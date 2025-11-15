@@ -27,15 +27,20 @@ const arkimeparser = require('./arkimeparser.js');
 const internals = require('./internals');
 const ViewerUtils = require('./viewerUtils');
 const ipaddr = require('ipaddr.js');
-const LRU = require('lru-cache');
+const { LRUCache } = require('lru-cache');
+const sanitizeHtml = require('sanitize-html');
 
-const headerlru = new LRU({ max: 100 });
+const headerlru = new LRUCache({ max: 100 });
 
 class SessionAPIs {
   // --------------------------------------------------------------------------
   // INTERNAL HELPERS
   // --------------------------------------------------------------------------
   static #sessionsListFromQuery (req, res, fields, cb) {
+    if (req.query.length === undefined || parseInt(req.query.length) < 1000000) {
+      req.query.length = 1000000;
+    }
+
     if (req.query.segments && req.query.segments.match(/^(time|all)$/) && fields.indexOf('rootId') === -1) {
       fields.push('rootId');
     }
@@ -1438,8 +1443,9 @@ class SessionAPIs {
       }
     }
 
-    if (reqQuery.facets === 'true' || parseInt(reqQuery.facets) === 1) {
+    if (reqQuery.facets === 'true' || parseInt(reqQuery.facets) === 1 || reqQuery.map === 'true' || reqQuery.map === true) {
       query.aggregations = {};
+
       // only add map aggregations if requested
       if (reqQuery.map === 'true' || reqQuery.map) {
         query.aggregations = {
@@ -1449,43 +1455,46 @@ class SessionAPIs {
         };
       }
 
-      query.aggregations.dbHisto = { aggregations: {} };
+      // add the dbHisto aggregation for timeline data if requested
+      if (reqQuery.facets === 'true' || parseInt(reqQuery.facets) === 1) {
+        query.aggregations.dbHisto = { aggregations: {} };
 
-      const filters = req.user.settings.timelineDataFilters || internals.settingDefaults.timelineDataFilters;
-      for (let i = 0; i < filters.length; i++) {
-        const filter = filters[i];
+        const filters = req.user.settings.timelineDataFilters || internals.settingDefaults.timelineDataFilters;
+        for (let i = 0; i < filters.length; i++) {
+          const filter = filters[i];
 
-        // Will also grab src/dst of these options instead to show on the timeline
-        switch (filter) {
-        case 'network.packets':
-        case 'totPackets':
-          query.aggregations.dbHisto.aggregations['source.packets'] = { sum: { field: 'source.packets' } };
-          query.aggregations.dbHisto.aggregations['destination.packets'] = { sum: { field: 'destination.packets' } };
+          // Will also grab src/dst of these options instead to show on the timeline
+          switch (filter) {
+          case 'network.packets':
+          case 'totPackets':
+            query.aggregations.dbHisto.aggregations['source.packets'] = { sum: { field: 'source.packets' } };
+            query.aggregations.dbHisto.aggregations['destination.packets'] = { sum: { field: 'destination.packets' } };
+            break;
+          case 'network.bytes':
+          case 'totBytes':
+            query.aggregations.dbHisto.aggregations['source.bytes'] = { sum: { field: 'source.bytes' } };
+            query.aggregations.dbHisto.aggregations['destination.bytes'] = { sum: { field: 'destination.bytes' } };
+            break;
+          case 'totDataBytes':
+            query.aggregations.dbHisto.aggregations['client.bytes'] = { sum: { field: 'client.bytes' } };
+            query.aggregations.dbHisto.aggregations['server.bytes'] = { sum: { field: 'server.bytes' } };
+            break;
+          default:
+            query.aggregations.dbHisto.aggregations[filter] = { sum: { field: filter } };
+          }
+        }
+
+        switch (reqQuery.bounding) {
+        case 'first':
+          query.aggregations.dbHisto.histogram = { field: 'firstPacket', interval: interval * 1000, min_doc_count: 1 };
           break;
-        case 'network.bytes':
-        case 'totBytes':
-          query.aggregations.dbHisto.aggregations['source.bytes'] = { sum: { field: 'source.bytes' } };
-          query.aggregations.dbHisto.aggregations['destination.bytes'] = { sum: { field: 'destination.bytes' } };
-          break;
-        case 'totDataBytes':
-          query.aggregations.dbHisto.aggregations['client.bytes'] = { sum: { field: 'client.bytes' } };
-          query.aggregations.dbHisto.aggregations['server.bytes'] = { sum: { field: 'server.bytes' } };
+        case 'database':
+          query.aggregations.dbHisto.histogram = { field: '@timestamp', interval: interval * 1000, min_doc_count: 1 };
           break;
         default:
-          query.aggregations.dbHisto.aggregations[filter] = { sum: { field: filter } };
+          query.aggregations.dbHisto.histogram = { field: 'lastPacket', interval: interval * 1000, min_doc_count: 1 };
+          break;
         }
-      }
-
-      switch (reqQuery.bounding) {
-      case 'first':
-        query.aggregations.dbHisto.histogram = { field: 'firstPacket', interval: interval * 1000, min_doc_count: 1 };
-        break;
-      case 'database':
-        query.aggregations.dbHisto.histogram = { field: '@timestamp', interval: interval * 1000, min_doc_count: 1 };
-        break;
-      default:
-        query.aggregations.dbHisto.histogram = { field: 'lastPacket', interval: interval * 1000, min_doc_count: 1 };
-        break;
       }
     }
 
@@ -2530,7 +2539,12 @@ class SessionAPIs {
    * @returns {string} The list of unique fields (with counts if requested)
    */
   static getUnique (req, res) {
-    ArkimeUtil.noCache(req, res, 'text/plain; charset=utf-8');
+    if (req.query.autocomplete !== undefined) {
+      // we want a json array returned when providing the autocomplete options in the search typeahead
+      ArkimeUtil.noCache(req, res, 'application/json; charset=utf-8');
+    } else {
+      ArkimeUtil.noCache(req, res, 'text/plain; charset=utf-8');
+    }
 
     // req.query.exp -> req.query.field by viewer.js:expToField
 
@@ -2824,7 +2838,17 @@ class SessionAPIs {
           if (Config.debug > 1) {
             console.log('/api/session/%s/%s/detail rendering', ArkimeUtil.sanitizeStr(req.params.nodeName), ArkimeUtil.sanitizeStr(req.params.id), data.replace(/>/g, '>\n'));
           }
-          res.send(data);
+          const html = sanitizeHtml(data, {
+            allowedTags: ['h3', 'h4', 'h5', 'h6', 'a', 'b', 'i', 'strong', 'em', 'div', 'pre', 'span', 'br', 'img', 'ul', 'li', 'b-dropdown', 'b-dropdown-item', 'arkime-toast', 'arkime-session-field', 'arkime-tag-sessions', 'arkime-export-pcap', 'arkime-remove-data', 'arkime-send-sessions', 'b-card-group', 'b-card', 'h4', 'dl', 'dt', 'dd', 'field-actions', 'b-dropdown-divider', 'template'],
+            allowedClasses: {
+              '*': ['ts-value', 'text-theme-quaternary', 'imagetag', 'file', 'nav-link', 'cursor-pointer', 'nav', 'nav-link', 'nav-pills', 'nav-item', 'mb-3', 'mb-2', 'me-1', 'me-5', 'ms-1', 'row', 'col-md-6', 'offset-md-6', 'sessionsrc', 'sessiondst', 'session-detail-ts', 'alert', 'alert-danger', 'session-detail', 'pull-right', 'small', 'dstcol', 'srccol', 'fa', 'fa-info-circle', 'fa-lg', 'fa-exclamation-triangle', 'sessionln', 'src-col-tip', 'dst-col-tip', 'fa-download', 'fa-arrow-circle-up', 'fa-arrow-circle-down', 'fa-link', 'clickable-label', 'detail-field', 'no-wrap', 'card-title', 'tag-list', 'btn', 'btn-xs', 'btn-theme-secondary', 'fa-plus-circle', 'str', 'bytes']
+            },
+            allowedAttributes: {
+              img: ['src'],
+              '*': [':download', '#button-content', 'class', 'value', 'sessionid', 'hidePackets', 'v-if', 'target', 'href', ':href', '@click', 'v-has-permission', 'text', ':text', ':sessions', '@done', ':cluster', ':single', ':message', ':type', ':done', 'expr', ':expr', ':separator', ':field', 'pull-left', 'size', 'variant', 'columns', 'style', 'suffix', 'target', 'v-for', 'key', ':key', ':add', 'title']
+            }
+          });
+          res.send(html);
         });
       });
     });
@@ -2942,6 +2966,251 @@ class SessionAPIs {
         SessionAPIs.removeTagsList(res, tags, list);
       });
     }
+  };
+
+  // --------------------------------------------------------------------------
+  /**
+   * GET - /api/sessions/summary
+   *
+   * Get summary info by id or by query.
+   * @name /sessions/summary
+   * @param {SessionsQuery} See_List - This API supports a common set of parameters documented in the SessionsQuery section
+   * @returns {object} summary - An object containing summary statistics for the selected sessions, including fields such as IP addresses, ports, protocols, tags, DNS queries, HTTP hosts, byte and packet counts, and time ranges.
+   *
+   */
+  static summary (req, res) {
+    let topNum = 20;
+    if (req.query.length) {
+      topNum = parseInt(req.query.length);
+    }
+
+    function convert (agg) {
+      if (!agg || !agg.buckets) {
+        return [];
+      }
+
+      const results = [];
+      for (let i = 0; i < Math.min(agg.buckets.length, topNum); i++) {
+        results.push({
+          item: agg.buckets[i].key,
+          sessions: agg.buckets[i].doc_count,
+          bytes: agg.buckets[i].bytes.value,
+          packets: agg.buckets[i].packets.value
+        });
+      }
+      return results;
+    }
+
+    SessionAPIs.buildSessionQuery(req, (bsqErr, query, indices) => {
+      if (bsqErr) {
+        return res.send({
+          recordsTotal: 0,
+          recordsFiltered: 0,
+          error: bsqErr.toString()
+        });
+      }
+
+      query._source = false;
+      query.size = 0;
+
+      if (Config.debug) {
+        console.log('summary query', JSON.stringify(query, null, 1));
+      }
+
+      const extraAggs = {
+        bytes: {
+          sum: {
+            field: 'network.bytes'
+          }
+        },
+        packets: {
+          sum: {
+            field: 'network.packets'
+          }
+        }
+      };
+
+      const options = ViewerUtils.addCluster(req.query.cluster);
+      const aggregations = {
+        firstPacket: {
+          min: {
+            field: 'firstPacket'
+          }
+        },
+        lastPacket: {
+          max: {
+            field: 'lastPacket'
+          }
+        },
+        bytes: {
+          sum: {
+            field: 'network.bytes'
+          }
+        },
+        dataBytes: {
+          sum: {
+            field: 'totDataBytes'
+          }
+        },
+        packets: {
+          sum: {
+            field: 'network.packets'
+          }
+        },
+
+        tags: {
+          terms: {
+            field: 'tags',
+            size: topNum
+          },
+          aggs: extraAggs
+        },
+
+        protocols: {
+          terms: {
+            field: 'protocol',
+            size: topNum
+          },
+          aggs: extraAggs
+        },
+
+        sourceIp: {
+          terms: {
+            field: 'source.ip',
+            size: topNum
+          },
+          aggs: extraAggs
+        },
+
+        destinationIp: {
+          terms: {
+            field: 'destination.ip',
+            size: topNum
+          },
+          aggs: extraAggs
+        },
+
+        allIp: {
+          terms: {
+            script: {
+              source: "if (doc['source.ip'].size() == 0) { return []; } return [doc['source.ip'].value, doc['destination.ip'].value];",
+              lang: 'painless'
+            },
+            size: topNum
+          },
+          aggs: extraAggs
+        },
+
+        dstIpPort: {
+          terms: {
+            script: {
+              source: "if (doc['destination.port'].size() == 0) { return []; } return [doc['destination.ip'].value + '_' + doc['destination.port'].value];",
+              lang: 'painless'
+            },
+            size: topNum
+          },
+          aggs: extraAggs
+        },
+
+        tcpPorts: {
+          filter: {
+            term: { protocol: 'tcp' }
+          },
+          aggs: {
+            tcpPorts: {
+              terms: {
+                field: 'destination.port',
+                size: topNum
+              },
+              aggs: extraAggs
+            }
+          }
+        },
+
+        udpPorts: {
+          filter: {
+            term: { protocol: 'udp' }
+          },
+          aggs: {
+            udpPorts: {
+              terms: {
+                field: 'destination.port',
+                size: topNum
+              },
+              aggs: extraAggs
+            }
+          }
+        },
+
+        dnsQueryHost: {
+          terms: {
+            field: 'dns.queryHost',
+            size: topNum
+          },
+          aggs: extraAggs
+        },
+
+        httpHost: {
+          terms: {
+            field: 'http.host',
+            size: topNum
+          },
+          aggs: extraAggs
+        }
+
+      };
+
+      // Merge in the new aggregations
+      query.aggregations = query.aggregations ?? {};
+      query.aggregations = { ...query.aggregations, ...aggregations };
+
+      Db.searchSessions(indices, query, options, (err, result) => {
+        if (err || !result) {
+          console.log('summary err', JSON.stringify(err, null, 1));
+          return res.status(500).send({ error: err?.message || 'Failed to generate summary' });
+        }
+        if (Config.debug) {
+          console.log('summary result', JSON.stringify(result, null, 1));
+        }
+
+        const map = ViewerUtils.mapMerge(result.aggregations);
+        const graph = ViewerUtils.graphMerge(req, query, result.aggregations);
+
+        // Change _ to . or : in dstIpPort
+        const dstIpPort = convert(result.aggregations.dstIpPort).map((item) => {
+          if (item.item.indexOf(':') === -1) {
+            item.item = item.item.replace('_', ':');
+          } else {
+            item.item = item.item.replace('_', '.');
+          }
+          return item;
+        });
+
+        const response = {
+          firstPacket: result.aggregations.firstPacket.value,
+          lastPacket: result.aggregations.lastPacket.value,
+          sessions: result.hits.total,
+          bytes: result.aggregations.bytes.value,
+          dataBytes: result.aggregations.dataBytes.value,
+          packets: result.aggregations.packets.value,
+          tags: convert(result.aggregations.tags),
+          protocols: convert(result.aggregations.protocols),
+          uniqueIp: convert(result.aggregations.allIp),
+          uniqueSrcIp: convert(result.aggregations.sourceIp),
+          uniqueDstIp: convert(result.aggregations.destinationIp),
+          uniqueDstIpPort: dstIpPort,
+          uniqueTcpDstPorts: convert(result.aggregations.tcpPorts.tcpPorts),
+          uniqueUdpDstPorts: convert(result.aggregations.udpPorts.udpPorts),
+          dnsQueryHost: convert(result.aggregations.dnsQueryHost),
+          httpHost: convert(result.aggregations.httpHost),
+          map,
+          graph
+        };
+        response.downloadBytes = 20 + response.bytes + 16 * response.packets;
+
+        res.send(response);
+      });
+    });
   };
 
   // --------------------------------------------------------------------------

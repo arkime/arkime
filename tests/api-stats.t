@@ -1,4 +1,4 @@
-use Test::More tests => 92;
+use Test::More tests => 93;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -197,6 +197,7 @@ my $test1Token = getTokenCookie("test1");
 # parliament.json
     my $stats = viewerGet("/api/parliament");
     is (@{$stats->{data}}, 1, "parliament.json data set ");
+    is (@{$stats->{esNodes}}, 2, "parliament.json esNodes set ");
     is ($stats->{recordsTotal}, 1, "parliament.json recordsTotal");
     is ($stats->{data}->[0]->{id}, "test", "parliament.json name");
 

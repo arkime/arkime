@@ -120,7 +120,7 @@ LOCAL void smb_security_blob(ArkimeSession_t *session, uint8_t *data, int len)
 
     uint32_t lens[6], offsets[6];
     int i;
-    for (i = 0; i < 6; i++) {
+    for (i = 0; i < ARRAY_LEN(lens); i++) {
         BSB_LIMPORT_u16(bsb, lens[i]);
         BSB_IMPORT_skip(bsb, 2);
         BSB_LIMPORT_u32(bsb, offsets[i]);

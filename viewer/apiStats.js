@@ -208,13 +208,11 @@ class StatsAPIs {
       const from = +req.query.start || 0;
       const stopLen = from + (+req.query.length || 500);
 
-      const r = {
+      res.send({
         recordsTotal: total.count,
         recordsFiltered: results.results.length,
         data: results.results.slice(from, stopLen)
-      };
-
-      res.send(r);
+      });
     }).catch((err) => {
       console.log(`ERROR - ${req.method} /api/stats`, query, util.inspect(err, false, 50));
       res.send({ recordsTotal: 0, recordsFiltered: 0, data: [] });
@@ -1270,6 +1268,33 @@ class StatsAPIs {
     }
   };
 
+  // --------------------------------------------------------------------------
+  /**
+   * GET - /api/esadmin/allocation
+   *
+   * Provides an explanation for shard allocation in the cluster (es admin only - set in config with <a href="settings#esadminusers">esAdminUsers</a>).
+   * Returns details about why shards are assigned or unassigned.
+   * @name /esadmin/allocation
+   * @param {string} index - Optional specific index name to explain
+   * @param {number} shard - Optional specific shard number to explain
+   * @param {boolean} primary - Optional whether the shard is primary (true) or replica (false)
+   * @returns {object} allocation - The cluster allocation explanation including node decisions and shard state
+   */
+  static async getAllocationExplain (req, res) {
+    try {
+      const { body: data } = await Db.allocationExplain(
+        req.query.cluster,
+        req.query.index,
+        req.query.shard,
+        req.query.primary
+      );
+      return res.send(data);
+    } catch (err) {
+      console.log(`ERROR - ${req.method} /api/esadmin/allocation`, util.inspect(err, false, 50));
+      return res.serverError(500, err.toString());
+    }
+  };
+
   // ES SHARD APIS ------------------------------------------------------------
   /**
    * GET - /api/esshards
@@ -1293,8 +1318,9 @@ class StatsAPIs {
     const options = ViewerUtils.addCluster(req.query.cluster, { flat_settings: true });
     Promise.all([
       Db.shards(options.cluster ? { cluster: options.cluster } : undefined),
-      Db.getClusterSettingsCache(options)
-    ]).then(([{ body: shards }, { body: settings }]) => {
+      Db.getClusterSettingsCache(options),
+      Db.loadESId2Info(options.cluster)
+    ]).then(([{ body: shards, esid2info}, { body: settings }]) => {
       if (!Array.isArray(shards)) {
         return res.serverError(500, 'No results');
       }
@@ -1321,7 +1347,12 @@ class StatsAPIs {
       const nodes = {};
 
       for (const shard of shards) {
-        if (shard.node === null || shard.node === 'null') { shard.node = 'Unassigned'; }
+        if (shard.node === null || shard.node === 'null') {
+          if (shard.ud && shard.ud.startsWith('node_left [')) {
+            shard.oldNode = Db.getESId2Node(shard.ud.substring(11, shard.ud.length - 1), req.cluster);
+          }
+          shard.node = 'Unassigned';
+        }
 
         if (!(req.query.show === 'all' ||
           shard.state === req.query.show || //  Show only matching stage
@@ -1592,14 +1623,15 @@ class StatsAPIs {
       _source: [
         'ver', 'nodeName', 'currentTime', 'monitoring', 'deltaBytes',
         'deltaPackets', 'deltaMS', 'deltaESDropped', 'deltaDropped',
-        'deltaOverloadDropped'
+        'deltaOverloadDropped', 'freeSpaceM', 'freeSpaceP'
       ]
     };
 
     Promise.all([
       Db.search('stats', 'stat', query),
-      Db.numberOfDocuments('stats')
-    ]).then(([stats, total]) => {
+      Db.numberOfDocuments('stats'),
+      Db.nodesStatsCache()
+    ]).then(([stats, total, nodesStats]) => {
       if (stats.error) { throw stats.error; }
 
       const results = { total: stats.hits.total, results: [] };
@@ -1626,11 +1658,32 @@ class StatsAPIs {
         results.results.push(fields);
       }
 
-      res.send({
+      // add es nodes to the parliament response
+      const esNodes = [];
+      if (nodesStats?.nodes) {
+        for (const node of Object.values(nodesStats.nodes)) {
+          const freeSize = node.roles?.some(str => str.startsWith('data')) ? node.fs.total.available_in_bytes : 0;
+          const totalSize = node.roles?.some(str => str.startsWith('data')) ? node.fs.total.total_in_bytes : 0;
+          const freeSpaceM = freeSize / 1000000;
+          const freeSpaceP = totalSize > 0 ? (freeSize / totalSize) * 100 : 0;
+
+          esNodes.push({
+            nodeName: node.name,
+            freeSpaceM,
+            freeSpaceP,
+            roles: node.roles || []
+          });
+        }
+      }
+
+      const r = {
         data: results.results,
         recordsTotal: total.count,
-        recordsFiltered: results.total
-      });
+        recordsFiltered: results.total,
+        esNodes
+      };
+
+      res.send(r);
     }).catch((err) => {
       console.log(`ERROR - ${req.method} /api/parliament`, util.inspect(err, false, 50));
       res.send({ recordsTotal: 0, recordsFiltered: 0, data: [] });

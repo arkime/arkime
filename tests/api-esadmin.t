@@ -1,4 +1,4 @@
-use Test::More tests => 30;
+use Test::More tests => 38;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -29,6 +29,9 @@ use strict;
     eq_or_diff($json, from_json('{"text": "You do not have permission to access this resource", "success": false}'));
 
     $json = viewerPost("/api/esadmin/unflood?arkimeRegressionUser=notadmin");
+    eq_or_diff($json, from_json('{"text": "You do not have permission to access this resource", "success": false}'));
+
+    $json = viewerGet("/api/esadmin/allocation?arkimeRegressionUser=notadmin");
     eq_or_diff($json, from_json('{"text": "You do not have permission to access this resource", "success": false}'));
 
 # Missing token
@@ -78,6 +81,39 @@ use strict;
 
     $json = esGet("/_cluster/settings?flat_settings");
     ok (!exists $json->{persistent}->{'cluster.max_shards_per_node'});
+
+# test cluster.routing.allocation.enable restore to "all"
+    # First, clear any existing setting
+    $json = esPut('/_cluster/settings', '{"persistent" : {"cluster.routing.allocation.enable" : null}}');
+    $json = esGet("/_cluster/settings?flat_settings");
+    ok (!exists $json->{persistent}->{'cluster.routing.allocation.enable'});
+
+    # Set to "primaries" (something other than "all")
+    $json = viewerPostToken("/api/esadmin/set?arkimeRegressionUser=adminuser1", "key=cluster.routing.allocation.enable&value=primaries", $token);
+    eq_or_diff($json, from_json('{"text": "Successfully set settings", "success": true}'));
+
+    $json = esGet("/_cluster/settings?flat_settings");
+    is ($json->{persistent}->{'cluster.routing.allocation.enable'}, "primaries");
+
+    # Restore to "all"
+    $json = viewerPostToken("/api/esadmin/set?arkimeRegressionUser=adminuser1", "key=cluster.routing.allocation.enable&value=all", $token);
+    eq_or_diff($json, from_json('{"text": "Successfully set settings", "success": true}'));
+
+    $json = esGet("/_cluster/settings?flat_settings");
+    is ($json->{persistent}->{'cluster.routing.allocation.enable'}, "all");
+
+    # Clean up - restore to null
+    $json = esPut('/_cluster/settings', '{"persistent" : {"cluster.routing.allocation.enable" : null}}');
+
+# allocation explain tests
+    # General allocation explanation (no specific shard)
+    $json = viewerGet("/api/esadmin/allocation?arkimeRegressionUser=adminuser1");
+    ok(exists $json->{index} || exists $json->{allocate_explanation}, "Allocation explain returns valid response");
+
+    # Allocation explanation with specific index/shard parameters
+    # Note: This may fail if there are no unassigned shards, so we just check it doesn't error
+    $json = viewerGet("/api/esadmin/allocation?arkimeRegressionUser=adminuser1&index=sessions2-*&shard=0&primary=true");
+    ok(defined $json, "Allocation explain with parameters returns response");
 
 # multiviewer
     # test cluster

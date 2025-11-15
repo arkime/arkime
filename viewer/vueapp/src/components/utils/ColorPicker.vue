@@ -3,44 +3,44 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-
-  <div class="color-picker-input"
+  <div
+    class="color-picker-input"
     ref="colorpicker"
     @keyup.esc="hidePicker">
     <div class="input-group input-group-sm">
-      <span class="input-group-prepend">
-        <span class="input-group-text">
-          {{ fieldName }}
-        </span>
+      <span class="input-group-text">
+        {{ fieldName }}
       </span>
-      <div class="input-group-append cursor-pointer color"
+      <div
+        class="cursor-pointer color"
         @click="togglePicker">
-        <span class="input-group-text"
+        <span
+          class="input-group-text"
           :style="{'background-color':colorValue}">
           &nbsp;&nbsp;
-          <span v-if="displayPicker"
-            class="fa fa-check">
-          </span>
+          <span
+            v-if="displayPicker"
+            class="fa fa-check" />
           &nbsp;&nbsp;
         </span>
       </div>
     </div>
-    <chrome-picker v-model="colorValue"
+    <chrome-picker
+      v-model="colorValue"
       v-if="displayPicker"
       class="color-picker"
-      @input="changeColor">
-    </chrome-picker>
+      @input="changeColor" />
   </div>
-
 </template>
 
 <script>
-import VueColor from 'vue-color';
+import { ChromePicker } from 'vue-color';
 
 export default {
-  name: 'Settings',
+  name: 'ColorPicker',
+  emits: ['colorSelected'],
   components: {
-    'chrome-picker': VueColor.Chrome
+    'chrome-picker': ChromePicker
   },
   props: {
     color: {
@@ -102,7 +102,7 @@ export default {
       }
     }
   },
-  beforeDestroy: function () {
+  beforeUnmount () {
     document.removeEventListener('click', this.documentClick);
   }
 };
@@ -111,12 +111,17 @@ export default {
 <style scoped>
 .color-picker {
   position: absolute;
-  left: 15px;
-  z-index: 3;
+  z-index: 9999;
 }
+</style>
 
-.color-picker-input .input-group-prepend > .input-group-text {
+<style>
+.color-picker-input > .input-group-text {
   color: #333333 !important;
   background-color: #F1F1F1 !important;
+}
+
+.color-picker-input .color > .input-group-text {
+  border-radius: 0 4px 4px 0;
 }
 </style>

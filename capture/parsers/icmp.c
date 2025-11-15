@@ -147,14 +147,18 @@ void arkime_parser_init()
                                               icmp_create_sessionid,
                                               icmp_pre_process,
                                               icmp_process,
-                                              NULL);
+                                              NULL,
+                                              NULL,
+                                              arkime_config_int(NULL, "icmpTimeout", 10, 1, 0xffff));
 
     icmpv6MProtocol = arkime_mprotocol_register("icmpv6",
                                                 SESSION_ICMP,
                                                 icmpv6_create_sessionid,
                                                 icmpv6_pre_process,
                                                 icmp_process,
-                                                NULL);
+                                                NULL,
+                                                NULL,
+                                                arkime_config_int(NULL, "icmpTimeout", 10, 1, 0xffff));
 
     icmpTypeField = arkime_field_define("general", "integer",
                                         "icmp.type", "ICMP Type", "icmp.type",

@@ -1,117 +1,123 @@
-<!--
-Copyright Yahoo Inc.
-SPDX-License-Identifier: Apache-2.0
--->
 <template>
+  <BRow
+    gutter-x="1"
+    class="text-start flex-nowrap d-flex justify-content-between"
+    align-h="start"
+    @keyup.stop.prevent.enter="exportPcapAction">
+    <BCol cols="auto">
+      <SegmentSelect v-model:segments="segments" />
+    </BCol>
 
-  <!-- export pcap form -->
-  <div class="row"
-    @keyup.stop.prevent.enter="exportPcap">
-
-    <!-- segments select input -->
-    <SegmentSelect :segments.sync="segments"/> <!-- /segments select input -->
-    <div class="col-md-5">
-
-      <!-- filename input -->
+    <BCol
+      cols="auto"
+      class="flex-fill">
       <div class="input-group input-group-sm">
-        <div class="input-group-prepend">
-          <span class="input-group-text">
-            Filename
-          </span>
-        </div>
+        <span class="input-group-text">
+          {{ $t('sessions.exports.filename') }}
+        </span>
         <b-form-input
           autofocus
           type="text"
-          v-model="filename"
+          :model-value="filename"
           class="form-control"
-          placeholder="Enter a filename"
-        />
-      </div> <!-- /filename input -->
-
-      <!-- error -->
-      <p v-if="error"
-        class="small text-danger mb-0">
-        <span class="fa fa-exclamation-triangle">
-        </span>&nbsp;
-        {{ error }}
-      </p> <!-- /error -->
-
-    </div>
-
-    <!-- cancel button -->
-    <div class="col-md-3">
-      <div class="pull-right">
-        <button class="btn btn-sm btn-theme-tertiary"
-          title="Export PCAP"
-          @click="exportPcap"
-          type="button">
-          <span class="fa fa-paper-plane-o">
-          </span>&nbsp;
-          Export PCAP
-        </button>
-        <button class="btn btn-sm btn-warning"
-          v-b-tooltip.hover
-          title="cancel"
-          @click="done(null)"
-          type="button">
-          <span class="fa fa-ban">
-          </span>
-        </button>
+          :placeholder="$t('sessions.exports.filenamePlaceholder')"
+          @update:model-value="filename = $event" />
       </div>
-    </div> <!-- /cancel button -->
+      <p
+        v-if="error"
+        class="small text-danger mb-0">
+        <span class="fa fa-exclamation-triangle" />&nbsp;
+        {{ error }}
+      </p>
+    </BCol>
 
-  </div> <!-- /export pcap form -->
-
+    <BCol cols="auto">
+      <button
+        class="btn btn-sm btn-theme-tertiary me-1"
+        @click="exportPcapAction"
+        type="button">
+        <span class="fa fa-paper-plane-o" />&nbsp;
+        {{ $t('sessions.exports.exportPCAP') }}
+      </button>
+      <button
+        id="cancelExportPcap"
+        class="btn btn-sm btn-warning"
+        @click="$emit('done', null, false, false)"
+        type="button">
+        <span class="fa fa-ban" />
+        <BTooltip target="cancelExportPcap">
+          {{ $t('common.cancel') }}
+        </BTooltip>
+      </button>
+    </BCol>
+  </BRow>
 </template>
 
-<script>
+<script setup>
+import { ref } from 'vue';
+import { useRoute } from 'vue-router';
 import SessionsService from './SessionsService';
-import SegmentSelect from './SegmentSelect';
+import SegmentSelect from './SegmentSelect.vue';
+import { useI18n } from 'vue-i18n';
+const { t } = useI18n();
 
-export default {
-  name: 'ArkimeExportPcap',
-  components: { SegmentSelect },
-  props: {
-    start: Number,
-    done: Function,
-    applyTo: String,
-    sessions: Array,
-    numVisible: Number,
-    numMatching: Number
+// Define Props
+const props = defineProps({
+  start: {
+    type: Number,
+    default: 0
   },
-  data: function () {
-    return {
-      error: '',
-      segments: 'no',
-      filename: 'sessions.pcap'
-    };
+  applyTo: {
+    type: String,
+    default: 'open'
   },
-  methods: {
-    /* exposed functions ----------------------------------------- */
-    exportPcap: function () {
-      if (this.filename === '') {
-        this.error = 'No filename specified.';
-        return;
-      }
+  sessions: {
+    type: Array,
+    default: () => []
+  },
+  numVisible: {
+    type: Number,
+    default: 0
+  },
+  numMatching: {
+    type: Number,
+    default: 0
+  }
+});
 
-      const data = {
-        start: this.start,
-        applyTo: this.applyTo,
-        filename: this.filename,
-        segments: this.segments,
-        sessions: this.sessions,
-        numVisible: this.numVisible,
-        numMatching: this.numMatching
-      };
+// Define Emits
+const emit = defineEmits(['done']);
 
-      SessionsService.exportPcap(data, this.$route.query)
-        .then((response) => {
-          this.done(response.text, true);
-        })
-        .catch((error) => {
-          this.error = error.text;
-        });
-    }
+// Reactive state
+const error = ref('');
+const segments = ref('no');
+const filename = ref('sessions.pcap');
+
+// Access route
+const route = useRoute();
+
+// Methods
+const exportPcapAction = async () => {
+  if (filename.value === '') {
+    error.value = t('sessions.exports.missingFilenameErr');
+    return;
+  }
+
+  const data = {
+    start: props.start,
+    applyTo: props.applyTo,
+    filename: filename.value,
+    segments: segments.value,
+    sessions: props.sessions,
+    numVisible: props.numVisible,
+    numMatching: props.numMatching
+  };
+
+  try {
+    const response = await SessionsService.exportPcap(data, route.query);
+    emit('done', response.text, true, true); // Emit the done event with the response text
+  } catch (err) {
+    error.value = err.text || t('sessions.exports.unknownErr');
   }
 };
 </script>

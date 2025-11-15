@@ -35,9 +35,16 @@ LOCAL int tcpflagsFinField;
 LOCAL int tcpflagsUrgField;
 
 /******************************************************************************/
+LOCAL void tcp_mid_save(ArkimeSession_t *session)
+{
+    session->tcpData.ackTime = 0;
+    session->tcpData.synTime = 0;
+    memset(session->tcpData.tcpFlagCnt, 0, sizeof(session->tcpData.tcpFlagCnt));
+}
+/******************************************************************************/
 LOCAL void tcp_session_free(ArkimeSession_t *session)
 {
-    if (session->tcpData.td_count == 1 && session->tcpFlagCnt[ARKIME_TCPFLAG_PSH] == 1) {
+    if (session->tcpData.td_count == 1 && session->tcpData.tcpFlagCnt[ARKIME_TCPFLAG_PSH] == 1) {
         ArkimeTcpData_t *ftd = DLL_PEEK_HEAD(td_, &session->tcpData);
         const int which = ftd->packet->direction;
         const uint8_t *data = ftd->packet->pkt + ftd->dataOffset;
@@ -83,7 +90,7 @@ LOCAL void tcp_packet_finish(ArkimeSession_t *session)
 
     DLL_FOREACH_REMOVABLE(td_, tcpData, ftd, next) {
         const int which = ftd->packet->direction;
-        const uint32_t tcpSeq = session->tcpSeq[which];
+        const uint32_t tcpSeq = session->tcpData.tcpSeq[which];
 
         /* The sequence number we are looking for is past the start of the packet */
         if (tcpSeq >= ftd->seq) {
@@ -112,7 +119,7 @@ LOCAL void tcp_packet_finish(ArkimeSession_t *session)
             }
 
             arkime_packet_process_data(session, data, len, which);
-            session->tcpSeq[which] += len;
+            session->tcpData.tcpSeq[which] += len;
             session->databytes[which] += len;
             session->totalDatabytes[which] += len;
 
@@ -147,15 +154,15 @@ LOCAL int tcp_packet_process(ArkimeSession_t *const session, ArkimePacket_t *con
 #endif
 
     if (tcphdr->th_win == 0 && (tcphdr->th_flags & TH_RST) == 0) {
-        session->tcpFlagCnt[ARKIME_TCPFLAG_SRC_ZERO + packet->direction]++;
+        session->tcpData.tcpFlagCnt[ARKIME_TCPFLAG_SRC_ZERO + packet->direction]++;
     }
 
     if (len < 0)
         return 1;
 
     if (tcphdr->th_flags & TH_URG) {
-        session->tcpFlagCnt[ARKIME_TCPFLAG_URG]++;
-        ARKIME_RULES_RUN_FIELD_SET(session, tcpflagsUrgField, (gpointer)(long)session->tcpFlagCnt[ARKIME_TCPFLAG_URG]);
+        session->tcpData.tcpFlagCnt[ARKIME_TCPFLAG_URG]++;
+        ARKIME_RULES_RUN_FIELD_SET(session, tcpflagsUrgField, (gpointer)(long)session->tcpData.tcpFlagCnt[ARKIME_TCPFLAG_URG]);
     }
 
     // add to the long open
@@ -165,24 +172,24 @@ LOCAL int tcp_packet_process(ArkimeSession_t *const session, ArkimePacket_t *con
 
     if (tcphdr->th_flags & TH_SYN) {
         if (tcphdr->th_flags & TH_ACK) {
-            session->tcpFlagCnt[ARKIME_TCPFLAG_SYN_ACK]++;
-            ARKIME_RULES_RUN_FIELD_SET(session, tcpflagsSynAckField, (gpointer)(long)session->tcpFlagCnt[ARKIME_TCPFLAG_SYN_ACK]);
+            session->tcpData.tcpFlagCnt[ARKIME_TCPFLAG_SYN_ACK]++;
+            ARKIME_RULES_RUN_FIELD_SET(session, tcpflagsSynAckField, (gpointer)(long)session->tcpData.tcpFlagCnt[ARKIME_TCPFLAG_SYN_ACK]);
 
             if (!session->haveTcpSession) {
 #ifdef DEBUG_TCP
                 LOG("syn-ack first");
 #endif
-                session->tcpSeq[(packet->direction + 1) % 2] = ntohl(tcphdr->th_ack);
-                session->synSeq[1] = seq;
+                session->tcpData.tcpSeq[(packet->direction + 1) % 2] = ntohl(tcphdr->th_ack);
+                session->tcpData.synSeq[1] = seq;
             }
         } else {
-            session->tcpFlagCnt[ARKIME_TCPFLAG_SYN]++;
-            ARKIME_RULES_RUN_FIELD_SET(session, tcpflagsSynField, (gpointer)(long)session->tcpFlagCnt[ARKIME_TCPFLAG_SYN]);
-            if (session->synTime == 0) {
-                session->synSeq[0] = seq;
-                session->synTime = (packet->ts.tv_sec - session->firstPacket.tv_sec) * 1000 +
-                                   (packet->ts.tv_usec - session->firstPacket.tv_usec) / 1000 + 1;
-                session->ackTime = 0;
+            session->tcpData.tcpFlagCnt[ARKIME_TCPFLAG_SYN]++;
+            ARKIME_RULES_RUN_FIELD_SET(session, tcpflagsSynField, (gpointer)(long)session->tcpData.tcpFlagCnt[ARKIME_TCPFLAG_SYN]);
+            if (session->tcpData.synTime == 0) {
+                session->tcpData.synSeq[0] = seq;
+                session->tcpData.synTime = (packet->ts.tv_sec - session->firstPacket.tv_sec) * 1000 +
+                                           (packet->ts.tv_usec - session->firstPacket.tv_usec) / 1000 + 1;
+                session->tcpData.ackTime = 0;
             }
         }
 
@@ -190,56 +197,56 @@ LOCAL int tcp_packet_process(ArkimeSession_t *const session, ArkimePacket_t *con
 
         // Only reset the initial SYN if we haven't set it before in each direction
         if ((session->synSet & (1 << packet->direction)) == 0) {
-            session->tcpSeq[packet->direction] = seq + 1;
+            session->tcpData.tcpSeq[packet->direction] = seq + 1;
             session->synSet |= (1 << packet->direction);
         }
         return 1;
     }
 
     if (tcphdr->th_flags & TH_RST) {
-        session->tcpFlagCnt[ARKIME_TCPFLAG_RST]++;
-        ARKIME_RULES_RUN_FIELD_SET(session, tcpflagsRstField, (gpointer)(long)session->tcpFlagCnt[ARKIME_TCPFLAG_RST]);
-        int64_t diff = tcp_sequence_diff(seq, session->tcpSeq[packet->direction]);
+        session->tcpData.tcpFlagCnt[ARKIME_TCPFLAG_RST]++;
+        ARKIME_RULES_RUN_FIELD_SET(session, tcpflagsRstField, (gpointer)(long)session->tcpData.tcpFlagCnt[ARKIME_TCPFLAG_RST]);
+        int64_t diff = tcp_sequence_diff(seq, session->tcpData.tcpSeq[packet->direction]);
         if (diff  <= 0) {
             if (diff == 0 && !session->closingQ) {
-                arkime_session_mark_for_close(session, SESSION_TCP);
+                arkime_session_mark_for_close(session);
             }
             return 1;
         }
 
-        session->tcpState[packet->direction] = ARKIME_TCP_STATE_FIN_ACK;
+        session->tcpData.tcpState[packet->direction] = ARKIME_TCP_STATE_FIN_ACK;
     }
 
     if (tcphdr->th_flags & TH_FIN) {
-        session->tcpFlagCnt[ARKIME_TCPFLAG_FIN]++;
-        ARKIME_RULES_RUN_FIELD_SET(session, tcpflagsFinField, (gpointer)(long)session->tcpFlagCnt[ARKIME_TCPFLAG_FIN]);
-        session->tcpState[packet->direction] = ARKIME_TCP_STATE_FIN;
+        session->tcpData.tcpFlagCnt[ARKIME_TCPFLAG_FIN]++;
+        ARKIME_RULES_RUN_FIELD_SET(session, tcpflagsFinField, (gpointer)(long)session->tcpData.tcpFlagCnt[ARKIME_TCPFLAG_FIN]);
+        session->tcpData.tcpState[packet->direction] = ARKIME_TCP_STATE_FIN;
     }
 
     if ((tcphdr->th_flags & (TH_FIN | TH_RST | TH_PUSH | TH_SYN | TH_ACK)) == TH_ACK) {
-        session->tcpFlagCnt[ARKIME_TCPFLAG_ACK]++;
+        session->tcpData.tcpFlagCnt[ARKIME_TCPFLAG_ACK]++;
         if (session->tcpFlagAckCnt[packet->direction] < 0xff) {
             session->tcpFlagAckCnt[packet->direction]++;
         }
-        ARKIME_RULES_RUN_FIELD_SET(session, tcpflagsAckField, (gpointer)(long)session->tcpFlagCnt[ARKIME_TCPFLAG_ACK]);
-        if (session->ackTime == 0) {
-            session->ackTime = (packet->ts.tv_sec - session->firstPacket.tv_sec) * 1000 +
-                               (packet->ts.tv_usec - session->firstPacket.tv_usec) / 1000 + 1;
+        ARKIME_RULES_RUN_FIELD_SET(session, tcpflagsAckField, (gpointer)(long)session->tcpData.tcpFlagCnt[ARKIME_TCPFLAG_ACK]);
+        if (session->tcpData.ackTime == 0) {
+            session->tcpData.ackTime = (packet->ts.tv_sec - session->firstPacket.tv_sec) * 1000 +
+                                       (packet->ts.tv_usec - session->firstPacket.tv_usec) / 1000 + 1;
         }
     }
 
     if (tcphdr->th_flags & TH_PUSH) {
-        session->tcpFlagCnt[ARKIME_TCPFLAG_PSH]++;
-        ARKIME_RULES_RUN_FIELD_SET(session, tcpflagsPshField, (gpointer)(long)session->tcpFlagCnt[ARKIME_TCPFLAG_PSH]);
+        session->tcpData.tcpFlagCnt[ARKIME_TCPFLAG_PSH]++;
+        ARKIME_RULES_RUN_FIELD_SET(session, tcpflagsPshField, (gpointer)(long)session->tcpData.tcpFlagCnt[ARKIME_TCPFLAG_PSH]);
     }
 
     if (session->stopTCP)
         return 1;
 
     // If we've seen SYN but no SYN_ACK and no tcpSeq set, then just assume we've missed the syn-ack
-    if (session->haveTcpSession && session->tcpFlagCnt[ARKIME_TCPFLAG_SYN_ACK] == 0 && session->tcpSeq[packet->direction] == 0) {
+    if (session->haveTcpSession && session->tcpData.tcpFlagCnt[ARKIME_TCPFLAG_SYN_ACK] == 0 && session->tcpData.tcpSeq[packet->direction] == 0) {
         arkime_session_add_tag(session, "no-syn-ack");
-        session->tcpSeq[packet->direction] = seq;
+        session->tcpData.tcpSeq[packet->direction] = seq;
     }
 
     ArkimeTcpDataHead_t *const tcpData = &session->tcpData;
@@ -253,12 +260,12 @@ LOCAL int tcp_packet_process(ArkimeSession_t *const session, ArkimePacket_t *con
 
     if (tcphdr->th_flags & (TH_ACK | TH_RST)) {
         int owhich = (packet->direction + 1) & 1;
-        if (session->tcpState[owhich] == ARKIME_TCP_STATE_FIN) {
-            session->tcpState[owhich] = ARKIME_TCP_STATE_FIN_ACK;
-            if (session->tcpState[packet->direction] == ARKIME_TCP_STATE_FIN_ACK) {
+        if (session->tcpData.tcpState[owhich] == ARKIME_TCP_STATE_FIN) {
+            session->tcpData.tcpState[owhich] = ARKIME_TCP_STATE_FIN_ACK;
+            if (session->tcpData.tcpState[packet->direction] == ARKIME_TCP_STATE_FIN_ACK) {
 
                 if (!session->closingQ) {
-                    arkime_session_mark_for_close(session, SESSION_TCP);
+                    arkime_session_mark_for_close(session);
                 }
                 return 1;
             }
@@ -268,8 +275,8 @@ LOCAL int tcp_packet_process(ArkimeSession_t *const session, ArkimePacket_t *con
     if (tcphdr->th_flags & TH_ACK) {
         if (session->haveTcpSession &&  // Seen a SYN
             (session->ackedUnseenSegment & (1 << packet->direction)) == 0 &&  // Haven't already tagged
-            session->tcpSeq[(packet->direction + 1) % 2] != 0 &&                  // The syn-ack isn't what is missing
-            (tcp_sequence_diff(session->tcpSeq[(packet->direction + 1) % 2], ntohl(tcphdr->th_ack)) > 1)) { // more then one byte missing
+            session->tcpData.tcpSeq[(packet->direction + 1) % 2] != 0 &&                  // The syn-ack isn't what is missing
+            (tcp_sequence_diff(session->tcpData.tcpSeq[(packet->direction + 1) % 2], ntohl(tcphdr->th_ack)) > 1)) { // more then one byte missing
 
             static const char *tags[2] = {"acked-unseen-segment-src", "acked-unseen-segment-dst"};
             arkime_session_add_tag(session, tags[packet->direction]);
@@ -282,7 +289,7 @@ LOCAL int tcp_packet_process(ArkimeSession_t *const session, ArkimePacket_t *con
         return 1;
 
     // This packet is before what we are processing
-    int64_t diff = tcp_sequence_diff(session->tcpSeq[packet->direction], seq + len);
+    int64_t diff = tcp_sequence_diff(session->tcpData.tcpSeq[packet->direction], seq + len);
     if (session->haveTcpSession && diff <= 0)
         return 1;
 
@@ -378,11 +385,13 @@ LOCAL int tcp_pre_process(ArkimeSession_t *session, ArkimePacket_t *const packet
 
     // If this is an old session that hash RSTs and we get a syn, probably a port reuse, close old session
     if (!isNewSession && (tcphdr->th_flags & TH_SYN) && ((tcphdr->th_flags & TH_ACK) == 0) &&
-        (session->tcpFlagCnt[ARKIME_TCPFLAG_RST] || session->tcpFlagCnt[ARKIME_TCPFLAG_FIN])) {
+        (session->tcpData.tcpFlagCnt[ARKIME_TCPFLAG_RST] || session->tcpData.tcpFlagCnt[ARKIME_TCPFLAG_FIN])) {
         return 1;
     }
 
     if (isNewSession) {
+        DLL_INIT(td_, &session->tcpData);
+
         /* if the syn-ack was captured first then the syn probably got dropped.*/
         if ((tcphdr->th_flags & TH_SYN) && (tcphdr->th_flags & TH_ACK)) {
             struct in6_addr tmp;
@@ -395,7 +404,7 @@ LOCAL int tcp_pre_process(ArkimeSession_t *session, ArkimePacket_t *const packet
             session->port1 = ntohs(tcphdr->th_sport);
             session->port2 = ntohs(tcphdr->th_dport);
         }
-        if (arkime_http_is_arkime(session->h_hash, session->sessionId)) {
+        if (arkime_http_is_arkime(session->ses_hash, session->sessionId)) {
             if (config.debug) {
                 char buf[1000];
                 LOG("Ignoring connection %s", arkime_session_id_string(session->sessionId, buf));
@@ -442,7 +451,9 @@ void arkime_parser_init()
                                              tcp_create_sessionid,
                                              tcp_pre_process,
                                              tcp_process,
-                                             tcp_session_free);
+                                             tcp_session_free,
+                                             tcp_mid_save,
+                                             arkime_config_int(NULL, "tcpTimeout", 60 * 8, 10, 0xffff));
 
     tcpflagsSynField = arkime_field_by_exp("tcpflags.syn");
     tcpflagsSynAckField = arkime_field_by_exp("tcpflags.syn-ack");

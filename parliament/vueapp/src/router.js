@@ -2,20 +2,18 @@
 Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 */
-import Vue from 'vue';
-import Router from 'vue-router';
-import Parliament from '@/components/Parliament';
-import Issues from '@/components/Issues';
-import Settings from '@/components/Settings';
-import Parliament404 from '@/components/404';
-import Help from '@/components/Help';
-import Users from '@/components/Users';
-import AuthService from '@/auth';
+import { createRouter, createWebHistory } from 'vue-router';
 
-Vue.use(Router);
+import Parliament from '@/components/Parliament.vue';
+import Issues from '@/components/Issues.vue';
+import Settings from '@/components/Settings.vue';
+import Parliament404 from '@/components/404.vue';
+import Help from '@/components/Help.vue';
+import Users from '@/components/Users.vue';
+import AuthService from '@/auth.js';
 
-const router = new Router({
-  mode: 'history',
+const router = createRouter({
+  history: createWebHistory('/parliament/'),
   base: '/parliament/',
   scrollBehavior: function (to, from, savedPosition) {
     if (to.hash) {
@@ -53,7 +51,7 @@ const router = new Router({
       component: Users
     },
     {
-      path: '*',
+      path: '/:pathMatch(.*)*', // see: https://router.vuejs.org/guide/migration/#removed-star-or-catch-all-routes
       name: 'Not Found',
       component: Parliament404
     }

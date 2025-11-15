@@ -13,10 +13,9 @@ LOCAL int pimMProtocol;
 /******************************************************************************/
 LOCAL void pim_create_sessionid(uint8_t *sessionId, ArkimePacket_t *const UNUSED (packet))
 {
-    sessionId[0] = 3;
-    sessionId[1] = IPPROTO_PIM;
-    sessionId[2] = IPPROTO_PIM;
-    sessionId[3] = 0;
+    memset(sessionId, 0, 4);
+    sessionId[0] = 2;
+    sessionId[1] = pimMProtocol;
 
     // for now, lump all pim into the same session
 }
@@ -59,5 +58,7 @@ void arkime_parser_init()
                                              pim_create_sessionid,
                                              pim_pre_process,
                                              pim_process,
-                                             NULL);
+                                             NULL,
+                                             NULL,
+                                             600);
 }

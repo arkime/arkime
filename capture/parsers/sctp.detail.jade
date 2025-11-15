@@ -1,0 +1,4 @@
+if (session.sctp)
+  div.sessionDetailMeta.bold SCTP
+  dl.sessionDetailMeta
+    +arrayList(session.sctp, "protoId", "Protocol Id", "sctp.protoId")

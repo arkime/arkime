@@ -13,10 +13,9 @@ LOCAL int igmpMProtocol;
 /******************************************************************************/
 LOCAL void igmp_create_sessionid(uint8_t *sessionId, ArkimePacket_t *const UNUSED (packet))
 {
-    sessionId[0] = 3;
-    sessionId[1] = IPPROTO_IGMP;
-    sessionId[2] = IPPROTO_IGMP;
-    sessionId[3] = 0;
+    memset(sessionId, 0, 4);
+    sessionId[0] = 2;
+    sessionId[1] = igmpMProtocol;
 
     // for now, lump all igmp into the same session
 }
@@ -59,5 +58,7 @@ void arkime_parser_init()
                                               igmp_create_sessionid,
                                               igmp_pre_process,
                                               igmp_process,
-                                              NULL);
+                                              NULL,
+                                              NULL,
+                                              600);
 }

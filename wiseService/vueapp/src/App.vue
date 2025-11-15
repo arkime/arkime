@@ -6,7 +6,8 @@ SPDX-License-Identifier: Apache-2.0
   <div id="app">
     <div v-if="compatibleBrowser">
       <wise-navbar />
-      <router-view class="margin-for-nav" />
+      <router-view class="margin-for-nav-sm" />
+      <wise-footer />
     </div>
     <div v-else>
       <wise-upgrade-browser />
@@ -15,14 +16,16 @@ SPDX-License-Identifier: Apache-2.0
 </template>
 
 <script>
-import WiseNavbar from './components/Navbar';
-import WiseUpgradeBrowser from './components/UpgradeBrowser';
+import WiseNavbar from './components/Navbar.vue';
+import WiseUpgradeBrowser from './components/UpgradeBrowser.vue';
+import WiseFooter from '@common/Footer.vue';
 
 export default {
   name: 'App',
   components: {
     WiseNavbar,
-    WiseUpgradeBrowser
+    WiseUpgradeBrowser,
+    WiseFooter
   },
   data: function () {
     return {
@@ -84,4 +87,13 @@ body { background-color: #F0F0F0; }
 /* see top level common.css info area for usage */
 .info-area { color: #777777; }
 .info-area div { background-color: #FFFFFF; }
+
+/* styles for bottom footer */
+html {
+  position: relative;
+  min-height: 100%;
+}
+#app {
+  padding-bottom: 25px;
+}
 </style>

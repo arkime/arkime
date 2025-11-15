@@ -4,11 +4,16 @@ SPDX-License-Identifier: Apache-2.0
 -->
 <template>
   <span
-    v-b-tooltip.hover
     :title="value.full"
     v-if="value.value !== undefined"
     :class="{'cursor-help':value.full}">
-    <div :class="field.type === 'table' || field.type === 'array' ? 'd-flex justify-content-between align-items-center' : 'd-inline'">
+    <v-tooltip
+      v-if="value.full"
+      activator="parent"
+      location="top">{{ value.full }}</v-tooltip>
+    <div
+      class="mt-1"
+      :class="field.type === 'table' || field.type === 'array' ? 'd-flex justify-space-between align-center' : 'd-inline'">
       <label
         tabindex="-1"
         v-if="!hideLabel"
@@ -16,100 +21,74 @@ SPDX-License-Identifier: Apache-2.0
         :class="(field.type === 'table' || field.type === 'array') ? 'flex-grow-1 cursor-pointer' : 'pr-2'">
         <span class="text-warning">
           {{ field.label }}
-          <span
-            class="fa"
+          <v-icon
             v-if="field.type === 'table' || field.type === 'array'"
-            :class="{'fa-caret-down':visible,'fa-caret-up':!visible}"
-          />
+            :icon="visible ? 'mdi-menu-down' : 'mdi-menu-up'" />
         </span>
-        <span v-if="field.type === 'table'"
+        <span
+          v-if="field.type === 'table'"
+          class="ml-1"
           :class="getTableLength() === 0 ? 'table-count-low' : 'text-default'">({{ getTableLength() }})
         </span>
       </label>
-      <div class="d-inline">
-        <b-button
-          size="xs"
+      <div
+        v-if="field.type === 'table'"
+        class="d-flex ga-1">
+        <v-btn
+          size="x-small"
           tabindex="-1"
           @click="copy"
-          variant="outline-success"
-          v-if="field.type === 'table'"
-          v-b-tooltip.hover
+          variant="outlined"
+          color="success"
+          v-tooltip="'Copy table as CSV string'"
           title="Copy table as CSV string">
-          <span class="fa fa-copy fa-fw" />
-        </b-button>
-        <b-button
-          size="xs"
+          <v-icon icon="mdi-content-copy mdi-fw" />
+        </v-btn>
+        <v-btn
+          size="x-small"
           tabindex="-1"
           @click="download"
-          variant="outline-success"
-          v-if="field.type === 'table'"
-          v-b-tooltip.hover
+          variant="outlined"
+          color="success"
+          v-tooltip="'Download table as CSV'"
           title="Download table as CSV">
-          <span class="fa fa-download fa-fw" />
-        </b-button>
+          <v-icon icon="mdi-download mdi-fw" />
+        </v-btn>
       </div>
     </div>
     <template v-if="visible">
       <!-- table field -->
       <template v-if="field.type === 'table'">
-        <b-overlay
-          no-center
-          rounded="sm"
-          blur="0.2rem"
-          opacity="0.9"
-          variant="transparent"
-          :show="getRenderingTable">
-          <integration-table
-            v-if="value.value"
-            :fields="field.fields"
-            :table-data="value.value"
-            :default-sort-field="field.defaultSortField"
-            :default-sort-direction="field.defaultSortDirection"
-            @tableFilteredDataChanged="tableFilteredDataChanged"
-          />
-          <template #overlay>
-            <div class="overlay-loading">
-              <span class="fa fa-circle-o-notch fa-spin fa-2x" />
-              <p>Rendering table data...</p>
-            </div>
-          </template>
-        </b-overlay>
+        <integration-table
+          v-if="value.value"
+          :fields="field.fields"
+          :table-data="value.value"
+          :default-sort-field="field.defaultSortField"
+          :default-sort-direction="field.defaultSortDirection"
+          :highlight-patterns="highlightPatterns"
+          @table-filtered-data-changed="tableFilteredDataChanged" />
       </template> <!-- /table field -->
       <!-- array field -->
       <template v-else-if="field.type === 'array'">
-        <b-overlay
-          no-center
-          rounded="sm"
-          blur="0.2rem"
-          opacity="0.9"
-          variant="transparent"
-          :show="getRenderingArray">
-          <integration-array
-            :field="field"
-            v-if="value.value"
-            :array-data="value.value"
-            :highlights-array="highlights"
-          />
-          <template #overlay>
-            <div class="overlay-loading">
-              <span class="fa fa-circle-o-notch fa-spin fa-2x" />
-              <p>Rendering array data...</p>
-            </div>
-          </template>
-        </b-overlay>
+        <integration-array
+          :field="field"
+          v-if="value.value"
+          :array-data="value.value"
+          :highlights-array="computedHighlights"
+          :highlight-color="highlightColor" />
       </template> <!-- /array field -->
       <!-- external link field -->
       <template v-else-if="field.type === 'externalLink'">
-        <b-button
+        <v-btn
           target="_blank"
           :href="value.value"
-          size="xs"
-          class="integration-external-link-button"
-          variant="outline-primary"
-          v-b-tooltip.hover.noninteractive="field.altText != null ? field.altText : value.value"
-        >
-          <span class="fa fa-external-link" />
-        </b-button>
+          size="x-small"
+          class="integration-external-link-button square-btn-xs"
+          variant="outlined"
+          color="primary"
+          v-tooltip="field.altText != null ? field.altText : value.value">
+          <v-icon icon="mdi-open-in-new" />
+        </v-btn>
       </template> <!-- /external link field -->
       <!-- url field -->
       <template v-else-if="field.type === 'url'">
@@ -120,14 +99,16 @@ SPDX-License-Identifier: Apache-2.0
           data-testid="integration-url">
           <highlightable-text
             :content="value.value"
-            :highlights="highlights"/>
+            :highlights="computedHighlights"
+            :highlight-color="highlightColor" />
         </a>
       </template> <!-- /url field -->
       <!-- json field -->
       <template v-else-if="field.type === 'json'">
         <pre class="text-info"><code><highlightable-text
-            :content="value.value"
-            :highlights="highlights"/></code></pre>
+          :content="value.value"
+          :highlights="computedHighlights"
+          :highlight-color="highlightColor" /></code></pre>
       </template> <!-- /json field -->
       <!-- DnsRecords field -->
       <template v-else-if="field.type === 'dnsRecords'">
@@ -141,14 +122,14 @@ SPDX-License-Identifier: Apache-2.0
             :data="data"
             :value="value.value"
             :options="field.options"
-            :highlights="highlights"
-          />
+            :highlights="computedHighlights"
+            :highlight-color="highlightColor" />
         </template>
         <template v-else>
           <highlightable-text
             :content="value.value"
-            :highlights="highlights"
-          />
+            :highlights="computedHighlights"
+            :highlight-color="highlightColor" />
         </template>
       </template> <!-- /default string, ms, seconds, & date field -->
     </template>
@@ -158,12 +139,14 @@ SPDX-License-Identifier: Apache-2.0
 <script>
 import { mapGetters } from 'vuex';
 
-import Cont3xtField from '@/utils/Field';
-import IntegrationArray from '@/components/integrations/IntegrationArray';
-import IntegrationTable from '@/components/integrations/IntegrationTable';
-import HighlightableText from '@/utils/HighlightableText';
+import Cont3xtField from '@/utils/Field.vue';
+import IntegrationArray from '@/components/integrations/IntegrationArray.vue';
+import IntegrationTable from '@/components/integrations/IntegrationTable.vue';
+import HighlightableText from '@/utils/HighlightableText.vue';
 import { formatPostProcessedValue } from '@/utils/formatValue';
 import DnsRecords from '@/utils/DnsRecords.vue';
+import { clipboardCopyText } from '@/utils/clipboardCopyText';
+import { getHighlightsForValue, getHighlightsForArray } from '@/utils/highlightUtil';
 
 export default {
   name: 'IntegrationValue',
@@ -196,6 +179,12 @@ export default {
       default () {
         return null;
       }
+    },
+    highlightPatterns: { // array of highlight pattern objects from query string
+      type: Array,
+      default () {
+        return null;
+      }
     }
   },
   data () {
@@ -217,6 +206,32 @@ export default {
       }
 
       return { value, full };
+    },
+    computedHighlights () {
+      // If highlights are explicitly provided (e.g., from table search), use those
+      if (this.highlights) {
+        return this.highlights;
+      }
+
+      // If highlight patterns are provided from query string, compute highlights
+      if (this.highlightPatterns && this.highlightPatterns.length > 0) {
+        if (this.field.type === 'array') {
+          return getHighlightsForArray(this.value.value, this.highlightPatterns);
+        } else if (this.value.value != null) {
+          return getHighlightsForValue(this.value.value, this.highlightPatterns);
+        }
+      }
+
+      return null;
+    },
+    highlightColor () {
+      // Pink for URL pattern highlights, yellow for explicit highlights (table search)
+      if (this.highlights) {
+        return 'yellow';
+      } else if (this.highlightPatterns && this.highlightPatterns.length > 0) {
+        return 'pink';
+      }
+      return 'yellow'; // default
     }
   },
   mounted () {
@@ -235,7 +250,7 @@ export default {
       this.visible = !this.visible;
     },
     copy () {
-      this.$copyText(this.generateCSVString());
+      clipboardCopyText(this.generateCSVString());
     },
     download () {
       const a = document.createElement('a');

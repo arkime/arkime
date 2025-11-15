@@ -168,13 +168,21 @@ class HuntAPIs {
       }
     }
 
-    const message = `
+    if (hunt.notifier) {
+      const message = `
 *${hunt.name}* hunt job paused with error: *${error.value}*
 *${hunt.matchedSessions}* matched sessions out of *${hunt.searchedSessions}* searched sessions.
 ${Config.arkimeWebURL()}hunt
-    `;
+      `;
 
-    Notifier.issueAlert(hunt.notifier, message, continueProcess);
+      // Handle multiple notifiers (stored as comma-separated string) - send in parallel, fire and forget
+      const notifiers = hunt.notifier.split(',');
+      notifiers.forEach(notifierId => {
+        Notifier.issueAlert(notifierId, message, () => {});
+      });
+    }
+
+    continueProcess();
   }
 
   // --------------------------------------------------------------------------
@@ -541,10 +549,14 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
 ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.query.stopTime}&startTime=${hunt.query.startTime}
           `;
 
-          Notifier.issueAlert(hunt.notifier, message, continueProcess);
-        } else {
-          return continueProcess();
+          // Handle multiple notifiers (stored as comma-separated string) - send in parallel, fire and forget
+          const notifiers = hunt.notifier.split(',');
+          notifiers.forEach(notifierId => {
+            Notifier.issueAlert(notifierId, message, () => {});
+          });
         }
+
+        return continueProcess();
       });
     });
   }
@@ -750,7 +762,7 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
      hex - search for hex text.
      regex - search for text using <a href="https://github.com/google/re2/wiki/Syntax">safe regex</a>.
      hexregex - search for text using <a href="https://github.com/google/re2/wiki/Syntax">safe hex regex</a>.
-   * @param {string} notifier - The optional notifier name to fire when there is an error, or there are matches (every 10 minutes), or when the hunt is complete.
+   * @param {string} notifier - A comma separated list of notifier IDs to alert when there is an error or when the hunt is complete.
    * @param {string} users - The comma separated list of users to be added to the hunt so they can view the results.
    * @returns {boolean} success - Whether the creation of the hunt was successful.
    * @returns {Hunt} hunt - The newly created hunt object.
@@ -792,6 +804,10 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
       return res.serverError(403, 'Roles field must be an array of strings');
     }
 
+    if (req.body.notifier !== undefined && !ArkimeUtil.isStringArray(req.body.notifier)) {
+      return res.serverError(403, 'Notifier field must be an array of strings');
+    }
+
     if (req.body.users !== undefined && !ArkimeUtil.isString(req.body.users, 0)) {
       return res.serverError(403, 'Users field must be a string');
     }
@@ -809,7 +825,6 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
       src: req.body.src,
       dst: req.body.dst,
       totalSessions: req.body.totalSessions,
-      notifier: req.body.notifier,
       created: now,
       status: 'queued', // always starts as queued
       userId: req.user.userId,
@@ -824,6 +839,11 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
       description: req.body.description,
       roles: req.body.roles
     };
+
+    // Convert notifier array to comma-separated string for storage
+    if (ArkimeUtil.isStringArray(req.body.notifier)) {
+      hunt.notifier = req.body.notifier.join(',');
+    }
 
     async function doneCb (doneHunt, invalidUsers) {
       try {
@@ -927,6 +947,11 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
         hunt.id = hit._id;
         hunt.index = hit._index;
         hunt.users = hunt.users || [];
+
+        // Convert comma-separated notifier string to array for client
+        if (ArkimeUtil.isString(hunt.notifier)) {
+          hunt.notifier = hunt.notifier.split(',');
+        }
 
         // clear out secret fields for users who don't have access to that hunt
         // if the user is not an admin and didn't create the hunt and isn't part of the user's list

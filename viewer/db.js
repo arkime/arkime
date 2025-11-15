@@ -14,10 +14,13 @@ const async = require('async');
 const { Client } = require('@elastic/elasticsearch');
 const User = require('../common/user');
 const ArkimeUtil = require('../common/arkimeUtil');
-const LRU = require('lru-cache');
+const { LRUCache } = require('lru-cache');
 
-const cache10 = new LRU({ max: 1000, maxAge: 1000 * 10 });
-const cache60 = new LRU({ max: 1000, maxAge: 1000 * 60 });
+const cache10 = new LRUCache({ max: 1000, ttl: 1000 * 10 });
+const cache60 = new LRUCache({ max: 1000, ttl: 1000 * 60 });
+const esId2Info =  new Map();
+const esId2InfoLoadedCluster = new Map();
+
 const Db = exports;
 
 const internals = {
@@ -874,8 +877,8 @@ Db.setIndexSettings = async (index, options) => {
     });
     return response;
   } catch (err) {
-    cache10.reset();
-    cache60.reset();
+    cache10.clear();
+    cache60.clear();
     throw err;
   }
 };
@@ -888,7 +891,7 @@ Db.shards = async (options) => {
   return internals.client7.cat.shards({
     format: 'json',
     bytes: 'b',
-    h: 'index,shard,prirep,state,docs,store,ip,node,ur,uf,fm,sm',
+    h: 'index,shard,prirep,state,docs,store,ip,node,ur,uf,fm,sm,ud',
     cluster: options?.cluster
   });
 };
@@ -927,7 +930,7 @@ Db.getClusterSettingsCache = async (options) => {
 };
 
 Db.putClusterSettings = async (options) => {
-  cache60.keys().filter((v) => v.startsWith('clusterSettings-')).every((v) => cache60.del(v));
+  cache60.keys().filter((v) => v.startsWith('clusterSettings-')).every((v) => cache60.delete(v));
   options.timeout = '10m';
   options.master_timeout = '10m';
   return internals.client7.cluster.putSettings(options);
@@ -998,6 +1001,21 @@ Db.reroute = async (cluster, commands) => {
     cluster,
     body: { commands }
   });
+};
+
+Db.allocationExplain = async (cluster, index, shard, primary) => {
+  const params = { cluster };
+
+  // If specific shard info is provided, include it in the request body
+  if (index != null && shard != null && primary != null) {
+    params.body = {
+      index,
+      shard: parseInt(shard),
+      primary: primary === 'true' || primary === true
+    };
+  }
+
+  return internals.client7.cluster.allocationExplain(params);
 };
 
 Db.flush = async (index, cluster) => {
@@ -1144,8 +1162,8 @@ Db.flushCache = function () {
   internals.shortcutsCache.clear();
   delete internals.aliasesCache;
   Db.getAliasesCache();
-  cache10.reset();
-  cache60.reset();
+  cache10.clear();
+  cache60.clear();
 };
 
 function twoDigitString (value) {
@@ -1153,7 +1171,7 @@ function twoDigitString (value) {
 }
 
 // History DB interactions
-Db.historyIt = async function (doc) {
+Db.historyIt = async function (doc, cluster) {
   const d = new Date(Date.now());
   const jan = new Date(d.getUTCFullYear(), 0, 0);
   const iname = internals.prefix + 'history_v1-' +
@@ -1161,7 +1179,7 @@ Db.historyIt = async function (doc) {
     twoDigitString(Math.floor((d - jan) / 604800000));
 
   return internals.client7.index({
-    index: iname, body: doc, refresh: true, timeout: '10m'
+    index: iname, body: doc, refresh: true, timeout: '10m', cluster
   });
 };
 Db.searchHistory = async (query) => {
@@ -1520,6 +1538,45 @@ Db.masterCache = async (cluster) => {
   return data;
 };
 
+Db.loadESId2Info = async (cluster) => {
+  if (esId2InfoLoadedCluster.has(cluster)) { return; }
+
+  const query = {
+    size: 10000,
+    query: {
+      wildcard: {
+        nodeName: 'es:*'
+      }
+    },
+    cluster
+  };
+
+  const data = await Db.search('dstats', 'dstat', query);
+  if (!data.hits) { return; }
+  for (const hit of data.hits.hits) {
+    const id = hit._id.substring(3);
+    const nodeName = hit._source.nodeName.substring(3);
+    const hostname = hit._source.hostname.substring(3);
+    esId2Info.set(`${cluster}-${id}`, { nodeName, hostname });
+  }
+  esId2InfoLoadedCluster.set(cluster, true);
+};
+
+Db.getESId2Node = (id, cluster) => {
+  const node = esId2Info.get(`${cluster}-${id}`);
+  if (!node) { return node; }
+  return node.nodeName;
+};
+
+Db.updateESId2Info = (id, nodeName, hostname, cluster) => {
+  if (esId2Info.has(id) && esId2Info.get(id).nodeName === nodeName && esId2Info.get(id).hostname === hostname) {
+    return;
+  }
+
+  esId2Info.set(`${cluster}-${id}`, { nodeName, hostname });
+  Db.index('dstats', 'dstat', `es:${id}`, { nodeName: `es:${nodeName}`, hostname: `es:${hostname}`});
+};
+
 Db.nodesStatsCache = async (cluster) => {
   const key = `nodesStats-${cluster}`;
   const value = cache10.get(key);
@@ -1532,6 +1589,13 @@ Db.nodesStatsCache = async (cluster) => {
     metric: 'jvm,process,fs,os,indices,thread_pool',
     cluster
   });
+
+  const nodeKeys = Object.keys(data.nodes);
+
+  for (let n = 0, nlen = nodeKeys.length; n < nlen; n++) {
+    const node = data.nodes[nodeKeys[n]];
+    Db.updateESId2Info(nodeKeys[n], node.name, node.host);
+  }
   cache10.set(key, data);
   return data;
 };
@@ -1660,15 +1724,15 @@ Db.numberOfDocuments = async (index, options) => {
 Db.checkVersion = async function (minVersion) {
   const match = process.versions.node.match(/^(\d+)\.(\d+)\.(\d+)/);
   const nodeVersion = parseInt(match[1], 10) * 10000 + parseInt(match[2], 10) * 100 + parseInt(match[3], 10);
-  if (nodeVersion < 181500) {
-    console.log(`ERROR - Need node 18 (18.15 or higher) or node 20, currently using ${process.version}`);
+  if (nodeVersion < 200900) {
+    console.log(`ERROR - Need node 20 (20.9 or higher) or node 22, currently using ${process.version}`);
     process.exit(1);
-  } else if (nodeVersion >= 210000) {
-    console.log(`ERROR - Node version ${process.version} is not supported, please use node 18 (18.15 or higher) or node 20`);
+  } else if (nodeVersion >= 230000) {
+    console.log(`ERROR - Node version ${process.version} is not supported, please use node 20 (20.9 or higher) or node 22`);
     process.exit(1);
   }
 
-  ['stats', 'dstats', 'sequence', 'files'].forEach(async (index) => {
+  ['stats', 'dstats', 'sequence'].forEach(async (index) => {
     try {
       await Db.indexStats(index);
     } catch (err) {
@@ -1676,6 +1740,21 @@ Db.checkVersion = async function (minVersion) {
       process.exit(1);
     }
   });
+
+  if (!internals.multiES) {
+    const { body: doc } = await internals.usersClient7.indices.getMapping({
+      index: fixIndex('files'),
+    });
+
+    const fname = fixIndex('files_v30');
+    if (doc[fname]?.mappings?.properties?.name?.type !== 'keyword') {
+      console.log(`ERROR - Issue with '${fixIndex('files')}' index, use 'db/db.pl http://<host:port> repair' to fix.\n`);
+      if (internals.debug) {
+        console.log(JSON.stringify(doc, null, 2));
+      }
+      process.exit(1);
+    }
+  }
 
   ArkimeUtil.checkArkimeSchemaVersion(internals.client7, internals.prefix, minVersion);
 };

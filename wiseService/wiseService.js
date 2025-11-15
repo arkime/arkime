@@ -10,13 +10,13 @@
 
 const express = require('express');
 const fs = require('fs');
-const glob = require('glob');
 const async = require('async');
 const sprintf = require('./sprintf.js').sprintf;
 const iptrie = require('arkime-iptrie');
 const User = require('../common/user');
 const Auth = require('../common/auth');
 const ArkimeUtil = require('../common/arkimeUtil');
+const Locales = require('../common/locales');
 const WISESource = require('./wiseSource.js');
 const cluster = require('cluster');
 const cryptoLib = require('crypto');
@@ -182,9 +182,11 @@ const cspDirectives = {
   // web worker required for json editor (https://github.com/dirkliu/vue-json-editor)
   workerSrc: ["'self'", 'blob:']
 };
-const cspHeader = helmet.contentSecurityPolicy({
-  directives: cspDirectives
-});
+const cspHeader = (process.env.NODE_ENV === 'development')
+  ? (_req, _res, next) => { next(); }
+  : helmet.contentSecurityPolicy({
+    directives: cspDirectives
+  });
 
 // Explicit sigint handler for running under docker
 // See https://github.com/nodejs/node/issues/4182
@@ -583,7 +585,7 @@ class WISESourceAPI {
 }
 // ----------------------------------------------------------------------------
 function loadSources () {
-  const files = glob.globSync(ArkimeConfig.get('sourcePath', path.join(__dirname, '/')) + 'source.*.js');
+  const files = fs.globSync(ArkimeConfig.get('sourcePath', path.join(__dirname, '/')) + 'source.*.js');
   files.forEach((file) => {
     try {
       const src = require(file);
@@ -638,7 +640,11 @@ app.use('/font-awesome', express.static(
   { maxAge: dayMs, fallthrough: false }
 ), ArkimeUtil.missingResource);
 app.use('/assets', express.static(
-  path.join(__dirname, '/../assets'),
+  path.join(__dirname, 'vueapp/dist/assets'),
+  { maxAge: dayMs, fallthrough: true }
+));
+app.use(['/assets', '/logos'], express.static(
+  path.join(__dirname, '../assets'),
   { maxAge: dayMs, fallthrough: false }
 ), ArkimeUtil.missingResource);
 
@@ -1112,6 +1118,18 @@ app.get('/config/defs', [ArkimeUtil.noCacheJson], function (req, res) {
 });
 // ----------------------------------------------------------------------------
 /**
+ * GET - Retrieve all available locale files for internationalization
+ *
+ * @name "/api/locales"
+ * @returns {object} Object containing all locale data
+ */
+app.get(
+  ['/api/locales'],
+  [ArkimeUtil.noCacheJson],
+  Locales.getLocales
+);
+// ----------------------------------------------------------------------------
+/**
  * GET - Used by the wise UI to all the types known (unathenticated).
  *
  * @name "/types"
@@ -1576,33 +1594,34 @@ app.use(ArkimeUtil.expressErrorHandler);
 // ============================================================================
 // VUE APP
 // ============================================================================
-const Vue = require('vue');
-const vueServerRenderer = require('vue-server-renderer');
+// loads the manifest.json file from dist and inject it in the ejs template
+const parseManifest = () => {
+  if (process.env.NODE_ENV === 'development') return {};
 
-// Factory function to create fresh Vue apps
-function createApp () {
-  return new Vue({
-    template: '<div id="app"></div>'
-  });
-}
+  const manifestPath = path.join(path.resolve(), 'vueapp/dist/.vite/manifest.json');
+  const manifestFile = fs.readFileSync(manifestPath, 'utf-8');
+
+  return JSON.parse(manifestFile);
+};
+const manifest = parseManifest();
 
 // Send back vue for every other request
 app.use(cspHeader, (req, res, next) => {
-  const renderer = vueServerRenderer.createRenderer({
-    template: fs.readFileSync(path.join(__dirname, '/vueapp/dist/index.html'), 'utf-8')
-  });
+  const footerConfig = ArkimeConfig.get('footerTemplate', '_version_ | <a href="https://arkime.com/wise">arkime.com/wise</a>')
+    .replace(/_version_/g, `WISE v${version.version}`);
 
   const appContext = {
-    logoutUrl: Auth.logoutUrl,
+    manifest,
+    path: internals.webBasePath,
     nonce: res.locals.nonce,
-    version: version.version
+    version: version.version,
+    footerConfig,
+    logoutUrl: Auth.logoutUrl(req),
+    logoutUrlMethod: Auth.logoutUrlMethod,
+    environment: process.env.NODE_ENV
   };
 
-  // Create a fresh Vue app instance
-  const vueApp = createApp();
-
-  // Render the Vue instance to HTML
-  renderer.renderToString(vueApp, appContext, (err, html) => {
+  res.render('index.html.ejs', appContext, (err, html) => {
     if (err) {
       console.log('ERROR - fetching vue index page:', err);
       if (err.code === 404) {

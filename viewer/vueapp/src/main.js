@@ -1,30 +1,26 @@
-import './createNonce';
+import { createApp } from 'vue';
+import { createBootstrap } from 'bootstrap-vue-next';
 
-// The Vue build version to load with the `import` command
-// (runtime-only or standalone) has been set in webpack.base.conf with an alias.
-import Vue from 'vue';
-import Vuex from 'vuex';
-import axios from 'axios';
-import VueAxios from 'vue-axios';
-import VueMoment from 'vue-moment';
-import moment from 'moment-timezone';
-import VueClipboard from 'vue-clipboard2';
-import BootstrapVue from 'bootstrap-vue';
-import 'bootstrap-vue/dist/bootstrap-vue.css';
+// internationalization
+import { createI18nInstance } from '@common/i18nSetup.js';
+
+// css frameworks
 import 'bootstrap/dist/css/bootstrap.css';
-import 'pc-bootstrap4-datetimepicker/build/css/bootstrap-datetimepicker.css';
+import 'bootstrap-vue-next/dist/bootstrap-vue-next.css';
+
+// vue color picker styles
+import 'vue-color/style.css';
 
 // internal deps
-import App from './App';
-import ArkimeSessionField from './components/sessions/SessionField';
-import HasPermission from './components/utils/HasPermission';
-import HasRole from '@/../../../common/vueapp/HasRole';
-import interceptorSetup from './interceptors';
-import router from './router';
-import store from './store';
-import './filters.js';
-import '@/../../../common/vueapp/vueFilters.js';
+import App from './App.vue';
+import ArkimeSessionField from './components/sessions/SessionField.vue';
+import HasPermission from './components/utils/HasPermission.vue';
+import HasRole from '@common/HasRole.vue';
+import router from './router.js';
+import store from './store.js';
+import { i18nValue, i18nBTip, i18nBDD } from '@common/i18nHelpers.js';
 
+// common css
 import '../../../common/common.css';
 // bootstrap overrides
 import './overrides.css';
@@ -38,51 +34,60 @@ import './themes/dark-3.css';
 import './themes/arkime-light.css';
 import './themes/arkime-dark.css';
 
-Vue.config.productionTip = false;
+/**
+ * Initialize the application with dynamically loaded locales
+ */
+async function initializeApp() {
+  // Create and configure i18n instance
+  const i18n = await createI18nInstance('api/locales');
 
-Vue.use(Vuex);
-Vue.use(VueClipboard);
-Vue.use(BootstrapVue);
-Vue.use(VueAxios, axios);
-Vue.use(VueMoment, { moment });
+  const app = createApp(App);
 
-Vue.directive('has-role', HasRole);
-Vue.directive('has-permission', HasPermission);
-Vue.component('arkime-session-field', ArkimeSessionField);
+  app.use(store);
+  app.use(router);
+  app.use(i18n);
+  app.use(createBootstrap());
 
-interceptorSetup();
+  app.directive('has-role', HasRole);
+  app.directive('has-permission', HasPermission);
+  app.directive('i18n-value', i18nValue);
+  app.directive('i18n-btip', i18nBTip);
+  app.directive('i18n-bdd', i18nBDD);
+  app.component('ArkimeSessionField', ArkimeSessionField);
 
-/* eslint-disable no-new */
-new Vue({
-  el: '#app',
-  store,
-  router,
-  components: { App },
-  template: '<App/>',
-  created: function () {
-    // define app constants
-    /* eslint-disable no-undef */
-    Vue.prototype.$constants = {
-      TITLE_CONFIG,
-      FOOTER_CONFIG,
-      DEMO_MODE,
-      VERSION,
-      PATH,
-      MULTIVIEWER,
-      HASUSERSES,
-      HUNTWARN,
-      HUNTLIMIT,
-      ANONYMOUS_MODE,
-      BUSINESS_DAY_START,
-      BUSINESS_DAY_END,
-      BUSINESS_DAYS,
-      TURN_OFF_GRAPH_DAYS,
-      DISABLE_USER_PASSWORD_UI,
-      BUILD_VERSION, // from webpack.DefinePlugin
-      BUILD_DATE, // from webpack.DefinePlugin
-      LOGOUT_URL,
-      DEFAULT_TIME_RANGE,
-      SPIVIEW_CATEGORY_ORDER
-    };
-  }
-});
+  // these globals are injected into index.ejs.html, by viewer.js
+  /* eslint-disable no-undef */
+  const constants = {
+    TITLE_CONFIG,
+    FOOTER_CONFIG,
+    DEMO_MODE,
+    VERSION,
+    PATH,
+    MULTIVIEWER,
+    HASUSERSES,
+    HUNTWARN,
+    HUNTLIMIT,
+    ANONYMOUS_MODE,
+    BUSINESS_DAY_START,
+    BUSINESS_DAY_END,
+    BUSINESS_DAYS,
+    TURN_OFF_GRAPH_DAYS,
+    DISABLE_USER_PASSWORD_UI,
+    BUILD_VERSION,
+    BUILD_DATE,
+    LOGOUT_URL,
+    LOGOUT_URL_METHOD,
+    DEFAULT_TIME_RANGE,
+    SPIVIEW_CATEGORY_ORDER,
+    CLUSTER_DEFAULT
+  };
+  // allow vue options api to access constants with this.$constants
+  app.config.globalProperties.$constants = constants;
+  // provide constants to vue composition api
+  app.provide('constants', constants);
+
+  app.mount('#app');
+}
+
+// Initialize the application
+initializeApp();

@@ -4,52 +4,54 @@ SPDX-License-Identifier: Apache-2.0
 -->
 <template>
   <div class="spigraph-popup">
-    <template v-for="(field, index) of fieldList">
+    <template
+      v-for="(field, index) of fieldList"
+      :key="index">
       <b-card
         :key="field.exp"
         v-if="index < popupInfo.depth"
         class="mb-2">
         <b-card-title>
           {{ field.friendlyName }}
-          <a class="pull-right cursor-pointer no-decoration"
+          <a
+            class="pull-right cursor-pointer no-decoration"
             v-if="index === 0"
             @click="closeInfo">
-            <span class="fa fa-close"></span>
+            <span class="fa fa-close" />
           </a>
         </b-card-title>
         <b-card-text>
-          <template>
-            <arkime-session-field
-              :key="field.exp"
-              :field="field"
-              :value="getPopupInfo(index).name"
-              :expr="field.exp"
-              :parse="true"
-              :session-btn="true">
-            </arkime-session-field>
-          </template>
+          <arkime-session-field
+            :key="field.exp"
+            :field="field"
+            :value="getPopupInfo(index).name"
+            :expr="field.exp"
+            :parse="true"
+            :session-btn="true" />
         </b-card-text>
         <template #footer>
-          <div class="d-flex justify-content-around text-center">
+          <div
+            class="d-flex justify-content-around text-center"
+            style="line-height: 1;">
             <div class="stat">
-              Count
+              {{ $t('spigraph.tableCount') }}
               <br>
               <b-badge>
-                {{ getPopupInfo(index).size | commaString }}
+                {{ commaString(getPopupInfo(index).size) }}
               </b-badge>
             </div>
             <div class="stat">
               Src IPs
               <br>
               <b-badge>
-                {{ getPopupInfo(index).srcips | commaString }}
+                {{ commaString(getPopupInfo(index).srcips) }}
               </b-badge>
             </div>
             <div class="stat">
               Dst IPs
               <br>
               <b-badge>
-                {{ getPopupInfo(index).dstips | commaString }}
+                {{ commaString(getPopupInfo(index).dstips) }}
               </b-badge>
             </div>
           </div>
@@ -60,19 +62,39 @@ SPDX-License-Identifier: Apache-2.0
 </template>
 
 <script>
+import { commaString } from '@common/vueFilters.js';
+
 export default {
   name: 'Popup',
+  emits: ['closeInfo'],
   props: {
-    fieldList: Array,
-    popupInfo: Object
+    fieldList: {
+      type: Array,
+      default: () => []
+    },
+    popupInfo: {
+      type: Object,
+      default: () => ({})
+    }
   },
   methods: {
+    commaString,
     closeInfo () {
       this.$emit('closeInfo');
     },
     getPopupInfo (index) {
       let info = this.popupInfo;
       const i = index + 1;
+
+      // Handle simple case where depth matches and there's no complex parent structure
+      if (i === info.depth && (!info.parent || !info.parent.parent)) {
+        if (info.data.sizeValue) {
+          info.data.size = info.data.sizeValue;
+        }
+        return info.data;
+      }
+
+      // Handle hierarchical structure
       while (info.parent) {
         if (i === info.depth) {
           if (info.data.sizeValue) {
@@ -93,19 +115,26 @@ export default {
   box-shadow: 0px 5px 10px 0px black;
 }
 
-.spigraph-popup .card-body,
-.spigraph-popup .card-footer {
-  padding: 0.25rem;
-}
-
 .spigraph-popup .card-title {
+  font-size: 1rem;
   margin-bottom: -4px;
+}
+.spigraph-popup .card-footer {
+  font-size: 0.8rem;
 }
 
 .stat {
   padding: 3px;
   border-radius: 4px;
   margin: 0 5px 0 5px;
+  color: var(--color-foreground);
   border: 1px solid var(--color-primary);
+}
+</style>
+
+<style>
+.spigraph-popup > .card > .card-body,
+.spigraph-popup > .card > .card-footer {
+  padding: 0.2rem 0.3rem !important;
 }
 </style>

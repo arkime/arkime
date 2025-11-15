@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <base href="/parliament/">
+    <meta charset="utf-8">
+    <meta name="referrer" content="no-referrer">
+    <meta property="csp-nonce" content="<%= nonce %>">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <link rel="stylesheet" href="font-awesome/css/font-awesome.min.css" nonce="<%= nonce %>" type="text/css">
+    <title>Parliament</title>
+    <% if (environment !== 'development') { %>
+      <link rel="stylesheet" href="<%= manifest['parliament/vueapp/src/main.js'].css %>" />
+    <% } %>
+  </head>
+  <script nonce="<%= nonce %>">
+    const PATH = '<%= path %>';
+    const VERSION = '<%= version %>';
+    const LOGOUT_URL = '<%= logoutUrl %>';
+    const LOGOUT_URL_METHOD = '<%= logoutUrlMethod %>';
+    const FOOTER_CONFIG = '<%= footerConfig %>';
+  </script>
+  <body>
+    <div id="app"></div>
+
+    <% if (environment === 'development') { %>
+      <!-- development: load the main application from Vite ====== -->
+      <!-- vite's client for HMR/errors -->
+      <script type="module" src="http://localhost:5175/@vite/client"></script>
+      <script type="module" src="http://localhost:5175/parliament/vueapp/src/main.js"></script>
+    <% } else { %>
+      <!-- production: use bundled js file (mapped through .vite's manifest.json) -->
+      <script type="module" src="<%= manifest['parliament/vueapp/src/main.js'].file %>" nonce="<%= nonce %>"></script>
+    <% } %>
+  </body>
+</html>
