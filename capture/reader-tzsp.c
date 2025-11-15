@@ -31,7 +31,7 @@ LOCAL void *tzsp_thread(gpointer UNUSED(uw))
     GSocket                  *socket;
     GSocketAddress           *addr;
 
-    int initFunc = arkime_get_named_func("arkime_reader_thread_exit");
+    int initFunc = arkime_get_named_func("arkime_reader_thread_init");
     arkime_call_named_func(initFunc, 0, NULL);
 
     socket = g_socket_new (G_SOCKET_FAMILY_IPV4, G_SOCKET_TYPE_DATAGRAM, G_SOCKET_PROTOCOL_UDP, &error);
