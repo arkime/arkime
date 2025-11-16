@@ -260,6 +260,9 @@ LOCAL gboolean pcapoverip_client_check_connections (gpointer UNUSED(user_data))
 /******************************************************************************/
 LOCAL void pcapoverip_client_start()
 {
+    int initFunc = arkime_get_named_func("arkime_reader_thread_init");
+    arkime_call_named_func(initFunc, 0, NULL);
+
     pcapoverip_client_check_connections(NULL);
     g_timeout_add_seconds(5, pcapoverip_client_check_connections, NULL);
     arkime_packet_set_dltsnap(DLT_EN10MB, config.snapLen);
@@ -287,6 +290,9 @@ LOCAL void pcapoverip_server_start()
     GError                   *error = NULL;
     GSocket                  *socket;
     GSocketAddress           *addr;
+
+    int initFunc = arkime_get_named_func("arkime_reader_thread_init");
+    arkime_call_named_func(initFunc, 0, NULL);
 
     socket = g_socket_new (G_SOCKET_FAMILY_IPV4, G_SOCKET_TYPE_STREAM, 0, &error);
 
@@ -319,6 +325,12 @@ LOCAL int pcapoverip_stats(ArkimeReaderStats_t *stats)
     return 0;
 }
 /******************************************************************************/
+LOCAL void pcapoverip_stop()
+{
+    int exitFunc = arkime_get_named_func("arkime_reader_thread_exit");
+    arkime_call_named_func(exitFunc, 0, NULL);
+}
+/******************************************************************************/
 void reader_pcapoverip_init(const char *name)
 {
     port        = arkime_config_int(NULL, "pcapOverIpPort", 57012, 1, 0xffff);
@@ -328,6 +340,7 @@ void reader_pcapoverip_init(const char *name)
     } else {
         arkime_reader_start         = pcapoverip_server_start;
     }
-    arkime_reader_stats         = pcapoverip_stats;
+    arkime_reader_stats             = pcapoverip_stats;
+    arkime_reader_stop              = pcapoverip_stop;
     arkime_packet_batch_init(&batch);
 }
