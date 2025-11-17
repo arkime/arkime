@@ -38,6 +38,14 @@ int16_t fieldOpsRemap[ARKIME_FIELDS_MAX][ARKIME_FIELDS_MAX];
 #define FIELD_MAX_JSON_SIZE 20000
 
 /******************************************************************************/
+#define JSON_SIZE_INCR(incr) \
+    do { \
+        field->jsonSize += (incr); \
+        if (field->jsonSize > FIELD_MAX_JSON_SIZE) \
+            session->midSave = 1; \
+    } while (0)
+
+/******************************************************************************/
 void arkime_field_by_exp_add_special(const char *exp, int pos)
 {
     ArkimeFieldInfo_t *info = ARKIME_TYPE_ALLOC0(ArkimeFieldInfo_t);
@@ -607,6 +615,7 @@ LOCAL void arkime_field_truncated(ArkimeSession_t *session, const ArkimeFieldInf
     snprintf(str, sizeof(str), "truncated-field-%s", info->dbField);
     arkime_session_add_tag(session, str);
 }
+
 /******************************************************************************/
 const char *arkime_field_string_add(int pos, ArkimeSession_t *session, const char *string, int len, gboolean copy)
 {
@@ -678,15 +687,12 @@ const char *arkime_field_string_add(int pos, ArkimeSession_t *session, const cha
         field->str = (char *)string;
         goto added;
     case ARKIME_FIELD_TYPE_STR_ARRAY:
+        if  (info->flags & ARKIME_FIELD_FLAG_DIFF_FROM_LAST &&
+             strncmp(field->sarray->pdata[field->sarray->len - 1], string, len) == 0) {
+            return NULL;
+        }
         if (copy)
             string = g_strndup(string, len);
-        if (info->flags & ARKIME_FIELD_FLAG_DIFF_FROM_LAST) {
-            if (strcmp(field->sarray->pdata[field->sarray->len - 1], string) == 0) {
-                if (copy)
-                    g_free((char *)string);
-                return NULL;
-            }
-        }
         g_ptr_array_add(field->sarray, (char *)string);
         goto added;
     case ARKIME_FIELD_TYPE_STR_HASH:
@@ -722,11 +728,7 @@ const char *arkime_field_string_add(int pos, ArkimeSession_t *session, const cha
     }
 
 added:
-    field->jsonSize += (6 + 2 * len);
-
-    if (field->jsonSize > FIELD_MAX_JSON_SIZE)
-        session->midSave = 1;
-
+    JSON_SIZE_INCR(6 + 2 * len);
     if (info->ruleEnabled)
         arkime_rules_run_field_set(session, pos, (const gpointer) string);
 
@@ -852,25 +854,21 @@ const char *arkime_field_string_uw_add(int pos, ArkimeSession_t *session, const 
     if (len < 0)
         len = strlen(string);
 
-    field = session->fields[pos];
-    field->jsonSize += (6 + 2 * len);
-
     if (len > ARKIME_FIELD_MAX_ELEMENT_SIZE) {
         len = ARKIME_FIELD_MAX_ELEMENT_SIZE;
         arkime_field_truncated(session, info);
     }
 
-    if (field->jsonSize > FIELD_MAX_JSON_SIZE)
-        session->midSave = 1;
+    field = session->fields[pos];
 
     switch (info->type) {
     case ARKIME_FIELD_TYPE_STR_HASH:
         HASH_FIND_HASH(s_, *(field->shash), arkime_string_hash_len(string, len), string, hstring);
 
         if (hstring) {
-            field->jsonSize -= (6 + 2 * len);
             return NULL;
         }
+
         hstring = ARKIME_TYPE_ALLOC(ArkimeString_t);
         if (copy)
             string = g_strndup(string, len);
@@ -879,6 +877,8 @@ const char *arkime_field_string_uw_add(int pos, ArkimeSession_t *session, const 
         hstring->utf8 = 0;
         hstring->uw = uw;
         HASH_ADD(s_, *(field->shash), hstring->str, hstring);
+
+        JSON_SIZE_INCR(6 + 2 * len);
         if (info->ruleEnabled)
             arkime_rules_run_field_set(session, pos, (const gpointer) string);
         return string;
@@ -959,11 +959,7 @@ gboolean arkime_field_int_add(int pos, ArkimeSession_t *session, int i)
     }
 
 added:
-    field->jsonSize += 13;
-
-    if (field->jsonSize > FIELD_MAX_JSON_SIZE)
-        session->midSave = 1;
-
+    JSON_SIZE_INCR(13);
     if (info->ruleEnabled)
         arkime_rules_run_field_set(session, pos, (gpointer)(long)i);
 
@@ -1021,11 +1017,7 @@ gboolean arkime_field_float_add(int pos, ArkimeSession_t *session, float f)
     }
 
 added:
-    field->jsonSize += 15;
-
-    if (field->jsonSize > FIELD_MAX_JSON_SIZE)
-        session->midSave = 1;
-
+    JSON_SIZE_INCR(15);
     if (info->ruleEnabled) {
         memcpy(&fint, &f, 4);
         arkime_rules_run_field_set(session, pos, (gpointer)(long)fint);
@@ -1128,11 +1120,7 @@ gboolean arkime_field_ip_add_str(int pos, ArkimeSession_t *session, const char *
     }
 
 added:
-    field->jsonSize += (3 + len + 100);
-
-    if (field->jsonSize > FIELD_MAX_JSON_SIZE)
-        session->midSave = 1;
-
+    JSON_SIZE_INCR(3 + len + 100);
     if (info->ruleEnabled)
         arkime_rules_run_field_set(session, pos, v);
 
@@ -1190,11 +1178,7 @@ gboolean arkime_field_ip4_add(int pos, ArkimeSession_t *session, uint32_t i)
     }
 
 added:
-    field->jsonSize += (3 + 15 + 100);
-
-    if (field->jsonSize > FIELD_MAX_JSON_SIZE)
-        session->midSave = 1;
-
+    JSON_SIZE_INCR(3 + 15 + 100);
     if (info->ruleEnabled)
         arkime_rules_run_field_set(session, pos, v);
 
@@ -1248,11 +1232,7 @@ gboolean arkime_field_ip6_add(int pos, ArkimeSession_t *session, const uint8_t *
     }
 
 added:
-    field->jsonSize += (3 + 30 + 100);
-
-    if (field->jsonSize > FIELD_MAX_JSON_SIZE)
-        session->midSave = 1;
-
+    JSON_SIZE_INCR(3 + 30 + 100);
     if (info->ruleEnabled)
         arkime_rules_run_field_set(session, pos, v);
 
