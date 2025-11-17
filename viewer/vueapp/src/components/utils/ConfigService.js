@@ -94,7 +94,7 @@ export default {
    *                            or rejection of the request.
    */
   cancelEsTask: async function (cancelId) {
-    return await fetchWrapper({ url: `api/estasks/${cancelId}/cancelwith` });
+    return await fetchWrapper({ url: `api/estasks/${cancelId}/cancelwith`, method: 'POST' });
   },
 
   /**
