@@ -82,6 +82,7 @@ SPDX-License-Identifier: Apache-2.0
           <arkime-paging
             v-if="viewMode === 'table'"
             style="height: 32px;"
+            class="ms-2"
             :records-total="sessions.recordsTotal"
             :records-filtered="sessions.recordsFiltered"
             @change-paging="changePaging" />

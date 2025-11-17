@@ -4,56 +4,41 @@
       v-if="visible && data"
       class="summary-tooltip"
       :style="tooltipStyle">
-      <div class="p-1">
+      <div class="tooltip-content">
         <!-- Header with session field dropdown and close button -->
-        <div class="d-flex justify-content-between align-items-center no-wrap">
+        <div class="d-flex justify-content-between align-items-top">
           <arkime-session-field
             :field="fieldConfig"
             :value="data.item"
             :expr="fieldConfig.exp"
             :parse="true"
             :session-btn="true"
-            class="flex-grow-1 mb-1" />
+            class="flex-grow-1"
+            style="white-space: break-spaces;" />
           <button
             class="btn-close btn-xs"
             @click="$emit('close')" />
         </div>
 
-        <!-- Statistics in compact grid format -->
-        <div class="d-flex gap-1">
-          <div class="stat-card p-1">
-            <div class="stat-label">
-              {{ $t('sessions.summary.sessions') }}
-            </div>
-            <div class="stat-value">
-              {{ formatNumber(data.sessions) }}
-            </div>
+        <!-- Statistics in vertical format -->
+        <div class="stats-container">
+          <div class="stat-row">
+            <span class="stat-label">{{ $t('sessions.summary.sessions') }}:</span>
+            <span class="stat-value">{{ formatNumber(data.sessions) }}</span>
           </div>
-          <div class="stat-card p-1">
-            <div class="stat-label">
-              {{ $t('sessions.summary.packets') }}
-            </div>
-            <div class="stat-value">
-              {{ formatNumber(data.packets) }}
-            </div>
+          <div class="stat-row">
+            <span class="stat-label">{{ $t('sessions.summary.packets') }}:</span>
+            <span class="stat-value">{{ formatNumber(data.packets) }}</span>
           </div>
-          <div class="stat-card p-1">
-            <div class="stat-label">
-              {{ $t('sessions.summary.bytes') }}
-            </div>
-            <div class="stat-value">
-              {{ formatBytes(data.bytes) }}
-            </div>
+          <div class="stat-row">
+            <span class="stat-label">{{ $t('sessions.summary.bytes') }}:</span>
+            <span class="stat-value">{{ formatBytes(data.bytes) }}</span>
           </div>
           <div
             v-if="percentage !== null"
-            class="stat-card p-1">
-            <div class="stat-label">
-              {{ percentageLabel }}
-            </div>
-            <div class="stat-value">
-              {{ percentage.toFixed(1) }}%
-            </div>
+            class="stat-row">
+            <span class="stat-label">{{ percentageLabel }}:</span>
+            <span class="stat-value">{{ percentage.toFixed(1) }}%</span>
           </div>
         </div>
       </div>
@@ -100,9 +85,12 @@ const props = defineProps({
 defineEmits(['close']);
 
 const tooltipStyle = computed(() => {
+  // Position tooltip to the top-right of the pointer
+  const offset = 1; // pixels away from pointer
   return {
-    left: `${props.position.x}px`,
-    top: `${props.position.y}px`
+    left: `${props.position.x + offset}px`,
+    top: `${props.position.y - offset}px`,
+    transform: 'translate(0, -100%)' // Move up by its own height
   };
 });
 
@@ -126,31 +114,49 @@ const percentageLabel = computed(() => {
   z-index: 9999;
   background: var(--color-quaternary-lightest);
   border: 1px solid var(--color-gray);
-  border-radius: 4px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  border-radius: 3px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
   padding: 0;
-  min-width: 150px;
-  max-width: 250px;
   pointer-events: auto;
+  white-space: nowrap;
+  max-width: 250px;
 }
 
-.stat-card {
-  background: var(--color-quaternary);
-  border-radius: 4px;
-  text-align: center;
+.tooltip-content {
+  padding: 6px 8px;
+}
+
+.stats-container {
+  margin-top: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.stat-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
 }
 
 .stat-label {
-  font-size: 10px;
-  color: var(--color-white);
-  margin-bottom: 2px;
+  font-size: 11px;
   font-weight: 500;
-  text-transform: uppercase;
+  white-space: nowrap;
 }
 
 .stat-value {
-  font-size: 13px;
+  font-size: 11px;
   font-weight: 600;
-  word-break: break-word;
+  white-space: nowrap;
+  text-align: right;
+}
+
+.btn-close.btn-xs {
+  font-size: 10px;
+  padding: 2px 3px;
+  margin-left: 6px;
 }
 </style>

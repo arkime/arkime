@@ -147,18 +147,6 @@ const renderChart = async () => {
   // Y axis
   svg.append('g')
     .call(d3.axisLeft(y));
-
-  // Value labels
-  svg.selectAll('.label')
-    .data(props.data)
-    .enter()
-    .append('text')
-    .attr('class', 'label')
-    .attr('x', d => x(d.item) + x.bandwidth() / 2)
-    .attr('y', d => y(d[props.metricType]) - 5)
-    .attr('text-anchor', 'middle')
-    .style('font-size', '11px')
-    .text(d => d[props.metricType]);
 };
 
 // Watch for data changes

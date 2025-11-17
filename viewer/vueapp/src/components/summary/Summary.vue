@@ -171,9 +171,9 @@
           :available-modes="['pie', 'bar', 'table']"
           :data="summary.protocols"
           :columns="protocolColumns"
-          :field-config="{ friendlyName: 'Protocol', exp: 'protocol', dbField: 'protocol' }"
-          field-name="Protocol"
-          field-exp="protocol"
+          :field-config="{ friendlyName: 'Protocols', exp: 'protocols', dbField: 'protocols' }"
+          field-name="Protocols"
+          field-exp="protocols"
           svg-id="protocolChartSvg"
           color-scheme="schemeCategory10"
           label-font-size="12px"
@@ -185,7 +185,7 @@
             dataKey: 'protocols',
             svgId: 'protocolChartSvg',
             filename: 'protocols',
-            itemLabel: 'Protocol',
+            itemLabel: 'Protocols',
             mode: protocolsViewMode
           })" />
 
