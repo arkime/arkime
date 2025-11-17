@@ -1368,7 +1368,7 @@ class SessionAPIs {
 
     const interval = startAndStopParams[2];
 
-    if ((parseInt(reqQuery.date) > parseInt(req.user.timeLimit)) ||
+    if ((parseFloat(reqQuery.date) > parseFloat(req.user.timeLimit)) ||
       ((reqQuery.date === '-1') && req.user.timeLimit)) {
       timeLimitExceeded = true;
     } else if ((reqQuery.startTime) && (reqQuery.stopTime) && (req.user.timeLimit) &&
@@ -2020,7 +2020,7 @@ class SessionAPIs {
 
     const spiDataMaxIndices = +Config.get('spiDataMaxIndices', 4);
 
-    if (parseInt(req.query.date) === -1 && spiDataMaxIndices !== -1) {
+    if (parseFloat(req.query.date) === -1 && spiDataMaxIndices !== -1) {
       return res.send({ spi: {}, bsqErr: "'All' date range not allowed for spiview query" });
     }
 
