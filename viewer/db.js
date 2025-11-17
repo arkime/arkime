@@ -1574,7 +1574,7 @@ Db.updateESId2Info = (id, nodeName, hostname, cluster) => {
   }
 
   esId2Info.set(`${cluster}-${id}`, { nodeName, hostname });
-  Db.index('dstats', 'dstat', `es:${id}`, { nodeName: `es:${nodeName}`, hostname: `es:${hostname}`});
+  Db.index('dstats', 'dstat', `es:${id}`, { nodeName: `es:${nodeName}`, hostname: `es:${hostname}` });
 };
 
 Db.nodesStatsCache = async (cluster) => {

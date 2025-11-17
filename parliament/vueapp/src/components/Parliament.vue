@@ -972,7 +972,7 @@ export default {
     getDataNodesTooltip (clusterId) {
       const dNodes = this.stats[clusterId]?.dataNodes;
       const tNodes = this.stats[clusterId]?.totalNodes;
-      let tooltip = this.$t('parliament.dbNodesTip', { data: this.commaString(dNodes), total:this.commaString(tNodes)});
+      let tooltip = this.$t('parliament.dbNodesTip', { data: this.commaString(dNodes), total:this.commaString(tNodes) });
 
       if (clusterId === this.clusterBeingEdited) {
         return tooltip;
