@@ -236,9 +236,9 @@ LOCAL void wise_remove_item_locked(WiseItem_t *wi)
         for (int i = 0; i < wi->numSessions; i++) {
             arkime_session_add_cmd(wi->sessions[i], ARKIME_SES_CMD_FUNC, NULL, NULL, wise_session_cmd_cb);
         }
-        g_free(wi->sessions);
+        ARKIME_SIZE_FREE("sessions", wi->sessions);
         wi->sessions = 0;
-        g_free(wi->matchPoses);
+        ARKIME_SIZE_FREE("matchPoses", wi->matchPoses);
         wi->matchPoses = 0;
     }
     arkime_free_later(wi, (GDestroyNotify) wise_free_item);
@@ -364,9 +364,9 @@ LOCAL void wise_cb(int UNUSED(code), uint8_t *data, int data_len, gpointer uw)
         for (s = 0; s < wi->numSessions; s++) {
             arkime_session_add_cmd(wi->sessions[s], ARKIME_SES_CMD_FUNC, wi, (gpointer)(long)wi->matchPoses[s], wise_session_cmd_cb);
         }
-        g_free(wi->sessions);
+        ARKIME_SIZE_FREE("sessions", wi->sessions);
         wi->sessions = 0;
-        g_free(wi->matchPoses);
+        ARKIME_SIZE_FREE("matchPoses", wi->matchPoses);
         wi->matchPoses = 0;
         wi->numSessions = 0;
 
@@ -415,8 +415,8 @@ LOCAL void wise_lookup(ArkimeSession_t *session, WiseRequest_t *request, char *v
 
             if (wi->numSessions >= wi->sessionsSize) {
                 wi->sessionsSize = MIN(wi->sessionsSize * 2, 4096);
-                wi->sessions = realloc(wi->sessions, sizeof(ArkimeSession_t *) * wi->sessionsSize);
-                wi->matchPoses = realloc(wi->matchPoses, sizeof(int16_t) * wi->sessionsSize);
+                ARKIME_SIZE_REALLOC("sessions", wi->sessions, sizeof(ArkimeSession_t *) * wi->sessionsSize);
+                ARKIME_SIZE_REALLOC("matchPoses", wi->matchPoses, sizeof(int16_t) * wi->sessionsSize);
             }
             wi->sessions[wi->numSessions] = session;
             wi->matchPoses[wi->numSessions] = matchPos;
@@ -444,8 +444,8 @@ LOCAL void wise_lookup(ArkimeSession_t *session, WiseRequest_t *request, char *v
         HASH_ADD(wih_, types[type].itemHash, wi->key, wi);
     }
 
-    wi->sessions = malloc(sizeof(ArkimeSession_t *) * wi->sessionsSize);
-    wi->matchPoses = malloc(sizeof(int16_t) * wi->sessionsSize);
+    wi->sessions = ARKIME_SIZE_ALLOC("sessions", sizeof(ArkimeSession_t *) * wi->sessionsSize);
+    wi->matchPoses = ARKIME_SIZE_ALLOC("matchPoses", sizeof(int16_t) * wi->sessionsSize);
     wi->sessions[wi->numSessions] = session;
     wi->matchPoses[wi->numSessions] = matchPos;
     wi->numSessions++;
@@ -984,7 +984,7 @@ void arkime_plugin_init()
     wiseExcludeDomains = arkime_config_str_list(NULL, "wiseExcludeDomains", ".in-addr.arpa;.ip6.arpa");
     for (i = 0; wiseExcludeDomains[i]; i++);
     wiseExcludeDomainsNum = i;
-    wiseExcludeDomainsLen = malloc(sizeof(int) * wiseExcludeDomainsNum);
+    wiseExcludeDomainsLen = ARKIME_SIZE_ALLOC("wiseExcludeDomainsLen", sizeof(int) * wiseExcludeDomainsNum);
 
     for (i = 0; wiseExcludeDomains[i]; i++) {
         wiseExcludeDomainsLen[i] = strlen(wiseExcludeDomains[i]);

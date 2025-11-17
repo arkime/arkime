@@ -649,7 +649,7 @@ class ArkimeUtil {
     console.log('Common issues:');
     console.log('  * Is OpenSearch/Elasticsearch running and NOT RED?');
     console.log(`  * Have you run 'db/db.pl <host:port> init'?`);
-    console.log(`  * Is the 'elasticsearch' setting (${host}) correct in config file (${ArkimeConfig.configFile}) with a username and password if needed? (https://arkime.com/settings#elasticsearch)`);
+    console.log(`  * Is the 'elasticsearch' setting (${host}) correct in config file (${ArkimeConfig.configFile}) with a username and password if needed? (https://arkime.com/settings#elasticsearch)? These should be the same as used with db.pl init.`);
     if (!ArkimeConfig.insecure) {
       console.log('  * Do you need the --insecure option? (See https://arkime.com/faq#insecure)');
     }

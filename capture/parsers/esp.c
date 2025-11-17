@@ -94,5 +94,7 @@ void arkime_parser_init()
                                              esp_create_sessionid,
                                              esp_pre_process,
                                              NULL,
-                                             NULL);
+                                             NULL,
+                                             NULL,
+                                             arkime_config_int(NULL, "espTimeout", 600, 10, 0xffff));
 }

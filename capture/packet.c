@@ -80,8 +80,9 @@ LOCAL ArkimePacketEnqueue_t *ipCbs[ARKIME_IPPROTO_MAX];
 int                          tcpMProtocol;
 int                          udpMProtocol;
 
-LOCAL int                    mProtocolCnt;
-ArkimeProtocol_t             mProtocols[0x100];
+int                          mProtocolCnt = ARKIME_MPROTOCOL_MIN;
+ArkimeProtocol_t             mProtocols[ARKIME_MPROTOCOL_MAX];
+LOCAL GHashTable            *mProtocolHash;
 
 extern ArkimeOfflineInfo_t   offlineInfo[256];
 ARKIME_LOCK_DEFINE(offlineInfoLock);
@@ -750,7 +751,7 @@ int arkime_packet_frags_outstanding()
     return 0;
 }
 /******************************************************************************/
-LOCAL void arkime_packet_log(SessionTypes ses)
+LOCAL void arkime_packet_log(int mProtocol)
 {
     ArkimeReaderStats_t stats;
     if (arkime_reader_stats(&stats)) {
@@ -765,9 +766,9 @@ LOCAL void arkime_packet_log(SessionTypes ses)
 
     LOG("packets: %" PRIu64 " current sessions: %u/%u oldest: %d - recv: %" PRIu64 " drop: %" PRIu64 " (%0.2f) queue: %d disk: %d packet: %d close: %d ns: %d frags: %d/%d pstats: %" PRIu64 "/%" PRIu64 "/%" PRIu64 "/%" PRIu64 "/%" PRIu64 "/%" PRIu64 "/%" PRIu64 " ver: %s mem: %.2f%%",
         totalPackets,
-        arkime_session_watch_count(ses),
+        arkime_session_watch_count(mProtocols[mProtocol].ses),
         arkime_session_monitoring(),
-        arkime_session_idle_seconds(ses),
+        arkime_session_idle_seconds(mProtocol),
         stats.total,
         stats.dropped - initialDropped,
         (stats.total ? (stats.dropped - initialDropped) * (double)100.0 / stats.total : 0),
@@ -849,9 +850,9 @@ LOCAL void arkime_packet_cmd_stats(int UNUSED(argc), char **UNUSED(argv), gpoint
                        arkime_session_watch_count(SESSION_UDP),
                        arkime_session_watch_count(SESSION_ICMP),
 
-                       arkime_session_idle_seconds(SESSION_TCP),
-                       arkime_session_idle_seconds(SESSION_UDP),
-                       arkime_session_idle_seconds(SESSION_ICMP),
+                       arkime_session_idle_seconds(arkime_mprotocol_get("tcp")),
+                       arkime_session_idle_seconds(arkime_mprotocol_get("udp")),
+                       arkime_session_idle_seconds(arkime_mprotocol_get("icmp")),
 
                        arkime_http_queue_length(esServer),
                        wql,
@@ -1543,7 +1544,7 @@ skip_switch:
 
     ARKIME_THREAD_INCR(totalPackets);
     if (unlikely(totalPackets % config.logEveryXPackets == 0)) {
-        arkime_packet_log(mProtocols[packet->mProtocol].ses);
+        arkime_packet_log(packet->mProtocol);
     }
 
     uint32_t thread = packet->hash % config.packetThreads;
@@ -2074,6 +2075,8 @@ void arkime_packet_init()
     arkime_packet_set_ethernet_cb(ETHERTYPE_IPV6, arkime_packet_ip6);
 
     arkime_command_register("packet-stats", arkime_packet_cmd_stats, "Packet Stats");
+
+    mProtocolHash = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, NULL);
 }
 /******************************************************************************/
 uint64_t arkime_packet_dropped_packets()
@@ -2266,7 +2269,7 @@ void arkime_packet_exit()
         Destroy_Patricia(ipTree6, NULL);
         ipTree6 = 0;
     }
-    arkime_packet_log(SESSION_TCP);
+    arkime_packet_log(arkime_mprotocol_get("tcp"));
     if (unknownPacketFile[0])
         fclose(unknownPacketFile[0]);
     if (unknownPacketFile[1])
@@ -2281,9 +2284,13 @@ int arkime_mprotocol_register_internal(const char                      *name,
                                        ArkimeProtocolPreProcess_cb      preProcess,
                                        ArkimeProtocolProcess_cb         process,
                                        ArkimeProtocolSessionFree_cb     sFree,
+                                       ArkimeProtocolSessionMidSave_cb  midSave,
+                                       int                              sessionTimeout,
                                        size_t                           sessionsize,
                                        int                              apiversion)
 {
+    static ARKIME_LOCK_DEFINE(lock);
+
     if (sizeof(ArkimeSession_t) != sessionsize) {
         CONFIGEXIT("Parser '%s' built with different version of arkime.h\n %u != %u", name, (unsigned int)sizeof(ArkimeSession_t),  (unsigned int)sessionsize);
     }
@@ -2292,17 +2299,32 @@ int arkime_mprotocol_register_internal(const char                      *name,
         CONFIGEXIT("Parser '%s' built with different version of arkime.h\n %d %d", name, ARKIME_API_VERSION, apiversion);
     }
 
-    int num = ++mProtocolCnt; // Leave 0 empty so we know if not set in code
+    ARKIME_LOCK(lock);
+
+    int n = GPOINTER_TO_INT(g_hash_table_lookup(mProtocolHash, name));
+    if (n > 0)
+        return n;
+
+    if (mProtocolCnt >= ARKIME_MPROTOCOL_MAX) {
+        CONFIGEXIT("Too many protocols registered (max %d)", ARKIME_MPROTOCOL_MAX);
+    }
+    int num = mProtocolCnt++;
     mProtocols[num].name = name;
     mProtocols[num].ses = ses;
     mProtocols[num].createSessionId = createSessionId;
     mProtocols[num].preProcess = preProcess;
     mProtocols[num].process = process;
     mProtocols[num].sFree = sFree;
+    mProtocols[num].midSave = midSave;
+    mProtocols[num].sessionTimeout = sessionTimeout;
+
+    g_hash_table_insert(mProtocolHash, g_strdup(name), GINT_TO_POINTER(num));
+
+    ARKIME_UNLOCK(lock);
     return num;
 }
 /******************************************************************************/
-void arkime_mprotocol_set_mid_save(int mprotocol, ArkimeProtocolSessionMidSave_cb midSave)
+int arkime_mprotocol_get(const char *name)
 {
-    mProtocols[mprotocol].midSave = midSave;
+    return GPOINTER_TO_INT(g_hash_table_lookup(mProtocolHash, name));
 }

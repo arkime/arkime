@@ -925,7 +925,7 @@ void  arkime_parsers_register2(ArkimeSession_t *session, ArkimeParserFunc func, 
         } else {
             session->parserLen *= 1.67;
         }
-        session->parserInfo = realloc(session->parserInfo, sizeof(ArkimeParserInfo_t) * session->parserLen);
+        ARKIME_SIZE_REALLOC("parserInfo", session->parserInfo, sizeof(ArkimeParserInfo_t) * session->parserLen);
     }
 
     session->parserInfo[session->parserNum].parserFunc     = func;
@@ -1010,7 +1010,7 @@ LOCAL void arkime_parsers_classifier_add(ArkimeClassifyHead_t *ch, ArkimeClassif
         } else {
             ch->size *= 1.67;
         }
-        ch->arr = realloc(ch->arr, sizeof(ArkimeClassify_t *) * ch->size);
+        ARKIME_SIZE_REALLOC("ch arr", ch->arr, sizeof(ArkimeClassify_t *) * ch->size);
     }
 
     ch->arr[ch->cnt] = c;

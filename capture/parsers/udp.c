@@ -102,5 +102,7 @@ void arkime_parser_init()
                                              udp_create_sessionid,
                                              udp_pre_process,
                                              udp_process,
-                                             NULL);
+                                             NULL,
+                                             NULL,
+                                             arkime_config_int(NULL, "udpTimeout", 60, 10, 0xffff));
 }

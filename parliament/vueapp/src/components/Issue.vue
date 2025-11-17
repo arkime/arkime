@@ -69,14 +69,14 @@ export default {
       let htmlStr =
       `<small>
         <div>
-          ${this.$t('parliament.issue.firstHtml', {first: firstNoticed})}
+          ${this.$t('parliament.issue.firstHtml', { first: firstNoticed })}
         </div>`;
 
       if (issue.lastNoticed) {
         const lastNoticed = moment(issue.lastNoticed).format('YYYY/MM/DD HH:mm:ss');
         htmlStr +=
           `<div>
-            ${this.$t('parliament.issue.lastHtml', {last: lastNoticed})}
+            ${this.$t('parliament.issue.lastHtml', { last: lastNoticed })}
           </div>`;
       }
 

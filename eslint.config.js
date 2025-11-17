@@ -65,6 +65,8 @@ const commonJavaScriptRules = {
     "no-trailing-spaces": "error",
     "no-unused-vars": "off",
     "no-control-regex": "off",
+
+    "object-curly-spacing": ["error", "always"],
 };
 
 // Vue-specific rule overrides (applied after extending recommended configs)

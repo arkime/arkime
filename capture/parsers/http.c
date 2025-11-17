@@ -350,6 +350,8 @@ LOCAL void arkime_http_parse_authorization(ArkimeSession_t *session, char *str)
         // Yahoo reused Basic
         if (len < 6 || memcmp("token=", str, 6) != 0) {
             g_base64_decode_inplace(str, &olen);
+            if (olen <= 0)
+                return;
             char *colon = strchr(str, ':');
             if (colon)
                 *colon = 0;

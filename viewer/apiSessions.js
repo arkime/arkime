@@ -37,6 +37,10 @@ class SessionAPIs {
   // INTERNAL HELPERS
   // --------------------------------------------------------------------------
   static #sessionsListFromQuery (req, res, fields, cb) {
+    if (req.query.length === undefined || parseInt(req.query.length) < 1000000) {
+      req.query.length = 1000000;
+    }
+
     if (req.query.segments && req.query.segments.match(/^(time|all)$/) && fields.indexOf('rootId') === -1) {
       fields.push('rootId');
     }
@@ -2962,6 +2966,251 @@ class SessionAPIs {
         SessionAPIs.removeTagsList(res, tags, list);
       });
     }
+  };
+
+  // --------------------------------------------------------------------------
+  /**
+   * GET - /api/sessions/summary
+   *
+   * Get summary info by id or by query.
+   * @name /sessions/summary
+   * @param {SessionsQuery} See_List - This API supports a common set of parameters documented in the SessionsQuery section
+   * @returns {object} summary - An object containing summary statistics for the selected sessions, including fields such as IP addresses, ports, protocols, tags, DNS queries, HTTP hosts, byte and packet counts, and time ranges.
+   *
+   */
+  static summary (req, res) {
+    let topNum = 20;
+    if (req.query.length) {
+      topNum = parseInt(req.query.length);
+    }
+
+    function convert (agg) {
+      if (!agg || !agg.buckets) {
+        return [];
+      }
+
+      const results = [];
+      for (let i = 0; i < Math.min(agg.buckets.length, topNum); i++) {
+        results.push({
+          item: agg.buckets[i].key,
+          sessions: agg.buckets[i].doc_count,
+          bytes: agg.buckets[i].bytes.value,
+          packets: agg.buckets[i].packets.value
+        });
+      }
+      return results;
+    }
+
+    SessionAPIs.buildSessionQuery(req, (bsqErr, query, indices) => {
+      if (bsqErr) {
+        return res.send({
+          recordsTotal: 0,
+          recordsFiltered: 0,
+          error: bsqErr.toString()
+        });
+      }
+
+      query._source = false;
+      query.size = 0;
+
+      if (Config.debug) {
+        console.log('summary query', JSON.stringify(query, null, 1));
+      }
+
+      const extraAggs = {
+        bytes: {
+          sum: {
+            field: 'network.bytes'
+          }
+        },
+        packets: {
+          sum: {
+            field: 'network.packets'
+          }
+        }
+      };
+
+      const options = ViewerUtils.addCluster(req.query.cluster);
+      const aggregations = {
+        firstPacket: {
+          min: {
+            field: 'firstPacket'
+          }
+        },
+        lastPacket: {
+          max: {
+            field: 'lastPacket'
+          }
+        },
+        bytes: {
+          sum: {
+            field: 'network.bytes'
+          }
+        },
+        dataBytes: {
+          sum: {
+            field: 'totDataBytes'
+          }
+        },
+        packets: {
+          sum: {
+            field: 'network.packets'
+          }
+        },
+
+        tags: {
+          terms: {
+            field: 'tags',
+            size: topNum
+          },
+          aggs: extraAggs
+        },
+
+        protocols: {
+          terms: {
+            field: 'protocol',
+            size: topNum
+          },
+          aggs: extraAggs
+        },
+
+        sourceIp: {
+          terms: {
+            field: 'source.ip',
+            size: topNum
+          },
+          aggs: extraAggs
+        },
+
+        destinationIp: {
+          terms: {
+            field: 'destination.ip',
+            size: topNum
+          },
+          aggs: extraAggs
+        },
+
+        allIp: {
+          terms: {
+            script: {
+              source: "if (doc['source.ip'].size() == 0) { return []; } return [doc['source.ip'].value, doc['destination.ip'].value];",
+              lang: 'painless'
+            },
+            size: topNum
+          },
+          aggs: extraAggs
+        },
+
+        dstIpPort: {
+          terms: {
+            script: {
+              source: "if (doc['destination.port'].size() == 0) { return []; } return [doc['destination.ip'].value + '_' + doc['destination.port'].value];",
+              lang: 'painless'
+            },
+            size: topNum
+          },
+          aggs: extraAggs
+        },
+
+        tcpPorts: {
+          filter: {
+            term: { protocol: 'tcp' }
+          },
+          aggs: {
+            tcpPorts: {
+              terms: {
+                field: 'destination.port',
+                size: topNum
+              },
+              aggs: extraAggs
+            }
+          }
+        },
+
+        udpPorts: {
+          filter: {
+            term: { protocol: 'udp' }
+          },
+          aggs: {
+            udpPorts: {
+              terms: {
+                field: 'destination.port',
+                size: topNum
+              },
+              aggs: extraAggs
+            }
+          }
+        },
+
+        dnsQueryHost: {
+          terms: {
+            field: 'dns.queryHost',
+            size: topNum
+          },
+          aggs: extraAggs
+        },
+
+        httpHost: {
+          terms: {
+            field: 'http.host',
+            size: topNum
+          },
+          aggs: extraAggs
+        }
+
+      };
+
+      // Merge in the new aggregations
+      query.aggregations = query.aggregations ?? {};
+      query.aggregations = { ...query.aggregations, ...aggregations };
+
+      Db.searchSessions(indices, query, options, (err, result) => {
+        if (err || !result) {
+          console.log('summary err', JSON.stringify(err, null, 1));
+          return res.status(500).send({ error: err?.message || 'Failed to generate summary' });
+        }
+        if (Config.debug) {
+          console.log('summary result', JSON.stringify(result, null, 1));
+        }
+
+        const map = ViewerUtils.mapMerge(result.aggregations);
+        const graph = ViewerUtils.graphMerge(req, query, result.aggregations);
+
+        // Change _ to . or : in dstIpPort
+        const dstIpPort = convert(result.aggregations.dstIpPort).map((item) => {
+          if (item.item.indexOf(':') === -1) {
+            item.item = item.item.replace('_', ':');
+          } else {
+            item.item = item.item.replace('_', '.');
+          }
+          return item;
+        });
+
+        const response = {
+          firstPacket: result.aggregations.firstPacket.value,
+          lastPacket: result.aggregations.lastPacket.value,
+          sessions: result.hits.total,
+          bytes: result.aggregations.bytes.value,
+          dataBytes: result.aggregations.dataBytes.value,
+          packets: result.aggregations.packets.value,
+          tags: convert(result.aggregations.tags),
+          protocols: convert(result.aggregations.protocols),
+          uniqueIp: convert(result.aggregations.allIp),
+          uniqueSrcIp: convert(result.aggregations.sourceIp),
+          uniqueDstIp: convert(result.aggregations.destinationIp),
+          uniqueDstIpPort: dstIpPort,
+          uniqueTcpDstPorts: convert(result.aggregations.tcpPorts.tcpPorts),
+          uniqueUdpDstPorts: convert(result.aggregations.udpPorts.udpPorts),
+          dnsQueryHost: convert(result.aggregations.dnsQueryHost),
+          httpHost: convert(result.aggregations.httpHost),
+          map,
+          graph
+        };
+        response.downloadBytes = 20 + response.bytes + 16 * response.packets;
+
+        res.send(response);
+      });
+    });
   };
 
   // --------------------------------------------------------------------------
