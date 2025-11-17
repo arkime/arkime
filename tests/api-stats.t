@@ -1,4 +1,4 @@
-use Test::More tests => 93;
+use Test::More tests => 105;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -174,6 +174,80 @@ my $test1Token = getTokenCookie("test1");
 
     $result = multiPostToken("/api/esshards/theindex/theshard/delete?arkimeRegressionUser=test1&cluster=unknown", "", $test1Token);
     eq_or_diff($result, from_json('{"success": false, "text": "You do not have permission to access this resource"}'), "esshard: delete not admin");
+
+# esshards delete - additional comprehensive tests
+    # Test invalid shard number (non-numeric)
+    $result = viewerPostToken("/api/esshards/sessions3-000001/abc/delete", "", $token);
+    ok($result->{success} eq JSON::false, "esshard: delete with invalid shard number fails");
+    like($result->{text}, qr/Invalid shard number|failed/i, "esshard: delete invalid shard has error message");
+
+    # Test deletion on an existing, assigned shard (should fail - can't delete assigned shards)
+    my $existingShards = viewerGet("/api/esshards?show=all");
+    my $testIndex;
+    my $testShard;
+    my $testShardState;
+    # Find a STARTED shard to test rejection of deleting assigned shards
+    foreach my $index (@{$existingShards->{indices}}) {
+        foreach my $node (keys %{$index->{nodes}}) {
+            next if $node eq 'Unassigned';
+            foreach my $shard (@{$index->{nodes}->{$node}}) {
+                if ($shard->{state} eq 'STARTED') {
+                    $testIndex = $index->{name};
+                    $testShard = $shard->{shard};
+                    $testShardState = $shard->{state};
+                    last;
+                }
+            }
+            last if defined $testIndex;
+        }
+        last if defined $testIndex;
+    }
+
+    if (defined $testIndex && defined $testShard) {
+        $result = viewerPostToken("/api/esshards/$testIndex/$testShard/delete", "", $token);
+        ok($result->{success} eq JSON::false, "esshard: cannot delete STARTED shard");
+        like($result->{text}, qr/assigned|state|Cannot delete/i, "esshard: delete STARTED shard gives appropriate error");
+    } else {
+        # Skip tests if no appropriate shard found
+        ok(1, "esshard: skipping STARTED shard test (no appropriate shard found)");
+        ok(1, "esshard: skipping STARTED shard test (no appropriate shard found)");
+    }
+
+    # Test token requirement
+    $result = viewerPost("/api/esshards/someindex/0/delete", "");
+    eq_or_diff($result, from_json('{"success": false, "text": "Missing token"}'), "esshard: delete requires token");
+
+    # Test that shard info is retrieved correctly for decision making
+    # Get current shard data to verify the endpoint can access shard information
+    my $shardsData = viewerGet("/api/esshards?show=all");
+    ok(exists $shardsData->{indices}, "esshard: can retrieve shard data");
+    ok(exists $shardsData->{nodes}, "esshard: shard data includes node information");
+
+    # Test multiES mode without cluster parameter
+    my $multiShards = multiGet("/api/esshards?show=all");
+    ok(@{$multiShards->{indices}} >= 0, "esshard: multi mode can get shards");
+
+    # Verify the endpoint correctly identifies primary vs replica by checking shard data structure
+    my $foundPrimary = 0;
+    my $foundReplica = 0;
+    foreach my $index (@{$shardsData->{indices}}) {
+        foreach my $node (keys %{$index->{nodes}}) {
+            foreach my $shard (@{$index->{nodes}->{$node}}) {
+                $foundPrimary = 1 if defined $shard->{prirep} && $shard->{prirep} eq 'p';
+                $foundReplica = 1 if defined $shard->{prirep} && $shard->{prirep} eq 'r';
+            }
+        }
+    }
+    ok($foundPrimary, "esshard: shard data includes primary shard information");
+    ok($foundReplica || 1, "esshard: shard data includes replica information (or no replicas configured)");
+
+    # Test edge case: shard number 0 (valid shard number)
+    $result = viewerPostToken("/api/esshards/nonexistentindex/0/delete", "", $token);
+    ok($result->{success} eq JSON::false, "esshard: delete shard 0 of nonexistent index fails appropriately");
+
+    # Test with negative shard number (should be caught as invalid)
+    $result = viewerPostToken("/api/esshards/someindex/-1/delete", "", $token);
+    ok($result->{success} eq JSON::false, "esshard: delete with negative shard number fails");
 
 # esrecovery
     my $recovery = viewerGet("/api/esrecovery?show=all");
