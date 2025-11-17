@@ -69,11 +69,11 @@ class ViewerUtils {
       console.log('determineQueryTimes <-', reqQuery);
     }
 
-    if (reqQuery.date && isNaN(parseInt(reqQuery.date))) {
+    if (reqQuery.date && isNaN(parseFloat(reqQuery.date))) {
       reqQuery.date = '-1';
     }
 
-    if ((reqQuery.date && parseInt(reqQuery.date) === -1) ||
+    if ((reqQuery.date && parseFloat(reqQuery.date) === -1) ||
         (reqQuery.segments && reqQuery.segments === 'all')) {
       interval = 60 * 60; // Hour to be safe
     } else if ((reqQuery.startTime !== undefined) && (reqQuery.stopTime !== undefined)) {
