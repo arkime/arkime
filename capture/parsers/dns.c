@@ -1162,8 +1162,7 @@ LOCAL void dns_save_ip_ghash(BSB *jbsb, struct arkime_session *session, GHashTab
         arkime_db_geo_lookup6(session, *(struct in6_addr *)ikey, &geos[cnt]);
 
         if (IN6_IS_ADDR_V4MAPPED((struct in6_addr *)ikey)) {
-            uint32_t ipv4 = ARKIME_V6_TO_V4(*(struct in6_addr *)ikey);
-            snprintf(ip, sizeof(ip), "%u.%u.%u.%u", ipv4 & 0xff, (ipv4 >> 8) & 0xff, (ipv4 >> 16) & 0xff, (ipv4 >> 24) & 0xff);
+            arkime_ip4tostr(ARKIME_V6_TO_V4(*(struct in6_addr *)ikey), ip);
         } else {
             inet_ntop(AF_INET6, ikey, ip, sizeof(ip));
         }

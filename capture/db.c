@@ -886,10 +886,8 @@ void arkime_db_save_session(ArkimeSession_t *session, int final)
 
     if (session->ipProtocol) {
         if (IN6_IS_ADDR_V4MAPPED(&session->addr1)) {
-            uint32_t ip = ARKIME_V6_TO_V4(session->addr1);
-            snprintf(ipsrc, sizeof(ipsrc), "%u.%u.%u.%u", ip & 0xff, (ip >> 8) & 0xff, (ip >> 16) & 0xff, (ip >> 24) & 0xff);
-            ip = ARKIME_V6_TO_V4(session->addr2);
-            snprintf(ipdst, sizeof(ipdst), "%u.%u.%u.%u", ip & 0xff, (ip >> 8) & 0xff, (ip >> 16) & 0xff, (ip >> 24) & 0xff);
+            arkime_ip4tostr(ARKIME_V6_TO_V4(session->addr1), ipsrc);
+            arkime_ip4tostr(ARKIME_V6_TO_V4(session->addr2), ipdst);
         } else {
             inet_ntop(AF_INET6, &session->addr1, ipsrc, sizeof(ipsrc));
             inet_ntop(AF_INET6, &session->addr2, ipdst, sizeof(ipdst));
@@ -1330,8 +1328,7 @@ void arkime_db_save_session(ArkimeSession_t *session, int final)
             }
 
             if (IN6_IS_ADDR_V4MAPPED((struct in6_addr *)ikey)) {
-                uint32_t ip = ARKIME_V6_TO_V4(*(struct in6_addr *)ikey);
-                snprintf(ipsrc, sizeof(ipsrc), "%u.%u.%u.%u", ip & 0xff, (ip >> 8) & 0xff, (ip >> 16) & 0xff, (ip >> 24) & 0xff);
+                arkime_ip4tostr(ARKIME_V6_TO_V4(*(struct in6_addr *)ikey), ipsrc);
             } else {
                 inet_ntop(AF_INET6, ikey, ipsrc, sizeof(ipsrc));
             }
@@ -1357,8 +1354,7 @@ void arkime_db_save_session(ArkimeSession_t *session, int final)
                 arkime_db_geo_lookup6(session, *(struct in6_addr *)ikey, &geos[cnt]);
 
                 if (IN6_IS_ADDR_V4MAPPED((struct in6_addr *)ikey)) {
-                    uint32_t ip = ARKIME_V6_TO_V4(*(struct in6_addr *)ikey);
-                    snprintf(ipsrc, sizeof(ipsrc), "%u.%u.%u.%u", ip & 0xff, (ip >> 8) & 0xff, (ip >> 16) & 0xff, (ip >> 24) & 0xff);
+                    arkime_ip4tostr(ARKIME_V6_TO_V4(*(struct in6_addr *)ikey), ipsrc);
                 } else {
                     inet_ntop(AF_INET6, ikey, ipsrc, sizeof(ipsrc));
                 }

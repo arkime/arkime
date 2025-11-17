@@ -756,8 +756,7 @@ LOCAL PyObject *arkime_python_session_get(PyObject UNUSED(*self), PyObject *args
             ip6 = (struct in6_addr *)value;
 
             if (IN6_IS_ADDR_V4MAPPED(ip6)) {
-                uint32_t ip = ARKIME_V6_TO_V4(*ip6);
-                snprintf(ipstr, sizeof(ipstr), "%u.%u.%u.%u", ip & 0xff, (ip >> 8) & 0xff, (ip >> 16) & 0xff, (ip >> 24) & 0xff);
+                arkime_ip4tostr(ARKIME_V6_TO_V4(*ip6), ipstr);
             } else {
                 inet_ntop(AF_INET6, ip6, ipstr, sizeof(ipstr));
             }
@@ -869,8 +868,7 @@ LOCAL PyObject *arkime_python_session_get(PyObject UNUSED(*self), PyObject *args
     case ARKIME_FIELD_TYPE_IP:
         ip6 = (struct in6_addr *)session->fields[pos]->ip;
         if (IN6_IS_ADDR_V4MAPPED(ip6)) {
-            uint32_t ip = ARKIME_V6_TO_V4(*ip6);
-            snprintf(ipstr, sizeof(ipstr), "%u.%u.%u.%u", ip & 0xff, (ip >> 8) & 0xff, (ip >> 16) & 0xff, (ip >> 24) & 0xff);
+            arkime_ip4tostr(ARKIME_V6_TO_V4(*ip6), ipstr);
         } else {
             inet_ntop(AF_INET6, ip6, ipstr, sizeof(ipstr));
         }
@@ -885,8 +883,7 @@ LOCAL PyObject *arkime_python_session_get(PyObject UNUSED(*self), PyObject *args
         while (g_hash_table_iter_next (&iter, &ikey, NULL)) {
             ip6 = (struct in6_addr *)ikey;
             if (IN6_IS_ADDR_V4MAPPED(ip6)) {
-                uint32_t ip = ARKIME_V6_TO_V4(*ip6);
-                snprintf(ipstr, sizeof(ipstr), "%u.%u.%u.%u", ip & 0xff, (ip >> 8) & 0xff, (ip >> 16) & 0xff, (ip >> 24) & 0xff);
+                arkime_ip4tostr(ARKIME_V6_TO_V4(*ip6), ipstr);
             } else {
                 inet_ntop(AF_INET6, ip6, ipstr, sizeof(ipstr));
             }
