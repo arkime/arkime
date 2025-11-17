@@ -62,6 +62,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #3306 eslint upgraded to v9
   - #3364 eslint vue files and enforce recommended rules
   - #3468 remove support for old password storage
+  - #3476 new authJwsAlgorithm setting, defaults to RS256
 ## Capture
   - #3138 lua plugin now autoloads *.lua scripts in parsers directory
           if lua plugin is used

@@ -105,6 +105,7 @@ class Auth {
     options.authConfig.cookieSameSite ??= ArkimeConfig.get('authCookieSameSite');
     options.authConfig.cookieSecure ??= ArkimeConfig.get('authCookieSecure', true);
     options.authConfig.oidcScope ??= ArkimeConfig.get('authOIDCScope', 'openid');
+    options.authConfig.jwsAlgorithm ??= ArkimeConfig.get('authJwsAlgorithm', 'RS256');
 
     if (ArkimeConfig.debug > 1) {
       console.log('Auth.initialize', options);
@@ -574,7 +575,8 @@ class Auth {
         client_id: Auth.#authConfig.clientId,
         client_secret: Auth.#authConfig.clientSecret,
         redirect_uris: Auth.#authConfig.redirectURIs ? Auth.#authConfig.redirectURIs.split(',') : undefined,
-        token_endpoint_auth_method: 'client_secret_post'
+        token_endpoint_auth_method: 'client_secret_post',
+        id_token_signed_response_alg: Auth.#authConfig.jwsAlgorithm
       });
 
       passport.use('oidc', new OIDC.Strategy({
