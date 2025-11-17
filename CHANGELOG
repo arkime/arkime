@@ -94,6 +94,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
           which node is missing for node_left. ES should do this for us!
   - #3423 Periodic Queries and Hunts can now notify on multiple notifiers
   - #3439 multiviewer config now supports defaultCluster setting
+  - #3474 support 15 and 30 minute query time ranges
 ## Parliament
   - #3395 Low disk space monitoring for capture and ES hosts
   - #3395 Navbar ES status indicator cycles through clusters with issues w/highlighting
