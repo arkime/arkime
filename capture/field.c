@@ -907,7 +907,7 @@ gboolean arkime_field_int_add(int pos, ArkimeSession_t *session, int i)
             goto added;
         case ARKIME_FIELD_TYPE_INT_ARRAY:
         case ARKIME_FIELD_TYPE_INT_ARRAY_UNIQUE:
-            field->iarray = g_array_new(FALSE, FALSE, 4);
+            field->iarray = g_array_sized_new(FALSE, FALSE, sizeof(uint32_t), 2);
             g_array_append_val(field->iarray, i);
             goto added;
         case ARKIME_FIELD_TYPE_INT_HASH:
@@ -984,7 +984,7 @@ gboolean arkime_field_float_add(int pos, ArkimeSession_t *session, float f)
             field->f = f;
             goto added;
         case ARKIME_FIELD_TYPE_FLOAT_ARRAY:
-            field->farray = g_array_new(FALSE, FALSE, 4);
+            field->farray = g_array_sized_new(FALSE, FALSE, sizeof(uint32_t), 2);
             g_array_append_val(field->farray, f);
             goto added;
         case ARKIME_FIELD_TYPE_FLOAT_GHASH:

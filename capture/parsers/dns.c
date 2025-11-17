@@ -433,7 +433,7 @@ LOCAL DNSSVCBRData_t *dns_parser_rr_svcb(ArkimeSession_t *session, const uint8_t
         break;
         case SVCB_PARAM_KEY_IPV4_HINT: { // ipv4hint
             fieldValue->key = SVCB_PARAM_KEY_IPV4_HINT;
-            fieldValue->value = (void *)g_array_new(FALSE, FALSE, 4);
+            fieldValue->value = (void *)g_array_sized_new(FALSE, FALSE, sizeof(uint32_t), 2);
 
             BSB absb;
             BSB_INIT(absb, ptr, len);
