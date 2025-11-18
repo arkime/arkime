@@ -942,7 +942,7 @@ void arkime_call_named_func(uint32_t id, int thread, void *uw);
 
 gboolean arkime_is_main_thread();
 
-void arkime_ip4tostr(uint32_t ip, char *str);
+char *arkime_ip4tostr(uint32_t ip, char *str, int len);
 
 /******************************************************************************/
 /*

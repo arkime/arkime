@@ -886,8 +886,8 @@ void arkime_db_save_session(ArkimeSession_t *session, int final)
 
     if (session->ipProtocol) {
         if (IN6_IS_ADDR_V4MAPPED(&session->addr1)) {
-            arkime_ip4tostr(ARKIME_V6_TO_V4(session->addr1), ipsrc);
-            arkime_ip4tostr(ARKIME_V6_TO_V4(session->addr2), ipdst);
+            arkime_ip4tostr(ARKIME_V6_TO_V4(session->addr1), ipsrc, sizeof(ipsrc));
+            arkime_ip4tostr(ARKIME_V6_TO_V4(session->addr2), ipdst, sizeof(ipdst));
         } else {
             inet_ntop(AF_INET6, &session->addr1, ipsrc, sizeof(ipsrc));
             inet_ntop(AF_INET6, &session->addr2, ipdst, sizeof(ipdst));
@@ -1328,7 +1328,7 @@ void arkime_db_save_session(ArkimeSession_t *session, int final)
             }
 
             if (IN6_IS_ADDR_V4MAPPED((struct in6_addr *)ikey)) {
-                arkime_ip4tostr(ARKIME_V6_TO_V4(*(struct in6_addr *)ikey), ipsrc);
+                arkime_ip4tostr(ARKIME_V6_TO_V4(*(struct in6_addr *)ikey), ipsrc, sizeof(ipsrc));
             } else {
                 inet_ntop(AF_INET6, ikey, ipsrc, sizeof(ipsrc));
             }
@@ -1354,7 +1354,7 @@ void arkime_db_save_session(ArkimeSession_t *session, int final)
                 arkime_db_geo_lookup6(session, *(struct in6_addr *)ikey, &geos[cnt]);
 
                 if (IN6_IS_ADDR_V4MAPPED((struct in6_addr *)ikey)) {
-                    arkime_ip4tostr(ARKIME_V6_TO_V4(*(struct in6_addr *)ikey), ipsrc);
+                    arkime_ip4tostr(ARKIME_V6_TO_V4(*(struct in6_addr *)ikey), ipsrc, sizeof(ipsrc));
                 } else {
                     inet_ntop(AF_INET6, ikey, ipsrc, sizeof(ipsrc));
                 }

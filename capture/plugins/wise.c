@@ -535,10 +535,10 @@ cleanup:
 /******************************************************************************/
 LOCAL void wise_lookup_ip(ArkimeSession_t *session, WiseRequest_t *request, struct in6_addr *ip6, int16_t matchPos)
 {
-    char ipstr[INET6_ADDRSTRLEN + 100];
+    char ipstr[INET6_ADDRSTRLEN];
 
     if (IN6_IS_ADDR_V4MAPPED(ip6)) {
-        arkime_ip4tostr(ARKIME_V6_TO_V4(*ip6), ipstr);
+        arkime_ip4tostr(ARKIME_V6_TO_V4(*ip6), ipstr, sizeof(ipstr));
     } else {
         inet_ntop(AF_INET6, ip6, ipstr, sizeof(ipstr));
     }
@@ -566,31 +566,18 @@ LOCAL void wise_lookup_tuple(ArkimeSession_t *session, WiseRequest_t *request)
         BSB_EXPORT_ptr(bsb, hstring->str, hstring->len);
     }
 
+    char ipstr1[INET6_ADDRSTRLEN];
+    char ipstr2[INET6_ADDRSTRLEN];
+
     if (IN6_IS_ADDR_V4MAPPED(&session->addr1)) {
-        char ip1[INET6_ADDRSTRLEN];
-        char ip2[INET6_ADDRSTRLEN];
-
-        arkime_ip4tostr(ARKIME_V6_TO_V4(session->addr1), ip1);
-        arkime_ip4tostr(ARKIME_V6_TO_V4(session->addr2), ip2);
-
-        BSB_EXPORT_sprintf(bsb, ";%s;%u;%s;%u", ip1, session->port1, ip2, session->port2);
+        arkime_ip4tostr(ARKIME_V6_TO_V4(session->addr1), ipstr1, sizeof(ipstr1));
+        arkime_ip4tostr(ARKIME_V6_TO_V4(session->addr2), ipstr2, sizeof(ipstr2));
     } else {
-        // inet_ntop(AF_INET6, ip6, ipstr, sizeof(ipstr));
-        char ipstr1[INET6_ADDRSTRLEN];
-        char ipstr2[INET6_ADDRSTRLEN];
-
         inet_ntop(AF_INET6, &session->addr1, ipstr1, sizeof(ipstr1));
         inet_ntop(AF_INET6, &session->addr2, ipstr2, sizeof(ipstr2));
-
-        BSB_EXPORT_sprintf(bsb, ";%s;%u;%s;%u",
-                           ipstr1,
-                           session->port1,
-                           ipstr2,
-                           session->port2
-                          );
-
-
     }
+
+    BSB_EXPORT_sprintf(bsb, ";%s;%u;%s;%u", ipstr1, session->port1, ipstr2, session->port2);
     wise_lookup(session, request, str, INTEL_TYPE_TUPLE, -1);
 }
 /******************************************************************************/

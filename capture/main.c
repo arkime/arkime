@@ -884,20 +884,30 @@ LOCAL void arkime_hex_init()
     }
 }
 /******************************************************************************/
-void arkime_ip4tostr(uint32_t ip, char *str)
+char *arkime_ip4tostr(uint32_t ip, char *str, int len)
 {
+    char *end = str + len - 1;
+
     const char *s = arkime_ip_byte_lookup[ip & 0xff];
-    while (*s) *str++ = *s++;
-    *str++ = '.';
+    while (*s && str < end) *str++ = *s++;
+
+    if (str < end) *str++ = '.';
+
     s = arkime_ip_byte_lookup[(ip >> 8) & 0xff];
-    while (*s) *str++ = *s++;
-    *str++ = '.';
+    while (*s && str < end) *str++ = *s++;
+
+    if (str < end) *str++ = '.';
+
     s = arkime_ip_byte_lookup[(ip >> 16) & 0xff];
-    while (*s) *str++ = *s++;
-    *str++ = '.';
+    while (*s && str < end) *str++ = *s++;
+
+    if (str < end) *str++ = '.';
+
     s = arkime_ip_byte_lookup[(ip >> 24) & 0xff];
-    while (*s) *str++ = *s++;
+    while (*s && str < end) *str++ = *s++;
+
     *str = '\0';
+    return str;
 }
 /******************************************************************************/
 LOCAL ArkimeCredentials_t *currentCredentials;
