@@ -122,8 +122,7 @@ struct arkimehttpserver_t {
     ArkimeHttpHeader_cb      headerCb;
 };
 
-LOCAL z_stream z_strm;
-LOCAL ARKIME_LOCK_DEFINE(z_strm);
+LOCAL __thread z_stream z_strm;
 
 LOCAL gboolean arkime_http_send_timer_callback(gpointer);
 LOCAL void arkime_http_add_request(ArkimeHttpServer_t *server, ArkimeHttpRequest_t *request, int priority);
@@ -823,7 +822,9 @@ gboolean arkime_http_schedule2(void *serverV, const char *method, const char *ke
         char            *buf = arkime_http_get_buffer(data_len);
         int              ret;
 
-        ARKIME_LOCK(z_strm);
+        if (z_strm.state == Z_NULL) {
+            deflateInit2(&z_strm, Z_DEFAULT_COMPRESSION, Z_DEFLATED, 16 + 15, 8, Z_DEFAULT_STRATEGY);
+        }
         z_strm.avail_in   = data_len;
         z_strm.next_in    = (uint8_t *)data;
         z_strm.avail_out  = data_len;
@@ -839,7 +840,6 @@ gboolean arkime_http_schedule2(void *serverV, const char *method, const char *ke
         }
 
         deflateReset(&z_strm);
-        ARKIME_UNLOCK(z_strm);
     }
 
     request->server     = server;
@@ -1152,11 +1152,6 @@ void *arkime_http_get_or_create_server(const char *name, const char *hostnames, 
 /******************************************************************************/
 void arkime_http_init()
 {
-    z_strm.zalloc = Z_NULL;
-    z_strm.zfree  = Z_NULL;
-    z_strm.opaque = Z_NULL;
-    deflateInit2(&z_strm, Z_DEFAULT_COMPRESSION, Z_DEFLATED, 16 + 15, 8, Z_DEFAULT_STRATEGY);
-
     curl_global_init(CURL_GLOBAL_SSL);
 
     HASH_INIT(h_, connections, arkime_session_hash, (HASH_CMP_FUNC)arkime_http_conn_cmp);
