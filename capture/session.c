@@ -234,10 +234,11 @@ char *arkime_session_pretty_string (ArkimeSession_t *session, char *buf, int len
     BSB_INIT(bsb, buf, len);
 
     if (IN6_IS_ADDR_V4MAPPED(&session->addr1)) {
-        uint32_t ip1 = ARKIME_V6_TO_V4(session->addr1);
-        uint32_t ip2 = ARKIME_V6_TO_V4(session->addr2);
-        BSB_EXPORT_sprintf(bsb, "%u.%u.%u.%u:%u => %u.%u.%u.%u:%u", ip1 & 0xff, (ip1 >> 8) & 0xff, (ip1 >> 16) & 0xff, (ip1 >> 24) & 0xff, session->port1,
-                           ip2 & 0xff, (ip2 >> 8) & 0xff, (ip2 >> 16) & 0xff, (ip2 >> 24) & 0xff, session->port2);
+        BSB_EXPORT_ip4tostr(bsb, ARKIME_V6_TO_V4(session->addr1));
+        BSB_EXPORT_sprintf(bsb, ":%u", session->port1);
+        BSB_EXPORT_cstr(bsb, " => ");
+        BSB_EXPORT_ip4tostr(bsb, ARKIME_V6_TO_V4(session->addr2));
+        BSB_EXPORT_sprintf(bsb, ":%u", session->port2);
     } else {
         BSB_EXPORT_inet_ntop(bsb, AF_INET6, &session->addr1);
         BSB_EXPORT_sprintf(bsb, ".%u", session->port1);

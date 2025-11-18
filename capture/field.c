@@ -1155,7 +1155,7 @@ gboolean arkime_field_ip4_add(int pos, ArkimeSession_t *session, uint32_t i)
             g_hash_table_add(field->ghash, v);
             goto added;
         default:
-            snprintf(ipbuf, sizeof(ipbuf), "%u.%u.%u.%u", i & 0xff, (i >> 8) & 0xff, (i >> 16) & 0xff, (i >> 24) & 0xff);
+            arkime_ip4tostr(i, ipbuf, sizeof(ipbuf));
             LOGEXIT("ERROR - Not an ip, expression: %s field: %s, tried to set '%s'", info->expression, info->dbFieldFull, ipbuf);
         }
     }
@@ -1173,7 +1173,7 @@ gboolean arkime_field_ip4_add(int pos, ArkimeSession_t *session, uint32_t i)
             goto added;
         }
     default:
-        snprintf(ipbuf, sizeof(ipbuf), "%u.%u.%u.%u", i & 0xff, (i >> 8) & 0xff, (i >> 16) & 0xff, (i >> 24) & 0xff);
+        arkime_ip4tostr(i, ipbuf, sizeof(ipbuf));
         LOGEXIT("ERROR - Not an ip, expression: %s field: %s, tried to set '%s'", info->expression, info->dbFieldFull, ipbuf);
     }
 
@@ -1937,12 +1937,12 @@ LOCAL void *arkime_field_getcb_dst_ip_port(const ArkimeSession_t *session, int U
     char *ipstr = g_malloc(INET6_ADDRSTRLEN + 10);
 
     if (IN6_IS_ADDR_V4MAPPED(&session->addr2)) {
-        uint32_t ip = ARKIME_V6_TO_V4(session->addr2);
-        snprintf(ipstr, INET6_ADDRSTRLEN + 10, "%u.%u.%u.%u:%d", ip & 0xff, (ip >> 8) & 0xff, (ip >> 16) & 0xff, (ip >> 24) & 0xff, session->port2);
+        char *end = arkime_ip4tostr(ARKIME_V6_TO_V4(session->addr2), ipstr, INET6_ADDRSTRLEN);
+        snprintf(end, 10, ":%d", session->port2);
     } else {
-        inet_ntop(AF_INET6, &session->addr2, ipstr, sizeof(ipstr));
+        inet_ntop(AF_INET6, &session->addr2, ipstr, INET6_ADDRSTRLEN);
         int len = strlen(ipstr);
-        snprintf(ipstr + len, INET6_ADDRSTRLEN + 10 - len, ".%d", session->port2);
+        snprintf(ipstr + len, 10, ".%d", session->port2);
     }
 
     arkime_free_later(ipstr, g_free);

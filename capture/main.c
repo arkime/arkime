@@ -33,6 +33,7 @@ GMainLoop             *mainLoop;
 char                  *arkime_char_to_hex = "0123456789abcdef"; /* don't change case */
 uint8_t                arkime_char_to_hexstr[256][3];
 uint8_t                arkime_hex_to_char[256][256];
+char                   arkime_ip_byte_lookup[256][4];
 uint32_t               hashSalt;
 LOCAL pthread_t        mainThread;
 
@@ -876,6 +877,37 @@ LOCAL void arkime_hex_init()
         arkime_char_to_hexstr[i][0] = arkime_char_to_hex[(i >> 4) & 0xf];
         arkime_char_to_hexstr[i][1] = arkime_char_to_hex[i & 0xf];
     }
+
+    // Initialize IPv4 byte lookup table for fast conversion
+    for (i = 0; i < 256; i++) {
+        snprintf(arkime_ip_byte_lookup[i], sizeof(arkime_ip_byte_lookup[i]), "%u", i);
+    }
+}
+/******************************************************************************/
+char *arkime_ip4tostr(uint32_t ip, char *str, int len)
+{
+    char *end = str + len - 1;
+
+    const char *s = arkime_ip_byte_lookup[ip & 0xff];
+    while (*s && str < end) *str++ = *s++;
+
+    if (str < end) *str++ = '.';
+
+    s = arkime_ip_byte_lookup[(ip >> 8) & 0xff];
+    while (*s && str < end) *str++ = *s++;
+
+    if (str < end) *str++ = '.';
+
+    s = arkime_ip_byte_lookup[(ip >> 16) & 0xff];
+    while (*s && str < end) *str++ = *s++;
+
+    if (str < end) *str++ = '.';
+
+    s = arkime_ip_byte_lookup[(ip >> 24) & 0xff];
+    while (*s && str < end) *str++ = *s++;
+
+    *str = '\0';
+    return str;
 }
 /******************************************************************************/
 LOCAL ArkimeCredentials_t *currentCredentials;
