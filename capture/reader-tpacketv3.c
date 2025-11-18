@@ -69,7 +69,7 @@ int reader_tpacketv3_stats(ArkimeReaderStats_t *stats)
     ARKIME_LOCK(gStats);
 
     struct tpacket_stats_v3 tpstats;
-    for (int i = 0; i < MAX_INTERFACES && config.interface[i]; i++) {
+    for (int i = 0; config.interface[i]; i++) {
         for (int t = 0; t < numThreads; t++) {
             socklen_t len = sizeof(tpstats);
             getsockopt(infos[i][t].fd, SOL_PACKET, PACKET_STATISTICS, &tpstats, &len);
@@ -139,7 +139,7 @@ LOCAL void *reader_tpacketv3_thread(gpointer infov)
                         th->tp_snaplen, th->tp_len);
             }
 
-            ArkimePacket_t *packet = ARKIME_TYPE_ALLOC0(ArkimePacket_t);
+            ArkimePacket_t *packet = arkime_packet_alloc();
             packet->pktlen        = th->tp_snaplen;
             packet->pkt           = (u_char *)th + th->tp_mac;
             packet->ts.tv_sec     = th->tp_sec;
@@ -182,7 +182,7 @@ LOCAL void *reader_tpacketv3_thread(gpointer infov)
 void reader_tpacketv3_start()
 {
     char name[100];
-    for (int i = 0; i < MAX_INTERFACES && config.interface[i]; i++) {
+    for (int i = 0; config.interface[i]; i++) {
         for (int t = 0; t < numThreads; t++) {
             snprintf(name, sizeof(name), "arkime-af3%d-%d", i, t);
             g_thread_unref(g_thread_new(name, &reader_tpacketv3_thread, &infos[i][t]));
@@ -192,7 +192,7 @@ void reader_tpacketv3_start()
 /******************************************************************************/
 void reader_tpacketv3_exit()
 {
-    for (int i = 0; i < MAX_INTERFACES && config.interface[i]; i++) {
+    for (int i = 0; config.interface[i]; i++) {
         for (int t = 0; t < numThreads; t++) {
             close(infos[i][t].fd);
         }
@@ -231,7 +231,7 @@ void reader_tpacketv3_init(char *UNUSED(name))
     int version = TPACKET_V3;
     int reserve = 4;
     int i;
-    for (i = 0; i < MAX_INTERFACES && config.interface[i]; i++) {
+    for (i = 0; config.interface[i]; i++) {
         int ifindex = if_nametoindex(config.interface[i]);
 
         for (int t = 0; t < numThreads; t++) {
@@ -302,10 +302,6 @@ void reader_tpacketv3_init(char *UNUSED(name))
     }
 
     pcap_close(dpcap);
-
-    if (i == MAX_INTERFACES) {
-        CONFIGEXIT("Only support up to %d interfaces", MAX_INTERFACES);
-    }
 
     arkime_reader_start         = reader_tpacketv3_start;
     arkime_reader_exit          = reader_tpacketv3_exit;

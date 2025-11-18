@@ -116,7 +116,7 @@ LOCAL void *tzsp_thread(gpointer UNUSED(uw))
             continue;
         }
 
-        ArkimePacket_t *packet = ARKIME_TYPE_ALLOC0(ArkimePacket_t);
+        ArkimePacket_t *packet = arkime_packet_alloc();
         packet->pktlen        = BSB_REMAINING(bsb);
         packet->pkt           = BSB_WORK_PTR(bsb);
         packet->readerPos     = 0;

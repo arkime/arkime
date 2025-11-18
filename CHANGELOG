@@ -76,6 +76,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #3461 New DHCP Session linking
   - #3473 dnsOutputAnswers defults to TRUE now
   - #3479 Per thread compression to ES should help with busy capture
+  - #3481 ArkimePacket free list, should help with memory fragmentation on busy capture
 ## Capture/Viewer
   - #3197 new sessionsStarted and sessionsPresent in files tab
   - #3210 new vlan.dot1q and vlan.dot1ad expressions

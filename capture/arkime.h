@@ -415,6 +415,7 @@ typedef struct arkime_config {
     char     *nodeClass;
     char     *elasticsearch;
     char    **interface;
+    int       interfaceCnt;
     int       pcapDirPos;
     char    **pcapDir;
     char     *pcapDirTemplate;
@@ -1316,6 +1317,8 @@ void     arkime_packet_set_ip_cb2(uint16_t type, ArkimePacketEnqueue_cb2 enqueue
 void     arkime_packet_set_udpport_enqueue_cb(uint16_t port, ArkimePacketEnqueue_cb enqueueCb);
 void     arkime_packet_set_udpport_enqueue_cb2(uint16_t port, ArkimePacketEnqueue_cb2 enqueueCb, void *cbuw);
 
+ArkimePacket_t *arkime_packet_alloc();
+void arkime_packet_free(ArkimePacket_t *packet);
 
 /******************************************************************************/
 typedef void (*ArkimeProtocolCreateSessionId_cb)(uint8_t *sessionId, ArkimePacket_t *const packet);
