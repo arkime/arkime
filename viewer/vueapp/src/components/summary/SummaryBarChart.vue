@@ -22,12 +22,8 @@ const props = defineProps({
     type: String,
     default: 'schemeCategory10'
   },
-  fieldName: {
-    type: String,
-    required: true
-  },
-  fieldExp: {
-    type: String,
+  fieldConfig: {
+    type: Object,
     required: true
   },
   width: {
@@ -50,12 +46,6 @@ const emit = defineEmits(['show-tooltip']);
 const chartContainer = ref(null);
 let d3 = null;
 
-const fieldConfig = computed(() => ({
-  friendlyName: props.fieldName,
-  exp: props.fieldExp,
-  dbField: props.fieldExp
-}));
-
 const showTooltip = (data, evt) => {
   emit('show-tooltip', {
     data,
@@ -63,7 +53,7 @@ const showTooltip = (data, evt) => {
       x: evt.clientX + 1,
       y: evt.clientY + 1
     },
-    fieldConfig: fieldConfig.value
+    fieldConfig: props.fieldConfig
   });
 };
 const MARGIN = { top: 20, right: 30, bottom: 120, left: 60 };

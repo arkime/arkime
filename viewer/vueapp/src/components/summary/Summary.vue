@@ -108,211 +108,23 @@
       <div
         class="charts-container"
         :class="gridLayoutClass">
-        <!-- Top IP Addresses -->
+        <!-- Widgets rendered via v-for -->
         <SummaryWidget
-          :title="$t('sessions.summary.topIPAddresses')"
-          :has-data="hasIPData"
-          :no-data-message="$t('sessions.summary.noIPData')"
-          enable-view-mode
-          :view-mode="ipsViewMode"
-          :metric-type="ipsMetricType"
-          :available-modes="['pie', 'bar', 'table']"
-          :data="currentIPData"
-          :columns="ipColumns"
-          :field-config="currentIPFieldConfig"
-          :field-name="ipFieldName"
-          :field-exp="ipFieldExp"
-          svg-id="ipChartSvg"
-          color-scheme="schemeCategory10"
-          @change-mode="ipsViewMode = $event"
-          @change-metric="ipsMetricType = $event"
+          v-for="widget in widgetConfigs"
+          :key="widget.id"
+          :title="widget.title"
+          :data="widget.data"
+          :no-data-message="widget.noDataMessage"
+          :view-mode="widget.viewMode.value"
+          :metric-type="widget.metricType.value"
+          :columns="widget.columns"
+          :field-config="widget.fieldConfig"
+          :svg-id="widget.svgId"
+          :color-scheme="widget.colorScheme"
+          @change-mode="widget.viewMode.value = $event"
+          @change-metric="widget.metricType.value = $event"
           @show-tooltip="showTooltip"
-          @export="handleExport({
-            data: currentIPData,
-            svgId: 'ipChartSvg',
-            filename: 'ip-addresses',
-            itemLabel: 'IP Address',
-            mode: ipsViewMode
-          })">
-          <template #controls>
-            <div class="chart-controls mb-2">
-              <button
-                :class="['btn btn-sm', ipType === 'all' ? 'btn-primary' : 'btn-outline-secondary']"
-                @click="ipType = 'all'">
-                {{ $t('sessions.summary.allIPs') }}
-              </button>
-              <button
-                :class="['btn btn-sm ms-2', ipType === 'src' ? 'btn-primary' : 'btn-outline-secondary']"
-                @click="ipType = 'src'">
-                {{ $t('sessions.summary.sourceIPs') }}
-              </button>
-              <button
-                :class="['btn btn-sm ms-2', ipType === 'dst' ? 'btn-primary' : 'btn-outline-secondary']"
-                @click="ipType = 'dst'">
-                {{ $t('sessions.summary.destinationIPs') }}
-              </button>
-              <button
-                :class="['btn btn-sm ms-2', ipType === 'dstport' ? 'btn-primary' : 'btn-outline-secondary']"
-                @click="ipType = 'dstport'">
-                {{ $t('sessions.summary.destinationPortIPs') }}
-              </button>
-            </div>
-          </template>
-        </SummaryWidget>
-
-        <!-- Top Protocols -->
-        <SummaryWidget
-          :title="$t('sessions.summary.topProtocols')"
-          :has-data="hasProtocolData"
-          :no-data-message="$t('sessions.summary.noProtocolData')"
-          enable-view-mode
-          :view-mode="protocolsViewMode"
-          :metric-type="protocolsMetricType"
-          :available-modes="['pie', 'bar', 'table']"
-          :data="summary.protocols"
-          :columns="protocolColumns"
-          :field-config="{ friendlyName: 'Protocols', exp: 'protocols', dbField: 'protocols' }"
-          field-name="Protocols"
-          field-exp="protocols"
-          svg-id="protocolChartSvg"
-          color-scheme="schemeCategory10"
-          label-font-size="12px"
-          :label-radius="40"
-          @change-mode="protocolsViewMode = $event"
-          @change-metric="protocolsMetricType = $event"
-          @show-tooltip="showTooltip"
-          @export="handleExport({
-            dataKey: 'protocols',
-            svgId: 'protocolChartSvg',
-            filename: 'protocols',
-            itemLabel: 'Protocols',
-            mode: protocolsViewMode
-          })" />
-
-        <!-- Top Tags -->
-        <SummaryWidget
-          :title="$t('sessions.summary.topTags')"
-          :has-data="hasTagData"
-          :no-data-message="$t('sessions.summary.noTagData')"
-          enable-view-mode
-          :view-mode="tagsViewMode"
-          :metric-type="tagsMetricType"
-          :available-modes="['pie', 'bar', 'table']"
-          :data="summary.tags"
-          :columns="tagColumns"
-          :field-config="{ friendlyName: 'Tags', exp: 'tags', dbField: 'tags' }"
-          field-name="Tags"
-          field-exp="tags"
-          svg-id="tagsChartSvg"
-          color-scheme="schemePaired"
-          label-font-size="10px"
-          :label-radius="50"
-          @change-mode="tagsViewMode = $event"
-          @change-metric="tagsMetricType = $event"
-          @show-tooltip="showTooltip"
-          @export="handleExport({
-            dataKey: 'tags',
-            svgId: 'tagsChartSvg',
-            filename: 'tags',
-            itemLabel: 'Tag',
-            mode: tagsViewMode
-          })" />
-
-        <!-- DNS Query Hosts -->
-        <SummaryWidget
-          :title="$t('sessions.summary.topDNSQueries')"
-          :has-data="hasDNSData"
-          :no-data-message="$t('sessions.summary.noDNSData')"
-          enable-view-mode
-          :view-mode="dnsViewMode"
-          :metric-type="dnsMetricType"
-          :available-modes="['pie', 'bar', 'table']"
-          :data="summary.dnsQueryHost"
-          :columns="dnsColumns"
-          :field-config="FIELD_CONFIGS.DNS_HOST"
-          field-name="DNS Query"
-          field-exp="host.dns"
-          svg-id="dnsChartSvg"
-          color-scheme="schemeCategory10"
-          @change-mode="dnsViewMode = $event"
-          @change-metric="dnsMetricType = $event"
-          @show-tooltip="showTooltip"
-          @export="handleExport({
-            dataKey: 'dnsQueryHost',
-            svgId: 'dnsChartSvg',
-            filename: 'dns-queries',
-            itemLabel: 'DNS Query',
-            mode: dnsViewMode
-          })" />
-
-        <!-- HTTP Hosts -->
-        <SummaryWidget
-          :title="$t('sessions.summary.topHTTPHosts')"
-          :has-data="hasHTTPData"
-          :no-data-message="$t('sessions.summary.noHTTPData')"
-          enable-view-mode
-          :view-mode="httpViewMode"
-          :metric-type="httpMetricType"
-          :available-modes="['pie', 'bar', 'table']"
-          :data="summary.httpHost"
-          :columns="httpColumns"
-          :field-config="FIELD_CONFIGS.HTTP_HOST"
-          field-name="HTTP Host"
-          field-exp="host.http"
-          svg-id="httpChartSvg"
-          color-scheme="schemeCategory10"
-          @change-mode="httpViewMode = $event"
-          @change-metric="httpMetricType = $event"
-          @show-tooltip="showTooltip"
-          @export="handleExport({
-            dataKey: 'httpHost',
-            svgId: 'httpChartSvg',
-            filename: 'http-hosts',
-            itemLabel: 'HTTP Host',
-            mode: httpViewMode
-          })" />
-
-        <!-- Top Ports -->
-        <SummaryWidget
-          :title="$t('sessions.summary.topPorts')"
-          :has-data="hasPortData"
-          :no-data-message="$t('sessions.summary.noPortData')"
-          enable-view-mode
-          :view-mode="portsViewMode"
-          :metric-type="portsMetricType"
-          :available-modes="['pie', 'bar', 'table']"
-          :data="currentPortData"
-          :columns="portColumns"
-          :field-config="{ friendlyName: portFieldName, exp: 'port.dst', dbField: 'port.dst' }"
-          :field-name="portFieldName"
-          field-exp="port.dst"
-          svg-id="portsChartSvg"
-          color-scheme="schemeSet2"
-          @change-mode="portsViewMode = $event"
-          @change-metric="portsMetricType = $event"
-          @show-tooltip="showTooltip"
-          @export="handleExport({
-            data: currentPortData,
-            svgId: 'portsChartSvg',
-            filename: 'ports',
-            itemLabel: 'Port',
-            mode: portsViewMode
-          })">
-          <template #controls>
-            <div class="chart-controls mb-2">
-              <button
-                :class="['btn btn-sm', portType === 'tcp' ? 'btn-primary' : 'btn-outline-secondary']"
-                @click="portType = 'tcp'">
-                {{ $t('sessions.summary.tcpPorts') }}
-              </button>
-              <button
-                :class="['btn btn-sm ms-2', portType === 'udp' ? 'btn-primary' : 'btn-outline-secondary']"
-                @click="portType = 'udp'">
-                {{ $t('sessions.summary.udpPorts') }}
-              </button>
-            </div>
-          </template>
-        </SummaryWidget>
+          @export="handleWidgetExport(widget)" />
       </div> <!-- /charts-container -->
     </div>
   </div>
@@ -357,100 +169,10 @@ const gridLayoutClass = computed(() => {
   return resultsLimit > 20 ? 'charts-grid-large-data' : 'charts-grid-small-data';
 });
 
-// Check if data exists for each section
-const hasIPData = computed(() => {
-  if (!summary.value) return false;
-  const data = ipType.value === 'src' ? summary.value.uniqueSrcIp
-    : ipType.value === 'dst' ? summary.value.uniqueDstIp
-      : ipType.value === 'dstport' ? summary.value.uniqueDstIpPort
-        : summary.value.uniqueIp;
-  return data && data.length > 0;
-});
-
-const hasProtocolData = computed(() => {
-  return summary.value?.protocols && summary.value.protocols.length > 0;
-});
-
-const hasTagData = computed(() => {
-  return summary.value?.tags && summary.value.tags.length > 0;
-});
-
-const hasDNSData = computed(() => {
-  return summary.value?.dnsQueryHost && summary.value.dnsQueryHost.length > 0;
-});
-
-const hasHTTPData = computed(() => {
-  return summary.value?.httpHost && summary.value.httpHost.length > 0;
-});
-
-const hasPortData = computed(() => {
-  return (summary.value?.uniqueTcpDstPorts && summary.value.uniqueTcpDstPorts.length > 0) ||
-         (summary.value?.uniqueUdpDstPorts && summary.value.uniqueUdpDstPorts.length > 0);
-});
-
-// Computed properties for IP chart data and fields
-const currentIPData = computed(() => {
-  if (!summary.value) return [];
-  switch (ipType.value) {
-  case 'src':
-    return summary.value.uniqueSrcIp || [];
-  case 'dst':
-    return summary.value.uniqueDstIp || [];
-  case 'dstport':
-    return summary.value.uniqueDstIpPort || [];
-  default:
-    return summary.value.uniqueIp || [];
-  }
-});
-
-const ipFieldName = computed(() => {
-  switch (ipType.value) {
-  case 'src':
-    return 'Source IP';
-  case 'dst':
-    return 'Destination IP';
-  default:
-    return 'IP Address';
-  }
-});
-
-const ipFieldExp = computed(() => {
-  switch (ipType.value) {
-  case 'src':
-    return 'ip.src';
-  case 'dst':
-    return 'ip.dst';
-  default:
-    return 'ip';
-  }
-});
-
-const currentIPFieldConfig = computed(() => {
-  return {
-    friendlyName: ipFieldName.value,
-    exp: ipFieldExp.value,
-    dbField: ipFieldExp.value
-  };
-});
-
-// Computed properties for Ports chart data
-const currentPortData = computed(() => {
-  if (!summary.value) return [];
-  return portType.value === 'tcp'
-    ? (summary.value.uniqueTcpDstPorts || [])
-    : (summary.value.uniqueUdpDstPorts || []);
-});
-
-const portFieldName = computed(() => {
-  return portType.value === 'tcp' ? 'TCP Port' : 'UDP Port';
-});
-
 // Reactive state
 const summary = ref(null);
 const loading = ref(true);
 const error = ref('');
-const ipType = ref('all');
-const portType = ref('tcp');
 
 // Shared tooltip state
 const tooltipVisible = ref(false);
@@ -461,6 +183,7 @@ const tooltipFieldConfig = ref(null);
 const tooltipMetricType = ref('sessions');
 
 // View mode state for each section
+// TODO these will come from the user configuration
 const protocolsViewMode = ref('pie');
 const tagsViewMode = ref('pie');
 const dnsViewMode = ref('table');
@@ -469,6 +192,7 @@ const ipsViewMode = ref('bar');
 const portsViewMode = ref('bar');
 
 // Metric type state for each section (sessions, packets, bytes)
+// TODO these will come from the user configuration
 const protocolsMetricType = ref('sessions');
 const tagsMetricType = ref('sessions');
 const dnsMetricType = ref('sessions');
@@ -507,173 +231,123 @@ const FIELD_CONFIGS = {
   }
 };
 
+// Column factory function
+const createColumns = (itemHeader, expr = null) => [
+  {
+    key: 'item',
+    header: itemHeader,
+    align: 'left',
+    useSessionField: true,
+    ...(expr && { expr })
+  },
+  {
+    key: 'sessions',
+    header: 'Sessions',
+    align: 'end',
+    format: 'number'
+  },
+  {
+    key: 'packets',
+    header: 'Packets',
+    align: 'end',
+    format: 'number'
+  },
+  {
+    key: 'bytes',
+    header: 'Bytes',
+    align: 'end',
+    format: 'bytes'
+  }
+];
+
 // Table column definitions
-const dnsColumns = [
-  {
-    key: 'item',
-    header: 'Domain',
-    align: 'left',
-    useSessionField: true,
-    expr: 'host.dns'
-  },
-  {
-    key: 'sessions',
-    header: 'Sessions',
-    align: 'end',
-    format: 'number'
-  },
-  {
-    key: 'packets',
-    header: 'Packets',
-    align: 'end',
-    format: 'number'
-  },
-  {
-    key: 'bytes',
-    header: 'Bytes',
-    align: 'end',
-    format: 'bytes'
-  }
-];
+const dnsColumns = createColumns('Domain', 'host.dns');
+const httpColumns = createColumns('Host', 'host.http');
+const protocolColumns = createColumns('Protocols', 'protocols');
+const tagColumns = createColumns('Tag', 'tags');
+const ipColumns = createColumns('IP Address');
+const portColumns = createColumns('Port', 'port.dst');
 
-const httpColumns = [
-  {
-    key: 'item',
-    header: 'Host',
-    align: 'left',
-    useSessionField: true,
-    expr: 'host.http'
-  },
-  {
-    key: 'sessions',
-    header: 'Sessions',
-    align: 'end',
-    format: 'number'
-  },
-  {
-    key: 'packets',
-    header: 'Packets',
-    align: 'end',
-    format: 'number'
-  },
-  {
-    key: 'bytes',
-    header: 'Bytes',
-    align: 'end',
-    format: 'bytes'
-  }
-];
 
-const protocolColumns = [
+// Widget configurations for v-for rendering
+const widgetConfigs = computed(() => [
   {
-    key: 'item',
-    header: 'Protocol',
-    align: 'left',
-    useSessionField: true,
-    expr: 'protocol'
+    id: 'ip-addresses',
+    title: t('sessions.summary.topIPAddresses'),
+    data: summary.value?.uniqueIp || [],
+    noDataMessage: t('sessions.summary.noIPData'),
+    viewMode: ipsViewMode,
+    metricType: ipsMetricType,
+    columns: ipColumns,
+    fieldConfig: { friendlyName: 'IP Address', exp: 'ip', dbField: 'ip' },
+    svgId: 'ipChartSvg',
+    colorScheme: 'schemeCategory10',
   },
   {
-    key: 'sessions',
-    header: 'Sessions',
-    align: 'end',
-    format: 'number'
+    id: 'protocols',
+    title: t('sessions.summary.topProtocols'),
+    data: summary.value?.protocols || [],
+    noDataMessage: t('sessions.summary.noProtocolData'),
+    viewMode: protocolsViewMode,
+    metricType: protocolsMetricType,
+    columns: protocolColumns,
+    fieldConfig: { friendlyName: 'Protocols', exp: 'protocols', dbField: 'protocols' },
+    svgId: 'protocolChartSvg',
+    colorScheme: 'schemeCategory10',
+    exportDataKey: 'protocols'
   },
   {
-    key: 'packets',
-    header: 'Packets',
-    align: 'end',
-    format: 'number'
+    id: 'tags',
+    title: t('sessions.summary.topTags'),
+    data: summary.value?.tags || [],
+    noDataMessage: t('sessions.summary.noTagData'),
+    viewMode: tagsViewMode,
+    metricType: tagsMetricType,
+    columns: tagColumns,
+    fieldConfig: { friendlyName: 'Tags', exp: 'tags', dbField: 'tags' },
+    svgId: 'tagsChartSvg',
+    colorScheme: 'schemePaired',
+    exportDataKey: 'tags'
   },
   {
-    key: 'bytes',
-    header: 'Bytes',
-    align: 'end',
-    format: 'bytes'
+    id: 'dns-queries',
+    title: t('sessions.summary.topDNSQueries'),
+    data: summary.value?.dnsQueryHost || [],
+    noDataMessage: t('sessions.summary.noDNSData'),
+    viewMode: dnsViewMode,
+    metricType: dnsMetricType,
+    columns: dnsColumns,
+    fieldConfig: FIELD_CONFIGS.DNS_HOST,
+    svgId: 'dnsChartSvg',
+    colorScheme: 'schemeCategory10',
+    exportDataKey: 'dnsQueryHost'
+  },
+  {
+    id: 'http-hosts',
+    title: t('sessions.summary.topHTTPHosts'),
+    data: summary.value?.httpHost || [],
+    noDataMessage: t('sessions.summary.noHTTPData'),
+    viewMode: httpViewMode,
+    metricType: httpMetricType,
+    columns: httpColumns,
+    fieldConfig: FIELD_CONFIGS.HTTP_HOST,
+    svgId: 'httpChartSvg',
+    colorScheme: 'schemeCategory10',
+    exportDataKey: 'httpHost'
+  },
+  {
+    id: 'ports',
+    title: t('sessions.summary.topPorts'),
+    data: summary.value?.uniqueTcpDstPorts || [],
+    noDataMessage: t('sessions.summary.noPortData'),
+    viewMode: portsViewMode,
+    metricType: portsMetricType,
+    columns: portColumns,
+    fieldConfig: { friendlyName: 'TCP Port', exp: 'port.dst', dbField: 'port.dst' },
+    svgId: 'portsChartSvg',
+    colorScheme: 'schemeSet2',
   }
-];
-
-const tagColumns = [
-  {
-    key: 'item',
-    header: 'Tag',
-    align: 'left',
-    useSessionField: true,
-    expr: 'tags'
-  },
-  {
-    key: 'sessions',
-    header: 'Sessions',
-    align: 'end',
-    format: 'number'
-  },
-  {
-    key: 'packets',
-    header: 'Packets',
-    align: 'end',
-    format: 'number'
-  },
-  {
-    key: 'bytes',
-    header: 'Bytes',
-    align: 'end',
-    format: 'bytes'
-  }
-];
-
-const ipColumns = [
-  {
-    key: 'item',
-    header: 'IP Address',
-    align: 'left',
-    useSessionField: true
-  },
-  {
-    key: 'sessions',
-    header: 'Sessions',
-    align: 'end',
-    format: 'number'
-  },
-  {
-    key: 'packets',
-    header: 'Packets',
-    align: 'end',
-    format: 'number'
-  },
-  {
-    key: 'bytes',
-    header: 'Bytes',
-    align: 'end',
-    format: 'bytes'
-  }
-];
-
-const portColumns = [
-  {
-    key: 'item',
-    header: 'Port',
-    align: 'left',
-    useSessionField: true,
-    expr: 'port.dst'
-  },
-  {
-    key: 'sessions',
-    header: 'Sessions',
-    align: 'end',
-    format: 'number'
-  },
-  {
-    key: 'packets',
-    header: 'Packets',
-    align: 'end',
-    format: 'number'
-  },
-  {
-    key: 'bytes',
-    header: 'Bytes',
-    align: 'end',
-    format: 'bytes'
-  }
-];
+]);
 
 // Methods
 const generateSummary = async () => {
@@ -997,17 +671,20 @@ const exportTableCSV = (dataKeyOrData, headers, filename) => {
   }
 };
 
-// Unified export handler that adapts based on view mode
-const handleExport = (section) => {
-  const { dataKey, data, svgId, filename, itemLabel, mode } = section;
+// Simplified widget export handler
+const handleWidgetExport = (widget) => {
+  const exportData = widget.exportDataKey
+    ? summary.value?.[widget.exportDataKey]
+    : widget.data;
 
-  if (mode === 'table') {
-    // Export as CSV - use direct data if provided, otherwise lookup by key
+  const filename = widget.id;
+  const itemLabel = widget.fieldConfig.friendlyName;
+
+  if (widget.viewMode.value === 'table') {
     const headers = [itemLabel, 'Sessions', 'Packets', 'Bytes'];
-    exportTableCSV(data || dataKey, headers, `arkime-summary-${filename}.csv`);
+    exportTableCSV(exportData, headers, `arkime-summary-${filename}.csv`);
   } else {
-    // Export as PNG (pie or bar chart)
-    exportChart(svgId, filename);
+    exportChart(widget.svgId, filename);
   }
 };
 
