@@ -118,7 +118,7 @@ LOCAL gboolean pcapoverip_client_read_cb(gint UNUSED(fd), GIOCondition cond, gpo
 
         struct arkime_pcap_sf_pkthdr *ph = (struct arkime_pcap_sf_pkthdr *)(poic->data + pos);
 
-        ArkimePacket_t *packet = ARKIME_TYPE_ALLOC0(ArkimePacket_t);
+        ArkimePacket_t *packet = arkime_packet_alloc();
         uint32_t origlen = 0;
         uint32_t caplen = 0;
         if (poic->needSwap) {
@@ -143,7 +143,7 @@ LOCAL gboolean pcapoverip_client_read_cb(gint UNUSED(fd), GIOCondition cond, gpo
             if (!config.ignoreErrors) {
                 LOGEXIT("ERROR - The packet length %u is too large.", caplen);
             } else {
-                ARKIME_TYPE_FREE(ArkimePacket_t, packet);
+                arkime_packet_free(packet);
                 pcapoverip_client_free(poic);
                 return FALSE;
             }
@@ -151,7 +151,7 @@ LOCAL gboolean pcapoverip_client_read_cb(gint UNUSED(fd), GIOCondition cond, gpo
         }
 
         if (poic->len - pos < 16 + caplen) { // Not enough data for packet
-            ARKIME_TYPE_FREE(ArkimePacket_t, packet);
+            arkime_packet_free(packet);
             break;
         }
 
@@ -160,7 +160,7 @@ LOCAL gboolean pcapoverip_client_read_cb(gint UNUSED(fd), GIOCondition cond, gpo
         packet->readerPos     = poic->interface;
 
         if (config.bpf && bpf_filter(bpfp.bf_insns, packet->pkt, packet->pktlen, packet->pktlen)) {
-            ARKIME_TYPE_FREE(ArkimePacket_t, packet);
+            arkime_packet_free(packet);
         } else {
             arkime_packet_batch(&batch, packet);
         }
@@ -251,7 +251,7 @@ LOCAL void pcapoverip_client_connect(int interface)
 LOCAL gboolean pcapoverip_client_check_connections (gpointer UNUSED(user_data))
 {
     int i;
-    for (i = 0; i < MAX_INTERFACES && config.interface[i]; i++) {
+    for (i = 0; config.interface[i]; i++) {
         if (!isConnected[i])
             pcapoverip_client_connect(i);
     }

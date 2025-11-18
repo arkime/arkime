@@ -37,7 +37,7 @@ LOCAL int reader_snf_stats(ArkimeReaderStats_t *stats)
 
     int i, r;
     int ringStartOffset = (snfProcNum - 1) * snfNumRings;
-    for (i = 0; i < MAX_INTERFACES && config.interface[i]; i++) {
+    for (i = 0; config.interface[i]; i++) {
         for (r = ringStartOffset; r < (ringStartOffset + snfNumRings); r++) {
 
             // Use the packets read stats accumulated in capture
@@ -89,7 +89,7 @@ LOCAL void *reader_snf_thread(gpointer posv)
             break;
         }
 
-        ArkimePacket_t *packet = ARKIME_TYPE_ALLOC0(ArkimePacket_t);
+        ArkimePacket_t *packet = arkime_packet_alloc();
 
         packet->pkt           = (u_char *)req.pkt_addr;
         packet->ts.tv_sec     = req.timestamp / 1000000000;
@@ -116,7 +116,7 @@ LOCAL void reader_snf_start()
 
     int ringStartOffset = (snfProcNum - 1) * snfNumRings;
     int i, r;
-    for (i = 0; i < MAX_INTERFACES && config.interface[i]; i++) {
+    for (i = 0; config.interface[i]; i++) {
         for (r = ringStartOffset; r < (ringStartOffset + snfNumRings); r++) {
 
             totalPktsRead[i][r] = 0;
@@ -158,7 +158,7 @@ LOCAL void reader_snf_init(const char *UNUSED(name))
 
     int ringStartOffset = (snfProcNum - 1) * snfNumRings;
     int i, r;
-    for (i = 0; i < MAX_INTERFACES && config.interface[i]; i++) {
+    for (i = 0; config.interface[i]; i++) {
         const struct snf_ifaddrs *ifa = ifaddrs;
         portnums[i] = -1;
 
