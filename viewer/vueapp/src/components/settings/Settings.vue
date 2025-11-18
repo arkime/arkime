@@ -158,6 +158,7 @@ SPDX-License-Identifier: Apache-2.0
                 buttons
                 size="sm"
                 class="d-inline me-2"
+                button-variant="outline-secondary"
                 :model-value="settings.timezone"
                 @update:model-value="updateTimezone"
                 :options="[
@@ -172,7 +173,8 @@ SPDX-License-Identifier: Apache-2.0
                 id="millisecondsSetting"
                 :active="settings.ms"
                 :model-value="settings.ms"
-                @update:model-value="updateMs">
+                @update:model-value="updateMs"
+                button-variant="outline-secondary">
                 {{ $t('common.milliseconds') }}
                 <BTooltip target="millisecondsSetting">
                   {{ $t('settings.general.millisecondsSettingTip') }}
@@ -194,6 +196,7 @@ SPDX-License-Identifier: Apache-2.0
                 buttons
                 size="sm"
                 class="d-inline"
+                button-variant="outline-secondary"
                 :model-value="settings.detailFormat"
                 @update:model-value="updateSessionDetailFormat"
                 :options="[
@@ -216,6 +219,7 @@ SPDX-License-Identifier: Apache-2.0
                 buttons
                 size="sm"
                 class="d-inline"
+                button-variant="outline-secondary"
                 :model-value="settings.numPackets"
                 @update:model-value="updateNumberOfPackets"
                 :options="[
@@ -239,6 +243,7 @@ SPDX-License-Identifier: Apache-2.0
                 buttons
                 size="sm"
                 class="d-inline"
+                button-variant="outline-secondary"
                 :model-value="settings.showTimestamps"
                 @update:model-value="updateShowPacketTimestamps"
                 :options="[
@@ -259,6 +264,7 @@ SPDX-License-Identifier: Apache-2.0
                 buttons
                 size="sm"
                 class="d-inline"
+                button-variant="outline-secondary"
                 :model-value="settings.manualQuery"
                 @update:model-value="updateQueryOnPageLoad"
                 :options="[
@@ -296,6 +302,7 @@ SPDX-License-Identifier: Apache-2.0
                 buttons
                 size="sm"
                 class="d-inline"
+                button-variant="outline-secondary"
                 v-if="settings.sortColumn !== 'last'"
                 :model-value="settings.sortDirection"
                 @update:model-value="updateSortDirection"
@@ -1614,7 +1621,8 @@ export default {
     openView: function (tabName) {
       this.visibleTab = tabName;
       this.$router.push({
-        hash: `#${tabName}`
+        hash: `#${tabName}`,
+        query: this.$route.query
       });
     },
     /* displays a message in the navbar */
