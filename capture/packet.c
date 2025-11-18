@@ -150,19 +150,19 @@ LOCAL int arkime_packet_thread_exit_func;
 ArkimePacket_t *arkime_packet_alloc()
 {
     ArkimePacket_t *packet = packetFreelist;
-    
+
     // Try lock-free pop from freelist
     while (packet) {
         ArkimePacket_t *next = packet->packet_next;
-        if (__sync_bool_compare_and_swap(&packetFreelist, packet, next)) {
+        if (ARKIME_THREAD_CAS(&packetFreelist, packet, next)) {
             memset(packet, 0, sizeof(ArkimePacket_t));
             return packet;
         }
         packet = packetFreelist;
     }
-    
+
     // Freelist empty, allocate new
-    ARKIME_THREAD_INCR_NUM(packetFreelistMisses, 1);
+    ARKIME_THREAD_INCR(packetFreelistMisses);
     ArkimePacket_t *newPacket = malloc(sizeof(ArkimePacket_t));
     if (!newPacket) {
         LOGEXIT("ERROR - Failed to allocate packet");
@@ -175,18 +175,18 @@ ArkimePacket_t *arkime_packet_alloc()
 void arkime_packet_freelist_init()
 {
     uint32_t poolSize = (config.maxPacketsInQueue * config.packetThreads) + (config.interfaceCnt * 64);
-    
+
     poolSize = MAX(poolSize, 1000);
-    
+
     if (config.debug)
         LOG("Initializing packet freelist pool with %u packets (%lu bytes)", poolSize, poolSize * sizeof(ArkimePacket_t));
-    
+
     // Bulk allocate all packets at once
     ArkimePacket_t *pool = malloc(poolSize * sizeof(ArkimePacket_t));
     if (!pool) {
         LOGEXIT("ERROR - Failed to allocate packet pool (%u packets)", poolSize);
     }
-    
+
     // Carve up the pool and link into freelist
     for (uint32_t i = 0; i < poolSize; i++) {
         pool[i].packet_next = packetFreelist;
@@ -201,12 +201,12 @@ void arkime_packet_free(ArkimePacket_t *packet)
         free(packet->pkt);
     }
     packet->pkt = 0;
-    
+
     // Lock-free push to freelist
     ArkimePacket_t *head = packetFreelist;
     do {
         packet->packet_next = head;
-    } while (!__sync_bool_compare_and_swap(&packetFreelist, head, packet) && (head = packetFreelist));
+    } while (!ARKIME_THREAD_CAS(&packetFreelist, head, packet) && (head = packetFreelist));
 }
 /******************************************************************************/
 void arkime_packet_process_data(ArkimeSession_t *session, const uint8_t *data, int len, int which)
@@ -1834,7 +1834,7 @@ void arkime_packet_set_udpport_enqueue_cb(uint16_t port, ArkimePacketEnqueue_cb 
 void arkime_packet_init()
 {
     arkime_packet_freelist_init();
-    
+
     pcapFileHeader.magic = 0xa1b2c3d4;
     pcapFileHeader.version_major = 2;
     pcapFileHeader.version_minor = 4;
