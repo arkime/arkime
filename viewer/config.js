@@ -113,8 +113,8 @@ class Config {
   };
 
   // ----------------------------------------------------------------------------
-  static basePath (node) {
-    return Config.getFull(node ?? internals.nodeName, 'webBasePath', '/');
+  static basePath () {
+    return Config.getFull(internals.nodeName, 'webBasePath', '/');
   };
 
   // ----------------------------------------------------------------------------

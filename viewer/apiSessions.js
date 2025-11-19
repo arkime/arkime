@@ -840,13 +840,19 @@ class SessionAPIs {
           let buffer = Buffer.alloc(Math.min(16200000, fields['network.packets'] * 20 + fields['network.bytes']));
           let bufpos = 0;
 
-          const sessionPath = Config.basePath(fields.node) + 'api/session/' + fields.node + '/' + Db.session2Sid(item) + '.' + extension;
-          const url = new URL(sessionPath, viewUrl);
+          const sessionPath = '/api/session/' + fields.node + '/' + Db.session2Sid(item) + '.' + extension;
           const options = {
             agent: client === http ? internals.httpAgent : internals.httpsAgent
           };
 
-          Auth.addS2SAuth(options, req.user, fields.node, sessionPath);
+          let url;
+          if (sessionPath.startsWith('/')) {
+            url = new URL(sessionPath.substring(1), viewUrl);
+          } else {
+            url = new URL(sessionPath, viewUrl);
+          }
+
+          Auth.addS2SAuth(options, req.user, fields.node, url.pathname);
           ViewerUtils.addCaTrust(options, fields.node);
 
           const preq = client.request(url, options, (pres) => {
@@ -951,7 +957,7 @@ class SessionAPIs {
         // Get from our DISK
         internals.sendSessionQueue.push(options, nextCb);
       }, () => {
-        let sendPath = `api/session/${fields.node}/${sid}/send?saveId=${saveId}&remoteCluster=${cluster}`;
+        let sendPath = `/api/session/${fields.node}/${sid}/send?saveId=${saveId}&remoteCluster=${cluster}`;
         if (ArkimeUtil.isString(req.body.tags)) {
           sendPath += `&tags=${req.body.tags}`;
         }
@@ -1629,6 +1635,7 @@ class SessionAPIs {
       } else {
         url = new URL(req.url, viewUrl);
       }
+
       const options = {
         timeout: 20 * 60 * 1000,
         agent: client === http ? internals.httpAgent : internals.httpsAgent
@@ -3506,7 +3513,7 @@ class SessionAPIs {
               preq.params.nodeName = nodeName;
               preq.params.id = sessionID;
               preq.params.hash = hash;
-              preq.url = `api/session/${Config.basePath(nodeName) + nodeName}/${sessionID}/bodyhash/${hash}`;
+              preq.url = `api/session/${nodeName}/${sessionID}/bodyhash/${hash}`;
               return SessionAPIs.proxyRequest(preq, res);
             });
           } else {

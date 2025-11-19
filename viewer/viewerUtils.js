@@ -576,14 +576,19 @@ class ViewerUtils {
       if (err) {
         return cb(err);
       }
-      const nodePath = encodeURI(`${Config.basePath(node)}${path}`);
-      const url = new URL(nodePath, viewUrl);
+      const nodePath = encodeURI(path);
+      let url;
+      if (nodePath.startsWith('/')) {
+        url = new URL(nodePath.substring(1), viewUrl);
+      } else {
+        url = new URL(nodePath, viewUrl);
+      }
       const options = {
         timeout: 20 * 60 * 1000,
         agent: client === http ? internals.httpAgent : internals.httpsAgent
       };
 
-      Auth.addS2SAuth(options, user, node, nodePath);
+      Auth.addS2SAuth(options, user, node, url.pathname);
       ViewerUtils.addCaTrust(options, node);
 
       function responseFunc (pres) {
