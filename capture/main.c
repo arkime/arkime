@@ -1189,7 +1189,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 
         // LOG("Packet %llu %d", fuzzloch_sessionid, len);
 
-        ArkimePacket_t *packet = ARKIME_TYPE_ALLOC0(ArkimePacket_t);
+        ArkimePacket_t *packet = arkime_packet_alloc();
         packet->pktlen         = len;
         packet->pkt            = ptr;
         packet->ts.tv_sec      = ts >> 4;
