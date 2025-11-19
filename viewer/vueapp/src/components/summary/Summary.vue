@@ -112,7 +112,7 @@
         <SummaryWidget
           v-for="widget in widgetConfigs"
           :key="widget.field"
-          :title="FieldService.getField(widget.field, true)?.friendlyName"
+          :title="widget.title || FieldService.getField(widget.field, true)?.friendlyName || widget.field"
           :data="widget.data"
           :view-mode="widget.viewMode.value"
           :metric-type="widget.metricType.value"
@@ -183,46 +183,22 @@ const tooltipMetricType = ref('sessions');
 let saveSvgAsPng;
 
 // Widget configurations for v-for rendering
-// TODO this will come from the user configuration of the summary page
-// hardcoded for now until we allow the user to pick the fields to show
-const widgetConfigs = computed(() => [
-  {
-    data: summary.value?.uniqueIp || [],
-    viewMode: ref('bar'),
-    metricType: ref('sessions'),
-    field: 'ip'
-  },
-  {
-    data: summary.value?.protocols || [],
-    viewMode: ref('pie'),
-    metricType: ref('sessions'),
-    field: 'protocols',
-  },
-  {
-    data: summary.value?.tags || [],
-    viewMode: ref('pie'),
-    metricType: ref('sessions'),
-    field: 'tags',
-  },
-  {
-    data: summary.value?.dnsQueryHost || [],
-    viewMode: ref('table'),
-    metricType: ref('sessions'),
-    field: 'host.dns',
-  },
-  {
-    data: summary.value?.httpHost || [],
-    viewMode: ref('table'),
-    metricType: ref('sessions'),
-    field: 'host.http',
-  },
-  {
-    data: summary.value?.uniqueTcpDstPorts || [],
-    viewMode: ref('bar'),
-    metricType: ref('sessions'),
-    field: 'port.dst'
+// Dynamically built from the API response fields array
+const widgetConfigs = computed(() => {
+  if (!summary.value?.fields) {
+    return [];
   }
-]);
+
+  // Map each field from the API response to a widget configuration
+  return summary.value.fields.map(fieldObj => ({
+    data: fieldObj.data || [],
+    viewMode: ref(fieldObj.viewMode),     // viewMode from API
+    metricType: ref(fieldObj.metricType), // metricType from API
+    field: fieldObj.field,                // field expression from API
+    title: fieldObj.title,                // title from API (may be undefined)
+    description: fieldObj.description     // description from API (may be undefined)
+  }));
+});
 
 // Methods
 const generateSummary = async () => {
@@ -433,9 +409,8 @@ const exportTableCSV = (dataKeyOrData, headers, filename) => {
 
 // Simplified widget export handler
 const handleWidgetExport = (widget, svgId) => {
-  const fieldConfig = FieldService.getField(widget.field, true);
   const filename = widget.field;
-  const itemLabel = fieldConfig?.friendlyName || widget.field;
+  const itemLabel = widget.title || FieldService.getField(widget.field, true)?.friendlyName || widget.field;
 
   if (widget.viewMode.value === 'table') {
     const headers = [itemLabel, 'Sessions', 'Packets', 'Bytes'];

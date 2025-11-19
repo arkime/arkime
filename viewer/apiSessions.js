@@ -2984,6 +2984,60 @@ class SessionAPIs {
       topNum = parseInt(req.query.length);
     }
 
+    // Fields to aggregate - hardcoded for now until we allow the user to pick the fields to show
+    // These will remain the defaults if the user has no summary configuration
+    const aggFields = ['ip', 'ip.dst:port', 'protocols', 'tags', 'ip.src', 'ip.dst', 'port.dst', 'port.src', 'host.http', 'dns.query.host'];
+
+    // Field metadata configuration - hardcoded for now until we allow the user to pick the view mode and metric type for each field
+    // These will remain the defaults if the user has no summary configuration
+    const fieldMetadata = {
+      ip: { viewMode: 'bar', metricType: 'sessions' },
+      'ip.dst:port': { viewMode: 'table', metricType: 'sessions' },
+      protocols: { viewMode: 'pie', metricType: 'sessions' },
+      tags: { viewMode: 'pie', metricType: 'sessions' },
+      'ip.src': { viewMode: 'bar', metricType: 'sessions' },
+      'ip.dst': { viewMode: 'bar', metricType: 'sessions' },
+      'port.dst': { viewMode: 'bar', metricType: 'sessions' },
+      'port.src': { viewMode: 'bar', metricType: 'sessions' },
+      'host.http': { viewMode: 'table', metricType: 'sessions' },
+      'dns.query.host': { viewMode: 'table', metricType: 'sessions' }
+    };
+
+    // Get fields map for dynamic field lookup
+    const fieldsMap = Config.getFieldsMap();
+
+    // Special fields that don't have a direct database field mapping
+    const specialFields = ['ip', 'ip.dst:port'];
+
+    // Build mapping of field exp to aggregation name and dbField
+    const fieldConfig = {};
+    for (const fieldExp of aggFields) {
+      let aggName;
+
+      // Handle special fields that use Painless scripts
+      if (specialFields.includes(fieldExp)) {
+        aggName = fieldExp === 'ip' ? 'allIp' : 'dstIpPort';
+        fieldConfig[fieldExp] = {
+          aggName,
+          isSpecial: true
+        };
+        continue;
+      }
+
+      // Handle regular fields from Config.getFieldsMap()
+      const field = fieldsMap[fieldExp];
+      if (!field) {
+        console.log(`Warning: Unknown field expression '${fieldExp}' in summary aggFields`);
+        continue;
+      }
+      // Create a unique aggregation name from the field expression
+      aggName = fieldExp.replace(/\./g, '_');
+      fieldConfig[fieldExp] = {
+        aggName,
+        dbField: field.dbField
+      };
+    }
+
     function convert (agg) {
       if (!agg || !agg.buckets) {
         return [];
@@ -3031,6 +3085,8 @@ class SessionAPIs {
       };
 
       const options = ViewerUtils.addCluster(req.query.cluster);
+
+      // Top level aggregations
       const aggregations = {
         firstPacket: {
           min: {
@@ -3056,109 +3112,49 @@ class SessionAPIs {
           sum: {
             field: 'network.packets'
           }
-        },
-
-        tags: {
-          terms: {
-            field: 'tags',
-            size: topNum
-          },
-          aggs: extraAggs
-        },
-
-        protocols: {
-          terms: {
-            field: 'protocol',
-            size: topNum
-          },
-          aggs: extraAggs
-        },
-
-        sourceIp: {
-          terms: {
-            field: 'source.ip',
-            size: topNum
-          },
-          aggs: extraAggs
-        },
-
-        destinationIp: {
-          terms: {
-            field: 'destination.ip',
-            size: topNum
-          },
-          aggs: extraAggs
-        },
-
-        allIp: {
-          terms: {
-            script: {
-              source: "if (doc['source.ip'].size() == 0) { return []; } return [doc['source.ip'].value, doc['destination.ip'].value];",
-              lang: 'painless'
-            },
-            size: topNum
-          },
-          aggs: extraAggs
-        },
-
-        dstIpPort: {
-          terms: {
-            script: {
-              source: "if (doc['destination.port'].size() == 0) { return []; } return [doc['destination.ip'].value + '_' + doc['destination.port'].value];",
-              lang: 'painless'
-            },
-            size: topNum
-          },
-          aggs: extraAggs
-        },
-
-        tcpPorts: {
-          filter: {
-            term: { protocol: 'tcp' }
-          },
-          aggs: {
-            tcpPorts: {
-              terms: {
-                field: 'destination.port',
-                size: topNum
-              },
-              aggs: extraAggs
-            }
-          }
-        },
-
-        udpPorts: {
-          filter: {
-            term: { protocol: 'udp' }
-          },
-          aggs: {
-            udpPorts: {
-              terms: {
-                field: 'destination.port',
-                size: topNum
-              },
-              aggs: extraAggs
-            }
-          }
-        },
-
-        dnsQueryHost: {
-          terms: {
-            field: 'dns.queryHost',
-            size: topNum
-          },
-          aggs: extraAggs
-        },
-
-        httpHost: {
-          terms: {
-            field: 'http.host',
-            size: topNum
-          },
-          aggs: extraAggs
         }
-
       };
+
+      // Field aggregations - dynamically added based on requested fields
+      for (const fieldExp in fieldConfig) {
+        const { aggName, dbField, isSpecial } = fieldConfig[fieldExp];
+
+        if (isSpecial) {
+          // Handle special fields with Painless scripts
+          if (fieldExp === 'ip') {
+            aggregations[aggName] = {
+              terms: {
+                script: {
+                  source: "if (doc['source.ip'].size() == 0) { return []; } return [doc['source.ip'].value, doc['destination.ip'].value];",
+                  lang: 'painless'
+                },
+                size: topNum
+              },
+              aggs: extraAggs
+            };
+          } else if (fieldExp === 'ip.dst:port') {
+            aggregations[aggName] = {
+              terms: {
+                script: {
+                  source: "if (doc['destination.port'].size() == 0) { return []; } return [doc['destination.ip'].value + '_' + doc['destination.port'].value];",
+                  lang: 'painless'
+                },
+                size: topNum
+              },
+              aggs: extraAggs
+            };
+          }
+        } else {
+          // Regular field aggregations
+          aggregations[aggName] = {
+            terms: {
+              field: dbField,
+              size: topNum
+            },
+            aggs: extraAggs
+          };
+        }
+      }
 
       // Merge in the new aggregations
       query.aggregations = query.aggregations ?? {};
@@ -3182,22 +3178,49 @@ class SessionAPIs {
             bytes: 0,
             dataBytes: 0,
             packets: 0,
-            downloadBytes: 0
+            downloadBytes: 0,
+            fields: []
           });
         }
 
         const map = ViewerUtils.mapMerge(result.aggregations);
         const graph = ViewerUtils.graphMerge(req, query, result.aggregations);
 
-        // Change _ to . or : in dstIpPort
-        const dstIpPort = convert(result.aggregations.dstIpPort).map((item) => {
-          if (item.item.indexOf(':') === -1) {
-            item.item = item.item.replace('_', ':');
-          } else {
-            item.item = item.item.replace('_', '.');
-          }
-          return item;
-        });
+        // Process ip.dst:port data: change _ to . or : depending on IP version
+        const processedDstIpPort = fieldConfig['ip.dst:port']
+          ? convert(result.aggregations[fieldConfig['ip.dst:port'].aggName]).map((item) => {
+            if (item.item.indexOf(':') === -1) {
+              // IPv4: replace _ with :
+              item.item = item.item.replace('_', ':');
+            } else {
+              // IPv6: replace _ with .
+              item.item = item.item.replace('_', '.');
+            }
+            return item;
+          })
+          : [];
+
+        // Build fields array from aggFields using fieldConfig
+        const fields = aggFields
+          .filter(fieldExp => fieldConfig[fieldExp]) // Only include fields that were successfully mapped
+          .map(fieldExp => {
+            const { aggName, isSpecial } = fieldConfig[fieldExp];
+            const metadata = fieldMetadata[fieldExp];
+
+            // Use processed data for ip.dst:port, regular convert() for others
+            const data = fieldExp === 'ip.dst:port'
+              ? processedDstIpPort
+              : convert(result.aggregations[aggName]);
+
+            return {
+              field: fieldExp,
+              data,
+              viewMode: metadata.viewMode,
+              metricType: metadata.metricType,
+              title: undefined, // TODO this will come from the user configuration
+              description: undefined // TODO this will come from the user configuration
+            };
+          });
 
         const response = {
           firstPacket: result.aggregations.firstPacket.value,
@@ -3206,16 +3229,7 @@ class SessionAPIs {
           bytes: result.aggregations.bytes.value,
           dataBytes: result.aggregations.dataBytes.value,
           packets: result.aggregations.packets.value,
-          tags: convert(result.aggregations.tags),
-          protocols: convert(result.aggregations.protocols),
-          uniqueIp: convert(result.aggregations.allIp),
-          uniqueSrcIp: convert(result.aggregations.sourceIp),
-          uniqueDstIp: convert(result.aggregations.destinationIp),
-          uniqueDstIpPort: dstIpPort,
-          uniqueTcpDstPorts: convert(result.aggregations.tcpPorts.tcpPorts),
-          uniqueUdpDstPorts: convert(result.aggregations.udpPorts.udpPorts),
-          dnsQueryHost: convert(result.aggregations.dnsQueryHost),
-          httpHost: convert(result.aggregations.httpHost),
+          fields,
           map,
           graph
         };
