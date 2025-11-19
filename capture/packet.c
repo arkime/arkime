@@ -154,7 +154,7 @@ ArkimePacket_t *arkime_packet_alloc()
     // Try lock-free pop from freelist
     while (packet) {
         ArkimePacket_t *next = packet->packet_next;
-        // if (packetFreelist == packet) simpleFreelist = next
+        // if (packetFreelist == packet) packetFreelist = next
         if (ARKIME_THREAD_CAS(&packetFreelist, packet, next)) {
             memset(packet, 0, sizeof(ArkimePacket_t));
             return packet;
@@ -180,7 +180,7 @@ void arkime_packet_freelist_init()
     poolSize = MAX(poolSize, 1000);
 
     if (config.debug)
-        LOG("Initializing packet freelist pool with %u packets (%lu bytes)", poolSize, poolSize * sizeof(ArkimePacket_t));
+        LOG("Initializing packet freelist pool with %u packets (%lu bytes)", poolSize, (unsigned long)(poolSize * sizeof(ArkimePacket_t)));
 
     // Bulk allocate all packets at once
     ArkimePacket_t *pool = malloc(poolSize * sizeof(ArkimePacket_t));
@@ -206,7 +206,7 @@ void arkime_packet_free(ArkimePacket_t *packet)
     // Lock-free push to freelist
     for (ArkimePacket_t *head = packetFreelist; ; head = packetFreelist) {
         packet->packet_next = head;
-        // if (packetFreeList == head) packetFreeList = packet
+        // if (packetFreelist == head) packetFreelist = packet
         if (ARKIME_THREAD_CAS(&packetFreelist, head, packet))
             break;
     }
