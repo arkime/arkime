@@ -3173,6 +3173,19 @@ class SessionAPIs {
           console.log('summary result', JSON.stringify(result, null, 1));
         }
 
+        // Handle case where there's no data
+        if (!result.aggregations) {
+          return res.send({
+            firstPacket: 0,
+            lastPacket: 0,
+            sessions: 0,
+            bytes: 0,
+            dataBytes: 0,
+            packets: 0,
+            downloadBytes: 0
+          });
+        }
+
         const map = ViewerUtils.mapMerge(result.aggregations);
         const graph = ViewerUtils.graphMerge(req, query, result.aggregations);
 

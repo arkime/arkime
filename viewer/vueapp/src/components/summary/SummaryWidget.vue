@@ -119,7 +119,7 @@
       class="empty-state">
       <span class="fa fa-folder-open fa-4x mb-3 text-muted" />
       <p class="empty-state-text text-muted">
-        {{ noDataMessage }}
+        {{ $t(noDataMessage) }}
       </p>
     </div>
   </div>
@@ -143,7 +143,7 @@ const props = defineProps({
   },
   noDataMessage: {
     type: String,
-    default: 'No data available'
+    default: 'sessions.summary.noDataAvailable'
   },
   showExport: {
     type: Boolean,

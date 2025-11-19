@@ -171,7 +171,7 @@ const summary = ref(null);
 const loading = ref(true);
 const error = ref('');
 
-// Shared tooltip state - on tooltip to rule them all
+// Shared tooltip state - one tooltip to rule them all
 const tooltipVisible = ref(false);
 const tooltipData = ref(null);
 const tooltipPosition = ref({ x: 0, y: 0 });
