@@ -140,10 +140,9 @@ LOCAL ArkimeSimple_t *writer_simple_alloc(ArkimeSimple_t *previous)
     // Try lock-free pop from global freelist
     while (info) {
         ArkimeSimple_t *next = info->simple_next;
+        // if (simpleFreelist == info) simpleFreelist = next
         if (ARKIME_THREAD_CAS(&simpleFreelist, info, next)) {
             ARKIME_THREAD_DECR(simpleFreelistSize);
-            info->bufpos = 0;
-            info->closing = 0;
             break;
         }
         info = simpleFreelist;
@@ -156,6 +155,9 @@ LOCAL ArkimeSimple_t *writer_simple_alloc(ArkimeSimple_t *previous)
         if (unlikely(info->buf == MAP_FAILED)) {
             LOGEXIT("ERROR - MMap failure in writer_simple_alloc, %d: %s", errno, strerror(errno));
         }
+    } else {
+        info->bufpos = 0;
+        info->closing = 0;
     }
 
     if (previous) {
@@ -192,12 +194,13 @@ LOCAL void writer_simple_free(ArkimeSimple_t *info)
     }
     info->file = 0;
 
-    // Try lock-free push to global freelist if not full
     if (simpleFreelistSize < simpleFreeOutputBuffers) {
-        ArkimeSimple_t *head = simpleFreelist;
-        do {
+        for (ArkimeSimple_t *head = simpleFreelist; ; head = simpleFreelist) {
             info->simple_next = head;
-        } while (!ARKIME_THREAD_CAS(&simpleFreelist, head, info) && (head = simpleFreelist));
+            // if (simpleFreelist == head) simpleFreelist = info
+            if (ARKIME_THREAD_CAS(&simpleFreelist, head, info))
+                break;
+        }
         ARKIME_THREAD_INCR(simpleFreelistSize);
     } else {
         // Freelist full, munmap and free

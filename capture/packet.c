@@ -154,6 +154,7 @@ ArkimePacket_t *arkime_packet_alloc()
     // Try lock-free pop from freelist
     while (packet) {
         ArkimePacket_t *next = packet->packet_next;
+        // if (packetFreelist == packet) simpleFreelist = next
         if (ARKIME_THREAD_CAS(&packetFreelist, packet, next)) {
             memset(packet, 0, sizeof(ArkimePacket_t));
             return packet;
@@ -203,10 +204,12 @@ void arkime_packet_free(ArkimePacket_t *packet)
     packet->pkt = 0;
 
     // Lock-free push to freelist
-    ArkimePacket_t *head = packetFreelist;
-    do {
+    for (ArkimePacket_t *head = packetFreelist; ; head = packetFreelist) {
         packet->packet_next = head;
-    } while (!ARKIME_THREAD_CAS(&packetFreelist, head, packet) && (head = packetFreelist));
+        // if (packetFreeList == head) packetFreeList = packet
+        if (ARKIME_THREAD_CAS(&packetFreelist, head, packet))
+            break;
+    }
 }
 /******************************************************************************/
 void arkime_packet_process_data(ArkimeSession_t *session, const uint8_t *data, int len, int which)
