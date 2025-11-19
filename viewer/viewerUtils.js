@@ -576,7 +576,7 @@ class ViewerUtils {
       if (err) {
         return cb(err);
       }
-      const nodePath = encodeURI(`${Config.basePath(node)}${path}`);
+      const nodePath = encodeURI(path);
       const url = new URL(nodePath, viewUrl);
       const options = {
         timeout: 20 * 60 * 1000,
