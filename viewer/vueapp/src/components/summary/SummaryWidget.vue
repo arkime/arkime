@@ -67,7 +67,7 @@
           <template v-if="showExport">
             <b-dropdown-divider v-if="enableViewMode" />
 
-            <b-dropdown-item @click="$emit('export')">
+            <b-dropdown-item @click="$emit('export', svgId)">
               <span class="fa fa-download" /> {{ viewMode === 'table' ? $t('sessions.summary.downloadCSV') : $t('sessions.summary.downloadPNG') }}
             </b-dropdown-item>
           </template>
@@ -75,17 +75,24 @@
       </div>
     </div>
 
-    <!-- Content or empty state -->
-    <div v-if="hasData">
+    <!-- Content, error, or empty state -->
+    <div
+      v-if="!hasValidField"
+      class="empty-state">
+      <span class="fa fa-exclamation-triangle fa-4x mb-3 text-danger" />
+      <p class="empty-state-text text-danger">
+        Invalid field: {{ field }}
+      </p>
+    </div>
+    <div v-else-if="hasData">
       <!-- Pie Chart -->
       <SummaryPieChart
         v-if="viewMode === 'pie'"
         :data="data"
         :svg-id="svgId"
-        :color-scheme="colorScheme"
         :field-config="fieldConfig"
-        :width="chartWidth"
-        :height="chartHeight"
+        :width="chartSize"
+        :height="chartSize"
         :metric-type="metricType"
         @show-tooltip="$emit('show-tooltip', $event)" />
 
@@ -94,10 +101,9 @@
         v-else-if="viewMode === 'bar'"
         :data="data"
         :svg-id="svgId"
-        :color-scheme="colorScheme"
         :field-config="fieldConfig"
-        :width="chartWidth"
-        :height="chartHeight"
+        :width="chartSize"
+        :height="chartSize"
         :metric-type="metricType"
         @show-tooltip="$emit('show-tooltip', $event)" />
 
@@ -121,12 +127,14 @@
 
 <script setup>
 import { computed } from 'vue';
-import { useI18n } from 'vue-i18n';
 import SummaryPieChart from './SummaryPieChart.vue';
 import SummaryBarChart from './SummaryBarChart.vue';
 import SummaryTable from './SummaryTable.vue';
+import FieldService from '../search/FieldService';
+import Utils from '../utils/utils';
 
-const { t } = useI18n();
+// Generate unique SVG ID for this widget instance
+const svgId = `chart-${Utils.createRandomString()}`;
 
 const props = defineProps({
   title: {
@@ -135,7 +143,7 @@ const props = defineProps({
   },
   noDataMessage: {
     type: String,
-    required: true
+    default: 'No data available'
   },
   showExport: {
     type: Boolean,
@@ -160,22 +168,20 @@ const props = defineProps({
     type: Array,
     default: () => []
   },
-  columns: {
-    type: Array,
-    default: () => []
-  },
-  fieldConfig: {
-    type: Object,
-    default: null
-  },
-  svgId: {
+  field: {
     type: String,
-    default: 'chartSvg'
-  },
-  colorScheme: {
-    type: String,
-    default: 'schemeCategory10'
+    required: true
   }
+});
+
+// Fetch field configuration from FieldService
+const fieldConfig = computed(() => {
+  return FieldService.getField(props.field, true);
+});
+
+// Check if field configuration is valid
+const hasValidField = computed(() => {
+  return fieldConfig.value !== null && fieldConfig.value !== undefined;
 });
 
 // Computed hasData - check if data array has items
@@ -183,12 +189,22 @@ const hasData = computed(() => {
   return props.data && Array.isArray(props.data) && props.data.length > 0;
 });
 
-// Computed chart dimensions - larger for > 20 items
-const chartWidth = computed(() => {
-  return props.data.length > 20 ? 600 : 400;
-});
+// Generate table columns from fieldConfig
+const columns = computed(() => [
+  {
+    key: 'item',
+    header: fieldConfig.value?.friendlyName || props.field,
+    align: 'left',
+    useSessionField: true,
+    ...(fieldConfig.value?.exp && { expr: fieldConfig.value.exp })
+  },
+  { key: 'sessions', header: 'Sessions', align: 'end', format: 'number' },
+  { key: 'packets', header: 'Packets', align: 'end', format: 'number' },
+  { key: 'bytes', header: 'Bytes', align: 'end', format: 'bytes' }
+]);
 
-const chartHeight = computed(() => {
+// Computed chart dimensions - larger for > 20 items
+const chartSize = computed(() => {
   return props.data.length > 20 ? 600 : 400;
 });
 
