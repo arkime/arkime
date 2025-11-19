@@ -296,8 +296,12 @@ typedef struct {
 #define ARKIME_THREAD_INCROLD(var)       __sync_fetch_and_add(&var, 1);
 #define ARKIME_THREAD_INCR_NUM(var, num) __sync_add_and_fetch(&var, num);
 
+#define ARKIME_THREAD_DECR(var)          __sync_sub_and_fetch(&var, 1);
 #define ARKIME_THREAD_DECRNEW(var)       __sync_sub_and_fetch(&var, 1);
 #define ARKIME_THREAD_DECROLD(var)       __sync_fetch_and_sub(&var, 1);
+#define ARKIME_THREAD_DECR_NUM(var, num) __sync_sub_and_fetch(&var, num);
+
+#define ARKIME_THREAD_CAS(ptr, old, new) __sync_bool_compare_and_swap((ptr), (old), (new))
 
 /* You are probably looking here because you think 24 is too low, really it isn't.
  * Instead, increase the number of threads used for reading packets.
