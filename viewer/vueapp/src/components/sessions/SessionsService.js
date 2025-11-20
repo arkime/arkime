@@ -137,7 +137,7 @@ export default {
    */
   generateSummary: function (routeParams) {
     // Default fields to aggregate for summary - can be customized by users in the future
-    const defaultFields = ['ip', 'ip.dst:port', 'protocols', 'tags', 'ip.src', 'ip.dst', 'port.dst', 'port.src', 'host.http', 'dns.query.host'];
+    const defaultFields = ['ip', 'ip.dst:port', 'ip.src', 'ip.dst', 'port.src', 'port.dst', 'protocols', 'tags', 'host.http', 'dns.query.host'];
 
     return this.postSessionsRequest(
       'api/sessions/summary',
