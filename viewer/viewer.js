@@ -1007,7 +1007,7 @@ function expireDevice (nodes, dirs, minFreeSpaceG, nextCb) {
             }
           });
         }
-        return Db.deleteFile(fields.node, item._id, fields.name, forNextCb);
+        return Db.deleteFile(fields.node, item._id, fields.name).then(() => forNextCb());
       } else {
         if (Config.debug > 0) {
           console.log('EXPIRE - device not deleting', freeG, minFreeSpaceG, fields.name);

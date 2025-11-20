@@ -1144,7 +1144,7 @@ class SessionAPIs {
 
       if (whatToRemove === 'spi') { // just removing es data for session
         try {
-          await Db.deleteDocument(session._index, 'session', session._id);
+          await Db.deleteDocument(session._index, session._id);
           return endCb(null, fields);
         } catch (err) { return endCb(err, fields); }
       } else { // scrub the pcap
@@ -1192,7 +1192,7 @@ class SessionAPIs {
         }, async (pcapErr, results) => {
           if (whatToRemove === 'all') { // also remove the session data
             try {
-              await Db.deleteDocument(session._index, 'session', session._id);
+              await Db.deleteDocument(session._index, session._id);
               return endCb(null, fields);
             } catch (err) {
               return endCb(pcapErr, fields);
@@ -1210,9 +1210,12 @@ class SessionAPIs {
               doc.doc.packetPos = [];
               doc.doc.fileId = [];
             }
-            Db.updateSession(session._index, session._id, doc, (err, data) => {
-              return endCb(pcapErr, fields);
-            });
+            try {
+              await Db.updateSession(session._index, session._id, doc);
+            } catch (err) {
+              // log error but continue
+            }
+            return endCb(pcapErr, fields);
           }
         });
       }
@@ -1678,7 +1681,7 @@ class SessionAPIs {
       return doneCb(null);
     }
 
-    async.eachLimit(sessionList, 10, (session, nextCb) => {
+    async.eachLimit(sessionList, 10, async (session, nextCb) => {
       if (!session.fields) {
         console.log('No Fields in addTagsList', session);
         return nextCb(null);
@@ -1686,12 +1689,12 @@ class SessionAPIs {
 
       const cluster = (Config.get('multiES', false) && session.cluster) ? session.cluster : undefined;
 
-      Db.addTagsToSession(session._index, session._id, allTagNames, cluster, (err, data) => {
-        if (err) {
-          console.log('ERROR - addTagsList', session, util.inspect(err, false, 50), data);
-        }
-        nextCb(null);
-      });
+      try {
+        await Db.addTagsToSession(session._index, session._id, allTagNames, cluster);
+      } catch (err) {
+        console.log('ERROR - addTagsList', session, util.inspect(err, false, 50));
+      }
+      nextCb(null);
     }, doneCb);
   };
 
@@ -1701,7 +1704,7 @@ class SessionAPIs {
       return res.serverError(200, 'No sessions to remove tags from');
     }
 
-    async.eachLimit(sessionList, 10, (session, nextCb) => {
+    async.eachLimit(sessionList, 10, async (session, nextCb) => {
       if (!session.fields) {
         console.log('No Fields in removeTagsList', session);
         return nextCb(null);
@@ -1709,12 +1712,12 @@ class SessionAPIs {
 
       const cluster = (Config.get('multiES', false) && session.cluster) ? session.cluster : undefined;
 
-      Db.removeTagsFromSession(session._index, session._id, allTagNames, cluster, (err, data) => {
-        if (err) {
-          console.log('ERROR - removeTagsList', session, util.inspect(err, false, 50), data);
-        }
-        nextCb(null);
-      });
+      try {
+        await Db.removeTagsFromSession(session._index, session._id, allTagNames, cluster);
+      } catch (err) {
+        console.log('ERROR - removeTagsList', session, util.inspect(err, false, 50));
+      }
+      nextCb(null);
     }, async (err) => {
       await Db.refresh('sessions*');
       return res.send(JSON.stringify({

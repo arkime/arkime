@@ -442,7 +442,7 @@ class CronAPIs {
     }
 
     try {
-      await Db.deleteDocument('queries', 'query', key, { refresh: true });
+      await Db.deleteDocument('queries', key, { refresh: true });
       res.send(JSON.stringify({
         success: true,
         text: 'Deleted periodic query successfully'
