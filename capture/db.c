@@ -2722,7 +2722,7 @@ gboolean arkime_db_file_exists(const char *filename, uint32_t *outputId)
     char                   key[2000];
     int                    key_len;
 
-    key_len = snprintf(key, sizeof(key), "/%sfiles/_search?rest_total_hits_as_int&size=1&sort=num:desc&q=node:%s+AND+name:\"%s\"", config.prefix, config.nodeName, filename);
+    key_len = snprintf(key, sizeof(key), "/%sfiles/_search?rest_total_hits_as_int&size=1&sort=num:desc&q=node%%3A%%22%s%%22+AND+name%%3A%%22%s%%22", config.prefix, config.nodeName, filename);
 
     uint8_t *data = arkime_http_get(esServer, key, key_len, &data_len);
 
