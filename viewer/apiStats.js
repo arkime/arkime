@@ -235,7 +235,7 @@ class StatsAPIs {
    * @param {number} size=1440 - The size of the cubism graph. Defaults to 1440.
    * @returns {array} List of values to populate the cubism graph.
    */
-  static getDetailedStats (req, res) {
+  static async getDetailedStats (req, res) {
     if (req.query.name === undefined) {
       return res.send('{}');
     }
@@ -290,10 +290,8 @@ class StatsAPIs {
 
     const func = mapping[req.query.name] ? mapping[req.query.name].func : function (item) { return item[req.query.name]; };
 
-    Db.search('dstats', query, { filter_path: '_scroll_id,hits.total,hits.hits._source' }, (err, result) => {
-      if (err || result.error) {
-        console.log(`ERROR - ${req.method} /api/dstats`, query, util.inspect(err || result.error, false, 50));
-      }
+    try {
+      const result = await Db.search('dstats', query, { filter_path: '_scroll_id,hits.total,hits.hits._source' });
 
       let i, ilen;
       const data = {};
@@ -346,7 +344,10 @@ class StatsAPIs {
           res.send(data[req.query.nodeName]);
         }
       }
-    });
+    } catch (err) {
+      console.log(`ERROR - ${req.method} /api/dstats`, query, util.inspect(err, false, 50));
+      res.send({});
+    }
   };
 
   // --------------------------------------------------------------------------

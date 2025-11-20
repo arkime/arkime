@@ -150,28 +150,27 @@ class ViewerUtils {
     let finished = 0;
     let err = null;
 
-    function doProcess (qParent, obj, item) {
+    async function doProcess (qParent, obj, item) {
       // console.log("\nprocess:\n", item, obj, typeof obj[item], "\n");
       if (item === 'fileand' && typeof obj[item] === 'string') {
         const fileName = obj.fileand;
         delete obj.fileand;
         outstanding++;
-        Db.fileNameToFiles(fileName, function (files) {
-          outstanding--;
-          if (files === null || files.length === 0) {
-            err = "File '" + fileName + "' not found";
-          } else if (files.length > 1) {
-            obj.bool = { should: [] };
-            files.forEach(function (file) {
-              obj.bool.should.push({ bool: { filter: [{ term: { node: file.node } }, { term: { fileId: file.num } }] } });
-            });
-          } else {
-            obj.bool = { filter: [{ term: { node: files[0].node } }, { term: { fileId: files[0].num } }] };
-          }
-          if (finished && outstanding === 0) {
-            doneCb(err);
-          }
-        });
+        const files = await Db.fileNameToFiles(fileName);
+        outstanding--;
+        if (files === null || files.length === 0) {
+          err = "File '" + fileName + "' not found";
+        } else if (files.length > 1) {
+          obj.bool = { should: [] };
+          files.forEach(function (file) {
+            obj.bool.should.push({ bool: { filter: [{ term: { node: file.node } }, { term: { fileId: file.num } }] } });
+          });
+        } else {
+          obj.bool = { filter: [{ term: { node: files[0].node } }, { term: { fileId: files[0].num } }] };
+        }
+        if (finished && outstanding === 0) {
+          doneCb(err);
+        }
       } else if (item === 'field' && obj.field === 'fileand') {
         obj.field = 'fileId';
       } else if (typeof obj[item] === 'object') {
