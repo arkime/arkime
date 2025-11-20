@@ -1,4 +1,4 @@
-use Test::More tests => 81;
+use Test::More tests => 85;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -9,6 +9,8 @@ use strict;
 
 # my $pwd = "*/";
 
+# Default fields to request in summary (comma-separated string)
+my $defaultFields = 'ip,ip.dst:port,protocols,tags,ip.src,ip.dst,port.dst,port.src,host.http,dns.query.host';
 
 # Helper function to get a field by name from the fields array
 sub getField {
@@ -21,10 +23,14 @@ sub getField {
 
 # Helper function to test both single and multi viewer responses
 sub getSummary {
-    my ($url) = @_;
+    my ($url, $fields) = @_;
+    $fields //= $defaultFields;  # Use default fields if not provided
 
-    my $json = viewerGet($url);
-    my $mjson = multiGet($url);
+    # Build POST body with fields as comma-separated string
+    my $postData = to_json({ fields => $fields });
+
+    my $json = viewerPost($url, $postData);
+    my $mjson = multiPost($url, $postData);
 
     # Delete fields that might differ between single and multi
     delete $json->{recordsTotal};
@@ -34,6 +40,19 @@ sub getSummary {
 
     return $json;
 }
+
+# Test validation - missing fields parameter
+my $invalidJson = viewerPost("/api/sessions/summary?date=-1", to_json({}));
+ok(exists $invalidJson->{error}, "missing fields parameter returns error");
+like($invalidJson->{error}, qr/fields/i, "error message mentions fields");
+
+# Test validation - invalid fields type (array instead of string)
+$invalidJson = viewerPost("/api/sessions/summary?date=-1", to_json({ fields => ['ip', 'protocols'] }));
+ok(exists $invalidJson->{error}, "invalid fields type returns error");
+
+# Test validation - empty fields string
+$invalidJson = viewerPost("/api/sessions/summary?date=-1", to_json({ fields => '' }));
+ok(exists $invalidJson->{error}, "empty fields string returns error");
 
 # Basic summary test - all PCAP files
 my $summary = getSummary("/api/sessions/summary?date=-1");

@@ -2984,12 +2984,19 @@ class SessionAPIs {
       topNum = parseInt(req.query.length);
     }
 
-    // Fields to aggregate - hardcoded for now until we allow the user to pick the fields to show
-    // These will remain the defaults if the user has no summary configuration
-    const aggFields = ['ip', 'ip.dst:port', 'protocols', 'tags', 'ip.src', 'ip.dst', 'port.dst', 'port.src', 'host.http', 'dns.query.host'];
+    // Validate and parse fields parameter - should be a comma-separated string of field names
+    if (!req.body.fields || !ArkimeUtil.isString(req.body.fields)) {
+      return res.status(400).send({ error: 'Missing or invalid fields parameter in request body - must be a comma-separated string of field names' });
+    }
 
-    // Field metadata configuration - hardcoded for now until we allow the user to pick the view mode and metric type for each field
-    // These will remain the defaults if the user has no summary configuration
+    // Parse comma-separated string into array
+    const aggFields = req.body.fields.split(',').map(f => f.trim()).filter(f => f.length > 0);
+
+    if (aggFields.length === 0) {
+      return res.status(400).send({ error: 'Fields parameter cannot be empty' });
+    }
+
+    // Field metadata configuration with default viewMode and metricType for each field
     const fieldMetadata = {
       ip: { viewMode: 'bar', metricType: 'sessions' },
       'ip.dst:port': { viewMode: 'table', metricType: 'sessions' },
