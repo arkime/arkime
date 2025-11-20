@@ -1690,7 +1690,7 @@ class SessionAPIs {
       return doneCb(null);
     }
 
-    async.eachLimit(sessionList, 10, async (session, nextCb) => {
+    async.eachLimit(sessionList, 10, async (session) => {
       if (!session.fields) {
         console.log('No Fields in addTagsList', session);
         return nextCb(null);
@@ -1703,7 +1703,6 @@ class SessionAPIs {
       } catch (err) {
         console.log('ERROR - addTagsList', session, util.inspect(err, false, 50));
       }
-      nextCb(null);
     }, doneCb);
   };
 
@@ -1713,10 +1712,10 @@ class SessionAPIs {
       return res.serverError(200, 'No sessions to remove tags from');
     }
 
-    async.eachLimit(sessionList, 10, async (session, nextCb) => {
+    async.eachLimit(sessionList, 10, async (session) => {
       if (!session.fields) {
         console.log('No Fields in removeTagsList', session);
-        return nextCb(null);
+        return;
       }
 
       const cluster = (Config.get('multiES', false) && session.cluster) ? session.cluster : undefined;
@@ -1726,7 +1725,6 @@ class SessionAPIs {
       } catch (err) {
         console.log('ERROR - removeTagsList', session, util.inspect(err, false, 50));
       }
-      nextCb(null);
     }, async (err) => {
       await Db.refresh('sessions*');
       return res.send(JSON.stringify({
