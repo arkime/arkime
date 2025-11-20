@@ -222,12 +222,12 @@ ${Config.arkimeWebURL()}hunt
   }
 
   // --------------------------------------------------------------------------
-  static #updateSessionWithHunt (session, sessionId, hunt, huntId) {
-    Db.addHuntToSession(Db.sid2Index(sessionId), Db.sid2Id(sessionId), huntId, hunt.name, (err, data) => {
-      if (err) {
-        console.log('ERROR - updateSessionWithHunt - could not add hunt info to session:', session, util.inspect(err, false, 50), data);
-      }
-    });
+  static async #updateSessionWithHunt (session, sessionId, hunt, huntId) {
+    try {
+      await Db.addHuntToSession(Db.sid2Index(sessionId), Db.sid2Id(sessionId), huntId, hunt.name);
+    } catch (err) {
+      console.log('ERROR - updateSessionWithHunt - could not add hunt info to session:', session, util.inspect(err, false, 50));
+    }
   }
 
   // --------------------------------------------------------------------------
@@ -454,14 +454,14 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
           }
 
           SessionAPIs.isLocalView(node, () => {
-            HuntAPIs.#sessionHunt(sessionId, options, (err, matched) => {
+            HuntAPIs.#sessionHunt(sessionId, options, async (err, matched) => {
               if (err) {
                 return HuntAPIs.#pauseHuntJobWithError(huntId, hunt, { value: `Hunt error searching session (${sessionId}): ${err}` }, node);
               }
 
               if (matched) {
                 hunt.matchedSessions++;
-                HuntAPIs.#updateSessionWithHunt(session, sessionId, hunt, huntId);
+                await HuntAPIs.#updateSessionWithHunt(session, sessionId, hunt, huntId);
               }
 
               HuntAPIs.#updateHuntStats(hunt, huntId, session, searchedSessions, cb);
@@ -1120,7 +1120,7 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
 
           // iterate through sessions and remove hunt stuff from each one
           for (const hit of result.hits.hits) {
-            Db.removeHuntFromSession(hit._index, hit._id, req.params.id, hunt.name, () => {});
+            await Db.removeHuntFromSession(hit._index, hit._id, req.params.id, hunt.name);
           }
 
           await Db.updateHunt(req.params.id, { removed: true });
@@ -1303,7 +1303,7 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
 
       const options = HuntAPIs.#buildHuntOptions(huntId, hunt);
 
-      HuntAPIs.#sessionHunt(sessionId, options, (err, matched) => {
+      HuntAPIs.#sessionHunt(sessionId, options, async (err, matched) => {
         if (Config.debug > 1) {
           console.log('HUNT - result', huntId, sessionId, err, matched);
         }
@@ -1313,7 +1313,7 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
         }
 
         if (matched) {
-          HuntAPIs.#updateSessionWithHunt(session, sessionId, hunt, huntId);
+          await HuntAPIs.#updateSessionWithHunt(session, sessionId, hunt, huntId);
         }
 
         if (!res.headersSent) { res.send({ matched }); }

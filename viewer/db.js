@@ -761,7 +761,7 @@ Db.clearScroll = async (params) => {
   return internals.client7.clearScroll(params);
 };
 
-Db.deleteDocument = async (index, type, id, options) => {
+Db.deleteDocument = async (index, id, options) => {
   const params = { index: fixIndex(index), id };
   Db.merge(params, options);
   return internals.client7.delete(params);
@@ -964,7 +964,7 @@ Db.update = async (index, type, id, doc, options) => {
   return internals.client7.update(params);
 };
 
-Db.updateSession = async (index, id, doc, cb) => {
+Db.updateSession = async (index, id, doc) => {
   const params = {
     retry_on_conflict: 3,
     index: fixIndex(index),
@@ -975,16 +975,15 @@ Db.updateSession = async (index, id, doc, cb) => {
 
   try {
     const { body: data } = await internals.client7.update(params);
-    return cb(null, data);
+    return data;
   } catch (err) {
-    if (err.statusCode !== 403) { return cb(err, {}); }
-    try { // try clearing the index.blocks.write if we got a forbidden response
-      Db.setIndexSettings(fixIndex(index), { body: { 'index.blocks.write': null } });
-      const { body: retryData } = await internals.client7.update(params);
-      return cb(null, retryData);
-    } catch (err) {
-      return cb(err, {});
+    if (err.statusCode !== 403) {
+      throw err;
     }
+
+    await Db.setIndexSettings(fixIndex(index), { body: { 'index.blocks.write': null } });
+    const { body: retryData } = await internals.client7.update(params);
+    return retryData;
   }
 };
 
@@ -1038,7 +1037,7 @@ Db.refresh = async (index, cluster) => {
   }
 };
 
-Db.addTagsToSession = function (index, id, tags, cluster, cb) {
+Db.addTagsToSession = async (index, id, tags, cluster) => {
   const script = `
     if (ctx._source.tags != null) {
       for (int i = 0; i < params.tags.length; i++) {
@@ -1065,10 +1064,10 @@ Db.addTagsToSession = function (index, id, tags, cluster, cb) {
 
   if (cluster) { body.cluster = cluster; }
 
-  Db.updateSession(index, id, body, cb);
+  return Db.updateSession(index, id, body);
 };
 
-Db.removeTagsFromSession = function (index, id, tags, cluster, cb) {
+Db.removeTagsFromSession = async (index, id, tags, cluster) => {
   const script = `
     if (ctx._source.tags != null) {
       for (int i = 0; i < params.tags.length; i++) {
@@ -1095,10 +1094,10 @@ Db.removeTagsFromSession = function (index, id, tags, cluster, cb) {
 
   if (cluster) { body.cluster = cluster; }
 
-  Db.updateSession(index, id, body, cb);
+  return Db.updateSession(index, id, body);
 };
 
-Db.addHuntToSession = function (index, id, huntId, huntName, cb) {
+Db.addHuntToSession = async (index, id, huntId, huntName) => {
   const script = `
     if (ctx._source.huntId != null) {
       ctx._source.huntId.add(params.huntId);
@@ -1123,10 +1122,10 @@ Db.addHuntToSession = function (index, id, huntId, huntName, cb) {
     }
   };
 
-  Db.updateSession(index, id, body, cb);
+  return Db.updateSession(index, id, body);
 };
 
-Db.removeHuntFromSession = function (index, id, huntId, huntName, cb) {
+Db.removeHuntFromSession = async (index, id, huntId, huntName) => {
   const script = `
     if (ctx._source.huntId != null) {
       int index = ctx._source.huntId.indexOf(params.huntId);
@@ -1149,7 +1148,7 @@ Db.removeHuntFromSession = function (index, id, huntId, huntName, cb) {
     }
   };
 
-  Db.updateSession(index, id, body, cb);
+  return Db.updateSession(index, id, body);
 };
 
 /// ///////////////////////////////////////////////////////////////////////////////
@@ -1788,14 +1787,13 @@ Db.isLocalView = async function (node, yesCB, noCB) {
   }
 };
 
-Db.deleteFile = function (node, id, path, cb) {
-  fs.unlink(path, (err) => {
-    if (err) {
-      console.log('EXPIRE - error deleting file', node, id, path, err);
-    }
-    Db.deleteDocument('files', 'file', id);
-    cb();
-  });
+Db.deleteFile = async (node, id, path) => {
+  try {
+    await fs.promises.unlink(path);
+  } catch (err) {
+    console.log('EXPIRE - error deleting file', node, id, path, err);
+  }
+  await Db.deleteDocument('files', id);
 };
 
 Db.session2Sid = function (item) {
