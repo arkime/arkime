@@ -1693,7 +1693,7 @@ class SessionAPIs {
     async.eachLimit(sessionList, 10, async (session) => {
       if (!session.fields) {
         console.log('No Fields in addTagsList', session);
-        return nextCb(null);
+        return;
       }
 
       const cluster = (Config.get('multiES', false) && session.cluster) ? session.cluster : undefined;
