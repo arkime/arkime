@@ -279,11 +279,11 @@ Db.merge = (to, from) => {
   }
 };
 
-Db.get = async (index, type, id) => {
+Db.get = async (index, id) => {
   return internals.client7.get({ index: fixIndex(index), id });
 };
 
-Db.getWithOptions = async (index, type, id, options) => {
+Db.getWithOptions = async (index, id, options) => {
   const params = { index: fixIndex(index), id };
   Db.merge(params, options);
   return internals.client7.get(params);
@@ -529,7 +529,7 @@ Db.getSession = async (id, options, cb) => {
 
   const index = Db.sid2Index(id, { multiple: true });
 
-  Db.search(index, '_doc', query, params, async (err, results) => {
+  Db.search(index, query, params, async (err, results) => {
     if (internals.debug > 2) {
       console.log('GETSESSION - search results', err, JSON.stringify(results, false, 2));
     }
@@ -562,17 +562,17 @@ Db.getSession = async (id, options, cb) => {
   });
 };
 
-Db.index = async (index, type, id, doc) => {
+Db.index = async (index, id, doc) => {
   return internals.client7.index({ index: fixIndex(index), body: doc, id });
 };
 
-Db.indexNow = async (index, type, id, doc) => {
+Db.indexNow = async (index, id, doc) => {
   return internals.client7.index({
     index: fixIndex(index), body: doc, id, refresh: true
   });
 };
 
-Db.search = async (index, type, query, options, cb) => {
+Db.search = async (index, query, options, cb) => {
   if (!cb && typeof options === 'function') {
     cb = options;
     options = undefined;
@@ -637,16 +637,16 @@ Db.cancelByOpaqueId = async (cancelId, cluster) => {
   return 'OpenSearch/Elasticsearch task cancelled succesfully';
 };
 
-Db.searchScroll = function (index, type, query, options, cb) {
+Db.searchScroll = function (index, query, options, cb) {
   // external scrolling, or multiesES or lesseq 10000, do a normal search which does its own Promise conversion
   if (query.scroll !== undefined || internals.multiES || (query.size ?? 0) + (parseInt(query.from ?? 0, 10)) <= 10000) {
-    return Db.search(index, type, query, options, cb);
+    return Db.search(index, query, options, cb);
   }
 
   // Convert promise to cb by calling ourselves
   if (!cb) {
     return new Promise((resolve, reject) => {
-      Db.searchScroll(index, type, query, options, (err, data) => {
+      Db.searchScroll(index, query, options, (err, data) => {
         if (err) {
           reject(err);
         } else {
@@ -668,7 +668,7 @@ Db.searchScroll = function (index, type, query, options, cb) {
   Db.merge(params, options);
   query.size = 1000; // Get 1000 items per scroll call
   query.profile = internals.esProfile;
-  Db.search(index, type, query, params,
+  Db.search(index, query, params,
     async function getMoreUntilDone (error, response) {
       if (error) {
         if (totalResults && from > 0) {
@@ -723,7 +723,7 @@ Db.searchSessions = function (index, query, options, cb) {
   if (internals.maxConcurrentShardRequests) { params.maxConcurrentShardRequests = internals.maxConcurrentShardRequests; }
   Db.merge(params, options);
   delete params.arkime_unflatten;
-  Db.searchScroll(index, 'session', query, params, (err, result) => {
+  Db.searchScroll(index, query, params, (err, result) => {
     if (err || result.hits.hits.length === 0) { return cb(err, result); }
 
     for (let i = 0; i < result.hits.hits.length; i++) {
@@ -952,7 +952,7 @@ Db.nodesInfo = async (options) => {
   return internals.client7.nodes.info(options);
 };
 
-Db.update = async (index, type, id, doc, options) => {
+Db.update = async (index, id, doc, options) => {
   const params = {
     id,
     body: doc,
@@ -1471,7 +1471,7 @@ Db.getView = async (id) => {
 
 Db.arkimeNodeStats = async (nodeName) => {
   try {
-    const { body: stat } = await Db.get('stats', 'stat', nodeName);
+    const { body: stat } = await Db.get('stats', nodeName);
     return stat._source;
   } catch (err) {
     throw new Error('Unknown node');
@@ -1550,7 +1550,7 @@ Db.loadESId2Info = async (cluster) => {
     cluster
   };
 
-  const data = await Db.search('dstats', 'dstat', query);
+  const data = await Db.search('dstats', query);
   if (!data.hits) { return; }
   for (const hit of data.hits.hits) {
     const id = hit._id.substring(3);
@@ -1573,7 +1573,7 @@ Db.updateESId2Info = (id, nodeName, hostname, cluster) => {
   }
 
   esId2Info.set(`${cluster}-${id}`, { nodeName, hostname });
-  Db.index('dstats', 'dstat', `es:${id}`, { nodeName: `es:${nodeName}`, hostname: `es:${hostname}` });
+  Db.index('dstats', `es:${id}`, { nodeName: `es:${nodeName}`, hostname: `es:${hostname}` });
 };
 
 Db.nodesStatsCache = async (cluster) => {
@@ -1627,7 +1627,7 @@ Db.indicesSettingsCache = async (cluster) => {
 
 Db.hostnameToNodeids = function (hostname, cb) {
   const query = { query: { match: { hostname } } };
-  Db.search('stats', 'stat', query, (err, sdata) => {
+  Db.search('stats', query, (err, sdata) => {
     const nodes = [];
     if (sdata && sdata.hits && sdata.hits.hits) {
       for (let i = 0, ilen = sdata.hits.hits.length; i < ilen; i++) {
@@ -1650,7 +1650,7 @@ Db.fileIdToFile = async (node, num, cb) => {
 
   let file = null;
   try {
-    const { body: fresult } = await Db.get('files', 'file', node + '-' + num);
+    const { body: fresult } = await Db.get('files', node + '-' + num);
     file = fresult._source;
     internals.fileId2File.set(key, file);
     internals.fileName2File.set(file.name, file);
@@ -1676,7 +1676,7 @@ Db.fileNameToFiles = function (fileName, cb) {
     query = { size: 100, query: { term: { name: fileName } }, sort: [{ num: { order: 'desc' } }] };
   }
 
-  Db.search('files', 'file', query, (err, data) => {
+  Db.search('files', query, (err, data) => {
     const files = [];
     if (err || !data.hits) {
       return cb(null);
@@ -1693,7 +1693,7 @@ Db.fileNameToFiles = function (fileName, cb) {
 };
 
 Db.getSequenceNumber = async (sName) => {
-  const { body: sinfo } = await Db.index('sequence', 'sequence', sName, {});
+  const { body: sinfo } = await Db.index('sequence', sName, {});
   return sinfo._version;
 };
 
@@ -1883,7 +1883,7 @@ Db.sid2Index = function (id, options) {
 };
 
 Db.loadFields = async () => {
-  return Db.search('fields', 'field', { size: 10000 });
+  return Db.search('fields', { size: 10000 });
 };
 
 Db.getSessionIndices = function (excludeExtra) {

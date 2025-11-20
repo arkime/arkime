@@ -3763,7 +3763,7 @@ class SessionAPIs {
         saveId.seq = seq;
         const options = { num: saveId.seq, name: filename, first: session.firstPacket, node: Config.nodeName(), filesize: -1, locked: 1 };
 
-        await Db.indexNow('files', 'file', Config.nodeName() + '-' + saveId.seq, options);
+        await Db.indexNow('files', Config.nodeName() + '-' + saveId.seq, options);
 
         cb(filename);
         saveId.filename = filename; // Don't set the saveId.filename until after the first request completes
@@ -3776,7 +3776,7 @@ class SessionAPIs {
       const id = session.id;
       delete session.id;
       try {
-        Db.indexNow(Db.sid2Index(id), 'session', Db.sid2Id(id), session);
+        Db.indexNow(Db.sid2Index(id), Db.sid2Id(id), session);
       } catch (err) {
         console.log(`ERROR - ${req.method} /api/sessions/receive`, util.inspect(err, false, 50));
       }

@@ -350,7 +350,7 @@ function s3Expire () {
     },
     sort: { first: { order: 'asc' } }
   };
-  Db.search('files', 'file', query, (err, data) => {
+  Db.search('files', query, (err, data) => {
     if (err || !data.hits || !data.hits.hits) {
       return;
     }
@@ -362,7 +362,7 @@ function s3Expire () {
         if (err) {
           console.log('Couldn\'t delete from S3', item._id, item._source);
         } else {
-          Db.deleteDocument('files', 'file', item._id, (err) => {
+          Db.deleteDocument('files', item._id, (err) => {
             if (err) {
               console.log("Couldn't delete from ES", item._id, item._source);
             }

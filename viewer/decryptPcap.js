@@ -18,7 +18,7 @@ const ArkimeUtil = require('../common/arkimeUtil');
 
 function main () {
   const query = { size: 100, query: { term: { name: process.argv[2] } }, sort: [{ num: { order: 'desc' } }] };
-  Db.search('files', 'file', query, (err, data) => {
+  Db.search('files', query, (err, data) => {
     if (err) {
       console.error('ES Error', err);
       process.exit();

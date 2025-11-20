@@ -140,9 +140,9 @@ class StatsAPIs {
 
     const now = Math.floor(Date.now() / 1000);
 
-    Promise.all([Db.search('stats', 'stat', query),
+    Promise.all([Db.search('stats', query),
       Db.numberOfDocuments('stats', rquery.cluster ? { cluster: rquery.cluster } : {}),
-      Db.search('files', 'file', rquery)
+      Db.search('files', rquery)
     ]).then(([stats, total, retention]) => {
       if (stats.error) { throw stats.error; }
 
@@ -290,7 +290,7 @@ class StatsAPIs {
 
     const func = mapping[req.query.name] ? mapping[req.query.name].func : function (item) { return item[req.query.name]; };
 
-    Db.search('dstats', 'dstat', query, { filter_path: '_scroll_id,hits.total,hits.hits._source' }, (err, result) => {
+    Db.search('dstats', query, { filter_path: '_scroll_id,hits.total,hits.hits._source' }, (err, result) => {
       if (err || result.error) {
         console.log(`ERROR - ${req.method} /api/dstats`, query, util.inspect(err || result.error, false, 50));
       }
@@ -1684,7 +1684,7 @@ class StatsAPIs {
     };
 
     Promise.all([
-      Db.search('stats', 'stat', query),
+      Db.search('stats', query),
       Db.numberOfDocuments('stats'),
       Db.nodesStatsCache()
     ]).then(([stats, total, nodesStats]) => {
