@@ -1638,13 +1638,10 @@ Db.hostnameToNodeids = function (hostname, cb) {
   });
 };
 
-Db.fileIdToFile = async (node, num, cb) => {
+Db.fileIdToFile = async (node, num) => {
   const key = node + '!' + num;
   const info = internals.fileId2File.get(key);
   if (info !== undefined) {
-    if (cb) {
-      return setImmediate(() => { cb(info); });
-    }
     return info;
   }
 
@@ -1657,7 +1654,7 @@ Db.fileIdToFile = async (node, num, cb) => {
   } catch (err) { // Cache file is unknown
     internals.fileId2File.delete(key);
   }
-  return cb ? cb(file) : file;
+  return file;
 };
 
 Db.fileNameToFiles = function (fileName, cb) {

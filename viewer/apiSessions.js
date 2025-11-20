@@ -670,79 +670,88 @@ class SessionAPIs {
 
     let fileNum;
     let itemPos = 0;
-    async.eachLimit(fields.packetPos, limit || 1, (pos, nextCb) => {
+    async.eachLimit(fields.packetPos, limit || 1, async (pos) => {
       if (pos < 0) {
         fileNum = pos * -1;
-        return nextCb(null);
+        return;
       }
 
       // Get the pcap file for this node a filenum, if it isn't opened then do the filename lookup and open it
       const opcap = Pcap.get(fields.node + ':' + fileNum);
       if (opcap.isCorrupt()) {
-        return nextCb('Only have SPI data, PCAP file no longer available for ' + fields.node + '-' + fileNum);
+        throw new Error('Only have SPI data, PCAP file no longer available for ' + fields.node + '-' + fileNum);
       } else if (!opcap.isOpen()) {
-        Db.fileIdToFile(fields.node, fileNum, (file) => {
-          if (!file) {
-            console.log("WARNING - Only have SPI data, PCAP file no longer available.  Couldn't look up %s-%s in files index", fields.node, fileNum);
-            return nextCb('Only have SPI data, PCAP file no longer available for ' + fields.node + '-' + fileNum);
+        const file = await Db.fileIdToFile(fields.node, fileNum);
+        if (!file) {
+          console.log("WARNING - Only have SPI data, PCAP file no longer available.  Couldn't look up %s-%s in files index", fields.node, fileNum);
+          throw new Error('Only have SPI data, PCAP file no longer available for ' + fields.node + '-' + fileNum);
+        }
+        if (file.kekId) {
+          file.kek = Config.sectionGet('keks', file.kekId, undefined);
+          if (file.kek === undefined) {
+            console.log("ERROR - Couldn't find kek", file.kekId, 'in keks section');
+            throw new Error("Couldn't find kek " + file.kekId + ' in keks section');
           }
-          if (file.kekId) {
-            file.kek = Config.sectionGet('keks', file.kekId, undefined);
-            if (file.kek === undefined) {
-              console.log("ERROR - Couldn't find kek", file.kekId, 'in keks section');
-              return nextCb("Couldn't find kek " + file.kekId + ' in keks section');
+        }
+
+        const ipcap = Pcap.get(fields.node + ':' + file.num);
+
+        try {
+          ipcap.open(file);
+        } catch (err) {
+          console.log("ERROR - Couldn't open file ", util.inspect(err, false, 50));
+          if (err.code === 'EACCES') {
+            // Find all the directories to check
+            const checks = [];
+            let dir = path.resolve(file.name);
+            while ((dir = path.dirname(dir)) !== '/') {
+              checks.push(dir);
             }
-          }
 
-          const ipcap = Pcap.get(fields.node + ':' + file.num);
-
-          try {
-            ipcap.open(file);
-          } catch (err) {
-            console.log("ERROR - Couldn't open file ", util.inspect(err, false, 50));
-            if (err.code === 'EACCES') {
-              // Find all the directories to check
-              const checks = [];
-              let dir = path.resolve(file.name);
-              while ((dir = path.dirname(dir)) !== '/') {
-                checks.push(dir);
-              }
-
-              // Check them in reverse order, smallest to largest
-              let i = checks.length - 1;
-              for (i; i >= 0; i--) {
-                try {
-                  fs.accessSync(checks[i], fs.constants.X_OK);
-                } catch (e) {
-                  console.log(`NOTE - Directory permissions issue, possible fix "chmod a+x '${checks[i]}'"`);
-                  break;
-                }
-              }
-
-              // No directory issue, check the file itself
-              if (i === -1) {
-                try {
-                  fs.accessSync(file.name, fs.constants.R_OK);
-                } catch (e) {
-                  console.log(`NOTE - File permissions issue, possible fix "chmod a+r '${file.name}'"`);
-                }
+            // Check them in reverse order, smallest to largest
+            let i = checks.length - 1;
+            for (i; i >= 0; i--) {
+              try {
+                fs.accessSync(checks[i], fs.constants.X_OK);
+              } catch (e) {
+                console.log(`NOTE - Directory permissions issue, possible fix "chmod a+x '${checks[i]}'"`);
+                break;
               }
             }
-            return nextCb("Couldn't open file " + err);
-          }
 
-          if (headerCb) {
-            headerCb(ipcap, ipcap.readHeader());
-            headerCb = null;
+            // No directory issue, check the file itself
+            if (i === -1) {
+              try {
+                fs.accessSync(file.name, fs.constants.R_OK);
+              } catch (e) {
+                console.log(`NOTE - File permissions issue, possible fix "chmod a+r '${file.name}'"`);
+              }
+            }
           }
-          processFile(ipcap, pos, itemPos++, nextCb);
+          throw new Error("Couldn't open file " + err);
+        }
+
+        if (headerCb) {
+          headerCb(ipcap, ipcap.readHeader());
+          headerCb = null;
+        }
+        return new Promise((resolve, reject) => {
+          processFile(ipcap, pos, itemPos++, (err) => {
+            if (err) reject(err);
+            else resolve();
+          });
         });
       } else {
         if (headerCb) {
           headerCb(opcap, opcap.readHeader());
           headerCb = null;
         }
-        processFile(opcap, pos, itemPos++, nextCb);
+        return new Promise((resolve, reject) => {
+          processFile(opcap, pos, itemPos++, (err) => {
+            if (err) reject(err);
+            else resolve();
+          });
+        });
       }
     }, (pcapErr, results) => {
       endCb(pcapErr, fields);
