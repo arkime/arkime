@@ -433,7 +433,7 @@ LOCAL DNSSVCBRData_t *dns_parser_rr_svcb(ArkimeSession_t *session, const uint8_t
         break;
         case SVCB_PARAM_KEY_IPV4_HINT: { // ipv4hint
             fieldValue->key = SVCB_PARAM_KEY_IPV4_HINT;
-            fieldValue->value = (void *)g_array_new(FALSE, FALSE, 4);
+            fieldValue->value = (void *)g_array_sized_new(FALSE, FALSE, sizeof(uint32_t), 2);
 
             BSB absb;
             BSB_INIT(absb, ptr, len);
@@ -568,7 +568,7 @@ LOCAL void dns_parser(ArkimeSession_t *session, int kind, const uint8_t *data, i
 
     const int qd_count = (data[4] << 8) | data[5];          /*number of question records*/
     const int an_prereqs_count = (data[6] << 8) | data[7];  /*number of answer or prerequisite records*/
-    const int ns_update_count = (data[8] << 8) | data[9];   /*number of authoritative or update recrods*/
+    const int ns_update_count = (data[8] << 8) | data[9];   /*number of authoritative or update records*/
     const int ar_count = (data[10] << 8) | data[11];        /*number of additional records*/
     const int resultRecordCount[3] = {an_prereqs_count, ns_update_count, ar_count};
 
@@ -1162,8 +1162,7 @@ LOCAL void dns_save_ip_ghash(BSB *jbsb, struct arkime_session *session, GHashTab
         arkime_db_geo_lookup6(session, *(struct in6_addr *)ikey, &geos[cnt]);
 
         if (IN6_IS_ADDR_V4MAPPED((struct in6_addr *)ikey)) {
-            uint32_t ipv4 = ARKIME_V6_TO_V4(*(struct in6_addr *)ikey);
-            snprintf(ip, sizeof(ip), "%u.%u.%u.%u", ipv4 & 0xff, (ipv4 >> 8) & 0xff, (ipv4 >> 16) & 0xff, (ipv4 >> 24) & 0xff);
+            arkime_ip4tostr(ARKIME_V6_TO_V4(*(struct in6_addr *)ikey), ip, sizeof(ip));
         } else {
             inet_ntop(AF_INET6, ikey, ip, sizeof(ip));
         }
@@ -1833,7 +1832,7 @@ LOCAL void *dns_getcb_query_host(const ArkimeSession_t *session, int UNUSED(pos)
 void arkime_parser_init()
 {
     parseDNSRecordAll = arkime_config_boolean(NULL, "parseDNSRecordAll", FALSE);
-    dnsOutputAnswers = arkime_config_boolean(NULL, "dnsOutputAnswers", FALSE);
+    dnsOutputAnswers = arkime_config_boolean(NULL, "dnsOutputAnswers", TRUE);
 
     dnsField = arkime_field_object_register("dns", "DNS Query/Responses", dns_save, dns_free_object, dns_hash, dns_cmp);
 

@@ -820,6 +820,14 @@ LOCAL void arkime_config_load()
     config.caTrustFile      = arkime_config_str(keyfile, "caTrustFile", NULL);
     char *offlineRegex      = arkime_config_str(keyfile, "offlineFilenameRegex", "(?i)\\.(pcap|cap)$");
 
+    if (config.interface) {
+        for (config.interfaceCnt = 0; config.interfaceCnt < MAX_INTERFACES && config.interface[config.interfaceCnt]; config.interfaceCnt++) {
+        }
+        if (config.interfaceCnt == MAX_INTERFACES && config.interface[config.interfaceCnt]) {
+            CONFIGEXIT("Only support up to %d interfaces", MAX_INTERFACES);
+        }
+    }
+
     error = NULL;
     config.offlineRegex     = g_regex_new(offlineRegex, 0, 0, &error);
     if (!config.offlineRegex || error) {

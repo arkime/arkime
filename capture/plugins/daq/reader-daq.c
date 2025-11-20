@@ -26,7 +26,7 @@ LOCAL int reader_daq_stats(ArkimeReaderStats_t *stats)
     stats->total = 0;
 
     int i;
-    for (i = 0; i < MAX_INTERFACES && config.interface[i]; i++) {
+    for (i = 0; config.interface[i]; i++) {
         int err = daq_get_stats(module, handles[i], &daq_stats);
 
         if (err)
@@ -43,7 +43,7 @@ LOCAL DAQ_Verdict reader_daq_packet_cb(void *batch, const DAQ_PktHdr_t *h, const
         LOGEXIT("ERROR - Arkime requires full packet captures caplen: %d pktlen: %d", h->caplen, h->pktlen);
     }
 
-    ArkimePacket_t *packet = ARKIME_TYPE_ALLOC0(ArkimePacket_t);
+    ArkimePacket_t *packet = arkime_packet_alloc();
 
     packet->pkt           = (u_char *)data;
     packet->ts            = h->ts;
@@ -85,7 +85,7 @@ LOCAL void reader_daq_start()
     arkime_packet_set_dltsnap(daq_get_datalink_type(module, handles[0]), config.snapLen);
 
     int i;
-    for (i = 0; i < MAX_INTERFACES && config.interface[i]; i++) {
+    for (i = 0; config.interface[i]; i++) {
         if (config.bpf) {
             err = daq_set_filter(module, handles[i], config.bpf);
 
@@ -109,7 +109,7 @@ LOCAL void reader_daq_start()
 LOCAL void reader_daq_stop()
 {
     int i;
-    for (i = 0; i < MAX_INTERFACES && config.interface[i]; i++) {
+    for (i = 0; config.interface[i]; i++) {
         if (handles[i])
             daq_breakloop(module, handles[i]);
     }
@@ -118,7 +118,7 @@ LOCAL void reader_daq_stop()
 LOCAL void reader_daq_exit()
 {
     int i;
-    for (i = 0; i < MAX_INTERFACES && config.interface[i]; i++) {
+    for (i = 0; config.interface[i]; i++) {
         if (handles[i])
             daq_shutdown(module, handles[i]);
     }
@@ -145,7 +145,7 @@ LOCAL void reader_daq_init(const char *UNUSED(name))
 
 
     int i;
-    for (i = 0; i < MAX_INTERFACES && config.interface[i]; i++) {
+    for (i = 0; config.interface[i]; i++) {
         memset(&cfg, 0, sizeof(cfg));
         cfg.name = config.interface[i];
         cfg.snaplen = config.snapLen;

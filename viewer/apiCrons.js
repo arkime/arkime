@@ -442,7 +442,7 @@ class CronAPIs {
     }
 
     try {
-      await Db.deleteDocument('queries', 'query', key, { refresh: true });
+      await Db.deleteDocument('queries', key, { refresh: true });
       res.send(JSON.stringify({
         success: true,
         text: 'Deleted periodic query successfully'
@@ -493,7 +493,7 @@ class CronAPIs {
       function () {
         // Get from remote DISK
         ViewerUtils.getViewUrl(node, (err, viewUrl, client) => {
-          let sendPath = `${Config.basePath(node)}api/sessions/${node}/send?saveId=${pOptions.saveId}&remoteCluster=${pOptions.cluster}`;
+          let sendPath = `api/sessions/${node}/send?saveId=${pOptions.saveId}&remoteCluster=${pOptions.cluster}`;
           if (pOptions.tags) { sendPath += `&tags=${pOptions.tags}`; }
           const url = new URL(sendPath, viewUrl);
           const reqOptions = {

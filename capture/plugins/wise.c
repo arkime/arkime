@@ -535,11 +535,10 @@ cleanup:
 /******************************************************************************/
 LOCAL void wise_lookup_ip(ArkimeSession_t *session, WiseRequest_t *request, struct in6_addr *ip6, int16_t matchPos)
 {
-    char ipstr[INET6_ADDRSTRLEN + 100];
+    char ipstr[INET6_ADDRSTRLEN];
 
     if (IN6_IS_ADDR_V4MAPPED(ip6)) {
-        uint32_t ip = ARKIME_V6_TO_V4(*ip6);
-        snprintf(ipstr, sizeof(ipstr), "%u.%u.%u.%u", ip & 0xff, (ip >> 8) & 0xff, (ip >> 16) & 0xff, (ip >> 24) & 0xff);
+        arkime_ip4tostr(ARKIME_V6_TO_V4(*ip6), ipstr, sizeof(ipstr));
     } else {
         inet_ntop(AF_INET6, ip6, ipstr, sizeof(ipstr));
     }
@@ -567,34 +566,18 @@ LOCAL void wise_lookup_tuple(ArkimeSession_t *session, WiseRequest_t *request)
         BSB_EXPORT_ptr(bsb, hstring->str, hstring->len);
     }
 
+    char ipstr1[INET6_ADDRSTRLEN];
+    char ipstr2[INET6_ADDRSTRLEN];
+
     if (IN6_IS_ADDR_V4MAPPED(&session->addr1)) {
-
-        uint32_t ip1 = ARKIME_V6_TO_V4(session->addr1);
-        uint32_t ip2 = ARKIME_V6_TO_V4(session->addr2);
-
-        BSB_EXPORT_sprintf(bsb, ";%u.%u.%u.%u;%u;%u.%u.%u.%u;%u",
-                           ip1 & 0xff, (ip1 >> 8) & 0xff, (ip1 >> 16) & 0xff, (ip1 >> 24) & 0xff,
-                           session->port1,
-                           ip2 & 0xff, (ip2 >> 8) & 0xff, (ip2 >> 16) & 0xff, (ip2 >> 24) & 0xff,
-                           session->port2
-                          );
+        arkime_ip4tostr(ARKIME_V6_TO_V4(session->addr1), ipstr1, sizeof(ipstr1));
+        arkime_ip4tostr(ARKIME_V6_TO_V4(session->addr2), ipstr2, sizeof(ipstr2));
     } else {
-        // inet_ntop(AF_INET6, ip6, ipstr, sizeof(ipstr));
-        char ipstr1[INET6_ADDRSTRLEN];
-        char ipstr2[INET6_ADDRSTRLEN];
-
         inet_ntop(AF_INET6, &session->addr1, ipstr1, sizeof(ipstr1));
         inet_ntop(AF_INET6, &session->addr2, ipstr2, sizeof(ipstr2));
-
-        BSB_EXPORT_sprintf(bsb, ";%s;%u;%s;%u",
-                           ipstr1,
-                           session->port1,
-                           ipstr2,
-                           session->port2
-                          );
-
-
     }
+
+    BSB_EXPORT_sprintf(bsb, ";%s;%u;%s;%u", ipstr1, session->port1, ipstr2, session->port2);
     wise_lookup(session, request, str, INTEL_TYPE_TUPLE, -1);
 }
 /******************************************************************************/

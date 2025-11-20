@@ -98,6 +98,9 @@ LOCAL  uint32_t              overloadDropTimes[ARKIME_MAX_PACKET_THREADS];
 
 LOCAL  ARKIME_LOCK_DEFINE(frags);
 
+LOCAL ArkimePacket_t *packetFreelist;
+LOCAL uint64_t packetFreelistMisses;
+
 LOCAL ArkimePacketRC arkime_packet_ip4(ArkimePacketBatch_t *batch, ArkimePacket_t *const packet, const uint8_t *data, int len);
 LOCAL ArkimePacketRC arkime_packet_ip6(ArkimePacketBatch_t *batch, ArkimePacket_t *const packet, const uint8_t *data, int len);
 LOCAL ArkimePacketRC arkime_packet_frame_relay(ArkimePacketBatch_t *batch, ArkimePacket_t *const packet, const uint8_t *data, int len);
@@ -143,13 +146,70 @@ LOCAL int arkime_packet_thread_exit_func;
 #endif
 
 /******************************************************************************/
+// Allocate packet from freelist, falling back to malloc if exhausted. Called from reader threads
+ArkimePacket_t *arkime_packet_alloc()
+{
+    ArkimePacket_t *packet = packetFreelist;
+
+    // Try lock-free pop from freelist
+    while (packet) {
+        ArkimePacket_t *next = packet->packet_next;
+        // if (packetFreelist == packet) packetFreelist = next
+        if (ARKIME_THREAD_CAS(&packetFreelist, packet, next)) {
+            memset(packet, 0, sizeof(ArkimePacket_t));
+            return packet;
+        }
+        packet = packetFreelist;
+    }
+
+    // Freelist empty, allocate new
+    ARKIME_THREAD_INCR(packetFreelistMisses);
+    ArkimePacket_t *newPacket = malloc(sizeof(ArkimePacket_t));
+    if (!newPacket) {
+        LOGEXIT("ERROR - Failed to allocate packet");
+    }
+    memset(newPacket, 0, sizeof(ArkimePacket_t));
+    return newPacket;
+}
+
+/******************************************************************************/
+void arkime_packet_freelist_init()
+{
+    uint32_t poolSize = (config.maxPacketsInQueue * config.packetThreads) + (config.interfaceCnt * 64);
+
+    poolSize = MAX(poolSize, 1000);
+
+    if (config.debug)
+        LOG("Initializing packet freelist pool with %u packets (%lu bytes)", poolSize, (unsigned long)(poolSize * sizeof(ArkimePacket_t)));
+
+    // Bulk allocate all packets at once
+    ArkimePacket_t *pool = malloc(poolSize * sizeof(ArkimePacket_t));
+    if (!pool) {
+        LOGEXIT("ERROR - Failed to allocate packet pool (%u packets)", poolSize);
+    }
+
+    // Carve up the pool and link into freelist
+    for (uint32_t i = 0; i < poolSize; i++) {
+        pool[i].packet_next = packetFreelist;
+        packetFreelist = &pool[i];
+    }
+}
+
+/******************************************************************************/
 void arkime_packet_free(ArkimePacket_t *packet)
 {
     if (packet->copied) {
         free(packet->pkt);
     }
     packet->pkt = 0;
-    ARKIME_TYPE_FREE(ArkimePacket_t, packet);
+
+    // Lock-free push to freelist
+    for (ArkimePacket_t *head = packetFreelist; ; head = packetFreelist) {
+        packet->packet_next = head;
+        // if (packetFreelist == head) packetFreelist = packet
+        if (ARKIME_THREAD_CAS(&packetFreelist, head, packet))
+            break;
+    }
 }
 /******************************************************************************/
 void arkime_packet_process_data(ArkimeSession_t *session, const uint8_t *data, int len, int which)
@@ -1589,7 +1649,7 @@ void arkime_packet_batch_end_of_file(int readerPos)
 {
     offlineInfo[readerPos].finishWaiting = config.packetThreads;
     for (int t = 0; t < config.packetThreads; t++) {
-        ArkimePacket_t *packet = ARKIME_TYPE_ALLOC0(ArkimePacket_t);
+        ArkimePacket_t *packet = arkime_packet_alloc();
         packet->pktlen = ARKIME_PACKET_LEN_FILE_DONE;
         packet->readerPos = readerPos;
 
@@ -1776,6 +1836,8 @@ void arkime_packet_set_udpport_enqueue_cb(uint16_t port, ArkimePacketEnqueue_cb 
 /******************************************************************************/
 void arkime_packet_init()
 {
+    arkime_packet_freelist_init();
+
     pcapFileHeader.magic = 0xa1b2c3d4;
     pcapFileHeader.version_major = 2;
     pcapFileHeader.version_minor = 4;

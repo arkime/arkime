@@ -102,7 +102,12 @@ SPDX-License-Identifier: Apache-2.0
                     :id="`deleteUnassignedShards${index}`"
                     @click="deleteUnassignedShards(stat, index)">
                     <span class="fa fa-trash fa-fw" />
-                    <BTooltip :target="`deleteUnassignedShards${index}`">{{ $t('stats.esShards.deleteUnassignedTip') }}</BTooltip>
+                    <BTooltip
+                      :target="`deleteUnassignedShards${index}`"
+                      teleport-to="body"
+                      placement="right">
+                      {{ $t('stats.esShards.deleteUnassignedTip') }}
+                    </BTooltip>
                   </BButton>
                   <BButton
                     v-else
@@ -111,7 +116,12 @@ SPDX-License-Identifier: Apache-2.0
                     :id="`confirmDeleteUnassignedShards${index}`"
                     @click="confirmDeleteUnassignedShards(stat, index)">
                     <span class="fa fa-check fa-fw" />
-                    <BTooltip :target="`confirmDeleteUnassignedShards${index}`">{{ $t('stats.esShards.confirmDeleteUnassignedTip') }}</BTooltip>
+                    <BTooltip
+                      :target="`confirmDeleteUnassignedShards${index}`"
+                      teleport-to="body"
+                      placement="right">
+                      {{ $t('stats.esShards.confirmDeleteUnassignedTip') }}
+                    </BTooltip>
                   </BButton>
                 </transition>
               </span>

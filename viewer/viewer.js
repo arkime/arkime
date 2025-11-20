@@ -1008,7 +1008,7 @@ function expireDevice (nodes, dirs, minFreeSpaceG, nextCb) {
             }
           });
         }
-        return Db.deleteFile(fields.node, item._id, fields.name, forNextCb);
+        return Db.deleteFile(fields.node, item._id, fields.name).then(() => forNextCb());
       } else {
         if (Config.debug > 0) {
           console.log('EXPIRE - device not deleting', freeG, minFreeSpaceG, fields.name);
@@ -1723,6 +1723,12 @@ app.post( // remove tags endpoint
   ['/api/sessions/removetags'],
   [ArkimeUtil.noCacheJson, checkHeaderToken, logAction('removeTags'), User.checkPermissions(['removeEnabled'])],
   SessionAPIs.removeTags
+);
+
+app.getpost(
+  ['/api/sessions/summary'],
+  [ArkimeUtil.noCacheJson, fillQueryFromBody, checkHeaderToken, logAction('summary')],
+  SessionAPIs.summary
 );
 
 app.get( // session body file endpoint

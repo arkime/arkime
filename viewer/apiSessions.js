@@ -37,6 +37,10 @@ class SessionAPIs {
   // INTERNAL HELPERS
   // --------------------------------------------------------------------------
   static #sessionsListFromQuery (req, res, fields, cb) {
+    if (req.query.length === undefined || parseInt(req.query.length) < 1000000) {
+      req.query.length = 1000000;
+    }
+
     if (req.query.segments && req.query.segments.match(/^(time|all)$/) && fields.indexOf('rootId') === -1) {
       fields.push('rootId');
     }
@@ -836,13 +840,19 @@ class SessionAPIs {
           let buffer = Buffer.alloc(Math.min(16200000, fields['network.packets'] * 20 + fields['network.bytes']));
           let bufpos = 0;
 
-          const sessionPath = Config.basePath(fields.node) + 'api/session/' + fields.node + '/' + Db.session2Sid(item) + '.' + extension;
-          const url = new URL(sessionPath, viewUrl);
+          const sessionPath = '/api/session/' + fields.node + '/' + Db.session2Sid(item) + '.' + extension;
           const options = {
             agent: client === http ? internals.httpAgent : internals.httpsAgent
           };
 
-          Auth.addS2SAuth(options, req.user, fields.node, sessionPath);
+          let url;
+          if (sessionPath.startsWith('/')) {
+            url = new URL(sessionPath.substring(1), viewUrl);
+          } else {
+            url = new URL(sessionPath, viewUrl);
+          }
+
+          Auth.addS2SAuth(options, req.user, fields.node, url.pathname);
           ViewerUtils.addCaTrust(options, fields.node);
 
           const preq = client.request(url, options, (pres) => {
@@ -947,7 +957,7 @@ class SessionAPIs {
         // Get from our DISK
         internals.sendSessionQueue.push(options, nextCb);
       }, () => {
-        let sendPath = `api/session/${fields.node}/${sid}/send?saveId=${saveId}&remoteCluster=${cluster}`;
+        let sendPath = `/api/session/${fields.node}/${sid}/send?saveId=${saveId}&remoteCluster=${cluster}`;
         if (ArkimeUtil.isString(req.body.tags)) {
           sendPath += `&tags=${req.body.tags}`;
         }
@@ -1134,7 +1144,7 @@ class SessionAPIs {
 
       if (whatToRemove === 'spi') { // just removing es data for session
         try {
-          await Db.deleteDocument(session._index, 'session', session._id);
+          await Db.deleteDocument(session._index, session._id);
           return endCb(null, fields);
         } catch (err) { return endCb(err, fields); }
       } else { // scrub the pcap
@@ -1182,7 +1192,7 @@ class SessionAPIs {
         }, async (pcapErr, results) => {
           if (whatToRemove === 'all') { // also remove the session data
             try {
-              await Db.deleteDocument(session._index, 'session', session._id);
+              await Db.deleteDocument(session._index, session._id);
               return endCb(null, fields);
             } catch (err) {
               return endCb(pcapErr, fields);
@@ -1200,9 +1210,12 @@ class SessionAPIs {
               doc.doc.packetPos = [];
               doc.doc.fileId = [];
             }
-            Db.updateSession(session._index, session._id, doc, (err, data) => {
-              return endCb(pcapErr, fields);
-            });
+            try {
+              await Db.updateSession(session._index, session._id, doc);
+            } catch (err) {
+              // log error but continue
+            }
+            return endCb(pcapErr, fields);
           }
         });
       }
@@ -1364,7 +1377,7 @@ class SessionAPIs {
 
     const interval = startAndStopParams[2];
 
-    if ((parseInt(reqQuery.date) > parseInt(req.user.timeLimit)) ||
+    if ((parseFloat(reqQuery.date) > parseFloat(req.user.timeLimit)) ||
       ((reqQuery.date === '-1') && req.user.timeLimit)) {
       timeLimitExceeded = true;
     } else if ((reqQuery.startTime) && (reqQuery.stopTime) && (req.user.timeLimit) &&
@@ -1625,6 +1638,7 @@ class SessionAPIs {
       } else {
         url = new URL(req.url, viewUrl);
       }
+
       const options = {
         timeout: 20 * 60 * 1000,
         agent: client === http ? internals.httpAgent : internals.httpsAgent
@@ -1667,7 +1681,7 @@ class SessionAPIs {
       return doneCb(null);
     }
 
-    async.eachLimit(sessionList, 10, (session, nextCb) => {
+    async.eachLimit(sessionList, 10, async (session, nextCb) => {
       if (!session.fields) {
         console.log('No Fields in addTagsList', session);
         return nextCb(null);
@@ -1675,12 +1689,12 @@ class SessionAPIs {
 
       const cluster = (Config.get('multiES', false) && session.cluster) ? session.cluster : undefined;
 
-      Db.addTagsToSession(session._index, session._id, allTagNames, cluster, (err, data) => {
-        if (err) {
-          console.log('ERROR - addTagsList', session, util.inspect(err, false, 50), data);
-        }
-        nextCb(null);
-      });
+      try {
+        await Db.addTagsToSession(session._index, session._id, allTagNames, cluster);
+      } catch (err) {
+        console.log('ERROR - addTagsList', session, util.inspect(err, false, 50));
+      }
+      nextCb(null);
     }, doneCb);
   };
 
@@ -1690,7 +1704,7 @@ class SessionAPIs {
       return res.serverError(200, 'No sessions to remove tags from');
     }
 
-    async.eachLimit(sessionList, 10, (session, nextCb) => {
+    async.eachLimit(sessionList, 10, async (session, nextCb) => {
       if (!session.fields) {
         console.log('No Fields in removeTagsList', session);
         return nextCb(null);
@@ -1698,12 +1712,12 @@ class SessionAPIs {
 
       const cluster = (Config.get('multiES', false) && session.cluster) ? session.cluster : undefined;
 
-      Db.removeTagsFromSession(session._index, session._id, allTagNames, cluster, (err, data) => {
-        if (err) {
-          console.log('ERROR - removeTagsList', session, util.inspect(err, false, 50), data);
-        }
-        nextCb(null);
-      });
+      try {
+        await Db.removeTagsFromSession(session._index, session._id, allTagNames, cluster);
+      } catch (err) {
+        console.log('ERROR - removeTagsList', session, util.inspect(err, false, 50));
+      }
+      nextCb(null);
     }, async (err) => {
       await Db.refresh('sessions*');
       return res.send(JSON.stringify({
@@ -2016,7 +2030,7 @@ class SessionAPIs {
 
     const spiDataMaxIndices = +Config.get('spiDataMaxIndices', 4);
 
-    if (parseInt(req.query.date) === -1 && spiDataMaxIndices !== -1) {
+    if (parseFloat(req.query.date) === -1 && spiDataMaxIndices !== -1) {
       return res.send({ spi: {}, bsqErr: "'All' date range not allowed for spiview query" });
     }
 
@@ -2966,6 +2980,251 @@ class SessionAPIs {
 
   // --------------------------------------------------------------------------
   /**
+   * GET - /api/sessions/summary
+   *
+   * Get summary info by id or by query.
+   * @name /sessions/summary
+   * @param {SessionsQuery} See_List - This API supports a common set of parameters documented in the SessionsQuery section
+   * @returns {object} summary - An object containing summary statistics for the selected sessions, including fields such as IP addresses, ports, protocols, tags, DNS queries, HTTP hosts, byte and packet counts, and time ranges.
+   *
+   */
+  static summary (req, res) {
+    let topNum = 20;
+    if (req.query.length) {
+      topNum = parseInt(req.query.length);
+    }
+
+    function convert (agg) {
+      if (!agg || !agg.buckets) {
+        return [];
+      }
+
+      const results = [];
+      for (let i = 0; i < Math.min(agg.buckets.length, topNum); i++) {
+        results.push({
+          item: agg.buckets[i].key,
+          sessions: agg.buckets[i].doc_count,
+          bytes: agg.buckets[i].bytes.value,
+          packets: agg.buckets[i].packets.value
+        });
+      }
+      return results;
+    }
+
+    SessionAPIs.buildSessionQuery(req, (bsqErr, query, indices) => {
+      if (bsqErr) {
+        return res.send({
+          recordsTotal: 0,
+          recordsFiltered: 0,
+          error: bsqErr.toString()
+        });
+      }
+
+      query._source = false;
+      query.size = 0;
+
+      if (Config.debug) {
+        console.log('summary query', JSON.stringify(query, null, 1));
+      }
+
+      const extraAggs = {
+        bytes: {
+          sum: {
+            field: 'network.bytes'
+          }
+        },
+        packets: {
+          sum: {
+            field: 'network.packets'
+          }
+        }
+      };
+
+      const options = ViewerUtils.addCluster(req.query.cluster);
+      const aggregations = {
+        firstPacket: {
+          min: {
+            field: 'firstPacket'
+          }
+        },
+        lastPacket: {
+          max: {
+            field: 'lastPacket'
+          }
+        },
+        bytes: {
+          sum: {
+            field: 'network.bytes'
+          }
+        },
+        dataBytes: {
+          sum: {
+            field: 'totDataBytes'
+          }
+        },
+        packets: {
+          sum: {
+            field: 'network.packets'
+          }
+        },
+
+        tags: {
+          terms: {
+            field: 'tags',
+            size: topNum
+          },
+          aggs: extraAggs
+        },
+
+        protocols: {
+          terms: {
+            field: 'protocol',
+            size: topNum
+          },
+          aggs: extraAggs
+        },
+
+        sourceIp: {
+          terms: {
+            field: 'source.ip',
+            size: topNum
+          },
+          aggs: extraAggs
+        },
+
+        destinationIp: {
+          terms: {
+            field: 'destination.ip',
+            size: topNum
+          },
+          aggs: extraAggs
+        },
+
+        allIp: {
+          terms: {
+            script: {
+              source: "if (doc['source.ip'].size() == 0) { return []; } return [doc['source.ip'].value, doc['destination.ip'].value];",
+              lang: 'painless'
+            },
+            size: topNum
+          },
+          aggs: extraAggs
+        },
+
+        dstIpPort: {
+          terms: {
+            script: {
+              source: "if (doc['destination.port'].size() == 0) { return []; } return [doc['destination.ip'].value + '_' + doc['destination.port'].value];",
+              lang: 'painless'
+            },
+            size: topNum
+          },
+          aggs: extraAggs
+        },
+
+        tcpPorts: {
+          filter: {
+            term: { protocol: 'tcp' }
+          },
+          aggs: {
+            tcpPorts: {
+              terms: {
+                field: 'destination.port',
+                size: topNum
+              },
+              aggs: extraAggs
+            }
+          }
+        },
+
+        udpPorts: {
+          filter: {
+            term: { protocol: 'udp' }
+          },
+          aggs: {
+            udpPorts: {
+              terms: {
+                field: 'destination.port',
+                size: topNum
+              },
+              aggs: extraAggs
+            }
+          }
+        },
+
+        dnsQueryHost: {
+          terms: {
+            field: 'dns.queryHost',
+            size: topNum
+          },
+          aggs: extraAggs
+        },
+
+        httpHost: {
+          terms: {
+            field: 'http.host',
+            size: topNum
+          },
+          aggs: extraAggs
+        }
+
+      };
+
+      // Merge in the new aggregations
+      query.aggregations = query.aggregations ?? {};
+      query.aggregations = { ...query.aggregations, ...aggregations };
+
+      Db.searchSessions(indices, query, options, (err, result) => {
+        if (err || !result) {
+          console.log('summary err', JSON.stringify(err, null, 1));
+          return res.status(500).send({ error: err?.message || 'Failed to generate summary' });
+        }
+        if (Config.debug) {
+          console.log('summary result', JSON.stringify(result, null, 1));
+        }
+
+        const map = ViewerUtils.mapMerge(result.aggregations);
+        const graph = ViewerUtils.graphMerge(req, query, result.aggregations);
+
+        // Change _ to . or : in dstIpPort
+        const dstIpPort = convert(result.aggregations.dstIpPort).map((item) => {
+          if (item.item.indexOf(':') === -1) {
+            item.item = item.item.replace('_', ':');
+          } else {
+            item.item = item.item.replace('_', '.');
+          }
+          return item;
+        });
+
+        const response = {
+          firstPacket: result.aggregations.firstPacket.value,
+          lastPacket: result.aggregations.lastPacket.value,
+          sessions: result.hits.total,
+          bytes: result.aggregations.bytes.value,
+          dataBytes: result.aggregations.dataBytes.value,
+          packets: result.aggregations.packets.value,
+          tags: convert(result.aggregations.tags),
+          protocols: convert(result.aggregations.protocols),
+          uniqueIp: convert(result.aggregations.allIp),
+          uniqueSrcIp: convert(result.aggregations.sourceIp),
+          uniqueDstIp: convert(result.aggregations.destinationIp),
+          uniqueDstIpPort: dstIpPort,
+          uniqueTcpDstPorts: convert(result.aggregations.tcpPorts.tcpPorts),
+          uniqueUdpDstPorts: convert(result.aggregations.udpPorts.udpPorts),
+          dnsQueryHost: convert(result.aggregations.dnsQueryHost),
+          httpHost: convert(result.aggregations.httpHost),
+          map,
+          graph
+        };
+        response.downloadBytes = 20 + response.bytes + 16 * response.packets;
+
+        res.send(response);
+      });
+    });
+  };
+
+  // --------------------------------------------------------------------------
+  /**
    * GET - /api/session/:nodeName/:id/body/:bodyType/:bodyNum/:bodyName
    *
    * Retrieves a file that was transferred in a session.
@@ -3257,7 +3516,7 @@ class SessionAPIs {
               preq.params.nodeName = nodeName;
               preq.params.id = sessionID;
               preq.params.hash = hash;
-              preq.url = `api/session/${Config.basePath(nodeName) + nodeName}/${sessionID}/bodyhash/${hash}`;
+              preq.url = `api/session/${nodeName}/${sessionID}/bodyhash/${hash}`;
               return SessionAPIs.proxyRequest(preq, res);
             });
           } else {

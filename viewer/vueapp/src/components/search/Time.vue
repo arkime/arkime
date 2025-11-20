@@ -37,6 +37,12 @@ SPDX-License-Identifier: Apache-2.0
           v-focus="focusTimeRange"
           @change="changeTimeRange"
           @blur="onOffTimeRangeFocus">
+          <option value="0.25">
+            {{ $t('common.minuteCount', 15) }}
+          </option>
+          <option value="0.5">
+            {{ $t('common.minuteCount', 30) }}
+          </option>
           <option value="1">
             {{ $t('common.hourCount', 1) }}
           </option>
@@ -751,7 +757,7 @@ export default {
         this.time.startTime = (currentTimeSec - (hourSec * this.timeRange)).toString();
       }
 
-      if (parseInt(this.timeRange, 10) === -1) { // all time
+      if (parseFloat(this.timeRange) === -1) { // all time
         this.localStartTime = moment(0);
         this.time.startTime = '0';
         this.localStopTime = moment(currentTimeSec * 1000);
@@ -774,7 +780,7 @@ export default {
           }
         }
         this.timeRange = date;
-        if (parseInt(this.timeRange, 10) === -1) { // all time
+        if (parseFloat(this.timeRange) === -1) { // all time
           this.localStartTime = moment(0);
           this.time.startTime = '0';
           this.localStopTime = moment(currentTimeSec * 1000);

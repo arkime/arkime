@@ -635,7 +635,7 @@ LOCAL int arkime_reader_scheme_processNG(const char *uri, uint8_t *data, int len
                 continue;
             }
 
-            readerState.packet = ARKIME_TYPE_ALLOC0(ArkimePacket_t);
+            readerState.packet = arkime_packet_alloc();
             readerState.packet->pktlen = readerState.pktlen;
             readerState.packet->readerFilePos = readerState.startPos;
             readerState.packet->readerPos = readerState.readerPos;
@@ -687,7 +687,7 @@ LOCAL int arkime_reader_scheme_processNG(const char *uri, uint8_t *data, int len
             offlineInfo[readerState.readerPos].lastPackets++;
             offlineInfo[readerState.readerPos].lastPacketTime = readerState.packet->ts;
             if (deadPcap && bpf_filter(bpf.bf_insns, readerState.packet->pkt, readerState.pktlen, readerState.pktlen)) {
-                ARKIME_TYPE_FREE(ArkimePacket_t, readerState.packet);
+                arkime_packet_free(readerState.packet);
             } else {
                 arkime_packet_batch(&batch, readerState.packet);
             }
@@ -809,7 +809,7 @@ int arkime_reader_scheme_process(const char *uri, uint8_t *data, int len, const 
                 readerState.tmpBufferLen = 0;
             }
             readerState.state = ARKIME_SCHEME_PACKET;
-            readerState.packet = ARKIME_TYPE_ALLOC0(ArkimePacket_t);
+            readerState.packet = arkime_packet_alloc();
             struct arkime_pcap_sf_pkthdr *h = (struct arkime_pcap_sf_pkthdr *)pheader;
             if (unlikely(h->caplen != h->pktlen) && !config.readTruncatedPackets && !config.ignoreErrors) {
                 LOGEXIT("ERROR - Arkime requires full packet captures caplen: %u pktlen: %u. "
@@ -867,7 +867,7 @@ int arkime_reader_scheme_process(const char *uri, uint8_t *data, int len, const 
             offlineInfo[readerState.readerPos].lastPackets++;
             offlineInfo[readerState.readerPos].lastPacketTime = readerState.packet->ts;
             if (deadPcap && bpf_filter(bpf.bf_insns, readerState.packet->pkt, readerState.pktlen, readerState.pktlen)) {
-                ARKIME_TYPE_FREE(ArkimePacket_t, readerState.packet);
+                arkime_packet_free(readerState.packet);
             } else {
                 arkime_packet_batch(&batch, readerState.packet);
             }
@@ -875,7 +875,7 @@ int arkime_reader_scheme_process(const char *uri, uint8_t *data, int len, const 
             readerState.state = ARKIME_SCHEME_PACKET_HEADER;
         }
         if (readerState.state == ARKIME_SCHEME_PACKET_SKIP) {
-            ARKIME_TYPE_FREE(ArkimePacket_t, readerState.packet);
+            arkime_packet_free(readerState.packet);
             readerState.packet = 0;
             if (len < readerState.pktlen) {
                 data += len;

@@ -416,7 +416,7 @@ LOCAL int reader_libpcapfile_stats(ArkimeReaderStats_t *stats)
 /******************************************************************************/
 LOCAL void reader_libpcapfile_pcap_cb(u_char *UNUSED(user), const struct pcap_pkthdr *h, const u_char *bytes)
 {
-    ArkimePacket_t *packet = ARKIME_TYPE_ALLOC0(ArkimePacket_t);
+    ArkimePacket_t *packet = arkime_packet_alloc();
 
     if (unlikely(h->caplen != h->len) && !config.readTruncatedPackets && !config.ignoreErrors) {
         LOGEXIT("ERROR - Arkime requires full packet captures caplen: %d pktlen: %d. "
@@ -608,6 +608,9 @@ LOCAL void reader_libpcapfile_opened()
 /******************************************************************************/
 LOCAL void reader_libpcapfile_start()
 {
+    int initFunc = arkime_get_named_func("arkime_reader_thread_init");
+    arkime_call_named_func(initFunc, 0, NULL);
+
     reader_libpcapfile_next();
     if (!pcap) {
         if (config.pcapMonitor) {
@@ -616,6 +619,12 @@ LOCAL void reader_libpcapfile_start()
             arkime_quit();
         }
     }
+}
+/******************************************************************************/
+LOCAL void reader_libpcapfile_stop()
+{
+    int exitFunc = arkime_get_named_func("arkime_reader_thread_exit");
+    arkime_call_named_func(exitFunc, 0, NULL);
 }
 /******************************************************************************/
 void reader_libpcapfile_init(const char *UNUSED(name))
@@ -627,6 +636,7 @@ void reader_libpcapfile_init(const char *UNUSED(name))
     }
 
     arkime_reader_start         = reader_libpcapfile_start;
+    arkime_reader_stop          = reader_libpcapfile_stop;
     arkime_reader_stats         = reader_libpcapfile_stats;
 
     if (config.pcapMonitor)

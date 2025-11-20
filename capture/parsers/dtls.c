@@ -106,7 +106,7 @@ LOCAL uint32_t dtls_process_client_hello(ArkimeSession_t *session, const uint8_t
     BSB_IMPORT_u08(cbsb, skiplen);   // Cookie Length
     BSB_IMPORT_skip(cbsb, skiplen);  // Cookie
 
-    BSB_IMPORT_u16(cbsb, skiplen);   // Ciper Suites Length
+    BSB_IMPORT_u16(cbsb, skiplen);   // Cipher Suites Length
     while (BSB_NOT_ERROR(cbsb) && skiplen > 0) {
         uint16_t c = 0;
         BSB_IMPORT_u16(cbsb, c);

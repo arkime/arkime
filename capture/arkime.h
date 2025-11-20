@@ -296,8 +296,12 @@ typedef struct {
 #define ARKIME_THREAD_INCROLD(var)       __sync_fetch_and_add(&var, 1);
 #define ARKIME_THREAD_INCR_NUM(var, num) __sync_add_and_fetch(&var, num);
 
+#define ARKIME_THREAD_DECR(var)          __sync_sub_and_fetch(&var, 1);
 #define ARKIME_THREAD_DECRNEW(var)       __sync_sub_and_fetch(&var, 1);
 #define ARKIME_THREAD_DECROLD(var)       __sync_fetch_and_sub(&var, 1);
+#define ARKIME_THREAD_DECR_NUM(var, num) __sync_sub_and_fetch(&var, num);
+
+#define ARKIME_THREAD_CAS(ptr, old, new) __sync_bool_compare_and_swap((ptr), (old), (new))
 
 /* You are probably looking here because you think 24 is too low, really it isn't.
  * Instead, increase the number of threads used for reading packets.
@@ -415,6 +419,7 @@ typedef struct arkime_config {
     char     *nodeClass;
     char     *elasticsearch;
     char    **interface;
+    int       interfaceCnt;
     int       pcapDirPos;
     char    **pcapDir;
     char     *pcapDirTemplate;
@@ -942,6 +947,8 @@ void arkime_call_named_func(uint32_t id, int thread, void *uw);
 
 gboolean arkime_is_main_thread();
 
+char *arkime_ip4tostr(uint32_t ip, char *str, int len);
+
 /******************************************************************************/
 /*
  * cloud.c
@@ -1314,6 +1321,8 @@ void     arkime_packet_set_ip_cb2(uint16_t type, ArkimePacketEnqueue_cb2 enqueue
 void     arkime_packet_set_udpport_enqueue_cb(uint16_t port, ArkimePacketEnqueue_cb enqueueCb);
 void     arkime_packet_set_udpport_enqueue_cb2(uint16_t port, ArkimePacketEnqueue_cb2 enqueueCb, void *cbuw);
 
+ArkimePacket_t *arkime_packet_alloc();
+void arkime_packet_free(ArkimePacket_t *packet);
 
 /******************************************************************************/
 typedef void (*ArkimeProtocolCreateSessionId_cb)(uint8_t *sessionId, ArkimePacket_t *const packet);
