@@ -7,7 +7,7 @@
 </template>
 
 <script setup>
-import { ref, watch, onMounted, nextTick, computed } from 'vue';
+import { ref, watch, onMounted, nextTick } from 'vue';
 
 const props = defineProps({
   data: {
@@ -18,25 +18,9 @@ const props = defineProps({
     type: String,
     required: true
   },
-  colorScheme: {
-    type: String,
-    default: 'schemeCategory10'
-  },
-  fieldName: {
-    type: String,
+  fieldConfig: {
+    type: Object,
     required: true
-  },
-  fieldExp: {
-    type: String,
-    required: true
-  },
-  labelFontSize: {
-    type: String,
-    default: '12px'
-  },
-  labelRadius: {
-    type: Number,
-    default: 40
   },
   width: {
     type: Number,
@@ -58,11 +42,9 @@ const emit = defineEmits(['show-tooltip']);
 const chartContainer = ref(null);
 let d3 = null;
 
-const fieldConfig = computed(() => ({
-  friendlyName: props.fieldName,
-  exp: props.fieldExp,
-  dbField: props.fieldExp
-}));
+// Label styling constants
+const LABEL_FONT_SIZE = '11px';
+const LABEL_RADIUS = 45;
 
 const showTooltip = (data, evt, percentage) => {
   emit('show-tooltip', {
@@ -72,20 +54,22 @@ const showTooltip = (data, evt, percentage) => {
       y: evt.clientY + 1
     },
     percentage,
-    fieldConfig: fieldConfig.value,
+    fieldConfig: props.fieldConfig,
     metricType: props.metricType
   });
 };
-const LABEL_MAX_LENGTH = 12;
-const LABEL_TRUNCATE_LENGTH = 10;
+
+const getSlicePercentage = (d) => {
+  return (d.endAngle - d.startAngle) / (2 * Math.PI);
+};
+
 const MIN_SLICE_PERCENTAGE = 0.02; // Hide labels for slices < 2%
 
 const createChartHoverHandlers = () => {
   return {
     mouseover: function (e, d) {
       d3.select(this).style('opacity', 0.7);
-      // Calculate percentage for this slice
-      const percentage = (d.endAngle - d.startAngle) / (2 * Math.PI) * 100;
+      const percentage = getSlicePercentage(d) * 100;
       showTooltip(d.data, e, percentage);
     },
     mouseleave: function () {
@@ -115,9 +99,8 @@ const renderChart = async () => {
     .append('g')
     .attr('transform', `translate(${props.width / 2},${props.height / 2})`);
 
-  // Get the D3 color scheme
-  const colorSchemeFunc = d3[props.colorScheme];
-  const color = d3.scaleOrdinal(colorSchemeFunc);
+  // Use D3 color scheme
+  const color = d3.scaleOrdinal(d3.schemeCategory10);
 
   const pie = d3.pie()
     .value(d => d[props.metricType])
@@ -128,8 +111,8 @@ const renderChart = async () => {
     .outerRadius(radius - 10);
 
   const labelArc = d3.arc()
-    .innerRadius(radius - props.labelRadius)
-    .outerRadius(radius - props.labelRadius);
+    .innerRadius(radius - LABEL_RADIUS)
+    .outerRadius(radius - LABEL_RADIUS);
 
   const arcs = svg.selectAll('.arc')
     .data(pie(props.data))
@@ -153,42 +136,31 @@ const renderChart = async () => {
   arcs.append('text')
     .attr('transform', d => `translate(${labelArc.centroid(d)})`)
     .attr('text-anchor', 'middle')
-    .style('font-size', props.labelFontSize)
+    .style('font-size', LABEL_FONT_SIZE)
     .style('fill', 'white')
-    .style('font-weight', props.labelFontSize === '12px' ? 'bold' : 'normal')
+    .style('font-weight', 'normal')
     .text(d => {
-      // Calculate percentage of this slice
-      const percentage = (d.endAngle - d.startAngle) / (2 * Math.PI);
-
       // Hide label if slice is less than 2%
-      if (percentage < MIN_SLICE_PERCENTAGE) {
+      if (getSlicePercentage(d) < MIN_SLICE_PERCENTAGE) {
         return '';
       }
 
-      const itemName = d.data.item;
-      // Only truncate for tags (smaller font size)
-      if (props.labelFontSize === '10px' && itemName.length > LABEL_MAX_LENGTH) {
-        return itemName.substring(0, LABEL_TRUNCATE_LENGTH) + '...';
-      }
-      return itemName;
+      return d.data.item;
     });
 };
 
 // Watch for data changes
-watch(() => props.data, async () => {
-  await nextTick();
+watch(() => props.data, () => {
   renderChart();
 }, { deep: true });
 
 // Watch for metric type changes
-watch(() => props.metricType, async () => {
-  await nextTick();
+watch(() => props.metricType, () => {
   renderChart();
 });
 
 // Initial render
-onMounted(async () => {
-  await nextTick();
+onMounted(() => {
   renderChart();
 });
 </script>

@@ -7,7 +7,7 @@
 </template>
 
 <script setup>
-import { ref, watch, onMounted, nextTick, computed } from 'vue';
+import { ref, watch, onMounted, nextTick } from 'vue';
 
 const props = defineProps({
   data: {
@@ -18,16 +18,8 @@ const props = defineProps({
     type: String,
     required: true
   },
-  colorScheme: {
-    type: String,
-    default: 'schemeCategory10'
-  },
-  fieldName: {
-    type: String,
-    required: true
-  },
-  fieldExp: {
-    type: String,
+  fieldConfig: {
+    type: Object,
     required: true
   },
   width: {
@@ -50,12 +42,6 @@ const emit = defineEmits(['show-tooltip']);
 const chartContainer = ref(null);
 let d3 = null;
 
-const fieldConfig = computed(() => ({
-  friendlyName: props.fieldName,
-  exp: props.fieldExp,
-  dbField: props.fieldExp
-}));
-
 const showTooltip = (data, evt) => {
   emit('show-tooltip', {
     data,
@@ -63,7 +49,8 @@ const showTooltip = (data, evt) => {
       x: evt.clientX + 1,
       y: evt.clientY + 1
     },
-    fieldConfig: fieldConfig.value
+    fieldConfig: props.fieldConfig,
+    metricType: props.metricType
   });
 };
 const MARGIN = { top: 20, right: 30, bottom: 120, left: 60 };
@@ -114,9 +101,8 @@ const renderChart = async () => {
     .domain([0, d3.max(props.data, d => d[props.metricType])])
     .range([height, 0]);
 
-  // Get the D3 color scheme
-  const colorSchemeFunc = d3[props.colorScheme];
-  const colors = d3.scaleOrdinal(colorSchemeFunc);
+  // Use D3 color scheme
+  const colors = d3.scaleOrdinal(d3.schemeCategory10);
 
   const handlers = createChartHoverHandlers();
 
@@ -149,21 +135,13 @@ const renderChart = async () => {
     .call(d3.axisLeft(y));
 };
 
-// Watch for data changes
-watch(() => props.data, async () => {
-  await nextTick();
+// Watch for data or metric type changes
+watch([() => props.data, () => props.metricType], () => {
   renderChart();
 }, { deep: true });
 
-// Watch for metric type changes
-watch(() => props.metricType, async () => {
-  await nextTick();
-  renderChart();
-});
-
 // Initial render
-onMounted(async () => {
-  await nextTick();
+onMounted(() => {
   renderChart();
 });
 </script>
