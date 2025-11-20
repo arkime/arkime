@@ -1625,17 +1625,10 @@ Db.indicesSettingsCache = async (cluster) => {
   return indicesSettings;
 };
 
-Db.hostnameToNodeids = function (hostname, cb) {
+Db.hostnameToNodeids = async (hostname) => {
   const query = { query: { match: { hostname } } };
-  Db.search('stats', query, (err, sdata) => {
-    const nodes = [];
-    if (sdata && sdata.hits && sdata.hits.hits) {
-      for (let i = 0, ilen = sdata.hits.hits.length; i < ilen; i++) {
-        nodes.push(sdata.hits.hits[i]._id);
-      }
-    }
-    cb(nodes);
-  });
+  const sdata = await Db.search('stats', query);
+  return sdata?.hits?.hits?.map(hit => hit._id) ?? [];
 };
 
 Db.fileIdToFile = async (node, num) => {

@@ -929,11 +929,12 @@ internals.sendSessionQueue = async.queue(sendSessionWorker, 5);
 // EXPIRING
 // ============================================================================
 // Search the oldest 500 files on a set of nodes in a set of directories.
-// If less then 10 items are returned we don't delete anything.
+// If less then 10 items are returned we don't delete anything, otherwise
+// ignore the 10 most recent files and delete files until we have enough free space.
 // Doesn't support mounting sub directories in main directory, don't do it.
 function expireDevice (nodes, dirs, minFreeSpaceG, nextCb) {
   if (Config.debug > 0) {
-    console.log('EXPIRE - device', nodes, dirs, minFreeSpaceG);
+    console.log('EXPIRE - device', nodes, 'dirs', dirs, 'minFreeSpaceG', minFreeSpaceG);
   }
   const query = {
     _source: ['num', 'name', 'first', 'size', 'node', 'indexFilename'],
@@ -950,15 +951,15 @@ function expireDevice (nodes, dirs, minFreeSpaceG, nextCb) {
     sort: { first: { order: 'asc' } }
   };
 
-  Object.keys(dirs).forEach(function (pcapDir) {
+  for (const pcapDir of dirs) {
     const obj = { wildcard: {} };
-    if (pcapDir[pcapDir.length - 1] === '/') {
+    if (pcapDir.endsWith('/')) {
       obj.wildcard.name = pcapDir + '*';
     } else {
       obj.wildcard.name = pcapDir + '/*';
     }
     query.query.bool.filter[1].bool.should.push(obj);
-  });
+  }
 
   if (Config.debug > 1) {
     console.log('EXPIRE - device query', JSON.stringify(query, false, 2));
@@ -979,7 +980,7 @@ function expireDevice (nodes, dirs, minFreeSpaceG, nextCb) {
     }
 
     if (data.hits.total <= 10) {
-      console.log(`EXPIRE WARNING - not deleting any files since ${data.hits.total} <= 10 minimum files per node. Your disk(s) may fill!!! See https://arkime.com/faq#pcap-deletion`);
+      console.log(`EXPIRE WARNING - not deleting any files since ${data.hits.total} <= 10 minimum files per node. (Nodes: ${nodes} Directories: ${Array.from(dirs).join(',')}) Your disk(s) may fill!!! See https://arkime.com/faq#pcap-deletion`);
       return nextCb();
     }
 
@@ -1020,10 +1021,13 @@ function expireDevice (nodes, dirs, minFreeSpaceG, nextCb) {
   });
 }
 
+// Check a single device to see if we need to expire any files on it.
+// A single device might have multiple nodes and multiple directories.
 function expireCheckDevice (nodes, stat, nextCb) {
   let doit = false;
   let minFreeSpaceG = 0;
-  async.forEach(nodes, function (node, cb) {
+
+  for (const node of nodes) {
     let freeSpaceG = Config.getFull(node, 'freeSpaceG', '5%');
     if (freeSpaceG[freeSpaceG.length - 1] === '%') {
       freeSpaceG = parseFloat(freeSpaceG) * 0.01 * stat.bsize / 1024.0 * stat.blocks / (1024.0 * 1024.0);
@@ -1031,69 +1035,74 @@ function expireCheckDevice (nodes, stat, nextCb) {
       freeSpaceG = parseFloat(freeSpaceG);
     }
 
-    const freeG = stat.bsize / 1024.0 * stat.bavail / (1024.0 * 1024.0);
-    if (Config.debug > 0) {
-      console.log(`EXPIRE - check device node: ${node} free: ${freeG} freeSpaceG: ${freeSpaceG}`);
-    }
-    if (freeG < freeSpaceG) {
-      doit = true;
-    }
-
+    // minFreeSpaceG across all nodes on this device
     if (freeSpaceG > minFreeSpaceG) {
       minFreeSpaceG = freeSpaceG;
     }
 
-    cb();
-  }, function () {
-    if (doit) {
-      expireDevice(nodes, stat.dirs, minFreeSpaceG, nextCb);
-    } else {
-      return nextCb();
+    const freeG = stat.bsize / 1024.0 * stat.bavail / (1024.0 * 1024.0);
+    if (Config.debug > 0) {
+      console.log(`EXPIRE - check device node: ${node} free: ${freeG} freeSpaceG: ${freeSpaceG}`);
     }
-  });
+
+    // Do we need to free space on this device
+    if (freeG < freeSpaceG) {
+      doit = true;
+    }
+  }
+
+  if (doit) {
+    expireDevice(nodes, stat.dirs, minFreeSpaceG, nextCb);
+  } else {
+    return nextCb();
+  }
 }
 
-function expireCheckAll () {
+// Build the list of devices and dirs on those devices to check for expiring files.
+async function expireCheckAll () {
   const devToStat = {};
+
   // Find all the nodes running on this host
-  Db.hostnameToNodeids(Config.hostName(), function (nodes) {
-    // Current node name should always be checked too
-    if (!nodes.includes(Config.nodeName())) {
-      nodes.push(Config.nodeName());
+  const nodes = await Db.hostnameToNodeids(Config.hostName());
+  // Current node name should always be checked too
+  if (!nodes.includes(Config.nodeName())) {
+    nodes.push(Config.nodeName());
+  }
+
+  // Find all the pcap dirs for local nodes
+  for (const node of nodes) {
+    const pcapDirs = Config.getFullArray(node, 'pcapDir', '/opt/arkime/raw');
+    if (!pcapDirs) {
+      console.log("EXPIRE ERROR - couldn't find pcapDir setting for node:", node);
+      continue;
     }
 
-    // Find all the pcap dirs for local nodes
-    async.map(nodes, function (node, cb) {
-      const pcapDirs = Config.getFullArray(node, 'pcapDir');
-      if (!pcapDirs) {
-        return cb("ERROR - couldn't find pcapDir setting for node: " + node);
+    // Create a mapping from device id to stat information.
+    // Add a dirs Set to each entry with all directories on that device
+    for (let pcapDir of pcapDirs) {
+      if (!pcapDir) {
+        continue; // Skip empty elements.  Prevents errors when pcapDir has a trailing or double ;
       }
-      // Create a mapping from device id to stat information and all directories on that device
-      pcapDirs.forEach(function (pcapDir) {
-        if (!pcapDir) {
-          return; // Skip empty elements.  Prevents errors when pcapDir has a trailing or double ;
-        }
-        pcapDir = pcapDir.trim();
+      pcapDir = pcapDir.trim();
+      try {
         const fileStat = fs.statSync(pcapDir);
-        const vfsStat = fs.statfsSync(pcapDir);
         if (!devToStat[fileStat.dev]) {
-          vfsStat.dirs = {};
-          vfsStat.dirs[pcapDir] = {};
+          const vfsStat = fs.statfsSync(pcapDir);
+          vfsStat.dirs = new Set([pcapDir]);
           devToStat[fileStat.dev] = vfsStat;
         } else {
-          devToStat[fileStat.dev].dirs[pcapDir] = {};
+          devToStat[fileStat.dev].dirs.add(pcapDir);
         }
-      });
-      cb(null);
-    },
-    function (err) {
-      // Now gow through all the local devices and check them
-      const keys = Object.keys(devToStat);
-      async.forEachSeries(keys, function (key, cb) {
-        expireCheckDevice(nodes, devToStat[key], cb);
-      }, function (err) {
-      });
-    });
+      } catch (err) {
+        console.log('EXPIRE ERROR - couldn\'t stat pcapDir:', pcapDir, err);
+      }
+    }
+  }
+
+  // Now gow through all the local devices and check them one at a time
+  const keys = Object.keys(devToStat);
+  async.forEachSeries(keys, function (key, cb) {
+    expireCheckDevice(nodes, devToStat[key], cb);
   });
 }
 
