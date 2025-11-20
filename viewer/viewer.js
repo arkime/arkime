@@ -228,7 +228,7 @@ if (ArkimeConfig.regressionTests) {
       if (internals.runningHuntJob) {
         setTimeout(checkHuntFinished, 1000);
       } else {
-        Db.search('hunts', 'hunt', { query: { terms: { status: ['running', 'queued'] } } }, async function (err, result) {
+        Db.search('hunts', { query: { terms: { status: ['running', 'queued'] } } }, async function (err, result) {
           if (result.hits.total > 0) {
             HuntAPIs.processHuntJobs();
             await Db.refresh();
@@ -964,7 +964,7 @@ function expireDevice (nodes, dirs, minFreeSpaceG, nextCb) {
     console.log('EXPIRE - device query', JSON.stringify(query, false, 2));
   }
 
-  Db.search('files', 'file', query, function (err, data) {
+  Db.search('files', query, function (err, data) {
     if (err || data.error || !data.hits) {
       if (Config.debug > 0) {
         console.log('EXPIRE - device error', JSON.stringify(err, false, 2));

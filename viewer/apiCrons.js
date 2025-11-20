@@ -143,7 +143,7 @@ class CronAPIs {
       query.query.bool.filter = []; // remove sharing restrictions
     }
 
-    Db.search('queries', 'query', query, (err, data) => {
+    Db.search('queries', query, (err, data) => {
       if (err || data.error) {
         console.log(`ERROR - ${req.method} /api/crons`, util.inspect(err || data.error, false, 50));
       }
@@ -269,7 +269,7 @@ class CronAPIs {
     doc.doc.creator = userId || 'anonymous';
 
     try {
-      const { body: info } = await Db.indexNow('queries', 'query', null, doc.doc);
+      const { body: info } = await Db.indexNow('queries', null, doc.doc);
 
       if (CronAPIs.#primaryViewer) { CronAPIs.processCronQueries(); }
 
@@ -392,7 +392,7 @@ class CronAPIs {
       };
 
       try {
-        await Db.update('queries', 'query', key, doc, { refresh: true });
+        await Db.update('queries', key, doc, { refresh: true });
       } catch (err) {
         console.log(`ERROR - ${req.method} /api/cron/%s`, ArkimeUtil.sanitizeStr(key), util.inspect(err, false, 50));
       }
@@ -562,7 +562,7 @@ class CronAPIs {
           } else {
             const doc = { doc: { count: (query.count || 0) + count } };
             try {
-              Db.update('queries', 'query', options.qid, doc, { refresh: true });
+              Db.update('queries', options.qid, doc, { refresh: true });
             } catch (err) {
               console.log('ERROR CRON - updating query', err);
             }
@@ -641,7 +641,7 @@ class CronAPIs {
     let repeat;
     async.doWhilst(function (whilstCb) {
       repeat = false;
-      Db.search('queries', 'query', { size: 1000 }, (err, data) => {
+      Db.search('queries', { size: 1000 }, (err, data) => {
         if (err) {
           internals.cronRunning = false;
           console.log('CRON - processCronQueries', err);
@@ -756,7 +756,7 @@ class CronAPIs {
 
                 async function continueProcess () {
                   try {
-                    await Db.update('queries', 'query', qid, doc, { refresh: true });
+                    await Db.update('queries', qid, doc, { refresh: true });
                   } catch (err) {
                     console.log('ERROR CRON - updating query', err);
                   }

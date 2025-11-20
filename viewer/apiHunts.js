@@ -194,7 +194,7 @@ ${Config.arkimeWebURL()}hunt
 
     if ((now - hunt.lastUpdated) >= 2) { // only update every 2 seconds
       try {
-        const { body: huntHit } = await Db.get('hunts', 'hunt', huntId);
+        const { body: huntHit } = await Db.get('hunts', huntId);
 
         if (!huntHit) { return cb('undefined'); }
 
@@ -1289,7 +1289,7 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
 
     // fetch hunt and session
     Promise.all([
-      Db.get('hunts', 'hunt', huntId),
+      Db.get('hunts', huntId),
       Db.getSessionPromise(sessionId)
     ]).then(([{ body: hunt }, session]) => {
       if (hunt.error || session.error) {

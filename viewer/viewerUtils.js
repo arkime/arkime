@@ -420,7 +420,7 @@ class ViewerUtils {
     }
 
     const files = [];
-    async.forEachSeries(fields.fileId, async (item, cb) => {
+    async.forEachSeries(fields.fileId, async (item) => {
       try {
         const file = await Db.fileIdToFile(fields.node, item);
         if (file && file.locked === 1) {
