@@ -801,18 +801,18 @@ class CronAPIs {
         console.log('CRON - processCronQueries', err);
       }
     }, async () => {
-       if (Config.debug > 1) {
-         console.log('CRON - Process again: ', repeat);
-       }
-       return repeat;
+      if (Config.debug > 1) {
+        console.log('CRON - Process again: ', repeat);
+      }
+      return repeat;
     }).then(() => {
-       if (Config.debug) {
-         console.log('CRON - Should be up to date');
-       }
-       internals.cronRunning = false;
+      if (Config.debug) {
+        console.log('CRON - Should be up to date');
+      }
+      internals.cronRunning = false;
     }).catch((err) => {
-       console.log('CRON - Error:', err);
-       internals.cronRunning = false;
+      console.log('CRON - Error:', err);
+      internals.cronRunning = false;
     });
   }
 }
