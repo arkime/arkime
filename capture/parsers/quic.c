@@ -582,7 +582,7 @@ void arkime_parser_init()
     arkime_parsers_classifier_register_udp("quic", NULL, 1, (const uint8_t *)"\x00\x00\x00\x01", 1, quic_ietf_udp_classify);
 
     hostField = arkime_field_define("quic", "lotermfield",
-                                    "host.quic", "Hostname", "quic.host",
+                                    "host.quic", "QUIC Hostname", "quic.host",
                                     "QUIC host header field",
                                     ARKIME_FIELD_TYPE_STR_GHASH,  ARKIME_FIELD_FLAG_CNT,
                                     "category", "host",

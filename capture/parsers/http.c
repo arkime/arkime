@@ -839,7 +839,7 @@ void arkime_parser_init()
     };
 
     hostField = arkime_field_define("http", "lotermfield",
-                                    "host.http", "Hostname", "http.host",
+                                    "host.http", "HTTP Host", "http.host",
                                     "HTTP host header field",
                                     ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
                                     "aliases", "[\"http.host\"]",
@@ -847,52 +847,52 @@ void arkime_parser_init()
                                     (char *)NULL);
 
     arkime_field_define("http", "lotextfield",
-                        "host.http.tokens", "Hostname Tokens", "http.hostTokens",
+                        "host.http.tokens", "HTTP Host Tokens", "http.hostTokens",
                         "HTTP host Tokens header field",
                         ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_FAKE,
                         "aliases", "[\"http.host.tokens\"]",
                         (char *)NULL);
 
     urlsField = arkime_field_define("http", "termfield",
-                                    "http.uri", "URI", "http.uri",
+                                    "http.uri", "HTTP URI", "http.uri",
                                     "URIs for request",
                                     ARKIME_FIELD_TYPE_STR_HASH, ARKIME_FIELD_FLAG_CNT,
                                     "category", "[\"url\",\"host\"]",
                                     (char *)NULL);
 
     arkime_field_define("http", "lotextfield",
-                        "http.uri.tokens", "URI Tokens", "http.uriTokens",
+                        "http.uri.tokens", "HTTP URI Tokens", "http.uriTokens",
                         "URIs Tokens for request",
                         ARKIME_FIELD_TYPE_STR_HASH, ARKIME_FIELD_FLAG_FAKE,
                         (char *)NULL);
 
     xffField = arkime_field_define("http", "ip",
-                                   "ip.xff", "XFF IP", "http.xffIp",
+                                   "ip.xff", "HTTP XFF IP", "http.xffIp",
                                    "X-Forwarded-For Header",
                                    ARKIME_FIELD_TYPE_IP_GHASH, ARKIME_FIELD_FLAG_CNT | ARKIME_FIELD_FLAG_IPPRE,
                                    "category", "ip",
                                    (char *)NULL);
 
     uaField = arkime_field_define("http", "termfield",
-                                  "http.user-agent", "Useragent", "http.useragent",
+                                  "http.user-agent", "HTTP Useragent", "http.useragent",
                                   "User-Agent Header",
                                   ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
                                   (char *)NULL);
 
     arkime_field_define("http", "lotextfield",
-                        "http.user-agent.tokens", "Useragent Tokens", "http.useragentTokens",
+                        "http.user-agent.tokens", "HTTP Useragent Tokens", "http.useragentTokens",
                         "User-Agent Header Tokens",
                         ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_FAKE,
                         (char *)NULL);
 
     tagsReqField = arkime_field_define("http", "lotermfield",
-                                       "http.hasheader.src", "Has Src Header", "http.requestHeader",
+                                       "http.hasheader.src", "HTTP Src Header", "http.requestHeader",
                                        "Request has header present",
                                        ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
                                        (char *)NULL);
 
     tagsResField = arkime_field_define("http", "lotermfield",
-                                       "http.hasheader.dst", "Has Dst Header", "http.responseHeader",
+                                       "http.hasheader.dst", "HTTP Dst Header", "http.responseHeader",
                                        "Response has header present",
                                        ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
                                        (char *)NULL);
@@ -936,7 +936,7 @@ void arkime_parser_init()
                         (char *)NULL);
 
     md5Field = arkime_field_define("http", "lotermfield",
-                                   "http.md5", "Body MD5", "http.md5",
+                                   "http.md5", "HTTP Body MD5", "http.md5",
                                    "MD5 of http body response",
                                    ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
                                    "category", "md5",
@@ -944,7 +944,7 @@ void arkime_parser_init()
 
     if (config.supportSha256) {
         sha256Field = arkime_field_define("http", "lotermfield",
-                                          "http.sha256", "Body SHA256", "http.sha256",
+                                          "http.sha256", "HTTP Body SHA256", "http.sha256",
                                           "SHA256 of http body response",
                                           ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
                                           "category", "sha256",
@@ -952,87 +952,87 @@ void arkime_parser_init()
     }
 
     arkime_field_define("http", "termfield",
-                        "http.version", "Version", "httpversion",
+                        "http.version", "HTTP Version", "httpversion",
                         "HTTP version number",
                         0, ARKIME_FIELD_FLAG_FAKE,
                         "regex", "^http.version.[a-z]+$",
                         (char *)NULL);
 
     verReqField = arkime_field_define("http", "termfield",
-                                      "http.version.src", "Src Version", "http.clientVersion",
+                                      "http.version.src", "HTTP Src Version", "http.clientVersion",
                                       "Request HTTP version number",
                                       ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
                                       (char *)NULL);
 
     verResField = arkime_field_define("http", "termfield",
-                                      "http.version.dst", "Dst Version", "http.serverVersion",
+                                      "http.version.dst", "HTTP Dst Version", "http.serverVersion",
                                       "Response HTTP version number",
                                       ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
                                       (char *)NULL);
 
     pathField = arkime_field_define("http", "termfield",
-                                    "http.uri.path", "URI Path", "http.path",
+                                    "http.uri.path", "HTTP URI Path", "http.path",
                                     "Path portion of URI",
                                     ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
                                     (char *)NULL);
 
     keyField = arkime_field_define("http", "termfield",
-                                   "http.uri.key", "QS Keys", "http.key",
+                                   "http.uri.key", "HTTP QS Keys", "http.key",
                                    "Keys from query string of URI",
                                    ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
                                    (char *)NULL);
 
     valueField = arkime_field_define("http", "termfield",
-                                     "http.uri.value", "QS Values", "http.value",
+                                     "http.uri.value", "HTTP QS Values", "http.value",
                                      "Values from query string of URI",
                                      ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
                                      (char *)NULL);
 
     cookieKeyField = arkime_field_define("http", "termfield",
-                                         "http.cookie.key", "Cookie Keys", "http.cookieKey",
+                                         "http.cookie.key", "HTTP Cookie Keys", "http.cookieKey",
                                          "The keys to cookies sent up in requests",
                                          ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
                                          (char *)NULL);
 
     cookieValueField = arkime_field_define("http", "termfield",
-                                           "http.cookie.value", "Cookie Values", "http.cookieValue",
+                                           "http.cookie.value", "HTTP Cookie Values", "http.cookieValue",
                                            "The values to cookies sent up in requests",
                                            ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
                                            (char *)NULL);
 
     methodField = arkime_field_define("http", "termfield",
-                                      "http.method", "Request Method", "http.method",
+                                      "http.method", "HTTP Request Method", "http.method",
                                       "HTTP Request Method",
                                       ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
                                       (char *)NULL);
 
     magicField = arkime_field_define("http", "termfield",
-                                     "http.bodymagic", "Body Magic", "http.bodyMagic",
+                                     "http.bodymagic", "HTTP Body Magic", "http.bodyMagic",
                                      "The content type of body determined by libfile/magic",
                                      ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
                                      (char *)NULL);
 
     userField = arkime_field_define("http", "termfield",
-                                    "http.user", "User", "http.user",
+                                    "http.user", "HTTP User", "http.user",
                                     "HTTP Auth User",
                                     ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
                                     "category", "user",
                                     (char *)NULL);
 
     atField = arkime_field_define("http", "lotermfield",
-                                  "http.authtype", "Auth Type", "http.authType",
+                                  "http.authtype", "HTTP Auth Type", "http.authType",
                                   "HTTP Auth Type",
                                   ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
                                   (char *)NULL);
 
     statuscodeField = arkime_field_define("http", "integer",
-                                          "http.statuscode", "Status Code", "http.statuscode",
+                                          "http.statuscode", "HTTP Status Code", "http.statuscode",
                                           "Response HTTP numeric status code",
                                           ARKIME_FIELD_TYPE_INT_GHASH,  ARKIME_FIELD_FLAG_CNT,
                                           (char *)NULL);
 
     reqBodyField = arkime_field_define("http", "termfield",
-                                       "http.reqbody", "Request Body", "http.requestBody",
+                                       "http.reqbody", "HTTP Request Body", "http.requestBody",
                                        "HTTP Request Body",
                                        ARKIME_FIELD_TYPE_STR_HASH, 0,
                                        (char *)NULL);

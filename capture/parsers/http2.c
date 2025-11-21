@@ -493,7 +493,7 @@ void arkime_parser_init()
                                           ARKIME_FIELD_TYPE_INT_GHASH,  ARKIME_FIELD_FLAG_CNT,
                                           (char *)NULL);
     hostField = arkime_field_define("http", "lotermfield",
-                                    "host.http", "Hostname", "http.host",
+                                    "host.http", "HTTP Hostname", "http.host",
                                     "HTTP host header field",
                                     ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
                                     "aliases", "[\"http.host\"]",
