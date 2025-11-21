@@ -748,8 +748,9 @@ LOCAL PyObject *arkime_python_session_get(PyObject UNUSED(*self), PyObject *args
     if (pos >= config.minInternalField && config.fields[pos] && config.fields[pos]->getCb) {
         void *value = config.fields[pos]->getCb(session, pos);
 
-        if (!value)
+        if (!value) {
             Py_RETURN_NONE;
+        }
 
         switch (config.fields[pos]->type) {
         case ARKIME_FIELD_TYPE_IP: {
@@ -775,7 +776,7 @@ LOCAL PyObject *arkime_python_session_get(PyObject UNUSED(*self), PyObject *args
             py_list = PyList_New(sarray->len);
             for (int i = 0; i < (int)sarray->len; i++) {
                 const gchar *c_str = (const char *)g_ptr_array_index(sarray, i);
-                PyObject *py_str = PyUnicode_DecodeUTF8(c_str, strlen(c_str), "strict");
+                PyObject *py_str = PyUnicode_FromString(c_str);
                 PyList_SetItem(py_list, i, py_str);
             }
             return py_list;
@@ -787,7 +788,7 @@ LOCAL PyObject *arkime_python_session_get(PyObject UNUSED(*self), PyObject *args
             py_list = PyList_New(g_hash_table_size(ghash));
             int i = 0;
             while (g_hash_table_iter_next (&iter, &ikey, NULL)) {
-                PyObject *py_str = PyUnicode_DecodeUTF8(ikey, strlen(ikey), "strict");
+                PyObject *py_str = PyUnicode_FromString(ikey);
                 PyList_SetItem(py_list, i, py_str);
                 i++;
             }
@@ -899,7 +900,7 @@ LOCAL PyObject *arkime_python_session_get(PyObject UNUSED(*self), PyObject *args
     case ARKIME_FIELD_TYPE_STR_ARRAY:
         py_list = PyList_New(session->fields[pos]->sarray->len);
         for (int i = 0; i < (int)session->fields[pos]->sarray->len; i++) {
-            PyList_SetItem(py_list, i, PyUnicode_DecodeUTF8((char *)g_ptr_array_index(session->fields[pos]->sarray, i), -1, "strict"));
+            PyList_SetItem(py_list, i, PyUnicode_FromString((char *)g_ptr_array_index(session->fields[pos]->sarray, i)));
         }
         return py_list;
 
@@ -909,7 +910,7 @@ LOCAL PyObject *arkime_python_session_get(PyObject UNUSED(*self), PyObject *args
         int i = 0;
 
         HASH_FORALL2(s_, *shash, hstring) {
-            PyList_SetItem(py_list, i, PyUnicode_DecodeUTF8(hstring->str, -1, "strict"));
+            PyList_SetItem(py_list, i, PyUnicode_FromString(hstring->str));
             i++;
         }
         return py_list;
@@ -922,7 +923,7 @@ LOCAL PyObject *arkime_python_session_get(PyObject UNUSED(*self), PyObject *args
         py_list = PyList_New(g_hash_table_size(ghash));
         int i = 0;
         while (g_hash_table_iter_next (&iter, &ikey, NULL)) {
-            PyList_SetItem(py_list, i, PyUnicode_DecodeUTF8((char *)ikey, -1, "strict"));
+            PyList_SetItem(py_list, i, PyUnicode_FromString((char *)ikey));
             i++;
         }
 
