@@ -934,7 +934,7 @@ LOCAL void smtp_classify(ArkimeSession_t *session, const uint8_t *data, int len,
 void arkime_parser_init()
 {
     hostField = arkime_field_define("email", "lotermfield",
-                                    "host.email", "Hostname", "email.host",
+                                    "host.email", "Email Hostname", "email.host",
                                     "Email hostnames",
                                     ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
                                     "aliases", "[\"email.host\"]",

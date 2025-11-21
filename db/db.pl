@@ -930,7 +930,7 @@ sub fieldsUpdate
     esPost("/${PREFIX}fields_v30/_doc/port.dst?timeout=${ESTIMEOUT}s", '{
       "friendlyName": "Dst Port",
       "group": "general",
-      "help": "Source Port",
+      "help": "Destination Port",
       "type": "integer",
       "dbField2": "dstPort",
       "category": "port"

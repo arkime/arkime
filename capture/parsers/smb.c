@@ -736,7 +736,7 @@ void arkime_parser_init()
                                     (char *)NULL);
 
     hostField = arkime_field_define("smb", "termfield",
-                                    "host.smb", "Hostname", "smb.host",
+                                    "host.smb", "SMB Host", "smb.host",
                                     "SMB Host name",
                                     ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
                                     "category", "host",

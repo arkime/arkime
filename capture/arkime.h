@@ -226,6 +226,7 @@ typedef struct arkime_field_info {
     uint16_t                  cntForPos;
     char                     *transform;
     char                     *aliases;
+    char                     *friendlyName;
     char                      strKind;
 
     ArkimeFieldSetFunc        setCb;

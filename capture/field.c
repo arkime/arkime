@@ -98,6 +98,7 @@ LOCAL void arkime_field_free_info(ArkimeFieldInfo_t *info)
     g_free(info->category);
     g_free(info->transform);
     g_free(info->aliases);
+    g_free(info->friendlyName);
     ARKIME_TYPE_FREE(ArkimeFieldInfo_t, info);
 }
 /******************************************************************************/
@@ -137,6 +138,10 @@ void arkime_field_define_json(const uint8_t *expression, int expression_len, con
         } else if (strncmp("aliases", (char * )data + out[i], 7) == 0) {
             g_free(info->aliases);
             info->aliases = g_strndup((char *)data + out[i + 2], out[i + 3]);
+        } else if (strncmp("friendly", (char * )data + out[i], 8) == 0 ||
+                   strncmp("friendlyName", (char * )data + out[i], 12) == 0) {
+            g_free(info->friendlyName);
+            info->friendlyName = g_strndup((char *)data + out[i + 2], out[i + 3]);
         } else if (strncmp("disabled", (char * )data + out[i], 8) == 0) {
             if (strncmp((char *)data + out[i + 2], "true", 4) == 0) {
                 disabled = 1;
@@ -216,7 +221,7 @@ int arkime_field_define_text_full(char *field, const char *text, int *shortcut)
             noutf8 = strcmp(colon, "true") == 0;
         else if (strcmp(elements[e], "fake") == 0 || strcmp(elements[e], "viewerOnly") == 0)
             fake = strcmp(colon, "true") == 0;
-        else if (strcmp(elements[e], "friendly") == 0)
+        else if (strcmp(elements[e], "friendly") == 0 || strcmp(elements[e], "friendlyName") == 0)
             friendly = colon;
         else if (strcmp(elements[e], "db") == 0)
             db = colon;
@@ -384,6 +389,7 @@ int arkime_field_define(const char *group, const char *kind, const char *express
         minfo->dbField     = minfo->dbFieldFull;
         minfo->dbFieldLen  = strlen(minfo->dbField);
         minfo->pos         = -1;
+        minfo->friendlyName = g_strdup(friendlyName);
         minfo->expression  = g_strdup(expression);
         minfo->group       = g_strdup(group);
         minfo->kind        = g_strdup(kind);
@@ -417,20 +423,23 @@ int arkime_field_define(const char *group, const char *kind, const char *express
         }
 
         if (strcmp(kind, minfo->kind) != 0) {
-            LOG("WARNING - Field kind in db %s doesn't match field kind %s in capture for field %s", minfo->kind, kind, expression);
+            LOG("WARNING - Field kind in db '%s' doesn't match field kind '%s' in capture for field '%s'", minfo->kind, kind, expression);
         }
-
         if (category && (!minfo->category || strcmp(category, minfo->category) != 0)) {
-            LOG("UPDATING - Field category in db %s doesn't match field category %s in capture for field %s", minfo->category, category, expression);
+            LOG("UPDATING - Field category to '%s' from '%s' for field '%s'", category, minfo->category, expression);
             arkime_db_update_field(expression, "category", category);
         }
         if (transform && (!minfo->transform || strcmp(transform, minfo->transform) != 0)) {
-            LOG("UPDATING - Field transform in db %s doesn't match field transform %s in capture for field %s", minfo->transform, transform, expression);
+            LOG("UPDATING - Field transform to '%s' from '%s' for field '%s'", transform, minfo->transform, expression);
             arkime_db_update_field(expression, "transform", transform);
         }
         if (aliases && (!minfo->aliases || strcmp(aliases, minfo->aliases) != 0)) {
-            LOG("UPDATING - Field aliases in db %s doesn't match field aliases %s in capture for field %s", minfo->aliases, aliases, expression);
+            LOG("UPDATING - Field aliases to '%s' from '%s' for field '%s'", aliases, minfo->aliases, expression);
             arkime_db_update_field(expression, "aliases", aliases);
+        }
+        if (friendlyName && (!minfo->friendlyName || strcmp(friendlyName, minfo->friendlyName) != 0)) {
+            LOG("UPDATING - Field friendlyName to '%s' from '%s' for field '%s'", friendlyName, minfo->friendlyName, expression);
+            arkime_db_update_field(expression, "friendlyName", friendlyName);
         }
     }
 
