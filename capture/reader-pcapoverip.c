@@ -118,7 +118,7 @@ LOCAL gboolean pcapoverip_client_read_cb(gint UNUSED(fd), GIOCondition cond, gpo
 
         struct arkime_pcap_sf_pkthdr *ph = (struct arkime_pcap_sf_pkthdr *)(poic->data + pos);
 
-        ArkimePacket_t *packet = ARKIME_TYPE_ALLOC0(ArkimePacket_t);
+        ArkimePacket_t *packet = arkime_packet_alloc();
         uint32_t origlen = 0;
         uint32_t caplen = 0;
         if (poic->needSwap) {
@@ -143,7 +143,7 @@ LOCAL gboolean pcapoverip_client_read_cb(gint UNUSED(fd), GIOCondition cond, gpo
             if (!config.ignoreErrors) {
                 LOGEXIT("ERROR - The packet length %u is too large.", caplen);
             } else {
-                ARKIME_TYPE_FREE(ArkimePacket_t, packet);
+                arkime_packet_free(packet);
                 pcapoverip_client_free(poic);
                 return FALSE;
             }
@@ -151,7 +151,7 @@ LOCAL gboolean pcapoverip_client_read_cb(gint UNUSED(fd), GIOCondition cond, gpo
         }
 
         if (poic->len - pos < 16 + caplen) { // Not enough data for packet
-            ARKIME_TYPE_FREE(ArkimePacket_t, packet);
+            arkime_packet_free(packet);
             break;
         }
 
@@ -160,7 +160,7 @@ LOCAL gboolean pcapoverip_client_read_cb(gint UNUSED(fd), GIOCondition cond, gpo
         packet->readerPos     = poic->interface;
 
         if (config.bpf && bpf_filter(bpfp.bf_insns, packet->pkt, packet->pktlen, packet->pktlen)) {
-            ARKIME_TYPE_FREE(ArkimePacket_t, packet);
+            arkime_packet_free(packet);
         } else {
             arkime_packet_batch(&batch, packet);
         }
@@ -251,7 +251,7 @@ LOCAL void pcapoverip_client_connect(int interface)
 LOCAL gboolean pcapoverip_client_check_connections (gpointer UNUSED(user_data))
 {
     int i;
-    for (i = 0; i < MAX_INTERFACES && config.interface[i]; i++) {
+    for (i = 0; config.interface[i]; i++) {
         if (!isConnected[i])
             pcapoverip_client_connect(i);
     }
@@ -260,6 +260,9 @@ LOCAL gboolean pcapoverip_client_check_connections (gpointer UNUSED(user_data))
 /******************************************************************************/
 LOCAL void pcapoverip_client_start()
 {
+    int initFunc = arkime_get_named_func("arkime_reader_thread_init");
+    arkime_call_named_func(initFunc, 0, NULL);
+
     pcapoverip_client_check_connections(NULL);
     g_timeout_add_seconds(5, pcapoverip_client_check_connections, NULL);
     arkime_packet_set_dltsnap(DLT_EN10MB, config.snapLen);
@@ -287,6 +290,9 @@ LOCAL void pcapoverip_server_start()
     GError                   *error = NULL;
     GSocket                  *socket;
     GSocketAddress           *addr;
+
+    int initFunc = arkime_get_named_func("arkime_reader_thread_init");
+    arkime_call_named_func(initFunc, 0, NULL);
 
     socket = g_socket_new (G_SOCKET_FAMILY_IPV4, G_SOCKET_TYPE_STREAM, 0, &error);
 
@@ -319,6 +325,12 @@ LOCAL int pcapoverip_stats(ArkimeReaderStats_t *stats)
     return 0;
 }
 /******************************************************************************/
+LOCAL void pcapoverip_stop()
+{
+    int exitFunc = arkime_get_named_func("arkime_reader_thread_exit");
+    arkime_call_named_func(exitFunc, 0, NULL);
+}
+/******************************************************************************/
 void reader_pcapoverip_init(const char *name)
 {
     port        = arkime_config_int(NULL, "pcapOverIpPort", 57012, 1, 0xffff);
@@ -328,6 +340,7 @@ void reader_pcapoverip_init(const char *name)
     } else {
         arkime_reader_start         = pcapoverip_server_start;
     }
-    arkime_reader_stats         = pcapoverip_stats;
+    arkime_reader_stats             = pcapoverip_stats;
+    arkime_reader_stop              = pcapoverip_stop;
     arkime_packet_batch_init(&batch);
 }

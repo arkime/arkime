@@ -53,7 +53,7 @@ class RedisIntegration extends Integration {
       this.itypes[itype] = `${itype}Fetch`;
     });
 
-    this.#redisClient = ArkimeUtil.createRedisClient(ArkimeConfig.getFull(section, 'url', ArkimeConfig.exit), section);
+    this.#redisClient = ArkimeUtil.createRedisClient(this.#url, section);
 
     Integration.register(this);
   }
@@ -92,6 +92,6 @@ class RedisIntegration extends Integration {
 
 const sections = ArkimeConfig.getSections().filter((e) => { return e.match(/^redis:/); });
 sections.forEach((section) => {
-  // eslint-disable-next-line no-new
+
   new RedisIntegration(section, true);
 });

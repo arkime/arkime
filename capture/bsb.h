@@ -193,6 +193,19 @@ do {                                              \
     }                                             \
 } while (0)
 
+#define BSB_EXPORT_ip4tostr(b,s)                  \
+do {                                              \
+    if ((b).end != 0) {                           \
+        uint8_t *r = (uint8_t *)arkime_ip4tostr(s, (char*)(b).ptr, \
+                         (b).end - (b).ptr);      \
+        if (r) {                                  \
+            (b).ptr = r;                          \
+        } else {                                  \
+            BSB_SET_ERROR(b);                     \
+        }                                         \
+    }                                             \
+} while (0)
+
 #define BSB_IMPORT_u08(b, x)                      \
 do {                                              \
     if ((b).ptr && (b).ptr + 1 <= (b).end) {      \

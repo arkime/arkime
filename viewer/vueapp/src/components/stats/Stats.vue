@@ -3,482 +3,579 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-
   <div class="stats-content">
     <ArkimeCollapsible>
       <span class="fixed-header">
         <!-- stats sub navbar -->
-        <form class="stats-form">
-          <div class="form-inline mr-1 ml-1 mt-1 mb-1">
+        <BRow
+          gutter-x="1"
+          align-h="start"
+          class="stats-form p-1">
 
-            <div v-if="tabIndex === 7">&nbsp;</div>
-
-            <div class="input-group input-group-sm flex-grow-1 mr-1"
-              v-if="tabIndex !== 7">
-              <div class="input-group-prepend">
-                <span class="input-group-text input-group-text-fw">
-                  <span v-if="loadingData"
-                    class="fa fa-spinner fa-spin text-theme-accent">
-                  </span>
-                  <span v-else-if="!shiftKeyHold"
-                    class="fa fa-search fa-fw">
-                  </span>
-                  <span v-else-if="shiftKeyHold"
-                    class="query-shortcut">
-                    Q
-                  </span>
+          <BCol
+            cols="auto"
+            class="flex-grow-1"
+            v-if="tabIndex !== 7">
+            <BInputGroup size="sm">
+              <BInputGroupText class="input-group-text-fw">
+                <span
+                  v-if="loadingData"
+                  class="fa fa-spinner fa-spin text-theme-accent" />
+                <span
+                  v-else-if="!shiftKeyHold"
+                  class="fa fa-search fa-fw" />
+                <span
+                  v-else-if="shiftKeyHold"
+                  class="query-shortcut">
+                  Q
                 </span>
-              </div>
-              <input type="text"
+              </BInputGroupText>
+              <input
+                type="text"
                 class="form-control"
                 v-model="searchTerm"
                 v-focus="focusInput"
                 @blur="onOffFocus"
                 @input="debounceSearchInput"
                 @keydown.stop.prevent.enter="debounceSearchInput"
-                placeholder="Begin typing to search for items below (can use regex like .*foo)"
-              />
-              <span class="input-group-append">
-                <button type="button"
-                  @click="clear"
-                  :disabled="!searchTerm"
-                  class="btn btn-outline-secondary btn-clear-input">
-                  <span class="fa fa-close">
-                  </span>
-                </button>
-              </span>
-            </div>
+                :placeholder="$t('stats.filterPlaceholder')">
+              <BButton
+                @click="clear"
+                variant="outline-secondary"
+                :disabled="!searchTerm"
+                class="btn-clear-input">
+                <span class="fa fa-close" />
+              </BButton>
+            </BInputGroup>
+          </BCol>
 
-            <!-- graph type select -->
-            <div class="input-group input-group-sm"
-              v-if="tabIndex === 0">
-              <div class="input-group-prepend help-cursor"
-                v-b-tooltip.hover
-                title="The type of graph data to display">
-                <span class="input-group-text">
-                  Graph Type
-                </span>
-              </div>
-              <select class="form-control input-sm"
+          <!-- graph type select -->
+          <BCol
+            cols="auto"
+            v-if="tabIndex === 0">
+            <BInputGroup size="sm">
+              <BInputGroupText>
+                {{ $t('stats.graphType') }}
+              </BInputGroupText>
+              <select
+                class="form-control"
                 v-model="statsType"
-                v-on:change="statsTypeChange">
-                <option value="deltaPacketsPerSec">Packets/Sec</option>
-                <option value="deltaBytesPerSec">Bytes/Sec</option>
-                <option value="deltaBitsPerSec">Bits/Sec</option>
-                <option value="deltaSessionsPerSec">Sessions/Sec</option>
-                <option value="deltaDroppedPerSec">Input Dropped/Sec</option>
-                <option value="monitoring">Active Sessions</option>
-                <option value="tcpSessions">Active TCP Sessions</option>
-                <option value="udpSessions">Active UDP Sessions</option>
-                <option value="icmpSessions">Active ICMP Sessions</option>
-                <option value="sctpSessions">Active SCTP Sessions</option>
-                <option value="espSessions">Active ESP Sessions</option>
-                <option value="usedSpaceM">Used Space MB</option>
-                <option value="freeSpaceM">Free Space MB</option>
-                <option value="freeSpaceP">Free Space %</option>
-                <option value="memory">Memory</option>
-                <option value="memoryP">Memory %</option>
-                <option value="cpu">CPU</option>
-                <option value="diskQueue">Disk Queue</option>
-                <option value="esQueue">ES Queue</option>
-                <option value="deltaESDroppedPerSec">ES Dropped/Sec</option>
-                <option value="esHealthMS">ES Health Response MS</option>
-                <option value="packetQueue">Packet Queue</option>
-                <option value="closeQueue">Closing Queue</option>
-                <option value="needSave">Waiting Queue</option>
-                <option value="frags">Active Fragments</option>
-                <option value="deltaFragsDroppedPerSec">Fragments Dropped/Sec</option>
-                <option value="deltaOverloadDroppedPerSec">Overload Dropped/Sec</option>
-                <option value="deltaDupDroppedPerSec">Duplicate Dropped/Sec</option>
-                <option value="deltaTotalDroppedPerSec">Total Dropped/Sec</option>
-                <option value="deltaSessionBytesPerSec">ES Session Bytes/Sec</option>
-                <option value="sessionSizePerSec">ES Session Size/Sec</option>
-                <option value="deltaWrittenBytesPerSec">Written Bytes/Sec</option>
-                <option value="deltaUnwrittenBytesPerSec">Unwritten Bytes/Sec</option>
+                @change="statsTypeChange">
+                <option
+                  value="deltaPacketsPerSec"
+                  v-i18n-value="'stats.cstats.'" />
+                <option
+                  value="deltaBytesPerSec"
+                  v-i18n-value="'stats.cstats.'" />
+                <option
+                  value="deltaBitsPerSec"
+                  v-i18n-value="'stats.cstats.'" />
+                <option
+                  value="deltaSessionsPerSec"
+                  v-i18n-value="'stats.cstats.'" />
+                <option
+                  value="deltaDroppedPerSec"
+                  v-i18n-value="'stats.cstats.'" />
+                <option
+                  value="monitoring"
+                  v-i18n-value="'stats.cstats.'" />
+                <option
+                  value="tcpSessions"
+                  v-i18n-value="'stats.cstats.'" />
+                <option
+                  value="udpSessions"
+                  v-i18n-value="'stats.cstats.'" />
+                <option
+                  value="icmpSessions"
+                  v-i18n-value="'stats.cstats.'" />
+                <option
+                  value="sctpSessions"
+                  v-i18n-value="'stats.cstats.'" />
+                <option
+                  value="espSessions"
+                  v-i18n-value="'stats.cstats.'" />
+                <option
+                  value="usedSpaceM"
+                  v-i18n-value="'stats.cstats.'" />
+                <option
+                  value="freeSpaceM"
+                  v-i18n-value="'stats.cstats.'" />
+                <option
+                  value="freeSpaceP"
+                  v-i18n-value="'stats.cstats.'" />
+                <option
+                  value="memory"
+                  v-i18n-value="'stats.cstats.'" />
+                <option
+                  value="memoryP"
+                  v-i18n-value="'stats.cstats.'" />
+                <option
+                  value="cpu"
+                  v-i18n-value="'stats.cstats.'" />
+                <option
+                  value="diskQueue"
+                  v-i18n-value="'stats.cstats.'" />
+                <option
+                  value="esQueue"
+                  v-i18n-value="'stats.cstats.'" />
+                <option
+                  value="deltaESDroppedPerSec"
+                  v-i18n-value="'stats.cstats.'" />
+                <option
+                  value="esHealthMS"
+                  v-i18n-value="'stats.cstats.'" />
+                <option
+                  value="packetQueue"
+                  v-i18n-value="'stats.cstats.'" />
+                <option
+                  value="closeQueue"
+                  v-i18n-value="'stats.cstats.'" />
+                <option
+                  value="needSave"
+                  v-i18n-value="'stats.cstats.'" />
+                <option
+                  value="frags"
+                  v-i18n-value="'stats.cstats.'" />
+                <option
+                  value="deltaFragsDroppedPerSec"
+                  v-i18n-value="'stats.cstats.'" />
+                <option
+                  value="deltaOverloadDroppedPerSec"
+                  v-i18n-value="'stats.cstats.'" />
+                <option
+                  value="deltaDupDroppedPerSec"
+                  v-i18n-value="'stats.cstats.'" />
+                <option
+                  value="deltaTotalDroppedPerSec"
+                  v-i18n-value="'stats.cstats.'" />
+                <option
+                  value="deltaSessionBytesPerSec"
+                  v-i18n-value="'stats.cstats.'" />
+                <option
+                  value="sessionSizePerSec"
+                  v-i18n-value="'stats.cstats.'" />
+                <option
+                  value="deltaWrittenBytesPerSec"
+                  v-i18n-value="'stats.cstats.'" />
+                <option
+                  value="deltaUnwrittenBytesPerSec"
+                  v-i18n-value="'stats.cstats.'" />
               </select>
-            </div> <!-- /graph type select -->
+            </BInputGroup>
+          </BCol> <!-- /graph type select -->
 
-            <!-- graph interval select -->
-            <div class="input-group input-group-sm ml-1"
-              v-if="tabIndex === 0">
-              <div class="input-group-prepend help-cursor"
-                v-b-tooltip.hover
-                title="Graph data bins and graph data refresh interval">
-                <span class="input-group-text">
-                  Graph Interval
-                </span>
-              </div>
-              <select class="form-control input-sm"
+          <!-- graph interval select -->
+          <BCol
+            cols="auto"
+            v-if="tabIndex === 0">
+            <BInputGroup size="sm">
+              <BInputGroupText>
+                {{ $t('stats.graphInterval') }}
+              </BInputGroupText>
+              <select
+                class="form-control"
                 v-model="graphInterval"
-                v-on:change="graphIntervalChange">
-                <option value="5">Seconds</option>
-                <option value="60">Minutes</option>
-                <option value="600">10 Minutes</option>
+                @change="graphIntervalChange">
+                <option value="5">{{ $t('common.secondCount', 5) }}</option>
+                <option value="60">{{ $t('common.minuteCount', 1) }}</option>
+                <option value="600">{{ $t('common.minuteCount', 10) }}</option>
               </select>
-            </div> <!-- /graph interval select -->
+            </BInputGroup>
+          </BCol> <!-- /graph interval select -->
 
-            <!-- graph hide select -->
-            <div class="input-group input-group-sm ml-1"
-              v-if="tabIndex === 0 || tabIndex === 1">
-              <div class="input-group-prepend help-cursor"
-                v-b-tooltip.hover
-                title="Hide rows">
-               <span class="input-group-text">
-                 Hide
-               </span>
-             </div>
-              <select class="form-control input-sm"
+          <!-- graph hide select -->
+          <BCol
+            cols="auto"
+            v-if="tabIndex === 0 || tabIndex === 1">
+            <BInputGroup size="sm">
+              <BInputGroupText>{{ $t('stats.graphHide') }}</BInputGroupText>
+              <select
+                class="form-control input-sm"
                 v-model="graphHide"
-                v-on:change="graphHideChange">
-                <option value="none">None</option>
-                <option value="old">Out of date</option>
-                <option value="nosession">No sessions</option>
-                <option value="both">Both</option>
+                @change="graphHideChange">
+                <option
+                  value="none"
+                  v-i18n-value="'stats.graphHide-'" />
+                <option
+                  value="old"
+                  v-i18n-value="'stats.graphHide-'" />
+                <option
+                  value="nosession"
+                  v-i18n-value="'stats.graphHide-'" />
+                <option
+                  value="both"
+                  v-i18n-value="'stats.graphHide-'" />
               </select>
-            </div> <!-- /graph hide select -->
+            </BInputGroup>
+          </BCol> <!-- /graph hide select -->
 
-            <!-- graph sort select -->
-            <div class="input-group input-group-sm ml-1"
-              v-if="tabIndex === 0">
-              <div class="input-group-prepend help-cursor"
-                v-b-tooltip.hover
-                title="Sort">
-               <span class="input-group-text">
-                 Sort
-               </span>
-             </div>
-              <select class="form-control input-sm"
+          <!-- graph sort select -->
+          <BCol
+            cols="auto"
+            v-if="tabIndex === 0">
+            <BInputGroup size="sm">
+              <BInputGroupText>{{ $t('stats.graphSort') }}</BInputGroupText>
+              <select
+                class="form-control input-sm"
                 v-model="graphSort">
-                <option value="asc">Ascending</option>
-                <option value="desc">Descending</option>
+                <option
+                  value="asc"
+                  v-i18n-value="'stats.graphSort-'" />
+                <option
+                  value="desc"
+                  v-i18n-value="'stats.graphSort-'" />
               </select>
-            </div> <!-- /graph hide select -->
+            </BInputGroup>
+          </BCol> <!-- /graph hide select -->
 
-            <!-- page size select -->
-            <div class="input-group input-group-sm ml-1"
-              v-if="tabIndex === 4">
-              <div class="input-group-prepend">
-                <span class="input-group-text">
-                  Page Size
-                </span>
-              </div>
-              <select class="form-control input-sm"
+          <!-- page size select -->
+          <BCol
+            cols="auto"
+            v-if="tabIndex === 4">
+            <BInputGroup size="sm">
+              <BInputGroupText>{{ $t('stats.pageSize') }}</BInputGroupText>
+              <select
+                class="form-control "
                 v-model="pageSize"
-                v-on:change="pageSizeChange">
-                <option value="100">100 per page</option>
-                <option value="200">200 per page</option>
-                <option value="500">500 per page</option>
-                <option value="1000">1,000 per page</option>
-                <option value="5000">5,000 per page</option>
-                <option value="10000">10,000 per page (careful)</option>
+                @change="pageSizeChange">
+                <option value="100">{{ $t('common.perPage', 100) }}</option>
+                <option value="200">{{ $t('common.perPage', 200) }}</option>
+                <option value="500">{{ $t('common.perPage', 500) }}</option>
+                <option value="1000">{{ $t('common.perPage', {count: "1,000"}) }}</option>
+                <option value="5000">{{ $t('common.perPage', {count: "5,000"}) }}</option>
+                <option value="10000">{{ $t('common.perPage', {count: "10,000"}) }}</option>
               </select>
-            </div> <!-- /page size select -->
+            </BInputGroup>
+          </BCol><!-- /page size select -->
 
-            <!-- table data interval select -->
-            <div class="input-group input-group-sm ml-1"
-              v-if="tabIndex !== 0 && tabIndex !== 7">
-              <div class="input-group-prepend help-cursor"
-                v-b-tooltip.hover
-                title="Data refresh interval for Node and Elasticsearch stats">
-                <span class="input-group-text">
-                  Refresh Data Every
-                </span>
-              </div>
-              <select class="form-control input-sm"
+          <!-- table data interval select -->
+          <BCol
+            cols="auto"
+            v-if="tabIndex !== 0 && tabIndex !== 7">
+            <BInputGroup size="sm">
+              <BInputGroupText>{{ $t('stats.refreshEvery') }}</BInputGroupText>
+              <select
+                class="form-control"
                 v-model="dataInterval"
-                v-on:change="dataIntervalChange">
-                <option value="5000">5 seconds</option>
-                <option value="15000">15 seconds</option>
-                <option value="30000">30 seconds</option>
-                <option value="60000">1 minute</option>
-                <option value="600000">10 minutes</option>
-                <option value="0">None</option>
+                @change="dataIntervalChange">
+                <option value="5000">{{ $t('common.secondCount', 5) }}</option>
+                <option value="15000">{{ $t('common.secondCount', 15) }}</option>
+                <option value="30000">{{ $t('common.secondCount', 30) }}</option>
+                <option value="60000">{{ $t('common.minuteCount', 1) }}</option>
+                <option value="600000">{{ $t('common.minuteCount', 10) }}</option>
+                <option value="0">{{ $t('common.never') }}</option>
               </select>
-            </div> <!-- /table data interval select -->
+            </BInputGroup>
+          </BCol> <!-- /table data interval select -->
 
-            <!-- shards show select -->
-            <div class="input-group input-group-sm ml-1"
-              v-if="tabIndex === 5">
-              <div class="input-group-prepend help-cursor"
-                v-b-tooltip.hover
-                title="Hide shards">
-               <span class="input-group-text">
-                 Show
-               </span>
-             </div>
-              <select class="form-control input-sm"
+          <!-- shards show select -->
+          <BCol
+            cols="auto"
+            v-if="tabIndex === 5">
+            <BInputGroup size="sm">
+              <BInputGroupText>{{ $t('stats.shardsShow') }}</BInputGroupText>
+              <select
+                class="form-control"
                 v-model="shardsShow"
-                v-on:change="shardsShowChange">
-                <option value="all">All</option>
-                <option value="UNASSIGNED">Unassigned</option>
-                <option value="RELOCATING">Relocating</option>
-                <option value="INITIALIZING">Initializing</option>
-                <option value="notstarted">Not Started</option>
+                @change="shardsShowChange">
+                <option
+                  value="all"
+                  v-i18n-value="'stats.shardsShow-'" />
+                <option
+                  value="UNASSIGNED"
+                  v-i18n-value="'stats.shardsShow-'" />
+                <option
+                  value="RELOCATING"
+                  v-i18n-value="'stats.shardsShow-'" />
+                <option
+                  value="INITIALIZING"
+                  v-i18n-value="'stats.shardsShow-'" />
+                <option
+                  value="notstarted"
+                  v-i18n-value="'stats.shardsShow-'" />
               </select>
-            </div> <!-- /graph hide select -->
+            </BInputGroup>
+          </BCol> <!-- /graph hide select -->
 
-            <!-- recovery show select -->
-            <div class="input-group input-group-sm ml-1"
-              v-if="tabIndex === 6">
-              <div class="input-group-prepend help-cursor"
-                v-b-tooltip.hover
-                title="Hide rows">
-               <span class="input-group-text">
-                 Show
-               </span>
-             </div>
-              <select class="form-control input-sm"
+          <!-- recovery show select -->
+          <BCol
+            cols="auto"
+            v-if="tabIndex === 6">
+            <BInputGroup size="sm">
+              <BInputGroupText>{{ $t('stats.recoveryShow') }}</BInputGroupText>
+              <select
+                class="form-control"
                 v-model="recoveryShow"
-                v-on:change="recoveryShowChange">
-                <option value="all">All</option>
-                <option value="notdone">Active</option>
+                @change="recoveryShowChange">
+                <option
+                  value="all"
+                  v-i18n-value="'stats.recoveryShow-'" />
+                <option
+                  value="notdone"
+                  v-i18n-value="'stats.recoveryShow-'" />
               </select>
-            </div> <!-- /graph hide select -->
+            </BInputGroup>
+          </BCol> <!-- /graph hide select -->
 
-            <!-- refresh button -->
-            <div class="input-group input-group-sm ml-1"
-              v-if="tabIndex !== 0 && tabIndex !== 7">
-              <button type="button"
-                class="btn btn-theme-tertiary btn-sm refresh-btn"
-                @click="loadData">
-                <span v-if="!shiftKeyHold">
-                  Refresh
-                </span>
-                <span v-else
-                  class="enter-icon">
-                  <span class="fa fa-long-arrow-left fa-lg">
-                  </span>
-                  <div class="enter-arm">
-                  </div>
-                </span>
-              </button>
-            </div> <!-- /refresh button -->
+          <!-- refresh button -->
+          <BCol
+            cols="auto"
+            v-if="tabIndex !== 0 && tabIndex !== 7">
+            <BButton
+              size="sm"
+              variant="theme-tertiary"
+              @click="loadData">
+              <span v-if="!shiftKeyHold">
+                {{ $t('common.refresh') }}
+              </span>
+              <span
+                v-else
+                class="enter-icon">
+                <span class="fa fa-long-arrow-left fa-lg" />
+                <div class="enter-arm" />
+              </span>
+            </BButton>
+          </BCol> <!-- /refresh button -->
 
+          <BCol>
             <!-- confirm button -->
             <transition name="buttons">
-              <button v-if="confirmMessage"
+              <button
+                v-if="confirmMessage"
                 type="button"
-                class="btn btn-sm btn-danger ml-2"
+                class="btn btn-sm btn-danger ms-2"
                 @click="confirmed">
-                <span class="fa fa-check">
-                </span>&nbsp;
+                <span class="fa fa-check" />&nbsp;
                 {{ confirmMessage }}
               </button>
             </transition> <!-- /confirm button -->
 
             <!-- cancel confirm button -->
             <transition name="buttons">
-              <button v-if="confirmMessage"
+              <button
+                v-if="confirmMessage"
                 type="button"
-                class="btn btn-sm btn-warning ml-2"
+                class="btn btn-sm btn-warning ms-2"
                 @click="cancelConfirm">
-                <span class="fa fa-ban">
-                </span>&nbsp;
-                Cancel
+                <span class="fa fa-ban" />&nbsp;
+                {{ $t('common.cancel') }}
               </button>
             </transition> <!-- /cancel confirm button -->
+          </BCol>
 
-            <!-- error (from child component) -->
-            <div v-if="childError"
-              role="alert"
-              class="alert alert-sm alert-danger alert-dismissible fade show ml-2">
-              {{ childError }}
-              <button type="button"
-                class="close"
-                @click="childError = ''">
-                <span>&times;</span>
-              </button>
-            </div> <!-- /error (from child component) -->
+          <!-- error (from child component) -->
+          <div
+            v-if="childError"
+            role="alert"
+            class="alert alert-sm alert-danger alert-dismissible fade show ms-2">
+            {{ childError }}
+            <button
+              type="button"
+              class="btn-close"
+              @click="childError = ''">
+              <span>&times;</span>
+            </button>
+          </div> <!-- /error (from child component) -->
 
-            <!-- shrink index -->
-            <div v-if="shrinkIndex"
-              class="ml-4 form-inline">
-              <strong>
-                Shrink {{ shrinkIndex.index }}
-              </strong>
-              <!-- new # shards -->
-              <div class="input-group input-group-sm ml-2">
-                <div class="input-group-prepend">
-                  <span class="input-group-text">
-                    # Shards
-                  </span>
-                </div>
-                <select v-model="shrinkFactor"
-                  class="form-control"
-                  style="-webkit-appearance:none;">
-                  <option v-for="factor in shrinkFactors"
-                    :key="factor"
-                    :value="factor">
-                    {{ factor }}
-                  </option>
-                </select>
-              </div> <!-- /new # shards -->
-              <!-- temporary node -->
-              <div v-if="nodes && temporaryNode"
-                class="input-group input-group-sm ml-2">
-                <div class="input-group-prepend">
-                  <span class="input-group-text">
-                    Temporary Node
-                  </span>
-                </div>
-                <select v-model="temporaryNode"
-                  class="form-control"
-                  style="-webkit-appearance:none;">
-                  <option v-for="node in nodes"
-                    :key="node.name"
-                    :value="node.name">
-                    {{ node.name }}
-                  </option>
-                </select>
-              </div> <!-- /new shards input -->
-              <!-- ok button -->
-              <button class="btn btn-sm btn-success pull-right ml-2"
-                v-b-tooltip.hover
-                title="shrink"
-                @click="executeShrink(shrinkIndex)"
-                type="button">
-                <span class="fa fa-check">
-                </span>
-              </button> <!-- /ok button -->
-              <!-- cancel button -->
-              <button class="btn btn-sm btn-warning pull-right ml-2"
-                v-b-tooltip.hover
-                title="cancel"
-                @click="cancelShrink"
-                type="button">
-                <span class="fa fa-ban">
-                </span>
-              </button> <!-- /cancel button -->
-            </div>
-            <span v-if="shrinkIndex && shrinkError"
-              class="text-danger ml-2">
-              {{ shrinkError }}
-            </span> <!-- /shrink index -->
-
-            <Clusters
-              class="pull-right flex-grow-1"
-              @updateCluster="updateCluster"
-              :select-one="clusterParamOverride && tabIndex > 1"
-            />
-
+          <!-- shrink index -->
+          <div
+            v-if="shrinkIndex"
+            class="ms-4 form-inline">
+            <strong>
+              {{ $t('stats.shrink') }}  {{ shrinkIndex.index }}
+            </strong>
+            <!-- new # shards -->
+            <div class="input-group input-group-sm ms-2">
+              <span class="input-group-text">
+                {{ $t('stats.numShards') }}
+              </span>
+              <select
+                v-model="shrinkFactor"
+                class="form-control"
+                style="-webkit-appearance:none;">
+                <option
+                  v-for="factor in shrinkFactors"
+                  :key="factor"
+                  :value="factor">
+                  {{ factor }}
+                </option>
+              </select>
+            </div> <!-- /new # shards -->
+            <!-- temporary node -->
+            <div
+              v-if="nodes && temporaryNode"
+              class="input-group input-group-sm ms-2">
+              <span class="input-group-text">
+                {{ $t('stats.temporaryNode') }}
+              </span>
+              <select
+                v-model="temporaryNode"
+                class="form-control"
+                style="-webkit-appearance:none;">
+                <option
+                  v-for="node in nodes"
+                  :key="node.name"
+                  :value="node.name">
+                  {{ node.name }}
+                </option>
+              </select>
+            </div> <!-- /new shards input -->
+            <!-- ok button -->
+            <button
+              class="btn btn-sm btn-success pull-right ms-2"
+              @click="executeShrink(shrinkIndex)"
+              type="button">
+              <span class="fa fa-check" />
+            </button> <!-- /ok button -->
+            <!-- cancel button -->
+            <button
+              class="btn btn-sm btn-warning pull-right ms-2"
+              @click="cancelShrink"
+              type="button">
+              <span class="fa fa-ban" />
+            </button> <!-- /cancel button -->
           </div>
-        </form> <!-- /stats sub navbar -->
+          <span
+            v-if="shrinkIndex && shrinkError"
+            class="text-danger ms-2">
+            {{ shrinkError }}
+          </span> <!-- /shrink index -->
+
+          <!-- select cluster(s) -->
+          <BCol
+            cols="auto"
+            v-if="multiviewer">
+            <Clusters
+              @update-cluster="updateCluster"
+              :select-one="clusterParamOverride && tabIndex > 1" />
+          </BCol> <!-- /select cluster(s) -->
+
+          <!-- need this on non-multivierwer esAdmin tab to keep the layout consistent (empty navbar)-->
+          <div v-else-if="tabIndex === 7">
+            <button
+              class="btn btn-sm btn-theme-secondary"
+              style="visibility: hidden;">placeholder</button>
+          </div>
+
+        </BRow> <!-- /stats sub navbar -->
       </span>
     </ArkimeCollapsible>
 
     <!-- stats content -->
     <div class="stats-tabs">
-      <b-tabs v-model="tabIndex">
-        <b-tab title="Capture Graphs"
-          @click="tabIndexChange(0)">
-          <capture-graphs v-if="user && tabIndex === 0"
-            :refreshData="refreshData"
-            :searchTerm="searchTerm"
+      <b-tabs
+        lazy
+        :model-value="tabIndex"
+        @update:index="tabIndexChange($event)">
+        <b-tab
+          :title="$t('stats.nav.captureGraphs')"
+          :active="tabIndex === 0">
+          <capture-graphs
+            :refresh-data="refreshData"
+            :search-term="searchTerm"
             :graph-type="statsType"
             :graph-interval="graphInterval"
             :graph-hide="graphHide"
             :graph-sort="graphSort"
             :cluster="cluster"
-            :user="user">
-          </capture-graphs>
+            :user="user" />
         </b-tab>
-        <b-tab title="Capture Stats"
-          @click="tabIndexChange(1)">
-          <capture-stats v-if="user && tabIndex === 1"
+        <b-tab
+          :title="$t('stats.nav.captureStats')"
+          :active="tabIndex === 1">
+          <capture-stats
             :graph-hide="graphHide"
-            :refreshData="refreshData"
-            :searchTerm="searchTerm"
+            :refresh-data="refreshData"
+            :search-term="searchTerm"
             :data-interval="dataInterval"
             :cluster="cluster"
-            :user="user">
-          </capture-stats>
+            :user="user" />
         </b-tab>
-        <b-tab title="ES Nodes"
-          @click="tabIndexChange(2)">
-          <es-nodes v-if="user && tabIndex === 2"
-            :refreshData="refreshData"
-            :searchTerm="searchTerm"
+        <b-tab
+          :title="$t('stats.nav.esNodes')"
+          :active="tabIndex === 2">
+          <es-nodes
+            :refresh-data="refreshData"
+            :search-term="searchTerm"
             :data-interval="dataInterval"
-            :cluster="cluster">
-          </es-nodes>
+            :cluster="cluster" />
         </b-tab>
-        <b-tab title="ES Indices"
-          @click="tabIndexChange(3)">
-          <es-indices v-if="user && tabIndex === 3"
-            :refreshData="refreshData"
+        <b-tab
+          :title="$t('stats.nav.esIndices')"
+          :active="tabIndex === 3">
+          <es-indices
+            :refresh-data="refreshData"
             :data-interval="dataInterval"
             @errored="onError"
             @confirm="confirm"
             @shrink="shrink"
-            :searchTerm="searchTerm"
-            :issueConfirmation="issueConfirmation"
+            :search-term="searchTerm"
+            :issue-confirmation="issueConfirmation"
             :user="user"
-            :cluster="cluster">
-          </es-indices>
+            :cluster="cluster" />
         </b-tab>
-        <b-tab title="ES Tasks"
-          @click="tabIndexChange(4)">
-          <es-tasks v-if="user && tabIndex === 4"
+        <b-tab
+          :title="$t('stats.nav.esTasks')"
+          :active="tabIndex === 4">
+          <es-tasks
             :data-interval="dataInterval"
-            :refreshData="refreshData"
-            :searchTerm="searchTerm"
-            :pageSize="pageSize"
+            :refresh-data="refreshData"
+            :search-term="searchTerm"
+            :page-size="pageSize"
             :user="user"
             @errored="onError"
-            :cluster="cluster">
-          </es-tasks>
+            :cluster="cluster" />
         </b-tab>
-        <b-tab title="ES Shards"
-          @click="tabIndexChange(5)">
-          <es-shards v-if="user && tabIndex === 5"
+        <b-tab
+          :title="$t('stats.nav.esShards')"
+          :active="tabIndex === 5">
+          <es-shards
             :shards-show="shardsShow"
-            :refreshData="refreshData"
-            :searchTerm="searchTerm"
+            :refresh-data="refreshData"
+            :search-term="searchTerm"
             :data-interval="dataInterval"
-            :cluster="cluster">
-          </es-shards>
+            :cluster="cluster" />
         </b-tab>
-        <b-tab title="ES Recovery"
-          @click="tabIndexChange(6)">
-          <es-recovery v-if="user && tabIndex === 6"
+        <b-tab
+          :title="$t('stats.nav.esRecovery')"
+          :active="tabIndex === 6">
+          <es-recovery
             :recovery-show="recoveryShow"
             :data-interval="dataInterval"
-            :refreshData="refreshData"
-            :searchTerm="searchTerm"
+            :refresh-data="refreshData"
+            :search-term="searchTerm"
             :user="user"
-            :cluster="cluster">
-          </es-recovery>
+            :cluster="cluster" />
         </b-tab>
-        <b-tab title="ES Admin"
-          @click="tabIndexChange(7)"
+        <b-tab
+          :title="$t('stats.nav.esAdmin')"
+          :active="tabIndex === 7"
           v-if="user.esAdminUser">
-          <es-admin v-if="user && tabIndex === 7"
+          <es-admin
             :data-interval="dataInterval"
-            :refreshData="refreshData"
+            :refresh-data="refreshData"
             :user="user"
-            :cluster="cluster">
-          </es-admin>
+            :cluster="cluster" />
         </b-tab>
       </b-tabs>
     </div> <!-- /stats content -->
-
   </div>
-
 </template>
 
 <script>
-import EsShards from './EsShards';
-import EsNodes from './EsNodes';
-import EsTasks from './EsTasks';
-import EsRecovery from './EsRecovery';
-import EsIndices from './EsIndices';
-import EsAdmin from './EsAdmin';
-import CaptureGraphs from './CaptureGraphs';
-import CaptureStats from './CaptureStats';
-import ArkimeCollapsible from '../utils/CollapsibleWrapper';
+import EsShards from './EsShards.vue';
+import EsNodes from './EsNodes.vue';
+import EsTasks from './EsTasks.vue';
+import EsRecovery from './EsRecovery.vue';
+import EsIndices from './EsIndices.vue';
+import EsAdmin from './EsAdmin.vue';
+import CaptureGraphs from './CaptureGraphs.vue';
+import CaptureStats from './CaptureStats.vue';
+import ArkimeCollapsible from '../utils/CollapsibleWrapper.vue';
 import Utils from '../utils/utils';
-import Focus from '../../../../../common/vueapp/Focus';
-import Clusters from '../utils/Clusters';
+import Focus from '@common/Focus.vue';
+import Clusters from '../utils/Clusters.vue';
+import StatsService from './StatsService.js';
 
 let searchInputTimeout;
 
@@ -501,13 +598,13 @@ export default {
     return {
       tabIndex: parseInt(this.$route.query.statsTab, 10) || 0,
       statsType: this.$route.query.type || 'deltaPacketsPerSec',
-      graphInterval: this.$route.query.gtime || '5',
+      graphInterval: parseInt(this.$route.query.gtime, 10) || 5,
       graphHide: this.$route.query.hide || 'none',
       graphSort: this.$route.query.sort || 'asc',
       recoveryShow: this.$route.query.recoveryShow || 'notdone',
       shardsShow: this.$route.query.shardsShow || 'notstarted',
-      dataInterval: this.$route.query.refreshInterval || '15000',
-      pageSize: this.$route.query.size || '500',
+      dataInterval: parseInt(this.$route.query.refreshInterval, 10) || 15000,
+      pageSize: parseInt(this.$route.query.size, 10) || 500,
       cluster: this.$route.query.cluster || undefined,
       refreshData: false,
       childError: '',
@@ -521,7 +618,8 @@ export default {
       temporaryNode: undefined,
       nodes: undefined,
       shrinkError: undefined,
-      clusterParamOverride: true
+      clusterParamOverride: true,
+      multiviewer: this.$constants.MULTIVIEWER
     };
   },
   computed: {
@@ -582,6 +680,7 @@ export default {
       // this flag is toggled so that the children components can override the route queries
       // the cluster dropdown component watches for selectOne and updates the cluster prop to override the route queries
       // but the route queries stay the same so that the user can navigate back to the previous tab without losing their selection
+      this.tabIndex = newTabIndex;
       this.clusterParamOverride = false;
       setTimeout(() => { this.clusterParamOverride = true; });
       this.$router.push({ query: { ...this.$route.query, statsTab: newTabIndex } });
@@ -599,8 +698,8 @@ export default {
       if (queryParams.type) {
         this.statsType = queryParams.type;
       }
-      if (queryParams.graphInterval) {
-        this.graphInterval = queryParams.gtime;
+      if (queryParams.gtime) {
+        this.graphInterval = parseInt(queryParams.gtime, 10);
       }
       if (queryParams.graphHide) {
         this.graphHide = queryParams.graphHide;
@@ -615,12 +714,14 @@ export default {
         this.graphSort = queryParams.graphSort;
       }
       if (queryParams.refreshInterval) {
-        this.dataInterval = queryParams.refreshInterval;
+        this.dataInterval = parseInt(queryParams.refreshInterval, 10);
       }
       if (queryParams.cluster) {
         this.cluster = queryParams.cluster;
       }
-      this.pageSize = queryParams.size || 500;
+      if (queryParams.size) {
+        this.pageSize = parseInt(queryParams.size, 10);
+      }
     },
     clear: function () {
       this.searchTerm = undefined;
@@ -661,7 +762,7 @@ export default {
         this.confirmMessage = '';
       });
     },
-    shrink: function (index) {
+    async shrink (index) {
       this.shrinkIndex = index;
       this.shrinkFactors = Utils.findFactors(parseInt(index.pri));
       this.shrinkFactors.length === 1
@@ -672,12 +773,13 @@ export default {
         return;
       }
 
-      // find nodes for dropdown
-      this.$http.get('esstats.json', { params: { cluster: this.cluster } })
-        .then((response) => {
-          this.nodes = response.data.data;
-          this.temporaryNode = this.nodes[0].name;
-        });
+      try {
+        const response = await StatsService.getDataNodes({ cluster: this.cluster });
+        this.nodes = response.data.data;
+        this.temporaryNode = this.nodes[0].name;
+      } catch {
+        this.shrinkError = 'Error fetching data nodes';
+      }
     },
     cancelShrink: function () {
       this.shrinkIndex = undefined;
@@ -686,23 +788,24 @@ export default {
       this.temporaryNode = undefined;
       this.shrinkError = undefined;
     },
-    executeShrink: function (index) {
+    async executeShrink (index) {
       if (!Utils.checkClusterSelection(this.cluster, this.$store.state.esCluster.availableCluster.active, this).valid) {
         return;
       }
 
-      this.$http.post(`api/esindices/${index.index}/shrink`, {
-        target: this.temporaryNode,
-        numShards: this.shrinkFactor
-      }, { params: { cluster: this.cluster } }).then((response) => {
+      try {
+        const response = await StatsService.shrinkIndex(index.index, {
+          target: this.temporaryNode,
+          numShards: this.shrinkFactor
+        }, { cluster: this.cluster });
         if (!response.data.success) {
           this.shrinkError = response.data.text;
           return;
         }
         this.cancelShrink();
-      }).catch((error) => {
-        this.shrinkError = error.text || error;
-      });
+      } catch (error) {
+        this.shrinkError = error.text || String(error);
+      }
     }
   }
 };
@@ -732,7 +835,7 @@ table .btn-group.row-actions-btn > .btn-sm {
 <style scoped>
 
 /* apply theme colors to subnavbar */
-form.stats-form {
+.stats-form {
   z-index : 6;
   background-color: var(--color-quaternary-lightest);
 }

@@ -3,152 +3,161 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
+  <BRow
+    gutter-x="1"
+    class="text-start flex-nowrap d-flex justify-content-between"
+    align-h="start"
+    @keyup.stop.prevent.enter="applyAction(props.add)">
+    <BCol cols="auto">
+      <SegmentSelect v-model:segments="segments" />
+    </BCol>
 
-  <!-- tag sessions form -->
-  <div class="row"
-    @keyup.stop.prevent.enter="apply(add)">
-
-    <SegmentSelect :segments.sync="segments" />
-
-    <div class="col-md-5">
-
-      <!-- tags input -->
+    <BCol
+      cols="auto"
+      class="flex-fill">
       <div class="input-group input-group-sm">
-        <div class="input-group-prepend">
-          <span class="input-group-text">
-            Tags
-          </span>
-        </div>
-        <b-form-input
+        <span class="input-group-text">
+          {{ $t('sessions.tags') }}
+        </span>
+        <input
           autofocus
           type="text"
           v-model="tags"
           class="form-control"
-          placeholder="Enter a comma separated list of tags"
-        />
-      </div> <!-- /tags input -->
-
-      <!-- error -->
-      <p v-if="error"
-        class="small text-danger mb-0">
-        <span class="fa fa-exclamation-triangle">
-        </span>&nbsp;
-        {{ error }}
-      </p> <!-- /error -->
-
-    </div>
-
-    <!-- buttons -->
-    <div class="col-md-3">
-      <div class="pull-right">
-        <button
-          v-if="add"
-          type="button"
-          title="Add Tags"
-          @click="apply(true)"
-          :class="{'disabled':loading}"
-          class="btn btn-sm btn-theme-tertiary">
-          <span v-if="!loading">
-            <span class="fa fa-plus-circle">
-            </span>&nbsp;
-            Add Tags
-          </span>
-          <span v-else>
-            <span class="fa fa-spinner fa-spin">
-            </span>&nbsp;
-            Adding Tags
-          </span>
-        </button>
-        <button
-          v-else
-          type="button"
-          title="Remove Tags"
-          @click="apply(false)"
-          :class="{'disabled':loading}"
-          class="btn btn-sm btn-danger">
-          <span v-if="!loading">
-            <span class="fa fa-trash-o">
-            </span>&nbsp;
-            Remove Tags
-          </span>
-          <span v-else>
-            <span class="fa fa-spinner fa-spin">
-            </span>&nbsp;
-            Removing Tags
-          </span>
-        </button>
-        <button
-          type="button"
-          title="cancel"
-          v-b-tooltip.hover
-          @click="done(null)"
-          class="btn btn-sm btn-warning">
-          <span class="fa fa-ban">
-          </span>
-        </button>
+          :placeholder="$t('sessions.tagsPlaceholder')">
       </div>
-    </div> <!-- /buttons -->
+      <p
+        v-if="error"
+        class="small text-danger mb-0">
+        <span class="fa fa-exclamation-triangle" />&nbsp;
+        {{ error }}
+      </p>
+    </BCol>
 
-  </div> <!-- /tag sessions form -->
-
+    <BCol cols="auto">
+      <button
+        v-if="props.add"
+        type="button"
+        :title="$t('sessions.tag.addTags')"
+        @click="applyAction(true)"
+        :class="{'disabled':loading}"
+        class="btn btn-sm btn-theme-tertiary me-1">
+        <span v-if="!loading">
+          <span class="fa fa-plus-circle" />&nbsp;
+          {{ $t('sessions.tag.addTags') }}
+        </span>
+        <span v-else>
+          <span class="fa fa-spinner fa-spin" />&nbsp;
+          {{ $t('sessions.tag.addingTags') }}
+        </span>
+      </button>
+      <button
+        v-else
+        type="button"
+        :title="$t('sessions.tag.removeTags')"
+        @click="applyAction(false)"
+        :class="{'disabled':loading}"
+        class="btn btn-sm btn-danger me-1">
+        <span v-if="!loading">
+          <span class="fa fa-trash-o" />&nbsp;
+          {{ $t('sessions.tag.removeTags') }}
+        </span>
+        <span v-else>
+          <span class="fa fa-spinner fa-spin" />&nbsp;
+          {{ $t('sessions.tag.removingTags') }}
+        </span>
+      </button>
+      <button
+        id="cancelTagSessionsBtn"
+        type="button"
+        @click="$emit('done', null, false, false)"
+        class="btn btn-sm btn-warning">
+        <span class="fa fa-ban" />
+        <BTooltip target="cancelTagSessionsBtn">
+          {{ $t('common.cancel') }}
+        </BTooltip>
+      </button>
+    </BCol>
+  </BRow>
 </template>
 
-<script>
+<script setup>
+import { ref } from 'vue';
+import { useRoute } from 'vue-router';
 import SessionsService from './SessionsService';
-import SegmentSelect from './SegmentSelect';
+import SegmentSelect from './SegmentSelect.vue';
+import { useI18n } from 'vue-i18n';
+const { t } = useI18n();
 
-export default {
-  name: 'ArkimeTagSessions',
-  components: { SegmentSelect },
-  props: {
-    add: Boolean,
-    start: Number,
-    done: Function,
-    single: Boolean,
-    applyTo: String,
-    sessions: Array,
-    numVisible: Number,
-    numMatching: Number
+// Define Props
+const props = defineProps({
+  add: Boolean,
+  start: {
+    type: Number,
+    default: 0
   },
-  data: function () {
-    return {
-      error: '',
-      loading: false,
-      segments: 'no',
-      tags: ''
-    };
+  single: Boolean,
+  applyTo: {
+    type: String,
+    default: 'open'
   },
-  methods: {
-    /* exposed functions ----------------------------------------- */
-    apply: function (addTags) {
-      if (!this.tags) {
-        this.error = 'No tag(s) specified.';
-        return;
-      }
+  sessions: {
+    type: Array,
+    default: () => []
+  },
+  numVisible: {
+    type: Number,
+    default: 0
+  },
+  numMatching: {
+    type: Number,
+    default: 0
+  }
+});
 
-      this.loading = true;
+// Define Emits
+const emit = defineEmits(['done']);
 
-      const data = {
-        tags: this.tags,
-        start: this.start,
-        applyTo: this.applyTo,
-        segments: this.segments,
-        sessions: this.sessions,
-        numVisible: this.numVisible,
-        numMatching: this.numMatching
-      };
+// Reactive state
+const error = ref('');
+const loading = ref(false);
+const segments = ref('no');
+const tags = ref('');
 
-      SessionsService.tag(addTags, data, this.$route.query).then((response) => {
-        this.tags = '';
-        this.loading = false;
-        this.done(response.data.text, response.data.success, this.single);
-      }).catch((error) => {
-        // display the error under the form so that user
-        // has an opportunity to try again (don't close the form)
-        this.error = error.text;
-        this.loading = false;
-      });
-    }
+// Access route
+const route = useRoute();
+
+// Methods
+const applyAction = async (addTagsOperation) => {
+  if (!tags.value) {
+    error.value = t('sessions.tag.noTagsErr');
+    return;
+  }
+
+  error.value = ''; // Clear previous error
+  loading.value = true;
+
+  const data = {
+    tags: tags.value,
+    start: props.start,
+    applyTo: props.applyTo,
+    segments: segments.value,
+    sessions: props.sessions,
+    numVisible: props.numVisible,
+    numMatching: props.numMatching
+  };
+
+  try {
+    // The first argument to SessionsService.tag determines if it's add or remove
+    const response = await SessionsService.tag(addTagsOperation, data, route.query);
+    tags.value = ''; // Clear tags input on success
+    loading.value = false;
+    emit('done', response.text, true, true); // Emit the done event with the response text
+  } catch (err) {
+    // display the error under the form so that user
+    // has an opportunity to try again (don't close the form)
+    error.value = err.text || err.message || t('sessions.tag.unknownErr');
+    loading.value = false;
   }
 };
 </script>

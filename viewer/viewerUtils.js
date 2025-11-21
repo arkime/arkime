@@ -69,11 +69,11 @@ class ViewerUtils {
       console.log('determineQueryTimes <-', reqQuery);
     }
 
-    if (reqQuery.date && isNaN(parseInt(reqQuery.date))) {
+    if (reqQuery.date && isNaN(parseFloat(reqQuery.date))) {
       reqQuery.date = '-1';
     }
 
-    if ((reqQuery.date && parseInt(reqQuery.date) === -1) ||
+    if ((reqQuery.date && parseFloat(reqQuery.date) === -1) ||
         (reqQuery.segments && reqQuery.segments === 'all')) {
       interval = 60 * 60; // Hour to be safe
     } else if ((reqQuery.startTime !== undefined) && (reqQuery.stopTime !== undefined)) {
@@ -150,28 +150,27 @@ class ViewerUtils {
     let finished = 0;
     let err = null;
 
-    function doProcess (qParent, obj, item) {
+    async function doProcess (qParent, obj, item) {
       // console.log("\nprocess:\n", item, obj, typeof obj[item], "\n");
       if (item === 'fileand' && typeof obj[item] === 'string') {
         const fileName = obj.fileand;
         delete obj.fileand;
         outstanding++;
-        Db.fileNameToFiles(fileName, function (files) {
-          outstanding--;
-          if (files === null || files.length === 0) {
-            err = "File '" + fileName + "' not found";
-          } else if (files.length > 1) {
-            obj.bool = { should: [] };
-            files.forEach(function (file) {
-              obj.bool.should.push({ bool: { filter: [{ term: { node: file.node } }, { term: { fileId: file.num } }] } });
-            });
-          } else {
-            obj.bool = { filter: [{ term: { node: files[0].node } }, { term: { fileId: files[0].num } }] };
-          }
-          if (finished && outstanding === 0) {
-            doneCb(err);
-          }
-        });
+        const files = await Db.fileNameToFiles(fileName);
+        outstanding--;
+        if (files === null || files.length === 0) {
+          err = "File '" + fileName + "' not found";
+        } else if (files.length > 1) {
+          obj.bool = { should: [] };
+          files.forEach(function (file) {
+            obj.bool.should.push({ bool: { filter: [{ term: { node: file.node } }, { term: { fileId: file.num } }] } });
+          });
+        } else {
+          obj.bool = { filter: [{ term: { node: files[0].node } }, { term: { fileId: files[0].num } }] };
+        }
+        if (finished && outstanding === 0) {
+          doneCb(err);
+        }
       } else if (item === 'field' && obj.field === 'fileand') {
         obj.field = 'fileId';
       } else if (typeof obj[item] === 'object') {
@@ -337,7 +336,7 @@ class ViewerUtils {
     const graph = {
       xmin: req.query.startTime * 1000 || null,
       xmax: req.query.stopTime * 1000 || null,
-      interval: query.aggregations ? query.aggregations.dbHisto.histogram.interval / 1000 || 60 : 60,
+      interval: query?.aggregations?.dbHisto ? query.aggregations.dbHisto.histogram.interval / 1000 || 60 : 60,
       sessionsHisto: [],
       sessionsTotal: 0
     };
@@ -420,7 +419,7 @@ class ViewerUtils {
     }
 
     const files = [];
-    async.forEachSeries(fields.fileId, async (item, cb) => {
+    async.forEachSeries(fields.fileId, async (item) => {
       try {
         const file = await Db.fileIdToFile(fields.node, item);
         if (file && file.locked === 1) {
@@ -576,14 +575,19 @@ class ViewerUtils {
       if (err) {
         return cb(err);
       }
-      const nodePath = encodeURI(`${Config.basePath(node)}${path}`);
-      const url = new URL(nodePath, viewUrl);
+      const nodePath = encodeURI(path);
+      let url;
+      if (nodePath.startsWith('/')) {
+        url = new URL(nodePath.substring(1), viewUrl);
+      } else {
+        url = new URL(nodePath, viewUrl);
+      }
       const options = {
         timeout: 20 * 60 * 1000,
         agent: client === http ? internals.httpAgent : internals.httpsAgent
       };
 
-      Auth.addS2SAuth(options, user, node, nodePath);
+      Auth.addS2SAuth(options, user, node, url.pathname);
       ViewerUtils.addCaTrust(options, node);
 
       function responseFunc (pres) {

@@ -3,164 +3,173 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-
   <div class="container-fluid mt-3">
+    <arkime-loading v-if="loading && !error" />
 
-    <arkime-loading v-if="loading && !error">
-    </arkime-loading>
-
-    <arkime-error v-if="error"
-      :message="error">
-    </arkime-error>
+    <arkime-error
+      v-if="error"
+      :message="error" />
 
     <div v-if="!error">
-
       <h5 class="alert alert-warning">
-        <span class="fa fa-exclamation-triangle mr-1">
-        </span>
-        <strong>Warning!</strong>
-        This stuff is dangerous and you can destroy your ES cluster.
-        <strong>Be very careful.</strong>
+        <span class="fa fa-exclamation-triangle me-1" />
+        <span v-html="$t('stats.esAdmin.warningHtml')" />
       </h5>
 
-      <div class="alert alert-danger"
+      <div
+        class="alert alert-danger"
         v-if="interactionError">
-        <span class="fa fa-exclamation-triangle mr-1">
-        </span>
-        <strong>Error:</strong>
+        <span class="fa fa-exclamation-triangle me-1" />
+        <strong>{{ $t('common.error') }}:</strong>
         {{ interactionError }}
-        <button type="button"
-          class="close"
+        <button
+          type="button"
+          class="btn-close pull-right"
           @click="interactionError = ''"
-          data-dismiss="alert">
-          <span>&times;</span>
-        </button>
+          data-dismiss="alert" />
       </div>
 
-      <div class="alert alert-success"
+      <div
+        class="alert alert-success"
         v-if="interactionSuccess">
-        <span class="fa fa-check mr-1">
-        </span>
-        <strong>Success:</strong>
+        <span class="fa fa-check me-1" />
+        <strong>{{ $t('common.success') }}:</strong>
         {{ interactionSuccess }}
-        <button type="button"
-          class="close"
+        <button
+          type="button"
+          class="btn-close pull-right"
           @click="interactionSuccess = ''"
-          data-dismiss="alert">
-          <span class="fa fa-check">
-          </span>
-        </button>
+          data-dismiss="alert" />
       </div>
 
       <h3>
-        ES Cluster Settings
+        {{ $t('stats.esAdmin.esClusterSettings') }}
         <span class="pull-right">
-          <button type="button"
+          <button
+            type="button"
             @click="retryFailed"
-            v-b-tooltip.hover
-            title="Try to restart any shard migrations that have failed or paused"
-            class="btn btn-theme-primary">
-            Retry Failed
+            id="retryFailed"
+            class="btn btn-theme-primary ms-1">
+            {{ $t('stats.esAdmin.retryFailed') }}
+            <BTooltip target="retryFailed"><span v-i18n-btip="'stats.esAdmin.'" /></BTooltip>
           </button>
-          <button type="button"
+          <button
+            type="button"
             @click="flush"
-            v-b-tooltip.hover
-            title="Flush and refresh any data waiting in Elasticsearch to disk"
-            class="btn btn-theme-secondary">
-            Flush
+            id="flush"
+            class="btn btn-theme-secondary ms-1">
+            {{ $t('stats.esAdmin.flush') }}
+            <BTooltip target="flush"><span v-i18n-btip="'stats.esAdmin.'" /></BTooltip>
           </button>
-          <button type="button"
+          <button
+            type="button"
             @click="unflood"
-            v-b-tooltip.hover
-            title="Try and clear any indices marked as flooded"
-            class="btn btn-theme-tertiary">
-            Unflood
+            id="unflood"
+            class="btn btn-theme-tertiary ms-1">
+            {{ $t('stats.esAdmin.unflood') }}
+            <BTooltip target="unflood"><span v-i18n-btip="'stats.esAdmin.'" /></BTooltip>
           </button>
-          <button type="button"
+          <button
+            type="button"
             @click="clearCache"
-            v-b-tooltip.hover
-            title="Try and clear the cache for all indices"
-            class="btn btn-theme-quaternary">
-            Clear Cache
+            id="clearCache"
+            class="btn btn-theme-quaternary ms-1">
+            {{ $t('stats.esAdmin.clearCache') }}
+            <BTooltip target="clearCache"><span v-i18n-btip="'stats.esAdmin.'" /></BTooltip>
           </button>
         </span>
       </h3>
 
       <hr>
 
-      <div v-for="setting in settings"
+      <BRow
+        v-for="setting in settings"
         :key="setting.key"
-        class="form-group row">
-        <div class="col">
-          <div class="input-group">
-            <div class="input-group-prepend cursor-help">
-              <span class="input-group-text"
-                v-b-tooltip.hover
-                :title="setting.key">
-                {{ setting.name }}
-              </span>
-            </div>
-            <input type="text"
+        class="mt-2">
+        <BCol>
+          <BInputGroup>
+            <BInputGroupText :id="`setting-${setting.key}`">
+              {{ setting.name }}
+              <BTooltip :target="`setting-${setting.key}`">
+                {{ setting.key }}
+              </BTooltip>
+            </BInputGroupText>
+            <input
+              type="text"
               @input="setting.changed = true"
               class="form-control"
               v-model="setting.current"
-              :class="{'is-invalid':setting.error}"
-            />
-            <div class="input-group-append">
-              <span class="input-group-text">
-                {{ setting.type }}
-                <small class="ml-2">
-                  (<a :href="setting.url"
-                    class="no-decoration"
-                    target="_blank">
-                    Learn more
-                  </a>)
-                </small>
-              </span>
-              <button type="button"
-                :disabled="!setting.changed"
-                @click="cancel(setting)"
-                class="btn btn-warning">
-                Cancel
-              </button>
-              <button type="button"
-                :disabled="!setting.changed"
-                @click="save(setting)"
-                class="btn btn-theme-primary">
-                Save
-              </button>
-            </div>
-          </div>
-          <div v-if="setting.error"
+              :class="{'is-invalid':setting.error || (setting.key === 'cluster.routing.allocation.enable' && setting.current !== 'all')}">
+            <BInputGroupText>
+              {{ setting.type }}
+              <small class="ms-2">
+                (<a
+                  :href="setting.url"
+                  class="no-decoration"
+                  target="_blank">
+                  Learn more
+                </a>)
+              </small>
+            </BInputGroupText>
+            <button
+              v-if="setting.key === 'cluster.routing.allocation.enable' && setting.current !== 'all'"
+              type="button"
+              @click="restoreToAll(setting)"
+              :id="`restore-${setting.key}`"
+              class="btn btn-warning">
+              <span class="fa fa-undo" />
+              <BTooltip
+                :target="`restore-${setting.key}`"
+                teleport-to="body">
+                {{ $t('stats.esAdmin.restoreAllocationTip') }}
+              </BTooltip>
+            </button>
+            <button
+              type="button"
+              :disabled="!setting.changed"
+              @click="cancel(setting)"
+              class="btn btn-warning">
+              {{ $t('common.cancel') }}
+            </button>
+            <button
+              type="button"
+              :disabled="!setting.changed"
+              @click="save(setting)"
+              class="btn btn-theme-primary">
+              {{ $t('common.save') }}
+            </button>
+          </BInputGroup>
+          <div
+            v-if="setting.error"
             class="form-text text-danger">
-            <span class="fa fa-exclamation-triangle">
-            </span>
+            <span class="fa fa-exclamation-triangle" />
             {{ setting.error }}
           </div>
-        </div>
-      </div>
+        </BCol>
+      </BRow>
 
-      <div class="alert alert-info">
-        <span class="fa fa-info-circle mr-1">
-        </span>
-        You can control which users see this page by setting
-        <code>esAdminUsers=</code> in your <code>config.ini</code>.
+      <div class="alert alert-info mt-1">
+        <span class="fa fa-info-circle me-1" />
+        <span v-html="$t('stats.esAdmin.controlHtml')" />
       </div>
-
     </div>
-
   </div>
-
 </template>
 
 <script>
 import Utils from '../utils/utils';
-import ArkimeError from '../utils/Error';
-import ArkimeLoading from '../utils/Loading';
+import ArkimeError from '../utils/Error.vue';
+import ArkimeLoading from '../utils/Loading.vue';
+import StatsService from './StatsService.js';
 
 export default {
   name: 'EsAdmin',
-  props: ['cluster'],
+  props: {
+    cluster: {
+      type: String,
+      default: ''
+    }
+  },
   components: {
     ArkimeError,
     ArkimeLoading
@@ -188,121 +197,121 @@ export default {
   },
   methods: {
     /* exposed page functions ------------------------------------ */
-    save: function (setting) {
+    async save (setting) {
       if (!setting.current.match(setting.regex)) {
-        this.$set(setting, 'error', `Invalid format, this setting must be: ${setting.type}`);
+        setting.error = `Invalid format, this setting must be: ${setting.type}`;
         return;
       }
 
-      const selection = Utils.checkClusterSelection(this.query.cluster, this.$store.state.esCluster.availableCluster.active);
+      const selection = Utils.checkClusterSelection(this.query.cluster, this.$store.state.esCluster.availableCluster.active, this);
       if (!selection.valid) {
-        this.$set(setting, 'error', selection.error);
+        setting.error = selection.error;
         return;
       }
 
-      const body = {
+      const data = {
         key: setting.key,
         value: setting.current
       };
 
-      this.$http.post('api/esadmin/set', body, { params: this.query })
-        .then((response) => {
-          this.$set(setting, 'error', '');
-          this.$set(setting, 'changed', false);
-        }, (error) => {
-          this.$set(setting, 'error', error.text || error);
-        });
+      try {
+        await StatsService.setAdmin({ data, params: this.query });
+        setting.error = '';
+        setting.changed = false;
+      } catch (error) {
+        setting.error = error.text || String(error);
+      }
     },
-    cancel: function (setting) {
+    async restoreToAll (setting) {
+      setting.current = 'all';
+      setting.changed = true;
+      await this.save(setting);
+    },
+    async cancel (setting) {
       const selection = Utils.checkClusterSelection(this.query.cluster, this.$store.state.esCluster.availableCluster.active);
       if (!selection.valid) {
-        this.$set(setting, 'error', selection.error);
+        setting.error = selection.error;
         return;
       }
 
-      // update the changed value with the one that's saved
-      this.$http.get('api/esadmin', { params: this.query })
-        .then((response) => {
-          this.$set(setting, 'error', '');
-          for (const resSetting of response.data) {
-            if (resSetting.key === setting.key) {
-              this.$set(setting, 'current', resSetting.current);
-              this.$set(setting, 'changed', false);
-            }
+      try { // update the changed value with the one that's saved
+        const response = await StatsService.getAdmin(this.query);
+        setting.error = '';
+        for (const resSetting of response) {
+          if (resSetting.key === setting.key) {
+            setting.current = resSetting.current;
+            setting.changed = false;
           }
-        }, (error) => {
-          this.$set(setting, 'error', error.text || error);
-        });
+        }
+      } catch (error) {
+        setting.error = error.text || String(error);
+      }
     },
-    clearCache: function () {
+    async clearCache () {
       if (!Utils.checkClusterSelection(this.query.cluster, this.$store.state.esCluster.availableCluster.active, this, 'interactionError').valid) {
         return;
       }
 
-      this.$http.post('api/esadmin/clearcache', {}, { params: this.query })
-        .then((response) => {
-          this.interactionSuccess = response.data.text;
-        })
-        .catch((error) => {
-          this.interactionError = error.text || error;
-        });
+      try {
+        const response = await StatsService.clearCacheAdmin(this.query);
+        this.interactionSuccess = response.text;
+      } catch (error) {
+        this.interactionError = error.text || String(error);
+      }
     },
-    unflood: function () {
+    async unflood () {
       if (!Utils.checkClusterSelection(this.query.cluster, this.$store.state.esCluster.availableCluster.active, this, 'interactionError').valid) {
         return;
       }
 
-      this.$http.post('api/esadmin/unflood', {}, { params: this.query })
-        .then((response) => {
-          this.interactionSuccess = response.data.text;
-        })
-        .catch((error) => {
-          this.interactionError = error.text || error;
-        });
+      try {
+        const response = await StatsService.unFloodAdmin(this.query);
+        this.interactionSuccess = response.text;
+      } catch (error) {
+        this.interactionError = error.text || String(error);
+      }
     },
-    flush: function () {
+    async flush () {
       if (!Utils.checkClusterSelection(this.query.cluster, this.$store.state.esCluster.availableCluster.active, this, 'interactionError').valid) {
         return;
       }
 
-      this.$http.post('api/esadmin/flush', {}, { params: this.query })
-        .then((response) => {
-          this.interactionSuccess = response.data.text;
-        })
-        .catch((error) => {
-          this.interactionError = error.text || error;
-        });
+      try {
+        const response = await StatsService.flushAdmin(this.query);
+        this.interactionSuccess = response.text;
+      } catch (error) {
+        this.interactionError = error.text || String(error);
+      }
     },
-    retryFailed: function () {
+    async retryFailed () {
       if (!Utils.checkClusterSelection(this.query.cluster, this.$store.state.esCluster.availableCluster.active, this, 'interactionError').valid) {
         return;
       }
 
-      this.$http.post('api/esadmin/reroute', {}, { params: this.query })
-        .then((response) => {
-          this.interactionSuccess = response.data.text;
-        })
-        .catch((error) => {
-          this.interactionError = error.text || error;
-        });
+      try {
+        const response = await StatsService.rerouteAdmin(this.query);
+        this.interactionSuccess = response.text;
+      } catch (error) {
+        this.interactionError = error.text || String(error);
+      }
     },
     /* helper functions ------------------------------------------ */
-    loadData: function () {
+    async loadData () {
       if (!Utils.checkClusterSelection(this.query.cluster, this.$store.state.esCluster.availableCluster.active, this).valid) {
         return;
       }
 
       this.loading = true;
 
-      this.$http.get('api/esadmin', { params: this.query })
-        .then((response) => {
-          this.error = '';
-          this.loading = false;
-          this.settings = response.data;
-        }, (error) => {
-          this.error = error.text || error;
-          this.loading = false;
-        });
+      try {
+        const response = await StatsService.getAdmin(this.query);
+        this.error = '';
+        this.loading = false;
+        this.settings = response;
+      } catch (error) {
+        this.error = error.text || String(error);
+        this.loading = false;
+      }
     }
   }
 };

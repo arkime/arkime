@@ -3,46 +3,78 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-
-  <form class="position-relative">
-
+  <form class="position-relative pt-1">
     <!-- viz options button -->
-    <div class="viz-options-btn-container"
+    <div
+      class="viz-options-btn-container"
       v-if="!actionForm && (basePath === 'spigraph' || basePath === 'sessions' || basePath === 'spiview')">
+      <BTooltip
+        target="hideViz"
+        :delay="{show: 0, hide: 0}"
+        noninteractive
+        boundary="viewport"
+        placement="left"
+        v-if="basePath !== 'spigraph'">
+        {{ $t(!hideViz ? 'search.speedUpTip' : 'search.showGraphTip') }}
+      </BTooltip>
+      <template v-if="!hideViz && disabledAggregations">
+        <BTooltip
+          target="fetchVizQuery"
+          :delay="{show: 0, hide: 0}"
+          noninteractive
+          boundary="viewport"
+          placement="left">
+          {{ $t('search.fetchVizQueryTip') }}
+        </BTooltip>
+        <BTooltip
+          target="fetchVizSession"
+          :delay="{show: 0, hide: 0}"
+          noninteractive
+          boundary="viewport"
+          placement="left">
+          {{ $t('search.fetchVizSessionTip') }}
+        </BTooltip>
+        <BTooltip
+          target="fetchVizBrowser"
+          :delay="{show: 0, hide: 0}"
+          noninteractive
+          boundary="viewport"
+          placement="left">
+          {{ $t('search.fetchVizBrowserTip') }}
+        </BTooltip>
+      </template>
       <b-dropdown
         split
         right
         size="sm"
         variant="primary"
-        class="viz-options-btn"
-        @click="overrideDisabledAggregations(1)">
+        class="viz-options-btn">
         <template #button-content>
-          <span class="fa fa-gear fa-fw" />
-          <span v-if="!hideViz && disabledAggregations">
-            Fetch Viz Data
-          </span>
+          <div @click="overrideDisabledAggregations(1)">
+            <span class="fa fa-gear fa-fw" />
+            <span v-if="!hideViz && disabledAggregations">
+              {{ $t('search.fetchVizData') }}
+            </span>
+          </div>
         </template>
         <template v-if="!hideViz && disabledAggregations">
           <b-dropdown-item
-            @click="overrideDisabledAggregations(1)"
-            v-b-tooltip.hover.left="'might take a while'">
-            Fetch visualizations for this query
-          </b-dropdown-item>
+            id="fetchVizQuery"
+            v-i18n-bdd="'search.'"
+            @click="overrideDisabledAggregations(1)" />
           <b-dropdown-item
-            @click="overrideDisabledAggregations(0)"
-            v-b-tooltip.hover.left="'slows down future searches until you close this tab'">
-            Fetch visualizations for this browser session
-          </b-dropdown-item>
+            id="fetchVizSession"
+            v-i18n-bdd="'search.'"
+            @click="overrideDisabledAggregations(0)" />
           <b-dropdown-item
-            @click="overrideDisabledAggregations(-1)"
-            v-b-tooltip.hover.left="'slows down future searches until you turn it off'">
-            Always fetch visualizations for this browser
-          </b-dropdown-item>
+            id="fetchVizBrowser"
+            v-i18n-bdd="'search.'"
+            @click="overrideDisabledAggregations(-1)" />
         </template>
         <template v-if="forcedAggregations">
           <b-dropdown-item
             @click="overrideDisabledAggregations(undefined)">
-            Disable forced visualizations
+            {{ $t('search.disableVis') }}
           </b-dropdown-item>
         </template>
         <b-dropdown-divider v-if="!hideViz && disabledAggregations" />
@@ -51,311 +83,343 @@ SPDX-License-Identifier: Apache-2.0
           {{ !stickyViz ? 'Pin' : 'Unpin' }}{{ basePath && basePath === 'spigraph' ? ' top' : '' }} {{ basePath && basePath === 'sessions' ? 'graph, map, and column headers' : 'graph and map' }}
         </b-dropdown-item>
         <b-dropdown-item
+          id="hideViz"
           @click="toggleHideViz"
-          v-if="basePath !== 'spigraph'"
-          v-b-tooltip.hover.left="!hideViz ? 'Speeds up large queries!' : 'Show graph & map'">
-          {{ !hideViz ? 'Hide' : 'Show' }} graph and map
+          v-if="basePath !== 'spigraph'">
+          {{ $t(!hideViz ? 'search.hideGraphMap' : 'search.showGraphMap') }}
         </b-dropdown-item>
       </b-dropdown>
     </div> <!-- /viz options button -->
 
-    <div class="pr-1 pl-1 pt-1 pb-1">
-
+    <div class="pe-1 ps-1 pt-1 pb-1">
       <!-- actions dropdown menu -->
-      <b-dropdown v-if="!hideActions && $route.name === 'Sessions'"
-        right
+      <b-dropdown
+        v-if="!hideActions && $route.name === 'Sessions'"
         size="sm"
-        class="pull-right ml-1 action-menu-dropdown"
-        boundary="body"
+        class="pull-right ms-1 action-menu-dropdown"
         variant="theme-primary"
         title="Actions menu">
-        <b-dropdown-item @click="exportPCAP"
+        <b-dropdown-item
+          @click="exportPCAP"
           v-has-permission="'!disablePcapDownload'"
-          title="Export PCAP">
-          <span class="fa fa-fw fa-file-o"></span>&nbsp;
-          Export PCAP
+          :title="$t('sessions.exports.exportPCAP')">
+          <span class="fa fa-fw fa-file-o" />&nbsp;
+          {{ $t('sessions.exports.exportPCAP') }}
         </b-dropdown-item>
-        <b-dropdown-item @click="exportCSV"
-          title="Export CSV">
-          <span class="fa fa-fw fa-file-excel-o"></span>&nbsp;
-          Export CSV
+        <b-dropdown-item
+          @click="exportCSV"
+          title="$t('sessions.exports.exportCSV')">
+          <span class="fa fa-fw fa-file-excel-o" />&nbsp;
+          {{ $t('sessions.exports.exportCSV') }}
         </b-dropdown-item>
-        <b-dropdown-item @click="addTags"
-          title="Add Tags">
-          <span class="fa fa-fw fa-tags"></span>&nbsp;
-          Add Tags
+        <b-dropdown-item
+          @click="addTags"
+          :title="$t('sessions.tag.addTags')">
+          <span class="fa fa-fw fa-tags" />&nbsp;
+          {{ $t('sessions.tag.addTags') }}
         </b-dropdown-item>
-        <b-dropdown-item @click="removeTags"
+        <b-dropdown-item
+          @click="removeTags"
           v-has-permission="'removeEnabled'"
-          title="Remove Tags">
-          <span class="fa fa-fw fa-eraser"></span>&nbsp;
-          Remove Tags
+          :title="$t('sessions.tag.removeTags')">
+          <span class="fa fa-fw fa-eraser" />&nbsp;
+          {{ $t('sessions.tag.removeTags') }}
         </b-dropdown-item>
-        <b-dropdown-item @click="removeData"
+        <b-dropdown-item
+          @click="removeData"
           v-has-permission="'removeEnabled'"
-          title="Remove Data">
-          <span class="fa fa-fw fa-trash-o"></span>&nbsp;
-          Remove Data
+          :title="$t('search.removeData')">
+          <span class="fa fa-fw fa-trash-o" />&nbsp;
+          {{ $t('search.removeData') }}
         </b-dropdown-item>
-        <b-dropdown-item v-for="(cluster, key) in arkimeClusters"
+        <b-dropdown-item
+          v-for="(clusterInfo, key) in arkimeClusters"
           :key="key"
           @click="sendSession(key)"
-          :title="`Send to ${cluster.name}`">
-          <span class="fa fa-fw fa-paper-plane-o"></span>&nbsp;
-          Send to {{ cluster.name }}
+          :title="`$t('search.sendSession', { name: clusterInfo.name })`">
+          <span class="fa fa-fw fa-paper-plane-o" />&nbsp;
+          {{ $t('search.sendSession', { name: clusterInfo.name }) }}
         </b-dropdown-item>
-        <b-dropdown-item @click="viewIntersection"
-          title="Export Intersection">
+        <b-dropdown-item
+          @click="viewIntersection"
+          :title="$t('sessions.intersection.title')">
           <span class="fa fa-fw fa-venn">
-            <span class="fa fa-circle-o">
-            </span>
-            <span class="fa fa-circle-o">
-            </span>
+            <span class="fa fa-circle-o" />
+            <span class="fa fa-circle-o" />
           </span>&nbsp;
-          Export Intersection
+          {{ $t('sessions.intersection.title') }}
         </b-dropdown-item>
         <b-dropdown-item
           v-if="!multiviewer"
           @click="periodicQuery"
-          title="Create Periodic Query">
+          :title="$t('search.createPeriodicQuery')">
           <span class="fa fa-fw fa-search" />&nbsp;
-          Create Periodic Query
+          {{ $t('search.createPeriodicQuery') }}
         </b-dropdown-item>
       </b-dropdown> <!-- /actions dropdown menu -->
 
       <!-- views dropdown menu -->
-      <b-dropdown right
+      <b-dropdown
+        right
         size="sm"
-        class="pull-right ml-1 view-menu-dropdown"
+        class="pull-right ms-1 view-menu-dropdown"
         no-caret
         toggle-class="rounded"
         variant="theme-secondary">
-        <template slot="button-content">
-          <div v-if="view && views && getView(view)"
-            v-b-tooltip.hover.left
-            :title="getView(view).expression || ''">
-            <span class="fa fa-eye"></span>
-            <span v-if="view">{{ getView(view).name || view }}</span>
-            <span class="sr-only">Views</span>
-          </div>
-          <div v-else>
-            <span class="fa fa-eye"></span>
-            <span class="sr-only">Views</span>
-          </div>
+        <template #button-content>
+          <template v-if="view && views && getView(view)">
+            <div id="viewMenuDropdown">
+              <span class="fa fa-eye" />
+              <span v-if="view">{{ getView(view).name || view }}</span>
+              <span class="sr-only">{{ $t('common.views') }}</span>
+              <BTooltip target="viewMenuDropdown">
+                {{ getView(view).expression || '' }}
+              </BTooltip>
+            </div>
+          </template>
+          <template v-else>
+            <span class="fa fa-eye" />
+            <span class="sr-only">{{ $t('common.views') }}</span>
+          </template>
         </template>
-        <b-dropdown-item @click="modView()"
+        <b-dropdown-item
+          @click="modView()"
           title="Create a new view">
-          <span class="fa fa-plus-circle"></span>&nbsp;
-          New View
+          <span class="fa fa-plus-circle" />&nbsp;
+          {{ $t('search.newView') }}
         </b-dropdown-item>
-        <b-dropdown-divider></b-dropdown-divider>
-        <b-dropdown-item @click="setView(undefined)"
+        <b-dropdown-divider />
+        <b-dropdown-item
+          @click="setView(undefined)"
           :class="{'active':!view}">
-          None
+          {{ $t('common.none') }}
         </b-dropdown-item>
-        <b-dropdown-item v-for="(value, index) in views"
+        <b-dropdown-item
+          v-for="(value, index) in views"
+          :id="`view${value.id}`"
           :key="value.id"
           :class="{'active':view === value.id}"
-          @click.self="setView(value.id)"
-          v-b-tooltip.hover.left
-          :title="value.expression">
-          <span v-if="value.shared"
-            class="fa fa-share-square">
-          </span>
+          @click.self="setView(value.id)">
+          <span
+            v-if="value.shared"
+            class="fa fa-share-square" />
           <!-- view action buttons -->
           <template v-if="canEditView(value)">
             <button
+              :id="`deleteView${value.id}`"
               type="button"
-              v-b-tooltip.hover.top
-              title="Delete this view."
-              class="btn btn-xs btn-danger pull-right ml-1"
+              class="btn btn-xs btn-danger pull-right ms-1"
               @click.stop.prevent="deleteView(value.id, index)">
-              <span class="fa fa-trash-o">
-              </span>
+              <span class="fa fa-trash-o" />
+              <BTooltip :target="`deleteView${value.id}`">
+                {{ $t('search.deleteView') }}
+              </BTooltip>
             </button>
             <button
+              :id="`editView${value.id}`"
               type="button"
-              v-b-tooltip.hover.top
-              title="Edit this view."
               @click.stop.prevent="modView(views[index])"
-              class="btn btn-xs btn-warning pull-right ml-1">
-              <span class="fa fa-edit">
-              </span>
+              class="btn btn-xs btn-warning pull-right ms-1">
+              <span class="fa fa-edit" />
+              <BTooltip :target="`editView${value.id}`">
+                {{ $t('search.editView') }}
+              </BTooltip>
             </button>
           </template>
-          <button class="btn btn-xs btn-theme-secondary pull-right ml-1"
+          <button
+            :id="`applyView${value.id}`"
+            class="btn btn-xs btn-theme-secondary pull-right ms-1"
             type="button"
-            v-b-tooltip.hover.top
-            title="Put this view's search expression into the search input. Note: this does not issue a search."
             @click.stop.prevent="applyView(value)">
-            <span class="fa fa-share fa-flip-horizontal">
-            </span>
+            <span class="fa fa-share fa-flip-horizontal" />
+            <BTooltip :target="`applyView${value.id}`">
+              {{ $t('search.applyView') }}
+            </BTooltip>
           </button>
-          <button v-if="value.sessionsColConfig && $route.name === 'Sessions'"
+          <button
+            v-if="value.sessionsColConfig && $route.name === 'Sessions'"
+            :id="`applyColumns${value.id}`"
             class="btn btn-xs btn-theme-tertiary pull-right"
             type="button"
-            v-b-tooltip.hover.top
-            title="Apply this view's column configuration to the sessions table. Note: this will issue a search and update the sessions table columns"
             @click.stop.prevent="applyColumns(value)">
-            <span class="fa fa-columns">
-            </span>
-          </button> <!-- /view action buttons -->
+            <span class="fa fa-columns" />
+            <BTooltip :target="`applyColumns${value.id}`">
+              {{ $t('search.applyColumns') }}
+            </BTooltip>
+          </button>
+          <!-- /view action buttons -->
           {{ value.name }}&nbsp;
+          <BTooltip :target="`view${value.id}`">
+            {{ value.expression }}
+          </BTooltip>
         </b-dropdown-item>
       </b-dropdown> <!-- /views dropdown menu -->
 
       <Clusters :select-one="$route.name === 'Hunt'" /> <!-- cluster dropdown menu -->
 
       <!-- search button -->
-      <a class="btn btn-sm btn-theme-tertiary pull-right ml-1 search-btn"
+      <a
+        class="btn btn-sm btn-theme-tertiary pull-right ms-1 search-btn"
         @click="applyParams"
         tabindex="2">
         <span v-if="!shiftKeyHold">
-          Search
+          {{ $t('common.search') }}
         </span>
-        <span v-else
+        <span
+          v-else
           class="enter-icon">
-          <span class="fa fa-long-arrow-left fa-lg">
-          </span>
-          <div class="enter-arm">
-          </div>
+          <span class="fa fa-long-arrow-left fa-lg" />
+          <div class="enter-arm" />
         </span>
       </a> <!-- /search button -->
 
       <!-- search box typeahead -->
       <expression-typeahead
-        @modView="modView"
-        @applyExpression="applyParams"
-        @changeExpression="changeExpression">
-      </expression-typeahead> <!-- /search box typeahead -->
+        @mod-view="modView"
+        @apply-expression="applyParams"
+        @change-expression="changeExpression" /> <!-- /search box typeahead -->
 
       <!-- time inputs -->
       <arkime-time
         :timezone="user.settings.timezone"
-        @timeChange="timeChange"
+        @time-change="timeChange"
         :hide-interval="hideInterval"
-        :updateTime="updateTime">
-      </arkime-time> <!-- /time inputs -->
+        :update-time="updateTime" /> <!-- /time inputs -->
 
       <!-- form message -->
       <div class="small mt-1">
-        <arkime-toast :message="message"
+        <arkime-toast
+          :message="message"
           :type="messageType"
-          :done="messageDone">
-        </arkime-toast>
+          :done="messageDone" />
       </div> <!-- /form message -->
 
       <div v-if="actionForm">
         <hr class="action-form-separator">
-        <div class="row">
-          <div v-if="showApplyButtons"
-            class="col-md-3">
-            <b-form-group>
-              <b-form-radio-group
-                size="sm"
-                buttons
-                v-model="actionFormItemRadio">
-                <b-radio
-                  value="open"
-                  class="btn-radio"
-                  v-b-tooltip.hover
-                  :title="openItemsTooltip">
-                  Open Items
-                </b-radio>
-                <b-radio
-                  value="visible"
-                  class="btn-radio"
-                  v-b-tooltip.hover
-                  :title="visibleItemsTooltip">
-                  Visible Items
-                </b-radio>
-                <b-radio
-                  value="matching"
-                  class="btn-radio"
-                  v-b-tooltip.hover
-                  :title="matchingItemsTooltip">
-                  Matching Items
-                </b-radio>
-              </b-form-radio-group>
-            </b-form-group>
+        <div class="row d-flex gap-1">
+          <div
+            v-if="showApplyButtons"
+            class="col-auto">
+            <BTooltip
+              target="visibleSessions"
+              noninteractive>
+              {{ visibleItemsTooltip }}
+            </BTooltip>
+            <BTooltip
+              target="openSessions"
+              noninteractive>
+              {{ openItemsTooltip }}
+            </BTooltip>
+            <BTooltip
+              target="matchingSessions"
+              noninteractive>
+              {{ matchingItemsTooltip }}
+            </BTooltip>
+            <BFormRadioGroup
+              buttons
+              size="sm"
+              :model-value="actionFormItemRadio"
+              @update:model-value="newVal => actionFormItemRadio = newVal"
+              class="mb-0">
+              <BFormRadio value="open">
+                <template #default>
+                  <div id="openSessions">
+                    {{ $t('search.open') }}
+                  </div>
+                </template>
+              </BFormRadio>
+              <BFormRadio value="visible">
+                <template #default>
+                  <div id="visibleSessions">
+                    {{ $t('search.visible') }}
+                  </div>
+                </template>
+              </BFormRadio>
+              <BFormRadio value="matching">
+                <template #default>
+                  <div id="matchingSessions">
+                    {{ $t('search.matching') }}
+                  </div>
+                </template>
+              </BFormRadio>
+            </BFormRadioGroup>
           </div>
           <!-- actions menu forms -->
-          <div :class="{'col-md-9':showApplyButtons,'col-md-12':!showApplyButtons}">
-            <arkime-modify-view v-if="actionForm === 'modify:view'"
-              :done="actionFormDone"
-              :editView="editableView"
-              :initialExpression="expression"
-              @setView="setView">
-            </arkime-modify-view>
-            <arkime-tag-sessions v-else-if="actionForm === 'add:tags' || actionForm === 'remove:tags'"
+          <div class="col-auto flex-grow-1">
+            <arkime-modify-view
+              v-if="actionForm === 'modify:view'"
+              @done="actionFormDone"
+              :edit-view="editableView"
+              :initial-expression="expression"
+              @set-view="setView" />
+            <arkime-tag-sessions
+              v-else-if="actionForm === 'add:tags' || actionForm === 'remove:tags'"
               :add="actionForm === 'add:tags'"
               :start="start"
-              :done="actionFormDone"
+              @done="actionFormDone"
               :sessions="openSessions"
               :num-visible="numVisibleSessions"
               :num-matching="numMatchingSessions"
-              :apply-to="actionFormItemRadio">
-            </arkime-tag-sessions>
-            <arkime-remove-data v-else-if="actionForm === 'remove:data'"
+              :apply-to="actionFormItemRadio" />
+            <arkime-remove-data
+              v-else-if="actionForm === 'remove:data'"
               :start="start"
-              :done="actionFormDone"
+              @done="actionFormDone"
               :sessions="openSessions"
               :num-visible="numVisibleSessions"
               :num-matching="numMatchingSessions"
-              :apply-to="actionFormItemRadio">
-            </arkime-remove-data>
-            <arkime-send-sessions v-else-if="actionForm === 'send:session'"
+              :apply-to="actionFormItemRadio" />
+            <arkime-send-sessions
+              v-else-if="actionForm === 'send:session'"
               :start="start"
               :cluster="cluster"
-              :done="actionFormDone"
+              @done="actionFormDone"
               :sessions="openSessions"
               :num-visible="numVisibleSessions"
               :num-matching="numMatchingSessions"
-              :apply-to="actionFormItemRadio">
-            </arkime-send-sessions>
-            <arkime-export-pcap v-else-if="actionForm === 'export:pcap'"
+              :apply-to="actionFormItemRadio" />
+            <arkime-export-pcap
+              v-else-if="actionForm === 'export:pcap'"
+              @done="actionFormDone"
               :start="start"
-              :done="actionFormDone"
               :sessions="openSessions"
               :num-visible="numVisibleSessions"
               :num-matching="numMatchingSessions"
-              :apply-to="actionFormItemRadio">
-            </arkime-export-pcap>
-            <arkime-export-csv v-else-if="actionForm === 'export:csv'"
+              :apply-to="actionFormItemRadio" />
+            <arkime-export-csv
+              v-else-if="actionForm === 'export:csv'"
               :start="start"
               :fields="fields"
-              :done="actionFormDone"
+              @done="actionFormDone"
               :sessions="openSessions"
               :num-visible="numVisibleSessions"
               :num-matching="numMatchingSessions"
-              :apply-to="actionFormItemRadio">
-            </arkime-export-csv>
-            <arkime-intersection v-else-if="actionForm === 'view:intersection'"
-              :done="actionFormDone"
-              :fields="fields">
-            </arkime-intersection>
+              :apply-to="actionFormItemRadio" />
+            <arkime-intersection
+              v-else-if="actionForm === 'view:intersection'"
+              @done="actionFormDone"
+              :fields="fields" />
           </div> <!-- /actions menu forms -->
         </div>
       </div>
-
     </div>
   </form>
-
 </template>
 
 <script>
 import SettingsService from '../settings/SettingsService';
-import ExpressionTypeahead from './ExpressionTypeahead';
-import ArkimeTime from './Time';
-import ArkimeToast from '../utils/Toast';
-import ArkimeModifyView from '../sessions/ModifyView';
-import ArkimeTagSessions from '../sessions/Tags';
-import ArkimeRemoveData from '../sessions/Remove';
-import ArkimeSendSessions from '../sessions/Send';
-import ArkimeExportPcap from '../sessions/ExportPcap';
-import ArkimeExportCsv from '../sessions/ExportCsv';
-import ArkimeIntersection from '../sessions/Intersection';
-import Clusters from '../utils/Clusters';
+import ExpressionTypeahead from './ExpressionTypeahead.vue';
+import ArkimeTime from './Time.vue';
+import ArkimeToast from '../utils/Toast.vue';
+import ArkimeModifyView from '../sessions/ModifyView.vue';
+import ArkimeTagSessions from '../sessions/Tags.vue';
+import ArkimeRemoveData from '../sessions/Remove.vue';
+import ArkimeSendSessions from '../sessions/Send.vue';
+import ArkimeExportPcap from '../sessions/ExportPcap.vue';
+import ArkimeExportCsv from '../sessions/ExportCsv.vue';
+import ArkimeIntersection from '../sessions/Intersection.vue';
+import Clusters from '../utils/Clusters.vue';
+import { commaString } from '@common/vueFilters.js';
 
 export default {
   name: 'ArkimeSearch',
@@ -372,30 +436,52 @@ export default {
     ArkimeIntersection,
     Clusters
   },
-  props: [
-    'openSessions',
-    'numVisibleSessions',
-    'numMatchingSessions',
-    'start',
-    'fields',
-    'hideActions',
-    'hideInterval'
+  props: {
+    openSessions: {
+      type: Array,
+      default: () => []
+    },
+    numVisibleSessions: {
+      type: Number,
+      default: 0
+    },
+    numMatchingSessions: {
+      type: Number,
+      default: 0
+    },
+    start: {
+      type: Number,
+      default: 0
+    },
+    fields: {
+      type: Array,
+      default: () => []
+    },
+    hideActions: {
+      type: Boolean,
+      default: false
+    },
+    hideInterval: {
+      type: Boolean,
+      default: false
+    }
+  },
+  emits: [
+    'changeSearch',
+    'recalc-collapse',
+    'setView',
+    'setColumns'
   ],
   data: function () {
     return {
       actionFormItemRadio: 'visible',
-      actionFormItemRadioOptions: [
-        { text: 'Open Item', value: 'open' },
-        { text: 'Visible Items', value: 'visible' },
-        { text: 'Matching Items', value: 'matching' }
-      ],
       actionForm: undefined,
       showApplyButtons: false,
       cluster: {},
       view: this.$route.query.view,
       message: undefined,
       messageType: undefined,
-      updateTime: false,
+      updateTime: 'false',
       editableView: undefined, // Not necessarily active view
       multiviewer: this.$constants.MULTIVIEWER,
       basePath: undefined
@@ -431,13 +517,13 @@ export default {
       return this.$store.state.remoteclusters;
     },
     openItemsTooltip: function () {
-      return 'Apply action to ' + this.$options.filters.commaString(this.openSessions.length) + ' opened sessions';
+      return this.$t('search.applyOpen', { count: commaString(this.openSessions.length) });
     },
     visibleItemsTooltip: function () {
-      return 'Apply action to ' + this.$options.filters.commaString(Math.min(this.numVisibleSessions, this.numMatchingSessions)) + ' visible sessions';
+      return this.$t('search.applyVisible', { count: commaString(Math.min(this.numVisibleSessions, this.numMatchingSessions)) });
     },
     matchingItemsTooltip: function () {
-      return 'Apply action to ' + this.$options.filters.commaString(this.numMatchingSessions) + ' query matching sessions';
+      return this.$t('search.applyMatching', { count: commaString(this.numMatchingSessions) });
     },
     stickyViz: {
       get: function () { return this.$store.state.stickyViz; },
@@ -469,7 +555,7 @@ export default {
       if (newVal) { this.applyParams(); }
     },
     actionForm: function () {
-      this.$parent.$emit('recalc-collapse');
+      this.$emit('recalc-collapse');
     }
   },
   created: function () {
@@ -486,7 +572,7 @@ export default {
     messageDone: function () {
       this.message = undefined;
       this.messageType = undefined;
-      this.$parent.$emit('recalc-collapse');
+      this.$emit('recalc-collapse');
     },
     applyExpression: function (expression) {
       if (!this.expression) { this.expression = undefined; }
@@ -638,7 +724,7 @@ export default {
       }
     },
     /**
-     * Overrides the server's diabling of aggregations on large time ranges
+     * Overrides the server's disabling of aggregations on large time ranges
      * @param {number} option - How long to disable the aggregation
      *                          -1 = forever
      *                          0  = this session
@@ -654,6 +740,7 @@ export default {
 
       if (option === -1) {
         localStorage['force-aggregations'] = true;
+        sessionStorage['force-aggregations'] = true;
         this.$store.commit('setForcedAggregations', true);
       } else {
         sessionStorage['force-aggregations'] = true;
@@ -669,8 +756,8 @@ export default {
         this.$store.commit('setFetchGraphData', false); // unset for future data fetching
         this.$store.commit('setForcedAggregations', true);
         if (option === 1) { // if just override just once, unset it for future calls to disable aggs
+          localStorage['force-aggregations'] = false;
           sessionStorage['force-aggregations'] = false;
-          this.$store.commit('setForcedAggregations', false);
         }
       }, 500);
     },
@@ -713,9 +800,9 @@ export default {
         });
       }
 
-      this.updateTime = !changed ? 'query' : true; // issue a query if the time
+      this.updateTime = !changed ? 'query' : 'true'; // issue a query if the time
       // hasn't changed, otherwise just update the time in the time component
-      this.$nextTick(() => { this.updateTime = false; });
+      this.$nextTick(() => { this.updateTime = 'false'; });
     },
     /* event functions ------------------------------------------- */
     /**
@@ -779,13 +866,10 @@ form {
 /* make sure action menu dropdown is above all the things
  * but specifically above the sticky sessions button */
 .action-menu-dropdown { z-index: 1030; }
-.form-group {
-  margin-bottom: 0;
-}
 
 /* viz options button position above viz in nav */
 .viz-options-btn-container {
-  top: 118px;
+  top: 122px;
   right: 4px;
   position: fixed;
 }

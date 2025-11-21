@@ -107,6 +107,7 @@ LOCAL void smtp_email_add_value(ArkimeSession_t *session, int pos, const char *s
     switch (config.fields[pos]->type) {
     case ARKIME_FIELD_TYPE_INT:
     case ARKIME_FIELD_TYPE_INT_ARRAY:
+    case ARKIME_FIELD_TYPE_INT_ARRAY_UNIQUE:
     case ARKIME_FIELD_TYPE_INT_HASH:
     case ARKIME_FIELD_TYPE_INT_GHASH:
         arkime_field_int_add(pos, session, atoi(s));
@@ -933,7 +934,7 @@ LOCAL void smtp_classify(ArkimeSession_t *session, const uint8_t *data, int len,
 void arkime_parser_init()
 {
     hostField = arkime_field_define("email", "lotermfield",
-                                    "host.email", "Hostname", "email.host",
+                                    "host.email", "Email Hostname", "email.host",
                                     "Email hostnames",
                                     ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
                                     "aliases", "[\"email.host\"]",

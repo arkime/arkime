@@ -83,3 +83,6 @@ GeoIPv6.dat
 ipv4-address-space.csv
 autom4te.cache
 stamp-h1
+
+# vite
+components.d.ts

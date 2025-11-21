@@ -279,16 +279,6 @@ class User {
         user = Object.assign(new User(), data);
       }
 
-      // If passStore is using old form re-encrypt
-      /* Remove for now
-      if (data.passStore.split('.').length === 1) {
-        data.passStore = Auth.ha12store(Auth.store2ha1(data.passStore));
-        User.setUser(data.userId, data, (err, info) => {
-          console.log('Upgraded passStore for', data.userId);
-        });
-      }
-      */
-
       cleanUser(user);
       user.settings = user.settings ?? {};
       await user.expandFromRoles();

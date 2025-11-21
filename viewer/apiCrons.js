@@ -85,8 +85,8 @@ class CronAPIs {
    * @param {string} action=tag - The action to perform when sessions have matched. "tag" or "forward:clusterName".
    * @param {string} creator - The id of the user that created this query.
    * @param {string} tags - A comma separated list of tags to add to each session that matches this query.
-   * @param {string} notifier - The name of the notifier to alert when there are matches for this query.
-   * @param {number} lastNotified - The time that this query last sent a notification to the notifier. Only notifies every 10 minutes. Format is seconds since Unix EPOC.
+   * @param {string} notifier - A comma separated list of notifier IDs to alert when there are matches for this query.
+   * @param {number} lastNotified - The time that this query last sent a notification to the notifiers. Only notifies every 10 minutes. Format is seconds since Unix EPOC.
    * @param {number} lastNotifiedCount - The count of sessions that matched since the last notification was sent.
    * @param {string} description - The description of this query.
    * @param {number} created - The time that this query was created. Format is seconds since Unix EPOC.
@@ -143,7 +143,7 @@ class CronAPIs {
       query.query.bool.filter = []; // remove sharing restrictions
     }
 
-    Db.search('queries', 'query', query, (err, data) => {
+    Db.search('queries', query, (err, data) => {
       if (err || data.error) {
         console.log(`ERROR - ${req.method} /api/crons`, util.inspect(err || data.error, false, 50));
       }
@@ -164,6 +164,11 @@ class CronAPIs {
             if (result.users) { // client expects a string
               result.users = result.users.join(',');
             }
+          }
+
+          // Convert comma-separated notifier string to array for client
+          if (ArkimeUtil.isString(result.notifier)) {
+            result.notifier = result.notifier.split(',');
           }
 
           result.key = key;
@@ -207,6 +212,10 @@ class CronAPIs {
       return res.serverError(403, 'Edit roles field must be an array of strings');
     }
 
+    if (req.body.notifier !== undefined && !ArkimeUtil.isStringArray(req.body.notifier)) {
+      return res.serverError(403, 'Notifier field must be an array of strings');
+    }
+
     if (req.body.users !== undefined && !ArkimeUtil.isString(req.body.users, 0)) {
       return res.serverError(403, 'Users field must be a string');
     }
@@ -230,12 +239,13 @@ class CronAPIs {
       }
     };
 
-    if (ArkimeUtil.isString(req.body.description)) {
-      doc.doc.description = req.body.description;
+    // Convert notifier array to comma-separated string for storage
+    if (req.body.notifier && req.body.notifier.length > 0) {
+      doc.doc.notifier = req.body.notifier.join(',');
     }
 
-    if (ArkimeUtil.isString(req.body.notifier)) {
-      doc.doc.notifier = req.body.notifier;
+    if (ArkimeUtil.isString(req.body.description)) {
+      doc.doc.description = req.body.description;
     }
 
     const userId = req.settingUser.userId;
@@ -259,13 +269,18 @@ class CronAPIs {
     doc.doc.creator = userId || 'anonymous';
 
     try {
-      const { body: info } = await Db.indexNow('queries', 'query', null, doc.doc);
+      const { body: info } = await Db.indexNow('queries', null, doc.doc);
 
       if (CronAPIs.#primaryViewer) { CronAPIs.processCronQueries(); }
 
       doc.doc.key = info._id;
       if (doc.doc.users) {
         doc.doc.users = doc.doc.users.join(',');
+      }
+
+      // Convert comma-separated notifier string to array for client
+      if (ArkimeUtil.isString(doc.doc.notifier)) {
+        doc.doc.notifier = doc.doc.notifier.split(',');
       }
 
       return res.send(JSON.stringify({
@@ -319,6 +334,10 @@ class CronAPIs {
       return res.serverError(403, 'Edit roles field must be an array of strings');
     }
 
+    if (req.body.notifier !== undefined && !ArkimeUtil.isStringArray(req.body.notifier)) {
+      return res.serverError(403, 'Notifier field must be an array of strings');
+    }
+
     if (req.body.users !== undefined && !ArkimeUtil.isString(req.body.users, 0)) {
       return res.serverError(403, 'Users field must be a string');
     }
@@ -331,7 +350,6 @@ class CronAPIs {
     const doc = {
       doc: {
         description: '',
-        notifier: undefined,
         name: req.body.name,
         tags: req.body.tags,
         users: req.body.users,
@@ -343,8 +361,11 @@ class CronAPIs {
       }
     };
 
-    if (ArkimeUtil.isString(req.body.notifier)) {
-      doc.doc.notifier = req.body.notifier;
+    // Convert notifier array to comma-separated string for storage
+    if (req.body.notifier && req.body.notifier.length > 0) {
+      doc.doc.notifier = req.body.notifier.join(',');
+    } else {
+      doc.doc.notifier = '';
     }
 
     if (ArkimeUtil.isString(req.body.description)) {
@@ -371,7 +392,7 @@ class CronAPIs {
       };
 
       try {
-        await Db.update('queries', 'query', key, doc, { refresh: true });
+        await Db.update('queries', key, doc, { refresh: true });
       } catch (err) {
         console.log(`ERROR - ${req.method} /api/cron/%s`, ArkimeUtil.sanitizeStr(key), util.inspect(err, false, 50));
       }
@@ -381,6 +402,11 @@ class CronAPIs {
       query.key = key;
       if (query.users) {
         query.users = query.users.join(',');
+      }
+
+      // Convert comma-separated notifier string to array for client
+      if (ArkimeUtil.isString(query.notifier)) {
+        query.notifier = query.notifier.split(',');
       }
 
       return res.send(JSON.stringify({
@@ -416,7 +442,7 @@ class CronAPIs {
     }
 
     try {
-      await Db.deleteDocument('queries', 'query', key, { refresh: true });
+      await Db.deleteDocument('queries', key, { refresh: true });
       res.send(JSON.stringify({
         success: true,
         text: 'Deleted periodic query successfully'
@@ -467,7 +493,7 @@ class CronAPIs {
       function () {
         // Get from remote DISK
         ViewerUtils.getViewUrl(node, (err, viewUrl, client) => {
-          let sendPath = `${Config.basePath(node)}api/sessions/${node}/send?saveId=${pOptions.saveId}&remoteCluster=${pOptions.cluster}`;
+          let sendPath = `api/sessions/${node}/send?saveId=${pOptions.saveId}&remoteCluster=${pOptions.cluster}`;
           if (pOptions.tags) { sendPath += `&tags=${pOptions.tags}`; }
           const url = new URL(sendPath, viewUrl);
           const reqOptions = {
@@ -536,7 +562,7 @@ class CronAPIs {
           } else {
             const doc = { doc: { count: (query.count || 0) + count } };
             try {
-              Db.update('queries', 'query', options.qid, doc, { refresh: true });
+              Db.update('queries', options.qid, doc, { refresh: true });
             } catch (err) {
               console.log('ERROR CRON - updating query', err);
             }
@@ -615,7 +641,7 @@ class CronAPIs {
     let repeat;
     async.doWhilst(function (whilstCb) {
       repeat = false;
-      Db.search('queries', 'query', { size: 1000 }, (err, data) => {
+      Db.search('queries', { size: 1000 }, (err, data) => {
         if (err) {
           internals.cronRunning = false;
           console.log('CRON - processCronQueries', err);
@@ -730,7 +756,7 @@ class CronAPIs {
 
                 async function continueProcess () {
                   try {
-                    await Db.update('queries', 'query', qid, doc, { refresh: true });
+                    await Db.update('queries', qid, doc, { refresh: true });
                   } catch (err) {
                     console.log('ERROR CRON - updating query', err);
                   }
@@ -738,7 +764,7 @@ class CronAPIs {
                   return forQueriesCb();
                 }
 
-                // issue alert via notifier if the count has changed and it has been at least 10 minutes
+                // issue alert via notifier(s) if the count has changed and it has been at least 10 minutes
                 if (cq.notifier && count && cq.count !== doc.doc.count &&
                   (!cq.lastNotified || (Math.floor(Date.now() / 1000) - cq.lastNotified >= 600))) {
                   const newMatchCount = cq.lastNotifiedCount ? (doc.doc.count - cq.lastNotifiedCount) : doc.doc.count;
@@ -760,7 +786,17 @@ class CronAPIs {
                   `;
 
                   Db.refresh('*'); // Before sending alert make sure everything has been refreshed
-                  Notifier.issueAlert(cq.notifier, message, continueProcess);
+
+                  // Handle multiple notifiers (stored as comma-separated string) - send in parallel, fire and forget
+                  if (cq.notifier) {
+                    const notifiers = cq.notifier.split(',');
+                    notifiers.forEach(notifierId => {
+                      Notifier.issueAlert(notifierId, message, () => {});
+                    });
+                  }
+
+                  // Continue processing immediately without waiting for notifications
+                  continueProcess();
                 } else {
                   return continueProcess();
                 }

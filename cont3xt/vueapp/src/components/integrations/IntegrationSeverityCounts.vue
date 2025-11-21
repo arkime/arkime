@@ -3,32 +3,43 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-  <div class="d-flex flex-row text-nowrap severity-badge-container">
-    <span v-if="severityTypes.some(severity => severityCounts[severity])" class="mr-1">
+  <div class="d-flex flex-row text-no-wrap severity-badge-container">
+    <span
+      v-if="severityTypes.some(severity => severityCounts[severity])"
+      class="mr-1">
       <span :id="`${indicatorId}-severity-counts`">
         <template v-for="severity in severityTypes">
-          <b-badge v-if="severityCounts[severity]"
+          <c3-badge
+            v-if="severityCounts[severity]"
             :key="severity"
-            class="severity-badge mb-1"
+            class="severity-badge"
             :variant="severity">
             {{ severityCounts[severity] }}
-          </b-badge>
+          </c3-badge>
         </template>
       </span>
-      <b-tooltip :target="`${indicatorId}-severity-counts`" placement="top">
-        <div class="d-flex flex-column gap-1">
+      <interactive-tooltip
+        :target="`${indicatorId}-severity-counts`"
+        location="top"
+        class="ma-1">
+        <div class="d-flex flex-column ga-1 ma-1">
           <template v-for="severity in severityTypes">
-            <div v-if="severityCounts[severity]" :key="severity" class="d-flex flex-row">
+            <div
+              v-if="severityCounts[severity]"
+              :key="severity"
+              class="d-flex flex-row align-center">
               <span class="severity-emoji align-self-center mr-2">
                 {{ severityEmojiMap[severity] }}
               </span>
               <integration-btns
+                hide-overview-selector
+                :margin-bottom="false"
                 :indicator-id="indicatorId"
-                :count-severity-filter="severity"/>
+                :count-severity-filter="severity" />
             </div>
           </template>
         </div>
-      </b-tooltip>
+      </interactive-tooltip>
     </span>
   </div>
 </template>
@@ -41,9 +52,10 @@ import {
 } from '@/utils/cont3xtUtil';
 import { mapGetters } from 'vuex';
 import IntegrationBtns from '@/components/integrations/IntegrationBtns.vue';
+import InteractiveTooltip from '@/utils/InteractiveTooltip.vue';
 export default {
   name: 'IntegrationSeverityCounts',
-  components: { IntegrationBtns },
+  components: { IntegrationBtns, InteractiveTooltip },
   props: {
     indicatorId: {
       type: String,
@@ -85,7 +97,7 @@ export default {
   align-self: center;
 }
 .severity-badge {
-  font-size: 100%;
+  font-size: 100% !important;
 }
 /* first and/or middle */
 .severity-badge:not(:last-child) {

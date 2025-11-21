@@ -3,75 +3,80 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-  <div v-if="multiviewer">
-    <b-dropdown
-      right
-      size="sm"
-      class="multies-menu-dropdown pull-right ml-1"
-      no-caret
-      toggle-class="rounded"
-      variant="theme-secondary"
-      @show="esVisMenuOpen = true"
-      @hide="esVisMenuOpen = false">
-      <template slot="button-content">
-        <div v-b-tooltip.hover.left :title="esMenuHoverText">
-          <span class="fa fa-database"> </span>
-          <span> {{ selectedCluster.length }} </span>
-        </div>
-      </template>
-      <b-dropdown-header>
-        <input type="text"
-          v-model="esQuery"
-          class="form-control form-control-sm dropdown-typeahead"
-          placeholder="Search for Clusters..."
-        />
-      </b-dropdown-header>
-      <template v-if="!selectOne">
-        <b-dropdown-divider>
-        </b-dropdown-divider>
-          <b-dropdown-item @click.native.capture.stop.prevent="selectAllCluster">
-          <span class="fa fa-list"></span>&nbsp;
-          Select All
-        </b-dropdown-item>
-        <b-dropdown-item @click.native.capture.stop.prevent="clearAllCluster">
-          <span class="fa fa-eraser"></span>&nbsp;
-          Clear All
-        </b-dropdown-item>
-      </template>
-      <b-dropdown-divider>
-      </b-dropdown-divider>
-      <template v-if="esVisMenuOpen">
-        <template v-for="(clusters, group) in filteredClusters">
-          <b-dropdown-header
-            :key="group"
-            class="group-header">
-            {{ group + ' (' + clusters.length + ')' }}
-          </b-dropdown-header>
-          <template v-for="cluster in clusters">
-            <b-dropdown-item
-              :id="group + cluster + 'item'"
-              :key="group + cluster + 'item'"
-              :class="{'active':isClusterVis(cluster)}"
-              @click.native.capture.stop.prevent="toggleClusterSelection(cluster)">
-              {{ cluster }}
-            </b-dropdown-item>
-          </template>
+  <b-dropdown
+    v-if="multiviewer"
+    right
+    size="sm"
+    class="multies-menu-dropdown pull-right ms-1"
+    no-caret
+    toggle-class="rounded"
+    variant="theme-secondary"
+    @show="esVisMenuOpen = true"
+    @hide="esVisMenuOpen = false">
+    <template #button-content>
+      <div id="esMenuHoverText">
+        <span class="fa fa-database me-1" />
+        {{ selectedCluster.length }}
+        <BTooltip target="esMenuHoverText">
+          {{ esMenuHoverText }}
+        </BTooltip>
+      </div>
+    </template>
+    <b-dropdown-header>
+      <input
+        type="text"
+        v-model="esQuery"
+        class="form-control form-control-sm dropdown-typeahead"
+        :placeholder="$t('utils.searchForClustersPlaceholder')">
+    </b-dropdown-header>
+    <template v-if="!selectOne">
+      <b-dropdown-divider />
+      <b-dropdown-item @click.prevent.stop="selectAllCluster">
+        <span class="fa fa-list" />&nbsp;
+        {{ $t('common.selectAll') }}
+      </b-dropdown-item>
+      <b-dropdown-item @click.prevent.stop="clearAllCluster">
+        <span class="fa fa-eraser" />&nbsp;
+        {{ $t('common.clearAll') }}
+      </b-dropdown-item>
+    </template>
+    <b-dropdown-divider />
+    <template v-if="esVisMenuOpen">
+      <template
+        v-for="(clusters, group) in filteredClusters"
+        :key="group">
+        <b-dropdown-header
+          class="group-header">
+          {{ group + ' (' + clusters.length + ')' }}
+        </b-dropdown-header>
+        <template
+          v-for="cluster in clusters"
+          :key="group + cluster + 'item'">
+          <b-dropdown-item
+            :id="group + cluster + 'item'"
+            :class="{'active':isClusterVis(cluster)}"
+            @click.prevent.stop="toggleClusterSelection(cluster)">
+            {{ cluster }}
+          </b-dropdown-item>
         </template>
       </template>
-    </b-dropdown>
-    <b-alert
-      v-model="showMessage"
-      class="position-fixed fixed-bottom m-0 rounded-0"
-      style="z-index: 2000;"
-      variant="warning"
-      dismissible>
-      You can only select one cluster on this tab.
-      We have disabled some clusters for you.
-    </b-alert>
+    </template>
+  </b-dropdown>
+  <div
+    v-if="showMessage"
+    class="alert alert-warning position-fixed fixed-bottom m-0 rounded-0"
+    style="z-index: 2000;">
+    <button
+      type="button"
+      class="btn-close pull-right"
+      @click="showMessage = false" />
+    {{ $t('utils.onlyOne') }}
   </div>
 </template>
 
 <script>
+import { searchCluster } from '@common/vueFilters.js';
+
 export default {
   name: 'Clusters',
   props: {
@@ -80,6 +85,7 @@ export default {
       default: false
     }
   },
+  emits: ['updateCluster'],
   data () {
     return {
       esQuery: '', // query for ES to toggle visibility
@@ -90,6 +96,7 @@ export default {
   },
   watch: {
     selectOne (newValue) {
+      if (!this.multiviewer) { return; }
       if (!newValue && this.$route.query.cluster !== 'none') {
         const clusterParam = this.$route.query.cluster.split(',') || [];
         if (clusterParam !== this.selectedCluster) {
@@ -107,7 +114,7 @@ export default {
     filteredClusters () {
       const filteredGroupedClusters = {};
       for (const group in this.availableCluster) {
-        filteredGroupedClusters[group] = this.$options.filters.searchCluster(
+        filteredGroupedClusters[group] = searchCluster(
           this.esQuery,
           this.availableCluster[group]
         );
@@ -173,20 +180,42 @@ export default {
       this.updateRouteQueryForClusters(this.selectedCluster);
     },
     /* helper functions ---------------------------------------------------- */
+    /**
+     * Sets clusters to search in multiviewer mode, using the following priority:
+     * 1. If route query 'cluster' param is present, use those clusters.
+     * 2. Else, if CLUSTER_DEFAULT constant is set, use those clusters.
+     * 3. Else, use all active clusters.
+     */
     getClusters () {
-      if (this.multiviewer) { // set clusters to search if in multiviewer mode
-        const clusters = this.$route.query.cluster ? this.$route.query.cluster.split(',') : [];
-        if (clusters.length === 0) {
-          this.selectedCluster = this.availableCluster.active;
-        } else {
-          this.selectedCluster = [];
-          for (let i = 0; i < clusters.length; i++) {
-            if (this.availableCluster.active.includes(clusters[i])) {
-              this.selectedCluster.push(clusters[i]);
-            }
+      if (!this.multiviewer) { return; }
+
+      // route query cluster param overrides clusterDefault
+      const routeClusters = this.$route.query.cluster ? this.$route.query.cluster.split(',') : [];
+      if (routeClusters.length > 0) {
+        this.selectedCluster = [];
+        for (let i = 0; i < routeClusters.length; i++) {
+          if (this.availableCluster.active.includes(routeClusters[i])) {
+            this.selectedCluster.push(routeClusters[i]);
           }
         }
+        return;
       }
+
+      // use clusterDefault if no route query params
+      const clusterDefault = this.$constants.CLUSTER_DEFAULT;
+      if (clusterDefault) {
+        const defaultClusters = clusterDefault.split(',').map(c => c.trim()).filter(c => c.length > 0);
+        this.selectedCluster = [];
+        for (let i = 0; i < defaultClusters.length; i++) {
+          if (this.availableCluster.active.includes(defaultClusters[i])) {
+            this.selectedCluster.push(defaultClusters[i]);
+          }
+        }
+        return;
+      }
+
+      // default to ALL active available clusters if no route query params and clusterDefault is not set
+      this.selectedCluster = this.availableCluster.active;
     },
     updateRouteQueryForClusters (clusters) {
       const cluster = clusters.length > 0 ? clusters.join(',') : 'none';

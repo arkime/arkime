@@ -3,188 +3,207 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
+  <BRow
+    gutter-x="1"
+    class="text-start flex-nowrap d-flex justify-content-between"
+    align-h="start"
+    @keyup.stop.prevent.enter="exportCsvAction">
+    <BCol cols="auto">
+      <SegmentSelect v-model:segments="segments" />
+    </BCol>
 
-  <div @keyup.stop.prevent.enter="exportCsv">
-
-    <!-- export csv form -->
-    <div class="row">
-
-      <!-- segments select input -->
-      <SegmentSelect :segments.sync="segments" /> <!-- /segments select input -->
-
-      <div class="col-md-4">
-
-        <!-- filename input -->
-        <div class="input-group input-group-sm">
-          <div class="input-group-prepend">
-            <span class="input-group-text">
-              Filename
-            </span>
-          </div>
-          <b-form-input
-            autofocus
-            type="text"
-            v-model="filename"
-            class="form-control"
-            placeholder="Enter a filename"
-          />
-        </div> <!-- /filename input -->
-        <!-- error -->
-        <p v-if="error"
-          class="small text-danger mb-0">
-          <span class="fa fa-exclamation-triangle">
-          </span>&nbsp;
-          {{ error }}
-        </p> <!-- /error -->
-
+    <BCol
+      cols="auto"
+      class="flex-fill">
+      <div class="input-group input-group-sm">
+        <span class="input-group-text">
+          Filename
+        </span>
+        <b-form-input
+          autofocus
+          type="text"
+          :model-value="filename"
+          class="form-control"
+          :placeholder="$t('sessions.exports.filenamePlaceholder')"
+          @update:model-value="filename = $event" />
       </div>
+      <p
+        v-if="error"
+        class="small text-danger mb-0">
+        <span class="fa fa-exclamation-triangle" />&nbsp;
+        {{ error }}
+      </p>
+    </BCol>
 
-      <!-- buttons -->
-      <div class="col-md-4">
-        <div class="pull-right">
-          <button type="button"
-            @click="toggleChangeFields"
-            class="btn btn-sm btn-theme-secondary"
-            title="Change the fields that are exported">
-            Change Fields
-          </button>
-          <button
-            type="button"
-            @click="exportCsv"
-            title="Export CSV"
-            class="btn btn-sm btn-theme-tertiary">
-            <span class="fa fa-paper-plane-o">
-            </span>&nbsp;
-            Export CSV
-          </button>
-          <button class="btn btn-sm btn-warning"
-            v-b-tooltip.hover
-            title="cancel"
-            @click="done(null)"
-            type="button">
-            <span class="fa fa-ban">
-            </span>
-          </button>
+    <BCol cols="auto">
+      <button
+        type="button"
+        @click="toggleChangeFields"
+        class="btn btn-sm btn-theme-secondary me-1">
+        {{ $t('sessions.exports.changeFields') }}
+      </button>
+      <button
+        type="button"
+        @click="exportCsvAction"
+        class="btn btn-sm btn-theme-tertiary me-1">
+        <span class="fa fa-paper-plane-o" />&nbsp;
+        {{ $t('sessions.exports.exportCSV') }}
+      </button>
+      <button
+        id="cancelExportCsv"
+        class="btn btn-sm btn-warning"
+        @click="$emit('done', null, false, false)"
+        type="button">
+        <span class="fa fa-ban" />
+        <BTooltip target="cancelExportCsv">
+          {{ $t('common.cancel') }}
+        </BTooltip>
+      </button>
+    </BCol>
+  </BRow>
+
+  <div
+    v-if="changeFields"
+    class="row mt-1">
+    <div class="col">
+      <div class="input-group input-group-sm">
+        <div
+          id="exportFields"
+          class="input-group-text cursor-help">
+          {{ $t('sessions.exports.exportFields') }}
+          <BTooltip target="exportFields">
+            {{ $t('sessions.exports.exportFieldsTip') }}
+          </BTooltip>
         </div>
-      </div> <!-- /buttons -->
-
-    </div> <!-- /export csv form -->
-
-    <div v-if="changeFields"
-      class="row mt-1">
-      <div class="col">
-        <div class="input-group input-group-sm">
-          <div
-            v-b-tooltip.hover
-             class="input-group-prepend cursor-help"
-            title="Comma separated list of fields to export (in database field format - see help page)">
-            <span class="input-group-text">
-              Fields
-            </span>
-          </div>
-          <input type="text"
-            class="form-control"
-            v-model="exportFields"
-            placeholder="Comma separated list of fields (in database field format - see help page)"
-          />
-          <div
-            v-b-tooltip.hover
-            class="input-group-prepend cursor-help"
-            title="This is a list of Database Fields, please consult the help page for field Database values (click the owl, then the fields section)">
-            <span class="input-group-text">
-              <span class="fa fa-question-circle">
-              </span>
-            </span>
-          </div>
+        <input
+          type="text"
+          class="form-control"
+          :model-value="exportFields"
+          @update:model-value="exportFields = $event"
+          :placeholder="$t('sessions.exports.exportFieldsTip')">
+        <div
+          id="exportFieldsHelp"
+          class="input-group-text cursor-help">
+          <span class="fa fa-question-circle" />
+          <BTooltip target="exportFieldsHelp">
+            {{ $t('sessions.exports.exportFieldsHelp') }}
+          </BTooltip>
         </div>
       </div>
     </div>
-
   </div>
-
 </template>
 
-<script>
+<script setup>
+import { ref, onMounted, watch } from 'vue';
+import { useRoute } from 'vue-router';
 import SessionsService from './SessionsService';
-import SegmentSelect from './SegmentSelect';
+import SegmentSelect from './SegmentSelect.vue';
+import { useI18n } from 'vue-i18n';
+const { t } = useI18n();
 
-export default {
-  name: 'ArkimeExportCsv',
-  components: { SegmentSelect },
-  props: {
-    start: Number,
-    done: Function,
-    applyTo: String,
-    sessions: Array,
-    numVisible: Number,
-    numMatching: Number,
-    fields: Array
+// Define Props
+const props = defineProps({
+  start: {
+    type: Number,
+    default: 0
   },
-  data: function () {
-    return {
-      error: '',
-      segments: 'no',
-      filename: 'sessions.csv',
-      changeFields: false,
-      exportFields: undefined
-    };
+  applyTo: {
+    type: String,
+    default: 'open'
   },
-  mounted: function () {
-    this.computeExportFields();
+  sessions: {
+    type: Array,
+    default: () => []
   },
-  methods: {
-    /* exposed functions ----------------------------------------- */
-    toggleChangeFields: function () {
-      this.changeFields = !this.changeFields;
-    },
-    exportCsv: function () {
-      if (this.filename === '') {
-        this.error = 'No filename specified.';
-        return;
-      }
+  numVisible: {
+    type: Number,
+    default: 0
+  },
+  numMatching: {
+    type: Number,
+    default: 0
+  },
+  fields: {
+    type: Array,
+    default: () => []
+  }
+});
 
-      if (!this.exportFields) {
-        this.error = 'No fields to export. Make sure the sessions table has columns.';
-        return;
-      }
+// Define Emits
+const emit = defineEmits(['done']);
 
-      const data = {
-        start: this.start,
-        applyTo: this.applyTo,
-        filename: this.filename,
-        segments: this.segments,
-        sessions: this.sessions,
-        numVisible: this.numVisible,
-        numMatching: this.numMatching,
-        fields: this.exportFields
-      };
+// Reactive state
+const error = ref('');
+const segments = ref('no');
+const filename = ref('sessions.csv');
+const changeFields = ref(false);
+const exportFields = ref(''); // Initialize as empty string, will be computed
 
-      SessionsService.exportCsv(data, this.$route.query).then((response) => {
-        this.done(response.text, true);
-      }).catch((error) => {
-        this.error = error.text;
-      });
-    },
-    /* helper functions ------------------------------------------ */
-    /* compute the string of comma separated field db values */
-    computeExportFields: function () {
-      const fieldDbList = [];
+// Access route
+const route = useRoute();
 
-      if (this.fields) {
-        for (let i = 0; i < this.fields.length; ++i) {
-          const field = this.fields[i];
-          if (field.children) {
-            for (let j = 0; j < field.children.length; ++j) {
-              const child = field.children[j];
-              if (child) { fieldDbList.push(child.dbField); }
-            }
-          } else {
-            fieldDbList.push(field.dbField);
+// Helper function to compute export fields string
+const computeExportFields = () => {
+  const fieldDbList = [];
+  if (props.fields) {
+    for (const field of props.fields) {
+      if (field.children) {
+        for (const child of field.children) {
+          if (child && child.dbField) { // Added check for child.dbField
+            fieldDbList.push(child.dbField);
           }
         }
+      } else if (field.dbField) { // Added check for field.dbField
+        fieldDbList.push(field.dbField);
       }
-      this.$set(this, 'exportFields', fieldDbList.join(','));
     }
+  }
+  exportFields.value = fieldDbList.join(',');
+};
+
+// Lifecycle hooks
+onMounted(() => {
+  computeExportFields();
+});
+
+// Watch for changes in props.fields if they can change after mount
+watch(() => props.fields, () => {
+  computeExportFields();
+}, { deep: true });
+
+// Methods
+const toggleChangeFields = () => {
+  changeFields.value = !changeFields.value;
+};
+
+const exportCsvAction = async () => {
+  if (filename.value === '') {
+    error.value = t('sessions.exports.missingFilenameErr');
+    return;
+  }
+
+  if (!exportFields.value) {
+    error.value = t('sessions.exports.missingFieldsErr');
+    return;
+  }
+
+  const data = {
+    start: props.start,
+    applyTo: props.applyTo,
+    filename: filename.value,
+    segments: segments.value,
+    sessions: props.sessions,
+    numVisible: props.numVisible,
+    numMatching: props.numMatching,
+    fields: exportFields.value
+  };
+
+  try {
+    const response = await SessionsService.exportCsv(data, route.query);
+    emit('done', response.text, true, true); // Emit the done event with the response text
+  } catch (err) {
+    error.value = err.text || t('sessions.exports.unknownErr');
   }
 };
 </script>

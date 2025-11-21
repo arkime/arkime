@@ -236,9 +236,9 @@ LOCAL void wise_remove_item_locked(WiseItem_t *wi)
         for (int i = 0; i < wi->numSessions; i++) {
             arkime_session_add_cmd(wi->sessions[i], ARKIME_SES_CMD_FUNC, NULL, NULL, wise_session_cmd_cb);
         }
-        g_free(wi->sessions);
+        ARKIME_SIZE_FREE("sessions", wi->sessions);
         wi->sessions = 0;
-        g_free(wi->matchPoses);
+        ARKIME_SIZE_FREE("matchPoses", wi->matchPoses);
         wi->matchPoses = 0;
     }
     arkime_free_later(wi, (GDestroyNotify) wise_free_item);
@@ -364,9 +364,9 @@ LOCAL void wise_cb(int UNUSED(code), uint8_t *data, int data_len, gpointer uw)
         for (s = 0; s < wi->numSessions; s++) {
             arkime_session_add_cmd(wi->sessions[s], ARKIME_SES_CMD_FUNC, wi, (gpointer)(long)wi->matchPoses[s], wise_session_cmd_cb);
         }
-        g_free(wi->sessions);
+        ARKIME_SIZE_FREE("sessions", wi->sessions);
         wi->sessions = 0;
-        g_free(wi->matchPoses);
+        ARKIME_SIZE_FREE("matchPoses", wi->matchPoses);
         wi->matchPoses = 0;
         wi->numSessions = 0;
 
@@ -415,8 +415,8 @@ LOCAL void wise_lookup(ArkimeSession_t *session, WiseRequest_t *request, char *v
 
             if (wi->numSessions >= wi->sessionsSize) {
                 wi->sessionsSize = MIN(wi->sessionsSize * 2, 4096);
-                wi->sessions = realloc(wi->sessions, sizeof(ArkimeSession_t *) * wi->sessionsSize);
-                wi->matchPoses = realloc(wi->matchPoses, sizeof(int16_t) * wi->sessionsSize);
+                ARKIME_SIZE_REALLOC("sessions", wi->sessions, sizeof(ArkimeSession_t *) * wi->sessionsSize);
+                ARKIME_SIZE_REALLOC("matchPoses", wi->matchPoses, sizeof(int16_t) * wi->sessionsSize);
             }
             wi->sessions[wi->numSessions] = session;
             wi->matchPoses[wi->numSessions] = matchPos;
@@ -444,8 +444,8 @@ LOCAL void wise_lookup(ArkimeSession_t *session, WiseRequest_t *request, char *v
         HASH_ADD(wih_, types[type].itemHash, wi->key, wi);
     }
 
-    wi->sessions = malloc(sizeof(ArkimeSession_t *) * wi->sessionsSize);
-    wi->matchPoses = malloc(sizeof(int16_t) * wi->sessionsSize);
+    wi->sessions = ARKIME_SIZE_ALLOC("sessions", sizeof(ArkimeSession_t *) * wi->sessionsSize);
+    wi->matchPoses = ARKIME_SIZE_ALLOC("matchPoses", sizeof(int16_t) * wi->sessionsSize);
     wi->sessions[wi->numSessions] = session;
     wi->matchPoses[wi->numSessions] = matchPos;
     wi->numSessions++;
@@ -535,11 +535,10 @@ cleanup:
 /******************************************************************************/
 LOCAL void wise_lookup_ip(ArkimeSession_t *session, WiseRequest_t *request, struct in6_addr *ip6, int16_t matchPos)
 {
-    char ipstr[INET6_ADDRSTRLEN + 100];
+    char ipstr[INET6_ADDRSTRLEN];
 
     if (IN6_IS_ADDR_V4MAPPED(ip6)) {
-        uint32_t ip = ARKIME_V6_TO_V4(*ip6);
-        snprintf(ipstr, sizeof(ipstr), "%u.%u.%u.%u", ip & 0xff, (ip >> 8) & 0xff, (ip >> 16) & 0xff, (ip >> 24) & 0xff);
+        arkime_ip4tostr(ARKIME_V6_TO_V4(*ip6), ipstr, sizeof(ipstr));
     } else {
         inet_ntop(AF_INET6, ip6, ipstr, sizeof(ipstr));
     }
@@ -567,34 +566,18 @@ LOCAL void wise_lookup_tuple(ArkimeSession_t *session, WiseRequest_t *request)
         BSB_EXPORT_ptr(bsb, hstring->str, hstring->len);
     }
 
+    char ipstr1[INET6_ADDRSTRLEN];
+    char ipstr2[INET6_ADDRSTRLEN];
+
     if (IN6_IS_ADDR_V4MAPPED(&session->addr1)) {
-
-        uint32_t ip1 = ARKIME_V6_TO_V4(session->addr1);
-        uint32_t ip2 = ARKIME_V6_TO_V4(session->addr2);
-
-        BSB_EXPORT_sprintf(bsb, ";%u.%u.%u.%u;%u;%u.%u.%u.%u;%u",
-                           ip1 & 0xff, (ip1 >> 8) & 0xff, (ip1 >> 16) & 0xff, (ip1 >> 24) & 0xff,
-                           session->port1,
-                           ip2 & 0xff, (ip2 >> 8) & 0xff, (ip2 >> 16) & 0xff, (ip2 >> 24) & 0xff,
-                           session->port2
-                          );
+        arkime_ip4tostr(ARKIME_V6_TO_V4(session->addr1), ipstr1, sizeof(ipstr1));
+        arkime_ip4tostr(ARKIME_V6_TO_V4(session->addr2), ipstr2, sizeof(ipstr2));
     } else {
-        // inet_ntop(AF_INET6, ip6, ipstr, sizeof(ipstr));
-        char ipstr1[INET6_ADDRSTRLEN];
-        char ipstr2[INET6_ADDRSTRLEN];
-
         inet_ntop(AF_INET6, &session->addr1, ipstr1, sizeof(ipstr1));
         inet_ntop(AF_INET6, &session->addr2, ipstr2, sizeof(ipstr2));
-
-        BSB_EXPORT_sprintf(bsb, ";%s;%u;%s;%u",
-                           ipstr1,
-                           session->port1,
-                           ipstr2,
-                           session->port2
-                          );
-
-
     }
+
+    BSB_EXPORT_sprintf(bsb, ";%s;%u;%s;%u", ipstr1, session->port1, ipstr2, session->port2);
     wise_lookup(session, request, str, INTEL_TYPE_TUPLE, -1);
 }
 /******************************************************************************/
@@ -717,6 +700,7 @@ LOCAL void wise_plugin_pre_save(ArkimeSession_t *session, int UNUSED(final))
                 wise_lookup(session, iRequest, buf, type, pos);
                 break;
             case ARKIME_FIELD_TYPE_INT_ARRAY:
+            case ARKIME_FIELD_TYPE_INT_ARRAY_UNIQUE:
                 for (i = 0; i < (int)session->fields[pos]->iarray->len; i++) {
                     snprintf(buf, sizeof(buf), "%u", g_array_index(session->fields[pos]->iarray, uint32_t, i));
                     wise_lookup(session, iRequest, buf, type, pos);
@@ -983,7 +967,7 @@ void arkime_plugin_init()
     wiseExcludeDomains = arkime_config_str_list(NULL, "wiseExcludeDomains", ".in-addr.arpa;.ip6.arpa");
     for (i = 0; wiseExcludeDomains[i]; i++);
     wiseExcludeDomainsNum = i;
-    wiseExcludeDomainsLen = malloc(sizeof(int) * wiseExcludeDomainsNum);
+    wiseExcludeDomainsLen = ARKIME_SIZE_ALLOC("wiseExcludeDomainsLen", sizeof(int) * wiseExcludeDomainsNum);
 
     for (i = 0; wiseExcludeDomains[i]; i++) {
         wiseExcludeDomainsLen[i] = strlen(wiseExcludeDomains[i]);

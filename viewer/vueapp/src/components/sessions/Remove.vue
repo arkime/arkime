@@ -3,141 +3,147 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
+  <BRow
+    gutter-x="1"
+    class="text-start flex-nowrap d-flex justify-content-between"
+    align-h="start">
+    <BCol cols="auto">
+      <BFormCheckbox
+        inline
+        :model-value="pcap"
+        id="pcapCheckbox"
+        name="pcap"
+        @update:model-value="pcap = $event">
+        {{ $t('sessions.remove.scrubPCAP') }}
+        <BTooltip target="pcapCheckbox">
+          {{ $t('sessions.remove.scrubPCAPTip') }}
+        </BTooltip>
+      </BFormCheckbox>
+      <BFormCheckbox
+        inline
+        :model-value="spi"
+        id="spiCheckbox"
+        name="spi"
+        @update:model-value="spi = $event">
+        {{ $t('sessions.remove.deleteSPIData') }}
+        <BTooltip target="spiCheckbox">
+          {{ $t('sessions.remove.deleteSPIDataTip') }}
+        </BTooltip>
+      </BFormCheckbox>
+    </BCol>
 
-  <!-- delete sessions form -->
-  <div class="row">
-
-    <div class="col-md-4">
-      <div class="form-check form-check-inline"
-        v-b-tooltip.hover
-        title="Perform a three pass overwrite of all packet data for matching sessions.">
-        <input type="checkbox"
-          class="form-check-input"
-          v-model="pcap"
-          id="pcap"
-        />
-        <label class="form-check-label"
-          for="pcap">
-          Scrub PCAP
-        </label>
-      </div>
-      <div class="form-check form-check-inline"
-        v-b-tooltip.hover
-        title="Non forensically remove SPI data for matching sessions.">
-        <input type="checkbox"
-          class="form-check-input"
-          v-model="spi"
-          id="spi"
-        />
-        <label class="form-check-label"
-          for="spi">
-          Delete SPI Data
-        </label>
-      </div>
-    </div>
-
-    <!-- segments select input -->
-    <SegmentSelect :segments.sync="segments">
-      <!-- delete error -->
-      <p v-if="error"
+    <BCol cols="auto">
+      <SegmentSelect v-model:segments="segments" />
+      <p
+        v-if="error"
         class="small text-danger mb-0">
-        <span class="fa fa-exclamation-triangle">
-        </span>&nbsp;
+        <span class="fa fa-exclamation-triangle" />&nbsp;
         {{ error }}
-      </p> <!-- /delete error -->
-    </SegmentSelect>
+      </p>
+    </BCol>
 
-    <!-- buttons -->
-    <div class="col-md-4">
-      <div class="pull-right">
-        <!-- delete button -->
-        <button
-          type="button"
-          title=" Remove Data"
-          @click="deleteSessions"
-          :class="{'disabled':loading}"
-          class="btn btn-danger btn-sm">
-          <span v-if="!loading">
-            <span class="fa fa-trash-o">
-            </span>&nbsp;
-            Remove Data
-          </span>
-          <span v-else>
-            <span class="fa fa-spinner fa-spin">
-            </span>&nbsp;
-            Removing Data
-          </span>
-        </button> <!-- /delete button -->
-        <!-- cancel button -->
-        <button class="btn btn-sm btn-warning"
-          v-b-tooltip.hover
-          title="cancel"
-          @click="done(null)"
-          type="button">
-          <span class="fa fa-ban">
-          </span>
-        </button> <!-- /cancel button -->
-      </div>
-    </div> <!-- /buttons -->
-
-  </div> <!-- /delete sessions form -->
-
+    <BCol cols="auto">
+      <button
+        type="button"
+        :title="$t('common.remove')"
+        @click="deleteSessionsAction"
+        :class="{'disabled':loading}"
+        class="btn btn-danger btn-sm me-1">
+        <span v-if="!loading">
+          <span class="fa fa-trash-o" />&nbsp;
+          {{ $t('common.remove') }}
+        </span>
+        <span v-else>
+          <span class="fa fa-spinner fa-spin" />&nbsp;
+          {{ $t('common.removing') }}
+        </span>
+      </button>
+      <button
+        class="btn btn-sm btn-warning"
+        id="cancelRemoveDataBtn"
+        @click="emit('done', null, false, false)"
+        type="button">
+        <span class="fa fa-ban" />
+        <BTooltip target="cancelRemoveDataBtn">
+          {{ $t('common.cancel') }}
+        </BTooltip>
+      </button>
+    </BCol>
+  </BRow>
 </template>
 
-<script>
+<script setup>
+import { ref } from 'vue';
+import { useRoute } from 'vue-router';
 import SessionsService from './SessionsService';
-import SegmentSelect from './SegmentSelect';
+import SegmentSelect from './SegmentSelect.vue';
+import { useI18n } from 'vue-i18n';
+const { t } = useI18n();
 
-export default {
-  name: 'ArkimeRemoveData',
-  components: { SegmentSelect },
-  props: {
-    start: Number,
-    done: Function,
-    single: Boolean,
-    applyTo: String,
-    sessions: Array,
-    numVisible: Number,
-    numMatching: Number
+// Define Props
+const props = defineProps({
+  start: {
+    type: Number,
+    default: 0
   },
-  data: function () {
-    return {
-      error: '',
-      spi: false,
-      pcap: true,
-      loading: false,
-      segments: 'no'
-    };
+  single: Boolean,
+  applyTo: {
+    type: String,
+    default: 'open'
   },
-  methods: {
-    /* exposed functions ----------------------------------------- */
-    deleteSessions: function () {
-      this.loading = true;
+  sessions: {
+    type: Array,
+    default: () => []
+  },
+  numVisible: {
+    type: Number,
+    default: 0
+  },
+  numMatching: {
+    type: Number,
+    default: 0
+  }
+});
 
-      const data = {
-        start: this.start,
-        removeSpi: this.spi,
-        removePcap: this.pcap,
-        applyTo: this.applyTo,
-        segments: this.segments,
-        sessions: this.sessions,
-        numVisible: this.numVisible,
-        numMatching: this.numMatching
-      };
+// Define Emits
+const emit = defineEmits(['done']);
 
-      SessionsService.remove(data, this.$route.query)
-        .then((response) => {
-          this.loading = false;
-          // notify parent to close form
-          this.done(response.data.text, response.data.success, this.single && this.pcap && !this.spi);
-        })
-        .catch((error) => {
-          // display the error under the form so that user
-          // has an oportunity to try again (don't close the form)
-          this.error = error.text;
-          this.loading = false;
-        });
-    }
+// Reactive state
+const error = ref('');
+const spi = ref(false);
+const pcap = ref(true);
+const loading = ref(false);
+const segments = ref('no');
+
+// Access route
+const route = useRoute();
+
+// Methods
+const deleteSessionsAction = async () => {
+  error.value = ''; // Clear previous error
+  loading.value = true;
+
+  const data = {
+    start: props.start,
+    removeSpi: spi.value,
+    removePcap: pcap.value,
+    applyTo: props.applyTo,
+    segments: segments.value,
+    sessions: props.sessions,
+    numVisible: props.numVisible,
+    numMatching: props.numMatching
+  };
+
+  try {
+    const response = await SessionsService.remove(data, route.query);
+    loading.value = false;
+    emit('done', response.text, true, true); // Emit the done event with the response text
+  } catch (err) {
+    // Display the error under the form so that user
+    // has an opportunity to try again (don't close the form)
+    error.value = err.text || err.message || t('sessions.remove.unknownError');
+    loading.value = false;
   }
 };
+
 </script>

@@ -33,8 +33,6 @@ class Config {
 
   static esProfile = false;
 
-  static #keyFileLocation;
-  static #certFileLocation;
   static keyFileData;
   static certFileData;
 
@@ -115,8 +113,8 @@ class Config {
   };
 
   // ----------------------------------------------------------------------------
-  static basePath (node) {
-    return Config.getFull(node ?? internals.nodeName, 'webBasePath', '/');
+  static basePath () {
+    return Config.getFull(internals.nodeName, 'webBasePath', '/');
   };
 
   // ----------------------------------------------------------------------------

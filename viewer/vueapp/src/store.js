@@ -1,11 +1,9 @@
-import Vue from 'vue';
-import Vuex from 'vuex';
+import { createStore } from 'vuex';
 
 import Utils from './components/utils/utils';
+import { parseRoles } from '@common/vueFilters.js';
 
-Vue.use(Vuex);
-
-const store = new Vuex.Store({
+const store = createStore({
   state: {
     esHealth: undefined,
     esHealthError: undefined,
@@ -23,7 +21,8 @@ const store = new Vuex.Store({
     fieldsMap: {}, // NOTE: this has duplicate fields where dbField and dbField2 are different
     fieldsAliasMap: {},
     fieldhistory: [],
-    timeRange: DEFAULT_TIME_RANGE ?? 1, /* eslint-disable-line no-undef */
+    // eslint-disable-next-line no-undef
+    timeRange: DEFAULT_TIME_RANGE ?? 1,
     expression: undefined,
     time: {
       startTime: undefined,
@@ -220,8 +219,8 @@ const store = new Vuex.Store({
       state.remoteclusters = value.remoteclusters;
       state.fieldhistory = value.fieldhistory.fields || [];
       state.esCluster.availableCluster = value.clusters;
-      state.roles = Vue.filter('parseRoles')(value.roles);
       state.userSettingDefaults = value.userSettingDefaults;
+      state.roles = parseRoles(value.roles);
 
       // fieldsMap has keys for these fields: dbField, dbField2, fieldECS, and exp (id/key)
       // fieldsAliasMap has keys for field aliases

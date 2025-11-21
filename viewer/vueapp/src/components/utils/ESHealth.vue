@@ -3,70 +3,67 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-
   <span>
 
     <!-- error -->
-    <div v-if="error"
-      v-b-tooltip.hover
-      :title="errorTitle"
-      :class="{'cursor-help': errorTitle}"
-      class="error-div text-muted-more mt-2 text-right pull-right">
+    <div
+      v-if="error"
+      id="networkError"
+      class="error-div text-muted pull-right">
       <small>
         {{ error || 'Network Error' }} - try
-        <a @click="window.location.reload()"
-          class="cursor-pointer reload-btn mr-2">
+        <a
+          @click="window.location.reload()"
+          class="cursor-pointer reload-btn me-2">
           reloading the page
         </a>
       </small>
+      <BTooltip target="networkError">{{ errorTitle }}</BTooltip>
     </div> <!-- /error -->
 
     <!-- info icon -->
-    <span class="cursor-help"
+    <span
+      class="cursor-help"
       id="infoTooltip">
-      <span class="fa fa-info-circle fa-lg"
+      <span
+        class="fa fa-info-circle fa-lg"
         :class="esHealthClass"
-        v-if="!error && esHealth">
-      </span>
+        v-if="!error && esHealth" />
+      <!-- tooltip content -->
+      <BTooltip target="infoTooltip">
+        <div class="text-center mb-1">
+          <strong>{{ $t('eshealth.title') }}</strong>
+        </div>
+        <dl
+          v-if="!error && esHealth"
+          class="dl-horizontal es-stats-dl">
+          <dt>{{ $t('eshealth.userName') }}</dt>
+          <dd>{{ user.userName }}&nbsp;</dd>
+          <dt>{{ $t('eshealth.userId') }}</dt>
+          <dd>{{ user.userId }}&nbsp;</dd>
+          <dt>{{ $t('eshealth.esVersion') }}</dt>
+          <dd>{{ esHealth.version }}&nbsp;</dd>
+          <dt>{{ $t('eshealth.dbVersion') }}</dt>
+          <dd>{{ esHealth.molochDbVersion }}&nbsp;</dd>
+          <dt>{{ $t('eshealth.cluster') }}</dt>
+          <dd>{{ esHealth.cluster_name }}&nbsp;</dd>
+          <dt>{{ $t('eshealth.status') }}</dt>
+          <dd>{{ esHealth.status }}&nbsp;</dd>
+          <dt>{{ $t('eshealth.nodes') }}</dt>
+          <dd>{{ esHealth.number_of_nodes }}&nbsp;</dd>
+          <dt>{{ $t('eshealth.shards') }}</dt>
+          <dd>{{ esHealth.active_shards }}&nbsp;</dd>
+          <dt>{{ $t('eshealth.relocating') }}</dt>
+          <dd>{{ esHealth.relocating_shards }}&nbsp;</dd>
+          <dt>{{ $t('eshealth.unassigned') }}</dt>
+          <dd>{{ esHealth.unassigned_shards }}&nbsp;</dd>
+          <dt>{{ $t('eshealth.initializing') }}</dt>
+          <dd>{{ esHealth.initializing_shards }}&nbsp;</dd>
+        </dl>
+      </BTooltip> <!-- /tooltip content -->
     </span> <!-- /info icon -->
 
-    <!-- tooltip content -->
-    <b-tooltip
-      target="infoTooltip"
-      placement="bottom"
-      boundary="viewport">
-      <div class="text-center mb-1">
-        <strong>App Info</strong>
-      </div>
-      <dl v-if="!error && esHealth"
-        class="dl-horizontal es-stats-dl">
-        <dt>User Name</dt>
-        <dd>{{ user.userName }}&nbsp;</dd>
-        <dt>User ID</dt>
-        <dd>{{ user.userId }}&nbsp;</dd>
-        <dt>ES Version</dt>
-        <dd>{{ esHealth.version }}&nbsp;</dd>
-        <dt>DB Version</dt>
-        <dd>{{ esHealth.molochDbVersion }}&nbsp;</dd>
-        <dt>Cluster</dt>
-        <dd>{{ esHealth.cluster_name }}&nbsp;</dd>
-        <dt>Status</dt>
-        <dd>{{ esHealth.status }}&nbsp;</dd>
-        <dt>Nodes</dt>
-        <dd>{{ esHealth.number_of_nodes }}&nbsp;</dd>
-        <dt>Shards</dt>
-        <dd>{{ esHealth.active_shards }}&nbsp;</dd>
-        <dt>Relocating Shards</dt>
-        <dd>{{ esHealth.relocating_shards }}&nbsp;</dd>
-        <dt>Unassigned Shards</dt>
-        <dd>{{ esHealth.unassigned_shards }}&nbsp;</dd>
-        <dt>Initializing Shards</dt>
-        <dd>{{ esHealth.initializing_shards }}&nbsp;</dd>
-      </dl>
-    </b-tooltip> <!-- /tooltip content -->
-
   </span>
-
 </template>
 
 <script>
@@ -127,7 +124,7 @@ export default {
       }, timeToWait);
     }
   },
-  beforeDestroy: function () {
+  beforeUnmount () {
     if (interval) { clearInterval(interval); }
   }
 };
@@ -146,14 +143,9 @@ export default {
 
 .error-div {
   line-height: 1;
-  margin-right: -12px;
-}
-
-.reload-btn {
-  color: var(--color-tertiary-light) !important;
-}
-.reload-btn:hover {
-  color: var(--color-tertiary) !important;
+  margin-left: 10px;
+  margin-right: 10px;
+  display: inline-block;
 }
 
 .es-stats-dl dt {
@@ -164,9 +156,5 @@ export default {
   margin-left: 145px;
   text-align: left;
   font-weight: bold;
-}
-
-.fa-info-circle {
-  margin-top: 9px;
 }
 </style>

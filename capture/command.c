@@ -19,8 +19,7 @@ typedef struct {
 } Command_t;
 
 LOCAL int         maxCommandLen = 0;
-LOCAL Command_t  *commandsArray[1000];
-LOCAL int         commandArrayLen;
+LOCAL GPtrArray  *commandsArray;
 LOCAL gboolean    commandsArraySorted = FALSE;
 LOCAL GHashTable *commandsHash;
 
@@ -135,6 +134,7 @@ void arkime_command_register(const char *name, ArkimeCommandFunc func, const cha
 
     if (!commandsHash) {
         commandsHash = g_hash_table_new_full(g_str_hash, g_str_equal, NULL, arkime_command_free);
+        commandsArray = g_ptr_array_new();
     }
 
     Command_t *cmd = ARKIME_TYPE_ALLOC0(Command_t);
@@ -143,7 +143,7 @@ void arkime_command_register(const char *name, ArkimeCommandFunc func, const cha
     cmd->help = g_strdup(help);
     g_hash_table_insert(commandsHash, cmd->name, cmd);
     maxCommandLen = MIN(MAX_INDENT, MAX(maxCommandLen, (int)strlen(name)));
-    commandsArray[commandArrayLen++] = cmd;
+    g_ptr_array_add(commandsArray, cmd);
     commandsArraySorted = FALSE;
 }
 /******************************************************************************/
@@ -155,6 +155,7 @@ void arkime_command_register_opts(const char *name, ArkimeCommandFunc func, cons
 
     if (!commandsHash) {
         commandsHash = g_hash_table_new_full(g_str_hash, g_str_equal, NULL, arkime_command_free);
+        commandsArray = g_ptr_array_new();
     }
 
     Command_t *cmd = ARKIME_TYPE_ALLOC0(Command_t);
@@ -163,7 +164,7 @@ void arkime_command_register_opts(const char *name, ArkimeCommandFunc func, cons
     cmd->help = g_strdup(help);
     g_hash_table_insert(commandsHash, cmd->name, cmd);
     maxCommandLen = MIN(MAX_INDENT, MAX(maxCommandLen, (int)strlen(name)));
-    commandsArray[commandArrayLen++] = cmd;
+    g_ptr_array_add(commandsArray, cmd);
     commandsArraySorted = FALSE;
 
     va_list  args;
@@ -241,12 +242,12 @@ LOCAL void arkime_command_help(int argc, char **argv, gpointer cc)
     }
 
     if (!commandsArraySorted) {
-        qsort(commandsArray, commandArrayLen, sizeof(Command_t *), arkime_command_cmp);
+        g_ptr_array_sort(commandsArray, arkime_command_cmp);
         commandsArraySorted = TRUE;
     }
 
-    for (int i = 0; i < commandArrayLen; i++) {
-        const Command_t *cmd = commandsArray[i];
+    for (guint i = 0; i < commandsArray->len; i++) {
+        const Command_t *cmd = g_ptr_array_index(commandsArray, i);
         arkime_command_single_help(&bsb, cmd);
     }
 

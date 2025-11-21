@@ -5,173 +5,187 @@ SPDX-License-Identifier: Apache-2.0
 <template>
   <div class="d-flex flex-row flex-grow-1 no-overflow-x">
     <!-- view create form -->
-    <create-view-modal />
+    <create-view-modal v-model="viewModalOpen" />
     <!-- integration selection panel -->
-    <IntegrationPanel />
+    <IntegrationPanel @create-view="viewModalOpen = true" />
     <!-- page content -->
     <div class="flex-grow-1 d-flex flex-column">
       <!-- search -->
-      <div class="d-flex justify-content-center mt-2 mx-3">
-        <div class="w-100 pb-1 d-flex justify-content-between">
+      <div class="d-flex justify-center mt-2 mx-3">
+        <div class="w-100 pb-1 d-flex justify-space-between">
           <!--    tag input      -->
-          <b-input-group style="max-width: 150px" class="mr-2">
-            <b-form-input
-                type="text"
-                tabindex="0"
-                ref="tagInput"
-                :placeholder="`Tags${tags.length ? ` (${tags.length})` : ''}`"
-                @keydown.enter="submitTag"
-                v-model="tagInput"
-                v-focus="getFocusTagInput"
-            />
-            <template #append>
-              <b-button
-                  tabindex="0"
-                  @click="toggleCollapseTagDisplay"
-                  title="Collapse tag display"
-                  id="expand-collapse-tags"
-                  :disabled="!tags.length"
-              >
-                <template v-if="getShiftKeyHold">
-                  <span class="tag-shortcut">G</span>
-                </template>
-                <template v-else-if="tagDisplayCollapsed">
-                  <b-tooltip noninteractive target="expand-collapse-tags"
-                             placement="top" boundary="viewport">
-                    Expand tag display
-                  </b-tooltip>
-                  <span class="fa fa-chevron-down"/>
-                </template>
-                <template v-else>
-                  <b-tooltip noninteractive target="expand-collapse-tags"
-                             placement="top" boundary="viewport">
-                    Collapse tag display
-                  </b-tooltip>
-                  <span class="fa fa-chevron-up"/>
-                </template>
-              </b-button>
+          <v-text-field
+            class="input-connect-right medium-input"
+            style="max-width: 150px; width: 150px"
+            type="text"
+            tabindex="0"
+            ref="tagInput"
+            :placeholder="`Tags${tags.length ? ` (${tags.length})` : ''}`"
+            @keydown.enter="submitTag"
+            v-model="tagInput"
+            v-focus="getFocusTagInput" />
+          <v-btn
+            variant="flat"
+            color="secondary"
+            class="btn-connect-left skinny-search-row-btn mr-1"
+            tabindex="0"
+            @click="toggleCollapseTagDisplay"
+            title="Collapse tag display"
+            id="expand-collapse-tags"
+            :disabled="!tags.length">
+            <template v-if="getShiftKeyHold">
+              <span class="tag-shortcut">G</span>
             </template>
-          </b-input-group>
+            <template v-else-if="tagDisplayCollapsed">
+              <v-tooltip
+                activator="parent"
+                location="top">
+                Expand tag display
+              </v-tooltip>
+              <v-icon icon="mdi-chevron-down" />
+            </template>
+            <template v-else>
+              <v-tooltip
+                activator="parent"
+                location="top">
+                Collapse tag display
+              </v-tooltip>
+              <v-icon icon="mdi-chevron-up" />
+            </template>
+          </v-btn>
           <!--    /tag input      -->
-          <b-input-group class="flex-grow-1 mr-2">
-            <template #prepend>
-              <b-input-group-text>
-              <span v-if="!getShiftKeyHold"
-                    class="fa fa-search fa-fw"
-              />
-                <span v-else
-                      class="query-shortcut">
-                Q
-              </span>
-              </b-input-group-text>
+          <v-text-field
+            variant="outlined"
+            v-model="searchTerm"
+            ref="search"
+            id="cont3xt-search-bar"
+            class="w-100 medium-input"
+            @keydown.enter="handleSearchAction"
+            :placeholder="searchMode === 'query' ? 'Indicators' : 'Highlight patterns (keywords or /regex/)'"
+            v-focus="getFocusSearch"
+            clearable>
+            <template #prepend-inner>
+              <v-menu>
+                <template #activator="{ props }">
+                  <v-btn
+                    v-bind="props"
+                    size="small"
+                    variant="text"
+                    :icon="searchMode === 'query' ? 'mdi-magnify' : 'mdi-marker'"
+                    v-tooltip="`Mode: ${searchMode === 'query' ? 'Query' : 'Highlight'}`" />
+                </template>
+                <v-list density="compact">
+                  <v-list-item
+                    @click="switchToQueryMode"
+                    :class="{'v-list-item--active': searchMode === 'query'}">
+                    <template #prepend>
+                      <v-icon icon="mdi-magnify" />
+                    </template>
+                    <v-list-item-title>Query Mode</v-list-item-title>
+                    <v-list-item-subtitle>Search for indicators</v-list-item-subtitle>
+                  </v-list-item>
+                  <v-list-item
+                    @click="switchToHighlightMode"
+                    :class="{'v-list-item--active': searchMode === 'highlight'}">
+                    <template #prepend>
+                      <v-icon icon="mdi-marker" />
+                    </template>
+                    <v-list-item-title>Highlight Mode</v-list-item-title>
+                    <v-list-item-subtitle>Set highlight patterns</v-list-item-subtitle>
+                  </v-list-item>
+                </v-list>
+              </v-menu>
+              <span
+                v-if="getShiftKeyHold"
+                class="search-query-shortcut text-warning ml-1">Q</span>
             </template>
-            <b-form-input
-                tabindex="0"
-                ref="search"
-                v-model="searchTerm"
-                @keydown.enter="search"
-                placeholder="Indicators"
-                v-focus="getFocusSearch"
-            />
-            <template #append>
-              <b-button
-                  tabindex="0"
-                  @click="clear"
-                  :disabled="!searchTerm"
-                  title="Remove the search text">
-                <span class="fa fa-close" />
-              </b-button>
-            </template>
-          </b-input-group>
-          <b-button
-              tabindex="-1"
-              @click="search"
-              variant="success"
-              class="mr-1 search-btn">
-          <span v-if="!getShiftKeyHold" class="no-wrap">
-            Get Cont3xt
-          </span>
-            <span v-else
-                  class="enter-icon">
-            <span class="fa fa-long-arrow-left fa-lg" />
-            <div class="enter-arm" />
-          </span>
-          </b-button>
+          </v-text-field>
+          <v-btn
+            tabindex="-1"
+            @click="handleSearchAction"
+            color="success"
+            :title="searchMode === 'query' ? 'search' : 'set highlight patterns'"
+            class="mx-1 search-row-btn cont3xt-search-btn">
+            <span
+              v-if="!getShiftKeyHold"
+              class="no-wrap">
+              <v-icon
+                icon="mdi-rocket-launch"
+                :class="{ ['rocket-fly']: rocketFly, ['rocket-shake']: rocketShake }" />
+              Get Cont3xt
+            </span>
+            <v-icon
+              v-else
+              icon="mdi-keyboard-return"
+              size="large" />
+          </v-btn>
           <ViewSelector
-              :no-caret="true"
-              :show-selected-view="true"
-              :hot-key-enabled="true">
-            <template #title>
-              <span class="fa fa-eye" />
-            </template>
+            class="search-row-btn"
+            :no-caret="true"
+            :show-selected-view="true"
+            :hot-key-enabled="true">
+            <v-icon icon="mdi-eye" />
           </ViewSelector>
-          <b-dropdown
-              class="ml-1"
-              tabindex="-1"
-              variant="info"
-              ref="actionDropdown">
-            <b-dropdown-item
-                :active="skipCache"
-                @click="skipCache = !skipCache"
-                v-b-tooltip.hover.left="skipCache ? 'Ignorning cache - click to use cache (shift + c)' : 'Using cache - click to ignore cache (shift + c)'">
-              <span class="fa fa-database fa-fw mr-1" />
-              Skip Cache
-            </b-dropdown-item>
-            <b-dropdown-item
-                :active="skipChildren"
-                @click="toggleSkipChildren"
-                v-b-tooltip.hover.left="skipChildren ? 'Ignorning child queries - select to enable child queries' : 'Including child queries - select to disable child queries'">
-              <span class="fa fa-child fa-fw mr-1" />
-              Skip Children
-            </b-dropdown-item>
-            <b-dropdown-item
-                @click="generateReport"
-                :disabled="!searchComplete"
-                v-b-tooltip.hover.left="'Download a report of this result (shift + r)'">
-              <span class="fa fa-file-text fa-fw mr-1" />
-              Download Report
-            </b-dropdown-item>
-            <b-dropdown-item
-                @click="shareLink"
-                :active="activeShareLink"
-                v-b-tooltip.hover.left="'Copy share link to clipboard (shift + l)'">
-              <span class="fa fa-share-alt fa-fw mr-1" />
-              Copy Share Link
-            </b-dropdown-item>
-          </b-dropdown>
-
+          <!-- action dropdown -->
+          <action-dropdown
+            v-model="actionDropdownOpen"
+            :actions="dropdownActions"
+            class="mx-1 skinny-search-row-btn"
+            tabindex="-1"
+            color="info" />
+          <!-- /action dropdown -->
         </div>
       </div> <!-- /search -->
 
+      <div class="d-flex flex-row mx-3">
+        <div
+          v-if="tags.length && !tagDisplayCollapsed && !shouldDisplayResults"
+          class="d-flex justify-start mb-1">
+          <tag-display-line
+            :tags="tags"
+            :remove-tag="removeTag"
+            :clear-tags="clearTags" />
+        </div>
+      </div>
+
       <div class="flex-grow-1 d-flex flex-row overflow-hidden pt-1">
         <!-- welcome -->
-        <div class="w-100 h-100 d-flex flex-column mt-1"
-             v-if="!initialized && !error.length && !getIntegrationsError.length">
-          <b-alert
-              show
-              variant="dark"
-              class="text-center mx-3">
-            <span class="fa fa-rocket fa-2x fa-flip-horizontal mr-1 text-muted" />
-            <strong class="text-warning lead">
+        <div
+          class="w-100 h-100 d-flex flex-column mt-1 cont3xt-welcome"
+          v-if="!initialized && !error.length && !getIntegrationsError.length">
+          <div class="well text-center mx-4 mb-2 py-2 d-flex align-center justify-center no-overflow">
+            <v-icon
+              icon="mdi-rocket-launch"
+              size="x-large"
+              class="text-muted mr-2" />
+            <strong class="text-warning cont3xt-welcome-text mr-2">
               <strong>Welcome to Cont3xt!</strong>
             </strong>
-            <span v-if="!searchTerm"
-                  class="text-success lead">
+            <span
+              v-if="!searchTerm"
+              class="text-success cont3xt-welcome-text">
               <strong>Search for IPs, domains, URLs, emails, phone numbers, or hashes.</strong>
             </span>
-            <span v-else
-                  class="text-success lead">
+            <span
+              v-else
+              class="text-success cont3xt-welcome-text">
               <strong>Hit enter to issue your search!</strong>
             </span>
-            <span class="fa fa-rocket fa-2x ml-1 text-muted" />
-          </b-alert>
+            <v-icon
+              icon="mdi-rocket-launch"
+              size="x-large"
+              class="text-muted ml-2" />
+          </div>
           <div class="cont3xt-result-grid-container">
-            <div class="cont3xt-result-grid cont3xt-welcome">
+            <div class="cont3xt-result-grid">
               <div class="indicator-tree-pane">
-                <div class="well well-lg text-center p-4 alert-dark h-100 mb-3 mx-2">
-                  <h1>
-                    <span class="fa fa-2x fa-tree text-muted" />
-                  </h1>
+                <div class="well text-center pa-4 alert-dark h-100 mb-3 mx-2">
+                  <h3>
+                    <v-icon
+                      class="text-muted"
+                      icon="mdi-pine-tree-variant"
+                      size="x-large" />
+                  </h3>
                   <h1 class="display-4">
                     Indicator Result Tree
                   </h1>
@@ -183,18 +197,22 @@ SPDX-License-Identifier: Apache-2.0
                   </p>
                   <p class="lead">
                     Choose and configure integrations via
-                    <a class="no-decoration"
-                       href="settings#integrations">
+                    <a
+                      class="no-decoration"
+                      href="settings#integrations">
                       Settings -> Integrations
                     </a>
                   </p>
                 </div>
               </div>
               <div class="result-card-pane">
-                <div class="well well-lg text-center p-4 alert-dark h-100 mb-3 mx-2">
-                  <h1>
-                    <span class="fa fa-2x fa-id-card-o text-muted" />
-                  </h1>
+                <div class="well text-center pa-4 alert-dark h-100 mb-3 mx-2">
+                  <h3>
+                    <v-icon
+                      size="x-large"
+                      icon="mdi-card-account-details"
+                      class="text-muted" />
+                  </h3>
                   <h1 class="display-4">
                     Indicator Card Detail
                   </h1>
@@ -207,10 +225,13 @@ SPDX-License-Identifier: Apache-2.0
                 </div>
               </div>
               <div class="link-group-pane">
-                <div class="well well-lg text-center p-4 alert-dark h-100 mb-3 mx-2">
-                  <h1>
-                    <span class="fa fa-2x fa-link text-muted" />
-                  </h1>
+                <div class="well text-center pa-4 alert-dark h-100 mb-3 mx-2">
+                  <h3>
+                    <v-icon
+                      size="x-large"
+                      icon="mdi-link-variant"
+                      class="text-muted" />
+                  </h3>
                   <h1 class="display-4">
                     Link Groups
                   </h1>
@@ -219,8 +240,9 @@ SPDX-License-Identifier: Apache-2.0
                   </p>
                   <p class="lead">
                     Create/Configure links and link groups in
-                    <a class="no-decoration"
-                       href="settings#linkgroups">
+                    <a
+                      class="no-decoration"
+                      href="settings#linkgroups">
                       Settings -> Link Groups
                     </a>
                   </p>
@@ -231,28 +253,29 @@ SPDX-License-Identifier: Apache-2.0
         </div> <!-- /welcome -->
 
         <!-- errors -->
-        <div v-if="error.length || getIntegrationsError.length"
-             class="w-100 d-flex flex-column mt-2 mx-3">
+        <div
+          v-if="error.length || getIntegrationsError.length"
+          class="w-100 d-flex flex-column mt-2 mx-3">
           <!-- search error -->
           <div
-              v-if="error.length"
-              class="alert alert-warning">
-            <span class="fa fa-exclamation-triangle" />&nbsp;
+            v-if="error.length"
+            class="alert alert-warning">
+            <v-icon icon="mdi-alert" />&nbsp;
             {{ error }}
             <button
-                tabindex="-1"
-                type="button"
-                @click="error = ''"
-                class="close cursor-pointer">
+              tabindex="-1"
+              type="button"
+              @click="error = ''"
+              class="close cursor-pointer">
               <span>&times;</span>
             </button>
           </div> <!-- /search error -->
 
           <!-- integration error -->
           <div
-              v-if="getIntegrationsError.length"
-              class="alert alert-danger">
-            <span class="fa fa-exclamation-triangle" />&nbsp;
+            v-if="getIntegrationsError.length"
+            class="alert alert-danger">
+            <v-icon icon="mdi-alert" />&nbsp;
             Error fetching integrations. Viewing data for integrations will not work!
             <br>
             {{ getIntegrationsError }}
@@ -260,188 +283,211 @@ SPDX-License-Identifier: Apache-2.0
         </div>
         <!-- /errors -->
 
-        <div v-if="shouldDisplayResults" class="cont3xt-result-grid-container">
+        <div
+          v-if="shouldDisplayResults"
+          class="cont3xt-result-grid-container">
           <div class="cont3xt-result-grid">
             <div class="indicator-tree-pane">
               <!-- tags line -->
-              <div v-if="!tagDisplayCollapsed" class="d-flex justify-content-start mb-1">
-                <tag-display-line :tags="tags" :remove-tag="removeTag" :clear-tags="clearTags"/>
+              <div
+                v-if="!tagDisplayCollapsed"
+                class="d-flex justify-start mb-1">
+                <tag-display-line
+                  :tags="tags"
+                  :remove-tag="removeTag"
+                  :clear-tags="clearTags" />
               </div>
               <!-- /tags line -->
-              <div class="pane-scroll-content pb-5 d-flex flex-column gap-3">
+              <div class="pb-5 d-flex flex-column ga-3">
                 <!-- indicator result tree -->
                 <i-type-node
-                    v-for="(indicatorTreeRoot, i) in indicatorTreeRoots" :key="i"
-                    :node="indicatorTreeRoot" />
+                  v-for="(indicatorTreeRoot, i) in indicatorTreeRoots"
+                  :key="i"
+                  :node="indicatorTreeRoot" />
                 <!-- /indicator result tree -->
               </div>
             </div>
-            <div class="result-card-pane position-relative" :class="{ 'result-card-pane-expanded': !getLinkGroupsPanelOpen }">
+            <div
+              v-if="shouldDisplayResults"
+              class="result-card-pane position-relative"
+              :class="{ 'result-card-pane-expanded': !getLinkGroupsPanelOpen }">
               <integration-btns
                 :indicator-id="activeIndicatorId"
                 :selected-overview="currentOverviewCard"
-                @set-override-overview="setOverrideOverview"
-              />
-              <div class="pane-scroll-content" @scroll="handleScroll" ref="resultsIntegration">
+                @set-override-overview="setOverrideOverview" />
+              <div
+                class="pane-scroll-content position-relative"
+                @scroll="handleScroll"
+                ref="resultsIntegration">
                 <!-- integration results -->
-                <b-overlay
-                    no-center
-                    rounded="sm"
-                    blur="0.2rem"
-                    opacity="0.9"
-                    variant="transparent"
-                    :show="getWaitRendering || getRendering">
-                  <div class="mb-5">
-                    <template v-if="showOverview">
-                      <overview-card
-                          v-if="currentOverviewCard"
-                          :indicator="getActiveIndicator"
-                          :card="currentOverviewCard"
-                      />
-                      <b-alert
-                          v-else
-                          show
-                          variant="dark"
-                          class="text-center">
-                        There is no overview configured for the <strong>{{ getActiveIndicator.itype }}</strong> iType.
-                        <a class="no-decoration" href="settings#overviews">Create one!</a>
-                      </b-alert>
-                    </template>
-                    <integration-card
-                        v-else-if="activeSource && getActiveIndicator"
-                        :source="activeSource"
-                        :indicator="getActiveIndicator"
-                        @update-results="updateData"
-                    />
+                <v-overlay
+                  :model-value="getWaitRendering || getRendering"
+                  class="align-center justify-center blur-overlay"
+                  contained>
+                  <div class="d-flex flex-column align-center justify-center">
+                    <v-progress-circular
+                      color="info"
+                      size="64"
+                      indeterminate />
+                    <p>Rendering data...</p>
                   </div>
-                  <template #overlay>
-                    <div class="overlay-loading">
-                      <span class="fa fa-circle-o-notch fa-spin fa-2x" />
-                      <p>Rendering data...</p>
-                    </div>
+                </v-overlay>
+                <div class="mb-5">
+                  <template v-if="showOverview">
+                    <overview-card
+                      class="overflow-auto"
+                      v-if="currentOverviewCard"
+                      :indicator="getActiveIndicator"
+                      :card="currentOverviewCard" />
+                    <v-alert
+                      v-else
+                      color="dark"
+                      class="text-center">
+                      There is no overview configured for the <strong>{{ getActiveIndicator.itype }}</strong> iType.
+                      <a
+                        class="no-decoration"
+                        href="settings#overviews">Create one!</a>
+                    </v-alert>
                   </template>
-                </b-overlay>
+                  <integration-card
+                    class="overflow-auto"
+                    v-else-if="activeSource && getActiveIndicator"
+                    :source="activeSource"
+                    :indicator="getActiveIndicator"
+                    @update-results="updateData" />
+                </div>
                 <!-- /integration results -->
+                <v-alert
+                  v-if="!getSelectedIntegrations.length"
+                  color="info"
+                  class="text-center">
+                  <v-icon
+                    icon="mdi-chevron-left mr-2"
+                    size="x-large" />
+                  No integrations selected.
+                  View the Integrations panel on the far left to select integrations to query.
+                  <v-icon
+                    icon="mdi-chevron-left ml-2"
+                    size="x-large" />
+                </v-alert>
               </div>
-              <b-button
-                  v-if="scrollPx > 100"
-                  size="sm"
-                  @click="toTop"
-                  title="Go to top"
-                  class="to-top-btn"
-                  variant="btn-link"
-                  v-show="scrollPx > 100">
-                <span class="fa fa-lg fa-arrow-circle-up" />
-              </b-button>
+              <v-btn
+                v-if="scrollPx > 100"
+                size="small"
+                @click="toTop"
+                title="Go to top"
+                class="to-top-btn square-btn-sm"
+                variant="text"
+                color="btn-link"
+                v-show="scrollPx > 100">
+                <v-icon
+                  size="large"
+                  icon="mdi-arrow-up-circle" />
+              </v-btn>
             </div>
-            <div v-if="getLinkGroupsPanelOpen" class="link-group-pane">
+            <div
+              v-if="getLinkGroupsPanelOpen"
+              class="link-group-pane">
               <div class="flex-grow-1 d-flex flex-column link-group-panel-shadow ml-3 overflow-hidden">
-                <div v-if="getActiveIndicator" class="mb-1 mx-2">
+                <div
+                  v-if="getActiveIndicator"
+                  class="mb-1 mx-2">
                   <!-- link groups error -->
-                  <b-alert
-                      variant="danger"
-                      :show="!!getLinkGroupsError.length">
+                  <v-alert
+                    color="error"
+                    v-if="!!getLinkGroupsError.length">
                     {{ getLinkGroupsError }}
-                  </b-alert>
+                  </v-alert>
                   <!-- /link groups error -->
 
                   <!-- link search -->
-                  <div class="d-flex justify-content-between mb-1">
-                    <div class="flex-grow-1">
-                      <b-input-group size="sm">
-                        <template #prepend>
-                          <b-input-group-text>
-                            <span v-if="!getShiftKeyHold"
-                              class="fa fa-search fa-fw"
-                            />
-                            <span v-else
-                              class="lg-query-shortcut">
-                              F
-                            </span>
-                          </b-input-group-text>
+                  <div class="d-flex flex-row justify-space-between mb-1">
+                    <div class="flex-grow-1 no-wrap d-flex flex-row mb-2">
+                      <v-text-field
+                        class="w-50 input-connect-right small-input"
+                        block="false"
+                        tabindex="0"
+                        ref="linkSearch"
+                        v-debounce="val => linkSearchTerm = val"
+                        v-focus="getFocusLinkSearch"
+                        placeholder="Search links below">
+                        <template #prepend-inner>
+                          <v-icon
+                            v-if="!getShiftKeyHold"
+                            icon="mdi-magnify" />
+                          <span
+                            v-else
+                            class="lg-query-shortcut">
+                            F
+                          </span>
                         </template>
-                        <b-form-input
-                          tabindex="0"
-                          debounce="400"
-                          ref="linkSearch"
-                          v-model="linkSearchTerm"
-                          v-focus="getFocusLinkSearch"
-                          placeholder="Search links below"
-                        />
-                        <template #append>
-                          <b-dropdown
-                            right
-                            size="sm"
-                            v-b-tooltip.hover="`Showing links for ${currentItype} iType. Click to change.`">
-                            <b-dropdown-item :key="iType"
-                              @click="changeItype(iType)"
-                              :active="currentItype === iType"
-                              v-for="iType in iTypes">
-                              {{ iType }}
-                            </b-dropdown-item>
-                          </b-dropdown>
-                        </template>
-                      </b-input-group>
+                      </v-text-field>
+                      <v-select
+                        class="input-connect-left small-input"
+                        flat
+                        style="max-width: 34px"
+                        v-tooltip="`Showing links for ${currentItype} iType. Click to change.`"
+                        v-model="currentItype"
+                        :items="iTypes">
+                        <template #selection />
+                      </v-select>
                     </div>
-                    <b-button
-                      size="sm"
-                      class="mx-1"
-                      v-b-tooltip.hover
-                      variant="outline-secondary"
+                    <v-btn
+                      class="mx-1 square-btn-sm"
+                      v-tooltip="`${!allVisibleLinkGroupsCollapsed ? 'Collapse' : 'Expand'} ALL Link Groups`"
+                      variant="outlined"
+                      color="secondary"
                       :disabled="!hasVisibleLinkGroup"
                       @click="toggleAllVisibleLinkGroupsCollapse"
                       :title="`${!allVisibleLinkGroupsCollapsed ? 'Collapse' : 'Expand'} ALL Link Groups`">
-                      <span class="fa fa-fw"
-                        :class="[!allVisibleLinkGroupsCollapsed ? 'fa-chevron-up' : 'fa-chevron-down']">
-                      </span>
-                    </b-button>
+                      <v-icon :icon="!allVisibleLinkGroupsCollapsed ? 'mdi-chevron-up' : 'mdi-chevron-down'" />
+                    </v-btn>
                     <!-- toggle link groups panel button -->
-                    <b-button
-                      size="sm"
+                    <v-btn
+                      size="small"
                       tabindex="-1"
-                      variant="link"
-                      class="float-right"
+                      color="secondary"
+                      variant="elevated"
+                      class="float-right square-btn-sm"
                       @click="toggleLinkGroupsPanel"
-                      v-b-tooltip.hover.top
+                      v-tooltip:top="'Hide Link Groups Panel'"
                       title="Hide Link Groups Panel">
-                      <span class="fa fa-lg fa-angle-double-right" />
-                    </b-button>
+                      <v-icon icon="mdi-chevron-double-right" />
+                    </v-btn>
                     <!-- /toggle link groups panel button -->
                   </div>
                   <!-- /link search -->
 
                   <!-- time range input for links -->
-                  <time-range-input v-model="timeRangeInfo"
-                    :place-holder-tip="linkPlaceholderTip"
-                  />
+                  <time-range-input
+                    v-model="timeRangeInfo"
+                    :place-holder-tip="linkPlaceholderTip" />
                   <!-- /time range input for links -->
                 </div>
-                <div v-if="getActiveIndicator" class="pane-scroll-content">
-                <!-- link groups -->
-                <div class="d-flex flex-column align-items-start mb-5">
-                  <template v-if="hasVisibleLinkGroup">
-                    <template v-for="(linkGroup, index) in getLinkGroups">
-                      <reorder-list
-                        :index="index"
-                        @update="updateList"
-                        :key="linkGroup._id"
-                        :list="getLinkGroups"
-                        class="w-100"
-                        v-if="hasVisibleLink(linkGroup)">
-                        <template #handle>
-                        <span
-                          :id="`${linkGroup._id}-tt`"
-                          class="fa fa-bars d-inline link-group-card-handle"
-                        ></span>
-                        <b-tooltip
-                          noninteractive
-                          :target="`${linkGroup._id}-tt`">
-                          Drag &amp; drop to reorder Link Groups
-                        </b-tooltip>
-                        </template>
-                        <template #default>
+                <div
+                  v-if="getActiveIndicator"
+                  class="pane-scroll-content">
+                  <!-- link groups -->
+                  <div class="d-flex flex-column align-start mb-5 mt-1">
+                    <template v-if="hasVisibleLinkGroup">
+                      <drag-update-list
+                        class="w-100 d-flex flex-column ga-2"
+                        :value="getLinkGroups"
+                        @update="updateList">
+                        <div
+                          v-for="(linkGroup, index) in getLinkGroups"
+                          :key="linkGroup._id"
+                          :class="{ 'd-none': !hasVisibleLink(linkGroup) }">
+                          <v-icon
+                            icon="mdi-menu"
+                            :id="`${linkGroup._id}-tt`"
+                            class="d-inline link-group-card-handle drag-handle" />
+                          <id-tooltip :target="`${linkGroup._id}-tt`">
+                            Drag &amp; drop to reorder Link Groups
+                          </id-tooltip>
+
                           <link-group-card
-                            v-if="getLinkGroups.length && getActiveIndicator"
+                            v-if="hasVisibleLink(linkGroup) && getLinkGroups.length && getActiveIndicator"
                             class="w-100"
                             :itype="currentItype"
                             :indicator="getActiveIndicator"
@@ -450,32 +496,39 @@ SPDX-License-Identifier: Apache-2.0
                             :stop-date="timeRangeInfo.stopDate"
                             :start-date="timeRangeInfo.startDate"
                             :link-group="getLinkGroups[index]"
-                            :hide-links="hideLinks[linkGroup._id]"
-                          />
-                        </template>
-                      </reorder-list>
+                            :hide-links="hideLinks[linkGroup._id]" />
+                          <span v-else />
+                        </div>
+                      </drag-update-list>
                     </template>
-                  </template>
-                  <!-- no link groups message -->
-                  <span v-else-if="hasLinkGroupWithItype" class="p-1">
-                    There are no Link Groups that match your search.
-                  </span>
-                  <span v-else class="p-1">
-                    There are no Link Groups for the <strong>{{ getActiveIndicator.itype }}</strong> iType.
-                    <a class="no-decoration" href="settings#linkgroups">Create one!</a>
-                  </span> <!-- /no link groups message -->
-                </div> <!-- /link groups -->
-              </div>
+                    <!-- no link groups message -->
+                    <span
+                      v-else-if="hasLinkGroupWithItype"
+                      class="pa-1 text-muted">
+                      There are no Link Groups that match your search.
+                    </span>
+                    <span
+                      v-else
+                      class="pa-1 text-muted">
+                      There are no Link Groups for the <strong>{{ currentItype }}</strong> iType.
+                      <a
+                        class="no-decoration"
+                        href="settings#linkgroups">Create one!</a>
+                    </span> <!-- /no link groups message -->
+                  </div> <!-- /link groups -->
+                </div>
               </div>
             </div>
           </div>
         </div>
-        <div v-if="shouldDisplayResults && !getLinkGroupsPanelOpen" class="side-panel-stub link-group-panel-stub h-100 cursor-pointer d-flex flex-column"
-          v-b-tooltip.hover.top="'Show Link Groups Panel'"
+        <div
+          v-if="shouldDisplayResults && !getLinkGroupsPanelOpen"
+          class="side-panel-stub link-group-panel-stub h-100 cursor-pointer d-flex flex-column"
+          v-tooltip:top="'Show Link Groups Panel'"
           @click="toggleLinkGroupsPanel">
-          <span
-            class="fa fa-link p-1 mt-1"
-          />
+          <v-icon
+            icon="mdi-chevron-double-left"
+            class="pa-1 mt-1" />
         </div>
       </div>
     </div> <!-- /page content -->
@@ -485,18 +538,20 @@ SPDX-License-Identifier: Apache-2.0
 <script>
 import { mapGetters } from 'vuex';
 
-import ReorderList from '@/utils/ReorderList';
-import TimeRangeInput from '@/utils/TimeRangeInput';
-import Focus from '@/../../../common/vueapp/Focus';
-import ViewSelector from '@/components/views/ViewSelector';
+import DragUpdateList from '@/utils/DragUpdateList.vue';
+import ActionDropdown from '@/utils/ActionDropdown.vue';
+import IdTooltip from '@/utils/IdTooltip.vue';
+import TimeRangeInput from '@/utils/TimeRangeInput.vue';
+import Focus from '@common/Focus.vue';
+import ViewSelector from '@/components/views/ViewSelector.vue';
 import UserService from '@/components/services/UserService';
-import LinkGroupCard from '@/components/links/LinkGroupCard';
-import CreateViewModal from '@/components/views/CreateViewModal';
+import LinkGroupCard from '@/components/links/LinkGroupCard.vue';
+import CreateViewModal from '@/components/views/CreateViewModal.vue';
 import Cont3xtService from '@/components/services/Cont3xtService';
-import IntegrationCard from '@/components/integrations/IntegrationCard';
-import OverviewCard from '@/components/overviews/OverviewCard';
-import IntegrationPanel from '@/components/integrations/IntegrationPanel';
-import TagDisplayLine from '@/utils/TagDisplayLine';
+import IntegrationCard from '@/components/integrations/IntegrationCard.vue';
+import OverviewCard from '@/components/overviews/OverviewCard.vue';
+import IntegrationPanel from '@/components/integrations/IntegrationPanel.vue';
+import TagDisplayLine from '@/utils/TagDisplayLine.vue';
 import { paramStr } from '@/utils/paramStr';
 import LinkService from '@/components/services/LinkService';
 import OverviewService from '@/components/services/OverviewService';
@@ -504,13 +559,17 @@ import ITypeNode from '@/components/itypes/ITypeNode.vue';
 import IntegrationBtns from '@/components/integrations/IntegrationBtns.vue';
 import { indicatorFromId, indicatorParentId, localIndicatorId } from '@/utils/cont3xtUtil';
 import { iTypes } from '@/utils/iTypes';
+import { clipboardCopyText } from '@/utils/clipboardCopyText';
+import { computed } from 'vue';
 
 export default {
   name: 'Cont3xt',
   components: {
+    DragUpdateList,
+    ActionDropdown,
+    IdTooltip,
     IntegrationBtns,
     ITypeNode,
-    ReorderList,
     ViewSelector,
     LinkGroupCard,
     CreateViewModal,
@@ -521,8 +580,46 @@ export default {
     TagDisplayLine
   },
   directives: { Focus },
+  created () {
+    // Non-reactive instance properties (not needed in template)
+    this.highlightDebounceTimer = null;
+  },
   data () {
     return {
+      rocketFly: false,
+      rocketShake: false,
+      viewModalOpen: false,
+      actionDropdownOpen: false,
+      dropdownActions: [
+        {
+          icon: 'mdi-database',
+          text: 'Skip Cache',
+          tooltip: computed(() => this.skipCache ? 'Ignorning cache - click to use cache (shift + c)' : 'Using cache - click to ignore cache (shift + c)'),
+          active: computed(() => this.skipCache),
+          action: () => { this.skipCache = !this.skipCache; }
+        },
+        {
+          icon: 'mdi-teddy-bear',
+          text: 'Skip Children',
+          tooltip: computed(() => this.skipChildren ? 'Ignorning child queries - select to enable child queries' : 'Including child queries - select to disable child queries'),
+          active: computed(() => this.skipChildren),
+          action: this.toggleSkipChildren
+        },
+        {
+          icon: 'mdi-file-document',
+          text: 'Download Report',
+          tooltip: computed(() => 'Download a report of this result (shift + r)'),
+          disabled: computed(() => !this.searchComplete),
+          action: this.generateReport
+        },
+        {
+          icon: 'mdi-share',
+          text: 'Copy Share Link',
+          tooltip: computed(() => 'Copy share link to clipboard (shift + l)'),
+          active: computed(() => this.activeShareLink),
+          action: this.shareLink
+        }
+      ],
       iTypes,
       error: '',
       scrollPx: 0,
@@ -534,6 +631,8 @@ export default {
       searchComplete: false,
       linkSearchTerm: this.$route.query.linkSearch || '',
       hideLinks: {},
+      searchMode: 'query', // 'query' or 'highlight'
+      previousQueryTerm: '', // Store the query term when switching to highlight mode
       linkPlaceholderTip: {
         title: 'These values are used to fill in <a href="help#linkgroups" class="no-decoration">link placeholders</a>.<br>' +
             'Try using <a href="help#general" class="no-decoration">relative times</a> like -5d or -1h.'
@@ -585,7 +684,7 @@ export default {
       'getSeeAllOverviews', 'getSelectedOverviewMap', 'getOverviewMap', 'getResults',
       'getIndicatorGraph', 'getLinkGroupsPanelOpen', 'getActiveIndicator',
       'getResultTreeNavigationDirection', 'getCollapsedIndicatorNodeMap',
-      'getCollapseOrExpandIndicatorRoots'
+      'getCollapseOrExpandIndicatorRoots', 'getSelectedIntegrations'
     ]),
     tags: {
       get () { return this.getTags; },
@@ -736,16 +835,16 @@ export default {
     },
     getToggleCache (val) {
       if (val) {
-        this.$refs.actionDropdown.show();
+        this.actionDropdownOpen = true;
         setTimeout(() => { this.skipCache = !this.skipCache; }, 100);
-        setTimeout(() => { this.$refs.actionDropdown.hide(); }, 1000);
+        setTimeout(() => { this.actionDropdownOpen = false; }, 1000);
       }
     },
     getToggleChildren (val) {
       if (val) {
-        this.$refs.actionDropdown.show();
+        this.actionDropdownOpen = true;
         setTimeout(() => { this.skipChildren = !this.skipChildren; }, 100);
-        setTimeout(() => { this.$refs.actionDropdown.hide(); }, 1000);
+        setTimeout(() => { this.actionDropdownOpen = false; }, 1000);
       }
     },
     getDownloadReport (val) {
@@ -753,7 +852,7 @@ export default {
     },
     getCopyShareLink (val) {
       if (val) {
-        this.$refs.actionDropdown.show();
+        this.actionDropdownOpen = true;
         setTimeout(() => { this.activeShareLink = true; }, 100);
         setTimeout(() => {
           this.shareLink();
@@ -769,6 +868,12 @@ export default {
     },
     getFocusTagInput (val) {
       if (val) { this.$refs.tagInput.select(); }
+    },
+    searchTerm (newVal) {
+      // Auto-update highlight patterns when in highlight mode
+      if (this.searchMode === 'highlight') {
+        this.debouncedUpdateHighlight();
+      }
     },
     // handle page-load query params -- fires once both integrations and views are loaded in from backend
     getImmediateSubmissionReady () {
@@ -844,16 +949,18 @@ export default {
     clear () {
       this.searchTerm = '';
     },
-    updateList ({ list }) {
+    updateList ({ newList, oldList, oldIndex, newIndex }) {
       const ids = [];
-      for (const group of list) {
+      for (const group of newList) {
         ids.push(group._id);
       }
 
+      this.$store.commit('SET_LINK_GROUPS', newList); // optimistic update, to avoid stutter
       UserService.setUserSettings({ linkGroup: { order: ids } }).then((response) => {
-        this.$store.commit('SET_LINK_GROUPS', list); // update list order
+        // nothing to do, since we've already updated the list
       }).catch((err) => {
         this.$store.commit('SET_LINK_GROUPS_ERROR', err);
+        this.$store.commit('SET_LINK_GROUPS', oldList); // roll-back list
       });
     },
     handleScroll (e) {
@@ -928,10 +1035,62 @@ export default {
         this.loading.received = chunk.sent;
       }
     },
+    startRocketFlyEffect () {
+      this.rocketFly = false;
+      setTimeout(() => { this.rocketFly = true; });
+    },
+    startRocketShakeEffect () {
+      this.rocketShake = false;
+      setTimeout(() => { this.rocketShake = true; });
+    },
+    switchToQueryMode () {
+      this.searchMode = 'query';
+      // Restore the original query term
+      this.searchTerm = this.previousQueryTerm;
+    },
+    switchToHighlightMode () {
+      this.searchMode = 'highlight';
+      // Save the current query term before switching
+      this.previousQueryTerm = this.searchTerm;
+      // Populate the search box with current highlight patterns
+      this.searchTerm = this.$route.query.highlight || '';
+    },
+    debouncedUpdateHighlight () {
+      // Clear existing timer
+      if (this.highlightDebounceTimer) {
+        clearTimeout(this.highlightDebounceTimer);
+      }
+      // Set new timer to update after user stops typing
+      this.highlightDebounceTimer = setTimeout(() => {
+        this.setHighlightPatterns();
+      }, 400); // 400ms delay
+    },
+    handleSearchAction () {
+      if (this.searchMode === 'highlight') {
+        // In highlight mode, immediately update (cancel debounce)
+        if (this.highlightDebounceTimer) {
+          clearTimeout(this.highlightDebounceTimer);
+        }
+        this.setHighlightPatterns();
+      } else {
+        this.search();
+      }
+    },
+    setHighlightPatterns () {
+      // Update the highlight query parameter
+      this.$router.push({
+        query: {
+          ...this.$route.query,
+          highlight: this.searchTerm || undefined
+        }
+      });
+    },
     search () {
       if (this.searchTerm == null || this.searchTerm === '') {
+        this.startRocketShakeEffect();
         return; // do NOT search if the query is empty
       }
+      this.startRocketFlyEffect();
 
       this.error = '';
       this.$store.commit('CLEAR_CONT3XT_RESULTS');
@@ -976,12 +1135,12 @@ export default {
     },
     hasLinkWithItype (linkGroup) {
       return linkGroup.links.some(link =>
-        link.url !== '----------' && link.itypes.includes(this.getActiveIndicator.itype)
+        link.url !== '----------' && link.itypes.includes(this.currentItype)
       );
     },
     hasVisibleLink (linkGroup) {
       return linkGroup.links.some((link, i) =>
-        link.url !== '----------' && link.itypes.includes(this.getActiveIndicator.itype) && !this.hideLinks[linkGroup._id]?.[i]
+        link.url !== '----------' && link.itypes.includes(this.currentItype) && !this.hideLinks[linkGroup._id]?.[i]
       );
     },
     shareLink () {
@@ -991,14 +1150,14 @@ export default {
         const allSharedQueryParams = { ...this.$route.query, submit: 'y' };
         shareLink = `${window.location.origin}/${paramStr(allSharedQueryParams)}`;
       }
-      this.$copyText(shareLink);
+      clipboardCopyText(shareLink);
     },
     toggleAllVisibleLinkGroupsCollapse () {
       // if all are collapsed, open them all
       // if even one is open, close them all
       const allCollapsed = this.allVisibleLinkGroupsCollapsed;
       for (const lg of this.visibleLinkGroups) {
-        this.$set(this.collapsedLinkGroups, lg._id, !allCollapsed);
+        this.collapsedLinkGroups[lg._id] = !allCollapsed;
       }
     },
     generateReport () {
@@ -1124,7 +1283,7 @@ export default {
           submitParam === 't' || submitParam === 'true');
     }
   },
-  beforeDestroy () {
+  beforeUnmount () {
     this.$store.commit('RESET_LOADING');
 
     // clear results/selections from the store (so the current search is not presented when the user returns)
@@ -1136,8 +1295,40 @@ export default {
 </script>
 
 <style scoped>
-.search-btn {
+.rocket-fly {
+  animation: rocket-fly 0.82s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+  transform: translate(0, 0);
+}
+
+@keyframes rocket-fly {
+  50% {
+    transform: translate(30px, -30px);
+  }
+  51% {
+    transform: translate(-30px, 30px);
+  }
+  100% {
+    transform: translate(0, 0);
+  }
+}
+
+.rocket-shake {
+  animation: rocket-shake 0.82s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+  transform: translateX(0);
+  rotate: 0;
+}
+
+@keyframes rocket-shake {
+  20% { transform: translateX(3px); rotate: 2deg; }
+  40% { transform: translateX(-4px); rotate: -3deg; }
+  60% { transform: translateX(5px); rotate: 4deg; }
+  80% { transform: translateX(-4px); rotate: -3deg; }
+  100% { transform: translateX(0); rotate: 0deg; }
+}
+
+.cont3xt-search-btn {
   width: 148px;
+  overflow: hidden;
 }
 
 .search-nav {
@@ -1150,11 +1341,33 @@ body.dark {
 
 .cont3xt-welcome .well {
   border-radius: 6px;
+  background-color: rgb(var(--v-theme-well));
+  border: 1px solid rgb(var(--v-theme-well-border));
+  overflow-x: hidden;
 }
 /* better text-wrapping on the welcome screen for browsers that support it */
 /*noinspection CssInvalidPropertyValue*/
 .cont3xt-welcome .well h1, .cont3xt-welcome .well p {
   text-wrap: balance;
+}
+
+.cont3xt-welcome h1 {
+  font-size: 3.5rem;
+  font-weight: 300;
+}
+
+.cont3xt-welcome p {
+  font-weight: 300;
+  font-size: 1.25rem;
+}
+
+.cont3xt-welcome a {
+  font-weight: 400;
+}
+
+.cont3xt-welcome-text {
+  font-size: 1.25rem;
+  font-weight: 300;
 }
 
 /* scroll to top btn for integration results */
@@ -1163,11 +1376,12 @@ body.dark {
   right: 8px;
   bottom: 0;
   position: absolute;
-  color: var(--info);
+  color: rgb(var(--v-theme-info));
 }
 
 .link-group-card-handle {
-  top: 2rem;
+  height: 0;
+  top: 0.5rem;
   z-index: 2;
   float: right;
   right: 1rem;
@@ -1175,10 +1389,6 @@ body.dark {
 }
 
 /* enter icon for search/refresh button to be displayed on shift hold */
-.enter-icon > .fa-long-arrow-left {
-  top: 2px;
-  position: relative;
-}
 .enter-icon > .enter-arm {
   top: -2px;
   right: 6px;
@@ -1212,6 +1422,7 @@ body.dark {
 
 .indicator-tree-pane {
   grid-column: 1;
+  overflow-y: scroll;
 }
 
 .result-card-pane {
@@ -1229,6 +1440,7 @@ body.dark {
 .pane-scroll-content {
   flex-grow: 1;
   overflow-y: auto;
+  overflow-x: auto;
   width: 100%;
   padding-inline: 0.5rem;
 }
@@ -1254,5 +1466,10 @@ body.dark {
 .link-group-panel-shadow {
   -webkit-box-shadow: -2px 0 1rem 0 rgba(0, 0, 0, 0.175) !important;
   box-shadow: -2px 0 1rem 0 rgba(0, 0, 0, 0.175) !important;
+}
+.search-query-shortcut { /* exactly fits the space of magnify icon */
+  font-size: 20px;
+  width: 24px !important;
+  text-align: center;
 }
 </style>
