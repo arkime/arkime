@@ -426,7 +426,7 @@ Db.getSession = async (id, options, cb) => {
   }
   async function fixPacketPos (session, fields) {
     if (!fields.packetPos || fields.packetPos.length === 0) {
-      return cb(null, session);
+      return session;
     }
 
     try {
@@ -436,7 +436,7 @@ Db.getSession = async (id, options, cb) => {
       }
 
       if (!fileInfo || !fileInfo.packetPosEncoding) {
-        return cb(null, session);
+        return session;
       }
 
       if (fileInfo.packetPosEncoding === 'gap0') {
@@ -456,12 +456,12 @@ Db.getSession = async (id, options, cb) => {
             last = fields.packetPos[i];
           }
         }
-        return cb(null, session);
+        return session;
       } else if (fileInfo.packetPosEncoding === 'localIndex') {
         // Neg numbers aren't encoded, use var length encoding, if pos is 0 same gap as last gap, otherwise last + pos
         if (await Db.isLocalView(fields.node)) {
           const newPacketPos = [];
-          async.forEachOfSeries(fields.packetPos, async (item, key) => {
+          await async.forEachOfSeries(fields.packetPos, async (item, key) => {
             if (key % 3 !== 0) { return; } // Only look at every 3rd item
 
             try {
@@ -497,53 +497,54 @@ Db.getSession = async (id, options, cb) => {
               console.log(e);
             }
             return;
-          }, () => {
-            fields.packetPos = newPacketPos;
-            return cb(null, session);
           });
+          fields.packetPos = newPacketPos;
+          return session;
         } else {
-          return cb(null, session);
+          return session;
         }
       } else {
         console.log('Unknown packetPosEncoding', fileInfo);
-        return cb(null, session);
+        return session;
       }
     } catch (err) {
-      return cb(null, session);
+      return session;
     }
   }
 
-  const optionsReplaced = options === undefined;
-  if (!options) {
-    options = { _source: ['cert', 'dns'], fields: ['*'] };
-  }
-  const query = { query: { ids: { values: [Db.sid2Id(id)] } }, _source: options._source, fields: options.fields };
+  try {
+    const optionsReplaced = options === undefined;
+    if (!options) {
+      options = { _source: ['cert', 'dns'], fields: ['*'] };
+    }
+    const query = { query: { ids: { values: [Db.sid2Id(id)] } }, _source: options._source, fields: options.fields };
 
-  const unflatten = options?.arkime_unflatten ?? true;
-  const params = Object.create(null);
-  Db.merge(params, options);
-  delete params._source;
-  delete params.fields;
-  delete params.arkime_unflatten;
-  delete params.final;
+    const unflatten = options?.arkime_unflatten ?? true;
+    const params = Object.create(null);
+    Db.merge(params, options);
+    delete params._source;
+    delete params.fields;
+    delete params.arkime_unflatten;
+    delete params.final;
 
-  const index = Db.sid2Index(id, { multiple: true });
+    const index = Db.sid2Index(id, { multiple: true });
 
-  Db.search(index, query, params, async (err, results) => {
+    let results = await Db.search(index, query, params);
     if (internals.debug > 2) {
-      console.log('GETSESSION - search results', err, JSON.stringify(results, false, 2));
+      console.log('GETSESSION - search results', JSON.stringify(results, false, 2));
     }
-    if (err) { return cb(err); }
     if (!results.hits || !results.hits.hits || results.hits.hits.length === 0) {
       if (options.final === true) {
         delete options.final;
-        return cb('Not found');
+        return cb ? cb('Not found') : Promise.reject('Not found');
       }
       options.final = true;
-      internals.client7.indices.refresh({ index: fixIndex(index) }, () => {
-        Db.getSession(id, options, cb);
+      await new Promise((resolve) => {
+        internals.client7.indices.refresh({ index: fixIndex(index) }, () => {
+          resolve();
+        });
       });
-      return;
+      return Db.getSession(id, options, cb);
     }
     const session = results.hits.hits[0];
     session.found = true;
@@ -556,10 +557,13 @@ Db.getSession = async (id, options, cb) => {
     delete session._source;
     fixSessionFields(session.fields, unflatten);
     if (!optionsReplaced && options.fields && !options.fields.includes('packetPos')) {
-      return cb(null, session);
+      return cb ? cb(null, session) : session;
     }
-    return await fixPacketPos(session, session.fields);
-  });
+    const result = await fixPacketPos(session, session.fields);
+    return cb ? cb(null, result) : result;
+  } catch (err) {
+    return cb ? cb(err) : Promise.reject(err);
+  }
 };
 
 Db.index = async (index, id, doc) => {
@@ -572,11 +576,7 @@ Db.indexNow = async (index, id, doc) => {
   });
 };
 
-Db.search = async (index, query, options, cb) => {
-  if (!cb && typeof options === 'function') {
-    cb = options;
-    options = undefined;
-  }
+Db.search = async (index, query, options) => {
   query.profile = internals.esProfile;
 
   const params = {
@@ -601,10 +601,9 @@ Db.search = async (index, query, options, cb) => {
       console.log('RESPONSE:', JSON.stringify(results, false, 2));
     }
 
-    return cb ? cb(null, results) : results;
+    return results;
   } catch (err) {
     console.trace(`OpenSearch/Elasticsearch Search Error - query: ${JSON.stringify(params, false, 2)} err:`, err);
-    if (cb) { return cb(err, null); }
     throw err;
   }
 };
@@ -637,49 +636,32 @@ Db.cancelByOpaqueId = async (cancelId, cluster) => {
   return 'OpenSearch/Elasticsearch task cancelled succesfully';
 };
 
-Db.searchScroll = function (index, query, options, cb) {
+Db.searchScroll = async (index, query, options, cb) => {
   // external scrolling, or multiesES or lesseq 10000, do a normal search which does its own Promise conversion
-  if (query.scroll !== undefined || internals.multiES || (query.size ?? 0) + (parseInt(query.from ?? 0, 10)) <= 10000) {
-    return Db.search(index, query, options, cb);
+  if (options?.scroll !== undefined || internals.multiES || (query.size ?? 0) + (parseInt(query.from ?? 0, 10)) <= 10000) {
+    if (!cb) {
+      return Db.search(index, query, options);
+    }
+    return Db.search(index, query, options).then((data) => cb(null, data)).catch((err) => cb(err));
   }
 
-  // Convert promise to cb by calling ourselves
-  if (!cb) {
-    return new Promise((resolve, reject) => {
-      Db.searchScroll(index, query, options, (err, data) => {
-        if (err) {
-          reject(err);
-        } else {
-          resolve(data);
-        }
-      });
-    });
-  }
+  try {
+    // Now actually do the search scroll
+    const from = +query.from || 0;
+    const size = +query.size || 0;
 
-  // Now actually do the search scroll
-  const from = +query.from || 0;
-  const size = +query.size || 0;
+    const querySize = from + size;
+    delete query.from;
 
-  const querySize = from + size;
-  delete query.from;
+    let totalResults;
+    const params = { scroll: '2m' };
+    Db.merge(params, options);
+    query.size = 1000; // Get 1000 items per scroll call
+    query.profile = internals.esProfile;
 
-  let totalResults;
-  const params = { scroll: '2m' };
-  Db.merge(params, options);
-  query.size = 1000; // Get 1000 items per scroll call
-  query.profile = internals.esProfile;
-  Db.search(index, query, params,
-    async function getMoreUntilDone (error, response) {
-      if (error) {
-        if (totalResults && from > 0) {
-          totalResults.hits.hits = totalResults.hits.hits.slice(from);
-        }
-        if (response && response._scroll_id) {
-          Db.clearScroll({ body: { scroll_id: response._scroll_id } });
-        }
-        return cb(error, totalResults);
-      }
+    let response = await Db.search(index, query, params);
 
+    while (true) {
       if (totalResults === undefined) {
         totalResults = response;
       } else {
@@ -691,21 +673,35 @@ Db.searchScroll = function (index, query, options, cb) {
           const { body: results } = await Db.scroll({
             scroll: '2m', body: { scroll_id: response._scroll_id }
           });
-          getMoreUntilDone(null, results);
+          response = results;
         } catch (err) {
           console.log('ERROR - issuing scroll', err);
-          getMoreUntilDone(err, {});
+          if (totalResults) {
+            totalResults.hits.hits = totalResults.hits.hits.slice(from, querySize);
+          }
+          if (response._scroll_id) {
+            Db.clearScroll({ body: { scroll_id: response._scroll_id } });
+          }
+          throw err;
         }
       } else {
-        if (totalResults && from > 0) {
-          totalResults.hits.hits = totalResults.hits.hits.slice(from);
-        }
-        if (response._scroll_id) {
-          Db.clearScroll({ body: { scroll_id: response._scroll_id } });
-        }
-        return cb(null, totalResults);
+        break;
       }
-    });
+    }
+
+    if (totalResults) {
+      totalResults.hits.hits = totalResults.hits.hits.slice(from, querySize);
+    }
+    if (response._scroll_id) {
+      Db.clearScroll({ body: { scroll_id: response._scroll_id } });
+    }
+
+    if (cb) { cb(null, totalResults); }
+    return totalResults;
+  } catch (err) {
+    if (cb) { cb(err); }
+    throw err;
+  }
 };
 
 Db.searchSessions = function (index, query, options, cb) {
