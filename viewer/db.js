@@ -151,7 +151,7 @@ Db.initialize = async (info, cb) => {
 
   // Replace tag implementation
   if (internals.multiES) {
-    Db.isLocalView = (node, yesCB, noCB) => { return noCB(); };
+    Db.isLocalView = (node) => { return false; };
     internals.prefix = 'MULTIPREFIX_';
   }
 
@@ -459,7 +459,7 @@ Db.getSession = async (id, options, cb) => {
         return cb(null, session);
       } else if (fileInfo.packetPosEncoding === 'localIndex') {
         // Neg numbers aren't encoded, use var length encoding, if pos is 0 same gap as last gap, otherwise last + pos
-        Db.isLocalView(fields.node, () => {
+        if (await Db.isLocalView(fields.node)) {
           const newPacketPos = [];
           async.forEachOfSeries(fields.packetPos, async (item, key) => {
             if (key % 3 !== 0) { return; } // Only look at every 3rd item
@@ -501,9 +501,9 @@ Db.getSession = async (id, options, cb) => {
             fields.packetPos = newPacketPos;
             return cb(null, session);
           });
-        }, () => {
+        } else {
           return cb(null, session);
-        });
+        }
       } else {
         console.log('Unknown packetPosEncoding', fileInfo);
         return cb(null, session);
@@ -1628,6 +1628,7 @@ Db.indicesSettingsCache = async (cluster) => {
 Db.hostnameToNodeids = async (hostname) => {
   const query = { query: { match: { hostname } } };
   const sdata = await Db.search('stats', query);
+  // If results, return array of _id, otherwise empty array
   return sdata?.hits?.hits?.map(hit => hit._id) ?? [];
 };
 
@@ -1650,7 +1651,7 @@ Db.fileIdToFile = async (node, num) => {
   return file;
 };
 
-Db.fileNameToFiles = function (fileName, cb) {
+Db.fileNameToFiles = async (fileName) => {
   let query;
   if (fileName[0] === '/' && fileName[fileName.length - 1] === '/') {
     query = { query: { regexp: { name: fileName.substring(1, fileName.length - 1) } }, sort: [{ num: { order: 'desc' } }] };
@@ -1661,16 +1662,17 @@ Db.fileNameToFiles = function (fileName, cb) {
   // Not wildcard/regex check the cache
   if (!query) {
     if (internals.fileName2File.has(fileName)) {
-      return cb([internals.fileName2File.get(fileName)]);
+      return [internals.fileName2File.get(fileName)];
     }
     query = { size: 100, query: { term: { name: fileName } }, sort: [{ num: { order: 'desc' } }] };
   }
 
-  Db.search('files', query, (err, data) => {
-    const files = [];
-    if (err || !data.hits) {
-      return cb(null);
+  try {
+    const data = await Db.search('files', query);
+    if (!data.hits) {
+      return null;
     }
+    const files = [];
     data.hits.hits.forEach((hit) => {
       const file = hit._source;
       const key = file.node + '!' + file.num;
@@ -1678,8 +1680,10 @@ Db.fileNameToFiles = function (fileName, cb) {
       internals.fileName2File.set(file.name, file);
       files.push(file);
     });
-    return cb(files);
-  });
+    return files;
+  } catch (err) {
+    return null;
+  }
 };
 
 Db.getSequenceNumber = async (sName) => {
@@ -1748,12 +1752,12 @@ Db.checkVersion = async function (minVersion) {
   ArkimeUtil.checkArkimeSchemaVersion(internals.client7, internals.prefix, minVersion);
 };
 
-Db.isLocalView = async function (node, yesCB, noCB) {
+Db.isLocalView = async function (node) {
   if (node === internals.nodeName) {
     if (internals.debug > 1) {
       console.log(`DEBUG: node:${node} is local view because equals ${internals.nodeName}`);
     }
-    return yesCB();
+    return true;
   }
 
   try {
@@ -1762,18 +1766,18 @@ Db.isLocalView = async function (node, yesCB, noCB) {
       if (internals.debug > 1) {
         console.log(`DEBUG: node:${node} is NOT local view because ${stat.hostname} != ${os.hostname()} or --host ${internals.hostName}`);
       }
-      noCB();
+      return false;
     } else {
       if (internals.debug > 1) {
         console.log(`DEBUG: node:${node} is local view because ${stat.hostname} == ${os.hostname()} or --host ${internals.hostName}`);
       }
-      yesCB();
+      return true;
     }
   } catch (err) {
     if (internals.debug > 1) {
       console.log(`DEBUG: node:${node} is NOT local view because error ${err} ${os.hostname()} ${internals.hostName}`);
     }
-    noCB();
+    return false;
   }
 };
 

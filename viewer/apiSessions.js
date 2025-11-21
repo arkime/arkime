@@ -1609,7 +1609,7 @@ class SessionAPIs {
   };
 
   // --------------------------------------------------------------------------
-  static isLocalView (node, yesCb, noCb) {
+  static async isLocalView (node, yesCb, noCb) {
     if (internals.isLocalViewRegExp && node.match(internals.isLocalViewRegExp)) {
       if (Config.debug > 1) {
         console.log(`DEBUG: node:${node} is local view because matches ${internals.isLocalViewRegExp}`);
@@ -1625,7 +1625,12 @@ class SessionAPIs {
       }
       return yesCb();
     }
-    return Db.isLocalView(node, yesCb, noCb);
+
+    if (await Db.isLocalView(node)) {
+      yesCb();
+    } else {
+      noCb();
+    }
   };
 
   // --------------------------------------------------------------------------

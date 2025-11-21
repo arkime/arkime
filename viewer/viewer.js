@@ -224,22 +224,23 @@ if (ArkimeConfig.regressionTests) {
     await Db.refresh();
     HuntAPIs.processHuntJobs();
 
-    setTimeout(function checkHuntFinished () {
+    async function checkHuntFinished () {
       if (internals.runningHuntJob) {
         setTimeout(checkHuntFinished, 1000);
       } else {
-        Db.search('hunts', { query: { terms: { status: ['running', 'queued'] } } }, async function (err, result) {
-          if (result.hits.total > 0) {
-            HuntAPIs.processHuntJobs();
-            await Db.refresh();
-            setTimeout(checkHuntFinished, 1000);
-          } else {
-            await Db.refresh();
-            res.send('{}');
-          }
-        });
+        const result = await Db.search('hunts', { query: { terms: { status: ['running', 'queued'] } } });
+        if (result.hits.total > 0) {
+          HuntAPIs.processHuntJobs();
+          await Db.refresh();
+          setTimeout(checkHuntFinished, 1000);
+        } else {
+          await Db.refresh();
+          res.send('{}');
+        }
       }
-    }, 1000);
+    }
+
+    setTimeout(checkHuntFinished, 1000);
   });
   app.get('/regressionTests/deleteAllUsers', User.apiDeleteAllUsers);
   app.get('/regressionTests/getUser/:user', (req, res) => {
@@ -932,7 +933,7 @@ internals.sendSessionQueue = async.queue(sendSessionWorker, 5);
 // If less then 10 items are returned we don't delete anything, otherwise
 // ignore the 10 most recent files and delete files until we have enough free space.
 // Doesn't support mounting sub directories in main directory, don't do it.
-function expireDevice (nodes, dirs, minFreeSpaceG, nextCb) {
+async function expireDevice (nodes, dirs, minFreeSpaceG, nextCb) {
   if (Config.debug > 0) {
     console.log('EXPIRE - device', nodes, 'dirs', dirs, 'minFreeSpaceG', minFreeSpaceG);
   }
@@ -965,10 +966,11 @@ function expireDevice (nodes, dirs, minFreeSpaceG, nextCb) {
     console.log('EXPIRE - device query', JSON.stringify(query, false, 2));
   }
 
-  Db.search('files', query, function (err, data) {
-    if (err || data.error || !data.hits) {
+  try {
+    const data = await Db.search('files', query);
+    if (data.error || !data.hits) {
       if (Config.debug > 0) {
-        console.log('EXPIRE - device error', JSON.stringify(err, false, 2));
+        console.log('EXPIRE - device error', data.error || 'no data.hits');
       }
       return nextCb();
     }
@@ -976,7 +978,7 @@ function expireDevice (nodes, dirs, minFreeSpaceG, nextCb) {
     if (Config.debug === 1) {
       console.log('EXPIRE - device results hits:', data.hits.hits.length);
     } else if (Config.debug > 1) {
-      console.log('EXPIRE - device results', data.hits.hits.length, JSON.stringify(err, false, 2), JSON.stringify(data, false, 2));
+      console.log('EXPIRE - device results', data.hits.hits.length, JSON.stringify(data, false, 2));
     }
 
     if (data.hits.total <= 10) {
@@ -1018,7 +1020,12 @@ function expireDevice (nodes, dirs, minFreeSpaceG, nextCb) {
     }, function () {
       return nextCb();
     });
-  });
+  } catch (err) {
+    if (Config.debug > 0) {
+      console.log('EXPIRE - device error', JSON.stringify(err, false, 2));
+    }
+    return nextCb();
+  }
 }
 
 // Check a single device to see if we need to expire any files on it.
