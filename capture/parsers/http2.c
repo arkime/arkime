@@ -483,29 +483,29 @@ void arkime_parser_init()
     arkime_parsers_classifier_register_tcp("http2", NULL, 0, (uint8_t *)"PRI * HTTP/2.0\r\n\r\nSM\r\n\r\n", 24, http2_classify);
 
     methodField = arkime_field_define("http", "termfield",
-                                      "http.method", "Request Method", "http.method",
+                                      "http.method", "HTTP Request Method", "http.method",
                                       "HTTP Request Method",
                                       ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
                                       (char *)NULL);
     statuscodeField = arkime_field_define("http", "integer",
-                                          "http.statuscode", "Status Code", "http.statuscode",
+                                          "http.statuscode", "HTTP Status Code", "http.statuscode",
                                           "Response HTTP numeric status code",
                                           ARKIME_FIELD_TYPE_INT_GHASH,  ARKIME_FIELD_FLAG_CNT,
                                           (char *)NULL);
     hostField = arkime_field_define("http", "lotermfield",
-                                    "host.http", "HTTP Hostname", "http.host",
+                                    "host.http", "HTTP Host", "http.host",
                                     "HTTP host header field",
                                     ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
                                     "aliases", "[\"http.host\"]",
                                     "category", "host",
                                     (char *)NULL);
     magicField = arkime_field_define("http", "termfield",
-                                     "http.bodymagic", "Body Magic", "http.bodyMagic",
+                                     "http.bodymagic", "HTTP Body Magic", "http.bodyMagic",
                                      "The content type of body determined by libfile/magic",
                                      ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
                                      (char *)NULL);
     md5Field = arkime_field_define("http", "lotermfield",
-                                   "http.md5", "Body MD5", "http.md5",
+                                   "http.md5", "HTTP Body MD5", "http.md5",
                                    "MD5 of http body response",
                                    ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
                                    "category", "md5",
@@ -513,7 +513,7 @@ void arkime_parser_init()
 
     if (config.supportSha256) {
         sha256Field = arkime_field_define("http", "lotermfield",
-                                          "http.sha256", "Body SHA256", "http.sha256",
+                                          "http.sha256", "HTTP Body SHA256", "http.sha256",
                                           "SHA256 of http body response",
                                           ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
                                           "category", "sha256",
