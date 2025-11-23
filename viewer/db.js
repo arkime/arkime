@@ -1117,27 +1117,23 @@ Db.refresh = async (index, cluster) => {
 };
 
 Db.addTagsToSession = async (index, id, tags, cluster) => {
-  const script = `
-    if (ctx._source.tags != null) {
-      for (int i = 0; i < params.tags.length; i++) {
-        if (ctx._source.tags.indexOf(params.tags[i]) == -1) {
-          ctx._source.tags.add(params.tags[i]);
-        }
-      }
-      ctx._source.tagsCnt = ctx._source.tags.length;
-    } else {
-      ctx._source.tags = params.tags;
-      ctx._source.tagsCnt = params.tags.length;
-    }
-  `;
-
   const body = {
     script: {
-      source: script,
+      source: `
+        if (ctx._source.tags != null) {
+          for (int i = 0; i < params.tags.length; i++) {
+            if (ctx._source.tags.indexOf(params.tags[i]) == -1) {
+              ctx._source.tags.add(params.tags[i]);
+            }
+          }
+          ctx._source.tagsCnt = ctx._source.tags.length;
+        } else {
+          ctx._source.tags = params.tags;
+          ctx._source.tagsCnt = params.tags.length;
+        }
+      `,
       lang: 'painless',
-      params: {
-        tags
-      }
+      params: { tags }
     }
   };
 
@@ -1147,27 +1143,23 @@ Db.addTagsToSession = async (index, id, tags, cluster) => {
 };
 
 Db.removeTagsFromSession = async (index, id, tags, cluster) => {
-  const script = `
-    if (ctx._source.tags != null) {
-      for (int i = 0; i < params.tags.length; i++) {
-        int index = ctx._source.tags.indexOf(params.tags[i]);
-        if (index > -1) { ctx._source.tags.remove(index); }
-      }
-      ctx._source.tagsCnt = ctx._source.tags.length;
-      if (ctx._source.tagsCnt == 0) {
-        ctx._source.remove("tags");
-        ctx._source.remove("tagsCnt");
-      }
-    }
-  `;
-
   const body = {
     script: {
-      source: script,
+      source: `
+        if (ctx._source.tags != null) {
+          for (int i = 0; i < params.tags.length; i++) {
+            int idx = ctx._source.tags.indexOf(params.tags[i]);
+            if (idx > -1) { ctx._source.tags.remove(idx); }
+          }
+          ctx._source.tagsCnt = ctx._source.tags.length;
+          if (ctx._source.tagsCnt == 0) {
+            ctx._source.remove("tags");
+            ctx._source.remove("tagsCnt");
+          }
+        }
+      `,
       lang: 'painless',
-      params: {
-        tags
-      }
+      params: { tags }
     }
   };
 
@@ -1177,27 +1169,22 @@ Db.removeTagsFromSession = async (index, id, tags, cluster) => {
 };
 
 Db.addHuntToSession = async (index, id, huntId, huntName) => {
-  const script = `
-    if (ctx._source.huntId != null) {
-      ctx._source.huntId.add(params.huntId);
-    } else {
-      ctx._source.huntId = [ params.huntId ];
-    }
-    if (ctx._source.huntName != null) {
-      ctx._source.huntName.add(params.huntName);
-    } else {
-      ctx._source.huntName = [ params.huntName ];
-    }
-  `;
-
   const body = {
     script: {
-      source: script,
+      source: `
+        if (ctx._source.huntId != null) {
+          ctx._source.huntId.add(params.huntId);
+        } else {
+          ctx._source.huntId = [ params.huntId ];
+        }
+        if (ctx._source.huntName != null) {
+          ctx._source.huntName.add(params.huntName);
+        } else {
+          ctx._source.huntName = [ params.huntName ];
+        }
+      `,
       lang: 'painless',
-      params: {
-        huntId,
-        huntName
-      }
+      params: { huntId, huntName }
     }
   };
 
@@ -1205,25 +1192,20 @@ Db.addHuntToSession = async (index, id, huntId, huntName) => {
 };
 
 Db.removeHuntFromSession = async (index, id, huntId, huntName) => {
-  const script = `
-    if (ctx._source.huntId != null) {
-      int index = ctx._source.huntId.indexOf(params.huntId);
-      if (index > -1) { ctx._source.huntId.remove(index); }
-    }
-    if (ctx._source.huntName != null) {
-      int index = ctx._source.huntName.indexOf(params.huntName);
-      if (index > -1) { ctx._source.huntName.remove(index); }
-    }
-  `;
-
   const body = {
     script: {
-      source: script,
+      source: `
+        if (ctx._source.huntId != null) {
+          int idx = ctx._source.huntId.indexOf(params.huntId);
+          if (idx > -1) { ctx._source.huntId.remove(idx); }
+        }
+        if (ctx._source.huntName != null) {
+          int idx = ctx._source.huntName.indexOf(params.huntName);
+          if (idx > -1) { ctx._source.huntName.remove(idx); }
+        }
+      `,
       lang: 'painless',
-      params: {
-        huntId,
-        huntName
-      }
+      params: { huntId, huntName }
     }
   };
 
@@ -1559,7 +1541,7 @@ Db.arkimeNodeStats = async (nodeName) => {
 
 Db.arkimeNodeStatsCache = async function (nodeName) {
   const key = `arkimeNodeStats-${nodeName}`;
-  let stat = cache60.get(nodeName);
+  let stat = cache60.get(key);
   if (stat) {
     return stat;
   }

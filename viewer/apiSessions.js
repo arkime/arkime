@@ -1770,7 +1770,7 @@ class SessionAPIs {
       return doneCb ? doneCb(null) : null;
     }
 
-    async.eachLimit(sessionList, 10, async (session) => {
+    await async.eachLimit(sessionList, 10, async (session) => {
       if (!session.fields) {
         console.log('No Fields in addTagsList', session);
         return;
@@ -1795,7 +1795,7 @@ class SessionAPIs {
       return doneCb ? doneCb(null) : null;
     }
 
-    async.eachLimit(sessionList, 10, async (session) => {
+    await async.eachLimit(sessionList, 10, async (session) => {
       if (!session.fields) {
         console.log('No Fields in removeTagsList', session);
         return;
