@@ -10,6 +10,7 @@
 
 const os = require('os');
 const fs = require('fs');
+const util = require('util');
 const async = require('async');
 const { Client } = require('@elastic/elasticsearch');
 const User = require('../common/user');
@@ -78,6 +79,8 @@ Db.initialize = async (info, cb) => {
 
   internals.esProfile = info.esProfile || false;
   delete info.esProfile;
+
+  internals.regressionTests = info.regressionTests ?? false;
 
   const esSSLOptions = { rejectUnauthorized: !internals.info.insecure };
   if (internals.info.caTrustFile) { esSSLOptions.ca = ArkimeUtil.certificateFileToArray(internals.info.caTrustFile); };
@@ -603,7 +606,7 @@ Db.search = async (index, query, options) => {
 
     return results;
   } catch (err) {
-    console.trace(`OpenSearch/Elasticsearch Search Error - query: ${JSON.stringify(params, false, 2)} err:`, err);
+    console.trace(`OpenSearch/Elasticsearch Search Error - query: ${JSON.stringify(params, false, 2)} err:`, util.inspect(err, null, 20));
     throw err;
   }
 };
@@ -637,8 +640,8 @@ Db.cancelByOpaqueId = async (cancelId, cluster) => {
 };
 
 Db.searchScroll = async (index, query, options, cb) => {
-  // external scrolling, or multiesES or lesseq 10000, do a normal search which does its own Promise conversion
-  if (options?.scroll !== undefined || internals.multiES || (query.size ?? 0) + (parseInt(query.from ?? 0, 10)) <= 10000) {
+  // external scrolling, or multiesES or (not regressionTests AND lesseq 10000), do a normal search which does its own Promise conversion
+  if (options?.scroll !== undefined || internals.multiES || (!internals.regressionTests && (query.size ?? 0) + (parseInt(query.from ?? 0, 10)) <= 10000)) {
     if (!cb) {
       return Db.search(index, query, options);
     }
@@ -704,6 +707,74 @@ Db.searchScroll = async (index, query, options, cb) => {
   }
 };
 
+Db.searchScrollIterator = async function* (index, query, options) {
+  // external scrolling, or multiesES or (not regressionTests AND lesseq 10000), do a normal search which does its own Promise conversion
+  if (options?.scroll !== undefined || internals.multiES || (!internals.regressionTests && (query.size ?? 0) + (parseInt(query.from ?? 0, 10)) <= 10000)) {
+    const result = await Db.search(index, query, options);
+    yield result;
+    return;
+  }
+
+  let from = +query.from || 0;
+  const size = +query.size || 0;
+  delete query.from;
+
+  let yielded = 0;
+  const params = { scroll: '2m' };
+  Db.merge(params, options);
+  query.size = 1000;
+  query.profile = internals.esProfile;
+
+  let response = await Db.search(index, query, params);
+
+  while (true) {
+    let hits = response.hits.hits;
+
+    // Stop if no more results
+    if (hits.length === 0) {
+      break;
+    }
+
+    if (from === 0) {
+      // Don't do anything
+    } else if (from < hits.length) {
+      hits = hits.slice(from);
+      from = 0;
+    } else {
+      from -= hits.length;
+      hits = [];
+    }
+
+    if (hits.length > 0) {
+      response.hits.hits = hits.slice(0, size - yielded);
+      yielded += response.hits.hits.length;
+      yield response;
+
+      if (yielded >= size) {
+        break;
+      }
+    }
+
+    // Fetch next chunk
+    try {
+      const { body: results } = await Db.scroll({
+        scroll: '2m', body: { scroll_id: response._scroll_id }
+      });
+      response = results;
+    } catch (err) {
+      console.log('ERROR - issuing scroll', err);
+      if (response._scroll_id) {
+        Db.clearScroll({ body: { scroll_id: response._scroll_id } });
+      }
+      throw err;
+    }
+  }
+
+  if (response._scroll_id) {
+    Db.clearScroll({ body: { scroll_id: response._scroll_id } });
+  }
+};
+
 Db.searchSessions = function (index, query, options, cb) {
   if (cb === undefined) {
     return new Promise((resolve, reject) => {
@@ -722,11 +793,23 @@ Db.searchSessions = function (index, query, options, cb) {
   Db.searchScroll(index, query, params, (err, result) => {
     if (err || result.hits.hits.length === 0) { return cb(err, result); }
 
-    for (let i = 0; i < result.hits.hits.length; i++) {
-      fixSessionFields(result.hits.hits[i].fields, unflatten);
-    }
+    result.hits.hits.forEach((hit) => fixSessionFields(hit.fields, unflatten));
     return cb(null, result);
   });
+};
+
+Db.searchSessionsIterator = async function* (index, query, options) {
+  if (!options) { options = {}; }
+  const unflatten = options.arkime_unflatten ?? true;
+  const params = { preference: 'primaries', ignore_unavailable: 'true' };
+  if (internals.maxConcurrentShardRequests) { params.maxConcurrentShardRequests = internals.maxConcurrentShardRequests; }
+  Db.merge(params, options);
+  delete params.arkime_unflatten;
+
+  for await (const chunk of Db.searchScrollIterator(index, query, params)) {
+    chunk.hits.hits.forEach((hit) => fixSessionFields(hit.fields, unflatten));
+    yield chunk;
+  }
 };
 
 Db.msearchSessions = async (index, queries, options) => {

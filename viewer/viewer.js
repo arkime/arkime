@@ -2216,7 +2216,8 @@ async function premain () {
     usersEsBasicAuth: Config.get('usersElasticsearchBasicAuth', null),
     isPrimaryViewer: CronAPIs.isPrimaryViewer,
     getCurrentUserCB: UserAPIs.getCurrentUserCB,
-    maxConcurrentShardRequests: Config.get('esMaxConcurrentShardRequests')
+    maxConcurrentShardRequests: Config.get('esMaxConcurrentShardRequests'),
+    regressionTests: Config.regressionTests
   }, main);
 
   Notifier.initialize({
