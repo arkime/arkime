@@ -1804,7 +1804,7 @@ app.post( // sessions send endpoint - used by vueapp
   SessionAPIs.sendSessions
 );
 
-app.post( // sessions recieve endpoint
+app.post( // sessions receive endpoint
   ['/api/sessions/receive', '/receiveSession'],
   [ArkimeUtil.noCacheJson],
   SessionAPIs.receiveSession

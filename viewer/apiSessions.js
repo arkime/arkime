@@ -1764,7 +1764,7 @@ class SessionAPIs {
   };
 
   // --------------------------------------------------------------------------
-  static async #addTagsList (allTagNames, sessionList, doneCb) {
+  static async addTagsList (allTagNames, sessionList, doneCb) {
     if (!sessionList.length) {
       console.log(`No sessions to add tags (${allTagNames}) to`);
       return doneCb ? doneCb(null) : null;
@@ -3009,7 +3009,7 @@ class SessionAPIs {
         if (!list.length) {
           return res.serverError(200, 'No sessions to add tags to');
         }
-        SessionAPIs.#addTagsList(tags, list, async () => {
+        SessionAPIs.addTagsList(tags, list, async () => {
           await Db.refresh('sessions*');
           return res.send(JSON.stringify({
             success: true,
@@ -3020,7 +3020,7 @@ class SessionAPIs {
     } else {
       SessionAPIs.#sessionsListFromQueryChunky(req, res, ['tags', 'node'], null,
         async (err, list) => {
-          await SessionAPIs.#addTagsList(tags, list);
+          await SessionAPIs.addTagsList(tags, list);
         }, async (err, total) => {
           if (err) {
             return res.send('Could not build query.  Err: ' + err);

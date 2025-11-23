@@ -34,7 +34,7 @@ function help () {
   console.log('  --hideStats             Hide the stats page from this user');
   console.log('  --timeLimit             Max time limit for searches in hours');
   console.log(`  --createOnly            Only create the user if it doesn't exist`);
-  console.log('  --roles                 Comma seperated list of roles');
+  console.log('  --roles                 Comma separated list of roles');
   console.log('');
   console.log('Config Options:');
   console.log('  -c, --config <file|url> Where to fetch the config file from');

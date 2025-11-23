@@ -636,7 +636,7 @@ Db.cancelByOpaqueId = async (cancelId, cluster) => {
     throw new Error('Cancel ID not found, cannot cancel OpenSearch/Elasticsearch task(s)');
   }
 
-  return 'OpenSearch/Elasticsearch task cancelled succesfully';
+  return 'OpenSearch/Elasticsearch task cancelled successfully';
 };
 
 Db.searchScroll = async (index, query, options, cb) => {
