@@ -3010,6 +3010,7 @@ class SessionAPIs {
           return res.serverError(200, 'No sessions to add tags to');
         }
         SessionAPIs.addTagsList(tags, list, async () => {
+          await Db.flush('sessions*');
           await Db.refresh('sessions*');
           return res.send(JSON.stringify({
             success: true,
@@ -3028,6 +3029,7 @@ class SessionAPIs {
           if (!total) {
             return res.serverError(200, 'No sessions to add tags to');
           }
+          await Db.flush('sessions*');
           await Db.refresh('sessions*');
           return res.send(JSON.stringify({
             success: true,
