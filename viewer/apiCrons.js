@@ -58,7 +58,7 @@ class CronAPIs {
       setInterval(CronAPIs.#runPrimaryViewer, 60 * 1000);
     } else if (Config.get('cronQueries') === true) {
       setTimeout(CronAPIs.#updatePrimaryViewer, 1000, true);
-      setInterval(CronAPIs.#updatePrimaryViewer, 120 * 1000, true);
+      setInterval(CronAPIs.#updatePrimaryViewer, 45 * 1000, true);
       setInterval(CronAPIs.#runPrimaryViewer, 60 * 1000);
     } else if (!Config.get('multiES', false)) {
       const info = await Db.getQueriesNode();

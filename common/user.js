@@ -542,7 +542,7 @@ class User {
   static apiGetUsers (req, res, next) {
     const query = User.#apiGetUsersCommon(req);
     if (query === undefined) {
-      res.send({
+      return res.send({
         success: false,
         recordsTotal: 0,
         recordsFiltered: 0,
@@ -583,7 +583,7 @@ class User {
 
     const query = User.#apiGetUsersCommon(req);
     if (query === undefined) {
-      res.send({
+      return res.send({
         success: false,
         recordsTotal: 0,
         recordsFiltered: 0,
@@ -842,10 +842,10 @@ class User {
       }
       try {
         await User.deleteUser(userId);
-        res.send({ success: true, text: 'User deleted successfully' });
+        return res.send({ success: true, text: 'User deleted successfully' });
       } catch (err) {
         console.log(`ERROR - ${req.method} /api/user/%s`, userId, util.inspect(err, false, 50));
-        res.send({ success: false, text: 'User not deleted' });
+        return res.send({ success: false, text: 'User not deleted' });
       }
     });
   };
