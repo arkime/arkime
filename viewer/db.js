@@ -166,8 +166,8 @@ Db.initialize = async (info) => {
   if (Array.isArray(info.queryExtraIndices)) {
     internals.sessionIndices = [...new Set([...['sessions2-*', 'partial-sessions3-*', 'sessions3-*'], ...info.queryExtraIndices])];
     delete internals.aliasesCache;
-    for (const pattern in info.queryExtraIndices) {
-      internals.queryExtraIndicesRegex.push(ArkimeUtil.wildcardToRegexp(info.queryExtraIndices[pattern]));
+    for (const pattern of info.queryExtraIndices) {
+      internals.queryExtraIndicesRegex.push(ArkimeUtil.wildcardToRegexp(pattern));
     }
     if (internals.debug > 2) {
       console.log(`defaultIndexPatterns: ${internals.sessionIndices}`);
@@ -490,7 +490,7 @@ Db.getSession = async (id, options, cb) => {
             } catch (e) {
               console.log(e);
             } finally {
-              if (!fd) {
+              if (fd) {
                 try {
                   fs.closeSync(fd);
                 } catch (closeErr) {
@@ -682,7 +682,7 @@ Db.searchScroll = async (index, query, options, cb) => {
             totalResults.hits.hits = totalResults.hits.hits.slice(from, querySize);
           }
           if (response._scroll_id) {
-            Db.clearScroll({ body: { scroll_id: response._scroll_id } });
+            await Db.clearScroll({ body: { scroll_id: response._scroll_id } });
           }
           throw err;
         }
@@ -695,7 +695,7 @@ Db.searchScroll = async (index, query, options, cb) => {
       totalResults.hits.hits = totalResults.hits.hits.slice(from, querySize);
     }
     if (response._scroll_id) {
-      Db.clearScroll({ body: { scroll_id: response._scroll_id } });
+      await Db.clearScroll({ body: { scroll_id: response._scroll_id } });
     }
 
     if (cb) { cb(null, totalResults); }
@@ -721,7 +721,7 @@ Db.searchScrollIterator = async function* (index, query, options) {
   let yielded = 0;
   const params = { scroll: '2m' };
   Db.merge(params, options);
-  query.size = 1000;
+  query.size = internals.regressionTests ? 20 : 2000;
   query.profile = internals.esProfile;
 
   let response = await Db.search(index, query, params);
@@ -763,14 +763,14 @@ Db.searchScrollIterator = async function* (index, query, options) {
     } catch (err) {
       console.log('ERROR - issuing scroll', err);
       if (response._scroll_id) {
-        Db.clearScroll({ body: { scroll_id: response._scroll_id } });
+        await Db.clearScroll({ body: { scroll_id: response._scroll_id } });
       }
       throw err;
     }
   }
 
   if (response._scroll_id) {
-    Db.clearScroll({ body: { scroll_id: response._scroll_id } });
+    await Db.clearScroll({ body: { scroll_id: response._scroll_id } });
   }
 };
 
@@ -1004,13 +1004,13 @@ Db.getClusterSettingsCache = async (options) => {
   if (value) {
     return value;
   }
-  value = internals.client7.cluster.getSettings(options);
+  value = await internals.client7.cluster.getSettings(options);
   cache60.set(key, value);
   return value;
 };
 
 Db.putClusterSettings = async (options) => {
-  cache60.keys().filter((v) => v.startsWith('clusterSettings-')).every((v) => cache60.delete(v));
+  cache60.keys().filter((v) => v.startsWith('clusterSettings-')).forEach((v) => cache60.delete(v));
   options.timeout = '10m';
   options.master_timeout = '10m';
   return internals.client7.cluster.putSettings(options);
@@ -1109,7 +1109,7 @@ Db.flush = async (index, cluster) => {
 
 Db.refresh = async (index, cluster) => {
   if (index === 'users') {
-    User.flush(cluster);
+    return User.flush(cluster);
   } else if (index === 'lookups') {
     return internals.usersClient7.indices.refresh({ index: `${internals.usersPrefix}${index}`, cluster });
   } else {
@@ -1369,7 +1369,7 @@ Db.updateLocalShortcuts = async () => {
         if (internals.debug > 1) {
           console.log(`SHORTCUT - deleting ${localShortcut._id} ${localShortcut._source.name} locally`);
         }
-        internals.client7.delete({ // remove the shortcut from the local db
+        await internals.client7.delete({ // remove the shortcut from the local db
           index: internals.localShortcutsIndex,
           id: localShortcut._id,
           refresh: true
@@ -1389,7 +1389,7 @@ Db.updateLocalShortcuts = async () => {
               console.log(`SHORTCUT - update from remote ${remoteShortcut._id} ${remoteShortcut._source.name}`);
             }
             // the versions don't match, this shortcut has been updated in the remote db
-            internals.client7.index({ // update the shortcut in the local db
+            await internals.client7.index({ // update the shortcut in the local db
               id: remoteShortcut._id,
               index: internals.localShortcutsIndex,
               body: remoteShortcut._source,
@@ -1405,7 +1405,7 @@ Db.updateLocalShortcuts = async () => {
         if (internals.debug > 1) {
           console.log(`SHORTCUT - add from remote ${remoteShortcut._id} ${remoteShortcut._source.name}`);
         }
-        internals.client7.index({ // add the shortcut in the local db
+        await internals.client7.index({ // add the shortcut in the local db
           id: remoteShortcut._id,
           index: internals.localShortcutsIndex,
           body: remoteShortcut._source,
@@ -1442,7 +1442,7 @@ Db.createShortcut = async (doc) => {
   const response = await internals.usersClient7.index({
     index: internals.remoteShortcutsIndex, body: doc, refresh: 'wait_for', timeout: '10m'
   });
-  Db.updateLocalShortcuts();
+  await Db.updateLocalShortcuts();
   return response;
 };
 Db.deleteShortcut = async (id) => {
@@ -1451,7 +1451,7 @@ Db.deleteShortcut = async (id) => {
   const response = await internals.usersClient7.delete({
     index: internals.remoteShortcutsIndex, id, refresh: true
   });
-  Db.updateLocalShortcuts();
+  await Db.updateLocalShortcuts();
   return response;
 };
 Db.setShortcut = async (id, doc) => {
@@ -1460,7 +1460,7 @@ Db.setShortcut = async (id, doc) => {
   const response = await internals.usersClient7.index({
     index: internals.remoteShortcutsIndex, body: doc, id, refresh: true, timeout: '10m'
   });
-  Db.updateLocalShortcuts();
+  await Db.updateLocalShortcuts();
   return response;
 };
 Db.getShortcut = async (id) => {
@@ -1594,7 +1594,7 @@ Db.masterCache = async (cluster) => {
     return value;
   }
 
-  const { body: data } = await Db.master();
+  const { body: data } = await Db.master(cluster);
   cache10.set(key, data);
   return data;
 };
@@ -1629,13 +1629,13 @@ Db.getESId2Node = (id, cluster) => {
   return node.nodeName;
 };
 
-Db.updateESId2Info = (id, nodeName, hostname, cluster) => {
+Db.updateESId2Info = async (id, nodeName, hostname, cluster) => {
   if (esId2Info.has(id) && esId2Info.get(id).nodeName === nodeName && esId2Info.get(id).hostname === hostname) {
     return;
   }
 
   esId2Info.set(`${cluster}-${id}`, { nodeName, hostname });
-  Db.index('dstats', `es:${id}`, { nodeName: `es:${nodeName}`, hostname: `es:${hostname}` });
+  await Db.index('dstats', `es:${id}`, { nodeName: `es:${nodeName}`, hostname: `es:${hostname}` });
 };
 
 Db.nodesStatsCache = async (cluster) => {
@@ -1655,7 +1655,7 @@ Db.nodesStatsCache = async (cluster) => {
 
   for (let n = 0, nlen = nodeKeys.length; n < nlen; n++) {
     const node = data.nodes[nodeKeys[n]];
-    Db.updateESId2Info(nodeKeys[n], node.name, node.host);
+    Db.updateESId2Info(nodeKeys[n], node.name, node.host, cluster);
   }
   cache10.set(key, data);
   return data;
@@ -1787,14 +1787,14 @@ Db.checkVersion = async function (minVersion) {
     process.exit(1);
   }
 
-  ['stats', 'dstats', 'sequence'].forEach(async (index) => {
+  for (const index of ['stats', 'dstats', 'sequence']) {
     try {
       await Db.indexStats(index);
     } catch (err) {
       console.log(`ERROR - Issue with '${fixIndex(index)}' index, make sure 'db/db.pl <host:port> init' has been run.\n`, err);
       process.exit(1);
     }
-  });
+  }
 
   if (!internals.multiES) {
     const { body: doc } = await internals.usersClient7.indices.getMapping({
@@ -1811,7 +1811,7 @@ Db.checkVersion = async function (minVersion) {
     }
   }
 
-  ArkimeUtil.checkArkimeSchemaVersion(internals.client7, internals.prefix, minVersion);
+  await ArkimeUtil.checkArkimeSchemaVersion(internals.client7, internals.prefix, minVersion);
 };
 
 Db.isLocalView = async function (node) {
@@ -2090,7 +2090,7 @@ Db.getIndices = async (startTime, stopTime, bounding, rotateIndex, extraIndices)
     if (internals.debug > 2) {
       console.log(`getIndices: ${indices}`);
     }
-    return indices.join();
+    return indices.join(',');
   } catch {
     return '';
   }
@@ -2146,7 +2146,7 @@ Db.setQueriesNode = async (node, force) => {
 
   // force is true we just rewrite the primary-viewer entry everytime
   if (force) {
-    internals.client7.index({
+    await internals.client7.index({
       id: 'primary-viewer',
       index: fixIndex('queries'),
       body: { name: namePid, lastRun: Date.now(), enabled: false }

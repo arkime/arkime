@@ -116,7 +116,7 @@ class ArkimeRedisCache extends ArkimeCache {
           }
         }
         super.set(key, bsonResult); // Set memory cache
-        cb(null, bsonResult);
+        return cb(null, bsonResult);
       });
     });
   };
@@ -190,6 +190,7 @@ class ArkimeMemcachedCache extends ArkimeCache {
 
     const data = BSON.serialize(result, false, true, false);
     this.client.set(key, data, { expires: this.cacheTimeout }, () => {});
+    return;
   };
 };
 
@@ -227,11 +228,9 @@ class ArkimeLMDBCache extends ArkimeCache {
       return this.store.get(key);
     }
 
-    return new Promise((resolve, reject) => {
-      this.store.get(key)
-        .then(data => cb(null, data))
-        .catch(err => cb(err, null));
-    });
+    this.store.get(key)
+      .then(data => cb(null, data))
+      .catch(err => cb(err, null));
   }
 
   // ----------------------------------------------------------------------------

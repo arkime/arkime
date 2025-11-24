@@ -1008,17 +1008,17 @@ class SessionAPIs {
   }
 
   // --------------------------------------------------------------------------
-  static #sendSessionsList (req, res, list) {
+  static async #sendSessionsList (req, res, list) {
     if (!list) { return res.serverError(200, 'Missing list of sessions'); }
 
     const saveId = Config.nodeName() + '-' + new Date().getTime().toString(36);
 
     const cluster = req.body.remoteCluster;
 
-    async.eachLimit(list, 10, (item, nextCb) => {
+    await async.eachLimit(list, 10, async (item) => {
       const fields = item.fields;
       const sid = Db.session2Sid(item);
-      SessionAPIs.isLocalView(fields.node, () => {
+      if (SessionAPIs.isLocalView(fields.node)) {
         const options = {
           user: req.user,
           cluster,
@@ -1027,23 +1027,21 @@ class SessionAPIs {
           tags: req.body.tags,
           nodeName: fields.node
         };
+
         // Get from our DISK
-        internals.sendSessionQueue.push(options, nextCb);
-      }, () => {
+        await internals.sendSessionQueue.push(options);
+      } else {
         let sendPath = `/api/session/${fields.node}/${sid}/send?saveId=${saveId}&remoteCluster=${cluster}`;
         if (ArkimeUtil.isString(req.body.tags)) {
           sendPath += `&tags=${req.body.tags}`;
         }
 
-        ViewerUtils.makeRequest(fields.node, sendPath, req.user, (err, response) => {
-          setImmediate(nextCb);
+        await new Promise((resolve) => {
+          ViewerUtils.makeRequest(fields.node, sendPath, req.user, (err, response) => {
+            resolve();
+          });
         });
-      });
-    }, (err) => {
-      return res.end(JSON.stringify({
-        success: true,
-        text: 'Sending of ' + list.length + ' sessions complete'
-      }));
+      }
     });
   }
 
@@ -1978,7 +1976,7 @@ class SessionAPIs {
           console.log('/api/sessions result', util.inspect(sessions, false, 50));
         }
 
-        if (sessions.error) { throw sessions.err; }
+        if (sessions.error) { throw sessions.error; }
 
         map = ViewerUtils.mapMerge(sessions.aggregations);
         graph = ViewerUtils.graphMerge(req, query, sessions.aggregations);
@@ -3879,16 +3877,29 @@ class SessionAPIs {
     if (!internals.remoteClusters || !internals.remoteClusters[cluster]) { return res.serverError(200, 'Unknown cluster'); }
     if (req.body.tags !== undefined && !ArkimeUtil.isString(req.body.tags, 0)) { return res.serverError(200, 'When present tags must be a string'); }
 
+    function sendResult(total) {
+      return res.end(JSON.stringify({
+        success: true,
+        text: 'Sending of ' + total + ' sessions complete'
+      }));
+    }
+
     if (req.body.ids) {
       const ids = ViewerUtils.queryValueToArray(req.body.ids);
 
-      SessionAPIs.sessionsListFromIds(req, ids, ['node'], (err, list) => {
-        SessionAPIs.#sendSessionsList(req, res, list);
+      SessionAPIs.sessionsListFromIds(req, ids, ['node'], async (err, list) => {
+        if (list) {
+          await SessionAPIs.#sendSessionsList(req, res, list);
+        }
+        sendResult(list ? list.length : 0);
       });
     } else {
-      SessionAPIs.#sessionsListFromQuery(req, res, ['node'], (err, list) => {
-        SessionAPIs.#sendSessionsList(req, res, list);
-      });
+      SessionAPIs.#sessionsListFromQueryChunky(req, res, ['node'], null,
+        async (err, list) => {
+          await SessionAPIs.ssendSessionsList(req, res, list);
+        }, (err, count) => {
+          sendResult(count);
+        });
     }
   };
 
