@@ -36,44 +36,6 @@ class SessionAPIs {
   // --------------------------------------------------------------------------
   // INTERNAL HELPERS
   // --------------------------------------------------------------------------
-  static #sessionsListFromQuery (req, res, fields, cb) {
-    if (req.query.length === undefined || parseInt(req.query.length) < 1000000) {
-      req.query.length = 1000000;
-    }
-
-    if (req.query.segments && req.query.segments.match(/^(time|all)$/) && fields.indexOf('rootId') === -1) {
-      fields.push('rootId');
-    }
-
-    SessionAPIs.buildSessionQuery(req, (err, query, indices) => {
-      if (err) {
-        return res.send('Could not build query.  Err: ' + err);
-      }
-      query._source = false;
-      query.fields = fields;
-      if (Config.debug) {
-        console.log('sessionsListFromQuery query', JSON.stringify(query, null, 1));
-      }
-      const options = ViewerUtils.addCluster(req.query.cluster);
-      options.arkime_unflatten = false;
-      Db.searchSessions(indices, query, options, (err, result) => {
-        if (err || result.error) {
-          console.log('ERROR - Could not fetch list of sessions:', util.inspect(err, false, 50), ' Result: ', result, 'query:', query);
-          return res.send('Could not fetch list of sessions:' + err + ' Result: ' + result);
-        }
-        const list = result.hits.hits;
-        if (req.query.segments && req.query.segments.match(/^(time|all)$/)) {
-          SessionAPIs.#sessionsListAddSegments(req, indices, query, list, (err, addSegmentsList) => {
-            cb(err, addSegmentsList);
-          });
-        } else {
-          cb(err, list);
-        }
-      });
-    });
-  };
-
-  // --------------------------------------------------------------------------
   static async #sessionsListFromQueryChunky (req, res, fields, startCb, chunkCb, endCb) {
     if (req.query.length === undefined || parseInt(req.query.length) < 1000000) {
       req.query.length = 1000000;
@@ -890,26 +852,29 @@ class SessionAPIs {
   }
 
   // --------------------------------------------------------------------------
-  static #sessionsPcapList (req, res, list, pcapWriter, extension) {
+  static async #sessionsPcapList (req, res, list, pcapWriter, extension) {
     if (list.length > 0 && list[0].fields) {
       list = list.sort((a, b) => {
         return a.fields.lastPacket - b.fields.lastPacket;
       });
-    } else if (list.length === 0) {
-      res.status(404);
-      return res.end(JSON.stringify({ success: false, text: 'no sessions found' }));
     }
 
-    const writerOptions = { writeHeader: true };
+    req.arkimeWriterOptions ??= { writeHeader: true };
 
-    async.eachLimit(list, 10, (item, nextCb) => {
+    await async.eachLimit(list, 10, async (item) => {
       const fields = item.fields;
-      SessionAPIs.isLocalView(fields.node, () => {
+      const isLocal = await SessionAPIs.isLocalView(fields.node);
+
+      if (isLocal) {
         // Get from our DISK
-        pcapWriter(res, Db.session2Sid(item), writerOptions, nextCb);
-      }, () => {
+        await new Promise((resolve) => {
+          pcapWriter(res, Db.session2Sid(item), req.arkimeWriterOptions, resolve);
+        });
+      } else {
+
         // Get from remote DISK
-        ViewerUtils.getViewUrl(fields.node, (err, viewUrl, client) => {
+        try {
+          const { viewUrl, client } = await ViewerUtils.getViewUrl(fields.node);
           let buffer = Buffer.alloc(Math.min(16200000, fields['network.packets'] * 20 + fields['network.bytes']));
           let bufpos = 0;
 
@@ -928,36 +893,38 @@ class SessionAPIs {
           Auth.addS2SAuth(options, req.user, fields.node, url.pathname);
           ViewerUtils.addCaTrust(options, fields.node);
 
-          const preq = client.request(url, options, (pres) => {
-            pres.on('data', (chunk) => {
-              if (bufpos + chunk.length > buffer.length) {
-                const tmp = Buffer.alloc(buffer.length + chunk.length * 10);
-                buffer.copy(tmp, 0, 0, bufpos);
-                buffer = tmp;
-              }
-              chunk.copy(buffer, bufpos);
-              bufpos += chunk.length;
+          await new Promise((resolve) => {
+            const preq = client.request(url, options, (pres) => {
+              pres.on('data', (chunk) => {
+                if (bufpos + chunk.length > buffer.length) {
+                  const tmp = Buffer.alloc(buffer.length + chunk.length * 10);
+                  buffer.copy(tmp, 0, 0, bufpos);
+                  buffer = tmp;
+                }
+                chunk.copy(buffer, bufpos);
+                bufpos += chunk.length;
+              });
+              pres.on('end', () => {
+                if (bufpos < 24) {
+                } else if (req.arkimeWriterOptions.writeHeader) {
+                  req.arkimeWriterOptions.writeHeader = false;
+                  res.write(buffer.slice(0, bufpos));
+                } else {
+                  res.write(buffer.slice(24, bufpos));
+                }
+                resolve();
+              });
             });
-            pres.on('end', () => {
-              if (bufpos < 24) {
-              } else if (writerOptions.writeHeader) {
-                writerOptions.writeHeader = false;
-                res.write(buffer.slice(0, bufpos));
-              } else {
-                res.write(buffer.slice(24, bufpos));
-              }
-              setImmediate(nextCb);
+            preq.on('error', (e) => {
+              console.log("ERROR - Couldn't proxy pcap request to fetch sessions pcap list =", url, '\nerror =', util.inspect(e, false, 50));
+              resolve();
             });
+            preq.end();
           });
-          preq.on('error', (e) => {
-            console.log("ERROR - Couldn't proxy pcap request to fetch sessions pcap list =", url, '\nerror =', util.inspect(e, false, 50));
-            nextCb(null);
-          });
-          preq.end();
-        });
-      });
-    }, (err) => {
-      res.end();
+        } catch (err) {
+          console.log("ERROR - Couldn't get view url for node", fields.node, '\nerror =', util.inspect(err, false, 50));
+        }
+      }
     });
   }
 
@@ -1051,15 +1018,29 @@ class SessionAPIs {
 
     const fields = ['lastPacket', 'node', 'network.bytes', 'network.packets', 'rootId'];
 
+    function sendResult(total) {
+      if (total === 0) {
+        res.status(404);
+        return res.end(JSON.stringify({ success: false, text: 'no sessions found' }));
+      }
+      res.end();
+    }
+
     if (req.query.ids) {
       const ids = ViewerUtils.queryValueToArray(req.query.ids);
-      SessionAPIs.sessionsListFromIds(req, ids, fields, (err, list) => {
-        SessionAPIs.#sessionsPcapList(req, res, list, pcapWriter, extension);
+      SessionAPIs.sessionsListFromIds(req, ids, fields, async (err, list) => {
+        if (list) {
+          await SessionAPIs.#sessionsPcapList(req, res, list, pcapWriter, extension);
+        }
+        sendResult(list ? list.length : 0);
       });
     } else {
-      SessionAPIs.#sessionsListFromQuery(req, res, fields, (err, list) => {
-        SessionAPIs.#sessionsPcapList(req, res, list, pcapWriter, extension);
-      });
+      SessionAPIs.#sessionsListFromQueryChunky(req, res, fields, null,
+        async (err, list) => {
+          await SessionAPIs.#sessionsPcapList(req, res, list, pcapWriter, extension);
+        }, (err, total) => {
+          return sendResult(total);
+        });
     }
   }
 

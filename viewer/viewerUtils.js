@@ -99,7 +99,7 @@ class ViewerUtils {
       }
     } else {
       const queryDate = reqQuery.date || 1;
-      startTimeSec = (Math.floor(Date.now() / 1000) - 60 * 60 * parseInt(queryDate, 10));
+      startTimeSec = (Math.floor(Date.now() / 1000) - 60 * 60 * parseFloat(queryDate));
       stopTimeSec = Date.now() / 1000;
 
       if (queryDate <= 5 * 24) {
@@ -548,7 +548,11 @@ class ViewerUtils {
       if (Config.debug > 1) {
         console.log(`DEBUG: node:${node} is using ${url} because viewUrl was set for ${node} in config file`);
       }
-      cb(null, url, url.slice(0, 5) === 'https' ? https : http);
+      if (cb) {
+        cb(null, url, url.slice(0, 5) === 'https' ? https : http);
+      } else {
+        return { viewUrl: url, client: url.slice(0, 5) === 'https' ? https : http };
+      }
       return;
     }
 
@@ -560,12 +564,26 @@ class ViewerUtils {
       }
 
       if (Config.isHTTPS(node)) {
-        cb(null, 'https://' + stat.hostname + ':' + Config.getFull(node, 'viewPort', '8005'), https);
+        const result = 'https://' + stat.hostname + ':' + Config.getFull(node, 'viewPort', '8005');
+        if (cb) {
+          cb(null, result, https);
+        } else {
+          return { viewUrl: result, client: https };
+        }
       } else {
-        cb(null, 'http://' + stat.hostname + ':' + Config.getFull(node, 'viewPort', '8005'), http);
+        const result = 'http://' + stat.hostname + ':' + Config.getFull(node, 'viewPort', '8005');
+        if (cb) {
+          cb(null, result, http);
+        } else {
+          return { viewUrl: result, client: http };
+        }
       }
     } catch (err) {
-      return cb(err);
+      if (cb) {
+        return cb(err);
+      } else {
+        throw err;
+      }
     }
   };
 
