@@ -2192,7 +2192,7 @@ process.on('unhandledRejection', (reason, p) => {
 async function premain () {
   await Config.initialize({ initAuth: true });
 
-  Db.initialize({
+  await Db.initialize({
     host: internals.elasticBase,
     prefix: internals.prefix,
     queryExtraIndices: Config.getArray('queryExtraIndices', ''),
@@ -2218,7 +2218,7 @@ async function premain () {
     getCurrentUserCB: UserAPIs.getCurrentUserCB,
     maxConcurrentShardRequests: Config.get('esMaxConcurrentShardRequests'),
     regressionTests: Config.regressionTests
-  }, main);
+  });
 
   Notifier.initialize({
     prefix: Config.get('usersPrefix', Config.get('prefix', 'arkime')),
@@ -2227,6 +2227,7 @@ async function premain () {
 
   CronAPIs.initialize({
   });
+  main();
 }
 
 premain();

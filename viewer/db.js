@@ -54,7 +54,7 @@ function checkURLs (nodes) {
   }
 }
 
-Db.initialize = async (info, cb) => {
+Db.initialize = async (info) => {
   internals.multiES = info.multiES === 'true' || info.multiES === true || false;
   delete info.multiES;
 
@@ -204,7 +204,6 @@ Db.initialize = async (info, cb) => {
         process.exit();
       }
     }
-    return cb();
   } catch (err) {
     ArkimeUtil.searchErrorMsg(err, internals.info.host, 'Getting OpenSearch/Elasticsearch info failed');
     process.exit(1);
@@ -290,14 +289,6 @@ Db.getWithOptions = async (index, id, options) => {
   const params = { index: fixIndex(index), id };
   Db.merge(params, options);
   return internals.client7.get(params);
-};
-
-Db.getSessionPromise = (id, options) => {
-  return new Promise((resolve, reject) => {
-    Db.getSession(id, options, (err, session) => {
-      err ? reject(err) : resolve(session);
-    });
-  });
 };
 
 // Fields too hard to leave as arrays for now
@@ -467,9 +458,10 @@ Db.getSession = async (id, options, cb) => {
           await async.forEachOfSeries(fields.packetPos, async (item, key) => {
             if (key % 3 !== 0) { return; } // Only look at every 3rd item
 
+            let fd;
             try {
               const idToFileInfo = await Db.fileIdToFile(fields.node, -1 * item);
-              const fd = fs.openSync(idToFileInfo.indexFilename, 'r');
+              fd = fs.openSync(idToFileInfo.indexFilename, 'r');
               if (!fd) { return; }
               const buffer = Buffer.alloc(fields.packetPos[key + 2]);
               fs.readSync(fd, buffer, 0, buffer.length, fields.packetPos[key + 1]);
@@ -495,9 +487,16 @@ Db.getSession = async (id, options, cb) => {
                   mult *= 128; // Javscript can't shift large numbers, so mult
                 }
               }
-              fs.closeSync(fd);
             } catch (e) {
               console.log(e);
+            } finally {
+              if (!fd) {
+                try {
+                  fs.closeSync(fd);
+                } catch (closeErr) {
+                  console.log('Error closing file:', closeErr);
+                }
+              }
             }
             return;
           });
@@ -943,6 +942,7 @@ Db.setIndexSettings = async (index, options) => {
         cluster: options.cluster
       });
     } catch (err) {
+      console.log('ERROR - updating users index settings', JSON.stringify(err, null, 2));
     }
   }
 
@@ -956,6 +956,7 @@ Db.setIndexSettings = async (index, options) => {
     });
     return response;
   } catch (err) {
+    console.log('ERROR - index settings', JSON.stringify(err, null, 2));
     cache10.clear();
     cache60.clear();
     throw err;
@@ -1546,7 +1547,7 @@ Db.arkimeNodeStatsCache = async function (nodeName) {
     return stat;
   }
 
-  stat = Db.arkimeNodeStats(nodeName);
+  stat = await Db.arkimeNodeStats(nodeName);
   cache60.set(key, stat);
   return stat;
 };

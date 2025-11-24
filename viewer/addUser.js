@@ -206,7 +206,7 @@ async function premain () {
     main();
   } else {
     const escInfo = Config.getArray('elasticsearch', 'http://localhost:9200');
-    Db.initialize({
+    await Db.initialize({
       host: escInfo,
       prefix: Config.get('prefix', 'arkime_'),
       esClientKey: Config.get('esClientKey', null),
@@ -221,7 +221,8 @@ async function premain () {
       esBasicAuth: Config.get('elasticsearchBasicAuth', null),
       usersEsBasicAuth: Config.get('usersElasticsearchBasicAuth', null),
       noUsersCheck: true
-    }, main);
+    });
+    main();
   }
 }
 premain();
