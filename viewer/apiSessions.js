@@ -859,13 +859,12 @@ class SessionAPIs {
       });
     }
 
-    req.arkimeWriterOptions ??= { writeHeader: true };
+    req.arkimeWriterOptions ??= { writeHeader: true, nodes: new Map() };
 
     await async.eachLimit(list, 10, async (item) => {
       const fields = item.fields;
-      const isLocal = await SessionAPIs.isLocalView(fields.node);
 
-      if (isLocal) {
+      if (await SessionAPIs.isLocalView(fields.node)) {
         // Get from our DISK
         await new Promise((resolve) => {
           pcapWriter(res, Db.session2Sid(item), req.arkimeWriterOptions, resolve);
@@ -874,7 +873,14 @@ class SessionAPIs {
 
         // Get from remote DISK
         try {
-          const { viewUrl, client } = await ViewerUtils.getViewUrl(fields.node);
+          let result = req.arkimeWriterOptions.nodes.get(fields.node);
+          if (!result) {
+            result = await ViewerUtils.getViewUrl(fields.node);
+            req.arkimeWriterOptions.nodes.set(fields.node, result);
+            ViewerUtils.addCaTrust(result, fields.node);
+          }
+          const { viewUrl, client, ca } = result;
+
           let buffer = Buffer.alloc(Math.min(16200000, fields['network.packets'] * 20 + fields['network.bytes']));
           let bufpos = 0;
 
@@ -891,7 +897,7 @@ class SessionAPIs {
           }
 
           Auth.addS2SAuth(options, req.user, fields.node, url.pathname);
-          ViewerUtils.addCaTrust(options, fields.node);
+          options.ca = ca;
 
           await new Promise((resolve) => {
             const preq = client.request(url, options, (pres) => {
