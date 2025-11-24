@@ -74,6 +74,66 @@ class SessionAPIs {
   };
 
   // --------------------------------------------------------------------------
+  static async #sessionsListFromQueryChunky (req, res, fields, startCb, chunkCb, endCb) {
+    if (req.query.length === undefined || parseInt(req.query.length) < 1000000) {
+      req.query.length = 1000000;
+    }
+
+    if (req.query.segments && req.query.segments.match(/^(time|all)$/) && fields.indexOf('rootId') === -1) {
+      fields.push('rootId');
+    }
+
+    let total = 0;
+    try {
+      const { query, indices } = await SessionAPIs.buildSessionQueryPromise(req);
+
+      query._source = false;
+      query.fields = fields;
+      if (Config.debug) {
+        console.log('sessionsListFromQueryChunky query', JSON.stringify(query, null, 1));
+      }
+      const options = ViewerUtils.addCluster(req.query.cluster);
+      options.arkime_unflatten = false;
+
+      for await (const chunk of Db.searchSessionsIterator(indices, query, options)) {
+        const list = chunk.hits.hits;
+
+        if (startCb) {
+          startCb();
+          startCb = undefined;
+        }
+
+        total += list.length;
+        await chunkCb(null, list);
+
+        if (req.query.segments && req.query.segments.match(/^(time|all)$/)) {
+          const segList = await new Promise((resolve, reject) => {
+            SessionAPIs.#sessionsListAddSegments(req, indices, query, list, (err, addSegmentsList) => {
+              if (err) {
+                reject(err);
+              } else {
+                resolve(addSegmentsList);
+              }
+            });
+          });
+          if (segList.length > 0) {
+            total += segList.length;
+            await chunkCb(null, segList);
+          }
+        }
+      }
+      if (endCb) {
+        endCb(null, total);
+      }
+    } catch (err) {
+      console.log('ERROR - Could not fetch list of sessions:', util.inspect(err, false, 50));
+      if (endCb) {
+        endCb(err, total);
+      }
+    }
+  }
+
+  // --------------------------------------------------------------------------
   /**
    * Adds the sort options to the elasticsearch query
    * @ignore
@@ -241,58 +301,62 @@ class SessionAPIs {
   }
 
   // --------------------------------------------------------------------------
-  static #csvListWriter (req, res, list, fields, pcapWriter, extension) {
-    if (list.length > 0 && list[0].fields) {
-      list = list.sort((a, b) => { return a.fields.lastPacket - b.fields.lastPacket; });
-    }
-
-    const fieldObjects = Config.getDBFieldsMap();
-
-    if (fields) {
-      const columnHeaders = [];
-      for (let i = 0; i < fields.length; ++i) {
-        if (fieldObjects[fields[i]] !== undefined) {
-          columnHeaders.push(fieldObjects[fields[i]].friendlyName);
-        }
-      }
-      res.write(columnHeaders.join(', '));
-      res.write('\r\n');
-    }
-
-    for (let j = 0; j < list.length; j++) {
-      const sessionData = list[j].fields;
-      sessionData._id = list[j]._id;
-
-      if (!fields) { continue; }
-
-      const values = [];
-      for (let k = 0; k < fields.length; ++k) {
-        let value = sessionData[fields[k]];
-        if (fields[k] === 'ipProtocol' && value) {
-          value = Pcap.protocol2Name(value);
-        }
-
-        if (Array.isArray(value)) {
-          const singleValue = '"' + value.join(', ') + '"';
-          values.push(singleValue);
-        } else {
-          if (value === undefined) {
-            value = '';
-          } else if (typeof (value) === 'string' && value.includes(',')) {
-            if (value.includes('"')) {
-              value = value.replace(/"/g, '""');
-            }
-            value = '"' + value + '"';
+  static #csvListWriter (req, res, what, list, fields) {
+    if (what.includes('start')) {
+      if (fields) {
+        const fieldObjects = Config.getDBFieldsMap();
+        const columnHeaders = [];
+        for (let i = 0; i < fields.length; ++i) {
+          if (fieldObjects[fields[i]] !== undefined) {
+            columnHeaders.push(fieldObjects[fields[i]].friendlyName);
           }
-          values.push(value);
         }
+        res.write(columnHeaders.join(', '));
+        res.write('\r\n');
       }
-
-      res.write(values.join(','));
-      res.write('\r\n');
     }
 
-    res.end();
+    if (what.includes('data')) {
+      if (list.length > 0 && list[0].fields) {
+        list = list.sort((a, b) => { return a.fields.lastPacket - b.fields.lastPacket; });
+      }
+      for (let j = 0; j < list.length; j++) {
+        const sessionData = list[j].fields;
+        sessionData._id = list[j]._id;
+
+        if (!fields) { continue; }
+
+        const values = [];
+        for (let k = 0; k < fields.length; ++k) {
+          let value = sessionData[fields[k]];
+          if (fields[k] === 'ipProtocol' && value) {
+            value = Pcap.protocol2Name(value);
+          }
+
+          if (Array.isArray(value)) {
+            const singleValue = '"' + value.join(', ') + '"';
+            values.push(singleValue);
+          } else {
+            if (value === undefined) {
+              value = '';
+            } else if (typeof (value) === 'string' && value.includes(',')) {
+              if (value.includes('"')) {
+                value = value.replace(/"/g, '""');
+              }
+              value = '"' + value + '"';
+            }
+            values.push(value);
+          }
+        }
+
+        res.write(values.join(','));
+        res.write('\r\n');
+      }
+    }
+
+    if (what.includes('end')) {
+      res.end();
+    }
   }
 
   // --------------------------------------------------------------------------
@@ -1111,7 +1175,7 @@ class SessionAPIs {
 
   // --------------------------------------------------------------------------
   static #scrubbingBuffers;
-  static #pcapScrub (req, res, sid, whatToRemove, endCb) {
+  static async #pcapScrub (req, res, sid, whatToRemove) {
     if (SessionAPIs.#scrubbingBuffers === undefined) {
       SessionAPIs.#scrubbingBuffers = [Buffer.alloc(5000), Buffer.alloc(5000), Buffer.alloc(5000)];
       SessionAPIs.#scrubbingBuffers[0].fill(0);
@@ -1145,120 +1209,110 @@ class SessionAPIs {
       pcap.unref();
     }
 
-    Db.getSession(sid, { _source: false, fields: ['node', 'ipProtocol', 'packetPos'] }, async (err, session) => {
-      let fileNum;
-      let itemPos = 0;
-      let noScrubs = false; // best name ever
-      const fields = session.fields;
+    const session = await Db.getSession(sid, { _source: false, fields: ['node', 'ipProtocol', 'packetPos'] });
+    let fileNum;
+    let itemPos = 0;
+    let noScrubs = false; // best name ever
+    const fields = session.fields;
 
-      if (whatToRemove === 'spi') { // just removing es data for session
+    if (whatToRemove === 'spi') { // just removing es data for session
+      await Db.deleteDocument(session._index, session._id);
+      return fields;
+    }
+
+    // scrub the pcap
+    try {
+      await async.eachLimit(fields.packetPos, 10, async (pos) => {
+        if (pos < 0) {
+          fileNum = pos * -1;
+          return;
+        }
+
+        // Get the pcap file for this node a filenum, if it isn't opened then do the filename lookup and open it
+        const opcap = Pcap.get(`write:${fields.node}:${fileNum}`);
+        if (opcap.isCorrupt()) {
+          throw new Error('Corrupt');
+        }
+
+        // Already open, just process
+        if (opcap.isOpen()) {
+          await processFile(opcap, pos, itemPos++);
+          return;
+        }
+
+        // Do the filename lookup and open it
+        let file;
+        try {
+          file = await Db.fileIdToFile(fields.node, fileNum);
+        } catch (err) {
+          console.log(`WARNING - Only have SPI data, PCAP file no longer available.  Couldn't look up in file table ${fields.node}-${fileNum}`);
+          throw new Error(`Only have SPI data, PCAP file no longer available for ${fields.node}-${fileNum}`);
+        }
+
+        if (whatToRemove === 'pcap' && (file.uncompressedBits !== undefined || file.encoding !== undefined)) {
+          noScrubs = true;
+          return;
+        }
+
+        const ipcap = Pcap.get(`write:${fields.node}:${file.num}`);
+
+        try {
+          ipcap.openReadWrite(file);
+        } catch (err) {
+          console.log("ERROR - Couldn't open file during pcapScrub:", util.inspect(err, false, 50));
+          throw new Error(`Couldn't open file for scrubbing pcap: ${err}`);
+        }
+        await processFile(ipcap, pos, itemPos++);
+      });
+    } catch (err) {
+      if (whatToRemove === 'all') {
         try {
           await Db.deleteDocument(session._index, session._id);
-          return endCb(null, fields);
-        } catch (err) { return endCb(err, fields); }
-      } else { // scrub the pcap
-        async.eachLimit(fields.packetPos, 10, async (pos) => {
-          if (pos < 0) {
-            fileNum = pos * -1;
-            return;
-          }
-
-          // Get the pcap file for this node a filenum, if it isn't opened then do the filename lookup and open it
-          const opcap = Pcap.get(`write:${fields.node}:${fileNum}`);
-          if (opcap.isCorrupt()) {
-            throw new Error('Corrupt');
-          }
-
-          // Already open, just process
-          if (opcap.isOpen()) {
-            await processFile(opcap, pos, itemPos++);
-            return;
-          }
-
-          // Do the filename lookup and open it
-          let file;
-          try {
-            file = await Db.fileIdToFile(fields.node, fileNum);
-          } catch (err) {
-            console.log(`WARNING - Only have SPI data, PCAP file no longer available.  Couldn't look up in file table ${fields.node}-${fileNum}`);
-            throw new Error(`Only have SPI data, PCAP file no longer available for ${fields.node}-${fileNum}`);
-          }
-
-          if (whatToRemove === 'pcap' && (file.uncompressedBits !== undefined || file.encoding !== undefined)) {
-            noScrubs = true;
-            return;
-          }
-
-          const ipcap = Pcap.get(`write:${fields.node}:${file.num}`);
-
-          try {
-            ipcap.openReadWrite(file);
-          } catch (err) {
-            console.log("ERROR - Couldn't open file during pcapScrub:", util.inspect(err, false, 50));
-            throw new Error(`Couldn't open file for scrubbing pcap: ${err}`);
-          }
-          await processFile(ipcap, pos, itemPos++);
-        }, async (pcapErr, results) => {
-          if (whatToRemove === 'all') { // also remove the session data
-            try {
-              await Db.deleteDocument(session._index, session._id);
-              return endCb(null, fields);
-            } catch (err) {
-              return endCb(pcapErr, fields);
-            }
-          } else { // just set who/when scrubbed the pcap
-            // Do the ES update
-            const doc = {
-              doc: {
-                scrubby: req.user.userId || '-',
-                scrubat: new Date().getTime()
-              }
-            };
-            if (noScrubs) {
-              doc.doc.packetLen = [];
-              doc.doc.packetPos = [];
-              doc.doc.fileId = [];
-            }
-            try {
-              await Db.updateSession(session._index, session._id, doc);
-            } catch (err) {
-              // log error but continue
-            }
-            return endCb(pcapErr, fields);
-          }
-        });
+        } catch (docErr) {
+          // ignore
+        }
       }
-    });
+      throw err;
+    }
+
+    if (whatToRemove === 'all') { // also remove the session data
+      await Db.deleteDocument(session._index, session._id);
+    } else { // just set who/when scrubbed the pcap
+      // Do the ES update
+      const doc = {
+        doc: {
+          scrubby: req.user.userId || '-',
+          scrubat: new Date().getTime()
+        }
+      };
+      if (noScrubs) {
+        doc.doc.packetLen = [];
+        doc.doc.packetPos = [];
+        doc.doc.fileId = [];
+      }
+      try {
+        await Db.updateSession(session._index, session._id, doc);
+      } catch (err) {
+        // log error but continue
+      }
+    }
+
+    return fields;
   }
 
   // --------------------------------------------------------------------------
-  static #scrubList (req, res, whatToRemove, list) {
-    if (!list) { return res.serverError(200, 'Missing list of sessions'); }
-
-    async.eachLimit(list, 10, (item, nextCb) => {
+  static async #scrubList (req, res, whatToRemove, list) {
+    await async.eachLimit(list, 10, async (item) => {
       const fields = item.fields;
 
-      SessionAPIs.isLocalView(fields.node, () => {
+      if (await SessionAPIs.isLocalView(fields.node)) {
         // Get from our DISK
-        SessionAPIs.#pcapScrub(req, res, Db.session2Sid(item), whatToRemove, nextCb);
-      }, () => {
+        await SessionAPIs.#pcapScrub(req, res, Db.session2Sid(item), whatToRemove);
+      } else {
         // Get from remote DISK
         const scrubPath = `${fields.node}/delete/${whatToRemove}/${Db.session2Sid(item)}`;
-        ViewerUtils.makeRequest(fields.node, scrubPath, req.user, (err, response) => {
-          setImmediate(nextCb);
-        });
-      });
-    }, (err) => {
-      Db.refresh('sessions*');
-      let text;
-      if (whatToRemove === 'all') {
-        text = `Deletion PCAP and SPI of ${list.length} sessions complete. Give OpenSearch/Elasticsearch 60 seconds to complete SPI deletion.`;
-      } else if (whatToRemove === 'spi') {
-        text = `Deletion SPI of ${list.length} sessions complete. Give OpenSearch/Elasticsearch 60 seconds to complete SPI deletion.`;
-      } else {
-        text = `Scrubbing PCAP of ${list.length} sessions complete`;
+        await ViewerUtils.makeRequest(fields.node, scrubPath, req.user);
       }
-      return res.end(JSON.stringify({ success: true, text }));
     });
   }
 
@@ -1357,6 +1411,27 @@ class SessionAPIs {
      'database' - Database: The timestamp the session was written to the database. This can be up to several minutes AFTER the last packet was received.
    * @param {boolean} strictly=false - When set the entire session must be inside the date range to be observed, otherwise if it overlaps it is displayed. Overwrites the bounding parameter, sets bounding to 'both'
    */
+
+  // --------------------------------------------------------------------------
+  /**
+   * Builds the session query based on req.query (Promise version)
+   * @ignore
+   * @name buildSessionQueryPromise
+   * @param {object} req - the client request
+   * @param {boolean} queryOverride=null - override the client query with overriding query
+   * @returns {Promise} - resolves with {query, indices}
+   */
+  static buildSessionQueryPromise (req, queryOverride = null) {
+    return new Promise((resolve, reject) => {
+      SessionAPIs.buildSessionQuery(req, (err, query, indices) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve({ query, indices });
+        }
+      }, queryOverride);
+    });
+  }
 
   // --------------------------------------------------------------------------
   /**
@@ -1614,7 +1689,7 @@ class SessionAPIs {
       if (Config.debug > 1) {
         console.log(`DEBUG: node:${node} is local view because matches ${internals.isLocalViewRegExp}`);
       }
-      return yesCb();
+      return yesCb ? yesCb() : true;
     }
 
     const pcapWriteMethod = Config.getFull(node, 'pcapWriteMethod');
@@ -1623,13 +1698,13 @@ class SessionAPIs {
       if (Config.debug > 1) {
         console.log(`DEBUG: node:${node} is local view because of writer`);
       }
-      return yesCb();
+      return yesCb ? yesCb() : true;
     }
 
     if (await Db.isLocalView(node)) {
-      yesCb();
+      return yesCb ? yesCb() : true;
     } else {
-      noCb();
+      return noCb ? noCb() : false;
     }
   };
 
@@ -1689,13 +1764,13 @@ class SessionAPIs {
   };
 
   // --------------------------------------------------------------------------
-  static addTagsList (allTagNames, sessionList, doneCb) {
+  static async addTagsList (allTagNames, sessionList, doneCb) {
     if (!sessionList.length) {
       console.log(`No sessions to add tags (${allTagNames}) to`);
-      return doneCb(null);
+      return doneCb ? doneCb(null) : null;
     }
 
-    async.eachLimit(sessionList, 10, async (session) => {
+    await async.eachLimit(sessionList, 10, async (session) => {
       if (!session.fields) {
         console.log('No Fields in addTagsList', session);
         return;
@@ -1708,16 +1783,19 @@ class SessionAPIs {
       } catch (err) {
         console.log('ERROR - addTagsList', session, util.inspect(err, false, 50));
       }
-    }, doneCb);
+    }, (err) => {
+      return doneCb ? doneCb(err) : null;
+    });
   };
 
   // --------------------------------------------------------------------------
-  static removeTagsList (res, allTagNames, sessionList) {
+  static async #removeTagsList (allTagNames, sessionList, doneCb) {
     if (!sessionList.length) {
-      return res.serverError(200, 'No sessions to remove tags from');
+      console.log(`No sessions to remove tags (${allTagNames}) to`);
+      return doneCb ? doneCb(null) : null;
     }
 
-    async.eachLimit(sessionList, 10, async (session) => {
+    await async.eachLimit(sessionList, 10, async (session) => {
       if (!session.fields) {
         console.log('No Fields in removeTagsList', session);
         return;
@@ -1730,12 +1808,8 @@ class SessionAPIs {
       } catch (err) {
         console.log('ERROR - removeTagsList', session, util.inspect(err, false, 50));
       }
-    }, async (err) => {
-      await Db.refresh('sessions*');
-      return res.send(JSON.stringify({
-        success: true,
-        text: 'Tags removed successfully'
-      }));
+    }, (err) => {
+      return doneCb ? doneCb(err) : null;
     });
   };
 
@@ -2008,11 +2082,19 @@ class SessionAPIs {
           console.log('ERROR - getSessionsCSV', util.inspect(err, false, 50));
           res.end(JSON.stringify({ success: false, text: 'Can\'t get sessions from IDs' }));
         }
-        SessionAPIs.#csvListWriter(req, res, list, reqFields);
+        SessionAPIs.#csvListWriter(req, res, ['start', 'data', 'end'], list, reqFields);
       });
     } else {
-      SessionAPIs.#sessionsListFromQuery(req, res, fields, (err, list) => {
-        SessionAPIs.#csvListWriter(req, res, list, reqFields);
+      SessionAPIs.#sessionsListFromQueryChunky(req, res, fields, () => {
+        SessionAPIs.#csvListWriter(req, res, ['start'], null, reqFields);
+      }, (err, chunk) => {
+        SessionAPIs.#csvListWriter(req, res, ['data'], chunk, reqFields);
+      }, (err) => {
+        if (err) {
+          return res.send('Could not build query.  Err: ' + err);
+        } else {
+          SessionAPIs.#csvListWriter(req, res, ['end'], null, reqFields);
+        }
       });
     }
   };
@@ -2928,6 +3010,7 @@ class SessionAPIs {
           return res.serverError(200, 'No sessions to add tags to');
         }
         SessionAPIs.addTagsList(tags, list, async () => {
+          await Db.flush('sessions*');
           await Db.refresh('sessions*');
           return res.send(JSON.stringify({
             success: true,
@@ -2936,18 +3019,23 @@ class SessionAPIs {
         });
       });
     } else {
-      SessionAPIs.#sessionsListFromQuery(req, res, ['tags', 'node'], (err, list) => {
-        if (!list.length) {
-          return res.serverError(200, 'No sessions to add tags to');
-        }
-        SessionAPIs.addTagsList(tags, list, async () => {
+      SessionAPIs.#sessionsListFromQueryChunky(req, res, ['tags', 'node'], null,
+        async (err, list) => {
+          await SessionAPIs.addTagsList(tags, list);
+        }, async (err, total) => {
+          if (err) {
+            return res.send('Could not build query.  Err: ' + err);
+          }
+          if (!total) {
+            return res.serverError(200, 'No sessions to add tags to');
+          }
+          await Db.flush('sessions*');
           await Db.refresh('sessions*');
           return res.send(JSON.stringify({
             success: true,
             text: 'Tags added successfully'
           }));
         });
-      });
     }
   };
 
@@ -2980,13 +3068,35 @@ class SessionAPIs {
     if (req.body.ids) {
       const ids = ViewerUtils.queryValueToArray(req.body.ids);
 
-      SessionAPIs.sessionsListFromIds(req, ids, ['tags'], (err, list) => {
-        SessionAPIs.removeTagsList(res, tags, list);
+      SessionAPIs.sessionsListFromIds(req, ids, ['tags', 'node'], (err, list) => {
+        if (!list.length) {
+          return res.serverError(200, 'No sessions to remove tags to');
+        }
+        SessionAPIs.#removeTagsList(tags, list, async () => {
+          await Db.refresh('sessions*');
+          return res.send(JSON.stringify({
+            success: true,
+            text: 'Tags removed successfully'
+          }));
+        });
       });
     } else {
-      SessionAPIs.#sessionsListFromQuery(req, res, ['tags'], (err, list) => {
-        SessionAPIs.removeTagsList(res, tags, list);
-      });
+      SessionAPIs.#sessionsListFromQueryChunky(req, res, ['tags', 'node'], null,
+        async (err, list) => {
+          await SessionAPIs.#removeTagsList(tags, list);
+        }, async (err, total) => {
+          if (err) {
+            return res.send('Could not build query.  Err: ' + err);
+          }
+          if (!total) {
+            return res.serverError(200, 'No sessions to add tags to');
+          }
+          await Db.refresh('sessions*');
+          return res.send(JSON.stringify({
+            success: true,
+            text: 'Tags removed successfully'
+          }));
+        });
     }
   };
 
@@ -3638,17 +3748,38 @@ class SessionAPIs {
       whatToRemove = 'pcap';
     }
 
+    if (!req.body.ids && !req.query.expression) {
+      return res.serverError(403, `Error: Missing expression. An expression is required so you don't delete everything.`);
+    }
+
+    function sendResult(total) {
+      Db.refresh('sessions*');
+      let text;
+      if (whatToRemove === 'all') {
+        text = `Deletion PCAP and SPI of ${total} sessions complete. Give OpenSearch/Elasticsearch 60 seconds to complete SPI deletion.`;
+      } else if (whatToRemove === 'spi') {
+        text = `Deletion SPI of ${total} sessions complete. Give OpenSearch/Elasticsearch 60 seconds to complete SPI deletion.`;
+      } else {
+        text = `Scrubbing PCAP of ${total} sessions complete`;
+      }
+      res.end(JSON.stringify({ success: true, text }));
+    }
+
     if (req.body.ids) {
       const ids = ViewerUtils.queryValueToArray(req.body.ids);
-      SessionAPIs.sessionsListFromIds(req, ids, ['node'], (err, list) => {
-        SessionAPIs.#scrubList(req, res, whatToRemove, list);
+      SessionAPIs.sessionsListFromIds(req, ids, ['node'], async (err, list) => {
+        if (list) {
+          await SessionAPIs.#scrubList(req, res, whatToRemove, list);
+        }
+        sendResult(list ? list.length : 0);
       });
     } else if (req.query.expression) {
-      SessionAPIs.#sessionsListFromQuery(req, res, ['node'], (err, list) => {
-        SessionAPIs.#scrubList(req, res, whatToRemove, list);
-      });
-    } else {
-      return res.serverError(403, `Error: Missing expression. An expression is required so you don't delete everything.`);
+      SessionAPIs.#sessionsListFromQueryChunky(req, res, ['node'], null,
+        async (err, list) => {
+          await SessionAPIs.#scrubList(req, res, whatToRemove, list);
+        }, (err, count) => {
+          sendResult(count);
+        });
     }
   };
 

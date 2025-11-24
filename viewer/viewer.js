@@ -1804,7 +1804,7 @@ app.post( // sessions send endpoint - used by vueapp
   SessionAPIs.sendSessions
 );
 
-app.post( // sessions recieve endpoint
+app.post( // sessions receive endpoint
   ['/api/sessions/receive', '/receiveSession'],
   [ArkimeUtil.noCacheJson],
   SessionAPIs.receiveSession
@@ -2192,7 +2192,7 @@ process.on('unhandledRejection', (reason, p) => {
 async function premain () {
   await Config.initialize({ initAuth: true });
 
-  Db.initialize({
+  await Db.initialize({
     host: internals.elasticBase,
     prefix: internals.prefix,
     queryExtraIndices: Config.getArray('queryExtraIndices', ''),
@@ -2216,8 +2216,9 @@ async function premain () {
     usersEsBasicAuth: Config.get('usersElasticsearchBasicAuth', null),
     isPrimaryViewer: CronAPIs.isPrimaryViewer,
     getCurrentUserCB: UserAPIs.getCurrentUserCB,
-    maxConcurrentShardRequests: Config.get('esMaxConcurrentShardRequests')
-  }, main);
+    maxConcurrentShardRequests: Config.get('esMaxConcurrentShardRequests'),
+    regressionTests: Config.regressionTests
+  });
 
   Notifier.initialize({
     prefix: Config.get('usersPrefix', Config.get('prefix', 'arkime')),
@@ -2226,6 +2227,7 @@ async function premain () {
 
   CronAPIs.initialize({
   });
+  main();
 }
 
 premain();

@@ -10,6 +10,7 @@
 
 const os = require('os');
 const fs = require('fs');
+const util = require('util');
 const async = require('async');
 const { Client } = require('@elastic/elasticsearch');
 const User = require('../common/user');
@@ -53,7 +54,7 @@ function checkURLs (nodes) {
   }
 }
 
-Db.initialize = async (info, cb) => {
+Db.initialize = async (info) => {
   internals.multiES = info.multiES === 'true' || info.multiES === true || false;
   delete info.multiES;
 
@@ -78,6 +79,8 @@ Db.initialize = async (info, cb) => {
 
   internals.esProfile = info.esProfile || false;
   delete info.esProfile;
+
+  internals.regressionTests = info.regressionTests ?? false;
 
   const esSSLOptions = { rejectUnauthorized: !internals.info.insecure };
   if (internals.info.caTrustFile) { esSSLOptions.ca = ArkimeUtil.certificateFileToArray(internals.info.caTrustFile); };
@@ -201,7 +204,6 @@ Db.initialize = async (info, cb) => {
         process.exit();
       }
     }
-    return cb();
   } catch (err) {
     ArkimeUtil.searchErrorMsg(err, internals.info.host, 'Getting OpenSearch/Elasticsearch info failed');
     process.exit(1);
@@ -287,14 +289,6 @@ Db.getWithOptions = async (index, id, options) => {
   const params = { index: fixIndex(index), id };
   Db.merge(params, options);
   return internals.client7.get(params);
-};
-
-Db.getSessionPromise = (id, options) => {
-  return new Promise((resolve, reject) => {
-    Db.getSession(id, options, (err, session) => {
-      err ? reject(err) : resolve(session);
-    });
-  });
 };
 
 // Fields too hard to leave as arrays for now
@@ -426,7 +420,7 @@ Db.getSession = async (id, options, cb) => {
   }
   async function fixPacketPos (session, fields) {
     if (!fields.packetPos || fields.packetPos.length === 0) {
-      return cb(null, session);
+      return session;
     }
 
     try {
@@ -436,7 +430,7 @@ Db.getSession = async (id, options, cb) => {
       }
 
       if (!fileInfo || !fileInfo.packetPosEncoding) {
-        return cb(null, session);
+        return session;
       }
 
       if (fileInfo.packetPosEncoding === 'gap0') {
@@ -456,17 +450,18 @@ Db.getSession = async (id, options, cb) => {
             last = fields.packetPos[i];
           }
         }
-        return cb(null, session);
+        return session;
       } else if (fileInfo.packetPosEncoding === 'localIndex') {
         // Neg numbers aren't encoded, use var length encoding, if pos is 0 same gap as last gap, otherwise last + pos
         if (await Db.isLocalView(fields.node)) {
           const newPacketPos = [];
-          async.forEachOfSeries(fields.packetPos, async (item, key) => {
+          await async.forEachOfSeries(fields.packetPos, async (item, key) => {
             if (key % 3 !== 0) { return; } // Only look at every 3rd item
 
+            let fd;
             try {
               const idToFileInfo = await Db.fileIdToFile(fields.node, -1 * item);
-              const fd = fs.openSync(idToFileInfo.indexFilename, 'r');
+              fd = fs.openSync(idToFileInfo.indexFilename, 'r');
               if (!fd) { return; }
               const buffer = Buffer.alloc(fields.packetPos[key + 2]);
               fs.readSync(fd, buffer, 0, buffer.length, fields.packetPos[key + 1]);
@@ -492,58 +487,66 @@ Db.getSession = async (id, options, cb) => {
                   mult *= 128; // Javscript can't shift large numbers, so mult
                 }
               }
-              fs.closeSync(fd);
             } catch (e) {
               console.log(e);
+            } finally {
+              if (!fd) {
+                try {
+                  fs.closeSync(fd);
+                } catch (closeErr) {
+                  console.log('Error closing file:', closeErr);
+                }
+              }
             }
             return;
-          }, () => {
-            fields.packetPos = newPacketPos;
-            return cb(null, session);
           });
+          fields.packetPos = newPacketPos;
+          return session;
         } else {
-          return cb(null, session);
+          return session;
         }
       } else {
         console.log('Unknown packetPosEncoding', fileInfo);
-        return cb(null, session);
+        return session;
       }
     } catch (err) {
-      return cb(null, session);
+      return session;
     }
   }
 
-  const optionsReplaced = options === undefined;
-  if (!options) {
-    options = { _source: ['cert', 'dns'], fields: ['*'] };
-  }
-  const query = { query: { ids: { values: [Db.sid2Id(id)] } }, _source: options._source, fields: options.fields };
+  try {
+    const optionsReplaced = options === undefined;
+    if (!options) {
+      options = { _source: ['cert', 'dns'], fields: ['*'] };
+    }
+    const query = { query: { ids: { values: [Db.sid2Id(id)] } }, _source: options._source, fields: options.fields };
 
-  const unflatten = options?.arkime_unflatten ?? true;
-  const params = Object.create(null);
-  Db.merge(params, options);
-  delete params._source;
-  delete params.fields;
-  delete params.arkime_unflatten;
-  delete params.final;
+    const unflatten = options?.arkime_unflatten ?? true;
+    const params = Object.create(null);
+    Db.merge(params, options);
+    delete params._source;
+    delete params.fields;
+    delete params.arkime_unflatten;
+    delete params.final;
 
-  const index = Db.sid2Index(id, { multiple: true });
+    const index = Db.sid2Index(id, { multiple: true });
 
-  Db.search(index, query, params, async (err, results) => {
+    let results = await Db.search(index, query, params);
     if (internals.debug > 2) {
-      console.log('GETSESSION - search results', err, JSON.stringify(results, false, 2));
+      console.log('GETSESSION - search results', JSON.stringify(results, false, 2));
     }
-    if (err) { return cb(err); }
     if (!results.hits || !results.hits.hits || results.hits.hits.length === 0) {
       if (options.final === true) {
         delete options.final;
-        return cb('Not found');
+        return cb ? cb('Not found') : Promise.reject('Not found');
       }
       options.final = true;
-      internals.client7.indices.refresh({ index: fixIndex(index) }, () => {
-        Db.getSession(id, options, cb);
+      await new Promise((resolve) => {
+        internals.client7.indices.refresh({ index: fixIndex(index) }, () => {
+          resolve();
+        });
       });
-      return;
+      return Db.getSession(id, options, cb);
     }
     const session = results.hits.hits[0];
     session.found = true;
@@ -556,10 +559,13 @@ Db.getSession = async (id, options, cb) => {
     delete session._source;
     fixSessionFields(session.fields, unflatten);
     if (!optionsReplaced && options.fields && !options.fields.includes('packetPos')) {
-      return cb(null, session);
+      return cb ? cb(null, session) : session;
     }
-    return await fixPacketPos(session, session.fields);
-  });
+    const result = await fixPacketPos(session, session.fields);
+    return cb ? cb(null, result) : result;
+  } catch (err) {
+    return cb ? cb(err) : Promise.reject(err);
+  }
 };
 
 Db.index = async (index, id, doc) => {
@@ -572,11 +578,7 @@ Db.indexNow = async (index, id, doc) => {
   });
 };
 
-Db.search = async (index, query, options, cb) => {
-  if (!cb && typeof options === 'function') {
-    cb = options;
-    options = undefined;
-  }
+Db.search = async (index, query, options) => {
   query.profile = internals.esProfile;
 
   const params = {
@@ -601,10 +603,9 @@ Db.search = async (index, query, options, cb) => {
       console.log('RESPONSE:', JSON.stringify(results, false, 2));
     }
 
-    return cb ? cb(null, results) : results;
+    return results;
   } catch (err) {
-    console.trace(`OpenSearch/Elasticsearch Search Error - query: ${JSON.stringify(params, false, 2)} err:`, err);
-    if (cb) { return cb(err, null); }
+    console.trace(`OpenSearch/Elasticsearch Search Error - query: ${JSON.stringify(params, false, 2)} err:`, util.inspect(err, null, 20));
     throw err;
   }
 };
@@ -634,52 +635,35 @@ Db.cancelByOpaqueId = async (cancelId, cluster) => {
     throw new Error('Cancel ID not found, cannot cancel OpenSearch/Elasticsearch task(s)');
   }
 
-  return 'OpenSearch/Elasticsearch task cancelled succesfully';
+  return 'OpenSearch/Elasticsearch task cancelled successfully';
 };
 
-Db.searchScroll = function (index, query, options, cb) {
-  // external scrolling, or multiesES or lesseq 10000, do a normal search which does its own Promise conversion
-  if (query.scroll !== undefined || internals.multiES || (query.size ?? 0) + (parseInt(query.from ?? 0, 10)) <= 10000) {
-    return Db.search(index, query, options, cb);
+Db.searchScroll = async (index, query, options, cb) => {
+  // external scrolling, or multiesES or (not regressionTests AND lesseq 10000), do a normal search which does its own Promise conversion
+  if (options?.scroll !== undefined || internals.multiES || (!internals.regressionTests && (query.size ?? 0) + (parseInt(query.from ?? 0, 10)) <= 10000)) {
+    if (!cb) {
+      return Db.search(index, query, options);
+    }
+    return Db.search(index, query, options).then((data) => cb(null, data)).catch((err) => cb(err));
   }
 
-  // Convert promise to cb by calling ourselves
-  if (!cb) {
-    return new Promise((resolve, reject) => {
-      Db.searchScroll(index, query, options, (err, data) => {
-        if (err) {
-          reject(err);
-        } else {
-          resolve(data);
-        }
-      });
-    });
-  }
+  try {
+    // Now actually do the search scroll
+    const from = +query.from || 0;
+    const size = +query.size || 0;
 
-  // Now actually do the search scroll
-  const from = +query.from || 0;
-  const size = +query.size || 0;
+    const querySize = from + size;
+    delete query.from;
 
-  const querySize = from + size;
-  delete query.from;
+    let totalResults;
+    const params = { scroll: '2m' };
+    Db.merge(params, options);
+    query.size = 1000; // Get 1000 items per scroll call
+    query.profile = internals.esProfile;
 
-  let totalResults;
-  const params = { scroll: '2m' };
-  Db.merge(params, options);
-  query.size = 1000; // Get 1000 items per scroll call
-  query.profile = internals.esProfile;
-  Db.search(index, query, params,
-    async function getMoreUntilDone (error, response) {
-      if (error) {
-        if (totalResults && from > 0) {
-          totalResults.hits.hits = totalResults.hits.hits.slice(from);
-        }
-        if (response && response._scroll_id) {
-          Db.clearScroll({ body: { scroll_id: response._scroll_id } });
-        }
-        return cb(error, totalResults);
-      }
+    let response = await Db.search(index, query, params);
 
+    while (true) {
       if (totalResults === undefined) {
         totalResults = response;
       } else {
@@ -691,21 +675,103 @@ Db.searchScroll = function (index, query, options, cb) {
           const { body: results } = await Db.scroll({
             scroll: '2m', body: { scroll_id: response._scroll_id }
           });
-          getMoreUntilDone(null, results);
+          response = results;
         } catch (err) {
           console.log('ERROR - issuing scroll', err);
-          getMoreUntilDone(err, {});
+          if (totalResults) {
+            totalResults.hits.hits = totalResults.hits.hits.slice(from, querySize);
+          }
+          if (response._scroll_id) {
+            Db.clearScroll({ body: { scroll_id: response._scroll_id } });
+          }
+          throw err;
         }
       } else {
-        if (totalResults && from > 0) {
-          totalResults.hits.hits = totalResults.hits.hits.slice(from);
-        }
-        if (response._scroll_id) {
-          Db.clearScroll({ body: { scroll_id: response._scroll_id } });
-        }
-        return cb(null, totalResults);
+        break;
       }
-    });
+    }
+
+    if (totalResults) {
+      totalResults.hits.hits = totalResults.hits.hits.slice(from, querySize);
+    }
+    if (response._scroll_id) {
+      Db.clearScroll({ body: { scroll_id: response._scroll_id } });
+    }
+
+    if (cb) { cb(null, totalResults); }
+    return totalResults;
+  } catch (err) {
+    if (cb) { cb(err); }
+    throw err;
+  }
+};
+
+Db.searchScrollIterator = async function* (index, query, options) {
+  // external scrolling, or multiesES or (not regressionTests AND lesseq 10000), do a normal search which does its own Promise conversion
+  if (options?.scroll !== undefined || internals.multiES || (!internals.regressionTests && (query.size ?? 0) + (parseInt(query.from ?? 0, 10)) <= 10000)) {
+    const result = await Db.search(index, query, options);
+    yield result;
+    return;
+  }
+
+  let from = +query.from || 0;
+  const size = +query.size || 0;
+  delete query.from;
+
+  let yielded = 0;
+  const params = { scroll: '2m' };
+  Db.merge(params, options);
+  query.size = 1000;
+  query.profile = internals.esProfile;
+
+  let response = await Db.search(index, query, params);
+
+  while (true) {
+    let hits = response.hits.hits;
+
+    // Stop if no more results
+    if (hits.length === 0) {
+      break;
+    }
+
+    if (from === 0) {
+      // Don't do anything
+    } else if (from < hits.length) {
+      hits = hits.slice(from);
+      from = 0;
+    } else {
+      from -= hits.length;
+      hits = [];
+    }
+
+    if (hits.length > 0) {
+      response.hits.hits = hits.slice(0, size - yielded);
+      yielded += response.hits.hits.length;
+      yield response;
+
+      if (yielded >= size) {
+        break;
+      }
+    }
+
+    // Fetch next chunk
+    try {
+      const { body: results } = await Db.scroll({
+        scroll: '2m', body: { scroll_id: response._scroll_id }
+      });
+      response = results;
+    } catch (err) {
+      console.log('ERROR - issuing scroll', err);
+      if (response._scroll_id) {
+        Db.clearScroll({ body: { scroll_id: response._scroll_id } });
+      }
+      throw err;
+    }
+  }
+
+  if (response._scroll_id) {
+    Db.clearScroll({ body: { scroll_id: response._scroll_id } });
+  }
 };
 
 Db.searchSessions = function (index, query, options, cb) {
@@ -726,11 +792,23 @@ Db.searchSessions = function (index, query, options, cb) {
   Db.searchScroll(index, query, params, (err, result) => {
     if (err || result.hits.hits.length === 0) { return cb(err, result); }
 
-    for (let i = 0; i < result.hits.hits.length; i++) {
-      fixSessionFields(result.hits.hits[i].fields, unflatten);
-    }
+    result.hits.hits.forEach((hit) => fixSessionFields(hit.fields, unflatten));
     return cb(null, result);
   });
+};
+
+Db.searchSessionsIterator = async function* (index, query, options) {
+  if (!options) { options = {}; }
+  const unflatten = options.arkime_unflatten ?? true;
+  const params = { preference: 'primaries', ignore_unavailable: 'true' };
+  if (internals.maxConcurrentShardRequests) { params.maxConcurrentShardRequests = internals.maxConcurrentShardRequests; }
+  Db.merge(params, options);
+  delete params.arkime_unflatten;
+
+  for await (const chunk of Db.searchScrollIterator(index, query, params)) {
+    chunk.hits.hits.forEach((hit) => fixSessionFields(hit.fields, unflatten));
+    yield chunk;
+  }
 };
 
 Db.msearchSessions = async (index, queries, options) => {
@@ -864,6 +942,7 @@ Db.setIndexSettings = async (index, options) => {
         cluster: options.cluster
       });
     } catch (err) {
+      console.log('ERROR - updating users index settings', JSON.stringify(err, null, 2));
     }
   }
 
@@ -877,6 +956,7 @@ Db.setIndexSettings = async (index, options) => {
     });
     return response;
   } catch (err) {
+    console.log('ERROR - index settings', JSON.stringify(err, null, 2));
     cache10.clear();
     cache60.clear();
     throw err;
@@ -1038,27 +1118,23 @@ Db.refresh = async (index, cluster) => {
 };
 
 Db.addTagsToSession = async (index, id, tags, cluster) => {
-  const script = `
-    if (ctx._source.tags != null) {
-      for (int i = 0; i < params.tags.length; i++) {
-        if (ctx._source.tags.indexOf(params.tags[i]) == -1) {
-          ctx._source.tags.add(params.tags[i]);
-        }
-      }
-      ctx._source.tagsCnt = ctx._source.tags.length;
-    } else {
-      ctx._source.tags = params.tags;
-      ctx._source.tagsCnt = params.tags.length;
-    }
-  `;
-
   const body = {
     script: {
-      source: script,
+      source: `
+        if (ctx._source.tags != null) {
+          for (int i = 0; i < params.tags.length; i++) {
+            if (ctx._source.tags.indexOf(params.tags[i]) == -1) {
+              ctx._source.tags.add(params.tags[i]);
+            }
+          }
+          ctx._source.tagsCnt = ctx._source.tags.length;
+        } else {
+          ctx._source.tags = params.tags;
+          ctx._source.tagsCnt = params.tags.length;
+        }
+      `,
       lang: 'painless',
-      params: {
-        tags
-      }
+      params: { tags }
     }
   };
 
@@ -1068,27 +1144,23 @@ Db.addTagsToSession = async (index, id, tags, cluster) => {
 };
 
 Db.removeTagsFromSession = async (index, id, tags, cluster) => {
-  const script = `
-    if (ctx._source.tags != null) {
-      for (int i = 0; i < params.tags.length; i++) {
-        int index = ctx._source.tags.indexOf(params.tags[i]);
-        if (index > -1) { ctx._source.tags.remove(index); }
-      }
-      ctx._source.tagsCnt = ctx._source.tags.length;
-      if (ctx._source.tagsCnt == 0) {
-        ctx._source.remove("tags");
-        ctx._source.remove("tagsCnt");
-      }
-    }
-  `;
-
   const body = {
     script: {
-      source: script,
+      source: `
+        if (ctx._source.tags != null) {
+          for (int i = 0; i < params.tags.length; i++) {
+            int idx = ctx._source.tags.indexOf(params.tags[i]);
+            if (idx > -1) { ctx._source.tags.remove(idx); }
+          }
+          ctx._source.tagsCnt = ctx._source.tags.length;
+          if (ctx._source.tagsCnt == 0) {
+            ctx._source.remove("tags");
+            ctx._source.remove("tagsCnt");
+          }
+        }
+      `,
       lang: 'painless',
-      params: {
-        tags
-      }
+      params: { tags }
     }
   };
 
@@ -1098,27 +1170,22 @@ Db.removeTagsFromSession = async (index, id, tags, cluster) => {
 };
 
 Db.addHuntToSession = async (index, id, huntId, huntName) => {
-  const script = `
-    if (ctx._source.huntId != null) {
-      ctx._source.huntId.add(params.huntId);
-    } else {
-      ctx._source.huntId = [ params.huntId ];
-    }
-    if (ctx._source.huntName != null) {
-      ctx._source.huntName.add(params.huntName);
-    } else {
-      ctx._source.huntName = [ params.huntName ];
-    }
-  `;
-
   const body = {
     script: {
-      source: script,
+      source: `
+        if (ctx._source.huntId != null) {
+          ctx._source.huntId.add(params.huntId);
+        } else {
+          ctx._source.huntId = [ params.huntId ];
+        }
+        if (ctx._source.huntName != null) {
+          ctx._source.huntName.add(params.huntName);
+        } else {
+          ctx._source.huntName = [ params.huntName ];
+        }
+      `,
       lang: 'painless',
-      params: {
-        huntId,
-        huntName
-      }
+      params: { huntId, huntName }
     }
   };
 
@@ -1126,25 +1193,20 @@ Db.addHuntToSession = async (index, id, huntId, huntName) => {
 };
 
 Db.removeHuntFromSession = async (index, id, huntId, huntName) => {
-  const script = `
-    if (ctx._source.huntId != null) {
-      int index = ctx._source.huntId.indexOf(params.huntId);
-      if (index > -1) { ctx._source.huntId.remove(index); }
-    }
-    if (ctx._source.huntName != null) {
-      int index = ctx._source.huntName.indexOf(params.huntName);
-      if (index > -1) { ctx._source.huntName.remove(index); }
-    }
-  `;
-
   const body = {
     script: {
-      source: script,
+      source: `
+        if (ctx._source.huntId != null) {
+          int idx = ctx._source.huntId.indexOf(params.huntId);
+          if (idx > -1) { ctx._source.huntId.remove(idx); }
+        }
+        if (ctx._source.huntName != null) {
+          int idx = ctx._source.huntName.indexOf(params.huntName);
+          if (idx > -1) { ctx._source.huntName.remove(idx); }
+        }
+      `,
       lang: 'painless',
-      params: {
-        huntId,
-        huntName
-      }
+      params: { huntId, huntName }
     }
   };
 
@@ -1480,12 +1542,12 @@ Db.arkimeNodeStats = async (nodeName) => {
 
 Db.arkimeNodeStatsCache = async function (nodeName) {
   const key = `arkimeNodeStats-${nodeName}`;
-  let stat = cache60.get(nodeName);
+  let stat = cache60.get(key);
   if (stat) {
     return stat;
   }
 
-  stat = Db.arkimeNodeStats(nodeName);
+  stat = await Db.arkimeNodeStats(nodeName);
   cache60.set(key, stat);
   return stat;
 };

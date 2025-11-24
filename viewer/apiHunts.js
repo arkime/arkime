@@ -1290,7 +1290,7 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
     // fetch hunt and session
     Promise.all([
       Db.get('hunts', huntId),
-      Db.getSessionPromise(sessionId)
+      Db.getSession(sessionId)
     ]).then(([{ body: hunt }, session]) => {
       if (hunt.error || session.error) {
         console.log('HUNT - remoteHunt error', hunt.error || session.error);
