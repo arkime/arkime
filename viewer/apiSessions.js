@@ -859,9 +859,12 @@ class SessionAPIs {
       });
     }
 
-    req.arkimeWriterOptions ??= { writeHeader: true, nodes: new Map() };
+    req.arkimeWriterOptions ??= { writeHeader: true, nodes: new Map(), bufferPool: [] };
 
-    await async.eachLimit(list, 10, async (item) => {
+    const bufferPool = req.arkimeWriterOptions.bufferPool;
+    const limit = 10;
+
+    await async.eachLimit(list, limit, async (item) => {
       const fields = item.fields;
 
       if (await SessionAPIs.isLocalView(fields.node)) {
@@ -881,7 +884,13 @@ class SessionAPIs {
           }
           const { viewUrl, client, ca } = result;
 
-          let buffer = Buffer.alloc(Math.min(16200000, fields['network.packets'] * 20 + fields['network.bytes']));
+          // Reuseable buffers.
+          const neededSize = Math.max(100000, Math.min(16200000, 24 + fields['network.packets'] * 20 + fields['network.bytes']));
+          let buffer = bufferPool.pop();
+          if (!buffer || buffer.length < neededSize) {
+            buffer = Buffer.alloc(neededSize);
+          }
+
           let bufpos = 0;
 
           const sessionPath = '/api/session/' + fields.node + '/' + Db.session2Sid(item) + '.' + extension;
@@ -903,7 +912,7 @@ class SessionAPIs {
             const preq = client.request(url, options, (pres) => {
               pres.on('data', (chunk) => {
                 if (bufpos + chunk.length > buffer.length) {
-                  const tmp = Buffer.alloc(buffer.length + chunk.length * 10);
+                  const tmp = Buffer.alloc(buffer.length * 1.5);
                   buffer.copy(tmp, 0, 0, bufpos);
                   buffer = tmp;
                 }
@@ -918,11 +927,17 @@ class SessionAPIs {
                 } else {
                   res.write(buffer.slice(24, bufpos));
                 }
+                if (bufferPool.length < limit) {
+                  bufferPool.push(buffer);
+                }
                 resolve();
               });
             });
             preq.on('error', (e) => {
               console.log("ERROR - Couldn't proxy pcap request to fetch sessions pcap list =", url, '\nerror =', util.inspect(e, false, 50));
+              if (bufferPool.length < limit) {
+                bufferPool.push(buffer);
+              }
               resolve();
             });
             preq.end();
