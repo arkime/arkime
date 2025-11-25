@@ -14,6 +14,7 @@ const ipaddr = require('ipaddr.js');
 const zlib = require('zlib');
 const async = require('async');
 const ArkimeUtil = require('../common/arkimeUtil');
+const { LRUCache } = require('lru-cache');
 
 const internals = {
   pr2name: {
@@ -39,6 +40,7 @@ class Pcap {
 
   constructor (key) {
     this.key = key;
+    this.blockCache = new LRUCache({ max: 10 });
     return this;
   };
 
@@ -183,7 +185,7 @@ class Pcap {
       } else {
         this.#closing = false;
       }
-    }, 500);
+    }, 2000);
   };
 
   createDecipher (pos) {
@@ -272,146 +274,162 @@ class Pcap {
       return;
     }
 
-    return this.readPacketInternal(pos, -1, cb);
+    return this.readPacketInternal(pos, cb);
   };
 
-  readPacketInternal (posArg, hpLenArg, cb) {
+  async readBlock (posArg) {
     let pos = posArg;
-    let hpLen = hpLenArg;
-
-    // -1 is used to mean first try for this packet
-    if (hpLen === -1) {
-      // zstd requires the entire block it seems :(
-      if (this.compression === 'zstd') {
-        hpLen = this.uncompressedBitsSize;
-      } else {
-        hpLen = 2048;
-      }
-    }
-
     let insideOffset = 0;
+    const blockSize = this.uncompressedBits ? this.uncompressedBitsSize : 128 * 1024;
 
-    // Get the start offset and inside offset.
+    // Get the start offset and inside offset
     if (this.uncompressedBits) {
       insideOffset = pos & (this.uncompressedBitsSize - 1);
-
-      // Shift >> info.uncompressedBits for real pos
       pos = Math.floor(pos / this.uncompressedBitsSize);
+    } else {
+      // For uncompressed files, align to block boundaries
+      insideOffset = pos % blockSize;
+      pos = pos - insideOffset;
     }
 
-    // If encrypted we might have to actually start before the current pos
+    // Calculate block start position accounting for encryption
     let posoffset = 0;
     if (this.encoding === 'aes-256-ctr') {
       posoffset = pos % 16;
-      pos = pos - posoffset; // Can't use & ~0xf because javascript is 32bit
+      pos = pos - posoffset;
     } else if (this.encoding === 'xor-2048') {
       posoffset = pos % 256;
-      pos = pos - posoffset; // Can't use & ~0xff because javascript is 32bit
+      pos = pos - posoffset;
     }
 
-    // Make sure the buffer is multiple of 256 and contains offsets
-    hpLen = 256 * Math.ceil((hpLen + insideOffset + posoffset) / 256);
-    const buffer = Buffer.alloc(hpLen);
+    const blockStart = pos;
 
-    // console.log(`readPacketInternal pos ${pos} posArg ${posArg} hpLen ${hpLen} hpLenArg ${hpLenArg} posoffset ${posoffset} insideoffset ${insideOffset}`);
+    // Check cache first (could be a promise or resolved buffer)
+    const cached = this.blockCache.get(blockStart);
+    if (cached) {
+      if (cached instanceof Promise) {
+        const cresult = await cached;
+        return { insideOffset, block: cresult.block };
+      } else {
+        return { insideOffset, block: cached };
+      }
+    }
 
-    try {
-      // Try and read full packet and header in one read
-      fs.read(this.fd, buffer, 0, buffer.length, pos, (err, bytesRead, readBuffer) => {
-        // Set buffer to what was read
-        readBuffer = readBuffer.slice(0, bytesRead);
+    // Create promise for this read
+    const promise = new Promise((resolve) => {
+      const buffer = Buffer.alloc(blockSize);
 
-        // Make sure we have at least the packet header
-        if (readBuffer.length - posoffset < 16) {
-          return cb(null);
-        }
+      try {
+        fs.read(this.fd, buffer, 0, buffer.length, blockStart, (err, bytesRead, readBuffer) => {
+          readBuffer = readBuffer.slice(0, bytesRead);
 
-        // Decrypt if needed
-        if (this.encoding === 'aes-256-ctr') {
-          const decipher = this.createDecipher(pos / 16);
-          readBuffer = Buffer.concat([
-            decipher.update(readBuffer),
-            decipher.final()
-          ]).slice(posoffset);
-        } else if (this.encoding === 'xor-2048') {
-          for (let i = posoffset; i < readBuffer.length; i++) {
-            readBuffer[i] ^= this.encKey[i % 256];
+          // Make sure we have at least some data
+          if (readBuffer.length - posoffset < 1) {
+            resolve({ insideOffset, block: null });
+            return;
           }
-          readBuffer = readBuffer.slice(posoffset);
-        }
 
-        // Uncompress if needed
-        if (this.uncompressedBits) {
-          try {
-            if (this.compression === 'gzip') {
-              readBuffer = zlib.inflateRawSync(readBuffer, { finishFlush: zlib.constants.Z_SYNC_FLUSH });
-            } else if (this.compression === 'zstd') {
-              readBuffer = zlib.zstdDecompressSync(readBuffer, { finishFlush: zlib.constants.Z_SYNC_FLUSH });
+          // Decrypt if needed
+          if (this.encoding === 'aes-256-ctr') {
+            const decipher = this.createDecipher(blockStart / 16);
+            readBuffer = Buffer.concat([
+              decipher.update(readBuffer),
+              decipher.final()
+            ]).slice(posoffset);
+          } else if (this.encoding === 'xor-2048') {
+            for (let i = posoffset; i < readBuffer.length; i++) {
+              readBuffer[i] ^= this.encKey[i % 256];
             }
-          } catch (e) {
-            console.log('PCAP uncompress issue', this.key, pos, buffer.length, bytesRead, e);
-            return cb(undefined);
+            readBuffer = readBuffer.slice(posoffset);
           }
-        }
 
-        // Reset readBuffer to where the packet actually starts inside the buffer
-        if (insideOffset) {
-          readBuffer = readBuffer.slice(insideOffset);
-        }
-
-        // Get the packetLen
-        let packetLen;
-        const headerLen = (this.shortHeader === undefined) ? 16 : 6;
-
-        if (readBuffer.length < headerLen) {
-          // Read failed, try one more time with bigger buffer if zstd
-          if (hpLenArg === -1 && this.compression === 'zstd') {
-            return this.readPacketInternal(posArg, this.uncompressedBitsSize * 2, cb);
+          // Uncompress if needed
+          if (this.uncompressedBits) {
+            try {
+              if (this.compression === 'gzip') {
+                readBuffer = zlib.inflateRawSync(readBuffer, { finishFlush: zlib.constants.Z_SYNC_FLUSH });
+              } else if (this.compression === 'zstd') {
+                readBuffer = zlib.zstdDecompressSync(readBuffer, { finishFlush: zlib.constants.Z_SYNC_FLUSH });
+              }
+            } catch (e) {
+              console.log('PCAP uncompress issue', this.key, blockStart, buffer.length, bytesRead, e);
+              resolve({ insideOffset, block: null });
+              return;
+            }
           }
-          console.log(`Not enough data ${readBuffer.length} for header ${headerLen} in ${this.filename} - See https://arkime.com/faq#zero-byte-pcap-files`);
-          return cb(undefined);
+
+          // Cache the resolved buffer
+          this.blockCache.set(blockStart, readBuffer);
+          resolve({ insideOffset, block: readBuffer });
+        });
+      } catch (e) {
+        resolve({ insideOffset, block: null });
+      }
+    });
+
+    // Cache the promise so others can wait on it
+    this.blockCache.set(blockStart, promise);
+
+    const result = await promise;
+    return result;
+  };
+
+  async readPacketInternal (posArg, cb) {
+    try {
+      const result = await this.readBlock(posArg);
+      if (!result.block) {
+        return cb(undefined);
+      }
+
+      let readBuffer = result.block;
+      const insideOffset = result.insideOffset;
+
+      // Reset readBuffer to where the packet actually starts inside the buffer
+      if (insideOffset) {
+        readBuffer = readBuffer.slice(insideOffset);
+      }
+
+      // Get the packetLen
+      let packetLen;
+      const headerLen = (this.shortHeader === undefined) ? 16 : 6;
+
+      if (readBuffer.length < headerLen) {
+        console.log(`Not enough data ${readBuffer.length} for header ${headerLen} in ${this.filename} - See https://arkime.com/faq#zero-byte-pcap-files`);
+        return cb(undefined);
+      }
+
+      if (this.shortHeader === undefined) {
+        packetLen = (this.bigEndian ? readBuffer.readUInt32BE(8) : readBuffer.readUInt32LE(8));
+      } else {
+        packetLen = (this.bigEndian ? readBuffer.readUInt16BE(0) : readBuffer.readUInt16LE(0));
+      }
+
+      if (packetLen < 0 || packetLen > 0xffff) {
+        return cb(undefined);
+      }
+
+      // Full packet fit
+      if ((headerLen + packetLen) <= readBuffer.length) {
+        if (this.shortHeader !== undefined) {
+          const t = readBuffer.readUInt32LE(2);
+          const sec = (t >>> 20) + this.shortHeader;
+          const usec = t & 0xfffff;
+
+          // Make a new buffer with standard pcap header and packet data
+          const newBuffer = Buffer.allocUnsafe(16 + packetLen);
+          newBuffer.writeUInt32LE(sec, 0);
+          newBuffer.writeUInt32LE(usec, 4);
+          newBuffer.writeUInt32LE(packetLen, 8);
+          newBuffer.writeUInt32LE(packetLen, 12);
+          readBuffer.copy(newBuffer, 16, 6, packetLen + 6);
+          return cb(newBuffer);
         }
+        return cb(readBuffer.slice(0, headerLen + packetLen));
+      }
 
-        if (this.shortHeader === undefined) {
-          packetLen = (this.bigEndian ? readBuffer.readUInt32BE(8) : readBuffer.readUInt32LE(8));
-        } else {
-          packetLen = (this.bigEndian ? readBuffer.readUInt16BE(0) : readBuffer.readUInt16LE(0));
-        }
-
-        if (packetLen < 0 || packetLen > 0xffff) {
-          return cb(undefined);
-        }
-
-        // Full packet fit
-        if ((headerLen + packetLen) <= readBuffer.length) {
-          if (this.shortHeader !== undefined) {
-            const t = readBuffer.readUInt32LE(2);
-            const sec = (t >>> 20) + this.shortHeader;
-            const usec = t & 0xfffff;
-
-            // Make a new buffer with standard pcap header and packet data
-            const newBuffer = Buffer.allocUnsafe(16 + packetLen);
-            newBuffer.writeUInt32LE(sec, 0);
-            newBuffer.writeUInt32LE(usec, 4);
-            newBuffer.writeUInt32LE(packetLen, 8);
-            newBuffer.writeUInt32LE(packetLen, 12);
-            readBuffer.copy(newBuffer, 16, 6, packetLen + 6);
-            return cb(newBuffer);
-          }
-          return cb(readBuffer.slice(0, headerLen + packetLen));
-        }
-
-        // Don't try again
-        if (hpLenArg !== -1) {
-          return cb(null);
-        }
-
-        // Full packet didn't fit, try again
-        return this.readPacketInternal(posArg, 16 + packetLen, cb);
-      });
-    } catch (e) {
-      console.log('Error ', e, 'for file', this.filename);
       return cb(null);
+    } catch (err) {
+      return cb(undefined);
     }
   };
 
@@ -420,6 +438,7 @@ class Pcap {
   };
 
   scrubPacket (packet, pos, buf, entire) {
+    this.blockCache.clear();
     const headerLen = (this.shortHeader === undefined) ? 16 : 6;
 
     let len = packet.pcap.incl_len + headerLen;

@@ -105,6 +105,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #3488 only use viewUrl for remote URL
   - #3492 default pcapDir to /opt/arkime/raw
   - #3495 Speed improvements for add/removing tags and exporting CSV
+  - #3497 Process pcap files in blocks for speed improvements
 ## Parliament
   - #3395 Low disk space monitoring for capture and ES hosts
   - #3395 Navbar ES status indicator cycles through clusters with issues w/highlighting

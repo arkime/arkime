@@ -683,6 +683,7 @@ class SessionAPIs {
           endCb(msg1, null);
           break;
         case undefined:
+          nextCb('Error');
           break;
         default:
           packetCb(pcap, packet, nextCb, i);
@@ -696,6 +697,7 @@ class SessionAPIs {
 
     let fileNum;
     let itemPos = 0;
+    let lastMsg = ""
     async.eachLimit(fields.packetPos, limit || 1, async (pos) => {
       if (pos < 0) {
         fileNum = pos * -1;
@@ -709,7 +711,11 @@ class SessionAPIs {
       } else if (!opcap.isOpen()) {
         const file = await Db.fileIdToFile(fields.node, fileNum);
         if (!file) {
-          console.log("WARNING - Only have SPI data, PCAP file no longer available.  Couldn't look up %s-%s in files index", fields.node, fileNum);
+          const msg = util.format("WARNING - Only have SPI data, PCAP file no longer available.  Couldn't look up %s-%s in files index", fields.node, fileNum);
+          if (lastMsg !== msg) {
+            lastMsg = msg;
+            console.log(msg);
+          }
           throw new Error('Only have SPI data, PCAP file no longer available for ' + fields.node + '-' + fileNum);
         }
         if (file.kekId) {
