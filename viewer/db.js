@@ -413,105 +413,106 @@ function fixSessionFields (fields, unflatten) {
   }
 }
 
+async function fixPacketPos (fields) {
+  if (!fields.packetPos || fields.packetPos.length === 0) {
+    return;
+  }
+
+  try {
+    const fileInfo = await Db.fileIdToFile(fields.node, -1 * fields.packetPos[0]);
+    if (internals.debug > 2) {
+      console.log('GETSESSION - fixPackPos', fileInfo);
+    }
+
+    if (!fileInfo || !fileInfo.packetPosEncoding) {
+      return;
+    }
+
+    if (fileInfo.packetPosEncoding === 'gap0') {
+      // Neg numbers aren't encoded, if pos is 0 same gap as last gap, otherwise last + pos
+      let last = 0;
+      let lastgap = 0;
+      for (let i = 0, ilen = fields.packetPos.length; i < ilen; i++) {
+        if (fields.packetPos[i] < 0) {
+          last = 0;
+        } else {
+          if (fields.packetPos[i] === 0) {
+            fields.packetPos[i] = last + lastgap;
+          } else {
+            lastgap = fields.packetPos[i];
+            fields.packetPos[i] += last;
+          }
+          last = fields.packetPos[i];
+        }
+      }
+      return;
+    } else if (fileInfo.packetPosEncoding === 'localIndex') {
+      // Neg numbers aren't encoded, use var length encoding, if pos is 0 same gap as last gap, otherwise last + pos
+      if (await Db.isLocalView(fields.node)) {
+        const newPacketPos = [];
+        await async.forEachOfSeries(fields.packetPos, async (item, key) => {
+          if (key % 3 !== 0) { return; } // Only look at every 3rd item
+
+          let fd;
+          try {
+            const idToFileInfo = await Db.fileIdToFile(fields.node, -1 * item);
+            fd = fs.openSync(idToFileInfo.indexFilename, 'r');
+            if (!fd) { return; }
+            const buffer = Buffer.alloc(fields.packetPos[key + 2]);
+            fs.readSync(fd, buffer, 0, buffer.length, fields.packetPos[key + 1]);
+            let last = 0;
+            let lastgap = 0;
+            let num = 0;
+            let mult = 1;
+            newPacketPos.push(item);
+            for (let i = 0; i < buffer.length; i++) {
+              const x = buffer.readUInt8(i);
+              // high bit set when last
+              if (x & 0x80) {
+                num = num + (x & 0x7f) * mult;
+                if (num !== 0) {
+                  lastgap = num;
+                }
+                last += lastgap;
+                newPacketPos.push(last);
+                num = 0;
+                mult = 1;
+              } else {
+                num = num + x * mult;
+                mult *= 128; // Javscript can't shift large numbers, so mult
+              }
+            }
+          } catch (e) {
+            console.log(e);
+          } finally {
+            if (fd) {
+              try {
+                fs.closeSync(fd);
+              } catch (closeErr) {
+                console.log('Error closing file:', closeErr);
+              }
+            }
+          }
+          return;
+        });
+        fields.packetPos = newPacketPos;
+        return;
+      } else {
+        return;
+      }
+    } else {
+      console.log('Unknown packetPosEncoding', fileInfo);
+      return;
+    }
+  } catch (err) {
+    return;
+  }
+}
+
 // Get a session from OpenSearch/Elasticsearch and decode packetPos if requested
 Db.getSession = async (id, options, cb) => {
   if (internals.debug > 2) {
     console.log('GETSESSION -', id, options);
-  }
-  async function fixPacketPos (session, fields) {
-    if (!fields.packetPos || fields.packetPos.length === 0) {
-      return session;
-    }
-
-    try {
-      const fileInfo = await Db.fileIdToFile(fields.node, -1 * fields.packetPos[0]);
-      if (internals.debug > 2) {
-        console.log('GETSESSION - fixPackPos', fileInfo);
-      }
-
-      if (!fileInfo || !fileInfo.packetPosEncoding) {
-        return session;
-      }
-
-      if (fileInfo.packetPosEncoding === 'gap0') {
-        // Neg numbers aren't encoded, if pos is 0 same gap as last gap, otherwise last + pos
-        let last = 0;
-        let lastgap = 0;
-        for (let i = 0, ilen = fields.packetPos.length; i < ilen; i++) {
-          if (fields.packetPos[i] < 0) {
-            last = 0;
-          } else {
-            if (fields.packetPos[i] === 0) {
-              fields.packetPos[i] = last + lastgap;
-            } else {
-              lastgap = fields.packetPos[i];
-              fields.packetPos[i] += last;
-            }
-            last = fields.packetPos[i];
-          }
-        }
-        return session;
-      } else if (fileInfo.packetPosEncoding === 'localIndex') {
-        // Neg numbers aren't encoded, use var length encoding, if pos is 0 same gap as last gap, otherwise last + pos
-        if (await Db.isLocalView(fields.node)) {
-          const newPacketPos = [];
-          await async.forEachOfSeries(fields.packetPos, async (item, key) => {
-            if (key % 3 !== 0) { return; } // Only look at every 3rd item
-
-            let fd;
-            try {
-              const idToFileInfo = await Db.fileIdToFile(fields.node, -1 * item);
-              fd = fs.openSync(idToFileInfo.indexFilename, 'r');
-              if (!fd) { return; }
-              const buffer = Buffer.alloc(fields.packetPos[key + 2]);
-              fs.readSync(fd, buffer, 0, buffer.length, fields.packetPos[key + 1]);
-              let last = 0;
-              let lastgap = 0;
-              let num = 0;
-              let mult = 1;
-              newPacketPos.push(item);
-              for (let i = 0; i < buffer.length; i++) {
-                const x = buffer.readUInt8(i);
-                // high bit set when last
-                if (x & 0x80) {
-                  num = num + (x & 0x7f) * mult;
-                  if (num !== 0) {
-                    lastgap = num;
-                  }
-                  last += lastgap;
-                  newPacketPos.push(last);
-                  num = 0;
-                  mult = 1;
-                } else {
-                  num = num + x * mult;
-                  mult *= 128; // Javscript can't shift large numbers, so mult
-                }
-              }
-            } catch (e) {
-              console.log(e);
-            } finally {
-              if (fd) {
-                try {
-                  fs.closeSync(fd);
-                } catch (closeErr) {
-                  console.log('Error closing file:', closeErr);
-                }
-              }
-            }
-            return;
-          });
-          fields.packetPos = newPacketPos;
-          return session;
-        } else {
-          return session;
-        }
-      } else {
-        console.log('Unknown packetPosEncoding', fileInfo);
-        return session;
-      }
-    } catch (err) {
-      return session;
-    }
   }
 
   try {
@@ -558,11 +559,10 @@ Db.getSession = async (id, options, cb) => {
     }
     delete session._source;
     fixSessionFields(session.fields, unflatten);
-    if (!optionsReplaced && options.fields && !options.fields.includes('packetPos')) {
-      return cb ? cb(null, session) : session;
+    if (session.fields.packetPos !== undefined) {
+      await fixPacketPos(session.fields);
     }
-    const result = await fixPacketPos(session, session.fields);
-    return cb ? cb(null, result) : result;
+    return cb ? cb(null, session) : session;
   } catch (err) {
     return cb ? cb(err) : Promise.reject(err);
   }
@@ -789,10 +789,15 @@ Db.searchSessions = function (index, query, options, cb) {
   if (internals.maxConcurrentShardRequests) { params.maxConcurrentShardRequests = internals.maxConcurrentShardRequests; }
   Db.merge(params, options);
   delete params.arkime_unflatten;
-  Db.searchScroll(index, query, params, (err, result) => {
+  Db.searchScroll(index, query, params, async (err, result) => {
     if (err || result.hits.hits.length === 0) { return cb(err, result); }
 
-    result.hits.hits.forEach((hit) => fixSessionFields(hit.fields, unflatten));
+    for (const hit of result.hits.hits) {
+      fixSessionFields(hit.fields, unflatten);
+      if (hit.fields?.packetPos !== undefined) {
+        await fixPacketPos(hit._source);
+      }
+    }
     return cb(null, result);
   });
 };
@@ -806,7 +811,12 @@ Db.searchSessionsIterator = async function* (index, query, options) {
   delete params.arkime_unflatten;
 
   for await (const chunk of Db.searchScrollIterator(index, query, params)) {
-    chunk.hits.hits.forEach((hit) => fixSessionFields(hit.fields, unflatten));
+    for (const hit of chunk.hits.hits) {
+      fixSessionFields(hit.fields, unflatten);
+      if (hit.fields?.packetPos !== undefined) {
+        await fixPacketPos(hit.fields);
+      }
+    }
     yield chunk;
   }
 };

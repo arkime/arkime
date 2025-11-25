@@ -683,6 +683,7 @@ class SessionAPIs {
           endCb(msg1, null);
           break;
         case undefined:
+          nextCb('Error');
           break;
         default:
           packetCb(pcap, packet, nextCb, i);
@@ -696,6 +697,7 @@ class SessionAPIs {
 
     let fileNum;
     let itemPos = 0;
+    let lastMsg;
     async.eachLimit(fields.packetPos, limit || 1, async (pos) => {
       if (pos < 0) {
         fileNum = pos * -1;
@@ -709,7 +711,11 @@ class SessionAPIs {
       } else if (!opcap.isOpen()) {
         const file = await Db.fileIdToFile(fields.node, fileNum);
         if (!file) {
-          console.log("WARNING - Only have SPI data, PCAP file no longer available.  Couldn't look up %s-%s in files index", fields.node, fileNum);
+          const msg = util.format("WARNING - Only have SPI data, PCAP file no longer available.  Couldn't look up %s-%s in files index", fields.node, fileNum);
+          if (lastMsg !== msg) {
+            lastMsg = msg;
+            console.log(msg);
+          }
           throw new Error('Only have SPI data, PCAP file no longer available for ' + fields.node + '-' + fileNum);
         }
         if (file.kekId) {
@@ -870,7 +876,7 @@ class SessionAPIs {
       if (await SessionAPIs.isLocalView(fields.node)) {
         // Get from our DISK
         await new Promise((resolve) => {
-          pcapWriter(res, Db.session2Sid(item), req.arkimeWriterOptions, resolve);
+          pcapWriter(res, item, req.arkimeWriterOptions, resolve);
         });
       } else {
 
@@ -1037,7 +1043,7 @@ class SessionAPIs {
   static #sessionsPcap (req, res, pcapWriter, extension) {
     ArkimeUtil.noCache(req, res, 'application/vnd.tcpdump.pcap');
 
-    const fields = ['lastPacket', 'node', 'network.bytes', 'network.packets', 'rootId'];
+    const fields = ['lastPacket', 'node', 'network.bytes', 'network.packets', 'rootId', 'packetPos'];
 
     function sendResult(total) {
       if (total === 0) {
@@ -1066,11 +1072,29 @@ class SessionAPIs {
   }
 
   // --------------------------------------------------------------------------
+  static #writePcapPool = [];
+  static #getWritePcapBuffer () {
+    let mem = SessionAPIs.#writePcapPool.pop();
+    if (!mem) {
+      mem = Buffer.alloc(0xfffe);
+    }
+    return mem;
+  }
+
+  static #putWritePcapBuffer (buf) {
+    if (SessionAPIs.#writePcapPool.length < 20) {
+      SessionAPIs.#writePcapPool.push(buf);
+    }
+  }
+
   static #writePcap (res, id, writerOptions, doneCb) {
-    let b = Buffer.alloc(0xfffe);
     let nextPacket = 0;
     let boffset = 0;
     const packets = {};
+
+    res.arkimeWritePcap ??= { bufferPool: [] };
+
+    let b = SessionAPIs.#getWritePcapBuffer();
 
     SessionAPIs.processSessionId(id, false, (pcap, buffer) => {
       if (writerOptions.writeHeader) {
@@ -1088,9 +1112,12 @@ class SessionAPIs {
         nextPacket++;
 
         if (boffset + buffer.length > b.length) {
-          res.write(b.slice(0, boffset));
+          const bToReturn = b;
+          res.write(b.slice(0, boffset), () => {
+            SessionAPIs.#putWritePcapBuffer(bToReturn);
+          });
           boffset = 0;
-          b = Buffer.alloc(0xfffe);
+          b = SessionAPIs.#getWritePcapBuffer();
         }
         buffer.copy(b, boffset, 0, buffer.length);
         boffset += buffer.length;
@@ -1104,7 +1131,9 @@ class SessionAPIs {
         }
         return doneCb(err);
       }
-      res.write(b.slice(0, boffset));
+      res.write(b.slice(0, boffset), () => {
+        SessionAPIs.#putWritePcapBuffer(b);
+      });
       doneCb(err);
     }, undefined, 10);
   }
@@ -1319,17 +1348,27 @@ class SessionAPIs {
   // --------------------------------------------------------------------------
   // EXPOSED HELPERS
   // --------------------------------------------------------------------------
-  static processSessionId (id, fullSession, headerCb, packetCb, endCb, maxPackets, limit) {
+  static async processSessionId (idOrSession, fullSession, headerCb, packetCb, endCb, maxPackets, limit) {
     let extra;
     let options;
     if (!fullSession) {
       options = { _source: false, fields: 'node,network.packets,packetPos,source.ip,source.port,destination.ip,destination.port,ipProtocol,packetLen'.split(',') };
     }
 
-    Db.getSession(id, options, async (err, session) => {
-      if (err || !session.found) {
-        console.log('ERROR - session get error in processSessionId', util.inspect(err, false, 50), session);
-        return endCb('Session not found', null);
+    try {
+      let session;
+      if (typeof idOrSession === 'object') {
+        if (idOrSession.fields.packetPos && idOrSession.fields.node) {
+          session = idOrSession;
+        } else {
+          session = await Db.getSession(Db.session2Sid(idOrSession), options);
+        }
+      } else {
+        session = await Db.getSession(idOrSession, options);
+        if (!session.found) {
+          console.log('ERROR - session get error in processSessionId', 'Session not found');
+          return endCb('Session not found', null);
+        }
       }
 
       const fields = session.fields;
@@ -1380,7 +1419,10 @@ class SessionAPIs {
 
         ViewerUtils.fixFields(psidFields, endCb);
       }, limit, extra);
-    });
+    } catch (err) {
+      console.log('ERROR - session get error in processSessionId', util.inspect(err, false, 50));
+      return endCb(err, null);
+    }
   };
 
   // --------------------------------------------------------------------------
