@@ -1066,6 +1066,21 @@ class SessionAPIs {
   }
 
   // --------------------------------------------------------------------------
+  static #writePcapPool = [];
+  static #getWritePcapBuffer () {
+    let mem = SessionAPIs.#writePcapPool.pop();
+    if (!mem) {
+      mem = Buffer.alloc(0xfffe);
+    }
+    return mem;
+  }
+
+  static #putWritePcapBuffer (buf) {
+    if (SessionAPIs.#writePcapPool.length < 20) {
+      SessionAPIs.#writePcapPool.push(buf);
+    }
+  }
+
   static #writePcap (res, id, writerOptions, doneCb) {
     let nextPacket = 0;
     let boffset = 0;
@@ -1073,15 +1088,7 @@ class SessionAPIs {
 
     res.arkimeWritePcap ??= { bufferPool: [] };
 
-    function getPool() {
-      let mem = res.arkimeWritePcap.bufferPool.pop();
-      if (!mem) {
-        mem = Buffer.alloc(0xfffe);
-      }
-      return mem;
-    }
-
-    let b = getPool();
+    let b = SessionAPIs.#getWritePcapBuffer();
 
     SessionAPIs.processSessionId(id, false, (pcap, buffer) => {
       if (writerOptions.writeHeader) {
@@ -1101,10 +1108,10 @@ class SessionAPIs {
         if (boffset + buffer.length > b.length) {
           const bToReturn = b;
           res.write(b.slice(0, boffset), () => {
-            res.arkimeWritePcap.bufferPool.push(bToReturn);
+            SessionAPIs.#putWritePcapBuffer(bToReturn);
           });
           boffset = 0;
-          b = getPool();
+          b = SessionAPIs.#getWritePcapBuffer();
         }
         buffer.copy(b, boffset, 0, buffer.length);
         boffset += buffer.length;
@@ -1119,7 +1126,7 @@ class SessionAPIs {
         return doneCb(err);
       }
       res.write(b.slice(0, boffset), () => {
-        res.arkimeWritePcap.bufferPool.push(b);
+        SessionAPIs.#putWritePcapBuffer(b);
       });
       doneCb(err);
     }, undefined, 10);
