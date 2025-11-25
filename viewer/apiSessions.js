@@ -697,7 +697,7 @@ class SessionAPIs {
 
     let fileNum;
     let itemPos = 0;
-    let lastMsg = ""
+    let lastMsg;
     async.eachLimit(fields.packetPos, limit || 1, async (pos) => {
       if (pos < 0) {
         fileNum = pos * -1;
