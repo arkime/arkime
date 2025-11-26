@@ -397,7 +397,7 @@ class Pcap {
   // --------------------------------------------------------------------------
   async readPacketInternal (posArg, cb) {
     try {
-      const readBuffer = await this.readAndSliceBlock(posArg);
+      let readBuffer = await this.readAndSliceBlock(posArg);
       if (!readBuffer) {
         return cb(undefined);
       }
@@ -406,13 +406,19 @@ class Pcap {
       let packetLen;
       const headerLen = (this.shortHeader === undefined) ? 16 : 6;
 
+      // Wasn't enough for header, add next block
       if (readBuffer.length < headerLen) {
-        const msg = `Not enough data ${readBuffer.length} for header ${headerLen} in ${this.filename} - See https://arkime.com/faq#zero-byte-pcap-files`;
-        if (Pcap.#lastMsg !== msg) {
-          Pcap.#lastMsg = msg;
-          console.log(msg);
+        if (this.uncompressedBits) { return cb(undefined); }
+        const readBuffer2 = await this.readAndSliceBlock(posArg + readBuffer.length);
+        if (!readBuffer2 || readBuffer2.length < headerLen) {
+          const msg = `Not enough data ${readBuffer.length} for header ${headerLen} in ${this.filename} - See https://arkime.com/faq#zero-byte-pcap-files`;
+          if (Pcap.#lastMsg !== msg) {
+            Pcap.#lastMsg = msg;
+            console.log(msg);
+          }
+          return cb(undefined);
         }
-        return cb(undefined);
+        readBuffer = Buffer.concat([readBuffer, readBuffer2]);
       }
 
       if (this.shortHeader === undefined) {
@@ -423,6 +429,21 @@ class Pcap {
 
       if (packetLen < 0 || packetLen > 0xffff) {
         return cb(undefined);
+      }
+
+      // Wasn't enough for packet data, add next block
+      if (readBuffer.length < (headerLen + packetLen)) {
+        if (this.uncompressedBits) { return cb(undefined); }
+        const readBuffer2 = await this.readAndSliceBlock(posArg + readBuffer.length);
+        if (!readBuffer2 || readBuffer.length + readBuffer2.length < headerLen + packetLen) {
+          const msg = `Not enough data ${readBuffer.length} for packet ${headerLen + packetLen} in ${this.filename} - See https://arkime.com/faq#zero-byte-pcap-files`;
+          if (Pcap.#lastMsg !== msg) {
+            Pcap.#lastMsg = msg;
+            console.log(msg);
+          }
+          return cb(undefined);
+        }
+        readBuffer = Buffer.concat([readBuffer, readBuffer2]);
       }
 
       // Full packet fit
