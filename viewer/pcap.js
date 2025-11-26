@@ -16,26 +16,25 @@ const async = require('async');
 const ArkimeUtil = require('../common/arkimeUtil');
 const { LRUCache } = require('lru-cache');
 
-const internals = {
-  pr2name: {
-    1: 'icmp',
-    2: 'igmp',
-    6: 'tcp',
-    17: 'udp',
-    47: 'gre',
-    50: 'esp',
-    51: 'ah',
-    58: 'icmpv6',
-    89: 'ospf',
-    103: 'pim',
-    132: 'sctp'
-  },
-  pcaps: {}
+const pr2name = {
+  1: 'icmp',
+  2: 'igmp',
+  6: 'tcp',
+  17: 'udp',
+  47: 'gre',
+  50: 'esp',
+  51: 'ah',
+  58: 'icmpv6',
+  89: 'ospf',
+  103: 'pim',
+  132: 'sctp'
 };
+
+const pcaps = new Map();
 
 class Pcap {
   #count = 0;
-  #closing = false;
+  #closingTimeout = null;
   static #etherCBs = {};
 
   constructor (key) {
@@ -48,23 +47,24 @@ class Pcap {
   /// / High Level
   /// ///////////////////////////////////////////////////////////////////////////////
   static get (key) {
-    if (internals.pcaps[key]) {
-      return internals.pcaps[key];
+    if (pcaps.has(key)) {
+      return pcaps.get(key);
     }
 
     const pcap = new Pcap(key);
-    internals.pcaps[key] = pcap;
+    pcaps.set(key, pcap);
     return pcap;
   };
 
   static getOrOpen (info) {
     const key = `${info.node}:${info.num}`;
-    if (internals.pcaps[key]) {
-      return internals.pcaps[key];
+    if (pcaps.has(key)) {
+      return pcaps.get(key);
     }
+
     const pcap = new Pcap(key);
     pcap.open(info);
-    internals.pcaps[key] = pcap;
+    pcaps.set(key, pcap);
     return pcap;
   };
 
@@ -161,6 +161,10 @@ class Pcap {
 
   ref () {
     this.#count++;
+    if (this.#closingTimeout) {
+      clearTimeout(this.#closingTimeout);
+      this.#closingTimeout = null;
+    }
   };
 
   unref () {
@@ -169,22 +173,18 @@ class Pcap {
       return;
     }
 
-    if (this.#closing === true) {
+    if (this.#closingTimeout) {
       return;
     }
 
-    this.#closing = true;
-
-    setTimeout(() => {
-      if (this.#closing && this.#count === 0) {
-        delete internals.pcaps[this.key];
-        if (this.fd) {
-          fs.close(this.fd, () => {});
-        }
-        delete this.fd;
-      } else {
-        this.#closing = false;
+    this.#closingTimeout = setTimeout(() => {
+      this.#closingTimeout = null;
+      pcaps.delete(this.key);
+      if (this.fd) {
+        fs.close(this.fd, () => {});
       }
+      delete this.fd;
+      this.blockCache.clear();
     }, 2000);
   };
 
@@ -483,7 +483,7 @@ class Pcap {
   /// ///////////////////////////////////////////////////////////////////////////////
 
   static protocol2Name (num) {
-    return internals.pr2name[num] || ('' + num);
+    return pr2name[num] || ('' + num);
   };
 
   static inet_ntoa (num) {
