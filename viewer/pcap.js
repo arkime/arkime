@@ -1323,10 +1323,16 @@ class Pcap {
           const lastResult = results[results.length - 1];
           const gapSize = item.tcp.seq - start - lastResult.length;
           if (gapSize > 0) {
+            // Missing data, zero fill
             lastResult.buffers.push(Buffer.alloc(gapSize));
             lastResult.length += gapSize;
           } else if (gapSize < 0) {
-            console.error('Negative gap size in TCP reassembly, shouldn\'t happen', gapSize);
+            // Retransmitted data, trim off front
+            if (-gapSize >= item.tcp.data.length) {
+              item.tcp.data = item.tcp.data.slice(-gapSize);
+            } else {
+              item.tcp.data = Buffer.alloc(0);
+            }
           }
           lastResult.buffers.push(item.tcp.data);
           lastResult.length += item.tcp.data.length;
