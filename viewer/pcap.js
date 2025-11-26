@@ -374,6 +374,8 @@ class Pcap {
     return result;
   };
 
+  #lastMsg;
+
   async readPacketInternal (posArg, cb) {
     try {
       const result = await this.readBlock(posArg);
@@ -394,7 +396,11 @@ class Pcap {
       const headerLen = (this.shortHeader === undefined) ? 16 : 6;
 
       if (readBuffer.length < headerLen) {
-        console.log(`Not enough data ${readBuffer.length} for header ${headerLen} in ${this.filename} - See https://arkime.com/faq#zero-byte-pcap-files`);
+        const msg = `Not enough data ${readBuffer.length} for header ${headerLen} in ${this.filename} - See https://arkime.com/faq#zero-byte-pcap-files`;
+        if (Pcap.#lastMsg !== msg) {
+          Pcap.#lastMsg = msg;
+          console.log(msg);
+        }
         return cb(undefined);
       }
 
