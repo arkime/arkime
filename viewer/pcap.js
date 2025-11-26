@@ -270,7 +270,7 @@ class Pcap {
   readPacket (pos, cb) {
     // Hacky!! File isn't actually opened, try again soon
     if (!this.fd) {
-      setTimeout(this.readPacket, 10, pos, cb);
+      setTimeout(() => this.readPacket(pos, cb), 10);
       return;
     }
 
@@ -477,7 +477,7 @@ class Pcap {
   /// ///////////////////////////////////////////////////////////////////////////////
 
   static protocol2Name (num) {
-    return internals.pr2name[num] || '' + num;
+    return internals.pr2name[num] || ('' + num);
   };
 
   static inet_ntoa (num) {
@@ -1053,18 +1053,18 @@ class Pcap {
     packets.forEach((item) => {
       const key = item.ip.addr1;
       if (results.length === 0 || key !== results[results.length - 1].key) {
-        const result = {
+        results.push({
           key,
-          data: item.icmp.data,
+          buffers: [item.icmp.data],
           ts: item.pcap.ts_sec * 1000 + Math.round(item.pcap.ts_usec / 1000)
-        };
-        results.push(result);
+        });
       } else {
-        const newBuf = Buffer.alloc(results[results.length - 1].data.length + item.icmp.data.length);
-        results[results.length - 1].data.copy(newBuf);
-        item.icmp.data.copy(newBuf, results[results.length - 1].data.length);
-        results[results.length - 1].data = newBuf;
+        results[results.length - 1].buffers.push(item.icmp.data);
       }
+    });
+    results.forEach((result) => {
+      result.data = Buffer.concat(result.buffers);
+      delete result.buffers;
     });
     cb(null, results);
   };
@@ -1076,18 +1076,18 @@ class Pcap {
       packets.forEach((item) => {
         const key = item.ip.addr1 + ':' + item.udp.sport;
         if (results.length === 0 || key !== results[results.length - 1].key) {
-          const result = {
+          results.push({
             key,
-            data: item.udp.data,
+            buffers: [item.udp.data],
             ts: item.pcap.ts_sec * 1000 + Math.round(item.pcap.ts_usec / 1000)
-          };
-          results.push(result);
+          });
         } else {
-          const newBuf = Buffer.alloc(results[results.length - 1].data.length + item.udp.data.length);
-          results[results.length - 1].data.copy(newBuf);
-          item.udp.data.copy(newBuf, results[results.length - 1].data.length);
-          results[results.length - 1].data = newBuf;
+          results[results.length - 1].buffers.push(item.udp.data);
         }
+      });
+      results.forEach((result) => {
+        result.data = Buffer.concat(result.buffers);
+        delete result.buffers;
       });
       cb(null, results);
     } catch (e) {
@@ -1102,18 +1102,18 @@ class Pcap {
       packets.forEach((item) => {
         const key = item.ip.addr1 + ':' + item.sctp.sport;
         if (results.length === 0 || key !== results[results.length - 1].key) {
-          const result = {
+          results.push({
             key,
-            data: item.sctp.data,
+            buffers: [item.sctp.data],
             ts: item.pcap.ts_sec * 1000 + Math.round(item.pcap.ts_usec / 1000)
-          };
-          results.push(result);
+          });
         } else {
-          const newBuf = Buffer.alloc(results[results.length - 1].data.length + item.sctp.data.length);
-          results[results.length - 1].data.copy(newBuf);
-          item.sctp.data.copy(newBuf, results[results.length - 1].data.length);
-          results[results.length - 1].data = newBuf;
+          results[results.length - 1].buffers.push(item.sctp.data);
         }
+      });
+      results.forEach((result) => {
+        result.data = Buffer.concat(result.buffers);
+        delete result.buffers;
       });
       cb(null, results);
     } catch (e) {
@@ -1127,18 +1127,18 @@ class Pcap {
     packets.forEach((item) => {
       const key = item.ip.addr1;
       if (results.length === 0 || key !== results[results.length - 1].key) {
-        const result = {
+        results.push({
           key,
-          data: item.esp.data,
+          buffers: [item.esp.data],
           ts: item.pcap.ts_sec * 1000 + Math.round(item.pcap.ts_usec / 1000)
-        };
-        results.push(result);
+        });
       } else {
-        const newBuf = Buffer.alloc(results[results.length - 1].data.length + item.esp.data.length);
-        results[results.length - 1].data.copy(newBuf);
-        item.esp.data.copy(newBuf, results[results.length - 1].data.length);
-        results[results.length - 1].data = newBuf;
+        results[results.length - 1].buffers.push(item.esp.data);
       }
+    });
+    results.forEach((result) => {
+      result.data = Buffer.concat(result.buffers);
+      delete result.buffers;
     });
     cb(null, results);
   };
@@ -1149,18 +1149,18 @@ class Pcap {
     packets.forEach((item) => {
       const key = item.ip.addr1;
       if (results.length === 0 || key !== results[results.length - 1].key) {
-        const result = {
+        results.push({
           key,
-          data: item.ip.data,
+          buffers: [item.ip.data],
           ts: item.pcap.ts_sec * 1000 + Math.round(item.pcap.ts_usec / 1000)
-        };
-        results.push(result);
+        });
       } else {
-        const newBuf = Buffer.alloc(results[results.length - 1].data.length + item.ip.data.length);
-        results[results.length - 1].data.copy(newBuf);
-        item.ip.data.copy(newBuf, results[results.length - 1].data.length);
-        results[results.length - 1].data = newBuf;
+        results[results.length - 1].buffers.push(item.ip.data);
       }
+    });
+    results.forEach((result) => {
+      result.data = Buffer.concat(result.buffers);
+      delete result.buffers;
     });
     cb(null, results);
   };
@@ -1171,18 +1171,18 @@ class Pcap {
     packets.forEach((item) => {
       const key = item.ether.addr1;
       if (results.length === 0 || key !== results[results.length - 1].key) {
-        const result = {
+        results.push({
           key,
-          data: item.ether.data,
+          buffers: [item.ether.data],
           ts: item.pcap.ts_sec * 1000 + Math.round(item.pcap.ts_usec / 1000)
-        };
-        results.push(result);
+        });
       } else {
-        const newBuf = Buffer.alloc(results[results.length - 1].data.length + item.ether.data.length);
-        results[results.length - 1].data.copy(newBuf);
-        item.ether.data.copy(newBuf, results[results.length - 1].data.length);
-        results[results.length - 1].data = newBuf;
+        results[results.length - 1].buffers.push(item.ether.data);
       }
+    });
+    results.forEach((result) => {
+      result.data = Buffer.concat(result.buffers);
+      delete result.buffers;
     });
     cb(null, results);
   };
@@ -1273,10 +1273,12 @@ class Pcap {
 
       // Now divide up conversation
       let clientSeq = 0;
-      let hostSeq = 0;
+      let serverSeq = 0;
       let start = 0;
       let previous = 0;
 
+      // We use async here so that the main event loop isnt blocked for large reassemblies
+      // We could have just done for (item of packets) but that would block the event loop
       const results = [];
       async.forEachSeries(packets, (item, nextCb) => {
         const pkey = item.ip.addr1 + ':' + item.tcp.sport;
@@ -1286,40 +1288,49 @@ class Pcap {
           }
           clientSeq = (item.tcp.seq + item.tcp.data.length);
         } else {
-          if (hostSeq >= (item.tcp.seq + item.tcp.data.length)) {
+          if (serverSeq >= (item.tcp.seq + item.tcp.data.length)) {
             return nextCb();
           }
-          hostSeq = (item.tcp.seq + item.tcp.data.length);
+          serverSeq = (item.tcp.seq + item.tcp.data.length);
         }
 
-        let result;
         if (results.length === 0 || pkey !== results[results.length - 1].key) {
           previous = start = item.tcp.seq;
-          result = {
+          results.push({
             key: pkey,
-            data: item.tcp.data,
+            buffers: [item.tcp.data],
+            length: item.tcp.data.length,
             ts: item.pcap.ts_sec * 1000 + Math.round(item.pcap.ts_usec / 1000)
-          };
-          results.push(result);
+          });
         } else if (item.tcp.seq - previous > 0xffff) {
-          results.push({ key: '', data: Buffer.alloc(0), ts: item.pcap.ts_sec * 1000 + Math.round(item.pcap.ts_usec / 1000) });
+          results.push({ key: '', buffers: [], length: 0, ts: item.pcap.ts_sec * 1000 + Math.round(item.pcap.ts_usec / 1000) });
           // Larger then max window size packets missing
           previous = start = item.tcp.seq;
-          result = {
+          results.push({
             key: pkey,
-            data: item.tcp.data,
+            buffers: [item.tcp.data],
+            length: item.tcp.data.length,
             ts: item.pcap.ts_sec * 1000 + Math.round(item.pcap.ts_usec / 1000)
-          };
-          results.push(result);
+          });
         } else {
           previous = item.tcp.seq;
-          const newBuf = Buffer.alloc(item.tcp.data.length + item.tcp.seq - start);
-          results[results.length - 1].data.copy(newBuf);
-          item.tcp.data.copy(newBuf, item.tcp.seq - start);
-          results[results.length - 1].data = newBuf;
+          const lastResult = results[results.length - 1];
+          const gapSize = item.tcp.seq - start - lastResult.length;
+          if (gapSize > 0) {
+            lastResult.buffers.push(Buffer.alloc(gapSize));
+            lastResult.length += gapSize;
+          } else if (gapSize < 0) {
+            console.error('Negative gap size in TCP reassembly, shouldn\'t happen', gapSize);
+          }
+          lastResult.buffers.push(item.tcp.data);
+          lastResult.length += item.tcp.data.length;
         }
         setImmediate(nextCb);
       }, (err) => {
+        results.forEach((result) => {
+          result.data = Buffer.concat(result.buffers);
+          delete result.buffers;
+        });
         if (skey !== results[0].key) {
           results.unshift({ data: Buffer.alloc(0), key: skey });
         }
@@ -1331,23 +1342,19 @@ class Pcap {
   };
 
   static packetFlow (session, packets, numPackets, cb) {
-    let sKey, dKey;
-    const error = false;
-
     packets = packets.slice(0, numPackets);
+
+    let sKey = Pcap.keyFromSession(session);
+    if (!packets[0].ip || packets[0].ip.p !== 6) {
+      sKey = Pcap.key(packets[0]);
+    }
+    let dKey;
 
     const results = packets.map((item, index) => {
       const result = {
         key: Pcap.key(item),
         ts: item.pcap.ts_sec * 1000 + Math.round(item.pcap.ts_usec / 1000)
       };
-
-      if (!sKey) {
-        sKey = Pcap.keyFromSession(session);
-        if (!packets[0].ip || packets[0].ip.p !== 6) {
-          sKey = Pcap.key(packets[0]);
-        }
-      }
 
       const match = result.key === sKey;
       if (!dKey && !match) { dKey = result.key; }
@@ -1389,8 +1396,6 @@ class Pcap {
 
       return result;
     });
-
-    if (error) { return cb(error, null); }
 
     return cb(null, results, sKey, dKey);
   };
