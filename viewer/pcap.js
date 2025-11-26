@@ -38,7 +38,7 @@ class Pcap {
   #closingTimeout = null;
   #lastMsg;
 
-  static #etherCBs = {};
+  static #etherCBs = new Map();
 
   // --------------------------------------------------------------------------
   constructor (key) {
@@ -299,7 +299,7 @@ class Pcap {
   async readAndSliceBlock (posArg) {
     let pos = posArg;
     let insideOffset = 0;
-    const blockSize = this.uncompressedBits ? this.uncompressedBitsSize : 128 * 1024;
+    const blockSize = this.uncompressedBits ? this.uncompressedBitsSize * 1.05 : 128 * 1024;
 
     // Get the start offset and inside offset
     if (this.uncompressedBits) {
@@ -874,13 +874,13 @@ class Pcap {
 
   // --------------------------------------------------------------------------
   static setEtherCB (type, cb) {
-    Pcap.#etherCBs[type] = cb;
+    Pcap.#etherCBs.set(type, cb);
   };
 
   // --------------------------------------------------------------------------
   ethertyperun (type, buffer, obj, pos) {
-    if (Pcap.#etherCBs[type]) {
-      return Pcap.#etherCBs[type](this, buffer, obj, pos);
+    if (Pcap.#etherCBs.has(type)) {
+      return Pcap.#etherCBs.get(type)(this, buffer, obj, pos);
     }
 
     switch (type) {
