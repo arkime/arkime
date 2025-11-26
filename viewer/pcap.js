@@ -30,13 +30,17 @@ const pr2name = {
   132: 'sctp'
 };
 
+const EMPTY_BUFFER = Buffer.alloc(0);
 const pcaps = new Map();
 
 class Pcap {
   #count = 0;
   #closingTimeout = null;
+  #lastMsg;
+
   static #etherCBs = {};
 
+  // --------------------------------------------------------------------------
   constructor (key) {
     this.key = key;
     this.blockCache = new LRUCache({ max: 10 });
@@ -46,6 +50,8 @@ class Pcap {
   /// ///////////////////////////////////////////////////////////////////////////////
   /// / High Level
   /// ///////////////////////////////////////////////////////////////////////////////
+
+  // --------------------------------------------------------------------------
   static get (key) {
     if (pcaps.has(key)) {
       return pcaps.get(key);
@@ -56,6 +62,7 @@ class Pcap {
     return pcap;
   };
 
+  // --------------------------------------------------------------------------
   static getOrOpen (info) {
     const key = `${info.node}:${info.num}`;
     if (pcaps.has(key)) {
@@ -68,6 +75,7 @@ class Pcap {
     return pcap;
   };
 
+  // --------------------------------------------------------------------------
   static make (key, header) {
     const pcap = new Pcap(key);
     pcap.headBuffer = header;
@@ -87,18 +95,22 @@ class Pcap {
     return pcap;
   };
 
+  // --------------------------------------------------------------------------
   isOpen () {
     return this.fd !== undefined;
   };
 
+  // --------------------------------------------------------------------------
   isCorrupt () {
     return this.corrupt;
   };
 
+  // --------------------------------------------------------------------------
   get headerLen () {
     return this.shortHeader === undefined ? 16 : 6;
   }
 
+  // --------------------------------------------------------------------------
   open (info) {
     if (this.fd) {
       return;
@@ -136,6 +148,7 @@ class Pcap {
     }
   };
 
+  // --------------------------------------------------------------------------
   openReadWrite (info) {
     if (info.uncompressedBits !== undefined) {
       this.corrupt = true;
@@ -159,6 +172,7 @@ class Pcap {
     }
   };
 
+  // --------------------------------------------------------------------------
   ref () {
     this.#count++;
     if (this.#closingTimeout) {
@@ -167,6 +181,7 @@ class Pcap {
     }
   };
 
+  // --------------------------------------------------------------------------
   unref () {
     this.#count--;
     if (this.#count > 0) {
@@ -188,11 +203,13 @@ class Pcap {
     }, 2000);
   };
 
+  // --------------------------------------------------------------------------
   createDecipher (pos) {
     this.iv.writeUInt32BE(pos, 12);
     return cryptoLib.createDecipheriv(this.encoding, this.encKey, this.iv);
   };
 
+  // --------------------------------------------------------------------------
   readHeader (cb) {
     if (this.headBuffer) {
       if (cb) {
@@ -267,6 +284,7 @@ class Pcap {
     return this.headBuffer;
   };
 
+  // --------------------------------------------------------------------------
   readPacket (pos, cb) {
     // Hacky!! File isn't actually opened, try again soon
     if (!this.fd) {
@@ -277,7 +295,8 @@ class Pcap {
     return this.readPacketInternal(pos, cb);
   };
 
-  async readBlock (posArg) {
+  // --------------------------------------------------------------------------
+  async readAndSliceBlock (posArg) {
     let pos = posArg;
     let insideOffset = 0;
     const blockSize = this.uncompressedBits ? this.uncompressedBitsSize : 128 * 1024;
@@ -308,10 +327,10 @@ class Pcap {
     const cached = this.blockCache.get(blockStart);
     if (cached) {
       if (cached instanceof Promise) {
-        const cresult = await cached;
-        return { insideOffset, block: cresult.block };
+        const block = await cached;
+        return block ? block.slice(insideOffset) : null;
       } else {
-        return { insideOffset, block: cached };
+        return cached.slice(insideOffset);
       }
     }
 
@@ -325,7 +344,7 @@ class Pcap {
 
           // Make sure we have at least some data
           if (readBuffer.length - posoffset < 1) {
-            resolve({ insideOffset, block: null });
+            resolve(null);
             return;
           }
 
@@ -353,17 +372,18 @@ class Pcap {
               }
             } catch (e) {
               console.log('PCAP uncompress issue', this.key, blockStart, buffer.length, bytesRead, e);
-              resolve({ insideOffset, block: null });
+              resolve(null);
               return;
             }
           }
 
-          // Cache the resolved buffer
+          // Replace cache with full buffer
           this.blockCache.set(blockStart, readBuffer);
-          resolve({ insideOffset, block: readBuffer });
+          // Resolve with full buffer
+          resolve(readBuffer);
         });
       } catch (e) {
-        resolve({ insideOffset, block: null });
+        resolve(null);
       }
     });
 
@@ -371,24 +391,15 @@ class Pcap {
     this.blockCache.set(blockStart, promise);
 
     const result = await promise;
-    return result;
+    return result ? result.slice(insideOffset) : null;
   };
 
-  #lastMsg;
-
+  // --------------------------------------------------------------------------
   async readPacketInternal (posArg, cb) {
     try {
-      const result = await this.readBlock(posArg);
-      if (!result.block) {
+      const readBuffer = await this.readAndSliceBlock(posArg);
+      if (!readBuffer) {
         return cb(undefined);
-      }
-
-      let readBuffer = result.block;
-      const insideOffset = result.insideOffset;
-
-      // Reset readBuffer to where the packet actually starts inside the buffer
-      if (insideOffset) {
-        readBuffer = readBuffer.slice(insideOffset);
       }
 
       // Get the packetLen
@@ -439,10 +450,12 @@ class Pcap {
     }
   };
 
+  // --------------------------------------------------------------------------
   async readPacketPromise (pos) {
     return new Promise((resolve, reject) => { this.readPacket(pos, data => resolve(data)); });
   };
 
+  // --------------------------------------------------------------------------
   scrubPacket (packet, pos, buf, entire) {
     this.blockCache.clear();
     const headerLen = (this.shortHeader === undefined) ? 16 : 6;
@@ -482,10 +495,12 @@ class Pcap {
   /// / Utilities
   /// ///////////////////////////////////////////////////////////////////////////////
 
+  // --------------------------------------------------------------------------
   static protocol2Name (num) {
     return pr2name[num] || ('' + num);
   };
 
+  // --------------------------------------------------------------------------
   static inet_ntoa (num) {
     return (num >> 24 & 0xff) + '.' + (num >> 16 & 0xff) + '.' + (num >> 8 & 0xff) + '.' + (num & 0xff);
   };
@@ -494,6 +509,7 @@ class Pcap {
   /// / Decode pcap buffers and build up simple objects
   /// ///////////////////////////////////////////////////////////////////////////////
 
+  // --------------------------------------------------------------------------
   icmp (buffer, obj, pos) {
     obj.icmp = {
       _pos: pos,
@@ -508,6 +524,7 @@ class Pcap {
     obj.icmp.data = buffer;
   };
 
+  // --------------------------------------------------------------------------
   tcp (buffer, obj, pos) {
     try {
       obj.tcp = {
@@ -533,7 +550,7 @@ class Pcap {
       };
 
       if (4 * obj.tcp.off > buffer.length) {
-        obj.tcp.data = Buffer.alloc(0);
+        obj.tcp.data = EMPTY_BUFFER;
       } else {
         obj.tcp.data = buffer.slice(4 * obj.tcp.off);
       }
@@ -542,6 +559,7 @@ class Pcap {
     }
   };
 
+  // --------------------------------------------------------------------------
   udp (buffer, obj, pos) {
     obj.udp = {
       _pos: pos,
@@ -611,6 +629,7 @@ class Pcap {
     }
   };
 
+  // --------------------------------------------------------------------------
   sctp (buffer, obj, pos) {
     obj.sctp = {
       _pos: pos,
@@ -622,6 +641,7 @@ class Pcap {
     obj.sctp.data = buffer.slice(12);
   };
 
+  // --------------------------------------------------------------------------
   esp (buffer, obj, pos) {
     obj.esp = {
       _pos: pos,
@@ -631,6 +651,7 @@ class Pcap {
     obj.esp.data = buffer;
   };
 
+  // --------------------------------------------------------------------------
   gre (buffer, obj, pos) {
     obj.gre = {
       flags_version: buffer.readUInt16BE(0),
@@ -654,8 +675,7 @@ class Pcap {
 
     // routing
     if (obj.gre.flags_version & 0x4000) {
-      // eslint-disable-next-line no-constant-condition
-      while (1) {
+      while (true) {
         bpos += 3;
         const len = buffer.readUInt16BE(bpos);
         bpos++;
@@ -676,10 +696,12 @@ class Pcap {
     }
   };
 
+  // --------------------------------------------------------------------------
   erspan (buffer, obj, pos) {
     this.ether(buffer.slice(8), obj, pos + 8);
   }
 
+  // --------------------------------------------------------------------------
   erspan3 (buffer, obj, pos) {
     obj.erspan3 = {
       subheader: buffer.readUInt16BE(10)
@@ -693,6 +715,7 @@ class Pcap {
     this.ethertyperun(0, buffer.slice(bpos), obj, pos + bpos);
   }
 
+  // --------------------------------------------------------------------------
   ip4 (buffer, obj, pos) {
     obj.ip = {
       length: buffer.length,
@@ -737,6 +760,7 @@ class Pcap {
     }
   };
 
+  // --------------------------------------------------------------------------
   ip6 (buffer, obj, pos) {
     obj.ip = {
       length: buffer.length,
@@ -789,6 +813,7 @@ class Pcap {
     }
   };
 
+  // --------------------------------------------------------------------------
   pppoe (buffer, obj, pos) {
     obj.pppoe = {
       len: buffer.readUInt16BE(4) - 2,
@@ -807,6 +832,7 @@ class Pcap {
     }
   };
 
+  // --------------------------------------------------------------------------
   ppp (buffer, obj, pos) {
     obj.pppoe = {
       type: buffer.readUInt16BE(2)
@@ -824,6 +850,7 @@ class Pcap {
     }
   };
 
+  // --------------------------------------------------------------------------
   mpls (buffer, obj, pos) {
     let offset = 0;
     while (offset + 5 < buffer.length) {
@@ -845,10 +872,12 @@ class Pcap {
     }
   };
 
+  // --------------------------------------------------------------------------
   static setEtherCB (type, cb) {
     Pcap.#etherCBs[type] = cb;
   };
 
+  // --------------------------------------------------------------------------
   ethertyperun (type, buffer, obj, pos) {
     if (Pcap.#etherCBs[type]) {
       return Pcap.#etherCBs[type](this, buffer, obj, pos);
@@ -892,6 +921,7 @@ class Pcap {
     return true;
   };
 
+  // --------------------------------------------------------------------------
   ethertype (buffer, obj, pos) {
     obj.ether.type = buffer.readUInt16BE(0);
 
@@ -909,6 +939,7 @@ class Pcap {
     }
   };
 
+  // --------------------------------------------------------------------------
   ether (buffer, obj, pos) {
     obj.ether = {
       length: buffer.length,
@@ -918,6 +949,7 @@ class Pcap {
     this.ethertype(buffer.slice(12), obj, pos + 12);
   };
 
+  // --------------------------------------------------------------------------
   radiotap (buffer, obj, pos) {
     const l = buffer[2] + 24 + 6;
     const ethertype = buffer.readUInt16BE(l);
@@ -925,12 +957,17 @@ class Pcap {
     if (this.ethertyperun(ethertype, buffer.slice(l + 2), obj, pos + l + 2)) { return; }
   };
 
+  // --------------------------------------------------------------------------
   nflog (buffer, obj, pos) {
     let offset = 4;
     while (offset + 4 < buffer.length) {
       const len = buffer.readUInt16LE(offset);
       if (buffer[offset + 3] === 0 && buffer[offset + 2] === 9) {
-        if (buffer[0] === 2) { return this.ip4(buffer.slice(offset + 4), obj, pos + offset + 4); } else { return this.ip6(buffer.slice(offset + 4), obj, pos + offset + 4); }
+        if (buffer[0] === 2) {
+          return this.ip4(buffer.slice(offset + 4), obj, pos + offset + 4);
+        } else {
+          return this.ip6(buffer.slice(offset + 4), obj, pos + offset + 4);
+        }
       } else {
         offset += (len + 3) & 0xfffc;
       }
@@ -944,6 +981,7 @@ class Pcap {
     }
   };
 
+  // --------------------------------------------------------------------------
   framerelay (buffer, obj, pos) {
     if (buffer[2] === 0x03 || buffer[3] === 0xcc) {
       this.ip4(buffer.slice(4), obj, pos + 4);
@@ -954,6 +992,7 @@ class Pcap {
     }
   };
 
+  // --------------------------------------------------------------------------
   pcap (buffer, obj) {
     if (this.bigEndian) {
       obj.pcap = {
@@ -1019,11 +1058,13 @@ class Pcap {
     }
   };
 
+  // --------------------------------------------------------------------------
   decode (buffer, obj) {
     this.readHeader();
     this.pcap(buffer, obj);
   };
 
+  // --------------------------------------------------------------------------
   getHeaderNg () {
     const buffer = this.readHeader();
     const b = Buffer.alloc(32 + 24);
@@ -1053,175 +1094,182 @@ class Pcap {
   /// / Reassembly array of packets
   /// ///////////////////////////////////////////////////////////////////////////////
 
+  // --------------------------------------------------------------------------
   static reassemble_icmp (packets, numPackets, cb) {
     const results = [];
     packets.length = Math.min(packets.length, numPackets);
-    packets.forEach((item) => {
-      const key = item.ip.addr1;
+    for (const packet of packets) {
+      const key = packet.ip.addr1;
       if (results.length === 0 || key !== results[results.length - 1].key) {
         results.push({
           key,
-          buffers: [item.icmp.data],
-          ts: item.pcap.ts_sec * 1000 + Math.round(item.pcap.ts_usec / 1000)
+          buffers: [packet.icmp.data],
+          ts: packet.pcap.ts_sec * 1000 + Math.round(packet.pcap.ts_usec / 1000)
         });
       } else {
-        results[results.length - 1].buffers.push(item.icmp.data);
+        results[results.length - 1].buffers.push(packet.icmp.data);
       }
-    });
-    results.forEach((result) => {
+    }
+    for (const result of results) {
       result.data = Buffer.concat(result.buffers);
       delete result.buffers;
-    });
+    }
     cb(null, results);
   };
 
+  // --------------------------------------------------------------------------
   static reassemble_udp (packets, numPackets, cb) {
     const results = [];
     try {
       packets.length = Math.min(packets.length, numPackets);
-      packets.forEach((item) => {
-        const key = item.ip.addr1 + ':' + item.udp.sport;
+      for (const packet of packets) {
+        const key = packet.ip.addr1 + ':' + packet.udp.sport;
         if (results.length === 0 || key !== results[results.length - 1].key) {
           results.push({
             key,
-            buffers: [item.udp.data],
-            ts: item.pcap.ts_sec * 1000 + Math.round(item.pcap.ts_usec / 1000)
+            buffers: [packet.udp.data],
+            ts: packet.pcap.ts_sec * 1000 + Math.round(packet.pcap.ts_usec / 1000)
           });
         } else {
-          results[results.length - 1].buffers.push(item.udp.data);
+          results[results.length - 1].buffers.push(packet.udp.data);
         }
-      });
-      results.forEach((result) => {
+      }
+      for (const result of results) {
         result.data = Buffer.concat(result.buffers);
         delete result.buffers;
-      });
+      }
       cb(null, results);
     } catch (e) {
       cb(e, results);
     }
   };
 
+  // --------------------------------------------------------------------------
   static reassemble_sctp (packets, numPackets, cb) {
     const results = [];
     try {
       packets.length = Math.min(packets.length, numPackets);
-      packets.forEach((item) => {
-        const key = item.ip.addr1 + ':' + item.sctp.sport;
+      for (const packet of packets) {
+        const key = packet.ip.addr1 + ':' + packet.sctp.sport;
         if (results.length === 0 || key !== results[results.length - 1].key) {
           results.push({
             key,
-            buffers: [item.sctp.data],
-            ts: item.pcap.ts_sec * 1000 + Math.round(item.pcap.ts_usec / 1000)
+            buffers: [packet.sctp.data],
+            ts: packet.pcap.ts_sec * 1000 + Math.round(packet.pcap.ts_usec / 1000)
           });
         } else {
-          results[results.length - 1].buffers.push(item.sctp.data);
+          results[results.length - 1].buffers.push(packet.sctp.data);
         }
-      });
-      results.forEach((result) => {
+      }
+      for (const result of results) {
         result.data = Buffer.concat(result.buffers);
         delete result.buffers;
-      });
+      }
       cb(null, results);
     } catch (e) {
       cb(e, results);
     }
   };
 
+  // --------------------------------------------------------------------------
   static reassemble_esp (packets, numPackets, cb) {
     const results = [];
     packets.length = Math.min(packets.length, numPackets);
-    packets.forEach((item) => {
-      const key = item.ip.addr1;
+    for (const packet of packets) {
+      const key = packet.ip.addr1;
       if (results.length === 0 || key !== results[results.length - 1].key) {
         results.push({
           key,
-          buffers: [item.esp.data],
-          ts: item.pcap.ts_sec * 1000 + Math.round(item.pcap.ts_usec / 1000)
+          buffers: [packet.esp.data],
+          ts: packet.pcap.ts_sec * 1000 + Math.round(packet.pcap.ts_usec / 1000)
         });
       } else {
-        results[results.length - 1].buffers.push(item.esp.data);
+        results[results.length - 1].buffers.push(packet.esp.data);
       }
-    });
-    results.forEach((result) => {
+    }
+    for (const result of results) {
       result.data = Buffer.concat(result.buffers);
       delete result.buffers;
-    });
+    }
     cb(null, results);
   };
 
+  // --------------------------------------------------------------------------
   static reassemble_generic_ip (packets, numPackets, cb) {
     const results = [];
     packets.length = Math.min(packets.length, numPackets);
-    packets.forEach((item) => {
-      const key = item.ip.addr1;
+    for (const packet of packets) {
+      const key = packet.ip.addr1;
       if (results.length === 0 || key !== results[results.length - 1].key) {
         results.push({
           key,
-          buffers: [item.ip.data],
-          ts: item.pcap.ts_sec * 1000 + Math.round(item.pcap.ts_usec / 1000)
+          buffers: [packet.ip.data],
+          ts: packet.pcap.ts_sec * 1000 + Math.round(packet.pcap.ts_usec / 1000)
         });
       } else {
-        results[results.length - 1].buffers.push(item.ip.data);
+        results[results.length - 1].buffers.push(packet.ip.data);
       }
-    });
-    results.forEach((result) => {
+    }
+    for (const result of results) {
       result.data = Buffer.concat(result.buffers);
       delete result.buffers;
-    });
+    }
     cb(null, results);
   };
 
+  // --------------------------------------------------------------------------
   static reassemble_generic_ether (packets, numPackets, cb) {
     const results = [];
     packets.length = Math.min(packets.length, numPackets);
-    packets.forEach((item) => {
-      const key = item.ether.addr1;
+    for (const packet of packets) {
+      const key = packet.ether.addr1;
       if (results.length === 0 || key !== results[results.length - 1].key) {
         results.push({
           key,
-          buffers: [item.ether.data],
-          ts: item.pcap.ts_sec * 1000 + Math.round(item.pcap.ts_usec / 1000)
+          buffers: [packet.ether.data],
+          ts: packet.pcap.ts_sec * 1000 + Math.round(packet.pcap.ts_usec / 1000)
         });
       } else {
-        results[results.length - 1].buffers.push(item.ether.data);
+        results[results.length - 1].buffers.push(packet.ether.data);
       }
-    });
-    results.forEach((result) => {
+    }
+    for (const result of results) {
       result.data = Buffer.concat(result.buffers);
       delete result.buffers;
-    });
+    }
     cb(null, results);
   };
 
   // Needs to be rewritten since its possible for packets to be
   // dropped by windowing and other things to actually be displayed allowed.
   // If multiple tcp sessions in one arkime session display can be wacky/wrong.
+
+  // --------------------------------------------------------------------------
   static reassemble_tcp (packets, numPackets, skey, cb) {
     try {
     // Remove syn, rst, 0 length packets and figure out min/max seq number
       const packets2 = [];
       const info = {};
       const keys = [];
-      let key, i, ilen;
-      for (i = 0, ilen = packets.length; i < ilen; i++) {
-        if (packets[i].tcp.data.length === 0 || packets[i].tcp.rstflag || packets[i].tcp.synflag) {
+      for (const packet of packets) {
+        if (packet.tcp.data.length === 0 || packet.tcp.rstflag || packet.tcp.synflag) {
           continue;
         }
-        key = packets[i].ip.addr1 + ':' + packets[i].tcp.sport;
+        const key = packet.ip.addr1 + ':' + packet.tcp.sport;
         if (!info[key]) {
-          info[key] = { min: packets[i].tcp.seq, max: packets[i].tcp.seq, wrapseq: false, wrapack: false };
+          info[key] = { min: packet.tcp.seq, max: packet.tcp.seq, wrapseq: false, wrapack: false };
           keys.push(key);
-        } else if (info[key].min > packets[i].tcp.seq) {
-          info[key].min = packets[i].tcp.seq;
-        } else if (info[key].max < packets[i].tcp.seq) {
-          info[key].max = packets[i].tcp.seq;
+        } else if (info[key].min > packet.tcp.seq) {
+          info[key].min = packet.tcp.seq;
+        } else if (info[key].max < packet.tcp.seq) {
+          info[key].max = packet.tcp.seq;
         }
 
-        packets2.push(packets[i]);
+        packets2.push(packet);
       }
 
       if (keys.length === 1) {
-        key = packets[0].ip.addr2 + ':' + packets[0].tcp.dport;
+        const key = packets[0].ip.addr2 + ':' + packets[0].tcp.dport;
         info[key] = { min: packets[0].tcp.ack, max: packets[0].tcp.ack, wrapseq: false, wrapack: false };
         keys.push(key);
       }
@@ -1248,14 +1296,14 @@ class Pcap {
 
       // Wrap the packets
       if (needwrap) {
-        for (i = 0, ilen = packets.length; i < ilen; i++) {
-          key = packets[i].ip.addr1 + ':' + packets[i].tcp.sport;
-          if (info[key].wrapseq && packets[i].tcp.seq < 0x7fffffff) {
-            packets[i].tcp.seq += 0xffffffff;
+        for (const packet of packets) {
+          const key = packet.ip.addr1 + ':' + packet.tcp.sport;
+          if (info[key].wrapseq && packet.tcp.seq < 0x7fffffff) {
+            packet.tcp.seq += 0xffffffff;
           }
 
-          if (info[key].wrapack && packets[i].tcp.ack < 0x7fffffff) {
-            packets[i].tcp.ack += 0xffffffff;
+          if (info[key].wrapack && packet.tcp.ack < 0x7fffffff) {
+            packet.tcp.ack += 0xffffffff;
           }
         }
       }
@@ -1284,67 +1332,67 @@ class Pcap {
       let previous = 0;
 
       // We use async here so that the main event loop isnt blocked for large reassemblies
-      // We could have just done for (item of packets) but that would block the event loop
+      // We could have just done for (packet of packets) but that would block the event loop
       const results = [];
-      async.forEachSeries(packets, (item, nextCb) => {
-        const pkey = item.ip.addr1 + ':' + item.tcp.sport;
+      async.forEachSeries(packets, (packet, nextCb) => {
+        const pkey = packet.ip.addr1 + ':' + packet.tcp.sport;
         if (pkey === clientKey) {
-          if (clientSeq >= (item.tcp.seq + item.tcp.data.length)) {
+          if (clientSeq >= (packet.tcp.seq + packet.tcp.data.length)) {
             return nextCb();
           }
-          clientSeq = (item.tcp.seq + item.tcp.data.length);
+          clientSeq = (packet.tcp.seq + packet.tcp.data.length);
         } else {
-          if (serverSeq >= (item.tcp.seq + item.tcp.data.length)) {
+          if (serverSeq >= (packet.tcp.seq + packet.tcp.data.length)) {
             return nextCb();
           }
-          serverSeq = (item.tcp.seq + item.tcp.data.length);
+          serverSeq = (packet.tcp.seq + packet.tcp.data.length);
         }
 
         if (results.length === 0 || pkey !== results[results.length - 1].key) {
-          previous = start = item.tcp.seq;
+          previous = start = packet.tcp.seq;
           results.push({
             key: pkey,
-            buffers: [item.tcp.data],
-            length: item.tcp.data.length,
-            ts: item.pcap.ts_sec * 1000 + Math.round(item.pcap.ts_usec / 1000)
+            buffers: [packet.tcp.data],
+            length: packet.tcp.data.length,
+            ts: packet.pcap.ts_sec * 1000 + Math.round(packet.pcap.ts_usec / 1000)
           });
-        } else if (item.tcp.seq - previous > 0xffff) {
-          results.push({ key: '', buffers: [], length: 0, ts: item.pcap.ts_sec * 1000 + Math.round(item.pcap.ts_usec / 1000) });
+        } else if (packet.tcp.seq - previous > 0xffff) {
+          results.push({ key: '', buffers: [], length: 0, ts: packet.pcap.ts_sec * 1000 + Math.round(packet.pcap.ts_usec / 1000) });
           // Larger then max window size packets missing
-          previous = start = item.tcp.seq;
+          previous = start = packet.tcp.seq;
           results.push({
             key: pkey,
-            buffers: [item.tcp.data],
-            length: item.tcp.data.length,
-            ts: item.pcap.ts_sec * 1000 + Math.round(item.pcap.ts_usec / 1000)
+            buffers: [packet.tcp.data],
+            length: packet.tcp.data.length,
+            ts: packet.pcap.ts_sec * 1000 + Math.round(packet.pcap.ts_usec / 1000)
           });
         } else {
-          previous = item.tcp.seq;
+          previous = packet.tcp.seq;
           const lastResult = results[results.length - 1];
-          const gapSize = item.tcp.seq - start - lastResult.length;
+          const gapSize = packet.tcp.seq - start - lastResult.length;
           if (gapSize > 0) {
             // Missing data, zero fill
             lastResult.buffers.push(Buffer.alloc(gapSize));
             lastResult.length += gapSize;
           } else if (gapSize < 0) {
             // Retransmitted data, trim off front
-            if (-gapSize >= item.tcp.data.length) {
-              item.tcp.data = item.tcp.data.slice(-gapSize);
+            if (-gapSize >= packet.tcp.data.length) {
+              packet.tcp.data = packet.tcp.data.slice(-gapSize);
             } else {
-              item.tcp.data = Buffer.alloc(0);
+              packet.tcp.data = EMPTY_BUFFER;
             }
           }
-          lastResult.buffers.push(item.tcp.data);
-          lastResult.length += item.tcp.data.length;
+          lastResult.buffers.push(packet.tcp.data);
+          lastResult.length += packet.tcp.data.length;
         }
         setImmediate(nextCb);
       }, (err) => {
-        results.forEach((result) => {
+        for (const result of results) {
           result.data = Buffer.concat(result.buffers);
           delete result.buffers;
-        });
+        }
         if (skey !== results[0].key) {
-          results.unshift({ data: Buffer.alloc(0), key: skey });
+          results.unshift({ data: EMPTY_BUFFER, key: skey });
         }
         cb(null, results);
       });
@@ -1353,6 +1401,7 @@ class Pcap {
     }
   };
 
+  // --------------------------------------------------------------------------
   static packetFlow (session, packets, numPackets, cb) {
     packets = packets.slice(0, numPackets);
 
@@ -1362,46 +1411,46 @@ class Pcap {
     }
     let dKey;
 
-    const results = packets.map((item, index) => {
+    const results = packets.map((packet) => {
       const result = {
-        key: Pcap.key(item),
-        ts: item.pcap.ts_sec * 1000 + Math.round(item.pcap.ts_usec / 1000)
+        key: Pcap.key(packet),
+        ts: packet.pcap.ts_sec * 1000 + Math.round(packet.pcap.ts_usec / 1000)
       };
 
       const match = result.key === sKey;
       if (!dKey && !match) { dKey = result.key; }
       result.src = match;
 
-      if (!item.ip) {
-        result.data = item.ether.data;
+      if (!packet.ip) {
+        result.data = packet.ether.data;
       } else {
-        switch (item.ip.p) {
+        switch (packet.ip.p) {
         case 1:
         case 58:
-          result.data = item.icmp.data;
+          result.data = packet.icmp.data;
           break;
         case 6:
-          result.data = item.tcp.data;
+          result.data = packet.tcp.data;
           result.tcpflags = {
-            syn: item.tcp.synflag,
-            ack: item.tcp.ackflag,
-            psh: item.tcp.pshflag,
-            rst: item.tcp.rstflag,
-            fin: item.tcp.finflag,
-            urg: item.tcp.urgflag
+            syn: packet.tcp.synflag,
+            ack: packet.tcp.ackflag,
+            psh: packet.tcp.pshflag,
+            rst: packet.tcp.rstflag,
+            fin: packet.tcp.finflag,
+            urg: packet.tcp.urgflag
           };
           break;
         case 17:
-          result.data = item.udp.data;
+          result.data = packet.udp.data;
           break;
         case 132:
-          result.data = item.sctp.data;
+          result.data = packet.sctp.data;
           break;
         case 50:
-          result.data = item.esp.data;
+          result.data = packet.esp.data;
           break;
         default:
-          result.data = item.ip.data;
+          result.data = packet.ip.data;
           break;
         }
       }
@@ -1412,6 +1461,7 @@ class Pcap {
     return cb(null, results, sKey, dKey);
   };
 
+  // --------------------------------------------------------------------------
   static key (packet) {
     if (!packet.ip) { return packet.ether.addr1; }
     const sep = packet.ip.addr1.includes(':') ? '.' : ':';
@@ -1428,6 +1478,7 @@ class Pcap {
     }
   };
 
+  // --------------------------------------------------------------------------
   static keyFromSession (session) {
     switch (session.ipProtocol) {
     case 6: // tcp
