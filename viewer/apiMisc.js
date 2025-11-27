@@ -285,12 +285,11 @@ class MiscAPIs {
 
     let tags = '';
     if (ArkimeUtil.isString(req.body.tags)) {
-      const t = req.body.tags.replace(/[^-a-zA-Z0-9_:,]/g, '').split(',');
-      t.forEach((tag) => {
+      for (const tag of req.body.tags.replace(/[^-a-zA-Z0-9_:,]/g, '').split(',')) {
         if (tag.length > 0) {
           tags += ' --tag ' + tag;
         }
-      });
+      }
     }
 
     const cmd = uploadCommand

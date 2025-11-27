@@ -149,10 +149,10 @@ class Config {
     if (!keys) { return []; }
     const headers = Object.keys(csection).map((key) => {
       const obj = { name: key };
-      csection[key].split(';').forEach((element) => {
+      for (const element of csection[key].split(';')) {
         const i = element.indexOf(':');
         if (i === -1) {
-          return;
+          continue;
         }
 
         const parts = [element.slice(0, i), element.slice(i + 1)];
@@ -162,7 +162,7 @@ class Config {
           parts[1] = false;
         }
         obj[parts[0]] = parts[1];
-      });
+      }
       return obj;
     });
 
@@ -176,12 +176,12 @@ class Config {
     const keys = Object.keys(data);
     if (!keys) { return {}; }
     const map = {};
-    keys.forEach((key) => {
+    for (const key of keys) {
       const obj = {};
-      data[key].split(';').forEach((element) => {
+      for (const element of data[key].split(';')) {
         const i = element.indexOf(':');
         if (i === -1) {
-          return;
+          continue;
         }
 
         const parts = [element.slice(0, i), element.slice(i + 1)];
@@ -191,9 +191,9 @@ class Config {
           parts[1] = false;
         }
         obj[parts[0]] = parts[1];
-      });
+      }
       map[key] = obj;
-    });
+    }
 
     return map;
   };
@@ -233,16 +233,16 @@ class Config {
     internals.fieldsMap = {};
     internals.dbFieldsMap = {};
     internals.categories = {};
-    data.forEach((field) => {
+    for (const field of data) {
       const source = field._source;
       source.exp = field._id;
 
       if (source.dbField2?.startsWith('http.request-') && !source.exp.startsWith('http.request.')) {
-        return;
+        continue;
       }
 
       if (source.dbField2?.startsWith('http.response-') && !source.exp.startsWith('http.response.')) {
-        return;
+        continue;
       }
 
       // Add some transforms
@@ -271,10 +271,10 @@ class Config {
         internals.categories[source.group] = [];
       }
       internals.categories[source.group].push(source);
-      (source.aliases || []).forEach((alias) => {
+      for (const alias of (source.aliases || [])) {
         internals.fieldsMap[alias] = source;
-      });
-    });
+      }
+    }
 
     function sortFunc (a, b) {
       return a.exp.localeCompare(b.exp);

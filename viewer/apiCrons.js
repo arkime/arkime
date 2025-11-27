@@ -462,19 +462,19 @@ class CronAPIs {
 
     const nodes = {};
 
-    list.forEach(function (item) {
+    for (const item of list) {
       if (!nodes[item.node]) {
         nodes[item.node] = [];
       }
       nodes[item.node].push(item.id);
-    });
+    }
 
     const keys = Object.keys(nodes);
 
     async.eachLimit(keys, 15, function (node, nextCb) {
       SessionAPIs.isLocalView(node, function () {
         let sent = 0;
-        nodes[node].forEach(function (item) {
+        for (const item of nodes[node]) {
           const options = {
             id: item,
             nodeName: node
@@ -488,7 +488,7 @@ class CronAPIs {
               nextCb();
             }
           });
-        });
+        }
       },
       function () {
         // Get from remote DISK
@@ -645,10 +645,10 @@ class CronAPIs {
         const data = await Db.search('queries', { size: 1000 });
 
         const queries = {};
-        data.hits.hits.forEach(function (item) {
-          if (item._id === 'primary-viewer') { return; }
+        for (const item of data.hits.hits) {
+          if (item._id === 'primary-viewer') { continue; }
           queries[item._id] = item._source;
-        });
+        }
 
         // Delayed by the max Timeout
         const endTime = Math.floor(Date.now() / 1000) - internals.cronTimeout;
@@ -781,9 +781,9 @@ class CronAPIs {
                   // Handle multiple notifiers (stored as comma-separated string) - send in parallel, fire and forget
                   if (cq.notifier) {
                     const notifiers = cq.notifier.split(',');
-                    notifiers.forEach(notifierId => {
+                    for (const notifierId of notifiers) {
                       Notifier.issueAlert(notifierId, message, () => {});
-                    });
+                    }
                   }
                 }
 
