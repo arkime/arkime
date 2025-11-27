@@ -162,9 +162,9 @@ class ViewerUtils {
           err = "File '" + fileName + "' not found";
         } else if (files.length > 1) {
           obj.bool = { should: [] };
-          files.forEach(function (file) {
+          for (const file of files) {
             obj.bool.should.push({ bool: { filter: [{ term: { node: file.node } }, { term: { fileId: file.num } }] } });
-          });
+          }
         } else {
           obj.bool = { filter: [{ term: { node: files[0].node } }, { term: { fileId: files[0].num } }] };
         }
@@ -307,17 +307,17 @@ class ViewerUtils {
       return {};
     }
 
-    aggregations.mapG1.buckets.forEach(function (item) {
+    for (const item of aggregations.mapG1.buckets) {
       map.src[item.key] = item.doc_count;
-    });
+    }
 
-    aggregations.mapG2.buckets.forEach(function (item) {
+    for (const item of aggregations.mapG2.buckets) {
       map.dst[item.key] = item.doc_count;
-    });
+    }
 
-    aggregations.mapG3.buckets.forEach(function (item) {
+    for (const item of aggregations.mapG3.buckets) {
       map.xffGeo[item.key] = item.doc_count;
-    });
+    }
 
     return map;
   };
@@ -367,7 +367,7 @@ class ViewerUtils {
       return graph;
     }
 
-    aggregations.dbHisto.buckets.forEach(function (item) {
+    for (const item of aggregations.dbHisto.buckets) {
       const key = item.key;
 
       // always add session information
@@ -399,7 +399,7 @@ class ViewerUtils {
           }
         }
       }
-    });
+    }
 
     return graph;
   };

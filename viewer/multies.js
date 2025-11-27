@@ -158,12 +158,7 @@ function getActiveNodes (clusterin) {
         tmpNodes.push(clusters[clusterin[i]]);
       }
     }
-    const esNodes = [];
-    activeESNodes.slice().forEach((node) => {
-      if (tmpNodes.includes(node)) {
-        esNodes.push(node);
-      }
-    });
+    const esNodes = activeESNodes.slice().filter(node => tmpNodes.includes(node));
     return esNodes;
   } else {
     return activeESNodes.slice();
@@ -852,9 +847,9 @@ function fixQuery (node, body, doneCb) {
       clients[node].search({ index: node2Prefix(node) + 'files', size: 500, body: query }, (err, { body: result }) => {
         outstanding--;
         obj.bool = { should: [] };
-        result.hits.hits.forEach((file) => {
+        for (const file of result.hits.hits) {
           obj.bool.should.push({ bool: { filter: [{ term: { node: file._source.node } }, { term: { fileId: file._source.num } }] } });
-        });
+        }
         if (obj.bool.should.length === 0) {
           err = 'No matching files found';
         }
@@ -1244,7 +1239,7 @@ async function premain () {
   }
 
   // First connect
-  nodes.forEach((node) => {
+  for (const node of nodes) {
     if (node.toLowerCase().includes(',http')) {
       console.log('WARNING - multiESNodes may be using a comma as a host delimiter, change to semicolon');
     }
@@ -1281,7 +1276,7 @@ async function premain () {
     }
 
     clients[node] = new Client(esClientOptions);
-  });
+  }
 
   // Now check version numbers
   nodes.forEach(async (node) => {

@@ -32,6 +32,8 @@ const sanitizeHtml = require('sanitize-html');
 
 const headerlru = new LRUCache({ max: 100 });
 
+const SEGMENTS_REGEX = /^(time|all)$/;
+
 class SessionAPIs {
   // --------------------------------------------------------------------------
   // INTERNAL HELPERS
@@ -41,7 +43,7 @@ class SessionAPIs {
       req.query.length = 1000000;
     }
 
-    if (req.query.segments && req.query.segments.match(/^(time|all)$/) && fields.indexOf('rootId') === -1) {
+    if (req.query.segments && SEGMENTS_REGEX.test(req.query.segments) && !fields.includes('rootId')) {
       fields.push('rootId');
     }
 
@@ -68,7 +70,7 @@ class SessionAPIs {
         total += list.length;
         await chunkCb(null, list);
 
-        if (req.query.segments && req.query.segments.match(/^(time|all)$/)) {
+        if (req.query.segments && SEGMENTS_REGEX.test(req.query.segments)) {
           const segList = await new Promise((resolve, reject) => {
             SessionAPIs.#sessionsListAddSegments(req, indices, query, list, (err, addSegmentsList) => {
               if (err) {
@@ -133,10 +135,10 @@ class SessionAPIs {
         query.sort = [];
       }
 
-      info.order.split(',').forEach((item) => {
+      for (const item of info.order.split(',')) {
         const parts = item.split(':');
         const field = parts[0];
-        if (ArkimeUtil.isPP(field)) { return; }
+        if (ArkimeUtil.isPP(field)) { continue; }
 
         const obj = {};
         if (field === 'firstPacket') {
@@ -158,7 +160,7 @@ class SessionAPIs {
         }
         obj[field].missing = (parts[1] === 'asc' ? '_last' : '_first');
         query.sort.push(obj);
-      });
+      }
 
       return;
     }
@@ -173,8 +175,8 @@ class SessionAPIs {
       query.sort = [];
     }
 
-    let i = 0;
-    for (const ilen = parseInt(info.iSortingCols, 10); i < ilen; i++) {
+    const ilen = parseInt(info.iSortingCols, 10);
+    for (let i = 0; i < ilen; i++) {
       if (!info['iSortCol_' + i] || !info['sSortDir_' + i] || !info['mDataProp_' + info['iSortCol_' + i]]) {
         continue;
       }
@@ -280,7 +282,7 @@ class SessionAPIs {
 
     if (what.includes('data')) {
       if (list.length > 0 && list[0].fields) {
-        list = list.sort((a, b) => { return a.fields.lastPacket - b.fields.lastPacket; });
+        list = list.sort((a, b) => a.fields.lastPacket - b.fields.lastPacket);
       }
       for (let j = 0; j < list.length; j++) {
         const sessionData = list[j].fields;
@@ -326,10 +328,7 @@ class SessionAPIs {
     const processedRo = {};
 
     // Index all the ids we have, so we don't include them again
-    const haveIds = {};
-    list.forEach((item) => {
-      haveIds[item._id] = true;
-    });
+    const haveIds = new Set(list.map(item => item._id));
 
     delete query.aggregations;
 
@@ -355,12 +354,12 @@ class SessionAPIs {
           console.log('ERROR - fetching matching sessions in sessionsListAddSegments', util.inspect(err, false, 50), result);
           return nextCb(null);
         }
-        result.hits.hits.forEach((subItem) => {
-          if (!haveIds[subItem._id]) {
-            haveIds[subItem._id] = true;
+        for (const subItem of result.hits.hits) {
+          if (!haveIds.has(subItem._id)) {
+            haveIds.add(subItem._id);
             list.push(subItem);
           }
-        });
+        }
         return nextCb(null);
       });
       query.query.bool.filter.pop();
@@ -1678,14 +1677,14 @@ class SessionAPIs {
   // --------------------------------------------------------------------------
   static sessionsListFromIds (req, ids, fields, cb) {
     let processSegments = false;
-    if (req?.query && ArkimeUtil.isString(req.query.segments) && req.query.segments.match(/^(time|all)$/)) {
-      if (fields.indexOf('rootId') === -1) { fields.push('rootId'); }
+    if (req?.query && ArkimeUtil.isString(req.query.segments) && SEGMENTS_REGEX.test(req.query.segments)) {
+      if (!fields.includes('rootId')) { fields.push('rootId'); }
       processSegments = true;
     }
 
     const list = [];
     const nonArrayFields = ['ipProtocol', 'firstPacket', 'lastPacket', 'source.ip', 'source.port', 'source.geo.country_iso_code', 'destination.ip', 'destination.port', 'destination.geo.country_iso_code', 'network.bytes', 'totDataBytes', 'network.packets', 'node', 'rootId', 'http.xffGEO'];
-    const fixFields = nonArrayFields.filter((x) => { return fields.indexOf(x) !== -1; });
+    const fixFields = nonArrayFields.filter(x => fields.includes(x));
 
     const options = ViewerUtils.addCluster(req ? req.query.cluster : undefined, { _source: false, fields });
     options.arkime_unflatten = false;
@@ -1981,11 +1980,11 @@ class SessionAPIs {
       if (req.query.fields) {
         query._source = false;
         query.fields = ViewerUtils.queryValueToArray(req.query.fields);
-        ['node', 'source.ip', 'source.port', 'destination.ip', 'destination.port'].forEach((item) => {
-          if (query.fields.indexOf(item) === -1) {
+        for (const item of ['node', 'source.ip', 'source.port', 'destination.ip', 'destination.port']) {
+          if (!query.fields.includes(item)) {
             query.fields.push(item);
           }
-        });
+        }
       } else {
         addMissing = true;
         query._source = false;
@@ -2041,20 +2040,20 @@ class SessionAPIs {
 
           if (addMissing) {
             if (options.arkime_unflatten) {
-              [['source', 'packets'], ['destination', 'packets'], ['source', 'bytes'], ['destination', 'bytes'], ['client', 'bytes'], ['server', 'bytes']].forEach((item) => {
+              for (const item of [['source', 'packets'], ['destination', 'packets'], ['source', 'bytes'], ['destination', 'bytes'], ['client', 'bytes'], ['server', 'bytes']]) {
                 if (fields[item[0]] === undefined) {
                   fields[item[0]] = {};
                 }
                 if (fields[item[0]][item[1]] === undefined) {
                   fields[item[0]][item[1]] = -1;
                 }
-              });
+              }
             } else {
-              ['source.packets', 'destination.packets', 'source.bytes', 'destination.bytes', 'client.bytes', 'server.bytes'].forEach((item) => {
+              for (const item of ['source.packets', 'destination.packets', 'source.bytes', 'destination.bytes', 'client.bytes', 'server.bytes']) {
                 if (fields[item] === undefined) {
                   fields[item] = -1;
                 }
-              });
+              }
             }
             results.results.push(fields);
             return hitCb();
@@ -2190,7 +2189,7 @@ class SessionAPIs {
         };
       }
 
-      ViewerUtils.queryValueToArray(req.query.spi).forEach((item) => {
+      for (const item of ViewerUtils.queryValueToArray(req.query.spi)) {
         const parts = item.split(':');
         if (parts[0] === 'fileand') {
           query.aggregations[parts[0]] = { terms: { field: 'node', size: 1000 }, aggregations: { fileId: { terms: { field: 'fileId', size: parts.length > 1 ? parseInt(parts[1], 10) : 10 } } } };
@@ -2201,7 +2200,7 @@ class SessionAPIs {
             query.aggregations[parts[0]].terms.size = parseInt(parts[1], 10);
           }
         }
-      });
+      }
 
       query.size = 0;
 
@@ -2247,18 +2246,18 @@ class SessionAPIs {
         }
 
         if (sessions.aggregations.ipProtocol) {
-          sessions.aggregations.ipProtocol.buckets.forEach((item) => {
+          for (const item of sessions.aggregations.ipProtocol.buckets) {
             item.key = Pcap.protocol2Name(item.key);
-          });
+          }
         }
 
         if (parseInt(req.query.facets) === 1) {
           protocols = {};
           map = ViewerUtils.mapMerge(sessions.aggregations);
           graph = ViewerUtils.graphMerge(req, query, sessions.aggregations);
-          sessions.aggregations.protocols.buckets.forEach((item) => {
+          for (const item of sessions.aggregations.protocols.buckets) {
             protocols[item.key] = item.doc_count;
-          });
+          }
 
           delete sessions.aggregations.mapG1;
           delete sessions.aggregations.mapG2;
@@ -2401,13 +2400,14 @@ class SessionAPIs {
 
         let queriesInfo = [];
         async function endCb () {
-          queriesInfo = queriesInfo.sort((a, b) => { return b.doc_count - a.doc_count; }).slice(0, size * 2);
+          queriesInfo = queriesInfo.sort((a, b) => b.doc_count - a.doc_count).slice(0, size * 2);
           const queries = queriesInfo.map((item) => { return item.query; });
 
           try {
             const { body: searchResult } = await Db.msearchSessions(indices, queries, options);
 
-            searchResult.responses.forEach((item, i) => {
+            for (let i = 0; i < searchResult.responses.length; i++) {
+              const item = searchResult.responses[i];
               const response = {
                 name: queriesInfo[i].key,
                 count: queriesInfo[i].doc_count
@@ -2434,15 +2434,15 @@ class SessionAPIs {
               response.map = ViewerUtils.mapMerge(searchResult.responses[i].aggregations);
 
               results.items.push(response);
-              histoKeys.forEach(key => {
+              for (const key of histoKeys) {
                 response[key] = 0.0;
-              });
+              }
 
               const graph = response.graph;
               for (let j = 0; j < histoKeys.length; j++) {
-                item = histoKeys[j];
-                for (let k = 0; k < graph[item].length; k++) {
-                  response[item] += graph[item][k][1];
+                const histoKey = histoKeys[j];
+                for (let k = 0; k < graph[histoKey].length; k++) {
+                  response[histoKey] += graph[histoKey][k][1];
                 }
               }
 
@@ -2469,7 +2469,7 @@ class SessionAPIs {
                 }).slice(0, size);
                 return res.send(results);
               }
-            });
+            }
           } catch (err) {
             console.log(`ERROR - ${req.method} /api/spigraph`, util.inspect(err, false, 50));
             return res.send(results);
@@ -2496,25 +2496,25 @@ class SessionAPIs {
           });
         }
 
-        aggs.forEach((item) => {
+        for (const item of aggs) {
           if (field === 'ip.dst:port') {
             filter.term['destination.ip'] = item.key;
             const sep = (item.key.indexOf(':') === -1) ? ':' : '.';
-            item.sub.buckets.forEach((sitem) => {
+            for (const sitem of item.sub.buckets) {
               sfilter.term['destination.port'] = sitem.key;
               queriesInfo.push({ key: item.key + sep + sitem.key, doc_count: sitem.doc_count, query: JSON.stringify(query) });
-            });
+            }
           } else if (field === 'fileand') {
             filter.term.node = item.key;
-            item.sub.buckets.forEach((sitem) => {
+            for (const sitem of item.sub.buckets) {
               sfilter.term.fileand = sitem.key;
               intermediateResults.push({ key: filter.term.node + ':' + sitem.key, doc_count: sitem.doc_count, query: JSON.stringify(query) });
-            });
+            }
           } else {
             filter.term[field] = item.key;
             queriesInfo.push({ key: item.key, doc_count: item.doc_count, query: JSON.stringify(query) });
           }
-        });
+        }
 
         if (field === 'fileand') { return findFileNames(); }
 
@@ -2743,10 +2743,10 @@ class SessionAPIs {
     if (req.query.field.match(/(ip.src:port.src|a1:p1|srcIp:srtPort|ip.src:srcPort|ip.dst:port.dst|a2:p2|dstIp:dstPort|ip.dst:dstPort|source.ip:source.port|ip.src:source.port|ip.dst:destination.port)/)) {
       eachCb = (item) => {
         const sep = (item.key.indexOf(':') === -1) ? ':' : '.';
-        item.field2.buckets.forEach((item2) => {
+        for (const item2 of item.field2.buckets) {
           item2.key = item.key + sep + item2.key;
           writeCb(item2);
-        });
+        }
       };
     }
 
@@ -2787,11 +2787,11 @@ class SessionAPIs {
       function findFileNames (result) {
         const intermediateResults = [];
         const aggs = result.aggregations.field.buckets;
-        aggs.forEach((item) => {
-          item.field2.buckets.forEach((sitem) => {
+        for (const item of aggs) {
+          for (const sitem of item.field2.buckets) {
             intermediateResults.push({ key: item.key + ':' + sitem.key, doc_count: sitem.doc_count });
-          });
-        });
+          }
+        }
 
         async.each(intermediateResults, async (fsitem) => {
           const split = fsitem.key.split(':');
@@ -2919,7 +2919,7 @@ class SessionAPIs {
         printUnique(result.aggregations.field.buckets, '');
 
         if (req.query.sort !== 'field') {
-          results = results.sort((a, b) => { return b.count - a.count; });
+          results = results.sort((a, b) => b.count - a.count);
         }
 
         if (doCounts) {
@@ -3884,7 +3884,7 @@ class SessionAPIs {
 
     let count = 0;
     const ids = ViewerUtils.queryValueToArray(req.body.ids);
-    ids.forEach((id) => {
+    for (const id of ids) {
       const options = {
         user: req.user,
         cluster,
@@ -3901,7 +3901,7 @@ class SessionAPIs {
           return res.end();
         }
       });
-    });
+    }
   };
 
   // --------------------------------------------------------------------------

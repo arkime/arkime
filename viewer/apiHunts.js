@@ -177,9 +177,9 @@ ${Config.arkimeWebURL()}hunt
 
       // Handle multiple notifiers (stored as comma-separated string) - send in parallel, fire and forget
       const notifiers = hunt.notifier.split(',');
-      notifiers.forEach(notifierId => {
+      for (const notifierId of notifiers) {
         Notifier.issueAlert(notifierId, message, () => {});
-      });
+      }
     }
 
     continueProcess();
@@ -438,7 +438,9 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
 
       // Gather all the hits by node
       const hitsByNode = {};
-      hits.forEach((hit) => { (hitsByNode[hit._source.node] ??= []).push(hit); });
+      for (const hit of hits) {
+        (hitsByNode[hit._source.node] ??= []).push(hit);
+      }
 
       // Run all nodes in parallel, with 2 hits per node at once
       async.forEach(hitsByNode, (nodehits, nodeCb) => {
@@ -551,9 +553,9 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
 
           // Handle multiple notifiers (stored as comma-separated string) - send in parallel, fire and forget
           const notifiers = hunt.notifier.split(',');
-          notifiers.forEach(notifierId => {
+          for (const notifierId of notifiers) {
             Notifier.issueAlert(notifierId, message, () => {});
-          });
+          }
         }
 
         return continueProcess();

@@ -190,10 +190,10 @@ class ArkimeUtil {
       }
 
       const options = { sentinels: [], name: match[6], db: parseInt(match[7]) };
-      match[5].split(',').forEach((hp) => {
+      for (const hp of match[5].split(',')) {
         const hostport = hp.split(':');
         options.sentinels.push({ host: hostport[0], port: hostport[1] || 26379 });
-      });
+      }
 
       if (match[3] && match[3] !== '') {
         options.sentinelPassword = match[3];
@@ -217,10 +217,10 @@ class ArkimeUtil {
       }
 
       const hosts = [];
-      match[4].split(',').forEach((hp) => {
+      for (const hp of match[4].split(',')) {
         const hostport = hp.split(':');
         hosts.push({ host: hostport[0], port: hostport[1] || 6379 });
-      });
+      }
 
       const options = { db: parseInt(match[5]) };
       if (match[3] && match[3] !== '') {

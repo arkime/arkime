@@ -42,12 +42,12 @@ function checkURLs (nodes) {
   }
 
   if (Array.isArray(nodes)) {
-    nodes.forEach(node => {
+    for (const node of nodes) {
       if (!node.startsWith('http')) {
         console.log(`ERROR - OpenSearch/Elasticsearch endpoint url '${node}' must start with http:// or https://`);
         process.exit();
       }
-    });
+    }
   } else if (!nodes.startsWith('http')) {
     console.log(`ERROR - OpenSearch/Elasticsearch endpoint url '${nodes}' must start with http:// or https://`);
     process.exit();
@@ -1779,13 +1779,13 @@ Db.fileNameToFiles = async (fileName) => {
       return null;
     }
     const files = [];
-    data.hits.hits.forEach((hit) => {
+    for (const hit of data.hits.hits) {
       const file = hit._source;
       const key = file.node + '!' + file.num;
       internals.fileId2File.set(key, file);
       internals.fileName2File.set(file.name, file);
       files.push(file);
-    });
+    }
     return files;
   } catch (err) {
     return null;
