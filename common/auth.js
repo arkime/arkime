@@ -508,12 +508,7 @@ class Auth {
         if (authHeader === undefined) {
           return done('Missing authorization header');
         }
-        let authorized = false;
-        authHeader.split(',').forEach(headerVal => {
-          if (Auth.#requiredAuthHeaderVal.includes(headerVal.trim())) {
-            authorized = true;
-          }
-        });
+        const authorized = authHeader.split(',').some(headerVal => Auth.#requiredAuthHeaderVal.includes(headerVal.trim()));
         if (!authorized) {
           console.log(`The required auth header '${Auth.#requiredAuthHeader}' expected '${Auth.#requiredAuthHeaderVal}' and has `, ArkimeUtil.sanitizeStr(authHeader));
           return done('Bad authorization header');
@@ -693,7 +688,7 @@ class Auth {
         objPath = obj.path.substring(Auth.#basePath.length);
       }
       if (obj.path !== req.url && objPath !== req.url) {
-        console.log('ERROR - mismatch url', obj.path, ArkimeUtil.sanitizeStr(req.url));
+        console.log('ERROR - mismatch url object:', obj.path, 'request:', ArkimeUtil.sanitizeStr(req.url));
         return done('Unauthorized based on bad url');
       }
 

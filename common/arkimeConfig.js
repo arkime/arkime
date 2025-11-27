@@ -165,7 +165,7 @@ class ArkimeConfig {
      * ARKIME_section__var - convert to section var=value
      * Replace DASH, COLON, DOT, SLASH with -, :, ., /
      */
-    Object.keys(process.env).filter(e => e.startsWith('ARKIME_')).forEach(e => {
+    for (const e of Object.keys(process.env).filter(e2 => e2.startsWith('ARKIME_'))) {
       let section, key;
       if (e.startsWith('ARKIME__')) {
         section = ArkimeConfig.#defaultSections[ArkimeConfig.#defaultSections.length - 1];
@@ -175,14 +175,14 @@ class ArkimeConfig {
         section = parts[0].replace(/DASH/g, '-').replace(/COLON/g, ':').replace(/DOT/g, '.').replace(/SLASH/g, '/');
         key = parts[1];
       }
-      if (section === undefined || key === undefined) { return; }
+      if (section === undefined || key === undefined) { continue; }
       key = key.replace(/DASH/g, '-').replace(/COLON/g, ':').replace(/DOT/g, '.').replace(/SLASH/g, '/');
 
       if (ArkimeConfig.#config[section] === undefined) {
         ArkimeConfig.#config[section] = {};
       }
       ArkimeConfig.#config[section][key] = process.env[e];
-    });
+    }
 
     if (ArkimeConfig.#dumpConfig) {
       console.error(JSON.stringify({ OVERRIDE: Object.fromEntries(ArkimeConfig.#override), CONFIG: ArkimeConfig.#config }, false, 2));
@@ -311,7 +311,7 @@ class ArkimeConfig {
     if (!includes) {
       return;
     }
-    includes.split(';').forEach((file) => {
+    for (let file of includes.split(';')) {
       const ignoreError = file[0] === '-';
       if (ignoreError) {
         file = file.substring(1);
@@ -319,7 +319,7 @@ class ArkimeConfig {
 
       if (!fs.existsSync(file)) {
         if (ignoreError) {
-          return;
+          continue;
         }
         console.log("ERROR - Couldn't open config includes file '%s'", file);
         process.exit(1);
@@ -334,7 +334,7 @@ class ArkimeConfig {
           }
         }
       }
-    });
+    }
   }
 
   // ----------------------------------------------------------------------------
@@ -409,12 +409,12 @@ class ConfigIni {
     }
 
     let output = '';
-    Object.keys(config).forEach((section) => {
+    for (const section of Object.keys(config)) {
       output += `[${encode(section)}]\n`;
-      Object.keys(config[section]).forEach((key) => {
+      for (const key of Object.keys(config[section])) {
         output += `${key}=${encode(config[section][key])}\n`;
-      });
-    });
+      }
+    }
 
     try {
       fs.writeFileSync(uri, output);
