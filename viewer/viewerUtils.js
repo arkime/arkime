@@ -99,7 +99,7 @@ class ViewerUtils {
       }
     } else {
       const queryDate = reqQuery.date || 1;
-      startTimeSec = (Math.floor(Date.now() / 1000) - 60 * 60 * parseInt(queryDate, 10));
+      startTimeSec = (Math.floor(Date.now() / 1000) - 60 * 60 * parseFloat(queryDate));
       stopTimeSec = Date.now() / 1000;
 
       if (queryDate <= 5 * 24) {
@@ -150,28 +150,27 @@ class ViewerUtils {
     let finished = 0;
     let err = null;
 
-    function doProcess (qParent, obj, item) {
+    async function doProcess (qParent, obj, item) {
       // console.log("\nprocess:\n", item, obj, typeof obj[item], "\n");
       if (item === 'fileand' && typeof obj[item] === 'string') {
         const fileName = obj.fileand;
         delete obj.fileand;
         outstanding++;
-        Db.fileNameToFiles(fileName, function (files) {
-          outstanding--;
-          if (files === null || files.length === 0) {
-            err = "File '" + fileName + "' not found";
-          } else if (files.length > 1) {
-            obj.bool = { should: [] };
-            files.forEach(function (file) {
-              obj.bool.should.push({ bool: { filter: [{ term: { node: file.node } }, { term: { fileId: file.num } }] } });
-            });
-          } else {
-            obj.bool = { filter: [{ term: { node: files[0].node } }, { term: { fileId: files[0].num } }] };
-          }
-          if (finished && outstanding === 0) {
-            doneCb(err);
-          }
-        });
+        const files = await Db.fileNameToFiles(fileName);
+        outstanding--;
+        if (files === null || files.length === 0) {
+          err = "File '" + fileName + "' not found";
+        } else if (files.length > 1) {
+          obj.bool = { should: [] };
+          files.forEach(function (file) {
+            obj.bool.should.push({ bool: { filter: [{ term: { node: file.node } }, { term: { fileId: file.num } }] } });
+          });
+        } else {
+          obj.bool = { filter: [{ term: { node: files[0].node } }, { term: { fileId: files[0].num } }] };
+        }
+        if (finished && outstanding === 0) {
+          doneCb(err);
+        }
       } else if (item === 'field' && obj.field === 'fileand') {
         obj.field = 'fileId';
       } else if (typeof obj[item] === 'object') {
@@ -420,7 +419,7 @@ class ViewerUtils {
     }
 
     const files = [];
-    async.forEachSeries(fields.fileId, async (item, cb) => {
+    async.forEachSeries(fields.fileId, async (item) => {
       try {
         const file = await Db.fileIdToFile(fields.node, item);
         if (file && file.locked === 1) {
@@ -549,7 +548,11 @@ class ViewerUtils {
       if (Config.debug > 1) {
         console.log(`DEBUG: node:${node} is using ${url} because viewUrl was set for ${node} in config file`);
       }
-      cb(null, url, url.slice(0, 5) === 'https' ? https : http);
+      if (cb) {
+        cb(null, url, url.slice(0, 5) === 'https' ? https : http);
+      } else {
+        return { viewUrl: url, client: url.slice(0, 5) === 'https' ? https : http };
+      }
       return;
     }
 
@@ -561,12 +564,26 @@ class ViewerUtils {
       }
 
       if (Config.isHTTPS(node)) {
-        cb(null, 'https://' + stat.hostname + ':' + Config.getFull(node, 'viewPort', '8005'), https);
+        const result = 'https://' + stat.hostname + ':' + Config.getFull(node, 'viewPort', '8005');
+        if (cb) {
+          cb(null, result, https);
+        } else {
+          return { viewUrl: result, client: https };
+        }
       } else {
-        cb(null, 'http://' + stat.hostname + ':' + Config.getFull(node, 'viewPort', '8005'), http);
+        const result = 'http://' + stat.hostname + ':' + Config.getFull(node, 'viewPort', '8005');
+        if (cb) {
+          cb(null, result, http);
+        } else {
+          return { viewUrl: result, client: http };
+        }
       }
     } catch (err) {
-      return cb(err);
+      if (cb) {
+        return cb(err);
+      } else {
+        throw err;
+      }
     }
   };
 
@@ -628,19 +645,26 @@ class ViewerUtils {
   // ----------------------------------------------------------------------------
   // check for anonymous mode before fetching user cache and return anonymous
   // user or the user requested by the userId
-  static getUserCacheIncAnon (userId, cb) {
-    if (Auth.isAnonymousMode()) { // user is anonymous
-      User.getUserCache('anonymous', (err, anonUser) => {
+  static async getUserCacheIncAnon (userId, cb) {
+    try {
+      if (Auth.isAnonymousMode()) { // user is anonymous
+        const anonUser = await User.getUserCache('anonymous');
         const anon = Object.assign(new User(), internals.anonymousUser);
 
         if (anonUser) {
           anon.settings = anonUser.settings || {};
         }
 
+        if (!cb) { return anon; }
         return cb(null, anon);
-      });
-    } else {
-      User.getUserCache(userId, cb);
+      } else {
+        const user = await User.getUserCache(userId);
+        if (!cb) { return user; }
+        return cb(null, user);
+      }
+    } catch (err) {
+      if (cb) { return cb(err, null); }
+      throw err;
     }
   };
 }

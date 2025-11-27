@@ -5,9 +5,9 @@ ul.nav.nav-pills.mb-3
   if (session.packetPos && session.packetPos.length > 0)
     if (session.rootId)
       li.nav-item
-        a.nav-link(href='api/session/' + session.node + '/' + session.id + '/pcap', :download="session.id + '-segment.pcap'") {{ $t('sessions.downloadSegmentPcap') }}
+        a.nav-link(href='api/session/' + session.node + '/' + session.id + '/pcap', :download="session.id + '-segment.pcap'") {{ $t('sessions.downloadSegmentPCAP') }}
       li.nav-item
-        a.nav-link(href='api/session/entire/' + session.node + '/' + session.rootId + '/pcap', :download="session.rootId + '.pcap'") {{ $t('sessions.downloadEntirePcap') }}
+        a.nav-link(href='api/session/entire/' + session.node + '/' + session.rootId + '/pcap', :download="session.rootId + '.pcap'") {{ $t('sessions.downloadEntirePCAP') }}
     else
       li.nav-item
         a.nav-link(href='api/session/' + session.node + '/' + session.id + '/pcap', v-has-permission="'!disablePcapDownload'", :download="session.id + '.pcap'")

@@ -10,6 +10,7 @@
 
 const os = require('os');
 const fs = require('fs');
+const util = require('util');
 const async = require('async');
 const { Client } = require('@elastic/elasticsearch');
 const User = require('../common/user');
@@ -53,7 +54,7 @@ function checkURLs (nodes) {
   }
 }
 
-Db.initialize = async (info, cb) => {
+Db.initialize = async (info) => {
   internals.multiES = info.multiES === 'true' || info.multiES === true || false;
   delete info.multiES;
 
@@ -78,6 +79,8 @@ Db.initialize = async (info, cb) => {
 
   internals.esProfile = info.esProfile || false;
   delete info.esProfile;
+
+  internals.regressionTests = info.regressionTests ?? false;
 
   const esSSLOptions = { rejectUnauthorized: !internals.info.insecure };
   if (internals.info.caTrustFile) { esSSLOptions.ca = ArkimeUtil.certificateFileToArray(internals.info.caTrustFile); };
@@ -151,7 +154,7 @@ Db.initialize = async (info, cb) => {
 
   // Replace tag implementation
   if (internals.multiES) {
-    Db.isLocalView = (node, yesCB, noCB) => { return noCB(); };
+    Db.isLocalView = (node) => { return false; };
     internals.prefix = 'MULTIPREFIX_';
   }
 
@@ -163,8 +166,8 @@ Db.initialize = async (info, cb) => {
   if (Array.isArray(info.queryExtraIndices)) {
     internals.sessionIndices = [...new Set([...['sessions2-*', 'partial-sessions3-*', 'sessions3-*'], ...info.queryExtraIndices])];
     delete internals.aliasesCache;
-    for (const pattern in info.queryExtraIndices) {
-      internals.queryExtraIndicesRegex.push(ArkimeUtil.wildcardToRegexp(info.queryExtraIndices[pattern]));
+    for (const pattern of info.queryExtraIndices) {
+      internals.queryExtraIndicesRegex.push(ArkimeUtil.wildcardToRegexp(pattern));
     }
     if (internals.debug > 2) {
       console.log(`defaultIndexPatterns: ${internals.sessionIndices}`);
@@ -201,7 +204,6 @@ Db.initialize = async (info, cb) => {
         process.exit();
       }
     }
-    return cb();
   } catch (err) {
     ArkimeUtil.searchErrorMsg(err, internals.info.host, 'Getting OpenSearch/Elasticsearch info failed');
     process.exit(1);
@@ -279,22 +281,14 @@ Db.merge = (to, from) => {
   }
 };
 
-Db.get = async (index, type, id) => {
+Db.get = async (index, id) => {
   return internals.client7.get({ index: fixIndex(index), id });
 };
 
-Db.getWithOptions = async (index, type, id, options) => {
+Db.getWithOptions = async (index, id, options) => {
   const params = { index: fixIndex(index), id };
   Db.merge(params, options);
   return internals.client7.get(params);
-};
-
-Db.getSessionPromise = (id, options) => {
-  return new Promise((resolve, reject) => {
-    Db.getSession(id, options, (err, session) => {
-      err ? reject(err) : resolve(session);
-    });
-  });
 };
 
 // Fields too hard to leave as arrays for now
@@ -419,131 +413,141 @@ function fixSessionFields (fields, unflatten) {
   }
 }
 
+async function fixPacketPos (fields) {
+  if (!fields.packetPos || fields.packetPos.length === 0) {
+    return;
+  }
+
+  try {
+    const fileInfo = await Db.fileIdToFile(fields.node, -1 * fields.packetPos[0]);
+    if (internals.debug > 2) {
+      console.log('GETSESSION - fixPackPos', fileInfo);
+    }
+
+    if (!fileInfo || !fileInfo.packetPosEncoding) {
+      return;
+    }
+
+    if (fileInfo.packetPosEncoding === 'gap0') {
+      // Neg numbers aren't encoded, if pos is 0 same gap as last gap, otherwise last + pos
+      let last = 0;
+      let lastgap = 0;
+      for (let i = 0, ilen = fields.packetPos.length; i < ilen; i++) {
+        if (fields.packetPos[i] < 0) {
+          last = 0;
+        } else {
+          if (fields.packetPos[i] === 0) {
+            fields.packetPos[i] = last + lastgap;
+          } else {
+            lastgap = fields.packetPos[i];
+            fields.packetPos[i] += last;
+          }
+          last = fields.packetPos[i];
+        }
+      }
+      return;
+    } else if (fileInfo.packetPosEncoding === 'localIndex') {
+      // Neg numbers aren't encoded, use var length encoding, if pos is 0 same gap as last gap, otherwise last + pos
+      if (await Db.isLocalView(fields.node)) {
+        const newPacketPos = [];
+        await async.forEachOfSeries(fields.packetPos, async (item, key) => {
+          if (key % 3 !== 0) { return; } // Only look at every 3rd item
+
+          let fd;
+          try {
+            const idToFileInfo = await Db.fileIdToFile(fields.node, -1 * item);
+            fd = fs.openSync(idToFileInfo.indexFilename, 'r');
+            if (!fd) { return; }
+            const buffer = Buffer.alloc(fields.packetPos[key + 2]);
+            fs.readSync(fd, buffer, 0, buffer.length, fields.packetPos[key + 1]);
+            let last = 0;
+            let lastgap = 0;
+            let num = 0;
+            let mult = 1;
+            newPacketPos.push(item);
+            for (let i = 0; i < buffer.length; i++) {
+              const x = buffer.readUInt8(i);
+              // high bit set when last
+              if (x & 0x80) {
+                num = num + (x & 0x7f) * mult;
+                if (num !== 0) {
+                  lastgap = num;
+                }
+                last += lastgap;
+                newPacketPos.push(last);
+                num = 0;
+                mult = 1;
+              } else {
+                num = num + x * mult;
+                mult *= 128; // Javscript can't shift large numbers, so mult
+              }
+            }
+          } catch (e) {
+            console.log(e);
+          } finally {
+            if (fd) {
+              try {
+                fs.closeSync(fd);
+              } catch (closeErr) {
+                console.log('Error closing file:', closeErr);
+              }
+            }
+          }
+          return;
+        });
+        fields.packetPos = newPacketPos;
+        return;
+      } else {
+        return;
+      }
+    } else {
+      console.log('Unknown packetPosEncoding', fileInfo);
+      return;
+    }
+  } catch (err) {
+    return;
+  }
+}
+
 // Get a session from OpenSearch/Elasticsearch and decode packetPos if requested
 Db.getSession = async (id, options, cb) => {
   if (internals.debug > 2) {
     console.log('GETSESSION -', id, options);
   }
-  async function fixPacketPos (session, fields) {
-    if (!fields.packetPos || fields.packetPos.length === 0) {
-      return cb(null, session);
+
+  try {
+    const optionsReplaced = options === undefined;
+    if (!options) {
+      options = { _source: ['cert', 'dns'], fields: ['*'] };
     }
+    const query = { query: { ids: { values: [Db.sid2Id(id)] } }, _source: options._source, fields: options.fields };
 
-    try {
-      const fileInfo = await Db.fileIdToFile(fields.node, -1 * fields.packetPos[0]);
-      if (internals.debug > 2) {
-        console.log('GETSESSION - fixPackPos', fileInfo);
-      }
+    const unflatten = options?.arkime_unflatten ?? true;
+    const params = Object.create(null);
+    Db.merge(params, options);
+    delete params._source;
+    delete params.fields;
+    delete params.arkime_unflatten;
+    delete params.final;
 
-      if (!fileInfo || !fileInfo.packetPosEncoding) {
-        return cb(null, session);
-      }
+    const index = Db.sid2Index(id, { multiple: true });
 
-      if (fileInfo.packetPosEncoding === 'gap0') {
-        // Neg numbers aren't encoded, if pos is 0 same gap as last gap, otherwise last + pos
-        let last = 0;
-        let lastgap = 0;
-        for (let i = 0, ilen = fields.packetPos.length; i < ilen; i++) {
-          if (fields.packetPos[i] < 0) {
-            last = 0;
-          } else {
-            if (fields.packetPos[i] === 0) {
-              fields.packetPos[i] = last + lastgap;
-            } else {
-              lastgap = fields.packetPos[i];
-              fields.packetPos[i] += last;
-            }
-            last = fields.packetPos[i];
-          }
-        }
-        return cb(null, session);
-      } else if (fileInfo.packetPosEncoding === 'localIndex') {
-        // Neg numbers aren't encoded, use var length encoding, if pos is 0 same gap as last gap, otherwise last + pos
-        Db.isLocalView(fields.node, () => {
-          const newPacketPos = [];
-          async.forEachOfSeries(fields.packetPos, async (item, key) => {
-            if (key % 3 !== 0) { return; } // Only look at every 3rd item
-
-            try {
-              const idToFileInfo = await Db.fileIdToFile(fields.node, -1 * item);
-              const fd = fs.openSync(idToFileInfo.indexFilename, 'r');
-              if (!fd) { return; }
-              const buffer = Buffer.alloc(fields.packetPos[key + 2]);
-              fs.readSync(fd, buffer, 0, buffer.length, fields.packetPos[key + 1]);
-              let last = 0;
-              let lastgap = 0;
-              let num = 0;
-              let mult = 1;
-              newPacketPos.push(item);
-              for (let i = 0; i < buffer.length; i++) {
-                const x = buffer.readUInt8(i);
-                // high bit set when last
-                if (x & 0x80) {
-                  num = num + (x & 0x7f) * mult;
-                  if (num !== 0) {
-                    lastgap = num;
-                  }
-                  last += lastgap;
-                  newPacketPos.push(last);
-                  num = 0;
-                  mult = 1;
-                } else {
-                  num = num + x * mult;
-                  mult *= 128; // Javscript can't shift large numbers, so mult
-                }
-              }
-              fs.closeSync(fd);
-            } catch (e) {
-              console.log(e);
-            }
-            return;
-          }, () => {
-            fields.packetPos = newPacketPos;
-            return cb(null, session);
-          });
-        }, () => {
-          return cb(null, session);
-        });
-      } else {
-        console.log('Unknown packetPosEncoding', fileInfo);
-        return cb(null, session);
-      }
-    } catch (err) {
-      return cb(null, session);
-    }
-  }
-
-  const optionsReplaced = options === undefined;
-  if (!options) {
-    options = { _source: ['cert', 'dns'], fields: ['*'] };
-  }
-  const query = { query: { ids: { values: [Db.sid2Id(id)] } }, _source: options._source, fields: options.fields };
-
-  const unflatten = options?.arkime_unflatten ?? true;
-  const params = Object.create(null);
-  Db.merge(params, options);
-  delete params._source;
-  delete params.fields;
-  delete params.arkime_unflatten;
-  delete params.final;
-
-  const index = Db.sid2Index(id, { multiple: true });
-
-  Db.search(index, '_doc', query, params, async (err, results) => {
+    let results = await Db.search(index, query, params);
     if (internals.debug > 2) {
-      console.log('GETSESSION - search results', err, JSON.stringify(results, false, 2));
+      console.log('GETSESSION - search results', JSON.stringify(results, false, 2));
     }
-    if (err) { return cb(err); }
     if (!results.hits || !results.hits.hits || results.hits.hits.length === 0) {
       if (options.final === true) {
         delete options.final;
-        return cb('Not found');
+        return cb ? cb('Not found') : Promise.reject('Not found');
       }
       options.final = true;
-      internals.client7.indices.refresh({ index: fixIndex(index) }, () => {
-        Db.getSession(id, options, cb);
+      await new Promise((resolve) => {
+        internals.client7.indices.refresh({ index: fixIndex(index) }, () => {
+          resolve();
+        });
       });
-      return;
+      return Db.getSession(id, options, cb);
     }
     const session = results.hits.hits[0];
     session.found = true;
@@ -555,28 +559,26 @@ Db.getSession = async (id, options, cb) => {
     }
     delete session._source;
     fixSessionFields(session.fields, unflatten);
-    if (!optionsReplaced && options.fields && !options.fields.includes('packetPos')) {
-      return cb(null, session);
+    if (session.fields.packetPos !== undefined) {
+      await fixPacketPos(session.fields);
     }
-    return await fixPacketPos(session, session.fields);
-  });
+    return cb ? cb(null, session) : session;
+  } catch (err) {
+    return cb ? cb(err) : Promise.reject(err);
+  }
 };
 
-Db.index = async (index, type, id, doc) => {
+Db.index = async (index, id, doc) => {
   return internals.client7.index({ index: fixIndex(index), body: doc, id });
 };
 
-Db.indexNow = async (index, type, id, doc) => {
+Db.indexNow = async (index, id, doc) => {
   return internals.client7.index({
     index: fixIndex(index), body: doc, id, refresh: true
   });
 };
 
-Db.search = async (index, type, query, options, cb) => {
-  if (!cb && typeof options === 'function') {
-    cb = options;
-    options = undefined;
-  }
+Db.search = async (index, query, options) => {
   query.profile = internals.esProfile;
 
   const params = {
@@ -601,10 +603,9 @@ Db.search = async (index, type, query, options, cb) => {
       console.log('RESPONSE:', JSON.stringify(results, false, 2));
     }
 
-    return cb ? cb(null, results) : results;
+    return results;
   } catch (err) {
-    console.trace(`OpenSearch/Elasticsearch Search Error - query: ${JSON.stringify(params, false, 2)} err:`, err);
-    if (cb) { return cb(err, null); }
+    console.trace(`OpenSearch/Elasticsearch Search Error - query: ${JSON.stringify(params, false, 2)} err:`, util.inspect(err, null, 20));
     throw err;
   }
 };
@@ -634,52 +635,35 @@ Db.cancelByOpaqueId = async (cancelId, cluster) => {
     throw new Error('Cancel ID not found, cannot cancel OpenSearch/Elasticsearch task(s)');
   }
 
-  return 'OpenSearch/Elasticsearch task cancelled succesfully';
+  return 'OpenSearch/Elasticsearch task cancelled successfully';
 };
 
-Db.searchScroll = function (index, type, query, options, cb) {
-  // external scrolling, or multiesES or lesseq 10000, do a normal search which does its own Promise conversion
-  if (query.scroll !== undefined || internals.multiES || (query.size ?? 0) + (parseInt(query.from ?? 0, 10)) <= 10000) {
-    return Db.search(index, type, query, options, cb);
+Db.searchScroll = async (index, query, options, cb) => {
+  // external scrolling, or multiesES or (not regressionTests AND lesseq 10000), do a normal search which does its own Promise conversion
+  if (options?.scroll !== undefined || internals.multiES || (!internals.regressionTests && (query.size ?? 0) + (parseInt(query.from ?? 0, 10)) <= 10000)) {
+    if (!cb) {
+      return Db.search(index, query, options);
+    }
+    return Db.search(index, query, options).then((data) => cb(null, data)).catch((err) => cb(err));
   }
 
-  // Convert promise to cb by calling ourselves
-  if (!cb) {
-    return new Promise((resolve, reject) => {
-      Db.searchScroll(index, type, query, options, (err, data) => {
-        if (err) {
-          reject(err);
-        } else {
-          resolve(data);
-        }
-      });
-    });
-  }
+  try {
+    // Now actually do the search scroll
+    const from = +query.from || 0;
+    const size = +query.size || 0;
 
-  // Now actually do the search scroll
-  const from = +query.from || 0;
-  const size = +query.size || 0;
+    const querySize = from + size;
+    delete query.from;
 
-  const querySize = from + size;
-  delete query.from;
+    let totalResults;
+    const params = { scroll: '2m' };
+    Db.merge(params, options);
+    query.size = 1000; // Get 1000 items per scroll call
+    query.profile = internals.esProfile;
 
-  let totalResults;
-  const params = { scroll: '2m' };
-  Db.merge(params, options);
-  query.size = 1000; // Get 1000 items per scroll call
-  query.profile = internals.esProfile;
-  Db.search(index, type, query, params,
-    async function getMoreUntilDone (error, response) {
-      if (error) {
-        if (totalResults && from > 0) {
-          totalResults.hits.hits = totalResults.hits.hits.slice(from);
-        }
-        if (response && response._scroll_id) {
-          Db.clearScroll({ body: { scroll_id: response._scroll_id } });
-        }
-        return cb(error, totalResults);
-      }
+    let response = await Db.search(index, query, params);
 
+    while (true) {
       if (totalResults === undefined) {
         totalResults = response;
       } else {
@@ -691,21 +675,103 @@ Db.searchScroll = function (index, type, query, options, cb) {
           const { body: results } = await Db.scroll({
             scroll: '2m', body: { scroll_id: response._scroll_id }
           });
-          getMoreUntilDone(null, results);
+          response = results;
         } catch (err) {
           console.log('ERROR - issuing scroll', err);
-          getMoreUntilDone(err, {});
+          if (totalResults) {
+            totalResults.hits.hits = totalResults.hits.hits.slice(from, querySize);
+          }
+          if (response._scroll_id) {
+            await Db.clearScroll({ body: { scroll_id: response._scroll_id } });
+          }
+          throw err;
         }
       } else {
-        if (totalResults && from > 0) {
-          totalResults.hits.hits = totalResults.hits.hits.slice(from);
-        }
-        if (response._scroll_id) {
-          Db.clearScroll({ body: { scroll_id: response._scroll_id } });
-        }
-        return cb(null, totalResults);
+        break;
       }
-    });
+    }
+
+    if (totalResults) {
+      totalResults.hits.hits = totalResults.hits.hits.slice(from, querySize);
+    }
+    if (response._scroll_id) {
+      await Db.clearScroll({ body: { scroll_id: response._scroll_id } });
+    }
+
+    if (cb) { cb(null, totalResults); }
+    return totalResults;
+  } catch (err) {
+    if (cb) { cb(err); }
+    throw err;
+  }
+};
+
+Db.searchScrollIterator = async function* (index, query, options) {
+  // external scrolling, or multiesES or (not regressionTests AND lesseq 10000), do a normal search which does its own Promise conversion
+  if (options?.scroll !== undefined || internals.multiES || (!internals.regressionTests && (query.size ?? 0) + (parseInt(query.from ?? 0, 10)) <= 10000)) {
+    const result = await Db.search(index, query, options);
+    yield result;
+    return;
+  }
+
+  let from = +query.from || 0;
+  const size = +query.size || 0;
+  delete query.from;
+
+  let yielded = 0;
+  const params = { scroll: '2m' };
+  Db.merge(params, options);
+  query.size = internals.regressionTests ? 20 : 2000;
+  query.profile = internals.esProfile;
+
+  let response = await Db.search(index, query, params);
+
+  while (true) {
+    let hits = response.hits.hits;
+
+    // Stop if no more results
+    if (hits.length === 0) {
+      break;
+    }
+
+    if (from === 0) {
+      // Don't do anything
+    } else if (from < hits.length) {
+      hits = hits.slice(from);
+      from = 0;
+    } else {
+      from -= hits.length;
+      hits = [];
+    }
+
+    if (hits.length > 0) {
+      response.hits.hits = hits.slice(0, size - yielded);
+      yielded += response.hits.hits.length;
+      yield response;
+
+      if (yielded >= size) {
+        break;
+      }
+    }
+
+    // Fetch next chunk
+    try {
+      const { body: results } = await Db.scroll({
+        scroll: '2m', body: { scroll_id: response._scroll_id }
+      });
+      response = results;
+    } catch (err) {
+      console.log('ERROR - issuing scroll', err);
+      if (response._scroll_id) {
+        await Db.clearScroll({ body: { scroll_id: response._scroll_id } });
+      }
+      throw err;
+    }
+  }
+
+  if (response._scroll_id) {
+    await Db.clearScroll({ body: { scroll_id: response._scroll_id } });
+  }
 };
 
 Db.searchSessions = function (index, query, options, cb) {
@@ -723,14 +789,36 @@ Db.searchSessions = function (index, query, options, cb) {
   if (internals.maxConcurrentShardRequests) { params.maxConcurrentShardRequests = internals.maxConcurrentShardRequests; }
   Db.merge(params, options);
   delete params.arkime_unflatten;
-  Db.searchScroll(index, 'session', query, params, (err, result) => {
+  Db.searchScroll(index, query, params, async (err, result) => {
     if (err || result.hits.hits.length === 0) { return cb(err, result); }
 
-    for (let i = 0; i < result.hits.hits.length; i++) {
-      fixSessionFields(result.hits.hits[i].fields, unflatten);
+    for (const hit of result.hits.hits) {
+      fixSessionFields(hit.fields, unflatten);
+      if (hit.fields?.packetPos !== undefined) {
+        await fixPacketPos(hit._source);
+      }
     }
     return cb(null, result);
   });
+};
+
+Db.searchSessionsIterator = async function* (index, query, options) {
+  if (!options) { options = {}; }
+  const unflatten = options.arkime_unflatten ?? true;
+  const params = { preference: 'primaries', ignore_unavailable: 'true' };
+  if (internals.maxConcurrentShardRequests) { params.maxConcurrentShardRequests = internals.maxConcurrentShardRequests; }
+  Db.merge(params, options);
+  delete params.arkime_unflatten;
+
+  for await (const chunk of Db.searchScrollIterator(index, query, params)) {
+    for (const hit of chunk.hits.hits) {
+      fixSessionFields(hit.fields, unflatten);
+      if (hit.fields?.packetPos !== undefined) {
+        await fixPacketPos(hit.fields);
+      }
+    }
+    yield chunk;
+  }
 };
 
 Db.msearchSessions = async (index, queries, options) => {
@@ -864,6 +952,7 @@ Db.setIndexSettings = async (index, options) => {
         cluster: options.cluster
       });
     } catch (err) {
+      console.log('ERROR - updating users index settings', JSON.stringify(err, null, 2));
     }
   }
 
@@ -877,6 +966,7 @@ Db.setIndexSettings = async (index, options) => {
     });
     return response;
   } catch (err) {
+    console.log('ERROR - index settings', JSON.stringify(err, null, 2));
     cache10.clear();
     cache60.clear();
     throw err;
@@ -924,13 +1014,13 @@ Db.getClusterSettingsCache = async (options) => {
   if (value) {
     return value;
   }
-  value = internals.client7.cluster.getSettings(options);
+  value = await internals.client7.cluster.getSettings(options);
   cache60.set(key, value);
   return value;
 };
 
 Db.putClusterSettings = async (options) => {
-  cache60.keys().filter((v) => v.startsWith('clusterSettings-')).every((v) => cache60.delete(v));
+  cache60.keys().filter((v) => v.startsWith('clusterSettings-')).forEach((v) => cache60.delete(v));
   options.timeout = '10m';
   options.master_timeout = '10m';
   return internals.client7.cluster.putSettings(options);
@@ -952,7 +1042,7 @@ Db.nodesInfo = async (options) => {
   return internals.client7.nodes.info(options);
 };
 
-Db.update = async (index, type, id, doc, options) => {
+Db.update = async (index, id, doc, options) => {
   const params = {
     id,
     body: doc,
@@ -1029,7 +1119,7 @@ Db.flush = async (index, cluster) => {
 
 Db.refresh = async (index, cluster) => {
   if (index === 'users') {
-    User.flush(cluster);
+    return User.flush(cluster);
   } else if (index === 'lookups') {
     return internals.usersClient7.indices.refresh({ index: `${internals.usersPrefix}${index}`, cluster });
   } else {
@@ -1038,27 +1128,23 @@ Db.refresh = async (index, cluster) => {
 };
 
 Db.addTagsToSession = async (index, id, tags, cluster) => {
-  const script = `
-    if (ctx._source.tags != null) {
-      for (int i = 0; i < params.tags.length; i++) {
-        if (ctx._source.tags.indexOf(params.tags[i]) == -1) {
-          ctx._source.tags.add(params.tags[i]);
-        }
-      }
-      ctx._source.tagsCnt = ctx._source.tags.length;
-    } else {
-      ctx._source.tags = params.tags;
-      ctx._source.tagsCnt = params.tags.length;
-    }
-  `;
-
   const body = {
     script: {
-      source: script,
+      source: `
+        if (ctx._source.tags != null) {
+          for (int i = 0; i < params.tags.length; i++) {
+            if (ctx._source.tags.indexOf(params.tags[i]) == -1) {
+              ctx._source.tags.add(params.tags[i]);
+            }
+          }
+          ctx._source.tagsCnt = ctx._source.tags.length;
+        } else {
+          ctx._source.tags = params.tags;
+          ctx._source.tagsCnt = params.tags.length;
+        }
+      `,
       lang: 'painless',
-      params: {
-        tags
-      }
+      params: { tags }
     }
   };
 
@@ -1068,27 +1154,23 @@ Db.addTagsToSession = async (index, id, tags, cluster) => {
 };
 
 Db.removeTagsFromSession = async (index, id, tags, cluster) => {
-  const script = `
-    if (ctx._source.tags != null) {
-      for (int i = 0; i < params.tags.length; i++) {
-        int index = ctx._source.tags.indexOf(params.tags[i]);
-        if (index > -1) { ctx._source.tags.remove(index); }
-      }
-      ctx._source.tagsCnt = ctx._source.tags.length;
-      if (ctx._source.tagsCnt == 0) {
-        ctx._source.remove("tags");
-        ctx._source.remove("tagsCnt");
-      }
-    }
-  `;
-
   const body = {
     script: {
-      source: script,
+      source: `
+        if (ctx._source.tags != null) {
+          for (int i = 0; i < params.tags.length; i++) {
+            int idx = ctx._source.tags.indexOf(params.tags[i]);
+            if (idx > -1) { ctx._source.tags.remove(idx); }
+          }
+          ctx._source.tagsCnt = ctx._source.tags.length;
+          if (ctx._source.tagsCnt == 0) {
+            ctx._source.remove("tags");
+            ctx._source.remove("tagsCnt");
+          }
+        }
+      `,
       lang: 'painless',
-      params: {
-        tags
-      }
+      params: { tags }
     }
   };
 
@@ -1098,27 +1180,22 @@ Db.removeTagsFromSession = async (index, id, tags, cluster) => {
 };
 
 Db.addHuntToSession = async (index, id, huntId, huntName) => {
-  const script = `
-    if (ctx._source.huntId != null) {
-      ctx._source.huntId.add(params.huntId);
-    } else {
-      ctx._source.huntId = [ params.huntId ];
-    }
-    if (ctx._source.huntName != null) {
-      ctx._source.huntName.add(params.huntName);
-    } else {
-      ctx._source.huntName = [ params.huntName ];
-    }
-  `;
-
   const body = {
     script: {
-      source: script,
+      source: `
+        if (ctx._source.huntId != null) {
+          ctx._source.huntId.add(params.huntId);
+        } else {
+          ctx._source.huntId = [ params.huntId ];
+        }
+        if (ctx._source.huntName != null) {
+          ctx._source.huntName.add(params.huntName);
+        } else {
+          ctx._source.huntName = [ params.huntName ];
+        }
+      `,
       lang: 'painless',
-      params: {
-        huntId,
-        huntName
-      }
+      params: { huntId, huntName }
     }
   };
 
@@ -1126,25 +1203,20 @@ Db.addHuntToSession = async (index, id, huntId, huntName) => {
 };
 
 Db.removeHuntFromSession = async (index, id, huntId, huntName) => {
-  const script = `
-    if (ctx._source.huntId != null) {
-      int index = ctx._source.huntId.indexOf(params.huntId);
-      if (index > -1) { ctx._source.huntId.remove(index); }
-    }
-    if (ctx._source.huntName != null) {
-      int index = ctx._source.huntName.indexOf(params.huntName);
-      if (index > -1) { ctx._source.huntName.remove(index); }
-    }
-  `;
-
   const body = {
     script: {
-      source: script,
+      source: `
+        if (ctx._source.huntId != null) {
+          int idx = ctx._source.huntId.indexOf(params.huntId);
+          if (idx > -1) { ctx._source.huntId.remove(idx); }
+        }
+        if (ctx._source.huntName != null) {
+          int idx = ctx._source.huntName.indexOf(params.huntName);
+          if (idx > -1) { ctx._source.huntName.remove(idx); }
+        }
+      `,
       lang: 'painless',
-      params: {
-        huntId,
-        huntName
-      }
+      params: { huntId, huntName }
     }
   };
 
@@ -1307,7 +1379,7 @@ Db.updateLocalShortcuts = async () => {
         if (internals.debug > 1) {
           console.log(`SHORTCUT - deleting ${localShortcut._id} ${localShortcut._source.name} locally`);
         }
-        internals.client7.delete({ // remove the shortcut from the local db
+        await internals.client7.delete({ // remove the shortcut from the local db
           index: internals.localShortcutsIndex,
           id: localShortcut._id,
           refresh: true
@@ -1327,7 +1399,7 @@ Db.updateLocalShortcuts = async () => {
               console.log(`SHORTCUT - update from remote ${remoteShortcut._id} ${remoteShortcut._source.name}`);
             }
             // the versions don't match, this shortcut has been updated in the remote db
-            internals.client7.index({ // update the shortcut in the local db
+            await internals.client7.index({ // update the shortcut in the local db
               id: remoteShortcut._id,
               index: internals.localShortcutsIndex,
               body: remoteShortcut._source,
@@ -1343,7 +1415,7 @@ Db.updateLocalShortcuts = async () => {
         if (internals.debug > 1) {
           console.log(`SHORTCUT - add from remote ${remoteShortcut._id} ${remoteShortcut._source.name}`);
         }
-        internals.client7.index({ // add the shortcut in the local db
+        await internals.client7.index({ // add the shortcut in the local db
           id: remoteShortcut._id,
           index: internals.localShortcutsIndex,
           body: remoteShortcut._source,
@@ -1380,7 +1452,7 @@ Db.createShortcut = async (doc) => {
   const response = await internals.usersClient7.index({
     index: internals.remoteShortcutsIndex, body: doc, refresh: 'wait_for', timeout: '10m'
   });
-  Db.updateLocalShortcuts();
+  await Db.updateLocalShortcuts();
   return response;
 };
 Db.deleteShortcut = async (id) => {
@@ -1389,7 +1461,7 @@ Db.deleteShortcut = async (id) => {
   const response = await internals.usersClient7.delete({
     index: internals.remoteShortcutsIndex, id, refresh: true
   });
-  Db.updateLocalShortcuts();
+  await Db.updateLocalShortcuts();
   return response;
 };
 Db.setShortcut = async (id, doc) => {
@@ -1398,7 +1470,7 @@ Db.setShortcut = async (id, doc) => {
   const response = await internals.usersClient7.index({
     index: internals.remoteShortcutsIndex, body: doc, id, refresh: true, timeout: '10m'
   });
-  Db.updateLocalShortcuts();
+  await Db.updateLocalShortcuts();
   return response;
 };
 Db.getShortcut = async (id) => {
@@ -1505,7 +1577,7 @@ Db.getShareable = async (id) => {
 
 Db.arkimeNodeStats = async (nodeName) => {
   try {
-    const { body: stat } = await Db.get('stats', 'stat', nodeName);
+    const { body: stat } = await Db.get('stats', nodeName);
     return stat._source;
   } catch (err) {
     throw new Error('Unknown node');
@@ -1514,12 +1586,12 @@ Db.arkimeNodeStats = async (nodeName) => {
 
 Db.arkimeNodeStatsCache = async function (nodeName) {
   const key = `arkimeNodeStats-${nodeName}`;
-  let stat = cache60.get(nodeName);
+  let stat = cache60.get(key);
   if (stat) {
     return stat;
   }
 
-  stat = Db.arkimeNodeStats(nodeName);
+  stat = await Db.arkimeNodeStats(nodeName);
   cache60.set(key, stat);
   return stat;
 };
@@ -1566,7 +1638,7 @@ Db.masterCache = async (cluster) => {
     return value;
   }
 
-  const { body: data } = await Db.master();
+  const { body: data } = await Db.master(cluster);
   cache10.set(key, data);
   return data;
 };
@@ -1584,7 +1656,7 @@ Db.loadESId2Info = async (cluster) => {
     cluster
   };
 
-  const data = await Db.search('dstats', 'dstat', query);
+  const data = await Db.search('dstats', query);
   if (!data.hits) { return; }
   for (const hit of data.hits.hits) {
     const id = hit._id.substring(3);
@@ -1601,13 +1673,13 @@ Db.getESId2Node = (id, cluster) => {
   return node.nodeName;
 };
 
-Db.updateESId2Info = (id, nodeName, hostname, cluster) => {
+Db.updateESId2Info = async (id, nodeName, hostname, cluster) => {
   if (esId2Info.has(id) && esId2Info.get(id).nodeName === nodeName && esId2Info.get(id).hostname === hostname) {
     return;
   }
 
   esId2Info.set(`${cluster}-${id}`, { nodeName, hostname });
-  Db.index('dstats', 'dstat', `es:${id}`, { nodeName: `es:${nodeName}`, hostname: `es:${hostname}` });
+  await Db.index('dstats', `es:${id}`, { nodeName: `es:${nodeName}`, hostname: `es:${hostname}` });
 };
 
 Db.nodesStatsCache = async (cluster) => {
@@ -1627,7 +1699,7 @@ Db.nodesStatsCache = async (cluster) => {
 
   for (let n = 0, nlen = nodeKeys.length; n < nlen; n++) {
     const node = data.nodes[nodeKeys[n]];
-    Db.updateESId2Info(nodeKeys[n], node.name, node.host);
+    Db.updateESId2Info(nodeKeys[n], node.name, node.host, cluster);
   }
   cache10.set(key, data);
   return data;
@@ -1659,42 +1731,33 @@ Db.indicesSettingsCache = async (cluster) => {
   return indicesSettings;
 };
 
-Db.hostnameToNodeids = function (hostname, cb) {
+Db.hostnameToNodeids = async (hostname) => {
   const query = { query: { match: { hostname } } };
-  Db.search('stats', 'stat', query, (err, sdata) => {
-    const nodes = [];
-    if (sdata && sdata.hits && sdata.hits.hits) {
-      for (let i = 0, ilen = sdata.hits.hits.length; i < ilen; i++) {
-        nodes.push(sdata.hits.hits[i]._id);
-      }
-    }
-    cb(nodes);
-  });
+  const sdata = await Db.search('stats', query);
+  // If results, return array of _id, otherwise empty array
+  return sdata?.hits?.hits?.map(hit => hit._id) ?? [];
 };
 
-Db.fileIdToFile = async (node, num, cb) => {
+Db.fileIdToFile = async (node, num) => {
   const key = node + '!' + num;
   const info = internals.fileId2File.get(key);
   if (info !== undefined) {
-    if (cb) {
-      return setImmediate(() => { cb(info); });
-    }
     return info;
   }
 
   let file = null;
   try {
-    const { body: fresult } = await Db.get('files', 'file', node + '-' + num);
+    const { body: fresult } = await Db.get('files', node + '-' + num);
     file = fresult._source;
     internals.fileId2File.set(key, file);
     internals.fileName2File.set(file.name, file);
   } catch (err) { // Cache file is unknown
     internals.fileId2File.delete(key);
   }
-  return cb ? cb(file) : file;
+  return file;
 };
 
-Db.fileNameToFiles = function (fileName, cb) {
+Db.fileNameToFiles = async (fileName) => {
   let query;
   if (fileName[0] === '/' && fileName[fileName.length - 1] === '/') {
     query = { query: { regexp: { name: fileName.substring(1, fileName.length - 1) } }, sort: [{ num: { order: 'desc' } }] };
@@ -1705,16 +1768,17 @@ Db.fileNameToFiles = function (fileName, cb) {
   // Not wildcard/regex check the cache
   if (!query) {
     if (internals.fileName2File.has(fileName)) {
-      return cb([internals.fileName2File.get(fileName)]);
+      return [internals.fileName2File.get(fileName)];
     }
     query = { size: 100, query: { term: { name: fileName } }, sort: [{ num: { order: 'desc' } }] };
   }
 
-  Db.search('files', 'file', query, (err, data) => {
-    const files = [];
-    if (err || !data.hits) {
-      return cb(null);
+  try {
+    const data = await Db.search('files', query);
+    if (!data.hits) {
+      return null;
     }
+    const files = [];
     data.hits.hits.forEach((hit) => {
       const file = hit._source;
       const key = file.node + '!' + file.num;
@@ -1722,12 +1786,14 @@ Db.fileNameToFiles = function (fileName, cb) {
       internals.fileName2File.set(file.name, file);
       files.push(file);
     });
-    return cb(files);
-  });
+    return files;
+  } catch (err) {
+    return null;
+  }
 };
 
 Db.getSequenceNumber = async (sName) => {
-  const { body: sinfo } = await Db.index('sequence', 'sequence', sName, {});
+  const { body: sinfo } = await Db.index('sequence', sName, {});
   return sinfo._version;
 };
 
@@ -1765,14 +1831,14 @@ Db.checkVersion = async function (minVersion) {
     process.exit(1);
   }
 
-  ['stats', 'dstats', 'sequence'].forEach(async (index) => {
+  for (const index of ['stats', 'dstats', 'sequence']) {
     try {
       await Db.indexStats(index);
     } catch (err) {
       console.log(`ERROR - Issue with '${fixIndex(index)}' index, make sure 'db/db.pl <host:port> init' has been run.\n`, err);
       process.exit(1);
     }
-  });
+  }
 
   if (!internals.multiES) {
     const { body: doc } = await internals.usersClient7.indices.getMapping({
@@ -1789,15 +1855,15 @@ Db.checkVersion = async function (minVersion) {
     }
   }
 
-  ArkimeUtil.checkArkimeSchemaVersion(internals.client7, internals.prefix, minVersion);
+  await ArkimeUtil.checkArkimeSchemaVersion(internals.client7, internals.prefix, minVersion);
 };
 
-Db.isLocalView = async function (node, yesCB, noCB) {
+Db.isLocalView = async function (node) {
   if (node === internals.nodeName) {
     if (internals.debug > 1) {
       console.log(`DEBUG: node:${node} is local view because equals ${internals.nodeName}`);
     }
-    return yesCB();
+    return true;
   }
 
   try {
@@ -1806,18 +1872,18 @@ Db.isLocalView = async function (node, yesCB, noCB) {
       if (internals.debug > 1) {
         console.log(`DEBUG: node:${node} is NOT local view because ${stat.hostname} != ${os.hostname()} or --host ${internals.hostName}`);
       }
-      noCB();
+      return false;
     } else {
       if (internals.debug > 1) {
         console.log(`DEBUG: node:${node} is local view because ${stat.hostname} == ${os.hostname()} or --host ${internals.hostName}`);
       }
-      yesCB();
+      return true;
     }
   } catch (err) {
     if (internals.debug > 1) {
       console.log(`DEBUG: node:${node} is NOT local view because error ${err} ${os.hostname()} ${internals.hostName}`);
     }
-    noCB();
+    return false;
   }
 };
 
@@ -1917,7 +1983,7 @@ Db.sid2Index = function (id, options) {
 };
 
 Db.loadFields = async () => {
-  return Db.search('fields', 'field', { size: 10000 });
+  return Db.search('fields', { size: 10000 });
 };
 
 Db.getSessionIndices = function (excludeExtra) {
@@ -2068,7 +2134,7 @@ Db.getIndices = async (startTime, stopTime, bounding, rotateIndex, extraIndices)
     if (internals.debug > 2) {
       console.log(`getIndices: ${indices}`);
     }
-    return indices.join();
+    return indices.join(',');
   } catch {
     return '';
   }
@@ -2124,7 +2190,7 @@ Db.setQueriesNode = async (node, force) => {
 
   // force is true we just rewrite the primary-viewer entry everytime
   if (force) {
-    internals.client7.index({
+    await internals.client7.index({
       id: 'primary-viewer',
       index: fixIndex('queries'),
       body: { name: namePid, lastRun: Date.now(), enabled: false }

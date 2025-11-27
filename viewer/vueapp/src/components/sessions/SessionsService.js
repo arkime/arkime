@@ -136,13 +136,16 @@ export default {
    *                              or rejection of the request.
    */
   generateSummary: function (routeParams) {
+    // Default fields to aggregate for summary - can be customized by users in the future
+    const defaultFields = ['ip', 'ip.dst:port', 'ip.src', 'ip.dst', 'port.src', 'port.dst', 'protocols', 'tags', 'host.http', 'dns.query.host'];
+
     return this.postSessionsRequest(
       'api/sessions/summary',
-      routeParams,
+      { ...routeParams, fields: defaultFields },
       {
         includePagination: true,
         includeSort: false,
-        includeFields: false,
+        includeFields: true, // buildSessionParams will convert fields array to comma-separated string
         flatten: false
       },
       true // always calculate facets for summary

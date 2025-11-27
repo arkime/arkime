@@ -320,13 +320,13 @@ LOCAL ArkimePacketRC dhcpv6_packet_enqueue(ArkimePacketBatch_t *UNUSED(batch), A
 void arkime_parser_init()
 {
     typeField = arkime_field_define("dhcp", "uptermfield",
-                                    "dhcp.type", "Type", "dhcp.type",
+                                    "dhcp.type", "DHCP Type", "dhcp.type",
                                     "DHCP Type",
                                     ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
                                     (char *)NULL);
 
     hostField = arkime_field_define("dhcp", "lotermfield",
-                                    "dhcp.host", "Host", "dhcp.host",
+                                    "dhcp.host", "DHCP Host", "dhcp.host",
                                     "DHCP Host",
                                     ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
                                     "aliases", "[\"host.dhcp\"]",
@@ -341,31 +341,31 @@ void arkime_parser_init()
                         (char *)NULL);
 
     macField = arkime_field_define("dhcp", "lotermfield",
-                                   "dhcp.mac", "Client MAC", "dhcp.mac",
+                                   "dhcp.mac", "DHCP Client MAC", "dhcp.mac",
                                    "Client ethernet MAC ",
                                    ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
                                    (char *)NULL);
 
     ouiField = arkime_field_define("dhcp", "termfield",
-                                   "dhcp.oui", "Client OUI", "dhcp.oui",
+                                   "dhcp.oui", "DHCP Client OUI", "dhcp.oui",
                                    "Client ethernet OUI ",
                                    ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
                                    (char *)NULL);
 
     idField = arkime_field_define("dhcp", "lotermfield",
-                                  "dhcp.id", "Transaction id", "dhcp.id",
+                                  "dhcp.id", "DHCP Transaction id", "dhcp.id",
                                   "DHCP Transaction Id",
                                   ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
                                   (char *)NULL);
 
     classIdField = arkime_field_define("dhcp", "termfield",
-                                       "dhcp.classId", "Vendor Class", "dhcp.classId",
+                                       "dhcp.classId", "DHCP Vendor Class", "dhcp.classId",
                                        "DHCP Vendor Class Identifier",
                                        ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
                                        (char *)NULL);
 
     requestIpField = arkime_field_define("dhcp", "ip",
-                                         "dhcp.requestIp", "Request IP", "dhcp.requestIp",
+                                         "dhcp.requestIp", "DHCP Request IP", "dhcp.requestIp",
                                          "DHCP Requested IP Address",
                                          ARKIME_FIELD_TYPE_IP_GHASH,  ARKIME_FIELD_FLAG_CNT,
                                          (char *)NULL);

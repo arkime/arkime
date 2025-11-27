@@ -58,7 +58,7 @@ class CronAPIs {
       setInterval(CronAPIs.#runPrimaryViewer, 60 * 1000);
     } else if (Config.get('cronQueries') === true) {
       setTimeout(CronAPIs.#updatePrimaryViewer, 1000, true);
-      setInterval(CronAPIs.#updatePrimaryViewer, 120 * 1000, true);
+      setInterval(CronAPIs.#updatePrimaryViewer, 45 * 1000, true);
       setInterval(CronAPIs.#runPrimaryViewer, 60 * 1000);
     } else if (!Config.get('multiES', false)) {
       const info = await Db.getQueriesNode();
@@ -143,10 +143,8 @@ class CronAPIs {
       query.query.bool.filter = []; // remove sharing restrictions
     }
 
-    Db.search('queries', 'query', query, (err, data) => {
-      if (err || data.error) {
-        console.log(`ERROR - ${req.method} /api/crons`, util.inspect(err || data.error, false, 50));
-      }
+    try {
+      const data = await Db.search('queries', query);
 
       let queries = [];
 
@@ -177,7 +175,9 @@ class CronAPIs {
       }
 
       res.send(queries);
-    });
+    } catch (err) {
+      console.log(`ERROR - ${req.method} /api/crons`, util.inspect(err, false, 50));
+    }
   }
 
   // --------------------------------------------------------------------------
@@ -269,7 +269,7 @@ class CronAPIs {
     doc.doc.creator = userId || 'anonymous';
 
     try {
-      const { body: info } = await Db.indexNow('queries', 'query', null, doc.doc);
+      const { body: info } = await Db.indexNow('queries', null, doc.doc);
 
       if (CronAPIs.#primaryViewer) { CronAPIs.processCronQueries(); }
 
@@ -392,7 +392,7 @@ class CronAPIs {
       };
 
       try {
-        await Db.update('queries', 'query', key, doc, { refresh: true });
+        await Db.update('queries', key, doc, { refresh: true });
       } catch (err) {
         console.log(`ERROR - ${req.method} /api/cron/%s`, ArkimeUtil.sanitizeStr(key), util.inspect(err, false, 50));
       }
@@ -562,7 +562,7 @@ class CronAPIs {
           } else {
             const doc = { doc: { count: (query.count || 0) + count } };
             try {
-              Db.update('queries', 'query', options.qid, doc, { refresh: true });
+              Db.update('queries', options.qid, doc, { refresh: true });
             } catch (err) {
               console.log('ERROR CRON - updating query', err);
             }
@@ -639,14 +639,10 @@ class CronAPIs {
     }
 
     let repeat;
-    async.doWhilst(function (whilstCb) {
+    async.doWhilst(async () => {
       repeat = false;
-      Db.search('queries', 'query', { size: 1000 }, (err, data) => {
-        if (err) {
-          internals.cronRunning = false;
-          console.log('CRON - processCronQueries', err);
-          return setImmediate(whilstCb, err);
-        }
+      try {
+        const data = await Db.search('queries', { size: 1000 });
 
         const queries = {};
         data.hits.hits.forEach(function (item) {
@@ -658,7 +654,7 @@ class CronAPIs {
         const endTime = Math.floor(Date.now() / 1000) - internals.cronTimeout;
 
         // Go thru the queries, fetch the user, make the query
-        async.eachSeries(Object.keys(queries), (qid, forQueriesCb) => {
+        await async.eachSeries(Object.keys(queries), async (qid) => {
           const cq = queries[qid];
           let cluster = null;
 
@@ -667,80 +663,78 @@ class CronAPIs {
           }
 
           if (!cq.enabled || endTime < cq.lpValue) {
-            return forQueriesCb();
+            return;
           }
 
           if (cq.action.indexOf('forward:') === 0) {
             cluster = cq.action.substring(8);
           }
 
-          ViewerUtils.getUserCacheIncAnon(cq.creator, async (err, user) => {
-            if (err && !user) {
-              return forQueriesCb();
-            }
-            if (!user) {
-              console.log(`CRON - User ${cq.creator} doesn't exist`);
-              return forQueriesCb(null);
-            }
-            if (!user.enabled) {
-              console.log(`CRON - User '${cq.creator}' has been disabled on users tab, either delete their cron jobs or enable them`);
-              return forQueriesCb();
-            }
+          const user = await ViewerUtils.getUserCacheIncAnon(cq.creator);
+          if (!user) {
+            console.log(`CRON - User ${cq.creator} doesn't exist`);
+            return;
+          }
+          if (!user.enabled) {
+            console.log(`CRON - User '${cq.creator}' has been disabled on users tab, either delete their cron jobs or enable them`);
+            return;
+          }
 
-            const options = {
-              user,
-              cluster,
-              saveId: Config.nodeName() + '-' + new Date().getTime().toString(36),
-              tags: cq.tags.replace(/[^-a-zA-Z0-9_:,]/g, ''),
-              qid
-            };
+          const options = {
+            user,
+            cluster,
+            saveId: Config.nodeName() + '-' + new Date().getTime().toString(36),
+            tags: cq.tags.replace(/[^-a-zA-Z0-9_:,]/g, ''),
+            qid
+          };
 
-            let shortcuts;
-            try { // try to fetch shortcuts
-              shortcuts = await Db.getShortcutsCache(user);
-            } catch (err) { // don't need to do anything, there will just be no
-              // shortcuts sent to the parser. but still log the error.
-              console.log('ERROR CRON - fetching shortcuts cache when processing periodic query', err);
-            }
+          let shortcuts;
+          try { // try to fetch shortcuts
+            shortcuts = await Db.getShortcutsCache(user);
+          } catch (err) { // don't need to do anything, there will just be no
+            // shortcuts sent to the parser. but still log the error.
+            console.log('ERROR CRON - fetching shortcuts cache when processing periodic query', err);
+          }
 
-            // always complete building the query regardless of shortcuts
-            arkimeparser.parser.yy = {
-              emailSearch: user.emailSearch === true,
-              fieldsMap: Config.getFieldsMap(),
-              dbFieldsMap: Config.getDBFieldsMap(),
-              prefix: internals.prefix,
-              shortcuts,
-              shortcutTypeMap: internals.shortcutTypeMap
-            };
+          // always complete building the query regardless of shortcuts
+          arkimeparser.parser.yy = {
+            emailSearch: user.emailSearch === true,
+            fieldsMap: Config.getFieldsMap(),
+            dbFieldsMap: Config.getDBFieldsMap(),
+            prefix: internals.prefix,
+            shortcuts,
+            shortcutTypeMap: internals.shortcutTypeMap
+          };
 
-            const query = {
-              from: 0,
-              size: 1000,
-              query: { bool: { filter: [{}] } },
-              _source: ['_id', 'node']
-            };
+          const query = {
+            from: 0,
+            size: 1000,
+            query: { bool: { filter: [{}] } },
+            _source: ['_id', 'node']
+          };
 
+          try {
+            query.query.bool.filter.push(arkimeparser.parse(cq.query));
+          } catch (e) {
+            console.log("CRON - Couldn't compile periodic query expression", cq, e);
+            return;
+          }
+
+          if (user.getExpression()) {
             try {
-              query.query.bool.filter.push(arkimeparser.parse(cq.query));
+              // Expression was set by admin, so assume email search ok
+              arkimeparser.parser.yy.emailSearch = true;
+              const userExpression = arkimeparser.parse(user.getExpression());
+              query.query.bool.filter.push(userExpression);
             } catch (e) {
-              console.log("CRON - Couldn't compile periodic query expression", cq, e);
-              return forQueriesCb();
+              console.log("CRON - Couldn't compile user forced expression", user.getExpression(), e);
+              return;
             }
+          }
 
-            if (user.getExpression()) {
-              try {
-                // Expression was set by admin, so assume email search ok
-                arkimeparser.parser.yy.emailSearch = true;
-                const userExpression = arkimeparser.parse(user.getExpression());
-                query.query.bool.filter.push(userExpression);
-              } catch (e) {
-                console.log("CRON - Couldn't compile user forced expression", user.getExpression(), e);
-                return forQueriesCb();
-              }
-            }
-
+          return new Promise((resolve) => {
             ViewerUtils.lookupQueryItems(query.query.bool.filter, (lerr) => {
-              CronAPIs.#processCronQuery(cq, options, query, endTime, (count, lpValue) => {
+              CronAPIs.#processCronQuery(cq, options, query, endTime, async (count, lpValue) => {
                 if (Config.debug > 1) {
                   console.log('CRON - setting lpValue', new Date(lpValue * 1000));
                 }
@@ -754,15 +748,12 @@ class CronAPIs {
                   }
                 };
 
-                async function continueProcess () {
-                  try {
-                    await Db.update('queries', 'query', qid, doc, { refresh: true });
-                  } catch (err) {
-                    console.log('ERROR CRON - updating query', err);
-                  }
-                  if (lpValue !== endTime) { repeat = true; }
-                  return forQueriesCb();
+                try {
+                  await Db.update('queries', qid, doc, { refresh: true });
+                } catch (err) {
+                  console.log('ERROR CRON - updating query', err);
                 }
+                if (lpValue !== endTime) { repeat = true; }
 
                 // issue alert via notifier(s) if the count has changed and it has been at least 10 minutes
                 if (cq.notifier && count && cq.count !== doc.doc.count &&
@@ -779,10 +770,10 @@ class CronAPIs {
                   }
 
                   const message = `
-  *${cq.name}* periodic query match alert:
-  *${newMatchCount} new* matches
-  *${doc.doc.count} total* matches
-  ${Config.arkimeWebURL()}${urlPath}${cq.description ? '\n' + cq.description : ''}
+   *${cq.name}* periodic query match alert:
+   *${newMatchCount} new* matches
+   *${doc.doc.count} total* matches
+   ${Config.arkimeWebURL()}${urlPath}${cq.description ? '\n' + cq.description : ''}
                   `;
 
                   Db.refresh('*'); // Before sending alert make sure everything has been refreshed
@@ -794,31 +785,33 @@ class CronAPIs {
                       Notifier.issueAlert(notifierId, message, () => {});
                     });
                   }
-
-                  // Continue processing immediately without waiting for notifications
-                  continueProcess();
-                } else {
-                  return continueProcess();
                 }
+
+                resolve();
               });
             });
           });
-        }, (err) => {
-          if (Config.debug > 1) {
-            console.log('CRON - Finished one pass of all crons');
-          }
-          return setImmediate(whilstCb, err);
         });
-      });
-    }, (testCb) => {
+
+        if (Config.debug > 1) {
+          console.log('CRON - Finished one pass of all crons');
+        }
+      } catch (err) {
+        internals.cronRunning = false;
+        console.log('CRON - processCronQueries', err);
+      }
+    }, async () => {
       if (Config.debug > 1) {
         console.log('CRON - Process again: ', repeat);
       }
-      return setImmediate(testCb, null, repeat);
-    }, (err) => {
+      return repeat;
+    }).then(() => {
       if (Config.debug) {
         console.log('CRON - Should be up to date');
       }
+      internals.cronRunning = false;
+    }).catch((err) => {
+      console.log('CRON - Error:', err);
       internals.cronRunning = false;
     });
   }

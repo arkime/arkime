@@ -11,7 +11,6 @@ clearIndex("tests_users");
 viewerGet("/regressionTests/deleteAllUsers");
 
 esGet("/_refresh");
-my $token = getTokenCookie();
 my $adminToken = getTokenCookie('admin');
 my $test6Token = getTokenCookie('test6');
 my $test7Token = getTokenCookie('test7');
@@ -221,6 +220,7 @@ is ($response->content, "Permission denied");
 
 
 # cleanup
+my $token = getTokenCookie();
 $response = viewerDeleteToken("/api/user/role:role", $token);
 eq_or_diff($response, from_json('{"success": false, "text": "Can not delete superAdmin unless you are superAdmin"}'));
 $response = viewerDeleteToken("/api/user/admin", $token);
