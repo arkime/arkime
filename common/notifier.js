@@ -40,10 +40,10 @@ class Notifier {
 
     // look for all notifier providers and initialize them
     const files = fs.globSync(path.join(__dirname, '/../common/notifier.*.js'));
-    files.forEach((file) => {
-      const plugin = require(file);
-      plugin.init(api);
-    });
+    for (const file of files) {
+      const notifier = require(file);
+      notifier.init(api);
+    }
   }
 
   // --------------------------------------------------------------------------
