@@ -35,9 +35,31 @@ jobs:
           if [[ "${HEAD_REF}" == start-v* || "${HEAD_REF}" == release-v* ]]; then
             MATRIX='{"include":[]}'
           elif [ "${{ github.event_name }}" != "push" ]; then
-            MATRIX=$(yq -o json eval '{"include": [.include[] | select(.version | test("(aarch64|_arm64)$") | not)]}' .github/workflows/versions | jq -c)
+            MATRIX=$(yq -o json eval '{"include": [.include[] | select(.version | test("(aarch64|_arm64|freebsd)$") | not)]}' .github/workflows/versions | jq -c)
           else
-            MATRIX=$(yq -o json .github/workflows/versions | jq -c)
+            MATRIX=$(yq -o json eval '{"include": [.include[] | select(.vmaction == null)]}' .github/workflows/versions | jq -c)
+          fi
+          echo "matrix=$MATRIX" >> $GITHUB_OUTPUT
+
+  generate-freebsd-matrix:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+    env:
+      HEAD_REF: ${{ github.head_ref }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+        with:
+          fetch-depth: 0
+
+      - name: Generate FreeBSD Matrix JSON with yq
+        id: set-matrix
+        run: |
+          if [[ "${HEAD_REF}" == start-v* || "${HEAD_REF}" == release-v* ]]; then
+            MATRIX='{"include":[]}'
+          else
+            MATRIX=$(yq -o json eval '{"include": [.include[] | select(.vmaction != null)]}' .github/workflows/versions | jq -c)
           fi
           echo "matrix=$MATRIX" >> $GITHUB_OUTPUT
 
@@ -351,6 +373,52 @@ jobs:
             ghcr.io/${{ github.repository_owner }}/arkime/arkime:snapshot-v${{ env.ARKIME_MAJOR_VERSION }}-${{ env.ARKIME_ARCH }}-ja4-latest
           build-args: |
             ARKIME_BASE=ghcr.io/${{ github.repository_owner }}/arkime/arkime:snapshot-v${{ env.ARKIME_MAJOR_VERSION }}-${{ env.ARKIME_ARCH }}-${{ github.run_id }}
+
+############# FreeBSD Build #############
+  freebsd-build:
+    needs: [generate-freebsd-matrix, cache-node]
+    strategy:
+      fail-fast: false
+      matrix: ${{fromJson(needs.generate-freebsd-matrix.outputs.matrix)}}
+
+    permissions:
+      contents: write
+      packages: write
+
+    concurrency:
+      group: ${{ github.workflow }}-${{ matrix.version }}-${{ github.event.pull_request.number || github.ref }}
+      cancel-in-progress: true
+
+    env:
+      PYTHON: ${{ matrix.python || 'python' }}
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+        with:
+          fetch-depth: 0
+
+      - name: Build on FreeBSD
+        uses: ${{ matrix.vmaction }}
+        with:
+          release: "15.0"
+          arch: ${{ contains(matrix.version, 'aarch64') && 'aarch64' || 'x86_64' }}
+          usesh: true
+          prepare: |
+            pkg update -f
+            pkg install -y bash git curl wget perl5 openssl jq yq
+          run: |
+            git config --global --add safe.directory `pwd`
+            ./easybutton-build.sh ${{ matrix.buildopt }} --rminstall --nothirdparty
+            file capture/capture
+            export PATH=/opt/arkime/bin:$PATH
+            INSTALL_BUNDLE=bundle make install
+            export ARKIME_MAJOR_VERSION=`sed 's/.*"\(.*\)\".*$/\1/' /opt/arkime/common/version.js | head -n 1 | cut -c 1-1`
+            echo "ARKIME_MAJOR_VERSION=$ARKIME_MAJOR_VERSION" >> $GITHUB_ENV
+            arch=$(uname -m | sed s/aarch64/arm64/ | sed s/x86_64/amd64/)
+            echo "ARKIME_ARCH=$arch" >> $GITHUB_ENV
 
 ############# Docker Manifest #############
   create-manifest:
