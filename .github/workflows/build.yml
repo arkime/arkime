@@ -408,7 +408,7 @@ jobs:
           usesh: true
           prepare: |
             pkg update -f
-            pkg install -y bash git curl wget perl5 openssl jq yq sudo gmake autoconf
+            pkg install -y bash git curl wget perl5 openssl jq yq sudo gmake autoconf automake
           run: |
             git config --global --add safe.directory `pwd`
             ./easybutton-build.sh ${{ matrix.buildopt }} --rminstall --nothirdparty
