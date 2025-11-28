@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 name="<%= name %>"
 
 # Running from make config doesn't fill in template
