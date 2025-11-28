@@ -630,13 +630,13 @@ function formatShortcutsQuery (yy, field, op, value, shortcutParent) {
   }
   obj.bool[operation] = [];
 
-  shortcuts.forEach(function (shortcut) {
-    shortcut = value = shortcut.substr(1); /* remove $ */
-    if (!yy.shortcuts || !yy.shortcuts[shortcut]) {
-      throw shortcut + ' - Shortcut not found';
+  for (const shortcut of shortcuts) {
+    let shortcutVal = value = shortcut.substr(1); /* remove $ */
+    if (!yy.shortcuts || !yy.shortcuts[shortcutVal]) {
+      throw shortcutVal + ' - Shortcut not found';
     }
 
-    shortcut = yy.shortcuts[shortcut];
+    const shortcutObj = yy.shortcuts[shortcutVal];
 
     const type = info.type2 || info.type;
     const shortcutType = yy.shortcutTypeMap[type];
@@ -645,7 +645,7 @@ function formatShortcutsQuery (yy, field, op, value, shortcutParent) {
       throw 'Unsupported field type: ' + type;
     }
 
-    if (!shortcut._source[shortcutType]) {
+    if (!shortcutObj._source[shortcutType]) {
       throw 'shortcut must be of type ' + shortcutType;
     }
 
@@ -664,7 +664,7 @@ function formatShortcutsQuery (yy, field, op, value, shortcutParent) {
       } else {
         terms[info.dbField] = {
           index: `${yy.prefix}lookups`,
-          id: shortcut._id,
+          id: shortcutObj._id,
           path: 'ip'
         };
         if (shortcutParent) {
@@ -676,7 +676,7 @@ function formatShortcutsQuery (yy, field, op, value, shortcutParent) {
     case 'integer':
       terms[info.dbField] = {
         index: `${yy.prefix}lookups`,
-        id: shortcut._id,
+        id: shortcutObj._id,
         path: 'number'
       };
       obj.bool[operation].push({ terms });
@@ -693,7 +693,7 @@ function formatShortcutsQuery (yy, field, op, value, shortcutParent) {
           const terms = {};
           terms[i.dbField] = {
             index: `${yy.prefix}lookups`,
-            id: shortcut._id,
+            id: shortcutObj._id,
             path: 'string'
           };
           obj.bool[operation].push({ terms });
@@ -701,7 +701,7 @@ function formatShortcutsQuery (yy, field, op, value, shortcutParent) {
       } else {
         terms[info.dbField] = {
           index: `${yy.prefix}lookups`,
-          id: shortcut._id,
+          id: shortcutObj._id,
           path: 'string'
         };
         obj.bool[operation].push({ terms });
@@ -710,7 +710,7 @@ function formatShortcutsQuery (yy, field, op, value, shortcutParent) {
     default:
       throw 'Unsupported field type: ' + type;
     }
-  });
+  }
 
   if (obj?.bool?.should?.length === 1) {
     obj = obj.bool.should[0];
@@ -913,7 +913,7 @@ function stringQuery (yy, field, str) {
 
     const items = [];
     let terms = null;
-    strs.forEach(function (astr) {
+    for (const astr of strs) {
       let item;
 
       if (typeof astr === 'string' && astr[0] === '/' && astr[astr.length - 1] === '/') {
@@ -927,24 +927,26 @@ function stringQuery (yy, field, str) {
           throw "Please use 'EXISTS!' instead of a '*' in expression";
         }
 
+        let cleanStr = astr;
         if (astr[0] === '"' && astr[astr.length - 1] === '"') {
-          astr = astr.substring(1, astr.length - 1).replace(/\\(.)/g, '$1');
+          cleanStr = astr.substring(1, astr.length - 1).replace(/\\(.)/g, '$1');
         }
 
         item = { wildcard: {} };
-        item.wildcard[rawField] = astr;
+        item.wildcard[rawField] = cleanStr;
         items.push(item);
       } else {
+        let cleanStr = astr;
         if (astr[0] === '"' && astr[astr.length - 1] === '"') {
-          astr = astr.substring(1, astr.length - 1).replace(/\\(.)/g, '$1');
+          cleanStr = astr.substring(1, astr.length - 1).replace(/\\(.)/g, '$1');
         }
 
         if (info.type.match(/termfield/)) {
           if (isArrayAND(str)) {
             item = { term: {} };
-            item.term[dbField] = astr;
+            item.term[dbField] = cleanStr;
             items.push(item);
-            return;
+            continue;
           }
 
           // Reuse same terms element for all terms query and add to items once
@@ -953,14 +955,14 @@ function stringQuery (yy, field, str) {
             terms.terms[dbField] = [];
             items.push(terms);
           }
-          terms.terms[dbField].push(astr);
+          terms.terms[dbField].push(cleanStr);
         } else {
           item = { match_phrase: {} };
-          item.match_phrase[dbField] = astr;
+          item.match_phrase[dbField] = cleanStr;
           items.push(item);
         }
       }
-    }); // forEach
+    }
 
     if (items.length === 1) {
       obj = items[0];
@@ -1113,9 +1115,9 @@ function ListToArrayShortcuts (yy, text) {
 
     if (str.match(/[*?]/)) {
       const re = new RegExp('^' + str.substring(1).replace(/\*/g, '.*').replace(/\?/g, '.') + '$');
-      Object.keys(yy.shortcuts).forEach((s) => {
+      for (const s of Object.keys(yy.shortcuts)) {
         if (s.match(re)) { nstrs.push('$' + s); }
-      });
+      }
     } else {
       nstrs.push(str);
     }
@@ -1219,12 +1221,12 @@ function termOrTermsSeconds (dbField, str) {
 function termOrTermsDate (dbField, str) {
   if (isArrayFull(str)) {
     const items = []
-    ListToArray(str).forEach(function (astr) {
+    for (const astr of ListToArray(str)) {
       const d = moment.unix(parseSeconds(stripQuotes(astr))).format();
       const r = { range: {} };
       r.range[dbField] = { gte: d, lte: d };
       items.push(r);
-    });
+    }
 
 
     if (isArrayAND(str)) {
