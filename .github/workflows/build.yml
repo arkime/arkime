@@ -469,7 +469,7 @@ jobs:
           create_and_push "snapshot-v${ARKIME_MAJOR_VERSION}-ja4-${{github.run_id}}" "-ja4"
           create_and_push "snapshot-v${ARKIME_MAJOR_VERSION}-ja4-latest" "-ja4"
 
-############# Send Slack#############
+############# Send Slack #############
   slack:
     runs-on: ubuntu-latest
     needs: build
