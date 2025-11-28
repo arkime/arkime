@@ -138,12 +138,12 @@ include:
     runson: ubuntu-24.04-arm
 
   ############# FreeBSD #############
-  - version: freebsd15.x86_64
+  - version: freebsd14.x86_64
     buildopt: "--kafka"
     vmaction: vmactions/freebsd-vm@v1
-    vmaction-opts: "release: 15.0 usesh: true"
+    vmaction-opts: "release: 14.3 usesh: true"
 
-  - version: freebsd15.aarch64
+  - version: freebsd14.aarch64
     buildopt: "--kafka"
     vmaction: vmactions/freebsd-vm@v1
-    vmaction-opts: "release: 15.0 arch: aarch64 usesh: true"
+    vmaction-opts: "release: 14.3 arch: aarch64 usesh: true"

@@ -403,7 +403,7 @@ jobs:
       - name: Build on FreeBSD
         uses: vmactions/freebsd-vm@v1
         with:
-          release: "15.0"
+          release: "14.3"
           arch: ${{ contains(matrix.version, 'aarch64') && 'aarch64' || 'x86_64' }}
           usesh: true
           prepare: |
