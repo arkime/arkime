@@ -401,7 +401,7 @@ jobs:
           fetch-depth: 0
 
       - name: Build on FreeBSD
-        uses: ${{ matrix.vmaction }}
+        uses: vmactions/freebsd-vm@v1
         with:
           release: "15.0"
           arch: ${{ contains(matrix.version, 'aarch64') && 'aarch64' || 'x86_64' }}
