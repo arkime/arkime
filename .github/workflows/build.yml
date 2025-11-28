@@ -44,7 +44,7 @@ jobs:
   generate-freebsd-matrix:
     runs-on: ubuntu-latest
     outputs:
-      matrix: ${{ steps.set-matrix.outputs.matrix }}
+      freebsdmatrix: ${{ steps.set-matrix.outputs.freebsdmatrix }}
     env:
       HEAD_REF: ${{ github.head_ref }}
     steps:
@@ -57,11 +57,11 @@ jobs:
         id: set-matrix
         run: |
           if [[ "${HEAD_REF}" == start-v* || "${HEAD_REF}" == release-v* ]]; then
-            MATRIX='{"include":[]}'
+            FREEBSD_MATRIX='{"include":[]}'
           else
-            MATRIX=$(yq -o json eval '{"include": [.include[] | select(.vmaction != null)]}' .github/workflows/versions | jq -c)
+            FREEBSD_MATRIX=$(yq -o json eval '{"include": [.include[] | select(.vmaction != null)]}' .github/workflows/versions | jq -c)
           fi
-          echo "matrix=$MATRIX" >> $GITHUB_OUTPUT
+          echo "freebsdmatrix=$FREEBSD_MATRIX" >> $GITHUB_OUTPUT
 
   cache-node:
     runs-on: ubuntu-latest
@@ -379,7 +379,7 @@ jobs:
     needs: [generate-freebsd-matrix, cache-node]
     strategy:
       fail-fast: false
-      matrix: ${{fromJson(needs.generate-freebsd-matrix.outputs.matrix)}}
+      matrix: ${{fromJson(needs.generate-freebsd-matrix.outputs.freebsdmatrix)}}
 
     permissions:
       contents: write
