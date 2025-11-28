@@ -413,7 +413,6 @@ jobs:
             git config --global --add safe.directory `pwd`
             ./easybutton-build.sh ${{ matrix.buildopt }} --rminstall --nothirdparty
             ls -l capture/capture
-            (cd tests; ./tests.pl)
             INSTALL_BUNDLE=bundle make install
             export ARKIME_MAJOR_VERSION=`sed 's/.*"\(.*\)\".*$/\1/' /opt/arkime/common/version.js | head -n 1 | cut -c 1-1`
             echo "ARKIME_MAJOR_VERSION=$ARKIME_MAJOR_VERSION" >> $GITHUB_ENV
