@@ -35,7 +35,7 @@ jobs:
           if [[ "${HEAD_REF}" == start-v* || "${HEAD_REF}" == release-v* ]]; then
             MATRIX='{"include":[]}'
           elif [ "${{ github.event_name }}" != "push" ]; then
-            MATRIX=$(yq -o json eval '{"include": [.include[] | select(.version | test("(aarch64|_arm64|freebsd)$") | not)]}' .github/workflows/versions | jq -c)
+            MATRIX=$(yq -o json eval '{"include": [.include[] | select(.version | test("(aarch64|_arm64)$") | not) | select(.vmaction == null)]}' .github/workflows/versions | jq -c)
           else
             MATRIX=$(yq -o json eval '{"include": [.include[] | select(.version | test("freebsd") | not) | select(.vmaction == null)]}' .github/workflows/versions | jq -c)
           fi
