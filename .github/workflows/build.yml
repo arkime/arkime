@@ -408,7 +408,7 @@ jobs:
           usesh: true
           prepare: |
             pkg update -f
-            pkg install -y bash git curl wget perl5 openssl jq yq sudo gmake autoconf automake
+            pkg install -y bash git curl wget perl5 openssl jq yq sudo gmake autoconf automake rubygem-fpm
           run: |
             git config --global --add safe.directory `pwd`
             ./easybutton-build.sh ${{ matrix.buildopt }} --rminstall --nothirdparty
@@ -419,6 +419,8 @@ jobs:
             echo "ARKIME_MAJOR_VERSION=$ARKIME_MAJOR_VERSION" >> $GITHUB_ENV
             arch=$(uname -m | sed s/aarch64/arm64/ | sed s/x86_64/amd64/)
             echo "ARKIME_ARCH=$arch" >> $GITHUB_ENV
+            fpm -s dir -t freebsd -n arkime -x opt/arkime/logs -x opt/arkime/raw -v $ARKIME_VERSION --iteration ${{ github.run_id }} --template-scripts --after-install "release/afterinstall.sh" --url "https://arkime.com" --description "Arkime Full Packet System" ${{ matrix.fpmdeps }} -p arkime_${ARKIME_VERSION}-${{github.run_id}}.${{matrix.version}}.pkg /opt/arkime
+            ls -l *.pkg
 
 ############# Docker Manifest #############
   create-manifest:
