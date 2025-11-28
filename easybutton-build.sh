@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Use this script to install OS dependencies, downloading and compile arkime dependencies, compile arkime capture, optionally install
 #
 # SPDX-License-Identifier: Apache-2.0
