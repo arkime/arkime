@@ -253,7 +253,7 @@ if [ "$UNAME" = "Darwin" ]; then
 fi
 
 if [ "$UNAME" = "FreeBSD" ]; then
-  sudo pkg install -y gcc wget curl pcre flex bison gettext glib gmake yara lua53 librdkafka pkgconf node20 npm-node20 libyaml autotools libmaxminddb libuuid
+  sudo pkg install -y gcc wget curl pcre flex bison gettext glib gmake yara lua53 librdkafka pkgconf node22 npm-node22 libyaml autotools libmaxminddb libuuid python312 libinotify
   MAKE=gmake
   DOTHIRDPARTY=0
   DOKAFKA=1
@@ -265,6 +265,8 @@ if [ "$UNAME" = "FreeBSD" ]; then
   export KAFKA_CFLAGS="-I/usr/local/include/librdkafka/"
   export KAFKA_LIBS="-L/usr/local/lib -lrdkafka"
   with_kafka=no
+
+  export LIBS='-linotify'
 fi
 
 if [ -f "/etc/alpine-release" ] ; then
@@ -433,10 +435,7 @@ else
   TPWD=`pwd`
 
   # glib
-  if [ "$UNAME" = "FreeBSD" ]; then
-    #Screw it, use whatever the OS has
-    WITHGLIB=" "
-  elif [ ! -z "$WITHGLIB" ]; then
+  if [ ! -z "$WITHGLIB" ]; then
     echo "ARKIME: withglib $WITHGLIB"
   else
     WITHGLIB="--with-glib2=thirdparty/glib-$GLIB"
