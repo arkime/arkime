@@ -150,6 +150,7 @@ include:
     vmaction: vmactions/freebsd-vm@v1
     vmaction-opts: "release: 14.3 usesh: true"
     fpmdeps: "-d glib -d yara -d libyaml -d libmaxminddb -d libuuid -d python312 -d libinotify"
+    ja4plus: true
     prbuild: true
 
   - version: freebsd15.x86_64
@@ -157,6 +158,7 @@ include:
     vmaction: vmactions/freebsd-vm@v1
     vmaction-opts: "release: 15.0 usesh: true"
     fpmdeps: "-d glib -d yara -d libyaml -d libmaxminddb -d libuuid -d python312 -d libinotify"
+    ja4plus: true
     prbuild: true
 
   - version: freebsd14.aarch64
