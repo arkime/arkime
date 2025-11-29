@@ -142,9 +142,11 @@ include:
     buildopt: "--kafka"
     vmaction: vmactions/freebsd-vm@v1
     vmaction-opts: "release: 14.3 usesh: true"
+    fpmdeps: "-d glib -d yara -d libyaml -d libmaxminddb -d libuuid -d python312 -d libinotify"
 
   - version: freebsd14.aarch64
     buildopt: "--kafka"
     vmaction: vmactions/freebsd-vm@v1
     vmaction-opts: "release: 14.3 arch: aarch64 usesh: true"
+    fpmdeps: "-d glib -d yara -d libyaml -d libmaxminddb -d libuuid -d python312 -d libinotify"
     runson: ubuntu-24.04-arm
