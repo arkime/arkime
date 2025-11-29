@@ -147,3 +147,4 @@ include:
     buildopt: "--kafka"
     vmaction: vmactions/freebsd-vm@v1
     vmaction-opts: "release: 14.3 arch: aarch64 usesh: true"
+    runson: ubuntu-24.04-arm

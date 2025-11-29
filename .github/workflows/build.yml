@@ -408,7 +408,7 @@ jobs:
           usesh: true
           prepare: |
             pkg update -f
-            pkg install -y bash git curl wget perl5 openssl jq yq sudo gmake autoconf automake m4 libtool rubygem-fpm autoconf-archive
+            pkg install -y bash git curl wget perl5 openssl jq yq sudo gmake autoconf automake m4 libtool rubygem-fpm autoconf-archive gtar
           run: |
             git config --global --add safe.directory `pwd`
             ./easybutton-build.sh ${{ matrix.buildopt }} --rminstall --nothirdparty
@@ -416,6 +416,9 @@ jobs:
             INSTALL_BUNDLE=bundle gmake install
             export ARKIME_VERSION=`sed 's/.*"\(.*\)\".*$/\1/' /opt/arkime/common/version.js | head -n 1`
             arch=$(uname -m | sed s/aarch64/arm64/ | sed s/x86_64/amd64/)
+            # Replace tar with gtar for fpm, let me know of better way
+            rm /usr/bin/tar
+            ln -s /usr/local/bin/gtar /usr/bin/tar
             fpm -s dir -t freebsd -n arkime -x opt/arkime/logs -x opt/arkime/raw -v $ARKIME_VERSION --iteration ${{ github.run_id }} --template-scripts --after-install "release/afterinstall.sh" --url "https://arkime.com" --description "Arkime Full Packet System" ${{ matrix.fpmdeps }} -p arkime_${ARKIME_VERSION}-${{github.run_id}}.${{matrix.version}}.pkg /opt/arkime
             mv *.pkg arkime-main.${{matrix.version}}.pkg
             ls -l *.pkg
