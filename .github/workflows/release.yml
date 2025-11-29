@@ -280,6 +280,19 @@ jobs:
             rm /usr/bin/tar
             ln -s /usr/local/bin/gtar /usr/bin/tar
             fpm -s dir -t freebsd -n arkime -x opt/arkime/logs -x opt/arkime/raw -v $ARKIME_VERSION --iteration ${{ github.event.inputs.iteration }} --template-scripts --after-install "release/afterinstall.sh" --url "https://arkime.com" --description "Arkime Full Packet System" ${{ matrix.fpmdeps }} -p arkime_${ARKIME_VERSION}-${{github.event.inputs.iteration}}.${{matrix.version}}.pkg /opt/arkime
+            ls -l *.pkg
+
+            if [ "${{ matrix.ja4plus }}" = "true" ]; then
+              (cd .. ; git clone -b dev6 --single-branch https://github.com/arkime/ja4)
+              cp ../ja4/ja4plus.c capture/plugins
+              (cd capture/plugins; gmake)
+              mv capture/plugins/ja4plus.so ja4plus.freebsd-${arch}.so
+              ls -l *.so
+            fi
+
+            # Clean up so we don't copy stuff back
+            gmake clean
+            rm -rf node_modules */node_modules
 
       - name: upload github
         uses: softprops/action-gh-release@v2.0.5
