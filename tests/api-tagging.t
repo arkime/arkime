@@ -24,6 +24,7 @@ my $json;
 
 # adding/removing tags test expression
     viewerPost("/api/sessions/addtags?date=-1&expression=file=$pwd/socks-http-example.pcap", "tags=TAGTEST1");
+    esGet("/_flush");
     esGet("/_refresh");
     $json = countTest(3, "date=-1&fields=tags,tagsCnt&expression=" . uri_escape("tags==TAGTEST1"));
     foreach my $item (@{$json->{data}}) {
@@ -31,6 +32,7 @@ my $json;
     }
 
     viewerPost("/api/sessions/removetags?date=-1&expression=file=$pwd/socks-http-example.pcap", "tags=TAGTEST1");
+    esGet("/_flush");
     esGet("/_refresh");
     countTest(0, "date=-1&expression=" . uri_escape("tags==TAGTEST1"));
     $json = countTest(3, "date=-1&fields=tags,tagsCnt&expression=" . uri_escape("file=$pwd/socks-http-example.pcap && tags==domainwise"));

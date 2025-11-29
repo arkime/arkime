@@ -1,0 +1,26 @@
+#!/bin/bash
+
+# pre-push hook to check for CHANGELOG updates
+# prompt the user to update the CHANGELOG if it has not been updated
+
+exec < /dev/tty # redirect script's input to come from terminal to accept user input
+
+echo "Checking for CHANGELOG updates..."
+
+# Check if CHANGELOG has been modified in this push
+if git diff main --cached --name-only | grep -q "CHANGELOG"; then
+  echo "Good job updating the CHANGELOG!"
+  exit 0  # CHANGELOG has been updated, continue with the push
+fi
+
+# CHANGELOG not updated, prompt user for confirmation
+read -p "CHANGELOG has not been updated. Continue with push? (y/n) " -n 1 -r
+echo
+
+if [[ $REPLY =~ ^[Yy]$ ]]; then
+  echo "Pushing without CHANGELOG updates"
+  exit 0  # User confirmed, continue with the push
+else
+  echo "Push aborted!"
+  exit 1  # User did not confirm, abort the push
+fi

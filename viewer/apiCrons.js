@@ -58,7 +58,7 @@ class CronAPIs {
       setInterval(CronAPIs.#runPrimaryViewer, 60 * 1000);
     } else if (Config.get('cronQueries') === true) {
       setTimeout(CronAPIs.#updatePrimaryViewer, 1000, true);
-      setInterval(CronAPIs.#updatePrimaryViewer, 120 * 1000, true);
+      setInterval(CronAPIs.#updatePrimaryViewer, 45 * 1000, true);
       setInterval(CronAPIs.#runPrimaryViewer, 60 * 1000);
     } else if (!Config.get('multiES', false)) {
       const info = await Db.getQueriesNode();
@@ -85,8 +85,8 @@ class CronAPIs {
    * @param {string} action=tag - The action to perform when sessions have matched. "tag" or "forward:clusterName".
    * @param {string} creator - The id of the user that created this query.
    * @param {string} tags - A comma separated list of tags to add to each session that matches this query.
-   * @param {string} notifier - The name of the notifier to alert when there are matches for this query.
-   * @param {number} lastNotified - The time that this query last sent a notification to the notifier. Only notifies every 10 minutes. Format is seconds since Unix EPOC.
+   * @param {string} notifier - A comma separated list of notifier IDs to alert when there are matches for this query.
+   * @param {number} lastNotified - The time that this query last sent a notification to the notifiers. Only notifies every 10 minutes. Format is seconds since Unix EPOC.
    * @param {number} lastNotifiedCount - The count of sessions that matched since the last notification was sent.
    * @param {string} description - The description of this query.
    * @param {number} created - The time that this query was created. Format is seconds since Unix EPOC.
@@ -143,10 +143,8 @@ class CronAPIs {
       query.query.bool.filter = []; // remove sharing restrictions
     }
 
-    Db.search('queries', 'query', query, (err, data) => {
-      if (err || data.error) {
-        console.log(`ERROR - ${req.method} /api/crons`, util.inspect(err || data.error, false, 50));
-      }
+    try {
+      const data = await Db.search('queries', query);
 
       let queries = [];
 
@@ -166,13 +164,20 @@ class CronAPIs {
             }
           }
 
+          // Convert comma-separated notifier string to array for client
+          if (ArkimeUtil.isString(result.notifier)) {
+            result.notifier = result.notifier.split(',');
+          }
+
           result.key = key;
           return result;
         });
       }
 
       res.send(queries);
-    });
+    } catch (err) {
+      console.log(`ERROR - ${req.method} /api/crons`, util.inspect(err, false, 50));
+    }
   }
 
   // --------------------------------------------------------------------------
@@ -207,6 +212,10 @@ class CronAPIs {
       return res.serverError(403, 'Edit roles field must be an array of strings');
     }
 
+    if (req.body.notifier !== undefined && !ArkimeUtil.isStringArray(req.body.notifier)) {
+      return res.serverError(403, 'Notifier field must be an array of strings');
+    }
+
     if (req.body.users !== undefined && !ArkimeUtil.isString(req.body.users, 0)) {
       return res.serverError(403, 'Users field must be a string');
     }
@@ -230,12 +239,13 @@ class CronAPIs {
       }
     };
 
-    if (ArkimeUtil.isString(req.body.description)) {
-      doc.doc.description = req.body.description;
+    // Convert notifier array to comma-separated string for storage
+    if (req.body.notifier && req.body.notifier.length > 0) {
+      doc.doc.notifier = req.body.notifier.join(',');
     }
 
-    if (ArkimeUtil.isString(req.body.notifier)) {
-      doc.doc.notifier = req.body.notifier;
+    if (ArkimeUtil.isString(req.body.description)) {
+      doc.doc.description = req.body.description;
     }
 
     const userId = req.settingUser.userId;
@@ -259,13 +269,18 @@ class CronAPIs {
     doc.doc.creator = userId || 'anonymous';
 
     try {
-      const { body: info } = await Db.indexNow('queries', 'query', null, doc.doc);
+      const { body: info } = await Db.indexNow('queries', null, doc.doc);
 
       if (CronAPIs.#primaryViewer) { CronAPIs.processCronQueries(); }
 
       doc.doc.key = info._id;
       if (doc.doc.users) {
         doc.doc.users = doc.doc.users.join(',');
+      }
+
+      // Convert comma-separated notifier string to array for client
+      if (ArkimeUtil.isString(doc.doc.notifier)) {
+        doc.doc.notifier = doc.doc.notifier.split(',');
       }
 
       return res.send(JSON.stringify({
@@ -319,6 +334,10 @@ class CronAPIs {
       return res.serverError(403, 'Edit roles field must be an array of strings');
     }
 
+    if (req.body.notifier !== undefined && !ArkimeUtil.isStringArray(req.body.notifier)) {
+      return res.serverError(403, 'Notifier field must be an array of strings');
+    }
+
     if (req.body.users !== undefined && !ArkimeUtil.isString(req.body.users, 0)) {
       return res.serverError(403, 'Users field must be a string');
     }
@@ -331,7 +350,6 @@ class CronAPIs {
     const doc = {
       doc: {
         description: '',
-        notifier: undefined,
         name: req.body.name,
         tags: req.body.tags,
         users: req.body.users,
@@ -343,8 +361,11 @@ class CronAPIs {
       }
     };
 
-    if (ArkimeUtil.isString(req.body.notifier)) {
-      doc.doc.notifier = req.body.notifier;
+    // Convert notifier array to comma-separated string for storage
+    if (req.body.notifier && req.body.notifier.length > 0) {
+      doc.doc.notifier = req.body.notifier.join(',');
+    } else {
+      doc.doc.notifier = '';
     }
 
     if (ArkimeUtil.isString(req.body.description)) {
@@ -371,7 +392,7 @@ class CronAPIs {
       };
 
       try {
-        await Db.update('queries', 'query', key, doc, { refresh: true });
+        await Db.update('queries', key, doc, { refresh: true });
       } catch (err) {
         console.log(`ERROR - ${req.method} /api/cron/%s`, ArkimeUtil.sanitizeStr(key), util.inspect(err, false, 50));
       }
@@ -381,6 +402,11 @@ class CronAPIs {
       query.key = key;
       if (query.users) {
         query.users = query.users.join(',');
+      }
+
+      // Convert comma-separated notifier string to array for client
+      if (ArkimeUtil.isString(query.notifier)) {
+        query.notifier = query.notifier.split(',');
       }
 
       return res.send(JSON.stringify({
@@ -416,7 +442,7 @@ class CronAPIs {
     }
 
     try {
-      await Db.deleteDocument('queries', 'query', key, { refresh: true });
+      await Db.deleteDocument('queries', key, { refresh: true });
       res.send(JSON.stringify({
         success: true,
         text: 'Deleted periodic query successfully'
@@ -436,19 +462,19 @@ class CronAPIs {
 
     const nodes = {};
 
-    list.forEach(function (item) {
+    for (const item of list) {
       if (!nodes[item.node]) {
         nodes[item.node] = [];
       }
       nodes[item.node].push(item.id);
-    });
+    }
 
     const keys = Object.keys(nodes);
 
     async.eachLimit(keys, 15, function (node, nextCb) {
       SessionAPIs.isLocalView(node, function () {
         let sent = 0;
-        nodes[node].forEach(function (item) {
+        for (const item of nodes[node]) {
           const options = {
             id: item,
             nodeName: node
@@ -462,12 +488,12 @@ class CronAPIs {
               nextCb();
             }
           });
-        });
+        }
       },
       function () {
         // Get from remote DISK
         ViewerUtils.getViewUrl(node, (err, viewUrl, client) => {
-          let sendPath = `${Config.basePath(node)}api/sessions/${node}/send?saveId=${pOptions.saveId}&remoteCluster=${pOptions.cluster}`;
+          let sendPath = `api/sessions/${node}/send?saveId=${pOptions.saveId}&remoteCluster=${pOptions.cluster}`;
           if (pOptions.tags) { sendPath += `&tags=${pOptions.tags}`; }
           const url = new URL(sendPath, viewUrl);
           const reqOptions = {
@@ -536,7 +562,7 @@ class CronAPIs {
           } else {
             const doc = { doc: { count: (query.count || 0) + count } };
             try {
-              Db.update('queries', 'query', options.qid, doc, { refresh: true });
+              Db.update('queries', options.qid, doc, { refresh: true });
             } catch (err) {
               console.log('ERROR CRON - updating query', err);
             }
@@ -613,26 +639,22 @@ class CronAPIs {
     }
 
     let repeat;
-    async.doWhilst(function (whilstCb) {
+    async.doWhilst(async () => {
       repeat = false;
-      Db.search('queries', 'query', { size: 1000 }, (err, data) => {
-        if (err) {
-          internals.cronRunning = false;
-          console.log('CRON - processCronQueries', err);
-          return setImmediate(whilstCb, err);
-        }
+      try {
+        const data = await Db.search('queries', { size: 1000 });
 
         const queries = {};
-        data.hits.hits.forEach(function (item) {
-          if (item._id === 'primary-viewer') { return; }
+        for (const item of data.hits.hits) {
+          if (item._id === 'primary-viewer') { continue; }
           queries[item._id] = item._source;
-        });
+        }
 
         // Delayed by the max Timeout
         const endTime = Math.floor(Date.now() / 1000) - internals.cronTimeout;
 
         // Go thru the queries, fetch the user, make the query
-        async.eachSeries(Object.keys(queries), (qid, forQueriesCb) => {
+        await async.eachSeries(Object.keys(queries), async (qid) => {
           const cq = queries[qid];
           let cluster = null;
 
@@ -641,80 +663,78 @@ class CronAPIs {
           }
 
           if (!cq.enabled || endTime < cq.lpValue) {
-            return forQueriesCb();
+            return;
           }
 
           if (cq.action.indexOf('forward:') === 0) {
             cluster = cq.action.substring(8);
           }
 
-          ViewerUtils.getUserCacheIncAnon(cq.creator, async (err, user) => {
-            if (err && !user) {
-              return forQueriesCb();
-            }
-            if (!user) {
-              console.log(`CRON - User ${cq.creator} doesn't exist`);
-              return forQueriesCb(null);
-            }
-            if (!user.enabled) {
-              console.log(`CRON - User '${cq.creator}' has been disabled on users tab, either delete their cron jobs or enable them`);
-              return forQueriesCb();
-            }
+          const user = await ViewerUtils.getUserCacheIncAnon(cq.creator);
+          if (!user) {
+            console.log(`CRON - User ${cq.creator} doesn't exist`);
+            return;
+          }
+          if (!user.enabled) {
+            console.log(`CRON - User '${cq.creator}' has been disabled on users tab, either delete their cron jobs or enable them`);
+            return;
+          }
 
-            const options = {
-              user,
-              cluster,
-              saveId: Config.nodeName() + '-' + new Date().getTime().toString(36),
-              tags: cq.tags.replace(/[^-a-zA-Z0-9_:,]/g, ''),
-              qid
-            };
+          const options = {
+            user,
+            cluster,
+            saveId: Config.nodeName() + '-' + new Date().getTime().toString(36),
+            tags: cq.tags.replace(/[^-a-zA-Z0-9_:,]/g, ''),
+            qid
+          };
 
-            let shortcuts;
-            try { // try to fetch shortcuts
-              shortcuts = await Db.getShortcutsCache(user);
-            } catch (err) { // don't need to do anything, there will just be no
-              // shortcuts sent to the parser. but still log the error.
-              console.log('ERROR CRON - fetching shortcuts cache when processing periodic query', err);
-            }
+          let shortcuts;
+          try { // try to fetch shortcuts
+            shortcuts = await Db.getShortcutsCache(user);
+          } catch (err) { // don't need to do anything, there will just be no
+            // shortcuts sent to the parser. but still log the error.
+            console.log('ERROR CRON - fetching shortcuts cache when processing periodic query', err);
+          }
 
-            // always complete building the query regardless of shortcuts
-            arkimeparser.parser.yy = {
-              emailSearch: user.emailSearch === true,
-              fieldsMap: Config.getFieldsMap(),
-              dbFieldsMap: Config.getDBFieldsMap(),
-              prefix: internals.prefix,
-              shortcuts,
-              shortcutTypeMap: internals.shortcutTypeMap
-            };
+          // always complete building the query regardless of shortcuts
+          arkimeparser.parser.yy = {
+            emailSearch: user.emailSearch === true,
+            fieldsMap: Config.getFieldsMap(),
+            dbFieldsMap: Config.getDBFieldsMap(),
+            prefix: internals.prefix,
+            shortcuts,
+            shortcutTypeMap: internals.shortcutTypeMap
+          };
 
-            const query = {
-              from: 0,
-              size: 1000,
-              query: { bool: { filter: [{}] } },
-              _source: ['_id', 'node']
-            };
+          const query = {
+            from: 0,
+            size: 1000,
+            query: { bool: { filter: [{}] } },
+            _source: ['_id', 'node']
+          };
 
+          try {
+            query.query.bool.filter.push(arkimeparser.parse(cq.query));
+          } catch (e) {
+            console.log("CRON - Couldn't compile periodic query expression", cq, e);
+            return;
+          }
+
+          if (user.getExpression()) {
             try {
-              query.query.bool.filter.push(arkimeparser.parse(cq.query));
+              // Expression was set by admin, so assume email search ok
+              arkimeparser.parser.yy.emailSearch = true;
+              const userExpression = arkimeparser.parse(user.getExpression());
+              query.query.bool.filter.push(userExpression);
             } catch (e) {
-              console.log("CRON - Couldn't compile periodic query expression", cq, e);
-              return forQueriesCb();
+              console.log("CRON - Couldn't compile user forced expression", user.getExpression(), e);
+              return;
             }
+          }
 
-            if (user.getExpression()) {
-              try {
-                // Expression was set by admin, so assume email search ok
-                arkimeparser.parser.yy.emailSearch = true;
-                const userExpression = arkimeparser.parse(user.getExpression());
-                query.query.bool.filter.push(userExpression);
-              } catch (e) {
-                console.log("CRON - Couldn't compile user forced expression", user.getExpression(), e);
-                return forQueriesCb();
-              }
-            }
-
+          return new Promise((resolve) => {
             ViewerUtils.lookupQueryItems(query.query.bool.filter, (lerr) => {
-              CronAPIs.#processCronQuery(cq, options, query, endTime, (count, lpValue) => {
+              CronAPIs.#processCronQuery(cq, options, query, endTime, async (count, lpValue) => {
                 if (Config.debug > 1) {
                   console.log('CRON - setting lpValue', new Date(lpValue * 1000));
                 }
@@ -728,17 +748,14 @@ class CronAPIs {
                   }
                 };
 
-                async function continueProcess () {
-                  try {
-                    await Db.update('queries', 'query', qid, doc, { refresh: true });
-                  } catch (err) {
-                    console.log('ERROR CRON - updating query', err);
-                  }
-                  if (lpValue !== endTime) { repeat = true; }
-                  return forQueriesCb();
+                try {
+                  await Db.update('queries', qid, doc, { refresh: true });
+                } catch (err) {
+                  console.log('ERROR CRON - updating query', err);
                 }
+                if (lpValue !== endTime) { repeat = true; }
 
-                // issue alert via notifier if the count has changed and it has been at least 10 minutes
+                // issue alert via notifier(s) if the count has changed and it has been at least 10 minutes
                 if (cq.notifier && count && cq.count !== doc.doc.count &&
                   (!cq.lastNotified || (Math.floor(Date.now() / 1000) - cq.lastNotified >= 600))) {
                   const newMatchCount = cq.lastNotifiedCount ? (doc.doc.count - cq.lastNotifiedCount) : doc.doc.count;
@@ -753,36 +770,48 @@ class CronAPIs {
                   }
 
                   const message = `
-  *${cq.name}* periodic query match alert:
-  *${newMatchCount} new* matches
-  *${doc.doc.count} total* matches
-  ${Config.arkimeWebURL()}${urlPath}${cq.description ? '\n' + cq.description : ''}
+   *${cq.name}* periodic query match alert:
+   *${newMatchCount} new* matches
+   *${doc.doc.count} total* matches
+   ${Config.arkimeWebURL()}${urlPath}${cq.description ? '\n' + cq.description : ''}
                   `;
 
                   Db.refresh('*'); // Before sending alert make sure everything has been refreshed
-                  Notifier.issueAlert(cq.notifier, message, continueProcess);
-                } else {
-                  return continueProcess();
+
+                  // Handle multiple notifiers (stored as comma-separated string) - send in parallel, fire and forget
+                  if (cq.notifier) {
+                    const notifiers = cq.notifier.split(',');
+                    for (const notifierId of notifiers) {
+                      Notifier.issueAlert(notifierId, message, () => {});
+                    }
+                  }
                 }
+
+                resolve();
               });
             });
           });
-        }, (err) => {
-          if (Config.debug > 1) {
-            console.log('CRON - Finished one pass of all crons');
-          }
-          return setImmediate(whilstCb, err);
         });
-      });
-    }, (testCb) => {
+
+        if (Config.debug > 1) {
+          console.log('CRON - Finished one pass of all crons');
+        }
+      } catch (err) {
+        internals.cronRunning = false;
+        console.log('CRON - processCronQueries', err);
+      }
+    }, async () => {
       if (Config.debug > 1) {
         console.log('CRON - Process again: ', repeat);
       }
-      return setImmediate(testCb, null, repeat);
-    }, (err) => {
+      return repeat;
+    }).then(() => {
       if (Config.debug) {
         console.log('CRON - Should be up to date');
       }
+      internals.cronRunning = false;
+    }).catch((err) => {
+      console.log('CRON - Error:', err);
       internals.cronRunning = false;
     });
   }

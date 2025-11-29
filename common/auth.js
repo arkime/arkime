@@ -18,7 +18,7 @@ const LocalStrategy = require('passport-local');
 const express = require('express');
 const expressSession = require('express-session');
 const OIDC = require('openid-client');
-const LRU = require('lru-cache');
+const { LRUCache } = require('lru-cache');
 const bodyParser = require('body-parser');
 
 class Auth {
@@ -44,8 +44,9 @@ class Auth {
   static #caTrustCerts;
   static #passwordSecretSection;
   static #app;
-  static #keyCache = new LRU({ max: 1000, maxAge: 1000 * 60 * 5 });
+  static #keyCache = new LRUCache({ max: 1000, ttl: 1000 * 60 * 5 });
   static #logoutUrl;
+  static #logoutUrlMethod;
 
   // ----------------------------------------------------------------------------
   /**
@@ -104,6 +105,7 @@ class Auth {
     options.authConfig.cookieSameSite ??= ArkimeConfig.get('authCookieSameSite');
     options.authConfig.cookieSecure ??= ArkimeConfig.get('authCookieSecure', true);
     options.authConfig.oidcScope ??= ArkimeConfig.get('authOIDCScope', 'openid');
+    options.authConfig.jwsAlgorithm ??= ArkimeConfig.get('authJwsAlgorithm', 'RS256');
 
     if (ArkimeConfig.debug > 1) {
       console.log('Auth.initialize', options);
@@ -180,6 +182,7 @@ class Auth {
     }
 
     Auth.#logoutUrl = ArkimeConfig.get('logoutUrl');
+    Auth.#logoutUrlMethod = ArkimeConfig.get('logoutUrlMethod', 'POST');
     const addBasic = Auth.mode.startsWith('basic+');
     if (addBasic) {
       Auth.mode = Auth.mode.slice(6);
@@ -336,8 +339,20 @@ class Auth {
   }
 
   // ----------------------------------------------------------------------------
-  static get logoutUrl () {
-    return Auth.#logoutUrl;
+  static logoutUrl (req) {
+    let logoutUrl = Auth.#logoutUrl;
+    if (req.session?.id_token !== undefined) {
+      logoutUrl = logoutUrl.replace('ARKIME_ID_TOKEN', req.session.id_token);
+    }
+    if (ArkimeConfig.debug > 0) {
+      console.log('Set logoutUrl to', req.user.userId, '=>', Auth.#logoutUrl);
+    }
+    return logoutUrl;
+  }
+
+  // ----------------------------------------------------------------------------
+  static get logoutUrlMethod () {
+    return Auth.#logoutUrlMethod;
   }
 
   // ----------------------------------------------------------------------------
@@ -452,7 +467,7 @@ class Auth {
         if (!user) { console.log('AUTH: User', userId, "doesn't exist"); return done(null, false); }
         if (!user.enabled) { console.log('AUTH: User', userId, 'not enabled'); return done('Not enabled'); }
 
-        const storeHa1 = Auth.store2ha1(user.passStore);
+        const storeHa1 = Auth.store2ha1(user.passStore, user.userId);
         const ha1 = Auth.pass2ha1(userId, password);
         if (storeHa1 !== ha1) return done(null, false);
 
@@ -473,7 +488,7 @@ class Auth {
         if (!user.enabled) { console.log('AUTH: User', userId, 'not enabled'); return done('Not enabled'); }
 
         user.setLastUsed();
-        return done(null, user, { ha1: Auth.store2ha1(user.passStore) });
+        return done(null, user, { ha1: Auth.store2ha1(user.passStore, user.userId) });
       });
     }, (poptions, done) => {
       return done(null, true);
@@ -493,12 +508,7 @@ class Auth {
         if (authHeader === undefined) {
           return done('Missing authorization header');
         }
-        let authorized = false;
-        authHeader.split(',').forEach(headerVal => {
-          if (Auth.#requiredAuthHeaderVal.includes(headerVal.trim())) {
-            authorized = true;
-          }
-        });
+        const authorized = authHeader.split(',').some(headerVal => Auth.#requiredAuthHeaderVal.includes(headerVal.trim()));
         if (!authorized) {
           console.log(`The required auth header '${Auth.#requiredAuthHeader}' expected '${Auth.#requiredAuthHeaderVal}' and has `, ArkimeUtil.sanitizeStr(authHeader));
           return done('Bad authorization header');
@@ -541,11 +551,27 @@ class Auth {
         OIDC.custom.setHttpOptionsDefaults({ ca: Auth.#caTrustCerts });
       }
       const issuer = await OIDC.Issuer.discover(Auth.#authConfig.discoverURL);
+
+      // User didn't set a logoutUrl, so we will use the end_session_endpoint from the issuer
+      if (Auth.#logoutUrl === undefined && issuer.end_session_endpoint !== undefined) {
+        if (Auth.#authConfig.redirectURIs) {
+          const logoutUrl = new URL(issuer.end_session_endpoint);
+          logoutUrl.searchParams ??= new URLSearchParams();
+          logoutUrl.searchParams.set('id_token_hint', 'ARKIME_ID_TOKEN');
+          logoutUrl.searchParams.set('post_logout_redirect_uri', Auth.#authConfig.redirectURIs.split(',')[0].replace(/\/auth\/login\/callback$/, '/auth/logout/callback'));
+          Auth.#logoutUrl = logoutUrl.toString();
+          Auth.#logoutUrlMethod = 'GET';
+        } else {
+          console.log('WARNING - No redirectURIs set in authConfig, logoutUrl will not work');
+        }
+      }
+
       const client = new issuer.Client({
         client_id: Auth.#authConfig.clientId,
         client_secret: Auth.#authConfig.clientSecret,
         redirect_uris: Auth.#authConfig.redirectURIs ? Auth.#authConfig.redirectURIs.split(',') : undefined,
-        token_endpoint_auth_method: 'client_secret_post'
+        token_endpoint_auth_method: 'client_secret_post',
+        id_token_signed_response_alg: Auth.#authConfig.jwsAlgorithm
       });
 
       passport.use('oidc', new OIDC.Strategy({
@@ -572,7 +598,7 @@ class Auth {
 
           await user.updateDynamicRoles(userinfo);
           user.setLastUsed();
-          return done(null, user);
+          return done(null, user, { id_token: tokenSet.id_token });
         }
 
         User.getUserCache(userId, (err, user) => {
@@ -598,7 +624,7 @@ class Auth {
         if (!user) { console.log('AUTH: User', userId, "doesn't exist"); return done(null, false); }
         if (!user.enabled) { console.log('AUTH: User', userId, 'not enabled'); return done('Not enabled'); }
 
-        const storeHa1 = Auth.store2ha1(user.passStore);
+        const storeHa1 = Auth.store2ha1(user.passStore, user.userId);
         const ha1 = Auth.pass2ha1(userId, password);
         if (storeHa1 !== ha1) return done(null, false);
 
@@ -662,7 +688,7 @@ class Auth {
         objPath = obj.path.substring(Auth.#basePath.length);
       }
       if (obj.path !== req.url && objPath !== req.url) {
-        console.log('ERROR - mismatch url', obj.path, ArkimeUtil.sanitizeStr(req.url));
+        console.log('ERROR - mismatch url object:', obj.path, 'request:', ArkimeUtil.sanitizeStr(req.url));
         return done('Unauthorized based on bad url');
       }
 
@@ -789,6 +815,15 @@ class Auth {
       return;
     }
 
+    if (req._parsedUrl.pathname === '/auth/logout/callback') {
+      if (req.session) {
+        req.session.destroy((err) => {});
+      }
+      res.cookie('ARKIME-SID', '', { maxAge: 0, path: Auth.#basePath });
+      res.redirect(Auth.#basePath);
+      return;
+    }
+
     if (typeof (req.isAuthenticated) === 'function' && req.isAuthenticated()) {
       return next();
     }
@@ -809,6 +844,10 @@ class Auth {
     }
 
     passport.authenticate(Auth.#strategies, { ...Auth.#passportAuthOptions, ...passportAuthOptionsExtra })(req, res, function (err) {
+      if (req.session !== undefined && req.authInfo?.id_token !== undefined) {
+        req.session.id_token ??= req.authInfo.id_token;
+      }
+
       if (Auth.#basePath !== '/') {
         req.url = req.url.replace(Auth.#basePath, '/');
       }
@@ -831,6 +870,7 @@ class Auth {
             }
           }
           return res.redirect(Auth.#basePath);
+        } else if (req._parsedUrl.pathname === '/auth/logout/callback') {
         }
         return next();
       }
@@ -873,26 +913,22 @@ class Auth {
   // ----------------------------------------------------------------------------
   // Decrypt the encrypted hashed password, it is still hashed
   // Support 2 styles of decryption
-  static store2ha1 (passstore) {
+  static store2ha1 (passstore, userId) {
     try {
       const parts = passstore.split('.');
       if (parts.length === 2) {
-        // New style with IV: IV.E
+        // IV.E
         const c = crypto.createDecipheriv('aes-256-cbc', Auth.passwordSecret256, Buffer.from(parts[0], 'hex'));
         let d = c.update(parts[1], 'hex', 'binary');
         d += c.final('binary');
         return d;
       } else {
-        // Old style without IV: E
-        // eslint-disable-next-line n/no-deprecated-api
-        const c = crypto.createDecipher('aes192', Auth.passwordSecret);
-        let d = c.update(passstore, 'hex', 'binary');
-        d += c.final('binary');
-        return d;
+        console.log(`WARNING - user '${userId}' passStore is using old encryption style, please reset user's password to update`);
+        return '';
       }
     } catch (e) {
-      console.log(`passwordSecret set in the [${Auth.#passwordSecretSection}] section can not decrypt information.  Make sure passwordSecret is the same for all nodes/applications. You may need to re-add users if you've changed the secret.`, e);
-      process.exit(1);
+      console.log(`passwordSecret set in the [${Auth.#passwordSecretSection}] section can not decrypt '${userId}' information.  Make sure passwordSecret is the same for all nodes/applications. You may need to re-add users or reset passwords if you've changed the secret.`, e);
+      return '';
     }
   };
 
@@ -987,8 +1023,7 @@ class Auth {
     // New json style, but still encoded, bad proxy probably
     if (auth.startsWith('%7B%22')) { return Auth.auth2objNext(decodeURIComponent(auth), secret); }
 
-    // Old style, IV.E.H
-
+    // IV.E.H
     const parts = auth.split('.');
 
     if (parts.length !== 3) {
@@ -1038,7 +1073,7 @@ class Auth {
   static getSettingUserDb (req, res, next) {
     let userId;
 
-    if (req.query.userId === undefined || req.query.userId === req.user.userId) {
+    if (!req.query.userId || req.query.userId === req.user.userId) {
       if (Auth.regressionTests) {
         req.settingUser = req.user;
         return next();

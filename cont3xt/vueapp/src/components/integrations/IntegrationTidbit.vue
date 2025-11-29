@@ -3,50 +3,64 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-  <span style="display: contents" class="cursor-help d-flex flex-row align-items-center overflow-hidden">
+  <span
+    style="display: contents"
+    class="cursor-help d-flex flex-row align-center overflow-hidden">
 
-    <b-tooltip :target="id" noninteractive>
+    <id-tooltip :target="id">
       <span class="text-primary">{{ tidbit.integration }}</span><span v-if="tidbit.tooltip">: {{ tidbit.tooltip }}</span>
-    </b-tooltip>
+    </id-tooltip>
 
-    <label v-if="labeled" :for="id" class="text-warning m-0">
+    <label
+      v-if="labeled"
+      :for="id"
+      class="text-warning ma-0">
       {{ tidbit.label }}
     </label>
 
     <template v-if="tidbit.display === 'badge'">
-      <b-badge variant="light" class="mw-100 overflow-hidden mr-1 mb-1" style="font-size:100%" :id="id">
+      <c3-badge
+        variant="light"
+        class="mw-100 overflow-hidden mr-1 mb-1"
+        style="font-size:100%"
+        :id="id">
         {{ tidbit.displayValue || tidbit.value }}
-      </b-badge>
+      </c3-badge>
     </template>
 
     <template v-else-if="tidbit.display === 'cont3xtField'">
-      <cont3xt-field class="mr-1 align-self-center" :id="id"
+      <cont3xt-field
+        class="mr-1 align-self-center"
+        :id="id"
         :value="tidbit.value"
-        :display="tidbit.displayValue"
-      />
+        :display="tidbit.displayValue" />
     </template>
 
     <template v-else-if="tidbit.display === 'cont3xtCopyLink'">
-      <cont3xt-field class="mr-1 align-self-center" :id="id"
+      <cont3xt-field
+        class="mr-1 align-self-center"
+        :id="id"
         :options="{ copy: 'copy link' }"
         :value="tidbit.value"
-        :display="tidbit.displayValue"
-      />
+        :display="tidbit.displayValue" />
     </template>
 
     <template v-else-if="groupColorNames.includes(tidbit.display)">
-      <b-badge
+      <c3-badge
         :id="id"
         variant="light"
         style="font-size:100%"
         class="d-inline-flex flex-wrap group-container mw-100 overflow-auto text-wrap mb-1"
         :class="groupClassMap(tidbit.display)">
-        <b-badge v-for="(element, index) in (tidbit.displayValue || tidbit.value)"
-          v-b-tooltip.hover.noninteractive=element
-          :key="index" class="group-member" variant="light">
+        <c3-badge
+          v-for="(element, index) in (tidbit.displayValue || tidbit.value)"
+          v-tooltip:close-on-content-click="element"
+          :key="index"
+          class="group-member"
+          variant="light">
           {{ element }}
-        </b-badge>
-      </b-badge>
+        </c3-badge>
+      </c3-badge>
     </template>
 
     <template v-else>
@@ -57,12 +71,14 @@ SPDX-License-Identifier: Apache-2.0
 </template>
 
 <script>
-import Cont3xtField from '@/utils/Field';
+import Cont3xtField from '@/utils/Field.vue';
+import IdTooltip from '@/utils/IdTooltip.vue';
 
 export default {
   name: 'IntegrationTidbit',
   components: {
-    Cont3xtField
+    Cont3xtField,
+    IdTooltip
   },
   props: {
     tidbit: {
@@ -87,7 +103,7 @@ export default {
   methods: {
     groupClassMap (display) {
       return {
-        'bg-danger': display === 'dangerGroup',
+        'bg-error': display === 'dangerGroup',
         'bg-warning': display === 'warningGroup',
         'bg-success': display === 'successGroup',
         'bg-primary': display === 'primaryGroup',

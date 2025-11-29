@@ -43,6 +43,19 @@ class GreyNoiseIntegration extends Integration {
     order: 400,
     fields: [
       {
+        field: 'classification',
+        type: 'array',
+        postProcess: [
+          {
+            if: { equals: 'malicious' },
+            else: undefined
+          },
+          { template: 'GreyNoise: <data.classification>, <data.name>' },
+          { split: '\x00' }
+        ],
+        display: 'dangerGroup'
+      },
+      {
         field: 'riot',
         postProcess: {
           if: { equals: true },
@@ -108,5 +121,4 @@ class GreyNoiseIntegration extends Integration {
   }
 }
 
-// eslint-disable-next-line no-new
 new GreyNoiseIntegration();

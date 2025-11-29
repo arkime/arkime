@@ -69,7 +69,7 @@ void arkime_parser_init()
                                     (char *)NULL);
 
     hostField = arkime_field_define("oracle", "lotermfield",
-                                    "oracle.host", "Host", "oracle.host",
+                                    "oracle.host", "Oracle Host", "oracle.host",
                                     "Oracle Host",
                                     ARKIME_FIELD_TYPE_STR,  ARKIME_FIELD_FLAG_LINKED_SESSIONS,
                                     "category", "host",

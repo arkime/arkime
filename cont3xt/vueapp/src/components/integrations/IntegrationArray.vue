@@ -2,92 +2,117 @@
 Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
+<script setup>
+import { ref, nextTick, onUpdated } from 'vue';
+import { useStore } from 'vuex';
+import { useGetters } from '@/vue3-helpers';
+import HighlightableText from '@/utils/HighlightableText.vue';
+
+const props = defineProps({
+  field: { // the field for which to display the array value
+    type: Object,
+    required: true
+  },
+  arrayData: { // the data to display the array
+    type: Array,
+    require: true,
+    default: () => []
+  },
+  size: { // the rows of data to display initially and increment or
+    type: Number, // decrement thereafter (by clicking more/less)
+    default: 50
+  },
+  highlightsArray: {
+    type: Array,
+    default () {
+      return null;
+    }
+  },
+  highlightColor: { // highlight color: 'yellow' or 'pink'
+    type: String,
+    default: 'yellow'
+  }
+});
+const store = useStore();
+const { getRenderingArray } = useGetters(store);
+
+const arrayLen = ref(Math.min(props.arrayData.length, props.size));
+
+function showMore () {
+  arrayLen.value = Math.min(arrayLen.value + props.size, props.arrayData.length);
+}
+function showLess () {
+  arrayLen.value = Math.max(arrayLen.value - props.size, props.size);
+}
+function showAll () {
+  store.commit('SET_RENDERING_ARRAY', true);
+  setTimeout(() => { // need settimeout for rendering to take effect
+    arrayLen.value = props.arrayData.length;
+  });
+}
+
+onUpdated(() => { // data is rendered
+  nextTick(() => {
+    store.commit('SET_RENDERING_ARRAY', false);
+  });
+});
+</script>
+
 <template>
-  <span>
+  <span class="position-relative">
+    <v-overlay
+      :model-value="getRenderingArray"
+      class="align-center justify-center blur-overlay"
+      contained>
+      <div class="d-flex flex-column align-center justify-center">
+        <v-progress-circular
+          color="info"
+          size="64"
+          indeterminate />
+        <p>Rendering array...</p>
+      </div>
+    </v-overlay>
+
     <template v-if="field.join">
       {{ arrayData.join(field.join || ', ') }}
     </template>
     <template v-else>
-      <div :key="index"
+      <div
+        :key="index"
         v-for="index in (Math.max(arrayLen, 0))">
-        <highlightable-text :content="arrayData[index - 1]" :highlights="highlightsArray ? highlightsArray[index - 1] : null"/>
+        <highlightable-text
+          :content="arrayData[index - 1]"
+          :highlights="highlightsArray ? highlightsArray[index - 1] : null"
+          :highlight-color="highlightColor" />
       </div>
-      <div class="d-flex justify-content-between"
+      <div
+        class="d-flex justify-space-between"
         v-if="arrayData.length > arrayLen || arrayLen > size">
-        <a
+        <v-btn
           @click="showLess"
-          class="btn btn-link btn-xs"
-          :class="{'disabled':arrayLen <= size}">
+          size="x-small"
+          variant="text"
+          color="primary"
+          :disabled="arrayLen <= size">
           show less...
-        </a>
-        <a
+        </v-btn>
+        <v-btn
           @click="showAll"
-          class="btn btn-link btn-xs"
-          :class="{'disabled':arrayLen >= arrayData.length}">
+          size="x-small"
+          variant="text"
+          color="primary"
+          :disabled="arrayLen >= arrayData.length">
           show ALL
-        </a>
-        <a
+        </v-btn>
+        <v-btn
           @click="showMore"
-          class="btn btn-link btn-xs"
-          :class="{'disabled':arrayLen >= arrayData.length}">
+          size="x-small"
+          variant="text"
+          color="primary"
+          :disabled="arrayLen >= arrayData.length">
           show more...
-        </a>
+        </v-btn>
       </div>
     </template>
   </span>
 </template>
-
-<script>
-import HighlightableText from '@/utils/HighlightableText';
-
-export default {
-  name: 'IntegrationArray',
-  components: {
-    HighlightableText
-  },
-  props: {
-    field: { // the field for which to display the array value
-      type: Object,
-      required: true
-    },
-    arrayData: { // the data to display the array
-      type: Array,
-      require: true
-    },
-    size: { // the rows of data to display initially and increment or
-      type: Number, // decrement thereafter (by clicking more/less)
-      default: 50
-    },
-    highlightsArray: {
-      type: Array,
-      default () {
-        return null;
-      }
-    }
-  },
-  data () {
-    return {
-      arrayLen: Math.min(this.arrayData.length, this.size)
-    };
-  },
-  methods: {
-    showMore () {
-      this.arrayLen = Math.min(this.arrayLen + this.size, this.arrayData.length);
-    },
-    showLess () {
-      this.arrayLen = Math.max(this.arrayLen - this.size, this.size);
-    },
-    showAll () {
-      this.$store.commit('SET_RENDERING_ARRAY', true);
-      setTimeout(() => { // need settimeout for rendering to take effect
-        this.arrayLen = this.arrayData.length;
-      }, 100);
-    }
-  },
-  updated () { // data is rendered
-    this.$nextTick(() => {
-      this.$store.commit('SET_RENDERING_ARRAY', false);
-    });
-  }
-};
-</script>

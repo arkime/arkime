@@ -34,7 +34,7 @@ function help () {
   console.log('  --hideStats             Hide the stats page from this user');
   console.log('  --timeLimit             Max time limit for searches in hours');
   console.log(`  --createOnly            Only create the user if it doesn't exist`);
-  console.log('  --roles                 Comma seperated list of roles');
+  console.log('  --roles                 Comma separated list of roles');
   console.log('');
   console.log('Config Options:');
   console.log('  -c, --config <file|url> Where to fetch the config file from');
@@ -206,7 +206,7 @@ async function premain () {
     main();
   } else {
     const escInfo = Config.getArray('elasticsearch', 'http://localhost:9200');
-    Db.initialize({
+    await Db.initialize({
       host: escInfo,
       prefix: Config.get('prefix', 'arkime_'),
       esClientKey: Config.get('esClientKey', null),
@@ -221,7 +221,8 @@ async function premain () {
       esBasicAuth: Config.get('elasticsearchBasicAuth', null),
       usersEsBasicAuth: Config.get('usersElasticsearchBasicAuth', null),
       noUsersCheck: true
-    }, main);
+    });
+    main();
   }
 }
 premain();

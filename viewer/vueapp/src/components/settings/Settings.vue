@@ -3,371 +3,294 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-
   <!-- settings content -->
   <div class="settings-page">
-
     <!-- messages (success/error) displayed at bottom of page -->
-    <b-alert
-      dismissible
-      :variant="msgType"
-      v-model="showMessage"
+    <div
+      v-if="showMessage"
       style="z-index: 2000;"
-      class="position-fixed fixed-bottom m-0 rounded-0">
+      :class="`alert-${msgType}`"
+      class="alert position-fixed fixed-bottom m-0 rounded-0">
       {{ msg }}
-    </b-alert> <!-- /messages -->
+      <button
+        type="button"
+        class="btn-close pull-right"
+        @click="showMessage = false" />
+    </div> <!-- /messages -->
 
     <!-- sub navbar -->
     <div class="sub-navbar">
       <span class="sub-navbar-title">
         <span class="fa-stack">
-          <span class="fa fa-cogs fa-stack-1x"></span>
-          <span class="fa fa-square-o fa-stack-2x"></span>
+          <span class="fa fa-cogs fa-stack-1x" />
+          <span class="fa fa-square-o fa-stack-2x" />
         </span>&nbsp;
         <span>
-          Settings
-          <span v-if="displayName">
-            for {{ displayName }}
-          </span>
+          {{ $t(displayName ? 'settings.settingsFor' : 'settings.settings', { user: displayName }) }}
         </span>
       </span>
     </div> <!-- /sub navbar -->
 
     <!-- loading overlay -->
     <arkime-loading
-      v-if="loading">
-    </arkime-loading> <!-- /loading overlay -->
+      v-if="loading" /> <!-- /loading overlay -->
 
     <!-- page error -->
     <arkime-error
       v-if="error"
       :message-html="error"
-      class="settings-error">
-    </arkime-error> <!-- /page error -->
+      class="settings-error" /> <!-- /page error -->
 
     <!-- content -->
-    <div class="settings-content row"
-       v-if="!loading && !error && settings">
-
+    <div
+      class="settings-content row"
+      v-if="!loading && !error && settings">
       <!-- navigation -->
-      <div class="col-xl-2 col-lg-3 col-md-3 col-sm-4 col-xs-12"
+      <div
+        class="col-xl-2 col-lg-3 col-md-3 col-sm-4 col-xs-12"
         role="tablist"
         aria-orientation="vertical">
         <div class="nav flex-column nav-pills">
-          <a class="nav-link cursor-pointer"
+          <a
+            class="nav-link cursor-pointer"
             @click="openView('general')"
             :class="{'active':visibleTab === 'general'}">
-            <span class="fa fa-fw fa-cog">
-            </span>&nbsp;
-            General
+            <span class="fa fa-fw fa-cog" />&nbsp;
+            {{ $t('settings.nav.general') }}
           </a>
-          <a class="nav-link cursor-pointer"
+          <a
+            class="nav-link cursor-pointer"
             @click="openView('col')"
             :class="{'active':visibleTab === 'col'}">
-            <span class="fa fa-fw fa-columns">
-            </span>&nbsp;
-            Column Layout
+            <span class="fa fa-fw fa-columns" />&nbsp;
+            {{ $t('settings.nav.columnLayout') }}
           </a>
-          <a class="nav-link cursor-pointer"
+          <a
+            class="nav-link cursor-pointer"
             @click="openView('info')"
             :class="{'active':visibleTab === 'info'}">
-            <span class="fa fa-fw fa-info">
-            </span>&nbsp;
-            Info Field Layout
+            <span class="fa fa-fw fa-info" />&nbsp;
+            {{ $t('settings.nav.infoFieldLayout') }}
           </a>
-          <a class="nav-link cursor-pointer"
+          <a
+            class="nav-link cursor-pointer"
             @click="openView('spiview')"
             :class="{'active':visibleTab === 'spiview'}">
-            <span class="fa fa-fw fa-eyedropper">
-            </span>&nbsp;
-            SPI View Layout
+            <span class="fa fa-fw fa-eyedropper" />&nbsp;
+            {{ $t('settings.nav.spiViewLayout') }}
           </a>
-          <a class="nav-link cursor-pointer"
+          <a
+            class="nav-link cursor-pointer"
             @click="openView('theme')"
             :class="{'active':visibleTab === 'theme'}">
-            <span class="fa fa-fw fa-paint-brush">
-            </span>&nbsp;
-            Themes
+            <span class="fa fa-fw fa-paint-brush" />&nbsp;
+            {{ $t('settings.nav.themes') }}
           </a>
-          <a v-if="!multiviewer && !disablePassword"
+          <a
+            v-if="(!multiviewer || hasUsersES) && !disablePassword"
             class="nav-link cursor-pointer"
             @click="openView('password')"
             :class="{'active':visibleTab === 'password'}">
-            <span class="fa fa-fw fa-lock">
-            </span>&nbsp;
-            Password
+            <span class="fa fa-fw fa-lock" />&nbsp;
+            {{ $t('settings.nav.password') }}
           </a>
-          <hr class="hr-small nav-separator" />
-          <a class="nav-link cursor-pointer"
+          <hr class="hr-small nav-separator">
+          <a
+            class="nav-link cursor-pointer"
             @click="openView('views')"
             :class="{'active':visibleTab === 'views'}">
-            <span class="fa fa-fw fa-eye">
-            </span>&nbsp;
-            Views
+            <span class="fa fa-fw fa-eye" />&nbsp;
+            {{ $t('settings.nav.views') }}
           </a>
-          <a v-if="!multiviewer || (multiviewer && hasUsersES)"
+          <a
+            v-if="!multiviewer || hasUsersES"
             class="nav-link cursor-pointer"
             @click="openView('shortcuts')"
             :class="{'active':visibleTab === 'shortcuts'}">
-            <span class="fa fa-fw fa-list">
-            </span>&nbsp;
-            Shortcuts
+            <span class="fa fa-fw fa-list" />&nbsp;
+            {{ $t('settings.nav.shortcuts') }}
           </a>
-          <a v-if="!multiviewer"
+          <a
+            v-if="!multiviewer"
             class="nav-link cursor-pointer"
             @click="openView('cron')"
             :class="{'active':visibleTab === 'cron'}">
-            <span class="fa fa-fw fa-search">
-            </span>&nbsp;
-            Periodic Queries
+            <span class="fa fa-fw fa-search" />&nbsp;
+            {{ $t('settings.nav.cron') }}
           </a>
-          <a class="nav-link cursor-pointer"
+          <a
+            class="nav-link cursor-pointer"
             v-has-role="{user:user,roles:'arkimeAdmin'}"
             @click="openView('notifiers')"
             :class="{'active':visibleTab === 'notifiers'}">
-            <span class="fa fa-fw fa-bell">
-            </span>&nbsp;
-            Notifiers
+            <span class="fa fa-fw fa-bell" />&nbsp;
+            {{ $t('settings.nav.notifiers') }}
           </a>
         </div>
       </div> <!-- /navigation -->
 
       <div class="col-xl-10 col-lg-9 col-md-9 col-sm-8 col-xs-12 settings-right-panel">
-
         <!-- general settings -->
-        <form class="form-horizontal"
+        <form
+          class="form-horizontal"
           v-if="visibleTab === 'general'"
           id="general">
-
           <h3>
-            General
-
-            <template class="form-group row justify-content-md-center">
-              <button type="button"
-                title="Reset settings to default"
-                @click="resetSettings"
-                class="btn btn-theme-quaternary btn-sm pull-right ml-1">
-                <span class="fa fa-repeat">
-                </span>&nbsp;
-                Reset General Settings
-              </button>
-            </template>
+            {{ $t('settings.general.title') }}
+            <button
+              type="button"
+              @click="resetSettings"
+              class="btn btn-theme-quaternary btn-sm pull-right ms-1">
+              <span class="fa fa-repeat me-2" />
+              {{ $t('settings.general.reset') }}
+            </button>
           </h3>
 
           <hr>
 
           <!-- timezone -->
           <div class="form-group row">
-            <label class="col-sm-3 col-form-label text-right font-weight-bold">
-              Timezone Format
+            <label class="col-sm-3 col-form-label text-end fw-bold">
+              {{ $t('settings.general.timezoneFormat') }}
             </label>
             <div class="col-sm-9">
-              <div class="btn-group">
-                <b-form-group>
-                  <b-form-radio-group
-                    size="sm"
-                    buttons
-                    @change="updateTimezone"
-                    v-model="settings.timezone">
-                    <b-radio value="local"
-                      class="btn-radio">
-                      Local
-                    </b-radio>
-                    <b-radio value="localtz"
-                      class="btn-radio">
-                      Local + Timezone
-                    </b-radio>
-                    <b-radio value="gmt"
-                      class="btn-radio">
-                      UTC
-                    </b-radio>
-                  </b-form-radio-group>
-                </b-form-group>
-              </div>
-              <div class="btn-group">
-                <b-form-group>
-                  <b-form-checkbox
-                    button
-                    size="sm"
-                    v-b-tooltip.hover
-                    class="btn-checkbox"
-                    @change="updateMs"
-                    v-model="settings.ms"
-                    :active="settings.ms"
-                    title="(for session and packet timestamps only)">
-                    milliseconds
-                  </b-form-checkbox>
-                </b-form-group>
-              </div>
-              <label class="ml-4 font-weight-bold text-theme-primary">
-                {{ date | timezoneDateString(settings.timezone, settings.ms) }}
+              <BFormRadioGroup
+                buttons
+                size="sm"
+                class="d-inline me-2"
+                button-variant="outline-secondary"
+                :model-value="settings.timezone"
+                @update:model-value="updateTimezone"
+                :options="[
+                  { text: $t('settings.general.tz-local'), value: 'local' },
+                  { text: $t('settings.general.tz-localtz'), value: 'localtz' },
+                  { text: $t('settings.general.tz-gmt'), value: 'gmt' }
+                ]" />
+              <BFormCheckbox
+                button
+                size="sm"
+                class="d-inline"
+                id="millisecondsSetting"
+                :active="settings.ms"
+                :model-value="settings.ms"
+                @update:model-value="updateMs"
+                button-variant="outline-secondary">
+                {{ $t('common.milliseconds') }}
+                <BTooltip target="millisecondsSetting">
+                  {{ $t('settings.general.millisecondsSettingTip') }}
+                </BTooltip>
+              </BFormCheckbox>
+              <label class="ms-2 fw-bold text-theme-primary align-bottom">
+                {{ timezoneDateString(date, settings.timezone, settings.ms) }}
               </label>
             </div>
           </div> <!-- /timezone -->
 
           <!-- session detail format -->
           <div class="form-group row">
-            <label class="col-sm-3 col-form-label text-right font-weight-bold">
-              Session Detail Format
+            <label class="col-sm-3 col-form-label text-end fw-bold">
+              {{ $t('settings.general.sessionDetailFormat') }}
             </label>
             <div class="col-sm-9">
-              <b-form-group>
-                <b-form-radio-group
-                  size="sm"
-                  buttons
-                  @change="updateSessionDetailFormat"
-                  v-model="settings.detailFormat">
-                  <b-radio value="last"
-                    v-b-tooltip.hover
-                    class="btn-radio">
-                    Last Used
-                  </b-radio>
-                  <b-radio value="natural"
-                    v-b-tooltip.hover
-                    class="btn-radio">
-                    Natural
-                  </b-radio>
-                  <b-radio value="ascii"
-                    v-b-tooltip.hover
-                    class="btn-radio">
-                    ASCII
-                  </b-radio>
-                  <b-radio value="utf8"
-                    v-b-tooltip.hover
-                    class="btn-radio">
-                    UTF-8
-                  </b-radio>
-                  <b-radio value="hex"
-                    v-b-tooltip.hover
-                    class="btn-radio">
-                    Hex
-                  </b-radio>
-                </b-form-radio-group>
-              </b-form-group>
+              <BFormRadioGroup
+                buttons
+                size="sm"
+                class="d-inline"
+                button-variant="outline-secondary"
+                :model-value="settings.detailFormat"
+                @update:model-value="updateSessionDetailFormat"
+                :options="[
+                  { text: $t('settings.general.lastUsed'), value: 'last' },
+                  { text: $t('settings.general.detail-natural'), value: 'natural' },
+                  { text: $t('settings.general.detail-ascii'), value: 'ascii' },
+                  { text: $t('settings.general.detail-utf8'), value: 'utf8' },
+                  { text: $t('settings.general.detail-hex'), value: 'hex' }
+                ]" />
             </div>
           </div> <!-- /session detail format -->
 
           <!-- number of packets -->
           <div class="form-group row">
-            <label class="col-sm-3 col-form-label text-right font-weight-bold">
-              Number of Packets
+            <label class="col-sm-3 col-form-label text-end fw-bold">
+              {{ $t('settings.general.numberOfPackets') }}
             </label>
             <div class="col-sm-9">
-              <b-form-group>
-                <b-form-radio-group
-                  size="sm"
-                  buttons
-                  @change="updateNumberOfPackets"
-                  v-model="settings.numPackets">
-                  <b-radio value="last"
-                    v-b-tooltip.hover
-                    class="btn-radio">
-                    Last Used
-                  </b-radio>
-                  <b-radio value="50"
-                    v-b-tooltip.hover
-                    class="btn-radio">
-                    50
-                  </b-radio>
-                  <b-radio value="200"
-                    v-b-tooltip.hover
-                    class="btn-radio">
-                    200
-                  </b-radio>
-                  <b-radio value="500"
-                    v-b-tooltip.hover
-                    class="btn-radio">
-                    500
-                  </b-radio>
-                  <b-radio value="1000"
-                    v-b-tooltip.hover
-                    class="btn-radio">
-                    1,000
-                  </b-radio>
-                  <b-radio value="2000"
-                    v-b-tooltip.hover
-                    class="btn-radio">
-                    2,000
-                  </b-radio>
-                </b-form-radio-group>
-              </b-form-group>
+              <BFormRadioGroup
+                buttons
+                size="sm"
+                class="d-inline"
+                button-variant="outline-secondary"
+                :model-value="settings.numPackets"
+                @update:model-value="updateNumberOfPackets"
+                :options="[
+                  { text: $t('settings.general.lastUsed'), value: 'last' },
+                  { text: '50', value: '50' },
+                  { text: '200', value: '200' },
+                  { text: '500', value: '500' },
+                  { text: '1,000', value: '1000' },
+                  { text: '2,000', value: '2000' }
+                ]" />
             </div>
           </div> <!-- /number of packets -->
 
           <!-- show packet timestamp -->
           <div class="form-group row">
-            <label class="col-sm-3 col-form-label text-right font-weight-bold">
-              Show Packet Info
+            <label class="col-sm-3 col-form-label text-end fw-bold">
+              {{ $t('settings.general.showPacketInfo') }}
             </label>
             <div class="col-sm-9">
-              <b-form-group>
-                <b-form-radio-group
-                  size="sm"
-                  buttons
-                  @change="updateShowPacketTimestamps"
-                  v-model="settings.showTimestamps">
-                  <b-radio value="last"
-                    v-b-tooltip.hover
-                    class="btn-radio">
-                    Last Used
-                  </b-radio>
-                  <b-radio value="on"
-                    v-b-tooltip.hover
-                    class="btn-radio">
-                    On
-                  </b-radio>
-                  <b-radio value="off"
-                    v-b-tooltip.hover
-                    class="btn-radio">
-                    Off
-                  </b-radio>
-                </b-form-radio-group>
-              </b-form-group>
+              <BFormRadioGroup
+                buttons
+                size="sm"
+                class="d-inline"
+                button-variant="outline-secondary"
+                :model-value="settings.showTimestamps"
+                @update:model-value="updateShowPacketTimestamps"
+                :options="[
+                  { text: $t('settings.general.lastUsed'), value: 'last' },
+                  { text: $t('settings.general.info-on'), value: 'on' },
+                  { text: $t('settings.general.info-off'), value: 'off' }
+                ]" />
             </div>
           </div> <!-- /show packet timestamp -->
 
           <!-- issue query on initial page load -->
           <div class="form-group row">
-            <label class="col-sm-3 col-form-label text-right font-weight-bold">
-              Issue Query on Page Load
+            <label class="col-sm-3 col-form-label text-end fw-bold">
+              {{ $t('settings.general.queryOnLoad') }}
             </label>
             <div class="col-sm-9">
-              <b-form-group>
-                <b-form-radio-group
-                  buttons
-                  size="sm"
-                  @change="updateQueryOnPageLoad"
-                  v-model="settings.manualQuery">
-                  <b-radio
-                    value="false"
-                    class="btn-radio"
-                    v-b-tooltip.hover
-                    title="Always issue a query on page load">
-                    Yes
-                  </b-radio>
-                  <b-radio
-                    value="true"
-                    class="btn-radio"
-                    v-b-tooltip.hover
-                    title="Only issue a query if there is a search expression">
-                    If Query
-                  </b-radio>
-                </b-form-radio-group>
-              </b-form-group>
+              <BFormRadioGroup
+                buttons
+                size="sm"
+                class="d-inline"
+                button-variant="outline-secondary"
+                :model-value="settings.manualQuery"
+                @update:model-value="updateQueryOnPageLoad"
+                :options="[
+                  { text: $t('settings.general.lastUsed'), value: 'last' },
+                  { text: $t('settings.general.query-false'), value: 'false' },
+                  { text: $t('settings.general.query-true'), value: 'true' }
+                ]" />
             </div>
           </div> <!-- /issue query on initial page load -->
 
           <!-- session sort -->
           <div class="form-group row">
-            <label class="col-sm-3 col-form-label text-right font-weight-bold">
-              Sort Sessions By
+            <label class="col-sm-3 col-form-label text-end fw-bold">
+              {{ $t('settings.general.sortSessionsBy') }}
             </label>
             <div class="col-sm-6">
-              <select class="form-control form-control-sm"
+              <select
+                size="sm"
+                class="form-select form-select-sm"
                 v-model="settings.sortColumn"
                 @change="update">
-                <option value="last">Last Used</option>
-                <option v-for="field in sortableColumns"
+                <option value="last">
+                  {{ $t('settings.general.lastUsed') }}
+                </option>
+                <option
+                  v-for="field in sortableColumns"
                   :key="field.dbField"
                   :value="field.dbField">
                   {{ field.friendlyName }}
@@ -375,33 +298,27 @@ SPDX-License-Identifier: Apache-2.0
               </select>
             </div>
             <div class="col-sm-3">
-              <b-form-group>
-                <b-form-radio-group
-                  v-if="settings.sortColumn !== 'last'"
-                  size="sm"
-                  buttons
-                  @change="updateSortDirection"
-                  v-model="settings.sortDirection">
-                  <b-radio value="asc"
-                    v-b-tooltip.hover
-                    class="btn-radio">
-                    ascending
-                  </b-radio>
-                  <b-radio value="desc"
-                    v-b-tooltip.hover
-                    class="btn-radio">
-                    descending
-                  </b-radio>
-                </b-form-radio-group>
-              </b-form-group>
+              <BFormRadioGroup
+                buttons
+                size="sm"
+                class="d-inline"
+                button-variant="outline-secondary"
+                v-if="settings.sortColumn !== 'last'"
+                :model-value="settings.sortDirection"
+                @update:model-value="updateSortDirection"
+                :options="[
+                  { text: $t('settings.general.sort-asc'), value: 'asc' },
+                  { text: $t('settings.general.sort-desc'), value: 'desc' }
+                ]" />
             </div>
           </div> <!-- /session sort -->
 
           <!-- default spi graph -->
-          <div v-if="fields && settings.spiGraph"
+          <div
+            v-if="fields && settings.spiGraph"
             class="form-group row">
-            <label class="col-sm-3 col-form-label text-right font-weight-bold">
-              Default SPI Graph
+            <label class="col-sm-3 col-form-label text-end fw-bold">
+              {{ $t('settings.general.defaultSPIGraph') }}
             </label>
             <div class="col-sm-6">
               <arkime-field-typeahead
@@ -409,25 +326,26 @@ SPDX-License-Identifier: Apache-2.0
                 :fields="fields"
                 query-param="field"
                 :initial-value="spiGraphTypeahead"
-                @fieldSelected="spiGraphFieldSelected">
-              </arkime-field-typeahead>
+                @field-selected="spiGraphFieldSelected" />
             </div>
             <div class="col-sm-3">
               <h4 v-if="spiGraphField">
-                <label class="badge badge-info cursor-help"
-                  v-b-tooltip.hover
-                  :title="spiGraphField.help">
+                <label
+                  id="spiGraphFieldSetting"
+                  class="badge bg-info cursor-help">
                   {{ spiGraphTypeahead || 'unknown field' }}
+                  <BTooltip target="spiGraphFieldSetting">{{ spiGraphField.help }}</BTooltip>
                 </label>
               </h4>
             </div>
           </div> <!-- /default spi graph -->
 
           <!-- connections src field -->
-          <div v-if="fields && settings.connSrcField"
+          <div
+            v-if="fields && settings.connSrcField"
             class="form-group row">
-            <label class="col-sm-3 col-form-label text-right font-weight-bold">
-              Connections Src
+            <label class="col-sm-3 col-form-label text-end fw-bold">
+              {{ $t('settings.general.connectionsSrc') }}
             </label>
             <div class="col-sm-6">
               <arkime-field-typeahead
@@ -435,25 +353,26 @@ SPDX-License-Identifier: Apache-2.0
                 :fields="fields"
                 query-param="field"
                 :initial-value="connSrcFieldTypeahead"
-                @fieldSelected="connSrcFieldSelected">
-              </arkime-field-typeahead>
+                @field-selected="connSrcFieldSelected" />
             </div>
             <div class="col-sm-3">
               <h4 v-if="connSrcField">
-                <label class="badge badge-info cursor-help"
-                  v-b-tooltip.hover
-                  :title="connSrcField.help">
+                <label
+                  class="badge bg-info cursor-help"
+                  id="connSrcFieldSetting">
                   {{ connSrcFieldTypeahead || 'unknown field' }}
+                  <BTooltip target="connSrcFieldSetting">{{ connSrcField.help }}</BTooltip>
                 </label>
               </h4>
             </div>
           </div> <!-- /connections src field -->
 
           <!-- connections dst field -->
-          <div v-if="fields && settings.connDstField"
+          <div
+            v-if="fields && settings.connDstField"
             class="form-group row">
-            <label class="col-sm-3 col-form-label text-right font-weight-bold">
-              Connections Dst
+            <label class="col-sm-3 col-form-label text-end fw-bold">
+              {{ $t('settings.general.connectionsDst') }}
             </label>
             <div class="col-sm-6">
               <arkime-field-typeahead
@@ -461,24 +380,25 @@ SPDX-License-Identifier: Apache-2.0
                 :fields="fields"
                 query-param="field"
                 :initial-value="connDstFieldTypeahead"
-                @fieldSelected="connDstFieldSelected">
-              </arkime-field-typeahead>
+                @field-selected="connDstFieldSelected" />
             </div>
             <div class="col-sm-3">
               <h4 v-if="connDstField">
-                <label class="badge badge-info cursor-help"
-                  v-b-tooltip.hover
-                  :title="connDstField.help">
+                <label
+                  class="badge bg-info cursor-help"
+                  id="connDstFieldSetting">
                   {{ connDstFieldTypeahead || 'unknown field' }}
+                  <BTooltip target="connDstFieldSetting">{{ connDstField.help }}</BTooltip>
                 </label>
               </h4>
             </div>
           </div> <!-- /connections dst field -->
 
-          <div v-if="integerFields"
+          <div
+            v-if="integerFields"
             class="form-group row">
-            <label class="col-sm-3 col-form-label text-right font-weight-bold">
-              Timeline Data Filters (max 4)
+            <label class="col-sm-3 col-form-label text-end fw-bold">
+              {{ $t('settings.general.timelineDataFilters') }}
             </label>
 
             <div class="col-sm-6">
@@ -487,34 +407,36 @@ SPDX-License-Identifier: Apache-2.0
                 :fields="integerFields"
                 :initial-value="filtersTypeahead"
                 query-param="field"
-                @fieldSelected="timelineFilterSelected">
-              </arkime-field-typeahead>
+                @field-selected="timelineFilterSelected" />
             </div>
             <div class="col-sm-3">
               <h4 v-if="timelineDataFilters.length > 0">
-                <label class="badge badge-info cursor-help small-badge"
-                  v-for="filter in timelineDataFilters" :key="filter.dbField + 'DataFilterBadge'"
+                <label
+                  class="badge bg-info cursor-help small-badge"
+                  v-for="filter in timelineDataFilters"
+                  :key="filter.dbField + 'DataFilterBadge'"
                   @click="timelineFilterSelected(filter)"
-                  v-b-tooltip.hover
-                  :title="filter.help">
-                  <span class="fa fa-times"></span>
+                  :id="filter.dbField + 'DataFilterBadge'">
+                  <span class="fa fa-times" />
                   {{ filter.friendlyName || 'unknown field' }}
+                  <BTooltip :target="filter.dbField + 'DataFilterBadge'">{{ filter.help }}</BTooltip>
                 </label>
               </h4>
               <b-button
                 size="sm"
                 variant="danger"
                 @click="resetDefaultFilters">
-                Reset default timeline filters
+                {{ $t('settings.general.resetTimelineDataFilters') }}
               </b-button>
             </div>
           </div>
 
           <!-- hide tags field -->
-          <div v-if="fields"
+          <div
+            v-if="fields"
             class="form-group row">
-            <label class="col-sm-3 col-form-label text-right font-weight-bold">
-              Hide Tags from Sessions
+            <label class="col-sm-3 col-form-label text-end fw-bold">
+              {{ $t('settings.general.hideTags') }}
             </label>
             <div class="col-sm-6">
               <input
@@ -522,30 +444,26 @@ SPDX-License-Identifier: Apache-2.0
                 @change="update"
                 v-model="settings.hideTags"
                 class="form-control form-control-sm"
-                placeholder="Enter comma separated tags to hide in sessions table"
-              />
+                :placeholder="$t('settings.general.hideTagsPlaceholder')">
             </div>
           </div> <!-- /hide tags field -->
         </form>
 
         <!-- col configs settings -->
-        <form v-if="visibleTab === 'col'"
+        <form
+          v-if="visibleTab === 'col'"
           class="form-horizontal"
           id="col">
+          <h3>{{ $t('settings.ccl.title') }}</h3>
 
-          <h3>Custom Column Layouts</h3>
-
-          <p>
-            Custom column layouts allow the user to save their session
-            table's column layout for future use.
-          </p>
+          <p>{{ $t('settings.ccl.info') }}</p>
 
           <table class="table table-striped table-sm">
             <thead>
               <tr>
-                <th>Name</th>
-                <th>Columns</th>
-                <th>Order</th>
+                <th>{{ $t('settings.ccl.table-name') }}</th>
+                <th>{{ $t('settings.ccl.table-columns') }}</th>
+                <th>{{ $t('settings.ccl.table-order') }}</th>
                 <th>&nbsp;</th>
               </tr>
             </thead>
@@ -553,28 +471,32 @@ SPDX-License-Identifier: Apache-2.0
               <!-- default col config -->
               <tr v-if="defaultColConfig && fieldsMap">
                 <td>
-                  Arkime Default
+                  {{ $t('settings.arkimeDefault') }}
                 </td>
                 <td>
-                  <template v-for="col in defaultColConfig.visibleHeaders">
-                    <label class="badge badge-secondary mr-1 help-cursor"
-                      v-b-tooltip.hover
-                      :title="fieldsMap[col].help"
-                      v-if="fieldsMap[col]"
-                      :key="col">
+                  <template
+                    v-for="col in defaultColConfig.visibleHeaders"
+                    :key="col">
+                    <label
+                      class="badge bg-secondary me-1 help-cursor"
+                      :id="`${col}DefaultColConfigSetting`"
+                      v-if="fieldsMap[col]">
                       {{ fieldsMap[col].friendlyName }}
+                      <BTooltip :target="`${col}DefaultColConfigSetting`">{{ fieldsMap[col].help }}</BTooltip>
                     </label>
                   </template>
                 </td>
                 <td>
-                  <span v-for="order in defaultColConfig.order"
+                  <span
+                    v-for="order in defaultColConfig.order"
                     :key="order[0]">
-                    <label class="badge badge-secondary mr-1 help-cursor"
-                      :title="fieldsMap[order[0]].help"
+                    <label
+                      class="badge bg-secondary me-1 help-cursor"
                       v-if="fieldsMap[order[0]]"
-                      v-b-tooltip.hover>
+                      :id="`${order[0]}DefaultColConfigSetting`">
                       {{ fieldsMap[order[0]].friendlyName }}&nbsp;
                       ({{ order[1] }})
+                      <BTooltip :target="`${order[0]}DefaultColConfigSetting`">{{ fieldsMap[order[0]].help }}</BTooltip>
                     </label>
                   </span>
                 </td>
@@ -582,42 +504,47 @@ SPDX-License-Identifier: Apache-2.0
               </tr> <!-- /default col configs -->
               <!-- col configs -->
               <template v-if="fieldsMap">
-                <tr v-for="(config, index) in colConfigs"
+                <tr
+                  v-for="(config, index) in colConfigs"
                   :key="config.name">
                   <td>
                     {{ config.name }}
                   </td>
                   <td>
-                    <template v-for="col in config.columns">
-                      <label class="badge badge-secondary mr-1 help-cursor"
-                        :title="fieldsMap[col].help"
-                        v-b-tooltip.hover
+                    <template
+                      v-for="col in config.columns"
+                      :key="col">
+                      <label
+                        class="badge bg-secondary me-1 help-cursor"
                         v-if="fieldsMap[col]"
-                        :key="col">
+                        :id="`${index}${col}ColConfigSetting`">
                         {{ fieldsMap[col].friendlyName }}
+                        <BTooltip :target="`${index}${col}ColConfigSetting`">{{ fieldsMap[col].help }}</BTooltip>
                       </label>
                     </template>
                   </td>
                   <td>
-                    <span v-for="order in config.order"
+                    <span
+                      v-for="order in config.order"
                       :key="order[0]">
-                      <label class="badge badge-secondary mr-1 help-cursor"
-                        :title="fieldsMap[order[0]].help"
+                      <label
+                        class="badge bg-secondary me-1 help-cursor"
                         v-if="fieldsMap[order[0]]"
-                        v-b-tooltip.hover>
+                        :id="`${index}-${order[0]}ColConfigSetting`">
                         {{ fieldsMap[order[0]].friendlyName }}&nbsp;
                         ({{ order[1] }})
+                        <BTooltip :target="`${index}-${order[0]}ColConfigSetting`">{{ fieldsMap[order[0]].help }}</BTooltip>
                       </label>
                     </span>
                   </td>
                   <td>
-                    <button type="button"
+                    <button
+                      type="button"
                       class="btn btn-sm btn-danger pull-right"
                       @click="deleteLayout('sessionstable', config.name, 'colConfigs', index)"
-                      title="Delete this custom column layout">
-                      <span class="fa fa-trash-o">
-                      </span>&nbsp;
-                      Delete
+                      :title="$t('settings.ccl.deleteTip')">
+                      <span class="fa fa-trash-o" />&nbsp;
+                      {{ $t('common.delete') }}
                     </button>
                   </td>
                 </tr>
@@ -626,8 +553,7 @@ SPDX-License-Identifier: Apache-2.0
               <tr v-if="colConfigError">
                 <td colspan="3">
                   <p class="text-danger mb-0">
-                    <span class="fa fa-exclamation-triangle">
-                    </span>&nbsp;
+                    <span class="fa fa-exclamation-triangle" />&nbsp;
                     {{ colConfigError }}
                   </p>
                 </td>
@@ -635,42 +561,33 @@ SPDX-License-Identifier: Apache-2.0
             </tbody>
           </table>
 
-          <div v-if="!colConfigs || !colConfigs.length"
+          <div
+            v-if="!colConfigs || !colConfigs.length"
             class="alert alert-info">
-            <span class="fa fa-info-circle fa-lg">
-            </span>
+            <span class="fa fa-info-circle fa-lg" />
             <strong>
-              You have no custom column layouts.
+              {{ $t('settings.ccl.empty') }}
             </strong>
             <br>
             <br>
-            To create one, go to the sessions page, rearrange the columns into
-            your preferred layout, and click the column layout
-            button ( <span class="fa fa-columns"></span> ) at the top left of the
-            table. Name your new custom column layout then click the save
-            button. You can now switch to this column layout anytime you
-            want by clicking on its name in the dropdown!
+            <span v-html="$t('settings.ccl.howToHtml')" />
           </div>
-
         </form> <!-- /col configs settings -->
 
         <!-- info field configs settings -->
-        <form v-if="visibleTab === 'info'"
+        <form
+          v-if="visibleTab === 'info'"
           class="form-horizontal"
           id="col">
+          <h3>{{ $t('settings.infoLayout.title') }}</h3>
 
-          <h3>Custom Info Field Column Layouts</h3>
-
-          <p>
-            Custom info field layouts allow the user to save their info
-            fields within the session table for future use.
-          </p>
+          <p>{{ $t('settings.infoLayout.info') }}</p>
 
           <table class="table table-striped table-sm">
             <thead>
               <tr>
-                <th>Name</th>
-                <th>Fields</th>
+                <th>{{ $t('settings.infoLayout.table-name') }}</th>
+                <th>{{ $t('settings.infoLayout.table-fields') }}</th>
                 <th>&nbsp;</th>
               </tr>
             </thead>
@@ -678,16 +595,18 @@ SPDX-License-Identifier: Apache-2.0
               <!-- default info field config -->
               <tr v-if="defaultInfoFieldLayout && fieldsMap">
                 <td>
-                  Arkime Default
+                  {{ $t('settings.arkimeDefault') }}
                 </td>
                 <td>
-                  <template v-for="field in defaultInfoFieldLayout">
-                    <label class="badge badge-secondary mr-1 help-cursor"
-                      v-b-tooltip.hover
-                      :title="fieldsMap[field].help"
-                      v-if="fieldsMap[field]"
-                      :key="field">
+                  <template
+                    v-for="field in defaultInfoFieldLayout"
+                    :key="field">
+                    <label
+                      class="badge bg-secondary me-1 help-cursor"
+                      :id="`${field}DefaultInfoFieldLayoutSetting`"
+                      v-if="fieldsMap[field]">
                       {{ fieldsMap[field].friendlyName }}
+                      <BTooltip :target="`${field}DefaultInfoFieldLayoutSetting`">{{ fieldsMap[field].help }}</BTooltip>
                     </label>
                   </template>
                 </td>
@@ -695,30 +614,33 @@ SPDX-License-Identifier: Apache-2.0
               </tr> <!-- /default info field configs -->
               <!-- info field configs -->
               <template v-if="fieldsMap">
-                <tr v-for="(config, index) in infoFieldLayouts"
+                <tr
+                  v-for="(config, index) in infoFieldLayouts"
                   :key="config.name">
                   <td>
                     {{ config.name }}
                   </td>
                   <td>
-                    <template v-for="field in config.fields">
-                      <label class="badge badge-secondary mr-1 help-cursor"
-                        :title="fieldsMap[field].help"
-                        v-b-tooltip.hover
-                        v-if="fieldsMap[field]"
-                        :key="field">
+                    <template
+                      v-for="field in config.fields"
+                      :key="field">
+                      <label
+                        class="badge bg-secondary me-1 help-cursor"
+                        :id="`${field}InfoFieldLayoutSetting`"
+                        v-if="fieldsMap[field]">
                         {{ fieldsMap[field].friendlyName }}
+                        <BTooltip :target="`${field}InfoFieldLayoutSetting`">{{ fieldsMap[field].help }}</BTooltip>
                       </label>
                     </template>
                   </td>
                   <td>
-                    <button type="button"
+                    <button
+                      type="button"
                       class="btn btn-sm btn-danger pull-right"
                       @click="deleteLayout('sessionsinfofields', config.name, 'infoFieldLayouts', index)"
-                      title="Delete this custom info field column layout">
-                      <span class="fa fa-trash-o">
-                      </span>&nbsp;
-                      Delete
+                      :title="$t('settings.infoLayout.deleteTip')">
+                      <span class="fa fa-trash-o" />&nbsp;
+                      {{ $t('common.delete') }}
                     </button>
                   </td>
                 </tr>
@@ -727,8 +649,7 @@ SPDX-License-Identifier: Apache-2.0
               <tr v-if="infoFieldLayoutError">
                 <td colspan="3">
                   <p class="text-danger mb-0">
-                    <span class="fa fa-exclamation-triangle">
-                    </span>&nbsp;
+                    <span class="fa fa-exclamation-triangle" />&nbsp;
                     {{ infoFieldLayoutError }}
                   </p>
                 </td>
@@ -736,42 +657,33 @@ SPDX-License-Identifier: Apache-2.0
             </tbody>
           </table>
 
-          <div v-if="!colConfigs || !colConfigs.length"
+          <div
+            v-if="!infoFieldLayouts || !infoFieldLayouts.length"
             class="alert alert-info">
-            <span class="fa fa-info-circle fa-lg">
-            </span>
+            <span class="fa fa-info-circle fa-lg" />
             <strong>
-              You have no custom column layouts.
+              {{ $t('settings.infoLayout.empty') }}
             </strong>
             <br>
             <br>
-            To create one, go to the sessions page, rearrange the columns into
-            your preferred layout, and click the column layout
-            button ( <span class="fa fa-columns"></span> ) at the top left of the
-            table. Name your new custom column layout then click the save
-            button. You can now switch to this column layout anytime you
-            want by clicking on its name in the dropdown!
+            <span v-html="$t('settings.infoLayout.howToHtml')" />
           </div>
-
         </form> <!-- /info field configs settings -->
 
         <!-- spiview field configs settings -->
-        <form v-if="visibleTab === 'spiview'"
+        <form
+          v-if="visibleTab === 'spiview'"
           class="form-horizontal"
           id="spiview">
+          <h3>{{ $t('settings.spiview.title') }}</h3>
 
-          <h3>Custom SPI View Layouts</h3>
-
-          <p>
-            Custom visible field layouts allow the user to save their
-            visible fields on the SPI View page for future use.
-          </p>
+          <p>{{ $t('settings.spiview.info') }}</p>
 
           <table class="table table-striped table-sm">
             <thead>
               <tr>
-                <th>Name</th>
-                <th>Fields</th>
+                <th>{{ $t('settings.spiview.table-name') }}</th>
+                <th>{{ $t('settings.spiview.table-fields') }}</th>
                 <th>&nbsp;</th>
               </tr>
             </thead>
@@ -779,17 +691,18 @@ SPDX-License-Identifier: Apache-2.0
               <!-- default spiview field config -->
               <tr v-if="defaultSpiviewConfig && fieldsMap">
                 <td>
-                  Arkime Default
+                  {{ $t('settings.arkimeDefault') }}
                 </td>
                 <td>
-                  <template v-for="field in defaultSpiviewConfig.fields">
+                  <template
+                    v-for="field in defaultSpiviewConfig.fields"
+                    :key="field">
                     <label
-                      :key="field"
-                      v-b-tooltip.hover
+                      :id="`${field}DefaultSpiviewFieldConfigSetting`"
                       v-if="fieldsMap[field]"
-                      class="badge badge-secondary mr-1 help-cursor"
-                      :title="fieldsMap[field].help">
+                      class="badge bg-secondary me-1 help-cursor">
                       {{ fieldsMap[field].friendlyName }} (100)
+                      <BTooltip :target="`${field}DefaultSpiviewFieldConfigSetting`">{{ fieldsMap[field].help }}</BTooltip>
                     </label>
                   </template>
                 </td>
@@ -797,29 +710,31 @@ SPDX-License-Identifier: Apache-2.0
               </tr> <!-- /default spiview field confg -->
               <!-- spiview field configs -->
               <template v-if="fieldsMap">
-                <tr v-for="(config, index) in spiviewConfigs"
+                <tr
+                  v-for="(config, index) in spiviewConfigs"
                   :key="config.name">
                   <td>
                     {{ config.name }}
                   </td>
                   <td>
-                    <label class="badge badge-secondary mr-1 help-cursor"
-                      :title="fieldObj.help"
-                      v-b-tooltip.hover
+                    <label
+                      class="badge bg-secondary me-1 help-cursor"
+                      :id="`${fieldObj.dbField}SpiviewFieldConfigSetting`"
                       v-for="fieldObj in config.fieldObjs"
                       :key="fieldObj.dbField">
-                      {{fieldObj.friendlyName}}
-                      ({{fieldObj.count}})
+                      {{ fieldObj.friendlyName }}
+                      ({{ fieldObj.count }})
+                      <BTooltip :target="`${fieldObj.dbField}SpiviewFieldConfigSetting`">{{ fieldObj.help }}</BTooltip>
                     </label>
                   </td>
                   <td>
-                    <button type="button"
+                    <button
+                      type="button"
                       class="btn btn-sm btn-danger pull-right"
                       @click="deleteLayout('spiview', config.name, 'spiviewConfigs', index)"
-                      title="Delete this custom spiview field layout">
-                      <span class="fa fa-trash-o">
-                      </span>&nbsp;
-                      Delete
+                      :title="$t('settings.spiview.deleteTip')">
+                      <span class="fa fa-trash-o" />&nbsp;
+                      {{ $t('common.delete') }}
                     </button>
                   </td>
                 </tr>
@@ -828,8 +743,7 @@ SPDX-License-Identifier: Apache-2.0
               <tr v-if="spiviewConfigError">
                 <td colspan="3">
                   <p class="text-danger mb-0">
-                    <span class="fa fa-exclamation-triangle">
-                    </span>&nbsp;
+                    <span class="fa fa-exclamation-triangle" />&nbsp;
                     {{ spiviewConfigError }}
                   </p>
                 </td>
@@ -837,55 +751,49 @@ SPDX-License-Identifier: Apache-2.0
             </tbody>
           </table>
 
-          <div v-if="!spiviewConfigs || !spiviewConfigs.length"
+          <div
+            v-if="!spiviewConfigs || !spiviewConfigs.length"
             class="alert alert-info">
-            <span class="fa fa-info-circle fa-lg">
-            </span>
+            <span class="fa fa-info-circle fa-lg" />
             <strong>
-              You have no custom SPI View field layouts.
+              {{ $t('settings.spiview.empty') }}
             </strong>
             <br>
             <br>
-            To create one, go to the SPI View page, toggle fields to
-            your preferred layout, and click the field layout
-            button ( <span class="fa fa-columns"></span> ) at the top left of the
-            page. Name your new custom field layout then click the save
-            button. You can now switch to this field layout anytime you
-            want by clicking on its name in the dropdown!
+            <span v-html="$t('settings.spiview.howToHtml')" />
           </div>
-
         </form> <!-- /spiview field configs settings -->
 
         <!-- theme settings -->
-        <form v-if="visibleTab === 'theme'"
+        <form
+          v-if="visibleTab === 'theme'"
           id="theme">
+          <h3>{{ $t('settings.themes.title') }}</h3>
 
-          <h3>UI Themes</h3>
-
-          <p>
-            Pick from a preexisting theme below
-          </p>
+          <p>{{ $t('settings.themes.pickTheme') }}</p>
 
           <hr>
 
           <!-- theme picker -->
           <div class="row">
-            <div class="col-lg-6 col-md-12"
+            <div
+              class="col-lg-6 col-md-12"
               v-for="theme in themeDisplays"
               :class="theme.class"
               :key="theme.class">
               <div class="theme-display">
                 <div class="row">
                   <div class="col-md-12">
-                    <div class="custom-control custom-radio ml-1">
-                      <input type="radio"
+                    <div class="custom-control custom-radio ms-1">
+                      <input
+                        type="radio"
                         class="custom-control-input cursor-pointer"
                         v-model="settings.theme"
                         @change="changeTheme(theme.class)"
                         :value="theme.class"
-                        :id="theme.class"
-                      />
-                      <label class="custom-control-label cursor-pointer"
+                        :id="theme.class">
+                      <label
+                        class="custom-control-label cursor-pointer ms-2"
                         :for="theme.class">
                         {{ theme.name }}
                       </label>
@@ -894,59 +802,54 @@ SPDX-License-Identifier: Apache-2.0
                 </div>
                 <nav class="navbar navbar-dark">
                   <a class="navbar-brand cursor-pointer">
-                    <img :src="settings.logo"
+                    <img
+                      :src="settings.logo"
                       class="arkime-logo"
-                      alt="hoot"
-                    />
+                      alt="hoot">
                   </a>
                   <ul class="nav">
-                    <a class="nav-item cursor-pointer active">
+                    <a class="nav-item cursor-pointer no-decoration active">
                       Current Page
                     </a>
-                    <a class="nav-item cursor-pointer ml-3">
+                    <a class="nav-item cursor-pointer no-decoration ms-3">
                       Other Pages
                     </a>
                   </ul>
-                  <ul class="navbar-nav">
-                    <span class="fa fa-info-circle fa-lg health-green">
-                    </span>
+                  <ul class="navbar-nav me-2">
+                    <span class="fa fa-info-circle fa-lg health-green" />
                   </ul>
                 </nav>
                 <div class="display-sub-navbar">
                   <div class="row">
                     <div class="col-xl-5 col-lg-4 col-md-5">
-                      <div class="input-group input-group-sm ml-1">
-                        <span class="input-group-prepend">
-                          <span class="input-group-text">
-                            <span class="fa fa-search">
-                            </span>
-                          </span>
+                      <div class="input-group input-group-sm ms-1">
+                        <span class="input-group-text">
+                          <span class="fa fa-search" />
                         </span>
-                        <input type="text"
+                        <input
+                          type="text"
                           placeholder="Search"
-                          class="form-control"
-                        />
+                          class="form-control">
                       </div>
                     </div>
                     <div class="col-xl-7 col-lg-8 col-sm-7">
-                      <div class="font-weight-bold text-theme-accent">
+                      <div class="fw-bold text-theme-accent ms-1">
                         Important text
                       </div>
                       <div class="pull-right display-sub-navbar-buttons">
-                        <a class="btn btn-sm btn-default btn-theme-tertiary-display">
+                        <a class="btn btn-sm btn-default btn-theme-tertiary-display me-1">
                           Search
                         </a>
-                        <a class="btn btn-sm btn-default btn-theme-quaternary-display">
-                          <span class="fa fa-cog fa-lg">
-                          </span>
+                        <a class="btn btn-sm btn-default btn-theme-quaternary-display me-1">
+                          <span class="fa fa-cog fa-lg" />
                         </a>
-                        <a class="btn btn-sm btn-default btn-theme-secondary-display">
-                          <span class="fa fa-eye fa-lg">
-                          </span>
+                        <a class="btn btn-sm btn-default btn-theme-secondary-display me-1">
+                          <span class="fa fa-eye fa-lg" />
                         </a>
-                        <b-dropdown right
+                        <b-dropdown
+                          right
                           size="sm"
-                          class="pull-right ml-1 action-menu-dropdown"
+                          class="pull-right action-menu-dropdown"
                           variant="theme-primary-display">
                           <b-dropdown-item>
                             Example
@@ -960,11 +863,10 @@ SPDX-License-Identifier: Apache-2.0
                   </div>
                 </div>
                 <div class="display-sub-sub-navbar">
-                  <div class="ml-1 mt-2 pb-2">
+                  <div class="ms-1 mt-2 pb-2">
                     <span class="field cursor-pointer">
                       example field value
-                      <span class="fa fa-caret-down">
-                      </span>
+                      <span class="fa fa-caret-down" />
                     </span>
                   </div>
                 </div>
@@ -974,28 +876,30 @@ SPDX-License-Identifier: Apache-2.0
 
           <!-- logo picker -->
           <hr>
-          <h3>Logos</h3>
-          <p>
-            Pick from these logos
-          </p>
-          <div class="row well logo-well mr-1 ml-1">
-            <div class="col-lg-3 col-md-4 col-sm-6 col-xs-12 mb-2 mt-2 logos"
+          <h3>{{ $t('settings.themes.logos') }}</h3>
+          <p>{{ $t('settings.themes.pickLogo') }}</p>
+          <div class="row well logo-well me-1 ms-1">
+            <div
+              class="col-lg-3 col-md-4 col-sm-6 col-xs-12 mb-2 mt-2 logos"
               v-for="logo in logos"
               :key="logo.location">
-              <div class="custom-control custom-radio ml-1">
-                <input type="radio"
+              <div class="custom-control custom-radio ms-1">
+                <input
+                  type="radio"
                   :id="logo.location"
                   :value="logo.location"
                   v-model="settings.logo"
                   @change="changeLogo(logo.location)"
-                  class="custom-control-input cursor-pointer"
-                />
-                <label class="custom-control-label cursor-pointer"
+                  class="custom-control-input cursor-pointer">
+                <label
+                  class="custom-control-label cursor-pointer ms-2"
                   :for="logo.location">
                   {{ logo.name }}
                 </label>
               </div>
-              <img :src="logo.location" :alt="logo.name" />
+              <img
+                :src="logo.location"
+                :alt="logo.name">
             </div>
           </div> <!-- /logo picker -->
 
@@ -1003,7 +907,8 @@ SPDX-License-Identifier: Apache-2.0
             <hr>
             <h3>
               Yahaha! You found me!
-              <button class="btn btn-primary"
+              <button
+                class="btn btn-primary"
                 @click="toggleShiftyEyes">
                 Turn Me Off
               </button>
@@ -1011,37 +916,34 @@ SPDX-License-Identifier: Apache-2.0
             <p>
               I am now watching you while data loads
             </p>
-            <img src="assets/watching.gif" />
+            <img :src="watching">
           </div>
 
           <hr>
 
           <!-- custom theme -->
           <p v-if="!creatingCustom">
-            Want more control
-            <small>(to make the UI completely unusable)</small>?
-            <a href="javascript:void(0)"
+            <span v-html="$t('settings.themes.moreControlHtml')" />
+            <a
+              href="javascript:void(0)"
               class="cursor-pointer"
               @click="creatingCustom = true">
-              Create your own custom theme
+              {{ $t('settings.themes.createCustom') }}
             </a>
             <br><br>
           </p>
 
           <div v-if="creatingCustom">
-
             <!-- custom theme display -->
             <div class="row">
               <div class="col-md-4">
                 <h3 class="mt-0 mb-3">
                   Custom Theme
-                  <button type="button"
+                  <button
+                    type="button"
                     class="btn btn-theme-tertiary pull-right"
-                    title="Toggle color theme help"
-                    v-b-tooltip.hover
                     @click="displayHelp = !displayHelp">
-                    <span class="fa fa-question-circle">
-                    </span>&nbsp;
+                    <span class="fa fa-question-circle" />&nbsp;
                     <span v-if="displayHelp">
                       Hide
                     </span>
@@ -1051,97 +953,95 @@ SPDX-License-Identifier: Apache-2.0
                     Help
                   </button>
                 </h3>
-                <color-picker :color="background"
-                  @colorSelected="changeColor"
-                  colorName="background"
-                  fieldName="Background"
-                  :class="{'mb-2':!displayHelp}">
-                </color-picker>
-                <p class="help-block small"
+                <color-picker
+                  :color="background"
+                  @color-selected="changeColor"
+                  color-name="background"
+                  field-name="Background"
+                  :class="{'mb-2':!displayHelp}" />
+                <p
+                  class="help-block small"
                   v-if="displayHelp">
                   This color should either be very light or very dark.
                 </p>
-                <color-picker :color="foreground"
-                  @colorSelected="changeColor"
-                  colorName="foreground"
-                  fieldName="Foreground"
-                  :class="{'mb-2':!displayHelp}">
-                </color-picker>
-                <p class="help-block small"
+                <color-picker
+                  :color="foreground"
+                  @color-selected="changeColor"
+                  color-name="foreground"
+                  field-name="Foreground"
+                  :class="{'mb-2':!displayHelp}" />
+                <p
+                  class="help-block small"
                   v-if="displayHelp">
                   This color should be visible on the background.
                 </p>
-                <color-picker :color="foregroundAccent"
-                  @colorSelected="changeColor"
-                  colorName="foregroundAccent"
-                  fieldName="Foreground Accent">
-                </color-picker>
-                <p class="help-block small"
+                <color-picker
+                  :color="foregroundAccent"
+                  @color-selected="changeColor"
+                  color-name="foregroundAccent"
+                  field-name="Foreground Accent" />
+                <p
+                  class="help-block small"
                   v-if="displayHelp">
                   This color should stand out.
                   It displays session field values and important text in navbars.
                 </p>
               </div>
               <div class="col-md-8">
-
-                <div class="custom-theme"
+                <div
+                  class="custom-theme"
                   id="custom-theme-display">
                   <div class="theme-display">
                     <div class="navbar navbar-dark">
                       <a class="navbar-brand cursor-pointer">
-                        <img :src="settings.logo"
+                        <img
+                          :src="settings.logo"
                           class="arkime-logo"
-                          alt="hoot"
-                        />
+                          alt="hoot">
                       </a>
                       <ul class="nav">
                         <a class="nav-item cursor-pointer active">
                           Current Page
                         </a>
-                        <a class="nav-item cursor-pointer ml-3">
+                        <a class="nav-item cursor-pointer ms-3">
                           Other Pages
                         </a>
                       </ul>
-                      <ul class="navbar-nav">
-                        <span class="fa fa-info-circle fa-lg health-green">
-                        </span>
+                      <ul class="navbar-nav me-2">
+                        <span class="fa fa-info-circle fa-lg health-green" />
                       </ul>
                     </div>
                     <div class="display-sub-navbar">
                       <div class="row">
                         <div class="col-xl-5 col-lg-4 col-md-5">
-                          <div class="input-group input-group-sm ml-1">
-                            <span class="input-group-prepend">
-                              <span class="input-group-text">
-                                <span class="fa fa-search">
-                                </span>
-                              </span>
+                          <div class="input-group input-group-sm ms-1">
+                            <span class="input-group-text">
+                              <span class="fa fa-search" />
                             </span>
-                            <input type="text"
+                            <input
+                              type="text"
                               placeholder="Search"
-                              class="form-control"
-                            />
+                              class="form-control">
                           </div>
                         </div>
                         <div class="col-xl-7 col-lg-8 col-sm-7">
-                          <div class="font-weight-bold text-theme-accent">
+                          <div class="fw-bold text-theme-accent ms-1">
                             Important text
                           </div>
                           <div class="pull-right display-sub-navbar-buttons">
-                            <a class="btn btn-sm btn-default btn-theme-tertiary-display">
+                            <a class="btn btn-sm btn-default btn-theme-tertiary-display me-1">
                               Search
                             </a>
-                            <a class="btn btn-sm btn-default btn-theme-quaternary-display">
-                              <span class="fa fa-cog fa-lg">
-                              </span>
+                            <a class="btn btn-sm btn-default btn-theme-quaternary-display me-1">
+                              <span class="fa fa-cog fa-lg" />
                             </a>
-                            <a class="btn btn-sm btn-default btn-theme-secondary-display">
-                              <span class="fa fa-eye fa-lg">
-                              </span>
+                            <a class="btn btn-sm btn-default btn-theme-secondary-display me-1">
+                              <span class="fa fa-eye fa-lg" />
                             </a>
-                            <b-dropdown right
+                            <b-dropdown
+                              right
                               size="sm"
-                              class="pull-right ml-1 action-menu-dropdown"
+                              class="pull-right action-menu-dropdown"
                               variant="theme-primary-display">
                               <b-dropdown-item>
                                 Example
@@ -1156,22 +1056,20 @@ SPDX-License-Identifier: Apache-2.0
                     </div>
                     <div class="display-sub-sub-navbar">
                       <arkime-paging
-                        class="mt-1 ml-1"
+                        class="mt-1 ms-1"
                         :records-total="200"
-                        :records-filtered="100">
-                      </arkime-paging>
+                        :records-filtered="100" />
                     </div>
                     <div>
-                      <div class="ml-1 mr-1 mt-2 pb-2">
+                      <div class="ms-1 me-1 mt-2 pb-2">
                         <span class="field cursor-pointer">
                           example field value
-                          <span class="fa fa-caret-down">
-                          </span>
+                          <span class="fa fa-caret-down" />
                         </span>
                         <br><br>
                         <div class="row">
                           <div class="col-md-6 sessionsrc">
-                            <small class="session-detail-ts font-weight-bold">
+                            <small class="session-detail-ts fw-bold">
                               <em class="ts-value">
                                 2013/11/18 03:06:52.831
                               </em>
@@ -1182,7 +1080,7 @@ SPDX-License-Identifier: Apache-2.0
                             <pre>Source packet text</pre>
                           </div>
                           <div class="col-md-6 sessiondst">
-                            <small class="session-detail-ts font-weight-bold">
+                            <small class="session-detail-ts fw-bold">
                               <em class="ts-value">
                                 2013/11/18 03:06:52.841
                               </em>
@@ -1197,13 +1095,13 @@ SPDX-License-Identifier: Apache-2.0
                     </div>
                   </div>
                 </div>
-
               </div>
             </div> <!-- /custom theme display -->
 
             <br>
 
-            <p v-if="displayHelp"
+            <p
+              v-if="displayHelp"
               class="help-block">
               Main theme colors are lightened/darkened programmatically to
               provide dark borders, active buttons, hover colors, etc.
@@ -1212,52 +1110,57 @@ SPDX-License-Identifier: Apache-2.0
             <!-- main colors -->
             <div class="row form-group">
               <div class="col-md-3">
-                <color-picker :color="primary"
-                  @colorSelected="changeColor"
-                  colorName="primary"
-                  fieldName="Primary">
-                </color-picker>
-                <p v-if="displayHelp"
+                <color-picker
+                  :color="primary"
+                  @color-selected="changeColor"
+                  color-name="primary"
+                  field-name="Primary" />
+                <p
+                  v-if="displayHelp"
                   class="help-block small">
                   Primary navbar, buttons, active item(s) in lists
                 </p>
               </div>
               <div class="col-md-3">
-                <color-picker :color="secondary"
-                  @colorSelected="changeColor"
-                  colorName="secondary"
-                  fieldName="Secondary">
-                </color-picker>
-                <p v-if="displayHelp"
+                <color-picker
+                  :color="secondary"
+                  @color-selected="changeColor"
+                  color-name="secondary"
+                  field-name="Secondary" />
+                <p
+                  v-if="displayHelp"
                   class="help-block small">
                   Buttons
                 </p>
               </div>
               <div class="col-md-3">
-                <color-picker :color="tertiary"
-                  @colorSelected="changeColor"
-                  colorName="tertiary"
-                  fieldName="Tertiary">
-                </color-picker>
-                <p v-if="displayHelp"
+                <color-picker
+                  :color="tertiary"
+                  @color-selected="changeColor"
+                  color-name="tertiary"
+                  field-name="Tertiary" />
+                <p
+                  v-if="displayHelp"
                   class="help-block small">
                   Action buttons (search, apply, open, etc)
                 </p>
               </div>
               <div class="col-md-3">
-                <color-picker :color="quaternary"
-                  @colorSelected="changeColor"
-                  colorName="quaternary"
-                  fieldName="Quaternary">
-                </color-picker>
-                <p v-if="displayHelp"
+                <color-picker
+                  :color="quaternary"
+                  @color-selected="changeColor"
+                  color-name="quaternary"
+                  field-name="Quaternary" />
+                <p
+                  v-if="displayHelp"
                   class="help-block small">
                   Accent and all other buttons
                 </p>
               </div>
             </div> <!-- /main colors -->
 
-            <p v-if="displayHelp"
+            <p
+              v-if="displayHelp"
               class="help-block">
               <em>Highlight colors should be similar to their parent color, above.</em>
               <br>
@@ -1268,45 +1171,49 @@ SPDX-License-Identifier: Apache-2.0
             <!-- main color highlights/backgrounds -->
             <div class="row form-group">
               <div class="col-md-3">
-                <color-picker :color="primaryLightest"
-                  @colorSelected="changeColor"
-                  colorName="primaryLightest"
-                  fieldName="Highlight 1">
-                </color-picker>
-                <p v-if="displayHelp"
+                <color-picker
+                  :color="primaryLightest"
+                  @color-selected="changeColor"
+                  color-name="primaryLightest"
+                  field-name="Highlight 1" />
+                <p
+                  v-if="displayHelp"
                   class="help-block small">
                   Backgrounds
                 </p>
               </div>
               <div class="col-md-3">
-                <color-picker :color="secondaryLightest"
-                  @colorSelected="changeColor"
-                  colorName="secondaryLightest"
-                  fieldName="Highlight 2">
-                </color-picker>
-                <p v-if="displayHelp"
+                <color-picker
+                  :color="secondaryLightest"
+                  @color-selected="changeColor"
+                  color-name="secondaryLightest"
+                  field-name="Highlight 2" />
+                <p
+                  v-if="displayHelp"
                   class="help-block small">
                   Search/Secondary navbar
                 </p>
               </div>
               <div class="col-md-3">
-                <color-picker :color="tertiaryLightest"
-                  @colorSelected="changeColor"
-                  colorName="tertiaryLightest"
-                  fieldName="Highlight 3">
-                </color-picker>
-                <p v-if="displayHelp"
+                <color-picker
+                  :color="tertiaryLightest"
+                  @color-selected="changeColor"
+                  color-name="tertiaryLightest"
+                  field-name="Highlight 3" />
+                <p
+                  v-if="displayHelp"
                   class="help-block small">
                   Tertiary navbar, table hover
                 </p>
               </div>
               <div class="col-md-3">
-                <color-picker :color="quaternaryLightest"
-                  @colorSelected="changeColor"
-                  colorName="quaternaryLightest"
-                  fieldName="Highlight 4">
-                </color-picker>
-                <p v-if="displayHelp"
+                <color-picker
+                  :color="quaternaryLightest"
+                  @color-selected="changeColor"
+                  color-name="quaternaryLightest"
+                  field-name="Highlight 4" />
+                <p
+                  v-if="displayHelp"
                   class="help-block small">
                   Session detail background
                 </p>
@@ -1315,7 +1222,8 @@ SPDX-License-Identifier: Apache-2.0
 
             <br>
 
-            <div v-if="displayHelp"
+            <div
+              v-if="displayHelp"
               class="row">
               <div class="col-6">
                 <p class="help-block">
@@ -1337,33 +1245,33 @@ SPDX-License-Identifier: Apache-2.0
             <div class="row form-group">
               <!-- visualization colors -->
               <div class="col-md-3">
-                <color-picker :color="water"
-                  @colorSelected="changeColor"
-                  colorName="water"
-                  fieldName="Map Water">
-                </color-picker>
+                <color-picker
+                  :color="water"
+                  @color-selected="changeColor"
+                  color-name="water"
+                  field-name="Map Water" />
               </div>
               <div class="col-md-3">
-                <color-picker :color="land"
-                  @colorSelected="changeColor"
-                  colorName="land"
-                  fieldName="Map Land">
-                </color-picker>
+                <color-picker
+                  :color="land"
+                  @color-selected="changeColor"
+                  color-name="land"
+                  field-name="Map Land" />
               </div> <!-- /visualization colors -->
               <!-- packet colors -->
               <div class="col-md-3">
-                <color-picker :color="src"
-                  @colorSelected="changeColor"
-                  colorName="src"
-                  fieldName="Source Packets">
-                </color-picker>
+                <color-picker
+                  :color="src"
+                  @color-selected="changeColor"
+                  color-name="src"
+                  field-name="Source Packets" />
               </div>
               <div class="col-md-3">
-                <color-picker :color="dst"
-                  @colorSelected="changeColor"
-                  colorName="dst"
-                  fieldName="Destination Packets">
-                </color-picker>
+                <color-picker
+                  :color="dst"
+                  @color-selected="changeColor"
+                  color-name="dst"
+                  field-name="Destination Packets" />
               </div> <!-- /packet colors -->
             </div>
 
@@ -1375,85 +1283,82 @@ SPDX-License-Identifier: Apache-2.0
                   Share your theme with others:
                 </label>
                 <div class="input-group input-group-sm">
-                  <input type="text"
+                  <input
+                    type="text"
                     class="form-control"
                     v-model="themeString"
-                    @keyup.37.38.39.40.65.66="secretStuff"
-                  />
-                  <span class="input-group-append">
-                    <button class="btn btn-theme-secondary"
-                      type="button"
-                      @click="copyValue(themeString)">
-                      <span class="fa fa-clipboard">
-                      </span>&nbsp;
-                      Copy
-                    </button>
-                    <button class="btn btn-theme-primary"
-                      type="button"
-                      @click="updateThemeString">
-                      <span class="fa fa-check">
-                      </span>&nbsp;
-                      Apply
-                    </button>
-                  </span>
+                    @keyup.up.down.left.right.a.b="secretStuff">
+                  <button
+                    class="btn btn-theme-secondary"
+                    type="button"
+                    @click="copyValue(themeString)">
+                    <span class="fa fa-clipboard" />&nbsp;
+                    {{ $t('common.copy') }}
+                  </button>
+                  <button
+                    class="btn btn-theme-primary"
+                    type="button"
+                    @click="updateThemeString">
+                    <span class="fa fa-check" />&nbsp;
+                    {{ $t('common.apply') }}
+                  </button>
                 </div>
               </div>
             </div>
-
           </div> <!-- /custom theme -->
-
         </form> <!-- /theme settings -->
 
         <!-- password settings -->
-        <form v-if="visibleTab === 'password' && !multiviewer && !disablePassword"
+        <form
+          v-if="visibleTab === 'password' && (!multiviewer || hasUsersES) && !disablePassword"
           class="form-horizontal"
           @keyup.enter="changePassword"
           id="password">
-
-          <h3>Change Password</h3>
+          <h3>{{ $t('settings.password.title') }}</h3>
 
           <hr>
 
           <!-- current password -->
-          <div v-if="!userId"
+          <div
+            v-if="!userId"
             class="form-group row">
-            <label class="col-sm-3 col-form-label text-right font-weight-bold">
-              Current Password
+            <label class="col-sm-3 col-form-label text-end fw-bold">
+              {{ $t('settings.password.currentPassword') }}
             </label>
             <div class="col-sm-6">
-              <input type="password"
+              <input
+                type="password"
                 class="form-control form-control-sm"
                 v-model="currentPassword"
-                placeholder="Enter your current password"
-              />
+                :placeholder="$t('settings.password.currentPasswordPlaceholder')">
             </div>
           </div>
 
           <!-- new password -->
           <div class="form-group row">
-            <label class="col-sm-3 col-form-label text-right font-weight-bold">
-              New Password
+            <label class="col-sm-3 col-form-label text-end fw-bold">
+              {{ $t('settings.password.newPassword') }}
             </label>
             <div class="col-sm-6">
-              <input type="password"
+              <input
+                type="password"
                 class="form-control form-control-sm"
                 v-model="newPassword"
-                placeholder="Enter a new password"
-              />
+                :placeholder="$t('settings.password.newPasswordPlaceholder')">
             </div>
           </div>
 
           <!-- confirm new password -->
           <div class="form-group row">
-            <label class="col-sm-3 col-form-label text-right font-weight-bold">
-              New Password
+            <label class="col-sm-3 col-form-label text-end fw-bold">
+              {{ $t('settings.password.confirmPassword') }}
             </label>
             <div class="col-sm-6">
-              <input type="password"
+              <input
+                type="password"
                 class="form-control form-control-sm"
                 v-model="confirmNewPassword"
-                placeholder="Confirm your new password"
-              />
+                :placeholder="$t('settings.password.confirmPasswordPlaceholder')">
             </div>
           </div>
 
@@ -1461,20 +1366,20 @@ SPDX-License-Identifier: Apache-2.0
           <div class="form-group row">
             <label class="col-sm-3 col-form-label">&nbsp;</label>
             <div class="col-sm-9">
-              <button type="button"
+              <button
+                type="button"
                 class="btn btn-theme-tertiary"
                 @click="changePassword">
-                Change Password
+                {{ $t('settings.password.changePassword') }}
               </button>
-              <span v-if="changePasswordError"
-                class="small text-danger pl-4">
-                <span class="fa fa-exclamation-triangle">
-                </span>&nbsp;
+              <span
+                v-if="changePasswordError"
+                class="small text-danger ps-4">
+                <span class="fa fa-exclamation-triangle" />&nbsp;
                 {{ changePasswordError }}
               </span>
             </div>
           </div> <!-- /change password button/error -->
-
         </form> <!-- /password settings -->
 
         <!-- notifiers settings -->
@@ -1484,66 +1389,59 @@ SPDX-License-Identifier: Apache-2.0
           @display-message="displayMessage"
           v-if="visibleTab === 'notifiers'"
           v-has-role="{user:user,roles:'arkimeAdmin'}"
-          help-text="Configure notifiers that can be added to periodic queries and hunt jobs."
-        />
+          help-intl-id="settings.notifiers.helpViewer" />
 
         <!-- shortcut settings -->
         <Shortcuts
           id="shortcuts"
           @copy-value="copyValue"
           v-if="visibleTab === 'shortcuts'"
-          @display-message="displayMessage"
-        />
+          @display-message="displayMessage" />
 
         <!-- view settings -->
         <Views
           id="views"
-          :userId="userId"
+          :user-id="userId"
           :fields-map="fieldsMap"
           @copy-value="copyValue"
           v-if="visibleTab === 'views'"
-          @display-message="displayMessage"
-        />
+          @display-message="displayMessage" />
 
         <!-- cron query settings -->
         <PeriodicQueries
           id="cron"
-          :userId="userId"
+          :user-id="userId"
           @display-message="displayMessage"
-          v-if="visibleTab === 'cron' && !multiviewer"
-        />
-
+          v-if="visibleTab === 'cron' && !multiviewer" />
       </div>
-
     </div> <!-- /content -->
-
   </div> <!-- /settings content -->
-
 </template>
 
 <script>
-import CommonUserService from '../../../../../common/vueapp/UserService';
-import Notifiers from '../../../../../common/vueapp/Notifiers';
+import { timezoneDateString } from '@common/vueFilters.js';
+import CommonUserService from '@common/UserService';
 import UserService from '../users/UserService';
+import Notifiers from '@common/Notifiers.vue';
 import FieldService from '../search/FieldService';
 import SettingsService from './SettingsService';
 import customCols from '../sessions/customCols.json';
-import ArkimeError from '../utils/Error';
-import ArkimeLoading from '../utils/Loading';
-import ArkimeFieldTypeahead from '../utils/FieldTypeahead';
-import ColorPicker from '../utils/ColorPicker';
-import ArkimePaging from '../utils/Pagination';
+import ArkimeError from '../utils/Error.vue';
+import ArkimeLoading from '../utils/Loading.vue';
+import ArkimeFieldTypeahead from '../utils/FieldTypeahead.vue';
+import ColorPicker from '../utils/ColorPicker.vue';
+import ArkimePaging from '../utils/Pagination.vue';
 import Utils from '../utils/utils';
-import PeriodicQueries from './PeriodicQueries';
-import Shortcuts from './Shortcuts';
-import Views from './Views';
+import PeriodicQueries from './PeriodicQueries.vue';
+import Shortcuts from './Shortcuts.vue';
+import Views from './Views.vue';
 
 let clockInterval;
 
 const defaultSpiviewConfig = { fields: ['destination.ip', 'protocol', 'source.ip'] };
 const defaultInfoFields = JSON.parse(JSON.stringify(customCols.info.children));
 
-const secretMatch = [38, 38, 40, 40, 37, 39, 37, 39, 66, 65];
+const secretMatch = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'b', 'a'];
 let secrets = [];
 
 export default {
@@ -1596,6 +1494,7 @@ export default {
       spiviewConfigError: '',
       defaultSpiviewConfig,
       // theme settings vars
+      watching: 'assets/watching.gif',
       themeDisplays: [
         { name: 'Arkime Light', class: 'arkime-light-theme' },
         { name: 'Arkime Dark', class: 'arkime-dark-theme' },
@@ -1709,16 +1608,21 @@ export default {
     });
   },
   methods: {
-    /* vue-clipboard2 directives are broken, use their internal method instead */
-    copyValue: function (val) {
-      this.$copyText(val);
+    timezoneDateString,
+    copyValue (val) {
+      if (!navigator.clipboard) {
+        alert(this.$t('common.clipboardNotSupported', { value: val }));
+        return;
+      }
+      navigator.clipboard.writeText(val);
     },
     /* exposed page functions ---------------------------------------------- */
     /* opens a specific settings tab */
     openView: function (tabName) {
       this.visibleTab = tabName;
       this.$router.push({
-        hash: tabName
+        hash: `#${tabName}`,
+        query: this.$route.query
       });
     },
     /* displays a message in the navbar */
@@ -1774,7 +1678,7 @@ export default {
       }
     },
     resetDefaultFilters: function () {
-      this.$set(this.settings, 'timelineDataFilters', UserService.getDefaultSettings().timelineDataFilters);
+      this.settings.timelineDataFilters = UserService.getDefaultSettings().timelineDataFilters;
       this.setTimelineDataFilterFields();
       this.update();
     },
@@ -1813,21 +1717,21 @@ export default {
       this.update();
     },
     spiGraphFieldSelected: function (field) {
-      this.$set(this, 'spiGraphField', field);
-      this.$set(this.settings, 'spiGraph', field.dbField);
-      this.$set(this, 'spiGraphTypeahead', field.friendlyName);
+      this.spiGraphField = field;
+      this.settings.spiGraph = field.dbField;
+      this.spiGraphTypeahead = field.friendlyName;
       this.update();
     },
     connSrcFieldSelected: function (field) {
-      this.$set(this, 'connSrcField', field);
-      this.$set(this.settings, 'connSrcField', field.dbField);
-      this.$set(this, 'connSrcFieldTypeahead', field.friendlyName);
+      this.connSrcField = field;
+      this.settings.connSrcField = field.dbField;
+      this.connSrcFieldTypeahead = field.friendlyName;
       this.update();
     },
     connDstFieldSelected: function (field) {
-      this.$set(this, 'connDstField', field);
-      this.$set(this.settings, 'connDstField', field.dbField);
-      this.$set(this, 'connDstFieldTypeahead', field.friendlyName);
+      this.connDstField = field;
+      this.settings.connDstField = field.dbField;
+      this.connDstFieldTypeahead = field.friendlyName;
       this.update();
     },
     timelineFilterSelected: function (field) {
@@ -1960,7 +1864,7 @@ export default {
       this.update();
     },
     secretStuff: function (e) {
-      secrets.push(e.keyCode);
+      secrets.push(e.key);
       for (let i = 0; i < secrets.length; i++) {
         if (secrets[i] !== secretMatch[i]) {
           secrets = [];
@@ -1987,22 +1891,22 @@ export default {
      * and confirmation of the new password */
     changePassword: function () {
       if (!this.userId && (!this.currentPassword || this.currentPassword === '')) {
-        this.changePasswordError = 'You must enter your current password';
+        this.changePasswordError = this.$t('settings.password.currentPasswordRequired');
         return;
       }
 
       if (!this.newPassword || this.newPassword === '') {
-        this.changePasswordError = 'You must enter a new password';
+        this.changePasswordError = this.$t('settings.password.newPasswordRequired');
         return;
       }
 
       if (!this.confirmNewPassword || this.confirmNewPassword === '') {
-        this.changePasswordError = 'You must confirm your new password';
+        this.changePasswordError = this.$t('settings.password.confirmPasswordRequired');
         return;
       }
 
       if (this.newPassword !== this.confirmNewPassword) {
-        this.changePasswordError = 'Your passwords don\'t match';
+        this.changePasswordError = this.$t('settings.password.mismatchedPassword');
         return;
       }
 
@@ -2061,25 +1965,25 @@ export default {
       UserService.getSettings(this.userId).then((response) => {
         // set the user settings individually
         for (const key in response) {
-          this.$set(this.settings, key, response[key]);
+          this.settings[key] = response[key];
         }
 
         // set defaults if a user setting doesn't exists
         // so that radio buttons show the default value
         if (!response.timezone) {
-          this.$set(this.settings, 'timezone', 'local');
+          this.settings.timezone = 'local';
         }
         if (!response.detailFormat) {
-          this.$set(this.settings, 'detailFormat', 'last');
+          this.settings.detailFormat = 'last';
         }
         if (!response.numPackets) {
-          this.$set(this.settings, 'numPackets', 'last');
+          this.settings.numPackets = 'last';
         }
         if (!response.showTimestamps) {
-          this.$set(this.settings, 'showTimestamps', 'last');
+          this.settings.showTimestamps = 'last';
         }
         if (!response.manualQuery) {
-          this.$set(this.settings, 'manualQuery', false);
+          this.settings.manualQuery = false;
         }
 
         this.setupFields().then(() => {
@@ -2126,21 +2030,21 @@ export default {
         // NOTE: dbField is saved in settings, but show the field's friendlyName
         const spigraphField = FieldService.getField(this.settings.spiGraph);
         if (spigraphField) {
-          this.$set(this, 'spiGraphField', spigraphField);
-          this.$set(this, 'spiGraphTypeahead', spigraphField.friendlyName);
+          this.spiGraphField = spigraphField;
+          this.spiGraphTypeahead = spigraphField.friendlyName;
         }
         const connSrcField = FieldService.getField(this.settings.connSrcField);
         if (connSrcField) {
-          this.$set(this, 'connSrcField', connSrcField);
-          this.$set(this, 'connSrcFieldTypeahead', connSrcField.friendlyName);
+          this.connSrcField = connSrcField;
+          this.connSrcFieldTypeahead = connSrcField.friendlyName;
         }
         const connDstField = FieldService.getField(this.settings.connDstField);
         if (connDstField) {
-          this.$set(this, 'connDstField', connDstField);
-          this.$set(this, 'connDstFieldTypeahead', connDstField.friendlyName);
+          this.connDstField = connDstField;
+          this.connDstFieldTypeahead = connDstField.friendlyName;
         }
 
-        this.$set(this, 'filtersTypeahead', '');
+        this.filtersTypeahead = '';
 
         // get the visible headers for the sessions table layout
         UserService.getState('sessionsNew').then((sessionsTableRes) => {
@@ -2220,7 +2124,7 @@ export default {
       }
     }
   },
-  beforeDestroy: function () {
+  beforeUnmount () {
     if (clockInterval) { clearInterval(clockInterval); }
 
     // remove userId route query parameter so that when a user
@@ -2289,9 +2193,6 @@ export default {
 }
 
 /* theme displays ----------------- */
-.logo-well {
-  background-color: #CCCCCC !important;
-}
 .logo-well .logos {
   text-align: center;
 }
@@ -2401,7 +2302,7 @@ export default {
   background-color: #303030;
 }
 
-.settings-page .arkime-light-theme .input-group-prepend > .input-group-text {
+.settings-page .arkime-light-theme .input-group > .input-group-text, .input-group:not(.color) > .input-group-text {
   color: #333333 !important;
   background-color: #EEEEEE !important;
   border-color: #CCCCCC !important;
@@ -2409,8 +2310,8 @@ export default {
 
 .settings-page .arkime-light-theme input.form-control,
 .settings-page .arkime-light-theme input.form-control:focus {
-  color: #000000;
-  background-color: #FFFFFF;
+  color: #000000 !important;
+  background-color: #FFFFFF !important;
 }
 
 .settings-page .arkime-light-theme .display-sub-navbar {
@@ -2493,7 +2394,7 @@ export default {
   background-color: #ADADAD;
 }
 
-.settings-page .arkime-dark-theme .input-group-prepend > .input-group-text {
+.settings-page .arkime-dark-theme .input-group > .input-group-text, .input-group:not(.color) > .input-group-text {
   color: #FFFFFF !important;
   background-color: #303030 !important;
   border-color: #CCCCCC !important;
@@ -2569,8 +2470,11 @@ export default {
 }
 
 .settings-page .arkime-dark-theme input.form-control {
-  color: #FFFFFF;
-  background-color: #222222;
+  color: #FFFFFF !important;
+  background-color: #222222 !important;
+}
+.settings-page .arkime-dark-theme input.form-control::placeholder {
+  color: #CCC !important;
 }
 
 /* purp */
@@ -2584,7 +2488,7 @@ export default {
   background-color: #830b9c;
 }
 
-.settings-page .purp-theme .input-group-prepend > .input-group-text {
+.settings-page .purp-theme .input-group > .input-group-text, .input-group:not(.color) > .input-group-text {
   color: #333333 !important;
   background-color: #EEEEEE !important;
   border-color: #CCCCCC !important;
@@ -2592,8 +2496,8 @@ export default {
 
 .settings-page .purp-theme input.form-control,
 .settings-page .purp-theme input.form-control:focus {
-  color: #000000;
-  background-color: #FFFFFF;
+  color: #000000 !important;
+  background-color: #FFFFFF !important;
 }
 
 .settings-page .purp-theme .display-sub-navbar {
@@ -2676,7 +2580,7 @@ export default {
   background-color: #214b78;
 }
 
-.settings-page .blue-theme .input-group-prepend > .input-group-text {
+.settings-page .blue-theme .input-group > .input-group-text, .input-group:not(.color) > .input-group-text {
   color: #333333 !important;
   background-color: #EEEEEE !important;
   border-color: #CCCCCC !important;
@@ -2684,8 +2588,8 @@ export default {
 
 .settings-page .blue-theme input.form-control,
 .settings-page .blue-theme input.form-control:focus {
-  color: #000000;
-  background-color: #FFFFFF;
+  color: #000000 !important;
+  background-color: #FFFFFF !important;
 }
 
 .settings-page .blue-theme .display-sub-navbar {
@@ -2768,7 +2672,7 @@ export default {
   background-color: #2a7847;
 }
 
-.settings-page .green-theme .input-group-prepend > .input-group-text {
+.settings-page .green-theme .input-group > .input-group-text, .input-group:not(.color) > .input-group-text {
   color: #333333 !important;
   background-color: #EEEEEE !important;
   border-color: #CCCCCC !important;
@@ -2776,8 +2680,8 @@ export default {
 
 .settings-page .green-theme input.form-control,
 .settings-page .green-theme input.form-control:focus {
-  color: #000000;
-  background-color: #FFFFFF;
+  color: #000000 !important;
+  background-color: #FFFFFF !important;
 }
 
 .settings-page .green-theme .display-sub-navbar {
@@ -2860,7 +2764,7 @@ export default {
   background-color: #c43d75;
 }
 
-.settings-page .cotton-candy-theme .input-group-prepend > .input-group-text {
+.settings-page .cotton-candy-theme .input-group > .input-group-text, .input-group:not(.color) > .input-group-text {
   color: #333333 !important;
   background-color: #EEEEEE !important;
   border-color: #CCCCCC !important;
@@ -2868,8 +2772,8 @@ export default {
 
 .settings-page .cotton-candy-theme input.form-control,
 .settings-page .cotton-candy-theme input.form-control:focus {
-  color: #000000;
-  background-color: #FFFFFF;
+  color: #000000 !important;
+  background-color: #FFFFFF !important;
 }
 
 .settings-page .cotton-candy-theme .display-sub-navbar {
@@ -2985,7 +2889,7 @@ export default {
   border-color: #4B4B4B;
 }
 
-.settings-page .dark-2-theme .input-group-prepend > .input-group-text {
+.settings-page .dark-2-theme .input-group > .input-group-text, .input-group:not(.color) > .input-group-text {
   color: #C7C7C7 !important;
   background-color: #222222 !important;
   border-color: #AAAAAA !important;
@@ -3028,8 +2932,11 @@ export default {
 }
 
 .settings-page .dark-2-theme input.form-control {
-  color: #FFFFFF;
-  background-color: #111111;
+  color: #FFFFFF !important;
+  background-color: #111111 !important;
+}
+.settings-page .dark-2-theme input.form-control::placeholder {
+  color: #CCC !important;
 }
 
 /* Dark Blue */
@@ -3080,7 +2987,7 @@ export default {
   border-color: #B42C72;
 }
 
-.settings-page .dark-3-theme .input-group-prepend > .input-group-text {
+.settings-page .dark-3-theme .input-group > .input-group-text, .input-group:not(.color) > .input-group-text {
   color: #ADC1C3 !important;
   background-color: #002833 !important;
   border-color: #AAAAAA !important;
@@ -3123,8 +3030,11 @@ export default {
 }
 
 .settings-page .dark-3-theme input.form-control {
-  color: #EEEEEE;
-  background-color: #222222;
+  color: #EEEEEE !important;
+  background-color: #222222 !important;
+}
+.settings-page .dark-3-theme input.form-control::placeholder {
+  color: #CCC !important;
 }
 
 /* Custom */

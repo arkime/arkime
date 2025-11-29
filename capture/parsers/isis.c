@@ -14,10 +14,9 @@ LOCAL int typeField;
 /******************************************************************************/
 LOCAL void isis_create_sessionid(uint8_t *sessionId, ArkimePacket_t *UNUSED(packet))
 {
+    memset(sessionId, 0, 4);
     sessionId[0] = 2;
-    sessionId[1] = 0x83;
-    sessionId[2] = 0;
-    sessionId[3] = 0;
+    sessionId[1] = isisMProtocol;
 
     // for now, lump all isis into the same session
 }
@@ -105,7 +104,9 @@ void arkime_parser_init()
                                               isis_create_sessionid,
                                               isis_pre_process,
                                               isis_process,
-                                              NULL);
+                                              NULL,
+                                              NULL,
+                                              600);
 
 
     typeField = arkime_field_define("isis", "lotermfield",

@@ -3,157 +3,180 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-
-  <div class="mb-1"
-    v-on-clickaway="onOffFocus">
-
+  <div
+    class="mb-1"
+    :class="{ 'big-typeahead': bigTypeahead }">
     <!-- typeahead input -->
-    <div class="input-group input-group-sm">
-      <span class="input-group-prepend input-group-prepend-fw cursor-help"
-        v-b-tooltip.hover.bottomright.d300="'Search Expression'">
-        <span class="input-group-text input-group-text-fw">
-          <span v-if="!shiftKeyHold"
-            class="fa fa-search fa-fw">
-          </span>
-          <span v-else
-            class="query-shortcut">
-            Q
-          </span>
+    <BInputGroup size="sm">
+      <BInputGroupText
+        id="searchExpressionTooltip"
+        class="cursor-help input-group-text-fw">
+        <span
+          v-if="!shiftKeyHold"
+          class="fa fa-search fa-fw" />
+        <span
+          v-else
+          class="query-shortcut">
+          Q
         </span>
-      </span>
+        <BTooltip
+          target="searchExpressionTooltip"
+          :delay="{show: 500, hide: 0}"
+          noninteractive>
+          <span v-html="$t('search.expressionTipHtml')" />
+        </BTooltip>
+      </BInputGroupText>
       <input
         type="text"
         tabindex="1"
         id="expression"
         ref="expression"
-        placeholder="Search"
+        :placeholder="$t('common.search')"
         v-model="expression"
         v-caret-pos="caretPos"
         v-focus="focusInput"
         @input="debounceExprChange"
         @keydown.enter.prevent.stop="enterClick"
         @keydown.esc.tab.enter.down.up.prevent.stop="keyup($event)"
-        class="form-control search-control"
-      />
-      <span class="input-group-append"
-        v-b-tooltip.hover
-        title="This is a pretty long search expression, maybe you want to create a shortcut? Click here to go to the shortcut creation page."
-        v-if="expression && expression.length > 200">
-        <a type="button"
+        class="form-control search-control">
+      <BButton
+        type="button"
+        id="bigTypeaheadBtn"
+        @click="bigTypeahead = !bigTypeahead"
+        class="btn btn-outline-secondary btn-clear-input">
+        <span
+          class="fa"
+          :class="bigTypeahead ? 'fa-compress' : 'fa-expand'" />
+        <BTooltip target="bigTypeaheadBtn">
+          <span v-i18n-btip="'search.'" />
+        </BTooltip>
+      </BButton>
+      <template v-if="expression && expression.length > 200">
+        <BButton
+          type="button"
+          id="longExpression"
           href="settings#shortcuts"
           class="btn btn-outline-secondary btn-clear-input">
-          <span class="fa fa-question-circle">
-          </span>
-        </a>
-      </span>
-      <span class="input-group-append">
-        <button type="button"
-          @click="saveExpression"
-          :disabled="!expression"
-          v-b-tooltip.hover.bottom
-          title="Save this search expression (apply it from the views menu)"
-          class="btn btn-outline-secondary btn-clear-input">
-          <span class="fa fa-save">
-          </span>
-        </button>
-      </span>
-      <span class="input-group-append">
-        <button type="button"
-          @click="clear"
-          :disabled="!expression"
-          title="Remove the search text"
-          class="btn btn-outline-secondary btn-clear-input">
-          <span class="fa fa-close">
-          </span>
-        </button>
-      </span>
-    </div> <!-- /typeahead input -->
+          <span class="fa fa-question-circle" />
+          <BTooltip target="longExpression">
+            <span v-i18n-btip="'search.'" />
+          </BTooltip>
+        </BButton>
+      </template>
+      <BButton
+        id="saveExpression"
+        type="button"
+        @click="saveExpression"
+        :disabled="!expression"
+        class="btn btn-outline-secondary btn-clear-input">
+        <span class="fa fa-save" />
+        <BTooltip target="saveExpression">
+          <span v-i18n-btip="'search.'" />
+        </BTooltip>
+      </BButton>
+      <BButton
+        type="button"
+        @click="clear"
+        :disabled="!expression"
+        :title="$t('search.clearSearchTip')"
+        class="btn btn-outline-secondary btn-clear-input">
+        <span class="fa fa-close" />
+      </BButton>
+    </BInputGroup> <!-- /typeahead input -->
 
     <!-- results dropdown -->
-    <div id="typeahead-results"
-      ref="typeaheadResults"
-      class="dropdown-menu typeahead-results"
-      v-show="expression && results && results.length">
-      <template v-if="autocompletingField">
-        <template v-for="(value, key) in fieldHistoryResults">
-          <a :id="key+'history'"
-            :key="key+'history'"
-            class="dropdown-item cursor-pointer"
-            :class="{'active':key === activeIdx,'last-history-item':key === fieldHistoryResults.length-1}"
-            @click="addToQuery(value)">
-            <span class="fa fa-history"></span>&nbsp;
-            <strong v-if="value.exp">{{ value.exp }}</strong>
-            <strong v-if="!value.exp">{{ value }}</strong>
-            <span v-if="value.friendlyName">- {{ value.friendlyName }}</span>
-            <span class="fa fa-close pull-right mt-1"
-              :title="`Remove ${value.exp} from your field history`"
-              @click.stop.prevent="removeFromFieldHistory(value)">
-            </span>
-          </a>
-          <b-tooltip v-if="value.help"
-            :key="key+'historytooltip'"
-            :target="key+'history'"
-            placement="right"
-            boundary="window">
-            {{ value.help.substring(0, 100) }}
-            <span v-if="value.help.length > 100">
-              ...
-            </span>
-          </b-tooltip>
-        </template>
-      </template>
-      <template v-for="(value, key) in results">
-        <a :id="key+'item'"
-          :key="key+'item'"
-          class="dropdown-item cursor-pointer"
-          :title="value.help"
-          :class="{'active':key+fieldHistoryResults.length === activeIdx}"
-          @click="addToQuery(value)">
-          <strong v-if="value.exp">{{ value.exp }}</strong>
-          <strong v-if="!value.exp">{{ value }}</strong>
-          <span v-if="value.friendlyName">- {{ value.friendlyName }}</span>
-        </a>
-        <b-tooltip v-if="value.help"
-          :key="key+'tooltip'"
-          :target="key+'item'"
-          placement="right"
-          boundary="window">
-          {{ value.help.substring(0, 100) }}
-          <span v-if="value.help.length > 100">
-            ...
-          </span>
-        </b-tooltip>
-      </template>
-    </div> <!-- /results dropdown -->
+    <TypeaheadResults
+      v-if="!bigTypeahead"
+      :expression="expression"
+      :results="results"
+      :active-idx="activeIdx"
+      :field-history-results="fieldHistoryResults"
+      :autocompleting-field="autocompletingField"
+      :add-to-query="addToQuery"
+      :remove-from-field-history="removeFromFieldHistory"
+      :big-typeahead="bigTypeahead" /> <!-- /results dropdown -->
 
     <!-- error -->
-    <div class="dropdown-menu typeahead-results"
+    <div
+      class="dropdown-menu typeahead-results"
       v-show="expression && loadingError">
       <a class="dropdown-item text-danger">
-        <span class="fa fa-warning"></span>&nbsp;
+        <span class="fa fa-warning" />&nbsp;
         Error: {{ loadingError }}
       </a>
     </div> <!-- /error -->
 
     <!-- loading -->
-    <div class="dropdown-menu typeahead-results"
+    <div
+      class="dropdown-menu typeahead-results"
       v-show="expression && loadingValues">
       <a class="dropdown-item">
-        <span class="fa fa-spinner fa-spin"></span>&nbsp;
-        Loading...
+        <span class="fa fa-spinner fa-spin" />&nbsp;
+        {{ $t('common.loading') }}
       </a>
     </div> <!-- /loading -->
 
+    <!-- big typeahead modal -->
+    <BModal
+      size="xl"
+      no-close-on-backdrop
+      :model-value="bigTypeahead"
+      @shown="showBigTypeahead"
+      @esc="closeBigTypeahead(false)">
+      <template #header>
+        <span class="fa fa-search fa-2x" />
+      </template>
+      <BFormTextarea
+        rows="5"
+        :placeholder="$t('common.search')"
+        v-model="expression"
+        v-caret-pos="caretPos"
+        v-focus="focusTextArea"
+        @input="debounceExprChange"
+        @keydown.enter.prevent.stop="closeBigTypeahead(true)" />
+      <!-- results dropdown -->
+      <TypeaheadResults
+        v-if="bigTypeahead"
+        :expression="expression"
+        :results="results"
+        :active-idx="activeIdx"
+        :field-history-results="fieldHistoryResults"
+        :autocompleting-field="autocompletingField"
+        :add-to-query="addToQuery"
+        :remove-from-field-history="removeFromFieldHistory"
+        :big-typeahead="bigTypeahead" /> <!-- /results dropdown -->
+      <template #footer>
+        <div class="d-flex w-100 justify-content-between">
+          <div>
+            <BButton
+              variant="secondary"
+              @click="closeBigTypeahead(false)">
+              {{ $t('common.close') }}
+            </BButton>
+            <BButton
+              variant="warning"
+              class="ms-2"
+              @click="clearBigTypeahead">
+              {{ $t('common.clear') }}
+            </BButton>
+          </div>
+          <BButton
+            variant="theme-tertiary"
+            @click="closeBigTypeahead(true)">
+            {{ $t('common.search') }}
+          </BButton>
+        </div>
+      </template>
+    </BModal> <!-- /big typeahead modal -->
   </div>
-
 </template>
 
 <script>
 import UserService from '../users/UserService';
 import FieldService from './FieldService';
-import CaretPos from '../utils/CaretPos';
-import { mixin as clickaway } from 'vue-clickaway';
-import Focus from '../../../../../common/vueapp/Focus';
+import CaretPos from '../utils/CaretPos.vue';
+import Focus from '@common/Focus.vue';
+import TypeaheadResults from './TypeaheadResults.vue';
 
 let tokens;
 let timeout;
@@ -162,7 +185,8 @@ const operations = ['==', '!=', '<', '<=', '>', '>='];
 
 export default {
   name: 'ExpressionTypeahead',
-  mixins: [clickaway],
+  emits: ['changeExpression', 'modView', 'applyExpression'],
+  components: { TypeaheadResults },
   directives: { CaretPos, Focus },
   data: function () {
     return {
@@ -178,7 +202,9 @@ export default {
       lastTokenWasField: false,
       autocompletingField: false,
       // saved expression vars
-      savedExpressions: []
+      savedExpressions: [],
+      bigTypeahead: false,
+      focusTextArea: false
     };
   },
   computed: {
@@ -233,7 +259,7 @@ export default {
   },
   mounted: function () {
     // set the results element for keyup event handler
-    this.resultsElement = this.$refs.typeaheadResults;
+    this.resultsElement = document.getElementById('typeahead-results');
   },
   methods: {
     /* exposed page functions ------------------------------------ */
@@ -242,6 +268,23 @@ export default {
     },
     saveExpression: function () {
       this.$emit('modView');
+    },
+    closeBigTypeahead: function (apply) {
+      this.bigTypeahead = false;
+      this.focusTextArea = false;
+      // clear results under the small input when modal closes
+      this.results = [];
+      if (apply) {
+        this.$emit('applyExpression');
+      }
+    },
+    clearBigTypeahead: function () {
+      this.clear();
+    },
+    showBigTypeahead: function () {
+      setTimeout(() => {
+        this.focusTextArea = true;
+      }, 100);
     },
     /**
      * Fired when a value from the typeahead menu is selected
@@ -308,7 +351,7 @@ export default {
       let target;
 
       // always check for escape before anything else
-      if (e.keyCode === 27) {
+      if (e.key === 'Escape') {
         // if there's a request in progress, cancel it
         this.cancelPromise();
 
@@ -328,7 +371,7 @@ export default {
       }
 
       // check for tab click when results are visible
-      if (this.results && this.results.length && e.keyCode === 9) {
+      if (this.results && this.results.length && e.key === 'Tab') {
         // if there is no item in the results is selected, use the first one
         if (this.activeIdx < 0) { this.activeIdx = 0; }
 
@@ -348,7 +391,7 @@ export default {
 
       // if there are no results, just check for enter click to remove typeahead
       if (!this.results || this.results.length === 0) {
-        if (e.keyCode === 13) {
+        if (e.key === 'Enter') {
           this.cancelPromise();
 
           this.loadingValues = false;
@@ -363,22 +406,22 @@ export default {
 
       if (!this.activeIdx && this.activeIdx !== 0) { this.activeIdx = -1; }
 
-      switch (e.keyCode) {
-      case 40: // down arrow
+      switch (e.key) {
+      case 'ArrowDown': // down arrow
         this.activeIdx = (this.activeIdx + 1) % (this.fieldHistoryResults.length + this.results.length);
         target = this.resultsElement.querySelectorAll('a')[this.activeIdx];
         if (target && target.parentNode) {
           target.parentNode.scrollTop = target.offsetTop;
         }
         break;
-      case 38: // up arrow
+      case 'ArrowUp': // up arrow
         this.activeIdx = (this.activeIdx > 0 ? this.activeIdx : (this.fieldHistoryResults.length + this.results.length)) - 1;
         target = this.resultsElement.querySelectorAll('a')[this.activeIdx];
         if (target && target.parentNode) {
           target.parentNode.scrollTop = target.offsetTop;
         }
         break;
-      case 13: // enter
+      case 'Enter': // enter
         if (this.activeIdx >= 0) {
           let result;
           if (this.activeIdx < this.fieldHistoryResults.length) {
@@ -488,7 +531,7 @@ export default {
       this.fieldHistoryResults = this.findMatch(strToMatch, this.fieldHistory) || [];
     },
     /* Displays appropriate typeahead suggestions */
-    changeExpression: function () {
+    changeExpression: async function () {
       this.activeIdx = -1;
       this.results = null;
       this.fieldHistoryResults = [];
@@ -576,21 +619,23 @@ export default {
         this.results = this.findMatch(lastToken, views);
       }
 
-      // autocomplete variables
+      // autocomplete shortcuts
       if (/^(\$)/.test(lastToken)) {
         this.loadingValues = true;
         let url = 'api/shortcuts?fieldFormat=true&map=true';
         if (field && field.type) {
           url += `&fieldType=${field.type}`;
         }
-        this.$http.get(url).then((response) => {
+
+        try {
+          const response = await FieldService.getShortcuts(url);
           this.loadingValues = false;
           const escapedToken = lastToken.replaceAll('$', '\\$');
           this.results = this.findMatch(escapedToken, response.data);
-        }).catch((error) => {
+        } catch (error) {
           this.loadingValues = false;
-          this.loadingError = error.text || error;
-        });
+          this.loadingError = error.text || String(error);
+        }
 
         return;
       }
@@ -669,21 +714,20 @@ export default {
 
         this.loadingValues = true;
 
-        this.cancellablePromise = FieldService.getValues(params);
-
-        this.cancellablePromise.promise.then((result) => {
+        try {
+          const { controller, fetcher } = FieldService.getValues(params);
+          this.cancellablePromise = { controller };
+          const result = await fetcher; // do the fetch
           this.cancellablePromise = null;
-          if (result) {
-            this.loadingValues = false;
-            this.loadingError = '';
-            this.results = result;
-            this.addExistsItem(lastToken, operatorToken);
-          }
-        }).catch((error) => {
+          this.loadingValues = false;
+          this.loadingError = '';
+          this.results = result;
+          this.addExistsItem(lastToken, operatorToken);
+        } catch (error) {
           this.cancellablePromise = null;
           this.loadingValues = false;
           this.loadingError = error.message || error;
-        });
+        }
       }
     },
     /**
@@ -703,7 +747,7 @@ export default {
     /* aborts a pending promise */
     cancelPromise: function () {
       if (this.cancellablePromise) {
-        this.cancellablePromise.source.cancel();
+        this.cancellablePromise.controller.abort(this.$t('common.youCancelledRequest'));
         this.cancellablePromise = null;
         this.loadingValues = false;
         this.loadingError = '';
@@ -877,7 +921,7 @@ export default {
       return output;
     }
   },
-  beforeDestroy: function () {
+  beforeUnmount () {
     this.cancelPromise();
     if (timeout) { clearTimeout(timeout); }
   }
@@ -888,25 +932,5 @@ export default {
 .input-group {
   flex-wrap: none;
   width: auto;
-}
-
-.typeahead-results {
-  top: initial;
-  left: initial;
-  display: block;
-  overflow-y: auto;
-  overflow-x: hidden;
-  max-height: 500px;
-  margin-left: 35px;
-}
-
-.typeahead-results a.last-history-item {
-  border-bottom: 1px solid var(--color-gray);
-}
-
-@media screen and (max-height: 600px) {
-  .typeahead-results {
-    max-height: 250px;
-  }
 }
 </style>

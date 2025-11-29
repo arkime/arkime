@@ -3,103 +3,125 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-  <div>
-    <!-- wise navbar -->
-    <nav class="navbar navbar-expand navbar-dark bg-dark justify-content-between fixed-top">
-      <router-link to="help">
-        <img alt="hoot"
-          src="assets/Arkime_Icon_ColorMint.png"
-          v-b-tooltip.hover="'HOOT! Can I help you? Click me to see the help page'"
-        />
+  <!-- wise navbar -->
+  <b-navbar
+    fixed="top"
+    variant="dark"
+    class="px-3"
+    :container="false">
+    <b-navbar-brand>
+      <router-link
+        to="help"
+        class="me-2"
+        exact>
+        <img
+          alt="hoot"
+          id="help-img"
+          class="arkime-logo"
+          src="/assets/Arkime_Icon_ColorMint.png">
+        <BTooltip
+          target="help-img"
+          title="HOOT! Can I help you? Click me to see the help page" />
       </router-link>
-      <!-- page links -->
-      <ul class="navbar-nav mr-auto">
-        <li class="nav-item mr-2">
-          <router-link :to="{ path: '/', query: queryParams }"
-            active-class="active"
-            class="nav-link"
-            exact>
-            Stats
-          </router-link>
-        </li>
-        <li class="nav-item mr-2">
-          <router-link to="/query"
-            active-class="active"
-            class="nav-link">
-            Query
-          </router-link>
-        </li>
-        <li class="nav-item mr-2">
-          <router-link to="config"
-            active-class="active"
-            class="nav-link">
-            Config
-          </router-link>
-        </li>
-      </ul> <!-- /page links -->
+    </b-navbar-brand>
 
+    <!-- page links -->
+    <b-navbar-nav class="ms-4">
+      <b-nav-item
+        :to="{ path: '/', query: queryParams }"
+        :class="{'router-link-active': $route.path === '/'}"
+        class="nav-link"
+        exact>
+        {{ $t('navigation.stats') }}
+      </b-nav-item>
+      <b-nav-item
+        to="/query"
+        :class="{'router-link-active': $route.path === '/query'}"
+        class="nav-link">
+        {{ $t('navigation.query') }}
+      </b-nav-item>
+      <b-nav-item
+        to="config"
+        :class="{'router-link-active': $route.path === '/config'}"
+        class="nav-link">
+        {{ $t('navigation.config') }}
+      </b-nav-item>
+    </b-navbar-nav> <!-- /page links -->
+
+    <b-navbar-nav
+      class="ms-auto d-flex align-items-center">
       <!-- data refresh interval select -->
-      <div v-if="$route.name === 'Stats'"
+      <div
+        v-if="$route.name === 'Stats'"
         style="width:auto;"
-        class="input-group input-group-sm ml-1">
-        <div class="input-group-prepend help-cursor"
-          v-b-tooltip.hover="'Refresh interval for stats data'">
-          <span class="input-group-text">
-            Refresh Data Every
-          </span>
-        </div>
-        <b-select class="form-control input-sm"
+        class="input-group input-group-sm ms-1">
+        <span class="input-group-text">
+          {{ $t('wise.nav.refreshEvery') }}
+        </span>
+        <BFormSelect
+          size="sm"
           v-model="statsDataInterval"
           :options="[
-            { value: 0, text: 'None' },
-            { value:5000, text: '5 seconds' },
-            { value:15000, text: '15 seconds' },
-            { value:30000, text: '30 seconds' },
-            { value:60000, text: '1 minute' }
-          ]">
-        </b-select>
-
+            { value: 0, text: $t('common.none') },
+            { value:5000, text: $t('common.secondCount', 5) },
+            { value:15000, text: $t('common.secondCount', 15) },
+            { value:30000, text: $t('common.secondCount', 30) },
+            { value:60000, text: $t('common.minuteCount', 1) }
+          ]" />
       </div> <!-- /data interval select -->
 
       <!-- version -->
-      <span class="pl-4">
+      <span class="ps-4">
         <Version timezone="local" />
       </span>
 
+      <LanguageSwitcher additional-classes="me-2 ms-2" />
+
       <!-- help -->
       <router-link to="help">
-        <span class="fa fa-2x fa-fw fa-question-circle mr-2 ml-2 help-link text-theme-button text-theme-gray-hover"
-          v-b-tooltip.hover="'HELP!'">
-        </span>
+        <span
+          id="help-icon"
+          class="fa fa-2x fa-fw fa-question-circle me-2 help-link text-theme-button text-theme-gray-hover" />
+        <BTooltip
+          target="help-icon"
+          :title="$t('navigation.helpTip')" />
       </router-link> <!-- /help -->
 
       <!-- dark/light mode -->
-      <button type="button"
-        class="btn btn-outline-secondary cursor-pointer mr-2"
-        @click="toggleTheme"
-        v-b-tooltip.hover.left
-        title="Toggle light/dark theme">
-        <span v-if="wiseTheme === 'light'"
-          class="fa fa-sun-o fa-fw">
-        </span>
-        <span v-if="wiseTheme === 'dark'"
-          class="fa fa-moon-o fa-fw">
-        </span>
-      </button> <!-- /dark/light mode -->
-      <Logout />
-    </nav> <!-- /wise navbar -->
-  </div>
+      <button
+        type="button"
+        id="theme-toggle"
+        class="btn btn-sm btn-outline-secondary cursor-pointer me-2"
+        @click="toggleTheme">
+        <span
+          v-if="wiseTheme === 'light'"
+          class="fa fa-sun-o fa-fw" />
+        <span
+          v-if="wiseTheme === 'dark'"
+          class="fa fa-moon-o fa-fw" />
+      </button>
+      <BTooltip
+        target="theme-toggle"
+        :title="$t('navigation.toggleLightDark')" />
+      <!-- /dark/light mode -->
+      <Logout
+        class="ms-2"
+        size="sm" />
+    </b-navbar-nav>
+  </b-navbar> <!-- /wise navbar -->
 </template>
 
 <script>
-import Logout from '@/../../../common/vueapp/Logout';
-import Version from '@/../../../common/vueapp/Version';
+import Logout from '@common/Logout.vue';
+import Version from '@common/Version.vue';
+import LanguageSwitcher from '@common/LanguageSwitcher.vue';
 
 export default {
   name: 'WiseNavbar',
   components: {
     Logout,
-    Version
+    Version,
+    LanguageSwitcher
   },
   data: function () {
     return {
@@ -152,16 +174,6 @@ export default {
 </script>
 
 <style scoped>
-nav.navbar img {
-  position: absolute;
-  height: 52px;
-  top: 2px;
-}
-
-.navbar-nav {
-  margin-left: 4rem;
-}
-
 /* animations -------------------------------- */
 .hide-login, .show-login {
   transition: width 0.5s cubic-bezier(0.250, 0.460, 0.450, 0.940),
@@ -174,5 +186,18 @@ nav.navbar img {
   width: 0px;
   opacity: 0;
   padding: 0;
+}
+</style>
+
+<style>
+nav.navbar li:hover {
+  background-color: black;
+}
+nav.navbar li a {
+  transition: all .4s;
+}
+nav.navbar ul.navbar-nav li.nav-link a.nav-link {
+  display: inline-block !important;
+  padding-top: 1px;
 }
 </style>

@@ -25,7 +25,7 @@ LOCAL int reader_pfring_stats(ArkimeReaderStats_t *stats)
     stats->total = 0;
 
     int i;
-    for (i = 0; i < MAX_INTERFACES && config.interface[i]; i++) {
+    for (i = 0; config.interface[i]; i++) {
         pfring_stats(rings[i], &pfstats);
         stats->dropped += pfstats.drop;
         stats->total += pfstats.recv;
@@ -41,7 +41,7 @@ LOCAL void reader_pfring_packet_cb(const struct pfring_pkthdr *h, const u_char *
         LOGEXIT("ERROR - Arkime requires full packet captures caplen: %d pktlen: %d", h->caplen, h->len);
     }
 
-    ArkimePacket_t *packet = ARKIME_TYPE_ALLOC0(ArkimePacket_t);
+    ArkimePacket_t *packet = arkime_packet_alloc();
 
     packet->pkt           = (u_char *)p;
     packet->ts            = h->ts;
@@ -82,7 +82,7 @@ LOCAL void reader_pfring_start()
     arkime_packet_set_dltsnap(DLT_EN10MB, config.snapLen);
 
     int i;
-    for (i = 0; i < MAX_INTERFACES && config.interface[i]; i++) {
+    for (i = 0; config.interface[i]; i++) {
         char name[100];
         snprintf(name, sizeof(name), "arkime-pfring%d", i);
         g_thread_unref(g_thread_new(name, &reader_pfring_thread, (gpointer)(long)i));
@@ -93,7 +93,7 @@ LOCAL void reader_pfring_stop()
 {
 
     int i;
-    for (i = 0; i < MAX_INTERFACES && config.interface[i]; i++) {
+    for (i = 0; config.interface[i]; i++) {
         if (rings[i])
             pfring_breakloop(rings[i]);
     }
@@ -103,7 +103,7 @@ LOCAL void reader_pfring_exit()
 {
 
     int i;
-    for (i = 0; i < MAX_INTERFACES && config.interface[i]; i++) {
+    for (i = 0; config.interface[i]; i++) {
         if (rings[i]) {
             pfring_close(rings[i]);
         }
@@ -116,7 +116,7 @@ LOCAL void reader_pfring_init(const char *UNUSED(name))
     int clusterId = arkime_config_int(NULL, "pfringClusterId", 0, 0, 255);
 
     int i;
-    for (i = 0; i < MAX_INTERFACES && config.interface[i]; i++) {
+    for (i = 0; config.interface[i]; i++) {
         rings[i] = pfring_open(config.interface[i], config.snapLen, flags);
 
         if (config.bpf) {

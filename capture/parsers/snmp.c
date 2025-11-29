@@ -55,7 +55,7 @@ LOCAL int snmp_parser(ArkimeSession_t *session, void *UNUSED(uw), const uint8_t 
 
     value = arkime_parsers_asn_get_tlv(&bsb, &apc, &dataType, &alen);
 
-    if (value && dataType < 8) {
+    if (value && dataType < ARRAY_LEN(types)) {
         arkime_field_string_add(typeField, session, types[dataType], lens[dataType], TRUE);
     } else {
         // This is probably not a SNMP stream after all
@@ -153,7 +153,7 @@ LOCAL void snmp_classify(ArkimeSession_t *session, const uint8_t *data, int len,
 /******************************************************************************/
 void arkime_parser_init()
 {
-    for (int i = 0; i < 8; i++) {
+    for (int i = 0; i < ARRAY_LEN(types); i++) {
         lens[i] = strlen(types[i]);
     }
     CLASSIFY_UDP("snmp", 0, "\x30", snmp_classify);

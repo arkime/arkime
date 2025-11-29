@@ -41,6 +41,12 @@
                }
             ],
             "dnsCnt" : 1,
+            "dot1q" : {
+               "id" : [
+                  100
+               ],
+               "idCnt" : 1
+            },
             "dstOui" : [
                "Palo Alto Networks"
             ],

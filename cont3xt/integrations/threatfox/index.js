@@ -13,7 +13,8 @@ class ThreatFoxIntegration extends Integration {
   cacheTimeout = '1w';
   itypes = {
     ip: 'fetchIp',
-    hash: 'fetchHash'
+    hash: 'fetchHash',
+    domain: 'fetchDomain'
   };
 
   homePage = 'https://threatfox.abuse.ch/';
@@ -21,6 +22,11 @@ class ThreatFoxIntegration extends Integration {
     disabled: {
       help: 'Disable integration for all queries',
       type: 'boolean'
+    },
+    key: {
+      help: 'Your ThreatFox API key',
+      password: true,
+      required: true
     }
   };
 
@@ -28,10 +34,74 @@ class ThreatFoxIntegration extends Integration {
     title: 'ThreatFox for %{query}',
     searchUrls: [{
       url: 'https://threatfox.abuse.ch/browse.php?search=%{query}',
-      itypes: ['ip'],
+      itypes: ['ip', 'domain', 'hash'],
       name: 'Search ThreatFox for %{query}'
     }],
     fields: [
+      {
+        label: 'query_status',
+        field: 'query_status'
+      },
+      {
+        label: 'Threats',
+        field: 'data',
+        type: 'table',
+        defaultSortField: 'first_seen',
+        defaultSortDirection: 'desc',
+        fields: [
+          {
+            label: 'IOC',
+            field: 'ioc',
+            pivot: true
+          },
+          {
+            label: 'Malware',
+            field: 'malware_printable'
+          },
+          {
+            label: 'Threat Type',
+            field: 'threat_type_desc'
+          },
+          {
+            label: 'IOC Type',
+            field: 'ioc_type_desc'
+          },
+          {
+            label: 'Confidence',
+            field: 'confidence_level'
+          },
+          {
+            label: 'First Seen',
+            field: 'first_seen',
+            type: 'date'
+          },
+          {
+            label: 'Last Seen',
+            field: 'last_seen',
+            type: 'date'
+          },
+          {
+            label: 'Reporter',
+            field: 'reporter'
+          },
+          {
+            label: 'Tags',
+            field: 'tags',
+            type: 'array',
+            join: ', '
+          },
+          {
+            label: 'Malpedia',
+            field: 'malware_malpedia',
+            type: 'url'
+          },
+          {
+            label: 'Reference',
+            field: 'reference',
+            type: 'url'
+          }
+        ]
+      }
     ]
   };
 
@@ -43,9 +113,15 @@ class ThreatFoxIntegration extends Integration {
 
   async fetch (user, body) {
     try {
+      const key = this.getUserConfig(user, 'key');
+      if (!key) {
+        return undefined;
+      }
+
       const result = await axios.post('https://threatfox-api.abuse.ch/api/v1/', body, {
         headers: {
-          'User-Agent': this.userAgent()
+          'User-Agent': this.userAgent(),
+          'Auth-Key': key
         }
       });
 
@@ -72,7 +148,10 @@ class ThreatFoxIntegration extends Integration {
   fetchHash (user, hash) {
     return this.fetch(user, `{ "query": "search_hash", "hash": "${hash}" }`);
   }
+
+  fetchDomain (user, domain) {
+    return this.fetch(user, `{ "query": "search_ioc", "search_term": "${domain}" }`);
+  }
 }
 
-// eslint-disable-next-line no-new
 new ThreatFoxIntegration();

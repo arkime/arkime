@@ -15,6 +15,7 @@ LOCAL  ArkimeStringHashStd_t readersHash;
 void reader_libpcapfile_init(const char *);
 void reader_libpcap_init(const char *);
 void reader_tpacketv3_init(const char *);
+void reader_bpf_init(const char *);
 void reader_null_init(const char *);
 void reader_pcapoverip_init(const char *);
 void reader_tzsp_init(const char *);
@@ -71,6 +72,7 @@ void arkime_readers_init()
     arkime_readers_add("pcap-over-ip-server", reader_pcapoverip_init);
     arkime_readers_add("tzsp", reader_tzsp_init);
     arkime_readers_add("scheme", arkime_reader_scheme_init);
+    arkime_readers_add("bpf", reader_bpf_init);
 }
 
 /******************************************************************************/

@@ -279,16 +279,6 @@ class User {
         user = Object.assign(new User(), data);
       }
 
-      // If passStore is using old form re-encrypt
-      /* Remove for now
-      if (data.passStore.split('.').length === 1) {
-        data.passStore = Auth.ha12store(Auth.store2ha1(data.passStore));
-        User.setUser(data.userId, data, (err, info) => {
-          console.log('Upgraded passStore for', data.userId);
-        });
-      }
-      */
-
       cleanUser(user);
       user.settings = user.settings ?? {};
       await user.expandFromRoles();
@@ -552,7 +542,7 @@ class User {
   static apiGetUsers (req, res, next) {
     const query = User.#apiGetUsersCommon(req);
     if (query === undefined) {
-      res.send({
+      return res.send({
         success: false,
         recordsTotal: 0,
         recordsFiltered: 0,
@@ -593,7 +583,7 @@ class User {
 
     const query = User.#apiGetUsersCommon(req);
     if (query === undefined) {
-      res.send({
+      return res.send({
         success: false,
         recordsTotal: 0,
         recordsFiltered: 0,
@@ -852,10 +842,10 @@ class User {
       }
       try {
         await User.deleteUser(userId);
-        res.send({ success: true, text: 'User deleted successfully' });
+        return res.send({ success: true, text: 'User deleted successfully' });
       } catch (err) {
         console.log(`ERROR - ${req.method} /api/user/%s`, userId, util.inspect(err, false, 50));
-        res.send({ success: false, text: 'User not deleted' });
+        return res.send({ success: false, text: 'User not deleted' });
       }
     });
   };

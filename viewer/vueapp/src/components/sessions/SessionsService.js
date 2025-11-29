@@ -1,91 +1,155 @@
-import Vue from 'vue';
 import qs from 'qs';
 import store from '../../store';
 import Utils from '../utils/utils';
+import { fetchWrapper, cancelFetchWrapper } from '@common/fetchWrapper.js';
 
 let getDecodingsQIP;
 let _decodingsCache;
 
 export default {
 
+  /* internal helper methods ----------------------------------------------- */
+  /**
+   * Builds base parameters from query for session-related requests
+   * @param {object} query Parameters from the query/route
+   * @param {object} options Configuration options for parameter building
+   * @param {boolean} options.includePagination Include start/length parameters
+   * @param {boolean} options.includeSort Include sort order parameter
+   * @param {boolean} options.includeFields Include fields parameter
+   * @param {boolean} options.flatten Include flatten parameter
+   * @returns {object} Built parameters object
+   */
+  buildSessionParams: function (query, options = {}) {
+    const {
+      includePagination = true,
+      includeSort = true,
+      includeFields = true,
+      flatten = true
+    } = options;
+
+    const params = {};
+    if (flatten) {
+      params.flatten = 1;
+    }
+
+    const sameParams = {
+      view: true,
+      facets: true,
+      bounding: true,
+      interval: true,
+      cancelId: true,
+      expression: true,
+      cluster: true,
+      map: true
+    };
+
+    if (includePagination) {
+      sameParams.start = true;
+      sameParams.length = true;
+    }
+
+    if (query) {
+      for (const param in sameParams) {
+        if (query[param]) { params[param] = query[param]; }
+      }
+
+      // always send stopTime and startTime unless date is all time (-1)
+      if (parseInt(query.date, 10) === -1) {
+        params.date = query.date;
+      } else {
+        params.startTime = query.startTime;
+        params.stopTime = query.stopTime;
+      }
+
+      // add sort to params
+      if (includeSort) {
+        params.order = store.state.sortsParam;
+      }
+
+      // server takes one param (fields)
+      if (includeFields && query.fields && query.fields.length) {
+        params.fields = '';
+        for (let i = 0, len = query.fields.length; i < len; ++i) {
+          const item = query.fields[i];
+          params.fields += item;
+          if (i < len - 1) { params.fields += ','; }
+        }
+      }
+    }
+
+    return params;
+  },
+
   /* service methods ------------------------------------------------------- */
+  /**
+   * Internal helper to make POST requests to sessions endpoints
+   * @param {string} url The endpoint URL
+   * @param {object} query Parameters to query the server
+   * @param {object} buildParamsOptions Options for buildSessionParams
+   * @param {boolean} calculateFacets Whether to calculate facets (default true)
+   * @returns {AbortController} The AbortController used to cancel the request.
+   * @returns {Promise<Object>} The response data parsed as JSON.
+   */
+  postSessionsRequest: function (url, query, buildParamsOptions, calculateFacets = true) {
+    const params = this.buildSessionParams(query, buildParamsOptions);
+
+    if (calculateFacets) {
+      // only calculate facets in some cases because it's expensive
+      Utils.setFacetsQuery(params, 'sessions');
+      Utils.setMapQuery(params);
+    }
+
+    const options = {
+      url,
+      method: 'POST',
+      data: params
+    };
+
+    return cancelFetchWrapper(options);
+  },
+
   /**
    * Gets a list of sessions from the server
    * @param {object} query        Parameters to query the server
-   * @param {object} cancelToken  Token to cancel the request
+   * @param {boolean} calculateFacets Whether to calculate facets (true) or not (false)
+   * @returns {AbortController} The AbortController used to cancel the request.
+   * @returns {Promise<Object>} The response data parsed as JSON.
+   */
+  get: function (query, calculateFacets = true) {
+    return this.postSessionsRequest(
+      'api/sessions',
+      query,
+      {
+        includePagination: true,
+        includeSort: true,
+        includeFields: true,
+        flatten: true
+      },
+      calculateFacets
+    );
+  },
+
+  /**
+   * Generates a summary of the sessions
+   * @param {object} routeParams  The current url route parameters (includes length for results limit)
    * @returns {Promise} Promise   A promise object that signals the completion
    *                              or rejection of the request.
    */
-  get: function (query, cancelToken) {
-    return new Promise((resolve, reject) => {
-      const params = { flatten: 1 };
-      const sameParams = {
-        view: true,
-        start: true,
-        length: true,
-        facets: true,
-        bounding: true,
-        interval: true,
-        cancelId: true,
-        expression: true,
-        cluster: true
-      };
+  generateSummary: function (routeParams) {
+    // Default fields to aggregate for summary - can be customized by users in the future
+    const defaultFields = ['ip', 'ip.dst:port', 'ip.src', 'ip.dst', 'port.src', 'port.dst', 'protocols', 'tags', 'host.http', 'dns.query.host'];
 
-      if (query) {
-        for (const param in sameParams) {
-          if (query[param]) { params[param] = query[param]; }
-        }
-
-        // always send stopTime and startTime unless date is all time (-1)
-        if (parseInt(query.date, 10) === -1) {
-          params.date = query.date;
-        } else {
-          params.startTime = query.startTime;
-          params.stopTime = query.stopTime;
-        }
-
-        // add sort to params
-        params.order = store.state.sortsParam;
-
-        // server takes one param (fields)
-        if (query.fields && query.fields.length) {
-          params.fields = '';
-          for (let i = 0, len = query.fields.length; i < len; ++i) {
-            const item = query.fields[i];
-            params.fields += item;
-            if (i < len - 1) { params.fields += ','; }
-          }
-        }
-      }
-
-      Utils.setFacetsQuery(params, 'sessions');
-
-      // set whether map is open on the sessions page
-      if (localStorage.getItem('sessions-open-map') === 'true') {
-        params.map = true;
-      }
-      // set whether vizualizations are open on the sessions page
-      if (localStorage.getItem('sessions-hide-viz') === 'true') {
-        params.facets = 0;
-      }
-
-      const options = {
-        url: 'api/sessions',
-        method: 'POST',
-        data: params,
-        cancelToken
-      };
-
-      Vue.axios(options)
-        .then((response) => {
-          if (response.data.error) { reject(response.data.error); }
-          resolve(response);
-        }, (error) => {
-          if (!Vue.axios.isCancel(error)) {
-            reject(error);
-          }
-        });
-    });
+    return this.postSessionsRequest(
+      'api/sessions/summary',
+      { ...routeParams, fields: defaultFields },
+      {
+        includePagination: true,
+        includeSort: false,
+        includeFields: true, // buildSessionParams will convert fields array to comma-separated string
+        flatten: false
+      },
+      true // always calculate facets for summary
+    );
   },
 
   /**
@@ -96,22 +160,11 @@ export default {
    * @returns {Promise} Promise A promise object that signals the completion
    *                            or rejection of the request.
    */
-  getDetail: function (id, node, cluster) {
-    return new Promise((resolve, reject) => {
-      const options = {
-        method: 'GET',
-        params: {
-          cluster
-        },
-        url: `api/session/${node}/${id}/detail`
-      };
-
-      Vue.axios(options)
-        .then((response) => {
-          resolve(response);
-        }, (error) => {
-          reject(error);
-        });
+  getDetail: async function (id, node, cluster) {
+    return await fetchWrapper({
+      url: `api/session/${node}/${id}/detail`,
+      params: { cluster },
+      headers: { 'Content-Type': 'text/html' }
     });
   },
 
@@ -125,32 +178,14 @@ export default {
    * that signals the completion or rejection of the request and a source object
    * to allow the request to be cancelled
    */
-  getPackets: function (id, node, cluster, params) {
-    const source = Vue.axios.CancelToken.source();
+  getPackets (id, node, cluster, params) {
+    const options = {
+      params: { ...params, cluster },
+      url: `api/session/${node}/${id}/packets`,
+      headers: { 'Content-Type': 'text/html' }
+    };
 
-    const promise = new Promise((resolve, reject) => {
-      const options = {
-        method: 'GET',
-        params: {
-          ...params,
-          cluster
-        },
-        cancelToken: source.token,
-        url: `api/session/${node}/${id}/packets`
-      };
-
-      Vue.axios(options)
-        .then((response) => {
-          resolve(response.data);
-        })
-        .catch((error) => {
-          if (!Vue.axios.isCancel(error)) {
-            reject(error);
-          }
-        });
-    });
-
-    return { promise, source };
+    return cancelFetchWrapper(options);
   },
 
   /**
@@ -164,15 +199,14 @@ export default {
     getDecodingsQIP = new Promise((resolve, reject) => {
       if (_decodingsCache) { return resolve(_decodingsCache); }
 
-      Vue.axios.get('api/sessions/decodings')
-        .then((response) => {
-          getDecodingsQIP = undefined;
-          _decodingsCache = response.data;
-          return resolve(response.data);
-        }, (error) => {
-          getDecodingsQIP = undefined;
-          return reject(error);
-        });
+      fetchWrapper({ url: 'api/sessions/decodings' }).then((response) => {
+        getDecodingsQIP = undefined;
+        _decodingsCache = response;
+        return resolve(response);
+      }).catch((error) => {
+        getDecodingsQIP = undefined;
+        return reject(error);
+      });
     });
 
     return getDecodingsQIP;
@@ -186,28 +220,22 @@ export default {
    * @returns {Promise} Promise   A promise object that signals the completion
    *                              or rejection of the request.
    */
-  tag: function (addTags, params, routeParams) {
-    return new Promise((resolve, reject) => {
-      let url = 'api/sessions';
-      addTags ? url += '/addtags' : url += '/removetags';
-      const options = this.getReqOptions(url, 'POST', params, routeParams);
+  tag: async function (addTags, params, routeParams) {
+    let url = 'api/sessions';
+    addTags ? url += '/addtags' : url += '/removetags';
 
-      if (options.error) { return reject({ text: options.error }); }
+    const { options, error } = this.getReqOptions(url, 'POST', params, routeParams);
 
-      // add sort to params
-      options.params.order = store.state.sortsParam;
+    if (error) { return { text: error }; }
 
-      // add tags to data instead of url params
-      options.data.tags = params.tags;
-      delete options.params.tags;
+    // add sort to params
+    options.params.order = store.state.sortsParam;
 
-      Vue.axios(options)
-        .then((response) => {
-          resolve(response);
-        }, (error) => {
-          reject(error);
-        });
-    });
+    // add tags to data instead of url params
+    options.data.tags = params.tags;
+    delete options.params.tags;
+
+    return await fetchWrapper(options);
   },
 
   /**
@@ -217,23 +245,15 @@ export default {
    * @returns {Promise} Promise   A promise object that signals the completion
    *                              or rejection of the request.
    */
-  remove: function (params, routeParams) {
-    return new Promise((resolve, reject) => {
-      const options = this.getReqOptions('api/delete', 'POST', params, routeParams);
+  remove: async function (params, routeParams) {
+    const { options, error } = this.getReqOptions('api/delete', 'POST', params, routeParams);
 
-      if (options.error) { return reject({ text: options.error }); }
+    if (error) { return { text: error }; }
 
-      // add sort to params
-      options.params.order = store.state.sortsParam;
+    // add sort to params
+    options.params.order = store.state.sortsParam;
 
-      Vue.axios(options)
-        .then((response) => {
-          resolve(response);
-        })
-        .catch((error) => {
-          reject(error);
-        });
-    });
+    return await fetchWrapper(options);
   },
 
   /**
@@ -243,30 +263,22 @@ export default {
    * @returns {Promise} Promise   A promise object that signals the completion
    *                              or rejection of the request.
    */
-  send: function (params, routeParams) {
-    return new Promise((resolve, reject) => {
-      const cluster = params.cluster;
-      const options = this.getReqOptions('api/sessions/send', 'POST', params, routeParams);
+  send: async function (params, routeParams) {
+    const cluster = params.cluster;
+    const { options, error } = this.getReqOptions('api/sessions/send', 'POST', params, routeParams);
 
-      if (options.error) { return reject({ text: options.error }); };
+    if (error) { return { text: error }; }
 
-      // add sort to params
-      options.params.order = store.state.sortsParam;
+    // add sort to params
+    options.params.order = store.state.sortsParam;
 
-      // add tags and cluster to data instead of url params
-      options.data.tags = params.tags;
-      options.data.remoteCluster = cluster; // ALW use the cluster before routeParams replaces it
-      delete options.params.tags;
-      delete options.params.cluster;
+    // add tags and cluster to data instead of url params
+    options.data.tags = params.tags;
+    options.data.remoteCluster = cluster; // use the cluster before routeParams replaces it
+    delete options.params.tags;
+    delete options.params.cluster;
 
-      Vue.axios(options)
-        .then((response) => {
-          resolve(response);
-        })
-        .catch((error) => {
-          reject(error);
-        });
-    });
+    return await fetchWrapper(options);
   },
 
   /**
@@ -283,9 +295,9 @@ export default {
       // save segments for later because getReqOptions deletes it
       const segments = params.segments;
 
-      const options = this.getReqOptions(baseUrl, '', params, routeParams);
+      const { options, error } = this.getReqOptions(baseUrl, '', params, routeParams);
 
-      if (options.error) { return reject({ text: options.error }); };
+      if (error) { return reject({ text: error }); };
 
       // add missing params
       options.params.segments = segments;
@@ -305,7 +317,7 @@ export default {
       link.click();
       link.remove();
 
-      return resolve({ text: 'PCAP now exporting' });
+      return resolve({ text: this.$t('sessions.exports.exportingPCAP') });
     });
   },
 
@@ -322,9 +334,9 @@ export default {
 
       delete params.filename; // don't need this anymore
 
-      const options = this.getReqOptions(baseUrl, '', params, routeParams);
+      const { options, error } = this.getReqOptions(baseUrl, '', params, routeParams);
 
-      if (options.error) { return reject({ text: options.error }); };
+      if (error) { return reject({ text: error }); };
 
       // add missing params
       options.params.segments = segments;
@@ -339,7 +351,7 @@ export default {
 
       window.location = url;
 
-      return resolve({ text: 'CSV Exported' });
+      return resolve({ text: this.$t('sessions.exports.exportingCSV') });
     });
   },
 
@@ -450,11 +462,13 @@ export default {
     delete combinedParams.numMatching;
 
     return {
-      data,
-      url: baseUrl,
       error,
-      method,
-      params: combinedParams
+      options: {
+        data,
+        method,
+        url: baseUrl,
+        params: combinedParams
+      }
     };
   }
 

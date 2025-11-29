@@ -3,68 +3,69 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-
   <div>
     <ArkimeCollapsible>
       <span class="fixed-header">
-        <div class="files-search">
-          <div class="p-1">
-            <Clusters
-              class="pull-right flex-grow-1"
-            />
-            <div class="input-group input-group-sm pull-right" style="max-width:50%;">
-              <div class="input-group-prepend">
-                <span class="input-group-text input-group-text-fw">
-                  <span v-if="!shiftKeyHold"
-                    class="fa fa-search fa-fw">
-                  </span>
-                  <span v-else
+        <div class="files-search p-1">
+          <BRow
+            gutter-x="1"
+            align-h="start">
+            <BCol cols="auto">
+              <arkime-paging
+                v-if="files"
+                :records-total="recordsTotal"
+                :records-filtered="recordsFiltered"
+                @change-paging="changePaging"
+                :length-default="500" />
+            </BCol>
+            <BCol cols="auto">
+              <BInputGroup size="sm">
+                <BInputGroupText class="input-group-text-fw">
+                  <span
+                    v-if="!shiftKeyHold"
+                    class="fa fa-search fa-fw" />
+                  <span
+                    v-else
                     class="query-shortcut">
                     Q
                   </span>
-                </span>
-              </div>
-              <input type="text"
-                class="form-control"
-                v-model="query.filter"
-                v-focus="focusInput"
-                @blur="onOffFocus"
-                @input="searchForFiles"
-                @keydown.enter="searchForFiles"
-                placeholder="Begin typing to search for files by name"
-              />
-              <span class="input-group-append">
-                <button type="button"
+                </BInputGroupText>
+                <input
+                  type="text"
+                  class="form-control"
+                  v-model="query.filter"
+                  v-focus="focusInput"
+                  @blur="onOffFocus"
+                  @input="searchForFiles"
+                  @keydown.enter="searchForFiles"
+                  :placeholder="$t('files.searchPlaceholder')">
+                <BButton
+                  variant="outline-secondary"
                   @click="clear"
                   :disabled="!query.filter"
-                  class="btn btn-outline-secondary btn-clear-input">
-                  <span class="fa fa-close">
-                  </span>
-                </button>
-              </span>
-            </div>
-            <arkime-paging v-if="files"
-              :records-total="recordsTotal"
-              :records-filtered="recordsFiltered"
-              v-on:changePaging="changePaging"
-              length-default=500 >
-            </arkime-paging>
-          </div>
+                  class="btn-clear-input">
+                  <span class="fa fa-close" />
+                </BButton>
+              </BInputGroup>
+            </BCol>
+            <BCol cols="auto">
+              <Clusters />
+            </BCol>
+          </BRow>
         </div>
       </span>
     </ArkimeCollapsible>
 
-    <div class="files-content container-fluid">
+    <div class="mt-4 container-fluid">
+      <arkime-loading v-if="loading && !error" />
 
-      <arkime-loading v-if="loading && !error">
-      </arkime-loading>
+      <arkime-error
+        v-if="error"
+        :message="error" />
 
-      <arkime-error v-if="error"
-        :message="error">
-      </arkime-error>
-
-      <div v-if="!error"
-        class="ml-2 mr-2">
+      <div
+        v-if="!error"
+        class="ms-2 me-2">
         <arkime-table
           id="fieldTable"
           :data="files"
@@ -74,31 +75,27 @@ SPDX-License-Identifier: Apache-2.0
           :desc="query.desc"
           :sort-field="query.sortField"
           :action-column="true"
-          :no-results-msg="`No results match your search.${query.cluster ? 'Try selecting a different cluster.' : ''}`"
+          :no-results-msg="$t(query.cluser? 'files.noResults' : 'files.noResultsCluster')"
           page="files"
           table-animation="list"
-          table-classes="table-sm"
           table-state-name="fieldsCols"
-          table-widths-state-name="filesColWidths">
-        </arkime-table>
+          table-widths-state-name="filesColWidths" />
       </div>
-
     </div>
-
   </div> <!-- /files content -->
-
 </template>
 
 <script>
 import Utils from '../utils/utils';
 import FileService from './FileService';
-import ArkimeError from '../utils/Error';
-import ArkimeTable from '../utils/Table';
-import Clusters from '../utils/Clusters';
-import ArkimeLoading from '../utils/Loading';
-import ArkimePaging from '../utils/Pagination';
-import ArkimeCollapsible from '../utils/CollapsibleWrapper';
-import Focus from '../../../../../common/vueapp/Focus';
+import ArkimeError from '../utils/Error.vue';
+import ArkimeTable from '../utils/Table.vue';
+import Clusters from '../utils/Clusters.vue';
+import ArkimeLoading from '../utils/Loading.vue';
+import ArkimePaging from '../utils/Pagination.vue';
+import ArkimeCollapsible from '../utils/CollapsibleWrapper.vue';
+import Focus from '@common/Focus.vue';
+import { commaString, timezoneDateString } from '@common/vueFilters.js';
 
 let searchInputTimeout; // timeout to debounce the search input
 
@@ -123,32 +120,42 @@ export default {
       query: {
         length: parseInt(this.$route.query.length) || 500,
         start: 0,
-        filter: null,
+        filter: '',
         sortField: 'num',
         desc: false,
         cluster: this.$route.query.cluster || undefined
-      },
-      columns: [ // node stats table columns
-        { id: 'num', name: 'File #', classes: 'text-right', sort: 'num', help: 'Internal file number, unique per node', width: 140, default: true },
-        { id: 'node', name: 'Node', sort: 'node', help: 'What Arkime capture node this file lives on', width: 120, default: true },
-        { id: 'name', name: 'Name', sort: 'name', help: 'The complete file path', width: 500, default: true },
-        { id: 'locked', name: 'Locked', sort: 'locked', dataFunction: (item) => { return item.locked === 1 ? 'True' : 'False'; }, help: 'If locked Arkime viewer won\'t delete this file to free space', width: 100, default: true },
-        { id: 'first', name: 'First Date', sort: 'first', dataFunction: (item) => { return this.$options.filters.timezoneDateString(item.firstTimestamp === undefined ? item.first * 1000 : item.firstTimestamp, this.user.settings.timezone, this.user.settings.ms); }, help: 'Timestamp of the first packet in the file', width: 220, default: true },
-        { id: 'lastTimestamp', name: 'Last Date', sort: 'lastTimestamp', dataFunction: (item) => { return this.$options.filters.timezoneDateString(item.lastTimestamp, this.user.settings.timezone, this.user.settings.ms); }, help: 'Last Packet Timestamp', width: 220 },
-        { id: 'filesize', name: 'File Size', sort: 'filesize', classes: 'text-right', help: 'Size of the file in bytes, blank if the file is still being written to', width: 100, default: true, dataFunction: (item) => { return this.$options.filters.commaString(item.filesize); } },
-        { id: 'encoding', name: 'Encoding', help: 'How the packets are encoded/encrypted', width: 140 },
-        { id: 'packetPosEncoding', name: 'Packet Pos Encoding', help: 'How the packet position is encoded', width: 140 },
-        { id: 'packets', sort: 'packets', name: 'Packets', classes: 'text-right', help: 'Number of packets in file', width: 130 },
-        { id: 'packetsSize', sort: 'packetsSize', name: 'Packets Bytes', classes: 'text-right', help: 'Size of packets before compression', width: 150, dataFunction: (item) => { return this.$options.filters.commaString(item.packetsSize); } },
-        { id: 'uncompressedBits', sort: 'uncompressedBits', name: 'UC Bits', classes: 'text-right', help: 'Number of bits used to store uncompressed position', width: 100 },
-        { id: 'cratio', name: 'C Ratio', classes: 'text-right', help: '1 - compressed/uncompressed in bytes', width: 100, dataFunction: (item) => { return item.cratio + '%'; } },
-        { id: 'compression', name: 'Compression', help: 'Compression Algorithm', width: 100 },
-        { id: 'startTimestamp', name: 'Start Date', sort: 'startTimestamp', dataFunction: (item) => { return this.$options.filters.timezoneDateString(item.startTimestamp, this.user.settings.timezone, this.user.settings.ms); }, help: 'Start Processing Timestamp', width: 220 },
-        { id: 'finishTimestamp', name: 'Finish Date', sort: 'finishTimestamp', dataFunction: (item) => { return this.$options.filters.timezoneDateString(item.finishTimestamp, this.user.settings.timezone, this.user.settings.ms); }, help: 'Finish Processing Timestamp', width: 220 }
-      ]
+      }
     };
   },
   computed: {
+    columns: function() {
+      const $t = this.$t.bind(this);
+      function intl(opt) {
+        opt.name = $t(`files.${opt.id}Name`);
+        opt.help = $t(`files.${opt.id}Help`);
+        return opt;
+      }
+      return [
+        intl({ id: 'num', classes: 'text-end', sort: 'num', width: 140, default: true }),
+        intl({ id: 'node', sort: 'node', width: 120, default: true }),
+        intl({ id: 'name', sort: 'name', width: 500, default: true }),
+        intl({ id: 'locked', sort: 'locked', dataFunction: (item) => { return item.locked === 1 ? 'True' : 'False'; }, width: 100, default: true }),
+        intl({ id: 'first', sort: 'first', dataFunction: (item) => { return timezoneDateString(item.firstTimestamp === undefined ? item.first * 1000 : item.firstTimestamp, this.user.settings.timezone, this.user.settings.ms); }, width: 220, default: true }),
+        intl({ id: 'lastTimestamp', sort: 'lastTimestamp', dataFunction: (item) => { return timezoneDateString(item.lastTimestamp, this.user.settings.timezone, this.user.settings.ms); }, width: 220 }),
+        intl({ id: 'filesize', sort: 'filesize', classes: 'text-end', width: 100, default: true, dataFunction: (item) => { return this.commaString(item.filesize); } }),
+        intl({ id: 'encoding', width: 140 }),
+        intl({ id: 'packetPosEncoding', width: 140 }),
+        intl({ id: 'packets', sort: 'packets', classes: 'text-end', width: 130 }),
+        intl({ id: 'packetsSize', sort: 'packetsSize', classes: 'text-end', width: 150, dataFunction: (item) => { return this.commaString(item.packetsSize); } }),
+        intl({ id: 'uncompressedBits', sort: 'uncompressedBits', classes: 'text-end', width: 100 }),
+        intl({ id: 'cratio', classes: 'text-end', width: 100, dataFunction: (item) => { return item.cratio + '%'; } }),
+        intl({ id: 'compression', width: 100 }),
+        intl({ id: 'startTimestamp', sort: 'startTimestamp', dataFunction: (item) => { return timezoneDateString(item.startTimestamp, this.user.settings.timezone, this.user.settings.ms); }, width: 220 }),
+        intl({ id: 'finishTimestamp', sort: 'finishTimestamp', dataFunction: (item) => { return timezoneDateString(item.finishTimestamp, this.user.settings.timezone, this.user.settings.ms); }, width: 220 }),
+        intl({ id: 'sessionsStarted', sort: 'sessionsStarted', classes: 'text-right', width: 130 }),
+        intl({ id: 'sessionsPresent', sort: 'sessionsPresent', classes: 'text-right', width: 130 })
+      ];
+    },
     user: function () {
       return this.$store.state.user;
     },
@@ -175,6 +182,8 @@ export default {
     }
   },
   methods: {
+    commaString,
+    timezoneDateString,
     /* exposed page functions ------------------------------------ */
     changePaging (pagingValues) {
       this.query.length = pagingValues.length;
@@ -211,12 +220,12 @@ export default {
       FileService.get(this.query).then((response) => {
         this.error = '';
         this.loading = false;
-        this.files = response.data.data;
-        this.recordsTotal = response.data.recordsTotal;
-        this.recordsFiltered = response.data.recordsFiltered;
+        this.files = response.data;
+        this.recordsTotal = response.recordsTotal;
+        this.recordsFiltered = response.recordsFiltered;
       }).catch((error) => {
         this.loading = false;
-        this.error = error.text || error;
+        this.error = error.text || String(error);
       });
     },
     onError: function (message) {
@@ -242,10 +251,5 @@ export default {
   -webkit-box-shadow: 0 0 16px -2px black;
      -moz-box-shadow: 0 0 16px -2px black;
           box-shadow: 0 0 16px -2px black;
-}
-
-/* page content */
-.files-content {
-  margin-top: 10px;
 }
 </style>

@@ -3,101 +3,118 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-
   <div class="container-fluid mt-2">
+    <arkime-loading v-if="initialLoading && !error" />
 
-    <arkime-loading v-if="initialLoading && !error">
-    </arkime-loading>
-
-    <arkime-error v-if="error"
-      :message="error">
-    </arkime-error>
+    <arkime-error
+      v-if="error"
+      :message="error" />
 
     <div v-show="!error">
-
-      <arkime-paging v-if="stats"
-        class="mt-1 ml-2"
+      <arkime-paging
+        v-if="stats"
+        class="mt-2"
         :info-only="true"
         :records-total="recordsTotal"
-        :records-filtered="recordsFiltered">
-      </arkime-paging>
+        :records-filtered="recordsFiltered" />
 
       <arkime-table
         id="esIndicesTable"
         :data="stats"
-        :loadData="loadData"
+        :load-data="loadData"
         :columns="columns"
         :no-results="true"
         :show-avg-tot="true"
         :action-column="true"
         :desc="query.desc"
-        :sortField="query.sortField"
-        :no-results-msg="`No results match your search.${cluster ? 'Try selecting a different cluster.' : ''}`"
+        :sort-field="query.sortField"
+        :no-results-msg="$t( cluster ? 'stats.noResultsCluster' : 'stats.noResults' )"
         page="esIndices"
         table-animation="list"
         table-state-name="esIndicesCols"
         table-widths-state-name="esIndicesColWidths"
-        table-classes="table-sm table-hover text-right small mt-2">
-        <template slot="actions"
-          slot-scope="{ item }">
-          <b-dropdown size="sm"
+        table-classes="table-sm table-hover text-end small mt-2">
+        <template #actions="item">
+          <b-dropdown
+            size="xs"
             class="row-actions-btn"
             v-has-role="{user:user,roles:'arkimeAdmin'}"
             v-has-permission="'removeEnabled'">
             <b-dropdown-item
-              @click.stop.prevent="confirmDeleteIndex(item.index)">
-              Delete Index {{ item.index }}
+              @click.stop.prevent="confirmDeleteIndex(item.item.index)">
+              {{ $t('stats.esIndices.deleteIndex') }} {{ item.item.index }}
             </b-dropdown-item>
             <b-dropdown-item
-              @click="optimizeIndex(item.index)">
-              Optimize Index {{ item.index }}
+              @click="optimizeIndex(item.item.index)">
+              {{ $t('stats.esIndices.optimizeIndex') }} {{ item.item.index }}
             </b-dropdown-item>
             <b-dropdown-item
-              v-if="item.status === 'open'"
-              @click="closeIndex(item)">
-              Close Index {{ item.index }}
+              v-if="item.item.status === 'open'"
+              @click="closeIndex(item.item)">
+              {{ $t('stats.esIndices.closeIndex') }} {{ item.item.index }}
             </b-dropdown-item>
             <b-dropdown-item
-              v-if="item.status === 'close'"
-              @click="openIndex(item)">
-              Open Index {{ item.index }}
+              v-if="item.item.status === 'close'"
+              @click="openIndex(item.item)">
+              {{ $t('stats.esIndices.openIndex') }} {{ item.item.index }}
             </b-dropdown-item>
             <b-dropdown-item
-              v-if="item.pri > 1"
-              @click="openShrinkIndexForm(item)">
-              Shrink Index {{ item.index }}
+              v-if="item.item.pri > 1"
+              @click="openShrinkIndexForm(item.item)">
+              {{ $t('stats.esIndices.shrinkIndex') }} {{ item.item.index }}
             </b-dropdown-item>
           </b-dropdown>
         </template>
       </arkime-table>
-
     </div>
-
   </div>
-
 </template>
 
 <script>
 import Utils from '../utils/utils';
-import ArkimeTable from '../utils/Table';
-import ArkimeError from '../utils/Error';
-import ArkimeLoading from '../utils/Loading';
-import ArkimePaging from '../utils/Pagination';
+import ArkimeTable from '../utils/Table.vue';
+import ArkimeError from '../utils/Error.vue';
+import ArkimeLoading from '../utils/Loading.vue';
+import ArkimePaging from '../utils/Pagination.vue';
+import StatsService from './StatsService.js';
+import { roundCommaString, humanReadableBytes, timezoneDateString } from '@common/vueFilters.js';
 
 let reqPromise; // promise returned from setInterval for recurring requests
 let respondedAt; // the time that the last data load successfully responded
 
 export default {
   name: 'EsIndices',
-  props: [
-    'user',
-    'dataInterval',
-    'refreshData',
-    'confirm',
-    'issueConfirmation',
-    'searchTerm',
-    'cluster'
-  ],
+  props: {
+    user: {
+      type: Object,
+      default: () => ({})
+    },
+    dataInterval: {
+      type: Number,
+      default: 5000
+    },
+    refreshData: {
+      type: Boolean,
+      default: false
+    },
+    confirm: {
+      type: Object,
+      default: () => ({})
+    },
+    issueConfirmation: {
+      type: Function,
+      default: () => {}
+    },
+    searchTerm: {
+      type: String,
+      default: ''
+    },
+    cluster: {
+      type: String,
+      default: ''
+    }
+  },
+  emits: ['confirm', 'errored', 'shrink'],
   components: {
     ArkimeTable,
     ArkimeError,
@@ -118,30 +135,38 @@ export default {
         sortField: 'index',
         desc: false,
         cluster: this.cluster || undefined
-      },
-      columns: [ // es indices table columns
-        // default columns
-        { id: 'index', name: 'Name', classes: 'text-left', sort: 'index', doStats: false, default: true, width: 200 },
-        { id: 'docs.count', name: 'Documents', sort: 'docs.count', doStats: true, default: true, width: 105, dataFunction: (item) => { return this.$options.filters.roundCommaString(item['docs.count']); } },
-        { id: 'store.size', name: 'Disk Size', sort: 'store.size', doStats: true, default: true, width: 100, dataFunction: (item) => { return this.$options.filters.humanReadableBytes(item['store.size']); } },
-        { id: 'pri', name: 'Shards', sort: 'pri', doStats: true, default: true, width: 100, dataFunction: (item) => { return this.$options.filters.roundCommaString(item.pri); } },
-        { id: 'segmentsCount', name: 'Segments', sort: 'segmentsCount', doStats: true, default: true, width: 100, dataFunction: (item) => { return this.$options.filters.roundCommaString(item.segmentsCount); } },
-        { id: 'rep', name: 'Replicas', sort: 'rep', doStats: true, default: true, width: 100, dataFunction: (item) => { return this.$options.filters.roundCommaString(item.rep); } },
-        { id: 'memoryTotal', name: 'Memory', sort: 'memoryTotal', doStats: true, default: true, width: 100, dataFunction: (item) => { return this.$options.filters.humanReadableBytes(item.memoryTotal); } },
-        { id: 'health', name: 'Health', sort: 'health', doStats: false, default: true, width: 100 },
-        { id: 'status', name: 'Status', sort: 'status', doStats: false, default: true, width: 100 },
-        // all the rest of the available stats
-        { id: 'cd', name: 'Created Date', sort: 'cd', doStats: false, width: 150, dataFunction: (item) => { return this.$options.filters.timezoneDateString(parseInt(item.cd), this.user.settings.timezone, this.user.settings.ms); } },
-        { id: 'pri.search.query_current', name: 'Current Query Phase Ops', dataField: 'pri.search.query_current', doStats: false, width: 100, dataFunction: (item) => { return this.$options.filters.roundCommaString(item['pri.search.query_current']); } },
-        { id: 'uuid', name: 'UUID', sort: 'uuid', doStats: false, width: 100 },
-        { id: 'molochtype', name: 'Hot/Warm', sort: 'molochtype', doStats: false, width: 100 },
-        { id: 'shardsPerNode', name: 'Shards/Node', sort: 'shardsPerNode', doStats: false, width: 100 },
-        { id: 'versionCreated', name: 'ES Version', sort: 'versionCreated', doStats: false, width: 100 },
-        { id: 'docSize', name: 'Disk Per Doc', sort: 'docSize', doStats: true, width: 100, dataFunction: (item) => { return this.$options.filters.roundCommaString(item.docSize); } }
-      ]
+      }
     };
   },
   computed: {
+    columns: function () {
+      const $t = this.$t.bind(this);
+      function intl(obj) {
+        obj.name = $t('stats.esIndices.' + obj.id.replace(/\./g, '-'));
+        return obj;
+      }
+
+      return [ // es indices table columns
+        // default columns
+        intl({ id: 'index', classes: 'text-start', sort: 'index', doStats: false, default: true, width: 200 }),
+        intl({ id: 'docs.count', sort: 'docs.count', doStats: true, default: true, width: 105, dataFunction: (item) => { return roundCommaString(item['docs.count']); } }),
+        intl({ id: 'store.size', sort: 'store.size', doStats: true, default: true, width: 100, dataFunction: (item) => { return humanReadableBytes(item['store.size']); } }),
+        intl({ id: 'pri', sort: 'pri', doStats: true, default: true, width: 100, dataFunction: (item) => { return roundCommaString(item.pri); } }),
+        intl({ id: 'segmentsCount', sort: 'segmentsCount', doStats: true, default: true, width: 100, dataFunction: (item) => { return roundCommaString(item.segmentsCount); } }),
+        intl({ id: 'rep', sort: 'rep', doStats: true, default: true, width: 100, dataFunction: (item) => { return roundCommaString(item.rep); } }),
+        intl({ id: 'memoryTotal', sort: 'memoryTotal', doStats: true, default: true, width: 100, dataFunction: (item) => { return humanReadableBytes(item.memoryTotal); } }),
+        intl({ id: 'health', sort: 'health', doStats: false, default: true, width: 100 }),
+        intl({ id: 'status', sort: 'status', doStats: false, default: true, width: 100 }),
+        // all the rest of the available stats
+        intl({ id: 'cd', sort: 'cd', doStats: false, width: 150, dataFunction: (item) => { return timezoneDateString(parseInt(item.cd), this.user.settings.timezone, this.user.settings.ms); } }),
+        intl({ id: 'pri.search.query_current', doStats: false, width: 100, dataFunction: (item) => { return roundCommaString(item['pri.search.query_current']); } }),
+        intl({ id: 'uuid', sort: 'uuid', doStats: false, width: 100 }),
+        intl({ id: 'molochtype', sort: 'molochtype', doStats: false, width: 100 }),
+        intl({ id: 'shardsPerNode', sort: 'shardsPerNode', doStats: false, width: 100 }),
+        intl({ id: 'versionCreated', sort: 'versionCreated', doStats: false, width: 100 }),
+        intl({ id: 'docSize', sort: 'docSize', doStats: true, width: 100, dataFunction: (item) => { return roundCommaString(item.docSize); } })
+      ];
+    },
     loading: {
       get: function () {
         return this.$store.state.loadingData;
@@ -189,63 +214,63 @@ export default {
   methods: {
     /* exposed page functions ------------------------------------ */
     confirmDeleteIndex: function (indexName) {
-      this.$emit('confirm', `Delete ${indexName}`, indexName);
+      this.$emit('confirm', `${this.$t('common.delete')}: ${indexName}`, indexName);
     },
-    deleteIndex (indexName) {
+    async deleteIndex (indexName) {
       if (!Utils.checkClusterSelection(this.query.cluster, this.$store.state.esCluster.availableCluster.active, this).valid) {
         return;
       }
 
-      this.$http.delete(`api/esindices/${indexName}`, { params: this.query })
-        .then((response) => {
-          for (let i = 0; i < this.stats.length; i++) {
-            if (this.stats[i].index === indexName) {
-              this.stats.splice(i, 1);
-              return;
-            }
+      try {
+        await StatsService.deleteIndex(indexName, this.query);
+        for (let i = 0; i < this.stats.length; i++) {
+          if (this.stats[i].index === indexName) {
+            this.stats.splice(i, 1);
+            return;
           }
-        }, (error) => {
-          this.$emit('errored', error.text || error);
-        });
+        }
+      } catch (error) {
+        this.$emit('errored', error.text || String(error));
+      }
     },
-    optimizeIndex (indexName) {
+    async optimizeIndex (indexName) {
       if (!Utils.checkClusterSelection(this.query.cluster, this.$store.state.esCluster.availableCluster.active, this).valid) {
         return;
       }
 
-      this.$http.post(`api/esindices/${indexName}/optimize`, {}, { params: this.query })
-        .then((response) => {
-        }, (error) => {
-          this.$emit('errored', error.text || error);
-        });
+      try {
+        await StatsService.optimizeIndex(indexName, this.query);
+      } catch (error) {
+        this.$emit('errored', error.text || String(error));
+      }
     },
-    closeIndex (index) {
+    async closeIndex (index) {
       if (!Utils.checkClusterSelection(this.query.cluster, this.$store.state.esCluster.availableCluster.active, this).valid) {
         return;
       }
 
-      this.$http.post(`api/esindices/${index.index}/close`, {}, { params: this.query })
-        .then((response) => {
-          if (response.data.success) {
-            this.$set(index, 'status', 'close');
-          }
-        }, (error) => {
-          this.$emit('errored', error.text || error);
-        });
+      try {
+        const response = await StatsService.closeIndex(index.index, this.query);
+        if (response.success) {
+          index.status = 'close';
+        }
+      } catch (error) {
+        this.$emit('errored', error.text || String(error));
+      }
     },
-    openIndex (index) {
+    async openIndex (index) {
       if (!Utils.checkClusterSelection(this.query.cluster, this.$store.state.esCluster.availableCluster.active, this).valid) {
         return;
       }
 
-      this.$http.post(`api/esindices/${index.index}/open`, {}, { params: this.query })
-        .then((response) => {
-          if (response.data.success) {
-            this.$set(index, 'status', 'open');
-          }
-        }, (error) => {
-          this.$emit('errored', error.text || error);
-        });
+      try {
+        const response = await StatsService.openIndex(index.index, this.query);
+        if (response.success) {
+          index.status = 'open';
+        }
+      } catch (error) {
+        this.$emit('errored', error.text || String(error));
+      }
     },
     openShrinkIndexForm (index) {
       this.$emit('shrink', index);
@@ -258,7 +283,7 @@ export default {
         }
       }, 500);
     },
-    loadData: function (sortField, desc) {
+    async loadData (sortField, desc) {
       if (!Utils.checkClusterSelection(this.query.cluster, this.$store.state.esCluster.availableCluster.active, this).valid) {
         return;
       }
@@ -271,24 +296,24 @@ export default {
       if (desc !== undefined) { this.query.desc = desc; }
       if (sortField) { this.query.sortField = sortField; }
 
-      this.$http.get('api/esindices', { params: this.query })
-        .then((response) => {
-          respondedAt = Date.now();
-          this.error = '';
-          this.loading = false;
-          this.initialLoading = false;
-          this.stats = response.data.data;
-          this.recordsTotal = response.data.recordsTotal;
-          this.recordsFiltered = response.data.recordsFiltered;
-        }, (error) => {
-          respondedAt = undefined;
-          this.loading = false;
-          this.initialLoading = false;
-          this.error = error.text || error;
-        });
+      try {
+        const response = await StatsService.getIndices(this.query);
+        respondedAt = Date.now();
+        this.error = '';
+        this.loading = false;
+        this.initialLoading = false;
+        this.stats = response.data;
+        this.recordsTotal = response.recordsTotal;
+        this.recordsFiltered = response.recordsFiltered;
+      } catch (error) {
+        respondedAt = undefined;
+        this.loading = false;
+        this.initialLoading = false;
+        this.error = error.text || String(error);
+      }
     }
   },
-  beforeDestroy: function () {
+  beforeUnmount () {
     if (reqPromise) {
       clearInterval(reqPromise);
       reqPromise = null;

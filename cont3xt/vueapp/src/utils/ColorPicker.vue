@@ -3,44 +3,41 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-  <span
-    ref="colorpicker"
-    @keyup.esc="hidePicker"
-    class="color-picker-input">
-    <div
-      @click="togglePicker"
-      data-testid="picker-btn"
-      class="input-group-append cursor-pointer color">
-      <span
-        style="width: 60px;"
-        class="input-group-text"
-        data-testid="color-display"
-        :style="{'background-color':colorValue}">
-        &nbsp;&nbsp;
-        <span v-if="displayPicker"
-          class="fa fa-check">
-        </span>
-        &nbsp;&nbsp;
-      </span>
-    </div>
-    <chrome-picker
-      v-model="colorValue"
+  <v-btn
+    class="skinny-search-row-btn color-picker-btn"
+    :color="colorValue"
+    :active="false"
+    :ripple="false"
+    selected-class=""
+    data-testid="picker-btn">
+    <v-icon
       v-if="displayPicker"
-      class="color-picker"
-      @input="changeColor"
-      data-testid="picker">
-    </chrome-picker>
-  </span>
+      icon="mdi-check-bold" />
+
+    <v-menu
+      activator="parent"
+      v-model="displayPicker"
+      :close-on-content-click="false">
+      <chrome-picker
+        :model-value="colorValue"
+        @update:model-value="changeColor"
+        class="color-picker"
+        data-testid="picker" />
+    </v-menu>
+  </v-btn>
 </template>
 
 <script>
-import VueColor from 'vue-color';
+import { Chrome } from '@ckpack/vue-color';
+
+let timeout;
 
 export default {
   name: 'ColorPicker',
   components: {
-    'chrome-picker': VueColor.Chrome
+    ChromePicker: Chrome
   },
+  emits: ['color-selected'],
   props: {
     color: {
       type: String,
@@ -72,55 +69,25 @@ export default {
   methods: {
     setColor: function (color) {
       this.colorValue = color;
+      this.$emit('color-selected', { color, index: this.index });
     },
     changeColor: function (color) {
-      this.setColor(color.hex);
-    },
-    hidePicker: function () {
-      this.displayPicker = false;
-      document.removeEventListener('click', this.documentClick);
-      if (this.colorValue !== this.color) {
-        this.$emit('colorSelected', {
-          linkName: this.linkName,
-          color: this.colorValue,
-          index: this.index
-        });
-      }
-    },
-    showPicker: function () {
-      this.displayPicker = true;
-      document.addEventListener('click', this.documentClick);
-    },
-    togglePicker: function () {
-      this.displayPicker ? this.hidePicker() : this.showPicker();
-    },
-    documentClick: function (e) {
-      const el = this.$refs.colorpicker;
-      const target = e.target;
-      if (el !== target && !el.contains(target)) {
-        this.hidePicker();
-      }
+      if (timeout) { clearTimeout(timeout); }
+      timeout = setTimeout(() => {
+        timeout = null;
+        this.setColor(color.hex);
+      }, 1000);
     }
   },
-  beforeDestroy: function () {
-    document.removeEventListener('click', this.documentClick);
+  beforeUnmount: function () {
+    if (timeout) { clearTimeout(timeout); }
   }
 };
 </script>
 
-<style scoped>
-.color {
-  height: 31px;
-}
-
-.color-picker {
-  right: 0;
-  z-index: 3;
-  position: absolute;
-}
-
-.color-picker-input .input-group-prepend > .input-group-text {
-  color: #333333 !important;
-  background-color: #F1F1F1 !important;
+<style>
+/* do not lighten button when active, so that we can see actual color */
+.color-picker-btn .v-btn__overlay {
+  opacity: 0 !important;
 }
 </style>

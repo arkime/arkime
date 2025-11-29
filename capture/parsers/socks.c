@@ -293,7 +293,7 @@ void arkime_parser_init()
                                   (char *)NULL);
 
     hostField = arkime_field_define("socks", "lotermfield",
-                                    "host.socks", "Host", "socks.host",
+                                    "host.socks", "Socks Hostname", "socks.host",
                                     "SOCKS destination host",
                                     ARKIME_FIELD_TYPE_STR,       0,
                                     "aliases", "[\"socks.host\"]",

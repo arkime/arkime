@@ -65,5 +65,4 @@ class URLHausIntegration extends Integration {
   }
 }
 
-// eslint-disable-next-line no-new
 new URLHausIntegration();
