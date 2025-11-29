@@ -386,7 +386,7 @@ jobs:
       - name: Build on FreeBSD
         uses: vmactions/freebsd-vm@v1
         with:
-          release: ${{ matix.freebsdrelease }}
+          release: ${{ matrix.freebsdrelease }}
           arch: ${{ contains(matrix.version, 'aarch64') && 'aarch64' || 'x86_64' }}
           usesh: true
           prepare: |
