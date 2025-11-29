@@ -404,7 +404,11 @@ jobs:
             ln -s /usr/local/bin/gtar /usr/bin/tar
             fpm -s dir -t freebsd -n arkime -x opt/arkime/logs -x opt/arkime/raw -v $ARKIME_VERSION --iteration ${{ github.run_id }} --template-scripts --after-install "release/afterinstall.sh" --url "https://arkime.com" --description "Arkime Full Packet System" ${{ matrix.fpmdeps }} -p arkime_${ARKIME_VERSION}-${{github.run_id}}.${{matrix.version}}.pkg /opt/arkime
             mv *.pkg arkime-main.${{matrix.version}}.pkg
-            ls -l *.pkg
+            (cd .. ; git clone -b dev6 --single-branch https://github.com/arkime/ja4)
+            cp ../ja4/ja4plus.c capture/plugins
+            (cd capture/plugins; make)
+            mv capture/plugins/ja4plus.so ja4plus.freebsd-${arch}.so
+            ls -l *.pkg *.so
 
       - name: upload github 6
         if: github.event_name == 'push' && github.ref == 'refs/heads/dev6'
