@@ -21,6 +21,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
+      freebsdmatrix: ${{ steps.set-matrix.outputs.freebsdmatrix }}
     env:
       HEAD_REF: ${{ github.head_ref }}
     steps:
@@ -34,35 +35,15 @@ jobs:
         run: |
           if [[ "${HEAD_REF}" == start-v* || "${HEAD_REF}" == release-v* ]]; then
             MATRIX='{"include":[]}'
-          elif [ "${{ github.event_name }}" != "push" ]; then
-            MATRIX=$(yq -o json eval '{"include": [.include[] | select(.version | test("(aarch64|_arm64)$") | not) | select(.vmaction == null)]}' .github/workflows/versions | jq -c)
-          else
-            MATRIX=$(yq -o json eval '{"include": [.include[] | select(.version | test("freebsd") | not) | select(.vmaction == null)]}' .github/workflows/versions | jq -c)
-          fi
-          echo "matrix=$MATRIX" >> $GITHUB_OUTPUT
-
-  generate-freebsd-matrix:
-    runs-on: ubuntu-latest
-    outputs:
-      freebsdmatrix: ${{ steps.set-matrix.outputs.freebsdmatrix }}
-    env:
-      HEAD_REF: ${{ github.head_ref }}
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
-        with:
-          fetch-depth: 0
-
-      - name: Generate FreeBSD Matrix JSON with yq
-        id: set-matrix
-        run: |
-          if [[ "${HEAD_REF}" == start-v* || "${HEAD_REF}" == release-v* ]]; then
             FREEBSD_MATRIX='{"include":[]}'
           elif [ "${{ github.event_name }}" != "push" ]; then
-            FREEBSD_MATRIX=$(yq -o json eval '{"include": [.include[] | select(.version | test("(aarch64|_arm64)$") | not) | select(.vmaction != null)]}' .github/workflows/versions | jq -c)
+            MATRIX=$(yq -o json eval '{"include": [.include[] | select(.version | test("freebsd") | not) | select(.prbuild == "true")]}' .github/workflows/versions | jq -c)
+            FREEBSD_MATRIX=$(yq -o json eval '{"include": [.include[] | select(.version | test("freebsd")) | select(.prbuild == "true")]}' .github/workflows/versions | jq -c)
           else
-            FREEBSD_MATRIX=$(yq -o json eval '{"include": [.include[] | select(.vmaction != null)]}' .github/workflows/versions | jq -c)
+            MATRIX=$(yq -o json eval '{"include": [.include[] | select(.version | test("freebsd") | not)]}' .github/workflows/versions | jq -c)
+            FREEBSD_MATRIX=$(yq -o json eval '{"include": [.include[] | select(.version | test("freebsd"))]}' .github/workflows/versions | jq -c)
           fi
+          echo "matrix=$MATRIX" >> $GITHUB_OUTPUT
           echo "freebsdmatrix=$FREEBSD_MATRIX" >> $GITHUB_OUTPUT
 
   cache-node:
@@ -378,10 +359,10 @@ jobs:
 
 ############# FreeBSD Build #############
   freebsd-build:
-    needs: [generate-freebsd-matrix]
+    needs: [generate-matrix]
     strategy:
       fail-fast: false
-      matrix: ${{fromJson(needs.generate-freebsd-matrix.outputs.freebsdmatrix)}}
+      matrix: ${{fromJson(needs.generate-matrix.outputs.freebsdmatrix)}}
 
     permissions:
       contents: write
