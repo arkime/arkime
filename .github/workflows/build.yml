@@ -414,6 +414,10 @@ jobs:
 
             ls -l *.pkg *.so
 
+            # Clean up so we don't copy stuff back
+            gmake clean
+            rm -rf node_modules */node_modules
+
       - name: upload github 6
         if: github.event_name == 'push' && github.ref == 'refs/heads/dev6'
         uses: softprops/action-gh-release@v2.0.5
