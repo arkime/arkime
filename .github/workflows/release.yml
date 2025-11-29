@@ -31,8 +31,26 @@ jobs:
       - name: Generate Matrix JSON with yq
         id: set-matrix
         run: |
-          MATRIX=$(yq -o json .github/workflows/versions | jq -c)
+          MATRIX=$(yq -o json eval '{"include": [.include[] | select(.version | test("freebsd") | not)]}' .github/workflows/versions | jq -c)
           echo "matrix=$MATRIX" >> $GITHUB_OUTPUT
+
+  generate-freebsd-matrix:
+    runs-on: ubuntu-latest
+    outputs:
+      freebsdmatrix: ${{ steps.set-matrix.outputs.freebsdmatrix }}
+    env:
+      HEAD_REF: ${{ github.head_ref }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+        with:
+          fetch-depth: 0
+
+      - name: Generate FreeBSD Matrix JSON with yq
+        id: set-matrix
+        run: |
+          FREEBSD_MATRIX=$(yq -o json eval '{"include": [.include[] | select(.vmaction != null)]}' .github/workflows/versions | jq -c)
+          echo "freebsdmatrix=$FREEBSD_MATRIX" >> $GITHUB_OUTPUT
 
   build-release:
     permissions:
@@ -215,6 +233,75 @@ jobs:
             ghcr.io/${{ github.repository_owner }}/arkime/arkime:v${{ github.event.inputs.release_tag }}-${{ env.ARKIME_ARCH }}-ja4
           build-args: |
             ARKIME_BASE=ghcr.io/${{ github.repository_owner }}/arkime/arkime:v${{ github.event.inputs.release_tag }}-${{ env.ARKIME_ARCH }}
+
+############# FreeBSD Build #############
+  freebsd-build:
+    needs: [generate-freebsd-matrix]
+    strategy:
+      fail-fast: false
+      matrix: ${{fromJson(needs.generate-freebsd-matrix.outputs.freebsdmatrix)}}
+
+    permissions:
+      contents: write
+      packages: write
+
+    concurrency:
+      group: ${{ github.workflow }}-${{ matrix.version }}-${{ github.event.pull_request.number || github.ref }}
+      cancel-in-progress: true
+
+    env:
+      PYTHON: ${{ matrix.python || 'python' }}
+
+    runs-on: ${{ matrix.runson || 'ubuntu-latest' }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+        with:
+          fetch-depth: 0
+
+      - name: Build on FreeBSD
+        uses: vmactions/freebsd-vm@v1
+        with:
+          release: "14.3"
+          arch: ${{ contains(matrix.version, 'aarch64') && 'aarch64' || 'x86_64' }}
+          usesh: true
+          prepare: |
+            pkg update -f
+            pkg install -y bash git curl wget perl5 openssl jq yq sudo gmake autoconf automake m4 libtool rubygem-fpm autoconf-archive gtar
+          run: |
+            git config --global --add safe.directory `pwd`
+            ./easybutton-build.sh ${{ matrix.buildopt }} --rminstall --nothirdparty
+            ls -l capture/capture
+            INSTALL_BUNDLE=bundle gmake install
+            export ARKIME_VERSION=`sed 's/.*"\(.*\)\".*$/\1/' /opt/arkime/common/version.js | head -n 1`
+            arch=$(uname -m | sed s/aarch64/arm64/ | sed s/x86_64/amd64/)
+            # Replace tar with gtar for fpm, let me know of better way
+            rm /usr/bin/tar
+            ln -s /usr/local/bin/gtar /usr/bin/tar
+            fpm -s dir -t freebsd -n arkime -x opt/arkime/logs -x opt/arkime/raw -v $ARKIME_VERSION --iteration ${{ github.event.inputs.iteration }} --template-scripts --after-install "release/afterinstall.sh" --url "https://arkime.com" --description "Arkime Full Packet System" ${{ matrix.fpmdeps }} -p arkime_${ARKIME_VERSION}-${{github.event.inputs.iteration}}.${{matrix.version}}.pkg /opt/arkime
+
+      - name: upload github
+        uses: softprops/action-gh-release@v2.0.5
+        with:
+          tag_name: "v${{ github.event.inputs.release_tag }}"
+          draft: false
+          prerelease: true
+          generate_release_notes: false
+          files: |
+            *.pkg
+            *.so
+          body: |
+            ### [Installation Instructions](https://arkime.com/install) | [4.x -> 5.x Upgrade Instructions](https://arkime.com/faq#how_do_i_upgrade_to_arkime_5) | [FAQ](https://arkime.com/faq) | [CHANGELOG](https://raw.githubusercontent.com/arkime/arkime/main/CHANGELOG) | [JA4+ Install](https://arkime.com/ja4) | [Docker Install](https://arkime.com/docker)
+
+            A db.pl upgrade is required when upgrading from 5.1.2 or earlier
+
+            Support Arkime's ongoing development! Become a **[GitHub Sponsor!](https://github.com/sponsors/awick)**
+
+            # :sparkles: What's new :sparkles:
+
+            ### :arrow_down: Download Info :arrow_down:
+            We offer downloads for different Linux distributions and versions because of library differences. For example, use the el8 download for Centos 8 or RHEL 8 not RHEL 9. A libssl version error means that most likely the wrong download was used for your Linux distribution and version, please double check. The moloch builds have the old filesystem layouts, we will stop providing the moloch builds in 2025.
 
 ############# Docker Manifest #############
   create-manifest:

@@ -12,6 +12,7 @@ void arkime_python_exit() {}
 #include "arkime.h"
 #include "Python.h"
 #include <arpa/inet.h>
+#include <sys/socket.h>
 
 extern ArkimeConfig_t        config;
 
