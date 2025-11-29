@@ -58,6 +58,8 @@ jobs:
         run: |
           if [[ "${HEAD_REF}" == start-v* || "${HEAD_REF}" == release-v* ]]; then
             FREEBSD_MATRIX='{"include":[]}'
+          elif [ "${{ github.event_name }}" != "push" ]; then
+            FREEBSD_MATRIX=$(yq -o json eval '{"include": [.include[] | select(.version | test("(aarch64|_arm64)$") | not) | select(.vmaction != null)]}' .github/workflows/versions | jq -c)
           else
             FREEBSD_MATRIX=$(yq -o json eval '{"include": [.include[] | select(.vmaction != null)]}' .github/workflows/versions | jq -c)
           fi
@@ -422,6 +424,18 @@ jobs:
             fpm -s dir -t freebsd -n arkime -x opt/arkime/logs -x opt/arkime/raw -v $ARKIME_VERSION --iteration ${{ github.run_id }} --template-scripts --after-install "release/afterinstall.sh" --url "https://arkime.com" --description "Arkime Full Packet System" ${{ matrix.fpmdeps }} -p arkime_${ARKIME_VERSION}-${{github.run_id}}.${{matrix.version}}.pkg /opt/arkime
             mv *.pkg arkime-main.${{matrix.version}}.pkg
             ls -l *.pkg
+
+      - name: upload github 6
+        if: github.event_name == 'push' && github.ref == 'refs/heads/dev6'
+        uses: softprops/action-gh-release@v2.0.5
+        with:
+          tag_name: last-commit6
+          draft: false
+          prerelease: true
+          generate_release_notes: false
+          files: |
+            *.pkg
+            *.so
 
 ############# Docker Manifest #############
   create-manifest:
