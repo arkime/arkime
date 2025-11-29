@@ -406,7 +406,7 @@ jobs:
             mv *.pkg arkime-main.${{matrix.version}}.pkg
             (cd .. ; git clone -b dev6 --single-branch https://github.com/arkime/ja4)
             cp ../ja4/ja4plus.c capture/plugins
-            (cd capture/plugins; make)
+            (cd capture/plugins; gmake)
             mv capture/plugins/ja4plus.so ja4plus.freebsd-${arch}.so
             ls -l *.pkg *.so
 
