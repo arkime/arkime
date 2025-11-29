@@ -386,7 +386,7 @@ jobs:
       - name: Build on FreeBSD
         uses: vmactions/freebsd-vm@v1
         with:
-          release: "14.3"
+          release: ${{ matrix.freebsdrelease }}
           arch: ${{ contains(matrix.version, 'aarch64') && 'aarch64' || 'x86_64' }}
           usesh: true
           prepare: |
@@ -405,6 +405,18 @@ jobs:
             fpm -s dir -t freebsd -n arkime -x opt/arkime/logs -x opt/arkime/raw -v $ARKIME_VERSION --iteration ${{ github.run_id }} --template-scripts --after-install "release/afterinstall.sh" --url "https://arkime.com" --description "Arkime Full Packet System" ${{ matrix.fpmdeps }} -p arkime_${ARKIME_VERSION}-${{github.run_id}}.${{matrix.version}}.pkg /opt/arkime
             mv *.pkg arkime-main.${{matrix.version}}.pkg
             ls -l *.pkg
+
+            if [ "${{ matrix.ja4plus }}" = "true" ]; then
+              (cd .. ; git clone -b dev6 --single-branch https://github.com/arkime/ja4)
+              cp ../ja4/ja4plus.c capture/plugins
+              (cd capture/plugins; gmake)
+              mv capture/plugins/ja4plus.so ja4plus.freebsd-${arch}.so
+              ls -l *.so
+            fi
+
+            # Clean up so we don't copy stuff back
+            gmake clean
+            rm -rf node_modules */node_modules
 
       - name: upload github 6
         if: github.event_name == 'push' && github.ref == 'refs/heads/dev6'
