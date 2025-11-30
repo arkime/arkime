@@ -71,15 +71,7 @@ class SessionAPIs {
         await chunkCb(null, list);
 
         if (req.query.segments && SEGMENTS_REGEX.test(req.query.segments)) {
-          const segList = await new Promise((resolve, reject) => {
-            SessionAPIs.#sessionsListAddSegments(req, indices, query, list, (err, addSegmentsList) => {
-              if (err) {
-                reject(err);
-              } else {
-                resolve(addSegmentsList);
-              }
-            });
-          });
+          const segList = await SessionAPIs.#sessionsListAddSegments(req, indices, query, list);
           if (segList.length > 0) {
             total += segList.length;
             await chunkCb(null, segList);
@@ -324,48 +316,51 @@ class SessionAPIs {
   }
 
   // --------------------------------------------------------------------------
-  static #sessionsListAddSegments (req, indices, query, list, cb) {
-    const processedRo = {};
+  static async #sessionsListAddSegments (req, indices, query, list) {
+    req.arkimeSegmentOptions ??= { haveIds: new Set(), processedRo: new Set() };
 
-    // Index all the ids we have, so we don't include them again
-    const haveIds = new Set(list.map(item => item._id));
+    const rootIdsToSearch = [];
+
+    for (const item of list) {
+      req.arkimeSegmentOptions.haveIds.add(item._id);
+      const fields = item.fields;
+      if (fields.rootId && !req.arkimeSegmentOptions.processedRo.has(fields.rootId)) {
+        rootIdsToSearch.push(fields.rootId);
+        req.arkimeSegmentOptions.processedRo.add(fields.rootId);
+      }
+    }
+
+    if (rootIdsToSearch.length === 0) {
+      return list;
+    }
 
     delete query.aggregations;
 
-    // Do a ro search on each item
-    let writes = 0;
-    async.eachLimit(list, 10, (item, nextCb) => {
-      const fields = item.fields;
-      if (!fields.rootId || processedRo[fields.rootId]) {
-        if (writes++ > 100) {
-          writes = 0;
-          setImmediate(nextCb);
-        } else {
-          nextCb();
-        }
-        return;
+    // Query for all rootIds at once using OR filter
+    const searchQuery = JSON.parse(JSON.stringify(query));
+    searchQuery.query.bool.filter.push({
+      bool: {
+        should: rootIdsToSearch.map(rootId => ({ term: { rootId } })),
+        minimum_should_match: 1
       }
-      processedRo[fields.rootId] = true;
+    });
 
-      const options = ViewerUtils.addCluster(req.query.cluster);
-      query.query.bool.filter.push({ term: { rootId: fields.rootId } });
-      Db.searchSessions(indices, query, options, (err, result) => {
-        if (err || result === undefined || result.hits === undefined || result.hits.hits === undefined) {
-          console.log('ERROR - fetching matching sessions in sessionsListAddSegments', util.inspect(err, false, 50), result);
-          return nextCb(null);
-        }
+    const options = ViewerUtils.addCluster(req.query.cluster);
+    try {
+      const result = await Db.searchSessions(indices, searchQuery, options);
+      if (result?.hits?.hits) {
         for (const subItem of result.hits.hits) {
-          if (!haveIds.has(subItem._id)) {
-            haveIds.add(subItem._id);
+          if (!req.arkimeSegmentOptions.haveIds.has(subItem._id)) {
+            req.arkimeSegmentOptions.haveIds.add(subItem._id);
             list.push(subItem);
           }
         }
-        return nextCb(null);
-      });
-      query.query.bool.filter.pop();
-    }, (err) => {
-      cb(err, list);
-    });
+      }
+    } catch (err) {
+      console.log('ERROR - fetching matching sessions in sessionsListAddSegments', util.inspect(err, false, 50));
+    }
+
+    return list;
   }
 
   // --------------------------------------------------------------------------
@@ -1714,8 +1709,10 @@ class SessionAPIs {
 
           query.fields = fields;
           query._source = false;
-          SessionAPIs.#sessionsListAddSegments(req, indices, query, list, (err, addSegmentsList) => {
-            cb(err, addSegmentsList);
+          SessionAPIs.#sessionsListAddSegments(req, indices, query, list).then(addSegmentsList => {
+            cb(null, addSegmentsList);
+          }).catch(err => {
+            cb(err);
           });
         });
       } else {
