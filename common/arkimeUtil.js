@@ -401,9 +401,7 @@ class ArkimeUtil {
     let values = string.split(/[,\n]+/g);
 
     // remove any empty values
-    values = values.filter(function (val) {
-      return val !== '';
-    });
+    values = values.filter(val => val !== '');
 
     return values;
   }

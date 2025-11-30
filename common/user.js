@@ -358,7 +358,11 @@ class User {
       const validUsers = [];
       const invalidUsers = [];
       for (const user of userIdList) {
-        usersList.indexOf(user) > -1 ? validUsers.push(user) : invalidUsers.push(user);
+        if (usersList.includes(user)) {
+          validUsers.push(user);
+        } else {
+          invalidUsers.push(user);
+        }
       }
 
       return { validUsers, invalidUsers };
@@ -1291,7 +1295,8 @@ class User {
    */
   static async checkAssignableRole (req, res, next) {
     const role = req.body.roleId;
-    if (role != null && !(await req.user.getAssignableRoles(req.user.userId)).includes(role)) {
+
+    if (role !== null && role !== undefined && !(await req.user.getAssignableRoles(req.user.userId)).includes(role)) {
       console.log(`Permission denied to ${req.user.userId} while requesting resource: ${req._parsedUrl.pathname}, for assignment-access to role ${role}`);
       return res.serverError(403, 'You do not have permission to access this resource');
     }

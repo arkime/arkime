@@ -859,12 +859,11 @@ class SessionAPIs {
       });
     }
 
-    req.arkimeWriterOptions ??= { writeHeader: true, nodes: new Map(), bufferPool: [] };
+    const postPcapFetch = Config.get('postPcapFetch');
 
-    const bufferPool = req.arkimeWriterOptions.bufferPool;
-    const limit = 10;
+    req.arkimeWriterOptions ??= { writeHeader: true, nodes: new Map() };
 
-    await async.eachLimit(list, limit, async (item) => {
+    await async.eachLimit(list, 10, async (item) => {
       const fields = item.fields;
 
       if (await SessionAPIs.isLocalView(fields.node)) {
@@ -873,7 +872,6 @@ class SessionAPIs {
           pcapWriter(res, item, req.arkimeWriterOptions, resolve);
         });
       } else {
-
         // Get from remote DISK
         try {
           let result = req.arkimeWriterOptions.nodes.get(fields.node);
@@ -884,19 +882,19 @@ class SessionAPIs {
           }
           const { viewUrl, client, ca } = result;
 
-          // Reuseable buffers.
-          const neededSize = Math.max(100000, Math.min(16200000, 24 + fields['network.packets'] * 20 + fields['network.bytes']));
-          let buffer = bufferPool.pop();
-          if (!buffer || buffer.length < neededSize) {
-            buffer = Buffer.alloc(neededSize);
-          }
-
-          let bufpos = 0;
-
           const sessionPath = '/api/session/' + fields.node + '/' + Db.session2Sid(item) + '.' + extension;
-          const options = {
-            agent: client === http ? internals.httpAgent : internals.httpsAgent
-          };
+          let options;
+          if (postPcapFetch) {
+            options = {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json'
+              }
+            };
+          } else {
+            options = {};
+          }
+          options.agent = client === http ? internals.httpAgent : internals.httpsAgent;
 
           let url;
           if (sessionPath.startsWith('/')) {
@@ -909,37 +907,37 @@ class SessionAPIs {
           options.ca = ca;
 
           await new Promise((resolve) => {
+            const chunks = [];
             const preq = client.request(url, options, (pres) => {
               pres.on('data', (chunk) => {
-                if (bufpos + chunk.length > buffer.length) {
-                  const tmp = Buffer.alloc(buffer.length * 1.5);
-                  buffer.copy(tmp, 0, 0, bufpos);
-                  buffer = tmp;
-                }
-                chunk.copy(buffer, bufpos);
-                bufpos += chunk.length;
+                chunks.push(chunk);
               });
               pres.on('end', () => {
-                if (bufpos < 24) {
-                } else if (req.arkimeWriterOptions.writeHeader) {
-                  req.arkimeWriterOptions.writeHeader = false;
-                  res.write(buffer.slice(0, bufpos));
-                } else {
-                  res.write(buffer.slice(24, bufpos));
+                if (chunks.length === 0) {
+                  resolve();
+                  return;
                 }
-                if (bufferPool.length < limit) {
-                  bufferPool.push(buffer);
+                const buffer = Buffer.concat(chunks);
+                if (buffer.length < 24) {
+                  resolve();
+                  return;
+                }
+                if (req.arkimeWriterOptions.writeHeader) {
+                  req.arkimeWriterOptions.writeHeader = false;
+                  res.write(buffer);
+                } else {
+                  res.write(buffer.subarray(24));
                 }
                 resolve();
               });
             });
             preq.on('error', (e) => {
               console.log("ERROR - Couldn't proxy pcap request to fetch sessions pcap list =", url, '\nerror =', util.inspect(e, false, 50));
-              if (bufferPool.length < limit) {
-                bufferPool.push(buffer);
-              }
               resolve();
             });
+            if (postPcapFetch) {
+              preq.write(JSON.stringify(item));
+            }
             preq.end();
           });
         } catch (err) {
@@ -1081,12 +1079,11 @@ class SessionAPIs {
     }
   }
 
+  // --------------------------------------------------------------------------
   static #writePcap (res, id, writerOptions, doneCb) {
     let nextPacket = 0;
     let boffset = 0;
     const packets = {};
-
-    res.arkimeWritePcap ??= { bufferPool: [] };
 
     let b = SessionAPIs.#getWritePcapBuffer();
 
@@ -3513,6 +3510,16 @@ class SessionAPIs {
     ArkimeUtil.noCache(req, res, 'application/vnd.tcpdump.pcap');
     const writeHeader = !req.query || !req.query.noHeader || req.query.noHeader !== 'true';
     SessionAPIs.#writePcap(res, req.params.id, { writeHeader }, () => {
+      res.end();
+    });
+  };
+
+  // --------------------------------------------------------------------------
+  static postPCAPFromNode (req, res) {
+    ArkimeUtil.noCache(req, res, 'application/vnd.tcpdump.pcap');
+    const writeHeader = !req.query || !req.query.noHeader || req.query.noHeader !== 'true';
+
+    SessionAPIs.#writePcap(res, req.body, { writeHeader }, () => {
       res.end();
     });
   };
