@@ -136,10 +136,9 @@ LOCAL char *find_bpf_device()
 {
     static char bpf_device[256];
     struct stat sb;
-    int n;
 
     // Try numbered BPF devices
-    for (n = 0; n < 256; n++) {
+    for (int n = 0; n < 256; n++) {
         snprintf(bpf_device, sizeof(bpf_device), "/dev/bpf%d", n);
         if (stat(bpf_device, &sb) == 0) {
             return bpf_device;

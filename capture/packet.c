@@ -214,9 +214,7 @@ void arkime_packet_free(ArkimePacket_t *packet)
 /******************************************************************************/
 void arkime_packet_process_data(ArkimeSession_t *session, const uint8_t *data, int len, int which)
 {
-    int i;
-
-    for (i = 0; i < session->parserNum; i++) {
+    for (int i = 0; i < session->parserNum; i++) {
         if (session->parserInfo[i].parserFunc) {
             int consumed = session->parserInfo[i].parserFunc(session, session->parserInfo[i].uw, data, len, which);
             if (consumed) {
@@ -263,11 +261,10 @@ void arkime_packet_flush()
 {
     gboolean mainThread = arkime_is_main_thread();
     int flushed = 0;
-    int t;
     while (!flushed) {
         flushed = !arkime_session_cmd_outstanding();
 
-        for (t = 0; t < config.packetThreads; t++) {
+        for (int t = 0; t < config.packetThreads; t++) {
             ARKIME_LOCK(packetQ[t].lock);
             if (DLL_COUNT(packet_, &packetQ[t]) > 0) {
                 flushed = 0;
@@ -1476,9 +1473,7 @@ LOCAL ArkimePacketRC arkime_packet_radiotap(ArkimePacketBatch_t *batch, ArkimePa
 /******************************************************************************/
 void arkime_packet_batch_init(ArkimePacketBatch_t *batch)
 {
-    int t;
-
-    for (t = 0; t < config.packetThreads; t++) {
+    for (int t = 0; t < config.packetThreads; t++) {
         DLL_INIT(packet_, &batch->packetQ[t]);
     }
     batch->count = 0;
@@ -1486,9 +1481,7 @@ void arkime_packet_batch_init(ArkimePacketBatch_t *batch)
 /******************************************************************************/
 void arkime_packet_batch_flush(ArkimePacketBatch_t *batch)
 {
-    int t;
-
-    for (t = 0; t < config.packetThreads; t++) {
+    for (int t = 0; t < config.packetThreads; t++) {
         if (DLL_COUNT(packet_, &batch->packetQ[t]) > 0) {
             ARKIME_LOCK(packetQ[t].lock);
             DLL_PUSH_TAIL_DLL(packet_, &packetQ[t], &batch->packetQ[t]);
@@ -1663,9 +1656,8 @@ void arkime_packet_batch_end_of_file(int readerPos)
 int arkime_packet_outstanding()
 {
     int count = 0;
-    int t;
 
-    for (t = 0; t < config.packetThreads; t++) {
+    for (int t = 0; t < config.packetThreads; t++) {
         count += DLL_COUNT(packet_, &packetQ[t]);
         count += inProgress[t];
     }
@@ -1675,9 +1667,8 @@ int arkime_packet_outstanding()
 SUPPRESS_UNSIGNED_INTEGER_OVERFLOW
 LOCAL uint32_t arkime_packet_frag_hash(const void *key)
 {
-    int i;
     uint32_t n = 0;
-    for (i = 0; i < 10; i++) {
+    for (int i = 0; i < 10; i++) {
         n = (n << 5) - n + ((uint8_t *)key)[i];
     }
     return n;
@@ -2112,8 +2103,7 @@ void arkime_packet_init()
                         0,  ARKIME_FIELD_FLAG_FAKE,
                         (char *)NULL);
 
-    int t;
-    for (t = 0; t < config.packetThreads; t++) {
+    for (int t = 0; t < config.packetThreads; t++) {
         char name[100];
         DLL_INIT(packet_, &packetQ[t]);
         ARKIME_LOCK_INIT(packetQ[t].lock);
@@ -2159,9 +2149,7 @@ uint64_t arkime_packet_dropped_overload()
 {
     uint64_t count = 0;
 
-    int t;
-
-    for (t = 0; t < config.packetThreads; t++) {
+    for (int t = 0; t < config.packetThreads; t++) {
         count += overloadDrops[t];
     }
     return count;
@@ -2171,9 +2159,7 @@ uint64_t arkime_packet_total_bytes()
 {
     uint64_t count = 0;
 
-    int t;
-
-    for (t = 0; t < config.packetThreads; t++) {
+    for (int t = 0; t < config.packetThreads; t++) {
         count += totalBytes[t];
     }
     return count;

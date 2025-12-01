@@ -106,11 +106,10 @@ LOCAL void *reader_tpacketv3_thread(gpointer infov)
     while (!config.quitting) {
         struct tpacket_block_desc *tbd = info->rd[pos].iov_base;
         if (config.debug > 2) {
-            int i;
             int cnt = 0;
             int waiting = 0;
 
-            for (i = 0; i < (int)info->req.tp_block_nr; i++) {
+            for (int i = 0; i < (int)info->req.tp_block_nr; i++) {
                 struct tpacket_block_desc *stbd = info->rd[i].iov_base;
                 if (stbd->hdr.bh1.block_status & TP_STATUS_USER) {
                     cnt++;
@@ -130,9 +129,8 @@ LOCAL void *reader_tpacketv3_thread(gpointer infov)
         struct tpacket3_hdr *th;
 
         th = (struct tpacket3_hdr *) ((uint8_t *) tbd + tbd->hdr.bh1.offset_to_first_pkt);
-        uint32_t p;
 
-        for (p = 0; p < tbd->hdr.bh1.num_pkts; p++) {
+        for (uint32_t p = 0; p < tbd->hdr.bh1.num_pkts; p++) {
             if (unlikely(th->tp_snaplen != th->tp_len) && !config.readTruncatedPackets && !config.ignoreErrors) {
                 LOGEXIT("ERROR - Arkime requires full packet captures caplen: %d pktlen: %d\n"
                         "See https://arkime.com/faq#arkime_requires_full_packet_captures_error",
@@ -230,8 +228,7 @@ void reader_tpacketv3_init(char *UNUSED(name))
 
     int version = TPACKET_V3;
     int reserve = 4;
-    int i;
-    for (i = 0; config.interface[i]; i++) {
+    for (int i = 0; config.interface[i]; i++) {
         int ifindex = if_nametoindex(config.interface[i]);
 
         for (int t = 0; t < numThreads; t++) {
@@ -277,8 +274,7 @@ void reader_tpacketv3_init(char *UNUSED(name))
             }
             infos[i][t].rd = malloc(infos[i][t].req.tp_block_nr * sizeof(struct iovec));
 
-            uint16_t j;
-            for (j = 0; j < infos[i][t].req.tp_block_nr; j++) {
+            for (uint16_t j = 0; j < infos[i][t].req.tp_block_nr; j++) {
                 infos[i][t].rd[j].iov_base = infos[i][t].map + (j * infos[i][t].req.tp_block_size);
                 infos[i][t].rd[j].iov_len = infos[i][t].req.tp_block_size;
             }

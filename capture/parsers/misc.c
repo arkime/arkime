@@ -100,8 +100,7 @@ LOCAL void ntp_classify(ArkimeSession_t *session, const uint8_t *data, int len, 
 /******************************************************************************/
 LOCAL void syslog_classify(ArkimeSession_t *session, const uint8_t *UNUSED(data), int len, int UNUSED(which), void *UNUSED(uw))
 {
-    int i;
-    for (i = 2; i < len; i++) {
+    for (int i = 2; i < len; i++) {
         if (data[i] == '>') {
             arkime_session_add_protocol(session, "syslog");
             return;

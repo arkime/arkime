@@ -119,8 +119,7 @@ LOCAL void smb_security_blob(ArkimeSession_t *session, uint8_t *data, int len)
         return;
 
     uint32_t lens[6], offsets[6];
-    int i;
-    for (i = 0; i < ARRAY_LEN(lens); i++) {
+    for (int i = 0; i < ARRAY_LEN(lens); i++) {
         BSB_LIMPORT_u16(bsb, lens[i]);
         BSB_IMPORT_skip(bsb, 2);
         BSB_LIMPORT_u32(bsb, offsets[i]);
@@ -148,9 +147,8 @@ LOCAL void smb_security_blob(ArkimeSession_t *session, uint8_t *data, int len)
 LOCAL void smb1_str_null_split(char *buf, int len, char **out, int max)
 {
     memset(out, 0, max * sizeof(char *));
-    int i, p;
     int start = 0;
-    for (i = 0, p = 0; i < len && p < max; i++) {
+    for (int i = 0, p = 0; i < len && p < max; i++) {
         if (buf[i] == 0) {
             out[p] = buf + start;
             start = i + 1;

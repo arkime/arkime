@@ -227,8 +227,7 @@ LOCAL int reader_scheme_header_common(const char *uri, int dlt, int snaplen, con
         arkime_field_ops_init(&readerFieldOps[readerState.readerPos], readerFilenameOpsNum, ARKIME_FIELD_OPS_FLAGS_COPY);
 
         // Go thru all the filename ops looking for matches and then expand the value string
-        int i;
-        for (i = 0; i < readerFilenameOpsNum; i++) {
+        for (int i = 0; i < readerFilenameOpsNum; i++) {
             GMatchInfo *match_info = 0;
             g_regex_match(readerFilenameOps[i].regex, uri, 0, &match_info);
             if (g_match_info_matches(match_info)) {

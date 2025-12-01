@@ -716,8 +716,7 @@ LOCAL void *writer_simple_thread(void *UNUSED(arg))
         case ARKIME_SIMPLE_NORMAL:
             break;
         case ARKIME_SIMPLE_XOR2048: {
-            uint32_t i;
-            for (i = 0; i < total; i++)
+            for (uint32_t i = 0; i < total; i++)
                 info->buf[i] ^= info->file->dek[i % 256];
             break;
         }
@@ -753,9 +752,7 @@ LOCAL void *writer_simple_thread(void *UNUSED(arg))
 /******************************************************************************/
 LOCAL void writer_simple_exit()
 {
-    int thread;
-
-    for (thread = 0; thread < config.packetThreads; thread++) {
+    for (int thread = 0; thread < config.packetThreads; thread++) {
         if (currentInfo[thread]) {
             writer_simple_process_buf(thread, 1);
         }
@@ -766,7 +763,7 @@ LOCAL void writer_simple_exit()
         usleep(10000);
     }
 
-    for (thread = 0; thread < config.packetThreads; thread++) {
+    for (int thread = 0; thread < config.packetThreads; thread++) {
         for (int p = 0; p < INDEX_FILES_CACHE_SIZE; p++) {
             if (indexFiles[thread][p].fp) {
                 fclose(indexFiles[thread][p].fp);
@@ -1063,8 +1060,7 @@ void writer_simple_init(const char *name)
     struct timeval now;
     gettimeofday(&now, NULL);
 
-    int thread;
-    for (thread = 0; thread < config.packetThreads; thread++) {
+    for (int thread = 0; thread < config.packetThreads; thread++) {
         lastSave[thread] = now;
         fileAge[thread] = now;
     }

@@ -180,15 +180,13 @@ uint8_t *arkime_http_send_sync(void *serverV, const char *method, const char *ke
     CURL *easy;
 
     if (headers) {
-        int i;
-        for (i = 0; headers[i]; i++) {
+        for (int i = 0; headers[i]; i++) {
             headerList = curl_slist_append(headerList, headers[i]);
         }
     }
 
     if (server->defaultHeaders) {
-        int i;
-        for (i = 0; server->defaultHeaders[i]; i++) {
+        for (int i = 0; server->defaultHeaders[i]; i++) {
             headerList = curl_slist_append(headerList, server->defaultHeaders[i]);
         }
     }
@@ -797,8 +795,7 @@ gboolean arkime_http_schedule2(void *serverV, const char *method, const char *ke
     ArkimeHttpRequest_t       *request = ARKIME_TYPE_ALLOC0(ArkimeHttpRequest_t);
 
     if (headers) {
-        int i;
-        for (i = 0; headers[i]; i++) {
+        for (int i = 0; headers[i]; i++) {
             request->headerList = curl_slist_append(request->headerList, headers[i]);
         }
     }
@@ -811,8 +808,7 @@ gboolean arkime_http_schedule2(void *serverV, const char *method, const char *ke
         request->retries = server->maxRetries;
 
     if (server->defaultHeaders) {
-        int i;
-        for (i = 0; server->defaultHeaders[i]; i++) {
+        for (int i = 0; server->defaultHeaders[i]; i++) {
             request->headerList = curl_slist_append(request->headerList, server->defaultHeaders[i]);
         }
     }

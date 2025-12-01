@@ -107,7 +107,6 @@ LOCAL void sqs_done(int UNUSED(code), uint8_t *data, int data_len, gpointer uw)
         return;
     }
 
-    int      i;
     uint32_t out[4 * 30];
 
     // Sometimes feel like an array, sometimes you don't
@@ -125,7 +124,7 @@ LOCAL void sqs_done(int UNUSED(code), uint8_t *data, int data_len, gpointer uw)
         out[3] = 0;
     }
 
-    for (i = 0; out[i + 1]; i += 2) {
+    for (int i = 0; out[i + 1]; i += 2) {
         uint32_t receiptLen = 0;
         uint8_t *receipt = (uint8_t *)arkime_js0n_get(messages + out[i], out[i + 1], "ReceiptHandle", &receiptLen);
 

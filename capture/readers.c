@@ -81,8 +81,7 @@ void arkime_readers_start()
     char **interfaceOps;
     interfaceOps = arkime_config_raw_str_list(NULL, "interfaceOps", "");
 
-    int i;
-    for (i = 0; interfaceOps[i]; i++) {
+    for (int i = 0; interfaceOps[i]; i++) {
         if (!interfaceOps[i][0])
             continue;
 
@@ -101,7 +100,7 @@ void arkime_readers_start()
     char **filenameOpsStr;
     filenameOpsStr = arkime_config_str_list(NULL, "filenameOps", "");
 
-    for (i = 0; filenameOpsStr && filenameOpsStr[i] && i < 100; i++) {
+    for (int i = 0; filenameOpsStr && filenameOpsStr[i] && i < 100; i++) {
         if (!filenameOpsStr[i][0])
             continue;
 

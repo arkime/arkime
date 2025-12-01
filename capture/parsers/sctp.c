@@ -217,7 +217,7 @@ LOCAL void sctp_maybe_send(ArkimeSession_t *const session, int which)
     if (state != 2)
         return;
 
-    uint8_t *data = g_malloc(totalsize);
+    uint8_t *data = ARKIME_SIZE_ALLOC("sctp data", totalsize);
     int     off = 0;
     int     protoId = fsd->protoId;
     sd = fsd;
@@ -230,7 +230,7 @@ LOCAL void sctp_maybe_send(ArkimeSession_t *const session, int which)
         memcpy(data + off, sd->data, sd->len);
         off += sd->len;
         DLL_REMOVE(sd_, &session->sctpData, sd);
-        g_free(sd->data);
+        ARKIME_SIZE_FREE("sctp data", sd->data);
         if (sd->flags & SCTP_DATA_FLAG_E) {
             ARKIME_TYPE_FREE(ArkimeSctpData_t, sd);
             break;
@@ -238,7 +238,7 @@ LOCAL void sctp_maybe_send(ArkimeSession_t *const session, int which)
         ARKIME_TYPE_FREE(ArkimeSctpData_t, sd);
     }
     sctp_send_data(session, data, totalsize, protoId, which);
-    g_free(data);
+    ARKIME_SIZE_FREE("sctp data", data);
 }
 /******************************************************************************/
 SUPPRESS_ALIGNMENT
@@ -372,7 +372,7 @@ LOCAL void sctp_session_free(ArkimeSession_t *session)
 {
     ArkimeSctpData_t *sd = 0;
     while (DLL_POP_HEAD(sd_, &session->sctpData, sd)) {
-        g_free(sd->data);
+        ARKIME_SIZE_FREE("sctp data", sd->data);
         ARKIME_TYPE_FREE(ArkimeSctpData_t, sd);
     }
 }

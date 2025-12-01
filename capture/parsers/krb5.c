@@ -77,10 +77,9 @@ LOCAL void krb5_parse_req_body(ArkimeSession_t *session, const uint8_t *data, in
     int num = arkime_parsers_asn_get_sequence(seq, 12, data, len, TRUE);
     if (num < 2)
         return;
-    int i;
     int vlen;
     const char *value;
-    for (i = 0; i < num; i++) {
+    for (int i = 0; i < num; i++) {
         switch (seq[i].tag) {
         case 1:
             krb5_parse_principal_name(session, cnameField, seq[i].value, seq[i].len);

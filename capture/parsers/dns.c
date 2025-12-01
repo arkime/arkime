@@ -276,9 +276,8 @@ LOCAL int dns_name_element(BSB *nbsb, BSB *bsb)
         return 1;
     }
 
-    int j;
-    for (j = 0; j < nlen; j++) {
-        register u_char c = 0;
+    for (int j = 0; j < nlen; j++) {
+        uint8_t c = 0;
         BSB_IMPORT_u08(*bsb, c);
 
         if (!isascii(c)) {
@@ -724,12 +723,10 @@ LOCAL void dns_parser(ArkimeSession_t *session, int kind, const uint8_t *data, i
     dns->rcode       = rcodes[dns->rcode_id];
     ARKIME_RULES_RUN_FIELD_SET(session, dnsStatusField, dns->rcode);
 
-    int recordType = 0;
-    int i;
     unsigned char txtLen = 0;
-    for (recordType = RESULT_RECORD_ANSWER; recordType <= RESULT_RECORD_ADDITIONAL; recordType++) {
+    for (int recordType = RESULT_RECORD_ANSWER; recordType <= RESULT_RECORD_ADDITIONAL; recordType++) {
         int recordNum = resultRecordCount[recordType - 1];
-        for (i = 0; BSB_NOT_ERROR(bsb) && i < recordNum; i++) {
+        for (int i = 0; BSB_NOT_ERROR(bsb) && i < recordNum; i++) {
             namelen = sizeof(namebuf);
             name = dns_name(session, data, len, &bsb, namebuf, &namelen);
 

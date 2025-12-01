@@ -522,7 +522,6 @@ uint32_t arkime_get_next_powerof2(uint32_t v)
 const uint8_t *arkime_js0n_get(const uint8_t *data, uint32_t len, const char *key, uint32_t *olen)
 {
     uint32_t key_len = strlen(key);
-    int      i;
     uint32_t out[4 * 100]; // Can have up to 100 elements at any level
 
     *olen = 0;
@@ -533,7 +532,7 @@ const uint8_t *arkime_js0n_get(const uint8_t *data, uint32_t len, const char *ke
         return 0;
     }
 
-    for (i = 0; out[i]; i += 4) {
+    for (int i = 0; out[i]; i += 4) {
         if (out[i + 1] == key_len && memcmp(key, data + out[i], key_len) == 0) {
             *olen = out[i + 3];
             return data + out[i + 2];
@@ -544,8 +543,7 @@ const uint8_t *arkime_js0n_get(const uint8_t *data, uint32_t len, const char *ke
 /******************************************************************************/
 const uint8_t *arkime_js0n_get_path(const uint8_t *data, uint32_t len, const char **keys, uint32_t *olen)
 {
-    int k;
-    for (k = 0; keys[k]; k++) {
+    for (int k = 0; keys[k]; k++) {
         data = arkime_js0n_get(data, len, keys[k], &len);
         if (!data) {
             if (config.debug > 2)
@@ -785,8 +783,7 @@ LOCAL gboolean arkime_quit_gfunc (gpointer UNUSED(user_data))
     }
 
 // Wait for all the can quits to signal all clear
-    int i;
-    for (i = 0; i < canQuitFuncsNum; i++) {
+    for (int i = 0; i < canQuitFuncsNum; i++) {
         int val = canQuitFuncs[i]();
         if (val != 0) {
             if (config.debug && canQuitNames[i]) {
@@ -863,9 +860,8 @@ LOCAL gboolean arkime_ready_gfunc (gpointer UNUSED(user_data))
 /******************************************************************************/
 LOCAL void arkime_hex_init()
 {
-    int i, j;
-    for (i = 0; i < 16; i++) {
-        for (j = 0; j < 16; j++) {
+    for (int i = 0; i < 16; i++) {
+        for (int j = 0; j < 16; j++) {
             arkime_hex_to_char[(uint8_t)arkime_char_to_hex[i]][(uint8_t)arkime_char_to_hex[j]] = i << 4 | j;
             arkime_hex_to_char[toupper(arkime_char_to_hex[i])][(uint8_t)arkime_char_to_hex[j]] = i << 4 | j;
             arkime_hex_to_char[(uint8_t)arkime_char_to_hex[i]][toupper(arkime_char_to_hex[j])] = i << 4 | j;
@@ -873,13 +869,13 @@ LOCAL void arkime_hex_init()
         }
     }
 
-    for (i = 0; i < 256; i++) {
+    for (int i = 0; i < 256; i++) {
         arkime_char_to_hexstr[i][0] = arkime_char_to_hex[(i >> 4) & 0xf];
         arkime_char_to_hexstr[i][1] = arkime_char_to_hex[i & 0xf];
     }
 
     // Initialize IPv4 byte lookup table for fast conversion
-    for (i = 0; i < 256; i++) {
+    for (int i = 0; i < 256; i++) {
         snprintf(arkime_ip_byte_lookup[i], sizeof(arkime_ip_byte_lookup[i]), "%d", i);
     }
 }

@@ -86,9 +86,7 @@ void arkime_plugins_load(char **plugins)
 
     arkime_add_can_quit((ArkimeCanQuitFunc)arkime_plugins_outstanding, "plugin outstanding");
 
-    int         i;
-
-    for (i = 0; plugins[i]; i++) {
+    for (int i = 0; plugins[i]; i++) {
         const char *name = plugins[i];
 
         guint e;
@@ -103,10 +101,9 @@ void arkime_plugins_load(char **plugins)
             continue;
         }
 
-        int d;
         gchar   *path;
         int      loaded = 0;
-        for (d = 0; config.pluginsDir[d]; d++) {
+        for (int d = 0; config.pluginsDir[d]; d++) {
             path = g_build_filename (config.pluginsDir[d], name, NULL);
 
             if (!g_file_test(path, G_FILE_TEST_EXISTS)) {
