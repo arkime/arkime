@@ -1,7 +1,8 @@
-#!/usr/bin/perl -I.
+#!/usr/bin/env perl
 #
 # SPDX-License-Identifier: Apache-2.0
 
+use lib ".";
 use strict;
 use HTTP::Request::Common;
 use LWP::UserAgent;
