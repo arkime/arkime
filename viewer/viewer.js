@@ -51,6 +51,7 @@ internals.initialize(app);
 const ViewerUtils = require('./viewerUtils');
 const Notifier = require('../common/notifier');
 const ViewAPIs = require('./apiViews');
+const ShareableAPIs = require('./apiShareables');
 const CronAPIs = require('./apiCrons');
 const SessionAPIs = require('./apiSessions');
 const ConnectionAPIs = require('./apiConnections');
@@ -1398,6 +1399,37 @@ app.put( // update view endpoint
   ['/api/view/:id'],
   [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), Auth.getSettingUserDb, Auth.checkResourceAccess(Db.getView, 'user'), sanitizeViewName],
   ViewAPIs.apiUpdateView
+);
+
+// shareable apis ---------------------------------------------------------------
+app.get( // list shareables endpoint
+  ['/api/shareables'],
+  [ArkimeUtil.noCacheJson, getSettingUserCache],
+  ShareableAPIs.apiListShareables
+);
+
+app.post( // create shareable endpoint
+  ['/api/shareable'],
+  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), Auth.getSettingUserDb],
+  ShareableAPIs.apiCreateShareable
+);
+
+app.get( // get shareable endpoint
+  ['/api/shareable/:id'],
+  [ArkimeUtil.noCacheJson, getSettingUserCache],
+  ShareableAPIs.apiGetShareable
+);
+
+app.put( // update shareable endpoint
+  ['/api/shareable/:id'],
+  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), Auth.getSettingUserDb],
+  ShareableAPIs.apiUpdateShareable
+);
+
+app.delete( // delete shareable endpoint
+  ['/api/shareable/:id'],
+  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), Auth.getSettingUserDb],
+  ShareableAPIs.apiDeleteShareable
 );
 
 // cron apis ------------------------------------------------------------------
