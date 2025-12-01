@@ -100,6 +100,10 @@ class ShareableAPIs {
       return res.serverError(403, 'Missing shareable type');
     }
 
+    if (req.body.description !== undefined && !ArkimeUtil.isString(req.body.description)) {
+      return res.serverError(403, 'Description must be a string');
+    }
+
     const user = req.settingUser;
 
     const viewRoles = ArkimeUtil.isStringArray(req.body.viewRoles) ? req.body.viewRoles : [];
@@ -119,6 +123,7 @@ class ShareableAPIs {
 
     const doc = {
       name: req.body.name,
+      description: req.body.description,
       type: req.body.type,
       creator: user.userId,
       created: new Date(),
@@ -202,6 +207,10 @@ class ShareableAPIs {
         return res.serverError(403, 'Cannot change shareable type');
       }
 
+      if (req.body.description !== undefined && !ArkimeUtil.isString(req.body.description)) {
+        return res.serverError(403, 'Description must be a string');
+      }
+
       let viewRoles = req.body.viewRoles !== undefined ? (ArkimeUtil.isStringArray(req.body.viewRoles) ? req.body.viewRoles : []) : (dbItem._source.viewRoles || []);
       let viewUsers = req.body.viewUsers !== undefined ? (ArkimeUtil.isStringArray(req.body.viewUsers) ? req.body.viewUsers : []) : (dbItem._source.viewUsers || []);
       let editRoles = req.body.editRoles !== undefined ? (ArkimeUtil.isStringArray(req.body.editRoles) ? req.body.editRoles : []) : (dbItem._source.editRoles || []);
@@ -220,6 +229,7 @@ class ShareableAPIs {
       const doc = {
         name: req.body.name !== undefined ? req.body.name : dbItem._source.name,
         type: dbItem._source.type,
+        description: req.body.description !== undefined ? req.body.description : dbItem._source.description,
         creator: dbItem._source.creator,
         created: dbItem._source.created,
         updated: new Date(),
@@ -363,6 +373,7 @@ class ShareableAPIs {
           id: item._id,
           type: shareable.type,
           name: shareable.name,
+          description: shareable.description,
           data: shareable.data,
           canEdit: await ShareableAPIs.canEdit(user, shareable),
           canDelete: ShareableAPIs.canDelete(user, shareable)

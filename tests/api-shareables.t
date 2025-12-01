@@ -1,4 +1,4 @@
-use Test::More tests => 60;
+use Test::More tests => 64;
 use ArkimeTest;
 use JSON;
 use Test::Differences;
@@ -23,11 +23,12 @@ my $info = viewerGet("/api/shareables?type=test&arkimeRegressionUser=sac-test1")
 eq_or_diff($info->{data}, from_json("[]"), "empty shareables");
 
 # create shareable and it gets returned
-$info = viewerPostToken("/api/shareable?arkimeRegressionUser=sac-test1", '{"name": "shareable1", "type": "test", "data": {"key": "value"}}', $token);
+$info = viewerPostToken("/api/shareable?arkimeRegressionUser=sac-test1", '{"name": "shareable1", "description": "important item", "type": "test", "data": {"key": "value"}}', $token);
 my $id1 = $info->{id};
 ok($info->{success}, "create shareable success");
 ok($info->{shareable}->{id}, "shareable has id");
 is($info->{shareable}->{name}, "shareable1", "shareable name is correct");
+is($info->{shareable}->{description}, "important item", "shareable description is correct");
 is($info->{shareable}->{type}, "test", "shareable type is correct");
 is($info->{shareable}->{creator}, "sac-test1", "shareable creator is set");
 ok($info->{shareable}->{created}, "shareable has created date");
@@ -37,6 +38,7 @@ ok($info->{shareable}->{updated}, "shareable has updated date");
 $info = viewerGet("/api/shareables?type=test&arkimeRegressionUser=sac-test1");
 is($info->{recordsTotal}, 1, "returns 1 recordsTotal");
 is($info->{data}->[0]->{name}, "shareable1", "shareable name in list");
+is($info->{data}->[0]->{description}, "important item", "shareable description in list");
 is($info->{data}->[0]->{canEdit}, 1, "creator can edit");
 is($info->{data}->[0]->{canDelete}, 1, "creator can delete");
 
@@ -44,6 +46,7 @@ is($info->{data}->[0]->{canDelete}, 1, "creator can delete");
 $info = viewerGet("/api/shareable/${id1}?arkimeRegressionUser=sac-test1");
 ok($info->{success}, "get shareable success");
 is($info->{shareable}->{name}, "shareable1", "got shareable with correct name");
+is($info->{shareable}->{description}, "important item", "got shareable with correct description");
 is($info->{shareable}->{canEdit}, 1, "creator has canEdit");
 is($info->{shareable}->{canDelete}, 1, "creator has canDelete");
 
@@ -56,9 +59,10 @@ $info = viewerGet("/api/shareables?type=test&arkimeRegressionUser=sac-test1");
 eq_or_diff($info->{recordsTotal}, 1, "still returns 1 recordsTotal");
 
 # can update shareable
-$info = viewerPutToken("/api/shareable/${id1}?arkimeRegressionUser=sac-test1", '{"name": "shareable1updated", "data": {"key": "newvalue"}}', $token);
+$info = viewerPutToken("/api/shareable/${id1}?arkimeRegressionUser=sac-test1", '{"name": "shareable1updated", "description": "important item updated", "data": {"key": "newvalue"}}', $token);
 ok($info->{success}, "update shareable success");
 is($info->{shareable}->{name}, "shareable1updated", "shareable name updated");
+is($info->{shareable}->{description}, "important item updated", "shareable description updated");
 is($info->{shareable}->{data}->{key}, "newvalue", "shareable data updated");
 is($info->{shareable}->{creator}, "sac-test1", "creator unchanged");
 ok($info->{shareable}->{created}, "created date still exists");

@@ -5956,6 +5956,9 @@ sub shareablesUpdate
     "name": {
       "type": "keyword"
     },
+    "description": {
+      "type": "keyword"
+    },
     "type": {
       "type": "keyword"
     },
