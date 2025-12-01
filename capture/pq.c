@@ -58,8 +58,7 @@ ArkimePQ_t *arkime_pq_alloc(int timeout, ArkimePQ_cb cb)
     ArkimePQ_t *pq = ARKIME_TYPE_ALLOC0(ArkimePQ_t);
 
     pq->timeout = timeout;
-    int t;
-    for (t = 0; t < config.packetThreads; t++) {
+    for (int t = 0; t < config.packetThreads; t++) {
         HASH_INIT(pqh_, pq->keys[t], arkime_string_hash, (HASH_CMP_FUNC)arkime_pq_cmp);
         DLL_INIT(pql_, &pq->lists[t]);
     }

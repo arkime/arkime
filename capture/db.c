@@ -106,8 +106,7 @@ LOCAL void arkime_db_free_override_ip(ArkimeIpInfo_t *ii)
     if (ii->rir)
         g_free(ii->rir);
 
-    int i;
-    for (i = 0; i < ii->numtags; i++)
+    for (int i = 0; i < ii->numtags; i++)
         g_free(ii->tagsStr[i]);
 
     if (ii->ops)
@@ -146,9 +145,8 @@ LOCAL ArkimeIpInfo_t *arkime_db_get_override_ip6(ArkimeSession_t *session, struc
 
 
     ArkimeIpInfo_t *ii = node->data;
-    int t;
 
-    for (t = 0; t < ii->numtags; t++) {
+    for (int t = 0; t < ii->numtags; t++) {
         arkime_field_string_add(config.tagsStringField, session, ii->tagsStr[t], -1, TRUE);
     }
 
@@ -625,7 +623,6 @@ LOCAL int arkime_db_field_sort(const void *a, const void *b)
 
 void arkime_db_save_session(ArkimeSession_t *session, int final)
 {
-    uint32_t               i;
     char                   id[100];
     uint32_t               id_len;
     uuid_t                 uuid;
@@ -733,7 +730,7 @@ void arkime_db_save_session(ArkimeSession_t *session, int final)
     }
 
     if (config.autoGenerateId == 2 && session->filePosArray->len > 1) {
-        id_len = snprintf(id, sizeof(id), "%s-%s-%u-%" PRId64, dbInfo[thread].prefix, config.nodeName, (uint32_t)g_array_index(session->fileNumArray, uint32_t, 0), (int64_t)g_array_index(session->filePosArray, int64_t, 1));
+        snprintf(id, sizeof(id), "%s-%s-%u-%" PRId64, dbInfo[thread].prefix, config.nodeName, (uint32_t)g_array_index(session->fileNumArray, uint32_t, 0), (int64_t)g_array_index(session->filePosArray, int64_t, 1));
 
         if (session->rootId == GINT_TO_POINTER(1))
             session->rootId = g_strdup(id);
@@ -747,7 +744,7 @@ void arkime_db_save_session(ArkimeSession_t *session, int final)
         id_len += g_base64_encode_close(FALSE, id + id_len, &state, &save);
         id[id_len] = 0;
 
-        for (i = 0; i < id_len; i++) {
+        for (uint32_t i = 0; i < id_len; i++) {
             if (id[i] == '+') id[i] = '-';
             else if (id[i] == '/') id[i] = '_';
         }
@@ -866,7 +863,7 @@ void arkime_db_save_session(ArkimeSession_t *session, int final)
 
     if (session->firstBytesLen[0] > 0) {
         BSB_EXPORT_cstr(jbsb, "\"srcPayload8\":\"");
-        for (i = 0; i < session->firstBytesLen[0]; i++) {
+        for (uint32_t i = 0; i < session->firstBytesLen[0]; i++) {
             BSB_EXPORT_ptr(jbsb, arkime_char_to_hexstr[(uint8_t)session->firstBytes[0][i]], 2);
         }
         BSB_EXPORT_cstr(jbsb, "\",");
@@ -874,7 +871,7 @@ void arkime_db_save_session(ArkimeSession_t *session, int final)
 
     if (session->firstBytesLen[1] > 0) {
         BSB_EXPORT_cstr(jbsb, "\"dstPayload8\":\"");
-        for (i = 0; i < session->firstBytesLen[1]; i++) {
+        for (uint32_t i = 0; i < session->firstBytesLen[1]; i++) {
             BSB_EXPORT_ptr(jbsb, arkime_char_to_hexstr[(uint8_t)session->firstBytes[1][i]], 2);
         }
         BSB_EXPORT_cstr(jbsb, "\",");
@@ -1034,7 +1031,7 @@ void arkime_db_save_session(ArkimeSession_t *session, int final)
         BSB_EXPORT_cstr(jbsb, ",\"vlan\":{");
         BSB_EXPORT_sprintf(jbsb, "\"id-cnt\":%u,", session->fields[vlanField]->iarray->len);
         BSB_EXPORT_sprintf(jbsb, "\"id\":[");
-        for (i = 0; i < session->fields[vlanField]->iarray->len; i++) {
+        for (uint32_t i = 0; i < session->fields[vlanField]->iarray->len; i++) {
             BSB_EXPORT_sprintf(jbsb, "%u", g_array_index(session->fields[vlanField]->iarray, uint32_t, i));
             BSB_EXPORT_u08(jbsb, ',');
         }
@@ -1070,7 +1067,7 @@ void arkime_db_save_session(ArkimeSession_t *session, int final)
          */
         int64_t last = 0;
         int64_t lastgap = 0;
-        for (i = 0; i < session->filePosArray->len; i++) {
+        for (uint32_t i = 0; i < session->filePosArray->len; i++) {
             if (i != 0)
                 BSB_EXPORT_u08(jbsb, ',');
             int64_t fpos = (int64_t)g_array_index(session->filePosArray, int64_t, i);
@@ -1090,7 +1087,7 @@ void arkime_db_save_session(ArkimeSession_t *session, int final)
         }
     } else {
         // Do NOT remove this, S3 and others use this
-        for (i = 0; i < session->filePosArray->len; i++) {
+        for (uint32_t i = 0; i < session->filePosArray->len; i++) {
             if (i != 0)
                 BSB_EXPORT_u08(jbsb, ',');
             BSB_EXPORT_sprintf(jbsb, "%" PRId64, (int64_t)g_array_index(session->filePosArray, int64_t, i));
@@ -1100,7 +1097,7 @@ void arkime_db_save_session(ArkimeSession_t *session, int final)
 
     if (config.enablePacketLen) {
         BSB_EXPORT_cstr(jbsb, "\"packetLen\":[");
-        for (i = 0; i < session->fileLenArray->len; i++) {
+        for (uint32_t i = 0; i < session->fileLenArray->len; i++) {
             if (i != 0)
                 BSB_EXPORT_u08(jbsb, ',');
             BSB_EXPORT_sprintf(jbsb, "%u", (uint16_t)g_array_index(session->fileLenArray, uint16_t, i));
@@ -1109,7 +1106,7 @@ void arkime_db_save_session(ArkimeSession_t *session, int final)
     }
 
     BSB_EXPORT_cstr(jbsb, "\"fileId\":[");
-    for (i = 0; i < session->fileNumArray->len; i++) {
+    for (uint32_t i = 0; i < session->fileNumArray->len; i++) {
         if (i == 0)
             BSB_EXPORT_sprintf(jbsb, "%u", (uint32_t)g_array_index(session->fileNumArray, uint32_t, i));
         else
@@ -1175,7 +1172,7 @@ void arkime_db_save_session(ArkimeSession_t *session, int final)
                 BSB_EXPORT_sprintf(jbsb, "\"%sCnt\":%u,", fieldInfo->dbField, session->fields[pos]->iarray->len);
             }
             BSB_EXPORT_sprintf(jbsb, "\"%s\":[", fieldInfo->dbField);
-            for (i = 0; i < session->fields[pos]->iarray->len; i++) {
+            for (uint32_t i = 0; i < session->fields[pos]->iarray->len; i++) {
                 BSB_EXPORT_sprintf(jbsb, "%u", g_array_index(session->fields[pos]->iarray, uint32_t, i));
                 BSB_EXPORT_u08(jbsb, ',');
             }
@@ -1190,7 +1187,7 @@ void arkime_db_save_session(ArkimeSession_t *session, int final)
                 BSB_EXPORT_sprintf(jbsb, "\"%sCnt\":%u,", fieldInfo->dbField, session->fields[pos]->sarray->len);
             }
             BSB_EXPORT_sprintf(jbsb, "\"%s\":[", fieldInfo->dbField);
-            for (i = 0; i < session->fields[pos]->sarray->len; i++) {
+            for (uint32_t i = 0; i < session->fields[pos]->sarray->len; i++) {
                 arkime_db_js0n_str(&jbsb,
                                    g_ptr_array_index(session->fields[pos]->sarray, i),
                                    flags & ARKIME_FIELD_FLAG_FORCE_UTF8);
@@ -1272,7 +1269,7 @@ void arkime_db_save_session(ArkimeSession_t *session, int final)
                 BSB_EXPORT_sprintf(jbsb, "\"%sCnt\":%u,", fieldInfo->dbField, session->fields[pos]->farray->len);
             }
             BSB_EXPORT_sprintf(jbsb, "\"%s\":[", fieldInfo->dbField);
-            for (i = 0; i < session->fields[pos]->farray->len; i++) {
+            for (uint32_t i = 0; i < session->fields[pos]->farray->len; i++) {
                 BSB_EXPORT_sprintf(jbsb, "%f", g_array_index(session->fields[pos]->farray, float, i));
                 BSB_EXPORT_u08(jbsb, ',');
             }
@@ -1366,7 +1363,7 @@ void arkime_db_save_session(ArkimeSession_t *session, int final)
             BSB_EXPORT_cstr(jbsb, "],");
 
             BSB_EXPORT_sprintf(jbsb, "\"%.*sGEO\":[", fieldInfo->dbFieldLen - 2, fieldInfo->dbField);
-            for (i = 0; i < cnt; i++) {
+            for (uint32_t i = 0; i < cnt; i++) {
                 if (geos[i].country) {
                     BSB_EXPORT_sprintf(jbsb, "\"%.*s\",", geos[i].countryLen, geos[i].country);
                 } else {
@@ -1377,7 +1374,7 @@ void arkime_db_save_session(ArkimeSession_t *session, int final)
             BSB_EXPORT_cstr(jbsb, "],");
 
             BSB_EXPORT_sprintf(jbsb, "\"%.*sASN\":[", fieldInfo->dbFieldLen - 2, fieldInfo->dbField);
-            for (i = 0; i < cnt; i++) {
+            for (uint32_t i = 0; i < cnt; i++) {
                 if (geos[i].asn) {
                     BSB_EXPORT_sprintf(jbsb, "\"AS%u ", geos[i].asNum);
                     arkime_db_js0n_str_unquoted(&jbsb, (uint8_t *)geos[i].asn, geos[i].asnLen, TRUE);
@@ -1391,7 +1388,7 @@ void arkime_db_save_session(ArkimeSession_t *session, int final)
             BSB_EXPORT_cstr(jbsb, "],");
 
             BSB_EXPORT_sprintf(jbsb, "\"%.*sRIR\":[", fieldInfo->dbFieldLen - 2, fieldInfo->dbField);
-            for (i = 0; i < cnt; i++) {
+            for (uint32_t i = 0; i < cnt; i++) {
                 if (geos[i].rir) {
                     BSB_EXPORT_sprintf(jbsb, "\"%s\",", geos[i].rir);
                 } else {
@@ -1526,8 +1523,7 @@ LOCAL void arkime_db_load_stats()
         dbTotalSessions[0] = dbTotalSessions[2] = zero_atoll((char *)arkime_js0n_get(source, source_len, "totalSessions", &len));
         dbTotalDropped[0]  = zero_atoll((char *)arkime_js0n_get(source, source_len, "totalDropped", &len));
 
-        int i;
-        for (i = 1; i < NUMBER_OF_STATS; i++) {
+        for (int i = 1; i < NUMBER_OF_STATS; i++) {
             dbTotalPackets[i]  = dbTotalPackets[0];
             dbTotalK[i]        = dbTotalK[0];
             dbTotalSessions[i] = dbTotalSessions[0];
@@ -1609,8 +1605,7 @@ LOCAL uint64_t arkime_db_used_space()
         nodeNameLen = strlen(config.nodeName);
     }
 
-    int i;
-    for (i = 0; config.pcapDir[i]; i++) {
+    for (int i = 0; config.pcapDir[i]; i++) {
         DIR *dir = opendir(config.pcapDir[i]);
         if (!dir) {
             continue;
@@ -1656,7 +1651,6 @@ LOCAL void arkime_db_update_stats(int n, gboolean sync)
     static uint64_t       lastUsedSpaceM = 0;
     uint64_t              freeSpaceM = 0;
     uint64_t              totalSpaceM = 0;
-    int                   i;
 
     char *json = arkime_http_get_buffer(ARKIME_HTTP_BUFFER_SIZE);
     struct timeval currentTime;
@@ -1691,7 +1685,7 @@ LOCAL void arkime_db_update_stats(int n, gboolean sync)
         lastDupDropped[n] = dupDropped;
     }
 
-    for (i = 0; config.pcapDir[i]; i++) {
+    for (int i = 0; config.pcapDir[i]; i++) {
         struct statvfs vfs;
         statvfs(config.pcapDir[i], &vfs);
         freeSpaceM += (uint64_t)((vfs.f_frsize / 1000.0) * (vfs.f_bavail / 1000.0));
@@ -1872,12 +1866,11 @@ LOCAL void arkime_db_update_stats(int n, gboolean sync)
 // Runs on main thread
 LOCAL gboolean arkime_db_flush_gfunc (gpointer user_data )
 {
-    int             thread;
     struct timeval  currentTime;
 
     gettimeofday(&currentTime, NULL);
 
-    for (thread = 0; thread < config.packetThreads; thread++) {
+    for (int thread = 0; thread < config.packetThreads; thread++) {
         ARKIME_LOCK(dbInfo[thread].lock);
         if (dbInfo[thread].json && BSB_LENGTH(dbInfo[thread].bsb) > 0 &&
             ((currentTime.tv_sec - dbInfo[thread].lastSave) >= config.dbFlushTimeout || user_data == GINT_TO_POINTER(1))) {
@@ -2155,8 +2148,7 @@ char *arkime_db_create_file_full(const struct timeval *firstPacket, const char *
             // Select the pcapDir with the highest percentage of free space
 
             double maxFreeSpacePercent = 0;
-            int i;
-            for (i = 0; config.pcapDir[i]; i++) {
+            for (int i = 0; config.pcapDir[i]; i++) {
                 struct statvfs vfs;
                 statvfs(config.pcapDir[i], &vfs);
                 if (config.debug)
@@ -2173,8 +2165,7 @@ char *arkime_db_create_file_full(const struct timeval *firstPacket, const char *
             // Select the pcapDir with the most bytes free
 
             uint64_t maxFreeSpaceBytes   = 0;
-            int i;
-            for (i = 0; config.pcapDir[i]; i++) {
+            for (int i = 0; config.pcapDir[i]; i++) {
                 struct statvfs vfs;
                 statvfs(config.pcapDir[i], &vfs);
                 if (config.debug)
@@ -2468,7 +2459,7 @@ LOCAL void arkime_db_load_oui(const char *name)
         }
 
         // Remove separators and get bitlen
-        int i = 0, j = 0, bitlen = 24;
+        int i, j = 0, bitlen = 24;
         for (i = 0; parts[0][i]; i++) {
             if (parts[0][i] == ':' || parts[0][i] == '-' || parts[0][i] == '.')
                 continue;
@@ -2557,8 +2548,7 @@ LOCAL void arkime_db_load_fields()
     uint32_t out[2 * 8000];
     memset(out, 0, sizeof(out));
     js0n(ahits, ahits_len, out, sizeof(out));
-    int i;
-    for (i = 0; out[i]; i += 2) {
+    for (int i = 0; out[i]; i += 2) {
         uint32_t           id_len;
         const uint8_t     *id = 0;
         id = arkime_js0n_get(ahits + out[i], out[i + 1], "_id", &id_len);
@@ -2775,8 +2765,7 @@ gboolean arkime_db_file_exists(const char *filename, uint32_t *outputId)
 /******************************************************************************/
 int arkime_db_can_quit()
 {
-    int thread;
-    for (thread = 0; thread < config.packetThreads; thread++) {
+    for (int thread = 0; thread < config.packetThreads; thread++) {
         // Make sure we can lock, that means a save isn't in progress
         ARKIME_LOCK(dbInfo[thread].lock);
         if (dbInfo[thread].json && BSB_LENGTH(dbInfo[thread].bsb) > 0) {
@@ -2929,8 +2918,7 @@ void arkime_db_init()
     ecsEventProvider = arkime_config_str(NULL, "ecsEventProvider", NULL);
     ecsEventDataset = arkime_config_str(NULL, "ecsEventDataset", NULL);
 
-    int thread;
-    for (thread = 0; thread < config.packetThreads; thread++) {
+    for (int thread = 0; thread < config.packetThreads; thread++) {
         ARKIME_LOCK_INIT(dbInfo[thread].lock);
         dbInfo[thread].prefixTime = -1;
     }

@@ -92,8 +92,7 @@ LOCAL gboolean reader_libpcapfile_monitor_read()
         LOGEXIT("ERROR - Monitor read failed - %s", strerror(errno));
     buf[rc] = 0;
 
-    char *p;
-    for (p = buf; p < buf + rc; ) {
+    for (char *p = buf; p < buf + rc; ) {
         struct inotify_event *event = (struct inotify_event *) p;
         reader_libpcapfile_monitor_do(event);
         p += sizeof(struct inotify_event) + event->len;
@@ -147,7 +146,6 @@ LOCAL void reader_libpcapfile_monitor_dir(char *dirname)
 /******************************************************************************/
 LOCAL void reader_libpcapfile_init_monitor()
 {
-    int          dir;
     monitorFd = inotify_init1(IN_NONBLOCK);
 
     if (monitorFd < 0)
@@ -156,7 +154,7 @@ LOCAL void reader_libpcapfile_init_monitor()
     wdHashTable = g_hash_table_new (g_direct_hash, g_direct_equal);
     arkime_watch_fd(monitorFd, ARKIME_GIO_READ_COND, reader_libpcapfile_monitor_read, NULL);
 
-    for (dir = 0; config.pcapReadDirs[dir] && config.pcapReadDirs[dir][0]; dir++) {
+    for (int dir = 0; config.pcapReadDirs[dir] && config.pcapReadDirs[dir][0]; dir++) {
         reader_libpcapfile_monitor_dir(config.pcapReadDirs[dir]);
     }
 }
@@ -582,8 +580,7 @@ LOCAL void reader_libpcapfile_opened()
         arkime_field_ops_init(&readerFieldOps[readerPos], readerFilenameOpsNum, ARKIME_FIELD_OPS_FLAGS_COPY);
 
         // Go thru all the filename ops looking for matches and then expand the value string
-        int i;
-        for (i = 0; i < readerFilenameOpsNum; i++) {
+        for (int i = 0; i < readerFilenameOpsNum; i++) {
             GMatchInfo *match_info = 0;
             g_regex_match(readerFilenameOps[i].regex, offlinePcapFilename, 0, &match_info);
             if (g_match_info_matches(match_info)) {

@@ -138,8 +138,7 @@ LOCAL uint32_t tls_process_server_hello(ArkimeSession_t *session, const uint8_t 
         if (skiplen > 0 && BSB_REMAINING(bsb) > skiplen) {
             const uint8_t *ptr = BSB_WORK_PTR(bsb);
             char sessionId[513];
-            int  i;
-            for (i = 0; i < skiplen; i++) {
+            for (int i = 0; i < skiplen; i++) {
                 sessionId[i * 2] = arkime_char_to_hexstr[ptr[i]][0];
                 sessionId[i * 2 + 1] = arkime_char_to_hexstr[ptr[i]][1];
             }
@@ -354,9 +353,7 @@ LOCAL uint32_t tls_process_client_hello_data(ArkimeSession_t *session, const uin
         if (skiplen > 0 && BSB_REMAINING(cbsb) > skiplen) {
             const uint8_t *ptr = BSB_WORK_PTR(cbsb);
             char sessionId[513];
-            int  i;
-
-            for (i = 0; i < skiplen; i++) {
+            for (int i = 0; i < skiplen; i++) {
                 sessionId[i * 2] = arkime_char_to_hexstr[ptr[i]][0];
                 sessionId[i * 2 + 1] = arkime_char_to_hexstr[ptr[i]][1];
             }
@@ -806,8 +803,7 @@ void arkime_parser_init()
 
     arkime_parsers_classifier_register_tcp("tls", NULL, 0, (uint8_t *)"\x16\x03", 2, tls_classify);
 
-    int t;
-    for (t = 0; t < config.packetThreads; t++) {
+    for (int t = 0; t < config.packetThreads; t++) {
         checksums256[t] = g_checksum_new(G_CHECKSUM_SHA256);
     }
 

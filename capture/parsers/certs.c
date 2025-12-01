@@ -173,7 +173,7 @@ LOCAL void certinfo_free(ArkimeFieldObject_t *object)
     }
 
     if (ci->serialNumber)
-        free(ci->serialNumber);
+        ARKIME_SIZE_FREE("serialNumber", ci->serialNumber);
 
     if (ci->extra)
         g_hash_table_destroy(ci->extra);
@@ -505,7 +505,7 @@ LOCAL uint32_t certinfo_process_server_certificate(ArkimeSession_t *session, con
             }
         }
         certs->serialNumberLen = alen;
-        certs->serialNumber = malloc(alen);
+        certs->serialNumber = ARKIME_SIZE_ALLOC("serialNumber", alen);
         memcpy(certs->serialNumber, value, alen);
 
         /* signature */

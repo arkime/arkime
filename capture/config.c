@@ -353,9 +353,7 @@ char arkime_config_boolean(GKeyFile *keyfile, const char *key, char d)
 /******************************************************************************/
 LOCAL void arkime_config_load_includes(char **includes)
 {
-    int       i, g, k;
-
-    for (i = 0; includes[i]; i++) {
+    for (int i = 0; includes[i]; i++) {
         GKeyFile *keyFile = g_key_file_new();
         GError *error = 0;
         const char *fn = includes[i];
@@ -374,9 +372,9 @@ LOCAL void arkime_config_load_includes(char **includes)
         }
 
         gchar **groups = g_key_file_get_groups (keyFile, NULL);
-        for (g = 0; groups[g]; g++) {
+        for (int g = 0; groups[g]; g++) {
             gchar **keys = g_key_file_get_keys (keyFile, groups[g], NULL, NULL);
-            for (k = 0; keys[k]; k++) {
+            for (int k = 0; keys[k]; k++) {
                 char *value = g_key_file_get_value(keyFile, groups[g], keys[k], NULL);
                 if (value) {
                     g_key_file_set_value(arkimeKeyFile, groups[g], keys[k], value);

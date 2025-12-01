@@ -198,8 +198,7 @@ LOCAL int quic_4648_udp_parser(ArkimeSession_t *session, void *UNUSED(uw), const
         return ARKIME_PARSER_UNREGISTER;
     }
 
-    uint32_t offset = 5;
-    for (; offset < (uint32_t)len - 20; offset++) {
+    for (uint32_t offset = 5; offset < (uint32_t)len - 20; offset++) {
         if (data[offset] == 'C' && memcmp(data + offset, "CHLO", 4) == 0) {
             BSB bsb;
             BSB_INIT(bsb, data + offset, len - offset);

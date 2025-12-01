@@ -250,8 +250,7 @@ LOCAL void pcapoverip_client_connect(int interface)
 /******************************************************************************/
 LOCAL gboolean pcapoverip_client_check_connections (gpointer UNUSED(user_data))
 {
-    int i;
-    for (i = 0; config.interface[i]; i++) {
+    for (int i = 0; config.interface[i]; i++) {
         if (!isConnected[i])
             pcapoverip_client_connect(i);
     }

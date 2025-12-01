@@ -105,7 +105,6 @@ LOCAL void arkime_field_free_info(ArkimeFieldInfo_t *info)
 void arkime_field_define_json(const uint8_t *expression, int expression_len, const uint8_t *data, int data_len)
 {
     ArkimeFieldInfo_t *info = ARKIME_TYPE_ALLOC0(ArkimeFieldInfo_t);
-    int                i;
     uint32_t           out[4 * 100]; // Can have up to 100 elements at any level
     int                disabled = 0;
 
@@ -114,7 +113,7 @@ void arkime_field_define_json(const uint8_t *expression, int expression_len, con
     }
 
     info->expression = g_strndup((char *)expression, expression_len);
-    for (i = 0; out[i]; i += 4) {
+    for (int i = 0; out[i]; i += 4) {
         if (strncmp("group", (char * )data + out[i], 5) == 0) {
             g_free(info->group);
             info->group = g_strndup((char *)data + out[i + 2], out[i + 3]);
@@ -200,8 +199,7 @@ int arkime_field_define_text_full(char *field, const char *text, int *shortcut)
     if (config.debug)
         LOG("Parsing %s", text);
     char **elements = g_strsplit(text, ";", 0);
-    int e;
-    for (e = 0; elements[e]; e++) {
+    for (int e = 0; elements[e]; e++) {
         char *colon = strchr(elements[e], ':');
         if (!colon)
             continue;
@@ -1266,7 +1264,6 @@ void arkime_field_macoui_add(ArkimeSession_t *session, int macField, int ouiFiel
 /******************************************************************************/
 void arkime_field_free(ArkimeSession_t *session)
 {
-    int                         pos;
     ArkimeString_t             *hstring;
     ArkimeStringHashStd_t      *shash;
     ArkimeInt_t                *hint;
@@ -1275,7 +1272,7 @@ void arkime_field_free(ArkimeSession_t *session)
     ArkimeFieldObjectHashStd_t *ohash;
     ArkimeFieldObjectFreeFunc   freeCB;
 
-    for (pos = 0; pos < session->maxFields; pos++) {
+    for (int pos = 0; pos < session->maxFields; pos++) {
         ArkimeField_t        *field;
 
         if (!(field = session->fields[pos]))
@@ -1472,9 +1469,7 @@ LOCAL int arkime_field_ops_should_run_int_op(const ArkimeFieldOp_t *op, int valu
 /******************************************************************************/
 void arkime_field_ops_run_match(ArkimeSession_t *session, ArkimeFieldOps_t *ops, int matchPos)
 {
-    int i;
-
-    for (i = 0; i < ops->num; i++) {
+    for (int i = 0; i < ops->num; i++) {
         const ArkimeFieldOp_t *op = &(ops->ops[i]);
         int16_t fieldPos = op->fieldPos;
 
@@ -1576,8 +1571,7 @@ void arkime_field_ops_run(ArkimeSession_t *session, ArkimeFieldOps_t *ops)
 void arkime_field_ops_free(ArkimeFieldOps_t *ops)
 {
     if (ops->flags & ARKIME_FIELD_OPS_FLAGS_COPY) {
-        int i;
-        for (i = 0; i < ops->num; i++) {
+        for (int i = 0; i < ops->num; i++) {
             g_free(ops->ops[i].str);
         }
     }
@@ -1798,14 +1792,13 @@ void arkime_field_ops_add(ArkimeFieldOps_t *ops, int fieldPos, char *value, int 
 LOCAL gboolean arkime_field_load_field_remap (gpointer UNUSED(user_data))
 {
     gsize keys_len;
-    int   i;
 
     gchar **keys = arkime_config_section_keys(NULL, "custom-fields-remap", &keys_len);
 
     if (!keys)
         return G_SOURCE_REMOVE;
 
-    for (i = 0; i < (int)keys_len; i++) {
+    for (int i = 0; i < (int)keys_len; i++) {
         int oldPos = arkime_field_by_exp(keys[i]);
         if (oldPos == -1) {
             LOG("WARNING - Unknown field '%s', not remapping", keys[i]);

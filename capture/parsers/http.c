@@ -133,10 +133,9 @@ void http_common_add_header_value(ArkimeSession_t *session, int pos, const char 
         break;
     case ARKIME_FIELD_TYPE_IP:
     case ARKIME_FIELD_TYPE_IP_GHASH: {
-        int i;
         gchar **parts = g_strsplit(s, ",", 0);
 
-        for (i = 0; parts[i]; i++) {
+        for (int i = 0; parts[i]; i++) {
             arkime_field_ip_add_str(pos, session, parts[i]);
 
             /* Add back maybe

@@ -111,9 +111,8 @@ LOCAL const char *arkime_parsers_magic_basic(ArkimeSession_t *session, int field
     case 0x30:
         if (len > 100 && (gchar)data[1] == (gchar)0x82) {
             ArkimeASNSeq_t seq[5];
-            int i;
             int num = arkime_parsers_asn_get_sequence(seq, 5, (uint8_t *)data, len, TRUE);
-            for (i = 0; i < num; i++) {
+            for (int i = 0; i < num; i++) {
                 if (seq[i].pc && seq[i].tag == 16) {
                     BSB tbsb;
                     BSB_INIT(tbsb, seq[i].value, seq[i].len);
@@ -391,8 +390,7 @@ void arkime_parsers_initial_tag(ArkimeSession_t *session)
         arkime_session_add_tag(session, classTag);
 
     if (config.extraTags) {
-        int i;
-        for (i = 0; config.extraTags[i]; i++) {
+        for (int i = 0; config.extraTags[i]; i++) {
             arkime_session_add_tag(session, config.extraTags[i]);
         }
     }
@@ -509,13 +507,12 @@ const char *arkime_parsers_asn_sequence_to_string(ArkimeASNSeq_t *seq, int *len)
 void arkime_parsers_asn_decode_oid(char *buf, int bufsz, const uint8_t *oid, int len)
 {
     int buflen = 0;
-    int pos = 0;
     int first = TRUE;
     int value = 0;
 
     buf[0] = 0;
 
-    for (pos = 0; pos < len; pos++) {
+    for (int pos = 0; pos < len; pos++) {
         value = (value << 7) | (oid[pos] & 0x7f);
         if (oid[pos] & 0x80) {
             continue;
@@ -721,8 +718,7 @@ void arkime_parsers_init()
 #endif
 
     if (magicMode == ARKIME_MAGICMODE_LIBMAGIC || magicMode == ARKIME_MAGICMODE_BOTH) {
-        int t;
-        for (t = 0; t < config.packetThreads; t++) {
+        for (int t = 0; t < config.packetThreads; t++) {
             cookie[t] = magic_open(flags);
             if (!cookie[t]) {
                 LOG("Error with libmagic %s", magic_error(cookie[t]));
@@ -738,17 +734,16 @@ void arkime_parsers_init()
     HASH_INIT(s_, loaded, arkime_string_hash, arkime_string_cmp);
 
     ArkimeString_t *hstring;
-    int d;
 
     char **disableParsers = arkime_config_str_list(NULL, "disableParsers", "arp.so");
-    for (d = 0; disableParsers[d]; d++) {
+    for (int d = 0; disableParsers[d]; d++) {
         hstring = ARKIME_TYPE_ALLOC0(ArkimeString_t);
         hstring->str = disableParsers[d];
         hstring->len = strlen(disableParsers[d]);
         HASH_ADD(s_, loaded, hstring->str, hstring);
     }
 
-    for (d = 0; config.parsersDir[d]; d++) {
+    for (int d = 0; config.parsersDir[d]; d++) {
         GError      *error = 0;
         GDir *dir = g_dir_open(config.parsersDir[d], 0, &error);
 
@@ -798,8 +793,7 @@ void arkime_parsers_init()
 
         qsort((void *)files, (size_t)flen, sizeof(ArkimeFileWithExtension_t), filewext_cmp);
 
-        int i;
-        for (i = 0; i < flen; i++) {
+        for (int i = 0; i < flen; i++) {
             gchar *path = g_build_filename (config.parsersDir[d], files[i].filename, NULL);
 
             int rc = ((ArkimeExtensions_t *)g_ptr_array_index(extensionsArr, files[i].extensionPos))->loadFunc(path);
@@ -849,8 +843,7 @@ void arkime_parsers_init()
     gsize keys_len;
     gchar **keys = arkime_config_section_keys(NULL, "custom-fields", &keys_len);
 
-    int i;
-    for (i = 0; i < (int)keys_len; i++) {
+    for (int i = 0; i < (int)keys_len; i++) {
         char *value = arkime_config_section_str(NULL, "custom-fields", keys[i], NULL);
         arkime_field_define_text_full(keys[i], value, NULL);
         g_free(value);
@@ -870,8 +863,7 @@ void arkime_parsers_init()
 void arkime_parsers_exit()
 {
     if (magicMode == ARKIME_MAGICMODE_LIBMAGIC || magicMode == ARKIME_MAGICMODE_BOTH) {
-        int t;
-        for (t = 0; t < config.packetThreads; t++) {
+        for (int t = 0; t < config.packetThreads; t++) {
             magic_close(cookie[t]);
         }
     }
@@ -879,9 +871,7 @@ void arkime_parsers_exit()
 /******************************************************************************/
 void arkime_print_hex_string(const uint8_t *data, unsigned int length)
 {
-    unsigned int i;
-
-    for (i = 0; i < length; i++) {
+    for (unsigned int i = 0; i < length; i++) {
         printf("%02x", data[i]);
     }
 
@@ -938,8 +928,7 @@ void  arkime_parsers_register2(ArkimeSession_t *session, ArkimeParserFunc func, 
 /******************************************************************************/
 void  arkime_parsers_unregister(ArkimeSession_t *session, void *uw)
 {
-    int i;
-    for (i = 0; i < session->parserNum; i++) {
+    for (int i = 0; i < session->parserNum; i++) {
         if (session->parserInfo[i].uw == uw && session->parserInfo[i].parserFunc != 0) {
             if (session->parserInfo[i].parserFreeFunc) {
                 session->parserInfo[i].parserFreeFunc(session, uw);
@@ -989,8 +978,7 @@ LOCAL ArkimeClassifyHead_t classifersUdpPortDst[0x10000];
 /******************************************************************************/
 LOCAL void arkime_parsers_classifier_add(ArkimeClassifyHead_t *ch, ArkimeClassify_t *c)
 {
-    int i;
-    for (i = 0; i < ch->cnt; i++) {
+    for (int i = 0; i < ch->cnt; i++) {
         if (ch->arr[i]->offset == c->offset &&
             ch->arr[i]->func == c->func &&
             c->matchlen == ch->arr[i]->matchlen &&
@@ -1191,8 +1179,6 @@ void arkime_parsers_classifier_register_sctp_protocol_internal(const char *name,
 /******************************************************************************/
 void arkime_parsers_classify_udp(ArkimeSession_t *session, const uint8_t *data, int remaining, int which)
 {
-    int i;
-
     if (remaining < 2)
         return;
 
@@ -1201,25 +1187,25 @@ void arkime_parsers_classify_udp(ArkimeSession_t *session, const uint8_t *data, 
     LOG("len: %d direction: %d hex: %s data: %.*s", remaining, which, arkime_sprint_hex_string(buf, data, MIN(remaining, 50)), MIN(remaining, 50), data);
 #endif
 
-    for (i = 0; i < classifersUdpPortSrc[session->port1].cnt; i++) {
+    for (int i = 0; i < classifersUdpPortSrc[session->port1].cnt; i++) {
         classifersUdpPortSrc[session->port1].arr[i]->func(session, data, remaining, which, classifersUdpPortSrc[session->port1].arr[i]->uw);
     }
 
-    for (i = 0; i < classifersUdpPortDst[session->port2].cnt; i++) {
+    for (int i = 0; i < classifersUdpPortDst[session->port2].cnt; i++) {
         classifersUdpPortDst[session->port2].arr[i]->func(session, data, remaining, which, classifersUdpPortDst[session->port2].arr[i]->uw);
     }
 
-    for (i = 0; i < classifersUdp0.cnt; i++) {
+    for (int i = 0; i < classifersUdp0.cnt; i++) {
         ArkimeClassify_t *c = classifersUdp0.arr[i];
         if (remaining >= c->minlen && memcmp(data + c->offset, c->match, c->matchlen) == 0) {
             c->func(session, data, remaining, which, c->uw);
         }
     }
 
-    for (i = 0; i < classifersUdp1[data[0]].cnt; i++)
+    for (int i = 0; i < classifersUdp1[data[0]].cnt; i++)
         classifersUdp1[data[0]].arr[i]->func(session, data, remaining, which, classifersUdp1[data[0]].arr[i]->uw);
 
-    for (i = 0; i < classifersUdp2[data[0]][data[1]].cnt; i++) {
+    for (int i = 0; i < classifersUdp2[data[0]][data[1]].cnt; i++) {
         ArkimeClassify_t *c = classifersUdp2[data[0]][data[1]].arr[i];
         if (remaining >= c->minlen && memcmp(data + 2, c->match, c->matchlen) == 0) {
             c->func(session, data, remaining, which, c->uw);
@@ -1233,8 +1219,6 @@ void arkime_parsers_classify_udp(ArkimeSession_t *session, const uint8_t *data, 
 /******************************************************************************/
 void arkime_parsers_classify_tcp(ArkimeSession_t *session, const uint8_t *data, int remaining, int which)
 {
-    int i;
-
 #ifdef DEBUG_PARSERS
     char buf[101];
     LOG("len: %d direction: %d hex: %s data: %.*s", remaining, which, arkime_sprint_hex_string(buf, data, MIN(remaining, 50)), MIN(remaining, 50), data);
@@ -1243,26 +1227,26 @@ void arkime_parsers_classify_tcp(ArkimeSession_t *session, const uint8_t *data, 
     if (remaining < 2)
         return;
 
-    for (i = 0; i < classifersTcpPortSrc[session->port1].cnt; i++) {
+    for (int i = 0; i < classifersTcpPortSrc[session->port1].cnt; i++) {
         classifersTcpPortSrc[session->port1].arr[i]->func(session, data, remaining, which, classifersTcpPortSrc[session->port1].arr[i]->uw);
     }
 
-    for (i = 0; i < classifersTcpPortDst[session->port2].cnt; i++) {
+    for (int i = 0; i < classifersTcpPortDst[session->port2].cnt; i++) {
         classifersTcpPortDst[session->port2].arr[i]->func(session, data, remaining, which, classifersTcpPortDst[session->port2].arr[i]->uw);
     }
 
-    for (i = 0; i < classifersTcp0.cnt; i++) {
+    for (int i = 0; i < classifersTcp0.cnt; i++) {
         ArkimeClassify_t *c = classifersTcp0.arr[i];
         if (remaining >= c->minlen && memcmp(data + c->offset, c->match, c->matchlen) == 0) {
             c->func(session, data, remaining, which, c->uw);
         }
     }
 
-    for (i = 0; i < classifersTcp1[data[0]].cnt; i++) {
+    for (int i = 0; i < classifersTcp1[data[0]].cnt; i++) {
         classifersTcp1[data[0]].arr[i]->func(session, data, remaining, which, classifersTcp1[data[0]].arr[i]->uw);
     }
 
-    for (i = 0; i < classifersTcp2[data[0]][data[1]].cnt; i++) {
+    for (int i = 0; i < classifersTcp2[data[0]][data[1]].cnt; i++) {
         ArkimeClassify_t *c = classifersTcp2[data[0]][data[1]].arr[i];
         if (remaining >= c->minlen && memcmp(data + 2, c->match, c->matchlen) == 0) {
             c->func(session, data, remaining, which, c->uw);
@@ -1276,8 +1260,6 @@ void arkime_parsers_classify_tcp(ArkimeSession_t *session, const uint8_t *data, 
 /******************************************************************************/
 void arkime_parsers_classify_sctp(ArkimeSession_t *session, uint32_t protocol, const uint8_t *data, int remaining, int which)
 {
-    int i;
-
 #ifdef DEBUG_PARSERS
     char buf[101];
     LOG("len: %d direction: %d hex: %s data: %.*s", remaining, which, arkime_sprint_hex_string(buf, data, MIN(remaining, 50)), MIN(remaining, 50), data);
@@ -1287,31 +1269,31 @@ void arkime_parsers_classify_sctp(ArkimeSession_t *session, uint32_t protocol, c
         return;
 
     if (protocol < 256) {
-        for (i = 0; i < classifersSctpProtocol[protocol].cnt; i++) {
+        for (int i = 0; i < classifersSctpProtocol[protocol].cnt; i++) {
             classifersSctpProtocol[protocol].arr[i]->func(session, data, remaining, which, classifersSctpProtocol[protocol].arr[i]->uw);
         }
     }
 
-    for (i = 0; i < classifersSctpPortSrc[session->port1].cnt; i++) {
+    for (int i = 0; i < classifersSctpPortSrc[session->port1].cnt; i++) {
         classifersSctpPortSrc[session->port1].arr[i]->func(session, data, remaining, which, classifersSctpPortSrc[session->port1].arr[i]->uw);
     }
 
-    for (i = 0; i < classifersSctpPortDst[session->port2].cnt; i++) {
+    for (int i = 0; i < classifersSctpPortDst[session->port2].cnt; i++) {
         classifersSctpPortDst[session->port2].arr[i]->func(session, data, remaining, which, classifersSctpPortDst[session->port2].arr[i]->uw);
     }
 
-    for (i = 0; i < classifersSctp0.cnt; i++) {
+    for (int i = 0; i < classifersSctp0.cnt; i++) {
         ArkimeClassify_t *c = classifersSctp0.arr[i];
         if (remaining >= c->minlen && memcmp(data + c->offset, c->match, c->matchlen) == 0) {
             c->func(session, data, remaining, which, c->uw);
         }
     }
 
-    for (i = 0; i < classifersSctp1[data[0]].cnt; i++) {
+    for (int i = 0; i < classifersSctp1[data[0]].cnt; i++) {
         classifersSctp1[data[0]].arr[i]->func(session, data, remaining, which, classifersSctp1[data[0]].arr[i]->uw);
     }
 
-    for (i = 0; i < classifersSctp2[data[0]][data[1]].cnt; i++) {
+    for (int i = 0; i < classifersSctp2[data[0]][data[1]].cnt; i++) {
         ArkimeClassify_t *c = classifersSctp2[data[0]][data[1]].arr[i];
         if (remaining >= c->minlen && memcmp(data + 2, c->match, c->matchlen) == 0) {
             c->func(session, data, remaining, which, c->uw);
