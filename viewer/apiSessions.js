@@ -71,15 +71,7 @@ class SessionAPIs {
         await chunkCb(null, list);
 
         if (req.query.segments && SEGMENTS_REGEX.test(req.query.segments)) {
-          const segList = await new Promise((resolve, reject) => {
-            SessionAPIs.#sessionsListAddSegments(req, indices, query, list, (err, addSegmentsList) => {
-              if (err) {
-                reject(err);
-              } else {
-                resolve(addSegmentsList);
-              }
-            });
-          });
+          const segList = await SessionAPIs.#sessionsListAddSegments(req, indices, query, list);
           if (segList.length > 0) {
             total += segList.length;
             await chunkCb(null, segList);
@@ -324,48 +316,51 @@ class SessionAPIs {
   }
 
   // --------------------------------------------------------------------------
-  static #sessionsListAddSegments (req, indices, query, list, cb) {
-    const processedRo = {};
+  static async #sessionsListAddSegments (req, indices, query, list) {
+    req.arkimeSegmentOptions ??= { haveIds: new Set(), processedRo: new Set() };
 
-    // Index all the ids we have, so we don't include them again
-    const haveIds = new Set(list.map(item => item._id));
+    const rootIdsToSearch = [];
+
+    for (const item of list) {
+      req.arkimeSegmentOptions.haveIds.add(item._id);
+      const fields = item.fields;
+      if (fields.rootId && !req.arkimeSegmentOptions.processedRo.has(fields.rootId)) {
+        rootIdsToSearch.push(fields.rootId);
+        req.arkimeSegmentOptions.processedRo.add(fields.rootId);
+      }
+    }
+
+    if (rootIdsToSearch.length === 0) {
+      return list;
+    }
 
     delete query.aggregations;
 
-    // Do a ro search on each item
-    let writes = 0;
-    async.eachLimit(list, 10, (item, nextCb) => {
-      const fields = item.fields;
-      if (!fields.rootId || processedRo[fields.rootId]) {
-        if (writes++ > 100) {
-          writes = 0;
-          setImmediate(nextCb);
-        } else {
-          nextCb();
-        }
-        return;
+    // Query for all rootIds at once using OR filter
+    const searchQuery = JSON.parse(JSON.stringify(query));
+    searchQuery.query.bool.filter.push({
+      bool: {
+        should: rootIdsToSearch.map(rootId => ({ term: { rootId } })),
+        minimum_should_match: 1
       }
-      processedRo[fields.rootId] = true;
+    });
 
-      const options = ViewerUtils.addCluster(req.query.cluster);
-      query.query.bool.filter.push({ term: { rootId: fields.rootId } });
-      Db.searchSessions(indices, query, options, (err, result) => {
-        if (err || result === undefined || result.hits === undefined || result.hits.hits === undefined) {
-          console.log('ERROR - fetching matching sessions in sessionsListAddSegments', util.inspect(err, false, 50), result);
-          return nextCb(null);
-        }
+    const options = ViewerUtils.addCluster(req.query.cluster);
+    try {
+      const result = await Db.searchSessions(indices, searchQuery, options);
+      if (result?.hits?.hits) {
         for (const subItem of result.hits.hits) {
-          if (!haveIds.has(subItem._id)) {
-            haveIds.add(subItem._id);
+          if (!req.arkimeSegmentOptions.haveIds.has(subItem._id)) {
+            req.arkimeSegmentOptions.haveIds.add(subItem._id);
             list.push(subItem);
           }
         }
-        return nextCb(null);
-      });
-      query.query.bool.filter.pop();
-    }, (err) => {
-      cb(err, list);
-    });
+      }
+    } catch (err) {
+      console.log('ERROR - fetching matching sessions in sessionsListAddSegments', util.inspect(err, false, 50));
+    }
+
+    return list;
   }
 
   // --------------------------------------------------------------------------
@@ -864,12 +859,11 @@ class SessionAPIs {
       });
     }
 
-    req.arkimeWriterOptions ??= { writeHeader: true, nodes: new Map(), bufferPool: [] };
+    const postPcapFetch = Config.get('postPcapFetch');
 
-    const bufferPool = req.arkimeWriterOptions.bufferPool;
-    const limit = 10;
+    req.arkimeWriterOptions ??= { writeHeader: true, nodes: new Map() };
 
-    await async.eachLimit(list, limit, async (item) => {
+    await async.eachLimit(list, 10, async (item) => {
       const fields = item.fields;
 
       if (await SessionAPIs.isLocalView(fields.node)) {
@@ -878,7 +872,6 @@ class SessionAPIs {
           pcapWriter(res, item, req.arkimeWriterOptions, resolve);
         });
       } else {
-
         // Get from remote DISK
         try {
           let result = req.arkimeWriterOptions.nodes.get(fields.node);
@@ -889,19 +882,19 @@ class SessionAPIs {
           }
           const { viewUrl, client, ca } = result;
 
-          // Reuseable buffers.
-          const neededSize = Math.max(100000, Math.min(16200000, 24 + fields['network.packets'] * 20 + fields['network.bytes']));
-          let buffer = bufferPool.pop();
-          if (!buffer || buffer.length < neededSize) {
-            buffer = Buffer.alloc(neededSize);
-          }
-
-          let bufpos = 0;
-
           const sessionPath = '/api/session/' + fields.node + '/' + Db.session2Sid(item) + '.' + extension;
-          const options = {
-            agent: client === http ? internals.httpAgent : internals.httpsAgent
-          };
+          let options;
+          if (postPcapFetch) {
+            options = {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json'
+              }
+            };
+          } else {
+            options = {};
+          }
+          options.agent = client === http ? internals.httpAgent : internals.httpsAgent;
 
           let url;
           if (sessionPath.startsWith('/')) {
@@ -914,37 +907,37 @@ class SessionAPIs {
           options.ca = ca;
 
           await new Promise((resolve) => {
+            const chunks = [];
             const preq = client.request(url, options, (pres) => {
               pres.on('data', (chunk) => {
-                if (bufpos + chunk.length > buffer.length) {
-                  const tmp = Buffer.alloc(buffer.length * 1.5);
-                  buffer.copy(tmp, 0, 0, bufpos);
-                  buffer = tmp;
-                }
-                chunk.copy(buffer, bufpos);
-                bufpos += chunk.length;
+                chunks.push(chunk);
               });
               pres.on('end', () => {
-                if (bufpos < 24) {
-                } else if (req.arkimeWriterOptions.writeHeader) {
-                  req.arkimeWriterOptions.writeHeader = false;
-                  res.write(buffer.slice(0, bufpos));
-                } else {
-                  res.write(buffer.slice(24, bufpos));
+                if (chunks.length === 0) {
+                  resolve();
+                  return;
                 }
-                if (bufferPool.length < limit) {
-                  bufferPool.push(buffer);
+                const buffer = Buffer.concat(chunks);
+                if (buffer.length < 24) {
+                  resolve();
+                  return;
+                }
+                if (req.arkimeWriterOptions.writeHeader) {
+                  req.arkimeWriterOptions.writeHeader = false;
+                  res.write(buffer);
+                } else {
+                  res.write(buffer.subarray(24));
                 }
                 resolve();
               });
             });
             preq.on('error', (e) => {
               console.log("ERROR - Couldn't proxy pcap request to fetch sessions pcap list =", url, '\nerror =', util.inspect(e, false, 50));
-              if (bufferPool.length < limit) {
-                bufferPool.push(buffer);
-              }
               resolve();
             });
+            if (postPcapFetch) {
+              preq.write(JSON.stringify(item));
+            }
             preq.end();
           });
         } catch (err) {
@@ -1075,42 +1068,43 @@ class SessionAPIs {
   static #getWritePcapBuffer () {
     let mem = SessionAPIs.#writePcapPool.pop();
     if (!mem) {
-      mem = Buffer.alloc(0xfffe);
+      mem = Buffer.alloc(0x10000); // 64k
     }
     return mem;
   }
 
   static #putWritePcapBuffer (buf) {
-    if (SessionAPIs.#writePcapPool.length < 20) {
+    if (SessionAPIs.#writePcapPool.length < 30) {
       SessionAPIs.#writePcapPool.push(buf);
     }
   }
 
+  // --------------------------------------------------------------------------
   static #writePcap (res, id, writerOptions, doneCb) {
-    let nextPacket = 0;
+    let writePos = 0;
     let boffset = 0;
-    const packets = {};
-
-    res.arkimeWritePcap ??= { bufferPool: [] };
+    const packets = new Map();
 
     let b = SessionAPIs.#getWritePcapBuffer();
 
-    SessionAPIs.processSessionId(id, false, (pcap, buffer) => {
+    // Retrieve all the packets in parallel (10) and chunk
+    // them when sending them
+    SessionAPIs.processSessionId(id, false, (pcap, packet) => {
       if (writerOptions.writeHeader) {
-        res.write(buffer);
+        res.write(packet);
         writerOptions.writeHeader = false;
       }
-    }, (pcap, buffer, cb, i) => {
+    }, (pcap, packet, cb, pos) => {
       // Save this packet in its spot
-      packets[i] = buffer;
+      packets.set(pos, packet);
 
       // Send any packets we have in order
-      while (packets[nextPacket]) {
-        buffer = packets[nextPacket];
-        delete packets[nextPacket];
-        nextPacket++;
+      while (packets.has(writePos)) {
+        packet = packets.get(writePos);
+        packets.delete(writePos);
+        writePos++;
 
-        if (boffset + buffer.length > b.length) {
+        if (boffset + packet.length > b.length) {
           const bToReturn = b;
           res.write(b.slice(0, boffset), () => {
             SessionAPIs.#putWritePcapBuffer(bToReturn);
@@ -1118,8 +1112,8 @@ class SessionAPIs {
           boffset = 0;
           b = SessionAPIs.#getWritePcapBuffer();
         }
-        buffer.copy(b, boffset, 0, buffer.length);
-        boffset += buffer.length;
+        packet.copy(b, boffset, 0, packet.length);
+        boffset += packet.length;
       }
       cb(null);
     }, (err, session) => {
@@ -1714,8 +1708,10 @@ class SessionAPIs {
 
           query.fields = fields;
           query._source = false;
-          SessionAPIs.#sessionsListAddSegments(req, indices, query, list, (err, addSegmentsList) => {
-            cb(err, addSegmentsList);
+          SessionAPIs.#sessionsListAddSegments(req, indices, query, list).then(addSegmentsList => {
+            cb(null, addSegmentsList);
+          }).catch(err => {
+            cb(err);
           });
         });
       } else {
@@ -3516,6 +3512,16 @@ class SessionAPIs {
     ArkimeUtil.noCache(req, res, 'application/vnd.tcpdump.pcap');
     const writeHeader = !req.query || !req.query.noHeader || req.query.noHeader !== 'true';
     SessionAPIs.#writePcap(res, req.params.id, { writeHeader }, () => {
+      res.end();
+    });
+  };
+
+  // --------------------------------------------------------------------------
+  static postPCAPFromNode (req, res) {
+    ArkimeUtil.noCache(req, res, 'application/vnd.tcpdump.pcap');
+    const writeHeader = !req.query || !req.query.noHeader || req.query.noHeader !== 'true';
+
+    SessionAPIs.#writePcap(res, req.body, { writeHeader }, () => {
       res.end();
     });
   };

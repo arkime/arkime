@@ -29,6 +29,7 @@ class ArkimeUtil {
    * A json body parser that doesn't allow anything that looks like "__proto__": or "constructor":
    */
   static jsonParser = bodyParser.json({
+    limit: '1mb',
     verify: function (req, res, buf, encoding) {
       if (buf !== undefined && buf.length) {
         sjson.parse(buf);
@@ -401,9 +402,7 @@ class ArkimeUtil {
     let values = string.split(/[,\n]+/g);
 
     // remove any empty values
-    values = values.filter(function (val) {
-      return val !== '';
-    });
+    values = values.filter(val => val !== '');
 
     return values;
   }

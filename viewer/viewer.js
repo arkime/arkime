@@ -1777,6 +1777,12 @@ app.get( // session node pcap endpoint
   SessionAPIs.getPCAPFromNode
 );
 
+app.post( // session node pcap endpoint
+  ['/api/session/:nodeName/:id[/.]pcap*'],
+  [checkProxyRequest, User.checkPermissions(['disablePcapDownload'])],
+  SessionAPIs.postPCAPFromNode
+);
+
 app.get( // session node pcapng endpoint
   ['/api/session/:nodeName/:id[/.]pcapng'],
   [checkProxyRequest, User.checkPermissions(['disablePcapDownload'])],

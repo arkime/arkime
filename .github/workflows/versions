@@ -14,6 +14,7 @@
 #   notice - build the notice file, only need once
 #   viewertest - run the viewer tests can be normal or sanitize
 #   sanitizebuild - when set the command to use for latest-commit to build a sanitized version
+#   prbuild - if True then this build is used for PR builds & main, otherwise just main
 
 
 include:
@@ -24,6 +25,7 @@ include:
     fpmdeps: "-d perl-libwww-perl -d perl-JSON -d ethtool -d libyaml -d perl-LWP-Protocol-https -d python3.12-libs"
     uitest: true
     python: python3.12
+    prbuild: true
 
   - version: el9.x86_64
     container: andywick/arkime-build-9:6.0.0-2
@@ -32,6 +34,7 @@ include:
     package: rpm
     notice: true
     python: python3
+    prbuild: true
 
   - version: el10.x86_64
     container: andywick/arkime-build-10:6.0.0-2
@@ -47,6 +50,7 @@ include:
     package: deb
     viewertest: sanitize
     sanitizebuild: make sanitize CC=clang-18
+    prbuild: true
 
   - version: ubuntu2404_amd64
     container: andywick/arkime-build-24:6.0.0-2
@@ -62,6 +66,7 @@ include:
     fpmdeps: "-d libmaxminddb -d libpcap -d yara -d perl-http-message -d perl-lwp-protocol-https -d perl-json -d libnet -d lua -d zstd -d openssl-1.1 -d pcre"
     package: arch
     viewertest: normal
+    prbuild: true
 
   - version: al2023.x86_64
     container: andywick/arkime-build-al2023:6.0.0-2
@@ -82,6 +87,7 @@ include:
     package: deb
     docker: true
     ja4plus: true
+    prbuild: true
 
   ############# ARM #############
   - version: al2023.aarch64
@@ -122,6 +128,7 @@ include:
     runson: ubuntu-24.04-arm
     docker: true
     ja4plus: true
+    prbuild: true
 
   - version: el9.aarch64
     container: andywick/arkime-build-9-arm64:6.0.0-2
@@ -136,3 +143,38 @@ include:
     fpmdeps: "-d perl-libwww-perl -d perl-JSON -d ethtool -d libyaml -d perl-LWP-Protocol-https -d libzstd -d libmaxminddb -d libpcap -d librdkafka -d python3-libs"
     package: rpm
     runson: ubuntu-24.04-arm
+
+  ############# FreeBSD #############
+  - version: freebsd14.x86_64
+    freebsdrelease: "14.3"
+    buildopt: "--kafka"
+    vmaction: vmactions/freebsd-vm@v1
+    vmaction-opts: "release: 14.3 usesh: true"
+    fpmdeps: "-d glib -d yara -d libyaml -d libmaxminddb -d libuuid -d python312 -d libinotify"
+    ja4plus: true
+    prbuild: true
+
+  - version: freebsd15.x86_64
+    freebsdrelease: "15.0"
+    buildopt: "--kafka"
+    vmaction: vmactions/freebsd-vm@v1
+    vmaction-opts: "release: 15.0 usesh: true"
+    fpmdeps: "-d glib -d yara -d libyaml -d libmaxminddb -d libuuid -d python312 -d libinotify"
+    prbuild: true
+
+#  - version: freebsd14.aarch64
+#    freebsdrelease: "14.3"
+#    buildopt: "--kafka"
+#    vmaction: vmactions/freebsd-vm@v1
+#    vmaction-opts: "release: 14.3 arch: aarch64 usesh: true"
+#    fpmdeps: "-d glib -d yara -d libyaml -d libmaxminddb -d libuuid -d python312 -d libinotify"
+#    ja4plus: true
+#    #runson: ubuntu-24.04-arm
+#
+#  - version: freebsd15.aarch64
+#    freebsdrelease: "15.0"
+#    buildopt: "--kafka"
+#    vmaction: vmactions/freebsd-vm@v1
+#    vmaction-opts: "release: 15.0 arch: aarch64 usesh: true"
+#    fpmdeps: "-d glib -d yara -d libyaml -d libmaxminddb -d libuuid -d python312 -d libinotify"
+#    #runson: ubuntu-24.04-arm

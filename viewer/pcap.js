@@ -43,7 +43,7 @@ class Pcap {
   // --------------------------------------------------------------------------
   constructor (key) {
     this.key = key;
-    this.blockCache = new LRUCache({ max: 10 });
+    this.blockCache = new LRUCache({ max: 11 });
     return this;
   };
 
