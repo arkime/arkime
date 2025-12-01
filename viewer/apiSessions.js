@@ -1068,41 +1068,43 @@ class SessionAPIs {
   static #getWritePcapBuffer () {
     let mem = SessionAPIs.#writePcapPool.pop();
     if (!mem) {
-      mem = Buffer.alloc(0xfffe);
+      mem = Buffer.alloc(0x10000); // 64k
     }
     return mem;
   }
 
   static #putWritePcapBuffer (buf) {
-    if (SessionAPIs.#writePcapPool.length < 20) {
+    if (SessionAPIs.#writePcapPool.length < 30) {
       SessionAPIs.#writePcapPool.push(buf);
     }
   }
 
   // --------------------------------------------------------------------------
   static #writePcap (res, id, writerOptions, doneCb) {
-    let nextPacket = 0;
+    let writePos = 0;
     let boffset = 0;
-    const packets = {};
+    const packets = new Map();
 
     let b = SessionAPIs.#getWritePcapBuffer();
 
-    SessionAPIs.processSessionId(id, false, (pcap, buffer) => {
+    // Retrieve all the packets in parallel (10) and chunk
+    // them when sending them
+    SessionAPIs.processSessionId(id, false, (pcap, packet) => {
       if (writerOptions.writeHeader) {
-        res.write(buffer);
+        res.write(packet);
         writerOptions.writeHeader = false;
       }
-    }, (pcap, buffer, cb, i) => {
+    }, (pcap, packet, cb, pos) => {
       // Save this packet in its spot
-      packets[i] = buffer;
+      packets.set(pos, packet);
 
       // Send any packets we have in order
-      while (packets[nextPacket]) {
-        buffer = packets[nextPacket];
-        delete packets[nextPacket];
-        nextPacket++;
+      while (packets.has(writePos)) {
+        packet = packets.get(writePos);
+        packets.delete(writePos);
+        writePos++;
 
-        if (boffset + buffer.length > b.length) {
+        if (boffset + packet.length > b.length) {
           const bToReturn = b;
           res.write(b.slice(0, boffset), () => {
             SessionAPIs.#putWritePcapBuffer(bToReturn);
@@ -1110,8 +1112,8 @@ class SessionAPIs {
           boffset = 0;
           b = SessionAPIs.#getWritePcapBuffer();
         }
-        buffer.copy(b, boffset, 0, buffer.length);
-        boffset += buffer.length;
+        packet.copy(b, boffset, 0, packet.length);
+        boffset += packet.length;
       }
       cb(null);
     }, (err, session) => {
