@@ -498,6 +498,7 @@ async function fixPacketPos (fields) {
         fields.packetPos = newPacketPos;
         return;
       } else {
+        delete fields.packetPos; // can't decode remote
         return;
       }
     } else {
