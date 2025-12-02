@@ -391,11 +391,12 @@ jobs:
           usesh: true
           prepare: |
             pkg update -f
-            pkg install -y bash git curl wget perl5 openssl jq yq sudo gmake autoconf automake m4 libtool rubygem-fpm autoconf-archive gtar
+            pkg install -y bash git curl wget perl5 openssl jq yq sudo gmake autoconf automake m4 libtool rubygem-fpm autoconf-archive gtar p5-LWP-Protocol-https p5-JSON p5-Test-Differences p5-Socket6
           run: |
             git config --global --add safe.directory `pwd`
             ./easybutton-build.sh ${{ matrix.buildopt }} --rminstall --nothirdparty
             ls -l capture/capture
+            (cd tests; ./tests.pl)
             INSTALL_BUNDLE=bundle gmake install
             export ARKIME_VERSION=`sed 's/.*"\(.*\)\".*$/\1/' /opt/arkime/common/version.js | head -n 1`
             arch=$(uname -m | sed s/aarch64/arm64/ | sed s/x86_64/amd64/)
