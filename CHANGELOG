@@ -35,7 +35,7 @@ NOTICE: Restart wiseService before capture when upgrading
 NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at once after upgrading
 NOTICE: Create a parliament config file before upgrading (see https://arkime.com/settings#parliament and https://arkime.com/faq#how_do_i_upgrade_to_arkime_5)
 
-6.0.0 2025/11/xx
+6.0.0 2025/12/xx
 ## BREAKING
   - #3138 settings parseSMTP & parseSMB removed, use disableParsers instead
   - #3138 plugins must end with supported extension, e.g. .so, .lua
@@ -129,7 +129,9 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
 ## WISE
   - #3435 New wise urlapi source
 
-5.8.3 2025/11/xx
+5.8.3 2025/12/02
+## Release
+  - #3510 Node 20.19.6
 ## Capture
   - #3489 Do a better job URL encoding the file exists check for managed OpenSearch
 
