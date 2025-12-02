@@ -4,21 +4,20 @@ SPDX-License-Identifier: Apache-2.0
 -->
 <template>
   <div v-if="compatibleBrowser">
-    <arkime-navbar></arkime-navbar>
+    <arkime-navbar />
     <router-view v-if="user" />
     <div class="pull-right small app-info-error">
       <arkime-toast
-        class="mr-1"
+        class="me-1"
         type="danger"
         :duration="1000000"
         :done="messageDone"
-        :message="appInfoMissing">
-      </arkime-toast>
+        :message="appInfoMissing" />
     </div>
     <keyboard-shortcuts
       shortcuts-class="arkime-shortcuts"
       @shift-hold-change="shiftHoldChange">
-      <template v-slot:content>
+      <template #content>
         <code>'Q'</code> - set focus to query bar
         <br>
         <code>'T'</code> - set focus to time range selector
@@ -42,25 +41,23 @@ SPDX-License-Identifier: Apache-2.0
         <code>'?'</code> - shows you this dialog, but I guess you already knew that
       </template>
     </keyboard-shortcuts>
-    <arkime-footer></arkime-footer>
+    <arkime-footer :store="$store" />
     <arkime-welcome-message
-      v-if="user && (!user.welcomeMsgNum || user.welcomeMsgNum < 1)">
-    </arkime-welcome-message>
+      v-if="user && (!user.welcomeMsgNum || user.welcomeMsgNum < 1)" />
   </div>
   <div v-else>
-    <arkime-upgrade-browser>
-    </arkime-upgrade-browser>
+    <arkime-upgrade-browser />
   </div>
 </template>
 
 <script>
-import ConfigService from './components/utils/ConfigService';
-import ArkimeToast from './components/utils/Toast';
-import ArkimeNavbar from './components/utils/Navbar';
-import ArkimeFooter from './components/utils/Footer';
-import ArkimeWelcomeMessage from './components/utils/WelcomeMessage';
-import ArkimeUpgradeBrowser from './components/utils/UpgradeBrowser';
-import KeyboardShortcuts from '../../../common/vueapp/KeyboardShortcuts';
+import ConfigService from './components/utils/ConfigService.js';
+import ArkimeToast from './components/utils/Toast.vue';
+import ArkimeNavbar from './components/utils/Navbar.vue';
+import ArkimeFooter from '@common/Footer.vue';
+import ArkimeWelcomeMessage from './components/utils/WelcomeMessage.vue';
+import ArkimeUpgradeBrowser from './components/utils/UpgradeBrowser.vue';
+import KeyboardShortcuts from '@common/KeyboardShortcuts.vue';
 
 export default {
   name: 'App',
@@ -125,7 +122,7 @@ export default {
       const activeElement = document.activeElement;
       const inputs = ['input', 'select', 'textarea'];
 
-      if (e.keyCode === 27) { // esc
+      if (e.key === 'Escape') { // esc
         activeElement.blur(); // remove focus from all inputs
         return;
       }
@@ -135,52 +132,54 @@ export default {
         return;
       }
 
-      switch (e.keyCode) {
-      case 81: // q
+      // Only convert to lowercase if the key is a single character (letter)
+      const key = e.key.length === 1 ? e.key.toLowerCase() : e.key;
+      switch (key) {
+      case 'q': // q
         // focus on search expression input
         this.$store.commit('setFocusSearch', true);
         break;
-      case 84: // t
+      case 't': // t
         // focus on time range selector
         this.$store.commit('setFocusTimeRange', true);
         break;
-      case 83: // s
+      case 's': // s
         // open sessions page if not on sessions page
         if (this.$route.name !== 'Sessions') {
           this.routeTo('/sessions');
         }
         break;
-      case 86: // v
+      case 'v': // v
         // open spiview page if not on spiview page
         if (this.$route.name !== 'Spiview') {
           this.routeTo('/spiview');
         }
         break;
-      case 71: // g
+      case 'g': // g
         // open spigraph page if not on spigraph page
         if (this.$route.name !== 'Spigraph') {
           this.routeTo('/spigraph');
         }
         break;
-      case 67: // c
+      case 'c': // c
         // open connections page if not on connections page
         if (this.$route.name !== 'Connections') {
           this.routeTo('/connections');
         }
         break;
-      case 72: // h
+      case 'h': // h
         // open help page if not on help page
         if (this.$route.name !== 'Help') {
           this.routeTo('/help');
         }
         break;
-      case 85: // u
+      case 'u': // u
         // open hunt page if not on hunt page
         if (this.$route.name !== 'Hunt') {
           this.routeTo('/hunt');
         }
         break;
-      case 13: // enter
+      case 'Enter': // enter
         // trigger search/refresh
         this.$store.commit('setIssueSearch', true);
         break;
@@ -408,7 +407,7 @@ div.btn-checkbox > label:disabled {
   margin-bottom : var(--px-none);
   font-size     : .85rem;
 }
-.alert.alert-sm button.close {
+.alert.alert-sm button.btn-close {
   padding: 0 .5rem;
 }
 
@@ -432,6 +431,11 @@ div.btn-checkbox > label:disabled {
   color: var(--color-quaternary);
   border-color: var(--color-quaternary-darkest);
   background-color: var(--color-quaternary-lightest);
+}
+
+/* version in navbar */
+.navbar-text {
+  color: var(--color-background);
 }
 
 /* sub navbars */
@@ -482,7 +486,7 @@ dl.dl-horizontal.dl-horizontal-wide dd {
 
 /* keyboard shortcut info styling */
 .arkime-shortcuts {
-  top: 155px;
+  top: 160px;
   z-index: 9;
   position: fixed;
   border-radius: 0 4px 4px 0;
@@ -506,7 +510,7 @@ dl.dl-horizontal.dl-horizontal-wide dd {
   width: 20px;
 }
 /* make sure the width of the input prepend doesn't change */
-.input-group-prepend-fw, .input-group-text-fw {
+.input-group-text-fw {
   width: 36px;
 }
 
@@ -524,7 +528,7 @@ dl.dl-horizontal.dl-horizontal-wide dd {
   background-color: var(--color-white, #FFFFFF);
   position: relative;
   top: -2px;
-  right: 6px;
+  right: 3px;
 }
 
 /* custom font awesome icons */
@@ -591,13 +595,6 @@ table.table {
   z-index: 9;
 }
 
-/* badge remove button */
-.badge > button.close {
-  line-height: 0.4;
-  font-size: 1.2rem;
-  margin-left: 0.3rem;
-}
-
 /* application information error */
 .app-info-error {
   right: 10px;
@@ -607,5 +604,33 @@ table.table {
 }
 .app-info-error > div.alert {
   font-size: 17px;
+}
+
+/* special buttons for andy that have checkboxes or radios still visible */
+.form-check.buttons-with-boxes,
+.buttons-with-boxes > .form-check {
+  font-size: .8rem;
+  padding: .1em .5em .1em 2em;
+  color: var(--color-black);
+  background: var(--color-gray-light);
+}
+.buttons-with-boxes {
+  cursor: pointer;
+}
+.buttons-with-boxes label,
+.buttons-with-boxes input {
+  cursor: pointer;
+}
+.buttons-with-boxes > .form-check {
+  margin-right: 0px;
+}
+.buttons-with-boxes > .form-check {
+  border-radius: 0;
+}
+.buttons-with-boxes > .form-check:first-child {
+  border-radius: 4px 0 0 4px;
+}
+.buttons-with-boxes > .form-check:last-child {
+  border-radius: 0 4px 4px 0;
 }
 </style>

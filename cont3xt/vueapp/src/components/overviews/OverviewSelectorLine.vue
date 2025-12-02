@@ -3,23 +3,20 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-  <div class="no-wrap d-flex d-inline-flex w-100 justify-content-between align-items-center">
-    <span
-        v-if="showITypeIcon"
-        class="fa fa-fw mr-1"
-        :class="[ iTypeIconMap[overview.iType] ]"
-        v-b-tooltip.hover="overview.iType"
-    />
+  <div class="no-wrap d-flex flex-row w-100 mw-100 justify-space-between align-center">
+    <v-icon
+      class="mr-2"
+      v-if="showITypeIcon"
+      v-tooltip="overview.iType"
+      :icon="iTypeIconMap[overview.iType]" />
     <span class="flex-grow-1 overview-nav-name">
       {{ overview.name }}
     </span>
-    <span
-        @click.stop="setAsDefaultOverview"
-        class="fa fa-fw pull-right"
-        :class="[isSetAsDefault ? 'fa-star' : 'fa-star-o']"
-        :style="iTypeColorStyleMap[overview.iType]"
-        v-b-tooltip.hover.right="isSetAsDefault ? `Default for ${overview.iType} iType` : `Set as default for ${overview.iType} iType`"
-    />
+    <v-icon
+      @click.stop="setAsDefaultOverview"
+      :icon="isSetAsDefault ? 'mdi-star' : 'mdi-star-outline'"
+      :style="iTypeColorStyleMap[overview.iType]"
+      v-tooltip:end="isSetAsDefault ? `Default for ${overview.iType} iType` : `Set as default for ${overview.iType} iType`" />
   </div>
 </template>
 
@@ -65,10 +62,10 @@ export default {
 <style scoped>
 /* this shortens the overview name with ellipsis without offsetting the to its right star */
 .overview-nav-name {
-  width: calc(100% - 10px);
   overflow: hidden;
   position: relative;
   white-space: nowrap;
   text-overflow: ellipsis;
+  text-align: start;
 }
 </style>

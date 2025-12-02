@@ -65,8 +65,7 @@ LOCAL gboolean scheme_file_monitor_read()
         LOGEXIT("ERROR - Monitor read failed - %s", strerror(errno));
     buf[rc] = 0;
 
-    char *p;
-    for (p = buf; p < buf + rc; ) {
+    for (char *p = buf; p < buf + rc; ) {
         struct inotify_event *event = (struct inotify_event *) p;
         scheme_file_monitor_do(event);
         p += sizeof(struct inotify_event) + event->len;

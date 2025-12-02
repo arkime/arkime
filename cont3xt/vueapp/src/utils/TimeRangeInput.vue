@@ -3,233 +3,245 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-  <b-form inline class="d-flex align-items-center">
-    <b-dropdown
+  <div class="d-flex align-center">
+    <v-btn
+      class="mr-1 skinny-search-row-btn"
+      tabindex="-1"
+      color="secondary"
+      :style="btnStyle">
+      <v-icon
+        icon="mdi-menu-down"
+        size="large" />
+      <v-menu
+        activator="parent"
+        location="bottom">
+        <v-card>
+          <v-list class="d-flex flex-column">
+            <template v-if="currentItype === 'domain'">
+              <v-btn
+                @click="snapTo(0)"
+                text="Registration Date"
+                variant="text"
+                class="justify-start" />
+              <v-divider class="my-1" />
+            </template>
+
+            <v-btn
+              v-for="nDays in [1, 2, 3, 7, 14, 30, -1]"
+              :key="nDays"
+              class="justify-start"
+              @click="snapTo(nDays)"
+              variant="text"
+              :label="(nDays === -1) ? 'All' : `${nDays}`">
+              <span v-if="nDays === -1">All</span>
+              <span v-else-if="nDays === 1">1 Day</span>
+              <span v-else>{{ nDays }} Days</span>
+            </v-btn>
+          </v-list>
+        </v-card>
+      </v-menu>
+    </v-btn>
+
+    <v-text-field
+      variant="outlined"
+      label="Start"
       class="mr-1"
-      :size="inputGroupSize"
-      v-b-tooltip.hover="'Snap To'">
-      <template v-if="currentItype === 'domain'">
-        <b-dropdown-item @click="snapTo(0)">Registration Date</b-dropdown-item>
-        <b-dropdown-divider></b-dropdown-divider>
-      </template>
-      <b-dropdown-item @click="snapTo(1)">1 Day</b-dropdown-item>
-      <b-dropdown-item @click="snapTo(2)">2 Days</b-dropdown-item>
-      <b-dropdown-item @click="snapTo(3)">3 Days</b-dropdown-item>
-      <b-dropdown-item @click="snapTo(7)">7 Days</b-dropdown-item>
-      <b-dropdown-item @click="snapTo(14)">14 Days</b-dropdown-item>
-      <b-dropdown-item @click="snapTo(30)">30 Days</b-dropdown-item>
-      <b-dropdown-item @click="snapTo(-1)">All</b-dropdown-item>
-    </b-dropdown>
-    <b-input-group
+      :class="[inputClass]"
+      type="text"
+      tabindex="0"
+      ref="startDateRef"
+      id="startDateField"
+      v-model="localStartDate"
+      :style="`width:${inputWidth}`"
+      placeholder="Start Date"
+      v-focus="getFocusStartDate"
+      @keyup.up="startKeyUp(1)"
+      @keyup.down="startKeyUp(-1)"
+      @change="updateStopStart('startDate')" />
+    <short-cut-tooltip
+      target-id="startDateField"
+      location="center">
+      T
+    </short-cut-tooltip>
+    <v-text-field
+      variant="outlined"
+      label="End"
       class="mr-1"
-      :size="inputGroupSize">
-      <template #prepend>
-        <b-input-group-text>
-          <span v-if="!getShiftKeyHold">
-            Start
-          </span>
-          <span v-else
-          class="start-time-shortcut">
-            T
-          </span>
-        </b-input-group-text>
-      </template>
-      <b-form-input
-          type="text"
-          tabindex="0"
-          ref="startDate"
-          v-model="localStartDate"
-          :style="`width:${inputWidth}`"
-          placeholder="Start Date"
-          v-focus="getFocusStartDate"
-          @keyup.up="startKeyUp(1)"
-          @keyup.down="startKeyUp(-1)"
-          @change="updateStopStart('startDate')"
-      />
-    </b-input-group>
-    <b-input-group
-        :size="inputGroupSize"
-        class="mr-1">
-      <template #prepend>
-        <b-input-group-text>
-          End
-        </b-input-group-text>
-      </template>
-      <b-form-input
-          type="text"
-          tabindex="0"
-          v-model="localStopDate"
-          :style="`width:${inputWidth}`"
-          placeholder="Stop Date"
-          @keyup.up="stopKeyUp(1)"
-          @keyup.down="stopKeyUp(-1)"
-          @change="updateStopStart('stopDate')"
-      />
-    </b-input-group>
-    <span class="text-nowrap">
-      <span class="fa fa-lg fa-question-circle cursor-help mt-1"
-            v-b-tooltip.hover.html="placeHolderTip"
-      />
+      :class="[inputClass]"
+      type="text"
+      tabindex="0"
+      placeholder="Stop Date"
+      v-model="localStopDate"
+      :style="`width:${inputWidth}`"
+      @keyup.up="stopKeyUp(1)"
+      @keyup.down="stopKeyUp(-1)"
+      @change="updateStopStart('stopDate')" />
+    <span class="text-no-wrap">
+      <v-icon
+        icon="mdi-help-circle-outline"
+        id="timerange-input-help" />
+      <html-tooltip
+        :html="placeHolderTip"
+        target-id="timerange-input-help" />
       <span class="pl-1">
         {{ timeRangeInfo.numDays }} days | {{ timeRangeInfo.numHours }} hours
       </span>
     </span>
-  </b-form>
+  </div>
 </template>
 
-<script>
-import { mapGetters } from 'vuex';
-import Focus from '@/../../../common/vueapp/Focus';
+<script setup>
+import HtmlTooltip from '@common/HtmlTooltip.vue';
+import ShortCutTooltip from '@/utils/ShortCutTooltip.vue';
+import Focus from '@common/Focus.vue';
+import { parseSeconds } from '@common/vueFilters.js';
+import { useStore } from 'vuex';
+import { useRoute, useRouter } from 'vue-router';
+import { useGetters } from '@/vue3-helpers';
+import { ref, computed, onMounted, watch } from 'vue';
 
 /**
  * -- TimeRangeInput --
  * This component handles changing a start/stop date via inputs, while managing the startDate/stopDate query params
  */
-export default {
-  name: 'TimeRangeInput',
-  directives: { Focus },
-  props: {
-    value: { // v-model 'value' segment
-      type: Object,
-      required: true
-    },
-    placeHolderTip: { // (Question mark hover text) -- shape of { title: String }
-      type: Object,
-      required: true
-    },
-    inputGroupSize: {
-      type: String,
-      default: 'xs'
-    },
-    inputWidth: {
-      type: String,
-      default: '138px'
-    }
+
+// expose as v-focus through Composition Api
+const VFocus = Focus;
+
+const props = defineProps({
+  modelValue: {
+    type: Object,
+    default: () => ({ startDate: '', stopDate: '' })
   },
-  data () {
-    return {
-      localStartDate: this.value.startDate,
-      localStopDate: this.value.stopDate
-    };
+  placeHolderTip: { // (Question mark hover text) -- shape of { title: String }
+    type: Object,
+    required: true
   },
-  computed: {
-    ...mapGetters(['getShiftKeyHold', 'getFocusStartDate', 'getActiveIndicator', 'getResults']),
-    timeRangeInfo: {
-      get () { return this.value; },
-      set (newVal) {
-        this.$emit('input', newVal); // v-model 'input' emitter segment
-      }
-    },
-    currentItype () {
-      return this.getActiveIndicator?.itype;
-    },
-    doneLoading () {
-      return this.$store.state.loading.done;
-    }
+  inputGroupSize: {
+    type: String,
+    default: 'xs'
   },
-  watch: {
-    getFocusStartDate (val) {
-      if (val) { this.$refs.startDate.select(); }
-    },
-    doneLoading (val) { // snap to the last snapTo value if it exists
-      if (val && localStorage.getItem('snapTo')) {
-        this.snapTo(parseInt(localStorage.getItem('snapTo')));
-      }
-    }
-  },
-  methods: { /* component methods ------------------------------------------- */
-    snapTo (days) {
-      // always update the stop date to now
-      const date = new Date();
-      this.localStopDate = date.toISOString().slice(0, -5) + 'Z';
-      this.updateStopStart('stopDate');
-      localStorage.setItem('snapTo', days);
+  inputWidth: {
+    type: String,
+    default: '138px'
+  }
+});
 
-      if (days && days > 0) { // update start date to <days> ago
-        const startMs = date.setDate(date.getDate() - days);
-        this.localStartDate = new Date(startMs).toISOString().slice(0, -5) + 'Z';
-        this.updateStopStart('startDate');
-      } else if (days === -1) { // update start date to epoch
-        this.localStartDate = new Date(0).toISOString().slice(0, -5) + 'Z';
-        this.updateStopStart('startDate');
-      } else { // update start date to registration date if it exists
-        if (this.currentItype === 'domain' && this.getResults?.domain?.[this.getActiveIndicator?.query]?.['PT Whois']?.registered) {
-          this.localStartDate = this.getResults.domain[this.getActiveIndicator.query]['PT Whois'].registered;
-          this.updateStopStart('startDate');
-        }
-      }
-    },
-    startKeyUp (days) {
-      const date = new Date(this.localStartDate);
-      const startMs = date.setDate(date.getDate() + days);
-      this.localStartDate = new Date(startMs).toISOString().slice(0, -5) + 'Z';
-      this.updateStopStart('startDate');
-    },
-    stopKeyUp (days) {
-      const date = new Date(this.localStopDate);
-      const stopMs = date.setDate(date.getDate() + days);
-      this.localStopDate = new Date(stopMs).toISOString().slice(0, -5) + 'Z';
-      this.updateStopStart('stopDate');
-    },
-    updateStopStart (updated) {
-      let startMs = new Date(this.localStartDate).getTime();
-      let stopMs = new Date(this.localStopDate).getTime();
+const inputClass = computed(() => props.inputGroupSize === 'xs' ? 'tiny-input' : 'medium-input');
+const btnStyle = computed(() => props.inputGroupSize === 'xs' ? 'height: 32px !important;' : '');
 
-      // test for relative times
-      if (isNaN(startMs)) {
-        startMs = this.$options.filters.parseSeconds(this.localStartDate) * 1000;
-      }
-      if (isNaN(stopMs)) {
-        stopMs = this.$options.filters.parseSeconds(this.localStopDate) * 1000;
-      }
+const timeRangeInfo = defineModel({ required: false, default: () => ({}), type: Object });
 
-      // can't do anything if we can't calculate the date ms
-      if (isNaN(stopMs) || isNaN(startMs)) { return; }
+const localStartDate = ref(timeRangeInfo.value.startDate);
+const localStopDate = ref(timeRangeInfo.value.stopDate);
+const startDateRef = ref(null);
 
-      const updatedDate = updated === 'startDate' ? this.localStartDate : this.localStopDate;
-      // update the query params with the updated value
-      if (this.$route.query[updated] !== updatedDate) {
-        const query = { ...this.$route.query };
-        query[updated] = updatedDate;
-        this.$router.push({ query });
-      }
+const store = useStore();
+const { getFocusStartDate, getActiveIndicator, getResults } = useGetters(store);
 
-      const days = (stopMs - startMs) / (3600000 * 24);
+const route = useRoute();
+const router = useRouter();
 
-      switch (updated) {
-      case 'stopDate':
-        this.localStartDate = new Date(stopMs - (3600000 * 24 * days)).toISOString().slice(0, -5) + 'Z';
-        this.localStopDate = new Date(stopMs).toISOString().slice(0, -5) + 'Z';
-        break;
-      case 'startDate':
-        this.localStartDate = new Date(startMs).toISOString().slice(0, -5) + 'Z';
-        break;
-      }
+const currentItype = computed(() => getActiveIndicator.value?.itype);
+const doneLoading = computed(() => store.state.loading.done);
 
-      this.timeRangeInfo = { // syncs time range data with parent
-        numDays: Math.round(days),
-        numHours: Math.round(days * 24),
-        startDate: this.localStartDate,
-        stopDate: this.localStopDate,
-        startMs,
-        stopMs
-      };
-    }
-  },
-  mounted () {
-    // set the stop/start date to the query parameters
-    if (this.$route.query.stopDate) {
-      this.localStopDate = this.$route.query.stopDate;
-      this.updateStopStart('stopDate');
-    }
-    if (this.$route.query.startDate) {
-      this.localStartDate = this.$route.query.startDate;
-      this.updateStopStart('startDate');
+function snapTo (days) {
+  // always update the stop date to now
+  const date = new Date();
+  localStopDate.value = date.toISOString().slice(0, -5) + 'Z';
+  updateStopStart('stopDate');
+  localStorage.setItem('snapTo', days);
+
+  if (days && days > 0) { // update start date to <days> ago
+    const startMs = date.setDate(date.getDate() - days);
+    localStartDate.value = new Date(startMs).toISOString().slice(0, -5) + 'Z';
+    updateStopStart('startDate');
+  } else if (days === -1) { // update start date to epoch
+    localStartDate.value = new Date(0).toISOString().slice(0, -5) + 'Z';
+    updateStopStart('startDate');
+  } else { // update start date to registration date if it exists
+    if (currentItype.value === 'domain' && getResults.value?.domain?.[getActiveIndicator.value?.query]?.['PT Whois']?.registered) {
+      localStartDate.value = getResults.value.domain[getActiveIndicator.value.query]['PT Whois'].registered;
+      updateStopStart('startDate');
     }
   }
-};
+}
+function startKeyUp (days) {
+  const date = new Date(localStartDate.value);
+  const startMs = date.setDate(date.getDate() + days);
+  localStartDate.value = new Date(startMs).toISOString().slice(0, -5) + 'Z';
+  updateStopStart('startDate');
+}
+function stopKeyUp (days) {
+  const date = new Date(localStopDate.value);
+  const stopMs = date.setDate(date.getDate() + days);
+  localStopDate.value = new Date(stopMs).toISOString().slice(0, -5) + 'Z';
+  updateStopStart('stopDate');
+}
+function updateStopStart (updated) {
+  let startMs = new Date(localStartDate.value).getTime();
+  let stopMs = new Date(localStopDate.value).getTime();
+
+  // test for relative times
+  if (isNaN(startMs)) {
+    startMs = parseSeconds(localStartDate.value) * 1000;
+  }
+  if (isNaN(stopMs)) {
+    stopMs = parseSeconds(localStopDate.value) * 1000;
+  }
+
+  // can't do anything if we can't calculate the date ms
+  if (isNaN(stopMs) || isNaN(startMs)) { return; }
+
+  const updatedDate = updated === 'startDate' ? localStartDate.value : localStopDate.value;
+  // update the query params with the updated value
+  if (route.query[updated] !== updatedDate) {
+    const query = { ...route.query };
+    query[updated] = updatedDate;
+    router.push({ query });
+  }
+
+  const days = (stopMs - startMs) / (3600000 * 24);
+
+  switch (updated) {
+  case 'stopDate':
+    localStartDate.value = new Date(stopMs - (3600000 * 24 * days)).toISOString().slice(0, -5) + 'Z';
+    localStopDate.value = new Date(stopMs).toISOString().slice(0, -5) + 'Z';
+    break;
+  case 'startDate':
+    localStartDate.value = new Date(startMs).toISOString().slice(0, -5) + 'Z';
+    break;
+  }
+
+  timeRangeInfo.value = { // syncs time range data with parent
+    numDays: Math.round(days),
+    numHours: Math.round(days * 24),
+    startDate: localStartDate.value,
+    stopDate: localStopDate.value,
+    startMs,
+    stopMs
+  };
+}
+
+onMounted(() => {
+  // set the stop/start date to the query parameters
+  if (route.query.stopDate) {
+    localStopDate.value = route.query.stopDate;
+    updateStopStart('stopDate');
+  }
+  if (route.query.startDate) {
+    localStartDate.value = route.query.startDate;
+    updateStopStart('startDate');
+  }
+});
+
+watch(getFocusStartDate, (val) => {
+  if (val) { startDateRef.value?.select(); }
+});
+
+watch(doneLoading, (val) => { // snap to the last snapTo value if it exists
+  if (val && localStorage.getItem('snapTo')) {
+    snapTo(parseInt(localStorage.getItem('snapTo')));
+  }
+});
 </script>
-
-<style scoped>
-
-</style>

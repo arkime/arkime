@@ -1,4 +1,4 @@
-import setReqHeaders from '../../../../../common/vueapp/setReqHeaders';
+import setReqHeaders from '@real_common/setReqHeaders';
 import { paramStr } from '../../utils/paramStr';
 
 export default {
@@ -15,7 +15,7 @@ export default {
         }
         return response.json();
       }).then((response) => {
-        return resolve(response.audits);
+        return resolve(response);
       }).catch((err) => { // this catches an issue within the ^ .then
         return reject(err);
       });

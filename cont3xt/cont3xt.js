@@ -57,17 +57,19 @@ app.use((req, res, next) => {
   next();
 });
 
-// define csp headers
-const cspHeader = helmet.contentSecurityPolicy({
-  directives: {
-    defaultSrc: ["'self'"],
-    styleSrc: ["'self'", "'unsafe-inline'"], // 'unsafe-inline' for vue inline styles
-    // need unsafe-eval for vue full build: https://vuejs.org/v2/guide/installation.html#CSP-environments
-    scriptSrc: ["'self'", "'unsafe-eval'", (req, res) => `'nonce-${res.locals.nonce}'`],
-    objectSrc: ["'none'"],
-    imgSrc: ["'self'", 'data:']
-  }
-});
+// define csp headers - no-op in NODE_END=development, since csp will disable vite's HMR (hot module reloading)
+const cspHeader = (process.env.NODE_ENV === 'development')
+  ? (_req, _res, next) => { next(); }
+  : helmet.contentSecurityPolicy({
+    directives: {
+      defaultSrc: ["'self'"],
+      styleSrc: ["'self'", "'unsafe-inline'"], // 'unsafe-inline' for vue inline styles
+      // need unsafe-eval for vue full build: https://vuejs.org/v2/guide/installation.html#CSP-environments
+      scriptSrc: ["'self'", "'unsafe-eval'", (req, res) => `'nonce-${res.locals.nonce}'`],
+      objectSrc: ["'none'"],
+      imgSrc: ["'self'", 'data:']
+    }
+  });
 
 function setCookie (req, res, next) {
   const cookieOptions = {
@@ -138,12 +140,19 @@ app.use((req, res, next) => {
 // assets and fonts
 // using fallthrough: false because there is no 404 endpoint (client router
 // handles 404s) and sending index.html is confusing
-app.use('/font-awesome', express.static(
-  path.join(__dirname, '/../node_modules/font-awesome'),
+app.use('/mdi-font', express.static(
+  path.join(__dirname, '/../cont3xt/node_modules/@mdi/font'),
   { maxAge: dayMs, fallthrough: false }
 ), ArkimeUtil.missingResource);
+// PRODUCTION BUNDLE (created by vite) - includes bundled js, css, & assets!
 app.use('/assets', express.static(
-  path.join(__dirname, '/../assets'),
+  path.join(__dirname, 'vueapp/dist/assets'),
+  { maxAge: dayMs, fallthrough: true }
+));
+// don't use 'assets' since that name is used for production bundle files from vite
+// NOTE: watching.gif and arkime logos are the only assets used in cont3xt currently, so maybe we should only host that?
+app.use(['/assets'], express.static(
+  path.join(__dirname, '../assets'),
   { maxAge: dayMs, fallthrough: false }
 ), ArkimeUtil.missingResource);
 app.use('/public', express.static(
@@ -331,56 +340,37 @@ function apiPutSettings (req, res, next) {
 // ----------------------------------------------------------------------------
 // VUE APP
 // ----------------------------------------------------------------------------
-const Vue = require('vue');
-const vueServerRenderer = require('vue-server-renderer');
 
-// Factory function to create fresh Vue apps
-function createApp () {
-  return new Vue({
-    template: '<div id="app"></div>'
-  });
-}
+// loads the manifest.json file from dist and inject it in the ejs template
+const parseManifest = () => {
+  if (process.env.NODE_ENV === 'development') return {};
 
-// using fallthrough: false because there is no 404 endpoint (client router
-// handles 404s) and sending index.html is confusing
-// expose vue bundles (prod)
-app.use('/static', express.static(
-  path.join(__dirname, '/vueapp/dist/static'),
-  { maxAge: dayMs, fallthrough: false }
-), ArkimeUtil.missingResource);
-// expose vue bundle (dev)
-app.use('/app.js', express.static(
-  path.join(__dirname, '/vueapp/dist/app.js'),
-  { fallthrough: false }
-), ArkimeUtil.missingResource);
-app.use('/app.js.map', express.static(
-  path.join(__dirname, '/vueapp/dist/app.js.map'),
-  { fallthrough: false }
-), ArkimeUtil.missingResource);
+  const manifestPath = path.join(path.resolve(), 'vueapp/dist/.vite/manifest.json');
+  const manifestFile = fs.readFileSync(manifestPath, 'utf-8');
+
+  return JSON.parse(manifestFile);
+};
+const manifest = parseManifest();
+
 // vue index page
 app.use(cspHeader, setCookie, (req, res, next) => {
   if (req.path.toLowerCase() === '/users' && !req.user.hasRole('usersAdmin')) {
     return res.status(403).send('Permission denied');
   }
 
-  const renderer = vueServerRenderer.createRenderer({
-    template: fs.readFileSync(path.join(__dirname, '/vueapp/dist/index.html'), 'utf-8')
-  });
-
   const appContext = {
-    logoutUrl: Auth.logoutUrl,
+    logoutUrl: Auth.logoutUrl(req),
+    logoutUrlMethod: Auth.logoutUrlMethod,
     nonce: res.locals.nonce,
     version: version.version,
     path: internals.webBasePath,
     disableUserPasswordUI: ArkimeConfig.get('disableUserPasswordUI', true),
-    demoMode: req.user.isDemoMode()
+    demoMode: req.user.isDemoMode(),
+    environment: process.env.NODE_ENV,
+    manifest
   };
 
-  // Create a fresh Vue app instance
-  const vueApp = createApp();
-
-  // Render the Vue instance to HTML
-  renderer.renderToString(vueApp, appContext, (err, html) => {
+  res.render('index.html.ejs', appContext, (err, html) => {
     if (err) {
       console.log('ERROR - fetching vue index page:', err);
       if (err.code === 404) {

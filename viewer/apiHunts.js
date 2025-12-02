@@ -168,13 +168,21 @@ class HuntAPIs {
       }
     }
 
-    const message = `
+    if (hunt.notifier) {
+      const message = `
 *${hunt.name}* hunt job paused with error: *${error.value}*
 *${hunt.matchedSessions}* matched sessions out of *${hunt.searchedSessions}* searched sessions.
 ${Config.arkimeWebURL()}hunt
-    `;
+      `;
 
-    Notifier.issueAlert(hunt.notifier, message, continueProcess);
+      // Handle multiple notifiers (stored as comma-separated string) - send in parallel, fire and forget
+      const notifiers = hunt.notifier.split(',');
+      for (const notifierId of notifiers) {
+        Notifier.issueAlert(notifierId, message, () => {});
+      }
+    }
+
+    continueProcess();
   }
 
   // --------------------------------------------------------------------------
@@ -186,7 +194,7 @@ ${Config.arkimeWebURL()}hunt
 
     if ((now - hunt.lastUpdated) >= 2) { // only update every 2 seconds
       try {
-        const { body: huntHit } = await Db.get('hunts', 'hunt', huntId);
+        const { body: huntHit } = await Db.get('hunts', huntId);
 
         if (!huntHit) { return cb('undefined'); }
 
@@ -214,12 +222,12 @@ ${Config.arkimeWebURL()}hunt
   }
 
   // --------------------------------------------------------------------------
-  static #updateSessionWithHunt (session, sessionId, hunt, huntId) {
-    Db.addHuntToSession(Db.sid2Index(sessionId), Db.sid2Id(sessionId), huntId, hunt.name, (err, data) => {
-      if (err) {
-        console.log('ERROR - updateSessionWithHunt - could not add hunt info to session:', session, util.inspect(err, false, 50), data);
-      }
-    });
+  static async #updateSessionWithHunt (session, sessionId, hunt, huntId) {
+    try {
+      await Db.addHuntToSession(Db.sid2Index(sessionId), Db.sid2Id(sessionId), huntId, hunt.name);
+    } catch (err) {
+      console.log('ERROR - updateSessionWithHunt - could not add hunt info to session:', session, util.inspect(err, false, 50));
+    }
   }
 
   // --------------------------------------------------------------------------
@@ -430,7 +438,9 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
 
       // Gather all the hits by node
       const hitsByNode = {};
-      hits.forEach((hit) => { (hitsByNode[hit._source.node] ??= []).push(hit); });
+      for (const hit of hits) {
+        (hitsByNode[hit._source.node] ??= []).push(hit);
+      }
 
       // Run all nodes in parallel, with 2 hits per node at once
       async.forEach(hitsByNode, (nodehits, nodeCb) => {
@@ -446,14 +456,14 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
           }
 
           SessionAPIs.isLocalView(node, () => {
-            HuntAPIs.#sessionHunt(sessionId, options, (err, matched) => {
+            HuntAPIs.#sessionHunt(sessionId, options, async (err, matched) => {
               if (err) {
                 return HuntAPIs.#pauseHuntJobWithError(huntId, hunt, { value: `Hunt error searching session (${sessionId}): ${err}` }, node);
               }
 
               if (matched) {
                 hunt.matchedSessions++;
-                HuntAPIs.#updateSessionWithHunt(session, sessionId, hunt, huntId);
+                await HuntAPIs.#updateSessionWithHunt(session, sessionId, hunt, huntId);
               }
 
               HuntAPIs.#updateHuntStats(hunt, huntId, session, searchedSessions, cb);
@@ -541,10 +551,14 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
 ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.query.stopTime}&startTime=${hunt.query.startTime}
           `;
 
-          Notifier.issueAlert(hunt.notifier, message, continueProcess);
-        } else {
-          return continueProcess();
+          // Handle multiple notifiers (stored as comma-separated string) - send in parallel, fire and forget
+          const notifiers = hunt.notifier.split(',');
+          for (const notifierId of notifiers) {
+            Notifier.issueAlert(notifierId, message, () => {});
+          }
         }
+
+        return continueProcess();
       });
     });
   }
@@ -750,7 +764,7 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
      hex - search for hex text.
      regex - search for text using <a href="https://github.com/google/re2/wiki/Syntax">safe regex</a>.
      hexregex - search for text using <a href="https://github.com/google/re2/wiki/Syntax">safe hex regex</a>.
-   * @param {string} notifier - The optional notifier name to fire when there is an error, or there are matches (every 10 minutes), or when the hunt is complete.
+   * @param {string} notifier - A comma separated list of notifier IDs to alert when there is an error or when the hunt is complete.
    * @param {string} users - The comma separated list of users to be added to the hunt so they can view the results.
    * @returns {boolean} success - Whether the creation of the hunt was successful.
    * @returns {Hunt} hunt - The newly created hunt object.
@@ -792,6 +806,10 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
       return res.serverError(403, 'Roles field must be an array of strings');
     }
 
+    if (req.body.notifier !== undefined && !ArkimeUtil.isStringArray(req.body.notifier)) {
+      return res.serverError(403, 'Notifier field must be an array of strings');
+    }
+
     if (req.body.users !== undefined && !ArkimeUtil.isString(req.body.users, 0)) {
       return res.serverError(403, 'Users field must be a string');
     }
@@ -809,7 +827,6 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
       src: req.body.src,
       dst: req.body.dst,
       totalSessions: req.body.totalSessions,
-      notifier: req.body.notifier,
       created: now,
       status: 'queued', // always starts as queued
       userId: req.user.userId,
@@ -824,6 +841,11 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
       description: req.body.description,
       roles: req.body.roles
     };
+
+    // Convert notifier array to comma-separated string for storage
+    if (ArkimeUtil.isStringArray(req.body.notifier)) {
+      hunt.notifier = req.body.notifier.join(',');
+    }
 
     async function doneCb (doneHunt, invalidUsers) {
       try {
@@ -927,6 +949,11 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
         hunt.id = hit._id;
         hunt.index = hit._index;
         hunt.users = hunt.users || [];
+
+        // Convert comma-separated notifier string to array for client
+        if (ArkimeUtil.isString(hunt.notifier)) {
+          hunt.notifier = hunt.notifier.split(',');
+        }
 
         // clear out secret fields for users who don't have access to that hunt
         // if the user is not an admin and didn't create the hunt and isn't part of the user's list
@@ -1095,7 +1122,7 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
 
           // iterate through sessions and remove hunt stuff from each one
           for (const hit of result.hits.hits) {
-            Db.removeHuntFromSession(hit._index, hit._id, req.params.id, hunt.name, () => {});
+            await Db.removeHuntFromSession(hit._index, hit._id, req.params.id, hunt.name);
           }
 
           await Db.updateHunt(req.params.id, { removed: true });
@@ -1264,8 +1291,8 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
 
     // fetch hunt and session
     Promise.all([
-      Db.get('hunts', 'hunt', huntId),
-      Db.getSessionPromise(sessionId)
+      Db.get('hunts', huntId),
+      Db.getSession(sessionId)
     ]).then(([{ body: hunt }, session]) => {
       if (hunt.error || session.error) {
         console.log('HUNT - remoteHunt error', hunt.error || session.error);
@@ -1278,7 +1305,7 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
 
       const options = HuntAPIs.#buildHuntOptions(huntId, hunt);
 
-      HuntAPIs.#sessionHunt(sessionId, options, (err, matched) => {
+      HuntAPIs.#sessionHunt(sessionId, options, async (err, matched) => {
         if (Config.debug > 1) {
           console.log('HUNT - result', huntId, sessionId, err, matched);
         }
@@ -1288,7 +1315,7 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
         }
 
         if (matched) {
-          HuntAPIs.#updateSessionWithHunt(session, sessionId, hunt, huntId);
+          await HuntAPIs.#updateSessionWithHunt(session, sessionId, hunt, huntId);
         }
 
         if (!res.headersSent) { res.send({ matched }); }

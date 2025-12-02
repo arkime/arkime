@@ -1,4 +1,4 @@
-use Test::More tests => 33;
+use Test::More tests => 34;
 
 use Cwd;
 use URI::Escape;
@@ -23,6 +23,13 @@ my $pwd = "*/pcap";
     ok($sd =~ m{Tags.*md5taggertest1}s, "multi /detail Tags");
 
 # http
+    $sd = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8123/api/session/test/$id/packets?line=false&ts=false&base=natural&showFrames=true")->content;
+    my $count = 0;
+    while ($sd =~ /ts-value/g) {
+        $count++;
+    }
+    is (12, $count);
+
     $sd = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8123/api/session/test/$id/packets?line=false&ts=false&base=natural")->content;
     ok(bin2hex($sd) =~ /636f6c3a2038303a71756963.*08000000000002/, "encoding:natural");
 
@@ -113,12 +120,12 @@ my $pwd = "*/pcap";
     $sdId = viewerGet("/sessions.json?date=-1&expression=" . uri_escape("file=$pwd/v6.pcap"));
     $id = $sdId->{data}->[0]->{id};
     $sd = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8123/api/session/test/$id/detail")->content;
-    ok($sd =~ m{Export Unique Src IP.Port}s, "ipv6 separator");
+    ok($sd =~ m|'sessions.exportUnique', {name: "Src IP.Port"}|s, "ipv6 separator");
 
     $sdId = viewerGet("/sessions.json?date=-1&expression=" . uri_escape("file=$pwd/mpls-basic.pcap"));
     $id = $sdId->{data}->[0]->{id};
     $sd = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8123/api/session/test/$id/detail")->content;
-    ok($sd =~ m{Export Unique Src IP:Port}s, "ipv4 separator");
+    ok($sd =~ m|'sessions.exportUnique', {name: "Src IP:Port"}|s, "ipv4 separator");
 
 # cyberchef
     $sd = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8123/cyberchef.html")->content;

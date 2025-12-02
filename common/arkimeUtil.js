@@ -29,8 +29,11 @@ class ArkimeUtil {
    * A json body parser that doesn't allow anything that looks like "__proto__": or "constructor":
    */
   static jsonParser = bodyParser.json({
+    limit: '1mb',
     verify: function (req, res, buf, encoding) {
-      sjson.parse(buf);
+      if (buf !== undefined && buf.length) {
+        sjson.parse(buf);
+      }
     }
   });
 
@@ -57,7 +60,7 @@ class ArkimeUtil {
   static sanitizeStr (str) {
     if (!str) { return str; }
     if (typeof str === 'object') { str = util.inspect(str); }
-    // eslint-disable-next-line no-control-regex
+
     return str.replace(/\u001b/g, '*ESC*');
   }
 
@@ -188,10 +191,10 @@ class ArkimeUtil {
       }
 
       const options = { sentinels: [], name: match[6], db: parseInt(match[7]) };
-      match[5].split(',').forEach((hp) => {
+      for (const hp of match[5].split(',')) {
         const hostport = hp.split(':');
         options.sentinels.push({ host: hostport[0], port: hostport[1] || 26379 });
-      });
+      }
 
       if (match[3] && match[3] !== '') {
         options.sentinelPassword = match[3];
@@ -215,10 +218,10 @@ class ArkimeUtil {
       }
 
       const hosts = [];
-      match[4].split(',').forEach((hp) => {
+      for (const hp of match[4].split(',')) {
         const hostport = hp.split(':');
         hosts.push({ host: hostport[0], port: hostport[1] || 6379 });
-      });
+      }
 
       const options = { db: parseInt(match[5]) };
       if (match[3] && match[3] !== '') {
@@ -399,9 +402,7 @@ class ArkimeUtil {
     let values = string.split(/[,\n]+/g);
 
     // remove any empty values
-    values = values.filter(function (val) {
-      return val !== '';
-    });
+    values = values.filter(val => val !== '');
 
     return values;
   }
@@ -543,6 +544,7 @@ class ArkimeUtil {
       })
       .on('listening', (e) => {
         console.log('%s listening on host %s port %d in %s mode', process.argv[1], server.address().address, server.address().port, app.settings.env);
+        console.log('Open your web browser to http://localhost:%d/', server.address().port);
       })
       .listen({ port, host }, listenCb);
 
@@ -646,7 +648,7 @@ class ArkimeUtil {
     console.log('Common issues:');
     console.log('  * Is OpenSearch/Elasticsearch running and NOT RED?');
     console.log(`  * Have you run 'db/db.pl <host:port> init'?`);
-    console.log(`  * Is the 'elasticsearch' setting (${host}) correct in config file (${ArkimeConfig.configFile}) with a username and password if needed? (https://arkime.com/settings#elasticsearch)`);
+    console.log(`  * Is the 'elasticsearch' setting (${host}) correct in config file (${ArkimeConfig.configFile}) with a username and password if needed? (https://arkime.com/settings#elasticsearch)? These should be the same as used with db.pl init.`);
     if (!ArkimeConfig.insecure) {
       console.log('  * Do you need the --insecure option? (See https://arkime.com/faq#insecure)');
     }
@@ -672,6 +674,29 @@ class ArkimeUtil {
    */
   static parseIniString (str) {
     return ini.parse(str, { comment: ['#', ';'], autoTyping: false });
+  }
+
+  // ----------------------------------------------------------------------------
+  static #evpBytesToKey (password, keyLen, ivLen) {
+    let data = Buffer.alloc(0);
+    let prev = Buffer.alloc(0);
+    while (data.length < keyLen + ivLen) {
+      const toHash = Buffer.concat([prev, Buffer.from(password)]);
+      prev = crypto.createHash('md5').update(toHash).digest();
+      data = Buffer.concat([data, prev]);
+    }
+    const key = data.slice(0, keyLen);
+    const iv = data.slice(keyLen, keyLen + ivLen);
+    return { key, iv };
+  }
+
+  // ----------------------------------------------------------------------------
+  /**
+   * Create a decipher object with AES-192-CBC algorithm and no IV like cryptoDeipher did
+   */
+  static createDecipherAES192NoIV (password) {
+    const result = ArkimeUtil.#evpBytesToKey(password, 24, 16);
+    return crypto.createDecipheriv('aes-192-cbc', result.key, result.iv);
   }
 }
 

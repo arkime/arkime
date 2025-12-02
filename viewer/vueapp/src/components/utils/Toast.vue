@@ -3,25 +3,24 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-
   <!-- alert -->
-  <div v-if="message"
+  <div
+    v-if="message"
     class="alert alert-sm alert-dismissible"
     :class="alertClass">
-
     <!-- icon -->
-    <span class="fa fa-check"
+    <span
+      class="fa fa-check"
       title="success"
-      v-if="type === 'success'">
-    </span>
-    <span class="fa fa-info-circle"
+      v-if="type === 'success'" />
+    <span
+      class="fa fa-info-circle"
       title="info"
-      v-if="type === 'info'">
-    </span>
-    <span class="fa fa-exclamation-triangle"
+      v-if="type === 'info'" />
+    <span
+      class="fa fa-exclamation-triangle"
       title="warning"
-      v-if="type === 'warning' || type === 'danger'">
-    </span> <!-- /icon -->
+      v-if="type === 'warning' || type === 'danger'" /> <!-- /icon -->
     <!-- message -->
     &nbsp;{{ message || 'undefined message' }}
     <!-- /message -->
@@ -29,15 +28,9 @@ SPDX-License-Identifier: Apache-2.0
     <button
       role="button"
       type="button"
-      class="close"
-      @click="done(null)">
-      <span>
-        &times;
-      </span>
-    </button> <!-- /dismiss alert button -->
-
+      class="btn-close mt-2"
+      @click="done(null)" /> <!-- /dismiss alert button -->
   </div> <!-- /alert -->
-
 </template>
 
 <script>
@@ -46,8 +39,14 @@ let timeout;
 export default {
   name: 'ArkimeToast',
   props: {
-    message: String,
-    done: Function,
+    message: {
+      type: String,
+      default: ''
+    },
+    done: {
+      type: Function,
+      default: () => {}
+    },
     duration: {
       type: Number,
       default: 5000
@@ -84,7 +83,7 @@ export default {
       }, this.duration);
     }
   },
-  beforeDestroy: function () {
+  beforeUnmount () {
     if (timeout) { clearTimeout(timeout); }
   }
 };

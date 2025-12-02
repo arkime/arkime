@@ -3,140 +3,174 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-
-  <div>
-
-    <!-- parliament navbar -->
-    <nav class="navbar navbar-expand navbar-dark bg-dark justify-content-between fixed-top">
-      <router-link to="help"
-        active-class="active"
-        class="navbar-brand"
+  <!-- parliament navbar -->
+  <b-navbar
+    fixed="top"
+    variant="dark"
+    class="px-3"
+    :container="false">
+    <b-navbar-brand>
+      <router-link
+        to="help"
+        class="me-2"
         exact>
-        <img src="assets/Arkime_Icon_White.png"
+        <img
+          :src="logo"
           alt="hoot"
-          v-b-tooltip.hover
-          title="HOOT! Can I help you? Click me to see the help page"
-        />
+          id="hoot-hoot"
+          class="arkime-logo">
+        <BTooltip
+          target="hoot-hoot"
+          placement="bottom">
+          {{ $t('navigation.tooltipHelpTip') }}
+        </BTooltip>
       </router-link>
-      <!-- page links -->
-      <ul class="navbar-nav mr-auto ml-5">
-        <li class="nav-item mr-2">
-          <router-link to="/"
-            active-class="active"
-            class="nav-link"
-            exact>
-            Parliament
-          </router-link>
-        </li>
-        <li class="nav-item mr-2">
-          <router-link to="issues"
-            active-class="active"
-            class="nav-link"
-            exact>
-            Issues
-          </router-link>
-        </li>
-        <li class="nav-item mr-2"
-          v-if="isAdmin">
-          <router-link to="settings"
-            active-class="active"
-            class="nav-link">
-            Settings
-          </router-link>
-        </li>
-        <li class="nav-item mr-2"
-          v-if="isAdmin">
-          <router-link to="users"
-            active-class="active"
-            class="nav-link">
-            Users
-          </router-link>
-        </li>
-      </ul> <!-- /page links -->
-      <!-- version -->
-      <span class="pr-2">
+    </b-navbar-brand>
+
+    <!-- page links -->
+    <b-navbar-nav class="ms-4">
+      <b-nav-item
+        to="/"
+        class="nav-link"
+        :class="{'router-link-active': $route.path === '/'}"
+        exact>
+        {{ $t('navigation.parliament') }}
+      </b-nav-item>
+      <b-nav-item
+        to="issues"
+        class="nav-link"
+        :class="{'router-link-active': $route.path === '/issues'}"
+        exact>
+        {{ $t('navigation.issues') }}
+      </b-nav-item>
+      <b-nav-item
+        v-if="isAdmin"
+        to="settings"
+        :class="{'router-link-active': $route.path === '/settings'}"
+        class="nav-link">
+        {{ $t('navigation.settings') }}
+      </b-nav-item>
+      <b-nav-item
+        v-if="isAdmin"
+        to="users"
+        :class="{'router-link-active': $route.path === '/users'}"
+        class="nav-link">
+        {{ $t('navigation.users') }}
+      </b-nav-item>
+    </b-navbar-nav> <!-- /page links -->
+
+    <!-- version -->
+    <b-navbar-nav
+      class="ms-auto d-flex align-items-center">
+      <span class="pe-4 align-self-center navbar-text no-wrap">
         <Version timezone="local" />
       </span>
-      <div class="form-inline">
-        <!-- cont3xt url -->
-        <a v-if="settings.general.cont3xtUrl"
-          target="_blank"
-          class="btn btn-outline-primary cursor-pointer mr-2"
-          v-b-tooltip.hover.bottom
-          :href="settings.general.cont3xtUrl"
-          :title="`Open Cont3xt in a new tab (${settings.general.cont3xtUrl})`">
-          Cont3xt
-        </a> <!-- /cont3xt url -->
-        <!-- wise url -->
-        <a v-if="settings.general.wiseUrl"
-          target="_blank"
-          class="btn btn-outline-info cursor-pointer mr-2"
-          v-b-tooltip.hover.bottom
-          :href="settings.general.wiseUrl"
-          :title="`Open WISE in a new tab (${settings.general.wiseUrl})`">
-          WISE
-        </a> <!-- /wise url -->
-        <!-- dark/light mode -->
-        <button type="button"
-          class="btn btn-outline-secondary cursor-pointer mr-2"
-          @click="toggleTheme"
-          v-b-tooltip.hover.bottom
-          title="Toggle light/dark theme">
-          <span v-if="theme === 'light'"
-            class="fa fa-sun-o">
-          </span>
-          <span v-if="theme === 'dark'"
-            class="fa fa-moon-o">
-          </span>
-        </button> <!-- /dark/light mode -->
-        <!-- refresh interval select -->
-        <span class="form-group">
-          <div class="input-group">
-            <span class="input-group-prepend cursor-help">
-              <span class="input-group-text"
-                v-b-tooltip.hover.left
-                title="Page data refresh interval">
-                <span class="fa fa-refresh">
-                </span>
-              </span>
-            </span>
-            <select class="form-control refresh-interval-control"
-              tabindex="1"
-              v-model="refreshInterval">
-              <option value="0">Never</option>
-              <option value="15000">15 seconds</option>
-              <option value="30000">30 seconds</option>
-              <option value="45000">45 seconds</option>
-              <option value="60000">1 minute</option>
-              <option value="300000">5 minutes</option>
-            </select>
-          </div>
-        </span> <!-- /refresh interval select -->
-      </div>
-      <Logout :base-path="path" />
-    </nav> <!-- /parliament nav -->
-
-  </div>
-
+      <!-- ES status indicator -->
+      <button
+        v-if="$route.path === '/' && nonGreenClusters.length > 0"
+        @click="scrollToNextNonGreenCluster"
+        class="btn btn-sm btn-danger me-2 position-relative no-wrap"
+        id="esStatusBtn">
+        {{ $t('parliament.navEsIssues') }}
+        <span class="badge rounded-pill bg-dark ms-1">
+          {{ nonGreenClusters.length }}
+        </span>
+      </button>
+      <BTooltip
+        v-if="$route.path === '/' && nonGreenClusters.length > 0"
+        target="esStatusBtn"
+        placement="bottom">
+        {{ $t('parliament.navEsIssuesTip', {cluster: $t('common.clusterCount', nonGreenClusters.length)}) }}
+      </BTooltip> <!-- /ES status indicator -->
+      <!-- cont3xt url -->
+      <a
+        v-if="settings.general.cont3xtUrl"
+        target="_blank"
+        class="btn btn-sm btn-outline-primary cursor-pointer me-2"
+        :href="settings.general.cont3xtUrl">
+        {{ $t('navigation.cont3xt') }}
+      </a> <!-- /cont3xt url -->
+      <!-- wise url -->
+      <a
+        v-if="settings.general.wiseUrl"
+        target="_blank"
+        class="btn btn-sm btn-outline-info cursor-pointer me-2"
+        :href="settings.general.wiseUrl">
+        {{ $t('navigation.wise') }}
+      </a>
+      <!-- /wise url -->
+      <!-- language switcher -->
+      <LanguageSwitcher
+        additional-classes="me-2" /> <!-- /language switcher -->
+      <!-- dark/light mode -->
+      <button
+        type="button"
+        class="btn btn-xs btn-outline-secondary cursor-pointer me-2"
+        @click="toggleTheme">
+        <span
+          v-if="theme === 'light'"
+          class="fa fa-sun-o" />
+        <span
+          v-if="theme === 'dark'"
+          class="fa fa-moon-o" />
+      </button> <!-- /dark/light mode -->
+      <!-- refresh interval select -->
+      <BInputGroup size="xs">
+        <BInputGroupText>
+          <span class="fa fa-refresh" />
+        </BInputGroupText>
+        <select
+          class="form-control refresh-interval-control"
+          tabindex="1"
+          v-model="refreshInterval">
+          <option value="0">
+            {{ $t('common.never') }}
+          </option>
+          <option value="15000">
+            {{ $t('common.secondCount', { count: 15 }) }}
+          </option>
+          <option value="30000">
+            {{ $t('common.secondCount', { count: 30 }) }}
+          </option>
+          <option value="45000">
+            {{ $t('common.secondCount', { count: 45 }) }}
+          </option>
+          <option value="60000">
+            {{ $t('common.minuteCount', { count: 1 }) }}
+          </option>
+          <option value="300000">
+            {{ $t('common.minuteCount', { count: 5 }) }}
+          </option>
+        </select>
+      </BInputGroup>
+      <!-- /refresh interval select -->
+      <Logout
+        :base-path="path"
+        class="ms-2"
+        size="sm" />
+    </b-navbar-nav> <!-- /version -->
+  </b-navbar> <!-- /parliament nav -->
 </template>
 
 <script>
-import Focus from '@/../../../common/vueapp/Focus';
-import Logout from '@/../../../common/vueapp/Logout';
-import Version from '@/../../../common/vueapp/Version';
+import Logout from '@common/Logout.vue';
+import Version from '@common/Version.vue';
+import LanguageSwitcher from '@common/LanguageSwitcher.vue';
 
 export default {
   name: 'ParliamentNavbar',
   components: {
     Logout,
-    Version
+    Version,
+    LanguageSwitcher
   },
-  directives: { Focus },
   data: function () {
     return {
       // default theme is light
       theme: 'light',
-      path: this.$constants.PATH
+      path: this.$constants.PATH,
+      logo: 'assets/Arkime_Icon_White.png',
+      currentNonGreenIndex: 0
     };
   },
   computed: {
@@ -158,6 +192,37 @@ export default {
       set: function (newValue) {
         this.$store.commit('setRefreshInterval', newValue);
       }
+    },
+    parliament () {
+      return this.$store.state.parliament;
+    },
+    stats () {
+      return this.$store.state.stats;
+    },
+    nonGreenClusters () {
+      const clusters = [];
+      if (!this.parliament?.groups || !this.stats) {
+        return clusters;
+      }
+
+      for (const group of this.parliament.groups) {
+        if (group.clusters) {
+          for (const cluster of group.clusters) {
+            const clusterStats = this.stats[cluster.id];
+            if (clusterStats && (clusterStats.status === 'yellow' || clusterStats.status === 'red' || clusterStats.healthError)) {
+              clusters.push({ groupId: group.id, clusterId: cluster.id, cluster });
+            }
+          }
+        }
+      }
+
+      return clusters;
+    }
+  },
+  watch: {
+    nonGreenClusters () {
+      // Reset index when the list of non-green clusters changes
+      this.currentNonGreenIndex = 0;
     }
   },
   mounted: function () {
@@ -197,20 +262,50 @@ export default {
 
       localStorage.setItem('parliamentTheme', this.theme);
       this.$store.commit('setTheme', this.theme);
+    },
+    scrollToNextNonGreenCluster: function () {
+      if (this.nonGreenClusters.length === 0) {
+        return;
+      }
+
+      // Only navigate if we're on the parliament page
+      if (this.$route.path !== '/') {
+        this.$router.push('/').then(() => {
+          this.$nextTick(() => {
+            this.doScroll();
+          });
+        });
+      } else {
+        this.doScroll();
+      }
+    },
+    doScroll: function () {
+      const cluster = this.nonGreenClusters[this.currentNonGreenIndex];
+
+      if (!cluster) { return; }
+
+      // Trigger scroll via Vuex store
+      this.$store.commit('setScrollToClusterId', cluster.clusterId);
+
+      // Cycle to next cluster
+      this.currentNonGreenIndex = (this.currentNonGreenIndex + 1) % this.nonGreenClusters.length;
     }
   }
 };
 </script>
 
-<style scoped>
-nav.navbar > .navbar-brand > img {
-  position: absolute;
-  height: 52px;
-  top: 2px;
+<style>
+nav.navbar li:hover {
+  background-color: black;
 }
-
-/* remove browser select box styling */
+nav.navbar li a {
+  transition: all .4s;
+}
+nav.navbar ul.navbar-nav li.nav-link a.nav-link {
+  display: inline-block !important;
+  padding-top: 1px;
+}
 .refresh-interval-control {
-  -webkit-appearance: none;
+  height: 23px !important;
 }
 </style>

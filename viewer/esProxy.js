@@ -127,6 +127,7 @@ ArkimeConfig.loaded(() => {
   getExact[`/${prefix}files/_stats`] = 1;
   getExact[`/${prefix}fields/_search`] = 1;
   getExact[`/${prefix}queries/_mapping`] = 1;
+  getExact[`/${prefix}files/_mapping`] = 1;
 
   postExact[`/${prefix}stats/_search`] = 1;
   postExact[`/${prefix}fields/_search`] = 1;

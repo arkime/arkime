@@ -42,17 +42,16 @@ void reader_tpacketv3_init(const char *UNUSED(name))
 
 #else
 
-#define MAX_TPACKETV3_THREADS 12
-
 typedef struct {
     int                  fd;
     struct tpacket_req3  req;
     uint8_t             *map;
     struct iovec        *rd;
     uint8_t              interfacePos;
+    uint8_t              thread;
 } ArkimeTPacketV3_t;
 
-LOCAL ArkimeTPacketV3_t infos[MAX_INTERFACES][MAX_TPACKETV3_THREADS];
+LOCAL ArkimeTPacketV3_t infos[MAX_INTERFACES][MAX_THREADS_PER_INTERFACE];
 
 LOCAL int numThreads;
 
@@ -62,13 +61,15 @@ LOCAL struct bpf_program     bpf;
 LOCAL ArkimeReaderStats_t gStats;
 LOCAL ARKIME_LOCK_DEFINE(gStats);
 
+LOCAL gboolean tpacketv3OldVlan;
+
 /******************************************************************************/
 int reader_tpacketv3_stats(ArkimeReaderStats_t *stats)
 {
     ARKIME_LOCK(gStats);
 
     struct tpacket_stats_v3 tpstats;
-    for (int i = 0; i < MAX_INTERFACES && config.interface[i]; i++) {
+    for (int i = 0; config.interface[i]; i++) {
         for (int t = 0; t < numThreads; t++) {
             socklen_t len = sizeof(tpstats);
             getsockopt(infos[i][t].fd, SOL_PACKET, PACKET_STATISTICS, &tpstats, &len);
@@ -96,14 +97,19 @@ LOCAL void *reader_tpacketv3_thread(gpointer infov)
     ArkimePacketBatch_t batch;
     arkime_packet_batch_init(&batch);
 
+    uint16_t vlanTag = htons(0x8100);
+    uint16_t vlan;
+
+    int initFunc = arkime_get_named_func("arkime_reader_thread_init");
+    arkime_call_named_func(initFunc, info->interfacePos * MAX_THREADS_PER_INTERFACE + info->thread, NULL);
+
     while (!config.quitting) {
         struct tpacket_block_desc *tbd = info->rd[pos].iov_base;
         if (config.debug > 2) {
-            int i;
             int cnt = 0;
             int waiting = 0;
 
-            for (i = 0; i < (int)info->req.tp_block_nr; i++) {
+            for (int i = 0; i < (int)info->req.tp_block_nr; i++) {
                 struct tpacket_block_desc *stbd = info->rd[i].iov_base;
                 if (stbd->hdr.bh1.block_status & TP_STATUS_USER) {
                     cnt++;
@@ -123,16 +129,15 @@ LOCAL void *reader_tpacketv3_thread(gpointer infov)
         struct tpacket3_hdr *th;
 
         th = (struct tpacket3_hdr *) ((uint8_t *) tbd + tbd->hdr.bh1.offset_to_first_pkt);
-        uint32_t p;
 
-        for (p = 0; p < tbd->hdr.bh1.num_pkts; p++) {
+        for (uint32_t p = 0; p < tbd->hdr.bh1.num_pkts; p++) {
             if (unlikely(th->tp_snaplen != th->tp_len) && !config.readTruncatedPackets && !config.ignoreErrors) {
                 LOGEXIT("ERROR - Arkime requires full packet captures caplen: %d pktlen: %d\n"
                         "See https://arkime.com/faq#arkime_requires_full_packet_captures_error",
                         th->tp_snaplen, th->tp_len);
             }
 
-            ArkimePacket_t *packet = ARKIME_TYPE_ALLOC0(ArkimePacket_t);
+            ArkimePacket_t *packet = arkime_packet_alloc();
             packet->pktlen        = th->tp_snaplen;
             packet->pkt           = (u_char *)th + th->tp_mac;
             packet->ts.tv_sec     = th->tp_sec;
@@ -140,7 +145,21 @@ LOCAL void *reader_tpacketv3_thread(gpointer infov)
             packet->readerPos     = info->interfacePos;
 
             if ((th->tp_status & TP_STATUS_VLAN_VALID) && th->hv1.tp_vlan_tci) {
-                packet->vlan = th->hv1.tp_vlan_tci & 0xfff;
+                if (tpacketv3OldVlan) {
+                    packet->vlan = th->hv1.tp_vlan_tci & 0xfff;
+                } else {
+                    // AFPacket removes the first VLAN so add it back in. Thanks to Suricata for the idea.
+                    packet->pktlen += 4;
+                    packet->pkt -= 4;
+
+                    // Move MACs back to make room
+                    memmove(packet->pkt, packet->pkt + 4, 12);
+
+                    // Add vlan that was removed
+                    memcpy(packet->pkt + 12, &vlanTag, 2);
+                    vlan = htons(th->hv1.tp_vlan_tci & 0xfff);
+                    memcpy(packet->pkt + 14, &vlan, 2);
+                }
             }
 
             arkime_packet_batch(&batch, packet);
@@ -152,13 +171,16 @@ LOCAL void *reader_tpacketv3_thread(gpointer infov)
         tbd->hdr.bh1.block_status = TP_STATUS_KERNEL;
         pos = (pos + 1) % info->req.tp_block_nr;
     }
+
+    int exitFunc = arkime_get_named_func("arkime_reader_thread_exit");
+    arkime_call_named_func(exitFunc, info->interfacePos * MAX_THREADS_PER_INTERFACE + info->thread, NULL);
     return NULL;
 }
 /******************************************************************************/
 void reader_tpacketv3_start()
 {
     char name[100];
-    for (int i = 0; i < MAX_INTERFACES && config.interface[i]; i++) {
+    for (int i = 0; config.interface[i]; i++) {
         for (int t = 0; t < numThreads; t++) {
             snprintf(name, sizeof(name), "arkime-af3%d-%d", i, t);
             g_thread_unref(g_thread_new(name, &reader_tpacketv3_thread, &infos[i][t]));
@@ -168,7 +190,7 @@ void reader_tpacketv3_start()
 /******************************************************************************/
 void reader_tpacketv3_exit()
 {
-    for (int i = 0; i < MAX_INTERFACES && config.interface[i]; i++) {
+    for (int i = 0; config.interface[i]; i++) {
         for (int t = 0; t < numThreads; t++) {
             close(infos[i][t].fd);
         }
@@ -180,7 +202,7 @@ void reader_tpacketv3_init(char *UNUSED(name))
     arkime_config_check("tpacketv3", "tpacketv3BlockSize", "tpacketv3NumThreads", "tpacketv3ClusterId", NULL);
 
     int blocksize = arkime_config_int(NULL, "tpacketv3BlockSize", 1 << 21, 1 << 16, 1U << 31);
-    numThreads = arkime_config_int(NULL, "tpacketv3NumThreads", 2, 1, MAX_TPACKETV3_THREADS);
+    numThreads = arkime_config_int(NULL, "tpacketv3NumThreads", 2, 1, MAX_THREADS_PER_INTERFACE);
 
     if (blocksize % getpagesize() != 0) {
         CONFIGEXIT("tpacketv3BlockSize=%d not divisible by pagesize %d", blocksize, getpagesize());
@@ -202,17 +224,23 @@ void reader_tpacketv3_init(char *UNUSED(name))
 
     int fanout_group_id = arkime_config_int(NULL, "tpacketv3ClusterId", 8005, 0x0001, 0xffff);
 
+    tpacketv3OldVlan = arkime_config_boolean(NULL, "tpacketv3OldVlan", FALSE);
+
     int version = TPACKET_V3;
-    int i;
-    for (i = 0; i < MAX_INTERFACES && config.interface[i]; i++) {
+    int reserve = 4;
+    for (int i = 0; config.interface[i]; i++) {
         int ifindex = if_nametoindex(config.interface[i]);
 
         for (int t = 0; t < numThreads; t++) {
             infos[i][t].fd = socket(AF_PACKET, SOCK_RAW, 0);
             infos[i][t].interfacePos = i;
+            infos[i][t].thread = t;
 
             if (setsockopt(infos[i][t].fd, SOL_PACKET, PACKET_VERSION, &version, sizeof(version)) < 0)
                 CONFIGEXIT("Error setting TPACKET_V3, might need a newer kernel: %s", strerror(errno));
+
+            if (!tpacketv3OldVlan && setsockopt(infos[i][t].fd, SOL_PACKET, PACKET_RESERVE, &reserve, sizeof(reserve)) < 0)
+                CONFIGEXIT("Error setting RESERVE, might need a newer kernel: %s", strerror(errno));
 
             memset(&infos[i][t].req, 0, sizeof(infos[i][t].req));
             infos[i][t].req.tp_block_size = blocksize;
@@ -246,8 +274,7 @@ void reader_tpacketv3_init(char *UNUSED(name))
             }
             infos[i][t].rd = malloc(infos[i][t].req.tp_block_nr * sizeof(struct iovec));
 
-            uint16_t j;
-            for (j = 0; j < infos[i][t].req.tp_block_nr; j++) {
+            for (uint16_t j = 0; j < infos[i][t].req.tp_block_nr; j++) {
                 infos[i][t].rd[j].iov_base = infos[i][t].map + (j * infos[i][t].req.tp_block_size);
                 infos[i][t].rd[j].iov_len = infos[i][t].req.tp_block_size;
             }
@@ -271,10 +298,6 @@ void reader_tpacketv3_init(char *UNUSED(name))
     }
 
     pcap_close(dpcap);
-
-    if (i == MAX_INTERFACES) {
-        CONFIGEXIT("Only support up to %d interfaces", MAX_INTERFACES);
-    }
 
     arkime_reader_start         = reader_tpacketv3_start;
     arkime_reader_exit          = reader_tpacketv3_exit;

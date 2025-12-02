@@ -3,10 +3,9 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-
   <div class="session-info">
-
-    <div v-for="(infoField, index) in infoFieldsClone"
+    <div
+      v-for="(infoField, index) in infoFieldsClone"
       :key="infoField.dbField + index">
       <div v-if="session[infoField.dbField]">
         <!-- label dropdown menu -->
@@ -14,52 +13,53 @@ SPDX-License-Identifier: Apache-2.0
           right
           size="sm"
           toggle-class="rounded"
-          class="field-dropdown"
+          class="field-dropdown d-inline-block me-1"
           variant="default"
           :text="infoField.friendlyName">
           <b-dropdown-item
             @click="exportUnique(infoField.rawField || infoField.exp, 0)">
-            Export Unique {{ infoField.friendlyName }}
+            {{ $t('sessions.exportUnique', {name: infoField.friendlyName}) }}
           </b-dropdown-item>
           <b-dropdown-item
             @click="exportUnique(infoField.rawField || infoField.exp, 1)">
-            Export Unique {{ infoField.friendlyName }} with counts
+            {{ $t('sessions.exportUniqueCounts', {name: infoField.friendlyName}) }}
           </b-dropdown-item>
           <template v-if="infoField.portField">
             <b-dropdown-item
               @click="exportUnique(infoField.rawField || infoField.exp + ':' + infoField.portField, 0)">
-              Export Unique {{ infoField.friendlyName }}:Ports
+              {{ $t('sessions.exportUniquePort', {name: infoField.friendlyName}) }}
             </b-dropdown-item>
             <b-dropdown-item
               @click="exportUnique(infoField.rawField || infoField.exp + ':' + infoField.portField, 1)">
-              Export Unique {{ infoField.friendlyName }}:Ports with counts
+              {{ $t('sessions.exportUniquePortCounts', {name: infoField.friendlyName}) }}
             </b-dropdown-item>
           </template>
           <b-dropdown-item
             @click="openSpiGraph(infoField.dbField)">
-            Open {{ infoField.friendlyName }} in SPI Graph
+            {{ $t('sessions.openSpiGraph', {name: infoField.friendlyName}) }}
           </b-dropdown-item>
         </b-dropdown> <!-- /label dropdown menu -->
         <span v-if="Array.isArray(session[infoField.dbField])">
-          <span v-for="(value, index) in limitArrayLength(session[infoField.dbField], infoField.limit)"
-            :key="value + index">
+          <span
+            v-for="(value, idx) in limitArrayLength(session[infoField.dbField], infoField.limit)"
+            :key="value + idx">
             <arkime-session-field
               :value="value"
               :session="session"
               :expr="infoField.exp"
-              :field="infoField">
-            </arkime-session-field>
+              :field="infoField" />
           </span>
-          <a class="cursor-pointer"
+          <a
+            class="cursor-pointer"
             href="javascript:void(0)"
             style="text-decoration:none;"
             v-if="session[infoField.dbField].length > initialLimit"
             @click="toggleShowAll(infoField)">
             <span v-if="!infoField.showAll">
-              more...
+              {{ $t('common.more') }}
             </span>
             <span v-else>
-              ...less
+              {{ $t('common.less') }}
             </span>
           </a>
         </span>
@@ -68,14 +68,11 @@ SPDX-License-Identifier: Apache-2.0
             :value="session[infoField.dbField]"
             :session="session"
             :expr="infoField.exp"
-            :field="infoField">
-          </arkime-session-field>
+            :field="infoField" />
         </span>
       </div>
     </div>
-
   </div>
-
 </template>
 
 <script>
@@ -83,10 +80,16 @@ import SessionsService from './SessionsService';
 
 export default {
   name: 'ArkimeSessionInfo',
-  props: [
-    'session', // the session object
-    'infoFields' // the fields to display as info
-  ],
+  props: {
+    session: {
+      type: Object,
+      default: () => ({})
+    }, // the session object
+    infoFields: {
+      type: Array,
+      default: () => []
+    } // the fields to display as info
+  },
   data: function () {
     return {
       initialLimit: 3,
@@ -94,8 +97,11 @@ export default {
     };
   },
   watch: {
-    infoFields: function (newVal, oldVal) {
-      this.infoFieldsClone = JSON.parse(JSON.stringify(newVal));
+    infoFields: {
+      deep: true,
+      handler (newVal, oldVal) {
+        this.infoFieldsClone = JSON.parse(JSON.stringify(newVal));
+      }
     }
   },
   methods: {
@@ -105,12 +111,12 @@ export default {
      * @param {object} infoField The field to toggle
      */
     toggleShowAll: function (infoField) {
-      this.$set(infoField, 'showAll', !infoField.showAll);
+      infoField.showAll = !infoField.showAll;
 
       if (infoField.showAll) {
-        this.$set(infoField, 'limit', 9999);
+        infoField.limit = 9999;
       } else {
-        this.$set(infoField, 'limit', this.initialLimit);
+        infoField.limit = this.initialLimit;
       }
     },
     /**
@@ -148,7 +154,7 @@ export default {
 
 <style>
 /* clickable field labels */
-.session-info .btn-group.dropdown.field-dropdown > button {
+.session-info div.dropdown.field-dropdown > button {
   margin-top: 1px;
   margin-bottom: 1px;
   padding: 0 4px;

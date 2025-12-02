@@ -1,4 +1,4 @@
-use Test::More tests => 38;
+use Test::More tests => 41;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -33,7 +33,8 @@ countTest(3, "date=-1&expression=" . uri_escape("file=$copytest"));
     eq_or_diff($png1->content, $pngm->content);
 
 # scrub 1 id
-    viewerPostToken("/delete?removePcap=true&removeSpi=false&date=-1", "ids=" . $idQuery->{data}->[0]->{id}, $token);
+    my $result = viewerPostToken("/delete?removePcap=true&removeSpi=false&date=-1", "ids=" . $idQuery->{data}->[0]->{id}, $token);
+    eq_or_diff($result, from_json('{"success":true,"text":"Scrubbing PCAP of 1 sessions complete"}'));
 
     esGet("/_flush");
     esGet("/_refresh");
@@ -55,7 +56,8 @@ countTest(3, "date=-1&expression=" . uri_escape("file=$copytest"));
     eq_or_diff($png1->content, $pngm->content);
 
 # scrub expression
-    viewerPostToken("/api/delete?removePcap=true&removeSpi=false&date=-1&expression=" . uri_escape("file=$copytest"), {}, $token);
+    $result = viewerPostToken("/api/delete?removePcap=true&removeSpi=false&date=-1&expression=" . uri_escape("file=$copytest"), {}, $token);
+    eq_or_diff($result, from_json('{"success":true,"text":"Scrubbing PCAP of 3 sessions complete"}'));
 
     esGet("/_flush");
     esGet("/_refresh");
@@ -69,7 +71,8 @@ countTest(3, "date=-1&expression=" . uri_escape("file=$copytest"));
     countTest(3, "date=-1&expression=" . uri_escape("file=$copytest&&scrubbed.by==/Anon.*mous/"));
 
 # delete
-    viewerPostToken("/delete?removePcap=true&removeSpi=true&date=-1&expression=" . uri_escape("file=$copytest"), {}, $token);
+    $result = viewerPostToken("/delete?removePcap=true&removeSpi=true&date=-1&expression=" . uri_escape("file=$copytest"), {}, $token);
+    eq_or_diff($result, from_json('{"success":true,"text":"Deletion PCAP and SPI of 3 sessions complete. Give OpenSearch/Elasticsearch 60 seconds to complete SPI deletion."}'));
 
     esGet("/_flush");
     esGet("/_refresh");

@@ -6,7 +6,9 @@ SPDX-License-Identifier: Apache-2.0
   <b-modal
     size="xl"
     id="create-user-modal"
-    :title="createMode === 'user' ? 'Create a New User' : 'Create a New Role'">
+    @hidden="$emit('close')"
+    :model-value="showModal"
+    :title="createMode === 'user' ? $t('users.createNewUser') : $t('users.createNewRole')">
     <!-- create form -->
     <b-form>
       <div class="row">
@@ -15,33 +17,31 @@ SPDX-License-Identifier: Apache-2.0
           class="col-md-6 mt-2">
           <template #prepend>
             <b-input-group-text>
-              {{ createMode === 'user' ? 'User' : 'Role' }}
-              ID<sup>*</sup>
+              {{ $t('users.userId') }}
+              <sup>*</sup>
             </b-input-group-text>
           </template>
           <b-form-input
             autofocus
             autocomplete="userid"
-            placeholder="Unique ID"
+            :placeholder="$t('users.userIdPlaceholder')"
             v-model.lazy="newUser.userId"
-            :state="newUser.userId.length > 0"
-          />
+            :state="newUser.userId.length > 0" />
         </b-input-group>
         <b-input-group
           size="sm"
           class="col-md-6 mt-2">
           <template #prepend>
             <b-input-group-text>
-              {{ createMode === 'user' ? 'User' : 'Role' }}
-              Name<sup>*</sup>
+              {{ $t('users.userName') }}
+              <sup>*</sup>
             </b-input-group-text>
           </template>
           <b-form-input
             autocomplete="username"
-            placeholder="Readable name"
+            :placeholder="$t('users.userNamePlaceholder')"
             v-model.lazy="newUser.userName"
-            :state="newUser.userName.length > 0"
-          />
+            :state="newUser.userName.length > 0" />
         </b-input-group>
       </div>
       <b-input-group
@@ -49,16 +49,18 @@ SPDX-License-Identifier: Apache-2.0
         class="mt-2">
         <template #prepend>
           <b-input-group-text
-            class="cursor-help"
-            v-b-tooltip.hover="'An Arkime search expression that is silently added to all queries. Useful to limit what data can be accessed (e.g. which nodes or IPs)'">
-            Forced Expression
+            id="create-user-expression"
+            class="cursor-help">
+            {{ $t('users.forcedExpression') }}
+            <BTooltip target="create-user-expression">
+              {{ $t('users.forcedExpressionTip') }}
+            </BTooltip>
           </b-input-group-text>
         </template>
         <b-form-input
           autocomplete="expression"
-          placeholder="node == test"
-          v-model.lazy="newUser.expression"
-        />
+          :placeholder="$t('users.forcedExpressionPlaceholder')"
+          v-model.lazy="newUser.expression" />
       </b-input-group>
       <div class="row">
         <div class="col-md-6">
@@ -67,50 +69,89 @@ SPDX-License-Identifier: Apache-2.0
             class="mt-2">
             <template #prepend>
               <b-input-group-text
-                class="cursor-help"
-                v-b-tooltip.hover="'Restrict the maximum time window of a query'">
-                Query Time Limit
+                id="create-user-time-limit"
+                class="cursor-help">
+                {{ $t('users.queryTimeLimit') }}
+                <BTooltip target="create-user-time-limit">
+                  {{ $t('users.queryTimeLimitTip') }}
+                </BTooltip>
               </b-input-group-text>
             </template>
             <!-- NOTE: can't use b-form-select because it doesn't allow for undefined v-models -->
             <select
               class="form-control"
               v-model.lazy="newUser.timeLimit">
-              <option value="1">1 hour</option>
-              <option value="6">6 hours</option>
-              <option value="24">24 hours</option>
-              <option value="48">48 hours</option>
-              <option value="72">72 hours</option>
-              <option value="168">1 week</option>
-              <option value="336">2 weeks</option>
-              <option value="720">1 month</option>
-              <option value="1440">2 months</option>
-              <option value="4380">6 months</option>
-              <option value="8760">1 year</option>
-              <option value=undefined>All (careful)</option>
+              <option value="1">
+                {{ $t('common.hourCount', { count: 1 }) }}
+              </option>
+              <option value="6">
+                {{ $t('common.hourCount', { count: 6 }) }}
+              </option>
+              <option value="24">
+                {{ $t('common.hourCount', { count: 24 }) }}
+              </option>
+              <option value="48">
+                {{ $t('common.hourCount', { count: 48 }) }}
+              </option>
+              <option value="72">
+                {{ $t('common.hourCount', { count: 72 }) }}
+              </option>
+
+              <option value="168">
+                {{ $t('common.weekCount', { count: 1 }) }}
+              </option>
+              <option value="336">
+                {{ $t('common.weekCount', { count: 2 }) }}
+              </option>
+
+              <option value="720">
+                {{ $t('common.monthCount', { count: 1 }) }}
+              </option>
+              <option value="1440">
+                {{ $t('common.monthCount', { count: 2 }) }}
+              </option>
+              <option value="4380">
+                {{ $t('common.monthCount', { count: 6 }) }}
+              </option>
+
+              <option value="8760">
+                {{ $t('common.yearCount', { count: 1 }) }}
+              </option>
+              <option value="undefined">
+                {{ $t('common.allCareful') }}
+              </option>
             </select>
           </b-input-group>
         </div>
         <div class="col-md-6 mt-2 d-inline-flex align-items-center">
           <template v-if="roles">
             <RoleDropdown
-                :roles="roles"
-                display-text="Roles"
-                @selected-roles-updated="updateNewUserRoles"
-            />
+              :roles="roles"
+              :display-text="$t('users.roles')"
+              @selected-roles-updated="updateNewUserRoles" />
             <span
-                class="fa fa-info-circle fa-lg cursor-help ml-2"
-                v-b-tooltip.hover="'These roles are applied across apps (Arkime, Parliament, WISE, Cont3xt)'"
-            />
+              id="create-user-roles"
+              class="fa fa-info-circle fa-lg cursor-help ms-2">
+              <BTooltip target="create-user-roles">
+                {{ $t('users.rolesTip') }}
+              </BTooltip>
+            </span>
           </template>
           <template v-if="createMode === 'role'">
-            <UserDropdown class="ml-3" display-text="Role Assigners" :selected-users="newUser.roleAssigners" @selected-users-updated="updateNewRoleAssigners">
-              Role Assigners
+            <UserDropdown
+              class="ms-3"
+              :display-text="$t('users.roleAssigners')"
+              :selected-users="newUser.roleAssigners"
+              @selected-users-updated="updateNewRoleAssigners">
+              {{ $t('users.roleAssigners') }}
             </UserDropdown>
             <span
-                class="fa fa-info-circle fa-lg cursor-help ml-2"
-                v-b-tooltip.hover="'These users can manage who has this role'"
-            />
+              id="create-user-role-assigners"
+              class="fa fa-info-circle fa-lg cursor-help ms-2">
+              <BTooltip target="create-user-role-assigners">
+                {{ $t('users.roleAssignersTip') }}
+              </BTooltip>
+            </span>
           </template>
         </div>
       </div>
@@ -120,107 +161,104 @@ SPDX-License-Identifier: Apache-2.0
         v-if="createMode === 'user'">
         <template #prepend>
           <b-input-group-text>
-            Password<sup>*</sup>
+            {{ $t('users.password') }}<sup>*</sup>
           </b-input-group-text>
         </template>
         <b-form-input
           type="password"
           :state="validatePassword"
-          placeholder="New password"
+          :placeholder="$t('users.passwordPlaceholder')"
           autocomplete="new-password"
-          v-model.lazy="newUser.password"
-        />
+          v-model.lazy="newUser.password" />
       </b-input-group>
-      <b-form-checkbox inline
+      <b-form-checkbox
+        inline
         v-model="newUser.enabled">
-        Enabled
+        {{ $t('users.enabled') }}
       </b-form-checkbox>
-      <b-form-checkbox inline
+      <b-form-checkbox
+        inline
         v-if="createMode === 'user'"
         v-model="newUser.webEnabled">
-        Web Interface
+        {{ $t('users.webEnabled') }}
       </b-form-checkbox>
-      <b-form-checkbox inline
+      <b-form-checkbox
+        inline
         v-if="createMode === 'user'"
         v-model="newUser.headerAuthEnabled">
-        Web Auth Header
+        {{ $t('users.headerAuthEnabled') }}
       </b-form-checkbox>
 
-      <b-form-checkbox inline
+      <b-form-checkbox
+        inline
         :checked="!newUser.emailSearch"
         v-if="createMode === 'user'"
         @input="newVal => negativeToggle(newVal, newUser, 'emailSearch')">
-        Disable Arkime Email Search
+        {{ $t('users.disableEmailSearch') }}
       </b-form-checkbox>
-      <b-form-checkbox inline
+      <b-form-checkbox
+        inline
         :checked="!newUser.removeEnabled"
         v-if="createMode === 'user'"
         @input="newVal => negativeToggle(newVal, newUser, 'removeEnabled')">
-        Disable Arkime Data Removal
+        {{ $t('users.disableDataRemoval') }}
       </b-form-checkbox>
-      <b-form-checkbox inline
+      <b-form-checkbox
+        inline
         :checked="!newUser.packetSearch"
         v-if="createMode === 'user'"
         @input="newVal => negativeToggle(newVal, newUser, 'packetSearch')">
-        Disable Arkime Hunting
+        {{ $t('users.disableHunting') }}
       </b-form-checkbox>
 
-      <b-form-checkbox inline
+      <b-form-checkbox
+        inline
         v-if="createMode === 'user'"
         v-model="newUser.hideStats">
-        Hide Arkime Stats Page
+        {{ $t('users.hideStatsPage') }}
       </b-form-checkbox>
-      <b-form-checkbox inline
+      <b-form-checkbox
+        inline
         v-if="createMode === 'user'"
         v-model="newUser.hideFiles">
-        Hide Arkime Files Page
+        {{ $t('users.hideFilesPage') }}
       </b-form-checkbox>
-      <b-form-checkbox inline
+      <b-form-checkbox
+        inline
         v-if="createMode === 'user'"
         v-model="newUser.hidePcap">
-        Hide Arkime PCAP
+        {{ $t('users.hidePcap') }}
       </b-form-checkbox>
-      <b-form-checkbox inline
+      <b-form-checkbox
+        inline
         v-if="createMode === 'user'"
         v-model="newUser.disablePcapDownload">
-        Disable Arkime PCAP Download
+        {{ $t('users.disablePcapDownload') }}
       </b-form-checkbox>
     </b-form> <!-- /create form -->
     <!-- create form error -->
-    <b-alert
-      variant="danger"
-      class="mt-2 mb-0"
-      :show="!!createError">
+    <div
+      v-if="createError"
+      class="alert alert-danger mt-2 mb-0">
       {{ createError }}
-    </b-alert> <!-- /create form error -->
+    </div> <!-- /create form error -->
     <!-- modal footer -->
-    <template #modal-footer>
+    <template #footer>
       <div class="w-100 d-flex justify-content-between">
         <b-button
-          title="Cancel"
+          :title="$t('common.cancel')"
           variant="danger"
-          @click="$bvModal.hide('create-user-modal')">
+          @click="$emit('close')">
           <span class="fa fa-times" />
-          Cancel
+          {{ $t('common.cancel') }}
         </b-button>
         <div>
-          <b-button
+          <BButton
             variant="primary"
-            @click="createUser(true)"
-            v-if="roles && createMode === 'role'"
-            v-b-tooltip.hover="'Create New Role'">
-            <span class="fa fa-plus-circle mr-1" />
-            Create Role
-          </b-button>
-          <b-button
-            variant="primary"
-            v-b-tooltip.hover
-            title="Create New User"
-            @click="createUser(false)"
-            v-if="createMode === 'user'">
-            <span class="fa fa-plus-circle mr-1" />
-            Create User
-          </b-button>
+            @click="createUser(createMode === 'role')">
+            <span class="fa fa-plus-circle me-1" />
+            {{ $t('common.create') }}
+          </BButton>
         </div>
       </div>
     </template> <!-- /modal footer -->
@@ -229,8 +267,8 @@ SPDX-License-Identifier: Apache-2.0
 
 <script>
 import UserService from './UserService';
-import RoleDropdown from './RoleDropdown';
-import UserDropdown from './UserDropdown';
+import RoleDropdown from './RoleDropdown.vue';
+import UserDropdown from './UserDropdown.vue';
 
 const defaultNewUser = {
   userId: '',
@@ -246,6 +284,7 @@ const defaultNewUser = {
 
 export default {
   name: 'CreateUser',
+  emits: ['close', 'user-created'],
   components: {
     RoleDropdown,
     UserDropdown
@@ -258,6 +297,10 @@ export default {
     createMode: {
       type: String,
       default: 'user'
+    },
+    showModal: {
+      type: Boolean,
+      default: false
     }
   },
   data () {
@@ -269,31 +312,31 @@ export default {
   },
   methods: {
     negativeToggle (newVal, user, field) {
-      this.$set(user, field, !newVal);
+      user[field] = !newVal;
     },
     updateNewUserRoles (roles) {
-      this.$set(this.newUser, 'roles', roles);
+      this.newUser.roles = roles;
     },
     updateNewRoleAssigners ({ newSelection }) {
-      this.$set(this.newUser, 'roleAssigners', newSelection);
+      this.newUser.roleAssigners = newSelection;
     },
     createUser (createRole) {
       this.createError = '';
       this.validatePassword = undefined;
 
       if (!this.newUser.userId) {
-        this.createError = 'ID can not be empty';
+        this.createError = this.$t('users.userIdEmptyError');
         return;
       }
 
       if (!this.newUser.userName) {
-        this.createError = 'Name can not be empty';
+        this.createError = this.$t('users.userNameEmptyError');
         return;
       }
 
       if (!createRole && !this.newUser.password) {
         this.validatePassword = false;
-        this.createError = 'Password can not be empty';
+        this.createError = this.$t('users.passwordEmptyError');
         return;
       }
 

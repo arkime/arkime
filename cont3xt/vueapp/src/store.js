@@ -2,15 +2,11 @@
 Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 */
-import Vue from 'vue';
-import Vuex from 'vuex';
-import createPersistedState from 'vuex-persistedstate';
+import { createStore } from 'vuex';
 import { iTypes, iTypeIndexMap } from '@/utils/iTypes';
 import { indicatorFromId, localIndicatorId } from '@/utils/cont3xtUtil';
 
-Vue.use(Vuex);
-
-const store = new Vuex.Store({
+const store = createStore({
   state: {
     user: undefined,
     roles: [],
@@ -30,12 +26,12 @@ const store = new Vuex.Store({
     integrationsArray: [],
     linkGroups: undefined,
     linkGroupsError: '',
-    collapsedLinkGroups: {},
-    checkedLinks: {},
-    selectedIntegrations: undefined,
-    sidebarKeepOpen: false,
+    collapsedLinkGroups: localStorage.getItem('collapsedLinkGroups') ? JSON.parse(localStorage.getItem('collapsedLinkGroups')) : {},
+    checkedLinks: localStorage.getItem('checkedLinks') ? JSON.parse(localStorage.getItem('checkedLinks')) : {},
+    selectedIntegrations: localStorage.getItem('selectedIntegrations') ? JSON.parse(localStorage.getItem('selectedIntegrations')) : [],
+    sidebarKeepOpen: localStorage.getItem('sidebarKeepOpen') === 'true',
     views: [],
-    integrationsPanelHoverDelay: 400,
+    integrationsPanelHoverDelay: localStorage.getItem('integrationsPanelHoverDelay') ? JSON.parse(localStorage.getItem('integrationsPanelHoverDelay')) : 400,
     selectedView: undefined,
     shiftKeyHold: false,
     focusSearch: false,
@@ -51,7 +47,7 @@ const store = new Vuex.Store({
     copyShareLink: false,
     toggleIntegrationPanel: false,
     immediateSubmissionReady: false,
-    theme: undefined,
+    theme: localStorage.getItem('theme') ? JSON.parse(localStorage.getItem('theme')) : undefined,
     tags: [],
     tagDisplayCollapsed: true,
     seeAllViews: false,
@@ -69,7 +65,7 @@ const store = new Vuex.Store({
     indicatorGraph: {}, // maps every `${query}-${itype}` to its corresponding indicator node
     /** @type {{ [indicatorId: string]: object }} */
     enhanceInfoTable: {}, // maps every `${query}-${itype}` to any enhancement info it may have
-    linkGroupsPanelOpen: true,
+    linkGroupsPanelOpen: localStorage.getItem('linkGroupsPanelOpen') === 'true',
     indicatorIdToFocus: undefined,
     /** @type {'down' | 'up' | 'left' | 'right' | undefined} */
     resultTreeNavigationDirection: undefined,
@@ -145,58 +141,43 @@ const store = new Vuex.Store({
     UPDATE_LINK_GROUP (state, data) {
       for (let i = 0; i < state.linkGroups.length; i++) {
         if (state.linkGroups[i]._id === data._id) {
-          Vue.set(state.linkGroups, i, data);
+          state.linkGroups[i] = data;
           return;
         }
       }
     },
-    TOGGLE_CHECK_LINK (state, { lgId, lname }) {
-      const clone = JSON.parse(JSON.stringify(state.checkedLinks));
-
-      if (!clone[lgId]) {
-        clone[lgId] = {};
-      }
-
-      if (clone[lgId][lname]) {
-        clone[lgId][lname] = false;
-      } else {
-        clone[lgId][lname] = true;
-      }
-
-      Vue.set(state, 'checkedLinks', clone);
-    },
     TOGGLE_CHECK_ALL_LINKS (state, { lgId, checked }) {
-      const clone = JSON.parse(JSON.stringify(state.checkedLinks));
-
       for (const lg of state.linkGroups) {
         if (lg._id === lgId) {
           if (!state.checkedLinks[lgId]) {
-            clone[lgId] = {};
+            state.checkedLinks[lgId] = {};
           }
 
           for (const link of lg.links) {
-            clone[lgId][link.name] = checked;
+            state.checkedLinks[lgId][link.name] = checked;
           }
-
-          Vue.set(state, 'checkedLinks', clone);
           return;
         }
       }
     },
     SET_SELECTED_INTEGRATIONS (state, data) {
-      Vue.set(state, 'selectedIntegrations', data);
+      state.selectedIntegrations = data;
+      localStorage.setItem('selectedIntegrations', JSON.stringify(data));
     },
     SET_SIDEBAR_KEEP_OPEN (state, data) {
       state.sidebarKeepOpen = data;
+      localStorage.setItem('sidebarKeepOpen', data);
     },
     SET_COLLAPSED_LINK_GROUPS (state, data) {
       state.collapsedLinkGroups = data;
+      localStorage.setItem('collapsedLinkGroups', JSON.stringify(data));
     },
     SET_VIEWS (state, data) {
       state.views = data;
     },
     SET_INTEGRATIONS_PANEL_DELAY (state, data) {
       state.integrationsPanelHoverDelay = data;
+      localStorage.setItem('integrationsPanelHoverDelay', JSON.stringify(data));
     },
     SET_SELECTED_VIEW (state, data) {
       state.selectedView = data;
@@ -253,6 +234,7 @@ const store = new Vuex.Store({
     },
     SET_THEME (state, data) {
       state.theme = data;
+      localStorage.setItem('theme', JSON.stringify(data));
     },
     SET_TAGS (state, data) {
       state.tags = data;
@@ -279,7 +261,7 @@ const store = new Vuex.Store({
       state.selectedOverviewIdMap = data;
     },
     SET_SELECTED_OVERVIEW_ID_FOR_ITYPE (state, { iType, id }) {
-      Vue.set(state.selectedOverviewIdMap, iType, id);
+      state.selectedOverviewIdMap[iType] = id;
     },
     REMOVE_OVERVIEW (state, id) {
       const index = state.overviews.findIndex(overview => overview._id === id);
@@ -290,20 +272,20 @@ const store = new Vuex.Store({
     UPDATE_OVERVIEW (state, data) {
       const index = state.overviews.findIndex(overview => overview._id === data._id);
       if (index !== -1) {
-        Vue.set(state.overviews, index, data);
+        state.overviews[index] = data;
       }
     },
     SET_INTEGRATION_RESULT (state, { indicator, source, result }) {
       const { itype, query } = indicator;
 
       if (!state.results[itype]) {
-        Vue.set(state.results, itype, {});
+        state.results[itype] = {};
       }
       if (!state.results[itype][query]) {
-        Vue.set(state.results[itype], query, {});
+        state.results[itype][query] = {};
       }
 
-      Vue.set(state.results[itype][query], source, Object.freeze(result));
+      state.results[itype][query][source] = Object.freeze(result);
     },
     SET_ACTIVE_INDICATOR_ID (state, data) {
       state.activeIndicatorId = data;
@@ -318,10 +300,10 @@ const store = new Vuex.Store({
       const id = localIndicatorId(indicator);
 
       if (!state.enhanceInfoTable[id]) {
-        Vue.set(state.enhanceInfoTable, id, {});
+        state.enhanceInfoTable[id] = {};
       }
       for (const key in enhanceInfo) {
-        Vue.set(state.enhanceInfoTable[id], key, enhanceInfo[key]);
+        state.enhanceInfoTable[id][key] = enhanceInfo[key];
       }
     },
     UPDATE_INDICATOR_GRAPH (state, { indicator, parentIndicator }) {
@@ -331,7 +313,7 @@ const store = new Vuex.Store({
       const parentId = parentIndicator ? localIndicatorId(parentIndicator) : undefined;
       if (!state.indicatorGraph[id]) {
         if (!state.enhanceInfoTable[id]) {
-          Vue.set(state.enhanceInfoTable, id, {});
+          state.enhanceInfoTable[id] = {};
         }
 
         const indicatorNode = {
@@ -341,7 +323,7 @@ const store = new Vuex.Store({
           children: Object.values(state.indicatorGraph).filter(node => node.parentIds.has(id)),
           enhanceInfo: state.enhanceInfoTable[id]
         };
-        Vue.set(state.indicatorGraph, id, indicatorNode);
+        state.indicatorGraph[id] = indicatorNode;
       } else {
         state.indicatorGraph[id].parentIds.add(parentId);
       }
@@ -362,9 +344,10 @@ const store = new Vuex.Store({
     },
     TOGGLE_LINK_GROUPS_PANEL (state) {
       state.linkGroupsPanelOpen = !state.linkGroupsPanelOpen;
+      localStorage.setItem('linkGroupsPanelOpen', state.linkGroupsPanelOpen);
     },
     TOGGLE_INDICATOR_NODE_COLLAPSE (state, data) {
-      Vue.set(state.collapsedIndicatorNodeMap, data, !state.collapsedIndicatorNodeMap[data]);
+      state.collapsedIndicatorNodeMap[data] = !state.collapsedIndicatorNodeMap[data];
     },
     SET_INDICATOR_ID_TO_FOCUS (state, data) {
       state.indicatorIdToFocus = data;
@@ -437,6 +420,12 @@ const store = new Vuex.Store({
       return state.linkGroupsError;
     },
     getCheckedLinks (state) {
+      for (const lg of state.linkGroups) {
+        if (!state.checkedLinks[lg._id]) {
+          state.checkedLinks[lg._id] = {};
+        }
+      }
+      localStorage.setItem('checkedLinks', JSON.stringify(state.checkedLinks));
       return state.checkedLinks;
     },
     getSidebarKeepOpen (state) {
@@ -605,13 +594,7 @@ const store = new Vuex.Store({
     getCollapseOrExpandIndicatorRoots (state) {
       return state.collapseOrExpandIndicatorRoots;
     }
-  },
-  plugins: [createPersistedState({
-    paths: [ // only these state variables are persisted to localstorage
-      'checkedLinks', 'selectedIntegrations', 'sidebarKeepOpen', 'linkGroupsPanelOpen',
-      'collapsedLinkGroups', 'integrationsPanelHoverDelay', 'theme'
-    ]
-  })]
+  }
 });
 
 export default store;

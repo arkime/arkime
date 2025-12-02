@@ -228,7 +228,7 @@ class CsvJsonIntegration extends Integration {
         key.split(',').forEach((cidr) => {
           const parts = cidr.split('/');
           try {
-            ipCache.add(ArkimeUtil.expandIp(parts[0]), +parts[1] ?? (parts[0].includes(':') ? 128 : 32), value);
+            ipCache.add(ArkimeUtil.expandIp(parts[0]), (parts[1] !== undefined ? +parts[1] : (parts[0].includes(':') ? 128 : 32)), value);
           } catch (e) {
             console.log('ERROR adding', this.section, cidr, e);
           }
@@ -327,12 +327,12 @@ class CsvJsonIntegration extends Integration {
 
 let sections = ArkimeConfig.getSections().filter((e) => { return e.match(/^csv:/); });
 sections.forEach((section) => {
-  // eslint-disable-next-line no-new
+
   new CsvJsonIntegration(section, true);
 });
 
 sections = ArkimeConfig.getSections().filter((e) => { return e.match(/^json:/); });
 sections.forEach((section) => {
-  // eslint-disable-next-line no-new
+
   new CsvJsonIntegration(section, false);
 });

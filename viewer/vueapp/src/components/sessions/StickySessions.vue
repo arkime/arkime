@@ -3,122 +3,142 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-
-  <div class="bounce"
+  <div
+    class="bounce"
     ref="stickyContainer"
     :class="{
       'hide-toolbars': !showToolBars,
       'show-sticky-sessions-btn': sortedSessions && sortedSessions.length
-    }"
-  >
-
+    }">
     <!-- toggle button -->
-    <div class="sticky-session-btn"
+    <div
+      id="toggleStickySessions"
+      class="sticky-session-btn"
       @click="toggleStickySessions"
-      v-if="sortedSessions && sortedSessions.length > 0"
-      v-b-tooltip.hover.left
-      title="Toggle view of expanded sessions">
-      <span v-if="!open"
-        class="fa fa-angle-double-left">
-      </span><span v-else
-        class="fa fa-angle-double-right">
-      </span>&nbsp;
+      v-if="sortedSessions && sortedSessions.length > 0">
+      <span
+        v-if="!open"
+        class="fa fa-angle-double-left" /><span
+          v-else
+          class="fa fa-angle-double-right" />&nbsp;
       <small>{{ sortedSessions.length }}</small>
+      <BTooltip target="toggleStickySessions">
+        {{ $t('sessions.sticky.toggleOpenTip') }}
+      </BTooltip>
     </div> <!-- /toggle button -->
 
     <!-- sticky sessions content -->
     <transition name="slide">
-      <div v-if="open"
+      <div
+        v-if="open"
         class="sticky-session-detail">
-
         <!-- sticky sessions list -->
         <ul class="list-group">
           <li class="list-group-item list-group-header">
-            <a v-b-tooltip.hover
+            <a
+              id="closeAllFromSticky"
               @click="closeAll"
-              title="Close all open sessions"
-              class="btn btn-default btn-sm pull-right ml-1">
-              <span class="fa fa-close">
-              </span>
+              class="btn btn-default btn-sm pull-right ms-1">
+              <span class="fa fa-close" />
+              <BTooltip target="closeAllFromSticky">
+                {{ $t('sessions.sticky.closeAllTip') }}
+              </BTooltip>
             </a>
             <span v-if="sortBy">
-              <a v-if="sortOrder === 'asc'"
-                v-b-tooltip.hover
+              <a
+                v-if="sortOrder === 'asc'"
+                id="toggleStickySortOrderDesc"
                 @click="toggleSortOrder"
-                title="Sorting ascending, click to sort descending"
-                class="btn btn-default btn-sm pull-right ml-1">
-                <span class="fa fa-sort-asc">
-                </span>
+                class="btn btn-default btn-sm pull-right ms-1">
+                <span class="fa fa-sort-asc" />
+                <BTooltip target="toggleStickySortOrderDesc">
+                  {{ $t('sessions.sticky.sortDescTip') }}
+                </BTooltip>
               </a>
-              <a v-if="sortOrder === 'desc'"
-                v-b-tooltip.hover
+              <a
+                v-if="sortOrder === 'desc'"
+                id="toggleStickySortOrderAsk"
                 @click="toggleSortOrder"
-                title="Sorting descending, click to sort ascending"
-                class="btn btn-default btn-sm pull-right ml-1">
-                <span class="fa fa-sort-desc">
-                </span>
+                class="btn btn-default btn-sm pull-right ms-1">
+                <span class="fa fa-sort-desc" />
+                <BTooltip target="toggleStickySortOrderDesc">
+                  {{ $t('sessions.sticky.sortAscTip') }}
+                </BTooltip>
               </a>
             </span>
-            <select v-model="sortBy"
+            <select
+              v-model="sortBy"
               class="form-control form-control-sm pull-right sort-by-select">
-              <option disabled value="">
-                Sort by...
+              <option
+                disabled
+                value="">
+                {{ $t('sessions.sortBy') }}
               </option>
               <option value="firstPacket">
-                Start Time
+                {{ $t('sessions.startTime') }}
               </option>
               <option value="lastPacket">
-                Stop Time
+                {{ $t('sessions.stopTime') }}
               </option>
             </select>
             <h4>
-              {{ sortedSessions.length }} Open
-              Session<span v-if="sortedSessions.length > 1">s</span>
+              {{ $t('sessions.sticky.openSessionCount', sortedSessions.length) }}
             </h4>
           </li>
-          <transition-group name="slide">
-            <a class="list-group-item list-group-item-animate cursor-pointer"
+          <transition-group
+            name="slide"
+            tag="span">
+            <a
+              class="list-group-item list-group-item-animate cursor-pointer"
               @click="scrollTo(session.id)"
               v-for="session in sortedSessions"
               :key="session.id">
               <div class="list-group-item-text">
-                <button class="btn btn-xs btn-link pull-right"
+                <button
+                  class="btn btn-xs btn-link pull-right"
                   @click.stop="closeSessionDetail(session)">
-                  <span class="fa fa-close fa-lg">
-                  </span>
+                  <span class="fa fa-close fa-lg" />
                 </button>
                 <small>
-                  <span class="fa fa-clock-o fa-fw">
-                  </span>
+                  <span class="fa fa-clock-o fa-fw" />
                   <em>
-                    {{ session.firstPacket | timezoneDateString(timezone, ms) }} -
-                    {{ session.lastPacket | timezoneDateString(timezone, ms) }}
+                    {{ timezoneDateString(session.firstPacket, timezone, ms) }} -
+                    {{ timezoneDateString(session.lastPacket, timezone, ms) }}
                   </em>
                   <br>
                   <strong>{{ session['source.ip'] }}</strong>:{{ session['source.port'] }} <strong>{{ session['source.geo.country_iso_code'] }}</strong> -
                   <strong>{{ session['destination.ip'] }}</strong>:{{ session['destination.port'] }} <strong>{{ session['destination.geo.country_iso_code'] }}</strong>
                   <br>
-                  <strong>{{ session.ipProtocol | protocol }}</strong> - {{ session.node }}
+                  <strong>{{ protocol(session.ipProtocol) }}</strong> - {{ session.node }}
                 </small>
               </div>
             </a>
           </transition-group>
         </ul> <!-- /sticky sessions list -->
-
       </div>
     </transition> <!-- /sticky sessions content -->
-
   </div>
-
 </template>
 
 <script>
+import { timezoneDateString, protocol } from '@common/vueFilters.js';
+
 let stickyContainer;
 let oldLength = 1;
 
 export default {
   name: 'ArkimeStickySessions',
-  props: ['sessions', 'ms'],
+  emits: ['closeSession', 'closeAllSessions'],
+  props: {
+    sessions: {
+      type: Array,
+      default: () => []
+    },
+    ms: {
+      type: Object,
+      default: () => ({})
+    }
+  },
   data: function () {
     return {
       open: false,
@@ -127,32 +147,35 @@ export default {
     };
   },
   watch: {
-    sessions: function (newVal, oldVal) {
-      const newLength = newVal.length;
+    sessions: {
+      deep: true,
+      handler (newVal, oldVal) {
+        const newLength = newVal.length;
 
-      this.$store.commit('setStickySessionsBtn', !!newLength);
+        this.$store.commit('setStickySessionsBtn', !!newLength);
 
-      // only sort changed, nothing to do
-      if (newLength === oldLength) { return; }
+        // only sort changed, nothing to do
+        if (newLength === oldLength) { return; }
 
-      if (!newLength) {
-        this.open = false;
-        return;
-      }
-
-      if (newLength > oldLength) {
-        if (!stickyContainer) {
-          stickyContainer = this.$refs.stickyContainer;
+        if (!newLength) {
+          this.open = false;
+          return;
         }
 
-        stickyContainer.classList.remove('bounce');
+        if (newLength > oldLength) {
+          if (!stickyContainer) {
+            stickyContainer = this.$refs.stickyContainer;
+          }
 
-        setTimeout(() => {
-          stickyContainer.classList.add('bounce');
-        });
+          stickyContainer.classList.remove('bounce');
+
+          setTimeout(() => {
+            stickyContainer.classList.add('bounce');
+          });
+        }
+
+        oldLength = newLength;
       }
-
-      oldLength = newLength;
     }
   },
   computed: {
@@ -185,6 +208,8 @@ export default {
     }
   },
   methods: {
+    protocol,
+    timezoneDateString,
     /* exposed functions --------------------------------------------------- */
     /* Opens/closes the sticky sessions panel */
     toggleStickySessions: function () {
@@ -319,7 +344,7 @@ a.list-group-item:focus {
 .slide-enter-active, .slide-leave-active {
   transition: all .5s ease;
 }
-.slide-enter, .slide-leave-to {
+.slide-enter-from, .slide-leave-to {
   transform: translateX(360px);
 }
 .list-group-item.list-group-item-animate {

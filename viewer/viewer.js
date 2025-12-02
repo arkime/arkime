@@ -30,6 +30,7 @@ const User = require('../common/user');
 const Auth = require('../common/auth');
 const ArkimeUtil = require('../common/arkimeUtil');
 const ArkimeConfig = require('../common/arkimeConfig');
+const Locales = require('../common/locales');
 
 // express app
 const app = express();
@@ -50,6 +51,7 @@ internals.initialize(app);
 const ViewerUtils = require('./viewerUtils');
 const Notifier = require('../common/notifier');
 const ViewAPIs = require('./apiViews');
+const ShareableAPIs = require('./apiShareables');
 const CronAPIs = require('./apiCrons');
 const SessionAPIs = require('./apiSessions');
 const ConnectionAPIs = require('./apiConnections');
@@ -89,9 +91,11 @@ const cspDirectives = {
   objectSrc: ["'none'"],
   imgSrc: ["'self'", 'data:']
 };
-const cspHeader = helmet.contentSecurityPolicy({
-  directives: cspDirectives
-});
+const cspHeader = (process.env.NODE_ENV === 'development')
+  ? (_req, _res, next) => { next(); }
+  : helmet.contentSecurityPolicy({
+    directives: cspDirectives
+  });
 const cyberchefCspHeader = helmet.contentSecurityPolicy({
   directives: {
     defaultSrc: ["'self'"],
@@ -166,8 +170,17 @@ app.use('/font-awesome', express.static(
   path.join(__dirname, '/../node_modules/font-awesome'),
   { maxAge: dayMs, fallthrough: false }
 ), ArkimeUtil.missingResource);
+// PRODUCTION BUNDLE (created by vite) - includes bundled js, css, & assets!
+app.use('/assets', express.static(
+  path.join(__dirname, 'vueapp/dist/assets'),
+  { maxAge: dayMs, fallthrough: true }
+));
 app.use(['/assets', '/logos'], express.static(
   path.join(__dirname, '../assets'),
+  { maxAge: dayMs, fallthrough: false }
+), ArkimeUtil.missingResource);
+app.use('/public', express.static(
+  path.join(__dirname, '/public'),
   { maxAge: dayMs, fallthrough: false }
 ), ArkimeUtil.missingResource);
 
@@ -212,22 +225,23 @@ if (ArkimeConfig.regressionTests) {
     await Db.refresh();
     HuntAPIs.processHuntJobs();
 
-    setTimeout(function checkHuntFinished () {
+    async function checkHuntFinished () {
       if (internals.runningHuntJob) {
         setTimeout(checkHuntFinished, 1000);
       } else {
-        Db.search('hunts', 'hunt', { query: { terms: { status: ['running', 'queued'] } } }, async function (err, result) {
-          if (result.hits.total > 0) {
-            HuntAPIs.processHuntJobs();
-            await Db.refresh();
-            setTimeout(checkHuntFinished, 1000);
-          } else {
-            await Db.refresh();
-            res.send('{}');
-          }
-        });
+        const result = await Db.search('hunts', { query: { terms: { status: ['running', 'queued'] } } });
+        if (result.hits.total > 0) {
+          HuntAPIs.processHuntJobs();
+          await Db.refresh();
+          setTimeout(checkHuntFinished, 1000);
+        } else {
+          await Db.refresh();
+          res.send('{}');
+        }
       }
-    }, 1000);
+    }
+
+    setTimeout(checkHuntFinished, 1000);
   });
   app.get('/regressionTests/deleteAllUsers', User.apiDeleteAllUsers);
   app.get('/regressionTests/getUser/:user', (req, res) => {
@@ -351,23 +365,23 @@ function createSessionDetail () {
   dirs = dirs.concat(Config.getArray('pluginsDir', `${version.config_prefix}/plugins`));
   dirs = dirs.concat(Config.getArray('parsersDir', `${version.config_prefix}/parsers`));
 
-  dirs.forEach(function (dir) {
+  for (const dir of dirs) {
     try {
       const files = fs.readdirSync(dir);
       // sort().reverse() so in this dir pug is processed before jade
-      files.sort().reverse().forEach(function (file) {
+      for (const file of files.sort().reverse()) {
         const sfile = file.replace(/\.(pug|jade)/, '');
         if (found[sfile]) {
-          return;
+          continue;
         }
         if (file.match(/\.detail\.jade$/i)) {
           found[sfile] = fs.readFileSync(dir + '/' + file, 'utf8').replace(/^/mg, '  ') + '\n';
         } else if (file.match(/\.detail\.pug$/i)) {
           found[sfile] = '  include ' + dir + '/' + file + '\n';
         }
-      });
+      }
     } catch (e) {}
-  });
+  }
 
   const customViews = Config.keys('custom-views') || [];
 
@@ -391,9 +405,9 @@ function createSessionDetail () {
                                  '  b-card-group(columns)\n' +
                                  '    b-card\n' +
                                  '      include views/sessionDetail\n';
-    Object.keys(found).sort().forEach(function (k) {
+    for (const k of Object.keys(found).sort()) {
       internals.sessionDetailNew += found[k].replaceAll(/^/mg, '  ') + '\n';
-    });
+    }
 
     let spaces;
     let state = 0;
@@ -636,7 +650,7 @@ function logAction (uiPage) {
       if (req._arkimeESQueryIndices) { log.esQueryIndices = req._arkimeESQueryIndices; }
 
       try {
-        Db.historyIt(log);
+        Db.historyIt(log, req.body.cluster ?? req.query.cluster);
       } catch (err) {
         console.log('log history error', err);
       }
@@ -700,7 +714,7 @@ function fillQueryFromBody (req, res, next) {
 // This returns the cached user
 function getSettingUserCache (req, res, next) {
   // If no userId parameter, or userId is ourself then req.user already has our info
-  if (req.query.userId === undefined || req.query.userId === req.user.userId) {
+  if (!req.query.userId || req.query.userId === req.user.userId) {
     req.settingUser = req.user;
     return next();
   }
@@ -770,27 +784,27 @@ function loadPlugins () {
   };
   const plugins = Config.getArray('viewerPlugins', '');
   const dirs = Config.getArray('pluginsDir', `${version.config_prefix}/plugins`);
-  plugins.forEach(function (plugin) {
-    plugin = plugin.trim();
-    if (plugin === '') {
-      return;
+  for (const plugin of plugins) {
+    const pluginTrimmed = plugin.trim();
+    if (pluginTrimmed === '') {
+      continue;
     }
     let found = false;
-    dirs.forEach(function (dir) {
-      dir = dir.trim();
-      if (found || dir === '') {
-        return;
+    for (const dir of dirs) {
+      const dirTrimmed = dir.trim();
+      if (found || dirTrimmed === '') {
+        continue;
       }
-      if (fs.existsSync(dir + '/' + plugin)) {
+      if (fs.existsSync(dirTrimmed + '/' + pluginTrimmed)) {
         found = true;
-        const p = require(dir + '/' + plugin);
+        const p = require(dirTrimmed + '/' + pluginTrimmed);
         p.init(Config, internals.pluginEmitter, api);
       }
-    });
-    if (!found) {
-      console.log("WARNING - Couldn't find plugin", plugin, 'in', dirs);
     }
-  });
+    if (!found) {
+      console.log("WARNING - Couldn't find plugin", pluginTrimmed, 'in', dirs);
+    }
+  }
 }
 
 // session helpers ------------------------------------------------------------
@@ -917,11 +931,12 @@ internals.sendSessionQueue = async.queue(sendSessionWorker, 5);
 // EXPIRING
 // ============================================================================
 // Search the oldest 500 files on a set of nodes in a set of directories.
-// If less then 10 items are returned we don't delete anything.
+// If less then 10 items are returned we don't delete anything, otherwise
+// ignore the 10 most recent files and delete files until we have enough free space.
 // Doesn't support mounting sub directories in main directory, don't do it.
-function expireDevice (nodes, dirs, minFreeSpaceG, nextCb) {
+async function expireDevice (nodes, dirs, minFreeSpaceG, nextCb) {
   if (Config.debug > 0) {
-    console.log('EXPIRE - device', nodes, dirs, minFreeSpaceG);
+    console.log('EXPIRE - device', nodes, 'dirs', dirs, 'minFreeSpaceG', minFreeSpaceG);
   }
   const query = {
     _source: ['num', 'name', 'first', 'size', 'node', 'indexFilename'],
@@ -938,24 +953,25 @@ function expireDevice (nodes, dirs, minFreeSpaceG, nextCb) {
     sort: { first: { order: 'asc' } }
   };
 
-  Object.keys(dirs).forEach(function (pcapDir) {
+  for (const pcapDir of dirs) {
     const obj = { wildcard: {} };
-    if (pcapDir[pcapDir.length - 1] === '/') {
+    if (pcapDir.endsWith('/')) {
       obj.wildcard.name = pcapDir + '*';
     } else {
       obj.wildcard.name = pcapDir + '/*';
     }
     query.query.bool.filter[1].bool.should.push(obj);
-  });
+  }
 
   if (Config.debug > 1) {
     console.log('EXPIRE - device query', JSON.stringify(query, false, 2));
   }
 
-  Db.search('files', 'file', query, function (err, data) {
-    if (err || data.error || !data.hits) {
+  try {
+    const data = await Db.search('files', query);
+    if (data.error || !data.hits) {
       if (Config.debug > 0) {
-        console.log('EXPIRE - device error', JSON.stringify(err, false, 2));
+        console.log('EXPIRE - device error', data.error || 'no data.hits');
       }
       return nextCb();
     }
@@ -963,11 +979,11 @@ function expireDevice (nodes, dirs, minFreeSpaceG, nextCb) {
     if (Config.debug === 1) {
       console.log('EXPIRE - device results hits:', data.hits.hits.length);
     } else if (Config.debug > 1) {
-      console.log('EXPIRE - device results', data.hits.hits.length, JSON.stringify(err, false, 2), JSON.stringify(data, false, 2));
+      console.log('EXPIRE - device results', data.hits.hits.length, JSON.stringify(data, false, 2));
     }
 
     if (data.hits.total <= 10) {
-      console.log(`EXPIRE WARNING - not deleting any files since ${data.hits.total} <= 10 minimum files per node. Your disk(s) may fill!!! See https://arkime.com/faq#pcap-deletion`);
+      console.log(`EXPIRE WARNING - not deleting any files since ${data.hits.total} <= 10 minimum files per node. (Nodes: ${nodes} Directories: ${Array.from(dirs).join(',')}) Your disk(s) may fill!!! See https://arkime.com/faq#pcap-deletion`);
       return nextCb();
     }
 
@@ -995,7 +1011,7 @@ function expireDevice (nodes, dirs, minFreeSpaceG, nextCb) {
             }
           });
         }
-        return Db.deleteFile(fields.node, item._id, fields.name, forNextCb);
+        return Db.deleteFile(fields.node, item._id, fields.name).then(() => forNextCb());
       } else {
         if (Config.debug > 0) {
           console.log('EXPIRE - device not deleting', freeG, minFreeSpaceG, fields.name);
@@ -1005,13 +1021,21 @@ function expireDevice (nodes, dirs, minFreeSpaceG, nextCb) {
     }, function () {
       return nextCb();
     });
-  });
+  } catch (err) {
+    if (Config.debug > 0) {
+      console.log('EXPIRE - device error', JSON.stringify(err, false, 2));
+    }
+    return nextCb();
+  }
 }
 
+// Check a single device to see if we need to expire any files on it.
+// A single device might have multiple nodes and multiple directories.
 function expireCheckDevice (nodes, stat, nextCb) {
   let doit = false;
   let minFreeSpaceG = 0;
-  async.forEach(nodes, function (node, cb) {
+
+  for (const node of nodes) {
     let freeSpaceG = Config.getFull(node, 'freeSpaceG', '5%');
     if (freeSpaceG[freeSpaceG.length - 1] === '%') {
       freeSpaceG = parseFloat(freeSpaceG) * 0.01 * stat.bsize / 1024.0 * stat.blocks / (1024.0 * 1024.0);
@@ -1019,69 +1043,74 @@ function expireCheckDevice (nodes, stat, nextCb) {
       freeSpaceG = parseFloat(freeSpaceG);
     }
 
-    const freeG = stat.bsize / 1024.0 * stat.bavail / (1024.0 * 1024.0);
-    if (Config.debug > 0) {
-      console.log(`EXPIRE - check device node: ${node} free: ${freeG} freeSpaceG: ${freeSpaceG}`);
-    }
-    if (freeG < freeSpaceG) {
-      doit = true;
-    }
-
+    // minFreeSpaceG across all nodes on this device
     if (freeSpaceG > minFreeSpaceG) {
       minFreeSpaceG = freeSpaceG;
     }
 
-    cb();
-  }, function () {
-    if (doit) {
-      expireDevice(nodes, stat.dirs, minFreeSpaceG, nextCb);
-    } else {
-      return nextCb();
+    const freeG = stat.bsize / 1024.0 * stat.bavail / (1024.0 * 1024.0);
+    if (Config.debug > 0) {
+      console.log(`EXPIRE - check device node: ${node} free: ${freeG} freeSpaceG: ${freeSpaceG}`);
     }
-  });
+
+    // Do we need to free space on this device
+    if (freeG < freeSpaceG) {
+      doit = true;
+    }
+  }
+
+  if (doit) {
+    expireDevice(nodes, stat.dirs, minFreeSpaceG, nextCb);
+  } else {
+    return nextCb();
+  }
 }
 
-function expireCheckAll () {
+// Build the list of devices and dirs on those devices to check for expiring files.
+async function expireCheckAll () {
   const devToStat = {};
+
   // Find all the nodes running on this host
-  Db.hostnameToNodeids(Config.hostName(), function (nodes) {
-    // Current node name should always be checked too
-    if (!nodes.includes(Config.nodeName())) {
-      nodes.push(Config.nodeName());
+  const nodes = await Db.hostnameToNodeids(Config.hostName());
+  // Current node name should always be checked too
+  if (!nodes.includes(Config.nodeName())) {
+    nodes.push(Config.nodeName());
+  }
+
+  // Find all the pcap dirs for local nodes
+  for (const node of nodes) {
+    const pcapDirs = Config.getFullArray(node, 'pcapDir', '/opt/arkime/raw');
+    if (!pcapDirs) {
+      console.log("EXPIRE ERROR - couldn't find pcapDir setting for node:", node);
+      continue;
     }
 
-    // Find all the pcap dirs for local nodes
-    async.map(nodes, function (node, cb) {
-      const pcapDirs = Config.getFullArray(node, 'pcapDir');
-      if (!pcapDirs) {
-        return cb("ERROR - couldn't find pcapDir setting for node: " + node);
+    // Create a mapping from device id to stat information.
+    // Add a dirs Set to each entry with all directories on that device
+    for (let pcapDir of pcapDirs) {
+      if (!pcapDir) {
+        continue; // Skip empty elements.  Prevents errors when pcapDir has a trailing or double ;
       }
-      // Create a mapping from device id to stat information and all directories on that device
-      pcapDirs.forEach(function (pcapDir) {
-        if (!pcapDir) {
-          return; // Skip empty elements.  Prevents errors when pcapDir has a trailing or double ;
-        }
-        pcapDir = pcapDir.trim();
+      pcapDir = pcapDir.trim();
+      try {
         const fileStat = fs.statSync(pcapDir);
-        const vfsStat = fs.statfsSync(pcapDir);
         if (!devToStat[fileStat.dev]) {
-          vfsStat.dirs = {};
-          vfsStat.dirs[pcapDir] = {};
+          const vfsStat = fs.statfsSync(pcapDir);
+          vfsStat.dirs = new Set([pcapDir]);
           devToStat[fileStat.dev] = vfsStat;
         } else {
-          devToStat[fileStat.dev].dirs[pcapDir] = {};
+          devToStat[fileStat.dev].dirs.add(pcapDir);
         }
-      });
-      cb(null);
-    },
-    function (err) {
-      // Now gow through all the local devices and check them
-      const keys = Object.keys(devToStat);
-      async.forEachSeries(keys, function (key, cb) {
-        expireCheckDevice(nodes, devToStat[key], cb);
-      }, function (err) {
-      });
-    });
+      } catch (err) {
+        console.log('EXPIRE ERROR - couldn\'t stat pcapDir:', pcapDir, err);
+      }
+    }
+  }
+
+  // Now gow through all the local devices and check them one at a time
+  const keys = Object.keys(devToStat);
+  async.forEachSeries(keys, function (key, cb) {
+    expireCheckDevice(nodes, devToStat[key], cb);
   });
 }
 
@@ -1238,6 +1267,13 @@ app.get( // user css endpoint
   UserAPIs.getUserCSS
 );
 
+// Locale endpoints ----------------------------------------------------------
+app.get( // get all locales endpoint - returns all locale files at once
+  ['/api/locales'],
+  [ArkimeUtil.noCacheJson, User.checkPermissions(['webEnabled'])],
+  Locales.getLocales
+);
+
 app.post( // get users endpoint
   ['/api/users'],
   [ArkimeUtil.noCacheJson, recordResponseTime, logAction('users'), User.checkRole('usersAdmin')],
@@ -1363,6 +1399,37 @@ app.put( // update view endpoint
   ['/api/view/:id'],
   [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), Auth.getSettingUserDb, Auth.checkResourceAccess(Db.getView, 'user'), sanitizeViewName],
   ViewAPIs.apiUpdateView
+);
+
+// shareable apis ---------------------------------------------------------------
+app.get( // list shareables endpoint
+  ['/api/shareables'],
+  [ArkimeUtil.noCacheJson, getSettingUserCache],
+  ShareableAPIs.apiListShareables
+);
+
+app.post( // create shareable endpoint
+  ['/api/shareable'],
+  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), Auth.getSettingUserDb],
+  ShareableAPIs.apiCreateShareable
+);
+
+app.get( // get shareable endpoint
+  ['/api/shareable/:id'],
+  [ArkimeUtil.noCacheJson, getSettingUserCache],
+  ShareableAPIs.apiGetShareable
+);
+
+app.put( // update shareable endpoint
+  ['/api/shareable/:id'],
+  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), Auth.getSettingUserDb],
+  ShareableAPIs.apiUpdateShareable
+);
+
+app.delete( // delete shareable endpoint
+  ['/api/shareable/:id'],
+  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), Auth.getSettingUserDb],
+  ShareableAPIs.apiDeleteShareable
 );
 
 // cron apis ------------------------------------------------------------------
@@ -1557,6 +1624,12 @@ app.post( // unflood OpenSearch/Elasticsearch admin endpoint
   StatsAPIs.clearCacheES
 );
 
+app.get( // OpenSearch/Elasticsearch allocation explain endpoint
+  ['/api/esadmin/allocation'],
+  [ArkimeUtil.noCacheJson, recordResponseTime, checkEsAdminUser, setCookie],
+  StatsAPIs.getAllocationExplain
+);
+
 app.get( // OpenSearch/Elasticsearch shards endpoint
   ['/api/esshards'],
   [ArkimeUtil.noCacheJson, recordResponseTime, User.checkPermissions(['hideStats']), setCookie],
@@ -1668,6 +1741,12 @@ app.post( // remove tags endpoint
   SessionAPIs.removeTags
 );
 
+app.getpost(
+  ['/api/sessions/summary'],
+  [ArkimeUtil.noCacheJson, fillQueryFromBody, checkHeaderToken, logAction('summary')],
+  SessionAPIs.summary
+);
+
 app.get( // session body file endpoint
   ['/api/session/:nodeName/:id/body/:bodyType/:bodyNum/:bodyName', '/:nodeName/:id/body/:bodyType/:bodyNum/:bodyName'],
   [checkProxyRequest],
@@ -1696,6 +1775,12 @@ app.get( // session node pcap endpoint
   ['/api/session/:nodeName/:id[/.]pcap*'],
   [checkProxyRequest, User.checkPermissions(['disablePcapDownload'])],
   SessionAPIs.getPCAPFromNode
+);
+
+app.post( // session node pcap endpoint
+  ['/api/session/:nodeName/:id[/.]pcap*'],
+  [checkProxyRequest, User.checkPermissions(['disablePcapDownload'])],
+  SessionAPIs.postPCAPFromNode
 );
 
 app.get( // session node pcapng endpoint
@@ -1757,7 +1842,7 @@ app.post( // sessions send endpoint - used by vueapp
   SessionAPIs.sendSessions
 );
 
-app.post( // sessions recieve endpoint
+app.post( // sessions receive endpoint
   ['/api/sessions/receive', '/receiveSession'],
   [ArkimeUtil.noCacheJson],
   SessionAPIs.receiveSession
@@ -1963,9 +2048,6 @@ app.use( // cyberchef UI endpoint
 // ============================================================================
 // VUE APP
 // ============================================================================
-const Vue = require('vue');
-const vueServerRenderer = require('vue-server-renderer');
-
 // using fallthrough: false because there is no 404 endpoint (client router
 // handles 404s) and sending index.html is confusing
 // expose vue bundles
@@ -1973,6 +2055,17 @@ app.use('/static', express.static(
   path.join(__dirname, '/vueapp/dist/static'),
   { maxAge: dayMs, fallthrough: false }
 ), ArkimeUtil.missingResource);
+
+// loads the manifest.json file from dist and inject it in the ejs template
+const parseManifest = () => {
+  if (process.env.NODE_ENV === 'development') return {};
+
+  const manifestPath = path.join(path.resolve(), 'vueapp/dist/.vite/manifest.json');
+  const manifestFile = fs.readFileSync(manifestPath, 'utf-8');
+
+  return JSON.parse(manifestFile);
+};
+const manifest = parseManifest();
 
 app.use(cspHeader, setCookie, (req, res) => {
   if (!req.user.webEnabled) {
@@ -1987,10 +2080,6 @@ app.use(cspHeader, setCookie, (req, res) => {
     return res.status(403).send('Permission denied');
   }
 
-  const renderer = vueServerRenderer.createRenderer({
-    template: fs.readFileSync(path.join(__dirname, '/vueapp/dist/index.html'), 'utf-8')
-  });
-
   let theme = req.user?.settings?.theme || 'default-theme';
   if (theme.startsWith('custom1')) { theme = 'custom-theme'; }
 
@@ -2000,7 +2089,7 @@ app.use(cspHeader, setCookie, (req, res) => {
     .replace(/_userName_/g, req.user ? req.user.userName : '-');
 
   const footerConfig = Config.get('footerTemplate', '_version_ | <a href="https://arkime.com">arkime.com</a> | _responseTime_')
-    .replace(/_version_/g, `Arkime v${version.version}`).replace(/_responseTime_/g, '{{ responseTime | commaString }}ms');
+    .replace(/_version_/g, `Arkime v${version.version}`).replace(/_responseTime_/g, '{{ commaString(responseTime) }}ms');
 
   const limit = req.user.hasRole('arkimeAdmin') ? Config.get('huntAdminLimit', 10000000) : Config.get('huntLimit', 1000000);
 
@@ -2023,20 +2112,18 @@ app.use(cspHeader, setCookie, (req, res) => {
     businessDays: Config.get('businessDays', '1,2,3,4,5'),
     turnOffGraphDays: Config.get('turnOffGraphDays', 30),
     disableUserPasswordUI: Config.get('disableUserPasswordUI', true),
-    logoutUrl: Auth.logoutUrl,
+    logoutUrl: Auth.logoutUrl(req),
+    logoutUrlMethod: Auth.logoutUrlMethod,
     defaultTimeRange: Config.get('defaultTimeRange', '1'),
-    spiViewCategoryOrder: Config.get('spiViewCategoryOrder')
+    spiViewCategoryOrder: Config.get('spiViewCategoryOrder'),
+    clusterDefault: Config.get('clusterDefault', ''),
+    environment: process.env.NODE_ENV,
+    manifest
   };
 
-  // Create a fresh Vue app instance
-  const vueApp = new Vue({
-    template: '<div id="app"></div>'
-  });
-
-  // Render the Vue instance to HTML
-  renderer.renderToString(vueApp, appContext, (err, html) => {
+  res.render('index.html.ejs', appContext, (err, html) => {
     if (err) {
-      console.log(err);
+      console.log('ERROR - fetching vue index page:', err);
       if (err.code === 404) {
         res.status(404).end('Page not found');
       } else {
@@ -2143,7 +2230,7 @@ process.on('unhandledRejection', (reason, p) => {
 async function premain () {
   await Config.initialize({ initAuth: true });
 
-  Db.initialize({
+  await Db.initialize({
     host: internals.elasticBase,
     prefix: internals.prefix,
     queryExtraIndices: Config.getArray('queryExtraIndices', ''),
@@ -2167,8 +2254,9 @@ async function premain () {
     usersEsBasicAuth: Config.get('usersElasticsearchBasicAuth', null),
     isPrimaryViewer: CronAPIs.isPrimaryViewer,
     getCurrentUserCB: UserAPIs.getCurrentUserCB,
-    maxConcurrentShardRequests: Config.get('esMaxConcurrentShardRequests')
-  }, main);
+    maxConcurrentShardRequests: Config.get('esMaxConcurrentShardRequests'),
+    regressionTests: Config.regressionTests
+  });
 
   Notifier.initialize({
     prefix: Config.get('usersPrefix', Config.get('prefix', 'arkime')),
@@ -2177,6 +2265,7 @@ async function premain () {
 
   CronAPIs.initialize({
   });
+  main();
 }
 
 premain();

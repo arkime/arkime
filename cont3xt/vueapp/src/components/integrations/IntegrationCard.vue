@@ -3,109 +3,130 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-  <b-card
-    class="mb-2">
-    <h5 class="text-warning mb-3"
+  <cont3xt-card class="mb-2">
+    <h5
+      class="text-warning mb-3"
       v-if="card && card.title">
       {{ card.title.replace('%{query}', indicator.query) }}
-      <div class="float-right mt-1">
+      <div class="float-right">
         <template v-if="filteredSearchUrls && filteredSearchUrls.length > 0">
           <template v-if="filteredSearchUrls.length === 1">
-            <b-button
-              size="sm"
-              target="_blank"
-              variant="outline-primary"
+            <v-btn
+              size="small"
+              class="ml-1"
+              variant="outlined"
+              color="primary"
               v-if="filteredSearchUrls[0]"
               :href="filteredSearchUrls[0].url.replace('%{query}', indicator.query)"
-              v-b-tooltip.hover="filteredSearchUrls[0].name.replace('%{query}', indicator.query)">
-              <span class="fa fa-external-link fa-fw"></span>
-            </b-button>
+              target="_blank"
+              v-tooltip="filteredSearchUrls[0].name.replace('%{query}', indicator.query)">
+              <v-icon icon="mdi-open-in-new" />
+            </v-btn>
           </template>
           <template v-else>
-            <b-dropdown
-              right
-              size="sm"
-              variant="outline-primary"
-              v-b-tooltip.hover="`Pivot your search into ${source}`">
-              <template #button-content>
-                <span class="fa fa-external-link fa-fw"></span>
-              </template>
-              <template v-for="searchUrl in card.searchUrls">
-                <b-dropdown-item
-                  target="_blank"
-                  :key="searchUrl.name"
-                  v-if="searchUrl.itypes.includes(indicator.itype)"
-                  :href="searchUrl.url.replace('%{query}', indicator.query)">
-                  {{ searchUrl.name.replace('%{query}', indicator.query) }}
-                </b-dropdown-item>
-              </template>
-            </b-dropdown>
+            <v-btn
+              variant="outlined"
+              color="primary"
+              size="small"
+              v-tooltip="`Pivot your search into ${source}`">
+              <v-icon icon="mdi-open-in-new" />
+              <v-icon icon="mdi-chevron-down" />
+              <v-menu activator="parent">
+                <v-list class="d-flex flex-column">
+                  <template
+                    v-for="searchUrl in card.searchUrls"
+                    :key="searchUrl.name">
+                    <v-btn
+                      v-if="searchUrl.itypes.includes(indicator.itype)"
+                      @click="action"
+                      :href="searchUrl.url.replace('%{query}', indicator.query)"
+                      target="_blank"
+                      variant="text"
+                      class="justify-start">
+                      {{ searchUrl.name.replace('%{query}', indicator.query) }}
+                    </v-btn>
+                  </template>
+                </v-list>
+              </v-menu>
+            </v-btn>
           </template>
         </template>
-        <b-button
-          size="sm"
+        <v-btn
+          size="small"
+          class="ml-1"
           tabindex="-1"
           @click="copy"
-          v-b-tooltip.hover
+          v-tooltip="'Copy as raw JSON'"
           title="Copy as raw JSON"
-          variant="outline-success">
-          <span class="fa fa-copy fa-fw" />
-        </b-button>
-        <b-button
-          size="sm"
+          variant="outlined"
+          color="success">
+          <v-icon icon="mdi-content-copy" />
+        </v-btn>
+        <v-btn
+          size="small"
+          class="ml-1"
           tabindex="-1"
           @click="download"
-          v-b-tooltip.hover
-          variant="outline-success"
-          title="Download as raw JSON">
-          <span class="fa fa-download fa-fw" />
-        </b-button>
-        <b-button
-          size="sm"
+          v-tooltip="'Download as raw JSON'"
+          title="Download as raw JSON"
+          variant="outlined"
+          color="success">
+          <v-icon icon="mdi-download" />
+        </v-btn>
+        <v-btn
+          size="small"
+          class="ml-1"
           tabindex="-1"
           @click="refresh"
-          v-b-tooltip.hover
-          variant="outline-info"
-          :title="`Queried ${$options.filters.moment(integrationData._cont3xt.createTime, 'from')}\n${$options.filters.dateString(integrationData._cont3xt.createTime)}`">
-          <span class="fa fa-refresh fa-fw" />
-        </b-button>
+          v-tooltip="`Queried ${moment(integrationData._cont3xt.createTime, 'from')}\n${dateString(integrationData._cont3xt.createTime)}`"
+          variant="outlined"
+          color="info"
+          :title="`Queried ${moment(integrationData._cont3xt.createTime, 'from')}\n${dateString(integrationData._cont3xt.createTime)}`">
+          <v-icon icon="mdi-refresh" />
+        </v-btn>
       </div>
     </h5>
     <!-- error with data -->
-    <b-alert
-      :show="!!error"
-      variant="danger">
+    <v-alert
+      v-if="!!error"
+      color="error"
+      class="flex-grow-1">
       <span class="pr-2">
-        <span class="fa fa-exclamation-triangle fa-fw fa-3x" />
+        <v-icon
+          icon="mdi-alert"
+          size="large" />
       </span>
       <div class="display-inline-block">
         <strong>Error:</strong>
         <br>
         {{ error }}
       </div>
-    </b-alert> <!-- error with data -->
+    </v-alert> <!-- error with data -->
     <!-- no template -->
-    <b-alert
-      :show="!card"
-      variant="warning">
+    <v-alert
+      v-if="!card"
+      color="warning">
       <span class="pr-2">
-        <span class="fa fa-exclamation-triangle fa-fw fa-3x" />
+        <v-icon
+          icon="mdi-alert"
+          size="large" />
       </span>
       <div class="display-inline-block">
         Missing information to render the data.
         <br>
         Please make sure your integration has a "card" attribute.
       </div>
-    </b-alert> <!-- no template -->
+    </v-alert> <!-- no template -->
     <!-- no data -->
     <template v-if="Object.keys(integrationData).length === 1 && integrationData._cont3xt.createTime">
       <h5 class="display-4 text-center mt-4 mb-4 text-muted">
-        <span class="fa fa-folder-open" />
+        <v-icon icon="mdi-folder-open" />
         <br>
         No data
       </h5>
     </template> <!-- /no data -->
-    <template v-else> <!-- data -->
+    <template v-else>
+      <!-- data -->
       <!-- card template -->
       <template v-if="card && card.fields">
         <div
@@ -115,37 +136,38 @@ SPDX-License-Identifier: Apache-2.0
             :field="field"
             v-if="integrationData"
             :data="integrationData"
-          />
+            :highlight-patterns="highlightPatterns" />
         </div>
       </template> <!-- /card template -->
       <!-- raw -->
-      <b-card class="mt-2">
-        <h6 tabindex="-1"
-          v-b-toggle.collapse-raw
-          class="card-title mb-1 text-warning">
-          raw
-          <span class="pull-right">
-            <span class="when-open fa fa-caret-up" />
-            <span class="when-closed fa fa-caret-down" />
-          </span>
-        </h6>
-        <b-collapse
-          class="mt-2"
-          tabindex="-1"
-          id="collapse-raw">
-          <pre class="text-info">{{ integrationData }}</pre>
-        </b-collapse>
-      </b-card> <!-- /raw -->
+      <v-expansion-panels class="mt-2">
+        <v-expansion-panel color="cont3xt-card">
+          <template #title>
+            <strong class="text-warning">
+              raw
+            </strong>
+          </template>
+          <template #text>
+            <pre class="text-info overflow-x-auto">{{ integrationData }}</pre>
+          </template>
+        </v-expansion-panel>
+      </v-expansion-panels>
+      <!-- /raw -->
     </template> <!-- /data -->
-  </b-card>
+  </cont3xt-card>
 </template>
 
 <script>
 import { mapGetters } from 'vuex';
+import moment from 'moment-timezone';
+import { dateString } from '@/utils/filters.js';
+import Cont3xtCard from '@/utils/Cont3xtCard.vue';
 
 import Cont3xtService from '@/components/services/Cont3xtService';
-import IntegrationValue from '@/components/integrations/IntegrationValue';
+import IntegrationValue from '@/components/integrations/IntegrationValue.vue';
 import { Cont3xtIndicatorProp, getIntegrationData } from '@/utils/cont3xtUtil';
+import { clipboardCopyText } from '@/utils/clipboardCopyText';
+import { parseHighlightPatterns } from '@/utils/highlightUtil';
 
 // NOTE: IntegrationCard displays IntegrationValues AND IntegrationTables
 // IntegrationTables can ALSO display IntegrationValues, so:
@@ -153,7 +175,8 @@ import { Cont3xtIndicatorProp, getIntegrationData } from '@/utils/cont3xtUtil';
 // IntegrationCard -> IntegrationValue -> IntegrationTable -> IntegrationValue
 export default {
   name: 'IntegrationCard',
-  components: { IntegrationValue },
+  emits: ['update-results'],
+  components: { IntegrationValue, Cont3xtCard },
   props: {
     source: { // the name of the integration to display data from
       type: String,
@@ -178,9 +201,15 @@ export default {
     },
     filteredSearchUrls () {
       return this.card?.searchUrls?.filter(url => url.itypes.includes(this.indicator.itype));
+    },
+    highlightPatterns () {
+      const highlightParam = this.$route.query.highlight;
+      return parseHighlightPatterns(highlightParam);
     }
   },
   methods: {
+    dateString,
+    moment,
     refresh () {
       // display loading overload (parent update hides overlay)
       this.$store.commit('SET_RENDERING_CARD', true);
@@ -200,7 +229,7 @@ export default {
         return;
       }
 
-      this.$copyText(JSON.stringify(this.integrationData, false, 2));
+      clipboardCopyText(JSON.stringify(this.integrationData, false, 2));
     },
     download () {
       this.error = '';
@@ -218,7 +247,12 @@ export default {
       URL.revokeObjectURL(a.href);
     }
   },
-  updated () { // card data is rendered
+  mounted () { // card data is rendered (typically on first load)
+    this.$nextTick(() => {
+      this.$store.commit('SET_RENDERING_CARD', false);
+    });
+  },
+  updated () { // card data is re-rendered (eg. via refresh)
     this.$nextTick(() => {
       this.$store.commit('SET_RENDERING_CARD', false);
     });

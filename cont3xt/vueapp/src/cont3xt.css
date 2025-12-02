@@ -10,6 +10,11 @@ body.dark .table-striped thead th {
     border-color: #525252;
 }
 
+/* light mode darkened table stripes */
+.table-striped tbody tr:nth-of-type(odd) {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
 /* remove default colorings from bootstrap dark variant */
 .table-dark {
     background-color: revert;
@@ -29,21 +34,13 @@ td .integration-external-link-button {
 
 /* reorder list handle for link groups and overview fields */
 .link-handle {
-    top: 18px;
+    top: -3px;
     left: -9px;
     z-index: 10;
-    padding: 5px 6px;
-    position: relative;
+    width: 24px;
+    height: 24px;
+    text-align: center;
+    position: absolute;
     border-radius: 14px;
-    background: var(--secondary);
-}
-
-.gap-1 {
-    gap: 0.25rem;
-}
-.gap-2 {
-    gap: 0.5rem;
-}
-.gap-3 {
-    gap: 1rem;
+    background: rgb(var(--v-theme-secondary));
 }

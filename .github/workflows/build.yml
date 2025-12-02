@@ -10,6 +10,7 @@ on:
     paths-ignore:
       - '*.md'
       - '.*'
+      - CHANGELOG
 
 permissions:
   contents: read
@@ -20,6 +21,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
+      freebsdmatrix: ${{ steps.set-matrix.outputs.freebsdmatrix }}
     env:
       HEAD_REF: ${{ github.head_ref }}
     steps:
@@ -33,12 +35,16 @@ jobs:
         run: |
           if [[ "${HEAD_REF}" == start-v* || "${HEAD_REF}" == release-v* ]]; then
             MATRIX='{"include":[]}'
+            FREEBSD_MATRIX='{"include":[]}'
           elif [ "${{ github.event_name }}" != "push" ]; then
-            MATRIX=$(yq -o json eval '{"include": [.include[] | select(.version | test("(aarch64|_arm64)$") | not)]}' .github/workflows/versions | jq -c)
+            MATRIX=$(yq -o json eval '{"include": [.include[] | select(.version | test("freebsd") | not) | select(.prbuild == "true")]}' .github/workflows/versions | jq -c)
+            FREEBSD_MATRIX=$(yq -o json eval '{"include": [.include[] | select(.version | test("freebsd")) | select(.prbuild == "true")]}' .github/workflows/versions | jq -c)
           else
-            MATRIX=$(yq -o json .github/workflows/versions | jq -c)
+            MATRIX=$(yq -o json eval '{"include": [.include[] | select(.version | test("freebsd") | not)]}' .github/workflows/versions | jq -c)
+            FREEBSD_MATRIX=$(yq -o json eval '{"include": [.include[] | select(.version | test("freebsd"))]}' .github/workflows/versions | jq -c)
           fi
           echo "matrix=$MATRIX" >> $GITHUB_OUTPUT
+          echo "freebsdmatrix=$FREEBSD_MATRIX" >> $GITHUB_OUTPUT
 
   cache-node:
     runs-on: ubuntu-latest
@@ -137,6 +143,7 @@ jobs:
       - name: build and install
         run: |
           ./easybutton-build.sh ${{ matrix.buildopt }} --rminstall
+          ldd capture/capture
           export PATH=/opt/arkime/bin:$PATH
           INSTALL_BUNDLE=bundle make install
 
@@ -149,12 +156,6 @@ jobs:
       - name: capture tests
         run: |
           (cd tests; ./tests.pl)
-
-      - name: ui test
-        if: ${{ matrix.uitest }}
-        run: |
-          export PATH=/opt/arkime/bin:$PATH
-          npm run test
 
       - name: viewer test
         if: ${{ matrix.viewertest == 'normal' }}
@@ -277,7 +278,22 @@ jobs:
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         uses: softprops/action-gh-release@v2.0.5
         with:
-          tag_name: last-commit
+          tag_name: last-commit6
+          draft: false
+          prerelease: true
+          generate_release_notes: false
+          files: |
+            *.deb
+            *.so
+            *.rpm
+            *.zst
+            NOTICE.txt
+
+      - name: upload github 7
+        if: github.event_name == 'push' && github.ref == 'refs/heads/dev7'
+        uses: softprops/action-gh-release@v2.0.5
+        with:
+          tag_name: last-commit7
           draft: false
           prerelease: true
           generate_release_notes: false
@@ -289,14 +305,14 @@ jobs:
             NOTICE.txt
 
       - name: tag last-commit
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main' && matrix.notice
+        if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev7') && matrix.notice
         run: |
-          if [ "$ARKIME_MAJOR_VERSION" = "5" ]; then
-            git tag --force last-commit
-            git push --force origin last-commit
-          else
+          if [ "$ARKIME_MAJOR_VERSION" = "6" ]; then
             git tag --force last-commit6
             git push --force origin last-commit6
+          else
+            git tag --force last-commit7
+            git push --force origin last-commit7
           fi
 
 ############# DOCKER DOCKER DOCKER #############
@@ -340,6 +356,92 @@ jobs:
             ghcr.io/${{ github.repository_owner }}/arkime/arkime:snapshot-v${{ env.ARKIME_MAJOR_VERSION }}-${{ env.ARKIME_ARCH }}-ja4-latest
           build-args: |
             ARKIME_BASE=ghcr.io/${{ github.repository_owner }}/arkime/arkime:snapshot-v${{ env.ARKIME_MAJOR_VERSION }}-${{ env.ARKIME_ARCH }}-${{ github.run_id }}
+
+############# FreeBSD Build #############
+  freebsd-build:
+    needs: [generate-matrix]
+    strategy:
+      fail-fast: false
+      matrix: ${{fromJson(needs.generate-matrix.outputs.freebsdmatrix)}}
+
+    permissions:
+      contents: write
+      packages: write
+
+    concurrency:
+      group: ${{ github.workflow }}-${{ matrix.version }}-${{ github.event.pull_request.number || github.ref }}
+      cancel-in-progress: true
+
+    env:
+      PYTHON: ${{ matrix.python || 'python' }}
+
+    runs-on: ${{ matrix.runson || 'ubuntu-latest' }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+        with:
+          fetch-depth: 0
+
+      - name: Build on FreeBSD
+        uses: vmactions/freebsd-vm@v1
+        with:
+          release: ${{ matrix.freebsdrelease }}
+          arch: ${{ contains(matrix.version, 'aarch64') && 'aarch64' || 'x86_64' }}
+          usesh: true
+          prepare: |
+            pkg update -f
+            pkg install -y bash git curl wget perl5 openssl jq yq sudo gmake autoconf automake m4 libtool rubygem-fpm autoconf-archive gtar p5-LWP-Protocol-https p5-JSON p5-Test-Differences p5-Socket6
+          run: |
+            git config --global --add safe.directory `pwd`
+            ./easybutton-build.sh ${{ matrix.buildopt }} --rminstall --nothirdparty
+            ls -l capture/capture
+            (cd tests; ./tests.pl)
+            INSTALL_BUNDLE=bundle gmake install
+            export ARKIME_VERSION=`sed 's/.*"\(.*\)\".*$/\1/' /opt/arkime/common/version.js | head -n 1`
+            arch=$(uname -m | sed s/aarch64/arm64/ | sed s/x86_64/amd64/)
+            # Replace tar with gtar for fpm, let me know of better way
+            rm /usr/bin/tar
+            ln -s /usr/local/bin/gtar /usr/bin/tar
+            fpm -s dir -t freebsd -n arkime -x opt/arkime/logs -x opt/arkime/raw -v $ARKIME_VERSION --iteration ${{ github.run_id }} --template-scripts --after-install "release/afterinstall.sh" --url "https://arkime.com" --description "Arkime Full Packet System" ${{ matrix.fpmdeps }} -p arkime_${ARKIME_VERSION}-${{github.run_id}}.${{matrix.version}}.pkg /opt/arkime
+            mv *.pkg arkime-main.${{matrix.version}}.pkg
+            ls -l *.pkg
+
+            if [ "${{ matrix.ja4plus }}" = "true" ]; then
+              (cd .. ; git clone https://github.com/arkime/ja4)
+              cp ../ja4/ja4plus.c capture/plugins
+              (cd capture/plugins; gmake)
+              mv capture/plugins/ja4plus.so ja4plus.freebsd-${arch}.so
+              ls -l *.so
+            fi
+
+            # Clean up so we don't copy stuff back
+            gmake clean
+            rm -rf node_modules */node_modules
+
+      - name: upload github 6
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: softprops/action-gh-release@v2.0.5
+        with:
+          tag_name: last-commit6
+          draft: false
+          prerelease: true
+          generate_release_notes: false
+          files: |
+            *.pkg
+            *.so
+
+      - name: upload github 7
+        if: github.event_name == 'push' && github.ref == 'refs/heads/dev7'
+        uses: softprops/action-gh-release@v2.0.5
+        with:
+          tag_name: last-commit7
+          draft: false
+          prerelease: true
+          generate_release_notes: false
+          files: |
+            *.pkg
+            *.so
 
 ############# Docker Manifest #############
   create-manifest:
@@ -390,10 +492,10 @@ jobs:
           create_and_push "snapshot-v${ARKIME_MAJOR_VERSION}-ja4-${{github.run_id}}" "-ja4"
           create_and_push "snapshot-v${ARKIME_MAJOR_VERSION}-ja4-latest" "-ja4"
 
-############# Send Slack#############
+############# Send Slack #############
   slack:
     runs-on: ubuntu-latest
-    needs: build
+    needs: [build, freebsd-build]
     steps:
       - name: Checkout repository
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1

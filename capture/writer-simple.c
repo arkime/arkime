@@ -52,6 +52,8 @@ typedef struct {
     uint32_t             packets;
     uint32_t             posInBlock;
     uint32_t             id;
+    uint32_t             sessionsStarted;
+    uint32_t             sessionsPresent;
     int                  fd;
     uint8_t              dek[256];
     z_stream             z_strm;
@@ -84,10 +86,13 @@ LOCAL  ArkimeSimpleHead_t simpleQ;
 LOCAL  ARKIME_LOCK_DEFINE(simpleQ);
 LOCAL  ARKIME_COND_DEFINE(simpleQ);
 
+// Global lock-free freelist for output buffers
+LOCAL ArkimeSimple_t        *simpleFreelist;
+LOCAL int                    simpleFreelistSize;
+
 enum ArkimeSimpleMode { ARKIME_SIMPLE_NORMAL, ARKIME_SIMPLE_XOR2048, ARKIME_SIMPLE_AES256CTR};
 
 LOCAL ArkimeSimple_t        *currentInfo[ARKIME_MAX_PACKET_THREADS];
-LOCAL ArkimeSimpleHead_t     freeList[ARKIME_MAX_PACKET_THREADS];
 LOCAL uint32_t               pageSize;
 LOCAL enum ArkimeSimpleMode  simpleMode;
 LOCAL int                    simpleMaxQ;
@@ -128,15 +133,23 @@ LOCAL uint32_t writer_simple_queue_length()
 /*
  * Get a new buffer structure, and copy the old file pointer if needed
  */
-LOCAL ArkimeSimple_t *writer_simple_alloc(int thread, ArkimeSimple_t *previous)
+LOCAL ArkimeSimple_t *writer_simple_alloc(ArkimeSimple_t *previous)
 {
-    ArkimeSimple_t *info;
+    ArkimeSimple_t *info = simpleFreelist;
 
-    ARKIME_LOCK(freeList[thread].lock);
-    DLL_POP_HEAD(simple_, &freeList[thread], info);
-    ARKIME_UNLOCK(freeList[thread].lock);
+    // Try lock-free pop from global freelist
+    while (info) {
+        ArkimeSimple_t *next = info->simple_next;
+        // if (simpleFreelist == info) simpleFreelist = next
+        if (ARKIME_THREAD_CAS(&simpleFreelist, info, next)) {
+            ARKIME_THREAD_DECR(simpleFreelistSize);
+            break;
+        }
+        info = simpleFreelist;
+    }
 
     if (!info) {
+        // Freelist empty, allocate new
         info = ARKIME_TYPE_ALLOC0(ArkimeSimple_t);
         info->buf = mmap (0, config.pcapWriteSize + ARKIME_PACKET_MAX_LEN, PROT_READ | PROT_WRITE, MAP_ANON | MAP_PRIVATE, -1, 0);
         if (unlikely(info->buf == MAP_FAILED)) {
@@ -155,8 +168,6 @@ LOCAL ArkimeSimple_t *writer_simple_alloc(int thread, ArkimeSimple_t *previous)
 /******************************************************************************/
 LOCAL void writer_simple_free(ArkimeSimple_t *info)
 {
-    int thread = info->file->thread;
-
     if (info->closing) {
         switch (simpleMode) {
         case ARKIME_SIMPLE_NORMAL:
@@ -183,11 +194,16 @@ LOCAL void writer_simple_free(ArkimeSimple_t *info)
     }
     info->file = 0;
 
-    if (DLL_COUNT(simple_, &freeList[thread]) < simpleFreeOutputBuffers) {
-        ARKIME_LOCK(freeList[thread].lock);
-        DLL_PUSH_TAIL(simple_, &freeList[thread], info);
-        ARKIME_UNLOCK(freeList[thread].lock);
+    if (simpleFreelistSize < simpleFreeOutputBuffers) {
+        for (ArkimeSimple_t *head = simpleFreelist; ; head = simpleFreelist) {
+            info->simple_next = head;
+            // if (simpleFreelist == head) simpleFreelist = info
+            if (ARKIME_THREAD_CAS(&simpleFreelist, head, info))
+                break;
+        }
+        ARKIME_THREAD_INCR(simpleFreelistSize);
     } else {
+        // Freelist full, munmap and free
         munmap(info->buf, config.pcapWriteSize + ARKIME_PACKET_MAX_LEN);
         ARKIME_TYPE_FREE(ArkimeSimple_t, info);
     }
@@ -204,7 +220,7 @@ LOCAL ArkimeSimple_t *writer_simple_process_buf(int thread, int closing)
         int writeSize = (info->bufpos / pageSize) * pageSize;
 
         // Create next buffer
-        ArkimeSimple_t *ninfo = currentInfo[thread] = writer_simple_alloc(thread, info);
+        ArkimeSimple_t *ninfo = currentInfo[thread] = writer_simple_alloc(info);
 
         // Copy what we aren't going to write to next buffer
         memcpy(ninfo->buf, info->buf + writeSize, info->bufpos - writeSize);
@@ -263,8 +279,8 @@ LOCAL ArkimeSimple_t *writer_simple_process_buf(int thread, int closing)
     }
 
     // Send to write q to actually write to disk
-    ARKIME_LOCK(simpleQ);
     gettimeofday(&lastSave[thread], NULL);
+    ARKIME_LOCK(simpleQ);
     DLL_PUSH_TAIL(simple_, &simpleQ, info);
     if (DLL_COUNT(simple_, &simpleQ) > 100) {
         LOG_RATE(60, "WARNING - Disk Q of %d is too large, check the Arkime FAQ about (https://arkime.com/faq#why-am-i-dropping-packets) testing disk speed", DLL_COUNT(simple_, &simpleQ));
@@ -483,7 +499,7 @@ LOCAL void writer_simple_write(const ArkimeSession_t *const session, ArkimePacke
         }
 
         ArkimeSimple_t *info;
-        info = currentInfo[thread] = writer_simple_alloc(thread, NULL);
+        info = currentInfo[thread] = writer_simple_alloc(NULL);
         info->file = ARKIME_TYPE_ALLOC0(ArkimeSimpleFile_t);
         info->file->thread = thread;
 
@@ -612,6 +628,12 @@ LOCAL void writer_simple_write(const ArkimeSession_t *const session, ArkimePacke
     }
 
     packet->writerFileNum = currentInfo[thread]->file->id;
+    if (session->lastFileNum == 0) {
+        currentInfo[thread]->file->sessionsStarted++;
+        currentInfo[thread]->file->sessionsPresent++;
+    } else if (session->lastFileNum != packet->writerFileNum) {
+        currentInfo[thread]->file->sessionsPresent++;
+    }
 
     if (compressionMode == ARKIME_COMPRESSION_GZIP) {
         if (currentInfo[thread]->file->posInBlock >= simpleCompressionBlockSize) {
@@ -694,8 +716,7 @@ LOCAL void *writer_simple_thread(void *UNUSED(arg))
         case ARKIME_SIMPLE_NORMAL:
             break;
         case ARKIME_SIMPLE_XOR2048: {
-            uint32_t i;
-            for (i = 0; i < total; i++)
+            for (uint32_t i = 0; i < total; i++)
                 info->buf[i] ^= info->file->dek[i % 256];
             break;
         }
@@ -721,7 +742,7 @@ LOCAL void *writer_simple_thread(void *UNUSED(arg))
             if (ftruncate(info->file->fd, info->file->pos) < 0 && config.debug)
                 LOG("Truncate failed");
             close(info->file->fd);
-            arkime_db_update_file(info->file->id, info->file->pos, info->file->packetBytesWritten, info->file->packets, &info->file->lastPacketTime);
+            arkime_db_update_file(info->file->id, info->file->pos, info->file->packetBytesWritten, info->file->packets, &info->file->lastPacketTime, info->file->sessionsStarted, info->file->sessionsPresent);
         }
 
         writer_simple_free(info);
@@ -731,9 +752,7 @@ LOCAL void *writer_simple_thread(void *UNUSED(arg))
 /******************************************************************************/
 LOCAL void writer_simple_exit()
 {
-    int thread;
-
-    for (thread = 0; thread < config.packetThreads; thread++) {
+    for (int thread = 0; thread < config.packetThreads; thread++) {
         if (currentInfo[thread]) {
             writer_simple_process_buf(thread, 1);
         }
@@ -744,7 +763,7 @@ LOCAL void writer_simple_exit()
         usleep(10000);
     }
 
-    for (thread = 0; thread < config.packetThreads; thread++) {
+    for (int thread = 0; thread < config.packetThreads; thread++) {
         for (int p = 0; p < INDEX_FILES_CACHE_SIZE; p++) {
             if (indexFiles[thread][p].fp) {
                 fclose(indexFiles[thread][p].fp);
@@ -793,8 +812,7 @@ LOCAL gboolean writer_simple_check_gfunc (gpointer UNUSED(user_data))
     gettimeofday(&now, NULL);
 
     ARKIME_LOCK(simpleQ);
-    int thread;
-    for (thread = 0; thread < config.packetThreads; thread++) {
+    for (int thread = 0; thread < config.packetThreads; thread++) {
         if (now.tv_sec - lastSave[thread].tv_sec >= 10) {
             arkime_session_add_cmd_thread(thread, GINT_TO_POINTER(thread), NULL, writer_simple_check);
         }
@@ -1042,12 +1060,9 @@ void writer_simple_init(const char *name)
     struct timeval now;
     gettimeofday(&now, NULL);
 
-    int thread;
-    for (thread = 0; thread < config.packetThreads; thread++) {
+    for (int thread = 0; thread < config.packetThreads; thread++) {
         lastSave[thread] = now;
         fileAge[thread] = now;
-        DLL_INIT(simple_, &freeList[thread]);
-        ARKIME_LOCK_INIT(freeList[thread].lock);
     }
 
     g_thread_unref(g_thread_new("arkime-simple", &writer_simple_thread, NULL));

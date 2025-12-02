@@ -10,9 +10,8 @@
 const { S3 } = require('@aws-sdk/client-s3');
 const async = require('async');
 const zlib = require('zlib');
-const { decompressSync } = require('@skhaz/zstd');
 const S3s = {};
-const LRU = require('lru-cache');
+const { LRUCache } = require('lru-cache');
 const CacheInProgress = {};
 let Config;
 let Db;
@@ -25,7 +24,7 @@ const COMPRESSED_ZSTD = 2;
 
 const S3DEBUG = false;
 // Store up to 100 items
-const lru = new LRU({ max: 100 });
+const lru = new LRUCache({ max: 100 });
 
 /// ///////////////////////////////////////////////////////////////////////////////
 // https://coderwall.com/p/pq0usg/javascript-string-split-that-ll-return-the-remainder
@@ -129,7 +128,7 @@ async function processSessionIdS3 (session, headerCb, packetCb, endCb, limit) {
         if (params.Key.endsWith('.gz')) {
           header = zlib.gunzipSync(body, { finishFlush: zlib.constants.Z_SYNC_FLUSH });
         } else if (params.Key.endsWith('.zst')) {
-          header = decompressSync(body);
+          header = zlib.zstdDecompressSync(body, { finishFlush: zlib.constants.Z_SYNC_FLUSH });
         } else {
           header = body;
         }
@@ -214,7 +213,8 @@ async function processSessionIdS3 (session, headerCb, packetCb, endCb, limit) {
                   decompressed[sp.rangeStart] = zlib.inflateRawSync(body.subarray(offset, offset + data.info.compressionBlockSize),
                     { finishFlush: zlib.constants.Z_SYNC_FLUSH });
                 } else if (data.compressed === COMPRESSED_ZSTD) {
-                  decompressed[sp.rangeStart] = decompressSync(body.subarray(offset, offset + data.info.compressionBlockSize));
+                  decompressed[sp.rangeStart] = zlib.zstdDecompressSync(body.subarray(offset, offset + data.info.compressionBlockSize),
+                    { finishFlush: zlib.constants.Z_SYNC_FLUSH });
                 }
                 const decompressedCacheKey = 'data:' + data.params.Bucket + ':' + data.params.Key + ':' + sp.rangeStart;
                 lru.set(decompressedCacheKey, decompressed[sp.rangeStart]);
@@ -251,52 +251,48 @@ async function processSessionIdS3 (session, headerCb, packetCb, endCb, limit) {
     // FIrst pass, convert packetPos and packetLen (if we have it) into packetData
     const packetData = [];
 
-    async.eachLimit(Object.keys(fields.packetPos), limit || 1, function (p, nextCb) {
+    async.eachLimit(Object.keys(fields.packetPos), limit || 1, async function (p) {
       const pos = fields.packetPos[p];
 
       if (pos < 0) {
-        Db.fileIdToFile(fields.node, pos * -1, function (info) {
-          const parts = splitRemain(info.name, '/', 4);
-          p = parseInt(p);
-          let compressed = 0;
-          if (info.name.endsWith('.gz')) {
-            compressed = COMPRESSED_GZIP;
-          } else if (info.name.endsWith('.zst')) {
-            compressed = COMPRESSED_ZSTD;
+        const info = await Db.fileIdToFile(fields.node, pos * -1);
+        const parts = splitRemain(info.name, '/', 4);
+        p = parseInt(p);
+        let compressed = 0;
+        if (info.name.endsWith('.gz')) {
+          compressed = COMPRESSED_GZIP;
+        } else if (info.name.endsWith('.zst')) {
+          compressed = COMPRESSED_ZSTD;
+        }
+        for (let pp = p + 1; pp < fields.packetPos.length && fields.packetPos[pp] >= 0; pp++) {
+          const packetPos = fields.packetPos[pp];
+          let len = 65536;
+          if (fields.packetLen) {
+            len = fields.packetLen[pp];
           }
-          for (let pp = p + 1; pp < fields.packetPos.length && fields.packetPos[pp] >= 0; pp++) {
-            const packetPos = fields.packetPos[pp];
-            let len = 65536;
-            if (fields.packetLen) {
-              len = fields.packetLen[pp];
-            }
-            const params = {
-              Bucket: parts[3],
-              Key: parts[4]
-            };
-            const pd = packetData[pp] = {
-              params,
-              info,
-              compressed
-            };
-            if (compressed) {
-              pd.rangeStart = Math.floor(packetPos / (1 << COMPRESSED_WITHIN_BLOCK_BITS));
-              pd.rangeEnd = pd.rangeStart + info.compressionBlockSize;
-              pd.packetStart = packetPos & ((1 << COMPRESSED_WITHIN_BLOCK_BITS) - 1);
-              pd.packetEnd = pd.packetStart + len;
-            } else {
-              pd.rangeStart = packetPos;
-              pd.rangeEnd = packetPos + len;
-              pd.packetStart = packetPos;
-              pd.packetEnd = packetPos + len;
-            }
-            packetData[pp].subPackets = [packetData[pp]];
+          const params = {
+            Bucket: parts[3],
+            Key: parts[4]
+          };
+          const pd = packetData[pp] = {
+            params,
+            info,
+            compressed
+          };
+          if (compressed) {
+            pd.rangeStart = Math.floor(packetPos / (1 << COMPRESSED_WITHIN_BLOCK_BITS));
+            pd.rangeEnd = pd.rangeStart + info.compressionBlockSize;
+            pd.packetStart = packetPos & ((1 << COMPRESSED_WITHIN_BLOCK_BITS) - 1);
+            pd.packetEnd = pd.packetStart + len;
+          } else {
+            pd.rangeStart = packetPos;
+            pd.rangeEnd = packetPos + len;
+            pd.packetStart = packetPos;
+            pd.packetEnd = packetPos + len;
           }
-          return nextCb(null);
-        });
-        return;
+          packetData[pp].subPackets = [packetData[pp]];
+        }
       }
-      return nextCb(null);
     },
     function (pcapErr, results) {
       // Now we have all the packetData objects. Set the itemPos correctly
@@ -334,7 +330,7 @@ async function processSessionIdS3 (session, headerCb, packetCb, endCb, limit) {
   }
 }
 /// ///////////////////////////////////////////////////////////////////////////////
-function s3Expire () {
+async function s3Expire () {
   const query = {
     _source: ['num', 'name', 'first', 'size', 'node'],
     from: '0',
@@ -350,27 +346,40 @@ function s3Expire () {
     },
     sort: { first: { order: 'asc' } }
   };
-  Db.search('files', 'file', query, (err, data) => {
-    if (err || !data.hits || !data.hits.hits) {
+
+  try {
+    const { body: data } = await Db.search('files', query);
+    if (!data.hits || !data.hits.hits) {
       return;
     }
 
-    data.hits.hits.forEach((item) => {
+    for (const item of data.hits.hits) {
       const parts = splitRemain(item._source.name, '/', 4);
       const s3 = makeS3(item._source.node, parts[2], parts[3]);
-      s3.deleteObject({ Bucket: parts[3], Key: parts[4] }, (err) => {
-        if (err) {
-          console.log('Couldn\'t delete from S3', item._id, item._source);
-        } else {
-          Db.deleteDocument('files', 'file', item._id, (err) => {
+
+      try {
+        await new Promise((resolve, reject) => {
+          s3.deleteObject({ Bucket: parts[3], Key: parts[4] }, (err) => {
             if (err) {
-              console.log("Couldn't delete from ES", item._id, item._source);
+              reject(err);
+            } else {
+              resolve();
             }
           });
+        });
+
+        try {
+          await Db.deleteDocument('files', item._id);
+        } catch (delErr) {
+          console.log("Couldn't delete from ES", item._id, item._source, delErr);
         }
-      });
-    });
-  });
+      } catch (s3Err) {
+        console.log('Couldn\'t delete from S3', item._id, item._source, s3Err);
+      }
+    }
+  } catch (err) {
+    console.log('ERROR - s3Expire search failed:', err);
+  }
 }
 /// ///////////////////////////////////////////////////////////////////////////////
 exports.init = function (config, emitter, api) {
@@ -380,7 +389,9 @@ exports.init = function (config, emitter, api) {
   Pcap = api.getPcap();
 
   if (Config.get('s3ExpireDays') !== undefined) {
-    s3Expire();
-    setInterval(s3Expire, 600 * 1000);
+    s3Expire().catch(err => console.log('ERROR - s3Expire initial run failed:', err));
+    setInterval(() => {
+      s3Expire().catch(err => console.log('ERROR - s3Expire interval run failed:', err));
+    }, 600 * 1000);
   }
 };

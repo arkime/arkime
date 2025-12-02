@@ -107,6 +107,7 @@ LOCAL void smtp_email_add_value(ArkimeSession_t *session, int pos, const char *s
     switch (config.fields[pos]->type) {
     case ARKIME_FIELD_TYPE_INT:
     case ARKIME_FIELD_TYPE_INT_ARRAY:
+    case ARKIME_FIELD_TYPE_INT_ARRAY_UNIQUE:
     case ARKIME_FIELD_TYPE_INT_HASH:
     case ARKIME_FIELD_TYPE_INT_GHASH:
         arkime_field_int_add(pos, session, atoi(s));
@@ -124,10 +125,9 @@ LOCAL void smtp_email_add_value(ArkimeSession_t *session, int pos, const char *s
         break;
     case ARKIME_FIELD_TYPE_IP:
     case ARKIME_FIELD_TYPE_IP_GHASH: {
-        int i;
         gchar **parts = g_strsplit(s, ",", 0);
 
-        for (i = 0; parts[i]; i++) {
+        for (int i = 0; parts[i]; i++) {
             arkime_field_ip_add_str(pos, session, parts[i]);
         }
 
@@ -644,8 +644,7 @@ LOCAL int smtp_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, i
             }
 
             if (config.smtpIpHeaders && is_header_value_consumed == FALSE) {
-                int i;
-                for (i = 0; config.smtpIpHeaders && config.smtpIpHeaders[i]; i++) {
+                for (int i = 0; config.smtpIpHeaders && config.smtpIpHeaders[i]; i++) {
                     if (strcasecmp(lower, config.smtpIpHeaders[i]) == 0) {
                         int l = strlen(config.smtpIpHeaders[i]);
                         const char *ip = smtp_remove_matching(line->str + l + 1, '[', ']');
@@ -933,7 +932,7 @@ LOCAL void smtp_classify(ArkimeSession_t *session, const uint8_t *data, int len,
 void arkime_parser_init()
 {
     hostField = arkime_field_define("email", "lotermfield",
-                                    "host.email", "Hostname", "email.host",
+                                    "host.email", "Email Hostname", "email.host",
                                     "Email hostnames",
                                     ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
                                     "aliases", "[\"email.host\"]",

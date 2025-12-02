@@ -3,147 +3,161 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
+  <BRow
+    gutter-x="1"
+    class="text-start flex-nowrap d-flex justify-content-between"
+    align-h="start"
+    @keyup.stop.prevent.enter="sendAction">
+    <BCol cols="auto">
+      <SegmentSelect v-model:segments="segments" />
+    </BCol>
 
-  <!-- send sessions form -->
-  <div class="row"
-    @keyup.stop.prevent.enter="send">
-
-    <SegmentSelect :segments.sync="segments" />
-
-    <div class="col-md-5">
-
-      <!-- tags input -->
+    <BCol
+      cols="auto"
+      class="flex-fill">
       <div class="input-group input-group-sm">
-        <div class="input-group-prepend">
-          <span class="input-group-text">
-            Tags
-          </span>
-        </div>
-        <b-form-input
+        <span class="input-group-text">
+          {{ $t('sessions.tags') }}
+        </span>
+        <input
           autofocus
           type="text"
           v-model="tags"
           class="form-control"
-          placeholder="Enter a comma separated list of tags"
-        />
-      </div> <!-- /tags input -->
-
-      <!-- error -->
-      <p v-if="error"
-        class="small text-danger mb-0">
-        <span class="fa fa-exclamation-triangle">
-        </span>&nbsp;
-        {{ error }}
-      </p> <!-- /error -->
-
-    </div>
-
-    <!-- buttons -->
-    <div class="col-md-3">
-      <div class="pull-right">
-        <button
-          type="button"
-          @click="send"
-          title="Send Session(s)"
-          :class="{'disabled':loading}"
-          class="btn btn-sm btn-theme-tertiary">
-          <span v-if="!loading">
-            <span class="fa fa-paper-plane-o">
-            </span>&nbsp;
-            Send Session(s)
-          </span>
-          <span v-else>
-            <span class="fa fa-spinner fa-spin">
-            </span>&nbsp;
-            Sending Session(s)
-          </span>
-        </button>
-        <button
-          type="button"
-          title="cancel"
-          v-b-tooltip.hover
-          @click="done(null)"
-          class="btn btn-sm btn-warning">
-          <span class="fa fa-ban">
-          </span>
-        </button>
+          :placeholder="$t('sessions.tagsPlaceholder')">
       </div>
-    </div> <!-- /buttons -->
+      <p
+        v-if="error"
+        class="small text-danger mb-0">
+        <span class="fa fa-exclamation-triangle" />&nbsp;
+        {{ error }}
+      </p>
+    </BCol>
 
-    <!-- info -->
-    <div class="col-md-12">
+    <BCol cols="auto">
+      <button
+        type="button"
+        @click="sendAction"
+        :title="$t('sessions.send.send')"
+        :class="{'disabled':loading}"
+        class="btn btn-sm btn-theme-tertiary me-1">
+        <span v-if="!loading">
+          <span class="fa fa-paper-plane-o" />&nbsp;
+          {{ $t('sessions.send.send') }}
+        </span>
+        <span v-else>
+          <span class="fa fa-spinner fa-spin" />&nbsp;
+          {{ $t('common.sending') }}
+        </span>
+      </button>
+      <button
+        type="button"
+        id="cancelSendBtn"
+        @click="$emit('done', null, false, false)"
+        class="btn btn-sm btn-warning">
+        <span class="fa fa-ban" />
+        <BTooltip target="cancelSendBtn">
+          {{ $t('common.cancel') }}
+        </BTooltip>
+      </button>
+    </BCol>
+  </BRow>
+
+  <div class="row mt-2">
+    <div class="col">
       <p class="text-info small mb-0">
         <em>
           <strong>
-            <span class="fa fa-info-circle"></span>&nbsp;
-            This will send the SPI and PCAP data to the remote Arkime instance.
+            <span class="fa fa-info-circle me-2" />
+            {{ $t('sessions.send.info') }}
           </strong>
         </em>
       </p>
-    </div> <!-- /info -->
-
-  </div> <!-- /send sessions form -->
-
+    </div>
+  </div>
 </template>
 
-<script>
+<script setup>
+import { ref } from 'vue';
+import { useRoute } from 'vue-router';
 import SessionsService from './SessionsService';
-import SegmentSelect from './SegmentSelect';
+import SegmentSelect from './SegmentSelect.vue';
+import { useI18n } from 'vue-i18n';
+const { t } = useI18n();
 
-export default {
-  name: 'ArkimeTagSessions',
-  components: { SegmentSelect },
-  props: {
-    cluster: String,
-    start: Number,
-    done: Function,
-    applyTo: String,
-    sessions: Array,
-    numVisible: Number,
-    numMatching: Number
+// Define Props
+const props = defineProps({
+  cluster: {
+    type: String,
+    default: ''
   },
-  data: function () {
-    return {
-      error: '',
-      loading: false,
-      segments: 'no',
-      tags: ''
-    };
+  start: {
+    type: Number,
+    default: 0
   },
-  methods: {
-    /* exposed functions ----------------------------------------- */
-    send: function () {
-      this.loading = true;
+  applyTo: {
+    type: String,
+    default: 'open'
+  },
+  sessions: {
+    type: Array,
+    default: () => []
+  },
+  numVisible: {
+    type: Number,
+    default: 0
+  },
+  numMatching: {
+    type: Number,
+    default: 0
+  }
+});
 
-      const data = {
-        tags: this.tags,
-        start: this.start,
-        cluster: this.cluster,
-        applyTo: this.applyTo,
-        segments: this.segments,
-        sessions: this.sessions,
-        numVisible: this.numVisible,
-        numMatching: this.numMatching
-      };
+// Define Emits
+const emit = defineEmits(['done']);
 
-      SessionsService.send(data, this.$route.query).then((response) => {
-        this.tags = '';
-        this.loading = false;
+// Reactive state
+const error = ref('');
+const loading = ref(false);
+const segments = ref('no');
+const tags = ref(''); // This is named 'tags' but might be used for other purposes in send context or just for consistency
 
-        let reloadData = false;
-        //  only reload data if tags were added to only one
-        if (data.sessions && data.sessions.length === 1) {
-          reloadData = true;
-        }
+// Access route
+const route = useRoute();
 
-        this.done(response.data.text, response.data.success, reloadData);
-      }).catch((error) => {
-        // display the error under the form so that user
-        // has an oportunity to try again (don't close the form)
-        this.error = error.text;
-        this.loading = false;
-      });
+// Methods
+const sendAction = async () => {
+  error.value = ''; // Clear previous errors
+  loading.value = true;
+
+  const data = {
+    tags: tags.value, // If tags are not relevant for "send", this might need adjustment based on actual API
+    start: props.start,
+    cluster: props.cluster,
+    applyTo: props.applyTo,
+    segments: segments.value,
+    sessions: props.sessions,
+    numVisible: props.numVisible,
+    numMatching: props.numMatching
+  };
+
+  try {
+    const response = await SessionsService.send(data, route.query);
+    tags.value = ''; // Clear input on success
+    loading.value = false;
+
+    let reloadData = false;
+    // Only reload data if action was on a single session
+    if (data.sessions && data.sessions.length === 1) {
+      reloadData = true;
     }
+
+    emit('done', response.text, true, reloadData); // Emit the done event with the response text
+  } catch (err) {
+    // Display the error under the form so that user
+    // has an opportunity to try again (don't close the form)
+    error.value = err.text || err.message || t('sessions.send.unknownErr');
+    loading.value = false;
   }
 };
 </script>

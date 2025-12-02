@@ -198,8 +198,7 @@ LOCAL int quic_4648_udp_parser(ArkimeSession_t *session, void *UNUSED(uw), const
         return ARKIME_PARSER_UNREGISTER;
     }
 
-    uint32_t offset = 5;
-    for (; offset < (uint32_t)len - 20; offset++) {
+    for (uint32_t offset = 5; offset < (uint32_t)len - 20; offset++) {
         if (data[offset] == 'C' && memcmp(data + offset, "CHLO", 4) == 0) {
             BSB bsb;
             BSB_INIT(bsb, data + offset, len - offset);
@@ -582,7 +581,7 @@ void arkime_parser_init()
     arkime_parsers_classifier_register_udp("quic", NULL, 1, (const uint8_t *)"\x00\x00\x00\x01", 1, quic_ietf_udp_classify);
 
     hostField = arkime_field_define("quic", "lotermfield",
-                                    "host.quic", "Hostname", "quic.host",
+                                    "host.quic", "QUIC Hostname", "quic.host",
                                     "QUIC host header field",
                                     ARKIME_FIELD_TYPE_STR_GHASH,  ARKIME_FIELD_FLAG_CNT,
                                     "category", "host",

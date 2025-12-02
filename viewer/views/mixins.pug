@@ -8,21 +8,24 @@ mixin clickableValue(expr, value, parse, session)
   else
     | &nbsp;
 
+mixin clickableLabelBody(field, title)
+  b-dropdown-item(@click=`exportUnique('${field}', 0)`)
+    | {{ $t('sessions.exportUnique', {name: "#{title}"} ) }}
+  b-dropdown-item(@click=`exportUnique('${field}', 1)`)
+    | {{ $t('sessions.exportUniqueCounts', {name: "#{title}"} ) }}
+  b-dropdown-item(@click=`openSpiGraph('${field}')`)
+    | {{ $t('sessions.openSpiGraph', {name: "#{title}"} ) }}
+  b-dropdown-item(@click=`toggleColVis('${field}')`)
+    | {{ $t('sessions.toggleColumn', {name: "#{title}"} ) }}
+  b-dropdown-item(@click=`toggleInfoVis('${field}')`)
+    | {{ $t('sessions.toggleInfoColumn', {name: "#{title}"} ) }}
+  b-dropdown-item(@click=`fieldExists('${field}', '==')`)
+    | {{ $t('sessions.addExists', {name: "#{title}"} ) }}
+
 //- Method to add a menu to field labels
 mixin clickableLabel(field, title)
   b-dropdown.clickable-label(size="sm", text=title, variant="default")
-    b-dropdown-item(@click="exportUnique('" + field  + "', 0)")
-      | Export Unique #{title}
-    b-dropdown-item(@click="exportUnique('" + field  + "', 1)")
-      | Export Unique #{title} with counts
-    b-dropdown-item(@click="openSpiGraph('" + field  + "')")
-      | Open #{title} SPI Graph
-    b-dropdown-item(@click="toggleColVis('" + field  + "')")
-      | Toggle #{title} column
-    b-dropdown-item(@click="toggleInfoVis('" + field  + "')")
-      | Toggle #{title} in Info column
-    b-dropdown-item(@click="fieldExists('" + field  + "', '==')")
-      | Add #{title} EXISTS! to query
+    +clickableLabelBody(field, title)
     +clickableFieldActions(field, true)
 
 //- Display a clickable field action in the field menu
@@ -62,7 +65,7 @@ mixin arrayList(container, field, title, expr, extra, max, session)
       div(style="display:inline;") &nbsp;
 
 //- Standard method to print ip, port, geo, asn, and rir info
-mixin ipPrint(session, ipstr, port, geo, as, rir, expr, full, v6)
+mixin ipPrint(session, ipstr, port, geo, as, rir, expr, full, region, city)
   span
     if (full)
       +clickableValue(expr, ipstr)
@@ -80,6 +83,22 @@ mixin ipPrint(session, ipstr, port, geo, as, rir, expr, full, v6)
         +clickableValue(`${expr}.country`, geo)
       else
         +clickableValue(`country.${expr}`, geo)
+      if (region || city)
+        | /
+        if (!region)
+          | &nbsp;
+        else if (full)
+          +clickableValue(`${expr}.region`, region)
+        else
+          +clickableValue(`region.${expr}`, region)
+        | /
+        if (!city)
+          | &nbsp;
+        else if (full)
+          +clickableValue(`${expr}.city`, city)
+        else
+          +clickableValue(`city.${expr}`, city)
+
       |) &nbsp;
     - if (as)
       span(style="display:inline-flex")
@@ -106,35 +125,35 @@ mixin ipArrayList(container, field, title, expr, max)
     dt
       b-dropdown.clickable-label(text=title, size="sm", variant="default")
         b-dropdown-item(@click="exportUnique('" + expr  + "', 0)")
-          | Export Unique #{title}
+          | {{ $t('sessions.exportUnique', {name: "#{title}"} ) }}
         b-dropdown-item(@click="exportUnique('" + expr  + "', 1)")
-          | Export Unique #{title} with counts
+          | {{ $t('sessions.exportUniqueCounts', {name: "#{title}"} ) }}
         b-dropdown-item(@click="openSpiGraph('" + expr  + "')")
-          | Open #{title} SPI Graph
+          | {{ $t('sessions.openSpiGraph', {name: "#{title}"} ) }}
         b-dropdown-divider
         b-dropdown-item(@click="exportUnique('" + expr  + ".country', 0)")
-          | Export Unique #{title} Country
+          | {{ $t('sessions.exportUniqueCountry', {name: "#{title}"} ) }}
         b-dropdown-item(@click="exportUnique('" + expr  + ".country', 1)")
-          | Export Unique #{title} Country with counts
+          | {{ $t('sessions.exportUniqueCountryCounts', {name: "#{title}"} ) }}
         b-dropdown-item(@click="openSpiGraph('" + expr  + ".country')")
-          | Open #{title} Country SPI Graph
+          | {{ $t('sessions.openSpiGraphCountry', {name: "#{title}"} ) }}
         b-dropdown-divider
         b-dropdown-item(@click="exportUnique('" + expr  + ".asn', 0)")
-          | Export Unique #{title} ASN
+          | {{ $t('sessions.exportUniqueASN', {name: "#{title}"} ) }}
         b-dropdown-item(@click="exportUnique('" + expr  + ".asn', 1)")
-          | Export Unique #{title} ASN with counts
+          | {{ $t('sessions.exportUniqueASNCounts', {name: "#{title}"} ) }}
         b-dropdown-item(@click="openSpiGraph('" + expr  + ".asn')")
-          | Open #{title} ASN SPI Graph
+          | {{ $t('sessions.openSpiGraphASN', {name: "#{title}"} ) }}
         b-dropdown-divider
         b-dropdown-item(@click="exportUnique('" + expr  + ".rir', 0)")
-          | Export Unique #{title} RIR
+          | {{ $t('sessions.exportUniqueRIR', {name: "#{title}"} ) }}
         b-dropdown-item(@click="exportUnique('" + expr  + ".rir', 1)")
-          | Export Unique #{title} RIR with counts
+          | {{ $t('sessions.exportUniqueRIRCounts', {name: "#{title}"} ) }}
         b-dropdown-item(@click="openSpiGraph('" + expr  + ".rir')")
-          | Open #{title} RIR SPI Graph
+          | {{ $t('sessions.openSpiGraphRIR', {name: "#{title}"} ) }}
         b-dropdown-divider
         b-dropdown-item(@click="fieldExists('" + field  + "', '==')")
-          | Add #{title} EXISTS! to query
+          | {{ $t('sessions.addExists', {name: "#{title}"} ) }}
 
     dd
       each ip,i in container[field]
@@ -166,7 +185,7 @@ mixin printHeader(inHeaderNames, inHeaderValues, expr)
     dt
       b-dropdown.clickable-label(size="sm", text=headerName, variant="default")
         b-dropdown-item(@click="exportUnique('" + expr  + "', 1)")
-          | Export Unique Header Value with counts
+          | {{ $t('sessions.exportUniqueHeader') }}
     - var headerValues = Array.from (headers[headerName]);
     dd
       each headerValue,i in headerValues
@@ -179,37 +198,37 @@ mixin ipArrayListDNS(container, field, title, expr, max)
     dt
       b-dropdown.clickable-label(text=title, size="sm", variant="default")
         b-dropdown-item(@click="exportUnique('" + "ip." + expr  + "', 0)")
-          | Export Unique #{title}
+          | {{ $t('sessions.exportUnique', {name: "#{title}"} ) }}
         b-dropdown-item(@click="exportUnique('" + "ip." + expr  + "', 1)")
-          | Export Unique #{title} with counts
+          | {{ $t('sessions.exportUniqueCounts', {name: "#{title}"} ) }}
         b-dropdown-item(@click="openSpiGraph('" + "ip." + expr  + "')")
-          | Open #{title} SPI Graph
+          | {{ $t('sessions.openSpiGraph', {name: "#{title}"} ) }}
         b-dropdown-divider
         b-dropdown-item(@click="exportUnique('" +   "country." + expr + "', 0)")
-          | Export Unique #{title} Country
+          | {{ $t('sessions.exportUniqueCountry', {name: "#{title}"} ) }}
         b-dropdown-item(@click="exportUnique('" +  "country." + expr + "', 1)")
-          | Export Unique #{title} Country with counts
+          | {{ $t('sessions.exportUniqueCountryCounts', {name: "#{title}"} ) }}
         b-dropdown-item(@click="openSpiGraph('" + "country." + expr +"')")
-          | Open #{title} Country SPI Graph
+          | {{ $t('sessions.openSpiGraphCountry', {name: "#{title}"} ) }}
         b-dropdown-divider
         b-dropdown-item(@click="exportUnique('" + "asn." + expr + "', 0)")
-          | Export Unique #{title} ASN
+          | {{ $t('sessions.exportUniqueASN', {name: "#{title}"} ) }}
         b-dropdown-item(@click="exportUnique('" + "asn."+ expr + "', 1)")
-          | Export Unique #{title} ASN with counts
+          | {{ $t('sessions.exportUniqueASNCounts', {name: "#{title}"} ) }}
         b-dropdown-item(@click="openSpiGraph('" + "asn." + expr + "')")
-          | Open #{title} ASN SPI Graph
+          | {{ $t('sessions.openSpiGraphASN', {name: "#{title}"} ) }}
         b-dropdown-divider
         b-dropdown-item(@click="exportUnique('" + "rir." + expr + "', 0)")
-          | Export Unique #{title} RIR
+          | {{ $t('sessions.exportUniqueRIR', {name: "#{title}"} ) }}
         b-dropdown-item(@click="exportUnique('" + "rir." + expr + "', 1)")
-          | Export Unique #{title} RIR with counts
+          | {{ $t('sessions.exportUniqueRIRCounts', {name: "#{title}"} ) }}
         b-dropdown-item(@click="openSpiGraph('" + "rir." + expr + "')")
-          | Open #{title} RIR SPI Graph
+          | {{ $t('sessions.openSpiGraphRIR', {name: "#{title}"} ) }}
     dd
       each ip,i in container[field + "Ip"]
         if (i == max)
           |<span style="display:none">
-        +ipPrint(container, container[field + "Ip"][i], undefined, (container[field + "GEO"]?container[field + "GEO"][i]:null), (container[field+"ASN"]?container[field + "ASN"][i]:null), (container[field + "RIR"]?container[field + "RIR"][i]:null), expr)
+        +ipPrint(container, container[field + "Ip"][i], undefined, (container[field + "GEO"]?container[field + "GEO"][i]:null), (container[field+"ASN"]?container[field + "ASN"][i]:null), (container[field + "RIR"]?container[field + "RIR"][i]:null), expr, false)
       if (container[field + "Ip"].length > max)
         |</span>
         a.cursor-pointer.show-more-items &hellip

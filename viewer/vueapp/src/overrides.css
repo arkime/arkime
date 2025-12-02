@@ -1,23 +1,34 @@
 /* Bootstrap Overrides (mainly for Arkime themes) */
 
+/* BOOTSTRAP 5 fixes ------------------------------------------------------- */
+.card-body {
+  color: var(--color-foreground);
+}
+
 /* dark form controls ------------------------------------------------------ */
-input.form-control,
-input.form-control:focus,
-select.form-control,
-select.form-control:focus,
-textarea.form-control,
-textarea.form-control:focus {
-  color: var(--color-foreground, #000);
-  background-color: var(--color-inputs, #FFF);
+input,
+input:focus,
+select,
+select:focus,
+textarea,
+textarea:focus {
+  color: var(--color-foreground, #000) !important;
+  background-color: var(--color-inputs, #FFF) !important;
 }
 
-input.form-control:disabled,
-select.form-control:disabled,
-textarea.form-control:disabled {
-  color: var(--color-gray-darker, #333);
-  background-color: var(--color-gray-lighter, #DDD);
+input:disabled,
+select:disabled,
+textarea:disabled {
+  color: var(--color-gray-darker, #333) !important;
+  background-color: var(--color-gray-lighter, #DDD) !important;
 }
 
+input.form-check-input { /* need this for dark theme check/radio */
+  background-image: var(--bs-form-check-bg-image) !important;
+}
+input.form-check-input:checked {
+  background-color: #0d6efd !important;
+}
 
 /* dark default buttons ---------------------------------------------------- */
 .btn.btn-default {
@@ -38,8 +49,8 @@ textarea.form-control:disabled {
 
 
 /* themed input groups ----------------------------------------------------- */
-.input-group-prepend > .input-group-text,
-.input-group-append:not(.color) > .input-group-text {
+.input-group > .input-group-text,
+.input-group:not(.color) > .input-group-text {
   border-color: var(--color-gray) !important;
   color: var(--color-foreground, #555) !important;
   background-color: var(--color-background, #EEE) !important;
@@ -69,20 +80,27 @@ textarea.form-control:disabled {
 .table-sm > tfoot > tr > td {
   padding: 0.1rem 0.5rem;
 }
+/* condense the table EVEN more! */
+.table-xs>thead>tr>th,
+.table-xs>tbody>tr>th,
+.table-xs>tfoot>tr>th,
+.table-xs>thead>tr>td,
+.table-xs>tbody>tr>td,
+.table-xs>tfoot>tr>td {
+  padding: 0.1rem 0.3rem;
+}
 
 /* make stripes darker */
-.table-striped > tbody > tr:nth-of-type(odd) {
-  background-color: var(--color-gray-lighter);
+.table-striped > tbody > tr td {
+  background-color: var(--color-background) !important;
+}
+.table-striped > tbody > tr:nth-of-type(odd) td {
+  background-color: var(--color-gray-lighter) !important;
 }
 
 /* don't stripe average and total rows */
 .table-striped > tbody > tr.average-row, tr.total-row {
   background-color: var(--color-background);
-}
-
-/* give hoverable rows theme color */
-.table-hover tbody tr:hover {
-  background-color: var(--color-gray-light);
 }
 
 /* make active table items darker */
@@ -101,33 +119,81 @@ textarea.form-control:disabled {
   background-color: var(--color-gray-lighter);
 }
 
+/* give table theme color */
+table.table > thead > tr > th {
+  color: var(--color-foreground);
+  background-color: var(--color-background);
+
+}
+table.table > tbody > tr > td {
+  color: var(--color-foreground, #333);
+  background-color: var(--color-gray-lighter);
+}
+table.table.table-striped > tbody > tr:nth-child(odd) > td {
+  background-color: var(--color-gray-light);
+}
+
+/* give hoverable rows theme color */
+table.table.table-hover > tbody > tr:hover > td {
+  filter: brightness(90%);
+}
+
+.table thead th {
+  vertical-align: middle;
+  border-bottom: 2px solid var(--bs-border-color);
+  border-top: 1px solid var(--bs-border-color);
+}
 
 /* give navs theme color --------------------------------------------------- */
-.nav > li > a:hover,
-.nav > li > a:focus {
-  color: var(--color-black);
-  background-color: var(--color-gray-light);
+nav.navbar {
+  background-color: var(--color-primary-dark);
+  border-color: var(--color-primary-darker);
+}
+
+nav.navbar li > button {
+  height: 100%;
+  font-weight: bold;
+  transition: height 0.2s ease-in;
+}
+
+nav.navbar li,
+nav.navbar-nav .nav-link.active,
+.navbar-nav .nav-link.active, .navbar-nav .nav-link.show {
+  color: #FFF !important;
+  max-height: 36px;
+  min-height: 36px;
+}
+nav.navbar li:focus,
+nav.navbar li.router-link-active {
+  background-color: var(--color-primary);
+  border-bottom: 4px solid var(--color-primary-lighter);
+}
+nav.navbar li:hover {
+  background-color: var(--color-primary);
+}
+
+nav.navbar a.nav-link {
+  color: #FFF;
 }
 
 .nav-pills > a.nav-link {
   color: var(--color-foreground, #333);
 }
-.nav-pills > a.nav-link.active,
-.nav-pills > a.nav-link.active:hover,
-.nav-pills > a.nav-link.active:focus {
+.nav-pills > .nav-link.active,
+.nav-pills > .nav-link.active:hover,
+.nav-pills > .nav-link.active:focus {
   color: var(--color-button, #FFF);
   background-color: var(--color-primary);
 }
 
-.nav-tabs > li.nav-item > a.nav-link.active,
-.nav-tabs > li.nav-item > a.nav-link.active:hover,
-.nav-tabs > li.nav-item > a.nav-link.active:focus {
+.nav-tabs > li.nav-item > .nav-link.active,
+.nav-tabs > li.nav-item > .nav-link.active:hover,
+.nav-tabs > li.nav-item > .nav-link.active:focus {
   font-weight: bold;
   color: var(--color-foreground);
   background-color: var(--color-background);
   border-bottom-color: var(--color-background, #fff);
 }
-
 
 /* give pagination theme color --------------------------------------------- */
 .pagination .page-item > .page-link {
@@ -185,27 +251,28 @@ input.field-typeahead + ul[uib-typeahead-popup] {
   border-color: var(--color-gray-light);
   background-color: var(--color-background, #FFF);
 }
-.dropdown-menu a.dropdown-item,
+.dropdown-menu .dropdown-item,
 .dropdown-menu div.custom-control {
   display: block;
   padding: 2px 8px;
   color: var(--color-foreground, #212529);
 }
 
-.dropdown-menu a.dropdown-item:hover,
-.dropdown-menu a.dropdown-item:focus {
+.dropdown .dropdown-item:hover,
+.dropdown-menu .dropdown-item:hover,
+.dropdown-menu .dropdown-item:focus {
   color: var(--color-foreground, #212529);
   background-color: var(--color-gray-light);
 }
-.dropdown-menu a.dropdown-item.active,
-.dropdown-menu li.active a.dropdown-item {
+.dropdown-menu .dropdown-item.active,
+.dropdown-menu .active .dropdown-item {
   color: var(--color-white, #FFF);
   background-color: var(--color-primary);
 }
-.dropdown-menu a.dropdown-item.active:hover,
-.dropdown-menu li.active:hover a.dropdown-item,
-.dropdown-menu a.dropdown-item.active:focus,
-.dropdown-menu li.active:focus a.dropdown-item {
+.dropdown-menu .dropdown-item.active:hover,
+.dropdown-menu .active:hover .dropdown-item,
+.dropdown-menu .dropdown-item.active:focus,
+.dropdown-menu .active:focus .dropdown-item {
   background-color: var(--color-primary-light);
 }
 

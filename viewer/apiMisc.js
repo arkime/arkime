@@ -106,7 +106,7 @@ class MiscAPIs {
    * @returns {number} recordsFiltered - The number of files returned in this result
    */
   static getFiles (req, res) {
-    const columns = ['num', 'node', 'name', 'locked', 'first', 'filesize', 'encoding', 'packetPosEncoding', 'packets', 'packetsSize', 'uncompressedBits', 'compression', 'firstTimestamp', 'lastTimestamp', 'startTimestamp', 'finishTimestamp'];
+    const columns = ['num', 'node', 'name', 'locked', 'first', 'filesize', 'encoding', 'packetPosEncoding', 'packets', 'packetsSize', 'uncompressedBits', 'compression', 'firstTimestamp', 'lastTimestamp', 'startTimestamp', 'finishTimestamp', 'sessionsStarted', 'sessionsPresent'];
 
     const query = {
       _source: columns,
@@ -126,7 +126,7 @@ class MiscAPIs {
     ViewerUtils.addCluster(req.query.cluster, query);
 
     Promise.all([
-      Db.searchScroll('files', 'file', query),
+      Db.searchScroll('files', query),
       Db.numberOfDocuments('files', { cluster: req.query.cluster })
     ]).then(([files, total]) => {
       if (files.error) { throw files.error; }
@@ -285,12 +285,11 @@ class MiscAPIs {
 
     let tags = '';
     if (ArkimeUtil.isString(req.body.tags)) {
-      const t = req.body.tags.replace(/[^-a-zA-Z0-9_:,]/g, '').split(',');
-      t.forEach((tag) => {
+      for (const tag of req.body.tags.replace(/[^-a-zA-Z0-9_:,]/g, '').split(',')) {
         if (tag.length > 0) {
           tags += ' --tag ' + tag;
         }
-      });
+      }
     }
 
     const cmd = uploadCommand

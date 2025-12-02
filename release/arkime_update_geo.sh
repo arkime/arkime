@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Variables
 DEST_DIR="${MOLOCH_DIR:-BUILD_ARKIME_INSTALL_DIR}/etc"

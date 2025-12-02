@@ -79,6 +79,8 @@
 # 80 - added info field configs
 # 81 - added files firstTimestamp, lastTimestamp, startTimestamp, finishTimestamp
 # 82 - added configs
+# 83 - added files sessionsStarted, sessionsPresent
+# 84 - added shareables index
 
 use HTTP::Request::Common;
 use LWP::UserAgent;
@@ -92,7 +94,7 @@ use URI;
 use strict;
 use warnings;
 
-my $VERSION = 82;
+my $VERSION = 84;
 my $verbose = 0;
 my $PREFIX = $ENV{ARKIME_default__prefix} || $ENV{ARKIME__prefix};
 my $OLDPREFIX = "";
@@ -312,7 +314,7 @@ sub esGet
     logmsg "GET ${main::elasticsearch}$url\n" if ($verbose > 2);
     my $response = $main::userAgent->get("${main::elasticsearch}$url");
     if (($response->code == 500 && $ARGV[1] ne "init" && $ARGV[1] ne "shrink") || ($response->code != 200 && !$dontcheck)) {
-      die "Couldn't GET ${main::elasticsearch}$url  the http status code is " . $response->code . " are you sure OpenSearch/Elasticsearch is running/reachable?";
+      die "Couldn't GET '${main::elasticsearch}$url' the http status code is " . $response->code . " are you sure OpenSearch/Elasticsearch is running/reachable? Maybe have http/https switched? Error is => $response->{_msg}\n";
     }
     my $json = from_json($response->content);
     logmsg "GET RESULT:", Dumper($json), "\n" if ($verbose > 3 || $response->code == 401);
@@ -628,6 +630,12 @@ sub filesUpdate
     },
     "last": {
       "type": "long"
+    },
+    "sessionsStarted": {
+      "type": "long"
+    },
+    "sessionsPresent": {
+      "type": "long"
     }
   }
 }';
@@ -923,7 +931,7 @@ sub fieldsUpdate
     esPost("/${PREFIX}fields_v30/_doc/port.dst?timeout=${ESTIMEOUT}s", '{
       "friendlyName": "Dst Port",
       "group": "general",
-      "help": "Source Port",
+      "help": "Destination Port",
       "type": "integer",
       "dbField2": "dstPort",
       "category": "port"
@@ -4436,6 +4444,26 @@ sub sessions3Update
         }
       }
     },
+    "dot1ad" : {
+      "properties" : {
+        "id" : {
+          "type" : "long"
+        },
+        "idCnt" : {
+          "type" : "long"
+        }
+      }
+    },
+    "dot1q" : {
+      "properties" : {
+        "id" : {
+          "type" : "long"
+        },
+        "idCnt" : {
+          "type" : "long"
+        }
+      }
+    },
     "dstOui" : {
       "type" : "keyword"
     },
@@ -5890,6 +5918,81 @@ sub configsCreate
   esAlias("add", "configs_v50", "configs");
 }
 ################################################################################
+sub shareablesCreate
+{
+  my $settings = '
+{
+  "settings": {
+    "index.priority": 30,
+    "number_of_shards": 1,
+    "number_of_replicas": 0,
+    "auto_expand_replicas": "0-3"
+  }
+}';
+
+  logmsg "Creating shareables_v60 index\n" if ($verbose > 0);
+  esPut("/${PREFIX}shareables_v60?master_timeout=${ESTIMEOUT}s", $settings);
+  esAlias("add", "shareables_v60", "shareables");
+  shareablesUpdate();
+}
+
+sub shareablesUpdate
+{
+    my $mapping = '
+{
+  "_source": {"enabled": "true"},
+  "dynamic": "true",
+  "dynamic_templates": [
+    {
+      "string_template": {
+        "match_mapping_type": "string",
+        "mapping": {
+          "type": "keyword"
+        }
+      }
+    }
+  ],
+  "properties": {
+    "name": {
+      "type": "keyword"
+    },
+    "description": {
+      "type": "keyword"
+    },
+    "type": {
+      "type": "keyword"
+    },
+    "creator": {
+      "type": "keyword"
+    },
+    "created": {
+      "type": "date"
+    },
+    "updated": {
+      "type": "date"
+    },
+    "viewRoles": {
+      "type": "keyword"
+    },
+    "viewUsers": {
+      "type": "keyword"
+    },
+    "editRoles": {
+      "type": "keyword"
+    },
+    "editUsers": {
+      "type": "keyword"
+    },
+    "data": {
+      "type": "object"
+    }
+  }
+}';
+
+logmsg "Setting shareables_v60 mapping\n" if ($verbose > 0);
+esPut("/${PREFIX}shareables_v60/_mapping?master_timeout=${ESTIMEOUT}s&pretty", $mapping);
+}
+################################################################################
 sub usersCreate
 {
     my $settings = '
@@ -6303,7 +6406,7 @@ sub progress {
 ################################################################################
 sub optimizeOther {
     logmsg "Optimizing Admin Indices\n";
-    esForceMerge("${PREFIX}stats_v30,${PREFIX}dstats_v30,${PREFIX}fields_v30,${PREFIX}files_v30,${PREFIX}sequence_v30,${PREFIX}users_v30,${PREFIX}queries_v30,${PREFIX}hunts_v30,${PREFIX}lookups_v30,${PREFIX}notifiers_v40,${PREFIX}views_v40,${PREFIX}configs_v50", 1, 0);
+    esForceMerge("${PREFIX}stats_v30,${PREFIX}dstats_v30,${PREFIX}fields_v30,${PREFIX}files_v30,${PREFIX}sequence_v30,${PREFIX}users_v30,${PREFIX}queries_v30,${PREFIX}hunts_v30,${PREFIX}lookups_v30,${PREFIX}notifiers_v40,${PREFIX}views_v40,${PREFIX}configs_v50,${PREFIX}shareables_v60", 1, 0);
     logmsg "\n" if ($verbose > 0);
 }
 ################################################################################
@@ -6467,10 +6570,11 @@ if ($ARGV[0] =~ /^urlinfile:\/\//) {
     $main::elasticsearch = <$file>;
     chomp $main::elasticsearch;
     close ($file);
-} elsif ($ARGV[0] =~ /^http/) {
+} elsif ($ARGV[0] =~ /^https?/) {
     $main::elasticsearch = $ARGV[0];
 } else {
-    $main::elasticsearch = "http://$ARGV[0]";
+    print "\nYou must specify the OpenSearch/Elasticsearch URL as the first argument: http://localhost:9200 https://localhost:9200 or urlinfile:///tmp/file\n";
+    exit 1;
 }
 
 if ($SECURE && $main::elasticsearch =~ /^https:\/\//) {
@@ -6546,7 +6650,7 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
     my %cont3xtIndices = map { $_->{index} => $_ } @{ esGet("/_cat/indices/cont3xt*?format=json", 1) };
 
     # Indices we want to backup, if there is an alias
-    my @indices = ("configs", "dstats", "fields", "files", "hunts", "lookups", "notifiers", "parliament", "queries", "sequence", "stats", "users", "views", "cont3xt_links", "cont3xt_views", "cont3xt_overviews", "cont3xt_history");
+    my @indices = ("configs", "dstats", "fields", "files", "hunts", "lookups", "notifiers", "parliament", "queries", "shareables", "sequence", "stats", "users", "views", "cont3xt_links", "cont3xt_views", "cont3xt_overviews", "cont3xt_history");
 
     # find which we have aliases for or are in cont3xt
     @indices = grep { exists $allAliases{"${PREFIX}${_}"} || $cont3xtIndices{$_} } @indices;
@@ -7104,6 +7208,8 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
     printIndex($status, "parliament_v50");
 
     printIndex($status, "queries_v30");
+
+    printIndex($status, "shareables_v60");
 
     printIndex($status, "sequence_v30");
     printIndex($status, "sequence_v3");
@@ -7756,6 +7862,12 @@ $policy = qq/{
             update => \&queriesUpdate,
         },
         {
+            name => "shareables_v60",
+            alias => "shareables",
+            create => \&shareablesCreate,
+            update => \&shareablesUpdate,
+        },
+        {
             name => "stats_v30",
             alias => "stats",
             create => \&statsCreate,
@@ -7905,7 +8017,7 @@ $policy = qq/{
         }
     }
 
-    foreach my $i ("configs_v50", "dstats_v30", "fields_v30", "hunts_v30", "lookups_v30", "notifiers_v40", "parliament_v50", "queries_v30", "stats_v30", "users_v30", "views_v40") {
+    foreach my $i ("configs_v50", "dstats_v30", "fields_v30", "hunts_v30", "lookups_v30", "notifiers_v40", "parliament_v50", "queries_v30", "shareables_v60", "stats_v30", "users_v30", "views_v40") {
         if (!defined $indices{"${PREFIX}$i"}) {
             print "--> Couldn't find index ${PREFIX}$i, repair might fail\n"
         }
@@ -7917,7 +8029,7 @@ $policy = qq/{
         }
     }
 
-    foreach my $i ("configs", "hunts", "lookups", "notifiers", "parliament", "queries", "users", "views") {
+    foreach my $i ("configs", "hunts", "lookups", "notifiers", "parliament", "queries", "shareables", "users", "views") {
         if (defined $indices{"${PREFIX}$i"}) {
             print "--> Will delete the index ${PREFIX}$i and recreate as alias, this WILL cause data loss in those indices, maybe cancel and run backup first\n"
         }
@@ -7936,7 +8048,7 @@ $policy = qq/{
     $verbose = 3 if ($verbose < 3);
 
     print "Deleting any indices that should be aliases\n";
-    foreach my $i ("configs", "dstats", "fields", "hunts", "lookups", "notifiers", "parliament", "queries", "stats", "users", "views") {
+    foreach my $i ("configs", "dstats", "fields", "hunts", "lookups", "notifiers", "parliament", "queries", "shareables", "stats", "users", "views") {
         esDelete("/${PREFIX}$i", 0) if (defined $indices{"${PREFIX}$i"});
     }
 
@@ -7950,6 +8062,7 @@ $policy = qq/{
     esAlias("add", "notifiers_v40", "notifiers");
     esAlias("add", "parliament_v50", "parliament");
     esAlias("add", "queries_v30", "queries");
+    esAlias("add", "shareables_v60", "shareables");
     esAlias("add", "sequence_v30", "sequence");
     esAlias("add", "stats_v30", "stats");
     esAlias("add", "users_v30", "users");
@@ -8011,6 +8124,12 @@ $policy = qq/{
 
     if (!defined $indices{"${PREFIX}configs_v50"}) {
         configsCreate();
+    }
+
+    if (!defined $indices{"${PREFIX}shareables_v60"}) {
+        shareablesCreate();
+    } else {
+        shareablesUpdate();
     }
 
     if (defined $indices{"${PREFIX}parliament_v50"}) {
@@ -8103,6 +8222,7 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
     esDelete("/${PREFIX}hunts_v30,${OLDPREFIX}hunts_v2,${OLDPREFIX}hunts_v1,${OLDPREFIX}hunts,${PREFIX}hunts?ignore_unavailable=true", 1);
     esDelete("/${PREFIX}lookups_v30,${OLDPREFIX}lookups_v1,${OLDPREFIX}lookups,${PREFIX}lookups?ignore_unavailable=true", 1);
     esDelete("/${PREFIX}notifiers_v40,${PREFIX}notifiers?ignore_unavailable=true", 1);
+    esDelete("/${PREFIX}shareables_v60,${PREFIX}shareables?ignore_unavailable=true", 1);
     esDelete("/${PREFIX}views_v40,${PREFIX}views?ignore_unavailable=true", 1);
     my $indices;
     esDeleteIndices($indices, 1) if (($indices = esMatchingIndices("${OLDPREFIX}sessions2-*")) ne "");
@@ -8142,6 +8262,7 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
     lookupsCreate();
     notifiersCreate();
     viewsCreate();
+    shareablesCreate();
     if ($ARGV[1] =~ "init") {
         usersCreate();
         queriesCreate();
@@ -8191,6 +8312,7 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
     esDelete("/${PREFIX}hunts_v30,${OLDPREFIX}hunts_v2,${OLDPREFIX}hunts_v1,${OLDPREFIX}hunts,${PREFIX}hunts?ignore_unavailable=true", 1);
     esDelete("/${PREFIX}lookups_v30,${OLDPREFIX}lookups_v1,${OLDPREFIX}lookups,${PREFIX}lookups?ignore_unavailable=true", 1);
     esDelete("/${PREFIX}notifiers_v40,${PREFIX}notifiers?ignore_unavailable=true", 1);
+    esDelete("/${PREFIX}shareables_v60,${PREFIX}shareables?ignore_unavailable=true", 1);
     esDelete("/${PREFIX}views_v40,${PREFIX}views?ignore_unavailable=true", 1);
     esDelete("/${PREFIX}configs_v50,${PREFIX}configs?ignore_unavailable=true", 1);
     esDelete("/${PREFIX}users_v30,${OLDPREFIX}users_v7,${OLDPREFIX}users_v6,${OLDPREFIX}users_v5,${OLDPREFIX}users,${PREFIX}users?ignore_unavailable=true", 1);
@@ -8339,6 +8461,7 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
         filesUpdate();
         configsCreate();
         fields82Fix();
+        shareablesCreate();
     } elsif ($main::versionNumber <= 81) {
         checkForOld7Indices();
         sessions3Update();
@@ -8347,20 +8470,28 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
         filesUpdate();
         configsCreate();
         fields82Fix();
-    } elsif ($main::versionNumber <= 82) {
+        shareablesCreate();
+    } elsif ($main::versionNumber <= 83) {
         checkForOld7Indices();
         sessions3Update();
         historyUpdate();
+        filesUpdate();
         fields82Fix();
+        shareablesCreate();
+    } elsif ($main::versionNumber <= 84) {
+        checkForOld7Indices();
+        sessions3Update();
+        historyUpdate();
+        shareablesCreate();
     } else {
         logmsg "db.pl is hosed\n";
     }
 }
 
 if ($DOHOTWARM) {
-    esPut("/${PREFIX}stats_v30,${PREFIX}dstats_v30,${PREFIX}fields_v30,${PREFIX}files_v30,${PREFIX}sequence_v30,${PREFIX}users_v30,${PREFIX}queries_v30,${PREFIX}hunts_v30,${PREFIX}history*,${PREFIX}lookups_v30,${PREFIX}notifiers_v40,${PREFIX}views_v40,${PREFIX}configs_v50/_settings?master_timeout=${ESTIMEOUT}s&allow_no_indices=true&ignore_unavailable=true", "{\"index.routing.allocation.require.molochtype\": \"warm\"}");
+    esPut("/${PREFIX}stats_v30,${PREFIX}dstats_v30,${PREFIX}fields_v30,${PREFIX}files_v30,${PREFIX}sequence_v30,${PREFIX}users_v30,${PREFIX}queries_v30,${PREFIX}hunts_v30,${PREFIX}history*,${PREFIX}lookups_v30,${PREFIX}notifiers_v40,${PREFIX}shareables_v60,${PREFIX}views_v40,${PREFIX}configs_v50/_settings?master_timeout=${ESTIMEOUT}s&allow_no_indices=true&ignore_unavailable=true", "{\"index.routing.allocation.require.molochtype\": \"warm\"}");
 } else {
-    esPut("/${PREFIX}stats_v30,${PREFIX}dstats_v30,${PREFIX}fields_v30,${PREFIX}files_v30,${PREFIX}sequence_v30,${PREFIX}users_v30,${PREFIX}queries_v30,${PREFIX}hunts_v30,${PREFIX}history*,${PREFIX}lookups_v30,${PREFIX}notifiers_v40,${PREFIX}views_v40,${PREFIX}configs_v50/_settings?master_timeout=${ESTIMEOUT}s&allow_no_indices=true&ignore_unavailable=true", "{\"index.routing.allocation.require.molochtype\": null}");
+    esPut("/${PREFIX}stats_v30,${PREFIX}dstats_v30,${PREFIX}fields_v30,${PREFIX}files_v30,${PREFIX}sequence_v30,${PREFIX}users_v30,${PREFIX}queries_v30,${PREFIX}hunts_v30,${PREFIX}history*,${PREFIX}lookups_v30,${PREFIX}notifiers_v40,${PREFIX}shareables_v60,${PREFIX}views_v40,${PREFIX}configs_v50/_settings?master_timeout=${ESTIMEOUT}s&allow_no_indices=true&ignore_unavailable=true", "{\"index.routing.allocation.require.molochtype\": null}");
 }
 
 logmsg "Finished\n";

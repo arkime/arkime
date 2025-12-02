@@ -26,7 +26,7 @@ install: cyberchef
 	npm run $(INSTALL_BUNDLE)
 	$(CP) -pr views public $(VIEWERDIR)
 	$(CP) -pr vueapp/dist "$(VIEWERDIR)/vueapp"
-	(cd $(VIEWERDIR) ; npm ci --production)
+	(cd $(VIEWERDIR) ; npm ci --omit=dev)
 
 distclean realclean clean:
 	rm -rf node_modules

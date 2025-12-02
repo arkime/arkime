@@ -164,6 +164,12 @@
                "packets" : 1,
                "port" : 15365
             },
+            "dot1q" : {
+               "id" : [
+                  300
+               ],
+               "idCnt" : 1
+            },
             "dstOui" : [
                "Palo Alto Networks"
             ],

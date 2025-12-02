@@ -3,221 +3,236 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-
   <div class="history-page">
     <ArkimeCollapsible>
       <span class="fixed-header">
         <!-- search navbar -->
-        <form class="history-search">
-          <div class="p-1">
-            <span class="fa fa-lg fa-question-circle text-theme-primary help-cursor mt-2 pull-right"
-              title="Tip: use ? to replace a single character and * to replace zero or more characters in your query"
-              v-b-tooltip.hover>
+        <div class="history-search p-1">
+          <Clusters />
+          <button
+            type="button"
+            class="btn btn-sm btn-theme-tertiary pull-right ms-1 search-btn"
+            @click="loadData">
+            <span v-if="!shiftKeyHold">
+              Search
             </span>
-            <Clusters
-              class="pull-right"
-            />
-            <button type="button"
-              class="btn btn-sm btn-theme-tertiary pull-right ml-1 search-btn"
-              @click="loadData">
-              <span v-if="!shiftKeyHold">
-                Search
+            <span
+              v-else
+              class="enter-icon">
+              <span class="fa fa-long-arrow-left fa-lg" />
+              <div class="enter-arm" />
+            </span>
+          </button>
+          <BInputGroup size="sm">
+            <BInputGroupText class="input-group-text-fw">
+              <span
+                v-if="!shiftKeyHold"
+                class="fa fa-search fa-fw" />
+              <span
+                v-else
+                class="query-shortcut">
+                Q
               </span>
-              <span v-else
-                class="enter-icon">
-                <span class="fa fa-long-arrow-left fa-lg">
-                </span>
-                <div class="enter-arm">
-                </div>
-              </span>
+            </BInputGroupText>
+            <input
+              type="text"
+              @keyup.enter="loadData"
+              @input="debounceSearch"
+              class="form-control"
+              v-model="searchTerm"
+              v-focus="focusInput"
+              @blur="onOffFocus"
+              :placeholder="$t('history.searchHistoryPlaceholder')">
+            <button
+              type="button"
+              @click="clear"
+              :disabled="!searchTerm"
+              class="btn btn-outline-secondary btn-clear-input">
+              <span class="fa fa-close" />
             </button>
-            <div class="input-group input-group-sm">
-              <div class="input-group-prepend">
-                <span class="input-group-text input-group-text-fw">
-                  <span v-if="!shiftKeyHold"
-                    class="fa fa-search fa-fw">
-                  </span>
-                  <span v-else
-                    class="query-shortcut">
-                    Q
-                  </span>
-                </span>
-              </div>
-              <input type="text"
-                @keyup.enter="loadData"
-                @input="debounceSearch"
-                class="form-control"
-                v-model="searchTerm"
-                v-focus="focusInput"
-                @blur="onOffFocus"
-                placeholder="Search for history in the table below"
-              />
-              <span class="input-group-append">
-                <button type="button"
-                  @click="clear"
-                  :disabled="!searchTerm"
-                  class="btn btn-outline-secondary btn-clear-input">
-                  <span class="fa fa-close">
-                  </span>
-                </button>
-              </span>
-            </div>
-            <div class="form-inline mt-1">
-              <arkime-time
-                :timezone="user.settings.timezone"
-                @timeChange="loadData"
-                :hide-bounding="true"
-                :hide-interval="true">
-              </arkime-time>
-            </div>
-          </div>
-        </form> <!-- /search navbar -->
+            <BInputGroupText id="searchHistory">
+              <span class="fa fa-lg fa-question-circle text-theme-primary help-cursor" />
+              <BTooltip target="searchHistory">
+                <div v-html="$t('history.searchHistoryTipHtml')" />
+              </BTooltip>
+            </BInputGroupText>
+          </BInputGroup>
+          <arkime-time
+            class="mt-1"
+            :timezone="user.settings.timezone"
+            @time-change="loadData"
+            :hide-bounding="true"
+            :hide-interval="true" />
+        </div> <!-- /search navbar -->
 
         <!-- paging navbar -->
-        <form class="history-paging">
-          <div class="form-inline">
-            <arkime-paging v-if="history"
-              class="mt-1 ml-1"
-              :records-total="recordsTotal"
-              :records-filtered="recordsFiltered"
-              @changePaging="changePaging"
-              length-default=100>
-            </arkime-paging>
-            <arkime-toast
-              class="ml-2 mb-3 mt-1"
-              :message="msg"
-              :type="msgType"
-              :done="messageDone">
-            </arkime-toast>
-          </div>
-        </form> <!-- /paging navbar -->
+        <div class="history-paging pt-1">
+          <arkime-paging
+            class="ms-1 d-inline"
+            :length-default="100"
+            :records-total="recordsTotal"
+            :records-filtered="recordsFiltered"
+            @change-paging="changePaging" />
+          <arkime-toast
+            class="ms-2 mb-3 mt-1 d-inline"
+            :message="msg"
+            :type="msgType"
+            :done="messageDone" />
+        </div> <!-- /paging navbar -->
       </span>
     </ArkimeCollapsible>
 
-    <table v-if="!error"
+    <table
+      v-if="!error"
       class="table table-sm table-striped small">
       <thead>
         <tr>
           <th width="100px;">
-            <button type="button"
+            <button
+              id="toggleColFilters"
               class="btn btn-xs btn-primary margined-bottom-sm"
-              v-b-tooltip.hover
-              title="Toggle column filters"
               @click="showColFilters = !showColFilters">
-              <span class="fa fa-filter"></span>
+              <span class="fa fa-filter" />
+              <BTooltip target="toggleColFilters">
+                <span v-i18n-btip="'history.'" />
+              </BTooltip>
             </button>
           </th>
           <th
             :key="column.name"
-            v-b-tooltip.hover
-            :title="column.help"
             v-for="column of columns"
             v-has-permission="column.permission"
             :style="{'width': `${column.width}%`}"
             v-has-role="{user:user,roles:column.role}"
             :class="`cursor-pointer ${column.classes}`">
+            <b-form-checkbox
+              id="seeAll"
+              @input="toggleSeeAll"
+              class="d-inline me-2"
+              v-if="column.sort == 'userId'" />
+            <BTooltip
+              target="seeAll"
+              noninteractive
+              placement="bottom"
+              boundary="viewport"
+              teleport-to="body">
+              <span v-html="$t('history.seeAllTipHtml')" />
+            </BTooltip>
             <input
               type="text"
               @click.stop
+              data-lpignore="true"
               @keyup="debounceSearch"
               v-model="filters[column.sort]"
               v-has-permission="column.permission"
               v-if="column.filter && showColFilters"
-              :placeholder="`Filter by ${column.name}`"
+              :placeholder="$t('history.filterByPlaceholder', { name: column.name })"
               class="form-control form-control-sm input-filter"
-            />
-            <div v-if="column.exists"
-              class="mr-1 header-div">
-              <input type="checkbox"
+              :id="`filter-${column.name}`">
+            <div
+              v-if="column.exists"
+              :id="`exists-${column.name}`"
+              class="me-1 header-div">
+              <input
+                type="checkbox"
                 class="checkbox"
-                v-b-tooltip.hover
-                :title="`Only show entries where the ${column.name} field exists`"
                 @change="loadData"
-                v-model="column.exists"
-              />
+                v-model="column.exists">
+              <BTooltip
+                placement="bottom"
+                triggers="hover"
+                :target="`exists-${column.name}`">
+                {{ $t('history.existsTip', { name: column.name }) }}
+              </BTooltip>
             </div>
-            <div class="header-div"
+            <div
+              class="header-div break-word"
+              :id="`column-${column.name}`"
               @click="columnClick(column.sort)">
               <span v-if="column.sort !== undefined">
-                <span v-show="sortField === column.sort && !desc" class="fa fa-sort-asc"></span>
-                <span v-show="sortField === column.sort && desc" class="fa fa-sort-desc"></span>
-                <span v-show="sortField !== column.sort" class="fa fa-sort"></span>
+                <span
+                  v-show="sortField === column.sort && !desc"
+                  class="fa fa-sort-asc" />
+                <span
+                  v-show="sortField === column.sort && desc"
+                  class="fa fa-sort-desc" />
+                <span
+                  v-show="sortField !== column.sort"
+                  class="fa fa-sort" />
               </span>
               {{ column.name }}
+              <BTooltip
+                placement="bottom"
+                triggers="hover"
+                :target="`column-${column.name}`">
+                {{ column.help }}
+              </BTooltip>
             </div>
-            <b-form-checkbox
-              button
-              size="sm"
-              v-model="seeAll"
-              class="ml-1 all-btn"
-              @input="toggleSeeAll"
-              v-b-tooltip.hover.bottom
-              v-if="column.sort == 'userId'"
-              :title="seeAll ? 'Just show your history' : 'See the history for all users (you can because you are an ADMIN!)'">
-              <span class="fa fa-user-circle mr-1" />
-              {{ seeAll ? 'MY' : 'ALL' }}
-            </b-form-checkbox>
           </th>
         </tr>
       </thead>
       <tbody v-if="history">
         <!-- no results -->
         <tr v-if="!history.length">
-          <td :colspan="colSpan"
+          <td
+            :colspan="colSpan"
             class="text-danger text-center">
-            <span class="fa fa-warning">
-            </span>&nbsp;
+            <span class="fa fa-warning" />&nbsp;
             <strong>
-              No history or none that matches your search
+              {{ $t('history.noHistory') }}
             </strong>
           </td>
         </tr> <!-- /no results -->
-        <template v-for="(item, index) of history">
+        <template
+          v-for="(item, index) of history"
+          :key="item.id">
           <!-- history item -->
-          <tr :key="item.id">
+          <tr>
             <td class="no-wrap">
-              <toggle-btn class="mt-1"
+              <toggle-btn
                 :opened="item.expanded"
-                @toggle="toggleLogDetail(item)">
-              </toggle-btn>
+                @toggle="toggleLogDetail(item)" />
               <button
                 type="button"
                 role="button"
                 title="Delete history"
-                class="btn btn-xs btn-warning"
+                class="btn btn-xs btn-warning ms-1"
                 v-has-role="{user:user,roles:'arkimeAdmin'}"
                 v-has-permission="'removeEnabled'"
                 @click="deleteLog(item, index)">
-                <span class="fa fa-trash-o">
-                </span>
+                <span class="fa fa-trash-o" />
               </button>
-              <a class="btn btn-xs btn-info"
+              <a
+                :id="`openPage-${item.id}`"
+                class="btn btn-xs btn-info ms-1"
                 v-if="item.uiPage"
                 tooltip-placement="right"
-                v-b-tooltip.hover
-                :title="`Open this query on the ${item.uiPage} page`"
                 @click="openPage(item)">
-                <span class="fa fa-folder-open">
-                </span>
+                <span class="fa fa-folder-open" />
+                <BTooltip :target="`openPage-${item.id}`">
+                  {{ $t('history.openPageTip', { uiPage: item.uiPage }) }}
+                </BTooltip>
               </a>
             </td>
             <td class="no-wrap">
-              {{ item.timestamp * 1000 | timezoneDateString(user.settings.timezone) }}
+              {{ timezoneDateString(item.timestamp * 1000, user.settings.timezone) }}
             </td>
-            <td class="no-wrap text-right">
-              {{ item.range*1000 | readableTime }}
+            <td class="no-wrap text-end">
+              {{ readableTime(item.range*1000) }}
             </td>
-            <td v-has-role="{user:user,roles:'arkimeAdmin'}"
+            <td
+              v-has-role="{user:user,roles:'arkimeAdmin'}"
               class="no-wrap">
               {{ item.userId }}
             </td>
-            <td class="no-wrap text-right">
+            <td class="no-wrap text-end">
               {{ item.queryTime }}ms
             </td>
             <td class="no-wrap">
               {{ item.method }}
             </td>
-            <td class="no-wrap"
+            <td
+              class="no-wrap"
               :title="item.api">
               {{ item.api }}
             </td>
@@ -225,89 +240,101 @@ SPDX-License-Identifier: Apache-2.0
               {{ item.expression }}
             </td>
             <td class="no-wrap">
-              <span v-if="item.view">
+              <template v-if="item.view">
                 <strong>
                   {{ item.view.name }}
                 </strong>
                 {{ item.view.expression }}
-              </span>
+              </template>
             </td>
           </tr> <!-- /history item -->
           <!-- history item info -->
-          <tr :key="item.id+'-detail'"
+          <tr
+            :key="item.id+'-detail'"
             v-if="expandedLogs[item.id]">
             <td :colspan="colSpan">
               <dl class="dl-horizontal">
                 <!-- forced expression -->
-                <div v-has-role="{user:user,roles:'arkimeAdmin'}"
+                <div
+                  v-has-role="{user:user,roles:'arkimeAdmin'}"
                   v-if="item.forcedExpression !== undefined"
                   class="mt-1">
-                  <span>
-                    <dt>Forced Expression</dt>
-                    <dd class="break-word">{{ item.forcedExpression }}</dd>
-                  </span>
+                  <dt>{{ $t('users.forcedExpression') }}</dt>
+                  <dd class="break-word">
+                    {{ item.forcedExpression }}
+                  </dd>
                 </div> <!-- /forced expression -->
                 <!-- count info -->
-                <div v-if="item.recordsReturned !== undefined"
+                <div
+                  v-if="item.recordsReturned !== undefined"
                   class="mt-1">
-                  <dt><h5>
-                    Counts
-                  </h5></dt>
+                  <dt>
+                    <h5>
+                      Counts
+                    </h5>
+                  </dt>
                   <dd><h5>&nbsp;</h5></dd>
-                  <span v-if="item.recordsReturned !== undefined">
-                    <dt>Records Returned</dt>
+                  <template v-if="item.recordsReturned !== undefined">
+                    <dt>{{ $t('history.recordsReturned') }}</dt>
                     <dd>{{ item.recordsReturned }}</dd>
-                  </span>
-                  <span v-if="item.recordsFiltered !== undefined">
-                    <dt>Records Filtered</dt>
+                  </template>
+                  <template v-if="item.recordsFiltered !== undefined">
+                    <dt>{{ $t('history.recordsFiltered') }}</dt>
                     <dd>{{ item.recordsFiltered }}</dd>
-                  </span>
-                  <span v-if="item.recordsTotal !== undefined">
-                    <dt>Records Total</dt>
+                  </template>
+                  <template v-if="item.recordsTotal !== undefined">
+                    <dt>{{ $t('history.recordsTotal') }}</dt>
                     <dd>{{ item.recordsTotal }}</dd>
-                  </span>
+                  </template>
                 </div> <!-- /count info -->
                 <!-- req body -->
-                <div v-if="item.body"
+                <div
+                  v-if="item.body"
                   class="mt-1">
-                  <dt><h5>
-                    Request Body
-                  </h5></dt>
+                  <dt>
+                    <h5>
+                      {{ $t('history.requestBody') }}
+                    </h5>
+                  </dt>
                   <dd><h5>&nbsp;</h5></dd>
-                  <span v-for="(value, key) in item.body"
+                  <template
+                    v-for="(value, key) in item.body"
                     :key="key">
                     <dt>{{ key }}</dt>
-                    <dd class="break-word">{{ value }}&nbsp;</dd>
-                  </span>
+                    <dd class="break-word">
+                      {{ value }}&nbsp;
+                    </dd>
+                  </template>
                 </div> <!-- /req body -->
                 <!-- query params -->
                 <div class="mt-2">
                   <template v-if="item.query">
-                    <dt><h5>
-                      Query parameters
-                      <sup>
-                        <span class="fa fa-info-circle text-theme-primary">
-                        </span>
-                      </sup>
-                    </h5></dt>
+                    <dt>
+                      <h5>
+                        {{ $t('history.queryParameters') }}
+                        <sup>
+                          <span class="fa fa-info-circle text-theme-primary" />
+                        </sup>
+                      </h5>
+                    </dt>
                     <dd><h5>&nbsp;</h5></dd>
-                    <span v-for="(value, key) in item.queryObj"
+                    <template
+                      v-for="(value, key) in item.queryObj"
                       :key="key">
                       <dt>{{ key }}</dt>
                       <dd class="break-word">
                         {{ value }}&nbsp;
-                        <span v-if="key === 'view' && item.view && item.view.expression">
+                        <template v-if="key === 'view' && item.view && item.view.expression">
                           ({{ item.view.expression }})
-                        </span>
+                        </template>
                       </dd>
-                    </span>
+                    </template>
                   </template>
                   <div class="mt-2">
                     <em>
                       <strong v-if="item.query">
-                        <span class="fa fa-info-circle text-theme-primary">
-                        </span>&nbsp;
-                        Parsed from:
+                        <span class="fa fa-info-circle text-theme-primary" />&nbsp;
+                        {{ $t('history.parsedFrom') }}
                       </strong>
                       <span style="word-break:break-all;">
                         {{ item.api }}{{ item.query ? '?' : '' }}{{ item.query }}
@@ -317,13 +344,17 @@ SPDX-License-Identifier: Apache-2.0
                 </div> <!-- /query params -->
                 <!-- es query -->
                 <div v-has-role="{user:user,roles:'arkimeAdmin'}">
-                  <div class="mt-3" v-if="item.esQueryIndices">
-                    <h5>Elasticsearch Query Indices</h5>
-                    <code class="mr-3 ml-3">{{ item.esQueryIndices }}</code>
+                  <div
+                    class="mt-3"
+                    v-if="item.esQueryIndices">
+                    <h5>{{ $t('history.esQueryIndices') }}</h5>
+                    <code class="me-3 ms-3">{{ item.esQueryIndices }}</code>
                   </div>
-                  <div class="mt-3" v-if="item.esQuery">
-                    <h5>Elasticsearch Query</h5>
-                    <pre class="mr-3 ml-3">{{ JSON.parse(item.esQuery) }}</pre>
+                  <div
+                    class="mt-3"
+                    v-if="item.esQuery">
+                    <h5>{{ $t('history.esQuery') }}</h5>
+                    <pre class="me-3 ms-3">{{ JSON.parse(item.esQuery) }}</pre>
                   </div>
                 </div>
               </dl>
@@ -335,37 +366,34 @@ SPDX-License-Identifier: Apache-2.0
 
     <!-- loading overlay -->
     <arkime-loading
-      v-if="loading && !error">
-    </arkime-loading> <!-- /loading overlay -->
+      v-if="loading && !error" /> <!-- /loading overlay -->
 
     <!-- error -->
     <arkime-error
       v-if="error"
-      :message="error"
-    /> <!-- /error -->
+      :message="error" /> <!-- /error -->
 
     <!-- hack to make vue watch expanded logs -->
     <div style="display:none;">
       {{ expandedLogs }}
     </div>
-
   </div>
-
 </template>
 
 <script>
 import qs from 'qs';
 import Utils from '../utils/utils';
-import ArkimeTime from '../search/Time';
-import Clusters from '../utils/Clusters';
-import ArkimeToast from '../utils/Toast';
-import ArkimeError from '../utils/Error';
-import ArkimeLoading from '../utils/Loading';
-import ArkimePaging from '../utils/Pagination';
+import ArkimeTime from '../search/Time.vue';
+import Clusters from '../utils/Clusters.vue';
+import ArkimeToast from '../utils/Toast.vue';
+import ArkimeError from '../utils/Error.vue';
+import ArkimeLoading from '../utils/Loading.vue';
+import ArkimePaging from '../utils/Pagination.vue';
 import HistoryService from './HistoryService';
-import Focus from '../../../../../common/vueapp/Focus';
-import ArkimeCollapsible from '../utils/CollapsibleWrapper';
-import ToggleBtn from '../../../../../common/vueapp/ToggleBtn';
+import Focus from '@common/Focus.vue';
+import ArkimeCollapsible from '../utils/CollapsibleWrapper.vue';
+import ToggleBtn from '@common/ToggleBtn.vue';
+import { timezoneDateString, readableTime } from '@common/vueFilters.js';
 
 let searchInputTimeout; // timeout to debounce the search input
 
@@ -399,19 +427,28 @@ export default {
       msg: '',
       msgType: undefined,
       seeAll: false,
-      columns: [
-        { name: 'Time', sort: 'timestamp', nowrap: true, width: 13, help: 'The time of the request' },
-        { name: 'Time Range', sort: 'range', nowrap: true, width: 11, classes: 'text-right', help: 'The time range of the request' },
-        { name: 'User ID', sort: 'userId', nowrap: true, width: 10, filter: true, classes: 'no-wrap', role: 'arkimeAdmin', help: 'The id of the user that initiated the request' },
-        { name: 'Query Time', sort: 'queryTime', nowrap: true, width: 8, classes: 'text-right', help: 'Execution time in MS' },
-        { name: 'Method', sort: 'method', nowrap: true, width: 5, help: 'The HTTP request method' },
-        { name: 'API', sort: 'api', nowrap: true, width: 13, filter: true, help: 'The API endpoint of the request' },
-        { name: 'Expression', sort: 'expression', nowrap: true, width: 25, exists: false, help: 'The query expression issued with the request' },
-        { name: 'View', sort: 'view.name', nowrap: true, width: 20, exists: false, help: 'The view expression applied to the request' }
-      ]
     };
   },
   computed: {
+    columns: function () {
+      const $t = this.$t.bind(this);
+      function intl(obj) {
+        const key = obj.sort.replace('.', '');
+        obj.name = $t(`history.${key}Name`);
+        obj.help = $t(`history.${key}Help`);
+        return obj;
+      };
+      return [
+        intl({ sort: 'timestamp', width: 13 }),
+        intl({ sort: 'range', width: 11, classes: 'text-end' }),
+        intl({ sort: 'userId', width: 10, filter: true, role: 'arkimeAdmin' }),
+        intl({ sort: 'queryTime', width: 8, classes: 'text-end' }),
+        intl({ sort: 'method', width: 8 }),
+        intl({ sort: 'api', width: 15, filter: true }),
+        intl({ sort: 'expression', width: 20, exists: false }),
+        intl({ sort: 'view.name', width: 15, exists: false })
+      ];
+    },
     query: function () {
       return { // query defaults
         length: parseInt(this.$route.query.length) || 50,
@@ -465,6 +502,8 @@ export default {
     });
   },
   methods: {
+    readableTime,
+    timezoneDateString,
     /* exposed page functions ------------------------------------ */
     toggleSeeAll () {
       this.filters.userId = this.seeAll ? '' : this.user.userId;
@@ -513,7 +552,7 @@ export default {
       HistoryService.delete(log.id, log.index)
         .then((response) => {
           this.history.splice(index, 1);
-          this.msg = response.data.text || 'Successfully deleted history item';
+          this.msg = response.text || 'Successfully deleted history item';
           this.msgType = 'success';
         })
         .catch((error) => {
@@ -578,13 +617,13 @@ export default {
         .then((response) => {
           this.error = '';
           this.loading = false;
-          this.history = response.data.data;
-          this.recordsTotal = response.data.recordsTotal;
-          this.recordsFiltered = response.data.recordsFiltered;
+          this.history = response.data;
+          this.recordsTotal = response.recordsTotal;
+          this.recordsFiltered = response.recordsFiltered;
         })
         .catch((error) => {
           this.loading = false;
-          this.error = error.text || error;
+          this.error = error.text || String(error);
         });
     },
     /* event functions ------------------------------------------- */
@@ -600,7 +639,7 @@ export default {
 
 <style scoped>
 /* navbar styles ------------------- */
-.history-page form.history-search {
+.history-page .history-search {
   z-index: 5;
   border: none;
   background-color: var(--color-secondary-lightest);
@@ -610,12 +649,12 @@ export default {
           box-shadow: 0 0 16px -2px black;
 }
 
-.history-page form .time-range-control {
+.history-page  .time-range-control {
   -webkit-appearance: none;
 }
 
 /* navbar with pagination */
-.history-page form.history-paging {
+.history-page .history-paging {
   z-index: 4;
   height: 40px;
 }

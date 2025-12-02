@@ -33,6 +33,7 @@ GMainLoop             *mainLoop;
 char                  *arkime_char_to_hex = "0123456789abcdef"; /* don't change case */
 uint8_t                arkime_char_to_hexstr[256][3];
 uint8_t                arkime_hex_to_char[256][256];
+char                   arkime_ip_byte_lookup[256][4];
 uint32_t               hashSalt;
 LOCAL pthread_t        mainThread;
 
@@ -43,7 +44,7 @@ ARKIME_LOCK_DEFINE(LOG);
 
 /******************************************************************************/
 LOCAL  gboolean showVersion    = FALSE;
-LOCAL  gboolean useScheme      = FALSE;
+LOCAL  gboolean useScheme      = TRUE;
 
 #define FREE_LATER_AND 0x7FFF
 LOCAL int freeLaterFront;
@@ -55,6 +56,24 @@ typedef struct {
 } ArkimeFreeLater_t;
 ArkimeFreeLater_t  freeLaterList[FREE_LATER_AND + 1];
 ARKIME_LOCK_DEFINE(freeLaterList);
+
+/******************************************************************************/
+typedef struct {
+    ArkimeNamedFunc cb;
+    void *cbuw;
+} ArkimeNamedFunc_t;
+
+typedef struct {
+    GPtrArray *funcs;
+    uint16_t   id;
+} ArkimeNamedInfo_t;
+
+// 64 is the max because of the u64 arkime_has_named_func
+#define MAX_NAMED_FUNCS  64
+uint64_t                 arkime_has_named_func;
+LOCAL uint16_t           namedFuncsMax = 0;
+LOCAL ArkimeNamedInfo_t *namedFuncsArr[MAX_NAMED_FUNCS];
+LOCAL GHashTable        *namedFuncsHash;
 
 /******************************************************************************/
 LOCAL gboolean arkime_debug_flag()
@@ -177,6 +196,11 @@ LOCAL void arkime_cmd_version(int UNUSED(argc), char UNUSED( * *argv), gpointer 
     const nghttp2_info *ngver = nghttp2_version(0);
     BSB_EXPORT_sprintf(bsb, "nghttp2: %s\n", ngver->version_str);
 
+#ifdef HAVE_PYTHON
+    const char *Py_GetVersion();
+    BSB_EXPORT_sprintf(bsb, "python: %s\n", Py_GetVersion());
+#endif
+
     arkime_command_respond(cc, buf, BSB_LENGTH(bsb));
 }
 /******************************************************************************/
@@ -237,6 +261,11 @@ LOCAL void parse_args(int argc, char **argv)
 #endif
         const nghttp2_info *ngver = nghttp2_version(0);
         printf("nghttp2: %s\n", ngver->version_str);
+
+#ifdef HAVE_PYTHON
+        const char *Py_GetVersion();
+        printf("python: %s\n", Py_GetVersion());
+#endif
 
         exit(0);
     }
@@ -493,7 +522,6 @@ uint32_t arkime_get_next_powerof2(uint32_t v)
 const uint8_t *arkime_js0n_get(const uint8_t *data, uint32_t len, const char *key, uint32_t *olen)
 {
     uint32_t key_len = strlen(key);
-    int      i;
     uint32_t out[4 * 100]; // Can have up to 100 elements at any level
 
     *olen = 0;
@@ -504,7 +532,7 @@ const uint8_t *arkime_js0n_get(const uint8_t *data, uint32_t len, const char *ke
         return 0;
     }
 
-    for (i = 0; out[i]; i += 4) {
+    for (int i = 0; out[i]; i += 4) {
         if (out[i + 1] == key_len && memcmp(key, data + out[i], key_len) == 0) {
             *olen = out[i + 3];
             return data + out[i + 2];
@@ -515,8 +543,7 @@ const uint8_t *arkime_js0n_get(const uint8_t *data, uint32_t len, const char *ke
 /******************************************************************************/
 const uint8_t *arkime_js0n_get_path(const uint8_t *data, uint32_t len, const char **keys, uint32_t *olen)
 {
-    int k;
-    for (k = 0; keys[k]; k++) {
+    for (int k = 0; keys[k]; k++) {
         data = arkime_js0n_get(data, len, keys[k], &len);
         if (!data) {
             if (config.debug > 2)
@@ -749,7 +776,6 @@ LOCAL gboolean arkime_quit_gfunc (gpointer UNUSED(user_data))
         readerExit = FALSE;
         if (arkime_reader_stop)
             arkime_reader_stop();
-        arkime_packet_exit();
         arkime_session_exit();
         if (config.debug)
             LOG("Read exit finished");
@@ -757,8 +783,7 @@ LOCAL gboolean arkime_quit_gfunc (gpointer UNUSED(user_data))
     }
 
 // Wait for all the can quits to signal all clear
-    int i;
-    for (i = 0; i < canQuitFuncsNum; i++) {
+    for (int i = 0; i < canQuitFuncsNum; i++) {
         int val = canQuitFuncs[i]();
         if (val != 0) {
             if (config.debug && canQuitNames[i]) {
@@ -778,6 +803,10 @@ LOCAL gboolean arkime_quit_gfunc (gpointer UNUSED(user_data))
             return G_SOURCE_CONTINUE;
         }
     }
+
+    // Can stop the packet threads and exit python
+    arkime_packet_exit();
+    arkime_python_exit();
 
 // Can quit the main loop now
     g_main_loop_quit(mainLoop);
@@ -831,9 +860,8 @@ LOCAL gboolean arkime_ready_gfunc (gpointer UNUSED(user_data))
 /******************************************************************************/
 LOCAL void arkime_hex_init()
 {
-    int i, j;
-    for (i = 0; i < 16; i++) {
-        for (j = 0; j < 16; j++) {
+    for (int i = 0; i < 16; i++) {
+        for (int j = 0; j < 16; j++) {
             arkime_hex_to_char[(uint8_t)arkime_char_to_hex[i]][(uint8_t)arkime_char_to_hex[j]] = i << 4 | j;
             arkime_hex_to_char[toupper(arkime_char_to_hex[i])][(uint8_t)arkime_char_to_hex[j]] = i << 4 | j;
             arkime_hex_to_char[(uint8_t)arkime_char_to_hex[i]][toupper(arkime_char_to_hex[j])] = i << 4 | j;
@@ -841,10 +869,41 @@ LOCAL void arkime_hex_init()
         }
     }
 
-    for (i = 0; i < 256; i++) {
+    for (int i = 0; i < 256; i++) {
         arkime_char_to_hexstr[i][0] = arkime_char_to_hex[(i >> 4) & 0xf];
         arkime_char_to_hexstr[i][1] = arkime_char_to_hex[i & 0xf];
     }
+
+    // Initialize IPv4 byte lookup table for fast conversion
+    for (int i = 0; i < 256; i++) {
+        snprintf(arkime_ip_byte_lookup[i], sizeof(arkime_ip_byte_lookup[i]), "%d", i);
+    }
+}
+/******************************************************************************/
+char *arkime_ip4tostr(uint32_t ip, char *str, int len)
+{
+    char *end = str + len - 1;
+
+    const char *s = arkime_ip_byte_lookup[ip & 0xff];
+    while (*s && str < end) *str++ = *s++;
+
+    if (str < end) *str++ = '.';
+
+    s = arkime_ip_byte_lookup[(ip >> 8) & 0xff];
+    while (*s && str < end) *str++ = *s++;
+
+    if (str < end) *str++ = '.';
+
+    s = arkime_ip_byte_lookup[(ip >> 16) & 0xff];
+    while (*s && str < end) *str++ = *s++;
+
+    if (str < end) *str++ = '.';
+
+    s = arkime_ip_byte_lookup[(ip >> 24) & 0xff];
+    while (*s && str < end) *str++ = *s++;
+
+    *str = '\0';
+    return str;
 }
 /******************************************************************************/
 LOCAL ArkimeCredentials_t *currentCredentials;
@@ -904,6 +963,46 @@ ArkimeCredentials_t *arkime_credentials_get(const char *service, const char *idN
         return currentCredentials;
 
     LOGEXIT("ERROR - No credentials for %s", config.provider);
+}
+/******************************************************************************/
+uint32_t arkime_add_named_func(const char *name, ArkimeNamedFunc func, void *cbuw)
+{
+    if (!namedFuncsHash)
+        namedFuncsHash = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, NULL);
+
+    ArkimeNamedInfo_t *info = g_hash_table_lookup(namedFuncsHash, name);
+    if (!info) {
+        info = ARKIME_TYPE_ALLOC0(ArkimeNamedInfo_t);
+        info->funcs = g_ptr_array_new();
+        namedFuncsMax++; // Don't use 0
+        if (namedFuncsMax >= MAX_NAMED_FUNCS) {
+            LOGEXIT("ERROR - Too many named functions %s", name);
+            return 0;
+        }
+        info->id = namedFuncsMax;
+        namedFuncsArr[namedFuncsMax] = info;
+        g_hash_table_insert(namedFuncsHash, g_strdup(name), info);
+    }
+    if (!func)
+        return info->id;
+
+    arkime_has_named_func |= (1ULL << info->id);
+    ArkimeNamedFunc_t *funcInfo = ARKIME_TYPE_ALLOC0(ArkimeNamedFunc_t);
+    funcInfo->cb = func;
+    funcInfo->cbuw = cbuw;
+    g_ptr_array_add(info->funcs, funcInfo);
+    return info->id;
+}
+/******************************************************************************/
+void arkime_call_named_func(uint32_t id, int thread, void *uw)
+{
+    if (id == 0 || id > namedFuncsMax || !ARKIME_HAS_NAMED_FUNC(id))
+        return;
+    ArkimeNamedInfo_t *info = namedFuncsArr[id];
+    for (int i = 0; i < (int)info->funcs->len; i++) {
+        ArkimeNamedFunc_t *funcInfo = g_ptr_array_index(info->funcs, i);
+        funcInfo->cb(thread, uw, funcInfo->cbuw);
+    }
 }
 /******************************************************************************/
 
@@ -1086,7 +1185,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 
         // LOG("Packet %llu %d", fuzzloch_sessionid, len);
 
-        ArkimePacket_t *packet = ARKIME_TYPE_ALLOC0(ArkimePacket_t);
+        ArkimePacket_t *packet = arkime_packet_alloc();
         packet->pktlen         = len;
         packet->pkt            = ptr;
         packet->ts.tv_sec      = ts >> 4;
@@ -1153,6 +1252,7 @@ int main(int argc, char **argv)
     }
     arkime_field_init();
     arkime_db_init();
+    arkime_python_init();
     arkime_packet_init();
     arkime_config_load_packet_ips();
     arkime_yara_init();

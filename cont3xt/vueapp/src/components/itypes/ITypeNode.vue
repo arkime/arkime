@@ -4,49 +4,44 @@ SPDX-License-Identifier: Apache-2.0
 -->
 <template>
   <cont3xt-domain
-      :indicator-id="indicatorId"
-      :indicator="node.indicator"
-      :children="node.children"
-      v-if="node.indicator.itype === 'domain'"
-  />
+    :indicator-id="indicatorId"
+    :indicator="node.indicator"
+    :children="node.children"
+    v-if="node.indicator.itype === 'domain'" />
   <cont3xt-ip
-      :indicator-id="indicatorId"
-      :indicator="node.indicator"
-      :children="node.children"
-      :enhance-info="node.enhanceInfo"
-      v-else-if="node.indicator.itype === 'ip'"
-  />
+    :indicator-id="indicatorId"
+    :indicator="node.indicator"
+    :children="node.children"
+    :enhance-info="node.enhanceInfo"
+    v-else-if="node.indicator.itype === 'ip'" />
   <cont3xt-url
-      :indicator-id="indicatorId"
-      :indicator="node.indicator"
-      :children="node.children"
-      v-else-if="node.indicator.itype === 'url'"
-  />
+    :indicator-id="indicatorId"
+    :indicator="node.indicator"
+    :children="node.children"
+    v-else-if="node.indicator.itype === 'url'" />
   <cont3xt-email
-      :indicator-id="indicatorId"
-      :indicator="node.indicator"
-      :children="node.children"
-      v-else-if="node.indicator.itype === 'email'"
-  />
+    :indicator-id="indicatorId"
+    :indicator="node.indicator"
+    :children="node.children"
+    v-else-if="node.indicator.itype === 'email'" />
   <cont3xt-hash
-      :indicator-id="indicatorId"
-      :indicator="node.indicator"
-      :children="node.children"
-      v-else-if="node.indicator.itype === 'hash'"
-  />
+    :indicator-id="indicatorId"
+    :indicator="node.indicator"
+    :children="node.children"
+    v-else-if="node.indicator.itype === 'hash'" />
   <cont3xt-phone
-      :indicator-id="indicatorId"
-      :indicator="node.indicator"
-      :children="node.children"
-      v-else-if="node.indicator.itype === 'phone'"
-  />
+    :indicator-id="indicatorId"
+    :indicator="node.indicator"
+    :children="node.children"
+    v-else-if="node.indicator.itype === 'phone'" />
   <cont3xt-text
-      :indicator-id="indicatorId"
-      :indicator="node.indicator"
-      :children="node.children"
-      v-else-if="node.indicator.itype === 'text'"
-  />
-  <h3 v-else class="text-warning">
+    :indicator-id="indicatorId"
+    :indicator="node.indicator"
+    :children="node.children"
+    v-else-if="node.indicator.itype === 'text'" />
+  <h3
+    v-else
+    class="text-warning">
     <span v-if="node && node.indicator">No display for {{ node.indicator.itype }}</span>
     <span v-else>No indicator given</span>
   </h3>
@@ -81,7 +76,8 @@ export default {
     },
     parentIndicatorId: {
       type: String,
-      required: false
+      required: false,
+      default: ''
     }
   },
   computed: {

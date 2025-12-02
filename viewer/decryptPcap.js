@@ -14,14 +14,12 @@ const Db = require('./db.js');
 const cryptoLib = require('crypto');
 const fs = require('fs');
 const ArkimeConfig = require('../common/arkimeConfig');
+const ArkimeUtil = require('../common/arkimeUtil');
 
-function main () {
+async function main () {
   const query = { size: 100, query: { term: { name: process.argv[2] } }, sort: [{ num: { order: 'desc' } }] };
-  Db.search('files', 'file', query, (err, data) => {
-    if (err) {
-      console.error('ES Error', err);
-      process.exit();
-    }
+  try {
+    const data = await Db.search('files', query);
     if (data.hits.hits.length === 0) {
       console.error('No matches');
       process.exit();
@@ -40,8 +38,7 @@ function main () {
     }
 
     // Decrypt the dek
-    // eslint-disable-next-line n/no-deprecated-api
-    const kdecipher = cryptoLib.createDecipher('aes-192-cbc', kek);
+    const kdecipher = ArkimeUtil.createDecipherAES192NoIV(kek);
     const encKey = Buffer.concat([kdecipher.update(Buffer.from(info.dek, 'hex')), kdecipher.final()]);
 
     const r = fs.createReadStream(process.argv[2]);
@@ -73,7 +70,10 @@ function main () {
     } else {
       console.log('Unknown encoding', info.encoding);
     }
-  });
+  } catch (err) {
+    console.error('ES Error', err);
+    process.exit();
+  }
 }
 
 if (process.argv.length < 3) {
@@ -85,7 +85,7 @@ async function premain () {
   await Config.initialize();
 
   const escInfo = Config.getArray('elasticsearch', 'http://localhost:9200');
-  Db.initialize({
+  await Db.initialize({
     host: escInfo,
     prefix: Config.get('prefix', 'arkime_'),
     queryExtraIndices: Config.getArray('queryExtraIndices', ''),
@@ -100,7 +100,8 @@ async function premain () {
     esBasicAuth: Config.get('elasticsearchBasicAuth', null),
     usersEsBasicAuth: Config.get('usersElasticsearchBasicAuth', null),
     noUsersCheck: true
-  }, main);
+  });
+  main();
 }
 
 premain();

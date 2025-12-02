@@ -3,453 +3,567 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-
   <div class="connections-page">
     <ArkimeCollapsible>
       <span class="fixed-header">
         <!-- search navbar -->
         <arkime-search
           :start="query.start"
-          @changeSearch="cancelAndLoad(true)">
-        </arkime-search> <!-- /search navbar -->
+          @change-search="cancelAndLoad(true)"
+          @recalc-collapse="$emit('recalc-collapse')" /> <!-- /search navbar -->
 
         <!-- connections sub navbar -->
-        <form class="connections-form">
-          <div class="form-inline pr-1 pl-1 pt-1 pb-1">
+        <div class="connections-form m-1">
+          <BRow
+            gutter-x="1"
+            align-h="start">
 
             <!-- query size select -->
-            <div class="input-group input-group-sm">
-              <div class="input-group-prepend help-cursor"
-                v-b-tooltip.hover.bottom.d300="'Query Size'">
-                <span class="input-group-text">
-                  Query Size
-                </span>
-              </div>
-              <select class="form-control input-sm"
-                v-model="query.length"
-                @change="changeLength">
-                <option value="100">100</option>
-                <option value="500">500</option>
-                <option value="1000">1,000</option>
-                <option value="5000">5,000</option>
-                <option value="10000">10,000</option>
-                <option value="50000">50,000</option>
-                <option value="100000">100,000</option>
-              </select>
-            </div> <!-- /query size select -->
+            <BCol cols="auto">
+              <BInputGroup size="sm">
+                <BInputGroupText
+                  id="querySize"
+                  class="cursor-help">
+                  {{ $t('connections.querySize') }}
+                  <BTooltip
+                    target="querySize"
+                    :delay="{show: 300, hide: 0}"
+                    noninteractive><span v-i18n-btip="'connections.'" /></BTooltip>
+                </BInputGroupText>
+                <BFormSelect
+                  class="form-control input-sm"
+                  :model-value="query.length"
+                  @update:model-value="(val) => changeLength(val)"
+                  :options="[100, 500, 1000, 5000, 10000, 50000, 100000]" />
+              </BInputGroup>
+            </BCol> <!-- /query size select -->
 
             <!-- src select -->
-            <div class="form-group ml-1"
+            <BCol
+              cols="auto"
               v-if="fields && fields.length && srcFieldTypeahead && fieldHistoryConnectionsSrc">
-              <div class="input-group input-group-sm">
-                <span class="input-group-prepend legend cursor-help"
-                  v-b-tooltip.hover.bottom.d300="'Select a field for the source nodes. This is the color of a source node.'">
-                  <span class="input-group-text primary-legend">
-                    Src:
-                  </span>
-                </span>
+              <BInputGroup size="sm">
+                <BInputGroupText
+                  class="legend cursor-help primary-legend"
+                  id="sourceField">
+                  Src:
+                  <BTooltip
+                    target="sourceField"
+                    :delay="{show: 300, hide: 0}"
+                    noninteractive><span v-i18n-btip="'connections.'" /></BTooltip>
+                </BInputGroupText>
                 <arkime-field-typeahead
                   :fields="fields"
                   query-param="srcField"
                   :initial-value="srcFieldTypeahead"
-                  @fieldSelected="changeSrcField"
+                  @field-selected="changeSrcField"
                   :history="fieldHistoryConnectionsSrc"
-                  page="ConnectionsSrc">
-                </arkime-field-typeahead>
-              </div>
-            </div> <!-- /src select -->
+                  page="ConnectionsSrc" />
+              </BInputGroup>
+            </BCol> <!-- /src select -->
 
             <!-- dst select -->
-            <div class="form-group ml-1"
+            <BCol
+              cols="auto"
               v-if="fields && dstFieldTypeahead && fieldHistoryConnectionsDst">
-              <div class="input-group input-group-sm">
-                <span class="input-group-prepend legend cursor-help"
-                  v-b-tooltip.hover.bottom.d300="'Select a field for the destination nodes. This is the color of a destination node.'">
-                  <span class="input-group-text tertiary-legend">
-                    Dst:
-                  </span>
-                </span>
+              <BInputGroup size="sm">
+                <BInputGroupText
+                  class="legend cursor-help secondary-legend"
+                  id="dstField">
+                  Dst:
+                  <BTooltip
+                    target="dstField"
+                    :delay="{show: 300, hide: 0}"
+                    noninteractive><span v-i18n-btip="'connections.'" /></BTooltip>
+                </BInputGroupText>
                 <arkime-field-typeahead
                   :fields="fields"
                   query-param="dstField"
                   :initial-value="dstFieldTypeahead"
-                  @fieldSelected="changeDstField"
+                  @field-selected="changeDstField"
                   :history="fieldHistoryConnectionsDst"
-                  page="ConnectionsDst">
-                </arkime-field-typeahead>
-              </div>
-            </div> <!-- /dst select -->
+                  page="ConnectionsDst" />
+              </BInputGroup>
+            </BCol> <!-- /dst select -->
 
             <!-- src & dst color -->
-            <div class="form-group ml-1">
-              <div class="input-group input-group-sm">
-                <span class="input-group-prepend legend cursor-help"
-                  v-b-tooltip.hover.bottom.d300="'This is the color of a node that is both a source and destination node'">
-                  <span class="input-group-text secondary-legend">
-                    Src &amp; Dst
-                  </span>
-                </span>
-              </div>
-            </div> <!-- /src & dst color -->
+            <BCol cols="auto">
+              <BInputGroup size="sm">
+                <BInputGroupText
+                  class="legend cursor-help tertiary-legend"
+                  id="srcDstColor">
+                  Src &amp; dst
+                  <BTooltip
+                    target="srcDstColor"
+                    :delay="{show: 300, hide: 0}"
+                    noninteractive><span v-i18n-btip="'connections.'" /></BTooltip>
+                </BInputGroupText>
+              </BInputGroup>
+            </BCol> <!-- /src & dst color -->
 
             <!-- min connections select -->
-            <div class="input-group input-group-sm ml-1">
-              <div class="input-group-prepend help-cursor">
-                <span class="input-group-text"
-                  v-b-tooltip.hover.bottom.d300="'Minimum number of sessions between nodes'">
-                  Min. Connections
-                </span>
-              </div>
-              <b-select class="form-control input-sm"
-                v-model="query.minConn"
-                @change="changeMinConn"
-                :options="[1,2,3,4,5]">
-              </b-select>
-            </div> <!-- /min connections select -->
+            <BCol cols="auto">
+              <BInputGroup size="sm">
+                <BInputGroupText
+                  id="minConn"
+                  class="help-cursor">
+                  {{ $t('connections.minConn') }}
+                  <BTooltip
+                    target="minConn"
+                    :delay="{show: 300, hide: 0}"
+                    noninteractive><span v-i18n-btip="'connections.'" /></BTooltip>
+                </BInputGroupText>
+                <BFormSelect
+                  size="sm"
+                  :model-value="query.minConn"
+                  @update:model-value="(val) => changeMinConn(val)"
+                  :options="[1,2,3,4,5]" />
+              </BInputGroup>
+            </BCol> <!-- /min connections select -->
 
             <!-- weight select -->
-            <div class="input-group input-group-sm ml-1">
-              <div class="input-group-prepend help-cursor"
-                v-b-tooltip.hover.bottom.d300="'Change the field that calculates the radius of nodes and the width links'">
-                <span class="input-group-text">
-                  Node/Link Weight
-                </span>
-              </div>
-              <select class="form-control input-sm"
-                v-model="weight"
-                @change="changeWeight">
-                <option value="sessions">Sessions</option>
-                <option value="network.packets">Packets</option>
-                <option value="network.bytes">Total Raw Bytes</option>
-                <option value="totDataBytes">Total Data Bytes</option>
-                <option value="">None</option>
-              </select>
-            </div> <!-- /weight select -->
+            <BCol cols="auto">
+              <BInputGroup size="sm">
+                <BInputGroupText
+                  class="help-cursor"
+                  id="weight">
+                  {{ $t('connections.weight') }}
+                  <BTooltip
+                    target="weight"
+                    :delay="{show: 300, hide: 0}"
+                    noninteractive><span v-i18n-btip="'connections.'" /></BTooltip>
+                </BInputGroupText>
+                <BFormSelect
+                  size="sm"
+                  :model-value="weight"
+                  @update:model-value="(val) => changeWeight(val)">
+                  <option
+                    value="sessions"
+                    v-i18n-value="'connections.weight-'" />
+                  <option
+                    value="network.packets"
+                    v-i18n-value="'connections.weight-'" />
+                  <option
+                    value="network.bytes"
+                    v-i18n-value="'connections.weight-'" />
+                  <option
+                    value="totDataBytes"
+                    v-i18n-value="'connections.weight-'" />
+                  <option
+                    value=""
+                    v-i18n-value="'connections.weight-'" />
+                </BFormSelect>
+              </BInputGroup>
+            </BCol> <!-- /weight select -->
 
-            <!-- node fields button -->
-            <b-dropdown
-              size="sm"
-              no-flip
-              no-caret
-              toggle-class="rounded"
-              class="field-vis-menu ml-1"
-              variant="theme-primary"
-              v-if="fields && groupedFields && nodeFields">
-              <template slot="button-content">
-                <span class="fa fa-circle-o"
-                  v-b-tooltip.hover.bottom.d300="'Toggle visible fields in the node popups'">
-                </span>
-              </template>
-              <b-dropdown-header>
-                <input type="text"
-                  v-model="fieldQuery"
-                  class="form-control form-control-sm dropdown-typeahead"
-                  placeholder="Search for fields..."
-                />
-              </b-dropdown-header>
-              <b-dropdown-divider>
-              </b-dropdown-divider>
-              <b-dropdown-item
-                @click.stop.prevent="resetNodeFieldsDefault">
-                Reset to default
-              </b-dropdown-item>
-              <b-dropdown-divider>
-              </b-dropdown-divider>
-              <template v-for="(group, key) in filteredFields">
-                <b-dropdown-header
-                  :key="key"
-                  v-if="group.length"
-                  class="group-header">
-                  {{ key }}
-                </b-dropdown-header>
-                <template v-for="(field, k) in group">
-                  <b-dropdown-item
-                    :id="key + k + 'itemnode'"
-                    :key="key + k + 'itemnode'"
-                    :class="{'active':isFieldVisible(field.dbField, nodeFields) >= 0}"
-                    @click.stop.prevent="toggleFieldVisibility(field.dbField, nodeFields)">
-                    {{ field.friendlyName }}
-                    <small>({{ field.exp }})</small>
-                  </b-dropdown-item>
-                  <b-tooltip v-if="field.help"
-                    :key="key + k + 'tooltipnode'"
-                    :target="key + k + 'itemnode'"
-                    placement="left"
-                    boundary="window">
-                    {{ field.help }}
-                  </b-tooltip>
+            <BCol
+              cols="auto"
+              v-if="!loading">
+              <!-- node fields button -->
+              <b-dropdown
+                size="sm"
+                no-flip
+                no-caret
+                toggle-class="rounded"
+                class="field-vis-menu ms-1 display-inline"
+                variant="theme-primary"
+                v-if="fields && groupedFields && nodeFields">
+                <template #button-content>
+                  <div id="nodeFields">
+                    <span class="fa fa-circle-o" />
+                    <BTooltip
+                      target="nodeFields"
+                      :delay="{show: 300, hide: 0}"
+                      noninteractive><span v-i18n-btip="'connections.'" /></BTooltip>
+                  </div>
                 </template>
-              </template>
-            </b-dropdown> <!-- /node fields button -->
+                <b-dropdown-header>
+                  <input
+                    type="text"
+                    v-model="fieldQuery"
+                    class="form-control form-control-sm dropdown-typeahead"
+                    :placeholder="$t('common.searchForFields')">
+                </b-dropdown-header>
+                <b-dropdown-divider />
+                <b-dropdown-item
+                  @click.stop.prevent="resetNodeFieldsDefault">
+                  Reset to default
+                </b-dropdown-item>
+                <b-dropdown-divider />
+                <template
+                  v-for="(group, key) in filteredFields"
+                  :key="key">
+                  <b-dropdown-header
+                    v-if="group.length"
+                    class="group-header">
+                    {{ key }}
+                  </b-dropdown-header>
+                  <template
+                    v-for="(field, k) in group"
+                    :key="key + k + 'itemnode'">
+                    <b-dropdown-item
+                      :id="key + k + 'itemnode'"
+                      :class="{'active':isFieldVisible(field.dbField, nodeFields) >= 0}"
+                      @click.stop.prevent="toggleFieldVisibility(field.dbField, nodeFields)">
+                      {{ field.friendlyName }}
+                      <small>({{ field.exp }})</small>
+                      <BTooltip
+                        v-if="field.help"
+                        :delay="{show: 300, hide: 0}"
+                        noninteractive
+                        :target="key + k + 'itemnode'">{{ field.help }}</BTooltip>
+                    </b-dropdown-item>
+                  </template>
+                </template>
+              </b-dropdown> <!-- /node fields button -->
 
-            <!-- link fields button -->
-            <b-dropdown
-              size="sm"
-              no-flip
-              no-caret
-              toggle-class="rounded"
-              class="field-vis-menu ml-1"
-              variant="theme-primary"
-              v-if="fields && groupedFields && linkFields">
-              <template slot="button-content">
-                <span class="fa fa-link"
-                  v-b-tooltip.hover.bottom.d300="'Toggle visible fields in the link popups'">
-                </span>
-              </template>
-              <b-dropdown-header>
-                <input type="text"
-                  v-model="fieldQuery"
-                  class="form-control form-control-sm dropdown-typeahead"
-                  placeholder="Search for fields..."
-                />
-              </b-dropdown-header>
-              <b-dropdown-divider>
-              </b-dropdown-divider>
-              <b-dropdown-item
-                @click.stop.prevent="resetLinkFieldsDefault">
-                Reset to default
-              </b-dropdown-item>
-              <b-dropdown-divider>
-              </b-dropdown-divider>
-              <template v-for="(group, key) in filteredFields">
-                <b-dropdown-header
-                  :key="key"
-                  v-if="group.length"
-                  class="group-header">
-                  {{ key }}
-                </b-dropdown-header>
-                <template v-for="(field, k) in group">
-                  <b-dropdown-item
-                    :id="key + k + 'itemlink'"
-                    :key="key + k + 'itemlink'"
-                    :class="{'active':isFieldVisible(field.dbField, linkFields) >= 0}"
-                    @click.stop.prevent="toggleFieldVisibility(field.dbField, linkFields)">
-                    {{ field.friendlyName }}
-                    <small>({{ field.exp }})</small>
-                  </b-dropdown-item>
-                  <b-tooltip v-if="field.help"
-                    :key="key + k + 'tooltiplink'"
-                    :target="key + k + 'itemlink'"
-                    placement="left"
-                    boundary="window">
-                    {{ field.help }}
-                  </b-tooltip>
+              <!-- link fields button -->
+              <b-dropdown
+                size="sm"
+                no-flip
+                no-caret
+                toggle-class="rounded"
+                class="field-vis-menu ms-1 display-inline"
+                variant="theme-primary"
+                v-if="fields && groupedFields && linkFields">
+                <template #button-content>
+                  <div id="linkFields">
+                    <span class="fa fa-link" />
+                    <BTooltip
+                      target="linkFields"
+                      :delay="{show: 300, hide: 0}"
+                      noninteractive><span v-i18n-btip="'connections.'" /></BTooltip>
+                  </div>
                 </template>
-              </template>
-            </b-dropdown> <!-- /link fields button -->
+                <b-dropdown-header>
+                  <input
+                    type="text"
+                    v-model="fieldQuery"
+                    class="form-control form-control-sm dropdown-typeahead"
+                    :placeholder="$t('common.searchForFields')">
+                </b-dropdown-header>
+                <b-dropdown-divider />
+                <b-dropdown-item
+                  @click.stop.prevent="resetLinkFieldsDefault">
+                  {{ $t('connections.reset') }}
+                </b-dropdown-item>
+                <b-dropdown-divider />
+                <template
+                  v-for="(group, key) in filteredFields"
+                  :key="key">
+                  <b-dropdown-header
+                    v-if="group.length"
+                    class="group-header">
+                    {{ key }}
+                  </b-dropdown-header>
+                  <template
+                    v-for="(field, k) in group"
+                    :key="key + k + 'itemlink'">
+                    <b-dropdown-item
+                      :id="key + k + 'itemlink'"
+                      :class="{'active':isFieldVisible(field.dbField, linkFields) >= 0}"
+                      @click.stop.prevent="toggleFieldVisibility(field.dbField, linkFields)">
+                      {{ field.friendlyName }}
+                      <small>({{ field.exp }})</small>
+                      <BTooltip
+                        v-if="field.help"
+                        :delay="{show: 300, hide: 0}"
+                        noninteractive
+                        :target="key + k + 'itemlink'">{{ field.help }}</BTooltip>
+                    </b-dropdown-item>
+                  </template>
+                </template>
+              </b-dropdown> <!-- /link fields button -->
+            </BCol>
 
             <!-- network baseline time range -->
-            <div class="input-group input-group-sm ml-1">
-              <div class="input-group-prepend help-cursor"
-                v-b-tooltip.hover.bottom.d300="'Time range for baseline (preceding query time range)'">
-                <span class="input-group-text">
-                  Baseline
-                </span>
-              </div>
-              <select class="form-control input-sm"
-                v-model="query.baselineDate"
-                @change="changeBaselineDate">
-                <option value="0">disabled</option>
-                <option value="1x">1 × query range</option>
-                <option value="2x">2 × query range</option>
-                <option value="4x">4 × query range</option>
-                <option value="6x">6 × query range</option>
-                <option value="8x">8 × query range</option>
-                <option value="10x">10 × query range</option>
-                <option value="1">1 hour</option>
-                <option value="6">6 hours</option>
-                <option value="24">24 hours</option>
-                <option value="48">48 hours</option>
-                <option value="72">72 hours</option>
-                <option value="168">1 week</option>
-                <option value="336">2 weeks</option>
-                <option value="720">1 month</option>
-                <option value="1440">2 months</option>
-                <option value="4380">6 months</option>
-                <option value="8760">1 year</option>
-              </select>
-            </div> <!-- /network baseline time range -->
+            <BCol cols="auto">
+              <BInputGroup size="sm">
+                <BInputGroupText
+                  class="help-cursor"
+                  id="baselineDate">
+                  {{ $t('connections.baselineDate') }}
+                  <BTooltip
+                    target="baselineDate"
+                    :delay="{show: 300, hide: 0}"
+                    noninteractive><span v-i18n-btip="'connections.'" /></BTooltip>
+                </BInputGroupText>
+                <select
+                  class="form-control input-sm"
+                  v-model="query.baselineDate"
+                  @change="changeBaselineDate">
+                  <option value="0">{{ $t('common.optionDisabled') }}</option>
+                  <option value="1x">{{ $t('connections.queryRange', 1) }}</option>
+                  <option value="2x">{{ $t('connections.queryRange', 2) }}</option>
+                  <option value="4x">{{ $t('connections.queryRange', 4) }}</option>
+                  <option value="6x">{{ $t('connections.queryRange', 6) }}</option>
+                  <option value="8x">{{ $t('connections.queryRange', 8) }}</option>
+                  <option value="10x">{{ $t('connections.queryRange', 10) }}</option>
+                  <option value="1">{{ $t('common.hourCount', 1) }}</option>
+                  <option value="6">{{ $t('common.hourCount', 6) }}</option>
+                  <option value="24">{{ $t('common.hourCount', 24) }}</option>
+                  <option value="48">{{ $t('common.hourCount', 48) }}</option>
+                  <option value="72">{{ $t('common.hourCount', 72) }}</option>
+                  <option value="168">{{ $t('common.weekCount', 1) }}</option>
+                  <option value="336">{{ $t('common.weekCount', 2) }}</option>
+                  <option value="720">{{ $t('common.monthCount', 1) }}</option>
+                  <option value="1440">{{ $t('common.monthCount', 2) }}</option>
+                  <option value="4380">{{ $t('common.monthCount', 6) }}</option>
+                  <option value="8760">{{ $t('common.yearCount', 1) }}</option>
+                </select>
+              </BInputGroup>
+            </BCol> <!-- /network baseline time range -->
 
             <!-- network baseline node visibility -->
-            <div class="input-group input-group-sm ml-1"
+            <BCol
+              cols="auto"
               v-show="query.baselineDate !== '0'">
-              <div class="input-group-prepend help-cursor"
-                v-b-tooltip.hover.bottom.d300="'Toggle node visibility based on baseline result set membership'">
-                <span class="input-group-text">
-                  Baseline Visibility
-                </span>
-              </div>
-              <select class="form-control input-sm"
-                v-bind:disabled="query.baselineDate === '0'"
-                v-model="query.baselineVis"
-                @change="changeBaselineVis">
-                <option value="all">All</option>
-                <option value="actual">Actual</option>
-                <option value="actualold">Baseline</option>
-                <option value="new">New only</option>
-                <option value="old">Baseline only</option>
-              </select>
-            </div> <!-- /network baseline node visibility -->
+              <BInputGroup size="sm">
+                <BInputGroupText
+                  class="help-cursor"
+                  id="baselineVis">
+                  {{ $t('connections.baselineVis') }}
+                  <BTooltip
+                    target="baselineVis"
+                    :delay="{show: 300, hide: 0}"
+                    noninteractive><span v-i18n-btip="'connections.'" /></BTooltip>
+                </BInputGroupText>
+                <select
+                  class="form-control input-sm"
+                  :disabled="query.baselineDate === '0'"
+                  v-model="query.baselineVis"
+                  @change="changeBaselineVis">
+                  <option
+                    value="all"
+                    v-i18n-value="'connections.baselineVis-'" />
+                  <option
+                    value="actual"
+                    v-i18n-value="'connections.baselineVis-'" />
+                  <option
+                    value="actualold"
+                    v-i18n-value="'connections.baselineVis-'" />
+                  <option
+                    value="new"
+                    v-i18n-value="'connections.baselineVis-'" />
+                  <option
+                    value="old"
+                    v-i18n-value="'connections.baselineVis-'" />
+                </select>
+              </BInputGroup>
+            </BCol> <!-- /network baseline node visibility -->
 
-          </div>
-        </form> <!-- /connections sub navbar -->
+          </BRow>
+        </div> <!-- /connections sub navbar -->
       </span>
     </ArkimeCollapsible>
 
     <div class="connections-content">
-
       <!-- loading overlay -->
       <arkime-loading
         :can-cancel="true"
         v-if="loading && !error"
-        @cancel="cancelAndLoad">
-      </arkime-loading> <!-- /loading overlay -->
+        @cancel="cancelAndLoad" /> <!-- /loading overlay -->
 
       <!-- page error -->
       <arkime-error
         v-if="error"
         :message="error"
-        class="mt-5">
-      </arkime-error> <!-- /page error -->
+        class="mt-5" /> <!-- /page error -->
 
       <!-- no results -->
       <arkime-no-results
         v-if="!error && !loading && recordsFiltered === 0"
         class="mt-5"
-        :view="query.view">
-      </arkime-no-results> <!-- /no results -->
+        :view="query.view" /> <!-- /no results -->
 
       <!-- connections graph container -->
-      <svg class="connections-graph"></svg>
-      <!-- /connections graph container -->
+      <svg
+        class="connections-graph"
+        v-if="!error" /> <!-- /connections graph container -->
 
       <!-- popup area -->
-      <div ref="infoPopup"
-        v-on-clickaway="closePopups">
+      <div
+        ref="infoPopup"
+        v-if="showPopup">
         <div class="connections-popup">
+          <NodePopup
+            v-if="dataNode"
+            :data-node="dataNode"
+            :fields="fieldsMap"
+            :node-fields="nodeFields"
+            :baseline-date="query.baselineDate"
+            @close="closePopups"
+            @hide-node="hideNode" />
+          <LinkPopup
+            v-if="dataLink"
+            :data-link="dataLink"
+            :fields="fieldsMap"
+            :link-fields="linkFields"
+            @close="closePopups"
+            @hide-link="hideLink" />
         </div>
       </div> <!-- /popup area -->
 
       <!-- Button group -->
-      <span class="connections-buttons"
-        :style= "[showToolBars ? {'top': '160px'} : {'top': '40px'}]">
+      <span
+        class="connections-buttons"
+        :style="[showToolBars ? {'top': '160px'} : {'top': '40px'}]">
         <div class="btn-group-vertical unlock-btn overlay-btns">
           <!-- unlock button-->
           <span class="unlock-btn">
-            <button class="btn btn-default btn-sm ml-1"
-              v-b-tooltip.hover.lefttop="'Unlock any nodes that you have set into place'"
+            <button
+              class="btn btn-default btn-sm ms-1"
+              id="unlockNodes"
               @click.stop.prevent="unlock">
-              <span class="fa fa-unlock"></span>
+              <span class="fa fa-unlock" />
+              <BTooltip
+                target="unlockNodes"
+                placement="bottom"
+                triggers="hover"
+                :delay="{show: 300, hide: 0}"
+                noninteractive><span v-i18n-btip="'connections.'" /></BTooltip>
             </button>
           </span> <!-- /unlock button-->
           <!-- export button-->
           <span class="export-btn">
-            <button class="btn btn-default btn-sm ml-1"
-              v-b-tooltip.hover.lefttop="'Export this graph as a PNG'"
+            <button
+              class="btn btn-default btn-sm ms-1"
+              id="exportGraph"
               @click.stop.prevent="exportPng">
-              <span class="fa fa-download"></span>
+              <span class="fa fa-download" />
+              <BTooltip
+                target="exportGraph"
+                placement="bottom"
+                triggers="hover"
+                :delay="{show: 300, hide: 0}"
+                noninteractive><span v-i18n-btip="'connections.'" /></BTooltip>
             </button>
           </span> <!-- /export button-->
         </div>
 
         <!-- node distance -->
         <div class="btn-group-vertical node-distance-btns overlay-btns">
-          <span v-b-tooltip.hover.lefttop="'Increase node distance'">
-            <button type="button"
-              class="btn btn-default btn-sm"
-              :class="{'disabled':query.nodeDist >= 200}"
-              @click="changeNodeDist(10)">
-              <span class="fa fa-plus">
-              </span>
-              <span class="fa fa-arrows-v">
-              </span>
-            </button>
-          </span>
-          <span v-b-tooltip.hover.lefttop="'Decrease node distance'">
-            <button type="button"
-              class="btn btn-default btn-sm"
-              :class="{'disabled':query.nodeDist <= 10}"
-              @click="changeNodeDist(-10)">
-              <span class="fa fa-minus">
-              </span>
-              <span class="fa fa-arrows-v">
-              </span>
-            </button>
-          </span>
+          <button
+            id="nodeDistUp"
+            type="button"
+            class="btn btn-default btn-sm"
+            :class="{'disabled':query.nodeDist >= 200}"
+            @click="changeNodeDist(10)">
+            <span class="fa fa-plus" />
+            <span class="fa fa-arrows-v" />
+            <BTooltip
+              target="nodeDistUp"
+              placement="bottom"
+              triggers="hover"
+              :delay="{show: 300, hide: 0}"
+              noninteractive><span v-i18n-btip="'connections.'" /></BTooltip>
+          </button>
+          <button
+            id="nodeDistDown"
+            type="button"
+            class="btn btn-default btn-sm"
+            :class="{'disabled':query.nodeDist <= 10}"
+            @click="changeNodeDist(-10)">
+            <span class="fa fa-minus" />
+            <span class="fa fa-arrows-v" />
+            <BTooltip
+              target="nodeDistDown"
+              placement="bottom"
+              triggers="hover"
+              :delay="{show: 300, hide: 0}"
+              noninteractive><span v-i18n-btip="'connections.'" /></BTooltip>
+          </button>
         </div> <!-- /node distance -->
 
         <!-- text size increase/decrease -->
         <div class="btn-group-vertical text-size-btns overlay-btns">
-          <span v-b-tooltip.hover.lefttop="'Increase text size (you might also want to update the node distance using the buttons just to the left)'">
-            <button type="button"
-              class="btn btn-default btn-sm"
-              :class="{'disabled':fontSize >= 1}"
-              @click="updateTextSize(0.1)">
-              <span class="fa fa-long-arrow-up">
-              </span>
-              <span class="fa fa-font">
-              </span>
-            </button>
-          </span>
-          <span v-b-tooltip.hover.lefttop="'Decrease text size (you might also want to update the node distance using the buttons just to the left)'">
-            <button type="button"
-              class="btn btn-default btn-sm"
-              :class="{'disabled':fontSize <= 0.2}"
-              @click="updateTextSize(-0.1)">
-              <span class="fa fa-long-arrow-down">
-              </span>
-              <span class="fa fa-font">
-              </span>
-            </button>
-          </span>
+          <button
+            id="textSizeUp"
+            type="button"
+            class="btn btn-default btn-sm"
+            :class="{'disabled':fontSize >= 1}"
+            @click="updateTextSize(0.1)">
+            <span class="fa fa-long-arrow-up" />
+            <span class="fa fa-font" />
+            <BTooltip
+              target="textSizeUp"
+              placement="bottom"
+              triggers="hover"
+              :delay="{show: 300, hide: 0}"
+              noninteractive><span v-i18n-btip="'connections.'" /></BTooltip>
+          </button>
+          <button
+            id="textSizeDown"
+            type="button"
+            class="btn btn-default btn-sm"
+            :class="{'disabled':fontSize <= 0.2}"
+            @click="updateTextSize(-0.1)">
+            <span class="fa fa-long-arrow-down" />
+            <span class="fa fa-font" />
+            <BTooltip
+              target="textSizeDown"
+              placement="bottom"
+              triggers="hover"
+              :delay="{show: 300, hide: 0}"
+              noninteractive><span v-i18n-btip="'connections.'" /></BTooltip>
+          </button>
         </div> <!-- /text size increase/decrease -->
 
         <!-- zoom in/out -->
         <div class="btn-group-vertical zoom-btns overlay-btns">
-          <span v-b-tooltip.hover.lefttop="'Zoom in'">
-            <button type="button"
-              class="btn btn-default btn-sm"
-              :class="{'disabled':zoomLevel >= 4}"
-              @click="zoomConnections(2)">
-              <span class="fa fa-lg fa-search-plus">
-              </span>
-            </button>
-          </span>
-          <span v-b-tooltip.hover.lefttop="'Zoom out'">
-            <button type="button"
-              class="btn btn-default btn-sm"
-              :class="{'disabled':zoomLevel <= 0.0625}"
-              @click="zoomConnections(0.5)">
-              <span class="fa fa-lg fa-search-minus">
-              </span>
-            </button>
-          </span>
+          <button
+            id="zoomIn"
+            type="button"
+            class="btn btn-default btn-sm"
+            :class="{'disabled':zoomLevel >= 4}"
+            @click="zoomConnections(2)">
+            <span class="fa fa-lg fa-search-plus" />
+            <BTooltip
+              target="zoomIn"
+              placement="bottom"
+              triggers="hover"
+              :delay="{show: 300, hide: 0}"
+              noninteractive><span v-i18n-btip="'connections.'" /></BTooltip>
+          </button>
+          <button
+            id="zoomOut"
+            type="button"
+            class="btn btn-default btn-sm"
+            :class="{'disabled':zoomLevel <= 0.0625}"
+            @click="zoomConnections(0.5)">
+            <span class="fa fa-lg fa-search-minus" />
+            <BTooltip
+              target="zoomOut"
+              placement="bottom"
+              triggers="hover"
+              :delay="{show: 300, hide: 0}"
+              noninteractive><span v-i18n-btip="'connections.'" /></BTooltip>
+          </button>
         </div> <!-- /zoom in/out -->
       </span> <!-- /Button group -->
     </div>
-
   </div>
-
 </template>
 
 <script>
 // import components
-import ArkimeSearch from '../search/Search';
-import ArkimeError from '../utils/Error';
-import ArkimeLoading from '../utils/Loading';
-import ArkimeNoResults from '../utils/NoResults';
-import ArkimeCollapsible from '../utils/CollapsibleWrapper';
+import ArkimeSearch from '../search/Search.vue';
+import ArkimeError from '../utils/Error.vue';
+import ArkimeLoading from '../utils/Loading.vue';
+import ArkimeNoResults from '../utils/NoResults.vue';
+import ArkimeCollapsible from '../utils/CollapsibleWrapper.vue';
+import NodePopup from './NodePopup.vue';
+import LinkPopup from './LinkPopup.vue';
 // import services
-import ArkimeFieldTypeahead from '../utils/FieldTypeahead';
+import ArkimeFieldTypeahead from '../utils/FieldTypeahead.vue';
 import FieldService from '../search/FieldService';
 import UserService from '../users/UserService';
 import ConnectionsService from './ConnectionsService';
 import ConfigService from '../utils/ConfigService';
-// import external
-import Vue from 'vue';
-import { mixin as clickaway } from 'vue-clickaway';
 // import utils
+import store from '@/store';
 import Utils from '../utils/utils';
+import { timezoneDateString, searchFields } from '@common/vueFilters.js';
 // lazy import these
 let d3, saveSvgAsPng;
 
@@ -457,7 +571,7 @@ let d3, saveSvgAsPng;
 let nodeFillColors;
 let simulation, svg, container, zoom;
 let node, nodes, link, links, nodeLabel;
-let popupTimer, popupVue;
+let popupTimer;
 let draggingNode;
 let nodeMax = 1;
 let nodeMin = 1;
@@ -466,7 +580,7 @@ let linkMin = 1;
 let linkScaleFactor = 0;
 let nodeScaleFactor = 0;
 const maxLog = Math.ceil(Math.pow(Math.E, 9));
-/* eslint-disable no-useless-escape */
+
 const idRegex = /[\[\]:. ]/g;
 let pendingPromise; // save a pending promise to be able to cancel it
 
@@ -533,20 +647,6 @@ function resize (toolbarDown = true) {
   svg.attr('width', width).attr('height', height);
 }
 
-// close popups helpers
-function closePopups () {
-  if (popupVue) { popupVue.$destroy(); }
-  popupVue = undefined;
-  $('.connections-popup').hide();
-}
-
-// close popup on escape press
-function closePopupsOnEsc (keyCode) {
-  if (event.keyCode === 27) { // esc
-    closePopups();
-  }
-}
-
 // other necessary vars ---------------------------------------------------- */
 // default fields to display in the node/link popups
 const defaultLinkFields = ['network.bytes', 'totDataBytes', 'network.packets', 'node'];
@@ -555,15 +655,17 @@ const defaultNodeFields = ['network.bytes', 'totDataBytes', 'network.packets', '
 // vue definition ---------------------------------------------------------- */
 export default {
   name: 'Connections',
-  mixins: [clickaway],
   components: {
     ArkimeSearch,
     ArkimeError,
     ArkimeLoading,
     ArkimeNoResults,
     ArkimeCollapsible,
-    ArkimeFieldTypeahead
+    ArkimeFieldTypeahead,
+    NodePopup,
+    LinkPopup
   },
+  emits: ['recalc-collapse'],
   data: function () {
     return {
       error: '',
@@ -582,24 +684,26 @@ export default {
       highlightPrimaryColor: undefined,
       highlightSecondaryColor: undefined,
       highlightTertiaryColor: undefined,
-      closePopups,
       fontSize: 0.4,
       zoomLevel: 1,
       weight: 'sessions',
       fieldHistoryConnectionsSrc: undefined,
-      fieldHistoryConnectionsDst: undefined
+      fieldHistoryConnectionsDst: undefined,
+      showPopup: false, // whether to show the node/link data popup
+      dataNode: undefined, // data for the node popup
+      dataLink: undefined // data for the link popup
     };
   },
   computed: {
     query: function () {
       return {
         start: 0, // first item index
-        length: this.$route.query.length || 100, // page length
-        date: this.$store.state.timeRange,
-        startTime: this.$store.state.time.startTime,
-        stopTime: this.$store.state.time.stopTime,
-        srcField: this.$route.query.srcField || this.$store.state.user.settings.connSrcField || 'source.ip',
-        dstField: this.$route.query.dstField || this.$store.state.user.settings.connDstField || 'destination.ip',
+        length: this.$route.query.connectionsLength || 100, // page length
+        date: store.state.timeRange,
+        startTime: store.state.time.startTime,
+        stopTime: store.state.time.stopTime,
+        srcField: this.$route.query.srcField || store.state.user.settings.connSrcField || 'source.ip',
+        dstField: this.$route.query.dstField || store.state.user.settings.connDstField || 'destination.ip',
         bounding: this.$route.query.bounding || 'last',
         interval: this.$route.query.interval || 'auto',
         minConn: this.$route.query.minConn || 1,
@@ -607,22 +711,22 @@ export default {
         baselineVis: this.$route.query.baselineVis || 'all',
         nodeDist: this.$route.query.nodeDist || 40,
         view: this.$route.query.view || undefined,
-        expression: this.$store.state.expression || undefined,
+        expression: store.state.expression || undefined,
         cluster: this.$route.query.cluster || undefined
       };
     },
     user: function () {
-      return this.$store.state.user;
+      return store.state.user;
     },
     // Boolean in the store will remember chosen toggle state for all pages
     showToolBars: function () {
-      return this.$store.state.showToolBars;
+      return store.state.showToolBars;
     },
     filteredFields: function () {
       const filteredGroupedFields = {};
 
       for (const group in this.groupedFields) {
-        filteredGroupedFields[group] = this.$options.filters.searchFields(
+        filteredGroupedFields[group] = searchFields(
           this.fieldQuery,
           this.groupedFields[group]
         );
@@ -632,30 +736,30 @@ export default {
     },
     nodeFields: {
       get: function () {
-        return this.$store.state.user.settings.connNodeFields || defaultNodeFields;
+        return store.state.user.settings.connNodeFields || defaultNodeFields;
       },
       set: function (newValue) {
-        const settings = this.$store.state.user.settings;
+        const settings = store.state.user.settings;
         settings.connNodeFields = newValue;
-        this.$store.commit('setUserSettings', settings);
+        store.commit('setUserSettings', settings);
       }
     },
     linkFields: {
       get: function () {
-        return this.$store.state.user.settings.connLinkFields || defaultLinkFields;
+        return store.state.user.settings.connLinkFields || defaultLinkFields;
       },
       set: function (newValue) {
-        const settings = this.$store.state.user.settings;
+        const settings = store.state.user.settings;
         settings.connLinkFields = newValue;
-        this.$store.commit('setUserSettings', settings);
+        store.commit('setUserSettings', settings);
       }
     },
     fields () {
-      return FieldService.addIpDstPortField(this.$store.state.fieldsArr);
+      return FieldService.addIpDstPortField(store.state.fieldsArr);
     }
   },
   watch: {
-    '$route.query.length': function (newVal, oldVal) {
+    '$route.query.connectionsLength': function (newVal, oldVal) {
       this.cancelAndLoad(true);
     },
     '$route.query.baselineDate': function (newVal, oldVal) {
@@ -691,7 +795,7 @@ export default {
       });
     }
   },
-  mounted: function () {
+  mounted () {
     // IMPORTANT: this kicks off loading data and drawing the graph
     this.cancelAndLoad(true);
 
@@ -704,7 +808,7 @@ export default {
     this.dstFieldTypeahead = FieldService.getFieldProperty(this.query.dstField, 'friendlyName');
 
     // close any node/link popups if the user presses escape
-    window.addEventListener('keyup', closePopupsOnEsc);
+    window.addEventListener('keyup', this.closePopupsOnEsc);
     // resize the simulation with the window
     window.addEventListener('resize', resize);
   },
@@ -719,7 +823,7 @@ export default {
     cancelAndLoad: function (runNewQuery) {
       const clientCancel = () => {
         if (pendingPromise) {
-          pendingPromise.source.cancel();
+          pendingPromise.controller.cancel();
           pendingPromise = null;
         }
 
@@ -745,11 +849,12 @@ export default {
         this.loadData();
       }
     },
-    changeLength: function () {
+    changeLength: function (len) {
+      this.query.length = len;
       this.$router.push({
         query: {
           ...this.$route.query,
-          length: this.query.length
+          connectionsLength: len
         }
       });
     },
@@ -783,15 +888,17 @@ export default {
         }
       });
     },
-    changeMinConn: function () {
+    changeMinConn: function (minConn) {
+      this.query.minConn = minConn;
       this.$router.push({
         query: {
           ...this.$route.query,
-          minConn: this.query.minConn
+          minConn
         }
       });
     },
-    changeWeight: function () {
+    changeWeight: function (weight) {
+      this.weight = weight;
       if (this.weight) { this.getMinMaxForScale(); }
 
       svg.selectAll('.node')
@@ -886,9 +993,7 @@ export default {
     exportPng: function () {
       const foregroundColor = this.foregroundColor;
 
-      import(
-        /* webpackChunkName: "saveSvgAsPng" */ 'save-svg-as-png'
-      ).then((saveSvgAsPngModule) => {
+      import('save-svg-as-png').then((saveSvgAsPngModule) => {
         saveSvgAsPng = saveSvgAsPngModule;
         saveSvgAsPng.saveSvgAsPng(
           document.getElementById('graphSvg'),
@@ -918,9 +1023,35 @@ export default {
       svg.selectAll('.node-label')
         .style('font-size', this.fontSize + 'em');
     },
+    closePopups () {
+      this.showPopup = false;
+      this.dataNode = undefined;
+      this.dataLink = undefined;
+      if (popupTimer) { clearTimeout(popupTimer); }
+    },
+    closePopupsOnEsc (e) {
+      if (e.key === 'Escape') { // esc
+        this.closePopups();
+      }
+    },
+    hideNode () {
+      const id = '#id' + this.dataNode.id.replace(idRegex, '_');
+      svg.select(id).remove();
+      svg.select(id + '-label').remove();
+      svg.selectAll('.link').filter(function (d, i) {
+        return d.source.id === this.dataNode.id || d.target.id === this.dataNode.id;
+      }).remove();
+      this.closePopups();
+    },
+    hideLink () {
+      svg.selectAll('.link').filter((d, i) => {
+        return d.source.id === this.dataLink.source.id && d.target.id === this.dataLink.target.id;
+      }).remove();
+      this.closePopups();
+    },
     /* helper functions ---------------------------------------------------- */
-    loadData: function () {
-      if (!Utils.checkClusterSelection(this.query.cluster, this.$store.state.esCluster.availableCluster.active, this).valid) {
+    async loadData () {
+      if (!Utils.checkClusterSelection(this.query.cluster, store.state.esCluster.availableCluster.active, this).valid) {
         this.drawGraphWrapper({ nodes: [], links: [] }); // draw empty graph
         this.recordsFiltered = 0;
         pendingPromise = null;
@@ -947,27 +1078,25 @@ export default {
       }
       this.query.fields = fields.join(',');
 
-      // create unique cancel id to make canel req for corresponding es task
+      // create unique cancel id to make cancel req for corresponding es task
       const cancelId = Utils.createRandomString();
       this.query.cancelId = cancelId;
 
-      const source = Vue.axios.CancelToken.source();
-      const cancellablePromise = ConnectionsService.get(this.query, source.token);
+      try {
+        const { controller, fetcher } = await ConnectionsService.get(this.query);
+        pendingPromise = { controller, cancelId };
 
-      // set pending promise info so it can be cancelled
-      pendingPromise = { cancellablePromise, source, cancelId };
-
-      cancellablePromise.then((response) => {
+        const response = await fetcher; // do the fetch
         pendingPromise = null;
         this.error = '';
         this.loading = false;
-        this.recordsFiltered = response.data.recordsFiltered;
-        this.drawGraphWrapper(response.data);
-      }).catch((error) => {
+        this.recordsFiltered = response.recordsFiltered;
+        this.drawGraphWrapper(response);
+      } catch (error) {
         pendingPromise = null;
         this.loading = false;
-        this.error = error.text || error;
-      });
+        this.error = error.text || String(error);
+      }
     },
     setupFields: function () {
       // group fields map by field group
@@ -994,7 +1123,7 @@ export default {
       UserService.saveSettings(this.user.settings, this.user.userId);
     },
     drawGraphWrapper: function (data) {
-      import(/* webpackChunkName: "d3" */ 'd3').then((d3Module) => {
+      import('d3').then((d3Module) => {
         d3 = d3Module;
         this.drawGraph(data);
       });
@@ -1005,8 +1134,8 @@ export default {
         this.backgroundColor = styles.getPropertyValue('--color-background').trim() || '#FFFFFF';
         this.foregroundColor = styles.getPropertyValue('--color-foreground').trim() || '#212529';
         this.primaryColor = styles.getPropertyValue('--color-primary').trim();
-        this.secondaryColor = styles.getPropertyValue('--color-tertiary').trim();
-        this.tertiaryColor = styles.getPropertyValue('--color-quaternary').trim();
+        this.secondaryColor = styles.getPropertyValue('--color-quaternary').trim();
+        this.tertiaryColor = styles.getPropertyValue('--color-tertiary').trim();
         this.highlightPrimaryColor = styles.getPropertyValue('--color-primary-lighter').trim();
         this.highlightSecondaryColor = styles.getPropertyValue('--color-secondary-lighter').trim();
         this.highlightTertiaryColor = styles.getPropertyValue('--color-tertiary-lighter').trim();
@@ -1036,12 +1165,12 @@ export default {
           // of type seconds and the node is a destination (target) node
           if ((srcFieldIsTime && dataNode.type === 1) ||
             (dstFieldIsTime && dataNode.type === 2)) {
-            dataNode.id = this.$options.filters.timezoneDateString(
+            dataNode.id = timezoneDateString(
               dataNode.id,
               this.settings.timezone ||
-                this.$store.state.user.settings.timezone,
+                store.state.user.settings.timezone,
               this.settings.ms ||
-                this.$store.state.user.settings.ms
+                store.state.user.settings.ms
             );
           }
         }
@@ -1329,252 +1458,48 @@ export default {
       const val = this.calculateNodeWeight(n);
       return 2 * val;
     },
-    showNodePopup: function (dataNode) {
+    showNodePopup (dataNode) {
+      this.dataLink = undefined;
+      this.dataNode = dataNode;
       if (dataNode.type === 2) {
-        dataNode.dbField = FieldService.getFieldProperty(this.query.dstField, 'dbField');
-        dataNode.exp = FieldService.getFieldProperty(this.query.dstField, 'exp');
+        this.dataNode.dbField = FieldService.getFieldProperty(this.query.dstField, 'dbField');
+        this.dataNode.exp = FieldService.getFieldProperty(this.query.dstField, 'exp');
       } else {
-        dataNode.dbField = FieldService.getFieldProperty(this.query.srcField, 'dbField');
-        dataNode.exp = FieldService.getFieldProperty(this.query.srcField, 'exp');
+        this.dataNode.dbField = FieldService.getFieldProperty(this.query.srcField, 'dbField');
+        this.dataNode.exp = FieldService.getFieldProperty(this.query.srcField, 'exp');
       }
-
-      closePopups();
-      if (!popupVue) {
-        popupVue = new Vue({
-          template: `
-            <div class="connections-popup">
-              <div class="mb-2 mt-2">
-                <strong>
-                  <arkime-session-field
-                    :value="dataNode.id"
-                    :session="dataNode"
-                    :expr="dataNode.exp"
-                    :field="fields[dataNode.dbField]"
-                    :pull-left="true">
-                  </arkime-session-field>
-                </strong>
-                <a class="pull-right cursor-pointer no-decoration"
-                  @click="closePopup">
-                  <span class="fa fa-close"></span>
-                </a>
-              </div>
-
-              <dl class="dl-horizontal">
-                <dt>Type</dt>
-                <dd>{{['','Source','Target','Both'][dataNode.type]}}</dd>
-                <dt>Links</dt>
-                <dd>{{dataNode.weight || dataNode.cnt}}&nbsp;</dd>
-                <dt>Sessions</dt>
-                <dd>{{dataNode.sessions}}&nbsp;</dd>
-
-                <span v-for="field in nodeFields"
-                  :key="field">
-                  <template v-if="fields[field]">
-                    <dt>
-                      {{ fields[field].friendlyName }}
-                    </dt>
-                    <dd>
-                      <span v-if="!Array.isArray(dataNode[field])">
-                        <arkime-session-field
-                          :value="dataNode[field]"
-                          :session="dataNode"
-                          :expr="fields[field].exp"
-                          :field="fields[field]"
-                          :pull-left="true">
-                        </arkime-session-field>
-                      </span>
-                      <span v-else
-                        v-for="value in dataNode[field]">
-                        <arkime-session-field
-                          :value="value"
-                          :session="dataNode"
-                          :expr="fields[field].exp"
-                          :field="fields[field]"
-                          :pull-left="true">
-                        </arkime-session-field>
-                      </span>&nbsp;
-                    </dd>
-                    </template>
-                </span>
-
-                <div v-if="baselineDate !== '0'">
-                  <dt>Result Set</dt>
-                  <dd>{{['','✨Actual','🚫 Baseline','Both'][dataNode.inresult]}}</dd>
-                </div>
-              </dl>
-
-              <a class="cursor-pointer no-decoration"
-                href="javascript:void(0)"
-                @click.stop.prevent="hideNode">
-                <span class="fa fa-eye-slash">
-                </span>&nbsp;
-                Hide Node
-              </a>
-            </div>
-          `,
-          parent: this,
-          data: {
-            dataNode,
-            nodeFields: this.nodeFields,
-            fields: this.fieldsMap,
-            baselineDate: this.query.baselineDate
-          },
-          methods: {
-            hideNode: function () {
-              this.$parent.closePopups();
-              const id = '#id' + dataNode.id.replace(idRegex, '_');
-              svg.select(id).remove();
-              svg.select(id + '-label').remove();
-              svg.selectAll('.link')
-                .filter(function (d, i) {
-                  return d.source.id === dataNode.id || d.target.id === dataNode.id;
-                })
-                .remove();
-            },
-            addExpression: function (op) {
-              const fullExpression = `${this.dataNode.exp} == ${this.dataNode.id}`;
-              this.$store.commit('addToExpression', { expression: fullExpression, op });
-            },
-            closePopup: function () {
-              this.$parent.closePopups();
-            }
-          }
-        }).$mount($(this.$refs.infoPopup)[0].firstChild);
-      }
-
-      popupVue.dataNode = dataNode;
-
-      $('.connections-popup').show();
+      this.showPopup = true; // show the popup
     },
-    showLinkPopup: function (linkData) {
-      linkData.dstDbField = FieldService.getFieldProperty(this.query.dstField, 'dbField');
-      linkData.srcDbField = FieldService.getFieldProperty(this.query.srcField, 'dbField');
-      linkData.dstExp = FieldService.getFieldProperty(this.query.dstField, 'exp');
-      linkData.srcExp = FieldService.getFieldProperty(this.query.srcField, 'exp');
-
-      closePopups();
-      if (!popupVue) {
-        popupVue = new Vue({
-          template: `
-            <div class="connections-popup">
-              <div class="mb-2 mt-2">
-                <strong>Link</strong>
-                <a class="pull-right cursor-pointer no-decoration"
-                   @click="closePopup">
-                  <span class="fa fa-close"></span>
-                </a>
-              </div>
-              <div>
-                <arkime-session-field
-                  :value="linkData.source.id"
-                  :session="linkData"
-                  :expr="linkData.srcExp"
-                  :field="fields[linkData.srcDbField]"
-                  :pull-left="true">
-                </arkime-session-field>
-              </div>
-              <div class="mb-2">
-                <arkime-session-field
-                  :value="linkData.target.id"
-                  :session="linkData"
-                  :expr="linkData.dstExp"
-                  :field="fields[linkData.dstDbField]"
-                  :pull-left="true">
-                </arkime-session-field>
-              </div>
-
-              <dl class="dl-horizontal">
-                <dt>Sessions</dt>
-                <dd>{{linkData.value}}&nbsp;</dd>
-
-                <span v-for="field in linkFields"
-                  :key="field">
-                  <template v-if="fields[field]">
-                    <dt>
-                      {{ fields[field].friendlyName }}
-                    </dt>
-                    <dd>
-                      <span v-if="!Array.isArray(linkData[field])">
-                        <arkime-session-field
-                          :value="linkData[field]"
-                          :session="linkData"
-                          :expr="fields[field].exp"
-                          :field="fields[field]"
-                          :pull-left="true">
-                        </arkime-session-field>
-                      </span>
-                      <span v-else
-                        v-for="value in linkData[field]">
-                        <arkime-session-field
-                          :value="value"
-                          :session="linkData"
-                          :expr="fields[field].exp"
-                          :field="fields[field]"
-                          :pull-left="true">
-                        </arkime-session-field>
-                      </span>&nbsp;
-                    </dd>
-                  </template>
-                </span>
-              </dl>
-
-              <a class="cursor-pointer no-decoration"
-                href="javascript:void(0)"
-                @click="hideLink">
-                <span class="fa fa-eye-slash"></span>&nbsp;
-                Hide Link
-              </a>
-
-            </div>
-          `,
-          parent: this,
-          data: {
-            linkData,
-            linkFields: this.linkFields,
-            fields: this.fieldsMap
-          },
-          methods: {
-            hideLink: function () {
-              this.$parent.closePopups();
-              svg.selectAll('.link')
-                .filter((d, i) => {
-                  return d.source.id === linkData.source.id && d.target.id === linkData.target.id;
-                })
-                .remove();
-            },
-            addExpression: function (op) {
-              const fullExpression = `(${linkData.srcExp} == ${linkData.source.id} && ${linkData.dstExp} == ${linkData.target.id})`;
-              this.$store.commit('addToExpression', { expression: fullExpression, op });
-            },
-            closePopup: function () {
-              this.$parent.closePopups();
-            }
-          }
-        }).$mount($(this.$refs.infoPopup)[0].firstChild);
-      }
-
-      popupVue.linkData = linkData;
-
-      $('.connections-popup').show();
+    showLinkPopup (dataLink) {
+      this.dataNode = undefined;
+      this.dataLink = dataLink;
+      this.dataLink.dstDbField = FieldService.getFieldProperty(this.query.dstField, 'dbField');
+      this.dataLink.srcDbField = FieldService.getFieldProperty(this.query.srcField, 'dbField');
+      this.dataLink.dstExp = FieldService.getFieldProperty(this.query.dstField, 'exp');
+      this.dataLink.srcExp = FieldService.getFieldProperty(this.query.srcField, 'exp');
+      this.showPopup = true;
     }
   },
-  beforeDestroy: function () {
+  beforeUnmount () {
     if (pendingPromise) {
-      pendingPromise.source.cancel();
+      pendingPromise.controller.abort('Closing Connections page canceled the search');
       pendingPromise = null;
     }
 
     // remove listeners
     window.removeEventListener('resize', resize);
-    window.removeEventListener('keyup', closePopupsOnEsc);
-    // d3 doesn't have .off function to remove listeners,
-    // so use .on('listener', null)
-    d3.zoom().on('zoom', null);
-    if (simulation) { simulation.on('tick', null); }
-    d3.drag()
-      .on('start', null)
-      .on('drag', null)
-      .on('end', null);
+    window.removeEventListener('keyup', this.closePopupsOnEsc);
+
+    if (d3) {
+      // d3 doesn't have .off function to remove listeners,
+      // so use .on('listener', null)
+      d3.zoom().on('zoom', null);
+      if (simulation) { simulation.on('tick', null); }
+      d3.drag()
+        .on('start', null)
+        .on('drag', null)
+        .on('end', null);
+    }
 
     if (svg) {
       node.on('mouseover', null)
@@ -1593,10 +1518,6 @@ export default {
       svg.remove();
     }
 
-    // destroy child component
-    $('.connections-popup').remove();
-    if (popupVue) { popupVue.$destroy(); }
-
     setTimeout(() => {
       // clean up global vars
       svg = undefined;
@@ -1604,7 +1525,6 @@ export default {
       node = undefined;
       link = undefined;
       nodeFillColors = undefined;
-      popupVue = undefined;
       container = undefined;
       nodeLabel = undefined;
       popupTimer = undefined;
@@ -1630,7 +1550,7 @@ export default {
 }
 
 /* position the subnavbar */
-.connections-page form.connections-form {
+.connections-page .connections-form {
   z-index: 4;
   background-color: var(--color-quaternary-lightest);
 
@@ -1640,22 +1560,22 @@ export default {
 }
 
 /* remove select box styles */
-.connections-page form.connections-form select {
+.connections-page .connections-form select {
   -webkit-appearance: none;
 }
 
 /* make the color for legend areas white */
-.connections-page form.connections-form .input-group-prepend.legend > .input-group-text {
+.connections-page .connections-form .legend.input-group-text {
   font-weight: 700;
   color: var(--color-button, #FFF) !important;
 }
-.connections-page form.connections-form .input-group-prepend.legend > .primary-legend {
+.connections-page .connections-form .legend.primary-legend {
   background-color: var(--color-primary) !important;
 }
-.connections-page form.connections-form .input-group-prepend.legend > .tertiary-legend {
+.connections-page .connections-form .legend.tertiary-legend {
   background-color: var(--color-tertiary) !important;
 }
-.connections-page form.connections-form .input-group-prepend.legend > .secondary-legend {
+.connections-page .connections-form .legend.secondary-legend {
   border-radius: 4px;
   background-color: var(--color-secondary) !important;
 }
@@ -1666,6 +1586,9 @@ export default {
 }
 
 /* buttons overlaying the graph */
+.connections-content .overlay-btns {
+  margin-right: 4px;
+}
 .connections-content .overlay-btns > span:first-child > button {
   border-bottom: none;
   border-radius: 4px 4px 0 0;
@@ -1685,10 +1608,9 @@ export default {
 .connections-page div.connections-popup {
   position: absolute;
   left: 0;
-  top: 148px;
+  top: 75px;
   bottom: 24px;
-  display: none;
-  font-size: smaller;
+  font-size: 0.85rem;
   padding: 4px 8px;
   max-width: 400px;
   min-width: 280px;

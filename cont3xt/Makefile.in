@@ -8,7 +8,7 @@ all:
 	echo "CONT3XT!"
 
 check:
-	npm ci --production
+	npm ci
 	npm run bundle
 
 install:
@@ -17,9 +17,9 @@ install:
 	npm ci
 	npm run $(INSTALL_BUNDLE)
 	$(CP) -pr favicon.ico $(CONT3XTDIR)
-	$(CP) -pr integrations "$(CONT3XTDIR)/"
+	$(CP) -pr views integrations "$(CONT3XTDIR)/"
 	$(CP) -pr vueapp/dist "$(CONT3XTDIR)/vueapp"
-	(cd $(CONT3XTDIR) ; npm ci --production)
+	(cd $(CONT3XTDIR) ; npm ci --omit=dev)
 
 distclean realclean clean:
 	rm -rf node_modules

@@ -3,9 +3,7 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-
-  <div class="packet-search-page ml-2 mr-2">
-
+  <div class="packet-search-page ms-2 me-2">
     <ArkimeCollapsible>
       <span class="fixed-header">
         <!-- search navbar -->
@@ -14,322 +12,239 @@ SPDX-License-Identifier: Apache-2.0
           :start="sessionsQuery.start"
           :hide-actions="true"
           :hide-interval="true"
-          @changeSearch="cancelAndLoad(true)">
-        </arkime-search> <!-- /search navbar -->
+          @change-search="cancelAndLoad(true)"
+          @recalc-collapse="$emit('recalc-collapse')" /> <!-- /search navbar -->
 
         <!-- hunt create navbar -->
-        <form class="hunt-create-navbar">
-          <div class="p-2 form-inline justify-content-between flex-row-reverse">
-            <button
-              type="button"
-              v-if="!createFormOpened"
-              @click="createFormOpened = true"
-              title="Open a form to create a new hunt"
-              class="btn btn-theme-tertiary btn-sm pull-right">
-              Create a packet search job
-            </button>
+        <BRow
+          gutter-x="1"
+          align-h="between"
+          class="hunt-create-navbar ps-2 pe-2 pt-1">
+          <BCol cols="auto">
             <span v-if="loadingSessions">
-              <div class="mt-1" style="display:inline-block;">
-                <span class="fa fa-spinner fa-spin fa-fw">
-                </span>
-                Loading sessions...
+              <div
+                class="mt-1"
+                style="display:inline-block;">
+                <span class="fa fa-spinner fa-spin fa-fw" />
+                {{ $t('common.loading') }}
               </div>
-              <button type="button"
-                class="btn btn-warning btn-sm ml-3"
+              <button
+                type="button"
+                class="btn btn-warning btn-sm ms-3"
                 @click="cancelAndLoad">
-                <span class="fa fa-ban">
-                </span>&nbsp;
-                cancel
+                <span class="fa fa-ban" />&nbsp;
+                {{ $t('common.cancel') }}
               </button>
             </span>
             <span v-else-if="loadingSessionsError">
-              <div class="mt-1" style="display:inline-block;">
-                <span class="fa fa-exclamation-triangle fa-fw">
-                </span>
+              <div
+                class="mt-1"
+                style="display:inline-block;">
+                <span class="fa fa-exclamation-triangle fa-fw text-danger" />
                 {{ loadingSessionsError }}
               </div>
             </span>
             <span v-else-if="!loadingSessions && !loadingSessionsError">
-              <div class="mt-1" style="display:inline-block;">
-                <span class="fa fa-info-circle fa-fw">
-                </span>&nbsp;
-                Creating a new packet search job will search the packets of
-                <strong>
-                  {{ sessions.recordsFiltered | commaString }}
-                </strong>
-                sessions.
+              <div
+                class="mt-1"
+                style="display:inline-block;">
+                <span v-html="$t('hunts.createMsgHtml', { count: commaString(sessions.recordsFiltered) })" />
               </div>
             </span>
-          </div>
-        </form> <!-- /hunt create navbar -->
+          </BCol>
+          <BCol cols="auto">
+            <BButton
+              size="sm"
+              variant="theme-tertiary"
+              :disabled="loadingSessions || loadingSessionsError"
+              v-if="!createFormOpened"
+              @click="createFormOpened = true">
+              {{ $t('hunts.createJob') }}
+            </BButton>
+          </BCol>
+        </BRow> <!-- /hunt create navbar -->
       </span>
     </ArkimeCollapsible>
 
     <!-- loading overlay -->
     <arkime-loading
-      v-if="loading">
-    </arkime-loading> <!-- /loading overlay -->
+      v-if="loading" /> <!-- /loading overlay -->
 
     <!-- configuration error -->
-    <b-alert
-      variant="danger"
+    <div
+      v-if="nodeInfo && !nodeInfo.node"
       style="z-index: 2000;"
-      :show="nodeInfo && !nodeInfo.node"
-      class="position-fixed fixed-bottom m-0 rounded-0">
-      <span class="fa fa-exclamation-triangle mr-2"></span>
-      Hunts are not configured correctly.
-      See the
-      <a class="no-decoration"
-        href="https://arkime.com/faq#hunts-not-working">
-        Arkime FAQ</a> for more information.
-    </b-alert> <!-- /configuration error -->
+      class="alert alert-danger position-fixed fixed-bottom m-0 rounded-0">
+      <span class="fa fa-exclamation-triangle me-2" />
+      <span v-html="$t('hunts.notConfiguredHtml')" />
+    </div> <!-- /configuration error -->
 
     <!-- permission error -->
-    <b-alert
-      class="mt-4"
-      variant="danger"
-      :show="permissionDenied">
+    <div
+      v-if="permissionDenied"
+      class="alert alert-danger mt-4">
       <p class="mb-0">
-        <span class="fa fa-exclamation-triangle fa-fw mr-2"></span>
-        <strong>Permission denied!</strong>
+        <span class="fa fa-exclamation-triangle fa-fw me-2" />
+        <strong>{{ $t('common.permisionDenied') }}</strong>
       </p>
       <p class="mb-0">
-        <span class="fa fa-info-circle fa-fw mr-2"></span>
+        <span class="fa fa-info-circle fa-fw me-2" />
         <template v-if="user.roles.includes('usersAdmin')">
-          Enable this feature on the Users page by expanding your user,
-          unchecking "Disable Arkime Hunting," then clicking save.
+          {{ $t('hunts.selfEnable') }}
         </template>
         <template v-else>
-          Contact your Arkime administrator to enable this feature by
-          unchecking "Disable Arkime Hunting" for your user.
+          {{ $t('hunts.adminEnable') }}
         </template>
       </p>
-    </b-alert> <!-- /permission error -->
+    </div> <!-- /permission error -->
 
     <!-- packet search jobs content -->
-    <div v-if="!permissionDenied"
-      class="packet-search-content ml-2 mr-2">
-
+    <div
+      v-if="!permissionDenied"
+      class="packet-search-content ms-2 me-2">
       <!-- create new packet search job -->
       <div class="mb-3">
         <transition name="slide">
-          <div v-if="createFormOpened"
+          <div
+            v-if="createFormOpened"
             class="card">
-            <form class="card-body"
+            <form
+              class="card-body"
               @keyup.enter="createJob">
               <div class="row">
                 <div class="col-12">
-                  <div class="alert"
+                  <div
+                    class="alert"
                     :class="{'alert-info':sessions.recordsFiltered < huntWarn || !sessions.recordsFiltered,'alert-danger':sessions.recordsFiltered >= huntWarn}">
                     <em v-if="sessions.recordsFiltered > huntWarn && !loadingSessions">
-                      That's a lot of sessions, this job will take a while.
-                      <strong>
-                        Proceed with caution.
-                      </strong>
+                      <span v-html="$t('hunts.lotOfSessionsHtml')" />
                       <br>
                     </em>
                     <em v-if="loadingSessions">
-                      <span class="fa fa-spinner fa-spin fa-fw mr-1"></span>
-                      Wait for session totals to be calculated.
+                      <span class="fa fa-spinner fa-spin fa-fw me-1" />
+                      {{ $t('hunts.waitForCalculation') }}
                       <br>
                     </em>
                     <span v-if="!loadingSessions">
-                    <span class="fa fa-exclamation-triangle fa-fw mr-1"></span>
-                      Make sure your sessions search above contains only the sessions that
-                      you want in your packet search!
+                      <span class="fa fa-exclamation-triangle fa-fw me-1" />
+                      {{ $t('hunts.doubleCheckSessions') }}
                     </span>
                     <span v-if="multiviewer">
                       <br>
-                      <span class="fa fa-info-circle fa-fw mr-2"></span>
-                      Multiviewer is enabled. This hunt will search the sessions in the
-                      <strong>{{ selectedCluster[0] }}</strong> cluster.
+                      <span class="fa fa-info-circle fa-fw me-2" />
+                      {{ $t('hunts.multiViewerHtml', { cluster: selectedCluster[0] }) }}
                     </span>
                   </div>
                 </div>
               </div>
-              <div class="row">
-                <div class="form-group col-lg-4 col-md-12">
+              <BRow gutter-x="1">
+                <BCol
+                  cols="auto"
+                  class="mb-2 flex-grow-1">
                   <!-- packet search job name -->
-                  <div class="input-group input-group-sm">
-                    <span class="input-group-prepend cursor-help"
-                      v-b-tooltip.hover
-                      title="Give your packet search job a short name (multiple jobs can have the same name)">
-                      <span class="input-group-text">
-                        Name
-                      </span>
-                    </span>
+                  <BInputGroup size="sm">
+                    <BInputGroupText
+                      id="jobName"
+                      class="cursor-help">
+                      {{ $t('hunts.jobName') }}
+                      <BTooltip target="jobName">
+                        <span v-i18n-btip="'hunts.'" />
+                      </BTooltip>
+                    </BInputGroupText>
                     <input
                       type="text"
                       v-model="jobName"
                       v-focus="true"
-                      placeholder="Name your packet search job"
                       class="form-control"
-                      maxlength="40"
-                    />
-                  </div> <!-- /packet search job name -->
-                </div>
+                      :placeholder="$t('hunts.jobNamePlaceholder')"
+                      maxlength="40">
+                  </BInputGroup> <!-- /packet search job name -->
+                </BCol>
                 <!-- packet search size -->
-                <div class="form-group col-lg-4 col-md-12">
-                  <div class="input-group input-group-sm">
-                    <span class="input-group-prepend">
-                      <span class="input-group-text">
-                        Max number of packets to examine per session
-                      </span>
-                    </span>
-                    <b-select
-                      role="listbox"
+                <BCol>
+                  <BInputGroup size="sm">
+                    <BInputGroupText>
+                      {{ $t('hunts.jobSize') }}
+                    </BInputGroupText>
+                    <BFormSelect
                       v-model="jobSize"
-                      class="form-control"
-                      style="-webkit-appearance: none;"
-                      :options="[50, 500, 5000, 10000]">
-                    </b-select>
-                  </div>
-                </div> <!-- /packet search size -->
+                      :options="[50, 500, 5000, 10000]" />
+                  </BInputGroup>
+                </BCol> <!-- /packet search size -->
                 <!-- notifier -->
-                <div class="form-group col-lg-4 col-md-12">
-                  <div class="input-group input-group-sm">
-                    <span class="input-group-prepend cursor-help"
-                      v-b-tooltip.hover="'Notifies upon completion. Admins can configure Notifiers on the Settings page.'">
-                      <span class="input-group-text">
-                        Notify
-                      </span>
-                    </span>
-                    <select class="form-control"
-                      v-model="jobNotifier"
-                      style="-webkit-appearance: none;">
-                      <option value=undefined>none</option>
-                      <option v-for="notifier in notifiers"
-                        :key="notifier.id"
-                        :value="notifier.id">
-                        {{ notifier.name }} ({{ notifier.type }})
-                      </option>
-                    </select>
-                  </div>
-                </div> <!-- /notifier -->
-              </div>
-              <div class="row">
-                <div class="form-group col-12">
-                  <div class="input-group input-group-sm">
-                    <span
-                      v-b-tooltip.hover
-                      class="input-group-prepend cursor-help"
-                      title="Describe what or why you are hunting">
-                      <span class="input-group-text">
-                        Description
-                      </span>
-                    </span>
+                <BCol>
+                  <NotifierDropdown
+                    :notifiers="notifiers"
+                    :selected-notifiers="jobNotifier"
+                    @selected-notifiers-updated="updateJobNotifiers"
+                    :display-text="jobNotifier.length > 0 ? undefined : $t('settings.cron.selectNotifier')" />
+                </BCol> <!-- /notifier -->
+              </BRow>
+              <BRow
+                gutter-x="1"
+                class="mb-2">
+                <BCol>
+                  <BInputGroup size="sm">
+                    <BInputGroupText
+                      class="cursor-help"
+                      id="jobDescription">
+                      {{ $t('hunts.jobDescription') }}
+                      <BTooltip target="jobDescription">
+                        <span v-i18n-btip="'hunts.'" />
+                      </BTooltip>
+                    </BInputGroupText>
                     <input
                       type="text"
                       class="form-control"
                       v-model="jobDescription"
-                      placeholder="What are you hunting for? Or why are you hunting?"
-                    />
-                  </div>
-                </div>
-              </div>
-              <div class="row">
-                <!-- packet search text & text type -->
-                <div class="form-group col-12">
-                  <div class="input-group input-group-sm">
-                    <span class="input-group-prepend cursor-help"
-                      v-b-tooltip.hover
-                      title="Search for this text in packets">
-                      <span class="input-group-text">
-                        <span class="fa fa-search">
-                        </span>
-                      </span>
-                    </span>
-                    <input type="text"
+                      :placeholder="$t('hunts.jobDescriptionPlaceholder')">
+                  </BInputGroup>
+                </BCol>
+              </BRow>
+              <BRow class="mb-2">
+                <BCol>
+                  <BInputGroup size="sm">
+                    <BInputGroupText
+                      class="cursor-help"
+                      id="jobSearch">
+                      <span class="fa fa-search" />
+                      <BTooltip target="jobSearch">
+                        <span v-i18n-btip="'hunts.'" />
+                      </BTooltip>
+                    </BInputGroupText>
+                    <input
+                      type="text"
                       v-model="jobSearch"
-                      placeholder="Search packets for"
-                      class="form-control"
-                    />
-                  </div>
-                  <div class="form-check form-check-inline">
-                    <input class="form-check-input"
-                      :checked="jobSearchType === 'ascii'"
-                      @click="setJobSearchType('ascii')"
-                      type="radio"
-                      id="ascii"
-                      value="ascii"
-                      name="packetSearchTextType"
-                    />
-                    <label class="form-check-label"
-                      for="ascii">
-                      ascii
-                    </label>
-                  </div>
-                  <div class="form-check form-check-inline">
-                    <input class="form-check-input"
-                      :checked="jobSearchType === 'asciicase'"
-                      @click="setJobSearchType('asciicase')"
-                      type="radio"
-                      id="asciicase"
-                      value="asciicase"
-                      name="packetSearchTextType"
-                    />
-                    <label class="form-check-label"
-                      for="asciicase">
-                      ascii (case sensitive)
-                    </label>
-                  </div>
-                  <div class="form-check form-check-inline">
-                    <input class="form-check-input"
-                      :checked="jobSearchType === 'hex'"
-                      @click="setJobSearchType('hex')"
-                      type="radio"
-                      id="hex"
-                      value="hex"
-                      name="packetSearchTextType"
-                    />
-                    <label class="form-check-label"
-                      for="hex">
-                      hex
-                    </label>
-                  </div>
-                  <div class="form-check form-check-inline">
-                    <input class="form-check-input"
-                      :checked="jobSearchType === 'regex'"
-                      @click="setJobSearchType('regex')"
-                      type="radio"
-                      id="regex"
-                      value="regex"
-                      name="packetSearchTextType"
-                    />
-                    <label class="form-check-label"
-                      for="regex">
-                      safe regex
-                    </label>
-                    <a href="https://github.com/google/re2/wiki/Syntax"
-                      target="_blank"
-                      class="regex-help">
-                      <span class="fa fa-question-circle">
-                      </span>
-                    </a>
-                  </div>
-                  <div class="form-check form-check-inline">
-                    <input class="form-check-input"
-                      :checked="jobSearchType === 'hexregex'"
-                      @click="setJobSearchType('hexregex')"
-                      type="radio"
-                      id="hexregex"
-                      value="hexregex"
-                      name="packetSearchTextType"
-                    />
-                    <label class="form-check-label"
-                      for="hexregex">
-                      safe hex regex
-                    </label>
-                    <a href="https://github.com/google/re2/wiki/Syntax"
-                      target="_blank"
-                      class="regex-help">
-                      <span class="fa fa-question-circle">
-                      </span>
-                    </a>
-                  </div>
-                </div> <!-- /packet search text & text type -->
-              </div>
-              <div class="row">
+                      :placeholder="$t('hunts.jobSearchPlaceholder')"
+                      class="form-control">
+                  </BInputGroup>
+                </BCol>
+              </BRow>
+              <BRow
+                gutter-x="1"
+                align-h="start">
+                <!-- packet search text & text type -->
+                <BCol>
+                  <BFormRadioGroup
+                    class="d-inline"
+                    v-model="jobSearchType"
+                    :options="[
+                      { text: 'ascii', value: 'ascii' },
+                      { text: 'ascii (case sensitive)', value: 'asciicase' },
+                      { text: 'hex', value: 'hex' },
+                      { text: 'safe regex', value: 'regex' },
+                      { text: 'safe hex regex', value: 'hexregex' }
+                    ]" />
+                  <a
+                    href="https://github.com/google/re2/wiki/Syntax"
+                    target="_blank"
+                    id="safeRegexHelp">
+                    <span class="fa fa-question-circle fa-lg" />
+                    <BTooltip target="safeRegexHelp"><span v-i18n-btip="'hunts.'" /></BTooltip>
+                  </a>
+                </BCol>
+              </BRow>
+              <BRow gutter-x="1">
                 <!-- packet search direction -->
                 <div class="form-group col-lg-3 col-md-12">
                   <div class="form-check">
@@ -340,11 +255,11 @@ SPDX-License-Identifier: Apache-2.0
                       role="checkbox"
                       :checked="jobSrc"
                       @click="jobSrc = !jobSrc"
-                      class="form-check-input"
-                    />
-                    <label class="form-check-label"
+                      class="form-check-input">
+                    <label
+                      class="form-check-label"
                       for="src">
-                      search src packets
+                      {{ $t('hunts.jobSrc') }}
                     </label>
                   </div>
                   <div class="form-check">
@@ -355,93 +270,94 @@ SPDX-License-Identifier: Apache-2.0
                       role="checkbox"
                       :checked="jobDst"
                       class="form-check-input"
-                      @click="jobDst = !jobDst"
-                    />
-                    <label class="form-check-label"
+                      @click="jobDst = !jobDst">
+                    <label
+                      class="form-check-label"
                       for="dst">
-                      search dst packets
+                      {{ $t('hunts.jobDst') }}
                     </label>
                   </div>
                 </div> <!-- /packet search direction -->
                 <!-- packet search type -->
                 <div class="form-group col-lg-3 col-md-12">
                   <div class="form-check">
-                    <input class="form-check-input"
+                    <input
+                      class="form-check-input"
                       :checked="jobType === 'raw'"
                       @click="setJobType('raw')"
                       type="radio"
                       id="raw"
                       value="raw"
-                      name="packetSearchType"
-                    />
-                    <label class="form-check-label"
+                      name="packetSearchType">
+                    <label
+                      class="form-check-label"
                       for="raw">
-                      search raw packets
+                      {{ $t('hunts.jobType-raw') }}
                     </label>
                   </div>
                   <div class="form-check">
-                    <input class="form-check-input"
+                    <input
+                      class="form-check-input"
                       :checked="jobType === 'reassembled'"
                       @click="setJobType('reassembled')"
                       type="radio"
                       id="reassembled"
                       value="reassembled"
-                      name="packetSearchType"
-                    />
-                    <label class="form-check-label"
+                      name="packetSearchType">
+                    <label
+                      class="form-check-label"
                       for="reassembled">
-                      search reassembled packets
+                      {{ $t('hunts.jobType-reassembled') }}
                     </label>
                   </div>
                 </div> <!-- /packet search type -->
                 <!-- sharing with users/roles -->
-                <div class="form-group d-flex col-lg-6 col-md-12"
+                <div
+                  class="form-group d-flex col-lg-6 col-md-12"
                   v-if="!anonymousMode">
                   <div class="align-self-start">
                     <RoleDropdown
                       :roles="roles"
                       :selected-roles="jobRoles"
-                      display-text="Share with roles"
-                      @selected-roles-updated="updateNewJobRoles"
-                    />
+                      :display-text="$t('common.shareWithRoles')"
+                      @selected-roles-updated="updateNewJobRoles" />
                   </div>
-                  <div class="flex-grow-1 ml-2">
-                    <div class="input-group input-group-sm">
-                      <span class="input-group-prepend cursor-help"
-                        v-b-tooltip.hover
-                        title="Let these users view the results of this hunt">
-                        <span class="input-group-text">
-                          <span class="fa fa-user">
-                          </span>
-                        </span>
-                      </span>
-                      <input type="text"
+                  <div class="flex-grow-1 ms-2">
+                    <BInputGroup size="sm">
+                      <BInputGroupText
+                        class="cursor-help"
+                        id="jobUsers">
+                        <span class="fa fa-user" />
+                        <BTooltip target="jobUsers">
+                          <span v-i18n-btip="'hunts.'" />
+                        </BTooltip>
+                      </BInputGroupText>
+                      <input
+                        type="text"
                         v-model="jobUsers"
-                        placeholder="Comma separated list of additional users that can view the hunt"
-                        class="form-control"
-                      />
-                    </div>
+                        :placeholder="$t('hunts.jobUsersPlaceholder')"
+                        class="form-control">
+                    </BInputGroup>
                   </div>
                 </div> <!-- /sharing with users/roles -->
-              </div>
-              <div class="row">
+              </BRow>
+              <BRow>
                 <div class="col-12 mt-1">
-                  <div v-if="createFormError"
+                  <div
+                    v-if="createFormError"
                     class="pull-left alert alert-danger alert-sm">
-                    <span class="fa fa-exclamation-triangle">
-                    </span>&nbsp;
+                    <span class="fa fa-exclamation-triangle" />&nbsp;
                     {{ createFormError }}
                   </div>
                   <!-- create search job button -->
                   <button
                     type="button"
                     @click="createJob"
-                    :disabled="loadingSessions"
+                    :disabled="loadingSessions || loadingSessionsError"
                     title="Create this hunt"
-                    class="pull-right btn btn-theme-tertiary pull-right ml-1">
-                    <span class="fa fa-plus fa-fw">
-                    </span>&nbsp;
-                    Create
+                    class="pull-right btn btn-theme-tertiary pull-right ms-1">
+                    <span class="fa fa-plus fa-fw" />&nbsp;
+                    {{ $t('common.create') }}
                   </button> <!-- /create search job button -->
                   <!-- cancel create search job button -->
                   <button
@@ -449,12 +365,11 @@ SPDX-License-Identifier: Apache-2.0
                     @click="cancelCreateForm"
                     title="Cancel creating this hunt"
                     class="pull-right btn btn-warning pull-right">
-                    <span class="fa fa-ban fa-fw">
-                    </span>&nbsp;
-                    Cancel
+                    <span class="fa fa-ban fa-fw" />&nbsp;
+                    {{ $t('common.cancel') }}
                   </button> <!-- /cancel create search job button -->
                 </div>
-              </div>
+              </BRow>
             </form>
           </div>
         </transition>
@@ -462,72 +377,76 @@ SPDX-License-Identifier: Apache-2.0
 
       <!-- running job -->
       <transition name="slide">
-        <div v-if="runningJob"
+        <div
+          v-if="runningJob"
           class="card mb-3">
           <div class="card-body">
             <h5 class="card-title">
-              Running Hunt Job:
-              {{ runningJob.name }} by
-              {{ runningJob.userId }}
+              {{ $t('hunts.runningHuntJob', { name: runningJob.name, user: runningJob.userId }) }}
               <span class="pull-right">
-                <button v-if="canEdit"
+                <button
+                  v-if="canEdit"
+                  :id="`remove${runningJob.id}`"
                   @click="removeJob(runningJob, 'results')"
                   :disabled="runningJob.disabled"
                   type="button"
-                  v-b-tooltip.hover
-                  title="Cancel and remove this job"
-                  class="ml-1 pull-right btn btn-sm btn-danger">
-                  <span v-if="!runningJob.loading"
-                    class="fa fa-trash-o fa-fw">
-                  </span>
-                  <span v-else
-                    class="fa fa-spinner fa-spin fa-fw">
-                  </span>
+                  class="ms-1 pull-right btn btn-sm btn-danger">
+                  <span
+                    v-if="!runningJob.loading"
+                    class="fa fa-trash-o fa-fw" />
+                  <span
+                    v-else
+                    class="fa fa-spinner fa-spin fa-fw" />
+                  <BTooltip :target="`remove${runningJob.id}`">
+                    {{ $t('hunts.cancelAndRemoveTip') }}
+                  </BTooltip>
                 </button>
                 <span v-if="canView">
-                  <button type="button"
+                  <button
+                    type="button"
                     @click="openSessions(runningJob)"
                     v-if="runningJob.matchedSessions"
                     :id="`openresults${runningJob.id}`"
-                    class="ml-1 pull-right btn btn-sm btn-theme-primary">
-                    <span class="fa fa-folder-open fa-fw">
-                    </span>
+                    class="ms-1 pull-right btn btn-sm btn-theme-primary">
+                    <span class="fa fa-folder-open fa-fw" />
+                    <BTooltip :target="`openresults${runningJob.id}`">
+                      <span v-html="$t('hunts.openResultsTipHtml')" />
+                    </BTooltip>
                   </button>
-                  <b-tooltip v-if="runningJob.matchedSessions"
-                    :target="`openresults${runningJob.id}`">
-                    Open <strong>partial</strong> results in a new Sessions tab.
-                    <br>
-                    <strong>Note:</strong> ES takes a while to update sessions, so your results
-                    might take a minute to show up.
-                  </b-tooltip>
                 </span>
-                <button v-if="canEdit"
+                <button
+                  v-if="canEdit"
+                  :id="`cancel${runningJob.id}`"
                   @click="cancelJob(runningJob)"
                   :disabled="runningJob.disabled"
                   type="button"
-                  v-b-tooltip.hover
-                  title="Cancel this job. It can be viewed in the history after the cancelation is complete."
-                  class="ml-1 pull-right btn btn-sm btn-danger">
-                  <span v-if="!runningJob.loading"
-                    class="fa fa-ban fa-fw">
-                  </span>
-                  <span v-else
-                    class="fa fa-spinner fa-spin fa-fw">
-                  </span>
+                  class="ms-1 pull-right btn btn-sm btn-danger">
+                  <span
+                    v-if="!runningJob.loading"
+                    class="fa fa-ban fa-fw" />
+                  <span
+                    v-else
+                    class="fa fa-spinner fa-spin fa-fw" />
                 </button>
-                <button v-if="canEdit"
+                <BTooltip :target="`cancel${runningJob.id}`">
+                  {{ $t('hunts.cancelTip') }}
+                </BTooltip>
+                <button
+                  v-if="canEdit"
+                  :id="`pause${runningJob.id}`"
                   @click="pauseJob(runningJob)"
                   :disabled="runningJob.loading"
                   type="button"
-                  v-b-tooltip.hover
-                  title="Pause this job"
                   class="pull-right btn btn-sm btn-warning">
-                  <span v-if="!runningJob.loading"
-                    class="fa fa-pause fa-fw">
-                  </span>
-                  <span v-else
-                    class="fa fa-spinner fa-spin fa-fw">
-                  </span>
+                  <span
+                    v-if="!runningJob.loading"
+                    class="fa fa-pause fa-fw" />
+                  <span
+                    v-else
+                    class="fa fa-spinner fa-spin fa-fw" />
+                  <BTooltip :target="`pause${runningJob.id}`">
+                    {{ $t('hunts.pauseTip') }}
+                  </BTooltip>
                 </button>
               </span>
             </h5>
@@ -537,65 +456,60 @@ SPDX-License-Identifier: Apache-2.0
                   <toggle-btn
                     v-if="canView"
                     :opened="runningJob.expanded"
-                    @toggle="toggleJobDetail(runningJob)">
-                  </toggle-btn>
-                  <div class="progress cursor-help"
+                    @toggle="toggleJobDetail(runningJob)" />
+                  <div
+                    class="progress cursor-help"
                     id="runningJob"
-                    v-b-tooltip.hover
                     style="height:26px;"
                     :class="{'progress-toggle':canView}">
-                    <div class="progress-bar bg-success progress-bar-striped progress-bar-animated"
+                    <div
+                      class="progress-bar bg-success progress-bar-striped progress-bar-animated"
                       role="progressbar"
                       :style="{width: runningJob.progress + '%'}"
                       :aria-valuenow="runningJob.progress"
                       aria-valuemin="0"
                       aria-valuemax="100">
-                      {{ runningJob.progress | round(1) }}%
+                      {{ round(runningJob.progress, 1) }}%
                     </div>
+                    <BTooltip target="runningJob">
+                      <div class="mt-2">
+                        <span v-html="$t('hunts.runningJob-headHtml', { matched: commaString(runningJob.matchedSessions) })" />
+                        <span
+                          v-if="canView"
+                          v-html="$t('hunts.runningJob-byHtml', { search: runningJob.search, searchType: runningJob.searchType })" />
+                        <span
+                          v-if="runningJob.failedSessionIds && runningJob.failedSessionIds.length"
+                          v-html="$t('hunts.runningJob-outOfHtml', {
+                            searched: commaString(runningJob.searchedSessions - runningJob.failedSessionIds.length),
+                            remaining: commaString(runningJob.totalSessions - runningJob.searchedSessions + runningJob.failedSessionIds.length),
+                            totalSessions: commaString(runningJob.totalSessions)})" />
+                        <span
+                          v-else
+                          v-html="$t('hunts.runningJob-outOfHtml', {
+                            searched: commaString(runningJob.searchedSessions),
+                            remaining: commaString(runningJob.totalSessions - runningJob.searchedSessions),
+                            totalSessions: commaString(runningJob.totalSessions)})" />
+                      </div>
+                    </BTooltip>
                   </div>
-                  <b-tooltip target="runningJob">
-                    <div class="mt-2">
-                      Found <strong>{{ runningJob.matchedSessions | commaString }}</strong> sessions
-                      <span v-if="canView">
-                        matching <strong>{{ runningJob.search }}</strong> ({{ runningJob.searchType }})
-                      </span>
-                      <span v-if="runningJob.failedSessionIds && runningJob.failedSessionIds.length">
-                        out of <strong>{{ runningJob.searchedSessions - runningJob.failedSessionIds.length | commaString }}</strong>
-                        sessions searched.
-                        (Still need to search
-                        <strong>{{ (runningJob.totalSessions - runningJob.searchedSessions + runningJob.failedSessionIds.length) | commaString }}</strong>
-                        of <strong>{{ runningJob.totalSessions | commaString  }}</strong>
-                        total sessions.)
-                      </span>
-                      <span v-else>
-                        out of <strong>{{ runningJob.searchedSessions | commaString }}</strong>
-                        sessions searched.
-                        (Still need to search
-                        <strong>{{ (runningJob.totalSessions - runningJob.searchedSessions) | commaString }}</strong>
-                        of <strong>{{ runningJob.totalSessions | commaString  }}</strong>
-                        total sessions.)
-                      </span>
-                    </div>
-                  </b-tooltip>
                 </div>
               </div>
               <transition name="grow">
-                <div v-if="runningJob.expanded"
+                <div
+                  v-if="runningJob.expanded"
                   class="mt-3">
                   <div class="row">
                     <div class="col-12">
-                      <span class="fa fa-id-card fa-fw">
-                      </span>&nbsp;
-                      Hunt Job ID: {{ runningJob.id }}
+                      <span class="fa fa-id-card fa-fw" />&nbsp;
+                      {{ $t('hunts.huntJobId', { id: runningJob.id }) }}:
                     </div>
                   </div>
-                  <hunt-data :job="runningJob"
-                    @removeUser="removeUser"
-                    @addUsers="addUsers"
+                  <hunt-data
+                    :job="runningJob"
+                    @remove-user="removeUser"
+                    @add-users="addUsers"
                     :user="user"
-                    @updateHunt="updateHunt"
-                    :notifierName="getNotifierName(runningJob.notifier)">
-                  </hunt-data>
+                    @update-hunt="updateHunt" />
                 </div>
               </transition>
             </div>
@@ -604,85 +518,89 @@ SPDX-License-Identifier: Apache-2.0
       </transition> <!-- /running job -->
 
       <h4 v-if="results.length">
-        <span class="fa fa-list-ol">
-        </span>&nbsp;
-        Hunt Job Queue
+        <span class="fa fa-list-ol" />&nbsp;
+        {{ $t('hunts.huntJobQueue') }}:
       </h4>
 
       <!-- hunt job queue errors -->
-      <div v-if="queuedListError"
+      <div
+        v-if="queuedListError"
         class="alert alert-danger">
         {{ queuedListError }}
       </div>
-      <div v-if="queuedListLoadingError"
+      <div
+        v-if="queuedListLoadingError"
         class="alert alert-danger">
-        Error loading hunt job queue:
+        {{ $t('hunts.errorLoadingQueue') }}:
         {{ queuedListLoadingError }}
       </div> <!-- /hunt job queue errors -->
 
-      <table v-if="results.length"
+      <table
+        v-if="results.length"
         class="table table-sm table-striped mb-4">
         <thead>
           <tr>
-            <th width="40px">&nbsp;</th>
-            <th>
-              Status
+            <th width="40px">
+&nbsp;
             </th>
             <th>
-              Matches
+              {{ $t('hunts.jobStatus') }}
             </th>
             <th>
-              Name
+              {{ $t('hunts.jobMatches') }}
             </th>
             <th>
-              User
+              {{ $t('hunts.jobName') }}
             </th>
             <th>
-              Search text
+              {{ $t('hunts.jobUser') }}
             </th>
             <th>
-              Notify
+              {{ $t('hunts.jobSearch') }}
             </th>
             <th>
-              Created
+              {{ $t('common.created') }}
             </th>
             <th>
               ID
             </th>
-            <th width="260px">&nbsp;</th>
+            <th width="260px">
+&nbsp;
+            </th>
           </tr>
         </thead>
-        <transition-group name="list"
+        <transition-group
+          name="list"
           tag="tbody">
           <!-- packet search jobs -->
-          <template v-for="job in results">
-            <hunt-row :key="`${job.id}-row`"
+          <template
+            v-for="job in results"
+            :key="`${job.id}-row`">
+            <hunt-row
               :job="job"
               :user="user"
-              :canRerun="true"
-              :canRepeat="true"
-              :canCancel="true"
-              arrayName="results"
-              @playJob="playJob"
-              @rerunJob="rerunJob"
-              @repeatJob="repeatJob"
-              @pauseJob="pauseJob"
-              @cancelJob="cancelJob"
-              @removeJob="removeJob"
+              :can-rerun="true"
+              :can-repeat="true"
+              :can-cancel="true"
+              array-name="results"
+              @play-job="playJob"
+              @rerun-job="rerunJob"
+              @repeat-job="repeatJob"
+              @pause-job="pauseJob"
+              @cancel-job="cancelJob"
+              @remove-job="removeJob"
               @toggle="toggleJobDetail"
-              @openSessions="openSessions"
-              :notifierName="getNotifierName(job.notifier)">
-            </hunt-row>
-            <tr :key="`${job.id}-detail`"
+              @open-sessions="openSessions" />
+            <tr
+              :key="`${job.id}-detail`"
               v-if="job.expanded">
               <td colspan="10">
-                <hunt-data :job="job"
-                  @removeUser="removeUser"
-                  @addUsers="addUsers"
+                <hunt-data
+                  :job="job"
+                  @remove-user="removeUser"
+                  @add-users="addUsers"
                   :user="user"
-                  @updateHunt="updateHunt"
-                  :notifierName="getNotifierName(job.notifier)">
-                </hunt-data>
+                  @update-hunt="updateHunt" />
               </td>
             </tr>
           </template> <!-- /packet search jobs -->
@@ -690,138 +608,167 @@ SPDX-License-Identifier: Apache-2.0
       </table>
 
       <!-- hunt job history errors -->
-      <div v-if="historyListError"
+      <div
+        v-if="historyListError"
         class="alert alert-danger">
-        <span class="fa fa-exclamation-triangle mr-2"></span>
+        <span class="fa fa-exclamation-triangle me-2" />
         {{ historyListError }}
       </div>
-      <div v-if="historyListLoadingError"
+      <div
+        v-if="historyListLoadingError"
         class="alert alert-danger">
-        <span class="fa fa-exclamation-triangle mr-2"></span>
-        Error loading hunt job history:
+        <span class="fa fa-exclamation-triangle me-2" />
+        {{ $t('hunts.errorLoadingHistory') }}:
         {{ historyListLoadingError }}
       </div> <!-- /hunt job history errors -->
 
       <template v-if="!historyListLoadingError">
         <h4>
-          <span class="fa fa-clock-o mr-2"></span>
-          Hunt Job History
+          <span class="fa fa-clock-o me-2" />
+          {{ $t('hunts.title') }}
         </h4>
-        <div class="row form-inline">
-          <div class="col-12">
-          <!-- job history paging -->
-          <arkime-paging
-            class="pull-right ml-2"
-            :records-total="historyResults.recordsTotal"
-            :records-filtered="historyResults.recordsFiltered"
-            @changePaging="changePaging">
-          </arkime-paging> <!-- /job history paging -->
+        <BRow
+          gutter-x="1"
+          align-h="start">
+          <BCol>
             <!-- search packet search jobs -->
-            <div class="input-group input-group-sm">
-              <span class="input-group-prepend cursor-help">
-                <span class="input-group-text">
-                  <span class="fa fa-search">
-                  </span>
-                </span>
-              </span>
-              <input type="text"
+            <BInputGroup size="sm">
+              <BInputGroupText>
+                <span class="fa fa-search" />
+              </BInputGroupText>
+              <input
+                type="text"
                 v-model="query.searchTerm"
                 @input="debounceSearch"
-                placeholder="Search your packet search job history"
-                class="form-control"
-              />
-              <span class="input-group-append">
-                <button type="button"
-                  @click="clear"
-                  :disabled="!query.searchTerm"
-                  class="btn btn-outline-secondary btn-clear-input">
-                  <span class="fa fa-close">
-                  </span>
-                </button>
-              </span>
-            </div> <!-- /search packet search jobs -->
-          </div>
-        </div>
+                :placeholder="$t('hunts.querySearchTermPlaceholder')"
+                class="form-control">
+              <button
+                type="button"
+                @click="clear"
+                :disabled="!query.searchTerm"
+                class="btn btn-outline-secondary btn-clear-input">
+                <span class="fa fa-close" />
+              </button>
+            </BInputGroup> <!-- /search packet search jobs -->
+          </BCol>
+          <BCol cols="auto">
+            <!-- job history paging -->
+            <arkime-paging
+              :records-total="historyResults.recordsTotal"
+              :records-filtered="historyResults.recordsFiltered"
+              @change-paging="changePaging" /> <!-- /job history paging -->
+          </BCol>
+        </BRow>
 
         <table class="table table-sm table-striped">
           <thead>
             <tr>
-              <th width="40px">&nbsp;</th>
-              <th class="cursor-pointer"
+              <th width="40px">
+&nbsp;
+              </th>
+              <th
+                class="cursor-pointer"
                 @click="columnClick('status')">
-                Status
-                <span v-show="query.sortField === 'status' && !query.desc" class="fa fa-sort-asc"></span>
-                <span v-show="query.sortField === 'status' && query.desc" class="fa fa-sort-desc"></span>
-                <span v-show="query.sortField !== 'status'" class="fa fa-sort"></span>
+                {{ $t('hunts.jobStatus') }}
+                <span
+                  v-show="query.sortField === 'status' && !query.desc"
+                  class="fa fa-sort-asc" />
+                <span
+                  v-show="query.sortField === 'status' && query.desc"
+                  class="fa fa-sort-desc" />
+                <span
+                  v-show="query.sortField !== 'status'"
+                  class="fa fa-sort" />
               </th>
               <th>
-                Matches
+                {{ $t('hunts.jobMatches') }}
               </th>
-              <th class="cursor-pointer"
+              <th
+                class="cursor-pointer"
                 @click="columnClick('name')">
-                Name
-                <span v-show="query.sortField === 'name' && !query.desc" class="fa fa-sort-asc"></span>
-                <span v-show="query.sortField === 'name' && query.desc" class="fa fa-sort-desc"></span>
-                <span v-show="query.sortField !== 'name'" class="fa fa-sort"></span>
+                {{ $t('hunts.jobName') }}
+                <span
+                  v-show="query.sortField === 'name' && !query.desc"
+                  class="fa fa-sort-asc" />
+                <span
+                  v-show="query.sortField === 'name' && query.desc"
+                  class="fa fa-sort-desc" />
+                <span
+                  v-show="query.sortField !== 'name'"
+                  class="fa fa-sort" />
               </th>
-              <th class="cursor-pointer no-wrap"
+              <th
+                class="cursor-pointer no-wrap"
                 @click="columnClick('userId')">
-                User
-                <span v-show="query.sortField === 'userId' && !query.desc" class="fa fa-sort-asc"></span>
-                <span v-show="query.sortField === 'userId' && query.desc" class="fa fa-sort-desc"></span>
-                <span v-show="query.sortField !== 'userId'" class="fa fa-sort"></span>
+                {{ $t('hunts.jobUser') }}
+                <span
+                  v-show="query.sortField === 'userId' && !query.desc"
+                  class="fa fa-sort-asc" />
+                <span
+                  v-show="query.sortField === 'userId' && query.desc"
+                  class="fa fa-sort-desc" />
+                <span
+                  v-show="query.sortField !== 'userId'"
+                  class="fa fa-sort" />
               </th>
               <th>
-                Search text
+                {{ $t('hunts.jobSearch') }}
               </th>
-              <th>
-                Notify
-              </th>
-              <th class="cursor-pointer"
+              <th
+                class="cursor-pointer"
                 @click="columnClick('created')">
-                Created
-                <span v-show="query.sortField === 'created' && !query.desc" class="fa fa-sort-asc"></span>
-                <span v-show="query.sortField === 'created' && query.desc" class="fa fa-sort-desc"></span>
-                <span v-show="query.sortField !== 'created'" class="fa fa-sort"></span>
+                {{ $t('common.created') }}
+                <span
+                  v-show="query.sortField === 'created' && !query.desc"
+                  class="fa fa-sort-asc" />
+                <span
+                  v-show="query.sortField === 'created' && query.desc"
+                  class="fa fa-sort-desc" />
+                <span
+                  v-show="query.sortField !== 'created'"
+                  class="fa fa-sort" />
               </th>
               <th>
                 ID
               </th>
-              <th width="260px">&nbsp;</th>
+              <th width="260px">
+&nbsp;
+              </th>
             </tr>
           </thead>
-          <transition-group name="list"
+          <transition-group
+            name="list"
             tag="tbody">
             <!-- packet search jobs -->
-            <template v-for="job in historyResults.data">
-              <hunt-row :key="`${job.id}-row`"
+            <template
+              v-for="job in historyResults.data"
+              :key="`${job.id}-row`">
+              <hunt-row
                 :job="job"
                 :user="user"
-                :canRerun="true"
-                :canRepeat="true"
-                arrayName="historyResults"
-                :canRemoveFromSessions="true"
-                @playJob="playJob"
-                @pauseJob="pauseJob"
-                @rerunJob="rerunJob"
-                @repeatJob="repeatJob"
-                @removeJob="removeJob"
+                :can-rerun="true"
+                :can-repeat="true"
+                array-name="historyResults"
+                :can-remove-from-sessions="true"
+                @play-job="playJob"
+                @pause-job="pauseJob"
+                @rerun-job="rerunJob"
+                @repeat-job="repeatJob"
+                @remove-job="removeJob"
                 @toggle="toggleJobDetail"
-                @openSessions="openSessions"
-                @removeFromSessions="removeFromSessions"
-                :notifierName="getNotifierName(job.notifier)">
-              </hunt-row>
-              <tr :key="`${job.id}-detail`"
+                @open-sessions="openSessions"
+                @remove-from-sessions="removeFromSessions" />
+              <tr
+                :key="`${job.id}-detail`"
                 v-if="job.expanded">
                 <td colspan="10">
-                  <hunt-data :job="job"
-                    @removeJob="removeJob"
-                    @removeUser="removeUser"
-                    @addUsers="addUsers"
+                  <hunt-data
+                    :job="job"
+                    @remove-job="removeJob"
+                    @remove-user="removeUser"
+                    @add-users="addUsers"
                     :user="user"
-                    @updateHunt="updateHunt"
-                    :notifierName="getNotifierName(job.notifier)">
-                  </hunt-data>
+                    @update-hunt="updateHunt" />
                 </td>
               </tr>
             </template> <!-- /packet search jobs -->
@@ -829,76 +776,74 @@ SPDX-License-Identifier: Apache-2.0
         </table>
 
         <!-- no results -->
-        <div v-if="!loading && !historyResults.data.length"
-          class="ml-1 mr-1">
+        <div
+          v-if="!loading && !historyResults.data.length"
+          class="ms-1 me-1">
           <div class="mb-5 info-area horizontal-center">
             <div>
-              <span class="fa fa-3x text-muted-more fa-folder-open">
-              </span>&nbsp;
+              <span class="fa fa-3x text-muted-more fa-folder-open" />&nbsp;
               <span v-if="!query.searchTerm">
-                There are currently no packet search jobs in the history.
+                {{ $t('hunts.emptyHistory') }}
                 <span v-if="!results.length">
                   <br>
-                  Click the "Create a packet search job" button above, and fill out the form to create one.
+                  {{ $t('hunts.noHunts') }}
                 </span>
               </span>
               <span v-else>
-                There are no packet search jobs that match your search.
+                {{ $t('hunts.noMatchHistory') }}
               </span>
             </div>
           </div>
         </div> <!-- /no results -->
       </template>
-
     </div> <!-- /packet search jobs content -->
 
     <!-- floating error -->
     <transition name="slide-fade">
-      <div v-if="floatingError || floatingSuccess"
+      <div
+        v-if="floatingError || floatingSuccess"
         class="card floating-msg">
         <div class="card-body">
-          <a @click="floatingError = false; floatingSuccess = false"
-            class="no-decoration cursor-pointer pull-right"
-            v-b-tooltip.hover
-            title="Dismiss">
-            <span class="fa fa-close">
-            </span>
+          <a
+            @click="floatingError = false; floatingSuccess = false"
+            id="dismissError"
+            class="no-decoration cursor-pointer pull-right">
+            <span class="fa fa-close" />
+            <BTooltip target="dismissError">$t('common.dismiss')</BTooltip>
           </a>
           <span :class="floatingError ? 'text-danger' : 'text-success'">
-            <span v-if="floatingError"
-              class="fa fa-exclamation-triangle mr-2">
-            </span>
-            <span v-else
-              class="fa fa-check mr-2">
-            </span>
+            <span
+              v-if="floatingError"
+              class="fa fa-exclamation-triangle me-2" />
+            <span
+              v-else
+              class="fa fa-check me-2" />
             {{ floatingError || floatingSuccess }}
           </span>
         </div>
       </div>
     </transition> <!-- /floating error -->
-
   </div>
-
 </template>
 
 <script>
-// import external
-import Vue from 'vue';
 // import services
 import SettingsService from '../settings/SettingsService';
 import SessionsService from '../sessions/SessionsService';
 import ConfigService from '../utils/ConfigService';
 import HuntService from './HuntService';
 // import components
-import ToggleBtn from '../../../../../common/vueapp/ToggleBtn';
-import ArkimeSearch from '../search/Search';
-import ArkimeLoading from '../utils/Loading';
-import ArkimePaging from '../utils/Pagination';
-import ArkimeCollapsible from '../utils/CollapsibleWrapper';
-import Focus from '../../../../../common/vueapp/Focus';
-import HuntData from './HuntData';
-import HuntRow from './HuntRow';
-import RoleDropdown from '../../../../../common/vueapp/RoleDropdown';
+import ToggleBtn from '@common/ToggleBtn.vue';
+import ArkimeSearch from '../search/Search.vue';
+import ArkimeLoading from '../utils/Loading.vue';
+import ArkimePaging from '../utils/Pagination.vue';
+import ArkimeCollapsible from '../utils/CollapsibleWrapper.vue';
+import Focus from '@common/Focus.vue';
+import HuntData from './HuntData.vue';
+import HuntRow from './HuntRow.vue';
+import RoleDropdown from '@common/RoleDropdown.vue';
+import NotifierDropdown from '@common/NotifierDropdown.vue';
+import { commaString, round } from '@common/vueFilters.js';
 // import utils
 import Utils from '../utils/utils';
 
@@ -917,9 +862,11 @@ export default {
     ArkimePaging,
     HuntData,
     HuntRow,
-    RoleDropdown
+    RoleDropdown,
+    NotifierDropdown
   },
   directives: { Focus },
+  emits: ['recalc-collapse'],
   data: function () {
     return {
       queuedListError: '',
@@ -951,7 +898,7 @@ export default {
       jobSrc: true,
       jobDst: true,
       jobType: 'reassembled',
-      jobNotifier: undefined,
+      jobNotifier: [],
       jobUsers: '',
       jobDescription: '',
       jobRoles: [],
@@ -1032,6 +979,8 @@ export default {
     }, 500);
   },
   methods: {
+    round,
+    commaString,
     /**
      * Cancels the pending session query (if it's still pending) and runs a new
      * query if requested
@@ -1041,7 +990,7 @@ export default {
     cancelAndLoad: function (runNewQuery) {
       const clientCancel = () => {
         if (pendingPromise) {
-          pendingPromise.source.cancel();
+          pendingPromise.controller.abort(this.$t('hunts.canceledSearch'));
           pendingPromise = null;
         }
 
@@ -1049,7 +998,7 @@ export default {
           this.loadingSessions = false;
           if (!this.sessions.data) {
             // show a page error if there is no data on the page
-            this.loadingSessionsError = 'You canceled the search';
+            this.loadingSessionsError = this.$t('hunts.canceledSearch');
           }
           return;
         }
@@ -1079,27 +1028,30 @@ export default {
     updateNewJobRoles (roles) {
       this.jobRoles = roles;
     },
+    updateJobNotifiers (notifiers) {
+      this.jobNotifier = notifiers;
+    },
     createJob: function () {
       this.createFormError = '';
 
       if (!this.sessions.recordsFiltered) {
-        this.createFormError = 'This hunt applies to no sessions. Try searching for sessions first.';
+        this.createFormError = this.$t('hunts.noSessions');
         return;
       }
       if (this.sessions.recordsFiltered > this.huntLimit) {
-        this.createFormError = `This hunt applies to too many sessions. Narrow down your session search to less than ${this.huntLimit} first.`;
+        this.createFormError = this.$t('hunts.tooManySessions', { count: this.huntLimit });
         return;
       }
       if (!this.jobName) {
-        this.createFormError = 'Hunt name required';
+        this.createFormError = this.$t('hunts.jobNameMissing');
         return;
       }
       if (!this.jobSearch) {
-        this.createFormError = 'Hunt search text required';
+        this.createFormError = this.$t('hunts.jobSearchMissing');
         return;
       }
       if (!this.jobSrc && !this.jobDst) {
-        this.createFormError = 'The hunt must search source or destination packets (or both)';
+        this.createFormError = this.$t('hunts.jobSrcDstMissing');
         return;
       }
 
@@ -1127,38 +1079,38 @@ export default {
         this.jobSearch = '';
         this.jobDescription = '';
         this.createFormError = '';
-        this.jobNotifier = undefined;
+        this.jobNotifier = [];
         this.loadData();
       }).catch((error) => {
-        this.createFormError = error.text || error;
+        this.createFormError = error.text || String(error);
       });
     },
     removeFromSessions: function (job) {
       if (job.loading) { return; } // it's already trying to do something
 
       this.setErrorForList('historyResults', '');
-      this.$set(job, 'loading', true);
+      job.loading = true;
 
       HuntService.cleanup(job.id, this.query.cluster).then((response) => {
-        this.$set(job, 'loading', false);
-        this.$set(job, 'removed', true);
-        this.$set(this, 'floatingSuccess', response.data.text || 'Successfully removed hunt ID and name from the matched sessions.');
+        job.loading = false;
+        job.removed = true;
+        this.floatingSuccess = response.text || 'Successfully removed hunt ID and name from the matched sessions.';
         setTimeout(() => {
-          this.$set(this, 'floatingSuccess', '');
+          this.floatingSuccess = '';
         }, 5000);
       }).catch((error) => {
-        this.$set(job, 'loading', false);
-        this.setErrorForList('historyResults', error.text || error);
+        job.loading = false;
+        this.setErrorForList('historyResults', error.text || String(error));
       });
     },
     removeJob: function (job, arrayName) {
       if (job.loading) { return; } // it's already trying to do something
 
       this.setErrorForList(arrayName, '');
-      this.$set(job, 'loading', true);
+      job.loading = true;
 
       HuntService.delete(job.id, this.query.cluster).then((response) => {
-        this.$set(job, 'loading', false);
+        job.loading = false;
         let array = this.results;
         if (arrayName === 'historyResults') {
           array = this.historyResults.data;
@@ -1171,70 +1123,67 @@ export default {
         }
         if (job.status === 'queued') { this.calculateQueue(); }
       }).catch((error) => {
-        this.$set(job, 'loading', false);
-        this.setErrorForList(arrayName, error.text || error);
+        job.loading = false;
+        this.setErrorForList(arrayName, error.text || String(error));
       });
     },
     cancelJob: function (job) {
       if (job.loading) { return; } // it's already trying to do something
 
       this.setErrorForList('results', '');
-      this.$set(job, 'loading', true);
+      job.loading = true;
 
       HuntService.cancel(job.id, this.query.cluster).then((response) => {
-        this.$set(job, 'loading', false);
+        job.loading = false;
         this.loadData();
       }).catch((error) => {
-        this.$set(job, 'loading', false);
-        this.setErrorForList('results', error.text || error);
+        job.loading = false;
+        this.setErrorForList('results', error.text || String(error));
       });
     },
     pauseJob: function (job) {
       if (job.loading) { return; } // it's already trying to do something
 
       this.setErrorForList('results', '');
-      this.$set(job, 'loading', true);
+      job.loading = true;
 
       HuntService.pause(job.id, this.query.cluster).then((response) => {
         if (job.status === 'running') {
           this.loadData();
           return;
         }
-        this.$set(job, 'status', 'paused');
-        this.$set(job, 'loading', false);
+        job.status = 'paused';
+        job.loading = false;
         this.calculateQueue();
       }).catch((error) => {
-        this.$set(job, 'loading', false);
-        this.setErrorForList('results', error.text || error);
+        job.loading = false;
+        this.setErrorForList('results', error.text || String(error));
       });
     },
     playJob: function (job) {
       if (job.loading) { return; } // it's already trying to do something
 
       this.setErrorForList('results', '');
-      this.$set(job, 'loading', true);
+      job.loading = true;
 
       HuntService.play(job.id, this.query.cluster).then((response) => {
-        this.$set(job, 'status', 'queued');
-        this.$set(job, 'loading', false);
+        job.status = 'queued';
+        job.loading = false;
         this.calculateQueue();
       }).catch((error) => {
-        this.$set(job, 'loading', false);
-        this.setErrorForList('results', error.text || error);
+        job.loading = false;
+        this.setErrorForList('results', error.text || String(error));
       });
     },
     openSessions: function (job) {
       const url = `sessions?expression=huntId == ${job.id}&stopTime=${job.query.stopTime}&startTime=${job.query.startTime}`;
       window.open(url, '_blank');
     },
-    setJobSearchType: function (val) {
-      this.jobSearchType = val;
-    },
     setJobType: function (val) {
       this.jobType = val;
     },
     toggleJobDetail: function (job) {
-      this.$set(job, 'expanded', !job.expanded);
+      job.expanded = !job.expanded;
     },
     debounceSearch: function () {
       if (timeout) { clearTimeout(timeout); }
@@ -1285,26 +1234,26 @@ export default {
       this.rerunJob(job);
     },
     removeUser: function (user, job) {
-      this.$set(this, 'floatingError', '');
+      this.floatingError = '';
 
       HuntService.removeUser(job.id, user, this.query.cluster).then((response) => {
-        this.$set(job, 'users', response.data.users);
+        job.users = response.users;
       }).catch((error) => {
-        this.$set(this, 'floatingError', error.text || error);
+        this.floatingError = error.text || String(error);
       });
     },
     addUsers: function (users, job) {
-      this.$set(this, 'floatingError', '');
+      this.floatingError = '';
 
       HuntService.addUsers(job.id, users, this.query.cluster).then((response) => {
-        this.$set(job, 'users', response.data.users);
+        job.users = response.users;
       }).catch((error) => {
-        this.$set(this, 'floatingError', error.text || error);
+        this.floatingError = error.text || String(error);
       });
     },
     updateHunt: function (job) {
-      this.$set(this, 'floatingError', '');
-      this.$set(this, 'floatingSuccess', '');
+      this.floatingError = '';
+      this.floatingSuccess = '';
 
       const data = {
         roles: job.roles,
@@ -1312,21 +1261,13 @@ export default {
       };
 
       HuntService.updateHunt(job.id, data, this.query.cluster).then((response) => {
-        this.$set(this, 'floatingSuccess', response.data.text);
+        this.floatingSuccess = response.text;
         setTimeout(() => {
-          this.$set(this, 'floatingSuccess', '');
+          this.floatingSuccess = '';
         }, 5000);
       }).catch((error) => {
-        this.$set(this, 'floatingError', error.text || error);
+        this.floatingError = error.text || String(error);
       });
-    },
-    getNotifierName (id) {
-      if (!this.notifiers) { return; }
-      for (const notifier of this.notifiers) {
-        if (notifier.id === id) {
-          return notifier.name;
-        }
-      }
     },
     /* helper functions ---------------------------------------------------- */
     setErrorForList: function (arrayName, errorText) {
@@ -1340,7 +1281,7 @@ export default {
       let queueCount = 1;
       for (const job of this.results) {
         if (job.status === 'queued') {
-          this.$set(job, 'queueCount', queueCount);
+          job.queueCount = queueCount;
           queueCount++;
         }
       }
@@ -1382,7 +1323,7 @@ export default {
         this.historyListLoadingError = '';
 
         if (Object.keys(expanded).length || Object.keys(loading).length) {
-          for (const result of response.data.data) {
+          for (const result of response.data) {
             // make sure expanded ones are still expanded
             if (Object.keys(expanded).length) {
               if (expanded[result.id]) {
@@ -1398,11 +1339,11 @@ export default {
           }
         }
 
-        this.nodeInfo = response.data.nodeInfo;
-        this.$set(this, 'historyResults', response.data);
+        this.nodeInfo = response.nodeInfo;
+        this.historyResults = response;
       }).catch((error) => {
         if (error.status === 403) { this.permissionDenied = true; }
-        this.historyListLoadingError = error.text || error;
+        this.historyListLoadingError = error.text || String(error);
       });
 
       // get the running, queued, paused hunts
@@ -1415,7 +1356,7 @@ export default {
         this.queuedListLoadingError = '';
 
         if (Object.keys(expanded).length || Object.keys(loading).length) {
-          for (const result of response.data.data) {
+          for (const result of response.data) {
             // make sure expanded ones are still expanded
             if (Object.keys(expanded).length) {
               if (expanded[result.id]) {
@@ -1431,24 +1372,20 @@ export default {
           }
         }
 
-        this.results = response.data.data;
-        this.runningJob = response.data.runningJob;
+        this.results = response.data;
+        this.runningJob = response.runningJob;
         if (this.runningJob) {
-          this.$set(this.runningJob, 'loading', runningJobLoading);
-          this.$set(this.runningJob, 'expanded', runningJobExpanded);
+          this.runningJob.loading = runningJobLoading;
+          this.runningJob.expanded = runningJobExpanded;
           let searchedSessions = this.runningJob.searchedSessions;
           if (this.runningJob.failedSessionIds && this.runningJob.failedSessionIds.length) {
             searchedSessions = searchedSessions - this.runningJob.failedSessionIds.length;
           }
-          this.$set(
-            this.runningJob,
-            'progress',
-            (searchedSessions / this.runningJob.totalSessions) * 100
-          );
+          this.runningJob.progress = (searchedSessions / this.runningJob.totalSessions) * 100;
         }
         this.calculateQueue();
       }).catch((error) => {
-        this.queuedListLoadingError = error.text || error;
+        this.queuedListLoadingError = error.text || String(error);
       });
 
       // stop loading when both requests are done
@@ -1460,35 +1397,37 @@ export default {
         respondedAt = undefined;
       });
     },
-    loadSessions: function () {
+    async loadSessions () {
       this.loadingSessions = true;
       this.loadingSessionsError = '';
 
-      // create unique cancel id to make canel req for corresponding es task
+      // create unique cancel id to make cancel req for corresponding es task
       const cancelId = Utils.createRandomString();
       this.sessionsQuery.cancelId = cancelId;
 
-      const source = Vue.axios.CancelToken.source();
-      const cancellablePromise = SessionsService.get(this.sessionsQuery, source.token);
+      try {
+        const { controller, fetcher } = SessionsService.get(this.sessionsQuery, false);
+        pendingPromise = { controller, cancelId };
 
-      // set pending promise info so it can be cancelled
-      pendingPromise = { cancellablePromise, source, cancelId };
+        const response = await fetcher; // do the fetch
+        if (response.error) {
+          throw new Error(response.error);
+        }
 
-      cancellablePromise.then((response) => {
         pendingPromise = null;
-        this.sessions = response.data;
+        this.sessions = response;
         this.loadingSessions = false;
-      }).catch((error) => {
+      } catch (error) {
         pendingPromise = null;
         this.sessions = {};
         this.loadingSessions = false;
-        this.loadingSessionsError = 'Problem loading sessions. Try narrowing down your results on the sessions page first.';
-      });
+        this.loadingSessionsError = this.$t('hunts.problemLoading');
+      }
     }
   },
-  beforeDestroy: function () {
+  beforeUnmount () {
     if (pendingPromise) {
-      pendingPromise.source.cancel();
+      pendingPromise.controller.abort(this.$t('hunts.closePage'));
       pendingPromise = null;
     }
 
@@ -1506,9 +1445,9 @@ export default {
   font-size: var(--px-xxlg);
 }
 
-form.hunt-create-navbar {
+.hunt-create-navbar {
   z-index: 4;
-  height: 45px;
+  height: 38px;
   background-color: var(--color-quaternary-lightest);
 
   -webkit-box-shadow: 0 0 16px -2px black;
@@ -1530,11 +1469,11 @@ form.hunt-create-navbar {
   max-height: 500px;
   transition: max-height .8s;
 }
-.slide-enter,
+.slide-enter-from,
 .slide-leave-active {
   max-height: 0px;
 }
-.slide-leave {
+.slide-leave-from {
   max-height: 500px;
 }
 .slide-leave-to {
@@ -1549,11 +1488,11 @@ form.hunt-create-navbar {
   max-height: 500px;
   transition: max-height .3s;
 }
-.grow-enter,
+.grow-enter-from,
 .grow-leave-active {
   max-height: 0px;
 }
-.grow-leave {
+.grow-leave-from {
   max-height: 500px;
 }
 .grow-leave-to {
@@ -1565,7 +1504,7 @@ form.hunt-create-navbar {
 .list-enter-active, .list-leave-active {
   transition: all .8s;
 }
-.list-enter {
+.list-enter-from {
   opacity: 0;
   transform: translateX(30px);
 }
@@ -1575,12 +1514,6 @@ form.hunt-create-navbar {
 }
 .list-move {
   transition: transform .8s;
-}
-
-/* regex help icon positioning */
-.regex-help {
-  margin-top: 3px;
-  margin-left: 6px;
 }
 
 /* floating message */
@@ -1609,7 +1542,7 @@ form.hunt-create-navbar {
 .slide-fade-leave-active {
   transition: all .8s ease;
 }
-.slide-fade-enter, .slide-fade-leave-to {
+.slide-fade-enter-from, .slide-fade-leave-to {
   transform: translateX(-365px);
   opacity: 0;
 }

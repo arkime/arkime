@@ -16,6 +16,12 @@
                "packets" : 8,
                "port" : 445
             },
+            "dot1q" : {
+               "id" : [
+                  1113
+               ],
+               "idCnt" : 1
+            },
             "dstOui" : [
                "VMware, Inc."
             ],

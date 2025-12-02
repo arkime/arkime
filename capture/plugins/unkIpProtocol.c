@@ -15,9 +15,9 @@ LOCAL void unkIpProtocol_create_sessionid(uint8_t *sessionId, ArkimePacket_t *co
 {
     // uint8_t *data = packet->pkt + packet->payloadOffset;
 
+    memset(sessionId, 0, 4);
     sessionId[0] = 2;
-    sessionId[1] = 0x9a;
-    sessionId[2] = 0x9a;
+    sessionId[1] = unkIpProtocolMProtocol;
 
     // for now, lump all unkIpProtocol into the same session
 }
@@ -60,5 +60,7 @@ void arkime_plugin_init()
                                                        unkIpProtocol_create_sessionid,
                                                        unkIpProtocol_pre_process,
                                                        unkIpProtocol_process,
-                                                       NULL);
+                                                       NULL,
+                                                       NULL,
+                                                       600);
 }

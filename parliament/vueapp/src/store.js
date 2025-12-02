@@ -2,12 +2,9 @@
 Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 */
-import Vue from 'vue';
-import Vuex from 'vuex';
+import { createStore } from 'vuex';
 
-Vue.use(Vuex);
-
-const store = new Vuex.Store({
+const store = createStore({
   state: {
     user: undefined,
     roles: [],
@@ -16,7 +13,9 @@ const store = new Vuex.Store({
     isUser: false,
     isAdmin: false,
     parliament: {},
-    refreshInterval: 15000
+    refreshInterval: 15000,
+    stats: {},
+    scrollToClusterId: null
   },
   mutations: {
     setUser (state, value) {
@@ -47,11 +46,18 @@ const store = new Vuex.Store({
     },
     setSettings (state, value) {
       state.parliament.settings = value;
+    },
+    setStats (state, value) {
+      state.stats = value;
+    },
+    setScrollToClusterId (state, value) {
+      state.scrollToClusterId = value;
     }
   },
   getters: {
     getUser: state => state.user,
-    getRoles: state => state.roles
+    getRoles: state => state.roles,
+    getTheme: state => state.theme
   }
 });
 

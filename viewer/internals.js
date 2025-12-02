@@ -19,7 +19,7 @@ const internals = {
   isProduction: false,
   multiES: false,
   CYBERCHEFVERSION: '10.19.2',
-  httpAgent: new http.Agent({ keepAlive: true, keepAliveMsecs: 5000, maxSockets: 40 }),
+  httpAgent: new http.Agent({ keepAlive: true, keepAliveMsecs: 20000, maxSockets: 50, maxFreeSockets: 25 }),
   previousNodesStats: [],
   caTrustCerts: new Map(),
   cronRunning: false,
@@ -105,7 +105,7 @@ ArkimeConfig.loaded(() => {
   internals.userNameHeader = Config.get('userNameHeader');
   internals.esAdminUsersSet = Config.get('esAdminUsers', false) !== false;
   internals.esAdminUsers = Config.getArray('esAdminUsers', '');
-  internals.httpsAgent = new https.Agent({ keepAlive: true, keepAliveMsecs: 5000, maxSockets: 40, rejectUnauthorized: !ArkimeConfig.insecure });
+  internals.httpsAgent = new https.Agent({ keepAlive: true, keepAliveMsecs: 20000, maxSockets: 50, maxFreeSockets: 25, rejectUnauthorized: !ArkimeConfig.insecure });
   internals.isLocalViewRegExp = Config.get('isLocalViewRegExp') ? new RE2(Config.get('isLocalViewRegExp')) : undefined;
   internals.allowUploads = !!Config.get('uploadCommand');
   internals.uploadRoles = Config.getArray('uploadRoles', 'arkimeUser');

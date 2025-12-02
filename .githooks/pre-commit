@@ -1,0 +1,92 @@
+#!/bin/bash
+
+# pre-commit hook to:
+# (1) check for TODO (or other) keywords in committed files
+# (2) check for "(s)" in en.json values
+
+# --------------------------------------------------------------------------
+# Pre-commit hook to check for TODO (or other) keywords in committed files
+# (excluding this hook file itself)
+echo -e "Checking for TODO (or other) keywords in committed files...\n"
+if git diff --cached --name-only | grep -v '^\.githooks/pre-commit$' | xargs -r git diff --cached -- | egrep -i '(todo ecr|todo alw)' 2>&1 # NOTE: add other keywords here as needed
+then
+    echo -e "\n❌ Found bad stuff in this commit - FIX IT!\n"
+    exit 1
+else
+    echo -e "✅ Check passed!\n"
+fi
+
+# --------------------------------------------------------------------------
+# Pre-commit hook to check for "(s)" in en.json values
+EN_JSON_FILE="common/vueapp/locales/en.json"
+
+# Check if en.json is being committed
+if git diff --cached --name-only | grep -q "^${EN_JSON_FILE}$"; then
+    echo "Checking ${EN_JSON_FILE} for '(s)' in values..."
+
+    # Use Node.js to parse JSON and check for "(s)" in values
+    check_result=$(node -e "
+        const fs = require('fs');
+        const path = require('path');
+
+        const filePath = '${EN_JSON_FILE}';
+        let content;
+
+        try {
+            content = fs.readFileSync(filePath, 'utf8');
+        } catch (err) {
+            console.error('Error reading file:', err.message);
+            process.exit(1);
+        }
+
+        let data;
+        try {
+            data = JSON.parse(content);
+        } catch (err) {
+            console.error('Error parsing JSON:', err.message);
+            process.exit(1);
+        }
+
+        const violations = [];
+
+        function checkObject(obj, path = '') {
+            for (const [key, value] of Object.entries(obj)) {
+                const currentPath = path ? \`\${path}.\${key}\` : key;
+
+                if (typeof value === 'string') {
+                    if (value.includes('(s)')) {
+                        violations.push({
+                            path: currentPath,
+                            value: value
+                        });
+                    }
+                } else if (typeof value === 'object' && value !== null) {
+                    checkObject(value, currentPath);
+                }
+            }
+        }
+
+        checkObject(data);
+
+        if (violations.length > 0) {
+            console.error('\\n❌ Found (s) in the following entries:\\n');
+            violations.forEach(v => {
+                console.error(\`  \${v.path}: \"\${v.value}\"\`);
+            });
+            console.error('\\nPlease remove all instances of \"(s)\" from values before committing.\\n');
+            process.exit(1);
+        }
+
+        console.log('✅ No (s) found in values.');
+        process.exit(0);
+    " 2>&1)
+
+    check_exit_code=$?
+    echo "$check_result"
+
+    if [ $check_exit_code -ne 0 ]; then
+        exit 1
+    fi
+fi
+
+exit 0

@@ -26,6 +26,12 @@
                "packets" : 0,
                "port" : 443
             },
+            "dot1q" : {
+               "id" : [
+                  300
+               ],
+               "idCnt" : 1
+            },
             "dstOui" : [
                "ICANN, IANA Department"
             ],

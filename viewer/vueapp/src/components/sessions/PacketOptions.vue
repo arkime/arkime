@@ -3,192 +3,261 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-  <span>
-    <div class="form-group">
+  <BRow
+    gutter-x="1"
+    class="text-start"
+    align-h="start">
+    <BCol cols="auto">
       <!-- # packets -->
-      <span v-b-tooltip.hover
-        :title="numPacketsInfo">
+      <span ref="numPackets">
         <b-form-select
           size="sm"
           role="listbox"
-          :value="params.packets"
+          :model-value="params.packets"
           :disabled="params.gzip || params.image"
-          class="mr-1 form-control"
+          class="me-1 form-control"
           :class="{'disabled':params.gzip}"
           :options="[
-            { value: 50, text: '50 packets' },
-            { value: 200, text: '200 packets' },
-            { value: 500, text: '500 packets' },
-            { value: 1000, text: '1,000 packets' },
-            { value: 2000, text: '2,000 packets' }
+            { value: 50, text: $t('common.packetCount', 50) },
+            { value: 200, text: $t('common.packetCount', 200) },
+            { value: 500, text: $t('common.packetCount', 500) },
+            { value: 1000, text: $t('common.packetCount', 1000) },
+            { value: 2000, text: $t('common.packetCount', 2000) },
           ]"
-          @change="$emit('updateNumPackets', $event)"
-        />
+          @update:model-value="$emit('updateNumPackets', $event)" />
+        <BTooltip
+          :target="getTarget('numPackets')"
+          v-if="params.gzip || params.image">{{ $t('sessions.packetOptions.noPacketSelector') }}</BTooltip>
       </span> <!-- /# packets -->
+    </BCol>
+    <BCol cols="auto">
       <!-- packet display type -->
       <b-form-select
         size="sm"
         role="listbox"
-        :value="params.base"
-        class="mr-1 form-control"
+        :model-value="params.base"
+        class="me-1 form-control"
         :options="[
-          { value: 'natural', text: 'natural' },
-          { value: 'ascii', text: 'ascii' },
-          { value: 'utf8', text: 'utf8' },
-          { value: 'hex', text: 'hex' }
+          { value: 'natural', text: $t('sessions.packetOptions.natural') },
+          { value: 'ascii', text: $t('sessions.packetOptions.ascii') },
+          { value: 'utf8', text: $t('sessions.packetOptions.utf8') },
+          { value: 'hex', text: $t('sessions.packetOptions.hex') }
         ]"
-        @change="$emit('updateBase', $event)"
-      /> <!-- /packet display type -->
+        @update:model-value="$emit('updateBase', $event)" /> <!-- /packet display type -->
+    </BCol>
+    <BCol cols="auto">
       <!-- toggle options -->
       <b-dropdown
         size="sm"
-        class="mr-1"
+        class="me-1"
         variant="checkbox"
-        text="Packet Options"
-        title="Packet Options">
+        :text="$t('sessions.packetOptions.packetOptions')">
         <b-dropdown-item
-          @click="$emit('toggleShowFrames')"
-          :title="params.showFrames ? 'Show Reassembled Packets' : 'Show Raw Packets'">
-          {{ params.showFrames ? 'Show Reassembled Packets' : 'Show Raw Packets' }}
+          @click="$emit('toggleShowFrames')">
+          {{ $t(params.showFrames ? 'sessions.packetOptions.showReassembled' : 'sessions.packetOptions.showRaw') }}
         </b-dropdown-item>
         <b-dropdown-item
-          @click="$emit('toggleTimestamps')"
-          :title="params.ts ? 'Hide Packet Info' : 'Show Packet Info'">
-          {{ params.ts ? 'Hide' : 'Show' }}
-          Packet Info
+          @click="$emit('toggleTimestamps')">
+          {{ $t(params.ts ? 'sessions.packetOptions.hideInfo' : 'sessions.packetOptions.showInfo') }}
         </b-dropdown-item>
         <b-dropdown-item
+          ref="toggleLineNumbers"
           v-if="params.base === 'hex'"
-          @click="$emit('toggleLineNumbers')"
-          :title="params.line ? 'Hide Line Numbers' : 'Show Line Numbers'">
-          {{ params.line ? 'Hide' : 'Show'}}
-          Line Numbers
+          @click="$emit('toggleLineNumbers')">
+          {{ $t(params.line ? 'sessions.packetOptions.hideLineNumbers' : 'sessions.packetOptions.showLineNumbers') }}
         </b-dropdown-item>
         <b-dropdown-item
+          ref="toggleCompression"
           v-if="!params.showFrames"
-          @click="$emit('toggleCompression')"
-          v-b-tooltip.hover.right="{ disabled: params.gzip }"
-          :title="params.gzip ? 'Disable Uncompressing' : 'Enable Uncompressing (Note: all packets will be requested)'">
-          {{ params.gzip ? 'Disable Uncompressing' : 'Enable Uncompressing' }}
+          @click="$emit('toggleCompression')">
+          {{ $t(params.gzip ? 'sessions.packetOptions.disableUncompressing' : 'sessions.packetOptions.enableUncompressing') }}
+          <BTooltip
+            :target="getTarget('toggleCompression')"
+            noninteractive
+            boundary="viewport"
+            placement="right"
+            teleport-to="body">
+            {{ $t(params.gzip ? 'sessions.packetOptions.disableUncompressing' : 'sessions.packetOptions.enableUncompressingTip') }}
+          </BTooltip>
         </b-dropdown-item>
         <b-dropdown-item
+          ref="toggleImages"
           v-if="!params.showFrames"
-          @click="$emit('toggleImages')"
-          v-b-tooltip.hover.right="{ disabled: params.image }"
-          :title="params.image ? 'Hide Images & Files' : 'Show Images & Files (Note: all packets will be requested)'">
-          {{ params.image ? 'Hide' : 'Show'}}
-          Images &amp; Files
+          @click="$emit('toggleImages')">
+          {{ $t(params.image ? 'sessions.packetOptions.hideFiles' : 'sessions.packetOptions.showFiles') }}
+          <BTooltip
+            :target="getTarget('toggleImages')"
+            noninteractive
+            boundary="viewport"
+            placement="right"
+            teleport-to="body">
+            {{ $t(params.image ? 'sessions.packetOptions.hideFiles' : 'sessions.packetOptions.showFilesTip') }}
+          </BTooltip>
         </b-dropdown-item>
-        <b-dropdown-divider></b-dropdown-divider>
+        <b-dropdown-divider />
         <b-dropdown-item
           target="_blank"
           :href="cyberChefSrcUrl">
-          Open <strong>src</strong> packets with CyberChef
+          {{ $t('sessions.packetOptions.openCyberChefSrc') }}
         </b-dropdown-item>
         <b-dropdown-item
           target="_blank"
           :href="cyberChefDstUrl">
-          Open <strong>dst</strong> packets with CyberChef
+          {{ $t('sessions.packetOptions.openCyberChefDst') }}
         </b-dropdown-item>
       </b-dropdown> <!-- /toggle options -->
+    </BCol>
+    <BCol cols="auto">
       <!-- src/dst packets -->
-      <div class="btn-group mr-1">
+      <div class="btn-group me-1">
         <button
-          v-b-tooltip
+          ref="toggleSrc"
           type="button"
           @click="$emit('toggleShowSrc')"
           :class="{'active':params.showSrc}"
-          title="Toggle source packet visibility"
           class="btn btn-sm btn-secondary btn-checkbox btn-sm">
-          Src
+          {{ $t('common.src') }}
+          <BTooltip
+            :target="getTarget('toggleSrc')"
+            noninteractive
+            boundary="viewport"
+            placement="bottom">
+            {{ $t('sessions.packetOptions.srcVisTip') }}
+          </BTooltip>
         </button>
         <button
-          v-b-tooltip
+          ref="toggleDst"
           type="button"
           @click="$emit('toggleShowDst')"
           :class="{'active':params.showDst}"
-          title="Toggle destination packet visibility"
           class="btn btn-secondary btn-checkbox btn-sm">
-          Dst
+          {{ $t('common.dst') }}
+          <BTooltip
+            :target="getTarget('toggleDst')"
+            noninteractive
+            boundary="viewport"
+            placement="bottom">
+            {{ $t('sessions.packetOptions.dstVisTip') }}
+          </BTooltip>
         </button>
       </div> <!-- /src/dst packets -->
+    </BCol>
+    <BCol cols="auto">
       <!-- decodings -->
-      <div class="btn-group">
+      <div
+        class="btn-group"
+        v-if="decodingsClone">
         <button
           v-for="(value, key) in decodingsClone"
+          :ref="`decodings${key}`"
+          :id="`decodings${key}`"
           :key="key"
           type="button"
-          v-b-tooltip.hover
           @click="toggleDecoding(key)"
           :disabled="params.showFrames"
-          :title="`Toggle ${value.name} Decoding`"
           :class="{'active':decodingsClone[key].active}"
           class="btn btn-secondary btn-checkbox btn-sm">
           {{ value.name }}
+          <BTooltip
+            :target="`decodings${key}`"
+            noninteractive
+            boundary="viewport"
+            placement="bottom">
+            {{ $t('sessions.packetOptions.toggleDecodingTip', value.name) }}
+          </BTooltip>
         </button>
       </div> <!-- /decodings -->
-    </div>
+    </BCol>
     <!-- decoding form -->
-    <div v-if="decodingForm">
-      <form class="form-inline well well-sm mt-1">
-        <span v-for="field in decodingsClone[decodingForm].fields"
-          :key="field.name">
-          <div class="form-group mr-1 mt-1"
-            v-if="!field.disabled">
-            <div class="input-group input-group-sm">
-              <span class="input-group-prepend">
-                <span class="input-group-text">
-                  {{ field.name }}
-                </span>
-              </span>
-              <input
-                type="field.type"
-                class="form-control"
-                v-model="field.value"
-                :placeholder="field.name"
-              />
-            </div>
+    <BRow
+      gutter-x="1"
+      class="text-start well well-sm mt-2 pt-2"
+      align-h="start"
+      v-if="decodingForm">
+      <template
+        v-for="field in decodingsClone[decodingForm].fields"
+        :key="field.name">
+        <BCol
+          cols="auto"
+          v-if="!field.disabled">
+          <div class="input-group input-group-sm">
+            <span class="input-group-text">
+              {{ field.name }}
+            </span>
+            <input
+              type="field.type"
+              class="form-control"
+              v-model="field.value"
+              :placeholder="field.name">
           </div>
-        </span>
-        <div class="btn-group btn-group-sm pull-right mt-1">
+        </BCol>
+      </template>
+      <BCol cols="auto">
+        <div class="btn-group btn-group-sm pull-right">
           <button
+            ref="cancelDecoding"
             type="button"
-            title="cancel"
-            v-b-tooltip.hover
             class="btn btn-warning"
             @click="closeDecodingForm(false)">
-            <span class="fa fa-ban">
-            </span>
+            <span class="fa fa-ban" />
+            <BTooltip :target="getTarget('cancelDecoding')">
+              {{ $t('common.cancel') }}
+            </BTooltip>
           </button>
           <button
+            ref="applyDecoding"
             type="button"
-            title="apply"
-            v-b-tooltip.hover
             class="btn btn-theme-primary"
             @click="applyDecoding(decodingForm)">
-            <span class="fa fa-check">
-            </span>
+            <span class="fa fa-check" />
+            <BTooltip :target="getTarget('applyDecoding')">
+              {{ $t('common.apply') }}
+            </BTooltip>
           </button>
         </div>
-      </form>
-      <div class="help-block ml-2">
-        <span class="fa fa-info-circle">
-        </span>&nbsp;
+      </BCol>
+      <div class="help-block ms-2">
+        <span class="fa fa-info-circle" />&nbsp;
         {{ decodingsClone[decodingForm].title }}
       </div>
-    </div> <!-- /decoding form -->
-  </span>
+    </BRow> <!-- /decoding form -->
+  </BRow>
 </template>
 
 <script>
 export default {
   name: 'PacketOptions',
   props: {
-    params: Object,
-    decodings: Object,
-    cyberChefSrcUrl: String,
-    cyberChefDstUrl: String
+    params: {
+      type: Object,
+      default: () => ({})
+    },
+    decodings: {
+      type: Object,
+      default: () => ({})
+    },
+    cyberChefSrcUrl: {
+      type: String,
+      default: ''
+    },
+    cyberChefDstUrl: {
+      type: String,
+      default: ''
+    }
   },
+  emits: [
+    'updateNumPackets',
+    'updateBase',
+    'toggleShowFrames',
+    'toggleTimestamps',
+    'toggleLineNumbers',
+    'toggleCompression',
+    'toggleImages',
+    'toggleShowSrc',
+    'toggleShowDst',
+    'updateDecodings',
+    'applyDecodings'
+  ],
   data () {
     return {
       decodingForm: false,
@@ -196,32 +265,21 @@ export default {
     };
   },
   computed: {
-    numPacketsInfo () {
-      let toggle;
-
-      if (this.params.gzip && this.params.image) {
-        toggle = 'uncompress and images & files';
-      } else if (this.params.gzip) {
-        toggle = 'uncompress';
-      } else if (this.params.image) {
-        toggle = 'images and files';
-      } else {
-        return '';
-      }
-
-      return `
-        Displaying all packets for this session.
-        You cannot select the number of packets because ${toggle} might need them all.
-        To select the number of packets returned, disable ${toggle} from the Packet Options menu.
-      `;
-    }
   },
   watch: {
-    decodings (newVal) {
-      this.decodingsClone = JSON.parse(JSON.stringify(newVal));
+    decodings: {
+      deep: true,
+      handler (newVal) {
+        if (newVal) {
+          this.decodingsClone = JSON.parse(JSON.stringify(newVal));
+        }
+      }
     }
   },
   methods: {
+    getTarget (ref) {
+      return this.$refs[ref];
+    },
     /**
      * Toggles a decoding on or off
      * If a decoding needs more input, shows form
@@ -265,11 +323,11 @@ export default {
       if (decoding.active) {
         if (decoding.fields) {
           for (const field of decoding.fields) {
-            this.$set(paramsClone[key], field.key, field.value);
+            paramsClone[key][field.key] = field.value;
           }
         }
       } else {
-        this.$delete(paramsClone, key);
+        delete paramsClone[key];
       }
 
       this.$emit('applyDecodings', paramsClone);

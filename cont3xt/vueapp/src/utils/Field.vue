@@ -4,52 +4,69 @@ SPDX-License-Identifier: Apache-2.0
 -->
 <template>
   <span class="field">
-    <a @click="toggleDropdown">
+    <a style="color: revert !important;">
+      <v-menu
+        activator="parent"
+        location="bottom end">
+        <v-sheet
+          class="d-flex flex-column mw-fit-content"
+          data-testid="field-dropdown">
+          <template v-for="option in options">
+            <v-btn
+              :class="[btnPullClass]"
+              size="small"
+              variant="text"
+              target="_blank"
+              :key="option.name"
+              v-if="option.href"
+              :href="formatUrl(option)">
+              {{ option.name }}
+            </v-btn>
+          </template>
+          <v-btn
+            :class="[btnPullClass]"
+            size="small"
+            variant="text"
+            key="copy"
+            v-if="options.copy"
+            @click="doCopy(value)">
+            {{ options.copy }}
+          </v-btn>
+          <v-btn
+            :class="[btnPullClass]"
+            size="small"
+            variant="text"
+            key="pivot"
+            target="_blank"
+            :href="pivotHref"
+            v-if="options.pivot">
+            {{ options.pivot }}
+          </v-btn>
+        </v-sheet>
+      </v-menu>
+
       <template v-if="highlights">
-        <highlightable-text :content="display || value" :highlights="highlights"/>
+        <highlightable-text
+          :content="display || value"
+          :highlights="highlights"
+          :highlight-color="highlightColor" />
       </template>
       <template v-else>
-        {{display || value}}
+        {{ display || value }}
         <template v-if="decodedValue">
-          <span class="text-muted">({{decodedValue}})</span>
+          <span class="text-muted">({{ decodedValue }})</span>
         </template>
       </template>
-      <span class="fa fa-caret-down" />
+      <v-icon icon="mdi-menu-down" />
     </a>
     <!-- clickable field menu -->
-    <div v-if="isOpen"
-      class="field-dropdown"
-      data-testid="field-dropdown"
-      :class="{'pull-right':!pullLeft,'pull-left':pullLeft}">
-      <template v-for="option in options">
-        <b-dropdown-item
-          target="_blank"
-          :key="option.name"
-          v-if="option.href"
-          :href="formatUrl(option)">
-          {{ option.name }}
-        </b-dropdown-item>
-      </template>
-      <b-dropdown-item
-        key="copy"
-        v-if="options.copy"
-        @click="doCopy(value)">
-        {{ options.copy }}
-      </b-dropdown-item>
-      <b-dropdown-item
-        key="pivot"
-        target="_blank"
-        :href="pivotHref"
-        v-if="options.pivot">
-        {{ options.pivot }}
-      </b-dropdown-item>
-    </div>
   </span>
 </template>
 
 <script>
-import HighlightableText from '@/utils/HighlightableText';
+import HighlightableText from '@/utils/HighlightableText.vue';
 import { formatPostProcessedValue } from '@/utils/formatValue';
+import { clipboardCopyText } from '@/utils/clipboardCopyText';
 
 export default {
   name: 'Cont3xtField',
@@ -68,10 +85,12 @@ export default {
     },
     decodedValue: { // the decoded value to be displayed next to searched value
       type: String,
-      required: false
+      required: false,
+      default: ''
     },
     display: { // the value to display (uses value is this is missing)
-      type: String
+      type: String,
+      default: ''
     },
     pullLeft: { // whether the dropdown should drop down from the left
       type: Boolean,
@@ -86,14 +105,16 @@ export default {
       default () {
         return null;
       }
+    },
+    highlightColor: { // highlight color: 'yellow' or 'pink'
+      type: String,
+      default: 'yellow'
     }
   },
-  data () {
-    return {
-      isOpen: false
-    };
-  },
   computed: {
+    btnPullClass () {
+      return this.pullLeft ? 'justify-start' : 'justify-end';
+    },
     pivotHref () {
       const params = new URLSearchParams(window.location.search);
       params.set('b', window.btoa(this.value));
@@ -105,18 +126,13 @@ export default {
       const value = formatPostProcessedValue(this.data, option.field);
       return option.href.replace('%{value}', value);
     },
-    /** Toggles the dropdown menu options for a field */
-    toggleDropdown () {
-      this.isOpen = !this.isOpen;
-    },
     /**
      * Triggered when a the Copy menu item is clicked for a field
      * Copies the value provided to the user's clipboard and closes the menu
      * @param {string} value The field value
      */
     doCopy (value) {
-      this.$copyText(value);
-      this.isOpen = false;
+      clipboardCopyText(value);
     }
   }
 };
@@ -136,8 +152,13 @@ export default {
   line-height: 1.3;
 }
 
+.field:hover {
+  background-color: rgb(var(--v-theme-light)) !important;
+  color: rgb(var(--v-theme-secondary));
+}
+
 /* .field a {
-  color: var(--primary) !important;
+  color: rgb(var(--v-theme-primary)) !important;
   text-decoration: none;
 } */
 
@@ -147,7 +168,7 @@ export default {
 }
 
 .field:hover a {
-  color: var(--primary) !important;
+  color: rgb(var(--v-theme-primary)) !important;
 }
 
 .field:hover ul.field-dropdown {
@@ -191,7 +212,7 @@ export default {
   visibility: visible;
 }
 
-.field-dropdown.pull-right {
+.field-dropdown.float-right {
   right: 0;
   left: auto;
 }
@@ -209,12 +230,12 @@ export default {
   font-weight: normal;
   line-height: 1.42857143;
   white-space: nowrap;
-  color: var(--color-dark) !important;
+  color: rgb(var(--v-theme-dark)) !important;
 }
 
 .field-dropdown a.dropdown-item:hover {
   text-decoration: none;
-  color: var(--primary) !important;
+  color: rgb(var(--v-theme-primary)) !important;
   background-color: var(--color-gray-light);
 }
 </style>

@@ -1,7 +1,6 @@
-import Vue from 'vue';
-
 import store from '../../store';
 import countries from './countries.json';
+import { fetchWrapper, cancelFetchWrapper } from '@common/fetchWrapper.js';
 import customCols from '../sessions/customCols.json';
 
 const ipDstPortField = {
@@ -41,23 +40,16 @@ export default {
    * to allow the request to be cancelled
    */
   getValues (params) {
-    const source = Vue.axios.CancelToken.source();
+    return cancelFetchWrapper({ url: 'api/unique', params });
+  },
 
-    const promise = new Promise((resolve, reject) => {
-      const options = { params, cancelToken: source.token };
-
-      Vue.axios.get('api/unique', options)
-        .then((response) => {
-          resolve(response.data);
-        })
-        .catch((error) => {
-          if (!Vue.axios.isCancel(error)) {
-            reject(error);
-          }
-        });
-    });
-
-    return { promise, source };
+  /**
+   * Gets the list of shortcuts to use in the expression autocomplete typeahead
+   * @param {string} url The URL to fetch the variables from
+   * @returns {Promise<Object>} The response data parsed as JSON.
+   */
+  async getShortcuts (url) {
+    return fetchWrapper({ url });
   },
 
   /**

@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Use this script to install OS dependencies, downloading and compile arkime dependencies, compile arkime capture, optionally install
 #
 # SPDX-License-Identifier: Apache-2.0
@@ -26,8 +26,7 @@ NGHTTP2=1.57.0
 ZSTD=1.5.5
 KAFKA=1.5.3
 
-NODE=20.19.6
-NODE217=20.19.6
+NODE=22.21.1
 
 TDIR="/opt/arkime"
 DOPFRING=0
@@ -172,23 +171,19 @@ UNAME="$(uname)"
 echo "ARKIME: Installing Dependencies"
 if [ -f "/etc/redhat-release" ] || [ -f "/etc/system-release" ]; then
   . /etc/os-release
-  if [[ $DONODE == "1" && "$VERSION_ID" == "7" ]]; then
-    NODEHOST=unofficial-builds.nodejs.org
-    NODEARCH="$NODEARCH-glibc-217"
-    NODE=$NODE217
-  fi
 
   if [[ "$VERSION_ID" == 8* ]]; then
-    sudo yum install -y python38
-  fi
-
-  if [[ "$VERSION_ID" == 9* || "$VERSION_ID" == 2023 ]]; then
+    sudo yum install -y python312 python3.12-devel
+  elif [[ "$VERSION_ID" == 9* || "$VERSION_ID" == 2023 ]]; then
     sudo yum install -y glib2-devel libmaxminddb-devel libcurl-devel libzstd-devel
+    if [[ "$VERSION_ID" == 9* ]]; then
+      sudo yum install -y python3.12 python3.12-devel
+    fi
     WITHGLIB=" "
     WITHCURL=" "
     BUILDZSTD=0
   elif [[ "$VERSION_ID" == 10* ]]; then
-    sudo yum install -y glib2-devel libmaxminddb-devel libcurl-devel libpcap-devel libzstd-devel librdkafka-devel
+    sudo yum install -y glib2-devel libmaxminddb-devel libcurl-devel libpcap-devel libzstd-devel librdkafka-devel python3-devel
     WITHGLIB=" "
     WITHCURL=" "
     WITHMAXMIND=" "
@@ -208,21 +203,23 @@ fi
 
 if [ -f "/etc/debian_version" ]; then
   . /etc/os-release
+
   if [[ "$VERSION_CODENAME" == "trixie" ]]; then
+      # D13
       sudo apt-get -qq install wget curl uuid-dev libmagic-dev pkg-config g++ flex bison zlib1g-dev libffi-dev gettext libgeoip-dev make libjson-perl libbz2-dev libwww-perl libpng-dev xz-utils libffi-dev libssl-dev libreadline-dev libtool libyaml-dev dh-autoreconf libsocket6-perl libtest-differences-perl
   else
+      # D12, U22, U24
       sudo apt-get -qq install wget curl libpcre3-dev uuid-dev libmagic-dev pkg-config g++ flex bison zlib1g-dev libffi-dev gettext libgeoip-dev make libjson-perl libbz2-dev libwww-perl libpng-dev xz-utils libffi-dev libssl-dev libreadline-dev libtool libyaml-dev dh-autoreconf libsocket6-perl libtest-differences-perl
+  fi
+
+  # Ubuntu 22 does not have libnl-genl-3-dev
+  if [[ "$VERSION_CODENAME" != "jammy" ]]; then
+      sudo apt-get -qq install libnl-genl-3-dev
   fi
 
   if [ $? -ne 0 ]; then
     echo "ARKIME: apt-get failed"
     exit 1
-  fi
-
-  if [[ $DONODE == "1" && "$VERSION_CODENAME" == "bionic" ]]; then
-    NODEHOST=unofficial-builds.nodejs.org
-    NODEARCH="$NODEARCH-glibc-217"
-    NODE=$NODE217
   fi
 
   # Just use OS packages, currently for Ubuntu 22/24
@@ -256,7 +253,7 @@ if [ "$UNAME" = "Darwin" ]; then
 fi
 
 if [ "$UNAME" = "FreeBSD" ]; then
-  sudo pkg install -y gcc wget curl pcre flex bison gettext e2fsprogs-libuuid glib gmake yara lua53 librdkafka pkgconf node20 npm-node20 libyaml autotools libmaxminddb
+  sudo pkg install -y gcc wget curl pcre flex bison gettext glib gmake yara lua53 librdkafka pkgconf node22 npm-node22 libyaml autotools libmaxminddb libuuid python312 libinotify
   MAKE=gmake
   DOTHIRDPARTY=0
   DOKAFKA=1
@@ -268,6 +265,8 @@ if [ "$UNAME" = "FreeBSD" ]; then
   export KAFKA_CFLAGS="-I/usr/local/include/librdkafka/"
   export KAFKA_LIBS="-L/usr/local/lib -lrdkafka"
   with_kafka=no
+
+  export LIBS='-linotify'
 fi
 
 if [ -f "/etc/alpine-release" ] ; then
@@ -275,6 +274,8 @@ if [ -f "/etc/alpine-release" ] ; then
   mkdir -p thirdparty
   NODEHOST=unofficial-builds.nodejs.org
   NODEARCH="$NODEARCH-musl"
+elif [ -f "/etc/arch-release" ]; then
+    sudo pacman -Sy --noconfirm gcc make python-pip git perl perl-test-differences sudo wget gawk lua geoip yara file libpcap libmaxminddb libnet lua libtool autoconf gettext automake perl-http-message perl-lwp-protocol-https perl-json perl-socket6 perl-clone perl-html-parser zstd openssl-1.1 pcre librdkafka openssl pkg-config
 fi
 
 # do autoconf
@@ -357,8 +358,6 @@ if [ "$UNAME" = "Darwin" ]; then
       --with-kafka=no KAFKA_CFLAGS="-I/opt/homebrew/Cellar/librdkafka/2.0.2/include/librdkafka" KAFKA_LIBS="-L/opt/homebrew/lib -lrdkafka" $EXTRACONFIGURE
   fi
 elif [ -f "/etc/arch-release" ]; then
-    sudo pacman -Sy --noconfirm gcc make python-pip git perl perl-test-differences sudo wget gawk lua geoip yara file libpcap libmaxminddb libnet lua libtool autoconf gettext automake perl-http-message perl-lwp-protocol-https perl-json perl-socket6 perl-clone perl-html-parser zstd openssl-1.1 pcre librdkafka openssl
-
     DOKAFKA=1
     BUILDKAFKA=0
     BUILDZSTD=0
@@ -436,10 +435,7 @@ else
   TPWD=`pwd`
 
   # glib
-  if [ "$UNAME" = "FreeBSD" ]; then
-    #Screw it, use whatever the OS has
-    WITHGLIB=" "
-  elif [ ! -z "$WITHGLIB" ]; then
+  if [ ! -z "$WITHGLIB" ]; then
     echo "ARKIME: withglib $WITHGLIB"
   else
     WITHGLIB="--with-glib2=thirdparty/glib-$GLIB"

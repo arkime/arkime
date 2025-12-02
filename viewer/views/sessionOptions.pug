@@ -5,58 +5,69 @@ ul.nav.nav-pills.mb-3
   if (session.packetPos && session.packetPos.length > 0)
     if (session.rootId)
       li.nav-item
-        a.nav-link(href='api/session/' + session.node + '/' + session.id + '/pcap', target="_blank", download=session.id + '-segment.pcap') Download Segment Pcap
+        a.nav-link(href='api/session/' + session.node + '/' + session.id + '/pcap', :download="session.id + '-segment.pcap'") {{ $t('sessions.downloadSegmentPCAP') }}
       li.nav-item
-        a.nav-link(href='api/session/entire/' + session.node + '/' + session.rootId + '/pcap', target="_blank", download=session.id + '.pcap') Download Entire Pcap
+        a.nav-link(href='api/session/entire/' + session.node + '/' + session.rootId + '/pcap', :download="session.rootId + '.pcap'") {{ $t('sessions.downloadEntirePCAP') }}
     else
       li.nav-item
-        a.nav-link(href='api/session/' + session.node + '/' + session.id + '/pcap', target="_blank", v-has-permission="'!disablePcapDownload'", v-b-tooltip.hover.bottom.d300="'Download the PCAP file for this session.'", download=session.id + '.pcap')
-          span.fa.fa-download
-          | &nbsp;Download PCAP
+        a.nav-link(href='api/session/' + session.node + '/' + session.id + '/pcap', v-has-permission="'!disablePcapDownload'", :download="session.id + '.pcap'")
+          span.fa.fa-download.me-1
+          | {{ $t('sessions.downloadPCAP') }}
     li.nav-item
-      a.nav-link(href='api/session/raw/' + session.node + '/' + session.id + '?type=src', target="_blank", v-b-tooltip.hover.bottom.d300="'Download the raw source packets for this session.'", download=session.id + '-src-raw')
-        span.fa.fa-arrow-circle-up
-        | &nbsp;Source Raw
+      a.nav-link(href='api/session/raw/' + session.node + '/' + session.id + '?type=src', :download="session.id + '-src-raw'")
+        span.fa.fa-arrow-circle-up.me-1
+        | {{ $t('sessions.sourceRaw') }}
     li.nav-item
-      a.nav-link(href='api/session/raw/' + session.node + '/' + session.id + '?type=dst', target="_blank", v-b-tooltip.hover.bottom.d300="'Download the raw destination packets for this session.'", download=session.id + '-dst-raw')
-        span.fa.fa-arrow-circle-down
-        | &nbsp;Destination Raw
+      a.nav-link(href='api/session/raw/' + session.node + '/' + session.id + '?type=dst', :download="session.id + '-dst-raw'")
+        span.fa.fa-arrow-circle-down.me-1
+        | {{ $t('sessions.destinationRaw') }}
   li.nav-item
-    a.nav-link.cursor-pointer(:href="permalink", v-b-tooltip.hover.bottom.d300="'Navigate to the sessions page containing just this session. You can use this link to share this session with other users.'")
-      span.fa.fa-link
-      | &nbsp;Link
-  b-dropdown.nav-item(text="Columns", size="sm")
+    a.nav-link.cursor-pointer(:href="permalink")
+      span.fa.fa-link.me-1
+      | {{ $t('sessions.link') }}
+  b-dropdown.nav-item(:text="$t('sessions.columns')")
+    //- NOTE: this is a workaround to get the dropdown button to have the same size as the nav-item buttons
+        To get PUG to render <template #button-content> correctly, this is the syntax:
+    template(#button-content="")
+      span(style="font-size:14px;")
+        span.fa.fa-columns.me-1
+        | {{ $t('sessions.columns') }}
     b-dropdown-item(@click="toggleLayout(1)")
-      | One Column
+      | {{ $t('sessions.oneColumn') }}
     b-dropdown-item(@click="toggleLayout(2)")
-      | Two Column
+      | {{ $t('sessions.twoColumn') }}
     b-dropdown-item(@click="toggleLayout(3)")
-      | Three Column
-  b-dropdown.nav-item(text="Actions", size="sm")
+      | {{ $t('sessions.threeColumn') }}
+  b-dropdown.nav-item
+    //- NOTE: same as above ^
+    template(#button-content="")
+        span(style="font-size:14px;")
+          span.fa.fa-columns.me-1
+          | {{ $t('sessions.actions') }}
     if (session.packetPos && session.packetPos.length > 0)
       b-dropdown-item(@click="exportPCAP", v-has-permission="'!disablePcapDownload'")
-        | Export PCAP
+        | {{ $t('sessions.exports.exportPCAP') }}
     b-dropdown-item(@click="addTags")
-      | Add Tags
+      | {{ $t('sessions.tag.addTags') }}
     b-dropdown-item(@click="removeTags", v-has-permission="'removeEnabled'")
-      | Remove Tags
+      | {{ $t('sessions.tag.removeTags') }}
     b-dropdown-item(@click="removeData()", v-has-permission="'removeEnabled'")
-      | Remove Data
+      | {{ $t('search.removeData') }}
     b-dropdown-item(v-for="(value, key) in remoteclusters", key="key", @click="sendSession(key)")
-      | Send Session to {{ value.name }}
+      | {{ $t('search.sendSession', { name: value.name }) }}
 
 div.mb-2
   arkime-toast(:message="message", :type="messageType", :done="messageDone")
 
-div.mb-2.mr-5
+div.mb-2.me-5
   - var sessions = [{id: session.id}];
   div(v-if="form === 'add:tags'")
-    arkime-tag-sessions(:sessions=sessions, :add="true", :done="actionFormDone", :single="true")
+    arkime-tag-sessions(:sessions=sessions, :add="true", @done="actionFormDone", :single="true")
   div(v-if="form === 'remove:tags'")
-    arkime-tag-sessions(:sessions=sessions, :add="false", :done="actionFormDone", :single="true")
+    arkime-tag-sessions(:sessions=sessions, :add="false", @done="actionFormDone", :single="true")
   div(v-if="form === 'export:pcap'")
-    arkime-export-pcap(:sessions=sessions, :done="actionFormDone")
+    arkime-export-pcap(:sessions=sessions, @done="actionFormDone")
   div(v-if="form === 'remove:data'")
-    arkime-remove-data(:sessions=sessions, :done="actionFormDone", :single="true")
+    arkime-remove-data(:sessions=sessions, @done="actionFormDone", :single="true")
   div(v-if="form === 'send:session'")
-    arkime-send-sessions(:sessions=sessions, :done="actionFormDone", :cluster="cluster")
+    arkime-send-sessions(:sessions=sessions, @done="actionFormDone", :cluster="cluster")

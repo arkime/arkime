@@ -172,5 +172,4 @@ class ThreatstreamIntegration extends Integration {
   }
 }
 
-// eslint-disable-next-line no-new
 new ThreatstreamIntegration();

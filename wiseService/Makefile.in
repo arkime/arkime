@@ -7,7 +7,7 @@ all:
 	echo "WISE!"
 
 check:
-	npm ci --production
+	npm ci
 	npm run bundle
 
 install:
@@ -15,9 +15,10 @@ install:
 	$(INSTALL) *.js wiseService.ini.sample package.json package-lock.json $(WISEDIR)
 	npm ci
 	npm run bundle:min
+	$(CP) -pr views $(WISEDIR)
 	$(CP) -pr favicon.ico $(WISEDIR)
 	$(CP) -pr vueapp/dist "$(WISEDIR)/vueapp"
-	(cd $(WISEDIR) ; npm ci --production)
+	(cd $(WISEDIR) ; npm ci --omit=dev)
 
 distclean realclean clean:
 	rm -f *.o *.so

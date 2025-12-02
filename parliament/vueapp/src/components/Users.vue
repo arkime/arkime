@@ -5,34 +5,31 @@ SPDX-License-Identifier: Apache-2.0
 <template>
   <div class="container-fluid overflow-auto">
     <UsersCommon
+      :dark="getTheme === 'dark'"
       v-if="getUser"
       :roles="getRoles"
       parent-app="Parliament"
       :current-user="getUser"
       @update-roles="updateRoles"
       @update-current-user="updateCurrentUser">
+      <template #loading>
+        <ArkimeLoading />
+      </template>
     </UsersCommon>
-    <div v-else>
-      <!-- error that we can't fetch the user -->
-      <div class="alert alert-danger" role="alert">
-        <h4 class="alert-heading">Error</h4>
-        <p>There was an error fetching the user.</p>
-      </div>
-    </div>
   </div>
 </template>
 
 <script>
 import { mapGetters } from 'vuex';
 
-import UsersCommon from '../../../../common/vueapp/Users';
-import UserService from '@/components/user.service';
+import UsersCommon from '@common/Users.vue';
+import UserService from '@/components/user.service.js';
 
 export default {
   name: 'Users',
   components: { UsersCommon },
   computed: {
-    ...mapGetters(['getUser', 'getRoles'])
+    ...mapGetters(['getUser', 'getRoles', 'getTheme'])
   },
   created () {
     UserService.getUser();

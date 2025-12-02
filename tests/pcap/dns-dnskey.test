@@ -35,6 +35,12 @@
                }
             ],
             "dnsCnt" : 1,
+            "dot1q" : {
+               "id" : [
+                  500
+               ],
+               "idCnt" : 1
+            },
             "dstOui" : [
                "Juniper Networks"
             ],

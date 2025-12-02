@@ -162,5 +162,4 @@ class TwilioIntegration extends Integration {
   }
 }
 
-// eslint-disable-next-line no-new
 new TwilioIntegration();

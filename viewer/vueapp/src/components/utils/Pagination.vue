@@ -1,145 +1,169 @@
-<!--
-Copyright Yahoo Inc.
-SPDX-License-Identifier: Apache-2.0
--->
 <template>
-
-  <div>
-    <div v-if="!infoOnly">
-      <!-- page size -->
-      <b-select
-        role="listbox"
-        v-model="length"
-        :options="lengthOptions"
-        class="form-control page-select"
-      /> <!-- /page size -->
-      <!-- paging -->
-      <b-pagination
-        size="sm"
-        :limit="5"
-        hide-ellipsis
-        :per-page="length"
-        v-model="currentPage"
-        :total-rows="recordsFiltered"
-        @input="notifyParent(true)">
-      </b-pagination> <!-- paging -->
-      <!-- page info -->
-      <div
-        :title="pagingInfoTitle"
-        class="pagination-info cursor-help"
-        v-b-tooltip.hover.right="pagingInfoTitle">
-        Showing
-        <span v-if="recordsFiltered">
-          {{ start + 1 | commaString }}
-        </span>
-        <span v-else>
-          {{ start | commaString }}
-        </span>
-        <span v-if="recordsFiltered">
-          - {{ Math.min((start + length), recordsFiltered) | commaString }}
-        </span>
-        of {{ recordsFiltered | commaString }} entries
-      </div> <!-- /page info -->
-    </div>
-    <div v-else
-      class="pagination-info info-only">
-      Showing {{ recordsFiltered | commaString }} entries,
-      filtered from {{ recordsTotal | commaString }} total entries
-    </div>
+  <!-- just show info, no controls -->
+  <div
+    v-if="infoOnly"
+    class="pagination-info info-only">
+    {{ t('common.showingAllTip', { start: commaString(recordsFiltered), total: commaString(recordsTotal) }) }}
   </div>
 
+  <!-- show info and controls -->
+  <div v-else>
+    <!-- page size -->
+    <BFormSelect
+      class="page-select"
+      :options="lengthOptions"
+      :model-value="pageLength"
+      @update:model-value="lengthUpdated" /> <!-- /page size -->
+
+    <!-- paging -->
+    <BPagination
+      size="sm"
+      no-ellipsis
+      :per-page="pageLength"
+      :model-value="currentPage"
+      :total-rows="props.recordsFiltered"
+      @update:model-value="currentPageUpdated" /> <!-- /paging -->
+
+    <!-- page info -->
+    <div
+      id="pagingInfo"
+      class="pagination-info cursor-help">
+      <span v-if="recordsFiltered">
+        {{ t('common.showingRange', { start: commaString(start + 1), end: commaString(Math.min((start + pageLength), recordsFiltered)), total: commaString(recordsFiltered) }) }}
+      </span>
+      <span v-else>
+        {{ t('common.showingAll', { start: commaString(start), total: commaString(recordsFiltered) }) }}
+      </span>
+      <BTooltip target="pagingInfo">
+        {{ pagingInfoTitle }}
+      </BTooltip>
+    </div> <!-- /page info -->
+  </div>
 </template>
 
-<script>
-export default {
-  name: 'ArkimePaging',
-  props: [
-    'recordsTotal',
-    'recordsFiltered',
-    'lengthDefault',
-    'infoOnly'
-  ],
-  data: function () {
-    return {
-      start: 0,
-      currentPage: 1
-    };
+<script setup>
+// setup ----------------------------------------------------------------------
+// external imports
+import { useStore } from 'vuex';
+import { ref, computed } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+// internal imports
+import { commaString } from '@common/vueFilters.js';
+
+// router
+const route = useRoute();
+const router = useRouter();
+
+// store
+const store = useStore();
+
+// emits
+const emit = defineEmits(['changePaging']);
+
+// data -----------------------------------------------------------------------
+// props
+const props = defineProps({
+  infoOnly: Boolean,
+  lengthDefault: {
+    type: Number,
+    default: 50
   },
-  computed: {
-    length: {
-      get: function () {
-        // only allow a maximum of 1000
-        return Math.min(parseInt(this.$route.query.length || this.lengthDefault || 50), 1000);
-      },
-      set: function (newValue) {
-        if (newValue !== this.length) {
-          const newQuery = {
-            ...this.$route.query,
-            length: newValue
-          };
-
-          const exprChanged = this.$store.state.expression !== this.$route.query.expression;
-          if (exprChanged) {
-            newQuery.expression = this.$store.state.expression;
-          }
-
-          this.$router.push({ query: newQuery });
-
-          // only issue a new query if the expression hasn't changed. if it
-          // has changed, a query will be issued by ExpressionTypeahead.vue
-          this.notifyParent(!exprChanged);
-        }
-      }
-    },
-    lengthOptions: function () {
-      const options = [
-        { value: 10, text: '10 per page' },
-        { value: 50, text: '50 per page' },
-        { value: 100, text: '100 per page' },
-        { value: 200, text: '200 per page' },
-        { value: 500, text: '500 per page' },
-        { value: 1000, text: '1000 per page' }
-      ];
-
-      let exists = false;
-      for (const option of options) {
-        if (this.length === option.value) {
-          exists = true;
-          break;
-        }
-      }
-
-      if (!exists) {
-        options.push({
-          value: this.length,
-          label: `${this.length} per page`
-        });
-      }
-
-      options.sort(function (a, b) {
-        return a.value - b.value;
-      });
-
-      return options;
-    },
-    pagingInfoTitle: function () {
-      const total = this.$options.filters.commaString(this.recordsTotal);
-      return `filtered from ${total} total entries`;
-    }
+  recordsTotal: {
+    type: Number,
+    default: 0
   },
-  methods: {
-    notifyParent: function (issueQuery) {
-      this.start = (this.currentPage - 1) * this.length;
+  recordsFiltered: {
+    type: Number,
+    default: 0
+  }
+});
 
-      const pagingParams = {
-        start: this.start,
-        length: this.length,
-        issueQuery
-      };
+import { useI18n } from 'vue-i18n';
+const { t } = useI18n();
 
-      this.$emit('changePaging', pagingParams);
+// local data
+const start = ref(0);
+const currentPage = ref(1);
+const pageLength = ref(Math.min(parseInt(route.query.length || props.lengthDefault || 50), 1000));
+
+// computed -------------------------------------------------------------------
+const pagingInfoTitle = computed(() => {
+  const total = commaString(props.recordsTotal);
+  return t('common.filteredFrom', { total });
+});
+
+const lengthOptions = computed(() => {
+  const options = [
+    { value: 10, text: t('common.perPage', 10) },
+    { value: 50, text: t('common.perPage', 50) },
+    { value: 100, text: t('common.perPage', 100) },
+    { value: 200, text: t('common.perPage', 200) },
+    { value: 500, text: t('common.perPage', 500) },
+    { value: 1000, text: t('common.perPage', 1000) }
+  ];
+
+  let exists = false;
+  for (const option of options) {
+    if (pageLength.value === option.value) {
+      exists = true;
+      break;
     }
   }
+
+  if (!exists) {
+    options.push({
+      value: pageLength.value,
+      label: `${pageLength.value} per page`
+    });
+  }
+
+  options.sort(function (a, b) {
+    return a.value - b.value;
+  });
+
+  return options;
+});
+
+// exposed page methods -------------------------------------------------------
+function currentPageUpdated (newPage) {
+  currentPage.value = newPage;
+  notifyParent();
+}
+
+function lengthUpdated (newLength) {
+  if (newLength === pageLength.value) {
+    return;
+  }
+
+  pageLength.value = newLength; // update local value
+
+  const newQuery = { ...route.query, length: newLength };
+
+  const exprChanged = store.state.expression !== route.query.expression;
+  if (exprChanged) {
+    newQuery.expression = store.state.expression;
+  }
+
+  router.push({ query: newQuery }); // update route
+
+  if (!exprChanged) {
+    // only issue a new query if the expression hasn't changed. if it
+    // has changed, a query will be issued by ExpressionTypeahead.vue
+    notifyParent();
+  }
+};
+
+// helper methods -------------------------------------------------------------
+function notifyParent () {
+  start.value = (currentPage.value - 1) * pageLength.value;
+
+  const pagingParams = {
+    issueQuery: true,
+    start: start.value,
+    length: pageLength.value
+  };
+
+  emit('changePaging', pagingParams);
 };
 </script>
 
@@ -149,7 +173,7 @@ export default {
 }
 
 select.page-select {
-  width: 120px;
+  width: 130px;
   font-size: .8rem;
   display: inline-flex;
   height: 31px !important;
@@ -169,7 +193,7 @@ select.page-select {
   font-size: .8rem;
   color: var(--color-gray-dark);
   border: 1px solid var(--color-gray-light);
-  padding: 5px 10px;
+  padding: 5px 10px 4px 10px;
   margin-left: -6px;
   border-radius: 0 var(--px-sm) var(--px-sm) 0;
   background-color: var(--color-white);

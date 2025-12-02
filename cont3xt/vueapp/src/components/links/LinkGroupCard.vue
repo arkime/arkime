@@ -4,309 +4,344 @@ SPDX-License-Identifier: Apache-2.0
 -->
 <template v-if="linkGroup">
   <!-- view (for con3xt page and users who can view but not edit) -->
-  <b-card
+  <v-card
     v-if="itype || !(getUser && (getUser.userId === linkGroup.creator || linkGroup._editable || (getUser.roles && getUser.roles.includes('cont3xtAdmin'))))"
+    variant="tonal"
     class="h-100 align-self-stretch">
-    <template #header>
+    <v-card-title class="px-2 py-1">
       <h6 class="mb-0 link-header">
-        <span
-          class="fa mr-1 cursor-pointer"
-          @click="toggleLinkGroup(linkGroup)"
-          :class="collapsedLinkGroups[linkGroup._id] ? 'fa-chevron-down' : 'fa-chevron-up'"
-        />
-        <span
-          class="fa fa-share-alt mr-1 cursor-help"
+        <v-icon
+          class="mr-1 cursor-pointer"
+          :icon="collapsedLinkGroups[linkGroup._id] ? 'mdi-chevron-down' : 'mdi-chevron-up'"
+          @click="toggleLinkGroup(linkGroup)" />
+        <v-icon
+          class="mr-1 cursor-help"
+          icon="mdi-share-circle mdi-fw"
           v-if="getUser && linkGroup.creator !== getUser.userId"
-          v-b-tooltip.hover="`Shared with you by ${linkGroup.creator}`"
-        />
+          v-tooltip="`Shared with you by ${linkGroup.creator}`" />
         {{ linkGroup.name }}
-        <div v-if="!itype && getUser && linkGroup.creator !== getUser.userId" class="pull-right">
+        <div
+          v-if="!itype && getUser && linkGroup.creator !== getUser.userId"
+          class="float-right">
           <small>
             You can only view this Link Group
           </small>
-          <b-button
-              class="ml-1"
-              size="sm"
-              variant="secondary"
-              @click="rawEditMode = !rawEditMode"
-              v-b-tooltip.hover="`View ${rawEditMode ? 'form' : 'raw'} configuration for this link group`">
-            <span class="fa fa-fw" :class="{'fa-file-text-o': rawEditMode, 'fa-pencil-square-o': !rawEditMode}" />
-          </b-button>
+          <v-btn
+            size="small"
+            color="secondary"
+            variant="elevated"
+            @click="rawEditMode = !rawEditMode"
+            v-tooltip="`View ${rawEditMode ? 'form' : 'raw'} configuration for this link group`">
+            <v-icon :icon="`${rawEditMode ? 'mdi-file-text-outline' : 'mdi-pencil-box'} mdi-fw`" />
+          </v-btn>
         </div>
       </h6>
-    </template>
-    <b-card-body>
+    </v-card-title>
+    <v-card-text class="py-1 px-2">
       <div v-show="!collapsedLinkGroups[linkGroup._id]">
         <template v-if="!rawEditMode">
           <template
-              v-for="(link, i) in filteredLinks">
+            v-for="(link, i) in filteredLinks">
             <!-- display link to click -->
-            <div class="link-display"
-                 :key="link.url + i + 'click'"
-                 v-if="itype && link.name !== '----------'">
-              <b-form-checkbox
-                  inline
-                  tabindex="-1"
-                  class="link-checkbox"
-                  @change="$store.commit('TOGGLE_CHECK_LINK', { lgId: linkGroup._id, lname: link.name })"
-                  :checked="getCheckedLinks[linkGroup._id] && getCheckedLinks[linkGroup._id][link.name]"
-              />
-              <a tabindex="-1"
-                 target="_blank"
-                 :title="link.name"
-                 :href="getUrl(link.url)"
-                 :style="link.color ? `color:${link.color}` : ''">
+            <div
+              class="link-display d-flex flex-row align-center"
+              :key="link.url + i + 'click'"
+              v-if="itype && link.name !== '----------'">
+              <v-checkbox
+                inline
+                tabindex="-1"
+                class="link-checkbox"
+                @change="computeAllChecked"
+                v-model="getCheckedLinks[linkGroup._id][link.name]" />
+              <a
+                tabindex="-1"
+                target="_blank"
+                class="link"
+                :title="link.name"
+                :href="getUrl(link.url)"
+                :style="link.color ? `color:${link.color}` : ''">
                 {{ link.name }}
               </a>
-              <link-guidance :link="link" :element-id="`${linkGroup._id}-${i}`" />
+              <link-guidance
+                class="ml-1"
+                :link="link"
+                :element-id="`${linkGroup._id}-${i}`" />
             </div> <!-- /display link to click -->
             <!-- display link to view -->
-            <div :title="link.name"
-                 :key="link.url + i + 'view'"
-                 v-else-if="!itype && link.name !== '----------'">
+            <div
+              :title="link.name"
+              :key="link.url + i + 'view'"
+              v-else-if="!itype && link.name !== '----------'">
               <strong class="text-warning">
                 {{ link.name }}
               </strong>
-              <a tabindex="-1"
-                 href="javascript:void(0)"
-                 :style="link.color ? `color:${link.color}` : ''">
+              <a
+                tabindex="-1"
+                class="link"
+                href="javascript:void(0)"
+                :style="link.color ? `color:${link.color}` : ''">
                 {{ link.url }}
               </a>
-              <link-guidance :link="link" :element-id="`${linkGroup.name}-${i}`" />
+              <link-guidance
+                class="ml-1"
+                :link="link"
+                :element-id="`${linkGroup.name}-${i}`" />
             </div> <!-- /display link to view -->
             <!-- separator -->
-            <hr class="link-separator-display"
-                :key="link.url + i + 'separator'"
-                v-else-if="link.name === '----------'"
-                :style="`border-color: ${link.color || '#777'}`"
-            >
+            <hr
+              class="link-separator-display"
+              :key="link.url + i + 'separator'"
+              v-else-if="link.name === '----------'"
+              :style="`border-color: ${link.color || '#777'}`">
           </template>
         </template>
         <link-group-form
-            v-else
-            :raw-edit-mode="rawEditMode"
-            :link-group="updatedLinkGroup"
-            :no-edit="true"
-            @display-message="displayMessage"
-            @update-link-group="updateLinkGroup"
-        />
+          v-else
+          :raw-edit-mode="rawEditMode"
+          :link-group="updatedLinkGroup"
+          :no-edit="true"
+          @display-message="displayMessage"
+          @update-link-group="updateLinkGroup" />
       </div>
-    </b-card-body>
-    <template #footer v-if="itype && !collapsedLinkGroups[linkGroup._id]">
-      <div class="w-100 d-flex justify-content-between align-items-start">
-        <b-form-checkbox
-          tabindex="-1"
-          role="checkbox"
-          class="mr-2 mt-1"
-          v-b-tooltip.hover="'Select All'"
-          :checked="allLinksChecked(linkGroup)"
-          @change="e => toggleAllLinks(linkGroup, e)">
-        </b-form-checkbox>
-        <b-button
-          block
-          size="sm"
-          tabindex="-1"
-          variant="secondary"
-          @click="openAllLinks(linkGroup)"
-          v-b-tooltip.hover="'Open all selected links in this group'">
-          Open Selected
-        </b-button>
-      </div>
-    </template>
-  </b-card> <!-- /view -->
+      <template v-if="itype && !collapsedLinkGroups[linkGroup._id]">
+        <div class="w-100 d-flex justify-start align-center mt-2 mb-1">
+          <v-checkbox
+            class="link-checkbox"
+            tabindex="-1"
+            role="checkbox"
+            v-model="allChecked"
+            v-tooltip:right="'Select All'"
+            @click="e => toggleAllLinks(linkGroup, e)" />
+          <v-btn
+            size="small"
+            tabindex="-1"
+            class="flex-grow-1"
+            color="secondary"
+            variant="elevated"
+            @click="openAllLinks(linkGroup)"
+            v-tooltip="'Open all selected links in this group'">
+            Open Selected
+          </v-btn>
+        </div>
+      </template>
+    </v-card-text>
+  </v-card> <!-- /view -->
   <!-- edit -->
-  <b-card v-else
+  <v-card
+    v-else
+    variant="tonal"
     class="h-100 align-self-stretch">
-    <template slot="header">
-      <div class="w-100 d-flex justify-content-between">
-        <div>
+    <template #title>
+      <div class="w-100 d-flex justify-space-between">
+        <div class="d-flex flex-row ga-1">
           <!-- delete button -->
           <transition name="buttons">
-            <b-button
-              size="sm"
-              variant="danger"
+            <v-btn
+              size="small"
+              color="error"
+              variant="elevated"
               v-if="!confirmDelete"
               @click="confirmDelete = true"
-              v-b-tooltip.hover="'Delete this link group'">
-              <span class="fa fa-trash" />
-            </b-button>
+              v-tooltip="'Delete this link group'">
+              <v-icon icon="mdi-trash-can mdi-fw" />
+            </v-btn>
           </transition> <!-- /delete button -->
           <!-- cancel confirm delete button -->
           <transition name="buttons">
-            <b-button
-              size="sm"
+            <v-btn
+              size="small"
+              v-tooltip="'Cancel'"
               title="Cancel"
-              variant="warning"
-              v-b-tooltip.hover
+              color="warning"
+              variant="elevated"
               v-if="confirmDelete"
               @click="confirmDelete = false">
-              <span class="fa fa-ban" />
-            </b-button>
+              <v-icon icon="mdi-cancel mdi-fw" />
+            </v-btn>
           </transition> <!-- /cancel confirm delete button -->
           <!-- confirm delete button -->
           <transition name="buttons">
-            <b-button
-              size="sm"
-              variant="danger"
-              v-b-tooltip.hover
+            <v-btn
+              size="small"
+              color="error"
+              variant="elevated"
+              v-tooltip="'Are you sure?'"
               title="Are you sure?"
               v-if="confirmDelete"
               @click="deleteLinkGroup(linkGroup._id)">
-              <span class="fa fa-check" />
-            </b-button>
+              <v-icon icon="mdi-check-bold mdi-fw" />
+            </v-btn>
           </transition> <!-- /confirm delete button -->
         </div>
-        <b-alert
-          :show="success"
-          variant="success"
-          class="mb-0 mt-0 alert-sm mr-1 ml-1">
-          <span class="fa fa-check mr-2" />
+        <v-alert
+          v-if="success"
+          color="success"
+          density="compact"
+          style="font-size: 0.8rem"
+          class="mb-0 mt-0 mr-1 ml-1 pt-0 pb-0">
+          <v-icon
+            icon="mdi-check-bold"
+            class="mr-2" />
           <template v-if="message">
             {{ message }}
           </template>
           <template v-else>
             Saved!
           </template>
-        </b-alert>
-        <div>
-          <b-button
-            size="sm"
-            variant="info"
-            v-b-tooltip.hover
+        </v-alert>
+        <div class="d-flex flex-row ga-1">
+          <v-btn
+            size="small"
+            color="info"
+            variant="elevated"
             v-if="canTransfer(linkGroup)"
+            v-tooltip="'Transfer ownership of this link group'"
             title="Transfer ownership of this link group"
             @click="$emit('open-transfer-resource', linkGroup)">
-            <span class="fa fa-share fa-fw" />
-          </b-button>
+            <v-icon icon="mdi-share mdi-fw" />
+          </v-btn>
           <transition name="buttons">
-            <b-button
-              size="sm"
-              variant="secondary"
+            <v-btn
+              size="small"
+              color="secondary"
+              variant="elevated"
               @click="rawEditMode = !rawEditMode"
-              v-b-tooltip.hover="`Edit ${rawEditMode ? 'form' : 'raw'} configuration for this link group`">
-              <span class="fa fa-fw" :class="{'fa-file-text-o': rawEditMode, 'fa-pencil-square-o': !rawEditMode}" />
-            </b-button>
+              v-tooltip="`Edit ${rawEditMode ? 'form' : 'raw'} configuration for this link group`">
+              <v-icon :icon="`${rawEditMode ? 'mdi-list-box' : 'mdi-text-box'} mdi-fw`" />
+            </v-btn>
           </transition>
           <transition name="buttons">
-            <b-button
-              size="sm"
-              variant="warning"
+            <v-btn
+              size="small"
+              color="warning"
               v-if="changesMade"
+              variant="elevated"
               @click="cancelUpdateLinkGroup(linkGroup)"
-              v-b-tooltip.hover="'Cancel unsaved updates'">
-              <span class="fa fa-ban" />
-            </b-button>
+              v-tooltip="'Cancel unsaved updates'">
+              <v-icon icon="mdi-cancel mdi-fw" />
+            </v-btn>
           </transition>
           <transition name="buttons">
-            <b-button
-              size="sm"
-              variant="success"
+            <v-btn
+              size="small"
+              color="success"
               v-if="changesMade"
+              variant="elevated"
               @click="saveLinkGroup(linkGroup)"
-              v-b-tooltip.hover="'Save this link group'">
-              <span class="fa fa-save" />
-            </b-button>
+              v-tooltip="'Save this link group'">
+              <v-icon icon="mdi-content-save mdi-fw" />
+            </v-btn>
           </transition>
         </div>
       </div>
     </template>
-    <b-card-body>
+    <v-card-text>
       <link-group-form
         :raw-edit-mode="rawEditMode"
         :link-group="updatedLinkGroup"
         @display-message="displayMessage"
-        @update-link-group="updateLinkGroup"
-      />
-    </b-card-body>
-    <template slot="footer">
-      <div class="w-100 d-flex justify-content-between align-items-start">
-        <div>
+        @update-link-group="updateLinkGroup" />
+    </v-card-text>
+    <template #actions>
+      <div class="w-100 d-flex justify-space-between mr-2 ml-2">
+        <div class="d-flex flex-row ga-1">
           <!-- delete button -->
           <transition name="buttons">
-            <b-button
-              size="sm"
-              variant="danger"
+            <v-btn
+              size="small"
+              color="error"
+              variant="elevated"
               v-if="!confirmDelete"
               @click="confirmDelete = true"
-              v-b-tooltip.hover="'Delete this link group'">
-              <span class="fa fa-trash" />
-            </b-button>
+              v-tooltip="'Delete this link group'">
+              <v-icon icon="mdi-trash-can" />
+            </v-btn>
           </transition> <!-- /delete button -->
           <!-- cancel confirm delete button -->
           <transition name="buttons">
-            <b-button
-              size="sm"
+            <v-btn
+              size="small"
+              v-tooltip="'Cancel'"
               title="Cancel"
-              variant="warning"
-              v-b-tooltip.hover
+              color="warning"
+              variant="elevated"
               v-if="confirmDelete"
               @click="confirmDelete = false">
-              <span class="fa fa-ban" />
-            </b-button>
+              <v-icon icon="mdi-cancel" />
+            </v-btn>
           </transition> <!-- /cancel confirm delete button -->
           <!-- confirm delete button -->
           <transition name="buttons">
-            <b-button
-              size="sm"
-              variant="danger"
-              v-b-tooltip.hover
+            <v-btn
+              class="ml-0"
+              size="small"
+              color="error"
+              variant="elevated"
+              v-tooltip="'Are you sure?'"
               title="Are you sure?"
               v-if="confirmDelete"
               @click="deleteLinkGroup(linkGroup._id)">
-              <span class="fa fa-check" />
-            </b-button>
+              <v-icon icon="mdi-check-bold" />
+            </v-btn>
           </transition> <!-- /confirm delete button -->
         </div>
-        <b-alert
-          variant="success"
-          :show="success"
-          class="mb-0 mt-0 alert-sm mr-1 ml-1">
-          <span class="fa fa-check mr-2" />
+        <v-alert
+          v-if="success"
+          color="success"
+          density="compact"
+          class="mb-0 mt-0 mr-1 ml-1 pt-0 pb-0">
+          <v-icon
+            icon="mdi-check-bold"
+            class="mr-2" />
           Saved!
-        </b-alert>
-        <div>
-          <b-button
-            size="sm"
-            variant="info"
-            v-b-tooltip.hover
+        </v-alert>
+        <div class="d-flex flex-row ga-1">
+          <v-btn
+            size="small"
+            color="info"
+            variant="elevated"
             v-if="canTransfer(linkGroup)"
+            v-tooltip="'Transfer ownership of this link group'"
             title="Transfer ownership of this link group"
             @click="$emit('open-transfer-resource', linkGroup)">
-            <span class="fa fa-share fa-fw" />
-          </b-button>
+            <v-icon icon="mdi-share mdi-fw" />
+          </v-btn>
           <transition name="buttons">
-            <b-button
-              size="sm"
-              variant="secondary"
+            <v-btn
+              size="small"
+              color="secondary"
+              variant="elevated"
               @click="rawEditMode = !rawEditMode"
-              v-b-tooltip.hover="'Toggle raw configuration for this link group'">
-              <span class="fa fa-pencil-square-o" />
-            </b-button>
+              v-tooltip="`Edit ${rawEditMode ? 'form' : 'raw'} configuration for this link group`">
+              <v-icon :icon="`${rawEditMode ? 'mdi-list-box' : 'mdi-text-box'} mdi-fw`" />
+            </v-btn>
           </transition>
           <transition name="buttons">
-            <b-button
-              size="sm"
-              variant="warning"
+            <v-btn
+              size="small"
+              color="warning"
               v-if="changesMade"
+              variant="elevated"
               @click="cancelUpdateLinkGroup(linkGroup)"
-              v-b-tooltip.hover="'Cancel unsaved updates'">
-              <span class="fa fa-ban" />
-            </b-button>
+              v-tooltip="'Cancel unsaved updates'">
+              <v-icon icon="mdi-cancel mdi-fw" />
+            </v-btn>
           </transition>
           <transition name="buttons">
-            <b-button
-              size="sm"
-              variant="success"
+            <v-btn
+              size="small"
+              color="success"
               v-if="changesMade"
+              variant="elevated"
               @click="saveLinkGroup(linkGroup)"
-              v-b-tooltip.hover="'Save this link group'">
-              <span class="fa fa-save" />
-            </b-button>
+              v-tooltip="'Save this link group'">
+              <v-icon icon="mdi-content-save mdi-fw" />
+            </v-btn>
           </transition>
         </div>
       </div>
     </template>
-  </b-card> <!-- /edit -->
+  </v-card> <!-- /edit -->
 </template>
 
 <script>
@@ -315,34 +350,55 @@ import dr from 'defang-refang';
 import { mapGetters } from 'vuex';
 
 import LinkService from '@/components/services/LinkService';
-import LinkGroupForm from '@/components/links/LinkGroupForm';
-import LinkGuidance from '@/utils/LinkGuidance';
+import LinkGroupForm from '@/components/links/LinkGroupForm.vue';
+import LinkGuidance from '@/utils/LinkGuidance.vue';
 import { Cont3xtIndicatorProp } from '@/utils/cont3xtUtil';
 
 export default {
   name: 'LinkGroupCard',
+  emits: ['open-transfer-resource', 'update-link-group'],
   components: { LinkGroupForm, LinkGuidance },
   props: {
     indicator: Cont3xtIndicatorProp, // the indicator { query, itype } to display links for
-    numDays: [Number, String], // the number of days to apply to urls
-    numHours: [Number, String], // the number of hours to apply to urls
-    stopDate: String, // the stop date to apply to urls
-    startDate: String, // the start date to apply to urls
-    hideLinks: Object, // which links to hide when a user is searching links in link groups
+    numDays: {
+      type: [Number, String],
+      default: 1
+    }, // the number of days to apply to urls
+    numHours: {
+      type: [Number, String],
+      default: 1
+    }, // the number of hours to apply to urls
+    stopDate: {
+      type: String,
+      default: ''
+    }, // the stop date to apply to urls
+    startDate: {
+      type: String,
+      default: ''
+    }, // the start date to apply to urls
+    hideLinks: {
+      type: Object,
+      default: () => ({})
+    }, // which links to hide when a user is searching links in link groups
     linkGroup: { // the link group object to generate links
       type: Object,
       required: true
     },
     preUpdatedLinkGroup: { // persists unsaved changes between switching the actively-edited link group
       type: Object,
-      required: false
+      required: false,
+      default: undefined
     },
-    itype: String // the itype to filter links by
+    itype: {
+      type: String,
+      default: ''
+    } // the itype to filter links by
   },
   data () {
     return {
       message: '',
       success: false,
+      allChecked: true,
       rawEditMode: false,
       changesMade: false,
       confirmDelete: false,
@@ -436,6 +492,10 @@ export default {
         infoField: link.infoField || undefined,
         expanded: undefined // don't care about expanded (only used for UI)
       }));
+
+      // ensure viewRoles and editRoles exist as arrays
+      normalizedLinkGroup.viewRoles = normalizedLinkGroup.viewRoles || [];
+      normalizedLinkGroup.editRoles = normalizedLinkGroup.editRoles || [];
 
       // sort edit/view roles to make order not matter for the comparison of these fields (as it is not meaningful)
       normalizedLinkGroup.viewRoles.sort();
@@ -575,25 +635,27 @@ export default {
         }
       }
     },
-    toggleAllLinks (linkGroup, checked) {
+    toggleAllLinks (linkGroup, e) {
+      const checked = e?.target?.checked;
+      this.allChecked = checked;
       this.$store.commit('TOGGLE_CHECK_ALL_LINKS', { lgId: linkGroup._id, checked });
     },
-    allLinksChecked (linkGroup) {
-      if (!this.getCheckedLinks[linkGroup._id]) {
-        return false;
+    computeAllChecked () {
+      if (!this.getCheckedLinks[this.linkGroup._id]) {
+        this.allChecked = false;
+        return;
       }
-
-      let count = 0;
-      for (const link in this.getCheckedLinks[linkGroup._id]) {
-        if (this.getCheckedLinks[linkGroup._id][link]) {
-          count++;
+      // update whether all the links are checked or not
+      for (const link of this.linkGroup.links) {
+        if (!this.getCheckedLinks[this.linkGroup._id][link.name]) {
+          this.allChecked = false;
+          return;
         }
       }
-
-      return count === linkGroup.links.length;
+      this.allChecked = true;
     },
     toggleLinkGroup (linkGroup) {
-      this.$set(this.collapsedLinkGroups, linkGroup._id, !this.collapsedLinkGroups[linkGroup._id]);
+      this.collapsedLinkGroups[linkGroup._id] = !this.collapsedLinkGroups[linkGroup._id];
       this.$store.commit('SET_COLLAPSED_LINK_GROUPS', this.collapsedLinkGroups);
     }
   },
@@ -601,19 +663,18 @@ export default {
     if (this.preUpdatedLinkGroup != null) {
       this.updateLinkGroup(this.updatedLinkGroup);
     }
+
+    // update whether all the links are checked or not
+    this.computeAllChecked();
   }
 };
 </script>
 
 <style scoped>
-/* small alerts */
-.alert.alert-sm {
-  padding: 0.2rem 0.8rem;
-}
-
 .link-checkbox {
   margin-right: 0;
   min-height: 1rem;
+  margin: -4px 0 -4px -2px;
 }
 
 .link-header {
@@ -632,5 +693,10 @@ export default {
   border-width: 2px;
   margin-top: 0.5rem;
   margin-bottom: 0.5rem;
+}
+
+/* unset weird margin between buttons in card actions */
+.v-card-actions .v-btn ~ .v-btn:not(.v-btn-toggle .v-btn) {
+    margin-inline-start: 0;
 }
 </style>

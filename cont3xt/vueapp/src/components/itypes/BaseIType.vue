@@ -3,58 +3,84 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-  <b-card v-if="indicator.query"
-          class="cursor-pointer itype-card" :class="{ 'border-danger': isActiveIndicator }"
-          @click.stop="setSelfAsActiveIndicator">
-    <div class="d-xl-flex" ref="nodeCardScrollMarker">
-      <div class="d-xl-flex flex-grow-1 flex-wrap mw-100">
-        <h4 class="text-warning m-0">
+  <cont3xt-card
+    v-if="indicator.query"
+    class="cursor-pointer itype-card"
+    :class="{ 'itype-card-active': isActiveIndicator }"
+    @mousedown.stop="setSelfAsActiveIndicator">
+    <div
+      class="d-xl-flex"
+      ref="nodeCardScrollMarker">
+      <div class="d-flex flex-grow-1 flex-wrap mw-100">
+        <h5 class="text-warning ma-0">
           {{ indicator.itype.toUpperCase() }}
-        </h4>
+        </h5>
         <cont3xt-field
-            :decoded-value="indicator.decoded"
-            :value="indicator.query"
-            class="align-self-center mr-1"
-            :id="`${indicator.query}-${indicator.itype}`"
-        />
+          :decoded-value="indicator.decoded"
+          :value="indicator.query"
+          class="align-self-center mr-1"
+          :id="`${indicator.query}-${indicator.itype}`" />
         <integration-severity-counts :indicator-id="indicatorId" />
 
         <!--    unlabeled tidbits    -->
-        <template v-for="(tidbit, index) in unlabeledTidbits">
-          <integration-tidbit :tidbit="tidbit" :key="index"
-                              :id="`${indicatorId}-tidbit-${index}`"/>
+        <template
+          v-for="(tidbit, index) in unlabeledTidbits"
+          :key="index">
+          <integration-tidbit
+            :tidbit="tidbit"
+            :id="`${indicatorId}-tidbit-${index}`" />
         </template><!--    /unlabeled tidbits    -->
       </div>
     </div>
 
     <!--  labeled tidbits  -->
-    <div v-if="labeledTidbits.length > 0"  class="mt-1">
-      <div v-for="(tidbit, index) in labeledTidbits" :key="index" class="row ml-3" :class="{ 'mt-1': index > 0 }">
+    <div
+      v-if="labeledTidbits.length > 0"
+      class="mt-1">
+      <div
+        v-for="(tidbit, index) in labeledTidbits"
+        :key="index"
+        class="row ml-3"
+        :class="{ 'mt-1': index > 0 }">
         <div class="col">
-          <integration-tidbit :tidbit="tidbit" :id="`${indicatorId}-labeled-tidbit-${index}`"/>
+          <integration-tidbit
+            :tidbit="tidbit"
+            :id="`${indicatorId}-labeled-tidbit-${index}`" />
         </div>
       </div>
     </div><!--  /labeled tidbits  -->
 
     <!--  children  -->
-    <div v-if="children.length > 0" class="mt-2">
+    <div
+      v-if="children.length > 0"
+      class="mt-2">
       <template v-if="isCollapsed">
-        <b-card class="itype-card" @click.stop="toggleCollapse">
-          <span class="fa fa-plus fa-lg"/> {{ children.length }} hidden
-        </b-card>
+        <cont3xt-card
+          class="itype-card"
+          @click.stop="toggleCollapse">
+          <v-icon
+            icon="mdi-plus"
+            size="large" /> {{ children.length }} hidden
+        </cont3xt-card>
       </template>
       <template v-else>
-        <span v-for="(child, index) in children" :key="index">
-          <i-type-node :node="child" :parent-indicator-id="indicatorId" />
+        <span
+          v-for="(child, index) in children"
+          :key="index">
+          <i-type-node
+            :node="child"
+            :parent-indicator-id="indicatorId" />
         </span>
       </template>
     </div> <!--  /children  -->
-  </b-card>
+  </cont3xt-card>
 </template>
 
 <script>
-import Cont3xtField from '@/utils/Field';
-import IntegrationTidbit from '@/components/integrations/IntegrationTidbit';
+import { defineAsyncComponent } from 'vue';
+import Cont3xtField from '@/utils/Field.vue';
+import Cont3xtCard from '@/utils/Cont3xtCard.vue';
+import IntegrationTidbit from '@/components/integrations/IntegrationTidbit.vue';
 import { mapGetters } from 'vuex';
 import { Cont3xtIndicatorProp } from '@/utils/cont3xtUtil';
 import IntegrationSeverityCounts from '@/components/integrations/IntegrationSeverityCounts.vue';
@@ -65,8 +91,9 @@ export default {
     // NOTE: need async import here because there's a circular dependency
     //       between BaseIType and the different implementation types (which are contained in ITypeNode)
     // see: vuejs.org/v2/guide/components.html#Circular-References-Between-Components
-    ITypeNode: () => import('@/components/itypes/ITypeNode'),
+    ITypeNode: defineAsyncComponent(() => import('@/components/itypes/ITypeNode.vue')),
     Cont3xtField,
+    Cont3xtCard,
     IntegrationTidbit,
     IntegrationSeverityCounts
   },
@@ -129,10 +156,12 @@ export default {
 
 <style scoped>
 /* effects only the directly-hovered itype-card */
+/* (by checking that none of its children are hovered) */
 .itype-card:hover:not(:has(.itype-card:hover)) {
-  background-color: #d9dbde;
+  background: rgb(var(--v-theme-cont3xt-card-hover)) !important;
 }
-body.dark .itype-card:hover:not(:has(.itype-card:hover)) {
-  background-color: #3d3d3d;
+.itype-card-active {
+  outline: 1px solid rgb(var(--v-theme-error)) !important;
+  outline-offset: -1px;
 }
 </style>

@@ -1,4 +1,4 @@
-AC_INIT([arkime], [5.8.3])
+AC_INIT([arkime],[6.0.0-GIT])
 AM_INIT_AUTOMAKE([-Wall -Werror foreign])
 AC_PROG_CC
 AC_PROG_CXX
@@ -67,7 +67,7 @@ dnl OS Stuff
 AC_CANONICAL_HOST
 case $host_os in
 darwin*)
-  SHARED_FLAGS="--shared -undefined suppress -flat_namespace"
+  SHARED_FLAGS="--shared -undefined dynamic_lookup -flat_namespace"
   UNDEFINED_FLAGS="-u _g_checksum_update -u _g_hmac_update -ljansson"
   ;;
 *)
@@ -120,7 +120,7 @@ AC_ARG_WITH(pfring,
       PCAP_CFLAGS="-I$withval/pfring/include"
       PCAP_LIBS="$withval/pfring/lib/libpcap.a $withval/pfring/lib/libpfring.a -lnuma"
     else
-      AC_ERROR(pcap.h or libpcap.a not found in $withval)
+      AC_MSG_ERROR(pcap.h or libpcap.a not found in $withval)
     fi
     ;;
 esac ], [
@@ -161,7 +161,7 @@ AC_ARG_WITH(libpcap,
 	 PCAP_LIBS+=`$withval/pcap-config --static --additional-libs`;
       fi
     else
-      AC_ERROR(pcap.h or libpcap.a not found in $withval)
+      AC_MSG_ERROR(pcap.h or libpcap.a not found in $withval)
     fi
     ;;
 esac ], [
@@ -176,12 +176,12 @@ esac ], [
   else
     TMP=$LIBS
     LIBS="-lpcap $LIBS"
-    AC_TRY_LINK([#include <pcap.h>], pcap_open_offline("",""), LIBPCAP_FOUND=1,LIBPCAP_FOUND=0)
+    AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <pcap.h>]], [[pcap_open_offline("","")]])],[LIBPCAP_FOUND=1],[LIBPCAP_FOUND=0])
     LIBS=$TMP
     if test $LIBPCAP_FOUND = 1 ; then
       PCAP_LIBS="-lpcap"
     else
-      AC_ERROR(libpcap not found)
+      AC_MSG_ERROR(libpcap not found)
     fi
   fi
 AC_MSG_RESULT(yes) ])
@@ -190,7 +190,7 @@ AC_MSG_RESULT(yes) ])
 # Modfied version of whats in libpcap configure.ac.  Thank you libpcap!
 #
 AC_ARG_WITH(libnl,
-AC_HELP_STRING([--without-libnl],[disable libnl support @<:@default=yes, on Linux, if present@:>@]),
+AS_HELP_STRING([--without-libnl],[disable libnl support @<:@default=yes, on Linux, if present@:>@]),
         with_libnl=$withval,,)
 
 if test x$with_libnl != xno ; then
@@ -293,7 +293,7 @@ AC_ARG_WITH(yara,
       YARA_CFLAGS="-I$withval/include"
       YARA_LIBS="$withval/lib/libyara.a"
     else
-      AC_ERROR(yara.h or yara.a not found in $withval)
+      AC_MSG_ERROR(yara.h or yara.a not found in $withval)
     fi
     ;;
 esac ], [
@@ -306,12 +306,12 @@ esac ], [
   else
     TMP=$LIBS
     LIBS="-lyara $LIBS"
-    AC_TRY_LINK([#include <yara.h>], yr_initialize(), LIBYARA_FOUND=1,LIBYARA_FOUND=0)
+    AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <yara.h>]], [[yr_initialize()]])],[LIBYARA_FOUND=1],[LIBYARA_FOUND=0])
     LIBS=$TMP
     if test $LIBYARA_FOUND = 1 ; then
       YARA_LIBS="-lyara"
     else
-      AC_ERROR(yara not found)
+      AC_MSG_ERROR(yara not found)
     fi
   fi
 AC_MSG_RESULT(yes) ])
@@ -346,7 +346,7 @@ AC_ARG_WITH(maxminddb,
       MAXMINDDB_CFLAGS="-I$withval/include"
       MAXMINDDB_LIBS="$withval/lib/libmaxminddb.a"
     else
-      AC_ERROR(maxminddb.h or libmaxminddb.a not found in $withval)
+      AC_MSG_ERROR(maxminddb.h or libmaxminddb.a not found in $withval)
     fi
     ;;
 esac ], [
@@ -359,12 +359,12 @@ esac ], [
   else
     TMP=$LIBS
     LIBS="-lmaxminddb $LIBS"
-    AC_TRY_LINK([#include <maxminddb.h>], MMDB_open(NULL, MMDB_MODE_MMAP, NULL), LIBMAXMINDDB_FOUND=1,LIBMAXMINDDB_FOUND=0)
+    AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <maxminddb.h>]], [[MMDB_open(NULL, MMDB_MODE_MMAP, NULL)]])],[LIBMAXMINDDB_FOUND=1],[LIBMAXMINDDB_FOUND=0])
     LIBS=$TMP
     if test $LIBMAXMINDDB_FOUND = 1 ; then
       MAXMINDDB_LIBS="-lmaxminddb"
     else
-      AC_ERROR(maxminddb not found)
+      AC_MSG_ERROR(maxminddb not found)
     fi
   fi
 AC_MSG_RESULT(yes) ])
@@ -399,7 +399,7 @@ AC_ARG_WITH(glib2,
       GLIB2_CFLAGS="-I$withval/glib -I$withval -I$withval/gmodule -I$withval/gobject -I$withval/_build/glib -I$withval/_build"
       GLIB2_LIBS="$withval/_build/glib/libglib-2.0.a $withval/_build/gio/libgio-2.0.a $withval/_build/gobject/libgobject-2.0.a $withval/_build/gthread/libgthread-2.0.a $withval/_build/gmodule/libgmodule-2.0.a $withval/_build/glib/libglib-2.0.a"
     else
-      AC_ERROR(glib.h or libglib-2.0.a not found in $withval)
+      AC_MSG_ERROR(glib.h or libglib-2.0.a not found in $withval)
     fi
     ;;
 esac ], [
@@ -439,7 +439,7 @@ AC_ARG_WITH(curl,
       CURL_CFLAGS="-I$withval/include"
       CURL_LIBS="$withval/lib/libcurl.a"
     else
-      AC_ERROR(curl.h or libcurl.a not found in $withval)
+      AC_MSG_ERROR(curl.h or libcurl.a not found in $withval)
     fi
     ;;
 esac ], [
@@ -471,7 +471,7 @@ AC_ARG_WITH(lua,
       LUA_CFLAGS="-I$withval/src"
       LUA_LIBS="$withval/src/liblua.a"
     else
-      AC_ERROR(lua.h or liblua.a not found in $withval)
+      AC_MSG_ERROR(lua.h or liblua.a not found in $withval)
     fi
     ;;
 esac ], [
@@ -503,7 +503,7 @@ AC_ARG_WITH(magic,
       MAGIC_CFLAGS="-I$withval/src"
       MAGIC_LIBS="$withval/src/.libs/libmagic.a"
     else
-      AC_ERROR(magic.h or libmagic.a not found in $withval)
+      AC_MSG_ERROR(magic.h or libmagic.a not found in $withval)
     fi
     ;;
 esac ], [
@@ -534,7 +534,7 @@ AC_ARG_WITH(nghttp2,
       NGHTTP2_CFLAGS="-I$withval/lib/includes"
       NGHTTP2_LIBS="$withval/lib/.libs/libnghttp2.a"
     else
-      AC_ERROR(nghttp2.h or libnghttp2.a not found in $withval)
+      AC_MSG_ERROR(nghttp2.h or libnghttp2.a not found in $withval)
     fi
     ;;
 esac ], [
@@ -568,7 +568,7 @@ AC_ARG_WITH(zstd,
       ZSTD_LIBS="$withval/lib/libzstd.a"
       AC_DEFINE([HAVE_ZSTD], [1], [Define if libzstd is available])
     else
-      AC_ERROR(zstd.h or libzstd.a not found in $withval)
+      AC_MSG_ERROR(zstd.h or libzstd.a not found in $withval)
     fi
     ;;
 esac ], [
@@ -582,7 +582,7 @@ AC_SUBST(ZSTD_LIBS)
 dnl Checks for kafka
 AC_MSG_CHECKING(for kafka)
 AC_ARG_WITH(kafka,
-[ --with-kafka=DIR use kafka (librdkafka) build directory],
+[  --with-kafka=DIR use kafka (librdkafka) build directory],
 [ case "$withval" in
   no)
      AC_MSG_RESULT(no)
@@ -601,7 +601,7 @@ AC_ARG_WITH(kafka,
       KAFKA_CFLAGS="-I$withval"
       KAFKA_LIBS="-lrdkafka"
     else
-      AC_ERROR(rdkafka.h or librdkafka.a not found in $withval)
+      AC_MSG_ERROR(rdkafka.h or librdkafka.a not found in $withval)
     fi
     ;;
 esac ], [
@@ -610,6 +610,44 @@ esac ], [
 AC_MSG_RESULT(no) ])
 AC_SUBST(KAFKA_CFLAGS)
 AC_SUBST(KAFKA_LIBS)
+
+dnl python
+AC_ARG_WITH([python],
+    AS_HELP_STRING([--with-python], [Enable Python support (default: auto)]),
+    [with_python=$withval],
+    [with_python=auto])
+
+AS_IF([test "x$with_python" != "xno"], [
+    PKG_CHECK_MODULES([PYTHON], [python-3.13-embed], [
+        AC_DEFINE([HAVE_PYTHON], [1], [Define to 1 if Python 3.13+ embed is available via pkg-config.])
+        have_python=yes
+        AC_MSG_NOTICE([Found Python 3.13 embed via pkg-config.])
+    ], [
+        PKG_CHECK_MODULES([PYTHON], [python-3.12-embed], [
+            AC_DEFINE([HAVE_PYTHON], [1], [Define to 1 if Python 3.12+ embed is available via pkg-config.])
+            have_python=yes
+            AC_MSG_NOTICE([Found Python 3.12 embed via pkg-config.])
+        ], [
+            PKG_CHECK_MODULES([PYTHON], [python3-embed >= 3.12], [
+                AC_DEFINE([HAVE_PYTHON], [1], [Define to 1 if generic Python 3.12+ embed is available via pkg-config.])
+                have_python=yes
+                AC_MSG_NOTICE([Found generic Python 3.12+ embed via pkg-config.])
+            ], [
+                AS_IF([test "x$with_python" = "xyes"], [
+                    AC_MSG_ERROR([Python 3.12 or newer with embedding support is required but not found via pkg-config.])
+                ], [
+                    AC_MSG_WARN([Python 3.12 or newer with embedding support not found via pkg-config, Python support disabled.])
+                ])
+                have_python=no
+            ])
+        ])
+    ])
+], [
+    have_python=no
+])
+
+AC_SUBST([PYTHON_CFLAGS])
+AC_SUBST([PYTHON_LIBS])
 
 AS_IF([test "$prefix" == "NONE"],
     [AC_DEFINE_UNQUOTED(CONFIG_PREFIX,"$ac_default_prefix", [config prefix directory])],

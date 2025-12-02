@@ -1,7 +1,8 @@
-#!/usr/bin/perl -I.
+#!/usr/bin/env perl
 #
 # SPDX-License-Identifier: Apache-2.0
 
+use lib ".";
 use strict;
 use HTTP::Request::Common;
 use LWP::UserAgent;
@@ -21,6 +22,7 @@ my $ELASTICSEARCH = $ENV{ELASTICSEARCH} = "http://127.0.0.1:9200";
 
 $ENV{'PERL5LIB'} = getcwd();
 $ENV{'TZ'} = 'US/Eastern';
+$ENV{'NODE_ENV'} = 'development';
 my $INSECURE = "";
 my $SCHEME = "";
 my $EXTRA = "";
@@ -138,8 +140,8 @@ sub sortObj {
             }
             next if (scalar (@{$obj->{$key}}) < 2);
             next if ($key =~ /(packetPos|packetLen|cert|dns)/);
-            next if ("$parentkey.$key" =~ /dns.answers/);
-            if ("$parentkey.$key" =~ /vlan.id|http.statuscode|icmp.type|icmp.code/) {
+            next if ("$parentkey.$key" =~ /dns.answers|vlan.id/);
+            if ("$parentkey.$key" =~ /http.statuscode|icmp.type|icmp.code/) {
                 my @tmp = sort { $a <=> $b } (@{$obj->{$key}});
                 $obj->{$key} = \@tmp;
             } else {
@@ -415,7 +417,14 @@ my ($cmd) = @_;
             system("cd ../cont3xt ; $node cont3xt.js $ces $cues --regressionTests -c ../tests/cont3xt.tests.ini $INSECURE > /dev/null 2>&1 &");
             system("cd ../viewer ; $node --trace-warnings esProxy.js --regressionTests $es -c ../tests/config.test.ini -n esproxy --debug $INSECURE >> /dev/null 2>&1 &");
         }
-        sleep (10000) if ($cmd eq "--viewerhang");
+        if ($cmd eq "--viewerhang") {
+           system("cd ../viewer/vueapp ; npx vite &");
+           system("cd ../parliament/vueapp ; npx vite &");
+           system("cd ../cont3xt/vueapp ; npx vite &");
+           system("cd ../wiseService/vueapp ; npx vite &");
+           printf("Everything started, hanging\n");
+           sleep (10000);
+        }
     }
 
     waitFor($ArkimeTest::host, 8123);
@@ -498,6 +507,9 @@ while (scalar (@ARGV) > 0) {
         shift @ARGV;
     } elsif ($ARGV[0] eq "--scheme") {
         $ENV{SCHEME} = $SCHEME = "--scheme";
+        shift @ARGV;
+    } elsif ($ARGV[0] eq "--libpcap") {
+        $ENV{SCHEME} = $SCHEME = "--libpcap";
         shift @ARGV;
     } elsif ($ARGV[0] eq "--copy") {
         $main::copy = "--copy";

@@ -31,6 +31,9 @@ LOCAL void *tzsp_thread(gpointer UNUSED(uw))
     GSocket                  *socket;
     GSocketAddress           *addr;
 
+    int initFunc = arkime_get_named_func("arkime_reader_thread_init");
+    arkime_call_named_func(initFunc, 0, NULL);
+
     socket = g_socket_new (G_SOCKET_FAMILY_IPV4, G_SOCKET_TYPE_DATAGRAM, G_SOCKET_PROTOCOL_UDP, &error);
 
     if (!socket || error) {
@@ -47,7 +50,7 @@ LOCAL void *tzsp_thread(gpointer UNUSED(uw))
 
     ArkimePacketBatch_t   batch;
     arkime_packet_batch_init(&batch);
-    while (TRUE) {
+    while (!config.quitting) {
         gchar             buf[0xffff];
 
         gsize len = g_socket_receive(socket, buf, sizeof(buf), NULL, &error);
@@ -113,7 +116,7 @@ LOCAL void *tzsp_thread(gpointer UNUSED(uw))
             continue;
         }
 
-        ArkimePacket_t *packet = ARKIME_TYPE_ALLOC0(ArkimePacket_t);
+        ArkimePacket_t *packet = arkime_packet_alloc();
         packet->pktlen        = BSB_REMAINING(bsb);
         packet->pkt           = BSB_WORK_PTR(bsb);
         packet->readerPos     = 0;
@@ -122,6 +125,11 @@ LOCAL void *tzsp_thread(gpointer UNUSED(uw))
         arkime_packet_batch(&batch, packet);
         arkime_packet_batch_flush(&batch);
     }
+
+    int exitFunc = arkime_get_named_func("arkime_reader_thread_exit");
+    arkime_call_named_func(exitFunc, 0, NULL);
+
+    return NULL;
 }
 
 /******************************************************************************/
