@@ -34,7 +34,7 @@ NOTICE: Restart wiseService before capture when upgrading
 NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at once after upgrading
 NOTICE: Create a parliament config file before upgrading (see https://arkime.com/settings#parliament and https://arkime.com/faq#how_do_i_upgrade_to_arkime_5)
 
-5.8.3 2025/12/xx
+5.8.3 2025/12/02
 ## Release
   - #3510 Node 20.19.6
 ## Capture
