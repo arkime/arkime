@@ -23,7 +23,7 @@
     "console-stamp": "^3.1.2",
     "csv": "^6.4.1",
     "ejs": "^3.1.10",
-    "express": "^4.21.2",
+    "express": "^4.22.0",
     "express-session": "^1.18.2",
     "font-awesome": "^4.7.0",
     "helmet": "^3.23.3",
