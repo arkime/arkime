@@ -38,7 +38,6 @@ typedef struct {
     uint8_t                  threadNum;
     uint16_t                 ringStart;
     uint16_t                 ringEnd;
-    gboolean                 initialized;
 } ArkimeNetmap_t;
 
 #define MAX_NETMAP_READERS (MAX_INTERFACES * MAX_THREADS_PER_INTERFACE)
@@ -46,6 +45,7 @@ typedef struct {
 LOCAL ArkimeNetmap_t         readers[MAX_NETMAP_READERS];
 LOCAL int                    numReaders;
 LOCAL int                    threadsPerInterface;
+LOCAL struct nm_desc        *nmdPerInterface[MAX_INTERFACES];
 LOCAL ArkimeReaderStats_t    gStats;
 LOCAL ARKIME_LOCK_DEFINE(gStats);
 
@@ -55,10 +55,10 @@ int reader_netmap_stats(ArkimeReaderStats_t *stats)
     ARKIME_LOCK(gStats);
     memset(&gStats, 0, sizeof(gStats));
 
-    for (int i = 0; i < numReaders; i++) {
-        if (readers[i].nmd) {
-            gStats.total += readers[i].nmd->st.ps_recv;
-            gStats.dropped += readers[i].nmd->st.ps_drop;
+    for (int i = 0; config.interface[i]; i++) {
+        if (nmdPerInterface[i]) {
+            gStats.total += nmdPerInterface[i]->st.ps_recv;
+            gStats.dropped += nmdPerInterface[i]->st.ps_drop;
         }
     }
     *stats = gStats;
@@ -147,10 +147,10 @@ void reader_netmap_start()
 /******************************************************************************/
 void reader_netmap_exit()
 {
-    for (int i = 0; i < numReaders; i++) {
-        if (readers[i].nmd) {
-            nm_close(readers[i].nmd);
-            readers[i].nmd = NULL;
+    for (int i = 0; config.interface[i]; i++) {
+        if (nmdPerInterface[i]) {
+            nm_close(nmdPerInterface[i]);
+            nmdPerInterface[i] = NULL;
         }
     }
 }
@@ -174,6 +174,8 @@ void reader_netmap_init(char *UNUSED(name))
         if (!nmd) {
             CONFIGEXIT("Failed to open netmap on interface %s: %s", config.interface[i], strerror(errno));
         }
+
+        nmdPerInterface[i] = nmd;
 
         if (config.debug) {
             LOG("Netmap opened on interface %s with %d RX rings", config.interface[i], nmd->nifp->ni_rx_rings);
@@ -211,7 +213,6 @@ void reader_netmap_init(char *UNUSED(name))
                 netmap_set_filter(reader, config.bpf);
             }
 
-            reader->initialized = TRUE;
             numReaders++;
         }
     }
