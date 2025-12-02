@@ -52,6 +52,15 @@ LOCAL ARKIME_LOCK_DEFINE(gStats);
 int reader_bpf_stats(ArkimeReaderStats_t *stats)
 {
     ARKIME_LOCK(gStats);
+    memset(&gStats, 0, sizeof(gStats));
+
+    struct bpf_stat bpfstats;
+    for (int i = 0; i < numReaders; i++) {
+        if (ioctl(readers[i].fd, BIOCGSTATS, &bpfstats) == 0) {
+            gStats.total += bpfstats.bs_recv;
+            gStats.dropped += bpfstats.bs_drop;
+        }
+    }
     *stats = gStats;
     ARKIME_UNLOCK(gStats);
     return 0;
