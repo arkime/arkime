@@ -1116,7 +1116,7 @@ class Pcap {
   /// ///////////////////////////////////////////////////////////////////////////////
 
   // --------------------------------------------------------------------------
-  static reassemble_icmp (packets, numPackets, cb) {
+  static reassemble_icmp (packets, numPackets) {
     const results = [];
     packets.length = Math.min(packets.length, numPackets);
     for (const packet of packets) {
@@ -1135,11 +1135,11 @@ class Pcap {
       result.data = Buffer.concat(result.buffers);
       delete result.buffers;
     }
-    cb(null, results);
+    return { results };
   };
 
   // --------------------------------------------------------------------------
-  static reassemble_udp (packets, numPackets, cb) {
+  static reassemble_udp (packets, numPackets) {
     const results = [];
     try {
       packets.length = Math.min(packets.length, numPackets);
@@ -1159,14 +1159,14 @@ class Pcap {
         result.data = Buffer.concat(result.buffers);
         delete result.buffers;
       }
-      cb(null, results);
-    } catch (e) {
-      cb(e, results);
+      return { results };
+    } catch (err) {
+      return { err, results };
     }
   };
 
   // --------------------------------------------------------------------------
-  static reassemble_sctp (packets, numPackets, cb) {
+  static reassemble_sctp (packets, numPackets) {
     const results = [];
     try {
       packets.length = Math.min(packets.length, numPackets);
@@ -1186,14 +1186,14 @@ class Pcap {
         result.data = Buffer.concat(result.buffers);
         delete result.buffers;
       }
-      cb(null, results);
-    } catch (e) {
-      cb(e, results);
+      return { results };
+    } catch (err) {
+      return { err, results };
     }
   };
 
   // --------------------------------------------------------------------------
-  static reassemble_esp (packets, numPackets, cb) {
+  static reassemble_esp (packets, numPackets) {
     const results = [];
     packets.length = Math.min(packets.length, numPackets);
     for (const packet of packets) {
@@ -1212,11 +1212,11 @@ class Pcap {
       result.data = Buffer.concat(result.buffers);
       delete result.buffers;
     }
-    cb(null, results);
+    return { results };
   };
 
   // --------------------------------------------------------------------------
-  static reassemble_generic_ip (packets, numPackets, cb) {
+  static reassemble_generic_ip (packets, numPackets) {
     const results = [];
     packets.length = Math.min(packets.length, numPackets);
     for (const packet of packets) {
@@ -1235,11 +1235,11 @@ class Pcap {
       result.data = Buffer.concat(result.buffers);
       delete result.buffers;
     }
-    cb(null, results);
+    return { results };
   };
 
   // --------------------------------------------------------------------------
-  static reassemble_generic_ether (packets, numPackets, cb) {
+  static reassemble_generic_ether (packets, numPackets) {
     const results = [];
     packets.length = Math.min(packets.length, numPackets);
     for (const packet of packets) {
@@ -1258,7 +1258,7 @@ class Pcap {
       result.data = Buffer.concat(result.buffers);
       delete result.buffers;
     }
-    cb(null, results);
+    return { results };
   };
 
   // Needs to be rewritten since its possible for packets to be
@@ -1423,7 +1423,7 @@ class Pcap {
   };
 
   // --------------------------------------------------------------------------
-  static packetFlow (session, packets, numPackets, cb) {
+  static packetFlow (session, packets, numPackets) {
     packets = packets.slice(0, numPackets);
 
     let sKey = Pcap.keyFromSession(session);
@@ -1479,7 +1479,7 @@ class Pcap {
       return result;
     });
 
-    return cb(null, results, sKey, dKey);
+    return { sKey, dKey, results };
   };
 
   // --------------------------------------------------------------------------
