@@ -598,28 +598,24 @@ class SessionAPIs {
       }
 
       if (req.query.showFrames && packets.length !== 0) {
-        Pcap.packetFlow(session, packets, +req.query.packets || 200, (err, results, sourceKey, destinationKey) => {
-          session._err = err;
-          session.sourceKey = sourceKey;
-          session.destinationKey = destinationKey;
-          SessionAPIs.#localSessionDetailReturn(req, res, session, results || []);
-        });
+        const { dKey, sKey, results } = Pcap.packetFlow(session, packets, +req.query.packets || 200);
+        session.sourceKey = sKey;
+        session.destinationKey = dKey;
+        SessionAPIs.#localSessionDetailReturn(req, res, session, results || []);
       } else if (packets.length === 0) {
         session._err = 'No pcap data found';
         SessionAPIs.#localSessionDetailReturn(req, res, session, []);
       } else if (packets[0].ether !== undefined && packets[0].ether.data !== undefined) {
-        Pcap.reassemble_generic_ether(packets, +req.query.packets || 200, (err, results) => {
-          session._err = err;
-          SessionAPIs.#localSessionDetailReturn(req, res, session, results || []);
-        });
+        const { err, results } = Pcap.reassemble_generic_ether(packets, +req.query.packets || 200);
+        session._err = err;
+        SessionAPIs.#localSessionDetailReturn(req, res, session, results || []);
       } else if (packets[0].ip === undefined) {
         session._err = "Couldn't decode pcap file, check viewer log";
         SessionAPIs.#localSessionDetailReturn(req, res, session, []);
       } else if (packets[0].ip.p === 1) {
-        Pcap.reassemble_icmp(packets, +req.query.packets || 200, (err, results) => {
-          session._err = err;
-          SessionAPIs.#localSessionDetailReturn(req, res, session, results || []);
-        });
+        const { err, results } = Pcap.reassemble_icmp(packets, +req.query.packets || 200);
+        session._err = err;
+        SessionAPIs.#localSessionDetailReturn(req, res, session, results || []);
       } else if (packets[0].ip.p === 6) {
         const key = ipaddr.parse(session.source.ip).toString();
         Pcap.reassemble_tcp(packets, +req.query.packets || 200, key + ':' + session.source.port, (err, results) => {
@@ -627,30 +623,25 @@ class SessionAPIs {
           SessionAPIs.#localSessionDetailReturn(req, res, session, results || []);
         });
       } else if (packets[0].ip.p === 17) {
-        Pcap.reassemble_udp(packets, +req.query.packets || 200, (err, results) => {
-          session._err = err;
-          SessionAPIs.#localSessionDetailReturn(req, res, session, results || []);
-        });
+        const { err, results } = Pcap.reassemble_udp(packets, +req.query.packets || 200);
+        session._err = err;
+        SessionAPIs.#localSessionDetailReturn(req, res, session, results || []);
       } else if (packets[0].ip.p === 132) {
-        Pcap.reassemble_sctp(packets, +req.query.packets || 200, (err, results) => {
-          session._err = err;
-          SessionAPIs.#localSessionDetailReturn(req, res, session, results || []);
-        });
+        const { err, results } = Pcap.reassemble_sctp(packets, +req.query.packets || 200);
+        session._err = err;
+        SessionAPIs.#localSessionDetailReturn(req, res, session, results || []);
       } else if (packets[0].ip.p === 50) {
-        Pcap.reassemble_esp(packets, +req.query.packets || 200, (err, results) => {
-          session._err = err;
-          SessionAPIs.#localSessionDetailReturn(req, res, session, results || []);
-        });
+        const { err, results } = Pcap.reassemble_esp(packets, +req.query.packets || 200);
+        session._err = err;
+        SessionAPIs.#localSessionDetailReturn(req, res, session, results || []);
       } else if (packets[0].ip.p === 58) {
-        Pcap.reassemble_icmp(packets, +req.query.packets || 200, (err, results) => {
-          session._err = err;
-          SessionAPIs.#localSessionDetailReturn(req, res, session, results || []);
-        });
+        const { err, results } = Pcap.reassemble_icmp(packets, +req.query.packets || 200);
+        session._err = err;
+        SessionAPIs.#localSessionDetailReturn(req, res, session, results || []);
       } else if (packets[0].ip.data !== undefined) {
-        Pcap.reassemble_generic_ip(packets, +req.query.packets || 200, (err, results) => {
-          session._err = err;
-          SessionAPIs.#localSessionDetailReturn(req, res, session, results || []);
-        });
+        const { err, results } = Pcap.reassemble_generic_ip(packets, +req.query.packets || 200);
+        session._err = err;
+        SessionAPIs.#localSessionDetailReturn(req, res, session, results || []);
       } else {
         session._err = 'Unknown ip.p=' + packets[0].ip.p;
         SessionAPIs.#localSessionDetailReturn(req, res, session, []);
@@ -1873,22 +1864,19 @@ class SessionAPIs {
       } else if (packets[0].ip === undefined) {
         return doneCb(null, session, []);
       } else if (packets[0].ip.p === 1) {
-        Pcap.reassemble_icmp(packets, numPackets, (err, results) => {
-          return doneCb(err, session, results);
-        });
+        const { err, results } = Pcap.reassemble_icmp(packets, numPackets);
+        return doneCb(err, session, results);
       } else if (packets[0].ip.p === 6) {
         const key = ipaddr.parse(session.source.ip).toString();
         Pcap.reassemble_tcp(packets, numPackets, key + ':' + session.source.port, (err, results) => {
           return doneCb(err, session, results);
         });
       } else if (packets[0].ip.p === 17) {
-        Pcap.reassemble_udp(packets, numPackets, (err, results) => {
-          return doneCb(err, session, results);
-        });
+        const { err, results } = Pcap.reassemble_udp(packets, numPackets);
+        return doneCb(err, session, results);
       } else if (packets[0].ip.p === 132) {
-        Pcap.reassemble_sctp(packets, numPackets, (err, results) => {
-          return doneCb(err, session, results);
-        });
+        const { err, results } = Pcap.reassemble_sctp(packets, numPackets);
+        return doneCb(err, session, results);
       } else {
         return doneCb(null, session, []);
       }
