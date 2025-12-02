@@ -9,10 +9,10 @@
 #define _FILE_OFFSET_BITS 64
 #include "arkime.h"
 
-#if !defined(__linux__) && !defined(__FreeBSD__)
+#if !defined(__FreeBSD__)
 void reader_netmap_init(const char *UNUSED(name))
 {
-    CONFIGEXIT("Netmap reader only supported on Linux and FreeBSD");
+    CONFIGEXIT("Netmap reader only supported on FreeBSD");
 }
 #else
 
@@ -24,7 +24,9 @@ void reader_netmap_init(const char *UNUSED(name))
 #include <sys/stat.h>
 #include <poll.h>
 #include <net/netmap.h>
+#include "pcap.h"
 #define NETMAP_WITH_LIBS
+#undef strncpy
 #include <net/netmap_user.h>
 
 extern ArkimeConfig_t        config;
@@ -55,11 +57,8 @@ int reader_netmap_stats(ArkimeReaderStats_t *stats)
 
     for (int i = 0; i < numReaders; i++) {
         if (readers[i].nmd) {
-            for (uint16_t ring_idx = readers[i].ringStart; ring_idx <= readers[i].ringEnd; ring_idx++) {
-                struct netmap_ring *ring = NETMAP_RXRING(readers[i].nmd->nifp, ring_idx);
-                gStats.total += ring->stats.packets;
-                gStats.dropped += ring->stats.drops;
-            }
+            gStats.total += readers[i].nmd->st.ps_recv;
+            gStats.dropped += readers[i].nmd->st.ps_drop;
         }
     }
     *stats = gStats;
@@ -126,7 +125,7 @@ LOCAL void *reader_netmap_thread(gpointer readerv)
 }
 
 /******************************************************************************/
-LOCAL void netmap_set_filter(ArkimeNetmap_t *reader UNUSED(const char *filterstr UNUSED))
+LOCAL void netmap_set_filter(ArkimeNetmap_t *UNUSED(reader), const char *UNUSED(filterstr))
 {
     // Netmap doesn't support in-kernel BPF filtering the same way
     // Filtering would need to be done at application level if needed
@@ -171,12 +170,7 @@ void reader_netmap_init(char *UNUSED(name))
         // Open a single netmap descriptor per interface
         snprintf(nmspec, sizeof(nmspec), "netmap:%s", config.interface[i]);
 
-        struct nm_open_flags flags = {0};
-        flags.extra_bufs = 0;
-        flags.timestamp = 0;
-        flags.ring_flags = 0;
-
-        struct nm_desc *nmd = nm_open(nmspec, NULL, NM_OPEN_ARG(&flags), NULL);
+        struct nm_desc *nmd = nm_open(nmspec, NULL, 0, NULL);
         if (!nmd) {
             CONFIGEXIT("Failed to open netmap on interface %s: %s", config.interface[i], strerror(errno));
         }
