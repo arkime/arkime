@@ -2,11 +2,11 @@ name: "build"
 
 on:
   push:
-    branches: [ "dev6" ]
+    branches: [ "main" ]
 
   pull_request:
     # The branches below must be a subset of the branches above
-    branches: [ "dev6" ]
+    branches: [ "main" ]
     paths-ignore:
       - '*.md'
       - '.*'
@@ -199,7 +199,7 @@ jobs:
       - name: ja4plus
         if: ${{ matrix.ja4plus }}
         run: |
-          (cd .. ; git clone -b dev6 --single-branch https://github.com/arkime/ja4)
+          (cd .. ; git clone https://github.com/arkime/ja4)
           cp ../ja4/ja4plus.c capture/plugins
           (cd capture/plugins; make)
           (cd ../ja4; make)
@@ -278,21 +278,6 @@ jobs:
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         uses: softprops/action-gh-release@v2.0.5
         with:
-          tag_name: last-commit
-          draft: false
-          prerelease: true
-          generate_release_notes: false
-          files: |
-            *.deb
-            *.so
-            *.rpm
-            *.zst
-            NOTICE.txt
-
-      - name: upload github 6
-        if: github.event_name == 'push' && github.ref == 'refs/heads/dev6'
-        uses: softprops/action-gh-release@v2.0.5
-        with:
           tag_name: last-commit6
           draft: false
           prerelease: true
@@ -304,15 +289,30 @@ jobs:
             *.zst
             NOTICE.txt
 
+      - name: upload github 7
+        if: github.event_name == 'push' && github.ref == 'refs/heads/dev7'
+        uses: softprops/action-gh-release@v2.0.5
+        with:
+          tag_name: last-commit7
+          draft: false
+          prerelease: true
+          generate_release_notes: false
+          files: |
+            *.deb
+            *.so
+            *.rpm
+            *.zst
+            NOTICE.txt
+
       - name: tag last-commit
-        if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev6') && matrix.notice
+        if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev7') && matrix.notice
         run: |
-          if [ "$ARKIME_MAJOR_VERSION" = "5" ]; then
-            git tag --force last-commit
-            git push --force origin last-commit
-          else
+          if [ "$ARKIME_MAJOR_VERSION" = "6" ]; then
             git tag --force last-commit6
             git push --force origin last-commit6
+          else
+            git tag --force last-commit7
+            git push --force origin last-commit7
           fi
 
 ############# DOCKER DOCKER DOCKER #############
@@ -408,7 +408,7 @@ jobs:
             ls -l *.pkg
 
             if [ "${{ matrix.ja4plus }}" = "true" ]; then
-              (cd .. ; git clone -b dev6 --single-branch https://github.com/arkime/ja4)
+              (cd .. ; git clone https://github.com/arkime/ja4)
               cp ../ja4/ja4plus.c capture/plugins
               (cd capture/plugins; gmake)
               mv capture/plugins/ja4plus.so ja4plus.freebsd-${arch}.so
@@ -420,10 +420,22 @@ jobs:
             rm -rf node_modules */node_modules
 
       - name: upload github 6
-        if: github.event_name == 'push' && github.ref == 'refs/heads/dev6'
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         uses: softprops/action-gh-release@v2.0.5
         with:
           tag_name: last-commit6
+          draft: false
+          prerelease: true
+          generate_release_notes: false
+          files: |
+            *.pkg
+            *.so
+
+      - name: upload github 7
+        if: github.event_name == 'push' && github.ref == 'refs/heads/dev7'
+        uses: softprops/action-gh-release@v2.0.5
+        with:
+          tag_name: last-commit7
           draft: false
           prerelease: true
           generate_release_notes: false
