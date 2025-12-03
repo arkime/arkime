@@ -39,7 +39,7 @@ class SessionAPIs {
   // INTERNAL HELPERS
   // --------------------------------------------------------------------------
   static async #sessionsListFromQueryChunky (req, res, fields, startCb, chunkCb, endCb) {
-    if (req.query.length === undefined || parseInt(req.query.length) < 1000000) {
+    if (req.query.length === undefined) {
       req.query.length = 1000000;
     }
 
