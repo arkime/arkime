@@ -37,7 +37,7 @@ DOCLEAN=0
 DONODE=1
 DOINSTALL=0
 DORMINSTALL=0
-DOTHIRDPARTY=1
+DOTHIRDPARTY=0
 BUILDZSTD=1
 EXTRACONFIGURE=""
 
@@ -81,6 +81,10 @@ do
     DOTHIRDPARTY=0
     shift
     ;;
+  --thirdparty)
+    DOTHIRDPARTY=1
+    shift
+    ;;
   --without-wise)
     EXTRACONFIGURE+="--without-wise "
     shift
@@ -98,6 +102,7 @@ do
     echo "--nonode            = Do NOT download and install nodejs into the moloch directory"
     echo "--pfring            = Build pfring support"
     echo "--daq               = Build daq support"
+    echo "--thirdparty        = Build thirdparty packages when it makes sense"
     echo "--nothirdparty      = Use OS packages instead of building thirdparty"
     echo "--kafka             = Build kafka support"
     echo "--without-cont3xt   = Don't build the cont3xt nodejs app"
