@@ -746,6 +746,7 @@
       "read": "Read/s",
       "write": "Write/s",
       "searches": "Search/s",
+      "scrolls": "Scrolls/s",
       "ip": "IP",
       "ipExcluded": "IP Excluded",
       "nodeExcluded": "Node Excluded",

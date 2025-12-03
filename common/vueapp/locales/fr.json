@@ -708,6 +708,7 @@
       "read": "Lecture/s",
       "write": "Écriture/s",
       "searches": "Recherche/s",
+      "scrolls": "Défilements/s",
       "ip": "IP",
       "ipExcluded": "IP exclue",
       "nodeExcluded": "Nœud exclu",
