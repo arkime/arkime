@@ -455,9 +455,9 @@ class CronAPIs {
 
   // --------------------------------------------------------------------------
   static #qlworking = {};
-  static #sendSessionsListQL (pOptions, list, nextQLCb) {
+  static async #sendSessionsListQL (pOptions, list, nextQLCb) {
     if (!list) {
-      return;
+      return nextQLCb();
     }
 
     const nodes = {};
@@ -471,9 +471,11 @@ class CronAPIs {
 
     const keys = Object.keys(nodes);
 
-    async.eachLimit(keys, 15, function (node, nextCb) {
-      SessionAPIs.isLocalView(node, function () {
-        let sent = 0;
+    await async.eachLimit(keys, 15, async (node) => {
+      const isLocal = await SessionAPIs.isLocalView(node);
+
+      if (isLocal) {
+        // Get from our DISK
         for (const item of nodes[node]) {
           const options = {
             id: item,
@@ -481,42 +483,36 @@ class CronAPIs {
           };
           Db.merge(options, pOptions);
 
-          // Get from our DISK
-          internals.sendSessionQueue.push(options, function () {
-            sent++;
-            if (sent === nodes[node].length) {
-              nextCb();
-            }
-          });
+          await internals.sendSessionQueue.push(options);
         }
-      },
-      function () {
+      } else {
         // Get from remote DISK
-        ViewerUtils.getViewUrl(node, (err, viewUrl, client) => {
-          let sendPath = `api/sessions/${node}/send?saveId=${pOptions.saveId}&remoteCluster=${pOptions.cluster}`;
-          if (pOptions.tags) { sendPath += `&tags=${pOptions.tags}`; }
-          const url = new URL(sendPath, viewUrl);
-          const reqOptions = {
-            method: 'POST',
-            agent: client === http ? internals.httpAgent : internals.httpsAgent
-          };
+        const { viewUrl, client } = await ViewerUtils.getViewUrl(node);
+        let sendPath = `api/sessions/${node}/send?saveId=${pOptions.saveId}&remoteCluster=${pOptions.cluster}`;
+        if (pOptions.tags) { sendPath += `&tags=${pOptions.tags}`; }
+        const url = new URL(sendPath, viewUrl);
+        const reqOptions = {
+          method: 'POST',
+          agent: client === http ? internals.httpAgent : internals.httpsAgent
+        };
 
-          Auth.addS2SAuth(reqOptions, pOptions.user, node, sendPath);
-          ViewerUtils.addCaTrust(reqOptions, node);
+        Auth.addS2SAuth(reqOptions, pOptions.user, node, sendPath);
+        ViewerUtils.addCaTrust(reqOptions, node);
 
+        await new Promise((resolve) => {
           const preq = client.request(url, reqOptions, (pres) => {
             pres.on('data', (chunk) => {
               CronAPIs.#qlworking[url.path] = 'data';
             });
             pres.on('end', () => {
               delete CronAPIs.#qlworking[url.path];
-              setImmediate(nextCb);
+              resolve();
             });
           });
           preq.on('error', (e) => {
             delete CronAPIs.#qlworking[url.path];
             console.log("ERROR - Couldn't proxy sendSession request=", url, '\nerror=', e);
-            setImmediate(nextCb);
+            resolve();
           });
           preq.setHeader('content-type', 'application/x-www-form-urlencoded');
           preq.write('ids=');
@@ -524,10 +520,10 @@ class CronAPIs {
           preq.end();
           CronAPIs.#qlworking[url.path] = 'sent';
         });
-      });
-    }, (err) => {
-      nextQLCb();
+      }
     });
+
+    nextQLCb();
   }
 
   // --------------------------------------------------------------------------
