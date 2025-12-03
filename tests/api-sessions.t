@@ -1,4 +1,4 @@
-use Test::More tests => 102;
+use Test::More tests => 106;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -163,6 +163,22 @@ tcp,1386004309468,1386004309478,10.180.156.185,53533,US,10.180.156.249,1080,US,2
     $csv =~ s/\r//g;
     eq_or_diff ($csv, 'Could not build query.  Err: Can\'t find view');
 
+# csv should respect length parameter (visible sessions export)
+    my $csvOne = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8123/sessions.csv?length=1&date=-1&expression=" . uri_escape("file=$pwd/socks-http-example.pcap"))->content;
+    $csvOne =~ s/\r//g;
+    my @lines = split(/\n/, $csvOne);
+    is (scalar @lines, 2, "CSV length=1 returns header + 1 row");
+
+    my $csvTwo = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8123/sessions.csv?length=2&date=-1&expression=" . uri_escape("file=$pwd/socks-http-example.pcap"))->content;
+    $csvTwo =~ s/\r//g;
+    @lines = split(/\n/, $csvTwo);
+    is (scalar @lines, 3, "CSV length=2 returns header + 2 rows");
+
+# pcap should respect length parameter (visible sessions export)
+    my $pcapAll = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8123/api/sessions/pcap/sessions.pcap?date=-1&expression=" . uri_escape("file=$pwd/socks-http-example.pcap"))->content;
+    my $pcapOne = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8123/api/sessions/pcap/sessions.pcap?length=1&date=-1&expression=" . uri_escape("file=$pwd/socks-http-example.pcap"))->content;
+    ok (length($pcapOne) < length($pcapAll), "PCAP length=1 returns smaller file than no length limit");
+    ok (length($pcapOne) > 24, "PCAP length=1 returns more than just pcap header");
 
 # bigendian pcap fs tests
     my $json = get("/sessions.json?date=-1&fields=fileId&expression=" . uri_escape("file=$pwd/bigendian.pcap"));
