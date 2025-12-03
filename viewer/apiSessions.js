@@ -1028,28 +1028,24 @@ class SessionAPIs {
 
     const fields = ['lastPacket', 'node', 'network.bytes', 'network.packets', 'rootId', 'packetPos'];
 
-    function sendResult(total) {
-      if (total === 0) {
-        res.status(404);
-        return res.end(JSON.stringify({ success: false, text: 'no sessions found' }));
-      }
-      res.end();
-    }
-
     if (req.query.ids) {
       const ids = ViewerUtils.queryValueToArray(req.query.ids);
       SessionAPIs.sessionsListFromIds(req, ids, fields, async (err, list) => {
         if (list) {
           await SessionAPIs.#sessionsPcapList(req, res, list, pcapWriter, extension);
         }
-        sendResult(list ? list.length : 0);
+        if (!list || list.length === 0) {
+          res.status(404);
+          return res.end(JSON.stringify({ success: false, text: 'no sessions found' }));
+        }
+        res.end();
       });
     } else {
       SessionAPIs.#sessionsListFromQueryChunky(req, res, fields, null,
         async (err, list) => {
           await SessionAPIs.#sessionsPcapList(req, res, list, pcapWriter, extension);
         }, (err, total) => {
-          return sendResult(total);
+          res.end();
         });
     }
   }
