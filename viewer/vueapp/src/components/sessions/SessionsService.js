@@ -317,7 +317,7 @@ export default {
       link.click();
       link.remove();
 
-      return resolve({ text: this.$t('sessions.exports.exportingPCAP') });
+      return resolve({ success: true });
     });
   },
 
@@ -351,7 +351,7 @@ export default {
 
       window.location = url;
 
-      return resolve({ text: this.$t('sessions.exports.exportingCSV') });
+      return resolve({ success: true });
     });
   },
 
@@ -447,6 +447,7 @@ export default {
       if (!data.ids) { error = 'There are no matching sessions open.'; }
     } else if (combinedParams.applyTo === 'visible') {
       // all sessions visible on the sessions page
+      combinedParams.start = params.start;
       combinedParams.length = combinedParams.numVisible;
     } else if (combinedParams.applyTo === 'matching') {
       // all sessions in query results

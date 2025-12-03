@@ -121,7 +121,7 @@ use strict;
     eq_or_diff($json, from_json('{"text": "Successfully set settings", "success": true}'));
 
     $json = multiGetToken("/api/esadmin?arkimeRegressionUser=adminuser1&cluster=test", $token);
-    is ($json->[6]->{'current'}, "4321");
+    is ($json->[7]->{'current'}, "4321");
 
     $json = multiPostToken("/api/esadmin/reroute?arkimeRegressionUser=adminuser1&cluster=test", "", $token);
     eq_or_diff($json, from_json('{"text": "Reroute successful", "success": true}'));
@@ -137,7 +137,7 @@ use strict;
     eq_or_diff($json, from_json('{"text": "Successfully set settings", "success": true}'));
 
     $json = multiGetToken("/api/esadmin?arkimeRegressionUser=adminuser1&cluster=test2", $token);
-    is ($json->[6]->{'current'}, "31453");
+    is ($json->[7]->{'current'}, "31453");
 
     $json = multiPostToken("/api/esadmin/reroute?arkimeRegressionUser=adminuser1&cluster=test2", "", $token);
     eq_or_diff($json, from_json('{"text": "Reroute successful", "success": true}'));

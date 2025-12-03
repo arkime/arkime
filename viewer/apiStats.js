@@ -449,6 +449,7 @@ class StatsAPIs {
           storeSize: node.indices.store.size_in_bytes,
           freeSize: node.roles.some(str => str.startsWith('data')) ? node.fs.total.available_in_bytes : 0,
           docs: node.indices.docs.count,
+          scrolls: node.indices.search.scroll_current,
           searches: node.indices.search.query_current,
           searchesTime: node.indices.search.query_time_in_millis,
           heapSize: node.jvm.mem.heap_used_in_bytes,
@@ -967,6 +968,11 @@ class StatsAPIs {
       addSetting('search.max_buckets', 'Integer',
         'Max Aggregation Size',
         'https://www.elastic.co/guide/en/elasticsearch/reference/current/search-aggregations-bucket.html',
+        '^(|null|\\d+)$');
+
+      addSetting('search.max_open_scroll_context', 'Integer',
+        'Max Number of Scrolls',
+        'https://www.elastic.co/docs/reference/elasticsearch/rest-apis/paginate-search-results',
         '^(|null|\\d+)$');
 
       addSetting('arkime.disk.watermarks', '3 Percent or Byte Values',

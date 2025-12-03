@@ -111,6 +111,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #3495 Speed improvements for add/removing tags and exporting CSV
   - #3497 Process pcap files in blocks for speed improvements
   - #3498 Optimize pcap ressembly memory usage for speed improvements
+  - #3522 Can set max scrolls and display current scrolls
 ## Parliament
   - #3395 Low disk space monitoring for capture and ES hosts
   - #3395 Navbar ES status indicator cycles through clusters with issues w/highlighting

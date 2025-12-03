@@ -173,6 +173,7 @@ export default {
         intl({ id: 'write', sort: 'write', doStats: true, default: true, width: 90, dataFunction: (item) => { return humanReadableBytes(item.write); } }),
         intl({ id: 'searches', sort: 'searches', doStats: true, width: 100, default: true, dataFunction: (item) => { return roundCommaString(item.searches); } }),
         // all the rest of the available stats
+        intl({ id: 'scrolls', sort: 'scrolls', doStats: true, width: 100, dataFunction: (item) => { return roundCommaString(item.scrolls); } }),
         intl({ id: 'ip', sort: 'ip', doStats: false, width: 100 }),
         intl({ id: 'ipExcluded', sort: 'ipExcluded', doStats: false, width: 100 }),
         intl({ id: 'nodeExcluded', classes: 'text-start', sort: 'nodeExcluded', doStats: false, width: 125 }),
