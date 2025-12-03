@@ -2106,7 +2106,7 @@ app.use(cspHeader, setCookie, (req, res) => {
     huntWarn: Config.get('huntWarn', 100000),
     huntLimit: limit,
     nonce: res.locals.nonce,
-    anonymousMode: Auth.isAnonymousMode() && !Config.regressionTests,
+    anonymousMode: Auth.isAnonymousMode() && !ArkimeConfig.regressionTests,
     businesDayStart: Config.get('businessDayStart', false),
     businessDayEnd: Config.get('businessDayEnd', false),
     businessDays: Config.get('businessDays', '1,2,3,4,5'),
@@ -2255,7 +2255,7 @@ async function premain () {
     isPrimaryViewer: CronAPIs.isPrimaryViewer,
     getCurrentUserCB: UserAPIs.getCurrentUserCB,
     maxConcurrentShardRequests: Config.get('esMaxConcurrentShardRequests'),
-    regressionTests: Config.regressionTests
+    regressionTests: ArkimeConfig.regressionTests
   });
 
   Notifier.initialize({

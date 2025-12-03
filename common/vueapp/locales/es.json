@@ -706,6 +706,7 @@
       "read": "Lectura/s",
       "write": "Escritura/s",
       "searches": "Búsqueda/s",
+      "scrolls": "Desplazamientos/s",
       "ip": "IP",
       "ipExcluded": "IP excluida",
       "nodeExcluded": "Nodo excluido",

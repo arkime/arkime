@@ -708,6 +708,7 @@
       "read": "读取/秒",
       "write": "写入/秒",
       "searches": "搜索/秒",
+      "scrolls": "滚动/秒",
       "ip": "IP",
       "ipExcluded": "已排除 IP",
       "nodeExcluded": "已排除节点",

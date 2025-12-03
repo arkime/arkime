@@ -698,6 +698,7 @@
       "read": "Lugemine/s",
       "write": "Kirjutamine/s",
       "searches": "Otsing/s",
+      "scrolls": "Kerimised/s",
       "ip": "IP",
       "ipExcluded": "IP välistatud",
       "nodeExcluded": "Sõlm välistatud",
