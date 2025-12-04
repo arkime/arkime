@@ -434,6 +434,16 @@ export default {
       ...routeParams
     };
 
+    // fallback to store time values if not in route query (can happen when navigating directly to /sessions)
+    if (!combinedParams.date && !combinedParams.startTime && !combinedParams.stopTime) {
+      if (parseInt(store.state.timeRange, 10) === -1) {
+        combinedParams.date = store.state.timeRange;
+      } else {
+        combinedParams.startTime = store.state.time.startTime;
+        combinedParams.stopTime = store.state.time.stopTime;
+      }
+    }
+
     if (!combinedParams.applyTo || combinedParams.applyTo === 'open') {
       // specific sessions that have been opened
       data.ids = [];
