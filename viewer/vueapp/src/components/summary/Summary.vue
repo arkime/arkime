@@ -546,6 +546,12 @@ defineExpose({
   display: grid;
 }
 
+/* Ensure grid items stretch to fill and have minimum height */
+.charts-container > * {
+  min-width: 0;      /* Prevent grid blowout */
+  min-height: 450px; /* Minimum height for readability */
+}
+
 /* When results > 20 (large data): 1-2 columns max */
 .charts-grid-large-data {
   /* Default: 1 column */
