@@ -66,6 +66,15 @@ SPDX-License-Identifier: Apache-2.0
                 100
               </b-dropdown-item>
             </b-dropdown> <!-- /results per widget dropdown -->
+            <!-- summary field visibility dropdown (only in summary view) -->
+            <FieldSelectDropdown
+              v-if="viewMode === 'summary'"
+              class="ms-2"
+              :selected-fields="summaryFields"
+              :tooltip-text="$t('sessions.summary.toggleFields')"
+              :search-placeholder="$t('sessions.summary.searchFields')"
+              field-id-key="exp"
+              @toggle="toggleSummaryField" />
           </div> <!-- /view toggle button -->
           <arkime-paging
             v-if="viewMode === 'table'"
@@ -96,6 +105,7 @@ SPDX-License-Identifier: Apache-2.0
       <arkime-summary-view
         v-if="viewMode === 'summary'"
         ref="summaryView"
+        :summary-fields="summaryFields"
         @update-visualizations="updateVisualizationsData"
         @recalc-collapse="$emit('recalc-collapse')" />
       <!-- /summary view -->
@@ -180,80 +190,16 @@ SPDX-License-Identifier: Apache-2.0
                   </button>
                 </div> <!-- /table fit button -->
                 <!-- column visibility button -->
-                <b-dropdown
-                  lazy
-                  no-flip
-                  no-caret
-                  size="sm"
-                  teleport-to="body"
-                  boundary="viewport"
-                  menu-class="col-dropdown-menu"
-                  class="col-dropdown d-inline-block me-1"
-                  variant="theme-primary"
-                  @show="colVisMenuOpen = true"
-                  @hide="colVisMenuOpen = false; showAllFields = false">
-                  <template #button-content>
-                    <span
-                      class="fa fa-bars"
-                      id="colVisMenu">
-                      <BTooltip
-                        target="colVisMenu"
-                        noninteractive
-                        placement="right"
-                        boundary="viewport"
-                        teleport-to="body">{{ $t('sessions.sessions.toggleColumns') }}</BTooltip>
-                    </span>
-                  </template>
-                  <b-dropdown-header header-class="p-1">
-                    <b-input
-                      size="sm"
-                      autofocus
-                      type="text"
-                      v-model="colQuery"
-                      @input="debounceColQuery"
-                      @click.stop
-                      :placeholder="$t('sessions.sessions.searchColumns')" />
-                  </b-dropdown-header>
-                  <b-dropdown-divider />
-                  <template v-if="colVisMenuOpen">
-                    <b-dropdown-item v-if="!filteredFieldsCount">
-                      {{ $t('sessions.sessions.noFieldsMatch') }}
-                    </b-dropdown-item>
-                    <template
-                      v-for="(group, key) in visibleFilteredFields"
-                      :key="key">
-                      <b-dropdown-header
-                        v-if="group.length"
-                        class="group-header"
-                        header-class="p-1 text-uppercase">
-                        {{ key }}
-                      </b-dropdown-header>
-                      <template
-                        v-for="(field, k) in group"
-                        :key="key + k + 'item'">
-                        <b-dropdown-item
-                          :id="key + k + 'item'"
-                          :class="{'active': fieldVisibilityMap[field.dbField]}"
-                          @click.stop.prevent="toggleColVis(field.dbField)">
-                          {{ field.friendlyName }}
-                          <small>({{ field.exp }})</small>
-                          <BTooltip
-                            v-if="field.help"
-                            :target="key + k + 'item'">
-                            {{ field.help }}
-                          </BTooltip>
-                        </b-dropdown-item>
-                      </template>
-                    </template>
-                    <button
-                      v-if="hasMoreFields"
-                      type="button"
-                      @click.stop="showAllFields = true"
-                      class="dropdown-item text-center cursor-pointer">
-                      <strong>Show {{ $t('sessions.sessions.showMoreFields', filteredFieldsCount - maxVisibleFields) }}</strong>
-                    </button>
-                  </template>
-                </b-dropdown> <!-- /column visibility button -->
+                <FieldSelectDropdown
+                  class="me-1"
+                  :selected-fields="tableState.visibleHeaders"
+                  :tooltip-text="$t('sessions.sessions.toggleColumns')"
+                  :search-placeholder="$t('sessions.sessions.searchColumns')"
+                  :exclude-filename="true"
+                  :max-visible-fields="maxVisibleFields"
+                  field-id-key="dbField"
+                  @toggle="toggleColVis" />
+                <!-- /column visibility button -->
                 <!-- column save button -->
                 <b-dropdown
                   lazy
@@ -822,6 +768,7 @@ import ArkimeVisualizations from '../visualizations/Visualizations.vue';
 import ArkimeStickySessions from './StickySessions.vue';
 import FieldActions from './FieldActions.vue';
 import ArkimeSummaryView from '../summary/Summary.vue';
+import FieldSelectDropdown from '../utils/FieldSelectDropdown.vue';
 // import utils
 import { searchFields, buildExpression } from '@common/vueFilters.js';
 // import external
@@ -963,7 +910,8 @@ export default {
     ArkimeStickySessions,
     ArkimeCollapsible,
     FieldActions,
-    ArkimeSummaryView
+    ArkimeSummaryView,
+    FieldSelectDropdown
   },
   emits: ['recalc-collapse'],
   data: function () {
@@ -1001,12 +949,14 @@ export default {
       infoConfigSuccess: '',
       maxVisibleFields: 50, // limit initial field rendering for performance
       showAllFields: false,
-      showAllInfoFields: false
+      showAllInfoFields: false,
+      summaryFields: []
     };
   },
   created: function () {
     this.getSessionsConfig(); // IMPORTANT: kicks off the initial search query!
     ConfigService.getFieldActions();
+    this.loadSummaryConfig();
 
     // watch for window resizing and update the info column width
     // this is only registered when the user has not set widths for any
@@ -1186,6 +1136,31 @@ export default {
       // Update route query to include the new summaryLength parameter
       this.$router.replace({
         query: { ...this.$route.query, summaryLength: newLimit }
+      });
+    },
+    toggleSummaryField: function (fieldExp) {
+      const index = this.summaryFields.indexOf(fieldExp);
+      if (index >= 0) {
+        this.summaryFields.splice(index, 1);
+      } else {
+        this.summaryFields.push(fieldExp);
+      }
+      UserService.saveState({ summaryFields: this.summaryFields }, 'summary');
+      if (this.$refs.summaryView?.reloadSummary) {
+        this.$refs.summaryView.reloadSummary();
+      }
+    },
+    loadSummaryConfig: function () {
+      // Initialize with defaults immediately so page works even if API fails
+      this.summaryFields = Utils.getDefaultSummaryFields();
+
+      // Try to load user's saved config (if API is implemented)
+      UserService.getPageConfig('summary').then((response) => {
+        if (response?.summaryFields?.length) {
+          this.summaryFields = response.summaryFields;
+        }
+      }).catch(() => {
+        // API not implemented or error - keep defaults (already set above)
       });
     },
     loadColumns: function (colConfig) {

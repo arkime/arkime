@@ -383,7 +383,9 @@
       "downloadCSV": "Download CSV",
       "resultsPerWidget": "Results per widget",
       "canceledSearch": "You canceled the search",
-      "closingCancelsSearchErr": "Closing the Summary page canceled the search"
+      "closingCancelsSearchErr": "Closing the Summary page canceled the search",
+      "toggleFields": "Toggle summary fields",
+      "searchFields": "Search for fields..."
     },
     "exports": {
       "filename": "Filename",

@@ -132,16 +132,16 @@ export default {
   /**
    * Generates a summary of the sessions
    * @param {object} routeParams  The current url route parameters (includes length for results limit)
+   * @param {array} fields        Optional array of field expressions to aggregate (uses defaults if not provided)
    * @returns {Promise} Promise   A promise object that signals the completion
    *                              or rejection of the request.
    */
-  generateSummary: function (routeParams) {
-    // Default fields to aggregate for summary - can be customized by users in the future
-    const defaultFields = ['ip', 'ip.dst:port', 'ip.src', 'ip.dst', 'port.src', 'port.dst', 'protocols', 'tags', 'host.http', 'dns.query.host'];
+  generateSummary: function (routeParams, fields) {
+    const summaryFields = fields || Utils.getDefaultSummaryFields();
 
     return this.postSessionsRequest(
       'api/sessions/summary',
-      { ...routeParams, fields: defaultFields },
+      { ...routeParams, fields: summaryFields },
       {
         includePagination: true,
         includeSort: false,

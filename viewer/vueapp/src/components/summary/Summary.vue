@@ -128,7 +128,7 @@
 
 <script setup>
 // external dependencies
-import { ref, onMounted, onBeforeUnmount, watch, computed } from 'vue';
+import { ref, onMounted, onBeforeUnmount, computed } from 'vue';
 import { useRoute } from 'vue-router';
 import { useStore } from 'vuex';
 import { useI18n } from 'vue-i18n';
@@ -146,6 +146,14 @@ import { commaString, humanReadableBytes, readableTime, timezoneDateString } fro
 const route = useRoute();
 const store = useStore();
 const { t } = useI18n();
+
+// Define props
+const props = defineProps({
+  summaryFields: {
+    type: Array,
+    default: () => []
+  }
+});
 
 // Define emits
 const emit = defineEmits(['update-visualizations']);
@@ -202,6 +210,11 @@ const widgetConfigs = computed(() => {
 
 // Methods
 const generateSummary = async () => {
+  // Wait for fields to be loaded from parent before generating summary
+  if (!props.summaryFields?.length) {
+    return;
+  }
+
   loading.value = true;
   error.value = '';
 
@@ -225,7 +238,7 @@ const generateSummary = async () => {
     const cancelId = Utils.createRandomString();
     queryParams.cancelId = cancelId;
 
-    const { controller, fetcher } = SessionsService.generateSummary(queryParams);
+    const { controller, fetcher } = SessionsService.generateSummary(queryParams, props.summaryFields);
     pendingPromise = { controller, cancelId };
 
     const response = await fetcher;
