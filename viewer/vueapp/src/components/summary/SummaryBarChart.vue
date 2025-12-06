@@ -7,7 +7,7 @@
 </template>
 
 <script setup>
-import { ref, watch, onMounted, nextTick } from 'vue';
+import { ref, watch, onMounted } from 'vue';
 
 const props = defineProps({
   data: {
@@ -54,7 +54,7 @@ const showTooltip = (data, evt) => {
   });
 };
 const MARGIN = { top: 20, right: 30, bottom: 120, left: 60 };
-const MIN_BAR_WIDTH = 30; // Minimum width per bar for readability
+const MAX_BAR_WIDTH = 80; // Maximum width per bar to prevent overly wide bars
 
 const createChartHoverHandlers = () => {
   return {
@@ -80,22 +80,39 @@ const renderChart = async () => {
   const container = d3.select(chartContainer.value);
   container.selectAll('*').remove();
 
-  // Calculate width based on number of bars for better readability
-  const calculatedWidth = Math.max(props.width, props.data.length * MIN_BAR_WIDTH + MARGIN.left + MARGIN.right);
-  const width = calculatedWidth - MARGIN.left - MARGIN.right;
-  const height = props.height - MARGIN.top - MARGIN.bottom;
+  // Use props.width as the SVG width - never exceed it to prevent resize loops
+  const svgWidth = props.width;
+  const svgHeight = props.height;
+  const height = svgHeight - MARGIN.top - MARGIN.bottom;
+  const dataCount = props.data.length;
+
+  // Calculate the inner width available for bars
+  const availableInnerWidth = svgWidth - MARGIN.left - MARGIN.right;
+
+  // Calculate natural bar width if we use full available space
+  const naturalBarWidth = availableInnerWidth / dataCount * 0.9; // 0.9 accounts for padding
+
+  // Determine actual inner width to use (may be less than available if bars would be too wide)
+  let chartInnerWidth;
+  if (naturalBarWidth > MAX_BAR_WIDTH) {
+    // Too few bars - cap bar width, use less space (left-aligned)
+    chartInnerWidth = dataCount * MAX_BAR_WIDTH / 0.9;
+  } else {
+    // Use full available width (bars will be natural size or clamped to min by scrolling)
+    chartInnerWidth = availableInnerWidth;
+  }
 
   const svg = container.append('svg')
     .attr('id', props.svgId)
-    .attr('width', calculatedWidth)
-    .attr('height', props.height)
+    .attr('width', svgWidth)
+    .attr('height', svgHeight)
     .append('g')
     .attr('transform', `translate(${MARGIN.left},${MARGIN.top})`);
 
   const x = d3.scaleBand()
-    .range([0, width])
+    .range([0, chartInnerWidth])
     .domain(props.data.map(d => d.item))
-    .padding(0.1); // Reduced padding for wider bars
+    .padding(0.1);
 
   const y = d3.scaleLinear()
     .domain([0, d3.max(props.data, d => d[props.metricType])])
@@ -135,8 +152,8 @@ const renderChart = async () => {
     .call(d3.axisLeft(y));
 };
 
-// Watch for data or metric type changes
-watch([() => props.data, () => props.metricType], () => {
+// Watch for data, metric type, or dimension changes
+watch([() => props.data, () => props.metricType, () => props.width, () => props.height], () => {
   renderChart();
 }, { deep: true });
 
@@ -149,12 +166,14 @@ onMounted(() => {
 <style scoped>
 .chart-wrapper {
   position: relative;
+  width: 100%;
+  flex: 1;
 }
 
 .chart {
-  min-height: 300px;
+  min-height: 200px;
+  height: 100%;
   overflow-x: auto;
   overflow-y: hidden;
-  width: 100%; /* Constrain to parent width */
 }
 </style>
