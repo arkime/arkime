@@ -33,9 +33,8 @@ trap "rm -rf $PKGDIR" EXIT
 # Get FreeBSD version
 FBSD_VERSION=$(uname -r | cut -d. -f1)
 
-# Create +MANIFEST file - minimal format for pkg create
-# Note: Don't include "prefix" in the manifest when using -r, pkg will handle it
-cat > "$PKGDIR/+MANIFEST" <<EOF
+# Create +MANIFEST file with correct prefix
+cat > "$PKGDIR/+MANIFEST" <<MANIFEST
 {
   "name": "arkime",
   "version": "${ARKIME_VERSION}",
@@ -46,30 +45,35 @@ cat > "$PKGDIR/+MANIFEST" <<EOF
   "www": "https://arkime.com",
   "abi": "FreeBSD:${FBSD_VERSION}:${PKG_ARCH}",
   "arch": "${PKG_ARCH}",
+  "prefix": "/usr/local/share/arkime",
   "licenselogic": "single",
   "licenses": ["Apache20"]
 }
-EOF
+MANIFEST
 
 # Create +POST_INSTALL script if afterinstall.sh exists
 #if [ -f "release/afterinstall.sh" ]; then
 #    cp "release/afterinstall.sh" "$PKGDIR/+POST_INSTALL"
 #fi
 
-# Generate plist by walking the install directory, excluding logs and raw directories
+# Generate plist with absolute paths from filesystem root
+# This way pkg create won't try to relativize or adjust them
 PLIST_FILE="$PKGDIR/plist"
 (
     cd "$INSTALL_DIR"
-    # Files: strip leading ./ and convert to paths relative to prefix
-    find . -type f ! -path "*/logs/*" ! -path "*/raw/*" -print | sed 's|^\./||'
-    # Directories: strip leading ./, remove trailing slashes, add @dir prefix, sort in reverse for proper removal order
-    find . -type d ! -name . ! -path "*/logs*" ! -path "*/raw*" -print | sed 's|^\./||' | sed 's|/$||' | sort -r | awk '{print "@dir " $0}'
-) | sort -u > "$PLIST_FILE"
+    # Files: use absolute paths
+    find . -type f ! -path "*/logs/*" ! -path "*/raw/*" -print | while read f; do
+        echo "${INSTALL_DIR}/${f#./}"
+    done
+    # Directories: use absolute paths with @dir prefix, sorted in reverse for proper cleanup
+    find . -type d ! -name . ! -path "*/logs*" ! -path "*/raw*" -print | while read d; do
+        echo "@dir ${INSTALL_DIR}/${d#./}"
+    done | sort -r
+) > "$PLIST_FILE"
 
-# Create the package using pkg create
+# Create the package without -r flag, using absolute paths in plist
 pkg create \
     -m "$PKGDIR" \
-    -r "${INSTALL_DIR}" \
     -p "$PLIST_FILE" \
     -o . \
     arkime
