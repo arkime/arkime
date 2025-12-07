@@ -33,7 +33,8 @@ trap "rm -rf $PKGDIR" EXIT
 # Get FreeBSD version
 FBSD_VERSION=$(uname -r | cut -d. -f1)
 
-# Create +MANIFEST file
+# Create +MANIFEST file - minimal format for pkg create
+# Note: Don't include "prefix" in the manifest when using -r, pkg will handle it
 cat > "$PKGDIR/+MANIFEST" <<EOF
 {
   "name": "arkime",
@@ -45,9 +46,8 @@ cat > "$PKGDIR/+MANIFEST" <<EOF
   "www": "https://arkime.com",
   "abi": "FreeBSD:${FBSD_VERSION}:${PKG_ARCH}",
   "arch": "${PKG_ARCH}",
-  "prefix": "/usr/local/share/arkime",
   "licenselogic": "single",
-  "licenses": ["AGPL3"]
+  "licenses": ["Apache20"]
 }
 EOF
 
@@ -60,8 +60,10 @@ EOF
 PLIST_FILE="$PKGDIR/plist"
 (
     cd "$INSTALL_DIR"
-    find . -type f ! -path "*/logs/*" ! -path "*/raw/*" -print
-    find . -type d ! -name . ! -path "*/logs*" ! -path "*/raw*" -print | sed 's|^\./||' | sort -r | sed 's|^|@dir |'
+    # Files: strip leading ./ and convert to paths relative to prefix
+    find . -type f ! -path "*/logs/*" ! -path "*/raw/*" -print | sed 's|^\./||'
+    # Directories: strip leading ./, remove trailing slashes, add @dir prefix, sort in reverse for proper removal order
+    find . -type d ! -name . ! -path "*/logs*" ! -path "*/raw*" -print | sed 's|^\./||' | sed 's|/$||' | sort -r | awk '{print "@dir " $0}'
 ) | sort -u > "$PLIST_FILE"
 
 # Create the package using pkg create
