@@ -807,7 +807,7 @@ class User {
         if (!err) {
           return res.send(JSON.stringify({
             success: true,
-            text: `${isRole ? 'Role' : 'User'} created succesfully`
+            text: `${isRole ? 'Role' : 'User'} created successfully`
           }));
         } else {
           console.log(`ERROR - ${req.method} /api/user`, util.inspect(err, false, 50), info);

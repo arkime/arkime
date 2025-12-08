@@ -372,12 +372,12 @@ class ArkimeUtil {
    * Sends a missing resource message to the client by:
    * 1. setting the response status code to 404 (not found)
    * 2. sending a message that the resource cannot be found
-   * This is so the client recieves an understandable message instead of the client index.html
+   * This is so the client receives an understandable message instead of the client index.html
    * @returns {Object} res - The Express.js response object
    */
   static missingResource (err, req, res, next) {
     res.status(404);
-    console.log('Cannot locate resource requsted from', ArkimeUtil.sanitizeStr(req.path));
+    console.log('Can not locate requested resource', ArkimeUtil.sanitizeStr(req.path));
     return res.send('Cannot locate resource');
   }
 
@@ -457,7 +457,7 @@ class ArkimeUtil {
         const molochDbVersion = doc[`${prefix}sessions3_template`].mappings._meta.molochDbVersion;
 
         if (molochDbVersion < minVersion) {
-          console.log(`ERROR - Current database version (${molochDbVersion}) is less then required version (${minVersion}) use 'db/db.pl <eshost:esport> upgrade' to upgrade`);
+          console.log(`ERROR - Current database version (${molochDbVersion}) is less than required version (${minVersion}) use 'db/db.pl <eshost:esport> upgrade' to upgrade`);
           if (doc._node) {
             console.log(`On node ${doc._node}`);
           }
@@ -482,7 +482,7 @@ class ArkimeUtil {
   static #watchHttpsFile (e, filename) {
     if (ArkimeUtil.#fsWait) { clearTimeout(ArkimeUtil.#fsWait); };
 
-    // We wait 10s from last event incase there are more events
+    // We wait 10s from last event in case there are more events
     ArkimeUtil.#fsWait = setTimeout(() => {
       ArkimeUtil.#fsWait = null;
       try { // try to get the new cert files

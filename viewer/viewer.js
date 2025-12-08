@@ -931,7 +931,7 @@ internals.sendSessionQueue = async.queue(sendSessionWorker, 5);
 // EXPIRING
 // ============================================================================
 // Search the oldest 500 files on a set of nodes in a set of directories.
-// If less then 10 items are returned we don't delete anything, otherwise
+// If less than 10 items are returned we don't delete anything, otherwise
 // ignore the 10 most recent files and delete files until we have enough free space.
 // Doesn't support mounting sub directories in main directory, don't do it.
 async function expireDevice (nodes, dirs, minFreeSpaceG, nextCb) {
