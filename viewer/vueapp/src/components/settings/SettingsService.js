@@ -211,6 +211,9 @@ export default {
    */
   async updateCronQuery (data, userId) {
     delete data.changed; // remove client only fields
+    if (data.notifier === '') { // notifier is an array, not string
+      delete data.notifier;
+    }
     return await fetchWrapper({ url: `api/cron/${data.key}`, method: 'POST', data, params: { userId } });
   }
 };
