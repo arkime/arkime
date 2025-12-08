@@ -1266,6 +1266,7 @@
     "noFieldsMatch": "Keine Felder stimmen mit Ihrer Abfrage überein",
     "beginTypingPlaceholder": "Beginnen Sie mit der Eingabe, um nach Feldern zu suchen",
     "arkimeEmpty": "Oh nein, Arkime ist leer! Es gibt keine Daten zu durchsuchen.",
+    "arkimeNoResults": "Keine Ergebnisse oder keine, die Ihrer Suche innerhalb Ihres Zeitbereichs entsprechen.",
     "arkimeEmptyView": "Vergessen Sie nicht! Sie haben eine Ansicht auf Ihre Suche angewendet",
     "unknownView": "Unbekannte oder gelöschte Ansicht"
   }

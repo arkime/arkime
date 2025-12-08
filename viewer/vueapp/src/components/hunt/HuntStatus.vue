@@ -6,36 +6,36 @@ SPDX-License-Identifier: Apache-2.0
   <span>
     <template v-if="status === 'running'">
       <span
-        ref="running"
+        :id="`hunt-status-running-${id}`"
         class="fa fa-play-circle fa-fw cursor-help">
-        <BTooltip :target="getTarget('running')">
+        <BTooltip :target="`hunt-status-running-${id}`">
           {{ $t('hunts.status.runningTip') }}
         </BTooltip>
       </span>
     </template>
     <template v-else-if="status === 'paused'">
       <span
-        ref="paused"
+        :id="`hunt-status-paused-${id}`"
         class="fa fa-pause fa-fw cursor-help">
-        <BTooltip :target="getTarget('paused')">
+        <BTooltip :target="`hunt-status-paused-${id}`">
           {{ $t('hunts.status.pausedTip') }}
         </BTooltip>
       </span>
     </template>
     <template v-else-if="status === 'queued'">
       <span
-        ref="queued"
+        :id="`hunt-status-queued-${id}`"
         class="fa fa-clock-o fa-fw cursor-help">
-        <BTooltip :target="getTarget('queued')">
+        <BTooltip :target="`hunt-status-queued-${id}`">
           {{ $t('hunts.status.queuedTip', {count: queueCount}) }}
         </BTooltip>
       </span>
     </template>
     <template v-else-if="status === 'finished'">
       <span
-        ref="finished"
+        :id="`hunt-status-finished-${id}`"
         class="fa fa-check fa-fw cursor-help">
-        <BTooltip :target="getTarget('finished')">
+        <BTooltip :target="`hunt-status-finished-${id}`">
           {{ $t('hunts.status.finishedTip') }}
         </BTooltip>
       </span>
@@ -50,6 +50,10 @@ SPDX-License-Identifier: Apache-2.0
 export default {
   name: 'HuntStatus',
   props: {
+    id: {
+      type: String,
+      required: true
+    },
     status: {
       type: String,
       default: ''
@@ -58,11 +62,6 @@ export default {
     queueCount: {
       type: Number,
       default: 0
-    }
-  },
-  methods: {
-    getTarget (ref) {
-      return this.$refs[ref];
     }
   }
 };
