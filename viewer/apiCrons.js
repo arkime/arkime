@@ -455,7 +455,7 @@ class CronAPIs {
 
   // --------------------------------------------------------------------------
   static #qlworking = {};
-  static #sendSessionsListQL (pOptions, list, nextQLCb) {
+  static async #sendSessionsListQL (pOptions, list) {
     if (!list) {
       return;
     }
@@ -471,9 +471,11 @@ class CronAPIs {
 
     const keys = Object.keys(nodes);
 
-    async.eachLimit(keys, 15, function (node, nextCb) {
-      SessionAPIs.isLocalView(node, function () {
-        let sent = 0;
+    await async.eachLimit(keys, 15, async (node) => {
+      const isLocal = await SessionAPIs.isLocalView(node);
+
+      if (isLocal) {
+        // Send from this node
         for (const item of nodes[node]) {
           const options = {
             id: item,
@@ -481,42 +483,36 @@ class CronAPIs {
           };
           Db.merge(options, pOptions);
 
-          // Get from our DISK
-          internals.sendSessionQueue.push(options, function () {
-            sent++;
-            if (sent === nodes[node].length) {
-              nextCb();
-            }
-          });
+          await internals.sendSessionQueue.push(options);
         }
-      },
-      function () {
-        // Get from remote DISK
-        ViewerUtils.getViewUrl(node, (err, viewUrl, client) => {
-          let sendPath = `api/sessions/${node}/send?saveId=${pOptions.saveId}&remoteCluster=${pOptions.cluster}`;
-          if (pOptions.tags) { sendPath += `&tags=${pOptions.tags}`; }
-          const url = new URL(sendPath, viewUrl);
-          const reqOptions = {
-            method: 'POST',
-            agent: client === http ? internals.httpAgent : internals.httpsAgent
-          };
+      } else {
+        // Send from remote node
+        const { viewUrl, client } = await ViewerUtils.getViewUrl(node);
+        let sendPath = `api/sessions/${node}/send?saveId=${pOptions.saveId}&remoteCluster=${pOptions.cluster}`;
+        if (pOptions.tags) { sendPath += `&tags=${pOptions.tags}`; }
+        const url = new URL(sendPath, viewUrl);
+        const reqOptions = {
+          method: 'POST',
+          agent: client === http ? internals.httpAgent : internals.httpsAgent
+        };
 
-          Auth.addS2SAuth(reqOptions, pOptions.user, node, sendPath);
-          ViewerUtils.addCaTrust(reqOptions, node);
+        Auth.addS2SAuth(reqOptions, pOptions.user, node, sendPath);
+        ViewerUtils.addCaTrust(reqOptions, node);
 
+        await new Promise((resolve) => {
           const preq = client.request(url, reqOptions, (pres) => {
             pres.on('data', (chunk) => {
               CronAPIs.#qlworking[url.path] = 'data';
             });
             pres.on('end', () => {
               delete CronAPIs.#qlworking[url.path];
-              setImmediate(nextCb);
+              resolve();
             });
           });
           preq.on('error', (e) => {
             delete CronAPIs.#qlworking[url.path];
             console.log("ERROR - Couldn't proxy sendSession request=", url, '\nerror=', e);
-            setImmediate(nextCb);
+            resolve();
           });
           preq.setHeader('content-type', 'application/x-www-form-urlencoded');
           preq.write('ids=');
@@ -524,9 +520,7 @@ class CronAPIs {
           preq.end();
           CronAPIs.#qlworking[url.path] = 'sent';
         });
-      });
-    }, (err) => {
-      nextQLCb();
+      }
     });
   }
 
@@ -535,14 +529,16 @@ class CronAPIs {
    * to give other queries a chance to run.  Because its timestamp based and not
    * lastPacket based since 1.0 it now search all indices each time.
    */
-  static #processCronQuery (cq, options, query, endTime, cb) {
+  static async #processCronQuery (cq, options, query, endTime, cb) {
     if (Config.debug > 2) {
       console.log('CRON', cq.name, cq.creator, '- processCronQuery(', cq, options, query, endTime, ')');
     }
 
     let singleEndTime;
     let count = 0;
-    async.doWhilst((whilstCb) => {
+    let continueProcessing = true;
+
+    while (continueProcessing) {
       // Process at most 24 hours
       singleEndTime = Math.min(endTime, cq.lpValue + 24 * 60 * 60);
       query.query.bool.filter[0] = { range: { '@timestamp': { gte: cq.lpValue * 1000, lt: singleEndTime * 1000 } } };
@@ -551,80 +547,60 @@ class CronAPIs {
         console.log('CRON', cq.name, cq.creator, '- start:', new Date(cq.lpValue * 1000), 'stop:', new Date(singleEndTime * 1000), 'end:', new Date(endTime * 1000), 'remaining runs:', ((endTime - singleEndTime) / (24 * 60 * 60.0)));
       }
 
-      Db.searchSessions(Db.getSessionIndices(true), query, { scroll: internals.esScrollTimeout }, function getMoreUntilDone (err, result) {
-        async function doNext () {
-          count += result.hits.hits.length;
+      try {
+        for await (const chunk of Db.searchSessionsIterator(Db.getSessionIndices(true), query)) {
+          const ids = [];
+          const hits = chunk.hits.hits;
+          count += hits.length;
 
-          // No more data, all done
-          if (result.hits.hits.length === 0) {
-            Db.clearScroll({ body: { scroll_id: result._scroll_id } });
-            return setImmediate(whilstCb, 'DONE');
+          let i, ilen;
+          if (cq.action.indexOf('forward:') === 0) {
+            for (i = 0, ilen = hits.length; i < ilen; i++) {
+              ids.push({ id: Db.session2Sid(hits[i]), node: hits[i]._source.node });
+            }
+
+            await CronAPIs.#sendSessionsListQL(options, ids);
+          } else if (cq.action.indexOf('tag') === 0) {
+            for (i = 0, ilen = hits.length; i < ilen; i++) {
+              ids.push(Db.session2Sid(hits[i]));
+            }
+
+            if (Config.debug > 1) {
+              console.log('CRON', cq.name, cq.creator, '- Updating tags:', ids.length);
+            }
+
+            const tags = options.tags.split(',');
+            await new Promise((resolve) => {
+              SessionAPIs.sessionsListFromIds(null, ids, ['tags', 'node'], (err, list) => {
+                SessionAPIs.addTagsList(tags, list, resolve);
+              });
+            });
           } else {
-            const doc = { doc: { count: (query.count || 0) + count } };
+            console.log('CRON - Unknown action', cq);
+          }
+
+          if (hits.length > 0) {
+            const doc = { doc: { count: (cq.count || 0) + count } };
             try {
-              Db.update('queries', options.qid, doc, { refresh: true });
+              await Db.update('queries', options.qid, doc, { refresh: true });
             } catch (err) {
               console.log('ERROR CRON - updating query', err);
             }
           }
-
-          query = {
-            body: {
-              scroll_id: result._scroll_id
-            },
-            scroll: internals.esScrollTimeout
-          };
-
-          try {
-            const { body: results } = await Db.scroll(query);
-            return getMoreUntilDone(null, results);
-          } catch (err) {
-            console.log('ERROR CRON - issuing scroll for cron job', err);
-            return getMoreUntilDone(err, {});
-          }
         }
+      } catch (err) {
+        console.log('CRON - cronQuery error', err, 'for', cq);
+      }
 
-        if (err || result.error) {
-          console.log('CRON - cronQuery error', err, (result ? result.error : null), 'for', cq);
-          return setImmediate(whilstCb, 'ERR');
-        }
-
-        const ids = [];
-        const hits = result.hits.hits;
-        let i, ilen;
-        if (cq.action.indexOf('forward:') === 0) {
-          for (i = 0, ilen = hits.length; i < ilen; i++) {
-            ids.push({ id: Db.session2Sid(hits[i]), node: hits[i]._source.node });
-          }
-
-          CronAPIs.#sendSessionsListQL(options, ids, doNext);
-        } else if (cq.action.indexOf('tag') === 0) {
-          for (i = 0, ilen = hits.length; i < ilen; i++) {
-            ids.push(Db.session2Sid(hits[i]));
-          }
-
-          if (Config.debug > 1) {
-            console.log('CRON', cq.name, cq.creator, '- Updating tags:', ids.length);
-          }
-
-          const tags = options.tags.split(',');
-          SessionAPIs.sessionsListFromIds(null, ids, ['tags', 'node'], (err, list) => {
-            SessionAPIs.addTagsList(tags, list, doNext);
-          });
-        } else {
-          console.log('CRON - Unknown action', cq);
-          doNext();
-        }
-      });
-    }, (testCb) => {
       Db.refresh('sessions*');
       if (Config.debug > 1) {
         console.log('CRON', cq.name, cq.creator, '- Continue process', singleEndTime, endTime);
       }
-      return setImmediate(testCb, null, singleEndTime !== endTime);
-    }, (err) => {
-      cb(count, singleEndTime);
-    });
+
+      continueProcessing = singleEndTime !== endTime;
+    }
+
+    cb(count, singleEndTime);
   }
 
   // --------------------------------------------------------------------------
@@ -733,8 +709,8 @@ class CronAPIs {
           }
 
           return new Promise((resolve) => {
-            ViewerUtils.lookupQueryItems(query.query.bool.filter, (lerr) => {
-              CronAPIs.#processCronQuery(cq, options, query, endTime, async (count, lpValue) => {
+            ViewerUtils.lookupQueryItems(query.query.bool.filter, async (lerr) => {
+              await CronAPIs.#processCronQuery(cq, options, query, endTime, async (count, lpValue) => {
                 if (Config.debug > 1) {
                   console.log('CRON - setting lpValue', new Date(lpValue * 1000));
                 }
