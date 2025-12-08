@@ -74,7 +74,7 @@ anonymous,,true,true,false,"arkimeAdmin, cont3xtUser, parliamentUser, usersAdmin
 
 # Add User 1
     $json = viewerPostToken("/api/user", '{"userId": "sac-test1", "userName": "UserName", "enabled":true, "password":"password", "roles": ["arkimeUser"]}', $token);
-    eq_or_diff($json, from_json('{"text": "User created succesfully", "success": true}'));
+    eq_or_diff($json, from_json('{"text": "User created successfully", "success": true}'));
 
     $users = viewerPost("/api/users?arkimeRegressionUser=notadmin", "");
     eq_or_diff($users, from_json('{"text": "You do not have permission to access this resource", "success": false}'));
@@ -163,7 +163,7 @@ anonymous,,true,true,false,"arkimeAdmin, cont3xtUser, parliamentUser, usersAdmin
 
 # Add User 2
     my $json = viewerPostToken2("/api/user", '{"userId": "sac-test2", "userName": "UserName2", "enabled":true, "password":"password"}', $token2);
-    eq_or_diff($json, from_json('{"text": "User created succesfully", "success": true}'));
+    eq_or_diff($json, from_json('{"text": "User created successfully", "success": true}'));
 
     esGet("/_flush");
     esGet("/_refresh");
@@ -417,7 +417,7 @@ anonymous,,true,true,false,"arkimeAdmin, cont3xtUser, parliamentUser, usersAdmin
     eq_or_diff($json, from_json('{"text": "Can\'t have circular role dependencies", "success": false}'));
 
     $json = viewerPostToken("/api/user", '{"userId": "role:sac-test1", "userName": "UserName", "enabled":true}', $token);
-    eq_or_diff($json, from_json('{"text": "Role created succesfully", "success": true}'));
+    eq_or_diff($json, from_json('{"text": "Role created successfully", "success": true}'));
 
     $json = viewerPostToken("/api/user", '{"userId": "role:sac-test2", "userName": "UserName", "enabled":true, "roles":["role:sac-test1", "superAdmin"]}', $token);
     eq_or_diff($json, from_json('{"text": "User defined roles can\'t have superAdmin", "success": false}'));
@@ -426,7 +426,7 @@ anonymous,,true,true,false,"arkimeAdmin, cont3xtUser, parliamentUser, usersAdmin
     eq_or_diff($json, from_json('{"text": "User defined roles can\'t have a system Admin role", "success": false}'));
 
     $json = viewerPostToken("/api/user", '{"userId": "role:sac-test2", "userName": "UserName", "enabled":true, "roles":["role:sac-test1"]}', $token);
-    eq_or_diff($json, from_json('{"text": "Role created succesfully", "success": true}'));
+    eq_or_diff($json, from_json('{"text": "Role created successfully", "success": true}'));
 
     $json = viewerPost("/api/users?arkimeRegressionUser=role:sac-test1", "");
     eq_or_diff($json, from_json('{"text": "Can not authenticate with role", "success": false}'));
@@ -574,7 +574,7 @@ my $uaToken = getTokenCookie('testusersadmin');
 
 # Make sure only superadmin can create superadmin
     $json = viewerPostToken("/api/user?arkimeRegressionUser=testsuperadmin", '{"userId": "sac-testsuperadmin1", "userName": "testsuperadmin1", "enabled":true, "password":"password", "roles": ["superAdmin"]}', $saToken);
-    eq_or_diff($json, from_json('{"text": "User created succesfully", "success": true}'));
+    eq_or_diff($json, from_json('{"text": "User created successfully", "success": true}'));
 
     $json = viewerPostToken("/api/user?arkimeRegressionUser=testusersadmin", '{"userId": "sac-testsuperadmin2", "userName": "testsuperadmin2", "enabled":true, "password":"password", "roles": ["superAdmin"]}', $uaToken);
     eq_or_diff($json, from_json('{"text": "Can not create superAdmin unless you are superAdmin", "success": false}'));
