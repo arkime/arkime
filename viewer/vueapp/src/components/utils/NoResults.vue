@@ -6,12 +6,12 @@ SPDX-License-Identifier: Apache-2.0
   <div class="info-area vertical-horizontal-center">
     <div v-if="parseInt(recordsTotal) === 0">
       <span class="fa fa-3x text-muted-more fa-exclamation-triangle" />&nbsp;
-      Oh no, Arkime is empty! There is no data to search.
+      {{ $t('utils.arkimeEmpty') }}
     </div>
 
     <div v-else-if="!recordsTotal || recordsTotal > 0">
       <span class="fa fa-3x text-muted-more fa-folder-open" />&nbsp;
-      {{ $t('utils.arkimeEmpty') }}
+      {{ $t('utils.arkimeNoResults') }}
       <small
         v-if="view"
         class="text-theme-primary">
@@ -29,7 +29,7 @@ export default {
   props: {
     recordsTotal: {
       type: Number,
-      default: 0
+      default: undefined
     },
     view: {
       type: String,

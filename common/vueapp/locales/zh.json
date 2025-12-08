@@ -562,7 +562,9 @@
     "timeInterval-hour": "小时",
     "timeInterval-day": "天",
     "timeRangeDisplayTip": "查询时间范围",
-    "createSummary": "创建摘要"
+    "createSummary": "创建摘要",
+    "arkimeNoResults": "没有结果，或者在您的时间范围内没有与您的搜索匹配的结果。",
+    "arkimeEmptyView": "别忘了！您的搜索已应用视图"
   },
   "stats": {
     "noResults": "没有与您的搜索匹配的结果。",

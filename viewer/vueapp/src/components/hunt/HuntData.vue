@@ -7,6 +7,7 @@ SPDX-License-Identifier: Apache-2.0
     <div class="row">
       <div class="col-12">
         <hunt-status
+          :id="localJob.id"
           :status="localJob.status"
           :queue-count="localJob.queueCount" />
       </div>

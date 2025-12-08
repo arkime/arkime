@@ -519,7 +519,7 @@ class ConnectionAPIs {
   static getConnectionsCSV (req, res) {
     ArkimeUtil.noCache(req, res, 'text/csv');
 
-    const seperator = req.query.seperator ?? ',';
+    const separator = req.query.separator ?? ',';
     ConnectionAPIs.#buildConnections(req, res, (err, nodes, links, total) => {
       if (err) {
         return res.send(err);
@@ -544,12 +544,12 @@ class ConnectionAPIs {
       res.write('\r\n');
 
       for (let i = 0, ilen = links.length; i < ilen; i++) {
-        res.write('"' + nodes[links[i].source].id.replaceAll('"', '""') + '"' + seperator +
-                  '"' + nodes[links[i].target].id.replaceAll('"', '""') + '"' + seperator +
-                       links[i].value + seperator);
+        res.write('"' + nodes[links[i].source].id.replaceAll('"', '""') + '"' + separator +
+                  '"' + nodes[links[i].target].id.replaceAll('"', '""') + '"' + separator +
+                       links[i].value + separator);
         for (let f = 0, flen = fields.length; f < flen; f++) {
           res.write(links[i][displayFields[fields[f]].dbField].toString());
-          if (f !== flen - 1) { res.write(seperator); }
+          if (f !== flen - 1) { res.write(separator); }
         }
         res.write('\r\n');
       }

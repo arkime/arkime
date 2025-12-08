@@ -1320,6 +1320,7 @@
     "noFieldsMatch": "No fields match your query",
     "beginTypingPlaceholder": "Begin typing to search for fields",
     "arkimeEmpty": "Oh no, Arkime is empty! There is no data to search.",
+    "arkimeNoResults": "No results or none that match your search within your time range.",
     "arkimeEmptyView": "Don't forget! You have a view applied to your search",
     "unknownView": "unknown or deleted view"
   },

@@ -772,7 +772,7 @@ class Auth {
           console.log(`WARNING - the userAutoCreateTmpl didn't set a userId field, instead using header/oidc set '${userId}'`);
         }
       } else {
-        console.log(`WARNING - the userAutoCreateTmpl set userId to a different value then header/oidc '${userId}' while the userAutoCreateTmpl returned '${nuser.userId}', reseting to use '${userId}'`);
+        console.log(`WARNING - the userAutoCreateTmpl set userId to a different value than header/oidc '${userId}' while the userAutoCreateTmpl returned '${nuser.userId}', reseting to use '${userId}'`);
       }
       nuser.userId = userId;
     }
