@@ -38,6 +38,13 @@ class SessionAPIs {
   // --------------------------------------------------------------------------
   // INTERNAL HELPERS
   // --------------------------------------------------------------------------
+
+  /**
+   * Fetch list of sessions in chunks based on query and call callbacks
+   * @ignore
+   * This method calls the chunkCb multiple times for each chunk of sessions retrieved.
+   * It prefetches the next chunk while processing the current chunk to improve performance.
+   */
   static async #sessionsListFromQueryChunky (req, res, fields, startCb, chunkCb, endCb) {
     if (req.query.length === undefined) {
       req.query.length = 1000000;
@@ -59,8 +66,24 @@ class SessionAPIs {
       const options = ViewerUtils.addCluster(req.query.cluster);
       options.arkime_unflatten = false;
 
-      for await (const chunk of Db.searchSessionsIterator(indices, query, options)) {
-        const list = chunk.hits.hits;
+      const iterator = Db.searchSessionsIterator(indices, query, options);
+
+      // 0. Start the first fetch
+      let nextFetch = iterator.next();
+
+      while (true) {
+        // 1. Wait for the previously initiated database request to complete.
+        const result = await nextFetch;
+
+        if (result.done) {
+          break; // Iterator is finished
+        }
+
+        // 2. Prefetch the next chunk
+        nextFetch = iterator.next();
+
+        // 3. Process the current chunk
+        const list = result.value.hits.hits;
 
         if (startCb) {
           startCb();
@@ -70,6 +93,7 @@ class SessionAPIs {
         total += list.length;
         await chunkCb(null, list);
 
+        // 4. If segments are requested, fetch and process them, could probably optimize more, but we warned you in the UI
         if (req.query.segments && SEGMENTS_REGEX.test(req.query.segments)) {
           const segList = await SessionAPIs.#sessionsListAddSegments(req, indices, query, list);
           if (segList.length > 0) {
@@ -78,6 +102,7 @@ class SessionAPIs {
           }
         }
       }
+
       if (endCb) {
         endCb(null, total);
       }
