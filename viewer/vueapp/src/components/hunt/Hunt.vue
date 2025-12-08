@@ -56,7 +56,7 @@ SPDX-License-Identifier: Apache-2.0
             <BButton
               size="sm"
               variant="theme-tertiary"
-              :disabled="loadingSessions || loadingSessionsError"
+              :disabled="loadingSessions || !!loadingSessionsError"
               v-if="!createFormOpened"
               @click="createFormOpened = true">
               {{ $t('hunts.createJob') }}
@@ -353,7 +353,7 @@ SPDX-License-Identifier: Apache-2.0
                   <button
                     type="button"
                     @click="createJob"
-                    :disabled="loadingSessions || loadingSessionsError"
+                    :disabled="loadingSessions || !!loadingSessionsError"
                     title="Create this hunt"
                     class="pull-right btn btn-theme-tertiary pull-right ms-1">
                     <span class="fa fa-plus fa-fw" />&nbsp;
@@ -476,7 +476,7 @@ SPDX-License-Identifier: Apache-2.0
                         <span v-html="$t('hunts.runningJob-headHtml', { matched: commaString(runningJob.matchedSessions) })" />
                         <span
                           v-if="canView"
-                          v-html="$t('hunts.runningJob-byHtml', { search: runningJob.search, searchType: runningJob.searchType })" />
+                          v-html="$t('hunts.runningJob-canViewHtml', { search: runningJob.search, searchType: runningJob.searchType })" />
                         <span
                           v-if="runningJob.failedSessionIds && runningJob.failedSessionIds.length"
                           v-html="$t('hunts.runningJob-outOfHtml', {

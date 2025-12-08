@@ -187,6 +187,12 @@ ${Config.arkimeWebURL()}hunt
 
   // --------------------------------------------------------------------------
   static async #updateHuntStats (hunt, huntId, session, searchedSessions, cb) {
+    // Configurable throttle for testing hunt progress in dev environments
+    const throttleMs = Config.get('huntThrottleMs', 0);
+    if (throttleMs > 0) {
+      await new Promise(resolve => setTimeout(resolve, throttleMs));
+    }
+
     // update the hunt with number of matchedSessions and searchedSessions
     // and the date of the first packet of the last searched session
     const lastPacketTime = session.lastPacket;
@@ -565,16 +571,23 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
 
   // --------------------------------------------------------------------------
   // Do the house keeping before actually running the hunt job
-  static #processHuntJob (huntId, hunt) {
+  static async #processHuntJob (huntId, hunt) {
     const now = Math.floor(Date.now() / 1000);
 
     hunt.lastUpdated = now;
     if (!hunt.started) { hunt.started = now; }
 
     try {
-      Db.setHunt(huntId, hunt);
+      await Db.setHunt(huntId, hunt);
     } catch (err) {
       HuntAPIs.#pauseHuntJobWithError(huntId, hunt, { value: `Error starting hunt job: ${err}` });
+      return;
+    }
+
+    // Configurable throttle for testing hunt status transitions in dev environments
+    const throttleMs = Config.get('huntThrottleMs', 0);
+    if (throttleMs > 0) {
+      await new Promise(resolve => setTimeout(resolve, throttleMs));
     }
 
     ViewerUtils.getUserCacheIncAnon(hunt.userId, (err, user) => {

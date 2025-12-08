@@ -481,7 +481,9 @@
         "database": "データベース"
       }
     },
-    "createSummary": "サマリーを作成"
+    "createSummary": "サマリーを作成",
+    "arkimeNoResults": "結果がないか、時間範囲内の検索に一致する結果がありません。",
+    "arkimeEmptyView": "お忘れなく！検索にビューが適用されています"
   },
   "stats": {
     "noResults": "結果がありません",

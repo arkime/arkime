@@ -1266,6 +1266,7 @@
     "noFieldsMatch": "Ningún campo coincide con tu consulta",
     "beginTypingPlaceholder": "Comenzar a escribir para buscar campos",
     "arkimeEmpty": "¡Oh no, Arkime está vacío! No hay datos para buscar.",
+    "arkimeNoResults": "No hay resultados o ninguno que coincida con tu búsqueda dentro de tu rango de tiempo.",
     "arkimeEmptyView": "¡No olvides! Tienes una vista aplicada a tu búsqueda",
     "unknownView": "vista desconocida o eliminada"
   }

@@ -562,7 +562,9 @@
     "timeInterval-hour": "Heures",
     "timeInterval-day": "Jours",
     "timeRangeDisplayTip": "Plage de temps de la requête",
-    "createSummary": "Créer un résumé"
+    "createSummary": "Créer un résumé",
+    "arkimeNoResults": "Aucun résultat ou aucun correspondant à votre recherche dans votre plage de temps.",
+    "arkimeEmptyView": "N'oubliez pas ! Vous avez une vue appliquée à votre recherche"
   },
   "stats": {
     "noResults": "Aucun résultat ne correspond à votre recherche.",

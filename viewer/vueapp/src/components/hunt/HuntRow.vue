@@ -12,6 +12,7 @@ SPDX-License-Identifier: Apache-2.0
     </td>
     <td class="no-wrap">
       <hunt-status
+        :id="job.id"
         :status="job.status"
         :queue-count="job.queueCount"
         :hide-text="true" />
