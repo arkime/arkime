@@ -429,7 +429,7 @@ SPDX-License-Identifier: Apache-2.0
               :notifiers="notifiers"
               :selected-notifiers="query.notifier || []"
               @selected-notifiers-updated="query.notifier = $event; cronQueryChanged(query)"
-              :display-text="query.notifier.length > 0 ? $t('common.notifierCount', query.notifier.length) : $t('settings.cron.selectNotifier')" />
+              :display-text="query.notifier?.length > 0 ? $t('common.notifierCount', query.notifier.length) : $t('settings.cron.selectNotifier')" />
             <RoleDropdown
               :roles="roles"
               :id="query.key"
