@@ -11,7 +11,7 @@
     "@databricks/sql": "^1.12.0",
     "@elastic/elasticsearch": "7.10.0",
     "arkime-iptrie": "^0.0.9",
-    "arkime-notifme-sdk": "^1.11.7",
+    "arkime-notifme-sdk": "^1.11.8",
     "async": "^3.2.6",
     "axios": "^1.12.2",
     "better-sqlite3": "^10.1.0",
