@@ -1379,7 +1379,7 @@ class Pcap {
           });
         } else if (packet.tcp.seq - previous > 0xffff) {
           results.push({ key: '', buffers: [], length: 0, ts: packet.pcap.ts_sec * 1000 + Math.round(packet.pcap.ts_usec / 1000) });
-          // Larger then max window size packets missing
+          // Larger than max window size packets missing
           previous = start = packet.tcp.seq;
           results.push({
             key: pkey,
