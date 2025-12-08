@@ -1,4 +1,4 @@
-use Test::More tests => 172;
+use Test::More tests => 173;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -44,17 +44,17 @@ doTest('ip.src != [1.2.3.4]', '{"bool":{"must_not":{"term":{"source.ip":"1.2.3.4
 doTest('ip.src == ]1.2.3.4[', '{"term":{"source.ip":"1.2.3.4"}}');
 doTest('ip.src != ]1.2.3.4[', '{"bool":{"must_not":{"term":{"source.ip":"1.2.3.4"}}}}');
 
-doTest('ip.src == [1.2.3.4,2.3.4.5]', '{"bool":{"should":[{"term":{"source.ip":"1.2.3.4"}},{"term":{"source.ip":"2.3.4.5"}}]}}');
-doTest('ip.src != [1.2.3.4,2.3.4.5]', '{"bool":{"must_not":[{"term":{"source.ip":"1.2.3.4"}},{"term":{"source.ip":"2.3.4.5"}}]}}');
+doTest('ip.src == [1.2.3.4,2.3.4.5]', '{"bool":{"should":[{"terms":{"source.ip":["1.2.3.4","2.3.4.5"]}}]}}');
+doTest('ip.src != [1.2.3.4,2.3.4.5]', '{"bool":{"must_not":[{"terms":{"source.ip":["1.2.3.4","2.3.4.5"]}}]}}');
 
 doTest('ip.src == ]1.2.3.4,2.3.4.5[', '{"bool":{"filter":[{"term":{"source.ip":"1.2.3.4"}},{"term":{"source.ip":"2.3.4.5"}}]}}');
 doTest('ip.src != ]1.2.3.4,2.3.4.5[', '{"bool":{"must_not":{"bool":{"filter":[{"term":{"source.ip":"1.2.3.4"}},{"term":{"source.ip":"2.3.4.5"}}]}}}}');
 
-doTest('ip.src == ]1.2.3.4,2.3.4.5[ && ip.src != [1.2.3.4,2.3.4.5]', '{"bool":{"filter":[{"term":{"source.ip":"1.2.3.4"}},{"term":{"source.ip":"2.3.4.5"}},{"bool":{"must_not":[{"term":{"source.ip":"1.2.3.4"}},{"term":{"source.ip":"2.3.4.5"}}]}}]}}');
-doTest('ip.src != ]1.2.3.4,2.3.4.5[ && ip.src == [1.2.3.4,2.3.4.5]', '{"bool":{"filter":[{"bool":{"must_not":{"bool":{"filter":[{"term":{"source.ip":"1.2.3.4"}},{"term":{"source.ip":"2.3.4.5"}}]}}}},{"bool":{"should":[{"term":{"source.ip":"1.2.3.4"}},{"term":{"source.ip":"2.3.4.5"}}]}}]}}');
+doTest('ip.src == ]1.2.3.4,2.3.4.5[ && ip.src != [1.2.3.4,2.3.4.5]', '{"bool":{"filter":[{"term":{"source.ip":"1.2.3.4"}},{"term":{"source.ip":"2.3.4.5"}},{"bool":{"must_not":[{"terms":{"source.ip":["1.2.3.4","2.3.4.5"]}}]}}]}}');
+doTest('ip.src != ]1.2.3.4,2.3.4.5[ && ip.src == [1.2.3.4,2.3.4.5]', '{"bool":{"filter":[{"bool":{"must_not":{"bool":{"filter":[{"term":{"source.ip":"1.2.3.4"}},{"term":{"source.ip":"2.3.4.5"}}]}}}},{"bool":{"should":[{"terms":{"source.ip":["1.2.3.4","2.3.4.5"]}}]}}]}}');
 
-doTest('ip.src != [1.2.3.4,2.3.4.5] && ip.src == ]1.2.3.4,2.3.4.5[', '{"bool":{"filter":[{"bool":{"must_not":[{"term":{"source.ip":"1.2.3.4"}},{"term":{"source.ip":"2.3.4.5"}}]}},{"term":{"source.ip":"1.2.3.4"}},{"term":{"source.ip":"2.3.4.5"}}]}}');
-doTest('ip.src == [1.2.3.4,2.3.4.5] && ip.src != ]1.2.3.4,2.3.4.5[', '{"bool":{"filter":[{"bool":{"should":[{"term":{"source.ip":"1.2.3.4"}},{"term":{"source.ip":"2.3.4.5"}}]}},{"bool":{"must_not":{"bool":{"filter":[{"term":{"source.ip":"1.2.3.4"}},{"term":{"source.ip":"2.3.4.5"}}]}}}}]}}');
+doTest('ip.src != [1.2.3.4,2.3.4.5] && ip.src == ]1.2.3.4,2.3.4.5[', '{"bool":{"filter":[{"bool":{"must_not":[{"terms":{"source.ip":["1.2.3.4","2.3.4.5"]}}]}},{"term":{"source.ip":"1.2.3.4"}},{"term":{"source.ip":"2.3.4.5"}}]}}');
+doTest('ip.src == [1.2.3.4,2.3.4.5] && ip.src != ]1.2.3.4,2.3.4.5[', '{"bool":{"filter":[{"bool":{"should":[{"terms":{"source.ip":["1.2.3.4","2.3.4.5"]}}]}},{"bool":{"must_not":{"bool":{"filter":[{"term":{"source.ip":"1.2.3.4"}},{"term":{"source.ip":"2.3.4.5"}}]}}}}]}}');
 
 doTest('ip.src == 1.2.3.4/31', '{"term":{"source.ip":"1.2.3.4/31"}}');
 doTest('ip.src != 1.2.3.4/31', '{"bool":{"must_not":{"term":{"source.ip":"1.2.3.4/31"}}}}');
@@ -83,8 +83,8 @@ doTest('ip.src != 1.2.3.4:80', '{"bool":{"must_not":{"bool":{"filter":[{"term":{
 doTest('ip.src == :80', '{"term":{"source.port":"80"}}');
 doTest('ip.src != :80', '{"bool":{"must_not":{"term":{"source.port":"80"}}}}');
 
-doTest('ip.src == [1.2.3.4,2.3.4.5:80,:81,1.2.3:82]', '{"bool":{"should":[{"term":{"source.ip":"1.2.3.4"}},{"bool":{"filter":[{"term":{"source.ip":"2.3.4.5"}},{"term":{"source.port":"80"}}]}},{"term":{"source.port":"81"}},{"bool":{"filter":[{"term":{"source.ip":"1.2.3.0/24"}},{"term":{"source.port":"82"}}]}}]}}');
-doTest('ip.src != [1.2.3.4,2.3.4.5:80,:81,1.2.3:82]', '{"bool":{"must_not":[{"term":{"source.ip":"1.2.3.4"}},{"bool":{"filter":[{"term":{"source.ip":"2.3.4.5"}},{"term":{"source.port":"80"}}]}},{"term":{"source.port":"81"}},{"bool":{"filter":[{"term":{"source.ip":"1.2.3.0/24"}},{"term":{"source.port":"82"}}]}}]}}');
+doTest('ip.src == [1.2.3.4,2.3.4.5:80,:81,1.2.3:82]', '{"bool":{"should":[{"terms":{"source.ip":["1.2.3.4"]}},{"bool":{"filter":[{"term":{"source.ip":"2.3.4.5"}},{"term":{"source.port":"80"}}]}},{"terms":{"source.port":["81"]}},{"bool":{"filter":[{"term":{"source.ip":"1.2.3.0/24"}},{"term":{"source.port":"82"}}]}}]}}');
+doTest('ip.src != [1.2.3.4,2.3.4.5:80,:81,1.2.3:82]', '{"bool":{"must_not":[{"terms":{"source.ip":["1.2.3.4"]}},{"bool":{"filter":[{"term":{"source.ip":"2.3.4.5"}},{"term":{"source.port":"80"}}]}},{"terms":{"source.port":["81"]}},{"bool":{"filter":[{"term":{"source.ip":"1.2.3.0/24"}},{"term":{"source.port":"82"}}]}}]}}');
 
 doTest('ip.src == 1.2.3.4 || ip.src == 2.3.4.5:80 || ip.src == :81 || ip.src == 1.2.3:82', '{"bool":{"should":[{"term":{"source.ip":"1.2.3.4"}},{"bool":{"filter":[{"term":{"source.ip":"2.3.4.5"}},{"term":{"source.port":"80"}}]}},{"term":{"source.port":"81"}},{"bool":{"filter":[{"term":{"source.ip":"1.2.3.0/24"}},{"term":{"source.port":"82"}}]}}]}}');
 doTest('ip.src == 1.2.3.4 && ip.src == 2.3.4.5:80 && ip.src == :81 && ip.src == 1.2.3:82', '{"bool":{"filter":[{"term":{"source.ip":"1.2.3.4"}},{"term":{"source.ip":"2.3.4.5"}},{"term":{"source.port":"80"}},{"term":{"source.port":"81"}},{"term":{"source.ip":"1.2.3.0/24"}},{"term":{"source.port":"82"}}]}}');
@@ -113,12 +113,12 @@ doTest('ip.src == $*cut*', qq({"bool":{"should":[{"terms":{"source.ip":{"index":
 
 doTest('ip.src == [1.2.3.4,$ipshortcut1]', qq({"bool":{"should":[{"term":{"source.ip":"1.2.3.4"}},{"terms":{"source.ip":{"index":"tests_lookups","path":"ip","id":"$ipshortcut1"}}}]}}));
 doTest('ip.src == [$ipshortcut1,1.2.3.4]', qq({"bool":{"should":[{"term":{"source.ip":"1.2.3.4"}},{"terms":{"source.ip":{"index":"tests_lookups","path":"ip","id":"$ipshortcut1"}}}]}}));
-doTest('ip.src == [1.2.3.4,$ipshortcut1,2.3.4.5:80]', qq({"bool":{"should":[{"term":{"source.ip":"1.2.3.4"}},{"bool":{"filter":[{"term":{"source.ip":"2.3.4.5"}},{"term":{"source.port":"80"}}]}},{"terms":{"source.ip":{"index":"tests_lookups","path":"ip","id":"$ipshortcut1"}}}]}}));
+doTest('ip.src == [1.2.3.4,$ipshortcut1,2.3.4.5:80]', qq({"bool":{"should":[{"terms":{"source.ip":["1.2.3.4"]}},{"bool":{"filter":[{"term":{"source.ip":"2.3.4.5"}},{"term":{"source.port":"80"}}]}},{"terms":{"source.ip":{"index":"tests_lookups","path":"ip","id":"$ipshortcut1"}}}]}}));
 doTest('ip.src == [$ipshortcut1,1.2.3.4,$ipshortcut2]', qq({"bool":{"should":[{"term":{"source.ip":"1.2.3.4"}},{"terms":{"source.ip":{"index":"tests_lookups","path":"ip","id":"$ipshortcut1"}}},{"terms":{"source.ip":{"index":"tests_lookups","path":"ip","id":"$ipshortcut2"}}}]}}));
 
 doTest('ip.src != [1.2.3.4,$ipshortcut1]', qq({"bool":{"must_not":[{"term":{"source.ip":"1.2.3.4"}},{"terms":{"source.ip":{"index":"tests_lookups","path":"ip","id":"$ipshortcut1"}}}]}}));
 doTest('ip.src != [$ipshortcut1,1.2.3.4]', qq({"bool":{"must_not":[{"term":{"source.ip":"1.2.3.4"}},{"terms":{"source.ip":{"index":"tests_lookups","path":"ip","id":"$ipshortcut1"}}}]}}));
-doTest('ip.src != [1.2.3.4,$ipshortcut1,2.3.4.5:80]', qq({"bool":{"must_not":[{"term":{"source.ip":"1.2.3.4"}},{"bool":{"filter":[{"term":{"source.ip":"2.3.4.5"}},{"term":{"source.port":"80"}}]}},{"terms":{"source.ip":{"index":"tests_lookups","path":"ip","id":"$ipshortcut1"}}}]}}));
+doTest('ip.src != [1.2.3.4,$ipshortcut1,2.3.4.5:80]', qq({"bool":{"must_not":[{"terms":{"source.ip":["1.2.3.4"]}},{"bool":{"filter":[{"term":{"source.ip":"2.3.4.5"}},{"term":{"source.port":"80"}}]}},{"terms":{"source.ip":{"index":"tests_lookups","path":"ip","id":"$ipshortcut1"}}}]}}));
 doTest('ip.src != [$ipshortcut1,1.2.3.4,$ipshortcut2]', qq({"bool":{"must_not":[{"term":{"source.ip":"1.2.3.4"}},{"terms":{"source.ip":{"index":"tests_lookups","path":"ip","id":"$ipshortcut1"}}},{"terms":{"source.ip":{"index":"tests_lookups","path":"ip","id":"$ipshortcut2"}}}]}}));
 
 doTest('ip.src == ]$ipshortcut1[', q(]$ipshortcut1[ - AND array not supported with shortcuts));
@@ -128,6 +128,8 @@ doTest('ip.src == 1::2.80', qq({"bool":{"filter":[{"term":{"source.ip":"1::2"}},
 doTest('ip.src == 1::2/8.80', qq({"bool":{"filter":[{"term":{"source.ip":"1::2/8"}},{"term":{"source.port":"80"}}]}}));
 doTest('ip.src == 1:2:3', qq({"term":{"source.ip":"1:2:3::/48"}}));
 doTest('ip.src == 1:2:3.80', qq({"bool":{"filter":[{"term":{"source.ip":"1:2:3::/48"}},{"term":{"source.port":"80"}}]}}));
+
+doTest('ip.src == [1.2.3.4,:80,2.3.4.5,:81]', qq({"bool":{"should":[{"terms":{"source.ip":["1.2.3.4","2.3.4.5"]}},{"terms":{"source.port":["80","81"]}}]}}));
 
 
 #### IP

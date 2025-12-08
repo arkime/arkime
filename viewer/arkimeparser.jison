@@ -225,19 +225,34 @@ function parseIpPort (yy, field, ipPortStr) {
 
   // We really have a list of them
   if (isArrayFull(ipPortStr)) {
-    const list = ListToArrayMap(ipPortStr, str => parseIpPort(yy, field, str));
+    const listAND = ListToArrayMap(ipPortStr, str => parseIpPort(yy, field, str));
 
     // Optimize 1 item in array
-    if (list.length === 1) {
-      return list[0]
+    if (listAND.length === 1) {
+      return listAND[0]
     }
 
     if (isArrayAND(ipPortStr)) {
-      obj = { bool: { filter: list } };
-    } else {
-      obj = { bool: { should: list } };
+      return { bool: { filter: listAND } };
     }
-    return obj;
+
+    // Optimize OR by combining term into terms when we can
+    const listOR = [];
+    let terms = {};
+    for (const l of listAND) {
+      if (l.term === undefined) {
+        listOR.push(l);
+        continue;
+      }
+      const key = Object.keys(l.term)[0];
+      if (terms[key] === undefined) {
+        terms[key] = [];
+        listOR.push({ terms: { [ key ]: terms[key] } });
+      }
+      terms[key].push(l.term[key]);
+    }
+
+    return { bool: { should: listOR } };
   }
 
   // Support ':80' and '.80'
