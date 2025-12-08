@@ -552,7 +552,9 @@
     "timeBounding-both": "Piiratud",
     "timeBounding-either": "Seansid kattuvad",
     "timeBounding-database": "Andmebaas",
-    "createSummary": "Loo kokkuvõte"
+    "createSummary": "Loo kokkuvõte",
+    "arkimeNoResults": "Tulemused puuduvad või ei vasta ühtegi teie otsingule teie ajavahemikus.",
+    "arkimeEmptyView": "Ärge unustage! Teie otsingule on rakendatud vaade"
   },
   "stats": {
     "noResults": "Teie otsingule ei vasta tulemusi.",

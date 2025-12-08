@@ -457,6 +457,8 @@
     }
   },
   "search": {
-    "createSummary": "요약 생성"
+    "createSummary": "요약 생성",
+    "arkimeNoResults": "결과가 없거나 시간 범위 내에서 검색과 일치하는 결과가 없습니다.",
+    "arkimeEmptyView": "잊지 마세요! 검색에 보기가 적용되어 있습니다"
   }
 }
