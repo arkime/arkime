@@ -4010,7 +4010,7 @@ class SessionAPIs {
       try {
         const seq = await Db.getSequenceNumber('fn-' + Config.nodeName());
 
-        const filename = Config.get('pcapDir') + '/' + Config.nodeName() + '-' + seq + '-' + req.query.saveId + '.pcap';
+        const filename = Config.get('pcapDir', '/opt/arkime/raw') + '/' + Config.nodeName() + '-' + seq + '-' + req.query.saveId + '.pcap';
         saveId.seq = seq;
         const options = { num: saveId.seq, name: filename, first: session.firstPacket, node: Config.nodeName(), filesize: -1, locked: 1 };
 
