@@ -62,26 +62,28 @@ export async function fetchWrapper (options) {
   }
 
   let data; // parse the response based on the content type
-  if (options.headers['Content-Type'] === 'application/json' && response.headers.get('Content-Type').includes('application/json')) {
+  const contentType = response.headers.get('Content-Type');
+  if (contentType?.includes('application/json') || (options.headers['Content-Type'] === 'application/json' && !contentType)) {
+    // parse as JSON if response is JSON, or if we requested JSON and server didn't specify content type
     data = await response.json();
   } else if (
     options.headers['Content-Type'] === 'text/plain' || options.headers['Content-Type'] === 'text/html' ||
-    response.headers.get('Content-Type').includes('text/plain') || response.headers.get('Content-Type').includes('text/html')
+    contentType?.includes('text/plain') || contentType?.includes('text/html')
   ) {
     data = await response.text();
   }
 
   // catch bad status codes and throw an error
   if (response.status < 200 || response.status >= 300) {
-    throw new Error(data.text || response.statusText || 'bad response status');
+    throw new Error(data?.text || response.statusText || 'bad response status');
   }
 
-  if (data.data?.bsqErr) { // check for a bsq error
+  if (data?.data?.bsqErr) { // check for a bsq error
     // bsq = build session query
     throw new Error(data.data.bsqErr);
   }
 
-  if (data.error) { // check for a general error
+  if (data?.error) { // check for a general error
     throw new Error(data.error);
   }
 
