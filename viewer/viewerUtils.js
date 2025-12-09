@@ -138,16 +138,12 @@ class ViewerUtils {
   /* This method fixes up parts of the query that jison builds to what ES actually
    * understands.  This includes using the collapse function and the filename mapping.
    */
-  static lookupQueryItems (query, doneCb) {
-    // console.log('BEFORE', JSON.stringify(query, false, 2));
+  static async lookupQueryItems (query, doneCb) {
     ViewerUtils.#collapseQuery(query);
-    // console.log('AFTER', JSON.stringify(query, false, 2));
     if (Config.get('multiES', false)) {
-      return doneCb(null);
+      return doneCb ? doneCb(null) : { };
     }
 
-    let outstanding = 0;
-    let finished = 0;
     let err = null;
 
     async function doProcess (qParent, obj, item) {
@@ -155,9 +151,7 @@ class ViewerUtils {
       if (item === 'fileand' && typeof obj[item] === 'string') {
         const fileName = obj.fileand;
         delete obj.fileand;
-        outstanding++;
         const files = await Db.fileNameToFiles(fileName);
-        outstanding--;
         if (files === null || files.length === 0) {
           err = "File '" + fileName + "' not found";
         } else if (files.length > 1) {
@@ -168,28 +162,22 @@ class ViewerUtils {
         } else {
           obj.bool = { filter: [{ term: { node: files[0].node } }, { term: { fileId: files[0].num } }] };
         }
-        if (finished && outstanding === 0) {
-          doneCb(err);
-        }
       } else if (item === 'field' && obj.field === 'fileand') {
         obj.field = 'fileId';
       } else if (typeof obj[item] === 'object') {
-        convert(obj, obj[item]);
+        await convert(obj, obj[item]);
       }
     }
 
-    function convert (qParent, obj) {
+    async function convert (qParent, obj) {
       for (const item in obj) {
-        doProcess(qParent, obj, item);
+        await doProcess(qParent, obj, item);
       }
     }
 
-    convert(null, query);
-    if (outstanding === 0) {
-      return doneCb(err);
-    }
+    await convert(null, query);
 
-    finished = 1;
+    return doneCb ? doneCb(err) : { err };
   };
 
   // ----------------------------------------------------------------------------
