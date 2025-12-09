@@ -3959,7 +3959,7 @@ class SessionAPIs {
     } else {
       SessionAPIs.#sessionsListFromQueryChunky(req, res, ['node'], null,
         async (err, list) => {
-          await SessionAPIs.ssendSessionsList(req, res, list);
+          await SessionAPIs.#sendSessionsList(req, res, list);
         }, (err, count) => {
           sendResult(count);
         });
