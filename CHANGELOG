@@ -107,7 +107,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #3439 multiviewer config now supports defaultCluster setting
   - #3474 support 15 and 30 minute query time ranges
   - #3488 only use viewUrl for remote URL
-  - #3492 default pcapDir to /opt/arkime/raw
+  - #3492,#3536 default pcapDir to /opt/arkime/raw
   - #3495 Speed improvements for add/removing tags and exporting CSV
   - #3497 Process pcap files in blocks for speed improvements
   - #3498 Optimize pcap ressembly memory usage for speed improvements
