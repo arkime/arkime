@@ -513,18 +513,6 @@ class ViewerUtils {
   };
 
   // ----------------------------------------------------------------------------
-  static arrayZeroFill (n) {
-    const a = [];
-
-    while (n > 0) {
-      a.push(0);
-      n--;
-    }
-
-    return a;
-  };
-
-  // ----------------------------------------------------------------------------
   static async getViewUrl (node, cb) {
     if (Array.isArray(node)) {
       node = node[0];
