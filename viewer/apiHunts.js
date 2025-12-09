@@ -629,7 +629,7 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
         fakeReq.query.view = hunt.query.view;
       }
 
-      SessionAPIs.buildSessionQuery(fakeReq, (err, query, indices) => {
+      SessionAPIs.buildSessionQuery(fakeReq, async (err, query, indices) => {
         if (err) {
           HuntAPIs.#pauseHuntJobWithError(huntId, hunt, {
             value: 'Fatal Error: Session query expression parse error. Fix your search expression and create a new hunt.',
@@ -638,25 +638,24 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
           return;
         }
 
-        ViewerUtils.lookupQueryItems(query.query.bool.filter, (lerr) => {
-          query.query.bool.filter[0] = {
-            range: {
-              lastPacket: {
-                gte: hunt.lastPacketTime || hunt.query.startTime * 1000,
-                lt: hunt.query.stopTime * 1000
-              }
+        await ViewerUtils.lookupQueryItems(query.query.bool.filter);
+        query.query.bool.filter[0] = {
+          range: {
+            lastPacket: {
+              gte: hunt.lastPacketTime || hunt.query.startTime * 1000,
+              lt: hunt.query.stopTime * 1000
             }
-          };
-
-          query._source = ['lastPacket', 'node', 'huntId', 'huntName', 'fileId'];
-
-          if (Config.debug > 2) {
-            console.log('HUNT -', hunt.name, hunt.userId, '- start:', new Date(hunt.lastPacketTime || hunt.query.startTime * 1000), 'stop:', new Date(hunt.query.stopTime * 1000));
           }
+        };
 
-          // do sessions query
-          HuntAPIs.#runHuntJob(huntId, hunt, query, user);
-        });
+        query._source = ['lastPacket', 'node', 'huntId', 'huntName', 'fileId'];
+
+        if (Config.debug > 2) {
+          console.log('HUNT -', hunt.name, hunt.userId, '- start:', new Date(hunt.lastPacketTime || hunt.query.startTime * 1000), 'stop:', new Date(hunt.query.stopTime * 1000));
+        }
+
+        // do sessions query
+        HuntAPIs.#runHuntJob(huntId, hunt, query, user);
       });
     });
   }

@@ -138,13 +138,13 @@ class ViewerUtils {
   /* This method fixes up parts of the query that jison builds to what ES actually
    * understands.  This includes using the collapse function and the filename mapping.
    */
-  static async lookupQueryItems (query, doneCb) {
+  static async lookupQueryItems (query) {
     ViewerUtils.#collapseQuery(query);
     if (Config.get('multiES', false)) {
-      return doneCb ? doneCb(null) : { };
+      return;
     }
 
-    let err = null;
+    let err;
 
     async function doProcess (qParent, obj, item) {
       // console.log("\nprocess:\n", item, obj, typeof obj[item], "\n");
@@ -177,7 +177,7 @@ class ViewerUtils {
 
     await convert(null, query);
 
-    return doneCb ? doneCb(err) : { err };
+    return err;
   };
 
   // ----------------------------------------------------------------------------
@@ -250,7 +250,7 @@ class ViewerUtils {
   };
 
   // ----------------------------------------------------------------------------
-  static continueBuildQuery (req, query, err, finalCb, queryOverride = null) {
+  static async continueBuildQuery (req, query, err, finalCb, queryOverride = null) {
     // queryOverride can supercede req.query if specified
     const reqQuery = queryOverride || req.query;
 
@@ -266,25 +266,24 @@ class ViewerUtils {
       }
     }
 
-    ViewerUtils.lookupQueryItems(query.query.bool.filter, async (lerr) => {
-      req._arkimeESQuery = JSON.stringify(query);
+    const lerr = await ViewerUtils.lookupQueryItems(query.query.bool.filter);
+    req._arkimeESQuery = JSON.stringify(query);
 
-      if (reqQuery.date === '-1' || // An all query
-          Config.get('queryAllIndices', Config.get('multiES', false))) { // queryAllIndices (default: multiES)
-        req._arkimeESQueryIndices = Db.fixIndex(Db.getSessionIndices());
-        return finalCb(err || lerr, query, req._arkimeESQueryIndices); // Then we just go against all indices for a slight overhead
-      }
+    if (reqQuery.date === '-1' || // An all query
+        Config.get('queryAllIndices', Config.get('multiES', false))) { // queryAllIndices (default: multiES)
+      req._arkimeESQueryIndices = Db.fixIndex(Db.getSessionIndices());
+      return finalCb(err || lerr, query, req._arkimeESQueryIndices); // Then we just go against all indices for a slight overhead
+    }
 
-      const indices = await Db.getIndices(reqQuery.startTime, reqQuery.stopTime, reqQuery.bounding, Config.get('rotateIndex', 'daily'), Config.getArray('queryExtraIndices', ''));
+    const indices = await Db.getIndices(reqQuery.startTime, reqQuery.stopTime, reqQuery.bounding, Config.get('rotateIndex', 'daily'), Config.getArray('queryExtraIndices', ''));
 
-      if (indices.length > 3000) { // Will url be too long
-        req._arkimeESQueryIndices = Db.fixIndex(Db.getSessionIndices());
-        return finalCb(err || lerr, query, req._arkimeESQueryIndices);
-      } else {
-        req._arkimeESQueryIndices = indices;
-        return finalCb(err || lerr, query, indices);
-      }
-    });
+    if (indices.length > 3000) { // Will url be too long
+      req._arkimeESQueryIndices = Db.fixIndex(Db.getSessionIndices());
+      return finalCb(err || lerr, query, req._arkimeESQueryIndices);
+    } else {
+      req._arkimeESQueryIndices = indices;
+      return finalCb(err || lerr, query, indices);
+    }
   };
 
   // ----------------------------------------------------------------------------

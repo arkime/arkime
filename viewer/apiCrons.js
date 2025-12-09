@@ -708,7 +708,7 @@ class CronAPIs {
             }
           }
 
-          const lerr = await  ViewerUtils.lookupQueryItems(query.query.bool.filter);
+          await ViewerUtils.lookupQueryItems(query.query.bool.filter);
           const { count, lpValue } = await CronAPIs.#processCronQuery(cq, options, query, endTime);
 
           if (Config.debug > 1) {

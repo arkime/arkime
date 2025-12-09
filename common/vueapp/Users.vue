@@ -521,7 +521,7 @@ export default {
         row.help = $t(key + 'Tip');
         return row;
       }
-      return  [
+      return [
         { label: '', key: 'toggle', sortable: false },
         mkRow({ key: 'userId', sortable: true, required: true }),
         mkRow({ key: 'userName', sortable: true, type: 'text', required: true, thStyle: 'width:250px;' }),
