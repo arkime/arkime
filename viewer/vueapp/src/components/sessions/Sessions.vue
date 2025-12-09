@@ -950,7 +950,8 @@ export default {
       maxVisibleFields: 50, // limit initial field rendering for performance
       showAllFields: false,
       showAllInfoFields: false,
-      summaryFields: []
+      summaryFields: [],
+      tableState: Utils.getDefaultTableState()
     };
   },
   created: function () {
