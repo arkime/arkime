@@ -620,26 +620,18 @@ class ViewerUtils {
   // ----------------------------------------------------------------------------
   // check for anonymous mode before fetching user cache and return anonymous
   // user or the user requested by the userId
-  static async getUserCacheIncAnon (userId, cb) {
-    try {
-      if (Auth.isAnonymousMode()) { // user is anonymous
-        const anonUser = await User.getUserCache('anonymous');
-        const anon = Object.assign(new User(), internals.anonymousUser);
+  static async getUserCacheIncAnon (userId) {
+    if (Auth.isAnonymousMode()) { // user is anonymous
+      const anonUser = await User.getUserCache('anonymous');
+      const anon = Object.assign(new User(), internals.anonymousUser);
 
-        if (anonUser) {
-          anon.settings = anonUser.settings || {};
-        }
-
-        if (!cb) { return anon; }
-        return cb(null, anon);
-      } else {
-        const user = await User.getUserCache(userId);
-        if (!cb) { return user; }
-        return cb(null, user);
+      if (anonUser) {
+        anon.settings = anonUser.settings || {};
       }
-    } catch (err) {
-      if (cb) { return cb(err, null); }
-      throw err;
+
+      return anon;
+    } else {
+      return await User.getUserCache(userId);
     }
   };
 }

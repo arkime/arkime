@@ -597,66 +597,67 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
       await new Promise(resolve => setTimeout(resolve, throttleMs));
     }
 
-    ViewerUtils.getUserCacheIncAnon(hunt.userId, (err, user) => {
-      if (err && !user) {
-        HuntAPIs.#pauseHuntJobWithError(huntId, hunt, { value: err });
-        return;
+    let user;
+    try {
+      user = await ViewerUtils.getUserCacheIncAnon(hunt.userId);
+    } catch (err) {
+      HuntAPIs.#pauseHuntJobWithError(huntId, hunt, { value: err });
+      return;
+    }
+    if (!user) {
+      HuntAPIs.#pauseHuntJobWithError(huntId, hunt, { value: `User ${hunt.userId} doesn't exist` });
+      return;
+    }
+    if (!user.enabled) {
+      HuntAPIs.#pauseHuntJobWithError(huntId, hunt, { value: `User ${hunt.userId} is not enabled` });
+      return;
+    }
+
+    const fakeReq = {
+      user,
+      query: {
+        from: 0,
+        size: 100, // only fetch 100 items at a time
+        _source: ['_id', 'node'],
+        sort: 'lastPacket:asc'
       }
-      if (!user) {
-        HuntAPIs.#pauseHuntJobWithError(huntId, hunt, { value: `User ${hunt.userId} doesn't exist` });
-        return;
-      }
-      if (!user.enabled) {
-        HuntAPIs.#pauseHuntJobWithError(huntId, hunt, { value: `User ${hunt.userId} is not enabled` });
+    };
+
+    if (hunt.query.expression) {
+      fakeReq.query.expression = hunt.query.expression;
+    }
+
+    if (hunt.query.view) {
+      fakeReq.query.view = hunt.query.view;
+    }
+
+    SessionAPIs.buildSessionQuery(fakeReq, async (err, query, indices) => {
+      if (err) {
+        HuntAPIs.#pauseHuntJobWithError(huntId, hunt, {
+          value: 'Fatal Error: Session query expression parse error. Fix your search expression and create a new hunt.',
+          unrunnable: true
+        });
         return;
       }
 
-      const fakeReq = {
-        user,
-        query: {
-          from: 0,
-          size: 100, // only fetch 100 items at a time
-          _source: ['_id', 'node'],
-          sort: 'lastPacket:asc'
+      await ViewerUtils.lookupQueryItems(query.query.bool.filter);
+      query.query.bool.filter[0] = {
+        range: {
+          lastPacket: {
+            gte: hunt.lastPacketTime || hunt.query.startTime * 1000,
+            lt: hunt.query.stopTime * 1000
+          }
         }
       };
 
-      if (hunt.query.expression) {
-        fakeReq.query.expression = hunt.query.expression;
+      query._source = ['lastPacket', 'node', 'huntId', 'huntName', 'fileId'];
+
+      if (Config.debug > 2) {
+        console.log('HUNT -', hunt.name, hunt.userId, '- start:', new Date(hunt.lastPacketTime || hunt.query.startTime * 1000), 'stop:', new Date(hunt.query.stopTime * 1000));
       }
 
-      if (hunt.query.view) {
-        fakeReq.query.view = hunt.query.view;
-      }
-
-      SessionAPIs.buildSessionQuery(fakeReq, async (err, query, indices) => {
-        if (err) {
-          HuntAPIs.#pauseHuntJobWithError(huntId, hunt, {
-            value: 'Fatal Error: Session query expression parse error. Fix your search expression and create a new hunt.',
-            unrunnable: true
-          });
-          return;
-        }
-
-        await ViewerUtils.lookupQueryItems(query.query.bool.filter);
-        query.query.bool.filter[0] = {
-          range: {
-            lastPacket: {
-              gte: hunt.lastPacketTime || hunt.query.startTime * 1000,
-              lt: hunt.query.stopTime * 1000
-            }
-          }
-        };
-
-        query._source = ['lastPacket', 'node', 'huntId', 'huntName', 'fileId'];
-
-        if (Config.debug > 2) {
-          console.log('HUNT -', hunt.name, hunt.userId, '- start:', new Date(hunt.lastPacketTime || hunt.query.startTime * 1000), 'stop:', new Date(hunt.query.stopTime * 1000));
-        }
-
-        // do sessions query
-        HuntAPIs.#runHuntJob(huntId, hunt, query, user);
-      });
+      // do sessions query
+      HuntAPIs.#runHuntJob(huntId, hunt, query, user);
     });
   }
 
