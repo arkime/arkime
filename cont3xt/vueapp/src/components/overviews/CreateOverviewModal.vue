@@ -68,7 +68,7 @@ const defaultOverview = {
   editRoles: []
 };
 
-const props = defineProps({
+defineProps({
   modelValue: {
     type: Boolean,
     default: false

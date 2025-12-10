@@ -68,7 +68,11 @@ const commonJavaScriptRules = {
         "ignoreEOLComments": true
     }],
 
-    "no-unused-vars": "off",
+    "no-unused-vars": ["error", {
+        "args": "none",
+        "caughtErrors": "none"
+    }],
+
     "no-control-regex": "off",
 
     "object-curly-spacing": ["error", "always"],

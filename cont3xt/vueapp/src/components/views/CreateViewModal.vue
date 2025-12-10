@@ -52,7 +52,7 @@ import ViewForm from '@/components/views/ViewForm.vue';
 import UserService from '@/components/services/UserService';
 import { ref, watch } from 'vue';
 
-const props = defineProps({
+defineProps({
   modelValue: {
     type: Boolean,
     default: false

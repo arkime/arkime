@@ -51,7 +51,7 @@ SPDX-License-Identifier: Apache-2.0
 <script setup>
 import { ref } from 'vue';
 
-const props = defineProps({
+defineProps({
   modelValue: {
     type: Boolean,
     default: false

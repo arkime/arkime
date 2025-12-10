@@ -517,7 +517,6 @@ Db.getSession = async (id, options, cb) => {
   }
 
   try {
-    const optionsReplaced = options === undefined;
     if (!options) {
       options = { _source: ['cert', 'dns'], fields: ['*'] };
     }

@@ -58,7 +58,7 @@ import LinkService from '@/components/services/LinkService';
 import LinkGroupForm from '@/components/links/LinkGroupForm.vue';
 import { ref } from 'vue';
 
-const props = defineProps({
+defineProps({
   modelValue: {
     type: Boolean,
     default: false
