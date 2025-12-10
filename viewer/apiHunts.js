@@ -129,7 +129,7 @@ class HuntAPIs {
   }
 
   // --------------------------------------------------------------------------
-  static #pauseHuntJobWithError (huntId, hunt, error, node) {
+  static async #pauseHuntJobWithError (huntId, hunt, error, node) {
     let errorMsg = `${hunt.name} (${huntId}) hunt ERROR: ${error.value}.`;
     if (node) {
       errorMsg += ` On ${node} node`;
@@ -155,19 +155,19 @@ class HuntAPIs {
       hunt.errors.push(error);
     }
 
-    async function continueProcess () {
-      try {
-        await Db.setHunt(huntId, hunt);
-        if (Config.debug) {
-          console.log('HUNT - pauseHuntJobWithError - cleared running');
-        }
-        internals.runningHuntJob = undefined;
-        HuntAPIs.processHuntJobs();
-      } catch (err) {
-        return console.log('ERROR - pauseHuntJobWithError - could not update hunt with errors:', util.inspect(err, false, 50));
+    // Update DB
+    try {
+      await Db.setHunt(huntId, hunt);
+      if (Config.debug) {
+        console.log('HUNT - pauseHuntJobWithError - cleared running');
       }
+      internals.runningHuntJob = undefined;
+      HuntAPIs.processHuntJobs();
+    } catch (err) {
+      console.log('ERROR - pauseHuntJobWithError - could not update hunt with errors:', util.inspect(err, false, 50));
     }
 
+    // Send notifier alert if configured
     if (hunt.notifier) {
       const message = `
 *${hunt.name}* hunt job paused with error: *${error.value}*
@@ -181,8 +181,6 @@ ${Config.arkimeWebURL()}hunt
         Notifier.issueAlert(notifierId, message, () => {});
       }
     }
-
-    continueProcess();
   }
 
   // --------------------------------------------------------------------------
@@ -865,41 +863,29 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
       hunt.notifier = req.body.notifier.join(',');
     }
 
-    async function doneCb (doneHunt, invalidUsers) {
+    const response = { success: true, hunt };
+
+    if (req.body.users && req.body.users.length) {
       try {
-        const { body: result } = await Db.createHunt(doneHunt, req.query.cluster);
-        doneHunt.id = result._id;
-        await HuntAPIs.processHuntJobs();
-        const response = {
-          success: true,
-          hunt: doneHunt
-        };
-
-        if (invalidUsers) {
-          response.invalidUsers = invalidUsers;
-        }
-
-        return res.send(JSON.stringify(response));
+        const reqUsers = ArkimeUtil.commaOrNewlineStringToArray(req.body.users);
+        const users = await User.validateUserIds(reqUsers);
+        hunt.users = users.validUsers;
+        // dedupe the array of users
+        hunt.users = [...new Set(hunt.users)];
+        response.invalidUsers = users.invalidUsers;
       } catch (err) {
-        console.log(`ERROR - ${req.method} /api/hunt`, util.inspect(err, false, 50));
-        return res.serverError(500, 'Error creating hunt');
+        return res.serverError(500, err);
       }
     }
 
-    if (!req.body.users || !req.body.users.length) {
-      return doneCb(hunt);
-    }
-
-    const reqUsers = ArkimeUtil.commaOrNewlineStringToArray(req.body.users);
-
     try {
-      const users = await User.validateUserIds(reqUsers);
-      hunt.users = users.validUsers;
-      // dedupe the array of users
-      hunt.users = [...new Set(hunt.users)];
-      return doneCb(hunt, users.invalidUsers);
+      const { body: result } = await Db.createHunt(hunt, req.query.cluster);
+      hunt.id = result._id;
+      await HuntAPIs.processHuntJobs();
+      return res.send(JSON.stringify(response));
     } catch (err) {
-      return res.serverError(500, err);
+      console.log(`ERROR - ${req.method} /api/hunt`, util.inspect(err, false, 50));
+      return res.serverError(500, 'Error creating hunt');
     }
   };
 
