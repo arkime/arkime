@@ -529,7 +529,7 @@ class CronAPIs {
    * to give other queries a chance to run.  Because its timestamp based and not
    * lastPacket based since 1.0 it now search all indices each time.
    */
-  static async #processCronQuery (cq, options, query, endTime, cb) {
+  static async #processCronQuery (cq, options, query, endTime) {
     if (Config.debug > 2) {
       console.log('CRON', cq.name, cq.creator, '- processCronQuery(', cq, options, query, endTime, ')');
     }
@@ -600,7 +600,7 @@ class CronAPIs {
       continueProcessing = singleEndTime !== endTime;
     }
 
-    cb(count, singleEndTime);
+    return { count, lpValue: singleEndTime };
   }
 
   // --------------------------------------------------------------------------
@@ -708,65 +708,60 @@ class CronAPIs {
             }
           }
 
-          return new Promise((resolve) => {
-            ViewerUtils.lookupQueryItems(query.query.bool.filter, async (lerr) => {
-              await CronAPIs.#processCronQuery(cq, options, query, endTime, async (count, lpValue) => {
-                if (Config.debug > 1) {
-                  console.log('CRON - setting lpValue', new Date(lpValue * 1000));
-                }
-                // Do the OpenSearch/Elasticsearch update
-                const doc = {
-                  doc: {
-                    lpValue,
-                    lastRun: Math.floor(Date.now() / 1000),
-                    count: (cq.count || 0) + count,
-                    lastCount: count
-                  }
-                };
+          await ViewerUtils.lookupQueryItems(query.query.bool.filter);
+          const { count, lpValue } = await CronAPIs.#processCronQuery(cq, options, query, endTime);
 
-                try {
-                  await Db.update('queries', qid, doc, { refresh: true });
-                } catch (err) {
-                  console.log('ERROR CRON - updating query', err);
-                }
-                if (lpValue !== endTime) { repeat = true; }
+          if (Config.debug > 1) {
+            console.log('CRON - setting lpValue', new Date(lpValue * 1000));
+          }
+          // Do the OpenSearch/Elasticsearch update
+          const doc = {
+            doc: {
+              lpValue,
+              lastRun: Math.floor(Date.now() / 1000),
+              count: (cq.count || 0) + count,
+              lastCount: count
+            }
+          };
 
-                // issue alert via notifier(s) if the count has changed and it has been at least 10 minutes
-                if (cq.notifier && count && cq.count !== doc.doc.count &&
-                  (!cq.lastNotified || (Math.floor(Date.now() / 1000) - cq.lastNotified >= 600))) {
-                  const newMatchCount = cq.lastNotifiedCount ? (doc.doc.count - cq.lastNotifiedCount) : doc.doc.count;
-                  doc.doc.lastNotifiedCount = doc.doc.count;
+          try {
+            await Db.update('queries', qid, doc, { refresh: true });
+          } catch (err) {
+            console.log('ERROR CRON - updating query', err);
+          }
+          if (lpValue !== endTime) { repeat = true; }
 
-                  let urlPath = 'sessions?expression=';
-                  const tags = cq.tags.split(',');
-                  for (let t = 0, tlen = tags.length; t < tlen; t++) {
-                    const tag = tags[t];
-                    urlPath += `tags%20%3D%3D%20${tag}`; // encoded ' == '
-                    if (t !== tlen - 1) { urlPath += '%20%26%26%20'; } // encoded ' && '
-                  }
+          // issue alert via notifier(s) if the count has changed and it has been at least 10 minutes
+          if (cq.notifier && count && cq.count !== doc.doc.count &&
+            (!cq.lastNotified || (Math.floor(Date.now() / 1000) - cq.lastNotified >= 600))) {
+            const newMatchCount = cq.lastNotifiedCount ? (doc.doc.count - cq.lastNotifiedCount) : doc.doc.count;
+            doc.doc.lastNotifiedCount = doc.doc.count;
 
-                  const message = `
-   *${cq.name}* periodic query match alert:
-   *${newMatchCount} new* matches
-   *${doc.doc.count} total* matches
-   ${Config.arkimeWebURL()}${urlPath}${cq.description ? '\n' + cq.description : ''}
-                  `;
+            let urlPath = 'sessions?expression=';
+            const tags = cq.tags.split(',');
+            for (let t = 0, tlen = tags.length; t < tlen; t++) {
+              const tag = tags[t];
+              urlPath += `tags%20%3D%3D%20${tag}`; // encoded ' == '
+              if (t !== tlen - 1) { urlPath += '%20%26%26%20'; } // encoded ' && '
+            }
 
-                  Db.refresh('*'); // Before sending alert make sure everything has been refreshed
+            const message = `
+*${cq.name}* periodic query match alert:
+*${newMatchCount} new* matches
+*${doc.doc.count} total* matches
+${Config.arkimeWebURL()}${urlPath}${cq.description ? '\n' + cq.description : ''}
+            `;
 
-                  // Handle multiple notifiers (stored as comma-separated string) - send in parallel, fire and forget
-                  if (cq.notifier) {
-                    const notifiers = cq.notifier.split(',');
-                    for (const notifierId of notifiers) {
-                      Notifier.issueAlert(notifierId, message, () => {});
-                    }
-                  }
-                }
+            Db.refresh('*'); // Before sending alert make sure everything has been refreshed
 
-                resolve();
-              });
-            });
-          });
+            // Handle multiple notifiers (stored as comma-separated string) - send in parallel, fire and forget
+            if (cq.notifier) {
+              const notifiers = cq.notifier.split(',');
+              for (const notifierId of notifiers) {
+                Notifier.issueAlert(notifierId, message, () => {});
+              }
+            }
+          }
         });
 
         if (Config.debug > 1) {
