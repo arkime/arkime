@@ -106,21 +106,30 @@
 
       <!-- Charts Grid -->
       <div
+        ref="widgetContainer"
         class="charts-container"
         :class="gridLayoutClass">
         <!-- Widgets rendered via v-for -->
-        <SummaryWidget
+        <div
           v-for="widget in widgetConfigs"
           :key="widget.field"
-          :title="widget.title || FieldService.getField(widget.field, true)?.friendlyName || widget.field"
-          :data="widget.data"
-          :view-mode="widget.viewMode.value"
-          :metric-type="widget.metricType.value"
-          :field="widget.field"
-          @change-mode="widget.viewMode.value = $event"
-          @change-metric="widget.metricType.value = $event"
-          @show-tooltip="showTooltip"
-          @export="handleWidgetExport(widget, $event)" />
+          class="widget-wrapper">
+          <span
+            class="widget-handle"
+            :title="$t('sessions.summary.dragToReorder')">
+            <span class="fa fa-th" />
+          </span>
+          <SummaryWidget
+            :title="widget.title || FieldService.getField(widget.field, true)?.friendlyName || widget.field"
+            :data="widget.data"
+            :view-mode="widget.viewMode.value"
+            :metric-type="widget.metricType.value"
+            :field="widget.field"
+            @change-mode="widget.viewMode.value = $event"
+            @change-metric="widget.metricType.value = $event"
+            @show-tooltip="showTooltip"
+            @export="handleWidgetExport(widget, $event)" />
+        </div>
       </div> <!-- /charts-container -->
     </div>
   </div>
@@ -128,10 +137,11 @@
 
 <script setup>
 // external dependencies
-import { ref, onMounted, onBeforeUnmount, computed } from 'vue';
+import { ref, onMounted, onBeforeUnmount, computed, watch, nextTick } from 'vue';
 import { useRoute } from 'vue-router';
 import { useStore } from 'vuex';
 import { useI18n } from 'vue-i18n';
+import Sortable from 'sortablejs';
 // internal dependencies
 import SessionsService from '../sessions/SessionsService';
 import SummaryWidget from './SummaryWidget.vue';
@@ -156,10 +166,13 @@ const props = defineProps({
 });
 
 // Define emits
-const emit = defineEmits(['update-visualizations']);
+const emit = defineEmits(['update-visualizations', 'reorder-fields']);
 
 // Save a pending promise to be able to cancel it
 let pendingPromise;
+
+// Sortable instance for drag-and-drop reordering
+let sortableInstance = null;
 
 // Computed properties
 const user = computed(() => store.state.user);
@@ -178,6 +191,7 @@ const gridLayoutClass = computed(() => {
 const summary = ref(null);
 const loading = ref(true);
 const error = ref('');
+const widgetContainer = ref(null);
 
 // Shared tooltip state - one tooltip to rule them all
 const tooltipVisible = ref(false);
@@ -433,6 +447,78 @@ const handleWidgetExport = (widget, svgId) => {
   }
 };
 
+// Initialize drag-and-drop reordering with Sortable.js
+const initializeDragDrop = () => {
+  if (!widgetContainer.value) return;
+
+  const scrollSensitivity = 200;
+  const minScrollSpeed = 50;
+  const maxScrollSpeed = 300;
+
+  sortableInstance = Sortable.create(widgetContainer.value, {
+    animation: 100,
+    handle: '.widget-handle',
+    draggable: '.widget-wrapper',
+    ghostClass: 'widget-ghost',
+    chosenClass: 'widget-chosen',
+    scroll: document.documentElement,
+    scrollSensitivity,
+    bubbleScroll: true,
+    forceFallback: true,
+    fallbackOnBody: true,
+    scrollFn: (offsetX, offsetY, originalEvent) => {
+      // Calculate dynamic scroll speed based on cursor position
+      // offsetY is negative when near top, positive when near bottom
+      if (offsetY !== 0 && originalEvent) {
+        const viewportHeight = window.innerHeight;
+        const cursorY = originalEvent.clientY;
+
+        let distanceFromEdge;
+        if (offsetY < 0) {
+          // Near top edge
+          distanceFromEdge = cursorY;
+        } else {
+          // Near bottom edge
+          distanceFromEdge = viewportHeight - cursorY;
+        }
+
+        // Calculate speed: closer to edge = faster scroll
+        // distanceFromEdge goes from 0 (at edge) to scrollSensitivity (at threshold)
+        const ratio = 1 - (distanceFromEdge / scrollSensitivity);
+        const speed = minScrollSpeed + (ratio * (maxScrollSpeed - minScrollSpeed));
+
+        // Apply scroll
+        const scrollAmount = offsetY > 0 ? speed : -speed;
+        document.documentElement.scrollTop += scrollAmount;
+      }
+    },
+    onSort: (evt) => {
+      const oldIndex = evt.oldIndex;
+      const newIndex = evt.newIndex;
+      // Reorder the local data to match the new DOM order
+      if (summary.value?.fields && oldIndex !== newIndex) {
+        const field = summary.value.fields.splice(oldIndex, 1)[0];
+        summary.value.fields.splice(newIndex, 0, field);
+        // Emit to parent to persist the new order
+        emit('reorder-fields', { oldIndex, newIndex });
+      }
+    }
+  });
+};
+
+// Watch for summary data to load, then initialize drag-drop
+watch(summary, (newVal) => {
+  if (newVal) {
+    nextTick(() => {
+      // Destroy existing instance to prevent duplicate handlers
+      if (sortableInstance) {
+        sortableInstance.destroy();
+      }
+      initializeDragDrop();
+    });
+  }
+});
+
 // On mount
 onMounted(() => {
   document.addEventListener('click', handleClickOutside);
@@ -447,6 +533,12 @@ onBeforeUnmount(() => {
   if (pendingPromise) {
     pendingPromise.controller.abort(t('sessions.summary.closingCancelsSearchErr'));
     pendingPromise = null;
+  }
+
+  // Cleanup sortable instance
+  if (sortableInstance) {
+    sortableInstance.destroy();
+    sortableInstance = null;
   }
 });
 
@@ -555,7 +647,7 @@ defineExpose({
 
 .charts-container {
   gap: 1rem;
-  margin-top: 1rem;
+  margin-top: 1.5rem; /* Extra margin to accommodate drag handles */
   display: grid;
 }
 
@@ -589,5 +681,35 @@ defineExpose({
     /* Very large viewport: 3 columns */
     grid-template-columns: repeat(3, 1fr);
   }
+}
+
+/* Widget wrapper for drag-and-drop */
+.widget-wrapper {
+  position: relative;
+}
+
+/* Drag handle for reordering widgets */
+.widget-handle {
+  visibility: hidden;
+  color: var(--color-gray);
+  cursor: move;
+  position: absolute;
+  top: -20px;
+  left: 0;
+  z-index: 10;
+  background: var(--color-quaternary-lightest);
+  padding: 2px 6px;
+  border-radius: 4px 4px 0 0;
+}
+.widget-wrapper:hover .widget-handle {
+  visibility: visible;
+}
+
+/* Visual feedback during drag */
+.widget-ghost {
+  opacity: 0.4;
+}
+.widget-chosen {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 </style>

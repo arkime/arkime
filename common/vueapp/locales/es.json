@@ -360,7 +360,13 @@
       "barChart": "Gráfico de barras",
       "tableView": "Tabla",
       "downloadPNG": "Descargar PNG",
-      "downloadCSV": "Descargar CSV"
+      "downloadCSV": "Descargar CSV",
+      "resultsPerWidget": "Resultados por widget",
+      "canceledSearch": "Cancelaste la búsqueda",
+      "closingCancelsSearchErr": "Cerrar la página de resumen canceló la búsqueda",
+      "toggleFields": "Alternar campos de resumen",
+      "searchFields": "Buscar campos...",
+      "dragToReorder": "Arrastrar para reordenar"
     },
     "exports": {
       "filename": "Nombre del archivo",

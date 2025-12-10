@@ -385,7 +385,8 @@
       "canceledSearch": "You canceled the search",
       "closingCancelsSearchErr": "Closing the Summary page canceled the search",
       "toggleFields": "Toggle summary fields",
-      "searchFields": "Search for fields..."
+      "searchFields": "Search for fields...",
+      "dragToReorder": "Drag to reorder"
     },
     "exports": {
       "filename": "Filename",

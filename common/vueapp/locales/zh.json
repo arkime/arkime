@@ -362,7 +362,13 @@
       "barChart": "柱状图",
       "tableView": "表格",
       "downloadPNG": "下载PNG",
-      "downloadCSV": "下载CSV"
+      "downloadCSV": "下载CSV",
+      "resultsPerWidget": "每个小部件的结果",
+      "canceledSearch": "您已取消搜索",
+      "closingCancelsSearchErr": "关闭摘要页面已取消搜索",
+      "toggleFields": "切换摘要字段",
+      "searchFields": "搜索字段...",
+      "dragToReorder": "拖动以重新排序"
     },
     "exports": {
       "filename": "文件名",

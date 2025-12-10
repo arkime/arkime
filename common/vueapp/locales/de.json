@@ -360,7 +360,13 @@
       "barChart": "Balkendiagramm",
       "tableView": "Tabelle",
       "downloadPNG": "PNG herunterladen",
-      "downloadCSV": "CSV herunterladen"
+      "downloadCSV": "CSV herunterladen",
+      "resultsPerWidget": "Ergebnisse pro Widget",
+      "canceledSearch": "Sie haben die Suche abgebrochen",
+      "closingCancelsSearchErr": "Das Schließen der Zusammenfassungsseite hat die Suche abgebrochen",
+      "toggleFields": "Zusammenfassungsfelder umschalten",
+      "searchFields": "Felder suchen...",
+      "dragToReorder": "Ziehen zum Neuordnen"
     },
     "exports": {
       "filename": "Dateiname",

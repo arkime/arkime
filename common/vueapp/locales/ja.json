@@ -362,7 +362,13 @@
       "barChart": "棒グラフ",
       "tableView": "テーブル",
       "downloadPNG": "PNGをダウンロード",
-      "downloadCSV": "CSVをダウンロード"
+      "downloadCSV": "CSVをダウンロード",
+      "resultsPerWidget": "ウィジェットごとの結果",
+      "canceledSearch": "検索をキャンセルしました",
+      "closingCancelsSearchErr": "サマリーページを閉じると検索がキャンセルされました",
+      "toggleFields": "サマリーフィールドを切り替え",
+      "searchFields": "フィールドを検索...",
+      "dragToReorder": "ドラッグして並べ替え"
     },
     "exports": {
       "filename": "ファイル名",

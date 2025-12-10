@@ -375,7 +375,13 @@
       "barChart": "Arbay Artchay",
       "tableView": "Abletay",
       "downloadPNG": "Ownloadday PNGway",
-      "downloadCSV": "Ownloadday CSVway"
+      "downloadCSV": "Ownloadday CSVway",
+      "resultsPerWidget": "Esultsray erpay idgetway",
+      "canceledSearch": "Ouyay anceledcay ethay earchsay",
+      "closingCancelsSearchErr": "Osingclay ethay ummarysay agepay anceledcay ethay earchsay",
+      "toggleFields": "Oggletay ummarysay ieldsfay",
+      "searchFields": "Earchsay orfay ieldsfay...",
+      "dragToReorder": "Agdray otay eorderray"
     },
     "exports": {
       "filename": "Ilenamefay",

@@ -107,6 +107,7 @@ SPDX-License-Identifier: Apache-2.0
         ref="summaryView"
         :summary-fields="summaryFields"
         @update-visualizations="updateVisualizationsData"
+        @reorder-fields="reorderSummaryFields"
         @recalc-collapse="$emit('recalc-collapse')" />
       <!-- /summary view -->
 
@@ -1150,6 +1151,13 @@ export default {
       if (this.$refs.summaryView?.reloadSummary) {
         this.$refs.summaryView.reloadSummary();
       }
+    },
+    reorderSummaryFields: function ({ oldIndex, newIndex }) {
+      // Move the field from old position to new position
+      const field = this.summaryFields.splice(oldIndex, 1)[0];
+      this.summaryFields.splice(newIndex, 0, field);
+      // Persist the new order (no reload needed - Summary.vue reorders locally)
+      UserService.saveState({ summaryFields: this.summaryFields }, 'summary');
     },
     loadSummaryConfig: function () {
       // Initialize with defaults immediately so page works even if API fails

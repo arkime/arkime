@@ -360,7 +360,13 @@
       "barChart": "Tulpdiagramm",
       "tableView": "Tabel",
       "downloadPNG": "Laadi PNG alla",
-      "downloadCSV": "Laadi CSV alla"
+      "downloadCSV": "Laadi CSV alla",
+      "resultsPerWidget": "Tulemusi vidina kohta",
+      "canceledSearch": "Sa tühistasid otsingu",
+      "closingCancelsSearchErr": "Kokkuvõtte lehe sulgemine tühistas otsingu",
+      "toggleFields": "Lülita kokkuvõtte väljad",
+      "searchFields": "Otsi välju...",
+      "dragToReorder": "Lohistage järjestuse muutmiseks"
     },
     "exports": {
       "filename": "Failinimi",

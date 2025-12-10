@@ -350,7 +350,13 @@
       "barChart": "막대 차트",
       "tableView": "테이블",
       "downloadPNG": "PNG 다운로드",
-      "downloadCSV": "CSV 다운로드"
+      "downloadCSV": "CSV 다운로드",
+      "resultsPerWidget": "위젯당 결과",
+      "canceledSearch": "검색을 취소했습니다",
+      "closingCancelsSearchErr": "요약 페이지를 닫으면 검색이 취소됩니다",
+      "toggleFields": "요약 필드 전환",
+      "searchFields": "필드 검색...",
+      "dragToReorder": "드래그하여 순서 변경"
     },
     "exports": {
       "filename": "파일 이름",

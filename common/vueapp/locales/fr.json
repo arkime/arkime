@@ -362,7 +362,13 @@
       "barChart": "Graphique à barres",
       "tableView": "Tableau",
       "downloadPNG": "Télécharger PNG",
-      "downloadCSV": "Télécharger CSV"
+      "downloadCSV": "Télécharger CSV",
+      "resultsPerWidget": "Résultats par widget",
+      "canceledSearch": "Vous avez annulé la recherche",
+      "closingCancelsSearchErr": "La fermeture de la page de résumé a annulé la recherche",
+      "toggleFields": "Basculer les champs de résumé",
+      "searchFields": "Rechercher des champs...",
+      "dragToReorder": "Glisser pour réorganiser"
     },
     "exports": {
       "filename": "Nom de fichier",
