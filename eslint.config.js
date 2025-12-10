@@ -63,7 +63,16 @@ const commonJavaScriptRules = {
     }],
 
     "no-trailing-spaces": "error",
-    "no-unused-vars": "off",
+
+    "no-multi-spaces": ["error", {
+        "ignoreEOLComments": true
+    }],
+
+    "no-unused-vars": ["error", {
+        "args": "none",
+        "caughtErrors": "none"
+    }],
+
     "no-control-regex": "off",
 
     "object-curly-spacing": ["error", "always"],

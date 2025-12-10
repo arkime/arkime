@@ -98,8 +98,6 @@ SPDX-License-Identifier: Apache-2.0
 </template>
 
 <script>
-import moment from 'moment';
-
 import Utils from '../utils/utils';
 import ArkimeTable from '../utils/Table.vue';
 import ArkimeError from '../utils/Error.vue';

@@ -312,7 +312,7 @@ class StatsAPIs {
           const pos = Math.floor((fields.currentTime - req.query.start) / req.query.step);
 
           if (data[fields.nodeName] === undefined) {
-            data[fields.nodeName] = ViewerUtils.arrayZeroFill(num);
+            data[fields.nodeName] = Array(num).fill(0);
           }
           data[fields.nodeName][pos] = mult * func(fields);
         }
@@ -322,11 +322,11 @@ class StatsAPIs {
         res.send(data);
       } else {
         if (data[nodeName] === undefined) {
-          data[nodeName] = ViewerUtils.arrayZeroFill(num);
+          data[nodeName] = Array(num).fill(0);
         }
         if (nodeName === 'Total' || nodeName === 'Average') {
           delete data[nodeName];
-          const data2 = ViewerUtils.arrayZeroFill(num);
+          const data2 = Array(num).fill(0);
           let cnt = 0;
           for (const key in data) {
             for (i = 0; i < num; i++) {

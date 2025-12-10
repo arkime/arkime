@@ -73,7 +73,7 @@ class SplunkSource extends WISESource {
       merging = true;
     }
     try {
-      const  results = await this.service.oneshotSearch(query, { output_mode: 'json', count: 0 });
+      const results = await this.service.oneshotSearch(query, { output_mode: 'json', count: 0 });
 
       if (results === undefined || results.results === undefined) {
         console.log(this.section, '- No results - ', results);

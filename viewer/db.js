@@ -19,7 +19,7 @@ const { LRUCache } = require('lru-cache');
 
 const cache10 = new LRUCache({ max: 1000, ttl: 1000 * 10 });
 const cache60 = new LRUCache({ max: 1000, ttl: 1000 * 60 });
-const esId2Info =  new Map();
+const esId2Info = new Map();
 const esId2InfoLoadedCluster = new Map();
 
 const Db = exports;
@@ -517,7 +517,6 @@ Db.getSession = async (id, options, cb) => {
   }
 
   try {
-    const optionsReplaced = options === undefined;
     if (!options) {
       options = { _source: ['cert', 'dns'], fields: ['*'] };
     }

@@ -138,26 +138,20 @@ class ViewerUtils {
   /* This method fixes up parts of the query that jison builds to what ES actually
    * understands.  This includes using the collapse function and the filename mapping.
    */
-  static lookupQueryItems (query, doneCb) {
-    // console.log('BEFORE', JSON.stringify(query, false, 2));
+  static async lookupQueryItems (query) {
     ViewerUtils.#collapseQuery(query);
-    // console.log('AFTER', JSON.stringify(query, false, 2));
     if (Config.get('multiES', false)) {
-      return doneCb(null);
+      return;
     }
 
-    let outstanding = 0;
-    let finished = 0;
-    let err = null;
+    let err;
 
     async function doProcess (qParent, obj, item) {
       // console.log("\nprocess:\n", item, obj, typeof obj[item], "\n");
       if (item === 'fileand' && typeof obj[item] === 'string') {
         const fileName = obj.fileand;
         delete obj.fileand;
-        outstanding++;
         const files = await Db.fileNameToFiles(fileName);
-        outstanding--;
         if (files === null || files.length === 0) {
           err = "File '" + fileName + "' not found";
         } else if (files.length > 1) {
@@ -168,28 +162,22 @@ class ViewerUtils {
         } else {
           obj.bool = { filter: [{ term: { node: files[0].node } }, { term: { fileId: files[0].num } }] };
         }
-        if (finished && outstanding === 0) {
-          doneCb(err);
-        }
       } else if (item === 'field' && obj.field === 'fileand') {
         obj.field = 'fileId';
       } else if (typeof obj[item] === 'object') {
-        convert(obj, obj[item]);
+        await convert(obj, obj[item]);
       }
     }
 
-    function convert (qParent, obj) {
+    async function convert (qParent, obj) {
       for (const item in obj) {
-        doProcess(qParent, obj, item);
+        await doProcess(qParent, obj, item);
       }
     }
 
-    convert(null, query);
-    if (outstanding === 0) {
-      return doneCb(err);
-    }
+    await convert(null, query);
 
-    finished = 1;
+    return err;
   };
 
   // ----------------------------------------------------------------------------
@@ -262,7 +250,7 @@ class ViewerUtils {
   };
 
   // ----------------------------------------------------------------------------
-  static continueBuildQuery (req, query, err, finalCb, queryOverride = null) {
+  static async continueBuildQuery (req, query, err, finalCb, queryOverride = null) {
     // queryOverride can supercede req.query if specified
     const reqQuery = queryOverride || req.query;
 
@@ -278,25 +266,24 @@ class ViewerUtils {
       }
     }
 
-    ViewerUtils.lookupQueryItems(query.query.bool.filter, async (lerr) => {
-      req._arkimeESQuery = JSON.stringify(query);
+    const lerr = await ViewerUtils.lookupQueryItems(query.query.bool.filter);
+    req._arkimeESQuery = JSON.stringify(query);
 
-      if (reqQuery.date === '-1' || // An all query
-          Config.get('queryAllIndices', Config.get('multiES', false))) { // queryAllIndices (default: multiES)
-        req._arkimeESQueryIndices = Db.fixIndex(Db.getSessionIndices());
-        return finalCb(err || lerr, query, req._arkimeESQueryIndices); // Then we just go against all indices for a slight overhead
-      }
+    if (reqQuery.date === '-1' || // An all query
+        Config.get('queryAllIndices', Config.get('multiES', false))) { // queryAllIndices (default: multiES)
+      req._arkimeESQueryIndices = Db.fixIndex(Db.getSessionIndices());
+      return finalCb(err || lerr, query, req._arkimeESQueryIndices); // Then we just go against all indices for a slight overhead
+    }
 
-      const indices = await Db.getIndices(reqQuery.startTime, reqQuery.stopTime, reqQuery.bounding, Config.get('rotateIndex', 'daily'), Config.getArray('queryExtraIndices', ''));
+    const indices = await Db.getIndices(reqQuery.startTime, reqQuery.stopTime, reqQuery.bounding, Config.get('rotateIndex', 'daily'), Config.getArray('queryExtraIndices', ''));
 
-      if (indices.length > 3000) { // Will url be too long
-        req._arkimeESQueryIndices = Db.fixIndex(Db.getSessionIndices());
-        return finalCb(err || lerr, query, req._arkimeESQueryIndices);
-      } else {
-        req._arkimeESQueryIndices = indices;
-        return finalCb(err || lerr, query, indices);
-      }
-    });
+    if (indices.length > 3000) { // Will url be too long
+      req._arkimeESQueryIndices = Db.fixIndex(Db.getSessionIndices());
+      return finalCb(err || lerr, query, req._arkimeESQueryIndices);
+    } else {
+      req._arkimeESQueryIndices = indices;
+      return finalCb(err || lerr, query, indices);
+    }
   };
 
   // ----------------------------------------------------------------------------
@@ -526,18 +513,6 @@ class ViewerUtils {
   };
 
   // ----------------------------------------------------------------------------
-  static arrayZeroFill (n) {
-    const a = [];
-
-    while (n > 0) {
-      a.push(0);
-      n--;
-    }
-
-    return a;
-  };
-
-  // ----------------------------------------------------------------------------
   static async getViewUrl (node, cb) {
     if (Array.isArray(node)) {
       node = node[0];
@@ -645,26 +620,18 @@ class ViewerUtils {
   // ----------------------------------------------------------------------------
   // check for anonymous mode before fetching user cache and return anonymous
   // user or the user requested by the userId
-  static async getUserCacheIncAnon (userId, cb) {
-    try {
-      if (Auth.isAnonymousMode()) { // user is anonymous
-        const anonUser = await User.getUserCache('anonymous');
-        const anon = Object.assign(new User(), internals.anonymousUser);
+  static async getUserCacheIncAnon (userId) {
+    if (Auth.isAnonymousMode()) { // user is anonymous
+      const anonUser = await User.getUserCache('anonymous');
+      const anon = Object.assign(new User(), internals.anonymousUser);
 
-        if (anonUser) {
-          anon.settings = anonUser.settings || {};
-        }
-
-        if (!cb) { return anon; }
-        return cb(null, anon);
-      } else {
-        const user = await User.getUserCache(userId);
-        if (!cb) { return user; }
-        return cb(null, user);
+      if (anonUser) {
+        anon.settings = anonUser.settings || {};
       }
-    } catch (err) {
-      if (cb) { return cb(err, null); }
-      throw err;
+
+      return anon;
+    } else {
+      return await User.getUserCache(userId);
     }
   };
 }

@@ -2422,7 +2422,7 @@ class SessionAPIs {
                 count: queriesInfo[i].doc_count
               };
 
-              response.graph = ViewerUtils.graphMerge(req, query, searchResult.responses[i].aggregations);
+              response.graph = ViewerUtils.graphMerge(req, query, item.aggregations);
 
               const histoKeys = Object.keys(results.graph).filter(j => j.toLowerCase().includes('histo'));
               const xMinName = histoKeys.reduce((prev, curr) => results.graph[prev][0][0] < results.graph[curr][0][0] ? prev : curr);
@@ -2440,7 +2440,7 @@ class SessionAPIs {
                 response.graph.xmax = results.graph.xmax || histoXMax;
               }
 
-              response.map = ViewerUtils.mapMerge(searchResult.responses[i].aggregations);
+              response.map = ViewerUtils.mapMerge(item.aggregations);
 
               results.items.push(response);
               for (const key of histoKeys) {
@@ -3394,8 +3394,8 @@ class SessionAPIs {
         const fields = aggFields
           .filter(fieldExp => fieldConfig[fieldExp]) // Only include fields that were successfully mapped
           .map(fieldExp => {
-            const { aggName, isSpecial } = fieldConfig[fieldExp];
-            const metadata = fieldMetadata[fieldExp] || { viewMode: 'bar', metricType: 'sessions' };
+            const { aggName } = fieldConfig[fieldExp];
+            const metadata = fieldMetadata[fieldExp];
 
             // Use processed data for ip.dst:port, regular convert() for others
             const data = fieldExp === 'ip.dst:port'
