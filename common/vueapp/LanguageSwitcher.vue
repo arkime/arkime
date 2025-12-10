@@ -34,7 +34,7 @@ import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { countryCodeEmoji } from 'country-code-emoji';
 
-const props = defineProps({
+defineProps({
   additionalClasses: {
     type: [String, Array, Object],
     default: ''

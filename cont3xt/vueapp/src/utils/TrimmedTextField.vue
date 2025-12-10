@@ -13,7 +13,7 @@
 
 import { ref, computed } from 'vue';
 
-const props = defineProps({
+defineProps({
   modelValue: {
     type: String,
     default: ''

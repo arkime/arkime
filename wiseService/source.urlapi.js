@@ -8,7 +8,6 @@
 'use strict';
 
 const WISESource = require('./wiseSource.js');
-const ArkimeUtil = require('../common/arkimeUtil');
 const axios = require('axios');
 
 class URLApiSource extends WISESource {

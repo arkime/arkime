@@ -59,7 +59,7 @@
 
 <script setup>
 
-const props = defineProps({
+defineProps({
   expression: {
     type: String,
     default: ''

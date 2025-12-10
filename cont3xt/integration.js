@@ -197,7 +197,7 @@ class Integration {
       try {
         // Make sure we can construct a proper URL-object using this string
 
-        const url = new URL(str);
+        new URL(str);
         return { itype: 'url' };
       } catch (e) {
         // This looked like a URL but could not be parsed as such. Continue testing below.

@@ -1311,7 +1311,6 @@ export default {
       // This mimics what d3.hierarchy() creates for pie/treemap
       const createHierarchyNode = (pathNodes, currentIndex) => {
         const currentNodeData = pathNodes[currentIndex];
-        const isLeaf = currentIndex === pathNodes.length - 1;
 
         return {
           data: currentNodeData, // The original node data
