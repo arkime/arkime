@@ -231,7 +231,7 @@ const saveConfig = async () => {
   try {
     const configData = {
       name: configName.value.trim(),
-      description: configDescription.value?.trim() || '',
+      description: configDescription.value?.trim() || undefined,
       data: props.config,
       viewRoles: viewRoles.value,
       editRoles: editRoles.value,
