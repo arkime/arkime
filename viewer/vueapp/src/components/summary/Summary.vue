@@ -125,8 +125,8 @@
             :view-mode="widget.viewMode.value"
             :metric-type="widget.metricType.value"
             :field="widget.field"
-            @change-mode="widget.viewMode.value = $event"
-            @change-metric="widget.metricType.value = $event"
+            @change-mode="updateWidgetViewMode(widget, $event)"
+            @change-metric="updateWidgetMetricType(widget, $event)"
             @show-tooltip="showTooltip"
             @export="handleWidgetExport(widget, $event)" />
         </div>
@@ -166,7 +166,7 @@ const props = defineProps({
 });
 
 // Define emits
-const emit = defineEmits(['update-visualizations', 'reorder-fields']);
+const emit = defineEmits(['update-visualizations', 'reorder-fields', 'widget-config-changed']);
 
 // Save a pending promise to be able to cancel it
 let pendingPromise;
@@ -542,9 +542,45 @@ onBeforeUnmount(() => {
   }
 });
 
+/**
+ * Updates a widget's view mode and emits change event
+ */
+const updateWidgetViewMode = (widget, newMode) => {
+  widget.viewMode.value = newMode;
+  emitWidgetConfigChange();
+};
+
+/**
+ * Updates a widget's metric type and emits change event
+ */
+const updateWidgetMetricType = (widget, newMetric) => {
+  widget.metricType.value = newMetric;
+  emitWidgetConfigChange();
+};
+
+/**
+ * Emits the current widget configuration to parent
+ */
+const emitWidgetConfigChange = () => {
+  emit('widget-config-changed', getWidgetConfigs());
+};
+
+/**
+ * Gets the current widget configurations for saving
+ * @returns {Array} Array of field configurations with viewMode and metricType
+ */
+const getWidgetConfigs = () => {
+  return widgetConfigs.value.map(w => ({
+    field: w.field,
+    viewMode: w.viewMode.value,
+    metricType: w.metricType.value
+  }));
+};
+
 // Expose methods to parent component
 defineExpose({
-  reloadSummary: generateSummary
+  reloadSummary: generateSummary,
+  getWidgetConfigs
 });
 </script>
 

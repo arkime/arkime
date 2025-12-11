@@ -78,6 +78,7 @@
 <script>
 import { searchFields } from '@common/vueFilters.js';
 import Utils from './utils';
+import FieldService from '../search/FieldService';
 
 let filterTimeout;
 
@@ -120,6 +121,11 @@ export default {
     maxVisibleFields: {
       type: Number,
       default: 200
+    },
+    // Include special summary fields (All IP Fields, Dst IP:Dst Port)
+    includeSummaryFields: {
+      type: Boolean,
+      default: false
     }
   },
   emits: ['toggle'],
@@ -136,7 +142,11 @@ export default {
   },
   computed: {
     fields () {
-      return this.$store.state.fieldsArr;
+      const baseFields = this.$store.state.fieldsArr;
+      if (this.includeSummaryFields) {
+        return FieldService.addSummarySpecialFields(baseFields);
+      }
+      return baseFields;
     },
     visibleFilteredFields () {
       if (!this.filteredFields || this.showAllFields) {

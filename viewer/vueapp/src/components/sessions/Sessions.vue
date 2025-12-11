@@ -73,8 +73,17 @@ SPDX-License-Identifier: Apache-2.0
               :selected-fields="summaryFields"
               :tooltip-text="$t('sessions.summary.toggleFields')"
               :search-placeholder="$t('sessions.summary.searchFields')"
+              :include-summary-fields="true"
               field-id-key="exp"
               @toggle="toggleSummaryField" />
+            <!-- summary config dropdown (only in summary view) -->
+            <SummaryConfigDropdown
+              v-if="viewMode === 'summary'"
+              class="ms-2"
+              :current-config="currentSummaryConfig"
+              @load="loadSummaryConfigFromShareable"
+              @reset="resetSummaryToDefaults"
+              @message="displayMessage" />
           </div> <!-- /view toggle button -->
           <arkime-paging
             v-if="viewMode === 'table'"
@@ -108,6 +117,7 @@ SPDX-License-Identifier: Apache-2.0
         :summary-fields="summaryFields"
         @update-visualizations="updateVisualizationsData"
         @reorder-fields="reorderSummaryFields"
+        @widget-config-changed="updateWidgetConfigs"
         @recalc-collapse="$emit('recalc-collapse')" />
       <!-- /summary view -->
 
@@ -770,6 +780,7 @@ import ArkimeStickySessions from './StickySessions.vue';
 import FieldActions from './FieldActions.vue';
 import ArkimeSummaryView from '../summary/Summary.vue';
 import FieldSelectDropdown from '../utils/FieldSelectDropdown.vue';
+import SummaryConfigDropdown from '../summary/SummaryConfigDropdown.vue';
 // import utils
 import { searchFields, buildExpression } from '@common/vueFilters.js';
 // import external
@@ -912,7 +923,8 @@ export default {
     ArkimeCollapsible,
     FieldActions,
     ArkimeSummaryView,
-    FieldSelectDropdown
+    FieldSelectDropdown,
+    SummaryConfigDropdown
   },
   emits: ['recalc-collapse'],
   data: function () {
@@ -952,6 +964,7 @@ export default {
       showAllFields: false,
       showAllInfoFields: false,
       summaryFields: [],
+      widgetConfigs: [], // Current widget configurations (viewMode, metricType per field)
       tableState: Utils.getDefaultTableState()
     };
   },
@@ -1085,6 +1098,26 @@ export default {
     },
     hasMoreInfoFields: function () {
       return !this.showAllInfoFields && this.filteredInfoFieldsCount > this.maxVisibleFields;
+    },
+    /**
+     * Returns the current summary configuration for saving
+     * Combines summaryFields with widgetConfigs and resultsLimit
+     */
+    currentSummaryConfig: function () {
+      // Build fields array with viewMode and metricType from widgetConfigs
+      const fields = this.summaryFields.map(fieldExp => {
+        const widgetConfig = this.widgetConfigs.find(w => w.field === fieldExp);
+        return {
+          field: fieldExp,
+          viewMode: widgetConfig?.viewMode || 'bar',
+          metricType: widgetConfig?.metricType || 'sessions'
+        };
+      });
+
+      return {
+        fields,
+        resultsLimit: this.summaryResultsLimit
+      };
     }
   },
   watch: {
@@ -1147,7 +1180,6 @@ export default {
       } else {
         this.summaryFields.push(fieldExp);
       }
-      UserService.saveState({ summaryFields: this.summaryFields }, 'summary');
       if (this.$refs.summaryView?.reloadSummary) {
         this.$refs.summaryView.reloadSummary();
       }
@@ -1156,21 +1188,73 @@ export default {
       // Move the field from old position to new position
       const field = this.summaryFields.splice(oldIndex, 1)[0];
       this.summaryFields.splice(newIndex, 0, field);
-      // Persist the new order (no reload needed - Summary.vue reorders locally)
-      UserService.saveState({ summaryFields: this.summaryFields }, 'summary');
+      // No reload needed - Summary.vue reorders locally
+    },
+    /**
+     * Updates the widget configs when Summary.vue emits changes
+     */
+    updateWidgetConfigs: function (configs) {
+      this.widgetConfigs = configs;
+    },
+    /**
+     * Loads summary configuration from a shareable
+     * @param {Object} shareable - The shareable object containing config data
+     */
+    loadSummaryConfigFromShareable: function (shareable) {
+      const configData = shareable.data;
+      if (!configData?.fields?.length) {
+        return;
+      }
+
+      // Extract field names in order
+      this.summaryFields = configData.fields.map(f => f.field);
+
+      // Store widget configs for when Summary.vue loads
+      this.widgetConfigs = configData.fields.map(f => ({
+        field: f.field,
+        viewMode: f.viewMode || 'bar',
+        metricType: f.metricType || 'sessions'
+      }));
+
+      // Update results limit
+      if (configData.resultsLimit) {
+        this.updateSummaryResultsLimit(configData.resultsLimit);
+      }
+
+      this.reloadSummaryView();
+    },
+    /**
+     * Displays a message to the user (success or error)
+     */
+    displayMessage: function ({ msg, type }) {
+      if (type === 'danger') {
+        this.error = msg;
+      } else {
+        // For success, we could use a toast notification
+        // For now, just log it - could be enhanced with proper notification system
+        console.log(msg);
+      }
     },
     loadSummaryConfig: function () {
-      // Initialize with defaults immediately so page works even if API fails
+      // Initialize with defaults
       this.summaryFields = Utils.getDefaultSummaryFields();
-
-      // Try to load user's saved config (if API is implemented)
-      UserService.getPageConfig('summary').then((response) => {
-        if (response?.summaryFields?.length) {
-          this.summaryFields = response.summaryFields;
-        }
-      }).catch(() => {
-        // API not implemented or error - keep defaults (already set above)
+    },
+    /**
+     * Reloads the summary view after Vue propagates prop changes
+     */
+    reloadSummaryView: function () {
+      this.$nextTick(() => {
+        this.$refs.summaryView?.reloadSummary?.();
       });
+    },
+    /**
+     * Resets the summary configuration to default fields and settings
+     */
+    resetSummaryToDefaults: function () {
+      this.summaryFields = Utils.getDefaultSummaryFields();
+      this.widgetConfigs = [];
+      this.updateSummaryResultsLimit(20);
+      this.reloadSummaryView();
     },
     loadColumns: function (colConfig) {
       this.tableState = JSON.parse(JSON.stringify(colConfig));
