@@ -508,7 +508,7 @@ const initializeDragDrop = () => {
 
 // Watch for summary data to load, then initialize drag-drop
 watch(summary, (newVal) => {
-  if (newVal) {
+  if (newVal?.fields?.length) {
     nextTick(() => {
       // Destroy existing instance to prevent duplicate handlers
       if (sortableInstance) {
