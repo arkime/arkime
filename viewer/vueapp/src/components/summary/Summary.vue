@@ -214,11 +214,11 @@ const widgetConfigs = computed(() => {
   // Map each field from the API response to a widget configuration
   return summary.value.fields.map(fieldObj => ({
     data: fieldObj.data || [],
-    viewMode: ref(fieldObj.viewMode),     // viewMode from API
-    metricType: ref(fieldObj.metricType), // metricType from API
-    field: fieldObj.field,                // field expression from API
-    title: fieldObj.title,                // title from API (may be undefined)
-    description: fieldObj.description     // description from API (may be undefined)
+    viewMode: ref(fieldObj.viewMode || 'bar'),         // viewMode from API or default
+    metricType: ref(fieldObj.metricType || 'sessions'), // metricType from API or default
+    field: fieldObj.field,                              // field expression from API
+    title: fieldObj.title,                              // title from API (may be undefined)
+    description: fieldObj.description                   // description from API (may be undefined)
   }));
 });
 
