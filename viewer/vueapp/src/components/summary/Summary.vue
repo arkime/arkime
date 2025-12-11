@@ -448,6 +448,10 @@ const handleWidgetExport = (widget, svgId) => {
 };
 
 // Initialize drag-and-drop reordering with Sortable.js
+// NOTE: We use forceFallback + custom scrollFn because:
+// 1. forceFallback is needed for consistent cross-browser drag behavior
+// 2. SortableJS's scrollSpeed option only works with native HTML5 drag-and-drop,
+//    not in fallback mode, so we implement custom scroll speed logic
 const initializeDragDrop = () => {
   if (!widgetContainer.value) return;
 
@@ -467,29 +471,21 @@ const initializeDragDrop = () => {
     forceFallback: true,
     fallbackOnBody: true,
     scrollFn: (offsetX, offsetY, originalEvent) => {
-      // Calculate dynamic scroll speed based on cursor position
+      // Custom scroll function for dynamic speed based on cursor proximity to edge
       // offsetY is negative when near top, positive when near bottom
       if (offsetY !== 0 && originalEvent) {
         const viewportHeight = window.innerHeight;
         const cursorY = originalEvent.clientY;
 
-        let distanceFromEdge;
-        if (offsetY < 0) {
-          // Near top edge
-          distanceFromEdge = cursorY;
-        } else {
-          // Near bottom edge
-          distanceFromEdge = viewportHeight - cursorY;
-        }
+        // Calculate distance from the edge being scrolled toward
+        const distanceFromEdge = offsetY < 0 ? cursorY : viewportHeight - cursorY;
 
         // Calculate speed: closer to edge = faster scroll
-        // distanceFromEdge goes from 0 (at edge) to scrollSensitivity (at threshold)
         const ratio = 1 - (distanceFromEdge / scrollSensitivity);
         const speed = minScrollSpeed + (ratio * (maxScrollSpeed - minScrollSpeed));
 
-        // Apply scroll
-        const scrollAmount = offsetY > 0 ? speed : -speed;
-        document.documentElement.scrollTop += scrollAmount;
+        // Apply scroll in the appropriate direction
+        document.documentElement.scrollTop += offsetY > 0 ? speed : -speed;
       }
     },
     onSort: (evt) => {
