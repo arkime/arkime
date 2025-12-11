@@ -82,10 +82,10 @@ export const createShareableService = (type) => ({
         name: config.name,
         description: config.description,
         data: config.data,
-        viewUsers: config.viewUsers,
-        viewRoles: config.viewRoles,
-        editUsers: config.editUsers,
-        editRoles: config.editRoles
+        viewUsers: config.viewUsers || [],
+        viewRoles: config.viewRoles || [],
+        editUsers: config.editUsers || [],
+        editRoles: config.editRoles || []
       }
     });
   },
