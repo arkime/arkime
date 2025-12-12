@@ -274,7 +274,7 @@ ${Config.arkimeWebURL()}hunt
       }
       // make sure the session id is not already in the array
       // if it's not the first pass and a node is still down, this could be a duplicate
-      if (hunt.failedSessionIds.indexOf(sessionId) < 0) {
+      if (!hunt.failedSessionIds.includes(sessionId)) {
         hunt.failedSessionIds.push(sessionId);
       }
     }
@@ -317,9 +317,9 @@ ${Config.arkimeWebURL()}hunt
   // if there are failed sessions, go through them one by one and do a packet search
   // if there are no failed sessions left at the end then the hunt is done
   // if there are still failed sessions, but some sessions were searched during the last pass, try again
-  // if there are still failed sessions, but no new sessions coudl be searched, pause the job with an error
+  // if there are still failed sessions, but no new sessions could be searched, pause the job with an error
   static #huntFailedSessions (hunt, huntId, options, searchedSessions, user) {
-    if (!hunt.failedSessionIds && !hunt.failedSessionIds.length) { return; }
+    if (!hunt.failedSessionIds || !hunt.failedSessionIds.length) { return; }
 
     let changesSearchingFailedSessions = false;
 
@@ -360,7 +360,7 @@ ${Config.arkimeWebURL()}hunt
           }
 
           // remove from failedSessionIds if it was found
-          hunt.failedSessionIds.splice(hunt.failedSessionIds.indexOf(sessionId), 1);
+          hunt.failedSessionIds = hunt.failedSessionIds.filter(id => id !== sessionId);
           // there were changes to this hunt; we're making progress
           changesSearchingFailedSessions = true;
 
@@ -403,12 +403,12 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
         // there are still failed sessions, but there were also changes,
         // so keep going
         // uninitialize hunts so that the running job with failed sessions will kick off again
-        internals.proccessHuntJobsInitialized = false;
+        internals.processHuntJobsInitialized = false;
         return continueProcess();
       } else if (!changesSearchingFailedSessions) {
         options.searchingFailedSessions = false; // no longer searching failed sessions
         // there were no changes, we're still struggling to connect to one or
-        // more renote nodes, so error out
+        // more remote nodes, so error out
         return HuntAPIs.#pauseHuntJobWithError(huntId, hunt, {
           value: 'Error hunting previously unreachable sessions. There is likely a node down. Please contact your administrator.'
         });
@@ -548,7 +548,7 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
         // the hunt is not actually finished, need to go through the failed session ids
         if (hunt.failedSessionIds && hunt.failedSessionIds.length) {
           // uninitialize hunts so that the running job with failed sessions will kick off again
-          internals.proccessHuntJobsInitialized = false;
+          internals.processHuntJobsInitialized = false;
           return continueProcess();
         }
 
@@ -709,7 +709,7 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
       }
 
       // Made to the end without starting a job
-      internals.proccessHuntJobsInitialized = true;
+      internals.processHuntJobsInitialized = true;
       internals.runningHuntJob = undefined;
     } catch (err) {
       console.log('ERROR - processHuntJobs - fetching hunt jobs', util.inspect(err, false, 50));
@@ -960,7 +960,7 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
 
         // clear out secret fields for users who don't have access to that hunt
         // if the user is not an admin and didn't create the hunt and isn't part of the user's list
-        if (!req.user.hasRole('arkimeAdmin') && req.user.userId !== hunt.userId && hunt.users.indexOf(req.user.userId) < 0) {
+        if (!req.user.hasRole('arkimeAdmin') && req.user.userId !== hunt.userId && !hunt.users.includes(req.user.userId)) {
           if (!hunt.roles || (hunt.roles.length && !req.user.hasRole(hunt.roles))) {
             // since hunt isn't cached we can just modify
             hunt.id = '';
@@ -1253,13 +1253,11 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
         return res.serverError(404, 'There are no users that have access to view this hunt');
       }
 
-      const userIdx = hunt.users.indexOf(req.params.user);
-
-      if (userIdx < 0) { // user doesn't have access to this hunt
+      if (!hunt.users.includes(req.params.user)) {
         return res.serverError(404, 'That user does not have access to this hunt');
       }
 
-      hunt.users.splice(userIdx, 1); // remove the user from the list
+      hunt.users = hunt.users.filter(userId => userId !== req.params.user);
 
       try {
         await Db.updateHunt(req.params.id, { users: hunt.users });
