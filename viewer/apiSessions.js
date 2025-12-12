@@ -3395,7 +3395,7 @@ class SessionAPIs {
           .filter(fieldExp => fieldConfig[fieldExp]) // Only include fields that were successfully mapped
           .map(fieldExp => {
             const { aggName } = fieldConfig[fieldExp];
-            const metadata = fieldMetadata[fieldExp];
+            const metadata = fieldMetadata[fieldExp] || { viewMode: 'bar', metricType: 'sessions' };
 
             // Use processed data for ip.dst:port, regular convert() for others
             const data = fieldExp === 'ip.dst:port'

@@ -24,6 +24,8 @@ SPDX-License-Identifier: Apache-2.0
         <br>
         <code>'S'</code> - jump to the Sessions page
         <br>
+        <code>'A'</code> - jump to the Arkime page
+        <br>
         <code>'V'</code> - jump to the SPI View page
         <br>
         <code>'G'</code> - jump to the SPI Graph page
@@ -147,6 +149,12 @@ export default {
         // open sessions page if not on sessions page
         if (this.$route.name !== 'Sessions') {
           this.routeTo('/sessions');
+        }
+        break;
+      case 'a': // a
+        // open arkime page if not on arkime page
+        if (this.$route.name !== 'Arkime') {
+          this.routeTo('/arkime');
         }
         break;
       case 'v': // v

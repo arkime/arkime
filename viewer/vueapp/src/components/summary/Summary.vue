@@ -106,21 +106,30 @@
 
       <!-- Charts Grid -->
       <div
+        ref="widgetContainer"
         class="charts-container"
         :class="gridLayoutClass">
         <!-- Widgets rendered via v-for -->
-        <SummaryWidget
+        <div
           v-for="widget in widgetConfigs"
           :key="widget.field"
-          :title="widget.title || FieldService.getField(widget.field, true)?.friendlyName || widget.field"
-          :data="widget.data"
-          :view-mode="widget.viewMode.value"
-          :metric-type="widget.metricType.value"
-          :field="widget.field"
-          @change-mode="widget.viewMode.value = $event"
-          @change-metric="widget.metricType.value = $event"
-          @show-tooltip="showTooltip"
-          @export="handleWidgetExport(widget, $event)" />
+          class="widget-wrapper">
+          <span
+            class="widget-handle"
+            :title="$t('sessions.summary.dragToReorder')">
+            <span class="fa fa-th" />
+          </span>
+          <SummaryWidget
+            :title="widget.title || FieldService.getField(widget.field, true)?.friendlyName || widget.field"
+            :data="widget.data"
+            :view-mode="widget.viewMode.value"
+            :metric-type="widget.metricType.value"
+            :field="widget.field"
+            @change-mode="updateWidgetViewMode(widget, $event)"
+            @change-metric="updateWidgetMetricType(widget, $event)"
+            @show-tooltip="showTooltip"
+            @export="handleWidgetExport(widget, $event)" />
+        </div>
       </div> <!-- /charts-container -->
     </div>
   </div>
@@ -128,12 +137,13 @@
 
 <script setup>
 // external dependencies
-import { ref, onMounted, onBeforeUnmount, computed } from 'vue';
+import { ref, onMounted, onBeforeUnmount, computed, watch, nextTick } from 'vue';
 import { useRoute } from 'vue-router';
 import { useStore } from 'vuex';
 import { useI18n } from 'vue-i18n';
+import Sortable from 'sortablejs';
 // internal dependencies
-import SessionsService from '../sessions/SessionsService';
+import setReqHeaders from '@common/setReqHeaders';
 import SummaryWidget from './SummaryWidget.vue';
 import SummaryChartTooltip from './SummaryChartTooltip.vue';
 import ArkimeLoading from '../utils/Loading.vue';
@@ -147,11 +157,22 @@ const route = useRoute();
 const store = useStore();
 const { t } = useI18n();
 
+// Define props
+const props = defineProps({
+  summaryFields: {
+    type: Array,
+    default: () => []
+  }
+});
+
 // Define emits
-const emit = defineEmits(['update-visualizations']);
+const emit = defineEmits(['update-visualizations', 'reorder-fields', 'widget-config-changed']);
 
 // Save a pending promise to be able to cancel it
 let pendingPromise;
+
+// Sortable instance for drag-and-drop reordering
+let sortableInstance = null;
 
 // Computed properties
 const user = computed(() => store.state.user);
@@ -170,6 +191,7 @@ const gridLayoutClass = computed(() => {
 const summary = ref(null);
 const loading = ref(true);
 const error = ref('');
+const widgetContainer = ref(null);
 
 // Shared tooltip state - one tooltip to rule them all
 const tooltipVisible = ref(false);
@@ -202,33 +224,78 @@ const widgetConfigs = computed(() => {
 
 // Methods
 const generateSummary = async () => {
+  // Wait for fields to be loaded from parent before generating summary
+  if (!props.summaryFields?.length) {
+    return;
+  }
+
   loading.value = true;
   error.value = '';
 
   try {
-    // Build query params from route and store (like Sessions.vue does)
-    const queryParams = {
-      ...route.query,
-      date: store.state.timeRange,
-      startTime: store.state.time.startTime,
-      stopTime: store.state.time.stopTime,
-      facets: 1
-    };
-
-    // Map summaryLength to length for the API
-    if (queryParams.summaryLength) {
-      queryParams.length = queryParams.summaryLength;
-      delete queryParams.summaryLength;
-    }
-
     // Create unique cancel id to make cancel req for corresponding es task
     const cancelId = Utils.createRandomString();
-    queryParams.cancelId = cancelId;
 
-    const { controller, fetcher } = SessionsService.generateSummary(queryParams);
+    // Build request body with fields and other params
+    const body = {
+      cancelId,
+      fields: props.summaryFields.join(',')
+    };
+
+    // Copy relevant params from route query
+    const routeParams = ['view', 'bounding', 'interval', 'expression', 'cluster'];
+    for (const param of routeParams) {
+      if (route.query[param]) {
+        body[param] = route.query[param];
+      }
+    }
+
+    // Handle pagination params
+    if (route.query.start) { body.start = route.query.start; }
+    if (route.query.summaryLength) {
+      body.length = route.query.summaryLength;
+    } else if (route.query.length) {
+      body.length = route.query.length;
+    }
+
+    // Handle time params - send stopTime and startTime unless date is all time (-1)
+    if (parseInt(store.state.timeRange, 10) === -1) {
+      body.date = store.state.timeRange;
+    } else {
+      body.startTime = store.state.time.startTime;
+      body.stopTime = store.state.time.stopTime;
+    }
+
+    // Handle facets - check if visualizations are hidden
+    Utils.setFacetsQuery(body, 'sessions');
+    Utils.setMapQuery(body);
+
+    // Create abort controller for request cancellation
+    const controller = new AbortController();
     pendingPromise = { controller, cancelId };
 
-    const response = await fetcher;
+    // Make direct fetch call
+    const fetchResponse = await fetch('api/sessions/summary', {
+      method: 'POST',
+      headers: setReqHeaders({ 'Content-Type': 'application/json' }),
+      body: JSON.stringify(body),
+      signal: controller.signal
+    });
+
+    if (!fetchResponse.ok) {
+      throw new Error(fetchResponse.statusText);
+    }
+
+    const response = await fetchResponse.json();
+
+    // Check for errors in response
+    if (response.error) {
+      throw new Error(response.error);
+    }
+    if (response.data?.bsqErr) {
+      throw new Error(response.data.bsqErr);
+    }
+
     summary.value = response;
 
     // Emit map/graph data to parent component for visualizations
@@ -243,7 +310,7 @@ const generateSummary = async () => {
   } catch (err) {
     pendingPromise = null;
     console.error('Error generating summary:', err);
-    error.value = err.text || String(err);
+    error.value = err.text || err.message || String(err);
     loading.value = false;
   }
 };
@@ -420,6 +487,74 @@ const handleWidgetExport = (widget, svgId) => {
   }
 };
 
+// Initialize drag-and-drop reordering with Sortable.js
+// NOTE: We use forceFallback + custom scrollFn because:
+// 1. forceFallback is needed for consistent cross-browser drag behavior
+// 2. SortableJS's scrollSpeed option only works with native HTML5 drag-and-drop,
+//    not in fallback mode, so we implement custom scroll speed logic
+const initializeDragDrop = () => {
+  if (!widgetContainer.value) return;
+
+  const scrollSensitivity = 200;
+  const minScrollSpeed = 50;
+  const maxScrollSpeed = 300;
+
+  sortableInstance = Sortable.create(widgetContainer.value, {
+    animation: 100,
+    handle: '.widget-handle',
+    draggable: '.widget-wrapper',
+    ghostClass: 'widget-ghost',
+    chosenClass: 'widget-chosen',
+    scroll: document.documentElement,
+    scrollSensitivity,
+    bubbleScroll: true,
+    forceFallback: true,
+    fallbackOnBody: true,
+    scrollFn: (offsetX, offsetY, originalEvent) => {
+      // Custom scroll function for dynamic speed based on cursor proximity to edge
+      // offsetY is negative when near top, positive when near bottom
+      if (offsetY !== 0 && originalEvent) {
+        const viewportHeight = window.innerHeight;
+        const cursorY = originalEvent.clientY;
+
+        // Calculate distance from the edge being scrolled toward
+        const distanceFromEdge = offsetY < 0 ? cursorY : viewportHeight - cursorY;
+
+        // Calculate speed: closer to edge = faster scroll
+        const ratio = 1 - (distanceFromEdge / scrollSensitivity);
+        const speed = minScrollSpeed + (ratio * (maxScrollSpeed - minScrollSpeed));
+
+        // Apply scroll in the appropriate direction
+        document.documentElement.scrollTop += offsetY > 0 ? speed : -speed;
+      }
+    },
+    onSort: (evt) => {
+      const oldIndex = evt.oldIndex;
+      const newIndex = evt.newIndex;
+      // Reorder the local data to match the new DOM order
+      if (summary.value?.fields && oldIndex !== newIndex) {
+        const field = summary.value.fields.splice(oldIndex, 1)[0];
+        summary.value.fields.splice(newIndex, 0, field);
+        // Emit to parent to persist the new order
+        emit('reorder-fields', { oldIndex, newIndex });
+      }
+    }
+  });
+};
+
+// Watch for summary data to load, then initialize drag-drop
+watch(summary, (newVal) => {
+  if (newVal?.fields?.length) {
+    nextTick(() => {
+      // Destroy existing instance to prevent duplicate handlers
+      if (sortableInstance) {
+        sortableInstance.destroy();
+      }
+      initializeDragDrop();
+    });
+  }
+});
+
 // On mount
 onMounted(() => {
   document.addEventListener('click', handleClickOutside);
@@ -435,11 +570,53 @@ onBeforeUnmount(() => {
     pendingPromise.controller.abort(t('sessions.summary.closingCancelsSearchErr'));
     pendingPromise = null;
   }
+
+  // Cleanup sortable instance
+  if (sortableInstance) {
+    sortableInstance.destroy();
+    sortableInstance = null;
+  }
 });
+
+/**
+ * Updates a widget's view mode and emits change event
+ */
+const updateWidgetViewMode = (widget, newMode) => {
+  widget.viewMode.value = newMode;
+  emitWidgetConfigChange();
+};
+
+/**
+ * Updates a widget's metric type and emits change event
+ */
+const updateWidgetMetricType = (widget, newMetric) => {
+  widget.metricType.value = newMetric;
+  emitWidgetConfigChange();
+};
+
+/**
+ * Emits the current widget configuration to parent
+ */
+const emitWidgetConfigChange = () => {
+  emit('widget-config-changed', getWidgetConfigs());
+};
+
+/**
+ * Gets the current widget configurations for saving
+ * @returns {Array} Array of field configurations with viewMode and metricType
+ */
+const getWidgetConfigs = () => {
+  return widgetConfigs.value.map(w => ({
+    field: w.field,
+    viewMode: w.viewMode.value,
+    metricType: w.metricType.value
+  }));
+};
 
 // Expose methods to parent component
 defineExpose({
-  reloadSummary: generateSummary
+  reloadSummary: generateSummary,
+  getWidgetConfigs
 });
 </script>
 
@@ -542,8 +719,14 @@ defineExpose({
 
 .charts-container {
   gap: 1rem;
-  margin-top: 1rem;
+  margin-top: 1.5rem; /* Extra margin to accommodate drag handles */
   display: grid;
+}
+
+/* Ensure grid items stretch to fill and have minimum height */
+.charts-container > * {
+  min-width: 0;      /* Prevent grid blowout */
+  min-height: 450px; /* Minimum height for readability */
 }
 
 /* When results > 20 (large data): 1-2 columns max */
@@ -570,5 +753,35 @@ defineExpose({
     /* Very large viewport: 3 columns */
     grid-template-columns: repeat(3, 1fr);
   }
+}
+
+/* Widget wrapper for drag-and-drop */
+.widget-wrapper {
+  position: relative;
+}
+
+/* Drag handle for reordering widgets */
+.widget-handle {
+  visibility: hidden;
+  color: var(--color-gray);
+  cursor: move;
+  position: absolute;
+  top: -20px;
+  left: 0;
+  z-index: 10;
+  background: var(--color-quaternary-lightest);
+  padding: 2px 6px;
+  border-radius: 4px 4px 0 0;
+}
+.widget-wrapper:hover .widget-handle {
+  visibility: visible;
+}
+
+/* Visual feedback during drag */
+.widget-ghost {
+  opacity: 0.4;
+}
+.widget-chosen {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 </style>

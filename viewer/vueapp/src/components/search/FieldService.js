@@ -14,9 +14,19 @@ const ipDstPortField = {
   help: 'Destination IP:Destination Port'
 };
 
+const allIpField = {
+  category: 'ip',
+  group: 'general',
+  exp: 'ip',
+  dbField: 'ip',
+  friendlyName: 'All IP Fields',
+  help: 'All source and destination IP addresses combined'
+};
+
 export default {
 
   ipDstPortField,
+  allIpField,
 
   addIpDstPortField (fields) {
     let result;
@@ -26,6 +36,27 @@ export default {
       result.push(ipDstPortField);
     } else {
       result = { ...fields }; // shallow copy so we don't mutate data
+      result[ipDstPortField.exp] = ipDstPortField;
+    }
+
+    return result;
+  },
+
+  /**
+   * Adds the special summary fields (All IP Fields, Dst IP:Dst Port) to the field list
+   * @param {Array|Object} fields The fields array or map to add to
+   * @returns {Array|Object} A new array/object with the special fields added
+   */
+  addSummarySpecialFields (fields) {
+    let result;
+
+    if (Array.isArray(fields)) {
+      result = [...fields]; // shallow copy so we don't mutate data
+      result.unshift(ipDstPortField); // add at beginning for visibility
+      result.unshift(allIpField);
+    } else {
+      result = { ...fields }; // shallow copy so we don't mutate data
+      result[allIpField.exp] = allIpField;
       result[ipDstPortField.exp] = ipDstPortField;
     }
 

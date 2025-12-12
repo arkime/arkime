@@ -110,6 +110,7 @@
     "notifierCount": "Not notifying | Notifying on 1 notifier | Notifying on {count} notifiers"
   },
   "navigation": {
+    "arkime": "Arkime",
     "sessions": "Sessions",
     "settings": "Settings",
     "spiview": "SPI View",
@@ -383,7 +384,38 @@
       "downloadCSV": "Download CSV",
       "resultsPerWidget": "Results per widget",
       "canceledSearch": "You canceled the search",
-      "closingCancelsSearchErr": "Closing the Summary page canceled the search"
+      "closingCancelsSearchErr": "Closing the Summary page canceled the search",
+      "toggleFields": "Toggle summary fields",
+      "searchFields": "Search for fields...",
+      "dragToReorder": "Drag to reorder",
+      "config": {
+        "configurations": "Save or load custom Summary Configurations",
+        "saveCurrent": "Save Current Configuration",
+        "saveConfig": "Save Summary Configuration",
+        "editConfig": "Edit Summary Configuration",
+        "noConfigs": "No saved configurations",
+        "name": "Name",
+        "nameTip": "A unique name for this configuration",
+        "namePlaceholder": "Enter configuration name",
+        "nameRequired": "Configuration name is required",
+        "description": "Description",
+        "descriptionTip": "Optional description for this configuration",
+        "descriptionPlaceholder": "Enter optional description",
+        "viewUsers": "View Users",
+        "viewUsersTip": "Comma-separated list of users who can view this configuration",
+        "editUsers": "Edit Users",
+        "editUsersTip": "Comma-separated list of users who can edit this configuration",
+        "usersPlaceholder": "user1, user2, ...",
+        "preview": "Configuration Preview",
+        "fieldsCount": "Fields",
+        "resultsLimit": "Results per field",
+        "saved": "Configuration saved successfully",
+        "deleted": "Configuration deleted successfully",
+        "confirmDelete": "Are you sure you want to delete the configuration \"{name}\"?",
+        "edit": "Edit configuration",
+        "delete": "Delete configuration",
+        "resetToDefault": "Reset to Default"
+      }
     },
     "exports": {
       "filename": "Filename",

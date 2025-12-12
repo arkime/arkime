@@ -84,15 +84,18 @@
         Invalid field: {{ field }}
       </p>
     </div>
-    <div v-else-if="hasData">
+    <div
+      v-else-if="hasData"
+      ref="chartContainerRef"
+      class="chart-content">
       <!-- Pie Chart -->
       <SummaryPieChart
         v-if="viewMode === 'pie'"
         :data="data"
         :svg-id="svgId"
         :field-config="fieldConfig"
-        :width="chartSize"
-        :height="chartSize"
+        :width="chartWidth"
+        :height="chartHeight"
         :metric-type="metricType"
         @show-tooltip="$emit('show-tooltip', $event)" />
 
@@ -102,8 +105,8 @@
         :data="data"
         :svg-id="svgId"
         :field-config="fieldConfig"
-        :width="chartSize"
-        :height="chartSize"
+        :width="chartWidth"
+        :height="chartHeight"
         :metric-type="metricType"
         @show-tooltip="$emit('show-tooltip', $event)" />
 
@@ -126,12 +129,25 @@
 </template>
 
 <script setup>
-import { computed } from 'vue';
+import { computed, ref, onMounted, onBeforeUnmount, nextTick } from 'vue';
 import SummaryPieChart from './SummaryPieChart.vue';
 import SummaryBarChart from './SummaryBarChart.vue';
 import SummaryTable from './SummaryTable.vue';
 import FieldService from '../search/FieldService';
 import Utils from '../utils/utils';
+
+// Chart dimension constants
+const MIN_CHART_SIZE = 400;
+const RESIZE_DEBOUNCE_MS = 100;
+
+// Debounce helper for resize events
+const debounce = (fn, delay) => {
+  let timeoutId;
+  return (...args) => {
+    clearTimeout(timeoutId);
+    timeoutId = setTimeout(() => fn(...args), delay);
+  };
+};
 
 // Generate unique SVG ID for this widget instance
 const svgId = `chart-${Utils.createRandomString()}`;
@@ -203,9 +219,44 @@ const columns = computed(() => [
   { key: 'bytes', header: 'Bytes', align: 'end', format: 'bytes' }
 ]);
 
-// Computed chart dimensions - larger for > 20 items
-const chartSize = computed(() => {
-  return props.data.length > 20 ? 600 : 400;
+// ResizeObserver for dynamic chart sizing
+const chartContainerRef = ref(null);
+const containerWidth = ref(MIN_CHART_SIZE);
+const containerHeight = ref(MIN_CHART_SIZE);
+let resizeObserver = null;
+
+// Computed chart dimensions with minimum constraints
+const chartWidth = computed(() => Math.max(MIN_CHART_SIZE, containerWidth.value));
+const chartHeight = computed(() => Math.max(MIN_CHART_SIZE, containerHeight.value));
+
+// Handle container resize
+const handleResize = debounce((entries) => {
+  const entry = entries[0];
+  if (entry) {
+    containerWidth.value = entry.contentRect.width;
+    containerHeight.value = entry.contentRect.height;
+  }
+}, RESIZE_DEBOUNCE_MS);
+
+// Setup ResizeObserver on mount
+onMounted(() => {
+  nextTick(() => {
+    if (chartContainerRef.value) {
+      resizeObserver = new ResizeObserver(handleResize);
+      resizeObserver.observe(chartContainerRef.value);
+      // Initialize with current size
+      containerWidth.value = chartContainerRef.value.clientWidth || MIN_CHART_SIZE;
+      containerHeight.value = chartContainerRef.value.clientHeight || MIN_CHART_SIZE;
+    }
+  });
+});
+
+// Cleanup on unmount
+onBeforeUnmount(() => {
+  if (resizeObserver) {
+    resizeObserver.disconnect();
+    resizeObserver = null;
+  }
 });
 
 defineEmits(['export', 'change-mode', 'change-metric', 'show-tooltip']);
@@ -218,9 +269,22 @@ defineEmits(['export', 'change-mode', 'change-metric', 'show-tooltip']);
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
   overflow-x: hidden; /* Prevent widget from expanding page */
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 450px;
+}
+
+.chart-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 400px;
+  overflow: hidden; /* Prevent chart content from expanding container - fixes ResizeObserver loop */
 }
 
 .empty-state {
+  flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;

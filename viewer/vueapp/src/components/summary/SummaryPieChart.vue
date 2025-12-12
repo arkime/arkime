@@ -149,15 +149,10 @@ const renderChart = async () => {
     });
 };
 
-// Watch for data changes
-watch(() => props.data, () => {
+// Watch for data, metric type, or dimension changes
+watch([() => props.data, () => props.metricType, () => props.width, () => props.height], () => {
   renderChart();
 }, { deep: true });
-
-// Watch for metric type changes
-watch(() => props.metricType, () => {
-  renderChart();
-});
 
 // Initial render
 onMounted(() => {
@@ -168,16 +163,20 @@ onMounted(() => {
 <style scoped>
 .chart-wrapper {
   position: relative;
+  width: 100%;
+  height: 100%;
+  flex: 1;
 }
 
 .chart {
-  min-height: 300px;
+  min-height: 200px;
+  height: 100%;
   display: flex;
   justify-content: center;
   align-items: center;
 }
 
 .chart-pie {
-  min-height: 400px;
+  min-height: 300px;
 }
 </style>

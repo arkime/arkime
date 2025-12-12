@@ -20,61 +20,15 @@ SPDX-License-Identifier: Apache-2.0
           @set-columns="loadColumns"
           @recalc-collapse="$emit('recalc-collapse')" /> <!-- /search navbar -->
 
-        <!-- paging navbar and view toggle -->
+        <!-- paging navbar -->
         <div class="d-flex justify-content-start align-items-baseline m-1">
-          <!-- view toggle button -->
-          <div class="view-toggle ms-2">
-            <button
-              :class="['btn btn-sm', viewMode === 'table' ? 'btn-primary' : 'btn-outline-secondary']"
-              @click="viewMode = 'table'"
-              type="button">
-              <span class="fa fa-table" />
-              {{ $t('sessions.sessions.tableView') }}
-            </button>
-            <button
-              :class="['btn btn-sm ms-2', viewMode === 'summary' ? 'btn-primary' : 'btn-outline-secondary']"
-              @click="viewMode = 'summary'"
-              type="button">
-              <span class="fa fa-file-text-o" />
-              {{ $t('sessions.sessions.summaryView') }}
-            </button>
-            <!-- results per widget dropdown (only in summary view) -->
-            <b-dropdown
-              v-if="viewMode === 'summary'"
-              size="sm"
-              variant="outline-secondary"
-              class="ms-2 d-inline-block"
-              :text="String(summaryResultsLimit)">
-              <b-dropdown-item
-                :active="summaryResultsLimit === 10"
-                @click="updateSummaryResultsLimit(10)">
-                10
-              </b-dropdown-item>
-              <b-dropdown-item
-                :active="summaryResultsLimit === 20"
-                @click="updateSummaryResultsLimit(20)">
-                20
-              </b-dropdown-item>
-              <b-dropdown-item
-                :active="summaryResultsLimit === 50"
-                @click="updateSummaryResultsLimit(50)">
-                50
-              </b-dropdown-item>
-              <b-dropdown-item
-                :active="summaryResultsLimit === 100"
-                @click="updateSummaryResultsLimit(100)">
-                100
-              </b-dropdown-item>
-            </b-dropdown> <!-- /results per widget dropdown -->
-          </div> <!-- /view toggle button -->
           <arkime-paging
-            v-if="viewMode === 'table'"
             style="height: 32px;"
             class="ms-2"
             :records-total="sessions.recordsTotal"
             :records-filtered="sessions.recordsFiltered"
             @change-paging="changePaging" />
-        </div> <!-- /paging navbar and view toggle -->
+        </div> <!-- /paging navbar -->
       </span>
     </ArkimeCollapsible>
 
@@ -92,16 +46,8 @@ SPDX-License-Identifier: Apache-2.0
       class="sessions-content ms-2"
       id="sessions-content"
       ref="sessionsContent">
-      <!-- summary view -->
-      <arkime-summary-view
-        v-if="viewMode === 'summary'"
-        ref="summaryView"
-        @update-visualizations="updateVisualizationsData"
-        @recalc-collapse="$emit('recalc-collapse')" />
-      <!-- /summary view -->
-
       <!-- table view -->
-      <div v-if="viewMode === 'table'">
+      <div>
         <!-- sticky (opened) sessions -->
         <transition name="leave">
           <arkime-sticky-sessions
@@ -180,80 +126,16 @@ SPDX-License-Identifier: Apache-2.0
                   </button>
                 </div> <!-- /table fit button -->
                 <!-- column visibility button -->
-                <b-dropdown
-                  lazy
-                  no-flip
-                  no-caret
-                  size="sm"
-                  teleport-to="body"
-                  boundary="viewport"
-                  menu-class="col-dropdown-menu"
-                  class="col-dropdown d-inline-block me-1"
-                  variant="theme-primary"
-                  @show="colVisMenuOpen = true"
-                  @hide="colVisMenuOpen = false; showAllFields = false">
-                  <template #button-content>
-                    <span
-                      class="fa fa-bars"
-                      id="colVisMenu">
-                      <BTooltip
-                        target="colVisMenu"
-                        noninteractive
-                        placement="right"
-                        boundary="viewport"
-                        teleport-to="body">{{ $t('sessions.sessions.toggleColumns') }}</BTooltip>
-                    </span>
-                  </template>
-                  <b-dropdown-header header-class="p-1">
-                    <b-input
-                      size="sm"
-                      autofocus
-                      type="text"
-                      v-model="colQuery"
-                      @input="debounceColQuery"
-                      @click.stop
-                      :placeholder="$t('sessions.sessions.searchColumns')" />
-                  </b-dropdown-header>
-                  <b-dropdown-divider />
-                  <template v-if="colVisMenuOpen">
-                    <b-dropdown-item v-if="!filteredFieldsCount">
-                      {{ $t('sessions.sessions.noFieldsMatch') }}
-                    </b-dropdown-item>
-                    <template
-                      v-for="(group, key) in visibleFilteredFields"
-                      :key="key">
-                      <b-dropdown-header
-                        v-if="group.length"
-                        class="group-header"
-                        header-class="p-1 text-uppercase">
-                        {{ key }}
-                      </b-dropdown-header>
-                      <template
-                        v-for="(field, k) in group"
-                        :key="key + k + 'item'">
-                        <b-dropdown-item
-                          :id="key + k + 'item'"
-                          :class="{'active': fieldVisibilityMap[field.dbField]}"
-                          @click.stop.prevent="toggleColVis(field.dbField)">
-                          {{ field.friendlyName }}
-                          <small>({{ field.exp }})</small>
-                          <BTooltip
-                            v-if="field.help"
-                            :target="key + k + 'item'">
-                            {{ field.help }}
-                          </BTooltip>
-                        </b-dropdown-item>
-                      </template>
-                    </template>
-                    <button
-                      v-if="hasMoreFields"
-                      type="button"
-                      @click.stop="showAllFields = true"
-                      class="dropdown-item text-center cursor-pointer">
-                      <strong>Show {{ $t('sessions.sessions.showMoreFields', filteredFieldsCount - maxVisibleFields) }}</strong>
-                    </button>
-                  </template>
-                </b-dropdown> <!-- /column visibility button -->
+                <FieldSelectDropdown
+                  class="me-1"
+                  :selected-fields="tableState.visibleHeaders"
+                  :tooltip-text="$t('sessions.sessions.toggleColumns')"
+                  :search-placeholder="$t('sessions.sessions.searchColumns')"
+                  :exclude-filename="true"
+                  :max-visible-fields="maxVisibleFields"
+                  field-id-key="dbField"
+                  @toggle="toggleColVis" />
+                <!-- /column visibility button -->
                 <!-- column save button -->
                 <b-dropdown
                   lazy
@@ -821,7 +703,7 @@ import ArkimeCollapsible from '../utils/CollapsibleWrapper.vue';
 import ArkimeVisualizations from '../visualizations/Visualizations.vue';
 import ArkimeStickySessions from './StickySessions.vue';
 import FieldActions from './FieldActions.vue';
-import ArkimeSummaryView from '../summary/Summary.vue';
+import FieldSelectDropdown from '../utils/FieldSelectDropdown.vue';
 // import utils
 import { searchFields, buildExpression } from '@common/vueFilters.js';
 // import external
@@ -963,13 +845,11 @@ export default {
     ArkimeStickySessions,
     ArkimeCollapsible,
     FieldActions,
-    ArkimeSummaryView
+    FieldSelectDropdown
   },
   emits: ['recalc-collapse'],
   data: function () {
     return {
-      viewMode: this.$route.query.sessionsViewMode || 'table', // 'table' or 'summary'
-      summaryResultsLimit: parseInt(this.$route.query.summaryLength) || 20, // results per widget in summary view
       loading: true,
       error: '',
       sessions: {}, // page data
@@ -1001,7 +881,8 @@ export default {
       infoConfigSuccess: '',
       maxVisibleFields: 50, // limit initial field rendering for performance
       showAllFields: false,
-      showAllInfoFields: false
+      showAllInfoFields: false,
+      tableState: Utils.getDefaultTableState()
     };
   },
   created: function () {
@@ -1142,51 +1023,11 @@ export default {
     },
     '$store.state.fetchGraphData': function (value) {
       if (value) { this.fetchGraphData(); }
-    },
-    viewMode: function (newValue) {
-      // Build the new query object
-      const newQuery = {
-        ...this.$route.query,
-        sessionsViewMode: newValue
-      };
-
-      // When switching to summary view, ensure date parameter exists
-      if (newValue === 'summary' && !newQuery.date && !newQuery.startTime && !newQuery.stopTime) {
-        // Add default date from store if not present in route
-        newQuery.date = this.$store.state.timeRange;
-      }
-
-      // Update route query parameter when view mode changes
-      this.$router.replace({
-        query: newQuery
-      });
-
-      // Load table data when switching to table view
-      if (newValue === 'table' && this.shouldIssueQuery()) {
-        this.cancelAndLoad(true);
-      }
-    },
-    '$route.query.summaryLength': function (newValue) {
-      // Update summaryResultsLimit when route query changes
-      const newLimit = parseInt(newValue) || 20;
-      if (this.summaryResultsLimit !== newLimit) {
-        this.summaryResultsLimit = newLimit;
-      }
-      if (this.$refs.summaryView && this.$refs.summaryView.reloadSummary) {
-        this.$refs.summaryView.reloadSummary();
-      }
     }
   },
   methods: {
     loadNewView: function () {
       this.viewChanged = true;
-    },
-    updateSummaryResultsLimit: function (newLimit) {
-      this.summaryResultsLimit = newLimit;
-      // Update route query to include the new summaryLength parameter
-      this.$router.replace({
-        query: { ...this.$route.query, summaryLength: newLimit }
-      });
     },
     loadColumns: function (colConfig) {
       this.tableState = JSON.parse(JSON.stringify(colConfig));
@@ -1942,14 +1783,6 @@ export default {
      * @param {bool} updateTable Whether the table needs updating
      */
     async loadData (updateTable) {
-      // In summary view mode, trigger Summary component to reload its data
-      if (this.viewMode === 'summary') {
-        if (this.$refs.summaryView && this.$refs.summaryView.reloadSummary) {
-          this.$refs.summaryView.reloadSummary();
-        }
-        return;
-      }
-
       if (!Utils.checkClusterSelection(this.query.cluster, this.$store.state.esCluster.availableCluster.active, this).valid) {
         this.sessions.data = undefined;
         this.dataLoading = false;

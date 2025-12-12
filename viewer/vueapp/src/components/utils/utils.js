@@ -31,6 +31,22 @@ export default {
     };
   },
 
+  /** @returns the default summary fields if none are defined by the user */
+  getDefaultSummaryFields: function () {
+    return [
+      'ip',
+      'ip.dst:port',
+      'ip.src',
+      'ip.dst',
+      'port.src',
+      'port.dst',
+      'protocols',
+      'tags',
+      'host.http',
+      'dns.query.host'
+    ];
+  },
+
   /**
    * Finds all of the factors of a given number
    * @param {int} An integer to find factors for
