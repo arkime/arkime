@@ -184,9 +184,9 @@ export default {
     loadSummary: function () {
       this.reloadSummaryView();
     },
-    updateSummaryResultsLimit: function (newLimit) {
+    updateSummaryResultsLimit: async function (newLimit) {
       this.summaryResultsLimit = newLimit;
-      this.$router.replace({
+      await this.$router.replace({
         query: { ...this.$route.query, summaryLength: newLimit }
       });
       this.reloadSummaryView();

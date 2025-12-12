@@ -143,7 +143,7 @@ import { useStore } from 'vuex';
 import { useI18n } from 'vue-i18n';
 import Sortable from 'sortablejs';
 // internal dependencies
-import SessionsService from '../sessions/SessionsService';
+import setReqHeaders from '@common/setReqHeaders';
 import SummaryWidget from './SummaryWidget.vue';
 import SummaryChartTooltip from './SummaryChartTooltip.vue';
 import ArkimeLoading from '../utils/Loading.vue';
@@ -233,29 +233,69 @@ const generateSummary = async () => {
   error.value = '';
 
   try {
-    // Build query params from route and store (like Sessions.vue does)
-    const queryParams = {
-      ...route.query,
-      date: store.state.timeRange,
-      startTime: store.state.time.startTime,
-      stopTime: store.state.time.stopTime,
-      facets: 1
-    };
-
-    // Map summaryLength to length for the API
-    if (queryParams.summaryLength) {
-      queryParams.length = queryParams.summaryLength;
-      delete queryParams.summaryLength;
-    }
-
     // Create unique cancel id to make cancel req for corresponding es task
     const cancelId = Utils.createRandomString();
-    queryParams.cancelId = cancelId;
 
-    const { controller, fetcher } = SessionsService.generateSummary(queryParams, props.summaryFields);
+    // Build request body with fields and other params
+    const body = {
+      cancelId,
+      fields: props.summaryFields.join(',')
+    };
+
+    // Copy relevant params from route query
+    const routeParams = ['view', 'bounding', 'interval', 'expression', 'cluster'];
+    for (const param of routeParams) {
+      if (route.query[param]) {
+        body[param] = route.query[param];
+      }
+    }
+
+    // Handle pagination params
+    if (route.query.start) { body.start = route.query.start; }
+    if (route.query.summaryLength) {
+      body.length = route.query.summaryLength;
+    } else if (route.query.length) {
+      body.length = route.query.length;
+    }
+
+    // Handle time params - send stopTime and startTime unless date is all time (-1)
+    if (parseInt(store.state.timeRange, 10) === -1) {
+      body.date = store.state.timeRange;
+    } else {
+      body.startTime = store.state.time.startTime;
+      body.stopTime = store.state.time.stopTime;
+    }
+
+    // Handle facets - check if visualizations are hidden
+    Utils.setFacetsQuery(body, 'sessions');
+    Utils.setMapQuery(body);
+
+    // Create abort controller for request cancellation
+    const controller = new AbortController();
     pendingPromise = { controller, cancelId };
 
-    const response = await fetcher;
+    // Make direct fetch call
+    const fetchResponse = await fetch('api/sessions/summary', {
+      method: 'POST',
+      headers: setReqHeaders({ 'Content-Type': 'application/json' }),
+      body: JSON.stringify(body),
+      signal: controller.signal
+    });
+
+    if (!fetchResponse.ok) {
+      throw new Error(fetchResponse.statusText);
+    }
+
+    const response = await fetchResponse.json();
+
+    // Check for errors in response
+    if (response.error) {
+      throw new Error(response.error);
+    }
+    if (response.data?.bsqErr) {
+      throw new Error(response.data.bsqErr);
+    }
+
     summary.value = response;
 
     // Emit map/graph data to parent component for visualizations
@@ -270,7 +310,7 @@ const generateSummary = async () => {
   } catch (err) {
     pendingPromise = null;
     console.error('Error generating summary:', err);
-    error.value = err.text || String(err);
+    error.value = err.text || err.message || String(err);
     loading.value = false;
   }
 };
