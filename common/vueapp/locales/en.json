@@ -110,6 +110,7 @@
     "notifierCount": "Not notifying | Notifying on 1 notifier | Notifying on {count} notifiers"
   },
   "navigation": {
+    "arkime": "Arkime",
     "sessions": "Sessions",
     "settings": "Settings",
     "spiview": "SPI View",

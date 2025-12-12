@@ -145,6 +145,7 @@ import { useStore } from 'vuex';
 import { useI18n } from 'vue-i18n';
 import RoleDropdown from '@common/RoleDropdown.vue';
 import { createShareableService } from '../users/ShareableService';
+import FieldService from '../search/FieldService';
 
 const SummaryConfigService = createShareableService('summaryConfig');
 
@@ -181,10 +182,13 @@ const saving = ref(false);
 // Get roles from store
 const roles = computed(() => store.state.roles || []);
 
-// Preview text showing field names
+// Preview text showing field friendly names
 const fieldsList = computed(() => {
   if (!props.config?.fields?.length) return '';
-  return props.config.fields.map(f => f.field).join(', ');
+  return props.config.fields.map(f => {
+    const fieldObj = FieldService.getField(f.field, true);
+    return fieldObj?.friendlyName || f.field;
+  }).join(', ');
 });
 
 // Reset form when modal opens

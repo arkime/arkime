@@ -464,13 +464,23 @@ export default {
     hideInterval: {
       type: Boolean,
       default: false
+    },
+    // Props for independent state (not using global store)
+    useIndependentState: {
+      type: Boolean,
+      default: false
+    },
+    independentExpression: {
+      type: String,
+      default: ''
     }
   },
   emits: [
     'changeSearch',
     'recalc-collapse',
     'setView',
-    'setColumns'
+    'setColumns',
+    'update:independentExpression'
   ],
   data: function () {
     return {
@@ -490,10 +500,17 @@ export default {
   computed: {
     expression: {
       get: function () {
+        if (this.useIndependentState) {
+          return this.independentExpression;
+        }
         return this.$store.state.expression;
       },
       set: function (newValue) {
-        this.$store.commit('setExpression', newValue);
+        if (this.useIndependentState) {
+          this.$emit('update:independentExpression', newValue);
+        } else {
+          this.$store.commit('setExpression', newValue);
+        }
       }
     },
     issueSearch: function () {
@@ -576,6 +593,11 @@ export default {
     },
     applyExpression: function (expression) {
       if (!this.expression) { this.expression = undefined; }
+      // In independent state mode, just emit changeSearch - don't update router
+      if (this.useIndependentState) {
+        this.$emit('changeSearch', { expression: this.expression });
+        return;
+      }
       this.$router.push({
         query: {
           ...this.$route.query,
@@ -588,6 +610,11 @@ export default {
       this.timeUpdate();
     },
     applyParams: function () {
+      // In independent state mode, always emit changeSearch
+      if (this.useIndependentState) {
+        this.$emit('changeSearch', { expression: this.expression });
+        return;
+      }
       if (this.$route.query.expression !== this.expression) {
         this.applyExpression();
       } else {

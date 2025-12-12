@@ -20,79 +20,15 @@ SPDX-License-Identifier: Apache-2.0
           @set-columns="loadColumns"
           @recalc-collapse="$emit('recalc-collapse')" /> <!-- /search navbar -->
 
-        <!-- paging navbar and view toggle -->
+        <!-- paging navbar -->
         <div class="d-flex justify-content-start align-items-baseline m-1">
-          <!-- view toggle button -->
-          <div class="view-toggle ms-2">
-            <button
-              :class="['btn btn-sm', viewMode === 'table' ? 'btn-primary' : 'btn-outline-secondary']"
-              @click="viewMode = 'table'"
-              type="button">
-              <span class="fa fa-table" />
-              {{ $t('sessions.sessions.tableView') }}
-            </button>
-            <button
-              :class="['btn btn-sm ms-2', viewMode === 'summary' ? 'btn-primary' : 'btn-outline-secondary']"
-              @click="viewMode = 'summary'"
-              type="button">
-              <span class="fa fa-file-text-o" />
-              {{ $t('sessions.sessions.summaryView') }}
-            </button>
-            <!-- results per widget dropdown (only in summary view) -->
-            <b-dropdown
-              v-if="viewMode === 'summary'"
-              size="sm"
-              variant="outline-secondary"
-              class="ms-2 d-inline-block"
-              :text="String(summaryResultsLimit)">
-              <b-dropdown-item
-                :active="summaryResultsLimit === 10"
-                @click="updateSummaryResultsLimit(10)">
-                10
-              </b-dropdown-item>
-              <b-dropdown-item
-                :active="summaryResultsLimit === 20"
-                @click="updateSummaryResultsLimit(20)">
-                20
-              </b-dropdown-item>
-              <b-dropdown-item
-                :active="summaryResultsLimit === 50"
-                @click="updateSummaryResultsLimit(50)">
-                50
-              </b-dropdown-item>
-              <b-dropdown-item
-                :active="summaryResultsLimit === 100"
-                @click="updateSummaryResultsLimit(100)">
-                100
-              </b-dropdown-item>
-            </b-dropdown> <!-- /results per widget dropdown -->
-            <!-- summary field visibility dropdown (only in summary view) -->
-            <FieldSelectDropdown
-              v-if="viewMode === 'summary'"
-              class="ms-2"
-              :selected-fields="summaryFields"
-              :tooltip-text="$t('sessions.summary.toggleFields')"
-              :search-placeholder="$t('sessions.summary.searchFields')"
-              :include-summary-fields="true"
-              field-id-key="exp"
-              @toggle="toggleSummaryField" />
-            <!-- summary config dropdown (only in summary view) -->
-            <SummaryConfigDropdown
-              v-if="viewMode === 'summary'"
-              class="ms-2"
-              :current-config="currentSummaryConfig"
-              @load="loadSummaryConfigFromShareable"
-              @reset="resetSummaryToDefaults"
-              @message="displayMessage" />
-          </div> <!-- /view toggle button -->
           <arkime-paging
-            v-if="viewMode === 'table'"
             style="height: 32px;"
             class="ms-2"
             :records-total="sessions.recordsTotal"
             :records-filtered="sessions.recordsFiltered"
             @change-paging="changePaging" />
-        </div> <!-- /paging navbar and view toggle -->
+        </div> <!-- /paging navbar -->
       </span>
     </ArkimeCollapsible>
 
@@ -110,19 +46,8 @@ SPDX-License-Identifier: Apache-2.0
       class="sessions-content ms-2"
       id="sessions-content"
       ref="sessionsContent">
-      <!-- summary view -->
-      <arkime-summary-view
-        v-if="viewMode === 'summary'"
-        ref="summaryView"
-        :summary-fields="summaryFields"
-        @update-visualizations="updateVisualizationsData"
-        @reorder-fields="reorderSummaryFields"
-        @widget-config-changed="updateWidgetConfigs"
-        @recalc-collapse="$emit('recalc-collapse')" />
-      <!-- /summary view -->
-
       <!-- table view -->
-      <div v-if="viewMode === 'table'">
+      <div>
         <!-- sticky (opened) sessions -->
         <transition name="leave">
           <arkime-sticky-sessions
@@ -778,9 +703,7 @@ import ArkimeCollapsible from '../utils/CollapsibleWrapper.vue';
 import ArkimeVisualizations from '../visualizations/Visualizations.vue';
 import ArkimeStickySessions from './StickySessions.vue';
 import FieldActions from './FieldActions.vue';
-import ArkimeSummaryView from '../summary/Summary.vue';
 import FieldSelectDropdown from '../utils/FieldSelectDropdown.vue';
-import SummaryConfigDropdown from '../summary/SummaryConfigDropdown.vue';
 // import utils
 import { searchFields, buildExpression } from '@common/vueFilters.js';
 // import external
@@ -922,15 +845,11 @@ export default {
     ArkimeStickySessions,
     ArkimeCollapsible,
     FieldActions,
-    ArkimeSummaryView,
-    FieldSelectDropdown,
-    SummaryConfigDropdown
+    FieldSelectDropdown
   },
   emits: ['recalc-collapse'],
   data: function () {
     return {
-      viewMode: this.$route.query.sessionsViewMode || 'table', // 'table' or 'summary'
-      summaryResultsLimit: parseInt(this.$route.query.summaryLength) || 20, // results per widget in summary view
       loading: true,
       error: '',
       sessions: {}, // page data
@@ -963,15 +882,12 @@ export default {
       maxVisibleFields: 50, // limit initial field rendering for performance
       showAllFields: false,
       showAllInfoFields: false,
-      summaryFields: [],
-      widgetConfigs: [], // Current widget configurations (viewMode, metricType per field)
       tableState: Utils.getDefaultTableState()
     };
   },
   created: function () {
     this.getSessionsConfig(); // IMPORTANT: kicks off the initial search query!
     ConfigService.getFieldActions();
-    this.loadSummaryConfig();
 
     // watch for window resizing and update the info column width
     // this is only registered when the user has not set widths for any
@@ -1098,26 +1014,6 @@ export default {
     },
     hasMoreInfoFields: function () {
       return !this.showAllInfoFields && this.filteredInfoFieldsCount > this.maxVisibleFields;
-    },
-    /**
-     * Returns the current summary configuration for saving
-     * Combines summaryFields with widgetConfigs and resultsLimit
-     */
-    currentSummaryConfig: function () {
-      // Build fields array with viewMode and metricType from widgetConfigs
-      const fields = this.summaryFields.map(fieldExp => {
-        const widgetConfig = this.widgetConfigs.find(w => w.field === fieldExp);
-        return {
-          field: fieldExp,
-          viewMode: widgetConfig?.viewMode || 'bar',
-          metricType: widgetConfig?.metricType || 'sessions'
-        };
-      });
-
-      return {
-        fields,
-        resultsLimit: this.summaryResultsLimit
-      };
     }
   },
   watch: {
@@ -1127,134 +1023,11 @@ export default {
     },
     '$store.state.fetchGraphData': function (value) {
       if (value) { this.fetchGraphData(); }
-    },
-    viewMode: function (newValue) {
-      // Build the new query object
-      const newQuery = {
-        ...this.$route.query,
-        sessionsViewMode: newValue
-      };
-
-      // When switching to summary view, ensure date parameter exists
-      if (newValue === 'summary' && !newQuery.date && !newQuery.startTime && !newQuery.stopTime) {
-        // Add default date from store if not present in route
-        newQuery.date = this.$store.state.timeRange;
-      }
-
-      // Update route query parameter when view mode changes
-      this.$router.replace({
-        query: newQuery
-      });
-
-      // Load table data when switching to table view
-      if (newValue === 'table' && this.shouldIssueQuery()) {
-        this.cancelAndLoad(true);
-      }
-    },
-    '$route.query.summaryLength': function (newValue) {
-      // Update summaryResultsLimit when route query changes
-      const newLimit = parseInt(newValue) || 20;
-      if (this.summaryResultsLimit !== newLimit) {
-        this.summaryResultsLimit = newLimit;
-      }
-      if (this.$refs.summaryView && this.$refs.summaryView.reloadSummary) {
-        this.$refs.summaryView.reloadSummary();
-      }
     }
   },
   methods: {
     loadNewView: function () {
       this.viewChanged = true;
-    },
-    updateSummaryResultsLimit: function (newLimit) {
-      this.summaryResultsLimit = newLimit;
-      // Update route query to include the new summaryLength parameter
-      this.$router.replace({
-        query: { ...this.$route.query, summaryLength: newLimit }
-      });
-    },
-    toggleSummaryField: function (fieldExp) {
-      const index = this.summaryFields.indexOf(fieldExp);
-      if (index >= 0) {
-        this.summaryFields.splice(index, 1);
-      } else {
-        this.summaryFields.push(fieldExp);
-      }
-      if (this.$refs.summaryView?.reloadSummary) {
-        this.$refs.summaryView.reloadSummary();
-      }
-    },
-    reorderSummaryFields: function ({ oldIndex, newIndex }) {
-      // Move the field from old position to new position
-      const field = this.summaryFields.splice(oldIndex, 1)[0];
-      this.summaryFields.splice(newIndex, 0, field);
-      // No reload needed - Summary.vue reorders locally
-    },
-    /**
-     * Updates the widget configs when Summary.vue emits changes
-     */
-    updateWidgetConfigs: function (configs) {
-      this.widgetConfigs = configs;
-    },
-    /**
-     * Loads summary configuration from a shareable
-     * @param {Object} shareable - The shareable object containing config data
-     */
-    loadSummaryConfigFromShareable: function (shareable) {
-      const configData = shareable.data;
-      if (!configData?.fields?.length) {
-        return;
-      }
-
-      // Extract field names in order
-      this.summaryFields = configData.fields.map(f => f.field);
-
-      // Store widget configs for when Summary.vue loads
-      this.widgetConfigs = configData.fields.map(f => ({
-        field: f.field,
-        viewMode: f.viewMode || 'bar',
-        metricType: f.metricType || 'sessions'
-      }));
-
-      // Update results limit
-      if (configData.resultsLimit) {
-        this.updateSummaryResultsLimit(configData.resultsLimit);
-      }
-
-      this.reloadSummaryView();
-    },
-    /**
-     * Displays a message to the user (success or error)
-     */
-    displayMessage: function ({ msg, type }) {
-      if (type === 'danger') {
-        this.error = msg;
-      } else {
-        // For success, we could use a toast notification
-        // For now, just log it - could be enhanced with proper notification system
-        console.log(msg);
-      }
-    },
-    loadSummaryConfig: function () {
-      // Initialize with defaults
-      this.summaryFields = Utils.getDefaultSummaryFields();
-    },
-    /**
-     * Reloads the summary view after Vue propagates prop changes
-     */
-    reloadSummaryView: function () {
-      this.$nextTick(() => {
-        this.$refs.summaryView?.reloadSummary?.();
-      });
-    },
-    /**
-     * Resets the summary configuration to default fields and settings
-     */
-    resetSummaryToDefaults: function () {
-      this.summaryFields = Utils.getDefaultSummaryFields();
-      this.widgetConfigs = [];
-      this.updateSummaryResultsLimit(20);
-      this.reloadSummaryView();
     },
     loadColumns: function (colConfig) {
       this.tableState = JSON.parse(JSON.stringify(colConfig));
@@ -2010,14 +1783,6 @@ export default {
      * @param {bool} updateTable Whether the table needs updating
      */
     async loadData (updateTable) {
-      // In summary view mode, trigger Summary component to reload its data
-      if (this.viewMode === 'summary') {
-        if (this.$refs.summaryView && this.$refs.summaryView.reloadSummary) {
-          this.$refs.summaryView.reloadSummary();
-        }
-        return;
-      }
-
       if (!Utils.checkClusterSelection(this.query.cluster, this.$store.state.esCluster.availableCluster.active, this).valid) {
         this.sessions.data = undefined;
         this.dataLoading = false;

@@ -101,7 +101,7 @@ export default {
     return {
       path: this.$constants.PATH,
       menuOrder: [
-        'sessions', 'spiview', 'spigraph', 'connections', 'hunt',
+        'arkime', 'sessions', 'spiview', 'spigraph', 'connections', 'hunt',
         'files', 'stats', 'history', 'upload', 'settings', 'users', 'roles'
       ]
     };
@@ -115,6 +115,7 @@ export default {
     },
     menu: function () {
       const menu = {
+        arkime: { title: this.$t('navigation.arkime'), link: 'arkime', hotkey: ['A', 'rkime'], name: 'Arkime' },
         sessions: { title: this.$t('navigation.sessions'), link: 'sessions', hotkey: ['Sessions'], name: 'Sessions' },
         spiview: { title: this.$t('navigation.spiview'), link: 'spiview', hotkey: ['SPI ', 'View'], name: 'Spiview' },
         spigraph: { title: this.$t('navigation.spigraph'), link: 'spigraph', hotkey: ['SPI ', 'Graph'], name: 'Spigraph' },
@@ -135,20 +136,32 @@ export default {
       // preserve url query parameters
       for (const m in menu) {
         const item = menu[m];
-        item.href = `${item.link}?${qs.stringify(this.$route.query)}`;
-        // make sure the stored expression is part of the query
-        item.query = {
-          ...this.$route.query,
-          expression: this.$store.state.expression
-        };
 
-        // update the start/stop time if they have not been updated
-        if ((this.$store.state.time.startTime !== this.$route.query.startTime ||
-          this.$store.state.time.stopTime !== this.$route.query.stopTime) &&
-          this.$store.state.timeRange === '0') {
-          item.query.startTime = this.$store.state.time.startTime;
-          item.query.stopTime = this.$store.state.time.stopTime;
-          item.query.date = undefined;
+        // Arkime page has independent state - don't copy expression/time from store
+        if (m === 'arkime') {
+          item.href = item.link;
+          item.query = {};
+        } else {
+          item.href = `${item.link}?${qs.stringify(this.$route.query)}`;
+          // make sure the stored expression is part of the query
+          item.query = {
+            ...this.$route.query,
+            expression: this.$store.state.expression
+          };
+
+          // update the start/stop time if they have not been updated
+          if ((this.$store.state.time.startTime !== this.$route.query.startTime ||
+            this.$store.state.time.stopTime !== this.$route.query.stopTime) &&
+            this.$store.state.timeRange === '0') {
+            item.query.startTime = this.$store.state.time.startTime;
+            item.query.stopTime = this.$store.state.time.stopTime;
+            item.query.date = undefined;
+          }
+
+          // When navigating FROM Arkime page, don't copy Arkime's query params
+          if (this.$route.name === 'Arkime') {
+            item.query = {};
+          }
         }
 
         // determine if user can view menu item
