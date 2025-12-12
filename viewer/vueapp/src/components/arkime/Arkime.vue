@@ -11,9 +11,6 @@ SPDX-License-Identifier: Apache-2.0
         <!-- search navbar -->
         <arkime-search
           :hide-actions="true"
-          :use-independent-state="true"
-          :independent-expression="expression"
-          @update:independent-expression="expression = $event"
           @change-search="loadSummary"
           @recalc-collapse="$emit('recalc-collapse')" />
 
@@ -123,8 +120,6 @@ export default {
   emits: ['recalc-collapse'],
   data: function () {
     return {
-      // Independent expression state (not from store)
-      expression: this.$route.query.expression || '',
       // Summary configuration
       summaryResultsLimit: parseInt(this.$route.query.summaryLength) || 20,
       summaryFields: [],
@@ -177,13 +172,6 @@ export default {
         this.summaryResultsLimit = newLimit;
         this.reloadSummaryView();
       }
-    },
-    // Handle browser back/forward navigation for expression
-    '$route.query.expression': function (newValue) {
-      if (this.expression !== (newValue || '')) {
-        this.expression = newValue || '';
-        this.reloadSummaryView();
-      }
     }
   },
   created: function () {
@@ -194,15 +182,6 @@ export default {
      * Loads summary data when search is triggered
      */
     loadSummary: function () {
-      // Update route with current expression
-      const newQuery = { ...this.$route.query };
-      if (this.expression) {
-        newQuery.expression = this.expression;
-      } else {
-        delete newQuery.expression;
-      }
-      this.$router.replace({ query: newQuery });
-
       this.reloadSummaryView();
     },
     updateSummaryResultsLimit: function (newLimit) {

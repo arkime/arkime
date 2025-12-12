@@ -137,31 +137,20 @@ export default {
       for (const m in menu) {
         const item = menu[m];
 
-        // Arkime page has independent state - don't copy expression/time from store
-        if (m === 'arkime') {
-          item.href = item.link;
-          item.query = {};
-        } else {
-          item.href = `${item.link}?${qs.stringify(this.$route.query)}`;
-          // make sure the stored expression is part of the query
-          item.query = {
-            ...this.$route.query,
-            expression: this.$store.state.expression
-          };
+        item.href = `${item.link}?${qs.stringify(this.$route.query)}`;
+        // make sure the stored expression is part of the query
+        item.query = {
+          ...this.$route.query,
+          expression: this.$store.state.expression
+        };
 
-          // update the start/stop time if they have not been updated
-          if ((this.$store.state.time.startTime !== this.$route.query.startTime ||
-            this.$store.state.time.stopTime !== this.$route.query.stopTime) &&
-            this.$store.state.timeRange === '0') {
-            item.query.startTime = this.$store.state.time.startTime;
-            item.query.stopTime = this.$store.state.time.stopTime;
-            item.query.date = undefined;
-          }
-
-          // When navigating FROM Arkime page, don't copy Arkime's query params
-          if (this.$route.name === 'Arkime') {
-            item.query = {};
-          }
+        // update the start/stop time if they have not been updated
+        if ((this.$store.state.time.startTime !== this.$route.query.startTime ||
+          this.$store.state.time.stopTime !== this.$route.query.stopTime) &&
+          this.$store.state.timeRange === '0') {
+          item.query.startTime = this.$store.state.time.startTime;
+          item.query.stopTime = this.$store.state.time.stopTime;
+          item.query.date = undefined;
         }
 
         // determine if user can view menu item
