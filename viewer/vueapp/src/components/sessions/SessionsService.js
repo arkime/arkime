@@ -82,33 +82,6 @@ export default {
 
   /* service methods ------------------------------------------------------- */
   /**
-   * Internal helper to make POST requests to sessions endpoints
-   * @param {string} url The endpoint URL
-   * @param {object} query Parameters to query the server
-   * @param {object} buildParamsOptions Options for buildSessionParams
-   * @param {boolean} calculateFacets Whether to calculate facets (default true)
-   * @returns {AbortController} The AbortController used to cancel the request.
-   * @returns {Promise<Object>} The response data parsed as JSON.
-   */
-  postSessionsRequest: function (url, query, buildParamsOptions, calculateFacets = true) {
-    const params = this.buildSessionParams(query, buildParamsOptions);
-
-    if (calculateFacets) {
-      // only calculate facets in some cases because it's expensive
-      Utils.setFacetsQuery(params, 'sessions');
-      Utils.setMapQuery(params);
-    }
-
-    const options = {
-      url,
-      method: 'POST',
-      data: params
-    };
-
-    return cancelFetchWrapper(options);
-  },
-
-  /**
    * Gets a list of sessions from the server
    * @param {object} query        Parameters to query the server
    * @param {boolean} calculateFacets Whether to calculate facets (true) or not (false)
@@ -116,40 +89,23 @@ export default {
    * @returns {Promise<Object>} The response data parsed as JSON.
    */
   get: function (query, calculateFacets = true) {
-    return this.postSessionsRequest(
-      'api/sessions',
-      query,
-      {
-        includePagination: true,
-        includeSort: true,
-        includeFields: true,
-        flatten: true
-      },
-      calculateFacets
-    );
-  },
+    const params = this.buildSessionParams(query, {
+      includePagination: true,
+      includeSort: true,
+      includeFields: true,
+      flatten: true
+    });
 
-  /**
-   * Generates a summary of the sessions
-   * @param {object} routeParams  The current url route parameters (includes length for results limit)
-   * @param {array} fields        Optional array of field expressions to aggregate (uses defaults if not provided)
-   * @returns {Promise} Promise   A promise object that signals the completion
-   *                              or rejection of the request.
-   */
-  generateSummary: function (routeParams, fields) {
-    const summaryFields = fields || Utils.getDefaultSummaryFields();
+    if (calculateFacets) {
+      Utils.setFacetsQuery(params, 'sessions');
+      Utils.setMapQuery(params);
+    }
 
-    return this.postSessionsRequest(
-      'api/sessions/summary',
-      { ...routeParams, fields: summaryFields },
-      {
-        includePagination: true,
-        includeSort: false,
-        includeFields: true, // buildSessionParams will convert fields array to comma-separated string
-        flatten: false
-      },
-      true // always calculate facets for summary
-    );
+    return cancelFetchWrapper({
+      url: 'api/sessions',
+      method: 'POST',
+      data: params
+    });
   },
 
   /**
