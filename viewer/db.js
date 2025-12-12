@@ -845,8 +845,12 @@ Db.scroll = async (params) => {
   return internals.client7.scroll(params);
 };
 
+// Ignore errors when we try to clear a scroll that doesn't exist
 Db.clearScroll = async (params) => {
-  return internals.client7.clearScroll(params);
+  try {
+    await internals.client7.clearScroll(params);
+  } catch (err) {
+  }
 };
 
 Db.deleteDocument = async (index, id, options) => {
