@@ -106,6 +106,7 @@ import ArkimeSummaryView from '../summary/Summary.vue';
 import FieldSelectDropdown from '../utils/FieldSelectDropdown.vue';
 import SummaryConfigDropdown from '../summary/SummaryConfigDropdown.vue';
 import Utils from '../utils/utils';
+import FieldService from '../search/FieldService';
 
 export default {
   name: 'Arkime',
@@ -142,7 +143,7 @@ export default {
       if (!this.user?.settings?.timelineDataFilters) {
         return [];
       }
-      return this.user.settings.timelineDataFilters;
+      return this.user.settings.timelineDataFilters.map(i => FieldService.getField(i));
     },
     /**
      * Returns the current summary configuration for saving
@@ -172,6 +173,10 @@ export default {
         this.summaryResultsLimit = newLimit;
         this.reloadSummaryView();
       }
+    },
+    // Handle fetch viz data button click (re-fetch visualizations)
+    '$store.state.fetchGraphData': function (value) {
+      if (value) { this.reloadSummaryView(); }
     }
   },
   created: function () {
@@ -253,10 +258,6 @@ export default {
 </script>
 
 <style scoped>
-.arkime-page {
-  margin-top: -6px;
-}
-
 .arkime-page.hide-tool-bars .fixed-header {
   display: none;
 }

@@ -7,7 +7,7 @@ SPDX-License-Identifier: Apache-2.0
     <!-- viz options button -->
     <div
       class="viz-options-btn-container"
-      v-if="!actionForm && (basePath === 'spigraph' || basePath === 'sessions' || basePath === 'spiview')">
+      v-if="!actionForm && (basePath === 'spigraph' || basePath === 'sessions' || basePath === 'spiview' || basePath === 'arkime')">
       <BTooltip
         target="hideViz"
         :delay="{show: 0, hide: 0}"
