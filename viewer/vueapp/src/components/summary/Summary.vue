@@ -282,16 +282,27 @@ const generateSummary = async () => {
       signal: controller.signal
     });
 
+    // TODO: Copy the cont3xt integrations readable stream code here that parses on newline.
+    // First element is summary + map/graph data or bsqErr, rest are field data, last is empty object
+    // For now just reasemble into single JSON object
+
     if (!fetchResponse.ok) {
       throw new Error(fetchResponse.statusText);
     }
 
-    const response = await fetchResponse.json();
+    const responseArray = await fetchResponse.json();
 
     // Check for errors in response
-    if (response.error) {
-      throw new Error(response.error);
+    if (responseArray.error) {
+      throw new Error(responseArray.error);
     }
+
+    const response = responseArray[0];
+    response.fields = [];
+    for (let i = 1; i < responseArray.length - 1; i++) {
+      response.fields.push(responseArray[i]);
+    }
+
     if (response.data?.bsqErr) {
       throw new Error(response.data.bsqErr);
     }

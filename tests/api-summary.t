@@ -32,13 +32,16 @@ sub getSummary {
     my $json = viewerPost($url, $postData);
     my $mjson = multiPost($url, $postData);
 
-    # Delete fields that might differ between single and multi
-    delete $json->{recordsTotal};
-    delete $mjson->{recordsTotal};
-
     eq_or_diff($mjson, $json, "single doesn't match multi for $url", { context => 3 });
 
-    return $json;
+    # Normalize into single JSON
+    my $njson = $json->[0];
+    $njson->{fields} = [];
+    foreach my $field (@{$json}) {
+        push @{$njson->{fields}}, $field if exists $field->{field};
+    }
+
+    return $njson;
 }
 
 # Test validation - missing fields parameter
