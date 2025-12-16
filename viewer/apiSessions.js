@@ -3257,7 +3257,11 @@ class SessionAPIs {
     }
 
     let isFirst = true;
-    function send (msg, isLast) {
+    // Development-only: add artificial delay between chunks for testing progressive display
+    // Set summaryChunkDelay=500 in config (milliseconds) - only works when Config.debug is enabled
+    const chunkDelay = Config.debug ? Config.get('summaryChunkDelay', 0) : 0;
+
+    async function send (msg, isLast) {
       if (isFirst) {
         res.write('[');
         isFirst = false;
@@ -3266,19 +3270,23 @@ class SessionAPIs {
       }
       res.write(JSON.stringify(msg));
       res.write('\n');
+      if (res.flush) res.flush();
       if (isLast) {
         res.write(']');
         res.end();
+      } else if (chunkDelay > 0) {
+        await new Promise(resolve => setTimeout(resolve, chunkDelay));
       }
     }
 
     SessionAPIs.buildSessionQuery(req, async (bsqErr, query, indices) => {
+      // Delay before first chunk to allow skeleton UI to display
+      if (chunkDelay > 0) {
+        await new Promise(resolve => setTimeout(resolve, chunkDelay));
+      }
+
       if (bsqErr) {
-        return res.send([{
-          recordsTotal: 0,
-          recordsFiltered: 0,
-          error: bsqErr.toString()
-        }]);
+        return await send({ bsqErr: bsqErr.toString() }, true);
       }
 
       query._source = false;
@@ -3344,7 +3352,7 @@ class SessionAPIs {
 
       // Handle case where there's no data
       if (!phase1.aggregations) {
-        return send({ firstPacket: 0, lastPacket: 0, sessions: 0, bytes: 0, dataBytes: 0, packets: 0, downloadBytes: 0 }, true);
+        return await send({ firstPacket: 0, lastPacket: 0, sessions: 0, bytes: 0, dataBytes: 0, packets: 0, downloadBytes: 0 }, true);
       }
 
       const response = {
@@ -3358,69 +3366,74 @@ class SessionAPIs {
         graph
       };
       response.downloadBytes = 20 + response.bytes + 16 * response.packets;
-      send(response, false);
+      await send(response, false);
 
       /****************************************/
       /* Phase 2 Requested field aggregations */
 
       // Field aggregations - dynamically added based on requested fields
       for (const fieldExp in fieldConfig) {
-        const { aggName, dbField, isSpecial } = fieldConfig[fieldExp];
-        const metadata = fieldMetadata[fieldExp] ?? { viewMode: 'bar', metricType: 'sessions' };
-        query.aggregations = {};
+        try {
+          const { aggName, dbField, isSpecial } = fieldConfig[fieldExp];
+          const metadata = fieldMetadata[fieldExp] ?? { viewMode: 'bar', metricType: 'sessions' };
+          query.aggregations = {};
 
-        if (isSpecial) {
-          // Handle special fields with Painless scripts
-          if (fieldExp === 'ip') {
+          if (isSpecial) {
+            // Handle special fields with Painless scripts
+            if (fieldExp === 'ip') {
+              query.aggregations[aggName] = {
+                terms: {
+                  script: {
+                    source: "if (doc['source.ip'].size() == 0) { return []; } return [doc['source.ip'].value, doc['destination.ip'].value];",
+                    lang: 'painless'
+                  },
+                  size: topNum
+                },
+                aggs: extraAggs
+              };
+            } else if (fieldExp === 'ip.dst:port') {
+              query.aggregations[aggName] = {
+                terms: {
+                  script: {
+                    source: "if (doc['destination.port'].size() == 0) { return []; } return [doc['destination.ip'].value + '_' + doc['destination.port'].value];",
+                    lang: 'painless'
+                  },
+                  size: topNum
+                },
+                aggs: extraAggs
+              };
+            }
+          } else {
+            // Regular field aggregations
             query.aggregations[aggName] = {
               terms: {
-                script: {
-                  source: "if (doc['source.ip'].size() == 0) { return []; } return [doc['source.ip'].value, doc['destination.ip'].value];",
-                  lang: 'painless'
-                },
-                size: topNum
-              },
-              aggs: extraAggs
-            };
-          } else if (fieldExp === 'ip.dst:port') {
-            query.aggregations[aggName] = {
-              terms: {
-                script: {
-                  source: "if (doc['destination.port'].size() == 0) { return []; } return [doc['destination.ip'].value + '_' + doc['destination.port'].value];",
-                  lang: 'painless'
-                },
+                field: dbField,
                 size: topNum
               },
               aggs: extraAggs
             };
           }
-        } else {
-          // Regular field aggregations
-          query.aggregations[aggName] = {
-            terms: {
-              field: dbField,
-              size: topNum
-            },
-            aggs: extraAggs
-          };
-        }
 
-        const phase2 = await Db.searchSessions(indices, query, options);
-        const field = {
-          field: fieldExp,
-          viewMode: metadata.viewMode,
-          metricType: metadata.metricType,
-          title: undefined, // TODO this will come from the user configuration
-          description: undefined // TODO this will come from the user configuration
-        };
-        if (fieldExp === 'ip.dst:port') {
-          field.data = convert(phase2.aggregations[aggName]).map(ipDstPortProcessor);
-        } else {
-          field.data = convert(phase2.aggregations[aggName]);
+          const phase2 = await Db.searchSessions(indices, query, options);
+          const field = {
+            field: fieldExp,
+            viewMode: metadata.viewMode,
+            metricType: metadata.metricType,
+            title: undefined, // TODO this will come from the user configuration
+            description: undefined // TODO this will come from the user configuration
+          };
+          if (fieldExp === 'ip.dst:port') {
+            field.data = convert(phase2.aggregations[aggName]).map(ipDstPortProcessor);
+          } else {
+            field.data = convert(phase2.aggregations[aggName]);
+          }
+          await send(field, false);
+        } catch (fieldErr) {
+          // Send error for this specific field, continue with others
+          await send({ field: fieldExp, error: fieldErr.message || String(fieldErr) }, false);
         }
-        send(field, false);
       }
-      send({}, true);
+      await send({}, true);
     });
   };
 

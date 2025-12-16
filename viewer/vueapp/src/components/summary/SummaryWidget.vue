@@ -1,5 +1,38 @@
 <template>
-  <div class="chart-section">
+  <!-- Loading state - bouncing dots with field name -->
+  <div
+    v-if="loading"
+    class="chart-section loading-widget"
+    aria-hidden="true">
+    <h4 class="loading-title">
+      {{ title }}
+    </h4>
+    <div class="bouncing-dots">
+      <span class="dot" />
+      <span class="dot" />
+      <span class="dot" />
+    </div>
+  </div>
+
+  <!-- Error state - show error message for this field -->
+  <div
+    v-else-if="error"
+    class="chart-section widget-error widget-loaded">
+    <h4 class="mb-3">
+      {{ title }}
+    </h4>
+    <div class="error-content">
+      <span class="fa fa-exclamation-circle fa-2x text-danger mb-2" />
+      <p class="text-danger mb-0">
+        {{ error }}
+      </p>
+    </div>
+  </div>
+
+  <!-- Normal widget content (fades in when data arrives) -->
+  <div
+    v-else
+    class="chart-section widget-loaded">
     <!-- Header with title, view mode selector, and export button -->
     <div class="d-flex justify-content-end align-items-center mb-2">
       <h4 class="flex-grow-1">
@@ -129,7 +162,7 @@
 </template>
 
 <script setup>
-import { computed, ref, onMounted, onBeforeUnmount, nextTick } from 'vue';
+import { computed, ref, watch, onMounted, onBeforeUnmount, nextTick } from 'vue';
 import SummaryPieChart from './SummaryPieChart.vue';
 import SummaryBarChart from './SummaryBarChart.vue';
 import SummaryTable from './SummaryTable.vue';
@@ -160,6 +193,14 @@ const props = defineProps({
   noDataMessage: {
     type: String,
     default: 'sessions.summary.noDataAvailable'
+  },
+  loading: {
+    type: Boolean,
+    default: false
+  },
+  error: {
+    type: String,
+    default: null
   },
   showExport: {
     type: Boolean,
@@ -238,10 +279,10 @@ const handleResize = debounce((entries) => {
   }
 }, RESIZE_DEBOUNCE_MS);
 
-// Setup ResizeObserver on mount
-onMounted(() => {
+// Setup ResizeObserver when chart container becomes available
+const setupResizeObserver = () => {
   nextTick(() => {
-    if (chartContainerRef.value) {
+    if (chartContainerRef.value && !resizeObserver) {
       resizeObserver = new ResizeObserver(handleResize);
       resizeObserver.observe(chartContainerRef.value);
       // Initialize with current size
@@ -249,6 +290,21 @@ onMounted(() => {
       containerHeight.value = chartContainerRef.value.clientHeight || MIN_CHART_SIZE;
     }
   });
+};
+
+// Setup on mount if not loading
+onMounted(() => {
+  if (!props.loading) {
+    setupResizeObserver();
+  }
+});
+
+// Watch for loading to become false (data arrived)
+watch(() => props.loading, (newVal, oldVal) => {
+  if (oldVal && !newVal) {
+    // Transitioned from loading to not loading
+    setupResizeObserver();
+  }
 });
 
 // Cleanup on unmount
@@ -281,6 +337,100 @@ defineEmits(['export', 'change-mode', 'change-metric', 'show-tooltip']);
   flex-direction: column;
   min-height: 400px;
   overflow: hidden; /* Prevent chart content from expanding container - fixes ResizeObserver loop */
+}
+
+.loading-widget {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.5;
+  filter: saturate(0.3);
+}
+
+.widget-loaded {
+  animation: fadeIn 0.4s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.widget-error {
+  display: flex;
+  flex-direction: column;
+}
+
+.error-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 2rem;
+}
+
+.loading-title {
+  margin-bottom: 1.5rem;
+  font-size: 1.1rem;
+}
+
+.bouncing-dots {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--color-tertiary, #6c757d);
+  animation: bounce 1.2s ease-in-out infinite;
+}
+
+.dot:nth-child(1) {
+  animation-delay: 0s;
+}
+
+.dot:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.dot:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+@keyframes bounce {
+  0%, 50%, 100% {
+    transform: translateY(0) scale(1);
+  }
+  8% {
+    transform: translateY(-20px) scale(1.15, 0.85);
+  }
+  16% {
+    transform: translateY(0) scale(0.85, 1.15);
+  }
+  20% {
+    transform: translateY(0) scale(1);
+  }
+  28% {
+    transform: translateY(-8px) scale(1.08, 0.92);
+  }
+  36% {
+    transform: translateY(0) scale(0.92, 1.08);
+  }
+  42% {
+    transform: translateY(0) scale(1);
+  }
 }
 
 .empty-state {

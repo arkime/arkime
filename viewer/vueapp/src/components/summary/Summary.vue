@@ -1,11 +1,5 @@
 <template>
   <div>
-    <!-- Loading overlay -->
-    <arkime-loading
-      :can-cancel="true"
-      v-if="loading && !error"
-      @cancel="cancelAndLoad(false)" />
-
     <!-- Error message -->
     <div
       v-if="error"
@@ -13,9 +7,68 @@
       {{ error }}
     </div>
 
-    <!-- Summary content -->
+    <!-- Skeleton stats (shown while loading, before first chunk) -->
     <div
-      v-if="!loading && !error && summary"
+      v-if="loading && !summary && !error"
+      class="summary-content m-2">
+      <div class="stats-container mb-3 placeholder-glow">
+        <!-- Main Statistics Skeleton -->
+        <div class="summary-stats">
+          <h4 class="mb-2">
+            {{ $t('sessions.summary.captureStatistics') }}
+          </h4>
+          <div class="stats-grid">
+            <div
+              v-for="n in 5"
+              :key="n"
+              class="stat-card">
+              <div class="stat-label">
+                <span class="placeholder col-8" />
+              </div>
+              <div class="stat-value">
+                <span class="placeholder col-6" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Time Statistics Skeleton -->
+        <div class="time-stats">
+          <h4 class="mb-2">
+            {{ $t('sessions.summary.timeInformation') }}
+          </h4>
+          <div class="time-grid">
+            <div
+              v-for="n in 4"
+              :key="n"
+              class="time-item">
+              <span class="placeholder col-4" />
+              <span class="placeholder col-6" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Skeleton Field Widgets -->
+      <div
+        class="charts-container"
+        :class="gridLayoutClass">
+        <div
+          v-for="field in summaryFields"
+          :key="field"
+          class="widget-wrapper">
+          <SummaryWidget
+            :title="FieldService.getField(field, true)?.friendlyName || field"
+            :data="[]"
+            :loading="true"
+            :field="field" />
+        </div>
+      </div>
+    </div>
+
+    <!-- Summary content (shows progressively as data streams in) -->
+    <div
+      v-if="!error && summary"
       class="summary-content m-2">
       <!-- Statistics Container -->
       <div class="stats-container mb-3">
@@ -122,6 +175,8 @@
           <SummaryWidget
             :title="widget.title || FieldService.getField(widget.field, true)?.friendlyName || widget.field"
             :data="widget.data"
+            :loading="widget.loading"
+            :error="widget.error"
             :view-mode="widget.viewMode.value"
             :metric-type="widget.metricType.value"
             :field="widget.field"
@@ -146,11 +201,27 @@ import Sortable from 'sortablejs';
 import setReqHeaders from '@common/setReqHeaders';
 import SummaryWidget from './SummaryWidget.vue';
 import SummaryChartTooltip from './SummaryChartTooltip.vue';
-import ArkimeLoading from '../utils/Loading.vue';
 import ConfigService from '../utils/ConfigService';
 import FieldService from '../search/FieldService';
 import Utils from '../utils/utils';
 import { commaString, humanReadableBytes, readableTime, timezoneDateString } from '@common/vueFilters.js';
+
+// Streaming response helpers
+
+// Decode Uint8Array to string
+const textDecoder = new TextDecoder('utf-8');
+const decoder = (arr) => textDecoder.decode(arr);
+
+// Parse JSON chunk, returning null for empty/invalid chunks
+const parseChunk = (chunk) => {
+  if (chunk.length < 2) return null;
+  try {
+    return JSON.parse(chunk);
+  } catch (err) {
+    console.error('Error parsing chunk:', chunk, err);
+    return null;
+  }
+};
 
 // Access route and store
 const route = useRoute();
@@ -212,10 +283,13 @@ const widgetConfigs = computed(() => {
   }
 
   // Map each field from the API response to a widget configuration
+  // Fields start as loading placeholders until their data arrives
   return summary.value.fields.map(fieldObj => ({
     data: fieldObj.data || [],
-    viewMode: ref(fieldObj.viewMode),     // viewMode from API
-    metricType: ref(fieldObj.metricType), // metricType from API
+    loading: fieldObj.loading ?? false,   // true until field data arrives
+    error: fieldObj.error || null,        // error message if field aggregation failed
+    viewMode: ref(fieldObj.viewMode ?? 'bar'),     // viewMode from API (default bar)
+    metricType: ref(fieldObj.metricType ?? 'sessions'), // metricType from API (default sessions)
     field: fieldObj.field,                // field expression from API
     title: fieldObj.title,                // title from API (may be undefined)
     description: fieldObj.description     // description from API (may be undefined)
@@ -231,6 +305,7 @@ const generateSummary = async () => {
 
   loading.value = true;
   error.value = '';
+  summary.value = null; // Reset for progressive display
 
   try {
     // Create unique cancel id to make cancel req for corresponding es task
@@ -282,79 +357,94 @@ const generateSummary = async () => {
       signal: controller.signal
     });
 
-    // TODO: Copy the cont3xt integrations readable stream code here that parses on newline.
-    // First element is summary + map/graph data or bsqErr, rest are field data, last is empty object
-    // For now just reasemble into single JSON object
-
     if (!fetchResponse.ok) {
       throw new Error(fetchResponse.statusText);
     }
 
-    const responseArray = await fetchResponse.json();
+    // Stream the response using newline-delimited JSON
+    const reader = fetchResponse.body.getReader();
+    let buffer = '';
 
-    // Check for errors in response
-    if (responseArray.error) {
-      throw new Error(responseArray.error);
+    // Handle each parsed chunk
+    const handleChunk = (chunk) => {
+      // Check for query errors (can come as first chunk)
+      if (chunk.bsqErr) {
+        throw new Error(chunk.bsqErr);
+      }
+
+      // First chunk has summary stats (sessions, packets, bytes, etc.)
+      if (chunk.sessions !== undefined) {
+        // Initialize placeholder fields for all requested fields (they show loading state)
+        chunk.fields = props.summaryFields.map(field => ({
+          field,
+          loading: true
+        }));
+        summary.value = chunk;
+
+        // Emit map/graph data immediately
+        emit('update-visualizations', {
+          mapData: chunk.map,
+          graphData: chunk.graph
+        });
+
+        // Hide loading overlay once we have summary stats (field cards show their own loading)
+        loading.value = false;
+      } else if (chunk.field) {
+        // Field chunks have field property - find and update the placeholder
+        if (summary.value?.fields) {
+          const index = summary.value.fields.findIndex(f => f.field === chunk.field);
+          if (index !== -1) {
+            // Replace placeholder with actual data
+            summary.value.fields[index] = chunk;
+          }
+        }
+      }
+      // Empty object {} signals stream end (ignore)
+    };
+
+    // Process the stream
+    // Format: [{first}\n,{second}\n,{third}\n...{}]
+    let isFirstLine = true;
+
+    while (true) {
+      const { done, value } = await reader.read();
+
+      if (done) {
+        // Process any remaining buffer (shouldn't normally have anything)
+        break;
+      }
+
+      buffer += decoder(value);
+
+      // Process complete lines (newline-delimited JSON)
+      let pos;
+      while ((pos = buffer.indexOf('\n')) > -1) {
+        let line = buffer.slice(0, pos);
+        buffer = buffer.slice(pos + 1);
+
+        // First line starts with '[', subsequent lines start with ','
+        if (isFirstLine) {
+          line = line.slice(1); // Remove leading '['
+          isFirstLine = false;
+        } else {
+          line = line.slice(1); // Remove leading ','
+        }
+
+        const chunk = parseChunk(line);
+        if (chunk) handleChunk(chunk);
+      }
     }
-
-    const response = responseArray[0];
-    response.fields = [];
-    for (let i = 1; i < responseArray.length - 1; i++) {
-      response.fields.push(responseArray[i]);
-    }
-
-    if (response.data?.bsqErr) {
-      throw new Error(response.data.bsqErr);
-    }
-
-    summary.value = response;
-
-    // Emit map/graph data to parent component for visualizations
-    emit('update-visualizations', {
-      mapData: response.map,
-      graphData: response.graph
-    });
 
     pendingPromise = null;
-
-    loading.value = false;
   } catch (err) {
+    if (err.name === 'AbortError') {
+      // Request was cancelled, don't show as error
+      return;
+    }
     pendingPromise = null;
     console.error('Error generating summary:', err);
     error.value = err.text || err.message || String(err);
     loading.value = false;
-  }
-};
-
-/**
- * Cancels pending summary request and optionally loads new data
- * @param {boolean} runNewQuery Whether to run a new summary query after canceling
- */
-const cancelAndLoad = (runNewQuery) => {
-  const clientCancel = () => {
-    if (pendingPromise) {
-      pendingPromise.controller.abort(t('sessions.summary.canceledSearch'));
-      pendingPromise = null;
-    }
-
-    if (!runNewQuery) {
-      loading.value = false;
-      if (!summary.value) {
-        // show a page error if there is no data on the page
-        error.value = t('sessions.summary.canceledSearch');
-      }
-      return;
-    }
-
-    generateSummary();
-  };
-
-  if (pendingPromise) {
-    ConfigService.cancelEsTask(pendingPromise.cancelId).finally(() => {
-      clientCancel();
-    });
-  } else if (runNewQuery) {
-    generateSummary();
   }
 };
 
