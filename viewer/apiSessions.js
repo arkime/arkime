@@ -3258,8 +3258,8 @@ class SessionAPIs {
 
     let isFirst = true;
     // Development-only: add artificial delay between chunks for testing progressive display
-    // Set summaryChunkDelay=500 in config (milliseconds) - only works when Config.debug is enabled
-    const chunkDelay = Config.debug ? Config.get('summaryChunkDelay', 0) : 0;
+    // Set summaryChunkDelay=500 in config (milliseconds)
+    const chunkDelay = Config.get('summaryChunkDelay', 0);
 
     async function send (msg, isLast) {
       if (isFirst) {

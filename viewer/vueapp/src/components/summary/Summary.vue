@@ -201,7 +201,6 @@ import Sortable from 'sortablejs';
 import setReqHeaders from '@common/setReqHeaders';
 import SummaryWidget from './SummaryWidget.vue';
 import SummaryChartTooltip from './SummaryChartTooltip.vue';
-import ConfigService from '../utils/ConfigService';
 import FieldService from '../search/FieldService';
 import Utils from '../utils/utils';
 import { commaString, humanReadableBytes, readableTime, timezoneDateString } from '@common/vueFilters.js';
