@@ -20,6 +20,12 @@ const internals = require('./internals');
 const ViewerUtils = require('./viewerUtils');
 const SessionAPIs = require('./apiSessions');
 const CronAPIs = require('./apiCrons');
+const ArkimeConfig = require('../common/arkimeConfig');
+
+let throttleMs;
+ArkimeConfig.loaded(() => {
+  throttleMs = Config.get('huntThrottleMs', 0);
+});
 
 class HuntAPIs {
   // --------------------------------------------------------------------------
@@ -186,7 +192,6 @@ ${Config.arkimeWebURL()}hunt
   // --------------------------------------------------------------------------
   static async #updateHuntStats (hunt, huntId, session, searchedSessions) {
     // Configurable throttle for testing hunt progress in dev environments
-    const throttleMs = Config.get('huntThrottleMs', 0);
     if (throttleMs > 0) {
       await new Promise(resolve => setTimeout(resolve, throttleMs));
     }
@@ -590,7 +595,6 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
     }
 
     // Configurable throttle for testing hunt status transitions in dev environments
-    const throttleMs = Config.get('huntThrottleMs', 0);
     if (throttleMs > 0) {
       await new Promise(resolve => setTimeout(resolve, throttleMs));
     }
@@ -661,7 +665,6 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
 
   // --------------------------------------------------------------------------
   // Kick off the process of running a hunt job
-  // cb is optional and is called either when a job has been started or end of function
   static async processHuntJobs () {
     if (!CronAPIs.isPrimaryViewer()) {
       return;
