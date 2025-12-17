@@ -85,6 +85,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #3494 Update field friendlyNames in db if they don't match capture
   - #3501 Added reader-bpf 
   - #3517 Netmap FreeBSD support
+  - #3547 Fix erspan vlan truncating at 8 bits instead of 12 bits
 ## Capture/Viewer
   - #3197 new sessionsStarted and sessionsPresent in files tab
   - #3210 new vlan.dot1q and vlan.dot1ad expressions
