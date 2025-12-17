@@ -22,9 +22,9 @@ const SessionAPIs = require('./apiSessions');
 const CronAPIs = require('./apiCrons');
 const ArkimeConfig = require('../common/arkimeConfig');
 
-let throttleMs;
+let huntThrottleMs;
 ArkimeConfig.loaded(() => {
-  throttleMs = Config.get('huntThrottleMs', 0);
+  huntThrottleMs = Config.get('huntThrottleMs', 0);
 });
 
 class HuntAPIs {
@@ -192,8 +192,8 @@ ${Config.arkimeWebURL()}hunt
   // --------------------------------------------------------------------------
   static async #updateHuntStats (hunt, huntId, session, searchedSessions) {
     // Configurable throttle for testing hunt progress in dev environments
-    if (throttleMs > 0) {
-      await new Promise(resolve => setTimeout(resolve, throttleMs));
+    if (huntThrottleMs > 0) {
+      await new Promise(resolve => setTimeout(resolve, huntThrottleMs));
     }
 
     // update the hunt with number of matchedSessions and searchedSessions
@@ -595,8 +595,8 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
     }
 
     // Configurable throttle for testing hunt status transitions in dev environments
-    if (throttleMs > 0) {
-      await new Promise(resolve => setTimeout(resolve, throttleMs));
+    if (huntThrottleMs > 0) {
+      await new Promise(resolve => setTimeout(resolve, huntThrottleMs));
     }
 
     let user;
