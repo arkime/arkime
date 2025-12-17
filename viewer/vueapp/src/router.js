@@ -15,6 +15,7 @@ import Settings from '@/components/settings/Settings.vue';
 import Upload from '@/components/upload/Upload.vue';
 import Hunt from '@/components/hunt/Hunt.vue';
 import Arkime404 from '@/components/utils/404.vue';
+import Arkime from '@/components/arkime/Arkime.vue';
 
 const router = createRouter({
   // PATH is a global injected into index.ejs.html, by viewer.js
@@ -40,6 +41,11 @@ const router = createRouter({
       path: '/stats',
       name: 'Stats',
       component: Stats
+    },
+    {
+      path: '/arkime',
+      name: 'Arkime',
+      component: Arkime
     },
     {
       path: '/sessions',
@@ -113,7 +119,8 @@ const router = createRouter({
 router.beforeEach((to, from, next) => {
   // always use the expression in the url query parameter if the navigation
   // was initiated from anything not in the arkime UI (browser forward/back btns)
-  if (!to.params.nav && store.state.expression !== to.query.expression) {
+  // Skip for Arkime page which has independent state
+  if (to.name !== 'Arkime' && !to.params.nav && store.state.expression !== to.query.expression) {
     store.commit('setExpression', to.query.expression);
   }
 

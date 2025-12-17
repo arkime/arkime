@@ -101,7 +101,7 @@ export default {
     return {
       path: this.$constants.PATH,
       menuOrder: [
-        'sessions', 'spiview', 'spigraph', 'connections', 'hunt',
+        'arkime', 'sessions', 'spiview', 'spigraph', 'connections', 'hunt',
         'files', 'stats', 'history', 'upload', 'settings', 'users', 'roles'
       ]
     };
@@ -115,6 +115,7 @@ export default {
     },
     menu: function () {
       const menu = {
+        arkime: { title: this.$t('navigation.arkime'), link: 'arkime', hotkey: ['Arkime'], name: 'Arkime' },
         sessions: { title: this.$t('navigation.sessions'), link: 'sessions', hotkey: ['Sessions'], name: 'Sessions' },
         spiview: { title: this.$t('navigation.spiview'), link: 'spiview', hotkey: ['SPI ', 'View'], name: 'Spiview' },
         spigraph: { title: this.$t('navigation.spigraph'), link: 'spigraph', hotkey: ['SPI ', 'Graph'], name: 'Spigraph' },
@@ -135,6 +136,7 @@ export default {
       // preserve url query parameters
       for (const m in menu) {
         const item = menu[m];
+
         item.href = `${item.link}?${qs.stringify(this.$route.query)}`;
         // make sure the stored expression is part of the query
         item.query = {

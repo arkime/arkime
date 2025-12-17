@@ -1,5 +1,38 @@
 <template>
-  <div class="chart-section">
+  <!-- Loading state - bouncing dots with field name -->
+  <div
+    v-if="loading"
+    class="chart-section loading-widget"
+    aria-hidden="true">
+    <h4 class="loading-title">
+      {{ title }}
+    </h4>
+    <div class="bouncing-dots">
+      <span class="dot" />
+      <span class="dot" />
+      <span class="dot" />
+    </div>
+  </div>
+
+  <!-- Error state - show error message for this field -->
+  <div
+    v-else-if="error"
+    class="chart-section widget-error widget-loaded">
+    <h4 class="mb-3">
+      {{ title }}
+    </h4>
+    <div class="error-content">
+      <span class="fa fa-exclamation-circle fa-2x text-danger mb-2" />
+      <p class="text-danger mb-0">
+        {{ error }}
+      </p>
+    </div>
+  </div>
+
+  <!-- Normal widget content (fades in when data arrives) -->
+  <div
+    v-else
+    class="chart-section widget-loaded">
     <!-- Header with title, view mode selector, and export button -->
     <div class="d-flex justify-content-end align-items-center mb-2">
       <h4 class="flex-grow-1">
@@ -84,15 +117,18 @@
         Invalid field: {{ field }}
       </p>
     </div>
-    <div v-else-if="hasData">
+    <div
+      v-else-if="hasData"
+      ref="chartContainerRef"
+      class="chart-content">
       <!-- Pie Chart -->
       <SummaryPieChart
         v-if="viewMode === 'pie'"
         :data="data"
         :svg-id="svgId"
         :field-config="fieldConfig"
-        :width="chartSize"
-        :height="chartSize"
+        :width="chartWidth"
+        :height="chartHeight"
         :metric-type="metricType"
         @show-tooltip="$emit('show-tooltip', $event)" />
 
@@ -102,8 +138,8 @@
         :data="data"
         :svg-id="svgId"
         :field-config="fieldConfig"
-        :width="chartSize"
-        :height="chartSize"
+        :width="chartWidth"
+        :height="chartHeight"
         :metric-type="metricType"
         @show-tooltip="$emit('show-tooltip', $event)" />
 
@@ -126,12 +162,25 @@
 </template>
 
 <script setup>
-import { computed } from 'vue';
+import { computed, ref, watch, onMounted, onBeforeUnmount, nextTick } from 'vue';
 import SummaryPieChart from './SummaryPieChart.vue';
 import SummaryBarChart from './SummaryBarChart.vue';
 import SummaryTable from './SummaryTable.vue';
 import FieldService from '../search/FieldService';
 import Utils from '../utils/utils';
+
+// Chart dimension constants
+const MIN_CHART_SIZE = 400;
+const RESIZE_DEBOUNCE_MS = 500;
+
+// Debounce helper for resize events
+const debounce = (fn, delay) => {
+  let timeoutId;
+  return (...args) => {
+    clearTimeout(timeoutId);
+    timeoutId = setTimeout(() => fn(...args), delay);
+  };
+};
 
 // Generate unique SVG ID for this widget instance
 const svgId = `chart-${Utils.createRandomString()}`;
@@ -144,6 +193,14 @@ const props = defineProps({
   noDataMessage: {
     type: String,
     default: 'sessions.summary.noDataAvailable'
+  },
+  loading: {
+    type: Boolean,
+    default: false
+  },
+  error: {
+    type: String,
+    default: null
   },
   showExport: {
     type: Boolean,
@@ -203,10 +260,68 @@ const columns = computed(() => [
   { key: 'bytes', header: 'Bytes', align: 'end', format: 'bytes' }
 ]);
 
-// Computed chart dimensions - larger for > 20 items
-const chartSize = computed(() => {
-  return props.data.length > 20 ? 600 : 400;
+// ResizeObserver for dynamic chart sizing
+const chartContainerRef = ref(null);
+const containerWidth = ref(MIN_CHART_SIZE);
+const containerHeight = ref(MIN_CHART_SIZE);
+let resizeObserver = null;
+
+// Computed chart dimensions with minimum constraints
+const chartWidth = computed(() => Math.max(MIN_CHART_SIZE, containerWidth.value));
+const chartHeight = computed(() => Math.max(MIN_CHART_SIZE, containerHeight.value));
+
+// Handle container resize
+const handleResize = debounce((entries) => {
+  const entry = entries[0];
+  if (entry) {
+    containerWidth.value = entry.contentRect.width;
+    containerHeight.value = entry.contentRect.height;
+  }
+}, RESIZE_DEBOUNCE_MS);
+
+// Cleanup ResizeObserver
+const cleanupResizeObserver = () => {
+  if (resizeObserver) {
+    resizeObserver.disconnect();
+    resizeObserver = null;
+  }
+};
+
+// Setup ResizeObserver when chart container becomes available
+const setupResizeObserver = () => {
+  nextTick(() => {
+    if (chartContainerRef.value) {
+      // Clean up any existing observer before creating new one
+      cleanupResizeObserver();
+      resizeObserver = new ResizeObserver(handleResize);
+      resizeObserver.observe(chartContainerRef.value);
+      // Initialize with current size
+      containerWidth.value = chartContainerRef.value.clientWidth || MIN_CHART_SIZE;
+      containerHeight.value = chartContainerRef.value.clientHeight || MIN_CHART_SIZE;
+    }
+  });
+};
+
+// Watch loading state to manage ResizeObserver lifecycle
+// - When loading becomes true: cleanup observer (element will be removed from DOM)
+// - When loading becomes false: setup observer (element is now available)
+watch(() => props.loading, (isLoading) => {
+  if (isLoading) {
+    cleanupResizeObserver();
+  } else {
+    setupResizeObserver();
+  }
 });
+
+// Setup on mount if not loading
+onMounted(() => {
+  if (!props.loading) {
+    setupResizeObserver();
+  }
+});
+
+// Cleanup on unmount
+onBeforeUnmount(cleanupResizeObserver);
 
 defineEmits(['export', 'change-mode', 'change-metric', 'show-tooltip']);
 </script>
@@ -218,9 +333,116 @@ defineEmits(['export', 'change-mode', 'change-metric', 'show-tooltip']);
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
   overflow-x: hidden; /* Prevent widget from expanding page */
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 450px;
+}
+
+.chart-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 400px;
+  overflow: hidden; /* Prevent chart content from visually overflowing its container */
+}
+
+.loading-widget {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.5;
+  filter: saturate(0.3);
+}
+
+.widget-loaded {
+  animation: fadeIn 0.4s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.widget-error {
+  display: flex;
+  flex-direction: column;
+}
+
+.error-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 2rem;
+}
+
+.loading-title {
+  margin-bottom: 1.5rem;
+  font-size: 1.1rem;
+}
+
+.bouncing-dots {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--color-tertiary, #6c757d);
+  animation: bounce 1.2s ease-in-out infinite;
+}
+
+.dot:nth-child(1) {
+  animation-delay: 0s;
+}
+
+.dot:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.dot:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+@keyframes bounce {
+  0%, 50%, 100% {
+    transform: translateY(0) scale(1);
+  }
+  8% {
+    transform: translateY(-20px) scale(1.15, 0.85);
+  }
+  16% {
+    transform: translateY(0) scale(0.85, 1.15);
+  }
+  20% {
+    transform: translateY(0) scale(1);
+  }
+  28% {
+    transform: translateY(-8px) scale(1.08, 0.92);
+  }
+  36% {
+    transform: translateY(0) scale(0.92, 1.08);
+  }
+  42% {
+    transform: translateY(0) scale(1);
+  }
 }
 
 .empty-state {
+  flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
