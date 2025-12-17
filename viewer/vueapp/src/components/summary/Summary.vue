@@ -299,6 +299,10 @@ const widgetConfigs = computed(() => {
 const generateSummary = async () => {
   // Wait for fields to be loaded from parent before generating summary
   if (!props.summaryFields?.length) {
+    // No summary fields provided: ensure we are not stuck in a loading state
+    loading.value = false;
+    summary.value = null;
+    error.value = 'No summary fields were provided to generate a summary.';
     return;
   }
 
