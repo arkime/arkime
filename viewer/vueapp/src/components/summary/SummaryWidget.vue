@@ -171,7 +171,7 @@ import Utils from '../utils/utils';
 
 // Chart dimension constants
 const MIN_CHART_SIZE = 400;
-const RESIZE_DEBOUNCE_MS = 100;
+const RESIZE_DEBOUNCE_MS = 500;
 
 // Debounce helper for resize events
 const debounce = (fn, delay) => {
@@ -279,10 +279,20 @@ const handleResize = debounce((entries) => {
   }
 }, RESIZE_DEBOUNCE_MS);
 
+// Cleanup ResizeObserver
+const cleanupResizeObserver = () => {
+  if (resizeObserver) {
+    resizeObserver.disconnect();
+    resizeObserver = null;
+  }
+};
+
 // Setup ResizeObserver when chart container becomes available
 const setupResizeObserver = () => {
   nextTick(() => {
-    if (chartContainerRef.value && !resizeObserver) {
+    if (chartContainerRef.value) {
+      // Clean up any existing observer before creating new one
+      cleanupResizeObserver();
       resizeObserver = new ResizeObserver(handleResize);
       resizeObserver.observe(chartContainerRef.value);
       // Initialize with current size
@@ -292,6 +302,17 @@ const setupResizeObserver = () => {
   });
 };
 
+// Watch loading state to manage ResizeObserver lifecycle
+// - When loading becomes true: cleanup observer (element will be removed from DOM)
+// - When loading becomes false: setup observer (element is now available)
+watch(() => props.loading, (isLoading) => {
+  if (isLoading) {
+    cleanupResizeObserver();
+  } else {
+    setupResizeObserver();
+  }
+});
+
 // Setup on mount if not loading
 onMounted(() => {
   if (!props.loading) {
@@ -299,21 +320,8 @@ onMounted(() => {
   }
 });
 
-// Watch for loading to become false (data arrived)
-watch(() => props.loading, (newVal, oldVal) => {
-  if (oldVal && !newVal) {
-    // Transitioned from loading to not loading
-    setupResizeObserver();
-  }
-});
-
 // Cleanup on unmount
-onBeforeUnmount(() => {
-  if (resizeObserver) {
-    resizeObserver.disconnect();
-    resizeObserver = null;
-  }
-});
+onBeforeUnmount(cleanupResizeObserver);
 
 defineEmits(['export', 'change-mode', 'change-metric', 'show-tooltip']);
 </script>
