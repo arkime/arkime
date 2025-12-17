@@ -218,7 +218,7 @@ watch(() => props.show, (newVal) => {
 // Parse comma-separated users string to array
 const parseUsers = (str) => {
   if (!str) return [];
-  return str.split(',').map(u => u.trim()).filter(u => u);
+  return str.split(',').map(u => u.trim()).filter(u => u !== '');
 };
 
 const saveConfig = async () => {
