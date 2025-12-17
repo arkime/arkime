@@ -336,7 +336,7 @@ defineEmits(['export', 'change-mode', 'change-metric', 'show-tooltip']);
   display: flex;
   flex-direction: column;
   min-height: 400px;
-  overflow: hidden; /* Prevent chart content from expanding container - fixes ResizeObserver loop */
+  overflow: hidden; /* Prevent chart content from visually overflowing its container */
 }
 
 .loading-widget {
