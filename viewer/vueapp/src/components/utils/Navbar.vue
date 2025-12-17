@@ -115,7 +115,7 @@ export default {
     },
     menu: function () {
       const menu = {
-        arkime: { title: this.$t('navigation.arkime'), link: 'arkime', hotkey: ['A', 'rkime'], name: 'Arkime' },
+        arkime: { title: this.$t('navigation.arkime'), link: 'arkime', hotkey: ['Arkime'], name: 'Arkime' },
         sessions: { title: this.$t('navigation.sessions'), link: 'sessions', hotkey: ['Sessions'], name: 'Sessions' },
         spiview: { title: this.$t('navigation.spiview'), link: 'spiview', hotkey: ['SPI ', 'View'], name: 'Spiview' },
         spigraph: { title: this.$t('navigation.spigraph'), link: 'spigraph', hotkey: ['SPI ', 'Graph'], name: 'Spigraph' },
