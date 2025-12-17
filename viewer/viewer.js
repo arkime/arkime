@@ -1743,7 +1743,7 @@ app.post( // remove tags endpoint
 
 app.getpost(
   ['/api/sessions/summary'],
-  [ArkimeUtil.noCacheJson, fillQueryFromBody, checkHeaderToken, logAction('summary')],
+  [ArkimeUtil.noCacheJson, recordResponseTime, fillQueryFromBody, checkHeaderToken, logAction('summary')],
   SessionAPIs.summary
 );
 

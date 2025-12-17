@@ -317,6 +317,7 @@ const generateSummary = async () => {
     // Build request body with fields and other params
     const body = {
       cancelId,
+      facets: 1, // default to requesting facets for timeline graph (setFacetsQuery can override to 0)
       fields: props.summaryFields.join(',')
     };
 
@@ -362,6 +363,12 @@ const generateSummary = async () => {
 
     if (!fetchResponse.ok) {
       throw new Error(fetchResponse.statusText);
+    }
+
+    // Extract and commit response time to store (matches fetchWrapper pattern)
+    const responseTime = fetchResponse.headers.get('x-arkime-response-time');
+    if (responseTime) {
+      store.commit('setResponseTime', responseTime);
     }
 
     // Stream the response using newline-delimited JSON
