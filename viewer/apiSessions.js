@@ -34,8 +34,18 @@ const headerlru = new LRUCache({ max: 100 });
 
 const SEGMENTS_REGEX = /^(time|all)$/;
 
-// Track if we've warned about summaryChunkDelay in production (warn only once)
-let warnedAboutChunkDelay = false;
+// Development-only: artificial delay between summary chunks for testing progressive display
+let summaryChunkDelay = 0;
+ArkimeConfig.loaded(() => {
+  const configuredDelay = Config.get('summaryChunkDelay', 0);
+  if (configuredDelay > 0) {
+    if (process.env.NODE_ENV === 'development') {
+      summaryChunkDelay = configuredDelay;
+    } else {
+      console.log('WARNING - summaryChunkDelay is configured but ignored in production mode');
+    }
+  }
+});
 
 class SessionAPIs {
   // --------------------------------------------------------------------------
@@ -3260,18 +3270,6 @@ class SessionAPIs {
     }
 
     let isFirst = true;
-    // Development-only: add artificial delay between chunks for testing progressive display
-    // Set summaryChunkDelay=500 in config (milliseconds)
-    let chunkDelay = 0;
-    const configuredDelay = Config.get('summaryChunkDelay', 0);
-    if (configuredDelay > 0) {
-      if (process.env.NODE_ENV === 'development') {
-        chunkDelay = configuredDelay;
-      } else if (!warnedAboutChunkDelay) {
-        warnedAboutChunkDelay = true;
-        console.log('WARNING - summaryChunkDelay is configured but ignored in production mode');
-      }
-    }
 
     async function send (msg, isLast) {
       if (isFirst) {
@@ -3286,15 +3284,15 @@ class SessionAPIs {
       if (isLast) {
         res.write(']');
         res.end();
-      } else if (chunkDelay > 0) {
-        await new Promise(resolve => setTimeout(resolve, chunkDelay));
+      } else if (summaryChunkDelay > 0) {
+        await new Promise(resolve => setTimeout(resolve, summaryChunkDelay));
       }
     }
 
     SessionAPIs.buildSessionQuery(req, async (bsqErr, query, indices) => {
       // Delay before first chunk to allow skeleton UI to display
-      if (chunkDelay > 0) {
-        await new Promise(resolve => setTimeout(resolve, chunkDelay));
+      if (summaryChunkDelay > 0) {
+        await new Promise(resolve => setTimeout(resolve, summaryChunkDelay));
       }
 
       if (bsqErr) {
