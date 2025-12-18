@@ -102,8 +102,8 @@ export default {
       default: () => ({})
     },
     issueConfirmation: {
-      type: Function,
-      default: () => {}
+      type: String,
+      default: undefined
     },
     searchTerm: {
       type: String,
