@@ -368,18 +368,23 @@ export default {
     toggleDropdown: function () {
       this.isOpen = !this.isOpen;
 
-      if (this.isOpen && !this.arkimeClickables) {
-        ConfigService.getArkimeClickables()
-          .then((response) => {
-            this.arkimeClickables = response;
+      if (this.isOpen) {
+        if (!this.arkimeClickables) {
+          ConfigService.getArkimeClickables()
+            .then((response) => {
+              this.arkimeClickables = response;
 
-            if (!this.arkimeClickables) { return; }
+              if (!this.arkimeClickables) { return; }
 
-            if (Object.keys(this.arkimeClickables).length !== 0) {
-              // add items to the menu if they exist
-              this.buildMenu();
-            }
-          });
+              if (Object.keys(this.arkimeClickables).length !== 0) {
+                // add items to the menu if they exist
+                this.buildMenu();
+              }
+            });
+        } else if (Object.keys(this.arkimeClickables).length !== 0) {
+          // Rebuild menu for the current value
+          this.buildMenu();
+        }
       }
     },
     /**
@@ -522,6 +527,9 @@ export default {
     /* Builds the dropdown menu items to display */
     buildMenu: function () {
       if (!this.parsed[0].value || !this.arkimeClickables) { return; }
+      // Clear previous menu items before rebuilding for current value
+      this.menuItems = {};
+      this.asyncMenuItems = {};
       const info = this.getInfo();
       const session = this.getSession();
       const text = this.parsed[0].queryVal.toString();
