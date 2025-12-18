@@ -536,68 +536,65 @@ class CronAPIs {
 
     let singleEndTime;
     let count = 0;
-    let continueProcessing = true;
 
-    while (continueProcessing) {
-      // Process at most 24 hours
-      singleEndTime = Math.min(endTime, cq.lpValue + 24 * 60 * 60);
-      query.query.bool.filter[0] = { range: { '@timestamp': { gte: cq.lpValue * 1000, lt: singleEndTime * 1000 } } };
+    // Process at most 24 hours
+    singleEndTime = Math.min(endTime, cq.lpValue + 24 * 60 * 60);
+    query.query.bool.filter[0] = { range: { '@timestamp': { gte: cq.lpValue * 1000, lt: singleEndTime * 1000 } } };
 
-      if (Config.debug > 2) {
-        console.log('CRON', cq.name, cq.creator, '- start:', new Date(cq.lpValue * 1000), 'stop:', new Date(singleEndTime * 1000), 'end:', new Date(endTime * 1000), 'remaining runs:', ((endTime - singleEndTime) / (24 * 60 * 60.0)));
-      }
+    if (Config.debug > 2) {
+      console.log('CRON', cq.name, cq.creator, '- start:', new Date(cq.lpValue * 1000), 'stop:', new Date(singleEndTime * 1000), 'end:', new Date(endTime * 1000), 'remaining runs:', ((endTime - singleEndTime) / (24 * 60 * 60.0)));
+    }
 
-      try {
-        for await (const chunk of Db.searchSessionsIterator(Db.getSessionIndices(true), query)) {
-          const ids = [];
-          const hits = chunk.hits.hits;
-          count += hits.length;
+    try {
+      for await (const chunk of Db.searchSessionsIterator(Db.getSessionIndices(true), query)) {
+        const ids = [];
+        const hits = chunk.hits.hits;
+        count += hits.length;
 
-          let i, ilen;
-          if (cq.action.indexOf('forward:') === 0) {
-            for (i = 0, ilen = hits.length; i < ilen; i++) {
-              ids.push({ id: Db.session2Sid(hits[i]), node: hits[i]._source.node });
-            }
+        if (hits.length === 0) { continue; }
 
-            await CronAPIs.#sendSessionsListQL(options, ids);
-          } else if (cq.action.indexOf('tag') === 0) {
-            for (i = 0, ilen = hits.length; i < ilen; i++) {
-              ids.push(Db.session2Sid(hits[i]));
-            }
-
-            if (Config.debug > 1) {
-              console.log('CRON', cq.name, cq.creator, '- Updating tags:', ids.length);
-            }
-
-            const tags = options.tags.split(',');
-            await new Promise((resolve) => {
-              SessionAPIs.sessionsListFromIds(null, ids, ['tags', 'node'], (err, list) => {
-                SessionAPIs.addTagsList(tags, list, resolve);
-              });
-            });
-          } else {
-            console.log('CRON - Unknown action', cq);
+        let i, ilen;
+        if (cq.action.indexOf('forward:') === 0) {
+          for (i = 0, ilen = hits.length; i < ilen; i++) {
+            ids.push({ id: Db.session2Sid(hits[i]), node: hits[i]._source.node });
           }
 
-          if (hits.length > 0) {
-            const doc = { doc: { count: (cq.count || 0) + count } };
-            try {
-              await Db.update('queries', options.qid, doc, { refresh: true });
-            } catch (err) {
-              console.log('ERROR CRON - updating query', err);
-            }
+          await CronAPIs.#sendSessionsListQL(options, ids);
+        } else if (cq.action.indexOf('tag') === 0) {
+          for (i = 0, ilen = hits.length; i < ilen; i++) {
+            ids.push(Db.session2Sid(hits[i]));
+          }
+
+          if (Config.debug > 1) {
+            console.log('CRON', cq.name, cq.creator, '- Updating tags:', ids.length);
+          }
+
+          const tags = options.tags.split(',');
+          await new Promise((resolve) => {
+            SessionAPIs.sessionsListFromIds(null, ids, ['tags', 'node'], (err, list) => {
+              SessionAPIs.addTagsList(tags, list, resolve);
+            });
+          });
+        } else {
+          console.log('CRON - Unknown action', cq);
+        }
+
+        if (hits.length > 0) {
+          const doc = { doc: { count: (cq.count || 0) + count } };
+          try {
+            await Db.update('queries', options.qid, doc, { refresh: true });
+          } catch (err) {
+            console.log('ERROR CRON - updating query', err);
           }
         }
-      } catch (err) {
-        console.log('CRON - cronQuery error', err, 'for', cq);
       }
+    } catch (err) {
+      console.log('CRON - cronQuery error', err, 'for', cq);
+    }
 
-      Db.refresh('sessions*');
-      if (Config.debug > 1) {
-        console.log('CRON', cq.name, cq.creator, '- Continue process', singleEndTime, endTime);
-      }
-
-      continueProcessing = singleEndTime !== endTime;
+    Db.refresh('sessions*');
+    if (Config.debug > 1) {
+      console.log('CRON', cq.name, cq.creator, '- Continue process', singleEndTime, endTime);
     }
 
     return { count, lpValue: singleEndTime };
