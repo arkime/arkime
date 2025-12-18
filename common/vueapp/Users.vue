@@ -412,14 +412,55 @@ SPDX-License-Identifier: Apache-2.0
                   </b-button>
                 </div>
               </form>
-              <span v-else>
+              <div v-else>
+                <!-- Role permission tri-state toggles -->
+                <div class="role-permissions mt-2 mb-2 d-flex flex-wrap gap-1">
+                  <TriStateToggle
+                    class="toggle-group rounded p-1"
+                    :model-value="data.item.emailSearch"
+                    :label="$t('users.disableEmailSearch')"
+                    :negated="true"
+                    @update:model-value="setRoleField(data.item, 'emailSearch', $event)" />
+                  <TriStateToggle
+                    class="toggle-group rounded p-1"
+                    :model-value="data.item.removeEnabled"
+                    :label="$t('users.disableDataRemoval')"
+                    :negated="true"
+                    @update:model-value="setRoleField(data.item, 'removeEnabled', $event)" />
+                  <TriStateToggle
+                    class="toggle-group rounded p-1"
+                    :model-value="data.item.packetSearch"
+                    :label="$t('users.disableHunting')"
+                    :negated="true"
+                    @update:model-value="setRoleField(data.item, 'packetSearch', $event)" />
+                  <TriStateToggle
+                    class="toggle-group rounded p-1"
+                    :model-value="data.item.hideStats"
+                    :label="$t('users.hideStatsPage')"
+                    @update:model-value="setRoleField(data.item, 'hideStats', $event)" />
+                  <TriStateToggle
+                    class="toggle-group rounded p-1"
+                    :model-value="data.item.hideFiles"
+                    :label="$t('users.hideFilesPage')"
+                    @update:model-value="setRoleField(data.item, 'hideFiles', $event)" />
+                  <TriStateToggle
+                    class="toggle-group rounded p-1"
+                    :model-value="data.item.hidePcap"
+                    :label="$t('users.hidePcap')"
+                    @update:model-value="setRoleField(data.item, 'hidePcap', $event)" />
+                  <TriStateToggle
+                    class="toggle-group rounded p-1"
+                    :model-value="data.item.disablePcapDownload"
+                    :label="$t('users.disablePcapDownload')"
+                    @update:model-value="setRoleField(data.item, 'disablePcapDownload', $event)" />
+                </div>
                 <UserDropdown
                   class="mt-2"
                   label="Role Assigners&nbsp;"
                   :selected-users="data.item.roleAssigners || []"
                   :role-id="data.item.userId"
                   @selected-users-updated="updateRoleAssigners" />
-              </span>
+              </div>
             </template>
           </div>
         </template> <!-- /detail row -->
@@ -456,6 +497,7 @@ import UserCreate from './UserCreate.vue';
 import UserService from './UserService.js';
 import RoleDropdown from './RoleDropdown.vue';
 import UserDropdown from './UserDropdown.vue';
+import TriStateToggle from './TriStateToggle.vue';
 import { timezoneDateString } from './vueFilters.js';
 
 let userChangeTimeout;
@@ -467,7 +509,8 @@ export default {
     ToggleBtn,
     UserCreate,
     RoleDropdown,
-    UserDropdown
+    UserDropdown,
+    TriStateToggle
   },
   emits: ['update-roles', 'update-current-user'],
   props: {
@@ -563,6 +606,14 @@ export default {
       user[field] = !user[field];
       if (existing) { this.userHasChanged(user); }
     },
+    setRoleField (role, field, value) {
+      if (value === undefined) {
+        delete role[field];
+      } else {
+        role[field] = value;
+      }
+      this.userHasChanged(role);
+    },
     changeTimeLimit (user) {
       if (user.timeLimit === 'undefined') {
         delete user.timeLimit;
@@ -600,13 +651,16 @@ export default {
       // sort, since order is not meaningful for roleAssigners
       user.roleAssigners.sort();
 
-      // make sure these fields exist or the objects will be different
-      // (undefined is the same as false for these fields)
-      user.timeLimit ||= undefined;
-      user.hidePcap ||= undefined;
-      user.hideFiles ||= undefined;
-      user.hideStats ||= undefined;
-      user.disablePcapDownload ||= undefined;
+      // For users: undefined is the same as false for these fields
+      // For roles: preserve the exact value (undefined = inherit, true/false = explicit)
+      const isRole = user.userId?.startsWith('role:');
+      if (!isRole) {
+        user.timeLimit ||= undefined;
+        user.hidePcap ||= undefined;
+        user.hideFiles ||= undefined;
+        user.hideStats ||= undefined;
+        user.disablePcapDownload ||= undefined;
+      }
 
       user.expanded = undefined; // don't care about expanded field (just for UI)
       user.lastUsed = undefined; // don't compare lastUsed, it might be different if the user is using the UI
@@ -814,5 +868,10 @@ export default {
 
 .small-table-font {
   font-size: 0.9rem;
+}
+
+.toggle-group {
+  background-color: var(--color-white);
+  color: var(--color-gray-dark);
 }
 </style>
