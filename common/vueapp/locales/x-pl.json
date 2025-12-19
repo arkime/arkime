@@ -256,7 +256,7 @@
     "closePage": "OsingClay ethay Unthay agePay anceledcay ethay earchsay",
     "huntJobId": "Unthay ObJay IDWAY: {id}",
     "results-searchedHtml": "Oundfay <strong>{matched}</strong> essionssay atchingmay <strong>{search}</strong> ({searchType}) ofway <strong>{total}</strong> essionssay earchedsay",
-    "results-stillNeedHtml": "Illstay eednay otay earchsay<strong>{remaining}</strong>ofway <strong>{total}</strong> otaltay essionssay",
+    "results-stillNeedHtml": "Illstay eednay otay earchsay <strong>{remaining}</strong>ofway <strong>{total}</strong> otaltay essionssay",
     "results-failedHtml": "<strong>{failed}</strong> essionssay ailedffay otay oadlay andway ereway otnay earchedsay etyay",
     "results-examiningHtml": "Examiningway <strong>{size}</strong> ({type}) {srcdst} acketspay erpay essionsay",
     "results-queryExpression": "Ethay essionssay ueryqay expressionway asway",

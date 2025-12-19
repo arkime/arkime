@@ -254,7 +254,7 @@
     "closePage": "Closing the Hunt page canceled the search",
     "huntJobId": "Hunt Job ID: {id}",
     "results-searchedHtml": "Found <strong>{matched}</strong> sessions matching <strong>{search}</strong> ({searchType}) of <strong>{total}</strong> sessions searched",
-    "results-stillNeedHtml": "Still need to search<strong>{remaining}</strong> of <strong>{total}</strong> total sessions",
+    "results-stillNeedHtml": "Still need to search <strong>{remaining}</strong> of <strong>{total}</strong> total sessions",
     "results-failedHtml": "<strong>{failed}</strong> sessions failed to load and were not searched yet",
     "results-examiningHtml": "Examining <strong>{size}</strong> ({type}) {srcdst} packets per session",
     "results-queryExpression": "The sessions query expression was",
