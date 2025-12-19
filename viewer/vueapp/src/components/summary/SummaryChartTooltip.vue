@@ -6,19 +6,15 @@
       :style="tooltipStyle">
       <div class="tooltip-content">
         <!-- Header with session field dropdown and close button -->
-        <div class="d-flex justify-content-between align-items-top">
-          <arkime-session-field
-            :field="fieldConfig"
-            :value="data.item"
-            :expr="fieldConfig.exp"
-            :parse="true"
-            :session-btn="true"
-            class="flex-grow-1"
-            style="white-space: break-spaces;" />
-          <button
-            class="btn-close btn-xs"
-            @click="$emit('close')" />
-        </div>
+        <arkime-session-field
+          :parse="true"
+          :session-btn="true"
+          :value="data.item"
+          :field="fieldConfig"
+          :expr="fieldConfig.exp" />
+        <button
+          class="btn-close btn-xs pull-right mt-1"
+          @click="$emit('close')" />
 
         <!-- Statistics in vertical format -->
         <div class="stats-container">
@@ -117,9 +113,7 @@ const percentageLabel = computed(() => {
   border-radius: 3px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
   padding: 0;
-  pointer-events: auto;
   white-space: nowrap;
-  max-width: 250px;
 }
 
 .tooltip-content {
