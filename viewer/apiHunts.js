@@ -21,6 +21,7 @@ const ViewerUtils = require('./viewerUtils');
 const SessionAPIs = require('./apiSessions');
 const CronAPIs = require('./apiCrons');
 const ArkimeConfig = require('../common/arkimeConfig');
+const BuildQuery = require('./buildQuery');
 
 let huntThrottleMs;
 ArkimeConfig.loaded(() => {
@@ -633,7 +634,7 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
       fakeReq.query.view = hunt.query.view;
     }
 
-    SessionAPIs.buildSessionQuery(fakeReq, async (err, query, indices) => {
+    BuildQuery.build(fakeReq, async (err, query, indices) => {
       if (err) {
         HuntAPIs.#pauseHuntJobWithError(huntId, hunt, {
           value: 'Fatal Error: Session query expression parse error. Fix your search expression and create a new hunt.',
@@ -642,7 +643,7 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
         return;
       }
 
-      await ViewerUtils.lookupQueryItems(query.query.bool.filter);
+      await BuildQuery.lookupQueryItems(query.query.bool.filter);
       query.query.bool.filter[0] = {
         range: {
           lastPacket: {
@@ -1107,7 +1108,7 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
 
       fakeReq.query.expression = `huntId == ${req.params.id}`;
 
-      SessionAPIs.buildSessionQuery(fakeReq, (err, query, indices) => {
+      BuildQuery.build(fakeReq, (err, query, indices) => {
         if (err) {
           return res.serverError(500, 'Unable to build sessions query to fetch sessions that matched this hunt.');
         }

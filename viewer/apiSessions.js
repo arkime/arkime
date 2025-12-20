@@ -23,12 +23,12 @@ const ArkimeConfig = require('../common/arkimeConfig');
 const Auth = require('../common/auth');
 const Pcap = require('./pcap.js');
 const version = require('../common/version');
-const arkimeparser = require('./arkimeparser.js');
 const internals = require('./internals');
 const ViewerUtils = require('./viewerUtils');
 const ipaddr = require('ipaddr.js');
 const { LRUCache } = require('lru-cache');
 const sanitizeHtml = require('sanitize-html');
+const BuildQuery = require('./buildQuery');
 
 const headerlru = new LRUCache({ max: 100 });
 
@@ -69,7 +69,7 @@ class SessionAPIs {
 
     let total = 0;
     try {
-      const { query, indices } = await SessionAPIs.buildSessionQueryPromise(req);
+      const { query, indices } = await BuildQuery.buildPromise(req);
 
       query._source = false;
       query.fields = fields;
@@ -124,173 +124,6 @@ class SessionAPIs {
       if (endCb) {
         endCb(err, total);
       }
-    }
-  }
-
-  // --------------------------------------------------------------------------
-  /**
-   * Adds the sort options to the elasticsearch query
-   * @ignore
-   * @name addSortToQuery
-   * @param {object} query - the elasticsearch query that has been partially built already by buildSessionQuery
-   * @param {object} info - the query params from the client
-   * @param {string} defaultSort - the default sort
-   */
-  static #addSortToQuery (query, info, defaultSort) {
-    function addSortDefault () {
-      if (defaultSort) {
-        if (!query.sort) {
-          query.sort = [];
-        }
-        const obj = {};
-        obj[defaultSort] = { order: 'asc' };
-        obj[defaultSort].missing = '_last';
-        query.sort.push(obj);
-      }
-    }
-
-    if (!info) {
-      addSortDefault();
-      return;
-    }
-
-    // New Method
-    if (info.order) {
-      if (info.order.length === 0) {
-        addSortDefault();
-        return;
-      }
-
-      if (!query.sort) {
-        query.sort = [];
-      }
-
-      for (const item of info.order.split(',')) {
-        const parts = item.split(':');
-        const field = parts[0];
-        if (ArkimeUtil.isPP(field)) { continue; }
-
-        const obj = {};
-        if (field === 'firstPacket') {
-          obj.firstPacket = { order: parts[1] };
-        } else if (field === 'lastPacket') {
-          obj.lastPacket = { order: parts[1] };
-        } else {
-          obj[field] = { order: parts[1] };
-        }
-
-        obj[field].unmapped_type = 'string';
-        const fieldInfo = Config.getDBFieldsMap()[field];
-        if (fieldInfo) {
-          if (fieldInfo.type === 'ip') {
-            obj[field].unmapped_type = 'ip';
-          } else if (fieldInfo.type === 'integer') {
-            obj[field].unmapped_type = 'long';
-          }
-        }
-        obj[field].missing = (parts[1] === 'asc' ? '_last' : '_first');
-        query.sort.push(obj);
-      }
-
-      return;
-    }
-
-    // Old Method
-    if (!info.iSortingCols || parseInt(info.iSortingCols, 10) === 0) {
-      addSortDefault();
-      return;
-    }
-
-    if (!query.sort) {
-      query.sort = [];
-    }
-
-    const ilen = parseInt(info.iSortingCols, 10);
-    for (let i = 0; i < ilen; i++) {
-      if (!info['iSortCol_' + i] || !info['sSortDir_' + i] || !info['mDataProp_' + info['iSortCol_' + i]]) {
-        continue;
-      }
-
-      const obj = {};
-      const field = info['mDataProp_' + info['iSortCol_' + i]];
-      obj[field] = { order: info['sSortDir_' + i] };
-      query.sort.push(obj);
-
-      if (field === 'firstPacket') {
-        query.sort.push({ firstPacket: { order: info['sSortDir_' + i] } });
-      } else if (field === 'lastPacket') {
-        query.sort.push({ lastPacket: { order: info['sSortDir_' + i] } });
-      }
-    }
-  }
-
-  // --------------------------------------------------------------------------
-  /**
-   * Adds the view search expression to the elasticsearch query
-   * @ignore
-   * @name addViewToQuery
-   * @param {object} req - the client request
-   * @param {object} query - the elasticsearch query that has been partially built already by buildSessionQuery
-   * @param {function} continueBuildQueryCb - the callback to call when adding the view is complete
-   * @param {function} finalCb - the callback to pass to continueBuildQueryCb that is called when building the sessions query is complete
-   * @param {boolean} queryOverride=null - override the client query with overriding query
-   * @returns {function} - the callback to call once the session query is built or an error occurs
-   */
-  static async #addViewToQuery (req, query, continueBuildQueryCb, finalCb, queryOverride = null) {
-    // queryOverride can supersede req.query if specified
-    const reqQuery = queryOverride || req.query;
-
-    try {
-      const roles = [...await req.user.getRoles()]; // es requries an array for terms search
-
-      const viewQuery = { // search for the shortcut
-        size: 1,
-        query: {
-          bool: {
-            filter: [{
-              bool: {
-                must: [{ // needs to match the id OR name
-                  bool: {
-                    should: [ // match id OR name
-                      { term: { _id: reqQuery.view } }, // matches the id
-                      { term: { name: reqQuery.view } } // matches the name
-                    ]
-                  }
-                }, { // AND be shared with the user via role, user, OR creator
-                  bool: {
-                    should: [
-                      { terms: { roles } }, // shared via user role
-                      { term: { users: req.user.userId } }, // shared via userId
-                      { term: { user: req.user.userId } } // created by this user
-                    ]
-                  }
-                }]
-              }
-            }]
-          }
-        }
-      };
-
-      const { body: { hits: { hits: views } } } = await Db.searchViews(viewQuery);
-
-      if (!views.length) {
-        console.log(`ERROR - User does not have permission to access this view or the view doesn't exist: ${reqQuery.view}`);
-        return continueBuildQueryCb(req, query, "Can't find view", finalCb, queryOverride);
-      }
-
-      const view = views[0]._source;
-
-      try {
-        const viewExpression = arkimeparser.parse(view.expression);
-        query.query.bool.filter.push(viewExpression);
-        return continueBuildQueryCb(req, query, undefined, finalCb, queryOverride);
-      } catch (err) {
-        console.log(`ERROR - View expression (%s) doesn't compile -`, ArkimeUtil.sanitizeStr(reqQuery.view), util.inspect(err, false, 50));
-        return continueBuildQueryCb(req, query, err, finalCb, queryOverride);
-      }
-    } catch (err) {
-      console.log(`ERROR - Can't find view (%s) -`, ArkimeUtil.sanitizeStr(reqQuery.view), util.inspect(err, false, 50));
-      return continueBuildQueryCb(req, query, err, finalCb, queryOverride);
     }
   }
 
@@ -1439,7 +1272,7 @@ class SessionAPIs {
           psidFields.tags = [];
         }
 
-        ViewerUtils.fixFields(psidFields, endCb);
+        return endCb(null, psidFields);
       }, limit, extra);
     } catch (err) {
       console.log('ERROR - session get error in processSessionId', util.inspect(err, false, 50));
@@ -1477,227 +1310,6 @@ class SessionAPIs {
    */
 
   // --------------------------------------------------------------------------
-  /**
-   * Builds the session query based on req.query (Promise version)
-   * @ignore
-   * @name buildSessionQueryPromise
-   * @param {object} req - the client request
-   * @param {boolean} queryOverride=null - override the client query with overriding query
-   * @returns {Promise} - resolves with {query, indices}
-   */
-  static buildSessionQueryPromise (req, queryOverride = null) {
-    return new Promise((resolve, reject) => {
-      SessionAPIs.buildSessionQuery(req, (err, query, indices) => {
-        if (err) {
-          reject(err);
-        } else {
-          resolve({ query, indices });
-        }
-      }, queryOverride);
-    });
-  }
-
-  // --------------------------------------------------------------------------
-  /**
-   * Builds the session query based on req.query
-   * @ignore
-   * @name buildSessionQuery
-   * @param {object} req - the client request
-   * @param {function} buildCb - the callback to call when building the query is complete
-   * @param {boolean} queryOverride=null - override the client query with overriding query
-   * @returns {function} - the callback to call once the session query is built or an error occurs
-   */
-  static async buildSessionQuery (req, buildCb, queryOverride = null) {
-    // validate time limit is not exceeded
-    let timeLimitExceeded = false;
-
-    // queryOverride can supercede req.query if specified
-    const reqQuery = queryOverride || req.query;
-
-    // determineQueryTimes calculates startTime, stopTime, and interval from reqQuery
-    const startAndStopParams = ViewerUtils.determineQueryTimes(reqQuery);
-    if (startAndStopParams[0] !== undefined) {
-      reqQuery.startTime = startAndStopParams[0];
-    }
-    if (startAndStopParams[1] !== undefined) {
-      reqQuery.stopTime = startAndStopParams[1];
-    }
-
-    const interval = startAndStopParams[2];
-
-    if ((parseFloat(reqQuery.date) > parseFloat(req.user.timeLimit)) ||
-      ((reqQuery.date === '-1') && req.user.timeLimit)) {
-      timeLimitExceeded = true;
-    } else if ((reqQuery.startTime) && (reqQuery.stopTime) && (req.user.timeLimit) &&
-               ((reqQuery.stopTime - reqQuery.startTime) / 3600 > req.user.timeLimit)) {
-      timeLimitExceeded = true;
-    }
-
-    if (timeLimitExceeded) {
-      console.log(`${req.user.userName} trying to exceed time limit: ${req.user.timeLimit} hours`);
-      return buildCb(`User time limit (${req.user.timeLimit} hours) exceeded`, {});
-    }
-
-    const limit = Math.min(+Config.get('maxSessionsQueried', 2000000), +reqQuery.length || 100);
-
-    const query = {
-      from: reqQuery.start || 0,
-      size: limit,
-      timeout: internals.esQueryTimeout,
-      query: { bool: { filter: [] } }
-    };
-
-    if (query.from === 0) {
-      delete query.from;
-    }
-
-    if (reqQuery.strictly === 'true') {
-      reqQuery.bounding = 'both';
-    }
-
-    if ((reqQuery.date && reqQuery.date === '-1') ||
-        (reqQuery.segments && reqQuery.segments === 'all')) {
-      // interval is already assigned above from result of determineQueryTimes
-
-    } else if (reqQuery.startTime !== undefined && reqQuery.stopTime) {
-      switch (reqQuery.bounding) {
-      case 'first':
-        query.query.bool.filter.push({ range: { firstPacket: { gte: reqQuery.startTime * 1000, lte: reqQuery.stopTime * 1000 } } });
-        break;
-      default:
-      case 'last':
-        query.query.bool.filter.push({ range: { lastPacket: { gte: reqQuery.startTime * 1000, lte: reqQuery.stopTime * 1000 } } });
-        break;
-      case 'both':
-        query.query.bool.filter.push({ range: { firstPacket: { gte: reqQuery.startTime * 1000 } } });
-        query.query.bool.filter.push({ range: { lastPacket: { lte: reqQuery.stopTime * 1000 } } });
-        break;
-      case 'either':
-        query.query.bool.filter.push({ range: { firstPacket: { lte: reqQuery.stopTime * 1000 } } });
-        query.query.bool.filter.push({ range: { lastPacket: { gte: reqQuery.startTime * 1000 } } });
-        break;
-      case 'database':
-        query.query.bool.filter.push({ range: { '@timestamp': { gte: reqQuery.startTime * 1000, lte: reqQuery.stopTime * 1000 } } });
-        break;
-      }
-    } else {
-      switch (reqQuery.bounding) {
-      case 'first':
-        query.query.bool.filter.push({ range: { firstPacket: { gte: reqQuery.startTime * 1000 } } });
-        break;
-      default:
-      case 'both':
-      case 'last':
-        query.query.bool.filter.push({ range: { lastPacket: { gte: reqQuery.startTime * 1000 } } });
-        break;
-      case 'either':
-        query.query.bool.filter.push({ range: { firstPacket: { lte: reqQuery.stopTime * 1000 } } });
-        query.query.bool.filter.push({ range: { lastPacket: { gte: reqQuery.startTime * 1000 } } });
-        break;
-      case 'database':
-        query.query.bool.filter.push({ range: { '@timestamp': { gte: reqQuery.startTime * 1000 } } });
-        break;
-      }
-    }
-
-    if (reqQuery.facets === 'true' || parseInt(reqQuery.facets) === 1 || reqQuery.map === 'true' || reqQuery.map === true) {
-      query.aggregations = {};
-
-      // only add map aggregations if requested
-      if (reqQuery.map === 'true' || reqQuery.map) {
-        query.aggregations = {
-          mapG1: { terms: { field: 'source.geo.country_iso_code', size: 1000, min_doc_count: 1 } },
-          mapG2: { terms: { field: 'destination.geo.country_iso_code', size: 1000, min_doc_count: 1 } },
-          mapG3: { terms: { field: 'http.xffGEO', size: 1000, min_doc_count: 1 } }
-        };
-      }
-
-      // add the dbHisto aggregation for timeline data if requested
-      if (reqQuery.facets === 'true' || parseInt(reqQuery.facets) === 1) {
-        query.aggregations.dbHisto = { aggregations: {} };
-
-        const filters = req.user.settings.timelineDataFilters || internals.settingDefaults.timelineDataFilters;
-        for (let i = 0; i < filters.length; i++) {
-          const filter = filters[i];
-
-          // Will also grab src/dst of these options instead to show on the timeline
-          switch (filter) {
-          case 'network.packets':
-          case 'totPackets':
-            query.aggregations.dbHisto.aggregations['source.packets'] = { sum: { field: 'source.packets' } };
-            query.aggregations.dbHisto.aggregations['destination.packets'] = { sum: { field: 'destination.packets' } };
-            break;
-          case 'network.bytes':
-          case 'totBytes':
-            query.aggregations.dbHisto.aggregations['source.bytes'] = { sum: { field: 'source.bytes' } };
-            query.aggregations.dbHisto.aggregations['destination.bytes'] = { sum: { field: 'destination.bytes' } };
-            break;
-          case 'totDataBytes':
-            query.aggregations.dbHisto.aggregations['client.bytes'] = { sum: { field: 'client.bytes' } };
-            query.aggregations.dbHisto.aggregations['server.bytes'] = { sum: { field: 'server.bytes' } };
-            break;
-          default:
-            query.aggregations.dbHisto.aggregations[filter] = { sum: { field: filter } };
-          }
-        }
-
-        switch (reqQuery.bounding) {
-        case 'first':
-          query.aggregations.dbHisto.histogram = { field: 'firstPacket', interval: interval * 1000, min_doc_count: 1 };
-          break;
-        case 'database':
-          query.aggregations.dbHisto.histogram = { field: '@timestamp', interval: interval * 1000, min_doc_count: 1 };
-          break;
-        default:
-          query.aggregations.dbHisto.histogram = { field: 'lastPacket', interval: interval * 1000, min_doc_count: 1 };
-          break;
-        }
-      }
-    }
-
-    SessionAPIs.#addSortToQuery(query, reqQuery, 'firstPacket');
-
-    let shortcuts;
-    try { // try to fetch shortcuts
-      shortcuts = await Db.getShortcutsCache(req.user);
-    } catch (err) { // don't need to do anything, there will just be no
-      // shortcuts sent to the parser. but still log the error.
-      console.log('ERROR - fetching shortcuts cache when building sessions query', util.inspect(err, false, 50));
-    }
-
-    // always complete building the query regardless of shortcuts
-    let err;
-    arkimeparser.parser.yy = {
-      views: req.user.views,
-      fieldsMap: Config.getFieldsMap(),
-      dbFieldsMap: Config.getDBFieldsMap(),
-      prefix: internals.prefix,
-      emailSearch: req.user.emailSearch === true,
-      shortcuts: shortcuts || {},
-      shortcutTypeMap: internals.shortcutTypeMap
-    };
-
-    if (reqQuery.expression) {
-      if (!ArkimeUtil.isString(reqQuery.expression)) {
-        err = 'Expression need to be a string';
-      } else {
-        // reqQuery.expression = reqQuery.expression.replace(/\\/g, "\\\\");
-        try {
-          query.query.bool.filter.push(arkimeparser.parse(reqQuery.expression));
-        } catch (e) {
-          err = e;
-        }
-      }
-    }
-
-    if (!err && reqQuery.view) {
-      SessionAPIs.#addViewToQuery(req, query, ViewerUtils.continueBuildQuery, buildCb, queryOverride);
-    } else {
-      ViewerUtils.continueBuildQuery(req, query, err, buildCb, queryOverride);
-    }
-  };
-
-  // --------------------------------------------------------------------------
   static sessionsListFromIds (req, ids, fields, cb) {
     let processSegments = false;
     if (req?.query && ArkimeUtil.isString(req.query.segments) && SEGMENTS_REGEX.test(req.query.segments)) {
@@ -1729,7 +1341,7 @@ class SessionAPIs {
       });
     }, (err) => {
       if (processSegments) {
-        SessionAPIs.buildSessionQuery(req, (err, query, indices) => {
+        BuildQuery.build(req, (err, query, indices) => {
           if (err) {
             console.log('ERROR - sessionsListFromIds', util.inspect(err, false, 50));
             return cb(err);
@@ -1938,7 +1550,7 @@ class SessionAPIs {
    *   curl -v 'http://localhost:8005/api/buildquery?date=-1&expression=ip.src%3D%3D1.2.3.4'
    */
   static getQuery (req, res) {
-    SessionAPIs.buildSessionQuery(req, (bsqErr, query, indices) => {
+    BuildQuery.build(req, (bsqErr, query, indices) => {
       if (bsqErr) {
         return res.send({
           recordsTotal: 0,
@@ -1992,7 +1604,7 @@ class SessionAPIs {
       recordsFiltered: 0
     };
 
-    SessionAPIs.buildSessionQuery(req, (bsqErr, query, indices) => {
+    BuildQuery.build(req, (bsqErr, query, indices) => {
       if (bsqErr) {
         response.error = bsqErr.toString();
         return res.send(response);
@@ -2077,14 +1689,9 @@ class SessionAPIs {
                 }
               }
             }
-            results.results.push(fields);
-            return hitCb();
-          } else {
-            ViewerUtils.fixFields(fields, () => {
-              results.results.push(fields);
-              return hitCb();
-            });
           }
+          results.results.push(fields);
+          return hitCb();
         }, () => {
           try {
             response.map = map;
@@ -2193,7 +1800,7 @@ class SessionAPIs {
 
     const response = { spi: {} };
 
-    SessionAPIs.buildSessionQuery(req, (bsqErr, query, indices) => {
+    BuildQuery.build(req, (bsqErr, query, indices) => {
       if (bsqErr) {
         response.error = bsqErr.toString();
         return res.send(response);
@@ -2365,7 +1972,7 @@ class SessionAPIs {
       return res.serverError(403, `Bad 'field' parameter`);
     }
 
-    SessionAPIs.buildSessionQuery(req, (bsqErr, query, indices) => {
+    BuildQuery.build(req, (bsqErr, query, indices) => {
       const results = { items: [], graph: {}, map: {} };
       if (bsqErr) {
         return res.serverError(403, bsqErr.toString());
@@ -2579,7 +2186,7 @@ class SessionAPIs {
       fields.push(field);
     }
 
-    SessionAPIs.buildSessionQuery(req, (err, query, indices) => {
+    BuildQuery.build(req, (err, query, indices) => {
       if (err) {
         console.log(`ERROR - ${req.method} /api/spigraphhierarchy`, util.inspect(err, false, 50));
         return res.serverError(403, err);
@@ -2772,7 +2379,7 @@ class SessionAPIs {
       };
     }
 
-    SessionAPIs.buildSessionQuery(req, (err, query, indices) => {
+    BuildQuery.build(req, (err, query, indices) => {
       if (err) {
         res.status(403);
 
@@ -2901,7 +2508,7 @@ class SessionAPIs {
       }
     }
 
-    SessionAPIs.buildSessionQuery(req, (err, query, indices) => {
+    BuildQuery.build(req, (err, query, indices) => {
       if (err) {
         console.log(`ERROR - ${req.method} /api/multiunique`, util.inspect(err, false, 50));
         res.status(400);
@@ -2983,41 +2590,39 @@ class SessionAPIs {
       SessionAPIs.#sortFields(session);
 
       const hidePackets = (session.fileId === undefined || session.fileId.length === 0) ? 'true' : 'false';
-      ViewerUtils.fixFields(session, () => {
-        pug.render(internals.sessionDetailNew, {
-          filename: 'sessionDetail',
-          cache: internals.isProduction,
-          compileDebug: !internals.isProduction,
-          user: req.user,
-          session,
-          sep: session.source.ip?.includes(':') ? '.' : ':',
-          Db,
-          query: req.query,
-          basedir: '/',
-          hidePackets,
-          reqFields: Config.headers('headers-http-request'),
-          resFields: Config.headers('headers-http-response'),
-          emailFields: Config.headers('headers-email')
-        }, (err, data) => {
-          if (err) {
-            console.trace(`ERROR - ${req.method} /api/session/%s/%s/detail`, ArkimeUtil.sanitizeStr(req.params.nodeName), ArkimeUtil.sanitizeStr(req.params.id), util.inspect(err, false, 50));
-            return req.next(err);
+      pug.render(internals.sessionDetailNew, {
+        filename: 'sessionDetail',
+        cache: internals.isProduction,
+        compileDebug: !internals.isProduction,
+        user: req.user,
+        session,
+        sep: session.source.ip?.includes(':') ? '.' : ':',
+        Db,
+        query: req.query,
+        basedir: '/',
+        hidePackets,
+        reqFields: Config.headers('headers-http-request'),
+        resFields: Config.headers('headers-http-response'),
+        emailFields: Config.headers('headers-email')
+      }, (err, data) => {
+        if (err) {
+          console.trace(`ERROR - ${req.method} /api/session/%s/%s/detail`, ArkimeUtil.sanitizeStr(req.params.nodeName), ArkimeUtil.sanitizeStr(req.params.id), util.inspect(err, false, 50));
+          return req.next(err);
+        }
+        if (Config.debug > 1) {
+          console.log('/api/session/%s/%s/detail rendering', ArkimeUtil.sanitizeStr(req.params.nodeName), ArkimeUtil.sanitizeStr(req.params.id), data.replace(/>/g, '>\n'));
+        }
+        const html = sanitizeHtml(data, {
+          allowedTags: ['h3', 'h4', 'h5', 'h6', 'a', 'b', 'i', 'strong', 'em', 'div', 'pre', 'span', 'br', 'img', 'ul', 'li', 'b-dropdown', 'b-dropdown-item', 'arkime-toast', 'arkime-session-field', 'arkime-tag-sessions', 'arkime-export-pcap', 'arkime-remove-data', 'arkime-send-sessions', 'b-card-group', 'b-card', 'h4', 'dl', 'dt', 'dd', 'field-actions', 'b-dropdown-divider', 'template'],
+          allowedClasses: {
+            '*': ['ts-value', 'text-theme-quaternary', 'imagetag', 'file', 'nav-link', 'cursor-pointer', 'nav', 'nav-link', 'nav-pills', 'nav-item', 'mb-3', 'mb-2', 'me-1', 'me-5', 'ms-1', 'row', 'col-md-6', 'offset-md-6', 'sessionsrc', 'sessiondst', 'session-detail-ts', 'alert', 'alert-danger', 'session-detail', 'pull-right', 'small', 'dstcol', 'srccol', 'fa', 'fa-info-circle', 'fa-lg', 'fa-exclamation-triangle', 'sessionln', 'src-col-tip', 'dst-col-tip', 'fa-download', 'fa-arrow-circle-up', 'fa-arrow-circle-down', 'fa-link', 'clickable-label', 'detail-field', 'no-wrap', 'card-title', 'tag-list', 'btn', 'btn-xs', 'btn-theme-secondary', 'fa-plus-circle', 'str', 'bytes']
+          },
+          allowedAttributes: {
+            img: ['src'],
+            '*': [':download', '#button-content', 'class', 'value', 'sessionid', 'hidePackets', 'v-if', 'target', 'href', ':href', '@click', 'v-has-permission', 'text', ':text', ':sessions', '@done', ':cluster', ':single', ':message', ':type', ':done', 'expr', ':expr', ':separator', ':field', 'pull-left', 'size', 'variant', 'columns', 'style', 'suffix', 'target', 'v-for', 'key', ':key', ':add', 'title']
           }
-          if (Config.debug > 1) {
-            console.log('/api/session/%s/%s/detail rendering', ArkimeUtil.sanitizeStr(req.params.nodeName), ArkimeUtil.sanitizeStr(req.params.id), data.replace(/>/g, '>\n'));
-          }
-          const html = sanitizeHtml(data, {
-            allowedTags: ['h3', 'h4', 'h5', 'h6', 'a', 'b', 'i', 'strong', 'em', 'div', 'pre', 'span', 'br', 'img', 'ul', 'li', 'b-dropdown', 'b-dropdown-item', 'arkime-toast', 'arkime-session-field', 'arkime-tag-sessions', 'arkime-export-pcap', 'arkime-remove-data', 'arkime-send-sessions', 'b-card-group', 'b-card', 'h4', 'dl', 'dt', 'dd', 'field-actions', 'b-dropdown-divider', 'template'],
-            allowedClasses: {
-              '*': ['ts-value', 'text-theme-quaternary', 'imagetag', 'file', 'nav-link', 'cursor-pointer', 'nav', 'nav-link', 'nav-pills', 'nav-item', 'mb-3', 'mb-2', 'me-1', 'me-5', 'ms-1', 'row', 'col-md-6', 'offset-md-6', 'sessionsrc', 'sessiondst', 'session-detail-ts', 'alert', 'alert-danger', 'session-detail', 'pull-right', 'small', 'dstcol', 'srccol', 'fa', 'fa-info-circle', 'fa-lg', 'fa-exclamation-triangle', 'sessionln', 'src-col-tip', 'dst-col-tip', 'fa-download', 'fa-arrow-circle-up', 'fa-arrow-circle-down', 'fa-link', 'clickable-label', 'detail-field', 'no-wrap', 'card-title', 'tag-list', 'btn', 'btn-xs', 'btn-theme-secondary', 'fa-plus-circle', 'str', 'bytes']
-            },
-            allowedAttributes: {
-              img: ['src'],
-              '*': [':download', '#button-content', 'class', 'value', 'sessionid', 'hidePackets', 'v-if', 'target', 'href', ':href', '@click', 'v-has-permission', 'text', ':text', ':sessions', '@done', ':cluster', ':single', ':message', ':type', ':done', 'expr', ':expr', ':separator', ':field', 'pull-left', 'size', 'variant', 'columns', 'style', 'suffix', 'target', 'v-for', 'key', ':key', ':add', 'title']
-            }
-          });
-          res.send(html);
         });
+        res.send(html);
       });
     });
   };
@@ -3289,7 +2894,7 @@ class SessionAPIs {
       }
     }
 
-    SessionAPIs.buildSessionQuery(req, async (bsqErr, query, indices) => {
+    BuildQuery.build(req, async (bsqErr, query, indices) => {
       // Delay before first chunk to allow skeleton UI to display
       if (summaryChunkDelay > 0) {
         await new Promise(resolve => setTimeout(resolve, summaryChunkDelay));
@@ -3696,7 +3301,7 @@ class SessionAPIs {
     let nodeName = null;
     let sessionID = null;
 
-    SessionAPIs.buildSessionQuery(req, (bsqErr, query, indices) => {
+    BuildQuery.build(req, (bsqErr, query, indices) => {
       if (bsqErr) {
         res.status(400);
         console.log('ERROR - Build session query: ', ArkimeUtil.sanitizeStr(bsqErr));
