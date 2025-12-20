@@ -60,23 +60,18 @@ class BuildQuery {
         if (ArkimeUtil.isPP(field)) { continue; }
 
         const obj = {};
-        if (field === 'firstPacket') {
-          obj.firstPacket = { order: parts[1] };
-        } else if (field === 'lastPacket') {
-          obj.lastPacket = { order: parts[1] };
-        } else {
-          obj[field] = { order: parts[1] };
-        }
+        obj[field] = { order: parts[1] };
 
-        obj[field].unmapped_type = 'string';
+        let unmappedType = 'string';
         const fieldInfo = Config.getDBFieldsMap()[field];
         if (fieldInfo) {
           if (fieldInfo.type === 'ip') {
-            obj[field].unmapped_type = 'ip';
+            unmappedType = 'ip';
           } else if (fieldInfo.type === 'integer') {
-            obj[field].unmapped_type = 'long';
+            unmappedType = 'long';
           }
         }
+        obj[field].unmapped_type = unmappedType;
         obj[field].missing = (parts[1] === 'asc' ? '_last' : '_first');
         query.sort.push(obj);
       }
@@ -499,7 +494,7 @@ class BuildQuery {
 
     if (reqQuery.expression) {
       if (!ArkimeUtil.isString(reqQuery.expression)) {
-        err = 'Expression need to be a string';
+        err = 'Expression needs to be a string';
       } else {
         // reqQuery.expression = reqQuery.expression.replace(/\\/g, "\\\\");
         try {
@@ -587,7 +582,7 @@ class BuildQuery {
         stopTimeSec = parseInt(reqQuery.stopTime, 10);
       }
 
-      const diff = reqQuery.stopTime - reqQuery.startTime;
+      const diff = stopTimeSec - startTimeSec;
       if (diff < 30 * 60) {
         interval = 1; // second
       } else if (diff <= 5 * 24 * 60 * 60) {
