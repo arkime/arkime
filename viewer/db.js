@@ -510,6 +510,35 @@ async function fixPacketPos (fields) {
   }
 }
 
+async function fixFileIds (fields) {
+  if (!fields || !fields.node) { return; }
+
+  try {
+    const stat = await Db.arkimeNodeStatsCache(fields.node);
+    fields.nodehost = stat.hostname;
+  } catch (err) {
+    // Ignore error
+  }
+
+  if (!fields.fileId) {
+    fields.fileId = [];
+    return;
+  }
+
+  const files = [];
+  for (const item of fields.fileId) {
+    try {
+      const file = await Db.fileIdToFile(fields.node, item);
+      if (file && file.locked === 1) {
+        files.push(file.name);
+      }
+    } catch (ferr) {
+      // Ignore error
+    }
+  }
+  fields.fileId = files;
+}
+
 // Get a session from OpenSearch/Elasticsearch and decode packetPos if requested
 Db.getSession = async (id, options, cb) => {
   if (internals.debug > 2) {
@@ -562,6 +591,7 @@ Db.getSession = async (id, options, cb) => {
     if (session.fields.packetPos !== undefined) {
       await fixPacketPos(session.fields);
     }
+    await fixFileIds(session.fields ?? session._source);
     return cb ? cb(null, session) : session;
   } catch (err) {
     return cb ? cb(err) : Promise.reject(err);
@@ -795,8 +825,9 @@ Db.searchSessions = function (index, query, options, cb) {
     for (const hit of result.hits.hits) {
       fixSessionFields(hit.fields, unflatten);
       if (hit.fields?.packetPos !== undefined) {
-        await fixPacketPos(hit._source);
+        await fixPacketPos(hit.fields);
       }
+      await fixFileIds(hit.fields);
     }
     return cb(null, result);
   });

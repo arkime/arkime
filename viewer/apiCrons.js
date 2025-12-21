@@ -21,6 +21,7 @@ const ViewerUtils = require('./viewerUtils');
 const http = require('http');
 const arkimeparser = require('./arkimeparser.js');
 const Notifier = require('../common/notifier');
+const BuildQuery = require('./buildQuery');
 
 class CronAPIs {
   // --------------------------------------------------------------------------
@@ -472,7 +473,7 @@ class CronAPIs {
     const keys = Object.keys(nodes);
 
     await async.eachLimit(keys, 15, async (node) => {
-      const isLocal = await SessionAPIs.isLocalView(node);
+      const isLocal = await ViewerUtils.isLocalView(node);
 
       if (isLocal) {
         // Send from this node
@@ -705,7 +706,7 @@ class CronAPIs {
             }
           }
 
-          await ViewerUtils.lookupQueryItems(query.query.bool.filter);
+          await BuildQuery.lookupQueryItems(query.query.bool.filter);
           const { count, lpValue } = await CronAPIs.#processCronQuery(cq, options, query, endTime);
 
           if (Config.debug > 1) {
