@@ -477,10 +477,10 @@ function createActions (configKey, emitter, internalsKey) {
 // ============================================================================
 // security/access middleware -------------------------------------------------
 function checkProxyRequest (req, res, next) {
-  ViewerUtils.isLocalView(req.params.nodeName, function () {
+  ViewerUtils.isLocalView(req.params.nodeName, () => {
     return next();
   },
-  function () {
+  () => {
     return ViewerUtils.proxyRequest(req, res);
   });
 }

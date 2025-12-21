@@ -866,7 +866,7 @@ class SessionAPIs {
     await async.eachLimit(list, 10, async (item) => {
       const fields = item.fields;
       const sid = Db.session2Sid(item);
-      if (ViewerUtils.isLocalView(fields.node)) {
+      if (await ViewerUtils.isLocalView(fields.node)) {
         const options = {
           user: req.user,
           cluster,
