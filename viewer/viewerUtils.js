@@ -11,6 +11,7 @@ const Config = require('./config.js');
 const Db = require('./db.js');
 const http = require('http');
 const https = require('https');
+const util = require('util');
 const ArkimeUtil = require('../common/arkimeUtil');
 const Auth = require('../common/auth');
 const User = require('../common/user');
@@ -24,14 +25,11 @@ class ViewerUtils {
     }
 
     let certs = internals.caTrustCerts.get(node);
-    if (certs && certs.length > 0) {
-      options.ca = certs;
-      return;
+    if (!certs) {
+      const caTrustFile = Config.getFull(node, 'caTrustFile');
+      certs = ArkimeUtil.certificateFileToArray(caTrustFile);
+      internals.caTrustCerts.set(node, certs);
     }
-
-    const caTrustFile = Config.getFull(node, 'caTrustFile');
-    certs = ArkimeUtil.certificateFileToArray(caTrustFile);
-    internals.caTrustCerts.set(node, certs);
 
     if (certs && certs.length > 0) {
       options.ca = certs;
@@ -74,14 +72,11 @@ class ViewerUtils {
 
   // ----------------------------------------------------------------------------
   static graphMerge (req, query, aggregations) {
+    const filterNameMap = { totPackets: 'network.packets', totBytes: 'network.bytes' };
     let filters = req.user.settings.timelineDataFilters || internals.settingDefaults.timelineDataFilters;
 
     // Convert old names to names locally
-    filters = filters.map(x => {
-      if (x === 'totPackets') return 'network.packets';
-      if (x === 'totBytes') return 'network.bytes';
-      return x;
-    });
+    filters = filters.map(x => filterNameMap[x] ?? x);
 
     const graph = {
       xmin: req.query.startTime * 1000 || null,
@@ -255,10 +250,12 @@ class ViewerUtils {
       if (Config.debug > 1) {
         console.log(`DEBUG: node:${node} is using ${url} because viewUrl was set for ${node} in config file`);
       }
+      const isHttps = url.startsWith('https');
+      const client = isHttps ? https : http;
       if (cb) {
-        cb(null, url, url.slice(0, 5) === 'https' ? https : http);
+        cb(null, url, client);
       } else {
-        return { viewUrl: url, client: url.slice(0, 5) === 'https' ? https : http };
+        return { viewUrl: url, client };
       }
       return;
     }
@@ -270,20 +267,14 @@ class ViewerUtils {
         console.log(`DEBUG: node:${node} is using ${stat.hostname} from OpenSearch/Elasticsearch stats index`);
       }
 
-      if (Config.isHTTPS(node)) {
-        const result = 'https://' + stat.hostname + ':' + Config.getFull(node, 'viewPort', '8005');
-        if (cb) {
-          cb(null, result, https);
-        } else {
-          return { viewUrl: result, client: https };
-        }
+      const isHttps = Config.isHTTPS(node);
+      const protocol = isHttps ? 'https' : 'http';
+      const client = isHttps ? https : http;
+      const result = protocol + '://' + stat.hostname + ':' + Config.getFull(node, 'viewPort', '8005');
+      if (cb) {
+        cb(null, result, client);
       } else {
-        const result = 'http://' + stat.hostname + ':' + Config.getFull(node, 'viewPort', '8005');
-        if (cb) {
-          cb(null, result, http);
-        } else {
-          return { viewUrl: result, client: http };
-        }
+        return { viewUrl: result, client };
       }
     } catch (err) {
       if (cb) {
@@ -340,9 +331,63 @@ class ViewerUtils {
     });
   };
 
+  // --------------------------------------------------------------------------
+  static proxyRequest (req, res, errCb) {
+    ArkimeUtil.noCache(req, res);
+
+    ViewerUtils.getViewUrl(req.params.nodeName, (err, viewUrl, client) => {
+      if (err) {
+        if (errCb) {
+          return errCb(err);
+        }
+        console.log('ERROR - getViewUrl in proxyRequest - node:', req.params.nodeName, 'err:', util.inspect(err, false, 50));
+        return res.send(`Can't find view url for '${ArkimeUtil.safeStr(req.params.nodeName)}' check viewer logs on '${Config.hostName()}'`);
+      }
+
+      let url;
+      if (req.url.startsWith('/')) {
+        url = new URL(req.url.substring(1), viewUrl);
+      } else {
+        url = new URL(req.url, viewUrl);
+      }
+
+      const options = {
+        timeout: 20 * 60 * 1000,
+        agent: client === http ? internals.httpAgent : internals.httpsAgent
+      };
+
+      const urlPath = url.pathname + (url.search ?? '');
+      Auth.addS2SAuth(options, req.user, req.params.nodeName, urlPath);
+      ViewerUtils.addCaTrust(options, req.params.nodeName);
+
+      const preq = client.request(url, options, (pres) => {
+        if (pres.headers['content-type']) {
+          res.setHeader('content-type', pres.headers['content-type']);
+        }
+        if (pres.headers['content-disposition']) {
+          res.setHeader('content-disposition', pres.headers['content-disposition']);
+        }
+        pres.on('data', (chunk) => {
+          res.write(chunk);
+        });
+        pres.on('end', () => {
+          res.end();
+        });
+      });
+
+      preq.on('error', (e) => {
+        if (errCb) {
+          return errCb(e);
+        }
+        console.log("ERROR - Couldn't proxy request=", url, '\nerror=', util.inspect(e, false, 50), '\nYou might want to run viewer with two --debug for more info');
+        res.send(`Error talking to node '${ArkimeUtil.safeStr(req.params.nodeName)}' using host '${url.host}' check viewer logs on '${Config.hostName()}'`);
+      });
+      preq.end();
+    });
+  };
+
   // ----------------------------------------------------------------------------
-  static addCluster (cluster, options) {
-    if (!options) options = {};
+  static addCluster (cluster, options = {}) {
     if (cluster && Config.get('multiES', false)) {
       options.cluster = cluster;
     }
@@ -364,6 +409,31 @@ class ViewerUtils {
       return anon;
     } else {
       return await User.getUserCache(userId);
+    }
+  };
+
+  // --------------------------------------------------------------------------
+  static async isLocalView (node, yesCb, noCb) {
+    if (internals.isLocalViewRegExp && node.match(internals.isLocalViewRegExp)) {
+      if (Config.debug > 1) {
+        console.log(`DEBUG: node:${node} is local view because matches ${internals.isLocalViewRegExp}`);
+      }
+      return yesCb ? yesCb() : true;
+    }
+
+    const pcapWriteMethod = Config.getFull(node, 'pcapWriteMethod');
+    const writer = internals.writers.get(pcapWriteMethod);
+    if (writer && writer.localNode === false) {
+      if (Config.debug > 1) {
+        console.log(`DEBUG: node:${node} is local view because of writer`);
+      }
+      return yesCb ? yesCb() : true;
+    }
+
+    if (await Db.isLocalView(node)) {
+      return yesCb ? yesCb() : true;
+    } else {
+      return noCb ? noCb() : false;
     }
   };
 }

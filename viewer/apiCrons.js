@@ -473,7 +473,7 @@ class CronAPIs {
     const keys = Object.keys(nodes);
 
     await async.eachLimit(keys, 15, async (node) => {
-      const isLocal = await SessionAPIs.isLocalView(node);
+      const isLocal = await ViewerUtils.isLocalView(node);
 
       if (isLocal) {
         // Send from this node

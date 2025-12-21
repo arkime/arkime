@@ -728,7 +728,7 @@ class SessionAPIs {
     await async.eachLimit(list, 10, async (item) => {
       const fields = item.fields;
 
-      if (await SessionAPIs.isLocalView(fields.node)) {
+      if (await ViewerUtils.isLocalView(fields.node)) {
         // Get from our DISK
         await new Promise((resolve) => {
           pcapWriter(res, item, req.arkimeWriterOptions, resolve);
@@ -866,7 +866,7 @@ class SessionAPIs {
     await async.eachLimit(list, 10, async (item) => {
       const fields = item.fields;
       const sid = Db.session2Sid(item);
-      if (SessionAPIs.isLocalView(fields.node)) {
+      if (ViewerUtils.isLocalView(fields.node)) {
         const options = {
           user: req.user,
           cluster,
@@ -1189,7 +1189,7 @@ class SessionAPIs {
     await async.eachLimit(list, 10, async (item) => {
       const fields = item.fields;
 
-      if (await SessionAPIs.isLocalView(fields.node)) {
+      if (await ViewerUtils.isLocalView(fields.node)) {
         // Get from our DISK
         await SessionAPIs.#pcapScrub(req, res, Db.session2Sid(item), whatToRemove);
       } else {
@@ -1358,86 +1358,6 @@ class SessionAPIs {
       } else {
         cb(err, list);
       }
-    });
-  };
-
-  // --------------------------------------------------------------------------
-  static async isLocalView (node, yesCb, noCb) {
-    if (internals.isLocalViewRegExp && node.match(internals.isLocalViewRegExp)) {
-      if (Config.debug > 1) {
-        console.log(`DEBUG: node:${node} is local view because matches ${internals.isLocalViewRegExp}`);
-      }
-      return yesCb ? yesCb() : true;
-    }
-
-    const pcapWriteMethod = Config.getFull(node, 'pcapWriteMethod');
-    const writer = internals.writers.get(pcapWriteMethod);
-    if (writer && writer.localNode === false) {
-      if (Config.debug > 1) {
-        console.log(`DEBUG: node:${node} is local view because of writer`);
-      }
-      return yesCb ? yesCb() : true;
-    }
-
-    if (await Db.isLocalView(node)) {
-      return yesCb ? yesCb() : true;
-    } else {
-      return noCb ? noCb() : false;
-    }
-  };
-
-  // --------------------------------------------------------------------------
-  static proxyRequest (req, res, errCb) {
-    ArkimeUtil.noCache(req, res);
-
-    ViewerUtils.getViewUrl(req.params.nodeName, (err, viewUrl, client) => {
-      if (err) {
-        if (errCb) {
-          return errCb(err);
-        }
-        console.log('ERROR - getViewUrl in proxyRequest - node:', req.params.nodeName, 'err:', util.inspect(err, false, 50));
-        return res.send(`Can't find view url for '${ArkimeUtil.safeStr(req.params.nodeName)}' check viewer logs on '${Config.hostName()}'`);
-      }
-
-      let url;
-      if (req.url.startsWith('/')) {
-        url = new URL(req.url.substring(1), viewUrl);
-      } else {
-        url = new URL(req.url, viewUrl);
-      }
-
-      const options = {
-        timeout: 20 * 60 * 1000,
-        agent: client === http ? internals.httpAgent : internals.httpsAgent
-      };
-
-      const urlPath = url.pathname + (url.search ?? '');
-      Auth.addS2SAuth(options, req.user, req.params.nodeName, urlPath);
-      ViewerUtils.addCaTrust(options, req.params.nodeName);
-
-      const preq = client.request(url, options, (pres) => {
-        if (pres.headers['content-type']) {
-          res.setHeader('content-type', pres.headers['content-type']);
-        }
-        if (pres.headers['content-disposition']) {
-          res.setHeader('content-disposition', pres.headers['content-disposition']);
-        }
-        pres.on('data', (chunk) => {
-          res.write(chunk);
-        });
-        pres.on('end', () => {
-          res.end();
-        });
-      });
-
-      preq.on('error', (e) => {
-        if (errCb) {
-          return errCb(e);
-        }
-        console.log("ERROR - Couldn't proxy request=", url, '\nerror=', util.inspect(e, false, 50), '\nYou might want to run viewer with two --debug for more info');
-        res.send(`Error talking to node '${ArkimeUtil.safeStr(req.params.nodeName)}' using host '${url.host}' check viewer logs on '${Config.hostName()}'`);
-      });
-      preq.end();
     });
   };
 
@@ -2636,12 +2556,12 @@ class SessionAPIs {
    * @returns {html} The html to display as session packets
    */
   static getPackets (req, res) {
-    SessionAPIs.isLocalView(req.params.nodeName, () => {
+    ViewerUtils.isLocalView(req.params.nodeName, () => {
       ArkimeUtil.noCache(req, res);
       req.packetsOnly = true;
       SessionAPIs.#localSessionDetail(req, res);
     }, () => {
-      return SessionAPIs.proxyRequest(req, res);
+      return ViewerUtils.proxyRequest(req, res);
     });
   };
 
@@ -3336,7 +3256,7 @@ class SessionAPIs {
             sessionID = Db.session2Sid(sessions.hits.hits[0]);
             hash = req.params.hash;
 
-            SessionAPIs.isLocalView(nodeName, () => { // get file from the local disk
+            ViewerUtils.isLocalView(nodeName, () => { // get file from the local disk
               SessionAPIs.#localGetItemByHash(nodeName, sessionID, hash, (err, item) => {
                 if (err) {
                   res.status(400);
@@ -3356,7 +3276,7 @@ class SessionAPIs {
               preq.params.id = sessionID;
               preq.params.hash = hash;
               preq.url = `api/session/${nodeName}/${sessionID}/bodyhash/${hash}`;
-              return SessionAPIs.proxyRequest(preq, res);
+              return ViewerUtils.proxyRequest(preq, res);
             });
           } else {
             res.status(400);

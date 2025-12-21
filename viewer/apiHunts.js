@@ -469,7 +469,7 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
             return HuntAPIs.#updateHuntStats(hunt, huntId, session, searchedSessions).then(statsResult => cb(statsResult));
           }
 
-          SessionAPIs.isLocalView(node, () => {
+          ViewerUtils.isLocalView(node, () => {
             HuntAPIs.#sessionHunt(sessionId, options, async (err, matched) => {
               if (err) {
                 return HuntAPIs.#pauseHuntJobWithError(huntId, hunt, { value: `Hunt error searching session (${sessionId}): ${err}` }, node);

@@ -1,4 +1,4 @@
-use Test::More tests => 106;
+use Test::More tests => 108;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -123,10 +123,14 @@ my ($url) = @_;
     is ($json->{graph}->{interval}, 3600, "correct interval ALL");
 
 # Check ip.protocol=blah (GET and POST)
-    my $json = get("/sessions.json?date=-1&&spi=ipsrc&expression=" . uri_escape("file=$pwd/bigendian.pcap&&ip.protocol==blah"));
+    $json = get("/sessions.json?date=-1&&spi=ipsrc&expression=" . uri_escape("file=$pwd/bigendian.pcap&&ip.protocol==blah"));
     is($json->{error}, "Unknown protocol string blah", "ip.protocol==blah");
-    my $json = post("/api/sessions", '{"date":-1, "spi":"ipsrc", "expression":"file=' . $pwd . '/bigendian.pcap&&ip.protocol==blah"}');
+    $json = post("/api/sessions", '{"date":-1, "spi":"ipsrc", "expression":"file=' . $pwd . '/bigendian.pcap&&ip.protocol==blah"}');
     is($json->{error}, "Unknown protocol string blah", "ip.protocol==blah");
+
+# expression string
+    $json = post("/api/sessions", '{"date":-1, "spi":"ipsrc", "expression": 1}');
+    is($json->{error}, "Expression needs to be a string", "ip.protocol==blah");
 
 # csv
     my $csv = getBinary("/sessions.csv?date=-1&expression=" . uri_escape("file=$pwd/socks-http-example.pcap"))->content;
