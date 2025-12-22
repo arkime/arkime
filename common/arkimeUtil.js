@@ -566,7 +566,7 @@ class ArkimeUtil {
 
   // ----------------------------------------------------------------------------
   /**
-   * Foramt the prefix
+   * Format the prefix
    */
   static formatPrefix (prefix) {
     if (prefix === undefined) {

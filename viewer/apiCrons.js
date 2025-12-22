@@ -158,7 +158,7 @@ class CronAPIs {
             // remove sensitive information for users this query is shared with (except arkimeAdmin)
             delete result.users;
             delete result.roles;
-            delete roles.editRoles;
+            delete result.editRoles;
           } else {
             if (result.users) { // client expects a string
               result.users = result.users.join(',');

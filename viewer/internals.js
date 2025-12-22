@@ -35,7 +35,7 @@ const internals = {
   emptyPNG: Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAACklEQVR4nGMAAQAABQABDQottAAAAABJRU5ErkJggg==', 'base64'),
   PNG_LINE_WIDTH: 256,
   runningHuntJob: undefined,
-  proccessHuntJobsInitialized: false,
+  processHuntJobsInitialized: false,
   notifiers: undefined,
   shortcutTypeMap: {
     ip: 'ip',

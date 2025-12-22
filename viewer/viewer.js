@@ -253,7 +253,7 @@ if (ArkimeConfig.regressionTests) {
   });
 }
 
-// load balancer test - no authj ----------------------------------------------
+// load balancer test - no auth ----------------------------------------------
 app.use(['/_ns_/nstest.html', '/health'], function (req, res) {
   res.end();
 });
@@ -1107,7 +1107,7 @@ async function expireCheckAll () {
     }
   }
 
-  // Now gow through all the local devices and check them one at a time
+  // Now go through all the local devices and check them one at a time
   const keys = Object.keys(devToStat);
   async.forEachSeries(keys, function (key, cb) {
     expireCheckDevice(nodes, devToStat[key], cb);
@@ -2107,7 +2107,7 @@ app.use(cspHeader, setCookie, (req, res) => {
     huntLimit: limit,
     nonce: res.locals.nonce,
     anonymousMode: Auth.isAnonymousMode() && !ArkimeConfig.regressionTests,
-    businesDayStart: Config.get('businessDayStart', false),
+    businessDayStart: Config.get('businessDayStart', false),
     businessDayEnd: Config.get('businessDayEnd', false),
     businessDays: Config.get('businessDays', '1,2,3,4,5'),
     turnOffGraphDays: Config.get('turnOffGraphDays', 30),

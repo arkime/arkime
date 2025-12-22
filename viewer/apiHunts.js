@@ -698,8 +698,8 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
         // there is a job already running
         if (hunt.status === 'running') {
           internals.runningHuntJob = hunt;
-          if (!internals.proccessHuntJobsInitialized) {
-            internals.proccessHuntJobsInitialized = true;
+          if (!internals.processHuntJobsInitialized) {
+            internals.processHuntJobsInitialized = true;
             // restart the abandoned or incomplete hunt
             HuntAPIs.#processHuntJob(id, hunt);
           }

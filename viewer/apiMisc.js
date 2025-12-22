@@ -160,7 +160,7 @@ class MiscAPIs {
   /**
    * GET - /api/valueactions
    *
-   * Retrives the actions that can be preformed on meta data values.
+   * Retrieves the actions that can be preformed on meta data values.
    * @name /valueactions
    * @returns {object} - The list of actions that can be preformed on data values.
    */
@@ -204,7 +204,7 @@ class MiscAPIs {
   /**
    * GET - /api/fieldactions
    *
-   * Retrives the actions that can be preformed on fields.
+   * Retrieves the actions that can be preformed on fields.
    * @name /fieldactions
    * @returns {object} - The list of actions that can be preformed on fields.
    */
@@ -237,7 +237,7 @@ class MiscAPIs {
   /**
    * GET - /api/reversedns
    *
-   * Retrives the domain names associated with an IP address.
+   * Retrieves the domain names associated with an IP address.
    * @name /reversedns
    * @param {string} ip - The IP to search domain names for.
    * @returns {string} domains - A comma separated string list of all the matching domain names.
