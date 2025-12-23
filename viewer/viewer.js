@@ -476,13 +476,12 @@ function createActions (configKey, emitter, internalsKey) {
 // API MIDDLEWARE
 // ============================================================================
 // security/access middleware -------------------------------------------------
-function checkProxyRequest (req, res, next) {
-  ViewerUtils.isLocalView(req.params.nodeName, () => {
+async function checkProxyRequest (req, res, next) {
+  if (await ViewerUtils.isLocalView(req.params.nodeName)) {
     return next();
-  },
-  () => {
+  } else {
     return ViewerUtils.proxyRequest(req, res);
-  });
+  }
 }
 
 function setCookie (req, res, next) {

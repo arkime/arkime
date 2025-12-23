@@ -2555,14 +2555,14 @@ class SessionAPIs {
    * @name /session/:nodeName/:id/packets
    * @returns {html} The html to display as session packets
    */
-  static getPackets (req, res) {
-    ViewerUtils.isLocalView(req.params.nodeName, () => {
+  static async getPackets (req, res) {
+    if (await ViewerUtils.isLocalView(req.params.nodeName)) {
       ArkimeUtil.noCache(req, res);
       req.packetsOnly = true;
       SessionAPIs.#localSessionDetail(req, res);
-    }, () => {
+    } else {
       return ViewerUtils.proxyRequest(req, res);
-    });
+    }
   };
 
   // --------------------------------------------------------------------------
@@ -3237,7 +3237,7 @@ class SessionAPIs {
         console.log(`/api/sessions/bodyhash/%s ${indices} query`, ArkimeUtil.sanitizeStr(req.params.hash), JSON.stringify(query, null, 2));
       }
 
-      Db.searchSessions(indices, query, {}, (err, sessions) => {
+      Db.searchSessions(indices, query, {}, async (err, sessions) => {
         if (err) {
           console.log(`ERROR - ${req.method} /api/sessions/bodyhash/%s`, ArkimeUtil.sanitizeStr(req.params.hash), util.inspect(err, false, 50));
           res.status(400);
@@ -3256,7 +3256,8 @@ class SessionAPIs {
             sessionID = Db.session2Sid(sessions.hits.hits[0]);
             hash = req.params.hash;
 
-            ViewerUtils.isLocalView(nodeName, () => { // get file from the local disk
+            if (await ViewerUtils.isLocalView(nodeName)) {
+              // get file from the local disk
               SessionAPIs.#localGetItemByHash(nodeName, sessionID, hash, (err, item) => {
                 if (err) {
                   res.status(400);
@@ -3270,14 +3271,15 @@ class SessionAPIs {
                   return res.end('No Match');
                 }
               });
-            }, () => { // get file from the remote disk
+            } else {
+              // get file from the remote disk
               const preq = Object.assign({}, req);
               preq.params.nodeName = nodeName;
               preq.params.id = sessionID;
               preq.params.hash = hash;
               preq.url = `api/session/${nodeName}/${sessionID}/bodyhash/${hash}`;
               return ViewerUtils.proxyRequest(preq, res);
-            });
+            }
           } else {
             res.status(400);
             res.end('No Match Found');
