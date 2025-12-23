@@ -414,20 +414,20 @@ class MiscAPIs {
    * @name /cyberchef/:nodeName/session/:id
    * @param {string} type=src - Whether to send the source (src) or destination (dst) packets.
    */
-  static cyberChef (req, res) {
-    SessionAPIs.processSessionIdAndDecode(req.params.id, 10000, (err, session, results) => {
-      if (err) {
-        console.log(`ERROR - ${req.method} /%s/session/%s/cyberchef`, ArkimeUtil.sanitizeStr(req.params.nodeName), ArkimeUtil.sanitizeStr(req.params.id), util.inspect(err, false, 50));
-        return res.end('Error - ' + err);
-      }
+  static async cyberChef (req, res) {
+    try {
+      const { packets } = await SessionAPIs.processSessionIdAndDecode(req.params.id, 10000);
 
       let data = '';
-      for (let i = (req.query.type !== 'dst' ? 0 : 1), ilen = results.length; i < ilen; i += 2) {
-        data += results[i].data.toString('hex');
+      for (let i = (req.query.type !== 'dst' ? 0 : 1), ilen = packets.length; i < ilen; i += 2) {
+        data += packets[i].data.toString('hex');
       }
 
       res.send({ data });
-    });
+    } catch (err) {
+      console.log(`ERROR - ${req.method} /%s/session/%s/cyberchef`, ArkimeUtil.sanitizeStr(req.params.nodeName), ArkimeUtil.sanitizeStr(req.params.id), util.inspect(err, false, 50));
+      return res.end('Error - ' + err);
+    }
   };
 
   // --------------------------------------------------------------------------

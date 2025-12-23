@@ -256,13 +256,11 @@ class SessionAPIs {
   }
 
   // --------------------------------------------------------------------------
-  static #reqGetRawBody (req, cb) {
-    SessionAPIs.processSessionIdAndDecode(req.params.id, 10000, (err, session, incoming) => {
-      if (err) {
-        return cb(err);
-      }
+  static async #reqGetRawBody (req, cb) {
+    try {
+      const { session, packets } = await SessionAPIs.processSessionIdAndDecode(req.params.id, 10000);
 
-      if (incoming.length === 0) {
+      if (packets.length === 0) {
         return cb(null, null);
       }
 
@@ -303,8 +301,10 @@ class SessionAPIs {
         cb(err, items[0].data);
       };
 
-      decode.createPipeline(options, options.order, new decode.Pcap2ItemStream(options, incoming));
-    });
+      decode.createPipeline(options, options.order, new decode.Pcap2ItemStream(options, packets));
+    } catch (err) {
+      return cb(err);
+    }
   };
 
   // --------------------------------------------------------------------------
@@ -810,13 +810,11 @@ class SessionAPIs {
   }
 
   // --------------------------------------------------------------------------
-  static #localGetItemByHash (nodeName, sessionID, hash, cb) {
-    SessionAPIs.processSessionIdAndDecode(sessionID, 10000, (err, session, incoming) => {
-      if (err) {
-        return cb(err);
-      }
+  static async #localGetItemByHash (nodeName, sessionID, hash, cb) {
+    try {
+      const { packets } = await SessionAPIs.processSessionIdAndDecode(sessionID, 10000);
 
-      if (incoming.length === 0) {
+      if (packets.length === 0) {
         return cb(null, null);
       }
 
@@ -851,8 +849,10 @@ class SessionAPIs {
         return cb(err, items[0]);
       };
 
-      decode.createPipeline(options, options.order, new decode.Pcap2ItemStream(options, incoming));
-    });
+      decode.createPipeline(options, options.order, new decode.Pcap2ItemStream(options, packets));
+    } catch (err) {
+      return cb(err);
+    }
   }
 
   // --------------------------------------------------------------------------
@@ -1412,45 +1412,51 @@ class SessionAPIs {
   };
 
   // --------------------------------------------------------------------------
-  static processSessionIdAndDecode (id, numPackets, doneCb) {
-    let packets = [];
-    SessionAPIs.processSessionId(id, true, null, (pcap, buffer, cb, i) => {
-      let obj = {};
-      if (buffer.length > 16) {
-        pcap.decode(buffer, obj);
-      } else {
-        obj = { ip: { p: '' } };
-      }
-      packets[i] = obj;
-      cb(null);
-    }, (err, session) => {
-      if (err) {
-        console.log('ERROR - processSessionIdAndDecode', util.inspect(err, false, 50));
-        return doneCb(err);
-      }
-      packets = packets.filter(Boolean);
-      if (packets.length === 0) {
-        return doneCb(null, session, []);
-      } else if (packets[0].ip === undefined) {
-        return doneCb(null, session, []);
-      } else if (packets[0].ip.p === 1) {
-        const { err, results } = Pcap.reassemble_icmp(packets, numPackets);
-        return doneCb(err, session, results);
-      } else if (packets[0].ip.p === 6) {
-        const key = ipaddr.parse(session.source.ip).toString();
-        Pcap.reassemble_tcp(packets, numPackets, key + ':' + session.source.port, (err, results) => {
-          return doneCb(err, session, results);
-        });
-      } else if (packets[0].ip.p === 17) {
-        const { err, results } = Pcap.reassemble_udp(packets, numPackets);
-        return doneCb(err, session, results);
-      } else if (packets[0].ip.p === 132) {
-        const { err, results } = Pcap.reassemble_sctp(packets, numPackets);
-        return doneCb(err, session, results);
-      } else {
-        return doneCb(null, session, []);
-      }
-    }, numPackets, 10);
+  static async processSessionIdAndDecode (id, numPackets) {
+    return new Promise((resolve, reject) => {
+      let packets = [];
+      SessionAPIs.processSessionId(id, true, null, (pcap, buffer, cb, i) => {
+        let obj = {};
+        if (buffer.length > 16) {
+          pcap.decode(buffer, obj);
+        } else {
+          obj = { ip: { p: '' } };
+        }
+        packets[i] = obj;
+        cb(null);
+      }, (err, session) => {
+        if (err) {
+          console.log('ERROR - processSessionIdAndDecode', util.inspect(err, false, 50));
+          return reject(err);
+        }
+        packets = packets.filter(Boolean);
+        if (packets.length === 0) {
+          return resolve({ session, packets: [] });
+        } else if (packets[0].ip === undefined) {
+          return resolve({ session, packets: [] });
+        } else if (packets[0].ip.p === 1) {
+          const { err: reassembleErr, results } = Pcap.reassemble_icmp(packets, numPackets);
+          if (reassembleErr) return reject(reassembleErr);
+          return resolve({ session, packets: results });
+        } else if (packets[0].ip.p === 6) {
+          const key = ipaddr.parse(session.source.ip).toString();
+          Pcap.reassemble_tcp(packets, numPackets, key + ':' + session.source.port, (err, results) => {
+            if (err) return reject(err);
+            return resolve({ session, packets: results });
+          });
+        } else if (packets[0].ip.p === 17) {
+          const { err: reassembleErr, results } = Pcap.reassemble_udp(packets, numPackets);
+          if (reassembleErr) return reject(reassembleErr);
+          return resolve({ session, packets: results });
+        } else if (packets[0].ip.p === 132) {
+          const { err: reassembleErr, results } = Pcap.reassemble_sctp(packets, numPackets);
+          if (reassembleErr) return reject(reassembleErr);
+          return resolve({ session, packets: results });
+        } else {
+          return resolve({ session, packets: [] });
+        }
+      }, numPackets, 10);
+    });
   };
 
   // --------------------------------------------------------------------------
@@ -3140,18 +3146,16 @@ class SessionAPIs {
    * @param {string} type=src - Whether to retrieve the src (source) or dst (desintation) packets bitmap image. Defaults to src.
    * @returns {image/png} image - The bitmap image.
    */
-  static getPacketPNG (req, res) {
+  static async getPacketPNG (req, res) {
     ArkimeUtil.noCache(req, res, 'image/png');
 
-    SessionAPIs.processSessionIdAndDecode(req.params.id, 1000, (err, session, results) => {
-      if (err) {
-        return res.send(internals.emptyPNG);
-      }
+    try {
+      const { packets } = await SessionAPIs.processSessionIdAndDecode(req.params.id, 10000);
 
       let size = 0;
       let i = (req.query.type !== 'dst' ? 0 : 1);
-      for (let ilen = results.length; i < ilen; i += 2) {
-        size += results[i].data.length + 2 * internals.PNG_LINE_WIDTH - (results[i].data.length % internals.PNG_LINE_WIDTH);
+      for (let ilen = packets.length; i < ilen; i += 2) {
+        size += packets[i].data.length + 2 * internals.PNG_LINE_WIDTH - (packets[i].data.length % internals.PNG_LINE_WIDTH);
       }
 
       const buffer = Buffer.alloc(size, 0);
@@ -3160,11 +3164,11 @@ class SessionAPIs {
         return res.send(internals.emptyPNG);
       }
 
-      for (let j = (req.query.type !== 'dst' ? 0 : 1); j < results.length; j += 2) {
-        results[j].data.copy(buffer, pos);
-        pos += results[j].data.length;
+      for (let j = (req.query.type !== 'dst' ? 0 : 1); j < packets.length; j += 2) {
+        packets[j].data.copy(buffer, pos);
+        pos += packets[j].data.length;
         const fillpos = pos;
-        pos += 2 * internals.PNG_LINE_WIDTH - (results[j].data.length % internals.PNG_LINE_WIDTH);
+        pos += 2 * internals.PNG_LINE_WIDTH - (packets[j].data.length % internals.PNG_LINE_WIDTH);
         buffer.fill(0xff, fillpos, pos);
       }
 
@@ -3179,7 +3183,9 @@ class SessionAPIs {
           inputHasAlpha: false
         }
       ));
-    });
+    } catch (err) {
+      return res.send(internals.emptyPNG);
+    }
   };
 
   // --------------------------------------------------------------------------
@@ -3191,20 +3197,20 @@ class SessionAPIs {
    * @param {string} type=src - Whether to retrieve the src (source) or dst (desintation) raw packets. Defaults to src.
    * @returns {string} The source or destination packet text.
    */
-  static getRawPackets (req, res) {
+  static async getRawPackets (req, res) {
     ArkimeUtil.noCache(req, res, 'application/vnd.tcpdump.pcap');
 
-    SessionAPIs.processSessionIdAndDecode(req.params.id, 10000, (err, session, results) => {
-      if (err) {
-        return res.send('Error');
-      }
+    try {
+      const { packets } = await SessionAPIs.processSessionIdAndDecode(req.params.id, 10000);
 
-      for (let i = (req.query.type !== 'dst' ? 0 : 1); i < results.length; i += 2) {
-        res.write(results[i].data);
+      for (let i = (req.query.type !== 'dst' ? 0 : 1); i < packets.length; i += 2) {
+        res.write(packets[i].data);
       }
 
       res.end();
-    });
+    } catch (err) {
+      return res.send('Error');
+    }
   };
 
   // --------------------------------------------------------------------------

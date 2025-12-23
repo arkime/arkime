@@ -69,13 +69,10 @@ class HuntAPIs {
   }
 
   // --------------------------------------------------------------------------
-  static #sessionHunt (sessionId, options, cb) {
+  static async #sessionHunt (sessionId, options, cb) {
     if (options.type === 'reassembled') {
-      SessionAPIs.processSessionIdAndDecode(sessionId, options.size || 10000, (err, session, packets) => {
-        if (err) {
-          return cb(null, false);
-        }
-
+      try {
+        const { packets } = await SessionAPIs.processSessionIdAndDecode(sessionId, options.size || 10000);
         let i = 0;
         let increment = 1;
         const len = packets.length;
@@ -90,9 +87,9 @@ class HuntAPIs {
         for (i; i < len; i += increment) {
           if (HuntAPIs.#packetSearch(packets[i].data, options)) { return cb(null, true); }
         }
-
-        return cb(null, false);
-      });
+      } catch (err) {
+      }
+      return cb(null, false);
     } else if (options.type === 'raw') {
       const packets = [];
       SessionAPIs.processSessionId(sessionId, true, null, (pcap, buffer, processSessionIdCb, i) => {
