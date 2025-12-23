@@ -24,15 +24,13 @@ class ArkimeCache {
   }
 
   // ----------------------------------------------------------------------------
-  get (key, cb) {
-    // promise version
-    if (!cb) {
-      return new Promise((resolve, reject) => {
-        resolve(this.#lru.get(key));
-      });
-    }
+  has (key) {
+    return this.#lru.has(key);
+  }
 
-    cb(null, this.#lru.get(key));
+  // ----------------------------------------------------------------------------
+  async get (key) {
+    return this.#lru.get(key);
   }
 
   // ----------------------------------------------------------------------------
@@ -79,30 +77,15 @@ class ArkimeRedisCache extends ArkimeCache {
   }
 
   // ----------------------------------------------------------------------------
-  get (key, cb) {
-    // Convert promise to cb by calling ourselves
-    if (!cb) {
-      return new Promise((resolve, reject) => {
-        this.get(key, (err, data) => {
-          if (err) {
-            reject(err);
-          } else {
-            resolve(data);
-          }
-        });
-      });
+  async get (key) {
+    if (super.has(key)) {
+      return super.get(key);
     }
 
-    // Check memory cache first
-    super.get(key, (err, result) => {
-      if (err || result) {
-        return cb(err, result);
-      }
-
-      // Check redis
+    return new Promise((resolve, reject) => {
       this.client.getBuffer(key, (err, reply) => {
         if (err || reply === null) {
-          return cb(null, undefined);
+          return resolve(undefined);
         }
         const bsonResult = BSON.deserialize(reply, { promoteBuffers: true });
 
@@ -116,7 +99,7 @@ class ArkimeRedisCache extends ArkimeCache {
           }
         }
         super.set(key, bsonResult); // Set memory cache
-        return cb(null, bsonResult);
+        return resolve(bsonResult);
       });
     });
   };
@@ -152,34 +135,19 @@ class ArkimeMemcachedCache extends ArkimeCache {
   }
 
   // ----------------------------------------------------------------------------
-  get (key, cb) {
-    // Convert promise to cb by calling ourselves
-    if (!cb) {
-      return new Promise((resolve, reject) => {
-        this.get(key, (err, data) => {
-          if (err) {
-            reject(err);
-          } else {
-            resolve(data);
-          }
-        });
-      });
+  async get (key) {
+    if (super.has(key)) {
+      return super.get(key);
     }
 
-    // Check memory cache first
-    super.get(key, (err, result) => {
-      if (err || result) {
-        return cb(err, result);
-      }
-
-      // Check memcache
+    return new Promise((resolve, reject) => {
       this.client.get(key, (err, reply) => {
         if (err || reply === null) {
-          return cb(err, undefined);
+          return resolve(undefined);
         }
         const bsonResult = BSON.deserialize(reply, { promoteBuffers: true });
         super.set(key, bsonResult); // Set memory cache
-        cb(null, bsonResult);
+        return resolve(bsonResult);
       });
     });
   };
@@ -190,7 +158,6 @@ class ArkimeMemcachedCache extends ArkimeCache {
 
     const data = BSON.serialize(result, false, true, false);
     this.client.set(key, data, { expires: this.cacheTimeout }, () => {});
-    return;
   };
 };
 
@@ -223,14 +190,8 @@ class ArkimeLMDBCache extends ArkimeCache {
   }
 
   // ----------------------------------------------------------------------------
-  get (key, cb) {
-    if (!cb) {
-      return this.store.get(key);
-    }
-
-    this.store.get(key)
-      .then(data => cb(null, data))
-      .catch(err => cb(err, null));
+  async get (key) {
+    return this.store.get(key);
   }
 
   // ----------------------------------------------------------------------------

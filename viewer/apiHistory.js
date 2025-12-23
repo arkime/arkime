@@ -57,95 +57,97 @@ class HistoryAPIs {
    * @returns {number} recordsTotal - The total number of history results stored.
    * @returns {number} recordsFiltered - The number of history items returned in this result.
    */
-  static getHistories (req, res) {
-    let userId;
-    if (req.user.hasRole('arkimeAdmin')) { // user is an admin, they can view all history items
-      // if the admin has requested a specific user
-      if (req.query.userId) { userId = req.query.userId; }
-    } else { // user isn't an admin, so they can only view their own history items
-      if (req.query.userId && req.query.userId !== req.user.userId) {
-        return res.serverError(403, 'Need admin privileges');
-      }
-      userId = req.user.userId;
-    }
-
-    const query = {
-      sort: {},
-      from: +req.query.start || 0,
-      size: +req.query.length || 1000
-    };
-
-    query.sort[req.query.sortField || 'timestamp'] = {
-      order: req.query.desc === 'true' ? 'desc' : 'asc'
-    };
-
-    if (req.query.searchTerm || userId) {
-      query.query = { bool: { filter: [] } };
-
-      if (req.query.searchTerm) { // apply search term
-        query.query.bool.filter.push({
-          query_string: {
-            query: req.query.searchTerm,
-            fields: ['expression', 'userId', 'api', 'view.name', 'view.expression']
-          }
-        });
-      }
-
-      if (userId) { // filter on userId
-        query.query.bool.filter.push({
-          wildcard: { userId }
-        });
-      }
-    }
-
-    if (req.query.api) { // filter on api endpoint
-      if (!query.query) { query.query = { bool: { filter: [] } }; }
-      query.query.bool.filter.push({
-        wildcard: { api: '*' + req.query.api + '*' }
-      });
-    }
-
-    if (req.query.exists) {
-      if (!query.query) { query.query = { bool: { filter: [] } }; }
-      const existsArr = req.query.exists.split(',');
-      for (let i = 0, len = existsArr.length; i < len; ++i) {
-        query.query.bool.filter.push({
-          exists: { field: existsArr[i] }
-        });
-      }
-    }
-
-    // filter history table by a time range
-    if (req.query.startTime && req.query.stopTime) {
-      if (!/^[0-9]+$/.test(req.query.startTime)) {
-        req.query.startTime = Date.parse(req.query.startTime.replace('+', ' ')) / 1000;
-      } else {
-        req.query.startTime = parseInt(req.query.startTime, 10);
-      }
-
-      if (!/^[0-9]+$/.test(req.query.stopTime)) {
-        req.query.stopTime = Date.parse(req.query.stopTime.replace('+', ' ')) / 1000;
-      } else {
-        req.query.stopTime = parseInt(req.query.stopTime, 10);
-      }
-
-      if (!query.query) { query.query = { bool: { filter: [] } }; }
-      query.query.bool.filter.push({
-        range: {
-          timestamp: {
-            gte: '' + req.query.startTime,
-            lte: '' + req.query.stopTime
-          }
+  static async getHistories (req, res) {
+    try {
+      let userId;
+      if (req.user.hasRole('arkimeAdmin')) { // user is an admin, they can view all history items
+        // if the admin has requested a specific user
+        if (req.query.userId) { userId = req.query.userId; }
+      } else { // user isn't an admin, so they can only view their own history items
+        if (req.query.userId && req.query.userId !== req.user.userId) {
+          return res.serverError(403, 'Need admin privileges');
         }
-      });
-    }
+        userId = req.user.userId;
+      }
 
-    ViewerUtils.addCluster(req.query.cluster, query);
+      const query = {
+        sort: {},
+        from: +req.query.start || 0,
+        size: +req.query.length || 1000
+      };
 
-    Promise.all([
-      Db.searchHistory(query),
-      Db.countHistory(req.query.cluster)
-    ]).then(([{ body: { hits: histories } }, { body: { count: total } }]) => {
+      query.sort[req.query.sortField || 'timestamp'] = {
+        order: req.query.desc === 'true' ? 'desc' : 'asc'
+      };
+
+      if (req.query.searchTerm || userId) {
+        query.query = { bool: { filter: [] } };
+
+        if (req.query.searchTerm) { // apply search term
+          query.query.bool.filter.push({
+            query_string: {
+              query: req.query.searchTerm,
+              fields: ['expression', 'userId', 'api', 'view.name', 'view.expression']
+            }
+          });
+        }
+
+        if (userId) { // filter on userId
+          query.query.bool.filter.push({
+            wildcard: { userId }
+          });
+        }
+      }
+
+      if (req.query.api) { // filter on api endpoint
+        if (!query.query) { query.query = { bool: { filter: [] } }; }
+        query.query.bool.filter.push({
+          wildcard: { api: '*' + req.query.api + '*' }
+        });
+      }
+
+      if (req.query.exists) {
+        if (!query.query) { query.query = { bool: { filter: [] } }; }
+        const existsArr = req.query.exists.split(',');
+        for (let i = 0, len = existsArr.length; i < len; ++i) {
+          query.query.bool.filter.push({
+            exists: { field: existsArr[i] }
+          });
+        }
+      }
+
+      // filter history table by a time range
+      if (req.query.startTime && req.query.stopTime) {
+        if (!/^[0-9]+$/.test(req.query.startTime)) {
+          req.query.startTime = Date.parse(req.query.startTime.replace('+', ' ')) / 1000;
+        } else {
+          req.query.startTime = parseInt(req.query.startTime, 10);
+        }
+
+        if (!/^[0-9]+$/.test(req.query.stopTime)) {
+          req.query.stopTime = Date.parse(req.query.stopTime.replace('+', ' ')) / 1000;
+        } else {
+          req.query.stopTime = parseInt(req.query.stopTime, 10);
+        }
+
+        if (!query.query) { query.query = { bool: { filter: [] } }; }
+        query.query.bool.filter.push({
+          range: {
+            timestamp: {
+              gte: '' + req.query.startTime,
+              lte: '' + req.query.stopTime
+            }
+          }
+        });
+      }
+
+      ViewerUtils.addCluster(req.query.cluster, query);
+
+      const [{ body: { hits: histories } }, { body: { count: total } }] = await Promise.all([
+        Db.searchHistory(query),
+        Db.countHistory(req.query.cluster)
+      ]);
+
       const results = { total: histories.total, results: [] };
       for (const hit of histories.hits) {
         const item = hit._source;
@@ -164,10 +166,10 @@ class HistoryAPIs {
         recordsTotal: total,
         recordsFiltered: results.total
       });
-    }).catch((err) => {
+    } catch (err) {
       console.log(`ERROR - ${req.method} /api/history`, util.inspect(err, false, 50));
       return res.serverError(500, 'Error retrieving history - ' + err);
-    });
+    }
   };
 
   // --------------------------------------------------------------------------

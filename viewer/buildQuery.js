@@ -123,7 +123,7 @@ class BuildQuery {
     const reqQuery = queryOverride || req.query;
 
     try {
-      const roles = [...await req.user.getRoles()]; // es requries an array for terms search
+      const roles = [...await req.user.getRoles()]; // es requires an array for terms search
 
       const viewQuery = { // search for the shortcut
         size: 1,

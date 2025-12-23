@@ -218,7 +218,7 @@ class Pcap {
       return this.headBuffer;
     }
 
-    // pcap header is 24 but reading extra becaue of gzip/encryption
+    // pcap header is 24 but reading extra because of gzip/encryption
     this.headBuffer = Buffer.alloc(64);
     const len = fs.readSync(this.fd, this.headBuffer, 0, this.headBuffer.length, 0);
 

@@ -196,10 +196,10 @@ class ArkimeUtil {
         options.sentinels.push({ host: hostport[0], port: hostport[1] || 26379 });
       }
 
-      if (match[3] && match[3] !== '') {
+      if (match[3] !== '') {
         options.sentinelPassword = match[3];
       }
-      if (match[4] && match[4] !== '') {
+      if (match[4] !== '') {
         options.password = match[4];
       }
 
@@ -224,7 +224,7 @@ class ArkimeUtil {
       }
 
       const options = { db: parseInt(match[5]) };
-      if (match[3] && match[3] !== '') {
+      if (match[3] !== '') {
         options.password = match[3];
       }
 
@@ -566,7 +566,7 @@ class ArkimeUtil {
 
   // ----------------------------------------------------------------------------
   /**
-   * Foramt the prefix
+   * Format the prefix
    */
   static formatPrefix (prefix) {
     if (prefix === undefined) {

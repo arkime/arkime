@@ -789,6 +789,7 @@ function funcName (typeName) {
 
   return 'get' + typeName[0].toUpperCase() + typeName.slice(1);
 }
+
 // ----------------------------------------------------------------------------
 // This function adds a new type to the internals.types map of types.
 // If newSrc is defined will add it to already defined types as src to query.
@@ -851,8 +852,9 @@ function addType (type, newSrc) {
   }
   return typeInfo;
 }
+
 // ----------------------------------------------------------------------------
-function processQuery (req, query, cb) {
+async function processQuery (req, query, cb) {
   if (ArkimeUtil.isPP(query.typeName)) {
     return cb('__proto__ invalid type name');
   }
@@ -883,103 +885,104 @@ function processQuery (req, query, cb) {
   }
 
   // Fetch the cache for this query
-  internals.cache.get(query.typeName + '-' + query.value, (err, cacheResult) => {
-    if (req.timedout) {
-      return cb('Timed out ' + query.typeName + ' ' + query.value);
+  const cacheKey = query.typeName + '-' + query.value;
+  let cacheResult = await internals.cache.get(cacheKey);
+  if (req.timedout) {
+    return cb('Timed out ' + query.typeName + ' ' + query.value);
+  }
+
+  const now = Math.floor(Date.now() / 1000);
+
+  let cacheChanged = false;
+  if (cacheResult === undefined) {
+    cacheResult = {};
+  } else {
+    typeInfo.cacheHitStats++;
+  }
+
+  async.map(query.sources || typeInfo.sources, (src, mapCb) => {
+    if (!typeInfo.sourceAllowed(src, query.value)) {
+      // This source isn't allowed for query
+      return setImmediate(mapCb, undefined);
     }
 
-    const now = Math.floor(Date.now() / 1000);
+    if (typeof src[typeInfo.funcName] !== 'function') {
+      return setImmediate(mapCb, undefined);
+    }
 
-    let cacheChanged = false;
-    if (cacheResult === undefined) {
-      cacheResult = {};
+    src.requestStat++;
+    if (cacheResult[src.section] === undefined || cacheResult[src.section].ts + src.cacheTimeout < now) {
+      if (src.cacheTimeout === -1) {
+        // Don't count as hit or miss
+      } else if (cacheResult[src.section] === undefined) {
+        src.cacheMissStat++;
+        typeInfo.cacheSrcMissStats++;
+      } else {
+        src.cacheRefreshStat++;
+        typeInfo.cacheSrcRefreshStats++;
+      }
+
+      // Can't use the cache or there is no cache for this source
+      delete cacheResult[src.section];
+
+      // If already in progress then add to the list and return, cb called later;
+      if (src.srcInProgress[query.typeName] && src.srcInProgress[query.typeName].has(query.value)) {
+        src.srcInProgress[query.typeName].get(query.value).push(mapCb);
+        return;
+      }
+
+      // First query for this value
+      src.srcInProgress[query.typeName].set(query.value, [mapCb]);
+      const startTime = Date.now();
+      src[typeInfo.funcName](src.fullQuery === true ? query : query.value, (err, result) => {
+        src.recentAverageMS = (999.0 * src.recentAverageMS + (Date.now() - startTime)) / 1000.0;
+
+        if (!err && result !== undefined) {
+          src.directHitStat++;
+          if (src.cacheTimeout !== -1) { // If err or cacheTimeout is -1 then don't cache
+            cacheResult[src.section] = { ts: now, result };
+            cacheChanged = true;
+          }
+        }
+        if (err === 'dropped') {
+          src.requestDroppedStat++;
+          err = null;
+          result = undefined;
+        }
+        const srcInProgress = src.srcInProgress[query.typeName].get(query.value);
+        src.srcInProgress[query.typeName].delete(query.value);
+        for (let i = 0, l = srcInProgress.length; i < l; i++) {
+          srcInProgress[i](err, result);
+        }
+      });
     } else {
-      typeInfo.cacheHitStats++;
+      src.cacheHitStat++;
+      typeInfo.cacheSrcHitStats++;
+      // Woot, we can use the cache
+      setImmediate(mapCb, null, cacheResult[src.section].result);
+    }
+  }, (err, results) => {
+    // Combine all the results together
+    if (err) {
+      return cb(err);
+    }
+    if (ArkimeConfig.debug > 2) {
+      console.log('RESULT', typeInfo.funcName, query.value, WISESource.result2JSON(WISESource.combineResults(results)));
     }
 
-    async.map(query.sources || typeInfo.sources, (src, mapCb) => {
-      if (!typeInfo.sourceAllowed(src, query.value)) {
-        // This source isn't allowed for query
-        return setImmediate(mapCb, undefined);
-      }
+    if (req.timedout) {
+      cb('Timed out ' + query.typeName + ' ' + query.value);
+    } else {
+      cb(null, WISESource.combineResults(results));
+    }
 
-      if (typeof src[typeInfo.funcName] !== 'function') {
-        return setImmediate(mapCb, undefined);
-      }
-
-      src.requestStat++;
-      if (cacheResult[src.section] === undefined || cacheResult[src.section].ts + src.cacheTimeout < now) {
-        if (src.cacheTimeout === -1) {
-          // Don't count as hit or miss
-        } else if (cacheResult[src.section] === undefined) {
-          src.cacheMissStat++;
-          typeInfo.cacheSrcMissStats++;
-        } else {
-          src.cacheRefreshStat++;
-          typeInfo.cacheSrcRefreshStats++;
-        }
-
-        // Can't use the cache or there is no cache for this source
-        delete cacheResult[src.section];
-
-        // If already in progress then add to the list and return, cb called later;
-        if (src.srcInProgress[query.typeName] && src.srcInProgress[query.typeName].has(query.value)) {
-          src.srcInProgress[query.typeName].get(query.value).push(mapCb);
-          return;
-        }
-
-        // First query for this value
-        src.srcInProgress[query.typeName].set(query.value, [mapCb]);
-        const startTime = Date.now();
-        src[typeInfo.funcName](src.fullQuery === true ? query : query.value, (err, result) => {
-          src.recentAverageMS = (999.0 * src.recentAverageMS + (Date.now() - startTime)) / 1000.0;
-
-          if (!err && result !== undefined) {
-            src.directHitStat++;
-            if (src.cacheTimeout !== -1) { // If err or cacheTimeout is -1 then don't cache
-              cacheResult[src.section] = { ts: now, result };
-              cacheChanged = true;
-            }
-          }
-          if (err === 'dropped') {
-            src.requestDroppedStat++;
-            err = null;
-            result = undefined;
-          }
-          const srcInProgress = src.srcInProgress[query.typeName].get(query.value);
-          src.srcInProgress[query.typeName].delete(query.value);
-          for (let i = 0, l = srcInProgress.length; i < l; i++) {
-            srcInProgress[i](err, result);
-          }
-        });
-      } else {
-        src.cacheHitStat++;
-        typeInfo.cacheSrcHitStats++;
-        // Woot, we can use the cache
-        setImmediate(mapCb, null, cacheResult[src.section].result);
-      }
-    }, (err, results) => {
-      // Combine all the results together
-      if (err) {
-        return cb(err);
-      }
-      if (ArkimeConfig.debug > 2) {
-        console.log('RESULT', typeInfo.funcName, query.value, WISESource.result2JSON(WISESource.combineResults(results)));
-      }
-
-      if (req.timedout) {
-        cb('Timed out ' + query.typeName + ' ' + query.value);
-      } else {
-        cb(null, WISESource.combineResults(results));
-      }
-
-      // Need to update the cache
-      if (cacheChanged) {
-        internals.cache.set(query.typeName + '-' + query.value, cacheResult);
-      }
-    });
+    // Need to update the cache
+    if (cacheChanged) {
+      internals.cache.set(cacheKey, cacheResult);
+    }
   });
 }
+
 // ----------------------------------------------------------------------------
 function processQueryResponse0 (req, res, queries, results) {
   const buf = Buffer.allocUnsafe(8);

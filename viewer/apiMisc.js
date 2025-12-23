@@ -160,7 +160,7 @@ class MiscAPIs {
   /**
    * GET - /api/valueactions
    *
-   * Retrives the actions that can be preformed on meta data values.
+   * Retrieves the actions that can be preformed on meta data values.
    * @name /valueactions
    * @returns {object} - The list of actions that can be preformed on data values.
    */
@@ -204,7 +204,7 @@ class MiscAPIs {
   /**
    * GET - /api/fieldactions
    *
-   * Retrives the actions that can be preformed on fields.
+   * Retrieves the actions that can be preformed on fields.
    * @name /fieldactions
    * @returns {object} - The list of actions that can be preformed on fields.
    */
@@ -237,7 +237,7 @@ class MiscAPIs {
   /**
    * GET - /api/reversedns
    *
-   * Retrives the domain names associated with an IP address.
+   * Retrieves the domain names associated with an IP address.
    * @name /reversedns
    * @param {string} ip - The IP to search domain names for.
    * @returns {string} domains - A comma separated string list of all the matching domain names.
@@ -414,20 +414,20 @@ class MiscAPIs {
    * @name /cyberchef/:nodeName/session/:id
    * @param {string} type=src - Whether to send the source (src) or destination (dst) packets.
    */
-  static cyberChef (req, res) {
-    SessionAPIs.processSessionIdAndDecode(req.params.id, 10000, (err, session, results) => {
-      if (err) {
-        console.log(`ERROR - ${req.method} /%s/session/%s/cyberchef`, ArkimeUtil.sanitizeStr(req.params.nodeName), ArkimeUtil.sanitizeStr(req.params.id), util.inspect(err, false, 50));
-        return res.end('Error - ' + err);
-      }
+  static async cyberChef (req, res) {
+    try {
+      const { packets } = await SessionAPIs.processSessionIdAndDecode(req.params.id, 10000);
 
       let data = '';
-      for (let i = (req.query.type !== 'dst' ? 0 : 1), ilen = results.length; i < ilen; i += 2) {
-        data += results[i].data.toString('hex');
+      for (let i = (req.query.type !== 'dst' ? 0 : 1), ilen = packets.length; i < ilen; i += 2) {
+        data += packets[i].data.toString('hex');
       }
 
       res.send({ data });
-    });
+    } catch (err) {
+      console.log(`ERROR - ${req.method} /%s/session/%s/cyberchef`, ArkimeUtil.sanitizeStr(req.params.nodeName), ArkimeUtil.sanitizeStr(req.params.id), util.inspect(err, false, 50));
+      return res.end('Error - ' + err);
+    }
   };
 
   // --------------------------------------------------------------------------
