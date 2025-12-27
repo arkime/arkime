@@ -506,8 +506,8 @@ anonymous,,true,true,false,"arkimeAdmin, cont3xtUser, parliamentUser, usersAdmin
     eq_or_diff ($csv, 'userId, userName, enabled, webEnabled, headerAuthEnabled, roles, emailSearch, removeEnabled, packetSearch, hideStats, hideFiles, hidePcap, disablePcapDownload, expression, timeLimit
 anonymous,,true,true,false,"arkimeAdmin, cont3xtUser, parliamentUser, usersAdmin, wiseUser",true,true,true,,,,,,
 notadmin,,true,true,false,"arkimeUser, cont3xtUser, parliamentUser, wiseUser",true,true,true,,,,,,
-role:sac-test1,UserName,true,false,false,"",false,false,false,false,false,false,false,,
-role:sac-test2,UserName,true,false,false,"role:sac-test1",false,false,false,false,false,false,false,,
+role:sac-test1,UserName,true,,,"",,,,,,,,,
+role:sac-test2,UserName,true,,,"role:sac-test1",,,,,,,,,
 sac-test1,UserNameUpdated,false,true,true,"usersAdmin, arkimeUser",true,true,false,false,false,false,false,foo,
 sac-test2,UserNameUpdated3,false,false,false,"arkimeUser",false,false,false,false,false,false,false,,72
 superAdmin,,true,true,false,"superAdmin",true,true,true,,,,,,

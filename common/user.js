@@ -778,22 +778,23 @@ class User {
         return res.serverError(403, 'User already exists');
       }
 
+      // For roles, preserve undefined for inherit; for users, force boolean
       const nuser = {
         userId: req.body.userId,
         userName: req.body.userName,
         expression: req.body.expression,
         passStore: Auth.pass2store(req.body.userId, req.body.password),
         enabled: req.body.enabled === true,
-        webEnabled: req.body.webEnabled === true,
-        emailSearch: req.body.emailSearch === true,
-        headerAuthEnabled: req.body.headerAuthEnabled === true,
-        removeEnabled: req.body.removeEnabled === true,
-        packetSearch: req.body.packetSearch === true,
+        webEnabled: isRole ? req.body.webEnabled : req.body.webEnabled === true,
+        emailSearch: isRole ? req.body.emailSearch : req.body.emailSearch === true,
+        headerAuthEnabled: isRole ? req.body.headerAuthEnabled : req.body.headerAuthEnabled === true,
+        removeEnabled: isRole ? req.body.removeEnabled : req.body.removeEnabled === true,
+        packetSearch: isRole ? req.body.packetSearch : req.body.packetSearch === true,
         timeLimit: req.body.timeLimit,
-        hideStats: req.body.hideStats === true,
-        hideFiles: req.body.hideFiles === true,
-        hidePcap: req.body.hidePcap === true,
-        disablePcapDownload: req.body.disablePcapDownload === true,
+        hideStats: isRole ? req.body.hideStats : req.body.hideStats === true,
+        hideFiles: isRole ? req.body.hideFiles : req.body.hideFiles === true,
+        hidePcap: isRole ? req.body.hidePcap : req.body.hidePcap === true,
+        disablePcapDownload: isRole ? req.body.disablePcapDownload : req.body.disablePcapDownload === true,
         roles: req.body.roles,
         welcomeMsgNum: 0,
         roleAssigners: req.body.roleAssigners
@@ -946,15 +947,28 @@ class User {
         }
       }
 
-      user.webEnabled = req.body.webEnabled === true;
-      user.emailSearch = req.body.emailSearch === true;
-      user.headerAuthEnabled = req.body.headerAuthEnabled === true;
-      user.removeEnabled = req.body.removeEnabled === true;
-      user.packetSearch = req.body.packetSearch === true;
-      user.hideStats = req.body.hideStats === true;
-      user.hideFiles = req.body.hideFiles === true;
-      user.hidePcap = req.body.hidePcap === true;
-      user.disablePcapDownload = req.body.disablePcapDownload === true;
+      // For roles, preserve undefined for inherit; for users, force boolean
+      if (isRole) {
+        user.webEnabled = req.body.webEnabled;
+        user.emailSearch = req.body.emailSearch;
+        user.headerAuthEnabled = req.body.headerAuthEnabled;
+        user.removeEnabled = req.body.removeEnabled;
+        user.packetSearch = req.body.packetSearch;
+        user.hideStats = req.body.hideStats;
+        user.hideFiles = req.body.hideFiles;
+        user.hidePcap = req.body.hidePcap;
+        user.disablePcapDownload = req.body.disablePcapDownload;
+      } else {
+        user.webEnabled = req.body.webEnabled === true;
+        user.emailSearch = req.body.emailSearch === true;
+        user.headerAuthEnabled = req.body.headerAuthEnabled === true;
+        user.removeEnabled = req.body.removeEnabled === true;
+        user.packetSearch = req.body.packetSearch === true;
+        user.hideStats = req.body.hideStats === true;
+        user.hideFiles = req.body.hideFiles === true;
+        user.hidePcap = req.body.hidePcap === true;
+        user.disablePcapDownload = req.body.disablePcapDownload === true;
+      }
       user.timeLimit = req.body.timeLimit ? parseInt(req.body.timeLimit) : undefined;
       user.roles = req.body.roles;
       user.roleAssigners = req.body.roleAssigners ?? [];
@@ -1445,18 +1459,24 @@ class User {
 // Clean User
 /******************************************************************************/
 function cleanUser (user) {
-  user.expression = user.expression || '';
-  user.headerAuthEnabled = user.headerAuthEnabled || false;
-  user.emailSearch = user.emailSearch || false;
-  user.removeEnabled = user.removeEnabled || false;
   user.userName = ArkimeUtil.safeStr(user.userName || '');
-  user.packetSearch = user.packetSearch || false;
-  user.timeLimit = user.timeLimit || undefined;
   user.lastUsed = user.lastUsed || 0;
+
+  const isRole = user.userId?.startsWith('role:');
+
+  // Only set defaults for users, not roles (roles use undefined for inherit)
+  if (!isRole) {
+    user.expression = user.expression || '';
+    user.headerAuthEnabled = user.headerAuthEnabled || false;
+    user.emailSearch = user.emailSearch || false;
+    user.removeEnabled = user.removeEnabled || false;
+    user.packetSearch = user.packetSearch || false;
+    user.timeLimit = user.timeLimit || undefined;
+  }
 
   // By default give to all user stuff if never had roles
   if (user.roles === undefined) {
-    user.roles = ['arkimeUser', 'cont3xtUser', 'parliamentUser', 'wiseUser'];
+    user.roles = isRole ? [] : ['arkimeUser', 'cont3xtUser', 'parliamentUser', 'wiseUser'];
   }
 
   // Convert createEnable to usersAdmin role
