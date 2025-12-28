@@ -240,57 +240,40 @@ class ViewerUtils {
   };
 
   // ----------------------------------------------------------------------------
-  static async getViewUrl (node, cb) {
+  static async getViewUrl (node) {
     if (Array.isArray(node)) {
       node = node[0];
     }
 
     const url = Config.getFull(node, 'viewUrl');
+    let isHttps, client;
     if (url) {
       if (Config.debug > 1) {
         console.log(`DEBUG: node:${node} is using ${url} because viewUrl was set for ${node} in config file`);
       }
-      const isHttps = url.startsWith('https');
-      const client = isHttps ? https : http;
-      if (cb) {
-        cb(null, url, client);
-      } else {
-        return { viewUrl: url, client };
-      }
-      return;
+      isHttps = url.startsWith('https');
+      client = isHttps ? https : http;
+      return { viewUrl: url, client };
     }
 
-    try {
-      const stat = await Db.arkimeNodeStatsCache(node);
+    const stat = await Db.arkimeNodeStatsCache(node);
 
-      if (Config.debug > 1) {
-        console.log(`DEBUG: node:${node} is using ${stat.hostname} from OpenSearch/Elasticsearch stats index`);
-      }
-
-      const isHttps = Config.isHTTPS(node);
-      const protocol = isHttps ? 'https' : 'http';
-      const client = isHttps ? https : http;
-      const result = protocol + '://' + stat.hostname + ':' + Config.getFull(node, 'viewPort', '8005');
-      if (cb) {
-        cb(null, result, client);
-      } else {
-        return { viewUrl: result, client };
-      }
-    } catch (err) {
-      if (cb) {
-        return cb(err);
-      } else {
-        throw err;
-      }
+    if (Config.debug > 1) {
+      console.log(`DEBUG: node:${node} is using ${stat.hostname} from OpenSearch/Elasticsearch stats index`);
     }
+
+    isHttps = Config.isHTTPS(node);
+    const protocol = isHttps ? 'https' : 'http';
+    client = isHttps ? https : http;
+    const result = protocol + '://' + stat.hostname + ':' + Config.getFull(node, 'viewPort', '8005');
+    return { viewUrl: result, client };
   };
 
   // ----------------------------------------------------------------------------
-  static makeRequest (node, path, user, cb) {
-    ViewerUtils.getViewUrl(node, (err, viewUrl, client) => {
-      if (err) {
-        return cb(err);
-      }
+  static async makeRequest (node, path, user, cb) {
+    try {
+      const { viewUrl, client } = await ViewerUtils.getViewUrl(node);
+
       const nodePath = encodeURI(path);
       let url;
       if (nodePath.startsWith('/')) {
@@ -328,21 +311,17 @@ class ViewerUtils {
         preq2.end();
       });
       preq.end();
-    });
+    } catch (err) {
+      cb(err);
+    }
   };
 
   // --------------------------------------------------------------------------
-  static proxyRequest (req, res, errCb) {
+  static async proxyRequest (req, res) {
     ArkimeUtil.noCache(req, res);
 
-    ViewerUtils.getViewUrl(req.params.nodeName, (err, viewUrl, client) => {
-      if (err) {
-        if (errCb) {
-          return errCb(err);
-        }
-        console.log('ERROR - getViewUrl in proxyRequest - node:', req.params.nodeName, 'err:', util.inspect(err, false, 50));
-        return res.send(`Can't find view url for '${ArkimeUtil.safeStr(req.params.nodeName)}' check viewer logs on '${Config.hostName()}'`);
-      }
+    try {
+      const { viewUrl, client } = await ViewerUtils.getViewUrl(req.params.nodeName);
 
       let url;
       if (req.url.startsWith('/')) {
@@ -376,14 +355,12 @@ class ViewerUtils {
       });
 
       preq.on('error', (e) => {
-        if (errCb) {
-          return errCb(e);
-        }
         console.log("ERROR - Couldn't proxy request=", url, '\nerror=', util.inspect(e, false, 50), '\nYou might want to run viewer with two --debug for more info');
         res.send(`Error talking to node '${ArkimeUtil.safeStr(req.params.nodeName)}' using host '${url.host}' check viewer logs on '${Config.hostName()}'`);
       });
       preq.end();
-    });
+    } catch (err) {
+    }
   };
 
   // ----------------------------------------------------------------------------

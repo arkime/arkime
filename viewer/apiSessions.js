@@ -988,8 +988,9 @@ class SessionAPIs {
       }
       res.write(b.slice(0, boffset), () => {
         SessionAPIs.#putWritePcapBuffer(b);
+        // Wait til this buffer is written to call doneCb
+        doneCb(null);
       });
-      doneCb(err);
     }, undefined, 10);
   }
 
