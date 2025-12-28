@@ -360,6 +360,8 @@ class ViewerUtils {
       });
       preq.end();
     } catch (err) {
+      console.log('ERROR - getViewUrl in proxyRequest - node:', req.params.nodeName, 'err:', util.inspect(err, false, 50));
+      res.send(`Can't find view url for '${ArkimeUtil.safeStr(req.params.nodeName)}' check viewer logs on '${Config.hostName()}'`);
     }
   };
 
