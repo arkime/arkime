@@ -20,117 +20,117 @@ if (session.tls || session.cert)
           - if (cert.serial)
             span.no-wrap
               strong.ml-1 Serial
-              arkime-session-field.detail-field(expr="cert.serial", value=cert.serial, :field="fields['cert.serial']", :pull-left="true")
+              +clickableValue('cert.serial', cert.serial)
           - if (cert.hash)
             span(style="display:inline-flex")
               |[
-            arkime-session-field.detail-field(expr="cert.hash", value=cert.hash, :field="fields['cert.hash']", :pull-left="true")
+            +clickableValue('cert.hash', cert.hash)
             span(style="display:inline-flex")
               |] &nbsp;
           - if (cert.notBefore)
             span.no-wrap
               strong.ml-1 Not Before
-              arkime-session-field.detail-field(expr="cert.notbefore", value=cert.notBefore, :field="fields['cert.notbefore']", :pull-left="true")
+              +clickableValue('cert.notbefore', cert.notBefore)
           - if (cert.notAfter)
             span.no-wrap
               strong.ml-1 Not After
-              arkime-session-field.detail-field(expr="cert.notafter", value=cert.notAfter, :field="fields['cert.notafter']", :pull-left="true")
+              +clickableValue('cert.notafter', cert.notAfter)
           - if (cert.validDays)
             span.no-wrap
               strong.ml-1 Days Valid For
-              arkime-session-field.detail-field(expr="cert.validfor", value=cert.validDays, :field="fields['cert.validfor']", :pull-left="true")
+              +clickableValue('cert.validfor', cert.validDays)
           - if (cert.validSeconds)
             span.no-wrap
               strong.ml-1 Seconds Valid For
-              arkime-session-field.detail-field(expr="cert.validforSeconds", value=cert.validSeconds, :field="fields['cert.validforSeconds']", :pull-left="true")
+              +clickableValue('cert.validforSeconds', cert.validSeconds)
           - if (cert.remainingDays)
             span.no-wrap
               strong.ml-1 Days Remaining
-              arkime-session-field.detail-field(expr="cert.remainingDays", value=cert.remainingDays, :field="fields['cert.remainingDays']", :pull-left="true")
+              +clickableValue('cert.remainingDays', cert.remainingDays)
           - if (cert.remainingSeconds)
             span.no-wrap
               strong.ml-1 Seconds Remaining
-              arkime-session-field.detail-field(expr="cert.remainingSeconds", value=cert.remainingSeconds, :field="fields['cert.remainingSeconds']", :pull-left="true")
+              +clickableValue('cert.remainingSeconds', cert.remainingSeconds)
           - if (cert.issuerCN && Array.isArray(cert.issuerCN))
             strong.ml-1 Issuer Common
             each cn,i in cert.issuerCN
               if (i > 0)
                 |,
-              arkime-session-field.detail-field(expr="cert.issuer.cn", value=cn, :field="fields['cert.issuer.cn']", :pull-left="true")
+              +clickableValue('cert.issuer.cn', cn)
           - else if (cert.issuerCN)
             strong.ml-1 Issuer Common
-            arkime-session-field.detail-field(expr="cert.issuer.cn", value=cert.issuerCN, :field="fields['cert.issuer.cn']", :pull-left="true")
+            +clickableValue('cert.issuer.cn', cert.issuerCN)
           - if (cert.issuerON && Array.isArray(cert.issuerON))
             strong.ml-1 Issuer Org
             each on,i in cert.issuerON
               if (i > 0)
                 |,
-              arkime-session-field.detail-field(expr="cert.issuer.on", value=on, :field="fields['cert.issuer.on']", :pull-left="true")
+              +clickableValue('cert.issuer.on', on)
           - else if (cert.issuerON)
             span.no-wrap
               strong.ml-1 Issuer Org
-              arkime-session-field.detail-field(expr="cert.issuer.on", value=cert.issuerON, :field="fields['cert.issuer.on']", :pull-left="true")
+              +clickableValue('cert.issuer.on', cert.issuerON)
           - if (cert.issuerOU && Array.isArray(cert.issuerOU))
             strong.ml-1 Issuer Org Unit
             each ou,i in cert.issuerOU
               if (i > 0)
                 |,
-              arkime-session-field.detail-field(expr="cert.issuer.ou", value=ou, :field="fields['cert.issuer.ou']", :pull-left="true")
+              +clickableValue('cert.issuer.ou', ou)
           - else if (cert.issuerOU)
             span.no-wrap
               strong.ml-1 Issuer Org unit
-              arkime-session-field.detail-field(expr="cert.issuer.ou", value=cert.issuerOU, :field="fields['cert.issuer.ou']", :pull-left="true")
+              +clickableValue('cert.issuer.ou', cert.issuerOU)
           - if (cert.subjectCN && Array.isArray(cert.subjectCN))
             strong.ml-1 Subject Common
             each cn,i in cert.subjectCN
               if (i > 0)
                 |,
-              arkime-session-field.detail-field(expr="cert.subject.cn", value=cn, :field="fields['cert.subject.cn']", :pull-left="true")
+              +clickableValue('cert.subject.cn', cn)
           - else if (cert.subjectCN)
             span.no-wrap
               strong.ml-1 Subject Common
-              arkime-session-field.detail-field(expr="cert.subject.cn", value=cert.subjectCN, :field="fields['cert.subject.cn']", :pull-left="true")
+              +clickableValue('cert.subject.cn', cert.subjectCN)
           - if (cert.subjectON && Array.isArray(cert.subjectON))
             strong.ml-1 Subject Org
             each on,i in cert.subjectON
               if (i > 0)
                 |,
-              arkime-session-field.detail-field(expr="cert.subject.on", value=on, :field="fields['cert.subject.on']", :pull-left="true")
+              +clickableValue('cert.subject.on', on)
           - else if (cert.subjectON)
             span.no-wrap
               strong.ml-1 Subject Org
-              arkime-session-field.detail-field(expr="cert.subject.on", value=cert.subjectON, :field="fields['cert.subject.on']", :pull-left="true")
+              +clickableValue('cert.subject.on', cert.subjectON)
           - if (cert.subjectOU && Array.isArray(cert.subjectOU))
             strong.ml-1 Subject Org Unit
             each ou,i in cert.subjectOU
               if (i > 0)
                 |,
-              arkime-session-field.detail-field(expr="cert.subject.ou", value=ou, :field="fields['cert.subject.ou']", :pull-left="true")
+              +clickableValue('cert.subject.ou', ou)
           - else if (cert.subjectOU)
             span.no-wrap
               strong.ml-1 Subject Org Unit
-              arkime-session-field.detail-field(expr="cert.subject.ou", value=cert.subjectOU, :field="fields['cert.subject.ou']", :pull-left="true")
+              +clickableValue('cert.subject.ou', cert.subjectOU)
           - if (cert.alt)
             span(style="display:inline-flex")
               |[
             each alt,i in cert.alt
               if (i > 0)
                 |,
-              arkime-session-field.detail-field(expr="cert.alt", value=alt, :field="fields['cert.alt']", :pull-left="true")
+              +clickableValue('cert.alt', alt)
             span(style="display:inline-flex")
               |] &nbsp;
           - if (cert.publicAlgorithm)
             span.no-wrap
               strong.ml-1 Public Algorithm
-              arkime-session-field.detail-field(expr="cert.publicAlgorithm", value=cert.publicAlgorithm, :field="fields['cert.publicAlgorithm']", :pull-left="true")
+              +clickableValue('cert.publicAlgorithm', cert.publicAlgorithm)
           - if (cert.curve)
             span.no-wrap
               strong.ml-1 Curve
-              arkime-session-field.detail-field(expr="cert.curve", value=cert.curve, :field="fields['cert.curve']", :pull-left="true")
+              +clickableValue('cert.curve', cert.curve)
           - if (cert.ja4x)
             span.no-wrap
               strong.ml-1 JA4x
-              arkime-session-field.detail-field(expr="cert.ja4x", value=cert.ja4x, :field="fields['cert.ja4x']", :pull-left="true")
+              +clickableValue('cert.ja4x', cert.ja4x)
           - if (cert.ja4x_r)
             strong.ml-1 JA4x_r
-            arkime-session-field.detail-field(expr="cert.ja4x_r", value=cert.ja4x_r, :field="fields['cert.ja4x_r']", :pull-left="true")
+              +clickableValue('cert.ja4x_r', cert.ja4x_r)

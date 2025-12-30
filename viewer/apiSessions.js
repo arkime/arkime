@@ -452,7 +452,7 @@ class SessionAPIs {
       }
       packets[i] = obj;
       cb(null);
-    }, (err, session) => {
+    }, async (err, session) => {
       if (err) {
         return res.end('Problem loading packets for ' + ArkimeUtil.safeStr(req.params.id) + ' Error: ' + err);
       }
@@ -489,10 +489,9 @@ class SessionAPIs {
         SessionAPIs.#localSessionDetailReturn(req, res, session, results || []);
       } else if (packets[0].ip.p === 6) {
         const key = ipaddr.parse(session.source.ip).toString();
-        Pcap.reassemble_tcp(packets, +req.query.packets || 200, key + ':' + session.source.port, (err, results) => {
-          session._err = err;
-          SessionAPIs.#localSessionDetailReturn(req, res, session, results || []);
-        });
+        const { err, results } = await Pcap.reassemble_tcp(packets, +req.query.packets || 200, key + ':' + session.source.port);
+        session._err = err;
+        SessionAPIs.#localSessionDetailReturn(req, res, session, results || []);
       } else if (packets[0].ip.p === 17) {
         const { err, results } = Pcap.reassemble_udp(packets, +req.query.packets || 200);
         session._err = err;
@@ -1425,7 +1424,7 @@ class SessionAPIs {
         }
         packets[i] = obj;
         cb(null);
-      }, (err, session) => {
+      }, async (err, session) => {
         if (err) {
           console.log('ERROR - processSessionIdAndDecode', util.inspect(err, false, 50));
           return reject(err);
@@ -1441,10 +1440,9 @@ class SessionAPIs {
           return resolve({ session, packets: results });
         } else if (packets[0].ip.p === 6) {
           const key = ipaddr.parse(session.source.ip).toString();
-          Pcap.reassemble_tcp(packets, numPackets, key + ':' + session.source.port, (err, results) => {
-            if (err) return reject(err);
-            return resolve({ session, packets: results });
-          });
+          const { err, results } = await Pcap.reassemble_tcp(packets, numPackets, key + ':' + session.source.port);
+          if (err) return reject(err);
+          return resolve({ session, packets: results });
         } else if (packets[0].ip.p === 17) {
           const { err: reassembleErr, results } = Pcap.reassemble_udp(packets, numPackets);
           if (reassembleErr) return reject(reassembleErr);

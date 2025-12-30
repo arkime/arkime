@@ -12,7 +12,6 @@ const fs = require('fs');
 const cryptoLib = require('crypto');
 const ipaddr = require('ipaddr.js');
 const zlib = require('zlib');
-const async = require('async');
 const ArkimeUtil = require('../common/arkimeUtil');
 const { LRUCache } = require('lru-cache');
 
@@ -210,11 +209,8 @@ class Pcap {
   };
 
   // --------------------------------------------------------------------------
-  readHeader (cb) {
+  readHeader () {
     if (this.headBuffer) {
-      if (cb) {
-        cb(this.headBuffer);
-      }
       return this.headBuffer;
     }
 
@@ -278,9 +274,6 @@ class Pcap {
       this.linkType = this.headBuffer.readUInt32LE(20);
     }
 
-    if (cb) {
-      cb(this.headBuffer);
-    }
     return this.headBuffer;
   };
 
@@ -1266,7 +1259,7 @@ class Pcap {
   // If multiple tcp sessions in one arkime session display can be wacky/wrong.
 
   // --------------------------------------------------------------------------
-  static reassemble_tcp (packets, numPackets, skey, cb) {
+  static async reassemble_tcp (packets, numPackets, skey) {
     try {
     // Remove syn, rst, 0 length packets and figure out min/max seq number
       const packets2 = [];
@@ -1298,7 +1291,7 @@ class Pcap {
       packets = packets2;
 
       if (packets.length === 0) {
-        return cb(null, packets);
+        return { results: packets };
       }
 
       // Do we need to wrap the packets
@@ -1352,19 +1345,22 @@ class Pcap {
       let start = 0;
       let previous = 0;
 
-      // We use async here so that the main event loop isnt blocked for large reassemblies
-      // We could have just done for (packet of packets) but that would block the event loop
+      // Organize packets, yielding every 50 packets to avoid blocking
       const results = [];
-      async.forEachSeries(packets, (packet, nextCb) => {
+      for (let i = 0; i < packets.length; i++) {
+        const packet = packets[i];
+        if (i % 50 === 0) {
+          await new Promise(resolve => setImmediate(resolve));
+        }
         const pkey = packet.ip.addr1 + ':' + packet.tcp.sport;
         if (pkey === clientKey) {
           if (clientSeq >= (packet.tcp.seq + packet.tcp.data.length)) {
-            return nextCb();
+            continue;
           }
           clientSeq = (packet.tcp.seq + packet.tcp.data.length);
         } else {
           if (serverSeq >= (packet.tcp.seq + packet.tcp.data.length)) {
-            return nextCb();
+            continue;
           }
           serverSeq = (packet.tcp.seq + packet.tcp.data.length);
         }
@@ -1406,19 +1402,23 @@ class Pcap {
           lastResult.buffers.push(packet.tcp.data);
           lastResult.length += packet.tcp.data.length;
         }
-        setImmediate(nextCb);
-      }, (err) => {
-        for (const result of results) {
-          result.data = Buffer.concat(result.buffers);
-          delete result.buffers;
-        }
-        if (skey !== results[0].key) {
-          results.unshift({ data: EMPTY_BUFFER, key: skey });
-        }
-        cb(null, results);
-      });
-    } catch (e) {
-      cb(e, null);
+      }
+
+      // Yield before final assembly
+      await new Promise(resolve => setImmediate(resolve));
+
+      // Combine buffers
+      for (const result of results) {
+        result.data = Buffer.concat(result.buffers);
+        delete result.buffers;
+      }
+      if (skey !== results[0].key) {
+        results.unshift({ data: EMPTY_BUFFER, key: skey });
+      }
+
+      return { results };
+    } catch (err) {
+      return { err };
     }
   };
 
