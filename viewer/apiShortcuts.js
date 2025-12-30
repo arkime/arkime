@@ -327,12 +327,12 @@ class ShortcutAPIs {
           delete newShortcut.number;
           ShortcutAPIs.#shortcutMutex.unlock();
 
-          return res.send(JSON.stringify({
+          return res.json({
             invalidUsers,
             success: true,
             shortcut: newShortcut,
             text: 'Created new shortcut!'
-          }));
+          });
         } catch (err) {
           ShortcutAPIs.#shortcutMutex.unlock();
           console.log(`ERROR - ${req.method} /api/shortcut (createShortcut)`, util.inspect(err, false, 50));
@@ -436,12 +436,12 @@ class ShortcutAPIs {
             sentShortcut.value = values.join('\n');
             sentShortcut.users = sentShortcut.users.join(',');
 
-            return res.send(JSON.stringify({
+            return res.json({
               invalidUsers,
               success: true,
               shortcut: sentShortcut,
               text: 'Updated shortcut!'
-            }));
+            });
           } catch (err) {
             ShortcutAPIs.#shortcutMutex.unlock();
             console.log(`ERROR - ${req.method} /api/shortcut/%s (setShortcut)`, ArkimeUtil.sanitizeStr(req.params.id), util.inspect(err, false, 50));
@@ -471,10 +471,10 @@ class ShortcutAPIs {
   static async deleteShortcut (req, res) {
     try {
       await Db.deleteShortcut(req.params.id);
-      res.send(JSON.stringify({
+      res.json({
         success: true,
         text: 'Deleted shortcut successfully'
-      }));
+      });
     } catch (err) {
       console.log(`ERROR - ${req.method} /api/shortcut/%s (deleteShortcut)`, ArkimeUtil.sanitizeStr(req.params.id), util.inspect(err, false, 50));
       return res.serverError(500, 'Error deleting shortcut');
@@ -494,7 +494,7 @@ class ShortcutAPIs {
    */
   static syncShortcuts (req, res) {
     Db.updateLocalShortcuts();
-    return res.send(JSON.stringify({ success: true }));
+    return res.json({ success: true });
   };
 };
 

@@ -2605,10 +2605,10 @@ class SessionAPIs {
         SessionAPIs.addTagsList(tags, list, async () => {
           await Db.flush('sessions*');
           await Db.refresh('sessions*');
-          return res.send(JSON.stringify({
+          return res.json({
             success: true,
             text: 'Tags added successfully'
-          }));
+          });
         });
       });
     } else {
@@ -2624,10 +2624,10 @@ class SessionAPIs {
           }
           await Db.flush('sessions*');
           await Db.refresh('sessions*');
-          return res.send(JSON.stringify({
+          return res.json({
             success: true,
             text: 'Tags added successfully'
-          }));
+          });
         });
     }
   };
@@ -2667,10 +2667,10 @@ class SessionAPIs {
         }
         SessionAPIs.#removeTagsList(tags, list, async () => {
           await Db.refresh('sessions*');
-          return res.send(JSON.stringify({
+          return res.json({
             success: true,
             text: 'Tags removed successfully'
-          }));
+          });
         });
       });
     } else {
@@ -2685,10 +2685,10 @@ class SessionAPIs {
             return res.serverError(200, 'No sessions to add tags to');
           }
           await Db.refresh('sessions*');
-          return res.send(JSON.stringify({
+          return res.json({
             success: true,
             text: 'Tags removed successfully'
-          }));
+          });
         });
     }
   };
@@ -2814,14 +2814,14 @@ class SessionAPIs {
         res.write(']');
         res.end();
       } else if (summaryChunkDelay > 0) {
-        await new Promise(resolve => setTimeout(resolve, summaryChunkDelay));
+        await ArkimeUtil.yield(summaryChunkDelay);
       }
     }
 
     BuildQuery.build(req, async (bsqErr, query, indices) => {
       // Delay before first chunk to allow skeleton UI to display
       if (summaryChunkDelay > 0) {
-        await new Promise(resolve => setTimeout(resolve, summaryChunkDelay));
+        await ArkimeUtil.yield(summaryChunkDelay);
       }
 
       if (bsqErr) {
@@ -3302,7 +3302,7 @@ class SessionAPIs {
    * @name /sessions/decodings
    */
   static getDecodings (req, res) {
-    res.send(JSON.stringify(decode.settings()));
+    res.json(decode.settings());
   };
 
   // --------------------------------------------------------------------------

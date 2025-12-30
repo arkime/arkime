@@ -101,7 +101,7 @@ class Config {
   static getArray = ArkimeConfig.getArray;
 
   // ----------------------------------------------------------------------------
-  // Return an array split on separator, remove leading/trailing spaces, remove empty elements
+  // Return an array split on separator, remove leading/trailing spaces, remove empty elements given a node
   static getFullArray (node, key, defaultValue, sep) {
     return ArkimeConfig.getFullArray([node, ArkimeConfig.getFull([node], 'nodeClass'), 'default'], key, defaultValue, sep);
   };

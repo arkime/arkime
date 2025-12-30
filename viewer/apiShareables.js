@@ -141,12 +141,12 @@ class ShareableAPIs {
 
       shareable.id = id;
 
-      return res.send(JSON.stringify({
+      return res.json({
         success: true,
         shareable,
         text: 'Created shareable item!',
         id
-      }));
+      });
     } catch (err) {
       console.log(`ERROR - ${req.method} /api/shareable (createShareable)`, util.inspect(err, false, 50));
       return res.serverError(500, 'Error creating shareable item');
@@ -247,11 +247,11 @@ class ShareableAPIs {
       shareable.canEdit = await ShareableAPIs.canEdit(user, shareable);
       shareable.canDelete = ShareableAPIs.canDelete(user, shareable);
 
-      return res.send(JSON.stringify({
+      return res.json({
         success: true,
         shareable,
         text: 'Updated shareable item!'
-      }));
+      });
     } catch (err) {
       console.log(`ERROR - ${req.method} /api/shareable/%s (updateShareable)`, ArkimeUtil.sanitizeStr(req.params.id), util.inspect(err, false, 50));
       return res.serverError(500, 'Error updating shareable item');
@@ -276,10 +276,10 @@ class ShareableAPIs {
       }
 
       await Db.deleteShareable(req.params.id);
-      res.send(JSON.stringify({
+      res.json({
         success: true,
         text: 'Deleted shareable item successfully'
-      }));
+      });
     } catch (err) {
       console.log(`ERROR - ${req.method} /api/shareable/%s (deleteShareable)`, ArkimeUtil.sanitizeStr(req.params.id), util.inspect(err, false, 50));
       return res.serverError(500, 'Error deleting shareable item');

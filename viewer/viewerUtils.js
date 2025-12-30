@@ -34,7 +34,7 @@ class ViewerUtils {
     if (certs && certs.length > 0) {
       options.ca = certs;
     }
-  };
+  }
 
   // ----------------------------------------------------------------------------
   static queryValueToArray (val) {
@@ -45,7 +45,7 @@ class ViewerUtils {
       val = [val];
     }
     return val.join(',').split(',');
-  };
+  }
 
   // ----------------------------------------------------------------------------
   static mapMerge (aggregations) {
@@ -68,7 +68,7 @@ class ViewerUtils {
     }
 
     return map;
-  };
+  }
 
   // ----------------------------------------------------------------------------
   static graphMerge (req, query, aggregations) {
@@ -95,8 +95,7 @@ class ViewerUtils {
       totDataBytes: ['client.bytes', 'server.bytes']
     };
 
-    for (let i = 0; i < filters.length; i++) {
-      const filter = filters[i];
+    for (const filter of filters) {
       if (filtersMap[filter] !== undefined) {
         for (const j of filtersMap[filter]) {
           graph[j + 'Histo'] = [];
@@ -105,7 +104,7 @@ class ViewerUtils {
         graph[filter + 'Histo'] = [];
       }
 
-      graph[filters[i] + 'Total'] = 0;
+      graph[filter + 'Total'] = 0;
     }
 
     if (!aggregations || !aggregations.dbHisto) {
@@ -147,7 +146,7 @@ class ViewerUtils {
     }
 
     return graph;
-  };
+  }
 
   // ----------------------------------------------------------------------------
   static errorString (err, result) {
@@ -163,12 +162,12 @@ class ViewerUtils {
       console.log(err, result);
     }
 
-    if (str.match('IndexMissingException')) {
+    if (str.includes('IndexMissingException')) {
       return "Arkime's OpenSearch/Elasticsearch database has no matching session indices for the timeframe selected.";
     } else {
       return 'OpenSearch/Elasticsearch error: ' + str;
     }
-  };
+  }
 
   // ----------------------------------------------------------------------------
   static async loadFields () {
@@ -202,13 +201,13 @@ class ViewerUtils {
       return {
         fieldsMap: JSON.stringify(Config.getFieldsMap()),
         fieldsArr: Config.getFields().sort((a, b) => {
-          return (a.exp > b.exp ? 1 : -1);
+          return a.exp - b.exp;
         })
       };
     } catch (err) {
       return { fieldsMap: {}, fieldsArr: [] };
     }
-  };
+  }
 
   // ----------------------------------------------------------------------------
   static oldDB2newDB (x) {
@@ -216,7 +215,7 @@ class ViewerUtils {
 
     if (old === undefined) { return x; }
     return old.dbFieldECS ?? old.dbField2;
-  };
+  }
 
   // ----------------------------------------------------------------------------
   static mergeUnarray (to, from) {
@@ -228,7 +227,7 @@ class ViewerUtils {
         to[key] = from[key];
       }
     }
-  };
+  }
 
   // ----------------------------------------------------------------------------
   // https://medium.com/dailyjs/rewriting-javascript-converting-an-array-of-objects-to-an-object-ec579cafbfc7
@@ -237,7 +236,7 @@ class ViewerUtils {
       obj[item[key]] = item;
       return obj;
     }, {});
-  };
+  }
 
   // ----------------------------------------------------------------------------
   static async getViewUrl (node) {
@@ -267,7 +266,7 @@ class ViewerUtils {
     client = isHttps ? https : http;
     const result = protocol + '://' + stat.hostname + ':' + Config.getFull(node, 'viewPort', '8005');
     return { viewUrl: result, client };
-  };
+  }
 
   // ----------------------------------------------------------------------------
   static async makeRequest (node, path, user, cb) {
@@ -314,7 +313,7 @@ class ViewerUtils {
     } catch (err) {
       cb(err);
     }
-  };
+  }
 
   // --------------------------------------------------------------------------
   static async proxyRequest (req, res) {
@@ -363,7 +362,7 @@ class ViewerUtils {
       console.log('ERROR - getViewUrl in proxyRequest - node:', req.params.nodeName, 'err:', util.inspect(err, false, 50));
       res.send(`Can't find view url for '${ArkimeUtil.safeStr(req.params.nodeName)}' check viewer logs on '${Config.hostName()}'`);
     }
-  };
+  }
 
   // ----------------------------------------------------------------------------
   static addCluster (cluster, options = {}) {
@@ -371,7 +370,7 @@ class ViewerUtils {
       options.cluster = cluster;
     }
     return options;
-  };
+  }
 
   // ----------------------------------------------------------------------------
   // check for anonymous mode before fetching user cache and return anonymous
@@ -389,7 +388,7 @@ class ViewerUtils {
     } else {
       return await User.getUserCache(userId);
     }
-  };
+  }
 
   // --------------------------------------------------------------------------
   static async isLocalView (node, yesCb, noCb) {
@@ -414,7 +413,7 @@ class ViewerUtils {
     } else {
       return noCb ? noCb() : false;
     }
-  };
+  }
 }
 
 module.exports = ViewerUtils;

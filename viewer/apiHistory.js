@@ -27,7 +27,7 @@ class HistoryAPIs {
    * @param {string} api - The API endpoint of the request.
    * @param {string} expression - The sessions search expression used in the request.
    * @param {ArkimeView} view - The view applied to the request.
-   * @param {number} timestamp - The time that the request was made. Format is seconds since Unix EPOC.
+   * @param {number} timestamp - The time that the request was made. Format is seconds since Unix EPOCH.
    * @param {number} range - The date range of the request. Range is described in hours, -1 means all.
    * @param {string} query - The query parameters of the request.
    * @param {number} queryTime - The time it took for the response to be returned after the request was issued.
@@ -35,7 +35,7 @@ class HistoryAPIs {
    * @param {number} recordsFiltered - The number of items returned from searching the dataset (before paging).
    * @param {number} recordsReturned - The number of items returned in the response (after paging).
    * @param {object} body - The request body.
-   * @param {string} forcedExpression - The expression applied to the search as a result of a users forced expression. Only visible to admins, normal users cannot see their forced expressions.
+   * @param {string} forcedExpression - The expression applied to the search as a result of a user's forced expression. Only visible to admins, normal users cannot see their forced expressions.
    */
 
   // --------------------------------------------------------------------------
@@ -45,8 +45,8 @@ class HistoryAPIs {
    * Retrieves a list of histories, or user client requests to the APIs.
    * @name /histories
    * @param {number} date=1 - The number of hours of data to return (-1 means all data). Defaults to 1.
-   * @param {number} startTime - If the date parameter is not set, this is the start time of data to return. Format is seconds since Unix EPOC.
-   * @param {number} stopTime  - If the date parameter is not set, this is the stop time of data to return. Format is seconds since Unix EPOC.
+   * @param {number} startTime - If the date parameter is not set, this is the start time of data to return. Format is seconds since Unix EPOCH.
+   * @param {number} stopTime  - If the date parameter is not set, this is the stop time of data to return. Format is seconds since Unix EPOCH.
    * @param {string} searchTerm - The search text to filter the history list by.
    * @param {number} length=100 - The number of items to return. Defaults to 1,000.
    * @param {number} start=0 - The entry to start at. Defaults to 0.
@@ -149,11 +149,12 @@ class HistoryAPIs {
       ]);
 
       const results = { total: histories.total, results: [] };
+      const isAdmin = req.user.hasRole('arkimeAdmin');
       for (const hit of histories.hits) {
         const item = hit._source;
         item.id = hit._id;
         item.index = hit._index;
-        if (!req.user.hasRole('arkimeAdmin')) {
+        if (!isAdmin) {
           // remove forced expression and es query for reqs made by nonadmin users
           item.forcedExpression = undefined;
           item.esQuery = undefined;
@@ -161,7 +162,7 @@ class HistoryAPIs {
         results.results.push(item);
       }
 
-      res.send({
+      res.json({
         data: results.results,
         recordsTotal: total,
         recordsFiltered: results.total
@@ -189,10 +190,10 @@ class HistoryAPIs {
 
     try {
       await Db.deleteHistory(req.params.id, req.query.index, req.query.cluster);
-      return res.send(JSON.stringify({
+      return res.json({
         success: true,
         text: 'Deleted history item successfully'
-      }));
+      });
     } catch (err) {
       console.log(`ERROR - ${req.method} /api/history/%s`, ArkimeUtil.sanitizeStr(req.params.id), util.inspect(err, false, 50));
       return res.serverError(500, 'Error deleting history item');

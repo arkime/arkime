@@ -614,11 +614,11 @@ class StatsAPIs {
   static async deleteESIndex (req, res) {
     try {
       await Db.deleteIndex([req.params.index], { cluster: req.query.cluster });
-      return res.send(JSON.stringify({ success: true }));
+      return res.json({ success: true });
     } catch (err) {
       console.log(`ERROR - ${req.method} /api/esindices/%s`, ArkimeUtil.sanitizeStr(req.params.index), util.inspect(err, false, 50));
       res.status(404);
-      return res.send(JSON.stringify({ success: false, text: 'Error deleting index' }));
+      return res.json({ success: false, text: 'Error deleting index' });
     }
   };
 
@@ -638,7 +638,7 @@ class StatsAPIs {
     }
 
     // always return successfully right away, optimizeIndex might block
-    return res.send(JSON.stringify({ success: true }));
+    return res.json({ success: true });
   };
 
   // --------------------------------------------------------------------------
@@ -657,11 +657,11 @@ class StatsAPIs {
 
     try {
       await Db.closeIndex([req.params.index], { cluster: req.query.cluster });
-      return res.send(JSON.stringify({ success: true }));
+      return res.json({ success: true });
     } catch (err) {
       console.log(`ERROR - ${req.method} /api/esindices/%s/close`, ArkimeUtil.sanitizeStr(req.params.index), util.inspect(err, false, 50));
       res.status(404);
-      return res.send(JSON.stringify({ success: false, text: 'Error closing index' }));
+      return res.json({ success: false, text: 'Error closing index' });
     }
   };
 
@@ -685,7 +685,7 @@ class StatsAPIs {
     }
 
     // always return successfully right away, openIndex might block
-    return res.send(JSON.stringify({ success: true }));
+    return res.json({ success: true });
   };
 
   // --------------------------------------------------------------------------
@@ -756,12 +756,12 @@ class StatsAPIs {
       }, 10000);
 
       // always return right away, shrinking might take a while
-      return res.send(JSON.stringify({ success: true }));
+      return res.json({ success: true });
     } catch (err) {
-      return res.send(JSON.stringify({
+      return res.json({
         success: false,
         text: ArkimeUtil.safeStr(err.message)
-      }));
+      });
     }
   };
 
@@ -878,7 +878,7 @@ class StatsAPIs {
 
     try {
       const { body: result } = await Db.taskCancel(taskId, req.query.cluster);
-      return res.send(JSON.stringify({ success: true, text: result }));
+      return res.json({ success: true, text: result });
     } catch (err) {
       console.log(`ERROR - ${req.method} /api/estasks/%s/cancel`, ArkimeUtil.sanitizeStr(taskId), util.inspect(err, false, 50));
       return res.serverError(500, err.toString());
@@ -907,7 +907,7 @@ class StatsAPIs {
 
     try {
       const { body: result } = await Db.cancelByOpaqueId(`${req.user.userId}::${cancelId}`, req.query.cluster);
-      return res.send(JSON.stringify({ success: true, text: result }));
+      return res.json({ success: true, text: result });
     } catch (err) {
       console.log(`ERROR - ${req.method} /api/estasks/%s/cancelwith`, ArkimeUtil.sanitizeStr(cancelId), util.inspect(err, false, 50));
       return res.serverError(500, err.toString());
@@ -926,7 +926,7 @@ class StatsAPIs {
   static async cancelAllESTasks (req, res) {
     try {
       const { body: result } = await Db.taskCancel(undefined, req.query.cluster);
-      return res.send(JSON.stringify({ success: true, text: result }));
+      return res.json({ success: true, text: result });
     } catch (err) {
       console.log(`ERROR - ${req.method} /api/estasks/cancelall`, util.inspect(err, false, 50));
       return res.serverError(500, err.toString());
@@ -1115,10 +1115,10 @@ class StatsAPIs {
 
       try {
         await Db.putClusterSettings(query);
-        return res.send(JSON.stringify({
+        return res.json({
           success: true,
           text: 'Successfully set settings'
-        }));
+        });
       } catch (err) {
         console.log(`ERROR - ${req.method} /api/esadmin/set`, util.inspect(err, false, 50));
         return res.serverError(500, 'Set failed');
@@ -1158,7 +1158,7 @@ class StatsAPIs {
         } else {
           Db.setILMPolicy(`${prefix}molochsessions`, silm, req.query.cluster);
         }
-        return res.send(JSON.stringify({ success: true, text: 'Set' }));
+        return res.json({ success: true, text: 'Set' });
       });
       return;
     }
@@ -1183,7 +1183,7 @@ class StatsAPIs {
           return res.serverError(500, 'Unknown field');
         }
         Db.putTemplate('sessions3_template', template[`${prefix}sessions3_template`], req.query.cluster);
-        return res.send(JSON.stringify({ success: true, text: 'Successfully set settings' }));
+        return res.json({ success: true, text: 'Successfully set settings' });
       });
       return;
     }
@@ -1193,10 +1193,10 @@ class StatsAPIs {
 
     try {
       await Db.putClusterSettings(clusterQuery);
-      return res.send(JSON.stringify({
+      return res.send({
         success: true,
         text: 'Successfully set settings'
-      }));
+      });
     } catch (err) {
       console.log(`ERROR - ${req.method} /api/esadmin/set`, util.inspect(err, false, 50));
       return res.serverError(500, 'Set failed');
@@ -1215,9 +1215,9 @@ class StatsAPIs {
   static async rerouteES (req, res) {
     try {
       await Db.reroute(req.query.cluster);
-      return res.send(JSON.stringify({ success: true, text: 'Reroute successful' }));
+      return res.json({ success: true, text: 'Reroute successful' });
     } catch (err) {
-      return res.send(JSON.stringify({ success: true, text: 'Reroute failed' }));
+      return res.json({ success: true, text: 'Reroute failed' });
     }
   };
 
@@ -1233,7 +1233,7 @@ class StatsAPIs {
   static flushES (req, res) {
     Db.refresh('*', req.query.cluster);
     Db.flush('*', req.query.cluster);
-    return res.send(JSON.stringify({ success: true, text: 'Flushed' }));
+    return res.json({ success: true, text: 'Flushed' });
   };
 
   // --------------------------------------------------------------------------
@@ -1250,7 +1250,7 @@ class StatsAPIs {
       body: { 'index.blocks.read_only_allow_delete': null },
       cluster: req.query.cluster
     });
-    return res.send(JSON.stringify({ success: true, text: 'Unflooded' }));
+    return res.json({ success: true, text: 'Unflooded' });
   };
 
   // --------------------------------------------------------------------------
@@ -1265,10 +1265,10 @@ class StatsAPIs {
   static async clearCacheES (req, res) {
     try {
       const { body: data } = await Db.clearCache(req.query.cluster);
-      return res.send(JSON.stringify({
+      return res.json({
         success: true,
         text: `Cache cleared: ${data._shards.successful} of ${data._shards.total} shards successful, with ${data._shards.failed} failing`
-      }));
+      });
     } catch (err) {
       console.log(`ERROR - ${req.method} /api/esadmin/clearcache`, util.inspect(err, false, 50));
       return res.serverError(500, err.toString());
@@ -1446,10 +1446,10 @@ class StatsAPIs {
       query.body.persistent[settingName] = exclude.join(',');
 
       await Db.putClusterSettings(query);
-      return res.send(JSON.stringify({
+      return res.json({
         success: true,
         text: 'Successfully excluded node'
-      }));
+      });
     } catch (err) {
       console.log(`ERROR - ${req.method} /api/esshards/%s/%s/exclude`, ArkimeUtil.sanitizeStr(req.params.type), ArkimeUtil.sanitizeStr(req.params.value), util.inspect(err, false, 50));
       return res.serverError(500, 'Node exclusion failed');
@@ -1496,10 +1496,10 @@ class StatsAPIs {
       query.body.persistent[settingName] = exclude.join(',');
 
       await Db.putClusterSettings(query);
-      return res.send(JSON.stringify({
+      return res.json({
         success: true,
         text: 'Successfully included node'
-      }));
+      });
     } catch (err) {
       console.log(`ERROR - ${req.method} /api/esshards/%s/%s/include`, ArkimeUtil.sanitizeStr(req.params.type), ArkimeUtil.sanitizeStr(req.params.value), util.inspect(err, false, 50));
       return res.serverError(500, 'Node inclusion failed');
@@ -1588,7 +1588,7 @@ class StatsAPIs {
       }
 
       await Db.reroute(req.query.cluster, commands);
-      return res.send(JSON.stringify({ success: true }));
+      return res.json({ success: true });
     } catch (err) {
       console.log(`ERROR - ${req.method} /api/esshards/%s/%s/delete`, ArkimeUtil.sanitizeStr(req.params.index), ArkimeUtil.sanitizeStr(req.params.shard), util.inspect(err, false, 50));
       return res.serverError(500, `Deleting shard ${ArkimeUtil.sanitizeStr(req.params.index)}:${ArkimeUtil.sanitizeStr(req.params.shard)} failed`);

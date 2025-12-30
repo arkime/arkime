@@ -16,7 +16,7 @@ class ViewAPIs {
   // HELPERS
   // --------------------------------------------------------------------------
   /**
-   * Retrieves an Arkime views that a user can view.
+   * Retrieves Arkime views that a user can view.
    */
   static async getViews (req) {
     const user = req.settingUser;
@@ -113,13 +113,13 @@ class ViewAPIs {
   /**
    * GET - /api/views
    *
-   * Retrieves an Arkime views that a user can view.
+   * Retrieves Arkime views that a user can view.
    * @name /views
    * @returns {ArkimeView[]} views - A list of views a user has configured or has been shared.
    */
   static async apiGetViews (req, res) {
     const views = await ViewAPIs.getViews(req);
-    res.send(views);
+    res.json(views);
   }
 
   /**
@@ -157,12 +157,12 @@ class ViewAPIs {
       view.id = id;
       view.users = view.users.join(',');
 
-      return res.send(JSON.stringify({
+      return res.json({
         success: true,
         view,
         text: 'Created view!',
         invalidUsers: ArkimeUtil.safeStr(users.invalidUsers)
-      }));
+      });
     } catch (err) {
       console.log(`ERROR - ${req.method} /api/view (createView)`, util.inspect(err, false, 50));
       return res.serverError(500, 'Error creating view');
@@ -180,13 +180,13 @@ class ViewAPIs {
   static async apiDeleteView (req, res) {
     try {
       await Db.deleteView(req.params.id);
-      res.send(JSON.stringify({
+      res.json({
         success: true,
         text: 'Deleted view successfully'
-      }));
+      });
     } catch (err) {
       console.log(`ERROR - ${req.method} /api/view/%s (deleteView)`, ArkimeUtil.sanitizeStr(req.params.id), util.inspect(err, false, 50));
-      return res.serverError(500, 'Error deleting notifier');
+      return res.serverError(500, 'Error deleting view');
     }
   }
 
@@ -232,12 +232,12 @@ class ViewAPIs {
         newView.users = newView.users.join(',');
         newView.id = dbView._id;
 
-        return res.send(JSON.stringify({
+        return res.json({
           view: newView,
           success: true,
           text: 'Updated view!',
           invalidUsers: ArkimeUtil.safeStr(users.invalidUsers)
-        }));
+        });
       } catch (err) {
         console.log(`ERROR - ${req.method} /api/view/%s (setView)`, ArkimeUtil.sanitizeStr(req.params.id), util.inspect(err, false, 50));
         return res.serverError(500, 'Error updating view');
