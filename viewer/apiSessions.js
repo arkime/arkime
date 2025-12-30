@@ -524,28 +524,27 @@ class SessionAPIs {
 
   // --------------------------------------------------------------------------
   static #processSessionIdDisk (session, headerCb, packetCb, endCb, limit) {
-    function processFile (pcap, pos, i, nextCb) {
+    async function processFile (pcap, pos, i, nextCb) {
       pcap.ref();
 
       if (Config.debug > 2) {
         console.log('readPacket', pos);
       }
-      pcap.readPacket(pos, (packet) => {
-        switch (packet) {
-        case null:
-          const msg1 = util.format(session._id, 'in file', pcap.filename, "couldn't read packet at", pos, 'packet #', i, 'of', fields.packetPos.length);
-          console.log('ERROR - processSessionIdDisk -', msg1);
-          endCb(msg1, null);
-          break;
-        case undefined:
-          nextCb('Error');
-          break;
-        default:
-          packetCb(pcap, packet, nextCb, i);
-          break;
-        }
-        pcap.unref();
-      });
+      const packet = await pcap.readPacket(pos);
+      switch (packet) {
+      case null:
+        const msg1 = util.format(session._id, 'in file', pcap.filename, "couldn't read packet at", pos, 'packet #', i, 'of', fields.packetPos.length);
+        console.log('ERROR - processSessionIdDisk -', msg1);
+        endCb(msg1, null);
+        break;
+      case undefined:
+        nextCb('Error');
+        break;
+      default:
+        packetCb(pcap, packet, nextCb, i);
+        break;
+      }
+      pcap.unref();
     }
 
     const fields = session.fields;
@@ -1073,7 +1072,7 @@ class SessionAPIs {
     async function processFile (pcap, pos, i) {
       pcap.ref();
       try {
-        const packet = await pcap.readPacketPromise(pos);
+        const packet = await pcap.readPacket(pos);
         if (packet.length > 16) {
           try {
             const obj = {};

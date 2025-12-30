@@ -1038,14 +1038,13 @@ if (require.main === module) {
 
     async.whilst(
       function (cb) { return cb(null, pos < stat.size); },
-      function (callback) {
-        pcap.readPacket(pos, function (packet) {
-          const obj = {};
-          pcap.decode(packet, obj);
-          packets.push(obj);
-          pos += packet.length;
-          callback();
-        });
+      async function (callback) {
+        const packet = pcap.readPacket(pos);
+        const obj = {};
+        pcap.decode(packet, obj);
+        packets.push(obj);
+        pos += packet.length;
+        callback();
       },
       async function (err, n) {
         const { results } = await Pcap.reassemble_tcp(packets, packets.length, packets[0].ip.addr1 + ':' + packets[0].tcp.sport);

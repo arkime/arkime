@@ -278,17 +278,6 @@ class Pcap {
   };
 
   // --------------------------------------------------------------------------
-  readPacket (pos, cb) {
-    // Hacky!! File isn't actually opened, try again soon
-    if (!this.fd) {
-      setTimeout(() => this.readPacket(pos, cb), 10);
-      return;
-    }
-
-    return this.readPacketInternal(pos, cb);
-  };
-
-  // --------------------------------------------------------------------------
   async readAndSliceBlock (posArg) {
     let pos = posArg;
     let insideOffset = 0;
@@ -388,11 +377,16 @@ class Pcap {
   };
 
   // --------------------------------------------------------------------------
-  async readPacketInternal (posArg, cb) {
+  async readPacket (posArg) {
+    // Hacky!! File isn't actually opened
+    while (!this.fd) {
+      await ArkimeUtil.yield(10);
+    }
+
     try {
       let readBuffer = await this.readAndSliceBlock(posArg);
       if (!readBuffer) {
-        return cb(undefined);
+        return undefined;
       }
 
       // Get the packetLen
@@ -401,7 +395,7 @@ class Pcap {
 
       // Wasn't enough for header, add next block
       if (readBuffer.length < headerLen) {
-        if (this.uncompressedBits) { return cb(undefined); }
+        if (this.uncompressedBits) { return undefined; }
         const readBuffer2 = await this.readAndSliceBlock(posArg + readBuffer.length);
         if (!readBuffer2 || readBuffer2.length < headerLen) {
           const msg = `Not enough data ${readBuffer.length} for header ${headerLen} in ${this.filename} - See https://arkime.com/faq#zero-byte-pcap-files`;
@@ -409,7 +403,7 @@ class Pcap {
             Pcap.#lastMsg = msg;
             console.log(msg);
           }
-          return cb(undefined);
+          return undefined;
         }
         readBuffer = Buffer.concat([readBuffer, readBuffer2]);
       }
@@ -421,12 +415,12 @@ class Pcap {
       }
 
       if (packetLen < 0 || packetLen > 0xffff) {
-        return cb(undefined);
+        return undefined;
       }
 
       // Wasn't enough for packet data, add next block
       if (readBuffer.length < (headerLen + packetLen)) {
-        if (this.uncompressedBits) { return cb(undefined); }
+        if (this.uncompressedBits) { return undefined; }
         const readBuffer2 = await this.readAndSliceBlock(posArg + readBuffer.length);
         if (!readBuffer2 || readBuffer.length + readBuffer2.length < headerLen + packetLen) {
           const msg = `Not enough data ${readBuffer.length} for packet ${headerLen + packetLen} in ${this.filename} - See https://arkime.com/faq#zero-byte-pcap-files`;
@@ -434,7 +428,7 @@ class Pcap {
             Pcap.#lastMsg = msg;
             console.log(msg);
           }
-          return cb(undefined);
+          return undefined;
         }
         readBuffer = Buffer.concat([readBuffer, readBuffer2]);
       }
@@ -453,20 +447,15 @@ class Pcap {
           newBuffer.writeUInt32LE(packetLen, 8);
           newBuffer.writeUInt32LE(packetLen, 12);
           readBuffer.copy(newBuffer, 16, 6, packetLen + 6);
-          return cb(newBuffer);
+          return newBuffer;
         }
-        return cb(readBuffer.slice(0, headerLen + packetLen));
+        return readBuffer.slice(0, headerLen + packetLen);
       }
 
-      return cb(null);
+      return null;
     } catch (err) {
-      return cb(undefined);
+      return undefined;
     }
-  };
-
-  // --------------------------------------------------------------------------
-  async readPacketPromise (pos) {
-    return new Promise((resolve, reject) => { this.readPacket(pos, data => resolve(data)); });
   };
 
   // --------------------------------------------------------------------------
@@ -1350,7 +1339,7 @@ class Pcap {
       for (let i = 0; i < packets.length; i++) {
         const packet = packets[i];
         if (i % 50 === 0) {
-          await new Promise(resolve => setImmediate(resolve));
+          await ArkimeUtil.yield();
         }
         const pkey = packet.ip.addr1 + ':' + packet.tcp.sport;
         if (pkey === clientKey) {
@@ -1405,7 +1394,7 @@ class Pcap {
       }
 
       // Yield before final assembly
-      await new Promise(resolve => setImmediate(resolve));
+      await ArkimeUtil.yield();
 
       // Combine buffers
       for (const result of results) {
