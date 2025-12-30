@@ -27,7 +27,7 @@ class HistoryAPIs {
    * @param {string} api - The API endpoint of the request.
    * @param {string} expression - The sessions search expression used in the request.
    * @param {ArkimeView} view - The view applied to the request.
-   * @param {number} timestamp - The time that the request was made. Format is seconds since Unix EPOC.
+   * @param {number} timestamp - The time that the request was made. Format is seconds since Unix EPOCH.
    * @param {number} range - The date range of the request. Range is described in hours, -1 means all.
    * @param {string} query - The query parameters of the request.
    * @param {number} queryTime - The time it took for the response to be returned after the request was issued.
@@ -35,7 +35,7 @@ class HistoryAPIs {
    * @param {number} recordsFiltered - The number of items returned from searching the dataset (before paging).
    * @param {number} recordsReturned - The number of items returned in the response (after paging).
    * @param {object} body - The request body.
-   * @param {string} forcedExpression - The expression applied to the search as a result of a users forced expression. Only visible to admins, normal users cannot see their forced expressions.
+   * @param {string} forcedExpression - The expression applied to the search as a result of a user's forced expression. Only visible to admins, normal users cannot see their forced expressions.
    */
 
   // --------------------------------------------------------------------------
@@ -45,8 +45,8 @@ class HistoryAPIs {
    * Retrieves a list of histories, or user client requests to the APIs.
    * @name /histories
    * @param {number} date=1 - The number of hours of data to return (-1 means all data). Defaults to 1.
-   * @param {number} startTime - If the date parameter is not set, this is the start time of data to return. Format is seconds since Unix EPOC.
-   * @param {number} stopTime  - If the date parameter is not set, this is the stop time of data to return. Format is seconds since Unix EPOC.
+   * @param {number} startTime - If the date parameter is not set, this is the start time of data to return. Format is seconds since Unix EPOCH.
+   * @param {number} stopTime  - If the date parameter is not set, this is the stop time of data to return. Format is seconds since Unix EPOCH.
    * @param {string} searchTerm - The search text to filter the history list by.
    * @param {number} length=100 - The number of items to return. Defaults to 1,000.
    * @param {number} start=0 - The entry to start at. Defaults to 0.
@@ -57,101 +57,104 @@ class HistoryAPIs {
    * @returns {number} recordsTotal - The total number of history results stored.
    * @returns {number} recordsFiltered - The number of history items returned in this result.
    */
-  static getHistories (req, res) {
-    let userId;
-    if (req.user.hasRole('arkimeAdmin')) { // user is an admin, they can view all history items
-      // if the admin has requested a specific user
-      if (req.query.userId) { userId = req.query.userId; }
-    } else { // user isn't an admin, so they can only view their own history items
-      if (req.query.userId && req.query.userId !== req.user.userId) {
-        return res.serverError(403, 'Need admin privileges');
-      }
-      userId = req.user.userId;
-    }
-
-    const query = {
-      sort: {},
-      from: +req.query.start || 0,
-      size: +req.query.length || 1000
-    };
-
-    query.sort[req.query.sortField || 'timestamp'] = {
-      order: req.query.desc === 'true' ? 'desc' : 'asc'
-    };
-
-    if (req.query.searchTerm || userId) {
-      query.query = { bool: { filter: [] } };
-
-      if (req.query.searchTerm) { // apply search term
-        query.query.bool.filter.push({
-          query_string: {
-            query: req.query.searchTerm,
-            fields: ['expression', 'userId', 'api', 'view.name', 'view.expression']
-          }
-        });
-      }
-
-      if (userId) { // filter on userId
-        query.query.bool.filter.push({
-          wildcard: { userId }
-        });
-      }
-    }
-
-    if (req.query.api) { // filter on api endpoint
-      if (!query.query) { query.query = { bool: { filter: [] } }; }
-      query.query.bool.filter.push({
-        wildcard: { api: '*' + req.query.api + '*' }
-      });
-    }
-
-    if (req.query.exists) {
-      if (!query.query) { query.query = { bool: { filter: [] } }; }
-      const existsArr = req.query.exists.split(',');
-      for (let i = 0, len = existsArr.length; i < len; ++i) {
-        query.query.bool.filter.push({
-          exists: { field: existsArr[i] }
-        });
-      }
-    }
-
-    // filter history table by a time range
-    if (req.query.startTime && req.query.stopTime) {
-      if (!/^[0-9]+$/.test(req.query.startTime)) {
-        req.query.startTime = Date.parse(req.query.startTime.replace('+', ' ')) / 1000;
-      } else {
-        req.query.startTime = parseInt(req.query.startTime, 10);
-      }
-
-      if (!/^[0-9]+$/.test(req.query.stopTime)) {
-        req.query.stopTime = Date.parse(req.query.stopTime.replace('+', ' ')) / 1000;
-      } else {
-        req.query.stopTime = parseInt(req.query.stopTime, 10);
-      }
-
-      if (!query.query) { query.query = { bool: { filter: [] } }; }
-      query.query.bool.filter.push({
-        range: {
-          timestamp: {
-            gte: '' + req.query.startTime,
-            lte: '' + req.query.stopTime
-          }
+  static async getHistories (req, res) {
+    try {
+      let userId;
+      if (req.user.hasRole('arkimeAdmin')) { // user is an admin, they can view all history items
+        // if the admin has requested a specific user
+        if (req.query.userId) { userId = req.query.userId; }
+      } else { // user isn't an admin, so they can only view their own history items
+        if (req.query.userId && req.query.userId !== req.user.userId) {
+          return res.serverError(403, 'Need admin privileges');
         }
-      });
-    }
+        userId = req.user.userId;
+      }
 
-    ViewerUtils.addCluster(req.query.cluster, query);
+      const query = {
+        sort: {},
+        from: +req.query.start || 0,
+        size: +req.query.length || 1000
+      };
 
-    Promise.all([
-      Db.searchHistory(query),
-      Db.countHistory(req.query.cluster)
-    ]).then(([{ body: { hits: histories } }, { body: { count: total } }]) => {
+      query.sort[req.query.sortField || 'timestamp'] = {
+        order: req.query.desc === 'true' ? 'desc' : 'asc'
+      };
+
+      if (req.query.searchTerm || userId) {
+        query.query = { bool: { filter: [] } };
+
+        if (req.query.searchTerm) { // apply search term
+          query.query.bool.filter.push({
+            query_string: {
+              query: req.query.searchTerm,
+              fields: ['expression', 'userId', 'api', 'view.name', 'view.expression']
+            }
+          });
+        }
+
+        if (userId) { // filter on userId
+          query.query.bool.filter.push({
+            wildcard: { userId }
+          });
+        }
+      }
+
+      if (req.query.api) { // filter on api endpoint
+        if (!query.query) { query.query = { bool: { filter: [] } }; }
+        query.query.bool.filter.push({
+          wildcard: { api: '*' + req.query.api + '*' }
+        });
+      }
+
+      if (req.query.exists) {
+        if (!query.query) { query.query = { bool: { filter: [] } }; }
+        const existsArr = req.query.exists.split(',');
+        for (let i = 0, len = existsArr.length; i < len; ++i) {
+          query.query.bool.filter.push({
+            exists: { field: existsArr[i] }
+          });
+        }
+      }
+
+      // filter history table by a time range
+      if (req.query.startTime && req.query.stopTime) {
+        if (!/^[0-9]+$/.test(req.query.startTime)) {
+          req.query.startTime = Date.parse(req.query.startTime.replace('+', ' ')) / 1000;
+        } else {
+          req.query.startTime = parseInt(req.query.startTime, 10);
+        }
+
+        if (!/^[0-9]+$/.test(req.query.stopTime)) {
+          req.query.stopTime = Date.parse(req.query.stopTime.replace('+', ' ')) / 1000;
+        } else {
+          req.query.stopTime = parseInt(req.query.stopTime, 10);
+        }
+
+        if (!query.query) { query.query = { bool: { filter: [] } }; }
+        query.query.bool.filter.push({
+          range: {
+            timestamp: {
+              gte: '' + req.query.startTime,
+              lte: '' + req.query.stopTime
+            }
+          }
+        });
+      }
+
+      ViewerUtils.addCluster(req.query.cluster, query);
+
+      const [{ body: { hits: histories } }, { body: { count: total } }] = await Promise.all([
+        Db.searchHistory(query),
+        Db.countHistory(req.query.cluster)
+      ]);
+
       const results = { total: histories.total, results: [] };
+      const isAdmin = req.user.hasRole('arkimeAdmin');
       for (const hit of histories.hits) {
         const item = hit._source;
         item.id = hit._id;
         item.index = hit._index;
-        if (!req.user.hasRole('arkimeAdmin')) {
+        if (!isAdmin) {
           // remove forced expression and es query for reqs made by nonadmin users
           item.forcedExpression = undefined;
           item.esQuery = undefined;
@@ -159,15 +162,15 @@ class HistoryAPIs {
         results.results.push(item);
       }
 
-      res.send({
+      res.json({
         data: results.results,
         recordsTotal: total,
         recordsFiltered: results.total
       });
-    }).catch((err) => {
+    } catch (err) {
       console.log(`ERROR - ${req.method} /api/history`, util.inspect(err, false, 50));
       return res.serverError(500, 'Error retrieving history - ' + err);
-    });
+    }
   };
 
   // --------------------------------------------------------------------------
@@ -187,10 +190,10 @@ class HistoryAPIs {
 
     try {
       await Db.deleteHistory(req.params.id, req.query.index, req.query.cluster);
-      return res.send(JSON.stringify({
+      return res.json({
         success: true,
         text: 'Deleted history item successfully'
-      }));
+      });
     } catch (err) {
       console.log(`ERROR - ${req.method} /api/history/%s`, ArkimeUtil.sanitizeStr(req.params.id), util.inspect(err, false, 50));
       return res.serverError(500, 'Error deleting history item');

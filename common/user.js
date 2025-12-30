@@ -806,10 +806,10 @@ class User {
 
       User.setUser(req.body.userId, nuser, (err, info) => {
         if (!err) {
-          return res.send(JSON.stringify({
+          return res.json({
             success: true,
             text: `${isRole ? 'Role' : 'User'} created successfully`
-          }));
+          });
         } else {
           console.log(`ERROR - ${req.method} /api/user`, util.inspect(err, false, 50), info);
           return res.serverError(403, err);
@@ -983,10 +983,10 @@ class User {
           return res.serverError(500, 'Error updating user:' + err);
         }
 
-        return res.send(JSON.stringify({
+        return res.json({
           success: true,
           text: `User ${userId} updated successfully`
-        }));
+        });
       });
     });
   };
@@ -1052,10 +1052,10 @@ class User {
           return res.serverError(500, 'Error updating user role:' + err);
         }
 
-        return res.send(JSON.stringify({
+        return res.json({
           success: true,
           text: `User ${userId}'s role ${roleId} updated successfully`
-        }));
+        });
       });
     });
   };
@@ -1099,10 +1099,10 @@ class User {
         return res.serverError(500, 'Password update failed');
       }
 
-      return res.send(JSON.stringify({
+      return res.json({
         success: true,
         text: 'Changed password successfully'
-      }));
+      });
     });
   };
 

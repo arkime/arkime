@@ -14,7 +14,7 @@ const util = require('util');
 const ArkimeUtil = require('../common/arkimeUtil');
 const ArkimeConfig = require('../common/arkimeConfig');
 const ViewerUtils = require('./viewerUtils');
-const SessionAPIs = require('./apiSessions');
+const BuildQuery = require('./buildQuery');
 
 let fieldsMap;
 
@@ -99,7 +99,7 @@ class ConnectionAPIs {
 
     if (resultId > 1) {
       // replace current time frame start/stop values with baseline time frame start/stop values
-      const currentQueryTimes = ViewerUtils.determineQueryTimes(req.query);
+      const currentQueryTimes = BuildQuery.determineQueryTimes(req.query);
       if (Config.debug) {
         console.log('buildConnectionQuery baseline.0', 'startTime', currentQueryTimes[0], 'stopTime', currentQueryTimes[1], baselineDate, baselineDateIsMultiplier ? 'x' : '');
       }
@@ -119,7 +119,7 @@ class ConnectionAPIs {
       }
     } // resultId > 1 (calculating baseline query time frame)
 
-    SessionAPIs.buildSessionQuery(req, (bsqErr, query, indices) => {
+    BuildQuery.build(req, (bsqErr, query, indices) => {
       if (bsqErr) {
         console.log('ERROR - buildConnectionQuery -> buildSessionQuery', resultId, util.inspect(bsqErr, false, 50));
         result.err = bsqErr;

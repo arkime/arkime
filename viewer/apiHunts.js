@@ -21,6 +21,7 @@ const ViewerUtils = require('./viewerUtils');
 const SessionAPIs = require('./apiSessions');
 const CronAPIs = require('./apiCrons');
 const ArkimeConfig = require('../common/arkimeConfig');
+const BuildQuery = require('./buildQuery');
 
 let huntThrottleMs;
 ArkimeConfig.loaded(() => {
@@ -68,13 +69,10 @@ class HuntAPIs {
   }
 
   // --------------------------------------------------------------------------
-  static #sessionHunt (sessionId, options, cb) {
+  static async #sessionHunt (sessionId, options, cb) {
     if (options.type === 'reassembled') {
-      SessionAPIs.processSessionIdAndDecode(sessionId, options.size || 10000, (err, session, packets) => {
-        if (err) {
-          return cb(null, false);
-        }
-
+      try {
+        const { packets } = await SessionAPIs.processSessionIdAndDecode(sessionId, options.size || 10000);
         let i = 0;
         let increment = 1;
         const len = packets.length;
@@ -89,9 +87,9 @@ class HuntAPIs {
         for (i; i < len; i += increment) {
           if (HuntAPIs.#packetSearch(packets[i].data, options)) { return cb(null, true); }
         }
-
-        return cb(null, false);
-      });
+      } catch (err) {
+      }
+      return cb(null, false);
     } else if (options.type === 'raw') {
       const packets = [];
       SessionAPIs.processSessionId(sessionId, true, null, (pcap, buffer, processSessionIdCb, i) => {
@@ -193,7 +191,7 @@ ${Config.arkimeWebURL()}hunt
   static async #updateHuntStats (hunt, huntId, session, searchedSessions) {
     // Configurable throttle for testing hunt progress in dev environments
     if (huntThrottleMs > 0) {
-      await new Promise(resolve => setTimeout(resolve, huntThrottleMs));
+      await ArkimeUtil.yield(huntThrottleMs);
     }
 
     // update the hunt with number of matchedSessions and searchedSessions
@@ -306,7 +304,7 @@ ${Config.arkimeWebURL()}hunt
 
       try {
         await Db.updateHunt(req.params.id, { status: huntStatus }, req.query.cluster);
-        res.send(JSON.stringify({ success: true, text: successText }));
+        res.json({ success: true, text: successText });
         HuntAPIs.processHuntJobs();
       } catch (err) {
         console.log('ERROR - updateHuntStatus -', errorText, util.inspect(err, false, 50));
@@ -468,7 +466,7 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
             return HuntAPIs.#updateHuntStats(hunt, huntId, session, searchedSessions).then(statsResult => cb(statsResult));
           }
 
-          SessionAPIs.isLocalView(node, () => {
+          ViewerUtils.isLocalView(node, () => {
             HuntAPIs.#sessionHunt(sessionId, options, async (err, matched) => {
               if (err) {
                 return HuntAPIs.#pauseHuntJobWithError(huntId, hunt, { value: `Hunt error searching session (${sessionId}): ${err}` }, node);
@@ -596,7 +594,7 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
 
     // Configurable throttle for testing hunt status transitions in dev environments
     if (huntThrottleMs > 0) {
-      await new Promise(resolve => setTimeout(resolve, huntThrottleMs));
+      await ArkimeUtil.yield(huntThrottleMs);
     }
 
     let user;
@@ -633,7 +631,7 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
       fakeReq.query.view = hunt.query.view;
     }
 
-    SessionAPIs.buildSessionQuery(fakeReq, async (err, query, indices) => {
+    BuildQuery.build(fakeReq, async (err, query, indices) => {
       if (err) {
         HuntAPIs.#pauseHuntJobWithError(huntId, hunt, {
           value: 'Fatal Error: Session query expression parse error. Fix your search expression and create a new hunt.',
@@ -642,7 +640,7 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
         return;
       }
 
-      await ViewerUtils.lookupQueryItems(query.query.bool.filter);
+      await BuildQuery.lookupQueryItems(query.query.bool.filter);
       query.query.bool.filter[0] = {
         range: {
           lastPacket: {
@@ -697,8 +695,8 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
         // there is a job already running
         if (hunt.status === 'running') {
           internals.runningHuntJob = hunt;
-          if (!internals.proccessHuntJobsInitialized) {
-            internals.proccessHuntJobsInitialized = true;
+          if (!internals.processHuntJobsInitialized) {
+            internals.processHuntJobsInitialized = true;
             // restart the abandoned or incomplete hunt
             HuntAPIs.#processHuntJob(id, hunt);
           }
@@ -885,7 +883,7 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
       const { body: result } = await Db.createHunt(hunt, req.query.cluster);
       hunt.id = result._id;
       await HuntAPIs.processHuntJobs();
-      return res.send(JSON.stringify(response));
+      return res.json(response);
     } catch (err) {
       console.log(`ERROR - ${req.method} /api/hunt`, util.inspect(err, false, 50));
       return res.serverError(500, 'Error creating hunt');
@@ -1009,10 +1007,10 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
   static async deleteHunt (req, res) {
     try {
       await Db.deleteHunt(req.params.id, req.query.cluster);
-      return res.send(JSON.stringify({
+      return res.json({
         success: true,
         text: 'Deleted hunt successfully'
-      }));
+      });
     } catch (err) {
       console.log(`ERROR - ${req.method} /api/hunt/%s`, ArkimeUtil.sanitizeStr(req.params.id), util.inspect(err, false, 50));
       return res.serverError(500, 'Error deleting hunt');
@@ -1046,7 +1044,7 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
       await Db.updateHunt(req.params.id, { status: 'finished', errors: hunt.errors }, req.query.cluster);
       internals.runningHuntJob = undefined;
       HuntAPIs.processHuntJobs();
-      return res.send(JSON.stringify({ success: true, text: 'Canceled hunt successfully' }));
+      return res.json({ success: true, text: 'Canceled hunt successfully' });
     } catch (err) {
       console.log(`ERROR - ${req.method} /api/hunt/%s/cancel`, ArkimeUtil.sanitizeStr(req.params.id), util.inspect(err, false, 50));
       return res.serverError(500, 'Error canceling hunt');
@@ -1107,7 +1105,7 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
 
       fakeReq.query.expression = `huntId == ${req.params.id}`;
 
-      SessionAPIs.buildSessionQuery(fakeReq, (err, query, indices) => {
+      BuildQuery.build(fakeReq, (err, query, indices) => {
         if (err) {
           return res.serverError(500, 'Unable to build sessions query to fetch sessions that matched this hunt.');
         }
@@ -1167,10 +1165,10 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
 
       try {
         await Db.setHunt(req.params.id, hunt, req.query.cluster);
-        res.send(JSON.stringify({
+        res.json({
           success: true,
           text: 'Updated Hunt Succesfully!'
-        }));
+        });
       } catch (err) {
         console.log(`ERROR - ${req.method} /api/hunt/%s (setHunt)`, ArkimeUtil.sanitizeStr(req.params.id), util.inspect(err, false, 50));
         return res.serverError(500, 'Unable to update hunt');
@@ -1219,11 +1217,11 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
 
         try {
           await Db.updateHunt(req.params.id, { users: hunt.users });
-          res.send(JSON.stringify({
+          res.send({
             success: true,
             users: hunt.users,
             invalidUsers: users.invalidUsers
-          }));
+          });
         } catch (err) {
           console.log(`ERROR - ${req.method} /api/hunt/%s/users (updateHunt)`, ArkimeUtil.sanitizeStr(req.params.id), util.inspect(err, false, 50));
           return res.serverError(500, 'Unable to add user(s)');
@@ -1264,7 +1262,7 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
 
       try {
         await Db.updateHunt(req.params.id, { users: hunt.users });
-        res.send(JSON.stringify({ success: true, users: hunt.users }));
+        res.json({ success: true, users: hunt.users });
       } catch (err) {
         console.log(`ERROR - ${req.method} /api/hunt/%s/user/%s (updateHunt)`, ArkimeUtil.sanitizeStr(req.params.id), ArkimeUtil.sanitizeStr(req.params.user), util.inspect(err, false, 50));
         return res.serverError(500, 'Unable to remove user');

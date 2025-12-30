@@ -12,7 +12,6 @@ const fs = require('fs');
 const cryptoLib = require('crypto');
 const ipaddr = require('ipaddr.js');
 const zlib = require('zlib');
-const async = require('async');
 const ArkimeUtil = require('../common/arkimeUtil');
 const { LRUCache } = require('lru-cache');
 
@@ -84,7 +83,7 @@ class Pcap {
     pcap.bigEndian = (magic === 0xd4c3b2a1 || magic === 0x4d3cb2a1);
     pcap.nanosecond = (magic === 0xa1b23c4d || magic === 0x4d3cb2a1);
     if (magic === 0xa1b2c3d5) {
-      this.shortHeader = pcap.headBuffer.readUInt32LE(8);
+      pcap.shortHeader = pcap.headBuffer.readUInt32LE(8);
     }
 
     if (pcap.bigEndian) {
@@ -210,15 +209,12 @@ class Pcap {
   };
 
   // --------------------------------------------------------------------------
-  readHeader (cb) {
+  readHeader () {
     if (this.headBuffer) {
-      if (cb) {
-        cb(this.headBuffer);
-      }
       return this.headBuffer;
     }
 
-    // pcap header is 24 but reading extra becaue of gzip/encryption
+    // pcap header is 24 but reading extra because of gzip/encryption
     this.headBuffer = Buffer.alloc(64);
     const len = fs.readSync(this.fd, this.headBuffer, 0, this.headBuffer.length, 0);
 
@@ -237,7 +233,7 @@ class Pcap {
       for (let i = 0; i < this.headBuffer.length; i++) {
         this.headBuffer[i] ^= this.encKey[i % 256];
       }
-    };
+    }
 
     if (this.uncompressedBits) {
       try {
@@ -278,26 +274,11 @@ class Pcap {
       this.linkType = this.headBuffer.readUInt32LE(20);
     }
 
-    if (cb) {
-      cb(this.headBuffer);
-    }
     return this.headBuffer;
   };
 
   // --------------------------------------------------------------------------
-  readPacket (pos, cb) {
-    // Hacky!! File isn't actually opened, try again soon
-    if (!this.fd) {
-      setTimeout(() => this.readPacket(pos, cb), 10);
-      return;
-    }
-
-    return this.readPacketInternal(pos, cb);
-  };
-
-  // --------------------------------------------------------------------------
-  async readAndSliceBlock (posArg) {
-    let pos = posArg;
+  async readAndSliceBlock (pos) {
     let insideOffset = 0;
     const blockSize = this.uncompressedBits ? this.uncompressedBitsSize * 2 : 128 * 1024;
 
@@ -395,11 +376,16 @@ class Pcap {
   };
 
   // --------------------------------------------------------------------------
-  async readPacketInternal (posArg, cb) {
+  async readPacket (pos) {
+    // Hacky!! File isn't actually opened
+    while (!this.fd) {
+      await ArkimeUtil.yield(10);
+    }
+
     try {
-      let readBuffer = await this.readAndSliceBlock(posArg);
+      let readBuffer = await this.readAndSliceBlock(pos);
       if (!readBuffer) {
-        return cb(undefined);
+        return undefined;
       }
 
       // Get the packetLen
@@ -408,15 +394,15 @@ class Pcap {
 
       // Wasn't enough for header, add next block
       if (readBuffer.length < headerLen) {
-        if (this.uncompressedBits) { return cb(undefined); }
-        const readBuffer2 = await this.readAndSliceBlock(posArg + readBuffer.length);
+        if (this.uncompressedBits) { return undefined; }
+        const readBuffer2 = await this.readAndSliceBlock(pos + readBuffer.length);
         if (!readBuffer2 || readBuffer2.length < headerLen) {
           const msg = `Not enough data ${readBuffer.length} for header ${headerLen} in ${this.filename} - See https://arkime.com/faq#zero-byte-pcap-files`;
-          if (Pcap.#lastMsg !== msg) {
-            Pcap.#lastMsg = msg;
+          if (this.#lastMsg !== msg) {
+            this.#lastMsg = msg;
             console.log(msg);
           }
-          return cb(undefined);
+          return undefined;
         }
         readBuffer = Buffer.concat([readBuffer, readBuffer2]);
       }
@@ -428,20 +414,20 @@ class Pcap {
       }
 
       if (packetLen < 0 || packetLen > 0xffff) {
-        return cb(undefined);
+        return undefined;
       }
 
       // Wasn't enough for packet data, add next block
       if (readBuffer.length < (headerLen + packetLen)) {
-        if (this.uncompressedBits) { return cb(undefined); }
-        const readBuffer2 = await this.readAndSliceBlock(posArg + readBuffer.length);
+        if (this.uncompressedBits) { return undefined; }
+        const readBuffer2 = await this.readAndSliceBlock(pos + readBuffer.length);
         if (!readBuffer2 || readBuffer.length + readBuffer2.length < headerLen + packetLen) {
           const msg = `Not enough data ${readBuffer.length} for packet ${headerLen + packetLen} in ${this.filename} - See https://arkime.com/faq#zero-byte-pcap-files`;
-          if (Pcap.#lastMsg !== msg) {
-            Pcap.#lastMsg = msg;
+          if (this.#lastMsg !== msg) {
+            this.#lastMsg = msg;
             console.log(msg);
           }
-          return cb(undefined);
+          return undefined;
         }
         readBuffer = Buffer.concat([readBuffer, readBuffer2]);
       }
@@ -460,20 +446,15 @@ class Pcap {
           newBuffer.writeUInt32LE(packetLen, 8);
           newBuffer.writeUInt32LE(packetLen, 12);
           readBuffer.copy(newBuffer, 16, 6, packetLen + 6);
-          return cb(newBuffer);
+          return newBuffer;
         }
-        return cb(readBuffer.slice(0, headerLen + packetLen));
+        return readBuffer.slice(0, headerLen + packetLen);
       }
 
-      return cb(null);
+      return null;
     } catch (err) {
-      return cb(undefined);
+      return undefined;
     }
-  };
-
-  // --------------------------------------------------------------------------
-  async readPacketPromise (pos) {
-    return new Promise((resolve, reject) => { this.readPacket(pos, data => resolve(data)); });
   };
 
   // --------------------------------------------------------------------------
@@ -790,7 +771,7 @@ class Pcap {
       flow: ((buffer[1] & 0xf) << 16) | (buffer[2] << 8) | buffer[3],
       len: buffer.readUInt16BE(4),
       p: buffer[6],
-      hopLimt: buffer[7],
+      hopLimit: buffer[7],
       addr1: ipaddr.fromByteArray(buffer.slice(8, 24)).toString(),
       addr2: ipaddr.fromByteArray(buffer.slice(24, 40)).toString()
     };
@@ -1004,11 +985,11 @@ class Pcap {
 
   // --------------------------------------------------------------------------
   framerelay (buffer, obj, pos) {
-    if (buffer[2] === 0x03 || buffer[3] === 0xcc) {
+    if (buffer[2] === 0x03 && buffer[3] === 0xcc) {
       this.ip4(buffer.slice(4), obj, pos + 4);
-    } else if (buffer[2] === 0x08 || buffer[3] === 0x00) {
+    } else if (buffer[2] === 0x08 && buffer[3] === 0x00) {
       this.ip4(buffer.slice(4), obj, pos + 4);
-    } else if (buffer[2] === 0x86 || buffer[3] === 0xdd) {
+    } else if (buffer[2] === 0x86 && buffer[3] === 0xdd) {
       this.ip6(buffer.slice(4), obj, pos + 4);
     }
   };
@@ -1266,7 +1247,7 @@ class Pcap {
   // If multiple tcp sessions in one arkime session display can be wacky/wrong.
 
   // --------------------------------------------------------------------------
-  static reassemble_tcp (packets, numPackets, skey, cb) {
+  static async reassemble_tcp (packets, numPackets, skey) {
     try {
     // Remove syn, rst, 0 length packets and figure out min/max seq number
       const packets2 = [];
@@ -1298,7 +1279,7 @@ class Pcap {
       packets = packets2;
 
       if (packets.length === 0) {
-        return cb(null, packets);
+        return { results: packets };
       }
 
       // Do we need to wrap the packets
@@ -1352,19 +1333,22 @@ class Pcap {
       let start = 0;
       let previous = 0;
 
-      // We use async here so that the main event loop isnt blocked for large reassemblies
-      // We could have just done for (packet of packets) but that would block the event loop
+      // Organize packets, yielding every 50 packets to avoid blocking
       const results = [];
-      async.forEachSeries(packets, (packet, nextCb) => {
+      for (let i = 0; i < packets.length; i++) {
+        const packet = packets[i];
+        if (i % 50 === 0) {
+          await ArkimeUtil.yield();
+        }
         const pkey = packet.ip.addr1 + ':' + packet.tcp.sport;
         if (pkey === clientKey) {
           if (clientSeq >= (packet.tcp.seq + packet.tcp.data.length)) {
-            return nextCb();
+            continue;
           }
           clientSeq = (packet.tcp.seq + packet.tcp.data.length);
         } else {
           if (serverSeq >= (packet.tcp.seq + packet.tcp.data.length)) {
-            return nextCb();
+            continue;
           }
           serverSeq = (packet.tcp.seq + packet.tcp.data.length);
         }
@@ -1406,19 +1390,23 @@ class Pcap {
           lastResult.buffers.push(packet.tcp.data);
           lastResult.length += packet.tcp.data.length;
         }
-        setImmediate(nextCb);
-      }, (err) => {
-        for (const result of results) {
-          result.data = Buffer.concat(result.buffers);
-          delete result.buffers;
-        }
-        if (skey !== results[0].key) {
-          results.unshift({ data: EMPTY_BUFFER, key: skey });
-        }
-        cb(null, results);
-      });
-    } catch (e) {
-      cb(e, null);
+      }
+
+      // Yield before final assembly
+      await ArkimeUtil.yield();
+
+      // Combine buffers
+      for (const result of results) {
+        result.data = Buffer.concat(result.buffers);
+        delete result.buffers;
+      }
+      if (skey !== results[0].key) {
+        results.unshift({ data: EMPTY_BUFFER, key: skey });
+      }
+
+      return { results };
+    } catch (err) {
+      return { err };
     }
   };
 

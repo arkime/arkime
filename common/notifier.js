@@ -328,12 +328,12 @@ class Notifier {
 
       req.body.id = id;
       req.body.users = req.body.users.join(',');
-      return res.send(JSON.stringify({
+      return res.json({
         success: true,
         notifier: req.body,
         text: 'Created notifier!',
         invalidUsers: users.invalidUsers
-      }));
+      });
     } catch (err) {
       console.log(`ERROR - ${req.method} /api/notifier (createNotifier)`, util.inspect(err, false, 50));
       return res.serverError(500, 'Error creating notifier');
@@ -383,12 +383,12 @@ class Notifier {
         await Notifier.setNotifier(req.params.id, notifier);
         notifier.id = req.params.id;
         notifier.users = notifier.users.join(',');
-        res.send(JSON.stringify({
+        res.json({
           notifier,
           success: true,
           invalidUsers: users.invalidUsers,
           text: 'Updated notifier successfully'
-        }));
+        });
       } catch (err) {
         console.log(`ERROR - ${req.method} /api/notifier/%s (setNotifier)`, ArkimeUtil.sanitizeStr(req.params.id), util.inspect(err, false, 50));
         return res.serverError(500, 'Error updating notifier');
@@ -417,10 +417,10 @@ class Notifier {
 
       try {
         await Notifier.deleteNotifier(req.params.id);
-        res.send(JSON.stringify({
+        res.json({
           success: true,
           text: 'Deleted notifier successfully'
-        }));
+        });
       } catch (err) {
         console.log(`ERROR - ${req.method} /api/notifier/%s (deleteNotifier)`, ArkimeUtil.sanitizeStr(req.params.id), util.inspect(err, false, 50));
         return res.serverError(500, 'Error deleting notifier');
@@ -445,10 +445,10 @@ class Notifier {
         return res.serverError(500, `Error testing alert: ${err}`);
       }
 
-      return res.send(JSON.stringify({
+      return res.json({
         success: true,
         text: `Successfully issued alert using the ${notifierName} notifier.`
-      }));
+      });
     }
 
     Notifier.issueAlert(req.params.id, `Test alert from ${req.user.userId}`, continueProcess);

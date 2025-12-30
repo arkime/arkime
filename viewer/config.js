@@ -91,7 +91,7 @@ class Config {
   // ----------------------------------------------------------------------------
   static getFull (node, key, defaultValue) {
     return ArkimeConfig.getFull([node, ArkimeConfig.getFull([node], 'nodeClass'), 'default'], key, defaultValue);
-  }
+  };
 
   // ----------------------------------------------------------------------------
   static get = ArkimeConfig.get;
@@ -101,7 +101,7 @@ class Config {
   static getArray = ArkimeConfig.getArray;
 
   // ----------------------------------------------------------------------------
-  // Return an array split on separator, remove leading/trailing spaces, remove empty elements
+  // Return an array split on separator, remove leading/trailing spaces, remove empty elements given a node
   static getFullArray (node, key, defaultValue, sep) {
     return ArkimeConfig.getFullArray([node, ArkimeConfig.getFull([node], 'nodeClass'), 'default'], key, defaultValue, sep);
   };
@@ -146,8 +146,7 @@ class Config {
     const csection = ArkimeConfig.getSection(section);
     if (csection === undefined) { return []; }
     const keys = Object.keys(csection);
-    if (!keys) { return []; }
-    const headers = Object.keys(csection).map((key) => {
+    const headers = keys.map((key) => {
       const obj = { name: key };
       for (const element of csection[key].split(';')) {
         const i = element.indexOf(':');
@@ -174,7 +173,6 @@ class Config {
     const data = ArkimeConfig.getSection(section) ?? ArkimeConfig.getSection(dSection) ?? d;
     if (data === undefined) { return {}; }
     const keys = Object.keys(data);
-    if (!keys) { return {}; }
     const map = {};
     for (const key of keys) {
       const obj = {};
@@ -237,11 +235,8 @@ class Config {
       const source = field._source;
       source.exp = field._id;
 
-      if (source.dbField2?.startsWith('http.request-') && !source.exp.startsWith('http.request.')) {
-        continue;
-      }
-
-      if (source.dbField2?.startsWith('http.response-') && !source.exp.startsWith('http.response.')) {
+      if ((source.dbField2?.startsWith('http.request-') && !source.exp.startsWith('http.request.')) ||
+          (source.dbField2?.startsWith('http.response-') && !source.exp.startsWith('http.response.'))) {
         continue;
       }
 
@@ -276,12 +271,8 @@ class Config {
       }
     }
 
-    function sortFunc (a, b) {
-      return a.exp.localeCompare(b.exp);
-    }
-
     for (const cat in internals.categories) {
-      internals.categories[cat] = internals.categories[cat].sort(sortFunc);
+      internals.categories[cat] = internals.categories[cat].sort((a, b) => a.exp.localeCompare(b.exp));
     }
   };
 
