@@ -740,14 +740,14 @@ class Auth {
     if (req.ip.includes(':')) {
       if (!Auth.#userAuthIps.find(req.ip)) {
         res.status(403);
-        res.send(JSON.stringify({ success: false, text: `Not allowed by ip (${req.ip})` }));
+        res.json({ success: false, text: `Not allowed by ip (${req.ip})` });
         console.log('Blocked (userAuthIps setting) by ip', req.ip, req.url);
         return 1;
       }
     } else {
       if (!Auth.#userAuthIps.find(`::ffff:${req.ip}`)) {
         res.status(403);
-        res.send(JSON.stringify({ success: false, text: `Not allowed by ip (${req.ip})` }));
+        res.json({ success: false, text: `Not allowed by ip (${req.ip})` });
         console.log('Blocked (userAuthIps setting) by ip', req.ip, req.url);
         return 1;
       }
@@ -856,7 +856,7 @@ class Auth {
           console.log('AUTH: passport.authenticate fail', err);
         }
         res.status(403);
-        return res.send(JSON.stringify({ success: false, text: err }));
+        return res.json({ success: false, text: err });
       } else {
         // Redirect to / if this is a login url
         if (req.route?.path === '/api/login' || req._parsedUrl.pathname === '/auth/login/callback') {

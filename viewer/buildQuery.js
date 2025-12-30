@@ -202,11 +202,11 @@ class BuildQuery {
     for (const prop in query) {
       if (prop === 'bool') {
         if (query.bool?.must_not?.bool?.should) {
-          // most_not: { - when just NOTing one thing
+          // must_not: { - when just NOTing one thing
           query.bool.must_not = query.bool.must_not.bool.should;
           BuildQuery.#collapseQuery(query);
         } else if (query.bool?.must_not?.length > 0) {
-          // We can collapse both must_not: most_not: and most_not: should:
+          // We can collapse both must_not: must_not: and must_not: should:
           const len = query.bool.must_not.length;
           const newItems = newArray(newArray(query.bool.must_not, 'must_not'), 'should');
           query.bool.must_not = newItems;
@@ -257,7 +257,7 @@ class BuildQuery {
 
     let err;
 
-    async function doProcess (qParent, obj, item) {
+    async function doProcess (obj, item) {
       // console.log("\nprocess:\n", item, obj, typeof obj[item], "\n");
       if (item === 'fileand' && typeof obj[item] === 'string') {
         const fileName = obj.fileand;
@@ -276,17 +276,17 @@ class BuildQuery {
       } else if (item === 'field' && obj.field === 'fileand') {
         obj.field = 'fileId';
       } else if (typeof obj[item] === 'object') {
-        await convert(obj, obj[item]);
+        await convert(obj[item]);
       }
     }
 
-    async function convert (qParent, obj) {
+    async function convert (obj) {
       for (const item in obj) {
-        await doProcess(qParent, obj, item);
+        await doProcess(obj, item);
       }
     }
 
-    await convert(null, query);
+    await convert(query);
 
     return err;
   };

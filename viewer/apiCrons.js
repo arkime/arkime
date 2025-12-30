@@ -284,12 +284,12 @@ class CronAPIs {
         doc.doc.notifier = doc.doc.notifier.split(',');
       }
 
-      return res.send(JSON.stringify({
+      return res.json({
         success: true,
         query: doc.doc,
         text: 'Created query!',
         invalidUsers: users.invalidUsers
-      }));
+      });
     } catch (err) {
       console.log(`ERROR - ${req.method} /api/cron`, util.inspect(err, false, 50));
       return res.serverError(500, 'Create query failed');
@@ -410,12 +410,12 @@ class CronAPIs {
         query.notifier = query.notifier.split(',');
       }
 
-      return res.send(JSON.stringify({
+      return res.json({
         query,
         success: true,
         text: 'Updated periodic query!',
         invalidUsers: users.invalidUsers
-      }));
+      });
     } catch (err) {
       console.log(`ERROR - ${req.method} /api/cron/%s`, ArkimeUtil.sanitizeStr(key), util.inspect(err, false, 50));
       return res.serverError(403, 'Periodic query update failed');
@@ -444,10 +444,10 @@ class CronAPIs {
 
     try {
       await Db.deleteDocument('queries', key, { refresh: true });
-      res.send(JSON.stringify({
+      res.json({
         success: true,
         text: 'Deleted periodic query successfully'
-      }));
+      });
     } catch (err) {
       console.log(`ERROR - ${req.method} /api/cron/%s`, ArkimeUtil.sanitizeStr(key), util.inspect(err, false, 50));
       return res.serverError(500, 'Delete periodic query failed');

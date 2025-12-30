@@ -579,10 +579,10 @@ class UserAPIs {
         return res.serverError(500, 'User settings update failed');
       }
 
-      return res.send(JSON.stringify({
+      return res.json({
         success: true,
         text: 'Updated user settings successfully'
-      }));
+      });
     });
   };
 
@@ -645,11 +645,11 @@ class UserAPIs {
         return res.serverError(500, 'Create layout failed');
       }
 
-      return res.send(JSON.stringify({
+      return res.json({
         success: true,
         name: result.layoutName,
         text: 'Created layout successfully'
-      }));
+      });
     });
   }
 
@@ -690,11 +690,11 @@ class UserAPIs {
         return res.serverError(500, 'Update layout failed');
       }
 
-      return res.send(JSON.stringify({
+      return res.json({
         success: true,
         layout: req.body,
         text: 'Updated layout'
-      }));
+      });
     });
   }
 
@@ -736,10 +736,10 @@ class UserAPIs {
         return res.serverError(500, 'Delete layout failed');
       }
 
-      return res.send(JSON.stringify({
+      return res.json({
         success: true,
         text: 'Deleted layout successfully'
-      }));
+      });
     });
   }
 
@@ -777,10 +777,10 @@ class UserAPIs {
           console.log(`ERROR - ${req.method} /api/user/%s/acknowledge (setUser)`, ArkimeUtil.sanitizeStr(req.params.userId), util.inspect(err, false, 50), user, info);
         }
 
-        return res.send(JSON.stringify({
+        return res.json({
           success: true,
           text: `User, ${req.user.userId}, dismissed message ${user.welcomeMsgNum}`
-        }));
+        });
       });
     });
   };
@@ -824,10 +824,10 @@ class UserAPIs {
           return res.serverError(403, 'state update failed');
         }
 
-        return res.send(JSON.stringify({
+        return res.json({
           success: true,
           text: 'updated state successfully'
-        }));
+        });
       });
     });
   };

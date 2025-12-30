@@ -83,7 +83,7 @@ class Pcap {
     pcap.bigEndian = (magic === 0xd4c3b2a1 || magic === 0x4d3cb2a1);
     pcap.nanosecond = (magic === 0xa1b23c4d || magic === 0x4d3cb2a1);
     if (magic === 0xa1b2c3d5) {
-      this.shortHeader = pcap.headBuffer.readUInt32LE(8);
+      pcap.shortHeader = pcap.headBuffer.readUInt32LE(8);
     }
 
     if (pcap.bigEndian) {
@@ -233,7 +233,7 @@ class Pcap {
       for (let i = 0; i < this.headBuffer.length; i++) {
         this.headBuffer[i] ^= this.encKey[i % 256];
       }
-    };
+    }
 
     if (this.uncompressedBits) {
       try {
@@ -278,8 +278,7 @@ class Pcap {
   };
 
   // --------------------------------------------------------------------------
-  async readAndSliceBlock (posArg) {
-    let pos = posArg;
+  async readAndSliceBlock (pos) {
     let insideOffset = 0;
     const blockSize = this.uncompressedBits ? this.uncompressedBitsSize * 2 : 128 * 1024;
 
@@ -377,14 +376,14 @@ class Pcap {
   };
 
   // --------------------------------------------------------------------------
-  async readPacket (posArg) {
+  async readPacket (pos) {
     // Hacky!! File isn't actually opened
     while (!this.fd) {
       await ArkimeUtil.yield(10);
     }
 
     try {
-      let readBuffer = await this.readAndSliceBlock(posArg);
+      let readBuffer = await this.readAndSliceBlock(pos);
       if (!readBuffer) {
         return undefined;
       }
@@ -396,11 +395,11 @@ class Pcap {
       // Wasn't enough for header, add next block
       if (readBuffer.length < headerLen) {
         if (this.uncompressedBits) { return undefined; }
-        const readBuffer2 = await this.readAndSliceBlock(posArg + readBuffer.length);
+        const readBuffer2 = await this.readAndSliceBlock(pos + readBuffer.length);
         if (!readBuffer2 || readBuffer2.length < headerLen) {
           const msg = `Not enough data ${readBuffer.length} for header ${headerLen} in ${this.filename} - See https://arkime.com/faq#zero-byte-pcap-files`;
-          if (Pcap.#lastMsg !== msg) {
-            Pcap.#lastMsg = msg;
+          if (this.#lastMsg !== msg) {
+            this.#lastMsg = msg;
             console.log(msg);
           }
           return undefined;
@@ -421,11 +420,11 @@ class Pcap {
       // Wasn't enough for packet data, add next block
       if (readBuffer.length < (headerLen + packetLen)) {
         if (this.uncompressedBits) { return undefined; }
-        const readBuffer2 = await this.readAndSliceBlock(posArg + readBuffer.length);
+        const readBuffer2 = await this.readAndSliceBlock(pos + readBuffer.length);
         if (!readBuffer2 || readBuffer.length + readBuffer2.length < headerLen + packetLen) {
           const msg = `Not enough data ${readBuffer.length} for packet ${headerLen + packetLen} in ${this.filename} - See https://arkime.com/faq#zero-byte-pcap-files`;
-          if (Pcap.#lastMsg !== msg) {
-            Pcap.#lastMsg = msg;
+          if (this.#lastMsg !== msg) {
+            this.#lastMsg = msg;
             console.log(msg);
           }
           return undefined;
@@ -772,7 +771,7 @@ class Pcap {
       flow: ((buffer[1] & 0xf) << 16) | (buffer[2] << 8) | buffer[3],
       len: buffer.readUInt16BE(4),
       p: buffer[6],
-      hopLimt: buffer[7],
+      hopLimit: buffer[7],
       addr1: ipaddr.fromByteArray(buffer.slice(8, 24)).toString(),
       addr2: ipaddr.fromByteArray(buffer.slice(24, 40)).toString()
     };
@@ -986,11 +985,11 @@ class Pcap {
 
   // --------------------------------------------------------------------------
   framerelay (buffer, obj, pos) {
-    if (buffer[2] === 0x03 || buffer[3] === 0xcc) {
+    if (buffer[2] === 0x03 && buffer[3] === 0xcc) {
       this.ip4(buffer.slice(4), obj, pos + 4);
-    } else if (buffer[2] === 0x08 || buffer[3] === 0x00) {
+    } else if (buffer[2] === 0x08 && buffer[3] === 0x00) {
       this.ip4(buffer.slice(4), obj, pos + 4);
-    } else if (buffer[2] === 0x86 || buffer[3] === 0xdd) {
+    } else if (buffer[2] === 0x86 && buffer[3] === 0xdd) {
       this.ip6(buffer.slice(4), obj, pos + 4);
     }
   };
