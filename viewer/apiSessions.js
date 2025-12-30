@@ -452,7 +452,7 @@ class SessionAPIs {
       }
       packets[i] = obj;
       cb(null);
-    }, (err, session) => {
+    }, async (err, session) => {
       if (err) {
         return res.end('Problem loading packets for ' + ArkimeUtil.safeStr(req.params.id) + ' Error: ' + err);
       }
@@ -489,10 +489,9 @@ class SessionAPIs {
         SessionAPIs.#localSessionDetailReturn(req, res, session, results || []);
       } else if (packets[0].ip.p === 6) {
         const key = ipaddr.parse(session.source.ip).toString();
-        Pcap.reassemble_tcp(packets, +req.query.packets || 200, key + ':' + session.source.port, (err, results) => {
-          session._err = err;
-          SessionAPIs.#localSessionDetailReturn(req, res, session, results || []);
-        });
+        const { err, results } = await Pcap.reassemble_tcp(packets, +req.query.packets || 200, key + ':' + session.source.port);
+        session._err = err;
+        SessionAPIs.#localSessionDetailReturn(req, res, session, results || []);
       } else if (packets[0].ip.p === 17) {
         const { err, results } = Pcap.reassemble_udp(packets, +req.query.packets || 200);
         session._err = err;
@@ -525,28 +524,27 @@ class SessionAPIs {
 
   // --------------------------------------------------------------------------
   static #processSessionIdDisk (session, headerCb, packetCb, endCb, limit) {
-    function processFile (pcap, pos, i, nextCb) {
+    async function processFile (pcap, pos, i, nextCb) {
       pcap.ref();
 
       if (Config.debug > 2) {
         console.log('readPacket', pos);
       }
-      pcap.readPacket(pos, (packet) => {
-        switch (packet) {
-        case null:
-          const msg1 = util.format(session._id, 'in file', pcap.filename, "couldn't read packet at", pos, 'packet #', i, 'of', fields.packetPos.length);
-          console.log('ERROR - processSessionIdDisk -', msg1);
-          endCb(msg1, null);
-          break;
-        case undefined:
-          nextCb('Error');
-          break;
-        default:
-          packetCb(pcap, packet, nextCb, i);
-          break;
-        }
-        pcap.unref();
-      });
+      const packet = await pcap.readPacket(pos);
+      switch (packet) {
+      case null:
+        const msg1 = util.format(session._id, 'in file', pcap.filename, "couldn't read packet at", pos, 'packet #', i, 'of', fields.packetPos.length);
+        console.log('ERROR - processSessionIdDisk -', msg1);
+        endCb(msg1, null);
+        break;
+      case undefined:
+        nextCb('Error');
+        break;
+      default:
+        packetCb(pcap, packet, nextCb, i);
+        break;
+      }
+      pcap.unref();
     }
 
     const fields = session.fields;
@@ -1074,7 +1072,7 @@ class SessionAPIs {
     async function processFile (pcap, pos, i) {
       pcap.ref();
       try {
-        const packet = await pcap.readPacketPromise(pos);
+        const packet = await pcap.readPacket(pos);
         if (packet.length > 16) {
           try {
             const obj = {};
@@ -1425,7 +1423,7 @@ class SessionAPIs {
         }
         packets[i] = obj;
         cb(null);
-      }, (err, session) => {
+      }, async (err, session) => {
         if (err) {
           console.log('ERROR - processSessionIdAndDecode', util.inspect(err, false, 50));
           return reject(err);
@@ -1441,10 +1439,9 @@ class SessionAPIs {
           return resolve({ session, packets: results });
         } else if (packets[0].ip.p === 6) {
           const key = ipaddr.parse(session.source.ip).toString();
-          Pcap.reassemble_tcp(packets, numPackets, key + ':' + session.source.port, (err, results) => {
-            if (err) return reject(err);
-            return resolve({ session, packets: results });
-          });
+          const { err, results } = await Pcap.reassemble_tcp(packets, numPackets, key + ':' + session.source.port);
+          if (err) return reject(err);
+          return resolve({ session, packets: results });
         } else if (packets[0].ip.p === 17) {
           const { err: reassembleErr, results } = Pcap.reassemble_udp(packets, numPackets);
           if (reassembleErr) return reject(reassembleErr);

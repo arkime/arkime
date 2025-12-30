@@ -66,6 +66,14 @@ class ArkimeUtil {
 
   // ----------------------------------------------------------------------------
   /**
+   * Async yield helper
+   */
+  static async yield (ms = 0) {
+    await new Promise(resolve => setTimeout(resolve, ms));
+  }
+
+  // ----------------------------------------------------------------------------
+  /**
    * Remove any special characters except ('-', '_', ':', and ' ')
    */
   static removeSpecialChars (str) {
