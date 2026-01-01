@@ -376,3 +376,4 @@ jobs:
           BODY="{\"icon_emoji\": \":sushi:\", \"username\": \"GitAction\", \"text\":\"Release $ARKIME_VERSION worked!!!\"}"
           curl -XPOST -H "Content-type: application/json" --data "$BODY" $SLACK_URL
 
+
