@@ -513,3 +513,4 @@ jobs:
           MSG=`git log -1 --format=%s`
           BODY="{\"icon_emoji\": \":sushi:\", \"username\": \"GitAction\", \"text\":\"Worked: $GIT_BRANCH - arkime-$ARKIME_VERSION-${{github.run_id}} - $MSG\"}"
           curl -XPOST -H "Content-type: application/json" --data "$BODY" $SLACK_URL
+
