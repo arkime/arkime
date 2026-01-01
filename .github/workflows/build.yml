@@ -64,7 +64,7 @@ jobs:
 
       - name: Cache Node.js tarballs
         id: cache-node
-        uses: actions/cache@v4
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
         with:
           path: .cache/node-tarballs
           key: node-${{ steps.node-version.outputs.node_version }}
@@ -113,7 +113,7 @@ jobs:
           fetch-depth: 0
 
       - name: Restore Node.js tarballs
-        uses: actions/cache@v4
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
         with:
           path: .cache/node-tarballs
           key: node-${{ needs.cache-node.outputs.node_version }}
@@ -276,7 +276,7 @@ jobs:
 
       - name: upload github
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-        uses: softprops/action-gh-release@v2.0.5
+        uses: softprops/action-gh-release@69320dbe05506a9a39fc8ae11030b214ec2d1f87 # v2.0.5
         with:
           tag_name: last-commit6
           draft: false
@@ -291,7 +291,7 @@ jobs:
 
       - name: upload github 7
         if: github.event_name == 'push' && github.ref == 'refs/heads/dev7'
-        uses: softprops/action-gh-release@v2.0.5
+        uses: softprops/action-gh-release@69320dbe05506a9a39fc8ae11030b214ec2d1f87 # v2.0.5
         with:
           tag_name: last-commit7
           draft: false
@@ -318,11 +318,11 @@ jobs:
 ############# DOCKER DOCKER DOCKER #############
       - name: Set up Docker Buildx
         if: matrix.docker
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3.12.0
 
       - name: Log in to registry
         if: matrix.docker
-        uses: docker/login-action@v3
+        uses: docker/login-action@5e57cd118135c172c3672efd75eb46360885c0ef # v3.6.0
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
@@ -330,7 +330,7 @@ jobs:
 
       - name: Build and push
         if: matrix.docker
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@ca052bb54ab0790a636c9b5f226502c73d547a25 # v5.4.0
         with:
           context: .
           file: ./release/Dockerfile
@@ -345,7 +345,7 @@ jobs:
 
       - name: Build and push ja4
         if: matrix.docker && github.event_name == 'push'
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@ca052bb54ab0790a636c9b5f226502c73d547a25 # v5.4.0
         with:
           context: .
           file: ./release/Dockerfile.ja4
@@ -384,7 +384,7 @@ jobs:
           fetch-depth: 0
 
       - name: Build on FreeBSD
-        uses: vmactions/freebsd-vm@v1
+        uses: vmactions/freebsd-vm@c54ba3b62f49de9b67a2f3af017ab6152f0ebb6f # v1.3.4
         with:
           release: ${{ matrix.freebsdrelease }}
           arch: ${{ contains(matrix.version, 'aarch64') && 'aarch64' || 'x86_64' }}
@@ -418,7 +418,7 @@ jobs:
 
       - name: upload github 6
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-        uses: softprops/action-gh-release@v2.0.5
+        uses: softprops/action-gh-release@69320dbe05506a9a39fc8ae11030b214ec2d1f87 # v2.0.5
         with:
           tag_name: last-commit6
           draft: false
@@ -430,7 +430,7 @@ jobs:
 
       - name: upload github 7
         if: github.event_name == 'push' && github.ref == 'refs/heads/dev7'
-        uses: softprops/action-gh-release@v2.0.5
+        uses: softprops/action-gh-release@69320dbe05506a9a39fc8ae11030b214ec2d1f87 # v2.0.5
         with:
           tag_name: last-commit7
           draft: false
@@ -455,7 +455,7 @@ jobs:
           fetch-depth: 0
 
       - name: Log in to registry
-        uses: docker/login-action@v3
+        uses: docker/login-action@5e57cd118135c172c3672efd75eb46360885c0ef # v3.6.0
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
