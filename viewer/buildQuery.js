@@ -387,6 +387,7 @@ class BuildQuery {
         query.query.bool.filter.push({ range: { firstPacket: { gte: reqQuery.startTime * 1000 } } });
         query.query.bool.filter.push({ range: { lastPacket: { lte: reqQuery.stopTime * 1000 } } });
         break;
+      case 'spanning':
       case 'either':
         query.query.bool.filter.push({ range: { firstPacket: { lte: reqQuery.stopTime * 1000 } } });
         query.query.bool.filter.push({ range: { lastPacket: { gte: reqQuery.startTime * 1000 } } });
@@ -405,6 +406,7 @@ class BuildQuery {
       case 'last':
         query.query.bool.filter.push({ range: { lastPacket: { gte: reqQuery.startTime * 1000 } } });
         break;
+      case 'spanning':
       case 'either':
         query.query.bool.filter.push({ range: { firstPacket: { lte: reqQuery.stopTime * 1000 } } });
         query.query.bool.filter.push({ range: { lastPacket: { gte: reqQuery.startTime * 1000 } } });
@@ -462,6 +464,9 @@ class BuildQuery {
           break;
         case 'database':
           query.aggregations.dbHisto.histogram = { field: '@timestamp', interval: interval * 1000, min_doc_count: 1 };
+          break;
+        case 'spanning':
+          query.aggregations.dbHisto.histogram = { field: 'packetRange', interval: interval * 1000, min_doc_count: 1 };
           break;
         default:
           query.aggregations.dbHisto.histogram = { field: 'lastPacket', interval: interval * 1000, min_doc_count: 1 };
@@ -566,9 +571,21 @@ class BuildQuery {
       reqQuery.date = '-1';
     }
 
+    function toInterval (diff) {
+      if (diff < 1000) {
+        return 1; // second
+      } else if (diff <= 60 * 2000) {
+        return 60; // minute
+      } else if (diff <= 60 * 60 * 2000) {
+        return 60 * 60; // hour
+      } else {
+        return 24 * 60 * 60; // day
+      }
+    }
+
     if ((reqQuery.date && parseFloat(reqQuery.date) === -1) ||
         (reqQuery.segments && reqQuery.segments === 'all')) {
-      interval = 60 * 60; // Hour to be safe
+      interval = 60 * 60 * 24; // Day to be safe
     } else if ((reqQuery.startTime !== undefined) && (reqQuery.stopTime !== undefined)) {
       if (!/^-?[0-9]+$/.test(reqQuery.startTime)) {
         startTimeSec = Date.parse(reqQuery.startTime.replace('+', ' ')) / 1000;
@@ -582,24 +599,13 @@ class BuildQuery {
         stopTimeSec = parseInt(reqQuery.stopTime, 10);
       }
 
-      const diff = stopTimeSec - startTimeSec;
-      if (diff < 30 * 60) {
-        interval = 1; // second
-      } else if (diff <= 5 * 24 * 60 * 60) {
-        interval = 60; // minute
-      } else {
-        interval = 60 * 60; // hour
-      }
+      interval = toInterval(stopTimeSec - startTimeSec);
     } else {
       const queryDate = reqQuery.date || 1;
       startTimeSec = (Math.floor(Date.now() / 1000) - 60 * 60 * parseFloat(queryDate));
       stopTimeSec = Date.now() / 1000;
 
-      if (queryDate <= 5 * 24) {
-        interval = 60; // minute
-      } else {
-        interval = 60 * 60; // hour
-      }
+      interval = toInterval(60 * parseFloat(queryDate));
     }
 
     switch (reqQuery.interval) {

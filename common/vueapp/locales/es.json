@@ -586,6 +586,7 @@
     "timeBounding-both": "Limitado",
     "timeBounding-either": "Superposiciones de Sesión",
     "timeBounding-database": "Base de Datos",
+    "timeBounding-spanning": "Abarcando",
     "timeInterval": "Intervalo",
     "timeIntervalTip": "Tamaño del bucket de intervalo de tiempo para el gráfico",
     "timeInterval-auto": "Auto",
@@ -593,6 +594,7 @@
     "timeInterval-minute": "Minutos",
     "timeInterval-hour": "Horas",
     "timeInterval-day": "Días",
+    "timeInterval-week": "Semanas",
     "timeRangeDisplayTip": "Rango de tiempo de consulta",
     "createSummary": "Crear resumen"
   },

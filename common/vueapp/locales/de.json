@@ -586,6 +586,7 @@
     "timeBounding-both": "Begrenzt",
     "timeBounding-either": "Sitzungsüberschneidungen",
     "timeBounding-database": "Datenbank",
+    "timeBounding-spanning": "Überspannend",
     "timeInterval": "Intervall",
     "timeIntervalTip": "Zeitintervall-Bucket-Größe für den Graphen",
     "timeInterval-auto": "Auto",
@@ -593,6 +594,7 @@
     "timeInterval-minute": "Minuten",
     "timeInterval-hour": "Stunden",
     "timeInterval-day": "Tage",
+    "timeInterval-week": "Wochen",
     "timeRangeDisplayTip": "Abfragezeitbereich",
     "createSummary": "Zusammenfassung erstellen"
   },
