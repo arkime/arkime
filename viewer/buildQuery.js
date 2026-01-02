@@ -387,7 +387,6 @@ class BuildQuery {
         query.query.bool.filter.push({ range: { firstPacket: { gte: reqQuery.startTime * 1000 } } });
         query.query.bool.filter.push({ range: { lastPacket: { lte: reqQuery.stopTime * 1000 } } });
         break;
-      case 'spanning':
       case 'either':
         query.query.bool.filter.push({ range: { firstPacket: { lte: reqQuery.stopTime * 1000 } } });
         query.query.bool.filter.push({ range: { lastPacket: { gte: reqQuery.startTime * 1000 } } });
@@ -406,7 +405,6 @@ class BuildQuery {
       case 'last':
         query.query.bool.filter.push({ range: { lastPacket: { gte: reqQuery.startTime * 1000 } } });
         break;
-      case 'spanning':
       case 'either':
         query.query.bool.filter.push({ range: { firstPacket: { lte: reqQuery.stopTime * 1000 } } });
         query.query.bool.filter.push({ range: { lastPacket: { gte: reqQuery.startTime * 1000 } } });
@@ -465,12 +463,13 @@ class BuildQuery {
         case 'database':
           query.aggregations.dbHisto.histogram = { field: '@timestamp', interval: interval * 1000, min_doc_count: 1 };
           break;
-        case 'spanning':
-          query.aggregations.dbHisto.histogram = { field: 'packetRange', interval: interval * 1000, min_doc_count: 1 };
-          break;
         default:
           query.aggregations.dbHisto.histogram = { field: 'lastPacket', interval: interval * 1000, min_doc_count: 1 };
           break;
+        }
+
+        if (reqQuery.spanning === 'true' || reqQuery.spanning === true) {
+          query.aggregations.dbHisto.histogram = { field: 'packetRange', interval: interval * 1000, min_doc_count: 1 };
         }
       }
     }
