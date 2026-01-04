@@ -561,7 +561,7 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
           try {
             await HuntAPIs.#updateHuntInfo(huntId, hunt);
           } catch (err) {
-            console.error(`ERROR - runHuntJob - updating hunt (${huntId})`, util.inspect(err, false, 50));
+            console.log(`ERROR - runHuntJob - updating hunt (${huntId})`, util.inspect(err, false, 50));
           }
 
           HuntAPIs.#runningHuntJob = undefined;
