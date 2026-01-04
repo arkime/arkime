@@ -7,7 +7,6 @@
  */
 'use strict';
 
-const internals = require('./internals.js');
 const http = require('http');
 const axios = require('axios');
 const { LRUCache } = require('lru-cache');
@@ -167,11 +166,15 @@ async function getBlockDisk (info, pos) {
   // Return a new buffer starting at pos
   return block.slice(pos - blockStart);
 }
-internals.schemes.set('file', { getBlock: getBlockDisk });
+schemes.set('file', { getBlock: getBlockDisk });
 */
 
-internals.schemes.set('http', { getBlock: getBlockHTTP });
-internals.schemes.set('https', { getBlock: getBlockHTTP });
-internals.schemes.set('s3', { getBlock: getBlockS3 });
-internals.schemes.set('s3http', { getBlock: getBlockS3HTTP });
-internals.schemes.set('s3https', { getBlock: getBlockS3HTTP });
+const schemes = new Map();
+
+schemes.set('http', { getBlock: getBlockHTTP });
+schemes.set('https', { getBlock: getBlockHTTP });
+schemes.set('s3', { getBlock: getBlockS3 });
+schemes.set('s3http', { getBlock: getBlockS3HTTP });
+schemes.set('s3https', { getBlock: getBlockS3HTTP });
+
+module.exports = schemes;

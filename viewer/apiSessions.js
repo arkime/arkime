@@ -24,6 +24,7 @@ const Auth = require('../common/auth');
 const Pcap = require('./pcap.js');
 const version = require('../common/version');
 const internals = require('./internals');
+const schemes = require('./schemes');
 const ViewerUtils = require('./viewerUtils');
 const ipaddr = require('ipaddr.js');
 const { LRUCache } = require('lru-cache');
@@ -1245,8 +1246,8 @@ class SessionAPIs {
 
       /* Figure out which decoder to use */
       let psid;
-      if (afileInfo?.scheme && internals.schemes.has(afileInfo.scheme)) {
-        const scheme = internals.schemes.get(afileInfo.scheme);
+      if (afileInfo?.scheme && schemes.has(afileInfo.scheme)) {
+        const scheme = schemes.get(afileInfo.scheme);
         if (scheme && scheme.getBlock) {
           psid ??= SessionAPIs.#processSessionIdBlock;
           extra = scheme.getBlock;

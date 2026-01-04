@@ -20,21 +20,16 @@ const internals = {
   multiES: false,
   CYBERCHEFVERSION: '10.19.2',
   httpAgent: new http.Agent({ keepAlive: true, keepAliveMsecs: 20000, maxSockets: 50, maxFreeSockets: 25 }),
-  previousNodesStats: [],
   caTrustCerts: new Map(),
-  cronRunning: false,
   rightClicks: {},
   fieldActions: {},
   pluginEmitter: new EventEmitter(),
   writers: new Map(),
-  schemes: new Map(),
-  oldDBFields: new Map(),
   uploadLimits: {},
 
   // http://garethrees.org/2007/11/14/pngcrush/
   emptyPNG: Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAACklEQVR4nGMAAQAABQABDQottAAAAABJRU5ErkJggg==', 'base64'),
   PNG_LINE_WIDTH: 256,
-  notifiers: undefined,
   shortcutTypeMap: {
     ip: 'ip',
     integer: 'number',
