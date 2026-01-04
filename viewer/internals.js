@@ -20,7 +20,6 @@ const internals = {
   multiES: false,
   CYBERCHEFVERSION: '10.19.2',
   httpAgent: new http.Agent({ keepAlive: true, keepAliveMsecs: 20000, maxSockets: 50, maxFreeSockets: 25 }),
-  caTrustCerts: new Map(),
   rightClicks: {},
   fieldActions: {},
   pluginEmitter: new EventEmitter(),
@@ -50,7 +49,6 @@ const internals = {
     found: true,
     roles: ['arkimeUser']
   },
-  scriptAggs: {},
   // default settings for users with no settings
   settingDefaults: {
     timezone: 'local',
@@ -78,11 +76,6 @@ const internals = {
     removeEnabled: 0,
     lastUsed: 0
   }
-};
-
-internals.scriptAggs['ip.dst:port'] = {
-  script: 'if (doc["destination.ip"].value.indexOf(".") > 0) {return doc["destination.ip"].value + ":" + doc["destination.port"].value} else {return doc["destination.ip"].value + "." + doc["destination.port"].value}',
-  dbField: 'destination.ip'
 };
 
 internals.initialize = (app) => {

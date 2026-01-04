@@ -49,6 +49,13 @@ ArkimeConfig.loaded(() => {
 });
 
 class SessionAPIs {
+  static #scriptAggs = {
+    'ip.dst:port': {
+      script: 'if (doc["destination.ip"].value.indexOf(".") > 0) {return doc["destination.ip"].value + ":" + doc["destination.port"].value} else {return doc["destination.ip"].value + "." + doc["destination.port"].value}',
+      dbField: 'destination.ip'
+    }
+  };
+
   // --------------------------------------------------------------------------
   // INTERNAL HELPERS
   // --------------------------------------------------------------------------
@@ -2100,8 +2107,8 @@ class SessionAPIs {
     const fields = [];
     const parts = req.query.exp.split(',');
     for (let i = 0; i < parts.length; i++) {
-      if (internals.scriptAggs[parts[i]] !== undefined) {
-        fields.push(internals.scriptAggs[parts[i]]);
+      if (SessionAPIs.#scriptAggs[parts[i]] !== undefined) {
+        fields.push(SessionAPIs.#scriptAggs[parts[i]]);
         continue;
       }
       const field = Config.getFieldsMap()[parts[i]];
