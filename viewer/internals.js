@@ -34,8 +34,6 @@ const internals = {
   // http://garethrees.org/2007/11/14/pngcrush/
   emptyPNG: Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAACklEQVR4nGMAAQAABQABDQottAAAAABJRU5ErkJggg==', 'base64'),
   PNG_LINE_WIDTH: 256,
-  runningHuntJob: undefined,
-  processHuntJobsInitialized: false,
   notifiers: undefined,
   shortcutTypeMap: {
     ip: 'ip',

@@ -1327,12 +1327,6 @@ Db.deleteHunt = async (id, cluster) => {
     index: fixIndex('hunts'), id, refresh: true, cluster
   });
 };
-Db.setHunt = async (id, doc, cluster) => {
-  await Db.refresh('sessions*');
-  return internals.client7.index({
-    index: fixIndex('hunts'), body: doc, id, refresh: true, timeout: '10m', cluster
-  });
-};
 Db.updateHunt = async (id, doc, cluster) => {
   const params = {
     refresh: true,

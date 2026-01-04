@@ -226,7 +226,7 @@ if (ArkimeConfig.regressionTests) {
     HuntAPIs.processHuntJobs();
 
     async function checkHuntFinished () {
-      if (internals.runningHuntJob) {
+      if (HuntAPIs.isHuntJobRunning()) {
         setTimeout(checkHuntFinished, 1000);
       } else {
         const result = await Db.search('hunts', { query: { terms: { status: ['running', 'queued'] } } });
