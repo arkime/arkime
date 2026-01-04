@@ -1,4 +1,4 @@
-use Test::More tests => 321;
+use Test::More tests => 316;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -106,12 +106,12 @@ my $hToken = getTokenCookie('sac-huntuser');
   is ($json->{success}, 1);
   my $id1 = $json->{hunt}->{id};
 
+# Make sure the hunt's name doesn't contain special chars
+  is ($json->{hunt}->{name}, "test hunt 13", "Strip special chars");
+
 # cancel hunt
   my $canceljson = viewerPutToken("/api/hunt/$id1/cancel?arkimeRegressionUser=anonymous", "{}", $token);
   is ($canceljson->{success}, 1, "can cancel a hunt");
-
-# Make sure the hunt's name doesn't contain special chars
-  is ($json->{hunt}->{name}, "test hunt 13", "Strip special chars");
 
 # Hunt should finish
   viewerGet("/regressionTests/processHuntJobs");
@@ -160,6 +160,9 @@ my $hToken = getTokenCookie('sac-huntuser');
 # If the user is not an admin they can only play their own hunts
   $json = viewerPutToken("/api/hunt/$id3/play?arkimeRegressionUser=user2", "{}", $otherToken);
   is ($json->{text}, "You cannot change another user\'s hunt unless you have admin privileges", "Non admin user cannot pause another user's hunt");
+
+  viewerGet("/regressionTests/processHuntJobs");
+  sleep(1); # Wait for it to finish processing
 
   $json = viewerDeleteToken("/api/hunt/$id3?arkimeRegressionUser=anonymous", $token);
   is ($json->{text}, "Deleted hunt successfully");
@@ -274,9 +277,10 @@ my $hToken = getTokenCookie('sac-huntuser');
 # can update hunt description
   $json = viewerPutToken("/api/hunt/$id7", '{"description":"awesome new description"}', $token);
   is ($json->{success}, 1, "can update hunt description");
+
   $hunts = viewerGet("/api/hunts?all");
-  is ($hunts->{recordsTotal}, 6, 'Wrong number of hunts');
-  is ($hunts->{data}->[4]->{description}, "awesome new description", "description updated");
+  is ($hunts->{recordsTotal}, 5, 'Wrong number of hunts');
+  is ($hunts->{data}->[3]->{description}, "awesome new description", "description updated");
 
 # validate that user can't access hunt secret fields because of hunt roles
   $hunts = viewerGetToken("/api/hunts?all&arkimeRegressionUser=user3", $nonadminToken);
@@ -293,25 +297,24 @@ my $hToken = getTokenCookie('sac-huntuser');
   $json = viewerPutToken("/api/hunt/$id7", '{"roles":["arkimeUser"]}', $token);
   is ($json->{success}, 1, "can update hunt roles");
   $hunts = viewerGet("/api/hunts?all");
-  is ($hunts->{recordsTotal}, 6, 'Wrong number of hunts');
-  is ($hunts->{data}->[4]->{roles}->[0], "arkimeUser", "roles updated");
+  is ($hunts->{recordsTotal}, 5, 'Wrong number of hunts');
+  is ($hunts->{data}->[3]->{roles}->[0], "arkimeUser", "roles updated");
 
 # validate that user can access hunt secrets now that the role is set
   $hunts = viewerGetToken("/api/hunts?all&arkimeRegressionUser=user3", $nonadminToken);
-  ok(exists $hunts->{data}->[4]->{id});
-  isnt($hunts->{data}->[4]->{id}, "", "should have id field");
-  ok(exists $hunts->{data}->[4]->{userId});
-  isnt($hunts->{data}->[4]->{userId}, "", "should be missing userId field");
-  ok(exists $hunts->{data}->[4]->{search});
-  isnt($hunts->{data}->[4]->{search}, "", "should be missing search field");
-  ok(exists $hunts->{data}->[4]->{searchType});
-  isnt($hunts->{data}->[4]->{searchType}, "", "should be missing searchType field");
-  ok(exists $hunts->{data}->[4]->{query});
-  isnt($hunts->{data}->[4]->{query}, undef, "should be missing query field");
+  ok(exists $hunts->{data}->[3]->{id});
+  isnt($hunts->{data}->[3]->{id}, "", "should have id field");
+  ok(exists $hunts->{data}->[3]->{userId});
+  isnt($hunts->{data}->[3]->{userId}, "", "should be missing userId field");
+  ok(exists $hunts->{data}->[3]->{search});
+  isnt($hunts->{data}->[3]->{search}, "", "should be missing search field");
+  ok(exists $hunts->{data}->[3]->{searchType});
+  isnt($hunts->{data}->[3]->{searchType}, "", "should be missing searchType field");
+  ok(exists $hunts->{data}->[3]->{query});
+  isnt($hunts->{data}->[3]->{query}, undef, "should be missing query field");
 
   $hunts = multiGet("/api/hunts?all");
-  is ($hunts->{recordsTotal}, 6, 'Wrong number of hunts');
-
+  is ($hunts->{recordsTotal}, 5, 'Wrong number of hunts');
 
 # cleanup
   viewerDeleteToken("/api/hunt/$id5?arkimeRegressionUser=anonymous", $token);
