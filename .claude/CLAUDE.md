@@ -324,6 +324,14 @@ Local instance required for development. See CHANGELOG for compatible versions.
 ### Nodemon & Vite
 Development commands use nodemon (backend) + vite (frontend) concurrently. Changes to .js files restart backend, changes to .vue files trigger Hot Module Reload (HMR).
 
+### Git Commit Guidelines
+When creating commits:
+- Always use the `git commit` command with a concise message.
+- If the commit includes a single change, keep it to a single line.
+- If the commit includes multiple changes, create a concise title, 2 newlines, then a list of succinct, short details for each change.
+- Do not include "Generated with Claude Code" note.
+- Include the "Co-Authored-By" note, if applicable.
+
 ### Git Hooks (Optional but recommended)
 Use Git Hooks to provide clean commits.
 Install local hooks for pre-commit linting:

@@ -1279,6 +1279,14 @@
     "unassigned": "未分配的分片",
     "initializing": "正在初始化的分片"
   },
+  "welcome": {
+    "greeting": "欢迎 {userName}！",
+    "checkOutOur": "查看我们的",
+    "pageInfo": "页面了解更多信息，或点击左上角的猫头鹰。",
+    "dismissTip": "下次再显示此消息",
+    "gotIt": "知道了！",
+    "gotItTip": "不再显示此消息"
+  },
   "spigraph": {
     "addAnotherField": "添加另一个字段",
     "showHiddenColumnsTip": "显示隐藏列",
