@@ -18,17 +18,25 @@ const User = require('../common/user');
 const internals = require('./internals');
 
 class ViewerUtils {
+  static #oldDBFields = new Map();
+  static #caTrustCerts = new Map();
+
   // ----------------------------------------------------------------------------
   static addCaTrust (options, node) {
     if (!Config.isHTTPS(node)) {
       return;
     }
 
-    let certs = internals.caTrustCerts.get(node);
+    let certs = ViewerUtils.#caTrustCerts.get(node);
+    if (certs === null) { return; }
     if (!certs) {
       const caTrustFile = Config.getFull(node, 'caTrustFile');
+      if (!caTrustFile) {
+        ViewerUtils.#caTrustCerts.set(node, null);
+        return;
+      }
       certs = ArkimeUtil.certificateFileToArray(caTrustFile);
-      internals.caTrustCerts.set(node, certs);
+      ViewerUtils.#caTrustCerts.set(node, certs);
     }
 
     if (certs && certs.length > 0) {
@@ -119,7 +127,7 @@ class ViewerUtils {
       graph.sessionsTotal += item.doc_count;
 
       for (const prop in item) {
-        // excluding every item prop that isnt a summed up aggregate collection (ie. es keys)
+        // excluding every item prop that isn't a summed up aggregate collection (ie. es keys)
         // tot* filters are exceptions: they will pass src/dst histo [], but keep a *Total count for filtered total
         // ie. totPackets selected filter => {srcPacketsHisto: [], dstPacketsHisto:[], totPacketsTotal: n, ...}
         if (filters.includes(prop) ||
@@ -178,11 +186,11 @@ class ViewerUtils {
       // Everything will use fieldECS or dbField2 as dbField
       for (let i = 0, ilen = data.length; i < ilen; i++) {
         if (data[i]._source.fieldECS) {
-          internals.oldDBFields.set(data[i]._source.dbField, data[i]._source);
-          internals.oldDBFields.set(data[i]._source.dbField2, data[i]._source);
+          ViewerUtils.#oldDBFields.set(data[i]._source.dbField, data[i]._source);
+          ViewerUtils.#oldDBFields.set(data[i]._source.dbField2, data[i]._source);
           data[i]._source.dbField = data[i]._source.fieldECS;
         } else {
-          internals.oldDBFields.set(data[i]._source.dbField, data[i]._source);
+          ViewerUtils.#oldDBFields.set(data[i]._source.dbField, data[i]._source);
           data[i]._source.dbField = data[i]._source.dbField2;
         }
 
@@ -211,7 +219,7 @@ class ViewerUtils {
 
   // ----------------------------------------------------------------------------
   static oldDB2newDB (x) {
-    const old = internals.oldDBFields.get(x);
+    const old = ViewerUtils.#oldDBFields.get(x);
 
     if (old === undefined) { return x; }
     return old.dbFieldECS ?? old.dbField2;

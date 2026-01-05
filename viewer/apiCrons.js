@@ -24,6 +24,13 @@ const Notifier = require('../common/notifier');
 const BuildQuery = require('./buildQuery');
 
 class CronAPIs {
+
+  // --------------------------------------------------------------------------
+  static #cronRunning = false;
+  static isCronRunning () {
+    return CronAPIs.#cronRunning;
+  }
+
   // --------------------------------------------------------------------------
   static #primaryViewer = false;
   static isPrimaryViewer () {
@@ -603,11 +610,11 @@ class CronAPIs {
 
   // --------------------------------------------------------------------------
   static processCronQueries () {
-    if (internals.cronRunning) {
+    if (CronAPIs.#cronRunning) {
       console.log('CRON - processQueries already running', CronAPIs.#qlworking);
       return;
     }
-    internals.cronRunning = true;
+    CronAPIs.#cronRunning = true;
     if (Config.debug) {
       console.log('CRON - cronRunning set to true');
     }
@@ -766,7 +773,7 @@ ${Config.arkimeWebURL()}${urlPath}${cq.description ? '\n' + cq.description : ''}
           console.log('CRON - Finished one pass of all crons');
         }
       } catch (err) {
-        internals.cronRunning = false;
+        CronAPIs.#cronRunning = false;
         console.log('CRON - processCronQueries', err);
       }
     }, async () => {
@@ -778,10 +785,10 @@ ${Config.arkimeWebURL()}${urlPath}${cq.description ? '\n' + cq.description : ''}
       if (Config.debug) {
         console.log('CRON - Should be up to date');
       }
-      internals.cronRunning = false;
+      CronAPIs.#cronRunning = false;
     }).catch((err) => {
       console.log('CRON - Error:', err);
-      internals.cronRunning = false;
+      CronAPIs.#cronRunning = false;
     });
   }
 }
