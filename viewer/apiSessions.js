@@ -1017,7 +1017,7 @@ class SessionAPIs {
         b = Buffer.alloc(0xfffe);
       }
 
-      /* Need to write the ng block, and conver the old timestamp */
+      /* Need to write the ng block, and convert the old timestamp */
       b.writeUInt32LE(0x00000006, boffset); // Block Type
       const len = ((buffer.length + 20 + 3) >> 2) << 2;
       b.writeUInt32LE(len, boffset + 4); // Block Len 1

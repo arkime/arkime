@@ -43,7 +43,7 @@ my $hToken = getTokenCookie('sac-huntuser');
 
 # Must have a size to add a hunt
   $json = viewerPostToken("/api/hunt", '{"totalSessions":1,"name":"test hunt 3","search":"test search text","searchType":"ascii","type":"raw","src":true,"dst":true}', $token);
-  eq_or_diff($json, from_json('{"text": "Missing max mumber of packets to examine per session", "success": false}'));
+  eq_or_diff($json, from_json('{"text": "Missing max number of packets to examine per session", "success": false}'));
 
 # Must have search text to add a hunt
   $json = viewerPostToken("/api/hunt", '{"totalSessions":1,"name":"test hunt 4","size":"50","searchType":"ascii","type":"raw","src":true,"dst":true}', $token);
