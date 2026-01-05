@@ -48,6 +48,7 @@ const compression = require('compression');
 // internal app deps
 const internals = require('./internals');
 internals.initialize(app);
+const schemes = require('./schemes');
 const ViewerUtils = require('./viewerUtils');
 const Notifier = require('../common/notifier');
 const ViewAPIs = require('./apiViews');
@@ -211,7 +212,7 @@ if (ArkimeConfig.regressionTests) {
     await Db.refresh();
     CronAPIs.processCronQueries();
     setTimeout(async function checkCronFinished () {
-      if (internals.cronRunning) {
+      if (CronAPIs.isCronRunning()) {
         setTimeout(checkCronFinished, 500);
       } else {
         await Db.refresh();
@@ -226,7 +227,7 @@ if (ArkimeConfig.regressionTests) {
     HuntAPIs.processHuntJobs();
 
     async function checkHuntFinished () {
-      if (internals.runningHuntJob) {
+      if (HuntAPIs.isHuntJobRunning()) {
         setTimeout(checkHuntFinished, 1000);
       } else {
         const result = await Db.search('hunts', { query: { terms: { status: ['running', 'queued'] } } });
@@ -776,7 +777,7 @@ function loadPlugins () {
       internals.writers.set(str, info);
     },
     registerScheme: function (scheme, info) {
-      internals.schemes.set(scheme, info);
+      schemes.set(scheme, info);
     },
     getDb: function () { return Db; },
     getPcap: function () { return Pcap; }
@@ -2160,15 +2161,7 @@ async function main () {
     console.log('ERROR - fetching OpenSearch/Elasticsearch health', err);
   }
 
-  try {
-    const { body: info } = await Db.nodesStats({
-      metric: 'jvm,process,fs,os,indices,thread_pool'
-    });
-    info.nodes.timestamp = new Date().getTime();
-    internals.previousNodesStats.push(info.nodes);
-  } catch (err) {
-    console.log('ERROR - fetching OpenSearch/Elasticsearch nodes stats', err);
-  }
+  await StatsAPIs.initialize();
 
   setFieldLocals();
   setInterval(setFieldLocals, 2 * 60 * 1000);

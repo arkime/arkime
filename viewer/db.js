@@ -1327,12 +1327,6 @@ Db.deleteHunt = async (id, cluster) => {
     index: fixIndex('hunts'), id, refresh: true, cluster
   });
 };
-Db.setHunt = async (id, doc, cluster) => {
-  await Db.refresh('sessions*');
-  return internals.client7.index({
-    index: fixIndex('hunts'), body: doc, id, refresh: true, timeout: '10m', cluster
-  });
-};
 Db.updateHunt = async (id, doc, cluster) => {
   const params = {
     refresh: true,
@@ -1374,7 +1368,7 @@ async function setShortcutsVersion () {
 // so they need to be periodically updated in the local db for searching by shortcuts to work
 Db.updateLocalShortcuts = async () => {
   if (!internals.info.usersHost ||
-     !internals.info.isPrimaryViewer || // If no isPrimaryViewer then we aren't actually viewer, dont do this
+     !internals.info.isPrimaryViewer || // If no isPrimaryViewer then we aren't actually viewer, don't do this
     !internals.info.isPrimaryViewer() ||
     internals.info.host === internals.info.usersHost) {
     return;
