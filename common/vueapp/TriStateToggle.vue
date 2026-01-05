@@ -32,7 +32,7 @@ SPDX-License-Identifier: Apache-2.0
 
 <script>
 /**
- * Three-state toggle for role permissions.
+ * Three-state toggle for user and role permissions.
  * States: Inherit (undefined), No (false), Yes (true)
  *
  * For negated fields (like emailSearch where false = disabled),

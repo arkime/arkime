@@ -248,55 +248,49 @@ SPDX-License-Identifier: Apache-2.0
         <!-- detail row -->
         <template #row-details="data">
           <div class="m-2">
-            <b-form-checkbox
-              inline
+            <!-- User permission tri-state toggles -->
+            <div
               v-if="isUser(data.item)"
-              :checked="!data.item.emailSearch"
-              @input="negativeToggle(data.item, 'emailSearch', true)">
-              {{ $t('users.disableEmailSearch') }}
-            </b-form-checkbox>
-            <b-form-checkbox
-              inline
-              v-if="isUser(data.item)"
-              :checked="!data.item.removeEnabled"
-              @input="negativeToggle(data.item, 'removeEnabled', true)">
-              {{ $t('users.disableDataRemoval') }}
-            </b-form-checkbox>
-            <b-form-checkbox
-              inline
-              v-if="isUser(data.item)"
-              :checked="!data.item.packetSearch"
-              @input="negativeToggle(data.item, 'packetSearch', true)">
-              {{ $t('users.disableHunting') }}
-            </b-form-checkbox>
-            <b-form-checkbox
-              inline
-              v-model="data.item.hideStats"
-              v-if="isUser(data.item)"
-              @input="userHasChanged(data.item)">
-              {{ $t('users.hideStatsPage') }}
-            </b-form-checkbox>
-            <b-form-checkbox
-              inline
-              v-model="data.item.hideFiles"
-              v-if="isUser(data.item)"
-              @input="userHasChanged(data.item)">
-              {{ $t('users.hideFilesPage') }}
-            </b-form-checkbox>
-            <b-form-checkbox
-              inline
-              v-model="data.item.hidePcap"
-              v-if="isUser(data.item)"
-              @input="userHasChanged(data.item)">
-              {{ $t('users.hidePcap') }}
-            </b-form-checkbox>
-            <b-form-checkbox
-              inline
-              v-model="data.item.disablePcapDownload"
-              v-if="isUser(data.item)"
-              @input="userHasChanged(data.item)">
-              {{ $t('users.disablePcapDownload') }}
-            </b-form-checkbox>
+              class="user-permissions mt-2 mb-2 d-flex flex-wrap gap-1">
+              <TriStateToggle
+                class="toggle-group rounded p-1"
+                :model-value="data.item.emailSearch"
+                :label="$t('users.disableEmailSearch')"
+                :negated="true"
+                @update:model-value="setRoleField(data.item, 'emailSearch', $event)" />
+              <TriStateToggle
+                class="toggle-group rounded p-1"
+                :model-value="data.item.removeEnabled"
+                :label="$t('users.disableDataRemoval')"
+                :negated="true"
+                @update:model-value="setRoleField(data.item, 'removeEnabled', $event)" />
+              <TriStateToggle
+                class="toggle-group rounded p-1"
+                :model-value="data.item.packetSearch"
+                :label="$t('users.disableHunting')"
+                :negated="true"
+                @update:model-value="setRoleField(data.item, 'packetSearch', $event)" />
+              <TriStateToggle
+                class="toggle-group rounded p-1"
+                :model-value="data.item.hideStats"
+                :label="$t('users.hideStatsPage')"
+                @update:model-value="setRoleField(data.item, 'hideStats', $event)" />
+              <TriStateToggle
+                class="toggle-group rounded p-1"
+                :model-value="data.item.hideFiles"
+                :label="$t('users.hideFilesPage')"
+                @update:model-value="setRoleField(data.item, 'hideFiles', $event)" />
+              <TriStateToggle
+                class="toggle-group rounded p-1"
+                :model-value="data.item.hidePcap"
+                :label="$t('users.hidePcap')"
+                @update:model-value="setRoleField(data.item, 'hidePcap', $event)" />
+              <TriStateToggle
+                class="toggle-group rounded p-1"
+                :model-value="data.item.disablePcapDownload"
+                :label="$t('users.disablePcapDownload')"
+                @update:model-value="setRoleField(data.item, 'disablePcapDownload', $event)" />
+            </div>
             <b-input-group
               size="sm"
               class="mt-2">
@@ -651,16 +645,7 @@ export default {
       // sort, since order is not meaningful for roleAssigners
       user.roleAssigners.sort();
 
-      // For users: undefined is the same as false for these fields
-      // For roles: preserve the exact value (undefined = inherit, true/false = explicit)
-      const isRole = user.userId?.startsWith('role:');
-      if (!isRole) {
-        user.timeLimit ||= undefined;
-        user.hidePcap ||= undefined;
-        user.hideFiles ||= undefined;
-        user.hideStats ||= undefined;
-        user.disablePcapDownload ||= undefined;
-      }
+      // For both users and roles: preserve the exact value (undefined = inherit, true/false = explicit)
 
       user.expanded = undefined; // don't care about expanded field (just for UI)
       user.lastUsed = undefined; // don't compare lastUsed, it might be different if the user is using the UI
