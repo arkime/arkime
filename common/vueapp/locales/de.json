@@ -1267,6 +1267,14 @@
     "unassigned": "Nicht zugeordnete Shards",
     "initializing": "Initialisierende Shards"
   },
+  "welcome": {
+    "greeting": "Willkommen {userName}!",
+    "checkOutOur": "Schauen Sie sich unsere",
+    "pageInfo": "Seite für weitere Informationen an oder klicken Sie auf die Eule oben links.",
+    "dismissTip": "Diese Nachricht beim nächsten Mal wieder anzeigen",
+    "gotIt": "Verstanden!",
+    "gotItTip": "Diese Nachricht nicht mehr anzeigen"
+  },
   "spigraph": {
     "addAnotherField": "Weiteres Feld hinzufügen",
     "showHiddenColumnsTip": "Versteckte Spalte(n) anzeigen",
