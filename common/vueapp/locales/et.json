@@ -1263,6 +1263,14 @@
     "unassigned": "Määramata Kilde",
     "initializing": "Initsialiseerivad Kilde"
   },
+  "welcome": {
+    "greeting": "Tere tulemast {userName}!",
+    "checkOutOur": "Tutvu meie",
+    "pageInfo": "lehega lisateabe saamiseks või klõpsa öökullil vasakul üleval.",
+    "dismissTip": "Näita seda teadet järgmine kord uuesti",
+    "gotIt": "Sain aru!",
+    "gotItTip": "Ära näita seda teadet enam"
+  },
   "spigraph": {
     "addAnotherField": "Lisa veel üks väli",
     "showHiddenColumnsTip": "Näita peidetud veergu(e)",

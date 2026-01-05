@@ -620,7 +620,9 @@
     "timeInterval-day": "일",
     "timeInterval-week": "주",
     "timeRangeDisplayTip": "쿼리 시간 범위",
-    "createSummary": "요약 생성"
+    "createSummary": "요약 생성",
+    "arkimeNoResults": "결과가 없거나 시간 범위 내에서 검색과 일치하는 결과가 없습니다.",
+    "arkimeEmptyView": "잊지 마세요! 검색에 보기가 적용되어 있습니다"
   },
   "stats": {
     "noResults": "검색과 일치하는 결과가 없습니다.",
@@ -1558,5 +1560,13 @@
       "type-cacheSrcMiss": "캐시 소스 미스",
       "type-cacheSrcRefresh": "캐시 소스 새로고침"
     }
+  },
+  "welcome": {
+    "greeting": "환영합니다 {userName}님!",
+    "checkOutOur": "자세한 내용은",
+    "pageInfo": "페이지를 확인하거나 왼쪽 상단의 올빼미를 클릭하세요.",
+    "dismissTip": "다음에 이 메시지 다시 표시",
+    "gotIt": "알겠습니다!",
+    "gotItTip": "이 메시지를 다시 표시하지 않음"
   }
 }

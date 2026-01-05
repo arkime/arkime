@@ -1319,6 +1319,14 @@
     "unassigned": "Unassigned Shards",
     "initializing": "Initializing Shards"
   },
+  "welcome": {
+    "greeting": "Welcome {userName}!",
+    "checkOutOur": "Check out our",
+    "pageInfo": "page for more information, or click the owl on the top left.",
+    "dismissTip": "But see this message again next time",
+    "gotIt": "Got it!",
+    "gotItTip": "Don't show me this message again"
+  },
   "spigraph": {
     "addAnotherField": "Add another field",
     "showHiddenColumnsTip": "Show hidden columns",

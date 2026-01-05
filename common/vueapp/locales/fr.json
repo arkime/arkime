@@ -1282,6 +1282,14 @@
     "unassigned": "Shards non attribués",
     "initializing": "Shards en cours d'initialisation"
   },
+  "welcome": {
+    "greeting": "Bienvenue {userName} !",
+    "checkOutOur": "Consultez notre page d'",
+    "pageInfo": "pour plus d'informations, ou cliquez sur le hibou en haut à gauche.",
+    "dismissTip": "Voir ce message à nouveau la prochaine fois",
+    "gotIt": "Compris !",
+    "gotItTip": "Ne plus afficher ce message"
+  },
   "spigraph": {
     "addAnotherField": "Ajouter un autre champ",
     "showHiddenColumnsTip": "Afficher la ou les colonne(s) masquée(s)",

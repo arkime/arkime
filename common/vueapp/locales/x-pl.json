@@ -1287,6 +1287,14 @@
     "unassigned": "Unassignedway Ardsshay",
     "initializing": "Initializingway Ardsshay"
   },
+  "welcome": {
+    "greeting": "Elcomeway {userName}!",
+    "checkOutOur": "Eckchay outway ourway",
+    "pageInfo": "agepay orfay oremay informationway, orway ickclay ethay owlway onway ethay optay eftlay.",
+    "dismissTip": "Utbay eesay isthay essagemay againway extnay imetay",
+    "gotIt": "Otgay itway!",
+    "gotItTip": "On'tday owshay emay isthay essagemay againway"
+  },
   "spigraph": {
     "addAnotherField": "Addway anotherway ieldfay",
     "showHiddenColumnsTip": "Owshay iddenhay olumncay(say)",

@@ -1303,6 +1303,14 @@
     "unassigned": "未割り当てのシャード",
     "initializing": "初期化中のシャード"
   },
+  "welcome": {
+    "greeting": "ようこそ {userName} さん！",
+    "checkOutOur": "詳細については",
+    "pageInfo": "ページをご覧いただくか、左上のフクロウをクリックしてください。",
+    "dismissTip": "次回もこのメッセージを表示する",
+    "gotIt": "了解！",
+    "gotItTip": "このメッセージを再度表示しない"
+  },
   "spigraph": {
     "addAnotherField": "別のフィールドを追加",
     "showHiddenColumnsTip": "隠された列を表示",
