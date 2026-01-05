@@ -8,39 +8,38 @@ SPDX-License-Identifier: Apache-2.0
       v-if="!dismissed"
       class="card welcome-msg">
       <div class="card-body">
-        <span class="fa fa-heart text-theme-accent" />
+        <span class="fa fa-heart text-theme-accent me-1" />
         <strong class="text-theme-accent">
-          Welcome {{ user.userName }}!
+          {{ $t('welcome.greeting', { userName: user.userName }) }}
         </strong>
-        Check out our
+        {{ $t('welcome.checkOutOur') }}
         <a
           href="javascript:void(0)"
           @click="openHelp"
           class="no-decoration">
-          help
+          {{ $t('common.help').toLowerCase() }}
         </a>
-        page for more information,
-        or click the owl on the top left.
+        {{ $t('welcome.pageInfo') }}
         <br>
         <a
           href="#"
           role="button"
           @click="dismissMsg"
           id="dismissWelcomeMsg"
-          class="no-decoration pull-left">
+          class="no-decoration pull-left ms-1">
           <span class="fa fa-close" />
-          Dismiss
-          <BTooltip target="dismissWelcomeMsg">But see this message again next time</BTooltip>
+          {{ $t('common.dismiss') }}
+          <BTooltip target="dismissWelcomeMsg">{{ $t('welcome.dismissTip') }}</BTooltip>
         </a>
         <a
           href="#"
           role="button"
           @click="acknowledgeMsg"
           id="acknowledgeWelcomeMsg"
-          class="no-decoration pull-right">
-          Got it!
+          class="no-decoration pull-right me-1">
+          {{ $t('welcome.gotIt') }}
           <span class="fa fa-thumbs-up" />
-          <BTooltip target="acknowledgeWelcomeMsg">Don't show me this message again</BTooltip>
+          <BTooltip target="acknowledgeWelcomeMsg">{{ $t('welcome.gotItTip') }}</BTooltip>
         </a>
       </div>
     </div>

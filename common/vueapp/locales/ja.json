@@ -1057,6 +1057,14 @@
     "taskMaxWaitingInQueueMillis": "キュー最大待機時間（ミリ秒）",
     "activeShardsPercentAsNumber": "アクティブシャード%（数値）"
   },
+  "welcome": {
+    "greeting": "ようこそ {userName} さん！",
+    "checkOutOur": "詳細については",
+    "pageInfo": "ページをご覧いただくか、左上のフクロウをクリックしてください。",
+    "dismissTip": "次回もこのメッセージを表示する",
+    "gotIt": "了解！",
+    "gotItTip": "このメッセージを再度表示しない"
+  },
   "spigraph": {
     "exportCSVSPIGraphTip": "SPIグラフのCSVデータをエクスポート"
   },
