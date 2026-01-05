@@ -17,6 +17,8 @@ const internals = require('./internals');
 const ViewerUtils = require('./viewerUtils');
 
 class StatsAPIs {
+  static #previousNodesStats = [];
+
   // --------------------------------------------------------------------------
   // APIs
   // --------------------------------------------------------------------------
@@ -386,8 +388,8 @@ class StatsAPIs {
       }
 
       const now = new Date().getTime();
-      while (internals.previousNodesStats.length > 1 && internals.previousNodesStats[1].timestamp + 10000 < now) {
-        internals.previousNodesStats.shift();
+      while (StatsAPIs.#previousNodesStats.length > 1 && StatsAPIs.#previousNodesStats[1].timestamp + 10000 < now) {
+        StatsAPIs.#previousNodesStats.shift();
       }
 
       let regex;
@@ -412,7 +414,7 @@ class StatsAPIs {
 
         const writeInfo = node.thread_pool.bulk || node.thread_pool.write;
 
-        const oldnode = internals.previousNodesStats[0][nodeKeys[n]];
+        const oldnode = StatsAPIs.#previousNodesStats[0][nodeKeys[n]];
         if (oldnode !== undefined && node.fs.io_stats !== undefined && oldnode.fs.io_stats !== undefined && 'total' in node.fs.io_stats) {
           const timediffsec = (node.timestamp - oldnode.timestamp) / 1000.0;
           read = Math.max(0, Math.ceil((node.fs.io_stats.total.read_kilobytes - oldnode.fs.io_stats.total.read_kilobytes) / timediffsec * 1024));
@@ -492,7 +494,7 @@ class StatsAPIs {
       }
 
       nodesStats.nodes.timestamp = new Date().getTime();
-      internals.previousNodesStats.push(nodesStats.nodes);
+      StatsAPIs.#previousNodesStats.push(nodesStats.nodes);
 
       res.send({
         data: stats,
@@ -1752,6 +1754,19 @@ class StatsAPIs {
       res.send({ recordsTotal: 0, recordsFiltered: 0, data: [] });
     });
   };
+
+  // --------------------------------------------------------------------------
+  static async initialize () {
+    try {
+      const { body: info } = await Db.nodesStats({
+        metric: 'jvm,process,fs,os,indices,thread_pool'
+      });
+      info.nodes.timestamp = new Date().getTime();
+      StatsAPIs.#previousNodesStats.push(info.nodes);
+    } catch (err) {
+      console.log('ERROR - fetching OpenSearch/Elasticsearch nodes stats', err);
+    }
+  }
 };
 
 module.exports = StatsAPIs;

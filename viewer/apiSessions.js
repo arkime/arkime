@@ -24,6 +24,7 @@ const Auth = require('../common/auth');
 const Pcap = require('./pcap.js');
 const version = require('../common/version');
 const internals = require('./internals');
+const schemes = require('./schemes');
 const ViewerUtils = require('./viewerUtils');
 const ipaddr = require('ipaddr.js');
 const { LRUCache } = require('lru-cache');
@@ -48,6 +49,13 @@ ArkimeConfig.loaded(() => {
 });
 
 class SessionAPIs {
+  static #scriptAggs = {
+    'ip.dst:port': {
+      script: 'if (doc["destination.ip"].value.indexOf(".") > 0) {return doc["destination.ip"].value + ":" + doc["destination.port"].value} else {return doc["destination.ip"].value + "." + doc["destination.port"].value}',
+      dbField: 'destination.ip'
+    }
+  };
+
   // --------------------------------------------------------------------------
   // INTERNAL HELPERS
   // --------------------------------------------------------------------------
@@ -1245,8 +1253,8 @@ class SessionAPIs {
 
       /* Figure out which decoder to use */
       let psid;
-      if (afileInfo?.scheme && internals.schemes.has(afileInfo.scheme)) {
-        const scheme = internals.schemes.get(afileInfo.scheme);
+      if (afileInfo?.scheme && schemes.has(afileInfo.scheme)) {
+        const scheme = schemes.get(afileInfo.scheme);
         if (scheme && scheme.getBlock) {
           psid ??= SessionAPIs.#processSessionIdBlock;
           extra = scheme.getBlock;
@@ -2099,8 +2107,8 @@ class SessionAPIs {
     const fields = [];
     const parts = req.query.exp.split(',');
     for (let i = 0; i < parts.length; i++) {
-      if (internals.scriptAggs[parts[i]] !== undefined) {
-        fields.push(internals.scriptAggs[parts[i]]);
+      if (SessionAPIs.#scriptAggs[parts[i]] !== undefined) {
+        fields.push(SessionAPIs.#scriptAggs[parts[i]]);
         continue;
       }
       const field = Config.getFieldsMap()[parts[i]];

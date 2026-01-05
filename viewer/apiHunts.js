@@ -30,8 +30,9 @@ ArkimeConfig.loaded(() => {
 
 class HuntAPIs {
   static #processHuntJobsInitialized = false;
-  static #runningHuntJob;
 
+  // --------------------------------------------------------------------------
+  static #runningHuntJob;
   static isHuntJobRunning () {
     return HuntAPIs.#runningHuntJob !== undefined;
   }
