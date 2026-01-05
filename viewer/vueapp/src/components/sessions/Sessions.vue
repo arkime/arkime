@@ -39,6 +39,7 @@ SPDX-License-Identifier: Apache-2.0
       :map-data="mapData"
       :graph-data="graphData"
       @fetch-map-data="fetchMapData"
+      @spanning-change="loadData"
       :timeline-data-filters="timelineDataFilters" />
     <!-- /visualizations -->
 

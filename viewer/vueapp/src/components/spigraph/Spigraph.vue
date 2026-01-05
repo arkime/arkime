@@ -151,7 +151,8 @@ SPDX-License-Identifier: Apache-2.0
         :map-data="mapData"
         :primary="true"
         :timeline-data-filters="timelineDataFilters"
-        @fetch-map-data="cancelAndLoad(true)" />
+        @fetch-map-data="cancelAndLoad(true)"
+        @spanning-change="cancelAndLoad(true)" />
     </div> <!-- /main visualization -->
 
     <div class="spigraph-content">

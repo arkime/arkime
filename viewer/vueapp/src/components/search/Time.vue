@@ -289,32 +289,6 @@ SPDX-License-Identifier: Apache-2.0
       </BInputGroup>
     </BCol>  <!-- /time bounding select -->
 
-    <!-- spanning checkbox -->
-    <BCol
-      cols="auto"
-      v-if="!hideBounding">
-      <BButton
-        size="sm"
-        id="spanning"
-        variant="secondary"
-        :disabled="timeBounding === 'database'"
-        @click="changeSpanning">
-        <input
-          class="me-1"
-          type="checkbox"
-          v-model="spanning">
-        {{ $t('search.timeBounding-spanning') }}
-      </BButton>
-      <BTooltip
-        target="spanning"
-        placement="bottom"
-        :delay="{show: 500, hide: 0}"
-        noninteractive>
-        <span v-i18n-btip="'search.spanning'" />
-      </BTooltip>
-    </BCol>
-    <!-- /spanning checkbox -->
-
     <!-- time interval select -->
     <BCol
       cols="auto"
@@ -426,7 +400,6 @@ export default {
       timeError: '',
       timeBounding: this.$route.query.bounding || 'last',
       timeInterval: this.$route.query.interval || 'auto',
-      spanning: this.$route.query.spanning === 'true',
       // use start/stop time localized to this component so that the time
       // watcher can compare time values to local (unaffected) start/stop times
       localStopTime: undefined,
@@ -684,13 +657,10 @@ export default {
      * Updating the url parameter triggers updateParams
      */
     changeTimeBounding: function () {
-      // clear spanning when bounding is database
-      const spanning = this.timeBounding === 'database' ? undefined : this.$route.query.spanning;
       this.$router.push({
         query: {
           ...this.$route.query,
-          bounding: this.timeBounding !== 'last' ? this.timeBounding : undefined,
-          spanning
+          bounding: this.timeBounding !== 'last' ? this.timeBounding : undefined
         }
       });
     },
@@ -704,20 +674,6 @@ export default {
         query: {
           ...this.$route.query,
           interval: this.timeInterval !== 'auto' ? this.timeInterval : undefined
-        }
-      });
-    },
-    /**
-     * Fired when spanning checkbox is changed
-     * Applies the spanning url parameter
-     * Updating the url parameter triggers updateParams
-     */
-    changeSpanning: function () {
-      this.spanning = !this.spanning;
-      this.$router.push({
-        query: {
-          ...this.$route.query,
-          spanning: this.spanning ? 'true' : undefined
         }
       });
     },
@@ -883,26 +839,11 @@ export default {
       if (newParams.bounding !== oldParams.bounding) {
         change = true;
         this.timeBounding = newParams.bounding || 'last';
-        // disable spanning when bounding is database
-        if (this.timeBounding === 'database' && this.spanning) {
-          this.spanning = false;
-          this.$router.push({
-            query: {
-              ...this.$route.query,
-              spanning: undefined
-            }
-          });
-        }
       }
 
       if (newParams.interval !== oldParams.interval) {
         change = true;
         this.timeInterval = newParams.interval || 'auto';
-      }
-
-      if (newParams.spanning !== oldParams.spanning) {
-        change = true;
-        this.spanning = newParams.spanning === 'true';
       }
 
       if (newParams.date !== oldParams.date) {

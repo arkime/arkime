@@ -174,6 +174,7 @@ SPDX-License-Identifier: Apache-2.0
       :map-data="mapData"
       :graph-data="graphData"
       @fetch-map-data="fetchVizData"
+      @spanning-change="issueQueries"
       :timeline-data-filters="timelineDataFilters" /> <!-- /visualizations -->
 
     <div class="spiview-content me-1 ms-1">

@@ -237,6 +237,25 @@ SPDX-License-Identifier: Apache-2.0
                   {{ $t('vis.capRestartsTip') }}
                 </BTooltip>
               </div>
+              <!-- spanning -->
+              <div
+                class="btn-group btn-group-xs btn-group-checkboxes ms-1"
+                id="toggleSpanning"
+                style="margin-top: 4px;">
+                <b-form-checkbox
+                  size="sm"
+                  class="buttons-with-boxes"
+                  :model-value="spanning"
+                  :disabled="timeBounding === 'database'"
+                  @update:model-value="toggleSpanning">
+                  {{ $t('search.timeBounding-spanning') }}
+                </b-form-checkbox>
+                <BTooltip
+                  target="toggleSpanning"
+                  placement="bottom">
+                  {{ $t('search.spanningTip') }}
+                </BTooltip>
+              </div> <!-- /spanning -->
             </div> <!-- /graph controls -->
 
             <!-- graph -->
@@ -281,7 +300,7 @@ let barWidthInPixels;
 
 export default {
   name: 'ArkimeVisualizations',
-  emits: ['fetchMapData'],
+  emits: ['fetchMapData', 'spanningChange'],
   props: {
     graphData: {
       type: Object,
@@ -396,6 +415,12 @@ export default {
     },
     disabledAggregations: function () {
       return this.$store.state.disabledAggregations;
+    },
+    spanning: function () {
+      return this.$route.query.spanning === 'true';
+    },
+    timeBounding: function () {
+      return this.$route.query.bounding || 'last';
     }
   },
   watch: {
@@ -626,6 +651,16 @@ export default {
       StatsService.getCapRestartTimes(basePath).then(() => {
         this.setupGraphData();
         this.plot = $.plot(this.plotArea, this.graph, this.graphOptions);
+      });
+    },
+    toggleSpanning (newValue) {
+      this.$router.push({
+        query: {
+          ...this.$route.query,
+          spanning: newValue ? 'true' : undefined
+        }
+      }).then(() => {
+        this.$emit('spanningChange');
       });
     },
     /* helper functions ---------------------------------------------------- */
