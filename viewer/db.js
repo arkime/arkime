@@ -1368,7 +1368,7 @@ async function setShortcutsVersion () {
 // so they need to be periodically updated in the local db for searching by shortcuts to work
 Db.updateLocalShortcuts = async () => {
   if (!internals.info.usersHost ||
-     !internals.info.isPrimaryViewer || // If no isPrimaryViewer then we aren't actually viewer, dont do this
+     !internals.info.isPrimaryViewer || // If no isPrimaryViewer then we aren't actually viewer, don't do this
     !internals.info.isPrimaryViewer() ||
     internals.info.host === internals.info.usersHost) {
     return;

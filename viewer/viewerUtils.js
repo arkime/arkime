@@ -127,7 +127,7 @@ class ViewerUtils {
       graph.sessionsTotal += item.doc_count;
 
       for (const prop in item) {
-        // excluding every item prop that isnt a summed up aggregate collection (ie. es keys)
+        // excluding every item prop that isn't a summed up aggregate collection (ie. es keys)
         // tot* filters are exceptions: they will pass src/dst histo [], but keep a *Total count for filtered total
         // ie. totPackets selected filter => {srcPacketsHisto: [], dstPacketsHisto:[], totPacketsTotal: n, ...}
         if (filters.includes(prop) ||

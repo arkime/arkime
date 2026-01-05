@@ -286,7 +286,7 @@ ${Config.arkimeWebURL()}hunt
   }
 
   // --------------------------------------------------------------------------
-  // if we couldn't retrieve the seession, skip it but add it to failedSessionIds
+  // if we couldn't retrieve the session, skip it but add it to failedSessionIds
   // so that we can go back and search for it at the end of the hunt
   static async #continueHuntSkipSession (hunt, huntId, session, sessionId, searchedSessions) {
     if (!hunt.failedSessionIds) {
@@ -779,7 +779,7 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
      value - The error text to display to the user.
      time - The time the error was encountered.
      node - The Arkime node that the hunt was searching sessions for when the error occurred.
-   * @property {string} notifier - The otional notifier name to fire when there is an error, or there are matches (every 10 minutes), or when the hunt is complete.
+   * @property {string} notifier - The optional notifier name to fire when there is an error, or there are matches (every 10 minutes), or when the hunt is complete.
    * @property {boolean} unrunnable - Whether an error has rendered the hunt unrunnable.
    * @property {array} failedSessionIds - The list of sessions that have failed to be searched. Used to run the search against them again once the rest of the hunt is complete.
    * @property {array} users - The list of users to be added to the hunt so they can view the results.
@@ -810,13 +810,13 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
    * @param {string} users - The comma separated list of users to be added to the hunt so they can view the results.
    * @returns {boolean} success - Whether the creation of the hunt was successful.
    * @returns {Hunt} hunt - The newly created hunt object.
-   * @returns {array} invalidUsers - The list of users that could not be added to the hunt because they were invalid or nonexitent.
+   * @returns {array} invalidUsers - The list of users that could not be added to the hunt because they were invalid or nonexistent.
    */
   static async createHunt (req, res) {
     // make sure all the necessary data is included in the post body
     if (!req.body.totalSessions) { return res.serverError(403, 'This hunt does not apply to any sessions'); }
     if (!ArkimeUtil.isString(req.body.name)) { return res.serverError(403, 'Missing hunt name'); }
-    if (!req.body.size) { return res.serverError(403, 'Missing max mumber of packets to examine per session'); }
+    if (!req.body.size) { return res.serverError(403, 'Missing max number of packets to examine per session'); }
     if (!ArkimeUtil.isString(req.body.search)) { return res.serverError(403, 'Missing packet search text'); }
     if (!req.body.src && !req.body.dst) {
       return res.serverError(403, 'The hunt must search source or destination packets (or both)');
@@ -1165,7 +1165,7 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
 
           await Db.updateHunt(req.params.id, { removed: true });
 
-          return res.send({ success: true, text: 'Succesfully removed the hunt name and ID from the matched sessions.' });
+          return res.send({ success: true, text: 'Successfully removed the hunt name and ID from the matched sessions.' });
         });
       });
     } catch (err) {
@@ -1201,7 +1201,7 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
         await Db.updateHunt(req.params.id, { description: hunt.description, roles: hunt.roles }, req.query.cluster);
         res.json({
           success: true,
-          text: 'Updated Hunt Succesfully!'
+          text: 'Updated Hunt Successfully!'
         });
       } catch (err) {
         console.log(`ERROR - ${req.method} /api/hunt/%s (setHunt)`, ArkimeUtil.sanitizeStr(req.params.id), util.inspect(err, false, 50));
@@ -1222,7 +1222,7 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
    * @param {string} users - Comma separated list of user ids to add to the hunt.
    * @returns {boolean} success - Whether the add users operation was successful.
    * @returns {array} users - The list of users that were added to the hunt.
-   * @returns {array} invalidUsers - The list of users that could not be added to the hunt because they were invalid or nonexitent.
+   * @returns {array} invalidUsers - The list of users that could not be added to the hunt because they were invalid or nonexistent.
    */
   static async addUsers (req, res) {
     if (!ArkimeUtil.isString(req.body.users)) {
@@ -1278,7 +1278,7 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
    * @name /hunt/:id/user/:user
    * @returns {boolean} success - Whether the remove users operation was successful.
    * @returns {array} users - The list of users who have access to the hunt.
-   * @returns {array} invalidUsers - The list of users that could not be removed from the hunt because they were invalid or nonexitent.
+   * @returns {array} invalidUsers - The list of users that could not be removed from the hunt because they were invalid or nonexistent.
    */
   static async removeUsers (req, res) {
     try {
