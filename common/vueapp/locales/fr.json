@@ -589,6 +589,7 @@
     "timeBounding-either": "Chevauchement de session",
     "timeBounding-database": "Base de données",
     "timeBounding-spanning": "Englobant",
+    "spanningTip": "Lorsqu'activé, les sessions sont comptées dans chaque intervalle de temps qu'elles couvrent, plutôt qu'à un seul horodatage",
     "timeInterval": "Intervalle",
     "timeIntervalTip": "Taille du compartiment d'intervalle de temps pour le graphique",
     "timeInterval-auto": "Auto",

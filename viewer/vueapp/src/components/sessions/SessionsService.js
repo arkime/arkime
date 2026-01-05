@@ -37,6 +37,7 @@ export default {
       facets: true,
       bounding: true,
       interval: true,
+      spanning: true,
       cancelId: true,
       expression: true,
       cluster: true,

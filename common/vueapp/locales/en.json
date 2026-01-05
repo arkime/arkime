@@ -610,6 +610,7 @@
     "timeBounding-either": "Session Overlaps",
     "timeBounding-database": "Database",
     "timeBounding-spanning": "Spanning",
+    "spanningTip": "When enabled, sessions are counted in every time bucket they span, rather than just at a single timestamp",
     "timeInterval": "Interval",
     "timeIntervalTip": "Time interval bucket size for graph",
     "timeInterval-auto": "Auto",

@@ -587,6 +587,7 @@
     "timeBounding-either": "Superposiciones de Sesión",
     "timeBounding-database": "Base de Datos",
     "timeBounding-spanning": "Abarcando",
+    "spanningTip": "Cuando está habilitado, las sesiones se cuentan en cada intervalo de tiempo que abarcan, en lugar de solo en una marca de tiempo",
     "timeInterval": "Intervalo",
     "timeIntervalTip": "Tamaño del bucket de intervalo de tiempo para el gráfico",
     "timeInterval-auto": "Auto",

@@ -610,6 +610,7 @@
     "timeBounding-either": "세션 겹침",
     "timeBounding-database": "데이터베이스",
     "timeBounding-spanning": "전체 기간",
+    "spanningTip": "활성화하면 세션이 단일 타임스탬프가 아닌 해당 세션이 걸쳐 있는 모든 시간 버킷에서 집계됩니다",
     "timeInterval": "간격",
     "timeIntervalTip": "그래프의 시간 간격 버킷 크기",
     "timeInterval-auto": "자동",

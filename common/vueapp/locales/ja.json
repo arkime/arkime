@@ -610,6 +610,7 @@
     "timeBounding-either": "セッション重複",
     "timeBounding-database": "データベース",
     "timeBounding-spanning": "スパン(Spanning)",
+    "spanningTip": "有効にすると、セッションは単一のタイムスタンプではなく、それがまたがるすべての時間バケットでカウントされます",
     "timeInterval": "インターバル",
     "timeIntervalTip": "グラフの時間インターバルバケットサイズ",
     "timeInterval-auto": "自動",

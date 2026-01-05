@@ -587,6 +587,7 @@
     "timeBounding-either": "Sitzungsüberschneidungen",
     "timeBounding-database": "Datenbank",
     "timeBounding-spanning": "Überspannend",
+    "spanningTip": "Wenn aktiviert, werden Sitzungen in jedem Zeitintervall gezählt, das sie umfassen, anstatt nur bei einem einzelnen Zeitstempel",
     "timeInterval": "Intervall",
     "timeIntervalTip": "Zeitintervall-Bucket-Größe für den Graphen",
     "timeInterval-auto": "Auto",

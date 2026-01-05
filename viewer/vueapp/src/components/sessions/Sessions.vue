@@ -916,6 +916,7 @@ export default {
         stopTime: this.$store.state.time.stopTime,
         bounding: this.$route.query.bounding || 'last',
         interval: this.$route.query.interval || 'auto',
+        spanning: this.$route.query.spanning === 'true' ? true : undefined,
         view: this.$route.query.view || undefined,
         expression: this.$store.state.expression || undefined,
         cluster: this.$route.query.cluster || undefined
