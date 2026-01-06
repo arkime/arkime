@@ -8482,11 +8482,6 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
         filesUpdate();
         fields82Fix();
         shareablesCreate();
-    } elsif ($main::versionNumber <= 84) {
-        checkForOld7Indices();
-        sessions3Update();
-        historyUpdate();
-        shareablesCreate();
     } elsif ($main::versionNumber <= 85) {
         checkForOld7Indices();
         sessions3Update();
