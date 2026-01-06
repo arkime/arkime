@@ -50,7 +50,7 @@
                "snameCnt" : 1
             },
             "lastPacket" : 1466265698251,
-            "length" : 2,
+            "length" : 3,
             "network" : {
                "bytes" : 531,
                "community_id" : "1:9mWNeys3NX/s+FChaCt/5DxMJAY=",
@@ -75,6 +75,10 @@
                196,
                272
             ],
+            "packetRange" : {
+               "gte" : 1466265698248,
+               "lte" : 1466265698251
+            },
             "protocol" : [
                "krb5",
                "tcp"

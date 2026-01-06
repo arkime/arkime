@@ -46,7 +46,7 @@
             "initRTT" : 12,
             "ipProtocol" : 6,
             "lastPacket" : 1454301531009,
-            "length" : 78,
+            "length" : 77,
             "network" : {
                "bytes" : 804,
                "community_id" : "1:Y6I3JhgebNYJ7cm/dvZaIvCLNoU=",
@@ -77,6 +77,10 @@
                779,
                883
             ],
+            "packetRange" : {
+               "gte" : 1454301530932,
+               "lte" : 1454301531009
+            },
             "protocol" : [
                "ftp",
                "tcp"

@@ -19,7 +19,7 @@
             "firstPacket" : 1121119005000,
             "ipProtocol" : 0,
             "lastPacket" : 1136862144460,
-            "length" : 2858237572,
+            "length" : 15743139460,
             "network" : {
                "bytes" : 595,
                "packets" : 3
@@ -35,6 +35,10 @@
                104,
                383
             ],
+            "packetRange" : {
+               "gte" : 1121119005000,
+               "lte" : 1136862144460
+            },
             "protocol" : [
                "lldp"
             ],

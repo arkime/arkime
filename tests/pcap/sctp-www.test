@@ -191,7 +191,7 @@
             },
             "ipProtocol" : 132,
             "lastPacket" : 1137034859213,
-            "length" : 14458,
+            "length" : 14457,
             "network" : {
                "bytes" : 24770,
                "community_id" : "1:/6KQAGEbBef8FMaWb94uWVu+rWE=",
@@ -288,6 +288,10 @@
                48850,
                48926
             ],
+            "packetRange" : {
+               "gte" : 1137034844756,
+               "lte" : 1137034859213
+            },
             "protocol" : [
                "http",
                "sctp"
@@ -583,6 +587,10 @@
                48708,
                48784
             ],
+            "packetRange" : {
+               "gte" : 1137034844891,
+               "lte" : 1137034859213
+            },
             "protocol" : [
                "http",
                "sctp"
@@ -688,6 +696,10 @@
                48324,
                48446
             ],
+            "packetRange" : {
+               "gte" : 1137034844900,
+               "lte" : 1137034853900
+            },
             "protocol" : [
                "sctp"
             ],

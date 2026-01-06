@@ -42,7 +42,7 @@
             "initRTT" : 72,
             "ipProtocol" : 6,
             "lastPacket" : 1479719902505,
-            "length" : 22965,
+            "length" : 22964,
             "network" : {
                "bytes" : 12140,
                "community_id" : "1:Z3Q5W24QYzkDoI1VGO+4YY2G3BI=",
@@ -141,6 +141,10 @@
                12448,
                12786
             ],
+            "packetRange" : {
+               "gte" : 1479719879541,
+               "lte" : 1479719902505
+            },
             "protocol" : [
                "fbzero",
                "quic",

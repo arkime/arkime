@@ -61,6 +61,10 @@
             "packetPos" : [
                24
             ],
+            "packetRange" : {
+               "gte" : 1483104480102,
+               "lte" : 1483104480102
+            },
             "protocol" : [
                "stun",
                "udp"
@@ -182,6 +186,10 @@
             "packetPos" : [
                130
             ],
+            "packetRange" : {
+               "gte" : 1483109179834,
+               "lte" : 1483109179834
+            },
             "protocol" : [
                "stun",
                "udp"
@@ -267,7 +275,7 @@
             "firstPacket" : 1483325250913,
             "ipProtocol" : 6,
             "lastPacket" : 1483325251123,
-            "length" : 211,
+            "length" : 210,
             "network" : {
                "bytes" : 284,
                "community_id" : "1:ydsfSYKOf7xVsQvMBr27PNWiYRw=",
@@ -291,6 +299,10 @@
                411,
                497
             ],
+            "packetRange" : {
+               "gte" : 1483325250913,
+               "lte" : 1483325251123
+            },
             "protocol" : [
                "stun",
                "tcp"
@@ -382,6 +394,10 @@
             "packetPos" : [
                657
             ],
+            "packetRange" : {
+               "gte" : 1483326849006,
+               "lte" : 1483326849006
+            },
             "protocol" : [
                "stun",
                "udp"
@@ -456,6 +472,10 @@
             "packetPos" : [
                743
             ],
+            "packetRange" : {
+               "gte" : 1483331734283,
+               "lte" : 1483331734283
+            },
             "protocol" : [
                "stun",
                "udp"
@@ -530,6 +550,10 @@
             "packetPos" : [
                829
             ],
+            "packetRange" : {
+               "gte" : 1483331743573,
+               "lte" : 1483331743573
+            },
             "protocol" : [
                "stun",
                "udp"

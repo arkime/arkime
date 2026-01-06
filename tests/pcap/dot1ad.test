@@ -72,6 +72,10 @@
             "packetPos" : [
                24
             ],
+            "packetRange" : {
+               "gte" : 1747224993081,
+               "lte" : 1747224993081
+            },
             "protocol" : [
                "icmp"
             ],
@@ -171,6 +175,10 @@
             "packetPos" : [
                90
             ],
+            "packetRange" : {
+               "gte" : 1747224993082,
+               "lte" : 1747224993082
+            },
             "protocol" : [
                "icmp"
             ],

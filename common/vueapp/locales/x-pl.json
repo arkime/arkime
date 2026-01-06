@@ -601,6 +601,8 @@
     "timeBounding-both": "OundedBay",
     "timeBounding-either": "Essionsay Overlapsway",
     "timeBounding-database": "Atabaseday",
+    "timeBounding-spanning": "Anningspay",
+    "spanningTip": "Enwhay enabledway, essionssay areway ountedcay inway everyway imetay ucketbay eythay panspay, atherray anthay ustjay atway away inglesay imestamptay",
     "timeInterval": "Intervalway",
     "timeIntervalTip": "Imetay intervalway uckbetay izesay orfay raphgray",
     "timeInterval-auto": "Autoway",
@@ -608,6 +610,7 @@
     "timeInterval-minute": "Inutesmay",
     "timeInterval-hour": "Ourshay",
     "timeInterval-day": "Aysday",
+    "timeInterval-week": "Eeksway",
     "timeRangeDisplayTip": "Ueryqay imetay angeray",
     "createSummary": "Eatecray Ummarysay"
   },

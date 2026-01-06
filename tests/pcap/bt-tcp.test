@@ -62,6 +62,10 @@
                188,
                264
             ],
+            "packetRange" : {
+               "gte" : 1387744084182,
+               "lte" : 1387744084305
+            },
             "protocol" : [
                "bittorrent",
                "tcp"
@@ -209,6 +213,10 @@
                594,
                680
             ],
+            "packetRange" : {
+               "gte" : 1482553479723,
+               "lte" : 1482553479744
+            },
             "protocol" : [
                "bittorrent",
                "tcp"

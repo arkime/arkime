@@ -183,6 +183,10 @@
                24,
                165
             ],
+            "packetRange" : {
+               "gte" : 1415985409420,
+               "lte" : 1415985409420
+            },
             "protocol" : [
                "dns",
                "gtp",
@@ -280,6 +284,10 @@
             "packetPos" : [
                515
             ],
+            "packetRange" : {
+               "gte" : 1415985409932,
+               "lte" : 1415985409932
+            },
             "protocol" : [
                "gtp",
                "icmp"
@@ -370,6 +378,10 @@
             "packetPos" : [
                631
             ],
+            "packetRange" : {
+               "gte" : 1415985409932,
+               "lte" : 1415985409932
+            },
             "protocol" : [
                "gtp",
                "icmp"
@@ -593,6 +605,10 @@
                787,
                928
             ],
+            "packetRange" : {
+               "gte" : 1415985410140,
+               "lte" : 1415985410140
+            },
             "protocol" : [
                "dns",
                "gtp",
@@ -691,6 +707,10 @@
             "packetPos" : [
                1278
             ],
+            "packetRange" : {
+               "gte" : 1415985410172,
+               "lte" : 1415985410172
+            },
             "protocol" : [
                "gtp",
                "icmp"
@@ -784,6 +804,10 @@
                1402,
                5692
             ],
+            "packetRange" : {
+               "gte" : 1415985411060,
+               "lte" : 1415985414100
+            },
             "protocol" : [
                "gtp",
                "icmp"
@@ -904,6 +928,10 @@
                5412,
                5552
             ],
+            "packetRange" : {
+               "gte" : 1415985412100,
+               "lte" : 1415985412532
+            },
             "protocol" : [
                "gtp",
                "sip",
@@ -1004,7 +1032,7 @@
             "initRTT" : 16,
             "ipProtocol" : 6,
             "lastPacket" : 1415985446023,
-            "length" : 1041,
+            "length" : 1040,
             "network" : {
                "bytes" : 4033,
                "community_id" : "1:LfVtLs2VX3xOzzzdeOeVLCh7SOw=",
@@ -1039,6 +1067,10 @@
                10715,
                11405
             ],
+            "packetRange" : {
+               "gte" : 1415985444983,
+               "lte" : 1415985446023
+            },
             "protocol" : [
                "gtp",
                "sip",
@@ -1157,6 +1189,10 @@
                24837,
                25624
             ],
+            "packetRange" : {
+               "gte" : 1415985445984,
+               "lte" : 1415985512445
+            },
             "protocol" : [
                "gtp",
                "sip",
@@ -1243,7 +1279,7 @@
             "initRTT" : 20,
             "ipProtocol" : 6,
             "lastPacket" : 1415985533136,
-            "length" : 48237,
+            "length" : 48236,
             "network" : {
                "bytes" : 7565,
                "community_id" : "1:LfVtLs2VX3xOzzzdeOeVLCh7SOw=",
@@ -1298,6 +1334,10 @@
                26349,
                26489
             ],
+            "packetRange" : {
+               "gte" : 1415985484900,
+               "lte" : 1415985533136
+            },
             "protocol" : [
                "gtp",
                "sip",
@@ -1397,7 +1437,7 @@
             "firstPacket" : 1415985490121,
             "ipProtocol" : 17,
             "lastPacket" : 1415985500820,
-            "length" : 10698,
+            "length" : 10699,
             "network" : {
                "bytes" : 3838,
                "community_id" : "1:vbXa6H6s9So2GdvW+RtdVE26Ixg=",
@@ -1462,6 +1502,10 @@
                22975,
                24519
             ],
+            "packetRange" : {
+               "gte" : 1415985490121,
+               "lte" : 1415985500820
+            },
             "protocol" : [
                "gtp",
                "udp"
@@ -1690,6 +1734,10 @@
                18555,
                18696
             ],
+            "packetRange" : {
+               "gte" : 1415985490220,
+               "lte" : 1415985490220
+            },
             "protocol" : [
                "dns",
                "gtp",
@@ -1766,7 +1814,7 @@
             "firstPacket" : 1415985494581,
             "ipProtocol" : 17,
             "lastPacket" : 1415985500710,
-            "length" : 6128,
+            "length" : 6129,
             "network" : {
                "bytes" : 412,
                "community_id" : "1:+wHdXp4DE+tOLPO4Xk/bD3YW7U8=",
@@ -1783,6 +1831,10 @@
                20654,
                22102
             ],
+            "packetRange" : {
+               "gte" : 1415985494581,
+               "lte" : 1415985500710
+            },
             "protocol" : [
                "gtp",
                "udp"
@@ -1861,7 +1913,7 @@
             },
             "ipProtocol" : 58,
             "lastPacket" : 1415985500820,
-            "length" : 79,
+            "length" : 80,
             "network" : {
                "bytes" : 526,
                "community_id" : "1:R7F0MUT6ZV1iG5f3xJ0Pro45tts=",
@@ -1878,6 +1930,10 @@
                23318,
                24654
             ],
+            "packetRange" : {
+               "gte" : 1415985500740,
+               "lte" : 1415985500820
+            },
             "protocol" : [
                "gtp",
                "icmp"
@@ -1992,6 +2048,10 @@
                30227,
                30367
             ],
+            "packetRange" : {
+               "gte" : 1415985559780,
+               "lte" : 1415985559931
+            },
             "protocol" : [
                "gtp",
                "sip",

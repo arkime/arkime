@@ -209,7 +209,7 @@
             "firstPacket" : 921159902141,
             "ipProtocol" : 17,
             "lastPacket" : 921159902215,
-            "length" : 73,
+            "length" : 74,
             "network" : {
                "bytes" : 600,
                "community_id" : "1:JBeyh8m0a90BZxNrl8qsXhtgfcQ=",
@@ -224,6 +224,10 @@
                24,
                130
             ],
+            "packetRange" : {
+               "gte" : 921159902141,
+               "lte" : 921159902215
+            },
             "protocol" : [
                "dns",
                "udp"
@@ -329,6 +333,10 @@
                28055,
                28157
             ],
+            "packetRange" : {
+               "gte" : 921159907494,
+               "lte" : 921159966755
+            },
             "protocol" : [
                "icmp"
             ],
@@ -456,6 +464,10 @@
                27432,
                27518
             ],
+            "packetRange" : {
+               "gte" : 921159907620,
+               "lte" : 921159965778
+            },
             "protocol" : [
                "icmp"
             ],
@@ -677,6 +689,10 @@
                1048,
                1157
             ],
+            "packetRange" : {
+               "gte" : 921159908759,
+               "lte" : 921159908894
+            },
             "protocol" : [
                "dns",
                "udp"
@@ -749,6 +765,10 @@
                1923,
                22216
             ],
+            "packetRange" : {
+               "gte" : 921159914439,
+               "lte" : 921159941530
+            },
             "protocol" : [
                "udp"
             ],
@@ -931,6 +951,10 @@
                3145,
                3256
             ],
+            "packetRange" : {
+               "gte" : 921159918251,
+               "lte" : 921159918263
+            },
             "protocol" : [
                "dns",
                "udp"
@@ -1133,6 +1157,10 @@
                14316,
                14418
             ],
+            "packetRange" : {
+               "gte" : 921159918266,
+               "lte" : 921159923604
+            },
             "protocol" : [
                "ssh",
                "tcp"
@@ -1322,7 +1350,7 @@
             "firstPacket" : 921159929568,
             "ipProtocol" : 17,
             "lastPacket" : 921159929580,
-            "length" : 11,
+            "length" : 12,
             "network" : {
                "bytes" : 377,
                "community_id" : "1:+n2Xm0RMkkAREj2667uE6/dobbM=",
@@ -1337,6 +1365,10 @@
                14716,
                14827
             ],
+            "packetRange" : {
+               "gte" : 921159929568,
+               "lte" : 921159929580
+            },
             "protocol" : [
                "dns",
                "udp"
@@ -1411,6 +1443,10 @@
             "packetPos" : [
                15125
             ],
+            "packetRange" : {
+               "gte" : 921159929585,
+               "lte" : 921159929585
+            },
             "protocol" : [
                "udp"
             ],
@@ -1534,7 +1570,7 @@
             "firstPacket" : 921159929588,
             "ipProtocol" : 17,
             "lastPacket" : 921159929600,
-            "length" : 11,
+            "length" : 12,
             "network" : {
                "bytes" : 391,
                "community_id" : "1:lJ2EpPqi0BT6qTU7EMhhJ+SUXVU=",
@@ -1549,6 +1585,10 @@
                15353,
                15520
             ],
+            "packetRange" : {
+               "gte" : 921159929588,
+               "lte" : 921159929600
+            },
             "protocol" : [
                "dns",
                "udp"
@@ -1623,6 +1663,10 @@
             "packetPos" : [
                15776
             ],
+            "packetRange" : {
+               "gte" : 921159929601,
+               "lte" : 921159929601
+            },
             "protocol" : [
                "udp"
             ],
@@ -1696,6 +1740,10 @@
             "packetPos" : [
                16004
             ],
+            "packetRange" : {
+               "gte" : 921159929603,
+               "lte" : 921159929603
+            },
             "protocol" : [
                "udp"
             ],
@@ -1769,6 +1817,10 @@
             "packetPos" : [
                16232
             ],
+            "packetRange" : {
+               "gte" : 921159929604,
+               "lte" : 921159929604
+            },
             "protocol" : [
                "udp"
             ],
@@ -1854,6 +1906,10 @@
                17063,
                17291
             ],
+            "packetRange" : {
+               "gte" : 921159929611,
+               "lte" : 921159929642
+            },
             "protocol" : [
                "icmp"
             ],
@@ -2006,7 +2062,7 @@
             "firstPacket" : 921159929612,
             "ipProtocol" : 17,
             "lastPacket" : 921159929626,
-            "length" : 13,
+            "length" : 14,
             "network" : {
                "bytes" : 481,
                "community_id" : "1:6fW9tSY4vOSbkT1OommJEIbAgOs=",
@@ -2021,6 +2077,10 @@
                16460,
                16627
             ],
+            "packetRange" : {
+               "gte" : 921159929612,
+               "lte" : 921159929626
+            },
             "protocol" : [
                "dns",
                "udp"
@@ -2095,6 +2155,10 @@
             "packetPos" : [
                16973
             ],
+            "packetRange" : {
+               "gte" : 921159929627,
+               "lte" : 921159929627
+            },
             "protocol" : [
                "udp"
             ],
@@ -2172,6 +2236,10 @@
             "packetPos" : [
                17201
             ],
+            "packetRange" : {
+               "gte" : 921159929635,
+               "lte" : 921159929635
+            },
             "protocol" : [
                "udp"
             ],
@@ -2245,6 +2313,10 @@
             "packetPos" : [
                17429
             ],
+            "packetRange" : {
+               "gte" : 921159929679,
+               "lte" : 921159929679
+            },
             "protocol" : [
                "udp"
             ],
@@ -2330,6 +2402,10 @@
                18255,
                18483
             ],
+            "packetRange" : {
+               "gte" : 921159929691,
+               "lte" : 921159929728
+            },
             "protocol" : [
                "icmp"
             ],
@@ -2482,7 +2558,7 @@
             "firstPacket" : 921159929692,
             "ipProtocol" : 17,
             "lastPacket" : 921159929706,
-            "length" : 13,
+            "length" : 14,
             "network" : {
                "bytes" : 476,
                "community_id" : "1:2cUeFYFpuMSs0fxGv+ak3hNZ/V8=",
@@ -2497,6 +2573,10 @@
                17657,
                17824
             ],
+            "packetRange" : {
+               "gte" : 921159929692,
+               "lte" : 921159929706
+            },
             "protocol" : [
                "dns",
                "udp"
@@ -2571,6 +2651,10 @@
             "packetPos" : [
                18165
             ],
+            "packetRange" : {
+               "gte" : 921159929708,
+               "lte" : 921159929708
+            },
             "protocol" : [
                "udp"
             ],
@@ -2644,6 +2728,10 @@
             "packetPos" : [
                18393
             ],
+            "packetRange" : {
+               "gte" : 921159929718,
+               "lte" : 921159929718
+            },
             "protocol" : [
                "udp"
             ],
@@ -2717,6 +2805,10 @@
             "packetPos" : [
                18621
             ],
+            "packetRange" : {
+               "gte" : 921159929730,
+               "lte" : 921159929730
+            },
             "protocol" : [
                "udp"
             ],
@@ -2785,7 +2877,7 @@
             },
             "ipProtocol" : 58,
             "lastPacket" : 921159929931,
-            "length" : 142,
+            "length" : 143,
             "network" : {
                "bytes" : 366,
                "community_id" : "1:hLZd0XGWojozrvxqE0dWB1iM6R0=",
@@ -2802,6 +2894,10 @@
                19368,
                19596
             ],
+            "packetRange" : {
+               "gte" : 921159929788,
+               "lte" : 921159929931
+            },
             "protocol" : [
                "icmp"
             ],
@@ -2924,7 +3020,7 @@
             "firstPacket" : 921159929789,
             "ipProtocol" : 17,
             "lastPacket" : 921159929803,
-            "length" : 13,
+            "length" : 14,
             "network" : {
                "bytes" : 397,
                "community_id" : "1:MxtfBMwM5+MDHy9yBdlSflxBHso=",
@@ -2939,6 +3035,10 @@
                18849,
                19016
             ],
+            "packetRange" : {
+               "gte" : 921159929789,
+               "lte" : 921159929803
+            },
             "protocol" : [
                "dns",
                "udp"
@@ -3013,6 +3113,10 @@
             "packetPos" : [
                19278
             ],
+            "packetRange" : {
+               "gte" : 921159929805,
+               "lte" : 921159929805
+            },
             "protocol" : [
                "udp"
             ],
@@ -3086,6 +3190,10 @@
             "packetPos" : [
                19506
             ],
+            "packetRange" : {
+               "gte" : 921159929873,
+               "lte" : 921159929873
+            },
             "protocol" : [
                "udp"
             ],
@@ -3285,6 +3393,10 @@
                19734,
                19844
             ],
+            "packetRange" : {
+               "gte" : 921159936681,
+               "lte" : 921159937360
+            },
             "protocol" : [
                "dns",
                "udp"
@@ -3359,7 +3471,7 @@
             },
             "ipProtocol" : 58,
             "lastPacket" : 921159939423,
-            "length" : 2014,
+            "length" : 2015,
             "network" : {
                "bytes" : 420,
                "community_id" : "1:+TW+HtLHvV1xnGhV1lv7XoJrqQg=",
@@ -3382,6 +3494,10 @@
                21538,
                21624
             ],
+            "packetRange" : {
+               "gte" : 921159937408,
+               "lte" : 921159939423
+            },
             "protocol" : [
                "icmp"
             ],
@@ -3535,7 +3651,7 @@
             "firstPacket" : 921159937432,
             "ipProtocol" : 17,
             "lastPacket" : 921159937449,
-            "length" : 16,
+            "length" : 17,
             "network" : {
                "bytes" : 474,
                "community_id" : "1:eqkepZjUXBd6FRCDWLx9UiqGwk8=",
@@ -3550,6 +3666,10 @@
                20354,
                20521
             ],
+            "packetRange" : {
+               "gte" : 921159937432,
+               "lte" : 921159937449
+            },
             "protocol" : [
                "dns",
                "udp"
@@ -3704,7 +3824,7 @@
             "firstPacket" : 921159938429,
             "ipProtocol" : 17,
             "lastPacket" : 921159938443,
-            "length" : 13,
+            "length" : 14,
             "network" : {
                "bytes" : 474,
                "community_id" : "1:DDTJae3ti7Hy+J9ixs257S0tiAo=",
@@ -3719,6 +3839,10 @@
                21032,
                21199
             ],
+            "packetRange" : {
+               "gte" : 921159938429,
+               "lte" : 921159938443
+            },
             "protocol" : [
                "dns",
                "udp"
@@ -3873,7 +3997,7 @@
             "firstPacket" : 921159939424,
             "ipProtocol" : 17,
             "lastPacket" : 921159939438,
-            "length" : 13,
+            "length" : 14,
             "network" : {
                "bytes" : 474,
                "community_id" : "1:/xPcVFFOsrfzUnBW7pMSIw/VZL8=",
@@ -3888,6 +4012,10 @@
                21710,
                21877
             ],
+            "packetRange" : {
+               "gte" : 921159939424,
+               "lte" : 921159939438
+            },
             "protocol" : [
                "dns",
                "udp"
@@ -3966,6 +4094,10 @@
             "packetPos" : [
                23634
             ],
+            "packetRange" : {
+               "gte" : 921159951927,
+               "lte" : 921159951927
+            },
             "protocol" : [
                "icmp"
             ],
@@ -4042,6 +4174,10 @@
             "packetPos" : [
                23712
             ],
+            "packetRange" : {
+               "gte" : 921159952222,
+               "lte" : 921159952222
+            },
             "protocol" : [
                "icmp"
             ],
@@ -4213,7 +4349,7 @@
             "firstPacket" : 921159956705,
             "ipProtocol" : 17,
             "lastPacket" : 921159961961,
-            "length" : 5255,
+            "length" : 5256,
             "network" : {
                "bytes" : 346,
                "community_id" : "1:ROb1V7Hyin1yz+TVtdcyErmoHrA=",
@@ -4228,6 +4364,10 @@
                23846,
                24152
             ],
+            "packetRange" : {
+               "gte" : 921159956705,
+               "lte" : 921159961961
+            },
             "protocol" : [
                "dns",
                "udp"
@@ -4310,6 +4450,10 @@
             "packetPos" : [
                24420
             ],
+            "packetRange" : {
+               "gte" : 921159961962,
+               "lte" : 921159961962
+            },
             "protocol" : [
                "icmp"
             ],
@@ -4386,6 +4530,10 @@
             "packetPos" : [
                24736
             ],
+            "packetRange" : {
+               "gte" : 921159962650,
+               "lte" : 921159962650
+            },
             "protocol" : [
                "icmp"
             ],
@@ -4534,6 +4682,10 @@
                25112,
                25279
             ],
+            "packetRange" : {
+               "gte" : 921159962652,
+               "lte" : 921159962667
+            },
             "protocol" : [
                "dns",
                "udp"
@@ -4669,7 +4821,7 @@
             "firstPacket" : 921159962782,
             "ipProtocol" : 17,
             "lastPacket" : 921159962796,
-            "length" : 13,
+            "length" : 14,
             "network" : {
                "bytes" : 419,
                "community_id" : "1:MceIKUK+lZ3tlzhY93h8oQCkcxI=",
@@ -4684,6 +4836,10 @@
                25735,
                25902
             ],
+            "packetRange" : {
+               "gte" : 921159962782,
+               "lte" : 921159962796
+            },
             "protocol" : [
                "dns",
                "udp"
@@ -4819,7 +4975,7 @@
             "firstPacket" : 921159963775,
             "ipProtocol" : 17,
             "lastPacket" : 921159963788,
-            "length" : 12,
+            "length" : 13,
             "network" : {
                "bytes" : 419,
                "community_id" : "1:g33nkzkY8GSyKHxDGKBXBEpzqrY=",
@@ -4834,6 +4990,10 @@
                26358,
                26525
             ],
+            "packetRange" : {
+               "gte" : 921159963775,
+               "lte" : 921159963788
+            },
             "protocol" : [
                "dns",
                "udp"
@@ -4969,7 +5129,7 @@
             "firstPacket" : 921159964777,
             "ipProtocol" : 17,
             "lastPacket" : 921159964794,
-            "length" : 16,
+            "length" : 17,
             "network" : {
                "bytes" : 419,
                "community_id" : "1:DblIC7Bw7gfCmEuAOolUPPBOsO8=",
@@ -4984,6 +5144,10 @@
                26981,
                27148
             ],
+            "packetRange" : {
+               "gte" : 921159964777,
+               "lte" : 921159964794
+            },
             "protocol" : [
                "dns",
                "udp"
@@ -5134,6 +5298,10 @@
                27604,
                27771
             ],
+            "packetRange" : {
+               "gte" : 921159965780,
+               "lte" : 921159965808
+            },
             "protocol" : [
                "dns",
                "udp"

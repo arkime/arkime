@@ -32,7 +32,7 @@
             "initRTT" : 0,
             "ipProtocol" : 6,
             "lastPacket" : 1132371118592,
-            "length" : 56,
+            "length" : 57,
             "network" : {
                "bytes" : 2764,
                "community_id" : "1:MKEIesHzLctRLCFs3srzwj6vDhA=",
@@ -71,6 +71,10 @@
                2760,
                2881
             ],
+            "packetRange" : {
+               "gte" : 1132371118535,
+               "lte" : 1132371118592
+            },
             "protocol" : [
                "smb",
                "tcp"

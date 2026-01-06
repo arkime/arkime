@@ -71,7 +71,8 @@ SPDX-License-Identifier: Apache-2.0
       :primary="true"
       :map-data="mapData"
       :graph-data="graphData"
-      :timeline-data-filters="timelineDataFilters" />
+      :timeline-data-filters="timelineDataFilters"
+      @spanning-change="reloadSummaryView" />
 
     <!-- error message -->
     <div

@@ -1,4 +1,4 @@
-use Test::More tests => 108;
+use Test::More tests => 120;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -285,3 +285,18 @@ tcp,1386004309468,1386004309478,10.180.156.185,53533,US,10.180.156.249,1080,US,2
     my $json1 = post("/api/sessions", '{"flatten":1,"length":50,"facets":1,"bounding":"last","interval":"auto","cancelId":"47ad2fc7-2f95-43b1-95eb-1704f248e821","date":"-1","order":"lastPacket:desc","fields":"ipProtocol,firstPacket,lastPacket,source.ip,source.geo.country_iso_code,source.port,destination.ip,destination.geo.country_iso_code,destination.port,network.packets,totDataBytes,network.bytes,node,protocol,tags,http.uri,email.src,email.dst,email.subject,email.filename,dns.host,cert.alt,irc.channel"}');
     my $json2 = post("/api/sessions", '{"flatten":1,"length":50,"facets":1,"bounding":"last","interval":"auto","cancelId":"47ad2fc7-2f95-43b1-95eb-1704f248e821","date":"-1","order":"lastPacket:desc","fields":"ipProtocol,firstPacket,lastPacket,source.ip,source.geo.country_iso_code,source.port,destination.ip,destination.geo.country_iso_code,destination.port,network.packets,totDataBytes,network.bytes,node,protocol,tags,http.uri,email.src,email.dst,email.subject,email.filename,dns.host,cert.alt,irc.channel"}');
     eq_or_diff($json1, $json2);
+
+# Check spanning
+    $json = get("/sessions.json?length=1000&start=2&date=-1&facets=1&spanning=true&expression=" . uri_escape("file=*/long-session.pcap"));
+    is($json->{graph}->{interval}, 86400);
+    is(scalar @{$json->{graph}->{'destination.bytesHisto'}}, 1);
+    is($json->{graph}->{'destination.bytesHisto'}->[0]->[0], 1401321600000);
+    is($json->{graph}->{'destination.bytesHisto'}->[0]->[1], 126);
+
+    $json = get("/sessions.json?length=1000&start=2&date=-1&facets=1&spanning=true&interval=minute&expression=" . uri_escape("file=*/long-session.pcap"));
+    is($json->{graph}->{interval}, 60);
+    is(scalar @{$json->{graph}->{'destination.bytesHisto'}}, 16);
+    is($json->{graph}->{'destination.bytesHisto'}->[0]->[0], 1401385380000);
+    is($json->{graph}->{'destination.bytesHisto'}->[0]->[1], 126);
+    is($json->{graph}->{'destination.bytesHisto'}->[15]->[0], 1401386280000);
+    is($json->{graph}->{'destination.bytesHisto'}->[15]->[1], 126);

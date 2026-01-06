@@ -62,7 +62,7 @@
             },
             "ipProtocol" : 1,
             "lastPacket" : 1055289992101,
-            "length" : 23309,
+            "length" : 23308,
             "network" : {
                "bytes" : 1230,
                "community_id" : "1:4qiuUiapfKrMDVDHhw0iOgvogqI=",
@@ -93,6 +93,10 @@
                6474,
                6732
             ],
+            "packetRange" : {
+               "gte" : 1055289968793,
+               "lte" : 1055289992101
+            },
             "protocol" : [
                "gre",
                "icmp"
@@ -233,6 +237,10 @@
                1128,
                1258
             ],
+            "packetRange" : {
+               "gte" : 1055289973849,
+               "lte" : 1055289973923
+            },
             "protocol" : [
                "gre",
                "ntp",
@@ -355,7 +363,7 @@
             "initRTT" : 22,
             "ipProtocol" : 6,
             "lastPacket" : 1055289981914,
-            "length" : 3157,
+            "length" : 3158,
             "network" : {
                "bytes" : 4619,
                "community_id" : "1:GvEAhAEKkdnTWFCXuw7HpDevs2w=",
@@ -410,6 +418,10 @@
                6147,
                6253
             ],
+            "packetRange" : {
+               "gte" : 1055289978756,
+               "lte" : 1055289981914
+            },
             "protocol" : [
                "gre",
                "ssh",
@@ -580,6 +592,10 @@
                6359,
                6617
             ],
+            "packetRange" : {
+               "gte" : 1055289987055,
+               "lte" : 1055289992056
+            },
             "protocol" : [
                "dns",
                "gre",
@@ -718,6 +734,10 @@
                6875,
                7005
             ],
+            "packetRange" : {
+               "gte" : 1055289992849,
+               "lte" : 1055289992905
+            },
             "protocol" : [
                "gre",
                "ntp",
@@ -864,6 +884,10 @@
                7135,
                7265
             ],
+            "packetRange" : {
+               "gte" : 1055289996849,
+               "lte" : 1055289996921
+            },
             "protocol" : [
                "gre",
                "ntp",

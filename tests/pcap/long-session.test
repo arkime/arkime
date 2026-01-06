@@ -61,6 +61,10 @@
                196,
                266
             ],
+            "packetRange" : {
+               "gte" : 1401385380102,
+               "lte" : 1401386288595
+            },
             "protocol" : [
                "http",
                "tcp"
@@ -193,7 +197,7 @@
             "firstPacket" : 1401385380102,
             "ipProtocol" : 6,
             "lastPacket" : 1401386288597,
-            "length" : 908494,
+            "length" : 908495,
             "network" : {
                "bytes" : 60,
                "community_id" : "1:bxgYvMUY0ltITBt7nM0O9T/w9hI=",
@@ -206,6 +210,10 @@
             "packetPos" : [
                341
             ],
+            "packetRange" : {
+               "gte" : 1401385380102,
+               "lte" : 1401386288597
+            },
             "protocol" : [
                "http",
                "tcp"

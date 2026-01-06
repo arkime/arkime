@@ -128,7 +128,7 @@
             "firstPacket" : 1565212114674,
             "ipProtocol" : 17,
             "lastPacket" : 1565212114677,
-            "length" : 2,
+            "length" : 3,
             "network" : {
                "bytes" : 396,
                "community_id" : "1:SB1sNGEQ5U+jmB3am3T8bnBNTKI=",
@@ -147,6 +147,10 @@
                210,
                335
             ],
+            "packetRange" : {
+               "gte" : 1565212114674,
+               "lte" : 1565212114677
+            },
             "protocol" : [
                "dns",
                "udp"
@@ -297,6 +301,10 @@
                7625,
                7695
             ],
+            "packetRange" : {
+               "gte" : 1565212114677,
+               "lte" : 1565212114804
+            },
             "protocol" : [
                "tcp",
                "tls"

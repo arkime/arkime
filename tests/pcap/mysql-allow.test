@@ -37,7 +37,7 @@
             "initRTT" : 0,
             "ipProtocol" : 6,
             "lastPacket" : 1398217359003,
-            "length" : 43,
+            "length" : 42,
             "mysql" : {
                "user" : "user10",
                "version" : "5.5.35-0ubuntu0.12.04.2"
@@ -74,6 +74,10 @@
                1007,
                1168
             ],
+            "packetRange" : {
+               "gte" : 1398217358961,
+               "lte" : 1398217359003
+            },
             "protocol" : [
                "mysql",
                "tcp"

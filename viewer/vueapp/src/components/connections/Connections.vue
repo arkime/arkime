@@ -706,6 +706,7 @@ export default {
         dstField: this.$route.query.dstField || store.state.user.settings.connDstField || 'destination.ip',
         bounding: this.$route.query.bounding || 'last',
         interval: this.$route.query.interval || 'auto',
+        spanning: this.$route.query.spanning === 'true' ? true : undefined,
         minConn: this.$route.query.minConn || 1,
         baselineDate: this.$route.query.baselineDate || '0',
         baselineVis: this.$route.query.baselineVis || 'all',

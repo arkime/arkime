@@ -41,7 +41,7 @@
             "firstPacket" : 1429686316293,
             "ipProtocol" : 17,
             "lastPacket" : 1429686316327,
-            "length" : 33,
+            "length" : 34,
             "network" : {
                "bytes" : 5650,
                "community_id" : "1:bRWgLSiVmslsmUd2vovC1HYlvCc=",
@@ -62,6 +62,10 @@
                4248,
                4346
             ],
+            "packetRange" : {
+               "gte" : 1429686316293,
+               "lte" : 1429686316327
+            },
             "protocol" : [
                "iprulztest",
                "quic",

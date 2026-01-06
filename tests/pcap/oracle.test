@@ -39,7 +39,7 @@
             "initRTT" : 85,
             "ipProtocol" : 6,
             "lastPacket" : 1476102172528,
-            "length" : 183,
+            "length" : 184,
             "network" : {
                "bytes" : 676,
                "community_id" : "1:9ep7PomCE1d3mRnmbY3vxnbWq3A=",
@@ -74,6 +74,10 @@
                400,
                486
             ],
+            "packetRange" : {
+               "gte" : 1476102172344,
+               "lte" : 1476102172528
+            },
             "protocol" : [
                "oracle",
                "tcp"

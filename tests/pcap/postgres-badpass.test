@@ -79,6 +79,10 @@
                1042,
                1124
             ],
+            "packetRange" : {
+               "gte" : 1399312748531,
+               "lte" : 1399312748549
+            },
             "postgresql" : {
                "app" : "psql",
                "db" : "bar",

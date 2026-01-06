@@ -37,7 +37,7 @@
             "initRTT" : 5,
             "ipProtocol" : 6,
             "lastPacket" : 1466085103897,
-            "length" : 10,
+            "length" : 11,
             "network" : {
                "bytes" : 341,
                "community_id" : "1:U0rs2Q+QDS7xJ0yJ5OM+y7QwC78=",
@@ -63,6 +63,10 @@
                216,
                302
             ],
+            "packetRange" : {
+               "gte" : 1466085103886,
+               "lte" : 1466085103897
+            },
             "protocol" : [
                "cassandra",
                "tcp",

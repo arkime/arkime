@@ -33,7 +33,7 @@
             },
             "ipProtocol" : 1,
             "lastPacket" : 1335958317529,
-            "length" : 4376,
+            "length" : 4377,
             "network" : {
                "bytes" : 196,
                "community_id" : "1:u15ZSE/zwPPH+PdNHE0LOby1NF0=",
@@ -48,6 +48,10 @@
                24,
                138
             ],
+            "packetRange" : {
+               "gte" : 1335958313152,
+               "lte" : 1335958317529
+            },
             "protocol" : [
                "icmp"
             ],

@@ -21,7 +21,7 @@
             "firstPacket" : 1571744396019,
             "ipProtocol" : 103,
             "lastPacket" : 1571744615737,
-            "length" : 219717,
+            "length" : 219718,
             "network" : {
                "bytes" : 29264,
                "packets" : 428
@@ -887,6 +887,10 @@
                35968,
                36052
             ],
+            "packetRange" : {
+               "gte" : 1571744396019,
+               "lte" : 1571744615737
+            },
             "protocol" : [
                "pim"
             ],
