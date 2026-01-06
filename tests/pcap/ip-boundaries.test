@@ -38,6 +38,10 @@
             "packetPos" : [
                24
             ],
+            "packetRange" : {
+               "gte" : 1387253713030,
+               "lte" : 1387253713030
+            },
             "protocol" : [
                "bittorrent",
                "udp"

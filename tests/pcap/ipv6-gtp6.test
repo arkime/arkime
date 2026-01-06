@@ -274,6 +274,10 @@
             "packetPos" : [
                24
             ],
+            "packetRange" : {
+               "gte" : 1513078266494,
+               "lte" : 1513078266494
+            },
             "protocol" : [
                "dns",
                "gtp",

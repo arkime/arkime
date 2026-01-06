@@ -103,7 +103,7 @@
             "initRTT" : 2,
             "ipProtocol" : 6,
             "lastPacket" : 1579293816817,
-            "length" : 257,
+            "length" : 258,
             "network" : {
                "bytes" : 3132,
                "community_id" : "1:YzavRzM2u5v8TNEv4SuCDe3OgWg=",
@@ -138,6 +138,10 @@
                3184,
                3266
             ],
+            "packetRange" : {
+               "gte" : 1579293816559,
+               "lte" : 1579293816817
+            },
             "protocol" : [
                "tcp",
                "tls"

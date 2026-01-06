@@ -46,6 +46,10 @@
                24,
                132
             ],
+            "packetRange" : {
+               "gte" : 1467818432675,
+               "lte" : 1467818432675
+            },
             "protocol" : [
                "arp",
                "vxlan"
@@ -190,6 +194,10 @@
                1224,
                1388
             ],
+            "packetRange" : {
+               "gte" : 1467818432676,
+               "lte" : 1467818435680
+            },
             "protocol" : [
                "icmp",
                "vxlan"

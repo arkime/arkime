@@ -64,6 +64,10 @@
             "packetPos" : [
                24
             ],
+            "packetRange" : {
+               "gte" : 1466252055201,
+               "lte" : 1466252055201
+            },
             "protocol" : [
                "krb5",
                "udp"

@@ -36,7 +36,7 @@
             "firstPacket" : 1214051926994,
             "ipProtocol" : 51,
             "lastPacket" : 1214051927082,
-            "length" : 89,
+            "length" : 88,
             "network" : {
                "bytes" : 1940,
                "community_id" : "1:qAlkH6wIQvS03C2vMBIOoB7Vg+U=",
@@ -49,6 +49,10 @@
             "packetPos" : [
                24
             ],
+            "packetRange" : {
+               "gte" : 1214051926994,
+               "lte" : 1214051927082
+            },
             "protocol" : [
                "esp"
             ],

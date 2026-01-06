@@ -29,6 +29,10 @@
             "packetPos" : [
                24
             ],
+            "packetRange" : {
+               "gte" : 1661319541920,
+               "lte" : 1661319541920
+            },
             "protocol" : [
                "tcp"
             ],

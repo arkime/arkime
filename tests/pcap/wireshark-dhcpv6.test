@@ -29,7 +29,7 @@
             },
             "ipProtocol" : 58,
             "lastPacket" : 1420235564987,
-            "length" : 8187,
+            "length" : 8188,
             "network" : {
                "bytes" : 220,
                "community_id" : "1:0ELYyHcXyx7f7b41QA2LAsFIwiw=",
@@ -44,6 +44,10 @@
                24,
                647
             ],
+            "packetRange" : {
+               "gte" : 1420235556799,
+               "lte" : 1420235564987
+            },
             "protocol" : [
                "icmp"
             ],
@@ -119,7 +123,7 @@
             "firstPacket" : 1420235564775,
             "ipProtocol" : 17,
             "lastPacket" : 1420235564777,
-            "length" : 1,
+            "length" : 2,
             "network" : {
                "bytes" : 261,
                "packets" : 2
@@ -133,6 +137,10 @@
                150,
                484
             ],
+            "packetRange" : {
+               "gte" : 1420235564775,
+               "lte" : 1420235564777
+            },
             "protocol" : [
                "dhcpv6",
                "udp"
@@ -210,6 +218,10 @@
             "packetPos" : [
                280
             ],
+            "packetRange" : {
+               "gte" : 1420235564776,
+               "lte" : 1420235564776
+            },
             "protocol" : [
                "icmp"
             ],
@@ -299,6 +311,10 @@
                1113,
                1215
             ],
+            "packetRange" : {
+               "gte" : 1420235564777,
+               "lte" : 1420235569784
+            },
             "protocol" : [
                "icmp"
             ],
@@ -374,7 +390,7 @@
             "firstPacket" : 1420235565837,
             "ipProtocol" : 17,
             "lastPacket" : 1420235565839,
-            "length" : 1,
+            "length" : 2,
             "network" : {
                "bytes" : 308,
                "packets" : 2
@@ -388,6 +404,10 @@
                773,
                950
             ],
+            "packetRange" : {
+               "gte" : 1420235565837,
+               "lte" : 1420235565839
+            },
             "protocol" : [
                "dhcpv6",
                "udp"
@@ -464,7 +484,7 @@
             "firstPacket" : 1420235569892,
             "ipProtocol" : 17,
             "lastPacket" : 1420235569893,
-            "length" : 0,
+            "length" : 1,
             "network" : {
                "bytes" : 286,
                "packets" : 2
@@ -478,6 +498,10 @@
                1309,
                1486
             ],
+            "packetRange" : {
+               "gte" : 1420235569892,
+               "lte" : 1420235569893
+            },
             "protocol" : [
                "dhcpv6",
                "udp"

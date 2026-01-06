@@ -87,6 +87,10 @@
                9592,
                9764
             ],
+            "packetRange" : {
+               "gte" : 1422828273817,
+               "lte" : 1422828275817
+            },
             "protocol" : [
                "geneve",
                "icmp"
@@ -205,7 +209,7 @@
             "initRTT" : 0,
             "ipProtocol" : 6,
             "lastPacket" : 1422828275565,
-            "length" : 1567,
+            "length" : 1566,
             "network" : {
                "bytes" : 8368,
                "community_id" : "1:GX653mPN70ulA0YA40xwxJDzgUc=",
@@ -282,6 +286,10 @@
                9240,
                9460
             ],
+            "packetRange" : {
+               "gte" : 1422828273999,
+               "lte" : 1422828275565
+            },
             "protocol" : [
                "geneve",
                "ssh",

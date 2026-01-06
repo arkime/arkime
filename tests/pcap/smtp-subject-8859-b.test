@@ -133,7 +133,7 @@
             "initRTT" : 0,
             "ipProtocol" : 6,
             "lastPacket" : 1386358271580,
-            "length" : 518,
+            "length" : 519,
             "network" : {
                "bytes" : 3465,
                "community_id" : "1:J7FruyHnuDmNgU8FN557ZhCTNvw=",
@@ -190,6 +190,10 @@
                3705,
                3781
             ],
+            "packetRange" : {
+               "gte" : 1386358271061,
+               "lte" : 1386358271580
+            },
             "protocol" : [
                "smtp",
                "tcp"

@@ -777,9 +777,6 @@ void arkime_db_save_session(ArkimeSession_t *session, int final)
         BSB_INIT(dbInfo[thread].bsb, dbInfo[thread].json, size);
     }
 
-    uint32_t timediff = (uint32_t) ((session->lastPacket.tv_sec - session->firstPacket.tv_sec) * 1000 +
-                                    (session->lastPacket.tv_usec - session->firstPacket.tv_usec) / 1000);
-
     BSB jbsb = dbInfo[thread].bsb;
 
     startPtr = BSB_WORK_PTR(jbsb);
@@ -803,8 +800,22 @@ void arkime_db_save_session(ArkimeSession_t *session, int final)
 
     const uint64_t firstPacketMs = ((uint64_t)session->firstPacket.tv_sec) * 1000 + ((uint64_t)session->firstPacket.tv_usec) / 1000;
     const uint64_t lastPacketMs  = ((uint64_t)session->lastPacket.tv_sec) * 1000 + ((uint64_t)session->lastPacket.tv_usec) / 1000;
+
+    BSB_EXPORT_cstr(jbsb, "{");
+    uint32_t timediff;
+    if (firstPacketMs <= lastPacketMs) {
+        if (arkimeDbVersion >= 85) {
+            BSB_EXPORT_sprintf(jbsb, "\"packetRange\":{\"gte\":%" PRIu64 ",\"lte\":%" PRIu64 "},", firstPacketMs, lastPacketMs);
+        }
+        timediff = lastPacketMs - firstPacketMs;
+    } else {
+        if (arkimeDbVersion >= 85) {
+            BSB_EXPORT_sprintf(jbsb, "\"packetRange\":{\"gte\":%" PRIu64 ",\"lte\":%" PRIu64 "},", lastPacketMs, firstPacketMs);
+        }
+        timediff = firstPacketMs - lastPacketMs;
+    }
     BSB_EXPORT_sprintf(jbsb,
-                       "{\"firstPacket\":%" PRIu64 ","
+                       "\"firstPacket\":%" PRIu64 ","
                        "\"lastPacket\":%" PRIu64 ","
                        "\"length\":%u,"
                        "\"ipProtocol\":%u,",
@@ -812,14 +823,6 @@ void arkime_db_save_session(ArkimeSession_t *session, int final)
                        lastPacketMs,
                        timediff,
                        session->ipProtocol);
-
-    if (arkimeDbVersion >= 85) {
-        if (firstPacketMs <= lastPacketMs) {
-            BSB_EXPORT_sprintf(jbsb, "\"packetRange\":{\"gte\":%" PRIu64 ",\"lte\":%" PRIu64 "},", firstPacketMs, lastPacketMs);
-        } else {
-            BSB_EXPORT_sprintf(jbsb, "\"packetRange\":{\"gte\":%" PRIu64 ",\"lte\":%" PRIu64 "},", lastPacketMs, firstPacketMs);
-        }
-    }
 
 
     if (session->ethertype) {
@@ -2876,7 +2879,8 @@ void arkime_db_init()
         arkime_db_load_stats();
         arkime_db_load_fields();
     } else {
-        arkimeDbVersion = ARKIME_MIN_DB_VERSION;
+        //arkimeDbVersion = ARKIME_MIN_DB_VERSION; // ALW FIX v6 release
+        arkimeDbVersion = 85;
     }
 
     arkime_add_can_quit(arkime_db_can_quit, "DB");

@@ -67,7 +67,7 @@
             "initRTT" : 1,
             "ipProtocol" : 6,
             "lastPacket" : 1652950005876,
-            "length" : 11,
+            "length" : 12,
             "network" : {
                "bytes" : 1135,
                "community_id" : "1:vJGJyvSGPn66/zbr0DiR1fCFooo=",
@@ -92,6 +92,10 @@
                931,
                1101
             ],
+            "packetRange" : {
+               "gte" : 1652950005864,
+               "lte" : 1652950005876
+            },
             "protocol" : [
                "gre",
                "http",

@@ -37,7 +37,7 @@
             "firstPacket" : 1259261324435,
             "ipProtocol" : 6,
             "lastPacket" : 2164247948451,
-            "length" : 3043491855,
+            "length" : 3043491856,
             "network" : {
                "bytes" : 290,
                "community_id" : "1:g99Vgks0T67b4ifViWJVGKZmmpU=",
@@ -54,6 +54,10 @@
                118,
                253
             ],
+            "packetRange" : {
+               "gte" : 1259261324435,
+               "lte" : 2164247948451
+            },
             "protocol" : [
                "bgp",
                "tcp"
@@ -151,6 +155,10 @@
             "packetPos" : [
                362
             ],
+            "packetRange" : {
+               "gte" : 1259261324435,
+               "lte" : 1259261324451
+            },
             "protocol" : [
                "bgp",
                "tcp"

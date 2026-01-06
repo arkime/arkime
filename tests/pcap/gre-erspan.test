@@ -76,7 +76,7 @@
             },
             "ipProtocol" : 1,
             "lastPacket" : 1402723255669,
-            "length" : 1,
+            "length" : 2,
             "network" : {
                "bytes" : 656,
                "community_id" : "1:iF3HTcqmaP2JudVO9Vp3ktkojUY=",
@@ -101,6 +101,10 @@
                1319,
                1499
             ],
+            "packetRange" : {
+               "gte" : 1402723255667,
+               "lte" : 1402723255669
+            },
             "protocol" : [
                "gre",
                "icmp"

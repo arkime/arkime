@@ -26,7 +26,7 @@
                ]
             },
             "lastPacket" : 1213758644147,
-            "length" : 85014,
+            "length" : 85015,
             "network" : {
                "bytes" : 52379,
                "packets" : 43
@@ -122,6 +122,10 @@
                50031,
                51561
             ],
+            "packetRange" : {
+               "gte" : 1213758559132,
+               "lte" : 1213758644147
+            },
             "protocol" : [
                "isis"
             ],

@@ -64,6 +64,10 @@
                1034,
                1116
             ],
+            "packetRange" : {
+               "gte" : 1103485433560,
+               "lte" : 1103485433664
+            },
             "postgresql" : {
                "db" : "dbdb",
                "user" : "user"

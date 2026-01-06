@@ -321,6 +321,10 @@
                11260,
                11342
             ],
+            "packetRange" : {
+               "gte" : 1386004472572,
+               "lte" : 1386004472629
+            },
             "protocol" : [
                "socks",
                "tcp",
@@ -675,7 +679,7 @@
             "initRTT" : 0,
             "ipProtocol" : 6,
             "lastPacket" : 1386004475761,
-            "length" : 69,
+            "length" : 70,
             "network" : {
                "bytes" : 10911,
                "community_id" : "1:QFSWpQ4ebG5/0YcprIWXFTWEzvI=",
@@ -746,6 +750,10 @@
                22651,
                22733
             ],
+            "packetRange" : {
+               "gte" : 1386004475691,
+               "lte" : 1386004475761
+            },
             "protocol" : [
                "socks",
                "tcp",
@@ -1097,7 +1105,7 @@
             "initRTT" : 0,
             "ipProtocol" : 6,
             "lastPacket" : 1386004480888,
-            "length" : 35,
+            "length" : 36,
             "network" : {
                "bytes" : 11127,
                "community_id" : "1:FU35c9jWM24tS4OJPq+kgps1akw=",
@@ -1174,6 +1182,10 @@
                34306,
                34388
             ],
+            "packetRange" : {
+               "gte" : 1386004480852,
+               "lte" : 1386004480888
+            },
             "protocol" : [
                "socks",
                "tcp",

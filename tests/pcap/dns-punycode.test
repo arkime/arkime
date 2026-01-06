@@ -200,7 +200,7 @@
             "firstPacket" : 1528986536421,
             "ipProtocol" : 17,
             "lastPacket" : 1528986536466,
-            "length" : 44,
+            "length" : 45,
             "network" : {
                "bytes" : 524,
                "community_id" : "1:+Di2h6HR9A0wbT0QT0jI85L7IKA=",
@@ -215,6 +215,10 @@
                24,
                135
             ],
+            "packetRange" : {
+               "gte" : 1528986536421,
+               "lte" : 1528986536466
+            },
             "protocol" : [
                "dns",
                "udp"

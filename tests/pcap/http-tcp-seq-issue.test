@@ -175,7 +175,7 @@
             "initRTT" : 102,
             "ipProtocol" : 6,
             "lastPacket" : 1559004679353,
-            "length" : 808,
+            "length" : 807,
             "network" : {
                "bytes" : 2955,
                "community_id" : "1:eJlWVTyMD/0EOX2chOPekExOXNA=",
@@ -200,6 +200,10 @@
                1495,
                1577
             ],
+            "packetRange" : {
+               "gte" : 1559004678546,
+               "lte" : 1559004679353
+            },
             "protocol" : [
                "http",
                "tcp"
