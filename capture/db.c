@@ -802,7 +802,7 @@ void arkime_db_save_session(ArkimeSession_t *session, int final)
     const uint64_t lastPacketMs  = ((uint64_t)session->lastPacket.tv_sec) * 1000 + ((uint64_t)session->lastPacket.tv_usec) / 1000;
 
     BSB_EXPORT_cstr(jbsb, "{");
-    uint32_t timediff;
+    uint64_t timediff;
     if (firstPacketMs <= lastPacketMs) {
         if (arkimeDbVersion >= 85) {
             BSB_EXPORT_sprintf(jbsb, "\"packetRange\":{\"gte\":%" PRIu64 ",\"lte\":%" PRIu64 "},", firstPacketMs, lastPacketMs);
@@ -817,7 +817,7 @@ void arkime_db_save_session(ArkimeSession_t *session, int final)
     BSB_EXPORT_sprintf(jbsb,
                        "\"firstPacket\":%" PRIu64 ","
                        "\"lastPacket\":%" PRIu64 ","
-                       "\"length\":%u,"
+                       "\"length\":%" PRIu64 ","
                        "\"ipProtocol\":%u,",
                        firstPacketMs,
                        lastPacketMs,

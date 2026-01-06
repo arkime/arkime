@@ -1378,7 +1378,7 @@ export default {
 
 /* center timeline buttons on timeline graph if the map is collapsed */
 .map-visible .session-graph-btn-container {
-  left: 25%;
+  left: 12%;
 }
 .map-visible .session-graph-btn-container > div {
   left: 0;
