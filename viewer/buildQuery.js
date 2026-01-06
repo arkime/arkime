@@ -243,7 +243,7 @@ class BuildQuery {
         BuildQuery.#collapseQuery(query[prop]);
       }
     }
-  };
+  }
 
   // ----------------------------------------------------------------------------
   /* This method fixes up parts of the query that jison builds to what ES actually
@@ -289,7 +289,7 @@ class BuildQuery {
     await convert(query);
 
     return err;
-  };
+  }
 
   // --------------------------------------------------------------------------
   /**
@@ -546,7 +546,7 @@ class BuildQuery {
     }
 
     return buildCb(err ?? lerr, query, req._arkimeESQueryIndices);
-  };
+  }
 
   // -------------------------------------------------------------------------
   // determineQueryTimes(reqQuery)
@@ -634,7 +634,7 @@ class BuildQuery {
     }
 
     return [startTimeSec, Math.floor(stopTimeSec), interval];
-  };
-};
+  }
+}
 
 module.exports = BuildQuery;

@@ -920,7 +920,7 @@ function sendSessionWorker (options, cb) {
       preq.write(sessionStr);
       preq.write(buffer);
       preq.end();
-    };
+    }
     doRequest(true);
   }, undefined, 10);
 }

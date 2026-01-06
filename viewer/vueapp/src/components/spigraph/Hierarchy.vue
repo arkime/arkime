@@ -266,7 +266,7 @@ function gripClick (e, col) {
   tableWidthBeforeResize = table.style.width.slice(0, -2);
   colStartOffset = col.offsetWidth - e.pageX;
   selectedGripElem = col.getElementsByClassName('grip')[0];
-};
+}
 
 // fired when the column resize grip is dragged
 // styles the grip to show where it's being dragged
@@ -334,7 +334,7 @@ function mouseover (d, self) {
 
 function mouseleave (d, self) {
   d3.select(self).select('path').style('stroke', background);
-};
+}
 
 // treemap functions ------------------------------------------------------- //
 // get a uid based on the name of the node and the parent nodes

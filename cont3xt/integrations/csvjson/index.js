@@ -292,7 +292,7 @@ class CsvJsonIntegration extends Integration {
       };
       this.#watch = fs.watch(this.#url, watchCb);
     }
-  };
+  }
 
   // ----------------------------------------------------------------------------
   #loadRedis () {
@@ -308,7 +308,7 @@ class CsvJsonIntegration extends Integration {
         this.#process(data);
       });
     }
-  };
+  }
 
   // ----------------------------------------------------------------------------
   #loadHttp () {
@@ -322,7 +322,7 @@ class CsvJsonIntegration extends Integration {
         }
         console.log(this.section, '- ERROR', error);
       });
-  };
+  }
 }
 
 let sections = ArkimeConfig.getSections().filter((e) => { return e.match(/^csv:/); });

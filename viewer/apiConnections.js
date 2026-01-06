@@ -503,7 +503,7 @@ class ConnectionAPIs {
         recordsFiltered: total
       });
     });
-  };
+  }
 
   // --------------------------------------------------------------------------
   /**
@@ -556,7 +556,7 @@ class ConnectionAPIs {
 
       res.end();
     });
-  };
-};
+  }
+}
 
 module.exports = ConnectionAPIs;

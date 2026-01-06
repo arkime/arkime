@@ -242,7 +242,7 @@ class ShortcutAPIs {
       console.log(`ERROR - ${req.method} /api/shortcuts`, util.inspect(err, false, 50));
       return res.serverError(500, 'Error retrieving shortcuts - ' + err);
     });
-  };
+  }
 
   // --------------------------------------------------------------------------
   /**
@@ -344,7 +344,7 @@ class ShortcutAPIs {
         return res.serverError(500, 'Error creating shortcut');
       }
     });
-  };
+  }
 
   // --------------------------------------------------------------------------
   /**
@@ -457,7 +457,7 @@ class ShortcutAPIs {
       console.log(`ERROR - ${req.method} /api/shortcut/%s (getShortcut)`, ArkimeUtil.sanitizeStr(req.params.id), util.inspect(err, false, 50));
       return res.serverError(500, 'Fetching shortcut to update failed');
     }
-  };
+  }
 
   // --------------------------------------------------------------------------
   /**
@@ -479,7 +479,7 @@ class ShortcutAPIs {
       console.log(`ERROR - ${req.method} /api/shortcut/%s (deleteShortcut)`, ArkimeUtil.sanitizeStr(req.params.id), util.inspect(err, false, 50));
       return res.serverError(500, 'Error deleting shortcut');
     }
-  };
+  }
 
   // --------------------------------------------------------------------------
   /**
@@ -495,7 +495,7 @@ class ShortcutAPIs {
   static syncShortcuts (req, res) {
     Db.updateLocalShortcuts();
     return res.json({ success: true });
-  };
-};
+  }
+}
 
 module.exports = ShortcutAPIs;

@@ -69,7 +69,7 @@ class UserAPIs {
     }
 
     return clone;
-  };
+  }
 
   // --------------------------------------------------------------------------
   static findUserState (stateName, user) {
@@ -89,7 +89,7 @@ class UserAPIs {
     }
 
     return user.tableStates[stateName];
-  };
+  }
 
   /**
    * @private
@@ -202,7 +202,7 @@ class UserAPIs {
     });
 
     return { user, layoutName: result.layoutName, success: true };
-  };
+  }
 
   /**
    * @private
@@ -237,7 +237,7 @@ class UserAPIs {
     });
 
     return { user, layoutName: result.layoutName, success: true };
-  };
+  }
 
   /**
    * @private
@@ -299,7 +299,7 @@ class UserAPIs {
     }
 
     return { success: false, text: 'Layout not found' };
-  };
+  }
 
   /**
    * @private
@@ -327,7 +327,7 @@ class UserAPIs {
     }
 
     return { success: false, text: 'Layout not found' };
-  };
+  }
 
   /**
    * @private
@@ -539,7 +539,7 @@ class UserAPIs {
         return res.send(css);
       });
     });
-  };
+  }
 
   // USER SETTINGS --------------------------------------------------------------------------
   /**
@@ -555,7 +555,7 @@ class UserAPIs {
       : JSON.parse(JSON.stringify(internals.settingDefaults));
 
     return res.send(settings);
-  };
+  }
 
   /**
    * POST - /api/user/settings
@@ -584,7 +584,7 @@ class UserAPIs {
         text: 'Updated user settings successfully'
       });
     });
-  };
+  }
 
   // LAYOUTS --------------------------------------------------------------------------
   /**
@@ -783,7 +783,7 @@ class UserAPIs {
         });
       });
     });
-  };
+  }
 
   // USER STATE --------------------------------------------------------------------------
   /**
@@ -795,7 +795,7 @@ class UserAPIs {
    */
   static getUserState (req, res) {
     return res.send(UserAPIs.findUserState(req.params.name, req.user));
-  };
+  }
 
   /**
    * POST - /api/user/state/:name
@@ -830,7 +830,7 @@ class UserAPIs {
         });
       });
     });
-  };
+  }
 
   // --------------------------------------------------------------------------
   /**
@@ -892,7 +892,7 @@ class UserAPIs {
     default:
       return res.serverError(501, 'Requested page is not supported');
     }
-  };
-};
+  }
+}
 
 module.exports = UserAPIs;

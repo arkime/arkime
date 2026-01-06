@@ -115,7 +115,7 @@ class ValueActionsSource extends WISESource {
       }
       this.api.addValueAction(key, obj);
     });
-  };
+  }
 
   // ----------------------------------------------------------------------------
   watchFile () {
@@ -150,7 +150,7 @@ class ValueActionsSource extends WISESource {
     const data = config.valueactions || config;
 
     this.process(data);
-  };
+  }
 
   // ----------------------------------------------------------------------------
   getSourceRawFile (cb) {
@@ -182,7 +182,7 @@ class ValueActionsSource extends WISESource {
         this.process(ArkimeUtil.parseIniString(data));
       });
     }
-  };
+  }
 
   // ----------------------------------------------------------------------------
   getSourceRawRedis (cb) {
@@ -209,7 +209,7 @@ class ValueActionsSource extends WISESource {
         }
         console.log(this.section, '- ERROR', error);
       });
-  };
+  }
 
   // ----------------------------------------------------------------------------
   getSourceRawES (cb) {

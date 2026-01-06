@@ -116,7 +116,7 @@ class WiseProxySource extends WISESource {
           bufferInfo[i].cb('Error');
         }
       });
-  };
+  }
 
   // ----------------------------------------------------------------------------
   fetch (type, item, cb) {
@@ -128,7 +128,7 @@ class WiseProxySource extends WISESource {
     if (this.bufferInfo.length > 100) {
       this.performQuery();
     }
-  };
+  }
 
   // ----------------------------------------------------------------------------
   updateInfo () {
@@ -186,7 +186,7 @@ class WiseProxySource extends WISESource {
       }).catch((err) => {
         console.log(this.section, 'problem fetching /rightClicks', this.section, err);
       });
-  };
+  }
 
   // ----------------------------------------------------------------------------
   getIpImpl (item, cb) {

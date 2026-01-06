@@ -50,12 +50,12 @@ class HODIRedisSource extends WISESource {
     this.client.hset(key, 'last', date.getTime());
     this.client.hincrby(key, 'count', 1);
     this.client.hincrby(key, `count:${date.getFullYear()}:${date.getMonth() + 1}`, 1);
-  };
+  }
 
   // ----------------------------------------------------------------------------
   getDomain (query, cb) {
     return this.process(`d:${query.value}`, this.tagsDomain, cb);
-  };
+  }
 
   // ----------------------------------------------------------------------------
   getMd5 (query, cb) {
@@ -64,17 +64,17 @@ class HODIRedisSource extends WISESource {
     }
 
     return this.process(`h:${query.value}`, this.tagsMd5, cb);
-  };
+  }
 
   // ----------------------------------------------------------------------------
   getEmail (query, cb) {
     return this.process(`e:${query.value}`, this.tagsEmail, cb);
-  };
+  }
 
   // ----------------------------------------------------------------------------
   getIp (query, cb) {
     return this.process(`a:${query.value}`, this.tagsIp, cb);
-  };
+  }
 }
 
 // ----------------------------------------------------------------------------

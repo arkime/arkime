@@ -73,7 +73,7 @@ class OpenDNSSource extends WISESource {
     });
 
     request.end();
-  };
+  }
 
   // ----------------------------------------------------------------------------
   performQuery () {
@@ -161,7 +161,7 @@ class OpenDNSSource extends WISESource {
     // post the data
     request.write(postData);
     request.end();
-  };
+  }
 
   // ----------------------------------------------------------------------------
   getDomain (domain, cb) {

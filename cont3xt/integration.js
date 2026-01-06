@@ -1010,7 +1010,7 @@ function updateTime (stats, istats, diff, prefix) {
 
   const ilookup = Math.min(stats[prefix + 'Lookup'], 100);
   istats[prefix + 'RecentAvgMS'] = (istats[prefix + 'RecentAvgMS'] * (ilookup - 1) + diff) / ilookup;
-};
+}
 
 function makeITypeStats (itype) {
   itypeStats[itype] = {
@@ -1025,7 +1025,7 @@ function makeITypeStats (itype) {
     directError: 0,
     directRecentAvgMS: 0.0
   };
-};
+}
 
 module.exports = Integration;
 

@@ -144,7 +144,7 @@ class VirusTotalSource extends WISESource {
     } else {
       return cb('dropped');
     }
-  };
+  }
 }
 
 // ----------------------------------------------------------------------------

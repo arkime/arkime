@@ -57,7 +57,7 @@ class ArkimeCache {
       console.log('ERROR - Unknown cache type', options.type);
       process.exit(1);
     }
-  };
+  }
 }
 
 module.exports = ArkimeCache;
@@ -102,7 +102,7 @@ class ArkimeRedisCache extends ArkimeCache {
         return resolve(bsonResult);
       });
     });
-  };
+  }
 
   // ----------------------------------------------------------------------------
   set (key, result) {
@@ -121,8 +121,8 @@ class ArkimeRedisCache extends ArkimeCache {
 
     const data = BSON.serialize(newResult, false, true, false);
     this.client.setex(key, this.cacheTimeout, data);
-  };
-};
+  }
+}
 
 /******************************************************************************/
 // Memcached Cache
@@ -150,7 +150,7 @@ class ArkimeMemcachedCache extends ArkimeCache {
         return resolve(bsonResult);
       });
     });
-  };
+  }
 
   // ----------------------------------------------------------------------------
   set (key, result) {
@@ -158,8 +158,8 @@ class ArkimeMemcachedCache extends ArkimeCache {
 
     const data = BSON.serialize(result, false, true, false);
     this.client.set(key, data, { expires: this.cacheTimeout }, () => {});
-  };
-};
+  }
+}
 
 /******************************************************************************/
 // LMDB Cache
@@ -197,5 +197,5 @@ class ArkimeLMDBCache extends ArkimeCache {
   // ----------------------------------------------------------------------------
   set (key, result) {
     this.store.put(key, result);
-  };
-};
+  }
+}

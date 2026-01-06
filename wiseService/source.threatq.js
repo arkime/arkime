@@ -108,7 +108,7 @@ class ThreatQSource extends WISESource {
       .on('close', () => {
         console.log(this.section, '- Done Loading', count, 'elements');
       });
-  };
+  }
 
   // ----------------------------------------------------------------------------
   loadFile () {
@@ -119,33 +119,33 @@ class ThreatQSource extends WISESource {
         this.parseFile();
       }
     });
-  };
+  }
 
   // ----------------------------------------------------------------------------
   getDomain (domain, cb) {
     const domains = this.domains;
     cb(null, domains.get(domain) || domains.get(domain.substring(domain.indexOf('.') + 1)));
-  };
+  }
 
   // ----------------------------------------------------------------------------
   getIp (ip, cb) {
     cb(null, this.ips.get(ip));
-  };
+  }
 
   // ----------------------------------------------------------------------------
   getMd5 (md5, cb) {
     cb(null, this.md5s.get(md5));
-  };
+  }
 
   // ----------------------------------------------------------------------------
   getEmail (email, cb) {
     cb(null, this.emails.get(email));
-  };
+  }
 
   // ----------------------------------------------------------------------------
   itemCount () {
     return this.ips.size + this.domains.size + this.md5s.size + this.emails.size;
-  };
+  }
 
   // ----------------------------------------------------------------------------
   dump (res) {
@@ -158,7 +158,7 @@ class ThreatQSource extends WISESource {
       });
     });
     res.end();
-  };
+  }
 }
 
 // ----------------------------------------------------------------------------

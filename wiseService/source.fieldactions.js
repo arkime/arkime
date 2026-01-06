@@ -115,7 +115,7 @@ class FieldActionsSource extends WISESource {
       }
       this.api.addFieldAction(key, obj);
     });
-  };
+  }
 
   // ----------------------------------------------------------------------------
   watchFile () {
@@ -150,7 +150,7 @@ class FieldActionsSource extends WISESource {
     const data = config.fieldactions || config;
 
     this.process(data);
-  };
+  }
 
   // ----------------------------------------------------------------------------
   getSourceRawFile (cb) {
@@ -182,7 +182,7 @@ class FieldActionsSource extends WISESource {
         this.process(ArkimeUtil.parseIniString(data));
       });
     }
-  };
+  }
 
   // ----------------------------------------------------------------------------
   getSourceRawRedis (cb) {
@@ -209,7 +209,7 @@ class FieldActionsSource extends WISESource {
         }
         console.log(this.section, '- ERROR', error);
       });
-  };
+  }
 
   // ----------------------------------------------------------------------------
   getSourceRawES (cb) {

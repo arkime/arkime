@@ -179,7 +179,7 @@ class User {
       User.#usersCache.set(userId, { _timeStamp: Date.now(), user });
       cb(null, user);
     });
-  };
+  }
 
   /******************************************************************************/
   // Static methods the Implementation must have
@@ -294,7 +294,7 @@ class User {
    */
   static numberOfUsers () {
     return User.#implementation.numberOfUsers();
-  };
+  }
 
   /**
    * Delete user
@@ -302,7 +302,7 @@ class User {
   static deleteUser (userId) {
     User.#usersCache.delete(userId);
     return User.#implementation.deleteUser(userId);
-  };
+  }
 
   /**
    * Set user, callback only
@@ -333,7 +333,7 @@ class User {
         cb(err, boo);
       }
     });
-  };
+  }
 
   /**
    * Determines whether each user in the list of users is valid or invalid.
@@ -508,7 +508,7 @@ class User {
   static async apiGetUser (req, res, next) {
     const clone = await User.getCurrentUser(req);
     return res.send(clone);
-  };
+  }
 
   static #apiGetUsersCommon (req) {
     if (typeof req.body !== 'object') { return undefined; }
@@ -574,7 +574,7 @@ class User {
         data: []
       });
     });
-  };
+  }
 
   /**
    * POST - /api/users/csv
@@ -628,7 +628,7 @@ class User {
       console.log(`ERROR - ${req.method} /api/users`, util.inspect(err, false, 50));
       return res.send('Error');
     });
-  };
+  }
 
   /**
    * The Arkime user-info object (information provided to roleAssigners or non-admin users).
@@ -688,7 +688,7 @@ class User {
         data: []
       });
     });
-  };
+  }
 
   /**
    * POST - /api/user
@@ -815,7 +815,7 @@ class User {
         }
       });
     });
-  };
+  }
 
   /**
    * DELETE - /api/user/:id
@@ -852,7 +852,7 @@ class User {
         return res.send({ success: false, text: 'User not deleted' });
       }
     });
-  };
+  }
 
   /**
    * POST - /api/user/:id
@@ -975,7 +975,7 @@ class User {
         });
       });
     });
-  };
+  }
 
   /**
    * POST - /api/user/:id/assignment
@@ -1044,7 +1044,7 @@ class User {
         });
       });
     });
-  };
+  }
 
   /**
    * POST - /api/user/password
@@ -1090,7 +1090,7 @@ class User {
         text: 'Changed password successfully'
       });
     });
-  };
+  }
 
   /******************************************************************************/
   // Regression Tests APIs
@@ -1530,7 +1530,7 @@ class UserESImplementation {
     this.prefix = ArkimeUtil.formatPrefix(options.prefix);
 
     const esSSLOptions = { rejectUnauthorized: !options.insecure };
-    if (options.caTrustFile) { esSSLOptions.ca = ArkimeUtil.certificateFileToArray(options.caTrustFile); };
+    if (options.caTrustFile) { esSSLOptions.ca = ArkimeUtil.certificateFileToArray(options.caTrustFile); }
     if (options.clientKey) {
       esSSLOptions.key = fs.readFileSync(options.clientKey);
       esSSLOptions.cert = fs.readFileSync(options.clientCert);
@@ -1661,7 +1661,7 @@ class UserESImplementation {
       }
     });
     return count.count;
-  };
+  }
 
   // Delete user, promise only
   async deleteUser (userId) {
@@ -1671,7 +1671,7 @@ class UserESImplementation {
       refresh: true
     });
     User.deleteCache(userId); // Delete again after db says its done refreshing
-  };
+  }
 
   // Set user, callback only
   setUser (userId, doc, cb) {
@@ -1688,7 +1688,7 @@ class UserESImplementation {
       User.deleteCache(userId); // Delete again after db says its done refreshing
       cb(err);
     });
-  };
+  }
 
   setLastUsed (userId, now) {
     const params = {
@@ -1699,7 +1699,7 @@ class UserESImplementation {
     };
 
     return this.client.update(params);
-  };
+  }
 
   async allRoles () {
     const response = await this.client.search({
@@ -1712,7 +1712,7 @@ class UserESImplementation {
     });
 
     return response.body.hits.hits.map(h => h._source.userId);
-  };
+  }
 
   async getAssignableRoles (userId) {
     const query = {
@@ -1731,7 +1731,7 @@ class UserESImplementation {
     });
 
     return response.body.hits.hits.map(h => h._source.userId);
-  };
+  }
 
   async deleteAllUsers () {
     await this.client.deleteByQuery({
@@ -1794,13 +1794,13 @@ class UserLMDBImplementation {
         reject(err);
       }
     });
-  };
+  }
 
   // Delete user, promise only
   async deleteUser (userId) {
     await this.store.remove(userId);
     User.deleteCache(userId); // Delete again after db says its done refreshing
-  };
+  }
 
   // Set user, callback only
   async setUser (userId, doc, cb) {
@@ -1822,13 +1822,13 @@ class UserLMDBImplementation {
     } catch (err) {
       cb(err);
     }
-  };
+  }
 
   async setLastUsed (userId, now) {
     const user = this.store.get(userId);
     user.lastUsed = now;
     await this.store.put(userId, user);
-  };
+  }
 
   async allRoles () {
     const hits = [];
@@ -1904,13 +1904,13 @@ class UserRedisImplementation {
   async numberOfUsers () {
     const keys = (await this.client.keys('*')).filter(key => key !== '_moloch_shared' && !key.startsWith('role:'));
     return keys.length;
-  };
+  }
 
   // Delete user, promise only
   async deleteUser (userId) {
     await this.client.del(userId);
     User.deleteCache(userId); // Delete again after db says its done refreshing
-  };
+  }
 
   // Set user, callback only
   async setUser (userId, doc, cb) {
@@ -1928,7 +1928,7 @@ class UserRedisImplementation {
     } catch (err) {
       cb(err);
     }
-  };
+  }
 
   async setLastUsed (userId, now) {
     let user = await this.client.get(userId);
@@ -1937,7 +1937,7 @@ class UserRedisImplementation {
     user.lastUsed = now;
     user = JSON.stringify(user);
     await this.client.set(userId, user);
-  };
+  }
 
   async allRoles () {
     const keys = await this.client.keys('role:*');

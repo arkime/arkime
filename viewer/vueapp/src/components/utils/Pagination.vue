@@ -151,7 +151,7 @@ function lengthUpdated (newLength) {
     // has changed, a query will be issued by ExpressionTypeahead.vue
     notifyParent();
   }
-};
+}
 
 // helper methods -------------------------------------------------------------
 function notifyParent () {
@@ -164,7 +164,7 @@ function notifyParent () {
   };
 
   emit('changePaging', pagingParams);
-};
+}
 </script>
 
 <style scoped>

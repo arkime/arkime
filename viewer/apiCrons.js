@@ -459,7 +459,7 @@ class CronAPIs {
       console.log(`ERROR - ${req.method} /api/cron/%s`, ArkimeUtil.sanitizeStr(key), util.inspect(err, false, 50));
       return res.serverError(500, 'Delete periodic query failed');
     }
-  };
+  }
 
   // --------------------------------------------------------------------------
   static #qlworking = {};

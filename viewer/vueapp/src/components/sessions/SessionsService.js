@@ -254,7 +254,7 @@ export default {
 
       const { options, error } = this.getReqOptions(baseUrl, '', params, routeParams);
 
-      if (error) { return reject({ text: error }); };
+      if (error) { return reject({ text: error }); }
 
       // add missing params
       options.params.segments = segments;
@@ -293,7 +293,7 @@ export default {
 
       const { options, error } = this.getReqOptions(baseUrl, '', params, routeParams);
 
-      if (error) { return reject({ text: error }); };
+      if (error) { return reject({ text: error }); }
 
       // add missing params
       options.params.segments = segments;
