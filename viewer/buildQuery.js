@@ -573,9 +573,9 @@ class BuildQuery {
     function toInterval (diff) {
       if (diff < 1000) {
         return 1; // second
-      } else if (diff <= 60 * 2000) {
+      } else if (diff <= 60 * 10000) {
         return 60; // minute
-      } else if (diff <= 60 * 60 * 2000) {
+      } else if (diff <= 60 * 60 * 10000) {
         return 60 * 60; // hour
       } else {
         return 24 * 60 * 60; // day
@@ -584,7 +584,11 @@ class BuildQuery {
 
     if ((reqQuery.date && parseFloat(reqQuery.date) === -1) ||
         (reqQuery.segments && reqQuery.segments === 'all')) {
-      interval = 60 * 60 * 24; // Day to be safe
+      if (reqQuery.spanning === 'true' || reqQuery.spanning === true) {
+        interval = 60 * 60 * 24; // Day to be safe
+      } else {
+        interval = 60 * 60; // Hour to be safe
+      }
     } else if ((reqQuery.startTime !== undefined) && (reqQuery.stopTime !== undefined)) {
       if (!/^-?[0-9]+$/.test(reqQuery.startTime)) {
         startTimeSec = Date.parse(reqQuery.startTime.replace('+', ' ')) / 1000;

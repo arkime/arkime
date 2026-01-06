@@ -814,7 +814,11 @@ void arkime_db_save_session(ArkimeSession_t *session, int final)
                        session->ipProtocol);
 
     if (arkimeDbVersion >= 85) {
-        BSB_EXPORT_sprintf(jbsb, "\"packetRange\":{\"gte\":%" PRIu64 ",\"lte\":%" PRIu64 "},", firstPacketMs, lastPacketMs);
+        if (firstPacketMs <= lastPacketMs) {
+            BSB_EXPORT_sprintf(jbsb, "\"packetRange\":{\"gte\":%" PRIu64 ",\"lte\":%" PRIu64 "},", firstPacketMs, lastPacketMs);
+        } else {
+            BSB_EXPORT_sprintf(jbsb, "\"packetRange\":{\"gte\":%" PRIu64 ",\"lte\":%" PRIu64 "},", lastPacketMs, firstPacketMs);
+        }
     }
 
 
