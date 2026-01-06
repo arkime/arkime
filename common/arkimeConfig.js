@@ -497,7 +497,7 @@ class ConfigRedis {
       cb(err);
     });
   }
-};
+}
 ArkimeConfig.registerScheme('redis', ConfigRedis);
 
 // ----------------------------------------------------------------------------
@@ -530,7 +530,7 @@ class ConfigRedisSentinel {
       cb(err);
     });
   }
-};
+}
 ArkimeConfig.registerScheme('redis-sentinel', ConfigRedisSentinel);
 
 // ----------------------------------------------------------------------------
@@ -560,7 +560,7 @@ class ConfigRedisCluster {
       cb(err);
     });
   }
-};
+}
 ArkimeConfig.registerScheme('redis-cluster', ConfigRedisCluster);
 
 // ----------------------------------------------------------------------------
@@ -596,7 +596,7 @@ class ConfigElasticsearch {
         cb(error);
       });
   }
-};
+}
 ArkimeConfig.registerScheme('elasticsearch', ConfigElasticsearch);
 ArkimeConfig.registerScheme('opensearch', ConfigElasticsearch);
 ArkimeConfig.registerScheme('elasticsearchs', ConfigElasticsearch);
@@ -623,7 +623,7 @@ class ConfigHttp {
       throw error;
     }
   }
-};
+}
 ArkimeConfig.registerScheme('http', ConfigHttp);
 ArkimeConfig.registerScheme('https', ConfigHttp);
 

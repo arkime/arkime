@@ -91,7 +91,7 @@ class Config {
   // ----------------------------------------------------------------------------
   static getFull (node, key, defaultValue) {
     return ArkimeConfig.getFull([node, ArkimeConfig.getFull([node], 'nodeClass'), 'default'], key, defaultValue);
-  };
+  }
 
   // ----------------------------------------------------------------------------
   static get = ArkimeConfig.get;
@@ -104,28 +104,28 @@ class Config {
   // Return an array split on separator, remove leading/trailing spaces, remove empty elements given a node
   static getFullArray (node, key, defaultValue, sep) {
     return ArkimeConfig.getFullArray([node, ArkimeConfig.getFull([node], 'nodeClass'), 'default'], key, defaultValue, sep);
-  };
+  }
 
   // ----------------------------------------------------------------------------
   static isHTTPS (node) {
     return Config.getFull(node ?? internals.nodeName, 'keyFile') &&
            Config.getFull(node ?? internals.nodeName, 'certFile');
-  };
+  }
 
   // ----------------------------------------------------------------------------
   static basePath () {
     return Config.getFull(internals.nodeName, 'webBasePath', '/');
-  };
+  }
 
   // ----------------------------------------------------------------------------
   static nodeName () {
     return internals.nodeName;
-  };
+  }
 
   // ----------------------------------------------------------------------------
   static hostName () {
     return internals.hostName;
-  };
+  }
 
   // ----------------------------------------------------------------------------
   static arkimeWebURL () {
@@ -134,12 +134,12 @@ class Config {
       webUrl = Config.isHTTPS() ? `https://${webUrl}` : `http://${webUrl}`;
     }
     return webUrl;
-  };
+  }
 
   // ----------------------------------------------------------------------------
   static keys (section) {
     return Object.keys(ArkimeConfig.getSection(section) ?? {});
-  };
+  }
 
   // ----------------------------------------------------------------------------
   static headers (section) {
@@ -166,7 +166,7 @@ class Config {
     });
 
     return headers;
-  };
+  }
 
   // ----------------------------------------------------------------------------
   static configMap (section, dSection, d) {
@@ -194,36 +194,36 @@ class Config {
     }
 
     return map;
-  };
+  }
 
   /// ///////////////////////////////////////////////////////////////////////////////
   // Fields
   /// ///////////////////////////////////////////////////////////////////////////////
   static getFields () {
     return internals.fields;
-  };
+  }
 
   // ----------------------------------------------------------------------------
   static getFieldsMap () {
     return internals.fieldsMap;
-  };
+  }
 
   // ----------------------------------------------------------------------------
   static getDBFieldsMap () {
     return internals.dbFieldsMap;
-  };
+  }
 
   // ----------------------------------------------------------------------------
   static getDBField (field, property) {
     if (internals.dbFieldsMap[field] === undefined) { return undefined; }
     if (property === undefined) { return internals.dbFieldsMap[field]; }
     return internals.dbFieldsMap[field][property];
-  };
+  }
 
   // ----------------------------------------------------------------------------
   static getCategories () {
     return internals.categories;
-  };
+  }
 
   // ----------------------------------------------------------------------------
   static loadFields (data) {
@@ -274,7 +274,7 @@ class Config {
     for (const cat in internals.categories) {
       internals.categories[cat] = internals.categories[cat].sort((a, b) => a.exp.localeCompare(b.exp));
     }
-  };
+  }
 
   /// ///////////////////////////////////////////////////////////////////////////////
   // Initialize Auth

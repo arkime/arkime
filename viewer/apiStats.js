@@ -66,7 +66,7 @@ class StatsAPIs {
     } catch (err) {
       return res.serverError(500, err.toString());
     }
-  };
+  }
 
   // STATS APIS ---------------------------------------------------------------
   /**
@@ -219,7 +219,7 @@ class StatsAPIs {
       console.log(`ERROR - ${req.method} /api/stats`, query, util.inspect(err, false, 50));
       res.send({ recordsTotal: 0, recordsFiltered: 0, data: [] });
     });
-  };
+  }
 
   // --------------------------------------------------------------------------
   /**
@@ -350,7 +350,7 @@ class StatsAPIs {
       console.log(`ERROR - ${req.method} /api/dstats`, query, util.inspect(err, false, 50));
       res.send({});
     }
-  };
+  }
 
   // --------------------------------------------------------------------------
   /**
@@ -509,7 +509,7 @@ class StatsAPIs {
         recordsFiltered: 0
       });
     });
-  };
+  }
 
   // ES INDICES APIS ----------------------------------------------------------
   /**
@@ -602,7 +602,7 @@ class StatsAPIs {
         data: findices
       });
     });
-  };
+  }
 
   // --------------------------------------------------------------------------
   /**
@@ -622,7 +622,7 @@ class StatsAPIs {
       res.status(404);
       return res.json({ success: false, text: 'Error deleting index' });
     }
-  };
+  }
 
   // --------------------------------------------------------------------------
   /**
@@ -641,7 +641,7 @@ class StatsAPIs {
 
     // always return successfully right away, optimizeIndex might block
     return res.json({ success: true });
-  };
+  }
 
   // --------------------------------------------------------------------------
   /**
@@ -665,7 +665,7 @@ class StatsAPIs {
       res.status(404);
       return res.json({ success: false, text: 'Error closing index' });
     }
-  };
+  }
 
   // --------------------------------------------------------------------------
   /**
@@ -688,7 +688,7 @@ class StatsAPIs {
 
     // always return successfully right away, openIndex might block
     return res.json({ success: true });
-  };
+  }
 
   // --------------------------------------------------------------------------
   /**
@@ -765,7 +765,7 @@ class StatsAPIs {
         text: ArkimeUtil.safeStr(err.message)
       });
     }
-  };
+  }
 
   // ES TASK APIS -------------------------------------------------------------
   /**
@@ -857,7 +857,7 @@ class StatsAPIs {
         recordsFiltered: 0
       });
     }
-  };
+  }
 
   // --------------------------------------------------------------------------
   /**
@@ -885,7 +885,7 @@ class StatsAPIs {
       console.log(`ERROR - ${req.method} /api/estasks/%s/cancel`, ArkimeUtil.sanitizeStr(taskId), util.inspect(err, false, 50));
       return res.serverError(500, err.toString());
     }
-  };
+  }
 
   // --------------------------------------------------------------------------
   /**
@@ -914,7 +914,7 @@ class StatsAPIs {
       console.log(`ERROR - ${req.method} /api/estasks/%s/cancelwith`, ArkimeUtil.sanitizeStr(cancelId), util.inspect(err, false, 50));
       return res.serverError(500, err.toString());
     }
-  };
+  }
 
   // --------------------------------------------------------------------------
   /**
@@ -933,7 +933,7 @@ class StatsAPIs {
       console.log(`ERROR - ${req.method} /api/estasks/cancelall`, util.inspect(err, false, 50));
       return res.serverError(500, err.toString());
     }
-  };
+  }
 
   // ES ADMIN APIS ------------------------------------------------------------
   /**
@@ -1073,7 +1073,7 @@ class StatsAPIs {
 
       return res.send(rsettings);
     });
-  };
+  }
 
   // --------------------------------------------------------------------------
   /**
@@ -1203,7 +1203,7 @@ class StatsAPIs {
       console.log(`ERROR - ${req.method} /api/esadmin/set`, util.inspect(err, false, 50));
       return res.serverError(500, 'Set failed');
     }
-  };
+  }
 
   // --------------------------------------------------------------------------
   /**
@@ -1221,7 +1221,7 @@ class StatsAPIs {
     } catch (err) {
       return res.json({ success: true, text: 'Reroute failed' });
     }
-  };
+  }
 
   // --------------------------------------------------------------------------
   /**
@@ -1236,7 +1236,7 @@ class StatsAPIs {
     Db.refresh('*', req.query.cluster);
     Db.flush('*', req.query.cluster);
     return res.json({ success: true, text: 'Flushed' });
-  };
+  }
 
   // --------------------------------------------------------------------------
   /**
@@ -1253,7 +1253,7 @@ class StatsAPIs {
       cluster: req.query.cluster
     });
     return res.json({ success: true, text: 'Unflooded' });
-  };
+  }
 
   // --------------------------------------------------------------------------
   /**
@@ -1275,7 +1275,7 @@ class StatsAPIs {
       console.log(`ERROR - ${req.method} /api/esadmin/clearcache`, util.inspect(err, false, 50));
       return res.serverError(500, err.toString());
     }
-  };
+  }
 
   // --------------------------------------------------------------------------
   /**
@@ -1302,7 +1302,7 @@ class StatsAPIs {
       console.log(`ERROR - ${req.method} /api/esadmin/allocation`, util.inspect(err, false, 50));
       return res.serverError(500, err.toString());
     }
-  };
+  }
 
   // ES SHARD APIS ------------------------------------------------------------
   /**
@@ -1407,7 +1407,7 @@ class StatsAPIs {
         ipExcludes
       });
     });
-  };
+  }
 
   // --------------------------------------------------------------------------
   /**
@@ -1456,7 +1456,7 @@ class StatsAPIs {
       console.log(`ERROR - ${req.method} /api/esshards/%s/%s/exclude`, ArkimeUtil.sanitizeStr(req.params.type), ArkimeUtil.sanitizeStr(req.params.value), util.inspect(err, false, 50));
       return res.serverError(500, 'Node exclusion failed');
     }
-  };
+  }
 
   // --------------------------------------------------------------------------
   /**
@@ -1506,7 +1506,7 @@ class StatsAPIs {
       console.log(`ERROR - ${req.method} /api/esshards/%s/%s/include`, ArkimeUtil.sanitizeStr(req.params.type), ArkimeUtil.sanitizeStr(req.params.value), util.inspect(err, false, 50));
       return res.serverError(500, 'Node inclusion failed');
     }
-  };
+  }
 
   // --------------------------------------------------------------------------
   /**
@@ -1595,7 +1595,7 @@ class StatsAPIs {
       console.log(`ERROR - ${req.method} /api/esshards/%s/%s/delete`, ArkimeUtil.sanitizeStr(req.params.index), ArkimeUtil.sanitizeStr(req.params.shard), util.inspect(err, false, 50));
       return res.serverError(500, `Deleting shard ${ArkimeUtil.sanitizeStr(req.params.index)}:${ArkimeUtil.sanitizeStr(req.params.shard)} failed`);
     }
-  };
+  }
 
   // ES RECOVERY APIS ---------------------------------------------------------
   /**
@@ -1662,7 +1662,7 @@ class StatsAPIs {
         recordsFiltered: 0
       });
     }
-  };
+  }
 
   // PARLIAMENT APIs ----------------------------------------------------------
   /**
@@ -1753,7 +1753,7 @@ class StatsAPIs {
       console.log(`ERROR - ${req.method} /api/parliament`, util.inspect(err, false, 50));
       res.send({ recordsTotal: 0, recordsFiltered: 0, data: [] });
     });
-  };
+  }
 
   // --------------------------------------------------------------------------
   static async initialize () {
@@ -1767,6 +1767,6 @@ class StatsAPIs {
       console.log('ERROR - fetching OpenSearch/Elasticsearch nodes stats', err);
     }
   }
-};
+}
 
 module.exports = StatsAPIs;

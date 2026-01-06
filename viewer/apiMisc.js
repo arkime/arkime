@@ -91,7 +91,7 @@ class MiscAPIs {
     } else {
       res.send(internals.fieldsMap);
     }
-  };
+  }
 
   // file apis ----------------------------------------------------------------
   /**
@@ -154,7 +154,7 @@ class MiscAPIs {
       console.log(`ERROR - ${req.method} /api/files`, util.inspect(err, false, 50));
       return res.send({ recordsTotal: 0, recordsFiltered: 0, data: [] });
     });
-  };
+  }
 
   // value actions apis -------------------------------------------------------
   /**
@@ -198,7 +198,7 @@ class MiscAPIs {
     }
 
     return res.send(actions);
-  };
+  }
 
   // --------------------------------------------------------------------------
   /**
@@ -231,7 +231,7 @@ class MiscAPIs {
     }
 
     return res.send(actions);
-  };
+  }
 
   // reverse dns apis ---------------------------------------------------------
   /**
@@ -249,7 +249,7 @@ class MiscAPIs {
       }
       return res.send(data.join(', '));
     });
-  };
+  }
 
   // upload apis --------------------------------------------------------------
   /**
@@ -313,7 +313,7 @@ class MiscAPIs {
       res.end('</pre>');
       fs.unlinkSync(req.file.path);
     });
-  };
+  }
 
   // cluster apis -------------------------------------------------------------
   /**
@@ -328,7 +328,7 @@ class MiscAPIs {
   static async getClusters (req, res) {
     const clusters = await MiscAPIs.#getClusters();
     res.send(clusters);
-  };
+  }
 
   /**
    * GET - /api/remoteclusters
@@ -346,7 +346,7 @@ class MiscAPIs {
     }
 
     return res.send(clusters);
-  };
+  }
 
   // app info apis ------------------------------------------------------------
   /**
@@ -404,7 +404,7 @@ class MiscAPIs {
       console.log('ERROR - /api/appinfo', err);
       return res.serverError(500, err.toString());
     }
-  };
+  }
 
   // cyberchef apis -----------------------------------------------------------
   /**
@@ -428,7 +428,7 @@ class MiscAPIs {
       console.log(`ERROR - ${req.method} /%s/session/%s/cyberchef`, ArkimeUtil.sanitizeStr(req.params.nodeName), ArkimeUtil.sanitizeStr(req.params.id), util.inspect(err, false, 50));
       return res.end('Error - ' + err);
     }
-  };
+  }
 
   // --------------------------------------------------------------------------
   /**
@@ -472,7 +472,7 @@ class MiscAPIs {
         res.status(404).end('Page not found');
       }
     });
-  };
-};
+  }
+}
 
 module.exports = MiscAPIs;

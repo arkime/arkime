@@ -313,7 +313,7 @@ class SessionAPIs {
     } catch (err) {
       return cb(err);
     }
-  };
+  }
 
   // --------------------------------------------------------------------------
   static #localSessionDetailReturnFull (req, res, session, incoming) {
@@ -1285,7 +1285,7 @@ class SessionAPIs {
       console.log('ERROR - session get error in processSessionId', util.inspect(err, false, 50));
       return endCb(err, null);
     }
-  };
+  }
 
   // --------------------------------------------------------------------------
   /**
@@ -1366,7 +1366,7 @@ class SessionAPIs {
         cb(err, list);
       }
     });
-  };
+  }
 
   // --------------------------------------------------------------------------
   static async addTagsList (allTagNames, sessionList, doneCb) {
@@ -1391,7 +1391,7 @@ class SessionAPIs {
     }, (err) => {
       return doneCb ? doneCb(err) : null;
     });
-  };
+  }
 
   // --------------------------------------------------------------------------
   static async #removeTagsList (allTagNames, sessionList, doneCb) {
@@ -1416,7 +1416,7 @@ class SessionAPIs {
     }, (err) => {
       return doneCb ? doneCb(err) : null;
     });
-  };
+  }
 
   // --------------------------------------------------------------------------
   static async processSessionIdAndDecode (id, numPackets) {
@@ -1463,7 +1463,7 @@ class SessionAPIs {
         }
       }, numPackets, 10);
     });
-  };
+  }
 
   // --------------------------------------------------------------------------
   // APIs
@@ -1498,7 +1498,7 @@ class SessionAPIs {
 
       res.send({ esquery: query, indices });
     });
-  };
+  }
 
   // --------------------------------------------------------------------------
   /**
@@ -1645,7 +1645,7 @@ class SessionAPIs {
         return res.send(response);
       });
     });
-  };
+  }
 
   // --------------------------------------------------------------------------
   /**
@@ -1699,7 +1699,7 @@ class SessionAPIs {
         }
       });
     }
-  };
+  }
 
   // --------------------------------------------------------------------------
   /**
@@ -1878,7 +1878,7 @@ class SessionAPIs {
         });
       });
     });
-  };
+  }
 
   // --------------------------------------------------------------------------
   /**
@@ -2085,7 +2085,7 @@ class SessionAPIs {
         return res.serverError(403, ViewerUtils.errorString(err));
       });
     });
-  };
+  }
 
   // --------------------------------------------------------------------------
   /**
@@ -2231,7 +2231,7 @@ class SessionAPIs {
         });
       });
     });
-  };
+  }
 
   // --------------------------------------------------------------------------
   /**
@@ -2396,7 +2396,7 @@ class SessionAPIs {
         return doneCb ? doneCb() : res.end();
       });
     });
-  };
+  }
 
   // --------------------------------------------------------------------------
   /**
@@ -2495,7 +2495,7 @@ class SessionAPIs {
         return res.end();
       });
     });
-  };
+  }
 
   // --------------------------------------------------------------------------
   /**
@@ -2557,7 +2557,7 @@ class SessionAPIs {
         res.send(html);
       });
     });
-  };
+  }
 
   // --------------------------------------------------------------------------
   /**
@@ -2575,7 +2575,7 @@ class SessionAPIs {
     } else {
       return ViewerUtils.proxyRequest(req, res);
     }
-  };
+  }
 
   // --------------------------------------------------------------------------
   /**
@@ -2638,7 +2638,7 @@ class SessionAPIs {
           });
         });
     }
-  };
+  }
 
   // --------------------------------------------------------------------------
   /**
@@ -2699,7 +2699,7 @@ class SessionAPIs {
           });
         });
     }
-  };
+  }
 
   // --------------------------------------------------------------------------
   /**
@@ -2982,7 +2982,7 @@ class SessionAPIs {
       }
       await send({}, true);
     });
-  };
+  }
 
   // --------------------------------------------------------------------------
   /**
@@ -3004,7 +3004,7 @@ class SessionAPIs {
 
       return res.end(data);
     });
-  };
+  }
 
   // --------------------------------------------------------------------------
   /**
@@ -3031,7 +3031,7 @@ class SessionAPIs {
 
       res.send(PNG.sync.write(png, { inputColorType: 0, colorType: 0, bitDepth: 8, inputHasAlpha: false }));
     });
-  };
+  }
 
   // --------------------------------------------------------------------------
   /**
@@ -3049,7 +3049,7 @@ class SessionAPIs {
    */
   static getPCAP (req, res) {
     return SessionAPIs.#sessionsPcap(req, res, SessionAPIs.#writePcap, 'pcap');
-  };
+  }
 
   // --------------------------------------------------------------------------
   /**
@@ -3064,7 +3064,7 @@ class SessionAPIs {
    */
   static getPCAPNG (req, res) {
     return SessionAPIs.#sessionsPcap(req, res, SessionAPIs.#writePcapNg, 'pcapng');
-  };
+  }
 
   // --------------------------------------------------------------------------
   /**
@@ -3081,7 +3081,7 @@ class SessionAPIs {
     SessionAPIs.#writePcap(res, req.params.id, { writeHeader }, () => {
       res.end();
     });
-  };
+  }
 
   // --------------------------------------------------------------------------
   static postPCAPFromNode (req, res) {
@@ -3091,7 +3091,7 @@ class SessionAPIs {
     SessionAPIs.#writePcap(res, req.body, { writeHeader }, () => {
       res.end();
     });
-  };
+  }
 
   // --------------------------------------------------------------------------
   /**
@@ -3108,7 +3108,7 @@ class SessionAPIs {
     SessionAPIs.#writePcapNg(res, req.params.id, { writeHeader }, () => {
       res.end();
     });
-  };
+  }
 
   // --------------------------------------------------------------------------
   /**
@@ -3141,7 +3141,7 @@ class SessionAPIs {
         res.end();
       });
     });
-  };
+  }
 
   // --------------------------------------------------------------------------
   /**
@@ -3192,7 +3192,7 @@ class SessionAPIs {
     } catch (err) {
       return res.send(internals.emptyPNG);
     }
-  };
+  }
 
   // --------------------------------------------------------------------------
   /**
@@ -3217,7 +3217,7 @@ class SessionAPIs {
     } catch (err) {
       return res.send('Error');
     }
-  };
+  }
 
   // --------------------------------------------------------------------------
   /**
@@ -3299,7 +3299,7 @@ class SessionAPIs {
         }
       });
     });
-  };
+  }
 
   // --------------------------------------------------------------------------
   /**
@@ -3311,7 +3311,7 @@ class SessionAPIs {
    */
   static getDecodings (req, res) {
     res.json(decode.settings());
-  };
+  }
 
   // --------------------------------------------------------------------------
   /**
@@ -3336,7 +3336,7 @@ class SessionAPIs {
         return res.end('No Match');
       }
     });
-  };
+  }
 
   // --------------------------------------------------------------------------
   /**
@@ -3398,7 +3398,7 @@ class SessionAPIs {
           sendResult(count);
         });
     }
-  };
+  }
 
   // --------------------------------------------------------------------------
   /**
@@ -3430,7 +3430,7 @@ class SessionAPIs {
     internals.sendSessionQueue.push(options, () => {
       res.end();
     });
-  };
+  }
 
   // --------------------------------------------------------------------------
   /**
@@ -3477,7 +3477,7 @@ class SessionAPIs {
         }
       });
     }
-  };
+  }
 
   // --------------------------------------------------------------------------
   /**
@@ -3520,7 +3520,7 @@ class SessionAPIs {
           sendResult(count);
         });
     }
-  };
+  }
 
   // --------------------------------------------------------------------------
   /**
@@ -3674,7 +3674,7 @@ class SessionAPIs {
       }
       return res.send({ success: true });
     });
-  };
-};
+  }
+}
 
 module.exports = SessionAPIs;

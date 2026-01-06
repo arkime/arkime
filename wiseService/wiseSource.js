@@ -158,7 +158,7 @@ class WISESource {
     } else if (line.lastIndexOf('view:', 0) === 0) {
       this.view += line.substring(5) + '\n';
     }
-  };
+  }
 
   // ----------------------------------------------------------------------------
   /**
@@ -197,7 +197,7 @@ class WISESource {
       }
       endCb(err);
     });
-  };
+  }
 
   // ----------------------------------------------------------------------------
   /**
@@ -393,7 +393,7 @@ class WISESource {
     } else {
       this.tagsResult = WISESource.emptyResult;
     }
-  };
+  }
 
   /** The format of the source if options.formatSetting was set to true. */
   format;
@@ -415,7 +415,7 @@ class WISESource {
     } else {
       throw new Error(`${this.section} - ERROR not loading unknown data format - ${this.format}`);
     }
-  };
+  }
 
   /** The wise item type of the source if options.typeSetting was set to true. */
   type;
@@ -427,7 +427,7 @@ class WISESource {
       throw new Error(`${this.section} - ERROR not loading since missing required type setting`);
     }
     this.typeFunc = this.api.funcName(this.type);
-  };
+  }
 
   // ----------------------------------------------------------------------------
   /** A simple constant that should be used when needing to represent an empty result */
@@ -471,7 +471,7 @@ class WISESource {
     }
     buf[0] = arguments.length / 2;
     return buf;
-  };
+  }
 
   // ----------------------------------------------------------------------------
   /**
@@ -510,7 +510,7 @@ class WISESource {
     }
     buf[0] = num;
     return buf;
-  };
+  }
 
   // ----------------------------------------------------------------------------
   /**
@@ -531,7 +531,7 @@ class WISESource {
     }
 
     return JSON.stringify(collection).replace(/},{/g, '},\n{');
-  };
+  }
 
   // ----------------------------------------------------------------------------
   /**
@@ -569,7 +569,7 @@ class WISESource {
       }
       setTimeout(cb, 100, err?.response?.status ?? 404);
     });
-  };
+  }
 
   // ----------------------------------------------------------------------------
   /**
@@ -579,7 +579,7 @@ class WISESource {
    */
   itemCount () {
     return 0;
-  };
+  }
 }
 /**
  * Get the raw source data for editing.

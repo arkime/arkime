@@ -883,7 +883,7 @@ class Auth {
       .createHash('md5')
       .update(str)
       .digest(encoding || 'hex');
-  };
+  }
 
   // ----------------------------------------------------------------------------
   // Encrypt the hashed password for storing
@@ -908,7 +908,7 @@ class Auth {
   static pass2store (userId, password) {
     // md5 is required because of http digest
     return Auth.ha12store(Auth.pass2ha1(userId, password));
-  };
+  }
 
   // ----------------------------------------------------------------------------
   // Decrypt the encrypted hashed password, it is still hashed
@@ -930,7 +930,7 @@ class Auth {
       console.log(`passwordSecret set in the [${Auth.#passwordSecretSection}] section can not decrypt '${userId}' information.  Make sure passwordSecret is the same for all nodes/applications. You may need to re-add users or reset passwords if you've changed the secret.`, e);
       return '';
     }
-  };
+  }
 
   // ----------------------------------------------------------------------------
   // Encrypt an object into an auth string
@@ -986,7 +986,7 @@ class Auth {
     e = iv.toString('hex') + '.' + e;
     const h = crypto.createHmac('sha256', secret).update(e).digest('hex');
     return e + '.' + h;
-  };
+  }
 
   // ----------------------------------------------------------------------------
   // Decrypt the auth string into an object
@@ -1052,7 +1052,7 @@ class Auth {
       console.log(error);
       throw new Error('Incorrect auth supplied');
     }
-  };
+  }
 
   // ----------------------------------------------------------------------------
   static addS2SAuth (options, user, node, path, secret) {

@@ -117,7 +117,7 @@ class PassiveTotalSource extends WISESource {
     if (this.waiting.length >= 25) {
       this.performQuery();
     }
-  };
+  }
 
   // ----------------------------------------------------------------------------
   getIp = PassiveTotalSource.prototype.fetch;

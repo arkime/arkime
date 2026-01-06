@@ -323,7 +323,9 @@ ${Config.arkimeWebURL()}hunt
       }
 
       // clear the running hunt job if this is it
-      if (hunt.status === 'running') { HuntAPIs.#runningHuntJob = undefined; }
+      if (HuntAPIs.#runningHuntJob && HuntAPIs.#runningHuntJob.id === req.params.id) {
+        HuntAPIs.#runningHuntJob = undefined;
+      }
 
       try {
         await Db.updateHunt(req.params.id, { status: huntStatus }, req.query.cluster);
@@ -740,7 +742,7 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
     } catch (err) {
       console.log('ERROR - processHuntJobs - fetching hunt jobs', util.inspect(err, false, 50));
     }
-  };
+  }
 
   // --------------------------------------------------------------------------
   // APIs
@@ -913,7 +915,7 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
       console.log(`ERROR - ${req.method} /api/hunt`, util.inspect(err, false, 50));
       return res.serverError(500, 'Error creating hunt');
     }
-  };
+  }
 
   // --------------------------------------------------------------------------
   /**
@@ -1018,7 +1020,7 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
       console.log(`ERROR - ${req.method} /api/hunts`, util.inspect(err, false, 50));
       return res.serverError(500, 'Error retrieving hunts');
     });
-  };
+  }
 
   // --------------------------------------------------------------------------
   /**
@@ -1045,7 +1047,7 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
       console.log(`ERROR - ${req.method} /api/hunt/%s`, ArkimeUtil.sanitizeStr(req.params.id), util.inspect(err, false, 50));
       return res.serverError(500, 'Error deleting hunt');
     }
-  };
+  }
 
   // --------------------------------------------------------------------------
   /**
@@ -1083,7 +1085,7 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
       console.log(`ERROR - ${req.method} /api/hunt/%s/cancel`, ArkimeUtil.sanitizeStr(req.params.id), util.inspect(err, false, 50));
       return res.serverError(500, 'Error canceling hunt');
     }
-  };
+  }
 
   // --------------------------------------------------------------------------
   /**
@@ -1096,7 +1098,7 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
    */
   static pauseHunt (req, res) {
     HuntAPIs.#updateHuntStatus(req, res, 'paused', 'Paused hunt successfully', 'Error pausing hunt');
-  };
+  }
 
   // --------------------------------------------------------------------------
   /**
@@ -1109,7 +1111,7 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
    */
   static playHunt (req, res) {
     HuntAPIs.#updateHuntStatus(req, res, 'queued', 'Queued hunt successfully', 'Error starting hunt');
-  };
+  }
 
   // --------------------------------------------------------------------------
   /**
@@ -1172,7 +1174,7 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
       console.log(`ERROR - ${req.method} /api/hunt/%s/removefromsessions`, ArkimeUtil.sanitizeStr(req.params.id), util.inspect(err, false, 50));
       return res.serverError(500, 'Unable to remove hunt name and ID from the matched sessions.');
     }
-  };
+  }
 
   // --------------------------------------------------------------------------
   /**
@@ -1211,7 +1213,7 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
       console.log(`ERROR - ${req.method} /api/hunt/%s/users (getHunt)`, ArkimeUtil.sanitizeStr(req.params.id), util.inspect(err, false, 50));
       return res.serverError(500, 'Unable update hunt');
     }
-  };
+  }
 
   // --------------------------------------------------------------------------
   /**
@@ -1268,7 +1270,7 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
       console.log(`ERROR - ${req.method} /api/hunt/%s/users (getHunt)`, ArkimeUtil.sanitizeStr(req.params.id), util.inspect(err, false, 50));
       return res.serverError(500, 'Unable to add user(s)');
     }
-  };
+  }
 
   // --------------------------------------------------------------------------
   /**
@@ -1305,7 +1307,7 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
       console.log(`ERROR - ${req.method} /api/hunt/%s/user/%s (getHunt)`, ArkimeUtil.sanitizeStr(req.params.id), ArkimeUtil.sanitizeStr(req.params.user), util.inspect(err, false, 50));
       return res.serverError(500, 'Unable to remove user');
     }
-  };
+  }
 
   // --------------------------------------------------------------------------
   /**
@@ -1360,7 +1362,7 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
       console.log(`ERROR - ${req.method} /api/hunt/%s/%s/remote/%s`, ArkimeUtil.sanitizeStr(req.params.nodeName), ArkimeUtil.sanitizeStr(req.params.huntId), ArkimeUtil.sanitizeStr(req.params.sessionId), util.inspect(err, false, 50));
       if (!res.headersSent) { res.send({ matched: false, error: err }); }
     });
-  };
-};
+  }
+}
 
 module.exports = HuntAPIs;

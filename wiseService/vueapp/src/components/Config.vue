@@ -799,7 +799,7 @@ export default {
           const match = line.match(regex.section);
           value[match[1]] = {};
           section = match[1];
-        };
+        }
       });
       return value;
     },

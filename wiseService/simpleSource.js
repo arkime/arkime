@@ -79,7 +79,7 @@ class SimpleSource extends WISESource {
       res.write(str);
     });
     res.end();
-  };
+  }
 
   // ----------------------------------------------------------------------------
   /**
@@ -106,7 +106,7 @@ class SimpleSource extends WISESource {
     // Found, so combine the two results (per item, and per source)
     const newresult = WISESource.combineResults([result, this.tagsResult]);
     return cb(null, newresult);
-  };
+  }
 
   // ----------------------------------------------------------------------------
   /**
@@ -181,8 +181,8 @@ class SimpleSource extends WISESource {
         console.log(this.section, '- Done Loading', count, 'elements');
       });
     });
-  };
-};
+  }
+}
 
 /**
  * Each simple source must implement this method.

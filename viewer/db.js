@@ -83,7 +83,7 @@ Db.initialize = async (info) => {
   internals.regressionTests = info.regressionTests ?? false;
 
   const esSSLOptions = { rejectUnauthorized: !internals.info.insecure };
-  if (internals.info.caTrustFile) { esSSLOptions.ca = ArkimeUtil.certificateFileToArray(internals.info.caTrustFile); };
+  if (internals.info.caTrustFile) { esSSLOptions.ca = ArkimeUtil.certificateFileToArray(internals.info.caTrustFile); }
   if (info.esClientKey) {
     esSSLOptions.key = fs.readFileSync(info.esClientKey);
     esSSLOptions.cert = fs.readFileSync(info.esClientCert);

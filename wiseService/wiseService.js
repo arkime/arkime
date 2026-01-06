@@ -1560,7 +1560,7 @@ if (internals.webconfig) {
             config[section][key] = ArkimeConfig.getFull(section, key);
           }
         }
-      };
+      }
     }
 
     if (ArkimeConfig.regressionTests) {

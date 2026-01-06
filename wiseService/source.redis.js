@@ -73,7 +73,7 @@ class RedisSource extends WISESource {
         }
       }
     });
-  };
+  }
 
   // ----------------------------------------------------------------------------
   fetchDomain (key, cb) {
@@ -83,7 +83,7 @@ class RedisSource extends WISESource {
       }
       return cb(err, result);
     });
-  };
+  }
 }
 // ----------------------------------------------------------------------------
 exports.initSource = function (api) {

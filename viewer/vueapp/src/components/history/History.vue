@@ -437,7 +437,7 @@ export default {
         obj.name = $t(`history.${key}Name`);
         obj.help = $t(`history.${key}Help`);
         return obj;
-      };
+      }
       return [
         intl({ sort: 'timestamp', width: 13 }),
         intl({ sort: 'range', width: 11, classes: 'text-end' }),
