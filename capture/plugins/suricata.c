@@ -346,7 +346,7 @@ LOCAL void suricata_process()
             item->flow_id = g_strndup(line + out[i + 2], out[i + 3]);
             item->flow_id_len = out[i + 3];
         } else if (MATCH(line, "proto")) {
-            // Match on prototol by name or by
+            // Match on protocol by name or by
             // IANA number: https://www.iana.org/assignments/protocol-numbers/protocol-numbers.xhtml
             if (strncmp("TCP", line + out[i + 2], 3) == 0 || strncmp("006", line + out[i + 2], 3) == 0)
                 item->ses = SESSION_TCP;
