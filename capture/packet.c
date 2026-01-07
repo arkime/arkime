@@ -382,7 +382,7 @@ LOCAL void arkime_packet_process(ArkimePacket_t *packet, int thread)
             ARKIME_THREAD_INCR_NUM(writtenBytes, packet->pktlen);
 
             // If the last fileNum used in the session isn't the same as the
-            // lastest packets fileNum then we need to add to the filePos and
+            // latest packets fileNum then we need to add to the filePos and
             // fileNum arrays.
             uint16_t len;
             if (session->lastFileNum != packet->writerFileNum) {
@@ -1194,7 +1194,7 @@ LOCAL ArkimePacketRC arkime_packet_ip6(ArkimePacketBatch_t *batch, ArkimePacket_
             break;
         case IPPROTO_FRAGMENT:
 #ifdef DEBUG_PACKET
-            LOG("ERROR - Don't support ip6 fragements yet!");
+            LOG("ERROR - Don't support ip6 fragments yet!");
 #endif
             return ARKIME_PACKET_UNKNOWN;
 
@@ -1558,7 +1558,7 @@ void arkime_packet_batch(ArkimePacketBatch_t *batch, ArkimePacket_t *const packe
 
     if (likely(rc == ARKIME_PACKET_DO_PROCESS) && unlikely(packet->mProtocol == 0)) {
         if (config.debug)
-            LOG("Packet was market as do process but no mProtocol was set");
+            LOG("Packet was marked as do process but no mProtocol was set");
         rc = ARKIME_PACKET_UNKNOWN;
     }
 

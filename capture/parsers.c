@@ -644,7 +644,7 @@ LOCAL int arkime_parsers_load_so(const char *path)
 void arkime_parsers_register_load_extension(const char *extension, ArkimeParserLoadFunc loadFunc)
 {
     if (extension[0] != '.') {
-        LOGEXIT("ERROR - Extension '%s'must start with a .", extension);
+        LOGEXIT("ERROR - Extension '%s' must start with a .", extension);
     }
     if (!extensionsArr) {
         extensionsArr = g_ptr_array_new_full(4, NULL);

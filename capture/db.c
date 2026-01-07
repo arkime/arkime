@@ -1864,7 +1864,7 @@ LOCAL void arkime_db_update_stats(int n, gboolean sync)
                 free(data);
             arkime_http_free_buffer(json);
         } else {
-            // Dropable if the current time isn't first 2 seconds of each minute
+            // Droppable if the current time isn't first 2 seconds of each minute
             if ((cursec % 60) >= 2) {
                 arkime_http_schedule(esServer, "POST", stats_key, stats_key_len, json, json_len, NULL, ARKIME_HTTP_PRIORITY_DROPABLE, NULL, NULL);
             } else {

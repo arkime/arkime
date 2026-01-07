@@ -90,7 +90,7 @@ LOCAL void irc_classify(ArkimeSession_t *session, const uint8_t *data, int len, 
     if (data[0] == ':' && !arkime_memstr((char *)data, len, " NOTICE ", 8))
         return;
 
-    //If a USER packet must have NICK or +iw with it so we don't pickup FTP
+    //If a USER packet must have NICK or +iw with it so we don't pick up FTP
     if (data[0] == 'U' && !arkime_memstr((char *)data, len, "\nNICK ", 6) && !arkime_memstr((char *)data, len, " +iw ", 5)) {
         return;
     }

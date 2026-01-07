@@ -70,7 +70,7 @@ int arkime_field_by_exp_add_internal(const char *exp, ArkimeFieldType type, Arki
 /******************************************************************************/
 LOCAL void arkime_field_by_exp_add_count(const char *exp, int cntForPos)
 {
-    // Fake fields don't actully have a cnt
+    // Fake fields don't actually have a cnt
     if (cntForPos == -1) {
         return;
     }
@@ -1523,7 +1523,7 @@ void arkime_field_ops_run_match(ArkimeSession_t *session, ArkimeFieldOps_t *ops,
 
         // Internal Fields
         if (fieldPos >= config.minInternalField) {
-            LOG("WARNING - not allow to set %s", config.fields[fieldPos]->expression);
+            LOG("WARNING - not allowed to set %s", config.fields[fieldPos]->expression);
             continue;
         }
 
@@ -1725,7 +1725,7 @@ void arkime_field_ops_add_match(ArkimeFieldOps_t *ops, int fieldPos, char *value
         }
     } else {
         if (fieldPos >= config.minInternalField && !config.fields[fieldPos]->setCb) {
-            LOG("WARNING - not allow to set %s", config.fields[fieldPos]->expression);
+            LOG("WARNING - not allowed to set %s", config.fields[fieldPos]->expression);
             return;
         }
 

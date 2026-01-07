@@ -209,7 +209,7 @@ LOCAL char *smtp_gformat(char *format)
 /******************************************************************************/
 LOCAL void smtp_email_add_encoded(ArkimeSession_t *session, int pos, char *string, int len)
 {
-    /* Decode this nightmare - http://www.rfc-editor.org/rfc/rfc2047.txt */
+    /* Decode this nightmare - https://www.rfc-editor.org/rfc/rfc2047.txt */
     /* =?charset?encoding?encoded-text?= */
 
     char  output[0xfff];
