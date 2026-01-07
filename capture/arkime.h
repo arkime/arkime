@@ -189,7 +189,7 @@ typedef enum {
 #define ARKIME_FIELD_FLAG_CNT                0x1000
 /* Added -cnt */
 #define ARKIME_FIELD_FLAG_ECS_CNT            0x2000
-/* prepend ip stuff - dont use*/
+/* prepend ip stuff - don't use*/
 #define ARKIME_FIELD_FLAG_IPPRE              0x4000
 /* new value has to be different from last value */
 #define ARKIME_FIELD_FLAG_DIFF_FROM_LAST     0x8000

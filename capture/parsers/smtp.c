@@ -861,7 +861,7 @@ LOCAL int smtp_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, i
             email->bdatRemaining[which]--;
             if (email->bdatRemaining[which] == 0) {
 #ifdef EMAILDEBUG
-                printf("%d %d reseting to CMD %s\n", which, *state, line->str);
+                printf("%d %d resetting to CMD %s\n", which, *state, line->str);
 #endif
                 *state = EMAIL_CMD;
                 email->inBDAT &=  ~(1 << which);

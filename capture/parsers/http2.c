@@ -256,7 +256,7 @@ LOCAL void http2_parse_frame_push_promise(ArkimeSession_t *session, HTTP2Info_t 
  */
 LOCAL void http2_parse_frame_data(ArkimeSession_t *session, HTTP2Info_t *http2, int which, uint8_t flags, uint32_t streamId, const uint8_t *in, int inlen, int initial)
 {
-    // If first packet check for padding/end and save it for when dataneeded is 0
+    // If first packet check for padding/end and save it for when dataNeeded is 0
     if (initial) {
         if (flags & NGHTTP2_FLAG_PADDED) {
             http2->dataPadding[which] = in[0];
