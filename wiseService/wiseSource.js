@@ -446,28 +446,38 @@ class WISESource {
    * @returns {buffer} - the endcoded results
    */
   static encodeResult () {
-    let l;
+    const vals = [];
+    const lens = [];
     let len = 0;
+
     for (let a = 1; a < arguments.length; a += 2) {
-      if (typeof (arguments[a]) === 'number') {
-        arguments[a] = arguments[a].toString();
+      let val = arguments[a];
+      if (typeof (val) === 'number') {
+        val = val.toString();
       }
-      l = Buffer.byteLength(arguments[a]);
+
+      let l = Buffer.byteLength(val);
       if (l > 250) {
-        arguments[a] = arguments[a].substring(0, 240);
+        val = val.substring(0, 240);
+        l = Buffer.byteLength(val);
       }
-      len += 3 + Buffer.byteLength(arguments[a]);
+      vals.push(val);
+      lens.push(l);
+      len += 3 + l;
     }
 
     const buf = Buffer.allocUnsafe(len + 1);
     let offset = 1;
+    let idx = 0;
     for (let a = 1; a < arguments.length; a += 2) {
       buf.writeUInt8(arguments[a - 1], offset);
-      len = Buffer.byteLength(arguments[a]);
-      buf.writeUInt8(len + 1, offset + 1);
-      l = buf.write(arguments[a], offset + 2);
+      const l = lens[idx];
+      const val = vals[idx];
+      buf.writeUInt8(l + 1, offset + 1);
+      buf.write(val, offset + 2);
       buf.writeUInt8(0, offset + l + 2);
       offset += 3 + l;
+      idx++;
     }
     buf[0] = arguments.length / 2;
     return buf;

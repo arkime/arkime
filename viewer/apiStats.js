@@ -827,9 +827,9 @@ class StatsAPIs {
       const sortField = req.query.sortField || 'action';
       if (sortField === 'action' || sortField === 'user') {
         if (req.query.desc === 'true') {
-          rtasks = rtasks.sort((a, b) => { return b.action.localeCompare(a.index); });
+          rtasks = rtasks.sort((a, b) => { return b[sortField].localeCompare(a[sortField]); });
         } else {
-          rtasks = rtasks.sort((a, b) => { return a.action.localeCompare(b.index); });
+          rtasks = rtasks.sort((a, b) => { return a[sortField].localeCompare(b[sortField]); });
         }
       } else {
         if (req.query.desc === 'true') {

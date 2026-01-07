@@ -700,7 +700,7 @@ class ArkimeUtil {
 
   // ----------------------------------------------------------------------------
   /**
-   * Create a decipher object with AES-192-CBC algorithm and no IV like cryptoDeipher did
+   * Create a decipher object with AES-192-CBC algorithm and no IV like cryptoDecipher did
    */
   static createDecipherAES192NoIV (password) {
     const result = ArkimeUtil.#evpBytesToKey(password, 24, 16);

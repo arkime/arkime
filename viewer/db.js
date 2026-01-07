@@ -1827,7 +1827,7 @@ Db.getSequenceNumber = async (sName) => {
 };
 
 Db.numberOfDocuments = async (index, options) => {
-  // count interface is slow for larget data sets, don't use for sessions unless multiES
+  // count interface is slow for large data sets, don't use for sessions unless multiES
   if (index !== 'sessions2-*' || internals.multiES) {
     const params = { index: fixIndex(index), ignore_unavailable: true };
     Db.merge(params, options);
