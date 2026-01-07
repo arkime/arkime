@@ -85,7 +85,7 @@ exports.initSource = function (api) {
     fields: [
       { name: 'type', required: true, help: 'The wise query type this source supports' },
       { name: 'tags', required: false, help: 'Comma separated list of tags to set for matches', regex: '^[-a-z0-9,]+' },
-      { name: 'format', required: false, help: 'The format data is in: csv (default), tagger, jsonl, jsonl, or json', regex: '^(csv|tagger|jsonl|json)$' },
+      { name: 'format', required: false, help: 'The format data is in: csv (default), tagger, jsonl, or json', regex: '^(csv|tagger|jsonl|json)$' },
       { name: 'column', required: false, help: 'The numerical column number to use as the key', regex: '^[0-9]*$', ifField: 'format', ifValue: 'csv' },
       { name: 'arrayPath', required: false, help: "The path of where to find the array, if the json result isn't an array", ifField: 'format', ifValue: ['jsonl', 'json'] },
       { name: 'keyPath', required: true, help: 'The path of what field to use as the key', ifField: 'format', ifValue: ['jsonl', 'json'] },

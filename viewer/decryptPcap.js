@@ -54,7 +54,7 @@ async function main () {
         process.exit();
       });
 
-      // Doit
+      // Do it
       r.pipe(d).pipe(process.stdout);
     } else if (info.encoding === 'xor-2048') {
       let pos = 0;

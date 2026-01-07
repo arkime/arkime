@@ -1242,7 +1242,7 @@ class Pcap {
     return { results };
   }
 
-  // Needs to be rewritten since its possible for packets to be
+  // Needs to be rewritten since it's possible for packets to be
   // dropped by windowing and other things to actually be displayed allowed.
   // If multiple tcp sessions in one arkime session display can be wacky/wrong.
 

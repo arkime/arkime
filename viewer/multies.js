@@ -1181,7 +1181,7 @@ app.use(ArkimeUtil.expressErrorHandler);
 /// / Main
 /// ///////////////////////////////////////////////////////////////////////////////
 
-// Ping (HEAD /) periodically to maintian a list of active ES nodes
+// Ping (HEAD /) periodically to maintain a list of active ES nodes
 function pingESNode (client, node) {
   return new Promise((resolve, reject) => {
     client.ping({}, {

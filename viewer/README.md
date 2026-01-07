@@ -43,7 +43,7 @@ npm run start:dev
 
 For this command to work, your `tests/config.test.ini` must be valid.
 
-This command adds an admin user (if it doesn't already exists) and starts the node server and bundles all Vue app files into `viewer/vueapp/dist`.
+This command adds an admin user (if it doesn't already exist) and starts the node server and bundles all Vue app files into `viewer/vueapp/dist`.
 
 Webpack watches for changes to relevant Vue files, and re-bundles the Vue app after each save.
 

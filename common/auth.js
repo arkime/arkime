@@ -297,7 +297,7 @@ class Auth {
         done(null, user.userId);
       });
 
-      // load the user using the userid in the passport session
+      // load the user using the userId in the passport session
       passport.deserializeUser(function (userId, done) {
         User.getUserCache(userId, async (err, user) => {
           if (err) { return done('ERROR - passport-session getUser - user: ' + userId + ' err:' + err); }
@@ -357,7 +357,7 @@ class Auth {
 
   // ----------------------------------------------------------------------------
   /**
-   * Check's a user's permission to access a resource to update/delete
+   * Checks a user's permission to access a resource to update/delete
    * only allow admins, editors, or creator can update/delete resources
    * @param {function} dbFunc The function to call to get the resource
    * @param {string} ownerProperty The property on the resource that contains the owner
@@ -772,7 +772,7 @@ class Auth {
           console.log(`WARNING - the userAutoCreateTmpl didn't set a userId field, instead using header/oidc set '${userId}'`);
         }
       } else {
-        console.log(`WARNING - the userAutoCreateTmpl set userId to a different value than header/oidc '${userId}' while the userAutoCreateTmpl returned '${nuser.userId}', reseting to use '${userId}'`);
+        console.log(`WARNING - the userAutoCreateTmpl set userId to a different value than header/oidc '${userId}' while the userAutoCreateTmpl returned '${nuser.userId}', resetting to use '${userId}'`);
       }
       nuser.userId = userId;
     }
@@ -1109,7 +1109,7 @@ class Auth {
 class ESStore extends expressSession.Store {
   static #client;
   static #index;
-  static #ttl = 24 * 60 * 60 * 1000; // 1 hr
+  static #ttl = 24 * 60 * 60 * 1000; // 24 hrs
 
   constructor (options) {
     super();

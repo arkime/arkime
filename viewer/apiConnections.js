@@ -174,7 +174,7 @@ class ConnectionAPIs {
       resultSet.err = connQueries[0] ? connQueries[0].err : 'null query object';
 
       if (((connQueries[0]) && (connQueries[0].err)) || (!connQueries[0])) {
-        // propogate query errors up into the result set without doing a search
+        // propagate query errors up into the result set without doing a search
         console.log('ERROR - buildConnectionQuery -> dbConnectionQuerySearch', resultSet.resultId, util.inspect(resultSet.err, false, 50));
         return cb([resultSet]);
       } else {
@@ -332,7 +332,7 @@ class ConnectionAPIs {
         resultSetStatus.err = connResultSets[0] ? connResultSets[0].err : 'null resultset';
 
         if (((connResultSets[0]) && (connResultSets[0].err)) || (!connResultSets[0])) {
-          // propogate errors up (and stop processing)
+          // propagate errors up (and stop processing)
           console.log('ERROR - buildConnectionQuery -> processResultSets', resultSetStatus.resultId, util.inspect(resultSetStatus.err, false, 50));
           return processResultSetsCb([resultSetStatus]);
         } else {

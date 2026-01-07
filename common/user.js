@@ -492,7 +492,7 @@ class User {
    * @param {object} spiviewFieldConfigs - A list of SPIView page field configurations that a user has created.
    * @param {object} tableStates - A list of table states used to render Arkime tables as the user has configured them.
    * @param {number} welcomeMsgNum=0 - The message number that a user is on. Gets incremented when a user dismisses a message.
-   * @param {number} lastUsed - The date that the user last used Arkime. Format is milliseconds since Unix EPOC.
+   * @param {number} lastUsed - The date that the user last used Arkime. Format is milliseconds since Unix EPOCH.
    * @param {number} timeLimit - Limits the time range a user can query for.
    * @param {array} roles - The list of Arkime roles assigned to this user.
    * @param {array} roleAssigners - The list of userIds that can manage who has this (ROLE)
@@ -1946,7 +1946,14 @@ class UserRedisImplementation {
 
   async getAssignableRoles (userId) {
     const keys = await this.allRoles();
-    return keys.filter(async key => this.client.get(key).roleAssigners?.includes(userId));
+    const results = await Promise.all(keys.map(async key => {
+      const data = await this.client.get(key);
+      if (!data) { return false; }
+      const user = JSON.parse(data);
+      return user.roleAssigners?.includes(userId);
+    }));
+
+    return keys.filter((_, i) => results[i]);
   }
 
   async deleteAllUsers () {

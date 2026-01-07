@@ -68,7 +68,7 @@ function makeS3 (info) {
   s3Params.forcePathStyle = info.extra.pathStyle;
   s3Params.sslEnabled = info.extra.endpoint.startsWith('https://');
 
-  // Lets hope that we can find a credential provider elsewhere
+  // Let's hope that we can find a credential provider elsewhere
 
   s3 = new S3(s3Params);
   S3s.set(cacheKey, s3);

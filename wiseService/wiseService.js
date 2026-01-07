@@ -61,7 +61,7 @@ const internals = {
         { name: 'userAuthIps', required: false, help: 'Comma separated list of CIDRs to allow authed requests from' },
         { name: 'usersPrefix', required: false, help: 'The prefix used with db.pl --prefix for users OpenSearch/Elasticsearch, if empty arkime_ is used' },
         { name: 'sourcePath', required: false, help: 'Where to look for the source files. Defaults to "./"' },
-        { name: 'webBasePath', required: false, help: 'The base URL to wise requeests, must end with slash. Defaults to "/"' }
+        { name: 'webBasePath', required: false, help: 'The base URL to wise requests, must end with slash. Defaults to "/"' }
       ]
     },
     cache: {
@@ -547,7 +547,7 @@ class WISESourceAPI {
    * @typedef {Object} WISESourceAPI~ValueAction
    * @property {string} key - The key must be unique and is also used as the right click menu name if the name field is missing
    * @property {string} name - The name of the value action to show the user
-   * @property {string} [url] - The url to send the user, supports special subsitutions, must set url or func
+   * @property {string} [url] - The url to send the user, supports special substitutions, must set url or func
    * @property {string} [func] - A javascript function body to call, will be passed the name and value and must return the value, must set url or func
    * @property {string} [actionType] - If set to 'fetch' this will replace the menu option with the results of url or func
    * @property {string} [category] - Which category of fields should the value action be shown for, must set fields or category. <a href="settings#right-click">View available categories</a>
@@ -1101,7 +1101,7 @@ app.post('/get', function (req, res) {
 });
 // ----------------------------------------------------------------------------
 /**
- * GET - Used by wise UI to retrieve all the sources (unathenticated).
+ * GET - Used by wise UI to retrieve all the sources (unauthenticated).
  *
  * @name "/sources"
  * @returns {string|array} All the sources
@@ -1133,7 +1133,7 @@ app.get(
 );
 // ----------------------------------------------------------------------------
 /**
- * GET - Used by the wise UI to all the types known (unathenticated).
+ * GET - Used by the wise UI to all the types known (unauthenticated).
  *
  * @name "/types"
  * @returns {string|array} - all the types
@@ -1567,7 +1567,7 @@ if (internals.webconfig) {
       return res.send({ success: true, text: 'Would save, but regressionTests' });
     }
 
-    // Make sure updateTime has increased incase of clock sku
+    // Make sure updateTime has increased in case of clock sku
     config.wiseService.updateTime = Math.max(Date.now(), internals.updateTime + 1);
 
     ArkimeConfig.replace(config);
