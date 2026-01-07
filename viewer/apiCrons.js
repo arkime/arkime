@@ -635,7 +635,7 @@ class CronAPIs {
         const endTime = Math.floor(Date.now() / 1000) - internals.cronTimeout;
 
         // Go thru the queries, fetch the user, make the query
-        await async.eachSeries(Object.keys(queries), async (qid) => {
+        for (const qid of Object.keys(queries)) {
           const cq = queries[qid];
           let cluster = null;
 
@@ -644,7 +644,7 @@ class CronAPIs {
           }
 
           if (!cq.enabled || endTime < cq.lpValue) {
-            return;
+            continue;
           }
 
           if (cq.action.indexOf('forward:') === 0) {
@@ -654,11 +654,11 @@ class CronAPIs {
           const user = await ViewerUtils.getUserCacheIncAnon(cq.creator);
           if (!user) {
             console.log(`CRON - User ${cq.creator} doesn't exist`);
-            return;
+            continue;
           }
           if (!user.enabled) {
             console.log(`CRON - User '${cq.creator}' has been disabled on users tab, either delete their cron jobs or enable them`);
-            return;
+            continue;
           }
 
           const options = {
@@ -698,7 +698,7 @@ class CronAPIs {
             query.query.bool.filter.push(arkimeparser.parse(cq.query));
           } catch (e) {
             console.log("CRON - Couldn't compile periodic query expression", cq, e);
-            return;
+            continue;
           }
 
           if (user.getExpression()) {
@@ -709,7 +709,7 @@ class CronAPIs {
               query.query.bool.filter.push(userExpression);
             } catch (e) {
               console.log("CRON - Couldn't compile user forced expression", user.getExpression(), e);
-              return;
+              continue;
             }
           }
 
@@ -767,7 +767,7 @@ ${Config.arkimeWebURL()}${urlPath}${cq.description ? '\n' + cq.description : ''}
               }
             }
           }
-        });
+        }
 
         if (Config.debug > 1) {
           console.log('CRON - Finished one pass of all crons');

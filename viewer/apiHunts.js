@@ -660,14 +660,8 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
       fakeReq.query.view = hunt.query.view;
     }
 
-    BuildQuery.build(fakeReq, async (err, query, indices) => {
-      if (err) {
-        HuntAPIs.#pauseHuntJobWithError(hunt.id, hunt, {
-          value: 'Fatal Error: Session query expression parse error. Fix your search expression and create a new hunt.',
-          unrunnable: true
-        });
-        return;
-      }
+    try {
+      const { query } = await BuildQuery.buildPromise(fakeReq);
 
       await BuildQuery.lookupQueryItems(query.query.bool.filter);
       query.query.bool.filter[0] = {
@@ -687,7 +681,12 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
 
       // do sessions query
       HuntAPIs.#runHuntJob(hunt.id, hunt, query, user);
-    });
+    } catch (err) {
+      HuntAPIs.#pauseHuntJobWithError(hunt.id, hunt, {
+        value: 'Fatal Error: Session query expression parse error. Fix your search expression and create a new hunt.',
+        unrunnable: true
+      });
+    }
   }
 
   // --------------------------------------------------------------------------

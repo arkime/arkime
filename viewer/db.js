@@ -674,7 +674,11 @@ Db.searchScroll = async (index, query, options, cb) => {
     if (!cb) {
       return Db.search(index, query, options);
     }
-    return Db.search(index, query, options).then((data) => cb(null, data)).catch((err) => cb(err));
+    try {
+      return cb(null, await Db.search(index, query, options));
+    } catch (err) {
+      return cb(err);
+    }
   }
 
   try {

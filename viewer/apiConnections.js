@@ -20,11 +20,9 @@ let fieldsMap;
 
 ArkimeConfig.loaded(() => {
   if (!fieldsMap) {
-    setTimeout(() => { // make sure db.js loads before fetching fields
-      ViewerUtils.loadFields()
-        .then((result) => {
-          fieldsMap = result.fieldsMap;
-        });
+    setTimeout(async () => { // make sure db.js loads before fetching fields
+      const result = await ViewerUtils.loadFields();
+      fieldsMap = result.fieldsMap;
     });
   }
 });
@@ -46,7 +44,7 @@ class ConnectionAPIs {
   //
   // This code was factored out from buildConnections.
   // --------------------------------------------------------------------------
-  static #buildConnectionQuery (req, fields, options, fsrc, fdst, dstipport, resultId, cb) {
+  static async #buildConnectionQuery (req, fields, options, fsrc, fdst, dstipport, resultId, cb) {
     const result = {
       resultId,
       err: null,
@@ -119,35 +117,35 @@ class ConnectionAPIs {
       }
     } // resultId > 1 (calculating baseline query time frame)
 
-    BuildQuery.build(req, (bsqErr, query, indices) => {
-      if (bsqErr) {
-        console.log('ERROR - buildConnectionQuery -> buildSessionQuery', resultId, util.inspect(bsqErr, false, 50));
-        result.err = bsqErr;
-        return cb([result]);
+    try {
+      const { query, indices } = await BuildQuery.buildPromise(req, tmpReqQuery);
+
+      query.query.bool.filter.push({ exists: { field: req.query.srcField } });
+      query.query.bool.filter.push({ exists: { field: req.query.dstField } });
+
+      query.fields = fields;
+      query._source = false;
+      query.docvalue_fields = [fsrc, fdst];
+
+      if (dstipport) {
+        query.fields.push('destination.port');
+      }
+
+      result.query = JSON.parse(JSON.stringify(query));
+      result.indices = JSON.parse(JSON.stringify(indices));
+
+      if ((resultId === 1) && (doBaseline)) {
+        ConnectionAPIs.#buildConnectionQuery(req, fields, options, fsrc, fdst, dstipport, resultId + 1, (baselineResult) => {
+          return cb([result].concat(baselineResult));
+        });
       } else {
-        query.query.bool.filter.push({ exists: { field: req.query.srcField } });
-        query.query.bool.filter.push({ exists: { field: req.query.dstField } });
-
-        query.fields = fields;
-        query._source = false;
-        query.docvalue_fields = [fsrc, fdst];
-
-        if (dstipport) {
-          query.fields.push('destination.port');
-        }
-
-        result.query = JSON.parse(JSON.stringify(query));
-        result.indices = JSON.parse(JSON.stringify(indices));
-
-        if ((resultId === 1) && (doBaseline)) {
-          ConnectionAPIs.#buildConnectionQuery(req, fields, options, fsrc, fdst, dstipport, resultId + 1, (baselineResult) => {
-            return cb([result].concat(baselineResult));
-          });
-        } else {
-          return cb([result]);
-        }
-      } // bsqErr if/else
-    }, tmpReqQuery); // buildSessionQuery
+        return cb([result]);
+      }
+    } catch (bsqErr) {
+      console.log('ERROR - buildConnectionQuery -> buildSessionQuery', resultId, util.inspect(bsqErr, false, 50));
+      result.err = bsqErr;
+      return cb([result]);
+    }
   } // buildConnectionQuery
 
   // --------------------------------------------------------------------------
