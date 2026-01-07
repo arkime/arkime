@@ -290,7 +290,7 @@ LOCAL void wise_cb(int UNUSED(code), uint8_t *data, int data_len, gpointer uw)
             LOG("WISE Response %32.32s cnt %d pos %d", hash, cnt, hashPos);
 
         if (hashPos == FIELDS_MAP_MAX)
-            LOGEXIT("ERROR - Too many unique wise hashs");
+            LOGEXIT("ERROR - Too many unique wise hashes");
 
         if (hashPos == fieldsMapCnt) {
             fieldsMapHash[hashPos] = g_strndup((gchar *)hash, 32);
@@ -918,7 +918,7 @@ LOCAL void wise_load_wise_types()
         int v;
         for (v = 0; values[v]; v++) {
             if (types[type].fieldsLen == INTEL_TYPE_MAX_FIELDS)
-                CONFIGEXIT("wise-types '%s' has too man fields, max %d", keys[i], INTEL_TYPE_MAX_FIELDS);
+                CONFIGEXIT("wise-types '%s' has too many fields, max %d", keys[i], INTEL_TYPE_MAX_FIELDS);
 
             int pos;
             if  (strncmp("db:", values[v], 3) == 0)

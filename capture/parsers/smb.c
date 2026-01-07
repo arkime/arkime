@@ -614,7 +614,7 @@ LOCAL int smb_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, in
 
                 BSB_IMPORT_skip(bsb, 1);
                 BSB_IMPORT_u24(bsb, *remlen);
-                // Peak at SMBHEADER for version
+                // Peek at SMBHEADER for version
                 smb->version[which] = *(BSB_WORK_PTR(bsb));
                 *state = SMB_SMBHEADER;
                 break;

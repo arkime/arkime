@@ -303,7 +303,7 @@ LOCAL void tagger_free_ip (TaggerIP_t *tip)
 }
 /******************************************************************************/
 /*
- * Called by arkime when arkime is quiting
+ * Called by arkime when arkime is quitting
  */
 LOCAL void tagger_plugin_exit()
 {
@@ -409,7 +409,7 @@ LOCAL void tagger_unload_file(TaggerFile_t *file)
             if (tstring) {
                 tagger_remove_file(tstring->infos, file);
                 // We could check if files is now empty and remove the node, but the
-                // theory is most of the time it will be just readded in the load_file
+                // theory is most of the time it will be just re-added in the load_file
             }
         }
     }

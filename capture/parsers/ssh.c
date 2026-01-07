@@ -118,7 +118,7 @@ LOCAL int ssh_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, in
         }
     }
 
-    /* From packets 6-15 count number number of packets between 0-49 and 50-99 bytes.
+    /* From packets 6-15 count number of packets between 0-49 and 50-99 bytes.
      * If more of the bigger packets in both directions this probably is a reverse shell
      */
     if (!ssh->doneRS && ssh->packets[which] > 5) {

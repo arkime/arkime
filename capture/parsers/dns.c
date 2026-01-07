@@ -27,7 +27,7 @@ LOCAL  char                 *qclasses[MAX_QCLASSES] = {
     [255] = "ANY"
 };
 
-//http://en.wikipedia.org/wiki/List_of_DNS_record_types
+//https://en.wikipedia.org/wiki/List_of_DNS_record_types
 LOCAL  char                 *qtypes[MAX_QTYPES] = {
     [1]   = "A",
     [2]   = "NS",

@@ -362,7 +362,7 @@ LOCAL uint32_t tls_process_client_hello_data(ArkimeSession_t *session, const uin
         }
         BSB_IMPORT_skip(cbsb, skiplen);  // Session Id
 
-        BSB_IMPORT_u16(cbsb, skiplen);   // Ciper Suites Length
+        BSB_IMPORT_u16(cbsb, skiplen);   // Cipher Suites Length
         while (BSB_NOT_ERROR(cbsb) && skiplen > 0) {
             uint16_t c = 0;
             BSB_IMPORT_u16(cbsb, c);

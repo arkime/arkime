@@ -279,11 +279,11 @@ uint32_t arkime_config_int(GKeyFile *keyfile, const char *key, uint32_t d, uint3
     }
 
     if (value < min) {
-        LOG ("INFO: Reseting %s since %u is less then the min %u", key, value, min);
+        LOG ("INFO: Resetting %s since %u is less than the min %u", key, value, min);
         value = min;
     }
     if (value > max) {
-        LOG ("INFO: Reseting %s since %u is greater then the max %u", key, value, max);
+        LOG ("INFO: Resetting %s since %u is greater than the max %u", key, value, max);
         value = max;
     }
 
