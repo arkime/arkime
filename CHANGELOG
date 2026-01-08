@@ -87,6 +87,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #3517 Netmap FreeBSD support
   - #3547 Fix erspan vlan truncating at 7 bits instead of 12 bits
   - #3566 fix the sessions length being off by 1ms sometimes
+  - #3576 improve performance by batching packet processing to reduce lock contention
 ## Capture/Viewer
   - #3197 new sessionsStarted and sessionsPresent in files tab
   - #3210 new vlan.dot1q and vlan.dot1ad expressions
