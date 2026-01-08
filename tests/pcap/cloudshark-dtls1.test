@@ -61,7 +61,7 @@
             "firstPacket" : 1404648102097,
             "ipProtocol" : 17,
             "lastPacket" : 1404648102237,
-            "length" : 139,
+            "length" : 140,
             "network" : {
                "bytes" : 1631,
                "community_id" : "1:UPZ9f3UdNc+eoCm8yVYQOonoaBE=",
@@ -82,6 +82,10 @@
                1260,
                1600
             ],
+            "packetRange" : {
+               "gte" : 1404648102097,
+               "lte" : 1404648102237
+            },
             "protocol" : [
                "dtls",
                "udp"
@@ -573,7 +577,7 @@
             "firstPacket" : 1404648108283,
             "ipProtocol" : 17,
             "lastPacket" : 1404648108320,
-            "length" : 36,
+            "length" : 37,
             "network" : {
                "bytes" : 1025,
                "community_id" : "1:DuL94POE3Q8ma0tVDRZS9/PU/5o=",
@@ -588,6 +592,10 @@
                1735,
                1821
             ],
+            "packetRange" : {
+               "gte" : 1404648108283,
+               "lte" : 1404648108320
+            },
             "protocol" : [
                "dns",
                "udp"

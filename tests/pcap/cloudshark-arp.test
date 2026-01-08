@@ -38,6 +38,10 @@
                24,
                100
             ],
+            "packetRange" : {
+               "gte" : 1352595620652,
+               "lte" : 1352595620652
+            },
             "protocol" : [
                "arp"
             ],
@@ -121,6 +125,10 @@
                158,
                272
             ],
+            "packetRange" : {
+               "gte" : 1352595620652,
+               "lte" : 1352595620652
+            },
             "protocol" : [
                "icmp"
             ],
@@ -180,7 +188,7 @@
             "firstPacket" : 1352595625652,
             "ipProtocol" : 0,
             "lastPacket" : 1352595625653,
-            "length" : 0,
+            "length" : 1,
             "network" : {
                "bytes" : 102,
                "packets" : 2
@@ -194,6 +202,10 @@
                386,
                444
             ],
+            "packetRange" : {
+               "gte" : 1352595625652,
+               "lte" : 1352595625653
+            },
             "protocol" : [
                "arp"
             ],

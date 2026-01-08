@@ -83,7 +83,7 @@ class DatabricksIntegration extends Integration {
       }
     };
     return data;
-  };
+  }
 }
 
 const sections = ArkimeConfig.getSections().filter((e) => { return e.match(/^databricks:/); });

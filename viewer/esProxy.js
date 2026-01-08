@@ -50,7 +50,7 @@ ArkimeConfig.loaded(() => {
   const esClientKey = Config.get('esClientKey');
   const esClientCert = Config.get('esClientCert');
   const caTrustFile = Config.getFull(Config.nodeName(), 'caTrustFile');
-  if (caTrustFile) { esSSLOptions.ca = ArkimeUtil.certificateFileToArray(caTrustFile); };
+  if (caTrustFile) { esSSLOptions.ca = ArkimeUtil.certificateFileToArray(caTrustFile); }
   if (esClientKey) {
     esSSLOptions.key = fs.readFileSync(esClientKey);
     esSSLOptions.cert = fs.readFileSync(esClientCert);

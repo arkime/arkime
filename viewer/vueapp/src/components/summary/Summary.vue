@@ -329,6 +329,11 @@ const generateSummary = async () => {
       }
     }
 
+    // Handle spanning param as boolean
+    if (route.query.spanning === 'true') {
+      body.spanning = true;
+    }
+
     // Handle pagination params
     if (route.query.start) { body.start = route.query.start; }
     if (route.query.summaryLength) {

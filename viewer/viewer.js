@@ -62,7 +62,6 @@ const UserAPIs = require('./apiUsers');
 const HistoryAPIs = require('./apiHistory');
 const ShortcutAPIs = require('./apiShortcuts');
 const MiscAPIs = require('./apiMisc');
-require('./schemes');
 
 // registers a get and a post
 app.getpost = (route, mw, func) => { app.get(route, mw, func); app.post(route, mw, func); };
@@ -381,7 +380,9 @@ function createSessionDetail () {
           found[sfile] = '  include ' + dir + '/' + file + '\n';
         }
       }
-    } catch (e) {}
+    } catch (e) {
+      console.log('ERROR - loading plugin detail views', e);
+    }
   }
 
   const customViews = Config.keys('custom-views') || [];
@@ -920,7 +921,7 @@ function sendSessionWorker (options, cb) {
       preq.write(sessionStr);
       preq.write(buffer);
       preq.end();
-    };
+    }
     doRequest(true);
   }, undefined, 10);
 }
@@ -934,7 +935,7 @@ internals.sendSessionQueue = async.queue(sendSessionWorker, 5);
 // If less than 10 items are returned we don't delete anything, otherwise
 // ignore the 10 most recent files and delete files until we have enough free space.
 // Doesn't support mounting sub directories in main directory, don't do it.
-async function expireDevice (nodes, dirs, minFreeSpaceG, nextCb) {
+async function expireDevice (nodes, dirs, minFreeSpaceG) {
   if (Config.debug > 0) {
     console.log('EXPIRE - device', nodes, 'dirs', dirs, 'minFreeSpaceG', minFreeSpaceG);
   }
@@ -973,7 +974,7 @@ async function expireDevice (nodes, dirs, minFreeSpaceG, nextCb) {
       if (Config.debug > 0) {
         console.log('EXPIRE - device error', data.error || 'no data.hits');
       }
-      return nextCb();
+      return;
     }
 
     if (Config.debug === 1) {
@@ -984,13 +985,13 @@ async function expireDevice (nodes, dirs, minFreeSpaceG, nextCb) {
 
     if (data.hits.total <= 10) {
       console.log(`EXPIRE WARNING - not deleting any files since ${data.hits.total} <= 10 minimum files per node. (Nodes: ${nodes} Directories: ${Array.from(dirs).join(',')}) Your disk(s) may fill!!! See https://arkime.com/faq#pcap-deletion`);
-      return nextCb();
+      return;
     }
 
     // Keep 10 most recent files by truncating array
     data.hits.hits.length -= 10;
 
-    async.forEachSeries(data.hits.hits, function (item, forNextCb) {
+    for (const item of data.hits.hits) {
       const fields = item._source || item.fields;
 
       let freeG;
@@ -1011,27 +1012,26 @@ async function expireDevice (nodes, dirs, minFreeSpaceG, nextCb) {
             }
           });
         }
-        return Db.deleteFile(fields.node, item._id, fields.name).then(() => forNextCb());
+        await Db.deleteFile(fields.node, item._id, fields.name);
       } else {
         if (Config.debug > 0) {
           console.log('EXPIRE - device not deleting', freeG, minFreeSpaceG, fields.name);
         }
-        return forNextCb('DONE');
+        break;
       }
-    }, function () {
-      return nextCb();
-    });
+    }
+    return;
   } catch (err) {
     if (Config.debug > 0) {
       console.log('EXPIRE - device error', JSON.stringify(err, false, 2));
     }
-    return nextCb();
+    return;
   }
 }
 
 // Check a single device to see if we need to expire any files on it.
 // A single device might have multiple nodes and multiple directories.
-function expireCheckDevice (nodes, stat, nextCb) {
+async function expireCheckDevice (nodes, stat) {
   let doit = false;
   let minFreeSpaceG = 0;
 
@@ -1060,9 +1060,7 @@ function expireCheckDevice (nodes, stat, nextCb) {
   }
 
   if (doit) {
-    expireDevice(nodes, stat.dirs, minFreeSpaceG, nextCb);
-  } else {
-    return nextCb();
+    await expireDevice(nodes, stat.dirs, minFreeSpaceG);
   }
 }
 
@@ -1108,10 +1106,9 @@ async function expireCheckAll () {
   }
 
   // Now go through all the local devices and check them one at a time
-  const keys = Object.keys(devToStat);
-  async.forEachSeries(keys, function (key, cb) {
-    expireCheckDevice(nodes, devToStat[key], cb);
-  });
+  for (const key of Object.keys(devToStat)) {
+    await expireCheckDevice(nodes, devToStat[key]);
+  }
 }
 
 // ============================================================================

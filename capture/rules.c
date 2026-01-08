@@ -1521,7 +1521,7 @@ LOCAL void arkime_rules_check_rule_fields(ArkimeSession_t *const session, Arkime
         arkime_rules_match(session, rule);
     } else {
 #ifdef RULES_DEBUG
-        LOG("%s %s didn't matched", rule->filename, rule->name);
+        LOG("%s %s didn't match", rule->filename, rule->name);
 #endif
     }
 }

@@ -110,7 +110,7 @@
             "initRTT" : 47,
             "ipProtocol" : 6,
             "lastPacket" : 1193676056235,
-            "length" : 380,
+            "length" : 379,
             "network" : {
                "bytes" : 4196,
                "community_id" : "1:C1UCMVQ0stzcOTtArGfbNxbT8e8=",
@@ -141,6 +141,10 @@
                3953,
                4235
             ],
+            "packetRange" : {
+               "gte" : 1193676055856,
+               "lte" : 1193676056235
+            },
             "protocol" : [
                "pppoe",
                "tcp",

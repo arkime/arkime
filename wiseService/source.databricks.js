@@ -109,7 +109,7 @@ class DatabricksSource extends WISESource {
       }
     }
     this.cache = cache;
-  };
+  }
 
   // ----------------------------------------------------------------------------
   itemCount () {
@@ -133,7 +133,7 @@ class DatabricksSource extends WISESource {
       res.write(str);
     });
     res.end();
-  };
+  }
 
   // ----------------------------------------------------------------------------
   sendResultPeriodic (key, cb) {
@@ -154,7 +154,7 @@ class DatabricksSource extends WISESource {
     // Found, so combine the two results (per item, and per source)
     const newresult = WISESource.combineResults([result, this.tagsResult]);
     return cb(null, newresult);
-  };
+  }
 
   // ----------------------------------------------------------------------------
   async sendResult (key, cb) {
@@ -181,7 +181,7 @@ class DatabricksSource extends WISESource {
     }
     const newresult = WISESource.combineResults([WISESource.encodeResult.apply(null, args), this.tagsResult]);
     return cb(null, newresult);
-  };
+  }
 }
 
 // ----------------------------------------------------------------------------

@@ -24,6 +24,7 @@ const commonJavaScriptRules = {
     "generator-star-spacing": "off",
     "no-debugger": process.env.NODE_ENV === "production" ? "error" : "off",
     "semi": ["error", "always"],
+    "no-extra-semi": "error",
     "handle-callback-err": ["error", "never"],
     "prefer-promise-reject-errors": 0,
     "standard/no-callback-literal": "off",

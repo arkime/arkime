@@ -61,6 +61,10 @@
             "packetPos" : [
                24
             ],
+            "packetRange" : {
+               "gte" : 1467241187446,
+               "lte" : 1467241187446
+            },
             "protocol" : [
                "quic",
                "udp"

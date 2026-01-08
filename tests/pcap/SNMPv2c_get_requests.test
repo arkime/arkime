@@ -30,7 +30,7 @@
             "firstPacket" : 1222366202157,
             "ipProtocol" : 17,
             "lastPacket" : 1222366202159,
-            "length" : 1,
+            "length" : 2,
             "network" : {
                "bytes" : 176,
                "community_id" : "1:19JH6XlC94lkwKduyakUMYKuSko=",
@@ -45,6 +45,10 @@
                24,
                123
             ],
+            "packetRange" : {
+               "gte" : 1222366202157,
+               "lte" : 1222366202159
+            },
             "protocol" : [
                "snmp",
                "udp"
@@ -131,7 +135,7 @@
             "firstPacket" : 1222366202193,
             "ipProtocol" : 17,
             "lastPacket" : 1222366202195,
-            "length" : 1,
+            "length" : 2,
             "network" : {
                "bytes" : 184,
                "community_id" : "1:/t0Lle0+ZbpAqnF3QljBwwpf4xc=",
@@ -146,6 +150,10 @@
                232,
                338
             ],
+            "packetRange" : {
+               "gte" : 1222366202193,
+               "lte" : 1222366202195
+            },
             "protocol" : [
                "snmp",
                "udp"
@@ -246,6 +254,10 @@
                448,
                557
             ],
+            "packetRange" : {
+               "gte" : 1222366202225,
+               "lte" : 1222366202226
+            },
             "protocol" : [
                "snmp",
                "udp"
@@ -346,6 +358,10 @@
                671,
                780
             ],
+            "packetRange" : {
+               "gte" : 1222366202254,
+               "lte" : 1222366202255
+            },
             "protocol" : [
                "snmp",
                "udp"

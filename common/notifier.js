@@ -221,8 +221,8 @@ class Notifier {
    * @property {string} name - The human readable name of the notifier. Must be unique.
    * @property {string} type - The type of notifier (e.g. email, slack, twilio).
    * @property {array} fields - The list of fields that need to be configured to use the notifier.
-   * @property {number} created - The time the notifier was created. Format is seconds since Unix EPOC.
-   * @property {number} updated - The time the notifier was last updated. Format is seconds since Unix EPOC.
+   * @property {number} created - The time the notifier was created. Format is seconds since Unix EPOCH.
+   * @property {number} updated - The time the notifier was last updated. Format is seconds since Unix EPOCH.
    * @property {string} user - The ID of the user that created the notifier.
    * @property {Array} users - The list of userIds who have access to use this notifier.
    * @property {Array} roles - The list of roles who have access to use this notifier.

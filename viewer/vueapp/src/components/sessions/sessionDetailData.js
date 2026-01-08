@@ -31,7 +31,7 @@ function gripClick (e, div) {
   siblingDD = selectedDT.nextElementSibling;
   dtOffset = selectedDT.offsetWidth - e.pageX;
   selectedGrip = div.getElementsByClassName('session-detail-grip')[0];
-};
+}
 
 // fired when the column resize grip is dragged
 // styles the grip to show where it's being dragged

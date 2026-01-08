@@ -97,7 +97,7 @@ class URLApiSource extends WISESource {
       }).catch((err) => {
         return cb(err);
       });
-  };
+  }
 }
 
 // ----------------------------------------------------------------------------

@@ -68,6 +68,10 @@
                24,
                429
             ],
+            "packetRange" : {
+               "gte" : 1463339353458,
+               "lte" : 1463339353461
+            },
             "protocol" : [
                "radius",
                "udp"

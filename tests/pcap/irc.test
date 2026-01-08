@@ -54,7 +54,7 @@
                "nickCnt" : 1
             },
             "lastPacket" : 1387554256201,
-            "length" : 14568,
+            "length" : 14567,
             "network" : {
                "bytes" : 8945,
                "community_id" : "1:YdkGov/c+KLtmg7Cf5DLDB4+YdQ=",
@@ -123,6 +123,10 @@
                8713,
                8795
             ],
+            "packetRange" : {
+               "gte" : 1387554241634,
+               "lte" : 1387554256201
+            },
             "protocol" : [
                "irc",
                "tcp"

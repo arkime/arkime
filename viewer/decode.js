@@ -66,7 +66,7 @@ class ItemTransform extends Transform {
           } catch (err) {
             cb(err);
             console.log("Couldn't decode", err);
-          };
+          }
         }, function (err) {
           self._itemTransform.items = [];
           return callback();
@@ -90,7 +90,7 @@ class ItemTransform extends Transform {
     case 2:
       return callback(null, item);
     }
-  };
+  }
 
   _flush (callback) {
     if (this._itemTransform.state === 1) {
@@ -103,7 +103,7 @@ class ItemTransform extends Transform {
     }
 
     callback();
-  };
+  }
 }
 
 /// /////////////////////////////////////////////////////////////////////////////
@@ -121,7 +121,7 @@ class Pcap2ItemStream extends Readable {
       this.push(data[i]);
     }
     this.push(null);
-  };
+  }
 }
 
 /// /////////////////////////////////////////////////////////////////////////////
@@ -270,7 +270,7 @@ class CollectBodyStream extends Writable {
   _write (chunk, encoding, callback) {
     this.buffers.push(chunk);
     callback(null);
-  };
+  }
 }
 
 /// /////////////////////////////////////////////////////////////////////////////
@@ -298,7 +298,7 @@ class ItemSMTPStream extends ItemTransform {
 
   _shouldProcess (item) {
     return (item.data.length >= 4 && item.data.slice(0, 4).toString().match(/(HELO|EHLO)/));
-  };
+  }
 
   _process (item, callback) {
     const self = this;
@@ -479,7 +479,7 @@ class ItemSMTPStream extends ItemTransform {
       addBuffer(ItemSMTPStream.STATES.cmd, false);
     }
     callback();
-  };
+  }
 
   bodyDone (item, data, headerInfo) {
     this.push({ client: item.client, ts: item.ts, data, bodyNum: headerInfo.bodyNum, bodyType: headerInfo.bodyType, bodyName: headerInfo.bodyName, itemPos: headerInfo.itemPos });
@@ -487,7 +487,7 @@ class ItemSMTPStream extends ItemTransform {
     if (this.runningStreams === 0 && this.endCb) {
       this.endCb();
     }
-  };
+  }
 
   _finish (callback) {
     if (this.runningStreams > 0) {
@@ -495,7 +495,7 @@ class ItemSMTPStream extends ItemTransform {
     } else {
       setImmediate(callback);
     }
-  };
+  }
 }
 /// /////////////////////////////////////////////////////////////////////////////
 class ItemHTTPStream extends ItemTransform {
@@ -534,7 +534,7 @@ class ItemHTTPStream extends ItemTransform {
 
   _shouldProcess (item) {
     return (item.data.length >= 4 && item.data.slice(0, 4).toString() === 'HTTP');
-  };
+  }
 
   add (item, endPos) {
     this.itemPos++;
@@ -757,7 +757,7 @@ class ItemHTTPStream extends ItemTransform {
       setImmediate(callback);
     }
   }
-};
+}
 
 /// /////////////////////////////////////////////////////////////////////////////
 class ItemHexFormaterStream extends Transform {
@@ -808,7 +808,7 @@ class ItemHexFormaterStream extends Transform {
     }
     item.html = out + '</pre>';
     callback(null, item);
-  };
+  }
 }
 /// /////////////////////////////////////////////////////////////////////////////
 function createItemSorterStream (options) {

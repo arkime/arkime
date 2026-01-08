@@ -158,7 +158,7 @@ class ElasticsearchIntegration extends Integration {
       }
     };
     return data;
-  };
+  }
 
   async getMethod (user, item) {
     const results = await this.#client.get({
@@ -177,7 +177,7 @@ class ElasticsearchIntegration extends Integration {
       }
     };
     return data;
-  };
+  }
 }
 
 const sections = ArkimeConfig.getSections().filter((e) => { return e.match(/^(elasticsearch|opensearch):/); });

@@ -48,7 +48,7 @@
             "initRTT" : 1,
             "ipProtocol" : 6,
             "lastPacket" : 1463682642100,
-            "length" : 2,
+            "length" : 3,
             "network" : {
                "bytes" : 584,
                "community_id" : "1:zVld1Ie77iuvz5cBRwEj51k0Yjo=",
@@ -77,6 +77,10 @@
                428,
                514
             ],
+            "packetRange" : {
+               "gte" : 1463682642097,
+               "lte" : 1463682642100
+            },
             "protocol" : [
                "tcp",
                "thrift"
@@ -199,7 +203,7 @@
             "initRTT" : 2,
             "ipProtocol" : 6,
             "lastPacket" : 1483833315778,
-            "length" : 5,
+            "length" : 6,
             "network" : {
                "bytes" : 557,
                "community_id" : "1:lC90PrhE/k5YdvmSIK2ItPfiU1Q=",
@@ -224,6 +228,10 @@
                892,
                978
             ],
+            "packetRange" : {
+               "gte" : 1483833315772,
+               "lte" : 1483833315778
+            },
             "protocol" : [
                "tcp",
                "thrift"

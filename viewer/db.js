@@ -83,7 +83,7 @@ Db.initialize = async (info) => {
   internals.regressionTests = info.regressionTests ?? false;
 
   const esSSLOptions = { rejectUnauthorized: !internals.info.insecure };
-  if (internals.info.caTrustFile) { esSSLOptions.ca = ArkimeUtil.certificateFileToArray(internals.info.caTrustFile); };
+  if (internals.info.caTrustFile) { esSSLOptions.ca = ArkimeUtil.certificateFileToArray(internals.info.caTrustFile); }
   if (info.esClientKey) {
     esSSLOptions.key = fs.readFileSync(info.esClientKey);
     esSSLOptions.cert = fs.readFileSync(info.esClientCert);
@@ -674,7 +674,11 @@ Db.searchScroll = async (index, query, options, cb) => {
     if (!cb) {
       return Db.search(index, query, options);
     }
-    return Db.search(index, query, options).then((data) => cb(null, data)).catch((err) => cb(err));
+    try {
+      return cb(null, await Db.search(index, query, options));
+    } catch (err) {
+      return cb(err);
+    }
   }
 
   try {
@@ -1827,7 +1831,7 @@ Db.getSequenceNumber = async (sName) => {
 };
 
 Db.numberOfDocuments = async (index, options) => {
-  // count interface is slow for larget data sets, don't use for sessions unless multiES
+  // count interface is slow for large data sets, don't use for sessions unless multiES
   if (index !== 'sessions2-*' || internals.multiES) {
     const params = { index: fixIndex(index), ignore_unavailable: true };
     Db.merge(params, options);

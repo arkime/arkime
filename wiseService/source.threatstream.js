@@ -184,7 +184,7 @@ class ThreatStreamSource extends WISESource {
       .on('close', () => {
         console.log(this.section, '- Done Loading');
       });
-  };
+  }
 
   // ----------------------------------------------------------------------------
   loadFile () {
@@ -196,7 +196,7 @@ class ThreatStreamSource extends WISESource {
         this.reloadTime = new Date();
       }
     });
-  };
+  }
 
   // ----------------------------------------------------------------------------
   getDomainZip (domain, cb) {
@@ -285,7 +285,7 @@ class ThreatStreamSource extends WISESource {
         console.log(this.section, 'problem fetching ', options, err);
         return cb(null, WISESource.emptyResult);
       });
-  };
+  }
 
   // ----------------------------------------------------------------------------
   getDomainApi (domain, cb) {
@@ -346,7 +346,7 @@ class ThreatStreamSource extends WISESource {
       console.log(this.section, 'ERROR', err);
       return cb('dropped');
     }
-  };
+  }
 
   // ----------------------------------------------------------------------------
   getDomainSqlite3 (domain, cb) {
@@ -409,7 +409,7 @@ class ThreatStreamSource extends WISESource {
         console.log(this.section, 'ERROR - failed to load types', err);
         return;
       });
-  };
+  }
 
   // ----------------------------------------------------------------------------
   checkMd5Index (db, dbFile) {
@@ -492,7 +492,7 @@ class ThreatStreamSource extends WISESource {
       }
     } catch (err) {
     }
-  };
+  }
 
   // ----------------------------------------------------------------------------
   openDb () {
@@ -528,7 +528,7 @@ class ThreatStreamSource extends WISESource {
         console.log('Threatstream truncate error', err);
       }
     }, 5 * 60 * 1000);
-  };
+  }
 }
 
 // ----------------------------------------------------------------------------

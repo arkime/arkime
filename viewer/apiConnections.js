@@ -20,11 +20,9 @@ let fieldsMap;
 
 ArkimeConfig.loaded(() => {
   if (!fieldsMap) {
-    setTimeout(() => { // make sure db.js loads before fetching fields
-      ViewerUtils.loadFields()
-        .then((result) => {
-          fieldsMap = result.fieldsMap;
-        });
+    setTimeout(async () => { // make sure db.js loads before fetching fields
+      const result = await ViewerUtils.loadFields();
+      fieldsMap = result.fieldsMap;
     });
   }
 });
@@ -46,7 +44,7 @@ class ConnectionAPIs {
   //
   // This code was factored out from buildConnections.
   // --------------------------------------------------------------------------
-  static #buildConnectionQuery (req, fields, options, fsrc, fdst, dstipport, resultId, cb) {
+  static async #buildConnectionQuery (req, fields, options, fsrc, fdst, dstipport, resultId, cb) {
     const result = {
       resultId,
       err: null,
@@ -119,35 +117,35 @@ class ConnectionAPIs {
       }
     } // resultId > 1 (calculating baseline query time frame)
 
-    BuildQuery.build(req, (bsqErr, query, indices) => {
-      if (bsqErr) {
-        console.log('ERROR - buildConnectionQuery -> buildSessionQuery', resultId, util.inspect(bsqErr, false, 50));
-        result.err = bsqErr;
-        return cb([result]);
+    try {
+      const { query, indices } = await BuildQuery.buildPromise(req, tmpReqQuery);
+
+      query.query.bool.filter.push({ exists: { field: req.query.srcField } });
+      query.query.bool.filter.push({ exists: { field: req.query.dstField } });
+
+      query.fields = fields;
+      query._source = false;
+      query.docvalue_fields = [fsrc, fdst];
+
+      if (dstipport) {
+        query.fields.push('destination.port');
+      }
+
+      result.query = JSON.parse(JSON.stringify(query));
+      result.indices = JSON.parse(JSON.stringify(indices));
+
+      if ((resultId === 1) && (doBaseline)) {
+        ConnectionAPIs.#buildConnectionQuery(req, fields, options, fsrc, fdst, dstipport, resultId + 1, (baselineResult) => {
+          return cb([result].concat(baselineResult));
+        });
       } else {
-        query.query.bool.filter.push({ exists: { field: req.query.srcField } });
-        query.query.bool.filter.push({ exists: { field: req.query.dstField } });
-
-        query.fields = fields;
-        query._source = false;
-        query.docvalue_fields = [fsrc, fdst];
-
-        if (dstipport) {
-          query.fields.push('destination.port');
-        }
-
-        result.query = JSON.parse(JSON.stringify(query));
-        result.indices = JSON.parse(JSON.stringify(indices));
-
-        if ((resultId === 1) && (doBaseline)) {
-          ConnectionAPIs.#buildConnectionQuery(req, fields, options, fsrc, fdst, dstipport, resultId + 1, (baselineResult) => {
-            return cb([result].concat(baselineResult));
-          });
-        } else {
-          return cb([result]);
-        }
-      } // bsqErr if/else
-    }, tmpReqQuery); // buildSessionQuery
+        return cb([result]);
+      }
+    } catch (bsqErr) {
+      console.log('ERROR - buildConnectionQuery -> buildSessionQuery', resultId, util.inspect(bsqErr, false, 50));
+      result.err = bsqErr;
+      return cb([result]);
+    }
   } // buildConnectionQuery
 
   // --------------------------------------------------------------------------
@@ -174,7 +172,7 @@ class ConnectionAPIs {
       resultSet.err = connQueries[0] ? connQueries[0].err : 'null query object';
 
       if (((connQueries[0]) && (connQueries[0].err)) || (!connQueries[0])) {
-        // propogate query errors up into the result set without doing a search
+        // propagate query errors up into the result set without doing a search
         console.log('ERROR - buildConnectionQuery -> dbConnectionQuerySearch', resultSet.resultId, util.inspect(resultSet.err, false, 50));
         return cb([resultSet]);
       } else {
@@ -332,7 +330,7 @@ class ConnectionAPIs {
         resultSetStatus.err = connResultSets[0] ? connResultSets[0].err : 'null resultset';
 
         if (((connResultSets[0]) && (connResultSets[0].err)) || (!connResultSets[0])) {
-          // propogate errors up (and stop processing)
+          // propagate errors up (and stop processing)
           console.log('ERROR - buildConnectionQuery -> processResultSets', resultSetStatus.resultId, util.inspect(resultSetStatus.err, false, 50));
           return processResultSetsCb([resultSetStatus]);
         } else {
@@ -503,7 +501,7 @@ class ConnectionAPIs {
         recordsFiltered: total
       });
     });
-  };
+  }
 
   // --------------------------------------------------------------------------
   /**
@@ -556,7 +554,7 @@ class ConnectionAPIs {
 
       res.end();
     });
-  };
-};
+  }
+}
 
 module.exports = ConnectionAPIs;

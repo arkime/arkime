@@ -839,7 +839,7 @@ void arkime_session_mid_save(ArkimeSession_t *session, uint32_t tv_sec)
         DLL_MOVE_TAIL(tcp_, &tcpWriteQ[session->thread], session);
     }
 
-    // Don't change change saveTime if already closing
+    // Don't change saveTime if already closing
     if (!session->closingQ) {
         session->saveTime = tv_sec + config.tcpSaveTimeout;
     }

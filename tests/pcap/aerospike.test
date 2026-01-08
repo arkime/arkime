@@ -84,6 +84,10 @@
                818,
                894
             ],
+            "packetRange" : {
+               "gte" : 1466097898472,
+               "lte" : 1466097973153
+            },
             "protocol" : [
                "aerospike",
                "tcp"
@@ -255,6 +259,10 @@
                1868,
                1954
             ],
+            "packetRange" : {
+               "gte" : 1466101718441,
+               "lte" : 1466101718908
+            },
             "protocol" : [
                "aerospike",
                "tcp"

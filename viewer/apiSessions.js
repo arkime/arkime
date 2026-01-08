@@ -313,7 +313,7 @@ class SessionAPIs {
     } catch (err) {
       return cb(err);
     }
-  };
+  }
 
   // --------------------------------------------------------------------------
   static #localSessionDetailReturnFull (req, res, session, incoming) {
@@ -1285,7 +1285,7 @@ class SessionAPIs {
       console.log('ERROR - session get error in processSessionId', util.inspect(err, false, 50));
       return endCb(err, null);
     }
-  };
+  }
 
   // --------------------------------------------------------------------------
   /**
@@ -1366,7 +1366,7 @@ class SessionAPIs {
         cb(err, list);
       }
     });
-  };
+  }
 
   // --------------------------------------------------------------------------
   static async addTagsList (allTagNames, sessionList, doneCb) {
@@ -1391,7 +1391,7 @@ class SessionAPIs {
     }, (err) => {
       return doneCb ? doneCb(err) : null;
     });
-  };
+  }
 
   // --------------------------------------------------------------------------
   static async #removeTagsList (allTagNames, sessionList, doneCb) {
@@ -1416,7 +1416,7 @@ class SessionAPIs {
     }, (err) => {
       return doneCb ? doneCb(err) : null;
     });
-  };
+  }
 
   // --------------------------------------------------------------------------
   static async processSessionIdAndDecode (id, numPackets) {
@@ -1463,7 +1463,7 @@ class SessionAPIs {
         }
       }, numPackets, 10);
     });
-  };
+  }
 
   // --------------------------------------------------------------------------
   // APIs
@@ -1481,15 +1481,9 @@ class SessionAPIs {
    *   Returns the OpenSearch/Elasticsearch query for all the sessions with the source IP of 1.2.3.4
    *   curl -v 'http://localhost:8005/api/buildquery?date=-1&expression=ip.src%3D%3D1.2.3.4'
    */
-  static getQuery (req, res) {
-    BuildQuery.build(req, (bsqErr, query, indices) => {
-      if (bsqErr) {
-        return res.send({
-          recordsTotal: 0,
-          recordsFiltered: 0,
-          error: bsqErr.toString()
-        });
-      }
+  static async getQuery (req, res) {
+    try {
+      const { query, indices } = await BuildQuery.buildPromise(req);
 
       if (req.query.fields) {
         query._source = false;
@@ -1497,8 +1491,14 @@ class SessionAPIs {
       }
 
       res.send({ esquery: query, indices });
-    });
-  };
+    } catch (bsqErr) {
+      return res.send({
+        recordsTotal: 0,
+        recordsFiltered: 0,
+        error: bsqErr.toString()
+      });
+    }
+  }
 
   // --------------------------------------------------------------------------
   /**
@@ -1517,7 +1517,7 @@ class SessionAPIs {
    *   Returns all the sessions with the source IP of 1.2.3.4
    *   curl -v 'http://localhost:8005/api/sessions?date=-1&expression=ip.src%3D%3D1.2.3.4'
    */
-  static getSessions (req, res) {
+  static async getSessions (req, res) {
     let map = {};
     let graph = {};
 
@@ -1536,11 +1536,8 @@ class SessionAPIs {
       recordsFiltered: 0
     };
 
-    BuildQuery.build(req, (bsqErr, query, indices) => {
-      if (bsqErr) {
-        response.error = bsqErr.toString();
-        return res.send(response);
-      }
+    try {
+      const { query, indices } = await BuildQuery.buildPromise(req);
 
       let addMissing = false;
       if (req.query.fields) {
@@ -1577,75 +1574,68 @@ class SessionAPIs {
         hideTags = undefined;
       }
 
-      Promise.all([
+      const [sessions, total] = await Promise.all([
         Db.searchSessions(indices, query, options),
         Db.numberOfDocuments(Db.getSessionIndices(), options.cluster ? { cluster: options.cluster } : {})
-      ]).then(([sessions, total]) => {
-        if (Config.debug) {
-          console.log('/api/sessions result', util.inspect(sessions, false, 50));
+      ]);
+
+      if (Config.debug) {
+        console.log('/api/sessions result', util.inspect(sessions, false, 50));
+      }
+
+      if (sessions.error) { throw sessions.error; }
+
+      map = ViewerUtils.mapMerge(sessions.aggregations);
+      graph = ViewerUtils.graphMerge(req, query, sessions.aggregations);
+
+      const results = { total: sessions.hits.total, results: [] };
+      for (const hit of sessions.hits.hits) {
+        const fields = hit.fields;
+        if (fields === undefined) {
+          continue;
         }
 
-        if (sessions.error) { throw sessions.error; }
+        if (hideTags && fields.tags) {
+          // remove all entries from hideTags
+          fields.tags = fields.tags.filter((tag) => !hideTags.includes(tag));
+        }
 
-        map = ViewerUtils.mapMerge(sessions.aggregations);
-        graph = ViewerUtils.graphMerge(req, query, sessions.aggregations);
+        fields.id = Db.session2Sid(hit);
 
-        const results = { total: sessions.hits.total, results: [] };
-        async.eachSeries(sessions.hits.hits, (hit, hitCb) => {
-          const fields = hit.fields;
-          if (fields === undefined) {
-            return hitCb(null);
-          }
-
-          if (hideTags && fields.tags) {
-            // remove all entries from hideTags
-            fields.tags = fields.tags.filter((tag) => !hideTags.includes(tag));
-          }
-
-          fields.id = Db.session2Sid(hit);
-
-          if (addMissing) {
-            if (options.arkime_unflatten) {
-              for (const item of [['source', 'packets'], ['destination', 'packets'], ['source', 'bytes'], ['destination', 'bytes'], ['client', 'bytes'], ['server', 'bytes']]) {
-                if (fields[item[0]] === undefined) {
-                  fields[item[0]] = {};
-                }
-                if (fields[item[0]][item[1]] === undefined) {
-                  fields[item[0]][item[1]] = -1;
-                }
+        if (addMissing) {
+          if (options.arkime_unflatten) {
+            for (const item of [['source', 'packets'], ['destination', 'packets'], ['source', 'bytes'], ['destination', 'bytes'], ['client', 'bytes'], ['server', 'bytes']]) {
+              if (fields[item[0]] === undefined) {
+                fields[item[0]] = {};
               }
-            } else {
-              for (const item of ['source.packets', 'destination.packets', 'source.bytes', 'destination.bytes', 'client.bytes', 'server.bytes']) {
-                if (fields[item] === undefined) {
-                  fields[item] = -1;
-                }
+              if (fields[item[0]][item[1]] === undefined) {
+                fields[item[0]][item[1]] = -1;
+              }
+            }
+          } else {
+            for (const item of ['source.packets', 'destination.packets', 'source.bytes', 'destination.bytes', 'client.bytes', 'server.bytes']) {
+              if (fields[item] === undefined) {
+                fields[item] = -1;
               }
             }
           }
-          results.results.push(fields);
-          return hitCb();
-        }, () => {
-          try {
-            response.map = map;
-            response.graph = graph;
-            response.data = (results ? results.results : []);
-            response.recordsTotal = total.count;
-            response.recordsFiltered = (results ? results.total : 0);
-            res.logCounts(response.data.length, response.recordsFiltered, response.recordsTotal);
-            return res.send(response);
-          } catch (e) {
-            console.trace(`ERROR - ${req.method} /api/sessions`, ArkimeUtil.sanitizeStr(e.stack));
-            response.error = e.toString();
-            return res.send(response);
-          }
-        });
-      }).catch((err) => {
-        console.log(`ERROR - ${req.method} /api/sessions`, util.inspect(err, false, 50));
-        response.error = err.toString();
-        return res.send(response);
-      });
-    });
-  };
+        }
+        results.results.push(fields);
+      }
+
+      response.map = map;
+      response.graph = graph;
+      response.data = results.results;
+      response.recordsTotal = total.count;
+      response.recordsFiltered = results.total;
+      res.logCounts(response.data.length, response.recordsFiltered, response.recordsTotal);
+      return res.send(response);
+    } catch (err) {
+      console.log(`ERROR - ${req.method} /api/sessions`, util.inspect(err, false, 50));
+      response.error = err.message || err.toString();
+      return res.send(response);
+    }
+  }
 
   // --------------------------------------------------------------------------
   /**
@@ -1699,7 +1689,7 @@ class SessionAPIs {
         }
       });
     }
-  };
+  }
 
   // --------------------------------------------------------------------------
   /**
@@ -1785,7 +1775,7 @@ class SessionAPIs {
 
       Promise.all([Db.searchSessions(indices, query, options),
         Db.numberOfDocuments(Db.getSessionIndices(), options.cluster ? { cluster: options.cluster } : {})
-      ]).then(([sessions, total]) => {
+      ]).then(async ([sessions, total]) => {
         if (Config.debug) {
           console.log('/api/spiview result', util.inspect(sessions, false, 50));
         }
@@ -1852,9 +1842,9 @@ class SessionAPIs {
 
         let sodc = 0;
         let nresults = [];
-        async.each(sessions.aggregations.fileand.buckets, (nobucket, cb) => {
+        await Promise.all(sessions.aggregations.fileand.buckets.map(async (nobucket) => {
           sodc += nobucket.fileId.sum_other_doc_count;
-          async.each(nobucket.fileId.buckets, async (fsitem) => {
+          await Promise.all(nobucket.fileId.buckets.map(async (fsitem) => {
             try {
               const file = await Db.fileIdToFile(nobucket.key, fsitem.key);
               if (file && file.name) {
@@ -1863,22 +1853,19 @@ class SessionAPIs {
             } catch (err) {
               // Ignore error
             }
-          }, () => {
-            cb();
-          });
-        }, () => {
-          nresults = nresults.sort((a, b) => {
-            if (a.doc_count === b.doc_count) {
-              return a.key.localeCompare(b.key);
-            }
-            return b.doc_count - a.doc_count;
-          });
-          sessions.aggregations.fileand = { doc_count_error_upper_bound: 0, sum_other_doc_count: sodc, buckets: nresults };
-          return sendResult();
+          }));
+        }));
+        nresults = nresults.sort((a, b) => {
+          if (a.doc_count === b.doc_count) {
+            return a.key.localeCompare(b.key);
+          }
+          return b.doc_count - a.doc_count;
         });
+        sessions.aggregations.fileand = { doc_count_error_upper_bound: 0, sum_other_doc_count: sodc, buckets: nresults };
+        return sendResult();
       });
     });
-  };
+  }
 
   // --------------------------------------------------------------------------
   /**
@@ -2038,8 +2025,8 @@ class SessionAPIs {
         }
 
         const intermediateResults = [];
-        function findFileNames () {
-          async.each(intermediateResults, async (fsitem) => {
+        async function findFileNames () {
+          await Promise.all(intermediateResults.map(async (fsitem) => {
             const split = fsitem.key.split(':');
             const node = split[0];
             const fileId = split[1];
@@ -2051,10 +2038,8 @@ class SessionAPIs {
             } catch (err) {
               // Ignore error
             }
-            return;
-          }, () => {
-            endCb();
-          });
+          }));
+          endCb();
         }
 
         for (const item of aggs) {
@@ -2085,7 +2070,7 @@ class SessionAPIs {
         return res.serverError(403, ViewerUtils.errorString(err));
       });
     });
-  };
+  }
 
   // --------------------------------------------------------------------------
   /**
@@ -2231,7 +2216,7 @@ class SessionAPIs {
         });
       });
     });
-  };
+  }
 
   // --------------------------------------------------------------------------
   /**
@@ -2345,7 +2330,7 @@ class SessionAPIs {
       query.size = 0;
       console.log('/api/unique aggregations', indices, JSON.stringify(query));
 
-      function findFileNames (result) {
+      async function findFileNames (result) {
         const intermediateResults = [];
         const aggs = result.aggregations.field.buckets;
         for (const item of aggs) {
@@ -2354,7 +2339,7 @@ class SessionAPIs {
           }
         }
 
-        async.each(intermediateResults, async (fsitem) => {
+        await Promise.all(intermediateResults.map(async (fsitem) => {
           const split = fsitem.key.split(':');
           const node = split[0];
           const fileId = split[1];
@@ -2366,9 +2351,8 @@ class SessionAPIs {
           } catch (err) {
             // Ignore error
           }
-        }, () => {
-          return res.end();
-        });
+        }));
+        return res.end();
       }
 
       const options = ViewerUtils.addCluster(req.query.cluster);
@@ -2396,7 +2380,7 @@ class SessionAPIs {
         return doneCb ? doneCb() : res.end();
       });
     });
-  };
+  }
 
   // --------------------------------------------------------------------------
   /**
@@ -2495,7 +2479,7 @@ class SessionAPIs {
         return res.end();
       });
     });
-  };
+  }
 
   // --------------------------------------------------------------------------
   /**
@@ -2557,7 +2541,7 @@ class SessionAPIs {
         res.send(html);
       });
     });
-  };
+  }
 
   // --------------------------------------------------------------------------
   /**
@@ -2575,7 +2559,7 @@ class SessionAPIs {
     } else {
       return ViewerUtils.proxyRequest(req, res);
     }
-  };
+  }
 
   // --------------------------------------------------------------------------
   /**
@@ -2638,7 +2622,7 @@ class SessionAPIs {
           });
         });
     }
-  };
+  }
 
   // --------------------------------------------------------------------------
   /**
@@ -2699,7 +2683,7 @@ class SessionAPIs {
           });
         });
     }
-  };
+  }
 
   // --------------------------------------------------------------------------
   /**
@@ -2982,7 +2966,7 @@ class SessionAPIs {
       }
       await send({}, true);
     });
-  };
+  }
 
   // --------------------------------------------------------------------------
   /**
@@ -3004,7 +2988,7 @@ class SessionAPIs {
 
       return res.end(data);
     });
-  };
+  }
 
   // --------------------------------------------------------------------------
   /**
@@ -3031,7 +3015,7 @@ class SessionAPIs {
 
       res.send(PNG.sync.write(png, { inputColorType: 0, colorType: 0, bitDepth: 8, inputHasAlpha: false }));
     });
-  };
+  }
 
   // --------------------------------------------------------------------------
   /**
@@ -3049,7 +3033,7 @@ class SessionAPIs {
    */
   static getPCAP (req, res) {
     return SessionAPIs.#sessionsPcap(req, res, SessionAPIs.#writePcap, 'pcap');
-  };
+  }
 
   // --------------------------------------------------------------------------
   /**
@@ -3064,7 +3048,7 @@ class SessionAPIs {
    */
   static getPCAPNG (req, res) {
     return SessionAPIs.#sessionsPcap(req, res, SessionAPIs.#writePcapNg, 'pcapng');
-  };
+  }
 
   // --------------------------------------------------------------------------
   /**
@@ -3081,7 +3065,7 @@ class SessionAPIs {
     SessionAPIs.#writePcap(res, req.params.id, { writeHeader }, () => {
       res.end();
     });
-  };
+  }
 
   // --------------------------------------------------------------------------
   static postPCAPFromNode (req, res) {
@@ -3091,7 +3075,7 @@ class SessionAPIs {
     SessionAPIs.#writePcap(res, req.body, { writeHeader }, () => {
       res.end();
     });
-  };
+  }
 
   // --------------------------------------------------------------------------
   /**
@@ -3108,7 +3092,7 @@ class SessionAPIs {
     SessionAPIs.#writePcapNg(res, req.params.id, { writeHeader }, () => {
       res.end();
     });
-  };
+  }
 
   // --------------------------------------------------------------------------
   /**
@@ -3141,7 +3125,7 @@ class SessionAPIs {
         res.end();
       });
     });
-  };
+  }
 
   // --------------------------------------------------------------------------
   /**
@@ -3192,7 +3176,7 @@ class SessionAPIs {
     } catch (err) {
       return res.send(internals.emptyPNG);
     }
-  };
+  }
 
   // --------------------------------------------------------------------------
   /**
@@ -3217,7 +3201,7 @@ class SessionAPIs {
     } catch (err) {
       return res.send('Error');
     }
-  };
+  }
 
   // --------------------------------------------------------------------------
   /**
@@ -3299,7 +3283,7 @@ class SessionAPIs {
         }
       });
     });
-  };
+  }
 
   // --------------------------------------------------------------------------
   /**
@@ -3311,7 +3295,7 @@ class SessionAPIs {
    */
   static getDecodings (req, res) {
     res.json(decode.settings());
-  };
+  }
 
   // --------------------------------------------------------------------------
   /**
@@ -3336,7 +3320,7 @@ class SessionAPIs {
         return res.end('No Match');
       }
     });
-  };
+  }
 
   // --------------------------------------------------------------------------
   /**
@@ -3398,7 +3382,7 @@ class SessionAPIs {
           sendResult(count);
         });
     }
-  };
+  }
 
   // --------------------------------------------------------------------------
   /**
@@ -3430,7 +3414,7 @@ class SessionAPIs {
     internals.sendSessionQueue.push(options, () => {
       res.end();
     });
-  };
+  }
 
   // --------------------------------------------------------------------------
   /**
@@ -3477,7 +3461,7 @@ class SessionAPIs {
         }
       });
     }
-  };
+  }
 
   // --------------------------------------------------------------------------
   /**
@@ -3520,7 +3504,7 @@ class SessionAPIs {
           sendResult(count);
         });
     }
-  };
+  }
 
   // --------------------------------------------------------------------------
   /**
@@ -3674,7 +3658,7 @@ class SessionAPIs {
       }
       return res.send({ success: true });
     });
-  };
-};
+  }
+}
 
 module.exports = SessionAPIs;

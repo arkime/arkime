@@ -44,7 +44,7 @@
             "initRTT" : 72,
             "ipProtocol" : 6,
             "lastPacket" : 1387759542236,
-            "length" : 233,
+            "length" : 234,
             "network" : {
                "bytes" : 256,
                "community_id" : "1:/ZsDatMZZd7TselDg9zoC1yFeTA=",
@@ -63,6 +63,10 @@
                180,
                256
             ],
+            "packetRange" : {
+               "gte" : 1387759542002,
+               "lte" : 1387759542236
+            },
             "protocol" : [
                "imap",
                "tcp"

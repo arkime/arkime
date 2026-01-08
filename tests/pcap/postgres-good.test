@@ -31,7 +31,7 @@
             "initRTT" : 0,
             "ipProtocol" : 6,
             "lastPacket" : 1399300685032,
-            "length" : 8,
+            "length" : 9,
             "network" : {
                "bytes" : 1198,
                "community_id" : "1:+KMQwe1GBT7eaCQAYnV9v0ga8zw=",
@@ -64,6 +64,10 @@
                880,
                1003
             ],
+            "packetRange" : {
+               "gte" : 1399300685023,
+               "lte" : 1399300685032
+            },
             "postgresql" : {
                "app" : "pgAdmin III - Browser",
                "db" : "dbdbdbdb",

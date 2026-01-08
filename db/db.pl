@@ -81,6 +81,7 @@
 # 82 - added configs
 # 83 - added files sessionsStarted, sessionsPresent
 # 84 - added shareables index
+# 85 - added packetRange field to sessions
 
 use HTTP::Request::Common;
 use LWP::UserAgent;
@@ -94,7 +95,7 @@ use URI;
 use strict;
 use warnings;
 
-my $VERSION = 84;
+my $VERSION = 85;
 my $verbose = 0;
 my $PREFIX = $ENV{ARKIME_default__prefix} || $ENV{ARKIME__prefix};
 my $OLDPREFIX = "";
@@ -4897,6 +4898,9 @@ sub sessions3Update
     "lastPacket" : {
       "type" : "date"
     },
+    "packetRange" : {
+      "type" : "date_range"
+    },
     "ldap" : {
       "properties" : {
         "authtype" : {
@@ -8478,11 +8482,10 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
         filesUpdate();
         fields82Fix();
         shareablesCreate();
-    } elsif ($main::versionNumber <= 84) {
+    } elsif ($main::versionNumber <= 85) {
         checkForOld7Indices();
         sessions3Update();
         historyUpdate();
-        shareablesCreate();
     } else {
         logmsg "db.pl is hosed\n";
     }

@@ -39,6 +39,7 @@ SPDX-License-Identifier: Apache-2.0
       :map-data="mapData"
       :graph-data="graphData"
       @fetch-map-data="fetchMapData"
+      @spanning-change="loadData"
       :timeline-data-filters="timelineDataFilters" />
     <!-- /visualizations -->
 
@@ -754,7 +755,7 @@ function gripClick (e, col) {
   tableWidthBeforeResize = table.style.width.slice(0, -2);
   colStartOffset = col.offsetWidth - e.pageX;
   selectedGripElem = col.getElementsByClassName('grip')[0];
-};
+}
 
 // fired when the column resize grip is dragged
 // styles the grip to show where it's being dragged
@@ -916,6 +917,7 @@ export default {
         stopTime: this.$store.state.time.stopTime,
         bounding: this.$route.query.bounding || 'last',
         interval: this.$route.query.interval || 'auto',
+        spanning: this.$route.query.spanning === 'true' ? true : undefined,
         view: this.$route.query.view || undefined,
         expression: this.$store.state.expression || undefined,
         cluster: this.$route.query.cluster || undefined

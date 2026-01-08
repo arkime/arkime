@@ -50,7 +50,7 @@ class ArkimeUtil {
       .replace(/"/g, '&quot;')
       .replace(/'/g, '&#39;')
       .replace(/\//g, '&#47;');
-  };
+  }
 
   // ----------------------------------------------------------------------------
   /**
@@ -99,7 +99,7 @@ class ArkimeUtil {
       res.setHeader('Content-Type', ct);
       res.header('X-Content-Type-Options', 'nosniff');
     }
-  };
+  }
 
   // ----------------------------------------------------------------------------
   /**
@@ -121,7 +121,7 @@ class ArkimeUtil {
     ret.push(str.join(separator));
 
     return ret;
-  };
+  }
 
   // ----------------------------------------------------------------------------
   /**
@@ -446,7 +446,7 @@ class ArkimeUtil {
     }
 
     return undefined;
-  };
+  }
 
   // ----------------------------------------------------------------------------
   /**
@@ -488,7 +488,7 @@ class ArkimeUtil {
   static #fsWait;
   static #httpsServer;
   static #watchHttpsFile (e, filename) {
-    if (ArkimeUtil.#fsWait) { clearTimeout(ArkimeUtil.#fsWait); };
+    if (ArkimeUtil.#fsWait) { clearTimeout(ArkimeUtil.#fsWait); }
 
     // We wait 10s from last event in case there are more events
     ArkimeUtil.#fsWait = setTimeout(() => {
@@ -700,7 +700,7 @@ class ArkimeUtil {
 
   // ----------------------------------------------------------------------------
   /**
-   * Create a decipher object with AES-192-CBC algorithm and no IV like cryptoDeipher did
+   * Create a decipher object with AES-192-CBC algorithm and no IV like cryptoDecipher did
    */
   static createDecipherAES192NoIV (password) {
     const result = ArkimeUtil.#evpBytesToKey(password, 24, 16);

@@ -38,7 +38,7 @@
             "initRTT" : 171,
             "ipProtocol" : 6,
             "lastPacket" : 1483459979301,
-            "length" : 343,
+            "length" : 342,
             "network" : {
                "bytes" : 699,
                "community_id" : "1:OUrJ0XfBMwQ/wtfDj/bTOuUMkNE=",
@@ -68,6 +68,10 @@
                400,
                486
             ],
+            "packetRange" : {
+               "gte" : 1483459978959,
+               "lte" : 1483459979301
+            },
             "protocol" : [
                "mongo",
                "tcp"
@@ -162,7 +166,7 @@
             "initRTT" : 81,
             "ipProtocol" : 6,
             "lastPacket" : 1483558835131,
-            "length" : 163,
+            "length" : 162,
             "network" : {
                "bytes" : 511,
                "community_id" : "1:kP7Af9QB6VQVXDn0O/EJYiYvD20=",
@@ -192,6 +196,10 @@
                1195,
                1281
             ],
+            "packetRange" : {
+               "gte" : 1483558834969,
+               "lte" : 1483558835131
+            },
             "protocol" : [
                "mongo",
                "tcp"
@@ -307,6 +315,10 @@
                1618,
                1704
             ],
+            "packetRange" : {
+               "gte" : 1483726705497,
+               "lte" : 1483726705503
+            },
             "protocol" : [
                "mongo",
                "tcp"
@@ -419,6 +431,10 @@
                2040,
                2126
             ],
+            "packetRange" : {
+               "gte" : 1483737232974,
+               "lte" : 1483737232979
+            },
             "protocol" : [
                "mongo",
                "tcp"
@@ -541,6 +557,10 @@
                2951,
                3037
             ],
+            "packetRange" : {
+               "gte" : 1483814916005,
+               "lte" : 1483814916108
+            },
             "protocol" : [
                "mongo",
                "tcp"

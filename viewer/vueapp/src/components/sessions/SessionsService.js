@@ -37,6 +37,7 @@ export default {
       facets: true,
       bounding: true,
       interval: true,
+      spanning: true,
       cancelId: true,
       expression: true,
       cluster: true,
@@ -253,7 +254,7 @@ export default {
 
       const { options, error } = this.getReqOptions(baseUrl, '', params, routeParams);
 
-      if (error) { return reject({ text: error }); };
+      if (error) { return reject({ text: error }); }
 
       // add missing params
       options.params.segments = segments;
@@ -292,7 +293,7 @@ export default {
 
       const { options, error } = this.getReqOptions(baseUrl, '', params, routeParams);
 
-      if (error) { return reject({ text: error }); };
+      if (error) { return reject({ text: error }); }
 
       // add missing params
       options.params.segments = segments;

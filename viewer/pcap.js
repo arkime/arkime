@@ -44,7 +44,7 @@ class Pcap {
     this.key = key;
     this.blockCache = new LRUCache({ max: 11 });
     return this;
-  };
+  }
 
   /// ///////////////////////////////////////////////////////////////////////////////
   /// / High Level
@@ -59,7 +59,7 @@ class Pcap {
     const pcap = new Pcap(key);
     pcaps.set(key, pcap);
     return pcap;
-  };
+  }
 
   // --------------------------------------------------------------------------
   static getOrOpen (info) {
@@ -72,7 +72,7 @@ class Pcap {
     pcap.open(info);
     pcaps.set(key, pcap);
     return pcap;
-  };
+  }
 
   // --------------------------------------------------------------------------
   static make (key, header) {
@@ -92,17 +92,17 @@ class Pcap {
       pcap.linkType = pcap.headBuffer.readUInt32LE(20);
     }
     return pcap;
-  };
+  }
 
   // --------------------------------------------------------------------------
   isOpen () {
     return this.fd !== undefined;
-  };
+  }
 
   // --------------------------------------------------------------------------
   isCorrupt () {
     return this.corrupt;
-  };
+  }
 
   // --------------------------------------------------------------------------
   get headerLen () {
@@ -145,7 +145,7 @@ class Pcap {
       delete this.fd;
       throw err;
     }
-  };
+  }
 
   // --------------------------------------------------------------------------
   openReadWrite (info) {
@@ -169,7 +169,7 @@ class Pcap {
       delete this.fd;
       throw err;
     }
-  };
+  }
 
   // --------------------------------------------------------------------------
   ref () {
@@ -178,7 +178,7 @@ class Pcap {
       clearTimeout(this.#closingTimeout);
       this.#closingTimeout = null;
     }
-  };
+  }
 
   // --------------------------------------------------------------------------
   unref () {
@@ -200,13 +200,13 @@ class Pcap {
       delete this.fd;
       this.blockCache.clear();
     }, 2000);
-  };
+  }
 
   // --------------------------------------------------------------------------
   createDecipher (pos) {
     this.iv.writeUInt32BE(pos, 12);
     return cryptoLib.createDecipheriv(this.encoding, this.encKey, this.iv);
-  };
+  }
 
   // --------------------------------------------------------------------------
   readHeader () {
@@ -275,7 +275,7 @@ class Pcap {
     }
 
     return this.headBuffer;
-  };
+  }
 
   // --------------------------------------------------------------------------
   async readAndSliceBlock (pos) {
@@ -373,7 +373,7 @@ class Pcap {
 
     const result = await promise;
     return result ? result.slice(insideOffset) : null;
-  };
+  }
 
   // --------------------------------------------------------------------------
   async readPacket (pos) {
@@ -455,7 +455,7 @@ class Pcap {
     } catch (err) {
       return undefined;
     }
-  };
+  }
 
   // --------------------------------------------------------------------------
   scrubPacket (packet, pos, buf, entire) {
@@ -491,7 +491,7 @@ class Pcap {
 
     fs.writeSync(this.fd, buf, 0, len, pos);
     fs.fsyncSync(this.fd);
-  };
+  }
 
   /// ///////////////////////////////////////////////////////////////////////////////
   /// / Utilities
@@ -500,12 +500,12 @@ class Pcap {
   // --------------------------------------------------------------------------
   static protocol2Name (num) {
     return pr2name[num] || ('' + num);
-  };
+  }
 
   // --------------------------------------------------------------------------
   static inet_ntoa (num) {
     return (num >> 24 & 0xff) + '.' + (num >> 16 & 0xff) + '.' + (num >> 8 & 0xff) + '.' + (num & 0xff);
-  };
+  }
 
   /// ///////////////////////////////////////////////////////////////////////////////
   /// / Decode pcap buffers and build up simple objects
@@ -524,7 +524,7 @@ class Pcap {
     };
 
     obj.icmp.data = buffer;
-  };
+  }
 
   // --------------------------------------------------------------------------
   tcp (buffer, obj, pos) {
@@ -559,7 +559,7 @@ class Pcap {
     } catch (e) {
       console.trace("Couldn't parse tcp", e);
     }
-  };
+  }
 
   // --------------------------------------------------------------------------
   udp (buffer, obj, pos) {
@@ -629,7 +629,7 @@ class Pcap {
         this.ip4(data.slice(offset), obj, pos + offset);
       }
     }
-  };
+  }
 
   // --------------------------------------------------------------------------
   sctp (buffer, obj, pos) {
@@ -641,7 +641,7 @@ class Pcap {
     };
 
     obj.sctp.data = buffer.slice(12);
-  };
+  }
 
   // --------------------------------------------------------------------------
   esp (buffer, obj, pos) {
@@ -651,7 +651,7 @@ class Pcap {
     };
 
     obj.esp.data = buffer;
-  };
+  }
 
   // --------------------------------------------------------------------------
   gre (buffer, obj, pos) {
@@ -696,7 +696,7 @@ class Pcap {
     } else if (!this.ethertyperun(obj.gre.type, buffer.slice(bpos), obj, pos + bpos)) {
       console.log('gre Unknown type', obj.gre.type, 'Please open a new protocol issue with sample pcap - https://github.com/arkime/arkime/issues/new/choose');
     }
-  };
+  }
 
   // --------------------------------------------------------------------------
   erspan (buffer, obj, pos) {
@@ -760,7 +760,7 @@ class Pcap {
       obj.ip.data = buffer.slice(obj.ip.hl * 4, obj.ip.len);
   // console.log("v4 Unknown ip.p", obj, 'Please open a new protocol issue with sample pcap - https://github.com/arkime/arkime/issues/new/choose');
     }
-  };
+  }
 
   // --------------------------------------------------------------------------
   ip6 (buffer, obj, pos) {
@@ -813,7 +813,7 @@ class Pcap {
         return;
       }
     }
-  };
+  }
 
   // --------------------------------------------------------------------------
   pppoe (buffer, obj, pos) {
@@ -832,7 +832,7 @@ class Pcap {
     default:
       console.log('Unknown pppoe.type', obj, 'Please open a new protocol issue with sample pcap - https://github.com/arkime/arkime/issues/new/choose');
     }
-  };
+  }
 
   // --------------------------------------------------------------------------
   ppp (buffer, obj, pos) {
@@ -850,7 +850,7 @@ class Pcap {
     default:
       console.log('Unknown ppp.type', obj, 'Please open a new protocol issue with sample pcap - https://github.com/arkime/arkime/issues/new/choose');
     }
-  };
+  }
 
   // --------------------------------------------------------------------------
   mpls (buffer, obj, pos) {
@@ -872,12 +872,12 @@ class Pcap {
         }
       }
     }
-  };
+  }
 
   // --------------------------------------------------------------------------
   static setEtherCB (type, cb) {
     Pcap.#etherCBs.set(type, cb);
-  };
+  }
 
   // --------------------------------------------------------------------------
   ethertyperun (type, buffer, obj, pos) {
@@ -921,7 +921,7 @@ class Pcap {
       return false;
     }
     return true;
-  };
+  }
 
   // --------------------------------------------------------------------------
   ethertype (buffer, obj, pos) {
@@ -939,7 +939,7 @@ class Pcap {
       // console.trace("Unknown ether.type", obj);
       break;
     }
-  };
+  }
 
   // --------------------------------------------------------------------------
   ether (buffer, obj, pos) {
@@ -949,7 +949,7 @@ class Pcap {
       addr2: buffer.slice(6, 12).toString('hex', 0, 6)
     };
     this.ethertype(buffer.slice(12), obj, pos + 12);
-  };
+  }
 
   // --------------------------------------------------------------------------
   radiotap (buffer, obj, pos) {
@@ -957,7 +957,7 @@ class Pcap {
     const ethertype = buffer.readUInt16BE(l);
 
     if (this.ethertyperun(ethertype, buffer.slice(l + 2), obj, pos + l + 2)) { return; }
-  };
+  }
 
   // --------------------------------------------------------------------------
   nflog (buffer, obj, pos) {
@@ -981,7 +981,7 @@ class Pcap {
     } else if (buffer[l + 6] === 0x86 && buffer[l + 7] === 0xdd) {
       this.ip6(buffer.slice(l + 8), obj, pos + l + 8);
     }
-  };
+  }
 
   // --------------------------------------------------------------------------
   framerelay (buffer, obj, pos) {
@@ -992,7 +992,7 @@ class Pcap {
     } else if (buffer[2] === 0x86 && buffer[3] === 0xdd) {
       this.ip6(buffer.slice(4), obj, pos + 4);
     }
-  };
+  }
 
   // --------------------------------------------------------------------------
   pcap (buffer, obj) {
@@ -1058,13 +1058,13 @@ class Pcap {
       console.log('Unsupported pcap file', this.filename, 'link type', this.linkType, 'Please open a new protocol issue with sample pcap - https://github.com/arkime/arkime/issues/new/choose');
       break;
     }
-  };
+  }
 
   // --------------------------------------------------------------------------
   decode (buffer, obj) {
     this.readHeader();
     this.pcap(buffer, obj);
-  };
+  }
 
   // --------------------------------------------------------------------------
   getHeaderNg () {
@@ -1090,7 +1090,7 @@ class Pcap {
     b.writeUInt32LE(24, 52); // Block Len 2
 
     return b;
-  };
+  }
 
   /// ///////////////////////////////////////////////////////////////////////////////
   /// / Reassembly array of packets
@@ -1117,7 +1117,7 @@ class Pcap {
       delete result.buffers;
     }
     return { results };
-  };
+  }
 
   // --------------------------------------------------------------------------
   static reassemble_udp (packets, numPackets) {
@@ -1144,7 +1144,7 @@ class Pcap {
     } catch (err) {
       return { err, results };
     }
-  };
+  }
 
   // --------------------------------------------------------------------------
   static reassemble_sctp (packets, numPackets) {
@@ -1171,7 +1171,7 @@ class Pcap {
     } catch (err) {
       return { err, results };
     }
-  };
+  }
 
   // --------------------------------------------------------------------------
   static reassemble_esp (packets, numPackets) {
@@ -1194,7 +1194,7 @@ class Pcap {
       delete result.buffers;
     }
     return { results };
-  };
+  }
 
   // --------------------------------------------------------------------------
   static reassemble_generic_ip (packets, numPackets) {
@@ -1217,7 +1217,7 @@ class Pcap {
       delete result.buffers;
     }
     return { results };
-  };
+  }
 
   // --------------------------------------------------------------------------
   static reassemble_generic_ether (packets, numPackets) {
@@ -1240,9 +1240,9 @@ class Pcap {
       delete result.buffers;
     }
     return { results };
-  };
+  }
 
-  // Needs to be rewritten since its possible for packets to be
+  // Needs to be rewritten since it's possible for packets to be
   // dropped by windowing and other things to actually be displayed allowed.
   // If multiple tcp sessions in one arkime session display can be wacky/wrong.
 
@@ -1408,7 +1408,7 @@ class Pcap {
     } catch (err) {
       return { err };
     }
-  };
+  }
 
   // --------------------------------------------------------------------------
   static packetFlow (session, packets, numPackets) {
@@ -1468,7 +1468,7 @@ class Pcap {
     });
 
     return { sKey, dKey, results };
-  };
+  }
 
   // --------------------------------------------------------------------------
   static key (packet) {
@@ -1485,7 +1485,7 @@ class Pcap {
     default:
       return addr1;
     }
-  };
+  }
 
   // --------------------------------------------------------------------------
   static keyFromSession (session) {
@@ -1501,7 +1501,7 @@ class Pcap {
     default:
       return session.source.ip;
     }
-  };
-};
+  }
+}
 
 module.exports = Pcap;

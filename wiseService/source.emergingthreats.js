@@ -57,7 +57,7 @@ class EmergingThreatsSource extends WISESource {
       }
     });
     fs.createReadStream('/tmp/categories.txt').pipe(parser);
-  };
+  }
 
   // ----------------------------------------------------------------------------
   parseRepData (fn, hash) {
@@ -88,7 +88,7 @@ class EmergingThreatsSource extends WISESource {
       console.log(this.section, '- Done Loading', fn);
     });
     fs.createReadStream(fn).pipe(parser);
-  };
+  }
 
   // ----------------------------------------------------------------------------
   loadFiles () {
@@ -112,22 +112,22 @@ class EmergingThreatsSource extends WISESource {
         this.parseRepData('/tmp/domainrepdata.csv', this.domains);
       }
     });
-  };
+  }
 
   // ----------------------------------------------------------------------------
   getDomain (domain, cb) {
     cb(null, this.domains.get(domain) || this.domains.get(domain.substring(domain.indexOf('.') + 1)));
-  };
+  }
 
   // ----------------------------------------------------------------------------
   getIp (ip, cb) {
     cb(null, this.ips.get(ip));
-  };
+  }
 
   // ----------------------------------------------------------------------------
   itemCount () {
     return this.ips.size + this.domains.size;
-  };
+  }
 
   // ----------------------------------------------------------------------------
   dump (res) {
@@ -140,7 +140,7 @@ class EmergingThreatsSource extends WISESource {
       });
     });
     res.end();
-  };
+  }
 }
 
 // ----------------------------------------------------------------------------

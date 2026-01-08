@@ -907,20 +907,21 @@ char *arkime_ip4tostr(uint32_t ip, char *str, int len)
 }
 /******************************************************************************/
 LOCAL ArkimeCredentials_t *currentCredentials;
-LOCAL GHashTable          *credentialProviers;
+LOCAL GHashTable          *credentialProviders;
 /******************************************************************************/
 LOCAL void arkime_credentials_free(ArkimeCredentials_t *creds)
 {
     g_free(creds->id);
     g_free(creds->key);
     g_free(creds->token);
+    ARKIME_TYPE_FREE(ArkimeCredentials_t, creds);
 }
 /******************************************************************************/
 void arkime_credentials_register(const char *provider, ArkimeCredentialsGet func)
 {
-    if (!credentialProviers)
-        credentialProviers = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, NULL);
-    g_hash_table_insert(credentialProviers, g_strdup(provider), func);
+    if (!credentialProviders)
+        credentialProviders = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, NULL);
+    g_hash_table_insert(credentialProviders, g_strdup(provider), func);
 }
 /******************************************************************************/
 void arkime_credentials_set(const char *id, const char *key, const char *token)
@@ -953,7 +954,7 @@ ArkimeCredentials_t *arkime_credentials_get(const char *service, const char *idN
         config.provider = g_strdup("aws");
     }
 
-    ArkimeCredentialsGet func = g_hash_table_lookup(credentialProviers, config.provider);
+    ArkimeCredentialsGet func = g_hash_table_lookup(credentialProviders, config.provider);
     if (!func) {
         LOGEXIT("ERROR - No credentials provider for %s", config.provider);
     }

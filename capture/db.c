@@ -25,7 +25,7 @@ LOCAL MMDB_s           *geoCountry;
 LOCAL int               geoCountryIsCity;
 LOCAL MMDB_s           *geoASN;
 
-#define ARKIME_MIN_DB_VERSION 77
+#define ARKIME_MIN_DB_VERSION 83
 
 int                     arkimeDbVersion = 0;
 extern uint64_t         totalPackets;
@@ -777,9 +777,6 @@ void arkime_db_save_session(ArkimeSession_t *session, int final)
         BSB_INIT(dbInfo[thread].bsb, dbInfo[thread].json, size);
     }
 
-    uint32_t timediff = (uint32_t) ((session->lastPacket.tv_sec - session->firstPacket.tv_sec) * 1000 +
-                                    (session->lastPacket.tv_usec - session->firstPacket.tv_usec) / 1000);
-
     BSB jbsb = dbInfo[thread].bsb;
 
     startPtr = BSB_WORK_PTR(jbsb);
@@ -801,15 +798,33 @@ void arkime_db_save_session(ArkimeSession_t *session, int final)
 
     dataPtr = BSB_WORK_PTR(jbsb);
 
+    const uint64_t firstPacketMs = ((uint64_t)session->firstPacket.tv_sec) * 1000 + ((uint64_t)session->firstPacket.tv_usec) / 1000;
+    const uint64_t lastPacketMs  = ((uint64_t)session->lastPacket.tv_sec) * 1000 + ((uint64_t)session->lastPacket.tv_usec) / 1000;
+
+    BSB_EXPORT_cstr(jbsb, "{");
+    uint64_t timediff;
+    if (firstPacketMs <= lastPacketMs) {
+        if (arkimeDbVersion >= 85) {
+            BSB_EXPORT_sprintf(jbsb, "\"packetRange\":{\"gte\":%" PRIu64 ",\"lte\":%" PRIu64 "},", firstPacketMs, lastPacketMs);
+        }
+        timediff = lastPacketMs - firstPacketMs;
+    } else {
+        if (arkimeDbVersion >= 85) {
+            BSB_EXPORT_sprintf(jbsb, "\"packetRange\":{\"gte\":%" PRIu64 ",\"lte\":%" PRIu64 "},", lastPacketMs, firstPacketMs);
+        }
+        timediff = firstPacketMs - lastPacketMs;
+    }
     BSB_EXPORT_sprintf(jbsb,
-                       "{\"firstPacket\":%" PRIu64 ","
+                       "\"firstPacket\":%" PRIu64 ","
                        "\"lastPacket\":%" PRIu64 ","
-                       "\"length\":%u,"
+                       "\"length\":%" PRIu64 ","
                        "\"ipProtocol\":%u,",
-                       ((uint64_t)session->firstPacket.tv_sec) * 1000 + ((uint64_t)session->firstPacket.tv_usec) / 1000,
-                       ((uint64_t)session->lastPacket.tv_sec) * 1000 + ((uint64_t)session->lastPacket.tv_usec) / 1000,
+                       firstPacketMs,
+                       lastPacketMs,
                        timediff,
                        session->ipProtocol);
+
+
     if (session->ethertype) {
         BSB_EXPORT_sprintf(jbsb, "\"ethertype\":%u,", session->ethertype);
     }
@@ -1849,7 +1864,7 @@ LOCAL void arkime_db_update_stats(int n, gboolean sync)
                 free(data);
             arkime_http_free_buffer(json);
         } else {
-            // Dropable if the current time isn't first 2 seconds of each minute
+            // Droppable if the current time isn't first 2 seconds of each minute
             if ((cursec % 60) >= 2) {
                 arkime_http_schedule(esServer, "POST", stats_key, stats_key_len, json, json_len, NULL, ARKIME_HTTP_PRIORITY_DROPABLE, NULL, NULL);
             } else {
@@ -2241,18 +2256,16 @@ char *arkime_db_create_file_full(const struct timeval *firstPacket, const char *
     }
     va_end(args);
 
-    if (arkimeDbVersion >= 81) {
-        struct timeval currentTime;
-        gettimeofday(&currentTime, NULL);
+    struct timeval currentTime;
+    gettimeofday(&currentTime, NULL);
 
-        BSB_EXPORT_sprintf(jbsb,
-                           ", \"startTimestamp\":%" PRIu64,
-                           ((uint64_t)currentTime.tv_sec) * 1000 + ((uint64_t)currentTime.tv_usec) / 1000);
+    BSB_EXPORT_sprintf(jbsb,
+                       ", \"startTimestamp\":%" PRIu64,
+                       ((uint64_t)currentTime.tv_sec) * 1000 + ((uint64_t)currentTime.tv_usec) / 1000);
 
-        BSB_EXPORT_sprintf(jbsb,
-                           ", \"firstTimestamp\":%" PRIu64,
-                           ((uint64_t)firstPacket->tv_sec) * 1000 + ((uint64_t)firstPacket->tv_usec) / 1000);
-    }
+    BSB_EXPORT_sprintf(jbsb,
+                       ", \"firstTimestamp\":%" PRIu64,
+                       ((uint64_t)firstPacket->tv_sec) * 1000 + ((uint64_t)firstPacket->tv_usec) / 1000);
 
     BSB_EXPORT_u08(jbsb, '}');
 
@@ -2678,25 +2691,21 @@ void arkime_db_update_file(uint32_t fileid, uint64_t filesize, uint64_t packetsS
 
     BSB_EXPORT_sprintf(jbsb, "{\"doc\": {\"filesize\": %" PRIu64 ", \"packetsSize\": %" PRIu64 ", \"packets\": %u", filesize, packetsSize, packets);
 
-    if (arkimeDbVersion >= 81) {
-        struct timeval currentTime;
-        gettimeofday(&currentTime, NULL);
+    struct timeval currentTime;
+    gettimeofday(&currentTime, NULL);
 
+    BSB_EXPORT_sprintf(jbsb,
+                       ", \"finishTimestamp\":%" PRIu64,
+                       ((uint64_t)currentTime.tv_sec) * 1000 + ((uint64_t)currentTime.tv_usec) / 1000);
+
+    if (packets > 0 && lastPacket) {
         BSB_EXPORT_sprintf(jbsb,
-                           ", \"finishTimestamp\":%" PRIu64,
-                           ((uint64_t)currentTime.tv_sec) * 1000 + ((uint64_t)currentTime.tv_usec) / 1000);
-
-        if (packets > 0 && lastPacket) {
-            BSB_EXPORT_sprintf(jbsb,
-                               ", \"lastTimestamp\":%" PRIu64,
-                               ((uint64_t)lastPacket->tv_sec) * 1000 + ((uint64_t)lastPacket->tv_usec) / 1000);
-        }
+                           ", \"lastTimestamp\":%" PRIu64,
+                           ((uint64_t)lastPacket->tv_sec) * 1000 + ((uint64_t)lastPacket->tv_usec) / 1000);
     }
 
-    if (arkimeDbVersion >= 83) {
-        BSB_EXPORT_sprintf(jbsb, ", \"sessionsStarted\":%u", sessionsStarted);
-        BSB_EXPORT_sprintf(jbsb, ", \"sessionsPresent\":%u", sessionsPresent);
-    }
+    BSB_EXPORT_sprintf(jbsb, ", \"sessionsStarted\":%u", sessionsStarted);
+    BSB_EXPORT_sprintf(jbsb, ", \"sessionsPresent\":%u", sessionsPresent);
 
     BSB_EXPORT_cstr(jbsb, "}}");
 
@@ -2869,6 +2878,9 @@ void arkime_db_init()
         arkime_db_load_file_num();
         arkime_db_load_stats();
         arkime_db_load_fields();
+    } else {
+        //arkimeDbVersion = ARKIME_MIN_DB_VERSION; // ALW FIX v6 release
+        arkimeDbVersion = 85;
     }
 
     arkime_add_can_quit(arkime_db_can_quit, "DB");

@@ -69,7 +69,7 @@ class AlienVaultSource extends WISESource {
       console.log(this.section, '- Done Loading', count, 'elements');
     });
     fs.createReadStream('/tmp/alienvault.data').pipe(parser);
-  };
+  }
 
   // ----------------------------------------------------------------------------
   loadFile () {
@@ -121,17 +121,17 @@ class AlienVaultSource extends WISESource {
         delete this.retry;
       }
     });
-  };
+  }
 
   // ----------------------------------------------------------------------------
   getIp (ip, cb) {
     cb(null, this.ips.get(ip));
-  };
+  }
 
   // ----------------------------------------------------------------------------
   itemCount () {
     return this.ips.size;
-  };
+  }
 
   // ----------------------------------------------------------------------------
   dump (res) {
@@ -141,7 +141,7 @@ class AlienVaultSource extends WISESource {
       res.write(str);
     });
     res.end();
-  };
+  }
 }
 // ----------------------------------------------------------------------------
 exports.initSource = function (api) {

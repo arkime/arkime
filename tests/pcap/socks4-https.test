@@ -148,7 +148,7 @@
             "initRTT" : 160,
             "ipProtocol" : 6,
             "lastPacket" : 1415053642702,
-            "length" : 1867,
+            "length" : 1866,
             "network" : {
                "bytes" : 7752,
                "community_id" : "1:6/u1qoj9fpHAapKWZJHA2kiVUeE=",
@@ -191,6 +191,10 @@
                6590,
                6666
             ],
+            "packetRange" : {
+               "gte" : 1415053640836,
+               "lte" : 1415053642702
+            },
             "protocol" : [
                "socks",
                "tcp",

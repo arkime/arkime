@@ -270,7 +270,7 @@ function gripClick (e, col) {
   tableWidthBeforeResize = table.style.width.slice(0, -2);
   colStartOffset = col.offsetWidth - e.pageX;
   selectedGripElem = col.getElementsByClassName('grip')[0];
-};
+}
 
 // fired when the column resize grip is dragged
 // styles the grip to show where it's being dragged

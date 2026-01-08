@@ -84,7 +84,7 @@ void arkime_plugins_load(char **plugins)
     if (!plugins)
         return;
 
-    arkime_add_can_quit((ArkimeCanQuitFunc)arkime_plugins_outstanding, "plugin outstanding");
+    arkime_add_can_quit((ArkimeCanQuitFunc)arkime_plugins_outstanding, "plugins outstanding");
 
     for (int i = 0; plugins[i]; i++) {
         const char *name = plugins[i];
@@ -154,7 +154,7 @@ LOCAL int arkime_plugins_load_so(const char *path)
 void arkime_plugins_register_load_extension(const char *extension, ArkimeParserLoadFunc loadFunc)
 {
     if (extension[0] != '.') {
-        LOGEXIT("ERROR - Extension '%s'must start with a .", extension);
+        LOGEXIT("ERROR - Extension '%s' must start with a .", extension);
     }
 
     if (!extensionsArr) {

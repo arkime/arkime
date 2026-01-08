@@ -121,7 +121,7 @@ class SplunkSource extends WISESource {
     } catch (err) {
       console.log(this.section, '- ERROR', err);
     }
-  };
+  }
 
   // ----------------------------------------------------------------------------
   itemCount () {
@@ -145,7 +145,7 @@ class SplunkSource extends WISESource {
       res.write(str);
     });
     res.end();
-  };
+  }
 
   // ----------------------------------------------------------------------------
   sendResultPeriodic (key, cb) {
@@ -166,7 +166,7 @@ class SplunkSource extends WISESource {
     // Found, so combine the two results (per item, and per source)
     const newresult = WISESource.combineResults([result, this.tagsResult]);
     return cb(null, newresult);
-  };
+  }
 
   // ----------------------------------------------------------------------------
   async sendResult (key, cb) {
@@ -198,7 +198,7 @@ class SplunkSource extends WISESource {
       console.log(this.section, '- ERROR', err);
       return cb(null, undefined);
     }
-  };
+  }
 }
 
 // ----------------------------------------------------------------------------

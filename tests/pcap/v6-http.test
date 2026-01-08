@@ -106,6 +106,10 @@
                5528,
                5630
             ],
+            "packetRange" : {
+               "gte" : 1186341079159,
+               "lte" : 1186341381164
+            },
             "protocol" : [
                "icmp"
             ],
@@ -169,7 +173,7 @@
             },
             "ipProtocol" : 58,
             "lastPacket" : 1186341103914,
-            "length" : 5859,
+            "length" : 5860,
             "network" : {
                "bytes" : 180,
                "community_id" : "1:N1pYzX56SZ4pCJrRuglkQ+2ylvE=",
@@ -184,6 +188,10 @@
                330,
                2440
             ],
+            "packetRange" : {
+               "gte" : 1186341098054,
+               "lte" : 1186341103914
+            },
             "protocol" : [
                "icmp"
             ],
@@ -260,6 +268,10 @@
             "packetPos" : [
                436
             ],
+            "packetRange" : {
+               "gte" : 1186341098474,
+               "lte" : 1186341098474
+            },
             "protocol" : [
                "icmp"
             ],
@@ -315,7 +327,7 @@
             "firstPacket" : 1186341099605,
             "ipProtocol" : 17,
             "lastPacket" : 1186341103455,
-            "length" : 3851,
+            "length" : 3850,
             "network" : {
                "bytes" : 1782,
                "community_id" : "1:TL4Y0+L3PjIimj1u3COHbMG1wIA=",
@@ -342,6 +354,10 @@
                1842,
                2141
             ],
+            "packetRange" : {
+               "gte" : 1186341099605,
+               "lte" : 1186341103455
+            },
             "protocol" : [
                "iprulztest",
                "mdns",
@@ -435,6 +451,10 @@
             "packetPos" : [
                4382
             ],
+            "packetRange" : {
+               "gte" : 1186341269082,
+               "lte" : 1186341269082
+            },
             "protocol" : [
                "icmp"
             ],
@@ -599,7 +619,7 @@
             "initRTT" : 0,
             "ipProtocol" : 6,
             "lastPacket" : 1186341404219,
-            "length" : 29,
+            "length" : 30,
             "network" : {
                "bytes" : 3267,
                "community_id" : "1:P/VOGxllF9rkDpAV0qCij17Tlnw=",
@@ -630,6 +650,10 @@
                8979,
                9069
             ],
+            "packetRange" : {
+               "gte" : 1186341404189,
+               "lte" : 1186341404219
+            },
             "protocol" : [
                "http",
                "tcp"

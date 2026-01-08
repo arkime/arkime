@@ -28,7 +28,7 @@ class Db {
       Db.implementation = new DbESImplementation(options);
       await Db.implementation.initialize();
     }
-  };
+  }
 
   /**
    * Get all the links that match the creator and set of roles
@@ -155,7 +155,7 @@ class DbESImplementation {
 
   constructor (options) {
     const esSSLOptions = { rejectUnauthorized: !options.insecure };
-    if (options.caTrustFile) { esSSLOptions.ca = ArkimeUtil.certificateFileToArray(options.caTrustFile); };
+    if (options.caTrustFile) { esSSLOptions.ca = ArkimeUtil.certificateFileToArray(options.caTrustFile); }
     if (options.clientKey) {
       esSSLOptions.key = fs.readFileSync(options.clientKey);
       esSSLOptions.cert = fs.readFileSync(options.clientCert);
@@ -188,7 +188,7 @@ class DbESImplementation {
     }
 
     this.client = new Client(esOptions);
-  };
+  }
 
   async initialize () {
     // create all ES indices simultaneously

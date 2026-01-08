@@ -43,7 +43,7 @@
             "initRTT" : 0,
             "ipProtocol" : 6,
             "lastPacket" : 1387565112051,
-            "length" : 106,
+            "length" : 105,
             "network" : {
                "bytes" : 3752,
                "community_id" : "1:eCGZrs2oS78hdxeW5zAzN+gSTUc=",
@@ -98,6 +98,10 @@
                3908,
                4058
             ],
+            "packetRange" : {
+               "gte" : 1387565111946,
+               "lte" : 1387565112051
+            },
             "protocol" : [
                "ssh",
                "tcp"

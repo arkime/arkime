@@ -38,6 +38,10 @@
             "packetPos" : [
                24
             ],
+            "packetRange" : {
+               "gte" : 1715858838018,
+               "lte" : 1715858838018
+            },
             "protocol" : [
                "udp"
             ],

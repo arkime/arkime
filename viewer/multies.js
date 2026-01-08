@@ -28,7 +28,7 @@ ArkimeConfig.loaded(() => {
   const esClientKey = Config.get('esClientKey');
   const esClientCert = Config.get('esClientCert');
   const caTrustFile = Config.get('caTrustFile');
-  if (caTrustFile) { esSSLOptions.ca = ArkimeUtil.certificateFileToArray(caTrustFile); };
+  if (caTrustFile) { esSSLOptions.ca = ArkimeUtil.certificateFileToArray(caTrustFile); }
   if (esClientKey) {
     esSSLOptions.key = fs.readFileSync(esClientKey);
     esSSLOptions.cert = fs.readFileSync(esClientCert);
@@ -372,7 +372,7 @@ function simpleGather1Cluster (req, res) {
   simpleGather(req, res, null, (err, results) => {
     res.send(results[0]);
   });
-};
+}
 
 app.get('/_tasks', simpleGatherTasks);
 app.post('/_tasks/:taskId/_cancel', simpleGather1Cluster);
@@ -825,7 +825,7 @@ function fixQuery (node, body, doneCb) {
     for (const item in obj) {
       doProcess(qParent, obj, item);
     }
-  };
+  }
 
   function doProcess (qParent, obj, item) {
     let query;
@@ -1181,7 +1181,7 @@ app.use(ArkimeUtil.expressErrorHandler);
 /// / Main
 /// ///////////////////////////////////////////////////////////////////////////////
 
-// Ping (HEAD /) periodically to maintian a list of active ES nodes
+// Ping (HEAD /) periodically to maintain a list of active ES nodes
 function pingESNode (client, node) {
   return new Promise((resolve, reject) => {
     client.ping({}, {

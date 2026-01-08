@@ -212,6 +212,10 @@
                20577,
                20659
             ],
+            "packetRange" : {
+               "gte" : 1733385184602,
+               "lte" : 1733385184823
+            },
             "protocol" : [
                "smtp",
                "tcp"
@@ -399,7 +403,7 @@
             "initRTT" : 3,
             "ipProtocol" : 6,
             "lastPacket" : 1733486380295,
-            "length" : 156,
+            "length" : 157,
             "network" : {
                "bytes" : 5671,
                "community_id" : "1:PPPArfw2Vg4Fjk7Mv/R0AkuJTDA=",
@@ -464,6 +468,10 @@
                26692,
                26768
             ],
+            "packetRange" : {
+               "gte" : 1733486380138,
+               "lte" : 1733486380295
+            },
             "protocol" : [
                "smtp",
                "tcp"
@@ -654,7 +662,7 @@
             "initRTT" : 0,
             "ipProtocol" : 6,
             "lastPacket" : 1733486381366,
-            "length" : 286,
+            "length" : 287,
             "network" : {
                "bytes" : 6372,
                "community_id" : "1:RIvrJLun4TkJg7NCBOAKbR4KNps=",
@@ -715,6 +723,10 @@
                33464,
                33540
             ],
+            "packetRange" : {
+               "gte" : 1733486381079,
+               "lte" : 1733486381366
+            },
             "protocol" : [
                "smtp",
                "tcp"
@@ -935,6 +947,10 @@
                37448,
                37530
             ],
+            "packetRange" : {
+               "gte" : 1733486838269,
+               "lte" : 1733486838673
+            },
             "protocol" : [
                "smtp",
                "tcp"

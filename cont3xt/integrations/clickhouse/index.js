@@ -78,7 +78,7 @@ class ClickHouseIntegration extends Integration {
       }
     };
     return data;
-  };
+  }
 }
 
 const sections = ArkimeConfig.getSections().filter((e) => { return e.match(/^clickhouse:/); });

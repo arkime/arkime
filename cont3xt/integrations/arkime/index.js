@@ -265,7 +265,7 @@ class ArkimeIntegration extends Integration {
       'socks.host',
       'oracle.host'
     ]);
-  };
+  }
 
   // ----------------------------------------------------------------------------
   async fetchEmail (user, item) {

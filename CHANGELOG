@@ -86,6 +86,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #3501 Added reader-bpf 
   - #3517 Netmap FreeBSD support
   - #3547 Fix erspan vlan truncating at 7 bits instead of 12 bits
+  - #3566 fix the sessions length being off by 1ms sometimes
 ## Capture/Viewer
   - #3197 new sessionsStarted and sessionsPresent in files tab
   - #3210 new vlan.dot1q and vlan.dot1ad expressions
@@ -94,6 +95,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #3463 Added dhcp.classId
   - #3464 Added id for dhcpv6
   - #3465 Added dhcp.requestIp
+  - #3566 New packetRange field to support spanning timeline display
 ## Viewer
   - #3326 BIG search expression
   - #3343 Basic internationalization support

@@ -277,9 +277,6 @@ SPDX-License-Identifier: Apache-2.0
             value="last"
             v-i18n-value="'search.timeBounding-'" />
           <option
-            value="last"
-            v-i18n-value="'search.timeBounding-'" />
-          <option
             value="both"
             v-i18n-value="'search.timeBounding-'" />
           <option
@@ -328,6 +325,9 @@ SPDX-License-Identifier: Apache-2.0
             v-i18n-value="'search.timeInterval-'" />
           <option
             value="day"
+            v-i18n-value="'search.timeInterval-'" />
+          <option
+            value="week"
             v-i18n-value="'search.timeInterval-'" />
         </select>
       </BInputGroup>

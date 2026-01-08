@@ -243,7 +243,7 @@ class BuildQuery {
         BuildQuery.#collapseQuery(query[prop]);
       }
     }
-  };
+  }
 
   // ----------------------------------------------------------------------------
   /* This method fixes up parts of the query that jison builds to what ES actually
@@ -289,7 +289,7 @@ class BuildQuery {
     await convert(query);
 
     return err;
-  };
+  }
 
   // --------------------------------------------------------------------------
   /**
@@ -467,6 +467,10 @@ class BuildQuery {
           query.aggregations.dbHisto.histogram = { field: 'lastPacket', interval: interval * 1000, min_doc_count: 1 };
           break;
         }
+
+        if (reqQuery.spanning === 'true' || reqQuery.spanning === true) {
+          query.aggregations.dbHisto.histogram = { field: 'packetRange', interval: interval * 1000, min_doc_count: 1 };
+        }
       }
     }
 
@@ -542,7 +546,7 @@ class BuildQuery {
     }
 
     return buildCb(err ?? lerr, query, req._arkimeESQueryIndices);
-  };
+  }
 
   // -------------------------------------------------------------------------
   // determineQueryTimes(reqQuery)
@@ -566,9 +570,25 @@ class BuildQuery {
       reqQuery.date = '-1';
     }
 
+    function toInterval (diff) {
+      if (diff < 1000) {
+        return 1; // second
+      } else if (diff <= 60 * 10000) {
+        return 60; // minute
+      } else if (diff <= 60 * 60 * 10000) {
+        return 60 * 60; // hour
+      } else {
+        return 24 * 60 * 60; // day
+      }
+    }
+
     if ((reqQuery.date && parseFloat(reqQuery.date) === -1) ||
         (reqQuery.segments && reqQuery.segments === 'all')) {
-      interval = 60 * 60; // Hour to be safe
+      if (reqQuery.spanning === 'true' || reqQuery.spanning === true) {
+        interval = 60 * 60 * 24; // Day to be safe
+      } else {
+        interval = 60 * 60; // Hour to be safe
+      }
     } else if ((reqQuery.startTime !== undefined) && (reqQuery.stopTime !== undefined)) {
       if (!/^-?[0-9]+$/.test(reqQuery.startTime)) {
         startTimeSec = Date.parse(reqQuery.startTime.replace('+', ' ')) / 1000;
@@ -582,24 +602,13 @@ class BuildQuery {
         stopTimeSec = parseInt(reqQuery.stopTime, 10);
       }
 
-      const diff = stopTimeSec - startTimeSec;
-      if (diff < 30 * 60) {
-        interval = 1; // second
-      } else if (diff <= 5 * 24 * 60 * 60) {
-        interval = 60; // minute
-      } else {
-        interval = 60 * 60; // hour
-      }
+      interval = toInterval(stopTimeSec - startTimeSec);
     } else {
       const queryDate = reqQuery.date || 1;
       startTimeSec = (Math.floor(Date.now() / 1000) - 60 * 60 * parseFloat(queryDate));
       stopTimeSec = Date.now() / 1000;
 
-      if (queryDate <= 5 * 24) {
-        interval = 60; // minute
-      } else {
-        interval = 60 * 60; // hour
-      }
+      interval = toInterval(60 * parseFloat(queryDate));
     }
 
     switch (reqQuery.interval) {
@@ -625,7 +634,7 @@ class BuildQuery {
     }
 
     return [startTimeSec, Math.floor(stopTimeSec), interval];
-  };
-};
+  }
+}
 
 module.exports = BuildQuery;
