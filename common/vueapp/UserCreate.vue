@@ -189,52 +189,93 @@ SPDX-License-Identifier: Apache-2.0
         {{ $t('users.headerAuthEnabled') }}
       </b-form-checkbox>
 
-      <b-form-checkbox
-        inline
-        :checked="!newUser.emailSearch"
+      <!-- User permission tri-state toggles -->
+      <div
         v-if="createMode === 'user'"
-        @input="newVal => negativeToggle(newVal, newUser, 'emailSearch')">
-        {{ $t('users.disableEmailSearch') }}
-      </b-form-checkbox>
-      <b-form-checkbox
-        inline
-        :checked="!newUser.removeEnabled"
-        v-if="createMode === 'user'"
-        @input="newVal => negativeToggle(newVal, newUser, 'removeEnabled')">
-        {{ $t('users.disableDataRemoval') }}
-      </b-form-checkbox>
-      <b-form-checkbox
-        inline
-        :checked="!newUser.packetSearch"
-        v-if="createMode === 'user'"
-        @input="newVal => negativeToggle(newVal, newUser, 'packetSearch')">
-        {{ $t('users.disableHunting') }}
-      </b-form-checkbox>
+        class="user-permissions mt-2 mb-2 d-flex flex-wrap gap-1">
+        <TriStateToggle
+          class="toggle-group rounded p-1"
+          :model-value="newUser.emailSearch"
+          :label="$t('users.disableEmailSearch')"
+          :negated="true"
+          @update:model-value="setRoleField('emailSearch', $event)" />
+        <TriStateToggle
+          class="toggle-group rounded p-1"
+          :model-value="newUser.removeEnabled"
+          :label="$t('users.disableDataRemoval')"
+          :negated="true"
+          @update:model-value="setRoleField('removeEnabled', $event)" />
+        <TriStateToggle
+          class="toggle-group rounded p-1"
+          :model-value="newUser.packetSearch"
+          :label="$t('users.disableHunting')"
+          :negated="true"
+          @update:model-value="setRoleField('packetSearch', $event)" />
+        <TriStateToggle
+          class="toggle-group rounded p-1"
+          :model-value="newUser.hideStats"
+          :label="$t('users.hideStatsPage')"
+          @update:model-value="setRoleField('hideStats', $event)" />
+        <TriStateToggle
+          class="toggle-group rounded p-1"
+          :model-value="newUser.hideFiles"
+          :label="$t('users.hideFilesPage')"
+          @update:model-value="setRoleField('hideFiles', $event)" />
+        <TriStateToggle
+          class="toggle-group rounded p-1"
+          :model-value="newUser.hidePcap"
+          :label="$t('users.hidePcap')"
+          @update:model-value="setRoleField('hidePcap', $event)" />
+        <TriStateToggle
+          class="toggle-group rounded p-1"
+          :model-value="newUser.disablePcapDownload"
+          :label="$t('users.disablePcapDownload')"
+          @update:model-value="setRoleField('disablePcapDownload', $event)" />
+      </div>
 
-      <b-form-checkbox
-        inline
-        v-if="createMode === 'user'"
-        v-model="newUser.hideStats">
-        {{ $t('users.hideStatsPage') }}
-      </b-form-checkbox>
-      <b-form-checkbox
-        inline
-        v-if="createMode === 'user'"
-        v-model="newUser.hideFiles">
-        {{ $t('users.hideFilesPage') }}
-      </b-form-checkbox>
-      <b-form-checkbox
-        inline
-        v-if="createMode === 'user'"
-        v-model="newUser.hidePcap">
-        {{ $t('users.hidePcap') }}
-      </b-form-checkbox>
-      <b-form-checkbox
-        inline
-        v-if="createMode === 'user'"
-        v-model="newUser.disablePcapDownload">
-        {{ $t('users.disablePcapDownload') }}
-      </b-form-checkbox>
+      <!-- Role permission tri-state toggles -->
+      <div
+        v-if="createMode === 'role'"
+        class="role-permissions mt-2 mb-2 d-flex flex-wrap gap-1">
+        <TriStateToggle
+          class="toggle-group rounded p-1"
+          :model-value="newUser.emailSearch"
+          :label="$t('users.disableEmailSearch')"
+          :negated="true"
+          @update:model-value="setRoleField('emailSearch', $event)" />
+        <TriStateToggle
+          class="toggle-group rounded p-1"
+          :model-value="newUser.removeEnabled"
+          :label="$t('users.disableDataRemoval')"
+          :negated="true"
+          @update:model-value="setRoleField('removeEnabled', $event)" />
+        <TriStateToggle
+          class="toggle-group rounded p-1"
+          :model-value="newUser.packetSearch"
+          :label="$t('users.disableHunting')"
+          :negated="true"
+          @update:model-value="setRoleField('packetSearch', $event)" />
+        <TriStateToggle
+          class="toggle-group rounded p-1"
+          :model-value="newUser.hideStats"
+          :label="$t('users.hideStatsPage')"
+          @update:model-value="setRoleField('hideStats', $event)" />
+        <TriStateToggle
+          class="toggle-group rounded p-1"
+          :model-value="newUser.hideFiles"
+          :label="$t('users.hideFilesPage')"
+          @update:model-value="setRoleField('hideFiles', $event)" />
+        <TriStateToggle
+          class="toggle-group rounded p-1"
+          :model-value="newUser.hidePcap"
+          :label="$t('users.hidePcap')"
+          @update:model-value="setRoleField('hidePcap', $event)" />
+        <TriStateToggle
+          class="toggle-group rounded p-1"
+          :model-value="newUser.disablePcapDownload"
+          :label="$t('users.disablePcapDownload')"
+          @update:model-value="setRoleField('disablePcapDownload', $event)" />
+      </div>
     </b-form> <!-- /create form -->
     <!-- create form error -->
     <div
@@ -269,6 +310,7 @@ SPDX-License-Identifier: Apache-2.0
 import UserService from './UserService';
 import RoleDropdown from './RoleDropdown.vue';
 import UserDropdown from './UserDropdown.vue';
+import TriStateToggle from './TriStateToggle.vue';
 
 const defaultNewUser = {
   userId: '',
@@ -282,12 +324,20 @@ const defaultNewUser = {
   roleAssigners: []
 };
 
+const defaultNewRole = {
+  userId: '',
+  userName: '',
+  enabled: true,
+  roleAssigners: []
+};
+
 export default {
   name: 'CreateUser',
   emits: ['close', 'user-created'],
   components: {
     RoleDropdown,
-    UserDropdown
+    UserDropdown,
+    TriStateToggle
   },
   props: {
     roles: {
@@ -306,13 +356,32 @@ export default {
   data () {
     return {
       createError: '',
-      newUser: defaultNewUser,
+      newUser: { ...defaultNewUser },
       validatePassword: undefined
     };
+  },
+  watch: {
+    showModal (newVal) {
+      if (newVal) {
+        // Reset to appropriate defaults when modal opens
+        this.newUser = this.createMode === 'role'
+          ? { ...defaultNewRole }
+          : { ...defaultNewUser };
+        this.createError = '';
+        this.validatePassword = undefined;
+      }
+    }
   },
   methods: {
     negativeToggle (newVal, user, field) {
       user[field] = !newVal;
+    },
+    setRoleField (field, value) {
+      if (value === undefined) {
+        delete this.newUser[field];
+      } else {
+        this.newUser[field] = value;
+      }
     },
     updateNewUserRoles (roles) {
       this.newUser.roles = roles;
@@ -348,7 +417,7 @@ export default {
       }
 
       UserService.createUser(user).then((response) => {
-        this.newUser = defaultNewUser;
+        this.newUser = createRole ? { ...defaultNewRole } : { ...defaultNewUser };
         this.$emit('user-created', response.text, user);
       }).catch((error) => {
         this.createError = error.text;
@@ -357,3 +426,10 @@ export default {
   }
 };
 </script>
+
+<style scoped>
+.toggle-group {
+  background-color: var(--color-white);
+  color: var(--color-gray-dark);
+}
+</style>
