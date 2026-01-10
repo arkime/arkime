@@ -92,6 +92,7 @@ ARKIME_LOCK_DEFINE(offlineInfoLock);
 uint64_t                     packetStats[ARKIME_PACKET_MAX];
 
 /******************************************************************************/
+#define ARKIME_PACKET_PROCESS_BATCH 64
 LOCAL  ArkimePacketHead_t    packetQ[ARKIME_MAX_PACKET_THREADS];
 LOCAL  uint64_t              overloadDrops[ARKIME_MAX_PACKET_THREADS];
 LOCAL  uint32_t              overloadDropTimes[ARKIME_MAX_PACKET_THREADS];
@@ -541,7 +542,9 @@ LOCAL void *arkime_packet_thread(void *threadp)
 
     // Continue while packet_exit hasn't been called and we still have outstanding packets
     while (likely(runThreads || DLL_COUNT(packet_, &packetQ[thread]))) {
-        ArkimePacket_t  *packet;
+        ArkimePacket_t *packets[ARKIME_PACKET_PROCESS_BATCH];
+        int             packetCnt = 0;
+        uint32_t        qCnt;
 
         ARKIME_LOCK(packetQ[thread].lock);
         inProgress[thread] = 0;
@@ -561,36 +564,58 @@ LOCAL void *arkime_packet_thread(void *threadp)
             }
         }
         inProgress[thread] = 1;
-        DLL_POP_HEAD(packet_, &packetQ[thread], packet);
+
+        // Copy up to ARKIME_PACKET_PROCESS_BATCH packets to local array to minimize lock calls
+        while (packetCnt < ARKIME_PACKET_PROCESS_BATCH) {
+            ArkimePacket_t *packet;
+            DLL_POP_HEAD(packet_, &packetQ[thread], packet);
+            if (!packet)
+                break;
+            if (unlikely(packet->pktlen == ARKIME_PACKET_LEN_FILE_DONE) && packetCnt > 0) {
+                // The PACKET_LEN_FILE_DONE needs to be processed first so put it back on the queue
+                DLL_PUSH_HEAD(packet_, &packetQ[thread], packet);
+                break;
+            }
+            packets[packetCnt++] = packet;
+        }
+        qCnt = DLL_COUNT(packet_, &packetQ[thread]);
         ARKIME_UNLOCK(packetQ[thread].lock);
 
-        // Only process commands if the packetQ is less then 75% full or every 8 packets
-        if (likely(DLL_COUNT(packet_, &packetQ[thread]) < maxPackets75) || (skipCount & 0x7) == 0) {
+        if (packetCnt == 0) {
             arkime_session_process_commands(thread);
-            if (!packet)
-                continue;
-        } else {
-            skipCount++;
-        }
-
-        if (unlikely(packet->pktlen == ARKIME_PACKET_LEN_FILE_DONE)) {
-            // Make sure no best http requests are in the queue, like the file create
-            while (arkime_http_queue_length_best(esServer) > 0) {
-                usleep(5000);
-            }
-
-            // Could do a lock per file pos but this shouldn't happen too often
-            ARKIME_LOCK(offlineInfoLock);
-            ArkimeOfflineInfo_t *oi = &offlineInfo[packet->readerPos];
-            oi->finishWaiting--;
-            if (oi->finishWaiting == 0) {
-                arkime_db_update_file(oi->outputId, oi->lastBytes, oi->lastBytes, oi->lastPackets, &oi->lastPacketTime, oi->sessionsStarted, oi->sessionsPresent);
-            }
-            ARKIME_UNLOCK(offlineInfoLock);
-            arkime_packet_free(packet);
             continue;
         }
-        arkime_packet_process(packet, thread);
+
+        for (int i = 0; i < packetCnt; i++) {
+            ArkimePacket_t *packet = packets[i];
+
+            // Only process commands if the packetQ is less then 75% full or every 8 packets
+            if (likely(qCnt < maxPackets75) || (skipCount & 0x7) == 0) {
+                arkime_session_process_commands(thread);
+            } else {
+                skipCount++;
+            }
+
+            if (unlikely(packet->pktlen == ARKIME_PACKET_LEN_FILE_DONE)) {
+                // Make sure no best http requests are in the queue, like the file create
+                while (arkime_http_queue_length_best(esServer) > 0) {
+                    usleep(5000);
+                }
+
+                // Could do a lock per file pos but this shouldn't happen too often
+                ARKIME_LOCK(offlineInfoLock);
+                ArkimeOfflineInfo_t *oi = &offlineInfo[packet->readerPos];
+                oi->finishWaiting--;
+                if (oi->finishWaiting == 0) {
+                    arkime_db_update_file(oi->outputId, oi->lastBytes, oi->lastBytes, oi->lastPackets, &oi->lastPacketTime, oi->sessionsStarted, oi->sessionsPresent);
+                }
+                ARKIME_UNLOCK(offlineInfoLock);
+                arkime_packet_free(packet);
+                arkime_session_process_commands(thread);
+                continue;
+            }
+            arkime_packet_process(packet, thread);
+        }
     }
 
     arkime_call_named_func(arkime_packet_thread_exit_func, thread, NULL);
