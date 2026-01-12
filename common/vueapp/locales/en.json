@@ -1023,7 +1023,13 @@
     "rolesSearchPlaceholder": "Search for roles...",
     "userDefinedRoleMsg": "User defined role",
     "missingRoleMsg": "This role no longer exists",
-    "noRolesMatchSearch": "No roles match your search"
+    "noRolesMatchSearch": "No roles match your search",
+    "inherit": "Inherit",
+    "inheritTip": "Use inherited value from user's other roles",
+    "yes": "Yes",
+    "no": "No",
+    "forceOnTip": "Force this restriction on for users with this role",
+    "forceOffTip": "Force this restriction off for users with this role"
   },
   "roles": {
     "name": "Name",

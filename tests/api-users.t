@@ -1,4 +1,7 @@
-use Test::More tests => 177;
+# Many of these test user/roles start with sac- (skip auto create) because
+# otherwise viewer in regression mode would auto create the user.
+# Some day should remove all autocreate code.
+use Test::More tests => 192;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -85,7 +88,7 @@ anonymous,,true,true,false,"arkimeAdmin, cont3xtUser, parliamentUser, usersAdmin
     $users = viewerPost("/api/users", "");
     is (@{$users->{data}}, 3, "Check add #1");
 
-    eq_or_diff($users->{data}->[2], from_json('{"roles": ["arkimeUser"], "userId": "sac-test1", "removeEnabled": false, "expression": "", "headerAuthEnabled": false, "userName": "UserName", "id": "sac-test1", "emailSearch": false, "enabled": true, "webEnabled": false, "packetSearch": false, "welcomeMsgNum": 0, "disablePcapDownload": false, "hideFiles": false, "hidePcap": false, "hideStats": false, "lastUsed": 0, "roleAssigners": []}', {relaxed => 1}), "Test User Add", { context => 3 });
+    eq_or_diff($users->{data}->[2], from_json('{"roles": ["arkimeUser"], "userId": "sac-test1", "expression": "", "headerAuthEnabled": false, "userName": "UserName", "id": "sac-test1", "enabled": true, "webEnabled": false, "welcomeMsgNum": 0, "lastUsed": 0, "roleAssigners": []}', {relaxed => 1}), "Test User Add", { context => 3 });
 
 
     # This will set a lastUsed time, make sure DB is updated with sleep
@@ -101,7 +104,7 @@ anonymous,,true,true,false,"arkimeAdmin, cont3xtUser, parliamentUser, usersAdmin
     my $lastUsedTimestamp1 = $users->{data}->[1]->{lastUsed};
     delete $users->{data}->[2]->{lastUsed};
 
-    eq_or_diff($users->{data}->[2], from_json('{"roles": ["arkimeUser"], "userId": "sac-test1", "removeEnabled": false, "expression": "", "headerAuthEnabled": false, "userName": "UserName", "id": "sac-test1", "emailSearch": false, "enabled": true, "webEnabled": false, "packetSearch": false, "welcomeMsgNum": 0, "disablePcapDownload": false, "hideFiles": false, "hidePcap": false, "hideStats": false, "roleAssigners": []}', {relaxed => 1}), "Test User Add", { context => 3 });
+    eq_or_diff($users->{data}->[2], from_json('{"roles": ["arkimeUser"], "userId": "sac-test1", "expression": "", "headerAuthEnabled": false, "userName": "UserName", "id": "sac-test1", "enabled": true, "webEnabled": false, "welcomeMsgNum": 0, "roleAssigners": []}', {relaxed => 1}), "Test User Add", { context => 3 });
 
 # Check appinfo works
     $json = viewerGetToken("/api/appInfo", $token);
@@ -145,13 +148,13 @@ anonymous,,true,true,false,"arkimeAdmin, cont3xtUser, parliamentUser, usersAdmin
     cmp_ok($lastUsedTimestamp1, '<', $lastUsedTimestamp2, "last used updated");
     delete $users->{data}->[$sacpos]->{lastUsed};
 
-    eq_or_diff($users->{data}->[$sacpos], from_json('{"roles": ["usersAdmin", "arkimeUser"], "userId": "sac-test1", "removeEnabled": true, "expression": "foo", "headerAuthEnabled": true, "userName": "UserNameUpdated", "id": "sac-test1", "emailSearch": true, "enabled": false, "webEnabled": true, "packetSearch": false, "disablePcapDownload": false, "hideFiles": false, "hidePcap": false, "hideStats": false, "welcomeMsgNum": 0, "roleAssigners": []}', {relaxed => 1}), "Test User Update", { context => 3 });
+    eq_or_diff($users->{data}->[$sacpos], from_json('{"roles": ["usersAdmin", "arkimeUser"], "userId": "sac-test1", "removeEnabled": true, "expression": "foo", "headerAuthEnabled": true, "userName": "UserNameUpdated", "id": "sac-test1", "emailSearch": true, "enabled": false, "webEnabled": true, "packetSearch": false, "welcomeMsgNum": 0, "roleAssigners": []}', {relaxed => 1}), "Test User Update", { context => 3 });
 
     $users = viewerPost2("/api/users", "");
     is (@{$users->{data}}, 4, "Check Update #2");
     is (exists $users->{data}->[$sacpos]->{lastUsed}, 1, "last used exists #3");
     delete $users->{data}->[$sacpos]->{lastUsed};
-    eq_or_diff($users->{data}->[$sacpos], from_json('{"roles": ["usersAdmin", "arkimeUser"], "userId": "sac-test1", "removeEnabled": true, "expression": "foo", "headerAuthEnabled": true, "userName": "UserNameUpdated", "id": "sac-test1", "emailSearch": true, "enabled": false, "webEnabled": true, "packetSearch": false, "disablePcapDownload": false, "hideFiles": false, "hidePcap": false, "hideStats": false, "welcomeMsgNum": 0, "roleAssigners": []}', {relaxed => 1}), "Test User Update", { context => 3 });
+    eq_or_diff($users->{data}->[$sacpos], from_json('{"roles": ["usersAdmin", "arkimeUser"], "userId": "sac-test1", "removeEnabled": true, "expression": "foo", "headerAuthEnabled": true, "userName": "UserNameUpdated", "id": "sac-test1", "emailSearch": true, "enabled": false, "webEnabled": true, "packetSearch": false, "welcomeMsgNum": 0, "roleAssigners": []}', {relaxed => 1}), "Test User Update", { context => 3 });
 
 # update user settings
     $json = viewerPostToken("/api/user/settings?arkimeRegressionUser=sac-test1", '{"logo":"testlogo.png","__proto":{"bad":"stuff"}}', $test1Token);
@@ -174,11 +177,11 @@ anonymous,,true,true,false,"arkimeAdmin, cont3xtUser, parliamentUser, usersAdmin
 
     $users = viewerPost("/api/users", "");
     is (@{$users->{data}}, 5, "Check second add #1");
-    eq_or_diff($users->{data}->[$test2pos], from_json('{"roles": [], "lastUsed": 0, "userId": "sac-test2", "removeEnabled": false, "expression": "", "headerAuthEnabled": false, "userName": "UserName2", "id": "sac-test2", "emailSearch": false, "enabled": true, "webEnabled": false, "packetSearch": false, "welcomeMsgNum": 0, "roleAssigners": [], "disablePcapDownload": false, "hideFiles": false, "hidePcap": false, "hideStats": false}', {relaxed => 1}), "Test User Add", { context => 3 });
+    eq_or_diff($users->{data}->[$test2pos], from_json('{"roles": [], "lastUsed": 0, "userId": "sac-test2", "expression": "", "headerAuthEnabled": false, "userName": "UserName2", "id": "sac-test2", "enabled": true, "webEnabled": false, "welcomeMsgNum": 0, "roleAssigners": []}', {relaxed => 1}), "Test User Add", { context => 3 });
 
     $users = viewerPost2("/api/users", "");
     is (@{$users->{data}}, 5, "Check second add #2");
-    eq_or_diff($users->{data}->[$test2pos], from_json('{"roles": [], "lastUsed": 0, "userId": "sac-test2", "removeEnabled": false, "expression": "", "headerAuthEnabled": false, "userName": "UserName2", "id": "sac-test2", "emailSearch": false, "enabled": true, "webEnabled": false, "packetSearch": false, "welcomeMsgNum": 0, "roleAssigners": [], "disablePcapDownload": false, "hideFiles": false, "hidePcap": false, "hideStats": false}', {relaxed => 1}), "Test User Add", { context => 3 });
+    eq_or_diff($users->{data}->[$test2pos], from_json('{"roles": [], "lastUsed": 0, "userId": "sac-test2", "expression": "", "headerAuthEnabled": false, "userName": "UserName2", "id": "sac-test2", "enabled": true, "webEnabled": false, "welcomeMsgNum": 0, "roleAssigners": []}', {relaxed => 1}), "Test User Add", { context => 3 });
 
 # Filter
     $users = viewerPost("/api/users", "filter=test");
@@ -219,12 +222,12 @@ anonymous,,true,true,false,"arkimeAdmin, cont3xtUser, parliamentUser, usersAdmin
     $users = viewerPost("/api/users", "");
     is (@{$users->{data}}, 5, "Check second Update #1");
     delete $users->{data}->[$test2pos]->{lastUsed};
-    eq_or_diff($users->{data}->[$test2pos], from_json('{"roles": [], "userId": "sac-test2", "removeEnabled": false, "expression": "foo", "headerAuthEnabled": true, "userName": "UserNameUpdated2", "id": "sac-test2", "emailSearch": true, "enabled": true, "webEnabled": true, "packetSearch": false, "disablePcapDownload": false, "hideFiles": false, "hidePcap": false, "hideStats": false, "welcomeMsgNum": 0, "roleAssigners": []}', {relaxed => 1}), "Test User Update", { context => 3 });
+    eq_or_diff($users->{data}->[$test2pos], from_json('{"roles": [], "userId": "sac-test2", "removeEnabled": false, "expression": "foo", "headerAuthEnabled": true, "userName": "UserNameUpdated2", "id": "sac-test2", "emailSearch": true, "enabled": true, "webEnabled": true, "packetSearch": false, "welcomeMsgNum": 0, "roleAssigners": []}', {relaxed => 1}), "Test User Update", { context => 3 });
 
     $users = viewerPost2("/api/users", "");
     is (@{$users->{data}}, 5, "Check second Update #2");
     delete $users->{data}->[$test2pos]->{lastUsed};
-    eq_or_diff($users->{data}->[$test2pos], from_json('{"roles": [], "userId": "sac-test2", "removeEnabled": false, "expression": "foo", "headerAuthEnabled": true, "userName": "UserNameUpdated2", "id": "sac-test2", "emailSearch": true, "enabled": true, "webEnabled": true, "packetSearch": false, "disablePcapDownload": false, "hideFiles": false, "hidePcap": false, "hideStats": false, "welcomeMsgNum": 0, "roleAssigners": []}', {relaxed => 1}), "Test User Update", { context => 3 });
+    eq_or_diff($users->{data}->[$test2pos], from_json('{"roles": [], "userId": "sac-test2", "removeEnabled": false, "expression": "foo", "headerAuthEnabled": true, "userName": "UserNameUpdated2", "id": "sac-test2", "emailSearch": true, "enabled": true, "webEnabled": true, "packetSearch": false, "welcomeMsgNum": 0, "roleAssigners": []}', {relaxed => 1}), "Test User Update", { context => 3 });
 
 # Reverse settings
     $json = viewerPostToken2("/api/user/sac-test2", '{"userName":"UserNameUpdated3", "enabled":false, "removeEnabled":true, "headerAuthEnabled":false, "expression":"", "emailSearch":false, "webEnabled":false, "roles": [], "packetSearch": false}', $token2);
@@ -233,12 +236,12 @@ anonymous,,true,true,false,"arkimeAdmin, cont3xtUser, parliamentUser, usersAdmin
     $users = viewerPost("/api/users", "");
     is (@{$users->{data}}, 5, "Check second Update #1");
     delete $users->{data}->[$test2pos]->{lastUsed};
-    eq_or_diff($users->{data}->[$test2pos], from_json('{"roles": [], "userId": "sac-test2", "removeEnabled": true, "expression": "", "headerAuthEnabled": false, "userName": "UserNameUpdated3", "id": "sac-test2", "emailSearch": false, "enabled": false, "webEnabled": false, "packetSearch": false, "disablePcapDownload": false, "hideFiles": false, "hidePcap": false, "hideStats": false, "welcomeMsgNum": 0, "roleAssigners": []}', {relaxed => 1}), "Test User Update", { context => 3 });
+    eq_or_diff($users->{data}->[$test2pos], from_json('{"roles": [], "userId": "sac-test2", "removeEnabled": true, "expression": "", "headerAuthEnabled": false, "userName": "UserNameUpdated3", "id": "sac-test2", "emailSearch": false, "enabled": false, "webEnabled": false, "packetSearch": false, "welcomeMsgNum": 0, "roleAssigners": []}', {relaxed => 1}), "Test User Update", { context => 3 });
 
     $users = viewerPost2("/api/users", "");
     is (@{$users->{data}}, 5, "Check second Update #2");
     delete $users->{data}->[$test2pos]->{lastUsed};
-    eq_or_diff($users->{data}->[$test2pos], from_json('{"roles": [], "userId": "sac-test2", "removeEnabled": true, "expression": "", "headerAuthEnabled": false, "userName": "UserNameUpdated3", "id": "sac-test2", "emailSearch": false, "enabled": false, "webEnabled": false, "packetSearch": false, "disablePcapDownload": false, "hideFiles": false, "hidePcap": false, "hideStats": false, "welcomeMsgNum": 0, "roleAssigners": []}', {relaxed => 1}), "Test User Update", { context => 3 });
+    eq_or_diff($users->{data}->[$test2pos], from_json('{"roles": [], "userId": "sac-test2", "removeEnabled": true, "expression": "", "headerAuthEnabled": false, "userName": "UserNameUpdated3", "id": "sac-test2", "emailSearch": false, "enabled": false, "webEnabled": false, "packetSearch": false, "welcomeMsgNum": 0, "roleAssigners": []}', {relaxed => 1}), "Test User Update", { context => 3 });
 
 # Session Table Column Layout CRUD
     my $info = viewerGetToken("/api/user/layouts/sessionstable?arkimeRegressionUser=sac-test1", $test1Token);
@@ -506,10 +509,10 @@ anonymous,,true,true,false,"arkimeAdmin, cont3xtUser, parliamentUser, usersAdmin
     eq_or_diff ($csv, 'userId, userName, enabled, webEnabled, headerAuthEnabled, roles, emailSearch, removeEnabled, packetSearch, hideStats, hideFiles, hidePcap, disablePcapDownload, expression, timeLimit
 anonymous,,true,true,false,"arkimeAdmin, cont3xtUser, parliamentUser, usersAdmin, wiseUser",true,true,true,,,,,,
 notadmin,,true,true,false,"arkimeUser, cont3xtUser, parliamentUser, wiseUser",true,true,true,,,,,,
-role:sac-test1,UserName,true,false,false,"",false,false,false,false,false,false,false,,
-role:sac-test2,UserName,true,false,false,"role:sac-test1",false,false,false,false,false,false,false,,
-sac-test1,UserNameUpdated,false,true,true,"usersAdmin, arkimeUser",true,true,false,false,false,false,false,foo,
-sac-test2,UserNameUpdated3,false,false,false,"arkimeUser",false,false,false,false,false,false,false,,72
+role:sac-test1,UserName,true,false,false,"",,,,,,,,,
+role:sac-test2,UserName,true,false,false,"role:sac-test1",,,,,,,,,
+sac-test1,UserNameUpdated,false,true,true,"usersAdmin, arkimeUser",true,true,false,,,,,foo,
+sac-test2,UserNameUpdated3,false,false,false,"arkimeUser",,,,,,,,,72
 superAdmin,,true,true,false,"superAdmin",true,true,true,,,,,,
 test100,,true,true,false,"arkimeUser, cont3xtUser, parliamentUser, wiseUser",true,true,true,,,,,,
 test101,,true,true,false,"arkimeUser, cont3xtUser, parliamentUser, wiseUser",true,true,true,,,,,,
@@ -596,8 +599,56 @@ my $uaToken = getTokenCookie('testusersadmin');
     eq_or_diff($json, from_json('{"text": "Can not disable superAdmin unless you are superAdmin", "success": false}'));
 
     $json = viewerPostToken("/api/user/testuser?arkimeRegressionUser=testsuperadmin", '{"userName": "testuser", "enabled":true, "password":"password", "roles": ["arkimeAdmin"]}', $saToken);
-    eq_or_diff($json, from_json('{"text": "User testuser updated successfully", "success": true}'));
 
+# Inheritance Tests
+    # Create roles
+    $json = viewerPostToken("/api/user", '{"userId": "role:sac-inheritA", "userName": "Role A", "enabled":true, "webEnabled": true, "emailSearch": true}', $token);
+    ok($json->{success}, "role:sac-inheritA created");
+
+    $json = viewerPostToken("/api/user", '{"userId": "role:sac-inheritB", "userName": "Role B", "enabled":true, "webEnabled": true, "emailSearch": false}', $token);
+    ok($json->{success}, "role:sac-inheritB created");
+
+    $json = viewerPostToken("/api/user", '{"userId": "role:sac-inheritC", "userName": "Role C", "enabled":true, "webEnabled": true, "packetSearch": true}', $token);
+    ok($json->{success}, "role:sac-inheritC created");
+
+    # User A
+    $json = viewerPostToken("/api/user", '{"userId": "sac-userInheritA", "userName": "User Inherit A", "enabled":true, "webEnabled": true, "password":"password", "emailSearch": true, "roles": ["role:sac-inheritA", "arkimeUser"]}', $token);
+    ok($json->{success}, "sac-userInheritA created");
+    $json = viewerGetToken("/api/user?arkimeRegressionUser=sac-userInheritA", $token);
+    is($json->{emailSearch}, 1, "sac-userInheritA emailSearch true");
+
+
+    # User B
+    $json = viewerPostToken("/api/user", '{"userId": "sac-userInheritB", "userName": "User Inherit B", "enabled":true, "webEnabled": true, "password":"password", "emailSearch": false, "roles": ["role:sac-inheritB", "arkimeUser"]}', $token);
+    ok($json->{success}, "sac-userInheritB created");
+    $json = viewerGetToken("/api/user?arkimeRegressionUser=sac-userInheritB", $token);
+    is($json->{emailSearch}, 0, "sac-userInheritB emailSearch false");
+
+    # User C
+    $json = viewerPostToken("/api/user", '{"userId": "sac-userInheritC", "userName": "User Inherit C", "enabled":true, "webEnabled": true, "password":"password", "packetSearch": true, "roles": ["role:sac-inheritC", "arkimeUser"]}', $token);
+    ok($json->{success}, "sac-userInheritC created");
+    $json = viewerGetToken("/api/user?arkimeRegressionUser=sac-userInheritC", $token);
+    is($json->{emailSearch}, 0, "sac-userInheritC emailSearch false (default)");
+    is($json->{packetSearch}, 1, "sac-userInheritC packetSearch true (inherited)");
+
+
+    # User AB
+    $json = viewerPostToken("/api/user", '{"userId": "sac-userInheritAB", "userName": "User Inherit AB", "enabled":true, "webEnabled": true, "password":"password", "roles": ["role:sac-inheritA", "role:sac-inheritB", "arkimeUser"]}', $token);
+    ok($json->{success}, "sac-userInheritAB created");
+    $json = viewerGetToken("/api/user?arkimeRegressionUser=sac-userInheritAB", $token);
+    is($json->{emailSearch}, 1, "sac-userInheritAB emailSearch true (A wins over B)");
+
+    # User A + Explicit False
+    $json = viewerPostToken("/api/user", '{"userId": "sac-userExplicitFalse", "userName": "User Explicit False", "enabled":true, "webEnabled": true, "password":"password", "emailSearch": false, "roles": ["role:sac-inheritA", "arkimeUser"]}', $token);
+    ok($json->{success}, "sac-userExplicitFalse created");
+    $json = viewerGetToken("/api/user?arkimeRegressionUser=sac-userExplicitFalse", $token);
+    is($json->{emailSearch}, 0, "sac-userExplicitFalse emailSearch false (explicit)");
+
+    # User B + Explicit True
+    $json = viewerPostToken("/api/user", '{"userId": "sac-userExplicitTrue", "userName": "User Explicit True", "enabled":true, "webEnabled": true, "password":"password", "emailSearch": true, "roles": ["role:sac-inheritB", "arkimeUser"]}', $token);
+    ok($json->{success}, "sac-userExplicitTrue created");
+    $json = viewerGetToken("/api/user?arkimeRegressionUser=sac-userExplicitTrue", $token);
+    is($json->{emailSearch}, 1, "sac-userExplicitTrue emailSearch true (explicit)");
 
 # clean old users
     clearIndex("tests_users");
