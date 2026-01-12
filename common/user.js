@@ -234,7 +234,7 @@ class User {
       process.exit();
     }
 
-    // Skip Auto Create - SAC users. This means when in regression mode we don't 
+    // Skip Auto Create - SAC users. This means when in regression mode we don't
     // auto create these users, this is usually needed for special tests.
     if (userId.startsWith('sac-') || userId.startsWith('role:sac-')) {
       return undefined;
