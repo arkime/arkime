@@ -53,7 +53,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #3492 Previously viewer didn't expire PCAPs if pcapDir wasn't set, now it
           defaults to /opt/arkime/raw and will expire them
 ## Release
-  - Node 22.21.1
+  - Node 22.22.0
   - #3342 Container based on Debian 13 now
   - Container includes geoipupdate
   - docker.sh supports --ilm and --ism options
