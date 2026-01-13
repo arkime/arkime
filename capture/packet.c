@@ -267,7 +267,7 @@ void arkime_packet_flush()
 
         for (int t = 0; t < config.packetThreads; t++) {
             ARKIME_LOCK(packetQ[t].lock);
-            if (DLL_COUNT(packet_, &packetQ[t]) > 0) {
+            if (DLL_COUNT(packet_, &packetQ[t]) > 0 || inProgress[t]) {
                 flushed = 0;
             }
             ARKIME_UNLOCK(packetQ[t].lock);
