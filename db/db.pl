@@ -255,6 +255,7 @@ sub showHelp($)
     print "  add-alias <node> <hostname>  - Adds a hidden node that points to hostname\n";
     print "  hide-node <node>             - Hide node in stats display\n";
     print "  unhide-node <node>           - Unhide node in stats display\n";
+    print "  show-nodes                   - Show the known nodes\n";
     print "\n";
     print "OpenSearch/Elasticsearch maintenance\n";
     print "  set-replicas <pat> <num>              - Set the number of replicas for index pattern\n";
@@ -6537,7 +6538,7 @@ $PREFIX = "arkime_" if (! defined $PREFIX);
 
 showHelp("Help:") if ($ARGV[1] =~ /^help$/);
 showHelp("Missing arguments") if (@ARGV < 2);
-showHelp("Unknown command '$ARGV[1]'") if ($ARGV[1] !~ /^(init|initnoprompt|clean|info|wipe|upgrade|upgradenoprompt|disable-?users|set-?shortcut|users-?import|import|restore|restorenoprompt|users-?export|export|repair|repair-old|backup|expire|rotate|optimize|optimize-admin|mv|rm|rm-?missing|rm-?node|add-?missing|field|field-list|field-rm|field-enable|field-disable|force-?put-?version|sync-?files|hide-?node|unhide-?node|add-?alias|set-?replicas|set-?shards-?per-?node|set-?allocation-?enable|allocate-?empty|unflood-?stage|shrink|ilm|ism|recreate-users|recreate-stats|recreate-dstats|recreate-fields|recreate-files|update-fields|update-history|reindex|force-sessions3-update|es-adduser|es-passwd|es-addapikey)$/);
+showHelp("Unknown command '$ARGV[1]'") if ($ARGV[1] !~ /^(init|initnoprompt|clean|info|wipe|upgrade|upgradenoprompt|disable-?users|set-?shortcut|users-?import|import|restore|restorenoprompt|users-?export|export|repair|repair-old|backup|expire|rotate|optimize|optimize-admin|mv|rm|rm-?missing|rm-?node|add-?missing|field|field-list|field-rm|field-enable|field-disable|force-?put-?version|sync-?files|hide-?node|unhide-?node|add-?alias|show-?nodes|set-?replicas|set-?shards-?per-?node|set-?allocation-?enable|allocate-?empty|unflood-?stage|shrink|ilm|ism|recreate-users|recreate-stats|recreate-dstats|recreate-fields|recreate-files|update-fields|update-history|reindex|force-sessions3-update|es-adduser|es-passwd|es-addapikey)$/);
 showHelp("Missing arguments") if (@ARGV < 3 && $ARGV[1] =~ /^(users-?import|import|users-?export|backup|restore|restorenoprompt|rm|rm-?missing|rm-?node|hide-?node|unhide-?node|set-?allocation-?enable|unflood-?stage|reindex|es-adduser|es-addapikey|field-rm|field-enable|field-disable)$/);
 showHelp("Missing arguments") if (@ARGV < 4 && $ARGV[1] =~ /^(field|export|add-?missing|sync-?files|add-?alias|set-?replicas|set-?shards-?per-?node|set-?shortcut|ilm)$/);
 showHelp("Missing arguments") if (@ARGV < 5 && $ARGV[1] =~ /^(allocate-?empty|set-?shortcut|shrink)$/);
@@ -7329,6 +7330,22 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
     my $results = esGet("/${PREFIX}stats/_doc/$ARGV[2]", 1);
     die "Node $ARGV[2] not found" if (!$results->{found});
     esPost("/${PREFIX}stats/_update/$ARGV[2]", '{"script" : "ctx._source.remove(\"hide\")"}');
+    exit 0;
+} elsif ($ARGV[1] =~ /^show-?nodes$/) {
+    my $results = esGet("/${PREFIX}stats/_search?size=1000");
+    print sprintf("%-20s %-36s %-19s  %-10s\n", "Node", "Host", "Last Update", "Version");
+    foreach my $hit (@{$results->{hits}->{hits}}) {
+        my $source = $hit->{_source};
+        print sprintf("%-20s %-36s %-19s  %-10s", 
+            $source->{nodeName}, 
+            $source->{hostname}, 
+            exists $source->{currentTime} ? strftime("%Y/%m/%d %H:%M:%S", localtime($source->{currentTime})) : "",
+            exists $source->{ver} ? $source->{ver} : "");
+        if ($source->{hide}) {
+            print "  (hidden)";
+        }
+        print "\n";
+    }
     exit 0;
 } elsif ($ARGV[1] =~ /^add-?alias$/) {
     my $results = esGet("/${PREFIX}stats/_doc/$ARGV[2]", 1);
