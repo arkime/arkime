@@ -439,7 +439,6 @@ void arkime_db_set_send_bulk2(ArkimeDbSendBulkFunc func, gboolean bulkHeader, gb
 gchar *arkime_db_community_id(const ArkimeSession_t *session)
 {
     GChecksum       *checksum = g_checksum_new(G_CHECKSUM_SHA1);
-    int              cmp;
 
     static uint16_t seed = 0;
     static uint8_t  zero = 0;
@@ -447,27 +446,18 @@ gchar *arkime_db_community_id(const ArkimeSession_t *session)
     g_checksum_update(checksum, (guchar *)&seed, 2);
 
     if (ARKIME_SESSION_v6(session)) {
-        cmp = memcmp(session->sessionId + 1, session->sessionId + 19, 16);
-
-        if (cmp < 0 || (cmp == 0 && session->port1 < session->port2)) {
-            g_checksum_update(checksum, (guchar *)session->sessionId + 1, 16);
-            g_checksum_update(checksum, (guchar *)session->sessionId + 19, 16);
-            g_checksum_update(checksum, (guchar *)&session->ipProtocol, 1);
-            g_checksum_update(checksum, (guchar *)&zero, 1);
-            g_checksum_update(checksum, (guchar *)session->sessionId + 17, 2);
-            g_checksum_update(checksum, (guchar *)session->sessionId + 35, 2);
-        } else {
-            g_checksum_update(checksum, (guchar *)session->sessionId + 19, 16);
-            g_checksum_update(checksum, (guchar *)session->sessionId + 1, 16);
-            g_checksum_update(checksum, (guchar *)&session->ipProtocol, 1);
-            g_checksum_update(checksum, (guchar *)&zero, 1);
-            g_checksum_update(checksum, (guchar *)session->sessionId + 35, 2);
-            g_checksum_update(checksum, (guchar *)session->sessionId + 17, 2);
-        }
+        // For v6 we sort the same as community id
+        g_checksum_update(checksum, (guchar *)session->sessionId + 1, 16);
+        g_checksum_update(checksum, (guchar *)session->sessionId + 19, 16);
+        g_checksum_update(checksum, (guchar *)&session->ipProtocol, 1);
+        g_checksum_update(checksum, (guchar *)&zero, 1);
+        g_checksum_update(checksum, (guchar *)session->sessionId + 17, 2);
+        g_checksum_update(checksum, (guchar *)session->sessionId + 35, 2);
     } else {
-        cmp = memcmp(session->sessionId + 1, session->sessionId + 7, 4);
+        // For v4 because of byte order we have a different sort for ip but not port
+        int cmp = memcmp(session->sessionId + 1, session->sessionId + 7, 4);
 
-        if (cmp < 0 || (cmp == 0 && session->port1 < session->port2)) {
+        if (cmp <= 0) {
             g_checksum_update(checksum, (guchar *)session->sessionId + 1, 4);
             g_checksum_update(checksum, (guchar *)session->sessionId + 7, 4);
             g_checksum_update(checksum, (guchar *)&session->ipProtocol, 1);

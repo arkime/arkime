@@ -52,6 +52,8 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #3488 When talking to remote viewers only the viewUrl is used now and not webBasePath
   - #3492 Previously viewer didn't expire PCAPs if pcapDir wasn't set, now it
           defaults to /opt/arkime/raw and will expire them
+  - #3583 Previous community_id for IPv4 sessions with same src/dst IP, could
+          have incorrect community_id
 ## Release
   - Node 22.22.0
   - #3342 Container based on Debian 13 now
@@ -87,6 +89,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #3517 Netmap FreeBSD support
   - #3547 Fix erspan vlan truncating at 7 bits instead of 12 bits
   - #3566 fix the sessions length being off by 1ms sometimes
+  - #3583 Fix community_id for v4 sessions with same src/dst port sorting
 ## Capture/Viewer
   - #3197 new sessionsStarted and sessionsPresent in files tab
   - #3210 new vlan.dot1q and vlan.dot1ad expressions
