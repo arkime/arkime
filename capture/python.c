@@ -938,6 +938,57 @@ LOCAL PyObject *arkime_python_session_get(PyObject UNUSED(*self), PyObject *args
     Py_RETURN_NONE;
 }
 /******************************************************************************/
+LOCAL void arkime_python_decref(gpointer data)
+{
+    Py_DECREF((PyObject *)data);
+}
+/******************************************************************************/
+LOCAL PyObject *arkime_python_session_set_attr(PyObject UNUSED(*self), PyObject *args)
+{
+    PyObject *py_session_obj;
+    const char *key;
+    PyObject *state_obj;
+
+    if (!PyArg_ParseTuple(args, "OsO", &py_session_obj, &key, &state_obj)) {
+        return NULL;
+    }
+
+    ArkimeSession_t *session = (ArkimeSession_t *)PyLong_AsVoidPtr(py_session_obj);
+
+    if (!session->pythonAttrs) {
+        session->pythonAttrs = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, arkime_python_decref);
+    }
+
+    Py_INCREF(state_obj);
+    g_hash_table_replace(session->pythonAttrs, g_strdup(key), state_obj);
+
+    Py_RETURN_NONE;
+}
+/******************************************************************************/
+LOCAL PyObject *arkime_python_session_get_attr(PyObject UNUSED(*self), PyObject *args)
+{
+    PyObject *py_session_obj;
+    const char *key;
+
+    if (!PyArg_ParseTuple(args, "Os", &py_session_obj, &key)) {
+        return NULL;
+    }
+
+    ArkimeSession_t *session = (ArkimeSession_t *)PyLong_AsVoidPtr(py_session_obj);
+
+    if (!session->pythonAttrs) {
+        Py_RETURN_NONE;
+    }
+
+    PyObject *state = g_hash_table_lookup(session->pythonAttrs, key);
+    if (state) {
+        Py_INCREF(state);
+        return state;
+    }
+
+    Py_RETURN_NONE;
+}
+/******************************************************************************/
 LOCAL PyMethodDef arkime_session_methods[] = {
     { "register_parser", arkime_python_session_register_parser, METH_VARARGS, NULL },
     { "add_tag", arkime_python_session_add_tag, METH_VARARGS, NULL },
@@ -948,6 +999,8 @@ LOCAL PyMethodDef arkime_session_methods[] = {
     { "incref", arkime_python_session_incref, METH_VARARGS, NULL },
     { "decref", arkime_python_session_decref, METH_VARARGS, NULL },
     { "get", arkime_python_session_get, METH_VARARGS, NULL },
+    { "set_attr", arkime_python_session_set_attr, METH_VARARGS, NULL },
+    { "get_attr", arkime_python_session_get_attr, METH_VARARGS, NULL },
     {NULL, NULL, 0, NULL} // Sentinel
 };
 /******************************************************************************/
@@ -979,6 +1032,16 @@ PyMODINIT_FUNC PyInit_arkime_session(void)
     state->dummy_value = 0; // Initialize dummy value
 
     return m;
+}
+/******************************************************************************/
+void arkime_python_session_free(ArkimeSession_t *session)
+{
+    if (session->pythonAttrs) {
+        PyGILState_STATE gstate = PyGILState_Ensure();
+        g_hash_table_destroy(session->pythonAttrs);
+        PyGILState_Release(gstate);
+        session->pythonAttrs = NULL;
+    }
 }
 /******************************************************************************/
 LOCAL void arkime_python_packet_load_file(const char *file)
