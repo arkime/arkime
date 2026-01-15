@@ -77,17 +77,17 @@ def get(session: ArkimeSession, fieldPosOrExp: int | str) -> Any | list[Any]:
 
 def get_attr(session: ArkimeSession, key: str) -> Any | None:
     """
-    Get a Python attribute from the session.
+    Retrieve a Python object associated with the session.
 
     Args:
         session: The session object from the classifyCb or parserCb.
-        key: The attribute key.
+        key: The attribute key used in set_attr.
     """
     ...
 
 def has_protocol(session: ArkimeSession, protocol: str) -> bool:
     """
-    Optimized version of get(session, “protocol”) and checking if the list contains the protocol.
+    Optimized version of get(session, "protocol") and checking if the list contains the protocol.
 
     Args:
         session: The session object from the classifyCb or parserCb.
@@ -107,7 +107,9 @@ def register_parser(session: ArkimeSession, parserCb: ParserCb) -> None:
 
 def set_attr(session: ArkimeSession, key: str, value: Any) -> None:
     """
-    Set a Python attribute on the session.
+    Associate a Python object with the session.
+    This is useful for storing state between calls to the parserCb.
+    The key is global across all Python modules, so use a unique key to avoid collisions.
 
     Args:
         session: The session object from the classifyCb or parserCb.
