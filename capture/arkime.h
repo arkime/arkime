@@ -713,9 +713,7 @@ typedef struct arkime_session {
     GArray                *fileLenArray;
     GArray                *fileNumArray;
     char                  *rootId;
-#ifdef HAVE_PYTHON
     GHashTable            *pythonAttrs;
-#endif
 
     struct timeval         firstPacket;
     struct timeval         lastPacket;
