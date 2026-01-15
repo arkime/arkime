@@ -97,8 +97,7 @@ LOCAL void *reader_tpacketv3_thread(gpointer infov)
     ArkimePacketBatch_t batch;
     arkime_packet_batch_init(&batch);
 
-    uint16_t vlanTag = htons(0x8100);
-    uint16_t vlan;
+    uint32_t vlanHeader;
 
     int initFunc = arkime_get_named_func("arkime_reader_thread_init");
     arkime_call_named_func(initFunc, info->interfacePos * MAX_THREADS_PER_INTERFACE + info->thread, NULL);
@@ -155,10 +154,9 @@ LOCAL void *reader_tpacketv3_thread(gpointer infov)
                     // Move MACs back to make room
                     memmove(packet->pkt, packet->pkt + 4, 12);
 
-                    // Add vlan that was removed
-                    memcpy(packet->pkt + 12, &vlanTag, 2);
-                    vlan = htons(th->hv1.tp_vlan_tci & 0xfff);
-                    memcpy(packet->pkt + 14, &vlan, 2);
+                    // Build VLAN header (network byte order)
+                    vlanHeader = htonl((0x8100 << 16) | (th->hv1.tp_vlan_tci & 0xfff));
+                    memcpy(packet->pkt + 12, &vlanHeader, 4);
                 }
             }
 

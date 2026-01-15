@@ -99,7 +99,6 @@ LOCAL  uint32_t              overloadDropTimes[ARKIME_MAX_PACKET_THREADS];
 LOCAL  ARKIME_LOCK_DEFINE(frags);
 
 LOCAL ArkimePacket_t *packetFreelist;
-LOCAL uint64_t packetFreelistMisses;
 
 LOCAL ArkimePacketRC arkime_packet_ip4(ArkimePacketBatch_t *batch, ArkimePacket_t *const packet, const uint8_t *data, int len);
 LOCAL ArkimePacketRC arkime_packet_ip6(ArkimePacketBatch_t *batch, ArkimePacket_t *const packet, const uint8_t *data, int len);
@@ -163,7 +162,6 @@ ArkimePacket_t *arkime_packet_alloc()
     }
 
     // Freelist empty, allocate new
-    ARKIME_THREAD_INCR(packetFreelistMisses);
     ArkimePacket_t *newPacket = malloc(sizeof(ArkimePacket_t));
     if (!newPacket) {
         LOGEXIT("ERROR - Failed to allocate packet");
