@@ -433,6 +433,11 @@ LOCAL void arkime_session_free (ArkimeSession_t *session)
         ARKIME_UNLOCK(stoppedSessions[session->thread].lock);
     }
 
+#ifdef HAVE_PYTHON
+    if (session->pythonAttrs)
+        arkime_python_session_free(session);
+#endif
+
     ARKIME_TYPE_FREE(ArkimeSession_t, session);
 }
 /******************************************************************************/

@@ -713,6 +713,7 @@ typedef struct arkime_session {
     GArray                *fileLenArray;
     GArray                *fileNumArray;
     char                  *rootId;
+    GHashTable            *pythonAttrs;
 
     struct timeval         firstPacket;
     struct timeval         lastPacket;
@@ -766,6 +767,7 @@ typedef struct arkime_session {
     uint16_t               pq: 1;
     uint16_t               synSet: 2;
     uint16_t               inStoppedSave: 1;
+
 #if ARKIME_SESSION_HASH == ARKIME_SESSION_HASH_SLL
     uint16_t               inSessionTable: 1;
 #endif
@@ -1658,6 +1660,7 @@ void arkime_pq_flush(int thread);
  * python.c
  */
 void arkime_python_init();
+void arkime_python_session_free(ArkimeSession_t *session);
 void arkime_python_exit();
 
 /******************************************************************************/
