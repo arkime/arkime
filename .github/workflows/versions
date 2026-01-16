@@ -48,7 +48,7 @@ include:
     buildopt: "--kafka --pfring"
     fpmdeps: "-d libwww-perl -d libjson-perl -d ethtool -d libyaml-dev -d liblua5.4-0 -d libmaxminddb0 -d libcurl4 -d libpcap0.8 -d libglib2.0-0 -d libnghttp2-14 -d libyara8 -d librdkafka1"
     package: deb
-    sanitizebuild: make sanitize CC=clang-18
+    sanitizebuild: make -j sanitize CC=clang-18
     prbuild: true
 
   - version: ubuntu2404_amd64
@@ -58,7 +58,7 @@ include:
     package: deb
     python: python3
     viewertest: sanitize
-    sanitizebuild: "make SANITIZE_LDFLAGS='-fno-common -fsanitize=address -fsanitize=undefined -fno-omit-frame-pointer' sanitize"
+    sanitizebuild: "make -j SANITIZE_LDFLAGS='-fno-common -fsanitize=address -fsanitize=undefined -fno-omit-frame-pointer' sanitize"
     prbuild: true
 
   - version: "arch-x86_64"
@@ -104,7 +104,7 @@ include:
     fpmdeps: "-d libwww-perl -d libjson-perl -d ethtool -d libyaml-dev -d liblua5.4-0 -d libmaxminddb0 -d libcurl4 -d libpcap0.8 -d libglib2.0-0 -d libnghttp2-14 -d libyara8 -d librdkafka1"
     package: deb
     runson: ubuntu-24.04-arm
-    sanitizebuild: "make SANITIZE_LDFLAGS='-fno-common -fsanitize=address -fsanitize=undefined -fno-omit-frame-pointer' sanitize"
+    sanitizebuild: "make -j SANITIZE_LDFLAGS='-fno-common -fsanitize=address -fsanitize=undefined -fno-omit-frame-pointer' sanitize"
 
   - version: ubuntu2404_arm64
     container: andywick/arkime-build-24-arm64:6.0.0-2
@@ -112,7 +112,7 @@ include:
     fpmdeps: "-d libwww-perl -d libjson-perl -d ethtool -d libyaml-dev -d liblua5.4-0 -d libmaxminddb0 -d libcurl4 -d libpcap0.8 -d libglib2.0-0 -d libnghttp2-14 -d libyara10 -d librdkafka1 -d libpcre3 -d libpython3.12"
     package: deb
     runson: ubuntu-24.04-arm
-    sanitizebuild: "make SANITIZE_LDFLAGS='-fno-common -fsanitize=address -fsanitize=undefined -fno-omit-frame-pointer' sanitize"
+    sanitizebuild: "make -j SANITIZE_LDFLAGS='-fno-common -fsanitize=address -fsanitize=undefined -fno-omit-frame-pointer' sanitize"
 
   - version: debian12_arm64
     container: andywick/arkime-build-d12-arm64:6.0.0-2

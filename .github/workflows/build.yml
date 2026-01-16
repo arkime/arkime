@@ -214,7 +214,7 @@ jobs:
           rm -rf /data/moloch; mkdir -p /data
           mv /opt/arkime /data/moloch
           ./easybutton-build.sh ${{ matrix.buildopt }} --dir /data/moloch
-          (cd capture ; make clean; make; make install)
+          (cd capture ; make clean; make -j; make install)
           (cd release ; make installmoloch)
           mv /data/moloch/bin/capture /data/moloch/bin/moloch-capture
           /bin/cp -f common/version.js /data/moloch/common/
@@ -238,7 +238,7 @@ jobs:
           rm -rf /data/moloch; mkdir -p /data
           mv /opt/arkime /data/moloch
           ./easybutton-build.sh ${{ matrix.buildopt }} --dir /data/moloch
-          (cd capture ; make clean; make; make install)
+          (cd capture ; make clean; make -j; make install)
           (cd release ; make installmoloch)
           mv /data/moloch/bin/capture /data/moloch/bin/moloch-capture
           /bin/cp -f common/version.js /data/moloch/common/

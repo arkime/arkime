@@ -14,7 +14,18 @@ my $cmd = '../capture/capture -c config.test.ini -n test --regressionTests --tes
 my $input = `$cmd`;
 # diag $input;
 
-my $out = from_json($input, {relaxed => 1});
+my $out;
+
+eval {
+    $out = from_json($input, {relaxed => 1});
+    1;
+} or do {
+    my $e = $@;
+    print "JSON Parse Error: $e\n";
+    print $input, "\n";
+    exit 1;
+};
+
 #diag Dumper($out->{sessions3}->[0]->{body});
 
 is($out->{sessions3}->[0]->{body}->{test}->{python}->[0], "my value");
