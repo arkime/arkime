@@ -1,2 +1,3 @@
 leak:Py_NewInterpreterFromConfig
 leak:new_interpreter
+leak:pcre2_jit_compile_8
