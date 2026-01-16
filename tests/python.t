@@ -8,7 +8,10 @@ use JSON;
 use strict;
 
 
-my $out = from_json(`../capture/capture -c config.test.ini -n test --regressionTests --tests -o plugins=pythontest.py -r pcap/aerospike.pcap 2>&1 1>/dev/null | ./tests.pl --fix`, {relaxed => 1});
+my $cmd = '../capture/capture -c config.test.ini -n test --regressionTests --tests -o plugins=pythontest.py -r pcap/aerospike.pcap 2>&1 1>/dev/null | ./tests.pl --fix';
+#diag $cmd;
+
+my $out = from_json(`$cmd`, {relaxed => 1});
 #diag Dumper($out->{sessions3}->[0]->{body});
 
 is($out->{sessions3}->[0]->{body}->{test}->{python}->[0], "my value");

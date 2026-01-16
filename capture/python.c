@@ -40,6 +40,27 @@ LOCAL __thread int arkimeReaderThread = -1;
 LOCAL int loadingThread = -1;
 
 /******************************************************************************/
+LOCAL void arkime_python_cb_map_free(gpointer data)
+{
+    ARKIME_TYPE_FREE(ArkimePyCbMap_t, data);
+}
+/******************************************************************************/
+LOCAL void arkime_python_release_callbacks_for_thread(int thread)
+{
+    ARKIME_LOCK(singleLock);
+    GHashTableIter iter;
+    gpointer key, value;
+    g_hash_table_iter_init(&iter, arkimePyCbMap);
+    while (g_hash_table_iter_next(&iter, &key, &value)) {
+        ArkimePyCbMap_t *map = (ArkimePyCbMap_t *)value;
+        if (map->cb[thread] != NULL) {
+            Py_DECREF(map->cb[thread]);
+            map->cb[thread] = NULL;
+        }
+    }
+    ARKIME_UNLOCK(singleLock);
+}
+/******************************************************************************/
 /**
  * Need to save the py callback per thread. We use the register name + the callback name as the key.
  */
@@ -1554,19 +1575,16 @@ LOCAL void arkime_python_thread_init(PyThreadState **threadState)
         PyErr_Print();
         LOGEXIT("Failed to add arkime module to sys.modules.\n");
     }
-    Py_DECREF(p_arkime_module_obj); // Decrement our local reference, as sys.modules now owns it.
 
     if (PyDict_SetItemString(sys_modules, "arkime_session", p_arkime_session_module_obj) < 0) {
         PyErr_Print();
         LOGEXIT("Failed to add arkime_session module to sys.modules.\n");
     }
-    Py_DECREF(p_arkime_session_module_obj); // Decrement our local reference, as sys.modules now owns it.
 
     if (PyDict_SetItemString(sys_modules, "arkime_packet", p_arkime_packet_module_obj) < 0) {
         PyErr_Print();
         LOGEXIT("Failed to add arkime_packet module to sys.modules.\n");
     }
-    Py_DECREF(p_arkime_packet_module_obj); // Decrement our local reference, as sys.modules now owns it.
 
     if (!PyDict_GetItemString(sys_modules, "arkime")) {
         LOGEXIT("C Debug: 'arkime' module NOT found in sys.modules after insertion.");
@@ -1580,8 +1598,7 @@ LOCAL void arkime_python_thread_init(PyThreadState **threadState)
         LOGEXIT("C Debug: 'arkime_packet' module NOT found in sys.modules after insertion.");
     }
 
-    Py_DECREF(sys_modules);
-
+    // Add constants before decrementing references
     PyModule_AddStringConstant(p_arkime_module_obj, "VERSION", VERSION);
     PyModule_AddStringConstant(p_arkime_module_obj, "CONFIG_PREFIX", CONFIG_PREFIX);
     PyModule_AddIntConstant(p_arkime_module_obj, "API_VERSION", ARKIME_API_VERSION);
@@ -1602,6 +1619,12 @@ LOCAL void arkime_python_thread_init(PyThreadState **threadState)
     PyModule_AddIntConstant(p_arkime_packet_module_obj, "DONT_PROCESS_OR_FREE", ARKIME_PACKET_DONT_PROCESS_OR_FREE);
     PyModule_AddIntConstant(p_arkime_packet_module_obj, "DUPLICATE_DROPPED", ARKIME_PACKET_DUPLICATE_DROPPED);
 
+    // Decrement our local references now that sys.modules owns them
+    Py_DECREF(p_arkime_module_obj);
+    Py_DECREF(p_arkime_session_module_obj);
+    Py_DECREF(p_arkime_packet_module_obj);
+    // Note: sys_modules is a borrowed reference from PyImport_GetModuleDict(), do NOT Py_DECREF it
+
     PyEval_SaveThread();
 }
 /******************************************************************************/
@@ -1619,10 +1642,16 @@ LOCAL uint32_t arkime_python_packet_thread_init(int thread, void UNUSED(*uw), vo
 /******************************************************************************/
 LOCAL uint32_t arkime_python_packet_thread_exit(int thread, void UNUSED(*uw), void UNUSED(*cbuw))
 {
+    if (disablePython) {
+        return 0;
+    }
+
     if (config.debug)
         LOG("Exiting Python interpreter for thread %d.", thread);
     PyEval_RestoreThread(packetThreadState[thread]);
+    arkime_python_release_callbacks_for_thread(thread);
     Py_EndInterpreter(packetThreadState[thread]);
+    packetThreadState[thread] = NULL;
     threads--;
     return 0;
 }
@@ -1643,10 +1672,16 @@ LOCAL uint32_t arkime_python_reader_thread_init(int thread, void UNUSED(*uw), vo
 /******************************************************************************/
 LOCAL uint32_t arkime_python_reader_thread_exit(int thread, void UNUSED(*uw), void UNUSED(*cbuw))
 {
+    if (disablePython) {
+        return 0;
+    }
+
     if (config.debug)
         LOG("Exiting Python interpreter for thread %d.", thread);
     PyEval_RestoreThread(readerThreadState[thread]);
+    arkime_python_release_callbacks_for_thread(thread);
     Py_EndInterpreter(readerThreadState[thread]);
+    readerThreadState[thread] = NULL;
     threads--;
     return 0;
 }
@@ -1668,7 +1703,7 @@ void arkime_python_init()
     arkime_parsers_register_load_extension(".py", arkime_python_pp_load);
     arkime_plugins_register_load_extension(".py", arkime_python_pp_load);
 
-    arkimePyCbMap = g_hash_table_new_full(g_str_hash, g_str_equal, NULL, NULL);
+    arkimePyCbMap = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, arkime_python_cb_map_free);
 
     arkime_add_named_func("arkime_packet_thread_init", arkime_python_packet_thread_init, NULL);
     arkime_add_named_func("arkime_packet_thread_exit", arkime_python_packet_thread_exit, NULL);
@@ -1691,6 +1726,18 @@ void arkime_python_exit()
         if (config.debug > 1)
             LOG("Waiting for %d Python threads to exit", threads);
         usleep(10000);
+    }
+
+    // Clean up the callback map - the PyObjects have already been decref'd in thread exit
+    if (arkimePyCbMap) {
+        g_hash_table_destroy(arkimePyCbMap);
+        arkimePyCbMap = NULL;
+    }
+
+    // Clean up filesLoaded
+    if (filesLoaded) {
+        g_ptr_array_free(filesLoaded, TRUE);
+        filesLoaded = NULL;
     }
 
     PyEval_RestoreThread(mainThreadState);
