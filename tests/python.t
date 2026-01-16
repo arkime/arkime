@@ -14,7 +14,9 @@ my $cmd = '../capture/capture -c config.test.ini -n test --regressionTests --tes
 my $input = `$cmd`;
 # diag $input;
 
-$input =~ s/^-----.*//ms;
+diag "BEFORE >", $input, "<";
+$input =~ s/^-----.*$//ms;
+diag "AFTER >", $input, "<";
 
 my $out = from_json($input, {relaxed => 1});
 #diag Dumper($out->{sessions3}->[0]->{body});
