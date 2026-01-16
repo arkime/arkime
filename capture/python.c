@@ -1531,7 +1531,7 @@ LOCAL int arkime_python_pp_load(const char *path)
 {
     arkime_python_packet_load_file(path);
     if (!filesLoaded) {
-        filesLoaded = g_ptr_array_new();
+        filesLoaded = g_ptr_array_new_with_free_func(g_free);
     }
     g_ptr_array_add(filesLoaded, g_strdup(path));
     return 0;
