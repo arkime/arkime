@@ -205,7 +205,6 @@ sub doTests {
 ################################################################################
 sub doFix {
     my $data = do { local $/; <> };
-    $data =~ s/^-----.*$//ms;
     my $json;
     eval {
         $json = from_json($data, {relaxed => 1});
