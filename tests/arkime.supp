@@ -1,0 +1,2 @@
+leak:Py_NewInterpreterFromConfig
+leak:new_interpreter
