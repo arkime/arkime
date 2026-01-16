@@ -14,8 +14,9 @@ my $cmd = '../capture/capture -c config.test.ini -n test --regressionTests --tes
 my $input = `$cmd`;
 # diag $input;
 
-my $json = JSON::XS->new->relaxed;
-my ($out, $len) = $json->decode_prefix($input);
+$input =~ s/^-----.*//ms;
+
+my $out = from_json($input, {relaxed => 1});
 #diag Dumper($out->{sessions3}->[0]->{body});
 
 is($out->{sessions3}->[0]->{body}->{test}->{python}->[0], "my value");
