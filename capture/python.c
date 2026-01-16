@@ -646,18 +646,26 @@ LOCAL PyObject *arkime_python_session_has_protocol(PyObject UNUSED(*self), PyObj
 LOCAL PyObject *arkime_python_session_add_int(PyObject UNUSED(*self), PyObject *args)
 {
     PyObject *py_session_obj;
-    const char *field;
+    PyObject *py_field_obj;
     int value;
 
-    if (!PyArg_ParseTuple(args, "Osi", &py_session_obj, &field, &value)) {
+    if (!PyArg_ParseTuple(args, "OOi", &py_session_obj, &py_field_obj, &value)) {
         return NULL;
     }
 
     int pos;
-    if (isdigit(field[0]))
-        pos = atoi(field);
-    else
-        pos = arkime_field_by_exp(field);
+    if (PyLong_Check(py_field_obj)) {
+        pos = PyLong_AsLong(py_field_obj);
+    } else if (PyUnicode_Check(py_field_obj)) {
+        const char *field = PyUnicode_AsUTF8(py_field_obj);
+        if (isdigit(field[0]))
+            pos = atoi(field);
+        else
+            pos = arkime_field_by_exp(field);
+    } else {
+        PyErr_SetString(PyExc_TypeError, "Field must be a string or integer.");
+        return NULL;
+    }
 
     gboolean result = arkime_field_int_add(pos, (ArkimeSession_t *)PyLong_AsVoidPtr(py_session_obj), value);
 
@@ -671,18 +679,26 @@ LOCAL PyObject *arkime_python_session_add_int(PyObject UNUSED(*self), PyObject *
 LOCAL PyObject *arkime_python_session_add_string(PyObject UNUSED(*self), PyObject *args)
 {
     PyObject *py_session_obj;
-    const char *field;
+    PyObject *py_field_obj;
     const char *value;
 
-    if (!PyArg_ParseTuple(args, "Oss", &py_session_obj, &field, &value)) {
+    if (!PyArg_ParseTuple(args, "OOs", &py_session_obj, &py_field_obj, &value)) {
         return NULL;
     }
 
     int pos;
-    if (isdigit(field[0]))
-        pos = atoi(field);
-    else
-        pos = arkime_field_by_exp(field);
+    if (PyLong_Check(py_field_obj)) {
+        pos = PyLong_AsLong(py_field_obj);
+    } else if (PyUnicode_Check(py_field_obj)) {
+        const char *field = PyUnicode_AsUTF8(py_field_obj);
+        if (isdigit(field[0]))
+            pos = atoi(field);
+        else
+            pos = arkime_field_by_exp(field);
+    } else {
+        PyErr_SetString(PyExc_TypeError, "Field must be a string or integer.");
+        return NULL;
+    }
 
     const char *result = arkime_field_string_add(pos, (ArkimeSession_t *)PyLong_AsVoidPtr(py_session_obj), value, -1, TRUE);
 
