@@ -1491,7 +1491,7 @@ char *arkime_yara_version();
 void arkime_field_init();
 void arkime_field_define_json(const uint8_t *expression, int expression_len, const uint8_t *data, int data_len);
 int  arkime_field_define_text(const char *text, int *shortcut);
-int  arkime_field_define_text_full(char *field, const char *text, int *shortcut);
+int  arkime_field_define_text_full(const char *field, const char *text, int *shortcut);
 int  arkime_field_define(const char *group, const char *kind, const char *expression, const char *friendlyName, const char *dbField, const char *help, ArkimeFieldType type, int flags, ...);
 
 int  arkime_field_by_db(const char *dbField);

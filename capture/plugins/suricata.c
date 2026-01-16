@@ -89,7 +89,7 @@ LOCAL void suricata_alerts_init()
 /******************************************************************************/
 LOCAL int suricata_alerts_add(SuricataItem_t *item)
 {
-    SuricataItem_t *check;
+    const SuricataItem_t *check;
 
     item->hash = arkime_session_hash(item->sessionId);
     int h = item->hash % alerts.num;

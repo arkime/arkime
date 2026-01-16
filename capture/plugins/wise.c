@@ -555,7 +555,7 @@ LOCAL void wise_lookup_tuple(ArkimeSession_t *session, WiseRequest_t *request)
     BSB_EXPORT_sprintf(bsb, "%ld;", session->firstPacket.tv_sec);
 
     int first = 1;
-    ArkimeString_t *hstring;
+    const ArkimeString_t *hstring;
     const ArkimeStringHashStd_t *shash = session->fields[protocolField]->shash;
     HASH_FORALL2(s_, *shash, hstring) {
         if (first) {
@@ -691,7 +691,7 @@ LOCAL void wise_plugin_pre_save(ArkimeSession_t *session, int UNUSED(final))
 
             const ArkimeStringHashStd_t *shash;
             const ArkimeIntHashStd_t    *ihash;
-            ArkimeInt_t                 *hint;
+            const ArkimeInt_t           *hint;
             char                         buf[20];
 
             switch (config.fields[pos]->type) {

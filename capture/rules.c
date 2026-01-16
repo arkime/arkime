@@ -1095,8 +1095,8 @@ LOCAL void arkime_rules_match(ArkimeSession_t *const session, ArkimeRule_t *cons
 
 LOCAL void arkime_rules_check_rule_fields(ArkimeSession_t *const session, ArkimeRule_t *const rule, int skipPos, BSB *logStr)
 {
-    ArkimeString_t              *hstring;
-    ArkimeInt_t                 *hint;
+    const ArkimeString_t        *hstring;
+    const ArkimeInt_t           *hint;
     const ArkimeStringHashStd_t *shash;
     const ArkimeIntHashStd_t    *ihash;
     GHashTable                  *ghash;

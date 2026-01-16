@@ -373,7 +373,7 @@ LOCAL void arkime_http_parse_authorization(ArkimeSession_t *session, char *str)
             quote = 1;
             str++;
         }
-        char *end = str;
+        const char *end = str;
         while (*end && (*end != '"' || !quote) && (*end != ',' || quote)) {
             end++;
         }

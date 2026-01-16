@@ -670,7 +670,7 @@ int arkime_string_ncmp(const void *keyv, const void *elementv)
 /******************************************************************************/
 uint32_t arkime_int_hash(const void *key)
 {
-    return (uint32_t)((long)key);
+    return GPOINTER_TO_UINT(key);
 }
 
 /******************************************************************************/
