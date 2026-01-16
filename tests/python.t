@@ -9,9 +9,13 @@ use strict;
 
 
 my $cmd = '../capture/capture -c config.test.ini -n test --regressionTests --tests -o plugins=pythontest.py -r pcap/aerospike.pcap 2>&1 1>/dev/null | ./tests.pl --fix';
-#diag $cmd;
+# diag $cmd;
 
-my $out = from_json(`$cmd`, {relaxed => 1});
+my $input = `$cmd`;
+# diag $input;
+
+my $json = JSON::XS->new->relaxed;
+my ($out, $len) = $json->decode_prefix($input);
 #diag Dumper($out->{sessions3}->[0]->{body});
 
 is($out->{sessions3}->[0]->{body}->{test}->{python}->[0], "my value");

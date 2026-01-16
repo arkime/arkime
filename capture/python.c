@@ -18,6 +18,7 @@ extern ArkimeConfig_t        config;
 
 typedef struct ArkimePyCbMap {
     PyObject *cb[MAX_INTERFACES * MAX_THREADS_PER_INTERFACE];
+    gboolean  isPacket;
 } ArkimePyCbMap_t;
 
 GHashTable *arkimePyCbMap = NULL;
@@ -45,7 +46,7 @@ LOCAL void arkime_python_cb_map_free(gpointer data)
     ARKIME_TYPE_FREE(ArkimePyCbMap_t, data);
 }
 /******************************************************************************/
-LOCAL void arkime_python_release_callbacks_for_thread(int thread)
+LOCAL void arkime_python_release_callbacks_for_thread(int thread, gboolean isPacket)
 {
     ARKIME_LOCK(singleLock);
     GHashTableIter iter;
@@ -53,7 +54,7 @@ LOCAL void arkime_python_release_callbacks_for_thread(int thread)
     g_hash_table_iter_init(&iter, arkimePyCbMap);
     while (g_hash_table_iter_next(&iter, &key, &value)) {
         ArkimePyCbMap_t *map = (ArkimePyCbMap_t *)value;
-        if (map->cb[thread] != NULL) {
+        if (map->cb[thread] != NULL && map->isPacket == isPacket) {
             Py_DECREF(map->cb[thread]);
             map->cb[thread] = NULL;
         }
@@ -64,7 +65,7 @@ LOCAL void arkime_python_release_callbacks_for_thread(int thread)
 /**
  * Need to save the py callback per thread. We use the register name + the callback name as the key.
  */
-LOCAL ArkimePyCbMap_t *arkime_python_save_callback(const char *name, PyObject *py_callback_obj)
+LOCAL ArkimePyCbMap_t *arkime_python_save_callback(const char *name, PyObject *py_callback_obj, gboolean isPacket)
 {
     char key[100];
 
@@ -83,6 +84,7 @@ LOCAL ArkimePyCbMap_t *arkime_python_save_callback(const char *name, PyObject *p
 
     if (!map) {
         map = ARKIME_TYPE_ALLOC0(ArkimePyCbMap_t);
+        map->isPacket = isPacket;
         g_hash_table_insert(arkimePyCbMap, g_strdup(key), map);
     }
     ARKIME_UNLOCK(singleLock);
@@ -173,7 +175,7 @@ LOCAL PyObject *arkime_python_register_tcp_classifier(PyObject UNUSED(*self), Py
     }
     Py_INCREF(py_callback_obj);
 
-    ArkimePyCbMap_t *map = arkime_python_save_callback(name_str, py_callback_obj);
+    ArkimePyCbMap_t *map = arkime_python_save_callback(name_str, py_callback_obj, TRUE);
 
     if (map) {
         arkime_parsers_classifier_register_tcp (
@@ -227,7 +229,7 @@ LOCAL PyObject *arkime_python_register_udp_classifier(PyObject UNUSED(*self), Py
     }
     Py_INCREF(py_callback_obj);
 
-    ArkimePyCbMap_t *map = arkime_python_save_callback(name_str, py_callback_obj);
+    ArkimePyCbMap_t *map = arkime_python_save_callback(name_str, py_callback_obj, TRUE);
 
     if (map)
         arkime_parsers_classifier_register_udp (
@@ -280,7 +282,7 @@ LOCAL PyObject *arkime_python_register_sctp_classifier(PyObject UNUSED(*self), P
     }
     Py_INCREF(py_callback_obj);
 
-    ArkimePyCbMap_t *map = arkime_python_save_callback(name_str, py_callback_obj);
+    ArkimePyCbMap_t *map = arkime_python_save_callback(name_str, py_callback_obj, TRUE);
 
     if (map)
         arkime_parsers_classifier_register_sctp (
@@ -319,7 +321,7 @@ LOCAL PyObject *arkime_python_register_sctp_protocol_classifier(PyObject UNUSED(
     }
     Py_INCREF(py_callback_obj);
 
-    ArkimePyCbMap_t *map = arkime_python_save_callback(name_str, py_callback_obj);
+    ArkimePyCbMap_t *map = arkime_python_save_callback(name_str, py_callback_obj, TRUE);
 
     if (map)
         arkime_parsers_classifier_register_sctp_protocol (
@@ -358,7 +360,7 @@ LOCAL PyObject *arkime_python_register_port_classifier(PyObject UNUSED(*self), P
     }
     Py_INCREF(py_callback_obj);
 
-    ArkimePyCbMap_t *map = arkime_python_save_callback(name_str, py_callback_obj);
+    ArkimePyCbMap_t *map = arkime_python_save_callback(name_str, py_callback_obj, TRUE);
 
     if (map)
         arkime_parsers_classifier_register_port (
@@ -425,7 +427,7 @@ LOCAL PyObject *arkime_python_register_save(PyObject UNUSED(*self), PyObject *ar
     }
     Py_INCREF(py_callback_obj);
 
-    ArkimePyCbMap_t *map = arkime_python_save_callback(":save", py_callback_obj);
+    ArkimePyCbMap_t *map = arkime_python_save_callback(":save", py_callback_obj, TRUE);
 
     if (map)
         arkime_parsers_add_named_func2("arkime_session_save", arkime_python_session_save_cb, map);
@@ -453,7 +455,7 @@ LOCAL PyObject *arkime_python_register_pre_save(PyObject UNUSED(*self), PyObject
     }
     Py_INCREF(py_callback_obj);
 
-    ArkimePyCbMap_t *map = arkime_python_save_callback(":pre_save", py_callback_obj);
+    ArkimePyCbMap_t *map = arkime_python_save_callback(":pre_save", py_callback_obj, TRUE);
 
     if (map)
         arkime_parsers_add_named_func2("arkime_session_pre_save", arkime_python_session_save_cb, map);
@@ -1388,7 +1390,7 @@ LOCAL PyObject *arkime_python_set_ethernet_cb(PyObject UNUSED(*self), PyObject *
     }
     Py_INCREF(py_callback_obj);
 
-    ArkimePyCbMap_t *map = arkime_python_save_callback(":ethernet_cb", py_callback_obj);
+    ArkimePyCbMap_t *map = arkime_python_save_callback(":ethernet_cb", py_callback_obj, FALSE);
 
     if (map)
         arkime_packet_set_ethernet_cb2(type, arkime_python_packet_cb, map);
@@ -1418,7 +1420,7 @@ LOCAL PyObject *arkime_python_set_ip_cb(PyObject UNUSED(*self), PyObject *args)
     }
     Py_INCREF(py_callback_obj);
 
-    ArkimePyCbMap_t *map = arkime_python_save_callback(":ip_cb", py_callback_obj);
+    ArkimePyCbMap_t *map = arkime_python_save_callback(":ip_cb", py_callback_obj, FALSE);
 
     if (map)
         arkime_packet_set_ip_cb2(type, arkime_python_packet_cb, map);
@@ -1649,7 +1651,7 @@ LOCAL uint32_t arkime_python_packet_thread_exit(int thread, void UNUSED(*uw), vo
     if (config.debug)
         LOG("Exiting Python interpreter for thread %d.", thread);
     PyEval_RestoreThread(packetThreadState[thread]);
-    arkime_python_release_callbacks_for_thread(thread);
+    arkime_python_release_callbacks_for_thread(thread, TRUE);
     Py_EndInterpreter(packetThreadState[thread]);
     packetThreadState[thread] = NULL;
     threads--;
@@ -1679,7 +1681,7 @@ LOCAL uint32_t arkime_python_reader_thread_exit(int thread, void UNUSED(*uw), vo
     if (config.debug)
         LOG("Exiting Python interpreter for thread %d.", thread);
     PyEval_RestoreThread(readerThreadState[thread]);
-    arkime_python_release_callbacks_for_thread(thread);
+    arkime_python_release_callbacks_for_thread(thread, FALSE);
     Py_EndInterpreter(readerThreadState[thread]);
     readerThreadState[thread] = NULL;
     threads--;
