@@ -766,9 +766,9 @@ LOCAL PyObject *arkime_python_session_get(PyObject UNUSED(*self), PyObject *args
     PyObject                    *py_session_obj;
     const char                  *field;
     const ArkimeStringHashStd_t *shash;
-    ArkimeString_t              *hstring = NULL;
+    const ArkimeString_t        *hstring = NULL;
     const ArkimeIntHashStd_t    *ihash;
-    ArkimeInt_t                 *hint;
+    const ArkimeInt_t           *hint;
     struct in6_addr             *ip6;
     char                         ipstr[INET6_ADDRSTRLEN + 10];
 
@@ -1138,7 +1138,7 @@ LOCAL void arkime_python_reader_load_files(int thread)
     PyThreadState* current_tstate_before_swap = PyThreadState_Swap(target_tstate);
 
     for (guint i = 0; i < filesLoaded->len; i++) {
-        gchar *file = g_ptr_array_index(filesLoaded, i);
+        const gchar *file = g_ptr_array_index(filesLoaded, i);
         FILE *fp = fopen(file, "r");
         if (PyRun_SimpleFileExFlags(fp, file, 1, NULL)) {
             LOG("Error loading '%s'\n", file);

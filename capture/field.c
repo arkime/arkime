@@ -181,7 +181,7 @@ void arkime_field_define_json(const uint8_t *expression, int expression_len, con
     return;
 }
 /******************************************************************************/
-int arkime_field_define_text_full(char *field, const char *text, int *shortcut)
+int arkime_field_define_text_full(const char *field, const char *text, int *shortcut)
 {
     int count = 0;
     int nolinked = 0;

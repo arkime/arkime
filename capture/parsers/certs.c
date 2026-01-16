@@ -232,7 +232,7 @@ LOCAL int certinfo_cmp(const void *keyv, const void *elementv)
 
     // Now see if all the other items are the same
 
-    ArkimeString_t *kstr, *estr;
+    const ArkimeString_t *kstr, *estr;
     for (kstr = keyCI->issuer.commonName.s_next, estr = elementCI->issuer.commonName.s_next;
          kstr != (void *) & (keyCI->issuer.commonName);
          kstr = kstr->s_next, estr = estr->s_next) {
@@ -654,7 +654,7 @@ LOCAL void *certs_getcb_alt(const ArkimeSession_t *session, int UNUSED(pos))
 
     ArkimeString_t *string;
     const ArkimeFieldObjectHashStd_t *ohash = session->fields[certsField]->ohash;
-    ArkimeFieldObject_t *object;
+    const ArkimeFieldObject_t *object;
 
     GPtrArray *array = g_ptr_array_new();
     HASH_FORALL2(o_, *ohash, object) {
