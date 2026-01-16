@@ -48,7 +48,6 @@ include:
     buildopt: "--kafka --pfring"
     fpmdeps: "-d libwww-perl -d libjson-perl -d ethtool -d libyaml-dev -d liblua5.4-0 -d libmaxminddb0 -d libcurl4 -d libpcap0.8 -d libglib2.0-0 -d libnghttp2-14 -d libyara8 -d librdkafka1"
     package: deb
-    viewertest: sanitize
     sanitizebuild: make sanitize CC=clang-18
     prbuild: true
 
@@ -58,6 +57,7 @@ include:
     fpmdeps: "-d libwww-perl -d libjson-perl -d ethtool -d libyaml-dev -d liblua5.4-0 -d libmaxminddb0 -d libcurl4 -d libpcap0.8 -d libglib2.0-0 -d libnghttp2-14 -d libyara10 -d librdkafka1 -d libpcre3 -d libpython3.12"
     package: deb
     python: python3
+    viewertest: sanitize
     sanitizebuild: "make SANITIZE_LDFLAGS='-fno-common -fsanitize=address -fsanitize=undefined -fno-omit-frame-pointer' sanitize"
 
   - version: "arch-x86_64"
