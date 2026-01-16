@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Simple capital C Configure script for rpm/deb, like the old days
 
 if [ "$1" == "--help" ]; then

@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/bin/env perl
 # This script can initialize, upgrade or provide simple maintenance for the
 # Arkime OpenSearch/Elasticsearch db
 #
