@@ -59,6 +59,7 @@ include:
     python: python3
     viewertest: sanitize
     sanitizebuild: "make SANITIZE_LDFLAGS='-fno-common -fsanitize=address -fsanitize=undefined -fno-omit-frame-pointer' sanitize"
+    prbuild: true
 
   - version: "arch-x86_64"
     container: andywick/arkime-build-arch:6.0.0-2
