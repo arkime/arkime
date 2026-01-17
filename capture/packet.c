@@ -562,7 +562,7 @@ LOCAL void *arkime_packet_thread(void *threadp)
         DLL_POP_HEAD(packet_, &packetQ[thread], packet);
         ARKIME_UNLOCK(packetQ[thread].lock);
 
-        // Only process commands if the packetQ is less then 75% full or every 8 packets
+        // Only process commands if the packetQ is less than 75% full or every 8 packets
         if (likely(DLL_COUNT(packet_, &packetQ[thread]) < maxPackets75) || (skipCount & 0x7) == 0) {
             arkime_session_process_commands(thread);
             if (!packet)
@@ -1420,7 +1420,7 @@ LOCAL ArkimePacketRC arkime_packet_nflog(ArkimePacketBatch_t *batch, ArkimePacke
     while (n + 4 < len) {
         int length = data[n + 1] << 8 | data[n];
 
-        // Make sure length is at least header and not bigger then remaining packet
+        // Make sure length is at least header and not bigger than remaining packet
         if (length < 4 || length > len - n) {
 #ifdef DEBUG_PACKET
             LOG("BAD PACKET: Wrong len %d", length);
@@ -2090,7 +2090,7 @@ void arkime_packet_init()
                         (char *)NULL);
 
     arkime_field_define("general", "termfield",
-                        "region.dst", "Src Region", "destination.geo.region_iso_code",
+                        "region.dst", "Dst Region", "destination.geo.region_iso_code",
                         "Destination IP Region ISO",
                         0,  ARKIME_FIELD_FLAG_FAKE,
                         (char *)NULL);

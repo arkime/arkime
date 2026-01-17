@@ -84,7 +84,7 @@ LOCAL void *reader_snf_thread(gpointer posv)
         if (err) {
             if (err == EBUSY || err == EAGAIN || err == EINTR)
                 continue;
-            LOG("SNF quiting %d", err);
+            LOG("SNF quitting %d", err);
             arkime_quit();
             break;
         }

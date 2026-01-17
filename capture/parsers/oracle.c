@@ -36,7 +36,7 @@ LOCAL void oracle_classify(ArkimeSession_t *session, const uint8_t *data, int le
         return;
     }
 
-    char *buf;  // can't be more then 1 byte big
+    char *buf;  // can't be more than 1 byte big
     int  blen;
 
     buf = oracle_get_item(data, "HOST=", 5, &blen); // Already lowercases

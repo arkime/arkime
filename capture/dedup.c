@@ -24,7 +24,7 @@ extern ArkimeConfig_t       config;
 
 // How many items in each hashtable we expect to be used, mut be less than DEDUP_SIZE_FACTOR
 #define DEDUP_SLOT_FACTOR   15
-// How many items in each hashtable we actually allow, must be less then 256 and more than DEDUP_SLOT_FACTOR
+// How many items in each hashtable we actually allow, must be less than 256 and more than DEDUP_SLOT_FACTOR
 #define DEDUP_SIZE_FACTOR   20
 
 LOCAL uint32_t              dedupSeconds;

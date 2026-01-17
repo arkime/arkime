@@ -180,7 +180,7 @@ LOCAL void suricata_plugin_save(ArkimeSession_t *session, int UNUSED(final))
 
 /******************************************************************************/
 /*
- * Called by arkime when arkime is quiting
+ * Called by arkime when arkime is quitting
  */
 LOCAL void suricata_plugin_exit()
 {

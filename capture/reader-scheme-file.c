@@ -157,6 +157,11 @@ LOCAL int scheme_file_dir(const char *dirname, ArkimeSchemeFlags flags, ArkimeSc
     }
 
     pcapGDir = g_dir_open(dirname, 0, &error);
+    if (error) {
+        LOG("ERROR - Couldn't open pcap directory %s: %s", dirname, error->message);
+        return 1;
+    }
+
     while (1) {
         const gchar *filename = g_dir_read_name(pcapGDir);
 
@@ -224,7 +229,7 @@ LOCAL int scheme_file_load(const char *uri, ArkimeSchemeFlags flags, ArkimeSchem
 
 
         fd = open(filename, O_RDONLY);
-        if (!fd) {
+        if (fd < 0) {
             LOG("ERROR - pcap open failed - Couldn't realpath file: '%s' with %s (%d)", filename, strerror(errno), errno);
             return 1;
         }

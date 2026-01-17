@@ -62,7 +62,7 @@ LOCAL void tcp_session_free(ArkimeSession_t *session)
 }
 
 /******************************************************************************/
-// Idea from gopacket tcpassembly/assemply.go
+// Idea from gopacket tcpassembly/assembly.go
 LOCAL int64_t tcp_sequence_diff (int64_t a, int64_t b)
 {
     if (a > 0xc0000000 && b < 0x40000000)
@@ -276,7 +276,7 @@ LOCAL int tcp_packet_process(ArkimeSession_t *const session, ArkimePacket_t *con
         if (session->haveTcpSession &&  // Seen a SYN
             (session->ackedUnseenSegment & (1 << packet->direction)) == 0 &&  // Haven't already tagged
             session->tcpData.tcpSeq[(packet->direction + 1) % 2] != 0 &&                  // The syn-ack isn't what is missing
-            (tcp_sequence_diff(session->tcpData.tcpSeq[(packet->direction + 1) % 2], ntohl(tcphdr->th_ack)) > 1)) { // more then one byte missing
+            (tcp_sequence_diff(session->tcpData.tcpSeq[(packet->direction + 1) % 2], ntohl(tcphdr->th_ack)) > 1)) { // more than one byte missing
 
             static const char *tags[2] = {"acked-unseen-segment-src", "acked-unseen-segment-dst"};
             arkime_session_add_tag(session, tags[packet->direction]);
