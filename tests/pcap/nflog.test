@@ -16,7 +16,9 @@
                },
                "bytes" : 1800,
                "geo" : {
-                  "country_iso_code" : "US"
+                  "city_name" : "Boardman",
+                  "country_iso_code" : "US",
+                  "region_iso_code" : "OR"
                },
                "ip" : "52.43.228.156",
                "packets" : 4,

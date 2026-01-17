@@ -383,7 +383,9 @@
                },
                "bytes" : 0,
                "geo" : {
-                  "country_iso_code" : "JP"
+                  "city_name" : "Tokyo",
+                  "country_iso_code" : "JP",
+                  "region_iso_code" : "13"
                },
                "ip" : "13.115.50.210",
                "mac" : [
@@ -734,7 +736,9 @@
                },
                "bytes" : 0,
                "geo" : {
-                  "country_iso_code" : "FR"
+                  "city_name" : "Paris",
+                  "country_iso_code" : "FR",
+                  "region_iso_code" : "IDF"
                },
                "ip" : "193.242.192.43",
                "mac" : [
@@ -1294,7 +1298,9 @@
                },
                "bytes" : 0,
                "geo" : {
-                  "country_iso_code" : "US"
+                  "city_name" : "Ashburn",
+                  "country_iso_code" : "US",
+                  "region_iso_code" : "VA"
                },
                "ip" : "35.174.150.168",
                "mac" : [
@@ -1485,7 +1491,9 @@
                },
                "bytes" : 0,
                "geo" : {
-                  "country_iso_code" : "US"
+                  "city_name" : "Scottsdale",
+                  "country_iso_code" : "US",
+                  "region_iso_code" : "AZ"
                },
                "ip" : "68.178.213.61",
                "mac" : [

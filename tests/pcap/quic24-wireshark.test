@@ -16,7 +16,9 @@
                },
                "bytes" : 2784,
                "geo" : {
-                  "country_iso_code" : "US"
+                  "city_name" : "Mountain View",
+                  "country_iso_code" : "US",
+                  "region_iso_code" : "CA"
                },
                "ip" : "216.58.208.195",
                "mac" : [
