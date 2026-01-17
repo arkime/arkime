@@ -156,7 +156,9 @@
                },
                "bytes" : 517,
                "geo" : {
-                  "country_iso_code" : "US"
+                  "city_name" : "Lockport",
+                  "country_iso_code" : "US",
+                  "region_iso_code" : "NY"
                },
                "ip" : "2001:4998:ef83:14:8000::100d",
                "packets" : 4,

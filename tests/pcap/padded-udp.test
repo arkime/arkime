@@ -9,7 +9,9 @@
             "destination" : {
                "bytes" : 0,
                "geo" : {
-                  "country_iso_code" : "RU"
+                  "city_name" : "Moscow",
+                  "country_iso_code" : "RU",
+                  "region_iso_code" : "MOW"
                },
                "ip" : "1.2.3.4",
                "mac" : [

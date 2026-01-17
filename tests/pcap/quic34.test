@@ -16,7 +16,9 @@
                },
                "bytes" : 0,
                "geo" : {
-                  "country_iso_code" : "US"
+                  "city_name" : "Bluffdale",
+                  "country_iso_code" : "US",
+                  "region_iso_code" : "UT"
                },
                "ip" : "216.58.194.195",
                "mac" : [

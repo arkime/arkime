@@ -16,7 +16,9 @@
                },
                "bytes" : 1454,
                "geo" : {
-                  "country_iso_code" : "US"
+                  "city_name" : "Columbus",
+                  "country_iso_code" : "US",
+                  "region_iso_code" : "NC"
                },
                "ip" : "2400:cb00:2048:1::6813:c266",
                "mac" : [

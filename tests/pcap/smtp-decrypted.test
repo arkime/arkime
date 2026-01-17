@@ -235,7 +235,9 @@
                },
                "bytes" : 18124,
                "geo" : {
-                  "country_iso_code" : "RU"
+                  "city_name" : "Moscow",
+                  "country_iso_code" : "RU",
+                  "region_iso_code" : "MOW"
                },
                "ip" : "185.25.10.15",
                "mac" : [
@@ -970,7 +972,9 @@
                },
                "bytes" : 1991,
                "geo" : {
-                  "country_iso_code" : "RU"
+                  "city_name" : "Moscow",
+                  "country_iso_code" : "RU",
+                  "region_iso_code" : "MOW"
                },
                "ip" : "185.25.10.15",
                "mac" : [

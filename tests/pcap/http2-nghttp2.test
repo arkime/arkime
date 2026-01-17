@@ -16,7 +16,9 @@
                },
                "bytes" : 48832,
                "geo" : {
-                  "country_iso_code" : "JP"
+                  "city_name" : "Tokyo",
+                  "country_iso_code" : "JP",
+                  "region_iso_code" : "13"
                },
                "ip" : "139.162.123.134",
                "packets" : 48,

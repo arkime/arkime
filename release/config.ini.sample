@@ -117,7 +117,7 @@ freeSpaceG=5%
 
 # A MaxMind account is now required, Arkime checks several install locations, or
 # will work without Geo files installed. See https://arkime.com/faq#maxmind
-#geoLite2Country=/var/lib/GeoIP/GeoLite2-Country.mmdb;/usr/share/GeoIP/GeoLite2-Country.mmdb;ARKIME_INSTALL_DIR/etc/GeoLite2-Country.mmdb
+#geoLite2Country=/var/lib/GeoIP/GeoLite2-City.mmdb;/usr/share/GeoIP/GeoLite2-City.mmdb;ARKIME_INSTALL_DIR/etc/GeoLite2-City.mmdb
 #geoLite2ASN=/var/lib/GeoIP/GeoLite2-ASN.mmdb;/usr/share/GeoIP/GeoLite2-ASN.mmdb;ARKIME_INSTALL_DIR/etc/GeoLite2-ASN.mmdb
 
 # Path of the rir assignments file

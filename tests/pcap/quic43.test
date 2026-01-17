@@ -85,7 +85,9 @@
                },
                "bytes" : 1412,
                "geo" : {
-                  "country_iso_code" : "US"
+                  "city_name" : "Sunnyvale",
+                  "country_iso_code" : "US",
+                  "region_iso_code" : "CA"
                },
                "ip" : "2001:4998:effd:7801::1058",
                "mac" : [

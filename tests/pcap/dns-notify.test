@@ -16,7 +16,9 @@
                },
                "bytes" : 73,
                "geo" : {
-                  "country_iso_code" : "US"
+                  "city_name" : "Clifton",
+                  "country_iso_code" : "US",
+                  "region_iso_code" : "NJ"
                },
                "ip" : "204.62.14.153",
                "mac" : [

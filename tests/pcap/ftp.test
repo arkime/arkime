@@ -16,7 +16,9 @@
                },
                "bytes" : 428,
                "geo" : {
-                  "country_iso_code" : "US"
+                  "city_name" : "Rochester",
+                  "country_iso_code" : "US",
+                  "region_iso_code" : "NY"
                },
                "ip" : "129.21.171.72",
                "mac" : [

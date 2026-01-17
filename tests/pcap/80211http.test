@@ -16,7 +16,9 @@
                },
                "bytes" : 5069,
                "geo" : {
-                  "country_iso_code" : "CN"
+                  "city_name" : "Shenzhen",
+                  "country_iso_code" : "CN",
+                  "region_iso_code" : "GD"
                },
                "ip" : "14.17.32.211",
                "packets" : 9,
@@ -444,7 +446,9 @@
                },
                "bytes" : 6763,
                "geo" : {
-                  "country_iso_code" : "US"
+                  "city_name" : "Neenah",
+                  "country_iso_code" : "US",
+                  "region_iso_code" : "WI"
                },
                "ip" : "172.5.5.113",
                "packets" : 17,

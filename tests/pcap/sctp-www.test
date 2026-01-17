@@ -316,7 +316,9 @@
                },
                "bytes" : 2298,
                "geo" : {
-                  "country_iso_code" : "KR"
+                  "city_name" : "Daegu",
+                  "country_iso_code" : "KR",
+                  "region_iso_code" : "27"
                },
                "ip" : "155.230.24.155",
                "mac" : [
@@ -615,7 +617,9 @@
                },
                "bytes" : 1766,
                "geo" : {
-                  "country_iso_code" : "KR"
+                  "city_name" : "Daegu",
+                  "country_iso_code" : "KR",
+                  "region_iso_code" : "27"
                },
                "ip" : "155.230.24.155",
                "mac" : [
@@ -659,7 +663,9 @@
                },
                "bytes" : 0,
                "geo" : {
-                  "country_iso_code" : "KR"
+                  "city_name" : "Haeundae-gu",
+                  "country_iso_code" : "KR",
+                  "region_iso_code" : "26"
                },
                "ip" : "222.96.156.151",
                "mac" : [
@@ -718,7 +724,9 @@
                },
                "bytes" : 318,
                "geo" : {
-                  "country_iso_code" : "KR"
+                  "city_name" : "Daegu",
+                  "country_iso_code" : "KR",
+                  "region_iso_code" : "27"
                },
                "ip" : "155.230.24.155",
                "mac" : [

@@ -16,7 +16,9 @@
                },
                "bytes" : 0,
                "geo" : {
-                  "country_iso_code" : "CH"
+                  "city_name" : "Cologny",
+                  "country_iso_code" : "CH",
+                  "region_iso_code" : "GE"
                },
                "ip" : "92.104.109.0",
                "mac" : [
@@ -87,7 +89,9 @@
             "source" : {
                "bytes" : 50,
                "geo" : {
-                  "country_iso_code" : "US"
+                  "city_name" : "San Mateo",
+                  "country_iso_code" : "US",
+                  "region_iso_code" : "CA"
                },
                "ip" : "47.245.159.156",
                "mac" : [
@@ -119,7 +123,9 @@
             "destination" : {
                "bytes" : 0,
                "geo" : {
-                  "country_iso_code" : "US"
+                  "city_name" : "San Mateo",
+                  "country_iso_code" : "US",
+                  "region_iso_code" : "CA"
                },
                "ip" : "47.245.159.156",
                "mac" : [
@@ -197,7 +203,9 @@
                },
                "bytes" : 50,
                "geo" : {
-                  "country_iso_code" : "CH"
+                  "city_name" : "Cologny",
+                  "country_iso_code" : "CH",
+                  "region_iso_code" : "GE"
                },
                "ip" : "92.104.109.0",
                "mac" : [
