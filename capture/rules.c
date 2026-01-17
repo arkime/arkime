@@ -461,7 +461,7 @@ LOCAL void arkime_rules_load_add_field_match(ArkimeRule_t *rule, int pos, int ty
     config.fields[pos]->ruleEnabled = 1;
 
     if (len > 255)
-        CONFIGEXIT("Match %s is to too large", key);
+        CONFIGEXIT("Match %s is too large", key);
 
     uint8_t *nkey = g_malloc(len + 3);
     nkey[0] = type;

@@ -329,7 +329,7 @@ LOCAL int MS_register_http_cb(lua_State *L)
         lua_pushvalue(L, 2);
         callbackRefs[num][callbackRefsCnt[num]++] = g_strdup(lua_tostring(L, 2));
     } else {
-        return luaL_error(L, "Can't have more then %d callbacks of this type", MOLUA_REF_MAX_CNT);
+        return luaL_error(L, "Can't have more than %d callbacks of this type", MOLUA_REF_MAX_CNT);
     }
 
     return 0;
@@ -351,7 +351,7 @@ LOCAL int MS_register_body_feed(lua_State *L)
         if (callbackRefsCnt[MOLUA_REF_HTTP] < MOLUA_REF_MAX_CNT) {
             callbackRefs[MOLUA_REF_HTTP][callbackRefsCnt[MOLUA_REF_HTTP]++] = g_strdup(lua_tostring(L, 2));
         } else {
-            return luaL_error(L, "Can't have more then %d %s callbacks", MOLUA_REF_MAX_CNT, type);
+            return luaL_error(L, "Can't have more than %d %s callbacks", MOLUA_REF_MAX_CNT, type);
         }
     } else {
         return luaL_error(L, "Unknown type: %s", type);
@@ -443,7 +443,7 @@ LOCAL int MS_register_save_cb(lua_State *L)
         lua_pushvalue(L, 1);
         callbackRefs[MOLUA_REF_SAVE][callbackRefsCnt[MOLUA_REF_SAVE]++] = g_strdup(lua_tostring(L, 1));
     } else {
-        return luaL_error(L, "Can't have more then %d callbacks of this type", MOLUA_REF_MAX_CNT);
+        return luaL_error(L, "Can't have more than %d callbacks of this type", MOLUA_REF_MAX_CNT);
     }
 
     return 0;
@@ -464,7 +464,7 @@ LOCAL int MS_register_pre_save_cb(lua_State *L)
         lua_pushvalue(L, 1);
         callbackRefs[MOLUA_REF_PRE_SAVE][callbackRefsCnt[MOLUA_REF_PRE_SAVE]++] = g_strdup(lua_tostring(L, 1));
     } else {
-        return luaL_error(L, "Can't have more then %d callbacks of this type", MOLUA_REF_MAX_CNT);
+        return luaL_error(L, "Can't have more than %d callbacks of this type", MOLUA_REF_MAX_CNT);
     }
 
     return 0;

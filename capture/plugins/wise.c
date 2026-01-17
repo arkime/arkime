@@ -790,6 +790,7 @@ LOCAL void wise_plugin_pre_save(ArkimeSession_t *session, int UNUSED(final))
                     else
                         wise_lookup(session, iRequest, ikey, type, pos);
                 }
+                break;
             case ARKIME_FIELD_TYPE_OBJECT:
                 // Unsupported
                 break;

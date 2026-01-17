@@ -131,7 +131,7 @@ LOCAL ArkimeScheme_t *uri2scheme(const char *uri)
     return str ? str->uw : NULL;
 }
 /******************************************************************************/
-/* Actually call the scheme load function. This is guartenteed to be on the scheme thread */
+/* Actually call the scheme load function. This is guaranteed to be on the scheme thread */
 LOCAL void arkime_reader_scheme_load_thread(const char *uri, ArkimeSchemeFlags flags, ArkimeSchemeAction_t *actions)
 {
     reader_scheme_pause();
@@ -366,7 +366,7 @@ LOCAL void *reader_scheme_thread(void *UNUSED(arg))
             ts.tv_sec++;
             ARKIME_COND_TIMEDWAIT(laterLock, ts);
             if (unlikely(config.quitting)) {
-                goto quiting;
+                goto quitting;
             }
         }
         ArkimeSchemeLater_t *item = laterHead;
@@ -378,7 +378,7 @@ LOCAL void *reader_scheme_thread(void *UNUSED(arg))
         ARKIME_TYPE_FREE(ArkimeSchemeLater_t, item);
     }
 
-quiting:
+quitting:
     arkime_quit();
     int exitFunc = arkime_get_named_func("arkime_reader_thread_exit");
     arkime_call_named_func(exitFunc, 0, NULL);

@@ -205,7 +205,7 @@ Returns the destination port as a number.
 
 ### ArkimeHttpService.new(hostports, maxConnections, maxRequests)
 It is assumed that the same server will be contacted repeatedly, so for each unique host you first create a ArkimeHttpService object.
-* hostports = comma seperated list of base urls
+* hostports = comma separated list of base urls
 * maxConnections = Maximum number of connections allowed
 * maxRequests = Maximum number of outstanding requests
 * returns = the userdata server object for other calls
