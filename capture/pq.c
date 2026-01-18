@@ -46,7 +46,7 @@ struct ArkimePQ_t {
 /******************************************************************************/
 LOCAL int arkime_pq_cmp(const void *keyv, const ArkimePQItem_t *item)
 {
-    return memcmp(keyv, item->session->sessionId, MIN(((uint8_t *)keyv)[0], item->session->sessionId[0])) == 0;
+    return memcmp(keyv, item->session->sessionId, item->session->sessionId[0]) == 0;
 }
 /******************************************************************************/
 ArkimePQ_t *arkime_pq_alloc(int timeout, ArkimePQ_cb cb)
