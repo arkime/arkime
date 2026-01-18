@@ -132,7 +132,7 @@ foreach my $e (undef, "xor-2048", "aes-256-ctr") {
 }
 
 # Test decode by find the last encrypted  non compressed file
-$json = esGet("/tests_files/_search?q=node:test&sort=num:desc&size=20");
+$json = esGet("/tests_files/_search?q=node:test&sort=num:desc&size=40");
 foreach my $item (@{$json->{hits}->{hits}}) {
     next if (exists $item->{_source}->{uncompressedBits});
     next if (!exists $item->{_source}->{dek});

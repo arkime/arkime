@@ -1045,7 +1045,7 @@ LOCAL ArkimePacketRC arkime_packet_ip4(ArkimePacketBatch_t *batch, ArkimePacket_
 
         const int dropPort = ((uint32_t)tcphdr->th_dport * (uint32_t)tcphdr->th_sport) & 0xffff;
         if (packetDrop4S.drops[dropPort] &&
-            arkime_drophash_should_drop(&packetDrop4, dropPort, sessionId + 1, packet->ts.tv_sec)) {
+            arkime_drophash_should_drop(&packetDrop4, dropPort, sessionId + 4, packet->ts.tv_sec)) {
 
             return ARKIME_PACKET_IPPORT_DROPPED;
         }
@@ -1224,7 +1224,7 @@ LOCAL ArkimePacketRC arkime_packet_ip6(ArkimePacketBatch_t *batch, ArkimePacket_
 
             const int dropPort = ((uint32_t)tcphdr->th_dport * (uint32_t)tcphdr->th_sport) & 0xffff;
             if (packetDrop6S.drops[dropPort] &&
-                arkime_drophash_should_drop(&packetDrop6, dropPort, sessionId + 1, packet->ts.tv_sec)) {
+                arkime_drophash_should_drop(&packetDrop6, dropPort, sessionId + 4, packet->ts.tv_sec)) {
 
                 return ARKIME_PACKET_IPPORT_DROPPED;
             }
@@ -2279,9 +2279,9 @@ void arkime_packet_drophash_add(ArkimeSession_t *session, int which, int min)
     if (which == -1) {
         const int port = (htons(session->port1) * htons(session->port2)) & 0xffff;
         if (ARKIME_SESSION_v6(session)) {
-            arkime_drophash_add(&packetDrop6S, port, session->sessionId + 1, session->lastPacket.tv_sec, min * 60);
+            arkime_drophash_add(&packetDrop6S, port, session->sessionId + 4, session->lastPacket.tv_sec, min * 60);
         } else {
-            arkime_drophash_add(&packetDrop4S, port, session->sessionId + 1, session->lastPacket.tv_sec, min * 60);
+            arkime_drophash_add(&packetDrop4S, port, session->sessionId + 4, session->lastPacket.tv_sec, min * 60);
         }
     } else {
         // packetDrop is kept in network byte order

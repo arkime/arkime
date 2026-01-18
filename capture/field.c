@@ -702,11 +702,12 @@ const char *arkime_field_string_add(int pos, ArkimeSession_t *session, const cha
             string = g_strndup(string, len);
         g_ptr_array_add(field->sarray, (char *)string);
         goto added;
-    case ARKIME_FIELD_TYPE_STR_HASH:
+    case ARKIME_FIELD_TYPE_STR_HASH: {
         if (copy)
             string = g_strndup(string, len);
 
-        HASH_FIND_HASH(s_, *(field->shash), arkime_string_hash_len(string, len), string, hstring);
+        uint32_t hhash = arkime_string_hash_len(string, len);
+        HASH_FIND_HASH(s_, *(field->shash), hhash, string, hstring);
 
         if (hstring) {
             if (copy)
@@ -718,8 +719,9 @@ const char *arkime_field_string_add(int pos, ArkimeSession_t *session, const cha
         hstring->len = len;
         hstring->utf8 = 0;
         hstring->uw = 0;
-        HASH_ADD(s_, *(field->shash), hstring->str, hstring);
+        HASH_ADD_HASH(s_, *(field->shash), hhash, hstring->str, hstring);
         goto added;
+    }
     case ARKIME_FIELD_TYPE_STR_GHASH:
         if (copy)
             string = g_strndup(string, len);
@@ -869,8 +871,9 @@ const char *arkime_field_string_uw_add(int pos, ArkimeSession_t *session, const 
     field = session->fields[pos];
 
     switch (info->type) {
-    case ARKIME_FIELD_TYPE_STR_HASH:
-        HASH_FIND_HASH(s_, *(field->shash), arkime_string_hash_len(string, len), string, hstring);
+    case ARKIME_FIELD_TYPE_STR_HASH: {
+        uint32_t hhash = arkime_string_hash_len(string, len);
+        HASH_FIND_HASH(s_, *(field->shash), hhash, string, hstring);
 
         if (hstring) {
             return NULL;
@@ -883,12 +886,13 @@ const char *arkime_field_string_uw_add(int pos, ArkimeSession_t *session, const 
         hstring->len = len;
         hstring->utf8 = 0;
         hstring->uw = uw;
-        HASH_ADD(s_, *(field->shash), hstring->str, hstring);
+        HASH_ADD_HASH(s_, *(field->shash), hhash, hstring->str, hstring);
 
         JSON_SIZE_INCR(6 + 2 * len);
         if (info->ruleEnabled)
             arkime_rules_run_field_set(session, pos, (const gpointer) string);
         return string;
+    }
     default:
         LOGEXIT("ERROR - Not a string hash, expression: %s field: %s, tried to set '%.*s'", info->expression, info->dbFieldFull, len, string);
     }

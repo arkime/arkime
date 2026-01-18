@@ -111,114 +111,137 @@ void arkime_session_id6 (uint8_t *buf, const uint8_t UNUSED(*addr1), uint16_t UN
 }
 #else
 /******************************************************************************/
-static uint32_t zero = 0;
 void arkime_session_id (uint8_t *buf, uint32_t addr1, uint16_t port1, uint32_t addr2, uint16_t port2, uint16_t vlan, uint32_t vni)
 {
+    // Layout: [len:1][vlan/vni:3][addr1:4][addr2:4][port1:2][port2:2] = 16 bytes
+    // This layout ensures 4-byte values are aligned at offsets 4 and 8
     buf[0] = ARKIME_SESSIONID4_LEN;
-    if (addr1 < addr2) {
-        memcpy(buf + 1, &addr1, 4);
-        memcpy(buf + 5, &port1, 2);
-        memcpy(buf + 7, &addr2, 4);
-        memcpy(buf + 11, &port2, 2);
-    } else if (addr1 > addr2) {
-        memcpy(buf + 1, &addr2, 4);
-        memcpy(buf + 5, &port2, 2);
-        memcpy(buf + 7, &addr1, 4);
-        memcpy(buf + 11, &port1, 2);
-    } else if (ntohs(port1) < ntohs(port2)) {
-        memcpy(buf + 1, &addr1, 4);
-        memcpy(buf + 5, &port1, 2);
-        memcpy(buf + 7, &addr2, 4);
-        memcpy(buf + 11, &port2, 2);
-    } else {
-        memcpy(buf + 1, &addr2, 4);
-        memcpy(buf + 5, &port2, 2);
-        memcpy(buf + 7, &addr1, 4);
-        memcpy(buf + 11, &port1, 2);
-    }
+
+    // Write vlan/vni at bytes 1-3 (unaligned, but only 3 bytes)
     switch (sessionIdTracking) {
     case ARKIME_TRACKING_NONE:
-        memcpy(buf + 13, &zero, 3);
+        buf[1] = buf[2] = buf[3] = 0;
         break;
     case ARKIME_TRACKING_VLAN:
-        buf[13] = 0;
+        buf[1] = 0;
         if (collapseTable) {
             uint16_t value = GPOINTER_TO_UINT(g_hash_table_lookup(collapseTable, GINT_TO_POINTER(vlan)));
             if (value) {
                 value--;
-                memcpy(buf + 14, &value, 2);
+                buf[2] = value & 0xff;
+                buf[3] = (value >> 8) & 0xff;
                 break;
             }
         }
-        memcpy(buf + 14, &vlan, 2);
+        buf[2] = vlan & 0xff;
+        buf[3] = (vlan >> 8) & 0xff;
         break;
     case ARKIME_TRACKING_VNI:
         if (collapseTable) {
             uint32_t value = GPOINTER_TO_UINT(g_hash_table_lookup(collapseTable, GINT_TO_POINTER(vni)));
             if (value) {
                 value--;
-                memcpy(buf + 13, &value, 3);
+                buf[1] = value & 0xff;
+                buf[2] = (value >> 8) & 0xff;
+                buf[3] = (value >> 16) & 0xff;
                 break;
             }
         }
-        memcpy(buf + 13, &vni, 3);
+        buf[1] = vni & 0xff;
+        buf[2] = (vni >> 8) & 0xff;
+        buf[3] = (vni >> 16) & 0xff;
         break;
     } /* switch */
+
+    // Write addresses and ports at aligned offsets
+    if (addr1 < addr2) {
+        *(uint32_t *)(buf + 4) = addr1;
+        *(uint32_t *)(buf + 8) = addr2;
+        *(uint16_t *)(buf + 12) = port1;
+        *(uint16_t *)(buf + 14) = port2;
+    } else if (addr1 > addr2) {
+        *(uint32_t *)(buf + 4) = addr2;
+        *(uint32_t *)(buf + 8) = addr1;
+        *(uint16_t *)(buf + 12) = port2;
+        *(uint16_t *)(buf + 14) = port1;
+    } else if (ntohs(port1) < ntohs(port2)) {
+        *(uint32_t *)(buf + 4) = addr1;
+        *(uint32_t *)(buf + 8) = addr2;
+        *(uint16_t *)(buf + 12) = port1;
+        *(uint16_t *)(buf + 14) = port2;
+    } else {
+        *(uint32_t *)(buf + 4) = addr2;
+        *(uint32_t *)(buf + 8) = addr1;
+        *(uint16_t *)(buf + 12) = port2;
+        *(uint16_t *)(buf + 14) = port1;
+    }
 }
 /******************************************************************************/
 void arkime_session_id6 (uint8_t *buf, const uint8_t *addr1, uint16_t port1, const uint8_t *addr2, uint16_t port2, uint16_t vlan, uint32_t vni)
 {
+    // Layout: [len:1][vlan/vni:3][addr1:16][addr2:16][port1:2][port2:2] = 40 bytes
+    // This layout ensures addresses start at offset 4 (aligned) and ports at 36/38 (aligned)
     buf[0] = ARKIME_SESSIONID6_LEN;
-    int cmp = memcmp(addr1, addr2, 16);
-    if (cmp < 0) {
-        memcpy(buf + 1, addr1, 16);
-        memcpy(buf + 17, &port1, 2);
-        memcpy(buf + 19, addr2, 16);
-        memcpy(buf + 35, &port2, 2);
-    } else if (cmp > 0) {
-        memcpy(buf + 1, addr2, 16);
-        memcpy(buf + 17, &port2, 2);
-        memcpy(buf + 19, addr1, 16);
-        memcpy(buf + 35, &port1, 2);
-    } else if (ntohs(port1) < ntohs(port2)) {
-        memcpy(buf + 1, addr1, 16);
-        memcpy(buf + 17, &port1, 2);
-        memcpy(buf + 19, addr2, 16);
-        memcpy(buf + 35, &port2, 2);
-    } else {
-        memcpy(buf + 1, addr2, 16);
-        memcpy(buf + 17, &port2, 2);
-        memcpy(buf + 19, addr1, 16);
-        memcpy(buf + 35, &port1, 2);
-    }
+
+    // Write vlan/vni at bytes 1-3 (unaligned, but only 3 bytes)
     switch (sessionIdTracking) {
     case ARKIME_TRACKING_NONE:
-        memcpy(buf + 37, &zero, 3);
+        buf[1] = buf[2] = buf[3] = 0;
         break;
     case ARKIME_TRACKING_VLAN:
-        buf[37] = 0;
+        buf[1] = 0;
         if (collapseTable) {
             uint16_t value = GPOINTER_TO_UINT(g_hash_table_lookup(collapseTable, GINT_TO_POINTER(vlan)));
             if (value) {
                 value--;
-                memcpy(buf + 38, &value, 2);
+                buf[2] = value & 0xff;
+                buf[3] = (value >> 8) & 0xff;
                 break;
             }
         }
-        memcpy(buf + 38, &vlan, 2);
+        buf[2] = vlan & 0xff;
+        buf[3] = (vlan >> 8) & 0xff;
         break;
     case ARKIME_TRACKING_VNI:
         if (collapseTable) {
             uint32_t value = GPOINTER_TO_UINT(g_hash_table_lookup(collapseTable, GINT_TO_POINTER(vni)));
             if (value) {
                 value--;
-                memcpy(buf + 37, &value, 3);
+                buf[1] = value & 0xff;
+                buf[2] = (value >> 8) & 0xff;
+                buf[3] = (value >> 16) & 0xff;
                 break;
             }
         }
-        memcpy(buf + 37, &vni, 3);
+        buf[1] = vni & 0xff;
+        buf[2] = (vni >> 8) & 0xff;
+        buf[3] = (vni >> 16) & 0xff;
         break;
     } /* switch */
+
+    // Write addresses and ports at aligned offsets
+    int cmp = memcmp(addr1, addr2, 16);
+    if (cmp < 0) {
+        memcpy(buf + 4, addr1, 16);
+        memcpy(buf + 20, addr2, 16);
+        *(uint16_t *)(buf + 36) = port1;
+        *(uint16_t *)(buf + 38) = port2;
+    } else if (cmp > 0) {
+        memcpy(buf + 4, addr2, 16);
+        memcpy(buf + 20, addr1, 16);
+        *(uint16_t *)(buf + 36) = port2;
+        *(uint16_t *)(buf + 38) = port1;
+    } else if (ntohs(port1) < ntohs(port2)) {
+        memcpy(buf + 4, addr1, 16);
+        memcpy(buf + 20, addr2, 16);
+        *(uint16_t *)(buf + 36) = port1;
+        *(uint16_t *)(buf + 38) = port2;
+    } else {
+        memcpy(buf + 4, addr2, 16);
+        memcpy(buf + 20, addr1, 16);
+        *(uint16_t *)(buf + 36) = port2;
+        *(uint16_t *)(buf + 38) = port1;
+    }
 }
 #endif
 /******************************************************************************/
