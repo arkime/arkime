@@ -518,7 +518,8 @@ LOCAL int dns_add_host(ArkimeSession_t *session, DNS_t *dns, ArkimeStringHashStd
     ArkimeString_t *hstring;
 
     if (hosts) {
-        HASH_FIND_HASH(s_, *hosts, arkime_string_hash_len(host, hostlen), host, hstring);
+        uint32_t hhash = arkime_string_hash_len(host, hostlen);
+        HASH_FIND_HASH(s_, *hosts, hhash, host, hstring);
         if (!hstring) {
             hstring = ARKIME_TYPE_ALLOC(ArkimeString_t);
             if (uniSet) {
@@ -529,7 +530,7 @@ LOCAL int dns_add_host(ArkimeSession_t *session, DNS_t *dns, ArkimeStringHashStd
             hstring->len = hostlen;
             hstring->utf8 = 1;
             hstring->uw = 0;
-            HASH_ADD(s_, *hosts, hstring->str, hstring);
+            HASH_ADD_HASH(s_, *hosts, hhash, hstring->str, hstring);
             ARKIME_RULES_RUN_FIELD_SET(session, field, host);
             *jsonLen += HOST_IP_JSON_LEN;
         }
@@ -674,13 +675,14 @@ LOCAL void dns_parser(ArkimeSession_t *session, int kind, const uint8_t *data, i
             if (g_utf8_validate(dns->query.hostname, hostlen, NULL)) {
                 ArkimeString_t *element;
 
-                HASH_FIND(s_, dns->hosts, dns->query.hostname, element);
+                uint32_t hhash = arkime_string_hash_len(dns->query.hostname, hostlen);
+                HASH_FIND_HASH(s_, dns->hosts, hhash, dns->query.hostname, element);
                 if (!element) {
                     element = ARKIME_TYPE_ALLOC0(ArkimeString_t);
                     element->str = g_strndup(dns->query.hostname, hostlen);
                     element->len = hostlen;
                     element->utf8 = 1;
-                    HASH_ADD(s_, dns->hosts, element->str, element);
+                    HASH_ADD_HASH(s_, dns->hosts, hhash, element->str, element);
                     ARKIME_RULES_RUN_FIELD_SET(session, dnsHostField, element->str);
                     jsonLen += HOST_IP_JSON_LEN;
                 }

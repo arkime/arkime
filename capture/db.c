@@ -71,6 +71,8 @@ LOCAL char             *ecsEventDataset;
 
 LOCAL int               arkime_session_save_func;
 
+LOCAL GRegex           *numRegex;
+LOCAL GRegex           *numHexRegex;
 
 extern uint64_t         packetStats[ARKIME_PACKET_MAX];
 
@@ -2083,8 +2085,6 @@ LOCAL void arkime_db_mkpath(char *path)
  */
 char *arkime_db_create_file_full(const struct timeval *firstPacket, const char *name, uint64_t size, int locked, uint32_t *id, ...)
 {
-    static const GRegex *numRegex;
-    static const GRegex *numHexRegex;
     char               key[200];
     int                key_len;
     uint32_t           num;
@@ -2092,11 +2092,6 @@ char *arkime_db_create_file_full(const struct timeval *firstPacket, const char *
     char              *json = arkime_http_get_buffer(ARKIME_HTTP_BUFFER_SIZE);
     BSB                jbsb;
     const uint64_t     fp = firstPacket->tv_sec;
-
-    if (!numRegex) {
-        numRegex = g_regex_new("#NUM#", 0, 0, 0);
-        numHexRegex = g_regex_new("#NUMHEX#", 0, 0, 0);
-    }
 
     BSB_INIT(jbsb, json, ARKIME_HTTP_BUFFER_SIZE);
 
@@ -2925,6 +2920,9 @@ void arkime_db_init()
     }
 
     arkime_session_save_func = arkime_parsers_get_named_func("arkime_session_save");
+
+    numRegex = g_regex_new("#NUM#", 0, 0, 0);
+    numHexRegex = g_regex_new("#NUMHEX#", 0, 0, 0);
 }
 /******************************************************************************/
 void arkime_db_exit()
@@ -2975,6 +2973,9 @@ void arkime_db_exit()
         ipTree4 = 0;
         ipTree6 = 0;
     }
+
+    g_regex_unref(numRegex);
+    g_regex_unref(numHexRegex);
 
     if (config.debug) {
         LOG("totalPackets: %" PRId64 " totalSessions: %" PRId64 " writtenBytes: %" PRId64 " unwrittenBytes: %" PRId64 " pstats: %" PRIu64 "/%" PRIu64 "/%" PRIu64 "/%" PRIu64 "/%" PRIu64 "/%" PRIu64 "/%" PRIu64,

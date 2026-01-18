@@ -470,9 +470,10 @@ LOCAL int arkime_hp_cb_on_header_value (http_parser *parser, const char *at, siz
         http->inValue |= (1 << http->which);
 
         const char *header = http->header[http->which];
-        arkime_plugins_cb_hp_ohfr(session, parser, header, strlen(header));
-        char *lower = g_ascii_strdown(header, -1);
-        arkime_plugins_cb_hp_ohf(session, parser, lower, strlen(lower));
+        const int headerLen = strlen(header);
+        arkime_plugins_cb_hp_ohfr(session, parser, header, headerLen);
+        char *lower = g_ascii_strdown(header, headerLen);
+        arkime_plugins_cb_hp_ohf(session, parser, lower, headerLen);
 
         if (http->which == http->urlWhich)
             HASH_FIND(s_, httpReqHeaders, lower, hstring);

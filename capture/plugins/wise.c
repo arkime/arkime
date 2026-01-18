@@ -403,7 +403,8 @@ LOCAL void wise_lookup(ArkimeSession_t *session, WiseRequest_t *request, char *v
 
     ARKIME_LOCK(item);
     WiseItem_t *wi;
-    HASH_FIND(wih_, types[type].itemHash, value, wi);
+    uint32_t hhash = arkime_string_hash(value);
+    HASH_FIND_HASH(wih_, types[type].itemHash, hhash, value, wi);
 
     if (wi) {
         // Already being looked up
@@ -441,7 +442,7 @@ LOCAL void wise_lookup(ArkimeSession_t *session, WiseRequest_t *request, char *v
         wi->key          = g_strdup(value);
         wi->type         = type;
         wi->sessionsSize = 4;
-        HASH_ADD(wih_, types[type].itemHash, wi->key, wi);
+        HASH_ADD_HASH(wih_, types[type].itemHash, hhash, wi->key, wi);
     }
 
     wi->sessions = ARKIME_SIZE_ALLOC("sessions", sizeof(ArkimeSession_t *) * wi->sessionsSize);

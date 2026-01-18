@@ -566,12 +566,13 @@ LOCAL void tagger_load_file_cb(int UNUSED(code), uint8_t *data, int data_len, gp
 
         TaggerString_t *tstring;
 
-        HASH_FIND(s_, *hash, parts[0], tstring);
+        uint32_t hhash = arkime_string_hash(parts[0]);
+        HASH_FIND_HASH(s_, *hash, hhash, parts[0], tstring);
         if (!tstring) {
             tstring = ARKIME_TYPE_ALLOC(TaggerString_t);
             tstring->str = strdup(parts[0]); // Need to strdup since file might be unloaded
             tstring->infos = g_ptr_array_new_with_free_func(tagger_info_free);
-            HASH_ADD(s_, *hash, tstring->str, tstring);
+            HASH_ADD_HASH(s_, *hash, hhash, tstring->str, tstring);
         }
         g_ptr_array_add(tstring->infos, info);
     } /* for elements */
@@ -634,11 +635,12 @@ LOCAL void tagger_fetch_files_cb(int UNUSED(code), uint8_t *data, int data_len, 
 
 
         TaggerFile_t *file;
-        HASH_FIND(s_, allFiles, id, file);
+        uint32_t hhash = arkime_string_hash(id);
+        HASH_FIND_HASH(s_, allFiles, hhash, id, file);
         if (!file) {
             file = ARKIME_TYPE_ALLOC0(TaggerFile_t);
             file->str = id;
-            HASH_ADD(s_, allFiles, file->str, file);
+            HASH_ADD_HASH(s_, allFiles, hhash, file->str, file);
             tagger_load_file(file);
             continue;
         }
