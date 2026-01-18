@@ -445,32 +445,35 @@ gchar *arkime_db_community_id(const ArkimeSession_t *session)
 
     g_checksum_update(checksum, (guchar *)&seed, 2);
 
+    // SessionId layout: [len:1][vlan/vni:3][addr1][addr2][port1:2][port2:2]
+    // IPv4: addr at +4 and +8 (4 bytes each), ports at +12 and +14
+    // IPv6: addr at +4 and +20 (16 bytes each), ports at +36 and +38
     if (ARKIME_SESSION_v6(session)) {
         // For v6 we sort the same as community id
-        g_checksum_update(checksum, (guchar *)session->sessionId + 1, 16);
-        g_checksum_update(checksum, (guchar *)session->sessionId + 19, 16);
+        g_checksum_update(checksum, (guchar *)session->sessionId + 4, 16);
+        g_checksum_update(checksum, (guchar *)session->sessionId + 20, 16);
         g_checksum_update(checksum, (guchar *)&session->ipProtocol, 1);
         g_checksum_update(checksum, (guchar *)&zero, 1);
-        g_checksum_update(checksum, (guchar *)session->sessionId + 17, 2);
-        g_checksum_update(checksum, (guchar *)session->sessionId + 35, 2);
+        g_checksum_update(checksum, (guchar *)session->sessionId + 36, 2);
+        g_checksum_update(checksum, (guchar *)session->sessionId + 38, 2);
     } else {
         // For v4 because of byte order we have a different sort for ip but not port
-        int cmp = memcmp(session->sessionId + 1, session->sessionId + 7, 4);
+        int cmp = memcmp(session->sessionId + 4, session->sessionId + 8, 4);
 
         if (cmp <= 0) {
-            g_checksum_update(checksum, (guchar *)session->sessionId + 1, 4);
-            g_checksum_update(checksum, (guchar *)session->sessionId + 7, 4);
+            g_checksum_update(checksum, (guchar *)session->sessionId + 4, 4);
+            g_checksum_update(checksum, (guchar *)session->sessionId + 8, 4);
             g_checksum_update(checksum, (guchar *)&session->ipProtocol, 1);
             g_checksum_update(checksum, (guchar *)&zero, 1);
-            g_checksum_update(checksum, (guchar *)session->sessionId + 5, 2);
-            g_checksum_update(checksum, (guchar *)session->sessionId + 11, 2);
+            g_checksum_update(checksum, (guchar *)session->sessionId + 12, 2);
+            g_checksum_update(checksum, (guchar *)session->sessionId + 14, 2);
         }  else {
-            g_checksum_update(checksum, (guchar *)session->sessionId + 7, 4);
-            g_checksum_update(checksum, (guchar *)session->sessionId + 1, 4);
+            g_checksum_update(checksum, (guchar *)session->sessionId + 8, 4);
+            g_checksum_update(checksum, (guchar *)session->sessionId + 4, 4);
             g_checksum_update(checksum, (guchar *)&session->ipProtocol, 1);
             g_checksum_update(checksum, (guchar *)&zero, 1);
-            g_checksum_update(checksum, (guchar *)session->sessionId + 11, 2);
-            g_checksum_update(checksum, (guchar *)session->sessionId + 5, 2);
+            g_checksum_update(checksum, (guchar *)session->sessionId + 14, 2);
+            g_checksum_update(checksum, (guchar *)session->sessionId + 12, 2);
         }
     }
 
