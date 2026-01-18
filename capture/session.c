@@ -111,34 +111,33 @@ void arkime_session_id6 (uint8_t *buf, const uint8_t UNUSED(*addr1), uint16_t UN
 }
 #else
 /******************************************************************************/
-static uint32_t zero = 0;
 void arkime_session_id (uint8_t *buf, uint32_t addr1, uint16_t port1, uint32_t addr2, uint16_t port2, uint16_t vlan, uint32_t vni)
 {
     buf[0] = ARKIME_SESSIONID4_LEN;
     if (addr1 < addr2) {
-        memcpy(buf + 1, &addr1, 4);
-        memcpy(buf + 5, &port1, 2);
-        memcpy(buf + 7, &addr2, 4);
-        memcpy(buf + 11, &port2, 2);
+        *(uint32_t *)(buf + 1) = addr1;
+        *(uint16_t *)(buf + 5) = port1;
+        *(uint32_t *)(buf + 7) = addr2;
+        *(uint16_t *)(buf + 11) = port2;
     } else if (addr1 > addr2) {
-        memcpy(buf + 1, &addr2, 4);
-        memcpy(buf + 5, &port2, 2);
-        memcpy(buf + 7, &addr1, 4);
-        memcpy(buf + 11, &port1, 2);
+        *(uint32_t *)(buf + 1) = addr2;
+        *(uint16_t *)(buf + 5) = port2;
+        *(uint32_t *)(buf + 7) = addr1;
+        *(uint16_t *)(buf + 11) = port1;
     } else if (ntohs(port1) < ntohs(port2)) {
-        memcpy(buf + 1, &addr1, 4);
-        memcpy(buf + 5, &port1, 2);
-        memcpy(buf + 7, &addr2, 4);
-        memcpy(buf + 11, &port2, 2);
+        *(uint32_t *)(buf + 1) = addr1;
+        *(uint16_t *)(buf + 5) = port1;
+        *(uint32_t *)(buf + 7) = addr2;
+        *(uint16_t *)(buf + 11) = port2;
     } else {
-        memcpy(buf + 1, &addr2, 4);
-        memcpy(buf + 5, &port2, 2);
-        memcpy(buf + 7, &addr1, 4);
-        memcpy(buf + 11, &port1, 2);
+        *(uint32_t *)(buf + 1) = addr2;
+        *(uint16_t *)(buf + 5) = port2;
+        *(uint32_t *)(buf + 7) = addr1;
+        *(uint16_t *)(buf + 11) = port1;
     }
     switch (sessionIdTracking) {
     case ARKIME_TRACKING_NONE:
-        memcpy(buf + 13, &zero, 3);
+        buf[13] = buf[14] = buf[15] = 0;
         break;
     case ARKIME_TRACKING_VLAN:
         buf[13] = 0;
@@ -146,11 +145,11 @@ void arkime_session_id (uint8_t *buf, uint32_t addr1, uint16_t port1, uint32_t a
             uint16_t value = GPOINTER_TO_UINT(g_hash_table_lookup(collapseTable, GINT_TO_POINTER(vlan)));
             if (value) {
                 value--;
-                memcpy(buf + 14, &value, 2);
+                *(uint16_t *)(buf + 14) = value;
                 break;
             }
         }
-        memcpy(buf + 14, &vlan, 2);
+        *(uint16_t *)(buf + 14) = vlan;
         break;
     case ARKIME_TRACKING_VNI:
         if (collapseTable) {
@@ -172,28 +171,28 @@ void arkime_session_id6 (uint8_t *buf, const uint8_t *addr1, uint16_t port1, con
     int cmp = memcmp(addr1, addr2, 16);
     if (cmp < 0) {
         memcpy(buf + 1, addr1, 16);
-        memcpy(buf + 17, &port1, 2);
+        *(uint16_t *)(buf + 17) = port1;
         memcpy(buf + 19, addr2, 16);
-        memcpy(buf + 35, &port2, 2);
+        *(uint16_t *)(buf + 35) = port2;
     } else if (cmp > 0) {
         memcpy(buf + 1, addr2, 16);
-        memcpy(buf + 17, &port2, 2);
+        *(uint16_t *)(buf + 17) = port2;
         memcpy(buf + 19, addr1, 16);
-        memcpy(buf + 35, &port1, 2);
+        *(uint16_t *)(buf + 35) = port1;
     } else if (ntohs(port1) < ntohs(port2)) {
         memcpy(buf + 1, addr1, 16);
-        memcpy(buf + 17, &port1, 2);
+        *(uint16_t *)(buf + 17) = port1;
         memcpy(buf + 19, addr2, 16);
-        memcpy(buf + 35, &port2, 2);
+        *(uint16_t *)(buf + 35) = port2;
     } else {
         memcpy(buf + 1, addr2, 16);
-        memcpy(buf + 17, &port2, 2);
+        *(uint16_t *)(buf + 17) = port2;
         memcpy(buf + 19, addr1, 16);
-        memcpy(buf + 35, &port1, 2);
+        *(uint16_t *)(buf + 35) = port1;
     }
     switch (sessionIdTracking) {
     case ARKIME_TRACKING_NONE:
-        memcpy(buf + 37, &zero, 3);
+        buf[37] = buf[38] = buf[39] = 0;
         break;
     case ARKIME_TRACKING_VLAN:
         buf[37] = 0;
@@ -201,11 +200,11 @@ void arkime_session_id6 (uint8_t *buf, const uint8_t *addr1, uint16_t port1, con
             uint16_t value = GPOINTER_TO_UINT(g_hash_table_lookup(collapseTable, GINT_TO_POINTER(vlan)));
             if (value) {
                 value--;
-                memcpy(buf + 38, &value, 2);
+                *(uint16_t *)(buf + 38) = value;
                 break;
             }
         }
-        memcpy(buf + 38, &vlan, 2);
+        *(uint16_t *)(buf + 38) = vlan;
         break;
     case ARKIME_TRACKING_VNI:
         if (collapseTable) {
