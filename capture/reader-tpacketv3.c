@@ -268,7 +268,7 @@ void reader_tpacketv3_init(char *UNUSED(name))
             infos[i][t].map = mmap(NULL, (size_t)infos[i][t].req.tp_block_size * infos[i][t].req.tp_block_nr,
                                    PROT_READ | PROT_WRITE, MAP_SHARED | MAP_LOCKED, infos[i][t].fd, 0);
             if (unlikely(infos[i][t].map == MAP_FAILED)) {
-                CONFIGEXIT("mmap failure in reader_tpacketv3_init, %d: %s. Tried to allocate %" PRId64 " bytes (tpacketv3BlockSize: %d * 64) which was probbaly too large for this host, you probably need to reduce one of the values.", errno, strerror(errno), (size_t)infos[i][t].req.tp_block_size * infos[i][t].req.tp_block_nr, blocksize);
+                CONFIGEXIT("mmap failure in reader_tpacketv3_init, %d: %s. Tried to allocate %" PRId64 " bytes (tpacketv3BlockSize: %d * 64) which was probably too large for this host, you probably need to reduce one of the values.", errno, strerror(errno), (size_t)infos[i][t].req.tp_block_size * infos[i][t].req.tp_block_nr, blocksize);
             }
             infos[i][t].rd = malloc(infos[i][t].req.tp_block_nr * sizeof(struct iovec));
 

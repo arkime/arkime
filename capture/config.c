@@ -279,11 +279,11 @@ uint32_t arkime_config_int(GKeyFile *keyfile, const char *key, uint32_t d, uint3
     }
 
     if (value < min) {
-        LOG ("INFO: Resetting %s since %u is less than the min %u", key, value, min);
+        LOG("INFO: Resetting %s since %u is less than the min %u", key, value, min);
         value = min;
     }
     if (value > max) {
-        LOG ("INFO: Resetting %s since %u is greater than the max %u", key, value, max);
+        LOG("INFO: Resetting %s since %u is greater than the max %u", key, value, max);
         value = max;
     }
 
@@ -634,7 +634,7 @@ LOCAL void arkime_config_load()
     if (!status || error) {
         if (config.noConfigOption) {
             LOG("Couldn't load config file (%s) %s", config.configFile, (error ? error->message : ""));
-            status = g_key_file_load_from_data(keyfile, (gchar *)"[default]\n", (gsize) -1, G_KEY_FILE_NONE, &error);
+            g_key_file_load_from_data(keyfile, (gchar *)"[default]\n", (gsize) -1, G_KEY_FILE_NONE, &error);
         } else
             CONFIGEXIT("Couldn't load config file (%s) %s", config.configFile, (error ? error->message : ""));
     }

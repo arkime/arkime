@@ -344,7 +344,7 @@ LOCAL int tcp_packet_process(ArkimeSession_t *const session, ArkimePacket_t *con
             }
         }
 
-        if ((void * )ftd == (void * )tcpData) {
+        if ((void *)ftd == (void *)tcpData) {
             DLL_PUSH_HEAD(td_, tcpData, td);
         }
 

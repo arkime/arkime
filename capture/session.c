@@ -1178,7 +1178,7 @@ void arkime_session_process_commands(int thread)
             cmd->func(cmd->session, cmd->uw1, cmd->uw2);
             break;
         default:
-            LOG ("Unknown cmd %d", cmd->cmd);
+            LOG("Unknown cmd %d", cmd->cmd);
         }
         ARKIME_TYPE_FREE(ArkimeSesCmd_t, cmd);
     }

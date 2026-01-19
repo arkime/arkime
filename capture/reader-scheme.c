@@ -136,7 +136,7 @@ LOCAL void arkime_reader_scheme_load_thread(const char *uri, ArkimeSchemeFlags f
 {
     reader_scheme_pause();
 
-    LOG ("Processing %s", uri);
+    LOG("Processing %s", uri);
     ArkimeScheme_t *readerScheme = uri2scheme(uri);
     if (!readerScheme) {
         LOG("ERROR - Unknown scheme for %s", uri);

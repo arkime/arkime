@@ -97,7 +97,7 @@ LOCAL void scheme_file_monitor_dir(const char *dirname, ArkimeSchemeFlags flags,
 
     int rc = inotify_add_watch(monitorFd, dirname, IN_CLOSE_WRITE | IN_CREATE);
     if (rc == -1) {
-        LOG ("WARNING - Couldn't watch %s %s", dirname, strerror(errno));
+        LOG("WARNING - Couldn't watch %s %s", dirname, strerror(errno));
         return;
     } else {
         SchemeWatch_t *sw = ARKIME_TYPE_ALLOC(SchemeWatch_t);

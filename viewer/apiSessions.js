@@ -2658,7 +2658,7 @@ class SessionAPIs {
 
       SessionAPIs.sessionsListFromIds(req, ids, ['tags', 'node'], (err, list) => {
         if (!list.length) {
-          return res.serverError(200, 'No sessions to remove tags to');
+          return res.serverError(200, 'No sessions to remove tags from');
         }
         SessionAPIs.#removeTagsList(tags, list, async () => {
           await Db.refresh('sessions*');

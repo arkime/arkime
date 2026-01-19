@@ -2766,7 +2766,7 @@ int arkime_db_can_quit()
 
             arkime_db_flush_gfunc(GINT_TO_POINTER(1));
             if (config.debug)
-                LOG ("Can't quit, sJson[%d] %u", thread, (uint32_t)BSB_LENGTH(dbInfo[thread].bsb));
+                LOG("Can't quit, sJson[%d] %u", thread, (uint32_t)BSB_LENGTH(dbInfo[thread].bsb));
             return 1;
         }
         ARKIME_UNLOCK(dbInfo[thread].lock);
@@ -2774,7 +2774,7 @@ int arkime_db_can_quit()
 
     if (arkime_http_queue_length(esServer) > 0) {
         if (config.debug)
-            LOG ("Can't quit, arkime_http_queue_length(esServer) %d", arkime_http_queue_length(esServer));
+            LOG("Can't quit, arkime_http_queue_length(esServer) %d", arkime_http_queue_length(esServer));
         return 1;
     }
 

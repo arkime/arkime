@@ -787,7 +787,7 @@ LOCAL gboolean arkime_quit_gfunc (gpointer UNUSED(user_data))
         int val = canQuitFuncs[i]();
         if (val != 0) {
             if (config.debug && canQuitNames[i]) {
-                LOG ("Can't quit, %s is %d", canQuitNames[i], val);
+                LOG("Can't quit, %s is %d", canQuitNames[i], val);
             }
             return G_SOURCE_CONTINUE;
         }
