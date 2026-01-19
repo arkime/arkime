@@ -258,7 +258,7 @@ if [ "$UNAME" = "Darwin" ]; then
 fi
 
 if [ "$UNAME" = "FreeBSD" ]; then
-  sudo pkg install -y gcc wget curl pcre flex bison gettext glib gmake yara lua53 librdkafka pkgconf node22 npm-node22 libyaml autotools libmaxminddb libuuid python312 libinotify
+  sudo pkg install -y gcc wget curl pcre2 flex bison gettext glib gmake yara lua53 librdkafka pkgconf node22 npm-node22 libyaml autotools libmaxminddb libuuid python312 libinotify
   MAKE=gmake
   DOTHIRDPARTY=0
   DOKAFKA=1
