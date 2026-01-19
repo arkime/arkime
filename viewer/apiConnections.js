@@ -529,8 +529,8 @@ class ConnectionAPIs {
 
       res.write('Source, Destination, Sessions');
       const displayFields = {};
+      const map = JSON.parse(fieldsMap);
       for (const field of fields) {
-        const map = JSON.parse(fieldsMap);
         for (const f in map) {
           if (map[f].dbField === field) {
             const friendlyName = map[f].friendlyName;

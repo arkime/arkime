@@ -171,7 +171,7 @@ ArkimePacket_t *arkime_packet_alloc()
 }
 
 /******************************************************************************/
-void arkime_packet_freelist_init()
+LOCAL void arkime_packet_freelist_init()
 {
     uint32_t poolSize = (config.maxPacketsInQueue * config.packetThreads) + (config.interfaceCnt * 64);
 
