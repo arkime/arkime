@@ -813,7 +813,7 @@ typedef struct {
                     name, (size_t)(size), __FILE__, __LINE__); \
         } \
         (ptr) = (void *)_tmp_ptr; \
-    } while(0)
+    } while (0)
 
 // pcap_file_header
 typedef struct {
@@ -874,8 +874,8 @@ extern ARKIME_LOCK_EXTERN(LOG);
     } \
 } while(0) /* no trailing ; */
 
-#define LOGEXIT(...) do { config.quiet = FALSE; LOG(__VA_ARGS__); exit(1); } while(0) /* no trailing ; */
-#define CONFIGEXIT(...) do { printf("vvvvvvvvvvvvvvvvvvvvvvvvv IMPORTANT vvvvvvvvvvvvvvvvvvvvvvvvv\n"); printf("FATAL CONFIG ERROR - " __VA_ARGS__); printf("\n^^^^^^^^^^^^^^^^^^^^^^^^^ IMPORTANT ^^^^^^^^^^^^^^^^^^^^^^^^^\n");exit(1); } while(0) /* no trailing ; */
+#define LOGEXIT(...) do { config.quiet = FALSE; LOG(__VA_ARGS__); exit(1); } while (0) /* no trailing ; */
+#define CONFIGEXIT(...) do { printf("vvvvvvvvvvvvvvvvvvvvvvvvv IMPORTANT vvvvvvvvvvvvvvvvvvvvvvvvv\n"); printf("FATAL CONFIG ERROR - " __VA_ARGS__); printf("\n^^^^^^^^^^^^^^^^^^^^^^^^^ IMPORTANT ^^^^^^^^^^^^^^^^^^^^^^^^^\n");exit(1); } while (0) /* no trailing ; */
 #define REMOVEDCONFIG(_var,_help) do { if (arkime_config_str(NULL, _var, NULL) != NULL) CONFIGEXIT("Setting '" _var "' removed - " _help); } while (0) /* no trailing ; */
 
 #define LOG_RATE(rate, ...) do { \
@@ -1133,13 +1133,13 @@ void  arkime_parsers_classifier_register_sctp_internal(const char *name, void *u
 
 #define  ARKIME_PARSERS_PORT_UDP_SRC 0x01
 #define  ARKIME_PARSERS_PORT_UDP_DST 0x02
-#define  ARKIME_PARSERS_PORT_UDP     ARKIME_PARSERS_PORT_UDP_SRC | ARKIME_PARSERS_PORT_UDP_DST
+#define  ARKIME_PARSERS_PORT_UDP     (ARKIME_PARSERS_PORT_UDP_SRC | ARKIME_PARSERS_PORT_UDP_DST)
 #define  ARKIME_PARSERS_PORT_TCP_SRC 0x04
 #define  ARKIME_PARSERS_PORT_TCP_DST 0x08
-#define  ARKIME_PARSERS_PORT_TCP     ARKIME_PARSERS_PORT_TCP_SRC | ARKIME_PARSERS_PORT_TCP_DST
+#define  ARKIME_PARSERS_PORT_TCP     (ARKIME_PARSERS_PORT_TCP_SRC | ARKIME_PARSERS_PORT_TCP_DST)
 #define  ARKIME_PARSERS_PORT_SCTP_SRC 0x10
 #define  ARKIME_PARSERS_PORT_SCTP_DST 0x20
-#define  ARKIME_PARSERS_PORT_SCTP     ARKIME_PARSERS_PORT_SCTP_SRC | ARKIME_PARSERS_PORT_SCTP_DST
+#define  ARKIME_PARSERS_PORT_SCTP     (ARKIME_PARSERS_PORT_SCTP_SRC | ARKIME_PARSERS_PORT_SCTP_DST)
 
 void  arkime_parsers_classifier_register_port_internal(const char *name, void *uw, uint16_t port, uint32_t type, ArkimeClassifyFunc func, size_t sessionsize, int apiversion);
 #define arkime_parsers_classifier_register_port(name, uw, port, type, func) arkime_parsers_classifier_register_port_internal(name, uw, port, type, func, sizeof(ArkimeSession_t), ARKIME_API_VERSION)
