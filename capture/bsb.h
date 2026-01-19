@@ -94,7 +94,7 @@ do {                                                \
 
 #define BSB_EXPORT_ptr(b, x, size)                \
 do {                                              \
-    if ((x || size == 0) &&                       \
+    if (((x) != NULL || size == 0) &&             \
         (b).ptr + size <= (b).end &&              \
         (b).ptr + size >= (b).buf) {              \
         memcpy((b).ptr, x, size);                 \
