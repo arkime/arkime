@@ -194,7 +194,7 @@ sub showHelp($)
     print "    --reverse                  - Optimize from most recent to oldest\n";
     print "    --shardsPerNode <shards>   - Number of shards per node or use \"null\" to let OpenSearch/Elasticsearch decide, default shards*replicas/nodes\n";
     print "    --warmafter <wafter>       - Set molochwarm on indices after <wafter> <type>\n";
-    print "    --optmizewarm              - Only optimize warm green indices\n";
+    print "    --optimizewarm             - Only optimize warm green indices\n";
     print "  optimize                     - Optimize all Arkime indices in OpenSearch/Elasticsearch\n";
     print "    --segments <num>           - Number of segments to optimize sessions to, default 1\n";
     print "  optimize-admin               - Optimize only admin indices in OpenSearch/Elasticsearch, use with ILM\n";
@@ -206,7 +206,7 @@ sub showHelp($)
     print "       file                    - File that includes a comma or newline separated list of values\n";
     print "    --type <type>              - Type of shortcut = string, ip, number, default is string\n";
     print "    --shareRoles <roles>       - Share to roles (comma separated list of roles)\n";
-    print "    --shareUsers <users>       - Share to specific users (comma seprated list of userIds)\n";
+    print "    --shareUsers <users>       - Share to specific users (comma separated list of userIds)\n";
     print "    --description <description>- Description of the shortcut\n";
     print "    --locked                   - Whether the shortcut is locked and cannot be modified by the web interface\n";
     print "  shrink <index> <node> <num>  - Shrink a session index\n";
@@ -6495,6 +6495,63 @@ sub parseArgs {
     }
 }
 ################################################################################
+sub checkPreviousSettings {
+    my $stemplate = esGet("/_template/${PREFIX}sessions3_template?flat_settings", 1)->{"${PREFIX}sessions3_template"};
+    if (!defined $stemplate) {
+        return;
+    }
+
+    $REPLICAS = 0 if ($REPLICAS < 0);
+    my $shardsPerNode = ceil($SHARDS * ($REPLICAS+1) / $main::numberOfNodes);
+    $shardsPerNode = $SHARDSPERNODE if ($SHARDSPERNODE eq "null" || $SHARDSPERNODE > $shardsPerNode);
+
+    my $needNewline = 0;
+
+    if ($REPLICAS != int($stemplate->{settings}->{"index.number_of_replicas"})) {
+        printf "WARNING: Previous number of replicas was %d, you are changing to %d. For old behaviour add:  --replicas %d\n",
+                int($stemplate->{settings}->{"index.number_of_replicas"}), $REPLICAS,
+                int($stemplate->{settings}->{"index.number_of_replicas"});
+        $needNewline = 1;
+    }
+
+    if ($SHARDS != int($stemplate->{settings}->{"index.number_of_shards"})) {
+        printf "WARNING: Previous number of shards was %d, you are changing to %d. For old behaviour add:  --shards %d\n",
+                int($stemplate->{settings}->{"index.number_of_shards"}), $SHARDS,
+                int($stemplate->{settings}->{"index.number_of_shards"});
+        $needNewline = 1;
+    }
+
+    if ($shardsPerNode != int($stemplate->{settings}->{"index.routing.allocation.total_shards_per_node"})) {
+        printf "WARNING: Previous shardsPerNode was %d, you are changing to %d. For old behaviour add:  --shardsPerNode %d\n",
+                int($stemplate->{settings}->{"index.routing.allocation.total_shards_per_node"}),
+                $shardsPerNode,
+                int($stemplate->{settings}->{"index.routing.allocation.total_shards_per_node"});
+        $needNewline = 1;
+    }
+
+    if ("${REFRESH}s" ne $stemplate->{settings}->{"index.refresh_interval"}) {
+        printf "WARNING: Previous refresh interval was %d, you are changing to %d. For old behaviour add:  --refresh %d\n",
+                substr($stemplate->{settings}->{"index.refresh_interval"}, 0, -1),
+                $REFRESH,
+                substr($stemplate->{settings}->{"index.refresh_interval"}, 0, -1);
+        $needNewline = 1;
+    }
+
+    if (!$DOILM && (exists $stemplate->{settings}->{"index.lifecycle.name"})) {
+        printf "WARNING: Previously ILM was enabled, now it isn't. For old behaviour add:  --ilm\n";
+        $needNewline = 1;
+    }
+
+    if ($DOILM && !(exists $stemplate->{settings}->{"index.lifecycle.name"})) {
+        printf "WARNING: Previously ILM was disabled, now it is. For old behaviour remove:  --ilm\n";
+        $needNewline = 1;
+    }
+
+    if ($needNewline) {
+        print "\n";
+    }
+}
+################################################################################
 while (@ARGV > 0 && substr($ARGV[0], 0, 1) eq "-") {
     if ($ARGV[0] =~ /(-v+|--verbose)$/) {
          $verbose += ($ARGV[0] =~ tr/v//);
@@ -6529,7 +6586,7 @@ while (@ARGV > 0 && substr($ARGV[0], 0, 1) eq "-") {
             system ("stty echo 2> /dev/null");
         }
     } else {
-        showHelp("Unknkown global option $ARGV[0]")
+        showHelp("Unknown global option $ARGV[0]")
     }
     shift @ARGV;
 }
@@ -6702,7 +6759,7 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
         print $fh to_json($data);
         close($fh);
     }
-    logmsg "Exporting aliaes...\n";
+    logmsg "Exporting aliases...\n";
 
     my $aliases = join(',', @indices);
     $aliases = "/_cat/aliases/${aliases}?format=json";
@@ -6944,7 +7001,7 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
 
     my $existingShortcut;
     foreach my $shortcut (@{$shortcuts->{hits}->{hits}}) {
-      if ($shortcut->{_source}->{name} == $shortcutName) {
+      if ($shortcut->{_source}->{name} eq $shortcutName) {
         $existingShortcut = $shortcut;
         last;
       }
@@ -7113,6 +7170,7 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
     exit 0;
 } elsif ($ARGV[1] eq "info") {
     dbVersion(0);
+    my $stemplate = esGet("/_template/${PREFIX}sessions3_template?flat_settings", 1)->{"${PREFIX}sessions3_template"};
     my $esversion = dbESVersion();
     my $catNodes = esGet("/_cat/nodes?format=json&bytes=b&h=name,diskTotal,role");
     my $status = esGet("/_stats/docs,store", 1);
@@ -7161,7 +7219,12 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
     printf "Cluster Name:        %17s\n", $esversion->{cluster_name};
     printf "ES Version:          %17s\n", $esversion->{version}->{number};
     printf "DB Version:          %17s\n", $main::versionNumber;
-    printf "ES Data Nodes:       %17s/%s\n", commify($dataNodes), commify($totalNodes);
+    if ($stemplate) {
+        printf "Tmpl Shards:         %17s\n", $stemplate->{settings}->{"index.number_of_shards"};
+        printf "Tmpl ShardsPerNode:  %17s\n", $stemplate->{settings}->{"index.routing.allocation.total_shards_per_node"};
+        printf "Tmpl Replicas:       %17s\n", $stemplate->{settings}->{"index.number_of_replicas"};
+    }
+    printf "OS/ES Data Nodes:    %17s/%s\n", commify($dataNodes), commify($totalNodes);
     printf "Sessions Indices:    %17s\n", commify(scalar(@sessions));
     printf "Sessions:            %17s (%s bytes)\n", commify($sessions), commify($sessionsBytes);
     if (scalar(@sessions) > 0 && $dataNodes > 0) {
@@ -8225,6 +8288,8 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
         exit 0;
     }
 
+    checkPreviousSettings();
+
     if ($ARGV[1] eq "init" && $main::versionNumber >= 0) {
         logmsg "It appears this OpenSearch/Elasticsearch cluster already has Arkime installed (version $main::versionNumber), this will delete ALL data in OpenSearch/Elasticsearch! (It does not delete the pcap files on disk.)\n\n";
         waitFor("INIT", "do you want to erase everything?");
@@ -8456,6 +8521,8 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
     if ($IFNEEDED && $main::versionNumber == $VERSION) {
         exit 0;
     }
+
+    checkPreviousSettings();
 
     if ($health->{status} eq "red") {
         logmsg "Not auto upgrading when OpenSearch/Elasticsearch status is red.\n\n";
