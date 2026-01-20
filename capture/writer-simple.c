@@ -662,7 +662,7 @@ LOCAL void writer_simple_write(const ArkimeSession_t *const session, ArkimePacke
         uint32_t t;
         if (firstPacket[thread] > packet->ts.tv_sec) {
             LOG("WARNING - timing moving backwards, simpleShortHeader should be disabled");
-            // Time stamp is too early, just prented its at firstPacket time
+            // Time stamp is too early, just pretend its at firstPacket time
             t = packet->ts.tv_usec;
         } else {
             t = ((packet->ts.tv_sec - firstPacket[thread]) << 20) | packet->ts.tv_usec;
@@ -792,7 +792,7 @@ LOCAL void writer_simple_check(ArkimeSession_t *UNUSED(session), gpointer uw1, g
         return;
     }
 
-    // Last add must be 10 seconds ago and have more then pageSize bytes
+    // Last add must be 10 seconds ago and have more than pageSize bytes
     if (now.tv_sec - lastSave[thread].tv_sec < 10)
         return;
 
@@ -986,7 +986,7 @@ void writer_simple_init(const char *name)
 
         if (simpleCompressionBlockSize > config.pcapWriteSize) {
             config.pcapWriteSize = simpleCompressionBlockSize + 1;
-            LOG ("INFO: Resetting pcapWriteSize to %u, so it is larger than simpleCompressionBlockSize", config.pcapWriteSize);
+            LOG("INFO: Resetting pcapWriteSize to %u, so it is larger than simpleCompressionBlockSize", config.pcapWriteSize);
         }
 
         if (config.debug)
@@ -998,7 +998,7 @@ void writer_simple_init(const char *name)
         simpleMode = ARKIME_SIMPLE_AES256CTR;
         cipher = EVP_aes_256_ctr();
         if (config.maxFileSizeB > 64 * 1024LL * 1024LL * 1024LL) {
-            LOG ("INFO: Resetting maxFileSizeG since %lf is greater then the max 64G in aes-256-ctr mode", config.maxFileSizeG);
+            LOG("INFO: Resetting maxFileSizeG since %lf is greater than the max 64G in aes-256-ctr mode", config.maxFileSizeG);
             config.maxFileSizeG = 64.0;
             config.maxFileSizeB = 64LL * 1024LL * 1024LL * 1024LL;
         }
@@ -1017,7 +1017,7 @@ void writer_simple_init(const char *name)
     pageSize = getpagesize();
     if (config.pcapWriteSize % pageSize != 0) {
         config.pcapWriteSize = ((config.pcapWriteSize + pageSize - 1) / pageSize) * pageSize;
-        LOG ("INFO: Resetting pcapWriteSize to %u since it must be a multiple of %u", config.pcapWriteSize, pageSize);
+        LOG("INFO: Resetting pcapWriteSize to %u since it must be a multiple of %u", config.pcapWriteSize, pageSize);
     }
 
     openOptions = O_NOATIME | O_WRONLY | O_CREAT | O_TRUNC;
@@ -1036,7 +1036,7 @@ void writer_simple_init(const char *name)
     simpleShortHeader = arkime_config_boolean(NULL, "simpleShortHeader", FALSE);
     if (simpleShortHeader && config.maxFileTimeM > 60) {
         config.maxFileTimeM = 60;
-        LOG ("INFO: Resetting maxFileTimeM to 60 since using simpleShortHeader");
+        LOG("INFO: Resetting maxFileTimeM to 60 since using simpleShortHeader");
     }
 
     localPcapIndex = arkime_config_boolean(NULL, "localPcapIndex", FALSE);

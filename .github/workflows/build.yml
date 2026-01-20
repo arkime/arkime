@@ -214,7 +214,7 @@ jobs:
           rm -rf /data/moloch; mkdir -p /data
           mv /opt/arkime /data/moloch
           ./easybutton-build.sh ${{ matrix.buildopt }} --dir /data/moloch
-          (cd capture ; make clean; make; make install)
+          (cd capture ; make clean; make -j; make install)
           (cd release ; make installmoloch)
           mv /data/moloch/bin/capture /data/moloch/bin/moloch-capture
           /bin/cp -f common/version.js /data/moloch/common/
@@ -238,7 +238,7 @@ jobs:
           rm -rf /data/moloch; mkdir -p /data
           mv /opt/arkime /data/moloch
           ./easybutton-build.sh ${{ matrix.buildopt }} --dir /data/moloch
-          (cd capture ; make clean; make; make install)
+          (cd capture ; make clean; make -j; make install)
           (cd release ; make installmoloch)
           mv /data/moloch/bin/capture /data/moloch/bin/moloch-capture
           /bin/cp -f common/version.js /data/moloch/common/
@@ -252,7 +252,8 @@ jobs:
         run: |
           (chown -R opensearch /opensearch-2.7.0; cd /opensearch-2.7.0 ; su opensearch -c "ES_JAVA_OPTS='-Xms1000m -Xmx1000m' bin/opensearch" > /tmp/os &)
           (cd capture ; ${{ matrix.sanitizebuild }})
-          export ASAN_OPTIONS=fast_unwind_on_malloc=false
+          export ASAN_OPTIONS="fast_unwind_on_malloc=false"
+          export LSAN_OPTIONS="fast_unwind_on_malloc=false:suppressions=./arkime.supp:print_suppressions=0"
           (cd tests; ./tests.pl)
           cat /tmp/os
           export PATH=/opt/arkime/bin:$PATH

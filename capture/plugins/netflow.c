@@ -107,7 +107,7 @@ LOCAL void netflow_plugin_save(ArkimeSession_t *session, int UNUSED(final))
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wstrict-aliasing"
-    if (!IN6_IS_ADDR_V4MAPPED(&session->addr1)) {
+    if (ARKIME_SESSION_IS_v6(session)) {
         return;
     }
 #pragma GCC diagnostic pop
@@ -219,7 +219,7 @@ LOCAL void netflow_plugin_save(ArkimeSession_t *session, int UNUSED(final))
 
 /******************************************************************************/
 /*
- * Called by arkime when arkime is quiting
+ * Called by arkime when arkime is quitting
  */
 LOCAL void netflow_plugin_exit()
 {

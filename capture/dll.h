@@ -17,12 +17,12 @@
 #define _DLL_HEADER
 
 
-#define DLL_INIT(name,head) \
+#define DLL_INIT(name, head) \
     ((head)->name##count = 0, \
      (head)->name##next = (head)->name##prev = (void *)head \
     )
 
-#define DLL_PUSH_TAIL(name,head,element) \
+#define DLL_PUSH_TAIL(name, head, element) \
     ((element)->name##next          = (void *)(head), \
      (element)->name##prev          = (head)->name##prev, \
      (head)->name##prev->name##next = (element), \
@@ -30,16 +30,16 @@
      (head)->name##count++ \
     )
 
-#define DLL_PUSH_TAIL_DLL(name,head1,head2) \
+#define DLL_PUSH_TAIL_DLL(name, head1, head2) \
     ((head1)->name##prev->name##next = (head2)->name##next, \
      (head2)->name##next->name##prev = (head1)->name##prev, \
      (head1)->name##prev             = (head2)->name##prev, \
      (head2)->name##prev->name##next = (void *)(head1), \
-     (head1)->name##count+=(head2)->name##count, \
-     DLL_INIT(name,head2) \
+     (head1)->name##count += (head2)->name##count, \
+     DLL_INIT(name, head2) \
     )
 
-#define DLL_PUSH_HEAD(name,head,element) \
+#define DLL_PUSH_HEAD(name, head, element) \
     ((element)->name##next          = (head)->name##next, \
      (element)->name##prev          = (void *)(head), \
      (head)->name##next->name##prev = (element), \
@@ -47,7 +47,7 @@
      (head)->name##count++ \
     )
 
-#define DLL_ADD_AFTER(name,head,after,element) \
+#define DLL_ADD_AFTER(name, head, after, element) \
     ((element)->name##next            = (after)->name##next, \
      (element)->name##prev            = (after), \
      (after)->name##next->name##prev  = (element), \
@@ -55,7 +55,7 @@
      (head)->name##count++ \
     )
 
-#define DLL_ADD_BEFORE(name,head,before,element) \
+#define DLL_ADD_BEFORE(name, head, before, element) \
     ((element)->name##next             = (before), \
      (element)->name##prev             = (before)->name##prev, \
      (before)->name##prev              = (element), \
@@ -64,7 +64,7 @@
     )
 
 
-#define DLL_REMOVE(name,head,element) \
+#define DLL_REMOVE(name, head, element) \
     ((element)->name##prev->name##next = (element)->name##next, \
      (element)->name##next->name##prev = (element)->name##prev, \
      (element)->name##prev             = 0, \
@@ -72,7 +72,7 @@
      (head)->name##count-- \
     )
 
-#define DLL_MOVE_TAIL(name,head,element) \
+#define DLL_MOVE_TAIL(name, head, element) \
     ((element)->name##prev->name##next = (element)->name##next, \
      (element)->name##next->name##prev = (element)->name##prev, \
      (element)->name##next             = (void *)(head), \
@@ -87,36 +87,36 @@
 #define DLL_POP_TAIL(name, head, element) \
     ((head)->name##count == 0 ? ((element) = NULL, 0) : ((element) = (head)->name##prev, DLL_REMOVE(name, (head), (element)), 1))
 
-#define DLL_PEEK_HEAD(name,head) \
-    ((head)->name##count == 0?NULL:(head)->name##next)
+#define DLL_PEEK_HEAD(name, head) \
+    ((head)->name##count == 0 ? NULL : (head)->name##next)
 
-#define DLL_PEEK_TAIL(name,head) \
-    ((head)->name##count == 0?NULL:(head)->name##prev)
+#define DLL_PEEK_TAIL(name, head) \
+    ((head)->name##count == 0 ? NULL : (head)->name##prev)
 
-#define DLL_COUNT(name,head) \
+#define DLL_COUNT(name, head) \
     ((head)->name##count)
 
-#define DLL_FOREACH(name,head,element) \
+#define DLL_FOREACH(name, head, element) \
       for ((element) = (head)->name##next; \
            (element) != (void *)(head); \
-           (element)=(element)->name##next)
+           (element) = (element)->name##next)
 
-#define DLL_FOREACH_REMOVABLE(name,head,element,temp) \
+#define DLL_FOREACH_REMOVABLE(name, head, element, temp) \
       for ((element) = (head)->name##next, (temp) = (element)->name##next; \
            (element) != (void *)(head); \
            (element) = (temp), (temp) = (temp)->name##next)
 
-#define DLL_FOREACH_REMOVABLE_START(name,head,element,temp) \
+#define DLL_FOREACH_REMOVABLE_START(name, head, element, temp) \
       for ((temp) = (element)->name##next; \
            (element) != (void *)(head); \
            (element) = (temp), (temp) = (temp)->name##next)
 
-#define DLL_FOREACH_REVERSE(name,head,element) \
+#define DLL_FOREACH_REVERSE(name, head, element) \
       for ((element) = (head)->name##prev; \
            (element) != (void *)(head); \
-           (element)=(element)->name##prev)
+           (element) = (element)->name##prev)
 
-#define DLL_FOREACH_REVERSE_REMOVABLE(name,head,element, temp) \
+#define DLL_FOREACH_REVERSE_REMOVABLE(name, head, element, temp) \
       for ((element) = (head)->name##prev, (temp) = (element)->name##prev; \
            (element) != (void *)(head); \
            (element) = (temp), (temp) = (temp)->name##prev)

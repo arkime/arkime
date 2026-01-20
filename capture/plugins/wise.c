@@ -403,7 +403,8 @@ LOCAL void wise_lookup(ArkimeSession_t *session, WiseRequest_t *request, char *v
 
     ARKIME_LOCK(item);
     WiseItem_t *wi;
-    HASH_FIND(wih_, types[type].itemHash, value, wi);
+    uint32_t hhash = arkime_string_hash(value);
+    HASH_FIND_HASH(wih_, types[type].itemHash, hhash, value, wi);
 
     if (wi) {
         // Already being looked up
@@ -441,7 +442,7 @@ LOCAL void wise_lookup(ArkimeSession_t *session, WiseRequest_t *request, char *v
         wi->key          = g_strdup(value);
         wi->type         = type;
         wi->sessionsSize = 4;
-        HASH_ADD(wih_, types[type].itemHash, wi->key, wi);
+        HASH_ADD_HASH(wih_, types[type].itemHash, hhash, wi->key, wi);
     }
 
     wi->sessions = ARKIME_SIZE_ALLOC("sessions", sizeof(ArkimeSession_t *) * wi->sessionsSize);
@@ -555,7 +556,7 @@ LOCAL void wise_lookup_tuple(ArkimeSession_t *session, WiseRequest_t *request)
     BSB_EXPORT_sprintf(bsb, "%ld;", session->firstPacket.tv_sec);
 
     int first = 1;
-    ArkimeString_t *hstring;
+    const ArkimeString_t *hstring;
     const ArkimeStringHashStd_t *shash = session->fields[protocolField]->shash;
     HASH_FORALL2(s_, *shash, hstring) {
         if (first) {
@@ -569,7 +570,7 @@ LOCAL void wise_lookup_tuple(ArkimeSession_t *session, WiseRequest_t *request)
     char ipstr1[INET6_ADDRSTRLEN];
     char ipstr2[INET6_ADDRSTRLEN];
 
-    if (IN6_IS_ADDR_V4MAPPED(&session->addr1)) {
+    if (ARKIME_SESSION_IS_v4(session)) {
         arkime_ip4tostr(ARKIME_V6_TO_V4(session->addr1), ipstr1, sizeof(ipstr1));
         arkime_ip4tostr(ARKIME_V6_TO_V4(session->addr2), ipstr2, sizeof(ipstr2));
     } else {
@@ -691,7 +692,7 @@ LOCAL void wise_plugin_pre_save(ArkimeSession_t *session, int UNUSED(final))
 
             const ArkimeStringHashStd_t *shash;
             const ArkimeIntHashStd_t    *ihash;
-            ArkimeInt_t                 *hint;
+            const ArkimeInt_t           *hint;
             char                         buf[20];
 
             switch (config.fields[pos]->type) {
@@ -790,6 +791,7 @@ LOCAL void wise_plugin_pre_save(ArkimeSession_t *session, int UNUSED(final))
                     else
                         wise_lookup(session, iRequest, ikey, type, pos);
                 }
+                break;
             case ARKIME_FIELD_TYPE_OBJECT:
                 // Unsupported
                 break;

@@ -71,6 +71,8 @@ LOCAL char             *ecsEventDataset;
 
 LOCAL int               arkime_session_save_func;
 
+LOCAL GRegex           *numRegex;
+LOCAL GRegex           *numHexRegex;
 
 extern uint64_t         packetStats[ARKIME_PACKET_MAX];
 
@@ -439,48 +441,37 @@ void arkime_db_set_send_bulk2(ArkimeDbSendBulkFunc func, gboolean bulkHeader, gb
 gchar *arkime_db_community_id(const ArkimeSession_t *session)
 {
     GChecksum       *checksum = g_checksum_new(G_CHECKSUM_SHA1);
-    int              cmp;
 
     static uint16_t seed = 0;
     static uint8_t  zero = 0;
 
     g_checksum_update(checksum, (guchar *)&seed, 2);
 
-    if (ARKIME_SESSION_v6(session)) {
-        cmp = memcmp(session->sessionId + 1, session->sessionId + 19, 16);
-
-        if (cmp < 0 || (cmp == 0 && session->port1 < session->port2)) {
-            g_checksum_update(checksum, (guchar *)session->sessionId + 1, 16);
-            g_checksum_update(checksum, (guchar *)session->sessionId + 19, 16);
-            g_checksum_update(checksum, (guchar *)&session->ipProtocol, 1);
-            g_checksum_update(checksum, (guchar *)&zero, 1);
-            g_checksum_update(checksum, (guchar *)session->sessionId + 17, 2);
-            g_checksum_update(checksum, (guchar *)session->sessionId + 35, 2);
-        } else {
-            g_checksum_update(checksum, (guchar *)session->sessionId + 19, 16);
-            g_checksum_update(checksum, (guchar *)session->sessionId + 1, 16);
-            g_checksum_update(checksum, (guchar *)&session->ipProtocol, 1);
-            g_checksum_update(checksum, (guchar *)&zero, 1);
-            g_checksum_update(checksum, (guchar *)session->sessionId + 35, 2);
-            g_checksum_update(checksum, (guchar *)session->sessionId + 17, 2);
-        }
+    // SessionId layout: [len:1][vlan/vni:3][addr1][addr2][port1:2][port2:2]
+    // IPv4: addr at +4 and +8 (4 bytes each), ports at +12 and +14
+    // IPv6: addr at +4 and +20 (16 bytes each), ports at +36 and +38
+    if (ARKIME_SESSION_IS_v6(session)) {
+        // For v6 we sort the same as community id
+        g_checksum_update(checksum, (guchar *)session->sessionId + 4, 32);
+        g_checksum_update(checksum, (guchar *)&session->ipProtocol, 1);
+        g_checksum_update(checksum, (guchar *)&zero, 1);
+        g_checksum_update(checksum, (guchar *)session->sessionId + 36, 4);
     } else {
-        cmp = memcmp(session->sessionId + 1, session->sessionId + 7, 4);
+        // For v4 because of byte order we have a different sort for ip but not port
+        int cmp = memcmp(session->sessionId + 4, session->sessionId + 8, 4);
 
-        if (cmp < 0 || (cmp == 0 && session->port1 < session->port2)) {
-            g_checksum_update(checksum, (guchar *)session->sessionId + 1, 4);
-            g_checksum_update(checksum, (guchar *)session->sessionId + 7, 4);
+        if (cmp <= 0) {
+            g_checksum_update(checksum, (guchar *)session->sessionId + 4, 8);
             g_checksum_update(checksum, (guchar *)&session->ipProtocol, 1);
             g_checksum_update(checksum, (guchar *)&zero, 1);
-            g_checksum_update(checksum, (guchar *)session->sessionId + 5, 2);
-            g_checksum_update(checksum, (guchar *)session->sessionId + 11, 2);
+            g_checksum_update(checksum, (guchar *)session->sessionId + 12, 4);
         }  else {
-            g_checksum_update(checksum, (guchar *)session->sessionId + 7, 4);
-            g_checksum_update(checksum, (guchar *)session->sessionId + 1, 4);
+            g_checksum_update(checksum, (guchar *)session->sessionId + 8, 4);
+            g_checksum_update(checksum, (guchar *)session->sessionId + 4, 4);
             g_checksum_update(checksum, (guchar *)&session->ipProtocol, 1);
             g_checksum_update(checksum, (guchar *)&zero, 1);
-            g_checksum_update(checksum, (guchar *)session->sessionId + 11, 2);
-            g_checksum_update(checksum, (guchar *)session->sessionId + 5, 2);
+            g_checksum_update(checksum, (guchar *)session->sessionId + 14, 2);
+            g_checksum_update(checksum, (guchar *)session->sessionId + 12, 2);
         }
     }
 
@@ -512,7 +503,7 @@ gchar *arkime_db_community_id_icmp(const ArkimeSession_t *session)
     port1 = session->icmpInfo[0];
     port2 = session->icmpInfo[1];
 
-    if (ARKIME_SESSION_v6(session)) {
+    if (ARKIME_SESSION_IS_v6(session)) {
         static const uint8_t port2Mapping[19] = {129, 128, 131, 130, 255, 134, 133, 136, 135, 255,
                                                  255, 140, 139, 255, 255, 255, 145, 145, 255
                                                 };
@@ -897,7 +888,7 @@ void arkime_db_save_session(ArkimeSession_t *session, int final)
                        ((uint64_t)currentTime.tv_sec) * 1000 + ((uint64_t)currentTime.tv_usec) / 1000);
 
     if (session->ipProtocol) {
-        if (IN6_IS_ADDR_V4MAPPED(&session->addr1)) {
+        if (ARKIME_SESSION_IS_v4(session)) {
             arkime_ip4tostr(ARKIME_V6_TO_V4(session->addr1), ipsrc, sizeof(ipsrc));
             arkime_ip4tostr(ARKIME_V6_TO_V4(session->addr2), ipdst, sizeof(ipdst));
         } else {
@@ -1930,7 +1921,7 @@ LOCAL void arkime_db_health_check_cb(int UNUSED(code), uint8_t *data, int data_l
     if (!status) {
         LOG("WARNING - Couldn't find status in '%.*s'", data_len, data);
     } else if ( esHealthMS > 20000) {
-        LOG("WARNING - Elasticsearch health check took more then 20 seconds %" PRIu64 "ms", esHealthMS);
+        LOG("WARNING - Elasticsearch health check took more than 20 seconds %" PRIu64 "ms", esHealthMS);
     } else if ((status[0] == 'y' && uw == GINT_TO_POINTER(1)) || (status[0] == 'r')) {
         LOG("WARNING - Elasticsearch is %.*s and took %" PRIu64 "ms to query health, this may cause issues.  See FAQ.", status_len, status, esHealthMS);
     }
@@ -2094,8 +2085,6 @@ LOCAL void arkime_db_mkpath(char *path)
  */
 char *arkime_db_create_file_full(const struct timeval *firstPacket, const char *name, uint64_t size, int locked, uint32_t *id, ...)
 {
-    static const GRegex *numRegex;
-    static const GRegex *numHexRegex;
     char               key[200];
     int                key_len;
     uint32_t           num;
@@ -2103,11 +2092,6 @@ char *arkime_db_create_file_full(const struct timeval *firstPacket, const char *
     char              *json = arkime_http_get_buffer(ARKIME_HTTP_BUFFER_SIZE);
     BSB                jbsb;
     const uint64_t     fp = firstPacket->tv_sec;
-
-    if (!numRegex) {
-        numRegex = g_regex_new("#NUM#", 0, 0, 0);
-        numHexRegex = g_regex_new("#NUMHEX#", 0, 0, 0);
-    }
 
     BSB_INIT(jbsb, json, ARKIME_HTTP_BUFFER_SIZE);
 
@@ -2782,7 +2766,7 @@ int arkime_db_can_quit()
 
             arkime_db_flush_gfunc(GINT_TO_POINTER(1));
             if (config.debug)
-                LOG ("Can't quit, sJson[%d] %u", thread, (uint32_t)BSB_LENGTH(dbInfo[thread].bsb));
+                LOG("Can't quit, sJson[%d] %u", thread, (uint32_t)BSB_LENGTH(dbInfo[thread].bsb));
             return 1;
         }
         ARKIME_UNLOCK(dbInfo[thread].lock);
@@ -2790,7 +2774,7 @@ int arkime_db_can_quit()
 
     if (arkime_http_queue_length(esServer) > 0) {
         if (config.debug)
-            LOG ("Can't quit, arkime_http_queue_length(esServer) %d", arkime_http_queue_length(esServer));
+            LOG("Can't quit, arkime_http_queue_length(esServer) %d", arkime_http_queue_length(esServer));
         return 1;
     }
 
@@ -2936,6 +2920,9 @@ void arkime_db_init()
     }
 
     arkime_session_save_func = arkime_parsers_get_named_func("arkime_session_save");
+
+    numRegex = g_regex_new("#NUM#", 0, 0, 0);
+    numHexRegex = g_regex_new("#NUMHEX#", 0, 0, 0);
 }
 /******************************************************************************/
 void arkime_db_exit()
@@ -2986,6 +2973,9 @@ void arkime_db_exit()
         ipTree4 = 0;
         ipTree6 = 0;
     }
+
+    g_regex_unref(numRegex);
+    g_regex_unref(numHexRegex);
 
     if (config.debug) {
         LOG("totalPackets: %" PRId64 " totalSessions: %" PRId64 " writtenBytes: %" PRId64 " unwrittenBytes: %" PRId64 " pstats: %" PRIu64 "/%" PRIu64 "/%" PRIu64 "/%" PRIu64 "/%" PRIu64 "/%" PRIu64 "/%" PRIu64,

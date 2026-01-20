@@ -54,8 +54,11 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
           defaults to /opt/arkime/raw and will expire them
   - #3552 Users and Roles now inherit for the 7 extra settings if not
           specificly set.
+  - #3583 Previous community_id for IPv4 sessions with same src/dst IP, could
+          have incorrect community_id
+  - #3591 geoLite2Country setting now looks for City file first by default
 ## Release
-  - Node 22.21.1
+  - Node 22.22.0
   - #3342 Container based on Debian 13 now
   - Container includes geoipupdate
   - docker.sh supports --ilm and --ism options
@@ -90,6 +93,8 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #3517 Netmap FreeBSD support
   - #3547 Fix erspan vlan truncating at 7 bits instead of 12 bits
   - #3566 fix the sessions length being off by 1ms sometimes
+  - #3583 Fix community_id for v4 sessions with same src/dst port sorting
+  - #3591 geoLite2Country setting now looks for City file first by default
 ## Capture/Viewer
   - #3197 new sessionsStarted and sessionsPresent in files tab
   - #3210 new vlan.dot1q and vlan.dot1ad expressions
@@ -139,6 +144,8 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #3430 Handle when ES cluster returns 503 better
 ## WISE
   - #3435 New wise urlapi source
+## db.pl
+  - #3581 New db.pl show-nodes command
 
 5.8.3 2025/12/02
 ## Release

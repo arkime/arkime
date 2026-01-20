@@ -373,7 +373,7 @@ LOCAL void arkime_http_parse_authorization(ArkimeSession_t *session, char *str)
             quote = 1;
             str++;
         }
-        char *end = str;
+        const char *end = str;
         while (*end && (*end != '"' || !quote) && (*end != ',' || quote)) {
             end++;
         }
@@ -470,9 +470,10 @@ LOCAL int arkime_hp_cb_on_header_value (http_parser *parser, const char *at, siz
         http->inValue |= (1 << http->which);
 
         const char *header = http->header[http->which];
-        arkime_plugins_cb_hp_ohfr(session, parser, header, strlen(header));
-        char *lower = g_ascii_strdown(header, -1);
-        arkime_plugins_cb_hp_ohf(session, parser, lower, strlen(lower));
+        const int headerLen = strlen(header);
+        arkime_plugins_cb_hp_ohfr(session, parser, header, headerLen);
+        char *lower = g_ascii_strdown(header, headerLen);
+        arkime_plugins_cb_hp_ohf(session, parser, lower, headerLen);
 
         if (http->which == http->urlWhich)
             HASH_FIND(s_, httpReqHeaders, lower, hstring);
@@ -625,7 +626,7 @@ LOCAL int arkime_hp_cb_on_headers_complete (http_parser *parser)
                 }
                 if (!arkime_field_string_add(urlsField, session, http->urlString->str, http->urlString->len, FALSE))
                     g_free(http->urlString->str);
-                (void)g_string_free(http->urlString, FALSE);
+                (g_string_free)(http->urlString, FALSE);
                 g_string_free(http->hostString, TRUE);
             } else {
                 /* Host header doesn't match the url */
@@ -640,7 +641,7 @@ LOCAL int arkime_hp_cb_on_headers_complete (http_parser *parser)
                     g_free(http->hostString->str);
 
                 g_string_free(http->urlString, TRUE);
-                (void)g_string_free(http->hostString, FALSE);
+                (g_string_free)(http->hostString, FALSE);
             }
         } else {
             /* Normal case, url starts with /, so no extra host in url */
@@ -653,7 +654,7 @@ LOCAL int arkime_hp_cb_on_headers_complete (http_parser *parser)
             if (!arkime_field_string_add(urlsField, session, http->hostString->str, http->hostString->len, FALSE))
                 g_free(http->hostString->str);
             g_string_free(http->urlString, TRUE);
-            (void)g_string_free(http->hostString, FALSE);
+            (g_string_free)(http->hostString, FALSE);
         }
 
         http->urlString = NULL;
@@ -666,7 +667,7 @@ LOCAL int arkime_hp_cb_on_headers_complete (http_parser *parser)
         }
         if (!arkime_field_string_add(urlsField, session, http->urlString->str, http->urlString->len, FALSE))
             g_free(http->urlString->str);
-        (void)g_string_free(http->urlString, FALSE);
+        (g_string_free)(http->urlString, FALSE);
 
         http->urlString = NULL;
     } else if (http->hostString) {

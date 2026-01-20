@@ -461,7 +461,7 @@ LOCAL void arkime_rules_load_add_field_match(ArkimeRule_t *rule, int pos, int ty
     config.fields[pos]->ruleEnabled = 1;
 
     if (len > 255)
-        CONFIGEXIT("Match %s is to too large", key);
+        CONFIGEXIT("Match %s is too large", key);
 
     uint8_t *nkey = g_malloc(len + 3);
     nkey[0] = type;
@@ -1095,8 +1095,8 @@ LOCAL void arkime_rules_match(ArkimeSession_t *const session, ArkimeRule_t *cons
 
 LOCAL void arkime_rules_check_rule_fields(ArkimeSession_t *const session, ArkimeRule_t *const rule, int skipPos, BSB *logStr)
 {
-    ArkimeString_t              *hstring;
-    ArkimeInt_t                 *hint;
+    const ArkimeString_t        *hstring;
+    const ArkimeInt_t           *hint;
     const ArkimeStringHashStd_t *shash;
     const ArkimeIntHashStd_t    *ihash;
     GHashTable                  *ghash;

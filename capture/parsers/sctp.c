@@ -105,7 +105,7 @@ LOCAL int sctp_pre_process(ArkimeSession_t *session, ArkimePacket_t *const packe
     return 0;
 }
 /******************************************************************************/
-// Idea from gopacket tcpassembly/assemply.go
+// Idea from gopacket tcpassembly/assembly.go
 LOCAL int64_t sctp_tsn_diff (int64_t a, int64_t b)
 {
     if (a > 0xc0000000 && b < 0x40000000)
@@ -168,7 +168,7 @@ LOCAL void sctp_send_data(ArkimeSession_t *const session, const uint8_t *data, i
 }
 
 /******************************************************************************/
-/* See if we can reassmble any data */
+/* See if we can reassemble any data */
 LOCAL void sctp_maybe_send(ArkimeSession_t *const session, int which)
 {
     int               dir = ARKIME_WHICH_GET_DIR(which);

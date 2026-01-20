@@ -1135,6 +1135,9 @@ class SessionAPIs {
         let file;
         try {
           file = await Db.fileIdToFile(fields.node, fileNum);
+          if (!file) {
+            throw 'Missing file';
+          }
         } catch (err) {
           console.log(`WARNING - Only have SPI data, PCAP file no longer available.  Couldn't look up in file table ${fields.node}-${fileNum}`);
           throw new Error(`Only have SPI data, PCAP file no longer available for ${fields.node}-${fileNum}`);
@@ -2655,7 +2658,7 @@ class SessionAPIs {
 
       SessionAPIs.sessionsListFromIds(req, ids, ['tags', 'node'], (err, list) => {
         if (!list.length) {
-          return res.serverError(200, 'No sessions to remove tags to');
+          return res.serverError(200, 'No sessions to remove tags from');
         }
         SessionAPIs.#removeTagsList(tags, list, async () => {
           await Db.refresh('sessions*');

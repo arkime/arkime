@@ -16,7 +16,9 @@
                },
                "bytes" : 1500,
                "geo" : {
-                  "country_iso_code" : "CO"
+                  "city_name" : "Medellín",
+                  "country_iso_code" : "CO",
+                  "region_iso_code" : "ANT"
                },
                "ip" : "190.0.0.2",
                "mac" : [
@@ -75,7 +77,9 @@
                },
                "bytes" : 0,
                "geo" : {
-                  "country_iso_code" : "CO"
+                  "city_name" : "Medellín",
+                  "country_iso_code" : "CO",
+                  "region_iso_code" : "ANT"
                },
                "ip" : "190.0.0.1",
                "mac" : [
@@ -118,7 +122,9 @@
                },
                "bytes" : 1340,
                "geo" : {
-                  "country_iso_code" : "CO"
+                  "city_name" : "Medellín",
+                  "country_iso_code" : "CO",
+                  "region_iso_code" : "ANT"
                },
                "ip" : "190.0.0.3",
                "mac" : [
@@ -177,7 +183,9 @@
                },
                "bytes" : 0,
                "geo" : {
-                  "country_iso_code" : "CO"
+                  "city_name" : "Medellín",
+                  "country_iso_code" : "CO",
+                  "region_iso_code" : "ANT"
                },
                "ip" : "190.0.0.1",
                "mac" : [
@@ -220,7 +228,9 @@
                },
                "bytes" : 1340,
                "geo" : {
-                  "country_iso_code" : "CO"
+                  "city_name" : "Medellín",
+                  "country_iso_code" : "CO",
+                  "region_iso_code" : "ANT"
                },
                "ip" : "190.0.0.4",
                "mac" : [
@@ -279,7 +289,9 @@
                },
                "bytes" : 0,
                "geo" : {
-                  "country_iso_code" : "CO"
+                  "city_name" : "Medellín",
+                  "country_iso_code" : "CO",
+                  "region_iso_code" : "ANT"
                },
                "ip" : "190.0.0.1",
                "mac" : [
@@ -322,7 +334,9 @@
                },
                "bytes" : 1220,
                "geo" : {
-                  "country_iso_code" : "CO"
+                  "city_name" : "Medellín",
+                  "country_iso_code" : "CO",
+                  "region_iso_code" : "ANT"
                },
                "ip" : "190.0.0.5",
                "mac" : [
@@ -381,7 +395,9 @@
                },
                "bytes" : 0,
                "geo" : {
-                  "country_iso_code" : "CO"
+                  "city_name" : "Medellín",
+                  "country_iso_code" : "CO",
+                  "region_iso_code" : "ANT"
                },
                "ip" : "190.0.0.1",
                "mac" : [
@@ -424,7 +440,9 @@
                },
                "bytes" : 1500,
                "geo" : {
-                  "country_iso_code" : "CO"
+                  "city_name" : "Medellín",
+                  "country_iso_code" : "CO",
+                  "region_iso_code" : "ANT"
                },
                "ip" : "190.0.0.12",
                "mac" : [
@@ -483,7 +501,9 @@
                },
                "bytes" : 0,
                "geo" : {
-                  "country_iso_code" : "CO"
+                  "city_name" : "Medellín",
+                  "country_iso_code" : "CO",
+                  "region_iso_code" : "ANT"
                },
                "ip" : "190.0.0.1",
                "mac" : [
@@ -526,7 +546,9 @@
                },
                "bytes" : 1340,
                "geo" : {
-                  "country_iso_code" : "CO"
+                  "city_name" : "Medellín",
+                  "country_iso_code" : "CO",
+                  "region_iso_code" : "ANT"
                },
                "ip" : "190.0.0.13",
                "mac" : [
@@ -585,7 +607,9 @@
                },
                "bytes" : 0,
                "geo" : {
-                  "country_iso_code" : "CO"
+                  "city_name" : "Medellín",
+                  "country_iso_code" : "CO",
+                  "region_iso_code" : "ANT"
                },
                "ip" : "190.0.0.1",
                "mac" : [
@@ -628,7 +652,9 @@
                },
                "bytes" : 1340,
                "geo" : {
-                  "country_iso_code" : "CO"
+                  "city_name" : "Medellín",
+                  "country_iso_code" : "CO",
+                  "region_iso_code" : "ANT"
                },
                "ip" : "190.0.0.14",
                "mac" : [
@@ -687,7 +713,9 @@
                },
                "bytes" : 0,
                "geo" : {
-                  "country_iso_code" : "CO"
+                  "city_name" : "Medellín",
+                  "country_iso_code" : "CO",
+                  "region_iso_code" : "ANT"
                },
                "ip" : "190.0.0.1",
                "mac" : [
@@ -730,7 +758,9 @@
                },
                "bytes" : 1220,
                "geo" : {
-                  "country_iso_code" : "CO"
+                  "city_name" : "Medellín",
+                  "country_iso_code" : "CO",
+                  "region_iso_code" : "ANT"
                },
                "ip" : "190.0.0.15",
                "mac" : [
@@ -789,7 +819,9 @@
                },
                "bytes" : 0,
                "geo" : {
-                  "country_iso_code" : "CO"
+                  "city_name" : "Medellín",
+                  "country_iso_code" : "CO",
+                  "region_iso_code" : "ANT"
                },
                "ip" : "190.0.0.1",
                "mac" : [
@@ -832,7 +864,9 @@
                },
                "bytes" : 1380,
                "geo" : {
-                  "country_iso_code" : "CO"
+                  "city_name" : "Medellín",
+                  "country_iso_code" : "CO",
+                  "region_iso_code" : "ANT"
                },
                "ip" : "190.0.0.22",
                "mac" : [
@@ -891,7 +925,9 @@
                },
                "bytes" : 0,
                "geo" : {
-                  "country_iso_code" : "CO"
+                  "city_name" : "Medellín",
+                  "country_iso_code" : "CO",
+                  "region_iso_code" : "ANT"
                },
                "ip" : "190.0.0.1",
                "mac" : [
@@ -934,7 +970,9 @@
                },
                "bytes" : 1220,
                "geo" : {
-                  "country_iso_code" : "CO"
+                  "city_name" : "Medellín",
+                  "country_iso_code" : "CO",
+                  "region_iso_code" : "ANT"
                },
                "ip" : "190.0.0.23",
                "mac" : [
@@ -993,7 +1031,9 @@
                },
                "bytes" : 0,
                "geo" : {
-                  "country_iso_code" : "CO"
+                  "city_name" : "Medellín",
+                  "country_iso_code" : "CO",
+                  "region_iso_code" : "ANT"
                },
                "ip" : "190.0.0.1",
                "mac" : [
@@ -1036,7 +1076,9 @@
                },
                "bytes" : 1220,
                "geo" : {
-                  "country_iso_code" : "CO"
+                  "city_name" : "Medellín",
+                  "country_iso_code" : "CO",
+                  "region_iso_code" : "ANT"
                },
                "ip" : "190.0.0.24",
                "mac" : [
@@ -1095,7 +1137,9 @@
                },
                "bytes" : 0,
                "geo" : {
-                  "country_iso_code" : "CO"
+                  "city_name" : "Medellín",
+                  "country_iso_code" : "CO",
+                  "region_iso_code" : "ANT"
                },
                "ip" : "190.0.0.1",
                "mac" : [
@@ -1138,7 +1182,9 @@
                },
                "bytes" : 1100,
                "geo" : {
-                  "country_iso_code" : "CO"
+                  "city_name" : "Medellín",
+                  "country_iso_code" : "CO",
+                  "region_iso_code" : "ANT"
                },
                "ip" : "190.0.0.25",
                "mac" : [
@@ -1197,7 +1243,9 @@
                },
                "bytes" : 0,
                "geo" : {
-                  "country_iso_code" : "CO"
+                  "city_name" : "Medellín",
+                  "country_iso_code" : "CO",
+                  "region_iso_code" : "ANT"
                },
                "ip" : "190.0.0.1",
                "mac" : [

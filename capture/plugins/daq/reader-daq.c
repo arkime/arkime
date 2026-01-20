@@ -68,7 +68,7 @@ LOCAL void *reader_daq_thread(gpointer posv)
 
         // Some kind of failure we quit
         if (unlikely(r)) {
-            LOG("DAQ quiting %d %s", r, daq_get_error(module, handle));
+            LOG("DAQ quitting %d %s", r, daq_get_error(module, handle));
             arkime_quit();
             module = 0;
             break;

@@ -37,8 +37,8 @@ sub doGeo {
         system("wget -nv https://raw.githubusercontent.com/arkime/arkime-test-data/main/oui.txt");
     }
 
-    if (! -f "GeoLite2-Country.mmdb") {
-        system("wget -nv https://raw.githubusercontent.com/arkime/arkime-test-data/main/GeoLite2-Country.mmdb");
+    if (! -f "GeoLite2-City.mmdb") {
+        system("wget -nv https://media.githubusercontent.com/media/arkime/arkime-test-data/main/GeoLite2-City.mmdb");
     }
 
     if (! -f "GeoLite2-ASN.mmdb") {

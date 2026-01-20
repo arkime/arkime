@@ -1,0 +1,9 @@
+{ 
+  // Don't suggest new packages under 3 days
+  "cooldown": 3,
+
+  // @elastic/elasticsearch - can't be upgrade because OSS/Opensearch
+  // lmdb - can't be upgrade because of RHEL 8
+  // better-sqlite3 - can't be upgrade because of RHEL 8
+  "reject": ["lmdb", "better-sqlite3", "@elastic/elasticsearch"]
+}

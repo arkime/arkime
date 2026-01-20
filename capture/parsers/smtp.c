@@ -695,7 +695,7 @@ LOCAL int smtp_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, i
                 gboolean        found = FALSE;
 
                 if (line->str[0] == '-') {
-                    ArkimeString_t *string;
+                    const ArkimeString_t *string;
                     DLL_FOREACH(s_, &email->boundaries, string) {
                         if ((int)line->len >= (int)(string->len + 2) && memcmp(line->str + 2, string->str, string->len) == 0) {
                             found = TRUE;

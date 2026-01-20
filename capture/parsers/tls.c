@@ -223,7 +223,7 @@ LOCAL uint32_t tls_process_server_hello(ArkimeSession_t *session, const uint8_t 
     BSB_EXPORT_sprintf(ja3bsb, "%d,%d,%.*s", ver, cipher, (int)BSB_LENGTH(eja3bsb), eja3);
 
     if (config.ja3Strings) {
-        arkime_field_string_add(ja3sStrField, session, ja3, strlen(ja3), TRUE);
+        arkime_field_string_add(ja3sStrField, session, ja3, BSB_LENGTH(ja3bsb), TRUE);
     }
 
     gchar *md5 = g_compute_checksum_for_data(G_CHECKSUM_MD5, (guchar *)ja3, BSB_LENGTH(ja3bsb));
@@ -516,7 +516,7 @@ LOCAL uint32_t tls_process_client_hello_data(ArkimeSession_t *session, const uin
         BSB_EXPORT_sprintf(ja3bsb, "%.*s,%.*s,%.*s", (int)BSB_LENGTH(eja3bsb), eja3, (int)BSB_LENGTH(ecja3bsb), ecja3, (int)BSB_LENGTH(ecfja3bsb), ecfja3);
 
         if (config.ja3Strings) {
-            arkime_field_string_add(ja3StrField, session, ja3, strlen(ja3), TRUE);
+            arkime_field_string_add(ja3StrField, session, ja3, BSB_LENGTH(ja3bsb), TRUE);
         }
 
         gchar *md5 = g_compute_checksum_for_data(G_CHECKSUM_MD5, (guchar *)ja3, BSB_LENGTH(ja3bsb));

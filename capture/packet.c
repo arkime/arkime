@@ -99,7 +99,6 @@ LOCAL  uint32_t              overloadDropTimes[ARKIME_MAX_PACKET_THREADS];
 LOCAL  ARKIME_LOCK_DEFINE(frags);
 
 LOCAL ArkimePacket_t *packetFreelist;
-LOCAL uint64_t packetFreelistMisses;
 
 LOCAL ArkimePacketRC arkime_packet_ip4(ArkimePacketBatch_t *batch, ArkimePacket_t *const packet, const uint8_t *data, int len);
 LOCAL ArkimePacketRC arkime_packet_ip6(ArkimePacketBatch_t *batch, ArkimePacket_t *const packet, const uint8_t *data, int len);
@@ -163,7 +162,6 @@ ArkimePacket_t *arkime_packet_alloc()
     }
 
     // Freelist empty, allocate new
-    ARKIME_THREAD_INCR(packetFreelistMisses);
     ArkimePacket_t *newPacket = malloc(sizeof(ArkimePacket_t));
     if (!newPacket) {
         LOGEXIT("ERROR - Failed to allocate packet");
@@ -173,7 +171,7 @@ ArkimePacket_t *arkime_packet_alloc()
 }
 
 /******************************************************************************/
-void arkime_packet_freelist_init()
+LOCAL void arkime_packet_freelist_init()
 {
     uint32_t poolSize = (config.maxPacketsInQueue * config.packetThreads) + (config.interfaceCnt * 64);
 
@@ -298,6 +296,10 @@ LOCAL void arkime_packet_process(ArkimePacket_t *packet, int thread)
 
     mProtocols[packet->mProtocol].createSessionId(sessionId, packet);
 
+    if ((sessionId[0] & 0x03) != 0) {
+        LOGEXIT("ERROR - Session ID must be aligned to 4 bytes, protocol %s is not (%d)", mProtocols[packet->mProtocol].name, sessionId[0]);
+    }
+
     // Try at most 2 times
     int isNew;
 
@@ -321,6 +323,7 @@ LOCAL void arkime_packet_process(ArkimePacket_t *packet, int thread)
                     session->addr1 = ip6->ip6_src;
                     session->addr2 = ip6->ip6_dst;
                     session->ip_tos = 0;
+                    session->v6 = 1;
                 }
             }
         }
@@ -564,7 +567,7 @@ LOCAL void *arkime_packet_thread(void *threadp)
         DLL_POP_HEAD(packet_, &packetQ[thread], packet);
         ARKIME_UNLOCK(packetQ[thread].lock);
 
-        // Only process commands if the packetQ is less then 75% full or every 8 packets
+        // Only process commands if the packetQ is less than 75% full or every 8 packets
         if (likely(DLL_COUNT(packet_, &packetQ[thread]) < maxPackets75) || (skipCount & 0x7) == 0) {
             arkime_session_process_commands(thread);
             if (!packet)
@@ -698,7 +701,7 @@ LOCAL gboolean arkime_packet_frags_process(ArkimePacket_t *const packet)
             break;
         }
     }
-    if ((void * )fpacket == (void * )&frags->packets) {
+    if ((void *)fpacket == (void *)&frags->packets) {
         DLL_PUSH_HEAD(packet_, &frags->packets, packet);
     }
 
@@ -726,7 +729,7 @@ LOCAL gboolean arkime_packet_frags_process(ArkimePacket_t *const packet)
         payloadLen = MAX(payloadLen, fip_off * 8 + fpacket->payloadLen);
     }
     // We have a hole
-    if ((void * )fpacket != (void * )&frags->packets) {
+    if ((void *)fpacket != (void *)&frags->packets) {
         return FALSE;
     }
 
@@ -882,7 +885,7 @@ LOCAL void arkime_packet_cmd_stats(int UNUSED(argc), char **UNUSED(argv), gpoint
                        "Oldest ICMP Session: %d\n"
                        "\n"
                        "ES Queue: %d\n"
-                       "DIsk Queue: %d\n"
+                       "Disk Queue: %d\n"
                        "Packet Queue: %d\n"
                        "Close Queue: %d\n"
                        "Need Saving Queue: %d\n"
@@ -1047,7 +1050,7 @@ LOCAL ArkimePacketRC arkime_packet_ip4(ArkimePacketBatch_t *batch, ArkimePacket_
 
         const int dropPort = ((uint32_t)tcphdr->th_dport * (uint32_t)tcphdr->th_sport) & 0xffff;
         if (packetDrop4S.drops[dropPort] &&
-            arkime_drophash_should_drop(&packetDrop4, dropPort, sessionId + 1, packet->ts.tv_sec)) {
+            arkime_drophash_should_drop(&packetDrop4, dropPort, sessionId + 4, packet->ts.tv_sec)) {
 
             return ARKIME_PACKET_IPPORT_DROPPED;
         }
@@ -1064,7 +1067,7 @@ LOCAL ArkimePacketRC arkime_packet_ip4(ArkimePacketBatch_t *batch, ArkimePacket_
         udphdr = (struct udphdr *)((char *)ip4 + ip_hdr_len);
 
         if (len > ip_hdr_len + (int)sizeof(struct udphdr) + 8 && udpPortCbs[udphdr->uh_dport]) {
-            int rc = arkime_packet_call_enqueue(udpPortCbs[udphdr->uh_dport], batch, packet, (uint8_t *)ip4 + ip_hdr_len + sizeof(struct udphdr *), len - ip_hdr_len - sizeof(struct udphdr *));
+            int rc = arkime_packet_call_enqueue(udpPortCbs[udphdr->uh_dport], batch, packet, (uint8_t *)ip4 + ip_hdr_len + sizeof(struct udphdr), len - ip_hdr_len - sizeof(struct udphdr));
             if (rc != ARKIME_PACKET_UNKNOWN)
                 return rc;
 
@@ -1137,7 +1140,7 @@ LOCAL ArkimePacketRC arkime_packet_ip6(ArkimePacketBatch_t *batch, ArkimePacket_
 
     if (ip_len + (int)sizeof(struct ip6_hdr) < ip_hdr_len) {
 #ifdef DEBUG_PACKET
-        LOG ("ERROR - %d + %ld < %d", ip_len, (long)sizeof(struct ip6_hdr), ip_hdr_len);
+        LOG("ERROR - %d + %ld < %d", ip_len, (long)sizeof(struct ip6_hdr), ip_hdr_len);
 #endif
         return ARKIME_PACKET_CORRUPT;
     }
@@ -1145,7 +1148,7 @@ LOCAL ArkimePacketRC arkime_packet_ip6(ArkimePacketBatch_t *batch, ArkimePacket_
 
     if (packet->pktlen < packet->payloadOffset + packet->payloadLen) {
 #ifdef DEBUG_PACKET
-        LOG ("ERROR - %d < %d + %d", packet->pktlen, packet->payloadOffset, packet->payloadLen);
+        LOG("ERROR - %d < %d + %d", packet->pktlen, packet->payloadOffset, packet->payloadLen);
 #endif
         return ARKIME_PACKET_CORRUPT;
     }
@@ -1178,7 +1181,7 @@ LOCAL ArkimePacketRC arkime_packet_ip6(ArkimePacketBatch_t *batch, ArkimePacket_
 
             if (ip_len + (int)sizeof(struct ip6_hdr) < ip_hdr_len) {
 #ifdef DEBUG_PACKET
-                LOG ("ERROR - %d + %ld < %d", ip_len, (long)sizeof(struct ip6_hdr), ip_hdr_len);
+                LOG("ERROR - %d + %ld < %d", ip_len, (long)sizeof(struct ip6_hdr), ip_hdr_len);
 #endif
                 return ARKIME_PACKET_CORRUPT;
             }
@@ -1186,7 +1189,7 @@ LOCAL ArkimePacketRC arkime_packet_ip6(ArkimePacketBatch_t *batch, ArkimePacket_
 
             if (packet->pktlen < packet->payloadOffset + packet->payloadLen) {
 #ifdef DEBUG_PACKET
-                LOG ("ERROR - %d < %d + %d", packet->pktlen, packet->payloadOffset, packet->payloadLen);
+                LOG("ERROR - %d < %d + %d", packet->pktlen, packet->payloadOffset, packet->payloadLen);
 #endif
                 return ARKIME_PACKET_CORRUPT;
             }
@@ -1226,7 +1229,7 @@ LOCAL ArkimePacketRC arkime_packet_ip6(ArkimePacketBatch_t *batch, ArkimePacket_
 
             const int dropPort = ((uint32_t)tcphdr->th_dport * (uint32_t)tcphdr->th_sport) & 0xffff;
             if (packetDrop6S.drops[dropPort] &&
-                arkime_drophash_should_drop(&packetDrop6, dropPort, sessionId + 1, packet->ts.tv_sec)) {
+                arkime_drophash_should_drop(&packetDrop6, dropPort, sessionId + 4, packet->ts.tv_sec)) {
 
                 return ARKIME_PACKET_IPPORT_DROPPED;
             }
@@ -1244,7 +1247,7 @@ LOCAL ArkimePacketRC arkime_packet_ip6(ArkimePacketBatch_t *batch, ArkimePacket_
                                ip6->ip6_dst.s6_addr, udphdr->uh_dport, packet->vlan, packet->vni);
 
             if (len > ip_hdr_len + (int)sizeof(struct udphdr) + 8 && udpPortCbs[udphdr->uh_dport]) {
-                int rc = arkime_packet_call_enqueue(udpPortCbs[udphdr->uh_dport], batch, packet, (uint8_t *)udphdr + sizeof(struct udphdr *), len - ip_hdr_len - sizeof(struct udphdr *));
+                int rc = arkime_packet_call_enqueue(udpPortCbs[udphdr->uh_dport], batch, packet, (uint8_t *)udphdr + sizeof(struct udphdr), len - ip_hdr_len - sizeof(struct udphdr));
                 if (rc != ARKIME_PACKET_UNKNOWN)
                     return rc;
 
@@ -1270,7 +1273,7 @@ LOCAL ArkimePacketRC arkime_packet_ip6(ArkimePacketBatch_t *batch, ArkimePacket_
         }
         if (ip_hdr_len > len) {
 #ifdef DEBUG_PACKET
-            LOG ("ERROR - Corrupt packet ip_hdr_len = %d nxt = %d len = %d", ip_hdr_len, nxt, len);
+            LOG("ERROR - Corrupt packet ip_hdr_len = %d nxt = %d len = %d", ip_hdr_len, nxt, len);
 #endif
             return ARKIME_PACKET_CORRUPT;
         }
@@ -1422,7 +1425,7 @@ LOCAL ArkimePacketRC arkime_packet_nflog(ArkimePacketBatch_t *batch, ArkimePacke
     while (n + 4 < len) {
         int length = data[n + 1] << 8 | data[n];
 
-        // Make sure length is at least header and not bigger then remaining packet
+        // Make sure length is at least header and not bigger than remaining packet
         if (length < 4 || length > len - n) {
 #ifdef DEBUG_PACKET
             LOG("BAD PACKET: Wrong len %d", length);
@@ -1749,7 +1752,7 @@ LOCAL ArkimePacketEnqueue_t *arkime_packet_set_enqueue_cb2(ArkimePacketEnqueue_c
 void arkime_packet_set_ethernet_cb2(uint16_t type, ArkimePacketEnqueue_cb2 enqueueCb, void *cbuw)
 {
     if (ethernetCbs[type])
-        LOG ("redefining existing callback type %u", type);
+        LOG("redefining existing callback type %u", type);
 
     ethernetCbs[type] = arkime_packet_set_enqueue_cb2(enqueueCb, cbuw);
 }
@@ -1757,7 +1760,7 @@ void arkime_packet_set_ethernet_cb2(uint16_t type, ArkimePacketEnqueue_cb2 enque
 void arkime_packet_set_ethernet_cb(uint16_t type, ArkimePacketEnqueue_cb enqueueCb)
 {
     if (ethernetCbs[type])
-        LOG ("redefining existing callback type %u", type);
+        LOG("redefining existing callback type %u", type);
 
     ethernetCbs[type] = arkime_packet_set_enqueue_cb(enqueueCb);
 }
@@ -1790,10 +1793,10 @@ ArkimePacketRC arkime_packet_run_ip_cb(ArkimePacketBatch_t *batch, ArkimePacket_
 void arkime_packet_set_ip_cb2(uint16_t type, ArkimePacketEnqueue_cb2 enqueueCb, void *cbuw)
 {
     if (type >= ARKIME_IPPROTO_MAX)
-        LOGEXIT ("ERROR - type value too large %u", type);
+        LOGEXIT("ERROR - type value too large %u", type);
 
     if (ipCbs[type])
-        LOG ("redefining existing callback type %u", type);
+        LOG("redefining existing callback type %u", type);
 
     ipCbs[type] = arkime_packet_set_enqueue_cb2(enqueueCb, cbuw);
 }
@@ -1801,10 +1804,10 @@ void arkime_packet_set_ip_cb2(uint16_t type, ArkimePacketEnqueue_cb2 enqueueCb, 
 void arkime_packet_set_ip_cb(uint16_t type, ArkimePacketEnqueue_cb enqueueCb)
 {
     if (type >= ARKIME_IPPROTO_MAX)
-        LOGEXIT ("ERROR - type value too large %u", type);
+        LOGEXIT("ERROR - type value too large %u", type);
 
     if (ipCbs[type])
-        LOG ("redefining existing callback type %u", type);
+        LOG("redefining existing callback type %u", type);
 
     ipCbs[type] = arkime_packet_set_enqueue_cb(enqueueCb);
 }
@@ -1812,7 +1815,7 @@ void arkime_packet_set_ip_cb(uint16_t type, ArkimePacketEnqueue_cb enqueueCb)
 void arkime_packet_set_udpport_enqueue_cb2(uint16_t port, ArkimePacketEnqueue_cb2 enqueueCb, void *cbuw)
 {
     if (udpPortCbs[htons(port)])
-        LOG ("redefining existing callback type %u", port);
+        LOG("redefining existing callback type %u", port);
 
     udpPortCbs[htons(port)] = arkime_packet_set_enqueue_cb2(enqueueCb, cbuw);
 }
@@ -1820,7 +1823,7 @@ void arkime_packet_set_udpport_enqueue_cb2(uint16_t port, ArkimePacketEnqueue_cb
 void arkime_packet_set_udpport_enqueue_cb(uint16_t port, ArkimePacketEnqueue_cb enqueueCb)
 {
     if (udpPortCbs[htons(port)])
-        LOG ("redefining existing callback type %u", port);
+        LOG("redefining existing callback type %u", port);
 
     udpPortCbs[htons(port)] = arkime_packet_set_enqueue_cb(enqueueCb);
 }
@@ -2092,7 +2095,7 @@ void arkime_packet_init()
                         (char *)NULL);
 
     arkime_field_define("general", "termfield",
-                        "region.dst", "Src Region", "destination.geo.region_iso_code",
+                        "region.dst", "Dst Region", "destination.geo.region_iso_code",
                         "Destination IP Region ISO",
                         0,  ARKIME_FIELD_FLAG_FAKE,
                         (char *)NULL);
@@ -2280,16 +2283,16 @@ void arkime_packet_drophash_add(ArkimeSession_t *session, int which, int min)
 
     if (which == -1) {
         const int port = (htons(session->port1) * htons(session->port2)) & 0xffff;
-        if (ARKIME_SESSION_v6(session)) {
-            arkime_drophash_add(&packetDrop6S, port, session->sessionId + 1, session->lastPacket.tv_sec, min * 60);
+        if (ARKIME_SESSION_IS_v6(session)) {
+            arkime_drophash_add(&packetDrop6S, port, session->sessionId + 4, session->lastPacket.tv_sec, min * 60);
         } else {
-            arkime_drophash_add(&packetDrop4S, port, session->sessionId + 1, session->lastPacket.tv_sec, min * 60);
+            arkime_drophash_add(&packetDrop4S, port, session->sessionId + 4, session->lastPacket.tv_sec, min * 60);
         }
     } else {
         // packetDrop is kept in network byte order
         const int port = (which == 0) ? htons(session->port1) : htons(session->port2);
 
-        if (ARKIME_SESSION_v6(session)) {
+        if (ARKIME_SESSION_IS_v6(session)) {
             if (which == 0) {
                 arkime_drophash_add(&packetDrop6, port, (void *)&session->addr1, session->lastPacket.tv_sec, min * 60);
             } else {

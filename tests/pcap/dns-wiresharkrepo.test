@@ -861,7 +861,9 @@
                },
                "bytes" : 129,
                "geo" : {
-                  "country_iso_code" : "NO"
+                  "city_name" : "Bergen",
+                  "country_iso_code" : "NO",
+                  "region_iso_code" : "12"
                },
                "ip" : "217.13.4.24",
                "mac" : [
@@ -978,7 +980,9 @@
                },
                "bytes" : 98,
                "geo" : {
-                  "country_iso_code" : "NO"
+                  "city_name" : "Bergen",
+                  "country_iso_code" : "NO",
+                  "region_iso_code" : "12"
                },
                "ip" : "217.13.4.24",
                "mac" : [
@@ -1095,7 +1099,9 @@
                },
                "bytes" : 140,
                "geo" : {
-                  "country_iso_code" : "NO"
+                  "city_name" : "Bergen",
+                  "country_iso_code" : "NO",
+                  "region_iso_code" : "12"
                },
                "ip" : "217.13.4.24",
                "mac" : [
@@ -1212,7 +1218,9 @@
                },
                "bytes" : 83,
                "geo" : {
-                  "country_iso_code" : "NO"
+                  "city_name" : "Bergen",
+                  "country_iso_code" : "NO",
+                  "region_iso_code" : "12"
                },
                "ip" : "217.13.4.24",
                "mac" : [
@@ -1329,7 +1337,9 @@
                },
                "bytes" : 83,
                "geo" : {
-                  "country_iso_code" : "NO"
+                  "city_name" : "Bergen",
+                  "country_iso_code" : "NO",
+                  "region_iso_code" : "12"
                },
                "ip" : "217.13.4.24",
                "mac" : [

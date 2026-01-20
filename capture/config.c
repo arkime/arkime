@@ -279,11 +279,11 @@ uint32_t arkime_config_int(GKeyFile *keyfile, const char *key, uint32_t d, uint3
     }
 
     if (value < min) {
-        LOG ("INFO: Resetting %s since %u is less than the min %u", key, value, min);
+        LOG("INFO: Resetting %s since %u is less than the min %u", key, value, min);
         value = min;
     }
     if (value > max) {
-        LOG ("INFO: Resetting %s since %u is greater than the max %u", key, value, max);
+        LOG("INFO: Resetting %s since %u is greater than the max %u", key, value, max);
         value = max;
     }
 
@@ -634,7 +634,7 @@ LOCAL void arkime_config_load()
     if (!status || error) {
         if (config.noConfigOption) {
             LOG("Couldn't load config file (%s) %s", config.configFile, (error ? error->message : ""));
-            status = g_key_file_load_from_data(keyfile, (gchar *)"[default]\n", (gsize) -1, G_KEY_FILE_NONE, &error);
+            g_key_file_load_from_data(keyfile, (gchar *)"[default]\n", (gsize) -1, G_KEY_FILE_NONE, &error);
         } else
             CONFIGEXIT("Couldn't load config file (%s) %s", config.configFile, (error ? error->message : ""));
     }
@@ -810,7 +810,7 @@ LOCAL void arkime_config_load()
     config.rirFile          = arkime_config_str(keyfile, "rirFile", NULL);
     config.ouiFile          = arkime_config_str(keyfile, "ouiFile", NULL);
     config.geoLite2ASN      = arkime_config_str_list(keyfile, "geoLite2ASN", "/var/lib/GeoIP/GeoLite2-ASN.mmdb;/usr/share/GeoIP/GeoLite2-ASN.mmdb;" CONFIG_PREFIX "/etc/GeoLite2-ASN.mmdb");
-    config.geoLite2Country  = arkime_config_str_list(keyfile, "geoLite2Country", "/var/lib/GeoIP/GeoLite2-Country.mmdb;/usr/share/GeoIP/GeoLite2-Country.mmdb;" CONFIG_PREFIX "/etc/GeoLite2-Country.mmdb");
+    config.geoLite2Country  = arkime_config_str_list(keyfile, "geoLite2Country", "/var/lib/GeoIP/GeoLite2-City.mmdb;/var/lib/GeoIP/GeoLite2-Country.mmdb;/usr/share/GeoIP/GeoLite2-City.mmdb;/usr/share/GeoIP/GeoLite2-Country.mmdb;" CONFIG_PREFIX "/etc/GeoLite2-City.mmdb;" CONFIG_PREFIX "/etc/GeoLite2-Country.mmdb");
     config.dropUser         = arkime_config_str(keyfile, "dropUser", NULL);
     config.dropGroup        = arkime_config_str(keyfile, "dropGroup", NULL);
     config.pluginsDir       = arkime_config_str_list(keyfile, "pluginsDir", CONFIG_PREFIX "/plugins ; ./plugins ");

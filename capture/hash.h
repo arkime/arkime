@@ -78,17 +78,17 @@ typedef int (* HASH_CMP_FUNC)(const void *key, const void *element);
 #define HASH_ADD_HASH(name, varname, h, key, element) \
   do { \
       const uint32_t _hh = element->name##hash = h; \
-      const int _b = element->name##bucket = element->name##hash % (varname).size; \
+      const int _b = element->name##bucket = _hh % (varname).size; \
       const void *_end = (void*)&((varname).buckets[_b]); \
       for (element->name##next = (varname).buckets[_b].name##next; element->name##next != _end; element->name##next = element->name##next->name##next) { \
           if (_hh > element->name##next->name##hash) break; \
-      }\
+      } \
      element->name##prev             = element->name##next->name##prev; \
      element->name##prev->name##next = element; \
      element->name##next->name##prev = element; \
-     (varname).buckets[_b].name##count++;\
+     (varname).buckets[_b].name##count++; \
      (varname).count++; \
-  } while(0)
+  } while (0)
 
 #define HASH_ADD(name, varname, key, element) HASH_ADD_HASH(name, varname, HASH_HASH(varname, key), key, element)
 
@@ -96,7 +96,7 @@ typedef int (* HASH_CMP_FUNC)(const void *key, const void *element);
   do { \
       DLL_REMOVE(name, &((varname).buckets[element->name##bucket]), element); \
       (varname).count--; \
-  } while(0)
+  } while (0)
 
 #define HASH_FIND_HASH(name, varname, h, key, element) \
   do { \
@@ -108,7 +108,7 @@ typedef int (* HASH_CMP_FUNC)(const void *key, const void *element);
           if (_hh > element->name##hash) {element = 0; break;} \
       } \
       if (element == _end) element = 0; \
-  } while(0)
+  } while (0)
 
 #define HASH_FIND_INT(name, varname, key, element) HASH_FIND_HASH(name, varname, (uint32_t)key, (void*)(long)key, element)
 

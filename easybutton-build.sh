@@ -26,7 +26,7 @@ NGHTTP2=1.57.0
 ZSTD=1.5.5
 KAFKA=1.5.3
 
-NODE=22.21.1
+NODE=22.22.0
 
 TDIR="/opt/arkime"
 DOPFRING=0
@@ -258,7 +258,7 @@ if [ "$UNAME" = "Darwin" ]; then
 fi
 
 if [ "$UNAME" = "FreeBSD" ]; then
-  sudo pkg install -y gcc wget curl pcre flex bison gettext glib gmake yara lua53 librdkafka pkgconf node22 npm-node22 libyaml autotools libmaxminddb libuuid python312 libinotify
+  sudo pkg install -y gcc wget curl pcre2 flex bison gettext glib gmake yara lua53 librdkafka pkgconf node22 npm-node22 libyaml autotools libmaxminddb libuuid python312 libinotify
   MAKE=gmake
   DOTHIRDPARTY=0
   DOKAFKA=1

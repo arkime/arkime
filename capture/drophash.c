@@ -279,7 +279,7 @@ void arkime_drophash_init(ArkimeDropHashGroup_t *group, const char *file, int ke
 void arkime_drophash_save(ArkimeDropHashGroup_t *group)
 {
     FILE *fp;
-    ArkimeDropHashItem_t *item;
+    const ArkimeDropHashItem_t *item;
 
     if (!group->file)
         return;

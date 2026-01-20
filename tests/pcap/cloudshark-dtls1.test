@@ -149,7 +149,9 @@
                },
                "bytes" : 955,
                "geo" : {
-                  "country_iso_code" : "NL"
+                  "city_name" : "Amsterdam",
+                  "country_iso_code" : "NL",
+                  "region_iso_code" : "NH"
                },
                "ip" : "193.0.14.129",
                "mac" : [

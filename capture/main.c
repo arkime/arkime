@@ -670,7 +670,7 @@ int arkime_string_ncmp(const void *keyv, const void *elementv)
 /******************************************************************************/
 uint32_t arkime_int_hash(const void *key)
 {
-    return (uint32_t)((long)key);
+    return GPOINTER_TO_UINT(key);
 }
 
 /******************************************************************************/
@@ -787,7 +787,7 @@ LOCAL gboolean arkime_quit_gfunc (gpointer UNUSED(user_data))
         int val = canQuitFuncs[i]();
         if (val != 0) {
             if (config.debug && canQuitNames[i]) {
-                LOG ("Can't quit, %s is %d", canQuitNames[i], val);
+                LOG("Can't quit, %s is %d", canQuitNames[i], val);
             }
             return G_SOURCE_CONTINUE;
         }

@@ -18,6 +18,7 @@ extern ArkimeConfig_t        config;
 
 typedef struct ArkimePyCbMap {
     PyObject *cb[MAX_INTERFACES * MAX_THREADS_PER_INTERFACE];
+    gboolean  isPacket;
 } ArkimePyCbMap_t;
 
 GHashTable *arkimePyCbMap = NULL;
@@ -40,10 +41,31 @@ LOCAL __thread int arkimeReaderThread = -1;
 LOCAL int loadingThread = -1;
 
 /******************************************************************************/
+LOCAL void arkime_python_cb_map_free(gpointer data)
+{
+    ARKIME_TYPE_FREE(ArkimePyCbMap_t, data);
+}
+/******************************************************************************/
+LOCAL void arkime_python_release_callbacks_for_thread(int thread, gboolean isPacket)
+{
+    ARKIME_LOCK(singleLock);
+    GHashTableIter iter;
+    gpointer key, value;
+    g_hash_table_iter_init(&iter, arkimePyCbMap);
+    while (g_hash_table_iter_next(&iter, &key, &value)) {
+        ArkimePyCbMap_t *map = (ArkimePyCbMap_t *)value;
+        if (map->cb[thread] != NULL && map->isPacket == isPacket) {
+            Py_DECREF(map->cb[thread]);
+            map->cb[thread] = NULL;
+        }
+    }
+    ARKIME_UNLOCK(singleLock);
+}
+/******************************************************************************/
 /**
  * Need to save the py callback per thread. We use the register name + the callback name as the key.
  */
-LOCAL ArkimePyCbMap_t *arkime_python_save_callback(const char *name, PyObject *py_callback_obj)
+LOCAL ArkimePyCbMap_t *arkime_python_save_callback(const char *name, PyObject *py_callback_obj, gboolean isPacket)
 {
     char key[100];
 
@@ -62,6 +84,7 @@ LOCAL ArkimePyCbMap_t *arkime_python_save_callback(const char *name, PyObject *p
 
     if (!map) {
         map = ARKIME_TYPE_ALLOC0(ArkimePyCbMap_t);
+        map->isPacket = isPacket;
         g_hash_table_insert(arkimePyCbMap, g_strdup(key), map);
     }
     ARKIME_UNLOCK(singleLock);
@@ -152,7 +175,7 @@ LOCAL PyObject *arkime_python_register_tcp_classifier(PyObject UNUSED(*self), Py
     }
     Py_INCREF(py_callback_obj);
 
-    ArkimePyCbMap_t *map = arkime_python_save_callback(name_str, py_callback_obj);
+    ArkimePyCbMap_t *map = arkime_python_save_callback(name_str, py_callback_obj, TRUE);
 
     if (map) {
         arkime_parsers_classifier_register_tcp (
@@ -206,7 +229,7 @@ LOCAL PyObject *arkime_python_register_udp_classifier(PyObject UNUSED(*self), Py
     }
     Py_INCREF(py_callback_obj);
 
-    ArkimePyCbMap_t *map = arkime_python_save_callback(name_str, py_callback_obj);
+    ArkimePyCbMap_t *map = arkime_python_save_callback(name_str, py_callback_obj, TRUE);
 
     if (map)
         arkime_parsers_classifier_register_udp (
@@ -259,7 +282,7 @@ LOCAL PyObject *arkime_python_register_sctp_classifier(PyObject UNUSED(*self), P
     }
     Py_INCREF(py_callback_obj);
 
-    ArkimePyCbMap_t *map = arkime_python_save_callback(name_str, py_callback_obj);
+    ArkimePyCbMap_t *map = arkime_python_save_callback(name_str, py_callback_obj, TRUE);
 
     if (map)
         arkime_parsers_classifier_register_sctp (
@@ -298,7 +321,7 @@ LOCAL PyObject *arkime_python_register_sctp_protocol_classifier(PyObject UNUSED(
     }
     Py_INCREF(py_callback_obj);
 
-    ArkimePyCbMap_t *map = arkime_python_save_callback(name_str, py_callback_obj);
+    ArkimePyCbMap_t *map = arkime_python_save_callback(name_str, py_callback_obj, TRUE);
 
     if (map)
         arkime_parsers_classifier_register_sctp_protocol (
@@ -337,7 +360,7 @@ LOCAL PyObject *arkime_python_register_port_classifier(PyObject UNUSED(*self), P
     }
     Py_INCREF(py_callback_obj);
 
-    ArkimePyCbMap_t *map = arkime_python_save_callback(name_str, py_callback_obj);
+    ArkimePyCbMap_t *map = arkime_python_save_callback(name_str, py_callback_obj, TRUE);
 
     if (map)
         arkime_parsers_classifier_register_port (
@@ -404,7 +427,7 @@ LOCAL PyObject *arkime_python_register_save(PyObject UNUSED(*self), PyObject *ar
     }
     Py_INCREF(py_callback_obj);
 
-    ArkimePyCbMap_t *map = arkime_python_save_callback(":save", py_callback_obj);
+    ArkimePyCbMap_t *map = arkime_python_save_callback(":save", py_callback_obj, TRUE);
 
     if (map)
         arkime_parsers_add_named_func2("arkime_session_save", arkime_python_session_save_cb, map);
@@ -432,7 +455,7 @@ LOCAL PyObject *arkime_python_register_pre_save(PyObject UNUSED(*self), PyObject
     }
     Py_INCREF(py_callback_obj);
 
-    ArkimePyCbMap_t *map = arkime_python_save_callback(":pre_save", py_callback_obj);
+    ArkimePyCbMap_t *map = arkime_python_save_callback(":pre_save", py_callback_obj, TRUE);
 
     if (map)
         arkime_parsers_add_named_func2("arkime_session_pre_save", arkime_python_session_save_cb, map);
@@ -646,18 +669,26 @@ LOCAL PyObject *arkime_python_session_has_protocol(PyObject UNUSED(*self), PyObj
 LOCAL PyObject *arkime_python_session_add_int(PyObject UNUSED(*self), PyObject *args)
 {
     PyObject *py_session_obj;
-    const char *field;
+    PyObject *py_field_obj;
     int value;
 
-    if (!PyArg_ParseTuple(args, "Osi", &py_session_obj, &field, &value)) {
+    if (!PyArg_ParseTuple(args, "OOi", &py_session_obj, &py_field_obj, &value)) {
         return NULL;
     }
 
     int pos;
-    if (isdigit(field[0]))
-        pos = atoi(field);
-    else
-        pos = arkime_field_by_exp(field);
+    if (PyLong_Check(py_field_obj)) {
+        pos = PyLong_AsLong(py_field_obj);
+    } else if (PyUnicode_Check(py_field_obj)) {
+        const char *field = PyUnicode_AsUTF8(py_field_obj);
+        if (isdigit(field[0]))
+            pos = atoi(field);
+        else
+            pos = arkime_field_by_exp(field);
+    } else {
+        PyErr_SetString(PyExc_TypeError, "Field must be a string or integer.");
+        return NULL;
+    }
 
     gboolean result = arkime_field_int_add(pos, (ArkimeSession_t *)PyLong_AsVoidPtr(py_session_obj), value);
 
@@ -671,18 +702,26 @@ LOCAL PyObject *arkime_python_session_add_int(PyObject UNUSED(*self), PyObject *
 LOCAL PyObject *arkime_python_session_add_string(PyObject UNUSED(*self), PyObject *args)
 {
     PyObject *py_session_obj;
-    const char *field;
+    PyObject *py_field_obj;
     const char *value;
 
-    if (!PyArg_ParseTuple(args, "Oss", &py_session_obj, &field, &value)) {
+    if (!PyArg_ParseTuple(args, "OOs", &py_session_obj, &py_field_obj, &value)) {
         return NULL;
     }
 
     int pos;
-    if (isdigit(field[0]))
-        pos = atoi(field);
-    else
-        pos = arkime_field_by_exp(field);
+    if (PyLong_Check(py_field_obj)) {
+        pos = PyLong_AsLong(py_field_obj);
+    } else if (PyUnicode_Check(py_field_obj)) {
+        const char *field = PyUnicode_AsUTF8(py_field_obj);
+        if (isdigit(field[0]))
+            pos = atoi(field);
+        else
+            pos = arkime_field_by_exp(field);
+    } else {
+        PyErr_SetString(PyExc_TypeError, "Field must be a string or integer.");
+        return NULL;
+    }
 
     const char *result = arkime_field_string_add(pos, (ArkimeSession_t *)PyLong_AsVoidPtr(py_session_obj), value, -1, TRUE);
 
@@ -727,9 +766,9 @@ LOCAL PyObject *arkime_python_session_get(PyObject UNUSED(*self), PyObject *args
     PyObject                    *py_session_obj;
     const char                  *field;
     const ArkimeStringHashStd_t *shash;
-    ArkimeString_t              *hstring = NULL;
+    const ArkimeString_t        *hstring = NULL;
     const ArkimeIntHashStd_t    *ihash;
-    ArkimeInt_t                 *hint;
+    const ArkimeInt_t           *hint;
     struct in6_addr             *ip6;
     char                         ipstr[INET6_ADDRSTRLEN + 10];
 
@@ -938,6 +977,57 @@ LOCAL PyObject *arkime_python_session_get(PyObject UNUSED(*self), PyObject *args
     Py_RETURN_NONE;
 }
 /******************************************************************************/
+LOCAL void arkime_python_decref(gpointer data)
+{
+    Py_DECREF((PyObject *)data);
+}
+/******************************************************************************/
+LOCAL PyObject *arkime_python_session_set_attr(PyObject UNUSED(*self), PyObject *args)
+{
+    PyObject *py_session_obj;
+    const char *key;
+    PyObject *state_obj;
+
+    if (!PyArg_ParseTuple(args, "OsO", &py_session_obj, &key, &state_obj)) {
+        return NULL;
+    }
+
+    ArkimeSession_t *session = (ArkimeSession_t *)PyLong_AsVoidPtr(py_session_obj);
+
+    if (!session->pythonAttrs) {
+        session->pythonAttrs = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, arkime_python_decref);
+    }
+
+    Py_INCREF(state_obj);
+    g_hash_table_replace(session->pythonAttrs, g_strdup(key), state_obj);
+
+    Py_RETURN_NONE;
+}
+/******************************************************************************/
+LOCAL PyObject *arkime_python_session_get_attr(PyObject UNUSED(*self), PyObject *args)
+{
+    PyObject *py_session_obj;
+    const char *key;
+
+    if (!PyArg_ParseTuple(args, "Os", &py_session_obj, &key)) {
+        return NULL;
+    }
+
+    ArkimeSession_t *session = (ArkimeSession_t *)PyLong_AsVoidPtr(py_session_obj);
+
+    if (!session->pythonAttrs) {
+        Py_RETURN_NONE;
+    }
+
+    PyObject *state = g_hash_table_lookup(session->pythonAttrs, key);
+    if (state) {
+        Py_INCREF(state);
+        return state;
+    }
+
+    Py_RETURN_NONE;
+}
+/******************************************************************************/
 LOCAL PyMethodDef arkime_session_methods[] = {
     { "register_parser", arkime_python_session_register_parser, METH_VARARGS, NULL },
     { "add_tag", arkime_python_session_add_tag, METH_VARARGS, NULL },
@@ -948,6 +1038,8 @@ LOCAL PyMethodDef arkime_session_methods[] = {
     { "incref", arkime_python_session_incref, METH_VARARGS, NULL },
     { "decref", arkime_python_session_decref, METH_VARARGS, NULL },
     { "get", arkime_python_session_get, METH_VARARGS, NULL },
+    { "set_attr", arkime_python_session_set_attr, METH_VARARGS, NULL },
+    { "get_attr", arkime_python_session_get_attr, METH_VARARGS, NULL },
     {NULL, NULL, 0, NULL} // Sentinel
 };
 /******************************************************************************/
@@ -981,6 +1073,16 @@ PyMODINIT_FUNC PyInit_arkime_session(void)
     return m;
 }
 /******************************************************************************/
+void arkime_python_session_free(ArkimeSession_t *session)
+{
+    if (session->pythonAttrs) {
+        PyGILState_STATE gstate = PyGILState_Ensure();
+        g_hash_table_destroy(session->pythonAttrs);
+        PyGILState_Release(gstate);
+        session->pythonAttrs = NULL;
+    }
+}
+/******************************************************************************/
 LOCAL void arkime_python_packet_load_file(const char *file)
 {
     // Make sure all the threads have been initialized before proceeding
@@ -1002,8 +1104,13 @@ LOCAL void arkime_python_packet_load_file(const char *file)
         PyThreadState* current_tstate_before_swap = PyThreadState_Swap(target_tstate);
 
         FILE *fp = fopen(file, "r");
+        if (!fp) {
+            LOG("Error opening '%s': %s", file, strerror(errno));
+            PyThreadState_Swap(current_tstate_before_swap);
+            continue;
+        }
         if (PyRun_SimpleFileExFlags(fp, file, 1, NULL)) {
-            LOG("Error loading '%s'\n", file);
+            LOG("Error loading '%s'", file);
             PyErr_Print();
         }
 
@@ -1036,10 +1143,14 @@ LOCAL void arkime_python_reader_load_files(int thread)
     PyThreadState* current_tstate_before_swap = PyThreadState_Swap(target_tstate);
 
     for (guint i = 0; i < filesLoaded->len; i++) {
-        gchar *file = g_ptr_array_index(filesLoaded, i);
+        const gchar *file = g_ptr_array_index(filesLoaded, i);
         FILE *fp = fopen(file, "r");
+        if (!fp) {
+            LOG("Error opening '%s': %s", file, strerror(errno));
+            continue;
+        }
         if (PyRun_SimpleFileExFlags(fp, file, 1, NULL)) {
-            LOG("Error loading '%s'\n", file);
+            LOG("Error loading '%s'", file);
             PyErr_Print();
         }
 
@@ -1288,7 +1399,7 @@ LOCAL PyObject *arkime_python_set_ethernet_cb(PyObject UNUSED(*self), PyObject *
     }
     Py_INCREF(py_callback_obj);
 
-    ArkimePyCbMap_t *map = arkime_python_save_callback(":ethernet_cb", py_callback_obj);
+    ArkimePyCbMap_t *map = arkime_python_save_callback(":ethernet_cb", py_callback_obj, FALSE);
 
     if (map)
         arkime_packet_set_ethernet_cb2(type, arkime_python_packet_cb, map);
@@ -1318,7 +1429,7 @@ LOCAL PyObject *arkime_python_set_ip_cb(PyObject UNUSED(*self), PyObject *args)
     }
     Py_INCREF(py_callback_obj);
 
-    ArkimePyCbMap_t *map = arkime_python_save_callback(":ip_cb", py_callback_obj);
+    ArkimePyCbMap_t *map = arkime_python_save_callback(":ip_cb", py_callback_obj, FALSE);
 
     if (map)
         arkime_packet_set_ip_cb2(type, arkime_python_packet_cb, map);
@@ -1429,7 +1540,7 @@ LOCAL int arkime_python_pp_load(const char *path)
 {
     arkime_python_packet_load_file(path);
     if (!filesLoaded) {
-        filesLoaded = g_ptr_array_new();
+        filesLoaded = g_ptr_array_new_with_free_func(g_free);
     }
     g_ptr_array_add(filesLoaded, g_strdup(path));
     return 0;
@@ -1475,19 +1586,16 @@ LOCAL void arkime_python_thread_init(PyThreadState **threadState)
         PyErr_Print();
         LOGEXIT("Failed to add arkime module to sys.modules.\n");
     }
-    Py_DECREF(p_arkime_module_obj); // Decrement our local reference, as sys.modules now owns it.
 
     if (PyDict_SetItemString(sys_modules, "arkime_session", p_arkime_session_module_obj) < 0) {
         PyErr_Print();
         LOGEXIT("Failed to add arkime_session module to sys.modules.\n");
     }
-    Py_DECREF(p_arkime_session_module_obj); // Decrement our local reference, as sys.modules now owns it.
 
     if (PyDict_SetItemString(sys_modules, "arkime_packet", p_arkime_packet_module_obj) < 0) {
         PyErr_Print();
         LOGEXIT("Failed to add arkime_packet module to sys.modules.\n");
     }
-    Py_DECREF(p_arkime_packet_module_obj); // Decrement our local reference, as sys.modules now owns it.
 
     if (!PyDict_GetItemString(sys_modules, "arkime")) {
         LOGEXIT("C Debug: 'arkime' module NOT found in sys.modules after insertion.");
@@ -1501,8 +1609,7 @@ LOCAL void arkime_python_thread_init(PyThreadState **threadState)
         LOGEXIT("C Debug: 'arkime_packet' module NOT found in sys.modules after insertion.");
     }
 
-    Py_DECREF(sys_modules);
-
+    // Add constants before decrementing references
     PyModule_AddStringConstant(p_arkime_module_obj, "VERSION", VERSION);
     PyModule_AddStringConstant(p_arkime_module_obj, "CONFIG_PREFIX", CONFIG_PREFIX);
     PyModule_AddIntConstant(p_arkime_module_obj, "API_VERSION", ARKIME_API_VERSION);
@@ -1523,6 +1630,12 @@ LOCAL void arkime_python_thread_init(PyThreadState **threadState)
     PyModule_AddIntConstant(p_arkime_packet_module_obj, "DONT_PROCESS_OR_FREE", ARKIME_PACKET_DONT_PROCESS_OR_FREE);
     PyModule_AddIntConstant(p_arkime_packet_module_obj, "DUPLICATE_DROPPED", ARKIME_PACKET_DUPLICATE_DROPPED);
 
+    // Decrement our local references now that sys.modules owns them
+    Py_DECREF(p_arkime_module_obj);
+    Py_DECREF(p_arkime_session_module_obj);
+    Py_DECREF(p_arkime_packet_module_obj);
+    // Note: sys_modules is a borrowed reference from PyImport_GetModuleDict(), do NOT Py_DECREF it
+
     PyEval_SaveThread();
 }
 /******************************************************************************/
@@ -1540,10 +1653,16 @@ LOCAL uint32_t arkime_python_packet_thread_init(int thread, void UNUSED(*uw), vo
 /******************************************************************************/
 LOCAL uint32_t arkime_python_packet_thread_exit(int thread, void UNUSED(*uw), void UNUSED(*cbuw))
 {
+    if (disablePython) {
+        return 0;
+    }
+
     if (config.debug)
         LOG("Exiting Python interpreter for thread %d.", thread);
     PyEval_RestoreThread(packetThreadState[thread]);
+    arkime_python_release_callbacks_for_thread(thread, TRUE);
     Py_EndInterpreter(packetThreadState[thread]);
+    packetThreadState[thread] = NULL;
     threads--;
     return 0;
 }
@@ -1564,10 +1683,16 @@ LOCAL uint32_t arkime_python_reader_thread_init(int thread, void UNUSED(*uw), vo
 /******************************************************************************/
 LOCAL uint32_t arkime_python_reader_thread_exit(int thread, void UNUSED(*uw), void UNUSED(*cbuw))
 {
+    if (disablePython) {
+        return 0;
+    }
+
     if (config.debug)
         LOG("Exiting Python interpreter for thread %d.", thread);
     PyEval_RestoreThread(readerThreadState[thread]);
+    arkime_python_release_callbacks_for_thread(thread, FALSE);
     Py_EndInterpreter(readerThreadState[thread]);
+    readerThreadState[thread] = NULL;
     threads--;
     return 0;
 }
@@ -1589,7 +1714,7 @@ void arkime_python_init()
     arkime_parsers_register_load_extension(".py", arkime_python_pp_load);
     arkime_plugins_register_load_extension(".py", arkime_python_pp_load);
 
-    arkimePyCbMap = g_hash_table_new_full(g_str_hash, g_str_equal, NULL, NULL);
+    arkimePyCbMap = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, arkime_python_cb_map_free);
 
     arkime_add_named_func("arkime_packet_thread_init", arkime_python_packet_thread_init, NULL);
     arkime_add_named_func("arkime_packet_thread_exit", arkime_python_packet_thread_exit, NULL);
@@ -1612,6 +1737,18 @@ void arkime_python_exit()
         if (config.debug > 1)
             LOG("Waiting for %d Python threads to exit", threads);
         usleep(10000);
+    }
+
+    // Clean up the callback map - the PyObjects have already been decref'd in thread exit
+    if (arkimePyCbMap) {
+        g_hash_table_destroy(arkimePyCbMap);
+        arkimePyCbMap = NULL;
+    }
+
+    // Clean up filesLoaded
+    if (filesLoaded) {
+        g_ptr_array_free(filesLoaded, TRUE);
+        filesLoaded = NULL;
     }
 
     PyEval_RestoreThread(mainThreadState);

@@ -176,7 +176,7 @@ class StatsAPIs {
         fields.deltaPacketsPerSec = Math.floor(fields.deltaPackets * 1000.0 / fields.deltaMS);
         fields.deltaSessionsPerSec = Math.floor(fields.deltaSessions * 1000.0 / fields.deltaMS);
         fields.deltaSessionBytesPerSec = Math.floor(fields.deltaSessionBytes * 1000.0 / fields.deltaMS);
-        fields.sessionSizePerSec = Math.floor(fields.deltaSessionBytes / fields.deltaSessions);
+        fields.sessionSizePerSec = Math.floor(fields.deltaSessionBytes / fields.deltaSessions) || 0;
         fields.deltaDroppedPerSec = Math.floor(fields.deltaDropped * 1000.0 / fields.deltaMS);
         fields.deltaFragsDroppedPerSec = Math.floor(fields.deltaFragsDropped * 1000.0 / fields.deltaMS);
         fields.deltaOverloadDroppedPerSec = Math.floor(fields.deltaOverloadDropped * 1000.0 / fields.deltaMS);

@@ -72,7 +72,8 @@
 #define ARKIME_IPPROTO_UNKNOWN 255
 #define ARKIME_IPPROTO_CORRUPT 256
 #define ARKIME_IPPROTO_MAX     257
-#define ARKIME_SESSION_v6(s) ((s)->sessionId[0] == ARKIME_SESSIONID6_LEN)
+#define ARKIME_SESSION_IS_v6(s) ((s)->v6 == 1)
+#define ARKIME_SESSION_IS_v4(s) ((s)->v6 == 0)
 
 #define ARKIME_VAR_ARG_STR_SKIP GINT_TO_POINTER(1)
 #define ARKIME_VAR_ARG_INT_SKIP (char *)0x7fffffffffffffffLL
@@ -713,6 +714,7 @@ typedef struct arkime_session {
     GArray                *fileLenArray;
     GArray                *fileNumArray;
     char                  *rootId;
+    GHashTable            *pythonAttrs;
 
     struct timeval         firstPacket;
     struct timeval         lastPacket;
@@ -766,6 +768,8 @@ typedef struct arkime_session {
     uint16_t               pq: 1;
     uint16_t               synSet: 2;
     uint16_t               inStoppedSave: 1;
+    uint16_t               v6: 1;
+
 #if ARKIME_SESSION_HASH == ARKIME_SESSION_HASH_SLL
     uint16_t               inSessionTable: 1;
 #endif
@@ -811,7 +815,7 @@ typedef struct {
                     name, (size_t)(size), __FILE__, __LINE__); \
         } \
         (ptr) = (void *)_tmp_ptr; \
-    } while(0)
+    } while (0)
 
 // pcap_file_header
 typedef struct {
@@ -872,8 +876,8 @@ extern ARKIME_LOCK_EXTERN(LOG);
     } \
 } while(0) /* no trailing ; */
 
-#define LOGEXIT(...) do { config.quiet = FALSE; LOG(__VA_ARGS__); exit(1); } while(0) /* no trailing ; */
-#define CONFIGEXIT(...) do { printf("vvvvvvvvvvvvvvvvvvvvvvvvv IMPORTANT vvvvvvvvvvvvvvvvvvvvvvvvv\n"); printf("FATAL CONFIG ERROR - " __VA_ARGS__); printf("\n^^^^^^^^^^^^^^^^^^^^^^^^^ IMPORTANT ^^^^^^^^^^^^^^^^^^^^^^^^^\n");exit(1); } while(0) /* no trailing ; */
+#define LOGEXIT(...) do { config.quiet = FALSE; LOG(__VA_ARGS__); exit(1); } while (0) /* no trailing ; */
+#define CONFIGEXIT(...) do { printf("vvvvvvvvvvvvvvvvvvvvvvvvv IMPORTANT vvvvvvvvvvvvvvvvvvvvvvvvv\n"); printf("FATAL CONFIG ERROR - " __VA_ARGS__); printf("\n^^^^^^^^^^^^^^^^^^^^^^^^^ IMPORTANT ^^^^^^^^^^^^^^^^^^^^^^^^^\n");exit(1); } while (0) /* no trailing ; */
 #define REMOVEDCONFIG(_var,_help) do { if (arkime_config_str(NULL, _var, NULL) != NULL) CONFIGEXIT("Setting '" _var "' removed - " _help); } while (0) /* no trailing ; */
 
 #define LOG_RATE(rate, ...) do { \
@@ -1131,13 +1135,13 @@ void  arkime_parsers_classifier_register_sctp_internal(const char *name, void *u
 
 #define  ARKIME_PARSERS_PORT_UDP_SRC 0x01
 #define  ARKIME_PARSERS_PORT_UDP_DST 0x02
-#define  ARKIME_PARSERS_PORT_UDP     ARKIME_PARSERS_PORT_UDP_SRC | ARKIME_PARSERS_PORT_UDP_DST
+#define  ARKIME_PARSERS_PORT_UDP     (ARKIME_PARSERS_PORT_UDP_SRC | ARKIME_PARSERS_PORT_UDP_DST)
 #define  ARKIME_PARSERS_PORT_TCP_SRC 0x04
 #define  ARKIME_PARSERS_PORT_TCP_DST 0x08
-#define  ARKIME_PARSERS_PORT_TCP     ARKIME_PARSERS_PORT_TCP_SRC | ARKIME_PARSERS_PORT_TCP_DST
+#define  ARKIME_PARSERS_PORT_TCP     (ARKIME_PARSERS_PORT_TCP_SRC | ARKIME_PARSERS_PORT_TCP_DST)
 #define  ARKIME_PARSERS_PORT_SCTP_SRC 0x10
 #define  ARKIME_PARSERS_PORT_SCTP_DST 0x20
-#define  ARKIME_PARSERS_PORT_SCTP     ARKIME_PARSERS_PORT_SCTP_SRC | ARKIME_PARSERS_PORT_SCTP_DST
+#define  ARKIME_PARSERS_PORT_SCTP     (ARKIME_PARSERS_PORT_SCTP_SRC | ARKIME_PARSERS_PORT_SCTP_DST)
 
 void  arkime_parsers_classifier_register_port_internal(const char *name, void *uw, uint16_t port, uint32_t type, ArkimeClassifyFunc func, size_t sessionsize, int apiversion);
 #define arkime_parsers_classifier_register_port(name, uw, port, type, func) arkime_parsers_classifier_register_port_internal(name, uw, port, type, func, sizeof(ArkimeSession_t), ARKIME_API_VERSION)
@@ -1489,7 +1493,7 @@ char *arkime_yara_version();
 void arkime_field_init();
 void arkime_field_define_json(const uint8_t *expression, int expression_len, const uint8_t *data, int data_len);
 int  arkime_field_define_text(const char *text, int *shortcut);
-int  arkime_field_define_text_full(char *field, const char *text, int *shortcut);
+int  arkime_field_define_text_full(const char *field, const char *text, int *shortcut);
 int  arkime_field_define(const char *group, const char *kind, const char *expression, const char *friendlyName, const char *dbField, const char *help, ArkimeFieldType type, int flags, ...);
 
 int  arkime_field_by_db(const char *dbField);
@@ -1658,6 +1662,7 @@ void arkime_pq_flush(int thread);
  * python.c
  */
 void arkime_python_init();
+void arkime_python_session_free(ArkimeSession_t *session);
 void arkime_python_exit();
 
 /******************************************************************************/

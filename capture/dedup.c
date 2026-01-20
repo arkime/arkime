@@ -13,18 +13,24 @@
  * We size the hashtable assuming DEDUP_SLOT_FACTOR elements per
  * slot, but actually allow DEDUP_SIZE_FACTOR elements.
  *
- * Currently use md5 on ip + tcp/udp hdr
+ * Hash ip + tcp/udp hdr using either MD5 or XXH3_128bits.
  */
 
 #include "arkime.h"
+
+#ifdef DEDUP_USE_MD5
 #define OPENSSL_SUPPRESS_DEPRECATED
 #include <openssl/md5.h>
+#else
+#define XXH_INLINE_ALL
+#include "xxhash.h"
+#endif
 
 extern ArkimeConfig_t       config;
 
 // How many items in each hashtable we expect to be used, mut be less than DEDUP_SIZE_FACTOR
 #define DEDUP_SLOT_FACTOR   15
-// How many items in each hashtable we actually allow, must be less then 256 and more than DEDUP_SLOT_FACTOR
+// How many items in each hashtable we actually allow, must be less than 256 and more than DEDUP_SLOT_FACTOR
 #define DEDUP_SIZE_FACTOR   20
 
 LOCAL uint32_t              dedupSeconds;
@@ -55,9 +61,11 @@ int arkime_dedup_should_drop (const ArkimePacket_t *packet, int headerLen)
 
     // Create hash, headerLen should be length of ip & tcp/udp header
     uint8_t md[16];
+    const uint8_t *const ptr = packet->pkt + packet->ipOffset;
+
+#ifdef DEDUP_USE_MD5
     MD5_CTX ctx;
     MD5_Init(&ctx);
-    const uint8_t *const ptr = packet->pkt + packet->ipOffset;
     if ((ptr[0] & 0xf0) == 0x40) {
         MD5_Update(&ctx, ptr, 8);
         // Skip TTL (1 byte)
@@ -70,6 +78,25 @@ int arkime_dedup_should_drop (const ArkimePacket_t *packet, int headerLen)
         MD5_Update(&ctx, ptr + 8, headerLen - 8);
     }
     MD5_Final(md, &ctx);
+#else
+    XXH3_state_t state;
+    XXH3_128bits_reset(&state);
+    if ((ptr[0] & 0xf0) == 0x40) {
+        XXH3_128bits_update(&state, ptr, 8);
+        // Skip TTL (1 byte)
+        XXH3_128bits_update(&state, ptr + 9, 1);
+        // Skip Header checksum (2 byte)
+        XXH3_128bits_update(&state, ptr + 12, headerLen - 12);
+    } else {
+        XXH3_128bits_update(&state, ptr, 7);
+        // Skip HOP
+        XXH3_128bits_update(&state, ptr + 8, headerLen - 8);
+    }
+    XXH128_hash_t hash = XXH3_128bits_digest(&state);
+    ((uint64_t *)md)[0] = hash.low64;
+    ((uint64_t *)md)[1] = hash.high64;
+#endif
+
     int h = ((uint32_t *)md)[0] & dedupSlotsMask;
 
     // First see if we need to clean up old slot, and block all new folks while we do

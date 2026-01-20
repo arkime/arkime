@@ -181,7 +181,7 @@ void arkime_field_define_json(const uint8_t *expression, int expression_len, con
     return;
 }
 /******************************************************************************/
-int arkime_field_define_text_full(char *field, const char *text, int *shortcut)
+int arkime_field_define_text_full(const char *field, const char *text, int *shortcut)
 {
     int count = 0;
     int nolinked = 0;
@@ -702,11 +702,12 @@ const char *arkime_field_string_add(int pos, ArkimeSession_t *session, const cha
             string = g_strndup(string, len);
         g_ptr_array_add(field->sarray, (char *)string);
         goto added;
-    case ARKIME_FIELD_TYPE_STR_HASH:
+    case ARKIME_FIELD_TYPE_STR_HASH: {
         if (copy)
             string = g_strndup(string, len);
 
-        HASH_FIND_HASH(s_, *(field->shash), arkime_string_hash_len(string, len), string, hstring);
+        uint32_t hhash = arkime_string_hash_len(string, len);
+        HASH_FIND_HASH(s_, *(field->shash), hhash, string, hstring);
 
         if (hstring) {
             if (copy)
@@ -718,8 +719,9 @@ const char *arkime_field_string_add(int pos, ArkimeSession_t *session, const cha
         hstring->len = len;
         hstring->utf8 = 0;
         hstring->uw = 0;
-        HASH_ADD(s_, *(field->shash), hstring->str, hstring);
+        HASH_ADD_HASH(s_, *(field->shash), hhash, hstring->str, hstring);
         goto added;
+    }
     case ARKIME_FIELD_TYPE_STR_GHASH:
         if (copy)
             string = g_strndup(string, len);
@@ -869,8 +871,9 @@ const char *arkime_field_string_uw_add(int pos, ArkimeSession_t *session, const 
     field = session->fields[pos];
 
     switch (info->type) {
-    case ARKIME_FIELD_TYPE_STR_HASH:
-        HASH_FIND_HASH(s_, *(field->shash), arkime_string_hash_len(string, len), string, hstring);
+    case ARKIME_FIELD_TYPE_STR_HASH: {
+        uint32_t hhash = arkime_string_hash_len(string, len);
+        HASH_FIND_HASH(s_, *(field->shash), hhash, string, hstring);
 
         if (hstring) {
             return NULL;
@@ -883,12 +886,13 @@ const char *arkime_field_string_uw_add(int pos, ArkimeSession_t *session, const 
         hstring->len = len;
         hstring->utf8 = 0;
         hstring->uw = uw;
-        HASH_ADD(s_, *(field->shash), hstring->str, hstring);
+        HASH_ADD_HASH(s_, *(field->shash), hhash, hstring->str, hstring);
 
         JSON_SIZE_INCR(6 + 2 * len);
         if (info->ruleEnabled)
             arkime_rules_run_field_set(session, pos, (const gpointer) string);
         return string;
+    }
     default:
         LOGEXIT("ERROR - Not a string hash, expression: %s field: %s, tried to set '%.*s'", info->expression, info->dbFieldFull, len, string);
     }
@@ -1938,7 +1942,7 @@ LOCAL void *arkime_field_getcb_dst_ip_port(const ArkimeSession_t *session, int U
 {
     char *ipstr = g_malloc(INET6_ADDRSTRLEN + 10);
 
-    if (IN6_IS_ADDR_V4MAPPED(&session->addr2)) {
+    if (ARKIME_SESSION_IS_v4(session)) {
         char *end = arkime_ip4tostr(ARKIME_V6_TO_V4(session->addr2), ipstr, INET6_ADDRSTRLEN);
         snprintf(end, 10, ":%d", session->port2);
     } else {

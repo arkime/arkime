@@ -113,7 +113,7 @@ LOCAL void kafka_send_session_bulk(char *json, int len)
 
 /******************************************************************************/
 /*
- * Called by arkime when arkime is quiting
+ * Called by arkime when arkime is quitting
  */
 LOCAL void kafka_plugin_exit()
 {

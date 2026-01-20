@@ -10,7 +10,7 @@
 
 ![banner](https://raw.githubusercontent.com/arkime/arkime/main/assets/Arkime_Logo_FullGradientBlack@3x.png)
 
-Arkime augments your current security infrastructure to store and index network traffic in standard PCAP format, providing fast, indexed access. An intuitive and simple web interface is provided for PCAP browsing, searching, and exporting. Arkime exposes APIs which allow for PCAP data and JSON formatted session data to be downloaded and consumed directly. Arkime stores and exports all packets in standard PCAP format, allowing you to also use your favorite PCAP ingesting tools, such as wireshark, during your analysis workflow.
+Arkime augments your current security infrastructure to store and index network traffic in standard PCAP format, providing fast, indexed access. An intuitive and simple web interface is provided for PCAP browsing, searching, and exporting. Arkime exposes APIs which allow for PCAP data and JSON formatted session data to be downloaded and consumed directly. Arkime stores and exports all packets in standard PCAP format, allowing you to also use your favorite PCAP ingesting tools, such as Wireshark, during your analysis workflow.
 
 Arkime is built to be deployed across many systems and can scale to handle tens of gigabits/sec of traffic. PCAP retention is based on available sensor disk space. Metadata retention is based on the Elasticsearch cluster scale. Both can be increased at anytime and are under your complete control.
 
@@ -54,13 +54,19 @@ The SPI View page offers a detailed breakdown of data, displaying all unique val
 
 ## Installation
 
-Most users should use the prebuilt binaries available on our [Downloads page](https://arkime.com/downloads) and follow the [simple install instructions](https://arkime.com/install). We also provide containers see the [Docker instructions](https://arkime.com/docker) for the best tag to use.
+We recommend installing Arkime using either our prebuilt binaries or containers.
 
-For advanced users, you can build Arkime yourself:
-* Make sure `node` is in your path, currently main supports Node version 20.x
+### Recommended Methods
+* **Prebuilt Binaries:** Available on our [Downloads page](https://arkime.com/downloads). Follow the [simple install instructions](https://arkime.com/install).
+* **Containers:** We provide official containers for easy deployment. Please refer to our [Docker instructions](https://arkime.com/docker) for details on available tags and usage.
+
+### Building from Source (Advanced)
+Building from source is only recommended for advanced users or contributors.
+
+* Make sure `node` is in your path, currently main supports Node version 22.x
 * `git clone https://github.com/arkime/arkime` - latest version on github
-* Find your OS in `.github/workflow/versions` for the easybutton options to use
-* `./easybutton-build.sh [easybutton options] --install` - build and install Arkime
+* Find your OS in `.github/workflows/versions` for the easybutton options to use
+* `./easybutton-build.sh [easybutton options] --install` - build and install Arkime (Run `./easybutton-build.sh --help` for list of options)
 * `make config` - performs an initial Arkime configuration
 * Refer to the [CONTRIBUTING.md](CONTRIBUTING.md) file for information about how to get involved
 
@@ -74,18 +80,18 @@ Once Arkime is running, point your browser to http://localhost:8005 to access th
 
 ## Security
 
-Access to Arkime is protected by using HTTPS with digest passwords or by using an authentication providing web server proxy. All PCAPs are stored on the sensors and are only accessed using the Arkime interface or API. Arkime is not meant to replace an IDS but instead work alongside them to store and index all the network traffic in standard PCAP format, providing fast access.
+Access to Arkime is protected by using HTTPS with digest passwords or by using an authentication-providing web server proxy. All PCAPs are stored on the sensors and are only accessed using the Arkime interface or API. Arkime is not meant to replace an IDS but instead work alongside them to store and index all the network traffic in standard PCAP format, providing fast access.
 
 
 * Arkime can be configured to use OpenSearch/Elasticsearch user auth or API keys.
 
-* Arkime machines should be locked down, however they need to talk to each other (port 8005), to the elasticsearch machines (ports 9200-920x), and the web interface needs to be open (port 8005).
+* Arkime machines should be locked down; however, they need to communicate with each other (port 8005) and the OpenSearch/Elasticsearch machines (ports 9200-920x). Additionally, the web interface needs to be open (port 8005).
 
-* Arkime ``viewer`` should be configured to use TLS.
+* Arkime `viewer`` should be configured to use TLS.
 
   - It's easiest to use a single certificate with multiple DNs or a wildcard.
   - Make sure you protect the cert on the filesystem with proper file permissions.
-  - Edit certFile and keyFile settings in ``/opt/arkime/etc/config.ini.ini`` to enable.
+  - Edit certFile and keyFile settings in ``/opt/arkime/etc/config.ini`` to enable.
 
 * For large deployments it is possible to set up a Arkime ``viewer`` on a central machine that doesn't capture any data, instead the machine gateways all UI requests.
 
@@ -94,7 +100,7 @@ Access to Arkime is protected by using HTTPS with digest passwords or by using a
 * A shared password stored in the Arkime configuration file is used to encrypt password hashes AND for inter-Arkime communication.
 
   - Make sure you protect the config file on the filesystem with proper file permissions.
-  - Encrypted password hashes are used so a new password hash can not be inserted into OpenSearch/Elasticsearch directly in case it hasn't been secured.
+  - Encrypted password hashes are used so a new password hash cannot be inserted into OpenSearch/Elasticsearch directly in case it hasn't been secured.
 
 ## API
 

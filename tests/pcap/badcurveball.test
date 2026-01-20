@@ -71,7 +71,9 @@
                },
                "bytes" : 2134,
                "geo" : {
-                  "country_iso_code" : "US"
+                  "city_name" : "Ashburn",
+                  "country_iso_code" : "US",
+                  "region_iso_code" : "VA"
                },
                "ip" : "54.226.182.138",
                "mac" : [

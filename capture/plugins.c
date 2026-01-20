@@ -63,7 +63,7 @@ LOCAL void arkime_plugins_cmd_list(int UNUSED(argc), char UNUSED( * *argv), gpoi
     BSB bsb;
     BSB_INIT(bsb, buf, sizeof(buf));
 
-    ArkimePlugin_t *plugin;
+    const ArkimePlugin_t *plugin;
 
     if (HASH_COUNT(p_, plugins) == 0) {
         BSB_EXPORT_sprintf(bsb, "No plugins loaded\n");

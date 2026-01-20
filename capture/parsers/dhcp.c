@@ -74,10 +74,10 @@ LOCAL void dhcpv6_create_sessionid(uint8_t *sessionId, ArkimePacket_t *packet)
 {
     const uint8_t *data = packet->pkt + packet->payloadOffset;
 
-    memset(sessionId, 0, 8);
-    sessionId[0] = 5;
+    sessionId[0] = 8;
     sessionId[1] = dhcpv6MProtocol;
     memcpy(sessionId + 2, data + 1, 3);
+    sessionId[5] = sessionId[6] = sessionId[7] = 0;
 }
 /******************************************************************************/
 LOCAL int dhcpv6_pre_process(ArkimeSession_t *session, ArkimePacket_t *const packet, int isNewSession)
