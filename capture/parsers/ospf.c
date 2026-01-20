@@ -15,9 +15,9 @@ LOCAL void ospf_create_sessionid(uint8_t *sessionId, ArkimePacket_t *const UNUSE
 {
     // uint8_t *data = packet->pkt + packet->payloadOffset;
 
-    memset(sessionId, 0, 4);
-    sessionId[0] = 2;
+    sessionId[0] = 4;
     sessionId[1] = ospfMProtocol;
+    sessionId[2] = sessionId[3] = 0;
 
     // for now, lump all ospf into the same session
 }

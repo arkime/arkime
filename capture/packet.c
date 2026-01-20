@@ -296,6 +296,10 @@ LOCAL void arkime_packet_process(ArkimePacket_t *packet, int thread)
 
     mProtocols[packet->mProtocol].createSessionId(sessionId, packet);
 
+    if ((sessionId[0] & 0x03) != 0) {
+        LOGEXIT("ERROR - Session ID must be aligned to 4 bytes, protocol %s is not (%d)", mProtocols[packet->mProtocol].name, sessionId[0]);
+    }
+
     // Try at most 2 times
     int isNew;
 
