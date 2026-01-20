@@ -143,6 +143,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #3435 New wise urlapi source
 ## db.pl
   - #3581 New db.pl show-nodes command
+  - #3600 The init/wipe/upgrade commands warn if using different settings
 
 5.8.3 2025/12/02
 ## Release
