@@ -1942,7 +1942,7 @@ LOCAL void *arkime_field_getcb_dst_ip_port(const ArkimeSession_t *session, int U
 {
     char *ipstr = g_malloc(INET6_ADDRSTRLEN + 10);
 
-    if (IN6_IS_ADDR_V4MAPPED(&session->addr2)) {
+    if (ARKIME_SESSION_IS_v4(session)) {
         char *end = arkime_ip4tostr(ARKIME_V6_TO_V4(session->addr2), ipstr, INET6_ADDRSTRLEN);
         snprintf(end, 10, ":%d", session->port2);
     } else {

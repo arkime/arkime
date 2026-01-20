@@ -256,7 +256,7 @@ char *arkime_session_pretty_string (ArkimeSession_t *session, char *buf, int len
     BSB bsb;
     BSB_INIT(bsb, buf, len);
 
-    if (IN6_IS_ADDR_V4MAPPED(&session->addr1)) {
+    if (ARKIME_SESSION_IS_v4(session)) {
         BSB_EXPORT_ip4tostr(bsb, ARKIME_V6_TO_V4(session->addr1));
         BSB_EXPORT_sprintf(bsb, ":%u", session->port1);
         BSB_EXPORT_cstr(bsb, " => ");

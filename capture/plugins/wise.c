@@ -570,7 +570,7 @@ LOCAL void wise_lookup_tuple(ArkimeSession_t *session, WiseRequest_t *request)
     char ipstr1[INET6_ADDRSTRLEN];
     char ipstr2[INET6_ADDRSTRLEN];
 
-    if (IN6_IS_ADDR_V4MAPPED(&session->addr1)) {
+    if (ARKIME_SESSION_IS_v4(session)) {
         arkime_ip4tostr(ARKIME_V6_TO_V4(session->addr1), ipstr1, sizeof(ipstr1));
         arkime_ip4tostr(ARKIME_V6_TO_V4(session->addr2), ipstr2, sizeof(ipstr2));
     } else {

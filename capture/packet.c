@@ -319,6 +319,7 @@ LOCAL void arkime_packet_process(ArkimePacket_t *packet, int thread)
                     session->addr1 = ip6->ip6_src;
                     session->addr2 = ip6->ip6_dst;
                     session->ip_tos = 0;
+                    session->v6 = 1;
                 }
             }
         }
@@ -2278,7 +2279,7 @@ void arkime_packet_drophash_add(ArkimeSession_t *session, int which, int min)
 
     if (which == -1) {
         const int port = (htons(session->port1) * htons(session->port2)) & 0xffff;
-        if (ARKIME_SESSION_v6(session)) {
+        if (ARKIME_SESSION_IS_v6(session)) {
             arkime_drophash_add(&packetDrop6S, port, session->sessionId + 4, session->lastPacket.tv_sec, min * 60);
         } else {
             arkime_drophash_add(&packetDrop4S, port, session->sessionId + 4, session->lastPacket.tv_sec, min * 60);
@@ -2287,7 +2288,7 @@ void arkime_packet_drophash_add(ArkimeSession_t *session, int which, int min)
         // packetDrop is kept in network byte order
         const int port = (which == 0) ? htons(session->port1) : htons(session->port2);
 
-        if (ARKIME_SESSION_v6(session)) {
+        if (ARKIME_SESSION_IS_v6(session)) {
             if (which == 0) {
                 arkime_drophash_add(&packetDrop6, port, (void *)&session->addr1, session->lastPacket.tv_sec, min * 60);
             } else {
