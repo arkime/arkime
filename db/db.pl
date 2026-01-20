@@ -194,7 +194,7 @@ sub showHelp($)
     print "    --reverse                  - Optimize from most recent to oldest\n";
     print "    --shardsPerNode <shards>   - Number of shards per node or use \"null\" to let OpenSearch/Elasticsearch decide, default shards*replicas/nodes\n";
     print "    --warmafter <wafter>       - Set molochwarm on indices after <wafter> <type>\n";
-    print "    --optmizewarm              - Only optimize warm green indices\n";
+    print "    --optimizewarm             - Only optimize warm green indices\n";
     print "  optimize                     - Optimize all Arkime indices in OpenSearch/Elasticsearch\n";
     print "    --segments <num>           - Number of segments to optimize sessions to, default 1\n";
     print "  optimize-admin               - Optimize only admin indices in OpenSearch/Elasticsearch, use with ILM\n";
@@ -206,7 +206,7 @@ sub showHelp($)
     print "       file                    - File that includes a comma or newline separated list of values\n";
     print "    --type <type>              - Type of shortcut = string, ip, number, default is string\n";
     print "    --shareRoles <roles>       - Share to roles (comma separated list of roles)\n";
-    print "    --shareUsers <users>       - Share to specific users (comma seprated list of userIds)\n";
+    print "    --shareUsers <users>       - Share to specific users (comma separated list of userIds)\n";
     print "    --description <description>- Description of the shortcut\n";
     print "    --locked                   - Whether the shortcut is locked and cannot be modified by the web interface\n";
     print "  shrink <index> <node> <num>  - Shrink a session index\n";
@@ -6586,7 +6586,7 @@ while (@ARGV > 0 && substr($ARGV[0], 0, 1) eq "-") {
             system ("stty echo 2> /dev/null");
         }
     } else {
-        showHelp("Unknkown global option $ARGV[0]")
+        showHelp("Unknown global option $ARGV[0]")
     }
     shift @ARGV;
 }
@@ -6759,7 +6759,7 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
         print $fh to_json($data);
         close($fh);
     }
-    logmsg "Exporting aliaes...\n";
+    logmsg "Exporting aliases...\n";
 
     my $aliases = join(',', @indices);
     $aliases = "/_cat/aliases/${aliases}?format=json";
@@ -7001,7 +7001,7 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
 
     my $existingShortcut;
     foreach my $shortcut (@{$shortcuts->{hits}->{hits}}) {
-      if ($shortcut->{_source}->{name} == $shortcutName) {
+      if ($shortcut->{_source}->{name} eq $shortcutName) {
         $existingShortcut = $shortcut;
         last;
       }
