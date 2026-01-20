@@ -72,7 +72,8 @@
 #define ARKIME_IPPROTO_UNKNOWN 255
 #define ARKIME_IPPROTO_CORRUPT 256
 #define ARKIME_IPPROTO_MAX     257
-#define ARKIME_SESSION_v6(s) ((s)->sessionId[0] == ARKIME_SESSIONID6_LEN)
+#define ARKIME_SESSION_IS_v6(s) ((s)->v6 == 1)
+#define ARKIME_SESSION_IS_v4(s) ((s)->v6 == 0)
 
 #define ARKIME_VAR_ARG_STR_SKIP GINT_TO_POINTER(1)
 #define ARKIME_VAR_ARG_INT_SKIP (char *)0x7fffffffffffffffLL
@@ -767,6 +768,7 @@ typedef struct arkime_session {
     uint16_t               pq: 1;
     uint16_t               synSet: 2;
     uint16_t               inStoppedSave: 1;
+    uint16_t               v6: 1;
 
 #if ARKIME_SESSION_HASH == ARKIME_SESSION_HASH_SLL
     uint16_t               inSessionTable: 1;

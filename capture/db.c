@@ -450,7 +450,7 @@ gchar *arkime_db_community_id(const ArkimeSession_t *session)
     // SessionId layout: [len:1][vlan/vni:3][addr1][addr2][port1:2][port2:2]
     // IPv4: addr at +4 and +8 (4 bytes each), ports at +12 and +14
     // IPv6: addr at +4 and +20 (16 bytes each), ports at +36 and +38
-    if (ARKIME_SESSION_v6(session)) {
+    if (ARKIME_SESSION_IS_v6(session)) {
         // For v6 we sort the same as community id
         g_checksum_update(checksum, (guchar *)session->sessionId + 4, 32);
         g_checksum_update(checksum, (guchar *)&session->ipProtocol, 1);
@@ -503,7 +503,7 @@ gchar *arkime_db_community_id_icmp(const ArkimeSession_t *session)
     port1 = session->icmpInfo[0];
     port2 = session->icmpInfo[1];
 
-    if (ARKIME_SESSION_v6(session)) {
+    if (ARKIME_SESSION_IS_v6(session)) {
         static const uint8_t port2Mapping[19] = {129, 128, 131, 130, 255, 134, 133, 136, 135, 255,
                                                  255, 140, 139, 255, 255, 255, 145, 145, 255
                                                 };
@@ -888,7 +888,7 @@ void arkime_db_save_session(ArkimeSession_t *session, int final)
                        ((uint64_t)currentTime.tv_sec) * 1000 + ((uint64_t)currentTime.tv_usec) / 1000);
 
     if (session->ipProtocol) {
-        if (IN6_IS_ADDR_V4MAPPED(&session->addr1)) {
+        if (ARKIME_SESSION_IS_v4(session)) {
             arkime_ip4tostr(ARKIME_V6_TO_V4(session->addr1), ipsrc, sizeof(ipsrc));
             arkime_ip4tostr(ARKIME_V6_TO_V4(session->addr2), ipdst, sizeof(ipdst));
         } else {

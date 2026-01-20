@@ -13,7 +13,7 @@ LOCAL int unkEthernetMProtocol;
 /******************************************************************************/
 LOCAL void unkEthernet_create_sessionid(uint8_t *sessionId, ArkimePacket_t *const UNUSED (packet))
 {
-    sessionId[0] = 15;
+    sessionId[0] = 16;
     sessionId[1] = unkEthernetMProtocol;
     memcpy(sessionId + 2, packet->pkt + packet->etherOffset, 14); // Copy macs and ether type
     sessionId[15] = 0;

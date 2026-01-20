@@ -13,9 +13,9 @@ LOCAL int igmpMProtocol;
 /******************************************************************************/
 LOCAL void igmp_create_sessionid(uint8_t *sessionId, ArkimePacket_t *const UNUSED (packet))
 {
-    memset(sessionId, 0, 4);
-    sessionId[0] = 2;
+    sessionId[0] = 4;
     sessionId[1] = igmpMProtocol;
+    sessionId[2] = sessionId[3] = 0;
 
     // for now, lump all igmp into the same session
 }
