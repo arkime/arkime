@@ -16,7 +16,8 @@ int                          mProtocolCnt = ARKIME_MPROTOCOL_MIN;
 ArkimeProtocol_t             mProtocols[ARKIME_MPROTOCOL_MAX];
 LOCAL GHashTable            *mProtocolHash;
 
-LOCAL int corruptMProtocol;
+LOCAL int corruptEtherMProtocol;
+LOCAL int corruptIpMProtocol;
 LOCAL int unknownEtherMProtocol;
 LOCAL int unknownIpMProtocol;
 
@@ -74,25 +75,60 @@ int arkime_mprotocol_get(const char *name)
     return GPOINTER_TO_INT(g_hash_table_lookup(mProtocolHash, name));
 }
 /******************************************************************************/
-// Corrupt packet mProtocol - session ID based on src/dst MAC
-LOCAL void corrupt_create_sessionid(uint8_t *sessionId, ArkimePacket_t *const packet)
+// Corrupt Ether packet mProtocol - session ID based on src/dst MAC
+LOCAL void corrupt_ether_create_sessionid(uint8_t *sessionId, ArkimePacket_t *const packet)
 {
     sessionId[0] = 16;
-    sessionId[1] = corruptMProtocol;
+    sessionId[1] = corruptEtherMProtocol;
     // Use etherOffset to get src/dst MACs (12 bytes)
     memcpy(sessionId + 2, packet->pkt + packet->etherOffset, 12);
     sessionId[14] = 0;
     sessionId[15] = 0;
 }
 /******************************************************************************/
-LOCAL int corrupt_pre_process(ArkimeSession_t *session, ArkimePacket_t *const UNUSED(packet), int isNewSession)
+LOCAL int corrupt_ether_pre_process(ArkimeSession_t *session, ArkimePacket_t *const UNUSED(packet), int isNewSession)
 {
     if (isNewSession)
-        arkime_session_add_protocol(session, "corrupt");
+        arkime_session_add_protocol(session, "corrupt-ether");
     return 0;
 }
 /******************************************************************************/
-LOCAL int corrupt_process(ArkimeSession_t *UNUSED(session), ArkimePacket_t *const UNUSED(packet))
+LOCAL int corrupt_ether_process(ArkimeSession_t *UNUSED(session), ArkimePacket_t *const UNUSED(packet))
+{
+    return 1;
+}
+/******************************************************************************/
+// Corrupt IP packet mProtocol - session ID based on src/dst IP
+SUPPRESS_ALIGNMENT
+LOCAL void corrupt_ip_create_sessionid(uint8_t *sessionId, ArkimePacket_t *const packet)
+{
+    if (packet->v6) {
+        sessionId[0] = 36;
+        sessionId[1] = corruptIpMProtocol;
+        const struct ip6_hdr *ip6 = (struct ip6_hdr *)(packet->pkt + packet->ipOffset);
+        memcpy(sessionId + 2, &ip6->ip6_src, 16);
+        memcpy(sessionId + 18, &ip6->ip6_dst, 16);
+        sessionId[34] = 0;
+        sessionId[35] = 0;
+    } else {
+        sessionId[0] = 12;
+        sessionId[1] = corruptIpMProtocol;
+        const struct ip *ip4 = (struct ip *)(packet->pkt + packet->ipOffset);
+        memcpy(sessionId + 2, &ip4->ip_src, 4);
+        memcpy(sessionId + 6, &ip4->ip_dst, 4);
+        sessionId[10] = 0;
+        sessionId[11] = 0;
+    }
+}
+/******************************************************************************/
+LOCAL int corrupt_ip_pre_process(ArkimeSession_t *session, ArkimePacket_t *const UNUSED(packet), int isNewSession)
+{
+    if (isNewSession)
+        arkime_session_add_protocol(session, "corrupt-ip");
+    return 0;
+}
+/******************************************************************************/
+LOCAL int corrupt_ip_process(ArkimeSession_t *UNUSED(session), ArkimePacket_t *const UNUSED(packet))
 {
     return 1;
 }
@@ -104,10 +140,17 @@ LOCAL ArkimePacketRC corrupt_packet_enqueue(ArkimePacketBatch_t *UNUSED(batch), 
     packet->payloadOffset = 0;
     packet->payloadLen = packet->pktlen;
 
-    corrupt_create_sessionid(sessionId, packet);
+    // Check if we have enough data for IP addresses (IPv6: 40 bytes, IPv4: 20 bytes)
+    int ipMinLen = packet->v6 ? 40 : 20;
+    if (packet->ipOffset && packet->ipOffset + ipMinLen <= packet->pktlen) {
+        corrupt_ip_create_sessionid(sessionId, packet);
+        packet->mProtocol = corruptIpMProtocol;
+    } else {
+        corrupt_ether_create_sessionid(sessionId, packet);
+        packet->mProtocol = corruptEtherMProtocol;
+    }
 
     packet->hash = arkime_session_hash(sessionId);
-    packet->mProtocol = corruptMProtocol;
 
     return ARKIME_PACKET_DO_PROCESS;
 }
@@ -202,14 +245,23 @@ void arkime_mprotocol_init()
 {
     mProtocolHash = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, NULL);
 
-    corruptMProtocol = arkime_mprotocol_register("corrupt",
-                                                 SESSION_OTHER,
-                                                 corrupt_create_sessionid,
-                                                 corrupt_pre_process,
-                                                 corrupt_process,
-                                                 NULL,
-                                                 NULL,
-                                                 60);
+    corruptEtherMProtocol = arkime_mprotocol_register("corrupt-ether",
+                                                       SESSION_OTHER,
+                                                       corrupt_ether_create_sessionid,
+                                                       corrupt_ether_pre_process,
+                                                       corrupt_ether_process,
+                                                       NULL,
+                                                       NULL,
+                                                       60);
+
+    corruptIpMProtocol = arkime_mprotocol_register("corrupt-ip",
+                                                    SESSION_OTHER,
+                                                    corrupt_ip_create_sessionid,
+                                                    corrupt_ip_pre_process,
+                                                    corrupt_ip_process,
+                                                    NULL,
+                                                    NULL,
+                                                    60);
 
     unknownEtherMProtocol = arkime_mprotocol_register("unknown-ether",
                                                       SESSION_OTHER,

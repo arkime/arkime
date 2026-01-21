@@ -624,7 +624,7 @@
                "lte" : 952109340432
             },
             "protocol" : [
-               "corrupt"
+               "corrupt-ether"
             ],
             "protocolCnt" : 1,
             "segmentCnt" : 1,
