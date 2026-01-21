@@ -15,8 +15,7 @@ LOCAL ArkimePacketRC erspan_packet_enqueue(ArkimePacketBatch_t *UNUSED(batch), A
     if ((*data >> 4) != 1) {
         if (config.logUnknownProtocols)
             LOG("Unknown ERSPAN protocol %d", (*data >> 4));
-        arkime_packet_save_ethernet(packet, 0x88be);
-        return ARKIME_PACKET_UNKNOWN;
+        return ARKIME_PACKET_UNKNOWN_ETHER;
     }
 
 
@@ -38,8 +37,7 @@ LOCAL ArkimePacketRC erspan_packet_enqueue3(ArkimePacketBatch_t *UNUSED(batch), 
     if ((*data >> 4) != 2) {
         if (config.logUnknownProtocols)
             LOG("Unknown ERSPAN protocol %d", (*data >> 4));
-        arkime_packet_save_ethernet(packet, 0x22eb);
-        return ARKIME_PACKET_UNKNOWN;
+        return ARKIME_PACKET_UNKNOWN_ETHER;
     }
 
 

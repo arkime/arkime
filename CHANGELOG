@@ -55,6 +55,8 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #3583 Previous community_id for IPv4 sessions with same src/dst IP, could
           have incorrect community_id
   - #3591 geoLite2Country setting now looks for City file first by default
+  - #3601 The unkEthernet/unkIpProtocol plugins are removed. The saveUnknownPackets
+          setting now saves unknown/corrupt packets as real Arkime sessions.
 ## Release
   - Node 22.22.0
   - #3342 Container based on Debian 13 now
@@ -101,6 +103,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #3464 Added id for dhcpv6
   - #3465 Added dhcp.requestIp
   - #3566 New packetRange field to support spanning timeline display
+  - #3601 Save corrupt and unknown sessions as real Arkmie sessions based on saveUnknownPackets
 ## Viewer
   - #3326 BIG search expression
   - #3343 Basic internationalization support

@@ -4,6 +4,258 @@
          "body" : {
             "@timestamp" : "SET",
             "client" : {
+               "bytes" : 0
+            },
+            "destination" : {
+               "as" : {
+                  "full" : "AS13335 Cloudflare, Inc.",
+                  "number" : 13335,
+                  "organization" : {
+                     "name" : "Cloudflare, Inc."
+                  }
+               },
+               "bytes" : 0,
+               "geo" : {
+                  "country_iso_code" : "AU"
+               },
+               "ip" : "1.1.1.1",
+               "mac" : [
+                  "01:00:0c:cc:cc:cc"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 0,
+               "port" : 0
+            },
+            "dot1q" : {
+               "id" : [
+                  23
+               ],
+               "idCnt" : 1
+            },
+            "dstOuterMac" : [
+               "64:00:f1:e2:01:01"
+            ],
+            "dstOuterMac-cnt" : 1,
+            "dstOuterOui" : [
+               "Cisco Systems, Inc"
+            ],
+            "dstOuterOuiCnt" : 1,
+            "dstRIR" : "APNIC",
+            "ethertype" : 2048,
+            "fileId" : [],
+            "firstPacket" : 1402723251625,
+            "ipProtocol" : 47,
+            "lastPacket" : 1402723251625,
+            "length" : 0,
+            "network" : {
+               "bytes" : 444,
+               "packets" : 1,
+               "vlan" : {
+                  "id" : [
+                     23
+                  ],
+                  "id-cnt" : 1
+               }
+            },
+            "node" : "test",
+            "packetLen" : [
+               460
+            ],
+            "packetPos" : [
+               24
+            ],
+            "packetRange" : {
+               "gte" : 1402723251625,
+               "lte" : 1402723251625
+            },
+            "protocol" : [
+               "corrupt",
+               "gre"
+            ],
+            "protocolCnt" : 2,
+            "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 0
+            },
+            "source" : {
+               "as" : {
+                  "full" : "AS3215 Orange",
+                  "number" : 3215,
+                  "organization" : {
+                     "name" : "Orange"
+                  }
+               },
+               "bytes" : 444,
+               "geo" : {
+                  "country_iso_code" : "FR"
+               },
+               "ip" : "2.2.2.2",
+               "mac" : [
+                  "64:00:f1:e1:03:03"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 1,
+               "port" : 0
+            },
+            "srcOui" : [
+               "Cisco Systems, Inc"
+            ],
+            "srcOuiCnt" : 1,
+            "srcOuterMac" : [
+               "64:00:f1:e2:01:12"
+            ],
+            "srcOuterMac-cnt" : 1,
+            "srcOuterOui" : [
+               "Cisco Systems, Inc"
+            ],
+            "srcOuterOuiCnt" : 1,
+            "srcRIR" : "RIPE",
+            "srcTTL" : [
+               254
+            ],
+            "srcTTLCnt" : 1,
+            "tags" : [
+               "gretest-erspan"
+            ],
+            "tagsCnt" : 1,
+            "totDataBytes" : 0
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions3-140614"
+            }
+         }
+      },
+      {
+         "body" : {
+            "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 0
+            },
+            "destination" : {
+               "as" : {
+                  "full" : "AS13335 Cloudflare, Inc.",
+                  "number" : 13335,
+                  "organization" : {
+                     "name" : "Cloudflare, Inc."
+                  }
+               },
+               "bytes" : 0,
+               "geo" : {
+                  "country_iso_code" : "AU"
+               },
+               "ip" : "1.1.1.1",
+               "mac" : [
+                  "01:00:0c:cc:cc:cc"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 0,
+               "port" : 0
+            },
+            "dot1q" : {
+               "id" : [
+                  23
+               ],
+               "idCnt" : 1
+            },
+            "dstOuterMac" : [
+               "64:00:f1:e2:01:01"
+            ],
+            "dstOuterMac-cnt" : 1,
+            "dstOuterOui" : [
+               "Cisco Systems, Inc"
+            ],
+            "dstOuterOuiCnt" : 1,
+            "dstRIR" : "APNIC",
+            "ethertype" : 2048,
+            "fileId" : [],
+            "firstPacket" : 1402723253149,
+            "ipProtocol" : 47,
+            "lastPacket" : 1402723253149,
+            "length" : 0,
+            "network" : {
+               "bytes" : 459,
+               "packets" : 1,
+               "vlan" : {
+                  "id" : [
+                     23
+                  ],
+                  "id-cnt" : 1
+               }
+            },
+            "node" : "test",
+            "packetLen" : [
+               475
+            ],
+            "packetPos" : [
+               484
+            ],
+            "packetRange" : {
+               "gte" : 1402723253149,
+               "lte" : 1402723253149
+            },
+            "protocol" : [
+               "corrupt",
+               "gre"
+            ],
+            "protocolCnt" : 2,
+            "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 0
+            },
+            "source" : {
+               "as" : {
+                  "full" : "AS3215 Orange",
+                  "number" : 3215,
+                  "organization" : {
+                     "name" : "Orange"
+                  }
+               },
+               "bytes" : 459,
+               "geo" : {
+                  "country_iso_code" : "FR"
+               },
+               "ip" : "2.2.2.2",
+               "mac" : [
+                  "64:00:f1:e1:02:02"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 1,
+               "port" : 0
+            },
+            "srcOui" : [
+               "Cisco Systems, Inc"
+            ],
+            "srcOuiCnt" : 1,
+            "srcOuterMac" : [
+               "64:00:f1:e2:01:12"
+            ],
+            "srcOuterMac-cnt" : 1,
+            "srcOuterOui" : [
+               "Cisco Systems, Inc"
+            ],
+            "srcOuterOuiCnt" : 1,
+            "srcRIR" : "RIPE",
+            "srcTTL" : [
+               254
+            ],
+            "srcTTLCnt" : 1,
+            "tags" : [
+               "gretest-erspan"
+            ],
+            "tagsCnt" : 1,
+            "totDataBytes" : 0
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions3-140614"
+            }
+         }
+      },
+      {
+         "body" : {
+            "@timestamp" : "SET",
+            "client" : {
                "bytes" : 160
             },
             "destination" : {

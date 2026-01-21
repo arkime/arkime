@@ -32,8 +32,7 @@ LOCAL ArkimePacketRC mpls_packet_enqueue(ArkimePacketBatch_t *batch, ArkimePacke
 #ifdef DEBUG_PACKET
                 LOG("BAD PACKET: Unknown mpls type %d", data[0] >> 4);
 #endif
-                arkime_packet_save_ethernet(packet, 0x8847);
-                return ARKIME_PACKET_UNKNOWN;
+                return ARKIME_PACKET_UNKNOWN_ETHER;
             }
         }
     }
