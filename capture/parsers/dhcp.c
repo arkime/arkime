@@ -281,11 +281,11 @@ LOCAL ArkimePacketRC dhcp_packet_enqueue(ArkimePacketBatch_t *UNUSED(batch), Ark
 
     // Validate: minimum size, op field (1=request, 2=reply), magic cookie
     if (len < 256 || (data[0] != 1 && data[0] != 2) || memcmp(data + 236, "\x63\x82\x53\x63", 4) != 0)
-        return ARKIME_PACKET_UNKNOWN;
+        return ARKIME_PACKET_UNKNOWN_IP;
 
     // Validate hardware type (1=Ethernet) and address length (6 bytes)
     if (data[1] != 1 || data[2] != 6)
-        return ARKIME_PACKET_UNKNOWN;
+        return ARKIME_PACKET_UNKNOWN_IP;
 
     packet->payloadOffset = data - packet->pkt;
     packet->payloadLen = len;
@@ -304,7 +304,7 @@ LOCAL ArkimePacketRC dhcpv6_packet_enqueue(ArkimePacketBatch_t *UNUSED(batch), A
     uint8_t sessionId[ARKIME_SESSIONID_LEN];
 
     if (len < 4 || data[0] == 0 || data[0] >= ARRAY_LEN(namesv6))
-        return ARKIME_PACKET_UNKNOWN;
+        return ARKIME_PACKET_UNKNOWN_IP;
 
     packet->payloadOffset = data - packet->pkt;
     packet->payloadLen = len;

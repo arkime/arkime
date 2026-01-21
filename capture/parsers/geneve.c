@@ -12,10 +12,10 @@ SUPPRESS_ALIGNMENT
 LOCAL ArkimePacketRC geneve_packet_enqueue(ArkimePacketBatch_t *batch, ArkimePacket_t *const packet, const uint8_t *data, int len)
 {
     if (len <= 8)
-        return ARKIME_PACKET_UNKNOWN;
+        return ARKIME_PACKET_UNKNOWN_IP;
 
     if ((data[0] & 0xc0) != 0 || (data[1] & 0x3f) != 0)
-        return ARKIME_PACKET_UNKNOWN;
+        return ARKIME_PACKET_UNKNOWN_IP;
 
     uint8_t  veroptlen = 0;
     uint16_t protocol;
@@ -29,14 +29,14 @@ LOCAL ArkimePacketRC geneve_packet_enqueue(ArkimePacketBatch_t *batch, ArkimePac
     BSB_IMPORT_skip(bsb, 4);
 
     if (BSB_IS_ERROR(bsb)) {
-        return ARKIME_PACKET_UNKNOWN;
+        return ARKIME_PACKET_UNKNOWN_IP;
     }
 
     veroptlen &= 0x3f;
     BSB_IMPORT_skip(bsb, veroptlen * 4);
 
     if (BSB_IS_ERROR(bsb)) {
-        return ARKIME_PACKET_UNKNOWN;
+        return ARKIME_PACKET_UNKNOWN_IP;
     }
 
     packet->tunnel |= ARKIME_PACKET_TUNNEL_GENEVE;

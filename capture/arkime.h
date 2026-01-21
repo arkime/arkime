@@ -1274,7 +1274,8 @@ typedef enum {
     ARKIME_PACKET_IP_DROPPED,
     ARKIME_PACKET_OVERLOAD_DROPPED,
     ARKIME_PACKET_CORRUPT,
-    ARKIME_PACKET_UNKNOWN,
+    ARKIME_PACKET_UNKNOWN_ETHER,
+    ARKIME_PACKET_UNKNOWN_IP,
     ARKIME_PACKET_IPPORT_DROPPED,
     ARKIME_PACKET_DONT_PROCESS,
     ARKIME_PACKET_DONT_PROCESS_OR_FREE,
@@ -1314,7 +1315,6 @@ uint32_t arkime_packet_dlt_to_linktype(int dlt);
 uint32_t arkime_packet_linktype_to_dlt(int linktype);
 void     arkime_packet_drophash_add(ArkimeSession_t *session, int which, int min);
 
-void     arkime_packet_save_ethernet(ArkimePacket_t *const packet, uint16_t type);
 ArkimePacketRC arkime_packet_run_ethernet_cb(ArkimePacketBatch_t *batch, ArkimePacket_t *const packet, const uint8_t *data, int len, uint16_t type, const char *str);
 void     arkime_packet_set_ethernet_cb(uint16_t type, ArkimePacketEnqueue_cb enqueueCb);
 void     arkime_packet_set_ethernet_cb2(uint16_t type, ArkimePacketEnqueue_cb2 enqueueCb, void *cbuw);
@@ -1366,6 +1366,7 @@ int arkime_mprotocol_register_internal(const char                      *name,
 int arkime_mprotocol_get(const char *name);
 
 void arkime_mprotocol_init();
+ArkimePacketRC arkime_mprotocol_corrupt_enqueue(ArkimePacketBatch_t *batch, ArkimePacket_t *const packet);
 
 
 /******************************************************************************/

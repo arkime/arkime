@@ -1624,7 +1624,8 @@ LOCAL void arkime_python_thread_init(PyThreadState **threadState)
     PyModule_AddIntConstant(p_arkime_packet_module_obj, "IP_DROPPED", ARKIME_PACKET_IP_DROPPED);
     PyModule_AddIntConstant(p_arkime_packet_module_obj, "OVERLOAD_DROPPED", ARKIME_PACKET_OVERLOAD_DROPPED);
     PyModule_AddIntConstant(p_arkime_packet_module_obj, "CORRUPT", ARKIME_PACKET_CORRUPT);
-    PyModule_AddIntConstant(p_arkime_packet_module_obj, "UNKNOWN", ARKIME_PACKET_UNKNOWN);
+    PyModule_AddIntConstant(p_arkime_packet_module_obj, "UNKNOWN_ETHER", ARKIME_PACKET_UNKNOWN_ETHER);
+    PyModule_AddIntConstant(p_arkime_packet_module_obj, "UNKNOWN_IP", ARKIME_PACKET_UNKNOWN_IP);
     PyModule_AddIntConstant(p_arkime_packet_module_obj, "IPPORT_DROPPED", ARKIME_PACKET_IPPORT_DROPPED);
     PyModule_AddIntConstant(p_arkime_packet_module_obj, "DONT_PROCESS", ARKIME_PACKET_DONT_PROCESS);
     PyModule_AddIntConstant(p_arkime_packet_module_obj, "DONT_PROCESS_OR_FREE", ARKIME_PACKET_DONT_PROCESS_OR_FREE);

@@ -12,10 +12,10 @@ SUPPRESS_ALIGNMENT
 LOCAL ArkimePacketRC gtp_packet_enqueue(ArkimePacketBatch_t *batch, ArkimePacket_t *const packet, const uint8_t *data, int len)
 {
     if (len <= 12)
-        return ARKIME_PACKET_UNKNOWN;
+        return ARKIME_PACKET_UNKNOWN_IP;
 
     if ((data[0] & 0xf0) != 0x30 || data[1] != 0xff || (data[2] << 8 | data[3]) != len - 8)
-        return ARKIME_PACKET_UNKNOWN;
+        return ARKIME_PACKET_UNKNOWN_IP;
 
     BSB bsb;
     BSB_INIT(bsb, data, len);
@@ -36,14 +36,14 @@ LOCAL ArkimePacketRC gtp_packet_enqueue(ArkimePacketBatch_t *batch, ArkimePacket
         uint8_t extlen = 0;
         BSB_IMPORT_u08(bsb, extlen);
         if (extlen == 0) {
-            return ARKIME_PACKET_UNKNOWN;
+            return ARKIME_PACKET_UNKNOWN_IP;
         }
         BSB_IMPORT_skip(bsb, extlen * 4 - 2);
         BSB_IMPORT_u08(bsb, next);
     }
 
     if (BSB_IS_ERROR(bsb)) {
-        return ARKIME_PACKET_UNKNOWN;
+        return ARKIME_PACKET_UNKNOWN_IP;
     }
 
     packet->tunnel |= ARKIME_PACKET_TUNNEL_GTP;

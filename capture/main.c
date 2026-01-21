@@ -1088,6 +1088,7 @@ LLVMFuzzerInitialize(int *UNUSED(argc), char ***UNUSED(argv))
     arkime_plugins_init();
     arkime_field_init();
     arkime_db_init();
+    arkime_mprotocol_init();
     arkime_packet_init();
     arkime_config_load_packet_ips();
     arkime_yara_init();
@@ -1145,6 +1146,7 @@ LLVMFuzzerInitialize(int *UNUSED(argc), char ***UNUSED(argv))
     arkime_plugins_init();
     arkime_field_init();
     arkime_db_init();
+    arkime_mprotocol_init();
     arkime_packet_init();
     arkime_config_load_packet_ips();
     arkime_yara_init();
@@ -1254,6 +1256,7 @@ int main(int argc, char **argv)
     arkime_field_init();
     arkime_db_init();
     arkime_python_init();
+    arkime_mprotocol_init();
     arkime_packet_init();
     arkime_config_load_packet_ips();
     arkime_yara_init();
