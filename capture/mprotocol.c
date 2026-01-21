@@ -149,6 +149,7 @@ LOCAL ArkimePacketRC unknown_ether_packet_enqueue(ArkimePacketBatch_t *UNUSED(ba
 }
 /******************************************************************************/
 // Unknown IP Protocol mProtocol - session ID based on src/dst IP + protocol
+SUPPRESS_ALIGNMENT
 LOCAL void unknown_ip_create_sessionid(uint8_t *sessionId, ArkimePacket_t *const packet)
 {
     if (packet->v6) {
