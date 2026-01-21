@@ -246,22 +246,22 @@ void arkime_mprotocol_init()
     mProtocolHash = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, NULL);
 
     corruptEtherMProtocol = arkime_mprotocol_register("corrupt-ether",
-                                                       SESSION_OTHER,
-                                                       corrupt_ether_create_sessionid,
-                                                       corrupt_ether_pre_process,
-                                                       corrupt_ether_process,
-                                                       NULL,
-                                                       NULL,
-                                                       60);
+                                                      SESSION_OTHER,
+                                                      corrupt_ether_create_sessionid,
+                                                      corrupt_ether_pre_process,
+                                                      corrupt_ether_process,
+                                                      NULL,
+                                                      NULL,
+                                                      60);
 
     corruptIpMProtocol = arkime_mprotocol_register("corrupt-ip",
-                                                    SESSION_OTHER,
-                                                    corrupt_ip_create_sessionid,
-                                                    corrupt_ip_pre_process,
-                                                    corrupt_ip_process,
-                                                    NULL,
-                                                    NULL,
-                                                    60);
+                                                   SESSION_OTHER,
+                                                   corrupt_ip_create_sessionid,
+                                                   corrupt_ip_pre_process,
+                                                   corrupt_ip_process,
+                                                   NULL,
+                                                   NULL,
+                                                   60);
 
     unknownEtherMProtocol = arkime_mprotocol_register("unknown-ether",
                                                       SESSION_OTHER,
