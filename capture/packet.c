@@ -442,7 +442,8 @@ LOCAL void arkime_packet_process(ArkimePacket_t *packet, int thread)
             }
 
             int n = 12;
-            while ((pcapData[n] == 0x81 && pcapData[n + 1] == 0x00) || (pcapData[n] == 0x88 && pcapData[n + 1] == 0xa8)) {
+            while (n + 3 < packet->pktlen &&
+                   ((pcapData[n] == 0x81 && pcapData[n + 1] == 0x00) || (pcapData[n] == 0x88 && pcapData[n + 1] == 0xa8))) {
                 uint16_t vlan = ((uint16_t)(pcapData[n + 2] << 8 | pcapData[n + 3])) & 0xfff;
                 arkime_field_int_add(vlanField, session, vlan);
                 if (pcapData[n] == 0x81 && pcapData[n + 1] == 0x00) {
@@ -453,7 +454,7 @@ LOCAL void arkime_packet_process(ArkimePacket_t *packet, int thread)
                 n += 4;
             }
 
-            if (session->ethertype == 0) {
+            if (session->ethertype == 0 && n + 1 < packet->pktlen) {
                 session->ethertype = (pcapData[n] << 8) | pcapData[n + 1];
             }
         }
