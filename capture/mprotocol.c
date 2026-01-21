@@ -202,31 +202,31 @@ void arkime_mprotocol_init()
     mProtocolHash = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, NULL);
 
     corruptMProtocol = arkime_mprotocol_register("corrupt",
-                                                  SESSION_OTHER,
-                                                  corrupt_create_sessionid,
-                                                  corrupt_pre_process,
-                                                  corrupt_process,
-                                                  NULL,
-                                                  NULL,
-                                                  60);
+                                                 SESSION_OTHER,
+                                                 corrupt_create_sessionid,
+                                                 corrupt_pre_process,
+                                                 corrupt_process,
+                                                 NULL,
+                                                 NULL,
+                                                 60);
 
     unknownEtherMProtocol = arkime_mprotocol_register("unknown-ether",
+                                                      SESSION_OTHER,
+                                                      unknown_ether_create_sessionid,
+                                                      unknown_ether_pre_process,
+                                                      unknown_ether_process,
+                                                      NULL,
+                                                      NULL,
+                                                      60);
+
+    unknownIpMProtocol = arkime_mprotocol_register("unknown-ip",
                                                    SESSION_OTHER,
-                                                   unknown_ether_create_sessionid,
-                                                   unknown_ether_pre_process,
-                                                   unknown_ether_process,
+                                                   unknown_ip_create_sessionid,
+                                                   unknown_ip_pre_process,
+                                                   unknown_ip_process,
                                                    NULL,
                                                    NULL,
                                                    60);
-
-    unknownIpMProtocol = arkime_mprotocol_register("unknown-ip",
-                                                SESSION_OTHER,
-                                                unknown_ip_create_sessionid,
-                                                unknown_ip_pre_process,
-                                                unknown_ip_process,
-                                                NULL,
-                                                NULL,
-                                                60);
 
     arkime_packet_set_ethernet_cb(ARKIME_ETHERTYPE_CORRUPT, corrupt_packet_enqueue);
     arkime_packet_set_ethernet_cb(ARKIME_ETHERTYPE_UNKNOWN, unknown_ether_packet_enqueue);
