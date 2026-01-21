@@ -417,11 +417,16 @@ sub esCopy
     $main::userAgent->timeout(7200);
 
     $status = esGet("/_stats/docs", 1);
+    if ($status->{indices}->{$srci}->{primaries}->{docs}->{count} == 0) {
+        logmsg "No documents to copy from $srci to $dsti\n";
+        return;
+    }
+
     logmsg "Copying " . $status->{indices}->{$srci}->{primaries}->{docs}->{count} . " elements from $srci to $dsti\n";
 
     esPost("/_reindex?timeout=7200s", to_json({"source" => {"index" => $srci}, "dest" => {"index" => $dsti, "version_type" => "external"}, "conflicts" => "proceed"}));
 
-    $status = esGet("/${dsti}/_refresh", 1);
+    esGet("/${dsti}/_refresh", 1);
     $status = esGet("/_stats/docs", 1);
     if ($status->{indices}->{$srci}->{primaries}->{docs}->{count} > $status->{indices}->{$dsti}->{primaries}->{docs}->{count}) {
         logmsg $status->{indices}->{$srci}->{primaries}->{docs}->{count}, " > ",  $status->{indices}->{$dsti}->{primaries}->{docs}->{count}, "\n";
@@ -8078,6 +8083,26 @@ $policy = qq/{
                 esAlias("add", "files_v30", "files");
             } else {
                 print "    NOT fixing files_v30 mapping\n";
+            }
+        }
+    }
+
+    $mapping = esGet("/${PREFIX}stats_v30/_mapping", 1);
+    if (defined $mapping->{$PREFIX . "stats_v30"}->{mappings}->{properties}) {
+        if (! defined $mapping->{$PREFIX . "stats_v30"}->{mappings}->{properties}->{hostname}->{type} || $mapping->{$PREFIX . "stats_v30"}->{mappings}->{properties}->{hostname}->{type} ne "keyword") {
+            print "??? The ${PREFIX}stats_v30 index has the wrong mapping for 'hostname', this will cause PCAP expire issues, should we try and fix it?\n";
+            my $choice = waitForRE(qr/^[yn]?$/, "([y]/n)?");
+            if ($choice ne "n") {
+                print "   Copying ${PREFIX}stats_v30 to ${PREFIX}stats-tmp and back again with the correct mapping\n";
+                esDelete("/${PREFIX}stats-tmp", 1);
+                esCopy("${PREFIX}stats_v30", "${PREFIX}stats-tmp");
+                esDelete("/${PREFIX}stats_v30", 1);
+                esDelete("/${PREFIX}stats", 1);
+                statsCreate();
+                esCopy("${PREFIX}stats-tmp", "${PREFIX}stats_v30");
+                esAlias("add", "stats_v30", "stats");
+            } else {
+                print "    NOT fixing stats_v30 mapping\n";
             }
         }
     }
