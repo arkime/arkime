@@ -381,7 +381,9 @@ function createSessionDetail () {
         }
       }
     } catch (e) {
-      console.log('ERROR - loading plugin detail views', e);
+      if (e.code !== 'ENOENT') {
+        console.log('ERROR - loading plugin detail views', e);
+      }
     }
   }
 

@@ -97,7 +97,7 @@ LOCAL int corrupt_process(ArkimeSession_t *UNUSED(session), ArkimePacket_t *cons
     return 1;
 }
 /******************************************************************************/
-ArkimePacketRC arkime_mprotocol_corrupt_enqueue(ArkimePacketBatch_t *UNUSED(batch), ArkimePacket_t *const packet)
+LOCAL ArkimePacketRC corrupt_packet_enqueue(ArkimePacketBatch_t *UNUSED(batch), ArkimePacket_t *const packet, const uint8_t *UNUSED(data), int UNUSED(len))
 {
     uint8_t sessionId[ARKIME_SESSIONID_LEN];
 
@@ -228,6 +228,7 @@ void arkime_mprotocol_init()
                                                 NULL,
                                                 60);
 
+    arkime_packet_set_ethernet_cb(ARKIME_ETHERTYPE_CORRUPT, corrupt_packet_enqueue);
     arkime_packet_set_ethernet_cb(ARKIME_ETHERTYPE_UNKNOWN, unknown_ether_packet_enqueue);
     arkime_packet_set_ip_cb(ARKIME_IPPROTO_UNKNOWN, unknown_ip_packet_enqueue);
 }

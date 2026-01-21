@@ -63,6 +63,8 @@
 #define ARKIME_ETHERTYPE_UNKNOWN 1
 // The first 2 bytes have the ethertype
 #define ARKIME_ETHERTYPE_DETECT  2
+// Corrupt packet
+#define ARKIME_ETHERTYPE_CORRUPT 3
 #define ARKIME_ETHERTYPE_TEB     0x6558
 #define ARKIME_ETHERTYPE_RAWFR   0x6559
 #define ARKIME_ETHERTYPE_NSH     0x894F
@@ -70,8 +72,7 @@
 #define ARKIME_ETHERTYPE_QINQ    0x88a8
 
 #define ARKIME_IPPROTO_UNKNOWN 255
-#define ARKIME_IPPROTO_CORRUPT 256
-#define ARKIME_IPPROTO_MAX     257
+#define ARKIME_IPPROTO_MAX     256
 #define ARKIME_SESSION_IS_v6(s) ((s)->v6 == 1)
 #define ARKIME_SESSION_IS_v4(s) ((s)->v6 == 0)
 
@@ -1366,7 +1367,6 @@ int arkime_mprotocol_register_internal(const char                      *name,
 int arkime_mprotocol_get(const char *name);
 
 void arkime_mprotocol_init();
-ArkimePacketRC arkime_mprotocol_corrupt_enqueue(ArkimePacketBatch_t *batch, ArkimePacket_t *const packet);
 
 
 /******************************************************************************/
