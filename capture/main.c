@@ -876,7 +876,7 @@ LOCAL void arkime_hex_init()
 
     // Initialize IPv4 byte lookup table for fast conversion
     for (int i = 0; i < 256; i++) {
-        snprintf(arkime_ip_byte_lookup[i], sizeof(arkime_ip_byte_lookup[i]), "%d", i);
+        snprintf(arkime_ip_byte_lookup[i], sizeof(arkime_ip_byte_lookup[i]), "%u", (uint8_t)i);
     }
 }
 /******************************************************************************/
