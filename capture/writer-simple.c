@@ -811,13 +811,11 @@ LOCAL gboolean writer_simple_check_gfunc (gpointer UNUSED(user_data))
     struct timeval now;
     gettimeofday(&now, NULL);
 
-    ARKIME_LOCK(simpleQ);
     for (int thread = 0; thread < config.packetThreads; thread++) {
         if (now.tv_sec - lastSave[thread].tv_sec >= 10) {
             arkime_session_add_cmd_thread(thread, GINT_TO_POINTER(thread), NULL, writer_simple_check);
         }
     }
-    ARKIME_UNLOCK(simpleQ);
 
     return G_SOURCE_CONTINUE;
 }
