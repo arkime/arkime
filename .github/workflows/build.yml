@@ -223,6 +223,12 @@ jobs:
           mv moloch*.rpm moloch-main.${{matrix.version}}.rpm
           ls -l *.rpm
 
+          yum install -y libubsan libasan
+          (cd capture ; make clean; make -j SANITIZE_LDFLAGS='-fno-common -fsanitize=address -fsanitize=undefined -fno-omit-frame-pointer' sanitize; make install)
+          fpm -s dir -t rpm -n moloch -x data/moloch/logs -x data/molcoh/raw -v $ARKIME_VERSION --iteration ${{ github.run_id }} --template-scripts --url "https://arkime.com" --description "Moloch Full Packet System" ${{ matrix.fpmdeps }} -d libubsan -d libasan --rpm-rpmbuild-define "_build_id_links none" -p molochsanitize-${ARKIME_VERSION}-${{github.run_id}}.${{matrix.version}}.rpm /data/moloch
+          mv molochsanitize*.rpm molochsanitize-main.${{matrix.version}}.rpm
+          ls -l *.rpm
+
       - name: package deb
         if: ${{ matrix.package == 'deb' }}
         run: |
