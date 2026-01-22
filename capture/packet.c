@@ -569,11 +569,12 @@ LOCAL void *arkime_packet_thread(void *threadp)
         // Only process commands if the packetQ is less than 75% full or every 8 packets
         if (likely(DLL_COUNT(packet_, &packetQ[thread]) < maxPackets75) || (skipCount & 0x7) == 0) {
             arkime_session_process_commands(thread);
-            if (!packet)
-                continue;
         } else {
             skipCount++;
         }
+
+        if (!packet)
+            continue;
 
         if (unlikely(packet->pktlen == ARKIME_PACKET_LEN_FILE_DONE)) {
             // Make sure no best http requests are in the queue, like the file create
