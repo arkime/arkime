@@ -211,7 +211,6 @@ void arkime_packet_free(ArkimePacket_t *packet)
 }
 #else
 /******************************************************************************/
-// Allocate packet from freelist, falling back to malloc if exhausted. Called from reader threads
 ArkimePacket_t *arkime_packet_alloc()
 {
     return ARKIME_TYPE_ALLOC0(ArkimePacket_t);
