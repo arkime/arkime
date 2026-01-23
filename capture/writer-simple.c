@@ -1042,6 +1042,7 @@ void writer_simple_init(const char *name)
     simpleFreeOutputBuffers  = arkime_config_int(NULL, "simpleFreeOutputBuffers", 16, 0, 0xffff);
 
     DLL_INIT(simple_, &simpleQ);
+    DLL_INIT(simple_, &freeList);
 
     struct timeval now;
     gettimeofday(&now, NULL);
