@@ -128,38 +128,95 @@ SPDX-License-Identifier: Apache-2.0
               inline
               v-model="newUser.headerAuthEnabled"
               label="Web Auth Header" />
-            <v-checkbox
-              inline
-              :model-value="!newUser.emailSearch"
-              @update:model-value="newVal => negativeToggle(newVal, newUser, 'emailSearch')"
-              label="Disable Arkime Email Search" />
-            <v-checkbox
-              inline
-              :model-value="!newUser.removeEnabled"
-              @update:model-value="newVal => negativeToggle(newVal, newUser, 'removeEnabled')"
-              label="Disable Arkime Data Removal" />
-            <v-checkbox
-              inline
-              :model-value="!newUser.packetSearch"
-              @update:model-value="newVal => negativeToggle(newVal, newUser, 'packetSearch')"
-              label="Disable Arkime Hunting" />
-            <v-checkbox
-              inline
-              v-model="newUser.hideStats"
-              label="Hide Arkime Stats Page" />
-            <v-checkbox
-              inline
-              v-model="newUser.hideFiles"
-              label="Hide Arkime Files Page" />
-            <v-checkbox
-              inline
-              v-model="newUser.hidePcap"
-              label="Hide Arkime PCAP" />
-            <v-checkbox
-              inline
-              v-model="newUser.disablePcapDownload"
-              label="Disable Arkime PCAP Download" />
           </template>
+        </div>
+
+        <!-- User permission tri-state toggles -->
+        <div
+          v-if="createMode === 'user'"
+          class="user-permissions mt-2 mb-2 d-flex flex-wrap ga-1">
+          <TriStateToggle
+            class="toggle-group rounded pa-1"
+            :model-value="newUser.emailSearch"
+            label="Disable Arkime Email Search"
+            :negated="true"
+            @update:model-value="setRoleField('emailSearch', $event)" />
+          <TriStateToggle
+            class="toggle-group rounded pa-1"
+            :model-value="newUser.removeEnabled"
+            label="Disable Arkime Data Removal"
+            :negated="true"
+            @update:model-value="setRoleField('removeEnabled', $event)" />
+          <TriStateToggle
+            class="toggle-group rounded pa-1"
+            :model-value="newUser.packetSearch"
+            label="Disable Arkime Hunting"
+            :negated="true"
+            @update:model-value="setRoleField('packetSearch', $event)" />
+          <TriStateToggle
+            class="toggle-group rounded pa-1"
+            :model-value="newUser.hideStats"
+            label="Hide Arkime Stats Page"
+            @update:model-value="setRoleField('hideStats', $event)" />
+          <TriStateToggle
+            class="toggle-group rounded pa-1"
+            :model-value="newUser.hideFiles"
+            label="Hide Arkime Files Page"
+            @update:model-value="setRoleField('hideFiles', $event)" />
+          <TriStateToggle
+            class="toggle-group rounded pa-1"
+            :model-value="newUser.hidePcap"
+            label="Hide Arkime PCAP"
+            @update:model-value="setRoleField('hidePcap', $event)" />
+          <TriStateToggle
+            class="toggle-group rounded pa-1"
+            :model-value="newUser.disablePcapDownload"
+            label="Disable Arkime PCAP Download"
+            @update:model-value="setRoleField('disablePcapDownload', $event)" />
+        </div>
+
+        <!-- Role permission tri-state toggles -->
+        <div
+          v-if="createMode === 'role'"
+          class="role-permissions mt-2 mb-2 d-flex flex-wrap ga-1">
+          <TriStateToggle
+            class="toggle-group rounded pa-1"
+            :model-value="newUser.emailSearch"
+            label="Disable Arkime Email Search"
+            :negated="true"
+            @update:model-value="setRoleField('emailSearch', $event)" />
+          <TriStateToggle
+            class="toggle-group rounded pa-1"
+            :model-value="newUser.removeEnabled"
+            label="Disable Arkime Data Removal"
+            :negated="true"
+            @update:model-value="setRoleField('removeEnabled', $event)" />
+          <TriStateToggle
+            class="toggle-group rounded pa-1"
+            :model-value="newUser.packetSearch"
+            label="Disable Arkime Hunting"
+            :negated="true"
+            @update:model-value="setRoleField('packetSearch', $event)" />
+          <TriStateToggle
+            class="toggle-group rounded pa-1"
+            :model-value="newUser.hideStats"
+            label="Hide Arkime Stats Page"
+            @update:model-value="setRoleField('hideStats', $event)" />
+          <TriStateToggle
+            class="toggle-group rounded pa-1"
+            :model-value="newUser.hideFiles"
+            label="Hide Arkime Files Page"
+            @update:model-value="setRoleField('hideFiles', $event)" />
+          <TriStateToggle
+            class="toggle-group rounded pa-1"
+            :model-value="newUser.hidePcap"
+            label="Hide Arkime PCAP"
+            @update:model-value="setRoleField('hidePcap', $event)" />
+          <TriStateToggle
+            class="toggle-group rounded pa-1"
+            :model-value="newUser.disablePcapDownload"
+            label="Disable Arkime PCAP Download"
+            @update:model-value="setRoleField('disablePcapDownload', $event)" />
         </div>
       </v-form> <!-- /create form -->
       <!-- create form error -->
@@ -213,7 +270,8 @@ SPDX-License-Identifier: Apache-2.0
 import UserService from '@real_common/UserService';
 import RoleDropdown from './RoleDropdown.vue';
 import UserDropdown from './UserDropdown.vue';
-import { ref } from 'vue';
+import TriStateToggle from './TriStateToggle.vue';
+import { ref, watch } from 'vue';
 
 const defaultNewUser = {
   userId: '',
@@ -227,7 +285,18 @@ const defaultNewUser = {
   roleAssigners: []
 };
 
-defineProps({
+const defaultNewRole = {
+  userId: '',
+  userName: '',
+  enabled: true,
+  roleAssigners: []
+};
+
+const emit = defineEmits(['user-created', 'close']);
+
+const modalOpen = defineModel('modalOpen', { required: false, default: false, type: Boolean });
+
+const props = defineProps({
   roles: {
     type: Array,
     required: true
@@ -238,16 +307,27 @@ defineProps({
   }
 });
 
-const emit = defineEmits(['user-created', 'close']);
-
-const modalOpen = defineModel({ required: false, default: false, type: Boolean });
-
 const createError = ref('');
-const newUser = ref(defaultNewUser);
+const newUser = ref({ ...defaultNewUser });
 const validatePassword = ref(undefined);
 
-function negativeToggle (newVal, user, field) {
-  user[field] = !newVal;
+// Reset form when modal opens
+watch(modalOpen, (newVal) => {
+  if (newVal) {
+    newUser.value = props.createMode === 'role'
+      ? { ...defaultNewRole }
+      : { ...defaultNewUser };
+    createError.value = '';
+    validatePassword.value = undefined;
+  }
+});
+
+function setRoleField (field, value) {
+  if (value === undefined) {
+    delete newUser.value[field];
+  } else {
+    newUser.value[field] = value;
+  }
 }
 function updateNewUserRoles (roles) {
   newUser.value.roles = roles;
@@ -283,10 +363,16 @@ function createUser (createRole) {
   }
 
   UserService.createUser(user).then((response) => {
-    newUser.value = defaultNewUser;
+    newUser.value = createRole ? { ...defaultNewRole } : { ...defaultNewUser };
     emit('user-created', response.text, user);
   }).catch((error) => {
     createError.value = error.text;
   });
 }
 </script>
+
+<style scoped>
+.toggle-group {
+  background-color: rgba(var(--v-theme-on-surface), 0.05);
+}
+</style>

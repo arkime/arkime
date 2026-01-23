@@ -272,56 +272,91 @@ SPDX-License-Identifier: Apache-2.0
         <template #expanded-row="{ columns, item }">
           <tr>
             <td :colspan="columns.length">
-              <div class="row mb-2">
-                <v-checkbox
-                  inline
-                  data-testid="checkbox"
-                  :model-value="!item.emailSearch"
-                  v-if="isUser(item)"
-                  @update:model-value="newVal => negativeToggle(newVal, item, 'emailSearch', true)"
-                  label="Disable Arkime Email Search" />
-                <v-checkbox
-                  inline
-                  data-testid="checkbox"
-                  :model-value="!item.removeEnabled"
-                  v-if="isUser(item)"
-                  @update:model-value="newVal => negativeToggle(newVal, item, 'removeEnabled', true)"
-                  label="Disable Arkime Data Removal" />
-                <v-checkbox
-                  inline
-                  data-testid="checkbox"
-                  :model-value="!item.packetSearch"
-                  v-if="isUser(item)"
-                  @update:model-value="newVal => negativeToggle(newVal, item, 'packetSearch', true)"
-                  label="Disable Arkime Hunting" />
-                <v-checkbox
-                  inline
-                  data-testid="checkbox"
-                  v-model="item.hideStats"
-                  v-if="isUser(item)"
-                  @update:model-value="userHasChanged(item)"
-                  label="Hide Arkime Stats Page" />
-                <v-checkbox
-                  inline
-                  data-testid="checkbox"
-                  v-model="item.hideFiles"
-                  v-if="isUser(item)"
-                  @update:model-value="userHasChanged(item)"
-                  label="Hide Arkime Files Page" />
-                <v-checkbox
-                  inline
-                  data-testid="checkbox"
-                  v-model="item.hidePcap"
-                  v-if="isUser(item)"
-                  @update:model-value="userHasChanged(item)"
-                  label="Hide Arkime PCAP" />
-                <v-checkbox
-                  inline
-                  data-testid="checkbox"
-                  v-model="item.disablePcapDownload"
-                  v-if="isUser(item)"
-                  @update:model-value="userHasChanged(item)"
-                  label="Disable Arkime PCAP Download" />
+              <!-- User permission tri-state toggles -->
+              <div
+                v-if="isUser(item)"
+                class="user-permissions mt-2 mb-2 d-flex flex-wrap ga-1">
+                <TriStateToggle
+                  class="toggle-group rounded pa-1"
+                  :model-value="item.emailSearch"
+                  label="Disable Arkime Email Search"
+                  :negated="true"
+                  @update:model-value="setRoleField(item, 'emailSearch', $event)" />
+                <TriStateToggle
+                  class="toggle-group rounded pa-1"
+                  :model-value="item.removeEnabled"
+                  label="Disable Arkime Data Removal"
+                  :negated="true"
+                  @update:model-value="setRoleField(item, 'removeEnabled', $event)" />
+                <TriStateToggle
+                  class="toggle-group rounded pa-1"
+                  :model-value="item.packetSearch"
+                  label="Disable Arkime Hunting"
+                  :negated="true"
+                  @update:model-value="setRoleField(item, 'packetSearch', $event)" />
+                <TriStateToggle
+                  class="toggle-group rounded pa-1"
+                  :model-value="item.hideStats"
+                  label="Hide Arkime Stats Page"
+                  @update:model-value="setRoleField(item, 'hideStats', $event)" />
+                <TriStateToggle
+                  class="toggle-group rounded pa-1"
+                  :model-value="item.hideFiles"
+                  label="Hide Arkime Files Page"
+                  @update:model-value="setRoleField(item, 'hideFiles', $event)" />
+                <TriStateToggle
+                  class="toggle-group rounded pa-1"
+                  :model-value="item.hidePcap"
+                  label="Hide Arkime PCAP"
+                  @update:model-value="setRoleField(item, 'hidePcap', $event)" />
+                <TriStateToggle
+                  class="toggle-group rounded pa-1"
+                  :model-value="item.disablePcapDownload"
+                  label="Disable Arkime PCAP Download"
+                  @update:model-value="setRoleField(item, 'disablePcapDownload', $event)" />
+              </div>
+              <!-- Role permission tri-state toggles -->
+              <div
+                v-else
+                class="role-permissions mt-2 mb-2 d-flex flex-wrap ga-1">
+                <TriStateToggle
+                  class="toggle-group rounded pa-1"
+                  :model-value="item.emailSearch"
+                  label="Disable Arkime Email Search"
+                  :negated="true"
+                  @update:model-value="setRoleField(item, 'emailSearch', $event)" />
+                <TriStateToggle
+                  class="toggle-group rounded pa-1"
+                  :model-value="item.removeEnabled"
+                  label="Disable Arkime Data Removal"
+                  :negated="true"
+                  @update:model-value="setRoleField(item, 'removeEnabled', $event)" />
+                <TriStateToggle
+                  class="toggle-group rounded pa-1"
+                  :model-value="item.packetSearch"
+                  label="Disable Arkime Hunting"
+                  :negated="true"
+                  @update:model-value="setRoleField(item, 'packetSearch', $event)" />
+                <TriStateToggle
+                  class="toggle-group rounded pa-1"
+                  :model-value="item.hideStats"
+                  label="Hide Arkime Stats Page"
+                  @update:model-value="setRoleField(item, 'hideStats', $event)" />
+                <TriStateToggle
+                  class="toggle-group rounded pa-1"
+                  :model-value="item.hideFiles"
+                  label="Hide Arkime Files Page"
+                  @update:model-value="setRoleField(item, 'hideFiles', $event)" />
+                <TriStateToggle
+                  class="toggle-group rounded pa-1"
+                  :model-value="item.hidePcap"
+                  label="Hide Arkime PCAP"
+                  @update:model-value="setRoleField(item, 'hidePcap', $event)" />
+                <TriStateToggle
+                  class="toggle-group rounded pa-1"
+                  :model-value="item.disablePcapDownload"
+                  label="Disable Arkime PCAP Download"
+                  @update:model-value="setRoleField(item, 'disablePcapDownload', $event)" />
               </div>
               <div class="d-flex flex-row mb-2">
                 <v-text-field
@@ -427,6 +462,7 @@ import UserCreate from './UserCreate.vue';
 import UserService from '@real_common/UserService';
 import RoleDropdown from './RoleDropdown.vue';
 import UserDropdown from './UserDropdown.vue';
+import TriStateToggle from './TriStateToggle.vue';
 import MyPagination from '@/utils/MyPagination.vue';
 import IdTooltip from '@/utils/IdTooltip.vue';
 import { timezoneDateString } from './vueFilters';
@@ -440,6 +476,7 @@ export default {
     UserCreate,
     RoleDropdown,
     UserDropdown,
+    TriStateToggle,
     MyPagination,
     IdTooltip
   },
@@ -545,6 +582,14 @@ export default {
       user[field] = !newVal;
       if (existing) { this.userHasChanged(user); }
     },
+    setRoleField (role, field, value) {
+      if (value === undefined) {
+        delete role[field];
+      } else {
+        role[field] = value;
+      }
+      this.userHasChanged(role);
+    },
     changeTimeLimit (user) {
       if (user.timeLimit == null) {
         delete user.timeLimit;
@@ -580,13 +625,7 @@ export default {
       // sort, since order is not meaningful for roleAssigners
       user.roleAssigners.sort();
 
-      // make sure these fields exist or the objects will be different
-      // (undefined is the same as false for these fields)
-      user.timeLimit ||= undefined;
-      user.hidePcap ||= undefined;
-      user.hideFiles ||= undefined;
-      user.hideStats ||= undefined;
-      user.disablePcapDownload ||= undefined;
+      // For both users and roles: preserve the exact value (undefined = inherit, true/false = explicit)
 
       user.expanded = undefined; // don't care about expanded field (just for UI)
       user.lastUsed = undefined; // don't compare lastUsed, it might be different if the user is using the UI
@@ -816,5 +855,9 @@ export default {
 }
 .hover-reveal-sort-arrow:hover .sort-arrow {
   visibility: visible;
+}
+
+.toggle-group {
+  background-color: rgba(var(--v-theme-on-surface), 0.05);
 }
 </style>
