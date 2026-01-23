@@ -96,8 +96,6 @@ LOCAL  uint32_t              overloadDropTimes[ARKIME_MAX_PACKET_THREADS];
 
 LOCAL  ARKIME_LOCK_DEFINE(frags);
 
-LOCAL ArkimePacket_t *packetFreelist;
-
 LOCAL ArkimePacketRC arkime_packet_ip4(ArkimePacketBatch_t *batch, ArkimePacket_t *const packet, const uint8_t *data, int len);
 LOCAL ArkimePacketRC arkime_packet_ip6(ArkimePacketBatch_t *batch, ArkimePacket_t *const packet, const uint8_t *data, int len);
 LOCAL ArkimePacketRC arkime_packet_frame_relay(ArkimePacketBatch_t *batch, ArkimePacket_t *const packet, const uint8_t *data, int len);
@@ -142,30 +140,32 @@ LOCAL int arkime_packet_thread_exit_func;
 #define IPPROTO_IPV4            4
 #endif
 
+#ifdef USE_CAS
+LOCAL ArkimePacket_t *packetFreelist;
 /******************************************************************************/
 // Allocate packet from freelist, falling back to malloc if exhausted. Called from reader threads
 ArkimePacket_t *arkime_packet_alloc()
 {
-    ArkimePacket_t *packet = packetFreelist;
+    ArkimePacket_t *packet, *next;
 
     // Try lock-free pop from freelist
-    while (packet) {
-        ArkimePacket_t *next = packet->packet_next;
-        // if (packetFreelist == packet) packetFreelist = next
+    while (1) {
+        packet = packetFreelist;
+        if (!packet) {
+            // Freelist empty, allocate new
+            ArkimePacket_t *newPacket = malloc(sizeof(ArkimePacket_t));
+            if (!newPacket) {
+                LOGEXIT("ERROR - Failed to allocate packet");
+            }
+            memset(newPacket, 0, sizeof(ArkimePacket_t));
+            return newPacket;
+        }
+        next = packet->packet_next;
         if (ARKIME_THREAD_CAS(&packetFreelist, packet, next)) {
             memset(packet, 0, sizeof(ArkimePacket_t));
             return packet;
         }
-        packet = packetFreelist;
     }
-
-    // Freelist empty, allocate new
-    ArkimePacket_t *newPacket = malloc(sizeof(ArkimePacket_t));
-    if (!newPacket) {
-        LOGEXIT("ERROR - Failed to allocate packet");
-    }
-    memset(newPacket, 0, sizeof(ArkimePacket_t));
-    return newPacket;
 }
 
 /******************************************************************************/
@@ -200,13 +200,39 @@ void arkime_packet_free(ArkimePacket_t *packet)
     packet->pkt = 0;
 
     // Lock-free push to freelist
-    for (ArkimePacket_t *head = packetFreelist; ; head = packetFreelist) {
+    ArkimePacket_t *head;
+    while (1) {
+        head = packetFreelist;
         packet->packet_next = head;
-        // if (packetFreelist == head) packetFreelist = packet
-        if (ARKIME_THREAD_CAS(&packetFreelist, head, packet))
+        if (ARKIME_THREAD_CAS(&packetFreelist, head, packet)) {
             break;
+        }
     }
 }
+#else
+/******************************************************************************/
+// Allocate packet from freelist, falling back to malloc if exhausted. Called from reader threads
+ArkimePacket_t *arkime_packet_alloc()
+{
+    return ARKIME_TYPE_ALLOC0(ArkimePacket_t);
+}
+
+/******************************************************************************/
+LOCAL void arkime_packet_freelist_init()
+{
+}
+
+/******************************************************************************/
+void arkime_packet_free(ArkimePacket_t *packet)
+{
+    if (packet->copied) {
+        free(packet->pkt);
+    }
+
+    ARKIME_TYPE_FREE(ArkimePacket_t, packet);
+}
+#endif
+
 /******************************************************************************/
 void arkime_packet_process_data(ArkimeSession_t *session, const uint8_t *data, int len, int which)
 {
@@ -569,11 +595,12 @@ LOCAL void *arkime_packet_thread(void *threadp)
         // Only process commands if the packetQ is less than 75% full or every 8 packets
         if (likely(DLL_COUNT(packet_, &packetQ[thread]) < maxPackets75) || (skipCount & 0x7) == 0) {
             arkime_session_process_commands(thread);
-            if (!packet)
-                continue;
         } else {
             skipCount++;
         }
+
+        if (!packet)
+            continue;
 
         if (unlikely(packet->pktlen == ARKIME_PACKET_LEN_FILE_DONE)) {
             // Make sure no best http requests are in the queue, like the file create
