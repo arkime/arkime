@@ -355,7 +355,7 @@ LOCAL int scheme_s3_load_full_dir(const char *dir, ArkimeSchemeFlags flags, Arki
     char *path;
     curl_url_get(h, CURLUPART_PATH, &path, 0);
 
-    char **paths = g_strsplit(path, "/", 0);
+    char **paths = g_strsplit(path, "/", 3);  // Split into at most 3: empty, bucket, prefix
 
     char schemehostport[300];
     if (port)
@@ -416,16 +416,16 @@ LOCAL int scheme_s3_load_full_dir(const char *dir, ArkimeSchemeFlags flags, Arki
         if (req.continuation) {
             char uri2[3000];
 
-            if (paths[3]) {
-                snprintf(uri2, sizeof(uri2), "%s://%s/?continuation-token=%s&list-type=2&prefix=%s", scheme, paths[2], req.continuation, paths[3]);
+            if (paths[2] && paths[2][0] != 0) {
+                snprintf(uri2, sizeof(uri2), "%s/?continuation-token=%s&list-type=2&prefix=%s", shpb, req.continuation, paths[2]);
             } else {
-                snprintf(uri2, sizeof(uri2), "%s://%s/?continuation-token=%s&list-type=2", scheme, paths[2], req.continuation);
+                snprintf(uri2, sizeof(uri2), "%s/?continuation-token=%s&list-type=2", shpb, req.continuation);
             }
 
             g_free(req.continuation);
             req.continuation = NULL;
 
-            scheme_s3_request(server, creds, uri2 + 5 + strlen(paths[2]), paths[2], &req, TRUE, NULL);
+            scheme_s3_request(server, creds, uri2 + strlen(shpb), paths[1], &req, TRUE, NULL);
             ARKIME_LOCK(waitingdir);
         }
         ARKIME_LOCK(s3Items->lock);
