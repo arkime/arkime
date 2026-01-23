@@ -124,6 +124,8 @@ struct arkimehttpserver_t {
 };
 
 LOCAL __thread z_stream z_strm;
+LOCAL GPtrArray *z_strms;
+LOCAL ARKIME_LOCK_DEFINE(z_strms);
 
 LOCAL gboolean arkime_http_send_timer_callback(gpointer);
 LOCAL void arkime_http_add_request(ArkimeHttpServer_t *server, ArkimeHttpRequest_t *request, int priority);
@@ -821,6 +823,9 @@ gboolean arkime_http_schedule2(void *serverV, const char *method, const char *ke
 
         if (z_strm.state == Z_NULL) {
             deflateInit2(&z_strm, Z_DEFAULT_COMPRESSION, Z_DEFLATED, 16 + 15, 8, Z_DEFAULT_STRATEGY);
+            ARKIME_LOCK(z_strms);
+            g_ptr_array_add(z_strms, &z_strm);
+            ARKIME_UNLOCK(z_strms);
         }
         z_strm.avail_in   = data_len;
         z_strm.next_in    = (uint8_t *)data;
@@ -1157,11 +1162,17 @@ void arkime_http_init()
     }
 
     servers = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, arkime_http_free_server);
+    z_strms = g_ptr_array_new();
 
     // Can NOT have config_ calls here since need to fetch config
 }
 /******************************************************************************/
 void arkime_http_exit()
 {
+    for (uint32_t i = 0; i < z_strms->len; i++) {
+        z_stream *zs = g_ptr_array_index(z_strms, i);
+        deflateEnd(zs);
+    }
+    g_ptr_array_free(z_strms, TRUE);
     curl_global_cleanup();
 }
