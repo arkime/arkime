@@ -225,6 +225,10 @@ LOCAL void arkime_packet_freelist_init()
 /******************************************************************************/
 void arkime_packet_free(ArkimePacket_t *packet)
 {
+    if (packet->copied) {
+        free(packet->pkt);
+    }
+
     ARKIME_TYPE_FREE(ArkimePacket_t, packet);
 }
 #endif
