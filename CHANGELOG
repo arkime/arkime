@@ -96,6 +96,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #3591 geoLite2Country setting now looks for City file first by default
   - #3618 Fix S3 scheme prefix handling
   - #3618 Fix S3 scheme not process over 1000 S3 items
+  - #3620 Simple DNS RRSIG/DS/NSEC parsing
 ## Capture/Viewer
   - #3197 new sessionsStarted and sessionsPresent in files tab
   - #3210 new vlan.dot1q and vlan.dot1ad expressions
@@ -105,7 +106,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #3464 Added id for dhcpv6
   - #3465 Added dhcp.requestIp
   - #3566 New packetRange field to support spanning timeline display
-  - #3601 Save corrupt and unknown sessions as real Arkmie sessions based on saveUnknownPackets
+  - #3601 Save corrupt and unknown sessions as real Arkime sessions based on saveUnknownPackets
 ## Viewer
   - #3326 BIG search expression
   - #3343 Basic internationalization support
