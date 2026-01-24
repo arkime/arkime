@@ -257,12 +257,6 @@
                      },
                      {
                         "class" : "IN",
-                        "name" : "<root>",
-                        "ttl" : 518400,
-                        "type" : "RRSIG"
-                     },
-                     {
-                        "class" : "IN",
                         "ip" : "198.41.0.4",
                         "name" : "a.root-servers.net",
                         "ttl" : 518400,
@@ -430,7 +424,7 @@
                         "type" : "AAAA"
                      }
                   ],
-                  "answersCnt" : 38,
+                  "answersCnt" : 37,
                   "headerFlags" : [
                      "AA",
                      "RD"

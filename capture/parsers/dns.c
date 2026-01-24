@@ -1575,7 +1575,7 @@ LOCAL void dns_save(BSB *jbsb, ArkimeFieldObject_t *object, struct arkime_sessio
                     case DNS_RR_RRSIG: {
                         const char *typeCoveredStr = (answer->rrsig->typeCovered < MAX_QTYPES && qtypes[answer->rrsig->typeCovered]) ?
                                                      qtypes[answer->rrsig->typeCovered] : "UNKNOWN";
-                        BSB_EXPORT_sprintf(*jbsb, "\"rrsig\":{\"title\":\"RRSIG %s %u %u %u %u %u %u %s\"},",
+                        BSB_EXPORT_sprintf(*jbsb, "\"rrsig\":\"RRSIG %s %u %u %u %u %u %u %s\",",
                                            typeCoveredStr,
                                            answer->rrsig->algorithm,
                                            answer->rrsig->labels,
@@ -1589,7 +1589,7 @@ LOCAL void dns_save(BSB *jbsb, ArkimeFieldObject_t *object, struct arkime_sessio
                     }
                     break;
                     case DNS_RR_NSEC: {
-                        BSB_EXPORT_sprintf(*jbsb, "\"nsec\":{\"title\":\"NSEC %s %s\"},",
+                        BSB_EXPORT_sprintf(*jbsb, "\"nsec\":\"NSEC %s %s\",",
                                            answer->nsec->nextDomainName,
                                            answer->nsec->typeList);
                         g_free(answer->nsec->nextDomainName);
@@ -1598,7 +1598,7 @@ LOCAL void dns_save(BSB *jbsb, ArkimeFieldObject_t *object, struct arkime_sessio
                     }
                     break;
                     case DNS_RR_DS: {
-                        BSB_EXPORT_sprintf(*jbsb, "\"ds\":{\"title\":\"DS %u %u %u %s\"},",
+                        BSB_EXPORT_sprintf(*jbsb, "\"ds\":\"DS %u %u %u %s\",",
                                            answer->ds->keyTag,
                                            answer->ds->algorithm,
                                            answer->ds->digestType,
@@ -2271,19 +2271,19 @@ void arkime_parser_init()
                         (char *)NULL);
 
     arkime_field_define("dns", "termfield",
-                        "dns.answer.rrsig", "DNS Answer RRSIG", "dns.answers.rrsig.title",
+                        "dns.answer.rrsig", "DNS Answer RRSIG", "dns.answers.rrsig",
                         "DNS Answer RRSIG",
                         0, ARKIME_FIELD_FLAG_FAKE,
                         (char *)NULL);
 
     arkime_field_define("dns", "termfield",
-                        "dns.answer.nsec", "DNS Answer NSEC", "dns.answers.nsec.title",
+                        "dns.answer.nsec", "DNS Answer NSEC", "dns.answers.nsec",
                         "DNS Answer NSEC",
                         0, ARKIME_FIELD_FLAG_FAKE,
                         (char *)NULL);
 
     arkime_field_define("dns", "termfield",
-                        "dns.answer.ds", "DNS Answer DS", "dns.answers.ds.title",
+                        "dns.answer.ds", "DNS Answer DS", "dns.answers.ds",
                         "DNS Answer DS",
                         0, ARKIME_FIELD_FLAG_FAKE,
                         (char *)NULL);
