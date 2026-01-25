@@ -218,6 +218,7 @@ sub doFix {
 
     fix($json);
     $json = to_json($json, {pretty => 1, canonical => 1});
+    $json =~ s/^((?:   )+)/(' ' x (length($1) \/ 3))/gme;
     print $json, "\n";
 }
 
