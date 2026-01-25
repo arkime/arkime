@@ -99,6 +99,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #3620 Simple DNS RRSIG/DS/NSEC parsing
   - #3622 Added disableIp4Defrag setting
   - #3623 Initial ES-IS protocol support
+  - #3624 saveUnknownPackets supports common strings
 ## Capture/Viewer
   - #3197 new sessionsStarted and sessionsPresent in files tab
   - #3210 new vlan.dot1q and vlan.dot1ad expressions

@@ -40,6 +40,245 @@ LOCAL char *yaml_names[] = {
 #endif
 
 /******************************************************************************/
+typedef struct {
+    const char *name;
+    uint8_t     num;
+} IpProtocolEntry_t;
+
+// Sorted alphabetically for bsearch
+LOCAL IpProtocolEntry_t ipProtocols[] = {
+    {"3pc", 34},
+    {"a/n", 107},
+    {"ah", 51},
+    {"aris", 104},
+    {"ax.25", 93},
+    {"bna", 49},
+    {"br-sat-mon", 76},
+    {"cbt", 7},
+    {"cftp", 62},
+    {"compaq-peer", 110},
+    {"cphb", 73},
+    {"cpnx", 72},
+    {"crtp", 126},
+    {"crudp", 127},
+    {"dccp", 33},
+    {"dcn-meas", 19},
+    {"ddp", 37},
+    {"ddx", 116},
+    {"dgp", 86},
+    {"dsr", 48},
+    {"egp", 8},
+    {"eigrp", 88},
+    {"encap", 98},
+    {"esp", 50},
+    {"etherip", 97},
+    {"ethernet", 143},
+    {"fc", 133},
+    {"fire", 125},
+    {"ggp", 3},
+    {"gmtp", 100},
+    {"gre", 47},
+    {"hip", 139},
+    {"hmp", 20},
+    {"hopopt", 0},
+    {"i-nlsp", 52},
+    {"iatp", 117},
+    {"icmp", 1},
+    {"icmpv6", 58},
+    {"idpr", 35},
+    {"idpr-cmtp", 38},
+    {"idrp", 45},
+    {"ifmp", 101},
+    {"igmp", 2},
+    {"igp", 9},
+    {"il", 40},
+    {"ip-in-ip", 4},
+    {"ipcomp", 108},
+    {"ipcv", 71},
+    {"ipip", 94},
+    {"iplt", 129},
+    {"ippc", 67},
+    {"iptm", 84},
+    {"ipv4", 4},
+    {"ipv6", 41},
+    {"ipv6-frag", 44},
+    {"ipv6-icmp", 58},
+    {"ipv6-nonxt", 59},
+    {"ipv6-opts", 60},
+    {"ipv6-route", 43},
+    {"ipx-in-ip", 111},
+    {"irtp", 28},
+    {"isis", 124},
+    {"iso-ip", 80},
+    {"iso-tp4", 29},
+    {"kryptolan", 65},
+    {"l2tp", 115},
+    {"larp", 91},
+    {"manet", 138},
+    {"merit-inp", 32},
+    {"mfe-nsp", 31},
+    {"mobile", 55},
+    {"mobility", 135},
+    {"mpls-in-ip", 137},
+    {"mtp", 92},
+    {"mux", 18},
+    {"narp", 54},
+    {"netblt", 30},
+    {"nsfnet-igp", 85},
+    {"nvp-ii", 11},
+    {"ospf", 89},
+    {"ospfigp", 89},
+    {"pgm", 113},
+    {"pim", 103},
+    {"pipe", 131},
+    {"pnni", 102},
+    {"prm", 21},
+    {"ptp", 123},
+    {"pup", 12},
+    {"pvp", 75},
+    {"qnx", 106},
+    {"rdp", 27},
+    {"rohc", 142},
+    {"rsvp", 46},
+    {"rsvp-e2e-ignore", 134},
+    {"rvd", 66},
+    {"sat-expak", 64},
+    {"sat-mon", 69},
+    {"scc-sp", 96},
+    {"scps", 105},
+    {"sctp", 132},
+    {"sdrp", 42},
+    {"secure-vmtp", 82},
+    {"shim6", 140},
+    {"skip", 57},
+    {"smp", 121},
+    {"snp", 109},
+    {"sprite-rpc", 90},
+    {"sps", 130},
+    {"srp", 119},
+    {"sscopmce", 128},
+    {"st", 5},
+    {"stp", 118},
+    {"sun-nd", 77},
+    {"tcp", 6},
+    {"tcf", 87},
+    {"tlsp", 56},
+    {"tp++", 39},
+    {"ttp", 84},
+    {"udp", 17},
+    {"udplite", 136},
+    {"uti", 120},
+    {"vines", 83},
+    {"visa", 70},
+    {"vmtp", 81},
+    {"vrrp", 112},
+    {"wb-expak", 79},
+    {"wb-mon", 78},
+    {"wesp", 141},
+    {"wsn", 74},
+    {"xtp", 36},
+};
+
+LOCAL int config_ipprotocol_cmp(const void *keyv, const void *entryv)
+{
+    const char *key = keyv;
+    const IpProtocolEntry_t *entry = entryv;
+    return strcasecmp(key, entry->name);
+}
+
+/******************************************************************************/
+LOCAL int config_ipprotocol_lookup(const char *str)
+{
+    // If it starts with a digit, just parse as number
+    if (isdigit(str[0]))
+        return atoi(str);
+
+    IpProtocolEntry_t *entry = bsearch(str, ipProtocols,
+                                       sizeof(ipProtocols) / sizeof(ipProtocols[0]),
+                                       sizeof(ipProtocols[0]),
+                                       config_ipprotocol_cmp);
+    if (entry)
+        return entry->num;
+    return -1;
+}
+
+/******************************************************************************/
+typedef struct {
+    const char *name;
+    uint16_t    num;
+} EthertypeEntry_t;
+
+// Sorted alphabetically for bsearch
+LOCAL EthertypeEntry_t ethertypes[] = {
+    {"aarp", 0x80F3},
+    {"appletalk", 0x809B},
+    {"arp", 0x0806},
+    {"atalk", 0x809B},
+    {"dec", 0x6000},
+    {"dna-dl", 0x6001},
+    {"dna-rc", 0x6002},
+    {"dna-rt", 0x6003},
+    {"erspan", 0x88BE},
+    {"ethercat", 0x88A4},
+    {"fcoe", 0x8906},
+    {"fip", 0x8914},
+    {"hsr", 0x892F},
+    {"ieee1588", 0x88F7},
+    {"ip", 0x0800},
+    {"ipv4", 0x0800},
+    {"ipv6", 0x86DD},
+    {"ipx", 0x8137},
+    {"lacp", 0x8809},
+    {"lat", 0x6004},
+    {"lldp", 0x88CC},
+    {"loopback", 0x9000},
+    {"macsec", 0x88E5},
+    {"mpls", 0x8847},
+    {"mpls-mc", 0x8848},
+    {"mvrp", 0x88F5},
+    {"nsh", 0x894F},
+    {"pppoe-disc", 0x8863},
+    {"pppoe-sess", 0x8864},
+    {"profinet", 0x8892},
+    {"ptp", 0x88F7},
+    {"qinq", 0x88A8},
+    {"rarp", 0x8035},
+    {"roce", 0x8915},
+    {"stp", 0x0027},
+    {"teb", 0x6558},
+    {"tipc", 0x88CA},
+    {"trill", 0x22F3},
+    {"vlan", 0x8100},
+    {"vntag", 0x8926},
+    {"vxlan-gpe", 0x22EB},
+    {"wake-on-lan", 0x0842},
+    {"wol", 0x0842},
+};
+
+LOCAL int config_ethertype_cmp(const void *keyv, const void *entryv)
+{
+    const char *key = keyv;
+    const EthertypeEntry_t *entry = entryv;
+    return strcasecmp(key, entry->name);
+}
+
+/******************************************************************************/
+LOCAL int config_ethertype_lookup(const char *str)
+{
+    // If it starts with a digit, just parse as number
+    if (isdigit(str[0]))
+        return strtol(str, NULL, 0);
+
+    EthertypeEntry_t *entry = bsearch(str, ethertypes,
+                                      sizeof(ethertypes) / sizeof(ethertypes[0]),
+                                      sizeof(ethertypes[0]),
+                                      config_ethertype_cmp);
+    if (entry)
+        return entry->num;
+    return -1;
+}
+
+/******************************************************************************/
 gchar **arkime_config_section_raw_str_list(GKeyFile *keyfile, const char *section, const char *key, const char *d)
 {
     gchar **result;
@@ -915,22 +1154,22 @@ LOCAL void arkime_config_load()
             } else if (strcmp(s, "ether:all") == 0) {
                 memset(&config.etherSavePcap, 0xff, sizeof(config.etherSavePcap));
             } else if (strncmp(s, "ip:", 3) == 0) {
-                int n = atoi(s + 3);
+                int n = config_ipprotocol_lookup(s + 3);
                 if (n < 0 || n > 0xff)
                     CONFIGEXIT("Bad saveUnknownPackets ip value: %s", s);
                 BIT_SET(n, config.ipSavePcap);
             } else if (strncmp(s, "-ip:", 4) == 0) {
-                int n = atoi(s + 4);
+                int n = config_ipprotocol_lookup(s + 4);
                 if (n < 0 || n > 0xff)
                     CONFIGEXIT("Bad saveUnknownPackets -ip value: %s", s);
                 BIT_CLR(n, config.ipSavePcap);
             } else if (strncmp(s, "ether:", 6) == 0) {
-                int n = atoi(s + 6);
+                int n = config_ethertype_lookup(s + 6);
                 if (n < 0 || n > 0xffff)
                     CONFIGEXIT("Bad saveUnknownPackets ether value: %s", s);
                 BIT_SET(n, config.etherSavePcap);
             } else if (strncmp(s, "-ether:", 7) == 0) {
-                int n = atoi(s + 7);
+                int n = config_ethertype_lookup(s + 7);
                 if (n < 0 || n > 0xffff)
                     CONFIGEXIT("Bad saveUnknownPackets -ether value: %s", s);
                 BIT_CLR(n, config.etherSavePcap);
