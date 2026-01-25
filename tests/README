@@ -55,6 +55,25 @@ smtp-decrypted.pcap - https://github.com/arkime/arkime/issues/2348#issuecomment-
 wireshark-dhcpv6 - https://wiki.wireshark.org/uploads/__moin_import__/attachments/SampleCaptures/DHCPv6.pcap
 
 
+arkime_test.pcap prompt:
+     Create a comprehensive test PCAP file arkime_test.pcap that covers all arkime_field_define fields across the entire codebase. This includes:
+       - Find all field definitions by searching for arkime_field_define in both parsers/*.c and *.c files in the capture directory
+       - For each parser, create packets that exercise all its fields:
+         - Use proper TCP 3-way handshakes for TCP protocols
+         - Use unique IP subnets per protocol (10.0.X.x, 10.1.X.x, etc.)
+         - Set unique timestamps (1 second apart per packet)
+       - Cover packet-level fields from packet.c:
+         - VLAN (802.1Q and Q-in-Q), VNI (VXLAN/Geneve), outer IPs (GRE/ERSPAN)
+         - Different MAC OUIs, TTL values, DSCP values
+         - All TCP flags, multiple ethertypes, public IPs for GeoIP
+       - Use scapy to generate the PCAP with realistic protocol payloads that trigger field extraction (not just port matching)
+       - Ensure all packets are valid:
+         - No truncated packets (caplen must equal pktlen/wirelen)
+         - Rebuild any packet where pkt.wirelen != len(bytes(pkt)) by re-creating it from bytes
+         - Verify with tcpdump -nn that no packets show "truncated", "invalid", "missing", or "bad"
+
+     Write the complete Python script and run it to create the PCAP.
+
 2) Viewer
 Test various viewer apis.  Requires that an elasticsearch already be running on the local host.
 
