@@ -51,6 +51,7 @@ LOCAL int                    dscpField[2];
 LOCAL int                    ttlField[2];
 
 LOCAL uint64_t               droppedFrags;
+LOCAL gboolean               disableIp4Defrag;
 
 time_t                       currentTime[ARKIME_MAX_PACKET_THREADS];
 time_t                       lastPacketSecs[ARKIME_MAX_PACKET_THREADS];
@@ -1000,7 +1001,7 @@ LOCAL ArkimePacketRC arkime_packet_ip4(ArkimePacketBatch_t *batch, ArkimePacket_
     ip_off &= IP_OFFMASK;
 
 
-    if ((ip_flags & IP_MF) || ip_off > 0) {
+    if (!disableIp4Defrag && ((ip_flags & IP_MF) || ip_off > 0)) {
         arkime_packet_frags4(batch, packet);
         return ARKIME_PACKET_DONT_PROCESS_OR_FREE;
     }
@@ -1816,6 +1817,8 @@ void arkime_packet_set_udpport_enqueue_cb(uint16_t port, ArkimePacketEnqueue_cb 
 void arkime_packet_init()
 {
     arkime_packet_freelist_init();
+
+    disableIp4Defrag = arkime_config_boolean(NULL, "disableIp4Defrag", FALSE);
 
     pcapFileHeader.magic = 0xa1b2c3d4;
     pcapFileHeader.version_major = 2;
