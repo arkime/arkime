@@ -224,7 +224,7 @@ jobs:
     needs: [generate-matrix]
     strategy:
       fail-fast: false
-      matrix: ${{fromJson(needs.generate-freebsd-matrix.outputs.freebsdmatrix)}}
+      matrix: ${{fromJson(needs.generate-matrix.outputs.freebsdmatrix)}}
 
     permissions:
       contents: write
