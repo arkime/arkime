@@ -928,6 +928,8 @@ LOCAL void writer_s3_write(const ArkimeSession_t *const session, ArkimePacket_t 
 /******************************************************************************/
 LOCAL void writer_s3_init(const char *UNUSED(name))
 {
+    DLL_INIT(fs3_, &fileQ);
+
     arkime_writer_queue_length = writer_s3_queue_length;
     arkime_writer_exit         = writer_s3_exit;
     arkime_writer_write        = writer_s3_write;
@@ -1072,8 +1074,6 @@ LOCAL void writer_s3_init(const char *UNUSED(name))
     s3Server = arkime_http_create_server(host, s3MaxConns, s3MaxRequests, s3Compress);
     arkime_http_set_print_errors(s3Server);
     arkime_http_set_header_cb(s3Server, writer_s3_header_cb);
-
-    DLL_INIT(fs3_, &fileQ);
 
     if (config.maxFileTimeM > 0) {
         g_timeout_add_seconds( 30, writer_s3_file_time_gfunc, 0);
