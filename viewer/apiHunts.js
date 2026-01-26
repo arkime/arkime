@@ -849,6 +849,10 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
       return res.serverError(403, 'Roles field must be an array of strings');
     }
 
+    if (req.body.notifier === '') {
+      delete req.body.notifier;
+    }
+
     if (req.body.notifier !== undefined && !ArkimeUtil.isStringArray(req.body.notifier)) {
       return res.serverError(403, 'Notifier field must be an array of strings');
     }
