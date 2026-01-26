@@ -94,6 +94,7 @@ SPDX-License-Identifier: Apache-2.0
         @update-visualizations="updateVisualizationsData"
         @reorder-fields="reorderSummaryFields"
         @widget-config-changed="updateWidgetConfigs"
+        @remove-field="toggleSummaryField"
         @recalc-collapse="$emit('recalc-collapse')" />
     </div>
   </div>

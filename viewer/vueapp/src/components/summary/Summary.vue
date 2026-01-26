@@ -183,7 +183,8 @@
             @change-mode="updateWidgetViewMode(widget, $event)"
             @change-metric="updateWidgetMetricType(widget, $event)"
             @show-tooltip="showTooltip"
-            @export="handleWidgetExport(widget, $event)" />
+            @export="handleWidgetExport(widget, $event)"
+            @remove-field="emit('remove-field', $event)" />
         </div>
       </div> <!-- /charts-container -->
     </div>
@@ -236,7 +237,7 @@ const props = defineProps({
 });
 
 // Define emits
-const emit = defineEmits(['update-visualizations', 'reorder-fields', 'widget-config-changed']);
+const emit = defineEmits(['update-visualizations', 'reorder-fields', 'widget-config-changed', 'remove-field']);
 
 // Save a pending promise to be able to cancel it
 let pendingPromise;

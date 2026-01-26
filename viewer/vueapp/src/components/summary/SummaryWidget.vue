@@ -104,6 +104,12 @@
               <span class="fa fa-download" /> {{ viewMode === 'table' ? $t('sessions.summary.downloadCSV') : $t('sessions.summary.downloadPNG') }}
             </b-dropdown-item>
           </template>
+
+          <!-- Remove Field Option -->
+          <b-dropdown-divider />
+          <b-dropdown-item @click="$emit('remove-field', field)">
+            <span class="fa fa-times text-danger" /> {{ $t('sessions.summary.removeField') }}
+          </b-dropdown-item>
         </b-dropdown>
       </div>
     </div>
@@ -323,7 +329,7 @@ onMounted(() => {
 // Cleanup on unmount
 onBeforeUnmount(cleanupResizeObserver);
 
-defineEmits(['export', 'change-mode', 'change-metric', 'show-tooltip']);
+defineEmits(['export', 'change-mode', 'change-metric', 'show-tooltip', 'remove-field']);
 </script>
 
 <style scoped>
