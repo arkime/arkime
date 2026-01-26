@@ -282,14 +282,14 @@
     "pauseTip": "이 사냥 일시중지. 나중에 재개할 수 있습니다.",
     "resumeTip": "이 사냥 재개. 나중에 일시중지할 수 있습니다.",
     "status": {
-        "running": "실행 중",
-        "runningTip": "실행 중 (방금 시작됨)",
-        "paused": "일시중지됨",
-        "pausedTip": "일시중지됨",
-        "queued": "대기 중",
-        "queuedTip": "대기 중 (대기열 내 #{count}번)",
-        "finished": "완료됨",
-        "finishedTip": "완료되었습니다!"
+      "running": "실행 중",
+      "runningTip": "실행 중 (방금 시작됨)",
+      "paused": "일시중지됨",
+      "pausedTip": "일시중지됨",
+      "queued": "대기 중",
+      "queuedTip": "대기 중 (대기열 내 #{count}번)",
+      "finished": "완료됨",
+      "finishedTip": "완료되었습니다!"
     }
   },
   "sessions": {
@@ -388,6 +388,7 @@
       "toggleFields": "요약 필드 전환",
       "searchFields": "필드 검색...",
       "dragToReorder": "드래그하여 순서 변경",
+      "removeField": "필드 제거",
       "config": {
         "configurations": "사용자 지정 요약 설정 저장 또는 로드",
         "saveCurrent": "현재 설정 저장",
@@ -620,9 +621,7 @@
     "timeInterval-day": "일",
     "timeInterval-week": "주",
     "timeRangeDisplayTip": "쿼리 시간 범위",
-    "createSummary": "요약 생성",
-    "arkimeNoResults": "결과가 없거나 시간 범위 내에서 검색과 일치하는 결과가 없습니다.",
-    "arkimeEmptyView": "잊지 마세요! 검색에 보기가 적용되어 있습니다"
+    "createSummary": "요약 생성"
   },
   "stats": {
     "noResults": "검색과 일치하는 결과가 없습니다.",
@@ -1008,7 +1007,13 @@
     "rolesSearchPlaceholder": "역할 검색...",
     "userDefinedRoleMsg": "사용자 정의 역할",
     "missingRoleMsg": "이 역할은 더 이상 존재하지 않습니다",
-    "noRolesMatchSearch": "검색과 일치하는 역할이 없습니다"
+    "noRolesMatchSearch": "검색과 일치하는 역할이 없습니다",
+    "inherit": "상속",
+    "inheritTip": "사용자의 다른 역할에서 상속된 값 사용",
+    "yes": "예",
+    "no": "아니요",
+    "forceOnTip": "이 역할을 가진 사용자에 대해 이 제한을 강제로 켜기",
+    "forceOffTip": "이 역할을 가진 사용자에 대해 이 제한을 강제로 끄기"
   },
   "roles": {
     "name": "이름",
@@ -1304,6 +1309,14 @@
     "unassigned": "할당되지 않은 샤드",
     "initializing": "초기화 중인 샤드"
   },
+  "welcome": {
+    "greeting": "환영합니다 {userName}님!",
+    "checkOutOur": "자세한 내용은",
+    "pageInfo": "페이지를 확인하거나 왼쪽 상단의 올빼미를 클릭하세요.",
+    "dismissTip": "다음에 이 메시지 다시 표시",
+    "gotIt": "알겠습니다!",
+    "gotItTip": "이 메시지를 다시 표시하지 않음"
+  },
   "spigraph": {
     "addAnotherField": "다른 필드 추가",
     "showHiddenColumnsTip": "숨겨진 열 표시",
@@ -1560,13 +1573,5 @@
       "type-cacheSrcMiss": "캐시 소스 미스",
       "type-cacheSrcRefresh": "캐시 소스 새로고침"
     }
-  },
-  "welcome": {
-    "greeting": "환영합니다 {userName}님!",
-    "checkOutOur": "자세한 내용은",
-    "pageInfo": "페이지를 확인하거나 왼쪽 상단의 올빼미를 클릭하세요.",
-    "dismissTip": "다음에 이 메시지 다시 표시",
-    "gotIt": "알겠습니다!",
-    "gotItTip": "이 메시지를 다시 표시하지 않음"
   }
 }

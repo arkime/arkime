@@ -21,6 +21,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
+      freebsdmatrix: ${{ steps.set-matrix.outputs.freebsdmatrix }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
@@ -32,24 +33,8 @@ jobs:
         id: set-matrix
         run: |
           MATRIX=$(yq -o json eval '{"include": [.include[] | select(.version | test("freebsd") | not)]}' .github/workflows/versions | jq -c)
+          FREEBSD_MATRIX=$(yq -o json eval '{"include": [.include[] | select(.version | test("freebsd"))]}' .github/workflows/versions | jq -c)
           echo "matrix=$MATRIX" >> $GITHUB_OUTPUT
-
-  generate-freebsd-matrix:
-    runs-on: ubuntu-latest
-    outputs:
-      freebsdmatrix: ${{ steps.set-matrix.outputs.freebsdmatrix }}
-    env:
-      HEAD_REF: ${{ github.head_ref }}
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
-        with:
-          fetch-depth: 0
-
-      - name: Generate FreeBSD Matrix JSON with yq
-        id: set-matrix
-        run: |
-          FREEBSD_MATRIX=$(yq -o json eval '{"include": [.include[] | select(.vmaction != null)]}' .github/workflows/versions | jq -c)
           echo "freebsdmatrix=$FREEBSD_MATRIX" >> $GITHUB_OUTPUT
 
   build-release:
@@ -182,16 +167,16 @@ jobs:
             *.zst
             NOTICE.txt
           body: |
-            ### [Installation Instructions](https://arkime.com/install) | [4.x -> 5.x Upgrade Instructions](https://arkime.com/faq#how_do_i_upgrade_to_arkime_5) | [FAQ](https://arkime.com/faq) | [CHANGELOG](https://raw.githubusercontent.com/arkime/arkime/main/CHANGELOG) | [JA4+ Install](https://arkime.com/ja4) | [Docker Install](https://arkime.com/docker)
+            ### [Installation Instructions](https://arkime.com/install) | [5.x -> 6.x Upgrade Instructions](https://arkime.com/faq#how_do_i_upgrade_to_arkime_6) | [FAQ](https://arkime.com/faq) | [CHANGELOG](https://raw.githubusercontent.com/arkime/arkime/main/CHANGELOG) | [JA4+ Install](https://arkime.com/ja4) | [Docker Install](https://arkime.com/docker)
 
-            A db.pl upgrade is required when upgrading from 5.1.2 or earlier
+            A db.pl upgrade is required when upgrading from Arkime 5 or earlier
 
             Support Arkime's ongoing development! Become a **[GitHub Sponsor!](https://github.com/sponsors/awick)**
 
             # :sparkles: What's new :sparkles:
 
             ### :arrow_down: Download Info :arrow_down:
-            We offer downloads for different Linux distributions and versions because of library differences. For example, use the el8 download for Centos 8 or RHEL 8 not RHEL 9. A libssl version error means that most likely the wrong download was used for your Linux distribution and version, please double check. The moloch builds have the old filesystem layouts, we will stop providing the moloch builds in 2025.
+            We offer downloads for different Linux distributions and versions because of library differences. For example, use the el8 download for Centos 8 or RHEL 8 not RHEL 9. A libssl version error means that most likely the wrong download was used for your Linux distribution and version, please double check. The moloch builds have the old filesystem layouts, we will stop providing the moloch builds in 2026.
 
 
 ############# DOCKER DOCKER DOCKER #############
@@ -267,23 +252,21 @@ jobs:
           arch: ${{ contains(matrix.version, 'aarch64') && 'aarch64' || 'x86_64' }}
           usesh: true
           prepare: |
-            pkg update -f
-            pkg install -y bash git curl wget perl5 openssl jq yq sudo gmake autoconf automake m4 libtool rubygem-fpm autoconf-archive gtar
+            pkg install -y bash git curl wget perl5 openssl jq yq sudo gmake autoconf automake m4 libtool autoconf-archive gtar p5-LWP-Protocol-https p5-JSON p5-Test-Differences p5-Socket6
           run: |
             git config --global --add safe.directory `pwd`
-            ./easybutton-build.sh ${{ matrix.buildopt }} --rminstall --nothirdparty
+            ./easybutton-build.sh --dir /usr/local/share/arkime ${{ matrix.buildopt }} --rminstall --nothirdparty
             ls -l capture/capture
             INSTALL_BUNDLE=bundle gmake install
-            export ARKIME_VERSION=`sed 's/.*"\(.*\)\".*$/\1/' /opt/arkime/common/version.js | head -n 1`
+            export ARKIME_VERSION=`sed 's/.*"\(.*\)\".*$/\1/' /usr/local/share/arkime/common/version.js | head -n 1`
             arch=$(uname -m | sed s/aarch64/arm64/ | sed s/x86_64/amd64/)
-            # Replace tar with gtar for fpm, let me know of better way
-            rm /usr/bin/tar
-            ln -s /usr/local/bin/gtar /usr/bin/tar
-            fpm -s dir -t freebsd -n arkime -x opt/arkime/logs -x opt/arkime/raw -v $ARKIME_VERSION --iteration ${{ github.event.inputs.iteration }} --template-scripts --after-install "release/afterinstall.sh" --url "https://arkime.com" --description "Arkime Full Packet System" ${{ matrix.fpmdeps }} -p arkime_${ARKIME_VERSION}-${{github.event.inputs.iteration}}.${{matrix.version}}.pkg /opt/arkime
+            ./release/freebsdpkg.sh $ARKIME_VERSION ${{ github.run_id }} ${{ matrix.version }} /usr/local/share/arkime
+            #mv arkime_*.pkg arkime-main.${{matrix.version}}.pkg || true
+
             ls -l *.pkg
 
             if [ "${{ matrix.ja4plus }}" = "true" ]; then
-              (cd .. ; git clone -b dev6 --single-branch https://github.com/arkime/ja4)
+              (cd .. ; git clone --single-branch https://github.com/arkime/ja4)
               cp ../ja4/ja4plus.c capture/plugins
               (cd capture/plugins; gmake)
               mv capture/plugins/ja4plus.so ja4plus.freebsd-${arch}.so
@@ -293,6 +276,8 @@ jobs:
             # Clean up so we don't copy stuff back
             gmake clean
             rm -rf node_modules */node_modules
+
+            ls -l *.pkg
 
       - name: upload github
         uses: softprops/action-gh-release@69320dbe05506a9a39fc8ae11030b214ec2d1f87 # v2.0.5
@@ -305,16 +290,16 @@ jobs:
             *.pkg
             *.so
           body: |
-            ### [Installation Instructions](https://arkime.com/install) | [4.x -> 5.x Upgrade Instructions](https://arkime.com/faq#how_do_i_upgrade_to_arkime_5) | [FAQ](https://arkime.com/faq) | [CHANGELOG](https://raw.githubusercontent.com/arkime/arkime/main/CHANGELOG) | [JA4+ Install](https://arkime.com/ja4) | [Docker Install](https://arkime.com/docker)
+            ### [Installation Instructions](https://arkime.com/install) | [5.x -> 6.x Upgrade Instructions](https://arkime.com/faq#how_do_i_upgrade_to_arkime_6) | [FAQ](https://arkime.com/faq) | [CHANGELOG](https://raw.githubusercontent.com/arkime/arkime/main/CHANGELOG) | [JA4+ Install](https://arkime.com/ja4) | [Docker Install](https://arkime.com/docker)
 
-            A db.pl upgrade is required when upgrading from 5.1.2 or earlier
+            A db.pl upgrade is required when upgrading from Arkime 5 or earlier
 
             Support Arkime's ongoing development! Become a **[GitHub Sponsor!](https://github.com/sponsors/awick)**
 
             # :sparkles: What's new :sparkles:
 
             ### :arrow_down: Download Info :arrow_down:
-            We offer downloads for different Linux distributions and versions because of library differences. For example, use the el8 download for Centos 8 or RHEL 8 not RHEL 9. A libssl version error means that most likely the wrong download was used for your Linux distribution and version, please double check. The moloch builds have the old filesystem layouts, we will stop providing the moloch builds in 2025.
+            We offer downloads for different Linux distributions and versions because of library differences. For example, use the el8 download for Centos 8 or RHEL 8 not RHEL 9. A libssl version error means that most likely the wrong download was used for your Linux distribution and version, please double check. The moloch builds have the old filesystem layouts, we will stop providing the moloch builds in 2026.
 
 ############# Docker Manifest #############
   create-manifest:
