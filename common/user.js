@@ -46,6 +46,8 @@ const searchColumns = [
   'lastUsed', 'timeLimit', 'roles', 'roleAssigners'
 ];
 
+const allSettingColumns = [ 'emailSearch', 'removeEnabled', 'packetSearch', 'hideStats', 'hideFiles', 'hidePcap', 'disablePcapDownload'];
+
 let readOnly = false;
 let getCurrentUserCB;
 
@@ -232,6 +234,8 @@ class User {
       process.exit();
     }
 
+    // Skip Auto Create - SAC users. This means when in regression mode we don't
+    // auto create these users, this is usually needed for special tests.
     if (userId.startsWith('sac-') || userId.startsWith('role:sac-')) {
       return undefined;
     }
@@ -247,6 +251,12 @@ class User {
       settings: {},
       welcomeMsgNum: 1
     });
+
+    user.#allSettings = {
+      emailSearch: true,
+      removeEnabled: true,
+      packetSearch: true
+    };
 
     if (userId === 'superAdmin') {
       user.roles = ['superAdmin'];
@@ -441,10 +451,8 @@ class User {
    */
   static async getCurrentUser (req) {
     const userProps = [
-      'emailSearch', 'enabled', 'removeEnabled',
-      'headerAuthEnabled', 'settings', 'userId', 'userName', 'webEnabled',
-      'packetSearch', 'hideStats', 'hideFiles', 'hidePcap',
-      'disablePcapDownload', 'welcomeMsgNum', 'lastUsed'
+      'enabled', 'headerAuthEnabled', 'settings', 'userId', 'userName', 'webEnabled',
+      'welcomeMsgNum', 'lastUsed'
     ];
 
     const clone = {};
@@ -453,6 +461,10 @@ class User {
       if (req.user[prop]) {
         clone[prop] = req.user[prop];
       }
+    }
+
+    for (const setting of allSettingColumns) {
+      clone[setting] = req.user.#allSettings[setting];
     }
 
     clone.roles = [...req.user.#allRoles];
@@ -770,6 +782,12 @@ class User {
       return res.serverError(403, 'Only superAdmin user can enable Admin roles on a user');
     }
 
+    for (const setting of allSettingColumns) {
+      if (req.body[setting] !== undefined && typeof req.body[setting] !== 'boolean') {
+        return res.serverError(403, `${setting} field must be a boolean or undefined`);
+      }
+    }
+
     req.body.roleAssigners ??= [];
 
     User.getUser(req.body.userId, (err, user) => {
@@ -783,17 +801,19 @@ class User {
         userName: req.body.userName,
         expression: req.body.expression,
         passStore: Auth.pass2store(req.body.userId, req.body.password),
+        timeLimit: req.body.timeLimit,
         enabled: req.body.enabled === true,
         webEnabled: req.body.webEnabled === true,
-        emailSearch: req.body.emailSearch === true,
         headerAuthEnabled: req.body.headerAuthEnabled === true,
-        removeEnabled: req.body.removeEnabled === true,
-        packetSearch: req.body.packetSearch === true,
-        timeLimit: req.body.timeLimit,
-        hideStats: req.body.hideStats === true,
-        hideFiles: req.body.hideFiles === true,
-        hidePcap: req.body.hidePcap === true,
-        disablePcapDownload: req.body.disablePcapDownload === true,
+
+        emailSearch: req.body.emailSearch,
+        removeEnabled: req.body.removeEnabled,
+        packetSearch: req.body.packetSearch,
+        hideStats: req.body.hideStats,
+        hideFiles: req.body.hideFiles,
+        hidePcap: req.body.hidePcap,
+        disablePcapDownload: req.body.disablePcapDownload,
+
         roles: req.body.roles,
         welcomeMsgNum: 0,
         roleAssigners: req.body.roleAssigners
@@ -946,15 +966,19 @@ class User {
         }
       }
 
+      // Per user
       user.webEnabled = req.body.webEnabled === true;
-      user.emailSearch = req.body.emailSearch === true;
       user.headerAuthEnabled = req.body.headerAuthEnabled === true;
-      user.removeEnabled = req.body.removeEnabled === true;
-      user.packetSearch = req.body.packetSearch === true;
-      user.hideStats = req.body.hideStats === true;
-      user.hideFiles = req.body.hideFiles === true;
-      user.hidePcap = req.body.hidePcap === true;
-      user.disablePcapDownload = req.body.disablePcapDownload === true;
+
+      // preserve undefined for inherit
+      user.emailSearch = req.body.emailSearch;
+      user.removeEnabled = req.body.removeEnabled;
+      user.packetSearch = req.body.packetSearch;
+      user.hideStats = req.body.hideStats;
+      user.hideFiles = req.body.hideFiles;
+      user.hidePcap = req.body.hidePcap;
+      user.disablePcapDownload = req.body.disablePcapDownload;
+
       user.timeLimit = req.body.timeLimit ? parseInt(req.body.timeLimit) : undefined;
       user.roles = req.body.roles;
       user.roleAssigners = req.body.roleAssigners ?? [];
@@ -1164,6 +1188,7 @@ class User {
   #allRoles;
   #allExpression;
   #allTimeLimit;
+  #allSettings = {};
   /**
    * Save user, callback only
    */
@@ -1181,6 +1206,45 @@ class User {
     // The roles we need to process to see if any subroles
     const rolesQ = [...this.roles ?? []];
 
+    // First do settings
+    const needSettings = [];
+    for (const col of allSettingColumns) {
+      if (this[col] !== undefined) {
+        this.#allSettings[col] = this[col];
+      } else {
+        needSettings.push(col);
+      }
+    }
+
+    // We only look at our direct roles for settings, since those should already be expanded
+    for (const r of this.roles) {
+      if (systemRolesMapping[r]) {
+        continue;
+      }
+
+      const role = await User.getUserCache(r);
+      if (!role || !role.enabled) { continue; }
+
+      for (const col of needSettings) {
+        if (!role.#allSettings[col]) {
+          continue;
+        }
+
+        if (this.#allSettings[col] !== undefined) {
+          this.#allSettings[col] |= role.#allSettings[col];
+        } else {
+          this.#allSettings[col] = role.#allSettings[col];
+        }
+      }
+    }
+
+    for (const col of needSettings) {
+      if (this.#allSettings[col] === undefined) {
+        this.#allSettings[col] = false;
+      }
+    }
+
+    // Now do expression and timeLimit
     if (this.expression && this.expression.trim().length > 0) {
       this.#allExpression = '(' + this.expression.trim() + ')';
     }
@@ -1315,11 +1379,19 @@ class User {
     };
 
     return (req, res, next) => {
+      function err(permission) {
+        console.log(`Permission denied to ${req.user.userId} while requesting resource: ${req._parsedUrl.pathname}, using permission ${permission}`);
+        return res.serverError(403, 'You do not have permission to access this resource');
+      }
+
       for (const permission of permissions) {
-        if ((!req.user[permission] && !inversePermissions[permission]) ||
-          (req.user[permission] && inversePermissions[permission])) {
-          console.log(`Permission denied to ${req.user.userId} while requesting resource: ${req._parsedUrl.pathname}, using permission ${permission}`);
-          return res.serverError(403, 'You do not have permission to access this resource');
+        if (permission === 'webEnabled' && !req.user.webEnabled) {
+          return err(permission);
+        }
+
+        if ((req.user.#allSettings[permission] === false && !inversePermissions[permission]) ||
+           (req.user.#allSettings[permission] === true && inversePermissions[permission])) {
+          return err(permission);
         }
       }
       next();
@@ -1444,19 +1516,20 @@ class User {
 /******************************************************************************/
 // Clean User
 /******************************************************************************/
+
 function cleanUser (user) {
-  user.expression = user.expression || '';
-  user.headerAuthEnabled = user.headerAuthEnabled || false;
-  user.emailSearch = user.emailSearch || false;
-  user.removeEnabled = user.removeEnabled || false;
   user.userName = ArkimeUtil.safeStr(user.userName || '');
-  user.packetSearch = user.packetSearch || false;
-  user.timeLimit = user.timeLimit || undefined;
   user.lastUsed = user.lastUsed || 0;
+
+  const isRole = user.userId?.startsWith('role:');
+
+  // Do not set defaults on the allSettingColumns
+  user.expression = user.expression || '';
+  user.timeLimit = user.timeLimit || undefined;
 
   // By default give to all user stuff if never had roles
   if (user.roles === undefined) {
-    user.roles = ['arkimeUser', 'cont3xtUser', 'parliamentUser', 'wiseUser'];
+    user.roles = isRole ? [] : ['arkimeUser', 'cont3xtUser', 'parliamentUser', 'wiseUser'];
   }
 
   // Convert createEnable to usersAdmin role

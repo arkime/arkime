@@ -52,6 +52,8 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #3488 When talking to remote viewers only the viewUrl is used now and not webBasePath
   - #3492 Previously viewer didn't expire PCAPs if pcapDir wasn't set, now it
           defaults to /opt/arkime/raw and will expire them
+  - #3552 Users and Roles now inherit for the 7 extra settings if not
+          specificly set.
   - #3583 Previous community_id for IPv4 sessions with same src/dst IP, could
           have incorrect community_id
   - #3591 geoLite2Country setting now looks for City file first by default
@@ -73,6 +75,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #3364 eslint vue files and enforce recommended rules
   - #3468 remove support for old password storage
   - #3476 new authJwsAlgorithm setting, defaults to RS256
+  - #3552 Users and Roles now inherit for the 7 extra settings if not specificly set.
 ## Capture
   - #3138 lua plugin now autoloads *.lua scripts in parsers directory
           if lua plugin is used
