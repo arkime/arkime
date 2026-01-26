@@ -388,6 +388,7 @@
       "toggleFields": "サマリーフィールドの切り替え",
       "searchFields": "フィールドを検索...",
       "dragToReorder": "ドラッグして並べ替え",
+      "removeField": "フィールドを削除",
       "config": {
         "configurations": "カスタムサマリー設定の保存または読み込み",
         "saveCurrent": "現在の設定を保存",
@@ -1006,7 +1007,13 @@
     "rolesSearchPlaceholder": "ロールを検索...",
     "userDefinedRoleMsg": "ユーザー定義ロール",
     "missingRoleMsg": "このロールはもう存在しません",
-    "noRolesMatchSearch": "検索に一致するロールはありません"
+    "noRolesMatchSearch": "検索に一致するロールはありません",
+    "inherit": "継承",
+    "inheritTip": "ユーザーの他のロールから継承された値を使用する",
+    "yes": "はい",
+    "no": "いいえ",
+    "forceOnTip": "このロールを持つユーザーに対してこの制限を強制的にオンにする",
+    "forceOffTip": "このロールを持つユーザーに対してこの制限を強制的にオフにする"
   },
   "roles": {
     "name": "名前",
@@ -1138,7 +1145,6 @@
       "noMatch": "検索に一致する通知設定はありません",
       "missingNotifier": "この通知設定はもう存在しません"
     },
-    "notUsed": "notused",
     "transfer": {
       "title": "所有権を別のユーザーに転送",
       "id": "ユーザー ID",

@@ -157,7 +157,7 @@
     "querySizeTip": "The number of connections to display in the graph",
     "sourceFieldTip": "Select a field for the source nodes. This is the color of a source node.",
     "dstFieldTip": "Select a field for the destination nodes. This is the color of a destination node.",
-    "srcDstColorTip":"This is the color of a node that is both a source and destination node.",
+    "srcDstColorTip": "This is the color of a node that is both a source and destination node.",
     "minConn": "Min connections",
     "minConnTip": "Minimum number of sessions between nodes to be displayed.",
     "weight": "Node/Link weight",
@@ -282,14 +282,14 @@
     "pauseTip": "Pause this hunt. It can be resumed later.",
     "resumeTip": "Play this hunt. It can be paused later.",
     "status": {
-        "running": "Running",
-        "runningTip": "Running (just started)",
-        "paused": "Paused",
-        "pausedTip": "Paused",
-        "queued": "Queued",
-        "queuedTip": "Queued (#{count} in the queue)",
-        "finished": "Finished",
-        "finishedTip": "Finished!"
+      "running": "Running",
+      "runningTip": "Running (just started)",
+      "paused": "Paused",
+      "pausedTip": "Paused",
+      "queued": "Queued",
+      "queuedTip": "Queued (#{count} in the queue)",
+      "finished": "Finished",
+      "finishedTip": "Finished!"
     }
   },
   "sessions": {
@@ -626,45 +626,35 @@
   "stats": {
     "noResults": "No results match your search.",
     "noresultsCluster": "No results match your search. Try selecting a different cluster.",
-
     "excludeNode": "Exclude Node",
     "includeNode": "Include Node",
     "excludeIp": "Exclude IP",
     "includeIp": "Include IP",
-
     "filterPlaceholder": "Filter results, regexp supported",
-
     "graphType": "Graph Type",
     "graphInterval": "Graph Interval",
-
     "graphHide": "Hide",
     "graphHide-none": "None",
     "graphHide-old": "Out of date",
     "graphHide-nosession": "No sessions",
     "graphHide-both": "Both",
-
     "graphSort": "Sort",
     "graphSort-asc": "Ascending",
     "graphSort-desc": "Descending",
-
     "pageSize": "Page Size",
     "refreshEvery": "Refresh Data Every",
-
     "shardsShow": "Show",
     "shardsShow-all": "All",
     "shardsShow-UNASSIGNED": "Unassigned",
     "shardsShow-RELOCATING": "Relocating",
     "shardsShow-INITIALIZING": "Initializing",
     "shardsShow-notstarted": "Not Started",
-
     "recoveryShow": "Show",
     "recoveryShow-all": "All",
     "recoveryShow-notdone": "Active",
-
     "shrink": "Shrink",
     "numShards": "# Shards",
     "temporaryNode": "Temporary Node",
-
     "nav": {
       "captureGraphs": "Capture Graphs",
       "captureStats": "Capture Statistics",
@@ -684,7 +674,6 @@
     },
     "cstats": {
       "helpTipHtml": "<strong>HINT:</strong> These graphs are 1440 pixels wide.  Expand your browser window to at least 1500 pixels wide for best viewing.",
-
       "nodeName": "Node",
       "currentTime": "Time",
       "monitoring": "Sessions",
@@ -749,7 +738,6 @@
       "closeIndex": "Close Index",
       "openIndex": "Open Index",
       "shrinkIndex": "Shrink Index",
-
       "index": "Name",
       "docs-count": "Documents",
       "store-size": "Disk Size",
@@ -771,7 +759,6 @@
       "mainManaging": "Main Managing Node",
       "managing": "Managing Node",
       "data": "Data Node",
-
       "name": "Name",
       "docs": "Documents",
       "storeSize": "Disk Used",
@@ -829,7 +816,6 @@
       "confirmDeleteUnassignedTip": "Confirm delete of all unassigned shards",
       "explainAllocation": "Explain Allocation",
       "allocationExplainTitle": "Shard Allocation Explanation: {index} - Shard {shard} ({type})",
-
       "table-name": "Index",
       "table-node": "Node",
       "table-oldNode": "Old Node",
@@ -845,14 +831,12 @@
       "table-prirep": "Shard Type",
       "table-prirep-p": "primary",
       "table-prirep-else": "replicate",
-
       "index": "Index",
       "unassigned": "Unassigned"
     },
     "esTasks": {
       "cancelAll": "Cancel All Tasks",
       "cancelAllTip": "Cancel all cancellable tasks",
-
       "action": "Action",
       "description": "Description",
       "start_time_in_millis": "Start Time",
@@ -865,7 +849,6 @@
       "taskId": "Task ID",
       "type": "Type"
     }
-
   },
   "errors": {
     "loadingFailed": "Failed to load data",
@@ -1103,7 +1086,7 @@
       "table-order": "Order",
       "empty": "You have no custom column layouts.",
       "howToHtml": "To create one, go to the sessions page, rearrange the columns into your preferred layout, and click the column layout button ( <span class=\"fa fa-columns\"></span> ) at the top left of the table. Name your new custom column layout then click the save button. You can now switch to this column layout anytime you want by clicking on its name in the dropdown!",
-      "deleteTip":"Delete this custom column layout"
+      "deleteTip": "Delete this custom column layout"
     },
     "infoLayout": {
       "title": "Custom Info Field Column Layouts",
@@ -1112,7 +1095,7 @@
       "table-fields": "Fields",
       "empty": "You have no custom info layouts.",
       "howToHtml": "To create one, go to the sessions page, click the info layout fields toggle button ( <span class=\"fa fa-bars\"></span> ) at the top right of the table and select the fields you want. Now use the save pulldown to name your new custom info fields then click the save button. You can now switch to this info fields layout anytime you want by clicking on its name in the dropdown!",
-      "deleteTip":"Delete this custom info field column layout"
+      "deleteTip": "Delete this custom info field column layout"
     },
     "spiview": {
       "title": "Custom SPI View Layouts",
@@ -1213,7 +1196,7 @@
       "saveTip": "Save changes to this query",
       "deleteTip": "Delete this query",
       "transferTip": "Transfer this query to another user",
-      "queryNotTagged":"This query has not tagged any sessions"
+      "queryNotTagged": "This query has not tagged any sessions"
     },
     "password": {
       "title": "Change Password",
@@ -1504,9 +1487,9 @@
     }
   },
   "wise": {
-    "noSourcesHtml":"<br> Looks like you don't have any WISE sources yet.  <br> Check out our <a href=\"help#getStarted\" class=\"no-decoration\"> getting started section </a> for help.  <br> Or add a source on the <a href=\"config\" class=\"no-decoration\">Config Page</a>.",
+    "noSourcesHtml": "<br> Looks like you don't have any WISE sources yet.  <br> Check out our <a href=\"help#getStarted\" class=\"no-decoration\"> getting started section </a> for help.  <br> Or add a source on the <a href=\"config\" class=\"no-decoration\">Config Page</a>.",
     "404": {
-      "messageHtml" :"Maybe you want to search for <a href=\"query\" class=\"no-decoration\"> WISE Data</a>?",
+      "messageHtml": "Maybe you want to search for <a href=\"query\" class=\"no-decoration\"> WISE Data</a>?",
       "helpHtml": "Or, maybe you need some <a href=\"help\" class=\"no-decoration\"> help</a>?"
     },
     "config": {
