@@ -256,7 +256,7 @@ jobs:
           run: |
 
             git config --global --add safe.directory `pwd`
-            git config --global --add safe.directory "$GITHUB_WORKSPACE"
+            git config --global --add safe.directory /home/runner/work/arkime/arkime
             ./easybutton-build.sh --dir /usr/local/share/arkime ${{ matrix.buildopt }} --rminstall --nothirdparty
             ls -l capture/capture
             INSTALL_BUNDLE=bundle gmake install
