@@ -221,7 +221,7 @@ jobs:
 
 ############# FreeBSD Build #############
   freebsd-build:
-    needs: [generate-freebsd-matrix]
+    needs: [generate-matrix]
     strategy:
       fail-fast: false
       matrix: ${{fromJson(needs.generate-freebsd-matrix.outputs.freebsdmatrix)}}
