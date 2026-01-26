@@ -51,6 +51,7 @@ LOCAL int                    dscpField[2];
 LOCAL int                    ttlField[2];
 
 LOCAL uint64_t               droppedFrags;
+LOCAL gboolean               disableIp4Defrag;
 
 time_t                       currentTime[ARKIME_MAX_PACKET_THREADS];
 time_t                       lastPacketSecs[ARKIME_MAX_PACKET_THREADS];
@@ -80,9 +81,7 @@ LOCAL ArkimePacketEnqueue_t *ipCbs[ARKIME_IPPROTO_MAX];
 int                          tcpMProtocol;
 int                          udpMProtocol;
 
-int                          mProtocolCnt = ARKIME_MPROTOCOL_MIN;
-ArkimeProtocol_t             mProtocols[ARKIME_MPROTOCOL_MAX];
-LOCAL GHashTable            *mProtocolHash;
+extern ArkimeProtocol_t      mProtocols[ARKIME_MPROTOCOL_MAX];
 
 extern ArkimeOfflineInfo_t   offlineInfo[256];
 ARKIME_LOCK_DEFINE(offlineInfoLock);
@@ -97,8 +96,6 @@ LOCAL  uint64_t              overloadDrops[ARKIME_MAX_PACKET_THREADS];
 LOCAL  uint32_t              overloadDropTimes[ARKIME_MAX_PACKET_THREADS];
 
 LOCAL  ARKIME_LOCK_DEFINE(frags);
-
-LOCAL ArkimePacket_t *packetFreelist;
 
 LOCAL ArkimePacketRC arkime_packet_ip4(ArkimePacketBatch_t *batch, ArkimePacket_t *const packet, const uint8_t *data, int len);
 LOCAL ArkimePacketRC arkime_packet_ip6(ArkimePacketBatch_t *batch, ArkimePacket_t *const packet, const uint8_t *data, int len);
@@ -144,30 +141,32 @@ LOCAL int arkime_packet_thread_exit_func;
 #define IPPROTO_IPV4            4
 #endif
 
+#ifdef USE_CAS
+LOCAL ArkimePacket_t *packetFreelist;
 /******************************************************************************/
 // Allocate packet from freelist, falling back to malloc if exhausted. Called from reader threads
 ArkimePacket_t *arkime_packet_alloc()
 {
-    ArkimePacket_t *packet = packetFreelist;
+    ArkimePacket_t *packet, *next;
 
     // Try lock-free pop from freelist
-    while (packet) {
-        ArkimePacket_t *next = packet->packet_next;
-        // if (packetFreelist == packet) packetFreelist = next
+    while (1) {
+        packet = packetFreelist;
+        if (!packet) {
+            // Freelist empty, allocate new
+            ArkimePacket_t *newPacket = malloc(sizeof(ArkimePacket_t));
+            if (!newPacket) {
+                LOGEXIT("ERROR - Failed to allocate packet");
+            }
+            memset(newPacket, 0, sizeof(ArkimePacket_t));
+            return newPacket;
+        }
+        next = packet->packet_next;
         if (ARKIME_THREAD_CAS(&packetFreelist, packet, next)) {
             memset(packet, 0, sizeof(ArkimePacket_t));
             return packet;
         }
-        packet = packetFreelist;
     }
-
-    // Freelist empty, allocate new
-    ArkimePacket_t *newPacket = malloc(sizeof(ArkimePacket_t));
-    if (!newPacket) {
-        LOGEXIT("ERROR - Failed to allocate packet");
-    }
-    memset(newPacket, 0, sizeof(ArkimePacket_t));
-    return newPacket;
 }
 
 /******************************************************************************/
@@ -202,13 +201,38 @@ void arkime_packet_free(ArkimePacket_t *packet)
     packet->pkt = 0;
 
     // Lock-free push to freelist
-    for (ArkimePacket_t *head = packetFreelist; ; head = packetFreelist) {
+    ArkimePacket_t *head;
+    while (1) {
+        head = packetFreelist;
         packet->packet_next = head;
-        // if (packetFreelist == head) packetFreelist = packet
-        if (ARKIME_THREAD_CAS(&packetFreelist, head, packet))
+        if (ARKIME_THREAD_CAS(&packetFreelist, head, packet)) {
             break;
+        }
     }
 }
+#else
+/******************************************************************************/
+ArkimePacket_t *arkime_packet_alloc()
+{
+    return ARKIME_TYPE_ALLOC0(ArkimePacket_t);
+}
+
+/******************************************************************************/
+LOCAL void arkime_packet_freelist_init()
+{
+}
+
+/******************************************************************************/
+void arkime_packet_free(ArkimePacket_t *packet)
+{
+    if (packet->copied) {
+        free(packet->pkt);
+    }
+
+    ARKIME_TYPE_FREE(ArkimePacket_t, packet);
+}
+#endif
+
 /******************************************************************************/
 void arkime_packet_process_data(ArkimeSession_t *session, const uint8_t *data, int len, int which)
 {
@@ -444,7 +468,8 @@ LOCAL void arkime_packet_process(ArkimePacket_t *packet, int thread)
             }
 
             int n = 12;
-            while ((pcapData[n] == 0x81 && pcapData[n + 1] == 0x00) || (pcapData[n] == 0x88 && pcapData[n + 1] == 0xa8)) {
+            while (n + 3 < packet->pktlen &&
+                   ((pcapData[n] == 0x81 && pcapData[n + 1] == 0x00) || (pcapData[n] == 0x88 && pcapData[n + 1] == 0xa8))) {
                 uint16_t vlan = ((uint16_t)(pcapData[n + 2] << 8 | pcapData[n + 3])) & 0xfff;
                 arkime_field_int_add(vlanField, session, vlan);
                 if (pcapData[n] == 0x81 && pcapData[n + 1] == 0x00) {
@@ -455,7 +480,7 @@ LOCAL void arkime_packet_process(ArkimePacket_t *packet, int thread)
                 n += 4;
             }
 
-            if (session->ethertype == 0) {
+            if (session->ethertype == 0 && n + 1 < packet->pktlen) {
                 session->ethertype = (pcapData[n] << 8) | pcapData[n + 1];
             }
         }
@@ -570,11 +595,12 @@ LOCAL void *arkime_packet_thread(void *threadp)
         // Only process commands if the packetQ is less than 75% full or every 8 packets
         if (likely(DLL_COUNT(packet_, &packetQ[thread]) < maxPackets75) || (skipCount & 0x7) == 0) {
             arkime_session_process_commands(thread);
-            if (!packet)
-                continue;
         } else {
             skipCount++;
         }
+
+        if (!packet)
+            continue;
 
         if (unlikely(packet->pktlen == ARKIME_PACKET_LEN_FILE_DONE)) {
             // Make sure no best http requests are in the queue, like the file create
@@ -602,41 +628,6 @@ LOCAL void *arkime_packet_thread(void *threadp)
     return NULL;
 }
 #endif
-/******************************************************************************/
-static FILE *unknownPacketFile[3];
-LOCAL void arkime_packet_save_unknown_packet(int type, ArkimePacket_t *const packet)
-{
-    static ARKIME_LOCK_DEFINE(lock);
-
-    struct arkime_pcap_sf_pkthdr hdr;
-    hdr.ts.tv_sec  = packet->ts.tv_sec;
-    hdr.ts.tv_usec = packet->ts.tv_usec;
-    hdr.caplen     = packet->pktlen;
-    hdr.pktlen     = packet->pktlen;
-
-    ARKIME_LOCK(lock);
-    if (!unknownPacketFile[type]) {
-        char               str[PATH_MAX];
-        static const char *names[] = {"unknown.ether", "unknown.ip", "corrupt"};
-
-        snprintf(str, sizeof(str), "%s/%s.%d.pcap", config.pcapDir[0], names[type], getpid());
-        unknownPacketFile[type] = fopen(str, "w");
-
-        // TODO-- should we also add logic to pick right pcapDir when there are multiple?
-        if (unknownPacketFile[type] == NULL) {
-            LOGEXIT("ERROR - Unable to open pcap file %s to store unknown type %s.  Error %s", str, names[type], strerror (errno));
-            ARKIME_UNLOCK(lock);
-            return;
-        }
-
-        fwrite(&pcapFileHeader, 24, 1, unknownPacketFile[type]);
-    }
-
-    fwrite(&hdr, 16, 1, unknownPacketFile[type]);
-    fwrite(packet->pkt, packet->pktlen, 1, unknownPacketFile[type]);
-    ARKIME_UNLOCK(lock);
-}
-
 /******************************************************************************/
 LOCAL void arkime_packet_frags_free(ArkimeFrags_t *const frags)
 {
@@ -843,7 +834,7 @@ LOCAL void arkime_packet_log(int mProtocol)
         packetStats[ARKIME_PACKET_IP_DROPPED],
         packetStats[ARKIME_PACKET_OVERLOAD_DROPPED],
         packetStats[ARKIME_PACKET_CORRUPT],
-        packetStats[ARKIME_PACKET_UNKNOWN],
+        packetStats[ARKIME_PACKET_UNKNOWN_ETHER] + packetStats[ARKIME_PACKET_UNKNOWN_IP],
         packetStats[ARKIME_PACKET_IPPORT_DROPPED],
         packetStats[ARKIME_PACKET_DUPLICATE_DROPPED],
         PACKAGE_VERSION,
@@ -895,7 +886,8 @@ LOCAL void arkime_packet_cmd_stats(int UNUSED(argc), char **UNUSED(argv), gpoint
                        "Packets IP Dropped: %" PRIu64 "\n"
                        "Packets Overload Dropped: %" PRIu64 "\n"
                        "Packets Corrupt: %" PRIu64 "\n"
-                       "Packets Unknown: %" PRIu64 "\n"
+                       "Packets Unknown Ether: %" PRIu64 "\n"
+                       "Packets Unknown IP: %" PRIu64 "\n"
                        "Packets IPPort Dropped: %" PRIu64 "\n"
                        "Packets Duplicate Dropped: %" PRIu64 "\n",
 
@@ -926,7 +918,8 @@ LOCAL void arkime_packet_cmd_stats(int UNUSED(argc), char **UNUSED(argv), gpoint
                        packetStats[ARKIME_PACKET_IP_DROPPED],
                        packetStats[ARKIME_PACKET_OVERLOAD_DROPPED],
                        packetStats[ARKIME_PACKET_CORRUPT],
-                       packetStats[ARKIME_PACKET_UNKNOWN],
+                       packetStats[ARKIME_PACKET_UNKNOWN_ETHER],
+                       packetStats[ARKIME_PACKET_UNKNOWN_IP],
                        packetStats[ARKIME_PACKET_IPPORT_DROPPED],
                        packetStats[ARKIME_PACKET_DUPLICATE_DROPPED]
                       );
@@ -1008,7 +1001,7 @@ LOCAL ArkimePacketRC arkime_packet_ip4(ArkimePacketBatch_t *batch, ArkimePacket_
     ip_off &= IP_OFFMASK;
 
 
-    if ((ip_flags & IP_MF) || ip_off > 0) {
+    if (!disableIp4Defrag && ((ip_flags & IP_MF) || ip_off > 0)) {
         arkime_packet_frags4(batch, packet);
         return ARKIME_PACKET_DONT_PROCESS_OR_FREE;
     }
@@ -1068,10 +1061,10 @@ LOCAL ArkimePacketRC arkime_packet_ip4(ArkimePacketBatch_t *batch, ArkimePacket_
 
         if (len > ip_hdr_len + (int)sizeof(struct udphdr) + 8 && udpPortCbs[udphdr->uh_dport]) {
             int rc = arkime_packet_call_enqueue(udpPortCbs[udphdr->uh_dport], batch, packet, (uint8_t *)ip4 + ip_hdr_len + sizeof(struct udphdr), len - ip_hdr_len - sizeof(struct udphdr));
-            if (rc != ARKIME_PACKET_UNKNOWN)
+            if (rc != ARKIME_PACKET_UNKNOWN_IP)
                 return rc;
 
-            // Reset state on UNKNOWN
+            // Reset state on UNKNOWN_IP
             packet->v6 = 0;
             packet->ipOffset = (uint8_t *)data - packet->pkt;
             packet->payloadOffset = packet->ipOffset + ip_hdr_len;
@@ -1199,7 +1192,7 @@ LOCAL ArkimePacketRC arkime_packet_ip6(ArkimePacketBatch_t *batch, ArkimePacket_
 #ifdef DEBUG_PACKET
             LOG("ERROR - Don't support ip6 fragments yet!");
 #endif
-            return ARKIME_PACKET_UNKNOWN;
+            return ARKIME_PACKET_UNKNOWN_IP;
 
         case IPPROTO_TCP:
             if (len < ip_hdr_len + (int)sizeof(struct tcphdr)) {
@@ -1248,10 +1241,10 @@ LOCAL ArkimePacketRC arkime_packet_ip6(ArkimePacketBatch_t *batch, ArkimePacket_
 
             if (len > ip_hdr_len + (int)sizeof(struct udphdr) + 8 && udpPortCbs[udphdr->uh_dport]) {
                 int rc = arkime_packet_call_enqueue(udpPortCbs[udphdr->uh_dport], batch, packet, (uint8_t *)udphdr + sizeof(struct udphdr), len - ip_hdr_len - sizeof(struct udphdr));
-                if (rc != ARKIME_PACKET_UNKNOWN)
+                if (rc != ARKIME_PACKET_UNKNOWN_IP)
                     return rc;
 
-                // Reset state on UNKNOWN
+                // Reset state on UNKNOWN_IP
                 packet->v6 = 1;
                 packet->ipOffset = (uint8_t *)data - packet->pkt;
                 packet->payloadOffset = packet->ipOffset + ip_hdr_len;
@@ -1452,19 +1445,19 @@ LOCAL ArkimePacketRC arkime_packet_nflog(ArkimePacketBatch_t *batch, ArkimePacke
 LOCAL ArkimePacketRC arkime_packet_radiotap(ArkimePacketBatch_t *batch, ArkimePacket_t *const packet, const uint8_t *data, int len)
 {
     if (data[0] != 0 || len < 36)
-        return ARKIME_PACKET_UNKNOWN;
+        return ARKIME_PACKET_UNKNOWN_ETHER;
 
     int hl = packet->pkt[2];
     if (hl + 24 + 8 >= len)
-        return ARKIME_PACKET_UNKNOWN;
+        return ARKIME_PACKET_UNKNOWN_ETHER;
 
     if (data[hl] != 8)
-        return ARKIME_PACKET_UNKNOWN;
+        return ARKIME_PACKET_UNKNOWN_ETHER;
 
     hl += 24 + 3;
 
     if (data[hl] != 0 || data[hl + 1] != 0 || data[hl + 2] != 0)
-        return ARKIME_PACKET_UNKNOWN;
+        return ARKIME_PACKET_UNKNOWN_ETHER;
 
     hl += 3;
 
@@ -1562,7 +1555,7 @@ void arkime_packet_batch(ArkimePacketBatch_t *batch, ArkimePacket_t *const packe
     if (likely(rc == ARKIME_PACKET_DO_PROCESS) && unlikely(packet->mProtocol == 0)) {
         if (config.debug)
             LOG("Packet was marked as do process but no mProtocol was set");
-        rc = ARKIME_PACKET_UNKNOWN;
+        rc = ARKIME_PACKET_CORRUPT;
     }
 
 skip_switch:
@@ -1570,13 +1563,10 @@ skip_switch:
 
     if (unlikely(rc)) {
         if (rc == ARKIME_PACKET_CORRUPT) {
-            if (config.corruptSavePcap) {
-                arkime_packet_save_unknown_packet(2, packet);
-            }
-
-            // A CORRUPT callback is expected to free the packet.
-            if (ipCbs[ARKIME_IPPROTO_CORRUPT]) {
-                arkime_packet_call_enqueue(ipCbs[ARKIME_IPPROTO_CORRUPT], batch, packet, packet->pkt, packet->pktlen);
+            // If we have at least 14 bytes (ethernet header) and corruptSavePcap is enabled, create a session
+            if (config.corruptSavePcap && packet->pktlen >= 14) {
+                rc = arkime_packet_run_ethernet_cb(batch, packet, packet->pkt, packet->pktlen, ARKIME_ETHERTYPE_CORRUPT, "CORRUPT");
+                goto process_packet;
             } else {
                 arkime_packet_free(packet);
             }
@@ -1586,6 +1576,7 @@ skip_switch:
         return;
     }
 
+process_packet:
     /* This packet we are going to process */
 
     if (unlikely(totalPackets == 0)) {
@@ -1699,12 +1690,6 @@ LOCAL gboolean arkime_packet_save_drophash(gpointer UNUSED(user_data))
     return G_SOURCE_CONTINUE;
 }
 /******************************************************************************/
-void arkime_packet_save_ethernet( ArkimePacket_t *const packet, uint16_t type)
-{
-    if (BIT_ISSET(type, config.etherSavePcap))
-        arkime_packet_save_unknown_packet(0, packet);
-}
-/******************************************************************************/
 ArkimePacketRC arkime_packet_run_ethernet_cb(ArkimePacketBatch_t *batch, ArkimePacket_t *const packet, const uint8_t *data, int len, uint16_t type, const char *str)
 {
 #ifdef DEBUG_PACKET
@@ -1719,18 +1704,19 @@ ArkimePacketRC arkime_packet_run_ethernet_cb(ArkimePacketBatch_t *batch, ArkimeP
         len -= 2;
     }
 
-    if ( ethernetCbs[type]) {
+    if (ethernetCbs[type]) {
         return arkime_packet_call_enqueue(ethernetCbs[type], batch, packet, data, len);
-    }
-
-    if (ethernetCbs[ARKIME_ETHERTYPE_UNKNOWN]) {
-        return arkime_packet_call_enqueue(ethernetCbs[ARKIME_ETHERTYPE_UNKNOWN], batch, packet, data, len);
     }
 
     if (config.logUnknownProtocols)
         LOG("Unknown %s ethernet protocol 0x%04x(%u)", str, type, type);
-    arkime_packet_save_ethernet(packet, type);
-    return ARKIME_PACKET_UNKNOWN;
+
+    // Check if we should capture this unknown ethernet type as a session
+    if (BIT_ISSET(type, config.etherSavePcap) && ethernetCbs[ARKIME_ETHERTYPE_UNKNOWN]) {
+        return arkime_packet_call_enqueue(ethernetCbs[ARKIME_ETHERTYPE_UNKNOWN], batch, packet, data, len);
+    }
+
+    return ARKIME_PACKET_UNKNOWN_ETHER;
 }
 /******************************************************************************/
 LOCAL ArkimePacketEnqueue_t *arkime_packet_set_enqueue_cb(ArkimePacketEnqueue_cb enqueueCb)
@@ -1779,15 +1765,15 @@ ArkimePacketRC arkime_packet_run_ip_cb(ArkimePacketBatch_t *batch, ArkimePacket_
         return arkime_packet_call_enqueue(ipCbs[type], batch, packet, data, len);
     }
 
-    if (ipCbs[ARKIME_IPPROTO_UNKNOWN]) {
+    if (config.logUnknownProtocols)
+        LOG("Unknown %s protocol %u", str, type);
+
+    // Check if we should capture this unknown IP protocol as a session
+    if (BIT_ISSET(type, config.ipSavePcap) && ipCbs[ARKIME_IPPROTO_UNKNOWN]) {
         return arkime_packet_call_enqueue(ipCbs[ARKIME_IPPROTO_UNKNOWN], batch, packet, data, len);
     }
 
-    if (config.logUnknownProtocols)
-        LOG("Unknown %s protocol %u", str, type);
-    if (BIT_ISSET(type, config.ipSavePcap))
-        arkime_packet_save_unknown_packet(1, packet);
-    return ARKIME_PACKET_UNKNOWN;
+    return ARKIME_PACKET_UNKNOWN_IP;
 }
 /******************************************************************************/
 void arkime_packet_set_ip_cb2(uint16_t type, ArkimePacketEnqueue_cb2 enqueueCb, void *cbuw)
@@ -1831,6 +1817,8 @@ void arkime_packet_set_udpport_enqueue_cb(uint16_t port, ArkimePacketEnqueue_cb 
 void arkime_packet_init()
 {
     arkime_packet_freelist_init();
+
+    disableIp4Defrag = arkime_config_boolean(NULL, "disableIp4Defrag", FALSE);
 
     pcapFileHeader.magic = 0xa1b2c3d4;
     pcapFileHeader.version_major = 2;
@@ -2130,8 +2118,6 @@ void arkime_packet_init()
     arkime_packet_set_ethernet_cb(ETHERTYPE_IPV6, arkime_packet_ip6);
 
     arkime_command_register("packet-stats", arkime_packet_cmd_stats, "Packet Stats");
-
-    mProtocolHash = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, NULL);
 }
 /******************************************************************************/
 uint64_t arkime_packet_dropped_packets()
@@ -2321,61 +2307,4 @@ void arkime_packet_exit()
         ipTree6 = 0;
     }
     arkime_packet_log(arkime_mprotocol_get("tcp"));
-    if (unknownPacketFile[0])
-        fclose(unknownPacketFile[0]);
-    if (unknownPacketFile[1])
-        fclose(unknownPacketFile[1]);
-    if (unknownPacketFile[2])
-        fclose(unknownPacketFile[2]);
-}
-/******************************************************************************/
-int arkime_mprotocol_register_internal(const char                      *name,
-                                       int                              ses,
-                                       ArkimeProtocolCreateSessionId_cb createSessionId,
-                                       ArkimeProtocolPreProcess_cb      preProcess,
-                                       ArkimeProtocolProcess_cb         process,
-                                       ArkimeProtocolSessionFree_cb     sFree,
-                                       ArkimeProtocolSessionMidSave_cb  midSave,
-                                       int                              sessionTimeout,
-                                       size_t                           sessionsize,
-                                       int                              apiversion)
-{
-    static ARKIME_LOCK_DEFINE(lock);
-
-    if (sizeof(ArkimeSession_t) != sessionsize) {
-        CONFIGEXIT("Parser '%s' built with different version of arkime.h\n %u != %u", name, (unsigned int)sizeof(ArkimeSession_t),  (unsigned int)sessionsize);
-    }
-
-    if (ARKIME_API_VERSION != apiversion) {
-        CONFIGEXIT("Parser '%s' built with different version of arkime.h\n %d %d", name, ARKIME_API_VERSION, apiversion);
-    }
-
-    ARKIME_LOCK(lock);
-
-    int n = GPOINTER_TO_INT(g_hash_table_lookup(mProtocolHash, name));
-    if (n > 0)
-        return n;
-
-    if (mProtocolCnt >= ARKIME_MPROTOCOL_MAX) {
-        CONFIGEXIT("Too many protocols registered (max %d)", ARKIME_MPROTOCOL_MAX);
-    }
-    int num = mProtocolCnt++;
-    mProtocols[num].name = name;
-    mProtocols[num].ses = ses;
-    mProtocols[num].createSessionId = createSessionId;
-    mProtocols[num].preProcess = preProcess;
-    mProtocols[num].process = process;
-    mProtocols[num].sFree = sFree;
-    mProtocols[num].midSave = midSave;
-    mProtocols[num].sessionTimeout = sessionTimeout;
-
-    g_hash_table_insert(mProtocolHash, g_strdup(name), GINT_TO_POINTER(num));
-
-    ARKIME_UNLOCK(lock);
-    return num;
-}
-/******************************************************************************/
-int arkime_mprotocol_get(const char *name)
-{
-    return GPOINTER_TO_INT(g_hash_table_lookup(mProtocolHash, name));
 }

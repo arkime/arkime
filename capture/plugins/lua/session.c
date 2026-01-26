@@ -601,7 +601,7 @@ LOCAL int MSP_get_addr1(lua_State *L)
 
     char addrbuf[INET6_ADDRSTRLEN];
     const char *result;
-    if (ARKIME_SESSION_v6(session)) {
+    if (ARKIME_SESSION_IS_v6(session)) {
         result = inet_ntop(AF_INET6, &session->addr1, addrbuf, INET6_ADDRSTRLEN);
     } else {
         result = inet_ntop(AF_INET, &ARKIME_V6_TO_V4(session->addr1), addrbuf, INET6_ADDRSTRLEN);
@@ -626,7 +626,7 @@ LOCAL int MSP_get_addr2(lua_State *L)
 
     char addrbuf[INET6_ADDRSTRLEN];
     const char *result;
-    if (ARKIME_SESSION_v6(session)) {
+    if (ARKIME_SESSION_IS_v6(session)) {
         result = inet_ntop(AF_INET6, &session->addr2, addrbuf, INET6_ADDRSTRLEN);
     } else {
         result = inet_ntop(AF_INET, &ARKIME_V6_TO_V4(session->addr2), addrbuf, INET6_ADDRSTRLEN);

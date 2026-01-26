@@ -178,6 +178,243 @@
          "body" : {
             "@timestamp" : "SET",
             "client" : {
+               "bytes" : 0
+            },
+            "destination" : {
+               "bytes" : 0,
+               "ip" : "224.0.0.10",
+               "mac" : [
+                  "01:00:5e:00:00:0a"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 0,
+               "port" : 0
+            },
+            "ethertype" : 2048,
+            "fileId" : [],
+            "firstPacket" : 952109332328,
+            "ipProtocol" : 88,
+            "lastPacket" : 952109350827,
+            "length" : 18499,
+            "network" : {
+               "bytes" : 370,
+               "packets" : 5
+            },
+            "node" : "test",
+            "packetLen" : [
+               90,
+               90,
+               90,
+               90,
+               90
+            ],
+            "packetPos" : [
+               180,
+               592,
+               2679,
+               3091,
+               5232
+            ],
+            "packetRange" : {
+               "gte" : 952109332328,
+               "lte" : 952109350827
+            },
+            "protocol" : [
+               "unknown-ip"
+            ],
+            "protocolCnt" : 1,
+            "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 0
+            },
+            "source" : {
+               "bytes" : 370,
+               "ip" : "10.1.2.2",
+               "mac" : [
+                  "00:30:96:e6:fc:39"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 5,
+               "port" : 0
+            },
+            "srcDscp" : [
+               48
+            ],
+            "srcDscpCnt" : 1,
+            "srcOui" : [
+               "Cisco Systems, Inc"
+            ],
+            "srcOuiCnt" : 1,
+            "srcTTL" : [
+               2
+            ],
+            "srcTTLCnt" : 1,
+            "totDataBytes" : 0
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions3-000303"
+            }
+         }
+      },
+      {
+         "body" : {
+            "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 0
+            },
+            "destination" : {
+               "bytes" : 0,
+               "mac" : [
+                  "00:30:96:e6:fc:39"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 0
+            },
+            "dstOui" : [
+               "Cisco Systems, Inc"
+            ],
+            "dstOuiCnt" : 1,
+            "ethertype" : 36864,
+            "fileId" : [],
+            "firstPacket" : 952109332380,
+            "ipProtocol" : 0,
+            "lastPacket" : 952109352383,
+            "length" : 20003,
+            "network" : {
+               "bytes" : 180,
+               "packets" : 3
+            },
+            "node" : "test",
+            "packetLen" : [
+               76,
+               76,
+               76
+            ],
+            "packetPos" : [
+               270,
+               2937,
+               5490
+            ],
+            "packetRange" : {
+               "gte" : 952109332380,
+               "lte" : 952109352383
+            },
+            "protocol" : [
+               "unknown-ether"
+            ],
+            "protocolCnt" : 1,
+            "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 0
+            },
+            "source" : {
+               "bytes" : 180,
+               "mac" : [
+                  "00:30:96:e6:fc:39"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 3
+            },
+            "srcOui" : [
+               "Cisco Systems, Inc"
+            ],
+            "srcOuiCnt" : 1,
+            "totDataBytes" : 0
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions3-000303"
+            }
+         }
+      },
+      {
+         "body" : {
+            "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 0
+            },
+            "destination" : {
+               "bytes" : 0,
+               "ip" : "224.0.0.10",
+               "mac" : [
+                  "01:00:5e:00:00:0a"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 0,
+               "port" : 0
+            },
+            "ethertype" : 2048,
+            "fileId" : [],
+            "firstPacket" : 952109332767,
+            "ipProtocol" : 88,
+            "lastPacket" : 952109351045,
+            "length" : 18278,
+            "network" : {
+               "bytes" : 370,
+               "packets" : 5
+            },
+            "node" : "test",
+            "packetLen" : [
+               90,
+               90,
+               90,
+               90,
+               90
+            ],
+            "packetPos" : [
+               346,
+               2080,
+               2847,
+               3259,
+               5322
+            ],
+            "packetRange" : {
+               "gte" : 952109332767,
+               "lte" : 952109351045
+            },
+            "protocol" : [
+               "unknown-ip"
+            ],
+            "protocolCnt" : 1,
+            "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 0
+            },
+            "source" : {
+               "bytes" : 370,
+               "ip" : "10.1.2.1",
+               "mac" : [
+                  "00:30:96:05:28:38"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 5,
+               "port" : 0
+            },
+            "srcDscp" : [
+               48
+            ],
+            "srcDscpCnt" : 1,
+            "srcOui" : [
+               "Cisco Systems, Inc"
+            ],
+            "srcOuiCnt" : 1,
+            "srcTTL" : [
+               2
+            ],
+            "srcTTLCnt" : 1,
+            "totDataBytes" : 0
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions3-000303"
+            }
+         }
+      },
+      {
+         "body" : {
+            "@timestamp" : "SET",
+            "client" : {
                "bytes" : 400
             },
             "destination" : {
@@ -275,6 +512,138 @@
             ],
             "srcTTLCnt" : 1,
             "totDataBytes" : 800
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions3-000303"
+            }
+         }
+      },
+      {
+         "body" : {
+            "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 0
+            },
+            "destination" : {
+               "bytes" : 0,
+               "mac" : [
+                  "00:30:96:05:28:38"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 0
+            },
+            "dstOui" : [
+               "Cisco Systems, Inc"
+            ],
+            "dstOuiCnt" : 1,
+            "ethertype" : 36864,
+            "fileId" : [],
+            "firstPacket" : 952109338243,
+            "ipProtocol" : 0,
+            "lastPacket" : 952109348245,
+            "length" : 10002,
+            "network" : {
+               "bytes" : 120,
+               "packets" : 2
+            },
+            "node" : "test",
+            "packetLen" : [
+               76,
+               76
+            ],
+            "packetPos" : [
+               2170,
+               4546
+            ],
+            "packetRange" : {
+               "gte" : 952109338243,
+               "lte" : 952109348245
+            },
+            "protocol" : [
+               "unknown-ether"
+            ],
+            "protocolCnt" : 1,
+            "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 0
+            },
+            "source" : {
+               "bytes" : 120,
+               "mac" : [
+                  "00:30:96:05:28:38"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 2
+            },
+            "srcOui" : [
+               "Cisco Systems, Inc"
+            ],
+            "srcOuiCnt" : 1,
+            "totDataBytes" : 0
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions3-000303"
+            }
+         }
+      },
+      {
+         "body" : {
+            "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 0
+            },
+            "destination" : {
+               "bytes" : 0,
+               "mac" : [
+                  "01:00:0c:cc:cc:cc"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 0
+            },
+            "ethertype" : 325,
+            "fileId" : [],
+            "firstPacket" : 952109340432,
+            "ipProtocol" : 0,
+            "lastPacket" : 952109340432,
+            "length" : 0,
+            "network" : {
+               "bytes" : 339,
+               "packets" : 1
+            },
+            "node" : "test",
+            "packetLen" : [
+               355
+            ],
+            "packetPos" : [
+               2246
+            ],
+            "packetRange" : {
+               "gte" : 952109340432,
+               "lte" : 952109340432
+            },
+            "protocol" : [
+               "corrupt-ether"
+            ],
+            "protocolCnt" : 1,
+            "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 0
+            },
+            "source" : {
+               "bytes" : 339,
+               "mac" : [
+                  "00:30:96:05:28:38"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 1
+            },
+            "srcOui" : [
+               "Cisco Systems, Inc"
+            ],
+            "srcOuiCnt" : 1,
+            "totDataBytes" : 0
          },
          "header" : {
             "index" : {
@@ -419,6 +788,82 @@
                "src" : 2553417723
             },
             "totDataBytes" : 75
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions3-000303"
+            }
+         }
+      },
+      {
+         "body" : {
+            "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 0
+            },
+            "destination" : {
+               "bytes" : 0,
+               "ip" : "10.34.0.1",
+               "mac" : [
+                  "00:30:96:e6:fc:39"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 0,
+               "port" : 0
+            },
+            "dstOui" : [
+               "Cisco Systems, Inc"
+            ],
+            "dstOuiCnt" : 1,
+            "ethertype" : 34887,
+            "fileId" : [],
+            "firstPacket" : 952109348181,
+            "ipProtocol" : 46,
+            "lastPacket" : 952109348181,
+            "length" : 0,
+            "network" : {
+               "bytes" : 214,
+               "packets" : 1
+            },
+            "node" : "test",
+            "packetLen" : [
+               230
+            ],
+            "packetPos" : [
+               4316
+            ],
+            "packetRange" : {
+               "gte" : 952109348181,
+               "lte" : 952109348181
+            },
+            "protocol" : [
+               "mpls",
+               "unknown-ip"
+            ],
+            "protocolCnt" : 2,
+            "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 0
+            },
+            "source" : {
+               "bytes" : 214,
+               "ip" : "10.31.0.1",
+               "mac" : [
+                  "00:30:96:05:28:38"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 1,
+               "port" : 0
+            },
+            "srcOui" : [
+               "Cisco Systems, Inc"
+            ],
+            "srcOuiCnt" : 1,
+            "srcTTL" : [
+               254
+            ],
+            "srcTTLCnt" : 1,
+            "totDataBytes" : 0
          },
          "header" : {
             "index" : {

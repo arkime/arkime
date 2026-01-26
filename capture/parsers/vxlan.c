@@ -12,10 +12,10 @@ SUPPRESS_ALIGNMENT
 LOCAL ArkimePacketRC vxlan_packet_enqueue(ArkimePacketBatch_t *batch, ArkimePacket_t *const packet, const uint8_t *data, int len)
 {
     if (len <= 8)
-        return ARKIME_PACKET_UNKNOWN;
+        return ARKIME_PACKET_UNKNOWN_IP;
 
     if ((data[0] & 0x77) != 0 || (data[1] & 0xb7) != 0)
-        return ARKIME_PACKET_UNKNOWN;
+        return ARKIME_PACKET_UNKNOWN_IP;
 
     if ((data[0] & 0x08) == 0x08) {
         packet->vni = (data[4] << 16) | (data[5] << 8) | data[6];
@@ -29,10 +29,10 @@ SUPPRESS_ALIGNMENT
 LOCAL ArkimePacketRC vxlan_gpe_packet_enqueue(ArkimePacketBatch_t *batch, ArkimePacket_t *const packet, const uint8_t *data, int len)
 {
     if (len <= 8)
-        return ARKIME_PACKET_UNKNOWN;
+        return ARKIME_PACKET_UNKNOWN_IP;
 
     if ((data[0] & 0xf0) != 0 || (data[1] & 0xff) != 0)
-        return ARKIME_PACKET_UNKNOWN;
+        return ARKIME_PACKET_UNKNOWN_IP;
 
     packet->tunnel |= ARKIME_PACKET_TUNNEL_VXLAN_GPE;
 
@@ -46,7 +46,7 @@ LOCAL ArkimePacketRC vxlan_gpe_packet_enqueue(ArkimePacketBatch_t *batch, Arkime
     case 4:
         return arkime_packet_run_ethernet_cb(batch, packet, data + 8, len - 8, ARKIME_ETHERTYPE_NSH, "vxlan-gpe");
     }
-    return ARKIME_PACKET_UNKNOWN;
+    return ARKIME_PACKET_UNKNOWN_IP;
 }
 /******************************************************************************/
 void arkime_parser_init()

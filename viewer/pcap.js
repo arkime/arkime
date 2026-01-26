@@ -896,7 +896,7 @@ class Pcap {
       this.ip4(buffer, obj, pos);
       break;
     case 0x0806: // arp
-      obj.ether ??= { data: buffer };
+      obj.ether.data ??= buffer;
       break;
     case 0x86dd:
       this.ip6(buffer, obj, pos);

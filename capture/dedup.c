@@ -137,7 +137,8 @@ int arkime_dedup_should_drop (const ArkimePacket_t *packet, int headerLen)
         return 0;
     }
 
-    // For now ignore the race condition of search between incr and copy
+    // Race condition: a reader may see incremented count before memcpy completes.
+    // This is acceptable - fail-open means a duplicate packet may slip through briefly.
     int c = ARKIME_THREAD_INCROLD(seconds[secondSlot].counts[h]);
     memcpy(seconds[secondSlot].md5s + 16 * (h * DEDUP_SIZE_FACTOR + c), md, 16);
     ARKIME_THREAD_INCR(seconds[secondSlot].count);

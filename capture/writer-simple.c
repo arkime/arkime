@@ -86,13 +86,11 @@ LOCAL  ArkimeSimpleHead_t simpleQ;
 LOCAL  ARKIME_LOCK_DEFINE(simpleQ);
 LOCAL  ARKIME_COND_DEFINE(simpleQ);
 
-// Global lock-free freelist for output buffers
-LOCAL ArkimeSimple_t        *simpleFreelist;
-LOCAL int                    simpleFreelistSize;
-
 enum ArkimeSimpleMode { ARKIME_SIMPLE_NORMAL, ARKIME_SIMPLE_XOR2048, ARKIME_SIMPLE_AES256CTR};
 
 LOCAL ArkimeSimple_t        *currentInfo[ARKIME_MAX_PACKET_THREADS];
+LOCAL ArkimeSimpleHead_t     freeList;
+ARKIME_LOCK_DEFINE(freeList);
 LOCAL uint32_t               pageSize;
 LOCAL enum ArkimeSimpleMode  simpleMode;
 LOCAL int                    simpleMaxQ;
@@ -135,18 +133,11 @@ LOCAL uint32_t writer_simple_queue_length()
  */
 LOCAL ArkimeSimple_t *writer_simple_alloc(ArkimeSimple_t *previous)
 {
-    ArkimeSimple_t *info = simpleFreelist;
+    ArkimeSimple_t *info;
 
-    // Try lock-free pop from global freelist
-    while (info) {
-        ArkimeSimple_t *next = info->simple_next;
-        // if (simpleFreelist == info) simpleFreelist = next
-        if (ARKIME_THREAD_CAS(&simpleFreelist, info, next)) {
-            ARKIME_THREAD_DECR(simpleFreelistSize);
-            break;
-        }
-        info = simpleFreelist;
-    }
+    ARKIME_LOCK(freeList);
+    DLL_POP_HEAD(simple_, &freeList, info);
+    ARKIME_UNLOCK(freeList);
 
     if (!info) {
         // Freelist empty, allocate new
@@ -194,16 +185,13 @@ LOCAL void writer_simple_free(ArkimeSimple_t *info)
     }
     info->file = 0;
 
-    if (simpleFreelistSize < simpleFreeOutputBuffers) {
-        for (ArkimeSimple_t *head = simpleFreelist; ; head = simpleFreelist) {
-            info->simple_next = head;
-            // if (simpleFreelist == head) simpleFreelist = info
-            if (ARKIME_THREAD_CAS(&simpleFreelist, head, info))
-                break;
-        }
-        ARKIME_THREAD_INCR(simpleFreelistSize);
+
+    ARKIME_LOCK(freeList);
+    if (DLL_COUNT(simple_, &freeList) < simpleFreeOutputBuffers) {
+        DLL_PUSH_TAIL(simple_, &freeList, info);
+        ARKIME_UNLOCK(freeList);
     } else {
-        // Freelist full, munmap and free
+        ARKIME_UNLOCK(freeList);
         munmap(info->buf, config.pcapWriteSize + ARKIME_PACKET_MAX_LEN);
         ARKIME_TYPE_FREE(ArkimeSimple_t, info);
     }
@@ -811,13 +799,11 @@ LOCAL gboolean writer_simple_check_gfunc (gpointer UNUSED(user_data))
     struct timeval now;
     gettimeofday(&now, NULL);
 
-    ARKIME_LOCK(simpleQ);
     for (int thread = 0; thread < config.packetThreads; thread++) {
         if (now.tv_sec - lastSave[thread].tv_sec >= 10) {
             arkime_session_add_cmd_thread(thread, GINT_TO_POINTER(thread), NULL, writer_simple_check);
         }
     }
-    ARKIME_UNLOCK(simpleQ);
 
     return G_SOURCE_CONTINUE;
 }
@@ -1056,6 +1042,7 @@ void writer_simple_init(const char *name)
     simpleFreeOutputBuffers  = arkime_config_int(NULL, "simpleFreeOutputBuffers", 16, 0, 0xffff);
 
     DLL_INIT(simple_, &simpleQ);
+    DLL_INIT(simple_, &freeList);
 
     struct timeval now;
     gettimeofday(&now, NULL);

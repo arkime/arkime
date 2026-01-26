@@ -32,8 +32,7 @@ LOCAL ArkimePacketRC pppoe_packet_enqueue(ArkimePacketBatch_t *batch, ArkimePack
 #ifdef DEBUG_PACKET
         LOG("BAD PACKET: Unknown pppoe type %d", type);
 #endif
-        arkime_packet_save_ethernet(packet, 0x8864);
-        return ARKIME_PACKET_UNKNOWN;
+        return ARKIME_PACKET_UNKNOWN_ETHER;
     }
 }
 /******************************************************************************/
@@ -56,8 +55,7 @@ LOCAL ArkimePacketRC ppp_packet_enqueue(ArkimePacketBatch_t *batch, ArkimePacket
 #ifdef DEBUG_PACKET
         LOG("BAD PACKET: Unknown ppp type %d", data[3]);
 #endif
-        arkime_packet_save_ethernet(packet, 0x880b);
-        return ARKIME_PACKET_UNKNOWN;
+        return ARKIME_PACKET_UNKNOWN_ETHER;
     }
 }
 /******************************************************************************/

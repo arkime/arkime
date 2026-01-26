@@ -107,6 +107,9 @@ typedef enum dns_type {
     DNS_RR_MX         =  15,
     DNS_RR_TXT        =  16,
     DNS_RR_AAAA       =  28,
+    DNS_RR_DS         =  43,
+    DNS_RR_RRSIG      =  46,
+    DNS_RR_NSEC       =  47,
     DNS_RR_HTTPS      =  65,
     DNS_RR_CAA        = 257
 } DNSType_t;
@@ -158,10 +161,33 @@ typedef struct dns_answer_svcbrdata {
 } DNSSVCBRData_t ;
 
 typedef struct dns_answer_caadata {
-    char *tag;
-    char *value;
+    char   *tag;
+    char   *value;
     uint8_t flags;
 } DNSCAARData_t;
+
+typedef struct dns_answer_rrsigdata {
+    char    *signerName;
+    uint32_t originalTTL;
+    uint32_t expiration;
+    uint32_t inception;
+    uint16_t typeCovered;
+    uint16_t keyTag;
+    uint8_t  algorithm;
+    uint8_t  labels;
+} DNSRRSIGRData_t;
+
+typedef struct dns_answer_nsecdata {
+    char *nextDomainName;
+    char *typeList;
+} DNSNSECRData_t;
+
+typedef struct dns_answer_dsdata {
+    char    *digest;
+    uint16_t keyTag;
+    uint8_t  algorithm;
+    uint8_t  digestType;
+} DNSDSRData_t;
 
 typedef struct dns_answer {
     struct dns_answer  *t_next, *t_prev;
@@ -174,6 +200,9 @@ typedef struct dns_answer {
         char            *txt;
         DNSCAARData_t   *caa;
         DNSSVCBRData_t  *svcb;
+        DNSRRSIGRData_t *rrsig;
+        DNSNSECRData_t  *nsec;
+        DNSDSRData_t    *ds;
     };
     char                *class;
     char                *type;
@@ -1009,6 +1038,151 @@ LOCAL void dns_parser(ArkimeSession_t *session, int kind, const uint8_t *data, i
                 jsonLen += tagLen + valueLen;
                 break;
             }
+            case DNS_RR_RRSIG: {
+                if (BSB_REMAINING(rdbsb) < 18) {
+                    goto continueerr;
+                }
+
+                uint16_t typeCovered = 0;
+                BSB_IMPORT_u16(rdbsb, typeCovered);
+                uint8_t algorithm = 0;
+                BSB_IMPORT_u08(rdbsb, algorithm);
+                uint8_t labels = 0;
+                BSB_IMPORT_u08(rdbsb, labels);
+                uint32_t originalTTL = 0;
+                BSB_IMPORT_u32(rdbsb, originalTTL);
+                uint32_t expiration = 0;
+                BSB_IMPORT_u32(rdbsb, expiration);
+                uint32_t inception = 0;
+                BSB_IMPORT_u32(rdbsb, inception);
+                uint16_t keyTag = 0;
+                BSB_IMPORT_u16(rdbsb, keyTag);
+
+                namelen = sizeof(namebuf);
+                name = dns_name(session, data, len, &rdbsb, namebuf, &namelen);
+
+                if (!namelen || BSB_IS_ERROR(rdbsb) || !name) {
+                    goto continueerr;
+                }
+
+                answer->rrsig = ARKIME_TYPE_ALLOC0(DNSRRSIGRData_t);
+                answer->rrsig->typeCovered = typeCovered;
+                answer->rrsig->algorithm = algorithm;
+                answer->rrsig->labels = labels;
+                answer->rrsig->originalTTL = originalTTL;
+                answer->rrsig->expiration = expiration;
+                answer->rrsig->inception = inception;
+                answer->rrsig->keyTag = keyTag;
+                answer->rrsig->signerName = g_hostname_to_unicode(name);
+                if (!answer->rrsig->signerName) {
+                    answer->rrsig->signerName = g_strndup(name, namelen);
+                }
+
+#ifdef DNSDEBUG
+                LOG("DNSDEBUG: RR_RRSIG type=%u alg=%u labels=%u origTTL=%u exp=%u inc=%u keyTag=%u signer=%s",
+                    typeCovered, algorithm, labels, originalTTL, expiration, inception, keyTag, answer->rrsig->signerName);
+#endif
+
+                jsonLen += 100 + namelen;
+                break;
+            }
+            case DNS_RR_NSEC: {
+                namelen = sizeof(namebuf);
+                name = dns_name(session, data, len, &rdbsb, namebuf, &namelen);
+
+                if (!namelen || BSB_IS_ERROR(rdbsb) || !name) {
+                    goto continueerr;
+                }
+
+                answer->nsec = ARKIME_TYPE_ALLOC0(DNSNSECRData_t);
+                answer->nsec->nextDomainName = g_hostname_to_unicode(name);
+                if (!answer->nsec->nextDomainName) {
+                    answer->nsec->nextDomainName = g_strndup(name, namelen);
+                }
+
+                // Parse type bit maps
+                GString *typeListStr = g_string_new("");
+                while (BSB_REMAINING(rdbsb) >= 2 && !BSB_IS_ERROR(rdbsb)) {
+                    uint8_t windowBlock = 0;
+                    BSB_IMPORT_u08(rdbsb, windowBlock);
+                    uint8_t bitmapLen = 0;
+                    BSB_IMPORT_u08(rdbsb, bitmapLen);
+
+                    if (bitmapLen > BSB_REMAINING(rdbsb) || bitmapLen > 32) {
+                        break;
+                    }
+
+                    for (int b = 0; b < bitmapLen; b++) {
+                        uint8_t byte = 0;
+                        BSB_IMPORT_u08(rdbsb, byte);
+                        for (int bit = 0; bit < 8; bit++) {
+                            if (byte & (0x80 >> bit)) {
+                                uint16_t rrtype = windowBlock * 256 + b * 8 + bit;
+                                if (rrtype < MAX_QTYPES && qtypes[rrtype]) {
+                                    g_string_append_printf(typeListStr, "%s ", qtypes[rrtype]);
+                                } else {
+                                    g_string_append_printf(typeListStr, "TYPE%u ", rrtype);
+                                }
+                            }
+                        }
+                    }
+                }
+                // Remove trailing space
+                if (typeListStr->len > 0 && typeListStr->str[typeListStr->len - 1] == ' ') {
+                    g_string_truncate(typeListStr, typeListStr->len - 1);
+                }
+                answer->nsec->typeList = g_string_free(typeListStr, FALSE);
+
+#ifdef DNSDEBUG
+                LOG("DNSDEBUG: RR_NSEC next=%s types=%s", answer->nsec->nextDomainName, answer->nsec->typeList);
+#endif
+
+                jsonLen += 50 + namelen + strlen(answer->nsec->typeList);
+                break;
+            }
+            case DNS_RR_DS: {
+                if (BSB_REMAINING(rdbsb) < 5) {
+                    goto continueerr;
+                }
+
+                uint16_t keyTag = 0;
+                BSB_IMPORT_u16(rdbsb, keyTag);
+                uint8_t algorithm = 0;
+                BSB_IMPORT_u08(rdbsb, algorithm);
+                uint8_t digestType = 0;
+                BSB_IMPORT_u08(rdbsb, digestType);
+
+                int digestLen = BSB_REMAINING(rdbsb);
+                if (digestLen <= 0) {
+                    goto continueerr;
+                }
+
+                const uint8_t *digestPtr = NULL;
+                BSB_IMPORT_ptr(rdbsb, digestPtr, digestLen);
+
+                if (!digestPtr) {
+                    goto continueerr;
+                }
+
+                // Convert digest to hex string
+                GString *digestHex = g_string_sized_new(digestLen * 2);
+                for (int d = 0; d < digestLen; d++) {
+                    g_string_append_printf(digestHex, "%02X", digestPtr[d]);
+                }
+
+                answer->ds = ARKIME_TYPE_ALLOC0(DNSDSRData_t);
+                answer->ds->keyTag = keyTag;
+                answer->ds->algorithm = algorithm;
+                answer->ds->digestType = digestType;
+                answer->ds->digest = g_string_free(digestHex, FALSE);
+
+#ifdef DNSDEBUG
+                LOG("DNSDEBUG: RR_DS keyTag=%u alg=%u digestType=%u digest=%s", keyTag, algorithm, digestType, answer->ds->digest);
+#endif
+
+                jsonLen += 50 + digestLen * 2;
+                break;
+            }
             } /* switch */
 
             if (anclass < MAX_QCLASSES && qclasses[anclass]) {
@@ -1398,6 +1572,41 @@ LOCAL void dns_save(BSB *jbsb, ArkimeFieldObject_t *object, struct arkime_sessio
                         ARKIME_TYPE_FREE(DNSCAARData_t, answer->caa);
                     }
                     break;
+                    case DNS_RR_RRSIG: {
+                        const char *typeCoveredStr = (answer->rrsig->typeCovered < MAX_QTYPES && qtypes[answer->rrsig->typeCovered]) ?
+                                                     qtypes[answer->rrsig->typeCovered] : "UNKNOWN";
+                        BSB_EXPORT_sprintf(*jbsb, "\"rrsig\":\"RRSIG %s %u %u %u %u %u %u %s\",",
+                                           typeCoveredStr,
+                                           answer->rrsig->algorithm,
+                                           answer->rrsig->labels,
+                                           answer->rrsig->originalTTL,
+                                           answer->rrsig->expiration,
+                                           answer->rrsig->inception,
+                                           answer->rrsig->keyTag,
+                                           answer->rrsig->signerName);
+                        g_free(answer->rrsig->signerName);
+                        ARKIME_TYPE_FREE(DNSRRSIGRData_t, answer->rrsig);
+                    }
+                    break;
+                    case DNS_RR_NSEC: {
+                        BSB_EXPORT_sprintf(*jbsb, "\"nsec\":\"NSEC %s %s\",",
+                                           answer->nsec->nextDomainName,
+                                           answer->nsec->typeList);
+                        g_free(answer->nsec->nextDomainName);
+                        g_free(answer->nsec->typeList);
+                        ARKIME_TYPE_FREE(DNSNSECRData_t, answer->nsec);
+                    }
+                    break;
+                    case DNS_RR_DS: {
+                        BSB_EXPORT_sprintf(*jbsb, "\"ds\":\"DS %u %u %u %s\",",
+                                           answer->ds->keyTag,
+                                           answer->ds->algorithm,
+                                           answer->ds->digestType,
+                                           answer->ds->digest);
+                        g_free(answer->ds->digest);
+                        ARKIME_TYPE_FREE(DNSDSRData_t, answer->ds);
+                    }
+                    break;
                     }
 
                     if (answer->class)
@@ -1534,6 +1743,39 @@ LOCAL void dns_free_object(ArkimeFieldObject_t *object)
                 g_free(answer->caa->value);
             }
             ARKIME_TYPE_FREE(DNSCAARData_t, answer->caa);
+        }
+        break;
+        case DNS_RR_RRSIG: {
+            if (!answer->rrsig) {
+                break;
+            }
+            if (answer->rrsig->signerName) {
+                g_free(answer->rrsig->signerName);
+            }
+            ARKIME_TYPE_FREE(DNSRRSIGRData_t, answer->rrsig);
+        }
+        break;
+        case DNS_RR_NSEC: {
+            if (!answer->nsec) {
+                break;
+            }
+            if (answer->nsec->nextDomainName) {
+                g_free(answer->nsec->nextDomainName);
+            }
+            if (answer->nsec->typeList) {
+                g_free(answer->nsec->typeList);
+            }
+            ARKIME_TYPE_FREE(DNSNSECRData_t, answer->nsec);
+        }
+        break;
+        case DNS_RR_DS: {
+            if (!answer->ds) {
+                break;
+            }
+            if (answer->ds->digest) {
+                g_free(answer->ds->digest);
+            }
+            ARKIME_TYPE_FREE(DNSDSRData_t, answer->ds);
         }
         break;
         }
@@ -2025,6 +2267,24 @@ void arkime_parser_init()
     arkime_field_define("dns", "termfield",
                         "dns.answer.caa", "DNS Answer CAA", "dns.answers.caa",
                         "DNS Answer CAA",
+                        0, ARKIME_FIELD_FLAG_FAKE,
+                        (char *)NULL);
+
+    arkime_field_define("dns", "termfield",
+                        "dns.answer.rrsig", "DNS Answer RRSIG", "dns.answers.rrsig",
+                        "DNS Answer RRSIG",
+                        0, ARKIME_FIELD_FLAG_FAKE,
+                        (char *)NULL);
+
+    arkime_field_define("dns", "termfield",
+                        "dns.answer.nsec", "DNS Answer NSEC", "dns.answers.nsec",
+                        "DNS Answer NSEC",
+                        0, ARKIME_FIELD_FLAG_FAKE,
+                        (char *)NULL);
+
+    arkime_field_define("dns", "termfield",
+                        "dns.answer.ds", "DNS Answer DS", "dns.answers.ds",
+                        "DNS Answer DS",
                         0, ARKIME_FIELD_FLAG_FAKE,
                         (char *)NULL);
 

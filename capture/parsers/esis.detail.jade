@@ -1,0 +1,4 @@
+if (session.esis)
+  div.sessionDetailMeta.bold esis
+  dl.sessionDetailMeta
+    +arrayList(session.esis, "type", "Type", "esis.type")

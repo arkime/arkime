@@ -63,6 +63,8 @@
 #define ARKIME_ETHERTYPE_UNKNOWN 1
 // The first 2 bytes have the ethertype
 #define ARKIME_ETHERTYPE_DETECT  2
+// Corrupt packet
+#define ARKIME_ETHERTYPE_CORRUPT 3
 #define ARKIME_ETHERTYPE_TEB     0x6558
 #define ARKIME_ETHERTYPE_RAWFR   0x6559
 #define ARKIME_ETHERTYPE_NSH     0x894F
@@ -70,8 +72,7 @@
 #define ARKIME_ETHERTYPE_QINQ    0x88a8
 
 #define ARKIME_IPPROTO_UNKNOWN 255
-#define ARKIME_IPPROTO_CORRUPT 256
-#define ARKIME_IPPROTO_MAX     257
+#define ARKIME_IPPROTO_MAX     256
 #define ARKIME_SESSION_IS_v6(s) ((s)->v6 == 1)
 #define ARKIME_SESSION_IS_v4(s) ((s)->v6 == 0)
 
@@ -1274,7 +1275,8 @@ typedef enum {
     ARKIME_PACKET_IP_DROPPED,
     ARKIME_PACKET_OVERLOAD_DROPPED,
     ARKIME_PACKET_CORRUPT,
-    ARKIME_PACKET_UNKNOWN,
+    ARKIME_PACKET_UNKNOWN_ETHER,
+    ARKIME_PACKET_UNKNOWN_IP,
     ARKIME_PACKET_IPPORT_DROPPED,
     ARKIME_PACKET_DONT_PROCESS,
     ARKIME_PACKET_DONT_PROCESS_OR_FREE,
@@ -1314,7 +1316,6 @@ uint32_t arkime_packet_dlt_to_linktype(int dlt);
 uint32_t arkime_packet_linktype_to_dlt(int linktype);
 void     arkime_packet_drophash_add(ArkimeSession_t *session, int which, int min);
 
-void     arkime_packet_save_ethernet(ArkimePacket_t *const packet, uint16_t type);
 ArkimePacketRC arkime_packet_run_ethernet_cb(ArkimePacketBatch_t *batch, ArkimePacket_t *const packet, const uint8_t *data, int len, uint16_t type, const char *str);
 void     arkime_packet_set_ethernet_cb(uint16_t type, ArkimePacketEnqueue_cb enqueueCb);
 void     arkime_packet_set_ethernet_cb2(uint16_t type, ArkimePacketEnqueue_cb2 enqueueCb, void *cbuw);

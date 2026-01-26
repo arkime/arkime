@@ -57,6 +57,8 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #3583 Previous community_id for IPv4 sessions with same src/dst IP, could
           have incorrect community_id
   - #3591 geoLite2Country setting now looks for City file first by default
+  - #3601 The unkEthernet/unkIpProtocol plugins are removed. The saveUnknownPackets
+          setting now saves unknown/corrupt packets as real Arkime sessions.
 ## Release
   - Node 22.22.0
   - #3342 Container based on Debian 13 now
@@ -95,6 +97,12 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #3566 fix the sessions length being off by 1ms sometimes
   - #3583 Fix community_id for v4 sessions with same src/dst port sorting
   - #3591 geoLite2Country setting now looks for City file first by default
+  - #3618 Fix S3 scheme prefix handling
+  - #3618 Fix S3 scheme not process over 1000 S3 items
+  - #3620 Simple DNS RRSIG/DS/NSEC parsing
+  - #3622 Added disableIp4Defrag setting
+  - #3623 Initial ES-IS protocol support
+  - #3624 saveUnknownPackets supports common strings
 ## Capture/Viewer
   - #3197 new sessionsStarted and sessionsPresent in files tab
   - #3210 new vlan.dot1q and vlan.dot1ad expressions
@@ -104,6 +112,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #3464 Added id for dhcpv6
   - #3465 Added dhcp.requestIp
   - #3566 New packetRange field to support spanning timeline display
+  - #3601 Save corrupt and unknown sessions as real Arkime sessions based on saveUnknownPackets
 ## Viewer
   - #3326 BIG search expression
   - #3343 Basic internationalization support
@@ -146,6 +155,8 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #3435 New wise urlapi source
 ## db.pl
   - #3581 New db.pl show-nodes command
+  - #3600 The init/wipe/upgrade commands warn if using different settings
+  - #3603 Support repairing bad mapping with stats index
 
 5.8.3 2025/12/02
 ## Release
