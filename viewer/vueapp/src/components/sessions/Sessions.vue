@@ -592,7 +592,7 @@ SPDX-License-Identifier: Apache-2.0
                     :opened="session.expanded"
                     @toggle="toggleSessionDetail(session)" />
                   <span v-if="session.ipProtocol === 0">
-                    notip
+                    not-ip
                   </span>
                   <arkime-session-field
                     v-else

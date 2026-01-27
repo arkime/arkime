@@ -53,6 +53,7 @@ SNMPv2c_get_requests.pcap - https://packetlife.net/media/captures/SNMPv2c_get_re
 wireshark-smb-on-windows10.pcap - https://wiki.wireshark.org/uploads/__moin_import__/attachments/SampleCaptures/smb-on-windows-10.pcapng
 smtp-decrypted.pcap - https://github.com/arkime/arkime/issues/2348#issuecomment-2724473629
 wireshark-dhcpv6 - https://wiki.wireshark.org/uploads/__moin_import__/attachments/SampleCaptures/DHCPv6.pcap
+tds7.pcap - https://gitlab.com/-/project/7898047/uploads/0c00d65dbde92a5bda7827561846f132/sql-login-transaction.cap
 
 
 arkime_test.pcap prompt:
