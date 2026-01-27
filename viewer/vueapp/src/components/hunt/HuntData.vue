@@ -45,6 +45,7 @@ SPDX-License-Identifier: Apache-2.0
             :prepend="$t('hunts.jobDescription')">
             <b-form-input
               v-model="newDescription"
+              @keyup.enter="updateJobDescription"
               :placeholder="$t('hunts.jobDescriptionPlaceholder')" />
             <b-button
               variant="warning"

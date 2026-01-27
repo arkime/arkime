@@ -1148,13 +1148,7 @@ export default {
       job.loading = true;
 
       HuntService.pause(job.id, this.query.cluster).then((response) => {
-        if (job.status === 'running') {
-          this.loadData();
-          return;
-        }
-        job.status = 'paused';
-        job.loading = false;
-        this.calculateQueue();
+        this.loadData();
       }).catch((error) => {
         job.loading = false;
         this.setErrorForList('results', error.text || String(error));
@@ -1221,6 +1215,8 @@ export default {
       this.jobNotifier = job.notifier;
       this.jobSearchType = job.searchType;
       this.jobDescription = job.description;
+      this.jobUsers = job.users?.join(',') || '';
+      this.jobRoles = job.roles || [];
       this.createFormOpened = true;
     },
     repeatJob: function (job) {
