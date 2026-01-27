@@ -87,9 +87,7 @@ SPDX-License-Identifier: Apache-2.0
                       <BTooltip
                         target="openAllSessions"
                         noninteractive
-                        placement="right"
-                        boundary="viewport"
-                        teleport-to="body">
+                        placement="right">
                         {{ $t('sessions.sessions.openAll') }}
                       </BTooltip>
                     </button>
@@ -103,9 +101,7 @@ SPDX-License-Identifier: Apache-2.0
                     <BTooltip
                       target="closeAllSessions"
                       noninteractive
-                      placement="right"
-                      boundary="viewport"
-                      teleport-to="body">
+                      placement="right">
                       {{ $t('sessions.sessions.closeAll') }}
                     </BTooltip>
                   </button>
@@ -119,9 +115,7 @@ SPDX-License-Identifier: Apache-2.0
                     <BTooltip
                       target="fitTable"
                       noninteractive
-                      placement="right"
-                      boundary="viewport"
-                      teleport-to="body">
+                      placement="right">
                       {{ $t('sessions.sessions.fitTable') }}
                     </BTooltip>
                   </button>
@@ -144,7 +138,6 @@ SPDX-License-Identifier: Apache-2.0
                   no-caret
                   size="sm"
                   teleport-to="body"
-                  boundary="viewport"
                   menu-class="col-dropdown-menu"
                   class="col-dropdown d-inline-block"
                   variant="theme-secondary">
@@ -155,9 +148,7 @@ SPDX-License-Identifier: Apache-2.0
                       <BTooltip
                         target="colConfigMenu"
                         noninteractive
-                        placement="right"
-                        boundary="viewport"
-                        teleport-to="body">{{ $t('sessions.sessions.customColumnMsg') }}</BTooltip>
+                        placement="right">{{ $t('sessions.sessions.customColumnMsg') }}</BTooltip>
                     </span>
                   </template>
                   <b-dropdown-header header-class="p-1">
@@ -191,9 +182,7 @@ SPDX-License-Identifier: Apache-2.0
                       <BTooltip
                         target="colConfigDefault"
                         noninteractive
-                        placement="right"
-                        boundary="viewport"
-                        teleport-to="body">
+                        placement="right">
                         {{ $t('sessions.sessions.customColumnReset') }}
                       </BTooltip>
                     </b-dropdown-item>
@@ -216,9 +205,7 @@ SPDX-License-Identifier: Apache-2.0
                         <BTooltip
                           target="updateColumnConfiguration"
                           noninteractive
-                          placement="right"
-                          boundary="viewport"
-                          teleport-to="body">
+                          placement="right">
                           {{ $t('sessions.sessions.customColumnUpdate') }}
                         </BTooltip>
                       </button>
@@ -269,7 +256,6 @@ SPDX-License-Identifier: Apache-2.0
                       no-caret
                       size="sm"
                       teleport-to="body"
-                      boundary="viewport"
                       variant="theme-secondary"
                       menu-class="col-dropdown-menu"
                       class="info-vis-menu pull-right col-dropdown">
@@ -280,9 +266,7 @@ SPDX-License-Identifier: Apache-2.0
                           <BTooltip
                             target="infoConfigMenuSave"
                             noninteractive
-                            placement="right"
-                            boundary="viewport"
-                            teleport-to="body">{{ $t('sessions.sessions.customInfoMsg') }}</BTooltip>
+                            placement="right">{{ $t('sessions.sessions.customInfoMsg') }}</BTooltip>
                         </span>
                       </template>
                       <b-dropdown-header header-class="p-1">
@@ -313,9 +297,7 @@ SPDX-License-Identifier: Apache-2.0
                         <BTooltip
                           target="infodefault"
                           noninteractive
-                          placement="right"
-                          boundary="viewport"
-                          teleport-to="body">
+                          placement="right">
                           {{ $t('sessions.sessions.customInfoReset') }}
                         </BTooltip>
                       </b-dropdown-item>
@@ -344,9 +326,7 @@ SPDX-License-Identifier: Apache-2.0
                             <BTooltip
                               target="updateInfoFieldConfiguration"
                               noninteractive
-                              placement="right"
-                              boundary="viewport"
-                              teleport-to="body">
+                              placement="right">
                               {{ $t('sessions.sessions.customInfoUpdate') }}
                             </BTooltip>
                           </button>
@@ -378,7 +358,6 @@ SPDX-License-Identifier: Apache-2.0
                       no-caret
                       size="sm"
                       teleport-to="body"
-                      boundary="viewport"
                       menu-class="col-dropdown-menu"
                       class="info-vis-menu pull-right col-dropdown me-1"
                       variant="theme-primary"
@@ -391,9 +370,7 @@ SPDX-License-Identifier: Apache-2.0
                           <BTooltip
                             target="infoConfigMenu"
                             noninteractive
-                            placement="right"
-                            boundary="viewport"
-                            teleport-to="body">
+                            placement="right">
                             {{ $t('sessions.sessions.toggleInfoFields') }}
                           </BTooltip>
                         </span>
@@ -434,9 +411,7 @@ SPDX-License-Identifier: Apache-2.0
                                 v-if="field.help"
                                 :target="key + k + 'infoitem'"
                                 noninteractive
-                                placement="right"
-                                boundary="viewport"
-                                teleport-to="body">{{ field.help }}</BTooltip>
+                                placement="right">{{ field.help }}</BTooltip>
                             </b-dropdown-item>
                           </template>
                         </template>
@@ -457,7 +432,6 @@ SPDX-License-Identifier: Apache-2.0
                     no-flip
                     size="sm"
                     teleport-to="body"
-                    boundary="viewport"
                     menu-class="col-dropdown-menu"
                     class="pull-right col-dropdown">
                     <b-dropdown-item

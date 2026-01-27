@@ -61,9 +61,7 @@ SPDX-License-Identifier: Apache-2.0
                     <BTooltip
                       target="spiViewFieldConfigSave"
                       placement="right"
-                      noninteractive
-                      teleport-to="body"
-                      boundary="viewport"><span v-i18n-btip="'spiview.'" /></BTooltip>
+                      noninteractive><span v-i18n-btip="'spiview.'" /></BTooltip>
                   </button>
                 </div>
               </b-dropdown-header>
@@ -79,9 +77,7 @@ SPDX-License-Identifier: Apache-2.0
                   <BTooltip
                     target="spiViewConfigDefault"
                     noninteractive
-                    placement="right"
-                    boundary="viewport"
-                    teleport-to="body">
+                    placement="right">
                     {{ $t('spiview.spiViewConfigDefaultTip') }}
                   </BTooltip>
                 </b-dropdown-item>
@@ -283,7 +279,6 @@ SPDX-License-Identifier: Apache-2.0
                           class="me-1 mb-1 field-dropdown"
                           :text="field.friendlyName"
                           :id="`spiViewField-${field.dbField}`"
-                          boundary="viewport"
                           @split-click="toggleSpiData(field, true, true)"
                           :class="{'active':categoryObjects[category].spi[field.dbField] && categoryObjects[category].spi[field.dbField].active}">
                           <b-dropdown-item

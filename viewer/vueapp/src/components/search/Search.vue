@@ -12,7 +12,6 @@ SPDX-License-Identifier: Apache-2.0
         target="hideViz"
         :delay="{show: 0, hide: 0}"
         noninteractive
-        boundary="viewport"
         placement="left"
         v-if="basePath !== 'spigraph'">
         {{ $t(!hideViz ? 'search.speedUpTip' : 'search.showGraphTip') }}
@@ -22,7 +21,6 @@ SPDX-License-Identifier: Apache-2.0
           target="fetchVizQuery"
           :delay="{show: 0, hide: 0}"
           noninteractive
-          boundary="viewport"
           placement="left">
           {{ $t('search.fetchVizQueryTip') }}
         </BTooltip>
@@ -30,7 +28,6 @@ SPDX-License-Identifier: Apache-2.0
           target="fetchVizSession"
           :delay="{show: 0, hide: 0}"
           noninteractive
-          boundary="viewport"
           placement="left">
           {{ $t('search.fetchVizSessionTip') }}
         </BTooltip>
@@ -38,7 +35,6 @@ SPDX-License-Identifier: Apache-2.0
           target="fetchVizBrowser"
           :delay="{show: 0, hide: 0}"
           noninteractive
-          boundary="viewport"
           placement="left">
           {{ $t('search.fetchVizBrowserTip') }}
         </BTooltip>

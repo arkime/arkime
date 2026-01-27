@@ -74,9 +74,7 @@ SPDX-License-Identifier: Apache-2.0
           <BTooltip
             :target="getTarget('toggleCompression')"
             noninteractive
-            boundary="viewport"
-            placement="right"
-            teleport-to="body">
+            placement="right">
             {{ $t(params.gzip ? 'sessions.packetOptions.disableUncompressing' : 'sessions.packetOptions.enableUncompressingTip') }}
           </BTooltip>
         </b-dropdown-item>
@@ -88,9 +86,7 @@ SPDX-License-Identifier: Apache-2.0
           <BTooltip
             :target="getTarget('toggleImages')"
             noninteractive
-            boundary="viewport"
-            placement="right"
-            teleport-to="body">
+            placement="right">
             {{ $t(params.image ? 'sessions.packetOptions.hideFiles' : 'sessions.packetOptions.showFilesTip') }}
           </BTooltip>
         </b-dropdown-item>
@@ -120,7 +116,6 @@ SPDX-License-Identifier: Apache-2.0
           <BTooltip
             :target="getTarget('toggleSrc')"
             noninteractive
-            boundary="viewport"
             placement="bottom">
             {{ $t('sessions.packetOptions.srcVisTip') }}
           </BTooltip>
@@ -135,7 +130,6 @@ SPDX-License-Identifier: Apache-2.0
           <BTooltip
             :target="getTarget('toggleDst')"
             noninteractive
-            boundary="viewport"
             placement="bottom">
             {{ $t('sessions.packetOptions.dstVisTip') }}
           </BTooltip>
@@ -161,7 +155,6 @@ SPDX-License-Identifier: Apache-2.0
           <BTooltip
             :target="`decodings${key}`"
             noninteractive
-            boundary="viewport"
             placement="bottom">
             {{ $t('sessions.packetOptions.toggleDecodingTip', value.name) }}
           </BTooltip>

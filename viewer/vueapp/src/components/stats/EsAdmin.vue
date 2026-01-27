@@ -119,8 +119,7 @@ SPDX-License-Identifier: Apache-2.0
               class="btn btn-warning">
               <span class="fa fa-undo" />
               <BTooltip
-                :target="`restore-${setting.key}`"
-                teleport-to="body">
+                :target="`restore-${setting.key}`">
                 {{ $t('stats.esAdmin.restoreAllocationTip') }}
               </BTooltip>
             </button>
