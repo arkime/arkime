@@ -217,17 +217,20 @@ exports.upgrade = async function (parliament, issues, Parliament) {
   const defaults = Parliament.settingsDefault.general;
   const general = parliament.settings.general;
 
-  if (!general.outOfDate) general.outOfDate = defaults.outOfDate;
-  if (!general.noPackets) general.noPackets = defaults.noPackets;
-  if (!general.noPacketsLength) general.noPacketsLength = defaults.noPacketsLength;
-  if (!general.esQueryTimeout) general.esQueryTimeout = defaults.esQueryTimeout;
-  if (!general.removeIssuesAfter) general.removeIssuesAfter = defaults.removeIssuesAfter;
-  if (!general.removeAcknowledgedAfter) general.removeAcknowledgedAfter = defaults.removeAcknowledgedAfter;
+  // Numbers - use === undefined to allow 0 as valid value
+  if (general.outOfDate === undefined) general.outOfDate = defaults.outOfDate;
+  if (general.noPackets === undefined) general.noPackets = defaults.noPackets;
+  if (general.noPacketsLength === undefined) general.noPacketsLength = defaults.noPacketsLength;
+  if (general.esQueryTimeout === undefined) general.esQueryTimeout = defaults.esQueryTimeout;
+  if (general.removeIssuesAfter === undefined) general.removeIssuesAfter = defaults.removeIssuesAfter;
+  if (general.removeAcknowledgedAfter === undefined) general.removeAcknowledgedAfter = defaults.removeAcknowledgedAfter;
   if (general.lowDiskSpace === undefined) general.lowDiskSpace = defaults.lowDiskSpace;
-  if (!general.lowDiskSpaceType) general.lowDiskSpaceType = defaults.lowDiskSpaceType;
   if (general.lowDiskSpaceES === undefined) general.lowDiskSpaceES = defaults.lowDiskSpaceES;
-  if (!general.lowDiskSpaceESType) general.lowDiskSpaceESType = defaults.lowDiskSpaceESType;
-  if (!general.hostname) general.hostname = os.hostname();
+
+  // Strings - use typeof to check for missing/wrong type
+  if (typeof general.lowDiskSpaceType !== 'string') general.lowDiskSpaceType = defaults.lowDiskSpaceType;
+  if (typeof general.lowDiskSpaceESType !== 'string') general.lowDiskSpaceESType = defaults.lowDiskSpaceESType;
+  if (typeof general.hostname !== 'string') general.hostname = os.hostname();
 
   if (parliament) { // add parliament to db
     delete parliament.version; // don't need version anymore
