@@ -260,10 +260,10 @@ jobs:
             ./easybutton-build.sh --dir /usr/local/share/arkime ${{ matrix.buildopt }} --rminstall --nothirdparty
             ls -l capture/capture
             INSTALL_BUNDLE=bundle gmake install
-            export ARKIME_VERSION=`sed 's/.*"\(.*\)\".*$/\1/' /usr/local/share/arkime/common/version.js | head -n 1`
+            export ARKIME_VERSION="${{ github.event.inputs.release_tag }}"
             arch=$(uname -m | sed s/aarch64/arm64/ | sed s/x86_64/amd64/)
-            ./release/freebsdpkg.sh $ARKIME_VERSION ${{ github.run_id }} ${{ matrix.version }} /usr/local/share/arkime
-            #mv arkime_*.pkg arkime-main.${{matrix.version}}.pkg || true
+            ./release/freebsdpkg.sh $ARKIME_VERSION ${{ matrix.version }} ${{ matrix.version }} /usr/local/share/arkime
+            # mv arkime_*.pkg arkime-main.${{matrix.version}}.pkg || true
 
             ls -l *.pkg
 
