@@ -7,6 +7,8 @@
  */
 'use strict';
 
+const os = require('os');
+
 // 1 - first version of parliament
 // 2 - cluster.type instead of cluster.disabled/multiviewer
 // 3 - more than one of each type of notifier
@@ -203,6 +205,29 @@ exports.upgrade = async function (parliament, issues, Parliament) {
 
     delete parliament.settings.notifiers;
   }
+
+  // Fill in missing settings with defaults BEFORE saving to ES
+  if (!parliament.settings) {
+    parliament.settings = Parliament.settingsDefault;
+  }
+  if (!parliament.settings.general) {
+    parliament.settings.general = Parliament.settingsDefault.general;
+  }
+
+  const defaults = Parliament.settingsDefault.general;
+  const general = parliament.settings.general;
+
+  if (!general.outOfDate) general.outOfDate = defaults.outOfDate;
+  if (!general.noPackets) general.noPackets = defaults.noPackets;
+  if (!general.noPacketsLength) general.noPacketsLength = defaults.noPacketsLength;
+  if (!general.esQueryTimeout) general.esQueryTimeout = defaults.esQueryTimeout;
+  if (!general.removeIssuesAfter) general.removeIssuesAfter = defaults.removeIssuesAfter;
+  if (!general.removeAcknowledgedAfter) general.removeAcknowledgedAfter = defaults.removeAcknowledgedAfter;
+  if (general.lowDiskSpace === undefined) general.lowDiskSpace = defaults.lowDiskSpace;
+  if (!general.lowDiskSpaceType) general.lowDiskSpaceType = defaults.lowDiskSpaceType;
+  if (general.lowDiskSpaceES === undefined) general.lowDiskSpaceES = defaults.lowDiskSpaceES;
+  if (!general.lowDiskSpaceESType) general.lowDiskSpaceESType = defaults.lowDiskSpaceESType;
+  if (!general.hostname) general.hostname = os.hostname();
 
   if (parliament) { // add parliament to db
     delete parliament.version; // don't need version anymore
