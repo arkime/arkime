@@ -51,6 +51,10 @@ async function initializeApp() {
       BTooltip: {
         boundary: 'viewport',
         teleportTo: 'body'
+      },
+      BDropdown: {
+        boundary: 'viewport',
+        teleportTo: 'body'
       }
     }
   }));

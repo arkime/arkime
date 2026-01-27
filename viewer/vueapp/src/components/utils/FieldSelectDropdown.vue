@@ -4,7 +4,6 @@
     no-flip
     no-caret
     size="sm"
-    teleport-to="body"
     menu-class="field-dropdown-menu"
     class="field-dropdown d-inline-block"
     :variant="buttonVariant"

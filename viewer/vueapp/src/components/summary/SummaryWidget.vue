@@ -338,7 +338,7 @@ defineEmits(['export', 'change-mode', 'change-metric', 'show-tooltip', 'remove-f
   padding: 1rem;
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-  overflow-x: hidden; /* Prevent widget from expanding page */
+  overflow: visible; /* Allow dropdowns to overflow */
   display: flex;
   flex-direction: column;
   height: 100%;
@@ -350,7 +350,7 @@ defineEmits(['export', 'change-mode', 'change-metric', 'show-tooltip', 'remove-f
   display: flex;
   flex-direction: column;
   min-height: 400px;
-  overflow: hidden; /* Prevent chart content from visually overflowing its container */
+  overflow: visible; /* Allow dropdowns to overflow */
 }
 
 .loading-widget {
