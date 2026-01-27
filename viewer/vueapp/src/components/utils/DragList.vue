@@ -11,7 +11,7 @@ SPDX-License-Identifier: Apache-2.0
     @drag="drag($event, index)"
     @dragover.prevent="dragOver($event, index)"
     @click.stop.prevent="doNothing"
-    class="badge bg-secondary me-1 mt-1"
+    class="badge bg-secondary me-1"
     :class="{dragging:dragging > -1}">
     {{ field.friendlyName }}
     <button
@@ -64,6 +64,12 @@ export default {
 </script>
 
 <style scoped>
+label.badge {
+  padding: 0.3rem 0.5rem;
+  font-size: 0.875rem;
+  display: inline-flex;
+  align-items: center;
+}
 label:hover {
   cursor: grab;
 }
