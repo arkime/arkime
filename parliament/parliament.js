@@ -19,7 +19,6 @@ const https = require('https');
 const fs = require('fs');
 const favicon = require('serve-favicon');
 const bp = require('body-parser');
-const os = require('os');
 const helmet = require('helmet');
 const uuid = require('uuid').v4;
 const upgrade = require('./upgrade');
@@ -1090,46 +1089,6 @@ async function initializeParliament () {
         }
       }
     }
-
-    if (!parliamentFile.settings) {
-      parliamentFile.settings = Parliament.settingsDefault;
-    }
-    if (!parliamentFile.settings.general) {
-      parliamentFile.settings.general = Parliament.settingsDefault.general;
-    }
-    if (!parliamentFile.settings.general.outOfDate) {
-      parliamentFile.settings.general.outOfDate = Parliament.settingsDefault.general.outOfDate;
-    }
-    if (!parliamentFile.settings.general.noPackets) {
-      parliamentFile.settings.general.noPackets = Parliament.settingsDefault.general.noPackets;
-    }
-    if (!parliamentFile.settings.general.noPacketsLength) {
-      parliamentFile.settings.general.noPacketsLength = Parliament.settingsDefault.general.noPacketsLength;
-    }
-    if (!parliamentFile.settings.general.esQueryTimeout) {
-      parliamentFile.settings.general.esQueryTimeout = Parliament.settingsDefault.general.esQueryTimeout;
-    }
-    if (!parliamentFile.settings.general.removeIssuesAfter) {
-      parliamentFile.settings.general.removeIssuesAfter = Parliament.settingsDefault.general.removeIssuesAfter;
-    }
-    if (!parliamentFile.settings.general.removeAcknowledgedAfter) {
-      parliamentFile.settings.general.removeAcknowledgedAfter = Parliament.settingsDefault.general.removeAcknowledgedAfter;
-    }
-    if (parliamentFile.settings.general.lowDiskSpace === undefined) {
-      parliamentFile.settings.general.lowDiskSpace = Parliament.settingsDefault.general.lowDiskSpace;
-    }
-    if (!parliamentFile.settings.general.lowDiskSpaceType) {
-      parliamentFile.settings.general.lowDiskSpaceType = Parliament.settingsDefault.general.lowDiskSpaceType;
-    }
-    if (parliamentFile.settings.general.lowDiskSpaceES === undefined) {
-      parliamentFile.settings.general.lowDiskSpaceES = Parliament.settingsDefault.general.lowDiskSpaceES;
-    }
-    if (!parliamentFile.settings.general.lowDiskSpaceESType) {
-      parliamentFile.settings.general.lowDiskSpaceESType = Parliament.settingsDefault.general.lowDiskSpaceESType;
-    }
-    if (!parliamentFile.settings.general.hostname) {
-      parliamentFile.settings.general.hostname = os.hostname();
-    }
   }
 
   if (ArkimeConfig.debug) {
@@ -1332,13 +1291,13 @@ async function getStats (cluster) {
 
       for (const stat of stats.data) {
         // sum delta bytes per second
-        if (stat.deltaBytesPerSec) {
-          cluster.deltaBPS += stat.deltaBytesPerSec;
+        if (stat.deltaBPS) {
+          cluster.deltaBPS += stat.deltaBPS;
         }
 
         // sum delta total dropped per second
-        if (stat.deltaTotalDroppedPerSec) {
-          cluster.deltaTDPS += stat.deltaTotalDroppedPerSec;
+        if (stat.deltaTDPS) {
+          cluster.deltaTDPS += stat.deltaTDPS;
         }
 
         if (stat.monitoring) {
