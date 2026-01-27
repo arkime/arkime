@@ -137,7 +137,6 @@ SPDX-License-Identifier: Apache-2.0
                   no-flip
                   no-caret
                   size="sm"
-                  teleport-to="body"
                   menu-class="col-dropdown-menu"
                   class="col-dropdown d-inline-block"
                   variant="theme-secondary">
@@ -255,7 +254,6 @@ SPDX-License-Identifier: Apache-2.0
                       no-flip
                       no-caret
                       size="sm"
-                      teleport-to="body"
                       variant="theme-secondary"
                       menu-class="col-dropdown-menu"
                       class="info-vis-menu pull-right col-dropdown">
@@ -357,7 +355,6 @@ SPDX-License-Identifier: Apache-2.0
                       no-flip
                       no-caret
                       size="sm"
-                      teleport-to="body"
                       menu-class="col-dropdown-menu"
                       class="info-vis-menu pull-right col-dropdown me-1"
                       variant="theme-primary"
@@ -431,7 +428,6 @@ SPDX-License-Identifier: Apache-2.0
                     right
                     no-flip
                     size="sm"
-                    teleport-to="body"
                     menu-class="col-dropdown-menu"
                     class="pull-right col-dropdown">
                     <b-dropdown-item

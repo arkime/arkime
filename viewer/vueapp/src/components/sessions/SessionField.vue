@@ -15,7 +15,7 @@ SPDX-License-Identifier: Apache-2.0
           variant="danger"
           :target="`field-tooltip-${expr}-${uuid}`">
           <h6 class="mb-1">
-            {{ $t('sessions.field.cantLocate') }}: <strong>{{ this.expr }}</strong>
+            {{ $t('sessions.field.cantLocate') }}: <strong>{{ expr }}</strong>
           </h6>
           {{ $t('sessions.field.viewerCrashed') }}
           <a
@@ -37,15 +37,16 @@ SPDX-License-Identifier: Apache-2.0
         <!-- normal parsed value -->
         <span
           v-if="!time"
-          class="field cursor-pointer">
+          class="field cursor-pointer"
+          :class="{'dropdown-open': openDropdownId === pd.id}">
           <a
-            @click="toggleDropdown"
+            @click="toggleDropdown(pd)"
             class="value">
             <span class="all-copy">{{ pd.value }}</span><span class="fa fa-caret-down" />
           </a>
           <!-- clickable field menu -->
           <div
-            v-if="isOpen"
+            v-if="openDropdownId === pd.id"
             class="session-field-dropdown"
             :class="{'pull-right':!pullLeft,'pull-left':pullLeft}">
             <b-dropdown-item
@@ -249,11 +250,19 @@ export default {
   data: function () {
     return {
       isOpen: false,
+      openDropdownId: null,
+      openDropdownPd: null,
       menuItems: {},
       asyncMenuItems: {},
       arkimeClickables: undefined,
       menuItemTimeout: null
     };
+  },
+  mounted () {
+    document.addEventListener('click', this.handleClickOutside);
+  },
+  beforeUnmount () {
+    document.removeEventListener('click', this.handleClickOutside);
   },
   watch: {
     // watch route update of time params to rebuild the menu
@@ -279,7 +288,8 @@ export default {
       return false;
     },
     sep () {
-      return this.session[this.field.dbField].includes(':') ? '.' : ':';
+      const val = this.session?.[this.field?.dbField];
+      return val && val.includes(':') ? '.' : ':';
     },
     parsed: function () {
       if (!this.field || this.value === '' || this.value === undefined) { return; }
@@ -345,6 +355,27 @@ export default {
   methods: {
     /* exposed page functions ---------------------------------------------- */
     /**
+     * Closes the dropdown and clears related state
+     */
+    closeDropdown: function () {
+      this.isOpen = false;
+      this.openDropdownId = null;
+      this.openDropdownPd = null;
+      this.menuItems = {};
+      this.asyncMenuItems = {};
+    },
+    /**
+     * Handles clicks outside the dropdown to close it
+     * @param {Event} evt The click event
+     */
+    handleClickOutside (evt) {
+      if (!this.isOpen) return;
+      // Check if click is inside this component's element
+      if (!this.$el.contains(evt.target)) {
+        this.closeDropdown();
+      }
+    },
+    /**
      * Triggered when a time field is clicked
      * Updates the vuex store start/stop time in the search bar
      * @param {string} field The field name ('starttime' || 'stoptime')
@@ -364,9 +395,21 @@ export default {
     /**
      * Toggles the dropdown menu for a field
      * If the dropdown menu is opened for the first time, get more menu options
+     * @param {Object} pd The parsed data object for the clicked value
      */
-    toggleDropdown: function () {
+    toggleDropdown: function (pd) {
+      // If clicking on a different value, close current and open new
+      if (this.openDropdownId && this.openDropdownId !== pd.id) {
+        this.isOpen = false;
+        this.openDropdownId = null;
+        this.openDropdownPd = null;
+        this.menuItems = {};
+        this.asyncMenuItems = {};
+      }
+
       this.isOpen = !this.isOpen;
+      this.openDropdownId = this.isOpen ? pd.id : null;
+      this.openDropdownPd = this.isOpen ? pd : null;
 
       if (this.isOpen) {
         if (!this.arkimeClickables) {
@@ -385,6 +428,10 @@ export default {
           // Rebuild menu for the current value
           this.buildMenu();
         }
+      } else {
+        // Clear menu items when closing
+        this.menuItems = {};
+        this.asyncMenuItems = {};
       }
     },
     /**
@@ -395,7 +442,7 @@ export default {
      * @param {string} op     The relational operator
      */
     fieldClick: function (field, value, op, andor) {
-      this.isOpen = false; // close the dropdown
+      this.closeDropdown(); // close the dropdown
 
       value = value.toString();
 
@@ -431,7 +478,7 @@ export default {
      * @param {boolean} root  Whether the expression should be added as the root expression
      */
     newTabSessions: function (field, value, op, root) {
-      this.isOpen = false; // close the dropdown
+      this.closeDropdown(); // close the dropdown
 
       value = value.toString();
 
@@ -468,7 +515,7 @@ export default {
         return;
       }
       navigator.clipboard.writeText(value);
-      this.isOpen = false;
+      this.closeDropdown();
     },
     /* helper functions ---------------------------------------------------- */
     /**
@@ -526,13 +573,14 @@ export default {
     },
     /* Builds the dropdown menu items to display */
     buildMenu: function () {
-      if (!this.parsed[0].value || !this.arkimeClickables) { return; }
+      const pd = this.openDropdownPd;
+      if (!pd || !pd.value || !this.arkimeClickables) { return; }
       // Clear previous menu items before rebuilding for current value
       this.menuItems = {};
       this.asyncMenuItems = {};
       const info = this.getInfo();
       const session = this.getSession();
-      const text = this.parsed[0].queryVal.toString();
+      const text = pd.queryVal.toString();
       const url = text.indexOf('?') === -1 ? text : text.substring(0, text.indexOf('?'));
       let host = url;
       let pos = url.indexOf('//');
@@ -684,7 +732,8 @@ export default {
   margin-right: 6px;
 }
 
-.field:hover {
+.field:hover,
+.field.dropdown-open {
   z-index: 4;
   background-color: var(--color-white);
   border: 1px solid var(--color-gray-light);
@@ -702,12 +751,8 @@ export default {
           user-select: all;
 }
 
-.field:hover ul.session-field-dropdown {
-  opacity: 1;
-  visibility: visible;
-}
-
-.field:hover .fa {
+.field:hover .fa,
+.field.dropdown-open .fa {
   opacity: 1;
   visibility: visible;
 }
@@ -722,13 +767,10 @@ export default {
 .session-field-dropdown {
   font-size: 12px;
   position: absolute;
-  opacity: 0;
-  visibility: hidden;
   max-width: 700px;
   min-width: 160px;
   max-height: 300px;
   overflow-y: auto;
-  position: absolute;
   z-index: 1000;
   display: block;
   padding: 0;
@@ -745,11 +787,6 @@ export default {
 
           box-shadow: 0 6px 12px -3px #333;
   -webkit-box-shadow: 0 6px 12px -3px #333;
-}
-
-.field:hover .session-field-dropdown {
-  opacity: 1;
-  visibility: visible;
 }
 
 .session-field-dropdown.pull-right {

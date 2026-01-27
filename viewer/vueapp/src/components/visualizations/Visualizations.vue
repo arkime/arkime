@@ -153,7 +153,6 @@ SPDX-License-Identifier: Apache-2.0
                 </label>
                 <b-dropdown
                   size="sm"
-                  boundary="body"
                   variant="default"
                   class="pan-dropdown">
                   <template #button-content>
