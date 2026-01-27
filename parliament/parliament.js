@@ -1332,13 +1332,13 @@ async function getStats (cluster) {
 
       for (const stat of stats.data) {
         // sum delta bytes per second
-        if (stat.deltaBytesPerSec) {
-          cluster.deltaBPS += stat.deltaBytesPerSec;
+        if (stat.deltaBPS) {
+          cluster.deltaBPS += stat.deltaBPS;
         }
 
         // sum delta total dropped per second
-        if (stat.deltaTotalDroppedPerSec) {
-          cluster.deltaTDPS += stat.deltaTotalDroppedPerSec;
+        if (stat.deltaTDPS) {
+          cluster.deltaTDPS += stat.deltaTDPS;
         }
 
         if (stat.monitoring) {
