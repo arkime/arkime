@@ -64,7 +64,7 @@ include:
   - version: "arch-x86_64"
     container: andywick/arkime-build-arch:6.0.0-3
     buildopt: "--kafka"
-    fpmdeps: "-d libmaxminddb -d libpcap -d yara -d perl-http-message -d perl-lwp-protocol-https -d perl-json -d libnet -d lua -d zstd -d openssl-1.1 -d pcre"
+    fpmdeps: "-d libmaxminddb -d libpcap -d yara -d perl-http-message -d perl-lwp-protocol-https -d perl-json -d libnet -d lua -d zstd -d openssl -d pcre"
     package: arch
     viewertest: normal
     prbuild: true

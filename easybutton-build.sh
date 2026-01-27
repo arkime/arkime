@@ -99,7 +99,7 @@ do
     echo "--clean             = Do a 'make clean' first"
     echo "--rminstall         = Do a 'rm -rf <dir>' first"
     echo "--install           = Do a 'make install' at the end, adding our node to the path"
-    echo "--nonode            = Do NOT download and install nodejs into the moloch directory"
+    echo "--nonode            = Do NOT download and install nodejs into the arkime directory"
     echo "--pfring            = Build pfring support"
     echo "--daq               = Build daq support"
     echo "--thirdparty        = Build thirdparty packages when it makes sense"
@@ -280,7 +280,7 @@ if [ -f "/etc/alpine-release" ] ; then
   NODEHOST=unofficial-builds.nodejs.org
   NODEARCH="$NODEARCH-musl"
 elif [ -f "/etc/arch-release" ]; then
-    sudo pacman -Sy --noconfirm gcc make python-pip git perl perl-test-differences sudo wget gawk lua geoip yara file libpcap libmaxminddb libnet lua libtool autoconf gettext automake perl-http-message perl-lwp-protocol-https perl-json perl-socket6 perl-clone perl-html-parser zstd openssl-1.1 pcre librdkafka openssl pkg-config
+    sudo pacman -Sy --noconfirm gcc make python-pip git perl perl-test-differences sudo wget gawk lua geoip yara file libpcap libmaxminddb libnet lua libtool autoconf gettext automake perl-http-message perl-lwp-protocol-https perl-json perl-socket6 perl-clone perl-html-parser zstd pcre librdkafka openssl pkg-config
 fi
 
 # do autoconf
