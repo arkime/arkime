@@ -26,7 +26,7 @@
 #define TZSP_PORT 37008
 #define TZSP_VERSION 1
 #define TZSP_TYPE_RX_PACKET 0
-#define SNAP_LEN 18000
+#define SNAP_LEN 64000
 
 int sock_fd;
 struct sockaddr_in dest_addr;

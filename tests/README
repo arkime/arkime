@@ -54,6 +54,7 @@ wireshark-smb-on-windows10.pcap - https://wiki.wireshark.org/uploads/__moin_impo
 smtp-decrypted.pcap - https://github.com/arkime/arkime/issues/2348#issuecomment-2724473629
 wireshark-dhcpv6 - https://wiki.wireshark.org/uploads/__moin_import__/attachments/SampleCaptures/DHCPv6.pcap
 tds7.pcap - https://gitlab.com/-/project/7898047/uploads/0c00d65dbde92a5bda7827561846f132/sql-login-transaction.cap
+bacnet-stack-services.pcap - https://wiki.wireshark.org/uploads/__moin_import__/attachments/Protocols/bacnet/bacnet-stack-services.cap
 
 
 arkime_test.pcap prompt:
