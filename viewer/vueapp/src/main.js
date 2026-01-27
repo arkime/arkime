@@ -46,7 +46,14 @@ async function initializeApp() {
   app.use(store);
   app.use(router);
   app.use(i18n);
-  app.use(createBootstrap());
+  app.use(createBootstrap({
+    components: {
+      BTooltip: {
+        boundary: 'viewport',
+        teleportTo: 'body'
+      }
+    }
+  }));
 
   app.directive('has-role', HasRole);
   app.directive('has-permission', HasPermission);

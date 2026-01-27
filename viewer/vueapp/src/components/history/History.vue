@@ -113,9 +113,7 @@ SPDX-License-Identifier: Apache-2.0
             <BTooltip
               target="seeAll"
               noninteractive
-              placement="bottom"
-              boundary="viewport"
-              teleport-to="body">
+              placement="bottom">
               <span v-html="$t('history.seeAllTipHtml')" />
             </BTooltip>
             <input

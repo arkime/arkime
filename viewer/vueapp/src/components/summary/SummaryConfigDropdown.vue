@@ -16,9 +16,7 @@ SPDX-License-Identifier: Apache-2.0
           <BTooltip
             target="summary-config-dropdown-btn"
             noninteractive
-            placement="right"
-            boundary="viewport"
-            teleport-to="body">{{ $t('sessions.summary.config.configurations') }}</BTooltip>
+            placement="right">{{ $t('sessions.summary.config.configurations') }}</BTooltip>
         </span>
       </template>
       <!-- Loading indicator -->

@@ -5,7 +5,6 @@
     no-caret
     size="sm"
     teleport-to="body"
-    boundary="viewport"
     menu-class="field-dropdown-menu"
     class="field-dropdown d-inline-block"
     :variant="buttonVariant"
@@ -18,9 +17,7 @@
         <BTooltip
           :target="dropdownId"
           noninteractive
-          placement="right"
-          boundary="viewport"
-          teleport-to="body">{{ tooltipText }}</BTooltip>
+          placement="right">{{ tooltipText }}</BTooltip>
       </span>
     </template>
     <b-dropdown-header header-class="p-1">

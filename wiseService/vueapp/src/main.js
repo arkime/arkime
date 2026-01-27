@@ -31,7 +31,14 @@ async function initializeApp() {
   app.use(store);
   app.use(router);
   app.use(i18n);
-  app.use(createBootstrap());
+  app.use(createBootstrap({
+    components: {
+      BTooltip: {
+        boundary: 'viewport',
+        teleportTo: 'body'
+      }
+    }
+  }));
 
   // these globals are injected into index.ejs.html, by wiseService.js
   /* eslint-disable no-undef */

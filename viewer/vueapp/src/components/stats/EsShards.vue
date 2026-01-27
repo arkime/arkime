@@ -104,7 +104,6 @@ SPDX-License-Identifier: Apache-2.0
                     <span class="fa fa-trash fa-fw" />
                     <BTooltip
                       :target="`deleteUnassignedShards${index}`"
-                      teleport-to="body"
                       placement="right">
                       {{ $t('stats.esShards.deleteUnassignedTip') }}
                     </BTooltip>
@@ -118,7 +117,6 @@ SPDX-License-Identifier: Apache-2.0
                     <span class="fa fa-check fa-fw" />
                     <BTooltip
                       :target="`confirmDeleteUnassignedShards${index}`"
-                      teleport-to="body"
                       placement="right">
                       {{ $t('stats.esShards.confirmDeleteUnassignedTip') }}
                     </BTooltip>
