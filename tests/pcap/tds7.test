@@ -1,0 +1,154 @@
+{
+ "sessions3" : [
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 524
+    },
+    "destination" : {
+     "as" : {
+      "full" : "AS16362 7 Global Systems Limited",
+      "number" : 16362,
+      "organization" : {
+       "name" : "7 Global Systems Limited"
+      }
+     },
+     "bytes" : 808,
+     "geo" : {
+      "country_iso_code" : "GB"
+     },
+     "ip" : "217.77.3.25",
+     "mac" : [
+      "00:0c:29:c9:8f:0f"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 6,
+     "port" : 1433
+    },
+    "dstOui" : [
+     "VMware, Inc."
+    ],
+    "dstOuiCnt" : 1,
+    "dstPayload8" : "0401002500000100",
+    "dstRIR" : "RIPE",
+    "dstTTL" : [
+     128
+    ],
+    "dstTTLCnt" : 1,
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 1164995541720,
+    "initRTT" : 0,
+    "ipProtocol" : 6,
+    "lastPacket" : 1164995541734,
+    "length" : 14,
+    "network" : {
+     "bytes" : 1736,
+     "community_id" : "1:JS9fSp1KPVGHouMIqjg+kHWUvpc=",
+     "packets" : 13
+    },
+    "node" : "test",
+    "packetLen" : [
+     78,
+     78,
+     76,
+     122,
+     107,
+     304,
+     455,
+     308,
+     124,
+     76,
+     70,
+     70,
+     76
+    ],
+    "packetPos" : [
+     24,
+     102,
+     180,
+     256,
+     378,
+     485,
+     789,
+     1244,
+     1552,
+     1676,
+     1752,
+     1822,
+     1892
+    ],
+    "packetRange" : {
+     "gte" : 1164995541720,
+     "lte" : 1164995541734
+    },
+    "protocol" : [
+     "tcp",
+     "tds"
+    ],
+    "protocolCnt" : 2,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 476
+    },
+    "source" : {
+     "as" : {
+      "full" : "AS16362 7 Global Systems Limited",
+      "number" : 16362,
+      "organization" : {
+       "name" : "7 Global Systems Limited"
+      }
+     },
+     "bytes" : 928,
+     "geo" : {
+      "country_iso_code" : "GB"
+     },
+     "ip" : "217.77.3.70",
+     "mac" : [
+      "00:0c:29:4c:84:92"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 7,
+     "port" : 1040
+    },
+    "srcOui" : [
+     "VMware, Inc."
+    ],
+    "srcOuiCnt" : 1,
+    "srcPayload8" : "1201003400000000",
+    "srcRIR" : "RIPE",
+    "srcTTL" : [
+     128
+    ],
+    "srcTTLCnt" : 1,
+    "tcpflags" : {
+     "ack" : 3,
+     "dstZero" : 0,
+     "fin" : 2,
+     "psh" : 6,
+     "rst" : 0,
+     "srcZero" : 0,
+     "syn" : 1,
+     "syn-ack" : 1,
+     "urg" : 0
+    },
+    "tcpseq" : {
+     "dst" : 0,
+     "src" : 1939030513
+    },
+    "totDataBytes" : 1000,
+    "user" : [
+     "testuser"
+    ],
+    "userCnt" : 1
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-061201"
+    }
+   }
+  }
+ ]
+}
+
