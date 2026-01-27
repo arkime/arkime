@@ -1,0 +1,7 @@
+if (session.bacnet)
+  div.sessionDetailMeta.bold BACnet
+  dl.sessionDetailMeta
+    +arrayList(session.bacnet, "function", "Function", "bacnet.function")
+    +arrayList(session.bacnet, "apduType", "APDU Type", "bacnet.apdu-type")
+    +arrayList(session.bacnet, "service", "Service", "bacnet.service")
+    +arrayList(session.bacnet, "objectName", "Object Name", "bacnet.object-name")

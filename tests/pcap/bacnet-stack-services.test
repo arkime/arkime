@@ -1,0 +1,1794 @@
+{
+ "sessions3" : [
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "bacnet" : {
+     "apduType" : [
+      "unconfirmed-request"
+     ],
+     "apduTypeCnt" : 1,
+     "function" : [
+      "original-unicast"
+     ],
+     "functionCnt" : 1,
+     "objectName" : [
+      "SYNERGY",
+      "SimpleServer"
+     ],
+     "objectNameCnt" : 2,
+     "service" : [
+      "i-am",
+      "i-have",
+      "time-synchronization",
+      "unconfirmed-cov-notification",
+      "who-has",
+      "who-is"
+     ],
+     "serviceCnt" : 6
+    },
+    "client" : {
+     "bytes" : 346
+    },
+    "destination" : {
+     "bytes" : 0,
+     "ip" : "192.168.0.255",
+     "mac" : [
+      "ff:ff:ff:ff:ff:ff"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 0,
+     "port" : 47808
+    },
+    "dstRIR" : "ARIN",
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 1159067115467,
+    "ipProtocol" : 17,
+    "lastPacket" : 1159068101021,
+    "length" : 985554,
+    "network" : {
+     "bytes" : 1060,
+     "community_id" : "1:MpUBdbr7IbtDwHCPg67IwGfJ7/s=",
+     "packets" : 17
+    },
+    "node" : "test",
+    "packetLen" : [
+     69,
+     80,
+     75,
+     80,
+     74,
+     74,
+     74,
+     74,
+     74,
+     95,
+     74,
+     74,
+     74,
+     82,
+     82,
+     82,
+     95
+    ],
+    "packetPos" : [
+     24,
+     93,
+     339,
+     580,
+     736,
+     5810,
+     6285,
+     6753,
+     7221,
+     7709,
+     7880,
+     8351,
+     8825,
+     9300,
+     10078,
+     10555,
+     11028
+    ],
+    "packetRange" : {
+     "gte" : 1159067115467,
+     "lte" : 1159068101021
+    },
+    "protocol" : [
+     "bacnet",
+     "udp"
+    ],
+    "protocolCnt" : 2,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 0
+    },
+    "source" : {
+     "bytes" : 1060,
+     "ip" : "192.168.0.13",
+     "mac" : [
+      "00:0c:6e:b0:3c:15"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 17,
+     "port" : 47808
+    },
+    "srcOui" : [
+     "ASUSTek COMPUTER INC."
+    ],
+    "srcOuiCnt" : 1,
+    "srcPayload8" : "810a000b10072c02",
+    "srcRIR" : "ARIN",
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
+    "totDataBytes" : 346
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-060924"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 0
+    },
+    "destination" : {
+     "bytes" : 0,
+     "mac" : [
+      "ff:ff:ff:ff:ff:ff"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 0
+    },
+    "ethertype" : 30,
+    "fileId" : [],
+    "firstPacket" : 1159067138213,
+    "ipProtocol" : 0,
+    "lastPacket" : 1159067138213,
+    "length" : 0,
+    "network" : {
+     "bytes" : 60,
+     "packets" : 1
+    },
+    "node" : "test",
+    "packetLen" : [
+     76
+    ],
+    "packetPos" : [
+     173
+    ],
+    "packetRange" : {
+     "gte" : 1159067138213,
+     "lte" : 1159067138213
+    },
+    "protocol" : [
+     "corrupt-ether"
+    ],
+    "protocolCnt" : 1,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 0
+    },
+    "source" : {
+     "bytes" : 60,
+     "mac" : [
+      "00:60:2d:00:15:d5"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 1
+    },
+    "srcOui" : [
+     "Alerton Technologies, Inc."
+    ],
+    "srcOuiCnt" : 1,
+    "totDataBytes" : 0
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-060924"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "bacnet" : {
+     "apduType" : [
+      "unconfirmed-request"
+     ],
+     "apduTypeCnt" : 1,
+     "function" : [
+      "original-unicast"
+     ],
+     "functionCnt" : 1,
+     "service" : [
+      "i-have"
+     ],
+     "serviceCnt" : 1
+    },
+    "client" : {
+     "bytes" : 32
+    },
+    "destination" : {
+     "bytes" : 0,
+     "ip" : "192.168.0.13",
+     "mac" : [
+      "00:0c:6e:b0:3c:15"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 0,
+     "port" : 47808
+    },
+    "dstOui" : [
+     "ASUSTek COMPUTER INC."
+    ],
+    "dstOuiCnt" : 1,
+    "dstRIR" : "ARIN",
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 1159067138233,
+    "ipProtocol" : 17,
+    "lastPacket" : 1159067138233,
+    "length" : 0,
+    "network" : {
+     "bytes" : 74,
+     "community_id" : "1:mSSwOgXf2ap/soBSBAdrenmkUZ4=",
+     "packets" : 1
+    },
+    "node" : "test",
+    "packetLen" : [
+     90
+    ],
+    "packetPos" : [
+     249
+    ],
+    "packetRange" : {
+     "gte" : 1159067138233,
+     "lte" : 1159067138233
+    },
+    "protocol" : [
+     "bacnet",
+     "udp"
+    ],
+    "protocolCnt" : 2,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 0
+    },
+    "source" : {
+     "bytes" : 74,
+     "ip" : "192.168.0.5",
+     "mac" : [
+      "00:60:2d:00:15:d5"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 1,
+     "port" : 47808
+    },
+    "srcOui" : [
+     "Alerton Technologies, Inc."
+    ],
+    "srcOuiCnt" : 1,
+    "srcPayload8" : "810a00200108000d",
+    "srcRIR" : "ARIN",
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
+    "totDataBytes" : 32
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-060924"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 0
+    },
+    "destination" : {
+     "bytes" : 0,
+     "mac" : [
+      "ff:ff:ff:ff:ff:ff"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 0
+    },
+    "ethertype" : 25,
+    "fileId" : [],
+    "firstPacket" : 1159067316132,
+    "ipProtocol" : 0,
+    "lastPacket" : 1159067316132,
+    "length" : 0,
+    "network" : {
+     "bytes" : 60,
+     "packets" : 1
+    },
+    "node" : "test",
+    "packetLen" : [
+     76
+    ],
+    "packetPos" : [
+     414
+    ],
+    "packetRange" : {
+     "gte" : 1159067316132,
+     "lte" : 1159067316132
+    },
+    "protocol" : [
+     "corrupt-ether"
+    ],
+    "protocolCnt" : 1,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 0
+    },
+    "source" : {
+     "bytes" : 60,
+     "mac" : [
+      "00:60:2d:00:15:d5"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 1
+    },
+    "srcOui" : [
+     "Alerton Technologies, Inc."
+    ],
+    "srcOuiCnt" : 1,
+    "totDataBytes" : 0
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-060924"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "bacnet" : {
+     "apduType" : [
+      "unconfirmed-request"
+     ],
+     "apduTypeCnt" : 1,
+     "function" : [
+      "original-unicast"
+     ],
+     "functionCnt" : 1,
+     "service" : [
+      "i-have"
+     ],
+     "serviceCnt" : 1
+    },
+    "client" : {
+     "bytes" : 32
+    },
+    "destination" : {
+     "bytes" : 0,
+     "ip" : "192.168.0.13",
+     "mac" : [
+      "00:0c:6e:b0:3c:15"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 0,
+     "port" : 47808
+    },
+    "dstOui" : [
+     "ASUSTek COMPUTER INC."
+    ],
+    "dstOuiCnt" : 1,
+    "dstRIR" : "ARIN",
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 1159067316152,
+    "ipProtocol" : 17,
+    "lastPacket" : 1159067316152,
+    "length" : 0,
+    "network" : {
+     "bytes" : 74,
+     "community_id" : "1:mSSwOgXf2ap/soBSBAdrenmkUZ4=",
+     "packets" : 1
+    },
+    "node" : "test",
+    "packetLen" : [
+     90
+    ],
+    "packetPos" : [
+     490
+    ],
+    "packetRange" : {
+     "gte" : 1159067316152,
+     "lte" : 1159067316152
+    },
+    "protocol" : [
+     "bacnet",
+     "udp"
+    ],
+    "protocolCnt" : 2,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 0
+    },
+    "source" : {
+     "bytes" : 74,
+     "ip" : "192.168.0.5",
+     "mac" : [
+      "00:60:2d:00:15:d5"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 1,
+     "port" : 47808
+    },
+    "srcOui" : [
+     "Alerton Technologies, Inc."
+    ],
+    "srcOuiCnt" : 1,
+    "srcPayload8" : "810a00200108000d",
+    "srcRIR" : "ARIN",
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
+    "totDataBytes" : 32
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-060924"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 0
+    },
+    "destination" : {
+     "bytes" : 0,
+     "mac" : [
+      "ff:ff:ff:ff:ff:ff"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 0
+    },
+    "ethertype" : 30,
+    "fileId" : [],
+    "firstPacket" : 1159067394952,
+    "ipProtocol" : 0,
+    "lastPacket" : 1159067603074,
+    "length" : 208122,
+    "network" : {
+     "bytes" : 720,
+     "packets" : 12
+    },
+    "node" : "test",
+    "packetLen" : [
+     76,
+     76,
+     76,
+     76,
+     76,
+     76,
+     76,
+     76,
+     76,
+     76,
+     76,
+     76
+    ],
+    "packetPos" : [
+     660,
+     810,
+     886,
+     5884,
+     5960,
+     6359,
+     6435,
+     6827,
+     6903,
+     7295,
+     7371,
+     7804
+    ],
+    "packetRange" : {
+     "gte" : 1159067394952,
+     "lte" : 1159067603074
+    },
+    "protocol" : [
+     "corrupt-ether"
+    ],
+    "protocolCnt" : 1,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 0
+    },
+    "source" : {
+     "bytes" : 720,
+     "mac" : [
+      "00:60:2d:00:15:d5"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 12
+    },
+    "srcOui" : [
+     "Alerton Technologies, Inc."
+    ],
+    "srcOuiCnt" : 1,
+    "totDataBytes" : 0
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-060924"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "bacnet" : {
+     "apduType" : [
+      "unconfirmed-request"
+     ],
+     "apduTypeCnt" : 1,
+     "function" : [
+      "original-broadcast"
+     ],
+     "functionCnt" : 1,
+     "service" : [
+      "i-am"
+     ],
+     "serviceCnt" : 1
+    },
+    "client" : {
+     "bytes" : 140
+    },
+    "destination" : {
+     "bytes" : 0,
+     "ip" : "192.168.0.255",
+     "mac" : [
+      "ff:ff:ff:ff:ff:ff"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 0,
+     "port" : 47808
+    },
+    "dstRIR" : "ARIN",
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 1159067443207,
+    "ipProtocol" : 17,
+    "lastPacket" : 1159067566823,
+    "length" : 123616,
+    "network" : {
+     "bytes" : 350,
+     "community_id" : "1:uZttKL0Tsb8Vmnqb29C2q+M8DRc=",
+     "packets" : 5
+    },
+    "node" : "test",
+    "packetLen" : [
+     86,
+     86,
+     86,
+     86,
+     86
+    ],
+    "packetPos" : [
+     962,
+     6036,
+     6511,
+     6979,
+     7447
+    ],
+    "packetRange" : {
+     "gte" : 1159067443207,
+     "lte" : 1159067566823
+    },
+    "protocol" : [
+     "bacnet",
+     "udp"
+    ],
+    "protocolCnt" : 2,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 0
+    },
+    "source" : {
+     "bytes" : 350,
+     "ip" : "192.168.0.5",
+     "mac" : [
+      "00:60:2d:00:15:d5"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 5,
+     "port" : 47808
+    },
+    "srcOui" : [
+     "Alerton Technologies, Inc."
+    ],
+    "srcOuiCnt" : 1,
+    "srcPayload8" : "810b001c0128ffff",
+    "srcRIR" : "ARIN",
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
+    "totDataBytes" : 140
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-060924"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "bacnet" : {
+     "apduType" : [
+      "complex-ack",
+      "confirmed-request",
+      "error"
+     ],
+     "apduTypeCnt" : 3,
+     "function" : [
+      "original-unicast"
+     ],
+     "functionCnt" : 1,
+     "service" : [
+      "atomic-write-file",
+      "read-property",
+      "reinitialize-device"
+     ],
+     "serviceCnt" : 3
+    },
+    "client" : {
+     "bytes" : 3785
+    },
+    "destination" : {
+     "bytes" : 740,
+     "ip" : "192.168.0.5",
+     "mac" : [
+      "00:60:2d:00:15:d5"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 12,
+     "port" : 47808
+    },
+    "dstOui" : [
+     "Alerton Technologies, Inc."
+    ],
+    "dstOuiCnt" : 1,
+    "dstPayload8" : "810a000f0108000d",
+    "dstRIR" : "ARIN",
+    "dstTTL" : [
+     64
+    ],
+    "dstTTLCnt" : 1,
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 1159067443208,
+    "ipProtocol" : 17,
+    "lastPacket" : 1159067566848,
+    "length" : 123640,
+    "network" : {
+     "bytes" : 5029,
+     "community_id" : "1:mSSwOgXf2ap/soBSBAdrenmkUZ4=",
+     "packets" : 24
+    },
+    "node" : "test",
+    "packetLen" : [
+     534,
+     76,
+     535,
+     76,
+     535,
+     76,
+     535,
+     76,
+     535,
+     76,
+     535,
+     76,
+     535,
+     76,
+     410,
+     76,
+     87,
+     76,
+     80,
+     76,
+     80,
+     76,
+     80,
+     96
+    ],
+    "packetPos" : [
+     1048,
+     1582,
+     1658,
+     2193,
+     2269,
+     2804,
+     2880,
+     3415,
+     3491,
+     4026,
+     4102,
+     4637,
+     4713,
+     5248,
+     5324,
+     5734,
+     6122,
+     6209,
+     6597,
+     6677,
+     7065,
+     7145,
+     7533,
+     7613
+    ],
+    "packetRange" : {
+     "gte" : 1159067443208,
+     "lte" : 1159067566848
+    },
+    "protocol" : [
+     "bacnet",
+     "udp"
+    ],
+    "protocolCnt" : 2,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 216
+    },
+    "source" : {
+     "bytes" : 4289,
+     "ip" : "192.168.0.13",
+     "mac" : [
+      "00:0c:6e:b0:3c:15"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 12,
+     "port" : 47808
+    },
+    "srcOui" : [
+     "ASUSTek COMPUTER INC."
+    ],
+    "srcOuiCnt" : 1,
+    "srcPayload8" : "810a01dc0124000d",
+    "srcRIR" : "ARIN",
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
+    "totDataBytes" : 4001
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-060924"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 0
+    },
+    "destination" : {
+     "bytes" : 0,
+     "mac" : [
+      "ff:ff:ff:ff:ff:ff"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 0
+    },
+    "ethertype" : 24,
+    "fileId" : [],
+    "firstPacket" : 1159067682027,
+    "ipProtocol" : 0,
+    "lastPacket" : 1159067682068,
+    "length" : 41,
+    "network" : {
+     "bytes" : 120,
+     "packets" : 2
+    },
+    "node" : "test",
+    "packetLen" : [
+     76,
+     76
+    ],
+    "packetPos" : [
+     7954,
+     8030
+    ],
+    "packetRange" : {
+     "gte" : 1159067682027,
+     "lte" : 1159067682068
+    },
+    "protocol" : [
+     "corrupt-ether"
+    ],
+    "protocolCnt" : 1,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 0
+    },
+    "source" : {
+     "bytes" : 120,
+     "mac" : [
+      "00:60:2d:00:15:d5"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 2
+    },
+    "srcOui" : [
+     "Alerton Technologies, Inc."
+    ],
+    "srcOuiCnt" : 1,
+    "totDataBytes" : 0
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-060924"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "bacnet" : {
+     "apduType" : [
+      "unconfirmed-request"
+     ],
+     "apduTypeCnt" : 1,
+     "function" : [
+      "original-broadcast"
+     ],
+     "functionCnt" : 1,
+     "service" : [
+      "i-am"
+     ],
+     "serviceCnt" : 1
+    },
+    "client" : {
+     "bytes" : 28
+    },
+    "destination" : {
+     "bytes" : 0,
+     "ip" : "192.168.0.255",
+     "mac" : [
+      "ff:ff:ff:ff:ff:ff"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 0,
+     "port" : 47808
+    },
+    "dstRIR" : "ARIN",
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 1159067682072,
+    "ipProtocol" : 17,
+    "lastPacket" : 1159067682072,
+    "length" : 0,
+    "network" : {
+     "bytes" : 70,
+     "community_id" : "1:uZttKL0Tsb8Vmnqb29C2q+M8DRc=",
+     "packets" : 1
+    },
+    "node" : "test",
+    "packetLen" : [
+     86
+    ],
+    "packetPos" : [
+     8106
+    ],
+    "packetRange" : {
+     "gte" : 1159067682072,
+     "lte" : 1159067682072
+    },
+    "protocol" : [
+     "bacnet",
+     "udp"
+    ],
+    "protocolCnt" : 2,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 0
+    },
+    "source" : {
+     "bytes" : 70,
+     "ip" : "192.168.0.5",
+     "mac" : [
+      "00:60:2d:00:15:d5"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 1,
+     "port" : 47808
+    },
+    "srcOui" : [
+     "Alerton Technologies, Inc."
+    ],
+    "srcOuiCnt" : 1,
+    "srcPayload8" : "810b001c0128ffff",
+    "srcRIR" : "ARIN",
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
+    "totDataBytes" : 28
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-060924"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "bacnet" : {
+     "apduType" : [
+      "confirmed-request",
+      "error"
+     ],
+     "apduTypeCnt" : 2,
+     "function" : [
+      "original-unicast"
+     ],
+     "functionCnt" : 1,
+     "service" : [
+      "write-property"
+     ],
+     "serviceCnt" : 1
+    },
+    "client" : {
+     "bytes" : 25
+    },
+    "destination" : {
+     "bytes" : 60,
+     "ip" : "192.168.0.5",
+     "mac" : [
+      "00:60:2d:00:15:d5"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 1,
+     "port" : 47808
+    },
+    "dstOui" : [
+     "Alerton Technologies, Inc."
+    ],
+    "dstOuiCnt" : 1,
+    "dstPayload8" : "810a00110108000d",
+    "dstRIR" : "ARIN",
+    "dstTTL" : [
+     64
+    ],
+    "dstTTLCnt" : 1,
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 1159067682077,
+    "ipProtocol" : 17,
+    "lastPacket" : 1159067682102,
+    "length" : 25,
+    "network" : {
+     "bytes" : 127,
+     "community_id" : "1:mSSwOgXf2ap/soBSBAdrenmkUZ4=",
+     "packets" : 2
+    },
+    "node" : "test",
+    "packetLen" : [
+     83,
+     76
+    ],
+    "packetPos" : [
+     8192,
+     8275
+    ],
+    "packetRange" : {
+     "gte" : 1159067682077,
+     "lte" : 1159067682102
+    },
+    "protocol" : [
+     "bacnet",
+     "udp"
+    ],
+    "protocolCnt" : 2,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 17
+    },
+    "source" : {
+     "bytes" : 67,
+     "ip" : "192.168.0.13",
+     "mac" : [
+      "00:0c:6e:b0:3c:15"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 1,
+     "port" : 47808
+    },
+    "srcOui" : [
+     "ASUSTek COMPUTER INC."
+    ],
+    "srcOuiCnt" : 1,
+    "srcPayload8" : "810a00190124000d",
+    "srcRIR" : "ARIN",
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
+    "totDataBytes" : 42
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-060924"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 0
+    },
+    "destination" : {
+     "bytes" : 0,
+     "mac" : [
+      "ff:ff:ff:ff:ff:ff"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 0
+    },
+    "ethertype" : 24,
+    "fileId" : [],
+    "firstPacket" : 1159067754992,
+    "ipProtocol" : 0,
+    "lastPacket" : 1159067818080,
+    "length" : 63088,
+    "network" : {
+     "bytes" : 300,
+     "packets" : 5
+    },
+    "node" : "test",
+    "packetLen" : [
+     76,
+     76,
+     76,
+     76,
+     76
+    ],
+    "packetPos" : [
+     8425,
+     8501,
+     8899,
+     8975,
+     9382
+    ],
+    "packetRange" : {
+     "gte" : 1159067754992,
+     "lte" : 1159067818080
+    },
+    "protocol" : [
+     "corrupt-ether"
+    ],
+    "protocolCnt" : 1,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 0
+    },
+    "source" : {
+     "bytes" : 300,
+     "mac" : [
+      "00:60:2d:00:15:d5"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 5
+    },
+    "srcOui" : [
+     "Alerton Technologies, Inc."
+    ],
+    "srcOuiCnt" : 1,
+    "totDataBytes" : 0
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-060924"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "bacnet" : {
+     "apduType" : [
+      "unconfirmed-request"
+     ],
+     "apduTypeCnt" : 1,
+     "function" : [
+      "original-broadcast"
+     ],
+     "functionCnt" : 1,
+     "service" : [
+      "i-am"
+     ],
+     "serviceCnt" : 1
+    },
+    "client" : {
+     "bytes" : 56
+    },
+    "destination" : {
+     "bytes" : 0,
+     "ip" : "192.168.0.255",
+     "mac" : [
+      "ff:ff:ff:ff:ff:ff"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 0,
+     "port" : 47808
+    },
+    "dstRIR" : "ARIN",
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 1159067755037,
+    "ipProtocol" : 17,
+    "lastPacket" : 1159067769134,
+    "length" : 14097,
+    "network" : {
+     "bytes" : 140,
+     "community_id" : "1:uZttKL0Tsb8Vmnqb29C2q+M8DRc=",
+     "packets" : 2
+    },
+    "node" : "test",
+    "packetLen" : [
+     86,
+     86
+    ],
+    "packetPos" : [
+     8577,
+     9051
+    ],
+    "packetRange" : {
+     "gte" : 1159067755037,
+     "lte" : 1159067769134
+    },
+    "protocol" : [
+     "bacnet",
+     "udp"
+    ],
+    "protocolCnt" : 2,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 0
+    },
+    "source" : {
+     "bytes" : 140,
+     "ip" : "192.168.0.5",
+     "mac" : [
+      "00:60:2d:00:15:d5"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 2,
+     "port" : 47808
+    },
+    "srcOui" : [
+     "Alerton Technologies, Inc."
+    ],
+    "srcOuiCnt" : 1,
+    "srcPayload8" : "810b001c0128ffff",
+    "srcRIR" : "ARIN",
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
+    "totDataBytes" : 56
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-060924"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "bacnet" : {
+     "apduType" : [
+      "confirmed-request",
+      "error",
+      "simple-ack"
+     ],
+     "apduTypeCnt" : 3,
+     "function" : [
+      "original-unicast"
+     ],
+     "functionCnt" : 1,
+     "service" : [
+      "device-communication-control"
+     ],
+     "serviceCnt" : 1
+    },
+    "client" : {
+     "bytes" : 101
+    },
+    "destination" : {
+     "bytes" : 400,
+     "ip" : "192.168.0.5",
+     "mac" : [
+      "00:60:2d:00:15:d5"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 6,
+     "port" : 47808
+    },
+    "dstOui" : [
+     "Alerton Technologies, Inc."
+    ],
+    "dstOuiCnt" : 1,
+    "dstPayload8" : "810a000d0108000d",
+    "dstRIR" : "ARIN",
+    "dstTTL" : [
+     64
+    ],
+    "dstTTLCnt" : 1,
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 1159067755060,
+    "ipProtocol" : 17,
+    "lastPacket" : 1159067867460,
+    "length" : 112400,
+    "network" : {
+     "bytes" : 753,
+     "community_id" : "1:mSSwOgXf2ap/soBSBAdrenmkUZ4=",
+     "packets" : 12
+    },
+    "node" : "test",
+    "packetLen" : [
+     86,
+     76,
+     87,
+     76,
+     86,
+     69,
+     86,
+     69,
+     86,
+     69,
+     86,
+     69
+    ],
+    "packetPos" : [
+     8663,
+     8749,
+     9137,
+     9224,
+     9458,
+     9544,
+     9613,
+     9699,
+     9768,
+     9854,
+     9923,
+     10009
+    ],
+    "packetRange" : {
+     "gte" : 1159067755060,
+     "lte" : 1159067867460
+    },
+    "protocol" : [
+     "bacnet",
+     "udp"
+    ],
+    "protocolCnt" : 2,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 142
+    },
+    "source" : {
+     "bytes" : 353,
+     "ip" : "192.168.0.13",
+     "mac" : [
+      "00:0c:6e:b0:3c:15"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 6,
+     "port" : 47808
+    },
+    "srcOui" : [
+     "ASUSTek COMPUTER INC."
+    ],
+    "srcOuiCnt" : 1,
+    "srcPayload8" : "810a001c0124000d",
+    "srcRIR" : "ARIN",
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
+    "totDataBytes" : 243
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-060924"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 0
+    },
+    "destination" : {
+     "bytes" : 0,
+     "mac" : [
+      "ff:ff:ff:ff:ff:ff"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 0
+    },
+    "ethertype" : 32,
+    "fileId" : [],
+    "firstPacket" : 1159067980861,
+    "ipProtocol" : 0,
+    "lastPacket" : 1159067980861,
+    "length" : 0,
+    "network" : {
+     "bytes" : 60,
+     "packets" : 1
+    },
+    "node" : "test",
+    "packetLen" : [
+     76
+    ],
+    "packetPos" : [
+     10160
+    ],
+    "packetRange" : {
+     "gte" : 1159067980861,
+     "lte" : 1159067980861
+    },
+    "protocol" : [
+     "corrupt-ether"
+    ],
+    "protocolCnt" : 1,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 0
+    },
+    "source" : {
+     "bytes" : 60,
+     "mac" : [
+      "00:60:2d:00:15:d5"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 1
+    },
+    "srcOui" : [
+     "Alerton Technologies, Inc."
+    ],
+    "srcOuiCnt" : 1,
+    "totDataBytes" : 0
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-060924"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "bacnet" : {
+     "apduType" : [
+      "confirmed-request",
+      "error",
+      "simple-ack"
+     ],
+     "apduTypeCnt" : 3,
+     "function" : [
+      "original-unicast"
+     ],
+     "functionCnt" : 1,
+     "service" : [
+      "device-communication-control"
+     ],
+     "serviceCnt" : 1
+    },
+    "client" : {
+     "bytes" : 55
+    },
+    "destination" : {
+     "bytes" : 116,
+     "ip" : "192.168.0.13",
+     "mac" : [
+      "00:0c:6e:b0:3c:15"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 2,
+     "port" : 47808
+    },
+    "dstOui" : [
+     "ASUSTek COMPUTER INC."
+    ],
+    "dstOuiCnt" : 1,
+    "dstPayload8" : "810a00120120000d",
+    "dstRIR" : "ARIN",
+    "dstTTL" : [
+     64
+    ],
+    "dstTTLCnt" : 1,
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 1159067992853,
+    "ipProtocol" : 17,
+    "lastPacket" : 1159068021574,
+    "length" : 28721,
+    "network" : {
+     "bytes" : 255,
+     "community_id" : "1:mSSwOgXf2ap/soBSBAdrenmkUZ4=",
+     "packets" : 4
+    },
+    "node" : "test",
+    "packetLen" : [
+     86,
+     76,
+     85,
+     72
+    ],
+    "packetPos" : [
+     10236,
+     10322,
+     10398,
+     10483
+    ],
+    "packetRange" : {
+     "gte" : 1159067992853,
+     "lte" : 1159068021574
+    },
+    "protocol" : [
+     "bacnet",
+     "udp"
+    ],
+    "protocolCnt" : 2,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 32
+    },
+    "source" : {
+     "bytes" : 139,
+     "ip" : "192.168.0.5",
+     "mac" : [
+      "00:60:2d:00:15:d5"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 2,
+     "port" : 47808
+    },
+    "srcOui" : [
+     "Alerton Technologies, Inc."
+    ],
+    "srcOuiCnt" : 1,
+    "srcPayload8" : "810a001c010c000d",
+    "srcRIR" : "ARIN",
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
+    "totDataBytes" : 87
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-060924"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 0
+    },
+    "destination" : {
+     "bytes" : 0,
+     "mac" : [
+      "ff:ff:ff:ff:ff:ff"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 0
+    },
+    "ethertype" : 32,
+    "fileId" : [],
+    "firstPacket" : 1159068059129,
+    "ipProtocol" : 0,
+    "lastPacket" : 1159068101058,
+    "length" : 41929,
+    "network" : {
+     "bytes" : 240,
+     "packets" : 4
+    },
+    "node" : "test",
+    "packetLen" : [
+     76,
+     76,
+     76,
+     76
+    ],
+    "packetPos" : [
+     10637,
+     10713,
+     10873,
+     11123
+    ],
+    "packetRange" : {
+     "gte" : 1159068059129,
+     "lte" : 1159068101058
+    },
+    "protocol" : [
+     "corrupt-ether"
+    ],
+    "protocolCnt" : 1,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 0
+    },
+    "source" : {
+     "bytes" : 240,
+     "mac" : [
+      "00:60:2d:00:15:d5"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 4
+    },
+    "srcOui" : [
+     "Alerton Technologies, Inc."
+    ],
+    "srcOuiCnt" : 1,
+    "totDataBytes" : 0
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-060924"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "bacnet" : {
+     "apduType" : [
+      "unconfirmed-request"
+     ],
+     "apduTypeCnt" : 1,
+     "function" : [
+      "original-broadcast"
+     ],
+     "functionCnt" : 1,
+     "service" : [
+      "time-synchronization",
+      "who-has"
+     ],
+     "serviceCnt" : 2
+    },
+    "client" : {
+     "bytes" : 47
+    },
+    "destination" : {
+     "bytes" : 0,
+     "ip" : "192.168.0.255",
+     "mac" : [
+      "ff:ff:ff:ff:ff:ff"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 0,
+     "port" : 47808
+    },
+    "dstRIR" : "ARIN",
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 1159068074292,
+    "ipProtocol" : 17,
+    "lastPacket" : 1159068101008,
+    "length" : 26716,
+    "network" : {
+     "bytes" : 131,
+     "community_id" : "1:uZttKL0Tsb8Vmnqb29C2q+M8DRc=",
+     "packets" : 2
+    },
+    "node" : "test",
+    "packetLen" : [
+     84,
+     79
+    ],
+    "packetPos" : [
+     10789,
+     10949
+    ],
+    "packetRange" : {
+     "gte" : 1159068074292,
+     "lte" : 1159068101008
+    },
+    "protocol" : [
+     "bacnet",
+     "udp"
+    ],
+    "protocolCnt" : 2,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 0
+    },
+    "source" : {
+     "bytes" : 131,
+     "ip" : "192.168.0.5",
+     "mac" : [
+      "00:60:2d:00:15:d5"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 2,
+     "port" : 47808
+    },
+    "srcOui" : [
+     "Alerton Technologies, Inc."
+    ],
+    "srcOuiCnt" : 1,
+    "srcPayload8" : "810b001a0128ffff",
+    "srcRIR" : "ARIN",
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
+    "totDataBytes" : 47
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-060924"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "bacnet" : {
+     "apduType" : [
+      "complex-ack",
+      "confirmed-request",
+      "error",
+      "reject",
+      "simple-ack"
+     ],
+     "apduTypeCnt" : 5,
+     "function" : [
+      "original-unicast"
+     ],
+     "functionCnt" : 1,
+     "service" : [
+      "atomic-read-file",
+      "atomic-write-file",
+      "read-property-multiple",
+      "reinitialize-device"
+     ],
+     "serviceCnt" : 4
+    },
+    "client" : {
+     "bytes" : 648
+    },
+    "destination" : {
+     "bytes" : 2075,
+     "ip" : "192.168.0.13",
+     "mac" : [
+      "00:0c:6e:b0:3c:15"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 8,
+     "port" : 47808
+    },
+    "dstOui" : [
+     "ASUSTek COMPUTER INC."
+    ],
+    "dstOuiCnt" : 1,
+    "dstPayload8" : "810a00120120000d",
+    "dstRIR" : "ARIN",
+    "dstTTL" : [
+     64
+    ],
+    "dstTTLCnt" : 1,
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 1159068136387,
+    "ipProtocol" : 17,
+    "lastPacket" : 1159068319066,
+    "length" : 182679,
+    "network" : {
+     "bytes" : 3059,
+     "community_id" : "1:mSSwOgXf2ap/soBSBAdrenmkUZ4=",
+     "packets" : 16
+    },
+    "node" : "test",
+    "packetLen" : [
+     85,
+     76,
+     82,
+     72,
+     84,
+     521,
+     85,
+     522,
+     85,
+     522,
+     85,
+     346,
+     525,
+     72,
+     81,
+     72
+    ],
+    "packetPos" : [
+     11199,
+     11284,
+     11360,
+     11442,
+     11514,
+     11598,
+     12119,
+     12204,
+     12726,
+     12811,
+     13333,
+     13418,
+     13764,
+     14289,
+     14361,
+     14442
+    ],
+    "packetRange" : {
+     "gte" : 1159068136387,
+     "lte" : 1159068319066
+    },
+    "protocol" : [
+     "bacnet",
+     "udp"
+    ],
+    "protocolCnt" : 2,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 1739
+    },
+    "source" : {
+     "bytes" : 984,
+     "ip" : "192.168.0.5",
+     "mac" : [
+      "00:60:2d:00:15:d5"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 8,
+     "port" : 47808
+    },
+    "srcOui" : [
+     "Alerton Technologies, Inc."
+    ],
+    "srcOuiCnt" : 1,
+    "srcPayload8" : "810a001b010c000d",
+    "srcRIR" : "ARIN",
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
+    "totDataBytes" : 2387
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-060924"
+    }
+   }
+  }
+ ]
+}
+
