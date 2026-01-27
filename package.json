@@ -111,7 +111,7 @@
     "@vitejs/plugin-vue": "^6.0.1",
     "@vue/compiler-sfc": "^3.5.22",
     "autoprefixer": "^10.2.5",
-    "baseline-browser-mapping": "^2.8.28",
+    "baseline-browser-mapping": "^2.9.18",
     "bootstrap": "^5.3.8",
     "bootstrap-vue-next": "^0.40.6",
     "concurrently": "^8.1.0",
