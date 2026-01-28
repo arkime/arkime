@@ -9,18 +9,6 @@ extern ArkimeConfig_t        config;
 LOCAL  int userField;
 
 /******************************************************************************/
-LOCAL void rdp_classify(ArkimeSession_t *session, const uint8_t *data, int len, int UNUSED(which), void *UNUSED(uw))
-{
-
-    if (len > 5 && data[3] <= len && data[4] == (data[3] - 5) && data[5] == 0xe0) {
-        arkime_session_add_protocol(session, "rdp");
-        if (len > 30 && memcmp(data + 11, "Cookie: mstshash=", 17) == 0) {
-            const char *end = g_strstr_len((char *)data + 28, len - 28, "\r\n");
-            if (end)
-                arkime_field_string_add_lower(userField, session, (char * )data + 28, end - (char *)data - 28);
-        }
-    }
-}
 /******************************************************************************/
 LOCAL void imap_classify(ArkimeSession_t *session, const uint8_t *data, int len, int UNUSED(which), void *UNUSED(uw))
 {
@@ -336,7 +324,6 @@ void arkime_parser_init()
     /* Bitcoin namecoin fork */
     SIMPLE_CLASSIFY_TCP("bitcoin", "\xf9\xbe\xb4\xfe");
 
-    CLASSIFY_TCP("rdp", 0, "\x03\x00", rdp_classify);
     CLASSIFY_TCP("imap", 0, "* OK ", imap_classify);
     SIMPLE_CLASSIFY_TCP("pop3", "+OK ");
     CLASSIFY_TCP("gh0st", 13, "\x78", gh0st_classify);
