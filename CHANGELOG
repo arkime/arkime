@@ -43,6 +43,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #3640 Initial isakmp protocol support
   - #3642 Initial tftp protocol support
   - #3643 Improved rdp parser
+  - #3644 Improved snmp parser
 
 6.0.0-rc1 2026/01/26
 ## BREAKING
