@@ -1,0 +1,12 @@
+if (session.isakmp)
+  div.sessionDetailMeta.bold ISAKMP
+  dl.sessionDetailMeta
+    +arrayList(session.isakmp, "version", "Version", "isakmp.version")
+    +arrayList(session.isakmp, "exchangeType", "Exchange Type", "isakmp.exchange-type")
+    +arrayList(session.isakmp, "initiatorSpi", "Initiator SPI", "isakmp.initiator-spi")
+    +arrayList(session.isakmp, "responderSpi", "Responder SPI", "isakmp.responder-spi")
+    +arrayList(session.isakmp, "vendorId", "Vendor ID", "isakmp.vendor-id")
+    +arrayList(session.isakmp, "encryption", "Encryption", "isakmp.encryption")
+    +arrayList(session.isakmp, "hash", "Hash/PRF", "isakmp.hash")
+    +arrayList(session.isakmp, "dhGroup", "DH Group", "isakmp.dh-group")
+    +arrayList(session.isakmp, "authMethod", "Auth Method", "isakmp.auth-method")
