@@ -524,6 +524,7 @@ LOCAL int arkime_reader_scheme_processNG(const char *uri, uint8_t *data, int len
                 blockHeader->block_type = SWAP32(blockHeader->block_type);
                 blockHeader->block_total_length = SWAP32(blockHeader->block_total_length);
             }
+
             readerState.tmpBufferLen = 0;
             readerState.blockSize = blockHeader->block_total_length - 8;
 
@@ -662,6 +663,7 @@ LOCAL int arkime_reader_scheme_processNG(const char *uri, uint8_t *data, int len
                 if (len < readerState.pktlen) {
                     memcpy(readerState.tmpBuffer, data, len);
                     readerState.tmpBufferLen = len;
+                    readerState.blockSize -= len;
                     goto processNG;
                 }
                 readerState.packet->pkt = data;
@@ -673,6 +675,7 @@ LOCAL int arkime_reader_scheme_processNG(const char *uri, uint8_t *data, int len
                 if (len < need) {
                     memcpy(readerState.tmpBuffer + readerState.tmpBufferLen, data, len);
                     readerState.tmpBufferLen += len;
+                    readerState.blockSize -= len;
                     goto processNG;
                 }
                 memcpy(readerState.tmpBuffer + readerState.tmpBufferLen, data, need);

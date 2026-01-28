@@ -98,14 +98,14 @@ LOCAL void tftp_udp_classify(ArkimeSession_t *session, const uint8_t *data, int 
 void arkime_parser_init()
 {
     opcodeField = arkime_field_define("tftp", "termfield",
-        "tftp.opcode", "Opcode", "tftp.opcode",
-        "TFTP opcode (rrq, wrq, data, ack, error)",
-        ARKIME_FIELD_TYPE_STR_GHASH, ARKIME_FIELD_FLAG_CNT, (char *)NULL);
+                                      "tftp.opcode", "Opcode", "tftp.opcode",
+                                      "TFTP opcode (rrq, wrq, data, ack, error)",
+                                      ARKIME_FIELD_TYPE_STR_GHASH, ARKIME_FIELD_FLAG_CNT, (char *)NULL);
 
     filenameField = arkime_field_define("tftp", "termfield",
-        "tftp.filename", "Filename", "tftp.filename",
-        "TFTP filename",
-        ARKIME_FIELD_TYPE_STR_GHASH, ARKIME_FIELD_FLAG_CNT, (char *)NULL);
+                                        "tftp.filename", "Filename", "tftp.filename",
+                                        "TFTP filename",
+                                        ARKIME_FIELD_TYPE_STR_GHASH, ARKIME_FIELD_FLAG_CNT, (char *)NULL);
 
     arkime_parsers_classifier_register_port("tftp", NULL, 69, ARKIME_PARSERS_PORT_UDP, tftp_udp_classify);
 }

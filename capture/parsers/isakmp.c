@@ -192,14 +192,28 @@ LOCAL void ike_parse_transform_v1(ArkimeSession_t *session, BSB *bsb)
                 break;
             case 3: // Auth Method
                 switch (value) {
-                case 1: arkime_field_string_add(authMethodField, session, "psk", -1, TRUE); break;
-                case 2: arkime_field_string_add(authMethodField, session, "dss-sig", -1, TRUE); break;
-                case 3: arkime_field_string_add(authMethodField, session, "rsa-sig", -1, TRUE); break;
+                case 1:
+                    arkime_field_string_add(authMethodField, session, "psk", -1, TRUE);
+                    break;
+                case 2:
+                    arkime_field_string_add(authMethodField, session, "dss-sig", -1, TRUE);
+                    break;
+                case 3:
+                    arkime_field_string_add(authMethodField, session, "rsa-sig", -1, TRUE);
+                    break;
                 case 4:
-                case 5: arkime_field_string_add(authMethodField, session, "rsa-enc", -1, TRUE); break;
-                case 64221: arkime_field_string_add(authMethodField, session, "hybrid-rsa", -1, TRUE); break;
-                case 65001: arkime_field_string_add(authMethodField, session, "xauth-psk", -1, TRUE); break;
-                case 65005: arkime_field_string_add(authMethodField, session, "xauth-rsa", -1, TRUE); break;
+                case 5:
+                    arkime_field_string_add(authMethodField, session, "rsa-enc", -1, TRUE);
+                    break;
+                case 64221:
+                    arkime_field_string_add(authMethodField, session, "hybrid-rsa", -1, TRUE);
+                    break;
+                case 65001:
+                    arkime_field_string_add(authMethodField, session, "xauth-psk", -1, TRUE);
+                    break;
+                case 65005:
+                    arkime_field_string_add(authMethodField, session, "xauth-rsa", -1, TRUE);
+                    break;
                 }
                 break;
             case 4: // DH Group
@@ -417,7 +431,10 @@ LOCAL int ike_udp_parser(ArkimeSession_t *session, void *UNUSED(uw), const uint8
     // Responder SPI (if not zero)
     int hasResponder = 0;
     for (int i = 0; i < 8; i++) {
-        if (responderSpi[i] != 0) { hasResponder = 1; break; }
+        if (responderSpi[i] != 0) {
+            hasResponder = 1;
+            break;
+        }
     }
     if (hasResponder) {
         arkime_sprint_hex_string(spiStr, responderSpi, 8);
@@ -551,49 +568,49 @@ LOCAL void ike_udp_classify(ArkimeSession_t *session, const uint8_t *data, int l
 void arkime_parser_init()
 {
     initiatorSpiField = arkime_field_define("isakmp", "termfield",
-        "isakmp.initiator-spi", "Initiator SPI", "isakmp.initiatorSpi",
-        "ISAKMP initiator security parameter index",
-        ARKIME_FIELD_TYPE_STR_GHASH, ARKIME_FIELD_FLAG_CNT, (char *)NULL);
+                                            "isakmp.initiator-spi", "Initiator SPI", "isakmp.initiatorSpi",
+                                            "ISAKMP initiator security parameter index",
+                                            ARKIME_FIELD_TYPE_STR_GHASH, ARKIME_FIELD_FLAG_CNT, (char *)NULL);
 
     responderSpiField = arkime_field_define("isakmp", "termfield",
-        "isakmp.responder-spi", "Responder SPI", "isakmp.responderSpi",
-        "ISAKMP responder security parameter index",
-        ARKIME_FIELD_TYPE_STR_GHASH, ARKIME_FIELD_FLAG_CNT, (char *)NULL);
+                                            "isakmp.responder-spi", "Responder SPI", "isakmp.responderSpi",
+                                            "ISAKMP responder security parameter index",
+                                            ARKIME_FIELD_TYPE_STR_GHASH, ARKIME_FIELD_FLAG_CNT, (char *)NULL);
 
     versionField = arkime_field_define("isakmp", "termfield",
-        "isakmp.version", "Version", "isakmp.version",
-        "ISAKMP version",
-        ARKIME_FIELD_TYPE_STR_GHASH, ARKIME_FIELD_FLAG_CNT, (char *)NULL);
+                                       "isakmp.version", "Version", "isakmp.version",
+                                       "ISAKMP version",
+                                       ARKIME_FIELD_TYPE_STR_GHASH, ARKIME_FIELD_FLAG_CNT, (char *)NULL);
 
     exchangeTypeField = arkime_field_define("isakmp", "termfield",
-        "isakmp.exchange-type", "Exchange Type", "isakmp.exchangeType",
-        "ISAKMP exchange type",
-        ARKIME_FIELD_TYPE_STR_GHASH, ARKIME_FIELD_FLAG_CNT, (char *)NULL);
+                                            "isakmp.exchange-type", "Exchange Type", "isakmp.exchangeType",
+                                            "ISAKMP exchange type",
+                                            ARKIME_FIELD_TYPE_STR_GHASH, ARKIME_FIELD_FLAG_CNT, (char *)NULL);
 
     vendorIdField = arkime_field_define("isakmp", "termfield",
-        "isakmp.vendor-id", "Vendor ID", "isakmp.vendorId",
-        "ISAKMP vendor identifier",
-        ARKIME_FIELD_TYPE_STR_GHASH, ARKIME_FIELD_FLAG_CNT, (char *)NULL);
+                                        "isakmp.vendor-id", "Vendor ID", "isakmp.vendorId",
+                                        "ISAKMP vendor identifier",
+                                        ARKIME_FIELD_TYPE_STR_GHASH, ARKIME_FIELD_FLAG_CNT, (char *)NULL);
 
     encryptionField = arkime_field_define("isakmp", "termfield",
-        "isakmp.encryption", "Encryption", "isakmp.encryption",
-        "ISAKMP encryption algorithm",
-        ARKIME_FIELD_TYPE_STR_GHASH, ARKIME_FIELD_FLAG_CNT, (char *)NULL);
+                                          "isakmp.encryption", "Encryption", "isakmp.encryption",
+                                          "ISAKMP encryption algorithm",
+                                          ARKIME_FIELD_TYPE_STR_GHASH, ARKIME_FIELD_FLAG_CNT, (char *)NULL);
 
     hashField = arkime_field_define("isakmp", "termfield",
-        "isakmp.hash", "Hash/PRF", "isakmp.hash",
-        "ISAKMP hash or PRF algorithm",
-        ARKIME_FIELD_TYPE_STR_GHASH, ARKIME_FIELD_FLAG_CNT, (char *)NULL);
+                                    "isakmp.hash", "Hash/PRF", "isakmp.hash",
+                                    "ISAKMP hash or PRF algorithm",
+                                    ARKIME_FIELD_TYPE_STR_GHASH, ARKIME_FIELD_FLAG_CNT, (char *)NULL);
 
     dhGroupField = arkime_field_define("isakmp", "termfield",
-        "isakmp.dh-group", "DH Group", "isakmp.dhGroup",
-        "ISAKMP Diffie-Hellman group",
-        ARKIME_FIELD_TYPE_STR_GHASH, ARKIME_FIELD_FLAG_CNT, (char *)NULL);
+                                       "isakmp.dh-group", "DH Group", "isakmp.dhGroup",
+                                       "ISAKMP Diffie-Hellman group",
+                                       ARKIME_FIELD_TYPE_STR_GHASH, ARKIME_FIELD_FLAG_CNT, (char *)NULL);
 
     authMethodField = arkime_field_define("isakmp", "termfield",
-        "isakmp.auth-method", "Auth Method", "isakmp.authMethod",
-        "ISAKMP authentication method",
-        ARKIME_FIELD_TYPE_STR_GHASH, ARKIME_FIELD_FLAG_CNT, (char *)NULL);
+                                          "isakmp.auth-method", "Auth Method", "isakmp.authMethod",
+                                          "ISAKMP authentication method",
+                                          ARKIME_FIELD_TYPE_STR_GHASH, ARKIME_FIELD_FLAG_CNT, (char *)NULL);
 
     arkime_parsers_classifier_register_port("isakmp", NULL, 500, ARKIME_PARSERS_PORT_UDP, ike_udp_classify);
     arkime_parsers_classifier_register_port("isakmp", NULL, 4500, ARKIME_PARSERS_PORT_UDP, ike_udp_classify);
