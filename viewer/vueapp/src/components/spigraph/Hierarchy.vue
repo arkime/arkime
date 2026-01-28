@@ -327,8 +327,7 @@ function textTransform (d) {
 }
 
 function mouseover (d, self) {
-  self.parentNode.appendChild(self);
-  self.parentNode.parentNode.appendChild(self.parentNode);
+  d3.select(self).raise(); // bring slice to front for border visibility
   d3.select(self).select('path').style('stroke', foreground);
 }
 
