@@ -86,18 +86,6 @@ LOCAL void misc_add_protocol_classify(ArkimeSession_t *session, const uint8_t *U
     arkime_session_add_protocol(session, uw);
 }
 /******************************************************************************/
-LOCAL void ntp_classify(ArkimeSession_t *session, const uint8_t *data, int len, int UNUSED(which), void *UNUSED(uw))
-{
-
-    if ((session->port1 != 123 && session->port2 != 123) ||  // ntp port
-        len < 48 ||                                         // min length
-        data[1] > 16                                        // max stratum
-       ) {
-        return;
-    }
-    arkime_session_add_protocol(session, "ntp");
-}
-/******************************************************************************/
 LOCAL void syslog_classify(ArkimeSession_t *session, const uint8_t *UNUSED(data), int len, int UNUSED(which), void *UNUSED(uw))
 {
     for (int i = 2; i < len; i++) {
@@ -391,18 +379,6 @@ void arkime_parser_init()
 
     SIMPLE_CLASSIFY_TCP("cassandra", "\x00\x00\x00\x25\x80\x01\x00\x01\x00\x00\x00\x0c\x73\x65\x74\x5f");
     SIMPLE_CLASSIFY_TCP("cassandra", "\x00\x00\x00\x1d\x80\x01\x00\x01\x00\x00\x00\x10\x64\x65\x73\x63");
-
-    CLASSIFY_UDP("ntp", 0, "\x13", ntp_classify);
-    CLASSIFY_UDP("ntp", 0, "\x19", ntp_classify);
-    CLASSIFY_UDP("ntp", 0, "\x1a", ntp_classify);
-    CLASSIFY_UDP("ntp", 0, "\x1b", ntp_classify);
-    CLASSIFY_UDP("ntp", 0, "\x1c", ntp_classify);
-    CLASSIFY_UDP("ntp", 0, "\x21", ntp_classify);
-    CLASSIFY_UDP("ntp", 0, "\x23", ntp_classify);
-    CLASSIFY_UDP("ntp", 0, "\x24", ntp_classify);
-    CLASSIFY_UDP("ntp", 0, "\xd9", ntp_classify);
-    CLASSIFY_UDP("ntp", 0, "\xdb", ntp_classify);
-    CLASSIFY_UDP("ntp", 0, "\xe3", ntp_classify);
 
     SIMPLE_CLASSIFY_UDP("bjnp", "BJNP");
 

@@ -1,0 +1,7 @@
+if (session.ntp)
+  div.sessionDetailMeta.bold NTP
+  dl.sessionDetailMeta
+    +arrayList(session.ntp, "version", "Version", "ntp.version")
+    +arrayList(session.ntp, "mode", "Mode", "ntp.mode")
+    +arrayList(session.ntp, "stratum", "Stratum", "ntp.stratum")
+    +arrayList(session.ntp, "refId", "Reference ID", "ntp.ref-id")

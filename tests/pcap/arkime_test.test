@@ -3954,6 +3954,20 @@
      "packets" : 1
     },
     "node" : "test",
+    "ntp" : {
+     "mode" : [
+      "client"
+     ],
+     "modeCnt" : 1,
+     "stratum" : [
+      "unspecified"
+     ],
+     "stratumCnt" : 1,
+     "version" : [
+      3
+     ],
+     "versionCnt" : 1
+    },
     "packetLen" : [
      106
     ],
