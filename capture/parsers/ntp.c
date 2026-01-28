@@ -21,16 +21,6 @@
  *   Bytes 40-47: Transmit Timestamp
  */
 
-// NTP Modes
-#define NTP_MODE_RESERVED       0
-#define NTP_MODE_SYMM_ACTIVE    1
-#define NTP_MODE_SYMM_PASSIVE   2
-#define NTP_MODE_CLIENT         3
-#define NTP_MODE_SERVER         4
-#define NTP_MODE_BROADCAST      5
-#define NTP_MODE_CONTROL        6
-#define NTP_MODE_PRIVATE        7
-
 LOCAL const char *ntpModes[] = {
     [0] = "reserved",
     [1] = "symmetric-active",
@@ -42,13 +32,8 @@ LOCAL const char *ntpModes[] = {
     [7] = "private"
 };
 
-// Stratum values
-#define NTP_STRATUM_UNSPEC      0
-#define NTP_STRATUM_PRIMARY     1
-#define NTP_STRATUM_SECONDARY   2   // 2-15
-#define NTP_STRATUM_UNSYNCED    16
-
 extern ArkimeConfig_t        config;
+
 LOCAL  int versionField;
 LOCAL  int modeField;
 LOCAL  int stratumField;
