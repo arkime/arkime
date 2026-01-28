@@ -187,8 +187,7 @@ SPDX-License-Identifier: Apache-2.0
             class="mx-2 no-wrap search-row-btn"
             color="secondary"
             flat
-            @click="seeAllViews = !seeAllViews"
-            @input="seeAllViewsChanged"
+            @click="seeAllViews = !seeAllViews; seeAllViewsChanged()"
             v-tooltip="seeAllViews ? 'Just show the views created from your activity or shared with you' : 'See all the views that exist for all users (you can because you are an ADMIN!)'"
             v-if="roles.includes('cont3xtAdmin')"
             :title="seeAllViews ? 'Just show the views created from your activity or shared with you' : 'See all the views that exist for all users (you can because you are an ADMIN!)'">
@@ -489,8 +488,7 @@ SPDX-License-Identifier: Apache-2.0
               class="mx-2 no-wrap"
               color="secondary"
               flat
-              @click="seeAllOverviews = !seeAllOverviews"
-              @input="seeAllOverviewsChanged"
+              @click="seeAllOverviews = !seeAllOverviews; seeAllOverviewsChanged()"
               v-tooltip="seeAllOverviews ? 'Just show the overviews created from your activity or shared with you' : 'See all the overviews that exist for all users (you can because you are an ADMIN!)'"
               v-if="roles.includes('cont3xtAdmin')"
               :title="seeAllOverviews ? 'Just show the overviews created from your activity or shared with you' : 'See all the overviews that exist for all users (you can because you are an ADMIN!)'">
@@ -563,8 +561,7 @@ SPDX-License-Identifier: Apache-2.0
               class="mx-2 no-wrap search-row-btn"
               color="secondary"
               flat
-              @click="seeAllLinkGroups = !seeAllLinkGroups"
-              @input="seeAllLinkGroupsChanged"
+              @click="seeAllLinkGroups = !seeAllLinkGroups; seeAllLinkGroupsChanged()"
               v-tooltip="seeAllLinkGroups ? 'Just show the link groups created from your activity or shared with you' : 'See all the link groups that exist for all users (you can because you are an ADMIN!)'"
               v-if="roles.includes('cont3xtAdmin')"
               :title="seeAllLinkGroups ? 'Just show the link groups created from your activity or shared with you' : 'See all the link groups that exist for all users (you can because you are an ADMIN!)'">
