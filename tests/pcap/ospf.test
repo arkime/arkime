@@ -1,3867 +1,3903 @@
 {
-   "sessions3" : [
-      {
-         "body" : {
-            "@timestamp" : "SET",
-            "client" : {
-               "bytes" : 124
-            },
-            "destination" : {
-               "as" : {
-                  "full" : "AS8075 Microsoft Corporation",
-                  "number" : 8075,
-                  "organization" : {
-                     "name" : "Microsoft Corporation"
-                  }
-               },
-               "bytes" : 0,
-               "geo" : {
-                  "country_iso_code" : "US"
-               },
-               "ip" : "20.0.1.100",
-               "mac" : [
-                  "08:00:27:76:e3:69"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 0,
-               "port" : 514
-            },
-            "dstOui" : [
-               "PCS Computer Systems GmbH"
-            ],
-            "dstOuiCnt" : 1,
-            "dstRIR" : "ARIN",
-            "ethertype" : 2048,
-            "fileId" : [],
-            "firstPacket" : 1571662508236,
-            "ipProtocol" : 17,
-            "lastPacket" : 1571662508236,
-            "length" : 0,
-            "network" : {
-               "bytes" : 166,
-               "community_id" : "1:+xR7TJBjmXTZjrc2xnXTenLtr7U=",
-               "packets" : 1
-            },
-            "node" : "test",
-            "packetLen" : [
-               182
-            ],
-            "packetPos" : [
-               24
-            ],
-            "packetRange" : {
-               "gte" : 1571662508236,
-               "lte" : 1571662508236
-            },
-            "protocol" : [
-               "syslog",
-               "udp"
-            ],
-            "protocolCnt" : 2,
-            "segmentCnt" : 1,
-            "server" : {
-               "bytes" : 0
-            },
-            "source" : {
-               "as" : {
-                  "full" : "AS0 This is neat",
-                  "number" : 0,
-                  "organization" : {
-                     "name" : "This is neat"
-                  }
-               },
-               "bytes" : 166,
-               "geo" : {
-                  "country_iso_code" : "RU"
-               },
-               "ip" : "10.0.0.1",
-               "mac" : [
-                  "08:00:27:1f:08:22"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 1,
-               "port" : 46503
-            },
-            "srcOui" : [
-               "PCS Computer Systems GmbH"
-            ],
-            "srcOuiCnt" : 1,
-            "srcPayload8" : "3c38353e4f637420",
-            "srcTTL" : [
-               64
-            ],
-            "srcTTLCnt" : 1,
-            "tags" : [
-               "srcip"
-            ],
-            "tagsCnt" : 1,
-            "test" : {
-               "ASN" : [
-                  "AS0 This is neat"
-               ],
-               "GEO" : [
-                  "RU"
-               ],
-               "RIR" : [
-                  ""
-               ],
-               "ip" : [
-                  "10.0.0.1"
-               ],
-               "number" : [
-                  1677787156
-               ],
-               "string.snow" : [
-                  "16777226:46503,1677787156:514"
-               ]
-            },
-            "totDataBytes" : 124
-         },
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions3-191021"
-            }
-         }
-      },
-      {
-         "body" : {
-            "@timestamp" : "SET",
-            "client" : {
-               "bytes" : 0
-            },
-            "destination" : {
-               "bytes" : 0,
-               "ip" : "224.0.0.13",
-               "mac" : [
-                  "01:00:5e:00:00:0d"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 0,
-               "port" : 0
-            },
-            "ethertype" : 2048,
-            "fileId" : [],
-            "firstPacket" : 1571662508569,
-            "ipProtocol" : 103,
-            "lastPacket" : 1571662612317,
-            "length" : 103748,
-            "network" : {
-               "bytes" : 13804,
-               "packets" : 203
-            },
-            "node" : "test",
-            "packetLen" : [
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84,
-               84
-            ],
-            "packetPos" : [
-               206,
-               290,
-               2100,
-               2184,
-               2268,
-               2352,
-               2436,
-               2520,
-               4496,
-               4580,
-               6194,
-               6278,
-               7892,
-               7976,
-               8328,
-               8412,
-               8496,
-               10110,
-               10194,
-               10278,
-               10460,
-               10544,
-               10726,
-               12340,
-               12424,
-               12508,
-               14204,
-               14484,
-               16098,
-               16182,
-               16266,
-               16350,
-               16434,
-               18048,
-               18132,
-               18363,
-               18447,
-               18531,
-               20145,
-               20229,
-               20411,
-               20593,
-               20677,
-               24017,
-               24101,
-               24185,
-               24269,
-               25883,
-               25967,
-               26051,
-               26135,
-               26219,
-               27833,
-               27917,
-               28001,
-               28085,
-               28169,
-               31313,
-               31397,
-               31661,
-               32039,
-               32123,
-               32207,
-               33821,
-               33905,
-               34155,
-               34239,
-               34323,
-               35937,
-               36021,
-               36105,
-               36189,
-               36273,
-               37887,
-               37971,
-               38055,
-               38139,
-               40132,
-               40216,
-               42026,
-               42110,
-               42194,
-               42461,
-               42545,
-               44159,
-               44243,
-               44327,
-               44411,
-               44495,
-               46109,
-               46193,
-               46277,
-               46361,
-               46693,
-               46777,
-               50218,
-               50302,
-               50386,
-               50470,
-               50750,
-               52364,
-               52448,
-               52532,
-               52616,
-               52700,
-               54314,
-               54398,
-               54482,
-               54566,
-               54846,
-               56460,
-               58074,
-               58158,
-               58242,
-               58326,
-               62620,
-               62704,
-               62788,
-               62970,
-               63152,
-               63236,
-               64850,
-               64934,
-               65018,
-               65102,
-               66312,
-               66396,
-               68010,
-               68094,
-               70008,
-               70092,
-               71974,
-               72058,
-               73214,
-               73298,
-               73382,
-               73466,
-               75397,
-               75481,
-               77360,
-               77444,
-               77528,
-               77612,
-               79308,
-               79392,
-               79476,
-               81090,
-               82704,
-               83264,
-               83348,
-               83432,
-               83516,
-               83600,
-               85361,
-               85445,
-               85725,
-               85809,
-               89339,
-               89423,
-               89507,
-               89591,
-               91339,
-               92953,
-               93037,
-               93121,
-               93205,
-               93289,
-               93849,
-               95463,
-               95613,
-               95697,
-               95781,
-               95865,
-               97675,
-               97759,
-               97919,
-               98085,
-               98365,
-               101603,
-               101687,
-               101771,
-               101855,
-               102105,
-               103719,
-               103803,
-               103887,
-               104210,
-               105824,
-               105908,
-               105992,
-               106076,
-               106440,
-               106524,
-               108138,
-               109935,
-               110019,
-               110201,
-               111913,
-               111997,
-               112264,
-               112348,
-               112432,
-               114334
-            ],
-            "packetRange" : {
-               "gte" : 1571662508569,
-               "lte" : 1571662612317
-            },
-            "protocol" : [
-               "pim"
-            ],
-            "protocolCnt" : 1,
-            "segmentCnt" : 1,
-            "server" : {
-               "bytes" : 0
-            },
-            "source" : {
-               "as" : {
-                  "full" : "AS1 Cool Beans!",
-                  "number" : 1,
-                  "organization" : {
-                     "name" : "Cool Beans!"
-                  }
-               },
-               "bytes" : 13804,
-               "geo" : {
-                  "country_iso_code" : "CA"
-               },
-               "ip" : "10.0.0.2",
-               "mac" : [
-                  "08:00:27:1f:08:22",
-                  "08:00:27:76:e3:69"
-               ],
-               "mac-cnt" : 2,
-               "packets" : 203,
-               "port" : 0
-            },
-            "srcDscp" : [
-               48
-            ],
-            "srcDscpCnt" : 1,
-            "srcOui" : [
-               "PCS Computer Systems GmbH"
-            ],
-            "srcOuiCnt" : 1,
-            "srcRIR" : "TEST",
-            "srcTTL" : [
-               1
-            ],
-            "srcTTLCnt" : 1,
-            "tags" : [
-               "dstip"
-            ],
-            "tagsCnt" : 1,
-            "totDataBytes" : 0
-         },
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions3-191021"
-            }
-         }
-      },
-      {
-         "body" : {
-            "@timestamp" : "SET",
-            "client" : {
-               "bytes" : 0
-            },
-            "destination" : {
-               "bytes" : 0,
-               "ip" : "224.0.0.5",
-               "mac" : [
-                  "01:00:5e:00:00:05"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 0,
-               "port" : 0
-            },
-            "ethertype" : 2048,
-            "fileId" : [],
-            "firstPacket" : 1571662508795,
-            "ipProtocol" : 89,
-            "lastPacket" : 1571662609191,
-            "length" : 100396,
-            "network" : {
-               "bytes" : 4876,
-               "packets" : 54
-            },
-            "node" : "test",
-            "packetLen" : [
-               98,
-               98,
-               98,
-               98,
-               98,
-               98,
-               98,
-               98,
-               98,
-               98,
-               98,
-               98,
-               98,
-               98,
-               94,
-               98,
-               82,
-               122,
-               86,
-               138,
-               122,
-               86,
-               82,
-               94,
-               126,
-               94,
-               150,
-               138,
-               138,
-               94,
-               150,
-               94,
-               94,
-               98,
-               82,
-               122,
-               86,
-               138,
-               122,
-               86,
-               82,
-               94,
-               126,
-               94,
-               150,
-               138,
-               138,
-               94,
-               150,
-               94,
-               98,
-               98,
-               98,
-               98
-            ],
-            "packetPos" : [
-               374,
-               472,
-               10362,
-               10628,
-               20313,
-               20495,
-               31563,
-               31941,
-               41830,
-               41928,
-               50554,
-               50652,
-               62872,
-               63054,
-               75080,
-               75565,
-               75663,
-               75745,
-               75867,
-               75953,
-               76091,
-               76213,
-               76299,
-               76381,
-               76475,
-               76782,
-               76876,
-               77026,
-               82788,
-               82926,
-               83020,
-               83170,
-               87423,
-               87740,
-               87838,
-               87920,
-               88042,
-               88128,
-               88266,
-               88388,
-               88474,
-               88556,
-               88650,
-               88957,
-               89051,
-               89201,
-               93373,
-               93511,
-               93605,
-               93755,
-               98169,
-               98267,
-               110103,
-               110285
-            ],
-            "packetRange" : {
-               "gte" : 1571662508795,
-               "lte" : 1571662609191
-            },
-            "protocol" : [
-               "ospf"
-            ],
-            "protocolCnt" : 1,
-            "segmentCnt" : 1,
-            "server" : {
-               "bytes" : 0
-            },
-            "source" : {
-               "as" : {
-                  "full" : "AS1 Cool Beans!",
-                  "number" : 1,
-                  "organization" : {
-                     "name" : "Cool Beans!"
-                  }
-               },
-               "bytes" : 4876,
-               "geo" : {
-                  "country_iso_code" : "CA"
-               },
-               "ip" : "10.0.0.2",
-               "mac" : [
-                  "08:00:27:1f:08:22",
-                  "08:00:27:76:e3:69"
-               ],
-               "mac-cnt" : 2,
-               "packets" : 54,
-               "port" : 0
-            },
-            "srcDscp" : [
-               48
-            ],
-            "srcDscpCnt" : 1,
-            "srcOui" : [
-               "PCS Computer Systems GmbH"
-            ],
-            "srcOuiCnt" : 1,
-            "srcRIR" : "TEST",
-            "srcTTL" : [
-               1
-            ],
-            "srcTTLCnt" : 1,
-            "tags" : [
-               "dstip"
-            ],
-            "tagsCnt" : 1,
-            "totDataBytes" : 0
-         },
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions3-191021"
-            }
-         }
-      },
-      {
-         "body" : {
-            "@timestamp" : "SET",
-            "client" : {
-               "bytes" : 0
-            },
-            "destination" : {
-               "bytes" : 0,
-               "mac" : [
-                  "01:80:c2:00:00:15"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 0
-            },
-            "ethertype" : 1500,
-            "fileId" : [],
-            "firstPacket" : 1571662509461,
-            "ipProtocol" : 0,
-            "isis" : {
-               "msgType" : [
-                  "l2-csnp",
-                  "l2-lsp",
-                  "lan-l2-hello"
-               ]
-            },
-            "lastPacket" : 1571662612261,
-            "length" : 102800,
-            "network" : {
-               "bytes" : 81451,
-               "packets" : 67
-            },
-            "node" : "test",
-            "packetLen" : [
-               1530,
-               1530,
-               196,
-               1530,
-               1530,
-               1530,
-               1530,
-               1530,
-               196,
-               1530,
-               1530,
-               1530,
-               1530,
-               1530,
-               196,
-               1530,
-               1530,
-               1530,
-               1530,
-               196,
-               1530,
-               1530,
-               1530,
-               1530,
-               196,
-               1530,
-               1530,
-               1530,
-               1530,
-               196,
-               1530,
-               1530,
-               1530,
-               196,
-               1530,
-               1530,
-               1530,
-               1530,
-               196,
-               1530,
-               1530,
-               1530,
-               1530,
-               196,
-               1530,
-               1530,
-               1530,
-               1530,
-               196,
-               1530,
-               1530,
-               1530,
-               1530,
-               196,
-               1530,
-               1530,
-               1530,
-               1530,
-               239,
-               1530,
-               196,
-               84,
-               1530,
-               1530,
-               1530,
-               1530,
-               288
-            ],
-            "packetPos" : [
-               570,
-               2604,
-               4300,
-               4664,
-               6362,
-               8580,
-               10810,
-               12592,
-               14288,
-               14568,
-               16518,
-               18615,
-               20761,
-               22291,
-               23821,
-               24353,
-               26303,
-               28253,
-               29783,
-               31745,
-               32291,
-               34407,
-               36357,
-               38223,
-               39753,
-               40300,
-               42629,
-               44579,
-               46861,
-               48391,
-               48688,
-               50834,
-               52784,
-               54650,
-               54930,
-               56544,
-               61090,
-               63320,
-               65548,
-               66480,
-               68478,
-               70176,
-               73550,
-               77164,
-               77696,
-               79560,
-               81174,
-               83831,
-               85529,
-               85893,
-               89809,
-               91423,
-               93933,
-               95949,
-               96145,
-               98449,
-               100073,
-               102189,
-               103971,
-               104294,
-               106160,
-               106356,
-               106608,
-               108222,
-               110383,
-               112516,
-               114046
-            ],
-            "packetRange" : {
-               "gte" : 1571662509461,
-               "lte" : 1571662612261
-            },
-            "protocol" : [
-               "isis"
-            ],
-            "protocolCnt" : 1,
-            "segmentCnt" : 1,
-            "server" : {
-               "bytes" : 0
-            },
-            "source" : {
-               "bytes" : 81451,
-               "mac" : [
-                  "08:00:27:1f:08:22",
-                  "08:00:27:76:e3:69"
-               ],
-               "mac-cnt" : 2,
-               "packets" : 67
-            },
-            "srcOui" : [
-               "PCS Computer Systems GmbH"
-            ],
-            "srcOuiCnt" : 1,
-            "totDataBytes" : 0
-         },
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions3-191021"
-            }
-         }
-      },
-      {
-         "body" : {
-            "@timestamp" : "SET",
-            "client" : {
-               "bytes" : 0
-            },
-            "destination" : {
-               "bytes" : 0,
-               "mac" : [
-                  "01:80:c2:00:00:0e"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 0
-            },
-            "ethertype" : 35020,
-            "fileId" : [],
-            "firstPacket" : 1571662511903,
-            "ipProtocol" : 0,
-            "lastPacket" : 1571662601886,
-            "length" : 89983,
-            "network" : {
-               "bytes" : 993,
-               "packets" : 7
-            },
-            "node" : "test",
-            "packetLen" : [
-               166,
-               147,
-               166,
-               147,
-               166,
-               147,
-               166
-            ],
-            "packetPos" : [
-               4134,
-               18216,
-               33989,
-               46546,
-               65186,
-               83684,
-               101939
-            ],
-            "packetRange" : {
-               "gte" : 1571662511903,
-               "lte" : 1571662601886
-            },
-            "protocol" : [
-               "lldp"
-            ],
-            "protocolCnt" : 1,
-            "segmentCnt" : 1,
-            "server" : {
-               "bytes" : 0
-            },
-            "source" : {
-               "bytes" : 993,
-               "mac" : [
-                  "08:00:27:12:62:b0",
-                  "08:00:27:d8:5d:87"
-               ],
-               "mac-cnt" : 2,
-               "packets" : 7
-            },
-            "srcOui" : [
-               "PCS Computer Systems GmbH"
-            ],
-            "srcOuiCnt" : 1,
-            "totDataBytes" : 0
-         },
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions3-191021"
-            }
-         }
-      },
-      {
-         "body" : {
-            "@timestamp" : "SET",
-            "client" : {
-               "bytes" : 0
-            },
-            "destination" : {
-               "as" : {
-                  "full" : "AS15169 Google LLC",
-                  "number" : 15169,
-                  "organization" : {
-                     "name" : "Google LLC"
-                  }
-               },
-               "bytes" : 0,
-               "geo" : {
-                  "country_iso_code" : "US"
-               },
-               "ip" : "2607:f8b0:400f:801::200e",
-               "mac" : [
-                  "08:00:27:76:e3:69"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 0,
-               "port" : 80
-            },
-            "dstOui" : [
-               "PCS Computer Systems GmbH"
-            ],
-            "dstOuiCnt" : 1,
-            "ethertype" : 34525,
-            "fileId" : [],
-            "firstPacket" : 1571662515683,
-            "ipProtocol" : 6,
-            "lastPacket" : 1571662515683,
-            "length" : 0,
-            "network" : {
-               "bytes" : 94,
-               "community_id" : "1:6LM13JzmBiKxzgoT5iVJSORTXx4=",
-               "packets" : 1
-            },
-            "node" : "test",
-            "packetLen" : [
-               110
-            ],
-            "packetPos" : [
-               8060
-            ],
-            "packetRange" : {
-               "gte" : 1571662515683,
-               "lte" : 1571662515683
-            },
-            "protocol" : [
-               "tcp"
-            ],
-            "protocolCnt" : 1,
-            "segmentCnt" : 1,
-            "server" : {
-               "bytes" : 0
-            },
-            "source" : {
-               "bytes" : 94,
-               "geo" : {
-                  "country_iso_code" : "SE"
-               },
-               "ip" : "2001:bef::a00:27ff:fe0d:5c3c",
-               "mac" : [
-                  "08:00:27:0d:5c:3c"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 1,
-               "port" : 34808
-            },
-            "srcOui" : [
-               "PCS Computer Systems GmbH"
-            ],
-            "srcOuiCnt" : 1,
-            "srcTTL" : [
-               64
-            ],
-            "srcTTLCnt" : 1,
-            "tcpflags" : {
-               "ack" : 0,
-               "dstZero" : 0,
-               "fin" : 0,
-               "psh" : 0,
-               "rst" : 0,
-               "srcZero" : 0,
-               "syn" : 1,
-               "syn-ack" : 0,
-               "urg" : 0
-            },
-            "tcpseq" : {
-               "src" : 419032480
-            },
-            "totDataBytes" : 0
-         },
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions3-191021"
-            }
-         }
-      },
-      {
-         "body" : {
-            "@timestamp" : "SET",
-            "client" : {
-               "bytes" : 1704
-            },
-            "destination" : {
-               "bytes" : 0,
-               "geo" : {
-                  "country_iso_code" : "SE"
-               },
-               "ip" : "2001:bef::a00:27ff:fe0d:5c3c",
-               "mac" : [
-                  "08:00:27:0d:5c:3c"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 0,
-               "port" : 0
-            },
-            "dstOui" : [
-               "PCS Computer Systems GmbH"
-            ],
-            "dstOuiCnt" : 1,
-            "ethertype" : 34525,
-            "fileId" : [],
-            "firstPacket" : 1571662515687,
-            "icmp" : {
-               "code" : [
-                  0
-               ],
-               "type" : [
-                  1
-               ]
-            },
-            "ipProtocol" : 58,
-            "lastPacket" : 1571662576902,
-            "length" : 61215,
-            "network" : {
-               "bytes" : 2730,
-               "community_id" : "1:rKMtTKJt1ij0Rf6KMO0eiIc+fqM=",
-               "packets" : 19
-            },
-            "node" : "test",
-            "packetLen" : [
-               158,
-               158,
-               158,
-               158,
-               158,
-               158,
-               158,
-               158,
-               158,
-               158,
-               158,
-               174,
-               158,
-               174,
-               158,
-               158,
-               158,
-               158,
-               158
-            ],
-            "packetPos" : [
-               8170,
-               58520,
-               58788,
-               59056,
-               59324,
-               59592,
-               59860,
-               60128,
-               60396,
-               60664,
-               60932,
-               65870,
-               66154,
-               68304,
-               71816,
-               72252,
-               72520,
-               72788,
-               73056
-            ],
-            "packetRange" : {
-               "gte" : 1571662515687,
-               "lte" : 1571662576902
-            },
-            "protocol" : [
-               "icmp"
-            ],
-            "protocolCnt" : 1,
-            "segmentCnt" : 1,
-            "server" : {
-               "bytes" : 0
-            },
-            "source" : {
-               "bytes" : 2730,
-               "geo" : {
-                  "country_iso_code" : "SE"
-               },
-               "ip" : "2001:bef::2",
-               "mac" : [
-                  "08:00:27:76:e3:69"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 19,
-               "port" : 0
-            },
-            "srcOui" : [
-               "PCS Computer Systems GmbH"
-            ],
-            "srcOuiCnt" : 1,
-            "srcTTL" : [
-               64
-            ],
-            "srcTTLCnt" : 1,
-            "totDataBytes" : 1704
-         },
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions3-191021"
-            }
-         }
-      },
-      {
-         "body" : {
-            "@timestamp" : "SET",
-            "client" : {
-               "bytes" : 0
-            },
-            "destination" : {
-               "bytes" : 0,
-               "ip" : "172.16.0.2",
-               "mac" : [
-                  "08:00:27:76:e3:69"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 0,
-               "port" : 35069
-            },
-            "dstOui" : [
-               "PCS Computer Systems GmbH"
-            ],
-            "dstOuiCnt" : 1,
-            "dstRIR" : "ARIN",
-            "ethertype" : 2048,
-            "fileId" : [],
-            "firstPacket" : 1571662521545,
-            "ipProtocol" : 6,
-            "lastPacket" : 1571662581526,
-            "length" : 59981,
-            "network" : {
-               "bytes" : 217,
-               "community_id" : "1:JIBYd0nkQ+UkLGn+xWIqRaO7GJE=",
-               "packets" : 3
-            },
-            "node" : "test",
-            "packetLen" : [
-               82,
-               101,
-               82
-            ],
-            "packetPos" : [
-               14122,
-               48587,
-               79226
-            ],
-            "packetRange" : {
-               "gte" : 1571662521545,
-               "lte" : 1571662581526
-            },
-            "protocol" : [
-               "tcp"
-            ],
-            "protocolCnt" : 1,
-            "segmentCnt" : 1,
-            "server" : {
-               "bytes" : 0
-            },
-            "source" : {
-               "bytes" : 217,
-               "ip" : "172.16.0.3",
-               "mac" : [
-                  "08:00:27:1f:08:22"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 3,
-               "port" : 179
-            },
-            "srcDscp" : [
-               48
-            ],
-            "srcDscpCnt" : 1,
-            "srcOui" : [
-               "PCS Computer Systems GmbH"
-            ],
-            "srcOuiCnt" : 1,
-            "srcRIR" : "ARIN",
-            "srcTTL" : [
-               254
-            ],
-            "srcTTLCnt" : 1,
-            "tcpflags" : {
-               "ack" : 2,
-               "dstZero" : 0,
-               "fin" : 0,
-               "psh" : 1,
-               "rst" : 0,
-               "srcZero" : 0,
-               "syn" : 0,
-               "syn-ack" : 0,
-               "urg" : 0
-            },
-            "totDataBytes" : 0
-         },
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions3-191021"
-            }
-         }
-      },
-      {
-         "body" : {
-            "@timestamp" : "SET",
-            "client" : {
-               "bytes" : 0
-            },
-            "destination" : {
-               "bytes" : 0,
-               "ip" : "172.16.0.4",
-               "mac" : [
-                  "08:00:27:76:e3:69"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 0,
-               "port" : 33771
-            },
-            "dstOui" : [
-               "PCS Computer Systems GmbH"
-            ],
-            "dstOuiCnt" : 1,
-            "dstRIR" : "ARIN",
-            "ethertype" : 2048,
-            "fileId" : [],
-            "firstPacket" : 1571662538526,
-            "ipProtocol" : 6,
-            "lastPacket" : 1571662598506,
-            "length" : 59980,
-            "network" : {
-               "bytes" : 217,
-               "community_id" : "1:dKsI1tGUA4VrhlTRxJK45S2SfEs=",
-               "packets" : 3
-            },
-            "node" : "test",
-            "packetLen" : [
-               82,
-               101,
-               82
-            ],
-            "packetPos" : [
-               31481,
-               46445,
-               98003
-            ],
-            "packetRange" : {
-               "gte" : 1571662538526,
-               "lte" : 1571662598506
-            },
-            "protocol" : [
-               "tcp"
-            ],
-            "protocolCnt" : 1,
-            "segmentCnt" : 1,
-            "server" : {
-               "bytes" : 0
-            },
-            "source" : {
-               "bytes" : 217,
-               "ip" : "172.16.0.1",
-               "mac" : [
-                  "08:00:27:1f:08:22"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 3,
-               "port" : 179
-            },
-            "srcDscp" : [
-               48
-            ],
-            "srcDscpCnt" : 1,
-            "srcOui" : [
-               "PCS Computer Systems GmbH"
-            ],
-            "srcOuiCnt" : 1,
-            "srcRIR" : "ARIN",
-            "srcTTL" : [
-               255
-            ],
-            "srcTTLCnt" : 1,
-            "tcpflags" : {
-               "ack" : 2,
-               "dstZero" : 0,
-               "fin" : 0,
-               "psh" : 1,
-               "rst" : 0,
-               "srcZero" : 0,
-               "syn" : 0,
-               "syn-ack" : 0,
-               "urg" : 0
-            },
-            "totDataBytes" : 0
-         },
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions3-191021"
-            }
-         }
-      },
-      {
-         "body" : {
-            "@timestamp" : "SET",
-            "client" : {
-               "bytes" : 0
-            },
-            "destination" : {
-               "bytes" : 302,
-               "ip" : "172.16.0.1",
-               "mac" : [
-                  "08:00:27:1f:08:22"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 4,
-               "port" : 179
-            },
-            "dstDscp" : [
-               48
-            ],
-            "dstDscpCnt" : 1,
-            "dstOui" : [
-               "PCS Computer Systems GmbH"
-            ],
-            "dstOuiCnt" : 1,
-            "dstRIR" : "ARIN",
-            "dstTTL" : [
-               255
-            ],
-            "dstTTLCnt" : 1,
-            "ethertype" : 2048,
-            "fileId" : [],
-            "firstPacket" : 1571662548073,
-            "ipProtocol" : 6,
-            "lastPacket" : 1571662610443,
-            "length" : 62370,
-            "network" : {
-               "bytes" : 604,
-               "community_id" : "1:tqiALxHxk3fn9otJ1Y+Kp9SkxtI=",
-               "packets" : 8
-            },
-            "node" : "test",
-            "packetLen" : [
-               101,
-               82,
-               101,
-               82,
-               101,
-               82,
-               101,
-               82
-            ],
-            "packetPos" : [
-               39949,
-               40050,
-               42278,
-               42379,
-               109752,
-               109853,
-               112081,
-               112182
-            ],
-            "packetRange" : {
-               "gte" : 1571662548073,
-               "lte" : 1571662610443
-            },
-            "protocol" : [
-               "tcp"
-            ],
-            "protocolCnt" : 1,
-            "segmentCnt" : 1,
-            "server" : {
-               "bytes" : 0
-            },
-            "source" : {
-               "bytes" : 302,
-               "ip" : "172.16.0.2",
-               "mac" : [
-                  "08:00:27:76:e3:69"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 4,
-               "port" : 33359
-            },
-            "srcDscp" : [
-               48
-            ],
-            "srcDscpCnt" : 1,
-            "srcOui" : [
-               "PCS Computer Systems GmbH"
-            ],
-            "srcOuiCnt" : 1,
-            "srcRIR" : "ARIN",
-            "srcTTL" : [
-               255
-            ],
-            "srcTTLCnt" : 1,
-            "tcpflags" : {
-               "ack" : 4,
-               "dstZero" : 0,
-               "fin" : 0,
-               "psh" : 4,
-               "rst" : 0,
-               "srcZero" : 0,
-               "syn" : 0,
-               "syn-ack" : 0,
-               "urg" : 0
-            },
-            "totDataBytes" : 0
-         },
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions3-191021"
-            }
-         }
-      },
-      {
-         "body" : {
-            "@timestamp" : "SET",
-            "client" : {
-               "bytes" : 0
-            },
-            "destination" : {
-               "as" : {
-                  "full" : "AS54113 Fastly",
-                  "number" : 54113,
-                  "organization" : {
-                     "name" : "Fastly"
-                  }
-               },
-               "bytes" : 0,
-               "ip" : "2a04:4e42:400::323",
-               "mac" : [
-                  "08:00:27:76:e3:69"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 0,
-               "port" : 80
-            },
-            "dstOui" : [
-               "PCS Computer Systems GmbH"
-            ],
-            "dstOuiCnt" : 1,
-            "ethertype" : 34525,
-            "fileId" : [],
-            "firstPacket" : 1571662567185,
-            "ipProtocol" : 6,
-            "lastPacket" : 1571662567185,
-            "length" : 0,
-            "network" : {
-               "bytes" : 94,
-               "community_id" : "1:zS/jLwl2n/kHIiVi3kXC214Ycik=",
-               "packets" : 1
-            },
-            "node" : "test",
-            "packetLen" : [
-               110
-            ],
-            "packetPos" : [
-               58410
-            ],
-            "packetRange" : {
-               "gte" : 1571662567185,
-               "lte" : 1571662567185
-            },
-            "protocol" : [
-               "tcp"
-            ],
-            "protocolCnt" : 1,
-            "segmentCnt" : 1,
-            "server" : {
-               "bytes" : 0
-            },
-            "source" : {
-               "bytes" : 94,
-               "geo" : {
-                  "country_iso_code" : "SE"
-               },
-               "ip" : "2001:bef::a00:27ff:fe0d:5c3c",
-               "mac" : [
-                  "08:00:27:0d:5c:3c"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 1,
-               "port" : 51532
-            },
-            "srcOui" : [
-               "PCS Computer Systems GmbH"
-            ],
-            "srcOuiCnt" : 1,
-            "srcTTL" : [
-               64
-            ],
-            "srcTTLCnt" : 1,
-            "tcpflags" : {
-               "ack" : 0,
-               "dstZero" : 0,
-               "fin" : 0,
-               "psh" : 0,
-               "rst" : 0,
-               "srcZero" : 0,
-               "syn" : 1,
-               "syn-ack" : 0,
-               "urg" : 0
-            },
-            "tcpseq" : {
-               "src" : 2639087993
-            },
-            "totDataBytes" : 0
-         },
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions3-191021"
-            }
-         }
-      },
-      {
-         "body" : {
-            "@timestamp" : "SET",
-            "client" : {
-               "bytes" : 0
-            },
-            "destination" : {
-               "as" : {
-                  "full" : "AS54113 Fastly",
-                  "number" : 54113,
-                  "organization" : {
-                     "name" : "Fastly"
-                  }
-               },
-               "bytes" : 0,
-               "ip" : "2a04:4e42:600::323",
-               "mac" : [
-                  "08:00:27:76:e3:69"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 0,
-               "port" : 80
-            },
-            "dstOui" : [
-               "PCS Computer Systems GmbH"
-            ],
-            "dstOuiCnt" : 1,
-            "ethertype" : 34525,
-            "fileId" : [],
-            "firstPacket" : 1571662567189,
-            "ipProtocol" : 6,
-            "lastPacket" : 1571662567189,
-            "length" : 0,
-            "network" : {
-               "bytes" : 94,
-               "community_id" : "1:ZAOeNMLUwJNJXfCXghxBO0/oq7k=",
-               "packets" : 1
-            },
-            "node" : "test",
-            "packetLen" : [
-               110
-            ],
-            "packetPos" : [
-               58678
-            ],
-            "packetRange" : {
-               "gte" : 1571662567189,
-               "lte" : 1571662567189
-            },
-            "protocol" : [
-               "tcp"
-            ],
-            "protocolCnt" : 1,
-            "segmentCnt" : 1,
-            "server" : {
-               "bytes" : 0
-            },
-            "source" : {
-               "bytes" : 94,
-               "geo" : {
-                  "country_iso_code" : "SE"
-               },
-               "ip" : "2001:bef::a00:27ff:fe0d:5c3c",
-               "mac" : [
-                  "08:00:27:0d:5c:3c"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 1,
-               "port" : 42834
-            },
-            "srcOui" : [
-               "PCS Computer Systems GmbH"
-            ],
-            "srcOuiCnt" : 1,
-            "srcTTL" : [
-               64
-            ],
-            "srcTTLCnt" : 1,
-            "tcpflags" : {
-               "ack" : 0,
-               "dstZero" : 0,
-               "fin" : 0,
-               "psh" : 0,
-               "rst" : 0,
-               "srcZero" : 0,
-               "syn" : 1,
-               "syn-ack" : 0,
-               "urg" : 0
-            },
-            "tcpseq" : {
-               "src" : 764248636
-            },
-            "totDataBytes" : 0
-         },
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions3-191021"
-            }
-         }
-      },
-      {
-         "body" : {
-            "@timestamp" : "SET",
-            "client" : {
-               "bytes" : 0
-            },
-            "destination" : {
-               "as" : {
-                  "full" : "AS54113 Fastly",
-                  "number" : 54113,
-                  "organization" : {
-                     "name" : "Fastly"
-                  }
-               },
-               "bytes" : 0,
-               "ip" : "2a04:4e42::323",
-               "mac" : [
-                  "08:00:27:76:e3:69"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 0,
-               "port" : 80
-            },
-            "dstOui" : [
-               "PCS Computer Systems GmbH"
-            ],
-            "dstOuiCnt" : 1,
-            "ethertype" : 34525,
-            "fileId" : [],
-            "firstPacket" : 1571662567192,
-            "ipProtocol" : 6,
-            "lastPacket" : 1571662567192,
-            "length" : 0,
-            "network" : {
-               "bytes" : 94,
-               "community_id" : "1:HqHv6VsSqKUcfCCgRzntY1oMT4M=",
-               "packets" : 1
-            },
-            "node" : "test",
-            "packetLen" : [
-               110
-            ],
-            "packetPos" : [
-               58946
-            ],
-            "packetRange" : {
-               "gte" : 1571662567192,
-               "lte" : 1571662567192
-            },
-            "protocol" : [
-               "tcp"
-            ],
-            "protocolCnt" : 1,
-            "segmentCnt" : 1,
-            "server" : {
-               "bytes" : 0
-            },
-            "source" : {
-               "bytes" : 94,
-               "geo" : {
-                  "country_iso_code" : "SE"
-               },
-               "ip" : "2001:bef::a00:27ff:fe0d:5c3c",
-               "mac" : [
-                  "08:00:27:0d:5c:3c"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 1,
-               "port" : 54958
-            },
-            "srcOui" : [
-               "PCS Computer Systems GmbH"
-            ],
-            "srcOuiCnt" : 1,
-            "srcTTL" : [
-               64
-            ],
-            "srcTTLCnt" : 1,
-            "tcpflags" : {
-               "ack" : 0,
-               "dstZero" : 0,
-               "fin" : 0,
-               "psh" : 0,
-               "rst" : 0,
-               "srcZero" : 0,
-               "syn" : 1,
-               "syn-ack" : 0,
-               "urg" : 0
-            },
-            "tcpseq" : {
-               "src" : 1805002475
-            },
-            "totDataBytes" : 0
-         },
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions3-191021"
-            }
-         }
-      },
-      {
-         "body" : {
-            "@timestamp" : "SET",
-            "client" : {
-               "bytes" : 0
-            },
-            "destination" : {
-               "as" : {
-                  "full" : "AS54113 Fastly",
-                  "number" : 54113,
-                  "organization" : {
-                     "name" : "Fastly"
-                  }
-               },
-               "bytes" : 0,
-               "ip" : "2a04:4e42:200::323",
-               "mac" : [
-                  "08:00:27:76:e3:69"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 0,
-               "port" : 80
-            },
-            "dstOui" : [
-               "PCS Computer Systems GmbH"
-            ],
-            "dstOuiCnt" : 1,
-            "ethertype" : 34525,
-            "fileId" : [],
-            "firstPacket" : 1571662567195,
-            "ipProtocol" : 6,
-            "lastPacket" : 1571662567195,
-            "length" : 0,
-            "network" : {
-               "bytes" : 94,
-               "community_id" : "1:PlvU1YCSX4Pugs0RnJMcqfUxm3c=",
-               "packets" : 1
-            },
-            "node" : "test",
-            "packetLen" : [
-               110
-            ],
-            "packetPos" : [
-               59214
-            ],
-            "packetRange" : {
-               "gte" : 1571662567195,
-               "lte" : 1571662567195
-            },
-            "protocol" : [
-               "tcp"
-            ],
-            "protocolCnt" : 1,
-            "segmentCnt" : 1,
-            "server" : {
-               "bytes" : 0
-            },
-            "source" : {
-               "bytes" : 94,
-               "geo" : {
-                  "country_iso_code" : "SE"
-               },
-               "ip" : "2001:bef::a00:27ff:fe0d:5c3c",
-               "mac" : [
-                  "08:00:27:0d:5c:3c"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 1,
-               "port" : 44110
-            },
-            "srcOui" : [
-               "PCS Computer Systems GmbH"
-            ],
-            "srcOuiCnt" : 1,
-            "srcTTL" : [
-               64
-            ],
-            "srcTTLCnt" : 1,
-            "tcpflags" : {
-               "ack" : 0,
-               "dstZero" : 0,
-               "fin" : 0,
-               "psh" : 0,
-               "rst" : 0,
-               "srcZero" : 0,
-               "syn" : 1,
-               "syn-ack" : 0,
-               "urg" : 0
-            },
-            "tcpseq" : {
-               "src" : 1845294610
-            },
-            "totDataBytes" : 0
-         },
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions3-191021"
-            }
-         }
-      },
-      {
-         "body" : {
-            "@timestamp" : "SET",
-            "client" : {
-               "bytes" : 0
-            },
-            "destination" : {
-               "as" : {
-                  "full" : "AS26101 Oath Holdings Inc.",
-                  "number" : 26101,
-                  "organization" : {
-                     "name" : "Oath Holdings Inc."
-                  }
-               },
-               "bytes" : 0,
-               "geo" : {
-                  "country_iso_code" : "US"
-               },
-               "ip" : "2001:4998:58:1836::10",
-               "mac" : [
-                  "08:00:27:76:e3:69"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 0,
-               "port" : 80
-            },
-            "dstOui" : [
-               "PCS Computer Systems GmbH"
-            ],
-            "dstOuiCnt" : 1,
-            "ethertype" : 34525,
-            "fileId" : [],
-            "firstPacket" : 1571662567263,
-            "ipProtocol" : 6,
-            "lastPacket" : 1571662567263,
-            "length" : 0,
-            "network" : {
-               "bytes" : 94,
-               "community_id" : "1:bLKnRk376Bs3Ke5URY5Zz9GlhHY=",
-               "packets" : 1
-            },
-            "node" : "test",
-            "packetLen" : [
-               110
-            ],
-            "packetPos" : [
-               59482
-            ],
-            "packetRange" : {
-               "gte" : 1571662567263,
-               "lte" : 1571662567263
-            },
-            "protocol" : [
-               "tcp"
-            ],
-            "protocolCnt" : 1,
-            "segmentCnt" : 1,
-            "server" : {
-               "bytes" : 0
-            },
-            "source" : {
-               "bytes" : 94,
-               "geo" : {
-                  "country_iso_code" : "SE"
-               },
-               "ip" : "2001:bef::a00:27ff:fe0d:5c3c",
-               "mac" : [
-                  "08:00:27:0d:5c:3c"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 1,
-               "port" : 52112
-            },
-            "srcOui" : [
-               "PCS Computer Systems GmbH"
-            ],
-            "srcOuiCnt" : 1,
-            "srcTTL" : [
-               64
-            ],
-            "srcTTLCnt" : 1,
-            "tcpflags" : {
-               "ack" : 0,
-               "dstZero" : 0,
-               "fin" : 0,
-               "psh" : 0,
-               "rst" : 0,
-               "srcZero" : 0,
-               "syn" : 1,
-               "syn-ack" : 0,
-               "urg" : 0
-            },
-            "tcpseq" : {
-               "src" : 1008627354
-            },
-            "totDataBytes" : 0
-         },
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions3-191021"
-            }
-         }
-      },
-      {
-         "body" : {
-            "@timestamp" : "SET",
-            "client" : {
-               "bytes" : 0
-            },
-            "destination" : {
-               "as" : {
-                  "full" : "AS36646 Oath Holdings Inc.",
-                  "number" : 36646,
-                  "organization" : {
-                     "name" : "Oath Holdings Inc."
-                  }
-               },
-               "bytes" : 0,
-               "geo" : {
-                  "country_iso_code" : "US"
-               },
-               "ip" : "2001:4998:44:41d::3",
-               "mac" : [
-                  "08:00:27:76:e3:69"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 0,
-               "port" : 80
-            },
-            "dstOui" : [
-               "PCS Computer Systems GmbH"
-            ],
-            "dstOuiCnt" : 1,
-            "ethertype" : 34525,
-            "fileId" : [],
-            "firstPacket" : 1571662567268,
-            "ipProtocol" : 6,
-            "lastPacket" : 1571662567268,
-            "length" : 0,
-            "network" : {
-               "bytes" : 94,
-               "community_id" : "1:c0vM0WrbY8zp6ddCOj5oLuxUL+Q=",
-               "packets" : 1
-            },
-            "node" : "test",
-            "packetLen" : [
-               110
-            ],
-            "packetPos" : [
-               59750
-            ],
-            "packetRange" : {
-               "gte" : 1571662567268,
-               "lte" : 1571662567268
-            },
-            "protocol" : [
-               "tcp"
-            ],
-            "protocolCnt" : 1,
-            "segmentCnt" : 1,
-            "server" : {
-               "bytes" : 0
-            },
-            "source" : {
-               "bytes" : 94,
-               "geo" : {
-                  "country_iso_code" : "SE"
-               },
-               "ip" : "2001:bef::a00:27ff:fe0d:5c3c",
-               "mac" : [
-                  "08:00:27:0d:5c:3c"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 1,
-               "port" : 32802
-            },
-            "srcOui" : [
-               "PCS Computer Systems GmbH"
-            ],
-            "srcOuiCnt" : 1,
-            "srcTTL" : [
-               64
-            ],
-            "srcTTLCnt" : 1,
-            "tcpflags" : {
-               "ack" : 0,
-               "dstZero" : 0,
-               "fin" : 0,
-               "psh" : 0,
-               "rst" : 0,
-               "srcZero" : 0,
-               "syn" : 1,
-               "syn-ack" : 0,
-               "urg" : 0
-            },
-            "tcpseq" : {
-               "src" : 1971637293
-            },
-            "totDataBytes" : 0
-         },
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions3-191021"
-            }
-         }
-      },
-      {
-         "body" : {
-            "@timestamp" : "SET",
-            "client" : {
-               "bytes" : 0
-            },
-            "destination" : {
-               "as" : {
-                  "full" : "AS36646 Oath Holdings Inc.",
-                  "number" : 36646,
-                  "organization" : {
-                     "name" : "Oath Holdings Inc."
-                  }
-               },
-               "bytes" : 0,
-               "geo" : {
-                  "country_iso_code" : "US"
-               },
-               "ip" : "2001:4998:44:41d::4",
-               "mac" : [
-                  "08:00:27:76:e3:69"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 0,
-               "port" : 80
-            },
-            "dstOui" : [
-               "PCS Computer Systems GmbH"
-            ],
-            "dstOuiCnt" : 1,
-            "ethertype" : 34525,
-            "fileId" : [],
-            "firstPacket" : 1571662567273,
-            "ipProtocol" : 6,
-            "lastPacket" : 1571662567273,
-            "length" : 0,
-            "network" : {
-               "bytes" : 94,
-               "community_id" : "1:us3PFR4rOxhEfjBei+RbJEzWC6Y=",
-               "packets" : 1
-            },
-            "node" : "test",
-            "packetLen" : [
-               110
-            ],
-            "packetPos" : [
-               60018
-            ],
-            "packetRange" : {
-               "gte" : 1571662567273,
-               "lte" : 1571662567273
-            },
-            "protocol" : [
-               "tcp"
-            ],
-            "protocolCnt" : 1,
-            "segmentCnt" : 1,
-            "server" : {
-               "bytes" : 0
-            },
-            "source" : {
-               "bytes" : 94,
-               "geo" : {
-                  "country_iso_code" : "SE"
-               },
-               "ip" : "2001:bef::a00:27ff:fe0d:5c3c",
-               "mac" : [
-                  "08:00:27:0d:5c:3c"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 1,
-               "port" : 44002
-            },
-            "srcOui" : [
-               "PCS Computer Systems GmbH"
-            ],
-            "srcOuiCnt" : 1,
-            "srcTTL" : [
-               64
-            ],
-            "srcTTLCnt" : 1,
-            "tcpflags" : {
-               "ack" : 0,
-               "dstZero" : 0,
-               "fin" : 0,
-               "psh" : 0,
-               "rst" : 0,
-               "srcZero" : 0,
-               "syn" : 1,
-               "syn-ack" : 0,
-               "urg" : 0
-            },
-            "tcpseq" : {
-               "src" : 539554290
-            },
-            "totDataBytes" : 0
-         },
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions3-191021"
-            }
-         }
-      },
-      {
-         "body" : {
-            "@timestamp" : "SET",
-            "client" : {
-               "bytes" : 0
-            },
-            "destination" : {
-               "as" : {
-                  "full" : "AS36647 Oath Holdings Inc.",
-                  "number" : 36647,
-                  "organization" : {
-                     "name" : "Oath Holdings Inc."
-                  }
-               },
-               "bytes" : 0,
-               "geo" : {
-                  "country_iso_code" : "US"
-               },
-               "ip" : "2001:4998:c:1023::5",
-               "mac" : [
-                  "08:00:27:76:e3:69"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 0,
-               "port" : 80
-            },
-            "dstOui" : [
-               "PCS Computer Systems GmbH"
-            ],
-            "dstOuiCnt" : 1,
-            "ethertype" : 34525,
-            "fileId" : [],
-            "firstPacket" : 1571662567276,
-            "ipProtocol" : 6,
-            "lastPacket" : 1571662567276,
-            "length" : 0,
-            "network" : {
-               "bytes" : 94,
-               "community_id" : "1:l7RM5nY0gEwr+HSf4iyA9Q+D7zI=",
-               "packets" : 1
-            },
-            "node" : "test",
-            "packetLen" : [
-               110
-            ],
-            "packetPos" : [
-               60286
-            ],
-            "packetRange" : {
-               "gte" : 1571662567276,
-               "lte" : 1571662567276
-            },
-            "protocol" : [
-               "tcp"
-            ],
-            "protocolCnt" : 1,
-            "segmentCnt" : 1,
-            "server" : {
-               "bytes" : 0
-            },
-            "source" : {
-               "bytes" : 94,
-               "geo" : {
-                  "country_iso_code" : "SE"
-               },
-               "ip" : "2001:bef::a00:27ff:fe0d:5c3c",
-               "mac" : [
-                  "08:00:27:0d:5c:3c"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 1,
-               "port" : 39392
-            },
-            "srcOui" : [
-               "PCS Computer Systems GmbH"
-            ],
-            "srcOuiCnt" : 1,
-            "srcTTL" : [
-               64
-            ],
-            "srcTTLCnt" : 1,
-            "tcpflags" : {
-               "ack" : 0,
-               "dstZero" : 0,
-               "fin" : 0,
-               "psh" : 0,
-               "rst" : 0,
-               "srcZero" : 0,
-               "syn" : 1,
-               "syn-ack" : 0,
-               "urg" : 0
-            },
-            "tcpseq" : {
-               "src" : 2192845188
-            },
-            "totDataBytes" : 0
-         },
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions3-191021"
-            }
-         }
-      },
-      {
-         "body" : {
-            "@timestamp" : "SET",
-            "client" : {
-               "bytes" : 0
-            },
-            "destination" : {
-               "as" : {
-                  "full" : "AS36647 Oath Holdings Inc.",
-                  "number" : 36647,
-                  "organization" : {
-                     "name" : "Oath Holdings Inc."
-                  }
-               },
-               "bytes" : 0,
-               "geo" : {
-                  "country_iso_code" : "US"
-               },
-               "ip" : "2001:4998:c:1023::4",
-               "mac" : [
-                  "08:00:27:76:e3:69"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 0,
-               "port" : 80
-            },
-            "dstOui" : [
-               "PCS Computer Systems GmbH"
-            ],
-            "dstOuiCnt" : 1,
-            "ethertype" : 34525,
-            "fileId" : [],
-            "firstPacket" : 1571662567279,
-            "ipProtocol" : 6,
-            "lastPacket" : 1571662567279,
-            "length" : 0,
-            "network" : {
-               "bytes" : 94,
-               "community_id" : "1:31nXcG+ZBCFxYAqEOPuAzkRSXX4=",
-               "packets" : 1
-            },
-            "node" : "test",
-            "packetLen" : [
-               110
-            ],
-            "packetPos" : [
-               60554
-            ],
-            "packetRange" : {
-               "gte" : 1571662567279,
-               "lte" : 1571662567279
-            },
-            "protocol" : [
-               "tcp"
-            ],
-            "protocolCnt" : 1,
-            "segmentCnt" : 1,
-            "server" : {
-               "bytes" : 0
-            },
-            "source" : {
-               "bytes" : 94,
-               "geo" : {
-                  "country_iso_code" : "SE"
-               },
-               "ip" : "2001:bef::a00:27ff:fe0d:5c3c",
-               "mac" : [
-                  "08:00:27:0d:5c:3c"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 1,
-               "port" : 53518
-            },
-            "srcOui" : [
-               "PCS Computer Systems GmbH"
-            ],
-            "srcOuiCnt" : 1,
-            "srcTTL" : [
-               64
-            ],
-            "srcTTLCnt" : 1,
-            "tcpflags" : {
-               "ack" : 0,
-               "dstZero" : 0,
-               "fin" : 0,
-               "psh" : 0,
-               "rst" : 0,
-               "srcZero" : 0,
-               "syn" : 1,
-               "syn-ack" : 0,
-               "urg" : 0
-            },
-            "tcpseq" : {
-               "src" : 3897817856
-            },
-            "totDataBytes" : 0
-         },
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions3-191021"
-            }
-         }
-      },
-      {
-         "body" : {
-            "@timestamp" : "SET",
-            "client" : {
-               "bytes" : 0
-            },
-            "destination" : {
-               "as" : {
-                  "full" : "AS26101 Oath Holdings Inc.",
-                  "number" : 26101,
-                  "organization" : {
-                     "name" : "Oath Holdings Inc."
-                  }
-               },
-               "bytes" : 0,
-               "geo" : {
-                  "country_iso_code" : "US"
-               },
-               "ip" : "2001:4998:58:1836::11",
-               "mac" : [
-                  "08:00:27:76:e3:69"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 0,
-               "port" : 80
-            },
-            "dstOui" : [
-               "PCS Computer Systems GmbH"
-            ],
-            "dstOuiCnt" : 1,
-            "ethertype" : 34525,
-            "fileId" : [],
-            "firstPacket" : 1571662567282,
-            "ipProtocol" : 6,
-            "lastPacket" : 1571662567282,
-            "length" : 0,
-            "network" : {
-               "bytes" : 94,
-               "community_id" : "1:05Mic6R09gwS/lrcHgiR//+gvlk=",
-               "packets" : 1
-            },
-            "node" : "test",
-            "packetLen" : [
-               110
-            ],
-            "packetPos" : [
-               60822
-            ],
-            "packetRange" : {
-               "gte" : 1571662567282,
-               "lte" : 1571662567282
-            },
-            "protocol" : [
-               "tcp"
-            ],
-            "protocolCnt" : 1,
-            "segmentCnt" : 1,
-            "server" : {
-               "bytes" : 0
-            },
-            "source" : {
-               "bytes" : 94,
-               "geo" : {
-                  "country_iso_code" : "SE"
-               },
-               "ip" : "2001:bef::a00:27ff:fe0d:5c3c",
-               "mac" : [
-                  "08:00:27:0d:5c:3c"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 1,
-               "port" : 44256
-            },
-            "srcOui" : [
-               "PCS Computer Systems GmbH"
-            ],
-            "srcOuiCnt" : 1,
-            "srcTTL" : [
-               64
-            ],
-            "srcTTLCnt" : 1,
-            "tcpflags" : {
-               "ack" : 0,
-               "dstZero" : 0,
-               "fin" : 0,
-               "psh" : 0,
-               "rst" : 0,
-               "srcZero" : 0,
-               "syn" : 1,
-               "syn-ack" : 0,
-               "urg" : 0
-            },
-            "tcpseq" : {
-               "src" : 1752346135
-            },
-            "totDataBytes" : 0
-         },
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions3-191021"
-            }
-         }
-      },
-      {
-         "body" : {
-            "@timestamp" : "SET",
-            "client" : {
-               "bytes" : 32
-            },
-            "destination" : {
-               "bytes" : 78,
-               "ip" : "fe80::a00:27ff:fe76:e369",
-               "mac" : [
-                  "08:00:27:76:e3:69"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 1,
-               "port" : 0
-            },
-            "dstOui" : [
-               "PCS Computer Systems GmbH"
-            ],
-            "dstOuiCnt" : 1,
-            "dstTTL" : [
-               255
-            ],
-            "dstTTLCnt" : 1,
-            "ethertype" : 34525,
-            "fileId" : [],
-            "firstPacket" : 1571662572190,
-            "icmp" : {
-               "code" : [
-                  0
-               ],
-               "type" : [
-                  135,
-                  136
-               ]
-            },
-            "ipProtocol" : 58,
-            "lastPacket" : 1571662572192,
-            "length" : 2,
-            "network" : {
-               "bytes" : 164,
-               "community_id" : "1:2og2vy4Q8lFp/dFP+c9vbw1mv7Y=",
-               "packets" : 2
-            },
-            "node" : "test",
-            "packetLen" : [
-               102,
-               94
-            ],
-            "packetPos" : [
-               65352,
-               65454
-            ],
-            "packetRange" : {
-               "gte" : 1571662572190,
-               "lte" : 1571662572192
-            },
-            "protocol" : [
-               "icmp"
-            ],
-            "protocolCnt" : 1,
-            "segmentCnt" : 1,
-            "server" : {
-               "bytes" : 24
-            },
-            "source" : {
-               "bytes" : 86,
-               "ip" : "fe80::a00:27ff:fe0d:5c3c",
-               "mac" : [
-                  "08:00:27:0d:5c:3c"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 1,
-               "port" : 0
-            },
-            "srcOui" : [
-               "PCS Computer Systems GmbH"
-            ],
-            "srcOuiCnt" : 1,
-            "srcTTL" : [
-               255
-            ],
-            "srcTTLCnt" : 1,
-            "totDataBytes" : 56
-         },
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions3-191021"
-            }
-         }
-      },
-      {
-         "body" : {
-            "@timestamp" : "SET",
-            "client" : {
-               "bytes" : 48
-            },
-            "destination" : {
-               "as" : {
-                  "full" : "AS2914 NTT America, Inc.",
-                  "number" : 2914,
-                  "organization" : {
-                     "name" : "NTT America, Inc."
-                  }
-               },
-               "bytes" : 0,
-               "geo" : {
-                  "country_iso_code" : "US"
-               },
-               "ip" : "2001:418:8405:4002::3",
-               "mac" : [
-                  "08:00:27:76:e3:69"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 0,
-               "port" : 123
-            },
-            "dstOui" : [
-               "PCS Computer Systems GmbH"
-            ],
-            "dstOuiCnt" : 1,
-            "ethertype" : 34525,
-            "fileId" : [],
-            "firstPacket" : 1571662572491,
-            "ipProtocol" : 17,
-            "lastPacket" : 1571662572491,
-            "length" : 0,
-            "network" : {
-               "bytes" : 110,
-               "community_id" : "1:DZD6E9KdK+44O1XIWrJTIdbYdyQ=",
-               "packets" : 1
-            },
-            "node" : "test",
-            "packetLen" : [
-               126
-            ],
-            "packetPos" : [
-               65744
-            ],
-            "packetRange" : {
-               "gte" : 1571662572491,
-               "lte" : 1571662572491
-            },
-            "protocol" : [
-               "ntp",
-               "udp"
-            ],
-            "protocolCnt" : 2,
-            "segmentCnt" : 1,
-            "server" : {
-               "bytes" : 0
-            },
-            "source" : {
-               "bytes" : 110,
-               "geo" : {
-                  "country_iso_code" : "SE"
-               },
-               "ip" : "2001:bef::a00:27ff:fe0d:5c3c",
-               "mac" : [
-                  "08:00:27:0d:5c:3c"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 1,
-               "port" : 123
-            },
-            "srcDscp" : [
-               11
-            ],
-            "srcDscpCnt" : 1,
-            "srcOui" : [
-               "PCS Computer Systems GmbH"
-            ],
-            "srcOuiCnt" : 1,
-            "srcPayload8" : "e30006e800000000",
-            "srcTTL" : [
-               64
-            ],
-            "srcTTLCnt" : 1,
-            "totDataBytes" : 48
-         },
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions3-191021"
-            }
-         }
-      },
-      {
-         "body" : {
-            "@timestamp" : "SET",
-            "client" : {
-               "bytes" : 0
-            },
-            "destination" : {
-               "as" : {
-                  "full" : "AS15169 Google LLC",
-                  "number" : 15169,
-                  "organization" : {
-                     "name" : "Google LLC"
-                  }
-               },
-               "bytes" : 0,
-               "geo" : {
-                  "country_iso_code" : "US"
-               },
-               "ip" : "2607:f8b0:400f:805::200e",
-               "mac" : [
-                  "08:00:27:76:e3:69"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 0,
-               "port" : 80
-            },
-            "dstOui" : [
-               "PCS Computer Systems GmbH"
-            ],
-            "dstOuiCnt" : 1,
-            "ethertype" : 34525,
-            "fileId" : [],
-            "firstPacket" : 1571662572665,
-            "ipProtocol" : 6,
-            "lastPacket" : 1571662572665,
-            "length" : 0,
-            "network" : {
-               "bytes" : 94,
-               "community_id" : "1:EGKOofHS2mtrMUR7IOTcJWZ3j6c=",
-               "packets" : 1
-            },
-            "node" : "test",
-            "packetLen" : [
-               110
-            ],
-            "packetPos" : [
-               66044
-            ],
-            "packetRange" : {
-               "gte" : 1571662572665,
-               "lte" : 1571662572665
-            },
-            "protocol" : [
-               "tcp"
-            ],
-            "protocolCnt" : 1,
-            "segmentCnt" : 1,
-            "server" : {
-               "bytes" : 0
-            },
-            "source" : {
-               "bytes" : 94,
-               "geo" : {
-                  "country_iso_code" : "SE"
-               },
-               "ip" : "2001:bef::a00:27ff:fe0d:5c3c",
-               "mac" : [
-                  "08:00:27:0d:5c:3c"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 1,
-               "port" : 52338
-            },
-            "srcOui" : [
-               "PCS Computer Systems GmbH"
-            ],
-            "srcOuiCnt" : 1,
-            "srcTTL" : [
-               64
-            ],
-            "srcTTLCnt" : 1,
-            "tcpflags" : {
-               "ack" : 0,
-               "dstZero" : 0,
-               "fin" : 0,
-               "psh" : 0,
-               "rst" : 0,
-               "srcZero" : 0,
-               "syn" : 1,
-               "syn-ack" : 0,
-               "urg" : 0
-            },
-            "tcpseq" : {
-               "src" : 743002002
-            },
-            "totDataBytes" : 0
-         },
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions3-191021"
-            }
-         }
-      },
-      {
-         "body" : {
-            "@timestamp" : "SET",
-            "client" : {
-               "bytes" : 48
-            },
-            "destination" : {
-               "as" : {
-                  "full" : "AS41231 Canonical Group Limited",
-                  "number" : 41231,
-                  "organization" : {
-                     "name" : "Canonical Group Limited"
-                  }
-               },
-               "bytes" : 0,
-               "geo" : {
-                  "country_iso_code" : "GB"
-               },
-               "ip" : "2001:67c:1560:8003::c8",
-               "mac" : [
-                  "08:00:27:76:e3:69"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 0,
-               "port" : 123
-            },
-            "dstOui" : [
-               "PCS Computer Systems GmbH"
-            ],
-            "dstOuiCnt" : 1,
-            "ethertype" : 34525,
-            "fileId" : [],
-            "firstPacket" : 1571662574339,
-            "ipProtocol" : 17,
-            "lastPacket" : 1571662574339,
-            "length" : 0,
-            "network" : {
-               "bytes" : 110,
-               "community_id" : "1:YBoCole5RzOqgxi8Mc/b53cN8Gk=",
-               "packets" : 1
-            },
-            "node" : "test",
-            "packetLen" : [
-               126
-            ],
-            "packetPos" : [
-               68178
-            ],
-            "packetRange" : {
-               "gte" : 1571662574339,
-               "lte" : 1571662574339
-            },
-            "protocol" : [
-               "ntp",
-               "udp"
-            ],
-            "protocolCnt" : 2,
-            "segmentCnt" : 1,
-            "server" : {
-               "bytes" : 0
-            },
-            "source" : {
-               "bytes" : 110,
-               "geo" : {
-                  "country_iso_code" : "SE"
-               },
-               "ip" : "2001:bef::a00:27ff:fe0d:5c3c",
-               "mac" : [
-                  "08:00:27:0d:5c:3c"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 1,
-               "port" : 123
-            },
-            "srcDscp" : [
-               11
-            ],
-            "srcDscpCnt" : 1,
-            "srcOui" : [
-               "PCS Computer Systems GmbH"
-            ],
-            "srcOuiCnt" : 1,
-            "srcPayload8" : "e30006e800000000",
-            "srcTTL" : [
-               64
-            ],
-            "srcTTLCnt" : 1,
-            "totDataBytes" : 48
-         },
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions3-191021"
-            }
-         }
-      },
-      {
-         "body" : {
-            "@timestamp" : "SET",
-            "client" : {
-               "bytes" : 0
-            },
-            "destination" : {
-               "as" : {
-                  "full" : "AS15169 Google LLC",
-                  "number" : 15169,
-                  "organization" : {
-                     "name" : "Google LLC"
-                  }
-               },
-               "bytes" : 0,
-               "geo" : {
-                  "country_iso_code" : "US"
-               },
-               "ip" : "2607:f8b0:400f:805::200e",
-               "mac" : [
-                  "08:00:27:76:e3:69"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 0,
-               "port" : 80
-            },
-            "dstOui" : [
-               "PCS Computer Systems GmbH"
-            ],
-            "dstOuiCnt" : 1,
-            "ethertype" : 34525,
-            "fileId" : [],
-            "firstPacket" : 1571662575795,
-            "ipProtocol" : 6,
-            "lastPacket" : 1571662575795,
-            "length" : 0,
-            "network" : {
-               "bytes" : 94,
-               "community_id" : "1:DgLdDq3rJ18VK25ZnwWu8rJ93Rw=",
-               "packets" : 1
-            },
-            "node" : "test",
-            "packetLen" : [
-               110
-            ],
-            "packetPos" : [
-               71706
-            ],
-            "packetRange" : {
-               "gte" : 1571662575795,
-               "lte" : 1571662575795
-            },
-            "protocol" : [
-               "tcp"
-            ],
-            "protocolCnt" : 1,
-            "segmentCnt" : 1,
-            "server" : {
-               "bytes" : 0
-            },
-            "source" : {
-               "bytes" : 94,
-               "geo" : {
-                  "country_iso_code" : "SE"
-               },
-               "ip" : "2001:bef::a00:27ff:fe0d:5c3c",
-               "mac" : [
-                  "08:00:27:0d:5c:3c"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 1,
-               "port" : 52342
-            },
-            "srcOui" : [
-               "PCS Computer Systems GmbH"
-            ],
-            "srcOuiCnt" : 1,
-            "srcTTL" : [
-               64
-            ],
-            "srcTTLCnt" : 1,
-            "tcpflags" : {
-               "ack" : 0,
-               "dstZero" : 0,
-               "fin" : 0,
-               "psh" : 0,
-               "rst" : 0,
-               "srcZero" : 0,
-               "syn" : 1,
-               "syn-ack" : 0,
-               "urg" : 0
-            },
-            "tcpseq" : {
-               "src" : 2316152254
-            },
-            "totDataBytes" : 0
-         },
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions3-191021"
-            }
-         }
-      },
-      {
-         "body" : {
-            "@timestamp" : "SET",
-            "client" : {
-               "bytes" : 0
-            },
-            "destination" : {
-               "as" : {
-                  "full" : "AS54113 Fastly",
-                  "number" : 54113,
-                  "organization" : {
-                     "name" : "Fastly"
-                  }
-               },
-               "bytes" : 0,
-               "ip" : "2a04:4e42:400::323",
-               "mac" : [
-                  "08:00:27:76:e3:69"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 0,
-               "port" : 80
-            },
-            "dstOui" : [
-               "PCS Computer Systems GmbH"
-            ],
-            "dstOuiCnt" : 1,
-            "ethertype" : 34525,
-            "fileId" : [],
-            "firstPacket" : 1571662576891,
-            "ipProtocol" : 6,
-            "lastPacket" : 1571662576891,
-            "length" : 0,
-            "network" : {
-               "bytes" : 94,
-               "community_id" : "1:HbDlBFMCOih0nNd6FFxk9pY5jFY=",
-               "packets" : 1
-            },
-            "node" : "test",
-            "packetLen" : [
-               110
-            ],
-            "packetPos" : [
-               72142
-            ],
-            "packetRange" : {
-               "gte" : 1571662576891,
-               "lte" : 1571662576891
-            },
-            "protocol" : [
-               "tcp"
-            ],
-            "protocolCnt" : 1,
-            "segmentCnt" : 1,
-            "server" : {
-               "bytes" : 0
-            },
-            "source" : {
-               "bytes" : 94,
-               "geo" : {
-                  "country_iso_code" : "SE"
-               },
-               "ip" : "2001:bef::a00:27ff:fe0d:5c3c",
-               "mac" : [
-                  "08:00:27:0d:5c:3c"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 1,
-               "port" : 51566
-            },
-            "srcOui" : [
-               "PCS Computer Systems GmbH"
-            ],
-            "srcOuiCnt" : 1,
-            "srcTTL" : [
-               64
-            ],
-            "srcTTLCnt" : 1,
-            "tcpflags" : {
-               "ack" : 0,
-               "dstZero" : 0,
-               "fin" : 0,
-               "psh" : 0,
-               "rst" : 0,
-               "srcZero" : 0,
-               "syn" : 1,
-               "syn-ack" : 0,
-               "urg" : 0
-            },
-            "tcpseq" : {
-               "src" : 74921166
-            },
-            "totDataBytes" : 0
-         },
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions3-191021"
-            }
-         }
-      },
-      {
-         "body" : {
-            "@timestamp" : "SET",
-            "client" : {
-               "bytes" : 0
-            },
-            "destination" : {
-               "as" : {
-                  "full" : "AS54113 Fastly",
-                  "number" : 54113,
-                  "organization" : {
-                     "name" : "Fastly"
-                  }
-               },
-               "bytes" : 0,
-               "ip" : "2a04:4e42:600::323",
-               "mac" : [
-                  "08:00:27:76:e3:69"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 0,
-               "port" : 80
-            },
-            "dstOui" : [
-               "PCS Computer Systems GmbH"
-            ],
-            "dstOuiCnt" : 1,
-            "ethertype" : 34525,
-            "fileId" : [],
-            "firstPacket" : 1571662576896,
-            "ipProtocol" : 6,
-            "lastPacket" : 1571662576896,
-            "length" : 0,
-            "network" : {
-               "bytes" : 94,
-               "community_id" : "1:MJCCMCXgjaemk5kxIQErRTlfXyg=",
-               "packets" : 1
-            },
-            "node" : "test",
-            "packetLen" : [
-               110
-            ],
-            "packetPos" : [
-               72410
-            ],
-            "packetRange" : {
-               "gte" : 1571662576896,
-               "lte" : 1571662576896
-            },
-            "protocol" : [
-               "tcp"
-            ],
-            "protocolCnt" : 1,
-            "segmentCnt" : 1,
-            "server" : {
-               "bytes" : 0
-            },
-            "source" : {
-               "bytes" : 94,
-               "geo" : {
-                  "country_iso_code" : "SE"
-               },
-               "ip" : "2001:bef::a00:27ff:fe0d:5c3c",
-               "mac" : [
-                  "08:00:27:0d:5c:3c"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 1,
-               "port" : 42868
-            },
-            "srcOui" : [
-               "PCS Computer Systems GmbH"
-            ],
-            "srcOuiCnt" : 1,
-            "srcTTL" : [
-               64
-            ],
-            "srcTTLCnt" : 1,
-            "tcpflags" : {
-               "ack" : 0,
-               "dstZero" : 0,
-               "fin" : 0,
-               "psh" : 0,
-               "rst" : 0,
-               "srcZero" : 0,
-               "syn" : 1,
-               "syn-ack" : 0,
-               "urg" : 0
-            },
-            "tcpseq" : {
-               "src" : 2242075977
-            },
-            "totDataBytes" : 0
-         },
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions3-191021"
-            }
-         }
-      },
-      {
-         "body" : {
-            "@timestamp" : "SET",
-            "client" : {
-               "bytes" : 0
-            },
-            "destination" : {
-               "as" : {
-                  "full" : "AS54113 Fastly",
-                  "number" : 54113,
-                  "organization" : {
-                     "name" : "Fastly"
-                  }
-               },
-               "bytes" : 0,
-               "ip" : "2a04:4e42:200::323",
-               "mac" : [
-                  "08:00:27:76:e3:69"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 0,
-               "port" : 80
-            },
-            "dstOui" : [
-               "PCS Computer Systems GmbH"
-            ],
-            "dstOuiCnt" : 1,
-            "ethertype" : 34525,
-            "fileId" : [],
-            "firstPacket" : 1571662576898,
-            "ipProtocol" : 6,
-            "lastPacket" : 1571662576898,
-            "length" : 0,
-            "network" : {
-               "bytes" : 94,
-               "community_id" : "1:2XcH7dd4VLbZtA7Mh2fuPXV5bCM=",
-               "packets" : 1
-            },
-            "node" : "test",
-            "packetLen" : [
-               110
-            ],
-            "packetPos" : [
-               72678
-            ],
-            "packetRange" : {
-               "gte" : 1571662576898,
-               "lte" : 1571662576898
-            },
-            "protocol" : [
-               "tcp"
-            ],
-            "protocolCnt" : 1,
-            "segmentCnt" : 1,
-            "server" : {
-               "bytes" : 0
-            },
-            "source" : {
-               "bytes" : 94,
-               "geo" : {
-                  "country_iso_code" : "SE"
-               },
-               "ip" : "2001:bef::a00:27ff:fe0d:5c3c",
-               "mac" : [
-                  "08:00:27:0d:5c:3c"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 1,
-               "port" : 44142
-            },
-            "srcOui" : [
-               "PCS Computer Systems GmbH"
-            ],
-            "srcOuiCnt" : 1,
-            "srcTTL" : [
-               64
-            ],
-            "srcTTLCnt" : 1,
-            "tcpflags" : {
-               "ack" : 0,
-               "dstZero" : 0,
-               "fin" : 0,
-               "psh" : 0,
-               "rst" : 0,
-               "srcZero" : 0,
-               "syn" : 1,
-               "syn-ack" : 0,
-               "urg" : 0
-            },
-            "tcpseq" : {
-               "src" : 3046654059
-            },
-            "totDataBytes" : 0
-         },
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions3-191021"
-            }
-         }
-      },
-      {
-         "body" : {
-            "@timestamp" : "SET",
-            "client" : {
-               "bytes" : 0
-            },
-            "destination" : {
-               "as" : {
-                  "full" : "AS54113 Fastly",
-                  "number" : 54113,
-                  "organization" : {
-                     "name" : "Fastly"
-                  }
-               },
-               "bytes" : 0,
-               "ip" : "2a04:4e42::323",
-               "mac" : [
-                  "08:00:27:76:e3:69"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 0,
-               "port" : 80
-            },
-            "dstOui" : [
-               "PCS Computer Systems GmbH"
-            ],
-            "dstOuiCnt" : 1,
-            "ethertype" : 34525,
-            "fileId" : [],
-            "firstPacket" : 1571662576901,
-            "ipProtocol" : 6,
-            "lastPacket" : 1571662576901,
-            "length" : 0,
-            "network" : {
-               "bytes" : 94,
-               "community_id" : "1:ouqnukYPdci4WdDBalLeYiFn0tc=",
-               "packets" : 1
-            },
-            "node" : "test",
-            "packetLen" : [
-               110
-            ],
-            "packetPos" : [
-               72946
-            ],
-            "packetRange" : {
-               "gte" : 1571662576901,
-               "lte" : 1571662576901
-            },
-            "protocol" : [
-               "tcp"
-            ],
-            "protocolCnt" : 1,
-            "segmentCnt" : 1,
-            "server" : {
-               "bytes" : 0
-            },
-            "source" : {
-               "bytes" : 94,
-               "geo" : {
-                  "country_iso_code" : "SE"
-               },
-               "ip" : "2001:bef::a00:27ff:fe0d:5c3c",
-               "mac" : [
-                  "08:00:27:0d:5c:3c"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 1,
-               "port" : 54994
-            },
-            "srcOui" : [
-               "PCS Computer Systems GmbH"
-            ],
-            "srcOuiCnt" : 1,
-            "srcTTL" : [
-               64
-            ],
-            "srcTTLCnt" : 1,
-            "tcpflags" : {
-               "ack" : 0,
-               "dstZero" : 0,
-               "fin" : 0,
-               "psh" : 0,
-               "rst" : 0,
-               "srcZero" : 0,
-               "syn" : 1,
-               "syn-ack" : 0,
-               "urg" : 0
-            },
-            "tcpseq" : {
-               "src" : 83282863
-            },
-            "totDataBytes" : 0
-         },
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions3-191021"
-            }
-         }
-      },
-      {
-         "body" : {
-            "@timestamp" : "SET",
-            "client" : {
-               "bytes" : 576
-            },
-            "destination" : {
-               "as" : {
-                  "full" : "AS8075 Microsoft Corporation",
-                  "number" : 8075,
-                  "organization" : {
-                     "name" : "Microsoft Corporation"
-                  }
-               },
-               "bytes" : 0,
-               "geo" : {
-                  "country_iso_code" : "US"
-               },
-               "ip" : "20.0.1.100",
-               "mac" : [
-                  "08:00:27:76:e3:69"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 0,
-               "port" : 514
-            },
-            "dstOui" : [
-               "PCS Computer Systems GmbH"
-            ],
-            "dstOuiCnt" : 1,
-            "dstRIR" : "ARIN",
-            "ethertype" : 2048,
-            "fileId" : [],
-            "firstPacket" : 1571662578777,
-            "ipProtocol" : 17,
-            "lastPacket" : 1571662589211,
-            "length" : 10434,
-            "network" : {
-               "bytes" : 744,
-               "community_id" : "1:Km2EZr/8JdHGPCTll+t+I3veupM=",
-               "packets" : 4
-            },
-            "node" : "test",
-            "packetLen" : [
-               223,
-               181,
-               223,
-               181
-            ],
-            "packetPos" : [
-               75174,
-               76601,
-               87517,
-               88776
-            ],
-            "packetRange" : {
-               "gte" : 1571662578777,
-               "lte" : 1571662589211
-            },
-            "protocol" : [
-               "syslog",
-               "udp"
-            ],
-            "protocolCnt" : 2,
-            "segmentCnt" : 1,
-            "server" : {
-               "bytes" : 0
-            },
-            "source" : {
-               "as" : {
-                  "full" : "AS0 This is neat",
-                  "number" : 0,
-                  "organization" : {
-                     "name" : "This is neat"
-                  }
-               },
-               "bytes" : 744,
-               "geo" : {
-                  "country_iso_code" : "RU"
-               },
-               "ip" : "10.0.0.1",
-               "mac" : [
-                  "08:00:27:1f:08:22"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 4,
-               "port" : 42521
-            },
-            "srcOui" : [
-               "PCS Computer Systems GmbH"
-            ],
-            "srcOuiCnt" : 1,
-            "srcPayload8" : "3c33363e4f637420",
-            "srcTTL" : [
-               64
-            ],
-            "srcTTLCnt" : 1,
-            "tags" : [
-               "srcip"
-            ],
-            "tagsCnt" : 1,
-            "test" : {
-               "ASN" : [
-                  "AS0 This is neat"
-               ],
-               "GEO" : [
-                  "RU"
-               ],
-               "RIR" : [
-                  ""
-               ],
-               "ip" : [
-                  "10.0.0.1"
-               ],
-               "number" : [
-                  1677787156
-               ],
-               "string.snow" : [
-                  "16777226:42521,1677787156:514"
-               ]
-            },
-            "totDataBytes" : 576
-         },
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions3-191021"
-            }
-         }
-      },
-      {
-         "body" : {
-            "@timestamp" : "SET",
-            "client" : {
-               "bytes" : 64
-            },
-            "destination" : {
-               "bytes" : 0,
-               "ip" : "ff02::1",
-               "mac" : [
-                  "33:33:00:00:00:01"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 0,
-               "port" : 0
-            },
-            "ethertype" : 34525,
-            "fileId" : [],
-            "firstPacket" : 1571662591197,
-            "icmp" : {
-               "code" : [
-                  0
-               ],
-               "type" : [
-                  134
-               ]
-            },
-            "ipProtocol" : 58,
-            "lastPacket" : 1571662591197,
-            "length" : 0,
-            "network" : {
-               "bytes" : 118,
-               "community_id" : "1:LZli3bzdB8zypy5qR3HA/ASU0Ec=",
-               "packets" : 1
-            },
-            "node" : "test",
-            "packetLen" : [
-               134
-            ],
-            "packetPos" : [
-               89675
-            ],
-            "packetRange" : {
-               "gte" : 1571662591197,
-               "lte" : 1571662591197
-            },
-            "protocol" : [
-               "icmp"
-            ],
-            "protocolCnt" : 1,
-            "segmentCnt" : 1,
-            "server" : {
-               "bytes" : 0
-            },
-            "source" : {
-               "bytes" : 118,
-               "ip" : "fe80::a00:27ff:fe76:e369",
-               "mac" : [
-                  "08:00:27:76:e3:69"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 1,
-               "port" : 0
-            },
-            "srcOui" : [
-               "PCS Computer Systems GmbH"
-            ],
-            "srcOuiCnt" : 1,
-            "srcTTL" : [
-               255
-            ],
-            "srcTTLCnt" : 1,
-            "totDataBytes" : 64
-         },
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions3-191021"
-            }
-         }
-      },
-      {
-         "body" : {
-            "@timestamp" : "SET",
-            "client" : {
-               "bytes" : 0
-            },
-            "destination" : {
-               "bytes" : 0,
-               "ip" : "224.0.0.1",
-               "mac" : [
-                  "01:00:5e:00:00:01",
-                  "01:00:5e:00:00:16"
-               ],
-               "mac-cnt" : 2,
-               "packets" : 0,
-               "port" : 0
-            },
-            "ethertype" : 2048,
-            "fileId" : [],
-            "firstPacket" : 1571662595101,
-            "ipProtocol" : 2,
-            "lastPacket" : 1571662599715,
-            "length" : 4614,
-            "network" : {
-               "bytes" : 188,
-               "packets" : 3
-            },
-            "node" : "test",
-            "packetLen" : [
-               66,
-               76,
-               94
-            ],
-            "packetPos" : [
-               95547,
-               97843,
-               99979
-            ],
-            "packetRange" : {
-               "gte" : 1571662595101,
-               "lte" : 1571662599715
-            },
-            "protocol" : [
-               "igmp"
-            ],
-            "protocolCnt" : 1,
-            "segmentCnt" : 1,
-            "server" : {
-               "bytes" : 0
-            },
-            "source" : {
-               "as" : {
-                  "full" : "AS0 This is neat",
-                  "number" : 0,
-                  "organization" : {
-                     "name" : "This is neat"
-                  }
-               },
-               "bytes" : 188,
-               "geo" : {
-                  "country_iso_code" : "RU"
-               },
-               "ip" : "10.0.0.1",
-               "mac" : [
-                  "08:00:27:1f:08:22",
-                  "08:00:27:76:e3:69",
-                  "0a:00:27:00:00:02"
-               ],
-               "mac-cnt" : 3,
-               "packets" : 3,
-               "port" : 0
-            },
-            "srcDscp" : [
-               48
-            ],
-            "srcDscpCnt" : 1,
-            "srcOui" : [
-               "PCS Computer Systems GmbH"
-            ],
-            "srcOuiCnt" : 1,
-            "srcTTL" : [
-               1
-            ],
-            "srcTTLCnt" : 1,
-            "tags" : [
-               "srcip"
-            ],
-            "tagsCnt" : 1,
-            "test" : {
-               "ASN" : [
-                  "AS0 This is neat"
-               ],
-               "GEO" : [
-                  "RU"
-               ],
-               "RIR" : [
-                  ""
-               ],
-               "ip" : [
-                  "10.0.0.1"
-               ],
-               "number" : [
-                  16777440
-               ],
-               "string.snow" : [
-                  "16777226:0,16777440:0"
-               ]
-            },
-            "totDataBytes" : 0
-         },
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions3-191021"
-            }
-         }
+ "sessions3" : [
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 124
+    },
+    "destination" : {
+     "as" : {
+      "full" : "AS8075 Microsoft Corporation",
+      "number" : 8075,
+      "organization" : {
+       "name" : "Microsoft Corporation"
       }
-   ]
+     },
+     "bytes" : 0,
+     "geo" : {
+      "country_iso_code" : "US"
+     },
+     "ip" : "20.0.1.100",
+     "mac" : [
+      "08:00:27:76:e3:69"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 0,
+     "port" : 514
+    },
+    "dstOui" : [
+     "PCS Computer Systems GmbH"
+    ],
+    "dstOuiCnt" : 1,
+    "dstRIR" : "ARIN",
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 1571662508236,
+    "ipProtocol" : 17,
+    "lastPacket" : 1571662508236,
+    "length" : 0,
+    "network" : {
+     "bytes" : 166,
+     "community_id" : "1:+xR7TJBjmXTZjrc2xnXTenLtr7U=",
+     "packets" : 1
+    },
+    "node" : "test",
+    "packetLen" : [
+     182
+    ],
+    "packetPos" : [
+     24
+    ],
+    "packetRange" : {
+     "gte" : 1571662508236,
+     "lte" : 1571662508236
+    },
+    "protocol" : [
+     "syslog",
+     "udp"
+    ],
+    "protocolCnt" : 2,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 0
+    },
+    "source" : {
+     "as" : {
+      "full" : "AS0 This is neat",
+      "number" : 0,
+      "organization" : {
+       "name" : "This is neat"
+      }
+     },
+     "bytes" : 166,
+     "geo" : {
+      "country_iso_code" : "RU"
+     },
+     "ip" : "10.0.0.1",
+     "mac" : [
+      "08:00:27:1f:08:22"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 1,
+     "port" : 46503
+    },
+    "srcOui" : [
+     "PCS Computer Systems GmbH"
+    ],
+    "srcOuiCnt" : 1,
+    "srcPayload8" : "3c38353e4f637420",
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
+    "tags" : [
+     "srcip"
+    ],
+    "tagsCnt" : 1,
+    "test" : {
+     "ASN" : [
+      "AS0 This is neat"
+     ],
+     "GEO" : [
+      "RU"
+     ],
+     "RIR" : [
+      ""
+     ],
+     "ip" : [
+      "10.0.0.1"
+     ],
+     "number" : [
+      1677787156
+     ],
+     "string.snow" : [
+      "16777226:46503,1677787156:514"
+     ]
+    },
+    "totDataBytes" : 124
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-191021"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 0
+    },
+    "destination" : {
+     "bytes" : 0,
+     "ip" : "224.0.0.13",
+     "mac" : [
+      "01:00:5e:00:00:0d"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 0,
+     "port" : 0
+    },
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 1571662508569,
+    "ipProtocol" : 103,
+    "lastPacket" : 1571662612317,
+    "length" : 103748,
+    "network" : {
+     "bytes" : 13804,
+     "packets" : 203
+    },
+    "node" : "test",
+    "packetLen" : [
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84,
+     84
+    ],
+    "packetPos" : [
+     206,
+     290,
+     2100,
+     2184,
+     2268,
+     2352,
+     2436,
+     2520,
+     4496,
+     4580,
+     6194,
+     6278,
+     7892,
+     7976,
+     8328,
+     8412,
+     8496,
+     10110,
+     10194,
+     10278,
+     10460,
+     10544,
+     10726,
+     12340,
+     12424,
+     12508,
+     14204,
+     14484,
+     16098,
+     16182,
+     16266,
+     16350,
+     16434,
+     18048,
+     18132,
+     18363,
+     18447,
+     18531,
+     20145,
+     20229,
+     20411,
+     20593,
+     20677,
+     24017,
+     24101,
+     24185,
+     24269,
+     25883,
+     25967,
+     26051,
+     26135,
+     26219,
+     27833,
+     27917,
+     28001,
+     28085,
+     28169,
+     31313,
+     31397,
+     31661,
+     32039,
+     32123,
+     32207,
+     33821,
+     33905,
+     34155,
+     34239,
+     34323,
+     35937,
+     36021,
+     36105,
+     36189,
+     36273,
+     37887,
+     37971,
+     38055,
+     38139,
+     40132,
+     40216,
+     42026,
+     42110,
+     42194,
+     42461,
+     42545,
+     44159,
+     44243,
+     44327,
+     44411,
+     44495,
+     46109,
+     46193,
+     46277,
+     46361,
+     46693,
+     46777,
+     50218,
+     50302,
+     50386,
+     50470,
+     50750,
+     52364,
+     52448,
+     52532,
+     52616,
+     52700,
+     54314,
+     54398,
+     54482,
+     54566,
+     54846,
+     56460,
+     58074,
+     58158,
+     58242,
+     58326,
+     62620,
+     62704,
+     62788,
+     62970,
+     63152,
+     63236,
+     64850,
+     64934,
+     65018,
+     65102,
+     66312,
+     66396,
+     68010,
+     68094,
+     70008,
+     70092,
+     71974,
+     72058,
+     73214,
+     73298,
+     73382,
+     73466,
+     75397,
+     75481,
+     77360,
+     77444,
+     77528,
+     77612,
+     79308,
+     79392,
+     79476,
+     81090,
+     82704,
+     83264,
+     83348,
+     83432,
+     83516,
+     83600,
+     85361,
+     85445,
+     85725,
+     85809,
+     89339,
+     89423,
+     89507,
+     89591,
+     91339,
+     92953,
+     93037,
+     93121,
+     93205,
+     93289,
+     93849,
+     95463,
+     95613,
+     95697,
+     95781,
+     95865,
+     97675,
+     97759,
+     97919,
+     98085,
+     98365,
+     101603,
+     101687,
+     101771,
+     101855,
+     102105,
+     103719,
+     103803,
+     103887,
+     104210,
+     105824,
+     105908,
+     105992,
+     106076,
+     106440,
+     106524,
+     108138,
+     109935,
+     110019,
+     110201,
+     111913,
+     111997,
+     112264,
+     112348,
+     112432,
+     114334
+    ],
+    "packetRange" : {
+     "gte" : 1571662508569,
+     "lte" : 1571662612317
+    },
+    "protocol" : [
+     "pim"
+    ],
+    "protocolCnt" : 1,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 0
+    },
+    "source" : {
+     "as" : {
+      "full" : "AS1 Cool Beans!",
+      "number" : 1,
+      "organization" : {
+       "name" : "Cool Beans!"
+      }
+     },
+     "bytes" : 13804,
+     "geo" : {
+      "country_iso_code" : "CA"
+     },
+     "ip" : "10.0.0.2",
+     "mac" : [
+      "08:00:27:1f:08:22",
+      "08:00:27:76:e3:69"
+     ],
+     "mac-cnt" : 2,
+     "packets" : 203,
+     "port" : 0
+    },
+    "srcDscp" : [
+     48
+    ],
+    "srcDscpCnt" : 1,
+    "srcOui" : [
+     "PCS Computer Systems GmbH"
+    ],
+    "srcOuiCnt" : 1,
+    "srcRIR" : "TEST",
+    "srcTTL" : [
+     1
+    ],
+    "srcTTLCnt" : 1,
+    "tags" : [
+     "dstip"
+    ],
+    "tagsCnt" : 1,
+    "totDataBytes" : 0
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-191021"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 0
+    },
+    "destination" : {
+     "bytes" : 0,
+     "ip" : "224.0.0.5",
+     "mac" : [
+      "01:00:5e:00:00:05"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 0,
+     "port" : 0
+    },
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 1571662508795,
+    "ipProtocol" : 89,
+    "lastPacket" : 1571662609191,
+    "length" : 100396,
+    "network" : {
+     "bytes" : 4876,
+     "packets" : 54
+    },
+    "node" : "test",
+    "packetLen" : [
+     98,
+     98,
+     98,
+     98,
+     98,
+     98,
+     98,
+     98,
+     98,
+     98,
+     98,
+     98,
+     98,
+     98,
+     94,
+     98,
+     82,
+     122,
+     86,
+     138,
+     122,
+     86,
+     82,
+     94,
+     126,
+     94,
+     150,
+     138,
+     138,
+     94,
+     150,
+     94,
+     94,
+     98,
+     82,
+     122,
+     86,
+     138,
+     122,
+     86,
+     82,
+     94,
+     126,
+     94,
+     150,
+     138,
+     138,
+     94,
+     150,
+     94,
+     98,
+     98,
+     98,
+     98
+    ],
+    "packetPos" : [
+     374,
+     472,
+     10362,
+     10628,
+     20313,
+     20495,
+     31563,
+     31941,
+     41830,
+     41928,
+     50554,
+     50652,
+     62872,
+     63054,
+     75080,
+     75565,
+     75663,
+     75745,
+     75867,
+     75953,
+     76091,
+     76213,
+     76299,
+     76381,
+     76475,
+     76782,
+     76876,
+     77026,
+     82788,
+     82926,
+     83020,
+     83170,
+     87423,
+     87740,
+     87838,
+     87920,
+     88042,
+     88128,
+     88266,
+     88388,
+     88474,
+     88556,
+     88650,
+     88957,
+     89051,
+     89201,
+     93373,
+     93511,
+     93605,
+     93755,
+     98169,
+     98267,
+     110103,
+     110285
+    ],
+    "packetRange" : {
+     "gte" : 1571662508795,
+     "lte" : 1571662609191
+    },
+    "protocol" : [
+     "ospf"
+    ],
+    "protocolCnt" : 1,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 0
+    },
+    "source" : {
+     "as" : {
+      "full" : "AS1 Cool Beans!",
+      "number" : 1,
+      "organization" : {
+       "name" : "Cool Beans!"
+      }
+     },
+     "bytes" : 4876,
+     "geo" : {
+      "country_iso_code" : "CA"
+     },
+     "ip" : "10.0.0.2",
+     "mac" : [
+      "08:00:27:1f:08:22",
+      "08:00:27:76:e3:69"
+     ],
+     "mac-cnt" : 2,
+     "packets" : 54,
+     "port" : 0
+    },
+    "srcDscp" : [
+     48
+    ],
+    "srcDscpCnt" : 1,
+    "srcOui" : [
+     "PCS Computer Systems GmbH"
+    ],
+    "srcOuiCnt" : 1,
+    "srcRIR" : "TEST",
+    "srcTTL" : [
+     1
+    ],
+    "srcTTLCnt" : 1,
+    "tags" : [
+     "dstip"
+    ],
+    "tagsCnt" : 1,
+    "totDataBytes" : 0
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-191021"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 0
+    },
+    "destination" : {
+     "bytes" : 0,
+     "mac" : [
+      "01:80:c2:00:00:15"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 0
+    },
+    "ethertype" : 1500,
+    "fileId" : [],
+    "firstPacket" : 1571662509461,
+    "ipProtocol" : 0,
+    "isis" : {
+     "msgType" : [
+      "l2-csnp",
+      "l2-lsp",
+      "lan-l2-hello"
+     ]
+    },
+    "lastPacket" : 1571662612261,
+    "length" : 102800,
+    "network" : {
+     "bytes" : 81451,
+     "packets" : 67
+    },
+    "node" : "test",
+    "packetLen" : [
+     1530,
+     1530,
+     196,
+     1530,
+     1530,
+     1530,
+     1530,
+     1530,
+     196,
+     1530,
+     1530,
+     1530,
+     1530,
+     1530,
+     196,
+     1530,
+     1530,
+     1530,
+     1530,
+     196,
+     1530,
+     1530,
+     1530,
+     1530,
+     196,
+     1530,
+     1530,
+     1530,
+     1530,
+     196,
+     1530,
+     1530,
+     1530,
+     196,
+     1530,
+     1530,
+     1530,
+     1530,
+     196,
+     1530,
+     1530,
+     1530,
+     1530,
+     196,
+     1530,
+     1530,
+     1530,
+     1530,
+     196,
+     1530,
+     1530,
+     1530,
+     1530,
+     196,
+     1530,
+     1530,
+     1530,
+     1530,
+     239,
+     1530,
+     196,
+     84,
+     1530,
+     1530,
+     1530,
+     1530,
+     288
+    ],
+    "packetPos" : [
+     570,
+     2604,
+     4300,
+     4664,
+     6362,
+     8580,
+     10810,
+     12592,
+     14288,
+     14568,
+     16518,
+     18615,
+     20761,
+     22291,
+     23821,
+     24353,
+     26303,
+     28253,
+     29783,
+     31745,
+     32291,
+     34407,
+     36357,
+     38223,
+     39753,
+     40300,
+     42629,
+     44579,
+     46861,
+     48391,
+     48688,
+     50834,
+     52784,
+     54650,
+     54930,
+     56544,
+     61090,
+     63320,
+     65548,
+     66480,
+     68478,
+     70176,
+     73550,
+     77164,
+     77696,
+     79560,
+     81174,
+     83831,
+     85529,
+     85893,
+     89809,
+     91423,
+     93933,
+     95949,
+     96145,
+     98449,
+     100073,
+     102189,
+     103971,
+     104294,
+     106160,
+     106356,
+     106608,
+     108222,
+     110383,
+     112516,
+     114046
+    ],
+    "packetRange" : {
+     "gte" : 1571662509461,
+     "lte" : 1571662612261
+    },
+    "protocol" : [
+     "isis"
+    ],
+    "protocolCnt" : 1,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 0
+    },
+    "source" : {
+     "bytes" : 81451,
+     "mac" : [
+      "08:00:27:1f:08:22",
+      "08:00:27:76:e3:69"
+     ],
+     "mac-cnt" : 2,
+     "packets" : 67
+    },
+    "srcOui" : [
+     "PCS Computer Systems GmbH"
+    ],
+    "srcOuiCnt" : 1,
+    "totDataBytes" : 0
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-191021"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 0
+    },
+    "destination" : {
+     "bytes" : 0,
+     "mac" : [
+      "01:80:c2:00:00:0e"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 0
+    },
+    "ethertype" : 35020,
+    "fileId" : [],
+    "firstPacket" : 1571662511903,
+    "ipProtocol" : 0,
+    "lastPacket" : 1571662601886,
+    "length" : 89983,
+    "network" : {
+     "bytes" : 993,
+     "packets" : 7
+    },
+    "node" : "test",
+    "packetLen" : [
+     166,
+     147,
+     166,
+     147,
+     166,
+     147,
+     166
+    ],
+    "packetPos" : [
+     4134,
+     18216,
+     33989,
+     46546,
+     65186,
+     83684,
+     101939
+    ],
+    "packetRange" : {
+     "gte" : 1571662511903,
+     "lte" : 1571662601886
+    },
+    "protocol" : [
+     "lldp"
+    ],
+    "protocolCnt" : 1,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 0
+    },
+    "source" : {
+     "bytes" : 993,
+     "mac" : [
+      "08:00:27:12:62:b0",
+      "08:00:27:d8:5d:87"
+     ],
+     "mac-cnt" : 2,
+     "packets" : 7
+    },
+    "srcOui" : [
+     "PCS Computer Systems GmbH"
+    ],
+    "srcOuiCnt" : 1,
+    "totDataBytes" : 0
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-191021"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 0
+    },
+    "destination" : {
+     "as" : {
+      "full" : "AS15169 Google LLC",
+      "number" : 15169,
+      "organization" : {
+       "name" : "Google LLC"
+      }
+     },
+     "bytes" : 0,
+     "geo" : {
+      "country_iso_code" : "US"
+     },
+     "ip" : "2607:f8b0:400f:801::200e",
+     "mac" : [
+      "08:00:27:76:e3:69"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 0,
+     "port" : 80
+    },
+    "dstOui" : [
+     "PCS Computer Systems GmbH"
+    ],
+    "dstOuiCnt" : 1,
+    "ethertype" : 34525,
+    "fileId" : [],
+    "firstPacket" : 1571662515683,
+    "ipProtocol" : 6,
+    "lastPacket" : 1571662515683,
+    "length" : 0,
+    "network" : {
+     "bytes" : 94,
+     "community_id" : "1:6LM13JzmBiKxzgoT5iVJSORTXx4=",
+     "packets" : 1
+    },
+    "node" : "test",
+    "packetLen" : [
+     110
+    ],
+    "packetPos" : [
+     8060
+    ],
+    "packetRange" : {
+     "gte" : 1571662515683,
+     "lte" : 1571662515683
+    },
+    "protocol" : [
+     "tcp"
+    ],
+    "protocolCnt" : 1,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 0
+    },
+    "source" : {
+     "bytes" : 94,
+     "geo" : {
+      "country_iso_code" : "SE"
+     },
+     "ip" : "2001:bef::a00:27ff:fe0d:5c3c",
+     "mac" : [
+      "08:00:27:0d:5c:3c"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 1,
+     "port" : 34808
+    },
+    "srcOui" : [
+     "PCS Computer Systems GmbH"
+    ],
+    "srcOuiCnt" : 1,
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
+    "tcpflags" : {
+     "ack" : 0,
+     "dstZero" : 0,
+     "fin" : 0,
+     "psh" : 0,
+     "rst" : 0,
+     "srcZero" : 0,
+     "syn" : 1,
+     "syn-ack" : 0,
+     "urg" : 0
+    },
+    "tcpseq" : {
+     "src" : 419032480
+    },
+    "totDataBytes" : 0
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-191021"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 1704
+    },
+    "destination" : {
+     "bytes" : 0,
+     "geo" : {
+      "country_iso_code" : "SE"
+     },
+     "ip" : "2001:bef::a00:27ff:fe0d:5c3c",
+     "mac" : [
+      "08:00:27:0d:5c:3c"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 0,
+     "port" : 0
+    },
+    "dstOui" : [
+     "PCS Computer Systems GmbH"
+    ],
+    "dstOuiCnt" : 1,
+    "ethertype" : 34525,
+    "fileId" : [],
+    "firstPacket" : 1571662515687,
+    "icmp" : {
+     "code" : [
+      0
+     ],
+     "type" : [
+      1
+     ]
+    },
+    "ipProtocol" : 58,
+    "lastPacket" : 1571662576902,
+    "length" : 61215,
+    "network" : {
+     "bytes" : 2730,
+     "community_id" : "1:rKMtTKJt1ij0Rf6KMO0eiIc+fqM=",
+     "packets" : 19
+    },
+    "node" : "test",
+    "packetLen" : [
+     158,
+     158,
+     158,
+     158,
+     158,
+     158,
+     158,
+     158,
+     158,
+     158,
+     158,
+     174,
+     158,
+     174,
+     158,
+     158,
+     158,
+     158,
+     158
+    ],
+    "packetPos" : [
+     8170,
+     58520,
+     58788,
+     59056,
+     59324,
+     59592,
+     59860,
+     60128,
+     60396,
+     60664,
+     60932,
+     65870,
+     66154,
+     68304,
+     71816,
+     72252,
+     72520,
+     72788,
+     73056
+    ],
+    "packetRange" : {
+     "gte" : 1571662515687,
+     "lte" : 1571662576902
+    },
+    "protocol" : [
+     "icmp"
+    ],
+    "protocolCnt" : 1,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 0
+    },
+    "source" : {
+     "bytes" : 2730,
+     "geo" : {
+      "country_iso_code" : "SE"
+     },
+     "ip" : "2001:bef::2",
+     "mac" : [
+      "08:00:27:76:e3:69"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 19,
+     "port" : 0
+    },
+    "srcOui" : [
+     "PCS Computer Systems GmbH"
+    ],
+    "srcOuiCnt" : 1,
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
+    "totDataBytes" : 1704
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-191021"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 0
+    },
+    "destination" : {
+     "bytes" : 0,
+     "ip" : "172.16.0.2",
+     "mac" : [
+      "08:00:27:76:e3:69"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 0,
+     "port" : 35069
+    },
+    "dstOui" : [
+     "PCS Computer Systems GmbH"
+    ],
+    "dstOuiCnt" : 1,
+    "dstRIR" : "ARIN",
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 1571662521545,
+    "ipProtocol" : 6,
+    "lastPacket" : 1571662581526,
+    "length" : 59981,
+    "network" : {
+     "bytes" : 217,
+     "community_id" : "1:JIBYd0nkQ+UkLGn+xWIqRaO7GJE=",
+     "packets" : 3
+    },
+    "node" : "test",
+    "packetLen" : [
+     82,
+     101,
+     82
+    ],
+    "packetPos" : [
+     14122,
+     48587,
+     79226
+    ],
+    "packetRange" : {
+     "gte" : 1571662521545,
+     "lte" : 1571662581526
+    },
+    "protocol" : [
+     "tcp"
+    ],
+    "protocolCnt" : 1,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 0
+    },
+    "source" : {
+     "bytes" : 217,
+     "ip" : "172.16.0.3",
+     "mac" : [
+      "08:00:27:1f:08:22"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 3,
+     "port" : 179
+    },
+    "srcDscp" : [
+     48
+    ],
+    "srcDscpCnt" : 1,
+    "srcOui" : [
+     "PCS Computer Systems GmbH"
+    ],
+    "srcOuiCnt" : 1,
+    "srcRIR" : "ARIN",
+    "srcTTL" : [
+     254
+    ],
+    "srcTTLCnt" : 1,
+    "tcpflags" : {
+     "ack" : 2,
+     "dstZero" : 0,
+     "fin" : 0,
+     "psh" : 1,
+     "rst" : 0,
+     "srcZero" : 0,
+     "syn" : 0,
+     "syn-ack" : 0,
+     "urg" : 0
+    },
+    "totDataBytes" : 0
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-191021"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 0
+    },
+    "destination" : {
+     "bytes" : 0,
+     "ip" : "172.16.0.4",
+     "mac" : [
+      "08:00:27:76:e3:69"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 0,
+     "port" : 33771
+    },
+    "dstOui" : [
+     "PCS Computer Systems GmbH"
+    ],
+    "dstOuiCnt" : 1,
+    "dstRIR" : "ARIN",
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 1571662538526,
+    "ipProtocol" : 6,
+    "lastPacket" : 1571662598506,
+    "length" : 59980,
+    "network" : {
+     "bytes" : 217,
+     "community_id" : "1:dKsI1tGUA4VrhlTRxJK45S2SfEs=",
+     "packets" : 3
+    },
+    "node" : "test",
+    "packetLen" : [
+     82,
+     101,
+     82
+    ],
+    "packetPos" : [
+     31481,
+     46445,
+     98003
+    ],
+    "packetRange" : {
+     "gte" : 1571662538526,
+     "lte" : 1571662598506
+    },
+    "protocol" : [
+     "tcp"
+    ],
+    "protocolCnt" : 1,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 0
+    },
+    "source" : {
+     "bytes" : 217,
+     "ip" : "172.16.0.1",
+     "mac" : [
+      "08:00:27:1f:08:22"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 3,
+     "port" : 179
+    },
+    "srcDscp" : [
+     48
+    ],
+    "srcDscpCnt" : 1,
+    "srcOui" : [
+     "PCS Computer Systems GmbH"
+    ],
+    "srcOuiCnt" : 1,
+    "srcRIR" : "ARIN",
+    "srcTTL" : [
+     255
+    ],
+    "srcTTLCnt" : 1,
+    "tcpflags" : {
+     "ack" : 2,
+     "dstZero" : 0,
+     "fin" : 0,
+     "psh" : 1,
+     "rst" : 0,
+     "srcZero" : 0,
+     "syn" : 0,
+     "syn-ack" : 0,
+     "urg" : 0
+    },
+    "totDataBytes" : 0
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-191021"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 0
+    },
+    "destination" : {
+     "bytes" : 302,
+     "ip" : "172.16.0.1",
+     "mac" : [
+      "08:00:27:1f:08:22"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 4,
+     "port" : 179
+    },
+    "dstDscp" : [
+     48
+    ],
+    "dstDscpCnt" : 1,
+    "dstOui" : [
+     "PCS Computer Systems GmbH"
+    ],
+    "dstOuiCnt" : 1,
+    "dstRIR" : "ARIN",
+    "dstTTL" : [
+     255
+    ],
+    "dstTTLCnt" : 1,
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 1571662548073,
+    "ipProtocol" : 6,
+    "lastPacket" : 1571662610443,
+    "length" : 62370,
+    "network" : {
+     "bytes" : 604,
+     "community_id" : "1:tqiALxHxk3fn9otJ1Y+Kp9SkxtI=",
+     "packets" : 8
+    },
+    "node" : "test",
+    "packetLen" : [
+     101,
+     82,
+     101,
+     82,
+     101,
+     82,
+     101,
+     82
+    ],
+    "packetPos" : [
+     39949,
+     40050,
+     42278,
+     42379,
+     109752,
+     109853,
+     112081,
+     112182
+    ],
+    "packetRange" : {
+     "gte" : 1571662548073,
+     "lte" : 1571662610443
+    },
+    "protocol" : [
+     "tcp"
+    ],
+    "protocolCnt" : 1,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 0
+    },
+    "source" : {
+     "bytes" : 302,
+     "ip" : "172.16.0.2",
+     "mac" : [
+      "08:00:27:76:e3:69"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 4,
+     "port" : 33359
+    },
+    "srcDscp" : [
+     48
+    ],
+    "srcDscpCnt" : 1,
+    "srcOui" : [
+     "PCS Computer Systems GmbH"
+    ],
+    "srcOuiCnt" : 1,
+    "srcRIR" : "ARIN",
+    "srcTTL" : [
+     255
+    ],
+    "srcTTLCnt" : 1,
+    "tcpflags" : {
+     "ack" : 4,
+     "dstZero" : 0,
+     "fin" : 0,
+     "psh" : 4,
+     "rst" : 0,
+     "srcZero" : 0,
+     "syn" : 0,
+     "syn-ack" : 0,
+     "urg" : 0
+    },
+    "totDataBytes" : 0
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-191021"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 0
+    },
+    "destination" : {
+     "as" : {
+      "full" : "AS54113 Fastly",
+      "number" : 54113,
+      "organization" : {
+       "name" : "Fastly"
+      }
+     },
+     "bytes" : 0,
+     "ip" : "2a04:4e42:400::323",
+     "mac" : [
+      "08:00:27:76:e3:69"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 0,
+     "port" : 80
+    },
+    "dstOui" : [
+     "PCS Computer Systems GmbH"
+    ],
+    "dstOuiCnt" : 1,
+    "ethertype" : 34525,
+    "fileId" : [],
+    "firstPacket" : 1571662567185,
+    "ipProtocol" : 6,
+    "lastPacket" : 1571662567185,
+    "length" : 0,
+    "network" : {
+     "bytes" : 94,
+     "community_id" : "1:zS/jLwl2n/kHIiVi3kXC214Ycik=",
+     "packets" : 1
+    },
+    "node" : "test",
+    "packetLen" : [
+     110
+    ],
+    "packetPos" : [
+     58410
+    ],
+    "packetRange" : {
+     "gte" : 1571662567185,
+     "lte" : 1571662567185
+    },
+    "protocol" : [
+     "tcp"
+    ],
+    "protocolCnt" : 1,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 0
+    },
+    "source" : {
+     "bytes" : 94,
+     "geo" : {
+      "country_iso_code" : "SE"
+     },
+     "ip" : "2001:bef::a00:27ff:fe0d:5c3c",
+     "mac" : [
+      "08:00:27:0d:5c:3c"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 1,
+     "port" : 51532
+    },
+    "srcOui" : [
+     "PCS Computer Systems GmbH"
+    ],
+    "srcOuiCnt" : 1,
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
+    "tcpflags" : {
+     "ack" : 0,
+     "dstZero" : 0,
+     "fin" : 0,
+     "psh" : 0,
+     "rst" : 0,
+     "srcZero" : 0,
+     "syn" : 1,
+     "syn-ack" : 0,
+     "urg" : 0
+    },
+    "tcpseq" : {
+     "src" : 2639087993
+    },
+    "totDataBytes" : 0
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-191021"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 0
+    },
+    "destination" : {
+     "as" : {
+      "full" : "AS54113 Fastly",
+      "number" : 54113,
+      "organization" : {
+       "name" : "Fastly"
+      }
+     },
+     "bytes" : 0,
+     "ip" : "2a04:4e42:600::323",
+     "mac" : [
+      "08:00:27:76:e3:69"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 0,
+     "port" : 80
+    },
+    "dstOui" : [
+     "PCS Computer Systems GmbH"
+    ],
+    "dstOuiCnt" : 1,
+    "ethertype" : 34525,
+    "fileId" : [],
+    "firstPacket" : 1571662567189,
+    "ipProtocol" : 6,
+    "lastPacket" : 1571662567189,
+    "length" : 0,
+    "network" : {
+     "bytes" : 94,
+     "community_id" : "1:ZAOeNMLUwJNJXfCXghxBO0/oq7k=",
+     "packets" : 1
+    },
+    "node" : "test",
+    "packetLen" : [
+     110
+    ],
+    "packetPos" : [
+     58678
+    ],
+    "packetRange" : {
+     "gte" : 1571662567189,
+     "lte" : 1571662567189
+    },
+    "protocol" : [
+     "tcp"
+    ],
+    "protocolCnt" : 1,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 0
+    },
+    "source" : {
+     "bytes" : 94,
+     "geo" : {
+      "country_iso_code" : "SE"
+     },
+     "ip" : "2001:bef::a00:27ff:fe0d:5c3c",
+     "mac" : [
+      "08:00:27:0d:5c:3c"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 1,
+     "port" : 42834
+    },
+    "srcOui" : [
+     "PCS Computer Systems GmbH"
+    ],
+    "srcOuiCnt" : 1,
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
+    "tcpflags" : {
+     "ack" : 0,
+     "dstZero" : 0,
+     "fin" : 0,
+     "psh" : 0,
+     "rst" : 0,
+     "srcZero" : 0,
+     "syn" : 1,
+     "syn-ack" : 0,
+     "urg" : 0
+    },
+    "tcpseq" : {
+     "src" : 764248636
+    },
+    "totDataBytes" : 0
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-191021"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 0
+    },
+    "destination" : {
+     "as" : {
+      "full" : "AS54113 Fastly",
+      "number" : 54113,
+      "organization" : {
+       "name" : "Fastly"
+      }
+     },
+     "bytes" : 0,
+     "ip" : "2a04:4e42::323",
+     "mac" : [
+      "08:00:27:76:e3:69"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 0,
+     "port" : 80
+    },
+    "dstOui" : [
+     "PCS Computer Systems GmbH"
+    ],
+    "dstOuiCnt" : 1,
+    "ethertype" : 34525,
+    "fileId" : [],
+    "firstPacket" : 1571662567192,
+    "ipProtocol" : 6,
+    "lastPacket" : 1571662567192,
+    "length" : 0,
+    "network" : {
+     "bytes" : 94,
+     "community_id" : "1:HqHv6VsSqKUcfCCgRzntY1oMT4M=",
+     "packets" : 1
+    },
+    "node" : "test",
+    "packetLen" : [
+     110
+    ],
+    "packetPos" : [
+     58946
+    ],
+    "packetRange" : {
+     "gte" : 1571662567192,
+     "lte" : 1571662567192
+    },
+    "protocol" : [
+     "tcp"
+    ],
+    "protocolCnt" : 1,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 0
+    },
+    "source" : {
+     "bytes" : 94,
+     "geo" : {
+      "country_iso_code" : "SE"
+     },
+     "ip" : "2001:bef::a00:27ff:fe0d:5c3c",
+     "mac" : [
+      "08:00:27:0d:5c:3c"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 1,
+     "port" : 54958
+    },
+    "srcOui" : [
+     "PCS Computer Systems GmbH"
+    ],
+    "srcOuiCnt" : 1,
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
+    "tcpflags" : {
+     "ack" : 0,
+     "dstZero" : 0,
+     "fin" : 0,
+     "psh" : 0,
+     "rst" : 0,
+     "srcZero" : 0,
+     "syn" : 1,
+     "syn-ack" : 0,
+     "urg" : 0
+    },
+    "tcpseq" : {
+     "src" : 1805002475
+    },
+    "totDataBytes" : 0
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-191021"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 0
+    },
+    "destination" : {
+     "as" : {
+      "full" : "AS54113 Fastly",
+      "number" : 54113,
+      "organization" : {
+       "name" : "Fastly"
+      }
+     },
+     "bytes" : 0,
+     "ip" : "2a04:4e42:200::323",
+     "mac" : [
+      "08:00:27:76:e3:69"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 0,
+     "port" : 80
+    },
+    "dstOui" : [
+     "PCS Computer Systems GmbH"
+    ],
+    "dstOuiCnt" : 1,
+    "ethertype" : 34525,
+    "fileId" : [],
+    "firstPacket" : 1571662567195,
+    "ipProtocol" : 6,
+    "lastPacket" : 1571662567195,
+    "length" : 0,
+    "network" : {
+     "bytes" : 94,
+     "community_id" : "1:PlvU1YCSX4Pugs0RnJMcqfUxm3c=",
+     "packets" : 1
+    },
+    "node" : "test",
+    "packetLen" : [
+     110
+    ],
+    "packetPos" : [
+     59214
+    ],
+    "packetRange" : {
+     "gte" : 1571662567195,
+     "lte" : 1571662567195
+    },
+    "protocol" : [
+     "tcp"
+    ],
+    "protocolCnt" : 1,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 0
+    },
+    "source" : {
+     "bytes" : 94,
+     "geo" : {
+      "country_iso_code" : "SE"
+     },
+     "ip" : "2001:bef::a00:27ff:fe0d:5c3c",
+     "mac" : [
+      "08:00:27:0d:5c:3c"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 1,
+     "port" : 44110
+    },
+    "srcOui" : [
+     "PCS Computer Systems GmbH"
+    ],
+    "srcOuiCnt" : 1,
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
+    "tcpflags" : {
+     "ack" : 0,
+     "dstZero" : 0,
+     "fin" : 0,
+     "psh" : 0,
+     "rst" : 0,
+     "srcZero" : 0,
+     "syn" : 1,
+     "syn-ack" : 0,
+     "urg" : 0
+    },
+    "tcpseq" : {
+     "src" : 1845294610
+    },
+    "totDataBytes" : 0
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-191021"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 0
+    },
+    "destination" : {
+     "as" : {
+      "full" : "AS26101 Oath Holdings Inc.",
+      "number" : 26101,
+      "organization" : {
+       "name" : "Oath Holdings Inc."
+      }
+     },
+     "bytes" : 0,
+     "geo" : {
+      "country_iso_code" : "US"
+     },
+     "ip" : "2001:4998:58:1836::10",
+     "mac" : [
+      "08:00:27:76:e3:69"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 0,
+     "port" : 80
+    },
+    "dstOui" : [
+     "PCS Computer Systems GmbH"
+    ],
+    "dstOuiCnt" : 1,
+    "ethertype" : 34525,
+    "fileId" : [],
+    "firstPacket" : 1571662567263,
+    "ipProtocol" : 6,
+    "lastPacket" : 1571662567263,
+    "length" : 0,
+    "network" : {
+     "bytes" : 94,
+     "community_id" : "1:bLKnRk376Bs3Ke5URY5Zz9GlhHY=",
+     "packets" : 1
+    },
+    "node" : "test",
+    "packetLen" : [
+     110
+    ],
+    "packetPos" : [
+     59482
+    ],
+    "packetRange" : {
+     "gte" : 1571662567263,
+     "lte" : 1571662567263
+    },
+    "protocol" : [
+     "tcp"
+    ],
+    "protocolCnt" : 1,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 0
+    },
+    "source" : {
+     "bytes" : 94,
+     "geo" : {
+      "country_iso_code" : "SE"
+     },
+     "ip" : "2001:bef::a00:27ff:fe0d:5c3c",
+     "mac" : [
+      "08:00:27:0d:5c:3c"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 1,
+     "port" : 52112
+    },
+    "srcOui" : [
+     "PCS Computer Systems GmbH"
+    ],
+    "srcOuiCnt" : 1,
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
+    "tcpflags" : {
+     "ack" : 0,
+     "dstZero" : 0,
+     "fin" : 0,
+     "psh" : 0,
+     "rst" : 0,
+     "srcZero" : 0,
+     "syn" : 1,
+     "syn-ack" : 0,
+     "urg" : 0
+    },
+    "tcpseq" : {
+     "src" : 1008627354
+    },
+    "totDataBytes" : 0
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-191021"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 0
+    },
+    "destination" : {
+     "as" : {
+      "full" : "AS36646 Oath Holdings Inc.",
+      "number" : 36646,
+      "organization" : {
+       "name" : "Oath Holdings Inc."
+      }
+     },
+     "bytes" : 0,
+     "geo" : {
+      "country_iso_code" : "US"
+     },
+     "ip" : "2001:4998:44:41d::3",
+     "mac" : [
+      "08:00:27:76:e3:69"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 0,
+     "port" : 80
+    },
+    "dstOui" : [
+     "PCS Computer Systems GmbH"
+    ],
+    "dstOuiCnt" : 1,
+    "ethertype" : 34525,
+    "fileId" : [],
+    "firstPacket" : 1571662567268,
+    "ipProtocol" : 6,
+    "lastPacket" : 1571662567268,
+    "length" : 0,
+    "network" : {
+     "bytes" : 94,
+     "community_id" : "1:c0vM0WrbY8zp6ddCOj5oLuxUL+Q=",
+     "packets" : 1
+    },
+    "node" : "test",
+    "packetLen" : [
+     110
+    ],
+    "packetPos" : [
+     59750
+    ],
+    "packetRange" : {
+     "gte" : 1571662567268,
+     "lte" : 1571662567268
+    },
+    "protocol" : [
+     "tcp"
+    ],
+    "protocolCnt" : 1,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 0
+    },
+    "source" : {
+     "bytes" : 94,
+     "geo" : {
+      "country_iso_code" : "SE"
+     },
+     "ip" : "2001:bef::a00:27ff:fe0d:5c3c",
+     "mac" : [
+      "08:00:27:0d:5c:3c"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 1,
+     "port" : 32802
+    },
+    "srcOui" : [
+     "PCS Computer Systems GmbH"
+    ],
+    "srcOuiCnt" : 1,
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
+    "tcpflags" : {
+     "ack" : 0,
+     "dstZero" : 0,
+     "fin" : 0,
+     "psh" : 0,
+     "rst" : 0,
+     "srcZero" : 0,
+     "syn" : 1,
+     "syn-ack" : 0,
+     "urg" : 0
+    },
+    "tcpseq" : {
+     "src" : 1971637293
+    },
+    "totDataBytes" : 0
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-191021"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 0
+    },
+    "destination" : {
+     "as" : {
+      "full" : "AS36646 Oath Holdings Inc.",
+      "number" : 36646,
+      "organization" : {
+       "name" : "Oath Holdings Inc."
+      }
+     },
+     "bytes" : 0,
+     "geo" : {
+      "country_iso_code" : "US"
+     },
+     "ip" : "2001:4998:44:41d::4",
+     "mac" : [
+      "08:00:27:76:e3:69"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 0,
+     "port" : 80
+    },
+    "dstOui" : [
+     "PCS Computer Systems GmbH"
+    ],
+    "dstOuiCnt" : 1,
+    "ethertype" : 34525,
+    "fileId" : [],
+    "firstPacket" : 1571662567273,
+    "ipProtocol" : 6,
+    "lastPacket" : 1571662567273,
+    "length" : 0,
+    "network" : {
+     "bytes" : 94,
+     "community_id" : "1:us3PFR4rOxhEfjBei+RbJEzWC6Y=",
+     "packets" : 1
+    },
+    "node" : "test",
+    "packetLen" : [
+     110
+    ],
+    "packetPos" : [
+     60018
+    ],
+    "packetRange" : {
+     "gte" : 1571662567273,
+     "lte" : 1571662567273
+    },
+    "protocol" : [
+     "tcp"
+    ],
+    "protocolCnt" : 1,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 0
+    },
+    "source" : {
+     "bytes" : 94,
+     "geo" : {
+      "country_iso_code" : "SE"
+     },
+     "ip" : "2001:bef::a00:27ff:fe0d:5c3c",
+     "mac" : [
+      "08:00:27:0d:5c:3c"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 1,
+     "port" : 44002
+    },
+    "srcOui" : [
+     "PCS Computer Systems GmbH"
+    ],
+    "srcOuiCnt" : 1,
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
+    "tcpflags" : {
+     "ack" : 0,
+     "dstZero" : 0,
+     "fin" : 0,
+     "psh" : 0,
+     "rst" : 0,
+     "srcZero" : 0,
+     "syn" : 1,
+     "syn-ack" : 0,
+     "urg" : 0
+    },
+    "tcpseq" : {
+     "src" : 539554290
+    },
+    "totDataBytes" : 0
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-191021"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 0
+    },
+    "destination" : {
+     "as" : {
+      "full" : "AS36647 Oath Holdings Inc.",
+      "number" : 36647,
+      "organization" : {
+       "name" : "Oath Holdings Inc."
+      }
+     },
+     "bytes" : 0,
+     "geo" : {
+      "country_iso_code" : "US"
+     },
+     "ip" : "2001:4998:c:1023::5",
+     "mac" : [
+      "08:00:27:76:e3:69"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 0,
+     "port" : 80
+    },
+    "dstOui" : [
+     "PCS Computer Systems GmbH"
+    ],
+    "dstOuiCnt" : 1,
+    "ethertype" : 34525,
+    "fileId" : [],
+    "firstPacket" : 1571662567276,
+    "ipProtocol" : 6,
+    "lastPacket" : 1571662567276,
+    "length" : 0,
+    "network" : {
+     "bytes" : 94,
+     "community_id" : "1:l7RM5nY0gEwr+HSf4iyA9Q+D7zI=",
+     "packets" : 1
+    },
+    "node" : "test",
+    "packetLen" : [
+     110
+    ],
+    "packetPos" : [
+     60286
+    ],
+    "packetRange" : {
+     "gte" : 1571662567276,
+     "lte" : 1571662567276
+    },
+    "protocol" : [
+     "tcp"
+    ],
+    "protocolCnt" : 1,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 0
+    },
+    "source" : {
+     "bytes" : 94,
+     "geo" : {
+      "country_iso_code" : "SE"
+     },
+     "ip" : "2001:bef::a00:27ff:fe0d:5c3c",
+     "mac" : [
+      "08:00:27:0d:5c:3c"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 1,
+     "port" : 39392
+    },
+    "srcOui" : [
+     "PCS Computer Systems GmbH"
+    ],
+    "srcOuiCnt" : 1,
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
+    "tcpflags" : {
+     "ack" : 0,
+     "dstZero" : 0,
+     "fin" : 0,
+     "psh" : 0,
+     "rst" : 0,
+     "srcZero" : 0,
+     "syn" : 1,
+     "syn-ack" : 0,
+     "urg" : 0
+    },
+    "tcpseq" : {
+     "src" : 2192845188
+    },
+    "totDataBytes" : 0
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-191021"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 0
+    },
+    "destination" : {
+     "as" : {
+      "full" : "AS36647 Oath Holdings Inc.",
+      "number" : 36647,
+      "organization" : {
+       "name" : "Oath Holdings Inc."
+      }
+     },
+     "bytes" : 0,
+     "geo" : {
+      "country_iso_code" : "US"
+     },
+     "ip" : "2001:4998:c:1023::4",
+     "mac" : [
+      "08:00:27:76:e3:69"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 0,
+     "port" : 80
+    },
+    "dstOui" : [
+     "PCS Computer Systems GmbH"
+    ],
+    "dstOuiCnt" : 1,
+    "ethertype" : 34525,
+    "fileId" : [],
+    "firstPacket" : 1571662567279,
+    "ipProtocol" : 6,
+    "lastPacket" : 1571662567279,
+    "length" : 0,
+    "network" : {
+     "bytes" : 94,
+     "community_id" : "1:31nXcG+ZBCFxYAqEOPuAzkRSXX4=",
+     "packets" : 1
+    },
+    "node" : "test",
+    "packetLen" : [
+     110
+    ],
+    "packetPos" : [
+     60554
+    ],
+    "packetRange" : {
+     "gte" : 1571662567279,
+     "lte" : 1571662567279
+    },
+    "protocol" : [
+     "tcp"
+    ],
+    "protocolCnt" : 1,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 0
+    },
+    "source" : {
+     "bytes" : 94,
+     "geo" : {
+      "country_iso_code" : "SE"
+     },
+     "ip" : "2001:bef::a00:27ff:fe0d:5c3c",
+     "mac" : [
+      "08:00:27:0d:5c:3c"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 1,
+     "port" : 53518
+    },
+    "srcOui" : [
+     "PCS Computer Systems GmbH"
+    ],
+    "srcOuiCnt" : 1,
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
+    "tcpflags" : {
+     "ack" : 0,
+     "dstZero" : 0,
+     "fin" : 0,
+     "psh" : 0,
+     "rst" : 0,
+     "srcZero" : 0,
+     "syn" : 1,
+     "syn-ack" : 0,
+     "urg" : 0
+    },
+    "tcpseq" : {
+     "src" : 3897817856
+    },
+    "totDataBytes" : 0
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-191021"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 0
+    },
+    "destination" : {
+     "as" : {
+      "full" : "AS26101 Oath Holdings Inc.",
+      "number" : 26101,
+      "organization" : {
+       "name" : "Oath Holdings Inc."
+      }
+     },
+     "bytes" : 0,
+     "geo" : {
+      "country_iso_code" : "US"
+     },
+     "ip" : "2001:4998:58:1836::11",
+     "mac" : [
+      "08:00:27:76:e3:69"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 0,
+     "port" : 80
+    },
+    "dstOui" : [
+     "PCS Computer Systems GmbH"
+    ],
+    "dstOuiCnt" : 1,
+    "ethertype" : 34525,
+    "fileId" : [],
+    "firstPacket" : 1571662567282,
+    "ipProtocol" : 6,
+    "lastPacket" : 1571662567282,
+    "length" : 0,
+    "network" : {
+     "bytes" : 94,
+     "community_id" : "1:05Mic6R09gwS/lrcHgiR//+gvlk=",
+     "packets" : 1
+    },
+    "node" : "test",
+    "packetLen" : [
+     110
+    ],
+    "packetPos" : [
+     60822
+    ],
+    "packetRange" : {
+     "gte" : 1571662567282,
+     "lte" : 1571662567282
+    },
+    "protocol" : [
+     "tcp"
+    ],
+    "protocolCnt" : 1,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 0
+    },
+    "source" : {
+     "bytes" : 94,
+     "geo" : {
+      "country_iso_code" : "SE"
+     },
+     "ip" : "2001:bef::a00:27ff:fe0d:5c3c",
+     "mac" : [
+      "08:00:27:0d:5c:3c"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 1,
+     "port" : 44256
+    },
+    "srcOui" : [
+     "PCS Computer Systems GmbH"
+    ],
+    "srcOuiCnt" : 1,
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
+    "tcpflags" : {
+     "ack" : 0,
+     "dstZero" : 0,
+     "fin" : 0,
+     "psh" : 0,
+     "rst" : 0,
+     "srcZero" : 0,
+     "syn" : 1,
+     "syn-ack" : 0,
+     "urg" : 0
+    },
+    "tcpseq" : {
+     "src" : 1752346135
+    },
+    "totDataBytes" : 0
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-191021"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 32
+    },
+    "destination" : {
+     "bytes" : 78,
+     "ip" : "fe80::a00:27ff:fe76:e369",
+     "mac" : [
+      "08:00:27:76:e3:69"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 1,
+     "port" : 0
+    },
+    "dstOui" : [
+     "PCS Computer Systems GmbH"
+    ],
+    "dstOuiCnt" : 1,
+    "dstTTL" : [
+     255
+    ],
+    "dstTTLCnt" : 1,
+    "ethertype" : 34525,
+    "fileId" : [],
+    "firstPacket" : 1571662572190,
+    "icmp" : {
+     "code" : [
+      0
+     ],
+     "type" : [
+      135,
+      136
+     ]
+    },
+    "ipProtocol" : 58,
+    "lastPacket" : 1571662572192,
+    "length" : 2,
+    "network" : {
+     "bytes" : 164,
+     "community_id" : "1:2og2vy4Q8lFp/dFP+c9vbw1mv7Y=",
+     "packets" : 2
+    },
+    "node" : "test",
+    "packetLen" : [
+     102,
+     94
+    ],
+    "packetPos" : [
+     65352,
+     65454
+    ],
+    "packetRange" : {
+     "gte" : 1571662572190,
+     "lte" : 1571662572192
+    },
+    "protocol" : [
+     "icmp"
+    ],
+    "protocolCnt" : 1,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 24
+    },
+    "source" : {
+     "bytes" : 86,
+     "ip" : "fe80::a00:27ff:fe0d:5c3c",
+     "mac" : [
+      "08:00:27:0d:5c:3c"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 1,
+     "port" : 0
+    },
+    "srcOui" : [
+     "PCS Computer Systems GmbH"
+    ],
+    "srcOuiCnt" : 1,
+    "srcTTL" : [
+     255
+    ],
+    "srcTTLCnt" : 1,
+    "totDataBytes" : 56
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-191021"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 48
+    },
+    "destination" : {
+     "as" : {
+      "full" : "AS2914 NTT America, Inc.",
+      "number" : 2914,
+      "organization" : {
+       "name" : "NTT America, Inc."
+      }
+     },
+     "bytes" : 0,
+     "geo" : {
+      "country_iso_code" : "US"
+     },
+     "ip" : "2001:418:8405:4002::3",
+     "mac" : [
+      "08:00:27:76:e3:69"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 0,
+     "port" : 123
+    },
+    "dstOui" : [
+     "PCS Computer Systems GmbH"
+    ],
+    "dstOuiCnt" : 1,
+    "ethertype" : 34525,
+    "fileId" : [],
+    "firstPacket" : 1571662572491,
+    "ipProtocol" : 17,
+    "lastPacket" : 1571662572491,
+    "length" : 0,
+    "network" : {
+     "bytes" : 110,
+     "community_id" : "1:DZD6E9KdK+44O1XIWrJTIdbYdyQ=",
+     "packets" : 1
+    },
+    "node" : "test",
+    "ntp" : {
+     "mode" : [
+      "client"
+     ],
+     "modeCnt" : 1,
+     "refId" : [
+      "INIT"
+     ],
+     "refIdCnt" : 1,
+     "stratum" : [
+      "unspecified"
+     ],
+     "stratumCnt" : 1,
+     "version" : [
+      4
+     ],
+     "versionCnt" : 1
+    },
+    "packetLen" : [
+     126
+    ],
+    "packetPos" : [
+     65744
+    ],
+    "packetRange" : {
+     "gte" : 1571662572491,
+     "lte" : 1571662572491
+    },
+    "protocol" : [
+     "ntp",
+     "udp"
+    ],
+    "protocolCnt" : 2,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 0
+    },
+    "source" : {
+     "bytes" : 110,
+     "geo" : {
+      "country_iso_code" : "SE"
+     },
+     "ip" : "2001:bef::a00:27ff:fe0d:5c3c",
+     "mac" : [
+      "08:00:27:0d:5c:3c"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 1,
+     "port" : 123
+    },
+    "srcDscp" : [
+     11
+    ],
+    "srcDscpCnt" : 1,
+    "srcOui" : [
+     "PCS Computer Systems GmbH"
+    ],
+    "srcOuiCnt" : 1,
+    "srcPayload8" : "e30006e800000000",
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
+    "totDataBytes" : 48
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-191021"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 0
+    },
+    "destination" : {
+     "as" : {
+      "full" : "AS15169 Google LLC",
+      "number" : 15169,
+      "organization" : {
+       "name" : "Google LLC"
+      }
+     },
+     "bytes" : 0,
+     "geo" : {
+      "country_iso_code" : "US"
+     },
+     "ip" : "2607:f8b0:400f:805::200e",
+     "mac" : [
+      "08:00:27:76:e3:69"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 0,
+     "port" : 80
+    },
+    "dstOui" : [
+     "PCS Computer Systems GmbH"
+    ],
+    "dstOuiCnt" : 1,
+    "ethertype" : 34525,
+    "fileId" : [],
+    "firstPacket" : 1571662572665,
+    "ipProtocol" : 6,
+    "lastPacket" : 1571662572665,
+    "length" : 0,
+    "network" : {
+     "bytes" : 94,
+     "community_id" : "1:EGKOofHS2mtrMUR7IOTcJWZ3j6c=",
+     "packets" : 1
+    },
+    "node" : "test",
+    "packetLen" : [
+     110
+    ],
+    "packetPos" : [
+     66044
+    ],
+    "packetRange" : {
+     "gte" : 1571662572665,
+     "lte" : 1571662572665
+    },
+    "protocol" : [
+     "tcp"
+    ],
+    "protocolCnt" : 1,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 0
+    },
+    "source" : {
+     "bytes" : 94,
+     "geo" : {
+      "country_iso_code" : "SE"
+     },
+     "ip" : "2001:bef::a00:27ff:fe0d:5c3c",
+     "mac" : [
+      "08:00:27:0d:5c:3c"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 1,
+     "port" : 52338
+    },
+    "srcOui" : [
+     "PCS Computer Systems GmbH"
+    ],
+    "srcOuiCnt" : 1,
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
+    "tcpflags" : {
+     "ack" : 0,
+     "dstZero" : 0,
+     "fin" : 0,
+     "psh" : 0,
+     "rst" : 0,
+     "srcZero" : 0,
+     "syn" : 1,
+     "syn-ack" : 0,
+     "urg" : 0
+    },
+    "tcpseq" : {
+     "src" : 743002002
+    },
+    "totDataBytes" : 0
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-191021"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 48
+    },
+    "destination" : {
+     "as" : {
+      "full" : "AS41231 Canonical Group Limited",
+      "number" : 41231,
+      "organization" : {
+       "name" : "Canonical Group Limited"
+      }
+     },
+     "bytes" : 0,
+     "geo" : {
+      "country_iso_code" : "GB"
+     },
+     "ip" : "2001:67c:1560:8003::c8",
+     "mac" : [
+      "08:00:27:76:e3:69"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 0,
+     "port" : 123
+    },
+    "dstOui" : [
+     "PCS Computer Systems GmbH"
+    ],
+    "dstOuiCnt" : 1,
+    "ethertype" : 34525,
+    "fileId" : [],
+    "firstPacket" : 1571662574339,
+    "ipProtocol" : 17,
+    "lastPacket" : 1571662574339,
+    "length" : 0,
+    "network" : {
+     "bytes" : 110,
+     "community_id" : "1:YBoCole5RzOqgxi8Mc/b53cN8Gk=",
+     "packets" : 1
+    },
+    "node" : "test",
+    "ntp" : {
+     "mode" : [
+      "client"
+     ],
+     "modeCnt" : 1,
+     "refId" : [
+      "INIT"
+     ],
+     "refIdCnt" : 1,
+     "stratum" : [
+      "unspecified"
+     ],
+     "stratumCnt" : 1,
+     "version" : [
+      4
+     ],
+     "versionCnt" : 1
+    },
+    "packetLen" : [
+     126
+    ],
+    "packetPos" : [
+     68178
+    ],
+    "packetRange" : {
+     "gte" : 1571662574339,
+     "lte" : 1571662574339
+    },
+    "protocol" : [
+     "ntp",
+     "udp"
+    ],
+    "protocolCnt" : 2,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 0
+    },
+    "source" : {
+     "bytes" : 110,
+     "geo" : {
+      "country_iso_code" : "SE"
+     },
+     "ip" : "2001:bef::a00:27ff:fe0d:5c3c",
+     "mac" : [
+      "08:00:27:0d:5c:3c"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 1,
+     "port" : 123
+    },
+    "srcDscp" : [
+     11
+    ],
+    "srcDscpCnt" : 1,
+    "srcOui" : [
+     "PCS Computer Systems GmbH"
+    ],
+    "srcOuiCnt" : 1,
+    "srcPayload8" : "e30006e800000000",
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
+    "totDataBytes" : 48
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-191021"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 0
+    },
+    "destination" : {
+     "as" : {
+      "full" : "AS15169 Google LLC",
+      "number" : 15169,
+      "organization" : {
+       "name" : "Google LLC"
+      }
+     },
+     "bytes" : 0,
+     "geo" : {
+      "country_iso_code" : "US"
+     },
+     "ip" : "2607:f8b0:400f:805::200e",
+     "mac" : [
+      "08:00:27:76:e3:69"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 0,
+     "port" : 80
+    },
+    "dstOui" : [
+     "PCS Computer Systems GmbH"
+    ],
+    "dstOuiCnt" : 1,
+    "ethertype" : 34525,
+    "fileId" : [],
+    "firstPacket" : 1571662575795,
+    "ipProtocol" : 6,
+    "lastPacket" : 1571662575795,
+    "length" : 0,
+    "network" : {
+     "bytes" : 94,
+     "community_id" : "1:DgLdDq3rJ18VK25ZnwWu8rJ93Rw=",
+     "packets" : 1
+    },
+    "node" : "test",
+    "packetLen" : [
+     110
+    ],
+    "packetPos" : [
+     71706
+    ],
+    "packetRange" : {
+     "gte" : 1571662575795,
+     "lte" : 1571662575795
+    },
+    "protocol" : [
+     "tcp"
+    ],
+    "protocolCnt" : 1,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 0
+    },
+    "source" : {
+     "bytes" : 94,
+     "geo" : {
+      "country_iso_code" : "SE"
+     },
+     "ip" : "2001:bef::a00:27ff:fe0d:5c3c",
+     "mac" : [
+      "08:00:27:0d:5c:3c"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 1,
+     "port" : 52342
+    },
+    "srcOui" : [
+     "PCS Computer Systems GmbH"
+    ],
+    "srcOuiCnt" : 1,
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
+    "tcpflags" : {
+     "ack" : 0,
+     "dstZero" : 0,
+     "fin" : 0,
+     "psh" : 0,
+     "rst" : 0,
+     "srcZero" : 0,
+     "syn" : 1,
+     "syn-ack" : 0,
+     "urg" : 0
+    },
+    "tcpseq" : {
+     "src" : 2316152254
+    },
+    "totDataBytes" : 0
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-191021"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 0
+    },
+    "destination" : {
+     "as" : {
+      "full" : "AS54113 Fastly",
+      "number" : 54113,
+      "organization" : {
+       "name" : "Fastly"
+      }
+     },
+     "bytes" : 0,
+     "ip" : "2a04:4e42:400::323",
+     "mac" : [
+      "08:00:27:76:e3:69"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 0,
+     "port" : 80
+    },
+    "dstOui" : [
+     "PCS Computer Systems GmbH"
+    ],
+    "dstOuiCnt" : 1,
+    "ethertype" : 34525,
+    "fileId" : [],
+    "firstPacket" : 1571662576891,
+    "ipProtocol" : 6,
+    "lastPacket" : 1571662576891,
+    "length" : 0,
+    "network" : {
+     "bytes" : 94,
+     "community_id" : "1:HbDlBFMCOih0nNd6FFxk9pY5jFY=",
+     "packets" : 1
+    },
+    "node" : "test",
+    "packetLen" : [
+     110
+    ],
+    "packetPos" : [
+     72142
+    ],
+    "packetRange" : {
+     "gte" : 1571662576891,
+     "lte" : 1571662576891
+    },
+    "protocol" : [
+     "tcp"
+    ],
+    "protocolCnt" : 1,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 0
+    },
+    "source" : {
+     "bytes" : 94,
+     "geo" : {
+      "country_iso_code" : "SE"
+     },
+     "ip" : "2001:bef::a00:27ff:fe0d:5c3c",
+     "mac" : [
+      "08:00:27:0d:5c:3c"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 1,
+     "port" : 51566
+    },
+    "srcOui" : [
+     "PCS Computer Systems GmbH"
+    ],
+    "srcOuiCnt" : 1,
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
+    "tcpflags" : {
+     "ack" : 0,
+     "dstZero" : 0,
+     "fin" : 0,
+     "psh" : 0,
+     "rst" : 0,
+     "srcZero" : 0,
+     "syn" : 1,
+     "syn-ack" : 0,
+     "urg" : 0
+    },
+    "tcpseq" : {
+     "src" : 74921166
+    },
+    "totDataBytes" : 0
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-191021"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 0
+    },
+    "destination" : {
+     "as" : {
+      "full" : "AS54113 Fastly",
+      "number" : 54113,
+      "organization" : {
+       "name" : "Fastly"
+      }
+     },
+     "bytes" : 0,
+     "ip" : "2a04:4e42:600::323",
+     "mac" : [
+      "08:00:27:76:e3:69"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 0,
+     "port" : 80
+    },
+    "dstOui" : [
+     "PCS Computer Systems GmbH"
+    ],
+    "dstOuiCnt" : 1,
+    "ethertype" : 34525,
+    "fileId" : [],
+    "firstPacket" : 1571662576896,
+    "ipProtocol" : 6,
+    "lastPacket" : 1571662576896,
+    "length" : 0,
+    "network" : {
+     "bytes" : 94,
+     "community_id" : "1:MJCCMCXgjaemk5kxIQErRTlfXyg=",
+     "packets" : 1
+    },
+    "node" : "test",
+    "packetLen" : [
+     110
+    ],
+    "packetPos" : [
+     72410
+    ],
+    "packetRange" : {
+     "gte" : 1571662576896,
+     "lte" : 1571662576896
+    },
+    "protocol" : [
+     "tcp"
+    ],
+    "protocolCnt" : 1,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 0
+    },
+    "source" : {
+     "bytes" : 94,
+     "geo" : {
+      "country_iso_code" : "SE"
+     },
+     "ip" : "2001:bef::a00:27ff:fe0d:5c3c",
+     "mac" : [
+      "08:00:27:0d:5c:3c"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 1,
+     "port" : 42868
+    },
+    "srcOui" : [
+     "PCS Computer Systems GmbH"
+    ],
+    "srcOuiCnt" : 1,
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
+    "tcpflags" : {
+     "ack" : 0,
+     "dstZero" : 0,
+     "fin" : 0,
+     "psh" : 0,
+     "rst" : 0,
+     "srcZero" : 0,
+     "syn" : 1,
+     "syn-ack" : 0,
+     "urg" : 0
+    },
+    "tcpseq" : {
+     "src" : 2242075977
+    },
+    "totDataBytes" : 0
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-191021"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 0
+    },
+    "destination" : {
+     "as" : {
+      "full" : "AS54113 Fastly",
+      "number" : 54113,
+      "organization" : {
+       "name" : "Fastly"
+      }
+     },
+     "bytes" : 0,
+     "ip" : "2a04:4e42:200::323",
+     "mac" : [
+      "08:00:27:76:e3:69"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 0,
+     "port" : 80
+    },
+    "dstOui" : [
+     "PCS Computer Systems GmbH"
+    ],
+    "dstOuiCnt" : 1,
+    "ethertype" : 34525,
+    "fileId" : [],
+    "firstPacket" : 1571662576898,
+    "ipProtocol" : 6,
+    "lastPacket" : 1571662576898,
+    "length" : 0,
+    "network" : {
+     "bytes" : 94,
+     "community_id" : "1:2XcH7dd4VLbZtA7Mh2fuPXV5bCM=",
+     "packets" : 1
+    },
+    "node" : "test",
+    "packetLen" : [
+     110
+    ],
+    "packetPos" : [
+     72678
+    ],
+    "packetRange" : {
+     "gte" : 1571662576898,
+     "lte" : 1571662576898
+    },
+    "protocol" : [
+     "tcp"
+    ],
+    "protocolCnt" : 1,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 0
+    },
+    "source" : {
+     "bytes" : 94,
+     "geo" : {
+      "country_iso_code" : "SE"
+     },
+     "ip" : "2001:bef::a00:27ff:fe0d:5c3c",
+     "mac" : [
+      "08:00:27:0d:5c:3c"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 1,
+     "port" : 44142
+    },
+    "srcOui" : [
+     "PCS Computer Systems GmbH"
+    ],
+    "srcOuiCnt" : 1,
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
+    "tcpflags" : {
+     "ack" : 0,
+     "dstZero" : 0,
+     "fin" : 0,
+     "psh" : 0,
+     "rst" : 0,
+     "srcZero" : 0,
+     "syn" : 1,
+     "syn-ack" : 0,
+     "urg" : 0
+    },
+    "tcpseq" : {
+     "src" : 3046654059
+    },
+    "totDataBytes" : 0
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-191021"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 0
+    },
+    "destination" : {
+     "as" : {
+      "full" : "AS54113 Fastly",
+      "number" : 54113,
+      "organization" : {
+       "name" : "Fastly"
+      }
+     },
+     "bytes" : 0,
+     "ip" : "2a04:4e42::323",
+     "mac" : [
+      "08:00:27:76:e3:69"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 0,
+     "port" : 80
+    },
+    "dstOui" : [
+     "PCS Computer Systems GmbH"
+    ],
+    "dstOuiCnt" : 1,
+    "ethertype" : 34525,
+    "fileId" : [],
+    "firstPacket" : 1571662576901,
+    "ipProtocol" : 6,
+    "lastPacket" : 1571662576901,
+    "length" : 0,
+    "network" : {
+     "bytes" : 94,
+     "community_id" : "1:ouqnukYPdci4WdDBalLeYiFn0tc=",
+     "packets" : 1
+    },
+    "node" : "test",
+    "packetLen" : [
+     110
+    ],
+    "packetPos" : [
+     72946
+    ],
+    "packetRange" : {
+     "gte" : 1571662576901,
+     "lte" : 1571662576901
+    },
+    "protocol" : [
+     "tcp"
+    ],
+    "protocolCnt" : 1,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 0
+    },
+    "source" : {
+     "bytes" : 94,
+     "geo" : {
+      "country_iso_code" : "SE"
+     },
+     "ip" : "2001:bef::a00:27ff:fe0d:5c3c",
+     "mac" : [
+      "08:00:27:0d:5c:3c"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 1,
+     "port" : 54994
+    },
+    "srcOui" : [
+     "PCS Computer Systems GmbH"
+    ],
+    "srcOuiCnt" : 1,
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
+    "tcpflags" : {
+     "ack" : 0,
+     "dstZero" : 0,
+     "fin" : 0,
+     "psh" : 0,
+     "rst" : 0,
+     "srcZero" : 0,
+     "syn" : 1,
+     "syn-ack" : 0,
+     "urg" : 0
+    },
+    "tcpseq" : {
+     "src" : 83282863
+    },
+    "totDataBytes" : 0
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-191021"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 576
+    },
+    "destination" : {
+     "as" : {
+      "full" : "AS8075 Microsoft Corporation",
+      "number" : 8075,
+      "organization" : {
+       "name" : "Microsoft Corporation"
+      }
+     },
+     "bytes" : 0,
+     "geo" : {
+      "country_iso_code" : "US"
+     },
+     "ip" : "20.0.1.100",
+     "mac" : [
+      "08:00:27:76:e3:69"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 0,
+     "port" : 514
+    },
+    "dstOui" : [
+     "PCS Computer Systems GmbH"
+    ],
+    "dstOuiCnt" : 1,
+    "dstRIR" : "ARIN",
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 1571662578777,
+    "ipProtocol" : 17,
+    "lastPacket" : 1571662589211,
+    "length" : 10434,
+    "network" : {
+     "bytes" : 744,
+     "community_id" : "1:Km2EZr/8JdHGPCTll+t+I3veupM=",
+     "packets" : 4
+    },
+    "node" : "test",
+    "packetLen" : [
+     223,
+     181,
+     223,
+     181
+    ],
+    "packetPos" : [
+     75174,
+     76601,
+     87517,
+     88776
+    ],
+    "packetRange" : {
+     "gte" : 1571662578777,
+     "lte" : 1571662589211
+    },
+    "protocol" : [
+     "syslog",
+     "udp"
+    ],
+    "protocolCnt" : 2,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 0
+    },
+    "source" : {
+     "as" : {
+      "full" : "AS0 This is neat",
+      "number" : 0,
+      "organization" : {
+       "name" : "This is neat"
+      }
+     },
+     "bytes" : 744,
+     "geo" : {
+      "country_iso_code" : "RU"
+     },
+     "ip" : "10.0.0.1",
+     "mac" : [
+      "08:00:27:1f:08:22"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 4,
+     "port" : 42521
+    },
+    "srcOui" : [
+     "PCS Computer Systems GmbH"
+    ],
+    "srcOuiCnt" : 1,
+    "srcPayload8" : "3c33363e4f637420",
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
+    "tags" : [
+     "srcip"
+    ],
+    "tagsCnt" : 1,
+    "test" : {
+     "ASN" : [
+      "AS0 This is neat"
+     ],
+     "GEO" : [
+      "RU"
+     ],
+     "RIR" : [
+      ""
+     ],
+     "ip" : [
+      "10.0.0.1"
+     ],
+     "number" : [
+      1677787156
+     ],
+     "string.snow" : [
+      "16777226:42521,1677787156:514"
+     ]
+    },
+    "totDataBytes" : 576
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-191021"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 64
+    },
+    "destination" : {
+     "bytes" : 0,
+     "ip" : "ff02::1",
+     "mac" : [
+      "33:33:00:00:00:01"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 0,
+     "port" : 0
+    },
+    "ethertype" : 34525,
+    "fileId" : [],
+    "firstPacket" : 1571662591197,
+    "icmp" : {
+     "code" : [
+      0
+     ],
+     "type" : [
+      134
+     ]
+    },
+    "ipProtocol" : 58,
+    "lastPacket" : 1571662591197,
+    "length" : 0,
+    "network" : {
+     "bytes" : 118,
+     "community_id" : "1:LZli3bzdB8zypy5qR3HA/ASU0Ec=",
+     "packets" : 1
+    },
+    "node" : "test",
+    "packetLen" : [
+     134
+    ],
+    "packetPos" : [
+     89675
+    ],
+    "packetRange" : {
+     "gte" : 1571662591197,
+     "lte" : 1571662591197
+    },
+    "protocol" : [
+     "icmp"
+    ],
+    "protocolCnt" : 1,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 0
+    },
+    "source" : {
+     "bytes" : 118,
+     "ip" : "fe80::a00:27ff:fe76:e369",
+     "mac" : [
+      "08:00:27:76:e3:69"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 1,
+     "port" : 0
+    },
+    "srcOui" : [
+     "PCS Computer Systems GmbH"
+    ],
+    "srcOuiCnt" : 1,
+    "srcTTL" : [
+     255
+    ],
+    "srcTTLCnt" : 1,
+    "totDataBytes" : 64
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-191021"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 0
+    },
+    "destination" : {
+     "bytes" : 0,
+     "ip" : "224.0.0.1",
+     "mac" : [
+      "01:00:5e:00:00:01",
+      "01:00:5e:00:00:16"
+     ],
+     "mac-cnt" : 2,
+     "packets" : 0,
+     "port" : 0
+    },
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 1571662595101,
+    "ipProtocol" : 2,
+    "lastPacket" : 1571662599715,
+    "length" : 4614,
+    "network" : {
+     "bytes" : 188,
+     "packets" : 3
+    },
+    "node" : "test",
+    "packetLen" : [
+     66,
+     76,
+     94
+    ],
+    "packetPos" : [
+     95547,
+     97843,
+     99979
+    ],
+    "packetRange" : {
+     "gte" : 1571662595101,
+     "lte" : 1571662599715
+    },
+    "protocol" : [
+     "igmp"
+    ],
+    "protocolCnt" : 1,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 0
+    },
+    "source" : {
+     "as" : {
+      "full" : "AS0 This is neat",
+      "number" : 0,
+      "organization" : {
+       "name" : "This is neat"
+      }
+     },
+     "bytes" : 188,
+     "geo" : {
+      "country_iso_code" : "RU"
+     },
+     "ip" : "10.0.0.1",
+     "mac" : [
+      "08:00:27:1f:08:22",
+      "08:00:27:76:e3:69",
+      "0a:00:27:00:00:02"
+     ],
+     "mac-cnt" : 3,
+     "packets" : 3,
+     "port" : 0
+    },
+    "srcDscp" : [
+     48
+    ],
+    "srcDscpCnt" : 1,
+    "srcOui" : [
+     "PCS Computer Systems GmbH"
+    ],
+    "srcOuiCnt" : 1,
+    "srcTTL" : [
+     1
+    ],
+    "srcTTLCnt" : 1,
+    "tags" : [
+     "srcip"
+    ],
+    "tagsCnt" : 1,
+    "test" : {
+     "ASN" : [
+      "AS0 This is neat"
+     ],
+     "GEO" : [
+      "RU"
+     ],
+     "RIR" : [
+      ""
+     ],
+     "ip" : [
+      "10.0.0.1"
+     ],
+     "number" : [
+      16777440
+     ],
+     "string.snow" : [
+      "16777226:0,16777440:0"
+     ]
+    },
+    "totDataBytes" : 0
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-191021"
+    }
+   }
+  }
+ ]
 }
 

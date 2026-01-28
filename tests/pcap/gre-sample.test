@@ -1,982 +1,1042 @@
 {
-   "sessions3" : [
-      {
-         "body" : {
-            "@timestamp" : "SET",
-            "client" : {
-               "bytes" : 256
-            },
-            "destination" : {
-               "bytes" : 742,
-               "ip" : "172.28.2.3",
-               "mac" : [
-                  "00:c0:ca:14:b0:52"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 6,
-               "port" : 0
-            },
-            "dstDscp" : [
-               48
-            ],
-            "dstDscpCnt" : 1,
-            "dstOui" : [
-               "Alfa, Inc."
-            ],
-            "dstOuiCnt" : 1,
-            "dstOuterASN" : [
-               "---",
-               "AS11590 Cumberland Technologies International"
-            ],
-            "dstOuterGEO" : [
-               "---",
-               "US"
-            ],
-            "dstOuterIp" : [
-               "172.27.1.66",
-               "66.59.109.137"
-            ],
-            "dstOuterIpCnt" : 2,
-            "dstOuterRIR" : [
-               "ARIN",
-               "ARIN"
-            ],
-            "dstRIR" : "ARIN",
-            "dstTTL" : [
-               63
-            ],
-            "dstTTLCnt" : 1,
-            "ethertype" : 2048,
-            "fileId" : [],
-            "firstPacket" : 1055289968793,
-            "icmp" : {
-               "code" : [
-                  0,
-                  3
-               ],
-               "type" : [
-                  0,
-                  3,
-                  8
-               ]
-            },
-            "ipProtocol" : 1,
-            "lastPacket" : 1055289992101,
-            "length" : 23308,
-            "network" : {
-               "bytes" : 1230,
-               "community_id" : "1:4qiuUiapfKrMDVDHhw0iOgvogqI=",
-               "packets" : 10
-            },
-            "node" : "test",
-            "packetLen" : [
-               138,
-               138,
-               138,
-               138,
-               138,
-               138,
-               138,
-               138,
-               143,
-               143
-            ],
-            "packetPos" : [
-               24,
-               162,
-               300,
-               438,
-               576,
-               714,
-               852,
-               990,
-               6474,
-               6732
-            ],
-            "packetRange" : {
-               "gte" : 1055289968793,
-               "lte" : 1055289992101
-            },
-            "protocol" : [
-               "gre",
-               "icmp"
-            ],
-            "protocolCnt" : 2,
-            "segmentCnt" : 1,
-            "server" : {
-               "bytes" : 394
-            },
-            "source" : {
-               "as" : {
-                  "full" : "AS11590 Cumberland Technologies International",
-                  "number" : 11590,
-                  "organization" : {
-                     "name" : "Cumberland Technologies International"
-                  }
-               },
-               "bytes" : 488,
-               "geo" : {
-                  "city_name" : "Newport",
-                  "country_iso_code" : "US",
-                  "region_iso_code" : "PA"
-               },
-               "ip" : "66.59.111.190",
-               "mac" : [
-                  "00:02:2d:56:4a:fd"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 4,
-               "port" : 0
-            },
-            "srcOui" : [
-               "Agere Systems"
-            ],
-            "srcOuiCnt" : 1,
-            "srcOuterASN" : [
-               "---",
-               "AS11590 Cumberland Technologies International"
-            ],
-            "srcOuterGEO" : [
-               "---",
-               "US"
-            ],
-            "srcOuterIp" : [
-               "172.27.1.66",
-               "66.59.109.137"
-            ],
-            "srcOuterIpCnt" : 2,
-            "srcOuterRIR" : [
-               "ARIN",
-               "ARIN"
-            ],
-            "srcRIR" : "ARIN",
-            "srcTTL" : [
-               64
-            ],
-            "srcTTLCnt" : 1,
-            "tags" : [
-               "gretest-sample"
-            ],
-            "tagsCnt" : 1,
-            "totDataBytes" : 650
-         },
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions3-030611"
-            }
-         }
-      },
-      {
-         "body" : {
-            "@timestamp" : "SET",
-            "client" : {
-               "bytes" : 48
-            },
-            "destination" : {
-               "as" : {
-                  "full" : "AS3 Massachusetts Institute of Technology",
-                  "number" : 3,
-                  "organization" : {
-                     "name" : "Massachusetts Institute of Technology"
-                  }
-               },
-               "bytes" : 114,
-               "geo" : {
-                  "country_iso_code" : "US"
-               },
-               "ip" : "18.26.4.105",
-               "mac" : [
-                  "00:c0:ca:14:b0:52"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 1,
-               "port" : 123
-            },
-            "dstOui" : [
-               "Alfa, Inc."
-            ],
-            "dstOuiCnt" : 1,
-            "dstOuterASN" : [
-               "---",
-               "AS11590 Cumberland Technologies International"
-            ],
-            "dstOuterGEO" : [
-               "---",
-               "US"
-            ],
-            "dstOuterIp" : [
-               "172.27.1.66",
-               "66.59.109.137"
-            ],
-            "dstOuterIpCnt" : 2,
-            "dstOuterRIR" : [
-               "ARIN",
-               "ARIN"
-            ],
-            "dstPayload8" : "240206ee000003bc",
-            "dstRIR" : "ARIN",
-            "dstTTL" : [
-               45
-            ],
-            "dstTTLCnt" : 1,
-            "ethertype" : 2048,
-            "fileId" : [],
-            "firstPacket" : 1055289973849,
-            "ipProtocol" : 17,
-            "lastPacket" : 1055289973923,
-            "length" : 74,
-            "network" : {
-               "bytes" : 228,
-               "community_id" : "1:veIAhY2jaBSkfqgIosmVNpCkTpE=",
-               "packets" : 2
-            },
-            "node" : "test",
-            "packetLen" : [
-               130,
-               130
-            ],
-            "packetPos" : [
-               1128,
-               1258
-            ],
-            "packetRange" : {
-               "gte" : 1055289973849,
-               "lte" : 1055289973923
-            },
-            "protocol" : [
-               "gre",
-               "ntp",
-               "udp"
-            ],
-            "protocolCnt" : 3,
-            "segmentCnt" : 1,
-            "server" : {
-               "bytes" : 48
-            },
-            "source" : {
-               "as" : {
-                  "full" : "AS11590 Cumberland Technologies International",
-                  "number" : 11590,
-                  "organization" : {
-                     "name" : "Cumberland Technologies International"
-                  }
-               },
-               "bytes" : 114,
-               "geo" : {
-                  "city_name" : "Newport",
-                  "country_iso_code" : "US",
-                  "region_iso_code" : "PA"
-               },
-               "ip" : "66.59.111.190",
-               "mac" : [
-                  "00:02:2d:56:4a:fd"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 1,
-               "port" : 123
-            },
-            "srcDscp" : [
-               4
-            ],
-            "srcDscpCnt" : 1,
-            "srcOui" : [
-               "Agere Systems"
-            ],
-            "srcOuiCnt" : 1,
-            "srcOuterASN" : [
-               "---",
-               "AS11590 Cumberland Technologies International"
-            ],
-            "srcOuterGEO" : [
-               "---",
-               "US"
-            ],
-            "srcOuterIp" : [
-               "172.27.1.66",
-               "66.59.109.137"
-            ],
-            "srcOuterIpCnt" : 2,
-            "srcOuterRIR" : [
-               "ARIN",
-               "ARIN"
-            ],
-            "srcPayload8" : "230b06ef00000000",
-            "srcRIR" : "ARIN",
-            "srcTTL" : [
-               64
-            ],
-            "srcTTLCnt" : 1,
-            "tags" : [
-               "gretest-sample"
-            ],
-            "tagsCnt" : 1,
-            "totDataBytes" : 96
-         },
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions3-030611"
-            }
-         }
-      },
-      {
-         "body" : {
-            "@timestamp" : "SET",
-            "client" : {
-               "bytes" : 952
-            },
-            "destination" : {
-               "bytes" : 2579,
-               "ip" : "172.28.2.3",
-               "mac" : [
-                  "00:c0:ca:14:b0:52"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 10,
-               "port" : 22
-            },
-            "dstOui" : [
-               "Alfa, Inc."
-            ],
-            "dstOuiCnt" : 1,
-            "dstOuterASN" : [
-               "---",
-               "AS11590 Cumberland Technologies International"
-            ],
-            "dstOuterGEO" : [
-               "---",
-               "US"
-            ],
-            "dstOuterIp" : [
-               "172.27.1.66",
-               "66.59.109.137"
-            ],
-            "dstOuterIpCnt" : 2,
-            "dstOuterRIR" : [
-               "ARIN",
-               "ARIN"
-            ],
-            "dstPayload8" : "5353482d312e3939",
-            "dstRIR" : "ARIN",
-            "dstTTL" : [
-               63
-            ],
-            "dstTTLCnt" : 1,
-            "ethertype" : 2048,
-            "fileId" : [],
-            "firstPacket" : 1055289978756,
-            "initRTT" : 22,
-            "ipProtocol" : 6,
-            "lastPacket" : 1055289981914,
-            "length" : 3158,
-            "network" : {
-               "bytes" : 4619,
-               "community_id" : "1:GvEAhAEKkdnTWFCXuw7HpDevs2w=",
-               "packets" : 22
-            },
-            "node" : "test",
-            "packetLen" : [
-               114,
-               114,
-               106,
-               129,
-               106,
-               130,
-               106,
-               594,
-               594,
-               106,
-               106,
-               130,
-               106,
-               530,
-               106,
-               522,
-               106,
-               842,
-               106,
-               106,
-               106,
-               106
-            ],
-            "packetPos" : [
-               1388,
-               1502,
-               1616,
-               1722,
-               1851,
-               1957,
-               2087,
-               2193,
-               2787,
-               3381,
-               3487,
-               3593,
-               3723,
-               3829,
-               4359,
-               4465,
-               4987,
-               5093,
-               5935,
-               6041,
-               6147,
-               6253
-            ],
-            "packetRange" : {
-               "gte" : 1055289978756,
-               "lte" : 1055289981914
-            },
-            "protocol" : [
-               "gre",
-               "ssh",
-               "tcp"
-            ],
-            "protocolCnt" : 3,
-            "segmentCnt" : 1,
-            "server" : {
-               "bytes" : 1671
-            },
-            "source" : {
-               "as" : {
-                  "full" : "AS11590 Cumberland Technologies International",
-                  "number" : 11590,
-                  "organization" : {
-                     "name" : "Cumberland Technologies International"
-                  }
-               },
-               "bytes" : 2040,
-               "geo" : {
-                  "city_name" : "Newport",
-                  "country_iso_code" : "US",
-                  "region_iso_code" : "PA"
-               },
-               "ip" : "66.59.111.190",
-               "mac" : [
-                  "00:02:2d:56:4a:fd"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 12,
-               "port" : 40264
-            },
-            "srcOui" : [
-               "Agere Systems"
-            ],
-            "srcOuiCnt" : 1,
-            "srcOuterASN" : [
-               "---",
-               "AS11590 Cumberland Technologies International"
-            ],
-            "srcOuterGEO" : [
-               "---",
-               "US"
-            ],
-            "srcOuterIp" : [
-               "172.27.1.66",
-               "66.59.109.137"
-            ],
-            "srcOuterIpCnt" : 2,
-            "srcOuterRIR" : [
-               "ARIN",
-               "ARIN"
-            ],
-            "srcPayload8" : "5353482d322e302d",
-            "srcRIR" : "ARIN",
-            "srcTTL" : [
-               64
-            ],
-            "srcTTLCnt" : 1,
-            "ssh" : {
-               "hassh" : [
-                  "5ef6678a6b060094834599ca16581b05"
-               ],
-               "hasshCnt" : 1,
-               "hasshServer" : [
-                  "6e3242d64766f4154c11858bbd654415"
-               ],
-               "hasshServerCnt" : 1,
-               "key" : [
-                  "AAAAB3NzaC1yc2EAAAABIwAAAIEApsEyRdoxEZ/Xmehe9Oo6s0uuroriAKOqim32L2V9DZbzt101U41iUHjI8ESaANQZd73O7uop7tIfK6ZMq/cshMcuuI1YxqYxCBuCFLsiomlYq7+7cURJEClVtSyPmtijvhnaJKAlN4P3iXZDCnUQkKrWC+XhBZT8E5DxSSIRAhk="
-               ],
-               "keyCnt" : 1,
-               "version" : [
-                  "ssh-1.99-openssh_3.1p1",
-                  "ssh-2.0-openssh_3.6.1p1"
-               ],
-               "versionCnt" : 2
-            },
-            "tags" : [
-               "gretest-sample"
-            ],
-            "tagsCnt" : 1,
-            "tcpflags" : {
-               "ack" : 10,
-               "dstZero" : 0,
-               "fin" : 2,
-               "psh" : 8,
-               "rst" : 0,
-               "srcZero" : 0,
-               "syn" : 1,
-               "syn-ack" : 1,
-               "urg" : 0
-            },
-            "tcpseq" : {
-               "dst" : 0,
-               "src" : 813658343
-            },
-            "totDataBytes" : 2623
-         },
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions3-030611"
-            }
-         }
-      },
-      {
-         "body" : {
-            "@timestamp" : "SET",
-            "client" : {
-               "bytes" : 66
-            },
-            "destination" : {
-               "bytes" : 0,
-               "ip" : "172.28.2.3",
-               "mac" : [
-                  "00:c0:ca:14:b0:52"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 0,
-               "port" : 53
-            },
-            "dns" : [
-               {
-                  "host" : [
-                     "www.gleeble.org"
-                  ],
-                  "hostCnt" : 1,
-                  "opcode" : "QUERY",
-                  "qc" : "IN",
-                  "qt" : "ANY",
-                  "queryHost" : "www.gleeble.org"
-               }
-            ],
-            "dnsCnt" : 1,
-            "dstOui" : [
-               "Alfa, Inc."
-            ],
-            "dstOuiCnt" : 1,
-            "dstOuterASN" : [
-               "AS11590 Cumberland Technologies International"
-            ],
-            "dstOuterGEO" : [
-               "US"
-            ],
-            "dstOuterIp" : [
-               "66.59.109.137"
-            ],
-            "dstOuterIpCnt" : 1,
-            "dstOuterRIR" : [
-               "ARIN"
-            ],
-            "dstRIR" : "ARIN",
-            "ethertype" : 2048,
-            "fileId" : [],
-            "firstPacket" : 1055289987055,
-            "ipProtocol" : 17,
-            "lastPacket" : 1055289992056,
-            "length" : 5001,
-            "network" : {
-               "bytes" : 198,
-               "community_id" : "1:07ZQAeEnPuTfz/AxZbb/1SQ0Yvk=",
-               "packets" : 2
-            },
-            "node" : "test",
-            "packetLen" : [
-               115,
-               115
-            ],
-            "packetPos" : [
-               6359,
-               6617
-            ],
-            "packetRange" : {
-               "gte" : 1055289987055,
-               "lte" : 1055289992056
-            },
-            "protocol" : [
-               "dns",
-               "gre",
-               "udp"
-            ],
-            "protocolCnt" : 3,
-            "segmentCnt" : 1,
-            "server" : {
-               "bytes" : 0
-            },
-            "source" : {
-               "as" : {
-                  "full" : "AS11590 Cumberland Technologies International",
-                  "number" : 11590,
-                  "organization" : {
-                     "name" : "Cumberland Technologies International"
-                  }
-               },
-               "bytes" : 198,
-               "geo" : {
-                  "city_name" : "Newport",
-                  "country_iso_code" : "US",
-                  "region_iso_code" : "PA"
-               },
-               "ip" : "66.59.111.190",
-               "mac" : [
-                  "00:02:2d:56:4a:fd"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 2,
-               "port" : 37675
-            },
-            "srcOui" : [
-               "Agere Systems"
-            ],
-            "srcOuiCnt" : 1,
-            "srcOuterASN" : [
-               "---"
-            ],
-            "srcOuterGEO" : [
-               "---"
-            ],
-            "srcOuterIp" : [
-               "172.27.1.66"
-            ],
-            "srcOuterIpCnt" : 1,
-            "srcOuterRIR" : [
-               "ARIN"
-            ],
-            "srcPayload8" : "bdaa010000010000",
-            "srcRIR" : "ARIN",
-            "srcTTL" : [
-               64
-            ],
-            "srcTTLCnt" : 1,
-            "tags" : [
-               "gretest-sample"
-            ],
-            "tagsCnt" : 1,
-            "totDataBytes" : 66
-         },
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions3-030611"
-            }
-         }
-      },
-      {
-         "body" : {
-            "@timestamp" : "SET",
-            "client" : {
-               "bytes" : 48
-            },
-            "destination" : {
-               "as" : {
-                  "full" : "AS11590 Cumberland Technologies International",
-                  "number" : 11590,
-                  "organization" : {
-                     "name" : "Cumberland Technologies International"
-                  }
-               },
-               "bytes" : 114,
-               "geo" : {
-                  "city_name" : "Newport",
-                  "country_iso_code" : "US",
-                  "region_iso_code" : "PA"
-               },
-               "ip" : "66.59.111.182",
-               "mac" : [
-                  "00:c0:ca:14:b0:52"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 1,
-               "port" : 123
-            },
-            "dstOui" : [
-               "Alfa, Inc."
-            ],
-            "dstOuiCnt" : 1,
-            "dstOuterASN" : [
-               "---",
-               "AS11590 Cumberland Technologies International"
-            ],
-            "dstOuterGEO" : [
-               "---",
-               "US"
-            ],
-            "dstOuterIp" : [
-               "172.27.1.66",
-               "66.59.109.137"
-            ],
-            "dstOuterIpCnt" : 2,
-            "dstOuterRIR" : [
-               "ARIN",
-               "ARIN"
-            ],
-            "dstPayload8" : "240306ef000008cf",
-            "dstRIR" : "ARIN",
-            "dstTTL" : [
-               63
-            ],
-            "dstTTLCnt" : 1,
-            "ethertype" : 2048,
-            "fileId" : [],
-            "firstPacket" : 1055289992849,
-            "ipProtocol" : 17,
-            "lastPacket" : 1055289992905,
-            "length" : 56,
-            "network" : {
-               "bytes" : 228,
-               "community_id" : "1:tHxGdFYxUdQ1mRGmcwzADwdsxpk=",
-               "packets" : 2
-            },
-            "node" : "test",
-            "packetLen" : [
-               130,
-               130
-            ],
-            "packetPos" : [
-               6875,
-               7005
-            ],
-            "packetRange" : {
-               "gte" : 1055289992849,
-               "lte" : 1055289992905
-            },
-            "protocol" : [
-               "gre",
-               "ntp",
-               "udp"
-            ],
-            "protocolCnt" : 3,
-            "segmentCnt" : 1,
-            "server" : {
-               "bytes" : 48
-            },
-            "source" : {
-               "as" : {
-                  "full" : "AS11590 Cumberland Technologies International",
-                  "number" : 11590,
-                  "organization" : {
-                     "name" : "Cumberland Technologies International"
-                  }
-               },
-               "bytes" : 114,
-               "geo" : {
-                  "city_name" : "Newport",
-                  "country_iso_code" : "US",
-                  "region_iso_code" : "PA"
-               },
-               "ip" : "66.59.111.190",
-               "mac" : [
-                  "00:02:2d:56:4a:fd"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 1,
-               "port" : 123
-            },
-            "srcDscp" : [
-               4
-            ],
-            "srcDscpCnt" : 1,
-            "srcOui" : [
-               "Agere Systems"
-            ],
-            "srcOuiCnt" : 1,
-            "srcOuterASN" : [
-               "---",
-               "AS11590 Cumberland Technologies International"
-            ],
-            "srcOuterGEO" : [
-               "---",
-               "US"
-            ],
-            "srcOuterIp" : [
-               "172.27.1.66",
-               "66.59.109.137"
-            ],
-            "srcOuterIpCnt" : 2,
-            "srcOuterRIR" : [
-               "ARIN",
-               "ARIN"
-            ],
-            "srcPayload8" : "230b06ef00000000",
-            "srcRIR" : "ARIN",
-            "srcTTL" : [
-               64
-            ],
-            "srcTTLCnt" : 1,
-            "tags" : [
-               "gretest-sample"
-            ],
-            "tagsCnt" : 1,
-            "totDataBytes" : 96
-         },
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions3-030611"
-            }
-         }
-      },
-      {
-         "body" : {
-            "@timestamp" : "SET",
-            "client" : {
-               "bytes" : 48
-            },
-            "destination" : {
-               "as" : {
-                  "full" : "AS10755 Dartmouth College",
-                  "number" : 10755,
-                  "organization" : {
-                     "name" : "Dartmouth College"
-                  }
-               },
-               "bytes" : 114,
-               "geo" : {
-                  "city_name" : "Hanover",
-                  "country_iso_code" : "US",
-                  "region_iso_code" : "NH"
-               },
-               "ip" : "129.170.17.4",
-               "mac" : [
-                  "00:c0:ca:14:b0:52"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 1,
-               "port" : 123
-            },
-            "dstOui" : [
-               "Alfa, Inc."
-            ],
-            "dstOuiCnt" : 1,
-            "dstOuterASN" : [
-               "---",
-               "AS11590 Cumberland Technologies International"
-            ],
-            "dstOuterGEO" : [
-               "---",
-               "US"
-            ],
-            "dstOuterIp" : [
-               "172.27.1.66",
-               "66.59.109.137"
-            ],
-            "dstOuterIpCnt" : 2,
-            "dstOuterRIR" : [
-               "ARIN",
-               "ARIN"
-            ],
-            "dstPayload8" : "240206f5000005b6",
-            "dstRIR" : "ARIN",
-            "dstTTL" : [
-               52
-            ],
-            "dstTTLCnt" : 1,
-            "ethertype" : 2048,
-            "fileId" : [],
-            "firstPacket" : 1055289996849,
-            "ipProtocol" : 17,
-            "lastPacket" : 1055289996921,
-            "length" : 72,
-            "network" : {
-               "bytes" : 228,
-               "community_id" : "1:KjznBxr7r/2kBYUhYhbnV4xMJmc=",
-               "packets" : 2
-            },
-            "node" : "test",
-            "packetLen" : [
-               130,
-               130
-            ],
-            "packetPos" : [
-               7135,
-               7265
-            ],
-            "packetRange" : {
-               "gte" : 1055289996849,
-               "lte" : 1055289996921
-            },
-            "protocol" : [
-               "gre",
-               "ntp",
-               "udp"
-            ],
-            "protocolCnt" : 3,
-            "segmentCnt" : 1,
-            "server" : {
-               "bytes" : 48
-            },
-            "source" : {
-               "as" : {
-                  "full" : "AS11590 Cumberland Technologies International",
-                  "number" : 11590,
-                  "organization" : {
-                     "name" : "Cumberland Technologies International"
-                  }
-               },
-               "bytes" : 114,
-               "geo" : {
-                  "city_name" : "Newport",
-                  "country_iso_code" : "US",
-                  "region_iso_code" : "PA"
-               },
-               "ip" : "66.59.111.190",
-               "mac" : [
-                  "00:02:2d:56:4a:fd"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 1,
-               "port" : 123
-            },
-            "srcDscp" : [
-               4
-            ],
-            "srcDscpCnt" : 1,
-            "srcOui" : [
-               "Agere Systems"
-            ],
-            "srcOuiCnt" : 1,
-            "srcOuterASN" : [
-               "---",
-               "AS11590 Cumberland Technologies International"
-            ],
-            "srcOuterGEO" : [
-               "---",
-               "US"
-            ],
-            "srcOuterIp" : [
-               "172.27.1.66",
-               "66.59.109.137"
-            ],
-            "srcOuterIpCnt" : 2,
-            "srcOuterRIR" : [
-               "ARIN",
-               "ARIN"
-            ],
-            "srcPayload8" : "230b06ef00000000",
-            "srcRIR" : "ARIN",
-            "srcTTL" : [
-               64
-            ],
-            "srcTTLCnt" : 1,
-            "tags" : [
-               "gretest-sample"
-            ],
-            "tagsCnt" : 1,
-            "totDataBytes" : 96
-         },
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions3-030611"
-            }
-         }
+ "sessions3" : [
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 256
+    },
+    "destination" : {
+     "bytes" : 742,
+     "ip" : "172.28.2.3",
+     "mac" : [
+      "00:c0:ca:14:b0:52"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 6,
+     "port" : 0
+    },
+    "dstDscp" : [
+     48
+    ],
+    "dstDscpCnt" : 1,
+    "dstOui" : [
+     "Alfa, Inc."
+    ],
+    "dstOuiCnt" : 1,
+    "dstOuterASN" : [
+     "---",
+     "AS11590 Cumberland Technologies International"
+    ],
+    "dstOuterGEO" : [
+     "---",
+     "US"
+    ],
+    "dstOuterIp" : [
+     "172.27.1.66",
+     "66.59.109.137"
+    ],
+    "dstOuterIpCnt" : 2,
+    "dstOuterRIR" : [
+     "ARIN",
+     "ARIN"
+    ],
+    "dstRIR" : "ARIN",
+    "dstTTL" : [
+     63
+    ],
+    "dstTTLCnt" : 1,
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 1055289968793,
+    "icmp" : {
+     "code" : [
+      0,
+      3
+     ],
+     "type" : [
+      0,
+      3,
+      8
+     ]
+    },
+    "ipProtocol" : 1,
+    "lastPacket" : 1055289992101,
+    "length" : 23308,
+    "network" : {
+     "bytes" : 1230,
+     "community_id" : "1:4qiuUiapfKrMDVDHhw0iOgvogqI=",
+     "packets" : 10
+    },
+    "node" : "test",
+    "packetLen" : [
+     138,
+     138,
+     138,
+     138,
+     138,
+     138,
+     138,
+     138,
+     143,
+     143
+    ],
+    "packetPos" : [
+     24,
+     162,
+     300,
+     438,
+     576,
+     714,
+     852,
+     990,
+     6474,
+     6732
+    ],
+    "packetRange" : {
+     "gte" : 1055289968793,
+     "lte" : 1055289992101
+    },
+    "protocol" : [
+     "gre",
+     "icmp"
+    ],
+    "protocolCnt" : 2,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 394
+    },
+    "source" : {
+     "as" : {
+      "full" : "AS11590 Cumberland Technologies International",
+      "number" : 11590,
+      "organization" : {
+       "name" : "Cumberland Technologies International"
       }
-   ]
+     },
+     "bytes" : 488,
+     "geo" : {
+      "city_name" : "Newport",
+      "country_iso_code" : "US",
+      "region_iso_code" : "PA"
+     },
+     "ip" : "66.59.111.190",
+     "mac" : [
+      "00:02:2d:56:4a:fd"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 4,
+     "port" : 0
+    },
+    "srcOui" : [
+     "Agere Systems"
+    ],
+    "srcOuiCnt" : 1,
+    "srcOuterASN" : [
+     "---",
+     "AS11590 Cumberland Technologies International"
+    ],
+    "srcOuterGEO" : [
+     "---",
+     "US"
+    ],
+    "srcOuterIp" : [
+     "172.27.1.66",
+     "66.59.109.137"
+    ],
+    "srcOuterIpCnt" : 2,
+    "srcOuterRIR" : [
+     "ARIN",
+     "ARIN"
+    ],
+    "srcRIR" : "ARIN",
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
+    "tags" : [
+     "gretest-sample"
+    ],
+    "tagsCnt" : 1,
+    "totDataBytes" : 650
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-030611"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 48
+    },
+    "destination" : {
+     "as" : {
+      "full" : "AS3 Massachusetts Institute of Technology",
+      "number" : 3,
+      "organization" : {
+       "name" : "Massachusetts Institute of Technology"
+      }
+     },
+     "bytes" : 114,
+     "geo" : {
+      "country_iso_code" : "US"
+     },
+     "ip" : "18.26.4.105",
+     "mac" : [
+      "00:c0:ca:14:b0:52"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 1,
+     "port" : 123
+    },
+    "dstOui" : [
+     "Alfa, Inc."
+    ],
+    "dstOuiCnt" : 1,
+    "dstOuterASN" : [
+     "---",
+     "AS11590 Cumberland Technologies International"
+    ],
+    "dstOuterGEO" : [
+     "---",
+     "US"
+    ],
+    "dstOuterIp" : [
+     "172.27.1.66",
+     "66.59.109.137"
+    ],
+    "dstOuterIpCnt" : 2,
+    "dstOuterRIR" : [
+     "ARIN",
+     "ARIN"
+    ],
+    "dstPayload8" : "240206ee000003bc",
+    "dstRIR" : "ARIN",
+    "dstTTL" : [
+     45
+    ],
+    "dstTTLCnt" : 1,
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 1055289973849,
+    "ipProtocol" : 17,
+    "lastPacket" : 1055289973923,
+    "length" : 74,
+    "network" : {
+     "bytes" : 228,
+     "community_id" : "1:veIAhY2jaBSkfqgIosmVNpCkTpE=",
+     "packets" : 2
+    },
+    "node" : "test",
+    "ntp" : {
+     "mode" : [
+      "client",
+      "server"
+     ],
+     "modeCnt" : 2,
+     "refId" : [
+      "7f7f0101",
+      "cdbcb921"
+     ],
+     "refIdCnt" : 2,
+     "stratum" : [
+      "secondary"
+     ],
+     "stratumCnt" : 1,
+     "version" : [
+      4
+     ],
+     "versionCnt" : 1
+    },
+    "packetLen" : [
+     130,
+     130
+    ],
+    "packetPos" : [
+     1128,
+     1258
+    ],
+    "packetRange" : {
+     "gte" : 1055289973849,
+     "lte" : 1055289973923
+    },
+    "protocol" : [
+     "gre",
+     "ntp",
+     "udp"
+    ],
+    "protocolCnt" : 3,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 48
+    },
+    "source" : {
+     "as" : {
+      "full" : "AS11590 Cumberland Technologies International",
+      "number" : 11590,
+      "organization" : {
+       "name" : "Cumberland Technologies International"
+      }
+     },
+     "bytes" : 114,
+     "geo" : {
+      "city_name" : "Newport",
+      "country_iso_code" : "US",
+      "region_iso_code" : "PA"
+     },
+     "ip" : "66.59.111.190",
+     "mac" : [
+      "00:02:2d:56:4a:fd"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 1,
+     "port" : 123
+    },
+    "srcDscp" : [
+     4
+    ],
+    "srcDscpCnt" : 1,
+    "srcOui" : [
+     "Agere Systems"
+    ],
+    "srcOuiCnt" : 1,
+    "srcOuterASN" : [
+     "---",
+     "AS11590 Cumberland Technologies International"
+    ],
+    "srcOuterGEO" : [
+     "---",
+     "US"
+    ],
+    "srcOuterIp" : [
+     "172.27.1.66",
+     "66.59.109.137"
+    ],
+    "srcOuterIpCnt" : 2,
+    "srcOuterRIR" : [
+     "ARIN",
+     "ARIN"
+    ],
+    "srcPayload8" : "230b06ef00000000",
+    "srcRIR" : "ARIN",
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
+    "tags" : [
+     "gretest-sample"
+    ],
+    "tagsCnt" : 1,
+    "totDataBytes" : 96
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-030611"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 952
+    },
+    "destination" : {
+     "bytes" : 2579,
+     "ip" : "172.28.2.3",
+     "mac" : [
+      "00:c0:ca:14:b0:52"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 10,
+     "port" : 22
+    },
+    "dstOui" : [
+     "Alfa, Inc."
+    ],
+    "dstOuiCnt" : 1,
+    "dstOuterASN" : [
+     "---",
+     "AS11590 Cumberland Technologies International"
+    ],
+    "dstOuterGEO" : [
+     "---",
+     "US"
+    ],
+    "dstOuterIp" : [
+     "172.27.1.66",
+     "66.59.109.137"
+    ],
+    "dstOuterIpCnt" : 2,
+    "dstOuterRIR" : [
+     "ARIN",
+     "ARIN"
+    ],
+    "dstPayload8" : "5353482d312e3939",
+    "dstRIR" : "ARIN",
+    "dstTTL" : [
+     63
+    ],
+    "dstTTLCnt" : 1,
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 1055289978756,
+    "initRTT" : 22,
+    "ipProtocol" : 6,
+    "lastPacket" : 1055289981914,
+    "length" : 3158,
+    "network" : {
+     "bytes" : 4619,
+     "community_id" : "1:GvEAhAEKkdnTWFCXuw7HpDevs2w=",
+     "packets" : 22
+    },
+    "node" : "test",
+    "packetLen" : [
+     114,
+     114,
+     106,
+     129,
+     106,
+     130,
+     106,
+     594,
+     594,
+     106,
+     106,
+     130,
+     106,
+     530,
+     106,
+     522,
+     106,
+     842,
+     106,
+     106,
+     106,
+     106
+    ],
+    "packetPos" : [
+     1388,
+     1502,
+     1616,
+     1722,
+     1851,
+     1957,
+     2087,
+     2193,
+     2787,
+     3381,
+     3487,
+     3593,
+     3723,
+     3829,
+     4359,
+     4465,
+     4987,
+     5093,
+     5935,
+     6041,
+     6147,
+     6253
+    ],
+    "packetRange" : {
+     "gte" : 1055289978756,
+     "lte" : 1055289981914
+    },
+    "protocol" : [
+     "gre",
+     "ssh",
+     "tcp"
+    ],
+    "protocolCnt" : 3,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 1671
+    },
+    "source" : {
+     "as" : {
+      "full" : "AS11590 Cumberland Technologies International",
+      "number" : 11590,
+      "organization" : {
+       "name" : "Cumberland Technologies International"
+      }
+     },
+     "bytes" : 2040,
+     "geo" : {
+      "city_name" : "Newport",
+      "country_iso_code" : "US",
+      "region_iso_code" : "PA"
+     },
+     "ip" : "66.59.111.190",
+     "mac" : [
+      "00:02:2d:56:4a:fd"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 12,
+     "port" : 40264
+    },
+    "srcOui" : [
+     "Agere Systems"
+    ],
+    "srcOuiCnt" : 1,
+    "srcOuterASN" : [
+     "---",
+     "AS11590 Cumberland Technologies International"
+    ],
+    "srcOuterGEO" : [
+     "---",
+     "US"
+    ],
+    "srcOuterIp" : [
+     "172.27.1.66",
+     "66.59.109.137"
+    ],
+    "srcOuterIpCnt" : 2,
+    "srcOuterRIR" : [
+     "ARIN",
+     "ARIN"
+    ],
+    "srcPayload8" : "5353482d322e302d",
+    "srcRIR" : "ARIN",
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
+    "ssh" : {
+     "hassh" : [
+      "5ef6678a6b060094834599ca16581b05"
+     ],
+     "hasshCnt" : 1,
+     "hasshServer" : [
+      "6e3242d64766f4154c11858bbd654415"
+     ],
+     "hasshServerCnt" : 1,
+     "key" : [
+      "AAAAB3NzaC1yc2EAAAABIwAAAIEApsEyRdoxEZ/Xmehe9Oo6s0uuroriAKOqim32L2V9DZbzt101U41iUHjI8ESaANQZd73O7uop7tIfK6ZMq/cshMcuuI1YxqYxCBuCFLsiomlYq7+7cURJEClVtSyPmtijvhnaJKAlN4P3iXZDCnUQkKrWC+XhBZT8E5DxSSIRAhk="
+     ],
+     "keyCnt" : 1,
+     "version" : [
+      "ssh-1.99-openssh_3.1p1",
+      "ssh-2.0-openssh_3.6.1p1"
+     ],
+     "versionCnt" : 2
+    },
+    "tags" : [
+     "gretest-sample"
+    ],
+    "tagsCnt" : 1,
+    "tcpflags" : {
+     "ack" : 10,
+     "dstZero" : 0,
+     "fin" : 2,
+     "psh" : 8,
+     "rst" : 0,
+     "srcZero" : 0,
+     "syn" : 1,
+     "syn-ack" : 1,
+     "urg" : 0
+    },
+    "tcpseq" : {
+     "dst" : 0,
+     "src" : 813658343
+    },
+    "totDataBytes" : 2623
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-030611"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 66
+    },
+    "destination" : {
+     "bytes" : 0,
+     "ip" : "172.28.2.3",
+     "mac" : [
+      "00:c0:ca:14:b0:52"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 0,
+     "port" : 53
+    },
+    "dns" : [
+     {
+      "host" : [
+       "www.gleeble.org"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "ANY",
+      "queryHost" : "www.gleeble.org"
+     }
+    ],
+    "dnsCnt" : 1,
+    "dstOui" : [
+     "Alfa, Inc."
+    ],
+    "dstOuiCnt" : 1,
+    "dstOuterASN" : [
+     "AS11590 Cumberland Technologies International"
+    ],
+    "dstOuterGEO" : [
+     "US"
+    ],
+    "dstOuterIp" : [
+     "66.59.109.137"
+    ],
+    "dstOuterIpCnt" : 1,
+    "dstOuterRIR" : [
+     "ARIN"
+    ],
+    "dstRIR" : "ARIN",
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 1055289987055,
+    "ipProtocol" : 17,
+    "lastPacket" : 1055289992056,
+    "length" : 5001,
+    "network" : {
+     "bytes" : 198,
+     "community_id" : "1:07ZQAeEnPuTfz/AxZbb/1SQ0Yvk=",
+     "packets" : 2
+    },
+    "node" : "test",
+    "packetLen" : [
+     115,
+     115
+    ],
+    "packetPos" : [
+     6359,
+     6617
+    ],
+    "packetRange" : {
+     "gte" : 1055289987055,
+     "lte" : 1055289992056
+    },
+    "protocol" : [
+     "dns",
+     "gre",
+     "udp"
+    ],
+    "protocolCnt" : 3,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 0
+    },
+    "source" : {
+     "as" : {
+      "full" : "AS11590 Cumberland Technologies International",
+      "number" : 11590,
+      "organization" : {
+       "name" : "Cumberland Technologies International"
+      }
+     },
+     "bytes" : 198,
+     "geo" : {
+      "city_name" : "Newport",
+      "country_iso_code" : "US",
+      "region_iso_code" : "PA"
+     },
+     "ip" : "66.59.111.190",
+     "mac" : [
+      "00:02:2d:56:4a:fd"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 2,
+     "port" : 37675
+    },
+    "srcOui" : [
+     "Agere Systems"
+    ],
+    "srcOuiCnt" : 1,
+    "srcOuterASN" : [
+     "---"
+    ],
+    "srcOuterGEO" : [
+     "---"
+    ],
+    "srcOuterIp" : [
+     "172.27.1.66"
+    ],
+    "srcOuterIpCnt" : 1,
+    "srcOuterRIR" : [
+     "ARIN"
+    ],
+    "srcPayload8" : "bdaa010000010000",
+    "srcRIR" : "ARIN",
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
+    "tags" : [
+     "gretest-sample"
+    ],
+    "tagsCnt" : 1,
+    "totDataBytes" : 66
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-030611"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 48
+    },
+    "destination" : {
+     "as" : {
+      "full" : "AS11590 Cumberland Technologies International",
+      "number" : 11590,
+      "organization" : {
+       "name" : "Cumberland Technologies International"
+      }
+     },
+     "bytes" : 114,
+     "geo" : {
+      "city_name" : "Newport",
+      "country_iso_code" : "US",
+      "region_iso_code" : "PA"
+     },
+     "ip" : "66.59.111.182",
+     "mac" : [
+      "00:c0:ca:14:b0:52"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 1,
+     "port" : 123
+    },
+    "dstOui" : [
+     "Alfa, Inc."
+    ],
+    "dstOuiCnt" : 1,
+    "dstOuterASN" : [
+     "---",
+     "AS11590 Cumberland Technologies International"
+    ],
+    "dstOuterGEO" : [
+     "---",
+     "US"
+    ],
+    "dstOuterIp" : [
+     "172.27.1.66",
+     "66.59.109.137"
+    ],
+    "dstOuterIpCnt" : 2,
+    "dstOuterRIR" : [
+     "ARIN",
+     "ARIN"
+    ],
+    "dstPayload8" : "240306ef000008cf",
+    "dstRIR" : "ARIN",
+    "dstTTL" : [
+     63
+    ],
+    "dstTTLCnt" : 1,
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 1055289992849,
+    "ipProtocol" : 17,
+    "lastPacket" : 1055289992905,
+    "length" : 56,
+    "network" : {
+     "bytes" : 228,
+     "community_id" : "1:tHxGdFYxUdQ1mRGmcwzADwdsxpk=",
+     "packets" : 2
+    },
+    "node" : "test",
+    "ntp" : {
+     "mode" : [
+      "client",
+      "server"
+     ],
+     "modeCnt" : 2,
+     "refId" : [
+      "121a0469",
+      "7f7f0101"
+     ],
+     "refIdCnt" : 2,
+     "stratum" : [
+      "secondary"
+     ],
+     "stratumCnt" : 1,
+     "version" : [
+      4
+     ],
+     "versionCnt" : 1
+    },
+    "packetLen" : [
+     130,
+     130
+    ],
+    "packetPos" : [
+     6875,
+     7005
+    ],
+    "packetRange" : {
+     "gte" : 1055289992849,
+     "lte" : 1055289992905
+    },
+    "protocol" : [
+     "gre",
+     "ntp",
+     "udp"
+    ],
+    "protocolCnt" : 3,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 48
+    },
+    "source" : {
+     "as" : {
+      "full" : "AS11590 Cumberland Technologies International",
+      "number" : 11590,
+      "organization" : {
+       "name" : "Cumberland Technologies International"
+      }
+     },
+     "bytes" : 114,
+     "geo" : {
+      "city_name" : "Newport",
+      "country_iso_code" : "US",
+      "region_iso_code" : "PA"
+     },
+     "ip" : "66.59.111.190",
+     "mac" : [
+      "00:02:2d:56:4a:fd"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 1,
+     "port" : 123
+    },
+    "srcDscp" : [
+     4
+    ],
+    "srcDscpCnt" : 1,
+    "srcOui" : [
+     "Agere Systems"
+    ],
+    "srcOuiCnt" : 1,
+    "srcOuterASN" : [
+     "---",
+     "AS11590 Cumberland Technologies International"
+    ],
+    "srcOuterGEO" : [
+     "---",
+     "US"
+    ],
+    "srcOuterIp" : [
+     "172.27.1.66",
+     "66.59.109.137"
+    ],
+    "srcOuterIpCnt" : 2,
+    "srcOuterRIR" : [
+     "ARIN",
+     "ARIN"
+    ],
+    "srcPayload8" : "230b06ef00000000",
+    "srcRIR" : "ARIN",
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
+    "tags" : [
+     "gretest-sample"
+    ],
+    "tagsCnt" : 1,
+    "totDataBytes" : 96
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-030611"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 48
+    },
+    "destination" : {
+     "as" : {
+      "full" : "AS10755 Dartmouth College",
+      "number" : 10755,
+      "organization" : {
+       "name" : "Dartmouth College"
+      }
+     },
+     "bytes" : 114,
+     "geo" : {
+      "city_name" : "Hanover",
+      "country_iso_code" : "US",
+      "region_iso_code" : "NH"
+     },
+     "ip" : "129.170.17.4",
+     "mac" : [
+      "00:c0:ca:14:b0:52"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 1,
+     "port" : 123
+    },
+    "dstOui" : [
+     "Alfa, Inc."
+    ],
+    "dstOuiCnt" : 1,
+    "dstOuterASN" : [
+     "---",
+     "AS11590 Cumberland Technologies International"
+    ],
+    "dstOuterGEO" : [
+     "---",
+     "US"
+    ],
+    "dstOuterIp" : [
+     "172.27.1.66",
+     "66.59.109.137"
+    ],
+    "dstOuterIpCnt" : 2,
+    "dstOuterRIR" : [
+     "ARIN",
+     "ARIN"
+    ],
+    "dstPayload8" : "240206f5000005b6",
+    "dstRIR" : "ARIN",
+    "dstTTL" : [
+     52
+    ],
+    "dstTTLCnt" : 1,
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 1055289996849,
+    "ipProtocol" : 17,
+    "lastPacket" : 1055289996921,
+    "length" : 72,
+    "network" : {
+     "bytes" : 228,
+     "community_id" : "1:KjznBxr7r/2kBYUhYhbnV4xMJmc=",
+     "packets" : 2
+    },
+    "node" : "test",
+    "ntp" : {
+     "mode" : [
+      "client",
+      "server"
+     ],
+     "modeCnt" : 2,
+     "refId" : [
+      "7f7f0101",
+      "c00529d1"
+     ],
+     "refIdCnt" : 2,
+     "stratum" : [
+      "secondary"
+     ],
+     "stratumCnt" : 1,
+     "version" : [
+      4
+     ],
+     "versionCnt" : 1
+    },
+    "packetLen" : [
+     130,
+     130
+    ],
+    "packetPos" : [
+     7135,
+     7265
+    ],
+    "packetRange" : {
+     "gte" : 1055289996849,
+     "lte" : 1055289996921
+    },
+    "protocol" : [
+     "gre",
+     "ntp",
+     "udp"
+    ],
+    "protocolCnt" : 3,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 48
+    },
+    "source" : {
+     "as" : {
+      "full" : "AS11590 Cumberland Technologies International",
+      "number" : 11590,
+      "organization" : {
+       "name" : "Cumberland Technologies International"
+      }
+     },
+     "bytes" : 114,
+     "geo" : {
+      "city_name" : "Newport",
+      "country_iso_code" : "US",
+      "region_iso_code" : "PA"
+     },
+     "ip" : "66.59.111.190",
+     "mac" : [
+      "00:02:2d:56:4a:fd"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 1,
+     "port" : 123
+    },
+    "srcDscp" : [
+     4
+    ],
+    "srcDscpCnt" : 1,
+    "srcOui" : [
+     "Agere Systems"
+    ],
+    "srcOuiCnt" : 1,
+    "srcOuterASN" : [
+     "---",
+     "AS11590 Cumberland Technologies International"
+    ],
+    "srcOuterGEO" : [
+     "---",
+     "US"
+    ],
+    "srcOuterIp" : [
+     "172.27.1.66",
+     "66.59.109.137"
+    ],
+    "srcOuterIpCnt" : 2,
+    "srcOuterRIR" : [
+     "ARIN",
+     "ARIN"
+    ],
+    "srcPayload8" : "230b06ef00000000",
+    "srcRIR" : "ARIN",
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
+    "tags" : [
+     "gretest-sample"
+    ],
+    "tagsCnt" : 1,
+    "totDataBytes" : 96
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-030611"
+    }
+   }
+  }
+ ]
 }
 
