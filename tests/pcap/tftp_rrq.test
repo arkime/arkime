@@ -1,0 +1,373 @@
+{
+ "sessions3" : [
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 20
+    },
+    "destination" : {
+     "bytes" : 0,
+     "ip" : "192.168.0.10",
+     "mac" : [
+      "00:50:8d:d7:8b:43"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 0,
+     "port" : 69
+    },
+    "dstOui" : [
+     "Abit Computer Corporation"
+    ],
+    "dstOuiCnt" : 1,
+    "dstRIR" : "ARIN",
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 1367411051972,
+    "ipProtocol" : 17,
+    "lastPacket" : 1367411051972,
+    "length" : 0,
+    "network" : {
+     "bytes" : 62,
+     "community_id" : "1:ZfujknC834QPCjUj4KPCei36qO4=",
+     "packets" : 1
+    },
+    "node" : "test",
+    "packetLen" : [
+     78
+    ],
+    "packetPos" : [
+     24
+    ],
+    "packetRange" : {
+     "gte" : 1367411051972,
+     "lte" : 1367411051972
+    },
+    "protocol" : [
+     "tftp",
+     "udp"
+    ],
+    "protocolCnt" : 2,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 0
+    },
+    "source" : {
+     "bytes" : 62,
+     "ip" : "192.168.0.253",
+     "mac" : [
+      "00:0b:be:18:9a:40"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 1,
+     "port" : 50618
+    },
+    "srcOui" : [
+     "Cisco Systems, Inc"
+    ],
+    "srcOuiCnt" : 1,
+    "srcPayload8" : "0001726663313335",
+    "srcRIR" : "ARIN",
+    "srcTTL" : [
+     255
+    ],
+    "srcTTLCnt" : 1,
+    "tftp" : {
+     "filename" : [
+      "rfc1350.txt"
+     ],
+     "filenameCnt" : 1,
+     "opcode" : [
+      "rrq"
+     ],
+     "opcodeCnt" : 1
+    },
+    "totDataBytes" : 20
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-130501"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 24795
+    },
+    "destination" : {
+     "bytes" : 2940,
+     "ip" : "192.168.0.253",
+     "mac" : [
+      "00:0b:be:18:9a:40"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 49,
+     "port" : 50618
+    },
+    "dstOui" : [
+     "Cisco Systems, Inc"
+    ],
+    "dstOuiCnt" : 1,
+    "dstPayload8" : "00040001",
+    "dstRIR" : "ARIN",
+    "dstTTL" : [
+     255
+    ],
+    "dstTTLCnt" : 1,
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 1367411052077,
+    "ipProtocol" : 17,
+    "lastPacket" : 1367411052258,
+    "length" : 181,
+    "network" : {
+     "bytes" : 29793,
+     "community_id" : "1:l1/xfSMQtiM99Ba6ZWxGuqV1PSk=",
+     "packets" : 98
+    },
+    "node" : "test",
+    "packetLen" : [
+     574,
+     76,
+     574,
+     76,
+     574,
+     76,
+     574,
+     76,
+     574,
+     76,
+     574,
+     76,
+     574,
+     76,
+     574,
+     76,
+     574,
+     76,
+     574,
+     76,
+     574,
+     76,
+     574,
+     76,
+     574,
+     76,
+     574,
+     76,
+     574,
+     76,
+     574,
+     76,
+     574,
+     76,
+     574,
+     76,
+     574,
+     76,
+     574,
+     76,
+     574,
+     76,
+     574,
+     76,
+     574,
+     76,
+     574,
+     76,
+     574,
+     76,
+     574,
+     76,
+     574,
+     76,
+     574,
+     76,
+     574,
+     76,
+     574,
+     76,
+     574,
+     76,
+     574,
+     76,
+     574,
+     76,
+     574,
+     76,
+     574,
+     76,
+     574,
+     76,
+     574,
+     76,
+     574,
+     76,
+     574,
+     76,
+     574,
+     76,
+     574,
+     76,
+     574,
+     76,
+     574,
+     76,
+     574,
+     76,
+     574,
+     76,
+     574,
+     76,
+     574,
+     76,
+     574,
+     76,
+     85,
+     76
+    ],
+    "packetPos" : [
+     102,
+     676,
+     752,
+     1326,
+     1402,
+     1976,
+     2052,
+     2626,
+     2702,
+     3276,
+     3352,
+     3926,
+     4002,
+     4576,
+     4652,
+     5226,
+     5302,
+     5876,
+     5952,
+     6526,
+     6602,
+     7176,
+     7252,
+     7826,
+     7902,
+     8476,
+     8552,
+     9126,
+     9202,
+     9776,
+     9852,
+     10426,
+     10502,
+     11076,
+     11152,
+     11726,
+     11802,
+     12376,
+     12452,
+     13026,
+     13102,
+     13676,
+     13752,
+     14326,
+     14402,
+     14976,
+     15052,
+     15626,
+     15702,
+     16276,
+     16352,
+     16926,
+     17002,
+     17576,
+     17652,
+     18226,
+     18302,
+     18876,
+     18952,
+     19526,
+     19602,
+     20176,
+     20252,
+     20826,
+     20902,
+     21476,
+     21552,
+     22126,
+     22202,
+     22776,
+     22852,
+     23426,
+     23502,
+     24076,
+     24152,
+     24726,
+     24802,
+     25376,
+     25452,
+     26026,
+     26102,
+     26676,
+     26752,
+     27326,
+     27402,
+     27976,
+     28052,
+     28626,
+     28702,
+     29276,
+     29352,
+     29926,
+     30002,
+     30576,
+     30652,
+     31226,
+     31302,
+     31387
+    ],
+    "packetRange" : {
+     "gte" : 1367411052077,
+     "lte" : 1367411052258
+    },
+    "protocol" : [
+     "udp"
+    ],
+    "protocolCnt" : 1,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 196
+    },
+    "source" : {
+     "bytes" : 26853,
+     "ip" : "192.168.0.10",
+     "mac" : [
+      "00:50:8d:d7:8b:43"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 49,
+     "port" : 3445
+    },
+    "srcOui" : [
+     "Abit Computer Corporation"
+    ],
+    "srcOuiCnt" : 1,
+    "srcPayload8" : "000300010a0a0a0a",
+    "srcRIR" : "ARIN",
+    "srcTTL" : [
+     128
+    ],
+    "srcTTLCnt" : 1,
+    "totDataBytes" : 24991
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-130501"
+    }
+   }
+  }
+ ]
+}
+

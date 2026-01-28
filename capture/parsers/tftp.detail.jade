@@ -1,0 +1,5 @@
+if (session.tftp)
+  div.sessionDetailMeta.bold TFTP
+  dl.sessionDetailMeta
+    +arrayList(session.tftp, "opcode", "Opcode", "tftp.opcode")
+    +arrayList(session.tftp, "filename", "Filename", "tftp.filename")
