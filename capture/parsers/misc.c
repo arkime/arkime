@@ -175,15 +175,6 @@ LOCAL void rip_classify(ArkimeSession_t *session, const uint8_t *UNUSED(data), i
     arkime_session_add_protocol(session, "rip");
 }
 /******************************************************************************/
-LOCAL void isakmp_udp_classify(ArkimeSession_t *session, const uint8_t *data, int len, int UNUSED(which), void *UNUSED(uw))
-{
-    if (len < 18 ||
-        (data[16] != 1 && data[16] != 8 && data[16] != 33 && data[16] != 46) ||
-        (data[17] != 0x10 && data[17] != 0x20 && data[17] != 0x02)) {
-        return;
-    }
-    arkime_session_add_protocol(session, "isakmp");
-}
 /******************************************************************************/
 LOCAL void aruba_papi_udp_classify(ArkimeSession_t *session, const uint8_t *data, int len, int UNUSED(which), void *UNUSED(uw))
 {
@@ -444,9 +435,6 @@ void arkime_parser_init()
 
     SIMPLE_CLASSIFY_TCP("splunk", "--splunk-cooked-mode");
     CLASSIFY_TCP("splunk-replication", 6, "\x00\x06\x00\x00\x00\x05_raw", misc_add_protocol_classify);
-
-    arkime_parsers_classifier_register_port("isakmp",  NULL, 500, ARKIME_PARSERS_PORT_UDP, isakmp_udp_classify);
-    arkime_parsers_classifier_register_port("isakmp",  NULL, 4500, ARKIME_PARSERS_PORT_UDP, isakmp_udp_classify);
 
     arkime_parsers_classifier_register_port("aruba-papi",  NULL, 8211, ARKIME_PARSERS_PORT_UDP, aruba_papi_udp_classify);
 

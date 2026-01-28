@@ -203,7 +203,7 @@ LOCAL int bacnet_udp_parser(ArkimeSession_t *session, void *UNUSED(uw), const ui
         return 0;
 
     // Add BVLC function
-    if (bvlcFunction < sizeof(bvlcFunctions) / sizeof(bvlcFunctions[0]) && bvlcFunctions[bvlcFunction]) {
+    if (bvlcFunction < ARRAY_LEN(bvlcFunctions) && bvlcFunctions[bvlcFunction]) {
         arkime_field_string_add(functionField, session, bvlcFunctions[bvlcFunction], -1, TRUE);
     }
 
@@ -315,7 +315,7 @@ LOCAL int bacnet_udp_parser(ArkimeSession_t *session, void *UNUSED(uw), const ui
         if (BSB_REMAINING(bsb) >= 1) {
             uint8_t serviceChoice = 0;
             BSB_IMPORT_u08(bsb, serviceChoice);
-            if (serviceChoice < sizeof(apduServices) / sizeof(apduServices[0]) && apduServices[serviceChoice]) {
+            if (serviceChoice < ARRAY_LEN(apduServices) && apduServices[serviceChoice]) {
                 arkime_field_string_add(serviceField, session, apduServices[serviceChoice], -1, TRUE);
             }
         }
@@ -323,7 +323,7 @@ LOCAL int bacnet_udp_parser(ArkimeSession_t *session, void *UNUSED(uw), const ui
         if (BSB_REMAINING(bsb) >= 1) {
             uint8_t serviceChoice = 0;
             BSB_IMPORT_u08(bsb, serviceChoice);
-            if (serviceChoice < sizeof(unconfirmedServices) / sizeof(unconfirmedServices[0]) && unconfirmedServices[serviceChoice]) {
+            if (serviceChoice < ARRAY_LEN(unconfirmedServices) && unconfirmedServices[serviceChoice]) {
                 arkime_field_string_add(serviceField, session, unconfirmedServices[serviceChoice], -1, TRUE);
             }
             // I-Am (0), I-Have (1), and Who-Has (7) contain object names
