@@ -361,8 +361,7 @@ export default {
       this.isOpen = false;
       this.openDropdownId = null;
       this.openDropdownPd = null;
-      this.menuItems = {};
-      this.asyncMenuItems = {};
+      this.clearMenuItems();
     },
     /**
      * Handles clicks outside the dropdown to close it
@@ -403,8 +402,7 @@ export default {
         this.isOpen = false;
         this.openDropdownId = null;
         this.openDropdownPd = null;
-        this.menuItems = {};
-        this.asyncMenuItems = {};
+        this.clearMenuItems();
       }
 
       this.isOpen = !this.isOpen;
@@ -430,8 +428,7 @@ export default {
         }
       } else {
         // Clear menu items when closing
-        this.menuItems = {};
-        this.asyncMenuItems = {};
+        this.clearMenuItems();
       }
     },
     /**
@@ -519,6 +516,17 @@ export default {
     },
     /* helper functions ---------------------------------------------------- */
     /**
+     * Clears menu items and cancels any pending async menu timeout
+     */
+    clearMenuItems: function () {
+      this.menuItems = {};
+      this.asyncMenuItems = {};
+      if (this.menuItemTimeout) {
+        clearTimeout(this.menuItemTimeout);
+        this.menuItemTimeout = null;
+      }
+    },
+    /**
      * Gets info to display the menu for a field
      * @returns {Object} The info to be displayed in the menu
      */
@@ -576,8 +584,7 @@ export default {
       const pd = this.openDropdownPd;
       if (!pd || !pd.value || !this.arkimeClickables) { return; }
       // Clear previous menu items before rebuilding for current value
-      this.menuItems = {};
-      this.asyncMenuItems = {};
+      this.clearMenuItems();
       const info = this.getInfo();
       const session = this.getSession();
       const text = pd.queryVal.toString();
