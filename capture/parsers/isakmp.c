@@ -1,4 +1,4 @@
-/* Copyright 2012-2017 AOL Inc. All rights reserved.
+/* Copyright 2026 Andy Wick. All rights reserved.
  *
  * SPDX-License-Identifier: Apache-2.0
  */
