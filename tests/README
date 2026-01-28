@@ -86,6 +86,7 @@ snmpv3_test.pcap prompt:
      - Use proper ASN.1 encoding for all fields
      - Different source IPs for each packet
      - Target UDP port 161
+     - Each packet 1 second apart in timestamp
 
 
 2) Viewer
