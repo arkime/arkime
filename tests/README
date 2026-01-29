@@ -55,6 +55,8 @@ smtp-decrypted.pcap - https://github.com/arkime/arkime/issues/2348#issuecomment-
 wireshark-dhcpv6 - https://wiki.wireshark.org/uploads/__moin_import__/attachments/SampleCaptures/DHCPv6.pcap
 tds7.pcap - https://gitlab.com/-/project/7898047/uploads/0c00d65dbde92a5bda7827561846f132/sql-login-transaction.cap
 bacnet-stack-services.pcap - https://wiki.wireshark.org/uploads/__moin_import__/attachments/Protocols/bacnet/bacnet-stack-services.cap
+IKEv1.pcap,IKEv2.pcap - https://weberblog.net/ikev1-ikev2-capture/
+tftp_rrq.pcap - https://wiki.wireshark.org/uploads/__moin_import__/attachments/SampleCaptures/tftp_rrq.pcap
 
 
 arkime_test.pcap prompt:
@@ -75,6 +77,17 @@ arkime_test.pcap prompt:
          - Verify with tcpdump -nn that no packets show "truncated", "invalid", "missing", or "bad"
 
      Write the complete Python script and run it to create the PCAP.
+
+snmpv3_test.pcap prompt:
+   Create a test pcap file with SNMPv3 traffic using Python/scapy. Include:
+     - 3 SNMPv3 packets with different usernames (e.g., admin_user, monitor, readonly)
+     - 3 SNMPv2c packets with different communities (e.g., public, private, secret123)
+     - Mix of message types: GetRequest, GetResponse, SetRequest
+     - Use proper ASN.1 encoding for all fields
+     - Different source IPs for each packet
+     - Target UDP port 161
+     - Each packet 1 second apart in timestamp
+
 
 2) Viewer
 Test various viewer apis.  Requires that an elasticsearch already be running on the local host.

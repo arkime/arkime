@@ -1,4 +1,4 @@
-/* Copyright 2012-2017 AOL Inc. All rights reserved.
+/* Copyright 2026 Andy Wick. All rights reserved.
  *
  * SPDX-License-Identifier: Apache-2.0
  */
@@ -58,7 +58,7 @@ LOCAL int ntp_udp_parser(ArkimeSession_t *session, void *UNUSED(uw), const uint8
     arkime_field_int_add(versionField, session, version);
 
     // Add mode
-    if (mode < sizeof(ntpModes) / sizeof(ntpModes[0]) && ntpModes[mode]) {
+    if (mode < ARRAY_LEN(ntpModes) && ntpModes[mode]) {
         arkime_field_string_add(modeField, session, ntpModes[mode], -1, TRUE);
     }
 
@@ -107,16 +107,16 @@ LOCAL int ntp_udp_parser(ArkimeSession_t *session, void *UNUSED(uw), const uint8
                     arkime_field_string_add(refIdField, session, (const char *)refId, refLen, TRUE);
                 } else {
                     char refStr[12];
-                    snprintf(refStr, sizeof(refStr), "%02x%02x%02x%02x", refId[0], refId[1], refId[2], refId[3]);
-                    arkime_field_string_add(refIdField, session, refStr, -1, TRUE);
+                    arkime_sprint_hex_string(refStr, refId, 4);
+                    arkime_field_string_add(refIdField, session, refStr, 8, TRUE);
                 }
             }
         } else if (stratum >= 2 && stratum <= 15) {
             // For stratum 2+: IPv4 address of upstream server, or first 4 bytes of MD5 hash for IPv6
             // Display as hex since we can't distinguish IPv4 from IPv6 hash
             char refStr[12];
-            snprintf(refStr, sizeof(refStr), "%02x%02x%02x%02x", refId[0], refId[1], refId[2], refId[3]);
-            arkime_field_string_add(refIdField, session, refStr, -1, TRUE);
+            arkime_sprint_hex_string(refStr, refId, 4);
+            arkime_field_string_add(refIdField, session, refStr, 8, TRUE);
         }
     }
 
@@ -125,6 +125,9 @@ LOCAL int ntp_udp_parser(ArkimeSession_t *session, void *UNUSED(uw), const uint8
 /******************************************************************************/
 LOCAL void ntp_udp_classify(ArkimeSession_t *session, const uint8_t *data, int len, int UNUSED(which), void *UNUSED(uw))
 {
+    if (arkime_session_has_protocol(session, "ntp"))
+        return;
+
     // Check port 123
     if (session->port1 != 123 && session->port2 != 123)
         return;

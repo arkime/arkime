@@ -9,18 +9,6 @@ extern ArkimeConfig_t        config;
 LOCAL  int userField;
 
 /******************************************************************************/
-LOCAL void rdp_classify(ArkimeSession_t *session, const uint8_t *data, int len, int UNUSED(which), void *UNUSED(uw))
-{
-
-    if (len > 5 && data[3] <= len && data[4] == (data[3] - 5) && data[5] == 0xe0) {
-        arkime_session_add_protocol(session, "rdp");
-        if (len > 30 && memcmp(data + 11, "Cookie: mstshash=", 17) == 0) {
-            const char *end = g_strstr_len((char *)data + 28, len - 28, "\r\n");
-            if (end)
-                arkime_field_string_add_lower(userField, session, (char * )data + 28, end - (char *)data - 28);
-        }
-    }
-}
 /******************************************************************************/
 LOCAL void imap_classify(ArkimeSession_t *session, const uint8_t *data, int len, int UNUSED(which), void *UNUSED(uw))
 {
@@ -175,15 +163,6 @@ LOCAL void rip_classify(ArkimeSession_t *session, const uint8_t *UNUSED(data), i
     arkime_session_add_protocol(session, "rip");
 }
 /******************************************************************************/
-LOCAL void isakmp_udp_classify(ArkimeSession_t *session, const uint8_t *data, int len, int UNUSED(which), void *UNUSED(uw))
-{
-    if (len < 18 ||
-        (data[16] != 1 && data[16] != 8 && data[16] != 33 && data[16] != 46) ||
-        (data[17] != 0x10 && data[17] != 0x20 && data[17] != 0x02)) {
-        return;
-    }
-    arkime_session_add_protocol(session, "isakmp");
-}
 /******************************************************************************/
 LOCAL void aruba_papi_udp_classify(ArkimeSession_t *session, const uint8_t *data, int len, int UNUSED(which), void *UNUSED(uw))
 {
@@ -212,54 +191,6 @@ LOCAL void wudo_classify(ArkimeSession_t *session, const uint8_t *data, int len,
     }
 }
 /******************************************************************************/
-LOCAL void mqtt_classify(ArkimeSession_t *session, const uint8_t *data, int len, int UNUSED(which), void *UNUSED(uw))
-{
-    if (len < 30 || memcmp("MQ", data + 4, 2) != 0)
-        return;
-
-    arkime_session_add_protocol(session, "mqtt");
-
-    BSB bsb;
-
-    BSB_INIT(bsb, data, len);
-    BSB_IMPORT_skip(bsb, 2);
-
-    int nameLen = 0;
-    BSB_IMPORT_u16(bsb, nameLen);
-    BSB_IMPORT_skip(bsb, nameLen);
-
-    BSB_IMPORT_skip(bsb, 1); // version
-
-    int flags = 0;
-    BSB_IMPORT_u08(bsb, flags);
-
-    BSB_IMPORT_skip(bsb, 2); // keep alive
-
-    int idLen = 0;
-    BSB_IMPORT_u16(bsb, idLen);
-    BSB_IMPORT_skip(bsb, idLen);
-
-    if (flags & 0x04) { // will
-        int skiplen = 0;
-
-        BSB_IMPORT_u16(bsb, skiplen);
-        BSB_IMPORT_skip(bsb, skiplen);
-
-        BSB_IMPORT_u16(bsb, skiplen);
-        BSB_IMPORT_skip(bsb, skiplen);
-    }
-
-    if (flags & 0x80) {
-        int      userLen = 0;
-        uint8_t *user = 0;
-        BSB_IMPORT_u16(bsb, userLen);
-        BSB_IMPORT_ptr(bsb, user, userLen);
-
-        if (BSB_NOT_ERROR(bsb)) {
-            arkime_field_string_add_lower(userField, session, (char *)user, userLen);
-        }
-    }
-}
 /******************************************************************************/
 LOCAL void hdfs_classify(ArkimeSession_t *session, const uint8_t *data, int len, int UNUSED(which), void *UNUSED(uw))
 {
@@ -345,7 +276,6 @@ void arkime_parser_init()
     /* Bitcoin namecoin fork */
     SIMPLE_CLASSIFY_TCP("bitcoin", "\xf9\xbe\xb4\xfe");
 
-    CLASSIFY_TCP("rdp", 0, "\x03\x00", rdp_classify);
     CLASSIFY_TCP("imap", 0, "* OK ", imap_classify);
     SIMPLE_CLASSIFY_TCP("pop3", "+OK ");
     CLASSIFY_TCP("gh0st", 13, "\x78", gh0st_classify);
@@ -445,9 +375,6 @@ void arkime_parser_init()
     SIMPLE_CLASSIFY_TCP("splunk", "--splunk-cooked-mode");
     CLASSIFY_TCP("splunk-replication", 6, "\x00\x06\x00\x00\x00\x05_raw", misc_add_protocol_classify);
 
-    arkime_parsers_classifier_register_port("isakmp",  NULL, 500, ARKIME_PARSERS_PORT_UDP, isakmp_udp_classify);
-    arkime_parsers_classifier_register_port("isakmp",  NULL, 4500, ARKIME_PARSERS_PORT_UDP, isakmp_udp_classify);
-
     arkime_parsers_classifier_register_port("aruba-papi",  NULL, 8211, ARKIME_PARSERS_PORT_UDP, aruba_papi_udp_classify);
 
     SIMPLE_CLASSIFY_TCP("x11", "\x6c\x00\x0b\x00");
@@ -480,8 +407,6 @@ void arkime_parser_init()
     arkime_parsers_classifier_register_port("sccp",  NULL, 2000, ARKIME_PARSERS_PORT_TCP_DST, sccp_classify);
 
     arkime_parsers_classifier_register_port("wudo",  NULL, 7680, ARKIME_PARSERS_PORT_TCP_DST, wudo_classify);
-
-    CLASSIFY_TCP("mqtt", 0, "\x10", mqtt_classify);
 
     arkime_parsers_classifier_register_port("hsrp",  NULL, 1985, ARKIME_PARSERS_PORT_UDP, hsrp_udp_classify);
     arkime_parsers_classifier_register_port("hsrp",  NULL, 2029, ARKIME_PARSERS_PORT_UDP, hsrp_udp_classify);

@@ -1,0 +1,303 @@
+{
+ "sessions3" : [
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 3256
+    },
+    "destination" : {
+     "as" : {
+      "full" : "AS3320 Deutsche Telekom AG",
+      "number" : 3320,
+      "organization" : {
+       "name" : "Deutsche Telekom AG"
+      }
+     },
+     "bytes" : 4110,
+     "geo" : {
+      "country_iso_code" : "DE"
+     },
+     "ip" : "2003:51:6012::4",
+     "mac" : [
+      "08:5b:0e:3c:11:5d"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 17,
+     "port" : 500
+    },
+    "dstOui" : [
+     "Fortinet, Inc."
+    ],
+    "dstOuiCnt" : 1,
+    "dstPayload8" : "8e7779464044673e",
+    "dstTTL" : [
+     64
+    ],
+    "dstTTLCnt" : 1,
+    "ethertype" : 34525,
+    "fileId" : [],
+    "firstPacket" : 1498561868006,
+    "ipProtocol" : 17,
+    "isakmp" : {
+     "exchangeType" : [
+      "create-child-sa",
+      "ike-auth",
+      "ike-sa-init",
+      "informational"
+     ],
+     "exchangeTypeCnt" : 4,
+     "initiatorSpi" : [
+      "8e7779464044673e",
+      "e5bc67550fd4d3ea"
+     ],
+     "initiatorSpiCnt" : 2,
+     "responderSpi" : [
+      "7b452c842bc4e891",
+      "b51cdb5af0efa3ac"
+     ],
+     "responderSpiCnt" : 2,
+     "version" : [
+      "2.0"
+     ],
+     "versionCnt" : 1
+    },
+    "lastPacket" : 1498561938007,
+    "length" : 70001,
+    "network" : {
+     "bytes" : 8482,
+     "community_id" : "1:uj0GfAFW5B8Q9Y3fEA+isgUchEM=",
+     "packets" : 35
+    },
+    "node" : "test",
+    "packetLen" : [
+     294,
+     294,
+     294,
+     366,
+     350,
+     462,
+     462,
+     174,
+     174,
+     294,
+     294,
+     350,
+     350,
+     174,
+     174,
+     462,
+     462,
+     174,
+     174,
+     414,
+     174,
+     174,
+     414,
+     174,
+     174,
+     174,
+     174,
+     174,
+     174,
+     174,
+     174,
+     174,
+     174,
+     174,
+     174
+    ],
+    "packetPos" : [
+     24,
+     318,
+     612,
+     906,
+     1272,
+     2510,
+     2972,
+     8034,
+     8208,
+     9302,
+     9596,
+     9890,
+     10240,
+     10590,
+     10764,
+     10938,
+     11400,
+     12338,
+     12512,
+     12686,
+     13100,
+     13274,
+     13448,
+     17986,
+     18160,
+     22934,
+     23108,
+     27882,
+     28056,
+     32830,
+     33004,
+     37778,
+     37952,
+     42726,
+     42900
+    ],
+    "packetRange" : {
+     "gte" : 1498561868006,
+     "lte" : 1498561938007
+    },
+    "protocol" : [
+     "isakmp",
+     "udp"
+    ],
+    "protocolCnt" : 2,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 3056
+    },
+    "source" : {
+     "as" : {
+      "full" : "AS3320 Deutsche Telekom AG",
+      "number" : 3320,
+      "organization" : {
+       "name" : "Deutsche Telekom AG"
+      }
+     },
+     "bytes" : 4372,
+     "geo" : {
+      "country_iso_code" : "DE"
+     },
+     "ip" : "2003:51:6012::2",
+     "mac" : [
+      "b4:0c:25:05:8e:10"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 18,
+     "port" : 500
+    },
+    "srcOui" : [
+     "Palo Alto Networks"
+    ],
+    "srcOuiCnt" : 1,
+    "srcPayload8" : "e5bc67550fd4d3ea",
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
+    "totDataBytes" : 6312
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-170627"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 12304
+    },
+    "destination" : {
+     "as" : {
+      "full" : "AS3320 Deutsche Telekom AG",
+      "number" : 3320,
+      "organization" : {
+       "name" : "Deutsche Telekom AG"
+      }
+     },
+     "bytes" : 17326,
+     "geo" : {
+      "country_iso_code" : "DE"
+     },
+     "ip" : "2003:51:6012::4",
+     "mac" : [
+      "b4:0c:25:05:8e:10"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 81,
+     "port" : 0
+    },
+    "dstOui" : [
+     "Palo Alto Networks"
+    ],
+    "dstOuiCnt" : 1,
+    "dstTTL" : [
+     63
+    ],
+    "dstTTLCnt" : 1,
+    "ethertype" : 34525,
+    "fileId" : [],
+    "firstPacket" : 1498561900557,
+    "ipProtocol" : 50,
+    "lastPacket" : 1498561941233,
+    "length" : 40676,
+    "network" : {
+     "bytes" : 34652,
+     "community_id" : "1:W/sKA6RLXpy2xnZVZwohsx6zKjo=",
+     "packets" : 162
+    },
+    "node" : "test",
+    "packetLen" : [
+     222
+    ],
+    "packetPos" : [
+     1622
+    ],
+    "packetRange" : {
+     "gte" : 1498561900557,
+     "lte" : 1498561941233
+    },
+    "protocol" : [
+     "esp"
+    ],
+    "protocolCnt" : 1,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 12304
+    },
+    "source" : {
+     "as" : {
+      "full" : "AS3320 Deutsche Telekom AG",
+      "number" : 3320,
+      "organization" : {
+       "name" : "Deutsche Telekom AG"
+      }
+     },
+     "bytes" : 17326,
+     "geo" : {
+      "country_iso_code" : "DE"
+     },
+     "ip" : "2003:51:6012::2",
+     "mac" : [
+      "08:5b:0e:3c:11:5d"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 81,
+     "port" : 0
+    },
+    "srcOui" : [
+     "Fortinet, Inc."
+    ],
+    "srcOuiCnt" : 1,
+    "srcTTL" : [
+     63
+    ],
+    "srcTTLCnt" : 1,
+    "tags" : [
+     "truncated-pcap"
+    ],
+    "tagsCnt" : 1,
+    "totDataBytes" : 24608
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-170627"
+    }
+   }
+  }
+ ]
+}
+

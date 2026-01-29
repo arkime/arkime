@@ -1,0 +1,8 @@
+if (session.rdp)
+  div.sessionDetailMeta.bold RDP
+  dl.sessionDetailMeta
+    +arrayList(session.rdp, "clientName", "Client Name", "rdp.clientName")
+    +arrayList(session.rdp, "keyboardLayout", "Keyboard Layout", "rdp.keyboardLayout")
+    +arrayList(session.rdp, "clientBuild", "Client Build", "rdp.clientBuild")
+    +arrayList(session.rdp, "requestedProtocols", "Requested Protocols", "rdp.requestedProtocols")
+    +arrayList(session.rdp, "selectedProtocol", "Selected Protocol", "rdp.selectedProtocol")
