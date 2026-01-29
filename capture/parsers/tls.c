@@ -21,11 +21,7 @@ LOCAL  int                   ja4RawField;
 
 LOCAL  gboolean              ja4Raw;
 
-typedef struct {
-    uint8_t             buf[2][8192];
-    uint16_t            len[2];
-    char                serverWhich;
-} TLSInfo_t;
+
 
 extern uint8_t    arkime_char_to_hexstr[256][3];
 
@@ -632,11 +628,10 @@ LOCAL void tls_process_client(ArkimeSession_t *session, const uint8_t *data, int
 /******************************************************************************/
 LOCAL int tls_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, int remaining, int which)
 {
-    TLSInfo_t            *tls          = uw;
+    ArkimeParserBuf_t    *tls          = uw;
 
     // Copy the data we have
-    memcpy(tls->buf[which] + tls->len[which], data, MIN(remaining, (int)sizeof(tls->buf[which]) - tls->len[which]));
-    tls->len[which] += MIN(remaining, (int)sizeof(tls->buf[which]) - tls->len[which]);
+    arkime_parser_buf_add(tls, which, data, remaining);
 
     // Make sure we have header
     if (tls->len[which] < 5)
@@ -668,9 +663,8 @@ LOCAL int tls_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, in
     }
 
     // Remove current frame if more data
-    tls->len[which] -= need;
+    arkime_parser_buf_del(tls, which, need);
     if (tls->len[which]) {
-        memmove(tls->buf[which], tls->buf[which] + need, tls->len[which]);
         return 0;
     }
 
@@ -679,20 +673,13 @@ LOCAL int tls_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, in
 /******************************************************************************/
 LOCAL void tls_save(ArkimeSession_t *session, void *uw, int UNUSED(final))
 {
-    TLSInfo_t            *tls          = uw;
+    ArkimeParserBuf_t    *tls          = uw;
 
     int which = tls->serverWhich;
     if (tls->len[which] > 5 && tls->buf[which][0] == 0x16) {
         tls_process_server_handshake_record(session, tls->buf[which] + 5, tls->len[which] - 5);
         tls->len[which] = 0;
     }
-}
-/******************************************************************************/
-LOCAL void tls_free(ArkimeSession_t *UNUSED(session), void *uw)
-{
-    TLSInfo_t            *tls          = uw;
-
-    ARKIME_TYPE_FREE(TLSInfo_t, tls);
 }
 /******************************************************************************/
 LOCAL void tls_classify(ArkimeSession_t *session, const uint8_t *data, int len, int which, void *UNUSED(uw))
@@ -711,11 +698,9 @@ LOCAL void tls_classify(ArkimeSession_t *session, const uint8_t *data, int len, 
     if (data[2] <= 0x03 && (data[5] == 1 || data[5] == 2)) {
         arkime_session_add_protocol(session, "tls");
 
-        TLSInfo_t  *tls = ARKIME_TYPE_ALLOC(TLSInfo_t);
-        tls->len[0] = 0;
-        tls->len[1] = 0;
+        ArkimeParserBuf_t  *tls = arkime_parser_buf_create();
 
-        arkime_parsers_register2(session, tls_parser, tls, tls_free, tls_save);
+        arkime_parsers_register2(session, tls_parser, tls, arkime_parser_buf_session_free, tls_save);
 
         if (data[5] == 1) {
             //tls_process_client(session, data, (int)len);

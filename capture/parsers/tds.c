@@ -4,13 +4,6 @@
  */
 #include "arkime.h"
 
-#define TDS_MAX_SIZE 4096
-typedef struct {
-    uint8_t  data[2][TDS_MAX_SIZE];
-    int      pos[2];
-    uint8_t  version;  // 0 = TDS 4.2/5.0, 7 = TDS 7.0+
-} TDSInfo_t;
-
 extern ArkimeConfig_t        config;
 LOCAL  int userField;
 
@@ -42,24 +35,22 @@ LOCAL void tds7_add_string_field(ArkimeSession_t *session, int field, const uint
 /******************************************************************************/
 LOCAL int tds_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, int remaining, int which)
 {
-    TDSInfo_t *tds = uw;
+    ArkimeParserBuf_t *tds = uw;
 
-    remaining = MIN(remaining, TDS_MAX_SIZE - tds->pos[which]);
-    memcpy(tds->data[which] + tds->pos[which], data, remaining);
-    tds->pos[which] += remaining;
+    arkime_parser_buf_add(tds, which, data, remaining);
 
     // Lots of info from http://www.freetds.org/tds.html
     if (tds->version == 7) {
         // TDS 7.0+ - look for LOGIN7 packet (type 0x10) in the stream
         // May have prelogin (0x12) packets before LOGIN7
-        const uint8_t *ptr = tds->data[0];
+        const uint8_t *ptr = tds->buf[0];
         int pos = 0;
 
-        while (pos + 8 <= tds->pos[0]) {
+        while (pos + 8 <= tds->len[0]) {
             uint8_t pktType = ptr[pos];
             uint16_t pktLen = (ptr[pos + 2] << 8) | ptr[pos + 3];
 
-            if (pktLen < 8 || pos + pktLen > tds->pos[0]) {
+            if (pktLen < 8 || pos + pktLen > tds->len[0]) {
                 // Need more data
                 break;
             }
@@ -86,19 +77,19 @@ LOCAL int tds_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, in
         }
     } else {
         // TDS 4.2/5.0 login packet
-        if (tds->pos[0] > 598) {
+        if (tds->len[0] > 598) {
 #if 0
             LOG("host:%.*s user:%.*s pass:%.*s process:%.*s app:%.*s server:%.*s lib:%.*s",
-                tds->data[0][38], tds->data[0] + 8,
-                tds->data[0][69], tds->data[0] + 39,
-                tds->data[0][100], tds->data[0] + 70,
-                tds->data[0][131], tds->data[0] + 101,
-                tds->data[0][178], tds->data[0] + 148,
-                tds->data[0][209], tds->data[0] + 179,
-                tds->data[0][480], tds->data[0] + 470
+                tds->buf[0][38], tds->buf[0] + 8,
+                tds->buf[0][69], tds->buf[0] + 39,
+                tds->buf[0][100], tds->buf[0] + 70,
+                tds->buf[0][131], tds->buf[0] + 101,
+                tds->buf[0][178], tds->buf[0] + 148,
+                tds->buf[0][209], tds->buf[0] + 179,
+                tds->buf[0][480], tds->buf[0] + 470
                );
 #endif
-            arkime_field_string_add_lower(userField, session, (const char *)tds->data[0] + 39, tds->data[0][69]);
+            arkime_field_string_add_lower(userField, session, (const char *)tds->buf[0] + 39, tds->buf[0][69]);
             arkime_parsers_unregister(session, uw);
         }
     }
@@ -106,43 +97,35 @@ LOCAL int tds_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, in
     return 0;
 }
 /******************************************************************************/
-LOCAL void tds_free(ArkimeSession_t UNUSED(*session), void *uw)
-{
-    TDSInfo_t            *tds          = uw;
-
-    ARKIME_TYPE_FREE(TDSInfo_t, tds);
-}
-/******************************************************************************/
 LOCAL void tds_classify(ArkimeSession_t *session, const uint8_t *data, int len, int which, void *UNUSED(uw))
 {
     if (which != 0 || arkime_session_has_protocol(session, "tds"))
         return;
 
-    TDSInfo_t *tds = ARKIME_TYPE_ALLOC(TDSInfo_t);
-    tds->pos[0] = tds->pos[1] = 0;
+    ArkimeParserBuf_t *tds = arkime_parser_buf_create();
 
     // Determine TDS version based on packet type
     if (data[0] == 0x10 || data[0] == 0x12) {
         // TDS 7.0+ LOGIN7 packet (0x10) or prelogin packet (0x12)
         if (len < 50) {
-            ARKIME_TYPE_FREE(TDSInfo_t, tds);
+            arkime_parser_buf_free(tds);
             return;
         }
         tds->version = 7;
     } else if (data[0] == 0x02) {
         // TDS 4.2/5.0 login packet - need at least 512 bytes
         if (len < 512) {
-            ARKIME_TYPE_FREE(TDSInfo_t, tds);
+            arkime_parser_buf_free(tds);
             return;
         }
         tds->version = 0;
     } else {
-        ARKIME_TYPE_FREE(TDSInfo_t, tds);
+        arkime_parser_buf_free(tds);
         return;
     }
 
     arkime_session_add_protocol(session, "tds");
-    arkime_parsers_register(session, tds_parser, tds, tds_free);
+    arkime_parsers_register(session, tds_parser, tds, arkime_parser_buf_session_free);
 }
 /******************************************************************************/
 LOCAL void tds7_classify(ArkimeSession_t *session, const uint8_t *data, int len, int which, void *uw)

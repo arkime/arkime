@@ -194,21 +194,46 @@ LOCAL void mqtt_parse_connect(ArkimeSession_t *session, BSB *bsb)
     }
 }
 /******************************************************************************/
-LOCAL void mqtt_parse_publish(ArkimeSession_t *session, BSB *bsb, int flags)
+// Returns total bytes to skip (header + payload) on success, or -1 if need more data
+LOCAL int mqtt_parse_publish(ArkimeSession_t *session, ArkimeParserBuf_t *mqtt, int which, BSB *bsb, int flags, uint32_t remainingLen)
 {
     int qos = (flags >> 1) & 0x03;
-    if (qos <= 2) {
-        arkime_field_int_add(qosField, session, qos);
-    }
 
-    // Topic name
-    int topicLen = 0;
-    uint8_t *topic = 0;
-    BSB_IMPORT_u16(*bsb, topicLen);
+    // Need at least 2 bytes for topic length
+    if (BSB_REMAINING(*bsb) < 2)
+        return -1;
+
+    // Peek at topic length without consuming
+    int topicLen = (mqtt->buf[which][BSB_WORK_PTR(*bsb) - mqtt->buf[which]] << 8) |
+                    mqtt->buf[which][BSB_WORK_PTR(*bsb) - mqtt->buf[which] + 1];
+
+    // Calculate how much of the header we need: 2 (topic len) + topicLen + (qos > 0 ? 2 : 0)
+    int headerNeeded = 2 + topicLen + (qos > 0 ? 2 : 0);
+    if (headerNeeded > (int)remainingLen)
+        return -1; // Malformed
+
+    if (BSB_REMAINING(*bsb) < headerNeeded)
+        return -1; // Need more data
+
+    // Now consume
+    BSB_IMPORT_skip(*bsb, 2); // topic length already peeked
+    uint8_t *topic = NULL;
     BSB_IMPORT_ptr(*bsb, topic, topicLen);
     if (BSB_NOT_ERROR(*bsb) && topicLen > 0) {
         arkime_field_string_add(topicField, session, (char *)topic, topicLen, TRUE);
     }
+
+    if (qos <= 2) {
+        arkime_field_int_add(qosField, session, qos);
+    }
+    if (qos > 0) {
+        BSB_IMPORT_skip(*bsb, 2); // packet ID only for QoS > 0
+    }
+
+    // Return total bytes consumed from buffer (fixed header already consumed before call)
+    // plus remaining payload to skip
+    int consumed = BSB_WORK_PTR(*bsb) - mqtt->buf[which];
+    return consumed + (remainingLen - headerNeeded);
 }
 /******************************************************************************/
 LOCAL void mqtt_parse_subscribe(ArkimeSession_t *session, BSB *bsb, int version)
@@ -242,12 +267,14 @@ LOCAL void mqtt_parse_subscribe(ArkimeSession_t *session, BSB *bsb, int version)
     }
 }
 /******************************************************************************/
-LOCAL int mqtt_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, int len, int UNUSED(which))
+LOCAL int mqtt_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, int len, int which)
 {
-    int version = (int)(long)uw;
+    ArkimeParserBuf_t *mqtt = uw;
+
+    arkime_parser_buf_add(mqtt, which, data, len);
 
     BSB bsb;
-    BSB_INIT(bsb, data, len);
+    BSB_INIT(bsb, mqtt->buf[which], mqtt->len[which]);
 
     while (BSB_REMAINING(bsb) >= 2) {
         // Fixed header
@@ -271,6 +298,21 @@ LOCAL int mqtt_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, i
             arkime_field_string_add(typeField, session, mqttTypes[packetType], -1, TRUE);
         }
 
+        // Handle PUBLISH specially - can skip large payloads
+        if (packetType == 3) {
+            int skipLen = mqtt_parse_publish(session, mqtt, which, &bsb, flags, remainingLen);
+            if (skipLen < 0)
+                break; // Need more data
+
+            arkime_parser_buf_skip(mqtt, which, skipLen);
+            BSB_INIT(bsb, mqtt->buf[which], mqtt->len[which]);
+            continue;
+        }
+
+        if (remainingLen > BSB_REMAINING(bsb)) {
+            break;
+        }
+
         // Parse based on packet type
         BSB packetBsb;
         BSB_INIT(packetBsb, BSB_WORK_PTR(bsb), remainingLen);
@@ -279,24 +321,29 @@ LOCAL int mqtt_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, i
         case 1: // CONNECT
             mqtt_parse_connect(session, &packetBsb);
             break;
-        case 3: // PUBLISH
-            mqtt_parse_publish(session, &packetBsb, flags);
-            break;
         case 8: // SUBSCRIBE
-            mqtt_parse_subscribe(session, &packetBsb, version);
+            mqtt_parse_subscribe(session, &packetBsb, mqtt->version);
             break;
         case 10: // UNSUBSCRIBE
-            mqtt_parse_subscribe(session, &packetBsb, version);
+            mqtt_parse_subscribe(session, &packetBsb, mqtt->version);
             break;
         }
 
         BSB_IMPORT_skip(bsb, remainingLen);
+
+        if (BSB_IS_ERROR(bsb))
+            break;
+
+        // Delete processed data and reinit BSB
+        int processed = BSB_WORK_PTR(bsb) - mqtt->buf[which];
+        arkime_parser_buf_del(mqtt, which, processed);
+        BSB_INIT(bsb, mqtt->buf[which], mqtt->len[which]);
     }
 
     return 0;
 }
 /******************************************************************************/
-LOCAL void mqtt_classify(ArkimeSession_t *session, const uint8_t *data, int len, int which, void *UNUSED(uw))
+LOCAL void mqtt_classify(ArkimeSession_t *session, const uint8_t *data, int len, int UNUSED(which), void *UNUSED(uw))
 {
     if (arkime_session_has_protocol(session, "mqtt"))
         return;
@@ -335,10 +382,9 @@ LOCAL void mqtt_classify(ArkimeSession_t *session, const uint8_t *data, int len,
         return;
 
     arkime_session_add_protocol(session, "mqtt");
-    arkime_parsers_register(session, mqtt_parser, 0, 0);
 
-    // Parse the CONNECT packet
-    mqtt_parser(session, 0, data, len, which);
+    ArkimeParserBuf_t *mqtt = arkime_parser_buf_create();
+    arkime_parsers_register(session, mqtt_parser, mqtt, arkime_parser_buf_session_free);
 }
 /******************************************************************************/
 void arkime_parser_init()
