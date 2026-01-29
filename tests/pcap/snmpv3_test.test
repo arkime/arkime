@@ -1,0 +1,450 @@
+{
+ "sessions3" : [
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 93
+    },
+    "destination" : {
+     "bytes" : 0,
+     "ip" : "10.0.0.161",
+     "packets" : 0,
+     "port" : 161
+    },
+    "fileId" : [],
+    "firstPacket" : 1700000000000,
+    "ipProtocol" : 17,
+    "lastPacket" : 1700000000000,
+    "length" : 0,
+    "network" : {
+     "bytes" : 121,
+     "community_id" : "1:/pgnYqh0tiUmdm0YAR2jBQver2o=",
+     "packets" : 1
+    },
+    "node" : "test",
+    "packetLen" : [
+     137
+    ],
+    "packetPos" : [
+     24
+    ],
+    "packetRange" : {
+     "gte" : 1700000000000,
+     "lte" : 1700000000000
+    },
+    "protocol" : [
+     "ldap",
+     "snmp",
+     "udp"
+    ],
+    "protocolCnt" : 3,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 0
+    },
+    "snmp" : {
+     "version" : [
+      3
+     ],
+     "versionCnt" : 1
+    },
+    "source" : {
+     "bytes" : 121,
+     "ip" : "10.0.0.82",
+     "packets" : 1,
+     "port" : 11151
+    },
+    "srcPayload8" : "305b020103301002",
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
+    "totDataBytes" : 93,
+    "user" : [
+     "admin_user"
+    ],
+    "userCnt" : 1
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-231114"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 38
+    },
+    "destination" : {
+     "bytes" : 0,
+     "ip" : "10.0.0.161",
+     "packets" : 0,
+     "port" : 161
+    },
+    "fileId" : [],
+    "firstPacket" : 1700000001000,
+    "ipProtocol" : 17,
+    "lastPacket" : 1700000001000,
+    "length" : 0,
+    "network" : {
+     "bytes" : 66,
+     "community_id" : "1:w15bDMbyOmB0uYad8ybKfjYDTPs=",
+     "packets" : 1
+    },
+    "node" : "test",
+    "packetLen" : [
+     82
+    ],
+    "packetPos" : [
+     161
+    ],
+    "packetRange" : {
+     "gte" : 1700000001000,
+     "lte" : 1700000001000
+    },
+    "protocol" : [
+     "snmp",
+     "udp"
+    ],
+    "protocolCnt" : 2,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 0
+    },
+    "snmp" : {
+     "community" : [
+      "public"
+     ],
+     "communityCnt" : 1,
+     "type" : [
+      "GetRequest"
+     ],
+     "typeCnt" : 1,
+     "version" : [
+      2
+     ],
+     "versionCnt" : 1
+    },
+    "source" : {
+     "bytes" : 66,
+     "ip" : "10.0.0.202",
+     "packets" : 1,
+     "port" : 46615
+    },
+    "srcPayload8" : "3024020101040670",
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
+    "totDataBytes" : 38
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-231114"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 90
+    },
+    "destination" : {
+     "bytes" : 0,
+     "ip" : "10.0.0.161",
+     "packets" : 0,
+     "port" : 161
+    },
+    "fileId" : [],
+    "firstPacket" : 1700000002000,
+    "ipProtocol" : 17,
+    "lastPacket" : 1700000002000,
+    "length" : 0,
+    "network" : {
+     "bytes" : 118,
+     "community_id" : "1:Q0RYjyIFOVAQwwD08Dt48PHoIl0=",
+     "packets" : 1
+    },
+    "node" : "test",
+    "packetLen" : [
+     134
+    ],
+    "packetPos" : [
+     243
+    ],
+    "packetRange" : {
+     "gte" : 1700000002000,
+     "lte" : 1700000002000
+    },
+    "protocol" : [
+     "ldap",
+     "snmp",
+     "udp"
+    ],
+    "protocolCnt" : 3,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 0
+    },
+    "snmp" : {
+     "version" : [
+      3
+     ],
+     "versionCnt" : 1
+    },
+    "source" : {
+     "bytes" : 118,
+     "ip" : "10.0.0.42",
+     "packets" : 1,
+     "port" : 3055
+    },
+    "srcPayload8" : "3058020103301002",
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
+    "totDataBytes" : 90,
+    "user" : [
+     "monitor"
+    ],
+    "userCnt" : 1
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-231114"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 39
+    },
+    "destination" : {
+     "bytes" : 0,
+     "ip" : "10.0.0.161",
+     "packets" : 0,
+     "port" : 161
+    },
+    "fileId" : [],
+    "firstPacket" : 1700000003000,
+    "ipProtocol" : 17,
+    "lastPacket" : 1700000003000,
+    "length" : 0,
+    "network" : {
+     "bytes" : 67,
+     "community_id" : "1:lk+bWOy2W3i3v7Z3Ybfkf0p7SaU=",
+     "packets" : 1
+    },
+    "node" : "test",
+    "packetLen" : [
+     83
+    ],
+    "packetPos" : [
+     377
+    ],
+    "packetRange" : {
+     "gte" : 1700000003000,
+     "lte" : 1700000003000
+    },
+    "protocol" : [
+     "snmp",
+     "udp"
+    ],
+    "protocolCnt" : 2,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 0
+    },
+    "snmp" : {
+     "community" : [
+      "private"
+     ],
+     "communityCnt" : 1,
+     "error" : [
+      "noSuchName"
+     ],
+     "errorCnt" : 1,
+     "type" : [
+      "GetResponse"
+     ],
+     "typeCnt" : 1,
+     "version" : [
+      2
+     ],
+     "versionCnt" : 1
+    },
+    "source" : {
+     "bytes" : 67,
+     "ip" : "10.0.0.137",
+     "packets" : 1,
+     "port" : 6037
+    },
+    "srcPayload8" : "3025020101040770",
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
+    "totDataBytes" : 39
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-231114"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 91
+    },
+    "destination" : {
+     "bytes" : 0,
+     "ip" : "10.0.0.161",
+     "packets" : 0,
+     "port" : 161
+    },
+    "fileId" : [],
+    "firstPacket" : 1700000004000,
+    "ipProtocol" : 17,
+    "lastPacket" : 1700000004000,
+    "length" : 0,
+    "network" : {
+     "bytes" : 119,
+     "community_id" : "1:UXcXg4j+oU4DOinDCEzenAo0jR8=",
+     "packets" : 1
+    },
+    "node" : "test",
+    "packetLen" : [
+     135
+    ],
+    "packetPos" : [
+     460
+    ],
+    "packetRange" : {
+     "gte" : 1700000004000,
+     "lte" : 1700000004000
+    },
+    "protocol" : [
+     "ldap",
+     "snmp",
+     "udp"
+    ],
+    "protocolCnt" : 3,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 0
+    },
+    "snmp" : {
+     "version" : [
+      3
+     ],
+     "versionCnt" : 1
+    },
+    "source" : {
+     "bytes" : 119,
+     "ip" : "10.0.0.56",
+     "packets" : 1,
+     "port" : 40576
+    },
+    "srcPayload8" : "3059020103301002",
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
+    "totDataBytes" : 91,
+    "user" : [
+     "readonly"
+    ],
+    "userCnt" : 1
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-231114"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 41
+    },
+    "destination" : {
+     "bytes" : 0,
+     "ip" : "10.0.0.161",
+     "packets" : 0,
+     "port" : 161
+    },
+    "fileId" : [],
+    "firstPacket" : 1700000005000,
+    "ipProtocol" : 17,
+    "lastPacket" : 1700000005000,
+    "length" : 0,
+    "network" : {
+     "bytes" : 69,
+     "community_id" : "1:UYgAlkCQvsALmwczrJv4bCOwCJU=",
+     "packets" : 1
+    },
+    "node" : "test",
+    "packetLen" : [
+     85
+    ],
+    "packetPos" : [
+     595
+    ],
+    "packetRange" : {
+     "gte" : 1700000005000,
+     "lte" : 1700000005000
+    },
+    "protocol" : [
+     "snmp",
+     "udp"
+    ],
+    "protocolCnt" : 2,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 0
+    },
+    "snmp" : {
+     "community" : [
+      "secret123"
+     ],
+     "communityCnt" : 1,
+     "type" : [
+      "SetRequest"
+     ],
+     "typeCnt" : 1,
+     "version" : [
+      2
+     ],
+     "versionCnt" : 1
+    },
+    "source" : {
+     "bytes" : 69,
+     "ip" : "10.0.0.48",
+     "packets" : 1,
+     "port" : 20221
+    },
+    "srcPayload8" : "3027020101040973",
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
+    "totDataBytes" : 41
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-231114"
+    }
+   }
+  }
+ ]
+}
+

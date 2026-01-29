@@ -78,6 +78,17 @@ arkime_test.pcap prompt:
 
      Write the complete Python script and run it to create the PCAP.
 
+snmpv3_test.pcap prompt:
+   Create a test pcap file with SNMPv3 traffic using Python/scapy. Include:
+     - 3 SNMPv3 packets with different usernames (e.g., admin_user, monitor, readonly)
+     - 3 SNMPv2c packets with different communities (e.g., public, private, secret123)
+     - Mix of message types: GetRequest, GetResponse, SetRequest
+     - Use proper ASN.1 encoding for all fields
+     - Different source IPs for each packet
+     - Target UDP port 161
+     - Each packet 1 second apart in timestamp
+
+
 2) Viewer
 Test various viewer apis.  Requires that an elasticsearch already be running on the local host.
 
