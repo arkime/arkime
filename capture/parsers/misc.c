@@ -293,10 +293,6 @@ void arkime_parser_init()
     CLASSIFY_TCP("mongo", 8, "\x00\x00\x00\x00\xd4\x07\x00\x00", misc_add_protocol_classify);
     CLASSIFY_TCP("mongo", 8, "\xff\xff\xff\xff\xd4\x07\x00\x00", misc_add_protocol_classify);
 
-    SIMPLE_CLASSIFY_BOTH("sip", "SIP/2.0");
-    SIMPLE_CLASSIFY_BOTH("sip", "REGISTER sip:");
-    SIMPLE_CLASSIFY_BOTH("sip", "NOTIFY sip:");
-
     CLASSIFY_TCP("jabber", 0, "<?xml", jabber_classify);
 
     CLASSIFY_TCP("user", 0, "USER ", user_classify);

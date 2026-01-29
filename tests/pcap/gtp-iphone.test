@@ -1,2118 +1,2320 @@
 {
-   "sessions3" : [
-      {
-         "body" : {
-            "@timestamp" : "SET",
-            "client" : {
-               "bytes" : 45
-            },
-            "destination" : {
-               "bytes" : 334,
-               "ip" : "192.168.168.1",
-               "packets" : 1,
-               "port" : 53
-            },
-            "dns" : [
-               {
-                  "ASN" : [
-                     "---"
-                  ],
-                  "GEO" : [
-                     "---"
-                  ],
-                  "RIR" : [
-                     "ARIN"
-                  ],
-                  "answers" : [
-                     {
-                        "class" : "IN",
-                        "ip" : "172.26.39.3",
-                        "name" : "sentitlement.mobile.att.net",
-                        "ttl" : 4159,
-                        "type" : "A"
-                     },
-                     {
-                        "class" : "IN",
-                        "name" : "att.net",
-                        "nameserver" : "ohcu.oh.mt.np.els-gms.att.net",
-                        "ttl" : 172240,
-                        "type" : "NS"
-                     },
-                     {
-                        "class" : "IN",
-                        "name" : "att.net",
-                        "nameserver" : "orcu.or.br.np.els-gms.att.net",
-                        "ttl" : 172240,
-                        "type" : "NS"
-                     },
-                     {
-                        "class" : "IN",
-                        "name" : "att.net",
-                        "nameserver" : "wycu.wy.br.np.els-gms.att.net",
-                        "ttl" : 172240,
-                        "type" : "NS"
-                     },
-                     {
-                        "class" : "IN",
-                        "name" : "att.net",
-                        "nameserver" : "macu.ma.mt.np.els-gms.att.net",
-                        "ttl" : 172240,
-                        "type" : "NS"
-                     },
-                     {
-                        "class" : "IN",
-                        "ip" : "99.99.99.130",
-                        "name" : "macu.ma.mt.np.els-gms.att.net",
-                        "ttl" : 68137,
-                        "type" : "A"
-                     },
-                     {
-                        "class" : "IN",
-                        "ip" : "2001:1890:1ff:9f1:99:99:99:130",
-                        "name" : "macu.ma.mt.np.els-gms.att.net",
-                        "ttl" : 64737,
-                        "type" : "AAAA"
-                     },
-                     {
-                        "class" : "IN",
-                        "ip" : "99.99.99.128",
-                        "name" : "ohcu.oh.mt.np.els-gms.att.net",
-                        "ttl" : 68137,
-                        "type" : "A"
-                     },
-                     {
-                        "class" : "IN",
-                        "ip" : "2001:1890:1ff:9f1:99:99:99:128",
-                        "name" : "ohcu.oh.mt.np.els-gms.att.net",
-                        "ttl" : 64737,
-                        "type" : "AAAA"
-                     }
-                  ],
-                  "answersCnt" : 9,
-                  "headerFlags" : [
-                     "RA",
-                     "RD"
-                  ],
-                  "host" : [
-                     "sentitlement.mobile.att.net"
-                  ],
-                  "hostCnt" : 1,
-                  "ip" : [
-                     "172.26.39.3"
-                  ],
-                  "ipCnt" : 1,
-                  "nameserverASN" : [
-                     "AS7018 AT&T Services, Inc.",
-                     "AS7018 AT&T Services, Inc.",
-                     "AS7018 AT&T Services, Inc.",
-                     "AS7018 AT&T Services, Inc."
-                  ],
-                  "nameserverGEO" : [
-                     "US",
-                     "US",
-                     "US",
-                     "US"
-                  ],
-                  "nameserverHost" : [
-                     "macu.ma.mt.np.els-gms.att.net",
-                     "ohcu.oh.mt.np.els-gms.att.net",
-                     "orcu.or.br.np.els-gms.att.net",
-                     "wycu.wy.br.np.els-gms.att.net"
-                  ],
-                  "nameserverHostCnt" : 4,
-                  "nameserverIp" : [
-                     "2001:1890:01ff:09f1:0099:0099:0099:0128",
-                     "2001:1890:01ff:09f1:0099:0099:0099:0130",
-                     "99.99.99.128",
-                     "99.99.99.130"
-                  ],
-                  "nameserverIpCnt" : 4,
-                  "nameserverRIR" : [
-                     "",
-                     "",
-                     "ARIN",
-                     "ARIN"
-                  ],
-                  "opcode" : "QUERY",
-                  "qc" : "IN",
-                  "qt" : "A",
-                  "queryHost" : "sentitlement.mobile.att.net",
-                  "status" : "NOERROR"
-               }
-            ],
-            "dnsCnt" : 1,
-            "dstOuterASN" : [
-               "---",
-               "---"
-            ],
-            "dstOuterGEO" : [
-               "---",
-               "---"
-            ],
-            "dstOuterIp" : [
-               "127.0.1.1",
-               "127.0.1.100"
-            ],
-            "dstOuterIpCnt" : 2,
-            "dstOuterRIR" : [
-               "",
-               ""
-            ],
-            "dstPayload8" : "d333818000010001",
-            "dstRIR" : "ARIN",
-            "dstTTL" : [
-               63
-            ],
-            "dstTTLCnt" : 1,
-            "fileId" : [],
-            "firstPacket" : 1415985409420,
-            "ipProtocol" : 17,
-            "lastPacket" : 1415985409420,
-            "length" : 0,
-            "network" : {
-               "bytes" : 459,
-               "community_id" : "1:gnbX4xbGH0+UsxHh+Z6yPe7Fb3c=",
-               "packets" : 2
-            },
-            "node" : "test",
-            "packetLen" : [
-               141,
-               350
-            ],
-            "packetPos" : [
-               24,
-               165
-            ],
-            "packetRange" : {
-               "gte" : 1415985409420,
-               "lte" : 1415985409420
-            },
-            "protocol" : [
-               "dns",
-               "gtp",
-               "udp"
-            ],
-            "protocolCnt" : 3,
-            "segmentCnt" : 1,
-            "server" : {
-               "bytes" : 254
-            },
-            "source" : {
-               "bytes" : 125,
-               "ip" : "192.168.3.129",
-               "packets" : 1,
-               "port" : 57801
-            },
-            "srcOuterASN" : [
-               "---",
-               "---"
-            ],
-            "srcOuterGEO" : [
-               "---",
-               "---"
-            ],
-            "srcOuterIp" : [
-               "127.0.1.1",
-               "127.0.1.100"
-            ],
-            "srcOuterIpCnt" : 2,
-            "srcOuterRIR" : [
-               "",
-               ""
-            ],
-            "srcPayload8" : "d333010000010000",
-            "srcRIR" : "ARIN",
-            "srcTTL" : [
-               64
-            ],
-            "srcTTLCnt" : 1,
-            "totDataBytes" : 299
-         },
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions3-141114"
-            }
-         }
-      },
-      {
-         "body" : {
-            "@timestamp" : "SET",
-            "client" : {
-               "bytes" : 8
-            },
-            "destination" : {
-               "bytes" : 0,
-               "ip" : "ff02::2",
-               "packets" : 0,
-               "port" : 0
-            },
-            "dstOuterASN" : [
-               "---"
-            ],
-            "dstOuterGEO" : [
-               "---"
-            ],
-            "dstOuterIp" : [
-               "127.0.1.100"
-            ],
-            "dstOuterIpCnt" : 1,
-            "dstOuterRIR" : [
-               ""
-            ],
-            "fileId" : [],
-            "firstPacket" : 1415985409932,
-            "icmp" : {
-               "code" : [
-                  0
-               ],
-               "type" : [
-                  133
-               ]
-            },
-            "ipProtocol" : 58,
-            "lastPacket" : 1415985409932,
-            "length" : 0,
-            "network" : {
-               "bytes" : 100,
-               "community_id" : "1:ZSqdzCvRkWsggi2OBdL85sNCb6Q=",
-               "packets" : 1
-            },
-            "node" : "test",
-            "packetLen" : [
-               116
-            ],
-            "packetPos" : [
-               515
-            ],
-            "packetRange" : {
-               "gte" : 1415985409932,
-               "lte" : 1415985409932
-            },
-            "protocol" : [
-               "gtp",
-               "icmp"
-            ],
-            "protocolCnt" : 2,
-            "segmentCnt" : 1,
-            "server" : {
-               "bytes" : 0
-            },
-            "source" : {
-               "bytes" : 100,
-               "ip" : "fe80::fd00:183:1:1",
-               "packets" : 1,
-               "port" : 0
-            },
-            "srcOuterASN" : [
-               "---"
-            ],
-            "srcOuterGEO" : [
-               "---"
-            ],
-            "srcOuterIp" : [
-               "127.0.1.1"
-            ],
-            "srcOuterIpCnt" : 1,
-            "srcOuterRIR" : [
-               ""
-            ],
-            "srcTTL" : [
-               255
-            ],
-            "srcTTLCnt" : 1,
-            "totDataBytes" : 8
-         },
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions3-141114"
-            }
-         }
-      },
-      {
-         "body" : {
-            "@timestamp" : "SET",
-            "client" : {
-               "bytes" : 48
-            },
-            "destination" : {
-               "bytes" : 0,
-               "ip" : "fe80::fd00:183:1:1",
-               "packets" : 0,
-               "port" : 0
-            },
-            "dstOuterASN" : [
-               "---"
-            ],
-            "dstOuterGEO" : [
-               "---"
-            ],
-            "dstOuterIp" : [
-               "127.0.1.1"
-            ],
-            "dstOuterIpCnt" : 1,
-            "dstOuterRIR" : [
-               ""
-            ],
-            "fileId" : [],
-            "firstPacket" : 1415985409932,
-            "icmp" : {
-               "code" : [
-                  0
-               ],
-               "type" : [
-                  134
-               ]
-            },
-            "ipProtocol" : 58,
-            "lastPacket" : 1415985409932,
-            "length" : 0,
-            "network" : {
-               "bytes" : 140,
-               "community_id" : "1:FqYeaO+Hxs1BIIB9o8cVa0q5VNs=",
-               "packets" : 1
-            },
-            "node" : "test",
-            "packetLen" : [
-               156
-            ],
-            "packetPos" : [
-               631
-            ],
-            "packetRange" : {
-               "gte" : 1415985409932,
-               "lte" : 1415985409932
-            },
-            "protocol" : [
-               "gtp",
-               "icmp"
-            ],
-            "protocolCnt" : 2,
-            "segmentCnt" : 1,
-            "server" : {
-               "bytes" : 0
-            },
-            "source" : {
-               "bytes" : 140,
-               "ip" : "fe80::18f:54ea:5196:2546",
-               "packets" : 1,
-               "port" : 0
-            },
-            "srcOuterASN" : [
-               "---"
-            ],
-            "srcOuterGEO" : [
-               "---"
-            ],
-            "srcOuterIp" : [
-               "127.0.1.100"
-            ],
-            "srcOuterIpCnt" : 1,
-            "srcOuterRIR" : [
-               ""
-            ],
-            "srcTTL" : [
-               255
-            ],
-            "srcTTLCnt" : 1,
-            "totDataBytes" : 48
-         },
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions3-141114"
-            }
-         }
-      },
-      {
-         "body" : {
-            "@timestamp" : "SET",
-            "client" : {
-               "bytes" : 45
-            },
-            "destination" : {
-               "bytes" : 334,
-               "ip" : "192.168.168.1",
-               "packets" : 1,
-               "port" : 53
-            },
-            "dns" : [
-               {
-                  "ASN" : [
-                     "---"
-                  ],
-                  "GEO" : [
-                     "---"
-                  ],
-                  "RIR" : [
-                     "ARIN"
-                  ],
-                  "answers" : [
-                     {
-                        "class" : "IN",
-                        "ip" : "172.26.39.3",
-                        "name" : "sentitlement.mobile.att.net",
-                        "ttl" : 4158,
-                        "type" : "A"
-                     },
-                     {
-                        "class" : "IN",
-                        "name" : "att.net",
-                        "nameserver" : "macu.ma.mt.np.els-gms.att.net",
-                        "ttl" : 172239,
-                        "type" : "NS"
-                     },
-                     {
-                        "class" : "IN",
-                        "name" : "att.net",
-                        "nameserver" : "ohcu.oh.mt.np.els-gms.att.net",
-                        "ttl" : 172239,
-                        "type" : "NS"
-                     },
-                     {
-                        "class" : "IN",
-                        "name" : "att.net",
-                        "nameserver" : "orcu.or.br.np.els-gms.att.net",
-                        "ttl" : 172239,
-                        "type" : "NS"
-                     },
-                     {
-                        "class" : "IN",
-                        "name" : "att.net",
-                        "nameserver" : "wycu.wy.br.np.els-gms.att.net",
-                        "ttl" : 172239,
-                        "type" : "NS"
-                     },
-                     {
-                        "class" : "IN",
-                        "ip" : "99.99.99.130",
-                        "name" : "macu.ma.mt.np.els-gms.att.net",
-                        "ttl" : 68136,
-                        "type" : "A"
-                     },
-                     {
-                        "class" : "IN",
-                        "ip" : "2001:1890:1ff:9f1:99:99:99:130",
-                        "name" : "macu.ma.mt.np.els-gms.att.net",
-                        "ttl" : 64736,
-                        "type" : "AAAA"
-                     },
-                     {
-                        "class" : "IN",
-                        "ip" : "99.99.99.128",
-                        "name" : "ohcu.oh.mt.np.els-gms.att.net",
-                        "ttl" : 68136,
-                        "type" : "A"
-                     },
-                     {
-                        "class" : "IN",
-                        "ip" : "2001:1890:1ff:9f1:99:99:99:128",
-                        "name" : "ohcu.oh.mt.np.els-gms.att.net",
-                        "ttl" : 64736,
-                        "type" : "AAAA"
-                     }
-                  ],
-                  "answersCnt" : 9,
-                  "headerFlags" : [
-                     "RA",
-                     "RD"
-                  ],
-                  "host" : [
-                     "sentitlement.mobile.att.net"
-                  ],
-                  "hostCnt" : 1,
-                  "ip" : [
-                     "172.26.39.3"
-                  ],
-                  "ipCnt" : 1,
-                  "nameserverASN" : [
-                     "AS7018 AT&T Services, Inc.",
-                     "AS7018 AT&T Services, Inc.",
-                     "AS7018 AT&T Services, Inc.",
-                     "AS7018 AT&T Services, Inc."
-                  ],
-                  "nameserverGEO" : [
-                     "US",
-                     "US",
-                     "US",
-                     "US"
-                  ],
-                  "nameserverHost" : [
-                     "macu.ma.mt.np.els-gms.att.net",
-                     "ohcu.oh.mt.np.els-gms.att.net",
-                     "orcu.or.br.np.els-gms.att.net",
-                     "wycu.wy.br.np.els-gms.att.net"
-                  ],
-                  "nameserverHostCnt" : 4,
-                  "nameserverIp" : [
-                     "2001:1890:01ff:09f1:0099:0099:0099:0128",
-                     "2001:1890:01ff:09f1:0099:0099:0099:0130",
-                     "99.99.99.128",
-                     "99.99.99.130"
-                  ],
-                  "nameserverIpCnt" : 4,
-                  "nameserverRIR" : [
-                     "",
-                     "",
-                     "ARIN",
-                     "ARIN"
-                  ],
-                  "opcode" : "QUERY",
-                  "qc" : "IN",
-                  "qt" : "A",
-                  "queryHost" : "sentitlement.mobile.att.net",
-                  "status" : "NOERROR"
-               }
-            ],
-            "dnsCnt" : 1,
-            "dstOuterASN" : [
-               "---",
-               "---"
-            ],
-            "dstOuterGEO" : [
-               "---",
-               "---"
-            ],
-            "dstOuterIp" : [
-               "127.0.1.1",
-               "127.0.1.100"
-            ],
-            "dstOuterIpCnt" : 2,
-            "dstOuterRIR" : [
-               "",
-               ""
-            ],
-            "dstPayload8" : "7442818000010001",
-            "dstRIR" : "ARIN",
-            "dstTTL" : [
-               63
-            ],
-            "dstTTLCnt" : 1,
-            "fileId" : [],
-            "firstPacket" : 1415985410140,
-            "ipProtocol" : 17,
-            "lastPacket" : 1415985410140,
-            "length" : 0,
-            "network" : {
-               "bytes" : 459,
-               "community_id" : "1:03Q3hWzYWS10KswBCBg7mTwtdkM=",
-               "packets" : 2
-            },
-            "node" : "test",
-            "packetLen" : [
-               141,
-               350
-            ],
-            "packetPos" : [
-               787,
-               928
-            ],
-            "packetRange" : {
-               "gte" : 1415985410140,
-               "lte" : 1415985410140
-            },
-            "protocol" : [
-               "dns",
-               "gtp",
-               "udp"
-            ],
-            "protocolCnt" : 3,
-            "segmentCnt" : 1,
-            "server" : {
-               "bytes" : 254
-            },
-            "source" : {
-               "bytes" : 125,
-               "ip" : "192.168.3.129",
-               "packets" : 1,
-               "port" : 58364
-            },
-            "srcOuterASN" : [
-               "---",
-               "---"
-            ],
-            "srcOuterGEO" : [
-               "---",
-               "---"
-            ],
-            "srcOuterIp" : [
-               "127.0.1.1",
-               "127.0.1.100"
-            ],
-            "srcOuterIpCnt" : 2,
-            "srcOuterRIR" : [
-               "",
-               ""
-            ],
-            "srcPayload8" : "7442010000010000",
-            "srcRIR" : "ARIN",
-            "srcTTL" : [
-               64
-            ],
-            "srcTTLCnt" : 1,
-            "totDataBytes" : 299
-         },
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions3-141114"
-            }
-         }
-      },
-      {
-         "body" : {
-            "@timestamp" : "SET",
-            "client" : {
-               "bytes" : 36
-            },
-            "destination" : {
-               "bytes" : 0,
-               "ip" : "192.168.168.1",
-               "packets" : 0,
-               "port" : 0
-            },
-            "dstOuterASN" : [
-               "---"
-            ],
-            "dstOuterGEO" : [
-               "---"
-            ],
-            "dstOuterIp" : [
-               "127.0.1.100"
-            ],
-            "dstOuterIpCnt" : 1,
-            "dstOuterRIR" : [
-               ""
-            ],
-            "dstRIR" : "ARIN",
-            "fileId" : [],
-            "firstPacket" : 1415985410172,
-            "icmp" : {
-               "code" : [
-                  3
-               ],
-               "type" : [
-                  3
-               ]
-            },
-            "ipProtocol" : 1,
-            "lastPacket" : 1415985410172,
-            "length" : 0,
-            "network" : {
-               "bytes" : 108,
-               "community_id" : "1:lB4egS/Qun/GwHeSFBDGvr1G/IU=",
-               "packets" : 1
-            },
-            "node" : "test",
-            "packetLen" : [
-               124
-            ],
-            "packetPos" : [
-               1278
-            ],
-            "packetRange" : {
-               "gte" : 1415985410172,
-               "lte" : 1415985410172
-            },
-            "protocol" : [
-               "gtp",
-               "icmp"
-            ],
-            "protocolCnt" : 2,
-            "segmentCnt" : 1,
-            "server" : {
-               "bytes" : 0
-            },
-            "source" : {
-               "bytes" : 108,
-               "ip" : "192.168.3.129",
-               "packets" : 1,
-               "port" : 0
-            },
-            "srcOuterASN" : [
-               "---"
-            ],
-            "srcOuterGEO" : [
-               "---"
-            ],
-            "srcOuterIp" : [
-               "127.0.1.1"
-            ],
-            "srcOuterIpCnt" : 1,
-            "srcOuterRIR" : [
-               ""
-            ],
-            "srcRIR" : "ARIN",
-            "srcTTL" : [
-               64
-            ],
-            "srcTTLCnt" : 1,
-            "totDataBytes" : 36
-         },
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions3-141114"
-            }
-         }
-      },
-      {
-         "body" : {
-            "@timestamp" : "SET",
-            "client" : {
-               "bytes" : 176
-            },
-            "destination" : {
-               "bytes" : 0,
-               "ip" : "ff02::16",
-               "packets" : 0,
-               "port" : 0
-            },
-            "dstOuterASN" : [
-               "---"
-            ],
-            "dstOuterGEO" : [
-               "---"
-            ],
-            "dstOuterIp" : [
-               "127.0.1.100"
-            ],
-            "dstOuterIpCnt" : 1,
-            "dstOuterRIR" : [
-               ""
-            ],
-            "fileId" : [],
-            "firstPacket" : 1415985411060,
-            "icmp" : {
-               "code" : [
-                  0
-               ],
-               "type" : [
-                  143
-               ]
-            },
-            "ipProtocol" : 58,
-            "lastPacket" : 1415985414100,
-            "length" : 3040,
-            "network" : {
-               "bytes" : 376,
-               "community_id" : "1:d7cy7xMNX0/8Mwn5xmwtmFSTQ/k=",
-               "packets" : 2
-            },
-            "node" : "test",
-            "packetLen" : [
-               204,
-               204
-            ],
-            "packetPos" : [
-               1402,
-               5692
-            ],
-            "packetRange" : {
-               "gte" : 1415985411060,
-               "lte" : 1415985414100
-            },
-            "protocol" : [
-               "gtp",
-               "icmp"
-            ],
-            "protocolCnt" : 2,
-            "segmentCnt" : 1,
-            "server" : {
-               "bytes" : 0
-            },
-            "source" : {
-               "bytes" : 376,
-               "ip" : "fe80::45:f337:32b9:ac9b",
-               "packets" : 2,
-               "port" : 0
-            },
-            "srcOuterASN" : [
-               "---"
-            ],
-            "srcOuterGEO" : [
-               "---"
-            ],
-            "srcOuterIp" : [
-               "127.0.1.1"
-            ],
-            "srcOuterIpCnt" : 1,
-            "srcOuterRIR" : [
-               ""
-            ],
-            "srcTTL" : [
-               1
-            ],
-            "srcTTLCnt" : 1,
-            "tags" : [
-               "not-src-0-not-dst-1",
-               "src-2-dst-0",
-               "src-2-not-dst-1"
-            ],
-            "tagsCnt" : 3,
-            "totDataBytes" : 176
-         },
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions3-141114"
-            }
-         }
-      },
-      {
-         "body" : {
-            "@timestamp" : "SET",
-            "client" : {
-               "bytes" : 1697
-            },
-            "destination" : {
-               "bytes" : 1317,
-               "ip" : "fd01::183",
-               "packets" : 5,
-               "port" : 5060
-            },
-            "dstOuterASN" : [
-               "---",
-               "---"
-            ],
-            "dstOuterGEO" : [
-               "---",
-               "---"
-            ],
-            "dstOuterIp" : [
-               "127.0.1.1",
-               "127.0.1.100"
-            ],
-            "dstOuterIpCnt" : 2,
-            "dstOuterRIR" : [
-               "",
-               ""
-            ],
-            "dstPayload8" : "5349502f322e3020",
-            "dstTTL" : [
-               64
-            ],
-            "dstTTLCnt" : 1,
-            "fileId" : [],
-            "firstPacket" : 1415985412100,
-            "initRTT" : 15,
-            "ipProtocol" : 6,
-            "lastPacket" : 1415985412532,
-            "length" : 432,
-            "network" : {
-               "bytes" : 3894,
-               "community_id" : "1:LfVtLs2VX3xOzzzdeOeVLCh7SOw=",
-               "packets" : 12
-            },
-            "node" : "test",
-            "packetLen" : [
-               152,
-               148,
-               140,
-               1478,
-               140,
-               499,
-               140,
-               829,
-               140,
-               140,
-               140,
-               140
-            ],
-            "packetPos" : [
-               1606,
-               1758,
-               1906,
-               2046,
-               3524,
-               3664,
-               4163,
-               4303,
-               5132,
-               5272,
-               5412,
-               5552
-            ],
-            "packetRange" : {
-               "gte" : 1415985412100,
-               "lte" : 1415985412532
-            },
-            "protocol" : [
-               "gtp",
-               "sip",
-               "tcp"
-            ],
-            "protocolCnt" : 3,
-            "segmentCnt" : 1,
-            "server" : {
-               "bytes" : 689
-            },
-            "source" : {
-               "bytes" : 2577,
-               "ip" : "fd00:183:1:1:1886:9040:8605:32b8",
-               "packets" : 7,
-               "port" : 5060
-            },
-            "srcOuterASN" : [
-               "---",
-               "---"
-            ],
-            "srcOuterGEO" : [
-               "---",
-               "---"
-            ],
-            "srcOuterIp" : [
-               "127.0.1.1",
-               "127.0.1.100"
-            ],
-            "srcOuterIpCnt" : 2,
-            "srcOuterRIR" : [
-               "",
-               ""
-            ],
-            "srcPayload8" : "5245474953544552",
-            "srcTTL" : [
-               255
-            ],
-            "srcTTLCnt" : 1,
-            "tcpflags" : {
-               "ack" : 6,
-               "dstZero" : 0,
-               "fin" : 2,
-               "psh" : 2,
-               "rst" : 0,
-               "srcZero" : 0,
-               "syn" : 1,
-               "syn-ack" : 1,
-               "urg" : 0
-            },
-            "tcpseq" : {
-               "dst" : 0,
-               "src" : 1375424496
-            },
-            "totDataBytes" : 2386
-         },
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions3-141114"
-            }
-         }
-      },
-      {
-         "body" : {
-            "@timestamp" : "SET",
-            "client" : {
-               "bytes" : 1794
-            },
-            "destination" : {
-               "bytes" : 1359,
-               "ip" : "fd01::183",
-               "packets" : 5,
-               "port" : 5060
-            },
-            "dstOuterASN" : [
-               "---",
-               "---"
-            ],
-            "dstOuterGEO" : [
-               "---",
-               "---"
-            ],
-            "dstOuterIp" : [
-               "127.0.1.1",
-               "127.0.1.100"
-            ],
-            "dstOuterIpCnt" : 2,
-            "dstOuterRIR" : [
-               "",
-               ""
-            ],
-            "dstPayload8" : "5349502f322e3020",
-            "dstTTL" : [
-               64
-            ],
-            "dstTTLCnt" : 1,
-            "fileId" : [],
-            "firstPacket" : 1415985444983,
-            "initRTT" : 16,
-            "ipProtocol" : 6,
-            "lastPacket" : 1415985446023,
-            "length" : 1040,
-            "network" : {
-               "bytes" : 4033,
-               "community_id" : "1:LfVtLs2VX3xOzzzdeOeVLCh7SOw=",
-               "packets" : 12
-            },
-            "node" : "test",
-            "packetLen" : [
-               152,
-               148,
-               140,
-               1478,
-               140,
-               596,
-               140,
-               871,
-               140,
-               140,
-               140,
-               140
-            ],
-            "packetPos" : [
-               5896,
-               6048,
-               6196,
-               6336,
-               7814,
-               7954,
-               8550,
-               8690,
-               9561,
-               10575,
-               10715,
-               11405
-            ],
-            "packetRange" : {
-               "gte" : 1415985444983,
-               "lte" : 1415985446023
-            },
-            "protocol" : [
-               "gtp",
-               "sip",
-               "tcp"
-            ],
-            "protocolCnt" : 3,
-            "segmentCnt" : 1,
-            "server" : {
-               "bytes" : 731
-            },
-            "source" : {
-               "bytes" : 2674,
-               "ip" : "fd00:183:1:1:1886:9040:8605:32b8",
-               "packets" : 7,
-               "port" : 5060
-            },
-            "srcOuterASN" : [
-               "---",
-               "---"
-            ],
-            "srcOuterGEO" : [
-               "---",
-               "---"
-            ],
-            "srcOuterIp" : [
-               "127.0.1.1",
-               "127.0.1.100"
-            ],
-            "srcOuterIpCnt" : 2,
-            "srcOuterRIR" : [
-               "",
-               ""
-            ],
-            "srcPayload8" : "5245474953544552",
-            "srcTTL" : [
-               255
-            ],
-            "srcTTLCnt" : 1,
-            "tcpflags" : {
-               "ack" : 6,
-               "dstZero" : 0,
-               "fin" : 2,
-               "psh" : 2,
-               "rst" : 0,
-               "srcZero" : 0,
-               "syn" : 1,
-               "syn-ack" : 1,
-               "urg" : 0
-            },
-            "tcpseq" : {
-               "dst" : 0,
-               "src" : 3627185437
-            },
-            "totDataBytes" : 2525
-         },
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions3-141114"
-            }
-         }
-      },
-      {
-         "body" : {
-            "@timestamp" : "SET",
-            "client" : {
-               "bytes" : 1429
-            },
-            "destination" : {
-               "bytes" : 1103,
-               "ip" : "fd01::183",
-               "packets" : 2,
-               "port" : 5060
-            },
-            "dstOuterASN" : [
-               "---",
-               "---"
-            ],
-            "dstOuterGEO" : [
-               "---",
-               "---"
-            ],
-            "dstOuterIp" : [
-               "127.0.1.1",
-               "127.0.1.100"
-            ],
-            "dstOuterIpCnt" : 2,
-            "dstOuterRIR" : [
-               "",
-               ""
-            ],
-            "dstPayload8" : "5349502f322e3020",
-            "dstTTL" : [
-               64
-            ],
-            "dstTTLCnt" : 1,
-            "fileId" : [],
-            "firstPacket" : 1415985445984,
-            "ipProtocol" : 17,
-            "lastPacket" : 1415985512445,
-            "length" : 66461,
-            "network" : {
-               "bytes" : 2732,
-               "community_id" : "1:IJBdyTHm5HjzP+ZbQJKTvVS/E74=",
-               "packets" : 4
-            },
-            "node" : "test",
-            "packetLen" : [
-               874,
-               550,
-               787,
-               585
-            ],
-            "packetPos" : [
-               9701,
-               10855,
-               24837,
-               25624
-            ],
-            "packetRange" : {
-               "gte" : 1415985445984,
-               "lte" : 1415985512445
-            },
-            "protocol" : [
-               "gtp",
-               "sip",
-               "udp"
-            ],
-            "protocolCnt" : 3,
-            "segmentCnt" : 1,
-            "server" : {
-               "bytes" : 903
-            },
-            "source" : {
-               "bytes" : 1629,
-               "ip" : "fd00:183:1:1:1886:9040:8605:32b8",
-               "packets" : 2,
-               "port" : 5060
-            },
-            "srcOuterASN" : [
-               "---",
-               "---"
-            ],
-            "srcOuterGEO" : [
-               "---",
-               "---"
-            ],
-            "srcOuterIp" : [
-               "127.0.1.1",
-               "127.0.1.100"
-            ],
-            "srcOuterIpCnt" : 2,
-            "srcOuterRIR" : [
-               "",
-               ""
-            ],
-            "srcPayload8" : "5355425343524942",
-            "srcTTL" : [
-               "255",
-               "64"
-            ],
-            "srcTTLCnt" : 2,
-            "totDataBytes" : 2332
-         },
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions3-141114"
-            }
-         }
-      },
-      {
-         "body" : {
-            "@timestamp" : "SET",
-            "client" : {
-               "bytes" : 2934
-            },
-            "destination" : {
-               "bytes" : 3131,
-               "ip" : "fd01::183",
-               "packets" : 10,
-               "port" : 5060
-            },
-            "dstOuterASN" : [
-               "---",
-               "---"
-            ],
-            "dstOuterGEO" : [
-               "---",
-               "---"
-            ],
-            "dstOuterIp" : [
-               "127.0.1.1",
-               "127.0.1.100"
-            ],
-            "dstOuterIpCnt" : 2,
-            "dstOuterRIR" : [
-               "",
-               ""
-            ],
-            "dstPayload8" : "5349502f322e3020",
-            "dstTTL" : [
-               64
-            ],
-            "dstTTLCnt" : 1,
-            "fileId" : [],
-            "firstPacket" : 1415985484900,
-            "initRTT" : 20,
-            "ipProtocol" : 6,
-            "lastPacket" : 1415985533136,
-            "length" : 48236,
-            "network" : {
-               "bytes" : 7565,
-               "community_id" : "1:LfVtLs2VX3xOzzzdeOeVLCh7SOw=",
-               "packets" : 22
-            },
-            "node" : "test",
-            "packetLen" : [
-               152,
-               148,
-               140,
-               1478,
-               476,
-               140,
-               140,
-               446,
-               140,
-               587,
-               140,
-               821,
-               140,
-               802,
-               140,
-               589,
-               140,
-               738,
-               140,
-               140,
-               140,
-               140
-            ],
-            "packetPos" : [
-               11545,
-               11697,
-               11845,
-               11985,
-               13463,
-               13939,
-               14079,
-               14219,
-               14665,
-               14805,
-               15392,
-               15532,
-               16833,
-               16973,
-               18095,
-               22226,
-               23501,
-               23641,
-               24379,
-               26209,
-               26349,
-               26489
-            ],
-            "packetRange" : {
-               "gte" : 1415985484900,
-               "lte" : 1415985533136
-            },
-            "protocol" : [
-               "gtp",
-               "sip",
-               "tcp"
-            ],
-            "protocolCnt" : 3,
-            "segmentCnt" : 1,
-            "server" : {
-               "bytes" : 1883
-            },
-            "source" : {
-               "bytes" : 4434,
-               "ip" : "fd00:183:1:1:1886:9040:8605:32b8",
-               "packets" : 12,
-               "port" : 5060
-            },
-            "srcOuterASN" : [
-               "---",
-               "---"
-            ],
-            "srcOuterGEO" : [
-               "---",
-               "---"
-            ],
-            "srcOuterIp" : [
-               "127.0.1.1",
-               "127.0.1.100"
-            ],
-            "srcOuterIpCnt" : 2,
-            "srcOuterRIR" : [
-               "",
-               ""
-            ],
-            "srcPayload8" : "494e564954452074",
-            "srcTTL" : [
-               255
-            ],
-            "srcTTLCnt" : 1,
-            "tcpflags" : {
-               "ack" : 11,
-               "dstZero" : 0,
-               "fin" : 2,
-               "psh" : 7,
-               "rst" : 0,
-               "srcZero" : 0,
-               "syn" : 1,
-               "syn-ack" : 1,
-               "urg" : 0
-            },
-            "tcpseq" : {
-               "dst" : 0,
-               "src" : 2889678409
-            },
-            "totDataBytes" : 4817
-         },
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions3-141114"
-            }
-         }
-      },
-      {
-         "body" : {
-            "@timestamp" : "SET",
-            "client" : {
-               "bytes" : 616
-            },
-            "destination" : {
-               "bytes" : 1822,
-               "ip" : "fd00:183:1:1:1886:9040:8605:32b8",
-               "packets" : 13,
-               "port" : 49120
-            },
-            "dstOuterASN" : [
-               "---",
-               "---"
-            ],
-            "dstOuterGEO" : [
-               "---",
-               "---"
-            ],
-            "dstOuterIp" : [
-               "127.0.1.1",
-               "127.0.1.100"
-            ],
-            "dstOuterIpCnt" : 2,
-            "dstOuterRIR" : [
-               "",
-               ""
-            ],
-            "dstPayload8" : "80660000000000a0",
-            "dstTTL" : [
-               255
-            ],
-            "dstTTLCnt" : 1,
-            "fileId" : [],
-            "firstPacket" : 1415985490121,
-            "ipProtocol" : 17,
-            "lastPacket" : 1415985500820,
-            "length" : 10699,
-            "network" : {
-               "bytes" : 3838,
-               "community_id" : "1:vbXa6H6s9So2GdvW+RtdVE26Ixg=",
-               "packets" : 27
-            },
-            "node" : "test",
-            "packetLen" : [
-               160,
-               160,
-               160,
-               160,
-               160,
-               160,
-               160,
-               160,
-               160,
-               160,
-               160,
-               160,
-               160,
-               160,
-               160,
-               160,
-               160,
-               160,
-               160,
-               160,
-               160,
-               160,
-               160,
-               160,
-               160,
-               135,
-               135
-            ],
-            "packetPos" : [
-               16353,
-               16513,
-               16673,
-               17775,
-               17935,
-               18235,
-               18395,
-               19046,
-               19206,
-               19366,
-               19526,
-               19686,
-               19846,
-               20006,
-               20166,
-               20326,
-               20822,
-               20982,
-               21142,
-               21302,
-               21462,
-               21622,
-               21782,
-               21942,
-               22815,
-               22975,
-               24519
-            ],
-            "packetRange" : {
-               "gte" : 1415985490121,
-               "lte" : 1415985500820
-            },
-            "protocol" : [
-               "gtp",
-               "udp"
-            ],
-            "protocolCnt" : 2,
-            "segmentCnt" : 1,
-            "server" : {
-               "bytes" : 522
-            },
-            "source" : {
-               "bytes" : 2016,
-               "ip" : "fd01::183",
-               "packets" : 14,
-               "port" : 19956
-            },
-            "srcOuterASN" : [
-               "---",
-               "---"
-            ],
-            "srcOuterGEO" : [
-               "---",
-               "---"
-            ],
-            "srcOuterIp" : [
-               "127.0.1.1",
-               "127.0.1.100"
-            ],
-            "srcOuterIpCnt" : 2,
-            "srcOuterRIR" : [
-               "",
-               ""
-            ],
-            "srcPayload8" : "80e652d84bcad9ca",
-            "srcTTL" : [
-               64
-            ],
-            "srcTTLCnt" : 1,
-            "totDataBytes" : 1138
-         },
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions3-141114"
-            }
-         }
-      },
-      {
-         "body" : {
-            "@timestamp" : "SET",
-            "client" : {
-               "bytes" : 45
-            },
-            "destination" : {
-               "bytes" : 334,
-               "ip" : "192.168.168.1",
-               "packets" : 1,
-               "port" : 53
-            },
-            "dns" : [
-               {
-                  "ASN" : [
-                     "---"
-                  ],
-                  "GEO" : [
-                     "---"
-                  ],
-                  "RIR" : [
-                     "ARIN"
-                  ],
-                  "answers" : [
-                     {
-                        "class" : "IN",
-                        "ip" : "172.26.39.3",
-                        "name" : "sentitlement.mobile.att.net",
-                        "ttl" : 4078,
-                        "type" : "A"
-                     },
-                     {
-                        "class" : "IN",
-                        "name" : "att.net",
-                        "nameserver" : "wycu.wy.br.np.els-gms.att.net",
-                        "ttl" : 172159,
-                        "type" : "NS"
-                     },
-                     {
-                        "class" : "IN",
-                        "name" : "att.net",
-                        "nameserver" : "macu.ma.mt.np.els-gms.att.net",
-                        "ttl" : 172159,
-                        "type" : "NS"
-                     },
-                     {
-                        "class" : "IN",
-                        "name" : "att.net",
-                        "nameserver" : "ohcu.oh.mt.np.els-gms.att.net",
-                        "ttl" : 172159,
-                        "type" : "NS"
-                     },
-                     {
-                        "class" : "IN",
-                        "name" : "att.net",
-                        "nameserver" : "orcu.or.br.np.els-gms.att.net",
-                        "ttl" : 172159,
-                        "type" : "NS"
-                     },
-                     {
-                        "class" : "IN",
-                        "ip" : "99.99.99.130",
-                        "name" : "macu.ma.mt.np.els-gms.att.net",
-                        "ttl" : 68056,
-                        "type" : "A"
-                     },
-                     {
-                        "class" : "IN",
-                        "ip" : "2001:1890:1ff:9f1:99:99:99:130",
-                        "name" : "macu.ma.mt.np.els-gms.att.net",
-                        "ttl" : 64656,
-                        "type" : "AAAA"
-                     },
-                     {
-                        "class" : "IN",
-                        "ip" : "99.99.99.128",
-                        "name" : "ohcu.oh.mt.np.els-gms.att.net",
-                        "ttl" : 68056,
-                        "type" : "A"
-                     },
-                     {
-                        "class" : "IN",
-                        "ip" : "2001:1890:1ff:9f1:99:99:99:128",
-                        "name" : "ohcu.oh.mt.np.els-gms.att.net",
-                        "ttl" : 64656,
-                        "type" : "AAAA"
-                     }
-                  ],
-                  "answersCnt" : 9,
-                  "headerFlags" : [
-                     "RA",
-                     "RD"
-                  ],
-                  "host" : [
-                     "sentitlement.mobile.att.net"
-                  ],
-                  "hostCnt" : 1,
-                  "ip" : [
-                     "172.26.39.3"
-                  ],
-                  "ipCnt" : 1,
-                  "nameserverASN" : [
-                     "AS7018 AT&T Services, Inc.",
-                     "AS7018 AT&T Services, Inc.",
-                     "AS7018 AT&T Services, Inc.",
-                     "AS7018 AT&T Services, Inc."
-                  ],
-                  "nameserverGEO" : [
-                     "US",
-                     "US",
-                     "US",
-                     "US"
-                  ],
-                  "nameserverHost" : [
-                     "macu.ma.mt.np.els-gms.att.net",
-                     "ohcu.oh.mt.np.els-gms.att.net",
-                     "orcu.or.br.np.els-gms.att.net",
-                     "wycu.wy.br.np.els-gms.att.net"
-                  ],
-                  "nameserverHostCnt" : 4,
-                  "nameserverIp" : [
-                     "2001:1890:01ff:09f1:0099:0099:0099:0128",
-                     "2001:1890:01ff:09f1:0099:0099:0099:0130",
-                     "99.99.99.128",
-                     "99.99.99.130"
-                  ],
-                  "nameserverIpCnt" : 4,
-                  "nameserverRIR" : [
-                     "",
-                     "",
-                     "ARIN",
-                     "ARIN"
-                  ],
-                  "opcode" : "QUERY",
-                  "qc" : "IN",
-                  "qt" : "A",
-                  "queryHost" : "sentitlement.mobile.att.net",
-                  "status" : "NOERROR"
-               }
-            ],
-            "dnsCnt" : 1,
-            "dstOuterASN" : [
-               "---",
-               "---"
-            ],
-            "dstOuterGEO" : [
-               "---",
-               "---"
-            ],
-            "dstOuterIp" : [
-               "127.0.1.1",
-               "127.0.1.100"
-            ],
-            "dstOuterIpCnt" : 2,
-            "dstOuterRIR" : [
-               "",
-               ""
-            ],
-            "dstPayload8" : "c2b1818000010001",
-            "dstRIR" : "ARIN",
-            "dstTTL" : [
-               63
-            ],
-            "dstTTLCnt" : 1,
-            "fileId" : [],
-            "firstPacket" : 1415985490220,
-            "ipProtocol" : 17,
-            "lastPacket" : 1415985490220,
-            "length" : 0,
-            "network" : {
-               "bytes" : 459,
-               "community_id" : "1:uIcWqMh/I0ro28bJT2MViJdWe08=",
-               "packets" : 2
-            },
-            "node" : "test",
-            "packetLen" : [
-               141,
-               350
-            ],
-            "packetPos" : [
-               18555,
-               18696
-            ],
-            "packetRange" : {
-               "gte" : 1415985490220,
-               "lte" : 1415985490220
-            },
-            "protocol" : [
-               "dns",
-               "gtp",
-               "udp"
-            ],
-            "protocolCnt" : 3,
-            "segmentCnt" : 1,
-            "server" : {
-               "bytes" : 254
-            },
-            "source" : {
-               "bytes" : 125,
-               "ip" : "192.168.3.129",
-               "packets" : 1,
-               "port" : 60716
-            },
-            "srcOuterASN" : [
-               "---",
-               "---"
-            ],
-            "srcOuterGEO" : [
-               "---",
-               "---"
-            ],
-            "srcOuterIp" : [
-               "127.0.1.1",
-               "127.0.1.100"
-            ],
-            "srcOuterIpCnt" : 2,
-            "srcOuterRIR" : [
-               "",
-               ""
-            ],
-            "srcPayload8" : "c2b1010000010000",
-            "srcRIR" : "ARIN",
-            "srcTTL" : [
-               64
-            ],
-            "srcTTLCnt" : 1,
-            "totDataBytes" : 299
-         },
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions3-141114"
-            }
-         }
-      },
-      {
-         "body" : {
-            "@timestamp" : "SET",
-            "client" : {
-               "bytes" : 112
-            },
-            "destination" : {
-               "bytes" : 0,
-               "ip" : "fd00:183:1:1:1886:9040:8605:32b8",
-               "packets" : 0,
-               "port" : 49121
-            },
-            "dstOuterASN" : [
-               "---"
-            ],
-            "dstOuterGEO" : [
-               "---"
-            ],
-            "dstOuterIp" : [
-               "127.0.1.1"
-            ],
-            "dstOuterIpCnt" : 1,
-            "dstOuterRIR" : [
-               ""
-            ],
-            "fileId" : [],
-            "firstPacket" : 1415985494581,
-            "ipProtocol" : 17,
-            "lastPacket" : 1415985500710,
-            "length" : 6129,
-            "network" : {
-               "bytes" : 412,
-               "community_id" : "1:+wHdXp4DE+tOLPO4Xk/bD3YW7U8=",
-               "packets" : 3
-            },
-            "node" : "test",
-            "packetLen" : [
-               168,
-               168,
-               124
-            ],
-            "packetPos" : [
-               20486,
-               20654,
-               22102
-            ],
-            "packetRange" : {
-               "gte" : 1415985494581,
-               "lte" : 1415985500710
-            },
-            "protocol" : [
-               "gtp",
-               "udp"
-            ],
-            "protocolCnt" : 2,
-            "segmentCnt" : 1,
-            "server" : {
-               "bytes" : 0
-            },
-            "source" : {
-               "bytes" : 412,
-               "ip" : "fd01::183",
-               "packets" : 3,
-               "port" : 19957
-            },
-            "srcOuterASN" : [
-               "---"
-            ],
-            "srcOuterGEO" : [
-               "---"
-            ],
-            "srcOuterIp" : [
-               "127.0.1.100"
-            ],
-            "srcOuterIpCnt" : 1,
-            "srcOuterRIR" : [
-               ""
-            ],
-            "srcPayload8" : "81c8000c6399bbc1",
-            "srcTTL" : [
-               64
-            ],
-            "srcTTLCnt" : 1,
-            "totDataBytes" : 112
-         },
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions3-141114"
-            }
-         }
-      },
-      {
-         "body" : {
-            "@timestamp" : "SET",
-            "client" : {
-               "bytes" : 250
-            },
-            "destination" : {
-               "bytes" : 0,
-               "ip" : "fd00:183:1:1:1886:9040:8605:32b8",
-               "packets" : 0,
-               "port" : 0
-            },
-            "dstOuterASN" : [
-               "---"
-            ],
-            "dstOuterGEO" : [
-               "---"
-            ],
-            "dstOuterIp" : [
-               "127.0.1.1"
-            ],
-            "dstOuterIpCnt" : 1,
-            "dstOuterRIR" : [
-               ""
-            ],
-            "fileId" : [],
-            "firstPacket" : 1415985500740,
-            "icmp" : {
-               "code" : [
-                  4
-               ],
-               "type" : [
-                  1
-               ]
-            },
-            "ipProtocol" : 58,
-            "lastPacket" : 1415985500820,
-            "length" : 80,
-            "network" : {
-               "bytes" : 526,
-               "community_id" : "1:R7F0MUT6ZV1iG5f3xJ0Pro45tts=",
-               "packets" : 3
-            },
-            "node" : "test",
-            "packetLen" : [
-               208,
-               183,
-               183
-            ],
-            "packetPos" : [
-               23110,
-               23318,
-               24654
-            ],
-            "packetRange" : {
-               "gte" : 1415985500740,
-               "lte" : 1415985500820
-            },
-            "protocol" : [
-               "gtp",
-               "icmp"
-            ],
-            "protocolCnt" : 2,
-            "segmentCnt" : 1,
-            "server" : {
-               "bytes" : 0
-            },
-            "source" : {
-               "bytes" : 526,
-               "ip" : "fd01::183",
-               "packets" : 3,
-               "port" : 0
-            },
-            "srcOuterASN" : [
-               "---"
-            ],
-            "srcOuterGEO" : [
-               "---"
-            ],
-            "srcOuterIp" : [
-               "127.0.1.100"
-            ],
-            "srcOuterIpCnt" : 1,
-            "srcOuterRIR" : [
-               ""
-            ],
-            "srcTTL" : [
-               64
-            ],
-            "srcTTLCnt" : 1,
-            "totDataBytes" : 250
-         },
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions3-141114"
-            }
-         }
-      },
-      {
-         "body" : {
-            "@timestamp" : "SET",
-            "client" : {
-               "bytes" : 1753
-            },
-            "destination" : {
-               "bytes" : 1053,
-               "ip" : "fd01::183",
-               "packets" : 5,
-               "port" : 5060
-            },
-            "dstOuterASN" : [
-               "---",
-               "---"
-            ],
-            "dstOuterGEO" : [
-               "---",
-               "---"
-            ],
-            "dstOuterIp" : [
-               "127.0.1.1",
-               "127.0.1.100"
-            ],
-            "dstOuterIpCnt" : 2,
-            "dstOuterRIR" : [
-               "",
-               ""
-            ],
-            "dstPayload8" : "5349502f322e3020",
-            "dstTTL" : [
-               64
-            ],
-            "dstTTLCnt" : 1,
-            "fileId" : [],
-            "firstPacket" : 1415985559780,
-            "initRTT" : 19,
-            "ipProtocol" : 6,
-            "lastPacket" : 1415985559931,
-            "length" : 151,
-            "network" : {
-               "bytes" : 3686,
-               "community_id" : "1:LfVtLs2VX3xOzzzdeOeVLCh7SOw=",
-               "packets" : 12
-            },
-            "node" : "test",
-            "packetLen" : [
-               152,
-               148,
-               140,
-               1478,
-               140,
-               555,
-               140,
-               565,
-               140,
-               140,
-               140,
-               140
-            ],
-            "packetPos" : [
-               26629,
-               26781,
-               26929,
-               27069,
-               28547,
-               28687,
-               29242,
-               29382,
-               29947,
-               30087,
-               30227,
-               30367
-            ],
-            "packetRange" : {
-               "gte" : 1415985559780,
-               "lte" : 1415985559931
-            },
-            "protocol" : [
-               "gtp",
-               "sip",
-               "tcp"
-            ],
-            "protocolCnt" : 3,
-            "segmentCnt" : 1,
-            "server" : {
-               "bytes" : 425
-            },
-            "source" : {
-               "bytes" : 2633,
-               "ip" : "fd00:183:1:1:1886:9040:8605:32b8",
-               "packets" : 7,
-               "port" : 5060
-            },
-            "srcOuterASN" : [
-               "---",
-               "---"
-            ],
-            "srcOuterGEO" : [
-               "---",
-               "---"
-            ],
-            "srcOuterIp" : [
-               "127.0.1.1",
-               "127.0.1.100"
-            ],
-            "srcOuterIpCnt" : 2,
-            "srcOuterRIR" : [
-               "",
-               ""
-            ],
-            "srcPayload8" : "5245474953544552",
-            "srcTTL" : [
-               255
-            ],
-            "srcTTLCnt" : 1,
-            "tcpflags" : {
-               "ack" : 6,
-               "dstZero" : 0,
-               "fin" : 2,
-               "psh" : 2,
-               "rst" : 0,
-               "srcZero" : 0,
-               "syn" : 1,
-               "syn-ack" : 1,
-               "urg" : 0
-            },
-            "tcpseq" : {
-               "dst" : 0,
-               "src" : 1122848232
-            },
-            "totDataBytes" : 2178
-         },
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions3-141114"
-            }
-         }
-      }
-   ]
+ "sessions3" : [
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 45
+    },
+    "destination" : {
+     "bytes" : 334,
+     "ip" : "192.168.168.1",
+     "packets" : 1,
+     "port" : 53
+    },
+    "dns" : [
+     {
+      "ASN" : [
+       "---"
+      ],
+      "GEO" : [
+       "---"
+      ],
+      "RIR" : [
+       "ARIN"
+      ],
+      "answers" : [
+       {
+        "class" : "IN",
+        "ip" : "172.26.39.3",
+        "name" : "sentitlement.mobile.att.net",
+        "ttl" : 4159,
+        "type" : "A"
+       },
+       {
+        "class" : "IN",
+        "name" : "att.net",
+        "nameserver" : "ohcu.oh.mt.np.els-gms.att.net",
+        "ttl" : 172240,
+        "type" : "NS"
+       },
+       {
+        "class" : "IN",
+        "name" : "att.net",
+        "nameserver" : "orcu.or.br.np.els-gms.att.net",
+        "ttl" : 172240,
+        "type" : "NS"
+       },
+       {
+        "class" : "IN",
+        "name" : "att.net",
+        "nameserver" : "wycu.wy.br.np.els-gms.att.net",
+        "ttl" : 172240,
+        "type" : "NS"
+       },
+       {
+        "class" : "IN",
+        "name" : "att.net",
+        "nameserver" : "macu.ma.mt.np.els-gms.att.net",
+        "ttl" : 172240,
+        "type" : "NS"
+       },
+       {
+        "class" : "IN",
+        "ip" : "99.99.99.130",
+        "name" : "macu.ma.mt.np.els-gms.att.net",
+        "ttl" : 68137,
+        "type" : "A"
+       },
+       {
+        "class" : "IN",
+        "ip" : "2001:1890:1ff:9f1:99:99:99:130",
+        "name" : "macu.ma.mt.np.els-gms.att.net",
+        "ttl" : 64737,
+        "type" : "AAAA"
+       },
+       {
+        "class" : "IN",
+        "ip" : "99.99.99.128",
+        "name" : "ohcu.oh.mt.np.els-gms.att.net",
+        "ttl" : 68137,
+        "type" : "A"
+       },
+       {
+        "class" : "IN",
+        "ip" : "2001:1890:1ff:9f1:99:99:99:128",
+        "name" : "ohcu.oh.mt.np.els-gms.att.net",
+        "ttl" : 64737,
+        "type" : "AAAA"
+       }
+      ],
+      "answersCnt" : 9,
+      "headerFlags" : [
+       "RA",
+       "RD"
+      ],
+      "host" : [
+       "sentitlement.mobile.att.net"
+      ],
+      "hostCnt" : 1,
+      "ip" : [
+       "172.26.39.3"
+      ],
+      "ipCnt" : 1,
+      "nameserverASN" : [
+       "AS7018 AT&T Services, Inc.",
+       "AS7018 AT&T Services, Inc.",
+       "AS7018 AT&T Services, Inc.",
+       "AS7018 AT&T Services, Inc."
+      ],
+      "nameserverGEO" : [
+       "US",
+       "US",
+       "US",
+       "US"
+      ],
+      "nameserverHost" : [
+       "macu.ma.mt.np.els-gms.att.net",
+       "ohcu.oh.mt.np.els-gms.att.net",
+       "orcu.or.br.np.els-gms.att.net",
+       "wycu.wy.br.np.els-gms.att.net"
+      ],
+      "nameserverHostCnt" : 4,
+      "nameserverIp" : [
+       "2001:1890:01ff:09f1:0099:0099:0099:0128",
+       "2001:1890:01ff:09f1:0099:0099:0099:0130",
+       "99.99.99.128",
+       "99.99.99.130"
+      ],
+      "nameserverIpCnt" : 4,
+      "nameserverRIR" : [
+       "",
+       "",
+       "ARIN",
+       "ARIN"
+      ],
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "sentitlement.mobile.att.net",
+      "status" : "NOERROR"
+     }
+    ],
+    "dnsCnt" : 1,
+    "dstOuterASN" : [
+     "---",
+     "---"
+    ],
+    "dstOuterGEO" : [
+     "---",
+     "---"
+    ],
+    "dstOuterIp" : [
+     "127.0.1.1",
+     "127.0.1.100"
+    ],
+    "dstOuterIpCnt" : 2,
+    "dstOuterRIR" : [
+     "",
+     ""
+    ],
+    "dstPayload8" : "d333818000010001",
+    "dstRIR" : "ARIN",
+    "dstTTL" : [
+     63
+    ],
+    "dstTTLCnt" : 1,
+    "fileId" : [],
+    "firstPacket" : 1415985409420,
+    "ipProtocol" : 17,
+    "lastPacket" : 1415985409420,
+    "length" : 0,
+    "network" : {
+     "bytes" : 459,
+     "community_id" : "1:gnbX4xbGH0+UsxHh+Z6yPe7Fb3c=",
+     "packets" : 2
+    },
+    "node" : "test",
+    "packetLen" : [
+     141,
+     350
+    ],
+    "packetPos" : [
+     24,
+     165
+    ],
+    "packetRange" : {
+     "gte" : 1415985409420,
+     "lte" : 1415985409420
+    },
+    "protocol" : [
+     "dns",
+     "gtp",
+     "udp"
+    ],
+    "protocolCnt" : 3,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 254
+    },
+    "source" : {
+     "bytes" : 125,
+     "ip" : "192.168.3.129",
+     "packets" : 1,
+     "port" : 57801
+    },
+    "srcOuterASN" : [
+     "---",
+     "---"
+    ],
+    "srcOuterGEO" : [
+     "---",
+     "---"
+    ],
+    "srcOuterIp" : [
+     "127.0.1.1",
+     "127.0.1.100"
+    ],
+    "srcOuterIpCnt" : 2,
+    "srcOuterRIR" : [
+     "",
+     ""
+    ],
+    "srcPayload8" : "d333010000010000",
+    "srcRIR" : "ARIN",
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
+    "totDataBytes" : 299
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-141114"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 8
+    },
+    "destination" : {
+     "bytes" : 0,
+     "ip" : "ff02::2",
+     "packets" : 0,
+     "port" : 0
+    },
+    "dstOuterASN" : [
+     "---"
+    ],
+    "dstOuterGEO" : [
+     "---"
+    ],
+    "dstOuterIp" : [
+     "127.0.1.100"
+    ],
+    "dstOuterIpCnt" : 1,
+    "dstOuterRIR" : [
+     ""
+    ],
+    "fileId" : [],
+    "firstPacket" : 1415985409932,
+    "icmp" : {
+     "code" : [
+      0
+     ],
+     "type" : [
+      133
+     ]
+    },
+    "ipProtocol" : 58,
+    "lastPacket" : 1415985409932,
+    "length" : 0,
+    "network" : {
+     "bytes" : 100,
+     "community_id" : "1:ZSqdzCvRkWsggi2OBdL85sNCb6Q=",
+     "packets" : 1
+    },
+    "node" : "test",
+    "packetLen" : [
+     116
+    ],
+    "packetPos" : [
+     515
+    ],
+    "packetRange" : {
+     "gte" : 1415985409932,
+     "lte" : 1415985409932
+    },
+    "protocol" : [
+     "gtp",
+     "icmp"
+    ],
+    "protocolCnt" : 2,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 0
+    },
+    "source" : {
+     "bytes" : 100,
+     "ip" : "fe80::fd00:183:1:1",
+     "packets" : 1,
+     "port" : 0
+    },
+    "srcOuterASN" : [
+     "---"
+    ],
+    "srcOuterGEO" : [
+     "---"
+    ],
+    "srcOuterIp" : [
+     "127.0.1.1"
+    ],
+    "srcOuterIpCnt" : 1,
+    "srcOuterRIR" : [
+     ""
+    ],
+    "srcTTL" : [
+     255
+    ],
+    "srcTTLCnt" : 1,
+    "totDataBytes" : 8
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-141114"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 48
+    },
+    "destination" : {
+     "bytes" : 0,
+     "ip" : "fe80::fd00:183:1:1",
+     "packets" : 0,
+     "port" : 0
+    },
+    "dstOuterASN" : [
+     "---"
+    ],
+    "dstOuterGEO" : [
+     "---"
+    ],
+    "dstOuterIp" : [
+     "127.0.1.1"
+    ],
+    "dstOuterIpCnt" : 1,
+    "dstOuterRIR" : [
+     ""
+    ],
+    "fileId" : [],
+    "firstPacket" : 1415985409932,
+    "icmp" : {
+     "code" : [
+      0
+     ],
+     "type" : [
+      134
+     ]
+    },
+    "ipProtocol" : 58,
+    "lastPacket" : 1415985409932,
+    "length" : 0,
+    "network" : {
+     "bytes" : 140,
+     "community_id" : "1:FqYeaO+Hxs1BIIB9o8cVa0q5VNs=",
+     "packets" : 1
+    },
+    "node" : "test",
+    "packetLen" : [
+     156
+    ],
+    "packetPos" : [
+     631
+    ],
+    "packetRange" : {
+     "gte" : 1415985409932,
+     "lte" : 1415985409932
+    },
+    "protocol" : [
+     "gtp",
+     "icmp"
+    ],
+    "protocolCnt" : 2,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 0
+    },
+    "source" : {
+     "bytes" : 140,
+     "ip" : "fe80::18f:54ea:5196:2546",
+     "packets" : 1,
+     "port" : 0
+    },
+    "srcOuterASN" : [
+     "---"
+    ],
+    "srcOuterGEO" : [
+     "---"
+    ],
+    "srcOuterIp" : [
+     "127.0.1.100"
+    ],
+    "srcOuterIpCnt" : 1,
+    "srcOuterRIR" : [
+     ""
+    ],
+    "srcTTL" : [
+     255
+    ],
+    "srcTTLCnt" : 1,
+    "totDataBytes" : 48
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-141114"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 45
+    },
+    "destination" : {
+     "bytes" : 334,
+     "ip" : "192.168.168.1",
+     "packets" : 1,
+     "port" : 53
+    },
+    "dns" : [
+     {
+      "ASN" : [
+       "---"
+      ],
+      "GEO" : [
+       "---"
+      ],
+      "RIR" : [
+       "ARIN"
+      ],
+      "answers" : [
+       {
+        "class" : "IN",
+        "ip" : "172.26.39.3",
+        "name" : "sentitlement.mobile.att.net",
+        "ttl" : 4158,
+        "type" : "A"
+       },
+       {
+        "class" : "IN",
+        "name" : "att.net",
+        "nameserver" : "macu.ma.mt.np.els-gms.att.net",
+        "ttl" : 172239,
+        "type" : "NS"
+       },
+       {
+        "class" : "IN",
+        "name" : "att.net",
+        "nameserver" : "ohcu.oh.mt.np.els-gms.att.net",
+        "ttl" : 172239,
+        "type" : "NS"
+       },
+       {
+        "class" : "IN",
+        "name" : "att.net",
+        "nameserver" : "orcu.or.br.np.els-gms.att.net",
+        "ttl" : 172239,
+        "type" : "NS"
+       },
+       {
+        "class" : "IN",
+        "name" : "att.net",
+        "nameserver" : "wycu.wy.br.np.els-gms.att.net",
+        "ttl" : 172239,
+        "type" : "NS"
+       },
+       {
+        "class" : "IN",
+        "ip" : "99.99.99.130",
+        "name" : "macu.ma.mt.np.els-gms.att.net",
+        "ttl" : 68136,
+        "type" : "A"
+       },
+       {
+        "class" : "IN",
+        "ip" : "2001:1890:1ff:9f1:99:99:99:130",
+        "name" : "macu.ma.mt.np.els-gms.att.net",
+        "ttl" : 64736,
+        "type" : "AAAA"
+       },
+       {
+        "class" : "IN",
+        "ip" : "99.99.99.128",
+        "name" : "ohcu.oh.mt.np.els-gms.att.net",
+        "ttl" : 68136,
+        "type" : "A"
+       },
+       {
+        "class" : "IN",
+        "ip" : "2001:1890:1ff:9f1:99:99:99:128",
+        "name" : "ohcu.oh.mt.np.els-gms.att.net",
+        "ttl" : 64736,
+        "type" : "AAAA"
+       }
+      ],
+      "answersCnt" : 9,
+      "headerFlags" : [
+       "RA",
+       "RD"
+      ],
+      "host" : [
+       "sentitlement.mobile.att.net"
+      ],
+      "hostCnt" : 1,
+      "ip" : [
+       "172.26.39.3"
+      ],
+      "ipCnt" : 1,
+      "nameserverASN" : [
+       "AS7018 AT&T Services, Inc.",
+       "AS7018 AT&T Services, Inc.",
+       "AS7018 AT&T Services, Inc.",
+       "AS7018 AT&T Services, Inc."
+      ],
+      "nameserverGEO" : [
+       "US",
+       "US",
+       "US",
+       "US"
+      ],
+      "nameserverHost" : [
+       "macu.ma.mt.np.els-gms.att.net",
+       "ohcu.oh.mt.np.els-gms.att.net",
+       "orcu.or.br.np.els-gms.att.net",
+       "wycu.wy.br.np.els-gms.att.net"
+      ],
+      "nameserverHostCnt" : 4,
+      "nameserverIp" : [
+       "2001:1890:01ff:09f1:0099:0099:0099:0128",
+       "2001:1890:01ff:09f1:0099:0099:0099:0130",
+       "99.99.99.128",
+       "99.99.99.130"
+      ],
+      "nameserverIpCnt" : 4,
+      "nameserverRIR" : [
+       "",
+       "",
+       "ARIN",
+       "ARIN"
+      ],
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "sentitlement.mobile.att.net",
+      "status" : "NOERROR"
+     }
+    ],
+    "dnsCnt" : 1,
+    "dstOuterASN" : [
+     "---",
+     "---"
+    ],
+    "dstOuterGEO" : [
+     "---",
+     "---"
+    ],
+    "dstOuterIp" : [
+     "127.0.1.1",
+     "127.0.1.100"
+    ],
+    "dstOuterIpCnt" : 2,
+    "dstOuterRIR" : [
+     "",
+     ""
+    ],
+    "dstPayload8" : "7442818000010001",
+    "dstRIR" : "ARIN",
+    "dstTTL" : [
+     63
+    ],
+    "dstTTLCnt" : 1,
+    "fileId" : [],
+    "firstPacket" : 1415985410140,
+    "ipProtocol" : 17,
+    "lastPacket" : 1415985410140,
+    "length" : 0,
+    "network" : {
+     "bytes" : 459,
+     "community_id" : "1:03Q3hWzYWS10KswBCBg7mTwtdkM=",
+     "packets" : 2
+    },
+    "node" : "test",
+    "packetLen" : [
+     141,
+     350
+    ],
+    "packetPos" : [
+     787,
+     928
+    ],
+    "packetRange" : {
+     "gte" : 1415985410140,
+     "lte" : 1415985410140
+    },
+    "protocol" : [
+     "dns",
+     "gtp",
+     "udp"
+    ],
+    "protocolCnt" : 3,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 254
+    },
+    "source" : {
+     "bytes" : 125,
+     "ip" : "192.168.3.129",
+     "packets" : 1,
+     "port" : 58364
+    },
+    "srcOuterASN" : [
+     "---",
+     "---"
+    ],
+    "srcOuterGEO" : [
+     "---",
+     "---"
+    ],
+    "srcOuterIp" : [
+     "127.0.1.1",
+     "127.0.1.100"
+    ],
+    "srcOuterIpCnt" : 2,
+    "srcOuterRIR" : [
+     "",
+     ""
+    ],
+    "srcPayload8" : "7442010000010000",
+    "srcRIR" : "ARIN",
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
+    "totDataBytes" : 299
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-141114"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 36
+    },
+    "destination" : {
+     "bytes" : 0,
+     "ip" : "192.168.168.1",
+     "packets" : 0,
+     "port" : 0
+    },
+    "dstOuterASN" : [
+     "---"
+    ],
+    "dstOuterGEO" : [
+     "---"
+    ],
+    "dstOuterIp" : [
+     "127.0.1.100"
+    ],
+    "dstOuterIpCnt" : 1,
+    "dstOuterRIR" : [
+     ""
+    ],
+    "dstRIR" : "ARIN",
+    "fileId" : [],
+    "firstPacket" : 1415985410172,
+    "icmp" : {
+     "code" : [
+      3
+     ],
+     "type" : [
+      3
+     ]
+    },
+    "ipProtocol" : 1,
+    "lastPacket" : 1415985410172,
+    "length" : 0,
+    "network" : {
+     "bytes" : 108,
+     "community_id" : "1:lB4egS/Qun/GwHeSFBDGvr1G/IU=",
+     "packets" : 1
+    },
+    "node" : "test",
+    "packetLen" : [
+     124
+    ],
+    "packetPos" : [
+     1278
+    ],
+    "packetRange" : {
+     "gte" : 1415985410172,
+     "lte" : 1415985410172
+    },
+    "protocol" : [
+     "gtp",
+     "icmp"
+    ],
+    "protocolCnt" : 2,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 0
+    },
+    "source" : {
+     "bytes" : 108,
+     "ip" : "192.168.3.129",
+     "packets" : 1,
+     "port" : 0
+    },
+    "srcOuterASN" : [
+     "---"
+    ],
+    "srcOuterGEO" : [
+     "---"
+    ],
+    "srcOuterIp" : [
+     "127.0.1.1"
+    ],
+    "srcOuterIpCnt" : 1,
+    "srcOuterRIR" : [
+     ""
+    ],
+    "srcRIR" : "ARIN",
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
+    "totDataBytes" : 36
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-141114"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 176
+    },
+    "destination" : {
+     "bytes" : 0,
+     "ip" : "ff02::16",
+     "packets" : 0,
+     "port" : 0
+    },
+    "dstOuterASN" : [
+     "---"
+    ],
+    "dstOuterGEO" : [
+     "---"
+    ],
+    "dstOuterIp" : [
+     "127.0.1.100"
+    ],
+    "dstOuterIpCnt" : 1,
+    "dstOuterRIR" : [
+     ""
+    ],
+    "fileId" : [],
+    "firstPacket" : 1415985411060,
+    "icmp" : {
+     "code" : [
+      0
+     ],
+     "type" : [
+      143
+     ]
+    },
+    "ipProtocol" : 58,
+    "lastPacket" : 1415985414100,
+    "length" : 3040,
+    "network" : {
+     "bytes" : 376,
+     "community_id" : "1:d7cy7xMNX0/8Mwn5xmwtmFSTQ/k=",
+     "packets" : 2
+    },
+    "node" : "test",
+    "packetLen" : [
+     204,
+     204
+    ],
+    "packetPos" : [
+     1402,
+     5692
+    ],
+    "packetRange" : {
+     "gte" : 1415985411060,
+     "lte" : 1415985414100
+    },
+    "protocol" : [
+     "gtp",
+     "icmp"
+    ],
+    "protocolCnt" : 2,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 0
+    },
+    "source" : {
+     "bytes" : 376,
+     "ip" : "fe80::45:f337:32b9:ac9b",
+     "packets" : 2,
+     "port" : 0
+    },
+    "srcOuterASN" : [
+     "---"
+    ],
+    "srcOuterGEO" : [
+     "---"
+    ],
+    "srcOuterIp" : [
+     "127.0.1.1"
+    ],
+    "srcOuterIpCnt" : 1,
+    "srcOuterRIR" : [
+     ""
+    ],
+    "srcTTL" : [
+     1
+    ],
+    "srcTTLCnt" : 1,
+    "tags" : [
+     "not-src-0-not-dst-1",
+     "src-2-dst-0",
+     "src-2-not-dst-1"
+    ],
+    "tagsCnt" : 3,
+    "totDataBytes" : 176
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-141114"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 1697
+    },
+    "destination" : {
+     "bytes" : 1317,
+     "ip" : "fd01::183",
+     "packets" : 5,
+     "port" : 5060
+    },
+    "dstOuterASN" : [
+     "---",
+     "---"
+    ],
+    "dstOuterGEO" : [
+     "---",
+     "---"
+    ],
+    "dstOuterIp" : [
+     "127.0.1.1",
+     "127.0.1.100"
+    ],
+    "dstOuterIpCnt" : 2,
+    "dstOuterRIR" : [
+     "",
+     ""
+    ],
+    "dstPayload8" : "5349502f322e3020",
+    "dstTTL" : [
+     64
+    ],
+    "dstTTLCnt" : 1,
+    "fileId" : [],
+    "firstPacket" : 1415985412100,
+    "initRTT" : 15,
+    "ipProtocol" : 6,
+    "lastPacket" : 1415985412532,
+    "length" : 432,
+    "network" : {
+     "bytes" : 3894,
+     "community_id" : "1:LfVtLs2VX3xOzzzdeOeVLCh7SOw=",
+     "packets" : 12
+    },
+    "node" : "test",
+    "packetLen" : [
+     152,
+     148,
+     140,
+     1478,
+     140,
+     499,
+     140,
+     829,
+     140,
+     140,
+     140,
+     140
+    ],
+    "packetPos" : [
+     1606,
+     1758,
+     1906,
+     2046,
+     3524,
+     3664,
+     4163,
+     4303,
+     5132,
+     5272,
+     5412,
+     5552
+    ],
+    "packetRange" : {
+     "gte" : 1415985412100,
+     "lte" : 1415985412532
+    },
+    "protocol" : [
+     "gtp",
+     "sip",
+     "tcp"
+    ],
+    "protocolCnt" : 3,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 689
+    },
+    "sip" : {
+     "callid" : [
+      "5PC5dBCGDQ0csFmFPQXQjE57"
+     ],
+     "callidCnt" : 1,
+     "contact" : [
+      "<sip:[fd00:183:1:1:1886:9040:8605:32b8]:5060>;+g.3gpp.icsi-ref=\"urn%3Aurn-7%3A3gpp-service.ims.icsi.mmtel\";+g.3gpp.smsip;+sip.instance=\"<urn:gsma:imei:35442706-323347-9>\""
+     ],
+     "contactCnt" : 1,
+     "from" : [
+      "<tel:263734>;tag=cVKbrkhG0L"
+     ],
+     "fromCnt" : 1,
+     "method" : [
+      "REGISTER"
+     ],
+     "methodCnt" : 1,
+     "statuscode" : [
+      401
+     ],
+     "statuscodeCnt" : 1,
+     "to" : [
+      "<tel:263734>"
+     ],
+     "toCnt" : 1,
+     "user" : [
+      "263734@imstest.lan"
+     ],
+     "userCnt" : 1,
+     "useragent" : [
+      "iOS/8.1 (12B411) iPhone"
+     ],
+     "useragentCnt" : 1,
+     "via" : [
+      "SIP/2.0/TCP [fd00:183:1:1:1886:9040:8605:32b8]:5060;branch=z9hG4bKVT3F3PbXtxKWEdp;rport",
+      "SIP/2.0/TCP [fd00:183:1:1:1886:9040:8605:32b8]:5060;branch=z9hG4bKVT3F3PbXtxKWEdp;rport=5060;received=fd00:183:1:1:1886:9040:8605:32b8"
+     ],
+     "viaCnt" : 2
+    },
+    "source" : {
+     "bytes" : 2577,
+     "ip" : "fd00:183:1:1:1886:9040:8605:32b8",
+     "packets" : 7,
+     "port" : 5060
+    },
+    "srcOuterASN" : [
+     "---",
+     "---"
+    ],
+    "srcOuterGEO" : [
+     "---",
+     "---"
+    ],
+    "srcOuterIp" : [
+     "127.0.1.1",
+     "127.0.1.100"
+    ],
+    "srcOuterIpCnt" : 2,
+    "srcOuterRIR" : [
+     "",
+     ""
+    ],
+    "srcPayload8" : "5245474953544552",
+    "srcTTL" : [
+     255
+    ],
+    "srcTTLCnt" : 1,
+    "tcpflags" : {
+     "ack" : 6,
+     "dstZero" : 0,
+     "fin" : 2,
+     "psh" : 2,
+     "rst" : 0,
+     "srcZero" : 0,
+     "syn" : 1,
+     "syn-ack" : 1,
+     "urg" : 0
+    },
+    "tcpseq" : {
+     "dst" : 0,
+     "src" : 1375424496
+    },
+    "totDataBytes" : 2386
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-141114"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 1794
+    },
+    "destination" : {
+     "bytes" : 1359,
+     "ip" : "fd01::183",
+     "packets" : 5,
+     "port" : 5060
+    },
+    "dstOuterASN" : [
+     "---",
+     "---"
+    ],
+    "dstOuterGEO" : [
+     "---",
+     "---"
+    ],
+    "dstOuterIp" : [
+     "127.0.1.1",
+     "127.0.1.100"
+    ],
+    "dstOuterIpCnt" : 2,
+    "dstOuterRIR" : [
+     "",
+     ""
+    ],
+    "dstPayload8" : "5349502f322e3020",
+    "dstTTL" : [
+     64
+    ],
+    "dstTTLCnt" : 1,
+    "fileId" : [],
+    "firstPacket" : 1415985444983,
+    "initRTT" : 16,
+    "ipProtocol" : 6,
+    "lastPacket" : 1415985446023,
+    "length" : 1040,
+    "network" : {
+     "bytes" : 4033,
+     "community_id" : "1:LfVtLs2VX3xOzzzdeOeVLCh7SOw=",
+     "packets" : 12
+    },
+    "node" : "test",
+    "packetLen" : [
+     152,
+     148,
+     140,
+     1478,
+     140,
+     596,
+     140,
+     871,
+     140,
+     140,
+     140,
+     140
+    ],
+    "packetPos" : [
+     5896,
+     6048,
+     6196,
+     6336,
+     7814,
+     7954,
+     8550,
+     8690,
+     9561,
+     10575,
+     10715,
+     11405
+    ],
+    "packetRange" : {
+     "gte" : 1415985444983,
+     "lte" : 1415985446023
+    },
+    "protocol" : [
+     "gtp",
+     "sip",
+     "tcp"
+    ],
+    "protocolCnt" : 3,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 731
+    },
+    "sip" : {
+     "callid" : [
+      "5PC5dBCGDQ0csFmFPQXQjE57"
+     ],
+     "callidCnt" : 1,
+     "contact" : [
+      "<sip:[fd00:183:1:1:1886:9040:8605:32b8]:5060>;+g.3gpp.icsi-ref=\"urn%3Aurn-7%3A3gpp-service.ims.icsi.mmtel\";+g.3gpp.smsip;+sip.instance=\"<urn:gsma:imei:35442706-323347-9>\"",
+      "<sip:[fd00:183:1:1:1886:9040:8605:32b8]:5060>;expires=3600"
+     ],
+     "contactCnt" : 2,
+     "from" : [
+      "<tel:263734>;tag=1QGDmSrhTP"
+     ],
+     "fromCnt" : 1,
+     "method" : [
+      "REGISTER"
+     ],
+     "methodCnt" : 1,
+     "statuscode" : [
+      200
+     ],
+     "statuscodeCnt" : 1,
+     "to" : [
+      "<tel:263734>",
+      "<tel:263734>;tag=497094864"
+     ],
+     "toCnt" : 2,
+     "user" : [
+      "263734@imstest.lan"
+     ],
+     "userCnt" : 1,
+     "useragent" : [
+      "iOS/8.1 (12B411) iPhone"
+     ],
+     "useragentCnt" : 1,
+     "via" : [
+      "SIP/2.0/TCP [fd00:183:1:1:1886:9040:8605:32b8]:5060;branch=z9hG4bK0iTZW12JDCCkuJn;rport",
+      "SIP/2.0/TCP [fd00:183:1:1:1886:9040:8605:32b8]:5060;branch=z9hG4bK0iTZW12JDCCkuJn;rport=5060;received=fd00:183:1:1:1886:9040:8605:32b8"
+     ],
+     "viaCnt" : 2
+    },
+    "source" : {
+     "bytes" : 2674,
+     "ip" : "fd00:183:1:1:1886:9040:8605:32b8",
+     "packets" : 7,
+     "port" : 5060
+    },
+    "srcOuterASN" : [
+     "---",
+     "---"
+    ],
+    "srcOuterGEO" : [
+     "---",
+     "---"
+    ],
+    "srcOuterIp" : [
+     "127.0.1.1",
+     "127.0.1.100"
+    ],
+    "srcOuterIpCnt" : 2,
+    "srcOuterRIR" : [
+     "",
+     ""
+    ],
+    "srcPayload8" : "5245474953544552",
+    "srcTTL" : [
+     255
+    ],
+    "srcTTLCnt" : 1,
+    "tcpflags" : {
+     "ack" : 6,
+     "dstZero" : 0,
+     "fin" : 2,
+     "psh" : 2,
+     "rst" : 0,
+     "srcZero" : 0,
+     "syn" : 1,
+     "syn-ack" : 1,
+     "urg" : 0
+    },
+    "tcpseq" : {
+     "dst" : 0,
+     "src" : 3627185437
+    },
+    "totDataBytes" : 2525
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-141114"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 1429
+    },
+    "destination" : {
+     "bytes" : 1103,
+     "ip" : "fd01::183",
+     "packets" : 2,
+     "port" : 5060
+    },
+    "dstOuterASN" : [
+     "---",
+     "---"
+    ],
+    "dstOuterGEO" : [
+     "---",
+     "---"
+    ],
+    "dstOuterIp" : [
+     "127.0.1.1",
+     "127.0.1.100"
+    ],
+    "dstOuterIpCnt" : 2,
+    "dstOuterRIR" : [
+     "",
+     ""
+    ],
+    "dstPayload8" : "5349502f322e3020",
+    "dstTTL" : [
+     64
+    ],
+    "dstTTLCnt" : 1,
+    "fileId" : [],
+    "firstPacket" : 1415985445984,
+    "ipProtocol" : 17,
+    "lastPacket" : 1415985512445,
+    "length" : 66461,
+    "network" : {
+     "bytes" : 2732,
+     "community_id" : "1:IJBdyTHm5HjzP+ZbQJKTvVS/E74=",
+     "packets" : 4
+    },
+    "node" : "test",
+    "packetLen" : [
+     874,
+     550,
+     787,
+     585
+    ],
+    "packetPos" : [
+     9701,
+     10855,
+     24837,
+     25624
+    ],
+    "packetRange" : {
+     "gte" : 1415985445984,
+     "lte" : 1415985512445
+    },
+    "protocol" : [
+     "gtp",
+     "sip",
+     "udp"
+    ],
+    "protocolCnt" : 3,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 903
+    },
+    "sip" : {
+     "callid" : [
+      "5E6Cykks9Q8hoKaqHXRaeWJr",
+      "Ibayc7qnh1PkQzsM6S0TeFJ6"
+     ],
+     "callidCnt" : 2,
+     "from" : [
+      "<tel:+88270006>;tag=9Q5V3XeXXf",
+      "<tel:+88270006>;tag=HKLjSxeVsP"
+     ],
+     "fromCnt" : 2,
+     "method" : [
+      "MESSAGE"
+     ],
+     "methodCnt" : 1,
+     "statuscode" : [
+      "202",
+      "405"
+     ],
+     "statuscodeCnt" : 2,
+     "to" : [
+      "<tel:+7>",
+      "<tel:+7>;tag=210896220",
+      "<tel:+88270006>;tag=659592208"
+     ],
+     "toCnt" : 3,
+     "useragent" : [
+      "iOS/8.1 (12B411) iPhone"
+     ],
+     "useragentCnt" : 1,
+     "via" : [
+      "SIP/2.0/UDP [fd00:183:1:1:1886:9040:8605:32b8]:5060;branch=z9hG4bKOJ5umQnnq16M2Cr;rport=5060;received=fd00:183:1:1:1886:9040:8605:32b8",
+      "SIP/2.0/UDP [fd00:183:1:1:1886:9040:8605:32b8]:5060;branch=z9hG4bKtbyL8nYMjSubgv5;rport",
+      "SIP/2.0/UDP [fd00:183:1:1:1886:9040:8605:32b8]:5060;branch=z9hG4bKtbyL8nYMjSubgv5;rport=5060;received=fd00:183:1:1:1886:9040:8605:32b8"
+     ],
+     "viaCnt" : 3
+    },
+    "source" : {
+     "bytes" : 1629,
+     "ip" : "fd00:183:1:1:1886:9040:8605:32b8",
+     "packets" : 2,
+     "port" : 5060
+    },
+    "srcOuterASN" : [
+     "---",
+     "---"
+    ],
+    "srcOuterGEO" : [
+     "---",
+     "---"
+    ],
+    "srcOuterIp" : [
+     "127.0.1.1",
+     "127.0.1.100"
+    ],
+    "srcOuterIpCnt" : 2,
+    "srcOuterRIR" : [
+     "",
+     ""
+    ],
+    "srcPayload8" : "5355425343524942",
+    "srcTTL" : [
+     "255",
+     "64"
+    ],
+    "srcTTLCnt" : 2,
+    "totDataBytes" : 2332
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-141114"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 2934
+    },
+    "destination" : {
+     "bytes" : 3131,
+     "ip" : "fd01::183",
+     "packets" : 10,
+     "port" : 5060
+    },
+    "dstOuterASN" : [
+     "---",
+     "---"
+    ],
+    "dstOuterGEO" : [
+     "---",
+     "---"
+    ],
+    "dstOuterIp" : [
+     "127.0.1.1",
+     "127.0.1.100"
+    ],
+    "dstOuterIpCnt" : 2,
+    "dstOuterRIR" : [
+     "",
+     ""
+    ],
+    "dstPayload8" : "5349502f322e3020",
+    "dstTTL" : [
+     64
+    ],
+    "dstTTLCnt" : 1,
+    "fileId" : [],
+    "firstPacket" : 1415985484900,
+    "initRTT" : 20,
+    "ipProtocol" : 6,
+    "lastPacket" : 1415985533136,
+    "length" : 48236,
+    "network" : {
+     "bytes" : 7565,
+     "community_id" : "1:LfVtLs2VX3xOzzzdeOeVLCh7SOw=",
+     "packets" : 22
+    },
+    "node" : "test",
+    "packetLen" : [
+     152,
+     148,
+     140,
+     1478,
+     476,
+     140,
+     140,
+     446,
+     140,
+     587,
+     140,
+     821,
+     140,
+     802,
+     140,
+     589,
+     140,
+     738,
+     140,
+     140,
+     140,
+     140
+    ],
+    "packetPos" : [
+     11545,
+     11697,
+     11845,
+     11985,
+     13463,
+     13939,
+     14079,
+     14219,
+     14665,
+     14805,
+     15392,
+     15532,
+     16833,
+     16973,
+     18095,
+     22226,
+     23501,
+     23641,
+     24379,
+     26209,
+     26349,
+     26489
+    ],
+    "packetRange" : {
+     "gte" : 1415985484900,
+     "lte" : 1415985533136
+    },
+    "protocol" : [
+     "gtp",
+     "sip",
+     "tcp"
+    ],
+    "protocolCnt" : 3,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 1883
+    },
+    "sip" : {
+     "callid" : [
+      "zTHDK1uOm6wLihi3m15pRfSR"
+     ],
+     "callidCnt" : 1,
+     "contact" : [
+      "<sip:[fd00:183:1:1:1886:9040:8605:32b8]:5060>;+g.3gpp.icsi-ref=\"urn%3Aurn-7%3A3gpp-service.ims.icsi.mmtel\";+g.3gpp.smsip",
+      "<sip:[fd01::183]:5060>"
+     ],
+     "contactCnt" : 2,
+     "from" : [
+      "<tel:+88270006>;tag=XsO27IxvIu",
+      "<tel:122>;tag=206718171"
+     ],
+     "fromCnt" : 2,
+     "method" : [
+      "ACK",
+      "BYE"
+     ],
+     "methodCnt" : 2,
+     "statuscode" : [
+      "100",
+      "180",
+      "200"
+     ],
+     "statuscodeCnt" : 3,
+     "to" : [
+      "<tel:+88270006>;tag=XsO27IxvIu",
+      "<tel:122>",
+      "<tel:122>;tag=206718171"
+     ],
+     "toCnt" : 3,
+     "useragent" : [
+      "YATE/5.4.1",
+      "iOS/8.1 (12B411) iPhone"
+     ],
+     "useragentCnt" : 2,
+     "via" : [
+      "SIP/2.0/TCP [fd00:183:1:1:1886:9040:8605:32b8]:5060;branch=z9hG4bKAm73W32FfruG5q1;rport",
+      "SIP/2.0/TCP [fd00:183:1:1:1886:9040:8605:32b8]:5060;branch=z9hG4bKAm73W32FfruG5q1;rport=5060;received=fd00:183:1:1:1886:9040:8605:32b8",
+      "SIP/2.0/TCP [fd01::183]:5060;alias;branch=z9hG4bK780599774;received=fd01::183;rport=5060",
+      "SIP/2.0/TCP [fd01::183]:5060;alias;rport;branch=z9hG4bK780599774"
+     ],
+     "viaCnt" : 4
+    },
+    "source" : {
+     "bytes" : 4434,
+     "ip" : "fd00:183:1:1:1886:9040:8605:32b8",
+     "packets" : 12,
+     "port" : 5060
+    },
+    "srcOuterASN" : [
+     "---",
+     "---"
+    ],
+    "srcOuterGEO" : [
+     "---",
+     "---"
+    ],
+    "srcOuterIp" : [
+     "127.0.1.1",
+     "127.0.1.100"
+    ],
+    "srcOuterIpCnt" : 2,
+    "srcOuterRIR" : [
+     "",
+     ""
+    ],
+    "srcPayload8" : "494e564954452074",
+    "srcTTL" : [
+     255
+    ],
+    "srcTTLCnt" : 1,
+    "tcpflags" : {
+     "ack" : 11,
+     "dstZero" : 0,
+     "fin" : 2,
+     "psh" : 7,
+     "rst" : 0,
+     "srcZero" : 0,
+     "syn" : 1,
+     "syn-ack" : 1,
+     "urg" : 0
+    },
+    "tcpseq" : {
+     "dst" : 0,
+     "src" : 2889678409
+    },
+    "totDataBytes" : 4817
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-141114"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 616
+    },
+    "destination" : {
+     "bytes" : 1822,
+     "ip" : "fd00:183:1:1:1886:9040:8605:32b8",
+     "packets" : 13,
+     "port" : 49120
+    },
+    "dstOuterASN" : [
+     "---",
+     "---"
+    ],
+    "dstOuterGEO" : [
+     "---",
+     "---"
+    ],
+    "dstOuterIp" : [
+     "127.0.1.1",
+     "127.0.1.100"
+    ],
+    "dstOuterIpCnt" : 2,
+    "dstOuterRIR" : [
+     "",
+     ""
+    ],
+    "dstPayload8" : "80660000000000a0",
+    "dstTTL" : [
+     255
+    ],
+    "dstTTLCnt" : 1,
+    "fileId" : [],
+    "firstPacket" : 1415985490121,
+    "ipProtocol" : 17,
+    "lastPacket" : 1415985500820,
+    "length" : 10699,
+    "network" : {
+     "bytes" : 3838,
+     "community_id" : "1:vbXa6H6s9So2GdvW+RtdVE26Ixg=",
+     "packets" : 27
+    },
+    "node" : "test",
+    "packetLen" : [
+     160,
+     160,
+     160,
+     160,
+     160,
+     160,
+     160,
+     160,
+     160,
+     160,
+     160,
+     160,
+     160,
+     160,
+     160,
+     160,
+     160,
+     160,
+     160,
+     160,
+     160,
+     160,
+     160,
+     160,
+     160,
+     135,
+     135
+    ],
+    "packetPos" : [
+     16353,
+     16513,
+     16673,
+     17775,
+     17935,
+     18235,
+     18395,
+     19046,
+     19206,
+     19366,
+     19526,
+     19686,
+     19846,
+     20006,
+     20166,
+     20326,
+     20822,
+     20982,
+     21142,
+     21302,
+     21462,
+     21622,
+     21782,
+     21942,
+     22815,
+     22975,
+     24519
+    ],
+    "packetRange" : {
+     "gte" : 1415985490121,
+     "lte" : 1415985500820
+    },
+    "protocol" : [
+     "gtp",
+     "udp"
+    ],
+    "protocolCnt" : 2,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 522
+    },
+    "source" : {
+     "bytes" : 2016,
+     "ip" : "fd01::183",
+     "packets" : 14,
+     "port" : 19956
+    },
+    "srcOuterASN" : [
+     "---",
+     "---"
+    ],
+    "srcOuterGEO" : [
+     "---",
+     "---"
+    ],
+    "srcOuterIp" : [
+     "127.0.1.1",
+     "127.0.1.100"
+    ],
+    "srcOuterIpCnt" : 2,
+    "srcOuterRIR" : [
+     "",
+     ""
+    ],
+    "srcPayload8" : "80e652d84bcad9ca",
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
+    "totDataBytes" : 1138
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-141114"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 45
+    },
+    "destination" : {
+     "bytes" : 334,
+     "ip" : "192.168.168.1",
+     "packets" : 1,
+     "port" : 53
+    },
+    "dns" : [
+     {
+      "ASN" : [
+       "---"
+      ],
+      "GEO" : [
+       "---"
+      ],
+      "RIR" : [
+       "ARIN"
+      ],
+      "answers" : [
+       {
+        "class" : "IN",
+        "ip" : "172.26.39.3",
+        "name" : "sentitlement.mobile.att.net",
+        "ttl" : 4078,
+        "type" : "A"
+       },
+       {
+        "class" : "IN",
+        "name" : "att.net",
+        "nameserver" : "wycu.wy.br.np.els-gms.att.net",
+        "ttl" : 172159,
+        "type" : "NS"
+       },
+       {
+        "class" : "IN",
+        "name" : "att.net",
+        "nameserver" : "macu.ma.mt.np.els-gms.att.net",
+        "ttl" : 172159,
+        "type" : "NS"
+       },
+       {
+        "class" : "IN",
+        "name" : "att.net",
+        "nameserver" : "ohcu.oh.mt.np.els-gms.att.net",
+        "ttl" : 172159,
+        "type" : "NS"
+       },
+       {
+        "class" : "IN",
+        "name" : "att.net",
+        "nameserver" : "orcu.or.br.np.els-gms.att.net",
+        "ttl" : 172159,
+        "type" : "NS"
+       },
+       {
+        "class" : "IN",
+        "ip" : "99.99.99.130",
+        "name" : "macu.ma.mt.np.els-gms.att.net",
+        "ttl" : 68056,
+        "type" : "A"
+       },
+       {
+        "class" : "IN",
+        "ip" : "2001:1890:1ff:9f1:99:99:99:130",
+        "name" : "macu.ma.mt.np.els-gms.att.net",
+        "ttl" : 64656,
+        "type" : "AAAA"
+       },
+       {
+        "class" : "IN",
+        "ip" : "99.99.99.128",
+        "name" : "ohcu.oh.mt.np.els-gms.att.net",
+        "ttl" : 68056,
+        "type" : "A"
+       },
+       {
+        "class" : "IN",
+        "ip" : "2001:1890:1ff:9f1:99:99:99:128",
+        "name" : "ohcu.oh.mt.np.els-gms.att.net",
+        "ttl" : 64656,
+        "type" : "AAAA"
+       }
+      ],
+      "answersCnt" : 9,
+      "headerFlags" : [
+       "RA",
+       "RD"
+      ],
+      "host" : [
+       "sentitlement.mobile.att.net"
+      ],
+      "hostCnt" : 1,
+      "ip" : [
+       "172.26.39.3"
+      ],
+      "ipCnt" : 1,
+      "nameserverASN" : [
+       "AS7018 AT&T Services, Inc.",
+       "AS7018 AT&T Services, Inc.",
+       "AS7018 AT&T Services, Inc.",
+       "AS7018 AT&T Services, Inc."
+      ],
+      "nameserverGEO" : [
+       "US",
+       "US",
+       "US",
+       "US"
+      ],
+      "nameserverHost" : [
+       "macu.ma.mt.np.els-gms.att.net",
+       "ohcu.oh.mt.np.els-gms.att.net",
+       "orcu.or.br.np.els-gms.att.net",
+       "wycu.wy.br.np.els-gms.att.net"
+      ],
+      "nameserverHostCnt" : 4,
+      "nameserverIp" : [
+       "2001:1890:01ff:09f1:0099:0099:0099:0128",
+       "2001:1890:01ff:09f1:0099:0099:0099:0130",
+       "99.99.99.128",
+       "99.99.99.130"
+      ],
+      "nameserverIpCnt" : 4,
+      "nameserverRIR" : [
+       "",
+       "",
+       "ARIN",
+       "ARIN"
+      ],
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "sentitlement.mobile.att.net",
+      "status" : "NOERROR"
+     }
+    ],
+    "dnsCnt" : 1,
+    "dstOuterASN" : [
+     "---",
+     "---"
+    ],
+    "dstOuterGEO" : [
+     "---",
+     "---"
+    ],
+    "dstOuterIp" : [
+     "127.0.1.1",
+     "127.0.1.100"
+    ],
+    "dstOuterIpCnt" : 2,
+    "dstOuterRIR" : [
+     "",
+     ""
+    ],
+    "dstPayload8" : "c2b1818000010001",
+    "dstRIR" : "ARIN",
+    "dstTTL" : [
+     63
+    ],
+    "dstTTLCnt" : 1,
+    "fileId" : [],
+    "firstPacket" : 1415985490220,
+    "ipProtocol" : 17,
+    "lastPacket" : 1415985490220,
+    "length" : 0,
+    "network" : {
+     "bytes" : 459,
+     "community_id" : "1:uIcWqMh/I0ro28bJT2MViJdWe08=",
+     "packets" : 2
+    },
+    "node" : "test",
+    "packetLen" : [
+     141,
+     350
+    ],
+    "packetPos" : [
+     18555,
+     18696
+    ],
+    "packetRange" : {
+     "gte" : 1415985490220,
+     "lte" : 1415985490220
+    },
+    "protocol" : [
+     "dns",
+     "gtp",
+     "udp"
+    ],
+    "protocolCnt" : 3,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 254
+    },
+    "source" : {
+     "bytes" : 125,
+     "ip" : "192.168.3.129",
+     "packets" : 1,
+     "port" : 60716
+    },
+    "srcOuterASN" : [
+     "---",
+     "---"
+    ],
+    "srcOuterGEO" : [
+     "---",
+     "---"
+    ],
+    "srcOuterIp" : [
+     "127.0.1.1",
+     "127.0.1.100"
+    ],
+    "srcOuterIpCnt" : 2,
+    "srcOuterRIR" : [
+     "",
+     ""
+    ],
+    "srcPayload8" : "c2b1010000010000",
+    "srcRIR" : "ARIN",
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
+    "totDataBytes" : 299
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-141114"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 112
+    },
+    "destination" : {
+     "bytes" : 0,
+     "ip" : "fd00:183:1:1:1886:9040:8605:32b8",
+     "packets" : 0,
+     "port" : 49121
+    },
+    "dstOuterASN" : [
+     "---"
+    ],
+    "dstOuterGEO" : [
+     "---"
+    ],
+    "dstOuterIp" : [
+     "127.0.1.1"
+    ],
+    "dstOuterIpCnt" : 1,
+    "dstOuterRIR" : [
+     ""
+    ],
+    "fileId" : [],
+    "firstPacket" : 1415985494581,
+    "ipProtocol" : 17,
+    "lastPacket" : 1415985500710,
+    "length" : 6129,
+    "network" : {
+     "bytes" : 412,
+     "community_id" : "1:+wHdXp4DE+tOLPO4Xk/bD3YW7U8=",
+     "packets" : 3
+    },
+    "node" : "test",
+    "packetLen" : [
+     168,
+     168,
+     124
+    ],
+    "packetPos" : [
+     20486,
+     20654,
+     22102
+    ],
+    "packetRange" : {
+     "gte" : 1415985494581,
+     "lte" : 1415985500710
+    },
+    "protocol" : [
+     "gtp",
+     "udp"
+    ],
+    "protocolCnt" : 2,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 0
+    },
+    "source" : {
+     "bytes" : 412,
+     "ip" : "fd01::183",
+     "packets" : 3,
+     "port" : 19957
+    },
+    "srcOuterASN" : [
+     "---"
+    ],
+    "srcOuterGEO" : [
+     "---"
+    ],
+    "srcOuterIp" : [
+     "127.0.1.100"
+    ],
+    "srcOuterIpCnt" : 1,
+    "srcOuterRIR" : [
+     ""
+    ],
+    "srcPayload8" : "81c8000c6399bbc1",
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
+    "totDataBytes" : 112
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-141114"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 250
+    },
+    "destination" : {
+     "bytes" : 0,
+     "ip" : "fd00:183:1:1:1886:9040:8605:32b8",
+     "packets" : 0,
+     "port" : 0
+    },
+    "dstOuterASN" : [
+     "---"
+    ],
+    "dstOuterGEO" : [
+     "---"
+    ],
+    "dstOuterIp" : [
+     "127.0.1.1"
+    ],
+    "dstOuterIpCnt" : 1,
+    "dstOuterRIR" : [
+     ""
+    ],
+    "fileId" : [],
+    "firstPacket" : 1415985500740,
+    "icmp" : {
+     "code" : [
+      4
+     ],
+     "type" : [
+      1
+     ]
+    },
+    "ipProtocol" : 58,
+    "lastPacket" : 1415985500820,
+    "length" : 80,
+    "network" : {
+     "bytes" : 526,
+     "community_id" : "1:R7F0MUT6ZV1iG5f3xJ0Pro45tts=",
+     "packets" : 3
+    },
+    "node" : "test",
+    "packetLen" : [
+     208,
+     183,
+     183
+    ],
+    "packetPos" : [
+     23110,
+     23318,
+     24654
+    ],
+    "packetRange" : {
+     "gte" : 1415985500740,
+     "lte" : 1415985500820
+    },
+    "protocol" : [
+     "gtp",
+     "icmp"
+    ],
+    "protocolCnt" : 2,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 0
+    },
+    "source" : {
+     "bytes" : 526,
+     "ip" : "fd01::183",
+     "packets" : 3,
+     "port" : 0
+    },
+    "srcOuterASN" : [
+     "---"
+    ],
+    "srcOuterGEO" : [
+     "---"
+    ],
+    "srcOuterIp" : [
+     "127.0.1.100"
+    ],
+    "srcOuterIpCnt" : 1,
+    "srcOuterRIR" : [
+     ""
+    ],
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
+    "totDataBytes" : 250
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-141114"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 1753
+    },
+    "destination" : {
+     "bytes" : 1053,
+     "ip" : "fd01::183",
+     "packets" : 5,
+     "port" : 5060
+    },
+    "dstOuterASN" : [
+     "---",
+     "---"
+    ],
+    "dstOuterGEO" : [
+     "---",
+     "---"
+    ],
+    "dstOuterIp" : [
+     "127.0.1.1",
+     "127.0.1.100"
+    ],
+    "dstOuterIpCnt" : 2,
+    "dstOuterRIR" : [
+     "",
+     ""
+    ],
+    "dstPayload8" : "5349502f322e3020",
+    "dstTTL" : [
+     64
+    ],
+    "dstTTLCnt" : 1,
+    "fileId" : [],
+    "firstPacket" : 1415985559780,
+    "initRTT" : 19,
+    "ipProtocol" : 6,
+    "lastPacket" : 1415985559931,
+    "length" : 151,
+    "network" : {
+     "bytes" : 3686,
+     "community_id" : "1:LfVtLs2VX3xOzzzdeOeVLCh7SOw=",
+     "packets" : 12
+    },
+    "node" : "test",
+    "packetLen" : [
+     152,
+     148,
+     140,
+     1478,
+     140,
+     555,
+     140,
+     565,
+     140,
+     140,
+     140,
+     140
+    ],
+    "packetPos" : [
+     26629,
+     26781,
+     26929,
+     27069,
+     28547,
+     28687,
+     29242,
+     29382,
+     29947,
+     30087,
+     30227,
+     30367
+    ],
+    "packetRange" : {
+     "gte" : 1415985559780,
+     "lte" : 1415985559931
+    },
+    "protocol" : [
+     "gtp",
+     "sip",
+     "tcp"
+    ],
+    "protocolCnt" : 3,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 425
+    },
+    "sip" : {
+     "callid" : [
+      "5PC5dBCGDQ0csFmFPQXQjE57"
+     ],
+     "callidCnt" : 1,
+     "contact" : [
+      "<sip:[fd00:183:1:1:1886:9040:8605:32b8]:5060>;+g.3gpp.icsi-ref=\"urn%3Aurn-7%3A3gpp-service.ims.icsi.mmtel\";+g.3gpp.smsip;+sip.instance=\"<urn:gsma:imei:35442706-323347-9>\""
+     ],
+     "contactCnt" : 1,
+     "from" : [
+      "<tel:263734>;tag=GcHaJMenCQ"
+     ],
+     "fromCnt" : 1,
+     "method" : [
+      "REGISTER"
+     ],
+     "methodCnt" : 1,
+     "statuscode" : [
+      200
+     ],
+     "statuscodeCnt" : 1,
+     "to" : [
+      "<tel:263734>",
+      "<tel:263734>;tag=1617783298"
+     ],
+     "toCnt" : 2,
+     "user" : [
+      "263734@imstest.lan"
+     ],
+     "userCnt" : 1,
+     "useragent" : [
+      "iOS/8.1 (12B411) iPhone"
+     ],
+     "useragentCnt" : 1,
+     "via" : [
+      "SIP/2.0/TCP [fd00:183:1:1:1886:9040:8605:32b8]:5060;branch=z9hG4bKsSBDarw4Z9q7oay;rport",
+      "SIP/2.0/TCP [fd00:183:1:1:1886:9040:8605:32b8]:5060;branch=z9hG4bKsSBDarw4Z9q7oay;rport=5060;received=fd00:183:1:1:1886:9040:8605:32b8"
+     ],
+     "viaCnt" : 2
+    },
+    "source" : {
+     "bytes" : 2633,
+     "ip" : "fd00:183:1:1:1886:9040:8605:32b8",
+     "packets" : 7,
+     "port" : 5060
+    },
+    "srcOuterASN" : [
+     "---",
+     "---"
+    ],
+    "srcOuterGEO" : [
+     "---",
+     "---"
+    ],
+    "srcOuterIp" : [
+     "127.0.1.1",
+     "127.0.1.100"
+    ],
+    "srcOuterIpCnt" : 2,
+    "srcOuterRIR" : [
+     "",
+     ""
+    ],
+    "srcPayload8" : "5245474953544552",
+    "srcTTL" : [
+     255
+    ],
+    "srcTTLCnt" : 1,
+    "tcpflags" : {
+     "ack" : 6,
+     "dstZero" : 0,
+     "fin" : 2,
+     "psh" : 2,
+     "rst" : 0,
+     "srcZero" : 0,
+     "syn" : 1,
+     "syn-ack" : 1,
+     "urg" : 0
+    },
+    "tcpseq" : {
+     "dst" : 0,
+     "src" : 1122848232
+    },
+    "totDataBytes" : 2178
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-141114"
+    }
+   }
+  }
+ ]
 }
 
