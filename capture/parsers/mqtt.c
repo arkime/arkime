@@ -205,7 +205,7 @@ LOCAL int mqtt_parse_publish(ArkimeSession_t *session, ArkimeParserBuf_t *mqtt, 
 
     // Peek at topic length without consuming
     int topicLen = (mqtt->buf[which][BSB_WORK_PTR(*bsb) - mqtt->buf[which]] << 8) |
-                    mqtt->buf[which][BSB_WORK_PTR(*bsb) - mqtt->buf[which] + 1];
+                   mqtt->buf[which][BSB_WORK_PTR(*bsb) - mqtt->buf[which] + 1];
 
     // Calculate how much of the header we need: 2 (topic len) + topicLen + (qos > 0 ? 2 : 0)
     int headerNeeded = 2 + topicLen + (qos > 0 ? 2 : 0);

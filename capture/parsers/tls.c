@@ -22,7 +22,6 @@ LOCAL  int                   ja4RawField;
 LOCAL  gboolean              ja4Raw;
 
 
-
 extern uint8_t    arkime_char_to_hexstr[256][3];
 
 LOCAL GChecksum *checksums256[ARKIME_MAX_PACKET_THREADS];
