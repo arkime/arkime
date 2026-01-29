@@ -1,0 +1,252 @@
+{
+ "sessions3" : [
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 23284
+    },
+    "destination" : {
+     "bytes" : 16223,
+     "ip" : "192.168.1.1",
+     "mac" : [
+      "00:aa:bb:cc:dd:ee"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 21,
+     "port" : 1883
+    },
+    "dstPayload8" : "2002000090050001",
+    "dstRIR" : "ARIN",
+    "dstTTL" : [
+     64
+    ],
+    "dstTTLCnt" : 1,
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 1769778000000,
+    "initRTT" : 1000,
+    "ipProtocol" : 6,
+    "lastPacket" : 1769778050000,
+    "length" : 50000,
+    "mqtt" : {
+     "clientId" : [
+      "test-client-123"
+     ],
+     "clientIdCnt" : 1,
+     "flags" : [
+      "cleanSession",
+      "hasWill"
+     ],
+     "flagsCnt" : 2,
+     "qos" : [
+      "0",
+      "1",
+      "2"
+     ],
+     "qosCnt" : 3,
+     "topic" : [
+      "test/#",
+      "test/qos1",
+      "test/qos2",
+      "test/small",
+      "test/topic1",
+      "test/topic2"
+     ],
+     "topicCnt" : 6,
+     "type" : [
+      "CONNACK",
+      "CONNECT",
+      "PUBACK",
+      "PUBCOMP",
+      "PUBLISH",
+      "PUBREC",
+      "PUBREL",
+      "SUBACK",
+      "SUBSCRIBE"
+     ],
+     "typeCnt" : 9,
+     "version" : [
+      "3.1.1"
+     ],
+     "versionCnt" : 1,
+     "willTopic" : [
+      "will/topic"
+     ],
+     "willTopicCnt" : 1
+    },
+    "network" : {
+     "bytes" : 41127,
+     "community_id" : "1:E7yLWNa3jbh2cU2PTMCoRoHGdo0=",
+     "packets" : 51
+    },
+    "node" : "test",
+    "packetLen" : [
+     70,
+     70,
+     70,
+     130,
+     74,
+     111,
+     77,
+     95,
+     98,
+     74,
+     98,
+     74,
+     74,
+     74,
+     1470,
+     1470,
+     1470,
+     1470,
+     1470,
+     1470,
+     1470,
+     1470,
+     889,
+     74,
+     103,
+     1470,
+     1470,
+     1470,
+     1470,
+     1470,
+     1470,
+     1470,
+     1470,
+     1470,
+     1470,
+     1091,
+     74,
+     2070,
+     105,
+     1470,
+     1470,
+     1470,
+     1470,
+     1470,
+     1470,
+     691,
+     87,
+     74,
+     72,
+     72,
+     72
+    ],
+    "packetPos" : [
+     24,
+     94,
+     164,
+     234,
+     364,
+     438,
+     549,
+     626,
+     721,
+     819,
+     893,
+     991,
+     1065,
+     1139,
+     1213,
+     2683,
+     4153,
+     5623,
+     7093,
+     8563,
+     10033,
+     11503,
+     12973,
+     13862,
+     13936,
+     14039,
+     15509,
+     16979,
+     18449,
+     19919,
+     21389,
+     22859,
+     24329,
+     25799,
+     27269,
+     28739,
+     29830,
+     29904,
+     31974,
+     32079,
+     33549,
+     35019,
+     36489,
+     37959,
+     39429,
+     40899,
+     41590,
+     41677,
+     41751,
+     41823,
+     41895
+    ],
+    "packetRange" : {
+     "gte" : 1769778000000,
+     "lte" : 1769778050000
+    },
+    "protocol" : [
+     "mqtt",
+     "tcp"
+    ],
+    "protocolCnt" : 2,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 15089
+    },
+    "source" : {
+     "bytes" : 24904,
+     "ip" : "192.168.1.100",
+     "mac" : [
+      "00:11:22:33:44:55"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 30,
+     "port" : 45678
+    },
+    "srcOui" : [
+     "CIMSYS Inc"
+    ],
+    "srcOuiCnt" : 1,
+    "srcPayload8" : "103a00044d515454",
+    "srcRIR" : "ARIN",
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
+    "tcpflags" : {
+     "ack" : 1,
+     "dstZero" : 0,
+     "fin" : 0,
+     "psh" : 48,
+     "rst" : 0,
+     "srcZero" : 0,
+     "syn" : 1,
+     "syn-ack" : 1,
+     "urg" : 0
+    },
+    "tcpseq" : {
+     "dst" : 0,
+     "src" : 1000
+    },
+    "totDataBytes" : 38373,
+    "user" : [
+     "testuser"
+    ],
+    "userCnt" : 1
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-260130"
+    }
+   }
+  }
+ ]
+}
+
