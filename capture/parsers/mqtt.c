@@ -298,6 +298,9 @@ LOCAL int mqtt_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, i
 /******************************************************************************/
 LOCAL void mqtt_classify(ArkimeSession_t *session, const uint8_t *data, int len, int which, void *UNUSED(uw))
 {
+    if (arkime_session_has_protocol(session, "mqtt"))
+        return;
+
     if (len < 10)
         return;
 
