@@ -1,0 +1,12 @@
+if (session.sip)
+  div.sessionDetailMeta.bold SIP
+  dl.sessionDetailMeta
+    +arrayList(session.sip, 'method', 'Method', 'sip.method')
+    +arrayList(session.sip, 'statuscode', 'Status Code', 'sip.statuscode')
+    +arrayList(session.sip, 'callid', 'Call ID', 'sip.callid')
+    +arrayList(session.sip, 'from', 'From', 'sip.from')
+    +arrayList(session.sip, 'to', 'To', 'sip.to')
+    +arrayList(session.sip, 'user', 'User', 'sip.user')
+    +arrayList(session.sip, 'useragent', 'User-Agent', 'sip.useragent')
+    +arrayList(session.sip, 'via', 'Via', 'sip.via')
+    +arrayList(session.sip, 'contact', 'Contact', 'sip.contact')

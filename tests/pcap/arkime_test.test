@@ -4049,12 +4049,40 @@
      "lte" : 1737752498000
     },
     "protocol" : [
+     "sip",
      "udp"
     ],
-    "protocolCnt" : 1,
+    "protocolCnt" : 2,
     "segmentCnt" : 1,
     "server" : {
      "bytes" : 0
+    },
+    "sip" : {
+     "callid" : [
+      "12345"
+     ],
+     "callidCnt" : 1,
+     "from" : [
+      "<sip:alice@example.com>"
+     ],
+     "fromCnt" : 1,
+     "method" : [
+      "INVITE"
+     ],
+     "methodCnt" : 1,
+     "to" : [
+      "<sip:bob@example.com>"
+     ],
+     "toCnt" : 1,
+     "user" : [
+      "alice",
+      "bob"
+     ],
+     "userCnt" : 2,
+     "via" : [
+      "SIP/2.0/UDP 10.0.46.100"
+     ],
+     "viaCnt" : 1
     },
     "source" : {
      "bytes" : 200,

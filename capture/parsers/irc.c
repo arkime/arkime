@@ -82,7 +82,7 @@ LOCAL void irc_free(ArkimeSession_t UNUSED(*session), void *uw)
     ARKIME_TYPE_FREE(IRCInfo_t, irc);
 }
 /******************************************************************************/
-LOCAL void irc_classify(ArkimeSession_t *session, const uint8_t *data, int len, int which, void *UNUSED(uw))
+LOCAL void irc_classify(ArkimeSession_t *session, const uint8_t *data, int len, int UNUSED(which), void *UNUSED(uw))
 {
     if (len < 8)
         return;
@@ -103,7 +103,6 @@ LOCAL void irc_classify(ArkimeSession_t *session, const uint8_t *data, int len, 
     IRCInfo_t            *irc          = ARKIME_TYPE_ALLOC0(IRCInfo_t);
 
     arkime_parsers_register(session, irc_parser, irc, irc_free);
-    irc_parser(session, irc, data, len, which);
 }
 /******************************************************************************/
 void arkime_parser_init()
