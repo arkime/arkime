@@ -156,16 +156,26 @@ mixin ipArrayList(container, field, title, expr, max)
           | {{ $t('sessions.addExists', {name: "#{title}"} ) }}
 
     dd
+      - fieldShort = (field.endsWith("Ip") ? field.slice(0, -2) : field)
       each ip,i in container[field]
         if (i == max)
           |<span style="display:none">
         if (field == "ip")
           +ipPrint(container, container.ip[i], undefined, (container.GEO?container.GEO[i]:null), (container.ASN?container.ASN[i]:null), (container.RIR?container.RIR[i]:null), expr, expr.endsWith(".ip"))
         else
-          +ipPrint(container, container[field][i], undefined, (container[field + "GEO"]?container[field + "GEO"][i]:null), (container[field + "ASN"]?container[field + "ASN"][i]:null), (container[field + "RIR"]?container[field + "RIR"][i]:null), expr, true)
+          +ipPrint(container, container[field][i], undefined, (container[fieldShort + "GEO"]?container[fieldShort + "GEO"][i]:null), (container[fieldShort + "ASN"]?container[fieldShort + "ASN"][i]:null), (container[fieldShort + "RIR"]?container[fieldShort + "RIR"][i]:null), expr, true)
       if (container[field].length > max)
         |</span>
         a.cursor-pointer.show-more-items &hellip;
+
+mixin ipArrayPrint(container, field, expr)
+  - fieldShort = (field.endsWith("Ip") ? field.slice(0, -2) : field)
+  if ((container && container[field]))
+    each value,i in container[field]
+      if (value.length == 0)
+        span &lt;empty&gt;
+      else
+        +ipPrint(container, container[field][i], undefined, (container[fieldShort + "GEO"]?container[fieldShort + "GEO"][i]:null), (container[fieldShort + "ASN"]?container[fieldShort + "ASN"][i]:null), (container[fieldShort + "RIR"]?container[fieldShort + "RIR"][i]:null), expr, true)
 
 //- Method to print HTTP and SMTP headers
 mixin printHeader(inHeaderNames, inHeaderValues, expr)
