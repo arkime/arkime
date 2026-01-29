@@ -167,7 +167,7 @@ dl
         +arrayPrint(session, "srcOuterOui", "outeroui.src")
       if (session.srcOuterIp)
         strong.ms-1 IP
-        +arrayPrint(session, "srcOuterIp", "outerip.src")
+        +ipArrayPrint(session, "srcOuterIp", "outerip.src")
 
   if (session.dstOuterMac || session.dstOuterIp )
     dt
@@ -192,7 +192,7 @@ dl
         +arrayPrint(session, "dstOuterOui", "outeroui.dst")
       if (session.dstOuterIp)
         strong.ms-1 IP
-        +arrayPrint(session, "dstOuterIp", "outerip.dst")
+        +ipArrayPrint(session, "dstOuterIp", "outerip.dst")
 
   dt
     b-dropdown.clickable-label(text="Src IP/Port", size="sm", variant="default")

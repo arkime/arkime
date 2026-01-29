@@ -1,0 +1,12 @@
+if (session.stun)
+  div.sessionDetailMeta.bold STUN
+  dl.sessionDetailMeta
+    +arrayList(session.stun, 'type', 'Message Type', 'stun.type')
+    +ipArrayList(session.stun, 'xorMappedIp', 'XOR Mapped IP', 'stun.xorMappedIp')
+    +arrayList(session.stun, 'xorMappedPort', 'XOR Mapped Port', 'stun.xorMappedPort')
+    +ipArrayList(session.stun, 'mappedIp', 'Mapped IP', 'stun.mappedIp')
+    +arrayList(session.stun, 'mappedPort', 'Mapped Port', 'stun.mappedPort')
+    +arrayList(session.stun, 'username', 'Username', 'stun.username')
+    +arrayList(session.stun, 'software', 'Software', 'stun.software')
+    +arrayList(session.stun, 'realm', 'Realm', 'stun.realm')
+    +arrayList(session.stun, 'error', 'Error Code', 'stun.error')

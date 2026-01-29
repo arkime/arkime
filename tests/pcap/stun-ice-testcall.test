@@ -1,0 +1,884 @@
+{
+ "sessions3" : [
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 80
+    },
+    "destination" : {
+     "as" : {
+      "full" : "AS15169 Google LLC",
+      "number" : 15169,
+      "organization" : {
+       "name" : "Google LLC"
+      }
+     },
+     "bytes" : 296,
+     "geo" : {
+      "country_iso_code" : "US"
+     },
+     "ip" : "74.125.141.127",
+     "mac" : [
+      "38:aa:3c:fc:69:c2"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 4,
+     "port" : 19302
+    },
+    "dstOui" : [
+     "Samsung Electro Mechanics Co., Ltd."
+    ],
+    "dstOuiCnt" : 1,
+    "dstPayload8" : "0101000c2112a442",
+    "dstRIR" : "ARIN",
+    "dstTTL" : [
+     43
+    ],
+    "dstTTLCnt" : 1,
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 1377211115029,
+    "ipProtocol" : 17,
+    "lastPacket" : 1377211135217,
+    "length" : 20188,
+    "network" : {
+     "bytes" : 544,
+     "community_id" : "1:DDzOB5L3ZmvnD8V/meKwIWeyPvA=",
+     "packets" : 8
+    },
+    "node" : "test",
+    "packetLen" : [
+     78,
+     90,
+     78,
+     78,
+     90,
+     90,
+     78,
+     90
+    ],
+    "packetPos" : [
+     24,
+     102,
+     192,
+     270,
+     348,
+     438,
+     14316,
+     14394
+    ],
+    "packetRange" : {
+     "gte" : 1377211115029,
+     "lte" : 1377211135217
+    },
+    "protocol" : [
+     "stun",
+     "udp"
+    ],
+    "protocolCnt" : 2,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 128
+    },
+    "source" : {
+     "bytes" : 248,
+     "ip" : "192.168.43.155",
+     "mac" : [
+      "f0:7b:cb:9e:e8:cc"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 4,
+     "port" : 60020
+    },
+    "srcOui" : [
+     "Hon Hai Precision Ind. Co.,Ltd."
+    ],
+    "srcOuiCnt" : 1,
+    "srcPayload8" : "000100002112a442",
+    "srcRIR" : "ARIN",
+    "srcTTL" : [
+     128
+    ],
+    "srcTTLCnt" : 1,
+    "stun" : {
+     "mappedASN" : [
+      "AS6167 Cellco Partnership DBA Verizon Wireless"
+     ],
+     "mappedGEO" : [
+      "US"
+     ],
+     "mappedIp" : [
+      "70.199.128.46"
+     ],
+     "mappedIpCnt" : 1,
+     "mappedPort" : [
+      4604
+     ],
+     "mappedPortCnt" : 1,
+     "mappedRIR" : [
+      "ARIN"
+     ],
+     "type" : [
+      "Binding Request",
+      "Binding Response"
+     ],
+     "typeCnt" : 2
+    },
+    "totDataBytes" : 208
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-130822"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 2088
+    },
+    "destination" : {
+     "as" : {
+      "full" : "AS7029 Windstream Communications LLC",
+      "number" : 7029,
+      "organization" : {
+       "name" : "Windstream Communications LLC"
+      }
+     },
+     "bytes" : 2754,
+     "geo" : {
+      "country_iso_code" : "US"
+     },
+     "ip" : "155.212.214.188",
+     "mac" : [
+      "38:aa:3c:fc:69:c2"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 21,
+     "port" : 23131
+    },
+    "dstOui" : [
+     "Samsung Electro Mechanics Co., Ltd."
+    ],
+    "dstOuiCnt" : 1,
+    "dstPayload8" : "010100442112a442",
+    "dstRIR" : "ARIN",
+    "dstTTL" : [
+     43
+    ],
+    "dstTTLCnt" : 1,
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 1377211128184,
+    "ipProtocol" : 17,
+    "lastPacket" : 1377211136139,
+    "length" : 7955,
+    "network" : {
+     "bytes" : 5724,
+     "community_id" : "1:i1Kd9gN8hSqhhKPGJylsn5kWyr8=",
+     "packets" : 42
+    },
+    "node" : "test",
+    "packetLen" : [
+     162,
+     162,
+     146,
+     162,
+     158,
+     122,
+     146,
+     158,
+     106,
+     146,
+     162,
+     162,
+     146,
+     146,
+     162,
+     146,
+     162,
+     146,
+     162,
+     146,
+     162,
+     146,
+     162,
+     146,
+     162,
+     146,
+     162,
+     146,
+     162,
+     146,
+     162,
+     146,
+     162,
+     146,
+     162,
+     146,
+     162,
+     146,
+     162,
+     146,
+     162,
+     146
+    ],
+    "packetPos" : [
+     690,
+     1338,
+     1646,
+     1954,
+     2396,
+     2554,
+     3934,
+     4344,
+     4502,
+     4608,
+     5854,
+     6324,
+     6632,
+     6778,
+     7086,
+     7248,
+     7702,
+     8010,
+     8318,
+     8480,
+     8934,
+     9096,
+     9550,
+     9712,
+     10166,
+     10474,
+     10782,
+     10944,
+     11398,
+     11706,
+     12014,
+     12322,
+     12630,
+     12792,
+     13246,
+     13408,
+     13862,
+     14024,
+     14646,
+     14808,
+     15262,
+     15424
+    ],
+    "packetRange" : {
+     "gte" : 1377211128184,
+     "lte" : 1377211136139
+    },
+    "protocol" : [
+     "stun",
+     "udp"
+    ],
+    "protocolCnt" : 2,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 1872
+    },
+    "source" : {
+     "bytes" : 2970,
+     "ip" : "192.168.43.155",
+     "mac" : [
+      "f0:7b:cb:9e:e8:cc"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 21,
+     "port" : 59977
+    },
+    "srcOui" : [
+     "Hon Hai Precision Ind. Co.,Ltd."
+    ],
+    "srcOuiCnt" : 1,
+    "srcPayload8" : "000100542112a442",
+    "srcRIR" : "ARIN",
+    "srcTTL" : [
+     128
+    ],
+    "srcTTLCnt" : 1,
+    "stun" : {
+     "error" : [
+      401
+     ],
+     "errorCnt" : 1,
+     "software" : [
+      "Net-Net OS-E E3.7.0 "
+     ],
+     "softwareCnt" : 1,
+     "type" : [
+      "Binding Error",
+      "Binding Request",
+      "Binding Response"
+     ],
+     "typeCnt" : 3,
+     "username" : [
+      "GwL3AHBovubLvCqn:pLyZHR",
+      "pLyZHR:GwL3AHBovubLvCqn"
+     ],
+     "usernameCnt" : 2,
+     "xorMappedASN" : [
+      "AS6167 Cellco Partnership DBA Verizon Wireless",
+      "AS7029 Windstream Communications LLC"
+     ],
+     "xorMappedGEO" : [
+      "US",
+      "US"
+     ],
+     "xorMappedIp" : [
+      "155.212.214.188",
+      "70.199.128.46"
+     ],
+     "xorMappedIpCnt" : 2,
+     "xorMappedPort" : [
+      "23131",
+      "4587"
+     ],
+     "xorMappedPortCnt" : 2,
+     "xorMappedRIR" : [
+      "ARIN",
+      "ARIN"
+     ]
+    },
+    "totDataBytes" : 3960
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-130822"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 2136
+    },
+    "destination" : {
+     "as" : {
+      "full" : "AS7029 Windstream Communications LLC",
+      "number" : 7029,
+      "organization" : {
+       "name" : "Windstream Communications LLC"
+      }
+     },
+     "bytes" : 2896,
+     "geo" : {
+      "country_iso_code" : "US"
+     },
+     "ip" : "155.212.214.188",
+     "mac" : [
+      "38:aa:3c:fc:69:c2"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 22,
+     "port" : 23130
+    },
+    "dstOui" : [
+     "Samsung Electro Mechanics Co., Ltd."
+    ],
+    "dstOuiCnt" : 1,
+    "dstPayload8" : "010100442112a442",
+    "dstRIR" : "ARIN",
+    "dstTTL" : [
+     43
+    ],
+    "dstTTLCnt" : 1,
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 1377211128184,
+    "ipProtocol" : 17,
+    "lastPacket" : 1377211136139,
+    "length" : 7955,
+    "network" : {
+     "bytes" : 5956,
+     "community_id" : "1:F6xN7zbQHWnvc8zie3Smc2NO/ms=",
+     "packets" : 44
+    },
+    "node" : "test",
+    "packetLen" : [
+     162,
+     162,
+     146,
+     162,
+     158,
+     122,
+     146,
+     158,
+     106,
+     146,
+     158,
+     106,
+     162,
+     146,
+     162,
+     146,
+     162,
+     146,
+     162,
+     146,
+     162,
+     146,
+     162,
+     146,
+     162,
+     146,
+     162,
+     146,
+     162,
+     146,
+     162,
+     146,
+     162,
+     146,
+     162,
+     146,
+     162,
+     146,
+     162,
+     146,
+     162,
+     146,
+     162,
+     146
+    ],
+    "packetPos" : [
+     528,
+     1176,
+     1500,
+     1792,
+     2116,
+     2274,
+     3536,
+     4080,
+     4238,
+     4754,
+     5428,
+     5586,
+     5692,
+     6016,
+     6162,
+     6486,
+     6924,
+     7394,
+     7540,
+     7864,
+     8156,
+     8626,
+     8772,
+     9242,
+     9388,
+     9858,
+     10004,
+     10328,
+     10620,
+     11090,
+     11236,
+     11560,
+     11852,
+     12176,
+     12468,
+     12938,
+     13084,
+     13554,
+     13700,
+     14170,
+     14484,
+     14954,
+     15100,
+     15570
+    ],
+    "packetRange" : {
+     "gte" : 1377211128184,
+     "lte" : 1377211136139
+    },
+    "protocol" : [
+     "stun",
+     "udp"
+    ],
+    "protocolCnt" : 2,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 1972
+    },
+    "source" : {
+     "bytes" : 3060,
+     "ip" : "192.168.43.155",
+     "mac" : [
+      "f0:7b:cb:9e:e8:cc"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 22,
+     "port" : 59977
+    },
+    "srcOui" : [
+     "Hon Hai Precision Ind. Co.,Ltd."
+    ],
+    "srcOuiCnt" : 1,
+    "srcPayload8" : "000100542112a442",
+    "srcRIR" : "ARIN",
+    "srcTTL" : [
+     128
+    ],
+    "srcTTLCnt" : 1,
+    "stun" : {
+     "error" : [
+      401
+     ],
+     "errorCnt" : 1,
+     "software" : [
+      "Net-Net OS-E E3.7.0 "
+     ],
+     "softwareCnt" : 1,
+     "type" : [
+      "Binding Error",
+      "Binding Request",
+      "Binding Response"
+     ],
+     "typeCnt" : 3,
+     "username" : [
+      "GwL3AHBovubLvCqn:pLyZHR",
+      "pLyZHR:GwL3AHBovubLvCqn"
+     ],
+     "usernameCnt" : 2,
+     "xorMappedASN" : [
+      "AS6167 Cellco Partnership DBA Verizon Wireless",
+      "AS7029 Windstream Communications LLC"
+     ],
+     "xorMappedGEO" : [
+      "US",
+      "US"
+     ],
+     "xorMappedIp" : [
+      "155.212.214.188",
+      "70.199.128.46"
+     ],
+     "xorMappedIpCnt" : 2,
+     "xorMappedPort" : [
+      "23130",
+      "4587"
+     ],
+     "xorMappedPortCnt" : 2,
+     "xorMappedRIR" : [
+      "ARIN",
+      "ARIN"
+     ]
+    },
+    "totDataBytes" : 4108
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-130822"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 288
+    },
+    "destination" : {
+     "as" : {
+      "full" : "AS7029 Windstream Communications LLC",
+      "number" : 7029,
+      "organization" : {
+       "name" : "Windstream Communications LLC"
+      }
+     },
+     "bytes" : 414,
+     "geo" : {
+      "country_iso_code" : "US"
+     },
+     "ip" : "155.212.214.188",
+     "mac" : [
+      "38:aa:3c:fc:69:c2"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 3,
+     "port" : 23131
+    },
+    "dstOui" : [
+     "Samsung Electro Mechanics Co., Ltd."
+    ],
+    "dstOuiCnt" : 1,
+    "dstPayload8" : "010100442112a442",
+    "dstRIR" : "ARIN",
+    "dstTTL" : [
+     43
+    ],
+    "dstTTLCnt" : 1,
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 1377211128232,
+    "ipProtocol" : 17,
+    "lastPacket" : 1377211128474,
+    "length" : 242,
+    "network" : {
+     "bytes" : 870,
+     "community_id" : "1:2Jd3iYKlewFE37NwTO0NrewU75M=",
+     "packets" : 7
+    },
+    "node" : "test",
+    "packetLen" : [
+     162,
+     146,
+     158,
+     122,
+     130,
+     158,
+     106
+    ],
+    "packetPos" : [
+     1014,
+     2676,
+     2968,
+     3126,
+     3248,
+     4900,
+     5058
+    ],
+    "packetRange" : {
+     "gte" : 1377211128232,
+     "lte" : 1377211128474
+    },
+    "protocol" : [
+     "stun",
+     "udp"
+    ],
+    "protocolCnt" : 2,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 288
+    },
+    "source" : {
+     "bytes" : 456,
+     "ip" : "192.168.43.155",
+     "mac" : [
+      "f0:7b:cb:9e:e8:cc"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 4,
+     "port" : 60020
+    },
+    "srcOui" : [
+     "Hon Hai Precision Ind. Co.,Ltd."
+    ],
+    "srcOuiCnt" : 1,
+    "srcPayload8" : "000100542112a442",
+    "srcRIR" : "ARIN",
+    "srcTTL" : [
+     128
+    ],
+    "srcTTLCnt" : 1,
+    "stun" : {
+     "error" : [
+      "401",
+      "500"
+     ],
+     "errorCnt" : 2,
+     "software" : [
+      "Net-Net OS-E E3.7.0 "
+     ],
+     "softwareCnt" : 1,
+     "type" : [
+      "Binding Error",
+      "Binding Request",
+      "Binding Response"
+     ],
+     "typeCnt" : 3,
+     "username" : [
+      "GwL3AHBovubLvCqn:pLyZHR",
+      "pLyZHR:GwL3AHBovubLvCqn"
+     ],
+     "usernameCnt" : 2,
+     "xorMappedASN" : [
+      "AS6167 Cellco Partnership DBA Verizon Wireless",
+      "AS7029 Windstream Communications LLC"
+     ],
+     "xorMappedGEO" : [
+      "US",
+      "US"
+     ],
+     "xorMappedIp" : [
+      "155.212.214.188",
+      "70.199.128.46"
+     ],
+     "xorMappedIpCnt" : 2,
+     "xorMappedPort" : [
+      "23131",
+      "4604"
+     ],
+     "xorMappedPortCnt" : 2,
+     "xorMappedRIR" : [
+      "ARIN",
+      "ARIN"
+     ]
+    },
+    "totDataBytes" : 576
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-130822"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 288
+    },
+    "destination" : {
+     "as" : {
+      "full" : "AS7029 Windstream Communications LLC",
+      "number" : 7029,
+      "organization" : {
+       "name" : "Windstream Communications LLC"
+      }
+     },
+     "bytes" : 414,
+     "geo" : {
+      "country_iso_code" : "US"
+     },
+     "ip" : "155.212.214.188",
+     "mac" : [
+      "38:aa:3c:fc:69:c2"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 3,
+     "port" : 23130
+    },
+    "dstOui" : [
+     "Samsung Electro Mechanics Co., Ltd."
+    ],
+    "dstOuiCnt" : 1,
+    "dstPayload8" : "010100442112a442",
+    "dstRIR" : "ARIN",
+    "dstTTL" : [
+     43
+    ],
+    "dstTTLCnt" : 1,
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 1377211128232,
+    "ipProtocol" : 17,
+    "lastPacket" : 1377211128506,
+    "length" : 274,
+    "network" : {
+     "bytes" : 870,
+     "community_id" : "1:4zZhZXliachQAajy+onC6H8iNSk=",
+     "packets" : 7
+    },
+    "node" : "test",
+    "packetLen" : [
+     162,
+     146,
+     158,
+     122,
+     130,
+     158,
+     106
+    ],
+    "packetPos" : [
+     852,
+     2822,
+     3378,
+     3682,
+     3804,
+     5164,
+     5322
+    ],
+    "packetRange" : {
+     "gte" : 1377211128232,
+     "lte" : 1377211128506
+    },
+    "protocol" : [
+     "stun",
+     "udp"
+    ],
+    "protocolCnt" : 2,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 288
+    },
+    "source" : {
+     "bytes" : 456,
+     "ip" : "192.168.43.155",
+     "mac" : [
+      "f0:7b:cb:9e:e8:cc"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 4,
+     "port" : 60020
+    },
+    "srcOui" : [
+     "Hon Hai Precision Ind. Co.,Ltd."
+    ],
+    "srcOuiCnt" : 1,
+    "srcPayload8" : "000100542112a442",
+    "srcRIR" : "ARIN",
+    "srcTTL" : [
+     128
+    ],
+    "srcTTLCnt" : 1,
+    "stun" : {
+     "error" : [
+      "401",
+      "500"
+     ],
+     "errorCnt" : 2,
+     "software" : [
+      "Net-Net OS-E E3.7.0 "
+     ],
+     "softwareCnt" : 1,
+     "type" : [
+      "Binding Error",
+      "Binding Request",
+      "Binding Response"
+     ],
+     "typeCnt" : 3,
+     "username" : [
+      "GwL3AHBovubLvCqn:pLyZHR",
+      "pLyZHR:GwL3AHBovubLvCqn"
+     ],
+     "usernameCnt" : 2,
+     "xorMappedASN" : [
+      "AS6167 Cellco Partnership DBA Verizon Wireless",
+      "AS7029 Windstream Communications LLC"
+     ],
+     "xorMappedGEO" : [
+      "US",
+      "US"
+     ],
+     "xorMappedIp" : [
+      "155.212.214.188",
+      "70.199.128.46"
+     ],
+     "xorMappedIpCnt" : 2,
+     "xorMappedPort" : [
+      "23130",
+      "4604"
+     ],
+     "xorMappedPortCnt" : 2,
+     "xorMappedRIR" : [
+      "ARIN",
+      "ARIN"
+     ]
+    },
+    "totDataBytes" : 576
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-130822"
+    }
+   }
+  }
+ ]
+}
+
