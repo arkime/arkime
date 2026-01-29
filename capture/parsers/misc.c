@@ -87,28 +87,6 @@ LOCAL void syslog_classify(ArkimeSession_t *session, const uint8_t *UNUSED(data)
     }
 }
 /******************************************************************************/
-LOCAL void stun_classify(ArkimeSession_t *session, const uint8_t *data, int len, int UNUSED(which), void *UNUSED(uw))
-{
-    if (len < 20 || 20 + data[3] != len)
-        return;
-
-    if (memcmp(data + 4, "\x21\x12\xa4\x42", 4) == 0) {
-        arkime_session_add_protocol(session, "stun");
-        return;
-    }
-
-    if (data[1] == 1 && len > 25 && data[23] + 24 == len) {
-        arkime_session_add_protocol(session, "stun");
-        return;
-    }
-}
-/******************************************************************************/
-LOCAL void stun_rsp_classify(ArkimeSession_t *session, const uint8_t *data, int len, int UNUSED(which), void *UNUSED(uw))
-{
-    if (arkime_memstr((const char *)data + 7, len - 7, "STUN", 4))
-        arkime_session_add_protocol(session, "stun");
-}
-/******************************************************************************/
 LOCAL void flap_classify(ArkimeSession_t *session, const uint8_t *data, int len, int UNUSED(which), void *UNUSED(uw))
 {
     if (len < 6)
@@ -317,12 +295,6 @@ void arkime_parser_init()
     PARSERS_CLASSIFY_BOTH("syslog", NULL, 0, (uint8_t *)"<7", 2, syslog_classify);
     PARSERS_CLASSIFY_BOTH("syslog", NULL, 0, (uint8_t *)"<8", 2, syslog_classify);
     PARSERS_CLASSIFY_BOTH("syslog", NULL, 0, (uint8_t *)"<9", 2, syslog_classify);
-
-    PARSERS_CLASSIFY_BOTH("stun", NULL, 0, (uint8_t *)"RSP/", 4, stun_rsp_classify);
-
-    CLASSIFY_UDP("stun", 0, "\x00\x01\x00", stun_classify);
-    CLASSIFY_UDP("stun", 0, "\x00\x03\x00", stun_classify);
-    CLASSIFY_UDP("stun", 0, "\x01\x01\x00", stun_classify);
 
     CLASSIFY_TCP("flap", 0, "\x2a\x01", flap_classify);
 
