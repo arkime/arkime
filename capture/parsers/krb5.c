@@ -12,12 +12,6 @@ LOCAL  int realmField;
 LOCAL  int cnameField;
 LOCAL  int snameField;
 
-#define KRB5_MAX_SIZE 4096
-typedef struct {
-    uint8_t  data[2][KRB5_MAX_SIZE];
-    int      pos[2];
-} KRB5Info_t;
-
 /******************************************************************************/
 /* wireshark: k5.asn which based on http://www.h5l.org/dist/src/heimdal-1.2.tar.gz
 --PrincipalName ::= SEQUENCE {
@@ -220,30 +214,20 @@ LOCAL void krb5_udp_classify(ArkimeSession_t *session, const uint8_t *data, int 
     }
 }
 /******************************************************************************/
-LOCAL void krb5_free(ArkimeSession_t UNUSED(*session), void *uw)
-{
-    KRB5Info_t            *krb5          = uw;
-
-    ARKIME_TYPE_FREE(KRB5Info_t, krb5);
-}
-/******************************************************************************/
 LOCAL int krb5_tcp_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, int remaining, int which)
 {
-    KRB5Info_t *krb5 = uw;
+    ArkimeParserBuf_t *krb5 = uw;
 
-    remaining = MIN(remaining, KRB5_MAX_SIZE - krb5->pos[which]);
-    memcpy(krb5->data[which] + krb5->pos[which], data, remaining);
-    krb5->pos[which] += remaining;
+    arkime_parser_buf_add(krb5, which, data, remaining);
 
-    if (krb5->pos[which] < 4)
+    if (krb5->len[which] < 4)
         return 0;
 
-    int len = (krb5->data[which][2] << 8) | krb5->data[which][3];
-    if (krb5->pos[which] < len + 4)
+    int len = (krb5->buf[which][2] << 8) | krb5->buf[which][3];
+    if (krb5->len[which] < len + 4)
         return 0;
-    krb5_parse(session, krb5->data[which] + 4, len);
-    memmove(krb5->data[which], krb5->data[which] + len + 4, krb5->pos[which] - len - 4);
-    krb5->pos[which] -= (len + 4);
+    krb5_parse(session, krb5->buf[which] + 4, len);
+    arkime_parser_buf_del(krb5, which, len + 4);
     return 0;
 }
 /******************************************************************************/
@@ -252,10 +236,9 @@ LOCAL void krb5_tcp_classify(ArkimeSession_t *session, const uint8_t *data, int 
     if (len < 2 || which != 0 || data[0] != 0 || data[1] != 0)
         return;
 
-    KRB5Info_t            *krb5          = ARKIME_TYPE_ALLOC(KRB5Info_t);
-    krb5->pos[0] = krb5->pos[1] = 0;
+    ArkimeParserBuf_t     *krb5          = arkime_parser_buf_create();
 
-    arkime_parsers_register(session, krb5_tcp_parser, krb5, krb5_free);
+    arkime_parsers_register(session, krb5_tcp_parser, krb5, arkime_parser_buf_session_free);
 }
 /******************************************************************************/
 void arkime_parser_init()

@@ -9,12 +9,8 @@ extern ArkimeConfig_t        config;
 LOCAL  int bindNameField;
 LOCAL  int authTypeField;
 
-typedef struct {
-    uint8_t       buf[2][8192];
-    int           len[2];
-} LDAPInfo_t;
 /******************************************************************************/
-LOCAL void ldap_process(ArkimeSession_t *session, LDAPInfo_t *ldap, int which)
+LOCAL void ldap_process(ArkimeSession_t *session, ArkimeParserBuf_t *ldap, int which)
 {
     BSB obsb, ibsb;
     uint32_t opc, otag, olen;
@@ -93,15 +89,14 @@ LOCAL void ldap_process(ArkimeSession_t *session, LDAPInfo_t *ldap, int which)
 /******************************************************************************/
 LOCAL int ldap_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, int remaining, int which)
 {
-    LDAPInfo_t            *ldap          = uw;
+    ArkimeParserBuf_t     *ldap          = uw;
 
     if (ldap->len[which] == -1) { // Stop recursion
         return 0;
     }
 
     // Copy the data we have
-    memcpy(ldap->buf[which] + ldap->len[which], data, MIN(remaining, (int)sizeof(ldap->buf[which]) - ldap->len[which]));
-    ldap->len[which] += MIN(remaining, (int)sizeof(ldap->buf[which]) - ldap->len[which]);
+    arkime_parser_buf_add(ldap, which, data, remaining);
 
     if (ldap->len[which] > 6000) {
         ldap_process(session, ldap, which);
@@ -114,7 +109,7 @@ LOCAL int ldap_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, i
 /******************************************************************************/
 LOCAL void ldap_save(ArkimeSession_t *session, void *uw, int UNUSED(final))
 {
-    LDAPInfo_t            *ldap          = uw;
+    ArkimeParserBuf_t     *ldap          = uw;
 
     if (ldap->len[0] > 5) {
         ldap_process(session, ldap, 0);
@@ -123,13 +118,6 @@ LOCAL void ldap_save(ArkimeSession_t *session, void *uw, int UNUSED(final))
     if (ldap->len[1] > 5) {
         ldap_process(session, ldap, 1);
     }
-}
-/******************************************************************************/
-LOCAL void ldap_free(ArkimeSession_t *UNUSED(session), void *uw)
-{
-    LDAPInfo_t            *ldap          = uw;
-
-    ARKIME_TYPE_FREE(LDAPInfo_t, ldap);
 }
 /******************************************************************************/
 LOCAL void ldap_classify(ArkimeSession_t *session, const uint8_t *data, int len, int UNUSED(which), void *UNUSED(uw))
@@ -156,11 +144,9 @@ LOCAL void ldap_classify(ArkimeSession_t *session, const uint8_t *data, int len,
             return;
 
         arkime_session_add_protocol(session, "ldap");
-        LDAPInfo_t  *ldap = ARKIME_TYPE_ALLOC(LDAPInfo_t);
-        ldap->len[0]         = 0;
-        ldap->len[1]         = 0;
+        ArkimeParserBuf_t  *ldap = arkime_parser_buf_create();
 
-        arkime_parsers_register2(session, ldap_parser, ldap, ldap_free, ldap_save);
+        arkime_parsers_register2(session, ldap_parser, ldap, arkime_parser_buf_session_free, ldap_save);
     }
 }
 /******************************************************************************/

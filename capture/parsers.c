@@ -1379,3 +1379,78 @@ void arkime_parsers_call_named_func(uint32_t id, ArkimeSession_t *session, const
         }
     }
 }
+/******************************************************************************/
+ArkimeParserBuf_t *arkime_parser_buf_create()
+{
+    ArkimeParserBuf_t *pb = ARKIME_TYPE_ALLOC(ArkimeParserBuf_t);
+    pb->len[0] = pb->len[1] = 0;
+    pb->state[0] = pb->state[1] = 0;
+    pb->skipping[0] = pb->skipping[1] = 0;
+    pb->serverWhich = 0;
+    return pb;
+}
+/******************************************************************************/
+int arkime_parser_buf_add(ArkimeParserBuf_t *pb, int which, const uint8_t *data, int len)
+{
+    if (len <= 0)
+        return 0;
+
+    // First skip any bytes that skipping[which] requires
+    if (pb->skipping[which] > 0) {
+        if (pb->skipping[which] >= len) {
+            pb->skipping[which] -= len;
+            return 0;
+        }
+        data += pb->skipping[which];
+        len -= pb->skipping[which];
+        pb->skipping[which] = 0;
+    }
+
+    // Calculate available space
+    int available = (int)sizeof(pb->buf[which]) - pb->len[which];
+    int tocopy = (len < available) ? len : available;
+
+    if (tocopy > 0) {
+        memcpy(pb->buf[which] + pb->len[which], data, tocopy);
+        pb->len[which] += tocopy;
+    }
+
+    return (tocopy < len) ? -1 : 0;
+}
+/******************************************************************************/
+int arkime_parser_buf_del(ArkimeParserBuf_t *pb, int which, int len)
+{
+    if (len <= 0)
+        return 0;
+
+    if (len >= pb->len[which]) {
+        pb->len[which] = 0;
+    } else {
+        memmove(pb->buf[which], pb->buf[which] + len, pb->len[which] - len);
+        pb->len[which] -= len;
+    }
+    return 0;
+}
+/******************************************************************************/
+void arkime_parser_buf_skip(ArkimeParserBuf_t *pb, int which, int skip)
+{
+    if (skip <= 0)
+        return;
+
+    if (skip <= pb->len[which]) {
+        arkime_parser_buf_del(pb, which, skip);
+    } else {
+        pb->skipping[which] += skip - pb->len[which];
+        pb->len[which] = 0;
+    }
+}
+/******************************************************************************/
+void arkime_parser_buf_free(ArkimeParserBuf_t *pb)
+{
+    ARKIME_TYPE_FREE(ArkimeParserBuf_t, pb);
+}
+/******************************************************************************/
+void arkime_parser_buf_session_free(ArkimeSession_t *UNUSED(session), void *uw)
+{
+    ARKIME_TYPE_FREE(ArkimeParserBuf_t, uw);
+}

@@ -16,12 +16,6 @@ LOCAL  int hostField;
 LOCAL  int uaField;
 LOCAL  int versionField;
 
-#define FBZERO_MAX_SIZE 4096
-typedef struct {
-    uint8_t  data[FBZERO_MAX_SIZE];
-    int      pos;
-} FBZeroInfo_t;
-
 typedef struct {
     int            packets;
     int            which;
@@ -267,33 +261,24 @@ LOCAL void quic_add(ArkimeSession_t *UNUSED(session), const uint8_t *UNUSED(data
     arkime_session_add_protocol(session, "quic");
 }
 /******************************************************************************/
-LOCAL void quic_fbzero_free(ArkimeSession_t UNUSED(*session), void *uw)
-{
-    FBZeroInfo_t            *fbzero          = uw;
-
-    ARKIME_TYPE_FREE(FBZeroInfo_t, fbzero);
-}
-/******************************************************************************/
 LOCAL int quic_fb_tcp_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, int remaining, int which)
 {
     if (which != 0)
         return 0;
 
-    FBZeroInfo_t *fbzero = uw;
+    ArkimeParserBuf_t *fbzero = uw;
 
-    remaining = MIN(remaining, FBZERO_MAX_SIZE - fbzero->pos);
-    memcpy(fbzero->data + fbzero->pos, data, remaining);
-    fbzero->pos += remaining;
+    arkime_parser_buf_add(fbzero, 0, data, remaining);
 
-    if (fbzero->pos < 7)
+    if (fbzero->len[0] < 7)
         return 0;
 
-    int len = (fbzero->data[6] << 8) | fbzero->data[5];
-    if (fbzero->pos < len + 9)
+    int len = (fbzero->buf[0][6] << 8) | fbzero->buf[0][5];
+    if (fbzero->len[0] < len + 9)
         return 0;
 
     BSB dbsb;
-    BSB_INIT(dbsb, fbzero->data + 9, len);
+    BSB_INIT(dbsb, fbzero->buf[0] + 9, len);
 
     if (quic_chlo_parser(session, dbsb))
         arkime_session_add_protocol(session, "fbzero");
@@ -305,9 +290,8 @@ LOCAL int quic_fb_tcp_parser(ArkimeSession_t *session, void *uw, const uint8_t *
 LOCAL void quic_fb_tcp_classify(ArkimeSession_t *session, const uint8_t *UNUSED(data), int len, int which, void *UNUSED(uw))
 {
     if (which == 0 && len > 13) {
-        FBZeroInfo_t *fbzero = ARKIME_TYPE_ALLOC(FBZeroInfo_t);
-        fbzero->pos = 0;
-        arkime_parsers_register(session, quic_fb_tcp_parser, fbzero, quic_fbzero_free);
+        ArkimeParserBuf_t *fbzero = arkime_parser_buf_create();
+        arkime_parsers_register(session, quic_fb_tcp_parser, fbzero, arkime_parser_buf_session_free);
     }
 }
 /******************************************************************************/

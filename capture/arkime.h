@@ -536,6 +536,15 @@ typedef struct {
 
 } ArkimeParserInfo_t;
 
+typedef struct {
+    uint8_t buf[2][8192];
+    int     len[2];
+    int     state[2];
+    int     skipping[2];
+    int     serverWhich;
+    uint8_t version;
+} ArkimeParserBuf_t;
+
 /******************************************************************************/
 struct arkime_pcap_timeval {
     uint32_t tv_sec;		   /* seconds */
@@ -1164,6 +1173,13 @@ void arkime_parsers_call_named_func(uint32_t id, ArkimeSession_t *session, const
 
 typedef int (* ArkimeParserLoadFunc) (const char *path);
 void arkime_parsers_register_load_extension(const char *extension, ArkimeParserLoadFunc loadFunc);
+
+ArkimeParserBuf_t *arkime_parser_buf_create();
+int arkime_parser_buf_add(ArkimeParserBuf_t *pb, int which, const uint8_t *data, int len);
+int arkime_parser_buf_del(ArkimeParserBuf_t *pb, int which, int len);
+void arkime_parser_buf_skip(ArkimeParserBuf_t *pb, int which, int skip);
+void arkime_parser_buf_free(ArkimeParserBuf_t *pb);
+void arkime_parser_buf_session_free(ArkimeSession_t *session, void *uw);
 
 /******************************************************************************/
 /*
