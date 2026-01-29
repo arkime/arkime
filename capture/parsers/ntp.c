@@ -125,6 +125,9 @@ LOCAL int ntp_udp_parser(ArkimeSession_t *session, void *UNUSED(uw), const uint8
 /******************************************************************************/
 LOCAL void ntp_udp_classify(ArkimeSession_t *session, const uint8_t *data, int len, int UNUSED(which), void *UNUSED(uw))
 {
+    if (arkime_session_has_protocol(session, "ntp"))
+        return;
+
     // Check port 123
     if (session->port1 != 123 && session->port2 != 123)
         return;

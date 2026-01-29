@@ -64,6 +64,9 @@ LOCAL int tftp_udp_parser(ArkimeSession_t *session, void *UNUSED(uw), const uint
 /******************************************************************************/
 LOCAL void tftp_udp_classify(ArkimeSession_t *session, const uint8_t *data, int len, int UNUSED(which), void *UNUSED(uw))
 {
+    if (arkime_session_has_protocol(session, "tftp"))
+        return;
+
     if (len < 4)
         return;
 

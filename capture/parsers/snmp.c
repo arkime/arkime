@@ -223,6 +223,9 @@ LOCAL int snmp_parser(ArkimeSession_t *session, void *UNUSED(uw), const uint8_t 
 /******************************************************************************/
 LOCAL void snmp_classify(ArkimeSession_t *session, const uint8_t *data, int len, int UNUSED(which), void *UNUSED(uw))
 {
+    if (arkime_session_has_protocol(session, "snmp"))
+        return;
+
     uint32_t apc, atag, alen;
     BSB bsb;
 

@@ -519,6 +519,9 @@ LOCAL int ike_udp_parser(ArkimeSession_t *session, void *UNUSED(uw), const uint8
 /******************************************************************************/
 LOCAL void ike_udp_classify(ArkimeSession_t *session, const uint8_t *data, int len, int UNUSED(which), void *UNUSED(uw))
 {
+    if (arkime_session_has_protocol(session, "isakmp"))
+        return;
+
     int offset = 0;
 
     // NAT-T on port 4500

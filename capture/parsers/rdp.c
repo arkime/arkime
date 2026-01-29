@@ -301,6 +301,9 @@ LOCAL int rdp_parser(ArkimeSession_t *session, void *UNUSED(uw), const uint8_t *
 /******************************************************************************/
 LOCAL void rdp_classify(ArkimeSession_t *session, const uint8_t *data, int len, int UNUSED(which), void *UNUSED(uw))
 {
+    if (arkime_session_has_protocol(session, "rdp"))
+        return;
+
     if (len < 11)
         return;
 
