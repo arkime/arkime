@@ -8447,6 +8447,10 @@
     "lastPacket" : 1737752626000,
     "length" : 5000,
     "modbus" : {
+     "exccode" : [
+      2
+     ],
+     "exccodeCnt" : 1,
      "funccode" : [
       3
      ],

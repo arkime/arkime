@@ -22,18 +22,13 @@ LOCAL  int exceptionCodeField;
 /******************************************************************************/
 LOCAL int modbus_tcp_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, int len, int which)
 {
-
-    if (len < MODBUS_TCP_HEADER_LEN || data[3] != 0) {
-        return ARKIME_PARSER_UNREGISTER;
-    }
-
     ArkimeParserBuf_t *modbus = uw;
 
     modbus->state[which]++;
 
     arkime_parser_buf_add(modbus, which, data, len);
 
-    while (modbus->len[which] > 9) {
+    while (modbus->len[which] >= MODBUS_TCP_HEADER_LEN) {
         BSB bsb;
         BSB_INIT(bsb, modbus->buf[which], modbus->len[which]);
 
