@@ -565,7 +565,7 @@ export default {
       const oldValue = this.asyncMenuItems[key].value;
 
       fetchWrapper({ url }).then((response) => {
-        this.asyncMenuItems[key].value = response.data;
+        this.asyncMenuItems[key].value = response;
         this.menuItemTimeout = setTimeout(() => {
           this.asyncMenuItems[key].value = oldValue; // reset the url
           this.menuItemTimeout = null;
