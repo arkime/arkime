@@ -4110,6 +4110,24 @@
     "ipProtocol" : 6,
     "lastPacket" : 1737752502000,
     "length" : 3000,
+    "mqtt" : {
+     "clientId" : [
+      "client"
+     ],
+     "clientIdCnt" : 1,
+     "flags" : [
+      "cleanSession"
+     ],
+     "flagsCnt" : 1,
+     "type" : [
+      "CONNECT"
+     ],
+     "typeCnt" : 1,
+     "version" : [
+      "3.1.1"
+     ],
+     "versionCnt" : 1
+    },
     "network" : {
      "bytes" : 236,
      "community_id" : "1:63tTAxb2/VA6E6DPmq/qsKgv0HE=",
@@ -4133,9 +4151,10 @@
      "lte" : 1737752502000
     },
     "protocol" : [
+     "mqtt",
      "tcp"
     ],
-    "protocolCnt" : 1,
+    "protocolCnt" : 2,
     "segmentCnt" : 1,
     "server" : {
      "bytes" : 0

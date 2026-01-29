@@ -191,54 +191,6 @@ LOCAL void wudo_classify(ArkimeSession_t *session, const uint8_t *data, int len,
     }
 }
 /******************************************************************************/
-LOCAL void mqtt_classify(ArkimeSession_t *session, const uint8_t *data, int len, int UNUSED(which), void *UNUSED(uw))
-{
-    if (len < 30 || memcmp("MQ", data + 4, 2) != 0)
-        return;
-
-    arkime_session_add_protocol(session, "mqtt");
-
-    BSB bsb;
-
-    BSB_INIT(bsb, data, len);
-    BSB_IMPORT_skip(bsb, 2);
-
-    int nameLen = 0;
-    BSB_IMPORT_u16(bsb, nameLen);
-    BSB_IMPORT_skip(bsb, nameLen);
-
-    BSB_IMPORT_skip(bsb, 1); // version
-
-    int flags = 0;
-    BSB_IMPORT_u08(bsb, flags);
-
-    BSB_IMPORT_skip(bsb, 2); // keep alive
-
-    int idLen = 0;
-    BSB_IMPORT_u16(bsb, idLen);
-    BSB_IMPORT_skip(bsb, idLen);
-
-    if (flags & 0x04) { // will
-        int skiplen = 0;
-
-        BSB_IMPORT_u16(bsb, skiplen);
-        BSB_IMPORT_skip(bsb, skiplen);
-
-        BSB_IMPORT_u16(bsb, skiplen);
-        BSB_IMPORT_skip(bsb, skiplen);
-    }
-
-    if (flags & 0x80) {
-        int      userLen = 0;
-        uint8_t *user = 0;
-        BSB_IMPORT_u16(bsb, userLen);
-        BSB_IMPORT_ptr(bsb, user, userLen);
-
-        if (BSB_NOT_ERROR(bsb)) {
-            arkime_field_string_add_lower(userField, session, (char *)user, userLen);
-        }
-    }
-}
 /******************************************************************************/
 LOCAL void hdfs_classify(ArkimeSession_t *session, const uint8_t *data, int len, int UNUSED(which), void *UNUSED(uw))
 {
@@ -455,8 +407,6 @@ void arkime_parser_init()
     arkime_parsers_classifier_register_port("sccp",  NULL, 2000, ARKIME_PARSERS_PORT_TCP_DST, sccp_classify);
 
     arkime_parsers_classifier_register_port("wudo",  NULL, 7680, ARKIME_PARSERS_PORT_TCP_DST, wudo_classify);
-
-    CLASSIFY_TCP("mqtt", 0, "\x10", mqtt_classify);
 
     arkime_parsers_classifier_register_port("hsrp",  NULL, 1985, ARKIME_PARSERS_PORT_UDP, hsrp_udp_classify);
     arkime_parsers_classifier_register_port("hsrp",  NULL, 2029, ARKIME_PARSERS_PORT_UDP, hsrp_udp_classify);

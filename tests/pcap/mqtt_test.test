@@ -1,0 +1,664 @@
+{
+ "sessions3" : [
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 123
+    },
+    "destination" : {
+     "bytes" : 200,
+     "ip" : "10.0.0.100",
+     "packets" : 5,
+     "port" : 1883
+    },
+    "dstTTL" : [
+     64
+    ],
+    "dstTTLCnt" : 1,
+    "fileId" : [],
+    "firstPacket" : 1700000000000,
+    "initRTT" : 50,
+    "ipProtocol" : 6,
+    "lastPacket" : 1700000004100,
+    "length" : 4100,
+    "mqtt" : {
+     "clientId" : [
+      "sensor-001"
+     ],
+     "clientIdCnt" : 1,
+     "flags" : [
+      "cleanSession",
+      "hasPassword"
+     ],
+     "flagsCnt" : 2,
+     "qos" : [
+      "0",
+      "1"
+     ],
+     "qosCnt" : 2,
+     "topic" : [
+      "commands/+",
+      "sensors/#",
+      "sensors/humidity",
+      "sensors/temperature"
+     ],
+     "topicCnt" : 4,
+     "type" : [
+      "CONNECT",
+      "PUBLISH",
+      "SUBSCRIBE"
+     ],
+     "typeCnt" : 3,
+     "version" : [
+      "3.1.1"
+     ],
+     "versionCnt" : 1
+    },
+    "network" : {
+     "bytes" : 563,
+     "community_id" : "1:lJWomI+VN7jeo7l/N7C75GpgH/Y=",
+     "packets" : 11
+    },
+    "node" : "test",
+    "packetLen" : [
+     56,
+     56,
+     56,
+     98,
+     56,
+     85,
+     56,
+     83,
+     56,
+     81,
+     56
+    ],
+    "packetPos" : [
+     24,
+     80,
+     136,
+     192,
+     290,
+     346,
+     431,
+     487,
+     570,
+     626,
+     707
+    ],
+    "packetRange" : {
+     "gte" : 1700000000000,
+     "lte" : 1700000004100
+    },
+    "protocol" : [
+     "mqtt",
+     "tcp"
+    ],
+    "protocolCnt" : 2,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 0
+    },
+    "source" : {
+     "bytes" : 363,
+     "ip" : "192.168.1.10",
+     "packets" : 6,
+     "port" : 54321
+    },
+    "srcPayload8" : "102800044d515454",
+    "srcRIR" : "ARIN",
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
+    "tcpflags" : {
+     "ack" : 5,
+     "dstZero" : 0,
+     "fin" : 0,
+     "psh" : 4,
+     "rst" : 0,
+     "srcZero" : 0,
+     "syn" : 1,
+     "syn-ack" : 1,
+     "urg" : 0
+    },
+    "tcpseq" : {
+     "dst" : 0,
+     "src" : 1000
+    },
+    "totDataBytes" : 123,
+    "user" : [
+     "admin"
+    ],
+    "userCnt" : 1
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-231114"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 95
+    },
+    "destination" : {
+     "bytes" : 120,
+     "ip" : "10.0.0.100",
+     "packets" : 3,
+     "port" : 1883
+    },
+    "dstTTL" : [
+     64
+    ],
+    "dstTTLCnt" : 1,
+    "fileId" : [],
+    "firstPacket" : 1700000010000,
+    "initRTT" : 50,
+    "ipProtocol" : 6,
+    "lastPacket" : 1700000012100,
+    "length" : 2100,
+    "mqtt" : {
+     "clientId" : [
+      "legacy-device"
+     ],
+     "clientIdCnt" : 1,
+     "flags" : [
+      "cleanSession",
+      "hasWill"
+     ],
+     "flagsCnt" : 2,
+     "qos" : [
+      "1",
+      "2"
+     ],
+     "qosCnt" : 2,
+     "topic" : [
+      "data/readings"
+     ],
+     "topicCnt" : 1,
+     "type" : [
+      "CONNECT",
+      "PUBLISH"
+     ],
+     "typeCnt" : 2,
+     "version" : [
+      "3.1"
+     ],
+     "versionCnt" : 1,
+     "willTopic" : [
+      "status/legacy-device"
+     ],
+     "willTopicCnt" : 1
+    },
+    "network" : {
+     "bytes" : 375,
+     "community_id" : "1:OztDnmEKl55Z2KHlx01ln2IlJdE=",
+     "packets" : 7
+    },
+    "node" : "test",
+    "packetLen" : [
+     56,
+     56,
+     56,
+     121,
+     56,
+     86,
+     56
+    ],
+    "packetPos" : [
+     763,
+     819,
+     875,
+     931,
+     1052,
+     1108,
+     1194
+    ],
+    "packetRange" : {
+     "gte" : 1700000010000,
+     "lte" : 1700000012100
+    },
+    "protocol" : [
+     "mqtt",
+     "tcp"
+    ],
+    "protocolCnt" : 2,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 0
+    },
+    "source" : {
+     "bytes" : 255,
+     "ip" : "192.168.1.20",
+     "packets" : 4,
+     "port" : 44444
+    },
+    "srcPayload8" : "103f00064d514973",
+    "srcRIR" : "ARIN",
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
+    "tcpflags" : {
+     "ack" : 3,
+     "dstZero" : 0,
+     "fin" : 0,
+     "psh" : 2,
+     "rst" : 0,
+     "srcZero" : 0,
+     "syn" : 1,
+     "syn-ack" : 1,
+     "urg" : 0
+    },
+    "tcpseq" : {
+     "dst" : 0,
+     "src" : 1000
+    },
+    "totDataBytes" : 95
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-231114"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 109
+    },
+    "destination" : {
+     "bytes" : 160,
+     "ip" : "10.0.0.100",
+     "packets" : 4,
+     "port" : 1883
+    },
+    "dstTTL" : [
+     64
+    ],
+    "dstTTLCnt" : 1,
+    "fileId" : [],
+    "firstPacket" : 1700000020000,
+    "initRTT" : 50,
+    "ipProtocol" : 6,
+    "lastPacket" : 1700000023100,
+    "length" : 3100,
+    "mqtt" : {
+     "clientId" : [
+      "iot-gateway-west"
+     ],
+     "clientIdCnt" : 1,
+     "flags" : [
+      "cleanSession"
+     ],
+     "flagsCnt" : 1,
+     "topic" : [
+      "alerts/+",
+      "factory/line1/#",
+      "factory/line2/#"
+     ],
+     "topicCnt" : 3,
+     "type" : [
+      "CONNECT",
+      "SUBSCRIBE",
+      "UNSUBSCRIBE"
+     ],
+     "typeCnt" : 3,
+     "version" : [
+      "3.1.1"
+     ],
+     "versionCnt" : 1
+    },
+    "network" : {
+     "bytes" : 469,
+     "community_id" : "1:ILUjz8diMZ9fow65IPH9a7JjTtI=",
+     "packets" : 9
+    },
+    "node" : "test",
+    "packetLen" : [
+     56,
+     56,
+     56,
+     100,
+     56,
+     107,
+     56,
+     70,
+     56
+    ],
+    "packetPos" : [
+     1250,
+     1306,
+     1362,
+     1418,
+     1518,
+     1574,
+     1681,
+     1737,
+     1807
+    ],
+    "packetRange" : {
+     "gte" : 1700000020000,
+     "lte" : 1700000023100
+    },
+    "protocol" : [
+     "mqtt",
+     "tcp"
+    ],
+    "protocolCnt" : 2,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 0
+    },
+    "source" : {
+     "bytes" : 309,
+     "ip" : "192.168.1.30",
+     "packets" : 5,
+     "port" : 33333
+    },
+    "srcPayload8" : "102a00044d515454",
+    "srcRIR" : "ARIN",
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
+    "tcpflags" : {
+     "ack" : 4,
+     "dstZero" : 0,
+     "fin" : 0,
+     "psh" : 3,
+     "rst" : 0,
+     "srcZero" : 0,
+     "syn" : 1,
+     "syn-ack" : 1,
+     "urg" : 0
+    },
+    "tcpseq" : {
+     "dst" : 0,
+     "src" : 1000
+    },
+    "totDataBytes" : 109,
+    "user" : [
+     "gateway_user"
+    ],
+    "userCnt" : 1
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-231114"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 103
+    },
+    "destination" : {
+     "bytes" : 200,
+     "ip" : "10.0.0.100",
+     "packets" : 5,
+     "port" : 1883
+    },
+    "dstTTL" : [
+     64
+    ],
+    "dstTTLCnt" : 1,
+    "fileId" : [],
+    "firstPacket" : 1700000030000,
+    "initRTT" : 50,
+    "ipProtocol" : 6,
+    "lastPacket" : 1700000034100,
+    "length" : 4100,
+    "mqtt" : {
+     "clientId" : [
+      "anon-publisher"
+     ],
+     "clientIdCnt" : 1,
+     "flags" : [
+      "cleanSession"
+     ],
+     "flagsCnt" : 1,
+     "qos" : [
+      "0",
+      "1"
+     ],
+     "qosCnt" : 2,
+     "topic" : [
+      "public/news",
+      "public/stocks",
+      "public/weather"
+     ],
+     "topicCnt" : 3,
+     "type" : [
+      "CONNECT",
+      "PUBLISH"
+     ],
+     "typeCnt" : 2,
+     "version" : [
+      "3.1.1"
+     ],
+     "versionCnt" : 1
+    },
+    "network" : {
+     "bytes" : 543,
+     "community_id" : "1:XyTfsUagOvlmyfRSYunE/NRSIew=",
+     "packets" : 11
+    },
+    "node" : "test",
+    "packetLen" : [
+     56,
+     56,
+     56,
+     84,
+     56,
+     84,
+     56,
+     79,
+     56,
+     80,
+     56
+    ],
+    "packetPos" : [
+     1863,
+     1919,
+     1975,
+     2031,
+     2115,
+     2171,
+     2255,
+     2311,
+     2390,
+     2446,
+     2526
+    ],
+    "packetRange" : {
+     "gte" : 1700000030000,
+     "lte" : 1700000034100
+    },
+    "protocol" : [
+     "mqtt",
+     "tcp"
+    ],
+    "protocolCnt" : 2,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 0
+    },
+    "source" : {
+     "bytes" : 343,
+     "ip" : "192.168.1.40",
+     "packets" : 6,
+     "port" : 22222
+    },
+    "srcPayload8" : "101a00044d515454",
+    "srcRIR" : "ARIN",
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
+    "tcpflags" : {
+     "ack" : 5,
+     "dstZero" : 0,
+     "fin" : 0,
+     "psh" : 4,
+     "rst" : 0,
+     "srcZero" : 0,
+     "syn" : 1,
+     "syn-ack" : 1,
+     "urg" : 0
+    },
+    "tcpseq" : {
+     "dst" : 0,
+     "src" : 1000
+    },
+    "totDataBytes" : 103
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-231114"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 122
+    },
+    "destination" : {
+     "bytes" : 160,
+     "ip" : "10.0.0.100",
+     "packets" : 4,
+     "port" : 1883
+    },
+    "dstTTL" : [
+     64
+    ],
+    "dstTTLCnt" : 1,
+    "fileId" : [],
+    "firstPacket" : 1700000040000,
+    "initRTT" : 50,
+    "ipProtocol" : 6,
+    "lastPacket" : 1700000043100,
+    "length" : 3100,
+    "mqtt" : {
+     "clientId" : [
+      "mqtt5-client"
+     ],
+     "clientIdCnt" : 1,
+     "flags" : [
+      "cleanSession",
+      "hasPassword"
+     ],
+     "flagsCnt" : 2,
+     "qos" : [
+      1
+     ],
+     "qosCnt" : 1,
+     "topic" : [
+      "v5/commands",
+      "v5/events/#",
+      "v5/telemetry"
+     ],
+     "topicCnt" : 3,
+     "type" : [
+      "CONNECT",
+      "PUBLISH",
+      "SUBSCRIBE"
+     ],
+     "typeCnt" : 3,
+     "version" : [
+      "5.0"
+     ],
+     "versionCnt" : 1
+    },
+    "network" : {
+     "bytes" : 482,
+     "community_id" : "1:dlBNC/Fgo9MwnZL6jyq9YTX10e0=",
+     "packets" : 9
+    },
+    "node" : "test",
+    "packetLen" : [
+     56,
+     56,
+     56,
+     107,
+     56,
+     88,
+     56,
+     95,
+     56
+    ],
+    "packetPos" : [
+     2582,
+     2638,
+     2694,
+     2750,
+     2857,
+     2913,
+     3001,
+     3057,
+     3152
+    ],
+    "packetRange" : {
+     "gte" : 1700000040000,
+     "lte" : 1700000043100
+    },
+    "protocol" : [
+     "mqtt",
+     "tcp"
+    ],
+    "protocolCnt" : 2,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 0
+    },
+    "source" : {
+     "bytes" : 322,
+     "ip" : "192.168.1.50",
+     "packets" : 5,
+     "port" : 11111
+    },
+    "srcPayload8" : "103100044d515454",
+    "srcRIR" : "ARIN",
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
+    "tcpflags" : {
+     "ack" : 4,
+     "dstZero" : 0,
+     "fin" : 0,
+     "psh" : 3,
+     "rst" : 0,
+     "srcZero" : 0,
+     "syn" : 1,
+     "syn-ack" : 1,
+     "urg" : 0
+    },
+    "tcpseq" : {
+     "dst" : 0,
+     "src" : 1000
+    },
+    "totDataBytes" : 122,
+    "user" : [
+     "modern_user"
+    ],
+    "userCnt" : 1
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-231114"
+    }
+   }
+  }
+ ]
+}
+
