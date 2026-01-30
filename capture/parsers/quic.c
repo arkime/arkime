@@ -384,6 +384,10 @@ LOCAL void quic_ietf_udp_classify(ArkimeSession_t *session, const uint8_t *data,
     uint8_t *did = BSB_WORK_PTR(bsb);
     BSB_IMPORT_skip(bsb, dlen);
 
+    // Skip server packets (dlen == 0) since we only want client initials
+    if (dlen == 0)
+        return;
+
     // Source
     int slen = 0;
     BSB_IMPORT_u08(bsb, slen);
@@ -397,6 +401,7 @@ LOCAL void quic_ietf_udp_classify(ArkimeSession_t *session, const uint8_t *data,
 
     // Length
     uint32_t packet_len = quic_get_number(&bsb);
+
     if (packet_len < 100 || packet_len > BSB_REMAINING(bsb)) {
         if (!config.debug)
             return;
@@ -426,7 +431,7 @@ LOCAL void quic_ietf_udp_classify(ArkimeSession_t *session, const uint8_t *data,
     } else if ((version >> 8) == 0xff0000 && (version & 0xff) >= 29) {
         salt = salt_draft_29; // draft-29 to draft-32
     } else {
-        salt = salt_draft_23; // draft-23 to draft-28
+        salt = salt_draft_23; // draft-23 to draft-28, including Facebook mvfst
     }
 
     // HKDF-Extract(salt, IKM) -> PRK
@@ -489,13 +494,10 @@ LOCAL void quic_ietf_udp_classify(ArkimeSession_t *session, const uint8_t *data,
     int pn_length = (packet0 & 0x03) + 1;
     uint64_t pn = 0;
 
-    if (pn_length > 2)
-        return;
-
-    for (int i = 0; pn_length > 0; pn_length--, i++) {
+    for (int i = 0; i < pn_length; i++) {
         uint8_t tmp = 0;
         BSB_IMPORT_u08(bsb, tmp);
-        pn |= (tmp ^ mask[i + 1]) << (8 * (pn_length - 1));
+        pn |= (uint64_t)(tmp ^ mask[i + 1]) << (8 * (pn_length - 1 - i));
     }
 
     // Make copy, with decrypted first byte and packet number
@@ -505,16 +507,16 @@ LOCAL void quic_ietf_udp_classify(ArkimeSession_t *session, const uint8_t *data,
     memcpy(buffer, data, len);
 
     buffer[0] = packet0;
-    buffer[headerLen - 1] = pn & 0xff;
-    if (pn_length == 2) {
-        buffer[headerLen - 2] = (pn & 0xff) >> 8;
+    for (int i = 0; i < pn_length; i++) {
+        buffer[headerLen - pn_length + i] = (pn >> (8 * (pn_length - 1 - i))) & 0xff;
     }
 
-    // Make nonce
+    // Make nonce - XOR packet number into the last bytes of IV
     uint8_t nonce[12];
     memcpy(nonce, ivOkm, sizeof(nonce));
-    nonce[10] ^= (pn & 0xff) >> 8;
-    nonce[11] ^= (pn & 0xff);
+    for (int i = 0; i < pn_length; i++) {
+        nonce[12 - pn_length + i] ^= (pn >> (8 * (pn_length - 1 - i))) & 0xff;
+    }
 
     // Decrypt Packet
     EVP_CIPHER_CTX      *pp_cipher_ctx;
@@ -584,6 +586,7 @@ void arkime_parser_init()
     arkime_parsers_classifier_register_udp("quic", NULL, 1, (const uint8_t *)"\xff\x00\x00\x1d", 4, quic_ietf_udp_classify);  // draft-29
     arkime_parsers_classifier_register_udp("quic", NULL, 1, (const uint8_t *)"\xff\x00\x00\x1c", 4, quic_ietf_udp_classify);  // draft-28
     arkime_parsers_classifier_register_udp("quic", NULL, 1, (const uint8_t *)"\xff\x00\x00\x1b", 4, quic_ietf_udp_classify);  // draft-27
+    arkime_parsers_classifier_register_udp("quic", NULL, 1, (const uint8_t *)"\xfa\xce\xb0\x02", 4, quic_ietf_udp_classify);  // Facebook mvfst (draft-27)
 
     hostField = arkime_field_define("quic", "lotermfield",
                                     "host.quic", "QUIC Hostname", "quic.host",

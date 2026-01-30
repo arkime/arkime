@@ -51,6 +51,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #3654 Added turn support to stun parser
   - #3655 Handle different quic salts for draft23, draft29, v2
   - #3655 More ssdp keywords
+  - #3656 Parse udp facebook quic
 
 6.0.0-rc1 2026/01/26
 ## BREAKING
