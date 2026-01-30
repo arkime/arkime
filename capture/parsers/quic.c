@@ -256,7 +256,7 @@ LOCAL void quic_5x_udp_classify(ArkimeSession_t *session, const uint8_t *data, i
     }
 }
 /******************************************************************************/
-LOCAL void quic_add(ArkimeSession_t *UNUSED(session), const uint8_t *UNUSED(data), int UNUSED(len), int UNUSED(which), void *UNUSED(uw))
+LOCAL void quic_add(ArkimeSession_t *session, const uint8_t *UNUSED(data), int UNUSED(len), int UNUSED(which), void *UNUSED(uw))
 {
     arkime_session_add_protocol(session, "quic");
 }
@@ -375,7 +375,8 @@ LOCAL void quic_ietf_udp_classify(ArkimeSession_t *session, const uint8_t *data,
     // Decode Header
     uint8_t flags = 0;
     BSB_IMPORT_u08(bsb, flags); // Still partially encrypted
-    BSB_IMPORT_skip(bsb, 4); // version
+    uint32_t version = 0;
+    BSB_IMPORT_u32(bsb, version);
 
     int dlen = 0;
     // Destination
@@ -411,9 +412,24 @@ LOCAL void quic_ietf_udp_classify(ArkimeSession_t *session, const uint8_t *data,
 
     // HKDF - HMAC-based Key Derivation Function
     // https://datatracker.ietf.org/doc/html/rfc5869
+    // Salts from https://github.com/wireshark/wireshark/blob/master/epan/dissectors/packet-quic.c
+    static const uint8_t salt_draft_23[20] = { 0xc3, 0xee, 0xf7, 0x12, 0xc7, 0x2e, 0xbb, 0x5a, 0x11, 0xa7, 0xd2, 0x43, 0x2b, 0xb4, 0x63, 0x65, 0xbe, 0xf9, 0xf5, 0x02 };
+    static const uint8_t salt_draft_29[20] = { 0xaf, 0xbf, 0xec, 0x28, 0x99, 0x93, 0xd2, 0x4c, 0x9e, 0x97, 0x86, 0xf1, 0x9c, 0x61, 0x11, 0xe0, 0x43, 0x90, 0xa8, 0x99 };
+    static const uint8_t salt_v1[20] = { 0x38, 0x76, 0x2c, 0xf7, 0xf5, 0x59, 0x34, 0xb3, 0x4d, 0x17, 0x9a, 0xe6, 0xa4, 0xc8, 0x0c, 0xad, 0xcc, 0xbb, 0x7f, 0x0a };
+    static const uint8_t salt_v2[20] = { 0x0d, 0xed, 0xe3, 0xde, 0xf7, 0x00, 0xa6, 0xdb, 0x81, 0x93, 0x81, 0xbe, 0x6e, 0x26, 0x9d, 0xcb, 0xf9, 0xbd, 0x2e, 0xd9 };
+
+    const uint8_t *salt;
+    if (version == 0x6b3343cf) {
+        salt = salt_v2; // QUIC v2
+    } else if (version == 0x00000001 || ((version >> 8) == 0xff0000 && (version & 0xff) >= 33)) {
+        salt = salt_v1; // QUIC v1 or draft-33+
+    } else if ((version >> 8) == 0xff0000 && (version & 0xff) >= 29) {
+        salt = salt_draft_29; // draft-29 to draft-32
+    } else {
+        salt = salt_draft_23; // draft-23 to draft-28
+    }
 
     // HKDF-Extract(salt, IKM) -> PRK
-    static const uint8_t salt[20] = { 0x38, 0x76, 0x2c, 0xf7, 0xf5, 0x59, 0x34, 0xb3, 0x4d, 0x17, 0x9a, 0xe6, 0xa4, 0xc8, 0x0c, 0xad, 0xcc, 0xbb, 0x7f, 0x0a };
     GHmac *hmac = g_hmac_new(G_CHECKSUM_SHA256, salt, 20);
     g_hmac_update(hmac, (guchar *)did, dlen);
     uint8_t prk[65];
@@ -562,7 +578,12 @@ void arkime_parser_init()
     arkime_parsers_classifier_register_tcp("fbzero", NULL, 0, (const uint8_t *)"\x31QTV", 4, quic_fb_tcp_classify);
     arkime_parsers_classifier_register_udp("quic", NULL, 9, (const uint8_t *)"PRST", 4, quic_add);
 
-    arkime_parsers_classifier_register_udp("quic", NULL, 1, (const uint8_t *)"\x00\x00\x00\x01", 1, quic_ietf_udp_classify);
+    // IETF QUIC versions
+    arkime_parsers_classifier_register_udp("quic", NULL, 1, (const uint8_t *)"\x00\x00\x00\x01", 4, quic_ietf_udp_classify);  // QUIC v1
+    arkime_parsers_classifier_register_udp("quic", NULL, 1, (const uint8_t *)"\x6b\x33\x43\xcf", 4, quic_ietf_udp_classify);  // QUIC v2
+    arkime_parsers_classifier_register_udp("quic", NULL, 1, (const uint8_t *)"\xff\x00\x00\x1d", 4, quic_ietf_udp_classify);  // draft-29
+    arkime_parsers_classifier_register_udp("quic", NULL, 1, (const uint8_t *)"\xff\x00\x00\x1c", 4, quic_ietf_udp_classify);  // draft-28
+    arkime_parsers_classifier_register_udp("quic", NULL, 1, (const uint8_t *)"\xff\x00\x00\x1b", 4, quic_ietf_udp_classify);  // draft-27
 
     hostField = arkime_field_define("quic", "lotermfield",
                                     "host.quic", "QUIC Hostname", "quic.host",
