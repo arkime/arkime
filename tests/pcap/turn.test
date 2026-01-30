@@ -1,0 +1,207 @@
+{
+ "sessions3" : [
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 1880
+    },
+    "destination" : {
+     "bytes" : 1056,
+     "ip" : "141.101.90.1",
+     "mac" : [
+      "94:2a:6f:ee:8c:82"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 10,
+     "port" : 80
+    },
+    "dstPayload8" : "011300742112a442",
+    "dstRIR" : "RIPE",
+    "dstTTL" : [
+     57
+    ],
+    "dstTTLCnt" : 1,
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 1769780238629,
+    "initRTT" : 0,
+    "ipProtocol" : 6,
+    "lastPacket" : 1769780239675,
+    "length" : 1046,
+    "network" : {
+     "bytes" : 4070,
+     "community_id" : "1:fQI48GXDq9MKzbghZJdj7OKheF4=",
+     "packets" : 27
+    },
+    "node" : "test",
+    "packetLen" : [
+     94,
+     90,
+     82,
+     110,
+     82,
+     218,
+     82,
+     310,
+     158,
+     82,
+     314,
+     314,
+     314,
+     126,
+     82,
+     126,
+     126,
+     82,
+     82,
+     82,
+     314,
+     314,
+     314,
+     126,
+     82,
+     314,
+     82
+    ],
+    "packetPos" : [
+     24,
+     118,
+     208,
+     290,
+     400,
+     482,
+     700,
+     782,
+     1092,
+     1250,
+     1332,
+     1646,
+     1960,
+     2274,
+     2400,
+     2482,
+     2608,
+     2734,
+     2816,
+     2898,
+     2980,
+     3294,
+     3608,
+     3922,
+     4048,
+     4130,
+     4444
+    ],
+    "packetRange" : {
+     "gte" : 1769780238629,
+     "lte" : 1769780239675
+    },
+    "protocol" : [
+     "stun",
+     "tcp"
+    ],
+    "protocolCnt" : 2,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 388
+    },
+    "source" : {
+     "bytes" : 3014,
+     "ip" : "192.168.1.75",
+     "mac" : [
+      "80:6d:97:85:a9:58"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 17,
+     "port" : 61109
+    },
+    "srcPayload8" : "000300082112a442",
+    "srcRIR" : "ARIN",
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
+    "stun" : {
+     "error" : [
+      401
+     ],
+     "errorCnt" : 1,
+     "realm" : [
+      "turn.cloudflare.com"
+     ],
+     "realmCnt" : 1,
+     "type" : [
+      "Allocate Error",
+      "Allocate Request",
+      "Allocate Response",
+      "CreatePermission Error",
+      "CreatePermission Request",
+      "CreatePermission Response"
+     ],
+     "typeCnt" : 6,
+     "username" : [
+      "g0361fffed09bfc90829143d508bc2ec3435d7ca5f4c2482eea08f89da63d85e"
+     ],
+     "usernameCnt" : 1,
+     "xorMappedASN" : [
+      "AS701 MCI Communications Services, Inc. d/b/a Verizon Business"
+     ],
+     "xorMappedGEO" : [
+      "US"
+     ],
+     "xorMappedIp" : [
+      "108.56.17.155"
+     ],
+     "xorMappedIpCnt" : 1,
+     "xorMappedPort" : [
+      61109
+     ],
+     "xorMappedPortCnt" : 1,
+     "xorMappedRIR" : [
+      "ARIN"
+     ],
+     "xorRelayedASN" : [
+      "AS13335 Cloudflare, Inc."
+     ],
+     "xorRelayedGEO" : [
+      "US"
+     ],
+     "xorRelayedIp" : [
+      "104.30.147.243"
+     ],
+     "xorRelayedIpCnt" : 1,
+     "xorRelayedPort" : [
+      51142
+     ],
+     "xorRelayedPortCnt" : 1,
+     "xorRelayedRIR" : [
+      "ARIN"
+     ]
+    },
+    "tcpflags" : {
+     "ack" : 10,
+     "dstZero" : 0,
+     "fin" : 0,
+     "psh" : 15,
+     "rst" : 0,
+     "srcZero" : 0,
+     "syn" : 1,
+     "syn-ack" : 1,
+     "urg" : 0
+    },
+    "tcpseq" : {
+     "dst" : 0,
+     "src" : 116997936
+    },
+    "totDataBytes" : 2268
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-260130"
+    }
+   }
+  }
+ ]
+}
+

@@ -48,6 +48,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #3651 Added basic sip parser
   - #3652 Added basic stun parser
   - #3653 Improve krb5 parser
+  - #3654 Added turn support to stun parser
 
 6.0.0-rc1 2026/01/26
 ## BREAKING
