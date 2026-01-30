@@ -504,6 +504,32 @@ const char *arkime_parsers_asn_sequence_to_string(ArkimeASNSeq_t *seq, int *len)
     return ivalue;
 }
 /******************************************************************************/
+int arkime_parsers_asn_sequence_to_int(ArkimeASNSeq_t *seq)
+{
+    const uint8_t *value = seq->value;
+    int vlen = seq->len;
+
+    // If this is a constructed element, we need to unwrap the inner TLV
+    if (seq->pc) {
+        BSB bsb;
+        BSB_INIT(bsb, seq->value, seq->len);
+        uint32_t ipc, itag, ilen;
+        value = arkime_parsers_asn_get_tlv(&bsb, &ipc, &itag, &ilen);
+        if (!value)
+            return -1;
+        vlen = ilen;
+    }
+
+    if (vlen == 0 || vlen > 4)
+        return -1;
+
+    int result = 0;
+    for (int i = 0; i < vlen; i++) {
+        result = (result << 8) | value[i];
+    }
+    return result;
+}
+/******************************************************************************/
 void arkime_parsers_asn_decode_oid(char *buf, int bufsz, const uint8_t *oid, int len)
 {
     int buflen = 0;
