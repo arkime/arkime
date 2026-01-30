@@ -1,135 +1,141 @@
 {
-   "sessions3" : [
-      {
-         "body" : {
-            "@timestamp" : "SET",
-            "client" : {
-               "bytes" : 273
-            },
-            "destination" : {
-               "bytes" : 70,
-               "ip" : "10.11.11.11",
-               "mac" : [
-                  "00:22:83:3f:17:cc"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 1,
-               "port" : 88
-            },
-            "dot1q" : {
-               "id" : [
-                  50
-               ],
-               "idCnt" : 1
-            },
-            "dstOui" : [
-               "Juniper Networks"
-            ],
-            "dstOuiCnt" : 1,
-            "dstTTL" : [
-               124
-            ],
-            "dstTTLCnt" : 1,
-            "ethertype" : 2048,
-            "fileId" : [],
-            "firstPacket" : 1466265698248,
-            "initRTT" : 1,
-            "ipProtocol" : 6,
-            "krb5" : {
-               "cname" : [
-                  "xxxxxxxxxxx$"
-               ],
-               "cnameCnt" : 1,
-               "realm" : [
-                  "xxxxxxxxxxxxxx.xxxxxx.xxx.COM"
-               ],
-               "realmCnt" : 1,
-               "sname" : [
-                  "krbtgt/xxxxxxxxxxxxxx.xxxxxx.xxx.COM"
-               ],
-               "snameCnt" : 1
-            },
-            "lastPacket" : 1466265698251,
-            "length" : 3,
-            "network" : {
-               "bytes" : 531,
-               "community_id" : "1:9mWNeys3NX/s+FChaCt/5DxMJAY=",
-               "packets" : 4,
-               "vlan" : {
-                  "id" : [
-                     50
-                  ],
-                  "id-cnt" : 1
-               }
-            },
-            "node" : "test",
-            "packetLen" : [
-               86,
-               86,
-               76,
-               347
-            ],
-            "packetPos" : [
-               24,
-               110,
-               196,
-               272
-            ],
-            "packetRange" : {
-               "gte" : 1466265698248,
-               "lte" : 1466265698251
-            },
-            "protocol" : [
-               "krb5",
-               "tcp"
-            ],
-            "protocolCnt" : 2,
-            "segmentCnt" : 1,
-            "server" : {
-               "bytes" : 0
-            },
-            "source" : {
-               "bytes" : 461,
-               "ip" : "10.10.10.10",
-               "mac" : [
-                  "00:22:83:3f:17:c5"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 3,
-               "port" : 57167
-            },
-            "srcOui" : [
-               "Juniper Networks"
-            ],
-            "srcOuiCnt" : 1,
-            "srcPayload8" : "0000010d6a820109",
-            "srcTTL" : [
-               122
-            ],
-            "srcTTLCnt" : 1,
-            "tcpflags" : {
-               "ack" : 1,
-               "dstZero" : 0,
-               "fin" : 0,
-               "psh" : 1,
-               "rst" : 0,
-               "srcZero" : 0,
-               "syn" : 1,
-               "syn-ack" : 1,
-               "urg" : 0
-            },
-            "tcpseq" : {
-               "dst" : 0,
-               "src" : 2324607201
-            },
-            "totDataBytes" : 273
-         },
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions3-160618"
-            }
-         }
-      }
-   ]
+ "sessions3" : [
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 273
+    },
+    "destination" : {
+     "bytes" : 70,
+     "ip" : "10.11.11.11",
+     "mac" : [
+      "00:22:83:3f:17:cc"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 1,
+     "port" : 88
+    },
+    "dot1q" : {
+     "id" : [
+      50
+     ],
+     "idCnt" : 1
+    },
+    "dstOui" : [
+     "Juniper Networks"
+    ],
+    "dstOuiCnt" : 1,
+    "dstTTL" : [
+     124
+    ],
+    "dstTTLCnt" : 1,
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 1466265698248,
+    "initRTT" : 1,
+    "ipProtocol" : 6,
+    "krb5" : {
+     "cname" : [
+      "xxxxxxxxxxx$"
+     ],
+     "cnameCnt" : 1,
+     "etype" : [
+      "aes256-cts-hmac-sha1-96",
+      "rc4-hmac",
+      "rc4-hmac-exp"
+     ],
+     "etypeCnt" : 3,
+     "realm" : [
+      "xxxxxxxxxxxxxx.xxxxxx.xxx.COM"
+     ],
+     "realmCnt" : 1,
+     "sname" : [
+      "krbtgt/xxxxxxxxxxxxxx.xxxxxx.xxx.COM"
+     ],
+     "snameCnt" : 1
+    },
+    "lastPacket" : 1466265698251,
+    "length" : 3,
+    "network" : {
+     "bytes" : 531,
+     "community_id" : "1:9mWNeys3NX/s+FChaCt/5DxMJAY=",
+     "packets" : 4,
+     "vlan" : {
+      "id" : [
+       50
+      ],
+      "id-cnt" : 1
+     }
+    },
+    "node" : "test",
+    "packetLen" : [
+     86,
+     86,
+     76,
+     347
+    ],
+    "packetPos" : [
+     24,
+     110,
+     196,
+     272
+    ],
+    "packetRange" : {
+     "gte" : 1466265698248,
+     "lte" : 1466265698251
+    },
+    "protocol" : [
+     "krb5",
+     "tcp"
+    ],
+    "protocolCnt" : 2,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 0
+    },
+    "source" : {
+     "bytes" : 461,
+     "ip" : "10.10.10.10",
+     "mac" : [
+      "00:22:83:3f:17:c5"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 3,
+     "port" : 57167
+    },
+    "srcOui" : [
+     "Juniper Networks"
+    ],
+    "srcOuiCnt" : 1,
+    "srcPayload8" : "0000010d6a820109",
+    "srcTTL" : [
+     122
+    ],
+    "srcTTLCnt" : 1,
+    "tcpflags" : {
+     "ack" : 1,
+     "dstZero" : 0,
+     "fin" : 0,
+     "psh" : 1,
+     "rst" : 0,
+     "srcZero" : 0,
+     "syn" : 1,
+     "syn-ack" : 1,
+     "urg" : 0
+    },
+    "tcpseq" : {
+     "dst" : 0,
+     "src" : 2324607201
+    },
+    "totDataBytes" : 273
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-160618"
+    }
+   }
+  }
+ ]
 }
 
