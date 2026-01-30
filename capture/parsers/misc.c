@@ -321,6 +321,7 @@ void arkime_parser_init()
     arkime_parsers_classifier_register_udp("ssdp", NULL, 0, (uint8_t *)"HTTP/1.", 7, ssdp_response_classify);
 
     SIMPLE_CLASSIFY_UDP("bsdp", "SEARCH BSDP/");
+    SIMPLE_CLASSIFY_UDP("bsdp", "NOTIFY BSDP/");
 
     SIMPLE_CLASSIFY_TCP("zabbix", "ZBXD\x01");
 
