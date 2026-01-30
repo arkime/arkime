@@ -232,6 +232,20 @@ LOCAL void ident_protocol_classify(ArkimeSession_t *session, const uint8_t *data
     }
 }
 /******************************************************************************/
+// SSDP response classifier - HTTP response over UDP with UPnP headers
+LOCAL void ssdp_response_classify(ArkimeSession_t *session, const uint8_t *data, int len, int UNUSED(which), void *UNUSED(uw))
+{
+    if (arkime_session_has_protocol(session, "ssdp"))
+        return;
+
+    // Look for UPnP-specific headers: ST:, USN:, or UPnP in SERVER/body
+    if (arkime_memstr((const char *)data, len, "\r\nST:", 5) ||
+        arkime_memstr((const char *)data, len, "\r\nUSN:", 6) ||
+        arkime_memstr((const char *)data, len, "UPnP", 4)) {
+        arkime_session_add_protocol(session, "ssdp");
+    }
+}
+/******************************************************************************/
 
 #define PARSERS_CLASSIFY_BOTH(_name, _uw, _offset, _str, _len, _func) \
     arkime_parsers_classifier_register_tcp(_name, _uw, _offset, (uint8_t *)_str, _len, _func); \
@@ -303,6 +317,10 @@ void arkime_parser_init()
 
     SIMPLE_CLASSIFY_UDP("ssdp", "M-SEARCH ");
     SIMPLE_CLASSIFY_UDP("ssdp", "NOTIFY * ");
+    SIMPLE_CLASSIFY_UDP("ssdp", "NOTIFY ALIVE SDDP/");
+    arkime_parsers_classifier_register_udp("ssdp", NULL, 0, (uint8_t *)"HTTP/1.", 7, ssdp_response_classify);
+
+    SIMPLE_CLASSIFY_UDP("bsdp", "SEARCH BSDP/");
 
     SIMPLE_CLASSIFY_TCP("zabbix", "ZBXD\x01");
 
