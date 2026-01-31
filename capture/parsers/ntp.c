@@ -111,7 +111,7 @@ LOCAL int ntp_udp_parser(ArkimeSession_t *session, void *UNUSED(uw), const uint8
                     arkime_field_string_add(refIdField, session, refStr, 8, TRUE);
                 }
             }
-        } else if (stratum >= 2 && stratum <= 15) {
+        } else if (stratum <= 15) {
             // For stratum 2+: IPv4 address of upstream server, or first 4 bytes of MD5 hash for IPv6
             // Display as hex since we can't distinguish IPv4 from IPv6 hash
             char refStr[12];

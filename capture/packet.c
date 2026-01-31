@@ -1295,7 +1295,7 @@ LOCAL ArkimePacketRC arkime_packet_ieee802(ArkimePacketBatch_t *batch, ArkimePac
     LOG("enter %p %p %d", packet, data, len);
 #endif
 
-    if (len < 3)
+    if (len < 5)
         return ARKIME_PACKET_CORRUPT;
 
     int etherlen = data[0] << 8 | data[1];
