@@ -158,6 +158,13 @@ sub sortJson {
     foreach my $session (@{$json->{sessions3}}) {
         sortObj("", $session->{body});
     }
+
+    @{$json->{sessions3}} = sort {
+        return $a->{body}->{firstPacket} <=> $b->{body}->{firstPacket} if ($a->{body}->{firstPacket} != $b->{body}->{firstPacket});
+        return $a->{body}->{lastPacket} <=> $b->{body}->{lastPacket} if ($a->{body}->{lastPacket} != $b->{body}->{lastPacket});
+        return $a->{body}->{source}->{port} <=> $b->{body}->{source}->{port} if ($a->{body}->{source}->{port} != $b->{body}->{source}->{port});
+        return $a->{body}->{source}->{ip} <=> $b->{body}->{source}->{ip};
+    } @{$json->{sessions3}};
     return $json;
 }
 ################################################################################
@@ -174,7 +181,6 @@ sub doTests {
         open my $fh, '<', "$filename.test" or die "error opening $filename.test: $!";
         my $savedData = do { local $/; <$fh> };
         my $savedJson = sortJson(from_json($savedData, {relaxed => 1}));
-
 
         my $cmd = "../capture/capture $SCHEME $EXTRA --tests -c config.test.ini -n test -r $filename.pcap 2>&1 1>/dev/null | ./tests.pl --fix";
 
@@ -275,11 +281,6 @@ my ($json) = @_;
             }
         }
     }
-
-    @{$json->{sessions3}} = sort {
-        return $a->{body}->{firstPacket} <=> $b->{body}->{firstPacket} if ($a->{body}->{firstPacket} != $b->{body}->{firstPacket});
-        return $a->{body}->{source}->{ip} <=> $b->{body}->{source}->{ip};
-    } @{$json->{sessions3}};
 }
 
 ################################################################################
