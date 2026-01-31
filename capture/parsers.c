@@ -1441,7 +1441,7 @@ int arkime_parser_buf_add(ArkimeParserBuf_t *pb, int which, const uint8_t *data,
         pb->len[which] += tocopy;
     }
 
-    return (tocopy < len) ? -1 : 0;
+    return (available < len) ? -1 : 0;
 }
 /******************************************************************************/
 int arkime_parser_buf_del(ArkimeParserBuf_t *pb, int which, int len)

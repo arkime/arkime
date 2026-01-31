@@ -47,7 +47,7 @@ LOCAL int mqtt_decode_varint(BSB *bsb, uint32_t *value)
 {
     *value = 0;
     int shift = 0;
-    uint8_t byte;
+    uint8_t byte = 0;
 
     for (int i = 0; i < 4; i++) {
         BSB_IMPORT_u08(*bsb, byte);
