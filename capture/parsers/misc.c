@@ -246,6 +246,36 @@ LOCAL void ssdp_response_classify(ArkimeSession_t *session, const uint8_t *data,
     }
 }
 /******************************************************************************/
+// Plex GDM response classifier - HTTP response over UDP with Plex headers
+LOCAL void plex_gdm_response_classify(ArkimeSession_t *session, const uint8_t *data, int len, int UNUSED(which), void *UNUSED(uw))
+{
+    if (arkime_session_has_protocol(session, "plex-gdm"))
+        return;
+
+    // Look for Plex-specific content type
+    if (arkime_memstr((const char *)data, len, "plex/media-", 11)) {
+        arkime_session_add_protocol(session, "plex-gdm");
+    }
+}
+/******************************************************************************/
+// Samsung SmartView discovery - JSON over UDP multicast to 224.0.0.7
+LOCAL void samsung_smartview_classify(ArkimeSession_t *session, const uint8_t *data, int len, int UNUSED(which), void *UNUSED(uw))
+{
+    if (arkime_session_has_protocol(session, "samsung-smartview"))
+        return;
+
+    // Check for multicast address 224.0.0.7
+    uint32_t addr = ARKIME_V6_TO_V4(session->addr2);
+    if (addr != 0x070000e0) // 224.0.0.7 in little endian
+        return;
+
+    // Verify uuid is present in the payload
+    if (!arkime_memstr((const char *)data, len, "uuid:", 5))
+        return;
+
+    arkime_session_add_protocol(session, "samsung-smartview");
+}
+/******************************************************************************/
 
 #define PARSERS_CLASSIFY_BOTH(_name, _uw, _offset, _str, _len, _func) \
     arkime_parsers_classifier_register_tcp(_name, _uw, _offset, (uint8_t *)_str, _len, _func); \
@@ -322,6 +352,16 @@ void arkime_parser_init()
 
     SIMPLE_CLASSIFY_UDP("bsdp", "SEARCH BSDP/");
     SIMPLE_CLASSIFY_UDP("bsdp", "NOTIFY BSDP/");
+
+    SIMPLE_CLASSIFY_UDP("plex-gdm", "UPDATE * ");
+    SIMPLE_CLASSIFY_UDP("plex-gdm", "VUPDATE * ");
+    arkime_parsers_classifier_register_udp("plex-gdm", NULL, 0, (uint8_t *)"HTTP/1.", 7, plex_gdm_response_classify);
+
+    arkime_parsers_classifier_register_udp("samsung-smartview", NULL, 0, (uint8_t *)"{\"data\":", 8, samsung_smartview_classify);
+
+    SIMPLE_CLASSIFY_TCP("whatsapp", "ED\x00\x01");
+
+    SIMPLE_CLASSIFY_UDP("ubiquiti-ubnt", "\"3DU");
 
     SIMPLE_CLASSIFY_TCP("zabbix", "ZBXD\x01");
 

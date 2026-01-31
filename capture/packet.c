@@ -1295,16 +1295,26 @@ LOCAL ArkimePacketRC arkime_packet_ieee802(ArkimePacketBatch_t *batch, ArkimePac
     LOG("enter %p %p %d", packet, data, len);
 #endif
 
-    if (len < 6 || memcmp(data + 2, "\xfe\xfe\x03", 3) != 0)
+    if (len < 3)
         return ARKIME_PACKET_CORRUPT;
 
     int etherlen = data[0] << 8 | data[1];
-    int ethertype = data[5];
 
     if (etherlen > len - 2)
         return ARKIME_PACKET_CORRUPT;
 
-    return arkime_packet_run_ethernet_cb(batch, packet, data + 6, len - 6, ethertype, "ieee802");
+    // Check for XID frame: control byte is 0xAF (response) or 0xBF (command)
+    uint8_t control = data[4] & 0xef; // Mask out P/F bit
+    if (control == 0xaf) {
+        return arkime_packet_run_ethernet_cb(batch, packet, data + 2, len - 2, ARKIME_ETHERTYPE_XID, "ieee802-xid");
+    }
+
+    // IPX: 0xfe 0xfe 0x03
+    if (len >= 6 && memcmp(data + 2, "\xfe\xfe\x03", 3) == 0) {
+        return arkime_packet_run_ethernet_cb(batch, packet, data + 6, len - 6, data[5], "ieee802-ipx");
+    }
+
+    return ARKIME_PACKET_CORRUPT;
 }
 /******************************************************************************/
 LOCAL ArkimePacketRC arkime_packet_ether(ArkimePacketBatch_t *batch, ArkimePacket_t *const packet, const uint8_t *data, int len)

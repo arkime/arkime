@@ -1,0 +1,66 @@
+{
+ "sessions3" : [
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 0
+    },
+    "destination" : {
+     "bytes" : 0,
+     "mac" : [
+      "ff:ff:ff:ff:ff:ff"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 0
+    },
+    "ethertype" : 6,
+    "fileId" : [],
+    "firstPacket" : 1769858655540,
+    "ipProtocol" : 0,
+    "lastPacket" : 1769858655542,
+    "length" : 2,
+    "network" : {
+     "bytes" : 40,
+     "packets" : 2
+    },
+    "node" : "test",
+    "packetLen" : [
+     36,
+     36
+    ],
+    "packetPos" : [
+     24,
+     60
+    ],
+    "packetRange" : {
+     "gte" : 1769858655540,
+     "lte" : 1769858655542
+    },
+    "protocol" : [
+     "xid"
+    ],
+    "protocolCnt" : 1,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 0
+    },
+    "source" : {
+     "bytes" : 40,
+     "mac" : [
+      "6a:70:c5:af:f1:f9"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 2
+    },
+    "totDataBytes" : 0
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-260131"
+    }
+   }
+  }
+ ]
+}
+
