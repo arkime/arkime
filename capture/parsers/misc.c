@@ -276,6 +276,27 @@ LOCAL void samsung_smartview_classify(ArkimeSession_t *session, const uint8_t *d
     arkime_session_add_protocol(session, "samsung-smartview");
 }
 /******************************************************************************/
+// NetBIOS Datagram Service (NBDS) - port 138
+// Wrapper protocol that can carry SMB mailslot messages
+LOCAL void nbds_classify(ArkimeSession_t *session, const uint8_t *data, int len, int UNUSED(which), void *UNUSED(uw))
+{
+    if (arkime_session_has_protocol(session, "nbds"))
+        return;
+
+    // NBDS message types: 0x10=direct unique, 0x11=direct group, 0x12=broadcast
+    // Minimum header is 14 bytes before the encoded names
+    if (len < 14 || data[0] < 0x10 || data[0] > 0x12)
+        return;
+
+    arkime_session_add_protocol(session, "nbds");
+
+    // Look for SMB inside the datagram (after NetBIOS header + encoded names)
+    if (arkime_memstr((const char *)data, len, "\xffSMB", 4) ||
+        arkime_memstr((const char *)data, len, "\xfeSMB", 4)) {
+        arkime_session_add_protocol(session, "smb");
+    }
+}
+/******************************************************************************/
 
 #define PARSERS_CLASSIFY_BOTH(_name, _uw, _offset, _str, _len, _func) \
     arkime_parsers_classifier_register_tcp(_name, _uw, _offset, (uint8_t *)_str, _len, _func); \
@@ -362,6 +383,9 @@ void arkime_parser_init()
     SIMPLE_CLASSIFY_TCP("whatsapp", "ED\x00\x01");
 
     SIMPLE_CLASSIFY_UDP("ubiquiti-ubnt", "\"3DU");
+
+    // NBDS - NetBIOS Datagram Service (port 138)
+    arkime_parsers_classifier_register_port("nbds", NULL, 138, ARKIME_PARSERS_PORT_UDP, nbds_classify);
 
     SIMPLE_CLASSIFY_TCP("zabbix", "ZBXD\x01");
 
