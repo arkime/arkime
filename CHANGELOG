@@ -53,6 +53,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #3655 More ssdp keywords
   - #3656 Parse udp facebook quic
   - #3657 Add classifiers for: plex-gdm, samsung-smartview, whatsapp, ubiquiti-ubnt, xid 
+  - #3659 Add classifier for nbds and parser for nbns
 
 6.0.0-rc1 2026/01/26
 ## BREAKING

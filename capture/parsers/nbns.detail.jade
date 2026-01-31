@@ -1,0 +1,8 @@
+if (session.nbns)
+  div.sessionDetailMeta.bold NBNS
+  dl.sessionDetailMeta
+    +arrayList(session.nbns, "name", "Name", "nbns.name")
+    +arrayList(session.nbns, "queryHost", "Query Host", "nbns.queryHost")
+    +arrayList(session.nbns, "host", "Host", "nbns.host")
+    +arrayList(session.nbns, "queryType", "Query Type", "nbns.queryType")
+    +ipArrayList(session.nbns, "ip", "IP", "nbns")
