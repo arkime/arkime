@@ -355,6 +355,15 @@ LOCAL int tcp_packet_process(ArkimeSession_t *const session, ArkimePacket_t *con
         }
     }
 
+    // Copy packet data if using zero-copy and we're keeping the packet
+    if (!packet->copied && arkime_reader_packet_unref) {
+        uint8_t *pkt = malloc(packet->pktlen);
+        memcpy(pkt, packet->pkt, packet->pktlen);
+        arkime_reader_packet_unref(packet);
+        packet->pkt = pkt;
+        packet->copied = 1;
+    }
+
     return 0;
 }
 

@@ -197,6 +197,8 @@ void arkime_packet_free(ArkimePacket_t *packet)
 {
     if (packet->copied) {
         free(packet->pkt);
+    } else if (arkime_reader_packet_unref) {
+        arkime_reader_packet_unref(packet);
     }
     packet->pkt = 0;
 
@@ -227,6 +229,8 @@ void arkime_packet_free(ArkimePacket_t *packet)
 {
     if (packet->copied) {
         free(packet->pkt);
+    } else if (arkime_reader_packet_unref) {
+        arkime_reader_packet_unref(packet);
     }
 
     ARKIME_TYPE_FREE(ArkimePacket_t, packet);
@@ -755,8 +759,11 @@ LOCAL gboolean arkime_packet_frags_process(ArkimePacket_t *const packet)
     }
 
     // Set all the vars in the current packet to new defraged packet
-    if (packet->copied)
+    if (packet->copied) {
         free(packet->pkt);
+    } else if (arkime_reader_packet_unref) {
+        arkime_reader_packet_unref(packet);
+    }
     packet->pkt = pkt;
     packet->copied = 1;
     packet->wasfrag = 1;
@@ -774,6 +781,8 @@ LOCAL void arkime_packet_frags4(ArkimePacketBatch_t *batch, ArkimePacket_t *cons
     if (!packet->copied) {
         uint8_t *pkt = malloc(packet->pktlen);
         memcpy(pkt, packet->pkt, packet->pktlen);
+        if (arkime_reader_packet_unref)
+            arkime_reader_packet_unref(packet);
         packet->pkt = pkt;
         packet->copied = 1;
     }
@@ -1622,7 +1631,7 @@ process_packet:
         return;
     }
 
-    if (likely(!packet->copied)) {
+    if (likely(!packet->copied) && !arkime_reader_packet_unref) {
         uint8_t *pkt = malloc(packet->pktlen);
         memcpy(pkt, packet->pkt, packet->pktlen);
         packet->pkt = pkt;

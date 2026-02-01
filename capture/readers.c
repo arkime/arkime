@@ -26,6 +26,7 @@ ArkimeReaderStart  arkime_reader_start;
 ArkimeReaderStats  arkime_reader_stats;
 ArkimeReaderStop   arkime_reader_stop;
 ArkimeReaderExit   arkime_reader_exit;
+ArkimeReaderPacketUnref arkime_reader_packet_unref;
 
 char              *readerFileName[256];
 ArkimeFieldOps_t   readerFieldOps[256];

@@ -579,6 +579,7 @@ typedef struct arkimepacket_t {
     uint64_t       readerFilePos;       // where in input file
     uint32_t       writerFileNum;       // file number in db
     uint32_t       hash;                // Saved hash
+    uint32_t       packetRef;           // zero-copy ref: top 8 bits = thread, bottom 24 bits = block+1 (0 = copied)
     uint16_t       pktlen;              // length of packet
     uint16_t       payloadLen;          // length of ip payload
     uint16_t       payloadOffset;       // offset to ip payload from start
@@ -1597,11 +1598,13 @@ typedef int  (*ArkimeReaderStats)(ArkimeReaderStats_t *stats);
 typedef void (*ArkimeReaderStart)();
 typedef void (*ArkimeReaderStop)();
 typedef void (*ArkimeReaderExit)();
+typedef void (*ArkimeReaderPacketUnref)(ArkimePacket_t *packet);
 
 extern ArkimeReaderStart arkime_reader_start;
 extern ArkimeReaderStats arkime_reader_stats;
 extern ArkimeReaderStop  arkime_reader_stop;
 extern ArkimeReaderExit  arkime_reader_exit;
+extern ArkimeReaderPacketUnref arkime_reader_packet_unref;
 
 void arkime_readers_init();
 void arkime_readers_set(char *name);

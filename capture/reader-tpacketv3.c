@@ -47,6 +47,7 @@ typedef struct {
     struct tpacket_req3  req;
     uint8_t             *map;
     struct iovec        *rd;
+    uint32_t            *blockRefs;      // atomic ref count per block
     uint8_t              interfacePos;
     uint8_t              thread;
 } ArkimeTPacketV3_t;
@@ -62,6 +63,7 @@ LOCAL ArkimeReaderStats_t gStats;
 LOCAL ARKIME_LOCK_DEFINE(gStats);
 
 LOCAL gboolean tpacketv3OldVlan;
+LOCAL gboolean tpacketv3NoPacketCopy;
 
 /******************************************************************************/
 int reader_tpacketv3_stats(ArkimeReaderStats_t *stats)
@@ -83,11 +85,24 @@ int reader_tpacketv3_stats(ArkimeReaderStats_t *stats)
     return 0;
 }
 /******************************************************************************/
+LOCAL void reader_tpacketv3_packet_unref(ArkimePacket_t *packet)
+{
+    // Extract thread, interface, and block index from packetRef
+    // Byte 3: thread, Byte 2: interface, Bytes 0-1: block index
+    uint8_t thread = packet->packetRef >> 24;
+    uint8_t interfacePos = (packet->packetRef >> 16) & 0xFF;
+    uint16_t blockIndex = packet->packetRef & 0xFFFF;
+
+    ArkimeTPacketV3_t *info = &infos[interfacePos][thread];
+    ARKIME_THREAD_DECR(info->blockRefs[blockIndex]);
+}
+/******************************************************************************/
 LOCAL void *reader_tpacketv3_thread(gpointer infov)
 {
     ArkimeTPacketV3_t *info = (ArkimeTPacketV3_t *)infov;
     struct pollfd pfd;
     int pos = 0;
+    int returnPos = 0;  // next block to return to kernel
 
     memset(&pfd, 0, sizeof(pfd));
     pfd.fd = info->fd;
@@ -98,6 +113,10 @@ LOCAL void *reader_tpacketv3_thread(gpointer infov)
     arkime_packet_batch_init(&batch);
 
     uint32_t vlanHeader;
+
+    // Pre-calculate thread/interface info for packetRef
+    // Byte 3: thread, Byte 2: interface, Bytes 0-1: block index
+    uint32_t packetRefBase = ((uint32_t)info->thread << 24) | ((uint32_t)info->interfacePos << 16);
 
     int initFunc = arkime_get_named_func("arkime_reader_thread_init");
     arkime_call_named_func(initFunc, info->interfacePos * MAX_THREADS_PER_INTERFACE + info->thread, NULL);
@@ -129,6 +148,10 @@ LOCAL void *reader_tpacketv3_thread(gpointer infov)
 
         th = (struct tpacket3_hdr *) ((uint8_t *) tbd + tbd->hdr.bh1.offset_to_first_pkt);
 
+        // Set block ref count for all packets we're about to read (only if zero-copy enabled)
+        if (tpacketv3NoPacketCopy)
+            info->blockRefs[pos] = tbd->hdr.bh1.num_pkts;
+
         for (uint32_t p = 0; p < tbd->hdr.bh1.num_pkts; p++) {
             if (unlikely(th->tp_snaplen != th->tp_len) && !config.readTruncatedPackets && !config.ignoreErrors) {
                 LOGEXIT("ERROR - Arkime requires full packet captures caplen: %d pktlen: %d\n"
@@ -142,6 +165,7 @@ LOCAL void *reader_tpacketv3_thread(gpointer infov)
             packet->ts.tv_sec     = th->tp_sec;
             packet->ts.tv_usec    = th->tp_nsec / 1000;
             packet->readerPos     = info->interfacePos;
+            packet->packetRef     = tpacketv3NoPacketCopy ? (packetRefBase | pos) : 0;
 
             if ((th->tp_status & TP_STATUS_VLAN_VALID) && th->hv1.tp_vlan_tci) {
                 if (tpacketv3OldVlan) {
@@ -166,7 +190,17 @@ LOCAL void *reader_tpacketv3_thread(gpointer infov)
         }
         arkime_packet_batch_flush(&batch);
 
-        tbd->hdr.bh1.block_status = TP_STATUS_KERNEL;
+        // Return any blocks whose ref counts have reached 0
+        while (returnPos != pos) {
+            if (info->blockRefs[returnPos] == 0) {
+                struct tpacket_block_desc *rtbd = info->rd[returnPos].iov_base;
+                rtbd->hdr.bh1.block_status = TP_STATUS_KERNEL;
+                returnPos = (returnPos + 1) % info->req.tp_block_nr;
+            } else {
+                break;
+            }
+        }
+
         pos = (pos + 1) % info->req.tp_block_nr;
     }
 
@@ -197,9 +231,10 @@ void reader_tpacketv3_exit()
 /******************************************************************************/
 void reader_tpacketv3_init(char *UNUSED(name))
 {
-    arkime_config_check("tpacketv3", "tpacketv3BlockSize", "tpacketv3NumThreads", "tpacketv3ClusterId", NULL);
+    arkime_config_check("tpacketv3", "tpacketv3BlockSize", "tpacketv3NumBlocks", "tpacketv3NumThreads", "tpacketv3ClusterId", "tpacketv3NoPacketCopy", NULL);
 
-    int blocksize = arkime_config_int(NULL, "tpacketv3BlockSize", 1 << 21, 1 << 16, 1U << 31);
+    int blocksize = arkime_config_int(NULL, "tpacketv3BlockSize", 1 << 20, 1 << 16, 1U << 31);
+    int numBlocks = arkime_config_int(NULL, "tpacketv3NumBlocks", 128, 16, 1024);
     numThreads = arkime_config_int(NULL, "tpacketv3NumThreads", 2, 1, MAX_THREADS_PER_INTERFACE);
 
     if (blocksize % getpagesize() != 0) {
@@ -223,6 +258,7 @@ void reader_tpacketv3_init(char *UNUSED(name))
     int fanout_group_id = arkime_config_int(NULL, "tpacketv3ClusterId", 8005, 0x0001, 0xffff);
 
     tpacketv3OldVlan = arkime_config_boolean(NULL, "tpacketv3OldVlan", FALSE);
+    tpacketv3NoPacketCopy = arkime_config_boolean(NULL, "tpacketv3NoPacketCopy", FALSE);
 
     int version = TPACKET_V3;
     int reserve = 4;
@@ -242,7 +278,7 @@ void reader_tpacketv3_init(char *UNUSED(name))
 
             memset(&infos[i][t].req, 0, sizeof(infos[i][t].req));
             infos[i][t].req.tp_block_size = blocksize;
-            infos[i][t].req.tp_block_nr = 64;
+            infos[i][t].req.tp_block_nr = numBlocks;
             infos[i][t].req.tp_frame_size = config.snapLen;
             infos[i][t].req.tp_frame_nr = (blocksize * infos[i][t].req.tp_block_nr) / infos[i][t].req.tp_frame_size;
             infos[i][t].req.tp_retire_blk_tov = 60;
@@ -268,9 +304,10 @@ void reader_tpacketv3_init(char *UNUSED(name))
             infos[i][t].map = mmap(NULL, (size_t)infos[i][t].req.tp_block_size * infos[i][t].req.tp_block_nr,
                                    PROT_READ | PROT_WRITE, MAP_SHARED | MAP_LOCKED, infos[i][t].fd, 0);
             if (unlikely(infos[i][t].map == MAP_FAILED)) {
-                CONFIGEXIT("mmap failure in reader_tpacketv3_init, %d: %s. Tried to allocate %" PRId64 " bytes (tpacketv3BlockSize: %d * 64) which was probably too large for this host, you probably need to reduce one of the values.", errno, strerror(errno), (size_t)infos[i][t].req.tp_block_size * infos[i][t].req.tp_block_nr, blocksize);
+                CONFIGEXIT("mmap failure in reader_tpacketv3_init, %d: %s. Tried to allocate %" PRId64 " bytes (tpacketv3BlockSize: %d * tpacketv3NumBlocks: %d) which was probably too large for this host, you probably need to reduce one of the values.", errno, strerror(errno), (size_t)infos[i][t].req.tp_block_size * infos[i][t].req.tp_block_nr, blocksize, numBlocks);
             }
             infos[i][t].rd = malloc(infos[i][t].req.tp_block_nr * sizeof(struct iovec));
+            infos[i][t].blockRefs = calloc(infos[i][t].req.tp_block_nr, sizeof(uint32_t));
 
             for (uint16_t j = 0; j < infos[i][t].req.tp_block_nr; j++) {
                 infos[i][t].rd[j].iov_base = infos[i][t].map + (j * infos[i][t].req.tp_block_size);
@@ -300,6 +337,8 @@ void reader_tpacketv3_init(char *UNUSED(name))
     arkime_reader_start         = reader_tpacketv3_start;
     arkime_reader_exit          = reader_tpacketv3_exit;
     arkime_reader_stats         = reader_tpacketv3_stats;
+    if (tpacketv3NoPacketCopy)
+        arkime_reader_packet_unref  = reader_tpacketv3_packet_unref;
 }
 #endif // TPACKET_V3
 #endif // _linux
