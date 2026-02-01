@@ -94,7 +94,13 @@ LOCAL void reader_tpacketv3_packet_unref(ArkimePacket_t *packet)
     uint16_t blockIndex = packet->packetRef & 0xFFFF;
 
     ArkimeTPacketV3_t *info = &infos[interfacePos][thread];
-    ARKIME_THREAD_DECR(info->blockRefs[blockIndex]);
+    uint32_t val = ARKIME_THREAD_DECRNEW(info->blockRefs[blockIndex]);
+
+    if (val == 0) {
+        //LOG("ALW unlock %d", blockIndex);
+        struct tpacket_block_desc *rtbd = info->rd[blockIndex].iov_base;
+        rtbd->hdr.bh1.block_status = TP_STATUS_KERNEL;
+    }
 }
 /******************************************************************************/
 LOCAL void *reader_tpacketv3_thread(gpointer infov)
@@ -102,7 +108,6 @@ LOCAL void *reader_tpacketv3_thread(gpointer infov)
     ArkimeTPacketV3_t *info = (ArkimeTPacketV3_t *)infov;
     struct pollfd pfd;
     int pos = 0;
-    int returnPos = 0;  // next block to return to kernel
 
     memset(&pfd, 0, sizeof(pfd));
     pfd.fd = info->fd;
@@ -140,6 +145,7 @@ LOCAL void *reader_tpacketv3_thread(gpointer infov)
 
         // Wait until the block is owned by capture
         if ((tbd->hdr.bh1.block_status & TP_STATUS_USER) == 0) {
+            LOG("ALW waiting for user %d %d", info->thread, pos);
             poll(&pfd, 1, -1);
             continue;
         }
@@ -151,6 +157,8 @@ LOCAL void *reader_tpacketv3_thread(gpointer infov)
         // Set block ref count for all packets we're about to read (only if zero-copy enabled)
         if (tpacketv3NoPacketCopy)
             info->blockRefs[pos] = tbd->hdr.bh1.num_pkts;
+
+        //LOG("ALW locked %d %d", pos, tbd->hdr.bh1.num_pkts);
 
         for (uint32_t p = 0; p < tbd->hdr.bh1.num_pkts; p++) {
             if (unlikely(th->tp_snaplen != th->tp_len) && !config.readTruncatedPackets && !config.ignoreErrors) {
@@ -189,17 +197,8 @@ LOCAL void *reader_tpacketv3_thread(gpointer infov)
             th = (struct tpacket3_hdr *) ((uint8_t *) th + th->tp_next_offset);
         }
         arkime_packet_batch_flush(&batch);
-
-        // Return any blocks whose ref counts have reached 0
-        while (returnPos != pos) {
-            if (info->blockRefs[returnPos] == 0) {
-                struct tpacket_block_desc *rtbd = info->rd[returnPos].iov_base;
-                rtbd->hdr.bh1.block_status = TP_STATUS_KERNEL;
-                returnPos = (returnPos + 1) % info->req.tp_block_nr;
-            } else {
-                break;
-            }
-        }
+        if (!tpacketv3NoPacketCopy)
+            rtbd->hdr.bh1.block_status = TP_STATUS_KERNEL;
 
         pos = (pos + 1) % info->req.tp_block_nr;
     }
