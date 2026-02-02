@@ -55,6 +55,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #3657 Add classifiers for: plex-gdm, samsung-smartview, whatsapp, ubiquiti-ubnt, xid 
   - #3659 Add classifier for nbds and parser for nbns
   - #3660 Added basic ptp parser
+  - #3661 Added isakmp cert decoding
 
 6.0.0-rc1 2026/01/26
 ## BREAKING

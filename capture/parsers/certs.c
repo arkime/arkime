@@ -427,184 +427,202 @@ LOCAL void certinfo_process_publickey(ArkimeCertsInfo_t *certs, uint8_t *data, u
     }
 }
 /******************************************************************************/
+// Process a single raw DER-encoded X.509 certificate
+// Returns 0 on success, -1 on failure
+LOCAL int certinfo_process_single_cert(ArkimeSession_t *session, const uint8_t *data, int clen)
+{
+    GChecksum *const checksum = checksums[session->thread];
+
+    int            badreason = 0;
+
+    ArkimeFieldObject_t *fobject = ARKIME_TYPE_ALLOC0(ArkimeFieldObject_t);
+
+    ArkimeCertsInfo_t *certs = ARKIME_TYPE_ALLOC0(ArkimeCertsInfo_t);
+    DLL_INIT(s_, &certs->alt);
+    DLL_INIT(s_, &certs->subject.commonName);
+    DLL_INIT(s_, &certs->subject.orgName);
+    DLL_INIT(s_, &certs->subject.orgUnit);
+    DLL_INIT(s_, &certs->issuer.commonName);
+    DLL_INIT(s_, &certs->issuer.orgName);
+    DLL_INIT(s_, &certs->issuer.orgUnit);
+
+    fobject->object = certs;
+
+    uint32_t       atag, alen, apc;
+    uint8_t *value;
+
+    BSB            bsb;
+    BSB_INIT(bsb, data, clen);
+
+    guchar digest[20];
+    gsize  dlen = sizeof(digest);
+
+    g_checksum_update(checksum, data, clen);
+    g_checksum_get_digest(checksum, digest, &dlen);
+    g_checksum_reset(checksum);
+    if (dlen > 0) {
+        int i;
+        for (i = 0; i < 20; i++) {
+            certs->hash[i * 3] = arkime_char_to_hexstr[digest[i]][0];
+            certs->hash[i * 3 + 1] = arkime_char_to_hexstr[digest[i]][1];
+            certs->hash[i * 3 + 2] = ':';
+        }
+    }
+    certs->hash[59] = 0;
+
+    /* Certificate */
+    if (!(value = arkime_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen))) {
+        badreason = 1;
+        goto bad_cert;
+    }
+    BSB_INIT(bsb, value, alen);
+
+    /* signedCertificate */
+    if (!(value = arkime_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen))) {
+        badreason = 2;
+        goto bad_cert;
+    }
+    BSB_INIT(bsb, value, alen);
+
+    /* serialNumber or version*/
+    if (!(value = arkime_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen))) {
+        badreason = 3;
+        goto bad_cert;
+    }
+
+    if (apc) {
+        if (!(value = arkime_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen))) {
+            badreason = 4;
+            goto bad_cert;
+        }
+    }
+    certs->serialNumberLen = alen;
+    certs->serialNumber = ARKIME_SIZE_ALLOC("serialNumber", alen);
+    memcpy(certs->serialNumber, value, alen);
+
+    /* signature */
+    if (!arkime_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen)) {
+        badreason = 5;
+        goto bad_cert;
+    }
+
+    /* issuer */
+    if (!(value = arkime_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen))) {
+        badreason = 6;
+        goto bad_cert;
+    }
+    BSB tbsb;
+    BSB_INIT(tbsb, value, alen);
+    certinfo_process(&certs->issuer, &tbsb);
+
+    /* validity */
+    if (!(value = arkime_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen))) {
+        badreason = 7;
+        goto bad_cert;
+    }
+
+    BSB_INIT(tbsb, value, alen);
+    if (!(value = arkime_parsers_asn_get_tlv(&tbsb, &apc, &atag, &alen))) {
+        badreason = 7;
+        goto bad_cert;
+    }
+    certs->notBefore = arkime_parsers_asn_parse_time(session, atag, value, alen);
+
+    if (!(value = arkime_parsers_asn_get_tlv(&tbsb, &apc, &atag, &alen))) {
+        badreason = 7;
+        goto bad_cert;
+    }
+    certs->notAfter = arkime_parsers_asn_parse_time(session, atag, value, alen);
+
+    /* subject */
+    if (!(value = arkime_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen))) {
+        badreason = 8;
+        goto bad_cert;
+    }
+    BSB_INIT(tbsb, value, alen);
+    certinfo_process(&certs->subject, &tbsb);
+
+    /* subjectPublicKeyInfo */
+    if (!(value = arkime_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen))) {
+        badreason = 9;
+        goto bad_cert;
+    }
+    certinfo_process_publickey(certs, value, alen);
+
+    /* extensions */
+    if (BSB_REMAINING(bsb)) {
+        if (!(value = arkime_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen))) {
+            badreason = 10;
+            goto bad_cert;
+        }
+        BSB_INIT(tbsb, value, alen);
+        char lastOid[100];
+        lastOid[0] = 0;
+        certinfo_alt_names(session, certs, &tbsb, lastOid);
+    }
+
+    // no previous certs AND not a CA AND either no orgName or the same orgName AND the same 1 commonName
+    if (!session->fields[certsField] &&
+        !certs->isCA &&
+        ((certs->subject.orgName.s_count == 1 && certs->issuer.orgName.s_count == 1 && strcmp(certs->subject.orgName.s_next->str, certs->issuer.orgName.s_next->str) == 0) ||
+         (certs->subject.orgName.s_count == 0 && certs->issuer.orgName.s_count == 0)) &&
+        certs->subject.commonName.s_count == 1 &&
+        certs->issuer.commonName.s_count == 1 &&
+        strcmp(certs->subject.commonName.s_next->str, certs->issuer.commonName.s_next->str) == 0) {
+
+        arkime_session_add_tag(session, "cert:self-signed");
+    }
+
+    if (certs->isCA) {
+        arkime_session_add_tag(session, "cert:certificate-authority");
+    }
+
+
+    if (!arkime_field_object_add(certsField, session, fobject, clen * 2)) {
+        certinfo_free(fobject);
+        fobject = 0;
+        certs = 0;
+    }
+
+    if (certs)
+        arkime_parsers_call_named_func(tls_process_certificate_wInfo_func, session, data, clen, certs);
+
+    return 0;
+
+bad_cert:
+    if (config.debug)
+        LOG("bad cert %d - %d", badreason, clen);
+    certinfo_free(fobject);
+    return -1;
+}
+/******************************************************************************/
 LOCAL uint32_t certinfo_process_server_certificate(ArkimeSession_t *session, const uint8_t *data, int len, void UNUSED(*uw))
 {
-
     BSB cbsb;
 
     BSB_INIT(cbsb, data, len);
 
     BSB_IMPORT_skip(cbsb, 3); // Length again
 
-    GChecksum *const checksum = checksums[session->thread];
-
     while (BSB_REMAINING(cbsb) > 3) {
-        int            badreason = 0;
         uint8_t *cdata = BSB_WORK_PTR(cbsb);
-        int            clen = MIN(BSB_REMAINING(cbsb) - 3, (cdata[0] << 16 | cdata[1] << 8 | cdata[2]));
+        int clen = MIN(BSB_REMAINING(cbsb) - 3, (cdata[0] << 16 | cdata[1] << 8 | cdata[2]));
 
-        ArkimeFieldObject_t *fobject = ARKIME_TYPE_ALLOC0(ArkimeFieldObject_t);
-
-        ArkimeCertsInfo_t *certs = ARKIME_TYPE_ALLOC0(ArkimeCertsInfo_t);
-        DLL_INIT(s_, &certs->alt);
-        DLL_INIT(s_, &certs->subject.commonName);
-        DLL_INIT(s_, &certs->subject.orgName);
-        DLL_INIT(s_, &certs->subject.orgUnit);
-        DLL_INIT(s_, &certs->issuer.commonName);
-        DLL_INIT(s_, &certs->issuer.orgName);
-        DLL_INIT(s_, &certs->issuer.orgUnit);
-
-        fobject->object = certs;
-
-        uint32_t       atag, alen, apc;
-        uint8_t *value;
-
-        BSB            bsb;
-        BSB_INIT(bsb, cdata + 3, clen);
-
-        guchar digest[20];
-        gsize  dlen = sizeof(digest);
-
-        g_checksum_update(checksum, cdata + 3, clen);
-        g_checksum_get_digest(checksum, digest, &dlen);
-        g_checksum_reset(checksum);
-        if (dlen > 0) {
-            int i;
-            for (i = 0; i < 20; i++) {
-                certs->hash[i * 3] = arkime_char_to_hexstr[digest[i]][0];
-                certs->hash[i * 3 + 1] = arkime_char_to_hexstr[digest[i]][1];
-                certs->hash[i * 3 + 2] = ':';
-            }
-        }
-        certs->hash[59] = 0;
-
-        /* Certificate */
-        if (!(value = arkime_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen))) {
-            badreason = 1;
-            goto bad_cert;
-        }
-        BSB_INIT(bsb, value, alen);
-
-        /* signedCertificate */
-        if (!(value = arkime_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen))) {
-            badreason = 2;
-            goto bad_cert;
-        }
-        BSB_INIT(bsb, value, alen);
-
-        /* serialNumber or version*/
-        if (!(value = arkime_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen))) {
-            badreason = 3;
-            goto bad_cert;
-        }
-
-        if (apc) {
-            if (!(value = arkime_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen))) {
-                badreason = 4;
-                goto bad_cert;
-            }
-        }
-        certs->serialNumberLen = alen;
-        certs->serialNumber = ARKIME_SIZE_ALLOC("serialNumber", alen);
-        memcpy(certs->serialNumber, value, alen);
-
-        /* signature */
-        if (!arkime_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen)) {
-            badreason = 5;
-            goto bad_cert;
-        }
-
-        /* issuer */
-        if (!(value = arkime_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen))) {
-            badreason = 6;
-            goto bad_cert;
-        }
-        BSB tbsb;
-        BSB_INIT(tbsb, value, alen);
-        certinfo_process(&certs->issuer, &tbsb);
-
-        /* validity */
-        if (!(value = arkime_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen))) {
-            badreason = 7;
-            goto bad_cert;
-        }
-
-        BSB_INIT(tbsb, value, alen);
-        if (!(value = arkime_parsers_asn_get_tlv(&tbsb, &apc, &atag, &alen))) {
-            badreason = 7;
-            goto bad_cert;
-        }
-        certs->notBefore = arkime_parsers_asn_parse_time(session, atag, value, alen);
-
-        if (!(value = arkime_parsers_asn_get_tlv(&tbsb, &apc, &atag, &alen))) {
-            badreason = 7;
-            goto bad_cert;
-        }
-        certs->notAfter = arkime_parsers_asn_parse_time(session, atag, value, alen);
-
-        /* subject */
-        if (!(value = arkime_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen))) {
-            badreason = 8;
-            goto bad_cert;
-        }
-        BSB_INIT(tbsb, value, alen);
-        certinfo_process(&certs->subject, &tbsb);
-
-        /* subjectPublicKeyInfo */
-        if (!(value = arkime_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen))) {
-            badreason = 9;
-            goto bad_cert;
-        }
-        certinfo_process_publickey(certs, value, alen);
-
-        /* extensions */
-        if (BSB_REMAINING(bsb)) {
-            if (!(value = arkime_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen))) {
-                badreason = 10;
-                goto bad_cert;
-            }
-            BSB_INIT(tbsb, value, alen);
-            char lastOid[100];
-            lastOid[0] = 0;
-            certinfo_alt_names(session, certs, &tbsb, lastOid);
-        }
-
-        // no previous certs AND not a CA AND either no orgName or the same orgName AND the same 1 commonName
-        if (!session->fields[certsField] &&
-            !certs->isCA &&
-            ((certs->subject.orgName.s_count == 1 && certs->issuer.orgName.s_count == 1 && strcmp(certs->subject.orgName.s_next->str, certs->issuer.orgName.s_next->str) == 0) ||
-             (certs->subject.orgName.s_count == 0 && certs->issuer.orgName.s_count == 0)) &&
-            certs->subject.commonName.s_count == 1 &&
-            certs->issuer.commonName.s_count == 1 &&
-            strcmp(certs->subject.commonName.s_next->str, certs->issuer.commonName.s_next->str) == 0) {
-
-            arkime_session_add_tag(session, "cert:self-signed");
-        }
-
-        if (certs->isCA) {
-            arkime_session_add_tag(session, "cert:certificate-authority");
-        }
-
-
-        if (!arkime_field_object_add(certsField, session, fobject, clen * 2)) {
-            certinfo_free(fobject);
-            fobject = 0;
-            certs = 0;
-        }
+        if (certinfo_process_single_cert(session, cdata + 3, clen) < 0)
+            break;
 
         BSB_IMPORT_skip(cbsb, clen + 3);
-
-        if (certs)
-            arkime_parsers_call_named_func(tls_process_certificate_wInfo_func, session, cdata + 3, clen, certs);
-
-        continue;
-
-bad_cert:
-        if (config.debug)
-            LOG("bad cert %d - %d", badreason, clen);
-        certinfo_free(fobject);
-        break;
     }
+    return 0;
+}
+/******************************************************************************/
+// Process a single DER-encoded certificate (for ISAKMP, etc.)
+LOCAL uint32_t tls_process_single_certificate(ArkimeSession_t *session, const uint8_t *data, int len, void UNUSED(*uw))
+{
+    if (len < 10)
+        return 0;
+
+    certinfo_process_single_cert(session, data, len);
     return 0;
 }
 /******************************************************************************/
@@ -787,5 +805,6 @@ void arkime_parser_init()
     }
 
     arkime_parsers_add_named_func("tls_process_server_certificate", certinfo_process_server_certificate);
+    arkime_parsers_add_named_func("tls_process_single_certificate", tls_process_single_certificate);
     tls_process_certificate_wInfo_func = arkime_parsers_get_named_func("tls_process_certificate_wInfo");
 }
