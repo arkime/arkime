@@ -1526,6 +1526,7 @@ void arkime_packet_batch(ArkimePacketBatch_t *batch, ArkimePacket_t *const packe
         rc = arkime_packet_ether(batch, packet, packet->pkt, packet->pktlen);
         break;
     case DLT_RAW: // RAW
+    case 101:     // LINKTYPE_RAW (standardized pcap file format value)
         if ((packet->pkt[0] & 0xF0) == 0x60)
             rc = arkime_packet_ip6(batch, packet, packet->pkt, packet->pktlen);
         else

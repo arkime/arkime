@@ -56,6 +56,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #3659 Add classifier for nbds and parser for nbns
   - #3660 Added basic ptp parser
   - #3661 Added isakmp cert decoding
+  - #3663 Added dcerpc parsing
 
 6.0.0-rc1 2026/01/26
 ## BREAKING
