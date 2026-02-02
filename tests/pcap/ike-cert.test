@@ -1,0 +1,463 @@
+{
+ "sessions3" : [
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "cert" : [
+     {
+      "hash" : "8e:84:ad:9c:17:5e:82:cc:93:db:92:df:75:79:24:5e:25:ab:9a:71",
+      "issuerCN" : [
+       "ikev1.example.com"
+      ],
+      "notAfter" : 1770140448000,
+      "notBefore" : 1770054048000,
+      "publicAlgorithm" : "rsaEncryption",
+      "remainingDays" : 811,
+      "remainingSeconds" : 70140448,
+      "serial" : "00e7fe6cc44427d5fe",
+      "subjectCN" : [
+       "ikev1.example.com"
+      ],
+      "validDays" : 1,
+      "validSeconds" : 86400
+     }
+    ],
+    "certCnt" : 1,
+    "client" : {
+     "bytes" : 346
+    },
+    "destination" : {
+     "bytes" : 0,
+     "ip" : "10.1.1.200",
+     "mac" : [
+      "94:2a:6f:ee:8c:82"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 0,
+     "port" : 500
+    },
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 1700000000000,
+    "ipProtocol" : 17,
+    "isakmp" : {
+     "exchangeType" : [
+      "identity-protection"
+     ],
+     "exchangeTypeCnt" : 1,
+     "initiatorSpi" : [
+      "1122334455667788"
+     ],
+     "initiatorSpiCnt" : 1,
+     "responderSpi" : [
+      "aabbccddeeff0011"
+     ],
+     "responderSpiCnt" : 1,
+     "version" : [
+      "1.0"
+     ],
+     "versionCnt" : 1
+    },
+    "lastPacket" : 1700000000000,
+    "length" : 0,
+    "network" : {
+     "bytes" : 388,
+     "community_id" : "1:6r8x7dC71Uzg6JShyxOGxnablz4=",
+     "packets" : 1
+    },
+    "node" : "test",
+    "packetLen" : [
+     404
+    ],
+    "packetPos" : [
+     24
+    ],
+    "packetRange" : {
+     "gte" : 1700000000000,
+     "lte" : 1700000000000
+    },
+    "protocol" : [
+     "isakmp",
+     "udp"
+    ],
+    "protocolCnt" : 2,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 0
+    },
+    "source" : {
+     "bytes" : 388,
+     "ip" : "10.1.1.100",
+     "mac" : [
+      "6a:70:c5:af:f1:f9"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 1,
+     "port" : 500
+    },
+    "srcPayload8" : "1122334455667788",
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
+    "tags" : [
+     "cert:self-signed"
+    ],
+    "tagsCnt" : 1,
+    "totDataBytes" : 346
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-231114"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "cert" : [
+     {
+      "hash" : "3a:6f:0c:34:be:12:31:9d:b7:6f:f5:0b:85:e6:7f:53:a9:29:45:42",
+      "issuerCN" : [
+       "ikev2.example.com"
+      ],
+      "notAfter" : 1770140448000,
+      "notBefore" : 1770054048000,
+      "publicAlgorithm" : "rsaEncryption",
+      "remainingDays" : 811,
+      "remainingSeconds" : 70139448,
+      "serial" : "00cba85d9a334981b1",
+      "subjectCN" : [
+       "ikev2.example.com"
+      ],
+      "validDays" : 1,
+      "validSeconds" : 86400
+     }
+    ],
+    "certCnt" : 1,
+    "client" : {
+     "bytes" : 346
+    },
+    "destination" : {
+     "bytes" : 0,
+     "ip" : "172.16.0.100",
+     "mac" : [
+      "94:2a:6f:ee:8c:82"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 0,
+     "port" : 500
+    },
+    "dstRIR" : "ARIN",
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 1700001000000,
+    "ipProtocol" : 17,
+    "isakmp" : {
+     "exchangeType" : [
+      "ike-sa-init"
+     ],
+     "exchangeTypeCnt" : 1,
+     "initiatorSpi" : [
+      "9988776655443322"
+     ],
+     "initiatorSpiCnt" : 1,
+     "responderSpi" : [
+      "123456789abcdef0"
+     ],
+     "responderSpiCnt" : 1,
+     "version" : [
+      "2.0"
+     ],
+     "versionCnt" : 1
+    },
+    "lastPacket" : 1700001000000,
+    "length" : 0,
+    "network" : {
+     "bytes" : 388,
+     "community_id" : "1:B2HzzHJ/PaoIXfIXdzaLF6tlS2g=",
+     "packets" : 1
+    },
+    "node" : "test",
+    "packetLen" : [
+     404
+    ],
+    "packetPos" : [
+     428
+    ],
+    "packetRange" : {
+     "gte" : 1700001000000,
+     "lte" : 1700001000000
+    },
+    "protocol" : [
+     "isakmp",
+     "udp"
+    ],
+    "protocolCnt" : 2,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 0
+    },
+    "source" : {
+     "bytes" : 388,
+     "ip" : "172.16.0.50",
+     "mac" : [
+      "6a:70:c5:af:f1:f9"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 1,
+     "port" : 500
+    },
+    "srcPayload8" : "9988776655443322",
+    "srcRIR" : "ARIN",
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
+    "tags" : [
+     "cert:self-signed"
+    ],
+    "tagsCnt" : 1,
+    "totDataBytes" : 346
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-231114"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "cert" : [
+     {
+      "hash" : "6e:8b:29:72:f8:9f:93:ba:70:26:73:de:63:c9:be:3b:53:bc:ba:fb",
+      "issuerCN" : [
+       "ikev1-ipv6.example.com"
+      ],
+      "notAfter" : 1770140448000,
+      "notBefore" : 1770054048000,
+      "publicAlgorithm" : "rsaEncryption",
+      "remainingDays" : 811,
+      "remainingSeconds" : 70138448,
+      "serial" : "00ab57469c81477296",
+      "subjectCN" : [
+       "ikev1-ipv6.example.com"
+      ],
+      "validDays" : 1,
+      "validSeconds" : 86400
+     }
+    ],
+    "certCnt" : 1,
+    "client" : {
+     "bytes" : 356
+    },
+    "destination" : {
+     "bytes" : 0,
+     "ip" : "2001:db8::200",
+     "mac" : [
+      "ff:ff:ff:ff:ff:ff"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 0,
+     "port" : 500
+    },
+    "ethertype" : 34525,
+    "fileId" : [],
+    "firstPacket" : 1700002000000,
+    "ipProtocol" : 17,
+    "isakmp" : {
+     "exchangeType" : [
+      "identity-protection"
+     ],
+     "exchangeTypeCnt" : 1,
+     "initiatorSpi" : [
+      "aabbccdd11223344"
+     ],
+     "initiatorSpiCnt" : 1,
+     "responderSpi" : [
+      "5566778899aabbcc"
+     ],
+     "responderSpiCnt" : 1,
+     "version" : [
+      "1.0"
+     ],
+     "versionCnt" : 1
+    },
+    "lastPacket" : 1700002000000,
+    "length" : 0,
+    "network" : {
+     "bytes" : 418,
+     "community_id" : "1:FhMr/xdt1f8f8PXil7KJ7zM+Law=",
+     "packets" : 1
+    },
+    "node" : "test",
+    "packetLen" : [
+     434
+    ],
+    "packetPos" : [
+     832
+    ],
+    "packetRange" : {
+     "gte" : 1700002000000,
+     "lte" : 1700002000000
+    },
+    "protocol" : [
+     "isakmp",
+     "udp"
+    ],
+    "protocolCnt" : 2,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 0
+    },
+    "source" : {
+     "bytes" : 418,
+     "ip" : "2001:db8::100",
+     "mac" : [
+      "00:00:00:00:00:00"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 1,
+     "port" : 500
+    },
+    "srcOui" : [
+     "Officially Xerox, but 0:0:0:0:0:0 is more common"
+    ],
+    "srcOuiCnt" : 1,
+    "srcPayload8" : "aabbccdd11223344",
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
+    "tags" : [
+     "cert:self-signed"
+    ],
+    "tagsCnt" : 1,
+    "totDataBytes" : 356
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-231114"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "cert" : [
+     {
+      "hash" : "24:78:f8:64:68:c7:07:fd:9c:dd:62:5b:96:ac:06:9a:72:8d:af:7a",
+      "issuerCN" : [
+       "ikev2-ipv6.example.com"
+      ],
+      "notAfter" : 1770140448000,
+      "notBefore" : 1770054048000,
+      "publicAlgorithm" : "rsaEncryption",
+      "remainingDays" : 811,
+      "remainingSeconds" : 70137448,
+      "serial" : "00c5f2c6d10670ff49",
+      "subjectCN" : [
+       "ikev2-ipv6.example.com"
+      ],
+      "validDays" : 1,
+      "validSeconds" : 86400
+     }
+    ],
+    "certCnt" : 1,
+    "client" : {
+     "bytes" : 356
+    },
+    "destination" : {
+     "bytes" : 0,
+     "ip" : "2001:db8::100",
+     "mac" : [
+      "ff:ff:ff:ff:ff:ff"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 0,
+     "port" : 500
+    },
+    "ethertype" : 34525,
+    "fileId" : [],
+    "firstPacket" : 1700003000000,
+    "ipProtocol" : 17,
+    "isakmp" : {
+     "exchangeType" : [
+      "ike-sa-init"
+     ],
+     "exchangeTypeCnt" : 1,
+     "initiatorSpi" : [
+      "ddeeff0011223344"
+     ],
+     "initiatorSpiCnt" : 1,
+     "responderSpi" : [
+      "5566778899aabbcc"
+     ],
+     "responderSpiCnt" : 1,
+     "version" : [
+      "2.0"
+     ],
+     "versionCnt" : 1
+    },
+    "lastPacket" : 1700003000000,
+    "length" : 0,
+    "network" : {
+     "bytes" : 418,
+     "community_id" : "1:t7KnK5UCqp9vQ55ypHT5WnZsbkM=",
+     "packets" : 1
+    },
+    "node" : "test",
+    "packetLen" : [
+     434
+    ],
+    "packetPos" : [
+     1266
+    ],
+    "packetRange" : {
+     "gte" : 1700003000000,
+     "lte" : 1700003000000
+    },
+    "protocol" : [
+     "isakmp",
+     "udp"
+    ],
+    "protocolCnt" : 2,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 0
+    },
+    "source" : {
+     "bytes" : 418,
+     "ip" : "2001:db8::50",
+     "mac" : [
+      "00:00:00:00:00:00"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 1,
+     "port" : 500
+    },
+    "srcOui" : [
+     "Officially Xerox, but 0:0:0:0:0:0 is more common"
+    ],
+    "srcOuiCnt" : 1,
+    "srcPayload8" : "ddeeff0011223344",
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
+    "tags" : [
+     "cert:self-signed"
+    ],
+    "tagsCnt" : 1,
+    "totDataBytes" : 356
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-231114"
+    }
+   }
+  }
+ ]
+}
+

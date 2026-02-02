@@ -35,6 +35,8 @@ LOCAL int hashField;
 LOCAL int dhGroupField;
 LOCAL int authMethodField;
 
+LOCAL uint32_t tls_process_single_certificate_func;
+
 LOCAL const char *ikev1ExchangeTypes[] = {
     [0] = "none",
     [1] = "base",
@@ -117,8 +119,10 @@ LOCAL const char *dhGroups[] = {
 };
 
 #define PAYLOAD_SA          1
+#define PAYLOAD_CERT        6
 #define PAYLOAD_VENDOR_ID   13
 #define PAYLOAD_SA_V2       33
+#define PAYLOAD_CERT_V2     37
 #define PAYLOAD_VENDOR_ID_V2 43
 
 typedef struct {
@@ -510,6 +514,20 @@ LOCAL int ike_udp_parser(ArkimeSession_t *session, void *UNUSED(uw), const uint8
                 }
             }
             break;
+
+        case PAYLOAD_CERT:
+        case PAYLOAD_CERT_V2:
+            // CERT payload: Cert Encoding (1 byte) | Certificate Data
+            if (BSB_REMAINING(pbsb) > 1) {
+                uint8_t certEncoding = 0;
+                BSB_IMPORT_u08(pbsb, certEncoding);
+                // Encoding 4 = X.509 Certificate - Signature (DER)
+                if (certEncoding == 4 && BSB_REMAINING(pbsb) > 0) {
+                    arkime_parsers_call_named_func(tls_process_single_certificate_func,
+                                                   session, BSB_WORK_PTR(pbsb), BSB_REMAINING(pbsb), NULL);
+                }
+            }
+            break;
         }
     }
 
@@ -614,6 +632,8 @@ void arkime_parser_init()
                                           "isakmp.auth-method", "Auth Method", "isakmp.authMethod",
                                           "ISAKMP authentication method",
                                           ARKIME_FIELD_TYPE_STR_GHASH, ARKIME_FIELD_FLAG_CNT, (char *)NULL);
+
+    tls_process_single_certificate_func = arkime_parsers_get_named_func("tls_process_single_certificate");
 
     arkime_parsers_classifier_register_port("isakmp", NULL, 500, ARKIME_PARSERS_PORT_UDP, ike_udp_classify);
     arkime_parsers_classifier_register_port("isakmp", NULL, 4500, ARKIME_PARSERS_PORT_UDP, ike_udp_classify);
