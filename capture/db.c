@@ -614,7 +614,7 @@ LOCAL int arkime_db_field_sort(const void *a, const void *b)
 
 void arkime_db_save_session(ArkimeSession_t *session, int final)
 {
-    char                   id[100];
+    char                   id[120];
     uint32_t               id_len;
     uuid_t                 uuid;
     ArkimeString_t        *hstring;

@@ -1,0 +1,5 @@
+if (session.ptp)
+  div.sessionDetailMeta.bold PTP
+  dl.sessionDetailMeta
+    +arrayList(session.ptp, "msgType", "Message Type", "ptp.msgType")
+    +arrayList(session.ptp, "clockId", "Clock ID", "ptp.clockId")

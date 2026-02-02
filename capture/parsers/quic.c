@@ -361,7 +361,7 @@ LOCAL void quic_ietf_udp_classify(ArkimeSession_t *session, const uint8_t *data,
 // Thank you wireshark/tshark/quicgo and other tools to verify (kindof) implementation
 
     // Min length for quic packets because of padding
-    if (len < 1200 || len > 3000)
+    if (len < 1100 || len > 3000)
         return;
 
     // Only look for long form initial
