@@ -245,9 +245,9 @@ class MiscAPIs {
   static getReverseDNS (req, res) {
     dns.reverse(req.query.ip, (err, data) => {
       if (err) {
-        return res.send('reverse error');
+        return res.type('text/plain').send('reverse error');
       }
-      return res.send(data.join(', '));
+      return res.type('text/plain').send(data.join(', '));
     });
   }
 

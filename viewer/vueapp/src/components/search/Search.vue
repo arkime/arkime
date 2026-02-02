@@ -165,7 +165,7 @@ SPDX-License-Identifier: Apache-2.0
         <template #button-content>
           <template v-if="view && views && getView(view)">
             <div id="viewMenuDropdown">
-              <span class="fa fa-eye" />
+              <span class="fa fa-eye me-1" />
               <span v-if="view">{{ getView(view).name || view }}</span>
               <span class="sr-only">{{ $t('common.views') }}</span>
               <BTooltip target="viewMenuDropdown">
