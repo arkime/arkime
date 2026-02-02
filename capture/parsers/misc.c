@@ -414,8 +414,6 @@ void arkime_parser_init()
     SIMPLE_CLASSIFY_TCP("pjl", "\x1b\x25\x2d\x31\x32\x33\x34\x35");
     SIMPLE_CLASSIFY_TCP("pjl", "\x40\x50\x4a\x4c\x20");
 
-    SIMPLE_CLASSIFY_TCP("dcerpc", "\x05\x00\x0b");
-
     CLASSIFY_UDP("rip", 0, "\x01\x01\x00\x00", rip_classify);
     CLASSIFY_UDP("rip", 0, "\x01\x02\x00\x00", rip_classify);
     CLASSIFY_UDP("rip", 0, "\x02\x01\x00\x00", rip_classify);
