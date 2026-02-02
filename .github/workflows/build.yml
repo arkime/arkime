@@ -207,8 +207,8 @@ jobs:
           mv capture/plugins/ja4plus.so ja4plus.${{ env.ARKIME_ARCH }}.so
           rm -f capture/plugins/ja4plus.c
 
-      - name: moloch el8 package rpm
-        if: ${{ matrix.version == 'el8.x86_64' }}
+      - name: moloch el package rpm
+        if: ${{ matrix.version == 'el8.x86_64' || matrix.version == 'el9.x86_64' }}
         run: |
           export ARKIME_VERSION=`sed 's/.*"\(.*\)\".*$/\1/' /opt/arkime/common/version.js | head -n 1 | tr "-" "_"`
           rm -rf /data/moloch; mkdir -p /data
