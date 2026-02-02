@@ -1,0 +1,8 @@
+if (session.dcerpc)
+  div.sessionDetailMeta.bold DCE/RPC
+  dl.sessionDetailMeta
+    +arrayList(session.dcerpc, "msgType", "Message Type", "dcerpc.msgType")
+    +arrayList(session.dcerpc, "interface", "Interface", "dcerpc.interface")
+    +arrayList(session.dcerpc, "uuid", "UUID", "dcerpc.uuid")
+    +arrayList(session.dcerpc, "opnum", "Opnum", "dcerpc.opnum")
+    +arrayList(session.dcerpc, "version", "Version", "dcerpc.version")
