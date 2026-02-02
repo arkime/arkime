@@ -67,8 +67,8 @@ LOCAL const char *msgTypes[] = {
 // Format UUID from wire format to string
 LOCAL void dcerpc_format_uuid(BSB *bsb, char *out, gboolean le)
 {
-    uint32_t data1;
-    uint16_t data2, data3;
+    uint32_t data1 = 0;
+    uint16_t data2 = 0, data3 = 0;
     uint8_t *data4;
 
     if (le) {
