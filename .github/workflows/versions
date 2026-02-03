@@ -42,6 +42,7 @@ include:
     package: rpm
     python: python3
     notice: true
+    prbuild: true
 
   - version: ubuntu2204_amd64
     container: andywick/arkime-build-22:6.0.0-2
