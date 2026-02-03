@@ -32,7 +32,6 @@ include:
     buildopt: "--thirdparty --kafka --pfring"
     fpmdeps: "-d perl-libwww-perl -d perl-JSON -d ethtool -d libyaml -d perl-LWP-Protocol-https -d libzstd -d python3.12-libs"
     package: rpm
-    notice: true
     python: python3
     prbuild: true
 
@@ -42,6 +41,7 @@ include:
     fpmdeps: "-d perl-libwww-perl -d perl-JSON -d ethtool -d libyaml -d perl-LWP-Protocol-https -d libzstd -d libmaxminddb -d libpcap -d librdkafka -d python3-libs"
     package: rpm
     python: python3
+    notice: true
 
   - version: ubuntu2204_amd64
     container: andywick/arkime-build-22:6.0.0-2
