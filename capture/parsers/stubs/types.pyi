@@ -8,6 +8,7 @@ PortKind = int  # Bitwise flags for port classifier types
 ArkimeSession = Any   # Session handle, valid during callback unless incref'd
 ArkimePacketBatch = Any  # Batch handle for packet processing
 ArkimePacket = Any    # Packet handle, use with arkime_packet.get()/set()
+ArkimeParserBuf = Any  # Parser buffer handle for buffered parsing
 memoryview = Any      # Read-only packet bytes, only valid during callback
 
 # === Callback types ===
@@ -37,6 +38,24 @@ Args:
     packetLen: Length of the packet in bytes.
     which: For TCP/UDP: 0 = client to server, 1 = server to client.
            For SCTP: direction in bit 0, stream ID in upper bits (use which & 1 for direction).
+
+Returns:
+    -1: Unregister parser (no more callbacks for this session)
+     0: Normal case, continue receiving packets
+    >0: Number of bytes consumed (used when this protocol wraps others)
+"""
+
+ParserBufCb = Callable[[ArkimeSession, ArkimeParserBuf, memoryview, int], int]
+"""
+Buffered parser callback for protocol dissection. Called for every packet of a session after
+being registered with arkime_session.register_parser_buf(). Data is automatically accumulated
+in a per-direction buffer (up to 8KB) and passed as a memoryview.
+
+Args:
+    session: Opaque session handle, use with arkime_session module methods.
+    pb: Parser buffer handle, use with parser_buf_del/parser_buf_skip.
+    buf: Read-only memoryview of accumulated buffer data; only valid during callback.
+    which: Direction: 0 = client to server, 1 = server to client.
 
 Returns:
     -1: Unregister parser (no more callbacks for this session)

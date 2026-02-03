@@ -6,7 +6,7 @@ The Python Arkime Session module has methods for dealing with sessions. The API 
 
 from typing import Any
 
-from .types import ArkimeSession, ParserCb
+from .types import ArkimeSession, ArkimeParserBuf, ParserCb, ParserBufCb
 
 # === Methods ===
 def add_int(session: ArkimeSession, fieldPosOrExp: int | str, value: int) -> bool:
@@ -120,6 +120,45 @@ def register_parser(session: ArkimeSession, parserCb: ParserCb) -> None:
     Args:
         session: The session object from the classifyCb or parserCb.
         parserCb: The callback to call for every packet of the session in each direction.
+    """
+    ...
+
+def register_parser_buf(session: ArkimeSession, parserBufCb: ParserBufCb) -> None:
+    """
+    Register a buffered parser callback for every packet of the session.
+    Data is automatically accumulated in a per-direction buffer (up to 8KB per direction)
+    and passed as a memoryview of the accumulated data. Use parser_buf_del or parser_buf_skip
+    to consume processed bytes from the buffer.
+
+    Args:
+        session: The session object from the classifyCb or parserCb.
+        parserBufCb: The callback to call for every packet of the session in each direction.
+                     Receives (session, pb, buf, which) where buf is accumulated data.
+    """
+    ...
+
+def parser_buf_del(pb: ArkimeParserBuf, which: int, length: int) -> None:
+    """
+    Delete bytes from the front of the parser buffer after processing them.
+    Call this after successfully parsing a complete message to remove consumed bytes.
+
+    Args:
+        pb: The parser buffer handle from the parserBufCb callback.
+        which: Direction: 0 = client to server, 1 = server to client.
+        length: Number of bytes to delete from the front of the buffer.
+    """
+    ...
+
+def parser_buf_skip(pb: ArkimeParserBuf, which: int, skip: int) -> None:
+    """
+    Skip bytes in the parser buffer. If skip is less than or equal to current buffer length,
+    acts like parser_buf_del. If skip is greater than current buffer length, also skips
+    that many bytes from future incoming data.
+
+    Args:
+        pb: The parser buffer handle from the parserBufCb callback.
+        which: Direction: 0 = client to server, 1 = server to client.
+        skip: Number of bytes to skip.
     """
     ...
 

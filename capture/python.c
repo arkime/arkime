@@ -619,6 +619,124 @@ LOCAL PyObject *arkime_python_session_register_parser(PyObject UNUSED(*self), Py
     Py_RETURN_NONE;
 }
 /******************************************************************************/
+// Parser buf support - stores callback + parser_buf together
+typedef struct {
+    PyObject         *callback;
+    ArkimeParserBuf_t *pb;
+} ArkimePyParserBufInfo_t;
+
+/******************************************************************************/
+LOCAL int arkime_python_session_parsers_buf_cb(ArkimeSession_t *session, void *uw, const uint8_t *data, int len, int which)
+{
+    ArkimePyParserBufInfo_t *info = (ArkimePyParserBufInfo_t *)uw;
+
+    // Add incoming data to the parser buffer
+    arkime_parser_buf_add(info->pb, which, data, len);
+
+    PyEval_RestoreThread(packetThreadState[arkimePacketThread]);
+
+    // Create memoryview of the buffered data
+    PyObject *py_buf_memview = PyMemoryView_FromMemory((char *)info->pb->buf[which], info->pb->len[which], PyBUF_READ);
+    PyObject *py_session_opaque_ptr = PyLong_FromVoidPtr(session);
+    PyObject *py_pb_opaque_ptr = PyLong_FromVoidPtr(info->pb);
+
+    PyObject *py_args = Py_BuildValue("(OOOi)", py_session_opaque_ptr, py_pb_opaque_ptr, py_buf_memview, which);
+
+    if (!py_args) {
+        PyErr_Print();
+        LOGEXIT("Error building arguments tuple for Python parser_buf callback");
+    }
+
+    PyObject *result = PyObject_CallObject(info->callback, py_args);
+    int resultn = 0;
+    if (result == NULL) {
+        PyErr_Print();
+        LOG("Error calling Python parser_buf callback function from C");
+        resultn = -1;
+    } else {
+        if (PyLong_Check(result))
+            resultn = PyLong_AsLong(result);
+        Py_DECREF(result);
+    }
+
+    Py_XDECREF(py_buf_memview);
+    Py_XDECREF(py_args);
+    Py_XDECREF(py_session_opaque_ptr);
+    Py_XDECREF(py_pb_opaque_ptr);
+
+    PyEval_SaveThread();
+
+    return resultn;
+}
+/******************************************************************************/
+LOCAL void arkime_python_session_parsers_buf_free_cb(ArkimeSession_t UNUSED(*session), void *uw)
+{
+    ArkimePyParserBufInfo_t *info = (ArkimePyParserBufInfo_t *)uw;
+    Py_DECREF(info->callback);
+    arkime_parser_buf_free(info->pb);
+    ARKIME_TYPE_FREE(ArkimePyParserBufInfo_t, info);
+}
+/******************************************************************************/
+LOCAL PyObject *arkime_python_session_register_parser_buf(PyObject UNUSED(*self), PyObject *args)
+{
+    PyObject *py_session_obj;
+    PyObject *py_callback_obj;
+
+    if (!PyArg_ParseTuple(args, "OO", &py_session_obj, &py_callback_obj)) {
+        return NULL;
+    }
+
+    if (!PyCallable_Check(py_callback_obj)) {
+        PyErr_SetString(PyExc_TypeError, "Callback must be a callable Python object.");
+        return NULL;
+    }
+    Py_INCREF(py_callback_obj);
+
+    ArkimePyParserBufInfo_t *info = ARKIME_TYPE_ALLOC(ArkimePyParserBufInfo_t);
+    info->callback = py_callback_obj;
+    info->pb = arkime_parser_buf_create();
+
+    arkime_parsers_register2(
+        (ArkimeSession_t *)PyLong_AsVoidPtr(py_session_obj),
+        arkime_python_session_parsers_buf_cb,
+        info,
+        arkime_python_session_parsers_buf_free_cb,
+        NULL);
+    Py_RETURN_NONE;
+}
+/******************************************************************************/
+LOCAL PyObject *arkime_python_parser_buf_del(PyObject UNUSED(*self), PyObject *args)
+{
+    PyObject *py_pb_obj;
+    int which;
+    int len;
+
+    if (!PyArg_ParseTuple(args, "Oii", &py_pb_obj, &which, &len)) {
+        return NULL;
+    }
+
+    ArkimeParserBuf_t *pb = (ArkimeParserBuf_t *)PyLong_AsVoidPtr(py_pb_obj);
+    arkime_parser_buf_del(pb, which, len);
+
+    Py_RETURN_NONE;
+}
+/******************************************************************************/
+LOCAL PyObject *arkime_python_parser_buf_skip(PyObject UNUSED(*self), PyObject *args)
+{
+    PyObject *py_pb_obj;
+    int which;
+    int skip;
+
+    if (!PyArg_ParseTuple(args, "Oii", &py_pb_obj, &which, &skip)) {
+        return NULL;
+    }
+
+    ArkimeParserBuf_t *pb = (ArkimeParserBuf_t *)PyLong_AsVoidPtr(py_pb_obj);
+    arkime_parser_buf_skip(pb, which, skip);
+
+    Py_RETURN_NONE;
+}
+/******************************************************************************/
 LOCAL PyObject *arkime_python_session_add_tag(PyObject UNUSED(*self), PyObject *args)
 {
     const char *tag_str;
@@ -1030,6 +1148,9 @@ LOCAL PyObject *arkime_python_session_get_attr(PyObject UNUSED(*self), PyObject 
 /******************************************************************************/
 LOCAL PyMethodDef arkime_session_methods[] = {
     { "register_parser", arkime_python_session_register_parser, METH_VARARGS, NULL },
+    { "register_parser_buf", arkime_python_session_register_parser_buf, METH_VARARGS, NULL },
+    { "parser_buf_del", arkime_python_parser_buf_del, METH_VARARGS, NULL },
+    { "parser_buf_skip", arkime_python_parser_buf_skip, METH_VARARGS, NULL },
     { "add_tag", arkime_python_session_add_tag, METH_VARARGS, NULL },
     { "add_protocol", arkime_python_session_add_protocol, METH_VARARGS, NULL },
     { "has_protocol", arkime_python_session_has_protocol, METH_VARARGS, NULL },
