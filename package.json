@@ -6,7 +6,7 @@
     "url": "https://github.com/arkime/arkime.git"
   },
   "dependencies": {
-    "@aws-sdk/client-s3": "^3.972.0",
+    "@aws-sdk/client-s3": "^3.981.0",
     "@clickhouse/client": "^1.12.1",
     "@databricks/sql": "^1.12.0",
     "@elastic/elasticsearch": "7.10.0",
