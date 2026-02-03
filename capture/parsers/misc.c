@@ -277,6 +277,23 @@ LOCAL void samsung_smartview_classify(ArkimeSession_t *session, const uint8_t *d
 }
 /******************************************************************************/
 // NetBIOS Datagram Service (NBDS) - port 138
+// WireGuard VPN - classify on handshake messages only to avoid false positives
+LOCAL void wireguard_classify(ArkimeSession_t *session, const uint8_t *data, int len, int UNUSED(which), void *UNUSED(uw))
+{
+    // First byte is message type, next 3 must be zero (reserved)
+    if (data[1] != 0 || data[2] != 0 || data[3] != 0)
+        return;
+
+    // Validate exact length for fixed-size handshake messages
+    uint8_t msgType = data[0];
+    if (msgType == 1 && len != 148)  // Handshake Initiation
+        return;
+    if (msgType == 2 && len != 92)   // Handshake Response
+        return;
+
+    arkime_session_add_protocol(session, "wireguard");
+}
+/******************************************************************************/
 // Wrapper protocol that can carry SMB mailslot messages
 LOCAL void nbds_classify(ArkimeSession_t *session, const uint8_t *data, int len, int UNUSED(which), void *UNUSED(uw))
 {
@@ -476,7 +493,9 @@ void arkime_parser_init()
 
     SIMPLE_CLASSIFY_TCP("rmi", "JRMI\x00");
 
-    SIMPLE_CLASSIFY_BOTH("dnp3", "\x05\x64");
+    // WireGuard handshake messages (content-based, exact length validation)
+    CLASSIFY_UDP("wireguard", 0, "\x01\x00\x00\x00", wireguard_classify);
+    CLASSIFY_UDP("wireguard", 0, "\x02\x00\x00\x00", wireguard_classify);
 
     userField = arkime_field_by_db("user");
 }

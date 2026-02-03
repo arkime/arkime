@@ -183,9 +183,9 @@ LOCAL void dnp3_udp_classify(ArkimeSession_t *session, const uint8_t *data, int 
 /******************************************************************************/
 void arkime_parser_init()
 {
-    // DNP3 typically runs on port 20000 TCP and UDP
-    arkime_parsers_classifier_register_port("dnp3", NULL, 20000, ARKIME_PARSERS_PORT_TCP, dnp3_tcp_classify);
-    arkime_parsers_classifier_register_port("dnp3", NULL, 20000, ARKIME_PARSERS_PORT_UDP, dnp3_udp_classify);
+    // Byte-based classifier for DNP3 on any port
+    arkime_parsers_classifier_register_tcp("dnp3", NULL, 0, (const uint8_t *)"\x05\x64", 2, dnp3_tcp_classify);
+    arkime_parsers_classifier_register_udp("dnp3", NULL, 0, (const uint8_t *)"\x05\x64", 2, dnp3_udp_classify);
 
     srcField = arkime_field_define("dnp3", "integer",
                                    "dnp3.src", "DNP3 Source Address", "dnp3.src",
