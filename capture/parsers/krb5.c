@@ -240,8 +240,9 @@ LOCAL void krb5_parse_req(ArkimeSession_t *session, const uint8_t *data, int len
 --      enc-part[6]             EncryptedData
 --}
 */
-LOCAL void krb5_parse_rep(const ArkimeSession_t *UNUSED(session), const uint8_t *UNUSED(data), int UNUSED(len))
+LOCAL void krb5_parse_rep(ArkimeSession_t *session, const uint8_t *UNUSED(data), int UNUSED(len))
 {
+    arkime_session_add_protocol(session, "krb5");
 }
 /******************************************************************************/
 /* wireshark: k5.asn which based on http://www.h5l.org/dist/src/heimdal-1.2.tar.gz
@@ -386,9 +387,17 @@ LOCAL int krb5_tcp_parser(ArkimeSession_t *session, void *uw, const uint8_t *dat
     return 0;
 }
 /******************************************************************************/
-LOCAL void krb5_tcp_classify(ArkimeSession_t *session, const uint8_t *data, int UNUSED(len), int UNUSED(which), void *UNUSED(uw))
+LOCAL void krb5_tcp_classify(ArkimeSession_t *session, const uint8_t *data, int len, int UNUSED(which), void *UNUSED(uw))
 {
-    if (len < 2 || which != 0 || data[0] != 0 || data[1] != 0)
+    // TCP Kerberos: 4-byte length prefix, then ASN.1
+    // First 2 bytes of length should be 0 for reasonable message sizes
+    if (len < 5 || data[0] != 0 || data[1] != 0)
+        return;
+
+    // Check ASN.1 application tag at offset 4
+    // Valid tags: 0x6a (AS-REQ), 0x6b (AS-REP), 0x6c (TGS-REQ), 0x6d (TGS-REP), 0x7e (KRB-ERROR)
+    uint8_t tag = data[4];
+    if (tag != 0x6a && tag != 0x6b && tag != 0x6c && tag != 0x6d && tag != 0x7e)
         return;
 
     ArkimeParserBuf_t     *krb5          = arkime_parser_buf_create();
