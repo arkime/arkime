@@ -1,0 +1,275 @@
+{
+ "sessions3" : [
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 67
+    },
+    "destination" : {
+     "as" : {
+      "full" : "AS1 Cool Beans!",
+      "number" : 1,
+      "organization" : {
+       "name" : "Cool Beans!"
+      }
+     },
+     "bytes" : 304,
+     "geo" : {
+      "country_iso_code" : "CA"
+     },
+     "ip" : "10.0.0.2",
+     "mac" : [
+      "00:aa:bb:cc:dd:ee"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 5,
+     "port" : 20000
+    },
+    "dnp3" : {
+     "dst" : [
+      "1",
+      "2"
+     ],
+     "dstCnt" : 2,
+     "func" : [
+      "1",
+      "129",
+      "2"
+     ],
+     "funcCnt" : 3,
+     "src" : [
+      "1",
+      "2"
+     ],
+     "srcCnt" : 2
+    },
+    "dstPayload8" : "05640a4402000100",
+    "dstRIR" : "TEST",
+    "dstTTL" : [
+     64
+    ],
+    "dstTTLCnt" : 1,
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 1770163200000,
+    "initRTT" : 1000,
+    "ipProtocol" : 6,
+    "lastPacket" : 1770163210000,
+    "length" : 10000,
+    "network" : {
+     "bytes" : 695,
+     "community_id" : "1:+nknT/m1+4K/+v/7Xnr/hjuJzpU=",
+     "packets" : 11
+    },
+    "node" : "test",
+    "packetLen" : [
+     70
+    ],
+    "packetPos" : [
+     24
+    ],
+    "packetRange" : {
+     "gte" : 1770163200000,
+     "lte" : 1770163210000
+    },
+    "protocol" : [
+     "dnp3",
+     "tcp"
+    ],
+    "protocolCnt" : 2,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 34
+    },
+    "source" : {
+     "as" : {
+      "full" : "AS0 This is neat",
+      "number" : 0,
+      "organization" : {
+       "name" : "This is neat"
+      }
+     },
+     "bytes" : 391,
+     "geo" : {
+      "country_iso_code" : "RU"
+     },
+     "ip" : "10.0.0.1",
+     "mac" : [
+      "00:11:22:33:44:55"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 6,
+     "port" : 12345
+    },
+    "srcOui" : [
+     "CIMSYS Inc"
+    ],
+    "srcOuiCnt" : 1,
+    "srcPayload8" : "05640bc401000200",
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
+    "tags" : [
+     "dstip",
+     "srcip",
+     "truncated-pcap"
+    ],
+    "tagsCnt" : 3,
+    "tcpflags" : {
+     "ack" : 4,
+     "dstZero" : 0,
+     "fin" : 0,
+     "psh" : 5,
+     "rst" : 0,
+     "srcZero" : 0,
+     "syn" : 1,
+     "syn-ack" : 1,
+     "urg" : 0
+    },
+    "tcpseq" : {
+     "dst" : 0,
+     "src" : 1000
+    },
+    "test" : {
+     "ASN" : [
+      "AS0 This is neat"
+     ],
+     "GEO" : [
+      "RU"
+     ],
+     "RIR" : [
+      ""
+     ],
+     "ip" : [
+      "10.0.0.1"
+     ],
+     "number" : [
+      33554442
+     ],
+     "string.snow" : [
+      "16777226:12345,33554442:20000"
+     ]
+    },
+    "totDataBytes" : 101
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-260204"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 33
+    },
+    "destination" : {
+     "bytes" : 121,
+     "ip" : "10.0.0.4",
+     "mac" : [
+      "00:aa:bb:cc:dd:ee"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 2,
+     "port" : 20000
+    },
+    "dnp3" : {
+     "dst" : [
+      "10",
+      "20"
+     ],
+     "dstCnt" : 2,
+     "func" : [
+      "1",
+      "129",
+      "13"
+     ],
+     "funcCnt" : 3,
+     "src" : [
+      "10",
+      "20"
+     ],
+     "srcCnt" : 2
+    },
+    "dstPayload8" : "05640d4414000a00",
+    "dstTTL" : [
+     64
+    ],
+    "dstTTLCnt" : 1,
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 1770163211000,
+    "ipProtocol" : 17,
+    "lastPacket" : 1770163214000,
+    "length" : 3000,
+    "network" : {
+     "bytes" : 238,
+     "community_id" : "1:NeU0B1GMd6hWpoKokX9h0MWnC/A=",
+     "packets" : 4
+    },
+    "node" : "test",
+    "packetLen" : [
+     76,
+     78,
+     73,
+     75
+    ],
+    "packetPos" : [
+     895,
+     971,
+     1049,
+     1122
+    ],
+    "packetRange" : {
+     "gte" : 1770163211000,
+     "lte" : 1770163214000
+    },
+    "protocol" : [
+     "dnp3",
+     "udp"
+    ],
+    "protocolCnt" : 2,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 37
+    },
+    "source" : {
+     "as" : {
+      "full" : "AS2 Hmm!@#$%^&*()",
+      "number" : 2,
+      "organization" : {
+       "name" : "Hmm!@#$%^&*()"
+      }
+     },
+     "bytes" : 117,
+     "ip" : "10.0.0.3",
+     "mac" : [
+      "00:11:22:33:44:55"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 2,
+     "port" : 54321
+    },
+    "srcOui" : [
+     "CIMSYS Inc"
+    ],
+    "srcOuiCnt" : 1,
+    "srcPayload8" : "05640bc40a001400",
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
+    "totDataBytes" : 70
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-260204"
+    }
+   }
+  }
+ ]
+}
+
