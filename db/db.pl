@@ -4297,6 +4297,34 @@ sub sessions3Update
         }
       }
     },
+    "bacnet" : {
+      "properties" : {
+        "apduType" : {
+          "type" : "keyword"
+        },
+        "apduTypeCnt" : {
+          "type" : "long"
+        },
+        "function" : {
+          "type" : "keyword"
+        },
+        "functionCnt" : {
+          "type" : "long"
+        },
+        "objectName" : {
+          "type" : "keyword"
+        },
+        "objectNameCnt" : {
+          "type" : "long"
+        },
+        "service" : {
+          "type" : "keyword"
+        },
+        "serviceCnt" : {
+          "type" : "long"
+        }
+      }
+    },
     "cert" : {
       "properties" : {
         "alt" : {
@@ -4346,8 +4374,48 @@ sub sessions3Update
     "certCnt" : {
       "type" : "long"
     },
+    "dcerpc" : {
+      "properties" : {
+        "interface" : {
+          "type" : "keyword"
+        },
+        "interfaceCnt" : {
+          "type" : "long"
+        },
+        "msgType" : {
+          "type" : "keyword"
+        },
+        "msgTypeCnt" : {
+          "type" : "long"
+        },
+        "opnum" : {
+          "type" : "long"
+        },
+        "opnumCnt" : {
+          "type" : "long"
+        },
+        "uuid" : {
+          "type" : "keyword"
+        },
+        "uuidCnt" : {
+          "type" : "long"
+        },
+        "version" : {
+          "type" : "keyword"
+        },
+        "versionCnt" : {
+          "type" : "long"
+        }
+      }
+    },
     "dhcp" : {
       "properties" : {
+        "classId" : {
+          "type" : "keyword"
+        },
+        "classIdCnt" : {
+          "type" : "long"
+        },
         "host" : {
           "type" : "keyword",
           "copy_to" : [
@@ -4378,6 +4446,12 @@ sub sessions3Update
           "type" : "keyword"
         },
         "ouiCnt" : {
+          "type" : "long"
+        },
+        "requestIp" : {
+          "type" : "ip"
+        },
+        "requestIpCnt" : {
           "type" : "long"
         },
         "type" : {
@@ -4591,6 +4665,13 @@ sub sessions3Update
         },
         "useragentCnt" : {
           "type" : "long"
+        }
+      }
+    },
+    "esis" : {
+      "properties" : {
+        "type" : {
+          "type" : "keyword"
         }
       }
     },
@@ -4879,12 +4960,89 @@ sub sessions3Update
         }
       }
     },
+    "isakmp" : {
+      "properties" : {
+        "authMethod" : {
+          "type" : "keyword"
+        },
+        "authMethodCnt" : {
+          "type" : "long"
+        },
+        "dhGroup" : {
+          "type" : "keyword"
+        },
+        "dhGroupCnt" : {
+          "type" : "long"
+        },
+        "encryption" : {
+          "type" : "keyword"
+        },
+        "encryptionCnt" : {
+          "type" : "long"
+        },
+        "exchangeType" : {
+          "type" : "keyword"
+        },
+        "exchangeTypeCnt" : {
+          "type" : "long"
+        },
+        "hash" : {
+          "type" : "keyword"
+        },
+        "hashCnt" : {
+          "type" : "long"
+        },
+        "initiatorSpi" : {
+          "type" : "keyword"
+        },
+        "initiatorSpiCnt" : {
+          "type" : "long"
+        },
+        "responderSpi" : {
+          "type" : "keyword"
+        },
+        "responderSpiCnt" : {
+          "type" : "long"
+        },
+        "vendorId" : {
+          "type" : "keyword"
+        },
+        "vendorIdCnt" : {
+          "type" : "long"
+        },
+        "version" : {
+          "type" : "keyword"
+        },
+        "versionCnt" : {
+          "type" : "long"
+        }
+      }
+    },
+    "isis" : {
+      "properties" : {
+        "msgType" : {
+          "type" : "keyword"
+        }
+      }
+    },
     "krb5" : {
       "properties" : {
         "cname" : {
           "type" : "keyword"
         },
         "cnameCnt" : {
+          "type" : "long"
+        },
+        "error" : {
+          "type" : "keyword"
+        },
+        "errorCnt" : {
+          "type" : "long"
+        },
+        "etype" : {
+          "type" : "keyword"
+        },
+        "etypeCnt" : {
           "type" : "long"
         },
         "realm" : {
@@ -4936,6 +5094,142 @@ sub sessions3Update
         }
       }
     },
+    "modbus" : {
+      "properties" : {
+        "exccode" : {
+          "type" : "long"
+        },
+        "exccodeCnt" : {
+          "type" : "long"
+        },
+        "funccode" : {
+          "type" : "long"
+        },
+        "funccodeCnt" : {
+          "type" : "long"
+        },
+        "protocolid" : {
+          "type" : "long"
+        },
+        "transactionid" : {
+          "type" : "long"
+        },
+        "transactionidCnt" : {
+          "type" : "long"
+        },
+        "unitid" : {
+          "type" : "long"
+        }
+      }
+    },
+    "mqtt" : {
+      "properties" : {
+        "clientId" : {
+          "type" : "keyword"
+        },
+        "clientIdCnt" : {
+          "type" : "long"
+        },
+        "flags" : {
+          "type" : "keyword"
+        },
+        "flagsCnt" : {
+          "type" : "long"
+        },
+        "qos" : {
+          "type" : "long"
+        },
+        "qosCnt" : {
+          "type" : "long"
+        },
+        "topic" : {
+          "type" : "keyword"
+        },
+        "topicCnt" : {
+          "type" : "long"
+        },
+        "type" : {
+          "type" : "keyword"
+        },
+        "typeCnt" : {
+          "type" : "long"
+        },
+        "version" : {
+          "type" : "keyword"
+        },
+        "versionCnt" : {
+          "type" : "long"
+        },
+        "willTopic" : {
+          "type" : "keyword"
+        },
+        "willTopicCnt" : {
+          "type" : "long"
+        }
+      }
+    },
+    "nbns" : {
+      "properties" : {
+        "host" : {
+          "type" : "keyword"
+        },
+        "hostCnt" : {
+          "type" : "long"
+        },
+        "ip" : {
+          "type" : "ip"
+        },
+        "ipCnt" : {
+          "type" : "long"
+        },
+        "name" : {
+          "type" : "keyword"
+        },
+        "nameCnt" : {
+          "type" : "long"
+        },
+        "queryHost" : {
+          "type" : "keyword"
+        },
+        "queryHostCnt" : {
+          "type" : "long"
+        },
+        "queryType" : {
+          "type" : "keyword"
+        },
+        "queryTypeCnt" : {
+          "type" : "long"
+        }
+      }
+    },
+    "ntp" : {
+      "properties" : {
+        "mode" : {
+          "type" : "keyword"
+        },
+        "modeCnt" : {
+          "type" : "long"
+        },
+        "refId" : {
+          "type" : "keyword"
+        },
+        "refIdCnt" : {
+          "type" : "long"
+        },
+        "stratum" : {
+          "type" : "keyword"
+        },
+        "stratumCnt" : {
+          "type" : "long"
+        },
+        "version" : {
+          "type" : "long"
+        },
+        "versionCnt" : {
+          "type" : "long"
+        }
+      }
+    },
     "node" : {
       "type" : "keyword"
     },
@@ -4978,6 +5272,22 @@ sub sessions3Update
         },
         "user" : {
           "type" : "keyword"
+        }
+      }
+    },
+    "ptp" : {
+      "properties" : {
+        "clockId" : {
+          "type" : "keyword"
+        },
+        "clockIdCnt" : {
+          "type" : "long"
+        },
+        "msgType" : {
+          "type" : "keyword"
+        },
+        "msgTypeCnt" : {
+          "type" : "long"
         }
       }
     },
@@ -5027,6 +5337,12 @@ sub sessions3Update
     },
     "radius" : {
       "properties" : {
+        "endpointIp" : {
+          "type" : "ip"
+        },
+        "endpointIpCnt" : {
+          "type" : "long"
+        },
         "framedASN" : {
           "type" : "keyword"
         },
@@ -5053,14 +5369,122 @@ sub sessions3Update
         }
       }
     },
+    "rdp" : {
+      "properties" : {
+        "clientBuild" : {
+          "type" : "long"
+        },
+        "clientBuildCnt" : {
+          "type" : "long"
+        },
+        "clientName" : {
+          "type" : "keyword"
+        },
+        "clientNameCnt" : {
+          "type" : "long"
+        },
+        "keyboardLayout" : {
+          "type" : "keyword"
+        },
+        "keyboardLayoutCnt" : {
+          "type" : "long"
+        },
+        "requestedProtocols" : {
+          "type" : "keyword"
+        },
+        "requestedProtocolsCnt" : {
+          "type" : "long"
+        },
+        "selectedProtocol" : {
+          "type" : "keyword"
+        },
+        "selectedProtocolCnt" : {
+          "type" : "long"
+        }
+      }
+    },
     "rootId" : {
       "type" : "keyword"
     },
     "segmentCnt" : {
       "type" : "long"
     },
+    "sctp" : {
+      "properties" : {
+        "protoId" : {
+          "type" : "keyword"
+        }
+      }
+    },
+    "sip" : {
+      "properties" : {
+        "callid" : {
+          "type" : "keyword"
+        },
+        "callidCnt" : {
+          "type" : "long"
+        },
+        "contact" : {
+          "type" : "keyword"
+        },
+        "contactCnt" : {
+          "type" : "long"
+        },
+        "from" : {
+          "type" : "keyword"
+        },
+        "fromCnt" : {
+          "type" : "long"
+        },
+        "method" : {
+          "type" : "keyword"
+        },
+        "methodCnt" : {
+          "type" : "long"
+        },
+        "statuscode" : {
+          "type" : "long"
+        },
+        "statuscodeCnt" : {
+          "type" : "long"
+        },
+        "to" : {
+          "type" : "keyword"
+        },
+        "toCnt" : {
+          "type" : "long"
+        },
+        "user" : {
+          "type" : "keyword"
+        },
+        "userCnt" : {
+          "type" : "long"
+        },
+        "useragent" : {
+          "type" : "keyword"
+        },
+        "useragentCnt" : {
+          "type" : "long"
+        },
+        "via" : {
+          "type" : "keyword"
+        },
+        "viaCnt" : {
+          "type" : "long"
+        }
+      }
+    },
     "smb" : {
       "properties" : {
+        "dialect" : {
+          "type" : "keyword"
+        },
+        "domain" : {
+          "type" : "keyword"
+        },
+        "domainCnt" : {
+          "type" : "long"
+        },
         "filename" : {
           "type" : "keyword"
         },
@@ -5072,6 +5496,78 @@ sub sessions3Update
           "copy_to" : [
             "smb.hostTokens"
           ]
+        },
+        "hostCnt" : {
+          "type" : "long"
+        },
+        "hostTokens" : {
+          "type" : "text",
+          "norms" : false,
+          "analyzer" : "wordSplit"
+        },
+        "os" : {
+          "type" : "keyword"
+        },
+        "osCnt" : {
+          "type" : "long"
+        },
+        "share" : {
+          "type" : "keyword"
+        },
+        "shareCnt" : {
+          "type" : "long"
+        },
+        "user" : {
+          "type" : "keyword"
+        },
+        "userCnt" : {
+          "type" : "long"
+        },
+        "version" : {
+          "type" : "keyword"
+        },
+        "versionCnt" : {
+          "type" : "long"
+        }
+      }
+    },
+    "snmp" : {
+      "properties" : {
+        "community" : {
+          "type" : "keyword"
+        },
+        "communityCnt" : {
+          "type" : "long"
+        },
+        "error" : {
+          "type" : "keyword"
+        },
+        "errorCnt" : {
+          "type" : "long"
+        },
+        "trapOid" : {
+          "type" : "keyword"
+        },
+        "trapOidCnt" : {
+          "type" : "long"
+        },
+        "type" : {
+          "type" : "keyword"
+        },
+        "typeCnt" : {
+          "type" : "long"
+        },
+        "variable" : {
+          "type" : "keyword"
+        },
+        "variableCnt" : {
+          "type" : "long"
+        },
+        "version" : {
+          "type" : "long"
+        },
+        "versionCnt" : {
+          "type" : "long"
         }
       }
     },
@@ -5114,6 +5610,76 @@ sub sessions3Update
     },
     "srcRIR" : {
       "type" : "keyword"
+    },
+    "stun" : {
+      "properties" : {
+        "error" : {
+          "type" : "long"
+        },
+        "errorCnt" : {
+          "type" : "long"
+        },
+        "mappedIp" : {
+          "type" : "ip"
+        },
+        "mappedIpCnt" : {
+          "type" : "long"
+        },
+        "mappedPort" : {
+          "type" : "long"
+        },
+        "mappedPortCnt" : {
+          "type" : "long"
+        },
+        "realm" : {
+          "type" : "keyword"
+        },
+        "realmCnt" : {
+          "type" : "long"
+        },
+        "software" : {
+          "type" : "keyword"
+        },
+        "softwareCnt" : {
+          "type" : "long"
+        },
+        "type" : {
+          "type" : "keyword"
+        },
+        "typeCnt" : {
+          "type" : "long"
+        },
+        "username" : {
+          "type" : "keyword"
+        },
+        "usernameCnt" : {
+          "type" : "long"
+        },
+        "xorMappedIp" : {
+          "type" : "ip"
+        },
+        "xorMappedIpCnt" : {
+          "type" : "long"
+        },
+        "xorMappedPort" : {
+          "type" : "long"
+        },
+        "xorMappedPortCnt" : {
+          "type" : "long"
+        },
+        "xorRelayedIp" : {
+          "type" : "ip"
+        },
+        "xorRelayedIpCnt" : {
+          "type" : "long"
+        },
+        "xorRelayedPort" : {
+          "type" : "long"
+        },
+        "xorRelayedPortCnt" : {
+          "type" : "long"
+        }
+      }
     },
     "ssh" : {
       "properties" : {
@@ -5194,6 +5760,22 @@ sub sessions3Update
     },
     "tagsCnt" : {
       "type" : "long"
+    },
+    "tftp" : {
+      "properties" : {
+        "filename" : {
+          "type" : "keyword"
+        },
+        "filenameCnt" : {
+          "type" : "long"
+        },
+        "opcode" : {
+          "type" : "keyword"
+        },
+        "opcodeCnt" : {
+          "type" : "long"
+        }
+      }
     },
     "tcpflags" : {
       "properties" : {
