@@ -1,6 +1,6 @@
 /* mqtt.c
  *
- * Copyright 2025 All rights reserved.
+ * Copyright 2026 All rights reserved.
  *
  * SPDX-License-Identifier: Apache-2.0
  *
