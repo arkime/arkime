@@ -1,0 +1,6 @@
+if (session.dnp3)
+  div.sessionDetailMeta.bold DNP3
+  dl.sessionDetailMeta
+    +arrayList(session.dnp3, "src", "Source Address", "dnp3.src")
+    +arrayList(session.dnp3, "dst", "Destination Address", "dnp3.dst")
+    +arrayList(session.dnp3, "func", "Function Code", "dnp3.func")

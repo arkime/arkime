@@ -5094,6 +5094,28 @@ sub sessions3Update
         }
       }
     },
+    "dnp3" : {
+      "properties" : {
+        "dst" : {
+          "type" : "long"
+        },
+        "dstCnt" : {
+          "type" : "long"
+        },
+        "func" : {
+          "type" : "long"
+        },
+        "funcCnt" : {
+          "type" : "long"
+        },
+        "src" : {
+          "type" : "long"
+        },
+        "srcCnt" : {
+          "type" : "long"
+        }
+      }
+    },
     "modbus" : {
       "properties" : {
         "exccode" : {
