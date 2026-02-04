@@ -1,0 +1,4 @@
+if (session.tcap)
+  div.sessionDetailMeta.bold TCAP
+  dl.sessionDetailMeta
+    +arrayList(session.tcap, "opcode", "Op Code", "tcap.opcode")

@@ -48,6 +48,7 @@ uint64_t                 arkime_parsers_has_named_func;
 LOCAL uint16_t           namedFuncsMax = 0;
 LOCAL ArkimeNamedInfo_t *namedFuncsArr[MAX_NAMED_FUNCS];
 LOCAL GHashTable        *namedFuncsHash;
+LOCAL GHashTable        *subParserHash;
 /******************************************************************************/
 typedef struct {
     char *filename;
@@ -686,6 +687,8 @@ void arkime_parsers_init()
     if (!namedFuncsHash)
         namedFuncsHash = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, NULL);
 
+    subParserHash = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, NULL);
+
     if (config.nodeClass)
         snprintf(classTag, sizeof(classTag), "class:%s", config.nodeClass);
 
@@ -1041,7 +1044,7 @@ void arkime_parsers_classifier_register_port_internal(const char *name, void *uw
         CONFIGEXIT("Parser '%s' built with different version of arkime.h\n %d %d", name, ARKIME_API_VERSION, apiversion);
     }
 
-    if ((type & (ARKIME_PARSERS_PORT_UDP | ARKIME_PARSERS_PORT_TCP)) == 0) {
+    if ((type & (ARKIME_PARSERS_PORT_UDP | ARKIME_PARSERS_PORT_TCP | ARKIME_PARSERS_PORT_SCTP)) == 0) {
         CONFIGEXIT("Parser '%s' has empty type", name);
     }
 
@@ -1479,4 +1482,30 @@ void arkime_parser_buf_free(ArkimeParserBuf_t *pb)
 void arkime_parser_buf_session_free(ArkimeSession_t *UNUSED(session), void *uw)
 {
     ARKIME_TYPE_FREE(ArkimeParserBuf_t, uw);
+}
+/******************************************************************************/
+// Sub-parser registration - allows parsers like M3UA, DCE/RPC to have sub-parsers register with them
+// The key is a hex string that identifies what protocol/interface to parse
+void arkime_parsers_register_sub(const char *parserName, const char *hexKey, ArkimeParserFunc func, void *uw)
+{
+    GHashTable *parserTable = g_hash_table_lookup(subParserHash, parserName);
+    if (!parserTable) {
+        parserTable = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, NULL);
+        g_hash_table_insert(subParserHash, g_strdup(parserName), parserTable);
+    }
+
+    ArkimeParserInfo_t *info = ARKIME_TYPE_ALLOC0(ArkimeParserInfo_t);
+    info->parserFunc = func;
+    info->uw = uw;
+    g_hash_table_insert(parserTable, g_strdup(hexKey), info);
+}
+/******************************************************************************/
+GHashTable *arkime_parsers_get_sub(const char *parserName)
+{
+    GHashTable *parserTable = g_hash_table_lookup(subParserHash, parserName);
+    if (!parserTable) {
+        parserTable = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, NULL);
+        g_hash_table_insert(subParserHash, g_strdup(parserName), parserTable);
+    }
+    return parserTable;
 }

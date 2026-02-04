@@ -1177,6 +1177,9 @@ void arkime_parsers_call_named_func(uint32_t id, ArkimeSession_t *session, const
 typedef int (* ArkimeParserLoadFunc) (const char *path);
 void arkime_parsers_register_load_extension(const char *extension, ArkimeParserLoadFunc loadFunc);
 
+void arkime_parsers_register_sub(const char *parserName, const char *hexKey, ArkimeParserFunc func, void *uw);
+GHashTable *arkime_parsers_get_sub(const char *parserName);
+
 ArkimeParserBuf_t *arkime_parser_buf_create();
 int arkime_parser_buf_add(ArkimeParserBuf_t *pb, int which, const uint8_t *data, int len);
 int arkime_parser_buf_del(ArkimeParserBuf_t *pb, int which, int len);

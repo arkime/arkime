@@ -1,0 +1,11 @@
+if (session.diameter)
+  div.sessionDetailMeta.bold DIAMETER
+  dl.sessionDetailMeta
+    +arrayList(session.diameter, "app", "Application", "diameter.app")
+    +arrayList(session.diameter, "cmd", "Command", "diameter.cmd")
+    +arrayList(session.diameter, "originHost", "Origin Host", "diameter.origin-host")
+    +arrayList(session.diameter, "originRealm", "Origin Realm", "diameter.origin-realm")
+    +arrayList(session.diameter, "destHost", "Dest Host", "diameter.dest-host")
+    +arrayList(session.diameter, "destRealm", "Dest Realm", "diameter.dest-realm")
+    +arrayList(session.diameter, "sessionId", "Session ID", "diameter.session-id")
+    +arrayList(session.diameter, "user", "User", "diameter.user")
