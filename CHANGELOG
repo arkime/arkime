@@ -63,6 +63,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #3668 Added basic dnp3 parsing
   - #3670 Added basic wireguard classifer
   - #3672 Added some telcom protocols: m3ua, sccp, tcap, camel, diameter
+  - #3676 Added basic imap parser
 
 6.0.0-rc1 2026/01/26
 ## BREAKING

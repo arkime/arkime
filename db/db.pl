@@ -4672,6 +4672,12 @@ sub sessions3Update
         "filenameCnt" : {
           "type" : "long"
         },
+        "folder" : {
+          "type" : "keyword"
+        },
+        "folderCnt" : {
+          "type" : "long"
+        },
         "header" : {
           "type" : "keyword"
         },
