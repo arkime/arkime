@@ -159,6 +159,11 @@ LOCAL void dnp3_tcp_classify(ArkimeSession_t *session, const uint8_t *data, int 
 /******************************************************************************/
 LOCAL void dnp3_udp_classify(ArkimeSession_t *session, const uint8_t *data, int len, int UNUSED(which), void UNUSED(*uw))
 {
+    // Exclude port 53 - DNS transaction IDs can collide with DNP3 start bytes
+    if (session->port1 == 53 || session->port2 == 53) {
+        return;
+    }
+
     if (len < DNP3_MIN_LEN) {
         return;
     }

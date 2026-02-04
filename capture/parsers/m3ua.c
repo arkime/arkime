@@ -168,7 +168,7 @@ LOCAL int m3ua_protocol_parser(ArkimeSession_t *session, void *uw, const uint8_t
 /******************************************************************************/
 LOCAL int m3ua_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, int len, int which)
 {
-    int isM2UA = (uw == (void *)2);
+    int isM2UA = (uw == GINT_TO_POINTER(2));
     const uint8_t *userData = NULL;
     int userLen = 0;
     int si = -1;
@@ -215,7 +215,7 @@ LOCAL void m3ua_classify_m2ua(ArkimeSession_t *session, const uint8_t *data, int
         return;
 
     arkime_session_add_protocol(session, "m2ua");
-    arkime_parsers_register(session, m3ua_parser, (void *)2, NULL);
+    arkime_parsers_register(session, m3ua_parser, GINT_TO_POINTER(2), NULL);
 }
 
 /******************************************************************************/
@@ -231,7 +231,7 @@ LOCAL void m3ua_classify_m3ua(ArkimeSession_t *session, const uint8_t *data, int
         return;
 
     arkime_session_add_protocol(session, "m3ua");
-    arkime_parsers_register(session, m3ua_parser, (void *)3, NULL);
+    arkime_parsers_register(session, m3ua_parser, GINT_TO_POINTER(3), NULL);
 }
 
 /******************************************************************************/

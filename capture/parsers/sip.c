@@ -92,9 +92,11 @@ LOCAL int sip_parse_header(ArkimeSession_t *session, const uint8_t *line, int li
     while (valueStart < lineLen && (line[valueStart] == ' ' || line[valueStart] == '\t'))
         valueStart++;
 
-    int valueLen = lineLen - valueStart;
-    if (valueLen <= 0)
+    // Check for empty value
+    if (valueStart >= lineLen)
         return -1;
+
+    int valueLen = lineLen - valueStart;
 
     const char *name = (char *)line;
     const char *value = (char *)line + valueStart;

@@ -69,7 +69,7 @@ LOCAL void dcerpc_format_uuid(BSB *bsb, char *out, gboolean le)
 {
     uint32_t data1 = 0;
     uint16_t data2 = 0, data3 = 0;
-    uint8_t *data4;
+    const uint8_t *data4;
 
     if (le) {
         BSB_LIMPORT_u32(*bsb, data1);
@@ -145,7 +145,7 @@ LOCAL void dcerpc_parse_bind(ArkimeSession_t *session, BSB *bsb, gboolean le)
 
         arkime_field_string_add(uuidField, session, uuid, 36, TRUE);
 
-        ArkimeParserInfo_t *info = g_hash_table_lookup(subParsers, uuid);
+        const ArkimeParserInfo_t *info = g_hash_table_lookup(subParsers, uuid);
         if (info) {
             arkime_field_string_add(interfaceField, session, info->uw, -1, TRUE);
             arkime_session_add_protocol(session, info->uw);
