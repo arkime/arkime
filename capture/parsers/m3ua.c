@@ -205,7 +205,7 @@ LOCAL int m3ua_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, i
 /******************************************************************************/
 LOCAL void m3ua_classify_m2ua(ArkimeSession_t *session, const uint8_t *data, int len, int UNUSED(which), void UNUSED(*uw))
 {
-    if (len < 8)
+    if (len < 8 || arkime_session_has_protocol(session, "m3ua"))
         return;
 
     if (data[0] != 0x01)
@@ -221,7 +221,7 @@ LOCAL void m3ua_classify_m2ua(ArkimeSession_t *session, const uint8_t *data, int
 /******************************************************************************/
 LOCAL void m3ua_classify_m3ua(ArkimeSession_t *session, const uint8_t *data, int len, int UNUSED(which), void UNUSED(*uw))
 {
-    if (len < 8)
+    if (len < 8 || arkime_session_has_protocol(session, "m3ua"))
         return;
 
     if (data[0] != 0x01)

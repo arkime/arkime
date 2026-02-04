@@ -143,13 +143,7 @@ LOCAL void diameter_parse_avps(ArkimeSession_t *session, const uint8_t *data, in
 
         BSB_IMPORT_u32(bsb, avpCode);
         BSB_IMPORT_u08(bsb, flags);
-
-        // AVP Length is 3 bytes
-        uint8_t lenBytes[3];
-        BSB_IMPORT_u08(bsb, lenBytes[0]);
-        BSB_IMPORT_u08(bsb, lenBytes[1]);
-        BSB_IMPORT_u08(bsb, lenBytes[2]);
-        avpLen = (lenBytes[0] << 16) | (lenBytes[1] << 8) | lenBytes[2];
+        BSB_IMPORT_u24(bsb, avpLen);
 
         if (avpLen < 8 || BSB_IS_ERROR(bsb))
             break;
@@ -216,13 +210,10 @@ LOCAL int diameter_tcp_parser(ArkimeSession_t *session, void *UNUSED(uw), const 
             return ARKIME_PARSER_UNREGISTER;
 
         // Message Length (3 bytes)
-        uint8_t lenBytes[3];
-        BSB_IMPORT_u08(bsb, lenBytes[0]);
-        BSB_IMPORT_u08(bsb, lenBytes[1]);
-        BSB_IMPORT_u08(bsb, lenBytes[2]);
-        uint32_t msgLen = (lenBytes[0] << 16) | (lenBytes[1] << 8) | lenBytes[2];
+        uint32_t msgLen = 0;
+        BSB_IMPORT_u24(bsb, msgLen);
 
-        if (msgLen < 20 || msgLen > 16777215)
+        if (msgLen < 20 || msgLen > sizeof(((ArkimeParserBuf_t *)0)->buf[0]))
             return ARKIME_PARSER_UNREGISTER;
 
         // Check if we have the full message
@@ -231,13 +222,9 @@ LOCAL int diameter_tcp_parser(ArkimeSession_t *session, void *UNUSED(uw), const 
 
         // Command Flags (1 byte) + Command Code (3 bytes)
         uint8_t cmdFlags = 0;
+        uint32_t cmdCode = 0;
         BSB_IMPORT_u08(bsb, cmdFlags);
-
-        uint8_t cmdBytes[3];
-        BSB_IMPORT_u08(bsb, cmdBytes[0]);
-        BSB_IMPORT_u08(bsb, cmdBytes[1]);
-        BSB_IMPORT_u08(bsb, cmdBytes[2]);
-        uint32_t cmdCode = (cmdBytes[0] << 16) | (cmdBytes[1] << 8) | cmdBytes[2];
+        BSB_IMPORT_u24(bsb, cmdCode);
 
         // Application-ID (4 bytes)
         uint32_t appId = 0;
@@ -305,7 +292,7 @@ LOCAL int diameter_validate(const uint8_t *data, int len)
     uint32_t msgLen = (data[1] << 16) | (data[2] << 8) | data[3];
 
     // Length must be at least 20 and reasonable
-    if (msgLen < 20 || msgLen > 16777215)
+    if (msgLen < 20 || msgLen > sizeof(((ArkimeParserBuf_t *)0)->buf[0]))
         return 0;
 
     // Command flags - check reserved bits are zero
@@ -324,7 +311,7 @@ LOCAL int diameter_validate(const uint8_t *data, int len)
 /******************************************************************************/
 LOCAL void diameter_tcp_classify(ArkimeSession_t *session, const uint8_t *data, int len, int UNUSED(which), void *UNUSED(uw))
 {
-    if (!diameter_validate(data, len))
+    if (!diameter_validate(data, len) || arkime_session_has_protocol(session, "diameter"))
         return;
 
     arkime_session_add_protocol(session, "diameter");
@@ -334,7 +321,7 @@ LOCAL void diameter_tcp_classify(ArkimeSession_t *session, const uint8_t *data, 
 /******************************************************************************/
 LOCAL void diameter_sctp_classify(ArkimeSession_t *session, const uint8_t *data, int len, int UNUSED(which), void *UNUSED(uw))
 {
-    if (!diameter_validate(data, len))
+    if (!diameter_validate(data, len) || arkime_session_has_protocol(session, "diameter"))
         return;
 
     arkime_session_add_protocol(session, "diameter");
