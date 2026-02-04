@@ -1,0 +1,954 @@
+{
+ "sessions3" : [
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 746
+    },
+    "destination" : {
+     "as" : {
+      "full" : "AS11348 Missouri University of Science and Technology",
+      "number" : 11348,
+      "organization" : {
+       "name" : "Missouri University of Science and Technology"
+      }
+     },
+     "bytes" : 23493,
+     "geo" : {
+      "city_name" : "Rolla",
+      "country_iso_code" : "US",
+      "region_iso_code" : "MO"
+     },
+     "ip" : "131.151.37.122",
+     "mac" : [
+      "00:e0:f9:cc:18:00"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 50,
+     "port" : 143
+    },
+    "dstOui" : [
+     "Cisco Systems, Inc"
+    ],
+    "dstOuiCnt" : 1,
+    "dstPayload8" : "2a204f4b204d6963",
+    "dstRIR" : "ARIN",
+    "dstTTL" : [
+     127
+    ],
+    "dstTTLCnt" : 1,
+    "email" : {
+     "dst" : [
+      "bonehead83_98@yahoo.com",
+      "cc-nt@umr.edu",
+      "cc-pgmr@umr.edu",
+      "dmadrid@semo.net",
+      "lsmsde@cs.com",
+      "nneul@umr.edu",
+      "rwa@umr.edu",
+      "scentryk9@aol.com",
+      "silverdazees@hotmail.com",
+      "vbkay02_2000@yahoo.com"
+     ],
+     "dstCnt" : 10,
+     "folder" : [
+      "INBOX"
+     ],
+     "folderCnt" : 1,
+     "src" : [
+      "gram@xiexie.org",
+      "hardcase_890@yahoo.com",
+      "hinze@umr.edu",
+      "hunt84jh@hotmail.com",
+      "jedg@umr.edu",
+      "obrennan@umr.edu",
+      "turner@umr.edu",
+      "uetrecht@umr.edu"
+     ],
+     "srcCnt" : 8,
+     "subject" : [
+      "Fwd: Check this out!!",
+      "Fwd: Fw: A new John 3:16",
+      "Fwd: Jokes.com Joke Mail.",
+      "Novell connection problems this morning",
+      "RE: pipes implementation of bkupexec agent",
+      "RE: remote re-install of hp workstation",
+      "RE: we should upgrade to bind 8.2.2p3... ",
+      "Re: The problem with NDS userids and bindery logins sometimes wor",
+      "Re: how to add/commit sample ethereal captures?",
+      "Testing of backups on UMR-CC-FS3",
+      "Veteran's Day",
+      "ghost 5.1b can't use a 5.1d image"
+     ],
+     "subjectCnt" : 12
+    },
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 942357327542,
+    "initRTT" : 0,
+    "ipProtocol" : 6,
+    "lastPacket" : 942357353323,
+    "length" : 25781,
+    "network" : {
+     "bytes" : 27283,
+     "community_id" : "1:nUa1TmymCvuh/0FrS/4RieBZYK0=",
+     "packets" : 106
+    },
+    "node" : "test",
+    "packetLen" : [
+     90,
+     76,
+     70,
+     151,
+     70,
+     88,
+     200,
+     105,
+     97,
+     88,
+     123,
+     92,
+     299,
+     228,
+     76,
+     1090,
+     1530,
+     650,
+     70,
+     1530,
+     650,
+     1530,
+     70,
+     256,
+     70,
+     1090,
+     70,
+     681,
+     70,
+     82,
+     96,
+     70,
+     82,
+     96,
+     70,
+     93,
+     89,
+     1530,
+     1530,
+     70,
+     497,
+     70,
+     100,
+     70,
+     82,
+     96,
+     82,
+     96,
+     70,
+     82,
+     96,
+     70,
+     82,
+     96,
+     70,
+     82,
+     96,
+     70,
+     82,
+     96,
+     70,
+     82,
+     96,
+     70,
+     82,
+     96,
+     70,
+     82,
+     96,
+     70,
+     82,
+     96,
+     70,
+     82,
+     96,
+     70,
+     116,
+     97,
+     120,
+     97,
+     85,
+     125,
+     92,
+     298,
+     228,
+     1090,
+     1530,
+     650,
+     70,
+     1530,
+     650,
+     1530,
+     70,
+     650,
+     678,
+     70,
+     82,
+     96,
+     70,
+     83,
+     97,
+     70,
+     70,
+     76,
+     76,
+     70
+    ],
+    "packetPos" : [
+     24,
+     114,
+     190,
+     260,
+     411,
+     481,
+     569,
+     769,
+     874,
+     971,
+     1059,
+     1182,
+     1274,
+     1573,
+     1801,
+     2671,
+     3761,
+     5291,
+     5941,
+     6011,
+     7541,
+     8191,
+     9721,
+     9791,
+     10047,
+     10117,
+     11207,
+     11277,
+     11958,
+     12028,
+     12110,
+     12206,
+     12276,
+     12358,
+     12454,
+     12524,
+     12617,
+     12706,
+     14236,
+     15766,
+     15836,
+     16333,
+     16403,
+     16503,
+     16573,
+     16655,
+     16751,
+     16833,
+     16929,
+     16999,
+     17081,
+     17177,
+     17247,
+     17329,
+     17425,
+     17495,
+     17577,
+     17673,
+     17743,
+     17825,
+     17921,
+     17991,
+     18073,
+     18169,
+     18239,
+     18321,
+     18417,
+     18487,
+     18569,
+     18665,
+     18735,
+     18817,
+     18913,
+     18983,
+     19065,
+     19161,
+     19231,
+     19347,
+     19444,
+     19564,
+     19661,
+     19746,
+     19871,
+     19963,
+     20261,
+     21829,
+     22919,
+     24449,
+     25099,
+     25169,
+     26699,
+     27349,
+     28879,
+     28949,
+     29599,
+     30277,
+     30627,
+     30709,
+     30805,
+     30875,
+     30958,
+     31055,
+     31125,
+     31195,
+     31271,
+     31347
+    ],
+    "packetRange" : {
+     "gte" : 942357327542,
+     "lte" : 942357353323
+    },
+    "protocol" : [
+     "imap",
+     "tcp"
+    ],
+    "protocolCnt" : 2,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 20769
+    },
+    "source" : {
+     "as" : {
+      "full" : "AS11348 Missouri University of Science and Technology",
+      "number" : 11348,
+      "organization" : {
+       "name" : "Missouri University of Science and Technology"
+      }
+     },
+     "bytes" : 3790,
+     "geo" : {
+      "city_name" : "Rolla",
+      "country_iso_code" : "US",
+      "region_iso_code" : "MO"
+     },
+     "ip" : "131.151.32.21",
+     "mac" : [
+      "00:60:08:9f:b1:f3"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 56,
+     "port" : 4167
+    },
+    "srcOui" : [
+     "3Com"
+    ],
+    "srcOuiCnt" : 1,
+    "srcPayload8" : "6130303030204341",
+    "srcRIR" : "ARIN",
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
+    "tcpflags" : {
+     "ack" : 32,
+     "dstZero" : 0,
+     "fin" : 2,
+     "psh" : 70,
+     "rst" : 0,
+     "srcZero" : 0,
+     "syn" : 1,
+     "syn-ack" : 1,
+     "urg" : 0
+    },
+    "tcpseq" : {
+     "dst" : 0,
+     "src" : 4048628786
+    },
+    "totDataBytes" : 21515
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-991111"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 8
+    },
+    "destination" : {
+     "as" : {
+      "full" : "AS11348 Missouri University of Science and Technology",
+      "number" : 11348,
+      "organization" : {
+       "name" : "Missouri University of Science and Technology"
+      }
+     },
+     "bytes" : 0,
+     "geo" : {
+      "city_name" : "Rolla",
+      "country_iso_code" : "US",
+      "region_iso_code" : "MO"
+     },
+     "ip" : "131.151.32.91",
+     "mac" : [
+      "00:50:56:00:20:15"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 0,
+     "port" : 1056
+    },
+    "dstOui" : [
+     "VMware, Inc."
+    ],
+    "dstOuiCnt" : 1,
+    "dstRIR" : "ARIN",
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 942357327864,
+    "ipProtocol" : 17,
+    "lastPacket" : 942357327864,
+    "length" : 0,
+    "network" : {
+     "bytes" : 60,
+     "community_id" : "1:4jbsrd94BaNZSkNcV17C1G0O+b4=",
+     "packets" : 1
+    },
+    "node" : "test",
+    "packetLen" : [
+     76
+    ],
+    "packetPos" : [
+     1877
+    ],
+    "packetRange" : {
+     "gte" : 942357327864,
+     "lte" : 942357327864
+    },
+    "protocol" : [
+     "udp"
+    ],
+    "protocolCnt" : 1,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 0
+    },
+    "source" : {
+     "as" : {
+      "full" : "AS11348 Missouri University of Science and Technology",
+      "number" : 11348,
+      "organization" : {
+       "name" : "Missouri University of Science and Technology"
+      }
+     },
+     "bytes" : 60,
+     "geo" : {
+      "city_name" : "Rolla",
+      "country_iso_code" : "US",
+      "region_iso_code" : "MO"
+     },
+     "ip" : "131.151.37.122",
+     "mac" : [
+      "00:e0:f9:cc:18:00"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 1,
+     "port" : 1350
+    },
+    "srcOui" : [
+     "Cisco Systems, Inc"
+    ],
+    "srcOuiCnt" : 1,
+    "srcPayload8" : "38270a018cef0600",
+    "srcRIR" : "ARIN",
+    "srcTTL" : [
+     127
+    ],
+    "srcTTLCnt" : 1,
+    "totDataBytes" : 8
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-991111"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 0
+    },
+    "destination" : {
+     "as" : {
+      "full" : "AS11348 Missouri University of Science and Technology",
+      "number" : 11348,
+      "organization" : {
+       "name" : "Missouri University of Science and Technology"
+      }
+     },
+     "bytes" : 540,
+     "geo" : {
+      "city_name" : "Rolla",
+      "country_iso_code" : "US",
+      "region_iso_code" : "MO"
+     },
+     "ip" : "131.151.37.122",
+     "mac" : [
+      "00:e0:f9:cc:18:00"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 2,
+     "port" : 1065
+    },
+    "dstOui" : [
+     "Cisco Systems, Inc"
+    ],
+    "dstOuiCnt" : 1,
+    "dstRIR" : "ARIN",
+    "dstTTL" : [
+     127
+    ],
+    "dstTTLCnt" : 1,
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 942357327871,
+    "ipProtocol" : 6,
+    "lastPacket" : 942357352030,
+    "length" : 24159,
+    "network" : {
+     "bytes" : 1356,
+     "community_id" : "1:10CBhqgLLrOZTmOhNrNiJQjhPlk=",
+     "packets" : 10
+    },
+    "node" : "test",
+    "packetLen" : [
+     166,
+     166,
+     246,
+     70,
+     70,
+     166,
+     166,
+     326,
+     70,
+     70
+    ],
+    "packetPos" : [
+     1953,
+     2119,
+     2285,
+     2531,
+     2601,
+     21171,
+     21337,
+     21503,
+     30347,
+     30417
+    ],
+    "packetRange" : {
+     "gte" : 942357327871,
+     "lte" : 942357352030
+    },
+    "protocol" : [
+     "tcp"
+    ],
+    "protocolCnt" : 1,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 0
+    },
+    "source" : {
+     "as" : {
+      "full" : "AS11348 Missouri University of Science and Technology",
+      "number" : 11348,
+      "organization" : {
+       "name" : "Missouri University of Science and Technology"
+      }
+     },
+     "bytes" : 816,
+     "geo" : {
+      "city_name" : "Rolla",
+      "country_iso_code" : "US",
+      "region_iso_code" : "MO"
+     },
+     "ip" : "131.151.32.91",
+     "mac" : [
+      "00:50:56:00:20:15"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 8,
+     "port" : 3614
+    },
+    "srcOui" : [
+     "VMware, Inc."
+    ],
+    "srcOuiCnt" : 1,
+    "srcRIR" : "ARIN",
+    "srcTTL" : [
+     128
+    ],
+    "srcTTLCnt" : 1,
+    "tcpflags" : {
+     "ack" : 4,
+     "dstZero" : 0,
+     "fin" : 0,
+     "psh" : 6,
+     "rst" : 0,
+     "srcZero" : 0,
+     "syn" : 0,
+     "syn-ack" : 0,
+     "urg" : 0
+    },
+    "totDataBytes" : 0
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-991111"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 8
+    },
+    "destination" : {
+     "as" : {
+      "full" : "AS11348 Missouri University of Science and Technology",
+      "number" : 11348,
+      "organization" : {
+       "name" : "Missouri University of Science and Technology"
+      }
+     },
+     "bytes" : 0,
+     "geo" : {
+      "city_name" : "Rolla",
+      "country_iso_code" : "US",
+      "region_iso_code" : "MO"
+     },
+     "ip" : "131.151.32.91",
+     "mac" : [
+      "00:50:56:00:20:15"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 0,
+     "port" : 1063
+    },
+    "dstOui" : [
+     "VMware, Inc."
+    ],
+    "dstOuiCnt" : 1,
+    "dstRIR" : "ARIN",
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 942357351863,
+    "ipProtocol" : 17,
+    "lastPacket" : 942357351863,
+    "length" : 0,
+    "network" : {
+     "bytes" : 60,
+     "community_id" : "1:j3bg2qJTshQroRQHkjh9TOEBu6U=",
+     "packets" : 1
+    },
+    "node" : "test",
+    "packetLen" : [
+     76
+    ],
+    "packetPos" : [
+     20489
+    ],
+    "packetRange" : {
+     "gte" : 942357351863,
+     "lte" : 942357351863
+    },
+    "protocol" : [
+     "udp"
+    ],
+    "protocolCnt" : 1,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 0
+    },
+    "source" : {
+     "as" : {
+      "full" : "AS11348 Missouri University of Science and Technology",
+      "number" : 11348,
+      "organization" : {
+       "name" : "Missouri University of Science and Technology"
+      }
+     },
+     "bytes" : 60,
+     "geo" : {
+      "city_name" : "Rolla",
+      "country_iso_code" : "US",
+      "region_iso_code" : "MO"
+     },
+     "ip" : "131.151.37.122",
+     "mac" : [
+      "00:e0:f9:cc:18:00"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 1,
+     "port" : 1359
+    },
+    "srcOui" : [
+     "Cisco Systems, Inc"
+    ],
+    "srcOuiCnt" : 1,
+    "srcPayload8" : "d829ed00041eed00",
+    "srcRIR" : "ARIN",
+    "srcTTL" : [
+     127
+    ],
+    "srcTTLCnt" : 1,
+    "totDataBytes" : 8
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-991111"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 0
+    },
+    "destination" : {
+     "as" : {
+      "full" : "AS11348 Missouri University of Science and Technology",
+      "number" : 11348,
+      "organization" : {
+       "name" : "Missouri University of Science and Technology"
+      }
+     },
+     "bytes" : 182,
+     "geo" : {
+      "city_name" : "Rolla",
+      "country_iso_code" : "US",
+      "region_iso_code" : "MO"
+     },
+     "ip" : "131.151.37.117",
+     "mac" : [
+      "00:e0:f9:cc:18:00"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 1,
+     "port" : 1065
+    },
+    "dstOui" : [
+     "Cisco Systems, Inc"
+    ],
+    "dstOuiCnt" : 1,
+    "dstRIR" : "ARIN",
+    "dstTTL" : [
+     127
+    ],
+    "dstTTLCnt" : 1,
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 942357351868,
+    "ipProtocol" : 6,
+    "lastPacket" : 942357352031,
+    "length" : 163,
+    "network" : {
+     "bytes" : 590,
+     "community_id" : "1:ypmXSJ9rYCynghzP7PjsgomGwY4=",
+     "packets" : 5
+    },
+    "node" : "test",
+    "packetLen" : [
+     166,
+     166,
+     198,
+     70,
+     70
+    ],
+    "packetPos" : [
+     20565,
+     20731,
+     20973,
+     30487,
+     30557
+    ],
+    "packetRange" : {
+     "gte" : 942357351868,
+     "lte" : 942357352031
+    },
+    "protocol" : [
+     "tcp"
+    ],
+    "protocolCnt" : 1,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 0
+    },
+    "source" : {
+     "as" : {
+      "full" : "AS11348 Missouri University of Science and Technology",
+      "number" : 11348,
+      "organization" : {
+       "name" : "Missouri University of Science and Technology"
+      }
+     },
+     "bytes" : 408,
+     "geo" : {
+      "city_name" : "Rolla",
+      "country_iso_code" : "US",
+      "region_iso_code" : "MO"
+     },
+     "ip" : "131.151.32.91",
+     "mac" : [
+      "00:50:56:00:20:15"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 4,
+     "port" : 1065
+    },
+    "srcOui" : [
+     "VMware, Inc."
+    ],
+    "srcOuiCnt" : 1,
+    "srcRIR" : "ARIN",
+    "srcTTL" : [
+     128
+    ],
+    "srcTTLCnt" : 1,
+    "tcpflags" : {
+     "ack" : 2,
+     "dstZero" : 0,
+     "fin" : 0,
+     "psh" : 3,
+     "rst" : 0,
+     "srcZero" : 0,
+     "syn" : 0,
+     "syn-ack" : 0,
+     "urg" : 0
+    },
+    "totDataBytes" : 0
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-991111"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 8
+    },
+    "destination" : {
+     "as" : {
+      "full" : "AS11348 Missouri University of Science and Technology",
+      "number" : 11348,
+      "organization" : {
+       "name" : "Missouri University of Science and Technology"
+      }
+     },
+     "bytes" : 0,
+     "geo" : {
+      "city_name" : "Rolla",
+      "country_iso_code" : "US",
+      "region_iso_code" : "MO"
+     },
+     "ip" : "131.151.32.91",
+     "mac" : [
+      "00:50:56:00:20:15"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 0,
+     "port" : 1056
+    },
+    "dstOui" : [
+     "VMware, Inc."
+    ],
+    "dstOuiCnt" : 1,
+    "dstRIR" : "ARIN",
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 942357351870,
+    "ipProtocol" : 17,
+    "lastPacket" : 942357351870,
+    "length" : 0,
+    "network" : {
+     "bytes" : 60,
+     "community_id" : "1:o7z9MMmzRQ0C4hfFKvGGTi8p8qg=",
+     "packets" : 1
+    },
+    "node" : "test",
+    "packetLen" : [
+     76
+    ],
+    "packetPos" : [
+     20897
+    ],
+    "packetRange" : {
+     "gte" : 942357351870,
+     "lte" : 942357351870
+    },
+    "protocol" : [
+     "udp"
+    ],
+    "protocolCnt" : 1,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 0
+    },
+    "source" : {
+     "as" : {
+      "full" : "AS11348 Missouri University of Science and Technology",
+      "number" : 11348,
+      "organization" : {
+       "name" : "Missouri University of Science and Technology"
+      }
+     },
+     "bytes" : 60,
+     "geo" : {
+      "city_name" : "Rolla",
+      "country_iso_code" : "US",
+      "region_iso_code" : "MO"
+     },
+     "ip" : "131.151.37.122",
+     "mac" : [
+      "00:e0:f9:cc:18:00"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 1,
+     "port" : 1360
+    },
+    "srcOui" : [
+     "Cisco Systems, Inc"
+    ],
+    "srcOuiCnt" : 1,
+    "srcPayload8" : "38270a018cef0600",
+    "srcRIR" : "ARIN",
+    "srcTTL" : [
+     127
+    ],
+    "srcTTLCnt" : 1,
+    "totDataBytes" : 8
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-991111"
+    }
+   }
+  }
+ ]
+}
+

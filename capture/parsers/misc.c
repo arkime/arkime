@@ -10,13 +10,6 @@ LOCAL  int userField;
 
 /******************************************************************************/
 /******************************************************************************/
-LOCAL void imap_classify(ArkimeSession_t *session, const uint8_t *data, int len, int UNUSED(which), void *UNUSED(uw))
-{
-    if (arkime_memstr((const char *)data + 5, len - 5, "IMAP", 4)) {
-        arkime_session_add_protocol(session, "imap");
-    }
-}
-/******************************************************************************/
 LOCAL void gh0st_classify(ArkimeSession_t *session, const uint8_t *data, int len, int UNUSED(which), void *UNUSED(uw))
 {
     if (len < 15)
@@ -336,7 +329,6 @@ void arkime_parser_init()
     /* Bitcoin namecoin fork */
     SIMPLE_CLASSIFY_TCP("bitcoin", "\xf9\xbe\xb4\xfe");
 
-    CLASSIFY_TCP("imap", 0, "* OK ", imap_classify);
     SIMPLE_CLASSIFY_TCP("pop3", "+OK ");
     CLASSIFY_TCP("gh0st", 13, "\x78", gh0st_classify);
     CLASSIFY_TCP("other220", 0, "220 ", other220_classify);
