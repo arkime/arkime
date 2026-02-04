@@ -9,7 +9,7 @@
  * - SI=5 (ISUP) -> Marks as ISUP
  * - SI=4 (TUP)  -> Marks as TUP
  *
- * Copyright 2024 AOL Inc. All rights reserved.
+ * Copyright 2026 Andy Wick. All rights reserved.
  *
  * SPDX-License-Identifier: Apache-2.0
  */

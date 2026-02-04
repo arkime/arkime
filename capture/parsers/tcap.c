@@ -5,7 +5,7 @@
  *
  * Registers as a sub-parser with m3ua for SI=03 (SCCP).
  *
- * Copyright 2024 AOL Inc. All rights reserved.
+ * Copyright 2026 Andy Wick. All rights reserved.
  *
  * SPDX-License-Identifier: Apache-2.0
  */

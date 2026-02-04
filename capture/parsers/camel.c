@@ -3,7 +3,7 @@
  * Handles TCAP messages containing CAP/CAMEL operations.
  * Registers as a sub-parser with tcap using CAMEL application context OIDs.
  *
- * Copyright 2024 AOL Inc. All rights reserved.
+/* Copyright 2026 Andy Wick. All rights reserved.
  *
  * SPDX-License-Identifier: Apache-2.0
  */
