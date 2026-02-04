@@ -48,7 +48,7 @@ use MIME::Base64;
 # Configuration defaults
 ################################################################################
 my $ELASTICSEARCH = $ENV{ELASTICSEARCH} || "http://127.0.0.1:9200";
-my $PREFIX = $ENV{ARKIME_PREFIX} || "";
+my $PREFIX = $ENV{ARKIME_PREFIX} || "arkime_";
 my $NODE = $ENV{ARKIME_NODE} || "netflow";
 my $TAG = "netflow";
 my $DEBUG = 0;
@@ -117,6 +117,11 @@ if ($ESUSER ne "" && $ESUSER !~ /:/) {
 }
 
 usage() if $HELP;
+
+# Ensure prefix ends with underscore if set
+if ($PREFIX ne "" && $PREFIX !~ /_$/) {
+    $PREFIX .= "_";
+}
 
 # Remaining arguments are input files
 @FILES = @ARGV;
