@@ -540,28 +540,29 @@ LOCAL void ike_udp_classify(ArkimeSession_t *session, const uint8_t *data, int l
     if (arkime_session_has_protocol(session, "isakmp"))
         return;
 
-    int offset = 0;
+    BSB bsb;
+    BSB_INIT(bsb, data, len);
 
     // NAT-T on port 4500
-    if ((session->port1 == 4500 || session->port2 == 4500) && len >= 4) {
-        if (data[0] == 0 && data[1] == 0 && data[2] == 0 && data[3] == 0)
-            offset = 4;
-        else
+    if (session->port1 == 4500 || session->port2 == 4500) {
+        uint32_t nattMarker = 0;
+        BSB_IMPORT_u32(bsb, nattMarker);
+        if (BSB_IS_ERROR(bsb) || nattMarker != 0)
             return;
     }
 
-    if (len - offset < 28)
+    if (BSB_REMAINING(bsb) < 28)
         return;
 
-    data += offset;
-    len -= offset;
-
-    uint8_t version = data[17];
+    BSB_IMPORT_skip(bsb, 17);
+    uint8_t version = 0;
+    BSB_IMPORT_u08(bsb, version);
     int majorVersion = (version >> 4) & 0x0f;
     if (majorVersion != 1 && majorVersion != 2)
         return;
 
-    uint8_t exchangeType = data[18];
+    uint8_t exchangeType = 0;
+    BSB_IMPORT_u08(bsb, exchangeType);
     if (majorVersion == 1) {
         if (exchangeType > 5 && exchangeType < 32)
             return;
@@ -572,7 +573,8 @@ LOCAL void ike_udp_classify(ArkimeSession_t *session, const uint8_t *data, int l
             return;
     }
 
-    uint8_t flags = data[19];
+    uint8_t flags = 0;
+    BSB_IMPORT_u08(bsb, flags);
     if (majorVersion == 1) {
         if (flags & 0xf8)
             return;

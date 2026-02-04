@@ -70,7 +70,7 @@ LOCAL void mqtt_parse_connect(ArkimeSession_t *session, BSB *bsb)
     if (BSB_IS_ERROR(*bsb) || protoNameLen > BSB_REMAINING(*bsb))
         return;
 
-    uint8_t *protoName = 0;
+    const uint8_t *protoName = 0;
     BSB_IMPORT_ptr(*bsb, protoName, protoNameLen);
 
     // Verify it's MQTT or MQIsdp (MQTT 3.1)
@@ -371,7 +371,7 @@ LOCAL void mqtt_classify(ArkimeSession_t *session, const uint8_t *data, int len,
     if (protoNameLen != 4 && protoNameLen != 6)
         return;
 
-    uint8_t *protoName = 0;
+    const uint8_t *protoName = 0;
     BSB_IMPORT_ptr(bsb, protoName, protoNameLen);
     if (BSB_IS_ERROR(bsb))
         return;

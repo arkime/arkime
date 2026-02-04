@@ -3,7 +3,7 @@
  * Handles TCAP messages containing CAP/CAMEL operations.
  * Registers as a sub-parser with tcap using CAMEL application context OIDs.
  *
-/* Copyright 2026 Andy Wick. All rights reserved.
+ * Copyright 2026 Andy Wick. All rights reserved.
  *
  * SPDX-License-Identifier: Apache-2.0
  */
@@ -199,7 +199,7 @@ LOCAL void camel_parse_cap_params(ArkimeSession_t *session, const uint8_t *data,
 // Parse TCAP components and extract operation codes
 LOCAL int camel_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, int len, int UNUSED(which))
 {
-    int *opcodeField = uw;
+    const int *opcodeField = uw;
 
     if (len < 2)
         return ARKIME_PARSER_UNREGISTER;
