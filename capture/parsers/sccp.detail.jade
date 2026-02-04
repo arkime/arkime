@@ -1,0 +1,5 @@
+if (session.sccp)
+  div.sessionDetailMeta.bold SCCP
+  dl.sessionDetailMeta
+    +arrayList(session.sccp, "src", "Src Point Code", "sccp.src")
+    +arrayList(session.sccp, "dst", "Dst Point Code", "sccp.dst")

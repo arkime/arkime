@@ -4374,6 +4374,34 @@ sub sessions3Update
     "certCnt" : {
       "type" : "long"
     },
+    "camel" : {
+      "properties" : {
+        "called" : {
+          "type" : "keyword"
+        },
+        "calledCnt" : {
+          "type" : "long"
+        },
+        "calling" : {
+          "type" : "keyword"
+        },
+        "callingCnt" : {
+          "type" : "long"
+        },
+        "imsi" : {
+          "type" : "keyword"
+        },
+        "imsiCnt" : {
+          "type" : "long"
+        },
+        "op" : {
+          "type" : "keyword"
+        },
+        "opCnt" : {
+          "type" : "long"
+        }
+      }
+    },
     "dcerpc" : {
       "properties" : {
         "interface" : {
@@ -4404,6 +4432,58 @@ sub sessions3Update
           "type" : "keyword"
         },
         "versionCnt" : {
+          "type" : "long"
+        }
+      }
+    },
+    "diameter" : {
+      "properties" : {
+        "app" : {
+          "type" : "keyword"
+        },
+        "appCnt" : {
+          "type" : "long"
+        },
+        "cmd" : {
+          "type" : "keyword"
+        },
+        "cmdCnt" : {
+          "type" : "long"
+        },
+        "destHost" : {
+          "type" : "keyword"
+        },
+        "destHostCnt" : {
+          "type" : "long"
+        },
+        "destRealm" : {
+          "type" : "keyword"
+        },
+        "destRealmCnt" : {
+          "type" : "long"
+        },
+        "originHost" : {
+          "type" : "keyword"
+        },
+        "originHostCnt" : {
+          "type" : "long"
+        },
+        "originRealm" : {
+          "type" : "keyword"
+        },
+        "originRealmCnt" : {
+          "type" : "long"
+        },
+        "sessionId" : {
+          "type" : "keyword"
+        },
+        "sessionIdCnt" : {
+          "type" : "long"
+        },
+        "user" : {
+          "type" : "keyword"
+        },
+        "userCnt" : {
           "type" : "long"
         }
       }
@@ -5116,6 +5196,16 @@ sub sessions3Update
         }
       }
     },
+    "m3ua" : {
+      "properties" : {
+        "si" : {
+          "type" : "long"
+        },
+        "siCnt" : {
+          "type" : "long"
+        }
+      }
+    },
     "modbus" : {
       "properties" : {
         "exccode" : {
@@ -5435,6 +5525,22 @@ sub sessions3Update
       "properties" : {
         "protoId" : {
           "type" : "keyword"
+        }
+      }
+    },
+    "sccp" : {
+      "properties" : {
+        "dst" : {
+          "type" : "long"
+        },
+        "dstCnt" : {
+          "type" : "long"
+        },
+        "src" : {
+          "type" : "long"
+        },
+        "srcCnt" : {
+          "type" : "long"
         }
       }
     },
@@ -5782,6 +5888,16 @@ sub sessions3Update
     },
     "tagsCnt" : {
       "type" : "long"
+    },
+    "tcap" : {
+      "properties" : {
+        "opcode" : {
+          "type" : "long"
+        },
+        "opcodeCnt" : {
+          "type" : "long"
+        }
+      }
     },
     "tftp" : {
       "properties" : {

@@ -1,0 +1,7 @@
+if (session.camel)
+  div.sessionDetailMeta.bold CAMEL
+  dl.sessionDetailMeta
+    +arrayList(session.camel, "op", "Operation", "camel.op")
+    +arrayList(session.camel, "calling", "Calling Party", "camel.calling")
+    +arrayList(session.camel, "called", "Called Party", "camel.called")
+    +arrayList(session.camel, "imsi", "IMSI", "camel.imsi")

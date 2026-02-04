@@ -32,7 +32,7 @@ LOCAL int interfaceField;
 LOCAL int opnumField;
 LOCAL int versionField;
 
-LOCAL GHashTable *knownInterfaces;
+LOCAL GHashTable *subParsers;
 
 LOCAL int msgTypeField;
 
@@ -145,10 +145,10 @@ LOCAL void dcerpc_parse_bind(ArkimeSession_t *session, BSB *bsb, gboolean le)
 
         arkime_field_string_add(uuidField, session, uuid, 36, TRUE);
 
-        const char *ifaceName = g_hash_table_lookup(knownInterfaces, uuid);
-        if (ifaceName) {
-            arkime_field_string_add(interfaceField, session, ifaceName, -1, TRUE);
-            arkime_session_add_protocol(session, ifaceName);
+        ArkimeParserInfo_t *info = g_hash_table_lookup(subParsers, uuid);
+        if (info) {
+            arkime_field_string_add(interfaceField, session, info->uw, -1, TRUE);
+            arkime_session_add_protocol(session, info->uw);
         }
 
         char verStr[8];
@@ -283,28 +283,28 @@ LOCAL void dcerpc_classify(ArkimeSession_t *session, const uint8_t *data, int le
 /******************************************************************************/
 void arkime_parser_init()
 {
-    // Initialize known interfaces hash table
-    knownInterfaces = g_hash_table_new(g_str_hash, g_str_equal);
-    g_hash_table_insert(knownInterfaces, "e3514235-4b06-11d1-ab04-00c04fc2dcd2", "drsuapi");      // AD replication, DCSync
-    g_hash_table_insert(knownInterfaces, "12345778-1234-abcd-ef00-0123456789ac", "samr");         // SAM enumeration
-    g_hash_table_insert(knownInterfaces, "12345678-1234-abcd-ef00-01234567cffb", "netlogon");     // Domain auth, ZeroLogon
-    g_hash_table_insert(knownInterfaces, "367abb81-9844-35f1-ad32-98f038001003", "svcctl");       // Service control, PSExec
-    g_hash_table_insert(knownInterfaces, "4b324fc8-1670-01d3-1278-5a47bf6ee188", "srvsvc");       // Server service, shares
-    g_hash_table_insert(knownInterfaces, "1ff70682-0a51-30e8-076d-740be8cee98b", "atsvc");        // Task scheduler
-    g_hash_table_insert(knownInterfaces, "338cd001-2244-31f1-aaaa-900038001003", "winreg");       // Remote registry
-    g_hash_table_insert(knownInterfaces, "c681d488-d850-11d0-8c52-00c04fd90f7e", "efsrpc");       // EFS, PetitPotam
-    g_hash_table_insert(knownInterfaces, "df1941c5-fe89-4e79-bf10-463657acf44d", "efsr");         // EFS alt
-    g_hash_table_insert(knownInterfaces, "12345778-1234-abcd-ef00-0123456789ab", "lsarpc");       // LSA
-    g_hash_table_insert(knownInterfaces, "6bffd098-a112-3610-9833-46c3f87e345a", "wkssvc");       // Workstation service
-    g_hash_table_insert(knownInterfaces, "3919286a-b10c-11d0-9ba8-00c04fd92ef5", "dssetup");      // Domain setup
-    g_hash_table_insert(knownInterfaces, "e1af8308-5d1f-11c9-91a4-08002b14a0fa", "epmapper");     // Endpoint mapper
-    g_hash_table_insert(knownInterfaces, "86d35949-83c9-4044-b424-db363231fd0c", "itaskscheduler"); // Task scheduler v2
-    g_hash_table_insert(knownInterfaces, "00000131-0000-0000-c000-000000000046", "ioxidresolver"); // DCOM resolver
-    g_hash_table_insert(knownInterfaces, "00000134-0000-0000-c000-000000000046", "iremunknown");   // DCOM remote unknown
-    g_hash_table_insert(knownInterfaces, "000001a0-0000-0000-c000-000000000046", "iremunknown2");  // DCOM remote unknown v2
-    g_hash_table_insert(knownInterfaces, "ccd8c074-d0e5-4a40-92b4-d074faa6ba28", "witness");       // SMB Witness Service
-    g_hash_table_insert(knownInterfaces, "afa8bd80-7d8a-11c9-bef4-08002b102989", "mgmt");          // RPC management
-    g_hash_table_insert(knownInterfaces, "f5cc5a18-4264-101a-8c59-08002b2f8426", "nspi");          // Name Service Provider Interface
+    // Get sub-parser table and register known interfaces
+    subParsers = arkime_parsers_get_sub("dcerpc");
+    arkime_parsers_register_sub("dcerpc", "e3514235-4b06-11d1-ab04-00c04fc2dcd2", NULL, "drsuapi");      // AD replication, DCSync
+    arkime_parsers_register_sub("dcerpc", "12345778-1234-abcd-ef00-0123456789ac", NULL, "samr");         // SAM enumeration
+    arkime_parsers_register_sub("dcerpc", "12345678-1234-abcd-ef00-01234567cffb", NULL, "netlogon");     // Domain auth, ZeroLogon
+    arkime_parsers_register_sub("dcerpc", "367abb81-9844-35f1-ad32-98f038001003", NULL, "svcctl");       // Service control, PSExec
+    arkime_parsers_register_sub("dcerpc", "4b324fc8-1670-01d3-1278-5a47bf6ee188", NULL, "srvsvc");       // Server service, shares
+    arkime_parsers_register_sub("dcerpc", "1ff70682-0a51-30e8-076d-740be8cee98b", NULL, "atsvc");        // Task scheduler
+    arkime_parsers_register_sub("dcerpc", "338cd001-2244-31f1-aaaa-900038001003", NULL, "winreg");       // Remote registry
+    arkime_parsers_register_sub("dcerpc", "c681d488-d850-11d0-8c52-00c04fd90f7e", NULL, "efsrpc");       // EFS, PetitPotam
+    arkime_parsers_register_sub("dcerpc", "df1941c5-fe89-4e79-bf10-463657acf44d", NULL, "efsr");         // EFS alt
+    arkime_parsers_register_sub("dcerpc", "12345778-1234-abcd-ef00-0123456789ab", NULL, "lsarpc");       // LSA
+    arkime_parsers_register_sub("dcerpc", "6bffd098-a112-3610-9833-46c3f87e345a", NULL, "wkssvc");       // Workstation service
+    arkime_parsers_register_sub("dcerpc", "3919286a-b10c-11d0-9ba8-00c04fd92ef5", NULL, "dssetup");      // Domain setup
+    arkime_parsers_register_sub("dcerpc", "e1af8308-5d1f-11c9-91a4-08002b14a0fa", NULL, "epmapper");     // Endpoint mapper
+    arkime_parsers_register_sub("dcerpc", "86d35949-83c9-4044-b424-db363231fd0c", NULL, "itaskscheduler"); // Task scheduler v2
+    arkime_parsers_register_sub("dcerpc", "00000131-0000-0000-c000-000000000046", NULL, "ioxidresolver"); // DCOM resolver
+    arkime_parsers_register_sub("dcerpc", "00000134-0000-0000-c000-000000000046", NULL, "iremunknown");   // DCOM remote unknown
+    arkime_parsers_register_sub("dcerpc", "000001a0-0000-0000-c000-000000000046", NULL, "iremunknown2");  // DCOM remote unknown v2
+    arkime_parsers_register_sub("dcerpc", "ccd8c074-d0e5-4a40-92b4-d074faa6ba28", NULL, "witness");       // SMB Witness Service
+    arkime_parsers_register_sub("dcerpc", "afa8bd80-7d8a-11c9-bef4-08002b102989", NULL, "mgmt");          // RPC management
+    arkime_parsers_register_sub("dcerpc", "f5cc5a18-4264-101a-8c59-08002b2f8426", NULL, "nspi");          // Name Service Provider Interface
 
     uuidField = arkime_field_define("dcerpc", "termfield",
                                     "dcerpc.uuid", "UUID", "dcerpc.uuid",

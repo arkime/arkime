@@ -1,0 +1,4 @@
+if (session.m3ua)
+  div.sessionDetailMeta.bold M3UA/M2UA
+  dl.sessionDetailMeta
+    +arrayList(session.m3ua, "si", "Service Indicator", "m3ua.si")
