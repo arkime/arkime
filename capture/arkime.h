@@ -48,6 +48,12 @@
 #define SUPPRESS_INT_CONVERSION
 #endif
 
+#if defined(__APPLE__)
+#define ARKIME_CACHE_ALIGN __attribute__((aligned(128)))
+#else
+#define ARKIME_CACHE_ALIGN __attribute__((aligned(64)))
+#endif
+
 #define ARKIME_API_VERSION 602
 
 #define ARKIME_SESSIONID_LEN  40
@@ -605,7 +611,7 @@ typedef struct {
     uint32_t                 packet_count;
     ARKIME_LOCK_EXTERN(lock);
     ARKIME_COND_EXTERN(lock);
-} ArkimePacketHead_t;
+} ARKIME_CACHE_ALIGN ArkimePacketHead_t;
 
 typedef struct {
     ArkimePacketHead_t    packetQ[ARKIME_MAX_PACKET_THREADS];
@@ -914,6 +920,15 @@ extern ARKIME_LOCK_EXTERN(LOG);
 /*
  * main.c
  */
+
+typedef struct {
+    time_t                       currentTime;
+    time_t                       lastPacketSecs;
+    ArkimeSessionHead_t          tcpWriteQ;
+    GChecksum                   *checksum1;
+    GChecksum                   *checksum256;
+} ARKIME_CACHE_ALIGN ArkimeThreadData_t;
+extern ArkimeThreadData_t arkimeThreadData[ARKIME_MAX_PACKET_THREADS];
 
 // Return 0 if ready to quit
 typedef int  (* ArkimeCanQuitFunc) ();

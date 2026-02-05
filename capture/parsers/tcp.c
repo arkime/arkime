@@ -19,7 +19,6 @@ extern ArkimeConfig_t        config;
 
 extern int                   tcpMProtocol;
 
-extern ArkimeSessionHead_t   tcpWriteQ[ARKIME_MAX_PACKET_THREADS];
 LOCAL int                    maxTcpOutOfOrderPackets;
 extern uint32_t              pluginsCbs;
 LOCAL int                    tcp_raw_packet_func;
@@ -167,7 +166,7 @@ LOCAL int tcp_packet_process(ArkimeSession_t *const session, ArkimePacket_t *con
 
     // add to the long open
     if (!session->tcp_next) {
-        DLL_PUSH_TAIL(tcp_, &tcpWriteQ[session->thread], session);
+        DLL_PUSH_TAIL(tcp_, &arkimeThreadData[session->thread].tcpWriteQ, session);
     }
 
     if (tcphdr->th_flags & TH_SYN) {
