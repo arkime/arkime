@@ -614,8 +614,23 @@ typedef struct {
     ARKIME_COND_EXTERN(lock);
 } ARKIME_CACHE_ALIGN ArkimePacketHead_t;
 
+typedef enum {
+    ARKIME_PACKET_DO_PROCESS,
+    ARKIME_PACKET_IP_DROPPED,
+    ARKIME_PACKET_OVERLOAD_DROPPED,
+    ARKIME_PACKET_CORRUPT,
+    ARKIME_PACKET_UNKNOWN_ETHER,
+    ARKIME_PACKET_UNKNOWN_IP,
+    ARKIME_PACKET_IPPORT_DROPPED,
+    ARKIME_PACKET_DONT_PROCESS,
+    ARKIME_PACKET_DONT_PROCESS_OR_FREE,
+    ARKIME_PACKET_DUPLICATE_DROPPED,
+    ARKIME_PACKET_MAX
+} ArkimePacketRC;
+
 typedef struct {
     ArkimePacketHead_t    packetQ[ARKIME_MAX_PACKET_THREADS];
+    uint32_t              packetStats[ARKIME_PACKET_MAX];
     int                   count;
     uint8_t               readerPos; // used by libpcap reader to set readerPos
 } ArkimePacketBatch_t;
@@ -1321,19 +1336,6 @@ void arkime_session_set_stop_spi(ArkimeSession_t *session, int value);
 /*
  * packet.c
  */
-typedef enum {
-    ARKIME_PACKET_DO_PROCESS,
-    ARKIME_PACKET_IP_DROPPED,
-    ARKIME_PACKET_OVERLOAD_DROPPED,
-    ARKIME_PACKET_CORRUPT,
-    ARKIME_PACKET_UNKNOWN_ETHER,
-    ARKIME_PACKET_UNKNOWN_IP,
-    ARKIME_PACKET_IPPORT_DROPPED,
-    ARKIME_PACKET_DONT_PROCESS,
-    ARKIME_PACKET_DONT_PROCESS_OR_FREE,
-    ARKIME_PACKET_DUPLICATE_DROPPED,
-    ARKIME_PACKET_MAX
-} ArkimePacketRC;
 
 typedef ArkimePacketRC (*ArkimePacketEnqueue_cb)(ArkimePacketBatch_t *batch, ArkimePacket_t *const packet, const uint8_t *data, int len);
 typedef ArkimePacketRC (*ArkimePacketEnqueue_cb2)(ArkimePacketBatch_t *batch, ArkimePacket_t *const packet, const uint8_t *data, int len, void *cbuw);

@@ -72,6 +72,8 @@ LOCAL int               arkime_session_save_func;
 LOCAL GRegex           *numRegex;
 LOCAL GRegex           *numHexRegex;
 
+extern uint64_t         packetStats[ARKIME_PACKET_MAX];
+
 /******************************************************************************/
 extern ArkimeConfig_t        config;
 
@@ -1671,7 +1673,7 @@ LOCAL void arkime_db_update_stats(int n, gboolean sync)
     uint64_t overloadDropped = arkime_packet_dropped_overload();
     uint64_t totalDropped    = arkime_packet_dropped_packets();
     uint64_t fragsDropped    = arkime_packet_dropped_frags();
-    uint64_t dupDropped      = arkime_packet_stats(ARKIME_PACKET_DUPLICATE_DROPPED);
+    uint64_t dupDropped      = packetStats[ARKIME_PACKET_DUPLICATE_DROPPED];
     uint64_t esDropped       = arkime_http_dropped_count(esServer);
     uint64_t totalBytes      = arkime_packet_total_bytes();
     uint64_t writtenBytes    = arkime_packet_written_bytes();
@@ -2982,14 +2984,14 @@ void arkime_db_exit()
     if (config.debug) {
         LOG("totalPackets: %" PRId64 " totalSessions: %" PRId64 " writtenBytes: %" PRId64 " unwrittenBytes: %" PRId64 " pstats: %" PRIu64 "/%" PRIu64 "/%" PRIu64 "/%" PRIu64 "/%" PRIu64 "/%" PRIu64 "/%" PRIu64 "/%" PRIu64,
             totalPackets, totalSessions, arkime_packet_written_bytes(), arkime_packet_unwritten_bytes(),
-            arkime_packet_stats(ARKIME_PACKET_DO_PROCESS),
-            arkime_packet_stats(ARKIME_PACKET_IP_DROPPED),
-            arkime_packet_stats(ARKIME_PACKET_OVERLOAD_DROPPED),
-            arkime_packet_stats(ARKIME_PACKET_CORRUPT),
-            arkime_packet_stats(ARKIME_PACKET_UNKNOWN_ETHER),
-            arkime_packet_stats(ARKIME_PACKET_UNKNOWN_IP),
-            arkime_packet_stats(ARKIME_PACKET_IPPORT_DROPPED),
-            arkime_packet_stats(ARKIME_PACKET_DUPLICATE_DROPPED)
+            packetStats[ARKIME_PACKET_DO_PROCESS],
+            packetStats[ARKIME_PACKET_IP_DROPPED],
+            packetStats[ARKIME_PACKET_OVERLOAD_DROPPED],
+            packetStats[ARKIME_PACKET_CORRUPT],
+            packetStats[ARKIME_PACKET_UNKNOWN_ETHER],
+            packetStats[ARKIME_PACKET_UNKNOWN_IP],
+            packetStats[ARKIME_PACKET_IPPORT_DROPPED],
+            packetStats[ARKIME_PACKET_DUPLICATE_DROPPED]
            );
     }
 }
