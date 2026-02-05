@@ -823,11 +823,16 @@ typedef struct {
 #define ARKIME_TYPE_ALLOC0(type) (type *)(calloc(1, sizeof(type)))
 #define ARKIME_TYPE_FREE(type,mem) free(mem)
 
-static inline void *arkime_alloc0_aligned(size_t size) {
-    void *ptr;
-    posix_memalign(&ptr, ARKIME_CACHE_LINE_SIZE, size);
-    memset(ptr, 0, size);
-    return ptr;
+static inline void *arkime_alloc0_aligned(size_t size)
+{
+    void *aaPtr;
+    int aaRc = posix_memalign(&aaPtr, ARKIME_CACHE_LINE_SIZE, size);
+    if (aaRc != 0) {
+        printf("posix_memalign failed: %d", aaRc);
+        exit(1);
+    }
+    memset(aaPtr, 0, size);
+    return aaPtr;
 }
 #define ARKIME_TYPE_ALLOC0_ALIGNED(type) (type *)arkime_alloc0_aligned(sizeof(type))
 

@@ -104,24 +104,25 @@ LOCAL ArkimePacketRC arkime_packet_frame_relay(ArkimePacketBatch_t *batch, Arkim
 LOCAL ArkimePacketRC arkime_packet_ether(ArkimePacketBatch_t *batch, ArkimePacket_t *const packet, const uint8_t *data, int len);
 
 typedef struct arkimefrags_t {
+    ArkimePacketHead_t     packets;
     struct arkimefrags_t  *fragh_next, *fragh_prev;
     struct arkimefrags_t  *fragl_next, *fragl_prev;
     uint32_t               fragh_bucket;
     uint32_t               fragh_hash;
-    ArkimePacketHead_t     packets;
     char                   key[10];
     uint32_t               secs;
     char                   haveNoFlags;
 } ArkimeFrags_t;
 
 typedef struct {
+    ArkimePacketHead_t     packets;
     struct arkimefrags_t  *fragh_next, *fragh_prev;
     struct arkimefrags_t  *fragl_next, *fragl_prev;
     uint32_t               fragh_count;
     uint32_t               fragl_count;
 } ArkimeFragsHead_t;
 
-typedef HASH_VAR(h_, ArkimeFragsHash_t, ArkimeFragsHead_t, 199337);
+typedef HASH_VAR(h_, ArkimeFragsHash_t, ArkimeFragsHead_t, 10007);
 
 LOCAL ArkimeFragsHash_t          fragsHash;
 LOCAL ArkimeFragsHead_t          fragsList;
