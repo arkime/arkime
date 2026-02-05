@@ -29,9 +29,6 @@ struct timeval               initialPacket; // Don't make LOCAL for now because 
 extern void                 *esServer;
 extern uint32_t              pluginsCbs;
 
-uint64_t                     writtenBytes;
-uint64_t                     unwrittenBytes;
-
 int                          mac1Field;
 int                          mac2Field;
 int                          vlanField;
@@ -92,6 +89,8 @@ typedef struct {
     uint64_t              overloadDrops;
     uint32_t              overloadDropTimes;
     uint64_t              totalBytes;
+    uint64_t              writtenBytes;
+    uint64_t              unwrittenBytes;
     int                   inProgress;
 } ARKIME_CACHE_ALIGN PacketThreadData_t;
 LOCAL PacketThreadData_t packetThreadData[ARKIME_MAX_PACKET_THREADS];
@@ -405,10 +404,10 @@ LOCAL void arkime_packet_process(ArkimePacket_t *packet, int thread)
                 arkime_session_add_tag(session, "pcap-disk-overload");
                 session->diskOverload = 1;
             }
-            ARKIME_THREAD_INCR_NUM(unwrittenBytes, packet->pktlen);
+            packetThreadData[thread].unwrittenBytes += packet->pktlen;
         } else {
 
-            ARKIME_THREAD_INCR_NUM(writtenBytes, packet->pktlen);
+            packetThreadData[thread].writtenBytes += packet->pktlen;
 
             // If the last fileNum used in the session isn't the same as the
             // latest packets fileNum then we need to add to the filePos and
@@ -443,7 +442,7 @@ LOCAL void arkime_packet_process(ArkimePacket_t *packet, int thread)
         if (packets - 1 == session->stopSaving) {
             arkime_session_set_stop_saving(session);
         }
-        ARKIME_THREAD_INCR_NUM(unwrittenBytes, packet->pktlen);
+        packetThreadData[thread].unwrittenBytes += packet->pktlen;
     }
 
     // Check the first 10 packets for dscp, vlans, tunnels, and macs
@@ -2163,6 +2162,26 @@ uint64_t arkime_packet_total_bytes()
 
     for (int t = 0; t < config.packetThreads; t++) {
         count += packetThreadData[t].totalBytes;
+    }
+    return count;
+}
+/******************************************************************************/
+uint64_t arkime_packet_written_bytes()
+{
+    uint64_t count = 0;
+
+    for (int t = 0; t < config.packetThreads; t++) {
+        count += packetThreadData[t].writtenBytes;
+    }
+    return count;
+}
+/******************************************************************************/
+uint64_t arkime_packet_unwritten_bytes()
+{
+    uint64_t count = 0;
+
+    for (int t = 0; t < config.packetThreads; t++) {
+        count += packetThreadData[t].unwrittenBytes;
     }
     return count;
 }

@@ -33,8 +33,6 @@ LOCAL  uint64_t         totalSessions = 0;
 LOCAL  uint64_t         totalSessionBytes;
 LOCAL  uint16_t         myPid;
 extern uint32_t         pluginsCbs;
-extern uint64_t         writtenBytes;
-extern uint64_t         unwrittenBytes;
 
 extern int              mac1Field;
 extern int              mac2Field;
@@ -1678,6 +1676,8 @@ LOCAL void arkime_db_update_stats(int n, gboolean sync)
     uint64_t dupDropped      = packetStats[ARKIME_PACKET_DUPLICATE_DROPPED];
     uint64_t esDropped       = arkime_http_dropped_count(esServer);
     uint64_t totalBytes      = arkime_packet_total_bytes();
+    uint64_t writtenBytes    = arkime_packet_written_bytes();
+    uint64_t unwrittenBytes  = arkime_packet_unwritten_bytes();
 
     // If totalDropped/overloadDropped/dupDropped wrapped we pretend no drops this time
     if (unlikely(totalDropped < lastDropped[n])) {
@@ -2983,7 +2983,7 @@ void arkime_db_exit()
 
     if (config.debug) {
         LOG("totalPackets: %" PRId64 " totalSessions: %" PRId64 " writtenBytes: %" PRId64 " unwrittenBytes: %" PRId64 " pstats: %" PRIu64 "/%" PRIu64 "/%" PRIu64 "/%" PRIu64 "/%" PRIu64 "/%" PRIu64 "/%" PRIu64 "/%" PRIu64,
-            totalPackets, totalSessions, writtenBytes, unwrittenBytes,
+            totalPackets, totalSessions, arkime_packet_written_bytes(), arkime_packet_unwritten_bytes(),
             packetStats[ARKIME_PACKET_DO_PROCESS],
             packetStats[ARKIME_PACKET_IP_DROPPED],
             packetStats[ARKIME_PACKET_OVERLOAD_DROPPED],

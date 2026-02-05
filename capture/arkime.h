@@ -1350,6 +1350,8 @@ int      arkime_packet_frags_size();
 uint64_t arkime_packet_dropped_frags();
 uint64_t arkime_packet_dropped_overload();
 uint64_t arkime_packet_total_bytes();
+uint64_t arkime_packet_written_bytes();
+uint64_t arkime_packet_unwritten_bytes();
 void     arkime_packet_thread_wake(int thread);
 void     arkime_packet_flush();
 void     arkime_packet_process_data(ArkimeSession_t *session, const uint8_t *data, int len, int which);
