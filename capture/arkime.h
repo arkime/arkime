@@ -631,6 +631,7 @@ typedef enum {
 typedef struct {
     ArkimePacketHead_t    packetQ[ARKIME_MAX_PACKET_THREADS];
     uint32_t              packetStats[ARKIME_PACKET_MAX];
+    uint32_t              totalPackets;
     int                   count;
     uint8_t               readerPos; // used by libpcap reader to set readerPos
 } ArkimePacketBatch_t;
