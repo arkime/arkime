@@ -58,7 +58,7 @@ ArkimePQ_t *arkime_pq_alloc(int timeout, ArkimePQ_cb cb)
         pqs = g_ptr_array_new();
     }
 
-    ArkimePQ_t *pq = ARKIME_TYPE_ALLOC0(ArkimePQ_t);
+    ArkimePQ_t *pq = ARKIME_TYPE_ALLOC0_ALIGNED(ArkimePQ_t);
 
     pq->timeout = timeout;
     for (int t = 0; t < config.packetThreads; t++) {

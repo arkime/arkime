@@ -657,7 +657,7 @@ LOCAL gboolean arkime_packet_frags_process(ArkimePacket_t *const packet)
     HASH_FIND(fragh_, fragsHash, key, frags);
 
     if (!frags) {
-        frags = ARKIME_TYPE_ALLOC0(ArkimeFrags_t);
+        frags = ARKIME_TYPE_ALLOC0_ALIGNED(ArkimeFrags_t);
         memcpy(frags->key, key, 10);
         frags->secs = packet->ts.tv_sec;
         HASH_ADD(fragh_, fragsHash, key, frags);

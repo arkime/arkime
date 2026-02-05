@@ -49,10 +49,11 @@
 #endif
 
 #if defined(__APPLE__)
-#define ARKIME_CACHE_ALIGN __attribute__((aligned(128)))
+#define ARKIME_CACHE_LINE_SIZE 128
 #else
-#define ARKIME_CACHE_ALIGN __attribute__((aligned(64)))
+#define ARKIME_CACHE_LINE_SIZE 64
 #endif
+#define ARKIME_CACHE_ALIGN __attribute__((aligned(ARKIME_CACHE_LINE_SIZE)))
 
 #define ARKIME_API_VERSION 602
 
@@ -821,6 +822,14 @@ typedef struct {
 #define ARKIME_TYPE_ALLOC(type) (type *)(malloc(sizeof(type)))
 #define ARKIME_TYPE_ALLOC0(type) (type *)(calloc(1, sizeof(type)))
 #define ARKIME_TYPE_FREE(type,mem) free(mem)
+
+static inline void *arkime_alloc0_aligned(size_t size) {
+    void *ptr;
+    posix_memalign(&ptr, ARKIME_CACHE_LINE_SIZE, size);
+    memset(ptr, 0, size);
+    return ptr;
+}
+#define ARKIME_TYPE_ALLOC0_ALIGNED(type) (type *)arkime_alloc0_aligned(sizeof(type))
 
 #define ARKIME_SIZE_ALLOC(name, s)  malloc(s)
 #define ARKIME_SIZE_ALLOC0(name, s) calloc(s, 1)
