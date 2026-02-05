@@ -49,7 +49,7 @@ typedef struct {
     struct iovec        *rd;
     uint8_t              interfacePos;
     uint8_t              thread;
-} ArkimeTPacketV3_t;
+} ARKIME_CACHE_ALIGN ArkimeTPacketV3_t;
 
 LOCAL ArkimeTPacketV3_t infos[MAX_INTERFACES][MAX_THREADS_PER_INTERFACE];
 

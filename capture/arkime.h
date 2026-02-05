@@ -48,6 +48,13 @@
 #define SUPPRESS_INT_CONVERSION
 #endif
 
+#if defined(__APPLE__)
+#define ARKIME_CACHE_LINE_SIZE 128
+#else
+#define ARKIME_CACHE_LINE_SIZE 64
+#endif
+#define ARKIME_CACHE_ALIGN __attribute__((aligned(ARKIME_CACHE_LINE_SIZE)))
+
 #define ARKIME_API_VERSION 602
 
 #define ARKIME_SESSIONID_LEN  40
@@ -605,10 +612,26 @@ typedef struct {
     uint32_t                 packet_count;
     ARKIME_LOCK_EXTERN(lock);
     ARKIME_COND_EXTERN(lock);
-} ArkimePacketHead_t;
+} ARKIME_CACHE_ALIGN ArkimePacketHead_t;
+
+typedef enum {
+    ARKIME_PACKET_DO_PROCESS,
+    ARKIME_PACKET_IP_DROPPED,
+    ARKIME_PACKET_OVERLOAD_DROPPED,
+    ARKIME_PACKET_CORRUPT,
+    ARKIME_PACKET_UNKNOWN_ETHER,
+    ARKIME_PACKET_UNKNOWN_IP,
+    ARKIME_PACKET_IPPORT_DROPPED,
+    ARKIME_PACKET_DONT_PROCESS,
+    ARKIME_PACKET_DONT_PROCESS_OR_FREE,
+    ARKIME_PACKET_DUPLICATE_DROPPED,
+    ARKIME_PACKET_MAX
+} ArkimePacketRC;
 
 typedef struct {
     ArkimePacketHead_t    packetQ[ARKIME_MAX_PACKET_THREADS];
+    uint32_t              packetStats[ARKIME_PACKET_MAX];
+    uint32_t              totalPackets;
     int                   count;
     uint8_t               readerPos; // used by libpcap reader to set readerPos
 } ArkimePacketBatch_t;
@@ -816,6 +839,19 @@ typedef struct {
 #define ARKIME_TYPE_ALLOC0(type) (type *)(calloc(1, sizeof(type)))
 #define ARKIME_TYPE_FREE(type,mem) free(mem)
 
+static inline void *arkime_alloc0_aligned(size_t size)
+{
+    void *aaPtr;
+    int aaRc = posix_memalign(&aaPtr, ARKIME_CACHE_LINE_SIZE, size);
+    if (aaRc != 0) {
+        printf("posix_memalign failed: %d", aaRc);
+        exit(1);
+    }
+    memset(aaPtr, 0, size);
+    return aaPtr;
+}
+#define ARKIME_TYPE_ALLOC0_ALIGNED(type) (type *)arkime_alloc0_aligned(sizeof(type))
+
 #define ARKIME_SIZE_ALLOC(name, s)  malloc(s)
 #define ARKIME_SIZE_ALLOC0(name, s) calloc(s, 1)
 #define ARKIME_SIZE_FREE(name, mem) free(mem)
@@ -914,6 +950,15 @@ extern ARKIME_LOCK_EXTERN(LOG);
 /*
  * main.c
  */
+
+typedef struct {
+    time_t                       currentTime;
+    time_t                       lastPacketSecs;
+    ArkimeSessionHead_t          tcpWriteQ;
+    GChecksum                   *checksum1;
+    GChecksum                   *checksum256;
+} ARKIME_CACHE_ALIGN ArkimeThreadData_t;
+extern ArkimeThreadData_t arkimeThreadData[ARKIME_MAX_PACKET_THREADS];
 
 // Return 0 if ready to quit
 typedef int  (* ArkimeCanQuitFunc) ();
@@ -1292,19 +1337,6 @@ void arkime_session_set_stop_spi(ArkimeSession_t *session, int value);
 /*
  * packet.c
  */
-typedef enum {
-    ARKIME_PACKET_DO_PROCESS,
-    ARKIME_PACKET_IP_DROPPED,
-    ARKIME_PACKET_OVERLOAD_DROPPED,
-    ARKIME_PACKET_CORRUPT,
-    ARKIME_PACKET_UNKNOWN_ETHER,
-    ARKIME_PACKET_UNKNOWN_IP,
-    ARKIME_PACKET_IPPORT_DROPPED,
-    ARKIME_PACKET_DONT_PROCESS,
-    ARKIME_PACKET_DONT_PROCESS_OR_FREE,
-    ARKIME_PACKET_DUPLICATE_DROPPED,
-    ARKIME_PACKET_MAX
-} ArkimePacketRC;
 
 typedef ArkimePacketRC (*ArkimePacketEnqueue_cb)(ArkimePacketBatch_t *batch, ArkimePacket_t *const packet, const uint8_t *data, int len);
 typedef ArkimePacketRC (*ArkimePacketEnqueue_cb2)(ArkimePacketBatch_t *batch, ArkimePacket_t *const packet, const uint8_t *data, int len, void *cbuw);
@@ -1321,6 +1353,9 @@ int      arkime_packet_frags_size();
 uint64_t arkime_packet_dropped_frags();
 uint64_t arkime_packet_dropped_overload();
 uint64_t arkime_packet_total_bytes();
+uint64_t arkime_packet_written_bytes();
+uint64_t arkime_packet_unwritten_bytes();
+uint64_t arkime_packet_stats(int stat);
 void     arkime_packet_thread_wake(int thread);
 void     arkime_packet_flush();
 void     arkime_packet_process_data(ArkimeSession_t *session, const uint8_t *data, int len, int which);

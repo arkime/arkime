@@ -24,8 +24,6 @@ LOCAL  gboolean              ja4Raw;
 
 extern uint8_t    arkime_char_to_hexstr[256][3];
 
-LOCAL GChecksum *checksums256[ARKIME_MAX_PACKET_THREADS];
-
 LOCAL uint32_t tls_process_client_hello_func;
 LOCAL uint32_t tls_process_server_hello_func;
 LOCAL uint32_t tls_process_server_certificate_func;
@@ -561,7 +559,7 @@ LOCAL uint32_t tls_process_client_hello_data(ArkimeSession_t *session, const uin
 
     BSB_EXPORT_u08(ja4_rbsb, '_');
 
-    GChecksum *const checksum = checksums256[session->thread];
+    GChecksum *const checksum = arkimeThreadData[session->thread].checksum256;
 
     if (BSB_LENGTH(tmpBSB) > 0) {
         g_checksum_update(checksum, (guchar *)tmpBuf, BSB_LENGTH(tmpBSB));
@@ -786,10 +784,6 @@ void arkime_parser_init()
     }
 
     arkime_parsers_classifier_register_tcp("tls", NULL, 0, (uint8_t *)"\x16\x03", 2, tls_classify);
-
-    for (int t = 0; t < config.packetThreads; t++) {
-        checksums256[t] = g_checksum_new(G_CHECKSUM_SHA256);
-    }
 
     tls_process_client_hello_func = arkime_parsers_add_named_func("tls_process_client_hello", tls_process_client_hello_data);
     tls_process_server_hello_func = arkime_parsers_add_named_func("tls_process_server_hello", tls_process_server_hello);
