@@ -1352,6 +1352,7 @@ uint64_t arkime_packet_dropped_overload();
 uint64_t arkime_packet_total_bytes();
 uint64_t arkime_packet_written_bytes();
 uint64_t arkime_packet_unwritten_bytes();
+uint64_t arkime_packet_stats(int stat);
 void     arkime_packet_thread_wake(int thread);
 void     arkime_packet_flush();
 void     arkime_packet_process_data(ArkimeSession_t *session, const uint8_t *data, int len, int which);
