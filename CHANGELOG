@@ -36,6 +36,9 @@ NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at o
 NOTICE: Create a parliament config file before upgrading (see https://arkime.com/settings#parliament and https://arkime.com/faq#how_do_i_upgrade_to_arkime_5)
 
 6.0.0 2026/02/xx
+## BREAKING
+  - #3677 arkime_packet_log no longer prints exactly logEveryXPackets, instead
+          that is just the minimum; it also only prints TCP info now.
 ## Contrib
   - #3637 increased max tzsp-forwarder packet to 64000
   - #3674 added new netflow2arkime.pl script
@@ -64,6 +67,8 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #3670 Added basic wireguard classifer
   - #3672 Added some telcom protocols: m3ua, sccp, tcap, camel, diameter
   - #3676 Added basic imap parser
+  - #3677 Align structures and remove unimportant atomic counts to help when
+          using large number of packetThreads
 
 6.0.0-rc1 2026/01/26
 ## BREAKING
