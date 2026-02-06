@@ -258,7 +258,7 @@ LOCAL int dhcp_process(ArkimeSession_t *session, ArkimePacket_t *const packet)
             BSB_IMPORT_u08(bsb, value);
             BSB_IMPORT_skip(bsb, 2);
             if (value != 0) // Don't support any encodings right now
-                BSB_IMPORT_skip(bsb, l - 1);
+                BSB_IMPORT_skip(bsb, l - 3);
             else {
                 BSB_IMPORT_ptr(bsb, valueStr, l - 3);
                 arkime_field_string_add_lower(hostField, session, (char *)valueStr, l - 3);

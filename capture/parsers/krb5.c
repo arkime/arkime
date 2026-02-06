@@ -132,8 +132,10 @@ LOCAL void krb5_parse_principal_name(ArkimeSession_t *session, int field, const 
         char str[255];
         value0 = arkime_parsers_asn_sequence_to_string(&seq[0], &len0);
         const char *value1 = arkime_parsers_asn_sequence_to_string(&seq[1], &len1);
-        snprintf(str, 255, "%.*s/%.*s", len0, value0, len1, value1);
-        arkime_field_string_add(field, session, str, len0 + 1 + len1, TRUE);
+        int slen = snprintf(str, sizeof(str), "%.*s/%.*s", len0, value0, len1, value1);
+        if (slen >= (int)sizeof(str))
+            slen = sizeof(str) - 1;
+        arkime_field_string_add(field, session, str, slen, TRUE);
     }
 }
 /******************************************************************************/

@@ -81,35 +81,33 @@ LOCAL const char *camel_op_names[] = {
 
 /******************************************************************************/
 // Decode TBCD (Telephony BCD) to string
-LOCAL int decode_tbcd(const uint8_t *data, int len, char *out, int outlen)
+LOCAL void decode_tbcd(const uint8_t *data, int len, BSB *bsb)
 {
-    int pos = 0;
-    for (int i = 0; i < len && pos < outlen - 1; i++) {
+    for (int i = 0; i < len && !BSB_IS_ERROR(*bsb) && BSB_REMAINING(*bsb) > 0; i++) {
         uint8_t lo = data[i] & 0x0f;
         uint8_t hi = (data[i] >> 4) & 0x0f;
 
         if (lo < 10) {
-            out[pos++] = '0' + lo;
+            BSB_EXPORT_u08(*bsb, '0' + lo);
         } else if (lo == 0x0a) {
-            out[pos++] = '*';
+            BSB_EXPORT_u08(*bsb, '*');
         } else if (lo == 0x0b) {
-            out[pos++] = '#';
+            BSB_EXPORT_u08(*bsb, '#');
         } else if (lo == 0x0f) {
             break;
         }
 
-        if (pos < outlen - 1 && hi < 10) {
-            out[pos++] = '0' + hi;
+        if (hi < 10) {
+            BSB_EXPORT_u08(*bsb, '0' + hi);
         } else if (hi == 0x0a) {
-            out[pos++] = '*';
+            BSB_EXPORT_u08(*bsb, '*');
         } else if (hi == 0x0b) {
-            out[pos++] = '#';
+            BSB_EXPORT_u08(*bsb, '#');
         } else if (hi == 0x0f) {
             break;
         }
     }
-    out[pos] = '\0';
-    return pos;
+    BSB_EXPORT_u08(*bsb, 0);
 }
 
 /******************************************************************************/
@@ -119,6 +117,7 @@ LOCAL void camel_parse_cap_params(ArkimeSession_t *session, const uint8_t *data,
     BSB bsb;
     BSB_INIT(bsb, data, len);
     char numBuf[32];
+    BSB numbsb;
 
     while (BSB_REMAINING(bsb) >= 2) {
         int tag = 0;
@@ -161,8 +160,9 @@ LOCAL void camel_parse_cap_params(ArkimeSession_t *session, const uint8_t *data,
             if (lenVal > 2) {
                 int skip = (valData[0] & 0x80) ? 1 : 2;
                 if (lenVal > skip) {
-                    decode_tbcd(valData + skip, lenVal - skip, numBuf, sizeof(numBuf));
-                    if (numBuf[0])
+                    BSB_INIT(numbsb, numBuf, sizeof(numBuf));
+                    decode_tbcd(valData + skip, lenVal - skip, &numbsb);
+                    if (numBuf[0] && !BSB_IS_ERROR(numbsb))
                         arkime_field_string_add(camelCalledField, session, numBuf, -1, TRUE);
                 }
             }
@@ -173,8 +173,9 @@ LOCAL void camel_parse_cap_params(ArkimeSession_t *session, const uint8_t *data,
             if (lenVal > 2) {
                 int skip = (valData[0] & 0x80) ? 1 : 2;
                 if (lenVal > skip) {
-                    decode_tbcd(valData + skip, lenVal - skip, numBuf, sizeof(numBuf));
-                    if (numBuf[0])
+                    BSB_INIT(numbsb, numBuf, sizeof(numBuf));
+                    decode_tbcd(valData + skip, lenVal - skip, &numbsb);
+                    if (numBuf[0] && !BSB_IS_ERROR(numbsb))
                         arkime_field_string_add(camelCallingField, session, numBuf, -1, TRUE);
                 }
             }
@@ -184,8 +185,9 @@ LOCAL void camel_parse_cap_params(ArkimeSession_t *session, const uint8_t *data,
         case 0xAA:
         case 0x9f32: // [50] iMSI (long form)
             if (lenVal >= 3 && lenVal <= 8) {
-                decode_tbcd(valData, lenVal, numBuf, sizeof(numBuf));
-                if (numBuf[0])
+                BSB_INIT(numbsb, numBuf, sizeof(numBuf));
+                decode_tbcd(valData, lenVal, &numbsb);
+                if (numBuf[0] && !BSB_IS_ERROR(numbsb))
                     arkime_field_string_add(camelImsiField, session, numBuf, -1, TRUE);
             }
             break;
@@ -281,10 +283,11 @@ LOCAL int camel_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, 
                             currentOpcode = opcode;
                             foundOpcode = 1;
                         } else if (invTag == 0x30 && lenByte > 0) {
-                            if (currentOpcode == 0 || currentOpcode == 70 || currentOpcode == 80) {
-                                camel_parse_cap_params(session, BSB_WORK_PTR(invBsb), lenByte);
+                            uint8_t *caps = 0;
+                            BSB_IMPORT_ptr(invBsb, caps, lenByte);
+                            if (caps && (currentOpcode == 0 || currentOpcode == 70 || currentOpcode == 80)) {
+                                camel_parse_cap_params(session, caps, lenByte);
                             }
-                            BSB_IMPORT_skip(invBsb, lenByte);
                         } else {
                             BSB_IMPORT_skip(invBsb, lenByte);
                         }

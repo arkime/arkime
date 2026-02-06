@@ -201,12 +201,16 @@ LOCAL void http2_parse_header_block(ArkimeSession_t *session, HTTP2Info_t *http2
 LOCAL void http2_parse_frame_headers(ArkimeSession_t *session, HTTP2Info_t *http2, int which, uint8_t flags, uint32_t streamId, uint8_t *in, int inlen)
 {
     if (flags & NGHTTP2_FLAG_PADDED) {
+        if (inlen < 1)
+            return;
         uint8_t padding = in[0];
         in++;
         inlen -= (1 + padding);
     }
 
     if (flags & NGHTTP2_FLAG_PRIORITY) {
+        if (inlen < 5)
+            return;
         in += 5;
         inlen -= 5;
     }
@@ -230,12 +234,16 @@ LOCAL void http2_parse_frame_headers(ArkimeSession_t *session, HTTP2Info_t *http
 LOCAL void http2_parse_frame_push_promise(ArkimeSession_t *session, HTTP2Info_t *http2, int which, uint8_t flags, uint32_t streamId, uint8_t *in, int inlen)
 {
     if (flags & NGHTTP2_FLAG_PADDED) {
+        if (inlen < 1)
+            return;
         uint8_t padding = in[0];
         in++;
         inlen -= (1 + padding);
     }
 
     // Promised Stream ID
+    if (inlen < 4)
+        return;
     in += 4;
     inlen -= 4;
 
@@ -259,6 +267,8 @@ LOCAL void http2_parse_frame_data(ArkimeSession_t *session, HTTP2Info_t *http2, 
     // If first packet check for padding/end and save it for when dataNeeded is 0
     if (initial) {
         if (flags & NGHTTP2_FLAG_PADDED) {
+            if (inlen < 1)
+                return;
             http2->dataPadding[which] = in[0];
             in++;
             inlen--;
