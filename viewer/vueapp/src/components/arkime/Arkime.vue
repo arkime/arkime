@@ -119,6 +119,7 @@ SPDX-License-Identifier: Apache-2.0
     <!-- summary content -->
     <div class="arkime-content ms-2">
       <arkime-summary-view
+        v-if="configLoaded"
         ref="summaryView"
         :summary-fields="summaryFields"
         @update-visualizations="updateVisualizationsData"
@@ -139,6 +140,7 @@ import FieldSelectDropdown from '../utils/FieldSelectDropdown.vue';
 import SummaryConfigDropdown from '../summary/SummaryConfigDropdown.vue';
 import Utils from '../utils/utils';
 import FieldService from '../search/FieldService';
+import UserService from '../users/UserService';
 
 export default {
   name: 'Arkime',
@@ -162,7 +164,8 @@ export default {
       mapData: undefined,
       graphData: undefined,
       // UI state
-      error: ''
+      error: '',
+      configLoaded: false
     };
   },
   computed: {
@@ -237,6 +240,7 @@ export default {
         query: { ...this.$route.query, summaryLength: newLimit }
       });
       this.reloadSummaryView();
+      this.saveSummaryConfig();
     },
     updateSummaryOrder: async function (newOrder) {
       this.summaryOrder = newOrder;
@@ -244,6 +248,7 @@ export default {
         query: { ...this.$route.query, summaryOrder: newOrder }
       });
       this.reloadSummaryView();
+      this.saveSummaryConfig();
     },
     toggleSummaryField: function (fieldExp) {
       const index = this.summaryFields.indexOf(fieldExp);
@@ -253,17 +258,21 @@ export default {
         this.summaryFields.push(fieldExp);
       }
       this.reloadSummaryView();
+      this.saveSummaryConfig();
     },
     clearSummaryFields: function () {
       this.summaryFields = [];
       this.reloadSummaryView();
+      this.saveSummaryConfig();
     },
     reorderSummaryFields: function ({ oldIndex, newIndex }) {
       const field = this.summaryFields.splice(oldIndex, 1)[0];
       this.summaryFields.splice(newIndex, 0, field);
+      this.saveSummaryConfig();
     },
     updateWidgetConfigs: function (configs) {
       this.widgetConfigs = configs;
+      this.saveSummaryConfig();
     },
     loadSummaryConfigFromShareable: function (shareable) {
       const configData = shareable.data;
@@ -286,6 +295,7 @@ export default {
         this.updateSummaryResultsLimit(configData.resultsLimit);
       } else {
         this.reloadSummaryView();
+        this.saveSummaryConfig();
       }
     },
     displayMessage: function ({ msg, type }) {
@@ -293,8 +303,34 @@ export default {
         this.error = msg;
       }
     },
-    loadSummaryConfig: function () {
+    loadSummaryConfig: async function () {
+      try {
+        const response = await UserService.getPageConfig('summary');
+        if (response?.summaryConfig?.fields?.length) {
+          const config = response.summaryConfig;
+          this.summaryFields = config.fields.map(f => f.field);
+          this.widgetConfigs = config.fields.map(f => ({
+            field: f.field,
+            viewMode: f.viewMode || 'bar',
+            metricType: f.metricType || 'sessions'
+          }));
+          if (config.order) {
+            this.summaryOrder = config.order;
+          }
+          if (config.resultsLimit) {
+            this.summaryResultsLimit = config.resultsLimit;
+          }
+          this.configLoaded = true;
+          return;
+        }
+      } catch (err) {
+        // fall through to defaults
+      }
       this.summaryFields = Utils.getDefaultSummaryFields();
+      this.configLoaded = true;
+    },
+    saveSummaryConfig: function () {
+      UserService.saveState(this.currentSummaryConfig, 'summary');
     },
     reloadSummaryView: function () {
       this.$nextTick(() => {
