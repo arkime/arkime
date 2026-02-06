@@ -5393,6 +5393,28 @@ sub sessions3Update
         }
       }
     },
+    "pana" : {
+      "properties" : {
+        "msgType" : {
+          "type" : "keyword"
+        },
+        "msgTypeCnt" : {
+          "type" : "long"
+        },
+        "sessionId" : {
+          "type" : "keyword"
+        },
+        "sessionIdCnt" : {
+          "type" : "long"
+        },
+        "user" : {
+          "type" : "keyword"
+        },
+        "userCnt" : {
+          "type" : "long"
+        }
+      }
+    },
     "ptp" : {
       "properties" : {
         "clockId" : {

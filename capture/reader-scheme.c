@@ -52,7 +52,8 @@ enum ArkimeSchemeMode {
     ARKIME_SCHEME_NG_INTERFACE,
     ARKIME_SCHEME_NG_PACKET_HEADER,
     ARKIME_SCHEME_NG_PACKET,
-    ARKIME_SCHEME_NG_SKIP
+    ARKIME_SCHEME_NG_SKIP,
+    ARKIME_SCHEME_NG_SPB_HEADER
 };
 
 LOCAL int                    offlineDispatchAfter;
@@ -526,13 +527,26 @@ LOCAL int arkime_reader_scheme_processNG(const char *uri, uint8_t *data, int len
             }
 
             readerState.tmpBufferLen = 0;
+
+            if (unlikely(blockHeader->block_total_length < 12)) {
+                LOG("ERROR - Invalid block_total_length %u in pcapNG file '%s'", blockHeader->block_total_length, uri);
+                return 1;
+            }
+
             readerState.blockSize = blockHeader->block_total_length - 8;
 
             readerState.nextStartPos = readerState.startPos + blockHeader->block_total_length;
             if (blockHeader->block_type == 6) {
                 readerState.state = ARKIME_SCHEME_NG_PACKET_HEADER;
+            } else if (blockHeader->block_type == 3) {
+                readerState.state = ARKIME_SCHEME_NG_SPB_HEADER;
             } else if (blockHeader->block_type == 1) {
                 readerState.state = ARKIME_SCHEME_NG_INTERFACE;
+            } else if (blockHeader->block_type == 0x0A0D0D0A) {
+                // New Section Header Block - reset interface and tsresol state
+                readerState.haveInterface = -1;
+                readerState.tsresol = 1000000;
+                readerState.state = ARKIME_SCHEME_NG_SKIP;
             } else {
                 readerState.state = ARKIME_SCHEME_NG_SKIP;
             }
@@ -569,7 +583,7 @@ LOCAL int arkime_reader_scheme_processNG(const char *uri, uint8_t *data, int len
             }
 
             uint8_t *options = readerState.tmpBuffer + 8;
-            const uint8_t *optionsEnd = options + readerState.tmpBufferLen - 8;
+            const uint8_t *optionsEnd = options + readerState.tmpBufferLen - 8 - 4; // exclude trailing block_total_length
 
             while (options + 4 <= optionsEnd) {
                 uint16_t otype = 0, olen = 0;
@@ -586,6 +600,10 @@ LOCAL int arkime_reader_scheme_processNG(const char *uri, uint8_t *data, int len
                 if (readerState.needSwap) {
                     otype = SWAP16(otype);
                     olen = SWAP16(olen);
+                }
+
+                if (options + olen > optionsEnd) {
+                    break; // malformed options
                 }
 
                 if (otype == 9) {
@@ -609,6 +627,41 @@ LOCAL int arkime_reader_scheme_processNG(const char *uri, uint8_t *data, int len
 
             readerState.state = ARKIME_SCHEME_NG_HEADER;
             readerState.tmpBufferLen = 0;
+            continue;
+        }
+        case ARKIME_SCHEME_NG_SPB_HEADER: {
+            // Simple Packet Block: 4 bytes original packet length, then packet data
+            int need = 4 - readerState.tmpBufferLen;
+            if (len < need) {
+                memcpy(readerState.tmpBuffer + readerState.tmpBufferLen, data, len);
+                readerState.tmpBufferLen += len;
+                readerState.blockSize -= len;
+                return 0;
+            }
+
+            memcpy(readerState.tmpBuffer + readerState.tmpBufferLen, data, need);
+            data += need;
+            len -= need;
+            readerState.blockSize -= need;
+
+            // Captured length is block_total_length - 16 (8 header + 4 orig_len + 4 trailing length)
+            readerState.pktlen = readerState.blockSize - 4; // blockSize already had 8 subtracted, subtract trailing 4
+            if (unlikely(readerState.pktlen < 0 || readerState.pktlen > 0xffff)) {
+                readerState.state = ARKIME_SCHEME_NG_SKIP;
+                continue;
+            }
+
+            readerState.packet = arkime_packet_alloc();
+            readerState.packet->pktlen = readerState.pktlen;
+            readerState.packet->readerFilePos = readerState.startPos;
+            readerState.packet->readerPos = readerState.readerPos;
+
+            // SPB has no timestamp
+            readerState.packet->ts.tv_sec = 0;
+            readerState.packet->ts.tv_usec = 0;
+
+            readerState.tmpBufferLen = 0;
+            readerState.state = ARKIME_SCHEME_NG_PACKET;
             continue;
         }
         case ARKIME_SCHEME_NG_PACKET_HEADER: {

@@ -1,0 +1,6 @@
+if (session.pana)
+  div.sessionDetailMeta.bold PANA
+  dl.sessionDetailMeta
+    +arrayList(session.pana, "user", "User", "pana.user")
+    +arrayList(session.pana, "msgType", "Msg Type", "pana.msg-type")
+    +arrayList(session.pana, "sessionId", "Session ID", "pana.session-id")
