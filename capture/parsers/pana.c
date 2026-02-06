@@ -43,13 +43,11 @@ LOCAL void pana_parse_eap(ArkimeSession_t *session, const uint8_t *data, int len
     BSB_INIT(bsb, data, len);
 
     uint8_t code = 0;
-    uint8_t id = 0;
     uint16_t eapLen = 0;
     uint8_t type = 0;
 
     BSB_IMPORT_u08(bsb, code);
-    BSB_IMPORT_u08(bsb, id);
-    (void)id;
+    BSB_IMPORT_skip(bsb, 1);  // id
     BSB_IMPORT_u16(bsb, eapLen);
     BSB_IMPORT_u08(bsb, type);
 
@@ -72,12 +70,10 @@ LOCAL int pana_parse_avps(ArkimeSession_t *session, BSB *bsb)
 {
     while (BSB_REMAINING(*bsb) >= 8) {
         uint16_t avpCode = 0;
-        uint16_t avpFlags = 0;
         uint16_t avpLen = 0;
 
         BSB_IMPORT_u16(*bsb, avpCode);
-        BSB_IMPORT_u16(*bsb, avpFlags);
-        (void)avpFlags;
+        BSB_IMPORT_skip(*bsb, 2);  // flags
         BSB_IMPORT_u16(*bsb, avpLen);
         BSB_IMPORT_skip(*bsb, 2);  // Reserved
 
