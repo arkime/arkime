@@ -387,6 +387,7 @@
       "resultsPerWidget": "Results per widget",
       "canceledSearch": "You canceled the search",
       "closingCancelsSearchErr": "Closing the Summary page canceled the search",
+      "staleDataWarning": "Some data may be incomplete",
       "toggleFields": "Toggle summary fields",
       "searchFields": "Search for fields...",
       "dragToReorder": "Drag to reorder",

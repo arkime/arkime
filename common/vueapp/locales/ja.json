@@ -387,6 +387,7 @@
       "resultsPerWidget": "ウィジェットごとの結果数",
       "canceledSearch": "検索をキャンセルしました",
       "closingCancelsSearchErr": "サマリーページを閉じたため、検索がキャンセルされました",
+      "staleDataWarning": "一部のデータが不完全な場合があります",
       "toggleFields": "サマリーフィールドの切り替え",
       "searchFields": "フィールドを検索...",
       "dragToReorder": "ドラッグして並べ替え",

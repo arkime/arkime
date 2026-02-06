@@ -91,7 +91,18 @@ SPDX-License-Identifier: Apache-2.0
             @load="loadSummaryConfigFromShareable"
             @reset="resetSummaryToDefaults"
             @message="displayMessage" />
+
+          <!-- cancel loading button -->
+          <button
+            v-if="summaryStreaming"
+            type="button"
+            class="btn btn-sm btn-warning ms-2"
+            @click="cancelSummaryLoading">
+            <span class="fa fa-ban" />&nbsp;
+            {{ $t('common.cancel') }}
+          </button>
         </div>
+
       </span>
     </ArkimeCollapsible>
 
@@ -126,7 +137,22 @@ SPDX-License-Identifier: Apache-2.0
         @reorder-fields="reorderSummaryFields"
         @widget-config-changed="updateWidgetConfigs"
         @remove-field="toggleSummaryField"
+        @streaming-state="summaryStreaming = $event"
+        @canceled-state="summaryCanceled = $event"
         @recalc-collapse="$emit('recalc-collapse')" />
+    </div>
+
+    <!-- stale data warning after cancellation -->
+    <div
+      v-if="summaryCanceled && !summaryStreaming"
+      class="alert alert-warning position-fixed fixed-bottom m-0 rounded-0">
+      <span class="fa fa-exclamation-triangle me-2" />
+      {{ $t('sessions.summary.canceledSearch') }}
+      — {{ $t('sessions.summary.staleDataWarning') }}
+      <button
+        type="button"
+        class="btn-close float-end"
+        @click="summaryCanceled = false" />
     </div>
   </div>
 </template>
@@ -165,7 +191,9 @@ export default {
       graphData: undefined,
       // UI state
       error: '',
-      configLoaded: false
+      configLoaded: false,
+      summaryStreaming: false,
+      summaryCanceled: false
     };
   },
   computed: {
@@ -343,6 +371,9 @@ export default {
       this.summaryOrder = 'desc';
       this.updateSummaryOrder('desc');
       this.updateSummaryResultsLimit(20);
+    },
+    cancelSummaryLoading: function () {
+      this.$refs.summaryView?.cancelLoading?.();
     },
     exportAllPNG: function () {
       this.$refs.summaryView?.exportAllPNG?.();

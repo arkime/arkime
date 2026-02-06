@@ -387,6 +387,7 @@
       "resultsPerWidget": "Résultats par widget",
       "canceledSearch": "Vous avez annulé la recherche",
       "closingCancelsSearchErr": "La fermeture de la page de résumé a annulé la recherche",
+      "staleDataWarning": "Certaines données peuvent être incomplètes",
       "toggleFields": "Basculer les champs de résumé",
       "searchFields": "Rechercher des champs...",
       "dragToReorder": "Glisser pour réorganiser",

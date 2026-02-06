@@ -387,6 +387,7 @@
       "resultsPerWidget": "Ergebnisse pro Widget",
       "canceledSearch": "Sie haben die Suche abgebrochen",
       "closingCancelsSearchErr": "Das Schließen der Zusammenfassungsseite hat die Suche abgebrochen",
+      "staleDataWarning": "Einige Daten sind möglicherweise unvollständig",
       "toggleFields": "Zusammenfassungsfelder umschalten",
       "searchFields": "Felder suchen...",
       "dragToReorder": "Ziehen zum Neuordnen",

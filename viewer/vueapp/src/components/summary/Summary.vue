@@ -203,6 +203,7 @@ import setReqHeaders from '@common/setReqHeaders';
 import SummaryWidget from './SummaryWidget.vue';
 import SummaryChartTooltip from './SummaryChartTooltip.vue';
 import FieldService from '../search/FieldService';
+import ConfigService from '../utils/ConfigService';
 import Utils from '../utils/utils';
 import { commaString, humanReadableBytes, readableTime, timezoneDateString } from '@common/vueFilters.js';
 
@@ -237,7 +238,7 @@ const props = defineProps({
 });
 
 // Define emits
-const emit = defineEmits(['update-visualizations', 'reorder-fields', 'widget-config-changed', 'remove-field']);
+const emit = defineEmits(['update-visualizations', 'reorder-fields', 'widget-config-changed', 'remove-field', 'streaming-state', 'canceled-state']);
 
 // Save a pending promise to be able to cancel it
 let pendingPromise;
@@ -263,6 +264,8 @@ const summary = ref(null);
 const loading = ref(true);
 const error = ref('');
 const widgetContainer = ref(null);
+const canceled = ref(false);
+const streaming = ref(false);
 
 // Shared tooltip state - one tooltip to rule them all
 const tooltipVisible = ref(false);
@@ -296,6 +299,36 @@ const widgetConfigs = computed(() => {
   }));
 });
 
+// Cancel an in-progress summary stream
+const cancelLoading = () => {
+  if (!pendingPromise) return;
+
+  // Cancel ES task server-side (fire and forget)
+  ConfigService.cancelEsTask(pendingPromise.cancelId).catch(() => {});
+
+  // Abort client-side fetch
+  pendingPromise.controller.abort(t('sessions.summary.canceledSearch'));
+  pendingPromise = null;
+
+  // Update state
+  canceled.value = true;
+  streaming.value = false;
+  loading.value = false;
+
+  // Mark still-loading fields as cancelled
+  if (summary.value?.fields) {
+    for (let i = 0; i < summary.value.fields.length; i++) {
+      if (summary.value.fields[i].loading) {
+        summary.value.fields[i] = {
+          ...summary.value.fields[i],
+          loading: false,
+          error: t('sessions.summary.canceledSearch')
+        };
+      }
+    }
+  }
+};
+
 // Methods
 const generateSummary = async () => {
   // Wait for fields to be loaded from parent before generating summary
@@ -305,6 +338,15 @@ const generateSummary = async () => {
     summary.value = null;
     error.value = 'No summary fields were provided to generate a summary.';
     return;
+  }
+
+  canceled.value = false;
+  streaming.value = true;
+
+  // Abort any previous pending request
+  if (pendingPromise) {
+    pendingPromise.controller.abort('New search started');
+    pendingPromise = null;
   }
 
   loading.value = true;
@@ -456,12 +498,15 @@ const generateSummary = async () => {
     }
 
     pendingPromise = null;
+    streaming.value = false;
   } catch (err) {
     if (err.name === 'AbortError') {
       // Request was cancelled, don't show as error
+      streaming.value = false;
       return;
     }
     pendingPromise = null;
+    streaming.value = false;
     console.error('Error generating summary:', err);
     error.value = err.text || err.message || String(err);
     loading.value = false;
@@ -847,6 +892,10 @@ watch(summary, (newVal) => {
   }
 });
 
+// Emit streaming/canceled state changes to parent
+watch(streaming, (val) => { emit('streaming-state', val); });
+watch(canceled, (val) => { emit('canceled-state', val); });
+
 // On mount
 onMounted(() => {
   document.addEventListener('click', handleClickOutside);
@@ -909,7 +958,8 @@ const getWidgetConfigs = () => {
 defineExpose({
   reloadSummary: generateSummary,
   getWidgetConfigs,
-  exportAllPNG
+  exportAllPNG,
+  cancelLoading
 });
 </script>
 

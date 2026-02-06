@@ -387,6 +387,7 @@
       "resultsPerWidget": "每个小部件的结果",
       "canceledSearch": "您已取消搜索",
       "closingCancelsSearchErr": "关闭摘要页面已取消搜索",
+      "staleDataWarning": "部分数据可能不完整",
       "toggleFields": "切换摘要字段",
       "searchFields": "搜索字段...",
       "dragToReorder": "拖动以重新排序",

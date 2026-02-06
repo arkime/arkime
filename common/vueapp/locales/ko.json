@@ -387,6 +387,7 @@
       "resultsPerWidget": "위젯당 결과 수",
       "canceledSearch": "검색을 취소했습니다",
       "closingCancelsSearchErr": "요약 페이지를 닫아 검색이 취소되었습니다",
+      "staleDataWarning": "일부 데이터가 불완전할 수 있습니다",
       "toggleFields": "요약 필드 전환",
       "searchFields": "필드 검색...",
       "dragToReorder": "드래그하여 순서 변경",

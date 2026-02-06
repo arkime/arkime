@@ -387,6 +387,7 @@
       "resultsPerWidget": "Tulemusi vidina kohta",
       "canceledSearch": "Sa tühistasid otsingu",
       "closingCancelsSearchErr": "Kokkuvõtte lehe sulgemine tühistas otsingu",
+      "staleDataWarning": "Mõned andmed võivad olla puudulikud",
       "toggleFields": "Lülita kokkuvõtte väljad",
       "searchFields": "Otsi välju...",
       "dragToReorder": "Lohistage järjestuse muutmiseks",
