@@ -3,6 +3,7 @@
     lazy
     no-flip
     no-caret
+    auto-close="outside"
     size="sm"
     menu-class="field-dropdown-menu"
     class="field-dropdown d-inline-block"
@@ -43,13 +44,15 @@
           header-class="p-1 text-uppercase">
           {{ group }}
         </b-dropdown-header>
-        <template
+        <li
           v-for="(field, idx) in groupFields"
           :key="group + idx + 'item'">
-          <b-dropdown-item
+          <button
+            type="button"
             :id="group + idx + 'item'"
+            class="dropdown-item"
             :class="{ active: isSelected(getFieldId(field)) }"
-            @click.stop.prevent="toggle(getFieldId(field))">
+            @click="toggle(getFieldId(field))">
             {{ field.friendlyName }}
             <small>({{ field.exp }})</small>
             <BTooltip
@@ -57,8 +60,8 @@
               :target="group + idx + 'item'">
               {{ field.help }}
             </BTooltip>
-          </b-dropdown-item>
-        </template>
+          </button>
+        </li>
       </template>
       <button
         v-if="hasMoreFields"
