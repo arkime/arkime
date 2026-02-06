@@ -44,7 +44,6 @@ struct dedupsecond {
     uint8_t        *md5s;
     uint8_t        *counts;
     uint32_t        tv_sec;
-    uint32_t        count;
     char            error;
     ARKIME_LOCK_EXTERN(lock);
 };
@@ -105,11 +104,13 @@ int arkime_dedup_should_drop (const ArkimePacket_t *packet, int headerLen)
         ARKIME_LOCK(seconds[secondSlot].lock);
         if (seconds[secondSlot].tv_sec != currentTime.tv_sec) { // Check critical section again
             if (seconds[secondSlot].error) {
-                LOG ("WARNING - Ran out of room, increase dedupPackets to %u or above. pcount: %u", dedupSlots * DEDUP_SLOT_FACTOR + 1, seconds[secondSlot].count);
+                uint32_t pcount = 0;
+                for (uint32_t i = 0; i < dedupSlots; i++)
+                    pcount += seconds[secondSlot].counts[i];
+                LOG ("WARNING - Ran out of room, increase dedupPackets to %u or above. pcount: %u", dedupSlots * DEDUP_SLOT_FACTOR + 1, pcount);
                 seconds[secondSlot].error = 0;
             }
             memset(seconds[secondSlot].counts, 0, dedupSlots);
-            seconds[secondSlot].count = 0;
             seconds[secondSlot].tv_sec = currentTime.tv_sec;
         }
         ARKIME_UNLOCK(seconds[secondSlot].lock);
@@ -141,7 +142,6 @@ int arkime_dedup_should_drop (const ArkimePacket_t *packet, int headerLen)
     // This is acceptable - fail-open means a duplicate packet may slip through briefly.
     int c = ARKIME_THREAD_INCROLD(seconds[secondSlot].counts[h]);
     memcpy(seconds[secondSlot].md5s + 16 * (h * DEDUP_SIZE_FACTOR + c), md, 16);
-    ARKIME_THREAD_INCR(seconds[secondSlot].count);
 
     return 0;
 }

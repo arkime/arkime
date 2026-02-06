@@ -835,7 +835,7 @@ LOCAL int smtp_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, i
                     DLL_PUSH_TAIL(s_, &email->boundaries, string);
                 }
             } else if (strncasecmp(line->str, "content-disposition:", 20) == 0) {
-                const char *s = line->str + 13;
+                const char *s = line->str + 20;
                 while (isspace(*s)) s++;
                 char *filename = (char *)arkime_memcasestr(s, line->len - (s - line->str), "filename=", 9);
                 if (filename) {

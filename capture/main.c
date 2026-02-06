@@ -37,6 +37,8 @@ char                   arkime_ip_byte_lookup[256][4];
 uint32_t               hashSalt;
 LOCAL pthread_t        mainThread;
 
+ArkimeThreadData_t     arkimeThreadData[ARKIME_MAX_PACKET_THREADS];
+
 extern ArkimeWriterQueueLength arkime_writer_queue_length;
 extern ArkimePcapFileHdr_t     pcapFileHeader;
 
@@ -1152,6 +1154,7 @@ LLVMFuzzerInitialize(int *UNUSED(argc), char ***UNUSED(argv))
     arkime_yara_init();
     arkime_parsers_init();
     arkime_session_init();
+    arkime_dedup_init();
     arkime_plugins_load(config.plugins);
     arkime_config_load_override_ips();
     arkime_rules_init();

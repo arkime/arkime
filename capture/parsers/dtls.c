@@ -12,8 +12,6 @@ LOCAL uint32_t tls_process_server_certificate_func;
 LOCAL uint32_t dtls_process_server_hello_func;
 LOCAL uint32_t dtls_process_client_hello_func;
 
-LOCAL GChecksum *checksums256[ARKIME_MAX_PACKET_THREADS];
-
 LOCAL  int                   ja4Field;
 LOCAL  int                   ja4RawField;
 
@@ -66,6 +64,17 @@ LOCAL void dtls_ja4_version(uint16_t ver, char vstr[3])
         memcpy(vstr, "00", 3);
         break;
     }
+}
+/******************************************************************************/
+LOCAL void dtls_2digit_to_string(int val, char *str)
+{
+    if (val >= 99) {
+        str[0] = '9';
+        str[1] = '9';
+        return;
+    }
+    str[0] = (val / 10) + '0';
+    str[1] = (val % 10) + '0';
 }
 /******************************************************************************/
 // Comparison function for qsort
@@ -204,7 +213,7 @@ LOCAL uint32_t dtls_process_client_hello(ArkimeSession_t *session, const uint8_t
                     if (!dtls_is_grease_value(supported_version)) {
                         ver = MAX(supported_version, ver);
                     }
-                    llen--;
+                    llen -= 2;
                 }
             } else {
                 BSB_IMPORT_skip (ebsb, elen);
@@ -225,10 +234,8 @@ LOCAL uint32_t dtls_process_client_hello(ArkimeSession_t *session, const uint8_t
     ja4[1] = vstr[0];
     ja4[2] = vstr[1];
     ja4[3] = ja4HasSNI;
-    ja4[4] = (ja4NumCiphers / 10) + '0';
-    ja4[5] = (ja4NumCiphers % 10) + '0';
-    ja4[6] = (ja4NumExtensions / 10) + '0';
-    ja4[7] = (ja4NumExtensions % 10) + '0';
+    dtls_2digit_to_string(ja4NumCiphers, ja4 + 4);
+    dtls_2digit_to_string(ja4NumExtensions, ja4 + 6);
     ja4[8] = ja4ALPN[0];
     ja4[9] = ja4ALPN[1];
     ja4[10] = '_';
@@ -251,7 +258,7 @@ LOCAL uint32_t dtls_process_client_hello(ArkimeSession_t *session, const uint8_t
 
     BSB_EXPORT_u08(ja4_rbsb, '_');
 
-    GChecksum *const checksum = checksums256[session->thread];
+    GChecksum *const checksum = arkimeThreadData[session->thread].checksum256;
 
     if (BSB_LENGTH(tmpBSB) > 0) {
         g_checksum_update(checksum, (guchar *)tmpBuf, BSB_LENGTH(tmpBSB));
@@ -377,11 +384,6 @@ void arkime_parser_init()
     arkime_parsers_classifier_register_udp("dtls", NULL, 0, (const uint8_t *)"\x16\xfe\xfd", 3, dtls_udp_classify);
 
     tls_process_server_certificate_func = arkime_parsers_get_named_func("tls_process_server_certificate");
-
-    int t;
-    for (t = 0; t < config.packetThreads; t++) {
-        checksums256[t] = g_checksum_new(G_CHECKSUM_SHA256);
-    }
 
     ja4Raw = arkime_config_boolean(NULL, "ja4Raw", FALSE);
 

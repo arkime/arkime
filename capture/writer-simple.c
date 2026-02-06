@@ -88,7 +88,22 @@ LOCAL  ARKIME_COND_DEFINE(simpleQ);
 
 enum ArkimeSimpleMode { ARKIME_SIMPLE_NORMAL, ARKIME_SIMPLE_XOR2048, ARKIME_SIMPLE_AES256CTR};
 
-LOCAL ArkimeSimple_t        *currentInfo[ARKIME_MAX_PACKET_THREADS];
+#define INDEX_FILES_CACHE_SIZE (ARKIME_MAX_PACKET_THREADS-1)
+
+typedef struct {
+    ArkimeSimple_t *currentInfo;
+    struct timeval  lastSave;
+    struct timeval  fileAge;
+    uint32_t        firstPacket;
+
+    struct {
+        int64_t  fileNum;
+        FILE    *fp;
+    } indexFiles[INDEX_FILES_CACHE_SIZE];
+} ARKIME_CACHE_ALIGN SimpleThreadData_t;
+
+LOCAL SimpleThreadData_t simpleThreadData[ARKIME_MAX_PACKET_THREADS];
+
 LOCAL ArkimeSimpleHead_t     freeList;
 ARKIME_LOCK_DEFINE(freeList);
 LOCAL uint32_t               pageSize;
@@ -96,15 +111,6 @@ LOCAL enum ArkimeSimpleMode  simpleMode;
 LOCAL int                    simpleMaxQ;
 LOCAL const EVP_CIPHER      *cipher;
 LOCAL int                    openOptions;
-LOCAL struct timeval         lastSave[ARKIME_MAX_PACKET_THREADS];
-LOCAL struct timeval         fileAge[ARKIME_MAX_PACKET_THREADS];
-LOCAL uint32_t               firstPacket[ARKIME_MAX_PACKET_THREADS];
-
-#define INDEX_FILES_CACHE_SIZE (ARKIME_MAX_PACKET_THREADS-1)
-struct {
-    int64_t  fileNum;
-    FILE    *fp;
-} indexFiles[ARKIME_MAX_PACKET_THREADS][INDEX_FILES_CACHE_SIZE];
 
 /*
  * Compression design inspired by Philip Gladstone and others.
@@ -200,7 +206,7 @@ LOCAL void writer_simple_free(ArkimeSimple_t *info)
 /******************************************************************************/
 LOCAL ArkimeSimple_t *writer_simple_process_buf(int thread, int closing)
 {
-    ArkimeSimple_t *info = currentInfo[thread];
+    ArkimeSimple_t *info = simpleThreadData[thread].currentInfo;
 
     info->closing = closing;
     if (!closing) {
@@ -208,7 +214,7 @@ LOCAL ArkimeSimple_t *writer_simple_process_buf(int thread, int closing)
         int writeSize = (info->bufpos / pageSize) * pageSize;
 
         // Create next buffer
-        ArkimeSimple_t *ninfo = currentInfo[thread] = writer_simple_alloc(info);
+        ArkimeSimple_t *ninfo = simpleThreadData[thread].currentInfo = writer_simple_alloc(info);
 
         // Copy what we aren't going to write to next buffer
         memcpy(ninfo->buf, info->buf + writeSize, info->bufpos - writeSize);
@@ -263,11 +269,11 @@ LOCAL ArkimeSimple_t *writer_simple_process_buf(int thread, int closing)
         default:
             break;
         }
-        currentInfo[thread] = NULL; // This will cause a new file to be allocated on next packet
+        simpleThreadData[thread].currentInfo = NULL; // This will cause a new file to be allocated on next packet
     }
 
     // Send to write q to actually write to disk
-    gettimeofday(&lastSave[thread], NULL);
+    gettimeofday(&simpleThreadData[thread].lastSave, NULL);
     ARKIME_LOCK(simpleQ);
     DLL_PUSH_TAIL(simple_, &simpleQ, info);
     if (DLL_COUNT(simple_, &simpleQ) > 100) {
@@ -276,7 +282,7 @@ LOCAL ArkimeSimple_t *writer_simple_process_buf(int thread, int closing)
     ARKIME_COND_SIGNAL(simpleQ);
     ARKIME_UNLOCK(simpleQ);
 
-    return currentInfo[thread];
+    return simpleThreadData[thread].currentInfo;
 }
 /******************************************************************************/
 LOCAL void writer_simple_encrypt_key(const char *kekId, const uint8_t *dek, int deklen, char *outkeyhex)
@@ -382,7 +388,7 @@ LOCAL char *writer_simple_get_kekId ()
 /******************************************************************************/
 LOCAL void writer_simple_write_output(int thread, const uint8_t *data, int len)
 {
-    ArkimeSimple_t *info = currentInfo[thread];
+    ArkimeSimple_t *info = simpleThreadData[thread].currentInfo;
 
     switch (compressionMode) {
     case ARKIME_COMPRESSION_NONE:
@@ -432,7 +438,7 @@ LOCAL void writer_simple_write_output(int thread, const uint8_t *data, int len)
 /******************************************************************************/
 LOCAL void writer_simple_gzip_make_new_block(int thread)
 {
-    ArkimeSimple_t *info = currentInfo[thread];
+    ArkimeSimple_t *info = simpleThreadData[thread].currentInfo;
 
     deflate(&info->file->z_strm, Z_FULL_FLUSH);
     info->bufpos = (uint8_t *)info->file->z_strm.next_out - info->buf;
@@ -442,7 +448,7 @@ LOCAL void writer_simple_gzip_make_new_block(int thread)
 /******************************************************************************/
 LOCAL void writer_simple_zstd_make_new_block(int thread)
 {
-    ArkimeSimple_t *info = currentInfo[thread];
+    ArkimeSimple_t *info = simpleThreadData[thread].currentInfo;
 #ifdef HAVE_ZSTD
     while (ZSTD_compressStream2(info->file->zstd_strm, &info->file->zstd_out, &info->file->zstd_in, ZSTD_e_end) != 0) {
         // The current zstd buffer is full
@@ -469,7 +475,7 @@ LOCAL void writer_simple_write(const ArkimeSession_t *const session, ArkimePacke
     int thread = session->thread;
 
     // Need to open a new file
-    if (!currentInfo[thread]) {
+    if (!simpleThreadData[thread].currentInfo) {
         char  dekhex[1024];
         char *name = 0;
         char *kekId;
@@ -487,7 +493,7 @@ LOCAL void writer_simple_write(const ArkimeSession_t *const session, ArkimePacke
         }
 
         ArkimeSimple_t *info;
-        info = currentInfo[thread] = writer_simple_alloc(NULL);
+        info = simpleThreadData[thread].currentInfo = writer_simple_alloc(NULL);
         info->file = ARKIME_TYPE_ALLOC0(ArkimeSimpleFile_t);
         info->file->thread = thread;
 
@@ -582,20 +588,20 @@ LOCAL void writer_simple_write(const ArkimeSession_t *const session, ArkimePacke
 
         /* If offline pcap honor umask, otherwise disable other RW */
         if (config.pcapReadOffline) {
-            currentInfo[thread]->file->fd = open(name,  openOptions, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
+            simpleThreadData[thread].currentInfo->file->fd = open(name,  openOptions, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
         } else {
-            currentInfo[thread]->file->fd = open(name,  openOptions, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP);
+            simpleThreadData[thread].currentInfo->file->fd = open(name,  openOptions, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP);
         }
-        if (currentInfo[thread]->file->fd < 0) {
+        if (simpleThreadData[thread].currentInfo->file->fd < 0) {
             LOGEXIT("ERROR - pcap open failed - Couldn't open file: '%s' with %s  (%d) -- You may need to check directory permissions or set pcapWriteMethod=simple-nodirect in config.ini file.  See https://arkime.com/settings#pcapwritemethod", name, strerror(errno), errno);
         }
 
         if (simpleShortHeader) {
-            firstPacket[thread] = packet->ts.tv_sec - 60; // Allow slightly out of sync clocks
+            simpleThreadData[thread].firstPacket = packet->ts.tv_sec - 60; // Allow slightly out of sync clocks
             ArkimePcapFileHdr_t   pcapFileHeader2;
             memcpy(&pcapFileHeader2, &pcapFileHeader, 24);
             pcapFileHeader2.magic = 0xa1b2c3d5;
-            pcapFileHeader2.thiszone = firstPacket[thread];
+            pcapFileHeader2.thiszone = simpleThreadData[thread].firstPacket;
             writer_simple_write_output(thread, (uint8_t *)&pcapFileHeader2, 20);
         } else {
             writer_simple_write_output(thread, (uint8_t *)&pcapFileHeader, 20);
@@ -612,35 +618,35 @@ LOCAL void writer_simple_write(const ArkimeSession_t *const session, ArkimePacke
             writer_simple_gzip_make_new_block(thread);
         else if (compressionMode == ARKIME_COMPRESSION_ZSTD)
             writer_simple_zstd_make_new_block(thread);
-        gettimeofday(&fileAge[thread], NULL);
+        gettimeofday(&simpleThreadData[thread].fileAge, NULL);
     }
 
-    packet->writerFileNum = currentInfo[thread]->file->id;
+    packet->writerFileNum = simpleThreadData[thread].currentInfo->file->id;
     if (session->lastFileNum == 0) {
-        currentInfo[thread]->file->sessionsStarted++;
-        currentInfo[thread]->file->sessionsPresent++;
+        simpleThreadData[thread].currentInfo->file->sessionsStarted++;
+        simpleThreadData[thread].currentInfo->file->sessionsPresent++;
     } else if (session->lastFileNum != packet->writerFileNum) {
-        currentInfo[thread]->file->sessionsPresent++;
+        simpleThreadData[thread].currentInfo->file->sessionsPresent++;
     }
 
     if (compressionMode == ARKIME_COMPRESSION_GZIP) {
-        if (currentInfo[thread]->file->posInBlock >= simpleCompressionBlockSize) {
+        if (simpleThreadData[thread].currentInfo->file->posInBlock >= simpleCompressionBlockSize) {
             writer_simple_gzip_make_new_block(thread);
         }
 
-        packet->writerFilePos = (currentInfo[thread]->file->blockStart << uncompressedBits) + currentInfo[thread]->file->posInBlock;
+        packet->writerFilePos = (simpleThreadData[thread].currentInfo->file->blockStart << uncompressedBits) + simpleThreadData[thread].currentInfo->file->posInBlock;
     } else if (compressionMode == ARKIME_COMPRESSION_ZSTD) {
-        if (currentInfo[thread]->file->posInBlock >= simpleCompressionBlockSize) {
+        if (simpleThreadData[thread].currentInfo->file->posInBlock >= simpleCompressionBlockSize) {
             writer_simple_zstd_make_new_block(thread);
         }
 
-        packet->writerFilePos = (currentInfo[thread]->file->blockStart << uncompressedBits) + currentInfo[thread]->file->posInBlock;
+        packet->writerFilePos = (simpleThreadData[thread].currentInfo->file->blockStart << uncompressedBits) + simpleThreadData[thread].currentInfo->file->posInBlock;
     } else {
-        packet->writerFilePos = currentInfo[thread]->file->pos;
+        packet->writerFilePos = simpleThreadData[thread].currentInfo->file->pos;
     }
 
-    currentInfo[thread]->file->lastPacketTime = packet->ts;
-    currentInfo[thread]->file->packets++;
+    simpleThreadData[thread].currentInfo->file->lastPacketTime = packet->ts;
+    simpleThreadData[thread].currentInfo->file->packets++;
     if (simpleShortHeader) {
         char header[6];
         // LLLL LLLL LLLL LLLL
@@ -648,12 +654,12 @@ LOCAL void writer_simple_write(const ArkimeSession_t *const session, ArkimePacke
 
         // SSSS SSSS SSSS MMMM MMMM MMMM MMMM MMMM
         uint32_t t;
-        if (firstPacket[thread] > packet->ts.tv_sec) {
+        if (simpleThreadData[thread].firstPacket > packet->ts.tv_sec) {
             LOG("WARNING - timing moving backwards, simpleShortHeader should be disabled");
             // Time stamp is too early, just pretend its at firstPacket time
             t = packet->ts.tv_usec;
         } else {
-            t = ((packet->ts.tv_sec - firstPacket[thread]) << 20) | packet->ts.tv_usec;
+            t = ((packet->ts.tv_sec - simpleThreadData[thread].firstPacket) << 20) | packet->ts.tv_usec;
         }
 
         memcpy(header + 2, &t, 4);
@@ -670,9 +676,9 @@ LOCAL void writer_simple_write(const ArkimeSession_t *const session, ArkimePacke
     }
     writer_simple_write_output(thread, packet->pkt, packet->pktlen);
 
-    if (currentInfo[thread]->bufpos > config.pcapWriteSize) {
+    if (simpleThreadData[thread].currentInfo->bufpos > config.pcapWriteSize) {
         writer_simple_process_buf(thread, 0);
-    } else if (currentInfo[thread]->file->packetBytesWritten >= config.maxFileSizeB) {
+    } else if (simpleThreadData[thread].currentInfo->file->packetBytesWritten >= config.maxFileSizeB) {
         writer_simple_process_buf(thread, 1);
     }
 }
@@ -741,7 +747,7 @@ LOCAL void *writer_simple_thread(void *UNUSED(arg))
 LOCAL void writer_simple_exit()
 {
     for (int thread = 0; thread < config.packetThreads; thread++) {
-        if (currentInfo[thread]) {
+        if (simpleThreadData[thread].currentInfo) {
             writer_simple_process_buf(thread, 1);
         }
     }
@@ -753,9 +759,9 @@ LOCAL void writer_simple_exit()
 
     for (int thread = 0; thread < config.packetThreads; thread++) {
         for (int p = 0; p < INDEX_FILES_CACHE_SIZE; p++) {
-            if (indexFiles[thread][p].fp) {
-                fclose(indexFiles[thread][p].fp);
-                indexFiles[thread][p].fp = 0;
+            if (simpleThreadData[thread].indexFiles[p].fp) {
+                fclose(simpleThreadData[thread].indexFiles[p].fp);
+                simpleThreadData[thread].indexFiles[p].fp = 0;
             }
         }
     }
@@ -770,18 +776,18 @@ LOCAL void writer_simple_check(ArkimeSession_t *UNUSED(session), gpointer uw1, g
     const int thread = GPOINTER_TO_INT(uw1);
 
     // No data or not enough bytes, reset the time
-    if (!currentInfo[thread] || currentInfo[thread]->bufpos < (uint32_t)pageSize) {
-        lastSave[thread] = now;
+    if (!simpleThreadData[thread].currentInfo || simpleThreadData[thread].currentInfo->bufpos < (uint32_t)pageSize) {
+        simpleThreadData[thread].lastSave = now;
         return;
     }
 
-    if (config.maxFileTimeM > 0 && now.tv_sec - fileAge[thread].tv_sec >= config.maxFileTimeM * 60) {
+    if (config.maxFileTimeM > 0 && now.tv_sec - simpleThreadData[thread].fileAge.tv_sec >= config.maxFileTimeM * 60) {
         writer_simple_process_buf(thread, 1);
         return;
     }
 
     // Last add must be 10 seconds ago and have more than pageSize bytes
-    if (now.tv_sec - lastSave[thread].tv_sec < 10)
+    if (now.tv_sec - simpleThreadData[thread].lastSave.tv_sec < 10)
         return;
 
     // Don't force writes for gzip for now
@@ -800,7 +806,7 @@ LOCAL gboolean writer_simple_check_gfunc (gpointer UNUSED(user_data))
     gettimeofday(&now, NULL);
 
     for (int thread = 0; thread < config.packetThreads; thread++) {
-        if (now.tv_sec - lastSave[thread].tv_sec >= 10) {
+        if (now.tv_sec - simpleThreadData[thread].lastSave.tv_sec >= 10) {
             arkime_session_add_cmd_thread(thread, GINT_TO_POINTER(thread), NULL, writer_simple_check);
         }
     }
@@ -812,28 +818,28 @@ LOCAL FILE *writer_simple_get_index(int thread, int64_t fileNum)
 {
     const int p = fileNum % INDEX_FILES_CACHE_SIZE;
 
-    if (indexFiles[thread][p].fp) {
+    if (simpleThreadData[thread].indexFiles[p].fp) {
         // This is the fileNum we are looking for
-        if (indexFiles[thread][p].fileNum == fileNum) {
-            return indexFiles[thread][p].fp;
+        if (simpleThreadData[thread].indexFiles[p].fileNum == fileNum) {
+            return simpleThreadData[thread].indexFiles[p].fp;
         }
 
         // This isn't it, close the old one
-        fclose(indexFiles[thread][p].fp);
+        fclose(simpleThreadData[thread].indexFiles[p].fp);
     }
 
     char     filename[1024];
     snprintf(filename, sizeof(filename), "%s/%s-%" PRId64 ".index", config.pcapDir[0], config.nodeName, fileNum);
 
-    if ((indexFiles[thread][p].fp = fopen(filename, "a")) == NULL) {
+    if ((simpleThreadData[thread].indexFiles[p].fp = fopen(filename, "a")) == NULL) {
         LOGEXIT("ERROR - Couldn't open file %s", filename);
     }
 
     if (!config.pcapReadOffline) {
-        fchmod(fileno(indexFiles[thread][p].fp), S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP);
+        fchmod(fileno(simpleThreadData[thread].indexFiles[p].fp), S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP);
     }
 
-    return indexFiles[thread][p].fp;
+    return simpleThreadData[thread].indexFiles[p].fp;
 }
 /******************************************************************************/
 LOCAL void writer_simple_index (ArkimeSession_t *session)
@@ -1048,8 +1054,8 @@ void writer_simple_init(const char *name)
     gettimeofday(&now, NULL);
 
     for (int thread = 0; thread < config.packetThreads; thread++) {
-        lastSave[thread] = now;
-        fileAge[thread] = now;
+        simpleThreadData[thread].lastSave = now;
+        simpleThreadData[thread].fileAge = now;
     }
 
     g_thread_unref(g_thread_new("arkime-simple", &writer_simple_thread, NULL));

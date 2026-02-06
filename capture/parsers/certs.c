@@ -13,7 +13,6 @@ LOCAL int certAltField;
 
 extern uint8_t    arkime_char_to_hexstr[256][3];
 
-LOCAL GChecksum *checksums[ARKIME_MAX_PACKET_THREADS];
 LOCAL uint32_t tls_process_certificate_wInfo_func;
 
 /******************************************************************************/
@@ -431,7 +430,7 @@ LOCAL void certinfo_process_publickey(ArkimeCertsInfo_t *certs, uint8_t *data, u
 // Returns 0 on success, -1 on failure
 LOCAL int certinfo_process_single_cert(ArkimeSession_t *session, const uint8_t *data, int clen)
 {
-    GChecksum *const checksum = checksums[session->thread];
+    GChecksum *const checksum = arkimeThreadData[session->thread].checksum1;
 
     int            badreason = 0;
 
@@ -798,11 +797,6 @@ void arkime_parser_init()
                         "Public Key Algorithm",
                         0, ARKIME_FIELD_FLAG_FAKE,
                         (char *)NULL);
-
-    int t;
-    for (t = 0; t < config.packetThreads; t++) {
-        checksums[t] = g_checksum_new(G_CHECKSUM_SHA1);
-    }
 
     arkime_parsers_add_named_func("tls_process_server_certificate", certinfo_process_server_certificate);
     arkime_parsers_add_named_func("tls_process_single_certificate", tls_process_single_certificate);

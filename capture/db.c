@@ -33,8 +33,6 @@ LOCAL  uint64_t         totalSessions = 0;
 LOCAL  uint64_t         totalSessionBytes;
 LOCAL  uint16_t         myPid;
 extern uint32_t         pluginsCbs;
-extern uint64_t         writtenBytes;
-extern uint64_t         unwrittenBytes;
 
 extern int              mac1Field;
 extern int              mac2Field;
@@ -440,7 +438,7 @@ void arkime_db_set_send_bulk2(ArkimeDbSendBulkFunc func, gboolean bulkHeader, gb
 /******************************************************************************/
 gchar *arkime_db_community_id(const ArkimeSession_t *session)
 {
-    GChecksum       *checksum = g_checksum_new(G_CHECKSUM_SHA1);
+    GChecksum *const checksum = arkimeThreadData[session->thread].checksum1;
 
     static uint16_t seed = 0;
     static uint8_t  zero = 0;
@@ -481,7 +479,7 @@ gchar *arkime_db_community_id(const ArkimeSession_t *session)
     g_checksum_get_digest(checksum, digest, &digest_len);
     gchar *b64 = g_base64_encode(digest, digest_len);
 
-    g_checksum_free(checksum);
+    g_checksum_reset(checksum);
     return b64;
 }
 /******************************************************************************/
@@ -489,7 +487,7 @@ gchar *arkime_db_community_id(const ArkimeSession_t *session)
 // It remaps the ports and is kind of a hot mess.
 gchar *arkime_db_community_id_icmp(const ArkimeSession_t *session)
 {
-    GChecksum       *checksum = g_checksum_new(G_CHECKSUM_SHA1);
+    GChecksum *const checksum = arkimeThreadData[session->thread].checksum1;
     int              cmp;
 
     static uint16_t seed = 0;
@@ -569,11 +567,11 @@ gchar *arkime_db_community_id_icmp(const ArkimeSession_t *session)
     g_checksum_get_digest(checksum, digest, &digest_len);
     gchar *b64 = g_base64_encode(digest, digest_len);
 
-    g_checksum_free(checksum);
+    g_checksum_reset(checksum);
     return b64;
 }
 /******************************************************************************/
-LOCAL struct {
+typedef struct {
     char    *json;
     BSB      bsb;
     time_t   lastSave;
@@ -583,7 +581,8 @@ LOCAL struct {
     uint16_t sortedFieldsIndexCnt;
     uint16_t cnt;
     ARKIME_LOCK_EXTERN(lock);
-} dbInfo[ARKIME_MAX_PACKET_THREADS];
+} ARKIME_CACHE_ALIGN DbInfo_t;
+LOCAL DbInfo_t dbInfo[ARKIME_MAX_PACKET_THREADS];
 
 #define MAX_IPS 2000
 
@@ -1677,6 +1676,8 @@ LOCAL void arkime_db_update_stats(int n, gboolean sync)
     uint64_t dupDropped      = packetStats[ARKIME_PACKET_DUPLICATE_DROPPED];
     uint64_t esDropped       = arkime_http_dropped_count(esServer);
     uint64_t totalBytes      = arkime_packet_total_bytes();
+    uint64_t writtenBytes    = arkime_packet_written_bytes();
+    uint64_t unwrittenBytes  = arkime_packet_unwritten_bytes();
 
     // If totalDropped/overloadDropped/dupDropped wrapped we pretend no drops this time
     if (unlikely(totalDropped < lastDropped[n])) {
@@ -2917,6 +2918,9 @@ void arkime_db_init()
     for (int thread = 0; thread < config.packetThreads; thread++) {
         ARKIME_LOCK_INIT(dbInfo[thread].lock);
         dbInfo[thread].prefixTime = -1;
+        arkimeThreadData[thread].checksum1 = g_checksum_new(G_CHECKSUM_SHA1);
+        arkimeThreadData[thread].checksum256 = g_checksum_new(G_CHECKSUM_SHA256);
+
     }
 
     arkime_session_save_func = arkime_parsers_get_named_func("arkime_session_save");
@@ -2979,7 +2983,7 @@ void arkime_db_exit()
 
     if (config.debug) {
         LOG("totalPackets: %" PRId64 " totalSessions: %" PRId64 " writtenBytes: %" PRId64 " unwrittenBytes: %" PRId64 " pstats: %" PRIu64 "/%" PRIu64 "/%" PRIu64 "/%" PRIu64 "/%" PRIu64 "/%" PRIu64 "/%" PRIu64 "/%" PRIu64,
-            totalPackets, totalSessions, writtenBytes, unwrittenBytes,
+            totalPackets, totalSessions, arkime_packet_written_bytes(), arkime_packet_unwritten_bytes(),
             packetStats[ARKIME_PACKET_DO_PROCESS],
             packetStats[ARKIME_PACKET_IP_DROPPED],
             packetStats[ARKIME_PACKET_OVERLOAD_DROPPED],

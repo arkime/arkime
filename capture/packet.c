@@ -22,16 +22,14 @@ extern ArkimeConfig_t        config;
 ArkimePcapFileHdr_t          pcapFileHeader;
 
 uint64_t                     totalPackets;
-LOCAL uint64_t               totalBytes[ARKIME_MAX_PACKET_THREADS];
 
 LOCAL uint64_t               initialDropped = 0;
+LOCAL uint8_t                firstPacket = 0;
+LOCAL uint64_t               nextLogPackets;
 struct timeval               initialPacket; // Don't make LOCAL for now because of netflow plugin
 
 extern void                 *esServer;
 extern uint32_t              pluginsCbs;
-
-uint64_t                     writtenBytes;
-uint64_t                     unwrittenBytes;
 
 int                          mac1Field;
 int                          mac2Field;
@@ -52,10 +50,6 @@ LOCAL int                    ttlField[2];
 
 LOCAL uint64_t               droppedFrags;
 LOCAL gboolean               disableIp4Defrag;
-
-time_t                       currentTime[ARKIME_MAX_PACKET_THREADS];
-time_t                       lastPacketSecs[ARKIME_MAX_PACKET_THREADS];
-LOCAL int                    inProgress[ARKIME_MAX_PACKET_THREADS];
 
 LOCAL patricia_tree_t       *ipTree4 = 0;
 LOCAL patricia_tree_t       *ipTree6 = 0;
@@ -91,9 +85,17 @@ ARKIME_LOCK_DEFINE(offlineInfoLock);
 uint64_t                     packetStats[ARKIME_PACKET_MAX];
 
 /******************************************************************************/
-LOCAL  ArkimePacketHead_t    packetQ[ARKIME_MAX_PACKET_THREADS];
-LOCAL  uint64_t              overloadDrops[ARKIME_MAX_PACKET_THREADS];
-LOCAL  uint32_t              overloadDropTimes[ARKIME_MAX_PACKET_THREADS];
+
+typedef struct {
+    ArkimePacketHead_t    packetQ;
+    uint64_t              overloadDrops;
+    uint32_t              overloadDropTimes;
+    uint64_t              totalBytes;
+    uint64_t              writtenBytes;
+    uint64_t              unwrittenBytes;
+    int                   inProgress;
+} ARKIME_CACHE_ALIGN PacketThreadData_t;
+LOCAL PacketThreadData_t packetThreadData[ARKIME_MAX_PACKET_THREADS];
 
 LOCAL  ARKIME_LOCK_DEFINE(frags);
 
@@ -103,24 +105,25 @@ LOCAL ArkimePacketRC arkime_packet_frame_relay(ArkimePacketBatch_t *batch, Arkim
 LOCAL ArkimePacketRC arkime_packet_ether(ArkimePacketBatch_t *batch, ArkimePacket_t *const packet, const uint8_t *data, int len);
 
 typedef struct arkimefrags_t {
+    ArkimePacketHead_t     packets;
     struct arkimefrags_t  *fragh_next, *fragh_prev;
     struct arkimefrags_t  *fragl_next, *fragl_prev;
     uint32_t               fragh_bucket;
     uint32_t               fragh_hash;
-    ArkimePacketHead_t     packets;
     char                   key[10];
     uint32_t               secs;
     char                   haveNoFlags;
 } ArkimeFrags_t;
 
 typedef struct {
+    ArkimePacketHead_t     packets;
     struct arkimefrags_t  *fragh_next, *fragh_prev;
     struct arkimefrags_t  *fragl_next, *fragl_prev;
     uint32_t               fragh_count;
     uint32_t               fragl_count;
 } ArkimeFragsHead_t;
 
-typedef HASH_VAR(h_, ArkimeFragsHash_t, ArkimeFragsHead_t, 199337);
+typedef HASH_VAR(h_, ArkimeFragsHash_t, ArkimeFragsHead_t, 10007);
 
 LOCAL ArkimeFragsHash_t          fragsHash;
 LOCAL ArkimeFragsHead_t          fragsList;
@@ -264,16 +267,16 @@ void arkime_packet_thread_wake(int thread)
 
     if (thread < 0) {
         for (thread = 0; thread < config.packetThreads; thread++) {
-            ARKIME_LOCK(packetQ[thread].lock);
-            ARKIME_COND_SIGNAL(packetQ[thread].lock);
-            ARKIME_UNLOCK(packetQ[thread].lock);
+            ARKIME_LOCK(packetThreadData[thread].packetQ.lock);
+            ARKIME_COND_SIGNAL(packetThreadData[thread].packetQ.lock);
+            ARKIME_UNLOCK(packetThreadData[thread].packetQ.lock);
         }
         return;
     }
 
-    ARKIME_LOCK(packetQ[thread].lock);
-    ARKIME_COND_SIGNAL(packetQ[thread].lock);
-    ARKIME_UNLOCK(packetQ[thread].lock);
+    ARKIME_LOCK(packetThreadData[thread].packetQ.lock);
+    ARKIME_COND_SIGNAL(packetThreadData[thread].packetQ.lock);
+    ARKIME_UNLOCK(packetThreadData[thread].packetQ.lock);
 }
 /******************************************************************************/
 /* Only called on main thread, we busy block until all packet threads are empty.
@@ -287,11 +290,11 @@ void arkime_packet_flush()
         flushed = !arkime_session_cmd_outstanding();
 
         for (int t = 0; t < config.packetThreads; t++) {
-            ARKIME_LOCK(packetQ[t].lock);
-            if (DLL_COUNT(packet_, &packetQ[t]) > 0) {
+            ARKIME_LOCK(packetThreadData[t].packetQ.lock);
+            if (DLL_COUNT(packet_, &packetThreadData[t].packetQ) > 0) {
                 flushed = 0;
             }
-            ARKIME_UNLOCK(packetQ[t].lock);
+            ARKIME_UNLOCK(packetThreadData[t].packetQ.lock);
             if (mainThread) {
                 g_main_context_iteration(NULL, FALSE);
             } else {
@@ -308,7 +311,7 @@ LOCAL void arkime_packet_process(ArkimePacket_t *packet, int thread)
     LOG("Processing %p %d", packet, packet->pktlen);
 #endif
 
-    lastPacketSecs[thread] = packet->ts.tv_sec;
+    arkimeThreadData[thread].lastPacketSecs = packet->ts.tv_sec;
 
     arkime_pq_run(thread, 10);
 
@@ -403,10 +406,10 @@ LOCAL void arkime_packet_process(ArkimePacket_t *packet, int thread)
                 arkime_session_add_tag(session, "pcap-disk-overload");
                 session->diskOverload = 1;
             }
-            ARKIME_THREAD_INCR_NUM(unwrittenBytes, packet->pktlen);
+            packetThreadData[thread].unwrittenBytes += packet->pktlen;
         } else {
 
-            ARKIME_THREAD_INCR_NUM(writtenBytes, packet->pktlen);
+            packetThreadData[thread].writtenBytes += packet->pktlen;
 
             // If the last fileNum used in the session isn't the same as the
             // latest packets fileNum then we need to add to the filePos and
@@ -441,7 +444,7 @@ LOCAL void arkime_packet_process(ArkimePacket_t *packet, int thread)
         if (packets - 1 == session->stopSaving) {
             arkime_session_set_stop_saving(session);
         }
-        ARKIME_THREAD_INCR_NUM(unwrittenBytes, packet->pktlen);
+        packetThreadData[thread].unwrittenBytes += packet->pktlen;
     }
 
     // Check the first 10 packets for dscp, vlans, tunnels, and macs
@@ -568,32 +571,32 @@ LOCAL void *arkime_packet_thread(void *threadp)
     arkime_call_named_func(arkime_packet_thread_init_func, thread, NULL);
 
     // Continue while packet_exit hasn't been called and we still have outstanding packets
-    while (likely(runThreads || DLL_COUNT(packet_, &packetQ[thread]))) {
+    while (likely(runThreads || DLL_COUNT(packet_, &packetThreadData[thread].packetQ))) {
         ArkimePacket_t  *packet;
 
-        ARKIME_LOCK(packetQ[thread].lock);
-        inProgress[thread] = 0;
-        if (DLL_COUNT(packet_, &packetQ[thread]) == 0) {
+        ARKIME_LOCK(packetThreadData[thread].packetQ.lock);
+        packetThreadData[thread].inProgress = 0;
+        if (DLL_COUNT(packet_, &packetThreadData[thread].packetQ) == 0) {
             struct timespec ts;
             clock_gettime(CLOCK_REALTIME_COARSE, &ts);
-            currentTime[thread] = ts.tv_sec;
+            arkimeThreadData[thread].currentTime = ts.tv_sec;
             ts.tv_sec++;
-            ARKIME_COND_TIMEDWAIT(packetQ[thread].lock, ts);
+            ARKIME_COND_TIMEDWAIT(packetThreadData[thread].packetQ.lock, ts);
 
             /* If we are in live capture mode and we haven't received any packets for 10 seconds we set current time to 10
              * seconds in the past so arkime_session_process_commands will clean things up.  10 seconds is arbitrary but
              * we want to make sure we don't set the time ahead of any packets that are currently being read off the wire
              */
-            if (!config.pcapReadOffline && DLL_COUNT(packet_, &packetQ[thread]) == 0 && ts.tv_sec - 10 > lastPacketSecs[thread]) {
-                lastPacketSecs[thread] = ts.tv_sec - 10;
+            if (!config.pcapReadOffline && DLL_COUNT(packet_, &packetThreadData[thread].packetQ) == 0 && ts.tv_sec - 10 > arkimeThreadData[thread].lastPacketSecs) {
+                arkimeThreadData[thread].lastPacketSecs = ts.tv_sec - 10;
             }
         }
-        inProgress[thread] = 1;
-        DLL_POP_HEAD(packet_, &packetQ[thread], packet);
-        ARKIME_UNLOCK(packetQ[thread].lock);
+        packetThreadData[thread].inProgress = 1;
+        DLL_POP_HEAD(packet_, &packetThreadData[thread].packetQ, packet);
+        ARKIME_UNLOCK(packetThreadData[thread].packetQ.lock);
 
         // Only process commands if the packetQ is less than 75% full or every 8 packets
-        if (likely(DLL_COUNT(packet_, &packetQ[thread]) < maxPackets75) || (skipCount & 0x7) == 0) {
+        if (likely(DLL_COUNT(packet_, &packetThreadData[thread].packetQ) < maxPackets75) || (skipCount & 0x7) == 0) {
             arkime_session_process_commands(thread);
         } else {
             skipCount++;
@@ -623,7 +626,7 @@ LOCAL void *arkime_packet_thread(void *threadp)
     }
 
     arkime_call_named_func(arkime_packet_thread_exit_func, thread, NULL);
-    inProgress[thread] = 0; // Clear after calling exit function delaying can quit
+    packetThreadData[thread].inProgress = 0; // Clear after calling exit function delaying can quit
 
     return NULL;
 }
@@ -656,7 +659,7 @@ LOCAL gboolean arkime_packet_frags_process(ArkimePacket_t *const packet)
     HASH_FIND(fragh_, fragsHash, key, frags);
 
     if (!frags) {
-        frags = ARKIME_TYPE_ALLOC0(ArkimeFrags_t);
+        frags = ARKIME_TYPE_ALLOC0_ALIGNED(ArkimeFrags_t);
         memcpy(frags->key, key, 10);
         frags->secs = packet->ts.tv_sec;
         HASH_ADD(fragh_, fragsHash, key, frags);
@@ -1482,6 +1485,8 @@ void arkime_packet_batch_init(ArkimePacketBatch_t *batch)
     for (int t = 0; t < config.packetThreads; t++) {
         DLL_INIT(packet_, &batch->packetQ[t]);
     }
+    memset(batch->packetStats, 0, sizeof(batch->packetStats));
+    batch->totalPackets = 0;
     batch->count = 0;
 }
 /******************************************************************************/
@@ -1489,10 +1494,24 @@ void arkime_packet_batch_flush(ArkimePacketBatch_t *batch)
 {
     for (int t = 0; t < config.packetThreads; t++) {
         if (DLL_COUNT(packet_, &batch->packetQ[t]) > 0) {
-            ARKIME_LOCK(packetQ[t].lock);
-            DLL_PUSH_TAIL_DLL(packet_, &packetQ[t], &batch->packetQ[t]);
-            ARKIME_COND_SIGNAL(packetQ[t].lock);
-            ARKIME_UNLOCK(packetQ[t].lock);
+            ARKIME_LOCK(packetThreadData[t].packetQ.lock);
+            DLL_PUSH_TAIL_DLL(packet_, &packetThreadData[t].packetQ, &batch->packetQ[t]);
+            ARKIME_COND_SIGNAL(packetThreadData[t].packetQ.lock);
+            ARKIME_UNLOCK(packetThreadData[t].packetQ.lock);
+        }
+    }
+    for (int i = 0; i < ARKIME_PACKET_MAX; i++) {
+        if (batch->packetStats[i]) {
+            ARKIME_THREAD_INCR_NUM(packetStats[i], batch->packetStats[i]);
+            batch->packetStats[i] = 0;
+        }
+    }
+    if (batch->totalPackets) {
+        ARKIME_THREAD_INCR_NUM(totalPackets, batch->totalPackets);
+        batch->totalPackets = 0;
+        if (unlikely(totalPackets >= nextLogPackets)) {
+            nextLogPackets = totalPackets + config.logEveryXPackets;
+            arkime_packet_log(tcpMProtocol);
         }
     }
     batch->count = 0;
@@ -1570,7 +1589,7 @@ void arkime_packet_batch(ArkimePacketBatch_t *batch, ArkimePacket_t *const packe
     }
 
 skip_switch:
-    ARKIME_THREAD_INCR(packetStats[rc]);
+    batch->packetStats[rc]++;
 
     if (unlikely(rc)) {
         if (rc == ARKIME_PACKET_CORRUPT) {
@@ -1590,7 +1609,8 @@ skip_switch:
 process_packet:
     /* This packet we are going to process */
 
-    if (unlikely(totalPackets == 0)) {
+    if (unlikely(!firstPacket)) {
+        firstPacket = 1;
         ArkimeReaderStats_t stats;
         if (!arkime_reader_stats(&stats)) {
             initialDropped = stats.dropped;
@@ -1600,25 +1620,22 @@ process_packet:
             LOG("Initial Packet = %ld Initial Dropped = %" PRIu64, initialPacket.tv_sec, initialDropped);
     }
 
-    ARKIME_THREAD_INCR(totalPackets);
-    if (unlikely(totalPackets % config.logEveryXPackets == 0)) {
-        arkime_packet_log(packet->mProtocol);
-    }
+    batch->totalPackets++;
 
     uint32_t thread = packet->hash % config.packetThreads;
 
-    totalBytes[thread] += packet->pktlen;
+    packetThreadData[thread].totalBytes += packet->pktlen;
 
-    if (unlikely(DLL_COUNT(packet_, &packetQ[thread]) >= config.maxPacketsInQueue)) {
-        ARKIME_LOCK(packetQ[thread].lock);
-        overloadDrops[thread]++;
-        if ((overloadDrops[thread] % 10000) == 1 && (overloadDropTimes[thread] + 60) < packet->ts.tv_sec) {
-            overloadDropTimes[thread] = packet->ts.tv_sec;
-            LOG("WARNING - Packet Q %u is overflowing, total dropped so far %" PRIu64 ".  See https://arkime.com/faq#why-am-i-dropping-packets and modify %s", thread, overloadDrops[thread], config.configFile);
+    if (unlikely(DLL_COUNT(packet_, &packetThreadData[thread].packetQ) >= config.maxPacketsInQueue)) {
+        ARKIME_LOCK(packetThreadData[thread].packetQ.lock);
+        packetThreadData[thread].overloadDrops++;
+        if ((packetThreadData[thread].overloadDrops % 10000) == 1 && (packetThreadData[thread].overloadDropTimes + 60) < packet->ts.tv_sec) {
+            packetThreadData[thread].overloadDropTimes = packet->ts.tv_sec;
+            LOG("WARNING - Packet Q %u is overflowing, total dropped so far %" PRIu64 ".  See https://arkime.com/faq#why-am-i-dropping-packets and modify %s", thread, packetThreadData[thread].overloadDrops, config.configFile);
         }
-        ARKIME_COND_SIGNAL(packetQ[thread].lock);
-        ARKIME_UNLOCK(packetQ[thread].lock);
-        ARKIME_THREAD_INCR(packetStats[rc]);
+        ARKIME_COND_SIGNAL(packetThreadData[thread].packetQ.lock);
+        ARKIME_UNLOCK(packetThreadData[thread].packetQ.lock);
+        batch->packetStats[rc]++;
         arkime_packet_free(packet);
         return;
     }
@@ -1651,10 +1668,10 @@ void arkime_packet_batch_end_of_file(int readerPos)
         packet->pktlen = ARKIME_PACKET_LEN_FILE_DONE;
         packet->readerPos = readerPos;
 
-        ARKIME_LOCK(packetQ[t].lock);
-        DLL_PUSH_TAIL(packet_, &packetQ[t], packet);
-        ARKIME_COND_SIGNAL(packetQ[t].lock);
-        ARKIME_UNLOCK(packetQ[t].lock);
+        ARKIME_LOCK(packetThreadData[t].packetQ.lock);
+        DLL_PUSH_TAIL(packet_, &packetThreadData[t].packetQ, packet);
+        ARKIME_COND_SIGNAL(packetThreadData[t].packetQ.lock);
+        ARKIME_UNLOCK(packetThreadData[t].packetQ.lock);
     }
 }
 /******************************************************************************/
@@ -1663,8 +1680,8 @@ int arkime_packet_outstanding()
     int count = 0;
 
     for (int t = 0; t < config.packetThreads; t++) {
-        count += DLL_COUNT(packet_, &packetQ[t]);
-        count += inProgress[t];
+        count += DLL_COUNT(packet_, &packetThreadData[t].packetQ);
+        count += packetThreadData[t].inProgress;
     }
     return count;
 }
@@ -1828,6 +1845,8 @@ void arkime_packet_set_udpport_enqueue_cb(uint16_t port, ArkimePacketEnqueue_cb 
 void arkime_packet_init()
 {
     arkime_packet_freelist_init();
+
+    nextLogPackets = config.logEveryXPackets;
 
     disableIp4Defrag = arkime_config_boolean(NULL, "disableIp4Defrag", FALSE);
 
@@ -2107,9 +2126,9 @@ void arkime_packet_init()
 
     for (int t = 0; t < config.packetThreads; t++) {
         char name[100];
-        DLL_INIT(packet_, &packetQ[t]);
-        ARKIME_LOCK_INIT(packetQ[t].lock);
-        ARKIME_COND_INIT(packetQ[t].lock);
+        DLL_INIT(packet_, &packetThreadData[t].packetQ);
+        ARKIME_LOCK_INIT(packetThreadData[t].packetQ.lock);
+        ARKIME_COND_INIT(packetThreadData[t].packetQ.lock);
         snprintf(name, sizeof(name), "arkime-pkt%d", t);
 #ifndef FUZZLOCH
         g_thread_unref(g_thread_new(name, &arkime_packet_thread, (gpointer)(long)t));
@@ -2150,7 +2169,7 @@ uint64_t arkime_packet_dropped_overload()
     uint64_t count = 0;
 
     for (int t = 0; t < config.packetThreads; t++) {
-        count += overloadDrops[t];
+        count += packetThreadData[t].overloadDrops;
     }
     return count;
 }
@@ -2160,7 +2179,27 @@ uint64_t arkime_packet_total_bytes()
     uint64_t count = 0;
 
     for (int t = 0; t < config.packetThreads; t++) {
-        count += totalBytes[t];
+        count += packetThreadData[t].totalBytes;
+    }
+    return count;
+}
+/******************************************************************************/
+uint64_t arkime_packet_written_bytes()
+{
+    uint64_t count = 0;
+
+    for (int t = 0; t < config.packetThreads; t++) {
+        count += packetThreadData[t].writtenBytes;
+    }
+    return count;
+}
+/******************************************************************************/
+uint64_t arkime_packet_unwritten_bytes()
+{
+    uint64_t count = 0;
+
+    for (int t = 0; t < config.packetThreads; t++) {
+        count += packetThreadData[t].unwrittenBytes;
     }
     return count;
 }

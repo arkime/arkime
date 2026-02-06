@@ -110,7 +110,7 @@ LOCAL char *scheme_s3_escape(const char *str, int len)
 
     out[0] = 0;
 
-    for (s = o = 0; s < len; s++) {
+    for (s = o = 0; s < len && o + 3 < (int)sizeof(out); s++) {
         if (str[s] == '+') {
             out[o++] = '%';
             out[o++] = '2';
@@ -376,7 +376,7 @@ LOCAL int scheme_s3_load_full_dir(const char *dir, ArkimeSchemeFlags flags, Arki
     if (s3) {
         s3 += 4;
         const char *dot = strchr(s3, '.');
-        if (dot) {
+        if (dot && dot - s3 < (int)sizeof(region)) {
             memcpy(region, s3, dot - s3);
             region[dot - s3] = 0;
         }
@@ -574,7 +574,7 @@ LOCAL int scheme_s3_load_full(const char *uri, ArkimeSchemeFlags flags, ArkimeSc
     if (s3) {
         s3 += 4;
         const char *dot = strchr(s3, '.');
-        if (dot) {
+        if (dot && dot - s3 < (int)sizeof(region)) {
             memcpy(region, s3, dot - s3);
             region[dot - s3] = 0;
         }

@@ -64,6 +64,10 @@ LOCAL void user_classify(ArkimeSession_t *session, const uint8_t *data, int len,
 /******************************************************************************/
 LOCAL void misc_add_protocol_classify(ArkimeSession_t *session, const uint8_t *UNUSED(data), int UNUSED(len), int UNUSED(which), void *uw)
 {
+    // Exclude DNS port
+    if (session->port1 == 53 || session->port2 == 53)
+        return;
+
     arkime_session_add_protocol(session, uw);
 }
 /******************************************************************************/
@@ -488,6 +492,13 @@ void arkime_parser_init()
     // WireGuard handshake messages (content-based, exact length validation)
     CLASSIFY_UDP("wireguard", 0, "\x01\x00\x00\x00", wireguard_classify);
     CLASSIFY_UDP("wireguard", 0, "\x02\x00\x00\x00", wireguard_classify);
+
+    // ESIO - Saia-Burgess PCD industrial control protocol
+    SIMPLE_CLASSIFY_UDP("esio", "ESIO");
+
+    // Gearman job server protocol (port 4730)
+    SIMPLE_CLASSIFY_TCP("gearman", "\x00REQ");
+    SIMPLE_CLASSIFY_TCP("gearman", "\x00RES");
 
     userField = arkime_field_by_db("user");
 }

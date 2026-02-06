@@ -9,11 +9,14 @@
 
 /******************************************************************************/
 extern ArkimeConfig_t        config;
-extern time_t                lastPacketSecs[ARKIME_MAX_PACKET_THREADS];
 
 LOCAL GPtrArray  *pqs;
-LOCAL uint32_t    pqEntries[ARKIME_MAX_PACKET_THREADS];
+typedef struct {
+    uint32_t    pqEntries;
+    time_t      lastRun;
+} ARKIME_CACHE_ALIGN pqThreadData_t;
 
+LOCAL pqThreadData_t pqThreadData[ARKIME_MAX_PACKET_THREADS];
 
 /******************************************************************************/
 typedef struct arkimepqitem {
@@ -32,9 +35,9 @@ typedef struct {
     struct arkimepqitem *pqh_next, *pqh_prev;
     int                  pql_count;
     int                  pqh_count;
-} ArkimePQHead_t;
+} ARKIME_CACHE_ALIGN ArkimePQHead_t;
 
-typedef HASH_VAR(s_, ArkimePQHash_t, ArkimePQHead_t, 51);
+typedef HASH_VAR(s_, ARKIME_CACHE_ALIGN ArkimePQHash_t, ArkimePQHead_t, 51);
 
 struct ArkimePQ_t {
     ArkimePQHead_t      lists[ARKIME_MAX_PACKET_THREADS];
@@ -55,7 +58,7 @@ ArkimePQ_t *arkime_pq_alloc(int timeout, ArkimePQ_cb cb)
         pqs = g_ptr_array_new();
     }
 
-    ArkimePQ_t *pq = ARKIME_TYPE_ALLOC0(ArkimePQ_t);
+    ArkimePQ_t *pq = ARKIME_TYPE_ALLOC0_ALIGNED(ArkimePQ_t);
 
     pq->timeout = timeout;
     for (int t = 0; t < config.packetThreads; t++) {
@@ -71,7 +74,7 @@ ArkimePQ_t *arkime_pq_alloc(int timeout, ArkimePQ_cb cb)
 void arkime_pq_upsert(ArkimePQ_t *pq, ArkimeSession_t *session, void *uw)
 {
     // timeout is relative to lastPacketSecs, figure out time
-    uint32_t expire = lastPacketSecs[session->thread] + pq->timeout;
+    uint32_t expire = arkimeThreadData[session->thread].lastPacketSecs + pq->timeout;
 
     ArkimePQItem_t *item;
     HASH_FIND(pqh_, (pq->keys[session->thread]), session->sessionId, item);
@@ -89,7 +92,7 @@ void arkime_pq_upsert(ArkimePQ_t *pq, ArkimeSession_t *session, void *uw)
     item->session = session;
     item->uw = uw;
     session->pq = 1;
-    pqEntries[session->thread]++;
+    pqThreadData[session->thread].pqEntries++;
 }
 /******************************************************************************/
 void arkime_pq_remove(ArkimePQ_t *pq, ArkimeSession_t *session)
@@ -102,7 +105,7 @@ void arkime_pq_remove(ArkimePQ_t *pq, ArkimeSession_t *session)
     DLL_REMOVE(pql_, &pq->lists[session->thread], item);
     HASH_REMOVE(pqh_, pq->keys[session->thread], item);
     ARKIME_TYPE_FREE(ArkimePQItem_t, item);
-    pqEntries[session->thread]--;
+    pqThreadData[session->thread].pqEntries--;
 }
 /******************************************************************************/
 void arkime_pq_run(int thread, int max)
@@ -110,30 +113,28 @@ void arkime_pq_run(int thread, int max)
     if (!pqs)
         return;
 
-    static time_t lastRun[ARKIME_MAX_PACKET_THREADS];
-
-    if (pqEntries[thread] == 0 || lastPacketSecs[thread] == lastRun[thread])
+    if (pqThreadData[thread].pqEntries == 0 || arkimeThreadData[thread].lastPacketSecs == pqThreadData[thread].lastRun)
         return;
-    lastRun[thread] = lastPacketSecs[thread];
+    pqThreadData[thread].lastRun = arkimeThreadData[thread].lastPacketSecs;
 
     for (guint i = 0; i < pqs->len; i++) {
         int cnt = max;
         ArkimePQ_t *pq = g_ptr_array_index(pqs, i);
         ArkimePQItem_t *item = 0;
         while (cnt > 0 && (item = DLL_PEEK_HEAD(pql_, &pq->lists[thread]))) {
-            if (item->expire >= (uint64_t)lastPacketSecs[thread])
+            if (item->expire >= (uint64_t)arkimeThreadData[thread].lastPacketSecs)
                 break;
 
             DLL_REMOVE(pql_, &pq->lists[thread], item);
             HASH_REMOVE(pqh_, pq->keys[thread], item);
             pq->cb(item->session, item->uw);
             ARKIME_TYPE_FREE(ArkimePQItem_t, item);
-            pqEntries[thread]--;
+            pqThreadData[thread].pqEntries--;
             cnt--;
         }
 
         if (DLL_PEEK_HEAD(pql_, &pq->lists[thread]))
-            lastRun[thread] = 0;
+            pqThreadData[thread].lastRun = 0;
     }
 }
 /******************************************************************************/
@@ -160,7 +161,7 @@ void arkime_pq_flush(int thread)
         while (DLL_POP_HEAD(pql_, &pq->lists[thread], item)) {
             HASH_REMOVE(pqh_, pq->keys[thread], item);
             ARKIME_TYPE_FREE(ArkimePQItem_t, item);
-            pqEntries[thread]--;
+            pqThreadData[thread].pqEntries--;
         }
     }
 }
