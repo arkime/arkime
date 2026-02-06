@@ -392,6 +392,8 @@
       "searchFields": "필드 검색...",
       "dragToReorder": "드래그하여 순서 변경",
       "removeField": "필드 제거",
+      "retryField": "재시도",
+      "retryAllFailed": "실패한 항목 모두 재시도",
       "config": {
         "configurations": "사용자 지정 요약 설정 저장 또는 로드",
         "saveCurrent": "현재 설정 저장",

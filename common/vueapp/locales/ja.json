@@ -392,6 +392,8 @@
       "searchFields": "フィールドを検索...",
       "dragToReorder": "ドラッグして並べ替え",
       "removeField": "フィールドを削除",
+      "retryField": "再試行",
+      "retryAllFailed": "失敗をすべて再試行",
       "config": {
         "configurations": "カスタムサマリー設定の保存または読み込み",
         "saveCurrent": "現在の設定を保存",

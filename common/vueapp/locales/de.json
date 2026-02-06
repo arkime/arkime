@@ -392,6 +392,8 @@
       "searchFields": "Felder suchen...",
       "dragToReorder": "Ziehen zum Neuordnen",
       "removeField": "Feld entfernen",
+      "retryField": "Wiederholen",
+      "retryAllFailed": "Alle fehlgeschlagenen wiederholen",
       "config": {
         "configurations": "Benutzerdefinierte Zusammenfassungskonfigurationen speichern oder laden",
         "saveCurrent": "Aktuelle Konfiguration speichern",

@@ -392,6 +392,8 @@
       "searchFields": "Rechercher des champs...",
       "dragToReorder": "Glisser pour réorganiser",
       "removeField": "Supprimer le champ",
+      "retryField": "Réessayer",
+      "retryAllFailed": "Réessayer tous les échecs",
       "config": {
         "configurations": "Enregistrer ou charger des configurations de résumé personnalisées",
         "saveCurrent": "Enregistrer la configuration actuelle",

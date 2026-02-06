@@ -392,6 +392,8 @@
       "searchFields": "Search for fields...",
       "dragToReorder": "Drag to reorder",
       "removeField": "Remove field",
+      "retryField": "Retry",
+      "retryAllFailed": "Retry all failed",
       "config": {
         "configurations": "Save or load custom Summary Configurations",
         "saveCurrent": "Save Current Configuration",

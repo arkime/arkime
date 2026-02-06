@@ -151,6 +151,13 @@ SPDX-License-Identifier: Apache-2.0
       — {{ $t('sessions.summary.staleDataWarning') }}
       <button
         type="button"
+        class="btn btn-success btn-xs ms-2"
+        @click="retryAllFailed">
+        <span class="fa fa-refresh" />&nbsp;
+        {{ $t('sessions.summary.retryAllFailed') }}
+      </button>
+      <button
+        type="button"
         class="btn-close float-end"
         @click="summaryCanceled = false" />
     </div>
@@ -374,6 +381,9 @@ export default {
     },
     cancelSummaryLoading: function () {
       this.$refs.summaryView?.cancelLoading?.();
+    },
+    retryAllFailed: function () {
+      this.$refs.summaryView?.retryAllFailed?.();
     },
     exportAllPNG: function () {
       this.$refs.summaryView?.exportAllPNG?.();

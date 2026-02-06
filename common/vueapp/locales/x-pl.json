@@ -393,6 +393,8 @@
       "searchFields": "Earchsay orfay ieldsfay...",
       "dragToReorder": "Agdray otay eorderray",
       "removeField": "Emoveray Ieldfay",
+      "retryField": "Etryray",
+      "retryAllFailed": "Etryray allay ailedfay",
       "config": {
         "configurations": "Avesay orway oadlay ustomcay Ummarysay Onfigurationscay",
         "saveCurrent": "Avesay Urrentcay Onfigurationcay",

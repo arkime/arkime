@@ -392,6 +392,8 @@
       "searchFields": "Otsi välju...",
       "dragToReorder": "Lohistage järjestuse muutmiseks",
       "removeField": "Eemalda väli",
+      "retryField": "Proovi uuesti",
+      "retryAllFailed": "Proovi kõiki ebaõnnestunuid uuesti",
       "config": {
         "configurations": "Salvesta või laadi kohandatud kokkuvõtte konfiguratsioone",
         "saveCurrent": "Salvesta praegune konfiguratsioon",
