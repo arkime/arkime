@@ -188,7 +188,7 @@ LOCAL int ssh_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, in
 
             if (!BSB_IS_ERROR(bsb) && BSB_REMAINING(bsb) >= keyLen) {
                 char *str = g_base64_encode(BSB_WORK_PTR(bsb), keyLen);
-                if (!arkime_field_string_add(keyField, session, str, (keyLen / 3 + 1) * 4, FALSE)) {
+                if (!arkime_field_string_add(keyField, session, str, -1, FALSE)) {
                     g_free(str);
                 }
             }

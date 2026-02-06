@@ -628,11 +628,13 @@ LOCAL void tagger_fetch_files_cb(int UNUSED(code), uint8_t *data, int data_len, 
         const uint8_t     *md5 = 0;
         md5 = arkime_js0n_get(source, source_len, "md5", &md5_len);
 
-        if (*md5 == '[') {
+        if (!md5)
+            continue;
+
+        if (*md5 == '[' && md5_len >= 4) {
             md5 += 2;
             md5_len -= 4;
         }
-
 
         TaggerFile_t *file;
         uint32_t hhash = arkime_string_hash(id);

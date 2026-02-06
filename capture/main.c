@@ -398,24 +398,6 @@ LOCAL void arkime_free_later_init()
 }
 
 /******************************************************************************/
-void *arkime_size_alloc(int size, int zero)
-{
-    size += 8;
-    void *mem = (zero ? g_slice_alloc0(size) : g_slice_alloc(size));
-    memcpy(mem, &size, 4);
-    return (char *)mem + 8;
-}
-/******************************************************************************/
-int arkime_size_free(void *mem)
-{
-    int size;
-    mem = (char *)mem - 8;
-
-    memcpy(&size, mem, 4);
-    g_slice_free1(size, mem);
-    return size - 8;
-}
-/******************************************************************************/
 LOCAL void controlc(int UNUSED(sig))
 {
     LOG("Control-C");
@@ -682,6 +664,33 @@ int arkime_int_cmp(const void *keyv, const void *elementv)
     const ArkimeInt_t *element = (ArkimeInt_t *)elementv;
 
     return key == element->i_hash;
+}
+/******************************************************************************/
+int arkime_atoin(const char *str, int len)
+{
+    int result = 0;
+    int sign = 1;
+    int i = 0;
+
+    while (i < len && isspace(str[i]))
+        i++;
+
+    if (i >= len)
+        return 0;
+
+    if (str[i] == '-') {
+        sign = -1;
+        i++;
+    } else if (str[i] == '+') {
+        i++;
+    }
+
+    while (i < len && isdigit(str[i])) {
+        result = result * 10 + (str[i] - '0');
+        i++;
+    }
+
+    return sign * result;
 }
 /******************************************************************************/
 typedef struct {

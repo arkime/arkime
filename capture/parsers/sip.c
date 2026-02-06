@@ -136,7 +136,7 @@ LOCAL int sip_parse_header(ArkimeSession_t *session, const uint8_t *line, int li
         }
     } else if ((colonPos == 14 && strncasecmp(name, "Content-Length", 14) == 0) ||
                (colonPos == 1 && (*name == 'l' || *name == 'L'))) {
-        return atoi(value);
+        return arkime_atoin(value, valueLen);
     }
 
     return -1;
@@ -240,7 +240,7 @@ LOCAL int sip_parse_response(ArkimeSession_t *session, const uint8_t *line, int 
     if (memcmp(line, "SIP/2.0 ", 8) != 0)
         return -1;
 
-    int statusCode = atoi((char *)line + 8);
+    int statusCode = arkime_atoin((char *)line + 8, lineLen - 8);
     if (statusCode >= 100 && statusCode < 700) {
         arkime_field_int_add(statusCodeField, session, statusCode);
     }

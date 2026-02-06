@@ -76,7 +76,8 @@ LOCAL void imap_parse_header_line(IMAPInfo_t UNUSED(*imap), ArkimeSession_t *ses
     /* Subject: header */
     else if (len > 8 && strncasecmp(line, "Subject:", 8) == 0) {
         const char *s = line + 8;
-        while (*s && isspace(*s)) s++;
+        const char *end = line + len;
+        while (s < end && isspace(*s)) s++;
         arkime_field_string_add(subjectField, session, s, len - (s - line), TRUE);
     }
 }

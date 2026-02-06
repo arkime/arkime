@@ -99,7 +99,7 @@ LOCAL char *smtp_remove_matching(char *str, char start, char stop)
 /******************************************************************************/
 LOCAL void smtp_email_add_value(ArkimeSession_t *session, int pos, const char *s, int l)
 {
-    while (isspace(*s)) {
+    while (l > 0 && isspace(*s)) {
         s++;
         l--;
     }
@@ -110,13 +110,18 @@ LOCAL void smtp_email_add_value(ArkimeSession_t *session, int pos, const char *s
     case ARKIME_FIELD_TYPE_INT_ARRAY_UNIQUE:
     case ARKIME_FIELD_TYPE_INT_HASH:
     case ARKIME_FIELD_TYPE_INT_GHASH:
-        arkime_field_int_add(pos, session, atoi(s));
+        arkime_field_int_add(pos, session, arkime_atoin(s, l));
         break;
     case ARKIME_FIELD_TYPE_FLOAT:
     case ARKIME_FIELD_TYPE_FLOAT_ARRAY:
-    case ARKIME_FIELD_TYPE_FLOAT_GHASH:
-        arkime_field_float_add(pos, session, atof(s));
+    case ARKIME_FIELD_TYPE_FLOAT_GHASH: {
+        char fbuf[32];
+        int flen = MIN(l, (int)sizeof(fbuf) - 1);
+        memcpy(fbuf, s, flen);
+        fbuf[flen] = 0;
+        arkime_field_float_add(pos, session, atof(fbuf));
         break;
+    }
     case ARKIME_FIELD_TYPE_STR:
     case ARKIME_FIELD_TYPE_STR_ARRAY:
     case ARKIME_FIELD_TYPE_STR_HASH:
@@ -469,7 +474,9 @@ LOCAL int smtp_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, i
                 email->seenHeaders |= (1 << which);
             } else if (strncasecmp(line->str, "BDAT", 4) == 0) {
                 email->inBDAT |= (1 << which);
-                email->bdatRemaining[which] = atoi(line->str + 5) + 1;
+                email->bdatRemaining[which] = arkime_atoin(line->str + 5, line->len - 5) + 1;
+                if (email->bdatRemaining[which] <= 0)
+                    email->bdatRemaining[which] = 1;
 
                 if (email->seenHeaders & (1 << which))
                     *state = EMAIL_DATA;

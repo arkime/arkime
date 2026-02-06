@@ -31,8 +31,13 @@ LOCAL uint8_t *aws_get_instance_metadata(const char *key, int key_len, size_t *m
         const uint8_t *token = arkime_http_send_sync(metadataServer, "PUT", "/latest/api/token", -1, NULL, 0, tokenRequestHeaders, mlen, NULL);
         if (config.debug)
             LOG("IMDSv2 metadata token received");
-        snprintf(tokenHeader, sizeof(tokenHeader), "X-aws-ec2-metadata-token: %s", token);
-        requestHeaders[0] = tokenHeader;
+        if (token) {
+            snprintf(tokenHeader, sizeof(tokenHeader), "X-aws-ec2-metadata-token: %s", token);
+            requestHeaders[0] = tokenHeader;
+        } else {
+            LOG("WARNING - Failed to get IMDSv2 metadata token");
+            requestHeaders[0] = NULL;
+        }
     } else {
         if (config.debug)
             LOG("Using IMDSv1");

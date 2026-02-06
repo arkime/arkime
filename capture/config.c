@@ -758,6 +758,10 @@ LOCAL gboolean arkime_config_load_yaml(GKeyFile *keyfile, char *data, GError **U
         case YAML_SEQUENCE_END_EVENT:
             if (level == 3) {
                 BSB_EXPORT_u08(bsb, 0);
+                if (BSB_IS_ERROR(bsb)) {
+                    LOG("WARNING - YAML sequence value too long for %s:%s, truncating", section, key);
+                    buf[sizeof(buf) - 1] = 0;
+                }
 #ifdef CONFIG_DEBUG
                 LOG("%s:%s => %s", section, key, buf);
 #endif
