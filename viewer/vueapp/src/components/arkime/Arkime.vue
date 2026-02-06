@@ -44,6 +44,24 @@ SPDX-License-Identifier: Apache-2.0
             </b-dropdown-item>
           </b-dropdown>
 
+          <!-- top/bottom results toggle -->
+          <b-dropdown
+            size="sm"
+            variant="secondary"
+            class="ms-2"
+            :text="summaryOrder === 'asc' ? 'Bottom' : 'Top'">
+            <b-dropdown-item
+              :active="summaryOrder === 'desc'"
+              @click="updateSummaryOrder('desc')">
+              Top
+            </b-dropdown-item>
+            <b-dropdown-item
+              :active="summaryOrder === 'asc'"
+              @click="updateSummaryOrder('asc')">
+              Bottom
+            </b-dropdown-item>
+          </b-dropdown>
+
           <!-- summary field visibility dropdown -->
           <FieldSelectDropdown
             class="ms-2"
@@ -126,6 +144,7 @@ export default {
     return {
       // Summary configuration
       summaryResultsLimit: parseInt(this.$route.query.summaryLength) || 20,
+      summaryOrder: this.$route.query.summaryOrder || 'desc',
       summaryFields: [],
       widgetConfigs: [],
       // Visualization data
@@ -164,7 +183,8 @@ export default {
 
       return {
         fields,
-        resultsLimit: this.summaryResultsLimit
+        resultsLimit: this.summaryResultsLimit,
+        order: this.summaryOrder
       };
     }
   },
@@ -174,6 +194,14 @@ export default {
       const newLimit = parseInt(newValue) || 20;
       if (this.summaryResultsLimit !== newLimit) {
         this.summaryResultsLimit = newLimit;
+        this.reloadSummaryView();
+      }
+    },
+    // Handle browser back/forward navigation for summaryOrder
+    '$route.query.summaryOrder': function (newValue) {
+      const newOrder = newValue || 'desc';
+      if (this.summaryOrder !== newOrder) {
+        this.summaryOrder = newOrder;
         this.reloadSummaryView();
       }
     },
@@ -196,6 +224,13 @@ export default {
       this.summaryResultsLimit = newLimit;
       await this.$router.replace({
         query: { ...this.$route.query, summaryLength: newLimit }
+      });
+      this.reloadSummaryView();
+    },
+    updateSummaryOrder: async function (newOrder) {
+      this.summaryOrder = newOrder;
+      await this.$router.replace({
+        query: { ...this.$route.query, summaryOrder: newOrder }
       });
       this.reloadSummaryView();
     },
@@ -232,6 +267,10 @@ export default {
         metricType: f.metricType || 'sessions'
       }));
 
+      if (configData.order) {
+        this.updateSummaryOrder(configData.order);
+      }
+
       if (configData.resultsLimit) {
         this.updateSummaryResultsLimit(configData.resultsLimit);
       } else {
@@ -254,6 +293,8 @@ export default {
     resetSummaryToDefaults: function () {
       this.summaryFields = Utils.getDefaultSummaryFields();
       this.widgetConfigs = [];
+      this.summaryOrder = 'desc';
+      this.updateSummaryOrder('desc');
       this.updateSummaryResultsLimit(20);
     },
     updateVisualizationsData: function (data) {

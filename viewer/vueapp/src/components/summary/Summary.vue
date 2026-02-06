@@ -343,6 +343,10 @@ const generateSummary = async () => {
       body.length = route.query.length;
     }
 
+    if (route.query.summaryOrder) {
+      body.order = route.query.summaryOrder;
+    }
+
     // Handle time params - send stopTime and startTime unless date is all time (-1)
     if (parseInt(store.state.timeRange, 10) === -1) {
       body.date = store.state.timeRange;

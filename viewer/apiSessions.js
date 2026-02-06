@@ -2704,6 +2704,8 @@ class SessionAPIs {
       topNum = parseInt(req.query.length);
     }
 
+    const sortOrder = req.body.order === 'asc' ? 'asc' : 'desc';
+
     // Validate and parse fields parameter - should be a comma-separated string of field names
     if (!req.body.fields || !ArkimeUtil.isString(req.body.fields)) {
       return res.status(400).send({ error: 'Missing or invalid fields parameter in request body - must be a comma-separated string of field names' });
@@ -2921,7 +2923,8 @@ class SessionAPIs {
                     source: "if (doc['source.ip'].size() == 0) { return []; } return [doc['source.ip'].value, doc['destination.ip'].value];",
                     lang: 'painless'
                   },
-                  size: topNum
+                  size: topNum,
+                  order: { _count: sortOrder }
                 },
                 aggs: extraAggs
               };
@@ -2932,7 +2935,8 @@ class SessionAPIs {
                     source: "if (doc['destination.port'].size() == 0) { return []; } return [doc['destination.ip'].value + '_' + doc['destination.port'].value];",
                     lang: 'painless'
                   },
-                  size: topNum
+                  size: topNum,
+                  order: { _count: sortOrder }
                 },
                 aggs: extraAggs
               };
@@ -2942,7 +2946,8 @@ class SessionAPIs {
             query.aggregations[aggName] = {
               terms: {
                 field: dbField,
-                size: topNum
+                size: topNum,
+                order: { _count: sortOrder }
               },
               aggs: extraAggs
             };
