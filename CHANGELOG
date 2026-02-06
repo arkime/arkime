@@ -69,6 +69,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #3676 Added basic imap parser
   - #3677 Align structures and remove unimportant atomic counts to help when
           using large number of packetThreads
+  - #3678 Added classifier: gearman, esio; parser: pana
 
 6.0.0-rc1 2026/01/26
 ## BREAKING

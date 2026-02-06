@@ -1,0 +1,147 @@
+{
+ "sessions3" : [
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 84
+    },
+    "destination" : {
+     "as" : {
+      "full" : "AS1 Cool Beans!",
+      "number" : 1,
+      "organization" : {
+       "name" : "Cool Beans!"
+      }
+     },
+     "bytes" : 132,
+     "geo" : {
+      "country_iso_code" : "CA"
+     },
+     "ip" : "10.0.0.2",
+     "mac" : [
+      "6a:70:c5:af:f1:f9",
+      "94:2a:6f:ee:8c:82"
+     ],
+     "mac-cnt" : 2,
+     "packets" : 2,
+     "port" : 716
+    },
+    "dstPayload8" : "0000002000000002",
+    "dstRIR" : "TEST",
+    "dstTTL" : [
+     64
+    ],
+    "dstTTLCnt" : 1,
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 1770378339598,
+    "ipProtocol" : 17,
+    "lastPacket" : 1770378339598,
+    "length" : 0,
+    "network" : {
+     "bytes" : 342,
+     "community_id" : "1:nS6eErt97WxwAI2+YooaXmcaUiE=",
+     "packets" : 5
+    },
+    "node" : "test",
+    "packetLen" : [
+     74
+    ],
+    "packetPos" : [
+     24
+    ],
+    "packetRange" : {
+     "gte" : 1770378339598,
+     "lte" : 1770378339598
+    },
+    "pana" : {
+     "msgType" : [
+      "auth",
+      "client-initiation",
+      "notification",
+      "termination"
+     ],
+     "msgTypeCnt" : 4,
+     "sessionId" : [
+      "12345678",
+      "aabbccdd"
+     ],
+     "sessionIdCnt" : 2,
+     "user" : [
+      "testuser@example.com"
+     ],
+     "userCnt" : 1
+    },
+    "protocol" : [
+     "pana",
+     "udp"
+    ],
+    "protocolCnt" : 2,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 48
+    },
+    "source" : {
+     "as" : {
+      "full" : "AS0 This is neat",
+      "number" : 0,
+      "organization" : {
+       "name" : "This is neat"
+      }
+     },
+     "bytes" : 210,
+     "geo" : {
+      "country_iso_code" : "RU"
+     },
+     "ip" : "10.0.0.1",
+     "mac" : [
+      "6a:70:c5:af:f1:f9",
+      "94:2a:6f:ee:8c:82"
+     ],
+     "mac-cnt" : 2,
+     "packets" : 3,
+     "port" : 12345
+    },
+    "srcPayload8" : "0000001000000001",
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
+    "tags" : [
+     "dstip",
+     "srcip",
+     "truncated-pcap"
+    ],
+    "tagsCnt" : 3,
+    "test" : {
+     "ASN" : [
+      "AS0 This is neat"
+     ],
+     "GEO" : [
+      "RU"
+     ],
+     "RIR" : [
+      ""
+     ],
+     "ip" : [
+      "10.0.0.1"
+     ],
+     "number" : [
+      33554442
+     ],
+     "string.snow" : [
+      "16777226:12345,33554442:716"
+     ]
+    },
+    "totDataBytes" : 132
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-260206"
+    }
+   }
+  }
+ ]
+}
+

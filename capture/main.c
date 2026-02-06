@@ -1154,6 +1154,7 @@ LLVMFuzzerInitialize(int *UNUSED(argc), char ***UNUSED(argv))
     arkime_yara_init();
     arkime_parsers_init();
     arkime_session_init();
+    arkime_dedup_init();
     arkime_plugins_load(config.plugins);
     arkime_config_load_override_ips();
     arkime_rules_init();
