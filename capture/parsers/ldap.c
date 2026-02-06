@@ -76,13 +76,17 @@ LOCAL void ldap_process(ArkimeSession_t *session, ArkimeParserBuf_t *ldap, int w
 
             }
         } else if (protocolOp == 23) {
-            int len = BSB_SIZE(obsb) - olen - 2;
-            arkime_parsers_classify_tcp(session, ldap->buf[which] + olen + 2, len, which);
-            arkime_packet_process_data(session, ldap->buf[which] + olen + 2, len, which);
+            int len = BSB_REMAINING(obsb);
+            if (len > 0) {
+                arkime_parsers_classify_tcp(session, BSB_WORK_PTR(obsb), len, which);
+                arkime_packet_process_data(session, BSB_WORK_PTR(obsb), len, which);
+            }
             return;
         } else if (protocolOp == 24) {
-            int len = BSB_SIZE(obsb) - olen - 2;
-            arkime_packet_process_data(session, ldap->buf[which] + olen + 2, len, which);
+            int len = BSB_REMAINING(obsb);
+            if (len > 0) {
+                arkime_packet_process_data(session, BSB_WORK_PTR(obsb), len, which);
+            }
         }
     }
 }

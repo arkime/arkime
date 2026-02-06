@@ -66,6 +66,17 @@ LOCAL void dtls_ja4_version(uint16_t ver, char vstr[3])
     }
 }
 /******************************************************************************/
+LOCAL void dtls_2digit_to_string(int val, char *str)
+{
+    if (val >= 99) {
+        str[0] = '9';
+        str[1] = '9';
+        return;
+    }
+    str[0] = (val / 10) + '0';
+    str[1] = (val % 10) + '0';
+}
+/******************************************************************************/
 // Comparison function for qsort
 LOCAL int compare_uint16_t(const void *a, const void *b)
 {
@@ -202,7 +213,7 @@ LOCAL uint32_t dtls_process_client_hello(ArkimeSession_t *session, const uint8_t
                     if (!dtls_is_grease_value(supported_version)) {
                         ver = MAX(supported_version, ver);
                     }
-                    llen--;
+                    llen -= 2;
                 }
             } else {
                 BSB_IMPORT_skip (ebsb, elen);
@@ -223,10 +234,8 @@ LOCAL uint32_t dtls_process_client_hello(ArkimeSession_t *session, const uint8_t
     ja4[1] = vstr[0];
     ja4[2] = vstr[1];
     ja4[3] = ja4HasSNI;
-    ja4[4] = (ja4NumCiphers / 10) + '0';
-    ja4[5] = (ja4NumCiphers % 10) + '0';
-    ja4[6] = (ja4NumExtensions / 10) + '0';
-    ja4[7] = (ja4NumExtensions % 10) + '0';
+    dtls_2digit_to_string(ja4NumCiphers, ja4 + 4);
+    dtls_2digit_to_string(ja4NumExtensions, ja4 + 6);
     ja4[8] = ja4ALPN[0];
     ja4[9] = ja4ALPN[1];
     ja4[10] = '_';
