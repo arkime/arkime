@@ -52,7 +52,8 @@ SPDX-License-Identifier: Apache-2.0
             :search-placeholder="$t('sessions.summary.searchFields')"
             :include-summary-fields="true"
             field-id-key="exp"
-            @toggle="toggleSummaryField" />
+            @toggle="toggleSummaryField"
+            @clear="clearSummaryFields" />
 
           <!-- summary config dropdown -->
           <SummaryConfigDropdown
@@ -205,6 +206,10 @@ export default {
       } else {
         this.summaryFields.push(fieldExp);
       }
+      this.reloadSummaryView();
+    },
+    clearSummaryFields: function () {
+      this.summaryFields = [];
       this.reloadSummaryView();
     },
     reorderSummaryFields: function ({ oldIndex, newIndex }) {

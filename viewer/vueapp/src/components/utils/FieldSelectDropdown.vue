@@ -30,6 +30,15 @@
         @click.stop
         :placeholder="searchPlaceholder" />
     </b-dropdown-header>
+    <li v-if="selectedFields.length > 0">
+      <button
+        type="button"
+        class="dropdown-item text-danger py-1"
+        @click="$emit('clear')">
+        <span class="fa fa-times me-1" />
+        Clear all
+      </button>
+    </li>
     <b-dropdown-divider />
     <template v-if="menuOpen">
       <b-dropdown-item v-if="!filteredFieldsCount">
@@ -127,7 +136,7 @@ export default {
       default: false
     }
   },
-  emits: ['toggle'],
+  emits: ['toggle', 'clear'],
   data () {
     return {
       menuOpen: false,
