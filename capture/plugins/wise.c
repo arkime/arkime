@@ -280,6 +280,10 @@ LOCAL void wise_cb(int UNUSED(code), uint8_t *data, int data_len, gpointer uw)
         int cnt = 0;
         BSB_IMPORT_u16(bsb, cnt);
 
+        if (cnt > ARKIME_FIELDS_MAX) {
+            LOGEXIT("ERROR - Wise server is returning too many fields %d > %d", cnt, ARKIME_FIELDS_MAX);
+        }
+
         ARKIME_LOCK(item);
         for (hashPos = 0; hashPos < fieldsMapCnt; hashPos++) {
             if (memcmp(hash, fieldsMapHash[hashPos], 32) == 0)

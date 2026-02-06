@@ -552,9 +552,11 @@ LOCAL void quic_ietf_udp_classify(ArkimeSession_t *session, const uint8_t *data,
             uint32_t offset = quic_get_number(&bsb);
             uint32_t length = quic_get_number(&bsb);
 
-            if (length <= sizeof(cbuf) && offset <= sizeof(cbuf) - length && BSB_REMAINING(bsb) >= length) {
-                memcpy(cbuf + offset, BSB_WORK_PTR(bsb), length);
-                clen += length;
+            if (offset < sizeof(cbuf) && BSB_REMAINING(bsb) >= length) {
+                int toCopy = MIN(length, sizeof(cbuf) - offset);
+                memcpy(cbuf + offset, BSB_WORK_PTR(bsb), toCopy);
+                if ((int)(offset + toCopy) > clen)
+                    clen = offset + toCopy;
             }
 
             BSB_IMPORT_skip(bsb, length);

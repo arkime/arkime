@@ -1010,7 +1010,7 @@ LOCAL void arkime_session_load_stopped()
         uint8_t  key[ARKIME_SESSIONID_LEN];
         uint32_t value;
         read += fread(key, 1, 1, fp);
-        if (key[0] > ARKIME_SESSIONID_LEN) {
+        if (key[0] < 1 || key[0] > ARKIME_SESSIONID_LEN) {
             LOG("WARNING - `%s` corrupt", stoppedFilename);
             break;
         }

@@ -1993,9 +1993,11 @@ LOCAL uint32_t arkime_db_get_sequence_number_sync(const char *name)
         const uint8_t *version = arkime_js0n_get(data, data_len, "_version", &version_len);
 
         if (!version_len || !version) {
-            LOG("ERROR - Couldn't fetch sequence: %d %.*s", (int)data_len, (int)data_len, data);
-            if (!data) // No data_len, can't search it or free it
+            if (!data) {
+                LOG("ERROR - Couldn't fetch sequence: no data returned");
                 continue;
+            }
+            LOG("ERROR - Couldn't fetch sequence: %d %.*s", (int)data_len, (int)data_len, data);
 
             if (strstr((char *)data, "FORBIDDEN") != 0) {
                 LOG("ERROR - You have most likely run out of space on an elasticsearch node, see https://arkime.com/faq#recommended-elasticsearch-settings on setting disk watermarks and how to clear the elasticsearch error");
@@ -2031,7 +2033,7 @@ LOCAL void arkime_db_load_file_num()
     data = arkime_http_get(esServer, key, key_len, &data_len);
 
     found = arkime_js0n_get(data, data_len, "found", &found_len);
-    if (found && memcmp("true", found, 4) != 0) {
+    if (found && (found_len < 4 || memcmp("true", found, 4) != 0)) {
         free(data);
 
         key_len = snprintf(key, sizeof(key), "/%ssequence/_doc/fn-%s?version_type=external&version=100", config.prefix, config.nodeName);

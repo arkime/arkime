@@ -323,8 +323,8 @@ LOCAL void arkime_packet_process(ArkimePacket_t *packet, int thread)
 
     mProtocols[packet->mProtocol].createSessionId(sessionId, packet);
 
-    if ((sessionId[0] & 0x03) != 0) {
-        LOGEXIT("ERROR - Session ID must be aligned to 4 bytes, protocol %s is not (%d)", mProtocols[packet->mProtocol].name, sessionId[0]);
+    if ((sessionId[0] & 0x03) != 0 || sessionId[0] > ARKIME_SESSIONID_LEN) {
+        LOGEXIT("ERROR - Session ID must be aligned to 4 bytes and <= %d, protocol %s is not (%d)", ARKIME_SESSIONID_LEN, mProtocols[packet->mProtocol].name, sessionId[0]);
     }
 
     // Try at most 2 times
@@ -1394,6 +1394,12 @@ LOCAL ArkimePacketRC arkime_packet_sll(ArkimePacketBatch_t *batch, ArkimePacket_
     int ethertype = data[14] << 8 | data[15];
     switch (ethertype) {
     case ETHERTYPE_VLAN:
+        if (len < 21) {
+#ifdef DEBUG_PACKET
+            LOG("BAD PACKET: Too short for VLAN %d", len);
+#endif
+            return ARKIME_PACKET_CORRUPT;
+        }
         if ((data[20] & 0xf0) == 0x60)
             return arkime_packet_ip6(batch, packet, data + 20, len - 20);
         else
@@ -1594,7 +1600,7 @@ skip_switch:
     if (unlikely(rc)) {
         if (rc == ARKIME_PACKET_CORRUPT) {
             // If we have at least 14 bytes (ethernet header) and corruptSavePcap is enabled, create a session
-            if (config.corruptSavePcap && packet->pktlen >= 14) {
+            if (config.corruptSavePcap && packet->pktlen >= packet->etherOffset + 14) {
                 rc = arkime_packet_run_ethernet_cb(batch, packet, packet->pkt, packet->pktlen, ARKIME_ETHERTYPE_CORRUPT, "CORRUPT");
                 goto process_packet;
             } else {

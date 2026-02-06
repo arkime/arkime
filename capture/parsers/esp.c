@@ -77,7 +77,8 @@ LOCAL int esp_pre_process(ArkimeSession_t *session, ArkimePacket_t *const UNUSED
     }
 
     packet->direction = dir;
-    session->databytes[packet->direction] += (packet->pktlen - packet->payloadOffset - 8);
+    if (packet->pktlen >= packet->payloadOffset + 8)
+        session->databytes[packet->direction] += (packet->pktlen - packet->payloadOffset - 8);
 
     return 0;
 }

@@ -157,7 +157,7 @@ LOCAL void http2_parse_header_block(ArkimeSession_t *session, HTTP2Info_t *http2
                 } else if (nv.namelen == 5 && memcmp(nv.name, ":path", 5) == 0) {
                     http_common_parse_url(session, (char *)nv.value, nv.valuelen);
                 } else if (nv.namelen == 7 && memcmp(nv.name, ":status", 7) == 0) {
-                    arkime_field_int_add(statuscodeField, session, atoi((const char *)nv.value));
+                    arkime_field_int_add(statuscodeField, session, arkime_atoin((const char *)nv.value, nv.valuelen));
                 }
             } else {
                 http_common_add_header(session, 0, which == http2->which, (const char *)nv.name, nv.namelen, (const char *)nv.value, nv.valuelen);
