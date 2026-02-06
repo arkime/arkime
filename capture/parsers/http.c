@@ -104,7 +104,7 @@ void http_common_parse_cookie(ArkimeSession_t *session, char *cookie, int len)
 /******************************************************************************/
 void http_common_add_header_value(ArkimeSession_t *session, int pos, const char *s, int l)
 {
-    while (isspace(*s)) {
+    while (l > 0 && isspace(*s)) {
         s++;
         l--;
     }
@@ -115,13 +115,18 @@ void http_common_add_header_value(ArkimeSession_t *session, int pos, const char 
     case ARKIME_FIELD_TYPE_INT_ARRAY_UNIQUE:
     case ARKIME_FIELD_TYPE_INT_HASH:
     case ARKIME_FIELD_TYPE_INT_GHASH:
-        arkime_field_int_add(pos, session, atoi(s));
+        arkime_field_int_add(pos, session, arkime_atoin(s, l));
         break;
     case ARKIME_FIELD_TYPE_FLOAT:
     case ARKIME_FIELD_TYPE_FLOAT_ARRAY:
-    case ARKIME_FIELD_TYPE_FLOAT_GHASH:
-        arkime_field_float_add(pos, session, atof(s));
+    case ARKIME_FIELD_TYPE_FLOAT_GHASH: {
+        char fbuf[32];
+        int flen = MIN(l, (int)sizeof(fbuf) - 1);
+        memcpy(fbuf, s, flen);
+        fbuf[flen] = 0;
+        arkime_field_float_add(pos, session, atof(fbuf));
         break;
+    }
     case ARKIME_FIELD_TYPE_STR:
     case ARKIME_FIELD_TYPE_STR_ARRAY:
     case ARKIME_FIELD_TYPE_STR_HASH:

@@ -25,13 +25,14 @@ LOCAL GHashTable *commandsHash;
 
 typedef struct {
     GSocket                *socket;
-    char                    data[1024];
+    char                    data[2048];
     uint32_t                len;
     int                     readWatch;
 } CommandClient_t;
 
 #define MAX_INDENT 40
 
+LOCAL void arkime_command_exit(int argc, char **argv, gpointer cc);
 
 /******************************************************************************/
 LOCAL void arkime_command_client_free(CommandClient_t *cc)
@@ -42,7 +43,7 @@ LOCAL void arkime_command_client_free(CommandClient_t *cc)
     ARKIME_TYPE_FREE(CommandClient_t, cc);
 }
 /******************************************************************************/
-LOCAL void arkime_command_run(const char *line, gpointer cc)
+LOCAL gboolean arkime_command_run(const char *line, gpointer cc)
 {
     gint    argcp;
     gchar **argvp = NULL;
@@ -50,7 +51,7 @@ LOCAL void arkime_command_run(const char *line, gpointer cc)
 
     if (!g_shell_parse_argv(line, &argcp, &argvp, &error)) {
         arkime_command_respond(cc, "No command sent\n", -1);
-        return;
+        return TRUE;
     }
 
     Command_t *cmd = g_hash_table_lookup(commandsHash, argvp[0]);
@@ -61,7 +62,9 @@ LOCAL void arkime_command_run(const char *line, gpointer cc)
         snprintf(msg, sizeof(msg), "Unknown command %s\n", argvp[0]);
         arkime_command_respond(cc, msg, -1);
     }
+    gboolean isExit = cmd && cmd->func == arkime_command_exit;
     g_strfreev(argvp);
+    return !isExit;
 }
 /******************************************************************************/
 SUPPRESS_ALIGNMENT
@@ -84,12 +87,19 @@ LOCAL gboolean arkime_command_data_read_cb(gint UNUSED(fd), GIOCondition cond, g
     }
     cc->len += len;
 
+    if (cc->len >= (int)sizeof(cc->data) && !memchr(cc->data, '\n', cc->len)) {
+        arkime_command_respond(cc, "ERROR: command too long\n", -1);
+        arkime_command_client_free(cc);
+        return FALSE;
+    }
+
     while (1) {
         char *pos = memchr(cc->data, '\n', cc->len);
         if (!pos)
             break;
         *pos = 0;
-        arkime_command_run(cc->data, cc);
+        if (!arkime_command_run(cc->data, cc))
+            return FALSE;
         memmove(cc->data, pos + 1, cc->len - (pos - cc->data + 1));
         cc->len -= pos - cc->data + 1;
     }
@@ -105,7 +115,12 @@ LOCAL gboolean arkime_command_server_read_cb(gint UNUSED(fd), GIOCondition UNUSE
 
     GSocket *client = g_socket_accept((GSocket *)data, NULL, &error);
     if (!client || error) {
-        LOG("ERROR - Error accepting command: %s", error->message);
+        if (error) {
+            LOG("ERROR - Error accepting command: %s", error->message);
+            g_error_free(error);
+        } else {
+            LOG("ERROR - Error accepting command");
+        }
         return FALSE;
     }
 

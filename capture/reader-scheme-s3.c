@@ -156,12 +156,13 @@ LOCAL void scheme_s3_done(int UNUSED(code), uint8_t *data, int data_len, gpointe
     }
 
     char *start = (char *)data;
-    while (start < (char *)data + data_len) {
-        char *key = strstr(start, "<Key>");
+    char *dataEnd = (char *)data + data_len;
+    while (start < dataEnd) {
+        char *key = (char *)arkime_memstr(start, dataEnd - start, "<Key>", 5);
         if (!key)
             break;
         key += 5;
-        char *end = strstr(key, "</Key>");
+        char *end = (char *)arkime_memstr(key, dataEnd - key, "</Key>", 6);
         if (!end)
             break;
         *end = 0;

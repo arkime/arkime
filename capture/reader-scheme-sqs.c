@@ -148,6 +148,13 @@ LOCAL void sqs_done(int UNUSED(code), uint8_t *data, int data_len, gpointer uw)
             continue;
         }
 
+        if (recordsLen < 2) {
+            LOG("Records too short %.*s", recordsLen, records);
+            g_free(body);
+            sqs_enqueue(req->items, g_strndup((char *)receipt, receiptLen), NULL, NULL);
+            continue;
+        }
+
         uint32_t s3Len = 0;
         const uint8_t *s3 = arkime_js0n_get(records + 1, recordsLen - 2, "s3", &s3Len);
         if (!s3) {
@@ -238,11 +245,11 @@ LOCAL int scheme_sqs_load(const char *uri, ArkimeSchemeFlags flags, ArkimeScheme
     char deleteFullPath[1000];
     snprintf(deleteFullPath, sizeof(deleteFullPath), "/%s/%s", uris[3], uris[4]);
 
-    static char *headers[5] = {"Content-Type: application/x-www-form-urlencoded", "Expect:", "Accept: application/json", NULL, NULL};
+    char *headers[5] = {"Content-Type: application/x-www-form-urlencoded", "Expect:", "Accept: application/json", NULL, NULL};
     char tokenHeader[1000];
     if (creds->token) {
         snprintf(tokenHeader, sizeof(tokenHeader), "X-Amz-Security-Token: %s", creds->token);
-        headers[4] = tokenHeader;
+        headers[3] = tokenHeader;
     }
     arkime_http_schedule(server, "POST", receiveFullPath, -1, NULL, 0, headers, ARKIME_HTTP_PRIORITY_BEST, sqs_done, req);
 

@@ -133,7 +133,7 @@ int arkime_dedup_should_drop (const ArkimePacket_t *packet, int headerLen)
     }
 
     // Is there space to add
-    if (seconds[secondSlot].counts[h] == DEDUP_SIZE_FACTOR) {
+    if (seconds[secondSlot].counts[h] >= DEDUP_SIZE_FACTOR) {
         seconds[secondSlot].error = 1;
         return 0;
     }
@@ -141,6 +141,10 @@ int arkime_dedup_should_drop (const ArkimePacket_t *packet, int headerLen)
     // Race condition: a reader may see incremented count before memcpy completes.
     // This is acceptable - fail-open means a duplicate packet may slip through briefly.
     int c = ARKIME_THREAD_INCROLD(seconds[secondSlot].counts[h]);
+    if (c >= DEDUP_SIZE_FACTOR) {
+        seconds[secondSlot].error = 1;
+        return 0;
+    }
     memcpy(seconds[secondSlot].md5s + 16 * (h * DEDUP_SIZE_FACTOR + c), md, 16);
 
     return 0;

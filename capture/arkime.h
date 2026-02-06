@@ -982,6 +982,8 @@ int arkime_string_ncmp(const void *keyv, const void *elementv);
 uint32_t arkime_int_hash(const void *key);
 int arkime_int_cmp(const void *keyv, const void *elementv);
 
+int arkime_atoin(const char *str, int len);
+
 const char *arkime_memstr(const char *haystack, int haysize, const char *needle, int needlesize);
 const char *arkime_memcasestr(const char *haystack, int haysize, const char *needle, int needlesize);
 

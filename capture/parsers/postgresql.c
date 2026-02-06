@@ -36,6 +36,9 @@ LOCAL int postgresql_parser(ArkimeSession_t *session, void *uw, const uint8_t *d
         goto cleanup;
     }
 
+    // Constrain BSB to declared message length
+    BSB_INIT(bsb, data + 4, plen - 4);
+
     uint32_t version = 0;
     BSB_IMPORT_u32(bsb, version);
     if (version >> 16 != 3) {

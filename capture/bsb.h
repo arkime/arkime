@@ -152,7 +152,9 @@ do {                                              \
         int l = snprintf((char*)(b).ptr,          \
                          (b).end - (b).ptr,       \
                          __VA_ARGS__);            \
-        if (l <= (b).end - (b).ptr) {             \
+        if (l < 0) {                              \
+            BSB_SET_ERROR(b);                     \
+        } else if (l <= (b).end - (b).ptr) {      \
             (b).ptr += l;                         \
         } else {                                  \
             BSB_SET_ERROR(b);                     \
@@ -168,7 +170,9 @@ do {                                              \
         int l = snprintf((char*)(b).ptr,          \
                          (b).end - (b).ptr,       \
                          ##args);                 \
-        if (l <= (b).end - (b).ptr) {             \
+        if (l < 0) {                              \
+            BSB_SET_ERROR(b);                     \
+        } else if (l <= (b).end - (b).ptr) {      \
             (b).ptr += l;                         \
         } else {                                  \
             BSB_SET_ERROR(b);                     \

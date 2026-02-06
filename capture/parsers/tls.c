@@ -215,6 +215,9 @@ LOCAL uint32_t tls_process_server_hello(ArkimeSession_t *session, const uint8_t 
 
     BSB_EXPORT_sprintf(ja3bsb, "%d,%d,%.*s", ver, cipher, (int)BSB_LENGTH(eja3bsb), eja3);
 
+    if (BSB_IS_ERROR(ja3bsb) || BSB_IS_ERROR(eja3bsb))
+        return 0;
+
     if (config.ja3Strings) {
         arkime_field_string_add(ja3sStrField, session, ja3, BSB_LENGTH(ja3bsb), TRUE);
     }
@@ -601,7 +604,7 @@ LOCAL uint32_t tls_process_client_hello_data(ArkimeSession_t *session, const uin
 
     // Add the field
     arkime_field_string_add(ja4Field, session, ja4, 36, TRUE);
-    if (ja4Raw) {
+    if (ja4Raw && BSB_NOT_ERROR(ja4_rbsb)) {
         arkime_field_string_add(ja4RawField, session, ja4_r, BSB_LENGTH(ja4_rbsb), TRUE);
     }
 

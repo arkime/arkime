@@ -241,8 +241,13 @@ LOCAL uint8_t *arkime_get_instance_metadata(void *serverV, const char *key, int 
         const uint8_t *token = arkime_http_send_sync(serverV, "PUT", "/latest/api/token", -1, NULL, 0, tokenRequestHeaders, mlen, NULL);
         if (config.debug)
             LOG("IMDSv2 metadata token received");
-        snprintf(tokenHeader, sizeof(tokenHeader), "X-aws-ec2-metadata-token: %s", token);
-        requestHeaders[0] = tokenHeader;
+        if (token) {
+            snprintf(tokenHeader, sizeof(tokenHeader), "X-aws-ec2-metadata-token: %s", token);
+            requestHeaders[0] = tokenHeader;
+        } else {
+            LOG("WARNING - Failed to get IMDSv2 metadata token");
+            requestHeaders[0] = NULL;
+        }
     } else {
         if (config.debug)
             LOG("Using IMDSv1");
@@ -349,6 +354,9 @@ LOCAL void writer_s3_header_cb (char *url, const char *field, const char *value,
 
     SavepcapS3File_t   *file = uw;
     int pn = atoi(pnstr + 11);
+
+    if (pn < 0 || pn >= ARRAY_LEN(file->partNumbers))
+        return;
 
     if (*value == '"')
         file->partNumbers[pn] = g_strndup(value + 1, valueLen - 2);

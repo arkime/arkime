@@ -629,9 +629,13 @@ const char *arkime_field_string_add(int pos, ArkimeSession_t *session, const cha
     ArkimeField_t                    *field;
     ArkimeStringHashStd_t            *hash;
     ArkimeString_t                   *hstring;
+
+    if (pos < 0 || pos >= session->maxFields)
+        return NULL;
+
     const ArkimeFieldInfo_t          *info = config.fields[pos];
 
-    if (pos >= session->maxFields || info->flags & ARKIME_FIELD_FLAG_DISABLED)
+    if (info->flags & ARKIME_FIELD_FLAG_DISABLED)
         return NULL;
 
     if (!session->fields[pos]) {
@@ -824,9 +828,13 @@ const char *arkime_field_string_uw_add(int pos, ArkimeSession_t *session, const 
     ArkimeField_t                    *field;
     ArkimeStringHashStd_t            *hash;
     ArkimeString_t                   *hstring;
+
+    if (pos < 0 || pos >= session->maxFields)
+        return NULL;
+
     const ArkimeFieldInfo_t          *info = config.fields[pos];
 
-    if (pos >= session->maxFields || info->flags & ARKIME_FIELD_FLAG_DISABLED)
+    if (info->flags & ARKIME_FIELD_FLAG_DISABLED)
         return NULL;
 
     if (!session->fields[pos]) {
@@ -903,9 +911,13 @@ gboolean arkime_field_int_add(int pos, ArkimeSession_t *session, int i)
     ArkimeField_t                    *field;
     ArkimeIntHashStd_t               *hash;
     ArkimeInt_t                      *hint;
+
+    if (pos < 0 || pos >= session->maxFields)
+        return FALSE;
+
     const ArkimeFieldInfo_t          *info = config.fields[pos];
 
-    if (pos >= session->maxFields || info->flags & ARKIME_FIELD_FLAG_DISABLED)
+    if (info->flags & ARKIME_FIELD_FLAG_DISABLED)
         return FALSE;
 
     if (!session->fields[pos]) {
@@ -981,9 +993,13 @@ gboolean arkime_field_float_add(int pos, ArkimeSession_t *session, float f)
 {
     ArkimeField_t                    *field;
     uint32_t                          fint;
+
+    if (pos < 0 || pos >= session->maxFields)
+        return FALSE;
+
     const ArkimeFieldInfo_t          *info = config.fields[pos];
 
-    if (pos >= session->maxFields || info->flags & ARKIME_FIELD_FLAG_DISABLED)
+    if (info->flags & ARKIME_FIELD_FLAG_DISABLED)
         return FALSE;
 
     if (!session->fields[pos]) {
@@ -1085,9 +1101,13 @@ void *arkime_field_parse_ip(const char *str)
 gboolean arkime_field_ip_add_str(int pos, ArkimeSession_t *session, const char *str)
 {
     ArkimeField_t                    *field;
+
+    if (pos < 0 || pos >= session->maxFields)
+        return FALSE;
+
     const ArkimeFieldInfo_t          *info = config.fields[pos];
 
-    if (pos >= session->maxFields || info->flags & ARKIME_FIELD_FLAG_DISABLED)
+    if (info->flags & ARKIME_FIELD_FLAG_DISABLED)
         return FALSE;
 
     int len = strlen(str);
@@ -1141,10 +1161,14 @@ added:
 gboolean arkime_field_ip4_add(int pos, ArkimeSession_t *session, uint32_t i)
 {
     ArkimeField_t                    *field;
-    const ArkimeFieldInfo_t          *info = config.fields[pos];
     char                              ipbuf[INET6_ADDRSTRLEN];
 
-    if (pos >= session->maxFields || info->flags & ARKIME_FIELD_FLAG_DISABLED)
+    if (pos < 0 || pos >= session->maxFields)
+        return FALSE;
+
+    const ArkimeFieldInfo_t          *info = config.fields[pos];
+
+    if (info->flags & ARKIME_FIELD_FLAG_DISABLED)
         return FALSE;
 
     struct in6_addr *v = g_malloc(sizeof(struct in6_addr));
@@ -1199,10 +1223,14 @@ added:
 gboolean arkime_field_ip6_add(int pos, ArkimeSession_t *session, const uint8_t *val)
 {
     ArkimeField_t                    *field;
-    const ArkimeFieldInfo_t          *info = config.fields[pos];
     char                              ipbuf[INET6_ADDRSTRLEN];
 
-    if (pos >= session->maxFields || info->flags & ARKIME_FIELD_FLAG_DISABLED)
+    if (pos < 0 || pos >= session->maxFields)
+        return FALSE;
+
+    const ArkimeFieldInfo_t          *info = config.fields[pos];
+
+    if (info->flags & ARKIME_FIELD_FLAG_DISABLED)
         return FALSE;
 
     struct in6_addr *v = g_memdup(val, sizeof(struct in6_addr));
@@ -1377,6 +1405,14 @@ gboolean arkime_field_object_add(int pos, ArkimeSession_t *session, ArkimeFieldO
     ArkimeFieldObjectHashStd_t  *hash;
     ArkimeFieldObject_t         *ho;
 
+    if (pos < 0 || pos >= session->maxFields)
+        return FALSE;
+
+    const ArkimeFieldInfo_t     *info = config.fields[pos];
+
+    if (info->flags & ARKIME_FIELD_FLAG_DISABLED)
+        return FALSE;
+
     if (!session->fields[pos]) {
         field = ARKIME_TYPE_ALLOC(ArkimeField_t);
         session->fields[pos] = field;
@@ -1384,21 +1420,21 @@ gboolean arkime_field_object_add(int pos, ArkimeSession_t *session, ArkimeFieldO
         // length of the object name
         // 4 for the brackets and braces
         // len should be the length of the contents of the object
-        field->jsonSize = 3 + config.fields[pos]->dbFieldLen + 4 + len;
-        switch (config.fields[pos]->type) {
+        field->jsonSize = 3 + info->dbFieldLen + 4 + len;
+        switch (info->type) {
         case ARKIME_FIELD_TYPE_OBJECT:
             hash = ARKIME_TYPE_ALLOC(ArkimeFieldObjectHashStd_t);
-            HASH_INIT(o_, *hash, config.fields[pos]->object_hash, config.fields[pos]->object_cmp);
+            HASH_INIT(o_, *hash, info->object_hash, info->object_cmp);
             field->ohash = hash;
             HASH_ADD(o_, *hash, object->object, object);
             return TRUE;
         default:
-            LOGEXIT("ERROR - Not a field object %s field", config.fields[pos]->dbField);
+            LOGEXIT("ERROR - Not a field object %s field", info->dbField);
         }
     }
 
     field = session->fields[pos];
-    switch (config.fields[pos]->type) {
+    switch (info->type) {
     case ARKIME_FIELD_TYPE_OBJECT:
         HASH_FIND(o_, *(field->ohash), object->object, ho);
         if (ho) {
@@ -1411,7 +1447,7 @@ gboolean arkime_field_object_add(int pos, ArkimeSession_t *session, ArkimeFieldO
         HASH_ADD(o_, *(field->ohash), object->object, object);
         return TRUE;
     default:
-        LOGEXIT("ERROR - Not a field object %s field", config.fields[pos]->dbField);
+        LOGEXIT("ERROR - Not a field object %s field", info->dbField);
     }
 }
 
@@ -1672,7 +1708,7 @@ LOCAL void arkime_field_ops_int_parse(ArkimeFieldOp_t *op, const char *value)
 void arkime_field_ops_add_match(ArkimeFieldOps_t *ops, int fieldPos, char *value, int valuelen, int matchPos)
 {
     if (ops->num >= ops->size) {
-        ops->size = ceil (ops->size * 1.6);
+        ops->size = ops->size == 0 ? 1 : ceil (ops->size * 1.6);
         ARKIME_SIZE_REALLOC("ops", ops->ops, ops->size * sizeof(ArkimeFieldOp_t));
     }
 
