@@ -143,7 +143,7 @@ LOCAL int ssh_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, in
 
     // Version handshake
     if (remaining > 3 && memcmp("SSH", data, 3) == 0) {
-        const uint8_t *n = memchr(data, 0x0a, remaining);
+        const uint8_t *n = memchr(data + 3, 0x0a, remaining - 3);
         if (n && *(n - 1) == 0x0d)
             n--;
 

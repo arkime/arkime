@@ -1394,6 +1394,12 @@ LOCAL ArkimePacketRC arkime_packet_sll(ArkimePacketBatch_t *batch, ArkimePacket_
     int ethertype = data[14] << 8 | data[15];
     switch (ethertype) {
     case ETHERTYPE_VLAN:
+        if (len < 21) {
+#ifdef DEBUG_PACKET
+            LOG("BAD PACKET: Too short for VLAN %d", len);
+#endif
+            return ARKIME_PACKET_CORRUPT;
+        }
         if ((data[20] & 0xf0) == 0x60)
             return arkime_packet_ip6(batch, packet, data + 20, len - 20);
         else
