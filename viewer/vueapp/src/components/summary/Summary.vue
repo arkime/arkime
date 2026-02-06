@@ -608,6 +608,177 @@ const handleWidgetExport = (widget, svgId) => {
   }
 };
 
+// Temporarily add count labels to an SVG for export, returns a cleanup function
+const addExportCountLabels = (svg, data, metricType, foregroundColor) => {
+  const NS = 'http://www.w3.org/2000/svg';
+  const added = [];
+
+  const formatValue = (val) => {
+    if (metricType === 'bytes') return humanReadableBytes(val || 0);
+    return commaString(val || 0);
+  };
+
+  // Bar chart: add count text above each bar
+  const bars = svg.querySelectorAll('rect.bar');
+  if (bars.length > 0) {
+    const g = bars[0].parentNode;
+    bars.forEach((bar, i) => {
+      if (i >= data.length) return;
+      const x = parseFloat(bar.getAttribute('x'));
+      const y = parseFloat(bar.getAttribute('y'));
+      const width = parseFloat(bar.getAttribute('width'));
+      const value = data[i]?.[metricType] || 0;
+
+      const text = document.createElementNS(NS, 'text');
+      text.setAttribute('x', String(x + width / 2));
+      text.setAttribute('y', String(y - 5));
+      text.setAttribute('text-anchor', 'middle');
+      text.setAttribute('font-size', '10px');
+      text.setAttribute('fill', foregroundColor);
+      text.textContent = formatValue(value);
+      g.appendChild(text);
+      added.push(text);
+    });
+    return () => added.forEach(el => el.remove());
+  }
+
+  // Pie chart: add count text below each slice label
+  const arcs = svg.querySelectorAll('g.arc');
+  if (arcs.length > 0) {
+    arcs.forEach((arc, i) => {
+      if (i >= data.length) return;
+      const existingText = arc.querySelector('text');
+      if (!existingText || !existingText.textContent) return; // Skip tiny slices with no label
+      const value = data[i]?.[metricType] || 0;
+      const transform = existingText.getAttribute('transform');
+
+      const countText = document.createElementNS(NS, 'text');
+      countText.setAttribute('transform', transform);
+      countText.setAttribute('text-anchor', 'middle');
+      countText.setAttribute('font-size', '10px');
+      countText.setAttribute('fill', foregroundColor);
+      countText.setAttribute('dy', '1.2em');
+      countText.textContent = formatValue(value);
+      arc.appendChild(countText);
+      added.push(countText);
+    });
+  }
+
+  return () => added.forEach(el => el.remove());
+};
+
+// Export all chart widgets as a single PNG image
+const exportAllPNG = async () => {
+  try {
+    if (!saveSvgAsPng) {
+      const saveSvgAsPngModule = await import('save-svg-as-png');
+      saveSvgAsPng = saveSvgAsPngModule;
+    }
+
+    if (!widgetContainer.value) return;
+
+    // Get computed colors from CSS variables
+    const computedStyle = getComputedStyle(document.documentElement);
+    const foregroundColor = computedStyle.getPropertyValue('--color-foreground').trim() || '#000000';
+    const backgroundColor = computedStyle.getPropertyValue('--color-background').trim() || '#ffffff';
+
+    // Collect SVGs paired with their widget labels
+    const wrappers = widgetContainer.value.querySelectorAll('.widget-wrapper');
+    const entries = [];
+    const cleanups = [];
+
+    for (let i = 0; i < wrappers.length; i++) {
+      const config = widgetConfigs.value[i];
+      if (!config || config.viewMode?.value === 'table') continue; // Skip table widgets
+
+      const svg = wrappers[i].querySelector('svg');
+      if (!svg) continue; // Skip loading, error, or empty widgets
+      const label = config?.title || FieldService.getField(config?.field, true)?.friendlyName || config?.field || '';
+      const metricType = config?.metricType?.value || 'sessions';
+      const data = config?.data || [];
+
+      // Temporarily add count labels to the live SVG
+      const cleanup = addExportCountLabels(svg, data, metricType, foregroundColor);
+      cleanups.push(cleanup);
+
+      // Convert SVG to PNG data URI
+      const uri = await saveSvgAsPng.svgAsPngUri(svg, {
+        backgroundColor,
+        modifyCss: (selector, properties) => {
+          if (selector.includes('text')) {
+            properties = `fill: ${foregroundColor}; ${properties}`;
+          }
+          return selector + '{' + properties + '}';
+        }
+      });
+
+      entries.push({ uri, label });
+    }
+
+    // Remove all temporary count labels
+    cleanups.forEach(fn => fn());
+
+    if (!entries.length) return;
+
+    // Load all images and measure dimensions
+    const images = await Promise.all(entries.map(entry => new Promise((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => resolve({ img, label: entry.label });
+      img.onerror = reject;
+      img.src = entry.uri;
+    })));
+
+    // Layout: stack vertically with a label row above each chart
+    const labelHeight = 32;
+    const padding = 16;
+    const gap = 24;
+
+    const canvasWidth = Math.max(...images.map(i => i.img.width)) + padding * 2;
+    let canvasHeight = padding;
+    for (let i = 0; i < images.length; i++) {
+      canvasHeight += labelHeight + images[i].img.height;
+      if (i < images.length - 1) canvasHeight += gap;
+    }
+    canvasHeight += padding;
+
+    // Draw onto canvas
+    const canvas = document.createElement('canvas');
+    canvas.width = canvasWidth;
+    canvas.height = canvasHeight;
+    const ctx = canvas.getContext('2d');
+
+    // Background
+    ctx.fillStyle = backgroundColor;
+    ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+
+    // Draw each chart with its label
+    ctx.fillStyle = foregroundColor;
+    ctx.font = 'bold 16px sans-serif';
+    ctx.textBaseline = 'middle';
+
+    let y = padding;
+    for (const { img, label } of images) {
+      ctx.fillStyle = foregroundColor;
+      ctx.fillText(label, padding, y + labelHeight / 2);
+      y += labelHeight;
+      ctx.drawImage(img, padding, y);
+      y += img.height + gap;
+    }
+
+    // Download
+    canvas.toBlob((blob) => {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'arkime-summary-export.png';
+      a.click();
+      URL.revokeObjectURL(url);
+    });
+  } catch (err) {
+    error.value = 'Failed to export summary as PNG';
+  }
+};
+
 // Initialize drag-and-drop reordering with Sortable.js
 // NOTE: We use forceFallback + custom scrollFn because:
 // 1. forceFallback is needed for consistent cross-browser drag behavior
@@ -737,7 +908,8 @@ const getWidgetConfigs = () => {
 // Expose methods to parent component
 defineExpose({
   reloadSummary: generateSummary,
-  getWidgetConfigs
+  getWidgetConfigs,
+  exportAllPNG
 });
 </script>
 

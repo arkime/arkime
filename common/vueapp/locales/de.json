@@ -382,6 +382,8 @@
       "tableView": "Tabelle",
       "downloadPNG": "PNG herunterladen",
       "downloadCSV": "CSV herunterladen",
+      "exportAllPNG": "Alle Diagramme als PNG exportieren",
+      "exportPNGTableWarning": "Exportiert nur Diagramme, keine Tabellen",
       "resultsPerWidget": "Ergebnisse pro Widget",
       "canceledSearch": "Sie haben die Suche abgebrochen",
       "closingCancelsSearchErr": "Das Schließen der Zusammenfassungsseite hat die Suche abgebrochen",

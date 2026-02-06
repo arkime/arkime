@@ -382,6 +382,8 @@
       "tableView": "表格",
       "downloadPNG": "下载PNG",
       "downloadCSV": "下载CSV",
+      "exportAllPNG": "将所有图表导出为PNG",
+      "exportPNGTableWarning": "仅导出图表，不包括表格",
       "resultsPerWidget": "每个小部件的结果",
       "canceledSearch": "您已取消搜索",
       "closingCancelsSearchErr": "关闭摘要页面已取消搜索",

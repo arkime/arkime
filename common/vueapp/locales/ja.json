@@ -382,6 +382,8 @@
       "tableView": "テーブル",
       "downloadPNG": "PNG をダウンロード",
       "downloadCSV": "CSV をダウンロード",
+      "exportAllPNG": "すべてのグラフをPNGとしてエクスポート",
+      "exportPNGTableWarning": "グラフのみエクスポートされます（テーブルは除外）",
       "resultsPerWidget": "ウィジェットごとの結果数",
       "canceledSearch": "検索をキャンセルしました",
       "closingCancelsSearchErr": "サマリーページを閉じたため、検索がキャンセルされました",

@@ -62,6 +62,17 @@ SPDX-License-Identifier: Apache-2.0
             </b-dropdown-item>
           </b-dropdown>
 
+          <!-- export all charts as PNG -->
+          <button
+            id="exportAllPNGBtn"
+            class="btn btn-sm btn-secondary ms-2"
+            @click="exportAllPNG">
+            <span class="fa fa-download" />
+          </button>
+          <BTooltip target="exportAllPNGBtn">
+            {{ $t('sessions.summary.exportAllPNG') }} — {{ $t('sessions.summary.exportPNGTableWarning') }}
+          </BTooltip>
+
           <!-- summary field visibility dropdown -->
           <FieldSelectDropdown
             class="ms-2"
@@ -296,6 +307,9 @@ export default {
       this.summaryOrder = 'desc';
       this.updateSummaryOrder('desc');
       this.updateSummaryResultsLimit(20);
+    },
+    exportAllPNG: function () {
+      this.$refs.summaryView?.exportAllPNG?.();
     },
     updateVisualizationsData: function (data) {
       this.mapData = data.mapData;

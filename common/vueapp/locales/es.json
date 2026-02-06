@@ -382,6 +382,8 @@
       "tableView": "Tabla",
       "downloadPNG": "Descargar PNG",
       "downloadCSV": "Descargar CSV",
+      "exportAllPNG": "Exportar todos los gráficos como PNG",
+      "exportPNGTableWarning": "Solo exporta gráficos, no tablas",
       "resultsPerWidget": "Resultados por widget",
       "canceledSearch": "Cancelaste la búsqueda",
       "closingCancelsSearchErr": "Cerrar la página de resumen canceló la búsqueda",

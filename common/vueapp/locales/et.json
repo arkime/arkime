@@ -382,6 +382,8 @@
       "tableView": "Tabel",
       "downloadPNG": "Laadi PNG alla",
       "downloadCSV": "Laadi CSV alla",
+      "exportAllPNG": "Ekspordi kõik diagrammid PNG-na",
+      "exportPNGTableWarning": "Ekspordib ainult diagrammid, mitte tabeleid",
       "resultsPerWidget": "Tulemusi vidina kohta",
       "canceledSearch": "Sa tühistasid otsingu",
       "closingCancelsSearchErr": "Kokkuvõtte lehe sulgemine tühistas otsingu",

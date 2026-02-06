@@ -382,6 +382,8 @@
       "tableView": "테이블",
       "downloadPNG": "PNG 다운로드",
       "downloadCSV": "CSV 다운로드",
+      "exportAllPNG": "모든 차트를 PNG로 내보내기",
+      "exportPNGTableWarning": "차트만 내보내며 테이블은 제외됩니다",
       "resultsPerWidget": "위젯당 결과 수",
       "canceledSearch": "검색을 취소했습니다",
       "closingCancelsSearchErr": "요약 페이지를 닫아 검색이 취소되었습니다",
