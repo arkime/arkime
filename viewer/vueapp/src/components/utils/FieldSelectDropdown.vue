@@ -3,6 +3,7 @@
     lazy
     no-flip
     no-caret
+    auto-close="outside"
     size="sm"
     menu-class="field-dropdown-menu"
     class="field-dropdown d-inline-block"
@@ -29,6 +30,15 @@
         @click.stop
         :placeholder="searchPlaceholder" />
     </b-dropdown-header>
+    <li v-if="selectedFields.length > 0">
+      <button
+        type="button"
+        class="dropdown-item text-danger py-1"
+        @click="$emit('clear')">
+        <span class="fa fa-times me-1" />
+        Clear all
+      </button>
+    </li>
     <b-dropdown-divider />
     <template v-if="menuOpen">
       <b-dropdown-item v-if="!filteredFieldsCount">
@@ -43,13 +53,15 @@
           header-class="p-1 text-uppercase">
           {{ group }}
         </b-dropdown-header>
-        <template
+        <li
           v-for="(field, idx) in groupFields"
           :key="group + idx + 'item'">
-          <b-dropdown-item
+          <button
+            type="button"
             :id="group + idx + 'item'"
+            class="dropdown-item"
             :class="{ active: isSelected(getFieldId(field)) }"
-            @click.stop.prevent="toggle(getFieldId(field))">
+            @click="toggle(getFieldId(field))">
             {{ field.friendlyName }}
             <small>({{ field.exp }})</small>
             <BTooltip
@@ -57,8 +69,8 @@
               :target="group + idx + 'item'">
               {{ field.help }}
             </BTooltip>
-          </b-dropdown-item>
-        </template>
+          </button>
+        </li>
       </template>
       <button
         v-if="hasMoreFields"
@@ -124,7 +136,7 @@ export default {
       default: false
     }
   },
-  emits: ['toggle'],
+  emits: ['toggle', 'clear'],
   data () {
     return {
       menuOpen: false,

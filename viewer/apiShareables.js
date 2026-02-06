@@ -375,6 +375,8 @@ class ShareableAPIs {
           name: shareable.name,
           description: shareable.description,
           data: shareable.data,
+          creator: shareable.creator,
+          shared: shareable.creator !== user.userId,
           canEdit: await ShareableAPIs.canEdit(user, shareable),
           canDelete: ShareableAPIs.canDelete(user, shareable)
         };

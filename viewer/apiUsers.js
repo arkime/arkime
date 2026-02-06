@@ -889,6 +889,10 @@ class UserAPIs {
       const columnWidths = UserAPIs.findUserState('esTasksColWidths', req.user);
       return res.send({ tableState, columnWidths });
     }
+    case 'summary': {
+      const summaryConfig = UserAPIs.findUserState('summary', req.user);
+      return res.send({ summaryConfig });
+    }
     default:
       return res.serverError(501, 'Requested page is not supported');
     }

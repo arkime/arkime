@@ -15,6 +15,7 @@ SPDX-License-Identifier: Apache-2.0
     <b-dropdown
       size="sm"
       auto-close="outside"
+      teleport-disabled
       @shown="setFocus"
       :disabled="disabled"
       class="roles-dropdown no-wrap"

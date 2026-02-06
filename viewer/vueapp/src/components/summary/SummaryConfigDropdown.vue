@@ -57,6 +57,9 @@ SPDX-License-Identifier: Apache-2.0
         @click="loadConfig(config)">
         <div class="d-flex justify-content-between align-items-center w-100">
           <span class="config-name">
+            <span
+              v-if="config.shared"
+              class="fa fa-share-square me-1" />
             {{ config.name }}
             <small
               v-if="config.creator && config.creator !== user.userId"
