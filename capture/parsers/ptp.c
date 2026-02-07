@@ -94,7 +94,7 @@ LOCAL void ptp_udp_classify(ArkimeSession_t *session, const uint8_t *data, int l
 
     // Validate message type (byte 0 low nibble should be valid)
     uint8_t msgType = data[0] & 0x0f;
-    if (msgType > 0x0D || (msgType > 0x03 && msgType < 0x08))
+    if (msgType >= ARRAY_LEN(ptpMsgTypes) || (msgType > 0x03 && msgType < 0x08))
         return;
 
     arkime_session_add_protocol(session, "ptp");

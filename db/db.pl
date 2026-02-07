@@ -5911,6 +5911,46 @@ sub sessions3Update
         }
       }
     },
+    "synchrophasor" : {
+      "properties" : {
+        "cmd" : {
+          "type" : "long"
+        },
+        "cmdCnt" : {
+          "type" : "long"
+        },
+        "dataRate" : {
+          "type" : "long"
+        },
+        "dataRateCnt" : {
+          "type" : "long"
+        },
+        "frameType" : {
+          "type" : "keyword"
+        },
+        "frameTypeCnt" : {
+          "type" : "long"
+        },
+        "idcode" : {
+          "type" : "long"
+        },
+        "idcodeCnt" : {
+          "type" : "long"
+        },
+        "numPMU" : {
+          "type" : "long"
+        },
+        "numPMUCnt" : {
+          "type" : "long"
+        },
+        "station" : {
+          "type" : "keyword"
+        },
+        "stationCnt" : {
+          "type" : "long"
+        }
+      }
+    },
     "tags" : {
       "type" : "keyword"
     },

@@ -122,7 +122,7 @@ LOCAL int pana_udp_parser(ArkimeSession_t *session, void *UNUSED(uw), const uint
         return ARKIME_PARSER_UNREGISTER;
 
     // Add message type
-    if (msgType > 0 && msgType <= 4) {
+    if (msgType > 0 && msgType < ARRAY_LEN(pana_msg_types)) {
         arkime_field_string_add(msgTypeField, session, pana_msg_types[msgType], -1, TRUE);
     }
 
@@ -144,8 +144,7 @@ LOCAL void pana_udp_classify(ArkimeSession_t *session, const uint8_t *data, int 
         return;
 
     // Exclude DNS ports
-    if (session->port1 == 53 || session->port2 == 53)
-        return;
+    ARKIME_RETURN_IF_DNS_PORT;
 
     // PANA header: 2 bytes reserved (0x0000), 2 bytes length, must match packet length
     if (len < 16)
@@ -157,7 +156,7 @@ LOCAL void pana_udp_classify(ArkimeSession_t *session, const uint8_t *data, int 
 
     // Message type should be 1-4
     uint16_t msgType = (data[6] << 8) | data[7];
-    if (msgType < 1 || msgType > 4)
+    if (msgType < 1 || msgType >= ARRAY_LEN(pana_msg_types))
         return;
 
     arkime_session_add_protocol(session, "pana");
