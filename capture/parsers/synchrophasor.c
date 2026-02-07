@@ -52,7 +52,7 @@ LOCAL void synchrophasor_parse_frame(ArkimeSession_t *session, const uint8_t *da
     BSB_IMPORT_u08(bsb, syncByte2);
     uint8_t frameType = (syncByte2 >> 4) & 0x07;
 
-    if (frameType <= 5) {
+    if (frameType < ARRAY_LEN(frameTypeNames)) {
         arkime_field_string_add(frameTypeField, session, frameTypeNames[frameType], -1, TRUE);
     }
 
@@ -262,8 +262,7 @@ LOCAL void synchrophasor_tcp_classify(ArkimeSession_t *session, const uint8_t *d
 /******************************************************************************/
 LOCAL void synchrophasor_udp_classify(ArkimeSession_t *session, const uint8_t *data, int len, int UNUSED(which), void UNUSED(*uw))
 {
-    if (session->port1 == 53 || session->port2 == 53)
-        return;
+    ARKIME_RETURN_IF_DNS_PORT;
 
     if (len < SYNCHROPHASOR_MIN_LEN)
         return;

@@ -533,6 +533,7 @@ typedef struct {
 #define ARKIME_WHICH_SET_ID(_w, _id) ((_w & 0x1) | (_id << 8))
 
 #define ARKIME_PARSER_UNREGISTER -1
+#define ARKIME_RETURN_IF_DNS_PORT if (session->port1 == 53 || session->port2 == 53) return
 typedef int  (* ArkimeParserFunc) (struct arkime_session *session, void *uw, const uint8_t *data, int remaining, int which);
 typedef void (* ArkimeParserFreeFunc) (struct arkime_session *session, void *uw);
 typedef void (* ArkimeParserSaveFunc) (struct arkime_session *session, void *uw, int final);

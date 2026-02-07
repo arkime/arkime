@@ -64,9 +64,7 @@ LOCAL void user_classify(ArkimeSession_t *session, const uint8_t *data, int len,
 /******************************************************************************/
 LOCAL void misc_add_protocol_classify(ArkimeSession_t *session, const uint8_t *UNUSED(data), int UNUSED(len), int UNUSED(which), void *uw)
 {
-    // Exclude DNS port
-    if (session->port1 == 53 || session->port2 == 53)
-        return;
+    ARKIME_RETURN_IF_DNS_PORT;
 
     arkime_session_add_protocol(session, uw);
 }
@@ -201,8 +199,8 @@ LOCAL void telnet_tcp_classify(ArkimeSession_t *session, const uint8_t *data, in
 /******************************************************************************/
 LOCAL void netflow_classify(ArkimeSession_t *session, const uint8_t *data, int len, int UNUSED(which), void *UNUSED(uw))
 {
-    // Exclude DNS and small packets
-    if (session->port1 == 53 || session->port2 == 53 || len < 24)
+    ARKIME_RETURN_IF_DNS_PORT;
+    if (len < 24)
         return;
 
     BSB bsb;
