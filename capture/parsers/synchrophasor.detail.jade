@@ -1,0 +1,10 @@
+if (session.synchrophasor)
+  div.sessionDetailMeta.bold Synchrophasor
+  dl.sessionDetailMeta
+    +arrayList(session.synchrophasor, "frameType", "Frame Type", "synchrophasor.frameType")
+    +arrayList(session.synchrophasor, "idcode", "ID Code", "synchrophasor.idcode")
+    +arrayList(session.synchrophasor, "cmd", "Command", "synchrophasor.cmd")
+    +arrayList(session.synchrophasor, "station", "Station Name", "synchrophasor.station")
+    +arrayList(session.synchrophasor, "numPMU", "Number of PMUs", "synchrophasor.numPMU")
+    +arrayList(session.synchrophasor, "dataRate", "Data Rate", "synchrophasor.dataRate")
+

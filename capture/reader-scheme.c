@@ -498,7 +498,7 @@ LOCAL int arkime_reader_scheme_processNG(const char *uri, uint8_t *data, int len
                 readerState.fileHeaderLen = h->block_total_length;
             }
 
-            if (readerState.fileHeaderLen > sizeof(readerState.tmpBuffer)) {
+            if ((size_t)readerState.fileHeaderLen > sizeof(readerState.tmpBuffer)) {
                 LOG("ERROR - pcapNG block_total_length %d exceeds maximum %zu", readerState.fileHeaderLen, sizeof(readerState.tmpBuffer));
                 return 1;
             }
@@ -540,7 +540,7 @@ LOCAL int arkime_reader_scheme_processNG(const char *uri, uint8_t *data, int len
 
             readerState.blockSize = blockHeader->block_total_length - 8;
 
-            if (readerState.blockSize > sizeof(readerState.tmpBuffer)) {
+            if ((size_t)readerState.blockSize > sizeof(readerState.tmpBuffer)) {
                 LOG("ERROR - pcapNG block size %d exceeds maximum %zu", readerState.blockSize, sizeof(readerState.tmpBuffer));
                 return 1;
             }
