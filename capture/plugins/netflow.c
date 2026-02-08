@@ -41,37 +41,43 @@ LOCAL int           headerSize;
 
 extern ArkimeConfig_t        config;
 
-LOCAL struct timeval lastTime[ARKIME_MAX_PACKET_THREADS];
-LOCAL char           buf[ARKIME_MAX_PACKET_THREADS][1500];
-LOCAL BSB            bsb[ARKIME_MAX_PACKET_THREADS];
-LOCAL int            bufCount[ARKIME_MAX_PACKET_THREADS];
-LOCAL uint32_t       totalFlows[ARKIME_MAX_PACKET_THREADS];
+typedef struct {
+    struct timeval  lastTime;
+    char            buf[1500];
+    BSB             bsb;
+    int             bufCount;
+    uint32_t        totalFlows;
+} ARKIME_CACHE_ALIGN NetflowThreadData_t;
+
+LOCAL NetflowThreadData_t netflowThreadData[ARKIME_MAX_PACKET_THREADS];
 
 /******************************************************************************/
 LOCAL void netflow_send(const int thread)
 {
     BSB hbsb;
 
-    BSB_INIT(hbsb, buf[thread], headerSize);
+    NetflowThreadData_t *td = &netflowThreadData[thread];
 
-    uint32_t sys_uptime = (lastTime[thread].tv_sec - initialPacket.tv_sec) * 1000 + (lastTime[thread].tv_usec - initialPacket.tv_usec) / 1000;
+    BSB_INIT(hbsb, td->buf, headerSize);
+
+    uint32_t sys_uptime = (td->lastTime.tv_sec - initialPacket.tv_sec) * 1000 + (td->lastTime.tv_usec - initialPacket.tv_usec) / 1000;
 
     /* Header */
     BSB_EXPORT_u16(hbsb, netflowVersion);
-    BSB_EXPORT_u16(hbsb, bufCount[thread]); // count
+    BSB_EXPORT_u16(hbsb, td->bufCount); // count
     BSB_EXPORT_u32(hbsb, sys_uptime); // sys_uptime
-    BSB_EXPORT_u32(hbsb, lastTime[thread].tv_sec);
-    BSB_EXPORT_u32(hbsb, lastTime[thread].tv_usec * 1000);
+    BSB_EXPORT_u32(hbsb, td->lastTime.tv_sec);
+    BSB_EXPORT_u32(hbsb, td->lastTime.tv_usec * 1000);
 
     switch (netflowVersion) {
     case 5:
-        BSB_EXPORT_u32(hbsb, totalFlows[thread]); // flow_sequence
+        BSB_EXPORT_u32(hbsb, td->totalFlows); // flow_sequence
         BSB_EXPORT_u08(hbsb, 0); // engine_type
         BSB_EXPORT_u08(hbsb, 0); // engine_id
         BSB_EXPORT_u16(hbsb, 0); // mode/interval
         break;
     case 7:
-        BSB_EXPORT_u32(hbsb, totalFlows[thread]); // flow_sequence
+        BSB_EXPORT_u32(hbsb, td->totalFlows); // flow_sequence
         BSB_EXPORT_u32(hbsb, 0); // reserved
         break;
     }
@@ -80,14 +86,14 @@ LOCAL void netflow_send(const int thread)
     for (i = 0; i < numDests; i++) {
         int rc;
 
-        if ((rc = send(dests[i].fd, buf[thread], BSB_LENGTH(bsb[thread]) + headerSize, 0)) < BSB_LENGTH(bsb[thread]) + headerSize) {
-            LOG("Failed to send rc=%d size=%u error=%s", rc, (uint32_t)BSB_LENGTH(bsb[thread]) + headerSize, strerror(errno));
+        if ((rc = send(dests[i].fd, td->buf, BSB_LENGTH(td->bsb) + headerSize, 0)) < BSB_LENGTH(td->bsb) + headerSize) {
+            LOG("Failed to send rc=%d size=%u error=%s", rc, (uint32_t)BSB_LENGTH(td->bsb) + headerSize, strerror(errno));
         }
     }
 
-    totalFlows[thread] += bufCount[thread];
-    BSB_INIT(bsb[thread], buf[thread] + headerSize, sizeof(buf[thread]) - headerSize);
-    bufCount[thread] = 0;
+    td->totalFlows += td->bufCount;
+    BSB_INIT(td->bsb, td->buf + headerSize, sizeof(td->buf) - headerSize);
+    td->bufCount = 0;
 }
 /******************************************************************************/
 /*
@@ -97,11 +103,12 @@ LOCAL void netflow_plugin_save(ArkimeSession_t *session, int UNUSED(final))
 {
     static const char zero[8] = {0, 0, 0, 0, 0, 0, 0, 0};
     const int thread = session->thread;
+    NetflowThreadData_t *td = &netflowThreadData[thread];
 
-    if (bufCount[thread] == -1) {
-        bufCount[thread] = 0;
-        BSB_INIT(bsb[thread], buf[thread] + headerSize, sizeof(buf[thread]) - headerSize);
-    } else if (bufCount[thread] > 20) {
+    if (td->bufCount == -1) {
+        td->bufCount = 0;
+        BSB_INIT(td->bsb, td->buf + headerSize, sizeof(td->buf) - headerSize);
+    } else if (td->bufCount > 20) {
         netflow_send(thread);
     }
 
@@ -112,108 +119,108 @@ LOCAL void netflow_plugin_save(ArkimeSession_t *session, int UNUSED(final))
     }
 #pragma GCC diagnostic pop
 
-    if ((lastTime[thread].tv_sec < session->lastPacket.tv_sec) || (lastTime[thread].tv_sec == session->lastPacket.tv_sec && lastTime[thread].tv_usec < session->lastPacket.tv_usec)) {
-        lastTime[thread] = session->lastPacket;
+    if ((td->lastTime.tv_sec < session->lastPacket.tv_sec) || (td->lastTime.tv_sec == session->lastPacket.tv_sec && td->lastTime.tv_usec < session->lastPacket.tv_usec)) {
+        td->lastTime = session->lastPacket;
     }
     uint32_t first = (session->firstPacket.tv_sec - initialPacket.tv_sec) * 1000 + (session->firstPacket.tv_usec - initialPacket.tv_usec) / 1000;
     uint32_t last  = (session->lastPacket.tv_sec - initialPacket.tv_sec) * 1000 + (session->lastPacket.tv_usec - initialPacket.tv_usec) / 1000;
 
     if (session->packets[0]) {
         /* Body */
-        BSB_EXPORT_ptr(bsb[thread], &ARKIME_V6_TO_V4(session->addr1), 4);
-        BSB_EXPORT_ptr(bsb[thread], &ARKIME_V6_TO_V4(session->addr2), 4);
-        BSB_EXPORT_u32(bsb[thread], 0); // nexthop
-        BSB_EXPORT_u16(bsb[thread], netflowSNMPInput); // snmp input
-        BSB_EXPORT_u16(bsb[thread], netflowSNMPOutput); // snmp output
-        BSB_EXPORT_u32(bsb[thread], session->packets[0]);
-        BSB_EXPORT_u32(bsb[thread], session->bytes[0]);
-        BSB_EXPORT_u32(bsb[thread], first);
-        BSB_EXPORT_u32(bsb[thread], last);
-        BSB_EXPORT_u16(bsb[thread], session->port1);
-        BSB_EXPORT_u16(bsb[thread], session->port2);
+        BSB_EXPORT_ptr(td->bsb, &ARKIME_V6_TO_V4(session->addr1), 4);
+        BSB_EXPORT_ptr(td->bsb, &ARKIME_V6_TO_V4(session->addr2), 4);
+        BSB_EXPORT_u32(td->bsb, 0); // nexthop
+        BSB_EXPORT_u16(td->bsb, netflowSNMPInput); // snmp input
+        BSB_EXPORT_u16(td->bsb, netflowSNMPOutput); // snmp output
+        BSB_EXPORT_u32(td->bsb, session->packets[0]);
+        BSB_EXPORT_u32(td->bsb, session->bytes[0]);
+        BSB_EXPORT_u32(td->bsb, first);
+        BSB_EXPORT_u32(td->bsb, last);
+        BSB_EXPORT_u16(td->bsb, session->port1);
+        BSB_EXPORT_u16(td->bsb, session->port2);
 
         switch (netflowVersion) {
         case 1:
-            BSB_EXPORT_u08(bsb[thread], 0); // pad
-            BSB_EXPORT_u08(bsb[thread], session->ipProtocol);
-            BSB_EXPORT_u08(bsb[thread], session->ip_tos); // tos
-            BSB_EXPORT_u08(bsb[thread], session->tcp_flags); // tcp_flags
-            BSB_EXPORT_ptr(bsb[thread], zero, 8); //pad
+            BSB_EXPORT_u08(td->bsb, 0); // pad
+            BSB_EXPORT_u08(td->bsb, session->ipProtocol);
+            BSB_EXPORT_u08(td->bsb, session->ip_tos); // tos
+            BSB_EXPORT_u08(td->bsb, session->tcp_flags); // tcp_flags
+            BSB_EXPORT_ptr(td->bsb, zero, 8); //pad
             break;
         case 5:
-            BSB_EXPORT_u08(bsb[thread], 0); // pad
-            BSB_EXPORT_u08(bsb[thread], session->tcp_flags); // tcp_flags
-            BSB_EXPORT_u08(bsb[thread], session->ipProtocol);
-            BSB_EXPORT_u08(bsb[thread], session->ip_tos); // tos
-            BSB_EXPORT_u16(bsb[thread], 0); // src as
-            BSB_EXPORT_u16(bsb[thread], 0); // dst as
-            BSB_EXPORT_u08(bsb[thread], 0); // src_mask
-            BSB_EXPORT_u08(bsb[thread], 0); // dst_mask
-            BSB_EXPORT_ptr(bsb[thread], zero, 2); //pad
+            BSB_EXPORT_u08(td->bsb, 0); // pad
+            BSB_EXPORT_u08(td->bsb, session->tcp_flags); // tcp_flags
+            BSB_EXPORT_u08(td->bsb, session->ipProtocol);
+            BSB_EXPORT_u08(td->bsb, session->ip_tos); // tos
+            BSB_EXPORT_u16(td->bsb, 0); // src as
+            BSB_EXPORT_u16(td->bsb, 0); // dst as
+            BSB_EXPORT_u08(td->bsb, 0); // src_mask
+            BSB_EXPORT_u08(td->bsb, 0); // dst_mask
+            BSB_EXPORT_ptr(td->bsb, zero, 2); //pad
             break;
         case 7:
-            BSB_EXPORT_u08(bsb[thread], 0); // pad
-            BSB_EXPORT_u08(bsb[thread], session->tcp_flags);
-            BSB_EXPORT_u08(bsb[thread], session->ipProtocol);
-            BSB_EXPORT_u08(bsb[thread], session->ip_tos);
-            BSB_EXPORT_u16(bsb[thread], 0); // src as
-            BSB_EXPORT_u16(bsb[thread], 0); // dst as
-            BSB_EXPORT_u08(bsb[thread], 0); // src_mask
-            BSB_EXPORT_u08(bsb[thread], 0); // dst_mask
-            BSB_EXPORT_u16(bsb[thread], 0); // flags
-            BSB_EXPORT_u32(bsb[thread], 0); // router_sc
+            BSB_EXPORT_u08(td->bsb, 0); // pad
+            BSB_EXPORT_u08(td->bsb, session->tcp_flags);
+            BSB_EXPORT_u08(td->bsb, session->ipProtocol);
+            BSB_EXPORT_u08(td->bsb, session->ip_tos);
+            BSB_EXPORT_u16(td->bsb, 0); // src as
+            BSB_EXPORT_u16(td->bsb, 0); // dst as
+            BSB_EXPORT_u08(td->bsb, 0); // src_mask
+            BSB_EXPORT_u08(td->bsb, 0); // dst_mask
+            BSB_EXPORT_u16(td->bsb, 0); // flags
+            BSB_EXPORT_u32(td->bsb, 0); // router_sc
             break;
         }
-        bufCount[thread]++;
+        td->bufCount++;
     }
 
     if (session->packets[1]) {
         /* Body */
-        BSB_EXPORT_ptr(bsb[thread], &ARKIME_V6_TO_V4(session->addr2), 4);
-        BSB_EXPORT_ptr(bsb[thread], &ARKIME_V6_TO_V4(session->addr1), 4);
-        BSB_EXPORT_u32(bsb[thread], 0); // nexthop
-        BSB_EXPORT_u16(bsb[thread], netflowSNMPInput); // snmp input
-        BSB_EXPORT_u16(bsb[thread], netflowSNMPOutput); // snmp output
-        BSB_EXPORT_u32(bsb[thread], session->packets[1]);
-        BSB_EXPORT_u32(bsb[thread], session->bytes[1]);
-        BSB_EXPORT_u32(bsb[thread], first);
-        BSB_EXPORT_u32(bsb[thread], last);
-        BSB_EXPORT_u16(bsb[thread], session->port2);
-        BSB_EXPORT_u16(bsb[thread], session->port1);
+        BSB_EXPORT_ptr(td->bsb, &ARKIME_V6_TO_V4(session->addr2), 4);
+        BSB_EXPORT_ptr(td->bsb, &ARKIME_V6_TO_V4(session->addr1), 4);
+        BSB_EXPORT_u32(td->bsb, 0); // nexthop
+        BSB_EXPORT_u16(td->bsb, netflowSNMPInput); // snmp input
+        BSB_EXPORT_u16(td->bsb, netflowSNMPOutput); // snmp output
+        BSB_EXPORT_u32(td->bsb, session->packets[1]);
+        BSB_EXPORT_u32(td->bsb, session->bytes[1]);
+        BSB_EXPORT_u32(td->bsb, first);
+        BSB_EXPORT_u32(td->bsb, last);
+        BSB_EXPORT_u16(td->bsb, session->port2);
+        BSB_EXPORT_u16(td->bsb, session->port1);
 
         switch (netflowVersion) {
         case 1:
-            BSB_EXPORT_u08(bsb[thread], 0); // pad
-            BSB_EXPORT_u08(bsb[thread], session->ipProtocol);
-            BSB_EXPORT_u08(bsb[thread], session->ip_tos); // tos
-            BSB_EXPORT_u08(bsb[thread], session->tcp_flags); // tcp_flags
-            BSB_EXPORT_ptr(bsb[thread], zero, 8); //pad
+            BSB_EXPORT_u08(td->bsb, 0); // pad
+            BSB_EXPORT_u08(td->bsb, session->ipProtocol);
+            BSB_EXPORT_u08(td->bsb, session->ip_tos); // tos
+            BSB_EXPORT_u08(td->bsb, session->tcp_flags); // tcp_flags
+            BSB_EXPORT_ptr(td->bsb, zero, 8); //pad
             break;
         case 5:
-            BSB_EXPORT_u08(bsb[thread], 0); // pad
-            BSB_EXPORT_u08(bsb[thread], session->tcp_flags); // tcp_flags
-            BSB_EXPORT_u08(bsb[thread], session->ipProtocol);
-            BSB_EXPORT_u08(bsb[thread], session->ip_tos); // tos
-            BSB_EXPORT_u16(bsb[thread], 0); // src as
-            BSB_EXPORT_u16(bsb[thread], 0); // dst as
-            BSB_EXPORT_u08(bsb[thread], 0); // src_mask
-            BSB_EXPORT_u08(bsb[thread], 0); // dst_mask
-            BSB_EXPORT_ptr(bsb[thread], zero, 2); //pad
+            BSB_EXPORT_u08(td->bsb, 0); // pad
+            BSB_EXPORT_u08(td->bsb, session->tcp_flags); // tcp_flags
+            BSB_EXPORT_u08(td->bsb, session->ipProtocol);
+            BSB_EXPORT_u08(td->bsb, session->ip_tos); // tos
+            BSB_EXPORT_u16(td->bsb, 0); // src as
+            BSB_EXPORT_u16(td->bsb, 0); // dst as
+            BSB_EXPORT_u08(td->bsb, 0); // src_mask
+            BSB_EXPORT_u08(td->bsb, 0); // dst_mask
+            BSB_EXPORT_ptr(td->bsb, zero, 2); //pad
             break;
         case 7:
-            BSB_EXPORT_u08(bsb[thread], 0); // pad
-            BSB_EXPORT_u08(bsb[thread], session->tcp_flags);
-            BSB_EXPORT_u08(bsb[thread], session->ipProtocol);
-            BSB_EXPORT_u08(bsb[thread], session->ip_tos);
-            BSB_EXPORT_u16(bsb[thread], 0); // src as
-            BSB_EXPORT_u16(bsb[thread], 0); // dst as
-            BSB_EXPORT_u08(bsb[thread], 0); // src_mask
-            BSB_EXPORT_u08(bsb[thread], 0); // dst_mask
-            BSB_EXPORT_u16(bsb[thread], 0); // flags
-            BSB_EXPORT_u32(bsb[thread], 0); // router_sc
+            BSB_EXPORT_u08(td->bsb, 0); // pad
+            BSB_EXPORT_u08(td->bsb, session->tcp_flags);
+            BSB_EXPORT_u08(td->bsb, session->ipProtocol);
+            BSB_EXPORT_u08(td->bsb, session->ip_tos);
+            BSB_EXPORT_u16(td->bsb, 0); // src as
+            BSB_EXPORT_u16(td->bsb, 0); // dst as
+            BSB_EXPORT_u08(td->bsb, 0); // src_mask
+            BSB_EXPORT_u08(td->bsb, 0); // dst_mask
+            BSB_EXPORT_u16(td->bsb, 0); // flags
+            BSB_EXPORT_u32(td->bsb, 0); // router_sc
             break;
         }
-        bufCount[thread]++;
+        td->bufCount++;
     }
 }
 
@@ -300,6 +307,6 @@ void arkime_plugin_init()
 
     int thread;
     for (thread = 0; thread < config.packetThreads; thread++) {
-        bufCount[thread] = -1;
+        netflowThreadData[thread].bufCount = -1;
     }
 }
