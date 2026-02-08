@@ -296,10 +296,10 @@ void arkime_parser_init()
     arkime_parsers_classifier_register_udp("synchrophasor", NULL, 0, (const uint8_t *)"\xaa", 1, synchrophasor_udp_classify);
 
     frameTypeField = arkime_field_define("synchrophasor", "lotermfield",
-                                          "synchrophasor.frameType", "Frame Type", "synchrophasor.frameType",
-                                          "Synchrophasor frame types",
-                                          ARKIME_FIELD_TYPE_STR_GHASH, ARKIME_FIELD_FLAG_CNT,
-                                          (char *)NULL);
+                                         "synchrophasor.frameType", "Frame Type", "synchrophasor.frameType",
+                                         "Synchrophasor frame types",
+                                         ARKIME_FIELD_TYPE_STR_GHASH, ARKIME_FIELD_FLAG_CNT,
+                                         (char *)NULL);
 
     idcodeField = arkime_field_define("synchrophasor", "integer",
                                       "synchrophasor.idcode", "ID Code", "synchrophasor.idcode",

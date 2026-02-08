@@ -129,10 +129,10 @@ class ArkimeUtil {
    */
   static isPP (str) {
     if (Array.isArray(str)) {
-      return str.includes('__proto__') || str.includes('constructor');
+      return str.includes('__proto__') || str.includes('constructor') || str.includes('prototype');
     }
 
-    return str === '__proto__' || str === 'constructor';
+    return str === '__proto__' || str === 'constructor' || str === 'prototype';
   }
 
   // ----------------------------------------------------------------------------
