@@ -812,6 +812,10 @@ class UserAPIs {
         return res.serverError(403, 'Unknown user');
       }
 
+      if (ArkimeUtil.isPP(req.params.name)) {
+        return res.serverError(400, 'Invalid state name');
+      }
+
       if (!user.tableStates) {
         user.tableStates = {};
       }

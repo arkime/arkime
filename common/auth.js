@@ -261,7 +261,7 @@ class Auth {
         secret: Auth.passwordSecret + Auth.#serverSecret,
         resave: false,
         saveUninitialized: true,
-        cookie: { path: Auth.#basePath, secure: Auth.#authConfig.cookieSecure, sameSite: Auth.#authConfig.cookieSameSite ?? 'Lax', maxAge: 24 * 60 * 60 * 1000 },
+        cookie: { path: Auth.#basePath, secure: Auth.#authConfig.cookieSecure, sameSite: Auth.#authConfig.cookieSameSite ?? 'Lax', maxAge: 24 * 60 * 60 * 1000, httpOnly: true },
         store: new ESStore({ })
       }));
       Auth.#authRouter.use(passport.initialize());
@@ -469,7 +469,7 @@ class Auth {
 
         const storeHa1 = Auth.store2ha1(user.passStore, user.userId);
         const ha1 = Auth.pass2ha1(userId, password);
-        if (storeHa1 !== ha1) return done(null, false);
+        if (storeHa1.length !== ha1.length || !crypto.timingSafeEqual(Buffer.from(storeHa1), Buffer.from(ha1))) return done(null, false);
 
         user.setLastUsed();
         return done(null, user);
@@ -626,7 +626,7 @@ class Auth {
 
         const storeHa1 = Auth.store2ha1(user.passStore, user.userId);
         const ha1 = Auth.pass2ha1(userId, password);
-        if (storeHa1 !== ha1) return done(null, false);
+        if (storeHa1.length !== ha1.length || !crypto.timingSafeEqual(Buffer.from(storeHa1), Buffer.from(ha1))) return done(null, false);
 
         user.setLastUsed();
         return done(null, user);

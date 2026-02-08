@@ -1716,6 +1716,12 @@ app.getpost( // multiunique endpoint (POST or GET) - uses fillQueryFromBody to
   SessionAPIs.getMultiunique
 );
 
+app.get( // single session JSON endpoint
+  ['/api/session/:id'],
+  [ArkimeUtil.noCacheJson, logAction(), setCookie],
+  SessionAPIs.getSessionById
+);
+
 app.get( // session detail (SPI) endpoint
   ['/api/session/:nodeName/:id/detail'],
   [logAction()],
