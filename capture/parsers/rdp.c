@@ -372,10 +372,22 @@ LOCAL void rdp_classify(ArkimeSession_t *session, const uint8_t *data, int len, 
     if (tpktLen > len + 100)  // Allow some slack
         return;
 
-    // X.224 CR (0xE0) or CC (0xD0) or DT (0xF0)
+    // X.224 CR (0xE0) or CC (0xD0) - RDP identification requires connection setup
     uint8_t x224Code = data[5];
-    if (x224Code != 0xE0 && x224Code != 0xD0 && x224Code != 0xF0)
+    if (x224Code != 0xE0 && x224Code != 0xD0)
         return;
+
+    // Positively identify RDP by looking for "Cookie:" or RDP Negotiation Request
+    if (len < 12)
+        return;
+    // Variable data starts at offset 11 (after TPKT(4) + COTP len(1) + type(1) + dst_ref(2) + src_ref(2) + class(1))
+    if (len >= 28 && memcmp(data + 11, "Cookie: mstshash=", 17) == 0) {
+        // RDP cookie found
+    } else if (data[11] == TYPE_RDP_NEG_REQ || data[11] == TYPE_RDP_NEG_RSP || data[11] == TYPE_RDP_NEG_FAILURE) {
+        // RDP negotiation request/response
+    } else {
+        return;
+    }
 
     ArkimeParserBuf_t *rdp = arkime_parser_buf_create();
     arkime_session_add_protocol(session, "rdp");

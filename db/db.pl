@@ -5630,6 +5630,46 @@ sub sessions3Update
         }
       }
     },
+    "s7comm" : {
+      "properties" : {
+        "errorClass" : {
+          "type" : "long"
+        },
+        "errorClassCnt" : {
+          "type" : "long"
+        },
+        "errorCode" : {
+          "type" : "long"
+        },
+        "errorCodeCnt" : {
+          "type" : "long"
+        },
+        "func" : {
+          "type" : "long"
+        },
+        "funcCnt" : {
+          "type" : "long"
+        },
+        "opcode" : {
+          "type" : "long"
+        },
+        "opcodeCnt" : {
+          "type" : "long"
+        },
+        "pduref" : {
+          "type" : "long"
+        },
+        "pdurefCnt" : {
+          "type" : "long"
+        },
+        "rosctr" : {
+          "type" : "long"
+        },
+        "rosctrCnt" : {
+          "type" : "long"
+        }
+      }
+    },
     "smb" : {
       "properties" : {
         "dialect" : {
