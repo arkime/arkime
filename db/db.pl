@@ -4371,6 +4371,40 @@ sub sessions3Update
         }
       }
     },
+    "c1222" : {
+      "properties" : {
+        "calledApTitle" : {
+          "type" : "keyword"
+        },
+        "calledApTitleCnt" : {
+          "type" : "long"
+        },
+        "callingApTitle" : {
+          "type" : "keyword"
+        },
+        "callingApTitleCnt" : {
+          "type" : "long"
+        },
+        "callingApInvocationId" : {
+          "type" : "long"
+        },
+        "callingApInvocationIdCnt" : {
+          "type" : "long"
+        },
+        "securityMode" : {
+          "type" : "keyword"
+        },
+        "securityModeCnt" : {
+          "type" : "long"
+        },
+        "responseControl" : {
+          "type" : "keyword"
+        },
+        "responseControlCnt" : {
+          "type" : "long"
+        }
+      }
+    },
     "certCnt" : {
       "type" : "long"
     },

@@ -128,7 +128,7 @@ LOCAL int s7comm_tcp_parser(ArkimeSession_t *session, void *uw, const uint8_t *d
         uint16_t tpktLen = 0;
         BSB_IMPORT_u16(bsb, tpktLen);
 
-        if (tpktLen < TPKT_HDR_LEN || tpktLen > 65535) {
+        if (tpktLen < TPKT_HDR_LEN) {
             return ARKIME_PARSER_UNREGISTER;
         }
 
