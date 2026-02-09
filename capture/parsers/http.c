@@ -40,6 +40,7 @@ typedef struct {
     uint16_t         isConnect: 2; // Keep track of each side that is CONNECT and completed headers
     uint16_t         reclassify: 2; // Keep track of each side that needs to reclassify still
     uint16_t         http2Upgrade: 1;
+    uint16_t         websocketUpgrade: 1;
 } HTTPInfo_t;
 
 extern ArkimeConfig_t        config;
@@ -505,6 +506,9 @@ LOCAL int arkime_hp_cb_on_header_value (http_parser *parser, const char *at, siz
                 http->http2Upgrade = 1;
             }
         }
+        if (strcmp(lower, "upgrade") == 0 && length >= 9 && strncasecmp((const char *)at, "websocket", 9) == 0) {
+            http->websocketUpgrade = 1;
+        }
         g_free(lower);
     }
 
@@ -691,6 +695,10 @@ LOCAL int arkime_hp_cb_on_headers_complete (http_parser *parser)
         arkime_session_add_tag(session, "http:url-truncated");
 
     arkime_session_add_protocol(session, "http");
+
+    if (http->websocketUpgrade && parser->status_code == 101) {
+        arkime_session_add_protocol(session, "websocket");
+    }
 
     if (pluginsCbs & ARKIME_PLUGIN_HP_OHC)
         arkime_plugins_cb_hp_ohc(session, parser);
