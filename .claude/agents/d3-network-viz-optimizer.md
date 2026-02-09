@@ -1,6 +1,13 @@
 ---
 name: d3-network-viz-optimizer
-description: Use this agent when working with D3.js visualizations for network traffic analysis, including: creating new visualizations from session data, optimizing performance of existing D3.js charts, improving visual clarity and interactivity, debugging rendering issues, implementing advanced D3.js patterns for time-series or flow-based network data, or enhancing user experience in network traffic dashboards.\n\nExamples:\n- User: 'I need to visualize 10,000 network sessions with source/destination IPs, timestamps, and packet counts'\n  Assistant: 'I'm going to use the d3-network-viz-optimizer agent to design an appropriate D3.js visualization architecture for your network session data.'\n- User: 'My D3.js force-directed graph is lagging with more than 1000 nodes'\n  Assistant: 'Let me use the d3-network-viz-optimizer agent to analyze and optimize the performance of your force-directed network visualization.'\n- User: 'How can I add time-based filtering to my network flow diagram?'\n  Assistant: 'I'll use the d3-network-viz-optimizer agent to implement interactive time-based filtering for your network flow visualization.'\n- Context: User has just written a basic D3.js scatter plot for network latency data\n  User: 'Here's my initial implementation...'\n  Assistant: 'Now let me use the d3-network-viz-optimizer agent to review and suggest improvements for your network latency visualization.'
+description: |
+  Use this agent when working with D3.js visualizations for network traffic analysis, including creating new visualizations from session data, optimizing performance of existing D3.js charts, improving visual clarity and interactivity, debugging rendering issues, implementing advanced D3.js patterns for time-series or flow-based network data, or enhancing user experience in network traffic dashboards.
+
+  Examples:
+    - "I need to visualize 10,000 network sessions with source/destination IPs, timestamps, and packet counts"
+    - "My D3.js force-directed graph is lagging with more than 1000 nodes"
+    - "How can I add time-based filtering to my network flow diagram?"
+    - "Here's my initial D3.js scatter plot for network latency data - can you review it?"
 model: sonnet
 color: cyan
 ---

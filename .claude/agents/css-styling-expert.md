@@ -1,6 +1,13 @@
 ---
 name: css-styling-expert
-description: Use this agent when you need help writing CSS for Vue components, debugging styling issues, implementing responsive layouts, or working with Bootstrap Vue Next, Vuetify, or custom CSS. This includes creating new visual features, fixing layout problems, understanding CSS specificity conflicts, or optimizing component styling.\n\nExamples:\n\n<example>\nContext: User is building a new Vue component that needs styling.\nuser: "I need to create a card component that displays session details with a header, body, and footer"\nassistant: "I'll use the css-styling-expert agent to help design and implement the styling for this card component"\n</example>\n\n<example>\nContext: User is debugging a CSS issue where styles aren't applying correctly.\nuser: "The button in my modal isn't showing the correct color even though I added the class"\nassistant: "Let me use the css-styling-expert agent to diagnose this CSS specificity issue and find the right solution"\n</example>\n\n<example>\nContext: User needs to make a component responsive.\nuser: "This table component looks good on desktop but breaks on mobile"\nassistant: "I'll engage the css-styling-expert agent to implement responsive breakpoints and mobile-friendly styling"\n</example>\n\n<example>\nContext: User wants to customize Bootstrap Vue Next components.\nuser: "I want to override the default Bootstrap colors to match our brand"\nassistant: "I'll use the css-styling-expert agent to set up proper SCSS variable overrides and custom theming"\n</example>
+description: |
+  Use this agent when you need help writing CSS for Vue components, debugging styling issues, implementing responsive layouts, or working with Bootstrap Vue Next, Vuetify, or custom CSS. This includes creating new visual features, fixing layout problems, understanding CSS specificity conflicts, or optimizing component styling.
+
+  Examples:
+    - "I need to create a card component that displays session details with a header, body, and footer"
+    - "The button in my modal isn't showing the correct color even though I added the class"
+    - "This table component looks good on desktop but breaks on mobile"
+    - "I want to override the default Bootstrap colors to match our brand"
 model: sonnet
 color: yellow
 ---

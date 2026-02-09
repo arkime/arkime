@@ -60,9 +60,11 @@ tftp_rrq.pcap - https://wiki.wireshark.org/uploads/__moin_import__/attachments/S
 stun-ice-testcall.pcap - https://www.cloudshark.org/captures/4686b8430477
 nbns.pcap - extract nbns from https://wiki.wireshark.org/uploads/__moin_import__/attachments/SampleCaptures/dos_win98_smb_netbeui.pcapng
 imap.pcap - https://wiki.wireshark.org/uploads/__moin_import__/attachments/SampleCaptures/imap.cap
+pcap/websocket.pcap - https://wiki.wireshark.org/uploads/__moin_import__/attachments/WebSocket/websocket.pcap
+c1222.pcap - combined https://wiki.wireshark.org/uploads/__moin_import__/attachments/SampleCaptures/c1222overIPv4.cap.gz and https://wiki.wireshark.org/uploads/__moin_import__/attachments/SampleCaptures/c1222_over_ipv6.pcap
 
 
-arkime_test.pcap prompt:
+arkime_synthetic.pcap prompt:
      Create a comprehensive test PCAP file arkime_test.pcap that covers all arkime_field_define fields across the entire codebase. This includes:
        - Find all field definitions by searching for arkime_field_define in both parsers/*.c and *.c files in the capture directory
        - For each parser, create packets that exercise all its fields:
@@ -78,19 +80,7 @@ arkime_test.pcap prompt:
          - No truncated packets (caplen must equal pktlen/wirelen)
          - Rebuild any packet where pkt.wirelen != len(bytes(pkt)) by re-creating it from bytes
          - Verify with tcpdump -nn that no packets show "truncated", "invalid", "missing", or "bad"
-
      Write the complete Python script and run it to create the PCAP.
-
-snmpv3_test.pcap prompt:
-   Create a test pcap file with SNMPv3 traffic using Python/scapy. Include:
-     - 3 SNMPv3 packets with different usernames (e.g., admin_user, monitor, readonly)
-     - 3 SNMPv2c packets with different communities (e.g., public, private, secret123)
-     - Mix of message types: GetRequest, GetResponse, SetRequest
-     - Use proper ASN.1 encoding for all fields
-     - Different source IPs for each packet
-     - Target UDP port 161
-     - Each packet 1 second apart in timestamp
-
 
 2) Viewer
 Test various viewer apis.  Requires that an elasticsearch already be running on the local host.

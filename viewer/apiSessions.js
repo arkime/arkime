@@ -382,6 +382,7 @@ class SessionAPIs {
 
     const decodeOptions = JSON.parse(req.query.decode || '{}');
     for (const key in decodeOptions) {
+      if (ArkimeUtil.isPP(key)) { continue; }
       if (key.match(/^ITEM/)) {
         options.order.push(key);
       } else {
@@ -2481,6 +2482,31 @@ class SessionAPIs {
         }
         return res.end();
       });
+    });
+  }
+
+  // --------------------------------------------------------------------------
+  /**
+   * GET - /api/session/:id
+   *
+   * Gets all the fields for a session as JSON.
+   * @name /session/:id
+   * @param {string} id - The ID of the session to retrieve
+   * @returns {object} The session fields as a JSON object
+   */
+  static getSessionById (req, res) {
+    const options = ViewerUtils.addCluster(req.query.cluster);
+    options._source = ['cert', 'dns'];
+    options.fields = ['*'];
+    options.arkime_unflatten = parseInt(req.query.flatten) !== 1;
+    Db.getSession(req.params.id, options, (err, session) => {
+      if (err || !session.found) {
+        return res.serverError(500, 'Session not found');
+      }
+
+      session = session.fields;
+      session.id = req.params.id;
+      return res.json(session);
     });
   }
 

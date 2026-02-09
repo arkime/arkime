@@ -1,0 +1,209 @@
+{
+ "sessions3" : [
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 548
+    },
+    "destination" : {
+     "bytes" : 870,
+     "ip" : "192.168.43.135",
+     "mac" : [
+      "00:0c:29:8a:3d:a7"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 9,
+     "port" : 12345
+    },
+    "dstOui" : [
+     "VMware, Inc."
+    ],
+    "dstOuiCnt" : 1,
+    "dstPayload8" : "485454502f312e31",
+    "dstRIR" : "ARIN",
+    "dstTTL" : [
+     64
+    ],
+    "dstTTLCnt" : 1,
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 1475155930793,
+    "http" : {
+     "clientVersion" : [
+      "1.1"
+     ],
+     "clientVersionCnt" : 1,
+     "host" : [
+      "192.168.43.135",
+      "192.168.43.135:12345"
+     ],
+     "hostCnt" : 2,
+     "method" : [
+      "GET"
+     ],
+     "methodCnt" : 1,
+     "path" : [
+      "/"
+     ],
+     "pathCnt" : 1,
+     "requestHeader" : [
+      "accept-encoding",
+      "accept-language",
+      "cache-control",
+      "connection",
+      "host",
+      "origin",
+      "pragma",
+      "sec-websocket-extensions",
+      "sec-websocket-key",
+      "sec-websocket-version",
+      "upgrade",
+      "user-agent"
+     ],
+     "requestHeaderCnt" : 12,
+     "requestHeaderField" : [
+      "accept-encoding",
+      "accept-language",
+      "cache-control",
+      "connection",
+      "origin",
+      "pragma",
+      "sec-websocket-extensions",
+      "sec-websocket-key",
+      "sec-websocket-version",
+      "upgrade"
+     ],
+     "requestHeaderValue" : [
+      "13",
+      "bkdpyn3u98ctfzjsh4tneq==",
+      "file://",
+      "gzip, deflate, sdch",
+      "no-cache",
+      "no-cache",
+      "permessage-deflate; client_max_window_bits",
+      "upgrade",
+      "websocket",
+      "zh-cn,zh;q=0.8,en-us;q=0.6,en;q=0.4"
+     ],
+     "requestHeaderValueCnt" : 10,
+     "responseHeader" : [
+      "connection",
+      "sec-websocket-accept",
+      "upgrade",
+      "websocket-location",
+      "websocket-origin"
+     ],
+     "responseHeaderCnt" : 5,
+     "responseHeaderField" : [
+      "connection",
+      "sec-websocket-accept",
+      "upgrade",
+      "websocket-location",
+      "websocket-origin"
+     ],
+     "responseHeaderValue" : [
+      "4eaesckuogby+rjosjsmv+vmoc0=",
+      "file://",
+      "upgrade",
+      "websocket",
+      "ws://192.168.43.135:12345/"
+     ],
+     "responseHeaderValueCnt" : 5,
+     "serverVersion" : [
+      "1.1"
+     ],
+     "serverVersionCnt" : 1,
+     "statuscode" : [
+      101
+     ],
+     "statuscodeCnt" : 1,
+     "uri" : [
+      "192.168.43.135:12345/"
+     ],
+     "uriCnt" : 1,
+     "useragent" : [
+      "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.116 Safari/537.36"
+     ],
+     "useragentCnt" : 1
+    },
+    "initRTT" : 1,
+    "ipProtocol" : 6,
+    "lastPacket" : 1475156053660,
+    "length" : 122867,
+    "network" : {
+     "bytes" : 1972,
+     "community_id" : "1:yZ/zFnzytWD2m5zDTLLA4crCFdg=",
+     "packets" : 19
+    },
+    "node" : "test",
+    "packetLen" : [
+     82
+    ],
+    "packetPos" : [
+     24
+    ],
+    "packetRange" : {
+     "gte" : 1475155930793,
+     "lte" : 1475156053660
+    },
+    "protocol" : [
+     "http",
+     "tcp",
+     "websocket"
+    ],
+    "protocolCnt" : 3,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 336
+    },
+    "source" : {
+     "bytes" : 1102,
+     "ip" : "192.168.43.1",
+     "mac" : [
+      "00:50:56:c0:00:08"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 10,
+     "port" : 50999
+    },
+    "srcOui" : [
+     "VMware, Inc."
+    ],
+    "srcOuiCnt" : 1,
+    "srcPayload8" : "474554202f204854",
+    "srcRIR" : "ARIN",
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
+    "tags" : [
+     "truncated-pcap"
+    ],
+    "tagsCnt" : 1,
+    "tcpflags" : {
+     "ack" : 10,
+     "dstZero" : 0,
+     "fin" : 0,
+     "psh" : 7,
+     "rst" : 0,
+     "srcZero" : 0,
+     "syn" : 1,
+     "syn-ack" : 1,
+     "urg" : 0
+    },
+    "tcpseq" : {
+     "dst" : 0,
+     "src" : 3386158937
+    },
+    "totDataBytes" : 884
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-160929"
+    }
+   }
+  }
+ ]
+}
+

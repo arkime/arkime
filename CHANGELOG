@@ -58,18 +58,22 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #3655 Handle different quic salts for draft23, draft29, v2
   - #3655 More ssdp keywords
   - #3656 Parse udp facebook quic
-  - #3657 Add classifiers for: plex-gdm, samsung-smartview, whatsapp, ubiquiti-ubnt, xid 
-  - #3659 Add classifier for nbds and parser for nbns
+  - #3657 Added classifiers for: plex-gdm, samsung-smartview, whatsapp, ubiquiti-ubnt, xid 
+  - #3659 Added classifier for nbds and parser for nbns
   - #3660 Added basic ptp parser
   - #3661 Added isakmp cert decoding
   - #3663 Added dcerpc parsing
   - #3668 Added basic dnp3 parsing
-  - #3670 Added basic wireguard classifer
+  - #3670 Added basic wireguard classifier
   - #3672 Added some telcom protocols: m3ua, sccp, tcap, camel, diameter
   - #3676 Added basic imap parser
   - #3677 Align structures and remove unimportant atomic counts to help when
           using large number of packetThreads
   - #3678 Added classifier: gearman, esio; parser: pana
+  - #3681 Added synchrophasor parser
+  - #3682 Added s7comm parser
+  - #3686 Added websocket detection
+  - #3687 Added c122 parser
 
 6.0.0-rc1 2026/01/26
 ## BREAKING

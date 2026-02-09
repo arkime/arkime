@@ -4371,6 +4371,46 @@ sub sessions3Update
         }
       }
     },
+    "c1222" : {
+      "properties" : {
+        "calledApInvocationId" : {
+          "type" : "long"
+        },
+        "calledApInvocationIdCnt" : {
+          "type" : "long"
+        },
+        "calledApTitle" : {
+          "type" : "keyword"
+        },
+        "calledApTitleCnt" : {
+          "type" : "long"
+        },
+        "callingApTitle" : {
+          "type" : "keyword"
+        },
+        "callingApTitleCnt" : {
+          "type" : "long"
+        },
+        "callingApInvocationId" : {
+          "type" : "long"
+        },
+        "callingApInvocationIdCnt" : {
+          "type" : "long"
+        },
+        "securityMode" : {
+          "type" : "keyword"
+        },
+        "securityModeCnt" : {
+          "type" : "long"
+        },
+        "responseControl" : {
+          "type" : "keyword"
+        },
+        "responseControlCnt" : {
+          "type" : "long"
+        }
+      }
+    },
     "certCnt" : {
       "type" : "long"
     },
@@ -5630,6 +5670,46 @@ sub sessions3Update
         }
       }
     },
+    "s7comm" : {
+      "properties" : {
+        "errorClass" : {
+          "type" : "long"
+        },
+        "errorClassCnt" : {
+          "type" : "long"
+        },
+        "errorCode" : {
+          "type" : "long"
+        },
+        "errorCodeCnt" : {
+          "type" : "long"
+        },
+        "func" : {
+          "type" : "long"
+        },
+        "funcCnt" : {
+          "type" : "long"
+        },
+        "opcode" : {
+          "type" : "long"
+        },
+        "opcodeCnt" : {
+          "type" : "long"
+        },
+        "pduref" : {
+          "type" : "long"
+        },
+        "pdurefCnt" : {
+          "type" : "long"
+        },
+        "rosctr" : {
+          "type" : "long"
+        },
+        "rosctrCnt" : {
+          "type" : "long"
+        }
+      }
+    },
     "smb" : {
       "properties" : {
         "dialect" : {
@@ -5907,6 +5987,46 @@ sub sessions3Update
           "type" : "long"
         },
         "signatureIdCnt" : {
+          "type" : "long"
+        }
+      }
+    },
+    "synchrophasor" : {
+      "properties" : {
+        "cmd" : {
+          "type" : "long"
+        },
+        "cmdCnt" : {
+          "type" : "long"
+        },
+        "dataRate" : {
+          "type" : "long"
+        },
+        "dataRateCnt" : {
+          "type" : "long"
+        },
+        "frameType" : {
+          "type" : "keyword"
+        },
+        "frameTypeCnt" : {
+          "type" : "long"
+        },
+        "idcode" : {
+          "type" : "long"
+        },
+        "idcodeCnt" : {
+          "type" : "long"
+        },
+        "numPMU" : {
+          "type" : "long"
+        },
+        "numPMUCnt" : {
+          "type" : "long"
+        },
+        "station" : {
+          "type" : "keyword"
+        },
+        "stationCnt" : {
           "type" : "long"
         }
       }

@@ -443,8 +443,8 @@ my $hToken = getTokenCookie('sac-huntuser');
   my $id = $HUNTS{"raw-regex-both-(.*a){25}x"}->{hunt}->{id};
   my $result = $RESULTS{$id};
   is ($result->{status}, 'finished', "raw-regex-both-(.*a){25}x finished check");
-  is ($result->{searchedSessions}, 80, "raw-regex-both-(.*a){25}x searchedSessions check");
-  is ($result->{totalSessions}, 80, "raw-regex-both-(.*a){25}x totalSessions check");
+  is ($result->{searchedSessions}, 81, "raw-regex-both-(.*a){25}x searchedSessions check");
+  is ($result->{totalSessions}, 81, "raw-regex-both-(.*a){25}x totalSessions check");
   is ($result->{matchedSessions}, 0, "raw-regex-both-(.*a){25}x match check");
 
 # cleanup

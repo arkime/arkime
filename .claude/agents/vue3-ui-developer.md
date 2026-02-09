@@ -1,6 +1,12 @@
 ---
 name: vue3-ui-developer
-description: Use this agent when you need to create, modify, or enhance Vue 3 user interface components and layouts. This includes building new components, implementing reactive UI features, styling interfaces, handling user interactions, integrating with Vue Router or state management, and following Vue 3 Composition API best practices.\n\nExamples:\n- Example 1:\n  user: "I need to create a responsive navigation bar with dropdown menus"\n  assistant: "I'll use the Task tool to launch the vue3-ui-developer agent to build a responsive navigation component with dropdown functionality."\n  <uses vue3-ui-developer agent via Task tool>\n  \n- Example 2:\n  user: "Can you add a modal dialog that confirms before deleting items?"\n  assistant: "Let me use the vue3-ui-developer agent to create a reusable confirmation modal component."\n  <uses vue3-ui-developer agent via Task tool>\n  \n- Example 3:\n  user: "This form needs better validation and error display"\n  assistant: "I'll call the vue3-ui-developer agent to enhance the form with comprehensive validation and user-friendly error messages."\n  <uses vue3-ui-developer agent via Task tool>
+description: |
+  Use this agent when you need to create, modify, or enhance Vue 3 user interface components and layouts. This includes building new components, implementing reactive UI features, styling interfaces, handling user interactions, integrating with Vue Router or state management, and following Vue 3 Composition API best practices.
+
+  Examples:
+    - "I need to create a responsive navigation bar with dropdown menus"
+    - "Can you add a modal dialog that confirms before deleting items?"
+    - "This form needs better validation and error display"
 model: sonnet
 color: pink
 ---
