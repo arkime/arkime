@@ -289,10 +289,11 @@ export default {
       const index = this.summaryFields.indexOf(fieldExp);
       if (index >= 0) {
         this.summaryFields.splice(index, 1);
+        this.$refs.summaryView?.removeField?.(fieldExp);
       } else {
         this.summaryFields.push(fieldExp);
+        this.$refs.summaryView?.addField?.(fieldExp);
       }
-      this.reloadSummaryView();
       this.saveSummaryConfig();
     },
     clearSummaryFields: function () {

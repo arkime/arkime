@@ -1064,9 +1064,34 @@ const getWidgetConfigs = () => {
   }));
 };
 
+// Add a single field without re-fetching everything
+const addField = (fieldExp) => {
+  if (!summary.value?.fields) {
+    // Summary hasn't loaded yet, need a full reload
+    generateSummary();
+    return;
+  }
+
+  // Add loading placeholder and fetch just this field
+  summary.value.fields.push({ field: fieldExp, loading: true });
+  fetchFields([fieldExp]);
+};
+
+// Remove a single field without re-fetching anything
+const removeField = (fieldExp) => {
+  if (!summary.value?.fields) return;
+
+  const index = summary.value.fields.findIndex(f => f.field === fieldExp);
+  if (index !== -1) {
+    summary.value.fields.splice(index, 1);
+  }
+};
+
 // Expose methods to parent component
 defineExpose({
   reloadSummary: generateSummary,
+  addField,
+  removeField,
   getWidgetConfigs,
   exportAllPNG,
   cancelLoading,
