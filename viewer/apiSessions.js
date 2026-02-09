@@ -2730,6 +2730,8 @@ class SessionAPIs {
       topNum = parseInt(req.query.length);
     }
 
+    const sortOrder = req.body.order === 'asc' ? 'asc' : 'desc';
+
     // Validate and parse fields parameter - should be a comma-separated string of field names
     if (!req.body.fields || !ArkimeUtil.isString(req.body.fields)) {
       return res.status(400).send({ error: 'Missing or invalid fields parameter in request body - must be a comma-separated string of field names' });
@@ -2822,6 +2824,7 @@ class SessionAPIs {
     let isFirst = true;
 
     async function send (msg, isLast) {
+      if (res.destroyed) return;
       if (isFirst) {
         res.write('[');
         isFirst = false;
@@ -2840,6 +2843,9 @@ class SessionAPIs {
     }
 
     BuildQuery.build(req, async (bsqErr, query, indices) => {
+      let clientDisconnected = false;
+      req.on('close', () => { clientDisconnected = true; });
+
       // Delay before first chunk to allow skeleton UI to display
       if (summaryChunkDelay > 0) {
         await ArkimeUtil.yield(summaryChunkDelay);
@@ -2871,6 +2877,9 @@ class SessionAPIs {
       };
 
       const options = ViewerUtils.addCluster(req.query.cluster);
+      if (req.query.cancelId) {
+        options.cancelId = `${req.user.userId}::${req.query.cancelId}`;
+      }
 
       /******************************/
       /* Phase 1, top level and map */
@@ -2933,6 +2942,7 @@ class SessionAPIs {
 
       // Field aggregations - dynamically added based on requested fields
       for (const fieldExp in fieldConfig) {
+        if (clientDisconnected || res.destroyed) { break; }
         try {
           const { aggName, dbField, isSpecial } = fieldConfig[fieldExp];
           const metadata = fieldMetadata[fieldExp] ?? { viewMode: 'bar', metricType: 'sessions' };
@@ -2947,7 +2957,8 @@ class SessionAPIs {
                     source: "if (doc['source.ip'].size() == 0) { return []; } return [doc['source.ip'].value, doc['destination.ip'].value];",
                     lang: 'painless'
                   },
-                  size: topNum
+                  size: topNum,
+                  order: { _count: sortOrder }
                 },
                 aggs: extraAggs
               };
@@ -2958,7 +2969,8 @@ class SessionAPIs {
                     source: "if (doc['destination.port'].size() == 0) { return []; } return [doc['destination.ip'].value + '_' + doc['destination.port'].value];",
                     lang: 'painless'
                   },
-                  size: topNum
+                  size: topNum,
+                  order: { _count: sortOrder }
                 },
                 aggs: extraAggs
               };
@@ -2968,7 +2980,8 @@ class SessionAPIs {
             query.aggregations[aggName] = {
               terms: {
                 field: dbField,
-                size: topNum
+                size: topNum,
+                order: { _count: sortOrder }
               },
               aggs: extraAggs
             };
@@ -2993,7 +3006,9 @@ class SessionAPIs {
           await send({ field: fieldExp, error: fieldErr.message || String(fieldErr) }, false);
         }
       }
-      await send({}, true);
+      if (!res.destroyed) {
+        await send({}, true);
+      }
     });
   }
 

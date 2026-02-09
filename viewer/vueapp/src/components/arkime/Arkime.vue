@@ -44,6 +44,35 @@ SPDX-License-Identifier: Apache-2.0
             </b-dropdown-item>
           </b-dropdown>
 
+          <!-- top/bottom results toggle -->
+          <b-dropdown
+            size="sm"
+            variant="secondary"
+            class="ms-2"
+            :text="summaryOrder === 'asc' ? 'Bottom' : 'Top'">
+            <b-dropdown-item
+              :active="summaryOrder === 'desc'"
+              @click="updateSummaryOrder('desc')">
+              Top
+            </b-dropdown-item>
+            <b-dropdown-item
+              :active="summaryOrder === 'asc'"
+              @click="updateSummaryOrder('asc')">
+              Bottom
+            </b-dropdown-item>
+          </b-dropdown>
+
+          <!-- export all charts as PNG -->
+          <button
+            id="exportAllPNGBtn"
+            class="btn btn-sm btn-secondary ms-2"
+            @click="exportAllPNG">
+            <span class="fa fa-download" />
+          </button>
+          <BTooltip target="exportAllPNGBtn">
+            {{ $t('sessions.summary.exportAllPNG') }} — {{ $t('sessions.summary.exportPNGTableWarning') }}
+          </BTooltip>
+
           <!-- summary field visibility dropdown -->
           <FieldSelectDropdown
             class="ms-2"
@@ -52,7 +81,8 @@ SPDX-License-Identifier: Apache-2.0
             :search-placeholder="$t('sessions.summary.searchFields')"
             :include-summary-fields="true"
             field-id-key="exp"
-            @toggle="toggleSummaryField" />
+            @toggle="toggleSummaryField"
+            @clear="clearSummaryFields" />
 
           <!-- summary config dropdown -->
           <SummaryConfigDropdown
@@ -61,7 +91,18 @@ SPDX-License-Identifier: Apache-2.0
             @load="loadSummaryConfigFromShareable"
             @reset="resetSummaryToDefaults"
             @message="displayMessage" />
+
+          <!-- cancel loading button -->
+          <button
+            v-if="summaryStreaming"
+            type="button"
+            class="btn btn-sm btn-warning ms-2"
+            @click="cancelSummaryLoading">
+            <span class="fa fa-ban" />&nbsp;
+            {{ $t('common.cancel') }}
+          </button>
         </div>
+
       </span>
     </ArkimeCollapsible>
 
@@ -89,13 +130,36 @@ SPDX-License-Identifier: Apache-2.0
     <!-- summary content -->
     <div class="arkime-content ms-2">
       <arkime-summary-view
+        v-if="configLoaded"
         ref="summaryView"
         :summary-fields="summaryFields"
         @update-visualizations="updateVisualizationsData"
         @reorder-fields="reorderSummaryFields"
         @widget-config-changed="updateWidgetConfigs"
         @remove-field="toggleSummaryField"
+        @streaming-state="summaryStreaming = $event"
+        @canceled-state="summaryCanceled = $event"
         @recalc-collapse="$emit('recalc-collapse')" />
+    </div>
+
+    <!-- stale data warning after cancellation -->
+    <div
+      v-if="summaryCanceled && !summaryStreaming"
+      class="alert alert-warning position-fixed fixed-bottom m-0 rounded-0">
+      <span class="fa fa-exclamation-triangle me-2" />
+      {{ $t('sessions.summary.canceledSearch') }}
+      — {{ $t('sessions.summary.staleDataWarning') }}
+      <button
+        type="button"
+        class="btn btn-success btn-xs ms-2"
+        @click="retryAllFailed">
+        <span class="fa fa-refresh" />&nbsp;
+        {{ $t('sessions.summary.retryAllFailed') }}
+      </button>
+      <button
+        type="button"
+        class="btn-close float-end"
+        @click="summaryCanceled = false" />
     </div>
   </div>
 </template>
@@ -109,6 +173,7 @@ import FieldSelectDropdown from '../utils/FieldSelectDropdown.vue';
 import SummaryConfigDropdown from '../summary/SummaryConfigDropdown.vue';
 import Utils from '../utils/utils';
 import FieldService from '../search/FieldService';
+import UserService from '../users/UserService';
 
 export default {
   name: 'Arkime',
@@ -125,13 +190,17 @@ export default {
     return {
       // Summary configuration
       summaryResultsLimit: parseInt(this.$route.query.summaryLength) || 20,
+      summaryOrder: this.$route.query.summaryOrder || 'desc',
       summaryFields: [],
       widgetConfigs: [],
       // Visualization data
       mapData: undefined,
       graphData: undefined,
       // UI state
-      error: ''
+      error: '',
+      configLoaded: false,
+      summaryStreaming: false,
+      summaryCanceled: false
     };
   },
   computed: {
@@ -163,7 +232,8 @@ export default {
 
       return {
         fields,
-        resultsLimit: this.summaryResultsLimit
+        resultsLimit: this.summaryResultsLimit,
+        order: this.summaryOrder
       };
     }
   },
@@ -173,6 +243,14 @@ export default {
       const newLimit = parseInt(newValue) || 20;
       if (this.summaryResultsLimit !== newLimit) {
         this.summaryResultsLimit = newLimit;
+        this.reloadSummaryView();
+      }
+    },
+    // Handle browser back/forward navigation for summaryOrder
+    '$route.query.summaryOrder': function (newValue) {
+      const newOrder = newValue || 'desc';
+      if (this.summaryOrder !== newOrder) {
+        this.summaryOrder = newOrder;
         this.reloadSummaryView();
       }
     },
@@ -197,22 +275,40 @@ export default {
         query: { ...this.$route.query, summaryLength: newLimit }
       });
       this.reloadSummaryView();
+      this.saveSummaryConfig();
+    },
+    updateSummaryOrder: async function (newOrder) {
+      this.summaryOrder = newOrder;
+      await this.$router.replace({
+        query: { ...this.$route.query, summaryOrder: newOrder }
+      });
+      this.reloadSummaryView();
+      this.saveSummaryConfig();
     },
     toggleSummaryField: function (fieldExp) {
       const index = this.summaryFields.indexOf(fieldExp);
       if (index >= 0) {
         this.summaryFields.splice(index, 1);
+        this.$refs.summaryView?.removeField?.(fieldExp);
       } else {
         this.summaryFields.push(fieldExp);
+        this.$refs.summaryView?.addField?.(fieldExp);
       }
+      this.saveSummaryConfig();
+    },
+    clearSummaryFields: function () {
+      this.summaryFields = [];
       this.reloadSummaryView();
+      this.saveSummaryConfig();
     },
     reorderSummaryFields: function ({ oldIndex, newIndex }) {
       const field = this.summaryFields.splice(oldIndex, 1)[0];
       this.summaryFields.splice(newIndex, 0, field);
+      this.saveSummaryConfig();
     },
     updateWidgetConfigs: function (configs) {
       this.widgetConfigs = configs;
+      this.saveSummaryConfig();
     },
     loadSummaryConfigFromShareable: function (shareable) {
       const configData = shareable.data;
@@ -227,10 +323,15 @@ export default {
         metricType: f.metricType || 'sessions'
       }));
 
+      if (configData.order) {
+        this.updateSummaryOrder(configData.order);
+      }
+
       if (configData.resultsLimit) {
         this.updateSummaryResultsLimit(configData.resultsLimit);
       } else {
         this.reloadSummaryView();
+        this.saveSummaryConfig();
       }
     },
     displayMessage: function ({ msg, type }) {
@@ -238,8 +339,34 @@ export default {
         this.error = msg;
       }
     },
-    loadSummaryConfig: function () {
+    loadSummaryConfig: async function () {
+      try {
+        const response = await UserService.getPageConfig('summary');
+        if (response?.summaryConfig?.fields?.length) {
+          const config = response.summaryConfig;
+          this.summaryFields = config.fields.map(f => f.field);
+          this.widgetConfigs = config.fields.map(f => ({
+            field: f.field,
+            viewMode: f.viewMode || 'bar',
+            metricType: f.metricType || 'sessions'
+          }));
+          if (config.order) {
+            this.summaryOrder = config.order;
+          }
+          if (config.resultsLimit) {
+            this.summaryResultsLimit = config.resultsLimit;
+          }
+          this.configLoaded = true;
+          return;
+        }
+      } catch (err) {
+        // fall through to defaults
+      }
       this.summaryFields = Utils.getDefaultSummaryFields();
+      this.configLoaded = true;
+    },
+    saveSummaryConfig: function () {
+      UserService.saveState(this.currentSummaryConfig, 'summary');
     },
     reloadSummaryView: function () {
       this.$nextTick(() => {
@@ -249,7 +376,18 @@ export default {
     resetSummaryToDefaults: function () {
       this.summaryFields = Utils.getDefaultSummaryFields();
       this.widgetConfigs = [];
+      this.summaryOrder = 'desc';
+      this.updateSummaryOrder('desc');
       this.updateSummaryResultsLimit(20);
+    },
+    cancelSummaryLoading: function () {
+      this.$refs.summaryView?.cancelLoading?.();
+    },
+    retryAllFailed: function () {
+      this.$refs.summaryView?.retryAllFailed?.();
+    },
+    exportAllPNG: function () {
+      this.$refs.summaryView?.exportAllPNG?.();
     },
     updateVisualizationsData: function (data) {
       this.mapData = data.mapData;

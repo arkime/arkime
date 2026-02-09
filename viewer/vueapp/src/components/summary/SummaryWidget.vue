@@ -26,6 +26,13 @@
       <p class="text-danger mb-0">
         {{ error }}
       </p>
+      <button
+        type="button"
+        class="btn btn-success btn-xs mt-2"
+        @click="emit('retry-field', field)">
+        <span class="fa fa-refresh" />&nbsp;
+        {{ $t('sessions.summary.retryField') }}
+      </button>
     </div>
   </div>
 
@@ -329,7 +336,7 @@ onMounted(() => {
 // Cleanup on unmount
 onBeforeUnmount(cleanupResizeObserver);
 
-defineEmits(['export', 'change-mode', 'change-metric', 'show-tooltip', 'remove-field']);
+const emit = defineEmits(['export', 'change-mode', 'change-metric', 'show-tooltip', 'remove-field', 'retry-field']);
 </script>
 
 <style scoped>
