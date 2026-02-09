@@ -190,7 +190,7 @@ LOCAL void dcerpc_process_pdu(ArkimeSession_t *session, const uint8_t *data, int
     BSB bsb;
     BSB_INIT(bsb, data, len);
 
-    uint8_t pktType, dataRep;
+    uint8_t pktType = 0, dataRep;
 
     BSB_IMPORT_skip(bsb, 2);  // Version
     BSB_IMPORT_u08(bsb, pktType);
