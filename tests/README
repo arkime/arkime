@@ -60,6 +60,7 @@ tftp_rrq.pcap - https://wiki.wireshark.org/uploads/__moin_import__/attachments/S
 stun-ice-testcall.pcap - https://www.cloudshark.org/captures/4686b8430477
 nbns.pcap - extract nbns from https://wiki.wireshark.org/uploads/__moin_import__/attachments/SampleCaptures/dos_win98_smb_netbeui.pcapng
 imap.pcap - https://wiki.wireshark.org/uploads/__moin_import__/attachments/SampleCaptures/imap.cap
+pcap/websocket.pcap - https://wiki.wireshark.org/uploads/__moin_import__/attachments/WebSocket/websocket.pcap
 
 
 arkime_test.pcap prompt:
