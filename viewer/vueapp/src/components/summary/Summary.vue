@@ -308,7 +308,7 @@ const cancelLoading = () => {
   ConfigService.cancelEsTask(pendingPromise.cancelId).catch(() => {});
 
   // Abort client-side fetch
-  pendingPromise.controller.abort(t('sessions.summary.canceledSearch'));
+  pendingPromise.controller.abort();
   pendingPromise = null;
 
   // Update state
@@ -496,7 +496,7 @@ const generateSummary = async () => {
 
   // Abort any previous pending request
   if (pendingPromise) {
-    pendingPromise.controller.abort('New search started');
+    pendingPromise.controller.abort();
     pendingPromise = null;
   }
 
@@ -1018,7 +1018,7 @@ onBeforeUnmount(() => {
 
   // Cancel any pending request on unmount
   if (pendingPromise) {
-    pendingPromise.controller.abort(t('sessions.summary.closingCancelsSearchErr'));
+    pendingPromise.controller.abort();
     pendingPromise = null;
   }
 
