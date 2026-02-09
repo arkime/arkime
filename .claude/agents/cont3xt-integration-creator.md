@@ -1,6 +1,17 @@
 ---
 name: cont3xt-integration-creator
-description: Use this agent when the user needs to create a new Cont3xt integration. This includes when they:\n- Explicitly ask to create a new integration for Cont3xt\n- Want to add a new threat intelligence source or data enrichment service\n- Need guidance on implementing a Cont3xt integration\n- Ask about integrating a specific service (e.g., 'integrate AbuseIPDB', 'add Shodan to Cont3xt')\n- Request help understanding the Cont3xt integration architecture\n\nExamples:\n- <example>\n  User: "I want to add a new integration for ThreatFox to Cont3xt"\n  Assistant: "I'll use the Task tool to launch the cont3xt-integration-creator agent to guide you through creating the ThreatFox integration."\n  <commentary>The user is explicitly asking to create a new Cont3xt integration, so use the cont3xt-integration-creator agent.</commentary>\n</example>\n- <example>\n  User: "How do I integrate AbuseIPDB into Arkime?"\n  Assistant: "I'll use the Task tool to launch the cont3xt-integration-creator agent to help you create the AbuseIPDB integration for Cont3xt."\n  <commentary>The user wants to add a threat intelligence service, which means creating a Cont3xt integration.</commentary>\n</example>\n- <example>\n  User: "Can you help me understand how Cont3xt integrations work?"\n  Assistant: "I'll use the Task tool to launch the cont3xt-integration-creator agent to explain the integration architecture and guide you through the process."\n  <commentary>The user needs guidance on Cont3xt integration concepts, so use the specialized agent.</commentary>\n</example>
+description: |
+  Use this agent when the user needs to create a new Cont3xt integration. This includes when they:
+  - Explicitly ask to create a new integration for Cont3xt
+  - Want to add a new threat intelligence source or data enrichment service
+  - Need guidance on implementing a Cont3xt integration
+  - Ask about integrating a specific service (e.g., "integrate AbuseIPDB", "add Shodan to Cont3xt")
+  - Request help understanding the Cont3xt integration architecture
+
+  Examples:
+    - "I want to add a new integration for ThreatFox to Cont3xt"
+    - "How do I integrate AbuseIPDB into Arkime?"
+    - "Can you help me understand how Cont3xt integrations work?"
 model: sonnet
 color: orange
 ---

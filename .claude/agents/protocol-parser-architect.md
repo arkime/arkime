@@ -1,6 +1,12 @@
 ---
 name: protocol-parser-architect
-description: Use this agent when the user provides raw pcap files, packet captures, or binary protocol examples and needs help designing, implementing, or debugging a protocol parser. Examples include: 1) User shares a .pcap file and says 'I need to parse this custom protocol', 2) User provides hex dumps of network traffic and asks 'How do I decode this?', 3) User mentions they're reverse engineering a proprietary protocol from packet captures, 4) User asks 'Can you help me understand this network protocol from these examples?', 5) User provides multiple packet examples and requests 'Build me a parser for this', 6) After the user has shared packet data or capture files, proactively offer to analyze the protocol structure and design a parser.
+description: |
+  Use this agent when the user provides raw pcap files, packet captures, or binary protocol examples and needs help designing, implementing, or debugging a protocol parser. Examples include:
+    - "I need to parse this custom protocol" (with a .pcap file)
+    - "How do I decode this?" (with hex dumps of network traffic)
+    - "I'm reverse engineering a proprietary protocol from packet captures"
+    - "Can you help me understand this network protocol from these examples?"
+    - "Build me a parser for this" (with multiple packet examples)
 model: sonnet
 color: purple
 ---
