@@ -15,6 +15,7 @@ extern ArkimeConfig_t        config;
 
 LOCAL int calledApTitleField;
 LOCAL int callingApTitleField;
+LOCAL int calledApInvocationIdField;
 LOCAL int callingApInvocationIdField;
 LOCAL int securityModeField;
 LOCAL int responseControlField;
@@ -80,6 +81,12 @@ LOCAL void c1222_parse_message(ArkimeSession_t *session, const uint8_t *data, in
 
     for (int i = 0; i < num; i++) {
         switch (seq[i].tag) {
+        case 4: { // called-AP-invocation-id [4]
+            int val = arkime_parsers_asn_sequence_to_int(&seq[i]);
+            if (val >= 0)
+                arkime_field_int_add(calledApInvocationIdField, session, val);
+            break;
+        }
         case 2: // called-AP-title [2]
         case 6: { // calling-AP-title [6]
             // Unwrap to find the OID inside
@@ -205,6 +212,12 @@ void arkime_parser_init()
                                               "C12.22 calling AP title OID",
                                               ARKIME_FIELD_TYPE_STR_GHASH, ARKIME_FIELD_FLAG_CNT,
                                               (char *)NULL);
+
+    calledApInvocationIdField = arkime_field_define("c1222", "integer",
+                                                    "c1222.calledApInvocationId", "Called AP Invocation ID", "c1222.calledApInvocationId",
+                                                    "C12.22 called AP invocation identifier",
+                                                    ARKIME_FIELD_TYPE_INT_GHASH, ARKIME_FIELD_FLAG_CNT,
+                                                    (char *)NULL);
 
     callingApInvocationIdField = arkime_field_define("c1222", "integer",
                                                      "c1222.callingApInvocationId", "Calling AP Invocation ID", "c1222.callingApInvocationId",

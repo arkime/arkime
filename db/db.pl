@@ -4373,6 +4373,12 @@ sub sessions3Update
     },
     "c1222" : {
       "properties" : {
+        "calledApInvocationId" : {
+          "type" : "long"
+        },
+        "calledApInvocationIdCnt" : {
+          "type" : "long"
+        },
         "calledApTitle" : {
           "type" : "keyword"
         },
