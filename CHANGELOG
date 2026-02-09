@@ -72,7 +72,8 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #3678 Added classifier: gearman, esio; parser: pana
   - #3681 Added synchrophasor parser
   - #3682 Added s7comm parser
-  - #3684 Added websocket detection
+  - #3686 Added websocket detection
+  - #3687 Added c122 parser
 
 6.0.0-rc1 2026/01/26
 ## BREAKING

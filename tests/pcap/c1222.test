@@ -1,0 +1,451 @@
+{
+ "sessions3" : [
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "c1222" : {
+     "calledApInvocationId" : [
+      333976609
+     ],
+     "calledApInvocationIdCnt" : 1,
+     "calledApTitle" : [
+      "1.3.6.1.4.1.33507",
+      "1.3.6.1.4.1.33507.1919.12345678.0"
+     ],
+     "calledApTitleCnt" : 2,
+     "callingApInvocationId" : [
+      "333976609",
+      "44"
+     ],
+     "callingApInvocationIdCnt" : 2,
+     "callingApTitle" : [
+      "1.3.6.1.4.1.33507",
+      "1.3.6.1.4.1.33507.1919.12345678.0"
+     ],
+     "callingApTitleCnt" : 2,
+     "responseControl" : [
+      "always"
+     ],
+     "responseControlCnt" : 1,
+     "securityMode" : [
+      "ciphertext-with-auth"
+     ],
+     "securityModeCnt" : 1
+    },
+    "client" : {
+     "bytes" : 73
+    },
+    "destination" : {
+     "bytes" : 243,
+     "ip" : "192.168.100.124",
+     "mac" : [
+      "00:0c:41:f5:7b:cb"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 2,
+     "port" : 1153
+    },
+    "dstOui" : [
+     "Cisco-Linksys, LLC"
+    ],
+    "dstOuiCnt" : 1,
+    "dstPayload8" : "606da20a06082b06",
+    "dstRIR" : "ARIN",
+    "dstTTL" : [
+     127
+    ],
+    "dstTTLCnt" : 1,
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 1285026953728,
+    "initRTT" : 10,
+    "ipProtocol" : 6,
+    "lastPacket" : 1285026954958,
+    "length" : 1230,
+    "network" : {
+     "bytes" : 514,
+     "community_id" : "1:SjcxQFjzaC/IukFJkC8ZFpMenqs=",
+     "packets" : 5
+    },
+    "node" : "test",
+    "packetLen" : [
+     82,
+     82,
+     82,
+     155,
+     193
+    ],
+    "packetPos" : [
+     24,
+     106,
+     188,
+     270,
+     425
+    ],
+    "packetRange" : {
+     "gte" : 1285026953728,
+     "lte" : 1285026954958
+    },
+    "protocol" : [
+     "c1222",
+     "tcp"
+    ],
+    "protocolCnt" : 2,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 111
+    },
+    "source" : {
+     "bytes" : 271,
+     "ip" : "192.168.1.101",
+     "mac" : [
+      "00:1f:3b:86:78:a3"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 3,
+     "port" : 1577
+    },
+    "srcOui" : [
+     "Intel Corporate"
+    ],
+    "srcOuiCnt" : 1,
+    "srcPayload8" : "6047a211060f2b06",
+    "srcRIR" : "ARIN",
+    "srcTTL" : [
+     128
+    ],
+    "srcTTLCnt" : 1,
+    "tcpflags" : {
+     "ack" : 1,
+     "dstZero" : 0,
+     "fin" : 0,
+     "psh" : 2,
+     "rst" : 0,
+     "srcZero" : 0,
+     "syn" : 1,
+     "syn-ack" : 1,
+     "urg" : 0
+    },
+    "tcpseq" : {
+     "dst" : 0,
+     "src" : 12615619
+    },
+    "totDataBytes" : 184
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-100920"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 32
+    },
+    "destination" : {
+     "bytes" : 0,
+     "ip" : "ff02::1:ffeb:3faf",
+     "mac" : [
+      "33:33:ff:eb:3f:af"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 0,
+     "port" : 0
+    },
+    "ethertype" : 34525,
+    "fileId" : [],
+    "firstPacket" : 1313506515119,
+    "icmp" : {
+     "code" : [
+      0
+     ],
+     "type" : [
+      135
+     ]
+    },
+    "ipProtocol" : 58,
+    "lastPacket" : 1313506515119,
+    "length" : 0,
+    "network" : {
+     "bytes" : 86,
+     "community_id" : "1:ASYHBmmOHkFNLdAI/lXAXKFOaeg=",
+     "packets" : 1
+    },
+    "node" : "test",
+    "packetLen" : [
+     102
+    ],
+    "packetPos" : [
+     618
+    ],
+    "packetRange" : {
+     "gte" : 1313506515119,
+     "lte" : 1313506515119
+    },
+    "protocol" : [
+     "icmp"
+    ],
+    "protocolCnt" : 1,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 0
+    },
+    "source" : {
+     "bytes" : 86,
+     "ip" : "fe80::21e:ecff:fe30:9474",
+     "mac" : [
+      "00:1e:ec:30:94:74"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 1,
+     "port" : 0
+    },
+    "srcOui" : [
+     "Compal Information (Kunshan) Co., Ltd."
+    ],
+    "srcOuiCnt" : 1,
+    "srcTTL" : [
+     255
+    ],
+    "srcTTLCnt" : 1,
+    "totDataBytes" : 32
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-110816"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 32
+    },
+    "destination" : {
+     "bytes" : 0,
+     "ip" : "fe80::21e:ecff:fe30:9474",
+     "mac" : [
+      "00:1e:ec:30:94:74"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 0,
+     "port" : 0
+    },
+    "dstOui" : [
+     "Compal Information (Kunshan) Co., Ltd."
+    ],
+    "dstOuiCnt" : 1,
+    "ethertype" : 34525,
+    "fileId" : [],
+    "firstPacket" : 1313506515119,
+    "icmp" : {
+     "code" : [
+      0
+     ],
+     "type" : [
+      136
+     ]
+    },
+    "ipProtocol" : 58,
+    "lastPacket" : 1313506515119,
+    "length" : 0,
+    "network" : {
+     "bytes" : 86,
+     "community_id" : "1:ZizxhJSjd8TgPTfehrCppha98x0=",
+     "packets" : 1
+    },
+    "node" : "test",
+    "packetLen" : [
+     102
+    ],
+    "packetPos" : [
+     720
+    ],
+    "packetRange" : {
+     "gte" : 1313506515119,
+     "lte" : 1313506515119
+    },
+    "protocol" : [
+     "icmp"
+    ],
+    "protocolCnt" : 1,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 0
+    },
+    "source" : {
+     "bytes" : 86,
+     "ip" : "fe80::203:47ff:feeb:3faf",
+     "mac" : [
+      "00:03:47:eb:3f:af"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 1,
+     "port" : 0
+    },
+    "srcOui" : [
+     "Intel Corporation"
+    ],
+    "srcOuiCnt" : 1,
+    "srcTTL" : [
+     255
+    ],
+    "srcTTLCnt" : 1,
+    "totDataBytes" : 32
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-110816"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "c1222" : {
+     "calledApInvocationId" : [
+      1988137462
+     ],
+     "calledApInvocationIdCnt" : 1,
+     "calledApTitle" : [
+      "1.3.6.1.4.1.33507.1919.22906.0",
+      "1.3.6.1.4.1.33507.1919.88.1"
+     ],
+     "calledApTitleCnt" : 2,
+     "callingApInvocationId" : [
+      "11",
+      "1988137462"
+     ],
+     "callingApInvocationIdCnt" : 2,
+     "callingApTitle" : [
+      "1.3.6.1.4.1.33507.1919.22906.0",
+      "1.3.6.1.4.1.33507.1919.88.1"
+     ],
+     "callingApTitleCnt" : 2,
+     "responseControl" : [
+      "always"
+     ],
+     "responseControlCnt" : 1,
+     "securityMode" : [
+      "ciphertext-with-auth"
+     ],
+     "securityModeCnt" : 1
+    },
+    "client" : {
+     "bytes" : 104
+    },
+    "destination" : {
+     "bytes" : 507,
+     "ip" : "fe80::203:47ff:feeb:3faf",
+     "mac" : [
+      "00:03:47:eb:3f:af"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 4,
+     "port" : 1153
+    },
+    "dstOui" : [
+     "Intel Corporation"
+    ],
+    "dstOuiCnt" : 1,
+    "dstPayload8" : "608198a20e060c2b",
+    "dstTTL" : [
+     64
+    ],
+    "dstTTLCnt" : 1,
+    "ethertype" : 34525,
+    "fileId" : [],
+    "firstPacket" : 1313506515119,
+    "initRTT" : 0,
+    "ipProtocol" : 6,
+    "lastPacket" : 1313506516530,
+    "length" : 1411,
+    "network" : {
+     "bytes" : 1049,
+     "community_id" : "1:0InaPIYfK0mw2Gp0uOuLdu6gGyk=",
+     "packets" : 9
+    },
+    "node" : "test",
+    "packetLen" : [
+     110,
+     110,
+     102,
+     206,
+     102,
+     257,
+     102,
+     102,
+     102
+    ],
+    "packetPos" : [
+     822,
+     932,
+     1042,
+     1144,
+     1350,
+     1452,
+     1709,
+     1811,
+     1913
+    ],
+    "packetRange" : {
+     "gte" : 1313506515119,
+     "lte" : 1313506516530
+    },
+    "protocol" : [
+     "c1222",
+     "tcp"
+    ],
+    "protocolCnt" : 2,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 155
+    },
+    "source" : {
+     "bytes" : 542,
+     "ip" : "fe80::21e:ecff:fe30:9474",
+     "mac" : [
+      "00:1e:ec:30:94:74"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 5,
+     "port" : 42787
+    },
+    "srcOui" : [
+     "Compal Information (Kunshan) Co., Ltd."
+    ],
+    "srcOuiCnt" : 1,
+    "srcPayload8" : "6066a210060e2b06",
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
+    "tcpflags" : {
+     "ack" : 4,
+     "dstZero" : 0,
+     "fin" : 1,
+     "psh" : 2,
+     "rst" : 0,
+     "srcZero" : 0,
+     "syn" : 1,
+     "syn-ack" : 1,
+     "urg" : 0
+    },
+    "tcpseq" : {
+     "dst" : 0,
+     "src" : 2440557130
+    },
+    "totDataBytes" : 259
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-110816"
+    }
+   }
+  }
+ ]
+}
+

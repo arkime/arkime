@@ -61,6 +61,7 @@ stun-ice-testcall.pcap - https://www.cloudshark.org/captures/4686b8430477
 nbns.pcap - extract nbns from https://wiki.wireshark.org/uploads/__moin_import__/attachments/SampleCaptures/dos_win98_smb_netbeui.pcapng
 imap.pcap - https://wiki.wireshark.org/uploads/__moin_import__/attachments/SampleCaptures/imap.cap
 pcap/websocket.pcap - https://wiki.wireshark.org/uploads/__moin_import__/attachments/WebSocket/websocket.pcap
+c1222.pcap - combined https://wiki.wireshark.org/uploads/__moin_import__/attachments/SampleCaptures/c1222overIPv4.cap.gz and https://wiki.wireshark.org/uploads/__moin_import__/attachments/SampleCaptures/c1222_over_ipv6.pcap
 
 
 arkime_test.pcap prompt:

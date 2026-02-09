@@ -201,7 +201,7 @@ LOCAL int synchrophasor_tcp_parser(ArkimeSession_t *session, void *uw, const uin
         // Read frame size from bytes 2-3
         uint16_t frameSize = (buf->buf[which][2] << 8) | buf->buf[which][3];
 
-        if (frameSize < SYNCHROPHASOR_MIN_LEN || frameSize > SYNCHROPHASOR_MAX_FRAME) {
+        if (frameSize < SYNCHROPHASOR_MIN_LEN) {
             // Invalid frame size, skip sync byte
             arkime_parser_buf_del(buf, which, 1);
             continue;
