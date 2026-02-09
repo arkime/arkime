@@ -18,7 +18,7 @@ import HasPermission from './components/utils/HasPermission.vue';
 import HasRole from '@common/HasRole.vue';
 import router from './router.js';
 import store from './store.js';
-import { i18nValue, i18nBTip, i18nBDD } from '@common/i18nHelpers.js';
+import { i18nValue, i18nBDD } from '@common/i18nHelpers.js';
 
 // common css
 import '../../../common/common.css';
@@ -62,7 +62,6 @@ async function initializeApp() {
   app.directive('has-role', HasRole);
   app.directive('has-permission', HasPermission);
   app.directive('i18n-value', i18nValue);
-  app.directive('i18n-btip', i18nBTip);
   app.directive('i18n-bdd', i18nBDD);
   app.component('ArkimeSessionField', ArkimeSessionField);
 

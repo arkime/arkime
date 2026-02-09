@@ -35,8 +35,7 @@ SPDX-License-Identifier: Apache-2.0
                   <BTooltip
                     target="spiViewFieldConfig"
                     placement="right"
-                    noninteractive>
-                    <span v-i18n-btip="'spiview.'" />
+                    noninteractive>{{ $t('spiview.spiViewFieldConfigTip') }}
                   </BTooltip>
                 </span>
               </template>
@@ -61,7 +60,7 @@ SPDX-License-Identifier: Apache-2.0
                     <BTooltip
                       target="spiViewFieldConfigSave"
                       placement="right"
-                      noninteractive><span v-i18n-btip="'spiview.'" /></BTooltip>
+                      noninteractive>{{ $t('spiview.spiViewFieldConfigSaveTip') }}</BTooltip>
                   </button>
                 </div>
               </b-dropdown-header>

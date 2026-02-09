@@ -273,7 +273,7 @@ SPDX-License-Identifier: Apache-2.0
             class="cursor-help">
             {{ $t('settings.shortcuts.shortcutFormName') }}<sup>*</sup>
             <BTooltip target="shortcutFormName">
-              <span v-i18n-btip="'settings.shortcuts.'" />
+              {{ $t('settings.shortcuts.shortcutFormNameTip') }}
             </BTooltip>
           </b-input-group-text>
         </template>
@@ -291,7 +291,7 @@ SPDX-License-Identifier: Apache-2.0
             class="cursor-help">
             {{ $t('settings.shortcuts.shortcutFormDesc') }}
             <BTooltip target="shortcutFormDesc">
-              <span v-i18n-btip="'settings.shortcuts.'" />
+              {{ $t('settings.shortcuts.shortcutFormDescTip') }}
             </BTooltip>
           </b-input-group-text>
         </template>
@@ -328,7 +328,7 @@ SPDX-License-Identifier: Apache-2.0
             class="cursor-help">
             {{ $t('settings.shortcuts.shortcutFormType') }}<sup>*</sup>
             <BTooltip target="shortcutFormType">
-              <span v-i18n-btip="'settings.shortcuts.'" />
+              {{ $t('settings.shortcuts.shortcutFormTypeTip') }}
             </BTooltip>
           </b-input-group-text>
         </template>
@@ -369,7 +369,7 @@ SPDX-License-Identifier: Apache-2.0
               class="cursor-help">
               {{ $t('common.shareWithUsers') }}
               <BTooltip target="shortcutFormUsers">
-                <span v-i18n-btip="'settings.shortcuts.'" />
+                {{ $t('settings.shortcuts.shortcutFormUsersTip') }}
               </BTooltip>
             </b-input-group-text>
           </template>

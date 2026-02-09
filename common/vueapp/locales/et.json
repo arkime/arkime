@@ -559,7 +559,8 @@
       "createErr": "Viga vaate loomisel.",
       "updateErr": "Viga vaate uuendamisel.",
       "noViewNameErr": "Vaate nime ei ole määratud.",
-      "noExpressionErr": "Avaldist ei ole määratud."
+      "noExpressionErr": "Avaldist ei ole määratud.",
+      "expandExpressionTip": "Ava suur tekstiala vaate avaldise jaoks."
     }
   },
   "search": {

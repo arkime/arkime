@@ -19,7 +19,7 @@ SPDX-License-Identifier: Apache-2.0
         id="fitBtn">
         <span class="fa fa-arrows-h" />
         <BTooltip target="fitBtn">
-          <span v-i18n-btip="'utils.'" />
+          {{ $t('utils.fitBtnTip') }}
         </BTooltip>
       </button>
       <tr ref="draggableColumns">
@@ -40,7 +40,7 @@ SPDX-License-Identifier: Apache-2.0
                 <span
                   class="fa fa-th"
                   id="colVisBtn">
-                  <BTooltip target="colVisBtn"><span v-i18n-btip="'utils.'" /></BTooltip>
+                  <BTooltip target="colVisBtn">{{ $t('utils.colVisBtnTip') }}</BTooltip>
                 </span>
               </template>
               <b-dropdown-header>

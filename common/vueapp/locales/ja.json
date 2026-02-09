@@ -559,7 +559,8 @@
       "createErr": "ビュー作成エラー。",
       "updateErr": "ビュー更新エラー。",
       "noViewNameErr": "ビュー名が指定されていません。",
-      "noExpressionErr": "式が指定されていません。"
+      "noExpressionErr": "式が指定されていません。",
+      "expandExpressionTip": "ビュー式用の大きなテキストエリアを開きます。"
     }
   },
   "search": {

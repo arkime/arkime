@@ -559,7 +559,8 @@
       "createErr": "Fehler beim Erstellen der Ansicht.",
       "updateErr": "Fehler beim Aktualisieren der Ansicht.",
       "noViewNameErr": "Kein Ansichtsname angegeben.",
-      "noExpressionErr": "Kein Ausdruck angegeben."
+      "noExpressionErr": "Kein Ausdruck angegeben.",
+      "expandExpressionTip": "Öffnet einen großen Textbereich für den Ansichtsausdruck."
     }
   },
   "search": {

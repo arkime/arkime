@@ -559,7 +559,8 @@
       "createErr": "创建视图时出错。",
       "updateErr": "更新视图时出错。",
       "noViewNameErr": "未指定视图名称。",
-      "noExpressionErr": "未指定表达式。"
+      "noExpressionErr": "未指定表达式。",
+      "expandExpressionTip": "打开一个大文本区域以输入视图表达式。"
     }
   },
   "search": {

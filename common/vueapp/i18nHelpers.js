@@ -19,24 +19,6 @@ export const i18nValue = {
   }
 };
 
-// For use with BTooltip items, e.g. v-i18n-btip="'settings.options.'" = settings.options.[value][targetId]Tip
-export const i18nBTip = {
-  mounted(el, binding) {
-    const vm = binding.instance;
-    let target = el.parentElement?.parentElement?.parentElement?.parentElement;
-    if (vm && vm.$t && target !== undefined) {
-      el.textContent = vm.$t(binding.value + target.id + 'Tip');
-    }
-  },
-  updated(el, binding) {
-    const vm = binding.instance;
-    let target = el.parentElement?.parentElement?.parentElement?.parentElement;
-    if (vm && vm.$t && target !== undefined) {
-      el.textContent = vm.$t(binding.value + target.id + 'Tip');
-    }
-  }
-};
-
 // For use with b-dropdown-item items, e.g. v-i18n-bdd="'settings.options.'" = settings.options.[id]
 export const i18nBDD = {
   mounted(el, binding, vnode) {

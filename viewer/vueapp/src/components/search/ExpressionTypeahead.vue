@@ -48,7 +48,7 @@ SPDX-License-Identifier: Apache-2.0
           class="fa"
           :class="bigTypeahead ? 'fa-compress' : 'fa-expand'" />
         <BTooltip target="bigTypeaheadBtn">
-          <span v-i18n-btip="'search.'" />
+          {{ $t('search.bigTypeaheadBtnTip') }}
         </BTooltip>
       </BButton>
       <template v-if="expression && expression.length > 200">
@@ -59,7 +59,7 @@ SPDX-License-Identifier: Apache-2.0
           class="btn btn-outline-secondary btn-clear-input">
           <span class="fa fa-question-circle" />
           <BTooltip target="longExpression">
-            <span v-i18n-btip="'search.'" />
+            {{ $t('search.longExpressionTip') }}
           </BTooltip>
         </BButton>
       </template>
@@ -71,7 +71,7 @@ SPDX-License-Identifier: Apache-2.0
         class="btn btn-outline-secondary btn-clear-input">
         <span class="fa fa-save" />
         <BTooltip target="saveExpression">
-          <span v-i18n-btip="'search.'" />
+          {{ $t('search.saveExpressionTip') }}
         </BTooltip>
       </BButton>
       <BButton
