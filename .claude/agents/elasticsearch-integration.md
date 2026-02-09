@@ -1,6 +1,13 @@
 ---
 name: elasticsearch-integration
-description: Use this agent when the user needs to write, review, or optimize JavaScript code for interacting with Elasticsearch or OpenSearch databases. This includes creating client connections, writing queries, implementing CRUD operations, handling bulk operations, managing indices, or troubleshooting database interaction issues.\n\nExamples:\n- Example 1:\n  user: "I need to create a search query that filters products by category and price range"\n  assistant: "Let me use the elasticsearch-integration agent to help you build that query."\n  <agent call to elasticsearch-integration>\n  \n- Example 2:\n  user: "Can you help me set up bulk indexing for my product catalog?"\n  assistant: "I'll use the elasticsearch-integration agent to create a robust bulk indexing solution for you."\n  <agent call to elasticsearch-integration>\n  \n- Example 3:\n  user: "Here's my Elasticsearch query but it's running slowly. Can you optimize it?"\n  assistant: "Let me have the elasticsearch-integration agent review and optimize your query performance."\n  <agent call to elasticsearch-integration>\n  \n- Example 4:\n  user: "I'm getting connection timeout errors with my OpenSearch cluster"\n  assistant: "I'll engage the elasticsearch-integration agent to diagnose and fix those connection issues."\n  <agent call to elasticsearch-integration>
+description: |
+  Use this agent when the user needs to write, review, or optimize JavaScript code for interacting with Elasticsearch or OpenSearch databases. This includes creating client connections, writing queries, implementing CRUD operations, handling bulk operations, managing indices, or troubleshooting database interaction issues.
+
+  Examples:
+    - "I need to create a search query that filters products by category and price range"
+    - "Can you help me set up bulk indexing for my product catalog?"
+    - "Here's my Elasticsearch query but it's running slowly. Can you optimize it?"
+    - "I'm getting connection timeout errors with my OpenSearch cluster"
 model: sonnet
 color: green
 ---

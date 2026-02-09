@@ -1,6 +1,12 @@
 ---
 name: express-api-builder
-description: Use this agent when the user needs to create new Express.js API endpoints, modify existing routes, fix bugs in API handlers, design RESTful architectures, implement middleware, handle errors in Express routes, or optimize API endpoint performance. Examples:\n\n<example>\nContext: User is building a new API endpoint for user authentication.\nuser: "I need to create a POST endpoint for user login that accepts email and password"\nassistant: "I'll use the express-api-builder agent to design and implement this authentication endpoint with proper validation and error handling."\n<Task tool called with express-api-builder agent>\n</example>\n\n<example>\nContext: User encounters an error in their Express route.\nuser: "My /api/users/:id endpoint is returning 500 errors when the ID doesn't exist"\nassistant: "Let me use the express-api-builder agent to diagnose and fix the error handling in your endpoint."\n<Task tool called with express-api-builder agent>\n</example>\n\n<example>\nContext: User just finished writing a new Express route handler.\nuser: "Here's my new endpoint for creating products:"\n[code provided]\nassistant: "Let me use the express-api-builder agent to review this endpoint implementation for best practices, error handling, and potential issues."\n<Task tool called with express-api-builder agent>\n</example>
+description: |
+  Use this agent when the user needs to create new Express.js API endpoints, modify existing routes, fix bugs in API handlers, design RESTful architectures, implement middleware, handle errors in Express routes, or optimize API endpoint performance.
+
+  Examples:
+    - "I need to create a POST endpoint for user login that accepts email and password"
+    - "My /api/users/:id endpoint is returning 500 errors when the ID doesn't exist"
+    - "Here's my new endpoint for creating products - can you review it?"
 model: sonnet
 color: blue
 ---
