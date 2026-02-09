@@ -244,7 +244,8 @@ SPDX-License-Identifier: Apache-2.0
             <span v-i18n-btip="'settings.views.'" />
           </BTooltip>
         </b-input-group-text>
-        <b-form-input
+        <b-form-textarea
+          rows="3"
           :model-value="newViewExpression"
           @update:model-value="newViewExpression = $event"
           :placeholder="$t('settings.views.viewFormExpressionPlaceholder')" />

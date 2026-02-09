@@ -36,6 +36,18 @@ SPDX-License-Identifier: Apache-2.0
             v-model="viewExpression"
             :placeholder="$t('sessions.views.expressionPlaceholder')"
             @keydown.enter.stop>
+          <button
+            type="button"
+            id="expandViewExpressionBtn"
+            class="btn btn-outline-secondary btn-clear-input"
+            @click="showBigExpression = !showBigExpression">
+            <span
+              class="fa"
+              :class="showBigExpression ? 'fa-compress' : 'fa-expand'" />
+            <BTooltip target="expandViewExpressionBtn">
+              {{ $t('sessions.views.expandExpressionTip') }}
+            </BTooltip>
+          </button>
         </div>
       </BCol>
 
@@ -114,6 +126,46 @@ SPDX-License-Identifier: Apache-2.0
       </BCol>
     </BRow>
 
+    <!-- big expression modal -->
+    <BModal
+      size="xl"
+      no-close-on-backdrop
+      :model-value="showBigExpression"
+      @hidden="showBigExpression = false"
+      @shown="focusBigExpressionTextarea">
+      <template #header>
+        <span class="fa fa-pencil fa-2x me-2" />
+        <span>{{ $t('sessions.views.expression') }}</span>
+      </template>
+      <BFormTextarea
+        id="bigViewExpression"
+        rows="5"
+        v-model="viewExpression"
+        :placeholder="$t('sessions.views.expressionPlaceholder')" />
+      <template #footer>
+        <div class="d-flex w-100 justify-content-between">
+          <div>
+            <BButton
+              variant="secondary"
+              @click="showBigExpression = false">
+              {{ $t('common.close') }}
+            </BButton>
+            <BButton
+              variant="warning"
+              class="ms-2"
+              @click="viewExpression = ''">
+              {{ $t('common.clear') }}
+            </BButton>
+          </div>
+          <BButton
+            variant="theme-tertiary"
+            @click="showBigExpression = false">
+            {{ $t('common.apply') }}
+          </BButton>
+        </div>
+      </template>
+    </BModal> <!-- /big expression modal -->
+
     <div
       v-if="error"
       class="row small text-danger mb-0 mt-1">
@@ -180,6 +232,7 @@ const getInitialExpression = () => {
 };
 
 const viewExpression = ref(getInitialExpression());
+const showBigExpression = ref(false);
 
 // Computed properties
 const sessionsPage = computed(() => route.name === 'Sessions');
@@ -201,6 +254,12 @@ watch(() => props.initialExpression, (newVal) => {
 });
 
 // Methods
+const focusBigExpressionTextarea = () => {
+  setTimeout(() => {
+    document.getElementById('bigViewExpression')?.focus();
+  }, 100);
+};
+
 const updateViewRoles = (roles) => {
   viewRoles.value = roles;
 };

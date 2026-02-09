@@ -559,7 +559,8 @@
       "createErr": "Error creating view.",
       "updateErr": "Error updating view.",
       "noViewNameErr": "No view name specified.",
-      "noExpressionErr": "No expression specified."
+      "noExpressionErr": "No expression specified.",
+      "expandExpressionTip": "Open a large text area for the view expression."
     }
   },
   "search": {
