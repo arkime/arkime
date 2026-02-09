@@ -7,7 +7,7 @@ ul.nav.nav-pills.mb-3
       li.nav-item
         a.nav-link(href='api/session/' + session.node + '/' + session.id + '/pcap', :download="session.id + '-segment.pcap'") {{ $t('sessions.downloadSegmentPCAP') }}
       li.nav-item
-        a.nav-link(href='api/session/entire/' + session.node + '/' + session.rootId + '/pcap', download=session.rootId + '.pcap') {{ $t('sessions.downloadEntirePCAP') }}
+        a.nav-link(href='api/session/entire/' + session.node + '/' + session.rootId + '/pcap', download=(session.network && session.network.community_id ? session.network.community_id : session.rootId) + '.pcap') {{ $t('sessions.downloadEntirePCAP') }}
     else
       li.nav-item
         a.nav-link(href='api/session/' + session.node + '/' + session.id + '/pcap', v-has-permission="'!disablePcapDownload'", :download="session.id + '.pcap'")
