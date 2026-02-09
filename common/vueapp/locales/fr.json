@@ -559,7 +559,8 @@
       "createErr": "Erreur lors de la création de la vue.",
       "updateErr": "Erreur lors de la mise à jour de la vue.",
       "noViewNameErr": "Aucun nom de vue spécifié.",
-      "noExpressionErr": "Aucune expression spécifiée."
+      "noExpressionErr": "Aucune expression spécifiée.",
+      "expandExpressionTip": "Ouvrir une grande zone de texte pour l'expression de la vue."
     }
   },
   "search": {

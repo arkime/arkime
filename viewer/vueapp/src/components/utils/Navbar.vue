@@ -57,7 +57,7 @@ SPDX-License-Identifier: Apache-2.0
           id="help"
           :to="{ path: helpLink.href, query: helpLink.query, name: 'Help' }">
           <span class="fa fa-lg fa-fw fa-question-circle help-link text-theme-button text-theme-gray-hover" />
-          <BTooltip target="help"><span v-i18n-btip="'navigation.'" /></BTooltip>
+          <BTooltip target="help">{{ $t('navigation.helpTip') }}</BTooltip>
         </router-link>
         <e-s-health />
       </b-navbar-nav>
@@ -68,7 +68,7 @@ SPDX-License-Identifier: Apache-2.0
         class="toggle-chevrons text-theme-button text-theme-gray-hover"
         @click="toggleToolBars">
         <span :class="showToolBars ? 'fa fa-chevron-circle-up fa-fw fa-lg' : 'fa fa-chevron-circle-down fa-fw fa-lg'" />
-        <BTooltip target="toggleTopStuff"><span v-i18n-btip="'navigation.'" /></BTooltip>
+        <BTooltip target="toggleTopStuff">{{ $t('navigation.toggleTopStuffTip') }}</BTooltip>
       </span>
 
       <Logout

@@ -135,7 +135,7 @@ SPDX-License-Identifier: Apache-2.0
                 id="exportCSVSPIGraph"
                 @click.stop.prevent="exportCSV">
                 <span class="fa fa-download" />
-                <BTooltip target="exportCSVSPIGraph"><span v-i18n-btip="'spigraph.'" /></BTooltip>
+                <BTooltip target="exportCSVSPIGraph">{{ $t('spigraph.exportCSVSPIGraphTip') }}</BTooltip>
               </button> <!-- /export button-->
             </BCol>
           </BRow>

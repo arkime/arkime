@@ -28,7 +28,7 @@ SPDX-License-Identifier: Apache-2.0
                   <BTooltip
                     target="querySize"
                     :delay="{show: 300, hide: 0}"
-                    noninteractive><span v-i18n-btip="'connections.'" /></BTooltip>
+                    noninteractive>{{ $t('connections.querySizeTip') }}</BTooltip>
                 </BInputGroupText>
                 <BFormSelect
                   class="form-control input-sm"
@@ -50,7 +50,7 @@ SPDX-License-Identifier: Apache-2.0
                   <BTooltip
                     target="sourceField"
                     :delay="{show: 300, hide: 0}"
-                    noninteractive><span v-i18n-btip="'connections.'" /></BTooltip>
+                    noninteractive>{{ $t('connections.sourceFieldTip') }}</BTooltip>
                 </BInputGroupText>
                 <arkime-field-typeahead
                   :fields="fields"
@@ -74,7 +74,7 @@ SPDX-License-Identifier: Apache-2.0
                   <BTooltip
                     target="dstField"
                     :delay="{show: 300, hide: 0}"
-                    noninteractive><span v-i18n-btip="'connections.'" /></BTooltip>
+                    noninteractive>{{ $t('connections.dstFieldTip') }}</BTooltip>
                 </BInputGroupText>
                 <arkime-field-typeahead
                   :fields="fields"
@@ -96,7 +96,7 @@ SPDX-License-Identifier: Apache-2.0
                   <BTooltip
                     target="srcDstColor"
                     :delay="{show: 300, hide: 0}"
-                    noninteractive><span v-i18n-btip="'connections.'" /></BTooltip>
+                    noninteractive>{{ $t('connections.srcDstColorTip') }}</BTooltip>
                 </BInputGroupText>
               </BInputGroup>
             </BCol> <!-- /src & dst color -->
@@ -111,7 +111,7 @@ SPDX-License-Identifier: Apache-2.0
                   <BTooltip
                     target="minConn"
                     :delay="{show: 300, hide: 0}"
-                    noninteractive><span v-i18n-btip="'connections.'" /></BTooltip>
+                    noninteractive>{{ $t('connections.minConnTip') }}</BTooltip>
                 </BInputGroupText>
                 <BFormSelect
                   size="sm"
@@ -131,7 +131,7 @@ SPDX-License-Identifier: Apache-2.0
                   <BTooltip
                     target="weight"
                     :delay="{show: 300, hide: 0}"
-                    noninteractive><span v-i18n-btip="'connections.'" /></BTooltip>
+                    noninteractive>{{ $t('connections.weightTip') }}</BTooltip>
                 </BInputGroupText>
                 <BFormSelect
                   size="sm"
@@ -174,7 +174,7 @@ SPDX-License-Identifier: Apache-2.0
                     <BTooltip
                       target="nodeFields"
                       :delay="{show: 300, hide: 0}"
-                      noninteractive><span v-i18n-btip="'connections.'" /></BTooltip>
+                      noninteractive>{{ $t('connections.nodeFieldsTip') }}</BTooltip>
                   </div>
                 </template>
                 <b-dropdown-header>
@@ -232,7 +232,7 @@ SPDX-License-Identifier: Apache-2.0
                     <BTooltip
                       target="linkFields"
                       :delay="{show: 300, hide: 0}"
-                      noninteractive><span v-i18n-btip="'connections.'" /></BTooltip>
+                      noninteractive>{{ $t('connections.linkFieldsTip') }}</BTooltip>
                   </div>
                 </template>
                 <b-dropdown-header>
@@ -286,7 +286,7 @@ SPDX-License-Identifier: Apache-2.0
                   <BTooltip
                     target="baselineDate"
                     :delay="{show: 300, hide: 0}"
-                    noninteractive><span v-i18n-btip="'connections.'" /></BTooltip>
+                    noninteractive>{{ $t('connections.baselineDateTip') }}</BTooltip>
                 </BInputGroupText>
                 <select
                   class="form-control input-sm"
@@ -326,7 +326,7 @@ SPDX-License-Identifier: Apache-2.0
                   <BTooltip
                     target="baselineVis"
                     :delay="{show: 300, hide: 0}"
-                    noninteractive><span v-i18n-btip="'connections.'" /></BTooltip>
+                    noninteractive>{{ $t('connections.baselineVisTip') }}</BTooltip>
                 </BInputGroupText>
                 <select
                   class="form-control input-sm"
@@ -421,7 +421,7 @@ SPDX-License-Identifier: Apache-2.0
                 placement="bottom"
                 triggers="hover"
                 :delay="{show: 300, hide: 0}"
-                noninteractive><span v-i18n-btip="'connections.'" /></BTooltip>
+                noninteractive>{{ $t('connections.unlockNodesTip') }}</BTooltip>
             </button>
           </span> <!-- /unlock button-->
           <!-- export button-->
@@ -436,7 +436,7 @@ SPDX-License-Identifier: Apache-2.0
                 placement="bottom"
                 triggers="hover"
                 :delay="{show: 300, hide: 0}"
-                noninteractive><span v-i18n-btip="'connections.'" /></BTooltip>
+                noninteractive>{{ $t('connections.exportGraphTip') }}</BTooltip>
             </button>
           </span> <!-- /export button-->
         </div>
@@ -456,7 +456,7 @@ SPDX-License-Identifier: Apache-2.0
               placement="bottom"
               triggers="hover"
               :delay="{show: 300, hide: 0}"
-              noninteractive><span v-i18n-btip="'connections.'" /></BTooltip>
+              noninteractive>{{ $t('connections.nodeDistUpTip') }}</BTooltip>
           </button>
           <button
             id="nodeDistDown"
@@ -471,7 +471,7 @@ SPDX-License-Identifier: Apache-2.0
               placement="bottom"
               triggers="hover"
               :delay="{show: 300, hide: 0}"
-              noninteractive><span v-i18n-btip="'connections.'" /></BTooltip>
+              noninteractive>{{ $t('connections.nodeDistDownTip') }}</BTooltip>
           </button>
         </div> <!-- /node distance -->
 
@@ -490,7 +490,7 @@ SPDX-License-Identifier: Apache-2.0
               placement="bottom"
               triggers="hover"
               :delay="{show: 300, hide: 0}"
-              noninteractive><span v-i18n-btip="'connections.'" /></BTooltip>
+              noninteractive>{{ $t('connections.textSizeUpTip') }}</BTooltip>
           </button>
           <button
             id="textSizeDown"
@@ -505,7 +505,7 @@ SPDX-License-Identifier: Apache-2.0
               placement="bottom"
               triggers="hover"
               :delay="{show: 300, hide: 0}"
-              noninteractive><span v-i18n-btip="'connections.'" /></BTooltip>
+              noninteractive>{{ $t('connections.textSizeDownTip') }}</BTooltip>
           </button>
         </div> <!-- /text size increase/decrease -->
 
@@ -523,7 +523,7 @@ SPDX-License-Identifier: Apache-2.0
               placement="bottom"
               triggers="hover"
               :delay="{show: 300, hide: 0}"
-              noninteractive><span v-i18n-btip="'connections.'" /></BTooltip>
+              noninteractive>{{ $t('connections.zoomInTip') }}</BTooltip>
           </button>
           <button
             id="zoomOut"
@@ -537,7 +537,7 @@ SPDX-License-Identifier: Apache-2.0
               placement="bottom"
               triggers="hover"
               :delay="{show: 300, hide: 0}"
-              noninteractive><span v-i18n-btip="'connections.'" /></BTooltip>
+              noninteractive>{{ $t('connections.zoomOutTip') }}</BTooltip>
           </button>
         </div> <!-- /zoom in/out -->
       </span> <!-- /Button group -->

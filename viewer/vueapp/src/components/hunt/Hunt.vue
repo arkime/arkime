@@ -148,7 +148,7 @@ SPDX-License-Identifier: Apache-2.0
                       class="cursor-help">
                       {{ $t('hunts.jobName') }}
                       <BTooltip target="jobName">
-                        <span v-i18n-btip="'hunts.'" />
+                        {{ $t('hunts.jobNameTip') }}
                       </BTooltip>
                     </BInputGroupText>
                     <input
@@ -190,7 +190,7 @@ SPDX-License-Identifier: Apache-2.0
                       id="jobDescription">
                       {{ $t('hunts.jobDescription') }}
                       <BTooltip target="jobDescription">
-                        <span v-i18n-btip="'hunts.'" />
+                        {{ $t('hunts.jobDescriptionTip') }}
                       </BTooltip>
                     </BInputGroupText>
                     <input
@@ -209,7 +209,7 @@ SPDX-License-Identifier: Apache-2.0
                       id="jobSearch">
                       <span class="fa fa-search" />
                       <BTooltip target="jobSearch">
-                        <span v-i18n-btip="'hunts.'" />
+                        {{ $t('hunts.jobSearchTip') }}
                       </BTooltip>
                     </BInputGroupText>
                     <input
@@ -240,7 +240,7 @@ SPDX-License-Identifier: Apache-2.0
                     target="_blank"
                     id="safeRegexHelp">
                     <span class="fa fa-question-circle fa-lg" />
-                    <BTooltip target="safeRegexHelp"><span v-i18n-btip="'hunts.'" /></BTooltip>
+                    <BTooltip target="safeRegexHelp">{{ $t('hunts.safeRegexHelpTip') }}</BTooltip>
                   </a>
                 </BCol>
               </BRow>
@@ -329,7 +329,7 @@ SPDX-License-Identifier: Apache-2.0
                         id="jobUsers">
                         <span class="fa fa-user" />
                         <BTooltip target="jobUsers">
-                          <span v-i18n-btip="'hunts.'" />
+                          {{ $t('hunts.jobUsersTip') }}
                         </BTooltip>
                       </BInputGroupText>
                       <input

@@ -559,7 +559,8 @@
       "createErr": "Error al crear la vista.",
       "updateErr": "Error al actualizar la vista.",
       "noViewNameErr": "No se especificó el nombre de la vista.",
-      "noExpressionErr": "No se especificó la expresión."
+      "noExpressionErr": "No se especificó la expresión.",
+      "expandExpressionTip": "Abra un área de texto grande para la expresión de la vista."
     }
   },
   "search": {

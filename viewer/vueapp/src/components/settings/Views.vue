@@ -225,7 +225,7 @@ SPDX-License-Identifier: Apache-2.0
           class="cursor-help">
           {{ $t('settings.views.viewFormName') }}<sup>*</sup>
           <BTooltip target="viewFormName">
-            <span v-i18n-btip="'settings.views.'" />
+            {{ $t('settings.views.viewFormNameTip') }}
           </BTooltip>
         </b-input-group-text>
         <b-form-input
@@ -241,7 +241,7 @@ SPDX-License-Identifier: Apache-2.0
           class="cursor-help">
           {{ $t('settings.views.viewFormExpression') }}<sup>*</sup>
           <BTooltip target="viewFormExpression">
-            <span v-i18n-btip="'settings.views.'" />
+            {{ $t('settings.views.viewFormExpressionTip') }}
           </BTooltip>
         </b-input-group-text>
         <b-form-textarea
@@ -272,7 +272,7 @@ SPDX-License-Identifier: Apache-2.0
             class="cursor-help">
             {{ $t('common.shareWithUsers') }}
             <BTooltip target="viewFormUsers">
-              <span v-i18n-btip="'settings.views.'" />
+              {{ $t('settings.views.viewFormUsersTip') }}
             </BTooltip>
           </b-input-group-text>
           <b-form-input

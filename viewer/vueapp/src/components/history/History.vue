@@ -94,7 +94,7 @@ SPDX-License-Identifier: Apache-2.0
               @click="showColFilters = !showColFilters">
               <span class="fa fa-filter" />
               <BTooltip target="toggleColFilters">
-                <span v-i18n-btip="'history.'" />
+                {{ $t('history.toggleColFiltersTip') }}
               </BTooltip>
             </button>
           </th>

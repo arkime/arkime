@@ -47,9 +47,7 @@ SPDX-License-Identifier: Apache-2.0
         <span
           class="fa"
           :class="bigTypeahead ? 'fa-compress' : 'fa-expand'" />
-        <BTooltip target="bigTypeaheadBtn">
-          <span v-i18n-btip="'search.'" />
-        </BTooltip>
+          <BTooltip target="bigTypeaheadBtn"> {{ $t('search.bigTypeaheadBtnTip') }} </BTooltip>
       </BButton>
       <template v-if="expression && expression.length > 200">
         <BButton
@@ -58,9 +56,7 @@ SPDX-License-Identifier: Apache-2.0
           href="settings#shortcuts"
           class="btn btn-outline-secondary btn-clear-input">
           <span class="fa fa-question-circle" />
-          <BTooltip target="longExpression">
-            <span v-i18n-btip="'search.'" />
-          </BTooltip>
+          <BTooltip target="longExpression"> {{ $t('search.longExpressionTip') }} </BTooltip>
         </BButton>
       </template>
       <BButton
@@ -70,9 +66,7 @@ SPDX-License-Identifier: Apache-2.0
         :disabled="!expression"
         class="btn btn-outline-secondary btn-clear-input">
         <span class="fa fa-save" />
-        <BTooltip target="saveExpression">
-          <span v-i18n-btip="'search.'" />
-        </BTooltip>
+        <BTooltip target="saveExpression"> {{ $t('search.saveExpressionTip') }} </BTooltip>
       </BButton>
       <BButton
         type="button"

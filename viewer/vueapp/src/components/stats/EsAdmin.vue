@@ -51,7 +51,7 @@ SPDX-License-Identifier: Apache-2.0
             id="retryFailed"
             class="btn btn-theme-primary ms-1">
             {{ $t('stats.esAdmin.retryFailed') }}
-            <BTooltip target="retryFailed"><span v-i18n-btip="'stats.esAdmin.'" /></BTooltip>
+            <BTooltip target="retryFailed">{{ $t('stats.esAdmin.retryFailedTip') }}</BTooltip>
           </button>
           <button
             type="button"
@@ -59,7 +59,7 @@ SPDX-License-Identifier: Apache-2.0
             id="flush"
             class="btn btn-theme-secondary ms-1">
             {{ $t('stats.esAdmin.flush') }}
-            <BTooltip target="flush"><span v-i18n-btip="'stats.esAdmin.'" /></BTooltip>
+            <BTooltip target="flush">{{ $t('stats.esAdmin.flushTip') }}</BTooltip>
           </button>
           <button
             type="button"
@@ -67,7 +67,7 @@ SPDX-License-Identifier: Apache-2.0
             id="unflood"
             class="btn btn-theme-tertiary ms-1">
             {{ $t('stats.esAdmin.unflood') }}
-            <BTooltip target="unflood"><span v-i18n-btip="'stats.esAdmin.'" /></BTooltip>
+            <BTooltip target="unflood">{{ $t('stats.esAdmin.unfloodTip') }}</BTooltip>
           </button>
           <button
             type="button"
@@ -75,7 +75,7 @@ SPDX-License-Identifier: Apache-2.0
             id="clearCache"
             class="btn btn-theme-quaternary ms-1">
             {{ $t('stats.esAdmin.clearCache') }}
-            <BTooltip target="clearCache"><span v-i18n-btip="'stats.esAdmin.'" /></BTooltip>
+            <BTooltip target="clearCache">{{ $t('stats.esAdmin.clearCacheTip') }}</BTooltip>
           </button>
         </span>
       </h3>

@@ -26,7 +26,7 @@ SPDX-License-Identifier: Apache-2.0
             placement="bottom"
             :delay="{show: 500, hide: 0}"
             noninteractive>
-            <span v-i18n-btip="'search.'" />
+            {{ $t('search.timeInputTip') }}
           </BTooltip>
         </BInputGroupText>
         <select
@@ -122,7 +122,7 @@ SPDX-License-Identifier: Apache-2.0
             placement="bottom"
             :delay="{show: 500, hide: 0}"
             noninteractive>
-            <span v-i18n-btip="'search.'" />
+            {{ $t('search.startTimeTip') }}
           </BTooltip>
         </BInputGroupText>
         <input
@@ -159,7 +159,7 @@ SPDX-License-Identifier: Apache-2.0
             placement="bottom"
             :delay="{show: 500, hide: 0}"
             noninteractive>
-            <span v-i18n-btip="'search.'" />
+            {{ $t('search.prevStartTimeTip') }}
           </BTooltip>
         </BButton>
         <BButton
@@ -173,7 +173,7 @@ SPDX-License-Identifier: Apache-2.0
             placement="bottom"
             :delay="{show: 500, hide: 0}"
             noninteractive>
-            <span v-i18n-btip="'search.'" />
+            {{ $t('search.nextStartTimeTip') }}
           </BTooltip>
         </BButton>
       </BInputGroup>
@@ -191,7 +191,7 @@ SPDX-License-Identifier: Apache-2.0
             placement="bottom"
             :delay="{show: 500, hide: 0}"
             noninteractive>
-            <span v-i18n-btip="'search.'" />
+            {{ $t('search.stopTimeTip') }}
           </BTooltip>
         </BInputGroupText>
         <input
@@ -228,7 +228,7 @@ SPDX-License-Identifier: Apache-2.0
             placement="bottom"
             :delay="{show: 500, hide: 0}"
             noninteractive>
-            <span v-i18n-btip="'search.'" />
+            {{ $t('search.prevStopTimeTip') }}
           </BTooltip>
         </BButton>
         <BButton
@@ -242,7 +242,7 @@ SPDX-License-Identifier: Apache-2.0
             placement="bottom"
             :delay="{show: 500, hide: 0}"
             noninteractive>
-            <span v-i18n-btip="'search.'" />
+            {{ $t('search.nextStopTimeTip') }}
           </BTooltip>
         </BButton>
       </BInputGroup>
@@ -262,7 +262,7 @@ SPDX-License-Identifier: Apache-2.0
             placement="bottom"
             :delay="{show: 500, hide: 0}"
             noninteractive>
-            <span v-i18n-btip="'search.'" />
+            {{ $t('search.timeBoundingTip') }}
           </BTooltip>
         </BInputGroupText>
         <select
@@ -303,7 +303,7 @@ SPDX-License-Identifier: Apache-2.0
             placement="bottom"
             :delay="{show: 500, hide: 0}"
             noninteractive>
-            <span v-i18n-btip="'search.'" />
+            {{ $t('search.timeIntervalTip') }}
           </BTooltip>
         </BInputGroupText>
         <select
@@ -347,7 +347,9 @@ SPDX-License-Identifier: Apache-2.0
               target="timeRangeDisplay"
               placement="bottom"
               :delay="{show: 500, hide: 0}"
-              noninteractive><span v-i18n-btip="'search.'" /></BTooltip>
+              noninteractive>
+              {{ $t('search.timeRangeDisplayTip') }}
+            </BTooltip>
           </span>
         </template>
         <template v-if="timeError">

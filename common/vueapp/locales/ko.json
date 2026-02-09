@@ -559,7 +559,8 @@
       "createErr": "뷰 생성 오류.",
       "updateErr": "뷰 업데이트 오류.",
       "noViewNameErr": "뷰 이름이 지정되지 않았습니다.",
-      "noExpressionErr": "표현식이 지정되지 않았습니다."
+      "noExpressionErr": "표현식이 지정되지 않았습니다.",
+      "expandExpressionTip": "뷰 표현식을 위한 큰 텍스트 영역을 엽니다."
     }
   },
   "search": {
