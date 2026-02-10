@@ -475,7 +475,7 @@ LOCAL int smtp_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, i
             } else if (strncasecmp(line->str, "BDAT", 4) == 0) {
                 email->inBDAT |= (1 << which);
                 email->bdatRemaining[which] = arkime_atoin(line->str + 5, line->len - 5) + 1;
-                if (email->bdatRemaining[which] <= 0)
+                if (email->bdatRemaining[which] == 0)
                     email->bdatRemaining[which] = 1;
 
                 if (email->seenHeaders & (1 << which))
