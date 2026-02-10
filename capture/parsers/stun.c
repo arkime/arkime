@@ -7,6 +7,7 @@
  */
 #include "arkime.h"
 #include <arpa/inet.h>
+#include <sys/socket.h>
 
 extern ArkimeConfig_t config;
 
