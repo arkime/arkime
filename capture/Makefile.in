@@ -63,7 +63,7 @@ all:thirdparty/js0n.o thirdparty/http_parser.o thirdparty/patricia.o $(O_FILES)
             @UNDEFINED_FLAGS@ \
 	    $(LIB_PCAP) \
 	    $(LIB_OTHER) \
-	    -lm @RESOLV_LIB@ @MAGIC_LIBS@ -lffi -lz
+	    -lm @RESOLV_LIB@ @MAGIC_LIBS@ -lffi -lz @JEMALLOC_LIBS@ @TCMALLOC_LIBS@
 	(cd parsers; $(MAKE) EXTRA_CFLAGS="$(EXTRA_CFLAGS)")
 	(cd plugins; $(MAKE) EXTRA_CFLAGS="$(EXTRA_CFLAGS)")
 

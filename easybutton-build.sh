@@ -39,6 +39,8 @@ DOINSTALL=0
 DORMINSTALL=0
 DOTHIRDPARTY=0
 BUILDZSTD=1
+DOJEMALLOC=0
+DOTCMALLOC=0
 EXTRACONFIGURE=""
 
 while :
@@ -59,6 +61,14 @@ do
   --kafka)
     DOKAFKA=1
     BUILDKAFKA=1
+    shift
+    ;;
+  --jemalloc)
+    DOJEMALLOC=1
+    shift
+    ;;
+  --tcmalloc)
+    DOTCMALLOC=1
     shift
     ;;
   --clean)
@@ -105,6 +115,8 @@ do
     echo "--thirdparty        = Build thirdparty packages when it makes sense"
     echo "--nothirdparty      = Use OS packages instead of building thirdparty"
     echo "--kafka             = Build kafka support"
+    echo "--jemalloc          = Use jemalloc memory allocator (recommended for performance)"
+    echo "--tcmalloc          = Use tcmalloc memory allocator (recommended for performance)"
     echo "--without-cont3xt   = Don't build the cont3xt nodejs app"
     echo "--without-wise      = Don't build the wise nodejs app"
     exit 0;
@@ -204,6 +216,12 @@ if [ -f "/etc/redhat-release" ] || [ -f "/etc/system-release" ]; then
     echo "ARKIME: yum failed"
     exit 1
   fi
+  if [ $DOJEMALLOC -eq 1 ]; then
+    sudo yum -y install jemalloc-devel
+  fi
+  if [ $DOTCMALLOC -eq 1 ]; then
+    sudo yum -y install gperftools-libs
+  fi
 fi
 
 if [ -f "/etc/debian_version" ]; then
@@ -225,6 +243,12 @@ if [ -f "/etc/debian_version" ]; then
   if [ $? -ne 0 ]; then
     echo "ARKIME: apt-get failed"
     exit 1
+  fi
+  if [ $DOJEMALLOC -eq 1 ]; then
+    sudo apt-get -qq install libjemalloc-dev
+  fi
+  if [ $DOTCMALLOC -eq 1 ]; then
+    sudo apt-get -qq install libgoogle-perftools-dev
   fi
 
   # Just use OS packages, currently for Ubuntu 22/24
@@ -281,6 +305,19 @@ if [ -f "/etc/alpine-release" ] ; then
   NODEARCH="$NODEARCH-musl"
 elif [ -f "/etc/arch-release" ]; then
     sudo pacman -Sy --noconfirm gcc make python-pip git perl perl-test-differences sudo wget gawk lua geoip yara file libpcap libmaxminddb libnet lua libtool autoconf gettext automake perl-http-message perl-lwp-protocol-https perl-json perl-socket6 perl-clone perl-html-parser zstd pcre librdkafka openssl pkg-config
+fi
+
+if [ $DOJEMALLOC -eq 1 ] && [ $DOTCMALLOC -eq 1 ]; then
+  echo "ARKIME: Cannot use both --jemalloc and --tcmalloc"
+  exit 1
+fi
+
+if [ $DOJEMALLOC -eq 1 ]; then
+  EXTRACONFIGURE+="--with-jemalloc "
+fi
+
+if [ $DOTCMALLOC -eq 1 ]; then
+  EXTRACONFIGURE+="--with-tcmalloc "
 fi
 
 # do autoconf

@@ -649,6 +649,36 @@ AS_IF([test "x$with_python" != "xno"], [
 AC_SUBST([PYTHON_CFLAGS])
 AC_SUBST([PYTHON_LIBS])
 
+dnl jemalloc
+AC_ARG_WITH(jemalloc,
+  AS_HELP_STRING([--with-jemalloc], [Use jemalloc memory allocator]))
+
+dnl tcmalloc
+AC_ARG_WITH(tcmalloc,
+  AS_HELP_STRING([--with-tcmalloc], [Use tcmalloc memory allocator]))
+
+if test "x$with_jemalloc" = "xyes" -a "x$with_tcmalloc" = "xyes"; then
+  AC_MSG_ERROR([Cannot use both --with-jemalloc and --with-tcmalloc])
+fi
+
+JEMALLOC_LIBS=""
+if test "x$with_jemalloc" = "xyes"; then
+  AC_CHECK_LIB(jemalloc, malloc,
+    [JEMALLOC_LIBS="-ljemalloc"],
+    [AC_MSG_ERROR([jemalloc requested but not found. Install libjemalloc-dev.])])
+fi
+AC_SUBST(JEMALLOC_LIBS)
+
+TCMALLOC_LIBS=""
+if test "x$with_tcmalloc" = "xyes"; then
+  AC_CHECK_LIB(tcmalloc_minimal, malloc,
+    [TCMALLOC_LIBS="-ltcmalloc_minimal"],
+    [AC_CHECK_LIB(tcmalloc, malloc,
+      [TCMALLOC_LIBS="-ltcmalloc"],
+      [AC_MSG_ERROR([tcmalloc requested but not found. Install libgoogle-perftools-dev.])])])
+fi
+AC_SUBST(TCMALLOC_LIBS)
+
 AS_IF([test "$prefix" == "NONE"],
     [AC_DEFINE_UNQUOTED(CONFIG_PREFIX,"$ac_default_prefix", [config prefix directory])],
     [AC_DEFINE_UNQUOTED(CONFIG_PREFIX,"$prefix", [config prefix directory])])

@@ -55,12 +55,15 @@ LOCAL long writer_inplace_create(ArkimePacket_t *const packet)
 /******************************************************************************/
 LOCAL void writer_inplace_write(const ArkimeSession_t *const UNUSED(session), ArkimePacket_t *const packet)
 {
-    // Need to lock since multiple packet threads for the same readerPos are running and only want to create once
-    ARKIME_LOCK(filePtr2Id);
+    // Check without lock first since outputId is only set once and never cleared
     long outputId = offlineInfo[packet->readerPos].outputId;
-    if (!outputId)
-        outputId = writer_inplace_create(packet);
-    ARKIME_UNLOCK(filePtr2Id);
+    if (!outputId) {
+        ARKIME_LOCK(filePtr2Id);
+        outputId = offlineInfo[packet->readerPos].outputId;
+        if (!outputId)
+            outputId = writer_inplace_create(packet);
+        ARKIME_UNLOCK(filePtr2Id);
+    }
 
     packet->writerFileNum = outputId;
     packet->writerFilePos = packet->readerFilePos;
