@@ -645,6 +645,8 @@ LOCAL void arkime_config_load_hidden(const char *configFile)
 /******************************************************************************/
 LOCAL char arkime_config_key_sep(const char *key)
 {
+    if (!key)
+        return ';';
     if (strcmp(key, "elasticsearch") == 0 ||
         strcmp(key, "usersElasticsearch") == 0)
         return ',';
