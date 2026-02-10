@@ -35,7 +35,7 @@ NOTICE: Restart wiseService before capture when upgrading
 NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at once after upgrading
 NOTICE: Create a parliament config file before upgrading (see https://arkime.com/settings#parliament and https://arkime.com/faq#how_do_i_upgrade_to_arkime_5)
 
-6.0.0 2026/02/xx
+6.0.0 2026/02/10
 ## BREAKING
   - #3677 arkime_packet_log no longer prints exactly logEveryXPackets, instead
           that is just the minimum; it also only prints TCP info now.
