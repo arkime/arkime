@@ -13,7 +13,7 @@
     "arkime-iptrie": "^0.0.9",
     "arkime-notifme-sdk": "^1.11.8",
     "async": "^3.2.6",
-    "axios": "^1.13.2",
+    "axios": "^1.13.5",
     "better-sqlite3": "^10.1.0",
     "body-parser": "^1.20.4",
     "bson": "^1.1.5",
