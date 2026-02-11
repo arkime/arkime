@@ -7,6 +7,8 @@ use Data::Dumper;
 use JSON;
 use strict;
 
+system("perl mini-redis.pl 7379 &");
+
 open(FH, '>', "testconfig.ini") or die $!;
 print FH <<EOF;
 [default]
@@ -335,22 +337,22 @@ $url = "${ArkimeTest::elasticsearch}/testconfig/_source/notfound";
 
 doNotFoundTest($url);
 
-SKIP: {
 #### REDIS JSON
-$out = `redis-cli -x set testconfig < testconfig.json`;
-skip "Redis down", 6 if ($out ne "OK\n");
+my $json = do { local $/; open my $fh, '<', 'testconfig.json' or die $!; <$fh> };
+my $klen = length("testconfig");
+my $vlen = length($json);
+$out = `printf '*3\r\n\$3\r\nSET\r\n\$$klen\r\ntestconfig\r\n\$$vlen\r\n${json}\r\n' | nc localhost 7379`;
 
-$url = "redis://127.0.0.1/0/testconfig";
+$url = "redis://127.0.0.1:7379/0/testconfig";
 
 doGoodTest($url, 1);
 
 #### NOTFOUND REDIS JSON
-$url = "redis://127.0.0.1/0/notfound";
+$url = "redis://127.0.0.1:7379/0/notfound";
 
 doNotFoundTest($url, 1);
-
-}
 
 #### Clean up
 unlink("testconfig.ini");
 unlink("testconfig.json");
+system("printf '*1\r\n\$8\r\nSHUTDOWN\r\n' | nc localhost 7379 > /dev/null 2>&1");
