@@ -34,13 +34,13 @@ my $test1Token = getTokenCookie("test1");
     }
 
     my $mstats = multiGet("/stats.json");
-    is (@{$mstats->{data}}, 1, "multi stats.json data set ");
+    is (@{$mstats->{data}}, 2, "multi stats.json data set ");
 
     my $mstats = multiGet("/stats.json?cluster=test");
     is (@{$mstats->{data}}, 1);
 
     my $mstats = multiGet("/stats.json?cluster=test2");
-    is (@{$mstats->{data}}, 0);
+    is (@{$mstats->{data}}, 1);
 
     my $mstats = multiGet("/stats.json?cluster=unknown");
     is (@{$mstats->{data}}, 0);
