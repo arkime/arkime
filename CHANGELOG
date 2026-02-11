@@ -39,6 +39,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
 ## Capture
   - #3699 - writer-s3 always uses 0xffff for snapLen now
   - #3699 - writer-s3 fix gzip memory leak
+  - #3702 - support redis:// for config
 
 6.0.0-rc2 2026/02/10
 ## BREAKING

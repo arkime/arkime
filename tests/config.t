@@ -1,11 +1,13 @@
 # Test config
 use lib ".";
 use ArkimeTest;
-use Test::More tests => 46;
+use Test::More tests => 48;
 use Test::Differences;
 use Data::Dumper;
 use JSON;
 use strict;
+
+system("perl mini-redis.pl 7379 &");
 
 open(FH, '>', "testconfig.ini") or die $!;
 print FH <<EOF;
@@ -335,22 +337,22 @@ $url = "${ArkimeTest::elasticsearch}/testconfig/_source/notfound";
 
 doNotFoundTest($url);
 
-SKIP: {
 #### REDIS JSON
-$out = `redis-cli -x set testconfig < testconfig.json`;
-skip "Redis down", 6 if ($out ne "OK\n");
+use IO::Socket::INET;
+my $json = do { local $/; open my $fh, '<', 'testconfig.json' or die $!; <$fh> };
+my $rs = IO::Socket::INET->new(PeerAddr => "127.0.0.1", PeerPort => 7379, Proto => "tcp");
+if ($rs) { my $vlen = length($json); print $rs "*3\r\n\$3\r\nSET\r\n\$10\r\ntestconfig\r\n\$$vlen\r\n$json\r\n"; $rs->close(); }
 
-$url = "redis://127.0.0.1/0/testconfig";
+$url = "redis://127.0.0.1:7379/0/testconfig";
 
-doGoodTest($url, 1);
+doGoodTest($url);
 
 #### NOTFOUND REDIS JSON
-$url = "redis://127.0.0.1/0/notfound";
+$url = "redis://127.0.0.1:7379/0/notfound";
 
-doNotFoundTest($url, 1);
-
-}
+doNotFoundTest($url);
 
 #### Clean up
 unlink("testconfig.ini");
 unlink("testconfig.json");
+if (my $rs2 = IO::Socket::INET->new(PeerAddr => "127.0.0.1", PeerPort => 7379, Proto => "tcp")) { print $rs2 "*1\r\n\$8\r\nSHUTDOWN\r\n"; $rs2->close(); }
