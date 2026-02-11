@@ -848,7 +848,10 @@ LOCAL SavepcapS3File_t *writer_s3_create(const ArkimePacket_t *packet)
     s3file->outputBuffer = arkime_http_get_buffer(config.pcapWriteSize + ARKIME_PACKET_MAX_LEN);
     s3file->outputPos = 0;
     uint32_t linktype = arkime_packet_dlt_to_linktype(pcapFileHeader.dlt);
-    append_to_output(s3file, &pcapFileHeader, 20, FALSE, 0);
+    uint32_t snaplen = 0xffff;
+
+    append_to_output(s3file, &pcapFileHeader, 16, FALSE, 0);
+    append_to_output(s3file, &snaplen, 4, FALSE, 0);
     append_to_output(s3file, &linktype, 4, FALSE, 0);
     make_new_block(s3file);                   // So we can read the header in a small amount of data fetched
 
