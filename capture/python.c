@@ -1668,11 +1668,17 @@ LOCAL int arkime_python_pp_load(const char *path)
 }
 /******************************************************************************/
 LOCAL int threads;
+LOCAL ARKIME_LOCK_DEFINE(interpLock);
+
 LOCAL void arkime_python_thread_init(PyThreadState **threadState)
 {
     PyInterpreterConfig pconfig = _PyInterpreterConfig_INIT;
 
+    // Serialize sub-interpreter creation - Py_NewInterpreterFromConfig requires the GIL
+    ARKIME_LOCK(interpLock);
+    PyEval_RestoreThread(mainThreadState);
     PyStatus status = Py_NewInterpreterFromConfig(threadState, &pconfig);
+    ARKIME_UNLOCK(interpLock);
     if (PyStatus_Exception(status)) {
         LOGEXIT("Error creating new Python interpreter from config: %s",
                 status.err_msg ? status.err_msg : "Unknown error");
@@ -1763,7 +1769,7 @@ LOCAL uint32_t arkime_python_packet_thread_init(int thread, void UNUSED(*uw), vo
         return 0;
     }
 
-    threads++;
+    ARKIME_THREAD_INCR(threads);
     arkime_python_thread_init(&packetThreadState[thread]);
 
     return 0;
@@ -1771,7 +1777,7 @@ LOCAL uint32_t arkime_python_packet_thread_init(int thread, void UNUSED(*uw), vo
 /******************************************************************************/
 LOCAL uint32_t arkime_python_packet_thread_exit(int thread, void UNUSED(*uw), void UNUSED(*cbuw))
 {
-    if (disablePython) {
+    if (disablePython || !packetThreadState[thread]) {
         return 0;
     }
 
@@ -1781,7 +1787,7 @@ LOCAL uint32_t arkime_python_packet_thread_exit(int thread, void UNUSED(*uw), vo
     arkime_python_release_callbacks_for_thread(thread, TRUE);
     Py_EndInterpreter(packetThreadState[thread]);
     packetThreadState[thread] = NULL;
-    threads--;
+    ARKIME_THREAD_DECR(threads);
     return 0;
 }
 /******************************************************************************/
@@ -1792,7 +1798,7 @@ LOCAL uint32_t arkime_python_reader_thread_init(int thread, void UNUSED(*uw), vo
     }
 
     arkimeReaderThread = thread;
-    threads++;
+    ARKIME_THREAD_INCR(threads);
     arkime_python_thread_init(&readerThreadState[thread]);
     arkime_python_reader_load_files(thread);
 
@@ -1801,7 +1807,7 @@ LOCAL uint32_t arkime_python_reader_thread_init(int thread, void UNUSED(*uw), vo
 /******************************************************************************/
 LOCAL uint32_t arkime_python_reader_thread_exit(int thread, void UNUSED(*uw), void UNUSED(*cbuw))
 {
-    if (disablePython) {
+    if (disablePython || !readerThreadState[thread]) {
         return 0;
     }
 
@@ -1811,7 +1817,7 @@ LOCAL uint32_t arkime_python_reader_thread_exit(int thread, void UNUSED(*uw), vo
     arkime_python_release_callbacks_for_thread(thread, FALSE);
     Py_EndInterpreter(readerThreadState[thread]);
     readerThreadState[thread] = NULL;
-    threads--;
+    ARKIME_THREAD_DECR(threads);
     return 0;
 }
 /******************************************************************************/
