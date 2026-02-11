@@ -11,7 +11,7 @@ extern ArkimeConfig_t        config;
 LOCAL int pimMProtocol;
 
 /******************************************************************************/
-LOCAL void pim_create_sessionid(uint8_t *sessionId, ArkimePacket_t *const UNUSED (packet))
+LOCAL void pim_create_sessionid(uint8_t *sessionId, ArkimePacket_t *const UNUSED(packet))
 {
     sessionId[0] = 4;
     sessionId[1] = pimMProtocol;

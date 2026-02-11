@@ -777,7 +777,7 @@ LOCAL PyObject *arkime_python_session_has_protocol(PyObject UNUSED(*self), PyObj
     if (!PyArg_ParseTuple(args, "Os", &py_session_obj, &protocol_str)) {
         return NULL;
     }
-    if (arkime_session_has_protocol( (ArkimeSession_t *)PyLong_AsVoidPtr(py_session_obj), protocol_str)) {
+    if (arkime_session_has_protocol((ArkimeSession_t *)PyLong_AsVoidPtr(py_session_obj), protocol_str)) {
         Py_RETURN_TRUE;
     } else {
         Py_RETURN_FALSE;

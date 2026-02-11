@@ -1020,7 +1020,7 @@ LOCAL void writer_s3_init(const char *UNUSED(name))
         }
         g_free(uri);
 
-        g_timeout_add_seconds( 280, writer_s3_refresh_creds_gfunc, 0);
+        g_timeout_add_seconds(280, writer_s3_refresh_creds_gfunc, 0);
         writer_s3_refresh_creds_gfunc(NULL);
     } else if (!s3ConfigCreds.s3AccessKeyId || !s3ConfigCreds.s3AccessKeyId[0]) {
         // Fetch the data from the EC2 metadata service
@@ -1040,7 +1040,7 @@ LOCAL void writer_s3_init(const char *UNUSED(name))
         snprintf(credURL, sizeof(credURL), "/latest/meta-data/iam/security-credentials/%.*s", (int)rlen, rolename);
         free(rolename);
 
-        g_timeout_add_seconds( 280, writer_s3_refresh_creds_gfunc, 0);
+        g_timeout_add_seconds(280, writer_s3_refresh_creds_gfunc, 0);
         writer_s3_refresh_creds_gfunc(NULL);
     } else if (s3ConfigCreds.s3AccessKeyId && !s3ConfigCreds.s3SecretAccessKey) {
         CONFIGEXIT("Must set s3SecretAccessKey to save to s3");
@@ -1089,7 +1089,7 @@ LOCAL void writer_s3_init(const char *UNUSED(name))
     arkime_http_set_header_cb(s3Server, writer_s3_header_cb);
 
     if (config.maxFileTimeM > 0) {
-        g_timeout_add_seconds( 30, writer_s3_file_time_gfunc, 0);
+        g_timeout_add_seconds(30, writer_s3_file_time_gfunc, 0);
     }
 }
 /******************************************************************************/

@@ -97,7 +97,7 @@ LOCAL int aws_get_credentials_metadata(const char UNUSED(*service))
             free(rolename);
         }
         arkime_http_set_print_errors(metadataServer);
-        g_timeout_add_seconds( 280, aws_refresh_creds, 0);
+        g_timeout_add_seconds(280, aws_refresh_creds, 0);
     }
     aws_refresh_creds(NULL);
     return 1;

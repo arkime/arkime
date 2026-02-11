@@ -215,15 +215,15 @@ LOCAL int certinfo_cmp(const void *keyv, const void *elementv)
     ArkimeCertsInfo_t  *elementCI = (ArkimeCertsInfo_t *)element->object;
 
     // Make sure all the easy things to check are the same
-    if ( !((keyCI->serialNumberLen == elementCI->serialNumberLen) &&
-           (memcmp(keyCI->serialNumber, elementCI->serialNumber, elementCI->serialNumberLen) == 0) &&
-           (keyCI->issuer.commonName.s_count == elementCI->issuer.commonName.s_count) &&
-           (keyCI->issuer.orgName.s_count == elementCI->issuer.orgName.s_count) &&
-           (keyCI->issuer.orgUnit.s_count == elementCI->issuer.orgUnit.s_count) &&
-           (keyCI->subject.commonName.s_count == elementCI->subject.commonName.s_count) &&
-           (keyCI->subject.orgName.s_count == elementCI->subject.orgName.s_count) &&
-           (keyCI->subject.orgUnit.s_count == elementCI->subject.orgUnit.s_count)
-          )
+    if (!((keyCI->serialNumberLen == elementCI->serialNumberLen) &&
+          (memcmp(keyCI->serialNumber, elementCI->serialNumber, elementCI->serialNumberLen) == 0) &&
+          (keyCI->issuer.commonName.s_count == elementCI->issuer.commonName.s_count) &&
+          (keyCI->issuer.orgName.s_count == elementCI->issuer.orgName.s_count) &&
+          (keyCI->issuer.orgUnit.s_count == elementCI->issuer.orgUnit.s_count) &&
+          (keyCI->subject.commonName.s_count == elementCI->subject.commonName.s_count) &&
+          (keyCI->subject.orgName.s_count == elementCI->subject.orgName.s_count) &&
+          (keyCI->subject.orgUnit.s_count == elementCI->subject.orgUnit.s_count)
+         )
        ) {
 
         return 0;
@@ -367,7 +367,7 @@ LOCAL void certinfo_process(ArkimeCertInfo_t *ci, BSB *bsb)
                 ArkimeString_t *element = ARKIME_TYPE_ALLOC0(ArkimeString_t);
                 element->utf8 = atag == 12;
                 if (element->utf8)
-                    element->str = g_utf8_strdown((char * )value, alen);
+                    element->str = g_utf8_strdown((char *)value, alen);
                 else
                     element->str = g_ascii_strdown((char *)value, alen);
                 DLL_PUSH_TAIL(s_, &ci->commonName, element);

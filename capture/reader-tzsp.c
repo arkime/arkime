@@ -34,19 +34,19 @@ LOCAL void *tzsp_thread(gpointer UNUSED(uw))
     int initFunc = arkime_get_named_func("arkime_reader_thread_init");
     arkime_call_named_func(initFunc, 0, NULL);
 
-    socket = g_socket_new (G_SOCKET_FAMILY_IPV4, G_SOCKET_TYPE_DATAGRAM, G_SOCKET_PROTOCOL_UDP, &error);
+    socket = g_socket_new(G_SOCKET_FAMILY_IPV4, G_SOCKET_TYPE_DATAGRAM, G_SOCKET_PROTOCOL_UDP, &error);
 
     if (!socket || error) {
         CONFIGEXIT("Error creating tzsp: %s", error->message);
     }
 
-    addr = g_inet_socket_address_new (g_inet_address_new_any (G_SOCKET_FAMILY_IPV4), tzspPort);
+    addr = g_inet_socket_address_new(g_inet_address_new_any(G_SOCKET_FAMILY_IPV4), tzspPort);
 
-    if (!g_socket_bind (socket, addr, TRUE, &error)) {
+    if (!g_socket_bind(socket, addr, TRUE, &error)) {
         CONFIGEXIT("Error binding tzsp: %s", error->message);
     }
 
-    g_object_unref (addr);
+    g_object_unref(addr);
 
     ArkimePacketBatch_t   batch;
     arkime_packet_batch_init(&batch);

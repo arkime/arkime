@@ -7,7 +7,7 @@
 #include "molua.h"
 
 /******************************************************************************/
-LOCAL MD_t *checkArkimeData (lua_State *L, int index)
+LOCAL MD_t *checkArkimeData(lua_State *L, int index)
 {
     MD_t *md;
     luaL_checktype(L, index, LUA_TUSERDATA);
@@ -23,7 +23,7 @@ LOCAL MD_t *checkArkimeData (lua_State *L, int index)
     return md;
 }
 /******************************************************************************/
-MD_t *molua_pushArkimeData (lua_State *L, const char *str, int len)
+MD_t *molua_pushArkimeData(lua_State *L, const char *str, int len)
 {
     MD_t *md = (MD_t *)lua_newuserdata(L, sizeof(MD_t));
     md->str = str;
@@ -103,7 +103,7 @@ LOCAL int MD_pcre_ismatch(lua_State *L)
 {
     const MD_t *data = checkArkimeData(L, 1);
     const GRegex *pattern = lua_touserdata(L, 2);
-    gboolean result = g_regex_match_full (pattern, data->str, data->len, 0, 0, NULL, NULL);
+    gboolean result = g_regex_match_full(pattern, data->str, data->len, 0, 0, NULL, NULL);
     lua_pushboolean(L, result);
     return 1;
 }
@@ -113,7 +113,7 @@ LOCAL int MD_pcre_match(lua_State *L)
     MD_t *data = checkArkimeData(L, 1);
     const GRegex *pattern = lua_touserdata(L, 2);
     GMatchInfo *match_info;
-    gboolean result = g_regex_match_full (pattern, data->str, data->len, 0, 0, &match_info, NULL);
+    gboolean result = g_regex_match_full(pattern, data->str, data->len, 0, 0, &match_info, NULL);
     lua_pushboolean(L, result);
 
     int i;

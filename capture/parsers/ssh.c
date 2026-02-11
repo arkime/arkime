@@ -98,7 +98,7 @@ LOCAL void ssh_parse_keyinit(ArkimeSession_t *session, const uint8_t *data, int 
     }
 }
 /******************************************************************************/
-LOCAL void ssh_send_counting200 (ArkimeSession_t *session, SSHInfo_t *ssh)
+LOCAL void ssh_send_counting200(ArkimeSession_t *session, SSHInfo_t *ssh)
 {
     arkime_parsers_call_named_func(ssh_counting200_func, session, NULL, 0, ssh);
 }

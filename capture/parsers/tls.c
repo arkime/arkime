@@ -180,8 +180,8 @@ LOCAL uint32_t tls_process_server_hello(ArkimeSession_t *session, const uint8_t 
         while (BSB_REMAINING(ebsb) > 0) {
             int etype = 0, elen = 0;
 
-            BSB_IMPORT_u16 (ebsb, etype);
-            BSB_IMPORT_u16 (ebsb, elen);
+            BSB_IMPORT_u16(ebsb, etype);
+            BSB_IMPORT_u16(ebsb, elen);
 
             BSB_EXPORT_sprintf(eja3bsb, "%d-", etype);
 
@@ -205,7 +205,7 @@ LOCAL uint32_t tls_process_server_hello(ArkimeSession_t *session, const uint8_t 
                 }
             }
 
-            BSB_IMPORT_skip (ebsb, elen);
+            BSB_IMPORT_skip(ebsb, elen);
         }
         BSB_EXPORT_rewind(eja3bsb, 1); // Remove last -
     }
@@ -389,11 +389,11 @@ LOCAL uint32_t tls_process_client_hello_data(ArkimeSession_t *session, const uin
             while (BSB_REMAINING(ebsb) >= 4) {
                 uint16_t etype = 0, elen = 0;
 
-                BSB_IMPORT_u16 (ebsb, etype);
-                BSB_IMPORT_u16 (ebsb, elen);
+                BSB_IMPORT_u16(ebsb, etype);
+                BSB_IMPORT_u16(ebsb, elen);
 
                 if (tls_is_grease_value(etype)) {
-                    BSB_IMPORT_skip (ebsb, elen);
+                    BSB_IMPORT_skip(ebsb, elen);
                     continue;
                 }
 
@@ -410,7 +410,7 @@ LOCAL uint32_t tls_process_client_hello_data(ArkimeSession_t *session, const uin
                 if (etype == 0) { // SNI
                     ja4NumExtensionsSome--;
                     BSB bsb;
-                    BSB_IMPORT_bsb (ebsb, bsb, elen);
+                    BSB_IMPORT_bsb(ebsb, bsb, elen);
 
                     int sni = 0;
                     BSB_IMPORT_u16(bsb, sni); // list len
@@ -429,7 +429,7 @@ LOCAL uint32_t tls_process_client_hello_data(ArkimeSession_t *session, const uin
                     ja4HasSNI = 'd';
                 } else if (etype == 0x000a) { // Elliptic Curves
                     BSB bsb;
-                    BSB_IMPORT_bsb (ebsb, bsb, elen);
+                    BSB_IMPORT_bsb(ebsb, bsb, elen);
 
                     uint16_t llen = 0;
                     BSB_IMPORT_u16(bsb, llen); // list len
@@ -444,7 +444,7 @@ LOCAL uint32_t tls_process_client_hello_data(ArkimeSession_t *session, const uin
                     BSB_EXPORT_rewind(ecja3bsb, 1); // Remove last -
                 } else if (etype == 0x000b) { // Elliptic Curves point formats
                     BSB bsb;
-                    BSB_IMPORT_bsb (ebsb, bsb, elen);
+                    BSB_IMPORT_bsb(ebsb, bsb, elen);
 
                     uint16_t llen = 0;
                     BSB_IMPORT_u08(bsb, llen); // list len
@@ -457,7 +457,7 @@ LOCAL uint32_t tls_process_client_hello_data(ArkimeSession_t *session, const uin
                     BSB_EXPORT_rewind(ecfja3bsb, 1); // Remove last -
                 } else if (etype == 0x000d) { // Signature Algorithms
                     BSB bsb;
-                    BSB_IMPORT_bsb (ebsb, bsb, elen);
+                    BSB_IMPORT_bsb(ebsb, bsb, elen);
 
                     uint16_t llen = 0;
                     BSB_IMPORT_u16(bsb, llen); // list len
@@ -470,19 +470,19 @@ LOCAL uint32_t tls_process_client_hello_data(ArkimeSession_t *session, const uin
                 } else if (etype == 0x10) { // ALPN
                     ja4NumExtensionsSome--;
                     BSB bsb;
-                    BSB_IMPORT_bsb (ebsb, bsb, elen);
+                    BSB_IMPORT_bsb(ebsb, bsb, elen);
 
-                    BSB_IMPORT_skip (bsb, 2); // len
+                    BSB_IMPORT_skip(bsb, 2);  // len
                     uint8_t alen = 0;
-                    BSB_IMPORT_u08 (bsb, alen); // len
+                    BSB_IMPORT_u08(bsb, alen);  // len
                     const uint8_t *astr = NULL;
-                    BSB_IMPORT_ptr (bsb, astr, alen);
+                    BSB_IMPORT_ptr(bsb, astr, alen);
                     if (alen > 0 && astr && !BSB_IS_ERROR(bsb)) {
                         tls_alpn_to_ja4alpn(astr, alen, ja4ALPN);
                     }
                 } else if (etype == 0x2b) { // etype 0x2b is supported version
                     BSB bsb;
-                    BSB_IMPORT_bsb (ebsb, bsb, elen);
+                    BSB_IMPORT_bsb(ebsb, bsb, elen);
 
                     uint16_t llen = 0;
                     BSB_IMPORT_u08(bsb, llen); // list len
@@ -496,12 +496,12 @@ LOCAL uint32_t tls_process_client_hello_data(ArkimeSession_t *session, const uin
                     }
                 } else if (etype == 0xffce) { // esni
                     arkime_session_add_tag(session, "tls:has_esni");
-                    BSB_IMPORT_skip (ebsb, elen);
+                    BSB_IMPORT_skip(ebsb, elen);
                 } else if (etype == 0xfe0d) { // encrypted_client_hello
                     arkime_session_add_tag(session, "tls:has_ech");
-                    BSB_IMPORT_skip (ebsb, elen);
+                    BSB_IMPORT_skip(ebsb, elen);
                 } else {
-                    BSB_IMPORT_skip (ebsb, elen);
+                    BSB_IMPORT_skip(ebsb, elen);
                 }
             }
             BSB_EXPORT_rewind(eja3bsb, 1); // Remove last -

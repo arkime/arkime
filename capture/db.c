@@ -136,10 +136,10 @@ LOCAL ArkimeIpInfo_t *arkime_db_get_override_ip6(ArkimeSession_t *session, struc
     patricia_node_t *node;
 
     if (IN6_IS_ADDR_V4MAPPED(ip)) {
-        if ((node = patricia_search_best3 (ipTree4, ((u_char *)ip->s6_addr) + 12, 32)) == NULL)
+        if ((node = patricia_search_best3(ipTree4, ((u_char *)ip->s6_addr) + 12, 32)) == NULL)
             return 0;
     } else {
-        if ((node = patricia_search_best3 (ipTree6, (u_char *)ip->s6_addr, 128)) == NULL)
+        if ((node = patricia_search_best3(ipTree6, (u_char *)ip->s6_addr, 128)) == NULL)
             return 0;
     }
 
@@ -1871,7 +1871,7 @@ LOCAL void arkime_db_update_stats(int n, gboolean sync)
 }
 /******************************************************************************/
 // Runs on main thread
-LOCAL gboolean arkime_db_flush_gfunc (gpointer user_data )
+LOCAL gboolean arkime_db_flush_gfunc (gpointer user_data)
 {
     struct timeval  currentTime;
 
@@ -1921,7 +1921,7 @@ LOCAL void arkime_db_health_check_cb(int UNUSED(code), uint8_t *data, int data_l
 
     if (!status) {
         LOG("WARNING - Couldn't find status in '%.*s'", data_len, data);
-    } else if ( esHealthMS > 20000) {
+    } else if (esHealthMS > 20000) {
         LOG("WARNING - Elasticsearch health check took more than 20 seconds %" PRIu64 "ms", esHealthMS);
     } else if ((status[0] == 'y' && uw == GINT_TO_POINTER(1)) || (status[0] == 'r')) {
         LOG("WARNING - Elasticsearch is %.*s and took %" PRIu64 "ms to query health, this may cause issues.  See FAQ.", status_len, status, esHealthMS);
@@ -1930,7 +1930,7 @@ LOCAL void arkime_db_health_check_cb(int UNUSED(code), uint8_t *data, int data_l
 /******************************************************************************/
 
 // Runs on main thread
-LOCAL gboolean arkime_db_health_check (gpointer user_data )
+LOCAL gboolean arkime_db_health_check (gpointer user_data)
 {
     arkime_http_schedule(esServer, "GET", "/_cat/health?format=json", -1, NULL, 0, NULL, ARKIME_HTTP_PRIORITY_DROPABLE, arkime_db_health_check_cb, user_data);
     clock_gettime(CLOCK_MONOTONIC, &startHealthCheck);
@@ -1956,7 +1956,7 @@ LOCAL void arkime_db_get_sequence_number_cb(int UNUSED(code), uint8_t *data, int
         arkime_db_get_sequence_number(r->name, r->func, r->uw);
     } else {
         if (r->func)
-            r->func(atoi((char * )version), r->uw);
+            r->func(atoi((char *)version), r->uw);
     }
 
     g_free(r->name);
@@ -2320,7 +2320,7 @@ LOCAL void arkime_db_check()
     if (!version)
         LOGEXIT("ERROR - Database version couldn't be found, have you run \"db/db.pl host:port init\"");
 
-    arkimeDbVersion = atoi((char * )version);
+    arkimeDbVersion = atoi((char *)version);
     if (arkimeDbVersion < ARKIME_MIN_DB_VERSION) {
         LOGEXIT("ERROR - Database version '%.*s' is too old, needs to be at least (%d), run \"db/db.pl host:port upgrade\"", version_len, version, ARKIME_MIN_DB_VERSION);
     }
@@ -2438,7 +2438,7 @@ LOCAL void arkime_db_load_oui(const char *name)
         // Trim
         int len = strlen(line);
         if (len < 4) continue;
-        while (len > 0 && isspace(line[len - 1]) )
+        while (len > 0 && isspace(line[len - 1]))
             len--;
         line[len] = 0;
 
@@ -2908,9 +2908,9 @@ void arkime_db_init()
         if (!config.noStats) {
             g_thread_unref(g_thread_new("arkime-stats", &arkime_db_stats_thread, NULL));
         }
-        timers[t++] = g_timeout_add_seconds(  1, arkime_db_flush_gfunc, 0);
+        timers[t++] = g_timeout_add_seconds(1, arkime_db_flush_gfunc, 0);
         if (arkime_config_boolean(NULL, "dbEsHealthCheck", TRUE)) {
-            timers[t++] = g_timeout_add_seconds( 30, arkime_db_health_check, 0);
+            timers[t++] = g_timeout_add_seconds(30, arkime_db_health_check, 0);
         }
     }
 

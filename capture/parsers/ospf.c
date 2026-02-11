@@ -11,7 +11,7 @@ extern ArkimeConfig_t        config;
 LOCAL int ospfMProtocol;
 
 /******************************************************************************/
-LOCAL void ospf_create_sessionid(uint8_t *sessionId, ArkimePacket_t *const UNUSED (packet))
+LOCAL void ospf_create_sessionid(uint8_t *sessionId, ArkimePacket_t *const UNUSED(packet))
 {
     // uint8_t *data = packet->pkt + packet->payloadOffset;
 

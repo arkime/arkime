@@ -142,7 +142,7 @@ LOCAL int arkime_plugins_load_so(const char *path)
 
     ArkimePluginInitFunc plugin_init;
 
-    if (!g_module_symbol(plugin, "arkime_plugin_init", (gpointer *)(char * )&plugin_init) || plugin_init == NULL) {
+    if (!g_module_symbol(plugin, "arkime_plugin_init", (gpointer *)(char *)&plugin_init) || plugin_init == NULL) {
         LOG("ERROR - Module %s doesn't have a arkime_plugin_init", path);
         return 1;
     }

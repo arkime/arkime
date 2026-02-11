@@ -30,7 +30,7 @@ struct arkimedrophash_t {
 };
 
 /******************************************************************************/
-LOCAL inline uint32_t arkime_drophash_hash (const void *key, int len)
+LOCAL inline uint32_t arkime_drophash_hash(const void *key, int len)
 {
     uint32_t  h = 0;
     uint32_t *p = (uint32_t *)key;
@@ -74,7 +74,7 @@ done:
     ARKIME_UNLOCK(group->lock);
 }
 /******************************************************************************/
-int arkime_drophash_add (ArkimeDropHashGroup_t *group, int port, const void *key, uint32_t current, uint32_t goodFor)
+int arkime_drophash_add(ArkimeDropHashGroup_t *group, int port, const void *key, uint32_t current, uint32_t goodFor)
 {
     if (!group->drops[port]) {
         arkime_drophash_make(group, port);
@@ -119,7 +119,7 @@ int arkime_drophash_add (ArkimeDropHashGroup_t *group, int port, const void *key
 // Intentionally lockless for performance. Readers may see stale data during
 // concurrent writes, but this is fail-open: worst case a packet isn't dropped
 // when it should be. arkime_free_later prevents use-after-free on deletion.
-int arkime_drophash_should_drop (ArkimeDropHashGroup_t *group, int port, const void *key, uint32_t current)
+int arkime_drophash_should_drop(ArkimeDropHashGroup_t *group, int port, const void *key, uint32_t current)
 {
     const ArkimeDropHash_t *hash = group->drops[port];
 
@@ -159,7 +159,7 @@ LOCAL void arkime_drophash_free(void *ptr)
     ARKIME_TYPE_FREE(ArkimeDropHashItem_t, ptr);
 }
 /******************************************************************************/
-void arkime_drophash_delete (ArkimeDropHashGroup_t *group, int port, const void *key)
+void arkime_drophash_delete(ArkimeDropHashGroup_t *group, int port, const void *key)
 {
     ArkimeDropHash_t *hash = group->drops[port];
 

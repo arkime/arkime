@@ -659,7 +659,7 @@ LOCAL int arkime_parsers_load_so(const char *path)
 
     ArkimePluginInitFunc parser_init;
 
-    if (!g_module_symbol(parser, "arkime_parser_init", (gpointer *)(char * )&parser_init) || parser_init == NULL) {
+    if (!g_module_symbol(parser, "arkime_parser_init", (gpointer *)(char *)&parser_init) || parser_init == NULL) {
         LOG("ERROR - Module %s doesn't have a arkime_parser_init", path);
         return 1;
     }

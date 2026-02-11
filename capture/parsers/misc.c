@@ -43,7 +43,7 @@ LOCAL void vnc_classify(ArkimeSession_t *session, const uint8_t *data, int len, 
 /******************************************************************************/
 LOCAL void jabber_classify(ArkimeSession_t *session, const uint8_t *data, int len, int UNUSED(which), void *UNUSED(uw))
 {
-    if (g_strstr_len((gchar * )data + 5, len - 5, "jabber") != NULL)
+    if (g_strstr_len((gchar *)data + 5, len - 5, "jabber") != NULL)
         arkime_session_add_protocol(session, "jabber");
 }
 /******************************************************************************/
