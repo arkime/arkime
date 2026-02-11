@@ -55,3 +55,5 @@ is (system("diff /tmp/arkime.file.none.true /tmp/arkime.file.zstd.false"), 0);
 is (system("diff /tmp/arkime.file.none.true /tmp/arkime.file.gzip.true"), 0);
 
 system("curl -s http://localhost:4566/_shutdown > /dev/null 2>&1");
+
+esPost("/tests2_sessions*/_delete_by_query?conflicts=proceed&refresh", '{ "query": { "term": { "node": "s3-test" } } }', 1);
