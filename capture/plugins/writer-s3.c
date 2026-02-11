@@ -185,7 +185,8 @@ LOCAL void writer_s3_complete_cb (int code, uint8_t *data, int len, gpointer uw)
     if (file->zstd_strm)
         ZSTD_freeCStream(file->zstd_strm);
 #endif
-
+    if (compressionMode == ARKIME_COMPRESSION_GZIP)
+        deflateEnd(&file->z_strm);
 
     ARKIME_TYPE_FREE(SavepcapS3File_t, file);
 
@@ -951,7 +952,7 @@ LOCAL void writer_s3_init(const char *UNUSED(name))
     s3PathAccessStyle     = arkime_config_boolean(NULL, "s3PathAccessStyle", strchr(s3Bucket, '.') != NULL);
     s3Compress            = arkime_config_boolean(NULL, "s3Compress", FALSE);
     REMOVEDCONFIG("s3WriteGzip", "use s3Compression=gzip");
-    const char *s3Compression = arkime_config_str(NULL, "s3Compression", "zstd");
+    char *s3Compression   = arkime_config_str(NULL, "s3Compression", "zstd");
     s3CompressionLevel    = arkime_config_int(NULL, "s3CompressionLevel", 0, 0, 22);
     s3CompressionBlockSize = arkime_config_int(NULL, "s3CompressionBlockSize", 100000, 0xffff, 0x7ffff);
     s3StorageClass        = arkime_config_str(NULL, "s3StorageClass", "STANDARD");
@@ -984,6 +985,7 @@ LOCAL void writer_s3_init(const char *UNUSED(name))
         } else {
             CONFIGEXIT("Unknown s3Compression value %s", s3Compression);
         }
+        g_free(s3Compression);
     }
 
     if (s3Compress && compressionMode != ARKIME_COMPRESSION_NONE) {
