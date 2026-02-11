@@ -338,10 +338,10 @@ $url = "${ArkimeTest::elasticsearch}/testconfig/_source/notfound";
 doNotFoundTest($url);
 
 #### REDIS JSON
+use IO::Socket::INET;
 my $json = do { local $/; open my $fh, '<', 'testconfig.json' or die $!; <$fh> };
-my $klen = length("testconfig");
-my $vlen = length($json);
-$out = `printf '*3\r\n\$3\r\nSET\r\n\$$klen\r\ntestconfig\r\n\$$vlen\r\n${json}\r\n' | nc localhost 7379`;
+my $rs = IO::Socket::INET->new(PeerAddr => "127.0.0.1", PeerPort => 7379, Proto => "tcp");
+if ($rs) { my $vlen = length($json); print $rs "*3\r\n\$3\r\nSET\r\n\$10\r\ntestconfig\r\n\$$vlen\r\n$json\r\n"; $rs->close(); }
 
 $url = "redis://127.0.0.1:7379/0/testconfig";
 
@@ -355,4 +355,4 @@ doNotFoundTest($url, 1);
 #### Clean up
 unlink("testconfig.ini");
 unlink("testconfig.json");
-system("printf '*1\r\n\$8\r\nSHUTDOWN\r\n' | nc localhost 7379 > /dev/null 2>&1");
+if (my $rs2 = IO::Socket::INET->new(PeerAddr => "127.0.0.1", PeerPort => 7379, Proto => "tcp")) { print $rs2 "*1\r\n\$8\r\nSHUTDOWN\r\n"; $rs2->close(); }
