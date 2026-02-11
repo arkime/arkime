@@ -59,7 +59,7 @@ my ($url) = @_;
 
 
 # bigendian pcap file tests
-    my $json = get("/sessions.json?length=1000&date=-1&expression=" . uri_escape("file=$pwd/bigendian.pcap"));
+    my $json = get("/sessions.json?length=1000&date=-1&expression=" . uri_escape("file=$pwd/bigendian.pcap && node != s3-test"));
     is ($json->{recordsFiltered}, 1, "bigendian recordsFiltered");
     is (scalar @{$json->{data}}, 1);
 
@@ -68,22 +68,22 @@ my ($url) = @_;
     is (unpack("H*", $response->content), "08000afb43a800004fa11b290002538d08090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f202122232425262728292a2b2c2d2e2f303132333435363708004bcb43ca00004fa11b2d0008129108090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f202122232425262728292a2b2c2d2e2f3031323334353637", "Correct bigendian tcpdump data");
 
     # Start at second element
-    my $json = get("/sessions.json?length=1000&start=2&date=-1&expression=" . uri_escape("file=$pwd/bigendian.pcap"));
+    my $json = get("/sessions.json?length=1000&start=2&date=-1&expression=" . uri_escape("file=$pwd/bigendian.pcap && node != s3-test"));
     is ($json->{recordsFiltered}, 1, "bigendian recordsFiltered");
     is (scalar @{$json->{data}}, 0);
 
     # Force a scroll
-    $json = get("/sessions.json?length=20000&date=-1&expression=" . uri_escape("file=$pwd/bigendian.pcap"));
+    $json = get("/sessions.json?length=20000&date=-1&expression=" . uri_escape("file=$pwd/bigendian.pcap && node != s3-test"));
     is ($json->{recordsFiltered}, 1);
     is (scalar @{$json->{data}}, 1);
 
     # Force a scroll and start at second element
-    $json = get("/sessions.json?length=20000&start=2&date=-1&expression=" . uri_escape("file=$pwd/bigendian.pcap"));
+    $json = get("/sessions.json?length=20000&start=2&date=-1&expression=" . uri_escape("file=$pwd/bigendian.pcap && node != s3-test"));
     is ($json->{recordsFiltered}, 1);
     is (scalar @{$json->{data}}, 0);
 
 # Check facets short
-    $json = get("/sessions.json?map=true&startTime=1386004308&stopTime=1386004400&facets=1&expression=" . uri_escape("file=$pwd/bigendian.pcap|file=$pwd/socks-http-example.pcap|file=$pwd/bt-tcp.pcap"));
+    $json = get("/sessions.json?map=true&startTime=1386004308&stopTime=1386004400&facets=1&expression=" . uri_escape("(file=$pwd/bigendian.pcap|file=$pwd/socks-http-example.pcap|file=$pwd/bt-tcp.pcap) && node != s3-test"));
 
     eq_or_diff($json->{map}, from_json('{"dst":{"US": 3}, "src":{"US": 3}, "xffGeo":{}}'), "map short");
     eq_or_diff($json->{graph}->{sessionsHisto}, from_json('[["1386004309000", 1], ["1386004312000", 1], [1386004317000, 1]]'), "sessionsHisto short");
@@ -97,7 +97,7 @@ my ($url) = @_;
     is ($json->{graph}->{xmin}, 1386004308000, "correct xmin short");
 
 # Check facets medium
-    $json = get("/sessions.json?map=true&startTime=1386004308&stopTime=1386349908&facets=1&expression=" . uri_escape("file=$pwd/bigendian.pcap|file=$pwd/socks-http-example.pcap|file=$pwd/bt-tcp.pcap"));
+    $json = get("/sessions.json?map=true&startTime=1386004308&stopTime=1386349908&facets=1&expression=" . uri_escape("(file=$pwd/bigendian.pcap|file=$pwd/socks-http-example.pcap|file=$pwd/bt-tcp.pcap) && node != s3-test"));
 
     eq_or_diff($json->{map}, from_json('{"dst":{"US": 3}, "src":{"US": 3}, "xffGeo":{}}'), "map medium");
     eq_or_diff($json->{graph}->{sessionsHisto}, from_json('[["1386004260000", 3]]'), "sessionsHisto medium");
@@ -111,7 +111,7 @@ my ($url) = @_;
     is ($json->{graph}->{xmin}, 1386004308000, "correct xmin medium");
 
 # Check facets ALL
-    $json = get("/sessions.json?map=true&date=-1&facets=1&expression=" . uri_escape("file=$pwd/bigendian.pcap|file=$pwd/socks-http-example.pcap|file=$pwd/bt-tcp.pcap"));
+    $json = get("/sessions.json?map=true&date=-1&facets=1&expression=" . uri_escape("(file=$pwd/bigendian.pcap|file=$pwd/socks-http-example.pcap|file=$pwd/bt-tcp.pcap) && node != s3-test"));
 
     eq_or_diff($json->{map}, from_json('{"dst":{"US": 3, "CA": 1}, "src":{"US": 3, "RU":1}, "xffGeo":{}}'), "map ALL");
     eq_or_diff($json->{graph}->{sessionsHisto}, from_json('[["1335956400000", 1], ["1386003600000", 3], [1387742400000, 1], [1482552000000,1]]'), "sessionsHisto ALL");
@@ -123,7 +123,7 @@ my ($url) = @_;
     is ($json->{graph}->{interval}, 3600, "correct interval ALL");
 
 # Check ip.protocol=blah (GET and POST)
-    $json = get("/sessions.json?date=-1&&spi=ipsrc&expression=" . uri_escape("file=$pwd/bigendian.pcap&&ip.protocol==blah"));
+    $json = get("/sessions.json?date=-1&&spi=ipsrc&expression=" . uri_escape("file=$pwd/bigendian.pcap && ip.protocol==blah && node != s3-test"));
     is($json->{error}, "Unknown protocol string blah", "ip.protocol==blah");
     $json = post("/api/sessions", '{"date":-1, "spi":"ipsrc", "expression":"file=' . $pwd . '/bigendian.pcap&&ip.protocol==blah"}');
     is($json->{error}, "Unknown protocol string blah", "ip.protocol==blah");
@@ -133,7 +133,7 @@ my ($url) = @_;
     is($json->{error}, "Expression needs to be a string", "ip.protocol==blah");
 
 # csv
-    my $csv = getBinary("/sessions.csv?date=-1&expression=" . uri_escape("file=$pwd/socks-http-example.pcap"))->content;
+    my $csv = getBinary("/sessions.csv?date=-1&expression=" . uri_escape("file=$pwd/socks-http-example.pcap && node != s3-test"))->content;
     $csv =~ s/\r//g;
     eq_or_diff ($csv, 'IP Protocol, Start Time, Stop Time, Src IP, Src Port, Src Country, Dst IP, Dst Port, Dst Country, Bytes, Data bytes, Packets, Arkime Node
 tcp,1386004309468,1386004309478,10.180.156.185,53533,US,10.180.156.249,1080,US,2698,1754,14,test
@@ -141,7 +141,7 @@ tcp,1386004312331,1386004312384,10.180.156.185,53534,US,10.180.156.249,1080,US,2
 tcp,1386004317979,1386004317989,10.180.156.185,53535,US,10.180.156.249,1080,US,2905,1763,17,test
 ', "CSV Expression");
 
-    my $idQuery = get("/sessions.json?date=-1&expression=" . uri_escape("file=$pwd/socks-http-example.pcap"));
+    my $idQuery = get("/sessions.json?date=-1&expression=" . uri_escape("file=$pwd/socks-http-example.pcap && node != s3-test"));
     #    diag "http://$ArkimeTest::host:8123/sessions.csv?date=-1&ids=" . $idQuery->{data}->[0]->{id};
     $csv = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8123/sessions.csv?date=-1&ids=" . $idQuery->{data}->[0]->{id})->content;
     $csv =~ s/\r//g;
@@ -150,7 +150,7 @@ tcp,1386004317979,1386004317989,10.180.156.185,53535,US,10.180.156.249,1080,US,2
 tcp,1386004309468,1386004309478,10.180.156.185,53533,US,10.180.156.249,1080,US,2698,1754,14,test
 ', "CSV Ids");
 
-    my $csv = getBinary("/sessions.csv?fields=firstPacket,lastPacket,source.ip,source.geo.country_iso_code,destination.ip,destination.geo.country_iso_code,network.packets,node,tcpflags.rst,tcpflags.psh,socks.ASN&date=-1&expression=" . uri_escape("file=$pwd/socks-http-example.pcap"))->content;
+    my $csv = getBinary("/sessions.csv?fields=firstPacket,lastPacket,source.ip,source.geo.country_iso_code,destination.ip,destination.geo.country_iso_code,network.packets,node,tcpflags.rst,tcpflags.psh,socks.ASN&date=-1&expression=" . uri_escape("file=$pwd/socks-http-example.pcap && node != s3-test"))->content;
     $csv =~ s/\r//g;
     eq_or_diff ($csv, 'Start Time, Stop Time, Src IP, Src Country, Dst IP, Dst Country, Packets, Arkime Node, TCP Flag RST, TCP Flag PSH,  ASN
 1386004309468,1386004309478,10.180.156.185,US,10.180.156.249,US,14,test,0,4,"AS15133 MCI Communications Services, Inc. d/b/a Verizon Business"
@@ -159,11 +159,11 @@ tcp,1386004309468,1386004309478,10.180.156.185,53533,US,10.180.156.249,1080,US,2
 ', "CSV Expression");
 
 # csv unknown view
-    my $csv = getBinary("/sessions.csv?view=unknown&date=-1&expression=" . uri_escape("file=$pwd/socks-http-example.pcap"))->content;
+    my $csv = getBinary("/sessions.csv?view=unknown&date=-1&expression=" . uri_escape("file=$pwd/socks-http-example.pcap && node != s3-test"))->content;
     $csv =~ s/\r//g;
     eq_or_diff ($csv, 'Could not build query.  Err: Can\'t find view');
 
-    my $csv = getBinary("/sessions.csv?view=unknown&fields=firstPacket,lastPacket,source.ip,source.geo.country_iso_code,destination.ip,destination.geo.country_iso_code,network.packets,node,tcpflags.rst,tcpflags.psh,socks.ASN&date=-1&expression=" . uri_escape("file=$pwd/socks-http-example.pcap"))->content;
+    my $csv = getBinary("/sessions.csv?view=unknown&fields=firstPacket,lastPacket,source.ip,source.geo.country_iso_code,destination.ip,destination.geo.country_iso_code,network.packets,node,tcpflags.rst,tcpflags.psh,socks.ASN&date=-1&expression=" . uri_escape("file=$pwd/socks-http-example.pcap && node != s3-test"))->content;
     $csv =~ s/\r//g;
     eq_or_diff ($csv, 'Could not build query.  Err: Can\'t find view');
 
@@ -185,26 +185,26 @@ tcp,1386004309468,1386004309478,10.180.156.185,53533,US,10.180.156.249,1080,US,2
     ok (length($pcapOne) > 24, "PCAP length=1 returns more than just pcap header");
 
 # bigendian pcap fs tests
-    my $json = get("/sessions.json?date=-1&fields=fileId&expression=" . uri_escape("file=$pwd/bigendian.pcap"));
+    my $json = get("/sessions.json?date=-1&fields=fileId&expression=" . uri_escape("file=$pwd/bigendian.pcap && node != s3-test"));
     ok (exists $json->{data}->[0]->{nodehost}, "requires nodehost");
     ok ($json->{data}->[0]->{fileId}->[0] =~ /bigendian.pcap/, "correct fs");
 
 # bigendian pcap fs tests 2 fields
-    my $json = get("/sessions.json?date=-1&fields=tls&fields=fileId&expression=" . uri_escape("file=$pwd/bigendian.pcap"));
+    my $json = get("/sessions.json?date=-1&fields=tls&fields=fileId&expression=" . uri_escape("file=$pwd/bigendian.pcap && node != s3-test"));
     ok ($json->{data}->[0]->{fileId}->[0] =~ /bigendian.pcap/, "correct fs");
 
 # no map data
-    $json = get("/sessions.json?startTime=1386004308&stopTime=1386004400&facets=1&expression=" . uri_escape("file=$pwd/bigendian.pcap|file=$pwd/socks-http-example.pcap|file=$pwd/bt-tcp.pcap"));
+    $json = get("/sessions.json?startTime=1386004308&stopTime=1386004400&facets=1&expression=" . uri_escape("(file=$pwd/bigendian.pcap|file=$pwd/socks-http-example.pcap|file=$pwd/bt-tcp.pcap) && node != s3-test"));
     eq_or_diff($json->{map}, from_json('{}'), "no map data");
 
 # Check file != blah.pcap
-    my $json = get("/sessions.json?date=-1&expression=" . uri_escape("file=$pwd/bigendian.pcap|file=$pwd/socks-http-example.pcap|file=$pwd/bt-tcp.pcap"));
+    my $json = get("/sessions.json?date=-1&expression=" . uri_escape("(file=$pwd/bigendian.pcap|file=$pwd/socks-http-example.pcap|file=$pwd/bt-tcp.pcap) && node != s3-test"));
     is ($json->{recordsFiltered}, 6, "file ==");
-    my $json = post("/api/sessions", '{"date": -1, "expression": "file!=' . $pwd . '/bigendian.pcap&&file=' . $pwd . '/socks-http-example.pcap|file=' . $pwd . '/bt-tcp.pcap"}');
+    my $json = post("/api/sessions", '{"date": -1, "expression": "(file!=' . $pwd . '/bigendian.pcap&&file=' . $pwd . '/socks-http-example.pcap|file=' . $pwd . '/bt-tcp.pcap)&& node != s3-test"}');
     is ($json->{recordsFiltered}, 5, "file !=");
 
 # Check file == EXISTS!
-    my $json = viewerGet("/sessions.json?date=-1&expression=" . uri_escape("file==EXISTS!&&file=$pwd/bigendian.pcap|file=$pwd/socks-http-example.pcap|file=$pwd/bt-tcp.pcap"));
+    my $json = viewerGet("/sessions.json?date=-1&expression=" . uri_escape("file==EXISTS!&&(file=$pwd/bigendian.pcap|file=$pwd/socks-http-example.pcap|file=$pwd/bt-tcp.pcap) && node != s3-test"));
     is ($json->{recordsFiltered}, 6, "file == EXISTS!");
 
 # buildquery should return a query and indices for GET and POST
@@ -233,7 +233,7 @@ tcp,1386004309468,1386004309478,10.180.156.185,53533,US,10.180.156.249,1080,US,2
     is ($json->{text}, "no sessions found", "can't download pcap because sessions can't be found with list of ids");
 
 # should be able to download multiple sessions pcap using query
-    $response = getBinary("/api/sessions/pcap/sessions.pcap?length=10000&date=-1&expression=" . uri_escape("file=$pwd/bigendian.pcap"));
+    $response = getBinary("/api/sessions/pcap/sessions.pcap?length=10000&date=-1&expression=" . uri_escape("file=$pwd/bigendian.pcap && node != s3-test"));
     is (unpack("H*", $response->content), "a1b2c3d40002000400000000000000000000ffff000000014fa11b2900025436000000620000006200005e0001b10021280529ba08004500005430a70000ff010348c0a8b1a00a400b3108000afb43a800004fa11b290002538d08090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f202122232425262728292a2b2c2d2e2f30313233343536374fa11b2d00081331000000620000006200005e0001b10021280529ba08004500005430a80000ff010347c0a8b1a00a400b3108004bcb43ca00004fa11b2d0008129108090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f202122232425262728292a2b2c2d2e2f3031323334353637", "can download pcap using query");
 
 # Test errors for /api/session/:node/:id/send
@@ -282,18 +282,18 @@ tcp,1386004309468,1386004309478,10.180.156.185,53533,US,10.180.156.249,1080,US,2
     eq_or_diff($json, from_json('{"success":false,"text":"Unknown cluster"}'));
 
 # Check twice in a row to make sure sort working
-    my $json1 = post("/api/sessions", '{"flatten":1,"length":50,"facets":1,"bounding":"last","interval":"auto","cancelId":"47ad2fc7-2f95-43b1-95eb-1704f248e821","date":"-1","order":"lastPacket:desc","fields":"ipProtocol,firstPacket,lastPacket,source.ip,source.geo.country_iso_code,source.port,destination.ip,destination.geo.country_iso_code,destination.port,network.packets,totDataBytes,network.bytes,node,protocol,tags,http.uri,email.src,email.dst,email.subject,email.filename,dns.host,cert.alt,irc.channel"}');
-    my $json2 = post("/api/sessions", '{"flatten":1,"length":50,"facets":1,"bounding":"last","interval":"auto","cancelId":"47ad2fc7-2f95-43b1-95eb-1704f248e821","date":"-1","order":"lastPacket:desc","fields":"ipProtocol,firstPacket,lastPacket,source.ip,source.geo.country_iso_code,source.port,destination.ip,destination.geo.country_iso_code,destination.port,network.packets,totDataBytes,network.bytes,node,protocol,tags,http.uri,email.src,email.dst,email.subject,email.filename,dns.host,cert.alt,irc.channel"}');
+    my $json1 = post("/api/sessions", '{"flatten":1,"length":50,"facets":1,"bounding":"last","interval":"auto","cancelId":"47ad2fc7-2f95-43b1-95eb-1704f248e821","date":"-1","order":"lastPacket:desc","fields":"ipProtocol,firstPacket,lastPacket,source.ip,source.geo.country_iso_code,source.port,destination.ip,destination.geo.country_iso_code,destination.port,network.packets,totDataBytes,network.bytes,node,protocol,tags,http.uri,email.src,email.dst,email.subject,email.filename,dns.host,cert.alt,irc.channel", "expression": "node != s3-test"}');
+    my $json2 = post("/api/sessions", '{"flatten":1,"length":50,"facets":1,"bounding":"last","interval":"auto","cancelId":"47ad2fc7-2f95-43b1-95eb-1704f248e821","date":"-1","order":"lastPacket:desc","fields":"ipProtocol,firstPacket,lastPacket,source.ip,source.geo.country_iso_code,source.port,destination.ip,destination.geo.country_iso_code,destination.port,network.packets,totDataBytes,network.bytes,node,protocol,tags,http.uri,email.src,email.dst,email.subject,email.filename,dns.host,cert.alt,irc.channel", "expression": "node != s3-test"}');
     eq_or_diff($json1, $json2);
 
 # Check spanning
-    $json = get("/sessions.json?length=1000&start=2&date=-1&facets=1&spanning=true&expression=" . uri_escape("file=*/long-session.pcap"));
+    $json = get("/sessions.json?length=1000&start=2&date=-1&facets=1&spanning=true&expression=" . uri_escape("file=*/long-session.pcap && node != s3-test"));
     is($json->{graph}->{interval}, 86400);
     is(scalar @{$json->{graph}->{'destination.bytesHisto'}}, 1);
     is($json->{graph}->{'destination.bytesHisto'}->[0]->[0], 1401321600000);
     is($json->{graph}->{'destination.bytesHisto'}->[0]->[1], 126);
 
-    $json = get("/sessions.json?length=1000&start=2&date=-1&facets=1&spanning=true&interval=minute&expression=" . uri_escape("file=*/long-session.pcap"));
+    $json = get("/sessions.json?length=1000&start=2&date=-1&facets=1&spanning=true&interval=minute&expression=" . uri_escape("file=*/long-session.pcap && node != s3-test"));
     is($json->{graph}->{interval}, 60);
     is(scalar @{$json->{graph}->{'destination.bytesHisto'}}, 16);
     is($json->{graph}->{'destination.bytesHisto'}->[0]->[0], 1401385380000);
