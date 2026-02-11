@@ -10,6 +10,8 @@
 #include "arkime.h"
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <sys/socket.h>
+#include <netdb.h>
 #include <fcntl.h>
 #include <inttypes.h>
 #include <errno.h>
@@ -803,6 +805,161 @@ LOCAL int cstring_cmp(const void *a, const void *b)
     return strcmp(*(char **)a, *(char **)b);
 }
 /******************************************************************************/
+// Send a RESP command and read the full response line or bulk string.
+// Returns malloc'd data (caller frees), or NULL on error.
+// redis://[:pass@]host[:port]/db/key
+LOCAL char *arkime_config_redis_get(const char *url)
+{
+    // Parse: skip "redis://"
+    const char *p = url + 8;
+
+    // Optional :pass@
+    const char *pass = NULL;
+    int passLen = 0;
+    const char *at = strchr(p, '@');
+    if (at) {
+        if (*p == ':') {
+            pass = p + 1;
+            passLen = at - pass;
+        }
+        p = at + 1;
+    }
+
+    // host[:port]
+    const char *slash = strchr(p, '/');
+    if (!slash)
+        CONFIGEXIT("Invalid redis url, missing /db/key: %s", url);
+
+    char *hostport = g_strndup(p, slash - p);
+    char *colon = strchr(hostport, ':');
+    char *host;
+    char *port;
+    if (colon) {
+        host = g_strndup(hostport, colon - hostport);
+        port = g_strdup(colon + 1);
+    } else {
+        host = g_strdup(hostport);
+        port = g_strdup("6379");
+    }
+    g_free(hostport);
+
+    // /db/key
+    const char *dbStr = slash + 1;
+    const char *slash2 = strchr(dbStr, '/');
+    if (!slash2)
+        CONFIGEXIT("Invalid redis url, missing /key: %s", url);
+    int db = atoi(dbStr);
+    const char *key = slash2 + 1;
+    if (*key == 0)
+        CONFIGEXIT("Invalid redis url, empty key: %s", url);
+
+    // Connect
+    struct addrinfo hints = {.ai_family = AF_UNSPEC, .ai_socktype = SOCK_STREAM};
+    struct addrinfo *res;
+    if (getaddrinfo(host, port, &hints, &res) != 0)
+        CONFIGEXIT("Couldn't resolve redis host: %s:%s", host, port);
+
+    int fd = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
+    if (fd < 0 || connect(fd, res->ai_addr, res->ai_addrlen) < 0) {
+        freeaddrinfo(res);
+        CONFIGEXIT("Couldn't connect to redis: %s:%s", host, port);
+    }
+    freeaddrinfo(res);
+    g_free(host);
+    g_free(port);
+
+    char cmd[2048];
+    int cmdLen;
+    char line[4096];
+
+    // AUTH if password provided
+    if (pass) {
+        cmdLen = snprintf(cmd, sizeof(cmd), "*2\r\n$4\r\nAUTH\r\n$%d\r\n%.*s\r\n", passLen, passLen, pass);
+        if (send(fd, cmd, cmdLen, 0) != cmdLen) {
+            close(fd);
+            CONFIGEXIT("Redis AUTH send failed");
+        }
+        int n = recv(fd, line, sizeof(line) - 1, 0);
+        if (n <= 0 || line[0] == '-') {
+            line[n > 0 ? n : 0] = 0;
+            close(fd);
+            CONFIGEXIT("Redis AUTH failed: %s", line);
+        }
+    }
+
+    // SELECT db
+    if (db > 0) {
+        cmdLen = snprintf(cmd, sizeof(cmd), "*2\r\n$6\r\nSELECT\r\n$%d\r\n%d\r\n", (int)snprintf(line, sizeof(line), "%d", db), db);
+        if (send(fd, cmd, cmdLen, 0) != cmdLen) {
+            close(fd);
+            CONFIGEXIT("Redis SELECT send failed");
+        }
+        int n = recv(fd, line, sizeof(line) - 1, 0);
+        if (n <= 0 || line[0] == '-') {
+            line[n > 0 ? n : 0] = 0;
+            close(fd);
+            CONFIGEXIT("Redis SELECT failed: %s", line);
+        }
+    }
+
+    // GET key
+    int keyLen = strlen(key);
+    cmdLen = snprintf(cmd, sizeof(cmd), "*2\r\n$3\r\nGET\r\n$%d\r\n%s\r\n", keyLen, key);
+    if (send(fd, cmd, cmdLen, 0) != cmdLen) {
+        close(fd);
+        CONFIGEXIT("Redis GET send failed");
+    }
+
+    // Read response: $<len>\r\n<data>\r\n  or  $-1\r\n (nil)
+    int n = recv(fd, line, sizeof(line) - 1, 0);
+    if (n <= 0) {
+        close(fd);
+        CONFIGEXIT("Redis GET recv failed");
+    }
+    line[n] = 0;
+
+    if (line[0] == '$' && line[1] == '-') {
+        // Key not found
+        close(fd);
+        return NULL;
+    }
+    if (line[0] != '$') {
+        close(fd);
+        CONFIGEXIT("Redis unexpected response: %s", line);
+    }
+
+    int dataLen = atoi(line + 1);
+    char *data = malloc(dataLen + 1);
+
+    // Find start of data (after $<len>\r\n)
+    char *dataStart = strstr(line, "\r\n");
+    if (!dataStart) {
+        free(data);
+        close(fd);
+        CONFIGEXIT("Redis malformed response");
+    }
+    dataStart += 2;
+    int have = n - (dataStart - line);
+    if (have > dataLen) have = dataLen;
+    memcpy(data, dataStart, have);
+
+    // Read remaining data if needed
+    int total = have;
+    while (total < dataLen) {
+        n = recv(fd, data + total, dataLen - total, 0);
+        if (n <= 0) {
+            free(data);
+            close(fd);
+            CONFIGEXIT("Redis GET recv incomplete");
+        }
+        total += n;
+    }
+    data[dataLen] = 0;
+
+    close(fd);
+    return data;
+}
+/******************************************************************************/
 LOCAL void arkime_config_load()
 {
 
@@ -834,7 +991,19 @@ LOCAL void arkime_config_load()
         config.configFile = g_string_free(string, FALSE);
     }
 
-    if (g_str_has_prefix(config.configFile, "http://") || g_str_has_prefix(config.configFile, "https://")) {
+    if (g_str_has_prefix(config.configFile, "redis://")) {
+        char *data = arkime_config_redis_get(config.configFile);
+        if (data) {
+            status = arkime_config_load_json(keyfile, data, &error);
+            free(data);
+        } else {
+            status = TRUE;
+            if (config.noConfigOption)
+                LOG("Redis key not found for %s", config.configFile);
+            else
+                CONFIGEXIT("Redis key not found for %s", config.configFile);
+        }
+    } else if (g_str_has_prefix(config.configFile, "http://") || g_str_has_prefix(config.configFile, "https://")) {
         const char *end = config.configFile + 8;
         while (*end != 0 && *end != '/' && *end != '?') end++;
 

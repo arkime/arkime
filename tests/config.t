@@ -1,7 +1,7 @@
 # Test config
 use lib ".";
 use ArkimeTest;
-use Test::More tests => 46;
+use Test::More tests => 48;
 use Test::Differences;
 use Data::Dumper;
 use JSON;
@@ -345,12 +345,12 @@ if ($rs) { my $vlen = length($json); print $rs "*3\r\n\$3\r\nSET\r\n\$10\r\ntest
 
 $url = "redis://127.0.0.1:7379/0/testconfig";
 
-doGoodTest($url, 1);
+doGoodTest($url);
 
 #### NOTFOUND REDIS JSON
 $url = "redis://127.0.0.1:7379/0/notfound";
 
-doNotFoundTest($url, 1);
+doNotFoundTest($url);
 
 #### Clean up
 unlink("testconfig.ini");
