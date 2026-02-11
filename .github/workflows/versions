@@ -53,7 +53,7 @@ include:
     prbuild: true
 
   - version: ubuntu2404_amd64
-    container: andywick/arkime-build-24:6.0.0-2
+    container: andywick/arkime-build-24:6.0.0-4
     buildopt: "--kafka"
     fpmdeps: "-d libwww-perl -d libjson-perl -d ethtool -d libyaml-dev -d liblua5.4-0 -d libmaxminddb0 -d libcurl4 -d libpcap0.8 -d libglib2.0-0 -d libnghttp2-14 -d libyara10 -d librdkafka1 -d libpcre3 -d libpython3.12"
     package: deb
@@ -63,7 +63,7 @@ include:
     prbuild: true
 
   - version: "arch-x86_64"
-    container: andywick/arkime-build-arch:6.0.0-3
+    container: andywick/arkime-build-arch:6.0.0-4
     buildopt: "--kafka"
     fpmdeps: "-d libmaxminddb -d libpcap -d yara -d perl-http-message -d perl-lwp-protocol-https -d perl-json -d libnet -d lua -d zstd -d openssl -d pcre"
     package: arch
