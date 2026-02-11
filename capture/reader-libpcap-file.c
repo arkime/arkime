@@ -51,7 +51,7 @@ LOCAL void reader_libpcapfile_monitor_dir(char *dirname);
 LOCAL void reader_libpcapfile_monitor_do(struct inotify_event *event)
 {
     gchar *dirname = g_hash_table_lookup(wdHashTable, (void *)(long)event->wd);
-    gchar *fullfilename = g_build_filename (dirname, event->name, NULL);
+    gchar *fullfilename = g_build_filename(dirname, event->name, NULL);
 
     if (config.pcapRecursive &&
         (event->mask & IN_CREATE) &&
@@ -83,16 +83,16 @@ LOCAL void reader_libpcapfile_monitor_do(struct inotify_event *event)
 /******************************************************************************/
 LOCAL gboolean reader_libpcapfile_monitor_read()
 {
-    char buf[20 * (sizeof(struct inotify_event) + NAME_MAX + 1)] __attribute__ ((aligned(8)));
+    char buf[20 * (sizeof(struct inotify_event) + NAME_MAX + 1)] __attribute__((aligned(8)));
 
-    int rc = read (monitorFd, buf, sizeof(buf));
+    int rc = read(monitorFd, buf, sizeof(buf));
     if (rc == 0)
         return TRUE;
     if (rc == -1)
         LOGEXIT("ERROR - Monitor read failed - %s", strerror(errno));
     buf[rc] = 0;
 
-    for (char *p = buf; p < buf + rc; ) {
+    for (char *p = buf; p < buf + rc;) {
         struct inotify_event *event = (struct inotify_event *) p;
         reader_libpcapfile_monitor_do(event);
         p += sizeof(struct inotify_event) + event->len;
@@ -107,7 +107,7 @@ LOCAL void reader_libpcapfile_monitor_dir(char *dirname)
 
     int rc = inotify_add_watch(monitorFd, dirname, IN_CLOSE_WRITE | IN_CREATE);
     if (rc == -1) {
-        LOG ("WARNING - Couldn't watch %s %s", dirname, strerror(errno));
+        LOG("WARNING - Couldn't watch %s %s", dirname, strerror(errno));
         return;
     } else {
         g_hash_table_insert(wdHashTable, (void *)(long)rc, g_strdup(dirname));
@@ -134,7 +134,7 @@ LOCAL void reader_libpcapfile_monitor_dir(char *dirname)
         if (filename[0] == '.')
             continue;
 
-        gchar *fullfilename = g_build_filename (dirname, filename, NULL);
+        gchar *fullfilename = g_build_filename(dirname, filename, NULL);
 
         if (g_file_test(fullfilename, G_FILE_TEST_IS_DIR)) {
             reader_libpcapfile_monitor_dir(fullfilename);
@@ -151,7 +151,7 @@ LOCAL void reader_libpcapfile_init_monitor()
     if (monitorFd < 0)
         LOGEXIT("ERROR - Couldn't init inotify %s", strerror(errno));
 
-    wdHashTable = g_hash_table_new (g_direct_hash, g_direct_equal);
+    wdHashTable = g_hash_table_new(g_direct_hash, g_direct_equal);
     arkime_watch_fd(monitorFd, ARKIME_GIO_READ_COND, reader_libpcapfile_monitor_read, NULL);
 
     for (int dir = 0; config.pcapReadDirs[dir] && config.pcapReadDirs[dir][0]; dir++) {
@@ -199,7 +199,7 @@ LOCAL int reader_libpcapfile_process(char *filename)
 
 process:
     errbuf[0] = 0;
-    LOG ("Processing %s", filename);
+    LOG("Processing %s", filename);
     pktsToRead = config.pktsToRead;
     pcap = pcap_open_offline(filename, errbuf);
 
@@ -325,7 +325,7 @@ fileListsDone:
             if (filename[0] == '.')
                 continue;
 
-            fullfilename = g_build_filename (pcapBase[pcapGDirLevel], filename, NULL);
+            fullfilename = g_build_filename(pcapBase[pcapGDirLevel], filename, NULL);
 
             // If recursive option and a directory then process all the files in that dir
             if (config.pcapRecursive && g_file_test(fullfilename, G_FILE_TEST_IS_DIR)) {
@@ -383,7 +383,7 @@ dirsDone:
     return 0;
 }
 /******************************************************************************/
-LOCAL gboolean reader_libpcapfile_monitor_gfunc (gpointer UNUSED(user_data))
+LOCAL gboolean reader_libpcapfile_monitor_gfunc(gpointer UNUSED(user_data))
 {
     if (DLL_COUNT(s_, &monitorQ) == 0)
         return G_SOURCE_CONTINUE;
@@ -404,7 +404,7 @@ LOCAL int reader_libpcapfile_stats(ArkimeReaderStats_t *stats)
         return 1;
     }
 
-    int rc = pcap_stats (pcap, &ps);
+    int rc = pcap_stats(pcap, &ps);
     if (rc)
         return rc;
     stats->dropped = ps.ps_drop;

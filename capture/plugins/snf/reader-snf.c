@@ -148,7 +148,7 @@ LOCAL void reader_snf_init(const char *UNUSED(name))
     int snfFlags = arkime_config_int(NULL, "snfFlags", -1, 0, -1);
 
     int err;
-    if ( (err = snf_init(SNF_VERSION_API)) != 0) {
+    if ((err = snf_init(SNF_VERSION_API)) != 0) {
         CONFIGEXIT("Myricom: failed in snf_init(%d) = %d", SNF_VERSION_API, err);
     }
 

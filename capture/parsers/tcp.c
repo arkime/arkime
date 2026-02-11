@@ -62,7 +62,7 @@ LOCAL void tcp_session_free(ArkimeSession_t *session)
 
 /******************************************************************************/
 // Idea from gopacket tcpassembly/assembly.go
-LOCAL int64_t tcp_sequence_diff (int64_t a, int64_t b)
+LOCAL int64_t tcp_sequence_diff(int64_t a, int64_t b)
 {
     if (a > 0xc0000000 && b < 0x40000000)
         return a + 0x100000000LL - b;

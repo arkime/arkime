@@ -114,34 +114,34 @@ void arkime_field_define_json(const uint8_t *expression, int expression_len, con
 
     info->expression = g_strndup((char *)expression, expression_len);
     for (int i = 0; out[i]; i += 4) {
-        if (strncmp("group", (char * )data + out[i], 5) == 0) {
+        if (strncmp("group", (char *)data + out[i], 5) == 0) {
             g_free(info->group);
             info->group = g_strndup((char *)data + out[i + 2], out[i + 3]);
-        } else if (strncmp("dbField2", (char * )data + out[i], 7) == 0) {
+        } else if (strncmp("dbField2", (char *)data + out[i], 7) == 0) {
             g_free(info->dbFieldFull);
             info->dbFieldFull = info->dbField = g_strndup((char *)data + out[i + 2], out[i + 3]);
             info->dbFieldLen  = out[i + 3];
-        } else if (strncmp("fieldECS", (char * )data + out[i], 7) == 0) {
+        } else if (strncmp("fieldECS", (char *)data + out[i], 7) == 0) {
             g_free(info->dbFieldFull);
             info->dbFieldFull = info->dbField = g_strndup((char *)data + out[i + 2], out[i + 3]);
             info->dbFieldLen  = out[i + 3];
-        } else if (strncmp("type", (char * )data + out[i], 4) == 0) {
+        } else if (strncmp("type", (char *)data + out[i], 4) == 0) {
             g_free(info->kind);
             info->kind = g_strndup((char *)data + out[i + 2], out[i + 3]);
-        } else if (strncmp("category", (char * )data + out[i], 8) == 0) {
+        } else if (strncmp("category", (char *)data + out[i], 8) == 0) {
             g_free(info->category);
             info->category = g_strndup((char *)data + out[i + 2], out[i + 3]);
-        } else if (strncmp("transform", (char * )data + out[i], 8) == 0) {
+        } else if (strncmp("transform", (char *)data + out[i], 8) == 0) {
             g_free(info->transform);
             info->transform = g_strndup((char *)data + out[i + 2], out[i + 3]);
-        } else if (strncmp("aliases", (char * )data + out[i], 7) == 0) {
+        } else if (strncmp("aliases", (char *)data + out[i], 7) == 0) {
             g_free(info->aliases);
             info->aliases = g_strndup((char *)data + out[i + 2], out[i + 3]);
-        } else if (strncmp("friendly", (char * )data + out[i], 8) == 0 ||
-                   strncmp("friendlyName", (char * )data + out[i], 12) == 0) {
+        } else if (strncmp("friendly", (char *)data + out[i], 8) == 0 ||
+                   strncmp("friendlyName", (char *)data + out[i], 12) == 0) {
             g_free(info->friendlyName);
             info->friendlyName = g_strndup((char *)data + out[i + 2], out[i + 3]);
-        } else if (strncmp("disabled", (char * )data + out[i], 8) == 0) {
+        } else if (strncmp("disabled", (char *)data + out[i], 8) == 0) {
             if (strncmp((char *)data + out[i + 2], "true", 4) == 0) {
                 disabled = 1;
             }
@@ -698,8 +698,8 @@ const char *arkime_field_string_add(int pos, ArkimeSession_t *session, const cha
         field->str = (char *)string;
         goto added;
     case ARKIME_FIELD_TYPE_STR_ARRAY:
-        if  (info->flags & ARKIME_FIELD_FLAG_DIFF_FROM_LAST &&
-             strncmp(field->sarray->pdata[field->sarray->len - 1], string, len) == 0) {
+        if (info->flags & ARKIME_FIELD_FLAG_DIFF_FROM_LAST &&
+            strncmp(field->sarray->pdata[field->sarray->len - 1], string, len) == 0) {
             return NULL;
         }
         if (copy)
@@ -1053,13 +1053,13 @@ added:
     return TRUE;
 }
 /******************************************************************************/
-gboolean arkime_field_ip_equal (gconstpointer v1, gconstpointer v2)
+gboolean arkime_field_ip_equal(gconstpointer v1, gconstpointer v2)
 {
-    return memcmp (v1, v2, 16) == 0;
+    return memcmp(v1, v2, 16) == 0;
 }
 /******************************************************************************/
 SUPPRESS_UNSIGNED_INTEGER_OVERFLOW
-guint arkime_field_ip_hash (gconstpointer v)
+guint arkime_field_ip_hash(gconstpointer v)
 {
     const uint8_t *p;
     guint32 h = 5381;
@@ -1708,7 +1708,7 @@ LOCAL void arkime_field_ops_int_parse(ArkimeFieldOp_t *op, const char *value)
 void arkime_field_ops_add_match(ArkimeFieldOps_t *ops, int fieldPos, char *value, int valuelen, int matchPos)
 {
     if (ops->num >= ops->size) {
-        ops->size = ops->size == 0 ? 1 : ceil (ops->size * 1.6);
+        ops->size = ops->size == 0 ? 1 : ceil(ops->size * 1.6);
         ARKIME_SIZE_REALLOC("ops", ops->ops, ops->size * sizeof(ArkimeFieldOp_t));
     }
 
@@ -1829,7 +1829,7 @@ void arkime_field_ops_add(ArkimeFieldOps_t *ops, int fieldPos, char *value, int 
 }
 /******************************************************************************/
 // Parse oldExpr=matchExpr1=newExpr1;matchExpr2=newExpr2
-LOCAL gboolean arkime_field_load_field_remap (gpointer UNUSED(user_data))
+LOCAL gboolean arkime_field_load_field_remap(gpointer UNUSED(user_data))
 {
     gsize keys_len;
 

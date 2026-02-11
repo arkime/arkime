@@ -244,7 +244,7 @@ LOCAL void socks4_classify(ArkimeSession_t *session, const uint8_t *data, int le
 
     int i;
     for (i = 8; i < len && data[i]; i++);
-    if (i > 8 && i != len ) {
+    if (i > 8 && i != len) {
         socks->user = g_strndup((char *)data + 8, i - 8);
         socks->userlen = i - 8;
     }
@@ -253,7 +253,7 @@ LOCAL void socks4_classify(ArkimeSession_t *session, const uint8_t *data, int le
         i++;
         int start;
         for (start = i; i < len && data[i]; i++);
-        if (i > start && i != len ) {
+        if (i > start && i != len) {
             socks->hostlen = i - start;
             socks->host = g_ascii_strdown((char *)data + start, i - start);
         }

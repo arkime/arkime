@@ -166,7 +166,7 @@ LOCAL void tagger_plugin_save(ArkimeSession_t *session, int UNUSED(final))
         ghash = session->fields[httpXffField]->ghash;
         g_hash_table_iter_init (&iter, ghash);
         while (g_hash_table_iter_next (&iter, &ikey, NULL)) {
-            if (IN6_IS_ADDR_V4MAPPED((struct in6_addr * )ikey)) {
+            if (IN6_IS_ADDR_V4MAPPED((struct in6_addr *)ikey)) {
                 prefix.family = AF_INET;
                 prefix.bitlen = 32;
                 prefix.add.sin.s_addr = ARKIME_V6_TO_V4(*(struct in6_addr *)ikey);
@@ -647,7 +647,7 @@ LOCAL void tagger_fetch_files_cb(int UNUSED(code), uint8_t *data, int data_len, 
             continue;
         }
         g_free(id);
-        if (!file->md5 || strncmp(file->md5, (char * )md5, md5_len) != 0) {
+        if (!file->md5 || strncmp(file->md5, (char *)md5, md5_len) != 0) {
             tagger_load_file(file);
         }
     }

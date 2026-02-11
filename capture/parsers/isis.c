@@ -29,7 +29,7 @@ LOCAL int isis_pre_process(ArkimeSession_t *session, ArkimePacket_t *const UNUSE
         arkime_session_add_protocol(session, "isis");
 
     if (packet->pktlen < 22) {
-        snprintf (msg, sizeof(msg), "err-len-%d", packet->pktlen);
+        snprintf(msg, sizeof(msg), "err-len-%d", packet->pktlen);
         arkime_field_string_add(typeField, session, msg, -1, TRUE);
         return 0;
     }
@@ -63,7 +63,7 @@ LOCAL int isis_pre_process(ArkimeSession_t *session, ArkimePacket_t *const UNUSE
         arkime_field_string_add(typeField, session, "l2-psnp", -1, TRUE);
         break;
     default:
-        snprintf (msg, sizeof(msg), "unk-%d", packet->pkt[21]);
+        snprintf(msg, sizeof(msg), "unk-%d", packet->pkt[21]);
         if (config.debug)
             LOG("isis %s\n", msg);
         arkime_field_string_add(typeField, session, msg, -1, TRUE);

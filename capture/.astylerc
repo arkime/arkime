@@ -7,3 +7,4 @@
 --squeeze-lines=2
 --align-pointer=name
 --pad-header
+--unpad-paren

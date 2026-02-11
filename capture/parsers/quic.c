@@ -82,7 +82,7 @@ LOCAL int quic_2445_udp_parser(ArkimeSession_t *session, void *UNUSED(uw), const
     uint32_t version = 0;
     uint32_t offset = 1;
 
-    if ( len < 9) {
+    if (len < 9) {
         return 0;
     }
 
@@ -96,7 +96,7 @@ LOCAL int quic_2445_udp_parser(ArkimeSession_t *session, void *UNUSED(uw), const
         offset += 8;
     }
 
-    if ( (uint32_t)len < offset + 5) {
+    if ((uint32_t)len < offset + 5) {
         return 0;
     }
 

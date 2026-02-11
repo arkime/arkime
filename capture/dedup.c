@@ -120,7 +120,7 @@ int arkime_dedup_should_drop (const ArkimePacket_t *packet, int headerLen)
     for (uint32_t s = 0; s < dedupSeconds; s++) {
 
         // If slot is too old just skip it
-        if (currentTime.tv_sec - dedupSeconds + 1 >= seconds[s].tv_sec ) {
+        if (currentTime.tv_sec - dedupSeconds + 1 >= seconds[s].tv_sec) {
             continue;
         }
 

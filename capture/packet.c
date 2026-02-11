@@ -982,10 +982,10 @@ LOCAL ArkimePacketRC arkime_packet_ip4(ArkimePacketBatch_t *batch, ArkimePacket_
     if (ipTree4) {
         const patricia_node_t *node;
 
-        if ((node = patricia_search_best3 (ipTree4, (u_char * )&ip4->ip_src, 32)) && node->data == NULL)
+        if ((node = patricia_search_best3 (ipTree4, (u_char *)&ip4->ip_src, 32)) && node->data == NULL)
             return ARKIME_PACKET_IP_DROPPED;
 
-        if ((node = patricia_search_best3 (ipTree4, (u_char * )&ip4->ip_dst, 32)) && node->data == NULL)
+        if ((node = patricia_search_best3 (ipTree4, (u_char *)&ip4->ip_dst, 32)) && node->data == NULL)
             return ARKIME_PACKET_IP_DROPPED;
     }
 
@@ -1119,10 +1119,10 @@ LOCAL ArkimePacketRC arkime_packet_ip6(ArkimePacketBatch_t *batch, ArkimePacket_
     if (ipTree6) {
         const patricia_node_t *node;
 
-        if ((node = patricia_search_best3 (ipTree6, (u_char * )&ip6->ip6_src, 128)) && node->data == NULL)
+        if ((node = patricia_search_best3 (ipTree6, (u_char *)&ip6->ip6_src, 128)) && node->data == NULL)
             return ARKIME_PACKET_IP_DROPPED;
 
-        if ((node = patricia_search_best3 (ipTree6, (u_char * )&ip6->ip6_dst, 128)) && node->data == NULL)
+        if ((node = patricia_search_best3 (ipTree6, (u_char *)&ip6->ip6_dst, 128)) && node->data == NULL)
             return ARKIME_PACKET_IP_DROPPED;
     }
 

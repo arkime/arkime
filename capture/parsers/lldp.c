@@ -11,7 +11,7 @@ extern ArkimeConfig_t        config;
 LOCAL int lldpMProtocol;
 
 /******************************************************************************/
-LOCAL void lldp_create_sessionid(uint8_t *sessionId, ArkimePacket_t *const UNUSED (packet))
+LOCAL void lldp_create_sessionid(uint8_t *sessionId, ArkimePacket_t *const UNUSED(packet))
 {
     // not used, but leaving for now
     // uint8_t *data = packet->pkt + packet->payloadOffset;

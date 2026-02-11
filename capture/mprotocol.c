@@ -36,7 +36,7 @@ int arkime_mprotocol_register_internal(const char                      *name,
     static ARKIME_LOCK_DEFINE(lock);
 
     if (sizeof(ArkimeSession_t) != sessionsize) {
-        CONFIGEXIT("Parser '%s' built with different version of arkime.h\n %u != %u", name, (unsigned int)sizeof(ArkimeSession_t),  (unsigned int)sessionsize);
+        CONFIGEXIT("Parser '%s' built with different version of arkime.h\n %u != %u", name, (unsigned int)sizeof(ArkimeSession_t), (unsigned int)sessionsize);
     }
 
     if (ARKIME_API_VERSION != apiversion) {

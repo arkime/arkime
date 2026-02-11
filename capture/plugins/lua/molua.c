@@ -16,7 +16,7 @@ lua_State *Ls[ARKIME_MAX_PACKET_THREADS];
 int molua_pluginIndex;
 
 /******************************************************************************/
-void molua_stackDump (lua_State *L)
+void molua_stackDump(lua_State *L)
 {
     int i;
     int top = lua_gettop(L);

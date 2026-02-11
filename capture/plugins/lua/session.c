@@ -55,7 +55,7 @@ LOCAL void register_http_constants(lua_State *L)
     lua_settable(L, -3);
 }
 /******************************************************************************/
-LOCAL void *checkArkimeSession (lua_State *L, int index)
+LOCAL void *checkArkimeSession(lua_State *L, int index)
 {
     void **pms, *ms;
     luaL_checktype(L, index, LUA_TUSERDATA);
@@ -70,7 +70,7 @@ LOCAL void *checkArkimeSession (lua_State *L, int index)
     return ms;
 }
 /******************************************************************************/
-LOCAL void *molua_pushArkimeSession (lua_State *L, const ArkimeSession_t *ms)
+LOCAL void *molua_pushArkimeSession(lua_State *L, const ArkimeSession_t *ms)
 {
     void **pms = (void **)lua_newuserdata(L, sizeof(void *));
     *pms = (void *)ms;
@@ -158,7 +158,7 @@ LOCAL int MS_register_udp_classifier(lua_State *L)
     return 0;
 }
 /******************************************************************************/
-LOCAL void molua_http_cb (int callback_type, ArkimeSession_t *session, http_parser *hp, const char *at, size_t length)
+LOCAL void molua_http_cb(int callback_type, ArkimeSession_t *session, http_parser *hp, const char *at, size_t length)
 {
     MoluaPlugin_t *mp = session->pluginData[molua_pluginIndex];
     lua_State *L = Ls[session->thread];
@@ -200,7 +200,7 @@ LOCAL void molua_http_cb (int callback_type, ArkimeSession_t *session, http_pars
     }
 }
 /******************************************************************************/
-LOCAL void molua_http_on_body_cb (ArkimeSession_t *session, http_parser *hp, const char *at, size_t length)
+LOCAL void molua_http_on_body_cb(ArkimeSession_t *session, http_parser *hp, const char *at, size_t length)
 {
     MoluaPlugin_t *mp = session->pluginData[molua_pluginIndex];
     lua_State *L = Ls[session->thread];
@@ -755,8 +755,8 @@ LOCAL int MS_get(lua_State *L)
         ghash = field->ghash;
         i = 0;
         lua_newtable(L);
-        g_hash_table_iter_init (&iter, ghash);
-        while (g_hash_table_iter_next (&iter, &ikey, NULL)) {
+        g_hash_table_iter_init(&iter, ghash);
+        while (g_hash_table_iter_next(&iter, &ikey, NULL)) {
             lua_pushinteger(L, i + 1);
             lua_pushinteger(L, (unsigned int)(long)ikey);
             lua_settable(L, -3);
@@ -789,8 +789,8 @@ LOCAL int MS_get(lua_State *L)
         ghash = field->ghash;
         i = 0;
         lua_newtable(L);
-        g_hash_table_iter_init (&iter, ghash);
-        while (g_hash_table_iter_next (&iter, &ikey, NULL)) {
+        g_hash_table_iter_init(&iter, ghash);
+        while (g_hash_table_iter_next(&iter, &ikey, NULL)) {
             lua_pushinteger(L, i + 1);
             lua_pushstring(L, ikey);
             lua_settable(L, -3);
@@ -810,8 +810,8 @@ LOCAL int MS_get(lua_State *L)
         ghash = field->ghash;
         i = 0;
         lua_newtable(L);
-        g_hash_table_iter_init (&iter, ghash);
-        while (g_hash_table_iter_next (&iter, &ikey, NULL)) {
+        g_hash_table_iter_init(&iter, ghash);
+        while (g_hash_table_iter_next(&iter, &ikey, NULL)) {
             lua_pushinteger(L, i + 1);
             if (IN6_IS_ADDR_V4MAPPED((struct in6_addr *)ikey)) {
                 inet_ntop(AF_INET6, ikey, addrbuf, INET6_ADDRSTRLEN);

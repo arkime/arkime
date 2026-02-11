@@ -106,7 +106,7 @@ LOCAL int sctp_pre_process(ArkimeSession_t *session, ArkimePacket_t *const packe
 }
 /******************************************************************************/
 // Idea from gopacket tcpassembly/assembly.go
-LOCAL int64_t sctp_tsn_diff (int64_t a, int64_t b)
+LOCAL int64_t sctp_tsn_diff(int64_t a, int64_t b)
 {
     if (a > 0xc0000000 && b < 0x40000000)
         return a + 0x100000000LL - b;

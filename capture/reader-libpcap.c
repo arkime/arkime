@@ -26,7 +26,7 @@ LOCAL int reader_libpcap_stats(ArkimeReaderStats_t *stats)
         struct pcap_stat ps;
         if (unlikely(!pcaps[i]))
             continue;
-        int rc = pcap_stats (pcaps[i], &ps);
+        int rc = pcap_stats(pcaps[i], &ps);
         if (unlikely(rc))
             continue;
         stats->dropped += ps.ps_drop;

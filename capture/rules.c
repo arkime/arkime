@@ -253,7 +253,7 @@ LOCAL YamlNode_t *arkime_rules_parser_get(YamlNode_t *node, const char *path)
 
         int i;
         for (i = 0; i < (int)node->values->len; i++) {
-            if (strncmp(path, ((YamlNode_t * )g_ptr_array_index(node->values, i))->key, len) == 0)
+            if (strncmp(path, ((YamlNode_t *)g_ptr_array_index(node->values, i))->key, len) == 0)
                 break;
         }
         if (i == (int)node->values->len)
@@ -1014,7 +1014,7 @@ LOCAL gboolean arkime_rules_check_str_match(const ArkimeRule_t *const rule, int 
             }
             break;
         case ARKIME_RULES_STR_MATCH_CONTAINS:
-            if (arkime_memstr(key, len, (char * )akey + 2, akey[1]) != 0) {
+            if (arkime_memstr(key, len, (char *)akey + 2, akey[1]) != 0) {
                 if (logStr) {
                     BSB_EXPORT_sprintf(*logStr, "%s,contains: %s, ", config.fields[p]->expression, akey + 2);
                 }
@@ -1598,7 +1598,7 @@ void arkime_rules_run_field_set(ArkimeSession_t *session, int pos, const gpointe
                             arkime_rules_run_field_set_rules(session, pos, rules);
                         break;
                     case ARKIME_RULES_STR_MATCH_CONTAINS:
-                        if (arkime_memstr((char *)value, len, (char * )akey + 2, akey[1]) != 0)
+                        if (arkime_memstr((char *)value, len, (char *)akey + 2, akey[1]) != 0)
                             arkime_rules_run_field_set_rules(session, pos, rules);
                     }
                 }

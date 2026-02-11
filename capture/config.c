@@ -1828,7 +1828,7 @@ void arkime_config_init()
     }
 
     if (!config.dryRun) {
-        g_timeout_add_seconds( 10, arkime_config_reload_files, 0);
+        g_timeout_add_seconds(10, arkime_config_reload_files, 0);
     }
 
     arkime_command_register("set", arkime_config_cmd_set, "Set/Get a config value - set [<name> [<value>]]");
