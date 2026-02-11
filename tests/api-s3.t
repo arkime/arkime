@@ -8,6 +8,7 @@ use Data::Dumper;
 use strict;
 
 system("perl mini-s3.pl 4566 &");
+esPost("/tests2_sessions*/_delete_by_query?conflicts=proceed&refresh", '{ "query": { "term": { "node": "s3-test" } } }');
 
 sub run {
 my ($tag, $compression, $extension, $gap) = @_;
@@ -56,4 +57,4 @@ is (system("diff /tmp/arkime.file.none.true /tmp/arkime.file.gzip.true"), 0);
 
 system("curl -s http://localhost:4566/_shutdown > /dev/null 2>&1");
 
-esPost("/tests2_sessions*/_delete_by_query?conflicts=proceed&refresh", '{ "query": { "term": { "node": "s3-test" } } }', 1);
+esPost("/tests2_sessions*/_delete_by_query?conflicts=proceed&refresh", '{ "query": { "term": { "node": "s3-test" } } }');
