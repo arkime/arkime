@@ -564,7 +564,7 @@ LOCAL int arkime_hp_cb_on_headers_complete (http_parser *parser)
         http->isConnect |= (1 << http->which);
     }
 
-    int len = snprintf(version, sizeof(version), "%d.%d", parser->http_major, parser->http_minor);
+    int len = arkime_snprintf_len(version, sizeof(version), "%d.%d", parser->http_major, parser->http_minor);
 
     if (parser->status_code == 0) {
         if (parser->method <= HTTP_MAX_METHOD)

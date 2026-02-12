@@ -586,7 +586,7 @@ LOCAL void tagger_load_file(TaggerFile_t *file)
     char                key[500];
     int                 key_len;
 
-    key_len = snprintf(key, sizeof(key), "/tagger/_source/%s", file->str);
+    key_len = arkime_snprintf_len(key, sizeof(key), "/tagger/_source/%s", file->str);
 
     arkime_http_send(esServer, "GET", key, key_len, NULL, 0, NULL, FALSE, tagger_load_file_cb, file);
 }
@@ -662,7 +662,7 @@ LOCAL gboolean tagger_fetch_files (gpointer sync)
     char                key[500];
     int                 key_len;
 
-    key_len = snprintf(key, sizeof(key), "/tagger/_search?_source=md5&size=999");
+    key_len = arkime_snprintf_len(key, sizeof(key), "/tagger/_search?_source=md5&size=999");
 
     /* Need to copy the data since sync uses a static buffer, should fix that */
     if (sync) {

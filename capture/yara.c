@@ -24,11 +24,7 @@ char *arkime_yara_version()
     snprintf(buf, sizeof(buf), "%d.x", YR_MAJOR_VERSION);
 #endif /* YR_MINOR_VERSION */
 #else /* YR_MAJOR_VERSION */
-#ifdef STRING_IS_HEX
-    snprintf(buf, sizeof(buf), "2.x");
-#else
     snprintf(buf, sizeof(buf), "unknown");
-#endif /* STRING_IS_HEX */
 #endif /* YR_MAJOR_VERSION */
     return buf;
 }
@@ -349,92 +345,6 @@ void arkime_yara_exit()
         yr_compiler_destroy(yEmailCompiler);
     yr_finalize();
 }
-#elif defined(STRING_IS_HEX)
-// Yara 2.x
-LOCAL  YR_COMPILER *yCompiler = 0;
-LOCAL  YR_COMPILER *yEmailCompiler = 0;
-LOCAL  YR_RULES *yRules = 0;
-LOCAL  YR_RULES *yEmailRules = 0;
-
-
-/******************************************************************************/
-LOCAL void arkime_yara_report_error(int error_level, const char *file_name, int line_number, const char *error_message)
-{
-    LOG("%d %s:%d: %s\n", error_level, file_name, line_number, error_message);
-}
-/******************************************************************************/
-LOCAL void arkime_yara_open(char *filename, YR_COMPILER **compiler, YR_RULES **rules)
-{
-    yr_compiler_create(compiler);
-    (*compiler)->error_report_function = arkime_yara_report_error;
-
-    if (filename) {
-        FILE *rule_file;
-
-        rule_file = fopen(filename, "r");
-
-        if (rule_file != NULL) {
-            int errors = yr_compiler_add_file(*compiler, rule_file, NULL);
-
-            fclose(rule_file);
-
-            if (errors) {
-                exit(0);
-            }
-            yr_compiler_get_rules(*compiler, rules);
-        } else {
-            CONFIGEXIT("yara could not open file: %s", filename);
-        }
-    }
-}
-/******************************************************************************/
-void arkime_yara_init()
-{
-    yr_initialize();
-
-    arkime_yara_open(config.yara, &yCompiler, &yRules);
-}
-
-/******************************************************************************/
-LOCAL int arkime_yara_callback(int message, YR_RULE *rule, ArkimeSession_t *session)
-{
-    if (message == CALLBACK_MSG_RULE_MATCHING)
-        return CALLBACK_CONTINUE;
-
-    char  tagname[256];
-    char *tag;
-
-    snprintf(tagname, sizeof(tagname), "yara:%s", rule->identifier);
-    arkime_session_add_tag(session, tagname);
-    tag = rule->tags;
-    while (tag != NULL && *tag) {
-        snprintf(tagname, sizeof(tagname), "yara:%s", tag);
-        arkime_session_add_tag(session, tagname);
-        tag += strlen(tag) + 1;
-    }
-
-    return CALLBACK_CONTINUE;
-}
-/******************************************************************************/
-void  arkime_yara_execute(ArkimeSession_t *session, const uint8_t *data, int len, int UNUSED(first))
-{
-    yr_rules_scan_mem(yRules, (uint8_t *)data, len, (YR_CALLBACK_FUNC)arkime_yara_callback, session, FALSE, 0);
-    return;
-}
-/******************************************************************************/
-void arkime_yara_exit()
-{
-    if (yRules)
-        yr_rules_destroy(yRules);
-    if (yEmailRules)
-        yr_rules_destroy(yEmailRules);
-
-    if (yCompiler)
-        yr_compiler_destroy(yCompiler);
-    if (yEmailCompiler)
-        yr_compiler_destroy(yEmailCompiler);
-    yr_finalize();
-}
 #else
-#error "Yara 1.x not supported"
+#error "Yara 1.x and 2.x not supported"
 #endif

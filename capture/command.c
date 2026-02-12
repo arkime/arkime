@@ -217,7 +217,7 @@ void arkime_command_respond(gpointer cc, const char *data, int len)
     }
 
     if (g_socket_send(client->socket, data, len, NULL, &error) != len) {
-        LOG("ERROR - Sending response: %s", error->message);
+        LOG("ERROR - Sending response: %s", error ? error->message : "Unknown error");
     }
 }
 /******************************************************************************/

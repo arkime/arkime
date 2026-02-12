@@ -144,76 +144,6 @@ LOCAL int arkime_packet_thread_exit_func;
 #define IPPROTO_IPV4            4
 #endif
 
-#ifdef USE_CAS
-LOCAL ArkimePacket_t *packetFreelist;
-/******************************************************************************/
-// Allocate packet from freelist, falling back to malloc if exhausted. Called from reader threads
-ArkimePacket_t *arkime_packet_alloc()
-{
-    ArkimePacket_t *packet, *next;
-
-    // Try lock-free pop from freelist
-    while (1) {
-        packet = packetFreelist;
-        if (!packet) {
-            // Freelist empty, allocate new
-            ArkimePacket_t *newPacket = malloc(sizeof(ArkimePacket_t));
-            if (!newPacket) {
-                LOGEXIT("ERROR - Failed to allocate packet");
-            }
-            memset(newPacket, 0, sizeof(ArkimePacket_t));
-            return newPacket;
-        }
-        next = packet->packet_next;
-        if (ARKIME_THREAD_CAS(&packetFreelist, packet, next)) {
-            memset(packet, 0, sizeof(ArkimePacket_t));
-            return packet;
-        }
-    }
-}
-
-/******************************************************************************/
-LOCAL void arkime_packet_freelist_init()
-{
-    uint32_t poolSize = (config.maxPacketsInQueue * config.packetThreads) + (config.interfaceCnt * 64);
-
-    poolSize = MAX(poolSize, 1000);
-
-    if (config.debug)
-        LOG("Initializing packet freelist pool with %u packets (%lu bytes)", poolSize, (unsigned long)(poolSize * sizeof(ArkimePacket_t)));
-
-    // Bulk allocate all packets at once
-    ArkimePacket_t *pool = malloc(poolSize * sizeof(ArkimePacket_t));
-    if (!pool) {
-        LOGEXIT("ERROR - Failed to allocate packet pool (%u packets)", poolSize);
-    }
-
-    // Carve up the pool and link into freelist
-    for (uint32_t i = 0; i < poolSize; i++) {
-        pool[i].packet_next = packetFreelist;
-        packetFreelist = &pool[i];
-    }
-}
-
-/******************************************************************************/
-void arkime_packet_free(ArkimePacket_t *packet)
-{
-    if (packet->copied) {
-        free(packet->pkt);
-    }
-    packet->pkt = 0;
-
-    // Lock-free push to freelist
-    ArkimePacket_t *head;
-    while (1) {
-        head = packetFreelist;
-        packet->packet_next = head;
-        if (ARKIME_THREAD_CAS(&packetFreelist, head, packet)) {
-            break;
-        }
-    }
-}
-#else
 /******************************************************************************/
 ArkimePacket_t *arkime_packet_alloc()
 {
@@ -234,7 +164,6 @@ void arkime_packet_free(ArkimePacket_t *packet)
 
     ARKIME_TYPE_FREE(ArkimePacket_t, packet);
 }
-#endif
 
 /******************************************************************************/
 void arkime_packet_process_data(ArkimeSession_t *session, const uint8_t *data, int len, int which)

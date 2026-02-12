@@ -114,6 +114,7 @@ LOCAL void sqs_done(int UNUSED(code), uint8_t *data, int data_len, gpointer uw)
         int rc;
         if ((rc = js0n(messages, messagesLen, out, sizeof(out))) != 0) {
             LOG("ERROR - Parse error %d in >%.*s<\n", rc, messagesLen, messages);
+            ARKIME_UNLOCK(waitingsqs);
             return;
         }
     } else {

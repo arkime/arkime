@@ -355,6 +355,9 @@ LOCAL char *dns_name(ArkimeSession_t *session, const uint8_t *full, int fulllen,
             BSB_IMPORT_u16(*curbsb, tpos);
             tpos &= 0x3fff;
 
+            if (tpos >= fulllen)
+                return 0;
+
             BSB_INIT(tmpbsb, full + tpos, fulllen - tpos);
             curbsb = &tmpbsb;
             continue;
