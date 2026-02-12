@@ -163,7 +163,7 @@ LOCAL void wise_load_fields()
 
     memset(fieldsMap[0], -1, sizeof(fieldsMap[0]));
 
-    key_len = snprintf(key, sizeof(key), "/fields?ver=1");
+    key_len = arkime_snprintf_len(key, sizeof(key), "/fields?ver=1");
     size_t         data_len;
     uint8_t *data = arkime_http_send_sync(wiseService, "GET", key, key_len, NULL, 0, NULL, &data_len, NULL);
 

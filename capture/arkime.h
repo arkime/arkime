@@ -328,6 +328,11 @@ typedef struct {
 #define LOCAL static
 #endif
 
+// snprintf that returns the actual length written, not the would-have-been length
+#define arkime_snprintf_len(buf, bufsize, ...) \
+    ({ int _r = snprintf(buf, bufsize, __VA_ARGS__); \
+       _r >= (int)(bufsize) ? (int)(bufsize) - 1 : _r; })
+
 #ifndef CLOCK_MONOTONIC_COARSE
 #define CLOCK_MONOTONIC_COARSE CLOCK_MONOTONIC
 #endif

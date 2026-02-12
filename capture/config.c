@@ -874,7 +874,7 @@ LOCAL char *arkime_config_redis_get(const char *url)
 
     // AUTH if password provided
     if (pass) {
-        cmdLen = snprintf(cmd, sizeof(cmd), "*2\r\n$4\r\nAUTH\r\n$%d\r\n%.*s\r\n", passLen, passLen, pass);
+        cmdLen = arkime_snprintf_len(cmd, sizeof(cmd), "*2\r\n$4\r\nAUTH\r\n$%d\r\n%.*s\r\n", passLen, passLen, pass);
         if (send(fd, cmd, cmdLen, 0) != cmdLen) {
             close(fd);
             CONFIGEXIT("Redis AUTH send failed");
@@ -889,7 +889,7 @@ LOCAL char *arkime_config_redis_get(const char *url)
 
     // SELECT db
     if (db > 0) {
-        cmdLen = snprintf(cmd, sizeof(cmd), "*2\r\n$6\r\nSELECT\r\n$%d\r\n%d\r\n", (int)snprintf(line, sizeof(line), "%d", db), db);
+        cmdLen = arkime_snprintf_len(cmd, sizeof(cmd), "*2\r\n$6\r\nSELECT\r\n$%d\r\n%d\r\n", (int)snprintf(line, sizeof(line), "%d", db), db);
         if (send(fd, cmd, cmdLen, 0) != cmdLen) {
             close(fd);
             CONFIGEXIT("Redis SELECT send failed");
@@ -904,17 +904,23 @@ LOCAL char *arkime_config_redis_get(const char *url)
 
     // GET key
     int keyLen = strlen(key);
-    cmdLen = snprintf(cmd, sizeof(cmd), "*2\r\n$3\r\nGET\r\n$%d\r\n%s\r\n", keyLen, key);
+    cmdLen = arkime_snprintf_len(cmd, sizeof(cmd), "*2\r\n$3\r\nGET\r\n$%d\r\n%s\r\n", keyLen, key);
     if (send(fd, cmd, cmdLen, 0) != cmdLen) {
         close(fd);
         CONFIGEXIT("Redis GET send failed");
     }
 
     // Read response: $<len>\r\n<data>\r\n  or  $-1\r\n (nil)
-    int n = recv(fd, line, sizeof(line) - 1, 0);
-    if (n <= 0) {
-        close(fd);
-        CONFIGEXIT("Redis GET recv failed");
+    int n = 0;
+    while (n < (int)sizeof(line) - 1) {
+        int r = recv(fd, line + n, 1, 0);
+        if (r <= 0) {
+            close(fd);
+            CONFIGEXIT("Redis GET recv failed");
+        }
+        n += r;
+        if (n >= 2 && line[n - 2] == '\r' && line[n - 1] == '\n')
+            break;
     }
     line[n] = 0;
 
@@ -931,20 +937,8 @@ LOCAL char *arkime_config_redis_get(const char *url)
     int dataLen = atoi(line + 1);
     char *data = malloc(dataLen + 1);
 
-    // Find start of data (after $<len>\r\n)
-    char *dataStart = strstr(line, "\r\n");
-    if (!dataStart) {
-        free(data);
-        close(fd);
-        CONFIGEXIT("Redis malformed response");
-    }
-    dataStart += 2;
-    int have = n - (dataStart - line);
-    if (have > dataLen) have = dataLen;
-    memcpy(data, dataStart, have);
-
-    // Read remaining data if needed
-    int total = have;
+    // Read exact data bytes
+    int total = 0;
     while (total < dataLen) {
         n = recv(fd, data + total, dataLen - total, 0);
         if (n <= 0) {

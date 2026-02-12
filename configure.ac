@@ -67,7 +67,7 @@ dnl OS Stuff
 AC_CANONICAL_HOST
 case $host_os in
 darwin*)
-  SHARED_FLAGS="--shared -undefined dynamic_lookup -flat_namespace"
+  SHARED_FLAGS="--shared -undefined dynamic_lookup"
   UNDEFINED_FLAGS="-u _g_checksum_update -u _g_hmac_update -ljansson"
   ;;
 *)

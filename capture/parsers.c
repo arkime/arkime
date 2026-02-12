@@ -548,11 +548,11 @@ void arkime_parsers_asn_decode_oid(char *buf, int bufsz, const uint8_t *oid, int
         if (first) {
             first = FALSE;
             if (value > 40) /* two values in first byte */
-                buflen = snprintf(buf, bufsz, "%d.%d", value / 40, value % 40);
+                buflen = arkime_snprintf_len(buf, bufsz, "%d.%d", value / 40, value % 40);
             else /* one value in first byte */
-                buflen = snprintf(buf, bufsz, "%d", value);
+                buflen = arkime_snprintf_len(buf, bufsz, "%d", value);
         } else if (buflen < bufsz) {
-            buflen += snprintf(buf + buflen, bufsz - buflen, ".%d", value);
+            buflen += arkime_snprintf_len(buf + buflen, bufsz - buflen, ".%d", value);
         }
 
         value = 0;
