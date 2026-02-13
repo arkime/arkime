@@ -29,8 +29,8 @@ LOCAL MMDB_s           *geoASN;
 
 int                     arkimeDbVersion = 0;
 extern uint64_t         totalPackets;
-LOCAL  uint64_t         totalSessions = 0;
-LOCAL  uint64_t         totalSessionBytes;
+LOCAL  uint64_t         totalSessions ARKIME_CACHE_ALIGN = 0;
+LOCAL  uint64_t         totalSessionBytes ARKIME_CACHE_ALIGN;
 LOCAL  uint16_t         myPid;
 extern uint32_t         pluginsCbs;
 

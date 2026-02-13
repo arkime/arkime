@@ -38,7 +38,7 @@ LOCAL GThread *schemeThread;
 LOCAL  ArkimeStringHashStd_t  schemesHash;
 LOCAL  ArkimeScheme_t        *fileScheme;
 
-LOCAL uint64_t totalPackets;
+LOCAL uint64_t packets;
 LOCAL uint64_t dropped;
 
 enum ArkimeSchemeMode {
@@ -396,7 +396,7 @@ LOCAL void reader_scheme_start()
 LOCAL int reader_scheme_stats(ArkimeReaderStats_t *stats)
 {
     stats->dropped = dropped;
-    stats->total = totalPackets;
+    stats->total = packets;
     return 0;
 }
 /******************************************************************************/
@@ -748,7 +748,7 @@ LOCAL int arkime_reader_scheme_processNG(const char *uri, uint8_t *data, int len
                 readerState.blockSize -= need;
                 readerState.tmpBufferLen = 0;
             }
-            totalPackets++;
+            packets++;
             offlineInfo[readerState.readerPos].lastPackets++;
             offlineInfo[readerState.readerPos].lastPacketTime = readerState.packet->ts;
             if (deadPcap && bpf_filter(bpf.bf_insns, readerState.packet->pkt, readerState.pktlen, readerState.pktlen)) {
@@ -928,7 +928,7 @@ int arkime_reader_scheme_process(const char *uri, uint8_t *data, int len, const 
                 len -= need;
                 readerState.tmpBufferLen = 0;
             }
-            totalPackets++;
+            packets++;
             offlineInfo[readerState.readerPos].lastPackets++;
             offlineInfo[readerState.readerPos].lastPacketTime = readerState.packet->ts;
             if (deadPcap && bpf_filter(bpf.bf_insns, readerState.packet->pkt, readerState.pktlen, readerState.pktlen)) {
