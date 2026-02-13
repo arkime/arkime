@@ -34,7 +34,7 @@ typedef struct writer_s3_file {
     uint16_t                   fs3_count;
 
     char                      *outputFileName;
-    struct timespec            outputFileTime;
+    struct timespec            createFileTime;
     char                      *outputPath;
     SavepcapS3Output_t         outputQ;
     char                      *uploadId;
@@ -844,7 +844,7 @@ LOCAL SavepcapS3File_t *writer_s3_create(const ArkimePacket_t *packet)
                                                         "#compressionBlockSize", compressionBlockSizeArg,
                                                         NULL);
     s3file->outputPath = s3file->outputFileName + offset;
-    clock_gettime(CLOCK_REALTIME_COARSE, &s3file->outputFileTime);
+    clock_gettime(CLOCK_REALTIME_COARSE, &s3file->createFileTime);
 
     s3file->outputBuffer = arkime_http_get_buffer(config.pcapWriteSize + ARKIME_PACKET_MAX_LEN);
     s3file->outputPos = 0;
@@ -872,7 +872,9 @@ LOCAL void writer_s3_file_time_check(ArkimeSession_t *UNUSED(session), gpointer 
     int thread = GPOINTER_TO_INT(uw1);
 
     SavepcapS3File_t *s3file = currentFiles[thread];
-    if (s3file && s3file->outputActualFilePos > 24 && (ts.tv_sec - s3file->outputFileTime.tv_sec) >= config.maxFileTimeM * 60) {
+    if (s3file && s3file->outputActualFilePos > 24 && (ts.tv_sec - s3file->createFileTime.tv_sec) >= config.maxFileTimeM * 60) {
+        if (config.debug)
+            LOG("Closing file %s due to time %lds", s3file->outputFileName, ts.tv_sec - s3file->createFileTime.tv_sec);
         writer_s3_flush(s3file, TRUE);
         currentFiles[thread] = NULL;
     }

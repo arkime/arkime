@@ -54,7 +54,9 @@ sub handle_request {
     my $query  = $req->uri->query // '';
 
     my $range = $req->header('Range') // '';
-    print "$method $uri" . ($query ne '' ? "?$query" : "") . ($range ne '' ? " Range:$range" : "") . "\n";
+    my $body_size = length($req->content // '');
+    my $date = strftime("%Y-%m-%dT%H:%M:%S", gmtime());
+    print "$date $method $uri" . ($query ne '' ? "?$query" : "") . " body:$body_size" . ($range ne '' ? " Range:$range" : "") . "\n";
 
     if ($uri eq '/_shutdown') {
         my $resp = HTTP::Response->new(200);
