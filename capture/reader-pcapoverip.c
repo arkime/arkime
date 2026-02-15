@@ -133,7 +133,7 @@ LOCAL gboolean pcapoverip_client_read_cb(gint UNUSED(fd), GIOCondition cond, gpo
             packet->ts.tv_usec = ph->ts.tv_usec;
         }
 
-        if (unlikely(caplen != origlen) && config.readTruncatedPackets && !config.ignoreErrors) {
+        if (unlikely(caplen != origlen) && !config.readTruncatedPackets && !config.ignoreErrors) {
             LOGEXIT("ERROR - Arkime requires full packet captures caplen: %u pktlen: %u\n"
                     "See https://arkime.com/faq#arkime_requires_full_packet_captures_error",
                     caplen, origlen);
@@ -206,8 +206,7 @@ LOCAL void pcapoverip_client_connect(int interface)
         }
 
         if (error && error->code != G_IO_ERROR_PENDING) {
-            g_error_free(error);
-            error = 0;
+            g_clear_error(&error);
             g_object_unref (conn);
             conn = NULL;
         } else {
@@ -224,10 +223,7 @@ LOCAL void pcapoverip_client_connect(int interface)
     g_object_unref (enumerator);
 
     if (conn) {
-        if (error) {
-            g_error_free(error);
-            error = 0;
-        }
+        g_clear_error(&error);
     } else if (error) {
         if (config.debug > 0)
             LOG("%s Error: %s", config.interface[interface], error->message);

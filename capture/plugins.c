@@ -299,7 +299,7 @@ void arkime_plugins_set_http_ext_cb(const char              *name,
         pluginsCbs |= ARKIME_PLUGIN_HP_OHF;
 
     plugin->on_header_field_raw = on_header_field_raw;
-    if (on_header_field)
+    if (on_header_field_raw)
         pluginsCbs |= ARKIME_PLUGIN_HP_OHFR;
 
     plugin->on_header_value = on_header_value;

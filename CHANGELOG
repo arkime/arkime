@@ -40,6 +40,9 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #3699 - writer-s3 always uses 0xffff for snapLen now
   - #3699 - writer-s3 fix gzip memory leak
   - #3702 - support redis:// for config
+  - #3706 - Don't close stdin after using "-" for filename
+  - #3706 - Cert UTCTime/GneralizedTime offset parsing fixes
+  - #3706 - Fix rules _dropBySession not working consistently
 
 6.0.0-rc2 2026/02/10
 ## BREAKING

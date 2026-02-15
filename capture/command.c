@@ -50,6 +50,7 @@ LOCAL gboolean arkime_command_run(const char *line, gpointer cc)
     GError *error = NULL;
 
     if (!g_shell_parse_argv(line, &argcp, &argvp, &error)) {
+        g_error_free(error);
         arkime_command_respond(cc, "No command sent\n", -1);
         return TRUE;
     }
@@ -218,6 +219,7 @@ void arkime_command_respond(gpointer cc, const char *data, int len)
 
     if (g_socket_send(client->socket, data, len, NULL, &error) != len) {
         LOG("ERROR - Sending response: %s", error ? error->message : "Unknown error");
+        g_clear_error(&error);
     }
 }
 /******************************************************************************/

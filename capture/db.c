@@ -674,7 +674,7 @@ void arkime_db_save_session(ArkimeSession_t *session, int final)
         for (int f = 0; f < session->maxFields; f++) {
             dbInfo[thread].sortedFieldsIndex[f] = f;
         }
-        qsort(&dbInfo[thread].sortedFieldsIndex, session->maxFields, 2, arkime_db_field_sort);
+        qsort(&dbInfo[thread].sortedFieldsIndex, session->maxFields, sizeof(dbInfo[thread].sortedFieldsIndex[0]), arkime_db_field_sort);
         dbInfo[thread].sortedFieldsIndexCnt = session->maxFields;
     }
 
@@ -1556,8 +1556,13 @@ LOCAL uint64_t arkime_db_memory_size()
         return 0;
 
     char buf[1024];
-    int len = read(fd, buf, sizeof(buf));
+    int len = read(fd, buf, sizeof(buf) - 1);
     close(fd);
+
+    if (len < 0) {
+        LOG("/proc/self/statm read failed - %s", strerror(errno));
+        return 0;
+    }
 
     if (len <= 10) {
         LOG("/proc/self/statm file too small - %d '%.*s'", len, len, buf);
@@ -1708,7 +1713,7 @@ LOCAL void arkime_db_update_stats(int n, gboolean sync)
     }
 
     const uint64_t cursec = currentTime.tv_sec;
-    uint64_t diffms = (currentTime.tv_sec - lastTime[n].tv_sec) * 1000 + (currentTime.tv_usec / 1000 - lastTime[n].tv_usec / 1000);
+    uint64_t diffms = (currentTime.tv_sec - lastTime[n].tv_sec) * 1000 + ((int64_t)currentTime.tv_usec - (int64_t)lastTime[n].tv_usec) / 1000;
 
     // Prevent FPE
     if (diffms == 0)
@@ -1717,8 +1722,8 @@ LOCAL void arkime_db_update_stats(int n, gboolean sync)
     struct rusage usage;
     getrusage(RUSAGE_SELF, &usage);
 
-    uint64_t diffusage = (usage.ru_utime.tv_sec - lastUsage[n].ru_utime.tv_sec) * 1000 + (usage.ru_utime.tv_usec / 1000 - lastUsage[n].ru_utime.tv_usec / 1000) +
-                         (usage.ru_stime.tv_sec - lastUsage[n].ru_stime.tv_sec) * 1000 + (usage.ru_stime.tv_usec / 1000 - lastUsage[n].ru_stime.tv_usec / 1000);
+    uint64_t diffusage = (usage.ru_utime.tv_sec - lastUsage[n].ru_utime.tv_sec) * 1000 + ((int64_t)usage.ru_utime.tv_usec - (int64_t)lastUsage[n].ru_utime.tv_usec) / 1000 +
+                         (usage.ru_stime.tv_sec - lastUsage[n].ru_stime.tv_sec) * 1000 + ((int64_t)usage.ru_stime.tv_usec - (int64_t)lastUsage[n].ru_stime.tv_usec) / 1000;
 
     dbTotalPackets[n] += (totalPackets - lastPackets[n]);
     dbTotalSessions[n] += (totalSessions - lastSessions[n]);
@@ -2719,6 +2724,10 @@ gboolean arkime_db_file_exists(const char *filename, uint32_t *outputId)
 
     uint8_t *data = arkime_http_get(esServer, key, key_len, &data_len);
 
+    if (!data) {
+        return FALSE;
+    }
+
     uint32_t           hits_len;
     const uint8_t     *hits = arkime_js0n_get(data, data_len, "hits", &hits_len);
 
@@ -2745,6 +2754,11 @@ gboolean arkime_db_file_exists(const char *filename, uint32_t *outputId)
 
         uint32_t           hit_len;
         const uint8_t     *hit = arkime_js0n_get(hits, hits_len, "hits", &hit_len);
+
+        if (!hit || hit_len < 2) {
+            free(data);
+            return FALSE;
+        }
 
         uint32_t           source_len;
         const uint8_t     *source = 0;

@@ -314,7 +314,7 @@ LOCAL int scheme_sqs_load(const char *uri, ArkimeSchemeFlags flags, ArkimeScheme
         ARKIME_TYPE_FREE(SQSItem, item);
     }
 
-    ARKIME_TYPE_FREE(S3ItemHead, req->items);
+    ARKIME_TYPE_FREE(SQSItemHead, req->items);
     ARKIME_TYPE_FREE(SQSRequest, req);
     return 1;
 }

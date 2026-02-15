@@ -445,9 +445,6 @@ LOCAL void arkime_session_free (ArkimeSession_t *session)
         ARKIME_SIZE_FREE("pluginData", session->pluginData);
     arkime_field_free(session);
 
-    if (mProtocols[session->mProtocol].sFree)
-        mProtocols[session->mProtocol].sFree(session);
-
     if (session->pq)
         arkime_pq_free(session);
 

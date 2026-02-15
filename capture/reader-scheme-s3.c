@@ -467,6 +467,12 @@ LOCAL int scheme_s3_load(const char *uri, ArkimeSchemeFlags flags, ArkimeSchemeA
 
     char **uris = g_strsplit(uri, "/", 0);
 
+    if (!uris[0] || !uris[1] || !uris[2]) {
+        LOG("ERROR - Invalid S3 uri %s", uri);
+        g_strfreev(uris);
+        return 1;
+    }
+
     S3Request req = {
         .actions = actions,
         .url = uri,

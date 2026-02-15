@@ -758,7 +758,7 @@ gboolean arkime_field_string_add_upper(int pos, ArkimeSession_t *session, const 
         arkime_field_truncated(session, config.fields[pos]);
     }
 
-    char *upper = g_ascii_strdown(string, len);
+    char *upper = g_ascii_strup(string, len);
     if (!arkime_field_string_add(pos, session, upper, len, FALSE)) {
         g_free(upper);
         return FALSE;
@@ -1034,7 +1034,6 @@ gboolean arkime_field_float_add(int pos, ArkimeSession_t *session, float f)
         goto added;
     case ARKIME_FIELD_TYPE_FLOAT_GHASH:
         memcpy(&fint, &f, 4);
-        g_hash_table_add(field->ghash, (gpointer)(long)fint);
         if (!g_hash_table_add(field->ghash, (gpointer)(long)fint)) {
             return FALSE;
         }
@@ -1456,7 +1455,7 @@ int arkime_field_count(int pos, ArkimeSession_t *session)
 {
     ArkimeField_t         *field;
 
-    if (pos >= session->maxFields)
+    if (pos < 0 || pos >= session->maxFields)
         return 0;
 
     if (!session->fields[pos])

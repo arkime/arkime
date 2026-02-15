@@ -604,8 +604,7 @@ LOCAL void arkime_config_load_includes(char **includes)
         gboolean status = g_key_file_load_from_file(keyFile, fn, G_KEY_FILE_NONE, &error);
         if (!status || error) {
             if (includes[i][0] == '-') {
-                if (error)
-                    g_error_free(error);
+                g_clear_error(&error);
                 continue;
             } else {
                 CONFIGEXIT("Couldn't load config includes file (%s) %s", fn, (error ? error->message : ""));
@@ -1441,8 +1440,8 @@ void arkime_config_load_override_ips()
             gboolean status = g_key_file_load_from_file(keyfile, overrideIpsFiles[i], G_KEY_FILE_NONE, &error);
             if (!status || error) {
                 if (overrideIpsFiles[i][0] == '-') {
-                    if (error)
-                        g_error_free(error);
+                    g_clear_error(&error);
+                    g_key_file_free(keyfile);
                     continue;
                 } else {
                     CONFIGEXIT("Couldn't load overrideIpsFiles file (%s) %s", overrideIpsFiles[i], (error ? error->message : ""));
@@ -1508,8 +1507,8 @@ void arkime_config_load_packet_ips()
             gboolean status = g_key_file_load_from_file(keyfile, packetDropIpsFiles[i], G_KEY_FILE_NONE, &error);
             if (!status || error) {
                 if (packetDropIpsFiles[i][0] == '-') {
-                    if (error)
-                        g_error_free(error);
+                    g_clear_error(&error);
+                    g_key_file_free(keyfile);
                     continue;
                 } else {
                     CONFIGEXIT("Couldn't load packetDropIpsFiles file (%s) %s", packetDropIpsFiles[i], (error ? error->message : ""));

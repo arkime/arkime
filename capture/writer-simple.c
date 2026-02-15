@@ -834,6 +834,7 @@ LOCAL FILE *writer_simple_get_index(int thread, int64_t fileNum)
     if ((simpleThreadData[thread].indexFiles[p].fp = fopen(filename, "a")) == NULL) {
         LOGEXIT("ERROR - Couldn't open file %s", filename);
     }
+    simpleThreadData[thread].indexFiles[p].fileNum = fileNum;
 
     if (!config.pcapReadOffline) {
         fchmod(fileno(simpleThreadData[thread].indexFiles[p].fp), S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP);

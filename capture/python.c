@@ -960,7 +960,7 @@ LOCAL PyObject *arkime_python_session_get(PyObject UNUSED(*self), PyObject *args
     }
 
     // This session doesn't have this many fields or field isnt set
-    if (pos < 0 || pos > session->maxFields || !session->fields[pos])
+    if (pos < 0 || pos >= session->maxFields || !session->fields[pos])
         Py_RETURN_NONE;
 
     switch (config.fields[pos]->type) {
