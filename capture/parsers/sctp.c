@@ -80,7 +80,7 @@ LOCAL int sctp_pre_process(ArkimeSession_t *session, ArkimePacket_t *const packe
 {
     const struct ip        *ip4 = (struct ip *)(packet->pkt + packet->ipOffset);
     const struct ip6_hdr   *ip6 = (struct ip6_hdr *)(packet->pkt + packet->ipOffset);
-    const struct sctphdr    *sctphdr = (struct sctphdr *)(packet->pkt + packet->payloadOffset);
+    const struct sctphdr   *sctphdr = (struct sctphdr *)(packet->pkt + packet->payloadOffset);
     if (isNewSession) {
         session->port1 = ntohs(sctphdr->sctp_sport);
         session->port2 = ntohs(sctphdr->sctp_dport);
@@ -101,7 +101,7 @@ LOCAL int sctp_pre_process(ArkimeSession_t *session, ArkimePacket_t *const packe
     packet->direction = (dir &&
                          session->port1 == ntohs(sctphdr->sctp_sport) &&
                          session->port2 == ntohs(sctphdr->sctp_dport)) ? 0 : 1;
-    session->databytes[packet->direction] += (packet->pktlen - 8);
+    session->databytes[packet->direction] += (packet->pktlen - sizeof(struct sctphdr));
 
     return 0;
 }
@@ -127,7 +127,7 @@ LOCAL void sctp_add_data(ArkimeSCTP_t *sctp, uint32_t tsn, int which, BSB *const
         if (tsn == fsd->tsn && which == fsd->which) { // Already have this tsn
             return;
         }
-        if (tsn < fsd->tsn) {
+        if (sctp_tsn_diff(tsn, fsd->tsn) > 0) {
             addBefore = 1;
             break;
         }
@@ -289,6 +289,9 @@ LOCAL int sctp_packet_process(ArkimeSession_t *const session, ArkimePacket_t *co
             BSB_IMPORT_skip(cbsb, 2); // streamSeq
             BSB_IMPORT_u32(cbsb, payloadProtoId);
 
+            if (BSB_IS_ERROR(cbsb))
+                break;
+
             int which = ARKIME_WHICH_SET_ID(packet->direction, streamId);
 
             // Only reset the initial TSN if we haven't set it before in each direction
@@ -307,7 +310,7 @@ LOCAL int sctp_packet_process(ArkimeSession_t *const session, ArkimePacket_t *co
                 }
 
                 sctp_maybe_send(session, which);
-            } else if (sctp_tsn_diff(tsn, session->sctpData.tsn[packet->direction]) < 0)  {
+            } else if (sctp_tsn_diff(tsn, session->sctpData.tsn[packet->direction]) > 0)  {
                 // ALW duplicate tsn drop
             } else {
                 if (DLL_COUNT(sd_, &session->sctpData) > maxSctpOutOfOrderPackets) {

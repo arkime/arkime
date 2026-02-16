@@ -1,758 +1,758 @@
 {
-   "sessions3" : [
-      {
-         "body" : {
-            "@timestamp" : "SET",
-            "client" : {
-               "bytes" : 2130
-            },
-            "destination" : {
-               "as" : {
-                  "full" : "AS9270 National Infomation Society Agency",
-                  "number" : 9270,
-                  "organization" : {
-                     "name" : "National Infomation Society Agency"
-                  }
-               },
-               "bytes" : 22472,
-               "geo" : {
-                  "country_iso_code" : "KR"
-               },
-               "ip" : "203.255.252.194",
-               "mac" : [
-                  "00:04:96:08:e0:40"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 22,
-               "port" : 80
-            },
-            "dstOui" : [
-               "Extreme Networks, Inc."
-            ],
-            "dstOuiCnt" : 1,
-            "dstPayload8" : "485454502f312e31",
-            "dstRIR" : "APNIC",
-            "dstTTL" : [
-               59
-            ],
-            "dstTTLCnt" : 1,
-            "ethertype" : 2048,
-            "fileId" : [],
-            "firstPacket" : 1137034844756,
-            "http" : {
-               "bodyMagic" : [
-                  "image/gif",
-                  "text/html"
-               ],
-               "bodyMagicCnt" : 2,
-               "clientVersion" : [
-                  "1.1"
-               ],
-               "clientVersionCnt" : 1,
-               "host" : [
-                  "203.255.252.194"
-               ],
-               "hostCnt" : 1,
-               "md5" : [
-                  "d9aeaef2a3e33b942a39ea143b3b189f",
-                  "f76bc7cf1dd6d93781bff70acafb41e2"
-               ],
-               "md5Cnt" : 2,
-               "method" : [
-                  "GET"
-               ],
-               "method-GET" : 2,
-               "methodCnt" : 1,
-               "path" : [
-                  "/",
-                  "/images/CPL@KOREN_logo_menu.gif"
-               ],
-               "pathCnt" : 2,
-               "request-referer" : [
-                  "http://203.255.252.194/"
-               ],
-               "request-refererCnt" : 1,
-               "requestHeader" : [
-                  "accept",
-                  "accept-charset",
-                  "accept-encoding",
-                  "accept-language",
-                  "connection",
-                  "host",
-                  "keep-alive",
-                  "referer",
-                  "user-agent"
-               ],
-               "requestHeaderCnt" : 9,
-               "requestHeaderField" : [
-                  "accept",
-                  "accept",
-                  "accept-charset",
-                  "accept-charset",
-                  "accept-encoding",
-                  "accept-encoding",
-                  "accept-language",
-                  "accept-language",
-                  "connection",
-                  "connection",
-                  "keep-alive",
-                  "keep-alive"
-               ],
-               "requestHeaderValue" : [
-                  "300",
-                  "300",
-                  "euc-kr,utf-8;q=0.7,*;q=0.7",
-                  "euc-kr,utf-8;q=0.7,*;q=0.7",
-                  "gzip,deflate",
-                  "gzip,deflate",
-                  "image/png,*/*;q=0.5",
-                  "keep-alive",
-                  "keep-alive",
-                  "ko,en-us;q=0.7,en;q=0.3",
-                  "ko,en-us;q=0.7,en;q=0.3",
-                  "text/xml,application/xml,application/xhtml+xml,text/html;q=0.9,text/plain;q=0.8,image/png,*/*;q=0.5"
-               ],
-               "requestHeaderValueCnt" : 12,
-               "responseHeader" : [
-                  "accept-ranges",
-                  "connection",
-                  "content-length",
-                  "content-type",
-                  "date",
-                  "etag",
-                  "keep-alive",
-                  "last-modified",
-                  "server"
-               ],
-               "responseHeaderCnt" : 9,
-               "responseHeaderField" : [
-                  "accept-ranges",
-                  "accept-ranges",
-                  "connection",
-                  "connection",
-                  "content-length",
-                  "content-length",
-                  "content-type",
-                  "content-type",
-                  "date",
-                  "date",
-                  "etag",
-                  "etag",
-                  "keep-alive",
-                  "keep-alive",
-                  "last-modified",
-                  "last-modified",
-                  "server",
-                  "server"
-               ],
-               "responseHeaderValue" : [
-                  "\"420324-1d3e-f63e5d00\"",
-                  "\"420331-3200-f62f1ac0\"",
-                  "12800",
-                  "7486",
-                  "apache/2.0.54 (unix) dav/2 php/4.4.1",
-                  "apache/2.0.54 (unix) dav/2 php/4.4.1",
-                  "bytes",
-                  "bytes",
-                  "image/gif",
-                  "keep-alive",
-                  "keep-alive",
-                  "text/html",
-                  "thu, 05 jan 2006 02:05:07 gmt",
-                  "thu, 05 jan 2006 02:05:08 gmt",
-                  "thu, 12 jan 2006 02:58:00 gmt",
-                  "thu, 12 jan 2006 02:58:00 gmt",
-                  "timeout=15, max=100",
-                  "timeout=15, max=99"
-               ],
-               "responseHeaderValueCnt" : 18,
-               "serverVersion" : [
-                  "1.1"
-               ],
-               "serverVersionCnt" : 1,
-               "sha256" : [
-                  "bd3b81027a56f15fca1a445f40e94c15bd344c6b7f42f8951a06fa37a5a7d07d",
-                  "c5547e55aa988e6b0321c3fb8454aed751b9e05f4a5c328c6dd2469df43593bc"
-               ],
-               "sha256Cnt" : 2,
-               "statuscode" : [
-                  200
-               ],
-               "statuscodeCnt" : 1,
-               "uri" : [
-                  "203.255.252.194/",
-                  "203.255.252.194/images/CPL@KOREN_logo_menu.gif"
-               ],
-               "uriCnt" : 2,
-               "useragent" : [
-                  "Mozilla/5.0 (X11; U; Linux i686; ko-KR; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1"
-               ],
-               "useragentCnt" : 1
-            },
-            "ipProtocol" : 132,
-            "lastPacket" : 1137034859213,
-            "length" : 14457,
-            "network" : {
-               "bytes" : 24770,
-               "community_id" : "1:/6KQAGEbBef8FMaWb94uWVu+rWE=",
-               "packets" : 43
-            },
-            "node" : "test",
-            "packetLen" : [
-               122,
-               294,
-               258,
-               76,
-               482,
-               78,
-               382,
-               78,
-               1510,
-               1510,
-               78,
-               1510,
-               1510,
-               78,
-               1510,
-               406,
-               78,
-               78,
-               78,
-               78,
-               466,
-               382,
-               1510,
-               78,
-               1510,
-               1510,
-               78,
-               1510,
-               1510,
-               78,
-               1510,
-               1510,
-               78,
-               1510,
-               1422,
-               78,
-               78,
-               78,
-               78,
-               78,
-               70,
-               76,
-               66
-            ],
-            "packetPos" : [
-               24,
-               146,
-               440,
-               698,
-               774,
-               1256,
-               1334,
-               1716,
-               1794,
-               3304,
-               4814,
-               4892,
-               6402,
-               7912,
-               7990,
-               9500,
-               9906,
-               9984,
-               10062,
-               10140,
-               10218,
-               10684,
-               12942,
-               14452,
-               14530,
-               16040,
-               17550,
-               17628,
-               25334,
-               26844,
-               26922,
-               28432,
-               29942,
-               30020,
-               31530,
-               32952,
-               42324,
-               42402,
-               42480,
-               48246,
-               48638,
-               48850,
-               48926
-            ],
-            "packetRange" : {
-               "gte" : 1137034844756,
-               "lte" : 1137034859213
-            },
-            "protocol" : [
-               "http",
-               "sctp"
-            ],
-            "protocolCnt" : 2,
-            "sctp" : {
-               "protoId" : [
-                  0
-               ]
-            },
-            "segmentCnt" : 1,
-            "server" : {
-               "bytes" : 22296
-            },
-            "source" : {
-               "as" : {
-                  "full" : "AS10052 Kyungpook National University",
-                  "number" : 10052,
-                  "organization" : {
-                     "name" : "Kyungpook National University"
-                  }
-               },
-               "bytes" : 2298,
-               "geo" : {
-                  "city_name" : "Daegu",
-                  "country_iso_code" : "KR",
-                  "region_iso_code" : "27"
-               },
-               "ip" : "155.230.24.155",
-               "mac" : [
-                  "00:0e:2e:24:37:5f"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 21,
-               "port" : 32836
-            },
-            "srcOui" : [
-               "Edimax Technology Co. Ltd."
-            ],
-            "srcOuiCnt" : 1,
-            "srcPayload8" : "474554202f204854",
-            "srcRIR" : "ARIN",
-            "srcTTL" : [
-               64
-            ],
-            "srcTTLCnt" : 1,
-            "totDataBytes" : 24426
-         },
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions3-060112"
-            }
-         }
-      },
-      {
-         "body" : {
-            "@timestamp" : "SET",
-            "client" : {
-               "bytes" : 1614
-            },
-            "destination" : {
-               "as" : {
-                  "full" : "AS9270 National Infomation Society Agency",
-                  "number" : 9270,
-                  "organization" : {
-                     "name" : "National Infomation Society Agency"
-                  }
-               },
-               "bytes" : 20770,
-               "geo" : {
-                  "country_iso_code" : "KR"
-               },
-               "ip" : "203.255.252.194",
-               "mac" : [
-                  "00:04:96:08:e0:40"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 19,
-               "port" : 80
-            },
-            "dstOui" : [
-               "Extreme Networks, Inc."
-            ],
-            "dstOuiCnt" : 1,
-            "dstPayload8" : "485454502f312e31",
-            "dstRIR" : "APNIC",
-            "dstTTL" : [
-               59
-            ],
-            "dstTTLCnt" : 1,
-            "ethertype" : 2048,
-            "fileId" : [],
-            "firstPacket" : 1137034844891,
-            "http" : {
-               "bodyMagic" : [
-                  "image/gif"
-               ],
-               "bodyMagicCnt" : 1,
-               "clientVersion" : [
-                  "1.1"
-               ],
-               "clientVersionCnt" : 1,
-               "host" : [
-                  "203.255.252.194"
-               ],
-               "hostCnt" : 1,
-               "md5" : [
-                  "bdd01b3ee59470d3ed2d8325a63e490a"
-               ],
-               "md5Cnt" : 1,
-               "method" : [
-                  "GET"
-               ],
-               "method-GET" : 1,
-               "methodCnt" : 1,
-               "path" : [
-                  "/images/protocols_small.gif"
-               ],
-               "pathCnt" : 1,
-               "request-referer" : [
-                  "http://203.255.252.194/"
-               ],
-               "request-refererCnt" : 1,
-               "requestHeader" : [
-                  "accept",
-                  "accept-charset",
-                  "accept-encoding",
-                  "accept-language",
-                  "connection",
-                  "host",
-                  "keep-alive",
-                  "referer",
-                  "user-agent"
-               ],
-               "requestHeaderCnt" : 9,
-               "requestHeaderField" : [
-                  "accept",
-                  "accept-charset",
-                  "accept-encoding",
-                  "accept-language",
-                  "connection",
-                  "keep-alive"
-               ],
-               "requestHeaderValue" : [
-                  "300",
-                  "euc-kr,utf-8;q=0.7,*;q=0.7",
-                  "gzip,deflate",
-                  "image/png,*/*;q=0.5",
-                  "keep-alive",
-                  "ko,en-us;q=0.7,en;q=0.3"
-               ],
-               "requestHeaderValueCnt" : 6,
-               "responseHeader" : [
-                  "accept-ranges",
-                  "connection",
-                  "content-length",
-                  "content-type",
-                  "date",
-                  "etag",
-                  "keep-alive",
-                  "last-modified",
-                  "server"
-               ],
-               "responseHeaderCnt" : 9,
-               "responseHeaderField" : [
-                  "accept-ranges",
-                  "connection",
-                  "content-length",
-                  "content-type",
-                  "date",
-                  "etag",
-                  "keep-alive",
-                  "last-modified",
-                  "server"
-               ],
-               "responseHeaderValue" : [
-                  "\"42033b-4a7f-f62f1ac0\"",
-                  "19071",
-                  "apache/2.0.54 (unix) dav/2 php/4.4.1",
-                  "bytes",
-                  "image/gif",
-                  "keep-alive",
-                  "thu, 05 jan 2006 02:05:07 gmt",
-                  "thu, 12 jan 2006 02:58:00 gmt",
-                  "timeout=15, max=100"
-               ],
-               "responseHeaderValueCnt" : 9,
-               "serverVersion" : [
-                  "1.1"
-               ],
-               "serverVersionCnt" : 1,
-               "sha256" : [
-                  "4c5a14835012f9be8e2e3184895c01b9bd0690f3953a3406487ef74ff12acf96"
-               ],
-               "sha256Cnt" : 1,
-               "statuscode" : [
-                  200
-               ],
-               "statuscodeCnt" : 1,
-               "uri" : [
-                  "203.255.252.194/images/protocols_small.gif"
-               ],
-               "uriCnt" : 1,
-               "useragent" : [
-                  "Mozilla/5.0 (X11; U; Linux i686; ko-KR; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1"
-               ],
-               "useragentCnt" : 1
-            },
-            "ipProtocol" : 132,
-            "lastPacket" : 1137034859213,
-            "length" : 14322,
-            "network" : {
-               "bytes" : 22536,
-               "community_id" : "1:9dAr7BinXFjtYMLvvPdJMq34dY4=",
-               "packets" : 38
-            },
-            "node" : "test",
-            "packetLen" : [
-               122,
-               294,
-               258,
-               76,
-               462,
-               78,
-               386,
-               78,
-               1510,
-               1510,
-               78,
-               1510,
-               1510,
-               78,
-               1510,
-               1510,
-               78,
-               1510,
-               1510,
-               78,
-               1510,
-               1510,
-               78,
-               1510,
-               710,
-               78,
-               1510,
-               1334,
-               78,
-               78,
-               78,
-               78,
-               78,
-               78,
-               78,
-               70,
-               76,
-               66
-            ],
-            "packetPos" : [
-               11066,
-               11188,
-               11482,
-               11740,
-               11816,
-               12278,
-               12356,
-               12742,
-               19138,
-               20648,
-               22158,
-               22236,
-               23746,
-               25256,
-               33030,
-               34540,
-               36050,
-               36128,
-               37638,
-               39148,
-               39226,
-               40736,
-               42246,
-               42558,
-               44068,
-               44778,
-               44856,
-               46366,
-               47700,
-               47778,
-               47856,
-               47934,
-               48012,
-               48090,
-               48168,
-               48568,
-               48708,
-               48784
-            ],
-            "packetRange" : {
-               "gte" : 1137034844891,
-               "lte" : 1137034859213
-            },
-            "protocol" : [
-               "http",
-               "sctp"
-            ],
-            "protocolCnt" : 2,
-            "sctp" : {
-               "protoId" : [
-                  0
-               ]
-            },
-            "segmentCnt" : 1,
-            "server" : {
-               "bytes" : 20618
-            },
-            "source" : {
-               "as" : {
-                  "full" : "AS10052 Kyungpook National University",
-                  "number" : 10052,
-                  "organization" : {
-                     "name" : "Kyungpook National University"
-                  }
-               },
-               "bytes" : 1766,
-               "geo" : {
-                  "city_name" : "Daegu",
-                  "country_iso_code" : "KR",
-                  "region_iso_code" : "27"
-               },
-               "ip" : "155.230.24.155",
-               "mac" : [
-                  "00:0e:2e:24:37:5f"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 19,
-               "port" : 32837
-            },
-            "srcOui" : [
-               "Edimax Technology Co. Ltd."
-            ],
-            "srcOuiCnt" : 1,
-            "srcPayload8" : "474554202f696d61",
-            "srcRIR" : "ARIN",
-            "srcTTL" : [
-               64
-            ],
-            "srcTTLCnt" : 1,
-            "totDataBytes" : 22232
-         },
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions3-060112"
-            }
-         }
-      },
-      {
-         "body" : {
-            "@timestamp" : "SET",
-            "client" : {
-               "bytes" : 294
-            },
-            "destination" : {
-               "as" : {
-                  "full" : "AS4766 Korea Telecom",
-                  "number" : 4766,
-                  "organization" : {
-                     "name" : "Korea Telecom"
-                  }
-               },
-               "bytes" : 0,
-               "geo" : {
-                  "city_name" : "Haeundae-gu",
-                  "country_iso_code" : "KR",
-                  "region_iso_code" : "26"
-               },
-               "ip" : "222.96.156.151",
-               "mac" : [
-                  "00:04:96:08:e0:40"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 0,
-               "port" : 80
-            },
-            "dstOui" : [
-               "Extreme Networks, Inc."
-            ],
-            "dstOuiCnt" : 1,
-            "dstRIR" : "APNIC",
-            "ethertype" : 2048,
-            "fileId" : [],
-            "firstPacket" : 1137034844900,
-            "ipProtocol" : 132,
-            "lastPacket" : 1137034853900,
-            "length" : 9000,
-            "network" : {
-               "bytes" : 318,
-               "community_id" : "1:EsmQhihL1F8Uoc8T7wwqcUge3W4=",
-               "packets" : 3
-            },
-            "node" : "test",
-            "packetLen" : [
-               122,
-               122,
-               122
-            ],
-            "packetPos" : [
-               12820,
-               48324,
-               48446
-            ],
-            "packetRange" : {
-               "gte" : 1137034844900,
-               "lte" : 1137034853900
-            },
-            "protocol" : [
-               "sctp"
-            ],
-            "protocolCnt" : 1,
-            "segmentCnt" : 1,
-            "server" : {
-               "bytes" : 0
-            },
-            "source" : {
-               "as" : {
-                  "full" : "AS10052 Kyungpook National University",
-                  "number" : 10052,
-                  "organization" : {
-                     "name" : "Kyungpook National University"
-                  }
-               },
-               "bytes" : 318,
-               "geo" : {
-                  "city_name" : "Daegu",
-                  "country_iso_code" : "KR",
-                  "region_iso_code" : "27"
-               },
-               "ip" : "155.230.24.155",
-               "mac" : [
-                  "00:0e:2e:24:37:5f"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 3,
-               "port" : 32838
-            },
-            "srcOui" : [
-               "Edimax Technology Co. Ltd."
-            ],
-            "srcOuiCnt" : 1,
-            "srcRIR" : "ARIN",
-            "srcTTL" : [
-               64
-            ],
-            "srcTTLCnt" : 1,
-            "totDataBytes" : 294
-         },
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions3-060112"
-            }
-         }
+ "sessions3" : [
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 2046
+    },
+    "destination" : {
+     "as" : {
+      "full" : "AS9270 National Infomation Society Agency",
+      "number" : 9270,
+      "organization" : {
+       "name" : "National Infomation Society Agency"
       }
-   ]
+     },
+     "bytes" : 22472,
+     "geo" : {
+      "country_iso_code" : "KR"
+     },
+     "ip" : "203.255.252.194",
+     "mac" : [
+      "00:04:96:08:e0:40"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 22,
+     "port" : 80
+    },
+    "dstOui" : [
+     "Extreme Networks, Inc."
+    ],
+    "dstOuiCnt" : 1,
+    "dstPayload8" : "485454502f312e31",
+    "dstRIR" : "APNIC",
+    "dstTTL" : [
+     59
+    ],
+    "dstTTLCnt" : 1,
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 1137034844756,
+    "http" : {
+     "bodyMagic" : [
+      "image/gif",
+      "text/html"
+     ],
+     "bodyMagicCnt" : 2,
+     "clientVersion" : [
+      "1.1"
+     ],
+     "clientVersionCnt" : 1,
+     "host" : [
+      "203.255.252.194"
+     ],
+     "hostCnt" : 1,
+     "md5" : [
+      "d9aeaef2a3e33b942a39ea143b3b189f",
+      "f76bc7cf1dd6d93781bff70acafb41e2"
+     ],
+     "md5Cnt" : 2,
+     "method" : [
+      "GET"
+     ],
+     "method-GET" : 2,
+     "methodCnt" : 1,
+     "path" : [
+      "/",
+      "/images/CPL@KOREN_logo_menu.gif"
+     ],
+     "pathCnt" : 2,
+     "request-referer" : [
+      "http://203.255.252.194/"
+     ],
+     "request-refererCnt" : 1,
+     "requestHeader" : [
+      "accept",
+      "accept-charset",
+      "accept-encoding",
+      "accept-language",
+      "connection",
+      "host",
+      "keep-alive",
+      "referer",
+      "user-agent"
+     ],
+     "requestHeaderCnt" : 9,
+     "requestHeaderField" : [
+      "accept",
+      "accept",
+      "accept-charset",
+      "accept-charset",
+      "accept-encoding",
+      "accept-encoding",
+      "accept-language",
+      "accept-language",
+      "connection",
+      "connection",
+      "keep-alive",
+      "keep-alive"
+     ],
+     "requestHeaderValue" : [
+      "300",
+      "300",
+      "euc-kr,utf-8;q=0.7,*;q=0.7",
+      "euc-kr,utf-8;q=0.7,*;q=0.7",
+      "gzip,deflate",
+      "gzip,deflate",
+      "image/png,*/*;q=0.5",
+      "keep-alive",
+      "keep-alive",
+      "ko,en-us;q=0.7,en;q=0.3",
+      "ko,en-us;q=0.7,en;q=0.3",
+      "text/xml,application/xml,application/xhtml+xml,text/html;q=0.9,text/plain;q=0.8,image/png,*/*;q=0.5"
+     ],
+     "requestHeaderValueCnt" : 12,
+     "responseHeader" : [
+      "accept-ranges",
+      "connection",
+      "content-length",
+      "content-type",
+      "date",
+      "etag",
+      "keep-alive",
+      "last-modified",
+      "server"
+     ],
+     "responseHeaderCnt" : 9,
+     "responseHeaderField" : [
+      "accept-ranges",
+      "accept-ranges",
+      "connection",
+      "connection",
+      "content-length",
+      "content-length",
+      "content-type",
+      "content-type",
+      "date",
+      "date",
+      "etag",
+      "etag",
+      "keep-alive",
+      "keep-alive",
+      "last-modified",
+      "last-modified",
+      "server",
+      "server"
+     ],
+     "responseHeaderValue" : [
+      "\"420324-1d3e-f63e5d00\"",
+      "\"420331-3200-f62f1ac0\"",
+      "12800",
+      "7486",
+      "apache/2.0.54 (unix) dav/2 php/4.4.1",
+      "apache/2.0.54 (unix) dav/2 php/4.4.1",
+      "bytes",
+      "bytes",
+      "image/gif",
+      "keep-alive",
+      "keep-alive",
+      "text/html",
+      "thu, 05 jan 2006 02:05:07 gmt",
+      "thu, 05 jan 2006 02:05:08 gmt",
+      "thu, 12 jan 2006 02:58:00 gmt",
+      "thu, 12 jan 2006 02:58:00 gmt",
+      "timeout=15, max=100",
+      "timeout=15, max=99"
+     ],
+     "responseHeaderValueCnt" : 18,
+     "serverVersion" : [
+      "1.1"
+     ],
+     "serverVersionCnt" : 1,
+     "sha256" : [
+      "bd3b81027a56f15fca1a445f40e94c15bd344c6b7f42f8951a06fa37a5a7d07d",
+      "c5547e55aa988e6b0321c3fb8454aed751b9e05f4a5c328c6dd2469df43593bc"
+     ],
+     "sha256Cnt" : 2,
+     "statuscode" : [
+      200
+     ],
+     "statuscodeCnt" : 1,
+     "uri" : [
+      "203.255.252.194/",
+      "203.255.252.194/images/CPL@KOREN_logo_menu.gif"
+     ],
+     "uriCnt" : 2,
+     "useragent" : [
+      "Mozilla/5.0 (X11; U; Linux i686; ko-KR; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1"
+     ],
+     "useragentCnt" : 1
+    },
+    "ipProtocol" : 132,
+    "lastPacket" : 1137034859213,
+    "length" : 14457,
+    "network" : {
+     "bytes" : 24770,
+     "community_id" : "1:/6KQAGEbBef8FMaWb94uWVu+rWE=",
+     "packets" : 43
+    },
+    "node" : "test",
+    "packetLen" : [
+     122,
+     294,
+     258,
+     76,
+     482,
+     78,
+     382,
+     78,
+     1510,
+     1510,
+     78,
+     1510,
+     1510,
+     78,
+     1510,
+     406,
+     78,
+     78,
+     78,
+     78,
+     466,
+     382,
+     1510,
+     78,
+     1510,
+     1510,
+     78,
+     1510,
+     1510,
+     78,
+     1510,
+     1510,
+     78,
+     1510,
+     1422,
+     78,
+     78,
+     78,
+     78,
+     78,
+     70,
+     76,
+     66
+    ],
+    "packetPos" : [
+     24,
+     146,
+     440,
+     698,
+     774,
+     1256,
+     1334,
+     1716,
+     1794,
+     3304,
+     4814,
+     4892,
+     6402,
+     7912,
+     7990,
+     9500,
+     9906,
+     9984,
+     10062,
+     10140,
+     10218,
+     10684,
+     12942,
+     14452,
+     14530,
+     16040,
+     17550,
+     17628,
+     25334,
+     26844,
+     26922,
+     28432,
+     29942,
+     30020,
+     31530,
+     32952,
+     42324,
+     42402,
+     42480,
+     48246,
+     48638,
+     48850,
+     48926
+    ],
+    "packetRange" : {
+     "gte" : 1137034844756,
+     "lte" : 1137034859213
+    },
+    "protocol" : [
+     "http",
+     "sctp"
+    ],
+    "protocolCnt" : 2,
+    "sctp" : {
+     "protoId" : [
+      0
+     ]
+    },
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 22208
+    },
+    "source" : {
+     "as" : {
+      "full" : "AS10052 Kyungpook National University",
+      "number" : 10052,
+      "organization" : {
+       "name" : "Kyungpook National University"
+      }
+     },
+     "bytes" : 2298,
+     "geo" : {
+      "city_name" : "Daegu",
+      "country_iso_code" : "KR",
+      "region_iso_code" : "27"
+     },
+     "ip" : "155.230.24.155",
+     "mac" : [
+      "00:0e:2e:24:37:5f"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 21,
+     "port" : 32836
+    },
+    "srcOui" : [
+     "Edimax Technology Co. Ltd."
+    ],
+    "srcOuiCnt" : 1,
+    "srcPayload8" : "474554202f204854",
+    "srcRIR" : "ARIN",
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
+    "totDataBytes" : 24254
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-060112"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 1538
+    },
+    "destination" : {
+     "as" : {
+      "full" : "AS9270 National Infomation Society Agency",
+      "number" : 9270,
+      "organization" : {
+       "name" : "National Infomation Society Agency"
+      }
+     },
+     "bytes" : 20770,
+     "geo" : {
+      "country_iso_code" : "KR"
+     },
+     "ip" : "203.255.252.194",
+     "mac" : [
+      "00:04:96:08:e0:40"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 19,
+     "port" : 80
+    },
+    "dstOui" : [
+     "Extreme Networks, Inc."
+    ],
+    "dstOuiCnt" : 1,
+    "dstPayload8" : "485454502f312e31",
+    "dstRIR" : "APNIC",
+    "dstTTL" : [
+     59
+    ],
+    "dstTTLCnt" : 1,
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 1137034844891,
+    "http" : {
+     "bodyMagic" : [
+      "image/gif"
+     ],
+     "bodyMagicCnt" : 1,
+     "clientVersion" : [
+      "1.1"
+     ],
+     "clientVersionCnt" : 1,
+     "host" : [
+      "203.255.252.194"
+     ],
+     "hostCnt" : 1,
+     "md5" : [
+      "bdd01b3ee59470d3ed2d8325a63e490a"
+     ],
+     "md5Cnt" : 1,
+     "method" : [
+      "GET"
+     ],
+     "method-GET" : 1,
+     "methodCnt" : 1,
+     "path" : [
+      "/images/protocols_small.gif"
+     ],
+     "pathCnt" : 1,
+     "request-referer" : [
+      "http://203.255.252.194/"
+     ],
+     "request-refererCnt" : 1,
+     "requestHeader" : [
+      "accept",
+      "accept-charset",
+      "accept-encoding",
+      "accept-language",
+      "connection",
+      "host",
+      "keep-alive",
+      "referer",
+      "user-agent"
+     ],
+     "requestHeaderCnt" : 9,
+     "requestHeaderField" : [
+      "accept",
+      "accept-charset",
+      "accept-encoding",
+      "accept-language",
+      "connection",
+      "keep-alive"
+     ],
+     "requestHeaderValue" : [
+      "300",
+      "euc-kr,utf-8;q=0.7,*;q=0.7",
+      "gzip,deflate",
+      "image/png,*/*;q=0.5",
+      "keep-alive",
+      "ko,en-us;q=0.7,en;q=0.3"
+     ],
+     "requestHeaderValueCnt" : 6,
+     "responseHeader" : [
+      "accept-ranges",
+      "connection",
+      "content-length",
+      "content-type",
+      "date",
+      "etag",
+      "keep-alive",
+      "last-modified",
+      "server"
+     ],
+     "responseHeaderCnt" : 9,
+     "responseHeaderField" : [
+      "accept-ranges",
+      "connection",
+      "content-length",
+      "content-type",
+      "date",
+      "etag",
+      "keep-alive",
+      "last-modified",
+      "server"
+     ],
+     "responseHeaderValue" : [
+      "\"42033b-4a7f-f62f1ac0\"",
+      "19071",
+      "apache/2.0.54 (unix) dav/2 php/4.4.1",
+      "bytes",
+      "image/gif",
+      "keep-alive",
+      "thu, 05 jan 2006 02:05:07 gmt",
+      "thu, 12 jan 2006 02:58:00 gmt",
+      "timeout=15, max=100"
+     ],
+     "responseHeaderValueCnt" : 9,
+     "serverVersion" : [
+      "1.1"
+     ],
+     "serverVersionCnt" : 1,
+     "sha256" : [
+      "4c5a14835012f9be8e2e3184895c01b9bd0690f3953a3406487ef74ff12acf96"
+     ],
+     "sha256Cnt" : 1,
+     "statuscode" : [
+      200
+     ],
+     "statuscodeCnt" : 1,
+     "uri" : [
+      "203.255.252.194/images/protocols_small.gif"
+     ],
+     "uriCnt" : 1,
+     "useragent" : [
+      "Mozilla/5.0 (X11; U; Linux i686; ko-KR; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1"
+     ],
+     "useragentCnt" : 1
+    },
+    "ipProtocol" : 132,
+    "lastPacket" : 1137034859213,
+    "length" : 14322,
+    "network" : {
+     "bytes" : 22536,
+     "community_id" : "1:9dAr7BinXFjtYMLvvPdJMq34dY4=",
+     "packets" : 38
+    },
+    "node" : "test",
+    "packetLen" : [
+     122,
+     294,
+     258,
+     76,
+     462,
+     78,
+     386,
+     78,
+     1510,
+     1510,
+     78,
+     1510,
+     1510,
+     78,
+     1510,
+     1510,
+     78,
+     1510,
+     1510,
+     78,
+     1510,
+     1510,
+     78,
+     1510,
+     710,
+     78,
+     1510,
+     1334,
+     78,
+     78,
+     78,
+     78,
+     78,
+     78,
+     78,
+     70,
+     76,
+     66
+    ],
+    "packetPos" : [
+     11066,
+     11188,
+     11482,
+     11740,
+     11816,
+     12278,
+     12356,
+     12742,
+     19138,
+     20648,
+     22158,
+     22236,
+     23746,
+     25256,
+     33030,
+     34540,
+     36050,
+     36128,
+     37638,
+     39148,
+     39226,
+     40736,
+     42246,
+     42558,
+     44068,
+     44778,
+     44856,
+     46366,
+     47700,
+     47778,
+     47856,
+     47934,
+     48012,
+     48090,
+     48168,
+     48568,
+     48708,
+     48784
+    ],
+    "packetRange" : {
+     "gte" : 1137034844891,
+     "lte" : 1137034859213
+    },
+    "protocol" : [
+     "http",
+     "sctp"
+    ],
+    "protocolCnt" : 2,
+    "sctp" : {
+     "protoId" : [
+      0
+     ]
+    },
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 20542
+    },
+    "source" : {
+     "as" : {
+      "full" : "AS10052 Kyungpook National University",
+      "number" : 10052,
+      "organization" : {
+       "name" : "Kyungpook National University"
+      }
+     },
+     "bytes" : 1766,
+     "geo" : {
+      "city_name" : "Daegu",
+      "country_iso_code" : "KR",
+      "region_iso_code" : "27"
+     },
+     "ip" : "155.230.24.155",
+     "mac" : [
+      "00:0e:2e:24:37:5f"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 19,
+     "port" : 32837
+    },
+    "srcOui" : [
+     "Edimax Technology Co. Ltd."
+    ],
+    "srcOuiCnt" : 1,
+    "srcPayload8" : "474554202f696d61",
+    "srcRIR" : "ARIN",
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
+    "totDataBytes" : 22080
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-060112"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 282
+    },
+    "destination" : {
+     "as" : {
+      "full" : "AS4766 Korea Telecom",
+      "number" : 4766,
+      "organization" : {
+       "name" : "Korea Telecom"
+      }
+     },
+     "bytes" : 0,
+     "geo" : {
+      "city_name" : "Haeundae-gu",
+      "country_iso_code" : "KR",
+      "region_iso_code" : "26"
+     },
+     "ip" : "222.96.156.151",
+     "mac" : [
+      "00:04:96:08:e0:40"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 0,
+     "port" : 80
+    },
+    "dstOui" : [
+     "Extreme Networks, Inc."
+    ],
+    "dstOuiCnt" : 1,
+    "dstRIR" : "APNIC",
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 1137034844900,
+    "ipProtocol" : 132,
+    "lastPacket" : 1137034853900,
+    "length" : 9000,
+    "network" : {
+     "bytes" : 318,
+     "community_id" : "1:EsmQhihL1F8Uoc8T7wwqcUge3W4=",
+     "packets" : 3
+    },
+    "node" : "test",
+    "packetLen" : [
+     122,
+     122,
+     122
+    ],
+    "packetPos" : [
+     12820,
+     48324,
+     48446
+    ],
+    "packetRange" : {
+     "gte" : 1137034844900,
+     "lte" : 1137034853900
+    },
+    "protocol" : [
+     "sctp"
+    ],
+    "protocolCnt" : 1,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 0
+    },
+    "source" : {
+     "as" : {
+      "full" : "AS10052 Kyungpook National University",
+      "number" : 10052,
+      "organization" : {
+       "name" : "Kyungpook National University"
+      }
+     },
+     "bytes" : 318,
+     "geo" : {
+      "city_name" : "Daegu",
+      "country_iso_code" : "KR",
+      "region_iso_code" : "27"
+     },
+     "ip" : "155.230.24.155",
+     "mac" : [
+      "00:0e:2e:24:37:5f"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 3,
+     "port" : 32838
+    },
+    "srcOui" : [
+     "Edimax Technology Co. Ltd."
+    ],
+    "srcOuiCnt" : 1,
+    "srcRIR" : "ARIN",
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
+    "totDataBytes" : 282
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-060112"
+    }
+   }
+  }
+ ]
 }
 
