@@ -8,8 +8,6 @@
 
 //#define DNSDEBUG 1
 
-#define MAX_QTYPES   258
-#define MAX_QCLASSES 256
 #define MAX_IPS 2000
 
 #define DEFAULT_JSON_LEN 200
@@ -19,7 +17,7 @@
 #define FNV_OFFSET ((uint32_t)0x811c9dc5)
 #define FNV_PRIME ((uint32_t)0x01000193)
 
-LOCAL  char                 *qclasses[MAX_QCLASSES] = {
+LOCAL  char                 *qclasses[] = {
     [1]   = "IN",
     [2]   = "CS",
     [3]   = "CH",
@@ -28,7 +26,7 @@ LOCAL  char                 *qclasses[MAX_QCLASSES] = {
 };
 
 //https://en.wikipedia.org/wiki/List_of_DNS_record_types
-LOCAL  char                 *qtypes[MAX_QTYPES] = {
+LOCAL  char                 *qtypes[] = {
     [1]   = "A",
     [2]   = "NS",
     [3]   = "MD",
@@ -689,13 +687,13 @@ LOCAL void dns_parser(ArkimeSession_t *session, int kind, const uint8_t *data, i
         ARKIME_RULES_RUN_FIELD_SET(session, dnsOpcodeField, dns->query.opcode);
 
         dns->query.class_id = key.query.class_id;
-        if (key.query.class_id < MAX_QCLASSES && qclasses[key.query.class_id]) {
+        if (key.query.class_id < ARRAY_LEN(qclasses) && qclasses[key.query.class_id]) {
             dns->query.class    = qclasses[key.query.class_id];
             ARKIME_RULES_RUN_FIELD_SET(session, dnsQueryClassField, dns->query.class);
         }
 
         dns->query.type_id = key.query.type_id;
-        if (key.query.type_id < MAX_QTYPES && qtypes[key.query.type_id]) {
+        if (key.query.type_id < ARRAY_LEN(qtypes) && qtypes[key.query.type_id]) {
             dns->query.type    = qtypes[key.query.type_id];
             ARKIME_RULES_RUN_FIELD_SET(session, dnsQueryTypeField, dns->query.type);
         }
@@ -829,9 +827,8 @@ LOCAL void dns_parser(ArkimeSession_t *session, int kind, const uint8_t *data, i
 #ifdef DNSDEBUG
                 LOG("DNSDEBUG: RR_A=%u.%u.%u.%u, name=%s", answer->ipA & 0xff, (answer->ipA >> 8) & 0xff, (answer->ipA >> 16) & 0xff, (answer->ipA >> 24) & 0xff, answer->name);
 #endif
-                struct in6_addr v;
+                struct in6_addr v = {0};
 
-                memset(v.s6_addr, 0, 8);
                 ((uint32_t *)v.s6_addr)[2] = htonl(0xffff);
                 ((uint32_t *)v.s6_addr)[3] = ((uint32_t)(ptr[3])) << 24 | ((uint32_t)(ptr[2])) << 16 | ((uint32_t)(ptr[1])) << 8 | ptr[0];
 
@@ -1121,7 +1118,7 @@ LOCAL void dns_parser(ArkimeSession_t *session, int kind, const uint8_t *data, i
                         for (int bit = 0; bit < 8; bit++) {
                             if (byte & (0x80 >> bit)) {
                                 uint16_t rrtype = windowBlock * 256 + b * 8 + bit;
-                                if (rrtype < MAX_QTYPES && qtypes[rrtype]) {
+                                if (rrtype < ARRAY_LEN(qtypes) && qtypes[rrtype]) {
                                     g_string_append_printf(typeListStr, "%s ", qtypes[rrtype]);
                                 } else {
                                     g_string_append_printf(typeListStr, "TYPE%u ", rrtype);
@@ -1188,11 +1185,11 @@ LOCAL void dns_parser(ArkimeSession_t *session, int kind, const uint8_t *data, i
             }
             } /* switch */
 
-            if (anclass < MAX_QCLASSES && qclasses[anclass]) {
+            if (anclass < ARRAY_LEN(qclasses) && qclasses[anclass]) {
                 answer->class = qclasses[anclass];
             }
 
-            if (antype < MAX_QTYPES && qtypes[antype]) {
+            if (antype < ARRAY_LEN(qtypes) && qtypes[antype]) {
                 answer->type = qtypes[antype];
                 answer->type_id = antype;
             }
@@ -1576,7 +1573,7 @@ LOCAL void dns_save(BSB *jbsb, ArkimeFieldObject_t *object, struct arkime_sessio
                     }
                     break;
                     case DNS_RR_RRSIG: {
-                        const char *typeCoveredStr = (answer->rrsig->typeCovered < MAX_QTYPES && qtypes[answer->rrsig->typeCovered]) ?
+                        const char *typeCoveredStr = (answer->rrsig->typeCovered < ARRAY_LEN(qtypes) && qtypes[answer->rrsig->typeCovered]) ?
                                                      qtypes[answer->rrsig->typeCovered] : "UNKNOWN";
                         BSB_EXPORT_sprintf(*jbsb, "\"rrsig\":\"RRSIG %s %u %u %u %u %u %u %s\",",
                                            typeCoveredStr,

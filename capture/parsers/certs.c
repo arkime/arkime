@@ -604,7 +604,7 @@ LOCAL uint32_t certinfo_process_server_certificate(ArkimeSession_t *session, con
     BSB_IMPORT_skip(cbsb, 3); // Length again
 
     while (BSB_REMAINING(cbsb) > 3) {
-        uint8_t *cdata = BSB_WORK_PTR(cbsb);
+        const uint8_t *cdata = BSB_WORK_PTR(cbsb);
         int clen = MIN(BSB_REMAINING(cbsb) - 3, (cdata[0] << 16 | cdata[1] << 8 | cdata[2]));
 
         if (certinfo_process_single_cert(session, cdata + 3, clen) < 0)

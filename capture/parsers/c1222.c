@@ -93,7 +93,7 @@ LOCAL void c1222_parse_message(ArkimeSession_t *session, const uint8_t *data, in
             BSB oidBsb;
             BSB_INIT(oidBsb, seq[i].value, seq[i].len);
             uint32_t opc, otag, olen;
-            uint8_t *ovalue = arkime_parsers_asn_get_tlv(&oidBsb, &opc, &otag, &olen);
+            const uint8_t *ovalue = arkime_parsers_asn_get_tlv(&oidBsb, &opc, &otag, &olen);
             if (ovalue && otag == 6) { // OID tag
                 char oidStr[256];
                 arkime_parsers_asn_decode_oid(oidStr, sizeof(oidStr), ovalue, olen);
@@ -122,7 +122,7 @@ LOCAL void c1222_parse(ArkimeSession_t *session, const uint8_t *data, int len)
     BSB_INIT(bsb, data, len);
 
     uint32_t opc, otag, olen;
-    uint8_t *ovalue = arkime_parsers_asn_get_tlv(&bsb, &opc, &otag, &olen);
+    const uint8_t *ovalue = arkime_parsers_asn_get_tlv(&bsb, &opc, &otag, &olen);
     if (!opc || !ovalue)
         return;
 
