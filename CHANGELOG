@@ -44,6 +44,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #3706 - Cert UTCTime/GneralizedTime offset parsing fixes
   - #3706 - Fix rules _dropBySession not working consistently
   - #3709 - Fix scheme mode only queueing up to two files for later
+  - #3710 - Fix SCTP chunk alignment, add maxSctpOutOfOrderPackets setting and check
 
 6.0.0-rc2 2026/02/10
 ## BREAKING

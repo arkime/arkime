@@ -32,6 +32,7 @@ extern ArkimeConfig_t        config;
 LOCAL int                    sctpMProtocol;
 LOCAL int                    sctp_raw_packet_func;
 LOCAL int                    protoIdField;
+LOCAL int                    maxSctpOutOfOrderPackets;
 /******************************************************************************/
 SUPPRESS_ALIGNMENT
 LOCAL ArkimePacketRC sctp_packet_enqueue(ArkimePacketBatch_t *UNUSED(batch), ArkimePacket_t *const packet, const uint8_t *UNUSED(data), int UNUSED(len))
@@ -247,6 +248,9 @@ LOCAL int sctp_packet_process(ArkimeSession_t *const session, ArkimePacket_t *co
     if (packet->payloadLen < (int)sizeof(struct sctphdr))
         return 1;
 
+    if (session->stopTCP)
+        return 1;
+
     BSB bsb;
     BSB_INIT(bsb, packet->pkt + packet->payloadOffset + sizeof(struct sctphdr), packet->payloadLen - sizeof(struct sctphdr));
 
@@ -257,8 +261,17 @@ LOCAL int sctp_packet_process(ArkimeSession_t *const session, ArkimePacket_t *co
         BSB_IMPORT_u08(bsb, chunkFlags);
         BSB_IMPORT_u16(bsb, chunkLen);
 
+        if (chunkLen < 4) {
+            return 1;
+        }
+
+        int dataLen = chunkLen - 4;
+
         BSB cbsb;
-        BSB_IMPORT_bsb(bsb, cbsb, chunkLen - 4);
+        BSB_IMPORT_bsb(bsb, cbsb, dataLen);
+        // SCTP chunks are padded to 4-byte boundaries
+        int padding = (4 - (dataLen & 3)) & 3;
+        BSB_IMPORT_skip(bsb, padding);
 
         if (BSB_IS_ERROR(bsb) || BSB_IS_ERROR(cbsb)) {
             return 1;
@@ -297,6 +310,11 @@ LOCAL int sctp_packet_process(ArkimeSession_t *const session, ArkimePacket_t *co
             } else if (sctp_tsn_diff(tsn, session->sctpData.tsn[packet->direction]) < 0)  {
                 // ALW duplicate tsn drop
             } else {
+                if (DLL_COUNT(sd_, &session->sctpData) > maxSctpOutOfOrderPackets) {
+                    arkime_session_add_tag(session, "incomplete-sctp");
+                    session->stopTCP = 1;
+                    return 1;
+                }
                 sctp_add_data(&session->sctpData, tsn, which, &cbsb, chunkFlags, payloadProtoId);
                 sctp_maybe_send(session, which);
             }
@@ -380,6 +398,7 @@ LOCAL void sctp_session_free(ArkimeSession_t *session)
 void arkime_parser_init()
 {
     sctp_raw_packet_func = arkime_parsers_get_named_func("sctp_raw_packet");
+    maxSctpOutOfOrderPackets = arkime_config_int(NULL, "maxSctpOutOfOrderPackets", 256, 64, 10000);
 
     arkime_packet_set_ip_cb(IPPROTO_SCTP, sctp_packet_enqueue);
     sctpMProtocol = arkime_mprotocol_register("sctp",
