@@ -155,8 +155,8 @@ LOCAL void scheme_s3_done(int UNUSED(code), uint8_t *data, int data_len, gpointe
         }
     }
 
-    char *start = (char *)data;
-    char *dataEnd = (char *)data + data_len;
+    const char *start = (char *)data;
+    const char *dataEnd = (char *)data + data_len;
     while (start < dataEnd) {
         char *key = (char *)arkime_memstr(start, dataEnd - start, "<Key>", 5);
         if (!key)

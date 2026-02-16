@@ -830,7 +830,7 @@ LOCAL char *arkime_config_redis_get(const char *url)
         CONFIGEXIT("Invalid redis url, missing /db/key: %s", url);
 
     char *hostport = g_strndup(p, slash - p);
-    char *colon = strchr(hostport, ':');
+    const char *colon = strchr(hostport, ':');
     char *host;
     char *port;
     if (colon) {

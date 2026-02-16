@@ -283,7 +283,7 @@ LOCAL int camel_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, 
                             currentOpcode = opcode;
                             foundOpcode = 1;
                         } else if (invTag == 0x30 && lenByte > 0) {
-                            uint8_t *caps = 0;
+                            const uint8_t *caps = 0;
                             BSB_IMPORT_ptr(invBsb, caps, lenByte);
                             if (caps && (currentOpcode == 0 || currentOpcode == 70 || currentOpcode == 80)) {
                                 camel_parse_cap_params(session, caps, lenByte);
