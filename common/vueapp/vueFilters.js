@@ -463,8 +463,8 @@ export const extractIPv6String = function (ipv6) {
     /(^|:)0:0:0($|:)/,
     /(^|:)0:0($|:)/]
     .every(function (re) {
-      if (ipv6.match(re)) {
-        ip = ipv6.replace(re, '::');
+      if (ip.match(re)) {
+        ip = ip.replace(re, '::');
         return false;
       }
       return true;

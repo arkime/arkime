@@ -405,7 +405,7 @@ class Auth {
   /* Register all the strategies that are supported */
   static async #registerStrategies () {
     // ----------------------------------------------------------------------------
-    passport.use('anonymous', new CustomStrategy((req, done) => {
+    passport.use('anonymous', new CustomStrategy(async (req, done) => {
       const user = Object.assign(new User(), {
         userId: 'anonymous',
         enabled: true,
@@ -418,12 +418,12 @@ class Auth {
         welcomeMsgNum: 1,
         roles: ['superAdmin']
       });
-      user.expandFromRoles();
+      await user.expandFromRoles();
       return done(null, user);
     }));
 
     // ----------------------------------------------------------------------------
-    passport.use('anonymousWithDB', new CustomStrategy((req, done) => {
+    passport.use('anonymousWithDB', new CustomStrategy(async (req, done) => {
       // Setup anonymous user
       const user = Object.assign(new User(), {
         userId: 'anonymous',
@@ -437,7 +437,7 @@ class Auth {
         welcomeMsgNum: 1,
         roles: ['superAdmin']
       });
-      user.expandFromRoles();
+      await user.expandFromRoles();
 
       User.getUserCache('anonymous', (err, dbUser) => {
         // Replace certain fields if available from db
@@ -649,7 +649,7 @@ class Auth {
     }));
 
     // ----------------------------------------------------------------------------
-    passport.use('s2s', new CustomStrategy((req, done) => {
+    passport.use('s2s', new CustomStrategy(async (req, done) => {
       let obj = req.headers['x-arkime-auth'];
 
       if (obj === undefined) {
@@ -716,7 +716,7 @@ class Auth {
           welcomeMsgNum: 1,
           roles: ['arkimeAdmin', 'cont3xtUser', 'parliamentUser', 'usersAdmin', 'wiseUser']
         });
-        user.expandFromRoles();
+        await user.expandFromRoles();
         return done(null, user);
       }
 

@@ -1281,7 +1281,7 @@ class User {
         if (this.#allTimeLimit === undefined) {
           this.#allTimeLimit = role.timeLimit;
         } else {
-          this.#allTimeLimit = Math.min(this.timeLimit, role.timeLimit);
+          this.#allTimeLimit = Math.min(this.#allTimeLimit, role.timeLimit);
         }
       }
 
@@ -1486,7 +1486,7 @@ class User {
       }
     }
 
-    if (newRoles.length === this.roles.length && newRoles.sort().join() === this.roles.sort().join()) {
+    if (newRoles.length === this.roles.length && [...newRoles].sort().join() === [...this.roles].sort().join()) {
       return;
     }
 
@@ -1581,14 +1581,14 @@ function filterUsers (users, filter, searchFields, noRoles) {
   if (!noRoles && !usingFilter) {
     return users; // nothing to filter on
   }
-  const re = ArkimeUtil.wildcardToRegexp(`*${filter}*`);
+  const re = usingFilter ? ArkimeUtil.wildcardToRegexp(`*${filter}*`) : null;
 
   return users.filter(user => {
     // exclude roles
     if (noRoles && user.userId.startsWith('role:')) { return false; }
 
     // filter searched fields
-    return (!usingFilter || validSearchFields.some(field => user[field].match(re)));
+    return (!usingFilter || validSearchFields.some(field => Array.isArray(user[field]) ? user[field].some(v => v.match(re)) : user[field]?.match(re)));
   });
 }
 
@@ -1993,6 +1993,7 @@ class UserRedisImplementation {
     try {
       if (createOnly) {
         this.client.setnx(userId, doc, cb);
+        User.deleteCache(userId);
         // cb({ meta: { body: { error: { type: 'version_conflict_engine_exception' } } } });
       } else {
         this.client.set(userId, doc, cb);

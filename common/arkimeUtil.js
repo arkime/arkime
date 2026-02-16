@@ -43,6 +43,7 @@ class ArkimeUtil {
    */
   static safeStr (str) {
     if (Array.isArray(str)) { return str.map(x => ArkimeUtil.safeStr(x)); }
+    if (typeof str !== 'string') { str = String(str); }
 
     return str.replace(/&/g, '&amp;')
       .replace(/</g, '&lt;')

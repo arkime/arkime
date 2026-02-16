@@ -132,10 +132,9 @@ class Notifier {
     // check that required notifier fields exist
     for (const field of foundNotifier.fields) {
       if (field.required) {
-        for (const sentField of notifier.fields) {
-          if (sentField.name === field.name && !sentField.value) {
-            return `Missing a value for ${field.name}`;
-          }
+        const sentField = notifier.fields.find(f => f.name === field.name);
+        if (!sentField || !sentField.value) {
+          return `Missing a value for ${field.name}`;
         }
       }
     }
@@ -191,7 +190,7 @@ class Notifier {
         if (field.required && config[field.name] === undefined) {
           const msg = `Cannot find notifier field value: ${field.name}, no alert can be issued`;
           if (ArkimeConfig.debug) { console.log(msg); }
-          continueProcess(msg);
+          return continueProcess(msg);
         }
       }
 
@@ -371,7 +370,7 @@ class Notifier {
       notifier.name = req.body.name;
       notifier.roles = req.body.roles;
       notifier.fields = req.body.fields;
-      notifier.alerts = req.body.alerts ??= Notifier.#defaultAlerts;
+      notifier.alerts = req.body.alerts ?? Notifier.#defaultAlerts;
       notifier.updated = Math.floor(Date.now() / 1000); // update/add updated time
 
       // comma/newline separated value -> array of values
@@ -409,7 +408,7 @@ class Notifier {
    */
   static async apiDeleteNotifier (req, res) {
     try {
-      const { body: notifier } = await Notifier.getNotifier(req.params.id);
+      const { body: { _source: notifier } } = await Notifier.getNotifier(req.params.id);
 
       if (!notifier) {
         return res.serverError(404, 'Notifier not found');
