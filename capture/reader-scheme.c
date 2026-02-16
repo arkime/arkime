@@ -192,6 +192,7 @@ void arkime_reader_scheme_load(const char *uri, ArkimeSchemeFlags flags, ArkimeS
     ARKIME_LOCK(laterLock);
     if (laterHead) {
         laterTail->next = item;
+        laterTail = item;
     } else {
         laterHead = laterTail = item;
     }

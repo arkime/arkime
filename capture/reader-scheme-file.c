@@ -247,7 +247,7 @@ LOCAL int scheme_file_load(const char *uri, ArkimeSchemeFlags flags, ArkimeSchem
         if (bytesRead > 0) {
             if (arkime_reader_scheme_process(uri, buffer, bytesRead, NULL, actions)) {
                 close(fd);
-                if (config.ignoreErrors && flags & ARKIME_SCHEME_FLAG_DELETE) { // ALW - Maybe this should always delete?
+                if (config.ignoreErrors && (flags & ARKIME_SCHEME_FLAG_DELETE)) { // ALW - Maybe this should always delete?
                     if (config.debug)
                         LOG("Deleting %s", uri);
                     int rc = unlink(uri);
