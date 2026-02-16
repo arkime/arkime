@@ -458,7 +458,7 @@ class User {
     const clone = {};
 
     for (const prop of userProps) {
-      if (req.user[prop]) {
+      if (req.user[prop] !== undefined && req.user[prop] !== null) {
         clone[prop] = req.user[prop];
       }
     }
@@ -1281,7 +1281,7 @@ class User {
         if (this.#allTimeLimit === undefined) {
           this.#allTimeLimit = role.timeLimit;
         } else {
-          this.#allTimeLimit = Math.min(this.timeLimit, role.timeLimit);
+          this.#allTimeLimit = Math.min(this.#allTimeLimit, role.timeLimit);
         }
       }
 
@@ -1486,7 +1486,7 @@ class User {
       }
     }
 
-    if (newRoles.length === this.roles.length && newRoles.sort().join() === this.roles.sort().join()) {
+    if (newRoles.length === this.roles.length && [...newRoles].sort().join() === [...this.roles].sort().join()) {
       return;
     }
 
@@ -1581,14 +1581,14 @@ function filterUsers (users, filter, searchFields, noRoles) {
   if (!noRoles && !usingFilter) {
     return users; // nothing to filter on
   }
-  const re = ArkimeUtil.wildcardToRegexp(`*${filter}*`);
+  const re = usingFilter ? ArkimeUtil.wildcardToRegexp(`*${filter}*`) : null;
 
   return users.filter(user => {
     // exclude roles
     if (noRoles && user.userId.startsWith('role:')) { return false; }
 
     // filter searched fields
-    return (!usingFilter || validSearchFields.some(field => user[field].match(re)));
+    return (!usingFilter || validSearchFields.some(field => Array.isArray(user[field]) ? user[field].some(v => v.match(re)) : user[field]?.match(re)));
   });
 }
 
@@ -1858,7 +1858,7 @@ class UserLMDBImplementation {
       try {
         let count = 0;
         for (const key of this.store.getKeys({})) {
-          if (key !== '_moloch_shared' && !key.startsWith('role:')) {
+          if (key !== '_moloch_shared') {
             count++;
           }
         }
@@ -1884,12 +1884,14 @@ class UserLMDBImplementation {
         const user = this.store.get(userId);
         if (!user) {
           await this.store.put(userId, doc);
+          User.deleteCache(userId);
           cb(null);
         } else {
           cb({ meta: { body: { error: { type: 'version_conflict_engine_exception' } } } });
         }
       } else {
         await this.store.put(userId, doc);
+        User.deleteCache(userId);
         cb(null);
       }
     } catch (err) {
@@ -1975,7 +1977,7 @@ class UserRedisImplementation {
   }
 
   async numberOfUsers () {
-    const keys = (await this.client.keys('*')).filter(key => key !== '_moloch_shared' && !key.startsWith('role:'));
+    const keys = (await this.client.keys('*')).filter(key => key !== '_moloch_shared');
     return keys.length;
   }
 
@@ -1993,6 +1995,7 @@ class UserRedisImplementation {
     try {
       if (createOnly) {
         this.client.setnx(userId, doc, cb);
+        User.deleteCache(userId);
         // cb({ meta: { body: { error: { type: 'version_conflict_engine_exception' } } } });
       } else {
         this.client.set(userId, doc, cb);

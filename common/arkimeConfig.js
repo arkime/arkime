@@ -261,6 +261,7 @@ class ArkimeConfig {
 
     // Just return directly
     if (value === undefined || Array.isArray(value)) { return value; }
+    if (typeof value !== 'string') { return [value]; }
 
     // Need to split ourselves
     sep ??= /[;,]/;
@@ -492,7 +493,7 @@ class ConfigRedis {
     }
   }
 
-  save (uri, config, cb) {
+  static save (uri, config, cb) {
     ConfigRedis.#redis.set(ConfigRedis.#redisKey, JSON.stringify(config), function (err, result) {
       cb(err);
     });
@@ -525,7 +526,7 @@ class ConfigRedisSentinel {
     }
   }
 
-  save (uri, config, cb) {
+  static save (uri, config, cb) {
     ConfigRedisSentinel.#redis.set(ConfigRedisSentinel.#redisKey, JSON.stringify(config), function (err, result) {
       cb(err);
     });
@@ -555,7 +556,7 @@ class ConfigRedisCluster {
     }
   }
 
-  save (uri, config, cb) {
+  static save (uri, config, cb) {
     ConfigRedisCluster.#redis.set(ConfigRedisCluster.#redisKey, JSON.stringify(config), function (err, result) {
       cb(err);
     });

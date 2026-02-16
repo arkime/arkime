@@ -89,6 +89,7 @@ exports.init = function (api) {
 exports.sendSlackAlert = function (config, message, links, cb) {
   if (!config.slackWebhookUrl) {
     console.error('Please add a Slack webhook URL on the Settings page to enable Slack notifications');
+    if (cb) { cb({ errors: { slack: 'Missing Slack webhook URL' } }); }
     return;
   }
 
@@ -110,7 +111,7 @@ exports.sendSlackAlert = function (config, message, links, cb) {
     slackMsgObj.slack.attachments = [];
     for (const link of links) {
       slackMsgObj.slack.attachments.push({
-        fallback: `${link.text}: <${link.link}>`,
+        fallback: `${link.text}: <${link.url}>`,
         actions: [{
           type: 'button',
           text: link.text,
@@ -128,6 +129,7 @@ exports.sendSlackAlert = function (config, message, links, cb) {
 exports.sendTwilioAlert = function (config, message, links, cb) {
   if (!config.accountSid || !config.authToken || !config.toNumber || !config.fromNumber) {
     console.error('Please fill out the required fields for Twilio notifications on the Settings page.');
+    if (cb) { cb({ errors: { twilio: 'Missing required Twilio fields' } }); }
     return;
   }
 
@@ -162,6 +164,7 @@ exports.sendTwilioAlert = function (config, message, links, cb) {
 exports.sendEmailAlert = function (config, message, links, cb) {
   if (!config.host || !config.port || !config.to || !config.from) {
     console.error('Please fill out the required fields for Email notifications on the Settings page.');
+    if (cb) { cb({ errors: { email: 'Missing required Email fields' } }); }
     return;
   }
 

@@ -1,7 +1,7 @@
 # Many of these test user/roles start with sac- (skip auto create) because
 # otherwise viewer in regression mode would auto create the user.
 # Some day should remove all autocreate code.
-use Test::More tests => 192;
+use Test::More tests => 203;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -193,6 +193,30 @@ anonymous,,true,true,false,"arkimeAdmin, cont3xtUser, parliamentUser, usersAdmin
     is (@{$users->{data}}, 1, "filter one");
     is ($users->{recordsTotal}, 5);
     is ($users->{recordsFiltered}, 1);
+
+# Filter by role (array field)
+    $users = viewerPost("/api/users", "filter=arkimeUser");
+    is (@{$users->{data}}, 2, "filter by role arkimeUser");
+    is ($users->{recordsFiltered}, 2);
+
+    $users = viewerPost("/api/users", "filter=usersAdmin");
+    is (@{$users->{data}}, 2, "filter by role usersAdmin");
+    is ($users->{recordsFiltered}, 2);
+
+    $users = viewerPost("/api/users", "filter=nonExistentRole");
+    is (@{$users->{data}}, 0, "filter by non-existent role");
+    is ($users->{recordsFiltered}, 0);
+
+# users/min with noRoles and no filter (should not crash)
+    $json = viewerPostToken("/api/users/min", "", $token);
+    ok($json->{success}, "users/min with no filter succeeds");
+    ok(@{$json->{data}} > 0, "users/min with no filter returns users");
+
+# users/min with noRoles and a filter
+    $json = viewerPostToken("/api/users/min", '{"filter":"sac-test1"}', $token);
+    ok($json->{success}, "users/min with filter succeeds");
+    is (@{$json->{data}}, 1, "users/min with filter returns one user");
+    is ($json->{data}->[0]->{userId}, "sac-test1", "users/min filter matches sac-test1");
 
 # start, length
     $users = viewerPost("/api/users", "start=0&length=2");

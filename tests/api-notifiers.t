@@ -1,4 +1,4 @@
-use Test::More tests => 57;
+use Test::More tests => 59;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -50,23 +50,29 @@ clearIndex("tests_notifiers");
   $json = viewerPostToken("/api/notifier", '{"name":"test1","type":"unknown","fields":[]}', $token);
   is($json->{text}, "Unknown notifier type", "invalid notifier type");
 
+# create notifier requires required fields
+  $json = viewerPostToken("/api/notifier", '{"name":"test1","type":"slack","fields":[]}', $token);
+  is($json->{text}, "Missing a value for slackWebhookUrl", "missing required field caught");
+  $json = viewerPostToken("/api/notifier", '{"name":"test1","type":"slack","fields":[{"name":"slackWebhookUrl","value":""}]}', $token);
+  is($json->{text}, "Missing a value for slackWebhookUrl", "empty required field caught");
+
 # create notifier needs valid alerts
-  $json = viewerPostToken("/api/notifier", '{"name":"test1","type":"slack","alerts":"badstring","fields":[{"slackWebhookUrl":{"value":"test1url"}}]}', $token);
+  $json = viewerPostToken("/api/notifier", '{"name":"test1","type":"slack","alerts":"badstring","fields":[{"name":"slackWebhookUrl","value":"test1url"}]}', $token);
   is($json->{text}, "Alerts must be an object", "Bad alerts type");
-  $json = viewerPostToken("/api/notifier", '{"name":"test1","type":"slack","alerts":{"esDown":"badstring"},"fields":[{"slackWebhookUrl":{"value":"test1url"}}]}', $token);
+  $json = viewerPostToken("/api/notifier", '{"name":"test1","type":"slack","alerts":{"esDown":"badstring"},"fields":[{"name":"slackWebhookUrl","value":"test1url"}]}', $token);
   is($json->{text}, "Alert must be true or false", "Bad alerts type");
 
 # create notifier needs valid on state
-  $json = viewerPostToken("/api/notifier", '{"name":"test1","type":"slack","on":"badstring","fields":[{"slackWebhookUrl":{"value":"test1url"}}]}', $token);
+  $json = viewerPostToken("/api/notifier", '{"name":"test1","type":"slack","on":"badstring","fields":[{"name":"slackWebhookUrl","value":"test1url"}]}', $token);
   is($json->{text}, "Notifier on state must be true or false", "Bad on type");
 
 # create notifier
-  $json = viewerPostToken("/api/notifier", '{"name":"test1","type":"slack","fields":[{"slackWebhookUrl":{"value":"test1url"}}]}', $token);
+  $json = viewerPostToken("/api/notifier", '{"name":"test1","type":"slack","fields":[{"name":"slackWebhookUrl","value":"test1url"}]}', $token);
   ok($json->{success}, "notifier create success");
   my $id1 = $json->{notifier}->{id};
 
 # create notifier sanitizes notifier name
-  $json = viewerPostToken("/api/notifier", '{"name":"test2`~!@#$%^&*+[]{}(),.<>?","type":"slack","fields":[{"slackWebhookUrl":{"value":"test1url"}}]}', $token);
+  $json = viewerPostToken("/api/notifier", '{"name":"test2`~!@#$%^&*+[]{}(),.<>?","type":"slack","fields":[{"name":"slackWebhookUrl","value":"test1url"}]}', $token);
   is($json->{notifier}->{name}, "test2", "notifier name sanitization");
   my $id2 = $json->{notifier}->{id};
 
@@ -79,7 +85,7 @@ clearIndex("tests_notifiers");
   is($json->{text}, "You do not have permission to access this resource", "update notifier requires admin");
 
 # update notifier needs valid id
-  $json = viewerPutToken("/api/notifier/badid", '{"name":"hi","fields":[],"type":"slack"}', $token);
+  $json = viewerPutToken("/api/notifier/badid", '{"name":"hi","fields":[{"name":"slackWebhookUrl","value":"test"}],"type":"slack"}', $token);
   is($json->{text}, "Fetching notifier to update failed", "update notifier needs valid id");
 
 # update notifier required fields
@@ -101,16 +107,16 @@ clearIndex("tests_notifiers");
   is($json->{text}, "Unknown notifier type", "invalid notifier type");
 
 # update notifier
-  $json = viewerPutToken("/api/notifier/$id1", '{"name":"test1a","type":"slack","fields":[{"slackWebhookUrl":{"value":"test1aurl"}}]}', $token);
+  $json = viewerPutToken("/api/notifier/$id1", '{"name":"test1a","type":"slack","fields":[{"name":"slackWebhookUrl","value":"test1aurl"}]}', $token);
   ok($json->{success}, "notifier update success");
   is($json->{notifier}->{name}, "test1a", "notifier name update");
-  is($json->{notifier}->{fields}[0]->{slackWebhookUrl}->{value}, "test1aurl", "notifier field value update");
+  is($json->{notifier}->{fields}[0]->{value}, "test1aurl", "notifier field value update");
 
 # updated field should be set when updating a notifier
   ok(exists $json->{notifier}->{updated}, "updated field was set");
 
 # can share with a users and returns invalid users
-  $json = viewerPostToken("/api/notifier", '{"name":"test3","users":"sac-notadmin,asdf","type":"slack","fields":[{"slackWebhookUrl":{"value":"testurl"}}]}', $token);
+  $json = viewerPostToken("/api/notifier", '{"name":"test3","users":"sac-notadmin,asdf","type":"slack","fields":[{"name":"slackWebhookUrl","value":"testurl"}]}', $token);
   ok($json->{success}, "notifier create success");
   is($json->{notifier}->{users}, "sac-notadmin", "users set");
   is($json->{invalidUsers}->[0], "asdf", "correct invalid users");
@@ -123,7 +129,7 @@ clearIndex("tests_notifiers");
   ok(!exists $notifiers->[0]->{fields}, "fields shouldn't exist for non admin");
 
 # can share with a role
-  $json = viewerPostToken("/api/notifier", '{"name":"test4","roles":["parliamentUser"],"type":"slack","fields":[{"slackWebhookUrl":{"value":"testurl"}}]}', $token);
+  $json = viewerPostToken("/api/notifier", '{"name":"test4","roles":["parliamentUser"],"type":"slack","fields":[{"name":"slackWebhookUrl","value":"testurl"}]}', $token);
   ok($json->{success}, "notifier create success");
   is($json->{notifier}->{roles}->[0], "parliamentUser", "roles set");
   my $id4 = $json->{notifier}->{id};
@@ -133,13 +139,13 @@ clearIndex("tests_notifiers");
   is (@{$notifiers}, 1, "Still single notifier shared with sac-notadmin user");
 
 # can update shared users and returns invalid users
-  $json = viewerPutToken("/api/notifier/$id3", '{"name":"test3","users":"sac-notadmin,sac-user2,fdsa","type":"slack","fields":[{"slackWebhookUrl":{"value":"testurl"}}]}', $token);
+  $json = viewerPutToken("/api/notifier/$id3", '{"name":"test3","users":"sac-notadmin,sac-user2,fdsa","type":"slack","fields":[{"name":"slackWebhookUrl","value":"testurl"}]}', $token);
   ok($json->{success}, "notifier update success");
   is($json->{notifier}->{users}, "sac-notadmin,sac-user2", "notifier users update");
   is($json->{invalidUsers}->[0], "fdsa", "correct invalid users on update");
 
 # can update roles
-  $json = viewerPutToken("/api/notifier/$id4", '{"name":"test4","roles":["arkimeUser","parliamentUser"],"type":"slack","fields":[{"slackWebhookUrl":{"value":"testurl"}}]}', $token);
+  $json = viewerPutToken("/api/notifier/$id4", '{"name":"test4","roles":["arkimeUser","parliamentUser"],"type":"slack","fields":[{"name":"slackWebhookUrl","value":"testurl"}]}', $token);
   ok($json->{success}, "notifier update success");
   is($json->{notifier}->{roles}->[0], "arkimeUser", "roles updated");
   is($json->{notifier}->{roles}->[1], "parliamentUser", "roles updated");
