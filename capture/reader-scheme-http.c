@@ -65,6 +65,7 @@ LOCAL int scheme_http_load(const char *uri, ArkimeSchemeFlags flags, ArkimeSchem
 
     if (rc) {
         LOG("Error parsing %s", uri);
+        curl_url_cleanup(h);
         return 1;
     }
 

@@ -90,7 +90,8 @@ LOCAL gboolean reader_libpcapfile_monitor_read()
         return TRUE;
     if (rc == -1)
         LOGEXIT("ERROR - Monitor read failed - %s", strerror(errno));
-    buf[rc] = 0;
+    if (rc < (int)sizeof(buf))
+        buf[rc] = 0;
 
     for (char *p = buf; p < buf + rc;) {
         struct inotify_event *event = (struct inotify_event *) p;
@@ -258,13 +259,15 @@ filesDone:
         }
 
         if (feof(file)) {
-            fclose(file);
+            if (file != stdin)
+                fclose(file);
             file = NULL;
             return reader_libpcapfile_next();
         }
 
         if (!fgets(line, sizeof(line), file)) {
-            fclose(file);
+            if (file != stdin)
+                fclose(file);
             file = NULL;
             return reader_libpcapfile_next();
         }

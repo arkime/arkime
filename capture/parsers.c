@@ -418,7 +418,7 @@ uint8_t *arkime_parsers_asn_get_tlv(BSB *bsb, uint32_t *apc, uint32_t *atag, uin
     if ((ch & 0x1f) ==  0x1f) {
         while (BSB_REMAINING(*bsb)) {
             BSB_IMPORT_u08(*bsb, ch);
-            (*atag) = ((*atag) << 7) | ch;
+            (*atag) = ((*atag) << 7) | (ch & 0x7f);
             if ((ch & 0x80) == 0)
                 break;
         }
@@ -441,6 +441,9 @@ uint8_t *arkime_parsers_asn_get_tlv(BSB *bsb, uint32_t *apc, uint32_t *atag, uin
             BSB_IMPORT_u08(*bsb, ch);
             (*alen) = ((*alen) << 8) | ch;
             cnt--;
+        }
+        if (cnt > 0) {
+            goto get_tlv_error;
         }
     } else {
         (*alen) = ch;
@@ -535,7 +538,7 @@ void arkime_parsers_asn_decode_oid(char *buf, int bufsz, const uint8_t *oid, int
 {
     int buflen = 0;
     int first = TRUE;
-    int value = 0;
+    unsigned int value = 0;
 
     buf[0] = 0;
 
@@ -548,11 +551,11 @@ void arkime_parsers_asn_decode_oid(char *buf, int bufsz, const uint8_t *oid, int
         if (first) {
             first = FALSE;
             if (value > 40) /* two values in first byte */
-                buflen = arkime_snprintf_len(buf, bufsz, "%d.%d", value / 40, value % 40);
+                buflen = arkime_snprintf_len(buf, bufsz, "%u.%u", value / 40, value % 40);
             else /* one value in first byte */
-                buflen = arkime_snprintf_len(buf, bufsz, "%d", value);
+                buflen = arkime_snprintf_len(buf, bufsz, "%u", value);
         } else if (buflen < bufsz) {
-            buflen += arkime_snprintf_len(buf + buflen, bufsz - buflen, ".%d", value);
+            buflen += arkime_snprintf_len(buf + buflen, bufsz - buflen, ".%u", value);
         }
 
         value = 0;
@@ -570,10 +573,11 @@ uint64_t arkime_parsers_asn_parse_time(ArkimeSession_t *session, int tag, uint8_
 
     //UTCTime
     if (tag == 23 && len > 12) {
-        if (len > 17 && value[12] != 'Z')
-            offset = str2num(value + 13) * 60 + str2num(value + 15);
+        memset(&tm, 0, sizeof(tm));
+        if (len >= 17 && value[12] != 'Z')
+            offset = str2num(value + 13) * 3600 + str2num(value + 15) * 60;
 
-        if (value[12] == '-')
+        if (value[12] == '+')
             offset = -offset;
 
         tm.tm_year = str2num(value + 0);
@@ -625,10 +629,10 @@ gtdone:
         if (pos == len) {
             val = timegm(&tm);
         } else {
-            if (pos + 5 < len && (value[pos] == '+' || value[pos] == '-')) {
-                offset = str2num(value + pos + 1) * 60 +  str2num(value + pos + 3);
+            if (pos + 5 <= len && (value[pos] == '+' || value[pos] == '-')) {
+                offset = str2num(value + pos + 1) * 3600 + str2num(value + pos + 3) * 60;
 
-                if (value[pos] == '-')
+                if (value[pos] == '+')
                     offset = -offset;
             }
             val = timegm(&tm) + offset;

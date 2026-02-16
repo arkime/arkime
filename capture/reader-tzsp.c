@@ -56,7 +56,7 @@ LOCAL void *tzsp_thread(gpointer UNUSED(uw))
         gsize len = g_socket_receive(socket, buf, sizeof(buf), NULL, &error);
         if (error) {
             LOG("Error: %s", error->message);
-            g_error_free(error);
+            g_clear_error(&error);
             dropped++;
             continue;
         }

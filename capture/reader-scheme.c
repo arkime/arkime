@@ -335,7 +335,8 @@ LOCAL void *reader_scheme_thread(void *UNUSED(arg))
 
         while (!feof(file)) {
             if (!fgets(line, sizeof(line), file)) {
-                fclose(file);
+                if (file != stdin)
+                    fclose(file);
                 file = NULL;
                 break;
             }
@@ -350,7 +351,7 @@ LOCAL void *reader_scheme_thread(void *UNUSED(arg))
                 continue;
             arkime_reader_scheme_load_thread(line, flags, NULL);
         }
-        if (file) {
+        if (file && file != stdin) {
             fclose(file);
         }
     }
@@ -367,6 +368,7 @@ LOCAL void *reader_scheme_thread(void *UNUSED(arg))
             ts.tv_sec++;
             ARKIME_COND_TIMEDWAIT(laterLock, ts);
             if (unlikely(config.quitting)) {
+                ARKIME_UNLOCK(laterLock);
                 goto quitting;
             }
         }

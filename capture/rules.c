@@ -781,7 +781,9 @@ LOCAL void arkime_rules_load_complete()
             if (g_match_info_matches(match_info)) {
                 g_match_info_fetch_pos (match_info, 1, &start_pos, NULL);
                 rule->bpf = g_strndup(bpfs[i], start_pos - 1);
-                arkime_field_ops_add(&rule->ops, pos, g_match_info_fetch(match_info, 1), -1);
+                char *fetched = g_match_info_fetch(match_info, 1);
+                arkime_field_ops_add(&rule->ops, pos, fetched, -1);
+                g_free(fetched);
             } else {
                 rule->bpf = g_strdup(bpfs[i]);
                 arkime_field_ops_add(&rule->ops, pos, "1", -1);
@@ -805,7 +807,9 @@ LOCAL void arkime_rules_load_complete()
             if (g_match_info_matches(match_info)) {
                 g_match_info_fetch_pos (match_info, 1, &start_pos, NULL);
                 rule->bpf = g_strndup(bpfs[i], start_pos - 1);
-                arkime_field_ops_add(&rule->ops, pos, g_match_info_fetch(match_info, 1), -1);
+                char *fetched = g_match_info_fetch(match_info, 1);
+                arkime_field_ops_add(&rule->ops, pos, fetched, -1);
+                g_free(fetched);
             } else {
                 rule->bpf = g_strdup(bpfs[i]);
                 arkime_field_ops_add(&rule->ops, pos, "1", -1);
@@ -900,6 +904,7 @@ LOCAL void arkime_rules_load(char **names)
         yaml_parser_set_input_file(&parser, input);
         YamlNode_t *parent = arkime_rules_parser_parse_yaml(names[i], NULL, &parser, FALSE);
         yaml_parser_delete(&parser);
+        fclose(input);
         if (!parent) {
             LOG("WARNING %s - has no rules", names[i]);
             continue;
@@ -909,7 +914,6 @@ LOCAL void arkime_rules_load(char **names)
         }
         arkime_rules_parser_load_file(names[i], parent);
         arkime_rules_parser_free_node(parent);
-        fclose(input);
     }
 
     // Part 2, which will also copy loading to current
