@@ -1572,8 +1572,8 @@ LOCAL uint64_t arkime_db_memory_size()
 
     buf[len] = 0;
 
-    uint64_t size;
-    sscanf(buf, "%lu", &size);
+    uint64_t size = 0;
+    sscanf(buf, "%" SCNu64, &size);
 
     if (size == 0) {
         LOG("/proc/self/statm size 0 - %d '%.*s'", len, len, buf);

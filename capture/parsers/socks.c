@@ -131,7 +131,7 @@ LOCAL int socks5_parser(ArkimeSession_t *session, void *uw, const uint8_t *data,
         arkime_field_string_add(userField, session, (char *)data + 2, data[1], TRUE);
         arkime_session_add_tag(session, "socks:password");
         socks->state5[which] = SOCKS5_STATE_CONN_REQUEST;
-        return data[1] + 1 + data[data[1] + 2];
+        return 2 + data[1] + 1 + data[data[1] + 2];
     case SOCKS5_STATE_USER_REPLY:
         socks->state5[which] = SOCKS5_STATE_CONN_REPLY;
         return 2;

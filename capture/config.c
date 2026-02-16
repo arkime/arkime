@@ -934,6 +934,10 @@ LOCAL char *arkime_config_redis_get(const char *url)
     }
 
     int dataLen = atoi(line + 1);
+    if (dataLen < 0) {
+        close(fd);
+        CONFIGEXIT("Redis key not found or invalid response length: %d", dataLen);
+    }
     char *data = malloc(dataLen + 1);
 
     // Read exact data bytes
@@ -1868,7 +1872,7 @@ LOCAL void arkime_config_cmd_set(int argc, char **argv, gpointer cc)
             BSB_EXPORT_sprintf(bsb, "%s=%d\n", acv->name, *(int *)acv->var);
             break;
         case 8:
-            *(int64_t *)acv->var = atoi(argv[2]);
+            *(int64_t *)acv->var = strtoll(argv[2], NULL, 10);
             BSB_EXPORT_sprintf(bsb, "%s=%" PRId64 "\n", acv->name, *(int64_t *)acv->var);
             break;
         case ARKIME_CONFIG_CMD_VAR_STR_PTR:
