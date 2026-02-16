@@ -15,7 +15,7 @@
      "opCnt" : 2
     },
     "client" : {
-     "bytes" : 270
+     "bytes" : 168
     },
     "destination" : {
      "bytes" : 116,
@@ -96,7 +96,7 @@
     },
     "segmentCnt" : 1,
     "server" : {
-     "bytes" : 92
+     "bytes" : 24
     },
     "source" : {
      "bytes" : 306,
@@ -125,7 +125,7 @@
      ],
      "opcodeCnt" : 2
     },
-    "totDataBytes" : 362
+    "totDataBytes" : 192
    },
    "header" : {
     "index" : {
@@ -137,7 +137,7 @@
    "body" : {
     "@timestamp" : "SET",
     "client" : {
-     "bytes" : 194
+     "bytes" : 92
     },
     "destination" : {
      "bytes" : 116,
@@ -207,7 +207,7 @@
     },
     "segmentCnt" : 1,
     "server" : {
-     "bytes" : 92
+     "bytes" : 24
     },
     "source" : {
      "bytes" : 230,
@@ -229,7 +229,7 @@
      64
     ],
     "srcTTLCnt" : 1,
-    "totDataBytes" : 286
+    "totDataBytes" : 116
    },
    "header" : {
     "index" : {
@@ -241,7 +241,7 @@
    "body" : {
     "@timestamp" : "SET",
     "client" : {
-     "bytes" : 186
+     "bytes" : 84
     },
     "destination" : {
      "bytes" : 116,
@@ -311,7 +311,7 @@
     },
     "segmentCnt" : 1,
     "server" : {
-     "bytes" : 92
+     "bytes" : 24
     },
     "source" : {
      "bytes" : 222,
@@ -333,7 +333,7 @@
      64
     ],
     "srcTTLCnt" : 1,
-    "totDataBytes" : 278
+    "totDataBytes" : 108
    },
    "header" : {
     "index" : {
@@ -356,7 +356,7 @@
      "opCnt" : 2
     },
     "client" : {
-     "bytes" : 278
+     "bytes" : 176
     },
     "destination" : {
      "bytes" : 116,
@@ -437,7 +437,7 @@
     },
     "segmentCnt" : 1,
     "server" : {
-     "bytes" : 92
+     "bytes" : 24
     },
     "source" : {
      "bytes" : 314,
@@ -459,6 +459,10 @@
      64
     ],
     "srcTTLCnt" : 1,
+    "tags" : [
+     "not-src-0-not-dst-1"
+    ],
+    "tagsCnt" : 1,
     "tcap" : {
      "opcode" : [
       "0",
@@ -466,7 +470,7 @@
      ],
      "opcodeCnt" : 2
     },
-    "totDataBytes" : 370
+    "totDataBytes" : 200
    },
    "header" : {
     "index" : {
@@ -489,7 +493,7 @@
      "opCnt" : 2
     },
     "client" : {
-     "bytes" : 540
+     "bytes" : 336
     },
     "destination" : {
      "bytes" : 232,
@@ -580,7 +584,7 @@
     },
     "segmentCnt" : 1,
     "server" : {
-     "bytes" : 184
+     "bytes" : 48
     },
     "source" : {
      "bytes" : 612,
@@ -609,7 +613,7 @@
      ],
      "opcodeCnt" : 2
     },
-    "totDataBytes" : 724
+    "totDataBytes" : 384
    },
    "header" : {
     "index" : {
@@ -621,7 +625,7 @@
    "body" : {
     "@timestamp" : "SET",
     "client" : {
-     "bytes" : 388
+     "bytes" : 184
     },
     "destination" : {
      "bytes" : 232,
@@ -701,7 +705,7 @@
     },
     "segmentCnt" : 1,
     "server" : {
-     "bytes" : 184
+     "bytes" : 48
     },
     "source" : {
      "bytes" : 460,
@@ -723,7 +727,7 @@
      64
     ],
     "srcTTLCnt" : 1,
-    "totDataBytes" : 572
+    "totDataBytes" : 232
    },
    "header" : {
     "index" : {
@@ -735,7 +739,7 @@
    "body" : {
     "@timestamp" : "SET",
     "client" : {
-     "bytes" : 372
+     "bytes" : 168
     },
     "destination" : {
      "bytes" : 232,
@@ -815,7 +819,7 @@
     },
     "segmentCnt" : 1,
     "server" : {
-     "bytes" : 184
+     "bytes" : 48
     },
     "source" : {
      "bytes" : 444,
@@ -837,7 +841,7 @@
      64
     ],
     "srcTTLCnt" : 1,
-    "totDataBytes" : 556
+    "totDataBytes" : 216
    },
    "header" : {
     "index" : {
@@ -860,7 +864,7 @@
      "opCnt" : 2
     },
     "client" : {
-     "bytes" : 556
+     "bytes" : 352
     },
     "destination" : {
      "bytes" : 232,
@@ -951,7 +955,7 @@
     },
     "segmentCnt" : 1,
     "server" : {
-     "bytes" : 184
+     "bytes" : 48
     },
     "source" : {
      "bytes" : 628,
@@ -980,7 +984,7 @@
      ],
      "opcodeCnt" : 2
     },
-    "totDataBytes" : 740
+    "totDataBytes" : 400
    },
    "header" : {
     "index" : {

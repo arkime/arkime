@@ -703,7 +703,7 @@ typedef struct arkime_sctp_data {
     uint32_t                 len;
     int                      which;
     uint32_t                 tsn;
-    uint16_t                 protoId;
+    uint32_t                 protoId;
     uint8_t                  flags;
 } ArkimeSctpData_t;
 /******************************************************************************/
