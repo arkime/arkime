@@ -45,7 +45,8 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #3706 - Fix rules _dropBySession not working consistently
   - #3709 - Fix scheme mode only queueing up to two files for later
   - #3710 - Fix SCTP chunk alignment, add maxSctpOutOfOrderPackets setting and check
-  - #3710 - Fix SCTP databytes
+  - #3711 - Fix SCTP databytes
+  - #3711 - Fix SCTP protoid should be 32 bits
 
 6.0.0-rc2 2026/02/10
 ## BREAKING

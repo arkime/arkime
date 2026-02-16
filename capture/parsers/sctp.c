@@ -101,7 +101,7 @@ LOCAL int sctp_pre_process(ArkimeSession_t *session, ArkimePacket_t *const packe
     packet->direction = (dir &&
                          session->port1 == ntohs(sctphdr->sctp_sport) &&
                          session->port2 == ntohs(sctphdr->sctp_dport)) ? 0 : 1;
-    session->databytes[packet->direction] += (packet->pktlen - sizeof(struct sctphdr));
+    session->databytes[packet->direction] += (packet->payloadLen - sizeof(struct sctphdr));
 
     return 0;
 }
@@ -223,7 +223,8 @@ LOCAL void sctp_maybe_send(ArkimeSession_t *const session, int which)
     int     protoId = fsd->protoId;
     sd = fsd;
 
-    DLL_FOREACH_REMOVABLE_START(sd_, &session->sctpData, sd, fsd) {
+    ArkimeSctpData_t *tmpsd;
+    DLL_FOREACH_REMOVABLE_START(sd_, &session->sctpData, sd, tmpsd) {
         // Only look at our direction
         if (ARKIME_WHICH_GET_DIR(sd->which) != dir) {
             continue;
@@ -331,6 +332,9 @@ LOCAL int sctp_packet_process(ArkimeSession_t *const session, ArkimePacket_t *co
             BSB_IMPORT_skip(cbsb, 8); // a_rwnd, numOutStreams, numInStreams
             BSB_IMPORT_u32(cbsb, tsn);
 
+            if (BSB_IS_ERROR(cbsb))
+                break;
+
             session->sctpData.tsn[packet->direction] = tsn;
             session->synSet |= (1 << packet->direction);
             session->sctpData.initTag[packet->direction] = initTag;
@@ -342,6 +346,9 @@ LOCAL int sctp_packet_process(ArkimeSession_t *const session, ArkimePacket_t *co
             BSB_IMPORT_u32(cbsb, initTag);
             BSB_IMPORT_skip(cbsb, 8); // a_rwnd, numOutStreams, numInStreams
             BSB_IMPORT_u32(cbsb, tsn);
+
+            if (BSB_IS_ERROR(cbsb))
+                break;
 
             /*
             if (session->sctpData.initTag != 0 && session->sctpData.initTag != initTag) {
