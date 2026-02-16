@@ -310,7 +310,7 @@
    "body" : {
     "@timestamp" : "SET",
     "client" : {
-     "bytes" : 374
+     "bytes" : 362
     },
     "destination" : {
      "bytes" : 306,
@@ -409,7 +409,7 @@
     },
     "segmentCnt" : 1,
     "server" : {
-     "bytes" : 282
+     "bytes" : 270
     },
     "source" : {
      "bytes" : 398,
@@ -428,7 +428,7 @@
      64
     ],
     "srcTTLCnt" : 1,
-    "totDataBytes" : 656
+    "totDataBytes" : 632
    },
    "header" : {
     "index" : {
@@ -440,7 +440,7 @@
    "body" : {
     "@timestamp" : "SET",
     "client" : {
-     "bytes" : 334
+     "bytes" : 322
     },
     "destination" : {
      "bytes" : 290,
@@ -535,7 +535,7 @@
     },
     "segmentCnt" : 1,
     "server" : {
-     "bytes" : 266
+     "bytes" : 254
     },
     "source" : {
      "bytes" : 358,
@@ -554,7 +554,7 @@
      64
     ],
     "srcTTLCnt" : 1,
-    "totDataBytes" : 600
+    "totDataBytes" : 576
    },
    "header" : {
     "index" : {
