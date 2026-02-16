@@ -458,7 +458,7 @@ class User {
     const clone = {};
 
     for (const prop of userProps) {
-      if (req.user[prop]) {
+      if (req.user[prop] !== undefined && req.user[prop] !== null) {
         clone[prop] = req.user[prop];
       }
     }
@@ -1858,7 +1858,7 @@ class UserLMDBImplementation {
       try {
         let count = 0;
         for (const key of this.store.getKeys({})) {
-          if (key !== '_moloch_shared' && !key.startsWith('role:')) {
+          if (key !== '_moloch_shared') {
             count++;
           }
         }
@@ -1884,12 +1884,14 @@ class UserLMDBImplementation {
         const user = this.store.get(userId);
         if (!user) {
           await this.store.put(userId, doc);
+          User.deleteCache(userId);
           cb(null);
         } else {
           cb({ meta: { body: { error: { type: 'version_conflict_engine_exception' } } } });
         }
       } else {
         await this.store.put(userId, doc);
+        User.deleteCache(userId);
         cb(null);
       }
     } catch (err) {
@@ -1975,7 +1977,7 @@ class UserRedisImplementation {
   }
 
   async numberOfUsers () {
-    const keys = (await this.client.keys('*')).filter(key => key !== '_moloch_shared' && !key.startsWith('role:'));
+    const keys = (await this.client.keys('*')).filter(key => key !== '_moloch_shared');
     return keys.length;
   }
 
