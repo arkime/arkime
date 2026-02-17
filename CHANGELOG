@@ -35,18 +35,20 @@ NOTICE: Restart wiseService before capture when upgrading
 NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at once after upgrading
 NOTICE: Create a parliament config file before upgrading (see https://arkime.com/settings#parliament and https://arkime.com/faq#how_do_i_upgrade_to_arkime_5)
 
+6.0.0 2026/02/xx
+
 6.0.0-rc3 2026/02/17
 ## Capture
-  - #3699 - writer-s3 always uses 0xffff for snapLen now
-  - #3699 - writer-s3 fix gzip memory leak
-  - #3702 - support redis:// for config
-  - #3706 - Don't close stdin after using "-" for filename
-  - #3706 - Cert UTCTime/GneralizedTime offset parsing fixes
-  - #3706 - Fix rules _dropBySession not working consistently
-  - #3709 - Fix scheme mode only queueing up to two files for later
-  - #3710 - Fix SCTP chunk alignment, add maxSctpOutOfOrderPackets setting and check
-  - #3711 - Fix SCTP databytes
-  - #3711 - Fix SCTP protoid should be 32 bits
+  - #3699 writer-s3 always uses 0xffff for snapLen now
+  - #3699 writer-s3 fix gzip memory leak
+  - #3702 support redis:// for config
+  - #3706 Don't close stdin after using "-" for filename
+  - #3706 Cert UTCTime/GneralizedTime offset parsing fixes
+  - #3706 Fix rules _dropBySession not working consistently
+  - #3709 Fix scheme mode only queueing up to two files for later
+  - #3710 Fix SCTP chunk alignment, add maxSctpOutOfOrderPackets setting and check
+  - #3711 Fix SCTP databytes
+  - #3711 Fix SCTP protoid should be 32 bits
 
 6.0.0-rc2 2026/02/10
 ## BREAKING
