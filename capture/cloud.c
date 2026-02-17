@@ -75,13 +75,14 @@ LOCAL int aws_get_credentials_metadata(const char UNUSED(*service))
         const char *uri = getenv("ECS_CONTAINER_METADATA_URI_V4");
         const char *relativeURI = getenv("AWS_CONTAINER_CREDENTIALS_RELATIVE_URI");
         if (uri && relativeURI) {
-            uri = g_strdup(uri);
-            char *slash = strchr(uri + 8, '/');
+            char *uriDup = g_strdup(uri);
+            char *slash = strchr(uriDup + 8, '/');
             if (slash) {
                 *slash = 0;
             }
             g_strlcpy(credURL, relativeURI, sizeof(credURL));
-            metadataServer = arkime_http_create_server(uri, 2, 2, FALSE);
+            metadataServer = arkime_http_create_server(uriDup, 2, 2, FALSE);
+            g_free(uriDup);
         } else {
             size_t rlen;
 

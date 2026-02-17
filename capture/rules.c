@@ -414,10 +414,9 @@ LOCAL void arkime_rules_load_add_field(ArkimeRule_t *rule, int pos, char *key)
 /******************************************************************************/
 LOCAL void arkime_rules_load_add_field_range_match(ArkimeRule_t *rule, int pos, const char *key)
 {
-    char *dash = strchr(key, '-');
-    *dash = 0;
+    const char *dash = strchr(key, '-');
 
-    uint32_t min = atoi(key);
+    uint32_t min = arkime_atoin(key, dash - key);
     uint32_t max = atoi(dash + 1);
     if (min > max)
         CONFIGEXIT("Min %u > Max %u not allowed", min, max);
