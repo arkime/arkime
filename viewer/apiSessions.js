@@ -1024,7 +1024,7 @@ class SessionAPIs {
       b.writeUInt32LE(len, boffset + 4); // Block Len 1
       b.writeUInt32LE(0, boffset + 8); // Interface Id
 
-      // js has 53 bit numbers, this will over flow on Jun 05 2255
+      // js has 53 bit numbers, this will overflow on Jun 05 2255
       const time = buffer.readUInt32LE(0) * 1000000 + buffer.readUInt32LE(4);
       b.writeUInt32LE(Math.floor(time / 0x100000000), boffset + 12); // Block Len 1
       b.writeUInt32LE(time % 0x100000000, boffset + 16); // Interface Id
@@ -1305,8 +1305,8 @@ class SessionAPIs {
    * @param {number} facets=0 - 1 = include the aggregation information for maps and timeline graphs.
    * @param {number} length=100 - The number of items to return, beginning at start parameter, max is 2,000,000
    * @param {number} start=0 - The entry to start at for pagination purposes.
-   * @param {number} startTime - If the date parameter is not set, this is the start time of data to return. Format is seconds since Unix EPOC.
-   * @param {number} stopTime  - If the date parameter is not set, this is the stop time of data to return. Format is seconds since Unix EPOC.
+   * @param {number} startTime - If the date parameter is not set, this is the start time of data to return. Format is seconds since Unix EPOCH.
+   * @param {number} stopTime  - If the date parameter is not set, this is the stop time of data to return. Format is seconds since Unix EPOCH.
    * @param {string} view - The Arkime view name to apply before the expression.
    * @param {string} order - Comma separated list of db field names to sort on. Data is sorted in order of the list supplied. Optionally can be followed by :asc or :desc for ascending or descending sorting.
    * @param {string} fields - Comma separated list of db field names to return.
@@ -1400,7 +1400,7 @@ class SessionAPIs {
   // --------------------------------------------------------------------------
   static async #removeTagsList (allTagNames, sessionList, doneCb) {
     if (!sessionList.length) {
-      console.log(`No sessions to remove tags (${allTagNames}) to`);
+      console.log(`No sessions to remove tags (${allTagNames}) from`);
       return doneCb ? doneCb(null) : null;
     }
 
@@ -2084,7 +2084,7 @@ class SessionAPIs {
    * @name /spigraphhierarchy
    * @param {SessionsQuery} See_List - This API supports a common set of parameters documented in the SessionsQuery section
    * @param {string} exp - Comma separated list of db fields to populate the graph/table.
-   * @param {boolean} strictly=false - When set the entire session must be inside the date range to be observed, otherwise if it overlaps it is displayed. Overwrites the bounding parameter, sets bonding to 'both'
+   * @param {boolean} strictly=false - When set the entire session must be inside the date range to be observed, otherwise if it overlaps it is displayed. Overwrites the bounding parameter, sets bounding to 'both'
    * @returns {object} hierarchicalResults - The nested data to populate the treemap or pie
    * @returns {array} tableResults - The list data to populate the table
    */
@@ -2229,7 +2229,7 @@ class SessionAPIs {
    * Builds an elasticsearch session query. Gets a list of unique field values (with or without counts) and sends them to the client.
    * @name /unique
    * @param {SessionsQuery} See_List - This API supports a common set of parameters documented in the SessionsQuery section
-   * @param {number} counts=0 - Whether to return counts with he list of unique field values. Defaults to 0. 0 = no counts, 1 - counts.
+   * @param {number} counts=0 - Whether to return counts with the list of unique field values. Defaults to 0. 0 = no counts, 1 - counts.
    * @param {string} exp - The expression field to return unique data for. Either exp or field is required, field is given priority if both are present.
    * @param {string} field - The database field to return unique data for. Either exp or field is required, field is given priority if both are present.
    * @returns {string} The list of unique fields (with counts if requested)
@@ -2393,7 +2393,7 @@ class SessionAPIs {
    * Builds an elasticsearch session query. Gets an intersection of unique field values (with or without counts) and sends them to the client.
    * @name /multiunique
    * @param {SessionsQuery} See_List - This API supports a common set of parameters documented in the SessionsQuery section
-   * @param {number} counts=0 - Whether to return counts with he list of unique field values. Defaults to 0. 0 = no counts, 1 - counts.
+   * @param {number} counts=0 - Whether to return counts with the list of unique field values. Defaults to 0. 0 = no counts, 1 - counts.
    * @param {string} exp - Comma separated list of expression fields to return unique data for.
    * @returns {string} The list of an intersection of unique fields (with counts if requested)
    */
@@ -2703,7 +2703,7 @@ class SessionAPIs {
             return res.send('Could not build query.  Err: ' + err);
           }
           if (!total) {
-            return res.serverError(200, 'No sessions to add tags to');
+            return res.serverError(200, 'No sessions to remove tags from');
           }
           await Db.refresh('sessions*');
           return res.json({
@@ -3177,7 +3177,7 @@ class SessionAPIs {
    *
    * Retrieve a bitmap image representation of packets in a session given the session id and node name.
    * @name /session/raw/:nodeName/:id/png
-   * @param {string} type=src - Whether to retrieve the src (source) or dst (desintation) packets bitmap image. Defaults to src.
+   * @param {string} type=src - Whether to retrieve the src (source) or dst (destination) packets bitmap image. Defaults to src.
    * @returns {image/png} image - The bitmap image.
    */
   static async getPacketPNG (req, res) {
@@ -3228,7 +3228,7 @@ class SessionAPIs {
    *
    * Retrieve raw packets for a session given the session id and node name.
    * @name /session/raw/:nodeName/:id
-   * @param {string} type=src - Whether to retrieve the src (source) or dst (desintation) raw packets. Defaults to src.
+   * @param {string} type=src - Whether to retrieve the src (source) or dst (destination) raw packets. Defaults to src.
    * @returns {string} The source or destination packet text.
    */
   static async getRawPackets (req, res) {
@@ -3370,7 +3370,7 @@ class SessionAPIs {
   /**
    * GET - /api/delete
    *
-   * Delete SPI and/or scrub PCAP data (remove persmission required).
+   * Delete SPI and/or scrub PCAP data (remove permission required).
    * @name /delete
    * @param {string} ids - Comma separated list of sessions to delete
    * @param {SessionsQuery} See_List - This API supports a common set of parameters documented in the SessionsQuery section

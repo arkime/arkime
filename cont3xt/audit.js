@@ -106,8 +106,8 @@ class Audit {
    * Returns list of audit logs that the requesting user is allowed to view.
    * @name /audits
    * @param {string} searchTerm - an optional query parameter to filter on indicator, iType, and tags
-   * @param {string} startMs - an optional query parameter to specify the start of results (milliseconds since Unix EPOC)
-   * @param {string} stopMs - an optional query parameter to specify the end of results (milliseconds since Unix EPOC)
+   * @param {string} startMs - an optional query parameter to specify the start of results (milliseconds since Unix EPOCH)
+   * @param {string} stopMs - an optional query parameter to specify the end of results (milliseconds since Unix EPOCH)
    * @param {string} seeAll - an optional query parameter to request viewing all history (only works for admin users)
    * @param {string} sortBy - an optional query parameter to specify the field to sort by
    * @param {string} sortOrder - an optional query parameter to specify the order to sort by

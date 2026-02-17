@@ -85,8 +85,8 @@ class CronAPIs {
    * @type {object}
    * @param {string} name - The name of the query
    * @param {boolean} enabled - Whether the query is enabled. If enabled, the query will run every 90 seconds.
-   * @param {number} lpValue - The last packet timestamp that was searched. Used to query for the next group of sessions to search. Format is seconds since Unix EPOC.
-   * @param {number} lastRun - The time that the query was last run. Format is seconds since Unix EPOC.
+   * @param {number} lpValue - The last packet timestamp that was searched. Used to query for the next group of sessions to search. Format is seconds since Unix EPOCH.
+   * @param {number} lastRun - The time that the query was last run. Format is seconds since Unix EPOCH.
    * @param {number} count - The count of total sessions that have matched this query.
    * @param {number} lastCount - The count of sessions that have matched this query during its last run.
    * @param {string} query - The search expression to apply when searching for sessions.
@@ -94,11 +94,11 @@ class CronAPIs {
    * @param {string} creator - The id of the user that created this query.
    * @param {string} tags - A comma separated list of tags to add to each session that matches this query.
    * @param {string} notifier - A comma separated list of notifier IDs to alert when there are matches for this query.
-   * @param {number} lastNotified - The time that this query last sent a notification to the notifiers. Only notifies every 10 minutes. Format is seconds since Unix EPOC.
+   * @param {number} lastNotified - The time that this query last sent a notification to the notifiers. Only notifies every 10 minutes. Format is seconds since Unix EPOCH.
    * @param {number} lastNotifiedCount - The count of sessions that matched since the last notification was sent.
    * @param {string} description - The description of this query.
-   * @param {number} created - The time that this query was created. Format is seconds since Unix EPOC.
-   * @param {number} lastToggled - The time that this query was enabled or disabled. Format is seconds since Unix EPOC.
+   * @param {number} created - The time that this query was created. Format is seconds since Unix EPOCH.
+   * @param {number} lastToggled - The time that this query was enabled or disabled. Format is seconds since Unix EPOCH.
    * @param {string} lastToggledBy - The user who last enabled or disabled this query.
    * @param {string} users - The list of userIds who have access to use this query.
    * @param {string} roles - The list of roles who have access to use this query.

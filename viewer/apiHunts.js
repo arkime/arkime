@@ -414,7 +414,7 @@ ${Config.arkimeWebURL()}hunt
       if (hunt.failedSessionIds && hunt.failedSessionIds.length === 0) {
         options.searchingFailedSessions = false; // no longer searching failed sessions
         // we had failed sessions but we're done searching through them
-        // so we're completely done with this hunt (inital search and failed sessions)
+        // so we're completely done with this hunt (initial search and failed sessions)
         hunt.status = 'finished';
 
         if (hunt.notifier) {
@@ -772,10 +772,10 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
    * @property {number} matchedSessions - How many sessions contain packets that match the search text.
    * @property {number} searchedSessions - How many sessions have had their packets searched.
    * @property {number} totalSessions - The number of sessions to search.
-   * @property {number} lastPacketTime - The date of the first packet of the last searched session. Used to query for the next chunk of sessions to search. Format is seconds since Unix EPOC.
-   * @property {number} created - The time that the hunt was created. Format is seconds since Unix EPOC.
-   * @property {number} lastUpdated - The time that the hunt was last updated in the DB. Used to only update every 2 seconds. Format is seconds since Unix EPOC.
-   * @property {number} started - The time that the hunt was started (put into running state). Format is seconds since Unix EPOC.
+   * @property {number} lastPacketTime - The date of the first packet of the last searched session. Used to query for the next chunk of sessions to search. Format is seconds since Unix EPOCH.
+   * @property {number} created - The time that the hunt was created. Format is seconds since Unix EPOCH.
+   * @property {number} lastUpdated - The time that the hunt was last updated in the DB. Used to only update every 2 seconds. Format is seconds since Unix EPOCH.
+   * @property {number} started - The time that the hunt was started (put into running state). Format is seconds since Unix EPOCH.
    * @property {array} errors - The list of errors that a hunt encountered. A hunt error includes:
      value - The error text to display to the user.
      time - The time the error was encountered.
@@ -1214,7 +1214,7 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
       }
     } catch (err) {
       console.log(`ERROR - ${req.method} /api/hunt/%s/users (getHunt)`, ArkimeUtil.sanitizeStr(req.params.id), util.inspect(err, false, 50));
-      return res.serverError(500, 'Unable update hunt');
+      return res.serverError(500, 'Unable to update hunt');
     }
   }
 

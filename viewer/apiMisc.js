@@ -160,9 +160,9 @@ class MiscAPIs {
   /**
    * GET - /api/valueactions
    *
-   * Retrieves the actions that can be preformed on meta data values.
+   * Retrieves the actions that can be performed on meta data values.
    * @name /valueactions
-   * @returns {object} - The list of actions that can be preformed on data values.
+   * @returns {object} - The list of actions that can be performed on data values.
    */
   static getValueActions (req, res) {
     if (!req.user || !req.user.userId) {
@@ -204,9 +204,9 @@ class MiscAPIs {
   /**
    * GET - /api/fieldactions
    *
-   * Retrieves the actions that can be preformed on fields.
+   * Retrieves the actions that can be performed on fields.
    * @name /fieldactions
-   * @returns {object} - The list of actions that can be preformed on fields.
+   * @returns {object} - The list of actions that can be performed on fields.
    */
   static getFieldActions (req, res) {
     if (!req.user || !req.user.userId) {
@@ -320,7 +320,7 @@ class MiscAPIs {
    * GET - /api/clusters
    *
    * Retrieves a list of known configured Arkime clusters (if in
-   * <a href="https://arkime.com/settings#multi-viewer-settings">Mulit Viewer mode</a>).
+   * <a href="https://arkime.com/settings#multi-viewer-settings">Multi Viewer mode</a>).
    * @name /clusters
    * @returns {Array} active - The active Arkime clusters.
    * @returns {Array} inactive - The inactive Arkime clusters.
@@ -359,7 +359,7 @@ class MiscAPIs {
    * @returns {ArkimeUser} currentuser - The currently logged in user
    * @returns {ArkimeView[]} views - A list of views accessible to the logged in user
    * @returns {Object} remoteclusters - A list of known remote Arkime clusters
-   * @returns {Array} clusters - A list of known configured Arkime clusters (if in Mulit Viewer mode)
+   * @returns {Array} clusters - A list of known configured Arkime clusters (if in Multi Viewer mode)
    * @returns {Array} fields - Available database field objects pertaining to sessions
    * @returns {Array} fieldsmap - Available database field objects pertaining to sessions
    * @returns {Object} fieldshistory - The user's field history for the search expression input
@@ -373,7 +373,7 @@ class MiscAPIs {
         esHealthError = err.toString();
       }
 
-      // these always returns something and never return an error
+      // these always return something and never return an error
       const clusters = await MiscAPIs.#getClusters(); // { active: [], inactive: [] }
       const remoteclusters = MiscAPIs.#remoteClusters(); // {}
       const fieldhistory = UserAPIs.findUserState('fieldHistory', req.user); // {}

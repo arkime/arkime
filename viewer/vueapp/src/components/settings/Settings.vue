@@ -1968,7 +1968,7 @@ export default {
           this.settings[key] = response[key];
         }
 
-        // set defaults if a user setting doesn't exists
+        // set defaults if a user setting doesn't exist
         // so that radio buttons show the default value
         if (!response.timezone) {
           this.settings.timezone = 'local';

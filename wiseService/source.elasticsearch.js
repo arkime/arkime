@@ -75,7 +75,7 @@ class ElasticsearchSource extends WISESource {
     query.sort[this.esTimestampField] = { order: 'desc' };
 
     // TODO: Should be option to do search vs get
-    // TODO: Should be an option to add more then most recent
+    // TODO: Should be an option to add more than most recent
 
     // Convert shortcuts into array of key path
     const shortcuts = [];
@@ -134,7 +134,7 @@ exports.initSource = function (api) {
       { name: 'elasticsearch', required: true, help: 'Elasticsearch base url' },
       { name: 'esIndex', required: true, help: 'The index pattern to look at' },
       { name: 'esTimestampField', required: true, help: 'The field to use in queries that has the timestamp in ms' },
-      { name: 'esMaxTimeMS', required: false, help: 'Timestamp field must be less then this (default: 1hr)' },
+      { name: 'esMaxTimeMS', required: false, help: 'Timestamp field must be less than this (default: 1hr)' },
       { name: 'esResultField', required: true, help: 'Field that is required to be in the result' }
     ]
   });

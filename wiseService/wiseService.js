@@ -56,8 +56,8 @@ const internals = {
         { name: 'httpRealm', ifField: 'authMode', ifValue: 'digest', required: false, help: 'The realm to use for digest requests. Must be the same as viewer is using. Default Moloch' },
         { name: 'passwordSecret', ifField: 'authMode', ifValue: 'digest', required: false, password: true, help: 'The secret used to encrypted password hashes. Must be the same as viewer is using. Default password' },
         { name: 'usersElasticsearch', required: false, help: 'The URL to connect to OpenSearch/Elasticsearch. Default http://localhost:9200' },
-        { name: 'usersElasticsearchAPIKey', required: false, help: 'OpenSearch/Elastisearch API key for users DB access', password: true },
-        { name: 'usersElasticsearchBasicAuth', required: false, help: 'OpenSearch/Elastisearch Basic Auth', password: true },
+        { name: 'usersElasticsearchAPIKey', required: false, help: 'OpenSearch/Elasticsearch API key for users DB access', password: true },
+        { name: 'usersElasticsearchBasicAuth', required: false, help: 'OpenSearch/Elasticsearch Basic Auth', password: true },
         { name: 'userAuthIps', required: false, help: 'Comma separated list of CIDRs to allow authed requests from' },
         { name: 'usersPrefix', required: false, help: 'The prefix used with db.pl --prefix for users OpenSearch/Elasticsearch, if empty arkime_ is used' },
         { name: 'sourcePath', required: false, help: 'Where to look for the source files. Defaults to "./"' },
@@ -695,7 +695,7 @@ app.get('/fields', [ArkimeUtil.noCacheJson], (req, res) => {
     if (internals.fields.length < 256) {
       res.send(internals.fieldsBuf0);
     } else {
-      console.log("ERROR - This wise server has more then 255 fields, it can't be used with older moloch");
+      console.log("ERROR - This wise server has more than 255 fields, it can't be used with older moloch");
       return res.status(404).end();
     }
   } else {

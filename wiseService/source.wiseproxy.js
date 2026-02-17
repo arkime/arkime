@@ -220,7 +220,7 @@ exports.initSource = function (api) {
     name: 'wiseproxy',
     description: 'Link to the wiseproxy data',
     fields: [
-      { name: 'url', required: true, help: 'The URl' },
+      { name: 'url', required: true, help: 'The URL' },
       { name: 'types', required: true, help: 'The type of data, such as ip,domain,md5,ja3,email, or something defined in [wise-types]' }
     ]
   });

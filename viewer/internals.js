@@ -96,7 +96,7 @@ ArkimeConfig.loaded(() => {
   internals.allowUploads = !!Config.get('uploadCommand');
   internals.uploadRoles = Config.getArray('uploadRoles', 'arkimeUser');
   internals.cronTimeout = +Config.get('dbFlushTimeout', 5) + // How long capture holds items
-                           60 + // How long before ES reindexs
+                           60 + // How long before ES reindexes
                            20; // Transmit and extra time
   internals.prefix = Config.get('prefix', 'arkime_');
   internals.multiES = Config.get('multiES', false);

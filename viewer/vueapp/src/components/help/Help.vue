@@ -269,7 +269,7 @@ SPDX-License-Identifier: Apache-2.0
         <dl class="dl-horizontal">
           <dt>Wildcard</dt>
           <dd>
-            If a <code>*</code> appears in a expression, it is assumed a wildcard
+            If a <code>*</code> appears in an expression, it is assumed a wildcard
             match is being used. Supported wildcards are <code>*</code>, which
             matches any character sequence (including the empty one), and
             <code>?</code>, which matches any single character. The wildcard query
@@ -316,7 +316,7 @@ SPDX-License-Identifier: Apache-2.0
           representations with a colon (ip4) or dot (ip6) and then the port number to further refine a query. Ports are also
           first class searchable and may be searched for directly. For example:
           <code>ip == 1.2.3.0/24:80</code>. This query will search for all sessions which contain an IP address within the 1.2.3.0/24 CIDR range as well as utilizing port 80 during the session.
-          An IP search can also be done with list of IPs which may be in mixed representations, both OR Lists and AND Lists are supported: <code>ip == [1.2.3.4,5.6.7.8,1.3.0.0/16]</code>
+          An IP search can also be done with a list of IPs which may be in mixed representations, both OR Lists and AND Lists are supported: <code>ip == [1.2.3.4,5.6.7.8,1.3.0.0/16]</code>
           If you only want to find ipv4 or ipv6 traffic, you can search using those tokens: <code>ip.src == ipv6</code>
         </p>
         <h6 id="numericSearch">
@@ -400,7 +400,7 @@ SPDX-License-Identifier: Apache-2.0
           It is possible to check if a field has been set or not in the session by
           using the special comparison value of <code>field == EXISTS!</code> OR negated: <code>field != EXISTS!</code>.
           For example, to verify that a certificate doesn't have an issuer common name, but does
-          have a issuer organizational name, the follow query could be used:
+          have an issuer organizational name, the following query could be used:
           <code>cert.issuer.cn != EXISTS! &amp;&amp; cert.issuer.on == EXISTS!</code>
         </p>
         <h6 id="examples">
@@ -1165,7 +1165,7 @@ SPDX-License-Identifier: Apache-2.0
           Views
         </h6>
         <p>
-          Here, a user can saved views by updating, deleting, or sharing them.
+          Here, a user can manage saved views by updating, deleting, or sharing them.
           A user can also create a new view in this section.
           See the <a
             href="help#views"

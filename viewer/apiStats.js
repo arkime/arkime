@@ -47,7 +47,7 @@ class StatsAPIs {
    * @property {boolean} timed_out - If false the response returned within the period of time that is specified by the timeout parameter (30s by default).
    * @property {number} unassigned_shards - The number of shards that are not allocated.
    * @property {string} version - the elasticsearch version number
-   * @property {number} _timeStamp - timestamps in ms from unix epoc
+   * @property {number} _timeStamp - timestamps in ms from unix epoch
    */
 
   // --------------------------------------------------------------------------
@@ -230,8 +230,8 @@ class StatsAPIs {
    * @name /dstats
    * @param {string} nodeName - The name of the node to get the detailed stats for.
    * @param {string} name - The name of the field to get the detailed stats for.
-   * @param {number} start - The start time of data to return. Format is seconds since Unix EPOC.
-   * @param {number} stop  - The stop time of data to return. Format is seconds since Unix EPOC.
+   * @param {number} start - The start time of data to return. Format is seconds since Unix EPOCH.
+   * @param {number} stop  - The stop time of data to return. Format is seconds since Unix EPOCH.
    * @param {number} step - The context step of the cubism graph in milliseconds.
    * @param {number} interval=60 - The time interval to search for.
    * @param {number} size=1440 - The size of the cubism graph. Defaults to 1440.
