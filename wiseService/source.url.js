@@ -92,7 +92,7 @@ exports.initSource = function (api) {
       { name: 'url', required: true, help: 'The URL to load' },
       { name: 'urlScrapeRedirect', required: false, help: 'If set this is a regex to match against the results of URL to find the url with the real data' },
       { name: 'urlScrapePrefix', required: false, help: 'If set, prefix the results of urlScrapeRedirect with this value' },
-      { name: 'urlScrapeSuffix', required: false, help: 'If set, add this value as the suffix to the  results of urlScrapeRedirect' },
+      { name: 'urlScrapeSuffix', required: false, help: 'If set, add this value as the suffix to the results of urlScrapeRedirect' },
       { name: 'reload', required: false, help: 'How often in minutes to refresh the file, or -1 (default) to never refresh it' },
       { name: 'headers', required: false, multiline: ';', help: 'List of headers to send in the URL request' }
     ]

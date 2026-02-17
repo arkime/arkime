@@ -39,7 +39,7 @@ processArgs(process.argv);
 // ----------------------------------------------------------------------------
 app.use(helmet.frameguard({ action: 'deny' })); // disallow iframing
 app.use(helmet.hidePoweredBy()); // hide powered by Express header
-app.use(helmet.xssFilter()); // disables browsers' buggy cross-site scripting filte
+app.use(helmet.xssFilter()); // disables browsers' buggy cross-site scripting filter
 app.use(helmet.noSniff()); // mitigates MIME type sniffing
 
 function setupHSTS () {

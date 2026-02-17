@@ -798,7 +798,7 @@ class Integration {
    * The settings for an integration for the logged in user
    * @typedef IntegrationSetting
    * @type {object}
-   * @param {boolean} globalConfiged - Whether integration is configured globally across cont3xt users or by this user (if a user has changed the settings for an integration, this if false)
+   * @param {boolean} globalConfiged - Whether integration is configured globally across cont3xt users or by this user (if a user has changed the settings for an integration, this is false)
    * @param {boolean} locked - Whether integration is locked. Locked integrations use the globally configured settings. Users cannot update locked integrations. Any previously configured settings for locked integrations will be ignored in favor of the global configuration.
    * @param {string} homePage - The link to the home page for this integration so a user can learn more
    * @param {object} settings - The setting field definitions for this integration
@@ -889,7 +889,7 @@ class Integration {
    * @param {number} directGood - The number of valid entries queried directly from the integration
    * @param {number} directLookup - The number of entries queried directly from the integration
    * @param {number} directRecentAvgMS - How long it takes to look up directly from the integration
-   * @param {number} name - The name of the integration
+   * @param {string} name - The name of the integration
    * @param {number} total - The number of times the integration was asked for a result
    */
 

@@ -42,7 +42,7 @@ const app = express();
 
 const issueTypes = {
   esRed: { on: true, name: 'ES Red', text: 'ES is red', severity: 'red', description: 'ES status is red' },
-  esDown: { on: true, name: 'ES Down', text: ' ES is down', severity: 'red', description: 'ES is unreachable' },
+  esDown: { on: true, name: 'ES Down', text: 'ES is down', severity: 'red', description: 'ES is unreachable' },
   esDropped: { on: true, name: 'ES Dropped', text: 'ES is dropping bulk inserts', severity: 'yellow', description: 'the capture node is overloading ES' },
   outOfDate: { on: true, name: 'Out of Date', text: 'has not checked in since', severity: 'red', description: 'the capture node has not checked in' },
   noPackets: { on: true, name: 'Low Packets', text: 'is not receiving many packets', severity: 'red', description: 'the capture node is not receiving many packets' },
@@ -1032,7 +1032,7 @@ async function initializeParliament () {
   // if there's a parliament file, check that it is the correct version
   if (parliamentFile && (parliamentFile.version === undefined || parliamentFile.version < MIN_PARLIAMENT_VERSION)) {
     console.log( // notify of upgrade
-      `WARNING - Current parliament version (${parliamentFile.version ?? 1}) is less then required version (${MIN_PARLIAMENT_VERSION})
+      `WARNING - Current parliament version (${parliamentFile.version ?? 1}) is less than required version (${MIN_PARLIAMENT_VERSION})
         Upgrading your Parliament...\n`
     );
 

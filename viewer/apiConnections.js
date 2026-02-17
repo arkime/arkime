@@ -54,15 +54,15 @@ class ConnectionAPIs {
     };
 
     // If network graph baseline is enabled (enabled: req.query.baselineDate != 0, disabled:req.query.baselineDate=0 or undefined)
-    //   then two queries will be run (ie., run buildSessionQuery->searchSessions->process twice): first for the
+    //   then two queries will be run (i.e., run buildSessionQuery->searchSessions->process twice): first for the
     //   original specified time frame and second for the same time frame immediately preceding it.
     //
     // Nodes have an .inresult attribute where:
     //   0 = 00 = not in either result set (although you'll never see these, obviously)
-    //   1 = 01 = seen during the "current" time frame but not in the "baseline" time frame (ie., "new")
-    //   2 = 10 = seen during the "baseline" time frame but not in the "current" time frame (ie., "old")
+    //   1 = 01 = seen during the "current" time frame but not in the "baseline" time frame (i.e., "new")
+    //   2 = 10 = seen during the "baseline" time frame but not in the "current" time frame (i.e., "old")
     //   3 = 11 = seen during both the "current" time frame and the "baseline" time frame
-    // This is only performed where startTime/startTime are defined, and never for "all" time range (date=-1).
+    // This is only performed where startTime/stopTime are defined, and never for "all" time range (date=-1).
     //
     // With baselining, req.query.baselineDate can determine baseline time frame, which is the number of
     // hours prior to the "start" query time, similar to req.query.date. If unspecified or zero, baseline

@@ -75,7 +75,7 @@ SPDX-License-Identifier: Apache-2.0
           :desc="query.desc"
           :sort-field="query.sortField"
           :action-column="true"
-          :no-results-msg="$t(query.cluser? 'files.noResults' : 'files.noResultsCluster')"
+          :no-results-msg="$t(query.cluster? 'files.noResults' : 'files.noResultsCluster')"
           page="files"
           table-animation="list"
           table-state-name="fieldsCols"

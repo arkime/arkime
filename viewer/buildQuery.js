@@ -326,7 +326,7 @@ class BuildQuery {
     // validate time limit is not exceeded
     let timeLimitExceeded = false;
 
-    // queryOverride can supercede req.query if specified
+    // queryOverride can supersede req.query if specified
     const reqQuery = queryOverride || req.query;
 
     // determineQueryTimes calculates startTime, stopTime, and interval from reqQuery

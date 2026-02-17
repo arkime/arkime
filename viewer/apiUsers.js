@@ -428,7 +428,7 @@ class UserAPIs {
    * @param {object} spiviewFieldConfigs - A list of SPIView page field configurations that a user has created.
    * @param {object} tableStates - A list of table states used to render Arkime tables as the user has configured them.
    * @param {number} welcomeMsgNum=0 - The message number that a user is on. Gets incremented when a user dismisses a message.
-   * @param {number} lastUsed - The date that the user last used Arkime. Format is milliseconds since Unix EPOC.
+   * @param {number} lastUsed - The date that the user last used Arkime. Format is milliseconds since Unix EPOCH.
    * @param {number} timeLimit - Limits the time range a user can query for.
    * @param {array} roles - The list of Arkime roles assigned to this user.
    * @param {array} roleAssigners - The list of userIds that can manage who has this (ROLE)

@@ -24,7 +24,7 @@ class WISESource {
    * @param {string} section - the section name
    * @param {object} options - All the options
    * @param {boolean} [options.dontCache=false] - do not cache this source, the source handles itself
-   * @param {integer} [options.cacheTimeout=cacheAgeMin*60 or 60] - override the cacheAgeMin setting, -1 same as dont
+   * @param {integer} [options.cacheTimeout=cacheAgeMin*60 or 60] - override the cacheAgeMin setting, -1 same as don't
    * @param {boolean} [options.tagsSetting=false] - load the optional tags setting
    * @param {boolean} [options.typeSetting=false] - load the required type setting
    * @param {boolean} [options.formatSetting=false] - load the format setting with default the provided value if not false
@@ -485,7 +485,7 @@ class WISESource {
 
   // ----------------------------------------------------------------------------
   /**
-   * Combine a array of encoded results into one encoded result
+   * Combine an array of encoded results into one encoded result
    *
    * @param {object|array} results - Array of results
    * @returns {Buffer} - A single combined result
@@ -557,7 +557,7 @@ class WISESource {
       if (fs.existsSync(file)) {
         const stat = fs.statSync(file);
 
-        // Don't download again if file is less then 1 minutes old
+        // Don't download again if file is less than 1 minutes old
         if (Date.now() - stat.mtime.getTime() < 60000) {
           return setImmediate(cb, 304);
         }
