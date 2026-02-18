@@ -89,6 +89,11 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #3682 Added s7comm parser
   - #3686 Added websocket detection
   - #3687 Added c122 parser
+## esproxy
+  - Added AWS SigV4 request signing for OpenSearch IAM authentication
+  - Supports Athenz ZTS, STS AssumeRole, static, and default credential chain
+  - Automatic credential refresh before expiry
+  - SigV4 support for tee target
 
 6.0.0-rc1 2026/01/26
 ## BREAKING
