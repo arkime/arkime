@@ -130,7 +130,7 @@ include:
     buildopt: "--kafka"
     fpmdeps: "-d libwww-perl -d libjson-perl -d ethtool -d libyaml-dev -d liblua5.4-0 -d libmaxminddb0 -d libcurl4 -d libpcap0.8 -d libglib2.0-0 -d libnghttp2-14 -d libyara10 -d librdkafka1 -d libpcre3 -d libpython3.12"
     package: deb
-    runson: ubuntu-26.04-arm
+    runson: ubuntu-24.04-arm
     prbuild: true
 
   - version: debian12_arm64
