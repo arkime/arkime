@@ -274,7 +274,7 @@ sub waitFor
     while (1) {
         my $answer = <STDIN>;
         if (!defined $answer) {
-            die "ERROR: No input available for "$help", stdin is closed or not a terminal.\n";
+            die "ERROR: No input available for '$help', stdin is closed or not a terminal.\n";
         }
         chomp $answer;
         last if ($answer eq $str);
@@ -290,7 +290,7 @@ sub waitForRE
     while (1) {
         my $answer = <STDIN>;
         if (!defined $answer) {
-            die "ERROR: No input available for "$help", stdin is closed or not a terminal.\n";
+            die "ERROR: No input available for '$help', stdin is closed or not a terminal.\n";
             exit 1;
         }
         chomp $answer;
