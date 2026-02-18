@@ -62,6 +62,16 @@ include:
     sanitizebuild: "make -j SANITIZE_LDFLAGS='-fno-common -fsanitize=address -fsanitize=undefined -fno-omit-frame-pointer' sanitize"
     prbuild: true
 
+  - version: ubuntu2604_amd64
+    container: andywick/arkime-build-26:6.0.0-4
+    buildopt: "--kafka"
+    fpmdeps: "-d libwww-perl -d libjson-perl -d ethtool -d libyaml-dev -d liblua5.4-0 -d libmaxminddb0 -d libcurl4 -d libpcap0.8 -d libglib2.0-0 -d libnghttp2-14 -d libyara10 -d librdkafka1 -d libpcre3 -d libpython3.13"
+    package: deb
+    python: python3
+    viewertest: normal
+    sanitizebuild: "make -j SANITIZE_LDFLAGS='-fno-common -fsanitize=address -fsanitize=undefined -fno-omit-frame-pointer' sanitize"
+    prbuild: true
+
   - version: "arch-x86_64"
     container: andywick/arkime-build-arch:6.0.0-4
     buildopt: "--kafka"
@@ -114,6 +124,13 @@ include:
     package: deb
     runson: ubuntu-24.04-arm
     sanitizebuild: "make -j SANITIZE_LDFLAGS='-fno-common -fsanitize=address -fsanitize=undefined -fno-omit-frame-pointer' sanitize"
+
+  - version: ubuntu2604_arm64
+    container: andywick/arkime-build-26-arm64:6.0.0-4
+    buildopt: "--kafka"
+    fpmdeps: "-d libwww-perl -d libjson-perl -d ethtool -d libyaml-dev -d liblua5.4-0 -d libmaxminddb0 -d libcurl4 -d libpcap0.8 -d libglib2.0-0 -d libnghttp2-14 -d libyara10 -d librdkafka1 -d libpcre3 -d libpython3.12"
+    package: deb
+    runson: ubuntu-24.04-arm
 
   - version: debian12_arm64
     container: andywick/arkime-build-d12-arm64:6.0.0-2
