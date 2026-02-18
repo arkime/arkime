@@ -273,6 +273,9 @@ sub waitFor
     print "Type \"$str\" to continue - $help?\n";
     while (1) {
         my $answer = <STDIN>;
+        if (!defined $answer) {
+            die "ERROR: No input available for "$help", stdin is closed or not a terminal.\n";
+        }
         chomp $answer;
         last if ($answer eq $str);
         print "You didn't type \"$str\", for some reason you typed \"$answer\"\n";
@@ -286,6 +289,10 @@ sub waitForRE
     print "$help\n";
     while (1) {
         my $answer = <STDIN>;
+        if (!defined $answer) {
+            die "ERROR: No input available for "$help", stdin is closed or not a terminal.\n";
+            exit 1;
+        }
         chomp $answer;
         return $answer if ($answer =~ $re);
         print "$help\n";

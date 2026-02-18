@@ -605,6 +605,7 @@ LOCAL void arkime_config_load_includes(char **includes)
         if (!status || error) {
             if (includes[i][0] == '-') {
                 g_clear_error(&error);
+                g_key_file_free(keyFile);
                 continue;
             } else {
                 CONFIGEXIT("Couldn't load config includes file (%s) %s", fn, (error ? error->message : ""));

@@ -140,6 +140,7 @@ LOCAL int aws_get_credentials_file(const char UNUSED(*service), const char *envN
         g_free(credFilename);
         g_printerr("Error loading credentials file: %s\n", error->message);
         g_error_free(error);
+        g_key_file_free(keyFile);
         return 0;
     }
     g_free(credFilename);

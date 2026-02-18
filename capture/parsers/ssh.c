@@ -108,9 +108,8 @@ LOCAL int ssh_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, in
     SSHInfo_t *ssh = uw;
 
     ssh->packets[which]++;
-    ssh->packets200[which]++;
-
-    if (ssh->packets200[0] + ssh->packets200[1] <= MAX_LENS) {
+    if (ssh->packets200[0] + ssh->packets200[1] < MAX_LENS) {
+        ssh->packets200[which]++;
         ssh->lens[which][ssh->packets200[which] - 1] = remaining;
         if (ssh->packets200[0] + ssh->packets200[1] == MAX_LENS) {
             ssh_send_counting200(session, ssh);

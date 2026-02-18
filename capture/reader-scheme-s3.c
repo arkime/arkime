@@ -344,17 +344,28 @@ LOCAL int scheme_s3_load_full_dir(const char *dir, ArkimeSchemeFlags flags, Arki
     CURLU *h = curl_url();
     curl_url_set(h, CURLUPART_URL, dir, CURLU_NON_SUPPORT_SCHEME);
 
-    char *scheme;
-    curl_url_get(h, CURLUPART_SCHEME, &scheme, 0);
+    int rc = 0;
+    char *scheme = NULL;
+    rc += curl_url_get(h, CURLUPART_SCHEME, &scheme, 0);
 
-    char *host;
-    curl_url_get(h, CURLUPART_HOST, &host, 0);
+    char *host = NULL;
+    rc += curl_url_get(h, CURLUPART_HOST, &host, 0);
 
-    char *port;
+    char *port = NULL;
     curl_url_get(h, CURLUPART_PORT, &port, 0);
 
-    char *path;
-    curl_url_get(h, CURLUPART_PATH, &path, 0);
+    char *path = NULL;
+    rc += curl_url_get(h, CURLUPART_PATH, &path, 0);
+
+    if (rc) {
+        LOG("Error parsing %s", dir);
+        curl_free(scheme);
+        curl_free(host);
+        curl_free(port);
+        curl_free(path);
+        curl_url_cleanup(h);
+        return 1;
+    }
 
     char **paths = g_strsplit(path, "/", 3);  // Split into at most 3: empty, bucket, prefix
 
@@ -546,17 +557,28 @@ LOCAL int scheme_s3_load_full(const char *uri, ArkimeSchemeFlags flags, ArkimeSc
     CURLU *h = curl_url();
     curl_url_set(h, CURLUPART_URL, uri, CURLU_NON_SUPPORT_SCHEME);
 
-    char *scheme;
-    curl_url_get(h, CURLUPART_SCHEME, &scheme, 0);
+    int rc = 0;
+    char *scheme = NULL;
+    rc += curl_url_get(h, CURLUPART_SCHEME, &scheme, 0);
 
-    char *host;
-    curl_url_get(h, CURLUPART_HOST, &host, 0);
+    char *host = NULL;
+    rc += curl_url_get(h, CURLUPART_HOST, &host, 0);
 
-    char *port;
+    char *port = NULL;
     curl_url_get(h, CURLUPART_PORT, &port, 0);
 
-    char *path;
-    curl_url_get(h, CURLUPART_PATH, &path, 0);
+    char *path = NULL;
+    rc += curl_url_get(h, CURLUPART_PATH, &path, 0);
+
+    if (rc) {
+        LOG("Error parsing %s", uri);
+        curl_free(scheme);
+        curl_free(host);
+        curl_free(port);
+        curl_free(path);
+        curl_url_cleanup(h);
+        return 1;
+    }
 
     char **paths = g_strsplit(path, "/", 0);
 

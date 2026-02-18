@@ -207,6 +207,11 @@ LOCAL int scheme_sqs_load(const char *uri, ArkimeSchemeFlags flags, ArkimeScheme
 
     char **dots = g_strsplit(uris[2], ".", 0);
 
+    if (!dots[0] || !dots[1]) {
+        LOGEXIT("ERROR - Invalid SQS hostname %s", uris[2]);
+        return 1;
+    }
+
     const char *scheme;
     if (strcmp(uris[0], "sqshttp:") == 0)
         scheme = "http";
@@ -301,9 +306,10 @@ LOCAL int scheme_sqs_load(const char *uri, ArkimeSchemeFlags flags, ArkimeScheme
         }
 
         // Delete the message
-        char *deletePost = arkime_http_get_buffer(2000);
         char *receiptHandle = g_uri_escape_string(item->receiptHandle, NULL, FALSE);
-        snprintf(deletePost, 2000, "Action=DeleteMessage&ReceiptHandle=%s", receiptHandle);
+        int needed = sizeof("Action=DeleteMessage&ReceiptHandle=") + strlen(receiptHandle);
+        char *deletePost = arkime_http_get_buffer(needed);
+        snprintf(deletePost, needed, "Action=DeleteMessage&ReceiptHandle=%s", receiptHandle);
         g_free(receiptHandle);
 
         arkime_http_schedule(server, "POST", deleteFullPath, -1, deletePost, strlen(deletePost), headers, ARKIME_HTTP_PRIORITY_DROPABLE, sqs_delete_done, NULL);

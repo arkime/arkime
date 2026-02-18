@@ -615,7 +615,7 @@ patricia_search_all2(patricia_tree_t * patricia, u_char *addr, int bitlen, patri
             return cnt;
     }
 
-    if (node->prefix && node->data &&
+    if (cnt < resultsize && node->prefix && node->data &&
         comp_with_mask(prefix_touchar(node->prefix), addr, node->prefix->bitlen)) {
         results[cnt++] = node;
     }

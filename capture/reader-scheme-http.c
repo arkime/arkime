@@ -51,20 +51,24 @@ LOCAL int scheme_http_load(const char *uri, ArkimeSchemeFlags flags, ArkimeSchem
     CURLU *h = curl_url();
     curl_url_set(h, CURLUPART_URL, uri, CURLU_NON_SUPPORT_SCHEME);
 
-    char *scheme;
+    char *scheme = NULL;
     rc += curl_url_get(h, CURLUPART_SCHEME, &scheme, 0);
 
-    char *host;
+    char *host = NULL;
     rc += curl_url_get(h, CURLUPART_HOST, &host, 0);
 
-    char *port;
+    char *port = NULL;
     rc += curl_url_get(h, CURLUPART_PORT, &port, 0);
 
-    char *path;
+    char *path = NULL;
     rc += curl_url_get(h, CURLUPART_PATH, &path, 0);
 
     if (rc) {
         LOG("Error parsing %s", uri);
+        curl_free(scheme);
+        curl_free(host);
+        curl_free(port);
+        curl_free(path);
         curl_url_cleanup(h);
         return 1;
     }

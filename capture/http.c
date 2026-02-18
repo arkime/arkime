@@ -667,6 +667,11 @@ LOCAL int arkime_http_curl_close_callback(void *snameV, curl_socket_t fd)
     socklen_t addressLength = sizeof(localAddressStorage);
     int rc = getsockname(fd, (struct sockaddr *)&localAddressStorage, &addressLength);
     if (rc != 0) {
+        long ev = (long)g_hash_table_lookup(server->fd2ev, (void *)(long)fd);
+        GSource *source = g_main_context_find_source_by_id(NULL, ev);
+        if (source)
+            g_source_destroy(source);
+        g_hash_table_remove(server->fd2ev, (void *)(long)fd);
         close(fd);
         return 0;
     }
@@ -674,6 +679,11 @@ LOCAL int arkime_http_curl_close_callback(void *snameV, curl_socket_t fd)
     addressLength = sizeof(remoteAddressStorage);
     rc = getpeername(fd, (struct sockaddr *)&remoteAddressStorage, &addressLength);
     if (rc != 0) {
+        long ev = (long)g_hash_table_lookup(server->fd2ev, (void *)(long)fd);
+        GSource *source = g_main_context_find_source_by_id(NULL, ev);
+        if (source)
+            g_source_destroy(source);
+        g_hash_table_remove(server->fd2ev, (void *)(long)fd);
         close(fd);
         return 0;
     }
