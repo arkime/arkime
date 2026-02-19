@@ -36,6 +36,8 @@ NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at o
 NOTICE: Create a parliament config file before upgrading (see https://arkime.com/settings#parliament and https://arkime.com/faq#how_do_i_upgrade_to_arkime_5)
 
 6.0.0 2026/02/xx
+## Release
+  - #3718 Build for Ubuntu 26.04
 
 6.0.0-rc3 2026/02/17
 ## Capture
