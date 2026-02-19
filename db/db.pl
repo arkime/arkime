@@ -4705,6 +4705,12 @@ sub sessions3Update
         "dstCnt" : {
           "type" : "long"
         },
+        "fileContentType" : {
+          "type" : "keyword"
+        },
+        "fileContentTypeCnt" : {
+          "type" : "long"
+        },
         "filename" : {
           "type" : "keyword"
         },
@@ -4966,6 +4972,12 @@ sub sessions3Update
         "requestHeaderCnt" : {
           "type" : "long"
         },
+        "requestHeaderValue" : {
+          "type" : "keyword"
+        },
+        "requestHeaderValueCnt" : {
+          "type" : "long"
+        },
         "response-content-type" : {
           "type" : "keyword"
         },
@@ -4982,6 +4994,12 @@ sub sessions3Update
           "type" : "keyword"
         },
         "responseHeaderCnt" : {
+          "type" : "long"
+        },
+        "responseHeaderValue" : {
+          "type" : "keyword"
+        },
+        "responseHeaderValueCnt" : {
           "type" : "long"
         },
         "serverVersion" : {
@@ -5397,6 +5415,9 @@ sub sessions3Update
           "copy_to" : [
             "oracle.hostTokens"
           ]
+        },
+        "hostCnt" : {
+          "type" : "long"
         },
         "hostTokens" : {
           "type" : "text",
@@ -5822,6 +5843,14 @@ sub sessions3Update
           "copy_to" : [
             "socks.hostTokens"
           ]
+        },
+        "hostCnt" : {
+          "type" : "long"
+        },
+        "hostTokens" : {
+          "type" : "text",
+          "norms" : false,
+          "analyzer" : "wordSplit"
         },
         "ip" : {
           "type" : "ip"
@@ -7831,12 +7860,11 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
         $lastUsed = $lastUsed / 1000;  # convert to seconds
         $lastUsed = $epoch - $lastUsed; # in seconds
         $lastUsed = $lastUsed / 86400; # days since last used
-        if ($lastUsed > $ARGV[2]) {
-            my $userId = $hit->{_source}->{userId};
-            print "Disabling user: $userId\n";
-            esPost("/${PREFIX}users/_update/$userId", '{"doc": {"enabled": false}}');
-            $rmcount++;
-        }
+        next if ($lastUsed <= $ARGV[2]);
+        my $userId = $hit->{_source}->{userId};
+        print "Disabling user: $userId\n";
+        esPost("/${PREFIX}users/_update/$userId", '{"doc": {"enabled": false}}');
+        $rmcount++;
     }
 
     if ($rmcount == 0) {
@@ -7873,10 +7901,9 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
 
     my $existingShortcut;
     foreach my $shortcut (@{$shortcuts->{hits}->{hits}}) {
-      if ($shortcut->{_source}->{name} eq $shortcutName) {
-        $existingShortcut = $shortcut;
-        last;
-      }
+      next unless ($shortcut->{_source}->{name} eq $shortcutName);
+      $existingShortcut = $shortcut;
+      last;
     }
 
     # create shortcut object
@@ -8009,7 +8036,8 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
     esPost("/_security/user/$ARGV[2]", $json);
     exit 0;
 } elsif ($ARGV[1] =~ /^es-passwd$/) {
-    my $password = waitForRE(qr/^.{6,}$/, "Enter 6+ character OpenSearch/Elasticsearch password for $ARGV[2]:");
+    my $user = (@ARGV >= 3) ? $ARGV[2] : "yourself";
+    my $password = waitForRE(qr/^.{6,}$/, "Enter 6+ character OpenSearch/Elasticsearch password for $user:");
     my $json = to_json({password => $password});
     if (@ARGV < 3) {
         esPost("/_security/user/_password", $json);
@@ -8029,7 +8057,8 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
     my $nodes = esGet("/_nodes");
     $main::numberOfNodes = dataNodes($nodes->{nodes});
     if (int($SHARDS) > $main::numberOfNodes) {
-        die "Can't set shards ($SHARDS) greater than the number of nodes ($main::numberOfNodes)";    } elsif ($SHARDS == -1) {
+        die "Can't set shards ($SHARDS) greater than the number of nodes ($main::numberOfNodes)";
+    } elsif ($SHARDS == -1) {
         $SHARDS = $main::numberOfNodes;
         if ($SHARDS > 24) {
             logmsg "Setting # of shards to 24, use --shards for a different number\n";
@@ -8065,10 +8094,9 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
     my $totalNodes = 0;
     foreach my $node (@{$catNodes}) {
         $totalNodes++;
-        if ($node->{role} =~ /d/) {
-            $diskTotal += $node->{diskTotal};
-            $dataNodes++;
-        }
+        next unless ($node->{role} =~ /d/);
+        $diskTotal += $node->{diskTotal};
+        $dataNodes++;
     }
 
     my $historys = 0;
@@ -8213,18 +8241,16 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
     logmsg "Need to remove references to these files from database:\n";
     my $cnt = 0;
     foreach my $hit (@{$results->{hits}->{hits}}) {
-        if (! -f $hit->{_source}->{name}) {
-            logmsg $hit->{_source}->{name}, "\n";
-            $cnt++;
-        }
+        next if (-f $hit->{_source}->{name});
+        logmsg $hit->{_source}->{name}, "\n";
+        $cnt++;
     }
     die "Nothing found to remove." if ($cnt == 0);
     logmsg "\n";
     waitFor("YES", "Do you want to remove file references from database?");
     foreach my $hit (@{$results->{hits}->{hits}}) {
-        if (! -f $hit->{_source}->{name}) {
-            esDelete("/${PREFIX}files/_doc/" . $hit->{_id}, 0);
-        }
+        next if (-f $hit->{_source}->{name});
+        esDelete("/${PREFIX}files/_doc/" . $hit->{_id}, 0);
     }
     exit 0;
 } elsif ($ARGV[1] =~ /^rm-?node$/) {
@@ -8708,9 +8734,9 @@ $policy = qq/{
         }
 
         if ($src =~ /-shrink/) {
-            $dst = $src =~ s/-shrink//rg
+            $dst = $src =~ s/-shrink//rg;
         } elsif ($src =~ /-reindex/) {
-            $dst = $src =~ s/-reindex//rg
+            $dst = $src =~ s/-reindex//rg;
         } else {
             $dst = "$src-reindex";
         }
@@ -9155,7 +9181,8 @@ if ($ARGV[1] !~ /noprompt$/) {
 }
 
 if (int($SHARDS) > $main::numberOfNodes) {
-    die "Can't set shards ($SHARDS) greater than the number of nodes ($main::numberOfNodes)";} elsif ($SHARDS == -1) {
+    die "Can't set shards ($SHARDS) greater than the number of nodes ($main::numberOfNodes)";
+} elsif ($SHARDS == -1) {
     $SHARDS = $main::numberOfNodes;
     if ($SHARDS > 24) {
         logmsg "Setting # of shards to 24, use --shards for a different number\n";
@@ -9300,19 +9327,18 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
 
     logmsg "Importing settings...\n\n";
     foreach my $index (@indices) { # import settings
-        if (-e "$ARGV[2].${PREFIX}${index}.settings.json") {
-            open(my $fh, "<", "$ARGV[2].${PREFIX}${index}.settings.json");
-            my $data = do { local $/; <$fh> };
-            $data = from_json($data);
-            my @index = keys %{$data};
-            delete $data->{$index[0]}->{settings}->{index}->{creation_date};
-            delete $data->{$index[0]}->{settings}->{index}->{provided_name};
-            delete $data->{$index[0]}->{settings}->{index}->{uuid};
-            delete $data->{$index[0]}->{settings}->{index}->{version};
-            my $settings = to_json($data->{$index[0]});
-            esPut("/$index[0]?master_timeout=${ESTIMEOUT}s", $settings);
-            close($fh);
-        }
+        next unless (-e "$ARGV[2].${PREFIX}${index}.settings.json");
+        open(my $fh, "<", "$ARGV[2].${PREFIX}${index}.settings.json");
+        my $data = do { local $/; <$fh> };
+        $data = from_json($data);
+        my @index = keys %{$data};
+        delete $data->{$index[0]}->{settings}->{index}->{creation_date};
+        delete $data->{$index[0]}->{settings}->{index}->{provided_name};
+        delete $data->{$index[0]}->{settings}->{index}->{uuid};
+        delete $data->{$index[0]}->{settings}->{index}->{version};
+        my $settings = to_json($data->{$index[0]});
+        esPut("/$index[0]?master_timeout=${ESTIMEOUT}s", $settings);
+        close($fh);
     }
 
     logmsg "Importing aliases...\n\n";
@@ -9327,75 +9353,71 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
 
     logmsg "Importing mappings...\n\n";
     foreach my $index (@indices) { # import mappings
-        if (-e "$ARGV[2].${PREFIX}${index}.mappings.json") {
-            open(my $fh, "<", "$ARGV[2].${PREFIX}${index}.mappings.json");
-            my $data = do { local $/; <$fh> };
-            $data = from_json($data);
-            my @index = keys %{$data};
-            my $mappings = $data->{$index[0]}->{mappings};
-            my @type = keys %{$mappings};
-            esPut("/$index[0]/_mapping?master_timeout=${ESTIMEOUT}s&pretty", to_json($mappings));
-            close($fh);
-        }
+        next unless (-e "$ARGV[2].${PREFIX}${index}.mappings.json");
+        open(my $fh, "<", "$ARGV[2].${PREFIX}${index}.mappings.json");
+        my $data = do { local $/; <$fh> };
+        $data = from_json($data);
+        my @index = keys %{$data};
+        my $mappings = $data->{$index[0]}->{mappings};
+        my @type = keys %{$mappings};
+        esPut("/$index[0]/_mapping?master_timeout=${ESTIMEOUT}s&pretty", to_json($mappings));
+        close($fh);
     }
 
     logmsg "Importing documents...\n\n";
     foreach my $index (@indices) { # import documents
-        if (-e "$ARGV[2].${PREFIX}${index}.json") {
-            open(my $fh, "<", "$ARGV[2].${PREFIX}${index}.json");
-            my $data = do { local $/; <$fh> };
-            esPost("/_bulk", $data);
-            close($fh);
-        }
+        next unless (-e "$ARGV[2].${PREFIX}${index}.json");
+        open(my $fh, "<", "$ARGV[2].${PREFIX}${index}.json");
+        my $data = do { local $/; <$fh> };
+        esPost("/_bulk", $data);
+        close($fh);
     }
 
     logmsg "Importing templates for Sessions and History...\n\n";
-    my @templates = ("sessions3_ecs", "sessions3", "history_v1");
+    my @templates = ("sessions2", "sessions3_ecs", "sessions3", "history_v1");
     foreach my $template (@templates) { # import templates
-        if (-e "$ARGV[2].${PREFIX}${template}.template.json") {
-            open(my $fh, "<", "$ARGV[2].${PREFIX}${template}.template.json");
-            my $data = do { local $/; <$fh> };
-            $data = from_json($data);
-            my @template_name = keys %{$data};
-            esPut("/_template/$template_name[0]?master_timeout=${ESTIMEOUT}s", to_json($data->{$template_name[0]}));
-            close($fh);
-        }
+        next unless (-e "$ARGV[2].${PREFIX}${template}.template.json");
+        open(my $fh, "<", "$ARGV[2].${PREFIX}${template}.template.json");
+        my $data = do { local $/; <$fh> };
+        $data = from_json($data);
+        my @template_name = keys %{$data};
+        esPut("/_template/$template_name[0]?master_timeout=${ESTIMEOUT}s", to_json($data->{$template_name[0]}));
+        close($fh);
     }
 
     foreach my $template (@templates) { # update mappings
-        if (-e "$ARGV[2].${PREFIX}${template}.template.json") {
-            open(my $fh, "<", "$ARGV[2].${PREFIX}${template}.template.json");
-            my $data = do { local $/; <$fh> };
-            $data = from_json($data);
-            my @template_name = keys %{$data};
-            my $mapping = $data->{$template_name[0]}->{mappings};
-            if (($template cmp "sessions2") == 0 && $UPGRADEALLSESSIONS) {
-                my $indices = esGet("/${OLDPREFIX}sessions2-*/_alias", 1);
-                logmsg "Updating sessions2 mapping for ", scalar(keys %{$indices}), " indices\n" if (scalar(keys %{$indices}) != 0);
-                foreach my $i (keys %{$indices}) {
-                    progress("$i ");
-                    esPut("/$i/_mapping?master_timeout=${ESTIMEOUT}s", to_json($mapping), 1);
-                }
-                logmsg "\n";
-            } elsif (($template cmp "sessions3") == 0 && $UPGRADEALLSESSIONS) {
-                my $indices = esGet("/${PREFIX}sessions3-*/_alias", 1);
-                logmsg "Updating sessions3 mapping for ", scalar(keys %{$indices}), " indices\n" if (scalar(keys %{$indices}) != 0);
-                foreach my $i (keys %{$indices}) {
-                    progress("$i ");
-                    esPut("/$i/_mapping?master_timeout=${ESTIMEOUT}s", to_json($mapping), 1);
-                }
-                logmsg "\n";
-            } elsif (($template cmp "history_v1") == 0) {
-                my $indices = esGet("/${PREFIX}history_v1-*/_alias", 1);
-                logmsg "Updating history mapping for ", scalar(keys %{$indices}), " indices\n" if (scalar(keys %{$indices}) != 0);
-                foreach my $i (keys %{$indices}) {
-                    progress("$i ");
-                    esPut("/$i/_mapping?master_timeout=${ESTIMEOUT}s", to_json($mapping), 1);
-                }
-                logmsg "\n";
+        next unless (-e "$ARGV[2].${PREFIX}${template}.template.json");
+        open(my $fh, "<", "$ARGV[2].${PREFIX}${template}.template.json");
+        my $data = do { local $/; <$fh> };
+        $data = from_json($data);
+        my @template_name = keys %{$data};
+        my $mapping = $data->{$template_name[0]}->{mappings};
+        if ($template eq "sessions2" && $UPGRADEALLSESSIONS) {
+            my $indices = esGet("/${OLDPREFIX}sessions2-*/_alias", 1);
+            logmsg "Updating sessions2 mapping for ", scalar(keys %{$indices}), " indices\n" if (scalar(keys %{$indices}) != 0);
+            foreach my $i (keys %{$indices}) {
+                progress("$i ");
+                esPut("/$i/_mapping?master_timeout=${ESTIMEOUT}s", to_json($mapping), 1);
             }
-            close($fh);
+            logmsg "\n";
+        } elsif ($template eq "sessions3" && $UPGRADEALLSESSIONS) {
+            my $indices = esGet("/${PREFIX}sessions3-*/_alias", 1);
+            logmsg "Updating sessions3 mapping for ", scalar(keys %{$indices}), " indices\n" if (scalar(keys %{$indices}) != 0);
+            foreach my $i (keys %{$indices}) {
+                progress("$i ");
+                esPut("/$i/_mapping?master_timeout=${ESTIMEOUT}s", to_json($mapping), 1);
+            }
+            logmsg "\n";
+        } elsif ($template eq "history_v1") {
+            my $indices = esGet("/${PREFIX}history_v1-*/_alias", 1);
+            logmsg "Updating history mapping for ", scalar(keys %{$indices}), " indices\n" if (scalar(keys %{$indices}) != 0);
+            foreach my $i (keys %{$indices}) {
+                progress("$i ");
+                esPut("/$i/_mapping?master_timeout=${ESTIMEOUT}s", to_json($mapping), 1);
+            }
+            logmsg "\n";
         }
+        close($fh);
     }
     logmsg "Finished Restore.\n";
 } else {
