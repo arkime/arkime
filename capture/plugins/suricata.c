@@ -303,7 +303,7 @@ LOCAL void suricata_process()
 
         if (MATCH(line, "timestamp")) {
             struct tm tm;
-            strptime(line + out[i + 2], "%Y-%m-%dT%H:%M:%S.%%06u", &tm);
+            strptime(line + out[i + 2], "%Y-%m-%dT%H:%M:%S", &tm);
             item->timestamp = timegm(&tm);
 
             if (out[i + 3] > 30) {
