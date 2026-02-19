@@ -1549,13 +1549,13 @@ void arkime_rules_run_field_set(ArkimeSession_t *session, int pos, const gpointe
 {
     if (ARKIME_FIELD_TYPE_IS_IP(config.fields[pos]->type)) {
 
-        patricia_node_t *nodes[PATRICIA_MAXBITS];
+        patricia_node_t *nodes[PATRICIA_MAXBITS + 1];
 
         int cnt;
         if (IN6_IS_ADDR_V4MAPPED((struct in6_addr *)value)) {
-            cnt = patricia_search_all2(current.fieldsTree4[pos], ((u_char *)value) + 12, 32, nodes, PATRICIA_MAXBITS);
+            cnt = patricia_search_all2(current.fieldsTree4[pos], ((u_char *)value) + 12, 32, nodes, PATRICIA_MAXBITS + 1);
         } else {
-            cnt = patricia_search_all2(current.fieldsTree6[pos], (u_char *)value, 128, nodes, PATRICIA_MAXBITS);
+            cnt = patricia_search_all2(current.fieldsTree6[pos], (u_char *)value, 128, nodes, PATRICIA_MAXBITS + 1);
         }
         if (cnt == 0)
             return;
