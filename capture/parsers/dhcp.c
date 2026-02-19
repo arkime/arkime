@@ -209,6 +209,8 @@ LOCAL int dhcp_process(ArkimeSession_t *session, ArkimePacket_t *const packet)
         BSB_IMPORT_u08(bsb, t);
         if (t == 255) // End Tag, no length
             break;
+        if (t == 0) // Pad, no length
+            continue;
         BSB_IMPORT_u08(bsb, l);
         if (BSB_IS_ERROR(bsb) || l > BSB_REMAINING(bsb) || l == 0)
             break;

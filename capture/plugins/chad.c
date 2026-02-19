@@ -15,7 +15,7 @@
 extern ArkimeConfig_t        config;
 
 LOCAL char     CHAD_ORDER_ARR[] =
-    "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVSXYZ1234567890=";
+    "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890=";
 
 
 LOCAL char     CHAD_HTTP_CONFIG[] = "host;accept;accept-encoding;accept-language;accept-charset;te;connection;referer;user-agent;cookie;content-encoding;keep-alive;ua-cpu;pragma;content-type;content-length;if-modified-since;trailer;transfer-encoding;via;x-forwarded-for;proxy-connection;userip;upgrade;authorization;expect;if-match;if-none-match;if-range;if-unmodified-since;max-forwards;proxy-authorization;range;server;warning;cache-control";

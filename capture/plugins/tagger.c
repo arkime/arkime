@@ -513,7 +513,7 @@ LOCAL void tagger_load_file_cb(int UNUSED(code), uint8_t *data, int data_len, gp
         arkime_field_ops_init(&info->ops, p - 2, 0);
 
         int j;
-        for (j = 2; j < p; j += 2) {
+        for (j = 2; j + 1 < p; j += 2) {
             int pos = -1;
             if (isdigit(parts[j][0])) {
                 unsigned int f = atoi(parts[j]);
