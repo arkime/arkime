@@ -261,7 +261,7 @@ sub showHelp($)
     print "  set-replicas <pat> <num>              - Set the number of replicas for index pattern\n";
     print "  set-shards-per-node <pat> <num>       - Set the number of shards per node for index pattern\n";
     print "  set-allocation-enable <mode>          - Set the allocation mode (all, primaries, new_primaries, none, null)\n";
-    print "  allocate-empty <node> <index> <shard> - Allocate a empty shard on a node, DATA LOSS!\n";
+    print "  allocate-empty <node> <index> <shard> - Allocate an empty shard on a node, DATA LOSS!\n";
     print "  unflood-stage <pat>                   - Mark index pattern as no longer flooded\n";
     exit 1;
 }
@@ -7824,12 +7824,12 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
 
     my $users = esGet("/${PREFIX}users/_search?size=1000&q=enabled:true+AND+createEnabled:false+AND+_exists_:lastUsed+AND+-userId:role\\:*");
     my $rmcount = 0;
+    my $epoch = time();
 
     foreach my $hit (@{$users->{hits}->{hits}}) {
-        my $epoc = time();
         my $lastUsed = $hit->{_source}->{lastUsed};
         $lastUsed = $lastUsed / 1000;  # convert to seconds
-        $lastUsed = $epoc - $lastUsed; # in seconds
+        $lastUsed = $epoch - $lastUsed; # in seconds
         $lastUsed = $lastUsed / 86400; # days since last used
         if ($lastUsed > $ARGV[2]) {
             my $userId = $hit->{_source}->{userId};
@@ -8743,7 +8743,7 @@ $policy = qq/{
         $result = esGet("/_tasks/$task");
         $dstCount = esGet("/$dst/_count")->{count};
         die Dumper($result->{error}) if (exists $result->{error});
-        my $p = int($dstCount * 100 / $srcCount);
+        my $p = $srcCount > 0 ? int($dstCount * 100 / $srcCount) : 100;
         if ($lastp != $p) {
             print (scalar localtime() . " $p% ($dstCount/$srcCount)\n");
             $lastp = $p;
