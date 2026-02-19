@@ -286,8 +286,8 @@ LOCAL void tls_alpn_to_ja4alpn(const uint8_t *alpn, int len, uint8_t *ja4alpn)
 
     len--;  // len now the offset of last byte, which could be 0
     if (isalnum(alpn[0]) && isalnum(alpn[len])) {
-        ja4alpn[0] = tolower(alpn[0]);
-        ja4alpn[1] = tolower(alpn[len]);
+        ja4alpn[0] = alpn[0];
+        ja4alpn[1] = alpn[len];
     } else {
         ja4alpn[0] = arkime_char_to_hexstr[alpn[0]][0];
         ja4alpn[1] = arkime_char_to_hexstr[alpn[len]][1];
