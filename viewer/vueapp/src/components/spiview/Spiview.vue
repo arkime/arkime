@@ -155,7 +155,7 @@ SPDX-License-Identifier: Apache-2.0
       <div
         class="text-theme-accent"
         v-if="staleData && !dataLoading">
-        <span class="fa fa-exclamation-triangle" />&nbsp;<span v-html="$t('spiview.canceledWarningHtml')" />
+        <span class="fa fa-exclamation-triangle" />&nbsp;<span v-html="$t('spiview.cancelWarningHtml')" />
         <span
           class="fa fa-close pull-right cursor-pointer"
           @click="staleData = false" />

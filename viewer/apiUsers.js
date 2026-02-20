@@ -632,7 +632,7 @@ class UserAPIs {
       result = UserAPIs.#setSPIViewLayout(req);
       break;
     default:
-      res.serverError(403, 'Invalid layout type');
+      return res.serverError(403, 'Invalid layout type');
     }
 
     if (!result.success) {
@@ -677,7 +677,7 @@ class UserAPIs {
       result = UserAPIs.#updateSPIViewLayout(req);
       break;
     default:
-      res.serverError(403, 'Invalid layout type');
+      return res.serverError(403, 'Invalid layout type');
     }
 
     if (!result.success) {
@@ -686,7 +686,7 @@ class UserAPIs {
 
     User.setUser(result.user.userId, result.user, (err, info) => {
       if (err) {
-        console.log(`ERROR - ${req.method} /api/user/info/${req.params.type}`, util.inspect(err, false, 50), info);
+        console.log(`ERROR - ${req.method} /api/user/layouts/${req.params.type}`, util.inspect(err, false, 50), info);
         return res.serverError(500, 'Update layout failed');
       }
 

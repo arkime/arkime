@@ -279,8 +279,8 @@ SPDX-License-Identifier: Apache-2.0
                       <input
                         class="form-check-input"
                         type="checkbox"
-                        :id="notifierTypes[notifier.type.toLowerCase()].alerts[aKey].name+notifier.name"
-                        :name="notifierTypes[notifier.type.toLowerCase()].alerts[aKey].name+notifier.name"
+                        :id="notifierTypes[notifier.type.toLowerCase()].alerts[aKey].name + notifier.name"
+                        :name="notifierTypes[notifier.type.toLowerCase()].alerts[aKey].name + notifier.name"
                         v-model="notifier.alerts[aKey]">
                       {{ notifierTypes[notifier.type.toLowerCase()].alerts[aKey].name }}
                     </label>

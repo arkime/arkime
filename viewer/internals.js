@@ -114,7 +114,7 @@ ArkimeConfig.loaded(() => {
     internals.elasticBase[0] = 'http://' + internals.elasticBase[0];
   }
 
-  // update user settingDefaults with user-setting-defaults config option if set\
+  // update user settingDefaults with user-setting-defaults config option if set
   for (const key in internals.settingDefaults) {
     const userSettingDefault = ArkimeConfig.getFull('user-setting-defaults', key);
     if (userSettingDefault !== undefined && userSettingDefault !== null) {

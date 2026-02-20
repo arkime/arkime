@@ -133,7 +133,7 @@ SPDX-License-Identifier: Apache-2.0
           v-html="$t('hunts.results-examiningHtml', {
             size: localJob.size > 0 ? localJob.size : $t('common.all'),
             type: localJob.type,
-            srcdst: (localJob.src ? '<strong>' + $t('common.sourceLC') +'</strong>' : '') + (localJob.src && localJob.dst ? ' and ' : '') + (localJob.dst ? '<strong>' + $t('common.destinationLC') + '</strong>' : '')
+            srcdst: (localJob.src ? '<strong>' + $t('common.sourceLC') + '</strong>' : '') + (localJob.src && localJob.dst ? ' and ' : '') + (localJob.dst ? '<strong>' + $t('common.destinationLC') + '</strong>' : '')
           })" />
       </div>
     </div>
@@ -233,10 +233,10 @@ SPDX-License-Identifier: Apache-2.0
         <div class="col-12">
           <span class="fa fa-fw fa-share-alt" />&nbsp;
           <template v-if="localJob.roles && localJob.roles.length">
-            {{ $t('hunts.noRoles') }}:
+            {{ $t('hunts.addRoles') }}:
           </template>
           <template v-else-if="!localJob.roles || !localJob.roles.length">
-            {{ $t('hunts.addRoles') }}:
+            {{ $t('hunts.noRoles') }}:
           </template>
           <RoleDropdown
             class="d-inline"

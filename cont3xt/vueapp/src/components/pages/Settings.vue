@@ -84,7 +84,7 @@ SPDX-License-Identifier: Apache-2.0
               class="nav-link cursor-pointer btn-space-between"
               color="primary"
               variant="text"
-              :active="activeOverviewId ===overview._id">
+              :active="activeOverviewId === overview._id">
               <overview-selector-line :overview="overview" />
             </v-btn>
           </div>

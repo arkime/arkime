@@ -308,7 +308,7 @@ class CronAPIs {
    * POST - /api/cron/:key
    *
    * Update a periodic query.
-   * @name /user/:key
+   * @name /cron/:key
    * @returns {boolean} success - Whether the update operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
    * @returns {ArkimeQuery} query - The updated query object

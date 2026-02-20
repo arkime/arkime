@@ -107,7 +107,7 @@ SPDX-License-Identifier: Apache-2.0
                   v-if="fieldsMap[col]"
                   :id="`viewField-${col}`">
                   {{ fieldsMap[col].friendlyName }}
-                  <BTooltip target="viewField-{{col}}">
+                  <BTooltip :target="`viewField-${col}`">
                     {{ fieldsMap[col].help }}
                   </BTooltip>
                 </label>
@@ -125,7 +125,7 @@ SPDX-License-Identifier: Apache-2.0
                   :id="`viewFieldOrder-${order[0]}`">
                   {{ fieldsMap[order[0]].friendlyName }}&nbsp;
                   ({{ order[1] }})
-                  <BTooltip target="viewFieldOrder-{{order[0]}}">
+                  <BTooltip :target="`viewFieldOrder-${order[0]}`">
                     {{ fieldsMap[order[0]].help }}
                   </BTooltip>
                 </label>

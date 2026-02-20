@@ -21,7 +21,7 @@ SPDX-License-Identifier: Apache-2.0
           <span class="fa fa-folder-open fa-2x text-muted" />
         </h3>
         <h5 class="lead">
-          {{ $t( cluster ? 'stats.sShards.noResultsCluster' : 'stats.esShards.noResults' ) }}
+          {{ $t( cluster ? 'stats.esShards.noResultsCluster' : 'stats.esShards.noResults' ) }}
         </h5>
       </div>
 
@@ -425,9 +425,9 @@ export default {
       try {
         await StatsService.includeShard(type, column[type], { cluster: this.query.cluster });
         if (type === 'name') {
-          column.nodeExcluded = true;
+          column.nodeExcluded = false;
         } else {
-          column.ipExcluded = true;
+          column.ipExcluded = false;
         }
       } catch (error) {
         this.error = error.text || String(error);

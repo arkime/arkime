@@ -222,7 +222,7 @@ class ViewerUtils {
     const old = ViewerUtils.#oldDBFields.get(x);
 
     if (old === undefined) { return x; }
-    return old.dbFieldECS ?? old.dbField2;
+    return old.fieldECS ?? old.dbField2;
   }
 
   // ----------------------------------------------------------------------------
