@@ -201,7 +201,7 @@ sub showHelp($)
     print "  disable-users <days>         - Disable user accounts that have not been active\n";
     print "      days                     - Number of days of inactivity (integer)\n";
     print "  set-shortcut <name> <userid> <file> [<opts>]\n";
-    print "       name                    - Name of the shortcut (no special characters except '_')\n";
+    print "       name                    - Name of the shortcut (no special characters except '-' and '_')\n";
     print "       userid                  - UserId of the user to add the shortcut for\n";
     print "       file                    - File that includes a comma or newline separated list of values\n";
     print "    --type <type>              - Type of shortcut = string, ip, number, default is string\n";
@@ -7259,8 +7259,8 @@ sub dbCheck {
         }
 
         if (!(exists $nodeStat->{process}->{max_file_descriptors}) || int($nodeStat->{process}->{max_file_descriptors}) < 4000) {
-            $errstr .= sprintf ("  INCREASE max file descriptors in /etc/security/limits.conf and restart all ES node\n");
-            $errstr .= sprintf ("                (change root to the user that runs ES)\n");
+            $errstr .= sprintf ("  INCREASE max file descriptors in /etc/security/limits.conf and restart all OS/ES nodes\n");
+            $errstr .= sprintf ("                (change root to the user that runs OS/ES)\n");
             $errstr .= sprintf ("          root hard nofile 128000\n");
             $errstr .= sprintf ("          root soft nofile 128000\n");
         }
@@ -7875,7 +7875,7 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
 
     exit 0;
 } elsif ($ARGV[1] =~ /^(set-?shortcut)$/) {
-    showHelp("Invalid name $ARGV[2], names cannot have special characters except '_'") if ($ARGV[2] =~ /[^-a-zA-Z0-9_]/);
+    showHelp("Invalid name $ARGV[2], names cannot have special characters except '-' and '_'") if ($ARGV[2] =~ /[^-a-zA-Z0-9_]/);
     showHelp("file '$ARGV[4]' not found") if (! -e $ARGV[4]);
     showHelp("file '$ARGV[4]' empty") if (-z $ARGV[4]);
 
@@ -8781,7 +8781,7 @@ $policy = qq/{
     esGet("/${dst}/_refresh", 1);
     $srcCount = esGet("/$src/_count")->{count};
     $dstCount = esGet("/$dst/_count")->{count};
-    die "Mismatch counts $srcCount != $dstCount" if ($srcCount != $dstCount);
+    die "Mismatched counts $srcCount != $dstCount" if ($srcCount != $dstCount);
     die "Not deleting src since would delete dst too" if ("${dst}*" eq "$src");
     esDelete("/$src", 1);
     print "Deleted $src\n";
@@ -9295,7 +9295,7 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
     splice(@directory, scalar(@directory)-1, 1);
     my $path = join("/", @directory);
 
-    die "Cannot find files start with ${basename}.${PREFIX} in $path" if (scalar(@filelist) == 0);
+    die "Cannot find files starting with ${basename}.${PREFIX} in $path" if (scalar(@filelist) == 0);
 
 
     logmsg "\nFollowing files will be used for restore\n\n@filelist\n\n";
