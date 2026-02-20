@@ -244,7 +244,8 @@ SPDX-License-Identifier: Apache-2.0
             {{ $t('settings.views.viewFormExpressionTip') }}
           </BTooltip>
         </b-input-group-text>
-        <b-form-textarea
+        <ExpressionAutocompleteInput
+          textarea
           rows="3"
           :model-value="newViewExpression"
           @update:model-value="newViewExpression = $event"
@@ -328,6 +329,7 @@ import UserService from '@common/UserService';
 import ArkimePaging from '../utils/Pagination.vue';
 import RoleDropdown from '@common/RoleDropdown.vue';
 import TransferResource from '@common/TransferResource.vue';
+import ExpressionAutocompleteInput from '../search/ExpressionAutocompleteInput.vue';
 
 export default {
   name: 'Views',
@@ -335,7 +337,8 @@ export default {
   components: {
     ArkimePaging,
     RoleDropdown,
-    TransferResource
+    TransferResource,
+    ExpressionAutocompleteInput
   },
   data () {
     return {

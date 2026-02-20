@@ -140,7 +140,7 @@ SPDX-License-Identifier: Apache-2.0
                   </BTooltip>
                 </b-input-group-text>
               </template>
-              <b-form-input
+              <ExpressionAutocompleteInput
                 :model-value="newCronQueryExpression"
                 @update:model-value="newCronQueryExpression = $event"
                 :placeholder="$t('settings.cron.searchExpressionPlaceholder')" />
@@ -398,7 +398,7 @@ SPDX-License-Identifier: Apache-2.0
                 </BTooltip>
               </b-input-group-text>
             </template>
-            <b-form-input
+            <ExpressionAutocompleteInput
               :model-value="query.query"
               @update:model-value="query.query = $event; cronQueryChanged(query)"
               :disabled="!canEditCronQuery(query)" />
@@ -586,6 +586,7 @@ import UserService from '@common/UserService.js';
 import RoleDropdown from '@common/RoleDropdown.vue';
 import NotifierDropdown from '@common/NotifierDropdown.vue';
 import TransferResource from '@common/TransferResource.vue';
+import ExpressionAutocompleteInput from '../search/ExpressionAutocompleteInput.vue';
 // utils
 import { timezoneDateString } from '@common/vueFilters.js';
 
@@ -595,7 +596,8 @@ export default {
   components: {
     RoleDropdown,
     NotifierDropdown,
-    TransferResource
+    TransferResource,
+    ExpressionAutocompleteInput
   },
   props: {
     userId: {
