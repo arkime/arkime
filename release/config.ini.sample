@@ -12,7 +12,7 @@
 # 3rd) The section titled "default" is used last.
 
 [default]
-# Comma seperated list of OpenSearch/Elasticsearch host:port combinations. If not using a
+# Comma separated list of OpenSearch/Elasticsearch host:port combinations. If not using a
 # Elasticsearch load balancer, a different OpenSearch/Elasticsearch node in the cluster can be
 # specified for each Arkime node to help spread load on high volume clusters. For user/password
 # use https://user:pass@host:port OR elasticsearchBasicAuth
@@ -44,13 +44,13 @@ rotateIndex=daily
 
 # Password Hash Secret - Must be in default section. Since OpenSearch/Elasticsearch
 # is wide open by default, we encrypt the stored password hashes with this
-# so a malicous person can't insert a working new account.
+# so a malicious person can't insert a working new account.
 # Comment out for no user authentication.
 # Changing the value will make all previously stored passwords no longer work.
 # Make this RANDOM, you never need to type in
 passwordSecret=ARKIME_PASSWORD
 
-# Use a different password for S2S communication then passwordSecret.
+# Use a different password for S2S communication than passwordSecret.
 # Must be in default section. Make this RANDOM, you never need to type in
 #serverSecret=
 
@@ -58,7 +58,7 @@ passwordSecret=ARKIME_PASSWORD
 # will make all previously stored passwords no longer work
 httpRealm=Moloch
 
-# Semicolon ';' seperated list of interfaces to listen on for traffic
+# Semicolon ';' separated list of interfaces to listen on for traffic
 interface=ARKIME_INTERFACE
 
 # Host to connect to for wiseService
@@ -97,13 +97,13 @@ udpTimeout=30
 # many seconds of inactivity.
 icmpTimeout=10
 
-# An aproximiate maximum number of active sessions Arkime will try and monitor
+# An approximate maximum number of active sessions Arkime will try and monitor
 maxStreams=1000000
 
 # Arkime writes a session record after this many packets
 maxPackets=10000
 
-# Delete pcap files when free space is lower then this in gigabytes OR it can be
+# Delete pcap files when free space is lower than this in gigabytes OR it can be
 # expressed as a percentage (ex: 5%). This does NOT delete the session records in
 # the database. It is recommended this value is between 5% and 10% of the disk.
 # Database deletes are done by the db.pl expire script
@@ -124,7 +124,7 @@ freeSpaceG=5%
 #  https://www.iana.org/assignments/ipv4-address-space/ipv4-address-space.csv
 rirFile=ARKIME_INSTALL_DIR/etc/ipv4-address-space.csv
 
-# Path of the OUI file from whareshark
+# Path of the OUI file from wireshark
 #  https://raw.githubusercontent.com/wireshark/wireshark/release-4.0/manuf
 ouiFile=ARKIME_INSTALL_DIR/etc/oui.txt
 
@@ -157,7 +157,7 @@ dropGroup=daemon
 # and additional HTTP headers can be sourced from the request
 # to populate various fields.
 #
-# The example below pulls verifies that an HTTP header called `UserGroup`
+# The example below verifies that an HTTP header called `UserGroup`
 # is present, and contains the value "ARKIME_ACCESS". If this authorization
 # check passes, the user database is inspected for the user in `userNameHeader`
 # and if it is not present it is created. The system uses the
@@ -165,7 +165,7 @@ dropGroup=daemon
 # request and uses them to populate `userId` and `userName`
 # fields for the new user record.
 #
-# Once the user record is created, this functionaity
+# Once the user record is created, this functionality
 # neither updates nor deletes the data, though if the user is no longer
 # reported to be in the group, access is denied regardless of the status
 # in the arkime database.
@@ -180,38 +180,38 @@ parseQSValue=false
 # Should we calculate sha256 for bodies
 supportSha256=false
 
-# Only index HTTP request bodies less than this number of bytes */
+# Only index HTTP request bodies less than this number of bytes
 maxReqBody=64
 
 # Only store request bodies that Utf-8?
 reqBodyOnlyUtf8=true
 
-# Semicolon ';' seperated list of SMTP Headers that have ips, need to have the terminating colon ':'
+# Semicolon ';' separated list of SMTP Headers that have ips, need to have the terminating colon ':'
 smtpIpHeaders=X-Originating-IP:;X-Barracuda-Apparent-Source-IP:
 
-# Semicolon ';' seperated list of directories to load parsers from
+# Semicolon ';' separated list of directories to load parsers from
 parsersDir=ARKIME_INSTALL_DIR/parsers
 
-# Semicolon ';' seperated list of directories to load plugins from
+# Semicolon ';' separated list of directories to load plugins from
 pluginsDir=ARKIME_INSTALL_DIR/plugins
 
-# Semicolon ';' seperated list of plugins to load and the order to load in
+# Semicolon ';' separated list of plugins to load and the order to load in
 # plugins=tagger.so; netflow.so
 
 # Plugins to load as root, usually just readers
 #rootPlugins=reader-pfring; reader-daq.so
 
-# Semicolon ';' seperated list of viewer plugins to load and the order to load in
+# Semicolon ';' separated list of viewer plugins to load and the order to load in
 # viewerPlugins=wise.js
 
 # NetFlowPlugin
 # Input device id, 0 by default
 #netflowSNMPInput=1
-# Outout device id, 0 by default
+# Output device id, 0 by default
 #netflowSNMPOutput=2
 # Netflow version 1,5,7 supported, 7 by default
 #netflowVersion=1
-# Semicolon ';' seperated list of netflow destinations
+# Semicolon ';' separated list of netflow destinations
 #netflowDestinations=localhost:9993
 
 # Specify the max number of indices we calculate spidata for.
@@ -235,7 +235,7 @@ spiDataMaxIndices=4
 # Number of threads processing packets
 packetThreads=2
 
-# ADVANCED - Semicolon ';' seperated list of files to load for config. Files are loaded
+# ADVANCED - Semicolon ';' separated list of files to load for config. Files are loaded
 # in order and can replace values set in this file or previous files.
 #includes=
 
@@ -247,7 +247,7 @@ pcapWriteMethod=simple
 
 # ADVANCED - Buffer size when writing pcap files. Should be a multiple of the raid 5 or xfs
 # stripe size. Defaults to 256k
-pcapWriteSize=262143
+pcapWriteSize=262144
 
 # ADVANCED - Max number of connections to OpenSearch/Elasticsearch
 maxESConns=30
@@ -309,7 +309,7 @@ logFileCreation=true
 # to index. They are accessed using the expression http.<fieldname> and
 # email.<fieldname> with optional .cnt expressions
 #
-# Possible config atributes for all headers
+# Possible config attributes for all headers
 #   type:<string> (string|integer|ip)  = data type                (default string)
 #  count:<boolean>                     = index count of items     (default false)
 #  unique:<boolean>                    = only record unique items (default true)

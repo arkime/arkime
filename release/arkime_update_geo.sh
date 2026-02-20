@@ -26,7 +26,7 @@ if (( $? == 0 )) ; then
   mv "$FILENAME" "${DEST_DIR}/oui.txt"
 fi
 
-# Run the maxind geoipupdate program if available. See
+# Run the maxmind geoipupdate program if available. See
 # https://blog.maxmind.com/2019/12/18/significant-changes-to-accessing-and-using-geolite2-databases/
 # https://dev.maxmind.com/geoip/geoipupdate/#For_Free_GeoLite2_Databases
 if [ -x "/usr/bin/geoipupdate" ]; then

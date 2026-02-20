@@ -35,7 +35,7 @@ foreach my $file (glob '../wiseService/source.*.js') {
 
         my $output = `egrep  'key: $match' ../../arkimeweb/_data/wise/$filename.yml`;
         if ($output eq "") {
-            print "MISSING key: $filename - $match}\n";
+            print "MISSING key: $filename - $match\n";
         }
     }
 }

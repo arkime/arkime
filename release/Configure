@@ -123,7 +123,7 @@ if [ -z "$ARKIME_INTERFACE" ]; then
     else
         /sbin/ifconfig | grep "^[a-z]" | cut -d: -f1 | cut -d" " -f1 | paste -s -d";"
     fi
-    echo -n "Semicolon ';' seperated list of interfaces to monitor [eth1] "
+    echo -n "Semicolon ';' separated list of interfaces to monitor [eth1] "
     read -r ARKIME_INTERFACE
 fi
 if [ -z "$ARKIME_INTERFACE" ]; then ARKIME_INTERFACE="eth1"; fi

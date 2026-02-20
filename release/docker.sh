@@ -98,7 +98,7 @@ show_help() {
     echo "  wise                 Run wise"
     echo
     echo "Options:"
-    echo "  --add-admin            Add a admin user if missing, please change password ASAP"
+    echo "  --add-admin            Add an admin user if missing, please change password ASAP"
     echo "  --basedir <dir>        Use a different base directory for Arkime, default is /opt/arkime"
     echo "  --forever              Run the tools forever, default is just once"
     echo "  --init <dburl>         Run db.pl init if needed, not recommended"
