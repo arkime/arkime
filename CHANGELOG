@@ -38,6 +38,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
 6.0.0 2026/02/xx
 ## Release
   - #3718 Build for Ubuntu 26.04
+  - #3726 docker.sh supports --wait-for-db option
 ## Capture
   - #3724 fix ja4plus plugin to match rust implementation for edge cases
 
