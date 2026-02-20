@@ -108,7 +108,7 @@ show_help() {
     echo "    delete                 Time in hours/days before deleting index (number followed by h or d)";
     echo "  --update-geo           Run /opt/arkime/bin/arkime_update_geo.sh"
     echo "  --upgrade <dburl>      Run db.pl upgrade if needed, not recommended"
-    echo "  --wait-for-db          Wait for Elasticsearch/OpenSearch to be ready before running command"
+    echo "  --wait-for-db <dburl>  Wait for Elasticsearch/OpenSearch to be ready before running command"
     echo "  --                     All arguments after this are passed to the command"
     echo
 }
@@ -187,12 +187,14 @@ while [ $# -gt 0 ]; do
             shift
             ;;
         --wait-for-db)
+            shift
+            WAIT_DB_URL=$1
             echo "Waiting for Elasticsearch/OpenSearch to be ready..."
             CURL_AUTH=""
             if [ -n "$ARKIME__elasticsearchBasicAuth" ]; then
                 CURL_AUTH="--user $ARKIME__elasticsearchBasicAuth"
             fi
-            until curl -sf $CURL_AUTH "$ARKIME__elasticsearch/_cluster/health?wait_for_status=yellow&timeout=30s"; do
+            until curl -sf $CURL_AUTH "$WAIT_DB_URL/_cluster/health?wait_for_status=yellow&timeout=30s"; do
                 echo "Waiting for Elasticsearch/OpenSearch..."
                 sleep 2
             done
