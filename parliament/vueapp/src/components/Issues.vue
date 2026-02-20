@@ -216,7 +216,7 @@ SPDX-License-Identifier: Apache-2.0
             scope="col"
             class="cursor-pointer"
             @click="sortBy('title')">
-            {{ $t('common.cluster') }}
+            {{ $t('parliament.issue.table-issue') }}
             <span
               v-if="query.sort !== 'title'"
               class="fa fa-sort fa-fw" />
@@ -353,25 +353,25 @@ SPDX-License-Identifier: Apache-2.0
                 <b-dropdown-item @click="removeIgnore">
                   {{ $t('parliament.issue.removeIgnore') }}
                 </b-dropdown-item>
-                <b-dropdown-item @click="ignoreIssue(3600000)">
+                <b-dropdown-item @click="ignoreIssues(3600000)">
                   {{ $t('parliament.issue.ignoreHourCount', 1) }}
                 </b-dropdown-item>
-                <b-dropdown-item @click="ignoreIssue(21600000)">
+                <b-dropdown-item @click="ignoreIssues(21600000)">
                   {{ $t('parliament.issue.ignoreHourCount', 6) }}
                 </b-dropdown-item>
-                <b-dropdown-item @click="ignoreIssue(43200000)">
+                <b-dropdown-item @click="ignoreIssues(43200000)">
                   {{ $t('parliament.issue.ignoreHourCount', 12) }}
                 </b-dropdown-item>
-                <b-dropdown-item @click="ignoreIssue(86400000)">
+                <b-dropdown-item @click="ignoreIssues(86400000)">
                   {{ $t('parliament.issue.ignoreDayCount', 1) }}
                 </b-dropdown-item>
-                <b-dropdown-item @click="ignoreIssue(604800000)">
+                <b-dropdown-item @click="ignoreIssues(604800000)">
                   {{ $t('parliament.issue.ignoreWeekCount', 1) }}
                 </b-dropdown-item>
-                <b-dropdown-item @click="ignoreIssue(2592000000)">
+                <b-dropdown-item @click="ignoreIssues(2592000000)">
                   {{ $t('parliament.issue.ignoreMonthCount', 1) }}
                 </b-dropdown-item>
-                <b-dropdown-item @click="ignoreIssue(-1)">
+                <b-dropdown-item @click="ignoreIssues(-1)">
                   {{ $t('parliament.issue.ignoreForever') }}
                 </b-dropdown-item>
               </b-dropdown> <!-- /ignore until dropdown -->

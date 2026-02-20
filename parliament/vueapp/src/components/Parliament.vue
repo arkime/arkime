@@ -52,7 +52,6 @@ SPDX-License-Identifier: Apache-2.0
             class="btn btn-outline-warning cursor-pointer me-1">
             <span class="fa fa-ban" />&nbsp;
             {{ $t('common.cancel') }}
-            Cancel
           </a>
           <a
             @click="createNewGroup"
@@ -1133,7 +1132,7 @@ export default {
         this.groupBeingEdited = undefined;
         this.focusGroupInput = false;
       }).catch((error) => {
-        this.error = error || 'Unable to udpate this group';
+        this.error = error || 'Unable to update this group';
       });
     },
     deleteGroup (group) {
