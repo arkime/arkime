@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# Set default value. Will be overwrite with options.
+# Set default value. Will be overwritten with options.
 node="default"
 file="/opt/arkime/etc/config.ini"
 

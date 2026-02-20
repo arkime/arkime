@@ -420,7 +420,7 @@ export default {
       });
     },
     saveSettings: function () {
-      this.msg = '';
+      this.message = '';
       if (msgCloseTimeout) { clearTimeout(msgCloseTimeout); }
 
       if (this.settings.general.noPackets === '' || this.settings.general.noPackets === undefined ||
@@ -472,7 +472,7 @@ export default {
         return;
       }
       if (!this.settings.general.removeAcknowledgedAfter || this.settings.general.removeAcknowledgedAfter > 10080) {
-        this.displayMessage({ msg: this.$t('parliament.settings.removeAcknowledgedAfter'), type: 'danger' });
+        this.displayMessage({ msg: this.$t('parliament.settings.removeAcknowledgedAfterErr'), type: 'danger' });
         return;
       }
 
@@ -493,7 +493,7 @@ export default {
       }
     },
     debounceInput: function () {
-      this.msg = '';
+      this.message = '';
       if (msgCloseTimeout) { clearTimeout(msgCloseTimeout); }
       if (inputDebounce) { clearTimeout(inputDebounce); }
       inputDebounce = setTimeout(() => {
@@ -520,7 +520,7 @@ export default {
     clearMessage: function (time) {
       if (msgCloseTimeout) { clearTimeout(msgCloseTimeout); }
       msgCloseTimeout = setTimeout(() => {
-        this.msg = '';
+        this.message = '';
       }, time || 5000);
     }
   }

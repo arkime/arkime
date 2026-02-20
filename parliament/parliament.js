@@ -141,7 +141,7 @@ app.use((req, res, next) => {
 const cspDirectives = {
   defaultSrc: ["'self'"],
   styleSrc: ["'self'"],
-  // need unsafe-eval for vue full build: https://vuejs.org/v2/guide/installation.html#CSP-environments
+  // need unsafe-eval for vue full build: https://vuejs.org/guide/best-practices/security.html#potential-dangers
   scriptSrc: ["'self'", "'unsafe-eval'", (req, res) => `'nonce-${res.locals.nonce}'`],
   objectSrc: ["'none'"],
   imgSrc: ["'self'", 'data:']
@@ -982,7 +982,7 @@ async function buildAlert (cluster, issue) {
       const field = setNotifier.fields.find(fd => fieldDef.name === fd.name);
       if (!field || (fieldDef.required && !field.value)) {
         // field doesn't exist, or field is required and doesn't have a value
-        console.log(`Missing the ${field.name} field for ${n} alerting. Add it on the settings page.`);
+        console.log(`Missing the ${fieldDef.name} field for ${n} alerting. Add it on the settings page.`);
         continue;
       }
       config[fieldDef.name] = field.value;
@@ -1201,8 +1201,6 @@ function setIssue (cluster, newIssue) {
 }
 
 function getHealth (cluster) {
-  Parliament.getGeneralSetting('esQueryTimeout');
-
   return new Promise((resolve, reject) => {
     const timeout = Parliament.getGeneralSetting('esQueryTimeout') * 1000;
 

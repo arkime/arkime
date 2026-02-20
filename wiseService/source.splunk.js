@@ -173,7 +173,7 @@ class SplunkSource extends WISESource {
     const query = this.query.replace('%%SEARCHTERM%%', key);
 
     try {
-      const results = this.service.oneshotSearch(query, { output_mode: 'json', count: 0 });
+      const results = await this.service.oneshotSearch(query, { output_mode: 'json', count: 0 });
 
       if (!results.results || results.results.length === 0) {
         return cb(null, undefined);
@@ -184,7 +184,7 @@ class SplunkSource extends WISESource {
       const args = [];
       for (const k in this.shortcuts) {
         if (item[k] !== undefined) {
-          args.push(this.shortcuts[k]);
+          args.push(this.shortcuts[k].pos);
           if (Array.isArray(item[k])) {
             args.push(item[k][0]);
           } else {

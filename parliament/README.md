@@ -69,7 +69,7 @@ Now browse to the app at `http://localhost:8008` (or whichever port you included
 #### Arkime User Authentication
 You can configure Parliament access using the Auth section on the Settings page (v4) or the config file (v5). Auth uses the Arkime User's database for Parliament access.
 
-_**Note**: When upgrading form v4 to v5, Auth settings configured in the UI will be automatically transferred to the config file._
+_**Note**: When upgrading from v4 to v5, Auth settings configured in the UI will be automatically transferred to the config file._
 
 - **All** Arkime users can view the Parliament.
 - Users with the "parliamentUser" role can ack, ignore, and delete issues within the Parliament.
@@ -83,20 +83,20 @@ To start the app for development and testing:
 
 This command starts the app with the necessary config options set (`-c ../parliament/parliament.ini`) and bundles the unminified application files into the `parliament/vueapp/dist` folder.
 
-`npm run parliament:dev` uses webpack to package the files then watches for changes to relevant files, and re-bundles the app after each save.
+`npm run parliament:dev` uses vite to package the files then watches for changes to relevant files, and re-bundles the app after each save.
 
 Now browse to the app at `http://localhost:8008`.
 
 #### Further help with running the application
 
-For a detailed explanation on how things work, check out the [vue webpack guide](http://vuejs-templates.github.io/webpack/) and [docs for vue-loader](http://vuejs.github.io/vue-loader).
+For a detailed explanation on how things work, check out the [Vite guide](https://vite.dev/guide/).
 
 
 ### Contributing
 
 Check out our [contributing guide](../CONTRIBUTING.md) for more information about contributing to Arkime.
 
-Before submitting a pull request with your contribution, please move to the top level Arkime directory and run `npm run lint`, and correct any errors. This runs [eslint][eslint], a static code analysis tool for finding problematic patterns or code that doesn’t adhere to our style guidelines. Check out `parliament/.eslintrc.js` to view this project's rules.
+Before submitting a pull request with your contribution, please move to the top level Arkime directory and run `npm run lint`, and correct any errors. This runs [eslint][eslint], a static code analysis tool for finding problematic patterns or code that doesn’t adhere to our style guidelines. Check out `eslint.config.js` to view this project's rules.
 
 Please use a [fork](https://guides.github.com/activities/forking/) to submit a [pull request](https://help.github.com/articles/creating-a-pull-request/) for your contribution.
 
@@ -132,7 +132,7 @@ Please use a [fork](https://guides.github.com/activities/forking/) to submit a [
       removeAcknowledgedAfter: 15
 
     },
-    notifiers: {    // notifiers (defined in parliament/notifiers/provider.notifme.js)
+    notifiers: {    // notifiers (defined in common/notifier.js)
       notifierX: {  // notifier (object)
 
         // name of the notifier displayed in the UI (string)
@@ -142,7 +142,7 @@ Please use a [fork](https://guides.github.com/activities/forking/) to submit a [
         on: false,
 
         // fields necessary to notify via this notifier (object)
-        // (defined in parliament/notifiers/provider.notifme.js)
+        // (defined in common/notifier.js)
         fields: {},
 
         // which issues to alert on via this notifier (object)
@@ -245,7 +245,6 @@ Please use a [fork](https://guides.github.com/activities/forking/) to submit a [
 
 [vue]: https://vuejs.org/
 [vuecli]: https://cli.vuejs.org/
-[webpack]: https://webpack.github.io/
 [node]: https://nodejs.org
 [npm]: https://www.npmjs.org/
 [eslint]: https://eslint.org/

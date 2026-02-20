@@ -63,7 +63,7 @@ export default {
     },
     shortcutsHelpTransition: { // the transition class name used to animate help dialog enter/leave
       type: String,
-      default: 'shortcuts-slide-long' // default sides in from the left
+      default: 'shortcuts-slide-long' // default slides in from the left
     }
   },
   data () {

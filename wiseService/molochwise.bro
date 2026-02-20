@@ -20,7 +20,7 @@ export {
                              /video\/mp4/ &redef;
 
 
-    # Set in local.bro with: redef MolochWise:base_url = "http://wise:80801";
+    # Set in local.bro with: redef MolochWise:base_url = "http://wise:8081";
     const base_url = "" &redef;
     const lookup_timeout: interval = 30min &redef;
     const lookup_count = 20 &redef;

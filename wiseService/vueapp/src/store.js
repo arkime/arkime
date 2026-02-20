@@ -14,8 +14,8 @@ const store = createStore({
       state.wiseTheme = newTheme;
       localStorage.setItem('wiseTheme', newTheme);
     },
-    SET_STATS_DATA_INTERVAL (state, newTheme) {
-      state.statsDataInterval = newTheme;
+    SET_STATS_DATA_INTERVAL (state, newInterval) {
+      state.statsDataInterval = newInterval;
     }
   },
   getters: {

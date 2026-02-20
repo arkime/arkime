@@ -247,7 +247,7 @@ class Notifier {
    */
   static async apiGetNotifiers (req, res) {
     const allRoles = await req.user.getRoles();
-    const roles = [...allRoles.keys()]; // es requries an array for terms search
+    const roles = [...allRoles.keys()]; // es requires an array for terms search
 
     const query = {
       sort: { created: { order: 'asc' } }

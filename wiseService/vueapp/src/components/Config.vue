@@ -655,7 +655,7 @@ export default {
         { name: 'name', required: true, depends: 'key', class: 'col-md-6', help: 'The name of the value action to show the user' },
         { name: 'category', required: true, depends: 'fields', class: 'col-md-6', help: 'Which category of fields should the value action be shown for, must set fields or category' },
         { name: 'fields', required: true, depends: 'category', class: 'col-md-6', help: 'Which fields to show the value action for, must set fields or category' },
-        { name: 'url', required: true, depends: 'func', help: 'The url to send the user, supports special subsitutions, must set url or func' },
+        { name: 'url', required: true, depends: 'func', help: 'The url to send the user, supports special substitutions, must set url or func' },
         { name: 'func', required: true, advanced: true, depends: 'url', help: 'A javascript function body to call, will be passed the name and value and must return the value, must set url or func' },
         { name: 'regex', required: false, advanced: true, help: 'When set, replaces %REGEX% in the url with the match' },
         { name: 'actionType', required: false, advanced: true, help: 'Needs a url. Supported actionTypes: "fetch" (information will be fetched and displayed in the value actions menu for 5 seconds after click), "" (empty, nothing is done on value action click)' },
@@ -671,7 +671,7 @@ export default {
     },
     sidebarOptions: function () {
       const options = {};
-      // Note: Services are alredy added to currConfig. This assists rendering them first
+      // Note: Services are already added to currConfig. This assists rendering them first
       options.services = Object.keys(this.configDefs).filter(key => this.configDefs[key].service);
       options.sources = Object.keys(this.currConfig).filter(key => !options.services.includes(key)).sort();
       return options;
@@ -1147,7 +1147,7 @@ export default {
       const rows = this.currFile.split('\n');
 
       for (const row of rows) { // parse rows
-        if (!row.length) { continue; } // emtpy row
+        if (!row.length) { continue; } // empty row
         if (row.startsWith('#')) { // comment row
           this.currCSV.rows.push([row]);
           continue;

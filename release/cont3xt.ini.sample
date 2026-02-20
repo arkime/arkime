@@ -17,7 +17,7 @@ userNameHeader=digest
 
 # Password Hash Secret - Must be in default section. Since OpenSearch/Elasticsearch
 # is wide open by default, we encrypt the stored password hashes with this
-# so a malicous person can't insert a working new account.
+# so a malicious person can't insert a working new account.
 # Changing the value will make all previously stored passwords no longer work.
 # Make this RANDOM, you never need to type in
 passwordSecret=ARKIME_PASSWORD
