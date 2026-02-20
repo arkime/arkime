@@ -30,12 +30,11 @@ SPDX-License-Identifier: Apache-2.0
           <span class="input-group-text">
             {{ $t('sessions.views.expression') }}
           </span>
-          <input
-            type="text"
-            class="form-control"
+          <ExpressionAutocompleteInput
             v-model="viewExpression"
             :placeholder="$t('sessions.views.expressionPlaceholder')"
-            @keydown.enter.stop>
+            @apply="modifyView"
+            @keyup.enter.stop />
           <button
             type="button"
             id="expandViewExpressionBtn"
@@ -137,11 +136,12 @@ SPDX-License-Identifier: Apache-2.0
         <span class="fa fa-pencil fa-2x me-2" />
         <span>{{ $t('sessions.views.expression') }}</span>
       </template>
-      <BFormTextarea
-        id="bigViewExpression"
+      <ExpressionAutocompleteInput
+        textarea
         rows="5"
         v-model="viewExpression"
-        :placeholder="$t('sessions.views.expressionPlaceholder')" />
+        :placeholder="$t('sessions.views.expressionPlaceholder')"
+        @apply="showBigExpression = false" />
       <template #footer>
         <div class="d-flex w-100 justify-content-between">
           <div>
@@ -189,6 +189,7 @@ const { t } = useI18n();
 import SettingsService from '../settings/SettingsService';
 // components
 import RoleDropdown from '@common/RoleDropdown.vue';
+import ExpressionAutocompleteInput from '../search/ExpressionAutocompleteInput.vue';
 
 // Define Props
 const props = defineProps({

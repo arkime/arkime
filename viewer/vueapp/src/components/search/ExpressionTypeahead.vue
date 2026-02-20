@@ -126,25 +126,13 @@ SPDX-License-Identifier: Apache-2.0
       <template #header>
         <span class="fa fa-search fa-2x" />
       </template>
-      <BFormTextarea
+      <ExpressionAutocompleteInput
+        textarea
         rows="5"
+        ref="bigAutocomplete"
         :placeholder="$t('common.search')"
         v-model="expression"
-        v-caret-pos="caretPos"
-        v-focus="focusTextArea"
-        @input="debounceExprChange"
-        @keydown.enter.prevent.stop="closeBigTypeahead(true)" />
-      <!-- results dropdown -->
-      <TypeaheadResults
-        v-if="bigTypeahead"
-        :expression="expression"
-        :results="results"
-        :active-idx="activeIdx"
-        :field-history-results="fieldHistoryResults"
-        :autocompleting-field="autocompletingField"
-        :add-to-query="addToQuery"
-        :remove-from-field-history="removeFromFieldHistory"
-        :big-typeahead="bigTypeahead" /> <!-- /results dropdown -->
+        @apply="closeBigTypeahead(true)" />
       <template #footer>
         <div class="d-flex w-100 justify-content-between">
           <div>
@@ -177,6 +165,7 @@ import FieldService from './FieldService';
 import CaretPos from '../utils/CaretPos.vue';
 import Focus from '@common/Focus.vue';
 import TypeaheadResults from './TypeaheadResults.vue';
+import ExpressionAutocompleteInput from './ExpressionAutocompleteInput.vue';
 
 let tokens;
 let timeout;
@@ -186,7 +175,7 @@ const operations = ['==', '!=', '<', '<=', '>', '>='];
 export default {
   name: 'ExpressionTypeahead',
   emits: ['changeExpression', 'modView', 'applyExpression'],
-  components: { TypeaheadResults },
+  components: { TypeaheadResults, ExpressionAutocompleteInput },
   directives: { CaretPos, Focus },
   data: function () {
     return {
@@ -196,15 +185,13 @@ export default {
       loadingValues: false,
       caretPos: 0,
       cancellablePromise: null,
-      resultsElement: null,
       // field history vars
       fieldHistoryResults: [],
       lastTokenWasField: false,
       autocompletingField: false,
       // saved expression vars
       savedExpressions: [],
-      bigTypeahead: false,
-      focusTextArea: false
+      bigTypeahead: false
     };
   },
   computed: {
@@ -258,8 +245,7 @@ export default {
     }
   },
   mounted: function () {
-    // set the results element for keyup event handler
-    this.resultsElement = document.getElementById('typeahead-results');
+    // resultsElement will be looked up dynamically when needed
   },
   methods: {
     /* exposed page functions ------------------------------------ */
@@ -271,7 +257,6 @@ export default {
     },
     closeBigTypeahead: function (apply) {
       this.bigTypeahead = false;
-      this.focusTextArea = false;
       // clear results under the small input when modal closes
       this.results = [];
       if (apply) {
@@ -283,7 +268,9 @@ export default {
     },
     showBigTypeahead: function () {
       setTimeout(() => {
-        this.focusTextArea = true;
+        if (this.$refs.bigAutocomplete) {
+          this.$refs.bigAutocomplete.focus();
+        }
       }, 100);
     },
     /**
@@ -407,20 +394,28 @@ export default {
       if (!this.activeIdx && this.activeIdx !== 0) { this.activeIdx = -1; }
 
       switch (e.key) {
-      case 'ArrowDown': // down arrow
+      case 'ArrowDown': { // down arrow
         this.activeIdx = (this.activeIdx + 1) % (this.fieldHistoryResults.length + this.results.length);
-        target = this.resultsElement.querySelectorAll('a')[this.activeIdx];
-        if (target && target.parentNode) {
-          target.parentNode.scrollTop = target.offsetTop;
+        const resultsEl = document.getElementById('typeahead-results');
+        if (resultsEl) {
+          target = resultsEl.querySelectorAll('a')[this.activeIdx];
+          if (target && target.parentNode) {
+            target.parentNode.scrollTop = target.offsetTop;
+          }
         }
         break;
-      case 'ArrowUp': // up arrow
+      }
+      case 'ArrowUp': { // up arrow
         this.activeIdx = (this.activeIdx > 0 ? this.activeIdx : (this.fieldHistoryResults.length + this.results.length)) - 1;
-        target = this.resultsElement.querySelectorAll('a')[this.activeIdx];
-        if (target && target.parentNode) {
-          target.parentNode.scrollTop = target.offsetTop;
+        const resultsEl2 = document.getElementById('typeahead-results');
+        if (resultsEl2) {
+          target = resultsEl2.querySelectorAll('a')[this.activeIdx];
+          if (target && target.parentNode) {
+            target.parentNode.scrollTop = target.offsetTop;
+          }
         }
         break;
+      }
       case 'Enter': // enter
         if (this.activeIdx >= 0) {
           let result;
