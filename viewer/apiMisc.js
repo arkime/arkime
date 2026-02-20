@@ -82,8 +82,7 @@ class MiscAPIs {
    */
   static getFields (req, res) {
     if (!internals.fieldsMap) {
-      res.status(404);
-      res.send('Cannot locate fields');
+      return res.status(404).send('Cannot locate fields');
     }
 
     if (req.query && req.query.array) {

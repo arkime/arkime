@@ -122,7 +122,7 @@ class HuntAPIs {
             if (HuntAPIs.#packetSearch(packets[i], options)) { return cb(null, true); }
           }
         } else {
-          // If searching src NOR dst need to check key
+          // If searching src OR dst (not both) need to check key
           const skey = Pcap.keyFromSession(session);
           for (let i = 0; i < len; i++) {
             const key = Pcap.key(packets[i]);

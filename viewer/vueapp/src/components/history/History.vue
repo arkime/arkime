@@ -216,7 +216,7 @@ SPDX-License-Identifier: Apache-2.0
               {{ timezoneDateString(item.timestamp * 1000, user.settings.timezone) }}
             </td>
             <td class="no-wrap text-end">
-              {{ readableTime(item.range*1000) }}
+              {{ readableTime(item.range * 1000) }}
             </td>
             <td
               v-has-role="{user:user,roles:'arkimeAdmin'}"
@@ -248,7 +248,7 @@ SPDX-License-Identifier: Apache-2.0
           </tr> <!-- /history item -->
           <!-- history item info -->
           <tr
-            :key="item.id+'-detail'"
+            :key="item.id + '-detail'"
             v-if="expandedLogs[item.id]">
             <td :colspan="colSpan">
               <dl class="dl-horizontal">

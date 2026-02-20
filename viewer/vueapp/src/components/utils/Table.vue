@@ -198,7 +198,7 @@ SPDX-License-Identifier: Apache-2.0
         <tr
           class="text-start"
           v-if="infoRow && item.opened"
-          :key="item.id+'moreInfo'">
+          :key="item.id + 'moreInfo'">
           <td :colspan="tableColspan">
             <div :id="'moreInfo-' + item.id" />
           </td>

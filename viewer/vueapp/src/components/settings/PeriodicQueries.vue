@@ -681,7 +681,7 @@ export default {
     /* creates a cron query given the name, expression, process, and tags */
     createCronQuery () {
       if (!this.newCronQueryName || this.newCronQueryName === '') {
-        this.cronQueryFormError = this.$t('settings.cron.queryNameRequired');
+        this.cronQueryFormError = this.$t('settings.cron.queryNameEmpty');
         return;
       }
 

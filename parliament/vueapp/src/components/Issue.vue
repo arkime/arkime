@@ -5,7 +5,7 @@ SPDX-License-Identifier: Apache-2.0
 <template>
   <div
     class="alert alert-sm mt-1 mb-0"
-    :class="{'alert-warning':issue.severity==='yellow','alert-danger':issue.severity==='red'}">
+    :class="{'alert-warning':issue.severity === 'yellow','alert-danger':issue.severity === 'red'}">
     <issue-actions
       v-if="isUser"
       class="issue-btns"

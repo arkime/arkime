@@ -271,8 +271,8 @@ SPDX-License-Identifier: Apache-2.0
                     :id="aKey + notifier.name">
                     <BFormCheckbox
                       inline
-                      :id="notifierTypes[notifier.type.toLowerCase()].alerts[aKey].name+notifier.name"
-                      :name="notifierTypes[notifier.type.toLowerCase()].alerts[aKey].name+notifier.name"
+                      :id="notifierTypes[notifier.type.toLowerCase()].alerts[aKey].name + notifier.name"
+                      :name="notifierTypes[notifier.type.toLowerCase()].alerts[aKey].name + notifier.name"
                       :model-value="notifier.alerts[aKey]"
                       @update:model-value="notifier.alerts[aKey] = $event">
                       {{ notifierTypes[notifier.type.toLowerCase()].alerts[aKey].name }}

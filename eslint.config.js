@@ -77,11 +77,14 @@ const commonJavaScriptRules = {
     "no-control-regex": "off",
 
     "object-curly-spacing": ["error", "always"],
+
+    "space-infix-ops": "error",
 };
 
 // Vue-specific rule overrides (applied after extending recommended configs)
 const vueRuleOverrides = {
     "vue/multi-word-component-names": "off",
+    "vue/space-infix-ops": "error",
     "vue/valid-v-slot": ["error", {
         allowModifiers: true,
     }],

@@ -57,11 +57,11 @@ SPDX-License-Identifier: Apache-2.0
               </a>
               <a
                 v-if="sortOrder === 'desc'"
-                id="toggleStickySortOrderAsk"
+                id="toggleStickySortOrderAsc"
                 @click="toggleSortOrder"
                 class="btn btn-default btn-sm pull-right ms-1">
                 <span class="fa fa-sort-desc" />
-                <BTooltip target="toggleStickySortOrderDesc">
+                <BTooltip target="toggleStickySortOrderAsc">
                   {{ $t('sessions.sticky.sortAscTip') }}
                 </BTooltip>
               </a>

@@ -104,7 +104,7 @@ SPDX-License-Identifier: Apache-2.0
         </b-dropdown-item>
         <b-dropdown-item
           @click="exportCSV"
-          title="$t('sessions.exports.exportCSV')">
+          :title="$t('sessions.exports.exportCSV')">
           <span class="fa fa-fw fa-file-excel-o" />&nbsp;
           {{ $t('sessions.exports.exportCSV') }}
         </b-dropdown-item>
@@ -132,7 +132,7 @@ SPDX-License-Identifier: Apache-2.0
           v-for="(clusterInfo, key) in arkimeClusters"
           :key="key"
           @click="sendSession(key)"
-          :title="`$t('search.sendSession', { name: clusterInfo.name })`">
+          :title="$t('search.sendSession', { name: clusterInfo.name })">
           <span class="fa fa-fw fa-paper-plane-o" />&nbsp;
           {{ $t('search.sendSession', { name: clusterInfo.name }) }}
         </b-dropdown-item>

@@ -24,7 +24,7 @@ SPDX-License-Identifier: Apache-2.0
             href="https://arkime.com/faq#what-browsers-are-supported">
             {{ $t('sessions.field.unsupportedBrowser') }}</a>?
           <br>
-          <em>{{ $t('session.field.contactAdmin') }}</em>
+          <em>{{ $t('sessions.field.contactAdmin') }}</em>
         </BTooltip>
       </span>
     </span>

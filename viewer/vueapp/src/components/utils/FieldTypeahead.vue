@@ -11,8 +11,8 @@ SPDX-License-Identifier: Apache-2.0
     role="dropdown">
     <a
       v-for="(field, index) in filteredFieldHistory"
-      :key="field.exp+'-history'"
-      :class="{'active': index === current,'last-history-item':index === filteredFieldHistory.length-1}"
+      :key="field.exp + '-history'"
+      :class="{'active': index === current,'last-history-item':index === filteredFieldHistory.length - 1}"
       class="dropdown-item cursor-pointer"
       @click.stop="changeField(field)">
       <span class="fa fa-history" />&nbsp;
@@ -29,7 +29,7 @@ SPDX-License-Identifier: Apache-2.0
     <a
       v-for="(field, index) in filteredFields"
       :key="field.exp"
-      :class="{'active':index+filteredFieldHistory.length === current}"
+      :class="{'active':index + filteredFieldHistory.length === current}"
       class="dropdown-item cursor-pointer"
       @click.stop="changeField(field)">
       {{ field.friendlyName }}
@@ -230,7 +230,7 @@ export default {
       return found;
     },
     /**
-     * Removes an item to the field history (and results)
+     * Removes an item from the field history (and results)
      * @param {object} field The field to remove from the history
      */
     removeFromFieldHistory: function (field) {

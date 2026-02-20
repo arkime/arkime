@@ -7,11 +7,11 @@
     <template v-if="autocompletingField">
       <template
         v-for="(value, key) in fieldHistoryResults"
-        :key="key+'history'">
+        :key="key + 'history'">
         <a
-          :id="key+'history'"
+          :id="key + 'history'"
           class="dropdown-item cursor-pointer"
-          :class="{'active':key === activeIdx,'last-history-item':key === fieldHistoryResults.length-1}"
+          :class="{'active':key === activeIdx,'last-history-item':key === fieldHistoryResults.length - 1}"
           @click="addToQuery(value)">
           <span class="fa fa-history" />&nbsp;
           <strong v-if="value.exp">{{ value.exp }}</strong>
@@ -23,7 +23,7 @@
             @click.stop.prevent="removeFromFieldHistory(value)" />
           <BTooltip
             v-if="value.help"
-            :target="key+'history'">
+            :target="key + 'history'">
             {{ value.help.substring(0, 100) }}
             <span v-if="value.help.length > 100">
               ...
@@ -34,19 +34,19 @@
     </template>
     <template
       v-for="(value, key) in results"
-      :key="value+'item'">
+      :key="value + 'item'">
       <a
-        :id="key+'item'"
+        :id="key + 'item'"
         class="dropdown-item cursor-pointer"
         :title="value.help"
-        :class="{'active':key+fieldHistoryResults.length === activeIdx}"
+        :class="{'active':key + fieldHistoryResults.length === activeIdx}"
         @click="addToQuery(value)">
         <strong v-if="value.exp">{{ value.exp }}</strong>
         <strong v-if="!value.exp">{{ value }}</strong>
         <span v-if="value.friendlyName">- {{ value.friendlyName }}</span>
         <BTooltip
           v-if="value.help"
-          :target="key+'item'">
+          :target="key + 'item'">
           {{ value.help.substring(0, 100) }}
           <span v-if="value.help.length > 100">
             ...

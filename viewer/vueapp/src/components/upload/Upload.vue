@@ -36,7 +36,7 @@ SPDX-License-Identifier: Apache-2.0
           <BFormFile
             :label="$t('uploads.pcapFileUpload')"
             :model-value="file"
-            placeholder="Fool"
+            placeholder="Choose file..."
             @update:model-value="(val) => file = val" /> <!-- /file -->
 
           <!-- tag(s) -->

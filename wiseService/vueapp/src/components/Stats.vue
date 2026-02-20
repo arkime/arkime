@@ -33,7 +33,7 @@ SPDX-License-Identifier: Apache-2.0
 
     <b-tabs
       class="mt-3"
-      :dark="getTheme ==='dark'">
+      :dark="getTheme === 'dark'">
       <b-tab
         :title="$t('wise.stats.sources')"
         @click="clickTab('sources')"
@@ -44,7 +44,7 @@ SPDX-License-Identifier: Apache-2.0
             striped
             :items="sourceStats"
             :fields="sourceTableFields"
-            :dark="getTheme ==='dark'" />
+            :dark="getTheme === 'dark'" />
         </div>
         <div
           v-else-if="searchTerm"
@@ -65,7 +65,7 @@ SPDX-License-Identifier: Apache-2.0
             striped
             :items="typeStats"
             :fields="typeTableFields"
-            :dark="getTheme ==='dark'" />
+            :dark="getTheme === 'dark'" />
         </div>
         <div
           v-else-if="searchTerm"

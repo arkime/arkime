@@ -454,7 +454,7 @@ function parseIpPort (yy, field, ipPortStr) {
   }
 
   // Support ':80' and '.80'
-  if ((ipPortStr[0] === ':' && ipPortStr[0] !== ':') ||
+  if ((ipPortStr[0] === ':') ||
       (ipPortStr[0] === '.')) {
     if (dbField !== 'ipall') {
       return parseSingleIp(field, dbField, undefined, +ipPortStr.slice(1));
