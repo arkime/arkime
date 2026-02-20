@@ -586,7 +586,7 @@ LOCAL DbInfo_t dbInfo[ARKIME_MAX_PACKET_THREADS];
 
 #define MAX_IPS 2000
 
-LOCAL ARKIME_LOCK_DEFINE(outputed);
+LOCAL ARKIME_LOCK_DEFINE(outputted);
 
 #define SAVE_FIELD_STR_HASH(POS, FLAGS) \
 do { \
@@ -1454,14 +1454,14 @@ void arkime_db_save_session(ArkimeSession_t *session, int final)
 
     if (config.dryRun) {
         if (config.tests) {
-            static int outputed;
+            static int outputted;
 
-            ARKIME_LOCK(outputed);
-            outputed++;
+            ARKIME_LOCK(outputted);
+            outputted++;
             const int hlen = dataPtr - startPtr;
-            fprintf(stderr, "  %s{\"header\":%.*s,\n  \"body\":%.*s}\n", (outputed == 1 ? "" : ","), hlen - 1, dbInfo[thread].json, (int)(BSB_LENGTH(jbsb) - hlen - 1), dbInfo[thread].json + hlen);
+            fprintf(stderr, "  %s{\"header\":%.*s,\n  \"body\":%.*s}\n", (outputted == 1 ? "" : ","), hlen - 1, dbInfo[thread].json, (int)(BSB_LENGTH(jbsb) - hlen - 1), dbInfo[thread].json + hlen);
             fflush(stderr);
-            ARKIME_UNLOCK(outputed);
+            ARKIME_UNLOCK(outputted);
         } else if (config.debug) {
             LOG("%.*s\n", (int)BSB_LENGTH(jbsb), dbInfo[thread].json);
         }
@@ -2835,10 +2835,10 @@ LOCAL  guint timers[10];
 void arkime_db_init()
 {
     if (config.tests) {
-        ARKIME_LOCK(outputed);
+        ARKIME_LOCK(outputted);
         fprintf(stderr, "{\"sessions3\": [\n");
         fflush(stderr);
-        ARKIME_UNLOCK(outputed);
+        ARKIME_UNLOCK(outputted);
     }
     if (!config.dryRun) {
         esServer = arkime_http_create_server(config.elasticsearch, config.maxESConns, config.maxESRequests, config.compressES);
@@ -2988,10 +2988,10 @@ void arkime_db_exit()
 
     if (config.tests) {
         usleep(10000);
-        ARKIME_LOCK(outputed);
+        ARKIME_LOCK(outputted);
         fprintf(stderr, "]}\n");
         fflush(stderr);
-        ARKIME_UNLOCK(outputed);
+        ARKIME_UNLOCK(outputted);
     }
 
     if (ipTree4) {

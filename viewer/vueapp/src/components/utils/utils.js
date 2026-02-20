@@ -60,7 +60,7 @@ export default {
   /**
    * Check that at least one ES cluster is selected from ES Cluster Dropdown Menu
    * Also, check that a valid/active cluster is selected
-   * If the vue component object is passed in, it sets the error message on the vue comonent "error" property
+   * If the vue component object is passed in, it sets the error message on the vue component "error" property
    * @param {string} queryCluster A string the contains a list of ES cluster in the format ES1,ES2,ES3, ...
    * @param {array} availableClusterList An array of available ES cluster
    * @param {object} self The vue component object

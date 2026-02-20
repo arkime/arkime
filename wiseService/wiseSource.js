@@ -443,7 +443,7 @@ class WISESource {
    * Convert field ids and string values into the encoded form used in WISE.
    *
    * This method tags a variable number of arguments, each in a pair of field id and string value.
-   * @returns {buffer} - the endcoded results
+   * @returns {buffer} - the encoded results
    */
   static encodeResult () {
     const vals = [];

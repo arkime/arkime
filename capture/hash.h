@@ -9,7 +9,7 @@
  * Create item structure and optional head structure for use with a DLL
  * Create the key function and cmp function.
  * Use HASH_VAR to declare the actual variable.  Can be global or in a structure
- * Use HASH_INIT to initialze the hashtable
+ * Use HASH_INIT to initialize the hashtable
  *
  * A key can also just be the element
  *

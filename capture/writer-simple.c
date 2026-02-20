@@ -116,7 +116,7 @@ LOCAL int                    openOptions;
  * Compression design inspired by Philip Gladstone and others.
  * A compressed file is made up of compressed blocks.
  * You can only start reading a compressed file at the beginning of a block.
- * Blocks are variable sized, with the max UNCOMPRESED data per block
+ * Blocks are variable sized, with the max UNCOMPRESSED data per block
  * controlled by simpleCompressionBlockSize.
  * uncompressedBits is calculated so it can hold simpleCompressionBlockSize.
  * The file pos for each packet is made of two parts

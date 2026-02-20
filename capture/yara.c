@@ -46,7 +46,7 @@ LOCAL  YR_RULES    *yEmailRules = 0;
 LOCAL  int         yFlags = 0;
 
 /******************************************************************************/
-// Yara 4 compiler callback: const YR_RULE *rule inbetween int line_number and const char *message.
+// Yara 4 compiler callback: const YR_RULE *rule in between int line_number and const char *message.
 LOCAL void arkime_yara_report_error(int error_level, const char *file_name, int line_number, const YR_RULE *UNUSED(rule), const char *error_message, void *UNUSED(user_data))
 {
     LOG("%d %s:%d: %s\n", error_level, file_name, line_number, error_message);

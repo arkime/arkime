@@ -685,7 +685,7 @@ export default {
         lastToken = queryChars.reverse().join('');
 
         if (/(])$/.test(lastToken)) {
-          // if theres a closing brace, remove it from the token for querying
+          // if there's a closing brace, remove it from the token for querying
           lastToken = lastToken.substring(0, lastToken.length - 1);
         }
       }

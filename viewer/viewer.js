@@ -86,7 +86,7 @@ const cspDirectives = {
   defaultSrc: ["'self'"],
   // need unsafe-inline for jquery flot (https://github.com/flot/flot/issues/1574, https://github.com/flot/flot/issues/828)
   styleSrc: ["'self'", "'unsafe-inline'"],
-  // need unsafe-eval for vue full build: https://vuejs.org/v2/guide/installation.html#CSP-environments
+  // need unsafe-eval for vue full build: https://vuejs.org/api/application#app-config-compileroptions
   scriptSrc: ["'self'", "'unsafe-eval'", (req, res) => `'nonce-${res.locals.nonce}'`],
   objectSrc: ["'none'"],
   imgSrc: ["'self'", 'data:']
@@ -186,7 +186,7 @@ app.use('/public', express.static(
 
 // regression test methods, before auth checks --------------------------------
 if (ArkimeConfig.regressionTests) {
-  // Override default lastUsed min write internal for tests
+  // Override default lastUsed min write interval for tests
   User.lastUsedMinInterval = 1000;
 
   app.get('/regressionTests/makeToken', (req, res, next) => {
@@ -1688,7 +1688,7 @@ app.getpost( // spigraph hierarchy endpoint (POST or GET) - uses fillQueryFromBo
   SessionAPIs.getSPIGraphHierarchy
 );
 
-app.getpost( // build query endoint (POST or GET) - uses fillQueryFromBody to
+app.getpost( // build query endpoint (POST or GET) - uses fillQueryFromBody to
   // fill the query parameters if the client uses POST to support POST and GET
   ['/api/buildquery', '/buildQuery.json'],
   [ArkimeUtil.noCacheJson, fillQueryFromBody, logAction('query')],

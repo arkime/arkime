@@ -6,7 +6,7 @@ import { parseRoles } from '@common/vueFilters.js';
 export default {
   /**
    * Fetches the list of user roles.
-   * @returns {Promise} - The promise that either resovles the request or rejects in error
+   * @returns {Promise} - The promise that either resolves the request or rejects in error
    */
   getUser () {
     return new Promise((resolve, reject) => {
@@ -26,7 +26,7 @@ export default {
 
   /**
    * Fetches users settings.
-   * @returns {Promise} - The promise that either resovles the request or rejects in error
+   * @returns {Promise} - The promise that either resolves the request or rejects in error
    */
   getUserSettings () {
     return new Promise((resolve, reject) => {
@@ -46,7 +46,7 @@ export default {
   /**
    * Set the users settings
    * @param {Object} settings - The settings to update
-   * @returns {Promise} - The promise that either resovles the request or rejects in error
+   * @returns {Promise} - The promise that either resolves the request or rejects in error
    */
   setUserSettings (settings) {
     return new Promise((resolve, reject) => {
@@ -68,7 +68,7 @@ export default {
 
   /**
    * Fetches the list of user roles.
-   * @returns {Promise} - The promise that either resovles the request or rejects in error
+   * @returns {Promise} - The promise that either resolves the request or rejects in error
    */
   getRoles () {
     return new Promise((resolve, reject) => {
@@ -91,7 +91,7 @@ export default {
 
   /**
    * Fetches the integration settings for this user
-   * @returns {Promise} - The promise that either resovles the request or rejects in error
+   * @returns {Promise} - The promise that either resolves the request or rejects in error
    */
   getIntegrationSettings () {
     return new Promise((resolve, reject) => {
@@ -111,7 +111,7 @@ export default {
   /**
    * Set the settings for integrations
    * @param {Object} settings - The settings to update
-   * @returns {Promise} - The promise that either resovles the request or rejects in error
+   * @returns {Promise} - The promise that either resolves the request or rejects in error
    */
   setIntegrationSettings (settings) {
     return new Promise((resolve, reject) => {
@@ -159,7 +159,7 @@ export default {
   /**
    * Saves a list of integrations as a view
    * @param {Object} view - The view to save { name: String, integrations: [], canView: [roles], canEdit: [roles] }
-   * @returns {Promise} - The promise that either resovles the request or rejects in error
+   * @returns {Promise} - The promise that either resolves the request or rejects in error
    */
   saveIntegrationsView (view) {
     return new Promise((resolve, reject) => {
@@ -183,7 +183,7 @@ export default {
   /**
    * Updates a view
    * @param {Object} view - The view to save { name: String, integrations: [], canView: [roles], canEdit: [roles] }
-   * @returns {Promise} - The promise that either resovles the request or rejects in error
+   * @returns {Promise} - The promise that either resolves the request or rejects in error
    */
   updateIntegrationsView (view) {
     return new Promise((resolve, reject) => {
@@ -207,7 +207,7 @@ export default {
   /**
    * Deletes a view
    * @param {String} id - The id of the view to delete
-   * @returns {Promise} - The promise that either resovles the request or rejects in error
+   * @returns {Promise} - The promise that either resolves the request or rejects in error
    */
   deleteIntegrationsView (id) {
     return new Promise((resolve, reject) => {

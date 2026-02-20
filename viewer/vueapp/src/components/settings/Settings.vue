@@ -707,7 +707,7 @@ SPDX-License-Identifier: Apache-2.0
                   </template>
                 </td>
                 <td>&nbsp;</td>
-              </tr> <!-- /default spiview field confg -->
+              </tr> <!-- /default spiview field config -->
               <!-- spiview field configs -->
               <template v-if="fieldsMap">
                 <tr

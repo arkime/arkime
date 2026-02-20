@@ -1193,7 +1193,7 @@ export default {
       }
     },
     navigateLeftResultTree () {
-      // if the node is collapsable and not collapsed, collapse it--otherwise, go to the parent
+      // if the node is collapsible and not collapsed, collapse it--otherwise, go to the parent
       if (this.nodeIsCollapsable(this.activeIndicatorId) && !this.getCollapsedIndicatorNodeMap[this.activeIndicatorId]) {
         this.$store.commit('TOGGLE_INDICATOR_NODE_COLLAPSE', this.activeIndicatorId);
       } else {
