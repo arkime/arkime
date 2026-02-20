@@ -175,7 +175,7 @@ const cspDirectives = {
   defaultSrc: ["'self'"],
   // unsafe-inline required for json editor (https://github.com/dirkliu/vue-json-editor)
   styleSrc: ["'self'", "'unsafe-inline'"],
-  // need unsafe-eval for vue full build: https://vuejs.org/v2/guide/installation.html#CSP-environments
+  // need unsafe-eval for vue full build: https://vuejs.org/guide/best-practices/security.html#potential-dangers
   scriptSrc: ["'self'", "'unsafe-eval'", (req, res) => `'nonce-${res.locals.nonce}'`],
   objectSrc: ["'none'"],
   imgSrc: ["'self'", 'data:'],
@@ -1567,7 +1567,7 @@ if (internals.webconfig) {
       return res.send({ success: true, text: 'Would save, but regressionTests' });
     }
 
-    // Make sure updateTime has increased in case of clock sku
+    // Make sure updateTime has increased in case of clock skew
     config.wiseService.updateTime = Math.max(Date.now(), internals.updateTime + 1);
 
     ArkimeConfig.replace(config);

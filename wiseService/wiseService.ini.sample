@@ -23,7 +23,7 @@ excludeDomains=*.bl.barracudabrts.com;*.zen.spamhaus.org;*.in-addr.arpa;*.avts.m
 [emergingthreats]
 #key=
 
-# ThreatQ - http://http://www.threatquotient.com/
+# ThreatQ - http://www.threatquotient.com/
 [threatq]
 #key=
 #host=
@@ -62,4 +62,4 @@ type=domain
 reload=60
 
 [right-click]
-file=/data/moloch/wiseService/right_click.ini.sample
+file=/opt/arkime/wiseService/right_click.ini.sample

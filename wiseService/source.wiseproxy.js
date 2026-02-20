@@ -180,11 +180,11 @@ class WiseProxySource extends WISESource {
     axios(vaOptions)
       .then((response) => {
         const body = response.data;
-        for (const viewName in body) {
-          this.api.addView(viewName, body[viewName]);
+        for (const actionName in body) {
+          this.api.addValueAction(actionName, body[actionName]);
         }
       }).catch((err) => {
-        console.log(this.section, 'problem fetching /rightClicks', this.section, err);
+        console.log(this.section, 'problem fetching /valueActions', this.section, err);
       });
   }
 

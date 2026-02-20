@@ -63,7 +63,7 @@ class ThreatStreamSource extends WISESource {
       ThreatStreamSource.prototype.dump = ThreatStreamSource.prototype.dumpZip;
       api.addSource('threatstream', this, ['domain', 'email', 'ip', 'md5', 'url']);
       api.app.get('/threatstream/_reload', (req, res) => {
-        this.loadFile.bind(this);
+        this.loadFile.bind(this)();
         res.send('Ok');
       });
 
@@ -83,7 +83,7 @@ class ThreatStreamSource extends WISESource {
       ThreatStreamSource.prototype.getURL = ThreatStreamSource.prototype.getURLSqlite3;
       this.loadTypes(true);
       api.app.get('/threatstream/_reload', (req, res) => {
-        this.openDB.bind(this);
+        this.openDb.bind(this)();
         res.send('Ok');
       });
       break;
