@@ -685,7 +685,7 @@ export default {
               count = spiParam[1] = spiParam[1] + 100;
             } else {
               // get the min of the requested length and the actual results length
-              // since the results could have been filtered and there are many fewer resutls
+              // since the results could have been filtered and there are many fewer results
               spiParam[1] = Math.min(parseInt(spiParam[1]), Math.round(currLen / 100) * 100);
               count = spiParam[1] = spiParam[1] - 100;
               count = Math.max(count, 100); // min is 100

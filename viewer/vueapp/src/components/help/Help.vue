@@ -512,7 +512,7 @@ SPDX-License-Identifier: Apache-2.0
           <ol>
             <li>Export a PCAP of the required sessions data.</li>
             <li>Data within the viewer may also be exported as a CSV for further review and manipulation.</li>
-            <li>Tags may be added or removed from the sessions which have been detected by the analyst's query. Theses events can then later be recalled by using the <code>tags == "blah"</code> statements.</li>
+            <li>Tags may be added or removed from the sessions which have been detected by the analyst's query. These events can then later be recalled by using the <code>tags == "blah"</code> statements.</li>
             <li>Send the selected data to another system for further analysis.</li>
             <li>Scrub packet data by overwriting the packets (if a user has data removal privileges).</li>
             <li>Delete SPI and PCAP data entirely (if a user has data removal privileges).</li>

@@ -1418,7 +1418,7 @@ export default {
   margin-top: -35px;
 }
 
-/* hide vizualization styles ----------------- */
+/* hide visualization styles ----------------- */
 .hide-viz .viz-container {
   height: auto;
 }

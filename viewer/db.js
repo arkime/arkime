@@ -183,7 +183,7 @@ Db.initialize = async (info) => {
   internals.localShortcutsIndex = fixIndex('lookups');
   if (internals.info.usersHost && internals.usersPrefix !== undefined) {
     internals.remoteShortcutsIndex = `${internals.usersPrefix}lookups`;
-  } else { // there is no remote shorcuts index, just set it to local
+  } else { // there is no remote shortcuts index, just set it to local
     internals.remoteShortcutsIndex = internals.localShortcutsIndex;
   }
 
@@ -479,7 +479,7 @@ async function fixPacketPos (fields) {
                 mult = 1;
               } else {
                 num = num + x * mult;
-                mult *= 128; // Javscript can't shift large numbers, so mult
+                mult *= 128; // Javascript can't shift large numbers, so mult
               }
             }
           } catch (e) {
@@ -2221,7 +2221,7 @@ Db.putTemplate = async (templateName, body, cluster) => {
 Db.setQueriesNode = async (node, force) => {
   const namePid = `${node}-${process.pid}`;
 
-  // force is true we just rewrite the primary-viewer entry everytime
+  // force is true we just rewrite the primary-viewer entry every time
   if (force) {
     await internals.client7.index({
       id: 'primary-viewer',

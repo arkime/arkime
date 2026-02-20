@@ -187,7 +187,7 @@ esac ], [
 AC_MSG_RESULT(yes) ])
 
 # Do we have libnl?
-# Modfied version of whats in libpcap configure.ac.  Thank you libpcap!
+# Modified version of what's in libpcap configure.ac.  Thank you libpcap!
 #
 AC_ARG_WITH(libnl,
 AS_HELP_STRING([--without-libnl],[disable libnl support @<:@default=yes, on Linux, if present@:>@]),

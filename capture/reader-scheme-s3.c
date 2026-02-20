@@ -49,7 +49,7 @@ typedef struct s3_request {
     uint8_t                isDir : 1;    // Doint a prefix match
     uint8_t                isS3 : 1;     // Use S3 URL
     uint8_t                tryAgain : 1; // Try again because wrong region
-    uint8_t                first : 1;    // The first attemp at url
+    uint8_t                first : 1;    // The first attempt at url
 } S3Request;
 
 

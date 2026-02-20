@@ -528,7 +528,7 @@ nav.navbar > .navbar-nav > .nav-item > a {
   transition: transform .5s;
 }
 
-/* for transition groups (must use lists - styles added to remove list stying)
+/* for transition groups (must use lists - styles added to remove list styling)
    expands/shrinks each item in the group in/out
    NOTE: make sure 300px is tall enough */
 .shrink-list {

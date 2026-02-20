@@ -1224,7 +1224,7 @@ export default {
   padding: .2rem .3rem;
   border-color: transparent;
   background-color: transparent;
-  box-shadow: none !important; /* Covers all css states that has this defined in boostrap */
+  box-shadow: none !important; /* Covers all css states that has this defined in bootstrap */
 }
 .source-btn[active] {
   color: #222;

@@ -76,7 +76,7 @@ LOCAL void reader_libpcapfile_monitor_do(struct inotify_event *event)
     string->str = fullfilename;
 
     if (config.debug)
-        LOG("Monitor enqueing %s", string->str);
+        LOG("Monitor enqueuing %s", string->str);
     DLL_PUSH_TAIL(s_, &monitorQ, string);
     return;
 }

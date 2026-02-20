@@ -266,7 +266,7 @@ LOCAL void writer_s3_free_creds(S3Credentials *creds)
 }
 /******************************************************************************/
 /* Timer callback to refresh our creds. We fetch them into new structure
- * and free the old structure later incase a thread is using them.
+ * and free the old structure later in case a thread is using them.
  */
 LOCAL gboolean writer_s3_refresh_creds_gfunc (gpointer UNUSED(user_data))
 {

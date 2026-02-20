@@ -47,7 +47,7 @@ raw packets and `--hexregex` works on the hexified packets.
 * `-q QUERY`  Query to filter the sessions. Uses the same syntax as the Moloch UI.
 * `-f FIELDS`  A comma-separated list of fields to include in the output.
 * `-l`  List the fields allowed for output (for the `-f` option).
-* `-c NUMBER`  The number of concurrent session pcap download/searches. Only appliable for full packet search/output.
+* `-c NUMBER`  The number of concurrent session pcap download/searches. Only applicable for full packet search/output.
 * `-p NUMBER`  Number of results to process at a time from elasticsearch. Also how often to report progress and flush results.
 * `--headers`  Include a header row in the output.
 * `--regex`  Regex to run on the raw pcap for each session.

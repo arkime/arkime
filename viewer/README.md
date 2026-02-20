@@ -16,7 +16,7 @@ You can get them from [http://nodejs.org/][node].
 
 ### Install Dependencies
 
-The viewer mostly uses development dependencies that are all bundled using [webpack][webpack].
+The viewer mostly uses development dependencies that are all bundled using [vite][vite].
 We get dependencies via `npm`, the [node package manager][npm].
 
 In the viewer directory, execute:
@@ -45,7 +45,7 @@ For this command to work, your `tests/config.test.ini` must be valid.
 
 This command adds an admin user (if it doesn't already exist) and starts the node server and bundles all Vue app files into `viewer/vueapp/dist`.
 
-Webpack watches for changes to relevant Vue files, and re-bundles the Vue app after each save.
+Vite watches for changes to relevant Vue files, and re-bundles the Vue app after each save.
 
 Now browse to the app at `http://localhost:8123` and login using username "admin" and password "admin".
 
@@ -60,7 +60,7 @@ For this command to work, your `tests/config.test.ini` must be valid.
 
 This command starts the node server and bundles all Vue app files into `viewer/vueapp/dist`.
 
-Webpack watches for changes to relevant Vue files, and re-bundles the Vue app after each save.
+Vite watches for changes to relevant Vue files, and re-bundles the Vue app after each save.
 
 Now browse to the app at `http://localhost:8123`.
 
@@ -99,7 +99,7 @@ The UI tests use [Jest](https://jestjs.io) and [Vue Testing Library](https://tes
 
 View the [contributing guide](../CONTRIBUTING.md) for more information.
 
-[webpack]: https://webpack.github.io/
+[vite]: https://vite.dev/
 [node]: https://nodejs.org
 [npm]: https://www.npmjs.org/
 [vuejs]: https://vuejs.org/

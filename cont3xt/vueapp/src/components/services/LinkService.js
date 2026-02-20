@@ -7,7 +7,7 @@ export default {
    * Fetches the list of link groups that a user can view.
    * @param {boolean} all - if true, request all link groups (admin only)
    * @param {boolean} doSet - whether to store these link groups as those to be applied during use
-   * @returns {Promise} - The promise that either resovles the or rejects in error
+   * @returns {Promise} - The promise that either resolves or rejects in error
    */
   getLinkGroups (all = false) {
     store.commit('SET_LINK_GROUPS_ERROR', '');
@@ -34,7 +34,7 @@ export default {
   /**
    * Creates a link group.
    * @param {Object} linkGroup - The link group data
-   * @returns {Promise} - The promise that either resovles the or rejects in error
+   * @returns {Promise} - The promise that either resolves or rejects in error
    */
   createLinkGroup (linkGroup) {
     for (const link of linkGroup.links) {
@@ -62,7 +62,7 @@ export default {
   /**
    * Deletes a link group.
    * @param {String} id - The id of the link group to delete
-   * @returns {Promise} - The promise that either resovles the or rejects in error
+   * @returns {Promise} - The promise that either resolves or rejects in error
    */
   deleteLinkGroup (id) {
     store.commit('SET_LINK_GROUPS_ERROR', '');
@@ -88,7 +88,7 @@ export default {
   /**
    * Updates a link group.
    * @param {Object} linkGroup - The new link group data
-   * @returns {Promise} - The promise that either resovles the or rejects in error
+   * @returns {Promise} - The promise that either resolves or rejects in error
    */
   updateLinkGroup (linkGroup) {
     store.commit('SET_LINK_GROUPS_ERROR', '');

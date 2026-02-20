@@ -10,7 +10,7 @@ Optional settings
 Multiple capture processes per NIC requires some special settings
 * Set the ```SNF_APP_ID``` environment variable to a unique (per host) value
 * Make sure ```snfFlags``` includes the process sharing flag (0x01)
-* Set ```snfNumProcs``` to the numer of capture processes listening on the shared interface
+* Set ```snfNumProcs``` to the number of capture processes listening on the shared interface
 * Set the ```snfProcNum``` for each process
 
 

@@ -13,7 +13,7 @@ To use:
 
 How it works:
 * Each packet thread gets its own lua interpreter.
-* Packets/Sessions are consistantly load balanced, so a 5 tuple will hit the same thread/lua interpreter
+* Packets/Sessions are consistently load balanced, so a 5 tuple will hit the same thread/lua interpreter
 * All interpreters load the same lua files configured by ```luaFiles```
 
 ## Callbacks:

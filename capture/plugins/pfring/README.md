@@ -7,6 +7,6 @@ To use:
 * build the plugin by using ```make``` in the ```capture/plugins/pfring``` directory
 * load the pfring plugin by changing configuration file so it has reader-pfring.so as a rootPlugins ```rootPlugins=reader-pfring.so```
 * tell capture to use pfring as the reader method with ```pcapReadMethod=pfring`` in your configuration file
-* optionaly set ```pfringClusterId``` in configuration file 
-* optinally change ```interface``` to any special pfring interface value
+* optionally set ```pfringClusterId``` in configuration file 
+* optionally change ```interface``` to any special pfring interface value
 
