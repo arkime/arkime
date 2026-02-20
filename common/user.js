@@ -110,7 +110,7 @@ class User {
       User.#dynamicRolesFuncs = {};
       for (const [role, func] of Object.entries(userRoleMappings)) {
         if (!systemRolesMapping[role] && !role.startsWith('role:')) {
-          console.log(`ERROR - user-role-mappings ${role} must start with role- or be a system role`);
+          console.log(`ERROR - user-role-mappings ${role} must start with role: or be a system role`);
           process.exit();
         }
         User.#dynamicRolesFuncs[role] = new Function('vals', `return ${func};`);

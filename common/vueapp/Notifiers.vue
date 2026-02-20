@@ -515,7 +515,7 @@ export default {
 
         this.notifiers.splice(index, 1);
         // display success message to user
-        this.$emit('display-message', { msg: response.text || $t('settings.notifiers.successDelete') });
+        this.$emit('display-message', { msg: response.text || this.$t('settings.notifiers.successDelete') });
       }).catch((error) => {
         this.$emit('display-message', { msg: error.text || this.$t('settings.notifiers.errorDelete'), type: 'danger' });
       });
