@@ -421,6 +421,8 @@ uint8_t *arkime_parsers_asn_get_tlv(BSB *bsb, uint32_t *apc, uint32_t *atag, uin
             (*atag) = ((*atag) << 7) | (ch & 0x7f);
             if ((ch & 0x80) == 0)
                 break;
+            if ((*atag) & 0xFE000000)
+                goto get_tlv_error;
         }
     } else {
         *atag = ch & 0x1f;
@@ -538,11 +540,13 @@ void arkime_parsers_asn_decode_oid(char *buf, int bufsz, const uint8_t *oid, int
 {
     int buflen = 0;
     int first = TRUE;
-    unsigned int value = 0;
+    uint64_t value = 0;
 
     buf[0] = 0;
 
     for (int pos = 0; pos < len; pos++) {
+        if (value & 0xFE00000000000000ULL)
+            break;
         value = (value << 7) | (oid[pos] & 0x7f);
         if (oid[pos] & 0x80) {
             continue;
@@ -551,11 +555,11 @@ void arkime_parsers_asn_decode_oid(char *buf, int bufsz, const uint8_t *oid, int
         if (first) {
             first = FALSE;
             if (value > 40) /* two values in first byte */
-                buflen = arkime_snprintf_len(buf, bufsz, "%u.%u", value / 40, value % 40);
+                buflen = arkime_snprintf_len(buf, bufsz, "%" PRIu64 ".%" PRIu64, value / 40, value % 40);
             else /* one value in first byte */
-                buflen = arkime_snprintf_len(buf, bufsz, "%u", value);
+                buflen = arkime_snprintf_len(buf, bufsz, "%" PRIu64, value);
         } else if (buflen < bufsz) {
-            buflen += arkime_snprintf_len(buf + buflen, bufsz - buflen, ".%u", value);
+            buflen += arkime_snprintf_len(buf + buflen, bufsz - buflen, ".%" PRIu64, value);
         }
 
         value = 0;
@@ -565,7 +569,7 @@ void arkime_parsers_asn_decode_oid(char *buf, int bufsz, const uint8_t *oid, int
 #define char2num(ch) (isdigit(ch)?((ch) - '0'):0)
 #define str2num(str) (char2num((str)[0]) * 10 + char2num((str)[1]))
 #define str4num(str) (char2num((str)[0]) * 1000 + char2num((str)[1]) * 100 + char2num((str)[2]) * 10 + char2num((str)[3]))
-uint64_t arkime_parsers_asn_parse_time(ArkimeSession_t *session, int tag, uint8_t *value, int len)
+uint64_t arkime_parsers_asn_parse_time(ArkimeSession_t *session, uint32_t tag, uint8_t *value, uint32_t len)
 {
     int        offset = 0;
     struct tm  tm;
@@ -599,7 +603,7 @@ uint64_t arkime_parsers_asn_parse_time(ArkimeSession_t *session, int tag, uint8_
     }
     //GeneralizedTime
     else if (tag == 24 && len >= 10) {
-        int pos;
+        uint32_t pos;
         memset(&tm, 0, sizeof(tm));
         tm.tm_year = str4num(value + 0) - 1900;
         tm.tm_mon  = str2num(value + 4) - 1;

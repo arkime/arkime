@@ -155,7 +155,7 @@ LOCAL void *reader_tpacketv3_thread(gpointer infov)
                     memmove(packet->pkt, packet->pkt + 4, 12);
 
                     // Build VLAN header (network byte order)
-                    vlanHeader = htonl((0x8100 << 16) | (th->hv1.tp_vlan_tci & 0xfff));
+                    vlanHeader = htonl((0x8100u << 16) | (th->hv1.tp_vlan_tci & 0xfff));
                     memcpy(packet->pkt + 12, &vlanHeader, 4);
                 }
             }
