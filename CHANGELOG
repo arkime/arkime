@@ -41,6 +41,8 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #3726 docker.sh supports --wait-for-db option
 ## Capture
   - #3724 fix ja4plus plugin to match rust implementation for edge cases
+  - #3731 fix crash on quit when freeing http zstrm data structures
+  - #3731 fix dedup increase message having incorrect values
 
 6.0.0-rc3 2026/02/17
 ## Capture
