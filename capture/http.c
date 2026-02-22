@@ -123,7 +123,7 @@ struct arkimehttpserver_t {
     ArkimeHttpHeader_cb      headerCb;
 };
 
-LOCAL __thread z_stream z_strm;
+LOCAL __thread z_stream *z_strm;
 LOCAL GPtrArray *z_strms;
 LOCAL ARKIME_LOCK_DEFINE(z_strms);
 
@@ -831,27 +831,28 @@ gboolean arkime_http_schedule2(void *serverV, const char *method, const char *ke
         char            *buf = arkime_http_get_buffer(data_len);
         int              ret;
 
-        if (z_strm.state == Z_NULL) {
-            deflateInit2(&z_strm, Z_DEFAULT_COMPRESSION, Z_DEFLATED, 16 + 15, 8, Z_DEFAULT_STRATEGY);
+        if (z_strm == NULL) {
+            z_strm = ARKIME_TYPE_ALLOC0(z_stream);
+            deflateInit2(z_strm, Z_DEFAULT_COMPRESSION, Z_DEFLATED, 16 + 15, 8, Z_DEFAULT_STRATEGY);
             ARKIME_LOCK(z_strms);
-            g_ptr_array_add(z_strms, &z_strm);
+            g_ptr_array_add(z_strms, z_strm);
             ARKIME_UNLOCK(z_strms);
         }
-        z_strm.avail_in   = data_len;
-        z_strm.next_in    = (uint8_t *)data;
-        z_strm.avail_out  = data_len;
-        z_strm.next_out   = (uint8_t *)buf;
-        ret = deflate(&z_strm, Z_FINISH);
+        z_strm->avail_in   = data_len;
+        z_strm->next_in    = (uint8_t *)data;
+        z_strm->avail_out  = data_len;
+        z_strm->next_out   = (uint8_t *)buf;
+        ret = deflate(z_strm, Z_FINISH);
         if (ret == Z_STREAM_END) {
             request->headerList = curl_slist_append(request->headerList, "Content-Encoding: gzip");
             ARKIME_SIZE_FREE("data", data);
-            data_len = data_len - z_strm.avail_out;
+            data_len = data_len - z_strm->avail_out;
             data     = buf;
         } else {
             ARKIME_SIZE_FREE("data", buf);
         }
 
-        deflateReset(&z_strm);
+        deflateReset(z_strm);
     }
 
     request->server     = server;
@@ -1182,6 +1183,7 @@ void arkime_http_exit()
     for (uint32_t i = 0; i < z_strms->len; i++) {
         z_stream *zs = g_ptr_array_index(z_strms, i);
         deflateEnd(zs);
+        ARKIME_TYPE_FREE(z_stream, zs);
     }
     g_ptr_array_free(z_strms, TRUE);
     curl_global_cleanup();

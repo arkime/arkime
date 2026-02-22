@@ -566,17 +566,19 @@ const char *arkime_memcasestr(const char *haystack, int haysize, const char *nee
 {
     const char *p;
     const char *end = haystack + haysize - needlesize;
-    int i;
+    const char firstNeedle = needle[0];
 
     for (p = haystack; p <= end; p++) {
-        for (i = 0; i < needlesize; i++) {
+        if (tolower(p[0]) != firstNeedle)
+            continue;
+        int i;
+        for (i = 1; i < needlesize; i++) {
             if (tolower(p[i]) != needle[i]) {
-                goto memcasestr_outer;
+                break;
             }
         }
-        return p;
-
-memcasestr_outer: ;
+        if (i == needlesize)
+            return p;
     }
     return NULL;
 }
