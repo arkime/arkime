@@ -297,6 +297,7 @@ LOCAL void arkime_packet_process(ArkimePacket_t *packet, int thread)
         arkime_packet_free(packet);
         return;
     }
+    session->lastPacket = packet->ts;
 
     if (isNew) {
         arkime_parsers_initial_tag(session);
@@ -320,7 +321,6 @@ LOCAL void arkime_packet_process(ArkimePacket_t *packet, int thread)
 
     session->packets[packet->direction]++;
     session->bytes[packet->direction] += packet->pktlen;
-    session->lastPacket = packet->ts;
 
     uint32_t packets = session->packets[0] + session->packets[1];
 

@@ -1174,7 +1174,7 @@ int arkime_parsers_asn_get_sequence(ArkimeASNSeq_t *seqs, int maxSeq, const uint
 const char *arkime_parsers_asn_sequence_to_string(ArkimeASNSeq_t *seq, int *len);
 int arkime_parsers_asn_sequence_to_int(ArkimeASNSeq_t *seq);
 void arkime_parsers_asn_decode_oid(char *buf, int bufsz, const uint8_t *oid, int len);
-uint64_t arkime_parsers_asn_parse_time(ArkimeSession_t *session, int tag, uint8_t *value, int len);
+uint64_t arkime_parsers_asn_parse_time(ArkimeSession_t *session, uint32_t tag, uint8_t *value, uint32_t len);
 void arkime_parsers_classify_tcp(ArkimeSession_t *session, const uint8_t *data, int remaining, int which);
 void arkime_parsers_classify_udp(ArkimeSession_t *session, const uint8_t *data, int remaining, int which);
 void arkime_parsers_classify_sctp(ArkimeSession_t *session, uint32_t protocol, const uint8_t *data, int remaining, int which);

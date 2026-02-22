@@ -1246,10 +1246,10 @@ int arkime_session_idle_seconds(int mProtocol)
 
     for (int t = 0; t < config.packetThreads; t++) {
         ArkimeSession_t *session = DLL_PEEK_HEAD(q_, &sessionThreadData[t].sessionsQ[mProtocol]);
-        if (!session)
+        if (!session || session->lastPacket.tv_sec == 0)
             continue;
 
-        tmp = arkimeThreadData[t].lastPacketSecs - (session->lastPacket.tv_sec + mProtocols[mProtocol].sessionTimeout);
+        tmp = (int)(arkimeThreadData[t].lastPacketSecs - session->lastPacket.tv_sec) - mProtocols[mProtocol].sessionTimeout;
         if (tmp > idle)
             idle = tmp;
     }
