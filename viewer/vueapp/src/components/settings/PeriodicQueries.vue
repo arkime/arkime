@@ -896,7 +896,7 @@ export default {
     },
     // HELPER FUNCTIONS ---------------------------------------------------- //
     clearNewFormInputs () {
-      this.cronQueryFormError = false;
+      this.cronQueryFormError = '';
       this.newCronQueryName = '';
       this.newCronQueryTags = '';
       this.newCronQueryUsers = '';

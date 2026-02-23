@@ -85,6 +85,8 @@ export default {
         return reject(error);
       });
     });
+
+    return getFieldActionsQIP;
   },
 
   /**

@@ -178,7 +178,7 @@ SPDX-License-Identifier: Apache-2.0
               {{ field.name }}
             </span>
             <input
-              type="field.type"
+              :type="field.type"
               class="form-control"
               v-model="field.value"
               :placeholder="field.name">

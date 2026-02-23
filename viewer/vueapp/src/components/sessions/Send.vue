@@ -146,7 +146,7 @@ const sendAction = async () => {
     tags.value = ''; // Clear input on success
     loading.value = false;
 
-    emit('done', response.text, true); // Emit the done event with the response text
+    emit('done', response.text, true, true); // Emit the done event with the response text
   } catch (err) {
     // Display the error under the form so that user
     // has an opportunity to try again (don't close the form)
