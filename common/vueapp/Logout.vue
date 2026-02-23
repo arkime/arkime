@@ -6,7 +6,7 @@ SPDX-License-Identifier: Apache-2.0
   <b-button
     :size="size"
     v-if="logoutUrl"
-    class="ml-2"
+    class="ms-2"
     @click="logout"
     id="logout-button"
     variant="outline-warning">

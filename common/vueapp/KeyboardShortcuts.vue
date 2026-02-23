@@ -13,7 +13,7 @@ SPDX-License-Identifier: Apache-2.0
         :class="shortcutsClass"
         data-testid="shortcuts-help-content">
         <div
-          class="pl-2 pt-1 pb-1"
+          class="ps-2 pt-1 pb-1"
           color="light">
           <!-- close shortcuts help -->
           <button
