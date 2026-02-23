@@ -129,7 +129,7 @@ exports.initSource = function (api) {
     link: 'https://arkime.com/wise#elasticsearch',
     fields: [
       { name: 'type', required: true, help: 'The wise type of this source' },
-      { name: 'tag', required: true, help: 'The tags to set on matches' },
+      { name: 'tags', required: true, help: 'The tags to set on matches' },
       { name: 'esQueryField', required: true, help: 'The elasticsearch field in each document that is being queried' },
       { name: 'elasticsearch', required: true, help: 'Elasticsearch base url' },
       { name: 'esIndex', required: true, help: 'The index pattern to look at' },

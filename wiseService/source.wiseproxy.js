@@ -104,6 +104,7 @@ class WiseProxySource extends WISESource {
           for (let n = 0; n < num; n++) {
             const field = body[offset]; offset += 1;
             const len = body[offset]; offset += 1;
+            // len includes null terminator, exclude it from the string
             const str = body.toString('ascii', offset, offset + len - 1); offset += len;
             args.push(this.mapping[field], str);
           }

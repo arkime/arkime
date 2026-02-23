@@ -95,16 +95,16 @@ internals.type2Name = ['ip', 'domain', 'md5', 'email', 'url', 'tuple', 'ja3', 's
 // ----------------------------------------------------------------------------
 function processArgs (argv) {
   for (let i = 0, ilen = argv.length; i < ilen; i++) {
-    if (process.argv[i] === '-o') {
+    if (argv[i] === '-o') {
       i++;
-      const equal = process.argv[i].indexOf('=');
+      const equal = argv[i].indexOf('=');
       if (equal === -1) {
-        console.log('Missing equal sign in', process.argv[i]);
+        console.log('Missing equal sign in', argv[i]);
         process.exit(1);
       }
 
-      const key = process.argv[i].slice(0, equal);
-      const value = process.argv[i].slice(equal + 1);
+      const key = argv[i].slice(0, equal);
+      const value = argv[i].slice(equal + 1);
       if (key.includes('.')) {
         ArkimeConfig.setOverride(key, value);
       } else {
@@ -559,8 +559,8 @@ class WISESourceAPI {
 
   /**
    * Add a value action set
-   * @params {string} actionName - The globally unique name of this action, not shown to user
-   * @params {WISESourceAPI~ValueAction} action - The action
+   * @param {string} actionName - The globally unique name of this action, not shown to user
+   * @param {WISESourceAPI~ValueAction} action - The action
    */
   addValueAction (actionName, action) {
     internals.valueActions.set(actionName, action);
@@ -568,8 +568,8 @@ class WISESourceAPI {
 
   /**
    * Add a field action set
-   * @params {string} actionName - The globally unique name of this action, not shown to user
-   * @params {WISESourceAPI~ValueAction} action - The action
+   * @param {string} actionName - The globally unique name of this action, not shown to user
+   * @param {WISESourceAPI~ValueAction} action - The action
    */
   addFieldAction (actionName, action) {
     internals.fieldActions.set(actionName, action);

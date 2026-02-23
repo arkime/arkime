@@ -301,7 +301,7 @@ class Notifier {
    * Creates a new notifier (admin only).
    * @name /notifier
    * @param {string} name - The name of the new notifier.
-   * @param {type} type - The type of notifier.
+   * @param {string} type - The type of notifier.
    * @param {array} fields - The fields to configure the notifier.
    * @returns {boolean} success - Whether the create notifier operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
@@ -344,8 +344,8 @@ class Notifier {
    *
    * Updates an existing notifier (admin only).
    * @name /notifier/:id
-   * @param {string} id - The new id of the notifier.
-   * @param {type} type - The new type of notifier.
+   * @param {string} id - The id of the notifier to update.
+   * @param {string} type - The new type of notifier.
    * @param {array} fields - The new field values to configure the notifier.
    * @returns {boolean} success - Whether the update notifier operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.

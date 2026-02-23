@@ -1102,7 +1102,7 @@ function cleanUpIssues () {
   let len = issues.length;
   while (len--) {
     const issue = issues[len];
-    const timeSinceLastNoticed = Date.now() - issue.lastNoticed || issue.firstNoticed;
+    const timeSinceLastNoticed = Date.now() - (issue.lastNoticed || issue.firstNoticed);
     const removeIssuesAfter = Parliament.getGeneralSetting('removeIssuesAfter') * 1000 * 60;
     const removeAcknowledgedAfter = Parliament.getGeneralSetting('removeAcknowledgedAfter') * 1000 * 60;
 
@@ -1317,7 +1317,7 @@ async function getStats (cluster) {
 
         // look for no packets issue
         if (stat.deltaPacketsPerSec <= Parliament.getGeneralSetting('noPackets')) {
-          const id = cluster.title + stat.nodeName;
+          const id = cluster.title + ':' + stat.nodeName;
 
           // only set the noPackets issue if there is a record of this cluster/node
           // having noPackets and that issue has persisted for the set length of time
@@ -1484,7 +1484,7 @@ function removeIssue (issueType, clusterId, nodeId) {
       issues.splice(len, 1);
       if (issue.type === 'noPackets') {
         // also remove it from the no packets record
-        noPacketsMap.delete(issue.cluster + nodeId);
+        noPacketsMap.delete(issue.cluster + ':' + nodeId);
       }
     }
   }
@@ -1717,7 +1717,7 @@ app.get('/parliament/api/issues', (req, res, next) => {
         if (b[sortBy] !== undefined) { bVal = b[sortBy]; }
         if (a[sortBy] !== undefined) { aVal = a[sortBy]; }
 
-        return order === 'asc' ? bVal - aVal : aVal - bVal;
+        return order === 'asc' ? aVal - bVal : bVal - aVal;
       } else { // assume it's a string
         let aVal = '';
         let bVal = '';
@@ -1725,7 +1725,7 @@ app.get('/parliament/api/issues', (req, res, next) => {
         if (b[sortBy] !== undefined) { bVal = b[sortBy]; }
         if (a[sortBy] !== undefined) { aVal = a[sortBy]; }
 
-        return order === 'asc' ? bVal.localeCompare(aVal) : aVal.localeCompare(bVal);
+        return order === 'asc' ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal);
       }
     });
   }
