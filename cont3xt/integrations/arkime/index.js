@@ -253,12 +253,9 @@ class ArkimeIntegration extends Integration {
     return this.doFetch(user, item, [
       'dhcp.host',
       'dns.host',
-      'dns.host',
       'dns.mailserverHost',
       'dns.nameserverHost',
       'dns.hostTokens',
-      'dns.mailserverHost',
-      'dns.nameserverHost',
       'http.host',
       'quic.host',
       'smb.host',

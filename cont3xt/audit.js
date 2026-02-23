@@ -82,7 +82,7 @@ class Audit {
         } else {
           resolve(results);
         }
-      }).catch((err) => reject('ES Error', err));
+      }).catch((err) => reject('ES Error: ' + err));
     });
   }
 

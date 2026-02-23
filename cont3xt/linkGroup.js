@@ -256,7 +256,7 @@ class LinkGroup {
       return res.send({ success: false, text: 'LinkGroup not found' });
     }
 
-    const results = await Db.deleteLinkGroup(req.params.id, req.body);
+    const results = await Db.deleteLinkGroup(req.params.id);
     if (!results) {
       return res.send({ success: false, text: 'ES Error' });
     }

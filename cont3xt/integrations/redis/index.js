@@ -61,7 +61,7 @@ class RedisIntegration extends Integration {
   // ----------------------------------------------------------------------------
   async #fetch (user, item, type) {
     if (this.#keyTemplate !== undefined) {
-      item = this.#keyTemplate.replace('%key%', item).replace('%type%', this.type);
+      item = this.#keyTemplate.replace('%key%', item).replace('%type%', type);
     }
     try {
       const result = await this.#redisClient[this.#redisMethod](item);

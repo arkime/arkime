@@ -77,7 +77,7 @@ class WiseIntegration extends Integration {
   }
 
   // ----------------------------------------------------------------------------
-  async fetchDomain (user, item, ip) {
+  async fetchDomain (user, item) {
     return this.doFetch(user, item, 'domain');
   }
 
