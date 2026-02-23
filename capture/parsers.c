@@ -6,6 +6,7 @@
  */
 
 #include "arkime.h"
+#include <inttypes.h>
 #include <fcntl.h>
 #include "gmodule.h"
 #include "magic.h"
