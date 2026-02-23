@@ -1823,7 +1823,7 @@ LOCAL uint32_t arkime_python_reader_thread_exit(int thread, void UNUSED(*uw), vo
 /******************************************************************************/
 void arkime_python_init()
 {
-    disablePython = arkime_config_boolean(NULL, "disablePython", FALSE);
+    disablePython = arkime_config_boolean(NULL, "disablePython", TRUE);
 
     if (disablePython) {
         return;
