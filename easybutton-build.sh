@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Use this script to install OS dependencies, downloading and compile arkime dependencies, compile arkime capture, optionally install
+# Use this script to install OS dependencies, download and compile arkime dependencies, compile arkime capture, optionally install
 #
 # SPDX-License-Identifier: Apache-2.0
 
@@ -229,10 +229,10 @@ if [ -f "/etc/debian_version" ]; then
 
   if [[ "$VERSION_CODENAME" == "trixie" ]]; then
       # D13
-      sudo apt-get -qq install wget curl uuid-dev libmagic-dev pkg-config g++ flex bison zlib1g-dev libffi-dev gettext libgeoip-dev make libjson-perl libbz2-dev libwww-perl libpng-dev xz-utils libffi-dev libssl-dev libreadline-dev libtool libyaml-dev dh-autoreconf libsocket6-perl libtest-differences-perl
+      sudo apt-get -qq install wget curl uuid-dev libmagic-dev pkg-config g++ flex bison zlib1g-dev libffi-dev gettext libgeoip-dev make libjson-perl libbz2-dev libwww-perl libpng-dev xz-utils libssl-dev libreadline-dev libtool libyaml-dev dh-autoreconf libsocket6-perl libtest-differences-perl
   else
       # D12, U22, U24
-      sudo apt-get -qq install wget curl libpcre3-dev uuid-dev libmagic-dev pkg-config g++ flex bison zlib1g-dev libffi-dev gettext libgeoip-dev make libjson-perl libbz2-dev libwww-perl libpng-dev xz-utils libffi-dev libssl-dev libreadline-dev libtool libyaml-dev dh-autoreconf libsocket6-perl libtest-differences-perl
+      sudo apt-get -qq install wget curl libpcre3-dev uuid-dev libmagic-dev pkg-config g++ flex bison zlib1g-dev libffi-dev gettext libgeoip-dev make libjson-perl libbz2-dev libwww-perl libpng-dev xz-utils libssl-dev libreadline-dev libtool libyaml-dev dh-autoreconf libsocket6-perl libtest-differences-perl
   fi
 
   # Ubuntu 22 does not have libnl-genl-3-dev
@@ -304,7 +304,7 @@ if [ -f "/etc/alpine-release" ] ; then
   NODEHOST=unofficial-builds.nodejs.org
   NODEARCH="$NODEARCH-musl"
 elif [ -f "/etc/arch-release" ]; then
-    sudo pacman -Sy --noconfirm gcc make python-pip git perl perl-test-differences sudo wget gawk lua geoip yara file libpcap libmaxminddb libnet lua libtool autoconf gettext automake perl-http-message perl-lwp-protocol-https perl-json perl-socket6 perl-clone perl-html-parser zstd pcre librdkafka openssl pkg-config
+    sudo pacman -Sy --noconfirm gcc make python-pip git perl perl-test-differences sudo wget gawk lua geoip yara file libpcap libmaxminddb libnet libtool autoconf gettext automake perl-http-message perl-lwp-protocol-https perl-json perl-socket6 perl-clone perl-html-parser zstd pcre librdkafka openssl pkg-config
 fi
 
 if [ $DOJEMALLOC -eq 1 ] && [ $DOTCMALLOC -eq 1 ]; then
@@ -335,7 +335,7 @@ if [ "$UNAME" = "Darwin" ]; then
       --with-pfring=no \
       --with-curl=yes \
       --with-nghttp2=yes \
-      --with-lua=no LUA_CFLAGS="-I/opt/local/include" LUA_LIBS="-L/opt/local/lib -llua' $EXTRACONFIGURE
+      --with-lua=no LUA_CFLAGS="-I/opt/local/include" LUA_LIBS="-L/opt/local/lib -llua"' $EXTRACONFIGURE
 
     ./configure \
       --prefix=$TDIR \
@@ -358,7 +358,7 @@ if [ "$UNAME" = "Darwin" ]; then
       --with-nghttp2=yes \
       --with-lua=no LUA_CFLAGS="-I/usr/local/include/lua" LUA_LIBS="-L/usr/local/lib -llua" \
       --with-zstd=yes \
-      --with-kafka=no KAFKA_CFLAGS="-I/opt/homebrew/Cellar/librdkafka/2.0.2/include/librdkafka" KAFKA_LIBS="-L/opt/homebrew/lib -lrdkafka"' $EXTRACONFIGURE
+      --with-kafka=no KAFKA_CFLAGS="-I/usr/local/Cellar/librdkafka/2.0.2/include/librdkafka" KAFKA_LIBS="-L/usr/local/lib -lrdkafka"' $EXTRACONFIGURE
 
     ./configure \
       --prefix=$TDIR \
@@ -370,7 +370,7 @@ if [ "$UNAME" = "Darwin" ]; then
       --with-nghttp2=yes \
       --with-lua=no LUA_CFLAGS="-I/usr/local/include/lua" LUA_LIBS="-L/usr/local/lib -llua" \
       --with-zstd=yes \
-      --with-kafka=no KAFKA_CFLAGS="-I/usr/local/Cellar/librdkafka/2.0.2/include/librdkafka" KAFKA_LIBS="-L/opt/homebrew/lib -lrdkafka" $EXTRACONFIGURE
+      --with-kafka=no KAFKA_CFLAGS="-I/usr/local/Cellar/librdkafka/2.0.2/include/librdkafka" KAFKA_LIBS="-L/usr/local/lib -lrdkafka" $EXTRACONFIGURE
 
   elif [ -x "/opt/homebrew/bin/brew" ]; then
     echo './configure \
@@ -558,7 +558,7 @@ else
 
     if [ ! -f "curl-$CURL/lib/.libs/libcurl.a" ]; then
       tar zxf curl-$CURL.tar.gz
-      ( cd curl-$CURL; ./configure --disable-ldap --disable-ldaps --without-libidn2 --without-librtmp --without-libpsl --without-nghttp2 --without-nghttp2 --without-nss --with-openssl --without-zstd; $MAKE)
+      ( cd curl-$CURL; ./configure --disable-ldap --disable-ldaps --without-libidn2 --without-librtmp --without-libpsl --without-nghttp2 --without-nss --with-openssl --without-zstd; $MAKE)
       if [ $? -ne 0 ]; then
         echo "ARKIME: $MAKE failed"
         exit 1
@@ -646,7 +646,7 @@ else
     fi
     if [ ! -f "librdkafka-$KAFKA/src/librdkafka.a" ]; then
       tar zxf librdkafka-$KAFKA.tar.gz
-      echo "ARKIME: Building librddkafka";
+      echo "ARKIME: Building librdkafka";
       (cd librdkafka-$KAFKA; ./configure --disable-sasl --install-deps; $MAKE)
       if [ $? -ne 0 ]; then
         echo "ARKIME: $MAKE failed"
