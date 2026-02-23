@@ -227,7 +227,7 @@ export default {
       await this.save(setting);
     },
     async cancel (setting) {
-      const selection = Utils.checkClusterSelection(this.query.cluster, this.$store.state.esCluster.availableCluster.active);
+      const selection = Utils.checkClusterSelection(this.query.cluster, this.$store.state.esCluster.availableCluster.active, this);
       if (!selection.valid) {
         setting.error = selection.error;
         return;

@@ -155,7 +155,7 @@ class ViewAPIs {
       const { body: { _source: view } } = await Db.getView(id);
 
       view.id = id;
-      view.users = view.users.join(',');
+      view.users = view.users?.join(',') ?? '';
 
       return res.json({
         success: true,
@@ -229,7 +229,7 @@ class ViewAPIs {
       try {
         await Db.setView(req.params.id, view);
         const { body: { _source: newView } } = await Db.getView(req.params.id);
-        newView.users = newView.users.join(',');
+        newView.users = newView.users?.join(',') ?? '';
         newView.id = dbView._id;
 
         return res.json({

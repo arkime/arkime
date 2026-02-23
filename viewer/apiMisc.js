@@ -137,7 +137,7 @@ class MiscAPIs {
           fields.locked = 0;
         }
         fields.cratio = fields.packetsSize ? Math.round(100 - (100 * fields.filesize / fields.packetsSize)) : 0;
-        fields.id = fields._id;
+        fields.id = file._id;
         results.results.push(fields);
       }
 
@@ -147,7 +147,7 @@ class MiscAPIs {
         data: results.results
       };
 
-      res.logCounts(r.data.length, r.recordsFiltered, r.total);
+      res.logCounts(r.data.length, r.recordsFiltered, r.recordsTotal);
       res.send(r);
     }).catch((err) => {
       console.log(`ERROR - ${req.method} /api/files`, util.inspect(err, false, 50));

@@ -13,7 +13,7 @@ esPost("/tests2_sessions*/_delete_by_query?conflicts=proceed&refresh", '{ "query
 sub run {
 my ($tag, $compression, $extension, $gap) = @_;
 
-    my $cmd = "../capture/capture -o disablePython=true -o s3GapPacketPos=$gap -c config.test.ini -n s3-test --copy -R pcap --tag $tag -o s3Compression=$compression > /tmp/arkime.capture.$tag.log 2>&1";
+    my $cmd = "../capture/capture -o disablePython=true -o s3GapPacketPos=$gap -c config.test.ini -n s3-test --copy -R pcap --tag $tag -o s3Compression=$compression --flush > /tmp/arkime.capture.$tag.log 2>&1";
     system($cmd);
 
     # Test 1

@@ -86,8 +86,7 @@ export default {
    * Gets a list of sessions from the server
    * @param {object} query        Parameters to query the server
    * @param {boolean} calculateFacets Whether to calculate facets (true) or not (false)
-   * @returns {AbortController} The AbortController used to cancel the request.
-   * @returns {Promise<Object>} The response data parsed as JSON.
+   * @returns {Object} Object with controller (AbortController) and fetcher (Promise).
    */
   get: function (query, calculateFacets = true) {
     const params = this.buildSessionParams(query, {

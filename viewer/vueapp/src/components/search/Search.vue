@@ -830,7 +830,7 @@ export default {
 .multies-menu-dropdown .dropdown-menu {
   /* max-height: 300px; */
   /* overflow: auto; */
-  width: 300px
+  width: 300px;
 }
 
 .multies-menu-dropdown .dropdown-header {
