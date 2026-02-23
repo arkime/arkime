@@ -297,7 +297,7 @@ SPDX-License-Identifier: Apache-2.0
         <div v-if="isAdmin && groupAddingCluster === group.id && editMode">
           <div class="col-md-12">
             <hr>
-            <form @keyup.enter="createCluster">
+            <form @keyup.enter="createNewCluster(group)">
               <div class="form-group row mb-1">
                 <label
                   for="newClusterTitle"
@@ -1200,7 +1200,7 @@ export default {
       cluster.newLocalUrl = cluster.localUrl;
       cluster.newType = cluster.type;
     },
-    cancelEditCluster (cluster) {
+    cancelEditCluster () {
       this.focusClusterInput = false;
       this.clusterBeingEdited = undefined;
     },

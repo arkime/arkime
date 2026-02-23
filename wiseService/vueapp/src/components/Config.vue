@@ -187,7 +187,7 @@ SPDX-License-Identifier: Apache-2.0
 
         <div v-if="configViewSelected === 'edit'">
           <p class="wrapit">
-            {{ $t('wise.config.format') }} {{ currFormat ?? unknown }}
+            {{ $t('wise.config.format') }} {{ currFormat ?? 'unknown' }}
             <template v-if="currFormat === 'tagger'">
               -
               <a
