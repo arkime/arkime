@@ -52,7 +52,7 @@ class AlienVaultOTXIntegration extends Integration {
     }, {
       url: 'https://otx.alienvault.com/indicator/file/%{query}',
       itypes: ['hash'],
-      name: 'Search AlienVault OTX for URL: %{query}'
+      name: 'Search AlienVault OTX for File: %{query}'
     }],
     fields: [
       {

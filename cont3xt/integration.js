@@ -868,7 +868,7 @@ class Integration {
    */
   static async apiPutSettings (req, res, next) {
     if (typeof req.body.settings !== 'object') {
-      res.send({ success: false, text: 'Missing settings' });
+      return res.send({ success: false, text: 'Missing settings' });
     }
     req.user.setCont3xtKeys(req.body.settings);
     res.send({ success: true, text: 'Saved' });
@@ -942,7 +942,7 @@ class Integration {
   }
 
   userAgent () {
-    this.getConfig('userAgent', ArkimeConfig.get('userAgent', 'cont3xt'));
+    return this.getConfig('userAgent', ArkimeConfig.get('userAgent', 'cont3xt'));
   }
 
   normalizeCard () {
@@ -1008,7 +1008,7 @@ function updateTime (stats, istats, diff, prefix) {
   const lookup = Math.min(stats[prefix + 'Lookup'], 100);
   stats[prefix + 'RecentAvgMS'] = (stats[prefix + 'RecentAvgMS'] * (lookup - 1) + diff) / lookup;
 
-  const ilookup = Math.min(stats[prefix + 'Lookup'], 100);
+  const ilookup = Math.min(istats[prefix + 'Lookup'], 100);
   istats[prefix + 'RecentAvgMS'] = (istats[prefix + 'RecentAvgMS'] * (ilookup - 1) + diff) / ilookup;
 }
 

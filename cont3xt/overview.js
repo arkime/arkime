@@ -306,7 +306,7 @@ class Overview {
         return res.send({ success: false, text: 'Can not change iType of a default overview' });
       }
 
-      if (overview.viewRoles?.length !== 1 || reqOverview.viewRoles[0] !== 'cont3xtUser') {
+      if (overview.viewRoles?.length !== 1 || overview.viewRoles[0] !== 'cont3xtUser') {
         return res.send({ success: false, text: 'Can not change viewRoles of a default overview' });
       }
     }
@@ -376,7 +376,7 @@ class Overview {
       return res.send({ success: false, text: 'Overview not found' });
     }
 
-    const results = await Db.deleteOverview(req.params.id, req.body);
+    const results = await Db.deleteOverview(req.params.id);
     if (!results) {
       return res.send({ success: false, text: 'ES Error' });
     }
@@ -570,31 +570,37 @@ const defaultOverviewPropertiesForIType = {
     title: 'Phone Overview for %{query}',
     fields: [
       {
+        from: 'Twilio',
         field: 'line_type_intelligence.carrier_name',
         alias: 'Carrier',
         type: 'linked'
       },
       {
+        from: 'Twilio',
         field: 'line_type_intelligence.type',
         alias: 'Line Type',
         type: 'linked'
       },
       {
+        from: 'Twilio',
         field: 'caller_name_object.caller_name',
         alias: 'Caller Name',
         type: 'linked'
       },
       {
+        from: 'Twilio',
         field: 'caller_name_object.caller_type',
         alias: 'Caller Type',
         type: 'linked'
       },
       {
+        from: 'Twilio',
         alias: 'Country Code',
         field: 'country_code',
         type: 'linked'
       },
       {
+        from: 'Twilio',
         alias: 'Phone Number',
         field: 'phone_number',
         type: 'linked'

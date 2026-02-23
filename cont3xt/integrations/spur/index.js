@@ -152,7 +152,7 @@ class SpurIntegration extends Integration {
       });
 
       for (const rkey in response.data) {
-        if (typeof (response.data) === 'object') {
+        if (typeof (response.data[rkey]) === 'object') {
           if (response.data[rkey].exists === false) {
             delete response.data[rkey];
           } else {

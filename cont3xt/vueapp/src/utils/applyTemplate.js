@@ -27,7 +27,7 @@ export const applyTemplate = (templateStr, accessibleVars) => {
     }
 
     if (stop < start) { // invalid -- opener ('<') must always come before closer ('>')
-      console.warn(`Invalid template: ${templateStr} -- template opener ('<') must precede template opener ('>')`);
+      console.warn(`Invalid template: ${templateStr} -- template opener ('<') must precede template closer ('>')`);
       return invalidResult;
     }
 

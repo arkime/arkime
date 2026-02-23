@@ -15,7 +15,7 @@ class DNSIntegration extends Integration {
   };
 
   // Default cacheTimeout 10 minutes
-  cacheTimeout = 10 * 1000;
+  cacheTimeout = 10 * 60 * 1000;
 
   card = {
     title: 'DNS for %{query}',

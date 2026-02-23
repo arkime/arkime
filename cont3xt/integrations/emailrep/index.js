@@ -112,7 +112,7 @@ class EmailReputationIntegration extends Integration {
       result._cont3xt = { count: 0 };
       // count all of these fields that are true
       const fields = ['blacklisted', 'malicious_activity', 'malicious_activity_recent', 'credentials_leaked', 'credentials_leaked_recent', 'data_breach', 'new_domain', 'suspicious_tld', 'spam', 'accept_all', 'spoofable'];
-      for (const field in fields) {
+      for (const field of fields) {
         if (result.details[field]) {
           result._cont3xt.count++;
         }

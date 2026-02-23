@@ -278,7 +278,7 @@ class CsvJsonIntegration extends Integration {
       return;
     }
 
-    // Proess the file
+    // Process the file
     this.#process(fs.readFileSync(this.#url));
 
     // Watch for file changes, debounce over 500ms
@@ -312,7 +312,7 @@ class CsvJsonIntegration extends Integration {
 
   // ----------------------------------------------------------------------------
   #loadHttp () {
-    axios.get(this.url)
+    axios.get(this.#url)
       .then((response) => {
         return this.#process(response.data);
       })

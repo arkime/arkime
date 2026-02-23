@@ -108,7 +108,7 @@ class View {
    *
    * Creates a new view
    * @name /view
-   * @param {Cont3xtView} views - The view to create
+   * @param {Cont3xtView} view - The view to create
    * @returns {boolean} success - True if the request was successful, false otherwise
    * @returns {string} text - The success/error message to (optionally) display to the user
    */
@@ -138,7 +138,7 @@ class View {
    *
    * Updates a view
    * @name /view/:id
-   * @param {Cont3xtView} views - The view to update
+   * @param {Cont3xtView} view - The view to update
    * @returns {boolean} success - True if the request was successful, false otherwise
    * @returns {string} text - The success/error message to (optionally) display to the user
    */
@@ -176,7 +176,7 @@ class View {
    *
    * Deletes a view
    * @name /view/:id
-   * @param {Cont3xtView} views - The view to delete
+   * @param {Cont3xtView} view - The view to delete
    * @returns {boolean} success - True if the request was successful, false otherwise
    * @returns {string} text - The success/error message to (optionally) display to the user
    */
@@ -186,7 +186,7 @@ class View {
       return res.send({ success: false, text: 'View not found' });
     }
 
-    const results = await Db.deleteView(req.params.id, req.body);
+    const results = await Db.deleteView(req.params.id);
     if (!results) {
       return res.send({ success: false, text: 'ES Error' });
     }

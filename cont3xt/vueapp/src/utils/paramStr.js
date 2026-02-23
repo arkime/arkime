@@ -5,7 +5,7 @@
  */
 export const paramStr = (queryParamObj) => {
   // no parameters, return empty
-  if (!Object.keys(queryParamObj)) { return ''; }
+  if (!Object.keys(queryParamObj).length) { return ''; }
   // form query param string
   return '?' + Object.entries(queryParamObj)
     .filter(([_, value]) => typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean')
