@@ -474,6 +474,25 @@ export default {
           }
         }
       }
+    },
+    // watch for columns prop changes (e.g. i18n locale change)
+    // and update computedColumns in place to preserve order, visibility, and width
+    columns: {
+      handler (newColumns) {
+        const columnMap = {};
+        for (const column of newColumns) {
+          columnMap[column.id] = column;
+        }
+        for (const computedCol of this.computedColumns) {
+          const sourceCol = columnMap[computedCol.id];
+          if (sourceCol) {
+            computedCol.name = sourceCol.name;
+            computedCol.help = sourceCol.help;
+            computedCol.dataFunction = sourceCol.dataFunction;
+            computedCol.avgTotFunction = sourceCol.avgTotFunction;
+          }
+        }
+      }
     }
   },
   mounted: function () {
