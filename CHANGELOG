@@ -35,7 +35,7 @@ NOTICE: Restart wiseService before capture when upgrading
 NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at once after upgrading
 NOTICE: Create a parliament config file before upgrading (see https://arkime.com/settings#parliament and https://arkime.com/faq#how_do_i_upgrade_to_arkime_5)
 
-6.0.0-rc3 2026/02/23
+6.0.0-rc4 2026/02/23
 ## Release
   - #3718 Build for Ubuntu 26.04
   - #3726 docker.sh supports --wait-for-db option
