@@ -35,7 +35,7 @@ NOTICE: Restart wiseService before capture when upgrading
 NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at once after upgrading
 NOTICE: Create a parliament config file before upgrading (see https://arkime.com/settings#parliament and https://arkime.com/faq#how_do_i_upgrade_to_arkime_5)
 
-6.0.0 2026/02/xx
+6.0.0-rc3 2026/02/23
 ## Release
   - #3718 Build for Ubuntu 26.04
   - #3726 docker.sh supports --wait-for-db option
@@ -45,6 +45,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #3724 fix ja4plus plugin to match rust implementation for edge cases
   - #3731 fix crash on quit when freeing http zstrm data structures
   - #3731 fix dedup increase message having incorrect values
+  - #3731 performance improvements with dedup and arkime_memcasestr
   - #3739 disablePython defaults to true now
 
 6.0.0-rc3 2026/02/17
