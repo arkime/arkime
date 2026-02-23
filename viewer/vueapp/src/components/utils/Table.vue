@@ -341,7 +341,7 @@ export default {
     },
     tableClasses: { // table classes to be applied to the table
       type: String,
-      require: false,
+      required: false,
       default: ''
     },
     /* IMPORTANT:

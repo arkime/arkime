@@ -825,7 +825,7 @@ export default {
         this.recordsTotal = response.recordsTotal;
         this.users = JSON.parse(JSON.stringify(response.data));
         // don't modify original list - used for comparing
-        this.dbUserList = response.data;
+        this.dbUserList = JSON.parse(JSON.stringify(response.data));
       }).catch((error) => {
         this.loading = false;
         this.error = error.text;

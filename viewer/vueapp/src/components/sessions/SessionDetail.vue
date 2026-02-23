@@ -308,7 +308,7 @@ const showSrcBytesImg = () => {
     <a class="no-decoration download-bytes" href="${url}" download="${props.session.id}-src.png">
       <span class="fa fa-download"></span>&nbsp;
       Download source bytes image
-    </button>
+    </a>
   `;
   packetContainerRef.value.getElementsByClassName('srccol')[0].removeEventListener('mouseenter', showSrcBytesImg);
 };
@@ -321,7 +321,7 @@ const showDstBytesImg = () => {
     <a class="no-decoration download-bytes" href="${url}" download="${props.session.id}-dst.png">
       <span class="fa fa-download"></span>&nbsp;
       Download destination bytes image
-    </button>
+    </a>
   `;
   packetContainerRef.value.getElementsByClassName('dstcol')[0].removeEventListener('mouseenter', showDstBytesImg);
 };

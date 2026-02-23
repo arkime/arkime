@@ -599,7 +599,7 @@ export default {
       return true;
     },
     clearViewForm () {
-      this.viewFormError = false;
+      this.viewFormError = '';
       this.newViewRoles = [];
       this.newViewUsers = '';
       this.newViewName = null;

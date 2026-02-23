@@ -10,7 +10,7 @@ export default {
    * @returns {Promise} Promise   A promise object that signals the completion
    *                              or rejection of the request.
    */
-  async get (query, cancelToken) {
+  async get (query) {
     Utils.setFacetsQuery(query, 'spigraph');
 
     const options = {

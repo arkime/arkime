@@ -41,7 +41,7 @@ SPDX-License-Identifier: Apache-2.0
           variant="success"
           :disabled="!userId"
           @click="transferResource">
-          <span class="fa fa-share mr-1" />
+          <span class="fa fa-share me-1" />
           {{ $t('common.transfer') }}
         </b-button>
       </div>

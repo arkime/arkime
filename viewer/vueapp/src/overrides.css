@@ -99,7 +99,8 @@ input.form-check-input:checked {
 }
 
 /* don't stripe average and total rows */
-.table-striped > tbody > tr.average-row, tr.total-row {
+.table-striped > tbody > tr.average-row,
+.table-striped > tbody > tr.total-row {
   background-color: var(--color-background);
 }
 
@@ -210,7 +211,7 @@ nav.navbar a.nav-link {
 .pagination .page-item.disabled > span:focus,
 .pagination .page-item.disabled > a,
 .pagination .page-item.disabled > a:hover,
-.pagination .page-item.disabled > a:focus
+.pagination .page-item.disabled > a:focus,
 .pagination .page-item.disabled > button,
 .pagination .page-item.disabled > button:hover,
 .pagination .page-item.disabled > button:focus {
@@ -333,7 +334,7 @@ pre {
 .bootstrap-datetimepicker-widget table td:hover > span.year:not(.active),
 .bootstrap-datetimepicker-widget table td:hover > span.month:not(.active),
 .bootstrap-datetimepicker-widget table td:hover > span.decade:not(.active) {
-  color: var(--color-forground);
+  color: var(--color-foreground);
 }
 
 /* darken buttons on hover */
