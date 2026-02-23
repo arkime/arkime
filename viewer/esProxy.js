@@ -35,6 +35,7 @@ let authHeader;
 ArkimeConfig.loaded(() => {
   elasticsearch = Config.get('elasticsearch');
   sensors = Config.configMap('esproxy-sensors');
+  prefix = ArkimeUtil.formatPrefix(Config.get('prefix', 'arkime_'));
   oldprefix = prefix === 'arkime_' ? '' : prefix;
   console.log('sensors', sensors);
 
@@ -44,7 +45,6 @@ ArkimeConfig.loaded(() => {
       sensors[sensor].ip = sensors[sensor].ip.split(',');
     }
   }
-  prefix = ArkimeUtil.formatPrefix(Config.get('prefix', 'arkime_'));
   console.log(`PREFIX: ${prefix} OLDPREFIX: ${oldprefix}`);
 
   const esClientKey = Config.get('esClientKey');

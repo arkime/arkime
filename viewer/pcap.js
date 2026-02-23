@@ -836,11 +836,11 @@ class Pcap {
 
   // --------------------------------------------------------------------------
   ppp (buffer, obj, pos) {
-    obj.pppoe = {
+    obj.ppp = {
       type: buffer.readUInt16BE(2)
     };
 
-    switch (obj.pppoe.type) {
+    switch (obj.ppp.type) {
     case 0x21:
       this.ip4(buffer.slice(4), obj, pos + 4);
       return;

@@ -352,7 +352,7 @@ export default {
       this.localJob.roles = roles;
       this.$emit('updateHunt', this.localJob);
     },
-    updateJobDescription: function (roles) {
+    updateJobDescription: function () {
       this.localJob.description = this.newDescription;
       this.$emit('updateHunt', this.localJob);
       this.editDescription = false;

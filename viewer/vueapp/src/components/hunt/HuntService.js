@@ -60,7 +60,7 @@ export default {
   /**
    * Plays a hunt
    * @param {string} id The id of the hunt item to play
-   * @param {string} cluster The cluster name string of the cluster to plays the hunt from
+   * @param {string} cluster The cluster name string of the cluster to play the hunt from
    * @returns {Promise} Promise A promise object that signals the completion
    *                            or rejection of the request.
    */
@@ -73,7 +73,7 @@ export default {
    * @param {string} id The id of the hunt
    * @param {object} data The updated description & roles:
                           { description: 'text', roles: ['one', 'two'] }
-   * @param {string} cluster The cluster name string of the cluster to updates the hunt from
+   * @param {string} cluster The cluster name string of the cluster to update the hunt from
    * @returns {Promise} Promise A promise object that signals the completion
    *                            or rejection of the request.
    */
@@ -85,7 +85,7 @@ export default {
    * Removes a user from a hunt
    * @param {string} id The id of the hunt
    * @param {string} userid The id of the user to remove
-   * @param {string} cluster The cluster name string of the cluster to removes the hunt from
+   * @param {string} cluster The cluster name string of the cluster to remove the hunt from
    * @returns {Promise} Promise A promise object that signals the completion
    *                            or rejection of the request.
    */
@@ -112,7 +112,7 @@ export default {
    * @returns {Promise} Promise A promise object that signals the completion
    *                            or rejection of the request.
    */
-  async cleanup (id, users, cluster) {
+  async cleanup (id, cluster) {
     return await fetchWrapper({ url: `api/hunt/${id}/removefromsessions`, method: 'PUT', params: { cluster } });
   },
 

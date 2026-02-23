@@ -69,7 +69,7 @@ dl
         +clickableLabelBody('bytes.dst', 'Dst Bytes')
         +clickableFieldActions('bytes.dst', false)
         b-dropdown-divider
-        +clickableLabelBody('databytes.dst', 'Dst DataBytes')
+        +clickableLabelBody('databytes.dst', 'Dst Databytes')
         +clickableFieldActions('databytes.dst', false)
     dd
       span.no-wrap
@@ -104,7 +104,7 @@ dl
         +clickableLabelBody('mac.dst', 'Dst Mac')
         +clickableFieldActions('mac.dst', false)
         b-dropdown-divider
-        +clickableLabelBody('out.dst', 'Dst OUI')
+        +clickableLabelBody('oui.dst', 'Dst OUI')
         +clickableFieldActions('oui.dst', false)
     dd
       strong.ms-1 Mac
@@ -174,7 +174,7 @@ dl
       b-dropdown.clickable-label(text="Dst Outer Layer", size="sm", variant="default")
         if (session.dstOuterMac)
           +clickableLabelBody('outermac.dst', 'Outer Dst Mac')
-          +clickableFieldActions('outeroui.dst', false)
+          +clickableFieldActions('outermac.dst', false)
           b-dropdown-divider
         if (session.dstOuterIp)
           +clickableLabelBody('outerip.dst', 'Outer Dst IP')

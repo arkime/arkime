@@ -209,7 +209,7 @@ class ViewerUtils {
       return {
         fieldsMap: JSON.stringify(Config.getFieldsMap()),
         fieldsArr: Config.getFields().sort((a, b) => {
-          return a.exp - b.exp;
+          return a.exp.localeCompare(b.exp);
         })
       };
     } catch (err) {

@@ -280,10 +280,10 @@ class ConnectionAPIs {
       if (ArkimeUtil.isPP(vsrc) || ArkimeUtil.isPP(vdst)) { return; }
       // ES 6 is returning formatted timestamps instead of ms like pre 6 did
       // https://github.com/elastic/elasticsearch/issues/27740
-      if (vsrc.length === 24 && vsrc[23] === 'Z' && vsrc.match(/^\d\d\d\d-\d\d-\d\dT\d\d:\d\d:\d\d.\d\d\dZ$/)) {
+      if (vsrc.length === 24 && vsrc[23] === 'Z' && vsrc.match(/^\d\d\d\d-\d\d-\d\dT\d\d:\d\d:\d\d\.\d\d\dZ$/)) {
         vsrc = new Date(vsrc).getTime();
       }
-      if (vdst.length === 24 && vdst[23] === 'Z' && vdst.match(/^\d\d\d\d-\d\d-\d\dT\d\d:\d\d:\d\d.\d\d\dZ$/)) {
+      if (vdst.length === 24 && vdst[23] === 'Z' && vdst.match(/^\d\d\d\d-\d\d-\d\dT\d\d:\d\d:\d\d\.\d\d\dZ$/)) {
         vdst = new Date(vdst).getTime();
       }
 

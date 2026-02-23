@@ -608,7 +608,7 @@ class BuildQuery {
       startTimeSec = (Math.floor(Date.now() / 1000) - 60 * 60 * parseFloat(queryDate));
       stopTimeSec = Date.now() / 1000;
 
-      interval = toInterval(60 * parseFloat(queryDate));
+      interval = toInterval(60 * 60 * parseFloat(queryDate));
     }
 
     switch (reqQuery.interval) {
