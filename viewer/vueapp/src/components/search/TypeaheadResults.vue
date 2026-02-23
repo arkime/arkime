@@ -16,7 +16,7 @@
           <span class="fa fa-history" />&nbsp;
           <strong v-if="value.exp">{{ value.exp }}</strong>
           <strong v-if="!value.exp">{{ value }}</strong>
-          <span v-if="value.friendlyName">- {{ value.friendlyName }}</span>
+          <span v-if="value.friendlyName"> - {{ value.friendlyName }}</span>
           <span
             class="fa fa-close pull-right mt-1"
             :title="`Remove ${value.exp} from your field history`"
@@ -43,7 +43,7 @@
         @click="addToQuery(value)">
         <strong v-if="value.exp">{{ value.exp }}</strong>
         <strong v-if="!value.exp">{{ value }}</strong>
-        <span v-if="value.friendlyName">- {{ value.friendlyName }}</span>
+        <span v-if="value.friendlyName"> - {{ value.friendlyName }}</span>
         <BTooltip
           v-if="value.help"
           :target="key + 'item'">
