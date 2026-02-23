@@ -293,7 +293,7 @@ AC_ARG_WITH(yara,
       YARA_CFLAGS="-I$withval/include"
       YARA_LIBS="$withval/lib/libyara.a"
     else
-      AC_MSG_ERROR(yara.h or yara.a not found in $withval)
+      AC_MSG_ERROR(yara.h or libyara.a not found in $withval)
     fi
     ;;
 esac ], [
@@ -679,7 +679,7 @@ if test "x$with_tcmalloc" = "xyes"; then
 fi
 AC_SUBST(TCMALLOC_LIBS)
 
-AS_IF([test "$prefix" == "NONE"],
+AS_IF([test "$prefix" = "NONE"],
     [AC_DEFINE_UNQUOTED(CONFIG_PREFIX,"$ac_default_prefix", [config prefix directory])],
     [AC_DEFINE_UNQUOTED(CONFIG_PREFIX,"$prefix", [config prefix directory])])
 
