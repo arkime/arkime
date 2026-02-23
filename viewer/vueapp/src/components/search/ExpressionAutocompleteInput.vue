@@ -36,7 +36,7 @@ SPDX-License-Identifier: Apache-2.0
       <template v-if="autocompletingField">
         <template
           v-for="(value, key) in fieldHistoryResults"
-          :key="key+'history'">
+          :key="key + 'history'">
           <a
             class="dropdown-item cursor-pointer"
             :class="{'active': key === activeIdx, 'last-history-item': key === fieldHistoryResults.length - 1}"
@@ -54,7 +54,7 @@ SPDX-License-Identifier: Apache-2.0
       </template>
       <template
         v-for="(value, key) in results"
-        :key="value+'item'">
+        :key="value + 'item'">
         <a
           class="dropdown-item cursor-pointer"
           :title="value.help"

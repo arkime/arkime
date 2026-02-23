@@ -39,10 +39,13 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
 ## Release
   - #3718 Build for Ubuntu 26.04
   - #3726 docker.sh supports --wait-for-db option
+## Viewer
+  - #3728 support expression autocomplete more places
 ## Capture
   - #3724 fix ja4plus plugin to match rust implementation for edge cases
   - #3731 fix crash on quit when freeing http zstrm data structures
   - #3731 fix dedup increase message having incorrect values
+  - #3739 disablePython defaults to true now
 
 6.0.0-rc3 2026/02/17
 ## Capture
