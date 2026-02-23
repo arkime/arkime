@@ -1139,7 +1139,7 @@ export default {
       ParliamentService.deleteGroup(group.id).then((data) => {
         let index = 0; // remove the group from the parliament
         for (const g of this.parliament.groups) {
-          if (g.title === group.title) {
+          if (g.id === group.id) {
             this.parliament.groups.splice(index, 1);
             break;
           }
