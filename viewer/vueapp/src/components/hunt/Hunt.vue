@@ -56,10 +56,18 @@ SPDX-License-Identifier: Apache-2.0
             <BButton
               size="sm"
               variant="theme-tertiary"
-              :disabled="loadingSessions || !!loadingSessionsError"
+              :disabled="loadingSessions"
               v-if="!createFormOpened"
               @click="createFormOpened = true">
               {{ $t('hunts.createJob') }}
+            </BButton>
+            <BButton
+              size="sm"
+              variant="warning"
+              v-if="createFormOpened && loadingSessionsDetailError"
+              @click="createFormOpened = false">
+              <span class="fa fa-ban" />&nbsp;
+              {{ $t('common.cancel') }}
             </BButton>
           </BCol>
         </BRow> <!-- /hunt create navbar -->
@@ -69,6 +77,12 @@ SPDX-License-Identifier: Apache-2.0
     <!-- loading overlay -->
     <arkime-loading
       v-if="loading" /> <!-- /loading overlay -->
+
+    <!-- page error -->
+    <arkime-error
+      v-if="loadingSessionsDetailError && createFormOpened"
+      :message="loadingSessionsDetailError"
+      class="mt-2 mb-2" /> <!-- /page error -->
 
     <!-- configuration error -->
     <div
@@ -106,7 +120,7 @@ SPDX-License-Identifier: Apache-2.0
       <div class="mb-3">
         <transition name="slide">
           <div
-            v-if="createFormOpened"
+            v-if="createFormOpened && !loadingSessionsDetailError"
             class="card">
             <form
               class="card-body"
@@ -835,6 +849,7 @@ import HuntService from './HuntService';
 // import components
 import ToggleBtn from '@common/ToggleBtn.vue';
 import ArkimeSearch from '../search/Search.vue';
+import ArkimeError from '../utils/Error.vue';
 import ArkimeLoading from '../utils/Loading.vue';
 import ArkimePaging from '../utils/Pagination.vue';
 import ArkimeCollapsible from '../utils/CollapsibleWrapper.vue';
@@ -856,6 +871,7 @@ export default {
   name: 'PacketSearch',
   components: {
     ToggleBtn,
+    ArkimeError,
     ArkimeSearch,
     ArkimeLoading,
     ArkimeCollapsible,
@@ -886,6 +902,7 @@ export default {
       runningJob: undefined, // the currently running hunt job obj
       sessions: {}, // sessions a new job applies to
       loadingSessionsError: '',
+      loadingSessionsDetailError: '',
       loadingSessions: false,
       // new job search form
       createFormError: '',
@@ -1396,6 +1413,7 @@ export default {
     async loadSessions () {
       this.loadingSessions = true;
       this.loadingSessionsError = '';
+      this.loadingSessionsDetailError = '';
 
       // create unique cancel id to make cancel req for corresponding es task
       const cancelId = Utils.createRandomString();
@@ -1418,6 +1436,7 @@ export default {
         this.sessions = {};
         this.loadingSessions = false;
         this.loadingSessionsError = this.$t('hunts.problemLoading');
+        this.loadingSessionsDetailError = error.text || error.message || '';
       }
     }
   },
