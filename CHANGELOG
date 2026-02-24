@@ -36,6 +36,9 @@ NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at o
 NOTICE: Create a parliament config file before upgrading (see https://arkime.com/settings#parliament and https://arkime.com/faq#how_do_i_upgrade_to_arkime_5)
 
 6.0.0 2026/02/xx
+## Viewer
+  - 3742 - ArkimeTables support i18n
+  - 3743 - Consistent expression parser error messages
 
 6.0.0-rc4 2026/02/23
 ## Release

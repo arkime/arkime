@@ -2489,7 +2489,7 @@ LOCAL void arkime_db_load_oui(const char *name)
         uint8_t buf[16];
         len = strlen(parts[0]);
         for (i = 0, j = 0; i < len && j < 8; i += 2, j++) {
-            buf[j] = arkime_hex_to_char[(int)parts[0][i]][(int)parts[0][i + 1]];
+            buf[j] = arkime_hex_to_char[(uint8_t)parts[0][i]][(uint8_t)parts[0][i + 1]];
         }
 
         // Create node

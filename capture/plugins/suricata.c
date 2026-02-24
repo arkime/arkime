@@ -391,6 +391,11 @@ LOCAL void suricata_read()
             suricata_process();
             lineLen = 0;
         } else if (lineLen == lineSize - 1) {
+            if (lineSize >= 0x1000000) {
+                LOG("WARNING - Suricata line too long, skipping");
+                lineLen = 0;
+                continue;
+            }
             lineSize *= 1.5;
             ARKIME_SIZE_REALLOC("line", line, lineSize);
         }
