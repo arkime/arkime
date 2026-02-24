@@ -2032,6 +2032,10 @@ app.get(
   MiscAPIs.getAppInfo
 );
 
+app.get('/api/appversion', [ArkimeUtil.noCacheJson], (req, res) => {
+  return res.send({ app: 'viewer', version: version.version });
+});
+
 // cyberchef apis -------------------------------------------------------------
 app.get('/cyberchef.html', [cyberchefCspHeader], express.static( // cyberchef client file endpoint
   path.join(__dirname, '/public'),

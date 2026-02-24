@@ -1,5 +1,5 @@
 # WISE tests
-use Test::More tests => 147;
+use Test::More tests => 146;
 use ArkimeTest;
 use Cwd;
 use URI::Escape;
@@ -365,11 +365,10 @@ eq_or_diff($wise, '{"success":false,"text":"Not authorized, check log file"}');
 $wise = $ArkimeTest::userAgent->put("http://$ArkimeTest::host:8081/config/save", Content => to_json({config => $config, configCode => "thecode"}), "Content-Type" => "application/json;charset=UTF-8")->content;
 eq_or_diff($wise, '{"success":false,"text":"Not authorized, check log file"}');
 
-# Check appinfo
-$wise = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8081/api/appinfo");
+# Check appversion
+$wise = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8081/api/appversion");
 $wise = from_json($wise->content);
-is($wise->{app}, "wiseService", "wise appinfo app field");
-is($wise->{user}->{userId}, "wiseUser", "wise appinfo userId");
+is($wise->{app}, "wiseService", "wise appversion app field");
 
 ##### wiseAdmin
 $ArkimeTest::userAgent->credentials( "$ArkimeTest::host:8081", 'Moloch', 'wiseAdmin', 'wiseAdmin' );
