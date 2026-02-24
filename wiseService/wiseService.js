@@ -1426,8 +1426,8 @@ if (internals.webconfig) {
   // Set up auth, all APIs registered below will use passport
   Auth.app(app);
 
-  app.get('/api/appinfo', async (req, res) => {
-    return res.send({ app: 'wiseService', version: version.version, user: await User.getCurrentUser(req) });
+  app.get('/api/appversion', (req, res) => {
+    return res.send({ app: 'wiseService', version: version.version });
   });
 
   // ----------------------------------------------------------------------------
@@ -1590,7 +1590,7 @@ if (internals.webconfig) {
     });
   });
 } else {
-  app.get('/api/appinfo', (req, res) => {
+  app.get('/api/appversion', (req, res) => {
     return res.send({ app: 'wiseService', version: version.version });
   });
   app.get(['/source/:source/get', '/config/get'], (req, res) => {
