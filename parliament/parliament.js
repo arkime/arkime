@@ -1551,7 +1551,7 @@ if (ArkimeConfig.regressionTests) {
 }
 
 // Get app info
-app.get('/parliament/api/appinfo', async (req, res, next) => {
+app.get('/api/appinfo', async (req, res, next) => {
   return res.send({ app: 'parliament', version: version.version, user: await User.getCurrentUser(req) });
 });
 

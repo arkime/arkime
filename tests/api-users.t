@@ -677,7 +677,7 @@ my $uaToken = getTokenCookie('testusersadmin');
     is($json->{emailSearch}, 1, "sac-userExplicitTrue emailSearch true (explicit)");
 
 # Check appinfo app field for parliament, cont3xt
-    $json = parliamentGet("/parliament/api/appinfo");
+    $json = parliamentGet("/api/appinfo");
     is($json->{app}, "parliament", "parliament appinfo app field");
     is($json->{user}->{userId}, "anonymous", "parliament appinfo userId");
 
