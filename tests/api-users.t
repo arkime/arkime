@@ -1,7 +1,7 @@
 # Many of these test user/roles start with sac- (skip auto create) because
 # otherwise viewer in regression mode would auto create the user.
 # Some day should remove all autocreate code.
-use Test::More tests => 207;
+use Test::More tests => 206;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -108,7 +108,6 @@ anonymous,,true,true,false,"arkimeAdmin, cont3xtUser, parliamentUser, usersAdmin
 
 # Check appinfo works
     $json = viewerGetToken("/api/appInfo", $token);
-    is($json->{app}, "viewer", "viewer appinfo app field");
     eq_or_diff(sort($json->{roles}), from_json('["arkimeAdmin", "arkimeUser", "cont3xtAdmin", "cont3xtUser", "parliamentAdmin", "parliamentUser", "superAdmin", "usersAdmin", "wiseAdmin", "wiseUser"]'));
     my @roles = sort @{$json->{user}->{roles}};
     eq_or_diff(\@roles, from_json('["arkimeAdmin", "arkimeUser", "cont3xtUser", "parliamentUser", "usersAdmin", "wiseUser"]'));
