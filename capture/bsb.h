@@ -105,7 +105,9 @@ do {                                              \
 
 #define BSB_EXPORT_ptr_some(b, x, size)           \
 do {                                              \
-    if ((b).ptr && (b).ptr + size <= (b).end) {   \
+    if ((b).ptr && (x) != NULL &&                 \
+        (b).ptr + size <= (b).end &&              \
+        (b).ptr + size >= (b).buf) {              \
         memcpy((b).ptr, x, size);                 \
         (b).ptr += size;                          \
     } else if (BSB_NOT_ERROR(b)) {                \
@@ -389,7 +391,8 @@ do {                                              \
 
 #define BSB_IMPORT_byte(b, x, size)               \
 do {                                              \
-    if ((b).ptr && (b).ptr + size <= (b).end) {   \
+    if ((b).ptr && (b).ptr + size <= (b).end &&   \
+        (b).ptr + size >= (b).buf) {              \
         memcpy(x, (b).ptr, size);                 \
         (b).ptr += size;                          \
     } else {                                      \
@@ -399,7 +402,8 @@ do {                                              \
 
 #define BSB_IMPORT_zbyte(b, x, size)              \
 do {                                              \
-    if ((b).ptr && (b).ptr + size <= (b).end) {   \
+    if ((b).ptr && (b).ptr + size <= (b).end &&   \
+        (b).ptr + size >= (b).buf) {              \
         memcpy(x, (b).ptr, size);                 \
         (x)[size] = 0;                            \
         (b).ptr += size;                          \

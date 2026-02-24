@@ -247,9 +247,6 @@ LOCAL void http2_parse_frame_push_promise(ArkimeSession_t *session, HTTP2Info_t 
     in += 4;
     inlen -= 4;
 
-    if (inlen < 0)
-        return;
-
     http2_parse_header_block(session, http2, which, flags, streamId, in, inlen);
 }
 /******************************************************************************/
