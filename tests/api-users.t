@@ -1,7 +1,7 @@
 # Many of these test user/roles start with sac- (skip auto create) because
 # otherwise viewer in regression mode would auto create the user.
 # Some day should remove all autocreate code.
-use Test::More tests => 203;
+use Test::More tests => 209;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -108,6 +108,8 @@ anonymous,,true,true,false,"arkimeAdmin, cont3xtUser, parliamentUser, usersAdmin
 
 # Check appinfo works
     $json = viewerGetToken("/api/appInfo", $token);
+    is($json->{app}, "viewer", "viewer appinfo app field");
+    is($json->{user}->{userId}, "anonymous", "viewer appinfo userId");
     eq_or_diff(sort($json->{roles}), from_json('["arkimeAdmin", "arkimeUser", "cont3xtAdmin", "cont3xtUser", "parliamentAdmin", "parliamentUser", "superAdmin", "usersAdmin", "wiseAdmin", "wiseUser"]'));
     my @roles = sort @{$json->{user}->{roles}};
     eq_or_diff(\@roles, from_json('["arkimeAdmin", "arkimeUser", "cont3xtUser", "parliamentUser", "usersAdmin", "wiseUser"]'));
@@ -673,6 +675,15 @@ my $uaToken = getTokenCookie('testusersadmin');
     ok($json->{success}, "sac-userExplicitTrue created");
     $json = viewerGetToken("/api/user?arkimeRegressionUser=sac-userExplicitTrue", $token);
     is($json->{emailSearch}, 1, "sac-userExplicitTrue emailSearch true (explicit)");
+
+# Check appinfo app field for parliament, cont3xt
+    $json = parliamentGet("/parliament/api/appinfo");
+    is($json->{app}, "parliament", "parliament appinfo app field");
+    is($json->{user}->{userId}, "anonymous", "parliament appinfo userId");
+
+    $json = cont3xtGet("/api/appinfo");
+    is($json->{app}, "cont3xt", "cont3xt appinfo app field");
+    is($json->{user}->{userId}, "anonymous", "cont3xt appinfo userId");
 
 # clean old users
     clearIndex("tests_users");

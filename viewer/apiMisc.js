@@ -387,6 +387,7 @@ class MiscAPIs {
       const userSettingDefaults = internals.settingDefaults;
 
       return res.send({
+        app: 'viewer',
         esHealth,
         esHealthError,
         views,
