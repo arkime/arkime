@@ -177,7 +177,7 @@ SPDX-License-Identifier: Apache-2.0
       <arkime-error
         v-if="error"
         :message="error"
-        class="mt-5 mb-5" /> <!-- /page error -->
+        class="mt-2 mb-2" /> <!-- /page error -->
 
       <!-- spiview panels -->
       <div role="tablist">
@@ -401,7 +401,7 @@ SPDX-License-Identifier: Apache-2.0
                         class="fa fa-spinner fa-spin" /> <!-- /spiview field loading -->
                       <!-- spiview field error -->
                       <span
-                        v-if="value.error"
+                        v-if="value.error && !error"
                         class="text-danger ms-2">
                         <span class="fa fa-exclamation-triangle" />&nbsp;
                         {{ value.error }}
@@ -906,7 +906,7 @@ export default {
           pendingPromises.splice(index, 1);
         }
 
-        this.error = error.text;
+        this.error = error.text || error.message;
 
         // Check if all requests are done (for viz data requests)
         if (pendingPromises.length === 0 && this.dataLoading) {
@@ -1119,7 +1119,10 @@ export default {
 
         this.countCategoryFieldsLoading(category, false);
 
-        if (response.error) { spiData.error = response.error; }
+        if (response.error) {
+          spiData.error = response.error;
+          if (!this.error) { this.error = response.error; }
+        }
 
         // only update the requested spi data
         spiData.loading = false;
@@ -1155,7 +1158,9 @@ export default {
 
         // display error for the requested spi data
         spiData.loading = false;
-        spiData.error = error.text;
+        const errMsg = error.text || error.message;
+        spiData.error = errMsg;
+        if (!this.error && errMsg) { this.error = errMsg; }
         this.loadingVisualizations = false;
 
         // Check if all requests are done

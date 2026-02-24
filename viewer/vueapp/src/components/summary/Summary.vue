@@ -1,11 +1,10 @@
 <template>
   <div>
     <!-- Error message -->
-    <div
+    <arkime-error
       v-if="error"
-      class="alert alert-danger m-3">
-      {{ error }}
-    </div>
+      :message="error"
+      class="mt-5 mb-5" />
 
     <!-- Skeleton stats (shown while loading, before first chunk) -->
     <div
@@ -201,6 +200,7 @@ import { useI18n } from 'vue-i18n';
 import Sortable from 'sortablejs';
 // internal dependencies
 import setReqHeaders from '@common/setReqHeaders';
+import ArkimeError from '../utils/Error.vue';
 import SummaryWidget from './SummaryWidget.vue';
 import SummaryChartTooltip from './SummaryChartTooltip.vue';
 import FieldService from '../search/FieldService';
