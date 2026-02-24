@@ -1172,6 +1172,7 @@ app.get('/:source/:typeName/:value', [ArkimeUtil.noCacheJson], function (req, re
   // Poor route planning by ALW, shame
   if (req.params.source === 'source' && req.params.value === 'get') { return next(); }
   if (req.params.source === 'auth') { return next(); }
+  if (req.params.source === 'api') { return next(); }
 
   const source = internals.sources.get(req.params.source);
   if (!source) {
@@ -1276,6 +1277,7 @@ app.get("/bro/:type", [ArkimeUtil.noCacheJson], function(req, res) {
 app.get('/:typeName/:value', [ArkimeUtil.noCacheJson], function (req, res, next) {
   // Poor route planning by ALW, shame
   if (req.params.typeName === 'config' && req.params.value === 'get') { return next(); }
+  if (req.params.typeName === 'api') { return next(); }
 
   const query = {
     typeName: req.params.typeName,
@@ -1423,6 +1425,11 @@ function isWiseUser (req, res, next) {
 if (internals.webconfig) {
   // Set up auth, all APIs registered below will use passport
   Auth.app(app);
+
+  app.get('/api/appinfo', async (req, res) => {
+    return res.send({ app: 'wiseService', version: version.version, user: await User.getCurrentUser(req) });
+  });
+
   // ----------------------------------------------------------------------------
   /**
    * GET - Used by wise UI to retrieve the raw file being used by the section.
@@ -1583,6 +1590,9 @@ if (internals.webconfig) {
     });
   });
 } else {
+  app.get('/api/appinfo', (req, res) => {
+    return res.send({ app: 'wiseService', version: version.version });
+  });
   app.get(['/source/:source/get', '/config/get'], (req, res) => {
     return res.send({ success: false, text: 'Must start wiseService with --webconfig option' });
   });

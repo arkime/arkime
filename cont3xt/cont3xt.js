@@ -206,6 +206,10 @@ app.all([
   return res.serverError(403, 'Disabled in demo mode.');
 });
 
+app.get('/api/appinfo', async (req, res, next) => {
+  return res.send({ app: 'cont3xt', version: version.version, user: await User.getCurrentUser(req) });
+});
+
 app.get('/api/linkGroup', LinkGroup.apiGet);
 app.put('/api/linkGroup', [jsonParser, checkCookieToken], LinkGroup.apiCreate);
 app.put('/api/linkGroup/:id', [jsonParser, checkCookieToken, Auth.checkResourceAccess(Db.getLinkGroup, 'creator')], LinkGroup.apiUpdate);

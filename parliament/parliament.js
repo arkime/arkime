@@ -1550,6 +1550,11 @@ if (ArkimeConfig.regressionTests) {
   });
 }
 
+// Get app info
+app.get('/api/appinfo', async (req, res, next) => {
+  return res.send({ app: 'parliament', version: version.version, user: await User.getCurrentUser(req) });
+});
+
 // Get whether authentication is set
 app.get('/parliament/api/auth', setCookie, (req, res, next) => {
   return res.json({
