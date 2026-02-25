@@ -60,6 +60,7 @@
     "lint": "eslint parliament viewer wiseService capture/plugins common cont3xt",
     "lint-fix": "eslint --fix parliament viewer wiseService capture/plugins common cont3xt",
     "common:lint": "eslint common",
+    "cont3xt:addtestuser": "cd viewer && node addUser.js -c ../tests/cont3xt.ini -n cont3xt admin admin admin --admin --packetSearch --createOnly",
     "cont3xt:bundle": "cd cont3xt && npm run bundle",
     "cont3xt:bundle:min": "cd cont3xt && npm run bundle:min",
     "cont3xt:run_bundle": "(cd cont3xt && nodemon cont3xt.js -c ../tests/cont3xt.ini)",
