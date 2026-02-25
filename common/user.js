@@ -137,7 +137,7 @@ class User {
   // Get the ES client for viewer, will remove someday
   // Used for shortcuts and views index
   static getClient () {
-    if (User.#implementation.getClient()) {
+    if (User.#implementation.getClient) {
       return User.#implementation.getClient();
     }
     return null;
