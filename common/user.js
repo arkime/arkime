@@ -499,7 +499,7 @@ class User {
    * @param {boolean} hidePcap=false - Hide PCAP (and only show metadata/session detail) for this user when they open a Session.
    * @param {boolean} disablePcapDownload=false - Do not allow this user to download PCAP files.
    * @param {string} expression - An Arkime search expression that is silently added to all queries. Useful to limit what data a user can access (e.g. which nodes or IPs).
-   * @param {ArkimeSettings} settings - The Arkime app settings.
+   * @param {ArkimeSettings} settings - The Arkime application settings.
    * @param {object} columnConfigs - A list of sessions table column configurations that a user has created.
    * @param {object} spiviewFieldConfigs - A list of SPIView page field configurations that a user has created.
    * @param {object} tableStates - A list of table states used to render Arkime tables as the user has configured them.
