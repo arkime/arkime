@@ -38,6 +38,8 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
 6.0.0 2026/02/xx
 ## All
   - 3747 New /api/appversion API
+## ESProxy
+  - #3750 - fix httpsAgent race condition with client certificates
 ## Viewer
   - 3742 ArkimeTables support i18n
   - 3743 Consistent expression parser error messages
@@ -70,8 +72,8 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
 
 6.0.0-rc2 2026/02/10
 ## BREAKING
-  - #3677 arkime_packet_log no longer prints exactly logEveryXPackets, instead
-          that is just the minimum; it also only prints TCP info now.
+  - #3677 arkime_packet_log now treats logEveryXPackets as a minimum rather
+          than an exact interval, and only prints TCP info
 ## Contrib
   - #3637 increased max tzsp-forwarder packet to 64000
   - #3674 added new netflow2arkime.pl script
@@ -111,25 +113,26 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
 6.0.0-rc1 2026/01/26
 ## BREAKING
   - #3138 settings parseSMTP & parseSMB removed, use disableParsers instead
-  - #3138 plugins must end with supported extension, e.g. .so, .lua
+  - #3138 plugins must end with a supported extension, e.g. .so, .lua, .py
   - #3138 setting luaFiles now defaults to no files
   - #3212 with capture --scheme is now the default, use --libpcap for previous behaviour
   - #3281 Remove Ubuntu 20.04 builds
-  - #3293 db.pl requires leading http/https for OpenSearch/Elasticsearch URLs
-  - #3306 WISE now requires webBasePath be set if using one, please set in Arkime 5 before upgrading
-  - #3422 Cont3xt ThreatFox integration requires api key (free on site https://auth.abuse.ch/)
-  - #3427 Capture now adds first vlan back to packet, this will change previous bpf filters, tpacketv3OldVlan=true to disable
-  - #3468 Digest/Form Users that haven't changed their password since Dec 2019
-          will not be able to login, arkimeAdmin can reset.
-  - #3473 dnsOutputAnswers defults to TRUE now
-  - #3488 When talking to remote viewers only the viewUrl is used now and not webBasePath
-  - #3492 Previously viewer didn't expire PCAPs if pcapDir wasn't set, now it
-          defaults to /opt/arkime/raw and will expire them
-  - #3552 Users and Roles now inherit for the 7 extra settings if not
-          specificly set.
-  - #3583 Previous community_id for IPv4 sessions with same src/dst IP, could
-          have incorrect community_id
-  - #3591 geoLite2Country setting now looks for City file first by default
+  - #3293 db.pl now requires a leading http:// or https:// in OpenSearch/Elasticsearch URLs
+  - #3306 WISE now requires webBasePath to be set if you use a non-default base path — set it in Arkime 5 before upgrading
+  - #3422 Cont3xt ThreatFox integration now requires an API key (free at https://auth.abuse.ch/)
+  - #3427 Capture now adds the first VLAN tag back to packets when saving to disk. This may affect existing BPF filters — 
+          set tpacketv3OldVlan=true to disable.
+  - #3468 Digest/Form users who haven't changed their password since Dec 2019
+          will not be able to log in. A userAdmin can reset their passwords.
+  - #3473 dnsOutputAnswers defaults to TRUE now
+  - #3488 When talking to remote viewers, only viewUrl is used now — webBasePath is no longer used
+  - #3492 Viewer now expires PCAPs even if pcapDir is not set, defaulting to
+          /opt/arkime/raw. Previously, PCAPs were not expired when pcapDir was unset.
+  - #3552 Users now inherit the 7 extra permissions from their Roles unless
+          explicitly overridden
+  - #3583 Fixed: IPv4 sessions with identical src and dst IP addresses may have
+          had an incorrect community_id. Old sessions will retain the incorrect value.
+  - #3591 The geoLite2Country setting now looks for a City database file first by default
   - #3601 The unkEthernet/unkIpProtocol plugins are removed. The saveUnknownPackets
           setting now saves unknown/corrupt packets as real Arkime sessions.
 ## Release
@@ -148,7 +151,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #3364 eslint vue files and enforce recommended rules
   - #3468 remove support for old password storage
   - #3476 new authJwsAlgorithm setting, defaults to RS256
-  - #3552 Users and Roles now inherit for the 7 extra settings if not specificly set.
+  - #3552 Users now inherit the 7 extra permissions from their Roles unless explicitly overridden.
 ## Capture
   - #3138 lua plugin now autoloads *.lua scripts in parsers directory
           if lua plugin is used
@@ -160,7 +163,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #3427 Add first vlan back to packet in AFPacket mode
   - #3460 DNS compress pointer chaining max increased to 10
   - #3461 New DHCP Session linking
-  - #3473 dnsOutputAnswers defults to TRUE now
+  - #3473 dnsOutputAnswers defaults to TRUE now
   - #3479 Per thread compression to ES should help with busy capture
   - #3481 ArkimePacket free list, should help with memory fragmentation on busy capture
   - #3494 Update field friendlyNames in db if they don't match capture
@@ -169,7 +172,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #3547 Fix erspan vlan truncating at 7 bits instead of 12 bits
   - #3566 fix the sessions length being off by 1ms sometimes
   - #3583 Fix community_id for v4 sessions with same src/dst port sorting
-  - #3591 geoLite2Country setting now looks for City file first by default
+  - #3591 The geoLite2Country setting now looks for a City database file first by default
   - #3618 Fix S3 scheme prefix handling
   - #3618 Fix S3 scheme not process over 1000 S3 items
   - #3620 Simple DNS RRSIG/DS/NSEC parsing
