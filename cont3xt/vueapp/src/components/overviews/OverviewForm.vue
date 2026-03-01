@@ -4,12 +4,12 @@ SPDX-License-Identifier: Apache-2.0
 -->
 <template>
   <template v-if="rawEditMode">
-    <v-textarea
+    <textarea
       rows="20"
       v-if="!noEdit"
-      variant="outlined"
       :value="rawEditText"
-      @input="e => debounceRawEdit(e)" />
+      @input="e => debounceRawEdit(e)"
+      class="form-control form-control-sm" />
     <pre v-else>{{ rawEditText }}</pre>
   </template>
   <v-form v-else>
@@ -289,6 +289,30 @@ export default {
     rawEditMode: {
       handler (newVal) {
         if (!newVal) {
+          // nothing to parse (initial load)
+          if (this.rawEditText == null) { return; }
+
+          try { // need to update local overview from json input
+            const overviewFromRaw = JSON.parse(this.rawEditText);
+            overviewFromRaw.fields ??= [];
+            for (const fieldRef of overviewFromRaw.fields) {
+              fieldRef.type = (fieldRef.custom == null) ? 'linked' : 'custom';
+            }
+            this.localOverview = {
+              ...this.localOverview,
+              name: overviewFromRaw.name,
+              title: overviewFromRaw.title,
+              iType: overviewFromRaw.iType,
+              fields: overviewFromRaw.fields,
+              viewRoles: overviewFromRaw.viewRoles,
+              editRoles: overviewFromRaw.editRoles
+            };
+            this.updateOverview();
+          } catch (err) {
+            console.warn('Invalid JSON for raw overview', err);
+            this.$store.commit('SET_OVERVIEWS_ERROR', 'Invalid JSON');
+          }
+          // clear rawEditText to be parsed again if rawEditMode triggered
           this.rawEditText = undefined;
           return;
         }
@@ -469,7 +493,7 @@ export default {
           fieldRef.type = (fieldRef.custom == null) ? 'linked' : 'custom';
         }
 
-        this.localOverview = {
+        this.$emit('update-modified-overview', {
           ...this.localOverview,
           name: overviewFromRaw.name,
           title: overviewFromRaw.title,
@@ -477,8 +501,7 @@ export default {
           fields: overviewFromRaw.fields,
           viewRoles: overviewFromRaw.viewRoles,
           editRoles: overviewFromRaw.editRoles
-        };
-        this.updateOverview();
+        });
       } catch (err) {
         console.warn('Invalid JSON for raw overview', err);
         this.$store.commit('SET_OVERVIEWS_ERROR', 'Invalid JSON');
