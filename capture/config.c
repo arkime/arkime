@@ -1230,6 +1230,11 @@ LOCAL void arkime_config_load()
     config.caTrustFile      = arkime_config_str(keyfile, "caTrustFile", NULL);
     char *offlineRegex      = arkime_config_str(keyfile, "offlineFilenameRegex", "(?i)\\.(pcap|cap)$");
 
+    if (config.bpf && *config.bpf == 0) {
+        g_free(config.bpf);
+        config.bpf = NULL;
+    }
+
     if (config.interface) {
         for (config.interfaceCnt = 0; config.interfaceCnt < MAX_INTERFACES && config.interface[config.interfaceCnt]; config.interfaceCnt++) {
         }
