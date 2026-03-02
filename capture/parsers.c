@@ -59,6 +59,7 @@ typedef struct {
 typedef struct arkime_extensions {
     const char               *extension;
     ArkimeParserLoadFunc      loadFunc;
+    int                       loaded;
 } ArkimeExtensions_t;
 LOCAL GPtrArray *extensionsArr;
 
@@ -677,6 +678,110 @@ LOCAL int arkime_parsers_load_so(const char *path)
     return 0;
 }
 /******************************************************************************/
+int arkime_parsers_load()
+{
+    ArkimeStringHashStd_t loaded;
+    HASH_INIT(s_, loaded, arkime_string_hash, arkime_string_cmp);
+
+    ArkimeString_t *hstring;
+
+    char **disableParsers = arkime_config_str_list(NULL, "disableParsers", "arp.so");
+    for (int d = 0; disableParsers[d]; d++) {
+        hstring = ARKIME_TYPE_ALLOC0(ArkimeString_t);
+        hstring->str = disableParsers[d];
+        hstring->len = strlen(disableParsers[d]);
+        HASH_ADD(s_, loaded, hstring->str, hstring);
+    }
+
+    for (int d = 0; config.parsersDir[d]; d++) {
+        GError      *error = 0;
+        GDir *dir = g_dir_open(config.parsersDir[d], 0, &error);
+
+        if (error) {
+            LOG("Error with %s: %s", config.parsersDir[d], error->message);
+            g_error_free(error);
+            if (dir)
+                g_dir_close(dir);
+            continue;
+        }
+
+        if (!dir)
+            continue;
+
+        const gchar               *filename;
+        ArkimeFileWithExtension_t  files[100];
+        int                        flen = 0;
+
+        while ((filename = g_dir_read_name(dir)) && flen < 100) {
+            // Skip hidden files/directories
+            if (filename[0] == '.')
+                continue;
+
+            guint e;
+            for (e = 0; e < extensionsArr->len; e++) {
+                ArkimeExtensions_t *ext = (ArkimeExtensions_t *)g_ptr_array_index(extensionsArr, e);
+                if (!ext->loaded && g_str_has_suffix(filename, ext->extension)) {
+                    break;
+                }
+            }
+
+            if (e == extensionsArr->len) {
+                continue;
+            }
+
+            HASH_FIND(s_, loaded, filename, hstring);
+            if (hstring) {
+                if (config.debug) {
+                    LOG("Skipping %s in %s since already loaded", filename, config.parsersDir[d]);
+                }
+                continue; /* Already loaded */
+            }
+
+            files[flen].filename = g_strdup(filename);
+            files[flen].extensionPos = e;
+            flen++;
+        }
+
+        qsort((void *)files, (size_t)flen, sizeof(ArkimeFileWithExtension_t), filewext_cmp);
+
+        for (int i = 0; i < flen; i++) {
+            gchar *path = g_build_filename (config.parsersDir[d], files[i].filename, NULL);
+
+            int rc = ((ArkimeExtensions_t *)g_ptr_array_index(extensionsArr, files[i].extensionPos))->loadFunc(path);
+
+            if (rc != 0) {
+                g_free(files[i].filename);
+                g_free (path);
+                continue;
+            }
+
+            hstring = ARKIME_TYPE_ALLOC0(ArkimeString_t);
+            hstring->str = files[i].filename;
+            hstring->len = strlen(files[i].filename);
+            HASH_ADD(s_, loaded, hstring->str, hstring);
+
+            if (config.debug)
+                LOG("Loaded %s", path);
+
+            g_free (path);
+        }
+        g_dir_close(dir);
+    }
+
+    for (guint e = 0; e < extensionsArr->len; e++) {
+        ArkimeExtensions_t *ext = (ArkimeExtensions_t *)g_ptr_array_index(extensionsArr, e);
+        ext->loaded = 1;
+    }
+
+    HASH_FORALL_POP_HEAD2(s_, loaded, hstring) {
+        g_free(hstring->str);
+        ARKIME_TYPE_FREE(ArkimeString_t, hstring);
+    }
+    g_free(disableParsers); // NOT, g_strfreev because using the pointers
+
+    return loaded.count;
+}
+/******************************************************************************/
 void arkime_parsers_register_load_extension(const char *extension, ArkimeParserLoadFunc loadFunc)
 {
     if (extension[0] != '.') {
@@ -768,102 +873,10 @@ void arkime_parsers_init()
 
     arkime_parsers_register_load_extension(".so", arkime_parsers_load_so);
 
-    ArkimeStringHashStd_t loaded;
-    HASH_INIT(s_, loaded, arkime_string_hash, arkime_string_cmp);
-
-    ArkimeString_t *hstring;
-
-    char **disableParsers = arkime_config_str_list(NULL, "disableParsers", "arp.so");
-    for (int d = 0; disableParsers[d]; d++) {
-        hstring = ARKIME_TYPE_ALLOC0(ArkimeString_t);
-        hstring->str = disableParsers[d];
-        hstring->len = strlen(disableParsers[d]);
-        HASH_ADD(s_, loaded, hstring->str, hstring);
-    }
-
-    for (int d = 0; config.parsersDir[d]; d++) {
-        GError      *error = 0;
-        GDir *dir = g_dir_open(config.parsersDir[d], 0, &error);
-
-        if (error) {
-            LOG("Error with %s: %s", config.parsersDir[d], error->message);
-            g_error_free(error);
-            if (dir)
-                g_dir_close(dir);
-            continue;
-        }
-
-        if (!dir)
-            continue;
-
-        const gchar               *filename;
-        ArkimeFileWithExtension_t  files[100];
-        int                        flen = 0;
-
-        while ((filename = g_dir_read_name(dir)) && flen < 100) {
-            // Skip hidden files/directories
-            if (filename[0] == '.')
-                continue;
-
-            guint e;
-            for (e = 0; e < extensionsArr->len; e++) {
-                if (g_str_has_suffix(filename, ((ArkimeExtensions_t *)g_ptr_array_index(extensionsArr, e))->extension)) {
-                    break;
-                }
-            }
-
-            if (e == extensionsArr->len) {
-                continue;
-            }
-
-            HASH_FIND(s_, loaded, filename, hstring);
-            if (hstring) {
-                if (config.debug) {
-                    LOG("Skipping %s in %s since already loaded", filename, config.parsersDir[d]);
-                }
-                continue; /* Already loaded */
-            }
-
-            files[flen].filename = g_strdup(filename);
-            files[flen].extensionPos = e;
-            flen++;
-        }
-
-        qsort((void *)files, (size_t)flen, sizeof(ArkimeFileWithExtension_t), filewext_cmp);
-
-        for (int i = 0; i < flen; i++) {
-            gchar *path = g_build_filename (config.parsersDir[d], files[i].filename, NULL);
-
-            int rc = ((ArkimeExtensions_t *)g_ptr_array_index(extensionsArr, files[i].extensionPos))->loadFunc(path);
-
-            if (rc != 0) {
-                g_free(files[i].filename);
-                g_free (path);
-                continue;
-            }
-
-            hstring = ARKIME_TYPE_ALLOC0(ArkimeString_t);
-            hstring->str = files[i].filename;
-            hstring->len = strlen(files[i].filename);
-            HASH_ADD(s_, loaded, hstring->str, hstring);
-
-            if (config.debug)
-                LOG("Loaded %s", path);
-
-            g_free (path);
-        }
-        g_dir_close(dir);
-    }
-
-    if (loaded.count == 0) {
+    int count = arkime_parsers_load();
+    if (count == 0) {
         LOG("WARNING - No parsers loaded, is parsersDir set correctly");
     }
-
-    HASH_FORALL_POP_HEAD2(s_, loaded, hstring) {
-        g_free(hstring->str);
-        ARKIME_TYPE_FREE(ArkimeString_t, hstring);
-    }
-    g_free(disableParsers); // NOT, g_strfreev because using the pointers
 
     // Set tags field up AFTER loading plugins
     config.tagsStringField = arkime_field_define("general", "termfield",

@@ -129,6 +129,9 @@ void arkime_plugins_load(char **plugins)
 
         g_free (path);
     }
+
+    int arkime_parsers_load();
+    arkime_parsers_load();
 }
 /******************************************************************************/
 LOCAL int arkime_plugins_load_so(const char *path)
