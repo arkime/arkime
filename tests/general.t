@@ -1,4 +1,4 @@
-use Test::More tests => 711;
+use Test::More tests => 713;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -463,3 +463,7 @@ if (0) {
     countTest(1, "date=-1&expression=" . uri_escape("file=$pwd/bt-udp.pcap&&source.port=50759"));
     countTest(1, "date=-1&expression=" . uri_escape("file=$pwd/bt-udp.pcap&&source.ip=10.0.0.2:50759"));
     countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/dns-flags0110.pcap||file=$pwd/dns-dnskey.pcap)&&source.mac=00:1a:e3:dc:2e:c0"));
+
+# IP Test
+    countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/dns-flags0110.pcap) && ((country.dst == EXISTS!) || (country.src == EXISTS!) || (ip.dst == EXISTS! && ip.dst != 0.0.0.0/8 && ip.dst != 10.0.0.0/8 && ip.dst != 100.64.0.0/10 && ip.dst != 127.0.0.0/8 && ip.dst != 169.254.0.0/16 && ip.dst != 172.16.0.0/12 && ip.dst != 192.0.0.0/24  && ip.dst != 192.0.2.0/24 && ip.dst != 192.88.99.0/24 && ip.dst != 192.168.0.0/16 && ip.dst != 198.18.0.0/15 && ip.dst != 198.51.100.0/24 && ip.dst != 203.0.113.0/24 && ip.dst != 224.0.0.0/4 && ip.dst != 232.0.0.0/8 && ip.dst != 233.0.0.0/8 && ip.dst != 234.0.0.0/8 && ip.dst != 239.0.0.0/8 && ip.dst != 240.0.0.0/4 && ip.dst != 255.255.255.255 && ip.dst != :: && ip.dst != ::1 && ip.dst != ff00::/8 && ip.dst != fe80::/10 && ip.dst != fc00::/7 && ip.dst != fd00::/8) || (ip.src == EXISTS! && ip.src != 0.0.0.0/8 && ip.src != 10.0.0.0/8 && ip.src != 100.64.0.0/10 && ip.src != 127.0.0.0/8 && ip.src != 169.254.0.0/16 && ip.src != 172.16.0.0/12 && ip.src != 192.0.0.0/24  && ip.src != 192.0.2.0/24 && ip.src != 192.88.99.0/24 && ip.src != 192.168.0.0/16 && ip.src != 198.18.0.0/15 && ip.src != 198.51.100.0/24 && ip.src != 203.0.113.0/24 && ip.src != 224.0.0.0/4 && ip.src != 232.0.0.0/8 && ip.src != 233.0.0.0/8 && ip.src != 234.0.0.0/8 && ip.src != 239.0.0.0/8 && ip.src != 240.0.0.0/4 && ip.src != 255.255.255.255 && ip.src != :: && ip.src != ::1 && ip.src != ff00::/8 && ip.src != fe80::/10 && ip.src != fc00::/7 && ip.src != fd00::/8))"));
+

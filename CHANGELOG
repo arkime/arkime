@@ -41,6 +41,8 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #3762 Fix auto loading of .lua parsers not always working
 ## Cont3xt
   - #3756 Fix overview raw editing not working well
+## Viewer
+  - #3766 Fix ips starting with :: being treated as ports
 
 
 6.0.0 2026/03/02
