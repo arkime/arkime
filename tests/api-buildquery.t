@@ -1,4 +1,4 @@
-use Test::More tests => 173;
+use Test::More tests => 177;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -130,6 +130,11 @@ doTest('ip.src == 1:2:3', qq({"term":{"source.ip":"1:2:3::/48"}}));
 doTest('ip.src == 1:2:3.80', qq({"bool":{"filter":[{"term":{"source.ip":"1:2:3::/48"}},{"term":{"source.port":"80"}}]}}));
 
 doTest('ip.src == [1.2.3.4,:80,2.3.4.5,:81]', qq({"bool":{"should":[{"terms":{"source.ip":["1.2.3.4","2.3.4.5"]}},{"terms":{"source.port":["80","81"]}}]}}));
+
+doTest('ip.src == ::2', qq({"term":{"source.ip":"::2"}}));
+doTest('ip.src == ::2.80', qq({"bool":{"filter":[{"term":{"source.ip":"::2"}},{"term":{"source.port":"80"}}]}}));
+doTest('ip.src == ::2/8.80', qq({"bool":{"filter":[{"term":{"source.ip":"::2/8"}},{"term":{"source.port":"80"}}]}}));
+doTest('ip.src == .80', qq({"term":{"source.port":"80"}}));
 
 
 #### IP
