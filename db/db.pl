@@ -4226,7 +4226,7 @@ my $template = qq(
           "limit": 10000
         }
       },
-      "refresh_interval": "5s"
+      "refresh_interval": "${REFRESH}s"
     }
   }
 }
