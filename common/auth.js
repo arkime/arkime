@@ -1143,7 +1143,7 @@ class ESStore extends expressSession.Store {
       // If already exists ignore error
       if (err.meta.body?.error?.type !== 'resource_already_exists_exception') {
         console.log(err);
-        process.exit(0);
+        process.exit(1);
       }
     }
 

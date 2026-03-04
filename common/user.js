@@ -990,7 +990,7 @@ class User {
 
         if (err) {
           console.log(`ERROR - ${req.method} /api/user/%s`, userId, util.inspect(err, false, 50), user, info);
-          return res.serverError(500, 'Error updating user:' + err);
+          return res.serverError(500, 'Error updating user');
         }
 
         return res.json({
@@ -1059,7 +1059,7 @@ class User {
 
         if (err) {
           console.log(`ERROR - ${req.method} /api/user/%s/assignment`, userId, util.inspect(err, false, 50), user, info);
-          return res.serverError(500, 'Error updating user role:' + err);
+          return res.serverError(500, 'Error updating user role');
         }
 
         return res.json({

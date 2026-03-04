@@ -196,6 +196,8 @@ export default {
         } else {
           return reject(response.text);
         }
+      }).catch((err) => {
+        reject(err.message || err);
       });
     });
   },

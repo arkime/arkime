@@ -476,11 +476,11 @@ class ArkimeUtil {
         }
       } catch (e) {
         console.log("ERROR - Couldn't find database version.  Have you run ./db.pl host:port upgrade?", e);
-        process.exit(0);
+        process.exit(1);
       }
     } catch (err) {
       console.log("ERROR - Couldn't retrieve database version, is OpenSearch/Elasticsearch running?  Have you run ./db.pl host:port init?", err);
-      process.exit(0);
+      process.exit(1);
     }
   }
 
@@ -555,7 +555,8 @@ class ArkimeUtil {
       })
       .on('listening', (e) => {
         console.log('%s listening on host %s port %d in %s mode', process.argv[1], server.address().address, server.address().port, app.settings.env);
-        console.log('Open your web browser to http://localhost:%d/', server.address().port);
+        const proto = ArkimeUtil.#httpsServer ? 'https' : 'http';
+        console.log('Open your web browser to %s://localhost:%d/', proto, server.address().port);
       })
       .listen({ port, host }, listenCb);
 
