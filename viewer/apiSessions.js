@@ -1693,7 +1693,7 @@ class SessionAPIs {
       }, (err) => {
         if (err) {
           console.log('ERROR - Could not build query for CSV', err);
-          return res.send('Could not build query');
+          return res.send('Could not build query. Err: ' + err);
         } else {
           SessionAPIs.#csvListWriter(req, res, ['end'], null, reqFields);
         }
@@ -2646,7 +2646,7 @@ class SessionAPIs {
         }, async (err, total) => {
           if (err) {
             console.log('ERROR - Could not build query for addTags', err);
-            return res.send('Could not build query');
+            return res.send('Could not build query. Err: ' + err);
           }
           if (!total) {
             return res.serverError(200, 'No sessions to add tags to');
@@ -2709,7 +2709,7 @@ class SessionAPIs {
         }, async (err, total) => {
           if (err) {
             console.log('ERROR - Could not build query for removeTags', err);
-            return res.send('Could not build query');
+            return res.send('Could not build query. Err: ' + err);
           }
           if (!total) {
             return res.serverError(200, 'No sessions to remove tags from');
