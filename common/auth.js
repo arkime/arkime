@@ -897,7 +897,11 @@ class Auth {
   }
 
   // ----------------------------------------------------------------------------
-  // Hash (MD5) the password
+  // Hash (MD5) the password into HTTP Digest HA1 format.
+  // NOTE: MD5 is required by the HTTP Digest authentication spec (RFC 2617).
+  // The HA1 is encrypted with AES-256 before storage (see ha12store).
+  // For stronger password hashing, use form or OIDC auth modes instead of digest.
+  // nosemgrep: javascript.lang.security.audit.node-crypto-md5
   static pass2ha1 (userId, password) {
     return Auth.md5(userId + ':' + Auth.#authConfig.httpRealm + ':' + password);
   }

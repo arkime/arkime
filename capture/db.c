@@ -2135,8 +2135,8 @@ char *arkime_db_create_file_full(const struct timeval *firstPacket, const char *
         key_len = arkime_snprintf_len(key, sizeof(key), "/%sfiles/_doc/%s-%u?refresh=true", config.prefix, config.nodeName, num);
     } else {
 
-        uint16_t flen = strlen(config.pcapDir[config.pcapDirPos]);
-        if (flen >= sizeof(filename) - 1) {
+        int flen = strlen(config.pcapDir[config.pcapDirPos]);
+        if (flen >= (int)sizeof(filename) - 1) {
             LOGEXIT("ERROR - pcapDir '%s' string length is too large", config.pcapDir[config.pcapDirPos]);
         }
 
@@ -2164,7 +2164,8 @@ char *arkime_db_create_file_full(const struct timeval *firstPacket, const char *
             double maxFreeSpacePercent = 0;
             for (int i = 0; config.pcapDir[i]; i++) {
                 struct statvfs vfs;
-                statvfs(config.pcapDir[i], &vfs);
+                if (statvfs(config.pcapDir[i], &vfs) != 0 || vfs.f_blocks == 0)
+                    continue;
                 if (config.debug)
                     LOG("%s has %0.2f%% free", config.pcapDir[i], 100 * ((double)vfs.f_bavail / (double)vfs.f_blocks));
 
@@ -2181,7 +2182,8 @@ char *arkime_db_create_file_full(const struct timeval *firstPacket, const char *
             uint64_t maxFreeSpaceBytes   = 0;
             for (int i = 0; config.pcapDir[i]; i++) {
                 struct statvfs vfs;
-                statvfs(config.pcapDir[i], &vfs);
+                if (statvfs(config.pcapDir[i], &vfs) != 0)
+                    continue;
                 if (config.debug)
                     LOG("%s has %" PRIu64 " megabytes available", config.pcapDir[i], (uint64_t)vfs.f_bavail * (uint64_t)vfs.f_frsize / (1000 * 1000));
                 if ((uint64_t)vfs.f_bavail * (uint64_t)vfs.f_frsize >= maxFreeSpaceBytes) {

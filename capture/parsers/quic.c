@@ -504,7 +504,7 @@ LOCAL void quic_ietf_udp_classify(ArkimeSession_t *session, const uint8_t *data,
     uint8_t buffer[3100];
     uint16_t headerLen = BSB_POSITION(bsb);
 
-    memcpy(buffer, data, len);
+    memcpy(buffer, data, MIN(len, (int)sizeof(buffer)));
 
     buffer[0] = packet0;
     for (int i = 0; i < pn_length; i++) {

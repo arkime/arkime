@@ -1217,7 +1217,7 @@ class User {
     }
 
     // We only look at our direct roles for settings, since those should already be expanded
-    for (const r of this.roles) {
+    for (const r of rolesQ) {
       if (systemRolesMapping[r]) {
         continue;
       }

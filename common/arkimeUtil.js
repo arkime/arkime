@@ -396,8 +396,10 @@ class ArkimeUtil {
    */
   static expressErrorHandler (err, req, res, next) {
     console.error('Error', ArkimeUtil.sanitizeStr(err.stack));
+    if (res.headersSent) {
+      return next(err);
+    }
     res.status(500).send(err.toString());
-    next();
   }
 
   // ----------------------------------------------------------------------------

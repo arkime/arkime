@@ -145,7 +145,7 @@ class ArkimeConfig {
         url = url[0];
       }
       const u = new URL(url);
-      if (u.origin?.startsWith('https://localhost') || u.origin?.startsWith('https://127.0.0.1')) {
+      if (u.origin?.startsWith('https://localhost') || u.origin?.startsWith('https://127.0.0.1') || u.origin?.startsWith('https://[::1]')) {
         return true;
       }
     }
@@ -185,7 +185,7 @@ class ArkimeConfig {
     }
 
     if (ArkimeConfig.#dumpConfig) {
-      console.error(JSON.stringify({ OVERRIDE: Object.fromEntries(ArkimeConfig.#override), CONFIG: ArkimeConfig.#config }, false, 2));
+      console.error(JSON.stringify({ OVERRIDE: Object.fromEntries(ArkimeConfig.#override), CONFIG: ArkimeConfig.#config }, null, 2));
       if (ArkimeConfig.regressionTests) { process.exit(); }
     }
   }
