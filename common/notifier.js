@@ -39,7 +39,7 @@ class Notifier {
     };
 
     // look for all notifier providers and initialize them
-    const files = fs.globSync(path.join(__dirname, '/../common/notifier.*.js'));
+    const files = fs.globSync(path.join(__dirname, 'notifier.*.js'));
     for (const file of files) {
       const notifier = require(file);
       notifier.init(api);

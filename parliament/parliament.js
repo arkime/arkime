@@ -534,8 +534,7 @@ class Parliament {
       return res.serverError(422, 'A group must have a string description.');
     }
 
-    const newGroup = { title: req.body.title, id: uuid(), clusters: [] };
-    newGroup.description ??= req.body.description;
+    const newGroup = { title: req.body.title, description: req.body.description, id: uuid(), clusters: [] };
 
     try {
       const { body: { _source: parliament } } = await Parliament.getParliament();
@@ -839,15 +838,6 @@ class Parliament {
 // ----------------------------------------------------------------------------
 // MIDDLEWARE
 // ----------------------------------------------------------------------------
-// Replace the default express error handler
-app.use((err, req, res, next) => {
-  console.log(ArkimeUtil.sanitizeStr(err.stack));
-  res.status(err.httpStatusCode ?? 500).json({
-    success: false,
-    text: err.message ?? 'Error'
-  });
-});
-
 app.use((req, res, next) => {
   res.serverError = ArkimeUtil.serverError;
   return next();
@@ -883,17 +873,19 @@ let alerts = [];
 // sends alerts in the alerts list
 async function sendAlerts () {
   const hostname = Parliament.getGeneralSetting('hostname');
+  const toSend = alerts;
+  alerts = [];
   const promise = new Promise((resolve, reject) => {
-    for (let index = 0, len = alerts.length; index < len; index++) {
+    for (let index = 0, len = toSend.length; index < len; index++) {
       (function (i) {
         // timeout so that alerts are alerted in order
         setTimeout(() => {
-          const alertToSend = alerts[i];
+          const alertToSend = toSend[i];
           const links = [];
           if (Parliament.getGeneralSetting('includeUrl')) {
             links.push({
               text: 'Parliament Dashboard',
-              url: `${hostname}?searchTerm=${alertToSend.cluster}`
+              url: `${hostname}?searchTerm=${encodeURIComponent(alertToSend.cluster)}`
             });
           }
           alertToSend.notifier.sendAlert(alertToSend.config, alertToSend.message, links);
@@ -906,9 +898,7 @@ async function sendAlerts () {
     }
   });
 
-  promise.then(() => {
-    alerts = []; // clear the queue
-  });
+  await promise;
 }
 
 // sorts the list of alerts by cluster title then sends them
@@ -1026,8 +1016,13 @@ async function initializeParliament () {
 
   // fetch parliament file if it exists
   try {
-    parliamentFile = require(`${ArkimeConfig.get('file')}`);
-  } catch (err) {}
+    parliamentFile = JSON.parse(fs.readFileSync(ArkimeConfig.get('file'), 'utf8'));
+  } catch (err) {
+    if (err.code !== 'ENOENT') {
+      console.log('Error reading parliament file:', err.message);
+      process.exit(1);
+    }
+  }
 
   // if there's a parliament file, check that it is the correct version
   if (parliamentFile && (parliamentFile.version === undefined || parliamentFile.version < MIN_PARLIAMENT_VERSION)) {
@@ -1522,9 +1517,8 @@ function writeIssues (req, res, next, successObj, errorText, sendIssues) {
       }
 
       if (err) {
-        const errorMsg = `Unable to write issue data: ${err.message ?? err}`;
-        console.log(errorMsg);
-        return res.serverError(500, errorMsg);
+        console.log(`Unable to write issue data: ${err.message ?? err}`);
+        return res.serverError(500, 'Unable to write issue data');
       }
 
       // send the updated issues with the response
@@ -1950,6 +1944,15 @@ app.put('/parliament/api/removeSelectedAcknowledgedIssues', [isUser, checkCookie
   writeIssues(req, res, next, successObj, errorText);
 });
 
+// Replace the default express error handler
+app.use((err, req, res, next) => {
+  console.log(ArkimeUtil.sanitizeStr(err.stack));
+  res.status(err.httpStatusCode ?? 500).json({
+    success: false,
+    text: err.message ?? 'Error'
+  });
+});
+
 // ----------------------------------------------------------------------------
 // INITIALIZE
 // ----------------------------------------------------------------------------
@@ -2040,7 +2043,7 @@ async function main () {
     internals.webBasePath = ArkimeConfig.get('webBasePath', '/');
   } catch (err) {
     console.log(err);
-    process.exit();
+    process.exit(1);
   }
 
   // ERROR OUT if there's no parliament config
@@ -2051,15 +2054,15 @@ async function main () {
 
   // construct the issues file name
   let issuesFilename = 'issues.json';
-  if (ArkimeConfig.get('file')?.indexOf('.json') > -1) {
-    const filename = ArkimeConfig.get('file').replace(/\.json/g, '');
-    issuesFilename = `${filename}.issues.json`;
+  const configFile = ArkimeConfig.get('file');
+  if (configFile?.endsWith('.json')) {
+    issuesFilename = `${configFile.slice(0, -5)}.issues.json`;
   }
   app.set('issuesfile', issuesFilename);
 
   // get the issues file or create it if it doesn't exist
   try {
-    issues = require(issuesFilename);
+    issues = JSON.parse(fs.readFileSync(issuesFilename, 'utf8'));
   } catch (err) {
     issues = [];
   }
