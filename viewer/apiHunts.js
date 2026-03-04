@@ -379,7 +379,14 @@ ${Config.arkimeWebURL()}hunt
             return cb(updateResult);
           }
 
-          const json = JSON.parse(response);
+          let json;
+          try {
+            json = JSON.parse(response);
+          } catch (e) {
+            console.log('ERROR - huntFailedSessions - could not parse response from', huntRemotePath, response);
+            const updateResult = await HuntAPIs.#continueHuntSkipSession(hunt, huntId, session, sessionId, searchedSessions);
+            return cb(updateResult);
+          }
 
           if (json.error) {
             console.log(`ERROR - huntFailedSessions - hunting on remote viewer: ${huntRemotePath}`, util.inspect(json.error, false, 50));
@@ -519,7 +526,14 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
                 const skipResult = await HuntAPIs.#continueHuntSkipSession(hunt, huntId, session, sessionId, searchedSessions);
                 return cb(skipResult);
               }
-              const json = JSON.parse(response);
+              let json;
+              try {
+                json = JSON.parse(response);
+              } catch (e) {
+                console.log('ERROR - runHuntJob - could not parse response from', huntRemotePath, response);
+                const skipResult = await HuntAPIs.#continueHuntSkipSession(hunt, huntId, session, sessionId, searchedSessions);
+                return cb(skipResult);
+              }
               if (json.error) {
                 console.log(`ERROR - runHuntJob - hunting on remote viewer: ${huntRemotePath}`, util.inspect(json.error, false, 50));
                 return HuntAPIs.#pauseHuntJobWithError(huntId, hunt, { value: `Error hunting on remote viewer: ${json.error}` }, node);

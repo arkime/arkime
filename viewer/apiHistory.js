@@ -169,7 +169,7 @@ class HistoryAPIs {
       });
     } catch (err) {
       console.log(`ERROR - ${req.method} /api/history`, util.inspect(err, false, 50));
-      return res.serverError(500, 'Error retrieving history - ' + err);
+      return res.serverError(500, 'Error retrieving history');
     }
   }
 
