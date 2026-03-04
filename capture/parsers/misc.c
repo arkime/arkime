@@ -197,6 +197,28 @@ LOCAL void telnet_tcp_classify(ArkimeSession_t *session, const uint8_t *data, in
     arkime_session_add_protocol(session, "telnet");
 }
 /******************************************************************************/
+LOCAL void openvpn_udp_classify(ArkimeSession_t *session, const uint8_t *data, int len, int UNUSED(which), void *UNUSED(uw))
+{
+    // OpenVPN UDP: byte0 = (opcode << 3) | key_id, valid opcodes 1-10
+    if (len < 14)
+        return;
+    uint8_t opcode = data[0] >> 3;
+    if (opcode < 1 || opcode > 10)
+        return;
+    arkime_session_add_protocol(session, "openvpn");
+}
+/******************************************************************************/
+LOCAL void openvpn_tcp_classify(ArkimeSession_t *session, const uint8_t *data, int len, int UNUSED(which), void *UNUSED(uw))
+{
+    // OpenVPN TCP: 2-byte length prefix, then byte0 = (opcode << 3) | key_id
+    if (len < 16)
+        return;
+    uint8_t opcode = data[2] >> 3;
+    if (opcode < 1 || opcode > 10)
+        return;
+    arkime_session_add_protocol(session, "openvpn");
+}
+/******************************************************************************/
 LOCAL void netflow_classify(ArkimeSession_t *session, const uint8_t *data, int len, int UNUSED(which), void *UNUSED(uw))
 {
     ARKIME_RETURN_IF_DNS_PORT;
@@ -476,6 +498,9 @@ void arkime_parser_init()
     arkime_parsers_classifier_register_port("safet",  NULL, 23294, ARKIME_PARSERS_PORT_UDP, safet_udp_classify);
 
     arkime_parsers_classifier_register_port("telnet",  NULL, 23, ARKIME_PARSERS_PORT_TCP_DST, telnet_tcp_classify);
+
+    arkime_parsers_classifier_register_port("openvpn",  NULL, 1194, ARKIME_PARSERS_PORT_UDP_DST, openvpn_udp_classify);
+    arkime_parsers_classifier_register_port("openvpn",  NULL, 1194, ARKIME_PARSERS_PORT_TCP_DST, openvpn_tcp_classify);
 
     arkime_parsers_classifier_register_port("whois",  "whois", 43, ARKIME_PARSERS_PORT_TCP_DST, misc_add_protocol_classify);
 
