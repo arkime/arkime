@@ -935,11 +935,15 @@ LOCAL char *arkime_config_redis_get(const char *url)
     }
 
     int dataLen = atoi(line + 1);
-    if (dataLen < 0) {
+    if (dataLen < 0 || dataLen > 10 * 1024 * 1024) {
         close(fd);
         CONFIGEXIT("Redis key not found or invalid response length: %d", dataLen);
     }
     char *data = malloc(dataLen + 1);
+    if (!data) {
+        close(fd);
+        CONFIGEXIT("Failed to allocate %d bytes for Redis response", dataLen + 1);
+    }
 
     // Read exact data bytes
     int total = 0;

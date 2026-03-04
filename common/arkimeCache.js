@@ -10,7 +10,7 @@
 const { LRUCache } = require('lru-cache');
 const Bson = require('bson');
 const BSON = new Bson();
-const ArkimeUtil = require('../common/arkimeUtil');
+const ArkimeUtil = require('./arkimeUtil');
 
 /******************************************************************************/
 // Base Cache

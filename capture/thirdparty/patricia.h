@@ -138,9 +138,6 @@ ascii2prefix (int family, char *string);
 prefix_t *
 ascii2prefix2 (int family, char *string, prefix_t *prefix);
 
-char *
-prefix_toa2x(prefix_t *prefix, char *buff, int with_len);
-
 patricia_node_t *
 make_and_lookup (patricia_tree_t *tree, char *string);
 

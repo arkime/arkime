@@ -292,6 +292,8 @@ class Notifier {
       });
 
       return res.send(results);
+    }).catch((err) => {
+      return res.serverError(500, 'Error retrieving notifiers');
     });
   }
 
