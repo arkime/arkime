@@ -773,13 +773,15 @@ int arkime_parsers_load()
         ext->loaded = 1;
     }
 
+    int count = HASH_COUNT(s_, loaded);
+
     HASH_FORALL_POP_HEAD2(s_, loaded, hstring) {
         g_free(hstring->str);
         ARKIME_TYPE_FREE(ArkimeString_t, hstring);
     }
     g_free(disableParsers); // NOT, g_strfreev because using the pointers
 
-    return loaded.count;
+    return count;
 }
 /******************************************************************************/
 void arkime_parsers_register_load_extension(const char *extension, ArkimeParserLoadFunc loadFunc)
