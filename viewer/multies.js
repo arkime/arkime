@@ -178,7 +178,12 @@ function makeRequest (url, options, cb) {
           result = result.replace(new RegExp('(index":\\s*|[,{]|  )"' + options.arkime_prefix + '(sessions3|sessions2|stats|dstats|sequence|files|users|history)', 'g'), '$1"MULTIPREFIX_$2');
           result = result.replace(new RegExp('(index":\\s*)"' + options.arkime_prefix + '(fields_v[1-4][0-9]?)"', 'g'), '$1"MULTIPREFIX_$2"');
         }
-        result = JSON.parse(result);
+        try {
+          result = JSON.parse(result);
+        } catch (e) {
+          console.log('ERROR - could not parse response from ES', e);
+          if (cb) { return cb(e, {}); }
+        }
       } else {
         result = {};
       }
@@ -248,7 +253,13 @@ function simpleGather (req, res, bodies, doneCb) {
 
     if (req.arkime_need_to_scroll) {
       // Save size and reset to 1000 per scroll call
-      let body = JSON.parse(options.arkime_body);
+      let body;
+      try {
+        body = JSON.parse(options.arkime_body);
+      } catch (e) {
+        console.log('ERROR - could not parse arkime_body for scroll', e);
+        return res.status(400).send('Invalid body');
+      }
       const totSize = body.size;
       body.size = 1000;
       options.arkime_body = JSON.stringify(body);
@@ -493,7 +504,7 @@ app.put('/arkime_sids_v50', (req, res) => {
   console.log('ERROR - Please set usersElasticsearch and usersPrefix in config.ini for multi-viewer. Maybe something like');
   console.log('usersElasticsearch=http://localhost:9200');
   console.log('usersPrefix=arkime');
-  process.exit();
+  process.exit(1);
 });
 
 app.get(['/users/user/:user', '/users/_doc/:user'], async (req, res) => {
@@ -808,7 +819,12 @@ function aggAdd (obj1, obj2) {
 }
 
 function fixQuery (node, body, doneCb) {
-  body = JSON.parse(body);
+  try {
+    body = JSON.parse(body);
+  } catch (e) {
+    console.log('ERROR - could not parse body in fixQuery', e);
+    return doneCb(null, body);
+  }
 
   // Reset from & size since we do aggregation
   if (body.size) {
@@ -1011,7 +1027,12 @@ app.post(['/MULTIPREFIX_fields/field/_search', '/MULTIPREFIX_fields/_search'], f
 
 app.post(['/:index/:type/_search', '/:index/_search'], function (req, res) {
   const bodies = {};
-  const search = JSON.parse(req.body);
+  let search;
+  try {
+    search = JSON.parse(req.body);
+  } catch (e) {
+    return res.status(400).send('Invalid JSON body');
+  }
 
   if (+search.size + (+search.from || 0) > 10000) {
     req.arkime_need_to_scroll = true;
@@ -1286,12 +1307,12 @@ async function premain () {
       if (data.version.distribution === 'opensearch') {
         if (data.version.number.match(/^[0]/)) {
           console.log(`ERROR - OpenSearch ${data.version.number} not supported, OpenSearch 1.0.0 or later required.`);
-          process.exit();
+          process.exit(1);
         }
       } else {
         if (data.version.number.match(/^([0-6]|7\.[0-9]\.)/)) {
           console.log(`ERROR - ES ${data.version.number} not supported, ES 7.10.0 or later required.`);
-          process.exit();
+          process.exit(1);
         }
       }
     } catch (err) {

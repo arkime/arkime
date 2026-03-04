@@ -308,7 +308,7 @@ class MiscAPIs {
       res.write(ArkimeUtil.safeStr(cmd));
       res.write('<br>');
       res.write('<pre>');
-      res.write(stdout);
+      res.write(ArkimeUtil.safeStr(stdout));
       res.end('</pre>');
       fs.unlinkSync(req.file.path);
     });

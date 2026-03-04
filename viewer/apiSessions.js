@@ -380,7 +380,12 @@ class SessionAPIs {
     options.order.push('ITEM-HTTP');
     options.order.push('ITEM-SMTP');
 
-    const decodeOptions = JSON.parse(req.query.decode || '{}');
+    let decodeOptions;
+    try {
+      decodeOptions = JSON.parse(req.query.decode || '{}');
+    } catch (e) {
+      return res.serverError(400, 'Invalid decode parameter');
+    }
     for (const key in decodeOptions) {
       if (ArkimeUtil.isPP(key)) { continue; }
       if (key.match(/^ITEM/)) {
@@ -1687,7 +1692,8 @@ class SessionAPIs {
         SessionAPIs.#csvListWriter(req, res, ['data'], chunk, reqFields);
       }, (err) => {
         if (err) {
-          return res.send('Could not build query.  Err: ' + err);
+          console.log('ERROR - Could not build query for CSV', err);
+          return res.send('Could not build query. Err: ' + err);
         } else {
           SessionAPIs.#csvListWriter(req, res, ['end'], null, reqFields);
         }
@@ -2312,7 +2318,8 @@ class SessionAPIs {
         query.query.bool.filter.push({
           script: {
             script: {
-              source: `doc["${req.query.field}"].size() > 0 && doc["${req.query.field}"].value.toString().startsWith("${req.query.autocomplete}")`
+              source: `doc["${req.query.field}"].size() > 0 && doc["${req.query.field}"].value.toString().startsWith(params.prefix)`,
+              params: { prefix: req.query.autocomplete }
             }
           }
         });
@@ -2525,7 +2532,7 @@ class SessionAPIs {
     Db.getSession(req.params.id, options, (err, session) => {
       if (err || !session.found) {
         console.log("Couldn't look up detail data, error for session %s Error: ", ArkimeUtil.safeStr(req.params.id), err);
-        return res.serverError(500, "Couldn't look up detail data, error for session " + ArkimeUtil.safeStr(req.params.id) + ' Error: ' + err);
+        return res.serverError(500, "Couldn't look up detail data for session " + ArkimeUtil.safeStr(req.params.id));
       }
 
       session = session.fields;
@@ -2638,7 +2645,8 @@ class SessionAPIs {
           await SessionAPIs.addTagsList(tags, list);
         }, async (err, total) => {
           if (err) {
-            return res.send('Could not build query.  Err: ' + err);
+            console.log('ERROR - Could not build query for addTags', err);
+            return res.send('Could not build query. Err: ' + err);
           }
           if (!total) {
             return res.serverError(200, 'No sessions to add tags to');
@@ -2700,7 +2708,8 @@ class SessionAPIs {
           await SessionAPIs.#removeTagsList(tags, list);
         }, async (err, total) => {
           if (err) {
-            return res.send('Could not build query.  Err: ' + err);
+            console.log('ERROR - Could not build query for removeTags', err);
+            return res.send('Could not build query. Err: ' + err);
           }
           if (!total) {
             return res.serverError(200, 'No sessions to remove tags from');
@@ -3650,7 +3659,12 @@ class SessionAPIs {
 
       // If we know the session len and haven't read the session
       if (sessionlen !== -1 && !session && buffer.length >= sessionlen) {
-        session = JSON.parse(buffer.toString('utf8', 0, sessionlen));
+        try {
+          session = JSON.parse(buffer.toString('utf8', 0, sessionlen));
+        } catch (e) {
+          console.log('ERROR - could not parse session data in receiveSession', e);
+          return req.destroy();
+        }
         session.srcNode = session.node; // Save original node
         session.node = Config.nodeName();
         buffer = buffer.slice(sessionlen);

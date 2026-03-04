@@ -161,11 +161,11 @@ tcp,1386004309468,1386004309478,10.180.156.185,53533,US,10.180.156.249,1080,US,2
 # csv unknown view
     my $csv = getBinary("/sessions.csv?view=unknown&date=-1&expression=" . uri_escape("file=$pwd/socks-http-example.pcap"))->content;
     $csv =~ s/\r//g;
-    eq_or_diff ($csv, 'Could not build query.  Err: Can\'t find view');
+    eq_or_diff ($csv, 'Could not build query. Err: Can\'t find view');
 
     my $csv = getBinary("/sessions.csv?view=unknown&fields=firstPacket,lastPacket,source.ip,source.geo.country_iso_code,destination.ip,destination.geo.country_iso_code,network.packets,node,tcpflags.rst,tcpflags.psh,socks.ASN&date=-1&expression=" . uri_escape("file=$pwd/socks-http-example.pcap"))->content;
     $csv =~ s/\r//g;
-    eq_or_diff ($csv, 'Could not build query.  Err: Can\'t find view');
+    eq_or_diff ($csv, 'Could not build query. Err: Can\'t find view');
 
 # csv should respect length parameter (visible sessions export)
     my $csvOne = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8123/sessions.csv?length=1&date=-1&expression=" . uri_escape("file=$pwd/socks-http-example.pcap"))->content;

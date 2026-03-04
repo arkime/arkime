@@ -240,7 +240,7 @@ class ShortcutAPIs {
       res.send(sendResults);
     }).catch((err) => {
       console.log(`ERROR - ${req.method} /api/shortcuts`, util.inspect(err, false, 50));
-      return res.serverError(500, 'Error retrieving shortcuts - ' + err);
+      return res.serverError(500, 'Error retrieving shortcuts');
     });
   }
 

@@ -78,7 +78,7 @@ app.use(compression());
 // Explicit sigint handler for running under docker
 // See https://github.com/nodejs/node/issues/4182
 process.on('SIGINT', function () {
-  process.exit();
+  process.exit(0);
 });
 
 // define csp headers
@@ -557,7 +557,7 @@ async function checkHuntAccess (req, res, next) {
       return res.serverError(403, `You cannot change another user's hunt unless you have admin privileges`);
     } catch (err) {
       console.log('ERROR - fetching hunt to check access', err);
-      return res.serverError(500, err);
+      return res.serverError(500, 'Error checking hunt access');
     }
   }
 }
@@ -901,7 +901,12 @@ function sendSessionWorker (options, cb) {
           result += chunk;
         });
         pres.on('end', () => {
-          result = JSON.parse(result);
+          try {
+            result = JSON.parse(result);
+          } catch (e) {
+            console.log('ERROR - could not parse response from', url, result);
+            return cb();
+          }
           if (!result.success) {
             console.log('ERROR sending session ', result);
           }
@@ -967,7 +972,7 @@ async function expireDevice (nodes, dirs, minFreeSpaceG) {
   }
 
   if (Config.debug > 1) {
-    console.log('EXPIRE - device query', JSON.stringify(query, false, 2));
+    console.log('EXPIRE - device query', JSON.stringify(query, null, 2));
   }
 
   try {
@@ -982,7 +987,7 @@ async function expireDevice (nodes, dirs, minFreeSpaceG) {
     if (Config.debug === 1) {
       console.log('EXPIRE - device results hits:', data.hits.hits.length);
     } else if (Config.debug > 1) {
-      console.log('EXPIRE - device results', data.hits.hits.length, JSON.stringify(data, false, 2));
+      console.log('EXPIRE - device results', data.hits.hits.length, JSON.stringify(data, null, 2));
     }
 
     if (data.hits.total <= 10) {
@@ -1025,7 +1030,7 @@ async function expireDevice (nodes, dirs, minFreeSpaceG) {
     return;
   } catch (err) {
     if (Config.debug > 0) {
-      console.log('EXPIRE - device error', JSON.stringify(err, false, 2));
+      console.log('EXPIRE - device error', JSON.stringify(err, null, 2));
     }
     return;
   }
@@ -2154,7 +2159,7 @@ app.use(ArkimeUtil.expressErrorHandler);
 async function main () {
   if (!fs.existsSync(path.join(process.cwd(), '/views/mixins.pug'))) {
     console.error('ERROR - ./views/mixins.pug missing - The viewer app MUST be run from inside the viewer directory');
-    process.exit();
+    process.exit(1);
   }
 
   if (!fs.existsSync(path.join(__dirname, '/vueapp/dist/index.html')) && app.settings.env !== 'development') {
@@ -2224,7 +2229,7 @@ processArgs(process.argv);
 // DB
 // ============================================================================
 process.on('unhandledRejection', (reason, p) => {
-  console.trace('Unhandled Rejection at: Promise', p, 'reason:', reason, JSON.stringify(reason, false, 2));
+  console.trace('Unhandled Rejection at: Promise', p, 'reason:', reason, JSON.stringify(reason, null, 2));
   // application specific logging, throwing an error, or other logic here
 });
 
