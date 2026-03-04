@@ -274,7 +274,7 @@ if [ "$UNAME" = "Darwin" ]; then
   if [ -x "/opt/local/bin/port" ]; then
     sudo port install libpcap yara glib2 jansson ossp-uuid libmaxminddb libmagic pcre lua libyaml wget nghttp2 librdkafka zstd
   elif [ -x "/usr/local/bin/brew" ] || [ -x "/opt/homebrew/bin/brew" ]; then
-    brew install libpcap yara glib jansson ossp-uuid libmaxminddb libmagic pcre lua libyaml openssl wget autoconf automake nghttp2 zstd librdkafka
+    brew install libpcap yara glib jansson ossp-uuid libmaxminddb libmagic pcre lua libyaml openssl wget autoconf automake pkg-config nghttp2 zstd librdkafka
   else
     echo "ARKIME: Please install MacPorts or Homebrew"
     exit 1
