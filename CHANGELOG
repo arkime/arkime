@@ -53,7 +53,6 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
 ## Viewer
   - #3766 Fix ips starting with :: being treated as ports
 
-
 6.0.0 2026/03/02
 ## All
   - #3747 New /api/appversion API
