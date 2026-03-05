@@ -20,8 +20,6 @@ LOCAL ArkimePacketRC gre_packet_enqueue(ArkimePacketBatch_t *UNUSED(batch), Arki
 {
     packet->tunnel |= ARKIME_PACKET_TUNNEL_GRE;
 
-    //LOG("ALW ipOffset %d payloadOffset %d diff %d", packet->ipOffset, packet->payloadOffset, (int)(data - packet->pkt));
-
     BSB bsb;
     if (unlikely(len) < 4 || unlikely(!data))
         return ARKIME_PACKET_CORRUPT;
@@ -33,35 +31,49 @@ LOCAL ArkimePacketRC gre_packet_enqueue(ArkimePacketBatch_t *UNUSED(batch), Arki
     uint16_t type = 0;
     BSB_IMPORT_u16(bsb, type);
 
-    if (flags_version & (0x8000 | 0x4000)) {
-        BSB_IMPORT_skip(bsb, 4); // skip len and offset
-    }
+    int version = flags_version & 0x0007;
 
-    // key
-    if (flags_version & 0x2000) {
+    if (version == 1) {
+        // Enhanced GRE (RFC 2637 - PPTP)
+        // After flags(2)+protocol(2): payload_length(2) + call_id(2)
         BSB_IMPORT_skip(bsb, 4);
-    }
 
-    // sequence number
-    if (flags_version & 0x1000) {
-        BSB_IMPORT_skip(bsb, 4);
-    }
-
-    // routing
-    if (flags_version & 0x4000) {
-        while (BSB_NOT_ERROR(bsb)) {
-            BSB_IMPORT_skip(bsb, 3);
-            int tlen = 0;
-            BSB_IMPORT_u08(bsb, tlen);
-            if (tlen == 0)
-                break;
-            BSB_IMPORT_skip(bsb, tlen);
+        // sequence number
+        if (flags_version & 0x1000) {
+            BSB_IMPORT_skip(bsb, 4);
         }
-    }
 
-    // ack number
-    if (flags_version & 0x0080) {
-        BSB_IMPORT_skip(bsb, 4);
+        // ack number
+        if (flags_version & 0x0080) {
+            BSB_IMPORT_skip(bsb, 4);
+        }
+    } else {
+        // Standard GRE (RFC 2784/2890)
+        if (flags_version & (0x8000 | 0x4000)) {
+            BSB_IMPORT_skip(bsb, 4); // skip checksum and offset
+        }
+
+        // key
+        if (flags_version & 0x2000) {
+            BSB_IMPORT_skip(bsb, 4);
+        }
+
+        // sequence number
+        if (flags_version & 0x1000) {
+            BSB_IMPORT_skip(bsb, 4);
+        }
+
+        // routing
+        if (flags_version & 0x4000) {
+            while (BSB_NOT_ERROR(bsb)) {
+                BSB_IMPORT_skip(bsb, 3);
+                int tlen = 0;
+                BSB_IMPORT_u08(bsb, tlen);
+                if (tlen == 0)
+                    break;
+                BSB_IMPORT_skip(bsb, tlen);
+            }
+        }
     }
 
     if (BSB_IS_ERROR(bsb))

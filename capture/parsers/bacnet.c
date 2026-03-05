@@ -360,9 +360,9 @@ LOCAL void bacnet_udp_classify(ArkimeSession_t *session, const uint8_t *data, in
     if (data[0] != BVLC_TYPE_BACNET_IP && data[0] != BVLC_TYPE_BACNET_IPV6)
         return;
 
-    // Validate length field matches packet length
+    // Validate length field doesn't exceed packet length
     uint16_t bvlcLen = (data[2] << 8) | data[3];
-    if (bvlcLen != len)
+    if (bvlcLen < 4 || bvlcLen > len)
         return;
 
     // Validate function is in known range

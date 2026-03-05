@@ -41,6 +41,11 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
 ## Capture
   - #3760 Fix scheme mode not ignoring empty bpf setting
   - #3762 Fix auto loading of .lua parsers not always working
+  - #3774 Fix GRE Enhanced v1 (PPTP) header parsing and added proper PPP framing support
+  - #3774 Simple OpenVPN classifier
+  - #3774 Simple Omron-FINS classifier
+  - #3774 ENIP parser
+  - #3774 Don't be so strict with BACnet parsing
 ## Cont3xt
   - #3756 Fix overview raw editing not working well
 ## Viewer
