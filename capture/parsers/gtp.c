@@ -57,7 +57,29 @@ LOCAL ArkimePacketRC gtp_packet_enqueue(ArkimePacketBatch_t *batch, ArkimePacket
     return arkime_packet_run_ethernet_cb(batch, packet, BSB_WORK_PTR(bsb), BSB_REMAINING(bsb), ETHERTYPE_IP, "gtp");
 }
 /******************************************************************************/
+LOCAL void gtp_control_udp_classify(ArkimeSession_t *session, const uint8_t *data, int len, int UNUSED(which), void *UNUSED(uw))
+{
+    ARKIME_RETURN_IF_DNS_PORT;
+    if (len < 8)
+        return;
+
+    uint8_t version = (data[0] >> 5) & 0x07;
+    uint16_t msgLen = (data[2] << 8) | data[3];
+
+    if (version == 2 && msgLen <= len - 4) {
+        arkime_session_add_protocol(session, "gtp");
+    } else if (version == 1 && data[1] != 0xff && msgLen <= len - 8) {
+        arkime_session_add_protocol(session, "gtp");
+    } else if (version == 0 && msgLen <= len - 4) {
+        arkime_session_add_protocol(session, "gtp");
+    }
+}
+/******************************************************************************/
 void arkime_parser_init()
 {
     arkime_packet_set_udpport_enqueue_cb(2152, gtp_packet_enqueue);
+
+    arkime_parsers_classifier_register_port("gtp", NULL, 2123, ARKIME_PARSERS_PORT_UDP_DST, gtp_control_udp_classify);
+    arkime_parsers_classifier_register_port("gtp", NULL, 3386, ARKIME_PARSERS_PORT_UDP, gtp_control_udp_classify);
+    arkime_parsers_classifier_register_port("gtp", NULL, 2152, ARKIME_PARSERS_PORT_UDP, gtp_control_udp_classify);
 }
