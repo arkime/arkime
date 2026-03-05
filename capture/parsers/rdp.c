@@ -356,6 +356,17 @@ LOCAL int rdp_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, in
 }
 
 /******************************************************************************/
+LOCAL void rdp_udp_classify(ArkimeSession_t *session, const uint8_t *data, int len, int UNUSED(which), void *UNUSED(uw))
+{
+    ARKIME_RETURN_IF_DNS_PORT;
+
+    // MS-RDPEUDP SYN: snSourceAck(4) == 0xffffffff
+    if (len >= 8 && memcmp(data, "\xff\xff\xff\xff", 4) == 0) {
+        arkime_session_add_protocol(session, "rdpudp");
+    }
+}
+
+/******************************************************************************/
 LOCAL void rdp_classify(ArkimeSession_t *session, const uint8_t *data, int len, int UNUSED(which), void *UNUSED(uw))
 {
     if (arkime_session_has_protocol(session, "rdp"))
@@ -425,4 +436,6 @@ void arkime_parser_init()
                                                 ARKIME_FIELD_TYPE_STR_GHASH, ARKIME_FIELD_FLAG_CNT, (char *)NULL);
 
     arkime_parsers_classifier_register_tcp("rdp", NULL, 0, (const uint8_t *)"\x03\x00", 2, rdp_classify);
+
+    arkime_parsers_classifier_register_port("rdpudp", NULL, 3389, ARKIME_PARSERS_PORT_UDP, rdp_udp_classify);
 }
