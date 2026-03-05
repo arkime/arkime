@@ -544,8 +544,10 @@ LOCAL int arkime_reader_scheme_processNG(const char *uri, uint8_t *data, int len
             readerState.blockSize = blockHeader->block_total_length - 8;
 
             if ((size_t)readerState.blockSize > sizeof(readerState.tmpBuffer)) {
-                LOG("ERROR - pcapNG block size %d exceeds maximum %zu", readerState.blockSize, sizeof(readerState.tmpBuffer));
-                return 1;
+                LOG("WARNING - pcapNG block size %d exceeds maximum %zu, skipping block", readerState.blockSize, sizeof(readerState.tmpBuffer));
+                readerState.nextStartPos = readerState.startPos + blockHeader->block_total_length;
+                readerState.state = ARKIME_SCHEME_NG_SKIP;
+                continue;
             }
 
             readerState.nextStartPos = readerState.startPos + blockHeader->block_total_length;
