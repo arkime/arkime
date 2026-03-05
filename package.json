@@ -103,10 +103,7 @@
     "common:doc": "jsdoc2md --partial jsdoc/*.hbs --helper jsdoc/dochelpers.js --files common/*.js > ../arkimeweb/_wiki/api_common_docs.md"
   },
   "devDependencies": {
-    "@babel/eslint-parser": "^7.28.6",
-    "@babel/preset-env": "^7.28.3",
-    "@eslint/eslintrc": "^3.3.4",
-    "@eslint/js": "^9.33.0",
+    "@eslint/js": "^10.0.1",
     "@rollup/plugin-inject": "^5.0.5",
     "@vitejs/plugin-vue": "^6.0.4",
     "@vue/compiler-sfc": "^3.5.29",
@@ -117,8 +114,7 @@
     "country-code-emoji": "^2.3.0",
     "d3-sankey": "^0.12.3",
     "defang-refang": "0.0.5",
-    "eslint": "^9.33.0",
-    "eslint-plugin-promise": "^7.2.1",
+    "eslint": "^10.0.2",
     "eslint-plugin-vue": "^10.8.0",
     "globals": "^16.3.0",
     "jsdoc-to-markdown": "^9.1.3",

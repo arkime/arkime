@@ -279,7 +279,7 @@ class Pcap {
 
   // --------------------------------------------------------------------------
   async readAndSliceBlock (pos) {
-    let insideOffset = 0;
+    let insideOffset;
     const blockSize = this.uncompressedBits ? this.uncompressedBitsSize * 2 : 128 * 1024;
 
     // Get the start offset and inside offset

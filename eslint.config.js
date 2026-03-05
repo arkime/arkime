@@ -7,17 +7,6 @@ const globals = require("globals");
 const vue = require("eslint-plugin-vue");
 const js = require("@eslint/js");
 const vueParser = require('vue-eslint-parser');
-const babelParser = require('@babel/eslint-parser');
-
-const {
-    FlatCompat,
-} = require("@eslint/eslintrc");
-
-const compat = new FlatCompat({
-    baseDirectory: __dirname,
-    recommendedConfig: js.configs.recommended,
-    allConfig: js.configs.all
-});
 
 // Shared JavaScript syntax rules for both JS and Vue files
 const commonJavaScriptRules = {
@@ -79,6 +68,8 @@ const commonJavaScriptRules = {
     "object-curly-spacing": ["error", "always"],
 
     "space-infix-ops": "error",
+
+    "preserve-caught-error": "off",
 };
 
 // Vue-specific rule overrides (applied after extending recommended configs)
@@ -99,9 +90,9 @@ module.exports = defineConfig([
     {
         files: ["**/*.js"],
         languageOptions: {
-            parser: babelParser,
             parserOptions: {
-                requireConfigFile: false,
+                ecmaVersion: "latest",
+                sourceType: "module",
             },
             globals: {
                 ...globals.browser,
@@ -114,15 +105,15 @@ module.exports = defineConfig([
             ...commonJavaScriptRules,
         },
     },
-    // Configuration for Vue files using predefined configs
-    ...compat.extends("plugin:vue/strongly-recommended"),
+    // Configuration for Vue files using flat config
+    ...vue.configs['flat/strongly-recommended'],
     {
         files: ["**/*.vue"],
         languageOptions: {
             parser: vueParser,
             parserOptions: {
-                requireConfigFile: false,
-                parser: babelParser,
+                ecmaVersion: "latest",
+                sourceType: "module",
             },
             globals: {
                 ...globals.browser,
