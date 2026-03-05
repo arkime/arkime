@@ -1527,8 +1527,8 @@ class SessionAPIs {
    *   curl -v 'http://localhost:8005/api/sessions?date=-1&expression=ip.src%3D%3D1.2.3.4'
    */
   static async getSessions (req, res) {
-    let map;
-    let graph;
+    let map = {}; // eslint-disable-line no-useless-assignment
+    let graph = {};
 
     let options = {};
     if (req.query.cancelId) {
