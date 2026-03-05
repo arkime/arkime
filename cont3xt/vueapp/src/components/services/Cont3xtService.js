@@ -91,7 +91,7 @@ export default {
 
                 remaining += decoder(value);
 
-                let pos = 0;
+                let pos;
                 while ((pos = remaining.indexOf('\n')) > -1) {
                   // - 1 = remove the trailing , or ]
                   sendChunk(subscriber, remaining.slice(0, pos - 1));

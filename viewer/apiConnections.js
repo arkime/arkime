@@ -81,7 +81,6 @@ class ConnectionAPIs {
     if ((ArkimeUtil.isString(req.query.baselineDate) && (req.query.baselineDate !== '0') &&
           (req.query.date !== '-1') && (req.query.startTime !== undefined) && (req.query.stopTime !== undefined)) ||
         (resultId > 1)) {
-      doBaseline = true;
       let baselineDateTmpStr = req.query.baselineDate;
       if (baselineDateTmpStr.endsWith('x')) {
         baselineDateIsMultiplier = true;
