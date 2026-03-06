@@ -28,7 +28,7 @@
 
 /******************************************************************************/
 ArkimeConfig_t         config;
-extern void           *esServer;
+
 GMainLoop             *mainLoop;
 char                  *arkime_char_to_hex = "0123456789abcdef"; /* don't change case */
 uint8_t                arkime_char_to_hexstr[256][3];
@@ -844,7 +844,7 @@ void arkime_quit()
  */
 LOCAL gboolean arkime_ready_gfunc (gpointer UNUSED(user_data))
 {
-    if (arkime_http_queue_length(esServer))
+    if (arkime_db_queue_length())
         return G_SOURCE_CONTINUE;
 
     if (config.debug)

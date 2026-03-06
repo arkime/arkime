@@ -57,7 +57,7 @@ enum ArkimeSchemeMode {
 };
 
 LOCAL int                    offlineDispatchAfter;
-extern void                 *esServer;
+
 
 extern ArkimeOfflineInfo_t   offlineInfo[256];
 
@@ -425,13 +425,13 @@ LOCAL void reader_scheme_pause()
         }
 
         // pause reading if too many waiting ES operations
-        if (!isMainThread && arkime_http_queue_length(esServer) > 30) {
+        if (!isMainThread && arkime_db_queue_length() > 30) {
             if (config.debug) {
                 static uint8_t msgcnt;
                 if (msgcnt++ % 10 == 0)
-                    LOG("Waiting to process more packets, es q: %d", arkime_http_queue_length(esServer));
+                    LOG("Waiting to process more packets, es q: %d", arkime_db_queue_length());
             }
-            while (arkime_http_queue_length(esServer) > 30) {
+            while (arkime_db_queue_length() > 30) {
                 usleep(5000);
             }
             continue;

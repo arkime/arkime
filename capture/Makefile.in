@@ -36,10 +36,11 @@ LIB_OTHER     = @GLIB2_LIBS@ \
                 @LIBS@ \
 	        thirdparty/http_parser.o \
 	        thirdparty/js0n.o \
+	        thirdparty/sqlite3.o \
 	        thirdparty/patricia.o \
 		@DL_LIB@ -lssl -lcrypto -lyaml
 
-C_FILES         = main.c db.c yara.c http.c config.c parsers.c plugins.c field.c writers.c writer-inplace.c writer-null.c writer-simple.c readers.c reader-libpcap-file.c reader-libpcap.c reader-tpacketv3.c reader-bpf.c reader-netmap.c reader-null.c reader-pcapoverip.c reader-tzsp.c reader-scheme.c reader-scheme-file.c reader-scheme-http.c reader-scheme-s3.c reader-scheme-sqs.c packet.c mprotocol.c session.c rules.c drophash.c pq.c dedup.c cloud.c command.c python.c
+C_FILES         = main.c db.c db.es.c db.sqlite.c yara.c http.c config.c parsers.c plugins.c field.c writers.c writer-inplace.c writer-null.c writer-simple.c readers.c reader-libpcap-file.c reader-libpcap.c reader-tpacketv3.c reader-bpf.c reader-netmap.c reader-null.c reader-pcapoverip.c reader-tzsp.c reader-scheme.c reader-scheme-file.c reader-scheme-http.c reader-scheme-s3.c reader-scheme-sqs.c packet.c mprotocol.c session.c rules.c drophash.c pq.c dedup.c cloud.c command.c python.c
 O_FILES         = $(C_FILES:.c=.o)
 
 INSTALL         = @INSTALL@
@@ -58,7 +59,7 @@ FUZZ_CFLAGS      = -DFUZZLOCH $(FUZZ_LDFLAGS)
             $(INCLUDE_OTHER) \
             -DBUILD_VERSION='"$(BUILD_VERSION)"'
 
-all:thirdparty/js0n.o thirdparty/http_parser.o thirdparty/patricia.o $(O_FILES)
+all:thirdparty/js0n.o thirdparty/sqlite3.o thirdparty/http_parser.o thirdparty/patricia.o $(O_FILES)
 	$(CC) $(EXTRA_LDFLAGS) -rdynamic -ggdb -pthread $(O_FILES) -o capture \
             @UNDEFINED_FLAGS@ \
 	    $(LIB_PCAP) \
@@ -67,18 +68,18 @@ all:thirdparty/js0n.o thirdparty/http_parser.o thirdparty/patricia.o $(O_FILES)
 	(cd parsers; $(MAKE) EXTRA_CFLAGS="$(EXTRA_CFLAGS)")
 	(cd plugins; $(MAKE) EXTRA_CFLAGS="$(EXTRA_CFLAGS)")
 
-sanitize:thirdparty/js0n.o thirdparty/http_parser.o thirdparty/patricia.o
+sanitize:thirdparty/js0n.o thirdparty/sqlite3.o thirdparty/http_parser.o thirdparty/patricia.o
 	touch arkime.h
 	$(MAKE) EXTRA_CFLAGS="$(SANITIZE_CFLAGS)" EXTRA_LDFLAGS="$(SANITIZE_LDFLAGS)"
 	touch arkime.h
 
-fuzzloch:thirdparty/js0n.o thirdparty/http_parser.o thirdparty/patricia.o
+fuzzloch:thirdparty/js0n.o thirdparty/sqlite3.o thirdparty/http_parser.o thirdparty/patricia.o
 	touch arkime.h
 	$(MAKE) EXTRA_CFLAGS="$(FUZZ_CFLAGS)" EXTRA_LDFLAGS="$(FUZZ_LDFLAGS)"
 	mv capture fuzzloch-capture
 	touch arkime.h
 
-sfuzzloch:thirdparty/js0n.o thirdparty/http_parser.o thirdparty/patricia.o
+sfuzzloch:thirdparty/js0n.o thirdparty/sqlite3.o thirdparty/http_parser.o thirdparty/patricia.o
 	touch arkime.h
 	$(MAKE) EXTRA_CFLAGS="-DSFUZZLOCH $(FUZZ_CFLAGS)" EXTRA_LDFLAGS="$(FUZZ_LDFLAGS)"
 	mv capture fuzzloch-capture
@@ -86,6 +87,9 @@ sfuzzloch:thirdparty/js0n.o thirdparty/http_parser.o thirdparty/patricia.o
 
 thirdparty/js0n.o:thirdparty/js0n.c
 	$(CC) -fno-strict-aliasing -pthread -fPIC -O2 -c thirdparty/js0n.c -o thirdparty/js0n.o
+
+thirdparty/sqlite3.o:thirdparty/sqlite3.c
+	$(CC) -fno-strict-aliasing -pthread -fPIC -O2 -c thirdparty/sqlite3.c -o thirdparty/sqlite3.o
 
 thirdparty/patricia.o:thirdparty/patricia.c
 	$(CC) -fno-strict-aliasing -pthread -fPIC -O2 -c thirdparty/patricia.c -o thirdparty/patricia.o

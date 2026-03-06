@@ -1093,6 +1093,39 @@ typedef struct {
     uint8_t  asnLen;
 } ArkimeGeoInfo_t;
 
+/******************************************************************************/
+/* Database implementation mode - whether an impl handles db, sessions, or both */
+typedef enum {
+    ARKIME_DB_MODE_BOTH     = 0,
+    ARKIME_DB_MODE_DB       = 1,
+    ARKIME_DB_MODE_SESSIONS = 2
+} ArkimeDbMode_t;
+
+/******************************************************************************/
+/* Database implementation vtable - each backend (ES, SQLite, etc.) provides one */
+typedef struct arkime_db_impl {
+    void     (*init)(const char *url, ArkimeDbMode_t mode);
+    void     (*exit)();
+    void     (*load_stats)(uint64_t *totalPackets, uint64_t *totalK, uint64_t *totalSessions, uint64_t *totalDropped, uint64_t *dbVersion);
+    void     (*send_stats)(char *json, int json_len, int n, uint64_t currentTimeSec, uint64_t dbVersion, gboolean sync);
+    void     (*check)(ArkimeDbMode_t mode);
+    void     (*get_sequence_number)(const char *name, ArkimeSeqNum_cb func, gpointer uw);
+    uint32_t (*get_sequence_number_sync)(const char *name);
+    void     (*create_file)(char *json, int json_len, uint32_t num);
+    void     (*update_file)(char *json, int json_len, uint32_t fileid);
+    gboolean (*file_exists)(const char *filename, uint32_t *outputId);
+    void     (*load_fields)();
+    void     (*send_fields)(char *json, int json_len, gboolean sync);
+    int      (*queue_length)();
+    int      (*queue_length_best)();
+    uint64_t (*dropped_count)();
+    void     (*refresh)();
+} ArkimeDbImpl_t;
+
+void     arkime_db_register(const char *name, ArkimeDbImpl_t *impl);
+void     arkime_db_es_init();
+void     arkime_db_sqlite_init();
+
 void     arkime_db_init();
 char    *arkime_db_create_file_full(const struct timeval *firstPacket, const char *name, uint64_t size, int locked, uint32_t *id, ...);
 void     arkime_db_save_session(ArkimeSession_t *session, int final);
@@ -1104,6 +1137,8 @@ void     arkime_db_update_field(const char *expression, const char *name, const 
 void     arkime_db_update_file(uint32_t fileid, uint64_t filesize, uint64_t packetsSize, uint32_t packets, const struct timeval *lastPacket, uint32_t sessionsStarted, uint32_t sessionsPresent);
 gboolean arkime_db_file_exists(const char *filename, uint32_t *outputId);
 void     arkime_db_exit();
+int      arkime_db_queue_length();
+int      arkime_db_queue_length_best();
 void     arkime_db_oui_lookup(int field, ArkimeSession_t *session, const uint8_t *mac);
 void     arkime_db_geo_lookup6(ArkimeSession_t *session, struct in6_addr addr, ArkimeGeoInfo_t *geo);
 gchar   *arkime_db_community_id(const ArkimeSession_t *session);
