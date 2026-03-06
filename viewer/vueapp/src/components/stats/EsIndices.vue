@@ -78,6 +78,7 @@ import ArkimeLoading from '../utils/Loading.vue';
 import ArkimePaging from '../utils/Pagination.vue';
 import StatsService from './StatsService.js';
 import { roundCommaString, humanReadableBytes, timezoneDateString } from '@common/vueFilters.js';
+import { resolveMessage } from '@common/resolveI18nMessage';
 
 let reqPromise; // promise returned from setInterval for recurring requests
 let respondedAt; // the time that the last data load successfully responded
@@ -230,7 +231,7 @@ export default {
           }
         }
       } catch (error) {
-        this.$emit('errored', error.text || String(error));
+        this.$emit('errored', resolveMessage(error, this.$t));
       }
     },
     async optimizeIndex (indexName) {
@@ -241,7 +242,7 @@ export default {
       try {
         await StatsService.optimizeIndex(indexName, this.query);
       } catch (error) {
-        this.$emit('errored', error.text || String(error));
+        this.$emit('errored', resolveMessage(error, this.$t));
       }
     },
     async closeIndex (index) {
@@ -255,7 +256,7 @@ export default {
           index.status = 'close';
         }
       } catch (error) {
-        this.$emit('errored', error.text || String(error));
+        this.$emit('errored', resolveMessage(error, this.$t));
       }
     },
     async openIndex (index) {
@@ -269,7 +270,7 @@ export default {
           index.status = 'open';
         }
       } catch (error) {
-        this.$emit('errored', error.text || String(error));
+        this.$emit('errored', resolveMessage(error, this.$t));
       }
     },
     openShrinkIndexForm (index) {
@@ -309,7 +310,7 @@ export default {
         respondedAt = undefined;
         this.loading = false;
         this.initialLoading = false;
-        this.error = error.text || String(error);
+        this.error = resolveMessage(error, this.$t);
       }
     }
   },

@@ -325,6 +325,8 @@ SPDX-License-Identifier: Apache-2.0
 // services
 import SettingsService from './SettingsService';
 import UserService from '@common/UserService';
+// utilities
+import { resolveMessage } from '@common/resolveI18nMessage';
 // components
 import ArkimePaging from '../utils/Pagination.vue';
 import RoleDropdown from '@common/RoleDropdown.vue';
@@ -472,7 +474,7 @@ export default {
         this.showViewModal = false;
         this.displaySuccess(response);
       }).catch((error) => {
-        this.viewFormError = error.text || String(error);
+        this.viewFormError = resolveMessage(error, this.$t);
       });
     },
     /**
@@ -501,10 +503,10 @@ export default {
       SettingsService.updateView(data, this.userId).then((response) => {
         this.getViews();
         this.transferView = undefined;
-        this.$emit('display-message', { msg: response.text, type: 'success' });
+        this.$emit('display-message', { msg: resolveMessage(response, this.$t), type: 'success' });
         this.showTransferModal = false;
       }).catch((error) => {
-        this.$emit('display-message', { msg: error.text, type: 'danger' });
+        this.$emit('display-message', { msg: resolveMessage(error, this.$t), type: 'danger' });
       });
     },
     /**
@@ -517,10 +519,10 @@ export default {
         // remove the view from the view list
         this.views.splice(index, 1);
         // display success message to user
-        this.$emit('display-message', { msg: response.text, type: 'success' });
+        this.$emit('display-message', { msg: resolveMessage(response, this.$t), type: 'success' });
       }).catch((error) => {
         // display error message to user
-        this.$emit('display-message', { msg: error.text, type: 'danger' });
+        this.$emit('display-message', { msg: resolveMessage(error, this.$t), type: 'danger' });
       });
     },
     /* opens up modal to edit view */
@@ -559,7 +561,7 @@ export default {
         this.showViewModal = false;
         this.displaySuccess(response);
       }).catch((error) => {
-        this.viewFormError = error.text;
+        this.viewFormError = resolveMessage(error, this.$t);
       });
     },
     /* helper functions ---------------------------------------------------- */
@@ -581,7 +583,7 @@ export default {
         this.recordsTotal = response.recordsTotal;
         this.recordsFiltered = response.recordsFiltered;
       }).catch((error) => {
-        this.viewListError = error.text;
+        this.viewListError = resolveMessage(error, this.$t);
       });
     },
     /* validates the view form. returns false if form is not valid and true otherwise.
@@ -611,7 +613,7 @@ export default {
     },
     /* display success message to user and add any invalid users if they exist */
     displaySuccess (response) {
-      let msg = response.text;
+      let msg = resolveMessage(response, this.$t);
       if (response.invalidUsers && response.invalidUsers.length) {
         msg += ` Could not add these users: ${response.invalidUsers.join(',')}`;
       }

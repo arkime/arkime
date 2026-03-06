@@ -213,6 +213,7 @@ import DragList from '../utils/DragList.vue';
 // import utils
 import Utils from '../utils/utils';
 import { commaString } from '@common/vueFilters.js';
+import { resolveMessage } from '@common/resolveI18nMessage';
 
 let d3; // lazy load d3
 let sankey, sankeyLinkHorizontal; // lazy load d3-sankey
@@ -1223,7 +1224,7 @@ export default {
       } catch (error) {
         pendingPromise = null;
         this.$emit('toggleLoad', false);
-        this.$emit('toggleError', error.text || String(error));
+        this.$emit('toggleError', resolveMessage(error, this.$t));
       }
     },
     initializeColResizable: function () {

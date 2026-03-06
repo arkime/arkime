@@ -311,6 +311,7 @@ import UserService from './UserService';
 import RoleDropdown from './RoleDropdown.vue';
 import UserDropdown from './UserDropdown.vue';
 import TriStateToggle from './TriStateToggle.vue';
+import { resolveMessage } from './resolveI18nMessage';
 
 const defaultNewUser = {
   userId: '',
@@ -418,9 +419,9 @@ export default {
 
       UserService.createUser(user).then((response) => {
         this.newUser = createRole ? { ...defaultNewRole } : { ...defaultNewUser };
-        this.$emit('user-created', response.text, user);
+        this.$emit('user-created', resolveMessage(response, this.$t), user);
       }).catch((error) => {
-        this.createError = error.text;
+        this.createError = resolveMessage(error, this.$t);
       });
     }
   }

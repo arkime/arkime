@@ -94,6 +94,7 @@ SPDX-License-Identifier: Apache-2.0
 <script>
 import UserService from './UserService';
 import Focus from './Focus.vue';
+import { resolveMessage } from './resolveI18nMessage';
 
 export default {
   name: 'UserDropdown',
@@ -157,7 +158,7 @@ export default {
         }
       }).catch((error) => {
         this.loading = false;
-        this.error = error.text;
+        this.error = resolveMessage(error, this.$t);
       });
     },
     updateUsers (userId) { // emits both the new array and changed user-value

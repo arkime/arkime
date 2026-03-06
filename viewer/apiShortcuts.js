@@ -240,7 +240,7 @@ class ShortcutAPIs {
       res.send(sendResults);
     }).catch((err) => {
       console.log(`ERROR - ${req.method} /api/shortcuts`, util.inspect(err, false, 50));
-      return res.serverError(500, 'Error retrieving shortcuts');
+      return res.serverError(500, 'Error retrieving shortcuts', 'api.shortcuts.retrieveFailed');
     });
   }
 
@@ -262,25 +262,25 @@ class ShortcutAPIs {
   static createShortcut (req, res) {
     // make sure all the necessary data is included in the post body
     if (!ArkimeUtil.isString(req.body.name)) {
-      return res.serverError(403, 'Missing shortcut name');
+      return res.serverError(403, 'Missing shortcut name', 'api.shortcuts.missingName');
     }
     if (!ArkimeUtil.isString(req.body.type)) {
-      return res.serverError(403, 'Missing shortcut type');
+      return res.serverError(403, 'Missing shortcut type', 'api.shortcuts.missingType');
     }
     if (!ArkimeUtil.isString(req.body.value)) {
-      return res.serverError(403, 'Missing shortcut value');
+      return res.serverError(403, 'Missing shortcut value', 'api.shortcuts.missingValue');
     }
 
     if (req.body.roles !== undefined && !ArkimeUtil.isStringArray(req.body.roles)) {
-      return res.serverError(403, 'Roles field must be an array of strings');
+      return res.serverError(403, 'Roles field must be an array of strings', 'api.shortcuts.rolesMustBeArray');
     }
 
     if (req.body.editRoles !== undefined && !ArkimeUtil.isStringArray(req.body.editRoles)) {
-      return res.serverError(403, 'Edit roles field must be an array of strings');
+      return res.serverError(403, 'Edit roles field must be an array of strings', 'api.shortcuts.editRolesMustBeArray');
     }
 
     if (req.body.users !== undefined && !ArkimeUtil.isString(req.body.users, 0)) {
-      return res.serverError(403, 'Users field must be a string');
+      return res.serverError(403, 'Users field must be a string', 'api.shortcuts.usersMustBeString');
     }
 
     req.body.name = req.body.name.replace(/[^-a-zA-Z0-9_]/g, '');
@@ -308,7 +308,7 @@ class ShortcutAPIs {
           const shortcut = hit._source;
           if (shortcut.name === req.body.name) {
             ShortcutAPIs.#shortcutMutex.unlock();
-            return res.serverError(403, `A shortcut with the name, ${req.body.name}, already exists`);
+            return res.serverError(403, `A shortcut with the name, ${req.body.name}, already exists`, 'api.shortcuts.nameExists', { name: req.body.name });
           }
         }
 
@@ -331,17 +331,18 @@ class ShortcutAPIs {
             invalidUsers,
             success: true,
             shortcut: newShortcut,
-            text: 'Created new shortcut!'
+            text: 'Created new shortcut!',
+            i18n: 'api.shortcuts.created'
           });
         } catch (err) {
           ShortcutAPIs.#shortcutMutex.unlock();
           console.log(`ERROR - ${req.method} /api/shortcut (createShortcut)`, util.inspect(err, false, 50));
-          return res.serverError(500, 'Error creating shortcut');
+          return res.serverError(500, 'Error creating shortcut', 'api.shortcuts.errorCreating');
         }
       } catch (err) {
         ShortcutAPIs.#shortcutMutex.unlock();
         console.log(`ERROR - ${req.method} /api/shortcut (searchShortcuts)`, util.inspect(err, false, 50));
-        return res.serverError(500, 'Error creating shortcut');
+        return res.serverError(500, 'Error creating shortcut', 'api.shortcuts.errorCreating');
       }
     });
   }
@@ -366,25 +367,25 @@ class ShortcutAPIs {
   static async updateShortcut (req, res) {
     // make sure all the necessary data is included in the post body
     if (!ArkimeUtil.isString(req.body.name)) {
-      return res.serverError(403, 'Missing shortcut name');
+      return res.serverError(403, 'Missing shortcut name', 'api.shortcuts.missingName');
     }
     if (!ArkimeUtil.isString(req.body.type)) {
-      return res.serverError(403, 'Missing shortcut type');
+      return res.serverError(403, 'Missing shortcut type', 'api.shortcuts.missingType');
     }
     if (!ArkimeUtil.isString(req.body.value)) {
-      return res.serverError(403, 'Missing shortcut value');
+      return res.serverError(403, 'Missing shortcut value', 'api.shortcuts.missingValue');
     }
 
     if (req.body.roles !== undefined && !ArkimeUtil.isStringArray(req.body.roles)) {
-      return res.serverError(403, 'Roles field must be an array of strings');
+      return res.serverError(403, 'Roles field must be an array of strings', 'api.shortcuts.rolesMustBeArray');
     }
 
     if (req.body.editRoles !== undefined && !ArkimeUtil.isStringArray(req.body.editRoles)) {
-      return res.serverError(403, 'Edit roles field must be an array of strings');
+      return res.serverError(403, 'Edit roles field must be an array of strings', 'api.shortcuts.editRolesMustBeArray');
     }
 
     if (req.body.users !== undefined && !ArkimeUtil.isString(req.body.users, 0)) {
-      return res.serverError(403, 'Users field must be a string');
+      return res.serverError(403, 'Users field must be a string', 'api.shortcuts.usersMustBeString');
     }
 
     const sentShortcut = req.body;
@@ -393,7 +394,7 @@ class ShortcutAPIs {
       const { body: fetchedShortcut } = await Db.getShortcut(req.params.id);
 
       if (fetchedShortcut._source.locked) {
-        return res.serverError(403, 'Locked Shortcut. Use db.pl script to update this shortcut.');
+        return res.serverError(403, 'Locked Shortcut. Use db.pl script to update this shortcut.', 'api.shortcuts.locked');
       }
 
       const query = {
@@ -418,7 +419,7 @@ class ShortcutAPIs {
             const shortcut = hit._source;
             if (shortcut.name === req.body.name) {
               ShortcutAPIs.#shortcutMutex.unlock();
-              return res.serverError(403, `A shortcut with the name, ${req.body.name}, already exists`);
+              return res.serverError(403, `A shortcut with the name, ${req.body.name}, already exists`, 'api.shortcuts.nameExists', { name: req.body.name });
             }
           }
 
@@ -440,22 +441,23 @@ class ShortcutAPIs {
               invalidUsers,
               success: true,
               shortcut: sentShortcut,
-              text: 'Updated shortcut!'
+              text: 'Updated shortcut!',
+              i18n: 'api.shortcuts.updated'
             });
           } catch (err) {
             ShortcutAPIs.#shortcutMutex.unlock();
             console.log(`ERROR - ${req.method} /api/shortcut/%s (setShortcut)`, ArkimeUtil.sanitizeStr(req.params.id), util.inspect(err, false, 50));
-            return res.serverError(500, 'Error updating shortcut');
+            return res.serverError(500, 'Error updating shortcut', 'api.shortcuts.errorUpdating');
           }
         } catch (err) {
           ShortcutAPIs.#shortcutMutex.unlock();
           console.log(`ERROR - ${req.method} /api/shortcut/%s (searchShortcuts)`, ArkimeUtil.sanitizeStr(req.params.id), util.inspect(err, false, 50));
-          return res.serverError(500, 'Error updating shortcut');
+          return res.serverError(500, 'Error updating shortcut', 'api.shortcuts.errorUpdating');
         }
       });
     } catch (err) {
       console.log(`ERROR - ${req.method} /api/shortcut/%s (getShortcut)`, ArkimeUtil.sanitizeStr(req.params.id), util.inspect(err, false, 50));
-      return res.serverError(500, 'Fetching shortcut to update failed');
+      return res.serverError(500, 'Fetching shortcut to update failed', 'api.shortcuts.errorFetching');
     }
   }
 
@@ -473,11 +475,12 @@ class ShortcutAPIs {
       await Db.deleteShortcut(req.params.id);
       res.json({
         success: true,
-        text: 'Deleted shortcut successfully'
+        text: 'Deleted shortcut successfully',
+        i18n: 'api.shortcuts.deleted'
       });
     } catch (err) {
       console.log(`ERROR - ${req.method} /api/shortcut/%s (deleteShortcut)`, ArkimeUtil.sanitizeStr(req.params.id), util.inspect(err, false, 50));
-      return res.serverError(500, 'Error deleting shortcut');
+      return res.serverError(500, 'Error deleting shortcut', 'api.shortcuts.errorDeleting');
     }
   }
 
