@@ -2038,7 +2038,7 @@ app.get(
 );
 
 app.get('/api/appversion', [ArkimeUtil.noCacheJson], (req, res) => {
-  return res.send({ app: 'viewer', version: version.version });
+  return res.send({ app: 'viewer', version: version.version, clusterName: internals.clusterName });
 });
 
 // cyberchef apis -------------------------------------------------------------
