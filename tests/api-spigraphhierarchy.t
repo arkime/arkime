@@ -1,4 +1,4 @@
-use Test::More tests => 16;
+use Test::More tests => 17;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -26,7 +26,8 @@ my $files = uri_escape($filestr);
 
 
 my $json = get("");
-eq_or_diff($json, from_json('{"success":false,"text":"Missing exp parameter"}'));
+is($json->{success}, 0, "Missing exp parameter");
+is($json->{i18n}, "api.sessions.missingExpParam", "Missing exp parameter i18n");
 
 my $json = get("exp=unknownfield");
 eq_or_diff($json, from_json('{"success":false,"text":"Unknown expression unknownfield\n"}'));
