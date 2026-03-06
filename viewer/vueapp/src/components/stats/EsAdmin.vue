@@ -160,6 +160,7 @@ import Utils from '../utils/utils';
 import ArkimeError from '../utils/Error.vue';
 import ArkimeLoading from '../utils/Loading.vue';
 import StatsService from './StatsService.js';
+import { resolveMessage } from '@common/resolveI18nMessage';
 
 export default {
   name: 'EsAdmin',
@@ -218,7 +219,7 @@ export default {
         setting.error = '';
         setting.changed = false;
       } catch (error) {
-        setting.error = error.text || String(error);
+        setting.error = resolveMessage(error, this.$t);
       }
     },
     async restoreToAll (setting) {
@@ -243,7 +244,7 @@ export default {
           }
         }
       } catch (error) {
-        setting.error = error.text || String(error);
+        setting.error = resolveMessage(error, this.$t);
       }
     },
     async clearCache () {
@@ -253,9 +254,9 @@ export default {
 
       try {
         const response = await StatsService.clearCacheAdmin(this.query);
-        this.interactionSuccess = response.text;
+        this.interactionSuccess = resolveMessage(response, this.$t);
       } catch (error) {
-        this.interactionError = error.text || String(error);
+        this.interactionError = resolveMessage(error, this.$t);
       }
     },
     async unflood () {
@@ -265,9 +266,9 @@ export default {
 
       try {
         const response = await StatsService.unFloodAdmin(this.query);
-        this.interactionSuccess = response.text;
+        this.interactionSuccess = resolveMessage(response, this.$t);
       } catch (error) {
-        this.interactionError = error.text || String(error);
+        this.interactionError = resolveMessage(error, this.$t);
       }
     },
     async flush () {
@@ -277,9 +278,9 @@ export default {
 
       try {
         const response = await StatsService.flushAdmin(this.query);
-        this.interactionSuccess = response.text;
+        this.interactionSuccess = resolveMessage(response, this.$t);
       } catch (error) {
-        this.interactionError = error.text || String(error);
+        this.interactionError = resolveMessage(error, this.$t);
       }
     },
     async retryFailed () {
@@ -289,9 +290,9 @@ export default {
 
       try {
         const response = await StatsService.rerouteAdmin(this.query);
-        this.interactionSuccess = response.text;
+        this.interactionSuccess = resolveMessage(response, this.$t);
       } catch (error) {
-        this.interactionError = error.text || String(error);
+        this.interactionError = resolveMessage(error, this.$t);
       }
     },
     /* helper functions ------------------------------------------ */
@@ -308,7 +309,7 @@ export default {
         this.loading = false;
         this.settings = response;
       } catch (error) {
-        this.error = error.text || String(error);
+        this.error = resolveMessage(error, this.$t);
         this.loading = false;
       }
     }

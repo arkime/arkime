@@ -166,6 +166,7 @@ import CaretPos from '../utils/CaretPos.vue';
 import Focus from '@common/Focus.vue';
 import TypeaheadResults from './TypeaheadResults.vue';
 import ExpressionAutocompleteInput from './ExpressionAutocompleteInput.vue';
+import { resolveMessage } from '@common/resolveI18nMessage';
 
 let tokens;
 let timeout;
@@ -629,7 +630,7 @@ export default {
           this.results = this.findMatch(escapedToken, response.data);
         } catch (error) {
           this.loadingValues = false;
-          this.loadingError = error.text || String(error);
+          this.loadingError = resolveMessage(error, this.$t);
         }
 
         return;

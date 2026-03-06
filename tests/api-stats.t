@@ -1,4 +1,4 @@
-use Test::More tests => 105;
+use Test::More tests => 117;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -82,7 +82,8 @@ my $test1Token = getTokenCookie("test1");
     cmp_ok ($indices->{data}->[0]->{index} cmp $indices->{data}->[1]->{index}, "<", 0, "indices index sorted");
 
     $indices = multiGet("/api/esindices?cluster=unknown");
-    eq_or_diff($indices, from_json('{"success": false, "text": "No results"}'));
+    is($indices->{success}, 0, "unknown cluster no results");
+    is($indices->{i18n}, "api.stats.noResults", "unknown cluster no results i18n");
 
 # estasks
     my $tasks = viewerGet("/api/estasks");
@@ -108,16 +109,20 @@ my $test1Token = getTokenCookie("test1");
     cmp_ok (@{$shards->{indices}}, "==", 0, "esshards: indices array size");
 
     my $result = viewerPost("/api/esshards/ip/1.2.3.4/exclude", "");
-    eq_or_diff($result, from_json('{"success": false, "text": "Missing token"}'), "esshard: exclude no token");
+    is($result->{success}, 0, "esshard: exclude no token");
+    is($result->{i18n}, "api.viewer.missingToken", "esshard: exclude no token i18n");
 
     $result = viewerPostToken("/api/esshards/ip/1.2.3.4/exclude", "", $token);
-    eq_or_diff($result, from_json('{"success": true, "text": "Successfully excluded node"}'), "esshard: exclude ip");
+    is($result->{success}, 1, "esshard: exclude ip");
+    is($result->{i18n}, "api.stats.nodeExcluded", "esshard: exclude ip i18n");
 
     $result = viewerPostToken("/api/esshards/name/thenode/exclude", "", $token);
-    eq_or_diff($result, from_json('{"success": true, "text": "Successfully excluded node"}'), "esshard: exclude node");
+    is($result->{success}, 1, "esshard: exclude node");
+    is($result->{i18n}, "api.stats.nodeExcluded", "esshard: exclude node i18n");
 
     $result = viewerPostToken("/api/esshards/foobar/1.2.3.4/exclude", "", $token);
-    eq_or_diff($result, from_json('{"success": false, "text": "Unknown exclude type"}'), "esshard: exclude foobar");
+    is($result->{success}, 0, "esshard: exclude foobar");
+    is($result->{i18n}, "api.stats.unknownExcludeType", "esshard: exclude foobar i18n");
 
     $result = viewerPostToken("/api/esshards/foobar/1.2.3.4/exclude?arkimeRegressionUser=test1", "", $test1Token);
     eq_or_diff($result, from_json('{"success": false, "text": "You do not have permission to access this resource"}'), "esshard: exclude not admin");
@@ -127,16 +132,20 @@ my $test1Token = getTokenCookie("test1");
     eq_or_diff($shards->{ipExcludes}, ["1.2.3.4"], "esshard: ipExcludes empty");
 
     $result = viewerPost("/api/esshards/ip/1.2.3.4/include", "");
-    eq_or_diff($result, from_json('{"success": false, "text": "Missing token"}'), "esshard: include no token");
+    is($result->{success}, 0, "esshard: include no token");
+    is($result->{i18n}, "api.viewer.missingToken", "esshard: include no token i18n");
 
     $result = viewerPostToken("/api/esshards/ip/1.2.3.4/include", "", $token);
-    eq_or_diff($result, from_json('{"success": true, "text": "Successfully included node"}'), "esshard: include ip");
+    is($result->{success}, 1, "esshard: include ip");
+    is($result->{i18n}, "api.stats.nodeIncluded", "esshard: include ip i18n");
 
     $result = viewerPostToken("/api/esshards/name/thenode/include", "", $token);
-    eq_or_diff($result, from_json('{"success": true, "text": "Successfully included node"}'), "esshard: include node");
+    is($result->{success}, 1, "esshard: include node");
+    is($result->{i18n}, "api.stats.nodeIncluded", "esshard: include node i18n");
 
     $result = viewerPostToken("/api/esshards/foobar/1.2.3.4/include", "", $token);
-    eq_or_diff($result, from_json('{"success": false, "text": "Unknown include type"}'), "esshard: include foodbar");
+    is($result->{success}, 0, "esshard: include foodbar");
+    is($result->{i18n}, "api.stats.unknownIncludeType", "esshard: include foodbar i18n");
 
     $result = viewerPostToken("/api/esshards/foobar/1.2.3.4/include?arkimeRegressionUser=test1", "", $test1Token);
     eq_or_diff($result, from_json('{"success": false, "text": "You do not have permission to access this resource"}'), "esshard: include not admin");
@@ -158,7 +167,8 @@ my $test1Token = getTokenCookie("test1");
     eq_or_diff($shards->{ipExcludes}, [], "esshard: ipExcludes empty");
 
     $shards = multiGet("/api/esshards?show=all&cluster=unknown");
-    eq_or_diff($shards, from_json('{"success": false, "text": "No results"}'));
+    is($shards->{success}, 0, "unknown cluster esshards no results");
+    is($shards->{i18n}, "api.stats.noResults", "unknown cluster esshards no results i18n");
 
     $result = viewerPostToken("/api/esshards/theindex/0/delete", "", $token);
     eq_or_diff($result, from_json('{"success": false, "text": "Deleting shard theindex:0 failed"}'), "esshard: delete failed");
@@ -167,7 +177,8 @@ my $test1Token = getTokenCookie("test1");
     eq_or_diff($result, from_json('{"success": false, "text": "You do not have permission to access this resource"}'), "esshard: delete not admin");
 
     $result = multiPostToken("/api/esshards/theindex/0/delete", "", $token);
-    eq_or_diff($result, from_json('{"success": false, "text": "Missing cluster in multiES mode"}'));
+    is($result->{success}, 0, "esshard: delete missing cluster");
+    is($result->{i18n}, "api.stats.missingCluster", "esshard: delete missing cluster i18n");
 
     $result = multiPostToken("/api/esshards/theindex/0/delete?cluster=unknown", "", $token);
     eq_or_diff($result, from_json('{"success": false, "text": "Deleting shard theindex:0 failed"}'));
@@ -215,7 +226,8 @@ my $test1Token = getTokenCookie("test1");
 
     # Test token requirement
     $result = viewerPost("/api/esshards/someindex/0/delete", "");
-    eq_or_diff($result, from_json('{"success": false, "text": "Missing token"}'), "esshard: delete requires token");
+    is($result->{success}, 0, "esshard: delete requires token");
+    is($result->{i18n}, "api.viewer.missingToken", "esshard: delete requires token i18n");
 
     # Test that shard info is retrieved correctly for decision making
     # Get current shard data to verify the endpoint can access shard information

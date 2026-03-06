@@ -516,7 +516,7 @@ function setCookie (req, res, next) {
 
 function checkCookieToken (req, res, next) {
   if (!req.headers['x-arkime-cookie']) {
-    return res.serverError(500, 'Missing token');
+    return res.serverError(500, 'Missing token', 'api.viewer.missingToken');
   }
 
   const cookie = req.headers['x-arkime-cookie'];
@@ -525,7 +525,7 @@ function checkCookieToken (req, res, next) {
   if (diff > 2400000 || /* req.token.pid !== process.pid || */
       req.token.userId !== req.user.userId) {
     console.trace('bad token', req.token, diff, req.token.userId, req.user.userId);
-    return res.serverError(500, 'Timeout - Please try reloading page and repeating the action');
+    return res.serverError(500, 'Timeout - Please try reloading page and repeating the action', 'api.viewer.sessionTimeout');
   }
 
   return next();
@@ -554,10 +554,10 @@ async function checkHuntAccess (req, res, next) {
         return next();
       }
 
-      return res.serverError(403, `You cannot change another user's hunt unless you have admin privileges`);
+      return res.serverError(403, `You cannot change another user's hunt unless you have admin privileges`, 'api.viewer.cannotChangeHunt');
     } catch (err) {
       console.log('ERROR - fetching hunt to check access', err);
-      return res.serverError(500, 'Error checking hunt access');
+      return res.serverError(500, 'Error checking hunt access', 'api.viewer.checkHuntAccessError');
     }
   }
 }
@@ -572,7 +572,7 @@ function checkEsAdminUser (req, res, next) {
       return next();
     }
   }
-  return res.serverError(403, 'You do not have permission to access this resource');
+  return res.serverError(403, 'You do not have permission to access this resource', 'api.viewer.noPermission');
 }
 
 // log middleware -------------------------------------------------------------
@@ -723,7 +723,7 @@ function getSettingUserCache (req, res, next) {
   }
 
   // user is trying to get another user's settings without admin privilege
-  if (!req.user.hasRole('usersAdmin') || !req.user.hasRole('arkimeAdmin')) { return res.serverError(403, 'Need admin privileges'); }
+  if (!req.user.hasRole('usersAdmin') || !req.user.hasRole('arkimeAdmin')) { return res.serverError(403, 'Need admin privileges', 'api.viewer.needAdminPrivileges'); }
 
   User.getUserCache(req.query.userId, (err, user) => {
     if (err || !user) {
@@ -1137,7 +1137,7 @@ app.all([
   if (!req.user.isDemoMode()) {
     return next();
   }
-  return res.serverError(403, 'Disabled in demo mode.');
+  return res.serverError(403, 'Disabled in demo mode.', 'api.viewer.disabledDemoMode');
 });
 
 // redirect to sessions page and conserve params

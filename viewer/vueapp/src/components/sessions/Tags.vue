@@ -87,6 +87,7 @@ import { useRoute } from 'vue-router';
 import SessionsService from './SessionsService';
 import SegmentSelect from './SegmentSelect.vue';
 import { useI18n } from 'vue-i18n';
+import { resolveMessage } from '@common/resolveI18nMessage';
 const { t } = useI18n();
 
 // Define Props
@@ -152,11 +153,11 @@ const applyAction = async (addTagsOperation) => {
     const response = await SessionsService.tag(addTagsOperation, data, route.query);
     tags.value = ''; // Clear tags input on success
     loading.value = false;
-    emit('done', response.text, true, true); // Emit the done event with the response text
+    emit('done', resolveMessage(response, t), true, true); // Emit the done event with the response text
   } catch (err) {
     // display the error under the form so that user
     // has an opportunity to try again (don't close the form)
-    error.value = err.text || err.message || t('sessions.tag.unknownErr');
+    error.value = resolveMessage(err, t) || t('sessions.tag.unknownErr');
     loading.value = false;
   }
 };

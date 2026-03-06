@@ -1,4 +1,4 @@
-use Test::More tests => 38;
+use Test::More tests => 66;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -17,67 +17,85 @@ use strict;
 
 # fail permission tests
     $json = viewerGet("/api/esadmin?arkimeRegressionUser=notadmin");
-    eq_or_diff($json, from_json('{"text": "You do not have permission to access this resource", "success": false}'));
+    is($json->{success}, 0, "esadmin get no permission");
+    is($json->{i18n}, "api.viewer.noPermission", "esadmin get no permission i18n");
 
     $json = viewerPost("/api/esadmin/set?arkimeRegressionUser=notadmin");
-    eq_or_diff($json, from_json('{"text": "You do not have permission to access this resource", "success": false}'));
+    is($json->{success}, 0, "esadmin set no permission");
+    is($json->{i18n}, "api.viewer.noPermission", "esadmin set no permission i18n");
 
     $json = viewerPost("/api/esadmin/reroute?arkimeRegressionUser=notadmin");
-    eq_or_diff($json, from_json('{"text": "You do not have permission to access this resource", "success": false}'));
+    is($json->{success}, 0, "esadmin reroute no permission");
+    is($json->{i18n}, "api.viewer.noPermission", "esadmin reroute no permission i18n");
 
     $json = viewerPost("/api/esadmin/flush?arkimeRegressionUser=notadmin");
-    eq_or_diff($json, from_json('{"text": "You do not have permission to access this resource", "success": false}'));
+    is($json->{success}, 0, "esadmin flush no permission");
+    is($json->{i18n}, "api.viewer.noPermission", "esadmin flush no permission i18n");
 
     $json = viewerPost("/api/esadmin/unflood?arkimeRegressionUser=notadmin");
-    eq_or_diff($json, from_json('{"text": "You do not have permission to access this resource", "success": false}'));
+    is($json->{success}, 0, "esadmin unflood no permission");
+    is($json->{i18n}, "api.viewer.noPermission", "esadmin unflood no permission i18n");
 
     $json = viewerGet("/api/esadmin/allocation?arkimeRegressionUser=notadmin");
-    eq_or_diff($json, from_json('{"text": "You do not have permission to access this resource", "success": false}'));
+    is($json->{success}, 0, "esadmin allocation no permission");
+    is($json->{i18n}, "api.viewer.noPermission", "esadmin allocation no permission i18n");
 
 # Missing token
     $json = viewerPost("/api/esadmin/set?arkimeRegressionUser=adminuser1");
-    eq_or_diff($json, from_json('{"text": "Missing token", "success": false}'));
+    is($json->{success}, 0, "esadmin set missing token");
+    is($json->{i18n}, "api.viewer.missingToken", "esadmin set missing token i18n");
 
     $json = viewerPost("/api/esadmin/reroute?arkimeRegressionUser=adminuser1");
-    eq_or_diff($json, from_json('{"text": "Missing token", "success": false}'));
+    is($json->{success}, 0, "esadmin reroute missing token");
+    is($json->{i18n}, "api.viewer.missingToken", "esadmin reroute missing token i18n");
 
     $json = viewerPost("/api/esadmin/flush?arkimeRegressionUser=adminuser1");
-    eq_or_diff($json, from_json('{"text": "Missing token", "success": false}'));
+    is($json->{success}, 0, "esadmin flush missing token");
+    is($json->{i18n}, "api.viewer.missingToken", "esadmin flush missing token i18n");
 
     $json = viewerPost("/api/esadmin/unflood?arkimeRegressionUser=adminuser1");
-    eq_or_diff($json, from_json('{"text": "Missing token", "success": false}'));
+    is($json->{success}, 0, "esadmin unflood missing token");
+    is($json->{i18n}, "api.viewer.missingToken", "esadmin unflood missing token i18n");
 
 # good
     $json = viewerPostToken("/api/esadmin/reroute?arkimeRegressionUser=adminuser1", "", $token);
-    eq_or_diff($json, from_json('{"text": "Reroute successful", "success": true}'));
+    is($json->{success}, 1, "esadmin reroute success");
+    is($json->{i18n}, "api.stats.rerouteSuccessful", "esadmin reroute success i18n");
 
     $json = viewerPostToken("/api/esadmin/flush?arkimeRegressionUser=adminuser1", "", $token);
-    eq_or_diff($json, from_json('{"text": "Flushed", "success": true}'));
+    is($json->{success}, 1, "esadmin flush success");
+    is($json->{i18n}, "api.stats.flushed", "esadmin flush success i18n");
 
     $json = viewerPostToken("/api/esadmin/unflood?arkimeRegressionUser=adminuser1", "", $token);
-    eq_or_diff($json, from_json('{"text": "Unflooded", "success": true}'));
+    is($json->{success}, 1, "esadmin unflood success");
+    is($json->{i18n}, "api.stats.unflooded", "esadmin unflood success i18n");
 
 # set tests
     $json = viewerPostToken("/api/esadmin/set?arkimeRegressionUser=adminuser1", "", $token);
-    eq_or_diff($json, from_json('{"text": "Missing key", "success": false}'));
+    is($json->{success}, 0, "esadmin set missing key");
+    is($json->{i18n}, "api.stats.missingKey", "esadmin set missing key i18n");
 
     $json = viewerPostToken("/api/esadmin/set?arkimeRegressionUser=adminuser1", "key=foo", $token);
-    eq_or_diff($json, from_json('{"text": "Missing value", "success": false}'));
+    is($json->{success}, 0, "esadmin set missing value");
+    is($json->{i18n}, "api.stats.missingValue", "esadmin set missing value i18n");
 
     $json = viewerPostToken("/api/esadmin/set?arkimeRegressionUser=adminuser1", "key=foo&value=bar", $token);
-    eq_or_diff($json, from_json('{"text": "Set failed", "success": false}'));
+    is($json->{success}, 0, "esadmin set failed");
+    is($json->{i18n}, "api.stats.setFailed", "esadmin set failed i18n");
 
 
     # set to 1234
     $json = viewerPostToken("/api/esadmin/set?arkimeRegressionUser=adminuser1", "key=cluster.max_shards_per_node&value=1234", $token);
-    eq_or_diff($json, from_json('{"text": "Successfully set settings", "success": true}'));
+    is($json->{success}, 1, "esadmin set settings success");
+    is($json->{i18n}, "api.stats.settingsSet", "esadmin set settings i18n");
 
     $json = esGet("/_cluster/settings?flat_settings");
     is ($json->{persistent}->{'cluster.max_shards_per_node'}, 1234);
 
     # clear with space
     $json = viewerPostToken("/api/esadmin/set?arkimeRegressionUser=adminuser1", "key=cluster.max_shards_per_node&value=", $token);
-    eq_or_diff($json, from_json('{"text": "Successfully set settings", "success": true}'));
+    is($json->{success}, 1, "esadmin set settings success");
+    is($json->{i18n}, "api.stats.settingsSet", "esadmin set settings i18n");
 
     $json = esGet("/_cluster/settings?flat_settings");
     ok (!exists $json->{persistent}->{'cluster.max_shards_per_node'});
@@ -90,14 +108,16 @@ use strict;
 
     # Set to "primaries" (something other than "all")
     $json = viewerPostToken("/api/esadmin/set?arkimeRegressionUser=adminuser1", "key=cluster.routing.allocation.enable&value=primaries", $token);
-    eq_or_diff($json, from_json('{"text": "Successfully set settings", "success": true}'));
+    is($json->{success}, 1, "esadmin set settings success");
+    is($json->{i18n}, "api.stats.settingsSet", "esadmin set settings i18n");
 
     $json = esGet("/_cluster/settings?flat_settings");
     is ($json->{persistent}->{'cluster.routing.allocation.enable'}, "primaries");
 
     # Restore to "all"
     $json = viewerPostToken("/api/esadmin/set?arkimeRegressionUser=adminuser1", "key=cluster.routing.allocation.enable&value=all", $token);
-    eq_or_diff($json, from_json('{"text": "Successfully set settings", "success": true}'));
+    is($json->{success}, 1, "esadmin set settings success");
+    is($json->{i18n}, "api.stats.settingsSet", "esadmin set settings i18n");
 
     $json = esGet("/_cluster/settings?flat_settings");
     is ($json->{persistent}->{'cluster.routing.allocation.enable'}, "all");
@@ -118,32 +138,40 @@ use strict;
 # multiviewer
     # test cluster
     $json = multiPostToken("/api/esadmin/set?arkimeRegressionUser=adminuser1&cluster=test", "key=cluster.max_shards_per_node&value=4321", $token);
-    eq_or_diff($json, from_json('{"text": "Successfully set settings", "success": true}'));
+    is($json->{success}, 1, "esadmin set settings success");
+    is($json->{i18n}, "api.stats.settingsSet", "esadmin set settings i18n");
 
     $json = multiGetToken("/api/esadmin?arkimeRegressionUser=adminuser1&cluster=test", $token);
     is ($json->[7]->{'current'}, "4321");
 
     $json = multiPostToken("/api/esadmin/reroute?arkimeRegressionUser=adminuser1&cluster=test", "", $token);
-    eq_or_diff($json, from_json('{"text": "Reroute successful", "success": true}'));
+    is($json->{success}, 1, "esadmin reroute success");
+    is($json->{i18n}, "api.stats.rerouteSuccessful", "esadmin reroute i18n");
 
     $json = multiPostToken("/api/esadmin/flush?arkimeRegressionUser=adminuser1&cluster=test", "", $token);
-    eq_or_diff($json, from_json('{"text": "Flushed", "success": true}'));
+    is($json->{success}, 1, "esadmin flush success");
+    is($json->{i18n}, "api.stats.flushed", "esadmin flush i18n");
 
     $json = multiPostToken("/api/esadmin/unflood?arkimeRegressionUser=adminuser1&cluster=test", "", $token);
-    eq_or_diff($json, from_json('{"text": "Unflooded", "success": true}'));
+    is($json->{success}, 1, "esadmin unflood success");
+    is($json->{i18n}, "api.stats.unflooded", "esadmin unflood i18n");
 
     # test2 cluster
     $json = multiPostToken("/api/esadmin/set?arkimeRegressionUser=adminuser1&cluster=test2", "key=cluster.max_shards_per_node&value=31453", $token);
-    eq_or_diff($json, from_json('{"text": "Successfully set settings", "success": true}'));
+    is($json->{success}, 1, "esadmin set settings success");
+    is($json->{i18n}, "api.stats.settingsSet", "esadmin set settings i18n");
 
     $json = multiGetToken("/api/esadmin?arkimeRegressionUser=adminuser1&cluster=test2", $token);
     is ($json->[7]->{'current'}, "31453");
 
     $json = multiPostToken("/api/esadmin/reroute?arkimeRegressionUser=adminuser1&cluster=test2", "", $token);
-    eq_or_diff($json, from_json('{"text": "Reroute successful", "success": true}'));
+    is($json->{success}, 1, "esadmin reroute success");
+    is($json->{i18n}, "api.stats.rerouteSuccessful", "esadmin reroute i18n");
 
     $json = multiPostToken("/api/esadmin/flush?arkimeRegressionUser=adminuser1&cluster=test2", "", $token);
-    eq_or_diff($json, from_json('{"text": "Flushed", "success": true}'));
+    is($json->{success}, 1, "esadmin flush success");
+    is($json->{i18n}, "api.stats.flushed", "esadmin flush i18n");
 
     $json = multiPostToken("/api/esadmin/unflood?arkimeRegressionUser=adminuser1&cluster=test2", "", $token);
-    eq_or_diff($json, from_json('{"text": "Unflooded", "success": true}'));
+    is($json->{success}, 1, "esadmin unflood success");
+    is($json->{i18n}, "api.stats.unflooded", "esadmin unflood i18n");

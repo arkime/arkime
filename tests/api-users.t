@@ -1,7 +1,7 @@
 # Many of these test user/roles start with sac- (skip auto create) because
 # otherwise viewer in regression mode would auto create the user.
 # Some day should remove all autocreate code.
-use Test::More tests => 206;
+use Test::More tests => 209;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -158,7 +158,8 @@ anonymous,,true,true,false,"arkimeAdmin, cont3xtUser, parliamentUser, usersAdmin
 
 # update user settings
     $json = viewerPostToken("/api/user/settings?arkimeRegressionUser=sac-test1", '{"logo":"testlogo.png","__proto":{"bad":"stuff"}}', $test1Token);
-    eq_or_diff($json, from_json('{"text": "Updated user settings successfully", "success": true}'));
+    is($json->{success}, 1, "update user settings");
+    is($json->{i18n}, "api.users.settingsUpdated", "update user settings i18n");
 
     $json = viewerGetToken("/api/user/settings?arkimeRegressionUser=sac-test1", $test1Token);
     ok(!exists $json->{__proto__}, "no prototype pollution");
@@ -371,10 +372,12 @@ anonymous,,true,true,false,"arkimeAdmin, cont3xtUser, parliamentUser, usersAdmin
     ok(!$info->{success}, "can't update welcome message number for another user");
 
     $info = viewerPutToken("/api/user/sac-test1/acknowledge?arkimeRegressionUser=sac-test1", '{}', $test1Token);
-    eq_or_diff($info, from_json('{"text": "Message number required", "success": false}'));
+    is($info->{success}, 0, "message number required");
+    is($info->{i18n}, "api.users.messageNumberRequired", "message number required i18n");
 
     $info = viewerPutToken("/api/user/sac-test1/acknowledge?arkimeRegressionUser=sac-test1", '{"msgNum":"foo"}', $test1Token);
-    eq_or_diff($info, from_json('{"text": "welcomeMsgNum is not integer", "success": false}'));
+    is($info->{success}, 0, "welcomeMsgNum not integer");
+    is($info->{i18n}, "api.users.welcomeMsgNumNotInteger", "welcomeMsgNum not integer i18n");
 
     $info = viewerPutToken("/api/user/sac-test1/acknowledge?arkimeRegressionUser=sac-test1", '{"msgNum":2}', $test1Token);
     ok($info->{success}, "update welcome message number");

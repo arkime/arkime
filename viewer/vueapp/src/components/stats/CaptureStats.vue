@@ -58,6 +58,7 @@ import ArkimeLoading from '../utils/Loading.vue';
 import ArkimePaging from '../utils/Pagination.vue';
 import StatsService from './StatsService.js';
 import { round, roundCommaString, timezoneDateString, humanReadableBytes, humanReadableBits, readableTime, readableTimeCompact } from '@common/vueFilters.js';
+import { resolveMessage } from '@common/resolveI18nMessage';
 
 let oldD3, cubism; // lazy load old d3 and cubism
 
@@ -301,7 +302,7 @@ export default {
         respondedAt = undefined;
         this.loading = false;
         this.initialLoading = false;
-        this.error = error.text || String(error);
+        this.error = resolveMessage(error, this.$t);
       }
     },
     toggleStatDetailWrapper: async function (stat) {

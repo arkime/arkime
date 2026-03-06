@@ -93,15 +93,15 @@ class ShareableAPIs {
    */
   static async apiCreateShareable (req, res) {
     if (!ArkimeUtil.isString(req.body.name)) {
-      return res.serverError(403, 'Missing shareable name');
+      return res.serverError(403, 'Missing shareable name', 'api.shareables.missingName');
     }
 
     if (!ArkimeUtil.isString(req.body.type)) {
-      return res.serverError(403, 'Missing shareable type');
+      return res.serverError(403, 'Missing shareable type', 'api.shareables.missingType');
     }
 
     if (req.body.description !== undefined && !ArkimeUtil.isString(req.body.description)) {
-      return res.serverError(403, 'Description must be a string');
+      return res.serverError(403, 'Description must be a string', 'api.shareables.descriptionMustBeString');
     }
 
     const user = req.settingUser;
@@ -145,11 +145,12 @@ class ShareableAPIs {
         success: true,
         shareable,
         text: 'Created shareable item!',
-        id
+        id,
+        i18n: 'api.shareables.created'
       });
     } catch (err) {
       console.log(`ERROR - ${req.method} /api/shareable (createShareable)`, util.inspect(err, false, 50));
-      return res.serverError(500, 'Error creating shareable item');
+      return res.serverError(500, 'Error creating shareable item', 'api.shareables.errorCreating');
     }
   }
 
@@ -167,7 +168,7 @@ class ShareableAPIs {
       const user = req.settingUser;
 
       if (!await ShareableAPIs.canView(user, shareable)) {
-        return res.serverError(403, 'Not permitted to view this shareable item');
+        return res.serverError(403, 'Not permitted to view this shareable item', 'api.shareables.notPermittedToView');
       }
 
       shareable.id = req.params.id;
@@ -180,7 +181,7 @@ class ShareableAPIs {
       });
     } catch (err) {
       console.log(`ERROR - ${req.method} /api/shareable/%s (getShareable)`, ArkimeUtil.sanitizeStr(req.params.id), util.inspect(err, false, 50));
-      return res.serverError(500, 'Error retrieving shareable item');
+      return res.serverError(500, 'Error retrieving shareable item', 'api.shareables.retrieveFailed');
     }
   }
 
@@ -200,15 +201,15 @@ class ShareableAPIs {
       const user = req.settingUser;
 
       if (!await ShareableAPIs.canEdit(user, dbItem._source)) {
-        return res.serverError(403, 'Not permitted to edit this shareable item');
+        return res.serverError(403, 'Not permitted to edit this shareable item', 'api.shareables.notPermittedToEdit');
       }
 
       if (req.body.type !== undefined && req.body.type !== dbItem._source.type) {
-        return res.serverError(403, 'Cannot change shareable type');
+        return res.serverError(403, 'Cannot change shareable type', 'api.shareables.cannotChangeType');
       }
 
       if (req.body.description !== undefined && !ArkimeUtil.isString(req.body.description)) {
-        return res.serverError(403, 'Description must be a string');
+        return res.serverError(403, 'Description must be a string', 'api.shareables.descriptionMustBeString');
       }
 
       let viewRoles = req.body.viewRoles !== undefined ? (ArkimeUtil.isStringArray(req.body.viewRoles) ? req.body.viewRoles : []) : (dbItem._source.viewRoles || []);
@@ -250,11 +251,12 @@ class ShareableAPIs {
       return res.json({
         success: true,
         shareable,
-        text: 'Updated shareable item!'
+        text: 'Updated shareable item!',
+        i18n: 'api.shareables.updated'
       });
     } catch (err) {
       console.log(`ERROR - ${req.method} /api/shareable/%s (updateShareable)`, ArkimeUtil.sanitizeStr(req.params.id), util.inspect(err, false, 50));
-      return res.serverError(500, 'Error updating shareable item');
+      return res.serverError(500, 'Error updating shareable item', 'api.shareables.errorUpdating');
     }
   }
 
@@ -272,17 +274,18 @@ class ShareableAPIs {
       const user = req.settingUser;
 
       if (!ShareableAPIs.canDelete(user, shareable)) {
-        return res.serverError(403, 'Not permitted to delete this shareable item');
+        return res.serverError(403, 'Not permitted to delete this shareable item', 'api.shareables.notPermittedToDelete');
       }
 
       await Db.deleteShareable(req.params.id);
       res.json({
         success: true,
-        text: 'Deleted shareable item successfully'
+        text: 'Deleted shareable item successfully',
+        i18n: 'api.shareables.deletedSuccessfully'
       });
     } catch (err) {
       console.log(`ERROR - ${req.method} /api/shareable/%s (deleteShareable)`, ArkimeUtil.sanitizeStr(req.params.id), util.inspect(err, false, 50));
-      return res.serverError(500, 'Error deleting shareable item');
+      return res.serverError(500, 'Error deleting shareable item', 'api.shareables.errorDeleting');
     }
   }
 
@@ -303,7 +306,7 @@ class ShareableAPIs {
       }
 
       if (!ArkimeUtil.isString(req.query.type)) {
-        return res.serverError(403, 'Missing or invalid type parameter');
+        return res.serverError(403, 'Missing or invalid type parameter', 'api.shareables.invalidTypeParam');
       }
 
       const type = req.query.type;
@@ -391,7 +394,7 @@ class ShareableAPIs {
       });
     } catch (err) {
       console.log(`ERROR - ${req.method} /api/shareables (listShareables)`, util.inspect(err, false, 50));
-      return res.serverError(500, 'Error listing shareable items');
+      return res.serverError(500, 'Error listing shareable items', 'api.shareables.listFailed');
     }
   }
 }

@@ -432,6 +432,7 @@ import ArkimeVisualizations from '../visualizations/Visualizations.vue';
 import ArkimeCollapsible from '../utils/CollapsibleWrapper.vue';
 import FieldActions from '../sessions/FieldActions.vue';
 import { commaString, searchFields, buildExpression } from '@common/vueFilters.js';
+import { resolveMessage } from '@common/resolveI18nMessage';
 // import utils
 import Utils from '../utils/utils';
 
@@ -804,7 +805,7 @@ export default {
         this.fieldConfigsOpen = false;
         this.fieldConfigError = false;
       }).catch((error) => {
-        this.fieldConfigError = error.text;
+        this.fieldConfigError = resolveMessage(error, this.$t);
       });
     },
     /**
@@ -833,7 +834,7 @@ export default {
         this.fieldConfigs.splice(index, 1);
         this.fieldConfigError = false;
       }).catch((error) => {
-        this.fieldConfigError = error.text;
+        this.fieldConfigError = resolveMessage(error, this.$t);
       });
     },
     /**
@@ -850,10 +851,10 @@ export default {
       UserService.updateLayout('spiview', data).then((response) => {
         this.fieldConfigs[index] = data;
         this.fieldConfigError = false;
-        this.fieldConfigSuccess = response.text;
+        this.fieldConfigSuccess = resolveMessage(response, this.$t);
         setTimeout(() => { this.fieldConfigSuccess = ''; }, 5000);
       }).catch((error) => {
-        this.fieldConfigError = error.text;
+        this.fieldConfigError = resolveMessage(error, this.$t);
       });
     },
     /* event functions ----------------------------------------------------- */
@@ -906,7 +907,7 @@ export default {
           pendingPromises.splice(index, 1);
         }
 
-        this.error = error.text || error.message;
+        this.error = resolveMessage(error, this.$t);
 
         // Check if all requests are done (for viz data requests)
         if (pendingPromises.length === 0 && this.dataLoading) {
@@ -1073,7 +1074,7 @@ export default {
           }
           // Note: dataLoading is set to false when all individual requests complete
         }).catch((error) => {
-          this.error = error.text || String(error);
+          this.error = resolveMessage(error, this.$t);
           // Note: dataLoading is set to false when all individual requests complete
         });
       } else {
@@ -1158,7 +1159,7 @@ export default {
 
         // display error for the requested spi data
         spiData.loading = false;
-        const errMsg = error.text || error.message;
+        const errMsg = resolveMessage(error, this.$t);
         spiData.error = errMsg;
         if (!this.error && errMsg) { this.error = errMsg; }
         this.loadingVisualizations = false;
@@ -1177,7 +1178,7 @@ export default {
       UserService.getLayout('spiview').then((response) => {
         this.fieldConfigs = response;
       }).catch((error) => {
-        this.fieldConfigError = error.text;
+        this.fieldConfigError = resolveMessage(error, this.$t);
       });
     },
     /**

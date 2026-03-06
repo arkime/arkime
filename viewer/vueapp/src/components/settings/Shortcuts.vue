@@ -442,6 +442,7 @@ import UserService from '@common/UserService';
 import ArkimePaging from '../utils/Pagination.vue';
 import RoleDropdown from '@common/RoleDropdown.vue';
 import TransferResource from '@common/TransferResource.vue';
+import { resolveMessage } from '@common/resolveI18nMessage';
 
 export default {
   name: 'Shortcuts',
@@ -580,7 +581,7 @@ export default {
         this.showShortcutModal = false;
         this.displaySuccess(response);
       }).catch((error) => {
-        this.shortcutFormError = error.text;
+        this.shortcutFormError = resolveMessage(error, this.$t);
         this.createShortcutLoading = false;
       });
     },
@@ -619,10 +620,10 @@ export default {
       SettingsService.updateShortcut(id, data).then((response) => {
         this.getShortcuts();
         this.transferShortcut = undefined;
-        this.$emit('display-message', { msg: response.text, type: 'success' });
+        this.$emit('display-message', { msg: resolveMessage(response, this.$t), type: 'success' });
         this.showTransferModal = false;
       }).catch((error) => {
-        this.$emit('display-message', { msg: error.text || String(error), type: 'danger' });
+        this.$emit('display-message', { msg: resolveMessage(error, this.$t), type: 'danger' });
       });
     },
     /* updates a specified shortcut */
@@ -655,7 +656,7 @@ export default {
         this.showShortcutModal = false;
         this.displaySuccess(response);
       }).catch((error) => {
-        this.shortcutFormError = error.text;
+        this.shortcutFormError = resolveMessage(error, this.$t);
         this.createShortcutLoading = false;
       });
     },
@@ -672,7 +673,7 @@ export default {
         this.displaySuccess(response);
       }).catch((error) => {
         // display error message to user
-        this.$emit('display-message', { msg: error.text, type: 'danger' });
+        this.$emit('display-message', { msg: resolveMessage(error, this.$t), type: 'danger' });
         shortcut.loading = false;
       });
     },
@@ -695,7 +696,7 @@ export default {
         this.shortcutsListError = '';
       }).catch((error) => {
         this.loading = false;
-        this.shortcutsListError = error.text || String(error);
+        this.shortcutsListError = resolveMessage(error, this.$t);
       });
     },
     /* validates the shortcut form. returns false if form is not valid and true otherwise.
@@ -731,7 +732,7 @@ export default {
     },
     /* display success message to user and add any invalid users if they exist */
     displaySuccess (response) {
-      let msg = response.text;
+      let msg = resolveMessage(response, this.$t);
       if (response.invalidUsers && response.invalidUsers.length) {
         msg += ` Could not add these users: ${response.invalidUsers.join(',')}`;
       }

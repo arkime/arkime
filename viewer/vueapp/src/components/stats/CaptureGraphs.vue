@@ -53,6 +53,7 @@ import ArkimePaging from '../utils/Pagination.vue';
 import ArkimeError from '../utils/Error.vue';
 import ArkimeLoading from '../utils/Loading.vue';
 import StatsService from './StatsService.js';
+import { resolveMessage } from '@common/resolveI18nMessage';
 let oldD3, cubism; // lazy load old d3 and cubism
 
 let reqPromise; // promise returned from setInterval for recurring requests
@@ -221,7 +222,7 @@ export default {
       } catch (error) {
         this.loading = false;
         this.initialLoading = false;
-        this.error = error.text || String(error);
+        this.error = resolveMessage(error, this.$t);
       }
     },
     makeStatsGraphWrapper: async function (metricName, interval) {

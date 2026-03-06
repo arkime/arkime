@@ -416,6 +416,7 @@ import ArkimeExportCsv from '../sessions/ExportCsv.vue';
 import ArkimeIntersection from '../sessions/Intersection.vue';
 import Clusters from '../utils/Clusters.vue';
 import { commaString } from '@common/vueFilters.js';
+import { resolveMessage } from '@common/resolveI18nMessage';
 
 export default {
   name: 'ArkimeSearch',
@@ -664,11 +665,11 @@ export default {
         // remove the view from the view list
         this.views.splice(index, 1);
         // display success message to user
-        this.msg = response.text;
+        this.msg = resolveMessage(response, this.$t);
         this.msgType = 'success';
       }).catch((error) => {
         // display error message to user
-        this.msg = error.text;
+        this.msg = resolveMessage(error, this.$t);
         this.msgType = 'danger';
       });
     },

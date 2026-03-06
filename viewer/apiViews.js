@@ -134,11 +134,11 @@ class ViewAPIs {
    */
   static async apiCreateView (req, res) {
     if (!ArkimeUtil.isString(req.body.name)) {
-      return res.serverError(403, 'Missing view name');
+      return res.serverError(403, 'Missing view name', 'api.views.missingName');
     }
 
     if (!ArkimeUtil.isString(req.body.expression)) {
-      return res.serverError(403, 'Missing view expression');
+      return res.serverError(403, 'Missing view expression', 'api.views.missingExpression');
     }
 
     const user = req.settingUser;
@@ -161,11 +161,12 @@ class ViewAPIs {
         success: true,
         view,
         text: 'Created view!',
+        i18n: 'api.views.created',
         invalidUsers: ArkimeUtil.safeStr(users.invalidUsers)
       });
     } catch (err) {
       console.log(`ERROR - ${req.method} /api/view (createView)`, util.inspect(err, false, 50));
-      return res.serverError(500, 'Error creating view');
+      return res.serverError(500, 'Error creating view', 'api.views.errorCreating');
     }
   }
 
@@ -182,11 +183,12 @@ class ViewAPIs {
       await Db.deleteView(req.params.id);
       res.json({
         success: true,
-        text: 'Deleted view successfully'
+        text: 'Deleted view successfully',
+        i18n: 'api.views.deleted'
       });
     } catch (err) {
       console.log(`ERROR - ${req.method} /api/view/%s (deleteView)`, ArkimeUtil.sanitizeStr(req.params.id), util.inspect(err, false, 50));
-      return res.serverError(500, 'Error deleting view');
+      return res.serverError(500, 'Error deleting view', 'api.views.errorDeleting');
     }
   }
 
@@ -201,11 +203,11 @@ class ViewAPIs {
   static async apiUpdateView (req, res) {
     // make sure all the necessary data is included in the body
     if (!ArkimeUtil.isString(req.body.name)) {
-      return res.serverError(403, 'Missing view name');
+      return res.serverError(403, 'Missing view name', 'api.views.missingName');
     }
 
     if (!ArkimeUtil.isString(req.body.expression)) {
-      return res.serverError(403, 'Missing view expression');
+      return res.serverError(403, 'Missing view expression', 'api.views.missingExpression');
     }
 
     const view = req.body;
@@ -236,15 +238,16 @@ class ViewAPIs {
           view: newView,
           success: true,
           text: 'Updated view!',
+          i18n: 'api.views.updated',
           invalidUsers: ArkimeUtil.safeStr(users.invalidUsers)
         });
       } catch (err) {
         console.log(`ERROR - ${req.method} /api/view/%s (setView)`, ArkimeUtil.sanitizeStr(req.params.id), util.inspect(err, false, 50));
-        return res.serverError(500, 'Error updating view');
+        return res.serverError(500, 'Error updating view', 'api.views.errorUpdating');
       }
     } catch (err) {
       console.log(`ERROR - ${req.method} /api/view/%s (getView)`, ArkimeUtil.sanitizeStr(req.params.id), util.inspect(err, false, 50));
-      return res.serverError(500, 'Fetching view to update failed');
+      return res.serverError(500, 'Fetching view to update failed', 'api.views.errorFetching');
     }
   }
 }

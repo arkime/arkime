@@ -859,6 +859,7 @@ import HuntRow from './HuntRow.vue';
 import RoleDropdown from '@common/RoleDropdown.vue';
 import NotifierDropdown from '@common/NotifierDropdown.vue';
 import { commaString, round } from '@common/vueFilters.js';
+import { resolveMessage } from '@common/resolveI18nMessage';
 // import utils
 import Utils from '../utils/utils';
 
@@ -1099,7 +1100,7 @@ export default {
         this.jobNotifier = [];
         this.loadData();
       }).catch((error) => {
-        this.createFormError = error.text || String(error);
+        this.createFormError = resolveMessage(error, this.$t);
       });
     },
     removeFromSessions: function (job) {
@@ -1111,13 +1112,13 @@ export default {
       HuntService.cleanup(job.id, this.query.cluster).then((response) => {
         job.loading = false;
         job.removed = true;
-        this.floatingSuccess = response.text || 'Successfully removed hunt ID and name from the matched sessions.';
+        this.floatingSuccess = resolveMessage(response, this.$t) || 'Successfully removed hunt ID and name from the matched sessions.';
         setTimeout(() => {
           this.floatingSuccess = '';
         }, 5000);
       }).catch((error) => {
         job.loading = false;
-        this.setErrorForList('historyResults', error.text || String(error));
+        this.setErrorForList('historyResults', resolveMessage(error, this.$t));
       });
     },
     removeJob: function (job, arrayName) {
@@ -1141,7 +1142,7 @@ export default {
         if (job.status === 'queued') { this.calculateQueue(); }
       }).catch((error) => {
         job.loading = false;
-        this.setErrorForList(arrayName, error.text || String(error));
+        this.setErrorForList(arrayName, resolveMessage(error, this.$t));
       });
     },
     cancelJob: function (job) {
@@ -1155,7 +1156,7 @@ export default {
         this.loadData();
       }).catch((error) => {
         job.loading = false;
-        this.setErrorForList('results', error.text || String(error));
+        this.setErrorForList('results', resolveMessage(error, this.$t));
       });
     },
     pauseJob: function (job) {
@@ -1168,7 +1169,7 @@ export default {
         this.loadData();
       }).catch((error) => {
         job.loading = false;
-        this.setErrorForList('results', error.text || String(error));
+        this.setErrorForList('results', resolveMessage(error, this.$t));
       });
     },
     playJob: function (job) {
@@ -1183,7 +1184,7 @@ export default {
         this.calculateQueue();
       }).catch((error) => {
         job.loading = false;
-        this.setErrorForList('results', error.text || String(error));
+        this.setErrorForList('results', resolveMessage(error, this.$t));
       });
     },
     openSessions: function (job) {
@@ -1252,7 +1253,7 @@ export default {
       HuntService.removeUser(job.id, user, this.query.cluster).then((response) => {
         job.users = response.users;
       }).catch((error) => {
-        this.floatingError = error.text || String(error);
+        this.floatingError = resolveMessage(error, this.$t);
       });
     },
     addUsers: function (users, job) {
@@ -1261,7 +1262,7 @@ export default {
       HuntService.addUsers(job.id, users, this.query.cluster).then((response) => {
         job.users = response.users;
       }).catch((error) => {
-        this.floatingError = error.text || String(error);
+        this.floatingError = resolveMessage(error, this.$t);
       });
     },
     updateHunt: function (job) {
@@ -1274,12 +1275,12 @@ export default {
       };
 
       HuntService.updateHunt(job.id, data, this.query.cluster).then((response) => {
-        this.floatingSuccess = response.text;
+        this.floatingSuccess = resolveMessage(response, this.$t);
         setTimeout(() => {
           this.floatingSuccess = '';
         }, 5000);
       }).catch((error) => {
-        this.floatingError = error.text || String(error);
+        this.floatingError = resolveMessage(error, this.$t);
       });
     },
     /* helper functions ---------------------------------------------------- */
@@ -1356,7 +1357,7 @@ export default {
         this.historyResults = response;
       }).catch((error) => {
         if (error.status === 403) { this.permissionDenied = true; }
-        this.historyListLoadingError = error.text || String(error);
+        this.historyListLoadingError = resolveMessage(error, this.$t);
       });
 
       // get the running, queued, paused hunts
@@ -1398,7 +1399,7 @@ export default {
         }
         this.calculateQueue();
       }).catch((error) => {
-        this.queuedListLoadingError = error.text || String(error);
+        this.queuedListLoadingError = resolveMessage(error, this.$t);
       });
 
       // stop loading when both requests are done
@@ -1436,7 +1437,7 @@ export default {
         this.sessions = {};
         this.loadingSessions = false;
         this.loadingSessionsError = this.$t('hunts.problemLoading');
-        this.loadingSessionsDetailError = error.text || error.message || '';
+        this.loadingSessionsDetailError = resolveMessage(error, this.$t) || '';
       }
     }
   },
