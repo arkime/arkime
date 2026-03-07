@@ -79,7 +79,7 @@ include:
     fpmdeps: "-d libmaxminddb -d libpcap -d yara -d perl-http-message -d perl-lwp-protocol-https -d perl-json -d libnet -d lua -d zstd -d openssl -d pcre"
     package: arch
     viewertest: normal
-    otherdbtest: true
+    otherdbtest: "true"
     prbuild: true
 
   - version: al2023.x86_64
