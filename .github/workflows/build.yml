@@ -174,7 +174,7 @@ jobs:
 
           (cd tests ; ARKIME_cache__type=sqlite ARKIME_cache__sqliteFile=/tmp/cache.sql ARKIME_cont3xt__dbUrl=sqlite:///tmp/cont3xt.db USERSELASTICSEARCH=sqlite:///tmp/users.db ./tests.pl --viewerstart cont3xt.t addUser.t )
 
-          (cd tests ; ARKIME_cache__type=redis ARKIME_cache__redisURL=redis://localhost:6379/1 ARKIME_cont3xt__dbUrl=redis://localhost:6379/2 USERSELASTICSEARCH=redis://localhost:6379/0 ./tests.pl --viewerstart cont3xt.t addUser.t )
+          (cd tests ; ARKIME_cache__type=redis ARKIME_cache__redisURL=redis://localhost:7379/1 ARKIME_cont3xt__dbUrl=redis://localhost:7379/2 USERSELASTICSEARCH=redis://localhost:7379/0 ./tests.pl --viewerstart cont3xt.t addUser.t )
 
       - name: package arch
         if: ${{ matrix.package == 'arch' }}
