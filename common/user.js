@@ -1818,6 +1818,7 @@ class UserESImplementation {
   }
 
   async deleteAllUsers () {
+    await this.client.indices.refresh({ index: '_all' });
     await this.client.deleteByQuery({
       index: this.prefix + 'users',
       body: { query: { match_all: { } } },
