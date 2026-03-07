@@ -3,12 +3,18 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 # Mini Redis server for testing. Stores everything in memory.
-# Usage: perl mini-redis.pl <port>
+# Usage: perl mini-redis.pl [--debug] <port>
 
 use strict;
 use warnings;
 use IO::Socket::INET;
 use IO::Select;
+
+my $debug = 0;
+if (@ARGV && $ARGV[0] eq '--debug') {
+    $debug = 1;
+    shift @ARGV;
+}
 
 my $port = $ARGV[0] || 6379;
 
@@ -23,7 +29,7 @@ my $server = IO::Socket::INET->new(
     ReuseAddr => 1,
 ) or die "Cannot start server on port $port: $!\n";
 
-print "mini-redis listening on port $port\n";
+print "mini-redis listening on port $port\n" if $debug;
 
 my $sel = IO::Select->new($server);
 
@@ -63,7 +69,7 @@ while (1) {
 
         my $cdb = $conn_db{fileno($fh)} // 0;
 
-        print "REDIS: $name " . join(' ', map { defined $_ ? $_ : '(nil)' } @args[1..$#args]) . " [db=$cdb]\n";
+        print "REDIS: $name " . join(' ', map { defined $_ ? $_ : '(nil)' } @args[1..$#args]) . " [db=$cdb]\n" if $debug;
 
         if ($name eq 'PING') {
             send_simple($fh, 'PONG');
@@ -153,6 +159,41 @@ while (1) {
         } elsif ($name eq 'FLUSHDB') {
             delete $db{$cdb};
             send_simple($fh, 'OK');
+        } elsif ($name eq 'KEYS') {
+            my $pattern = $args[1] // '*';
+            # Convert Redis glob pattern to Perl regex
+            my $re = $pattern;
+            $re =~ s/\./\\./g;
+            $re =~ s/\*/.*/g;
+            $re =~ s/\?/./g;
+            $re = qr/^$re$/;
+            my @matching;
+            for my $k (keys %{$db{$cdb} // {}}) {
+                my $entry = $db{$cdb}{$k};
+                if ($entry && defined $entry->{expire} && time() >= $entry->{expire}) {
+                    delete $db{$cdb}{$k};
+                    next;
+                }
+                push @matching, $k if $k =~ $re;
+            }
+            send_raw($fh, "*" . scalar(@matching) . "\r\n");
+            for my $k (@matching) {
+                send_bulk($fh, $k);
+            }
+        } elsif ($name eq 'SETNX') {
+            my $key = $args[1];
+            my $val = $args[2];
+            if (!defined $key || !defined $val) {
+                send_error($fh, "ERR wrong number of arguments for 'setnx' command");
+                next;
+            }
+            my $entry = $db{$cdb}{$key};
+            if ($entry && (!defined $entry->{expire} || time() < $entry->{expire})) {
+                send_integer($fh, 0);
+            } else {
+                $db{$cdb}{$key} = { value => $val };
+                send_integer($fh, 1);
+            }
         } elsif ($name eq 'SHUTDOWN') {
             send_simple($fh, 'OK');
             exit(0);

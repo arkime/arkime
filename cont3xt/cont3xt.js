@@ -183,6 +183,11 @@ if (ArkimeConfig.regressionTests) {
   app.post('/regressionTests/classify', [jsonParser], (req, res) => {
     res.send(req.body.map(item => Integration.classify(item)));
   });
+
+  app.post('/regressionTests/clearAll', async (req, res) => {
+    await Db.clearAll();
+    res.send({ success: true });
+  });
 }
 
 // Set up auth, all APIs registered below will use passport

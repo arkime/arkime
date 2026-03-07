@@ -24,6 +24,10 @@ class Db {
 
     if (options.url?.startsWith('lmdb')) {
       Db.implementation = new DbLMDBImplementation(options);
+    } else if (options.url?.startsWith('sqlite')) {
+      Db.implementation = new DbSQLiteImplementation(options);
+    } else if (options.url?.startsWith('redis')) {
+      Db.implementation = new DbRedisImplementation(options);
     } else {
       Db.implementation = new DbESImplementation(options);
       await Db.implementation.initialize();
@@ -144,6 +148,13 @@ class Db {
    */
   static async deleteOverview (id) {
     return Db.implementation.deleteOverview(id);
+  }
+
+  /**
+   * Clear all data from all tables (regression tests only)
+   */
+  static async clearAll () {
+    return Db.implementation.clearAll();
   }
 }
 
@@ -765,10 +776,16 @@ class DbESImplementation {
     }
     return null;
   }
+
+  async clearAll () {
+    await Promise.all([
+      this.client.deleteByQuery({ index: 'cont3xt_links', body: { query: { match_all: {} } }, refresh: true, conflicts: 'proceed' }),
+      this.client.deleteByQuery({ index: 'cont3xt_views', body: { query: { match_all: {} } }, refresh: true, conflicts: 'proceed' }),
+      this.client.deleteByQuery({ index: 'cont3xt_history', body: { query: { match_all: {} } }, refresh: true, conflicts: 'proceed' }),
+      this.client.deleteByQuery({ index: 'cont3xt_overviews', body: { query: { match_all: {} } }, refresh: true, conflicts: 'proceed' })
+    ]);
+  }
 }
-/******************************************************************************/
-// LMDB Implementation of Users DB
-/******************************************************************************/
 class DbLMDBImplementation {
   store;
   viewStore;
@@ -984,6 +1001,439 @@ class DbLMDBImplementation {
 
   async deleteOverview (id) {
     return this.overviewStore.remove(id);
+  }
+
+  async clearAll () {
+    for (const { key } of this.linkGroupStore.getRange({})) { await this.linkGroupStore.remove(key); }
+    for (const { key } of this.viewStore.getRange({})) { await this.viewStore.remove(key); }
+    for (const { key } of this.auditStore.getRange({})) { await this.auditStore.remove(key); }
+    for (const { key } of this.overviewStore.getRange({})) { await this.overviewStore.remove(key); }
+  }
+}
+class DbSQLiteImplementation {
+  constructor (options) {
+    const Database = require('better-sqlite3');
+    let dbPath = options.url;
+    dbPath = dbPath.replace('sqlite3://', '').replace('sqlite://', '');
+
+    this.db = new Database(dbPath);
+    this.db.pragma('journal_mode = WAL');
+    this.db.pragma('synchronous = NORMAL');
+    this.db.pragma('busy_timeout = 5000');
+
+    this.db.exec(`
+      CREATE TABLE IF NOT EXISTS link_groups (
+        id TEXT PRIMARY KEY,
+        json TEXT NOT NULL
+      )
+    `);
+    this.db.exec(`
+      CREATE TABLE IF NOT EXISTS views (
+        id TEXT PRIMARY KEY,
+        json TEXT NOT NULL
+      )
+    `);
+    this.db.exec(`
+      CREATE TABLE IF NOT EXISTS audits (
+        id TEXT PRIMARY KEY,
+        issuedAt INTEGER,
+        json TEXT NOT NULL
+      )
+    `);
+    this.db.exec(`
+      CREATE TABLE IF NOT EXISTS overviews (
+        id TEXT PRIMARY KEY,
+        json TEXT NOT NULL
+      )
+    `);
+  }
+
+  // Link Groups
+  async getMatchingLinkGroups (creator, roles, all) {
+    const rows = this.db.prepare('SELECT id, json FROM link_groups').all();
+    const linkGroups = [];
+    for (const row of rows) {
+      const data = JSON.parse(row.json);
+      if (!all) {
+        if (creator !== undefined && creator === data.creator) { /* match */ } else if (roles !== undefined && (
+          (data.editRoles && roles.some(x => data.editRoles.includes(x))) ||
+          (data.viewRoles && roles.some(x => data.viewRoles.includes(x)))
+        )) { /* match */ } else { continue; }
+      }
+      data._id = row.id;
+      linkGroups.push(new LinkGroup(data));
+    }
+    return linkGroups;
+  }
+
+  async putLinkGroup (id, linkGroup) {
+    if (id === null) {
+      id = cryptoLib.randomBytes(16).toString('hex');
+    }
+    this.db.prepare('INSERT OR REPLACE INTO link_groups (id, json) VALUES (?, ?)').run(id, JSON.stringify(linkGroup));
+    return id;
+  }
+
+  async getLinkGroup (id) {
+    const row = this.db.prepare('SELECT json FROM link_groups WHERE id = ?').get(id);
+    return row ? JSON.parse(row.json) : null;
+  }
+
+  async deleteLinkGroup (id) {
+    const info = this.db.prepare('DELETE FROM link_groups WHERE id = ?').run(id);
+    return info.changes > 0 ? {} : null;
+  }
+
+  // Views
+  async getMatchingViews (creator, roles, all) {
+    const rows = this.db.prepare('SELECT id, json FROM views').all();
+    const views = [];
+    for (const row of rows) {
+      const data = JSON.parse(row.json);
+      if (!all) {
+        if (creator !== undefined && creator === data.creator) { /* match */ } else if (roles !== undefined && (
+          (data.editRoles && roles.some(x => data.editRoles.includes(x))) ||
+          (data.viewRoles && roles.some(x => data.viewRoles.includes(x)))
+        )) { /* match */ } else { continue; }
+      }
+      data._id = row.id;
+      views.push(new View(data));
+    }
+    return views;
+  }
+
+  async putView (id, view) {
+    if (id === null) {
+      id = cryptoLib.randomBytes(16).toString('hex');
+    }
+    this.db.prepare('INSERT OR REPLACE INTO views (id, json) VALUES (?, ?)').run(id, JSON.stringify(view));
+    return id;
+  }
+
+  async getView (id) {
+    const row = this.db.prepare('SELECT json FROM views WHERE id = ?').get(id);
+    return row ? JSON.parse(row.json) : null;
+  }
+
+  async deleteView (id) {
+    const info = this.db.prepare('DELETE FROM views WHERE id = ?').run(id);
+    return info.changes > 0 ? {} : null;
+  }
+
+  // Audit Log
+  async putAudit (id, audit) {
+    if (id === null) {
+      id = cryptoLib.randomBytes(16).toString('hex');
+    }
+    this.db.prepare('INSERT OR REPLACE INTO audits (id, issuedAt, json) VALUES (?, ?, ?)').run(id, audit.issuedAt ?? Date.now(), JSON.stringify(audit));
+    return id;
+  }
+
+  async deleteAudit (id) {
+    const info = this.db.prepare('DELETE FROM audits WHERE id = ?').run(id);
+    return info.changes > 0 ? {} : null;
+  }
+
+  async getAudit (id) {
+    const row = this.db.prepare('SELECT json FROM audits WHERE id = ?').get(id);
+    return row ? JSON.parse(row.json) : null;
+  }
+
+  async deleteExpiredAudits (expireMs) {
+    const info = this.db.prepare('DELETE FROM audits WHERE issuedAt < ?').run(expireMs);
+    return info.changes;
+  }
+
+  async getMatchingAudits (userId, roles, reqQuery) {
+    const { startMs, stopMs, searchTerm, page, itemsPerPage, sortBy, sortOrder } = reqQuery;
+
+    const conditions = [];
+    const params = [];
+
+    if (startMs != null && stopMs != null) {
+      conditions.push('issuedAt BETWEEN ? AND ?');
+      params.push(startMs, stopMs);
+    }
+
+    if (!(roles?.includes('cont3xtAdmin') && reqQuery.seeAll === 'true')) {
+      conditions.push("json_extract(json, '$.userId') = ?");
+      params.push(userId);
+    }
+
+    if (searchTerm != null && typeof searchTerm === 'string') {
+      conditions.push("(json_extract(json, '$.indicator') LIKE ? OR json_extract(json, '$.iType') LIKE ? OR json_extract(json, '$.tags') LIKE ?)");
+      const likeTerm = `%${searchTerm}%`;
+      params.push(likeTerm, likeTerm, likeTerm);
+    }
+
+    const where = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
+
+    const allowedSortBy = ['issuedAt', 'indicator', 'iType'];
+    const sqlSortBy = allowedSortBy.includes(sortBy)
+      ? (sortBy === 'issuedAt' ? 'issuedAt' : `json_extract(json, '$.${sortBy}')`)
+      : 'issuedAt';
+    const sqlSortOrder = sortOrder === 'asc' ? 'ASC' : 'DESC';
+
+    const countRow = this.db.prepare(`SELECT COUNT(*) as total FROM audits ${where}`).get(...params);
+    const total = countRow.total;
+
+    const limit = itemsPerPage || 1000;
+    const offset = ((page - 1) * itemsPerPage) || 0;
+    const rows = this.db.prepare(`SELECT id, json FROM audits ${where} ORDER BY ${sqlSortBy} ${sqlSortOrder} LIMIT ? OFFSET ?`).all(...params, limit, offset);
+
+    const audits = rows.map(row => {
+      const data = JSON.parse(row.json);
+      data._id = row.id;
+      return new Audit(data);
+    });
+
+    return { audits, total };
+  }
+
+  // Overviews
+  async getMatchingOverviews (creator, roles, all) {
+    const rows = this.db.prepare('SELECT id, json FROM overviews').all();
+    const overviews = [];
+    for (const row of rows) {
+      const data = JSON.parse(row.json);
+      if (!all) {
+        if (creator !== undefined && creator === data.creator) { /* match */ } else if (roles !== undefined && (
+          (data.editRoles && roles.some(x => data.editRoles.includes(x))) ||
+          (data.viewRoles && roles.some(x => data.viewRoles.includes(x)))
+        )) { /* match */ } else { continue; }
+      }
+      data._id = row.id;
+      overviews.push(new Overview(data));
+    }
+    return overviews;
+  }
+
+  async putOverview (id, overview) {
+    if (id === null) {
+      id = cryptoLib.randomBytes(16).toString('hex');
+    }
+    this.db.prepare('INSERT OR REPLACE INTO overviews (id, json) VALUES (?, ?)').run(id, JSON.stringify(overview));
+    return id;
+  }
+
+  async getOverview (id) {
+    const row = this.db.prepare('SELECT json FROM overviews WHERE id = ?').get(id);
+    return row ? JSON.parse(row.json) : null;
+  }
+
+  async deleteOverview (id) {
+    const info = this.db.prepare('DELETE FROM overviews WHERE id = ?').run(id);
+    return info.changes > 0 ? {} : null;
+  }
+
+  async clearAll () {
+    this.db.prepare('DELETE FROM link_groups').run();
+    this.db.prepare('DELETE FROM views').run();
+    this.db.prepare('DELETE FROM audits').run();
+    this.db.prepare('DELETE FROM overviews').run();
+  }
+}
+
+/******************************************************************************/
+// Redis Implementation of Cont3xt DB
+/******************************************************************************/
+class DbRedisImplementation {
+  constructor (options) {
+    this.client = ArkimeUtil.createRedisClient(options.url, 'cont3xt');
+  }
+
+  // Helper to get all items matching a prefix
+  async #getAll (prefix) {
+    const keys = await this.client.keys(`${prefix}:*`);
+    const items = [];
+    for (const key of keys) {
+      const data = await this.client.get(key);
+      if (!data) { continue; }
+      const item = JSON.parse(data);
+      item._id = key.substring(prefix.length + 1);
+      items.push(item);
+    }
+    return items;
+  }
+
+  // Link Groups
+  async getMatchingLinkGroups (creator, roles, all) {
+    const items = await this.#getAll('lg');
+    const linkGroups = [];
+    for (const item of items) {
+      if (!all) {
+        if (creator !== undefined && creator === item.creator) { /* match */ } else if (roles !== undefined && (
+          (item.editRoles && roles.some(x => item.editRoles.includes(x))) ||
+          (item.viewRoles && roles.some(x => item.viewRoles.includes(x)))
+        )) { /* match */ } else { continue; }
+      }
+      linkGroups.push(new LinkGroup(item));
+    }
+    return linkGroups;
+  }
+
+  async putLinkGroup (id, linkGroup) {
+    if (id === null) {
+      id = cryptoLib.randomBytes(16).toString('hex');
+    }
+    await this.client.set(`lg:${id}`, JSON.stringify(linkGroup));
+    return id;
+  }
+
+  async getLinkGroup (id) {
+    const data = await this.client.get(`lg:${id}`);
+    return data ? JSON.parse(data) : null;
+  }
+
+  async deleteLinkGroup (id) {
+    const count = await this.client.del(`lg:${id}`);
+    return count > 0 ? {} : null;
+  }
+
+  // Views
+  async getMatchingViews (creator, roles, all) {
+    const items = await this.#getAll('view');
+    const views = [];
+    for (const item of items) {
+      if (!all) {
+        if (creator !== undefined && creator === item.creator) { /* match */ } else if (roles !== undefined && (
+          (item.editRoles && roles.some(x => item.editRoles.includes(x))) ||
+          (item.viewRoles && roles.some(x => item.viewRoles.includes(x)))
+        )) { /* match */ } else { continue; }
+      }
+      views.push(new View(item));
+    }
+    return views;
+  }
+
+  async putView (id, view) {
+    if (id === null) {
+      id = cryptoLib.randomBytes(16).toString('hex');
+    }
+    await this.client.set(`view:${id}`, JSON.stringify(view));
+    return id;
+  }
+
+  async getView (id) {
+    const data = await this.client.get(`view:${id}`);
+    return data ? JSON.parse(data) : null;
+  }
+
+  async deleteView (id) {
+    const count = await this.client.del(`view:${id}`);
+    return count > 0 ? {} : null;
+  }
+
+  // Audit Log
+  async putAudit (id, audit) {
+    if (id === null) {
+      id = cryptoLib.randomBytes(16).toString('hex');
+    }
+    await this.client.set(`audit:${id}`, JSON.stringify(audit));
+    return id;
+  }
+
+  async deleteAudit (id) {
+    const count = await this.client.del(`audit:${id}`);
+    return count > 0 ? {} : null;
+  }
+
+  async getAudit (id) {
+    const data = await this.client.get(`audit:${id}`);
+    return data ? JSON.parse(data) : null;
+  }
+
+  async deleteExpiredAudits (expireMs) {
+    const items = await this.#getAll('audit');
+    let count = 0;
+    for (const item of items) {
+      if (item.issuedAt < expireMs) {
+        await this.client.del(`audit:${item._id}`);
+        count++;
+      }
+    }
+    return count;
+  }
+
+  async getMatchingAudits (userId, roles, reqQuery) {
+    const { startMs, stopMs, searchTerm, page, itemsPerPage, sortBy, sortOrder } = reqQuery;
+
+    const items = await this.#getAll('audit');
+    let audits = [];
+    for (const item of items) {
+      if ((startMs != null && stopMs != null) && (item.issuedAt < startMs || item.issuedAt > stopMs)) {
+        continue;
+      }
+
+      if (searchTerm != null && typeof searchTerm === 'string') {
+        const containsTerm = (
+          (item.indicator && item.indicator.includes(searchTerm)) ||
+          (item.iType && item.iType.includes(searchTerm)) ||
+          (item.tags && item.tags.some(tag => tag.includes(searchTerm)))
+        );
+        if (!containsTerm) { continue; }
+      }
+
+      if (!(roles?.includes('cont3xtAdmin') && reqQuery.seeAll === 'true') && userId !== item.userId) {
+        continue;
+      }
+
+      audits.push(new Audit(item));
+    }
+
+    const total = audits.length;
+
+    audits = audits.sort((a, b) => {
+      if (sortBy === 'indicator' || sortBy === 'iType') {
+        return sortOrder === 'asc' ? a[sortBy].localeCompare(b[sortBy]) : b[sortBy].localeCompare(a[sortBy]);
+      }
+      return sortOrder === 'asc' ? a[sortBy] - b[sortBy] : b[sortBy] - a[sortBy];
+    }).slice((page - 1) * itemsPerPage, page * itemsPerPage);
+
+    return { audits, total };
+  }
+
+  // Overviews
+  async getMatchingOverviews (creator, roles, all) {
+    const items = await this.#getAll('overview');
+    const overviews = [];
+    for (const item of items) {
+      if (!all) {
+        if (creator !== undefined && creator === item.creator) { /* match */ } else if (roles !== undefined && (
+          (item.editRoles && roles.some(x => item.editRoles.includes(x))) ||
+          (item.viewRoles && roles.some(x => item.viewRoles.includes(x)))
+        )) { /* match */ } else { continue; }
+      }
+      overviews.push(new Overview(item));
+    }
+    return overviews;
+  }
+
+  async putOverview (id, overview) {
+    if (id === null) {
+      id = cryptoLib.randomBytes(16).toString('hex');
+    }
+    await this.client.set(`overview:${id}`, JSON.stringify(overview));
+    return id;
+  }
+
+  async getOverview (id) {
+    const data = await this.client.get(`overview:${id}`);
+    return data ? JSON.parse(data) : null;
+  }
+
+  async deleteOverview (id) {
+    const count = await this.client.del(`overview:${id}`);
+    return count > 0 ? {} : null;
+  }
+
+  async clearAll () {
+    for (const prefix of ['lg', 'view', 'audit', 'overview']) {
+      const keys = await this.client.keys(`${prefix}:*`);
+      for (const key of keys) {
+        await this.client.del(key);
+      }
+    }
   }
 }
 

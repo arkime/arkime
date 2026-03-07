@@ -8,7 +8,7 @@ use Test::Differences;
 use strict;
 
 # clean old users
-    clearIndex("tests_users");
+    viewerGet("/regressionTests/deleteAllUsers");
 
 my $json;
 
