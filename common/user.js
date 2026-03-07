@@ -81,12 +81,16 @@ class User {
     readOnly = options.readOnly ?? false;
     getCurrentUserCB = options.getCurrentUserCB;
 
-    if (!options.url) {
+    const url = options.url ?? (Array.isArray(options.node) ? options.node[0] : options.node);
+
+    if (!url || url.startsWith('http')) {
       User.#implementation = new UserESImplementation(options);
-    } else if (options.url.startsWith('lmdb')) {
-      User.#implementation = new UserLMDBImplementation(options);
-    } else if (options.url.startsWith('redis')) {
-      User.#implementation = new UserRedisImplementation(options);
+    } else if (url.startsWith('lmdb')) {
+      User.#implementation = new UserLMDBImplementation({ ...options, url });
+    } else if (url.startsWith('redis')) {
+      User.#implementation = new UserRedisImplementation({ ...options, url });
+    } else if (url.startsWith('sqlite')) {
+      User.#implementation = new UserSQLiteImplementation({ ...options, url });
     } else {
       User.#implementation = new UserESImplementation(options);
     }
@@ -229,7 +233,7 @@ class User {
    * Create a user from thin air!
    */
 
-  static #makeRegressionUser (userId) {
+  static async #makeRegressionUser (userId) {
     if (!Auth.regressionTests) {
       process.exit();
     }
@@ -265,7 +269,7 @@ class User {
     } else {
       user.roles = ['arkimeUser', 'cont3xtUser', 'parliamentUser', 'wiseUser'];
     }
-    User.setUser(userId, user);
+    await User.setUser(userId, user);
     return user;
   }
 
@@ -277,7 +281,7 @@ class User {
       let user;
       if (err || !data) {
         if (Auth.regressionTests) {
-          user = User.#makeRegressionUser(userId, cb);
+          user = await User.#makeRegressionUser(userId, cb);
           if (!user) {
             console.log(`Not making regression user ${userId}`);
             return cb(undefined, undefined);
@@ -338,11 +342,18 @@ class User {
     delete user.notifiers;
 
     User.#usersCache.delete(userId);
-    User.#implementation.setUser(userId, user, (err, boo) => {
-      if (cb) {
+    if (cb) {
+      User.#implementation.setUser(userId, user, (err, boo) => {
         cb(err, boo);
-      }
-    });
+      });
+    } else {
+      return new Promise((resolve, reject) => {
+        User.#implementation.setUser(userId, user, (err, boo) => {
+          if (err) { return reject(err); }
+          resolve(boo);
+        });
+      });
+    }
   }
 
   /**
@@ -1123,8 +1134,8 @@ class User {
   /**
    * Delete all the users
    */
-  static apiDeleteAllUsers (req, res, next) {
-    User.#implementation.deleteAllUsers();
+  static async apiDeleteAllUsers (req, res, next) {
+    await User.#implementation.deleteAllUsers();
     User.flushCache();
     return res.send({ success: true });
   }
@@ -1807,9 +1818,12 @@ class UserESImplementation {
   }
 
   async deleteAllUsers () {
+    await this.client.indices.refresh({ index: '_all' });
     await this.client.deleteByQuery({
       index: this.prefix + 'users',
-      body: { query: { match_all: { } } }
+      body: { query: { match_all: { } } },
+      conflicts: 'proceed',
+      refresh: true
     });
   }
 }
@@ -1838,9 +1852,11 @@ class UserLMDBImplementation {
     hits = filterUsers(hits, query.filter, query.searchFields, query.noRoles);
     sortUsers(hits, query.sortField, query.sortDescending);
 
+    const from = query.from ?? 0;
+    const size = query.size ?? hits.length;
     return {
       total: hits.length,
-      users: hits.slice(query.from, query.from + query.size)
+      users: hits.slice(from, from + size)
     };
   }
 
@@ -1884,6 +1900,7 @@ class UserLMDBImplementation {
         const user = this.store.get(userId);
         if (!user) {
           await this.store.put(userId, doc);
+          await this.store.flushed;
           User.deleteCache(userId);
           cb(null);
         } else {
@@ -1891,6 +1908,7 @@ class UserLMDBImplementation {
         }
       } else {
         await this.store.put(userId, doc);
+        await this.store.flushed;
         User.deleteCache(userId);
         cb(null);
       }
@@ -1928,10 +1946,10 @@ class UserLMDBImplementation {
   }
 
   async deleteAllUsers () {
-    this.store.getKeys({})
-      .forEach(key => {
-        this.store.remove(key);
-      });
+    for (const key of this.store.getKeys({})) {
+      await this.store.remove(key);
+    }
+    await this.store.flushed;
   }
 }
 
@@ -1961,9 +1979,11 @@ class UserRedisImplementation {
     hits = filterUsers(hits, query.filter, query.searchFields, query.noRoles);
     sortUsers(hits, query.sortField, query.sortDescending);
 
+    const from = query.from ?? 0;
+    const size = query.size ?? hits.length;
     return {
       total: hits.length,
-      users: hits.slice(query.from, query.from + query.size)
+      users: hits.slice(from, from + size)
     };
   }
 
@@ -2038,6 +2058,126 @@ class UserRedisImplementation {
 
   async close () {
     this.client.disconnect();
+  }
+}
+
+/******************************************************************************/
+// SQLite Implementation of Users DB
+/******************************************************************************/
+class UserSQLiteImplementation {
+  db;
+
+  constructor (options) {
+    const Database = require('better-sqlite3');
+    let dbPath;
+    if (options.url.startsWith('sqlite3://')) {
+      dbPath = options.url.slice(10);
+    } else if (options.url.startsWith('sqlite://')) {
+      dbPath = options.url.slice(9);
+    } else {
+      dbPath = options.url;
+    }
+
+    this.db = new Database(dbPath);
+    this.db.pragma('journal_mode = WAL');
+    this.db.pragma('synchronous = NORMAL');
+    this.db.pragma('busy_timeout = 5000');
+
+    this.db.exec(`
+      CREATE TABLE IF NOT EXISTS users (
+        userId TEXT PRIMARY KEY,
+        json TEXT NOT NULL
+      )
+    `);
+  }
+
+  // search against user index, promise only
+  async searchUsers (query) {
+    const rows = this.db.prepare('SELECT userId, json FROM users').all();
+    let hits = rows.map(row => {
+      let value = JSON.parse(row.json);
+      value = cleanSearchUser(value);
+      value.id = row.userId;
+      return Object.assign(new User(), value);
+    });
+
+    hits = filterUsers(hits, query.filter, query.searchFields, query.noRoles);
+    sortUsers(hits, query.sortField, query.sortDescending);
+
+    const from = query.from ?? 0;
+    const size = query.size ?? hits.length;
+    return {
+      total: hits.length,
+      users: hits.slice(from, from + size)
+    };
+  }
+
+  // Return a user from DB, callback only
+  getUser (userId, cb) {
+    try {
+      const row = this.db.prepare('SELECT json FROM users WHERE userId = ?').get(userId);
+      if (!row) { return cb(null, null); }
+      return cb(null, JSON.parse(row.json));
+    } catch (err) {
+      return cb(err);
+    }
+  }
+
+  async numberOfUsers () {
+    const row = this.db.prepare('SELECT COUNT(*) as count FROM users').get();
+    return row.count;
+  }
+
+  // Delete user, promise only
+  async deleteUser (userId) {
+    this.db.prepare('DELETE FROM users WHERE userId = ?').run(userId);
+    User.deleteCache(userId);
+  }
+
+  // Set user, callback only
+  async setUser (userId, doc, cb) {
+    const createOnly = !!doc._createOnly;
+    delete doc._createOnly;
+    try {
+      if (createOnly) {
+        const existing = this.db.prepare('SELECT 1 FROM users WHERE userId = ?').get(userId);
+        if (existing) {
+          return cb({ meta: { body: { error: { type: 'version_conflict_engine_exception' } } } });
+        }
+      }
+      this.db.prepare('INSERT OR REPLACE INTO users (userId, json) VALUES (?, ?)').run(userId, JSON.stringify(doc));
+      User.deleteCache(userId);
+      cb(null);
+    } catch (err) {
+      cb(err);
+    }
+  }
+
+  async setLastUsed (userId, now) {
+    const row = this.db.prepare('SELECT json FROM users WHERE userId = ?').get(userId);
+    if (!row) { return; }
+    const user = JSON.parse(row.json);
+    user.lastUsed = now;
+    this.db.prepare('UPDATE users SET json = ? WHERE userId = ?').run(JSON.stringify(user), userId);
+  }
+
+  async allRoles () {
+    const rows = this.db.prepare("SELECT userId FROM users WHERE userId LIKE 'role:%'").all();
+    return rows.map(row => row.userId);
+  }
+
+  async getAssignableRoles (userId) {
+    const rows = this.db.prepare("SELECT userId, json FROM users WHERE userId LIKE 'role:%'").all();
+    return rows
+      .filter(row => {
+        const user = JSON.parse(row.json);
+        return user.roleAssigners?.includes(userId);
+      })
+      .map(row => row.userId);
+  }
+
+  async deleteAllUsers () {
+    this.db.prepare('DELETE FROM users').run();
   }
 }
 

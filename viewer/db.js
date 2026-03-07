@@ -43,13 +43,13 @@ function checkURLs (nodes) {
 
   if (Array.isArray(nodes)) {
     for (const node of nodes) {
-      if (!node.startsWith('http')) {
-        console.log(`ERROR - OpenSearch/Elasticsearch endpoint url '${node}' must start with http:// or https://`);
+      if (!node.includes('://')) {
+        console.log(`ERROR - endpoint url '${node}' must contain ://`);
         process.exit();
       }
     }
-  } else if (!nodes.startsWith('http')) {
-    console.log(`ERROR - OpenSearch/Elasticsearch endpoint url '${nodes}' must start with http:// or https://`);
+  } else if (!nodes.includes('://')) {
+    console.log(`ERROR - endpoint url '${nodes}' must contain ://`);
     process.exit();
   }
 }
@@ -1874,7 +1874,7 @@ Db.checkVersion = async function (minVersion) {
   }
 
   if (!internals.multiES) {
-    const { body: doc } = await internals.usersClient7.indices.getMapping({
+    const { body: doc } = await internals.client7.indices.getMapping({
       index: fixIndex('files'),
     });
 

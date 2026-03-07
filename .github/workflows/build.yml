@@ -166,6 +166,16 @@ jobs:
           cat /tmp/os
           (cd tests ; G_SLICE=always-malloc ./tests.pl --viewer)
 
+      - name: otherdb viewer test
+        if: ${{ matrix.otherdbtest == 'true' }}
+        run: |
+          export PATH=/opt/arkime/bin:$PATH
+          (cd tests ; ARKIME_cache__type=lmdb ARKIME_cache__lmdbDir=/tmp/cache.lmdb ARKIME_cont3xt__dbUrl=lmdb:///tmp/cont3xt.lmddb USERSELASTICSEARCH=lmdb:///tmp/users.lmdb ./tests.pl --viewerstart cont3xt.t addUser.t)
+
+          (cd tests ; ARKIME_cache__type=sqlite ARKIME_cache__sqliteFile=/tmp/cache.sql ARKIME_cont3xt__dbUrl=sqlite:///tmp/cont3xt.db USERSELASTICSEARCH=sqlite:///tmp/users.db ./tests.pl --viewerstart cont3xt.t addUser.t )
+
+          (cd tests ; ARKIME_cache__type=redis ARKIME_cache__redisURL=redis://localhost:7379/1 ARKIME_cont3xt__dbUrl=redis://localhost:7379/2 USERSELASTICSEARCH=redis://localhost:7379/0 ./tests.pl --viewerstart cont3xt.t addUser.t )
+
       - name: package arch
         if: ${{ matrix.package == 'arch' }}
         run: |

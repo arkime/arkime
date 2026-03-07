@@ -50,6 +50,8 @@ class View {
       view._viewable = view.creator === req.user.userId || req.user.hasRole(view.viewRoles) || all;
     }
 
+    views.sort((a, b) => (a.name ?? '').localeCompare(b.name ?? ''));
+
     res.send({ success: true, views });
   }
 
