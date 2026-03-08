@@ -1379,6 +1379,7 @@ Db.updateLocalShortcuts = async () => {
   }
 
   if (internals.multiES) { return; } // don't sync shortcuts for multies
+  if (!internals.usersClient7) { return; } // users backend is not ES, no shortcuts to sync
 
   const msg = `updating local shortcuts (${internals.info.host}/${internals.localShortcutsIndex}) from remote (${internals.info.usersHost}/${internals.remoteShortcutsIndex})`;
 

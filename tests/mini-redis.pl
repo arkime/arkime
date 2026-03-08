@@ -8,6 +8,7 @@
 use strict;
 use warnings;
 use IO::Socket::INET;
+use POSIX qw(strftime);
 use IO::Select;
 
 my $debug = 0;
@@ -69,7 +70,8 @@ while (1) {
 
         my $cdb = $conn_db{fileno($fh)} // 0;
 
-        print "REDIS: $name " . join(' ', map { defined $_ ? $_ : '(nil)' } @args[1..$#args]) . " [db=$cdb]\n" if $debug;
+        my $ts = strftime("%H:%M:%S", localtime);
+        print "$ts REDIS: $name " . join(' ', map { defined $_ ? $_ : '(nil)' } @args[1..$#args]) . " [db=$cdb]\n" if $debug;
 
         if ($name eq 'PING') {
             send_simple($fh, 'PONG');

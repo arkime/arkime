@@ -497,6 +497,7 @@ async function setupAuth () {
   Overview.initialize();
 
   const cache = ArkimeCache.createCache({
+    name: 'cont3xt',
     type: ArkimeConfig.getFull('cache', 'type', 'memory'),
     cacheSize: ArkimeConfig.getFull('cache', 'cacheSize', '100000'),
     cacheTimeout: ArkimeConfig.getFull('cache', 'cacheTimeout'),

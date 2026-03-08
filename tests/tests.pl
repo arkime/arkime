@@ -352,7 +352,11 @@ my ($cmd) = @_;
     }
 
     if ($cmd ne "--viewernostart") {
-        system("perl mini-redis.pl 7379 &");
+        if ($main::debug) {
+            system("perl mini-redis.pl --debug 7379 > /tmp/arkime.redis 2>&1 &");
+        } else {
+            system("perl mini-redis.pl 7379 &");
+        }
         my $wes = "-o 'wiseService.usersElasticsearch=$USERSELASTICSEARCH'";
         print ("Starting WISE\n");
         if ($main::debug) {
