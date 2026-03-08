@@ -10,7 +10,7 @@ use strict;
 my $token = getTokenCookie();
 my $notAdminToken = getTokenCookie('sac-notadmin');
 
-clearIndex("tests_notifiers");
+viewerGet("/regressionTests/deleteAllNotifiers");
 
 # add users for sharing tests
   viewerPostToken("/api/user", '{"userId": "sac-notadmin", "userName": "notadmin", "enabled":true, "password":"password", "roles":["arkimeUser"]}', $token);
@@ -86,7 +86,7 @@ clearIndex("tests_notifiers");
 
 # update notifier needs valid id
   $json = viewerPutToken("/api/notifier/badid", '{"name":"hi","fields":[{"name":"slackWebhookUrl","value":"test"}],"type":"slack"}', $token);
-  is($json->{text}, "Fetching notifier to update failed", "update notifier needs valid id");
+  is($json->{text}, "Notifier not found", "update notifier needs valid id");
 
 # update notifier required fields
   $json = viewerPutToken("/api/notifier/$id1", '{}', $token);
@@ -158,7 +158,7 @@ clearIndex("tests_notifiers");
 
 # cleanup
   $json = viewerDeleteToken("/api/notifier/badid", $token);
-  is($json->{text}, "Fetching notifier to delete failed", "notifier delete needs valid id");
+  is($json->{text}, "Notifier not found", "notifier delete needs valid id");
   $json = viewerDeleteToken("/api/notifier/$id1", $token);
   ok($json->{success}, "notifier delete success");
   $json = viewerDeleteToken("/api/notifier/$id2", $token);

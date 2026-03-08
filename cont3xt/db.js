@@ -1012,14 +1012,7 @@ class DbLMDBImplementation {
 }
 class DbSQLiteImplementation {
   constructor (options) {
-    const Database = require('better-sqlite3');
-    let dbPath = options.url;
-    dbPath = dbPath.replace('sqlite3://', '').replace('sqlite://', '');
-
-    this.db = new Database(dbPath);
-    this.db.pragma('journal_mode = WAL');
-    this.db.pragma('synchronous = NORMAL');
-    this.db.pragma('busy_timeout = 5000');
+    this.db = ArkimeUtil.createSQLiteDB(options.url);
 
     this.db.exec(`
       CREATE TABLE IF NOT EXISTS link_groups (

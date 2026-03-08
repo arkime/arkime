@@ -151,19 +151,10 @@ exports.upgrade = async function (parliament, issues, Parliament) {
 
       try {
         // get viewer notifiers that match the parliament notifier name
-        const query = { bool: { must: { term: { name: notifier.name } } } };
-        const { body: matchingNotifiers } = await Notifier.searchNotifiers({ query });
+        const matchingNotifiers = await Notifier.searchNotifiers({ name: notifier.name });
 
         // find out if there is a matching notifier in viewer
-        let nameCollision = false;
-        if (matchingNotifiers.hits.total > 0) {
-          for (const hit of matchingNotifiers.hits.hits) {
-            if (hit._source.name === notifier.name) {
-              nameCollision = true;
-              break;
-            }
-          }
-        }
+        const nameCollision = matchingNotifiers.length > 0;
 
         if (nameCollision) { // update the name of the Parliament notifier if there is a name collision with viewer
           console.log(`WARNING - Notifier with name ${notifier.name} already exists. Renaming to "Parliament ${notifier.name}"`);

@@ -244,6 +244,7 @@ if (ArkimeConfig.regressionTests) {
     setTimeout(checkHuntFinished, 1000);
   });
   app.get('/regressionTests/deleteAllUsers', User.apiDeleteAllUsers);
+  app.get('/regressionTests/deleteAllNotifiers', Notifier.apiDeleteAllNotifiers);
   app.get('/regressionTests/getUser/:user', (req, res) => {
     User.getUser(req.params.user, (err, user) => {
       // Shallow copy
@@ -2265,8 +2266,7 @@ async function premain () {
   });
 
   Notifier.initialize({
-    prefix: Config.get('usersPrefix', Config.get('prefix', 'arkime')),
-    esclient: User.getClient()
+    prefix: Config.get('usersPrefix', Config.get('prefix', 'arkime'))
   });
 
   CronAPIs.initialize({

@@ -63,6 +63,7 @@ class User {
   static #usersCache = new Map();
   static #rolesCache = { _timeStamp: 0 };
   static #implementation;
+  static #dbUrl;
   static #demoMode;
   static #dynamicRolesFuncs;
 
@@ -82,6 +83,7 @@ class User {
     getCurrentUserCB = options.getCurrentUserCB;
 
     const url = options.url ?? (Array.isArray(options.node) ? options.node[0] : options.node);
+    User.#dbUrl = url;
 
     if (!url || url.startsWith('http')) {
       User.#implementation = new UserESImplementation(options);
@@ -145,6 +147,10 @@ class User {
       return User.#implementation.getClient();
     }
     return null;
+  }
+
+  static getDbUrl () {
+    return User.#dbUrl;
   }
 
   /**
@@ -1900,7 +1906,6 @@ class UserLMDBImplementation {
         const user = this.store.get(userId);
         if (!user) {
           await this.store.put(userId, doc);
-          await this.store.flushed;
           User.deleteCache(userId);
           cb(null);
         } else {
@@ -1908,7 +1913,6 @@ class UserLMDBImplementation {
         }
       } else {
         await this.store.put(userId, doc);
-        await this.store.flushed;
         User.deleteCache(userId);
         cb(null);
       }
@@ -1949,7 +1953,6 @@ class UserLMDBImplementation {
     for (const key of this.store.getKeys({})) {
       await this.store.remove(key);
     }
-    await this.store.flushed;
   }
 }
 
@@ -1958,6 +1961,7 @@ class UserLMDBImplementation {
 /******************************************************************************/
 class UserRedisImplementation {
   client;
+  prefix = 'user:';
 
   constructor (options) {
     this.client = ArkimeUtil.createRedisClient(options.url, 'User');
@@ -1965,14 +1969,14 @@ class UserRedisImplementation {
 
   // search against user index, promise only
   async searchUsers (query) {
-    const keys = (await this.client.keys('*')).filter(key => key !== '_moloch_shared');
+    const keys = await this.client.keys(this.prefix + '*');
     let hits = [];
     for (const key of keys) {
       const data = await this.client.get(key);
       if (!data) { continue; }
       let user = JSON.parse(data);
       user = cleanSearchUser(user);
-      user.id = key;
+      user.id = key.slice(this.prefix.length);
       hits.push(Object.assign(new User(), user));
     }
 
@@ -1989,7 +1993,7 @@ class UserRedisImplementation {
 
   // Return a user from DB, callback only
   getUser (userId, cb) {
-    this.client.get(userId, (err, user) => {
+    this.client.get(this.prefix + userId, (err, user) => {
       if (err || !user) { return cb(err, user); }
       user = JSON.parse(user);
       return cb(err, user);
@@ -1997,13 +2001,13 @@ class UserRedisImplementation {
   }
 
   async numberOfUsers () {
-    const keys = (await this.client.keys('*')).filter(key => key !== '_moloch_shared');
+    const keys = await this.client.keys(this.prefix + '*');
     return keys.length;
   }
 
   // Delete user, promise only
   async deleteUser (userId) {
-    await this.client.del(userId);
+    await this.client.del(this.prefix + userId);
     User.deleteCache(userId); // Delete again after db says its done refreshing
   }
 
@@ -2014,11 +2018,10 @@ class UserRedisImplementation {
     doc = JSON.stringify(doc);
     try {
       if (createOnly) {
-        this.client.setnx(userId, doc, cb);
+        this.client.setnx(this.prefix + userId, doc, cb);
         User.deleteCache(userId);
-        // cb({ meta: { body: { error: { type: 'version_conflict_engine_exception' } } } });
       } else {
-        this.client.set(userId, doc, cb);
+        this.client.set(this.prefix + userId, doc, cb);
         User.deleteCache(userId);
       }
     } catch (err) {
@@ -2027,23 +2030,23 @@ class UserRedisImplementation {
   }
 
   async setLastUsed (userId, now) {
-    let user = await this.client.get(userId);
+    let user = await this.client.get(this.prefix + userId);
     if (!user) { return; }
     user = JSON.parse(user);
     user.lastUsed = now;
     user = JSON.stringify(user);
-    await this.client.set(userId, user);
+    await this.client.set(this.prefix + userId, user);
   }
 
   async allRoles () {
-    const keys = await this.client.keys('role:*');
-    return keys;
+    const keys = await this.client.keys(this.prefix + 'role:*');
+    return keys.map(key => key.slice(this.prefix.length));
   }
 
   async getAssignableRoles (userId) {
     const keys = await this.allRoles();
     const results = await Promise.all(keys.map(async key => {
-      const data = await this.client.get(key);
+      const data = await this.client.get(this.prefix + key);
       if (!data) { return false; }
       const user = JSON.parse(data);
       return user.roleAssigners?.includes(userId);
@@ -2053,7 +2056,10 @@ class UserRedisImplementation {
   }
 
   async deleteAllUsers () {
-    await this.client.flushdb();
+    const keys = await this.client.keys(this.prefix + '*');
+    if (keys.length > 0) {
+      await this.client.del(...keys);
+    }
   }
 
   async close () {
@@ -2068,20 +2074,7 @@ class UserSQLiteImplementation {
   db;
 
   constructor (options) {
-    const Database = require('better-sqlite3');
-    let dbPath;
-    if (options.url.startsWith('sqlite3://')) {
-      dbPath = options.url.slice(10);
-    } else if (options.url.startsWith('sqlite://')) {
-      dbPath = options.url.slice(9);
-    } else {
-      dbPath = options.url;
-    }
-
-    this.db = new Database(dbPath);
-    this.db.pragma('journal_mode = WAL');
-    this.db.pragma('synchronous = NORMAL');
-    this.db.pragma('busy_timeout = 5000');
+    this.db = ArkimeUtil.createSQLiteDB(options.url);
 
     this.db.exec(`
       CREATE TABLE IF NOT EXISTS users (

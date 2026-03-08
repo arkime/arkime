@@ -185,8 +185,7 @@ class ArkimeSQLiteCache extends ArkimeCache {
   constructor (options) {
     super(options);
 
-    const Database = require('better-sqlite3');
-    let dbPath = options.getConfig('sqliteFile');
+    const dbPath = options.getConfig('sqliteFile');
 
     if (typeof (dbPath) !== 'string') {
       console.log('ERROR - sqliteFile must be set for sqlite cache');
@@ -194,10 +193,7 @@ class ArkimeSQLiteCache extends ArkimeCache {
     }
 
     try {
-      this.db = new Database(dbPath);
-      this.db.pragma('journal_mode = WAL');
-      this.db.pragma('synchronous = NORMAL');
-      this.db.pragma('busy_timeout = 5000');
+      this.db = ArkimeUtil.createSQLiteDB(dbPath);
 
       this.db.exec(`
         CREATE TABLE IF NOT EXISTS cache (

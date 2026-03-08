@@ -352,6 +352,7 @@ my ($cmd) = @_;
     }
 
     if ($cmd ne "--viewernostart") {
+        system("perl mini-redis.pl 7379 &");
         my $wes = "-o 'wiseService.usersElasticsearch=$USERSELASTICSEARCH'";
         print ("Starting WISE\n");
         if ($main::debug) {
@@ -367,7 +368,7 @@ my ($cmd) = @_;
     my $ces = "-o 'cont3xt.elasticsearch=$ELASTICSEARCH'";
     my $ues = "-o 'usersElasticsearch=$USERSELASTICSEARCH'";
     my $cues = "-o 'cont3xt.usersElasticsearch=$USERSELASTICSEARCH'";
-    my $pues = "-o 'parliament.usersElasticsearch=$ELASTICSEARCH'";
+    my $pues = "-o 'parliament.usersElasticsearch=$USERSELASTICSEARCH'";
     my $mes = "-o 'multiESNodes=$ELASTICSEARCH,prefix:tests,name:test;$ELASTICSEARCH,prefix:tests2_,name:test2'";
     my $s3 = "-o 's3AccessKeyId=$ENV{s3AccessKeyId}' -o 's3SecretAccessKey=$ENV{s3SecretAccessKey}'";
 
@@ -420,7 +421,6 @@ my ($cmd) = @_;
             system("cd ../cont3xt ; $node cont3xt.js $ces $cues --regressionTests -c ../tests/cont3xt.tests.ini $INSECURE > /dev/null 2>&1 &");
             system("cd ../viewer ; $node --trace-warnings esProxy.js --regressionTests $es -c ../tests/config.test.ini -n esproxy --debug $INSECURE >> /dev/null 2>&1 &");
         }
-        system("perl mini-redis.pl 7379 &");
         if ($cmd eq "--viewerhang") {
            system("cd ../viewer/vueapp ; npx vite &");
            system("cd ../parliament/vueapp ; npx vite &");

@@ -44,7 +44,7 @@ eq_or_diff($result, from_json('{"success": false, "text": "Permission Denied: No
 $result = parliamentPutToken("/parliament/api/removeSelectedAcknowledgedIssues?arkimeRegressionUser=arkimeUserP", '{}', $arkimeUserToken);
 eq_or_diff($result, from_json('{"success": false, "text": "Permission Denied: Not a Parliament user"}'));
 
-# non parliamet user cannot access/udpate settings/parliament
+# non parliamet user cannot access/update settings/parliament
 $result = parliamentGetToken("/parliament/api/notifierTypes?arkimeRegressionUser=arkimeUserP", $arkimeUserToken);
 eq_or_diff($result, from_json('{"success": false, "text": "Permission Denied: Not a Parliament admin"}'));
 $result = parliamentPutToken("/parliament/api/notifier/test?arkimeRegressionUser=arkimeUserP", '{}', $arkimeUserToken);
