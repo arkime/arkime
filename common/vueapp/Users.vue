@@ -493,6 +493,7 @@ import RoleDropdown from './RoleDropdown.vue';
 import UserDropdown from './UserDropdown.vue';
 import TriStateToggle from './TriStateToggle.vue';
 import { timezoneDateString } from './vueFilters.js';
+import { resolveMessage } from './resolveI18nMessage';
 
 let userChangeTimeout;
 
@@ -667,7 +668,7 @@ export default {
     updateUser (user) {
       UserService.updateUser(user).then((response) => {
         this.changed[user.userId] = false;
-        this.showMessage({ variant: 'success', message: response.text });
+        this.showMessage({ variant: 'success', message: resolveMessage(response, this.$t) });
 
         const oldUser = this.dbUserList.find(u => u.userId === user.userId);
         const currentUserRoleAssignmentChanged =
@@ -678,7 +679,7 @@ export default {
           this.emitCurrentUserUpdate();
         }
       }).catch((error) => {
-        this.showMessage({ variant: 'danger', message: error.text });
+        this.showMessage({ variant: 'danger', message: resolveMessage(error, this.$t) });
       });
     },
     toggleConfirmDeleteUser (id) {
@@ -687,12 +688,12 @@ export default {
     deleteUser (user, index) {
       UserService.deleteUser(user).then((response) => {
         this.users.splice(index, 1);
-        this.showMessage({ variant: 'success', message: response.text });
+        this.showMessage({ variant: 'success', message: resolveMessage(response, this.$t) });
         if (user.roleAssigners?.includes(this.currentUser.userId)) {
           this.emitCurrentUserUpdate(); // update current user if one of their assignable roles is deleted
         }
       }).catch((error) => {
-        this.showMessage({ variant: 'danger', message: error.text });
+        this.showMessage({ variant: 'danger', message: resolveMessage(error, this.$t) });
       });
     },
     openSettings (userId) {
@@ -748,10 +749,10 @@ export default {
         this.newPassword = null;
         this.confirmNewPassword = null;
         // display success message to user
-        this.showMessage({ variant: 'success', message: response.text || this.$t('users.changedPasswordMsg') });
+        this.showMessage({ variant: 'success', message: resolveMessage(response, this.$t) || this.$t('users.changedPasswordMsg') });
       }).catch((error) => {
         // display error message to user
-        this.showMessage({ variant: 'danger', message: error.text || error });
+        this.showMessage({ variant: 'danger', message: resolveMessage(error, this.$t) || error });
       });
     },
     userCreated (message, user) {
@@ -768,10 +769,10 @@ export default {
 
       UserService.downloadCSV(query).then((response) => {
         // display success message to user
-        this.showMessage({ variant: 'success', message: response.text || this.$t('users.downloadCSVMsg') });
+        this.showMessage({ variant: 'success', message: resolveMessage(response, this.$t) || this.$t('users.downloadCSVMsg') });
       }).catch((error) => {
         // display error message to user
-        this.showMessage({ variant: 'danger', message: error.text || error });
+        this.showMessage({ variant: 'danger', message: resolveMessage(error, this.$t) || error });
       });
     },
     /* helper functions ---------------------------------------------------- */
@@ -807,7 +808,7 @@ export default {
         this.dbUserList = JSON.parse(JSON.stringify(response.data));
       }).catch((error) => {
         this.loading = false;
-        this.error = error.text;
+        this.error = resolveMessage(error, this.$t);
       });
     },
     reloadUsers () {
@@ -828,7 +829,7 @@ export default {
         this.dbUserList = JSON.parse(JSON.stringify(response.data));
       }).catch((error) => {
         this.loading = false;
-        this.error = error.text;
+        this.error = resolveMessage(error, this.$t);
       });
     }
   }

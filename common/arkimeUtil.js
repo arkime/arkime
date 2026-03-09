@@ -387,14 +387,17 @@ class ArkimeUtil {
    * 3. sending a false success with message text (default "Server Error!")
    * @param {Number} [resStatus=403] - The response status code (optional)
    * @param {String} [text="Server Error!"] - The response text (optional)
+   * @param {String} [i18n] - The i18n translation key (optional)
+   * @param {Object} [i18nParams] - The i18n translation parameters (optional)
    * @returns {Object} res - The Express.js response object
    */
-  static serverError (resStatus, text) {
+  static serverError (resStatus, text, i18n, i18nParams) {
     this.status(resStatus || 403);
     this.setHeader('Content-Type', 'application/json');
-    return this.send(
-      { success: false, text: text || 'Server Error!' }
-    );
+    const body = { success: false, text: text || 'Server Error!' };
+    if (i18n) { body.i18n = i18n; }
+    if (i18nParams) { body.i18nParams = i18nParams; }
+    return this.send(body);
   }
 
   // ----------------------------------------------------------------------------

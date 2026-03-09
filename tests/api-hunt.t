@@ -1,4 +1,4 @@
-use Test::More tests => 316;
+use Test::More tests => 338;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -31,68 +31,85 @@ my $hToken = getTokenCookie('sac-huntuser');
 ##### ERRORS
 # Must have token to add a hunt
   $json = viewerPost("/api/hunt", '{"totalSessions":1,"name":"test hunt 1","size":"50","search":"test search text","searchType":"ascii","type":"raw","src":true,"dst":true}');
-  eq_or_diff($json, from_json('{"text": "Missing token", "success": false}'));
+  is($json->{success}, 0, "missing token");
+  is($json->{i18n}, "api.viewer.missingToken", "missing token i18n");
 
 # Must apply to sessions to add a hunt
   $json = viewerPostToken("/api/hunt", '{"totalSessions":0,"name":"test hunt 2","size":"50","search":"test search text","searchType":"ascii","type":"raw","src":true,"dst":true}', $token);
-  eq_or_diff($json, from_json('{"text": "This hunt does not apply to any sessions", "success": false}'));
+  is($json->{success}, 0, "hunt does not apply to sessions");
+  is($json->{i18n}, "api.hunts.noSessions", "hunt no sessions i18n");
 
 # Must have a name to add a hunt
   $json = viewerPostToken("/api/hunt", '{"totalSessions":1,"size":"50","search":"test search text","searchType":"ascii","type":"raw","src":true,"dst":true}', $token);
-  eq_or_diff($json, from_json('{"text": "Missing hunt name", "success": false}'));
+  is($json->{success}, 0, "missing hunt name");
+  is($json->{i18n}, "api.hunts.missingName", "missing hunt name i18n");
 
 # Must have a size to add a hunt
   $json = viewerPostToken("/api/hunt", '{"totalSessions":1,"name":"test hunt 3","search":"test search text","searchType":"ascii","type":"raw","src":true,"dst":true}', $token);
-  eq_or_diff($json, from_json('{"text": "Missing max number of packets to examine per session", "success": false}'));
+  is($json->{success}, 0, "missing hunt size");
+  is($json->{i18n}, "api.hunts.missingSize", "missing hunt size i18n");
 
 # Must have search text to add a hunt
   $json = viewerPostToken("/api/hunt", '{"totalSessions":1,"name":"test hunt 4","size":"50","searchType":"ascii","type":"raw","src":true,"dst":true}', $token);
-  eq_or_diff($json, from_json('{"text": "Missing packet search text", "success": false}'));
+  is($json->{success}, 0, "missing search text");
+  is($json->{i18n}, "api.hunts.missingSearch", "missing search text i18n");
 
 # Must have search text type to add a hunt
   $json = viewerPostToken("/api/hunt", '{"totalSessions":1,"name":"test hunt 5","size":"50","search":"test search text","type":"raw","src":true,"dst":true, "query": {"startTime":0, "stopTime":1}}', $token);
-  eq_or_diff($json, from_json('{"text": "Missing packet search text type", "success": false}'));
+  is($json->{success}, 0, "missing search text type");
+  is($json->{i18n}, "api.hunts.missingSearchType", "missing search text type i18n");
 
 # Must have a valid search text type to add a hunt
   $json = viewerPostToken("/api/hunt", '{"totalSessions":1,"name":"test hunt 6","size":"50","search":"test search text","searchType":"asdf","type":"raw","src":true,"dst":true, "query": {"startTime":0, "stopTime":1}}', $token);
-  eq_or_diff($json, from_json('{"text": "Improper packet search text type. Must be \"ascii\", \"asciicase\", \"hex\", \"hexregex\", or \"regex\"", "success": false}'));
+  is($json->{success}, 0, "improper search text type");
+  is($json->{i18n}, "api.hunts.improperSearchType", "improper search text type i18n");
 
 # Must have a type to add a hunt
   $json = viewerPostToken("/api/hunt",'{"totalSessions":1,"name":"test hunt 7","size":"50","search":"test search text","searchType":"ascii","src":true,"dst":true, "query": {"startTime":0, "stopTime":1}}', $token);
-  eq_or_diff($json, from_json('{"text": "Missing packet search type (raw or reassembled packets)", "success": false}'));
+  is($json->{success}, 0, "missing packet type");
+  is($json->{i18n}, "api.hunts.missingPacketType", "missing packet type i18n");
 
 # Must have a valid type to add a hunt
   $json = viewerPostToken("/api/hunt",'{"totalSessions":1,"name":"test hunt 8","size":"50","search":"test search text","searchType":"ascii","type":"asdf","src":true,"dst":true, "query": {"startTime":0, "stopTime":1}}', $token);
-  eq_or_diff($json, from_json('{"text": "Improper packet search type. Must be \"raw\" or \"reassembled\"", "success": false}'));
+  is($json->{success}, 0, "improper packet type");
+  is($json->{i18n}, "api.hunts.improperPacketType", "improper packet type i18n");
 
 # Must have src or dst to add a hunt
   $json = viewerPostToken("/api/hunt", '{"totalSessions":1,"name":"test hunt 9","size":"50","search":"test search text","searchType":"ascii","type":"raw"}', $token);
-  eq_or_diff($json, from_json('{"text": "The hunt must search source or destination packets (or both)", "success": false}'));
+  is($json->{success}, 0, "missing src or dst");
+  is($json->{i18n}, "api.hunts.missingSrcOrDst", "missing src or dst i18n");
 
 # Must have query to add a hunt
   $json = viewerPostToken("/api/hunt", '{"totalSessions":1,"name":"test hunt 10","size":"50","search":"test search text","searchType":"ascii","type":"raw","src":true,"dst":true}', $token);
-  eq_or_diff($json, from_json('{"text": "Missing query", "success": false}'));
+  is($json->{success}, 0, "missing query");
+  is($json->{i18n}, "api.hunts.missingQuery", "missing query i18n");
 
 # Must have fully formed query to add a hunt
   $json = viewerPostToken("/api/hunt", '{"totalSessions":1,"name":"test hunt 11","size":"50","search":"test search text","searchType":"ascii","type":"raw","src":true,"dst":true,"query":{"startTime":18000}}', $token);
-  eq_or_diff($json, from_json('{"text": "Missing fully formed query (must include start time and stop time)", "success": false}'));
+  is($json->{success}, 0, "missing stop time");
+  is($json->{i18n}, "api.hunts.missingFullQuery", "missing stop time i18n");
 
   $json = viewerPostToken("/api/hunt", '{"totalSessions":1,"name":"test hunt 12","size":"50","search":"test search text","searchType":"ascii","type":"raw","src":true,"dst":true,"query":{"stopTime":1536872891}}', $token);
-  eq_or_diff($json, from_json('{"text": "Missing fully formed query (must include start time and stop time)", "success": false}'));
+  is($json->{success}, 0, "missing start time");
+  is($json->{i18n}, "api.hunts.missingFullQuery", "missing start time i18n");
 
 # Bad roles
   $json = viewerPostToken("/api/hunt?arkimeRegressionUser=anonymous", '{"totalSessions":1,"name":"test hunt 17","size":"50","search":"test search text","searchType":"ascii","type":"raw","src":true,"dst":true,"query":{"startTime":18000,"stopTime":1536872891}, "roles": false}', $token);
-  eq_or_diff($json, from_json('{"text": "Roles field must be an array of strings", "success": false}'));
+  is($json->{success}, 0, "roles not array");
+  is($json->{i18n}, "api.hunts.rolesMustBeArray", "roles not array i18n");
 
   $json = viewerPostToken("/api/hunt?arkimeRegressionUser=anonymous", '{"totalSessions":1,"name":"test hunt 18","size":"50","search":"test search text","searchType":"ascii","type":"raw","src":true,"dst":true,"query":{"startTime":18000,"stopTime":1536872891}, "roles": [false]}', $token);
-  eq_or_diff($json, from_json('{"text": "Roles field must be an array of strings", "success": false}'));
+  is($json->{success}, 0, "roles array of non-strings");
+  is($json->{i18n}, "api.hunts.rolesMustBeArray", "roles array of non-strings i18n");
 
 # Bad users
   $json = viewerPostToken("/api/hunt?arkimeRegressionUser=anonymous", '{"totalSessions":1,"name":"test hunt 18","size":"50","search":"test search text","searchType":"ascii","type":"raw","src":true,"dst":true,"query":{"startTime":18000,"stopTime":1536872891}, "users": false}', $token);
-  eq_or_diff($json, from_json('{"text": "Users field must be a string", "success": false}'));
+  is($json->{success}, 0, "users not string");
+  is($json->{i18n}, "api.hunts.usersMustBeString", "users not string i18n");
 
   $json = viewerPostToken("/api/hunt?arkimeRegressionUser=anonymous", '{"totalSessions":1,"name":"test hunt 18","size":"50","search":"test search text","searchType":"ascii","type":"raw","src":true,"dst":true,"query":{"startTime":18000,"stopTime":1536872891}, "users": [false]}', $token);
-  eq_or_diff($json, from_json('{"text": "Users field must be a string", "success": false}'));
+  is($json->{success}, 0, "users array not string");
+  is($json->{i18n}, "api.hunts.usersMustBeString", "users array not string i18n");
 
 # Make sure no hunts
   my $hunts = viewerGet("/api/hunts?all");
@@ -237,7 +254,8 @@ my $hToken = getTokenCookie('sac-huntuser');
 
 # can't delete a user from an hunt with no users
   $json = viewerDeleteToken("/api/hunt/$id7/user/sac-huntuser?arkimeRegressionUser=anonymous", $token);
-  eq_or_diff($json, from_json('{"text": "There are no users that have access to view this hunt", "success": false}'), "can't delete a user from an hunt with no users");
+  is($json->{success}, 0, "can't delete a user from a hunt with no users");
+  is($json->{i18n}, "api.hunts.noUsersWithAccess", "no users with access i18n");
 
 # add a user to a hunt
   $json = viewerPostToken("/api/hunt/$id7/users?arkimeRegressionUser=anonymous", '{"users":"sac-huntuser"}', $token);
@@ -245,7 +263,8 @@ my $hToken = getTokenCookie('sac-huntuser');
 
 # can't add an unknown user to a hunt
   $json = viewerPostToken("/api/hunt/$id7/users?arkimeRegressionUser=anonymous", '{"users":"unknownuser"}', $token);
-  eq_or_diff($json, from_json('{"text": "Unable to validate user IDs provided", "success": false}'), "hunt should show error if no users are added");
+  is($json->{success}, 0, "hunt should show error if no users are added");
+  is($json->{i18n}, "api.hunts.unableToValidateUsers", "unable to validate users i18n");
 
 # hunt should not add and send back invalid users
   $json = viewerDeleteToken("/api/hunt/$id7/user/sac-huntuser?arkimeRegressionUser=anonymous", $token);
@@ -255,15 +274,18 @@ my $hToken = getTokenCookie('sac-huntuser');
 
 # can't add empty users
   $json = viewerPostToken("/api/hunt/$id7/users?arkimeRegressionUser=anonymous", '{}', $token);
-  eq_or_diff($json, from_json('{"success":false,"text":"You must provide users in a comma separated string"}'), "hunt can't add empty users");
+  is($json->{success}, 0, "hunt can't add empty users");
+  is($json->{i18n}, "api.hunts.usersMustBeCommaSeparated", "empty users i18n");
 
 # can't add missing users
   $json = viewerPostToken("/api/hunt/$id7/users?arkimeRegressionUser=anonymous", '{"users":""}', $token);
-  eq_or_diff($json, from_json('{"success":false,"text":"You must provide users in a comma separated string"}'), "hunt can't add empty users");
+  is($json->{success}, 0, "hunt can't add missing users");
+  is($json->{i18n}, "api.hunts.usersMustBeCommaSeparated", "missing users i18n");
 
 # can't delete an unknown user
   $json = viewerDeleteToken("/api/hunt/$id7/user/unknownuser?arkimeRegressionUser=anonymous", $token);
-  eq_or_diff($json, from_json('{"text": "That user does not have access to this hunt", "success": false}'), "can't delete a user from an hunt with no users");
+  is($json->{success}, 0, "can't delete unknown user from hunt");
+  is($json->{i18n}, "api.hunts.userNoAccess", "user no access i18n");
 
 # remove hunt id and name from sessions
   $json = viewerPutToken("/api/hunt/$id7/removefromsessions?arkimeRegressionUser=anonymous", "{}", $token);

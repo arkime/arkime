@@ -247,6 +247,7 @@ import ArkimeVisualizations from '../visualizations/Visualizations.vue';
 import ArkimeCollapsible from '../utils/CollapsibleWrapper.vue';
 import ArkimePie from './Hierarchy.vue';
 import { commaString } from '@common/vueFilters.js';
+import { resolveMessage } from '@common/resolveI18nMessage';
 // import utils
 import Utils from '../utils/utils';
 
@@ -566,7 +567,7 @@ export default {
         pendingPromise = null;
         respondedAt = undefined;
         this.loading = false;
-        this.error = error.text || String(error);
+        this.error = resolveMessage(error, this.$t);
       }
     }
   },

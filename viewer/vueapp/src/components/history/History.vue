@@ -392,6 +392,7 @@ import Focus from '@common/Focus.vue';
 import ArkimeCollapsible from '../utils/CollapsibleWrapper.vue';
 import ToggleBtn from '@common/ToggleBtn.vue';
 import { timezoneDateString, readableTime } from '@common/vueFilters.js';
+import { resolveMessage } from '@common/resolveI18nMessage';
 
 let searchInputTimeout; // timeout to debounce the search input
 
@@ -550,11 +551,11 @@ export default {
       HistoryService.delete(log.id, log.index)
         .then((response) => {
           this.history.splice(index, 1);
-          this.msg = response.text || 'Successfully deleted history item';
+          this.msg = resolveMessage(response, this.$t) || 'Successfully deleted history item';
           this.msgType = 'success';
         })
         .catch((error) => {
-          this.msg = error.text || 'Error deleting history item';
+          this.msg = resolveMessage(error, this.$t) || 'Error deleting history item';
           this.msgType = 'danger';
         });
     },
@@ -621,7 +622,7 @@ export default {
         })
         .catch((error) => {
           this.loading = false;
-          this.error = error.text || String(error);
+          this.error = resolveMessage(error, this.$t);
         });
     },
     /* event functions ------------------------------------------- */

@@ -1,4 +1,4 @@
-use Test::More tests => 42;
+use Test::More tests => 44;
 use Cwd;
 use ArkimeTest;
 use JSON;
@@ -110,11 +110,13 @@ ok($json->{success}, "query can be deleted");
 
 # can not update primary-viewer periodic query
 $json = viewerPostToken("/api/cron/primary-viewer", '{"name":"sac-test1update","query":"protocols == tls","action":"tag","tags":"tls","users":"sac-test2,test3"}', $token);
-eq_or_diff($json, from_json('{"text": "Bad query key", "success": false}'));
+is($json->{success}, 0, "can not update primary-viewer periodic query");
+is($json->{i18n}, "api.crons.badKey", "can not update primary-viewer i18n");
 
 # can not delete primary-viewer periodic queries
 $json = viewerDeleteToken("/api/cron/primary-viewer", $token);
-eq_or_diff($json, from_json('{"text": "Bad query key", "success": false}'));
+is($json->{success}, 0, "can not delete primary-viewer periodic query");
+is($json->{i18n}, "api.crons.badKey", "can not delete primary-viewer i18n");
 # Run crons
 viewerGet("/regressionTests/processCronQueries");
 viewerGet("/regressionTests/processCronQueries");

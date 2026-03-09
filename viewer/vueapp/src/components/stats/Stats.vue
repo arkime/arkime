@@ -576,6 +576,7 @@ import Utils from '../utils/utils';
 import Focus from '@common/Focus.vue';
 import Clusters from '../utils/Clusters.vue';
 import StatsService from './StatsService.js';
+import { resolveMessage } from '@common/resolveI18nMessage';
 
 let searchInputTimeout;
 
@@ -799,12 +800,12 @@ export default {
           numShards: this.shrinkFactor
         }, { cluster: this.cluster });
         if (!response.data.success) {
-          this.shrinkError = response.data.text;
+          this.shrinkError = resolveMessage(response.data, this.$t);
           return;
         }
         this.cancelShrink();
       } catch (error) {
-        this.shrinkError = error.text || String(error);
+        this.shrinkError = resolveMessage(error, this.$t);
       }
     }
   }

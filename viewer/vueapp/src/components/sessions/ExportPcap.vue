@@ -59,6 +59,7 @@ import { useRoute } from 'vue-router';
 import SessionsService from './SessionsService';
 import SegmentSelect from './SegmentSelect.vue';
 import { useI18n } from 'vue-i18n';
+import { resolveMessage } from '@common/resolveI18nMessage';
 const { t } = useI18n();
 
 // Define Props
@@ -115,9 +116,9 @@ const exportPcapAction = async () => {
 
   try {
     const response = await SessionsService.exportPcap(data, route.query);
-    emit('done', response.text, true, true); // Emit the done event with the response text
+    emit('done', resolveMessage(response, t), true, true); // Emit the done event with the response text
   } catch (err) {
-    error.value = err.text || t('sessions.exports.unknownErr');
+    error.value = resolveMessage(err, t) || t('sessions.exports.unknownErr');
   }
 };
 </script>

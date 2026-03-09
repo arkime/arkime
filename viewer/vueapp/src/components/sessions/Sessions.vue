@@ -677,6 +677,7 @@ import FieldActions from './FieldActions.vue';
 import FieldSelectDropdown from '../utils/FieldSelectDropdown.vue';
 // import utils
 import { searchFields, buildExpression } from '@common/vueFilters.js';
+import { resolveMessage } from '@common/resolveI18nMessage';
 // import external
 import Sortable from 'sortablejs';
 
@@ -1356,7 +1357,7 @@ export default {
         this.newColConfigName = null;
         this.colConfigError = false;
       }).catch((error) => {
-        this.colConfigError = error.text;
+        this.colConfigError = resolveMessage(error, this.$t);
       });
     },
     /**
@@ -1399,7 +1400,7 @@ export default {
         this.colConfigs.splice(index, 1);
         this.colConfigError = false;
       }).catch((error) => {
-        this.colConfigError = error.text;
+        this.colConfigError = resolveMessage(error, this.$t);
       });
     },
     /**
@@ -1417,10 +1418,10 @@ export default {
       UserService.updateLayout('sessionstable', data).then((response) => {
         this.colConfigs[index] = data;
         this.colConfigError = false;
-        this.colConfigSuccess = response.text;
+        this.colConfigSuccess = resolveMessage(response, this.$t);
         setTimeout(() => { this.colConfigSuccess = ''; }, 5000);
       }).catch((error) => {
-        this.colConfigError = error.text;
+        this.colConfigError = resolveMessage(error, this.$t);
       });
     },
     /**
@@ -1515,7 +1516,7 @@ export default {
         this.newInfoConfigName = null;
         this.infoConfigError = false;
       }).catch((error) => {
-        this.infoConfigError = error.text;
+        this.infoConfigError = resolveMessage(error, this.$t);
       });
     },
     /**
@@ -1540,7 +1541,7 @@ export default {
         this.infoConfigs.splice(index, 1);
         this.infoConfigError = false;
       }).catch((error) => {
-        this.infoConfigError = error.text;
+        this.infoConfigError = resolveMessage(error, this.$t);
       });
     },
     /**
@@ -1557,10 +1558,10 @@ export default {
       UserService.updateLayout('sessionsinfofields', data).then((response) => {
         this.infoConfigs[index] = data;
         this.infoConfigError = false;
-        this.infoConfigSuccess = response.text;
+        this.infoConfigSuccess = resolveMessage(response, this.$t);
         setTimeout(() => { this.infoConfigSuccess = ''; }, 5000);
       }).catch((error) => {
-        this.infoConfigError = error.text;
+        this.infoConfigError = resolveMessage(error, this.$t);
       });
     },
     /* Resets the visible fields in the info column to the default */
@@ -1855,7 +1856,7 @@ export default {
         pendingPromise = null;
         this.loading = false;
         this.sessions.data = undefined;
-        this.error = error.text || String(error);
+        this.error = resolveMessage(error, this.$t);
       }
     },
     /**
