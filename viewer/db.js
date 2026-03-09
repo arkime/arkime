@@ -161,6 +161,8 @@ Db.initialize = async (info) => {
     const dbUrl = User.getDbUrl();
     if (dbUrl?.startsWith('sqlite')) {
       internals.usersImpl = new DbSQLiteImpl(ArkimeUtil.createSQLiteDB(dbUrl));
+    } else if (dbUrl?.startsWith('redis') || dbUrl?.startsWith('lmdb')) {
+      console.log(`WARN - views/shareables not yet supported for '${dbUrl}', using ES only`);
     } else {
       console.log(`ERROR - Don't understand users db impl for '${dbUrl}'`);
       process.exit(1);
