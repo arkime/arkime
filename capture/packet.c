@@ -38,6 +38,15 @@ int                          vlanField;
 LOCAL int                    dot1qField;
 LOCAL int                    dot1adField;
 int                          vniField;
+LOCAL int                    erspanIdField;
+LOCAL int                    erspanDirField;
+LOCAL int                    erspanCosField;
+LOCAL int                    erspanVerField;
+LOCAL int                    erspanBsoStrField;
+LOCAL int                    erspanTruncatedField;
+LOCAL int                    erspanSgtField;
+LOCAL int                    erspanHwField;
+LOCAL int                    erspanPortField;
 LOCAL int                    oui1Field;
 LOCAL int                    oui2Field;
 LOCAL int                    outermac1Field;
@@ -423,6 +432,35 @@ LOCAL void arkime_packet_process(ArkimePacket_t *packet, int thread)
 
         if (packet->vni)
             arkime_field_int_add(vniField, session, packet->vni);
+
+        if (packet->erspan_type) {
+            if (packet->erspan_ver)
+                arkime_field_int_add(erspanVerField, session, packet->erspan_ver);
+            if (packet->erspan_id)
+                arkime_field_int_add(erspanIdField, session, packet->erspan_id);
+            arkime_field_int_add(erspanCosField, session, packet->erspan_cos);
+            if (packet->erspan_truncated)
+                arkime_field_string_add_lower(erspanTruncatedField, session, "true", 4);
+            if (packet->erspan_port)
+                arkime_field_int_add(erspanPortField, session, packet->erspan_port);
+            if (packet->erspan_type == 3) {
+                const char *dir_str = packet->erspan_dir ? "egress" : "ingress";
+                arkime_field_string_add_lower(erspanDirField, session, dir_str, strlen(dir_str));
+                if ((packet->erspan_bso & 0x3) != 0x0) {
+                    const char *bso_str = "unknown";
+                    switch (packet->erspan_bso & 0x3) {
+                    case 0x3: bso_str = "bad"; break;
+                    case 0x1: bso_str = "short"; break;
+                    case 0x2: bso_str = "oversized"; break;
+                    }
+                    arkime_field_string_add_lower(erspanBsoStrField, session, bso_str, strlen(bso_str));
+                }
+                if (packet->erspan_sgt)
+                    arkime_field_int_add(erspanSgtField, session, packet->erspan_sgt);
+                if (packet->erspan_hw)
+                    arkime_field_int_add(erspanHwField, session, packet->erspan_hw);
+            }
+        }
 
         if (packet->etherOffset != 0 && packet->outerEtherOffset != packet->etherOffset) {
             arkime_field_macoui_add(session, outermac1Field, outeroui1Field, packet->pkt + packet->outerEtherOffset);
@@ -1931,6 +1969,60 @@ void arkime_packet_init()
                                    ARKIME_FIELD_TYPE_INT_GHASH,  ARKIME_FIELD_FLAG_CNT | ARKIME_FIELD_FLAG_LINKED_SESSIONS,
                                    (char *)NULL);
 
+
+    erspanIdField = arkime_field_define("erspan", "integer",
+                                        "erspan.id", "ERSPAN Span ID", "erspan.spanId",
+                                        "ERSPAN span ID",
+                                        ARKIME_FIELD_TYPE_INT_GHASH, ARKIME_FIELD_FLAG_CNT | ARKIME_FIELD_FLAG_LINKED_SESSIONS,
+                                        (char *)NULL);
+
+    erspanDirField = arkime_field_define("erspan", "termfield",
+                                         "erspan.direction", "ERSPAN Direction", "erspan.direction",
+                                         "ERSPAN direction (ingress/egress)",
+                                         ARKIME_FIELD_TYPE_STR_HASH, ARKIME_FIELD_FLAG_CNT | ARKIME_FIELD_FLAG_LINKED_SESSIONS,
+                                         (char *)NULL);
+
+    erspanCosField = arkime_field_define("erspan", "integer",
+                                         "erspan.cos", "ERSPAN COS", "erspan.cos",
+                                         "ERSPAN Class of Service/DSCP",
+                                         ARKIME_FIELD_TYPE_INT_GHASH, ARKIME_FIELD_FLAG_CNT | ARKIME_FIELD_FLAG_LINKED_SESSIONS,
+                                         (char *)NULL);
+
+    erspanVerField = arkime_field_define("erspan", "integer",
+                                         "erspan.ver", "ERSPAN Version", "erspan.version",
+                                         "ERSPAN encapsulation version",
+                                         ARKIME_FIELD_TYPE_INT_GHASH, ARKIME_FIELD_FLAG_CNT | ARKIME_FIELD_FLAG_LINKED_SESSIONS,
+                                         (char *)NULL);
+
+    erspanBsoStrField = arkime_field_define("erspan", "termfield",
+                                            "erspan.bso.str", "ERSPAN BSO String", "erspan.bso_str",
+                                            "ERSPAN BSO as text (not set/bad/short/oversized)",
+                                            ARKIME_FIELD_TYPE_STR_HASH, ARKIME_FIELD_FLAG_CNT | ARKIME_FIELD_FLAG_LINKED_SESSIONS,
+                                            (char *)NULL);
+
+    erspanTruncatedField = arkime_field_define("erspan", "termfield",
+                                               "erspan.truncated", "ERSPAN Truncated", "erspan.truncated",
+                                               "ERSPAN truncated flag (true when packet was truncated)",
+                                               ARKIME_FIELD_TYPE_STR_HASH, ARKIME_FIELD_FLAG_LINKED_SESSIONS,
+                                               (char *)NULL);
+
+    erspanSgtField = arkime_field_define("erspan", "integer",
+                                         "erspan.sgt", "ERSPAN SGT", "erspan.sgt",
+                                         "ERSPAN Security Group Tag",
+                                         ARKIME_FIELD_TYPE_INT_GHASH, ARKIME_FIELD_FLAG_CNT | ARKIME_FIELD_FLAG_LINKED_SESSIONS,
+                                         (char *)NULL);
+
+    erspanHwField = arkime_field_define("erspan", "integer",
+                                        "erspan.hw", "ERSPAN Hw ID", "erspan.hw",
+                                        "ERSPAN Hardware ID",
+                                        ARKIME_FIELD_TYPE_INT_GHASH, ARKIME_FIELD_FLAG_CNT | ARKIME_FIELD_FLAG_LINKED_SESSIONS,
+                                        (char *)NULL);
+
+    erspanPortField = arkime_field_define("erspan", "integer",
+                                          "erspan.port", "ERSPAN Port Index", "erspan.port",
+                                          "ERSPAN platform Port_ID/Index",
+                                          ARKIME_FIELD_TYPE_INT_GHASH, ARKIME_FIELD_FLAG_CNT | ARKIME_FIELD_FLAG_LINKED_SESSIONS,
+                                          (char *)NULL);
 
     outerip1Field = arkime_field_define("general", "ip",
                                         "outerip.src", "Src Outer IP", "srcOuterIp",

@@ -611,6 +611,16 @@ typedef struct arkimepacket_t {
     uint32_t       ipOffset: 11;        // offset to ip header from start
     uint32_t       outerIpOffset: 11;   // offset to outer ip header from start
     uint32_t       vni: 24;             // vxlan id
+    uint16_t       erspan_id;           // ERSPAN Span ID
+    uint16_t       erspan_sgt;          // SGT (Security Group Tag)
+    uint32_t       erspan_port;         // Port_ID/Index (platform specific, if present)
+    uint8_t        erspan_type;         // ERSPAN version/type (2/3), non-zero means erspan was parsed
+    uint8_t        erspan_cos;          // ERSPAN COS marking
+    uint8_t        erspan_ver;          // ERSPAN encapsulation version (from header)
+    uint8_t        erspan_truncated;    // T (truncated) flag (0/1)
+    uint8_t        erspan_dir;          // ERSPAN direction bit
+    uint8_t        erspan_bso;          // BSO (Bad/Short/Oversized) 2-bit value
+    uint8_t        erspan_hw;           // Hardware ID
 } ArkimePacket_t;
 
 typedef struct {
