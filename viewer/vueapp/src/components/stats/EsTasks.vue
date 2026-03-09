@@ -67,6 +67,7 @@ import ArkimeLoading from '../utils/Loading.vue';
 import ArkimePaging from '../utils/Pagination.vue';
 import StatsService from './StatsService.js';
 import { roundCommaString, timezoneDateString } from '@common/vueFilters.js';
+import { resolveMessage } from '@common/resolveI18nMessage';
 
 let reqPromise; // promise returned from setInterval for recurring requests
 let respondedAt; // the time that the last data load successfully responded
@@ -210,7 +211,7 @@ export default {
           }
         }
       } catch (error) {
-        this.$emit('errored', error.text || String(error));
+        this.$emit('errored', resolveMessage(error, this.$t));
       }
     },
     async cancelTasks () {
@@ -227,7 +228,7 @@ export default {
           }
         }
       } catch (error) {
-        this.$emit('errored', error.text || String(error));
+        this.$emit('errored', resolveMessage(error, this.$t));
       }
     },
     /* helper functions ------------------------------------------ */
@@ -264,7 +265,7 @@ export default {
       } catch (error) {
         respondedAt = undefined;
         this.loading = false;
-        this.error = error.text || String(error);
+        this.error = resolveMessage(error, this.$t);
       }
 
       this.initialLoading = false;

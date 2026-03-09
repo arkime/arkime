@@ -1,4 +1,4 @@
-use Test::More tests => 95;
+use Test::More tests => 96;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -63,7 +63,8 @@ my ($json, $mjson, $pjson);
 
 # bad field
     $pjson = post("/api/spigraph", '{"map":true, "date":-1, "field": {}, "expression":"file=' . $pwd . '/bigendian.pcap|file=' . $pwd . '/socks-http-example.pcap|file=' . $pwd . '/bt-tcp.pcap"}');
-    eq_or_diff($pjson, from_json('{"success": false, "text": "Bad \'field\' parameter"}'));
+    is($pjson->{success}, 0, "bad field parameter");
+    is($pjson->{i18n}, "api.sessions.badFieldParam", "bad field parameter i18n");
 
 #node
     $json = get("/spigraph.json?map=true&date=-1&field=node&expression=" . uri_escape("file=$pwd/bigendian.pcap|file=$pwd/socks-http-example.pcap|file=$pwd/bt-tcp.pcap"));

@@ -65,7 +65,7 @@ class HistoryAPIs {
         if (req.query.userId) { userId = req.query.userId; }
       } else { // user isn't an admin, so they can only view their own history items
         if (req.query.userId && req.query.userId !== req.user.userId) {
-          return res.serverError(403, 'Need admin privileges');
+          return res.serverError(403, 'Need admin privileges', 'api.history.needAdminPrivileges');
         }
         userId = req.user.userId;
       }
@@ -169,7 +169,7 @@ class HistoryAPIs {
       });
     } catch (err) {
       console.log(`ERROR - ${req.method} /api/history`, util.inspect(err, false, 50));
-      return res.serverError(500, 'Error retrieving history');
+      return res.serverError(500, 'Error retrieving history', 'api.history.retrieveFailed');
     }
   }
 
@@ -185,18 +185,19 @@ class HistoryAPIs {
    */
   static async deleteHistory (req, res) {
     if (!req.query.index) {
-      return res.serverError(403, 'Missing history index');
+      return res.serverError(403, 'Missing history index', 'api.history.missingIndex');
     }
 
     try {
       await Db.deleteHistory(req.params.id, req.query.index, req.query.cluster);
       return res.json({
         success: true,
-        text: 'Deleted history item successfully'
+        text: 'Deleted history item successfully',
+        i18n: 'api.history.deletedSuccessfully'
       });
     } catch (err) {
       console.log(`ERROR - ${req.method} /api/history/%s`, ArkimeUtil.sanitizeStr(req.params.id), util.inspect(err, false, 50));
-      return res.serverError(500, 'Error deleting history item');
+      return res.serverError(500, 'Error deleting history item', 'api.history.deleteFailed');
     }
   }
 }

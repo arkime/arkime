@@ -1,6 +1,15 @@
 import store from '@/store';
 import setReqHeaders from './setReqHeaders';
 
+export class ArkimeError extends Error {
+  constructor (message, data) {
+    super(message);
+    this.text = message;
+    if (data?.i18n) { this.i18n = data.i18n; }
+    if (data?.i18nParams) { this.i18nParams = data.i18nParams; }
+  }
+}
+
 /**
  * A wrapper function for making HTTP requests using the Fetch API.
  *
@@ -75,7 +84,7 @@ export async function fetchWrapper (options) {
 
   // catch bad status codes and throw an error
   if (response.status < 200 || response.status >= 300) {
-    throw new Error(data?.text || response.statusText || 'bad response status');
+    throw new ArkimeError(data?.text || response.statusText || 'bad response status', data);
   }
 
   if (data?.data?.bsqErr) { // check for a bsq error

@@ -187,6 +187,8 @@ const { t } = useI18n();
 
 // services
 import SettingsService from '../settings/SettingsService';
+// utilities
+import { resolveMessage } from '@common/resolveI18nMessage';
 // components
 import RoleDropdown from '@common/RoleDropdown.vue';
 import ExpressionAutocompleteInput from '../search/ExpressionAutocompleteInput.vue';
@@ -282,10 +284,10 @@ const createViewAction = async () => {
   try {
     const response = await SettingsService.createView(data, undefined); // Assuming second param is options/config
     loading.value = false;
-    emit('done', response.text, true, true); // Emit the done event with the response text
+    emit('done', resolveMessage(response, t), true, true);
     store.commit('addView', response.view);
   } catch (err) {
-    error.value = err.message || err.text || t('sessions.views.createErr');
+    error.value = resolveMessage(err, t);
     loading.value = false;
   }
 };
@@ -311,10 +313,10 @@ const updateViewAction = async () => {
   try {
     const response = await SettingsService.updateView(data, undefined);
     loading.value = false;
-    emit('done', response.text, true, true); // Emit the done event with the response text
+    emit('done', resolveMessage(response, t), true, true);
     SettingsService.getViews();
   } catch (err) {
-    error.value = err.message || err.text || t('sessions.views.updateErr');
+    error.value = resolveMessage(err, t);
     loading.value = false;
   }
 };

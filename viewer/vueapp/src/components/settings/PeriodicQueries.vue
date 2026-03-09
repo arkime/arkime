@@ -589,6 +589,7 @@ import TransferResource from '@common/TransferResource.vue';
 import ExpressionAutocompleteInput from '../search/ExpressionAutocompleteInput.vue';
 // utils
 import { timezoneDateString } from '@common/vueFilters.js';
+import { resolveMessage } from '@common/resolveI18nMessage';
 
 export default {
   name: 'PeriodicQueries',
@@ -725,7 +726,7 @@ export default {
         this.cronLoading = false;
         this.showCronModal = false;
         // display success message to user
-        let msg = response.text || 'Successfully created periodic query.';
+        let msg = resolveMessage(response, this.$t) || 'Successfully created periodic query.';
         if (response.invalidUsers && response.invalidUsers.length) {
           msg += ` Could not add these users: ${response.invalidUsers.join(',')}`;
         }
@@ -733,7 +734,7 @@ export default {
       }).catch((error) => {
         // display error message to user
         this.cronLoading = false;
-        this.cronQueryFormError = error.text;
+        this.cronQueryFormError = resolveMessage(error, this.$t);
       });
     },
     /**
@@ -764,10 +765,10 @@ export default {
         // remove the query from the list
         this.cronQueries.splice(index, 1);
         // display success message to user
-        this.$emit('display-message', { msg: response.text });
+        this.$emit('display-message', { msg: resolveMessage(response, this.$t) });
       }).catch((error) => {
         // display error message to user
-        this.$emit('display-message', { msg: error.text, type: 'danger' });
+        this.$emit('display-message', { msg: resolveMessage(error, this.$t), type: 'danger' });
       });
     },
     /**
@@ -794,11 +795,11 @@ export default {
       SettingsService.updateCronQuery(data, this.userId).then((response) => {
         this.getCronQueries();
         this.transferQuery = undefined;
-        this.$emit('display-message', { msg: response.text });
+        this.$emit('display-message', { msg: resolveMessage(response, this.$t) });
         this.showTransferModal = false;
       }).catch((error) => {
         // display error message to user
-        this.$emit('display-message', { msg: error.text, type: 'danger' });
+        this.$emit('display-message', { msg: resolveMessage(error, this.$t), type: 'danger' });
       });
     },
     /**
@@ -873,14 +874,14 @@ export default {
       SettingsService.updateCronQuery(query, this.userId).then((response) => {
         this.cronQueries[index] = response.query;
         // display success message to user
-        let msg = response.text || 'Successfully updated periodic query.';
+        let msg = resolveMessage(response, this.$t) || 'Successfully updated periodic query.';
         if (response.invalidUsers && response.invalidUsers.length) {
           msg += ` Could not add these users: ${response.invalidUsers.join(',')}`;
         }
         this.$emit('display-message', { msg });
       }).catch((error) => {
         // display error message to user
-        this.$emit('display-message', { msg: error.text, type: 'danger' });
+        this.$emit('display-message', { msg: resolveMessage(error, this.$t), type: 'danger' });
       });
     },
     /* retrieves the specified user's cron queries */
@@ -893,7 +894,7 @@ export default {
       SettingsService.getCronQueries(queryParams).then((response) => {
         this.cronQueries = response;
       }).catch((error) => {
-        this.cronQueryListError = error.text;
+        this.cronQueryListError = resolveMessage(error, this.$t);
       });
     },
     // HELPER FUNCTIONS ---------------------------------------------------- //

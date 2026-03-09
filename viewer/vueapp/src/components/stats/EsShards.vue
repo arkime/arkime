@@ -261,6 +261,7 @@ import Utils from '../utils/utils';
 import ArkimeLoading from '../utils/Loading.vue';
 import StatsService from './StatsService';
 import { roundCommaString, humanReadableBytes } from '@common/vueFilters.js';
+import { resolveMessage } from '@common/resolveI18nMessage';
 
 let reqPromise; // promise returned from setInterval for recurring requests
 let respondedAt; // the time that the last data load successfully responded
@@ -391,7 +392,7 @@ export default {
           await StatsService.deleteShard(shard.name, node.shard, { cluster: this.query.cluster });
           count--;
         } catch (error) {
-          this.error = error.text || String(error);
+          this.error = resolveMessage(error, this.$t);
         }
       }
 
@@ -414,7 +415,7 @@ export default {
           column.ipExcluded = true;
         }
       } catch (error) {
-        this.error = error.text || String(error);
+        this.error = resolveMessage(error, this.$t);
       }
     },
     async include (type, column) {
@@ -430,7 +431,7 @@ export default {
           column.ipExcluded = false;
         }
       } catch (error) {
-        this.error = error.text || String(error);
+        this.error = resolveMessage(error, this.$t);
       }
     },
     showDetails: function (item, indexName) {
@@ -492,7 +493,7 @@ export default {
         this.loadingAllocationExplain = false;
       } catch (error) {
         this.loadingAllocationExplain = false;
-        this.allocationExplainError = error.text || String(error);
+        this.allocationExplainError = resolveMessage(error, this.$t);
       }
     },
     /* helper functions ------------------------------------------ */
@@ -545,7 +546,7 @@ export default {
         respondedAt = undefined;
         this.loading = false;
         this.initialLoading = false;
-        this.error = error.text || String(error);
+        this.error = resolveMessage(error, this.$t);
       }
     }
   },

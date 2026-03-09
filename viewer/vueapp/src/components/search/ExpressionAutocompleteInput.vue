@@ -93,6 +93,8 @@ import { useStore } from 'vuex';
 import { useRoute } from 'vue-router';
 import FieldService from './FieldService';
 import UserService from '../users/UserService';
+import { useI18n } from 'vue-i18n';
+import { resolveMessage } from '@common/resolveI18nMessage';
 
 const props = defineProps({
   modelValue: {
@@ -121,6 +123,7 @@ const emit = defineEmits(['update:modelValue', 'apply']);
 
 const store = useStore();
 const route = useRoute();
+const { t } = useI18n();
 
 const inputEl = ref(null);
 const dropdownEl = ref(null);
@@ -238,7 +241,7 @@ function rebuildQuery (q, str) {
     replacingToken = null;
     result = q += str + ' ';
   } else {
-    let t, i;
+    let tok, i;
 
     const isArray = /^(\[)/.test(lastToken);
     if (isArray) {
@@ -283,16 +286,16 @@ function rebuildQuery (q, str) {
     tokens[tokens.length - 1] = str;
 
     for (i = 0; i < tokens.length; ++i) {
-      t = tokens[i];
-      if (t === ' ') { break; }
-      result += t + ' ';
+      tok = tokens[i];
+      if (tok === ' ') { break; }
+      result += tok + ' ';
     }
 
     if (allTokens.length > tokens.length) {
       for (i; i < allTokens.length; ++i) {
-        t = allTokens[i];
-        if (t === ' ') { break; }
-        result += t + ' ';
+        tok = allTokens[i];
+        if (tok === ' ') { break; }
+        result += tok + ' ';
       }
     }
   }
@@ -460,7 +463,7 @@ async function changeExpression () {
       results.value = findMatch(escapedToken, response.data);
     } catch (error) {
       loadingValues.value = false;
-      loadingError.value = error.text || String(error);
+      loadingError.value = resolveMessage(error, t);
     }
     return;
   }

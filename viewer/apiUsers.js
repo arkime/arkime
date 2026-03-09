@@ -102,18 +102,18 @@ class UserAPIs {
    */
   static #validateSessionColumnLayout (req) {
     if (!ArkimeUtil.isString(req.body.name)) {
-      return { success: false, text: 'Missing name' };
+      return { success: false, text: 'Missing name', i18n: 'api.users.missingName' };
     }
     if (!req.body.columns) {
-      return { success: false, text: 'Missing columns' };
+      return { success: false, text: 'Missing columns', i18n: 'api.users.missingColumns' };
     }
     if (!req.body.order) {
-      return { success: false, text: 'Missing sort order' };
+      return { success: false, text: 'Missing sort order', i18n: 'api.users.missingSortOrder' };
     }
 
     const layoutName = req.body.name.replace(/[^-a-zA-Z0-9\s_:]/g, '');
     if (layoutName.length < 1) {
-      return { success: false, text: 'Invalid name' };
+      return { success: false, text: 'Invalid name', i18n: 'api.users.invalidName' };
     }
 
     return { layoutName, success: true };
@@ -130,15 +130,15 @@ class UserAPIs {
    */
   static #validateInfoFieldLayout (req) {
     if (!ArkimeUtil.isString(req.body.name)) {
-      return { success: false, text: 'Missing name' };
+      return { success: false, text: 'Missing name', i18n: 'api.users.missingName' };
     }
     if (!req.body.fields) {
-      return { success: false, text: 'Missing fields' };
+      return { success: false, text: 'Missing fields', i18n: 'api.users.missingFields' };
     }
 
     const layoutName = req.body.name.replace(/[^-a-zA-Z0-9\s_:]/g, '');
     if (layoutName.length < 1) {
-      return { success: false, text: 'Invalid name' };
+      return { success: false, text: 'Invalid name', i18n: 'api.users.invalidName' };
     }
 
     return { layoutName, success: true };
@@ -155,16 +155,16 @@ class UserAPIs {
    */
   static #validateSPIViewLayout (req) {
     if (!ArkimeUtil.isString(req.body.name)) {
-      return { success: false, text: 'Missing name' };
+      return { success: false, text: 'Missing name', i18n: 'api.users.missingName' };
     }
     if (!req.body.fields) {
-      return { success: false, text: 'Missing fields' };
+      return { success: false, text: 'Missing fields', i18n: 'api.users.missingFields' };
     }
 
     const layoutName = req.body.name.replace(/[^-a-zA-Z0-9\s_:]/g, '');
 
     if (layoutName.length < 1) {
-      return { success: false, text: 'Invalid name' };
+      return { success: false, text: 'Invalid name', i18n: 'api.users.invalidName' };
     }
 
     return { layoutName, success: true };
@@ -192,7 +192,7 @@ class UserAPIs {
     // don't let user use duplicate names
     for (const config of user.infoFieldConfigs) {
       if (result.layoutName === config.name) {
-        return { success: false, text: 'Duplicate name' };
+        return { success: false, text: 'Duplicate name', i18n: 'api.users.duplicateName' };
       }
     }
 
@@ -226,7 +226,7 @@ class UserAPIs {
     // don't let user use duplicate names
     for (const config of user.columnConfigs) {
       if (result.layoutName === config.name) {
-        return { success: false, text: 'Duplicate name' };
+        return { success: false, text: 'Duplicate name', i18n: 'api.users.duplicateName' };
       }
     }
 
@@ -261,7 +261,7 @@ class UserAPIs {
     // don't let user use duplicate names
     for (const config of user.spiviewFieldConfigs) {
       if (result.layoutName === config.name) {
-        return { success: false, text: 'Duplicate name' };
+        return { success: false, text: 'Duplicate name', i18n: 'api.users.duplicateName' };
       }
     }
 
@@ -298,7 +298,7 @@ class UserAPIs {
       }
     }
 
-    return { success: false, text: 'Layout not found' };
+    return { success: false, text: 'Layout not found', i18n: 'api.users.layoutNotFound' };
   }
 
   /**
@@ -326,7 +326,7 @@ class UserAPIs {
       }
     }
 
-    return { success: false, text: 'Layout not found' };
+    return { success: false, text: 'Layout not found', i18n: 'api.users.layoutNotFound' };
   }
 
   /**
@@ -355,7 +355,7 @@ class UserAPIs {
       }
     }
 
-    return { success: false, text: 'Layout not found' };
+    return { success: false, text: 'Layout not found', i18n: 'api.users.layoutNotFound' };
   }
 
   /**
@@ -379,7 +379,7 @@ class UserAPIs {
       }
     }
 
-    return { success: false, text: 'Layout not found' };
+    return { success: false, text: 'Layout not found', i18n: 'api.users.layoutNotFound' };
   }
 
   // --------------------------------------------------------------------------
@@ -576,12 +576,13 @@ class UserAPIs {
     User.setUser(req.settingUser.userId, req.settingUser, (err, info) => {
       if (err) {
         console.log(`ERROR - ${req.method} /api/user/settings update error`, util.inspect(err, false, 50), info);
-        return res.serverError(500, 'User settings update failed');
+        return res.serverError(500, 'User settings update failed', 'api.users.settingsUpdateFailed');
       }
 
       return res.json({
         success: true,
-        text: 'Updated user settings successfully'
+        text: 'Updated user settings successfully',
+        i18n: 'api.users.settingsUpdated'
       });
     });
   }
@@ -632,23 +633,24 @@ class UserAPIs {
       result = UserAPIs.#setSPIViewLayout(req);
       break;
     default:
-      return res.serverError(403, 'Invalid layout type');
+      return res.serverError(403, 'Invalid layout type', 'api.users.invalidLayoutType');
     }
 
     if (!result.success) {
-      return res.serverError(403, result.text);
+      return res.serverError(403, result.text, result.i18n);
     }
 
     User.setUser(result.user.userId, result.user, (err, info) => {
       if (err) {
         console.log(`ERROR - ${req.method} /api/user/layouts/${req.params.type}`, util.inspect(err, false, 50), info);
-        return res.serverError(500, 'Create layout failed');
+        return res.serverError(500, 'Create layout failed', 'api.users.layoutCreateFailed');
       }
 
       return res.json({
         success: true,
         name: result.layoutName,
-        text: 'Created layout successfully'
+        text: 'Created layout successfully',
+        i18n: 'api.users.layoutCreated'
       });
     });
   }
@@ -677,23 +679,24 @@ class UserAPIs {
       result = UserAPIs.#updateSPIViewLayout(req);
       break;
     default:
-      return res.serverError(403, 'Invalid layout type');
+      return res.serverError(403, 'Invalid layout type', 'api.users.invalidLayoutType');
     }
 
     if (!result.success) {
-      return res.serverError(403, result.text);
+      return res.serverError(403, result.text, result.i18n);
     }
 
     User.setUser(result.user.userId, result.user, (err, info) => {
       if (err) {
         console.log(`ERROR - ${req.method} /api/user/layouts/${req.params.type}`, util.inspect(err, false, 50), info);
-        return res.serverError(500, 'Update layout failed');
+        return res.serverError(500, 'Update layout failed', 'api.users.layoutUpdateFailed');
       }
 
       return res.json({
         success: true,
         layout: req.body,
-        text: 'Updated layout'
+        text: 'Updated layout',
+        i18n: 'api.users.layoutUpdated'
       });
     });
   }
@@ -721,24 +724,25 @@ class UserAPIs {
       layoutKey = 'spiviewFieldConfigs';
       break;
     default:
-      res.serverError(403, 'Invalid layout type');
+      res.serverError(403, 'Invalid layout type', 'api.users.invalidLayoutType');
     }
 
     const result = UserAPIs.#deleteLayout(layoutKey, req);
 
     if (!result.success) {
-      return res.serverError(403, result.text);
+      return res.serverError(403, result.text, result.i18n);
     }
 
     User.setUser(result.user.userId, result.user, (err, info) => {
       if (err) {
         console.log(`ERROR - ${req.method} /api/user/layouts/${req.params.type}/${req.params.name}`, util.inspect(err, false, 50), info);
-        return res.serverError(500, 'Delete layout failed');
+        return res.serverError(500, 'Delete layout failed', 'api.users.layoutDeleteFailed');
       }
 
       return res.json({
         success: true,
-        text: 'Deleted layout successfully'
+        text: 'Deleted layout successfully',
+        i18n: 'api.users.layoutDeleted'
       });
     });
   }
@@ -754,22 +758,22 @@ class UserAPIs {
    */
   static acknowledgeMsg (req, res) {
     if (!req.body.msgNum) {
-      return res.serverError(403, 'Message number required');
+      return res.serverError(403, 'Message number required', 'api.users.messageNumberRequired');
     }
 
     if (req.params.userId !== req.user.userId) {
-      return res.serverError(403, 'Can not change other users msg');
+      return res.serverError(403, 'Can not change other users msg', 'api.users.cannotChangeOtherUsersMsg');
     }
 
     User.getUser(req.params.userId, (err, user) => {
       if (err || !user) {
         console.log(`ERROR - ${req.method} /api/user/%s/acknowledge (getUser)`, ArkimeUtil.sanitizeStr(req.params.userId), util.inspect(err, false, 50), user);
-        return res.serverError(403, 'User not found');
+        return res.serverError(403, 'User not found', 'api.users.userNotFound');
       }
 
       user.welcomeMsgNum = parseInt(req.body.msgNum);
       if (!Number.isInteger(user.welcomeMsgNum)) {
-        return res.serverError(403, 'welcomeMsgNum is not integer');
+        return res.serverError(403, 'welcomeMsgNum is not integer', 'api.users.welcomeMsgNumNotInteger');
       }
 
       User.setUser(req.params.userId, user, (err, info) => {
@@ -779,7 +783,9 @@ class UserAPIs {
 
         return res.json({
           success: true,
-          text: `User, ${req.user.userId}, dismissed message ${user.welcomeMsgNum}`
+          text: `User, ${req.user.userId}, dismissed message ${user.welcomeMsgNum}`,
+          i18n: 'api.users.dismissedMessage',
+          i18nParams: { userId: req.user.userId, msgNum: user.welcomeMsgNum }
         });
       });
     });
@@ -809,11 +815,11 @@ class UserAPIs {
     User.getUser(req.user.userId, (err, user) => {
       if (err || !user) {
         console.log(`ERROR - ${req.method} /api/user/state/%s (getUser)`, ArkimeUtil.sanitizeStr(req.params.name), util.inspect(err, false, 50), user);
-        return res.serverError(403, 'Unknown user');
+        return res.serverError(403, 'Unknown user', 'api.users.unknownUser');
       }
 
       if (ArkimeUtil.isPP(req.params.name)) {
-        return res.serverError(400, 'Invalid state name');
+        return res.serverError(400, 'Invalid state name', 'api.users.invalidStateName');
       }
 
       if (!user.tableStates) {
@@ -825,12 +831,13 @@ class UserAPIs {
       User.setUser(user.userId, user, (err, info) => {
         if (err) {
           console.log(`ERROR - ${req.method} /api/user/state/%s (setUser)`, ArkimeUtil.sanitizeStr(req.params.name), util.inspect(err, false, 50), info);
-          return res.serverError(403, 'state update failed');
+          return res.serverError(403, 'state update failed', 'api.users.stateUpdateFailed');
         }
 
         return res.json({
           success: true,
-          text: 'updated state successfully'
+          text: 'updated state successfully',
+          i18n: 'api.users.stateUpdated'
         });
       });
     });
@@ -898,7 +905,7 @@ class UserAPIs {
       return res.send({ summaryConfig });
     }
     default:
-      return res.serverError(501, 'Requested page is not supported');
+      return res.serverError(501, 'Requested page is not supported', 'api.users.unsupportedPage');
     }
   }
 }

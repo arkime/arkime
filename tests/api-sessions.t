@@ -1,4 +1,4 @@
-use Test::More tests => 120;
+use Test::More tests => 132;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -241,45 +241,57 @@ tcp,1386004309468,1386004309478,10.180.156.185,53533,US,10.180.156.249,1080,US,2
     is(substr($response->content, 0, 50), "Can't find view url for 'unknownnode' check viewer");
 
     $json = viewerGet("/api/session/test/$id/send");
-    eq_or_diff($json, from_json('{"success":false,"text":"Missing saveId"}'));
+    is($json->{success}, 0, "send session missing saveId");
+    is($json->{i18n}, "api.sessions.missingSaveId", "send session missing saveId i18n");
 
     $json = viewerGet("/api/session/test/$id/send?saveId=id");
-    eq_or_diff($json, from_json('{"success":false,"text":"Missing cluster"}'));
+    is($json->{success}, 0, "send session missing cluster");
+    is($json->{i18n}, "api.sessions.missingCluster", "send session missing cluster i18n");
 
     $json = viewerGet("/api/session/test/$id/send?saveId=id&cluster=unknown");
-    eq_or_diff($json, from_json('{"success":false,"text":"Missing cluster"}'));
+    is($json->{success}, 0, "send session cluster param missing cluster");
+    is($json->{i18n}, "api.sessions.missingCluster", "send session cluster param missing cluster i18n");
 
     $json = viewerGet("/api/session/test/$id/send?saveId=id&remoteCluster=unknown");
-    eq_or_diff($json, from_json('{"success":false,"text":"Unknown cluster"}'));
+    is($json->{success}, 0, "send session unknown cluster");
+    is($json->{i18n}, "api.sessions.unknownCluster", "send session unknown cluster i18n");
 
 # Test errors for /api/sessions/:nodeName/send
     my $response = $ArkimeTest::userAgent->post("http://$ArkimeTest::host:8123/api/sessions/unknownnode/send");
     is(substr($response->content, 0, 50), "Can't find view url for 'unknownnode' check viewer");
 
     $json = viewerPost("/api/sessions/test/send", '{}');
-    eq_or_diff($json, from_json('{"success":false,"text":"Missing saveId"}'));
+    is($json->{success}, 0, "send sessions missing saveId");
+    is($json->{i18n}, "api.sessions.missingSaveId", "send sessions missing saveId i18n");
 
     $json = viewerPost("/api/sessions/test/send?saveId=id", '{}');
-    eq_or_diff($json, from_json('{"success":false,"text":"Missing cluster"}'));
+    is($json->{success}, 0, "send sessions missing cluster");
+    is($json->{i18n}, "api.sessions.missingCluster", "send sessions missing cluster i18n");
 
     $json = viewerPost("/api/sessions/test/send?saveId=id&cluster=unknown", '{}');
-    eq_or_diff($json, from_json('{"success":false,"text":"Missing cluster"}'));
+    is($json->{success}, 0, "send sessions cluster param missing cluster");
+    is($json->{i18n}, "api.sessions.missingCluster", "send sessions cluster param missing cluster i18n");
 
     $json = viewerPost("/api/sessions/test/send?saveId=id&remoteCluster=unknown", '{}');
-    eq_or_diff($json, from_json('{"success":false,"text":"Unknown cluster"}'));
+    is($json->{success}, 0, "send sessions unknown cluster");
+    is($json->{i18n}, "api.sessions.unknownCluster", "send sessions unknown cluster i18n");
 
     $json = viewerPost("/api/sessions/test/send?saveId=id&remoteCluster=test2", '{}');
-    eq_or_diff($json, from_json('{"success":false,"text":"Missing ids"}'));
+    is($json->{success}, 0, "send sessions missing ids");
+    is($json->{i18n}, "api.sessions.missingIds", "send sessions missing ids i18n");
 
 # Test errors for /api/sessions/send
     $json = viewerPost("/api/sessions/send", '');
-    eq_or_diff($json, from_json('{"success":false,"text":"Missing cluster"}'));
+    is($json->{success}, 0, "send all missing cluster");
+    is($json->{i18n}, "api.sessions.missingCluster", "send all missing cluster i18n");
 
     $json = viewerPost("/api/sessions/send", "cluster=unknown");
-    eq_or_diff($json, from_json('{"success":false,"text":"Missing cluster"}'));
+    is($json->{success}, 0, "send all cluster param missing cluster");
+    is($json->{i18n}, "api.sessions.missingCluster", "send all cluster param missing cluster i18n");
 
     $json = viewerPost("/api/sessions/send", "remoteCluster=unknown");
-    eq_or_diff($json, from_json('{"success":false,"text":"Unknown cluster"}'));
+    is($json->{success}, 0, "send all unknown cluster");
+    is($json->{i18n}, "api.sessions.unknownCluster", "send all unknown cluster i18n");
 
 # Check twice in a row to make sure sort working
     my $json1 = post("/api/sessions", '{"flatten":1,"length":50,"facets":1,"bounding":"last","interval":"auto","cancelId":"47ad2fc7-2f95-43b1-95eb-1704f248e821","date":"-1","order":"lastPacket:desc","fields":"ipProtocol,firstPacket,lastPacket,source.ip,source.geo.country_iso_code,source.port,destination.ip,destination.geo.country_iso_code,destination.port,network.packets,totDataBytes,network.bytes,node,protocol,tags,http.uri,email.src,email.dst,email.subject,email.filename,dns.host,cert.alt,irc.channel"}');

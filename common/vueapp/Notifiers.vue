@@ -343,6 +343,7 @@ SPDX-License-Identifier: Apache-2.0
 import setReqHeaders from './setReqHeaders';
 import RoleDropdown from './RoleDropdown.vue';
 import { timezoneDateString } from './vueFilters.js';
+import { resolveMessage } from './resolveI18nMessage';
 
 export default {
   name: 'Notifiers',
@@ -389,7 +390,7 @@ export default {
     }).then((response) => {
       this.notifierTypes = response;
     }).catch((error) => {
-      this.error = error.text || error;
+      this.error = resolveMessage(error, this.$t);
     });
 
     // if notifiers haven't been fetched by the parent application, fetch them now
@@ -402,7 +403,7 @@ export default {
       }).then((response) => {
         this.$store.commit('setNotifiers', response);
       }).catch((error) => {
-        this.error = error.text || error;
+        this.error = resolveMessage(error, this.$t);
       });
     }
   },
@@ -478,7 +479,7 @@ export default {
         return response.json();
       }).then((response) => {
         if (!response.success) {
-          this.newNotifierError = response.text;
+          this.newNotifierError = resolveMessage(response, this.$t);
           return;
         }
 
@@ -486,14 +487,14 @@ export default {
         // add notifier to the list
         this.notifiers.push(response.notifier);
         // display success message to user
-        let msg = response.text || this.$t('settings.notifiers.successCreate');
+        let msg = resolveMessage(response, this.$t) || this.$t('settings.notifiers.successCreate');
         if (response.invalidUsers && response.invalidUsers.length) {
           msg += ' ' + this.$t('settings.notifiers.couldNotAddUsers', { users: response.invalidUsers.join(',') });
         }
         this.$emit('display-message', { msg });
         this.newNotifier = {};
       }).catch((error) => {
-        this.newNotifierError = error.text;
+        this.newNotifierError = resolveMessage(error, this.$t);
       });
     },
     /* toggles the visibility of the value of secret fields */
@@ -509,15 +510,15 @@ export default {
         return response.json();
       }).then((response) => {
         if (!response.success) {
-          this.$emit('display-message', { msg: response.text || this.$t('settings.notifiers.errorDelete'), type: 'danger' });
+          this.$emit('display-message', { msg: resolveMessage(response, this.$t) || this.$t('settings.notifiers.errorDelete'), type: 'danger' });
           return;
         }
 
         this.notifiers.splice(index, 1);
         // display success message to user
-        this.$emit('display-message', { msg: response.text || this.$t('settings.notifiers.successDelete') });
+        this.$emit('display-message', { msg: resolveMessage(response, this.$t) || this.$t('settings.notifiers.successDelete') });
       }).catch((error) => {
-        this.$emit('display-message', { msg: error.text || this.$t('settings.notifiers.errorDelete'), type: 'danger' });
+        this.$emit('display-message', { msg: resolveMessage(error, this.$t) || this.$t('settings.notifiers.errorDelete'), type: 'danger' });
       });
     },
     /* updates a notifier */
@@ -530,19 +531,19 @@ export default {
         return response.json();
       }).then((response) => {
         if (!response.success) {
-          this.$emit('display-message', { msg: response.text || this.$t('settings.notifiers.errorUpdate'), type: 'danger' });
+          this.$emit('display-message', { msg: resolveMessage(response, this.$t) || this.$t('settings.notifiers.errorUpdate'), type: 'danger' });
           return;
         }
 
         this.notifiers.splice(index, 1, response.notifier);
         // display success message to user
-        let msg = response.text || this.$t('settings.notifiers.successUpdate');
+        let msg = resolveMessage(response, this.$t) || this.$t('settings.notifiers.successUpdate');
         if (response.invalidUsers && response.invalidUsers.length) {
           msg += ' ' + this.$t('settings.notifiers.couldNotAddUsers', { users: response.invalidUsers.join(',') });
         }
         this.$emit('display-message', { msg });
       }).catch((error) => {
-        this.$emit('display-message', { msg: error.text || this.$t('settings.notifiers.errorUpdate'), type: 'danger' });
+        this.$emit('display-message', { msg: resolveMessage(error, this.$t) || this.$t('settings.notifiers.errorUpdate'), type: 'danger' });
       });
     },
     /* tests a notifier */
@@ -560,17 +561,17 @@ export default {
         return response.json();
       }).then((response) => {
         if (!response.success) {
-          this.$emit('display-message', { msg: response.text || this.$t('settings.notifiers.errorTest'), type: 'danger' });
+          this.$emit('display-message', { msg: resolveMessage(response, this.$t) || this.$t('settings.notifiers.errorTest'), type: 'danger' });
           return;
         }
 
         this.notifiers[index].loading = false;
         // display success message to user
-        this.$emit('display-message', { msg: response.text || this.$t('settings.notifiers.successTest') });
+        this.$emit('display-message', { msg: resolveMessage(response, this.$t) || this.$t('settings.notifiers.successTest') });
         this.newNotifier = {};
       }).catch((error) => {
         this.notifiers[index].loading = false;
-        this.$emit('display-message', { msg: error.text || this.$t('settings.notifiers.errorTest'), type: 'danger' });
+        this.$emit('display-message', { msg: resolveMessage(error, this.$t) || this.$t('settings.notifiers.errorTest'), type: 'danger' });
       });
     },
     /* toggles a notifier on/off (parliament use only) */

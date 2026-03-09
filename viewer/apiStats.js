@@ -542,7 +542,7 @@ class StatsAPIs {
       const indicesSettings = results.indicesSettings;
 
       if (!Array.isArray(indices)) {
-        return res.serverError(500, 'No results');
+        return res.serverError(500, 'No results', 'api.stats.noResults');
       }
 
       let findices = [];
@@ -620,7 +620,7 @@ class StatsAPIs {
     } catch (err) {
       console.log(`ERROR - ${req.method} /api/esindices/%s`, ArkimeUtil.sanitizeStr(req.params.index), util.inspect(err, false, 50));
       res.status(404);
-      return res.json({ success: false, text: 'Error deleting index' });
+      return res.json({ success: false, text: 'Error deleting index', i18n: 'api.stats.errorDeletingIndex' });
     }
   }
 
@@ -654,7 +654,7 @@ class StatsAPIs {
    */
   static async closeESIndex (req, res) {
     if (internals.multiES && req.query.cluster === undefined) {
-      return res.serverError(401, 'Not supported in multies');
+      return res.serverError(401, 'Not supported in multies', 'api.stats.notSupportedInMulties');
     }
 
     try {
@@ -663,7 +663,7 @@ class StatsAPIs {
     } catch (err) {
       console.log(`ERROR - ${req.method} /api/esindices/%s/close`, ArkimeUtil.sanitizeStr(req.params.index), util.inspect(err, false, 50));
       res.status(404);
-      return res.json({ success: false, text: 'Error closing index' });
+      return res.json({ success: false, text: 'Error closing index', i18n: 'api.stats.errorClosingIndex' });
     }
   }
 
@@ -677,7 +677,7 @@ class StatsAPIs {
    */
   static openESIndex (req, res) {
     if (internals.multiES && req.query.cluster === undefined) {
-      return res.serverError(401, 'Not supported in multies');
+      return res.serverError(401, 'Not supported in multies', 'api.stats.notSupportedInMulties');
     }
 
     try {
@@ -703,15 +703,15 @@ class StatsAPIs {
    */
   static async shrinkESIndex (req, res) {
     if (internals.multiES && req.query.cluster === undefined) {
-      return res.serverError(401, 'Not supported in multies');
+      return res.serverError(401, 'Not supported in multies', 'api.stats.notSupportedInMulties');
     }
 
     if (!req.body) {
-      return res.serverError(403, 'Missing body');
+      return res.serverError(403, 'Missing body', 'api.stats.missingBody');
     }
 
     if (!ArkimeUtil.isString(req.body.target)) {
-      return res.serverError(403, 'Missing target');
+      return res.serverError(403, 'Missing target', 'api.stats.missingTarget');
     }
 
     const settingsParams = {
@@ -875,7 +875,7 @@ class StatsAPIs {
     } else if (req.body && ArkimeUtil.isString(req.body.taskId)) {
       taskId = req.body.taskId;
     } else {
-      return res.serverError(403, 'Missing ID of task to cancel');
+      return res.serverError(403, 'Missing ID of task to cancel', 'api.stats.missingTaskId');
     }
 
     try {
@@ -904,7 +904,7 @@ class StatsAPIs {
     } else if (req.body && ArkimeUtil.isString(req.body.cancelId)) {
       cancelId = req.body.cancelId;
     } else {
-      return res.serverError(403, 'Missing ID of task to cancel');
+      return res.serverError(403, 'Missing ID of task to cancel', 'api.stats.missingTaskId');
     }
 
     try {
@@ -1085,8 +1085,8 @@ class StatsAPIs {
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
   static async setESAdminSettings (req, res) {
-    if (!ArkimeUtil.isString(req.body.key)) { return res.serverError(500, 'Missing key'); }
-    if (!ArkimeUtil.isString(req.body.value, 0)) { return res.serverError(500, 'Missing value'); }
+    if (!ArkimeUtil.isString(req.body.key)) { return res.serverError(500, 'Missing key', 'api.stats.missingKey'); }
+    if (!ArkimeUtil.isString(req.body.value, 0)) { return res.serverError(500, 'Missing value', 'api.stats.missingValue'); }
 
     let prefix = internals.prefix;
     if (req.query.cluster) {
@@ -1107,7 +1107,7 @@ class StatsAPIs {
       } else {
         const parts = req.body.value.split(',');
         if (parts.length !== 3) {
-          return res.serverError(500, 'Must be 3 piece of info');
+          return res.serverError(500, 'Must be 3 piece of info', 'api.stats.mustBeThreePieces');
         }
 
         query.body.persistent['cluster.routing.allocation.disk.watermark.low'] = parts[0];
@@ -1119,11 +1119,12 @@ class StatsAPIs {
         await Db.putClusterSettings(query);
         return res.json({
           success: true,
-          text: 'Successfully set settings'
+          text: 'Successfully set settings',
+          i18n: 'api.stats.settingsSet'
         });
       } catch (err) {
         console.log(`ERROR - ${req.method} /api/esadmin/set`, util.inspect(err, false, 50));
-        return res.serverError(500, 'Set failed');
+        return res.serverError(500, 'Set failed', 'api.stats.setFailed');
       }
     }
 
@@ -1133,7 +1134,7 @@ class StatsAPIs {
         const hilm = ilm[`${prefix}molochhistory`];
 
         if (silm === undefined || hilm === undefined) {
-          return res.serverError(500, `ILM isn't configured`);
+          return res.serverError(500, `ILM isn't configured`, 'api.stats.ilmNotConfigured');
         }
 
         switch (req.body.key) {
@@ -1153,14 +1154,14 @@ class StatsAPIs {
           hilm.policy.phases.delete.min_age = req.body.value;
           break;
         default:
-          return res.serverError(500, 'Unknown field');
+          return res.serverError(500, 'Unknown field', 'api.stats.unknownField');
         }
         if (req.body.key.startsWith('arkime.ilm.history')) {
           Db.setILMPolicy(`${prefix}molochhistory`, hilm, req.query.cluster);
         } else {
           Db.setILMPolicy(`${prefix}molochsessions`, silm, req.query.cluster);
         }
-        return res.json({ success: true, text: 'Set' });
+        return res.json({ success: true, text: 'Set', i18n: 'api.stats.set' });
       });
       return;
     }
@@ -1182,10 +1183,10 @@ class StatsAPIs {
           }
           break;
         default:
-          return res.serverError(500, 'Unknown field');
+          return res.serverError(500, 'Unknown field', 'api.stats.unknownField');
         }
         Db.putTemplate('sessions3_template', template[`${prefix}sessions3_template`], req.query.cluster);
-        return res.json({ success: true, text: 'Successfully set settings' });
+        return res.json({ success: true, text: 'Successfully set settings', i18n: 'api.stats.settingsSet' });
       });
       return;
     }
@@ -1197,11 +1198,12 @@ class StatsAPIs {
       await Db.putClusterSettings(clusterQuery);
       return res.send({
         success: true,
-        text: 'Successfully set settings'
+        text: 'Successfully set settings',
+        i18n: 'api.stats.settingsSet'
       });
     } catch (err) {
       console.log(`ERROR - ${req.method} /api/esadmin/set`, util.inspect(err, false, 50));
-      return res.serverError(500, 'Set failed');
+      return res.serverError(500, 'Set failed', 'api.stats.setFailed');
     }
   }
 
@@ -1217,9 +1219,9 @@ class StatsAPIs {
   static async rerouteES (req, res) {
     try {
       await Db.reroute(req.query.cluster);
-      return res.json({ success: true, text: 'Reroute successful' });
+      return res.json({ success: true, text: 'Reroute successful', i18n: 'api.stats.rerouteSuccessful' });
     } catch (err) {
-      return res.json({ success: true, text: 'Reroute failed' });
+      return res.json({ success: true, text: 'Reroute failed', i18n: 'api.stats.rerouteFailed' });
     }
   }
 
@@ -1235,7 +1237,7 @@ class StatsAPIs {
   static flushES (req, res) {
     Db.refresh('*', req.query.cluster);
     Db.flush('*', req.query.cluster);
-    return res.json({ success: true, text: 'Flushed' });
+    return res.json({ success: true, text: 'Flushed', i18n: 'api.stats.flushed' });
   }
 
   // --------------------------------------------------------------------------
@@ -1252,7 +1254,7 @@ class StatsAPIs {
       body: { 'index.blocks.read_only_allow_delete': null },
       cluster: req.query.cluster
     });
-    return res.json({ success: true, text: 'Unflooded' });
+    return res.json({ success: true, text: 'Unflooded', i18n: 'api.stats.unflooded' });
   }
 
   // --------------------------------------------------------------------------
@@ -1269,7 +1271,9 @@ class StatsAPIs {
       const { body: data } = await Db.clearCache(req.query.cluster);
       return res.json({
         success: true,
-        text: `Cache cleared: ${data._shards.successful} of ${data._shards.total} shards successful, with ${data._shards.failed} failing`
+        text: `Cache cleared: ${data._shards.successful} of ${data._shards.total} shards successful, with ${data._shards.failed} failing`,
+        i18n: 'api.stats.cacheCleared',
+        i18nParams: { successful: data._shards.successful, total: data._shards.total, failed: data._shards.failed }
       });
     } catch (err) {
       console.log(`ERROR - ${req.method} /api/esadmin/clearcache`, util.inspect(err, false, 50));
@@ -1331,7 +1335,7 @@ class StatsAPIs {
       Db.loadESId2Info(options.cluster)
     ]).then(([{ body: shards, esid2info }, { body: settings }]) => {
       if (!Array.isArray(shards)) {
-        return res.serverError(500, 'No results');
+        return res.serverError(500, 'No results', 'api.stats.noResults');
       }
       let ipExcludes = [];
       if (settings.persistent['cluster.routing.allocation.exclude._ip']) {
@@ -1420,7 +1424,7 @@ class StatsAPIs {
    */
   static async excludeESShard (req, res) {
     if (internals.multiES && req.query.cluster === undefined) {
-      return res.serverError(401, 'Not supported in multies');
+      return res.serverError(401, 'Not supported in multies', 'api.stats.notSupportedInMulties');
     }
 
     try {
@@ -1433,7 +1437,7 @@ class StatsAPIs {
       } else if (req.params.type === 'name') {
         settingName = 'cluster.routing.allocation.exclude._name';
       } else {
-        return res.serverError(403, 'Unknown exclude type');
+        return res.serverError(403, 'Unknown exclude type', 'api.stats.unknownExcludeType');
       }
 
       if (settings.persistent[settingName]) {
@@ -1450,11 +1454,12 @@ class StatsAPIs {
       await Db.putClusterSettings(query);
       return res.json({
         success: true,
-        text: 'Successfully excluded node'
+        text: 'Successfully excluded node',
+        i18n: 'api.stats.nodeExcluded'
       });
     } catch (err) {
       console.log(`ERROR - ${req.method} /api/esshards/%s/%s/exclude`, ArkimeUtil.sanitizeStr(req.params.type), ArkimeUtil.sanitizeStr(req.params.value), util.inspect(err, false, 50));
-      return res.serverError(500, 'Node exclusion failed');
+      return res.serverError(500, 'Node exclusion failed', 'api.stats.nodeExclusionFailed');
     }
   }
 
@@ -1469,7 +1474,7 @@ class StatsAPIs {
    */
   static async includeESShard (req, res) {
     if (internals.multiES && req.query.cluster === undefined) {
-      return res.serverError(401, 'Not supported in multies');
+      return res.serverError(401, 'Not supported in multies', 'api.stats.notSupportedInMulties');
     }
 
     try {
@@ -1482,7 +1487,7 @@ class StatsAPIs {
       } else if (req.params.type === 'name') {
         settingName = 'cluster.routing.allocation.exclude._name';
       } else {
-        return res.serverError(403, 'Unknown include type');
+        return res.serverError(403, 'Unknown include type', 'api.stats.unknownIncludeType');
       }
 
       if (settings.persistent[settingName]) {
@@ -1500,11 +1505,12 @@ class StatsAPIs {
       await Db.putClusterSettings(query);
       return res.json({
         success: true,
-        text: 'Successfully included node'
+        text: 'Successfully included node',
+        i18n: 'api.stats.nodeIncluded'
       });
     } catch (err) {
       console.log(`ERROR - ${req.method} /api/esshards/%s/%s/include`, ArkimeUtil.sanitizeStr(req.params.type), ArkimeUtil.sanitizeStr(req.params.value), util.inspect(err, false, 50));
-      return res.serverError(500, 'Node inclusion failed');
+      return res.serverError(500, 'Node inclusion failed', 'api.stats.nodeInclusionFailed');
     }
   }
 
@@ -1519,7 +1525,7 @@ class StatsAPIs {
    */
   static async deleteESShard (req, res) {
     if (internals.multiES && req.query.cluster === undefined) {
-      return res.serverError(401, 'Missing cluster in multiES mode');
+      return res.serverError(401, 'Missing cluster in multiES mode', 'api.stats.missingCluster');
     }
 
     try {

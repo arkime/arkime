@@ -564,6 +564,7 @@ import ConfigService from '../utils/ConfigService';
 import store from '@/store';
 import Utils from '../utils/utils';
 import { timezoneDateString, searchFields } from '@common/vueFilters.js';
+import { resolveMessage } from '@common/resolveI18nMessage';
 // lazy import these
 let d3, saveSvgAsPng;
 
@@ -1096,7 +1097,7 @@ export default {
       } catch (error) {
         pendingPromise = null;
         this.loading = false;
-        this.error = error.text || String(error);
+        this.error = resolveMessage(error, this.$t);
       }
     },
     setupFields: function () {

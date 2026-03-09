@@ -96,6 +96,7 @@ import ArkimePaging from '../utils/Pagination.vue';
 import ArkimeCollapsible from '../utils/CollapsibleWrapper.vue';
 import Focus from '@common/Focus.vue';
 import { commaString, timezoneDateString } from '@common/vueFilters.js';
+import { resolveMessage } from '@common/resolveI18nMessage';
 
 let searchInputTimeout; // timeout to debounce the search input
 
@@ -225,7 +226,7 @@ export default {
         this.recordsFiltered = response.recordsFiltered;
       }).catch((error) => {
         this.loading = false;
-        this.error = error.text || String(error);
+        this.error = resolveMessage(error, this.$t);
       });
     },
     onError: function (message) {
