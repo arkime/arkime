@@ -16,6 +16,8 @@ const { Client } = require('@elastic/elasticsearch');
 const User = require('../common/user');
 const ArkimeUtil = require('../common/arkimeUtil');
 const { LRUCache } = require('lru-cache');
+const DbESImpl = require('./db.es');
+const DbSQLiteImpl = require('./db.sqlite');
 
 const cache10 = new LRUCache({ max: 1000, ttl: 1000 * 10 });
 const cache60 = new LRUCache({ max: 1000, ttl: 1000 * 60 });
@@ -151,6 +153,19 @@ Db.initialize = async (info) => {
   }
 
   internals.usersClient7 = User.getClient();
+
+  // Initialize the users DB backend for views, shareables, etc.
+  if (internals.usersClient7) {
+    internals.usersImpl = new DbESImpl(internals.usersClient7, internals.usersPrefix);
+  } else {
+    const dbUrl = User.getDbUrl();
+    if (dbUrl?.startsWith('sqlite')) {
+      internals.usersImpl = new DbSQLiteImpl(ArkimeUtil.createSQLiteDB(dbUrl));
+    } else {
+      console.log(`ERROR - Don't understand users db impl for '${dbUrl}'`);
+      process.exit(1);
+    }
+  }
 
   // Replace tag implementation
   if (internals.multiES) {
@@ -1149,8 +1164,8 @@ Db.allocationExplain = async (cluster, index, shard, primary) => {
 Db.flush = async (index, cluster) => {
   if (index === 'users') {
     return User.flush(cluster);
-  } else if (index === 'lookups') {
-    return internals.usersClient7.indices.flush({ index: `${internals.usersPrefix}${index}`, cluster });
+  } else if (index === 'lookups' || index === 'views' || index === 'shareables') {
+    return internals.usersImpl.flush(index, cluster);
   } else {
     return internals.client7.indices.flush({ index: fixIndex(index), cluster });
   }
@@ -1159,8 +1174,8 @@ Db.flush = async (index, cluster) => {
 Db.refresh = async (index, cluster) => {
   if (index === 'users') {
     return User.flush(cluster);
-  } else if (index === 'lookups') {
-    return internals.usersClient7.indices.refresh({ index: `${internals.usersPrefix}${index}`, cluster });
+  } else if (index === 'lookups' || index === 'views' || index === 'shareables') {
+    return internals.usersImpl.refresh(index, cluster);
   } else {
     return internals.client7.indices.refresh({ index: fixIndex(index), cluster });
   }
@@ -1546,67 +1561,53 @@ Db.getShortcutsCache = async (user) => {
   return shortcutsMap;
 };
 
-Db.searchViews = async (query) => {
-  return internals.usersClient7.search({
-    index: `${internals.usersPrefix}views`, body: query, rest_total_hits_as_int: true, version: true
-  });
+Db.searchViews = async (params) => {
+  return internals.usersImpl.searchViews(params);
 };
-Db.numberOfViews = async (query) => {
-  return internals.usersClient7.count({
-    index: `${internals.usersPrefix}views`, body: query
-  });
+Db.numberOfViews = async (params) => {
+  return internals.usersImpl.numberOfViews(params);
 };
 Db.createView = async (doc) => {
-  return await internals.usersClient7.index({
-    index: `${internals.usersPrefix}views`, body: doc, refresh: 'wait_for', timeout: '10m'
-  });
+  return internals.usersImpl.createView(doc);
 };
 Db.deleteView = async (id) => {
-  return await internals.usersClient7.delete({
-    index: `${internals.usersPrefix}views`, id, refresh: true
-  });
+  return internals.usersImpl.deleteView(id);
+};
+Db.deleteAllViews = async () => {
+  return internals.usersImpl.deleteAllViews();
 };
 Db.setView = async (id, doc) => {
-  return await internals.usersClient7.index({
-    index: `${internals.usersPrefix}views`, body: doc, id, refresh: true, timeout: '10m'
-  });
+  return internals.usersImpl.setView(id, doc);
 };
 Db.getView = async (id) => {
-  return internals.usersClient7.get({ index: `${internals.usersPrefix}views`, id });
+  return internals.usersImpl.getView(id);
+};
+Db.getViewByIdOrName = async (idOrName, user, roles) => {
+  return internals.usersImpl.getViewByIdOrName(idOrName, user, roles);
 };
 
-Db.searchShareables = async (query) => {
-  return internals.usersClient7.search({
-    index: `${internals.usersPrefix}shareables`, body: query, rest_total_hits_as_int: true, version: true
-  });
+Db.searchShareables = async (params) => {
+  return internals.usersImpl.searchShareables(params);
 };
 
-Db.numberOfShareables = async (query) => {
-  return internals.usersClient7.count({
-    index: `${internals.usersPrefix}shareables`, body: query
-  });
+Db.numberOfShareables = async (params) => {
+  return internals.usersImpl.numberOfShareables(params);
 };
 
 Db.createShareable = async (doc) => {
-  return await internals.usersClient7.index({
-    index: `${internals.usersPrefix}shareables`, body: doc, refresh: 'wait_for', timeout: '10m'
-  });
+  return internals.usersImpl.createShareable(doc);
 };
 
 Db.deleteShareable = async (id) => {
-  return await internals.usersClient7.delete({
-    index: `${internals.usersPrefix}shareables`, id, refresh: true
-  });
+  return internals.usersImpl.deleteShareable(id);
 };
 
 Db.setShareable = async (id, doc) => {
-  return await internals.usersClient7.index({
-    index: `${internals.usersPrefix}shareables`, body: doc, id, refresh: true, timeout: '10m'
-  });
+  return internals.usersImpl.setShareable(id, doc);
 };
 
 Db.getShareable = async (id) => {
-  return internals.usersClient7.get({ index: `${internals.usersPrefix}shareables`, id });
+  return internals.usersImpl.getShareable(id);
 };
 
 Db.arkimeNodeStats = async (nodeName) => {

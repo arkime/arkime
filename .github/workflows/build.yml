@@ -174,7 +174,7 @@ jobs:
           (cd tests ; ARKIME_cache__type=lmdb ARKIME_cache__lmdbDir=/tmp/cache.lmdb ARKIME_cont3xt__dbUrl=lmdb:///tmp/cont3xt.lmddb USERSELASTICSEARCH=lmdb:///tmp/users.lmdb ./tests.pl --viewerstart cont3xt.t addUser.t api-notifiers.t parliament.t)
 
           echo "SQLITE"
-          (cd tests ; ARKIME_cache__type=sqlite ARKIME_cache__sqliteFile=/tmp/cache.sql ARKIME_cont3xt__dbUrl=sqlite:///tmp/cont3xt.db USERSELASTICSEARCH=sqlite:///tmp/users.db ./tests.pl --viewerstart cont3xt.t addUser.t api-notifiers.t parliament.t)
+          (cd tests ; ARKIME_cache__type=sqlite ARKIME_cache__sqliteFile=/tmp/cache.sql ARKIME_cont3xt__dbUrl=sqlite:///tmp/cont3xt.db USERSELASTICSEARCH=sqlite:///tmp/users.db ./tests.pl --viewerstart cont3xt.t addUser.t api-notifiers.t parliament.t api-views.t api-shareables.t)
 
           echo "REDIS"
           (cd tests ; ARKIME_cache__type=redis ARKIME_cache__redisURL=redis://localhost:7379/1 ARKIME_cont3xt__dbUrl=redis://localhost:7379/2 USERSELASTICSEARCH=redis://localhost:7379/0 ./tests.pl --viewerstart cont3xt.t addUser.t api-notifiers.t parliament.t)

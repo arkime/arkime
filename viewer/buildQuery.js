@@ -123,44 +123,14 @@ class BuildQuery {
     const reqQuery = queryOverride || req.query;
 
     try {
-      const roles = [...await req.user.getRoles()]; // es requires an array for terms search
+      const roles = [...await req.user.getRoles()];
 
-      const viewQuery = { // search for the shortcut
-        size: 1,
-        query: {
-          bool: {
-            filter: [{
-              bool: {
-                must: [{ // needs to match the id OR name
-                  bool: {
-                    should: [ // match id OR name
-                      { term: { _id: reqQuery.view } }, // matches the id
-                      { term: { name: reqQuery.view } } // matches the name
-                    ]
-                  }
-                }, { // AND be shared with the user via role, user, OR creator
-                  bool: {
-                    should: [
-                      { terms: { roles } }, // shared via user role
-                      { term: { users: req.user.userId } }, // shared via userId
-                      { term: { user: req.user.userId } } // created by this user
-                    ]
-                  }
-                }]
-              }
-            }]
-          }
-        }
-      };
+      const view = await Db.getViewByIdOrName(reqQuery.view, req.user.userId, roles);
 
-      const { body: { hits: { hits: views } } } = await Db.searchViews(viewQuery);
-
-      if (!views.length) {
+      if (!view) {
         console.log(`ERROR - User does not have permission to access this view or the view doesn't exist: ${reqQuery.view}`);
         throw 'Can\'t find view';
       }
-
-      const view = views[0]._source;
 
       try {
         const viewExpression = arkimeparser.parse(view.expression);

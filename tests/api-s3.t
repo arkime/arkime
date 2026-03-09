@@ -7,7 +7,7 @@ use Test::Differences;
 use Data::Dumper;
 use strict;
 
-system("perl mini-s3.pl 4566 &");
+system("perl mini-s3.pl --debug 4566 > /tmp/arkime.s3 &");
 esPost("/tests2_sessions*/_delete_by_query?conflicts=proceed&refresh", '{ "query": { "term": { "node": "s3-test" } } }');
 
 sub run {

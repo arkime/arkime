@@ -9,6 +9,7 @@
 
 use strict;
 use warnings;
+$SIG{INT} = sub { exit 0; };
 use IO::Socket::INET;
 use POSIX qw(strftime);
 use IO::Select;

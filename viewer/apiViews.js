@@ -24,53 +24,23 @@ class ViewAPIs {
 
     const roles = [...await user.getRoles()]; // es requires an array for terms search
 
-    // only get views for setting user or shared
-    const query = {
-      query: {
-        bool: {
-          filter: [
-            {
-              bool: {
-                should: [
-                  { terms: { roles } }, // shared via user role
-                  { terms: { editRoles: roles } }, // shared via user editRoles
-                  { term: { users: user.userId } }, // shared via userId
-                  { term: { user: user.userId } } // created by this user
-                ]
-              }
-            }
-          ]
-        }
-      },
-      sort: {},
+    const params = {
+      user: user.userId,
+      roles,
+      all: req.query.all && roles.includes('arkimeAdmin'),
+      sortField: req.query.sort || 'name',
+      sortOrder: req.query.desc === 'true' ? 'desc' : 'asc',
       from: req.query.start || 0,
-      size: req.query.length || 50
+      size: req.query.length || 50,
+      searchTerm: req.query.searchTerm
     };
 
-    if (req.query.all && roles.includes('arkimeAdmin')) {
-      query.query.bool.filter = []; // remove sharing restrictions
-    }
+    const { data: views, total: recordsTotal } = await Db.searchViews(params);
+    const total = await Db.numberOfViews(params);
 
-    query.sort[req.query.sort || 'name'] = {
-      order: req.query.desc === 'true' ? 'desc' : 'asc'
-    };
-
-    if (req.query.searchTerm) {
-      query.query.bool.filter.push({
-        wildcard: { name: '*' + req.query.searchTerm + '*' }
-      });
-    }
-
-    const { body: { hits: views } } = await Db.searchViews(query);
-
-    delete query.sort;
-    delete query.size;
-    delete query.from;
-    const { body: { count: total } } = await Db.numberOfViews(query);
-
-    const results = views.hits.map((view) => {
-      const id = view._id;
-      const result = view._source;
+    const results = views.map((view) => {
+      const id = view.id;
+      const result = view.source;
 
       if ( // remove sensitive information for users this is shared with
         // (except creator, arkimeAdmin, and editors)
@@ -89,7 +59,7 @@ class ViewAPIs {
       return result;
     });
 
-    return { data: results, recordsTotal: views.total, recordsFiltered: total };
+    return { data: results, recordsTotal, recordsFiltered: total };
   }
 
   // --------------------------------------------------------------------------
@@ -151,8 +121,8 @@ class ViewAPIs {
     req.body.users = users.validUsers;
 
     try {
-      const { body: { _id: id } } = await Db.createView(req.body);
-      const { body: { _source: view } } = await Db.getView(id);
+      const id = await Db.createView(req.body);
+      const view = await Db.getView(id);
 
       view.id = id;
       view.users = view.users?.join(',') ?? '';
@@ -213,10 +183,10 @@ class ViewAPIs {
     const view = req.body;
 
     try {
-      const { body: dbView } = await Db.getView(req.params.id);
+      const dbViewSource = await Db.getView(req.params.id);
 
       // sets the owner if it has changed
-      if (!await User.setOwner(req, res, view, dbView._source, 'user')) {
+      if (!await User.setOwner(req, res, view, dbViewSource, 'user')) {
         return;
       }
 
@@ -230,9 +200,9 @@ class ViewAPIs {
 
       try {
         await Db.setView(req.params.id, view);
-        const { body: { _source: newView } } = await Db.getView(req.params.id);
+        const newView = await Db.getView(req.params.id);
         newView.users = newView.users?.join(',') ?? '';
-        newView.id = dbView._id;
+        newView.id = req.params.id;
 
         return res.json({
           view: newView,
