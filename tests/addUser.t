@@ -6,8 +6,6 @@ use ArkimeTest;
 use JSON;
 use strict;
 
-clearIndex("tests_users");
-
 viewerGet("/regressionTests/deleteAllUsers");
 
 esGet("/_refresh");
@@ -244,9 +242,9 @@ eq_or_diff($response, from_json('{"success": false, "text": "Bad path &#47;api&#
 $users = viewerPostToken("/api/users?arkimeRegressionUser=admin", "", $adminToken);
 is (@{$users->{data}}, 3, "Two supers left");
 
-clearIndex("tests_users");
+viewerGet("/regressionTests/deleteAllUsers");
 
 $users = viewerPost("/api/users", "");
-diag Dumper($users) if (@{$users->{data}} != 0);;
-is (@{$users->{data}}, 0, "Empty users table");
-clearIndex("tests_users");
+diag Dumper($users) if (@{$users->{data}} != 1);;
+is (@{$users->{data}}, 1, "Empty users table");
+viewerGet("/regressionTests/deleteAllUsers");

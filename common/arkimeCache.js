@@ -53,6 +53,9 @@ class ArkimeCache {
       return new ArkimeMemcachedCache(options);
     case 'lmdb':
       return new ArkimeLMDBCache(options);
+    case 'sqlite':
+    case 'sqlite3':
+      return new ArkimeSQLiteCache(options);
     default:
       console.log('ERROR - Unknown cache type', options.type);
       process.exit(1);
@@ -69,10 +72,7 @@ class ArkimeRedisCache extends ArkimeCache {
   constructor (options) {
     super(options);
 
-    this.redisFormat = parseInt(options.getConfig('redisFormat', '2'));
-    if (this.redisFormat !== 3) {
-      this.redisFormat = 2;
-    }
+    this.prefix = `cache:${options.name ?? 'default'}:`;
     this.client = ArkimeUtil.createRedisClient(options.getConfig('redisURL'), 'cache');
   }
 
@@ -83,23 +83,17 @@ class ArkimeRedisCache extends ArkimeCache {
     }
 
     return new Promise((resolve, reject) => {
-      this.client.getBuffer(key, (err, reply) => {
+      this.client.getBuffer(this.prefix + key, (err, reply) => {
         if (err || reply === null) {
           return resolve(undefined);
         }
-        const bsonResult = BSON.deserialize(reply, { promoteBuffers: true });
-
-        for (const source in bsonResult) {
-          // Redis uses old encoding, convert old to new when needed
-          if (!Buffer.isBuffer(bsonResult[source].result)) {
-            const newResult = Buffer.allocUnsafe(bsonResult[source].result.buffer.length + 1);
-            newResult[0] = bsonResult[source].result.num;
-            bsonResult[source].result.buffer.copy(newResult, 1);
-            bsonResult[source].result = newResult;
-          }
+        try {
+          const bsonResult = BSON.deserialize(reply, { promoteBuffers: true });
+          super.set(key, bsonResult);
+          return resolve(bsonResult);
+        } catch (e) {
+          return resolve(undefined);
         }
-        super.set(key, bsonResult); // Set memory cache
-        return resolve(bsonResult);
       });
     });
   }
@@ -108,19 +102,8 @@ class ArkimeRedisCache extends ArkimeCache {
   set (key, result) {
     super.set(key, result);
 
-    let newResult;
-    if (this.redisFormat === 3) {
-      newResult = result;
-    } else {
-      // Redis uses old encoding, convert new to old
-      newResult = {};
-      for (const source in result) {
-        newResult[source] = { ts: result[source].ts, result: { num: result[source].result[0], buffer: result[source].result.slice(1) } };
-      }
-    }
-
-    const data = BSON.serialize(newResult, false, true, false);
-    this.client.setex(key, this.cacheTimeout, data);
+    const data = BSON.serialize(result, false, true, false);
+    this.client.setex(this.prefix + key, this.cacheTimeout, data);
   }
 }
 
@@ -131,6 +114,7 @@ class ArkimeMemcachedCache extends ArkimeCache {
   constructor (options) {
     super(options);
 
+    this.prefix = `cache:${options.name ?? 'default'}:`;
     this.client = ArkimeUtil.createMemcachedClient(options.getConfig('memcachedURL'), 'cache');
   }
 
@@ -141,13 +125,17 @@ class ArkimeMemcachedCache extends ArkimeCache {
     }
 
     return new Promise((resolve, reject) => {
-      this.client.get(key, (err, reply) => {
+      this.client.get(this.prefix + key, (err, reply) => {
         if (err || reply === null) {
           return resolve(undefined);
         }
-        const bsonResult = BSON.deserialize(reply, { promoteBuffers: true });
-        super.set(key, bsonResult); // Set memory cache
-        return resolve(bsonResult);
+        try {
+          const bsonResult = BSON.deserialize(reply, { promoteBuffers: true });
+          super.set(key, bsonResult); // Set memory cache
+          return resolve(bsonResult);
+        } catch (e) {
+          return resolve(undefined);
+        }
       });
     });
   }
@@ -157,7 +145,7 @@ class ArkimeMemcachedCache extends ArkimeCache {
     super.set(key, result);
 
     const data = BSON.serialize(result, false, true, false);
-    this.client.set(key, data, { expires: this.cacheTimeout }, () => {});
+    this.client.set(this.prefix + key, data, { expires: this.cacheTimeout }, () => {});
   }
 }
 
@@ -197,5 +185,76 @@ class ArkimeLMDBCache extends ArkimeCache {
   // ----------------------------------------------------------------------------
   set (key, result) {
     this.store.put(key, result);
+  }
+}
+
+/******************************************************************************/
+// SQLite Cache
+/******************************************************************************/
+class ArkimeSQLiteCache extends ArkimeCache {
+  constructor (options) {
+    super(options);
+
+    const dbPath = options.getConfig('sqliteFile');
+
+    if (typeof (dbPath) !== 'string') {
+      console.log('ERROR - sqliteFile must be set for sqlite cache');
+      process.exit(1);
+    }
+
+    this.tableName = `cache_${(options.name ?? 'default').replace(/[^a-zA-Z0-9_]/g, '_')}`;
+
+    try {
+      this.db = ArkimeUtil.createSQLiteDB(dbPath);
+
+      this.db.exec(`
+        CREATE TABLE IF NOT EXISTS ${this.tableName} (
+          key TEXT PRIMARY KEY,
+          value BLOB NOT NULL,
+          expires INTEGER NOT NULL
+        )
+      `);
+      this.db.exec(`CREATE INDEX IF NOT EXISTS ${this.tableName}_expires ON ${this.tableName}(expires)`);
+
+      // Clean up expired entries every minute
+      const cleanupInterval = setInterval(() => {
+        try {
+          this.db.prepare(`DELETE FROM ${this.tableName} WHERE expires <= ?`).run(Math.floor(Date.now() / 1000));
+        } catch (e) { }
+      }, 60 * 1000);
+      cleanupInterval.unref();
+    } catch (err) {
+      console.log('ERROR -', err);
+      process.exit(1);
+    }
+  }
+
+  // ----------------------------------------------------------------------------
+  async get (key) {
+    if (super.has(key)) {
+      return super.get(key);
+    }
+
+    const row = this.db.prepare(`SELECT value FROM ${this.tableName} WHERE key = ? AND expires > ?`).get(key, Date.now() / 1000);
+    if (!row) {
+      return undefined;
+    }
+
+    try {
+      const result = BSON.deserialize(row.value, { promoteBuffers: true });
+      super.set(key, result);
+      return result;
+    } catch (e) {
+      return undefined;
+    }
+  }
+
+  // ----------------------------------------------------------------------------
+  set (key, result) {
+    super.set(key, result);
+
+    const data = BSON.serialize(result, false, true, false);
+    const expires = Math.floor(Date.now() / 1000) + this.cacheTimeout;
+    this.db.prepare(`INSERT OR REPLACE INTO ${this.tableName} (key, value, expires) VALUES (?, ?, ?)`).run(key, data, expires);
   }
 }

@@ -13,7 +13,7 @@ use strict;
 my $json;
 
 # clean old users
-    clearIndex("tests_users");
+    viewerGet("/regressionTests/deleteAllUsers");
 
 # Get tokens
     my $token = getTokenCookie();
@@ -688,4 +688,4 @@ my $uaToken = getTokenCookie('testusersadmin');
     is($json->{app}, "cont3xt", "cont3xt appversion app field");
 
 # clean old users
-    clearIndex("tests_users");
+    viewerGet("/regressionTests/deleteAllUsers");

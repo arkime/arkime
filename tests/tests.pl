@@ -19,6 +19,7 @@ use Socket6 qw(AF_INET6 inet_pton);
 $main::userAgent = LWP::UserAgent->new(timeout => 20);
 
 my $ELASTICSEARCH = $ENV{ELASTICSEARCH} = "http://127.0.0.1:9200";
+my $USERSELASTICSEARCH = $ENV{USERSELASTICSEARCH} || $ELASTICSEARCH;
 
 $ENV{'PERL5LIB'} = getcwd();
 $ENV{'TZ'} = 'US/Eastern';
@@ -351,7 +352,12 @@ my ($cmd) = @_;
     }
 
     if ($cmd ne "--viewernostart") {
-        my $wes = "-o 'wiseService.usersElasticsearch=$ELASTICSEARCH'";
+        if ($main::debug) {
+            system("perl mini-redis.pl --debug 7379 > /tmp/arkime.redis 2>&1 &");
+        } else {
+            system("perl mini-redis.pl 7379 &");
+        }
+        my $wes = "-o 'wiseService.usersElasticsearch=$USERSELASTICSEARCH'";
         print ("Starting WISE\n");
         if ($main::debug) {
             system("cd ../wiseService ; $node wiseService.js $wes $INSECURE --webcode thecode --webconfig --regressionTests -c ../tests/config.test.json > /tmp/arkime.wise &");
@@ -364,9 +370,9 @@ my ($cmd) = @_;
 
     my $es = "-o 'elasticsearch=$ELASTICSEARCH'";
     my $ces = "-o 'cont3xt.elasticsearch=$ELASTICSEARCH'";
-    my $ues = "-o 'usersElasticsearch=$ELASTICSEARCH'";
-    my $cues = "-o 'cont3xt.usersElasticsearch=$ELASTICSEARCH'";
-    my $pues = "-o 'parliament.usersElasticsearch=$ELASTICSEARCH'";
+    my $ues = "-o 'usersElasticsearch=$USERSELASTICSEARCH'";
+    my $cues = "-o 'cont3xt.usersElasticsearch=$USERSELASTICSEARCH'";
+    my $pues = "-o 'parliament.usersElasticsearch=$USERSELASTICSEARCH'";
     my $mes = "-o 'multiESNodes=$ELASTICSEARCH,prefix:tests,name:test;$ELASTICSEARCH,prefix:tests2_,name:test2'";
     my $s3 = "-o 's3AccessKeyId=$ENV{s3AccessKeyId}' -o 's3SecretAccessKey=$ENV{s3SecretAccessKey}'";
 
@@ -435,6 +441,7 @@ my ($cmd) = @_;
     waitFor($ArkimeTest::host, 8008);
     waitFor($ArkimeTest::host, 3218);
     waitFor($ArkimeTest::host, 7200);
+    waitFor($ArkimeTest::host, 7379);
     sleep 1;
 
     $main::userAgent->get("$ELASTICSEARCH/_flush");
@@ -458,6 +465,7 @@ my ($cmd) = @_;
         $main::userAgent->post("http://localhost:8008/regressionTests/shutdown");
         $main::userAgent->post("http://localhost:3218/regressionTests/shutdown");
         $main::userAgent->post("http://localhost:7200/regressionTests/shutdown");
+        if (my $rs2 = IO::Socket::INET->new(PeerAddr => "127.0.0.1", PeerPort => 7379, Proto => "tcp")) { $rs2->autoflush(1); print $rs2 "*1\r\n\$8\r\nSHUTDOWN\r\n"; my $resp = <$rs2>; $rs2->close(); }
     }
 
 # Coverage

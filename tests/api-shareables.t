@@ -6,7 +6,7 @@ use Data::Dumper;
 use strict;
 
 # clean old users
-clearIndex("tests_users");
+viewerGet("/regressionTests/deleteAllUsers");
 
 clearIndex("tests_shareables");
 

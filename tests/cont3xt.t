@@ -1,15 +1,13 @@
 # Test cont3xt.js
-use Test::More tests => 168;
+use Test::More tests => 176;
 use Test::Differences;
 use Data::Dumper;
 use ArkimeTest;
 use JSON;
 use strict;
 
-clearIndex("cont3xt_links");
-clearIndex("cont3xt_overviews");
-clearIndex("cont3xt_history");
-clearIndex("cont3xt_views");
+viewerGet("/regressionTests/deleteAllUsers");
+cont3xtPost("/regressionTests/clearAll");
 
 my $token = getCont3xtTokenCookie();
 
@@ -692,21 +690,23 @@ eq_or_diff($json, from_json('{"success": true, "roles": ["arkimeAdmin","arkimeUs
 
 ################################################################################
 ### INTEGRATION
-$json = cont3xtGet('/api/integration');
-is ($json->{success}, 1);
-cmp_ok (keys %{$json->{integrations}}, ">", 10);
 
-$json = cont3xtPost('/api/integration/search', to_json({
-  query => "example.com"
-}));
+# Full test - disable for now since it goes against real services
+#$json = cont3xtGet('/api/integration');
+#is ($json->{success}, 1);
+#cmp_ok (keys %{$json->{integrations}}, ">", 10);
 
-is($json->[0]->{purpose}, "init");
-is($json->[0]->{sent}, 0);
-is($json->[0]->{text}, "more to follow");
-is(scalar @{$json->[0]->{indicators}}, 1);
-is($json->[0]->{indicators}->[0]->{itype}, "domain");
-is($json->[0]->{indicators}->[0]->{query}, "example.com");
-cmp_ok (scalar @{$json}, ">", 8);
+#$json = cont3xtPost('/api/integration/search', to_json({
+#  query => "example.com"
+#}));
+
+#is($json->[0]->{purpose}, "init");
+#is($json->[0]->{sent}, 0);
+#is($json->[0]->{text}, "more to follow");
+#is(scalar @{$json->[0]->{indicators}}, 1);
+#is($json->[0]->{indicators}->[0]->{itype}, "domain");
+#is($json->[0]->{indicators}->[0]->{query}, "example.com");
+#cmp_ok (scalar @{$json}, ">", 8);
 
 $json = cont3xtPost('/api/integration/search', to_json({
   query => "example.com",
@@ -889,7 +889,7 @@ is (scalar @{$json->{audits}}, 0);
 
 $json = cont3xtGet('/api/audits');
 is($json->{success}, 1);
-is (scalar @{$json->{audits}}, 5);
+is (scalar @{$json->{audits}}, 4);
 $id = $json->{audits}->[0]->{_id};
 
 $json = cont3xtDelete("/api/audit/$id", '{}');
@@ -903,10 +903,52 @@ eq_or_diff($json, from_json('{"success": false, "text": "History log not found"}
 
 $json = cont3xtGet('/api/audits');
 is($json->{success}, 1);
-is (scalar @{$json->{audits}}, 4);
+is (scalar @{$json->{audits}}, 3);
 
-################################################################################
-### VIEWS
+# use actual issuedAt from results to build reliable date ranges
+my @timestamps = sort map { $_->{issuedAt} } @{$json->{audits}};
+my $minTime = $timestamps[0];
+my $maxTime = $timestamps[-1];
+
+# date range covering all audits
+$json = cont3xtGet("/api/audits?startMs=" . ($minTime - 1) . "&stopMs=" . ($maxTime + 1));
+is($json->{success}, 1);
+is (scalar @{$json->{audits}}, 3, "all audits in range");
+
+# date range before all audits
+$json = cont3xtGet("/api/audits?startMs=" . ($minTime - 2000) . "&stopMs=" . ($minTime - 1000));
+is($json->{success}, 1);
+is (scalar @{$json->{audits}}, 0, "no audits before range");
+
+# date range after all audits
+$json = cont3xtGet("/api/audits?startMs=" . ($maxTime + 1000) . "&stopMs=" . ($maxTime + 2000));
+is($json->{success}, 1);
+is (scalar @{$json->{audits}}, 0, "no audits after range");
+
+# sorting by issuedAt ascending
+$json = cont3xtGet('/api/audits?sortBy=issuedAt&sortOrder=asc');
+is($json->{success}, 1);
+ok($json->{audits}->[0]->{issuedAt} <= $json->{audits}->[-1]->{issuedAt}, "sorted ascending by issuedAt");
+
+# sorting by issuedAt descending
+$json = cont3xtGet('/api/audits?sortBy=issuedAt&sortOrder=desc');
+is($json->{success}, 1);
+ok($json->{audits}->[0]->{issuedAt} >= $json->{audits}->[-1]->{issuedAt}, "sorted descending by issuedAt");
+
+# pagination
+$json = cont3xtGet('/api/audits?page=1&itemsPerPage=2');
+is($json->{success}, 1);
+is (scalar @{$json->{audits}}, 2, "page 1 has 2 items");
+is ($json->{total}, 3, "total is still 3");
+
+$json = cont3xtGet('/api/audits?page=2&itemsPerPage=2');
+is($json->{success}, 1);
+is (scalar @{$json->{audits}}, 1, "page 2 has 1 item");
+
+# combined date range + search
+$json = cont3xtGet("/api/audits?startMs=" . ($minTime - 1) . "&stopMs=" . ($maxTime + 1) . "&searchTerm=goodtag");
+is($json->{success}, 1);
+is (scalar @{$json->{audits}}, 1, "date range + searchTerm combined");
 # Bad
 $json = cont3xtPostToken('/api/view', to_json({
 }), $token);
@@ -1009,7 +1051,7 @@ is (scalar @{$json->{views}}, 1);
 ### Settings
 $json = cont3xtGet('/api/integration/settings');
 ok($json->{success});
-ok($json->{settings}->{Threatstream}->{locked});
+ok($json->{settings}->{"elasticsearch:test"}->{locked});
 ok(!$json->{settings}->{Twilio}->{locked});
 
 $json = cont3xtPut('/api/integration/settings', '{}');

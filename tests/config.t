@@ -7,8 +7,6 @@ use Data::Dumper;
 use JSON;
 use strict;
 
-system("perl mini-redis.pl 7379 &");
-
 open(FH, '>', "testconfig.ini") or die $!;
 print FH <<EOF;
 [default]
@@ -355,4 +353,3 @@ doNotFoundTest($url);
 #### Clean up
 unlink("testconfig.ini");
 unlink("testconfig.json");
-if (my $rs2 = IO::Socket::INET->new(PeerAddr => "127.0.0.1", PeerPort => 7379, Proto => "tcp")) { print $rs2 "*1\r\n\$8\r\nSHUTDOWN\r\n"; $rs2->close(); }

@@ -8,6 +8,7 @@
 
 'use strict';
 
+const cryptoLib = require('crypto');
 const path = require('path');
 const util = require('util');
 const fs = require('fs');
@@ -18,16 +19,23 @@ const ArkimeConfig = require('./arkimeConfig');
 class Notifier {
   static notifierTypes;
 
-  static #esclient;
-  static #notifiersIndex;
+  static #implementation;
   static #defaultAlerts = { esRed: false, esDown: false, esDropped: false, outOfDate: false, noPackets: false };
 
   static initialize (options) {
-    Notifier.#esclient = options.esclient;
+    const url = options.url ?? User.getDbUrl();
 
-    const prefix = ArkimeUtil.formatPrefix(options.prefix);
-
-    Notifier.#notifiersIndex = `${prefix}notifiers`;
+    if (!url || url.startsWith('http')) {
+      Notifier.#implementation = new NotifierESImplementation(options);
+    } else if (url.startsWith('lmdb')) {
+      Notifier.#implementation = new NotifierLMDBImplementation(options);
+    } else if (url.startsWith('redis')) {
+      Notifier.#implementation = new NotifierRedisImplementation({ ...options, url });
+    } else if (url.startsWith('sqlite')) {
+      Notifier.#implementation = new NotifierSQLiteImplementation({ ...options, url });
+    } else {
+      Notifier.#implementation = new NotifierESImplementation(options);
+    }
 
     Notifier.notifierTypes = {};
 
@@ -49,32 +57,62 @@ class Notifier {
   // --------------------------------------------------------------------------
   // DB INTERACTIONS
   // --------------------------------------------------------------------------
+
+  /**
+   * Get a notifier by id
+   * @returns {object} { id, ...notifierDoc }
+   */
   static async getNotifier (id) {
-    return Notifier.#esclient.get({ index: Notifier.#notifiersIndex, id });
+    return Notifier.#implementation.getNotifier(id);
   }
 
-  static async searchNotifiers (query) {
-    return Notifier.#esclient.search({
-      index: Notifier.#notifiersIndex, body: query, rest_total_hits_as_int: true, version: true
-    });
+  /**
+   * Search notifiers with optional filters
+   * @param {object} options
+   * @param {string} options.name - Filter by exact name
+   * @param {string} options.userId - Filter to notifiers accessible by this userId
+   * @param {Array} options.roles - Filter to notifiers accessible by these roles
+   * @param {boolean} options.all - If true, return all notifiers (admin mode)
+   * @returns {Array} Array of { id, ...notifierDoc }
+   */
+  static async searchNotifiers (options = {}) {
+    const results = await Notifier.#implementation.searchNotifiers(options);
+    results.sort((a, b) => (a.created ?? 0) - (b.created ?? 0) || (a.name ?? '').localeCompare(b.name ?? ''));
+    return results;
   }
 
+  /**
+   * Create a notifier document
+   * @returns {string} The id of the created notifier
+   */
   static async createNotifier (doc) {
-    return await Notifier.#esclient.index({
-      index: Notifier.#notifiersIndex, body: doc, refresh: 'wait_for', timeout: '10m'
-    });
+    return Notifier.#implementation.createNotifier(doc);
   }
 
+  /**
+   * Delete a notifier by id
+   */
   static async deleteNotifier (id) {
-    return await Notifier.#esclient.delete({
-      index: Notifier.#notifiersIndex, id, refresh: true
-    });
+    return Notifier.#implementation.deleteNotifier(id);
   }
 
+  /**
+   * Update a notifier by id
+   */
   static async setNotifier (id, doc) {
-    return await Notifier.#esclient.index({
-      index: Notifier.#notifiersIndex, body: doc, id, refresh: true, timeout: '10m'
-    });
+    return Notifier.#implementation.setNotifier(id, doc);
+  }
+
+  /**
+   * Delete all notifiers (for regression tests)
+   */
+  static async deleteAllNotifiers () {
+    return Notifier.#implementation.deleteAllNotifiers();
+  }
+
+  static async apiDeleteAllNotifiers (req, res) {
+    await Notifier.deleteAllNotifiers();
+    return res.send({ success: true });
   }
 
   // --------------------------------------------------------------------------
@@ -158,7 +196,7 @@ class Notifier {
     }
 
     try {
-      const { body: { _source: notifier } } = await Notifier.getNotifier(id);
+      const notifier = await Notifier.getNotifier(id);
 
       if (!notifier) {
         const msg = `ERROR - Cannot find notifier (${id}), no alert can be issued`;
@@ -246,55 +284,35 @@ class Notifier {
    * @returns {Notifier[]} notifiers - The notifiers that have been created.
    */
   static async apiGetNotifiers (req, res) {
-    const allRoles = await req.user.getRoles();
-    const roles = [...allRoles.keys()]; // es requires an array for terms search
+    try {
+      const isAdmin = req.user.hasRole('arkimeAdmin') || req.user.hasRole('parliamentAdmin');
 
-    const query = {
-      sort: { created: { order: 'asc' } }
-    };
+      let notifiers;
+      if (isAdmin) {
+        notifiers = await Notifier.searchNotifiers({ all: true });
+      } else {
+        const allRoles = await req.user.getRoles();
+        const roles = [...allRoles.keys()];
+        notifiers = await Notifier.searchNotifiers({ userId: req.user.userId, roles });
+      }
 
-    // if not an admin, restrict who can see the notifiers
-    if (!req.user.hasRole('arkimeAdmin') && !req.user.hasRole('parliamentAdmin')) {
-      query.query = {
-        bool: {
-          filter: [
-            {
-              bool: {
-                should: [
-                  { terms: { roles } }, // shared via user role
-                  { term: { users: req.user.userId } } // shared via userId
-                ]
-              }
-            }
-          ]
-        }
-      };
-    }
-
-    Notifier.searchNotifiers(query).then(({ body: { hits: { hits: notifiers } } }) => {
       const results = notifiers.map((notifier) => {
-        const id = notifier._id;
-        const result = notifier._source;
-        // client expects a string
-        const users = result.users;
-        result.users = '';
+        // client expects a string for users
+        const users = notifier.users;
+        notifier.users = '';
         if (users) {
-          result.users = users.join(',') || '';
+          notifier.users = (Array.isArray(users) ? users : [users]).join(',') || '';
         }
-        if (!req.user.hasRole('arkimeAdmin') && !req.user.hasRole('parliamentAdmin')) {
-          // non-admins only need name and type to use notifiers (they cannot create/update/delete)
-          const notifierType = result.type;
-          const notifierName = result.name;
-          return { name: notifierName, type: notifierType, id };
+        if (!isAdmin) {
+          return { name: notifier.name, type: notifier.type, id: notifier.id };
         }
-        result.id = id;
-        return result;
+        return notifier;
       });
 
       return res.send(results);
-    }).catch((err) => {
+    } catch (err) {
       return res.serverError(500, 'Error retrieving notifiers');
-    });
+    }
   }
 
   /**
@@ -325,7 +343,7 @@ class Notifier {
     req.body.users = users.validUsers;
 
     try {
-      const { body: { _id: id } } = await Notifier.createNotifier(req.body);
+      const id = await Notifier.createNotifier(req.body);
 
       req.body.id = id;
       req.body.users = req.body.users.join(',');
@@ -361,7 +379,7 @@ class Notifier {
     }
 
     try {
-      const { body: { _source: notifier } } = await Notifier.getNotifier(req.params.id);
+      const notifier = await Notifier.getNotifier(req.params.id);
 
       if (!notifier) {
         return res.serverError(404, 'Notifier not found');
@@ -380,23 +398,18 @@ class Notifier {
       users = await User.validateUserIds(users);
       notifier.users = users.validUsers;
 
-      try {
-        await Notifier.setNotifier(req.params.id, notifier);
-        notifier.id = req.params.id;
-        notifier.users = notifier.users.join(',');
-        res.json({
-          notifier,
-          success: true,
-          invalidUsers: users.invalidUsers,
-          text: 'Updated notifier successfully'
-        });
-      } catch (err) {
-        console.log(`ERROR - ${req.method} /api/notifier/%s (setNotifier)`, ArkimeUtil.sanitizeStr(req.params.id), util.inspect(err, false, 50));
-        return res.serverError(500, 'Error updating notifier');
-      }
+      await Notifier.setNotifier(req.params.id, notifier);
+      notifier.id = req.params.id;
+      notifier.users = notifier.users.join(',');
+      res.json({
+        notifier,
+        success: true,
+        invalidUsers: users.invalidUsers,
+        text: 'Updated notifier successfully'
+      });
     } catch (err) {
-      console.log(`ERROR - ${req.method} /api/notifier/%s (getNotifier)`, ArkimeUtil.sanitizeStr(req.params.id), util.inspect(err, false, 50));
-      return res.serverError(500, 'Fetching notifier to update failed');
+      console.log(`ERROR - ${req.method} /api/notifier/%s (updateNotifier)`, ArkimeUtil.sanitizeStr(req.params.id), util.inspect(err, false, 50));
+      return res.serverError(500, 'Error updating notifier');
     }
   }
 
@@ -410,25 +423,20 @@ class Notifier {
    */
   static async apiDeleteNotifier (req, res) {
     try {
-      const { body: { _source: notifier } } = await Notifier.getNotifier(req.params.id);
+      const notifier = await Notifier.getNotifier(req.params.id);
 
       if (!notifier) {
         return res.serverError(404, 'Notifier not found');
       }
 
-      try {
-        await Notifier.deleteNotifier(req.params.id);
-        res.json({
-          success: true,
-          text: 'Deleted notifier successfully'
-        });
-      } catch (err) {
-        console.log(`ERROR - ${req.method} /api/notifier/%s (deleteNotifier)`, ArkimeUtil.sanitizeStr(req.params.id), util.inspect(err, false, 50));
-        return res.serverError(500, 'Error deleting notifier');
-      }
+      await Notifier.deleteNotifier(req.params.id);
+      res.json({
+        success: true,
+        text: 'Deleted notifier successfully'
+      });
     } catch (err) {
       console.log(`ERROR - ${req.method} /api/notifier/%s (deleteNotifier)`, ArkimeUtil.sanitizeStr(req.params.id), util.inspect(err, false, 50));
-      return res.serverError(500, 'Fetching notifier to delete failed');
+      return res.serverError(500, 'Error deleting notifier');
     }
   }
 
@@ -453,6 +461,265 @@ class Notifier {
     }
 
     Notifier.issueAlert(req.params.id, `Test alert from ${req.user.userId}`, continueProcess);
+  }
+}
+
+/******************************************************************************/
+// ES Implementation
+/******************************************************************************/
+class NotifierESImplementation {
+  client;
+  notifiersIndex;
+
+  constructor (options) {
+    this.client = User.getClient();
+    const prefix = ArkimeUtil.formatPrefix(options.prefix);
+    this.notifiersIndex = `${prefix}notifiers`;
+  }
+
+  async getNotifier (id) {
+    try {
+      const { body: { _source: doc } } = await this.client.get({ index: this.notifiersIndex, id });
+      if (!doc) { return null; }
+      doc.id = id;
+      return doc;
+    } catch (err) {
+      if (err.meta?.statusCode === 404) { return null; }
+      throw err;
+    }
+  }
+
+  async searchNotifiers (options = {}) {
+    const query = {};
+
+    if (options.name) {
+      query.query = { bool: { must: { term: { name: options.name } } } };
+    } else if (options.userId || options.roles) {
+      const should = [];
+      if (options.roles) { should.push({ terms: { roles: options.roles } }); }
+      if (options.userId) { should.push({ term: { users: options.userId } }); }
+      query.query = { bool: { filter: [{ bool: { should } }] } };
+    }
+
+    const { body: { hits: { hits } } } = await this.client.search({
+      index: this.notifiersIndex, body: query, rest_total_hits_as_int: true, size: 1000
+    });
+
+    return hits.map(h => { const doc = h._source; doc.id = h._id; return doc; });
+  }
+
+  async createNotifier (doc) {
+    const { body: { _id: id } } = await this.client.index({
+      index: this.notifiersIndex, body: doc, refresh: 'wait_for', timeout: '10m'
+    });
+    return id;
+  }
+
+  async deleteNotifier (id) {
+    await this.client.delete({ index: this.notifiersIndex, id, refresh: true });
+  }
+
+  async setNotifier (id, doc) {
+    const docToSave = { ...doc };
+    delete docToSave.id;
+    await this.client.index({
+      index: this.notifiersIndex, body: docToSave, id, refresh: true, timeout: '10m'
+    });
+  }
+
+  async deleteAllNotifiers () {
+    await this.client.indices.refresh({ index: this.notifiersIndex });
+    await this.client.deleteByQuery({
+      index: this.notifiersIndex, body: { query: { match_all: {} } }, conflicts: 'proceed', refresh: true
+    });
+  }
+}
+
+/******************************************************************************/
+// LMDB Implementation
+/******************************************************************************/
+class NotifierLMDBImplementation {
+  store;
+
+  constructor (options) {
+    const url = options.url ?? User.getDbUrl();
+    this.store = ArkimeUtil.createLMDBStore(url, 'Notifier');
+  }
+
+  async getNotifier (id) {
+    const json = this.store.get(id);
+    if (!json) { return null; }
+    const doc = JSON.parse(json);
+    doc.id = id;
+    return doc;
+  }
+
+  async searchNotifiers (options = {}) {
+    const results = [];
+    for (const { key, value } of this.store.getRange({})) {
+      const doc = JSON.parse(value);
+      doc.id = key;
+      if (options.name && doc.name !== options.name) { continue; }
+      if (!options.all && (options.userId || options.roles)) {
+        const matchUser = options.userId && doc.users && doc.users.includes(options.userId);
+        const matchRole = options.roles && doc.roles && doc.roles.some(r => options.roles.includes(r));
+        if (!matchUser && !matchRole) { continue; }
+      }
+      results.push(doc);
+    }
+    return results;
+  }
+
+  async createNotifier (doc) {
+    const id = cryptoLib.randomUUID();
+    await this.store.put(id, JSON.stringify(doc));
+    return id;
+  }
+
+  async deleteNotifier (id) {
+    await this.store.remove(id);
+  }
+
+  async setNotifier (id, doc) {
+    const docToSave = { ...doc };
+    delete docToSave.id;
+    await this.store.put(id, JSON.stringify(docToSave));
+  }
+
+  async deleteAllNotifiers () {
+    for (const { key } of this.store.getRange({})) {
+      this.store.remove(key);
+    }
+  }
+}
+
+/******************************************************************************/
+// Redis Implementation
+/******************************************************************************/
+class NotifierRedisImplementation {
+  client;
+  prefix = 'notifier:';
+
+  constructor (options) {
+    this.client = ArkimeUtil.createRedisClient(options.url, 'Notifier');
+  }
+
+  async getNotifier (id) {
+    const json = await this.client.get(this.prefix + id);
+    if (!json) { return null; }
+    const doc = JSON.parse(json);
+    doc.id = id;
+    return doc;
+  }
+
+  async #getAllNotifiers () {
+    const keys = await this.client.keys(this.prefix + '*');
+    if (keys.length === 0) { return []; }
+    const results = [];
+    for (const key of keys) {
+      const json = await this.client.get(key);
+      if (!json) { continue; }
+      const doc = JSON.parse(json);
+      doc.id = key.slice(this.prefix.length);
+      results.push(doc);
+    }
+    return results;
+  }
+
+  async searchNotifiers (options = {}) {
+    const all = await this.#getAllNotifiers();
+    return all.filter(doc => {
+      if (options.name && doc.name !== options.name) { return false; }
+      if (!options.all && (options.userId || options.roles)) {
+        const matchUser = options.userId && doc.users && doc.users.includes(options.userId);
+        const matchRole = options.roles && doc.roles && doc.roles.some(r => options.roles.includes(r));
+        if (!matchUser && !matchRole) { return false; }
+      }
+      return true;
+    });
+  }
+
+  async createNotifier (doc) {
+    const id = cryptoLib.randomUUID();
+    await this.client.set(this.prefix + id, JSON.stringify(doc));
+    return id;
+  }
+
+  async deleteNotifier (id) {
+    await this.client.del(this.prefix + id);
+  }
+
+  async setNotifier (id, doc) {
+    const docToSave = { ...doc };
+    delete docToSave.id;
+    await this.client.set(this.prefix + id, JSON.stringify(docToSave));
+  }
+
+  async deleteAllNotifiers () {
+    const keys = await this.client.keys(this.prefix + '*');
+    for (const key of keys) {
+      await this.client.del(key);
+    }
+  }
+}
+
+/******************************************************************************/
+// SQLite Implementation
+/******************************************************************************/
+class NotifierSQLiteImplementation {
+  db;
+
+  constructor (options) {
+    this.db = ArkimeUtil.createSQLiteDB(options.url);
+    this.db.exec(`CREATE TABLE IF NOT EXISTS notifiers (
+      id TEXT PRIMARY KEY,
+      json TEXT NOT NULL
+    )`);
+  }
+
+  async getNotifier (id) {
+    const row = this.db.prepare('SELECT json FROM notifiers WHERE id = ?').get(id);
+    if (!row) { return null; }
+    const doc = JSON.parse(row.json);
+    doc.id = id;
+    return doc;
+  }
+
+  async searchNotifiers (options = {}) {
+    const rows = this.db.prepare('SELECT id, json FROM notifiers').all();
+    const results = [];
+    for (const row of rows) {
+      const doc = JSON.parse(row.json);
+      doc.id = row.id;
+      if (options.name && doc.name !== options.name) { continue; }
+      if (!options.all && (options.userId || options.roles)) {
+        const matchUser = options.userId && doc.users && doc.users.includes(options.userId);
+        const matchRole = options.roles && doc.roles && doc.roles.some(r => options.roles.includes(r));
+        if (!matchUser && !matchRole) { continue; }
+      }
+      results.push(doc);
+    }
+    return results;
+  }
+
+  async createNotifier (doc) {
+    const id = cryptoLib.randomUUID();
+    this.db.prepare('INSERT INTO notifiers (id, json) VALUES (?, ?)').run(id, JSON.stringify(doc));
+    return id;
+  }
+
+  async deleteNotifier (id) {
+    this.db.prepare('DELETE FROM notifiers WHERE id = ?').run(id);
+  }
+
+  async setNotifier (id, doc) {
+    const docToSave = { ...doc };
+    delete docToSave.id;
+    this.db.prepare('UPDATE notifiers SET json = ? WHERE id = ?').run(JSON.stringify(docToSave), id);
+  }
+
+  async deleteAllNotifiers () {
+    this.db.prepare('DELETE FROM notifiers').run();
   }
 }
 

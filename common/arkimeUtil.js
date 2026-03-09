@@ -317,15 +317,37 @@ class ArkimeUtil {
     const { open } = require('lmdb');
 
     try {
-      const store = open({
+      const root = open({
         path: url.slice(7),
         compression: true
       });
-      return store;
+      if (section) {
+        return root.openDB(section);
+      }
+      return root;
     } catch (err) {
       console.log('ERROR -', err);
       process.exit(1);
     }
+  }
+
+  // ----------------------------------------------------------------------------
+  static createSQLiteDB (url) {
+    const Database = require('better-sqlite3');
+    let dbPath;
+    if (url.startsWith('sqlite3://')) {
+      dbPath = url.slice(10);
+    } else if (url.startsWith('sqlite://')) {
+      dbPath = url.slice(9);
+    } else {
+      dbPath = url;
+    }
+
+    const db = new Database(dbPath);
+    db.pragma('journal_mode = WAL');
+    db.pragma('synchronous = NORMAL');
+    db.pragma('busy_timeout = 5000');
+    return db;
   }
 
   // ----------------------------------------------------------------------------

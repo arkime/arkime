@@ -16,7 +16,7 @@ my $json;
 
 # Delete old hunts and users
 clearIndex("tests_hunts");
-clearIndex("tests_users");
+viewerGet("/regressionTests/deleteAllUsers");
 
 # Make sure no hunts
   my $hunts = viewerGet("/api/hunts?all");

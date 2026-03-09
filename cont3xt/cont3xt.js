@@ -183,6 +183,11 @@ if (ArkimeConfig.regressionTests) {
   app.post('/regressionTests/classify', [jsonParser], (req, res) => {
     res.send(req.body.map(item => Integration.classify(item)));
   });
+
+  app.post('/regressionTests/clearAll', async (req, res) => {
+    await Db.clearAll();
+    res.send({ success: true });
+  });
 }
 
 // Set up auth, all APIs registered below will use passport
@@ -492,6 +497,7 @@ async function setupAuth () {
   Overview.initialize();
 
   const cache = ArkimeCache.createCache({
+    name: 'cont3xt',
     type: ArkimeConfig.getFull('cache', 'type', 'memory'),
     cacheSize: ArkimeConfig.getFull('cache', 'cacheSize', '100000'),
     cacheTimeout: ArkimeConfig.getFull('cache', 'cacheTimeout'),

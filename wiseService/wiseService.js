@@ -1654,6 +1654,7 @@ app.use(cspHeader, (req, res, next) => {
 // ----------------------------------------------------------------------------
 function main () {
   internals.cache = ArkimeCache.createCache({
+    name: 'wise',
     type: ArkimeConfig.getFull('cache', 'type', 'memory'),
     cacheSize: ArkimeConfig.getFull('cache', 'cacheSize', '100000'),
     cacheTimeout: ArkimeConfig.getFull('cache', 'cacheTimeout'),
