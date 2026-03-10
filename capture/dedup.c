@@ -24,7 +24,6 @@
 
 #include "arkime.h"
 
-
 // MD5 is ~4% faster than XXH3 in production due to smaller icache footprint
 #define DEDUP_USE_MD5
 
@@ -43,7 +42,9 @@
 #endif
 #endif
 
-extern ArkimeConfig_t       config;
+extern ArkimeConfig_t          config;
+extern GHashTable             *collapseTable;
+extern ArkimeSessionIdTracking sessionIdTracking;
 
 // How many items in each hashtable we expect to be used, must be less than DEDUP_SIZE_FACTOR
 #define DEDUP_SLOT_FACTOR   15
@@ -56,6 +57,9 @@ LOCAL uint32_t              dedupSlotsMask;
 LOCAL uint32_t              dedupPackets;
 LOCAL uint32_t              dedupSize;
 
+typedef enum { DEDUP_PLAIN, DEDUP_VLAN, DEDUP_VNI } DedupMode;
+LOCAL DedupMode             dedupMode;
+
 typedef struct dedupsecond {
     uint8_t        *ctrl;
     uint8_t        *hashes;
@@ -66,6 +70,7 @@ typedef struct dedupsecond {
 } DedupSeconds_t;
 
 LOCAL DedupSeconds_t *seconds;
+
 
 /******************************************************************************/
 int arkime_dedup_should_drop (const ArkimePacket_t *packet, int headerLen)
@@ -79,9 +84,43 @@ int arkime_dedup_should_drop (const ArkimePacket_t *packet, int headerLen)
     uint8_t md[16];
     const uint8_t *const ptr = packet->pkt + packet->ipOffset;
 
+    uint8_t prefix[4];
+    int prefix_len = 0;
+    switch (dedupMode) {
+    case DEDUP_VLAN: {
+        uint16_t v = packet->vlan;
+        if (v && collapseTable) {
+            uint16_t c = GPOINTER_TO_UINT(g_hash_table_lookup(collapseTable, GINT_TO_POINTER(v)));
+            if (c) v = c - 1;
+        }
+        if (v) {
+            memcpy(prefix, &v, 2);
+            prefix_len = 2;
+        }
+        break;
+    }
+    case DEDUP_VNI: {
+        uint32_t v = packet->vni;
+        if (v && collapseTable) {
+            uint32_t c = GPOINTER_TO_UINT(g_hash_table_lookup(collapseTable, GINT_TO_POINTER(v)));
+            if (c) v = c - 1;
+        }
+        if (v) {
+            memcpy(prefix, &v, 4);
+            prefix_len = 4;
+        }
+        break;
+    }
+    default:
+        break;
+    }
+
 #ifdef DEDUP_USE_MD5
     MD5_CTX ctx;
     MD5_Init(&ctx);
+    if (prefix_len) {
+        MD5_Update(&ctx, prefix, prefix_len);
+    }
     if ((ptr[0] & 0xf0) == 0x40) {
         MD5_Update(&ctx, ptr, 8);
         // Skip TTL (1 byte)
@@ -95,18 +134,20 @@ int arkime_dedup_should_drop (const ArkimePacket_t *packet, int headerLen)
     }
     MD5_Final(md, &ctx);
 #else
-    // Build contiguous buffer skipping volatile fields, then one-shot hash
-    uint8_t buf[headerLen];
+    uint8_t buf[headerLen + 4];
     XXH128_hash_t hash;
+    if (prefix_len) {
+        memcpy(buf, prefix, prefix_len);
+    }
     if ((ptr[0] & 0xf0) == 0x40) {
-        memcpy(buf, ptr, 8);
-        buf[8] = ptr[9];  // protocol, skip TTL (1 byte)
-        memcpy(buf + 9, ptr + 12, headerLen - 12); // skip checksum (2 bytes)
-        hash = XXH3_128bits(buf, 9 + (headerLen - 12));
+        memcpy(buf + prefix_len, ptr, 8);
+        buf[prefix_len + 8] = ptr[9];  // protocol, skip TTL (1 byte)
+        memcpy(buf + prefix_len + 9, ptr + 12, headerLen - 12); // skip checksum (2 bytes)
+        hash = XXH3_128bits(buf, prefix_len + 9 + (headerLen - 12));
     } else {
-        memcpy(buf, ptr, 7);
-        memcpy(buf + 7, ptr + 8, headerLen - 8); // skip HOP (1 byte)
-        hash = XXH3_128bits(buf, 7 + (headerLen - 8));
+        memcpy(buf + prefix_len, ptr, 7);
+        memcpy(buf + prefix_len + 7, ptr + 8, headerLen - 8); // skip HOP (1 byte)
+        hash = XXH3_128bits(buf, prefix_len + 7 + (headerLen - 8));
     }
     memcpy(md, &hash, 16);
 #endif
@@ -189,6 +230,18 @@ void arkime_dedup_init()
         seconds[i].ctrl = ARKIME_SIZE_ALLOC("dedup ctrl", dedupSize);
         seconds[i].hashes = ARKIME_SIZE_ALLOC("dedup hashes", dedupSize * 16);
     }
+
+    // When sessionIdTracking uses VLAN or VNI, include that in the dedup hash
+    // so packets on different VLANs/VNIs are not treated as duplicates.
+    if (arkime_config_boolean(NULL, "dedupVlanVniMode", TRUE)) {
+        if (sessionIdTracking == ARKIME_TRACKING_VLAN)
+            dedupMode = DEDUP_VLAN;
+        else if (sessionIdTracking == ARKIME_TRACKING_VNI)
+            dedupMode = DEDUP_VNI;
+    }
+
+    if (config.debug)
+        LOG("Dedup mode: %s", dedupMode == DEDUP_VLAN ? "VLAN" : dedupMode == DEDUP_VNI ? "VNI" : "PLAIN");
 }
 /******************************************************************************/
 void arkime_dedup_exit()
