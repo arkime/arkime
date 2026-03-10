@@ -42,9 +42,13 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #3782 sqlite support added for user database and cont3xt/parliament databases
   - #3782 many fixes for lmdb and redis database implementation
   - #3782 now regression test sqlite/lmdb/redis databases during builds
+## Parliament
+  - #3788 Fix abort when parliament file not set
 ## Viewer
   - #3781 Most server errors are now localized
   - #3785 views/shareables/shortcuts can now live in sqlite instead of ES
+## ES Proxy
+  - #3789 Add AWS SigV4 signing support for managed OpenSearch
 
 6.0.1 2026/03/09
 ## All
