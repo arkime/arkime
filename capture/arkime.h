@@ -1294,6 +1294,11 @@ gboolean arkime_http_is_arkime(uint32_t hash, uint8_t *sessionId);
  * session.c
  */
 
+typedef enum {
+    ARKIME_TRACKING_NONE,
+    ARKIME_TRACKING_VLAN,
+    ARKIME_TRACKING_VNI
+} ArkimeSessionIdTracking;
 
 void     arkime_session_id (uint8_t *sessionId, uint32_t addr1, uint16_t port1, uint32_t addr2, uint16_t port2, uint16_t vlan, uint32_t vni);
 void     arkime_session_id6 (uint8_t *sessionId, const uint8_t *addr1, uint16_t port1, const uint8_t *addr2, uint16_t port2, uint16_t vlan, uint32_t vni);
@@ -1307,13 +1312,6 @@ ArkimeSession_t *arkime_session_find_or_create(int mProtocol, uint32_t hash, con
 
 void     arkime_session_init();
 void     arkime_session_exit();
-extern GHashTable *collapseTable;
-typedef enum {
-    ARKIME_TRACKING_NONE,
-    ARKIME_TRACKING_VLAN,
-    ARKIME_TRACKING_VNI
-} ArkimeSessionIdTracking;
-extern ArkimeSessionIdTracking sessionIdTracking;
 void     arkime_session_add_protocol(ArkimeSession_t *session, const char *protocol);
 gboolean arkime_session_has_protocol(ArkimeSession_t *session, const char *protocol);
 void     arkime_session_add_tag(ArkimeSession_t *session, const char *tag);
