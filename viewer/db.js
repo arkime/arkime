@@ -1526,6 +1526,7 @@ Db.getShortcutsCache = async (user) => {
         ]
       }
     },
+    sort: { name: { order: 'asc' } },
     size: 10000
   };
 
