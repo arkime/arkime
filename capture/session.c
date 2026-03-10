@@ -82,14 +82,8 @@ typedef struct {
 
 LOCAL SessionThreadData_t sessionThreadData[ARKIME_MAX_PACKET_THREADS];
 
-typedef enum {
-    ARKIME_TRACKING_NONE,
-    ARKIME_TRACKING_VLAN,
-    ARKIME_TRACKING_VNI
-} ArkimeSessionIdTracking;
-
-LOCAL ArkimeSessionIdTracking sessionIdTracking = ARKIME_TRACKING_NONE;
-LOCAL GHashTable *collapseTable;
+ArkimeSessionIdTracking sessionIdTracking = ARKIME_TRACKING_NONE;
+GHashTable *collapseTable;
 
 LOCAL int arkime_session_pre_save_func;
 

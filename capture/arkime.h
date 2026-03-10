@@ -1307,6 +1307,13 @@ ArkimeSession_t *arkime_session_find_or_create(int mProtocol, uint32_t hash, con
 
 void     arkime_session_init();
 void     arkime_session_exit();
+extern GHashTable *collapseTable;
+typedef enum {
+    ARKIME_TRACKING_NONE,
+    ARKIME_TRACKING_VLAN,
+    ARKIME_TRACKING_VNI
+} ArkimeSessionIdTracking;
+extern ArkimeSessionIdTracking sessionIdTracking;
 void     arkime_session_add_protocol(ArkimeSession_t *session, const char *protocol);
 gboolean arkime_session_has_protocol(ArkimeSession_t *session, const char *protocol);
 void     arkime_session_add_tag(ArkimeSession_t *session, const char *tag);
