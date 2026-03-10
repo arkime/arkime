@@ -230,27 +230,13 @@ void arkime_dedup_init()
     }
 
     // When true, include VLAN or VNI in the dedup hash based on sessionIdTracking.
+    // sessionIdTracking is set by session_init which runs before packet processing,
+    // so the global is always valid by the time arkime_dedup_should_drop is called.
     // If vlan-vni-collapse is configured, the collapsed value is used automatically.
     dedupVlanVniMode = arkime_config_boolean(NULL, "dedupVlanVniMode", FALSE);
 
-    if (dedupVlanVniMode) {
-        if (sessionIdTracking == ARKIME_TRACKING_VLAN) {
-            if (config.debug)
-                LOG("Dedup VLAN/VNI mode: ENABLED - including VLAN in dedup hash (sessionIdTracking=vlan)%s",
-                    collapseTable ? ", using vlan-vni-collapse table" : "");
-        } else if (sessionIdTracking == ARKIME_TRACKING_VNI) {
-            if (config.debug)
-                LOG("Dedup VLAN/VNI mode: ENABLED - including VNI in dedup hash (sessionIdTracking=vni)%s",
-                    collapseTable ? ", using vlan-vni-collapse table" : "");
-        } else {
-            dedupVlanVniMode = FALSE;
-            if (config.debug)
-                LOG("Dedup VLAN/VNI mode: DISABLED - dedupVlanVniMode=true but sessionIdTracking is not vlan or vni, ignoring");
-        }
-    } else {
-        if (config.debug)
-            LOG("Dedup VLAN/VNI mode: DISABLED - VLAN/VNI not included in dedup hash");
-    }
+    if (config.debug)
+        LOG("Dedup VLAN/VNI mode: %s", dedupVlanVniMode ? "ENABLED" : "DISABLED");
 }
 /******************************************************************************/
 void arkime_dedup_exit()
