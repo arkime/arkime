@@ -1134,12 +1134,15 @@ async function initializeParliament () {
   });
 
   // fetch parliament file if it exists
-  try {
-    parliamentFile = JSON.parse(fs.readFileSync(ArkimeConfig.get('file'), 'utf8'));
-  } catch (err) {
-    if (err.code !== 'ENOENT') {
-      console.log('Error reading parliament file:', err.message);
-      process.exit(1);
+  const parliamentFileName = ArkimeConfig.get('file');
+  if (parliamentFileName) {
+    try {
+      parliamentFile = JSON.parse(fs.readFileSync(parliamentFileName, 'utf8'));
+    } catch (err) {
+      if (err.code !== 'ENOENT') {
+        console.log('Error reading parliament file:', err.message);
+        process.exit(1);
+      }
     }
   }
 
