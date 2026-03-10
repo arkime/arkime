@@ -46,6 +46,7 @@ LOCAL ArkimePacketRC erspan_packet_enqueue3(ArkimePacketBatch_t *UNUSED(batch), 
     BSB_INIT(bsb, data, len);
 
     BSB_IMPORT_u16(bsb, packet->vlan);
+    packet->vlan &= 0xfff; // clear the version bits (top 4 bits)
     BSB_IMPORT_skip(bsb, 8);
 
     uint16_t subheader = 0;
