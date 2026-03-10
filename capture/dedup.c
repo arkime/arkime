@@ -233,7 +233,7 @@ void arkime_dedup_init()
 
     // When sessionIdTracking uses VLAN or VNI, include that in the dedup hash
     // so packets on different VLANs/VNIs are not treated as duplicates.
-    if (arkime_config_boolean(NULL, "dedupVlanVniMode", TRUE)) {
+    if (arkime_config_boolean(NULL, "dedupVlanVni", TRUE)) {
         if (sessionIdTracking == ARKIME_TRACKING_VLAN)
             dedupMode = DEDUP_VLAN;
         else if (sessionIdTracking == ARKIME_TRACKING_VNI)
