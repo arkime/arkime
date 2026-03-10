@@ -7,8 +7,7 @@ use strict;
 
 # clean old users
 viewerGet("/regressionTests/deleteAllUsers");
-
-clearIndex("tests_shareables");
+viewerGet("/regressionTests/deleteAllShareables");
 
 my $adminToken = getTokenCookie();
 my $token = getTokenCookie('sac-test1');

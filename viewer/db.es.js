@@ -187,6 +187,15 @@ class DbESImpl {
     });
   }
 
+  async deleteAllShareables () {
+    await this.#client.deleteByQuery({
+      index: `${this.#prefix}shareables`,
+      body: { query: { match_all: {} } },
+      conflicts: 'proceed',
+      refresh: true
+    });
+  }
+
   async setShareable (id, doc) {
     await this.#client.index({
       index: `${this.#prefix}shareables`,
@@ -194,6 +203,107 @@ class DbESImpl {
       id,
       refresh: true,
       timeout: '10m'
+    });
+  }
+
+  // --------------------------------------------------------------------------
+  // SHORTCUTS
+  // --------------------------------------------------------------------------
+  async searchShortcuts (params) {
+    const query = this.#buildShortcutsQuery(params);
+    query.sort = { [params.sortField || 'name']: { order: params.sortOrder || 'asc' } };
+    query.from = params.from || 0;
+    query.size = params.size || 50;
+
+    const { body: { hits } } = await this.#client.search({
+      index: `${this.#prefix}lookups`,
+      body: query,
+      rest_total_hits_as_int: true
+    });
+
+    return {
+      data: hits.hits.map(h => ({ id: h._id, source: h._source })),
+      total: hits.total
+    };
+  }
+
+  async numberOfShortcuts (params) {
+    const query = this.#buildShortcutsQuery(params);
+    const { body: { count } } = await this.#client.count({
+      index: `${this.#prefix}lookups`,
+      body: query
+    });
+    return count;
+  }
+
+  async getShortcut (id) {
+    const { body } = await this.#client.get({
+      index: `${this.#prefix}lookups`,
+      id
+    });
+    return body._source;
+  }
+
+  async createShortcut (doc) {
+    const { body } = await this.#client.index({
+      index: `${this.#prefix}lookups`,
+      body: doc,
+      refresh: 'wait_for',
+      timeout: '10m'
+    });
+    return body._id;
+  }
+
+  async deleteShortcut (id) {
+    await this.#client.delete({
+      index: `${this.#prefix}lookups`,
+      id,
+      refresh: true
+    });
+  }
+
+  async setShortcut (id, doc) {
+    await this.#client.index({
+      index: `${this.#prefix}lookups`,
+      body: doc,
+      id,
+      refresh: true,
+      timeout: '10m'
+    });
+  }
+
+  async deleteAllShortcuts () {
+    await this.#client.deleteByQuery({
+      index: `${this.#prefix}lookups`,
+      body: { query: { match_all: {} } },
+      conflicts: 'proceed',
+      refresh: true
+    });
+  }
+
+  // Returns all shortcuts with id, source, and version for sync purposes
+  async getAllShortcuts () {
+    const { body: { hits } } = await this.#client.search({
+      index: `${this.#prefix}lookups`,
+      body: { size: 10000 },
+      rest_total_hits_as_int: true,
+      version: true
+    });
+    return hits.hits.map(h => ({ id: h._id, source: h._source, version: h._version }));
+  }
+
+  async getShortcutsVersion () {
+    const { body: doc } = await this.#client.indices.getMapping({
+      index: `${this.#prefix}lookups`
+    });
+    return doc[Object.keys(doc)[0]]?.mappings?._meta?.version || 0;
+  }
+
+  async setShortcutsVersion () {
+    const version = await this.getShortcutsVersion();
+    return this.#client.indices.putMapping({
+      index: `${this.#prefix}lookups`,
+      body: { _meta: { version: version + 1, initSync: true } }
     });
   }
 
@@ -261,6 +371,41 @@ class DbESImpl {
     }];
 
     return { query: { bool: { must, filter } } };
+  }
+
+  #buildShortcutsQuery (params) {
+    const filter = [];
+
+    if (!params.all) {
+      filter.push({
+        bool: {
+          should: [
+            { terms: { roles: params.roles || [] } },
+            { terms: { editRoles: params.roles || [] } },
+            { term: { users: params.user } },
+            { term: { userId: params.user } }
+          ]
+        }
+      });
+    }
+
+    if (params.searchTerm) {
+      filter.push({ wildcard: { name: '*' + params.searchTerm + '*' } });
+    }
+
+    if (params.fieldType) {
+      filter.push({ exists: { field: params.fieldType } });
+    }
+
+    // Name collision check: find shortcuts with this name but NOT this id
+    if (params.nameCheck) {
+      filter.push({ term: { name: params.nameCheck } });
+      if (params.excludeId) {
+        return { query: { bool: { filter, must_not: [{ ids: { values: [params.excludeId] } }] } } };
+      }
+    }
+
+    return { query: { bool: { filter } } };
   }
 }
 

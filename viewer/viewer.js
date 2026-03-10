@@ -249,6 +249,14 @@ if (ArkimeConfig.regressionTests) {
     await Db.deleteAllViews();
     res.send('{}');
   });
+  app.get('/regressionTests/deleteAllShortcuts', async (req, res) => {
+    await Db.deleteAllShortcuts();
+    res.send('{}');
+  });
+  app.get('/regressionTests/deleteAllShareables', async (req, res) => {
+    await Db.deleteAllShareables();
+    res.send('{}');
+  });
   app.get('/regressionTests/getUser/:user', (req, res) => {
     User.getUser(req.params.user, (err, user) => {
       // Shallow copy

@@ -12,8 +12,8 @@ my $otherToken = getTokenCookie('sac-user2');
 
 viewerPostToken("/api/user", '{"userId": "sac-user2", "userName": "user2", "enabled":true, "password":"password", "roles":["arkimeUser"]}', $token);
 
-clearIndex("tests_lookups");
-clearIndex("tests2_lookups");
+viewerGet("/regressionTests/deleteAllShortcuts");
+viewerGet2("/regressionTests/deleteAllShortcuts");
 
 multiPost("/regressionTests/flushCache");
 
