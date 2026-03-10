@@ -1,310 +1,328 @@
 {
-   "sessions3" : [
-      {
-         "body" : {
-            "@timestamp" : "SET",
-            "client" : {
-               "bytes" : 0
-            },
-            "destination" : {
-               "as" : {
-                  "full" : "AS13335 Cloudflare, Inc.",
-                  "number" : 13335,
-                  "organization" : {
-                     "name" : "Cloudflare, Inc."
-                  }
-               },
-               "bytes" : 0,
-               "geo" : {
-                  "country_iso_code" : "AU"
-               },
-               "ip" : "1.1.1.1",
-               "mac" : [
-                  "01:00:0c:cc:cc:cc"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 0,
-               "port" : 0
-            },
-            "dot1q" : {
-               "id" : [
-                  23
-               ],
-               "idCnt" : 1
-            },
-            "dstOuterMac" : [
-               "64:00:f1:e2:01:01"
-            ],
-            "dstOuterMac-cnt" : 1,
-            "dstOuterOui" : [
-               "Cisco Systems, Inc"
-            ],
-            "dstOuterOuiCnt" : 1,
-            "dstRIR" : "APNIC",
-            "ethertype" : 2048,
-            "fileId" : [],
-            "firstPacket" : 1402723251625,
-            "ipProtocol" : 47,
-            "lastPacket" : 1402723253149,
-            "length" : 1524,
-            "network" : {
-               "bytes" : 903,
-               "packets" : 2,
-               "vlan" : {
-                  "id" : [
-                     23
-                  ],
-                  "id-cnt" : 1
-               }
-            },
-            "node" : "test",
-            "packetLen" : [
-               460,
-               475
-            ],
-            "packetPos" : [
-               24,
-               484
-            ],
-            "packetRange" : {
-               "gte" : 1402723251625,
-               "lte" : 1402723253149
-            },
-            "protocol" : [
-               "corrupt-ip",
-               "gre"
-            ],
-            "protocolCnt" : 2,
-            "segmentCnt" : 1,
-            "server" : {
-               "bytes" : 0
-            },
-            "source" : {
-               "as" : {
-                  "full" : "AS3215 Orange",
-                  "number" : 3215,
-                  "organization" : {
-                     "name" : "Orange"
-                  }
-               },
-               "bytes" : 903,
-               "geo" : {
-                  "country_iso_code" : "FR"
-               },
-               "ip" : "2.2.2.2",
-               "mac" : [
-                  "64:00:f1:e1:02:02",
-                  "64:00:f1:e1:03:03"
-               ],
-               "mac-cnt" : 2,
-               "packets" : 2,
-               "port" : 0
-            },
-            "srcOui" : [
-               "Cisco Systems, Inc"
-            ],
-            "srcOuiCnt" : 1,
-            "srcOuterMac" : [
-               "64:00:f1:e2:01:12"
-            ],
-            "srcOuterMac-cnt" : 1,
-            "srcOuterOui" : [
-               "Cisco Systems, Inc"
-            ],
-            "srcOuterOuiCnt" : 1,
-            "srcRIR" : "RIPE",
-            "srcTTL" : [
-               254
-            ],
-            "srcTTLCnt" : 1,
-            "tags" : [
-               "gretest-erspan"
-            ],
-            "tagsCnt" : 1,
-            "totDataBytes" : 0
-         },
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions3-140614"
-            }
-         }
-      },
-      {
-         "body" : {
-            "@timestamp" : "SET",
-            "client" : {
-               "bytes" : 160
-            },
-            "destination" : {
-               "as" : {
-                  "full" : "AS20940 Akamai International B.V.",
-                  "number" : 20940,
-                  "organization" : {
-                     "name" : "Akamai International B.V."
-                  }
-               },
-               "bytes" : 328,
-               "geo" : {
-                  "country_iso_code" : "US"
-               },
-               "ip" : "23.0.0.3",
-               "mac" : [
-                  "64:00:f1:e1:03:03"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 2,
-               "port" : 0
-            },
-            "dot1q" : {
-               "id" : [
-                  23
-               ],
-               "idCnt" : 1
-            },
-            "dstOui" : [
-               "Cisco Systems, Inc"
-            ],
-            "dstOuiCnt" : 1,
-            "dstOuterASN" : [
-               "AS13335 Cloudflare, Inc."
-            ],
-            "dstOuterGEO" : [
-               "AU"
-            ],
-            "dstOuterIp" : [
-               "1.1.1.1"
-            ],
-            "dstOuterIpCnt" : 1,
-            "dstOuterMac" : [
-               "64:00:f1:e2:01:01"
-            ],
-            "dstOuterMac-cnt" : 1,
-            "dstOuterOui" : [
-               "Cisco Systems, Inc"
-            ],
-            "dstOuterOuiCnt" : 1,
-            "dstOuterRIR" : [
-               "APNIC"
-            ],
-            "dstRIR" : "ARIN",
-            "dstTTL" : [
-               255
-            ],
-            "dstTTLCnt" : 1,
-            "ethertype" : 2048,
-            "fileId" : [],
-            "firstPacket" : 1402723255667,
-            "icmp" : {
-               "code" : [
-                  0
-               ],
-               "type" : [
-                  0,
-                  8
-               ]
-            },
-            "ipProtocol" : 1,
-            "lastPacket" : 1402723255669,
-            "length" : 2,
-            "network" : {
-               "bytes" : 656,
-               "community_id" : "1:iF3HTcqmaP2JudVO9Vp3ktkojUY=",
-               "packets" : 4,
-               "vlan" : {
-                  "id" : [
-                     23
-                  ],
-                  "id-cnt" : 1
-               }
-            },
-            "node" : "test",
-            "packetLen" : [
-               180,
-               180,
-               180,
-               180
-            ],
-            "packetPos" : [
-               959,
-               1139,
-               1319,
-               1499
-            ],
-            "packetRange" : {
-               "gte" : 1402723255667,
-               "lte" : 1402723255669
-            },
-            "protocol" : [
-               "gre",
-               "icmp"
-            ],
-            "protocolCnt" : 2,
-            "segmentCnt" : 1,
-            "server" : {
-               "bytes" : 160
-            },
-            "source" : {
-               "as" : {
-                  "full" : "AS20940 Akamai International B.V.",
-                  "number" : 20940,
-                  "organization" : {
-                     "name" : "Akamai International B.V."
-                  }
-               },
-               "bytes" : 328,
-               "geo" : {
-                  "country_iso_code" : "US"
-               },
-               "ip" : "23.0.0.2",
-               "mac" : [
-                  "64:00:f1:e1:02:02"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 2,
-               "port" : 0
-            },
-            "srcOui" : [
-               "Cisco Systems, Inc"
-            ],
-            "srcOuiCnt" : 1,
-            "srcOuterASN" : [
-               "AS3215 Orange"
-            ],
-            "srcOuterGEO" : [
-               "FR"
-            ],
-            "srcOuterIp" : [
-               "2.2.2.2"
-            ],
-            "srcOuterIpCnt" : 1,
-            "srcOuterMac" : [
-               "64:00:f1:e2:01:12"
-            ],
-            "srcOuterMac-cnt" : 1,
-            "srcOuterOui" : [
-               "Cisco Systems, Inc"
-            ],
-            "srcOuterOuiCnt" : 1,
-            "srcOuterRIR" : [
-               "RIPE"
-            ],
-            "srcRIR" : "ARIN",
-            "srcTTL" : [
-               255
-            ],
-            "srcTTLCnt" : 1,
-            "tags" : [
-               "gretest-erspan"
-            ],
-            "tagsCnt" : 1,
-            "totDataBytes" : 320
-         },
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions3-140614"
-            }
-         }
+ "sessions3" : [
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 0
+    },
+    "destination" : {
+     "as" : {
+      "full" : "AS13335 Cloudflare, Inc.",
+      "number" : 13335,
+      "organization" : {
+       "name" : "Cloudflare, Inc."
       }
-   ]
+     },
+     "bytes" : 0,
+     "ip" : "1.1.1.1",
+     "mac" : [
+      "01:00:0c:cc:cc:cc"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 0,
+     "port" : 0
+    },
+    "dot1q" : {
+     "id" : [
+      23
+     ],
+     "idCnt" : 1
+    },
+    "dstOuterMac" : [
+     "64:00:f1:e2:01:01"
+    ],
+    "dstOuterMac-cnt" : 1,
+    "dstOuterOui" : [
+     "Cisco Systems, Inc"
+    ],
+    "dstOuterOuiCnt" : 1,
+    "dstRIR" : "APNIC",
+    "erspan" : {
+     "cos" : [
+      0
+     ],
+     "cosCnt" : 1,
+     "spanId" : [
+      100
+     ],
+     "spanIdCnt" : 1,
+     "version" : [
+      1
+     ],
+     "versionCnt" : 1
+    },
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 1402723251625,
+    "ipProtocol" : 47,
+    "lastPacket" : 1402723253149,
+    "length" : 1524,
+    "network" : {
+     "bytes" : 903,
+     "packets" : 2,
+     "vlan" : {
+      "id" : [
+       23
+      ],
+      "id-cnt" : 1
+     }
+    },
+    "node" : "test",
+    "packetLen" : [
+     460,
+     475
+    ],
+    "packetPos" : [
+     24,
+     484
+    ],
+    "packetRange" : {
+     "gte" : 1402723251625,
+     "lte" : 1402723253149
+    },
+    "protocol" : [
+     "corrupt-ip",
+     "gre"
+    ],
+    "protocolCnt" : 2,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 0
+    },
+    "source" : {
+     "bytes" : 903,
+     "geo" : {
+      "country_iso_code" : "SE"
+     },
+     "ip" : "2.2.2.2",
+     "mac" : [
+      "64:00:f1:e1:02:02",
+      "64:00:f1:e1:03:03"
+     ],
+     "mac-cnt" : 2,
+     "packets" : 2,
+     "port" : 0
+    },
+    "srcOui" : [
+     "Cisco Systems, Inc"
+    ],
+    "srcOuiCnt" : 1,
+    "srcOuterMac" : [
+     "64:00:f1:e2:01:12"
+    ],
+    "srcOuterMac-cnt" : 1,
+    "srcOuterOui" : [
+     "Cisco Systems, Inc"
+    ],
+    "srcOuterOuiCnt" : 1,
+    "srcRIR" : "RIPE",
+    "srcTTL" : [
+     254
+    ],
+    "srcTTLCnt" : 1,
+    "tags" : [
+     "gretest-erspan"
+    ],
+    "tagsCnt" : 1,
+    "totDataBytes" : 0
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-140614"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 160
+    },
+    "destination" : {
+     "as" : {
+      "full" : "AS20940 Akamai International B.V.",
+      "number" : 20940,
+      "organization" : {
+       "name" : "Akamai International B.V."
+      }
+     },
+     "bytes" : 328,
+     "geo" : {
+      "country_iso_code" : "US"
+     },
+     "ip" : "23.0.0.3",
+     "mac" : [
+      "64:00:f1:e1:03:03"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 2,
+     "port" : 0
+    },
+    "dot1q" : {
+     "id" : [
+      23
+     ],
+     "idCnt" : 1
+    },
+    "dstOui" : [
+     "Cisco Systems, Inc"
+    ],
+    "dstOuiCnt" : 1,
+    "dstOuterASN" : [
+     "AS13335 Cloudflare, Inc."
+    ],
+    "dstOuterGEO" : [
+     "---"
+    ],
+    "dstOuterIp" : [
+     "1.1.1.1"
+    ],
+    "dstOuterIpCnt" : 1,
+    "dstOuterMac" : [
+     "64:00:f1:e2:01:01"
+    ],
+    "dstOuterMac-cnt" : 1,
+    "dstOuterOui" : [
+     "Cisco Systems, Inc"
+    ],
+    "dstOuterOuiCnt" : 1,
+    "dstOuterRIR" : [
+     "APNIC"
+    ],
+    "dstRIR" : "ARIN",
+    "dstTTL" : [
+     255
+    ],
+    "dstTTLCnt" : 1,
+    "erspan" : {
+     "cos" : [
+      0
+     ],
+     "cosCnt" : 1,
+     "spanId" : [
+      100
+     ],
+     "spanIdCnt" : 1,
+     "version" : [
+      1
+     ],
+     "versionCnt" : 1
+    },
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 1402723255667,
+    "icmp" : {
+     "code" : [
+      0
+     ],
+     "type" : [
+      0,
+      8
+     ]
+    },
+    "ipProtocol" : 1,
+    "lastPacket" : 1402723255669,
+    "length" : 2,
+    "network" : {
+     "bytes" : 656,
+     "community_id" : "1:iF3HTcqmaP2JudVO9Vp3ktkojUY=",
+     "packets" : 4,
+     "vlan" : {
+      "id" : [
+       23
+      ],
+      "id-cnt" : 1
+     }
+    },
+    "node" : "test",
+    "packetLen" : [
+     180,
+     180,
+     180,
+     180
+    ],
+    "packetPos" : [
+     959,
+     1139,
+     1319,
+     1499
+    ],
+    "packetRange" : {
+     "gte" : 1402723255667,
+     "lte" : 1402723255669
+    },
+    "protocol" : [
+     "gre",
+     "icmp"
+    ],
+    "protocolCnt" : 2,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 160
+    },
+    "source" : {
+     "as" : {
+      "full" : "AS20940 Akamai International B.V.",
+      "number" : 20940,
+      "organization" : {
+       "name" : "Akamai International B.V."
+      }
+     },
+     "bytes" : 328,
+     "geo" : {
+      "country_iso_code" : "US"
+     },
+     "ip" : "23.0.0.2",
+     "mac" : [
+      "64:00:f1:e1:02:02"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 2,
+     "port" : 0
+    },
+    "srcOui" : [
+     "Cisco Systems, Inc"
+    ],
+    "srcOuiCnt" : 1,
+    "srcOuterASN" : [
+     "---"
+    ],
+    "srcOuterGEO" : [
+     "SE"
+    ],
+    "srcOuterIp" : [
+     "2.2.2.2"
+    ],
+    "srcOuterIpCnt" : 1,
+    "srcOuterMac" : [
+     "64:00:f1:e2:01:12"
+    ],
+    "srcOuterMac-cnt" : 1,
+    "srcOuterOui" : [
+     "Cisco Systems, Inc"
+    ],
+    "srcOuterOuiCnt" : 1,
+    "srcOuterRIR" : [
+     "RIPE"
+    ],
+    "srcRIR" : "ARIN",
+    "srcTTL" : [
+     255
+    ],
+    "srcTTLCnt" : 1,
+    "tags" : [
+     "gretest-erspan"
+    ],
+    "tagsCnt" : 1,
+    "totDataBytes" : 320
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-140614"
+    }
+   }
+  }
+ ]
 }
 

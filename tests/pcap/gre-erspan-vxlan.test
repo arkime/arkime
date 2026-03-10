@@ -1,172 +1,190 @@
 {
-   "sessions3" : [
-      {
-         "body" : {
-            "@timestamp" : "SET",
-            "client" : {
-               "bytes" : 30
-            },
-            "destination" : {
-               "bytes" : 489,
-               "ip" : "10.16.27.131",
-               "mac" : [
-                  "aa:bb:cc:dd:cc:c1",
-                  "dd:dd:dd:dd:dd:d1"
-               ],
-               "mac-cnt" : 2,
-               "packets" : 3,
-               "port" : 80
-            },
-            "dstOuterASN" : [
-               "---"
-            ],
-            "dstOuterGEO" : [
-               "---"
-            ],
-            "dstOuterIp" : [
-               "172.16.27.121"
-            ],
-            "dstOuterIpCnt" : 1,
-            "dstOuterMac" : [
-               "ee:ee:ee:ee:ee:e1"
-            ],
-            "dstOuterMac-cnt" : 1,
-            "dstOuterRIR" : [
-               "ARIN"
-            ],
-            "dstPayload8" : "485454502f312e31",
-            "dstTTL" : [
-               64
-            ],
-            "dstTTLCnt" : 1,
-            "ethertype" : 2048,
-            "fileId" : [],
-            "firstPacket" : 1652950005864,
-            "http" : {
-               "md5" : [
-                  "f73d2a4f4331dc56920d51fe6ba8ebc9"
-               ],
-               "md5Cnt" : 1,
-               "serverVersion" : [
-                  "1.1"
-               ],
-               "serverVersionCnt" : 1,
-               "sha256" : [
-                  "37f481d025d06cada595431200f7406b368918401a14fb4d3b4b3777c5ff9a4e"
-               ],
-               "sha256Cnt" : 1,
-               "statuscode" : [
-                  200
-               ],
-               "statuscodeCnt" : 1,
-               "uri" : [
-                  "/Hello"
-               ],
-               "uriCnt" : 1
-            },
-            "initRTT" : 1,
-            "ipProtocol" : 6,
-            "lastPacket" : 1652950005876,
-            "length" : 12,
-            "network" : {
-               "bytes" : 1135,
-               "community_id" : "1:vJGJyvSGPn66/zbr0DiR1fCFooo=",
-               "packets" : 7
-            },
-            "node" : "test",
-            "packetLen" : [
-               170,
-               170,
-               170,
-               200,
-               197,
-               170,
-               170
-            ],
-            "packetPos" : [
-               24,
-               194,
-               364,
-               534,
-               734,
-               931,
-               1101
-            ],
-            "packetRange" : {
-               "gte" : 1652950005864,
-               "lte" : 1652950005876
-            },
-            "protocol" : [
-               "gre",
-               "http",
-               "tcp",
-               "vxlan-gpe"
-            ],
-            "protocolCnt" : 4,
-            "segmentCnt" : 1,
-            "server" : {
-               "bytes" : 27
-            },
-            "source" : {
-               "bytes" : 646,
-               "ip" : "10.16.27.12",
-               "mac" : [
-                  "aa:bb:cc:dd:cc:c1",
-                  "dd:dd:dd:dd:dd:d1"
-               ],
-               "mac-cnt" : 2,
-               "packets" : 4,
-               "port" : 65174
-            },
-            "srcOuterASN" : [
-               "---"
-            ],
-            "srcOuterGEO" : [
-               "---"
-            ],
-            "srcOuterIp" : [
-               "172.16.27.131"
-            ],
-            "srcOuterIpCnt" : 1,
-            "srcOuterMac" : [
-               "ff:dd:ff:ff:ff:f1"
-            ],
-            "srcOuterMac-cnt" : 1,
-            "srcOuterRIR" : [
-               "ARIN"
-            ],
-            "srcPayload8" : "474554202f48656c",
-            "srcTTL" : [
-               64
-            ],
-            "srcTTLCnt" : 1,
-            "tags" : [
-               "gretest-erspan-vxlan"
-            ],
-            "tagsCnt" : 1,
-            "tcpflags" : {
-               "ack" : 2,
-               "dstZero" : 0,
-               "fin" : 2,
-               "psh" : 1,
-               "rst" : 0,
-               "srcZero" : 0,
-               "syn" : 1,
-               "syn-ack" : 1,
-               "urg" : 0
-            },
-            "tcpseq" : {
-               "dst" : 0,
-               "src" : 0
-            },
-            "totDataBytes" : 57
-         },
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions3-220519"
-            }
-         }
-      }
-   ]
+ "sessions3" : [
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 30
+    },
+    "destination" : {
+     "bytes" : 489,
+     "ip" : "10.16.27.131",
+     "mac" : [
+      "aa:bb:cc:dd:cc:c1",
+      "dd:dd:dd:dd:dd:d1"
+     ],
+     "mac-cnt" : 2,
+     "packets" : 3,
+     "port" : 80
+    },
+    "dstOuterASN" : [
+     "---"
+    ],
+    "dstOuterGEO" : [
+     "---"
+    ],
+    "dstOuterIp" : [
+     "172.16.27.121"
+    ],
+    "dstOuterIpCnt" : 1,
+    "dstOuterMac" : [
+     "ee:ee:ee:ee:ee:e1"
+    ],
+    "dstOuterMac-cnt" : 1,
+    "dstOuterRIR" : [
+     "ARIN"
+    ],
+    "dstPayload8" : "485454502f312e31",
+    "dstTTL" : [
+     64
+    ],
+    "dstTTLCnt" : 1,
+    "erspan" : {
+     "cos" : [
+      0
+     ],
+     "cosCnt" : 1,
+     "port" : [
+      1
+     ],
+     "portCnt" : 1,
+     "spanId" : [
+      20
+     ],
+     "spanIdCnt" : 1,
+     "version" : [
+      1
+     ],
+     "versionCnt" : 1
+    },
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 1652950005864,
+    "http" : {
+     "md5" : [
+      "f73d2a4f4331dc56920d51fe6ba8ebc9"
+     ],
+     "md5Cnt" : 1,
+     "serverVersion" : [
+      "1.1"
+     ],
+     "serverVersionCnt" : 1,
+     "sha256" : [
+      "37f481d025d06cada595431200f7406b368918401a14fb4d3b4b3777c5ff9a4e"
+     ],
+     "sha256Cnt" : 1,
+     "statuscode" : [
+      200
+     ],
+     "statuscodeCnt" : 1,
+     "uri" : [
+      "/Hello"
+     ],
+     "uriCnt" : 1
+    },
+    "initRTT" : 1,
+    "ipProtocol" : 6,
+    "lastPacket" : 1652950005876,
+    "length" : 12,
+    "network" : {
+     "bytes" : 1135,
+     "community_id" : "1:vJGJyvSGPn66/zbr0DiR1fCFooo=",
+     "packets" : 7
+    },
+    "node" : "test",
+    "packetLen" : [
+     170,
+     170,
+     170,
+     200,
+     197,
+     170,
+     170
+    ],
+    "packetPos" : [
+     24,
+     194,
+     364,
+     534,
+     734,
+     931,
+     1101
+    ],
+    "packetRange" : {
+     "gte" : 1652950005864,
+     "lte" : 1652950005876
+    },
+    "protocol" : [
+     "gre",
+     "http",
+     "tcp",
+     "vxlan-gpe"
+    ],
+    "protocolCnt" : 4,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 27
+    },
+    "source" : {
+     "bytes" : 646,
+     "ip" : "10.16.27.12",
+     "mac" : [
+      "aa:bb:cc:dd:cc:c1",
+      "dd:dd:dd:dd:dd:d1"
+     ],
+     "mac-cnt" : 2,
+     "packets" : 4,
+     "port" : 65174
+    },
+    "srcOuterASN" : [
+     "---"
+    ],
+    "srcOuterGEO" : [
+     "---"
+    ],
+    "srcOuterIp" : [
+     "172.16.27.131"
+    ],
+    "srcOuterIpCnt" : 1,
+    "srcOuterMac" : [
+     "ff:dd:ff:ff:ff:f1"
+    ],
+    "srcOuterMac-cnt" : 1,
+    "srcOuterRIR" : [
+     "ARIN"
+    ],
+    "srcPayload8" : "474554202f48656c",
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
+    "tags" : [
+     "gretest-erspan-vxlan"
+    ],
+    "tagsCnt" : 1,
+    "tcpflags" : {
+     "ack" : 2,
+     "dstZero" : 0,
+     "fin" : 2,
+     "psh" : 1,
+     "rst" : 0,
+     "srcZero" : 0,
+     "syn" : 1,
+     "syn-ack" : 1,
+     "urg" : 0
+    },
+    "tcpseq" : {
+     "dst" : 0,
+     "src" : 0
+    },
+    "totDataBytes" : 57
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-220519"
+    }
+   }
+  }
+ ]
 }
 
