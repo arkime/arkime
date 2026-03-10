@@ -17,6 +17,8 @@ const basicAuth = require('basic-auth');
 const zlib = require('zlib');
 const ArkimeUtil = require('../common/arkimeUtil');
 const ArkimeConfig = require('../common/arkimeConfig');
+const aws4 = require('aws4');
+const EsProxyCredentials = require('./esProxyCredentials');
 
 // express app
 const app = express();
@@ -31,6 +33,10 @@ let oldprefix;
 let prefix;
 const esSSLOptions = { rejectUnauthorized: !ArkimeConfig.insecure };
 let authHeader;
+let sigV4Signer = null;
+let sigV4Credentials = null;
+let sigV4SignerTee = null;
+let sigV4CredentialsTee = null;
 
 ArkimeConfig.loaded(() => {
   elasticsearch = Config.get('elasticsearch');
@@ -72,6 +78,26 @@ ArkimeConfig.loaded(() => {
       authHeader = `Basic ${Buffer.from(esBasicAuth).toString('base64')}`;
     }
   }
+
+  const sigV4Enabled = Config.get('esProxySigV4', false) === 'true' || Config.get('esProxySigV4', false) === true;
+  if (sigV4Enabled) {
+    const region = Config.get('esProxySigV4Region');
+    const service = Config.get('esProxySigV4Service', 'es');
+
+    sigV4Credentials = new EsProxyCredentials({
+      credentialUrl: Config.get('esProxySigV4CredentialUrl'),
+      credentialCert: Config.get('esProxySigV4CredentialCert'),
+      credentialKey: Config.get('esProxySigV4CredentialKey'),
+      roleArn: Config.get('esProxySigV4RoleArn'),
+      accessKeyId: Config.get('esProxySigV4AccessKeyId'),
+      secretAccessKey: Config.get('esProxySigV4SecretAccessKey'),
+      sessionToken: Config.get('esProxySigV4SessionToken')
+    });
+
+    sigV4Signer = { region, service };
+    authHeader = null;
+    console.log('SigV4 signing enabled for region:', region);
+  }
 });
 
 // ============================================================================
@@ -92,6 +118,26 @@ ArkimeConfig.loaded(() => {
     } else {
       authHeaderTee = `Basic ${Buffer.from(esBasicAuthTee).toString('base64')}`;
     }
+  }
+
+  const teeSigV4Enabled = Config.sectionGet('tee', 'esProxySigV4', false) === 'true' || Config.sectionGet('tee', 'esProxySigV4', false) === true;
+  if (teeSigV4Enabled) {
+    const teeRegion = Config.sectionGet('tee', 'esProxySigV4Region');
+    const teeService = Config.sectionGet('tee', 'esProxySigV4Service', 'es');
+
+    sigV4CredentialsTee = new EsProxyCredentials({
+      credentialUrl: Config.sectionGet('tee', 'esProxySigV4CredentialUrl'),
+      credentialCert: Config.sectionGet('tee', 'esProxySigV4CredentialCert'),
+      credentialKey: Config.sectionGet('tee', 'esProxySigV4CredentialKey'),
+      roleArn: Config.sectionGet('tee', 'esProxySigV4RoleArn'),
+      accessKeyId: Config.sectionGet('tee', 'esProxySigV4AccessKeyId'),
+      secretAccessKey: Config.sectionGet('tee', 'esProxySigV4SecretAccessKey'),
+      sessionToken: Config.sectionGet('tee', 'esProxySigV4SessionToken')
+    });
+
+    sigV4SignerTee = { region: teeRegion, service: teeService };
+    authHeaderTee = null;
+    console.log('SigV4 signing enabled for tee, region:', teeRegion);
   }
 });
 
@@ -224,7 +270,7 @@ function saveBody (req, res, next) {
 
 // Proxy
 
-function doProxyFull (config, req, res) {
+async function doProxyFull (config, req, res) {
   let result = '';
   const esUrl = config.elasticsearch + req.url;
   console.log(`URL ${req.method} "%s"`, ArkimeUtil.sanitizeStr(esUrl));
@@ -239,7 +285,38 @@ function doProxyFull (config, req, res) {
     client = http;
   }
 
-  if (config.authHeader) {
+  // For SigV4: determine the body bytes to sign and send.
+  // Decompress gzip so we sign the same bytes the server will hash.
+  let bodyToSend = req._body ? req.body : null;
+  if (config.sigV4Signer && bodyToSend && req.headers['content-encoding'] === 'gzip') {
+    try {
+      bodyToSend = zlib.gunzipSync(bodyToSend);
+    } catch (err) {
+      console.log('SigV4: failed to decompress gzip body, sending as-is');
+    }
+  }
+
+  if (config.sigV4Signer && config.sigV4Credentials) {
+    const creds = await config.sigV4Credentials.getCredentials();
+
+    const signOpts = aws4.sign({
+      host: url.hostname,
+      path: url.pathname + (url.search || ''),
+      method: req.method,
+      service: config.sigV4Signer.service,
+      region: config.sigV4Signer.region,
+      headers: {
+        'content-type': req.headers['content-type'] || 'application/json'
+      },
+      body: bodyToSend || ''
+    }, {
+      accessKeyId: creds.accessKeyId,
+      secretAccessKey: creds.secretAccessKey,
+      sessionToken: creds.sessionToken
+    });
+
+    options.headers = signOpts.headers;
+  } else if (config.authHeader) {
     options.headers = {
       Authorization: config.authHeader
     };
@@ -254,29 +331,31 @@ function doProxyFull (config, req, res) {
       res.send(result);
     });
   });
-  preq.setHeader('content-type', req.headers['content-type'] || 'application/json');
 
-  // Copy these headers from original request to new request
-  for (const header of ['x-opaque-id', 'content-encoding', 'content-length']) {
-    if (req.headers[header] !== undefined) {
-      preq.setHeader(header, req.headers[header]);
+  if (!config.sigV4Signer) {
+    preq.setHeader('content-type', req.headers['content-type'] || 'application/json');
+    // Copy these headers from original request to new request
+    for (const header of ['x-opaque-id', 'content-encoding', 'content-length']) {
+      if (req.headers[header] !== undefined) {
+        preq.setHeader(header, req.headers[header]);
+      }
     }
   }
 
   preq.on('error', (e) => {
     console.log('Request error "%s"', ArkimeUtil.sanitizeStr(url), e);
   });
-  if (req._body) {
-    preq.end(req.body);
+  if (bodyToSend) {
+    preq.end(bodyToSend);
   } else {
     preq.end('');
   }
 }
 
-function doProxy (req, res) {
-  doProxyFull({ elasticsearch, authHeader }, req, res);
+async function doProxy (req, res) {
+  await doProxyFull({ elasticsearch, authHeader, sigV4Signer, sigV4Credentials }, req, res);
   if (elasticsearchTee) {
-    doProxyFull({ elasticsearch: elasticsearchTee, authHeader: authHeaderTee }, req, {
+    doProxyFull({ elasticsearch: elasticsearchTee, authHeader: authHeaderTee, sigV4Signer: sigV4SignerTee, sigV4Credentials: sigV4CredentialsTee }, req, {
       setHeader: () => {},
       send: () => {}
     });
@@ -305,7 +384,10 @@ app.get('*', (req, res) => {
     console.log(`GET failed node: ${req.sensor.node} path:>%s<:`, ArkimeUtil.sanitizeStr(path));
     return res.status(400).send('Not authorized for API');
   }
-  doProxy(req, res);
+  doProxy(req, res).catch(e => {
+    console.log('Proxy error', e);
+    res.status(500).send('Internal proxy error');
+  });
 });
 
 // Validate Bulk
@@ -420,7 +502,10 @@ app.post('*', saveBody, (req, res) => {
     console.log(req.body.toString('utf8'));
     return res.status(400).send('Not authorized for API');
   }
-  doProxy(req, res);
+  doProxy(req, res).catch(e => {
+    console.log('Proxy error', e);
+    res.status(500).send('Internal proxy error');
+  });
 });
 
 // Delete requests
@@ -433,7 +518,10 @@ app.delete('*', (req, res) => {
     console.log(`DELETE failed node: ${req.sensor.node} path:>%s<:`, ArkimeUtil.sanitizeStr(path));
     return res.status(400).send('Not authorized for API');
   }
-  doProxy(req, res);
+  doProxy(req, res).catch(e => {
+    console.log('Proxy error', e);
+    res.status(500).send('Internal proxy error');
+  });
 });
 
 // Put requests
@@ -446,7 +534,10 @@ app.put('*', (req, res) => {
     console.log(`PUT failed node: ${req.sensor.node} path:>%s<:`, ArkimeUtil.sanitizeStr(path));
     return res.status(400).send('Not authorized for API');
   }
-  doProxy(req, res);
+  doProxy(req, res).catch(e => {
+    console.log('Proxy error', e);
+    res.status(500).send('Internal proxy error');
+  });
 });
 
 // Replace the default express error handler
@@ -463,6 +554,13 @@ async function main () {
 
   httpAgent = new http.Agent({ keepAlive: true, keepAliveMsecs: 5000, maxSockets: 100 });
   httpsAgent = new https.Agent(Object.assign({ keepAlive: true, keepAliveMsecs: 5000, maxSockets: 100 }, esSSLOptions));
+
+  if (sigV4Credentials) {
+    await sigV4Credentials.initialize();
+  }
+  if (sigV4CredentialsTee) {
+    await sigV4CredentialsTee.initialize();
+  }
 
   ArkimeUtil.createHttpServer(app, Config.get('esProxyHost'), Config.get('esProxyPort', '7200'));
 }
