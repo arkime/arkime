@@ -287,7 +287,7 @@ app.use(async (req, res, next) => {
       return res.status(401).send('receive session only allowed s2s');
     }
     try {
-      if (!!Config.get('s2sRegressionTests')) {
+      if (Config.get('s2sRegressionTests')) {
         JSON.parse(req.headers['x-arkime-auth']);
       } else {
         Auth.auth2obj(req.headers['x-arkime-auth']);

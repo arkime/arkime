@@ -170,7 +170,7 @@ class SplunkSource extends WISESource {
 
   // ----------------------------------------------------------------------------
   async sendResult (key, cb) {
-    const sanitizedKey = key.replace(/[\\"|\[\]()]/g, '\\$&');
+    const sanitizedKey = key.replace(/[\\"|[\]()]/g, '\\$&');
     const query = this.query.replace('%%SEARCHTERM%%', sanitizedKey);
 
     try {
