@@ -11,7 +11,7 @@ const fs = require('fs');
 const unzipper = require('unzipper');
 const WISESource = require('./wiseSource.js');
 const axios = require('axios');
-const exec = require('child_process').exec;
+const { execFile } = require('child_process');
 const betterSqlite3 = require('better-sqlite3');
 const ArkimeUtil = require('../common/arkimeUtil');
 
@@ -231,7 +231,7 @@ class ThreatStreamSource extends WISESource {
     ['ips', 'domains', 'emails', 'md5s', 'urls'].forEach((ckey) => {
       res.write(`${ckey}: [\n`);
       this[ckey].forEach((value, key) => {
-        const str = `{"key": "${key}", "ops":\n` +
+        const str = `{"key": ${JSON.stringify(key)}, "ops":\n` +
           WISESource.result2JSON(value) + '},\n';
         res.write(str);
       });
@@ -440,7 +440,7 @@ class ThreatStreamSource extends WISESource {
 
         // 2) Copy real Db to .temp so that the .moloch db still works
         console.log(this.section, '- Copying DB', dbStat.mtime);
-        exec(`/bin/cp -f ${dbFile} ${dbFile}.temp`, (err, stdout, stderr) => {
+        execFile('/bin/cp', ['-f', dbFile, `${dbFile}.temp`], (err, stdout, stderr) => {
           // 3) Unlock realDb and close
           realDb.prepare('END').run();
           realDb.close();
@@ -453,8 +453,8 @@ class ThreatStreamSource extends WISESource {
           }
 
           // 5) Remove old .moloch and rename .tmp to .moloch
-          exec(`/bin/rm -f ${dbFile}.moloch`, (err, subStdout, subStderr) => {
-            exec(`/bin/mv -f ${dbFile}.temp ${dbFile}.moloch`, (err, subSubStdout, subSubStderr) => {
+          execFile('/bin/rm', ['-f', `${dbFile}.moloch`], (err, subStdout, subStderr) => {
+            execFile('/bin/mv', ['-f', `${dbFile}.temp`, `${dbFile}.moloch`], (err, subSubStdout, subSubStderr) => {
               // 6) open new .moloch file
               this.db = betterSqlite3(`${dbFile}.moloch`, { readonly: true, timeout: 1000 });
               console.log(`${this.section} - Loaded DB`);

@@ -159,7 +159,7 @@ LOCAL gboolean pcapoverip_client_read_cb(gint UNUSED(fd), GIOCondition cond, gpo
         packet->pkt           = (u_char *)poic->data + pos + 16;
         packet->readerPos     = poic->interface;
 
-        if (config.bpf && bpf_filter(bpfp.bf_insns, packet->pkt, packet->pktlen, packet->pktlen)) {
+        if (config.bpf && !bpf_filter(bpfp.bf_insns, packet->pkt, packet->pktlen, packet->pktlen)) {
             arkime_packet_free(packet);
         } else {
             arkime_packet_batch(&batch, packet);

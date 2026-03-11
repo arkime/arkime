@@ -861,9 +861,13 @@ async function processQuery (req, query, cb) {
 
   let typeInfo = internals.types.get(query.typeName);
 
-  // First time we've seen this typeName
+  // First time we've seen this typeName, only create if a source handles it
   if (!typeInfo) {
     typeInfo = addType(query.typeName);
+    if (typeInfo.sources.length === 0) {
+      internals.types.delete(query.typeName);
+      return cb(undefined, WISESource.emptyResult);
+    }
   }
 
   typeInfo.requestStats++;
@@ -1306,7 +1310,11 @@ app.get('/stats', [ArkimeUtil.noCacheJson], (req, res) => {
 
   let re2;
   if (ArkimeUtil.isString(req.query.search)) {
-    re2 = new RE2(req.query.search.toLowerCase());
+    try {
+      re2 = new RE2(req.query.search.toLowerCase());
+    } catch (e) {
+      return res.send({ types: [], sources: [], startTime: internals.startTime });
+    }
   }
 
   for (const type of types) {

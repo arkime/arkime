@@ -297,8 +297,16 @@ app.use(async (req, res, next) => {
   if (req.url.match(/^\/receiveSession/i) || req.url.match(/^\/api\/sessions\/receive/i)) {
     if (req.headers['x-arkime-auth'] === undefined) {
       return res.status(401).send('receive session only allowed s2s');
-    } else {
+    }
+    try {
+      if (Config.get('s2sRegressionTests')) {
+        JSON.parse(req.headers['x-arkime-auth']);
+      } else {
+        Auth.auth2obj(req.headers['x-arkime-auth']);
+      }
       return next();
+    } catch (e) {
+      return res.status(401).send('receive session only allowed s2s');
     }
   }
 
@@ -1953,9 +1961,9 @@ app.delete( // remove users from hunt endpoint
   HuntAPIs.removeUsers
 );
 
-app.get( // remote hunt endpoint
+app.get( // remote hunt endpoint - s2s only
   ['/api/hunt/:nodeName/:huntId/remote/:sessionId'],
-  [ArkimeUtil.noCacheJson],
+  [ArkimeUtil.noCacheJson, User.checkPermissions(['packetSearch'])],
   HuntAPIs.remoteHunt
 );
 

@@ -44,8 +44,8 @@ LOCAL int quic_chlo_parser(ArkimeSession_t *session, BSB dbsb)
         return 0;
     }
 
-    guchar *tagDataStart = dbsb.buf + tagLen * 8 + 8;
-    uint32_t dlen = BSB_SIZE(dbsb) - tagLen * 8 - 8;
+    guchar *tagDataStart = BSB_WORK_PTR(dbsb) + tagLen * 8;
+    uint32_t dlen = BSB_REMAINING(dbsb) - tagLen * 8;
 
     uint32_t start = 0;
     while (!BSB_IS_ERROR(dbsb) && BSB_REMAINING(dbsb) && tagLen > 0) {

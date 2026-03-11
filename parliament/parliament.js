@@ -1819,7 +1819,8 @@ app.get('/parliament/api/issues', (req, res, next) => {
   });
 
   let type = 'string';
-  const sortBy = req.query.sort;
+  const allowedSortFields = { ignoreUntil: 1, firstNoticed: 1, lastNoticed: 1, acknowledged: 1, title: 1, text: 1, node: 1, cluster: 1, message: 1, severity: 1, type: 1, value: 1 };
+  const sortBy = allowedSortFields[req.query.sort] ? req.query.sort : undefined;
   if (sortBy === 'ignoreUntil' ||
     sortBy === 'firstNoticed' ||
     sortBy === 'lastNoticed' ||

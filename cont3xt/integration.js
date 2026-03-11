@@ -376,8 +376,11 @@ class Integration {
       let card = integration.card;
       const cardstr = integration.getUserConfig(req.user, 'card');
       if (cardstr) {
-        card = JSON.parse(cardstr);
-        // Should normalize here
+        try {
+          card = JSON.parse(cardstr);
+        } catch (e) {
+          console.log('WARNING - bad card config for user', req.user.userId, 'integration', integration.name, e);
+        }
       }
 
       // User can override order
@@ -736,6 +739,12 @@ class Integration {
 
     const itype = req.params.itype;
     const query = ArkimeUtil.sanitizeStr(req.body.query.trim());
+
+    const classified = Integration.classify(query);
+    if (classified.itype !== itype) {
+      return res.send({ purpose: 'error', text: `query does not match itype ${itype}` });
+    }
+
     const indicator = { itype, query };
 
     const integration = Integration.#integrationsByName[req.params.integration];
