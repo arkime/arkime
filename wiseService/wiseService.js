@@ -866,7 +866,7 @@ async function processQuery (req, query, cb) {
     typeInfo = addType(query.typeName);
     if (typeInfo.sources.length === 0) {
       internals.types.delete(query.typeName);
-      return cb(undefined, WISEResult.emptyResult);
+      return cb(undefined, WISESource.emptyResult);
     }
   }
 
