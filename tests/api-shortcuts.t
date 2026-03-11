@@ -1,4 +1,4 @@
-use Test::More tests => 105;
+use Test::More tests => 109;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -59,6 +59,19 @@ $json = viewerPutToken("/api/shortcut/$shortcut1Id", '{"name":"test_shortcut"}',
 is($json->{text}, "Missing shortcut type", "shortcut type required");
 $json = viewerPutToken("/api/shortcut/$shortcut1Id", '{"name":"test_shortcut","type":"string"}', $token);
 is($json->{text}, "Missing shortcut value", "shortcut value required");
+
+# create shortcut with invalid type should fail
+$json = viewerPostToken("/api/shortcut", '{"name":"bad_type_shortcut","type":"userId","value":"test"}', $token);
+ok(!$json->{success}, "invalid shortcut type rejected on create");
+
+# update shortcut with invalid type should fail
+$json = viewerPutToken("/api/shortcut/$shortcut1Id", '{"name":"test_shortcut_updated","type":"userId","value":"test"}', $token);
+ok(!$json->{success}, "invalid shortcut type rejected on update");
+
+# update shortcut should sanitize name (strip special chars)
+$json = viewerPutToken("/api/shortcut/$shortcut1Id", '{"name":"test_shortcut~!@#$%^&*()","type":"ip","value":"10.0.0.1"}', $token);
+ok($json->{success}, "update shortcut with special chars in name");
+is($json->{shortcut}->{name}, "test_shortcut", "update strips special chars from name");
 
 # update shortcut
 $json = viewerPutToken("/api/shortcut/$shortcut1Id", '{"name":"test_shortcut_updated","type":"ip","value":"10.0.0.1"}', $token);

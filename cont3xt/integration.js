@@ -739,6 +739,12 @@ class Integration {
 
     const itype = req.params.itype;
     const query = ArkimeUtil.sanitizeStr(req.body.query.trim());
+
+    const classified = Integration.classify(query);
+    if (classified.itype !== itype) {
+      return res.send({ purpose: 'error', text: `query does not match itype ${itype}` });
+    }
+
     const indicator = { itype, query };
 
     const integration = Integration.#integrationsByName[req.params.integration];

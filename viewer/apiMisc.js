@@ -114,7 +114,8 @@ class MiscAPIs {
       sort: {}
     };
 
-    query.sort[req.query.sortField || 'num'] = {
+    const sortField = columns.includes(req.query.sortField) ? req.query.sortField : 'num';
+    query.sort[sortField] = {
       order: req.query.desc === 'true' ? 'desc' : 'asc'
     };
 

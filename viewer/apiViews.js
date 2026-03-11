@@ -51,7 +51,8 @@ class ViewAPIs {
       query.query.bool.filter = []; // remove sharing restrictions
     }
 
-    query.sort[req.query.sort || 'name'] = {
+    const allowedSortFields = { name: 1, expression: 1, created: 1 };
+    query.sort[allowedSortFields[req.query.sort] ? req.query.sort : 'name'] = {
       order: req.query.desc === 'true' ? 'desc' : 'asc'
     };
 

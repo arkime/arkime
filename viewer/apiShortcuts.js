@@ -61,6 +61,11 @@ class ShortcutAPIs {
    *                                                  array of values, and list of invalid users
    */
   static async #normalizeShortcut (shortcut) {
+    const validTypes = { ip: 1, string: 1, number: 1 };
+    if (!validTypes[shortcut.type]) {
+      return { type: shortcut.type, values: [], invalidUsers: [], error: 'Invalid shortcut type' };
+    }
+
     // comma/newline separated value -> array of values
     const values = ArkimeUtil.commaOrNewlineStringToArray(shortcut.value);
     shortcut[shortcut.type] = values;
@@ -152,7 +157,8 @@ class ShortcutAPIs {
       query.query.bool.filter = []; // remove sharing restrictions
     }
 
-    query.sort[req.query.sort || 'name'] = {
+    const allowedSortFields = { name: 1, description: 1, created: 1 };
+    query.sort[allowedSortFields[req.query.sort] ? req.query.sort : 'name'] = {
       order: req.query.desc === 'true' ? 'desc' : 'asc'
     };
 
@@ -315,7 +321,12 @@ class ShortcutAPIs {
         const newShortcut = req.body;
         newShortcut.userId = user.userId;
 
-        const { type, values, invalidUsers } = await ShortcutAPIs.#normalizeShortcut(newShortcut);
+        const { type, values, invalidUsers, error } = await ShortcutAPIs.#normalizeShortcut(newShortcut);
+
+        if (error) {
+          ShortcutAPIs.#shortcutMutex.unlock();
+          return res.serverError(403, error);
+        }
 
         try {
           const { body: result } = await Db.createShortcut(newShortcut);
@@ -389,6 +400,7 @@ class ShortcutAPIs {
     }
 
     const sentShortcut = req.body;
+    sentShortcut.name = sentShortcut.name.replace(/[^-a-zA-Z0-9_]/g, '');
 
     try {
       const { body: fetchedShortcut } = await Db.getShortcut(req.params.id);
@@ -423,7 +435,12 @@ class ShortcutAPIs {
             }
           }
 
-          const { values, invalidUsers } = await ShortcutAPIs.#normalizeShortcut(sentShortcut);
+          const { values, invalidUsers, error } = await ShortcutAPIs.#normalizeShortcut(sentShortcut);
+
+          if (error) {
+            ShortcutAPIs.#shortcutMutex.unlock();
+            return res.serverError(403, error);
+          }
 
           // sets the owner if it has changed
           if (!await User.setOwner(req, res, sentShortcut, fetchedShortcut._source, 'userId')) {

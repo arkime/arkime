@@ -1467,17 +1467,23 @@ LOCAL void dns_save(BSB *jbsb, ArkimeFieldObject_t *object, struct arkime_sessio
                     }
                     break;
                     case DNS_RR_NS: {
-                        BSB_EXPORT_sprintf(*jbsb, "\"nameserver\":\"%s\",", answer->nsdname);
+                        BSB_EXPORT_cstr(*jbsb, "\"nameserver\":");
+                        arkime_db_js0n_str(jbsb, (uint8_t *)answer->nsdname, TRUE);
+                        BSB_EXPORT_u08(*jbsb, ',');
                         g_free(answer->nsdname);
                     }
                     break;
                     case DNS_RR_CNAME: {
-                        BSB_EXPORT_sprintf(*jbsb, "\"cname\":\"%s\",", answer->cname);
+                        BSB_EXPORT_cstr(*jbsb, "\"cname\":");
+                        arkime_db_js0n_str(jbsb, (uint8_t *)answer->cname, TRUE);
+                        BSB_EXPORT_u08(*jbsb, ',');
                         g_free(answer->cname);
                     }
                     break;
                     case DNS_RR_MX: {
-                        BSB_EXPORT_sprintf(*jbsb, "\"priority\":%u,\"mx\":\"%s\",", answer->mx->preference, answer->mx->exchange);
+                        BSB_EXPORT_sprintf(*jbsb, "\"priority\":%u,\"mx\":", answer->mx->preference);
+                        arkime_db_js0n_str(jbsb, (uint8_t *)answer->mx->exchange, TRUE);
+                        BSB_EXPORT_u08(*jbsb, ',');
                         g_free(answer->mx->exchange);
                         ARKIME_TYPE_FREE(DNSMXRData_t, answer->mx);
                     }
@@ -1501,7 +1507,10 @@ LOCAL void dns_save(BSB *jbsb, ArkimeFieldObject_t *object, struct arkime_sessio
                     }
                     break;
                     case DNS_RR_HTTPS: {
-                        BSB_EXPORT_sprintf(*jbsb, "\"https\":\"HTTPS %u %s ", answer->svcb->priority, answer->svcb->dname);
+                        BSB_EXPORT_cstr(*jbsb, "\"https\":\"HTTPS ");
+                        BSB_EXPORT_sprintf(*jbsb, "%u ", answer->svcb->priority);
+                        arkime_db_js0n_str_unquoted(jbsb, (uint8_t *)answer->svcb->dname, -1, TRUE);
+                        BSB_EXPORT_u08(*jbsb, ' ');
                         g_free(answer->svcb->dname);
 
                         while (DLL_COUNT(t_, &(answer->svcb->fieldValues)) > 0) {
@@ -1564,7 +1573,10 @@ LOCAL void dns_save(BSB *jbsb, ArkimeFieldObject_t *object, struct arkime_sessio
                     }
                     break;
                     case DNS_RR_CAA: {
-                        BSB_EXPORT_sprintf(*jbsb, "\"caa\":\"CAA %d %s ", answer->caa->flags, answer->caa->tag);
+                        BSB_EXPORT_cstr(*jbsb, "\"caa\":\"CAA ");
+                        BSB_EXPORT_sprintf(*jbsb, "%d ", answer->caa->flags);
+                        arkime_db_js0n_str_unquoted(jbsb, (uint8_t *)answer->caa->tag, -1, TRUE);
+                        BSB_EXPORT_u08(*jbsb, ' ');
                         arkime_db_js0n_str_unquoted(jbsb, (uint8_t *)answer->caa->value, strlen(answer->caa->value), TRUE);
                         BSB_EXPORT_cstr(*jbsb, "\",");
                         g_free(answer->caa->tag);
@@ -1575,23 +1587,26 @@ LOCAL void dns_save(BSB *jbsb, ArkimeFieldObject_t *object, struct arkime_sessio
                     case DNS_RR_RRSIG: {
                         const char *typeCoveredStr = (answer->rrsig->typeCovered < ARRAY_LEN(qtypes) && qtypes[answer->rrsig->typeCovered]) ?
                                                      qtypes[answer->rrsig->typeCovered] : "UNKNOWN";
-                        BSB_EXPORT_sprintf(*jbsb, "\"rrsig\":\"RRSIG %s %u %u %u %u %u %u %s\",",
+                        BSB_EXPORT_sprintf(*jbsb, "\"rrsig\":\"RRSIG %s %u %u %u %u %u %u ",
                                            typeCoveredStr,
                                            answer->rrsig->algorithm,
                                            answer->rrsig->labels,
                                            answer->rrsig->originalTTL,
                                            answer->rrsig->expiration,
                                            answer->rrsig->inception,
-                                           answer->rrsig->keyTag,
-                                           answer->rrsig->signerName);
+                                           answer->rrsig->keyTag);
+                        arkime_db_js0n_str_unquoted(jbsb, (uint8_t *)answer->rrsig->signerName, -1, TRUE);
+                        BSB_EXPORT_cstr(*jbsb, "\",");
                         g_free(answer->rrsig->signerName);
                         ARKIME_TYPE_FREE(DNSRRSIGRData_t, answer->rrsig);
                     }
                     break;
                     case DNS_RR_NSEC: {
-                        BSB_EXPORT_sprintf(*jbsb, "\"nsec\":\"NSEC %s %s\",",
-                                           answer->nsec->nextDomainName,
-                                           answer->nsec->typeList);
+                        BSB_EXPORT_cstr(*jbsb, "\"nsec\":\"NSEC ");
+                        arkime_db_js0n_str_unquoted(jbsb, (uint8_t *)answer->nsec->nextDomainName, -1, TRUE);
+                        BSB_EXPORT_u08(*jbsb, ' ');
+                        arkime_db_js0n_str_unquoted(jbsb, (uint8_t *)answer->nsec->typeList, -1, TRUE);
+                        BSB_EXPORT_cstr(*jbsb, "\",");
                         g_free(answer->nsec->nextDomainName);
                         g_free(answer->nsec->typeList);
                         ARKIME_TYPE_FREE(DNSNSECRData_t, answer->nsec);
