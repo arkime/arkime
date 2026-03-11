@@ -83,11 +83,13 @@ class HistoryAPIs {
       if (req.query.searchTerm || userId) {
         query.query = { bool: { filter: [] } };
 
-        if (req.query.searchTerm) { // apply search term
+        if (req.query.searchTerm) { // apply search term across whitelisted fields only
           query.query.bool.filter.push({
-            query_string: {
-              query: req.query.searchTerm,
-              fields: ['expression', 'userId', 'api', 'view.name', 'view.expression']
+            bool: {
+              should: ['expression', 'userId', 'api', 'view.name', 'view.expression'].map(field => ({
+                wildcard: { [field]: `*${req.query.searchTerm}*` }
+              })),
+              minimum_should_match: 1
             }
           });
         }
@@ -186,6 +188,10 @@ class HistoryAPIs {
   static async deleteHistory (req, res) {
     if (!req.query.index) {
       return res.serverError(403, 'Missing history index', 'api.history.missingIndex');
+    }
+
+    if (!req.query.index.includes('history_v')) {
+      return res.serverError(403, 'Invalid history index', 'api.history.invalidIndex');
     }
 
     try {

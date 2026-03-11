@@ -634,11 +634,14 @@ class DbESImplementation {
   async getMatchingAudits (userId, roles, reqQuery) {
     const { startMs, stopMs, searchTerm, page, itemsPerPage, sortBy, sortOrder } = reqQuery;
     const filter = [];
+    const allowedSortBy = { issuedAt: 1, indicator: 1, iType: 1 };
+    const safeSortBy = allowedSortBy[sortBy] ? sortBy : 'issuedAt';
+    const safeSortOrder = sortOrder === 'asc' ? 'asc' : 'desc';
     const query = {
       size: itemsPerPage || 1000,
       from: (page - 1) * itemsPerPage || 0,
       query: { bool: { filter } },
-      sort: [{ [sortBy]: { order: sortOrder || 'desc' } }]
+      sort: [{ [safeSortBy]: { order: safeSortOrder } }]
     };
 
     if (startMs != null && stopMs != null) {
@@ -653,10 +656,12 @@ class DbESImplementation {
     }
 
     if (searchTerm != null && typeof searchTerm === 'string') {
-      filter.push({ // apply search term
-        query_string: {
-          query: `*${searchTerm}*`,
-          fields: ['indicator', 'iType', 'tags']
+      filter.push({ // apply search term across whitelisted fields only
+        bool: {
+          should: ['indicator', 'iType', 'tags'].map(field => ({
+            wildcard: { [field]: `*${searchTerm}*` }
+          })),
+          minimum_should_match: 1
         }
       });
     }

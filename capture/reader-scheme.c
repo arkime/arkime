@@ -571,16 +571,14 @@ LOCAL int arkime_reader_scheme_processNG(const char *uri, uint8_t *data, int len
             int need = readerState.blockSize - readerState.tmpBufferLen;
             if (len < need) {
                 memcpy(readerState.tmpBuffer + readerState.tmpBufferLen, data, len);
-                readerState.blockSize -= len;
                 readerState.tmpBufferLen += len;
                 goto processNG;
             }
 
             memcpy(readerState.tmpBuffer + readerState.tmpBufferLen, data, need);
-            readerState.blockSize -= need;
             data += need;
             len -= need;
-            readerState.tmpBufferLen += need;
+            readerState.tmpBufferLen = readerState.blockSize;
 
             uint16_t linkType;
             uint32_t snaplen;

@@ -313,10 +313,10 @@ LOCAL uint32_t tls_process_client_hello_data(ArkimeSession_t *session, const uin
     char     ja4HasSNI = 'i';
     uint16_t ja4Ciphers[JA4_MAX_CIPHERS];
     uint16_t ja4NumCiphers = 0;
-    uint8_t  ja4NumExtensions = 0;
+    uint16_t ja4NumExtensions = 0;
     uint16_t ja4Extensions[256];
-    uint8_t  ja4NumExtensionsSome = 0;
-    uint8_t  ja4NumAlgos = 0;
+    uint16_t ja4NumExtensionsSome = 0;
+    uint16_t ja4NumAlgos = 0;
     uint16_t ja4Algos[256];
     uint8_t  ja4ALPN[2] = {'0', '0'};
 
@@ -398,8 +398,10 @@ LOCAL uint32_t tls_process_client_hello_data(ArkimeSession_t *session, const uin
                 }
 
                 ja4NumExtensions++;
-                ja4Extensions[ja4NumExtensionsSome] = etype;
-                ja4NumExtensionsSome++;
+                if (ja4NumExtensionsSome < ARRAY_LEN(ja4Extensions)) {
+                    ja4Extensions[ja4NumExtensionsSome] = etype;
+                    ja4NumExtensionsSome++;
+                }
 
                 BSB_EXPORT_sprintf(eja3bsb, "%d-", etype);
 
@@ -408,7 +410,8 @@ LOCAL uint32_t tls_process_client_hello_data(ArkimeSession_t *session, const uin
 
 
                 if (etype == 0) { // SNI
-                    ja4NumExtensionsSome--;
+                    if (ja4NumExtensionsSome > 0)
+                        ja4NumExtensionsSome--;
                     BSB bsb;
                     BSB_IMPORT_bsb(ebsb, bsb, elen);
 
@@ -465,10 +468,12 @@ LOCAL uint32_t tls_process_client_hello_data(ArkimeSession_t *session, const uin
                     while (BSB_REMAINING(bsb) >= 2) {
                         uint16_t a = 0;
                         BSB_IMPORT_u16(bsb, a);
-                        ja4Algos[ja4NumAlgos++] = a;
+                        if (ja4NumAlgos < ARRAY_LEN(ja4Algos))
+                            ja4Algos[ja4NumAlgos++] = a;
                     }
                 } else if (etype == 0x10) { // ALPN
-                    ja4NumExtensionsSome--;
+                    if (ja4NumExtensionsSome > 0)
+                        ja4NumExtensionsSome--;
                     BSB bsb;
                     BSB_IMPORT_bsb(ebsb, bsb, elen);
 

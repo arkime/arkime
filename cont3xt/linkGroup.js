@@ -146,6 +146,9 @@ class LinkGroup {
       if (!ArkimeUtil.isString(link.url)) {
         return { msg: 'Link missing url' };
       }
+      if (!/^https?:\/\//i.test(link.url)) {
+        return { msg: 'Link url must start with http:// or https://' };
+      }
       if (!Array.isArray(link.itypes)) {
         return { msg: 'Link missing itypes' };
       }
@@ -165,6 +168,9 @@ class LinkGroup {
       }
       if (link.externalDocUrl !== undefined && !ArkimeUtil.isString(link.externalDocUrl)) {
         return { msg: 'Link externalDocUrl must be a string' };
+      }
+      if (link.externalDocUrl !== undefined && !/^https?:\/\//i.test(link.externalDocUrl)) {
+        return { msg: 'Link externalDocUrl must start with http:// or https://' };
       }
     }
 
