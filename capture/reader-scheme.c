@@ -754,7 +754,7 @@ LOCAL int arkime_reader_scheme_processNG(const char *uri, uint8_t *data, int len
             packets++;
             offlineInfo[readerState.readerPos].lastPackets++;
             offlineInfo[readerState.readerPos].lastPacketTime = readerState.packet->ts;
-            if (deadPcap && bpf_filter(bpf.bf_insns, readerState.packet->pkt, readerState.pktlen, readerState.pktlen)) {
+            if (deadPcap && !bpf_filter(bpf.bf_insns, readerState.packet->pkt, readerState.pktlen, readerState.pktlen)) {
                 arkime_packet_free(readerState.packet);
             } else {
                 arkime_packet_batch(&batch, readerState.packet);
@@ -934,7 +934,7 @@ int arkime_reader_scheme_process(const char *uri, uint8_t *data, int len, const 
             packets++;
             offlineInfo[readerState.readerPos].lastPackets++;
             offlineInfo[readerState.readerPos].lastPacketTime = readerState.packet->ts;
-            if (deadPcap && bpf_filter(bpf.bf_insns, readerState.packet->pkt, readerState.pktlen, readerState.pktlen)) {
+            if (deadPcap && !bpf_filter(bpf.bf_insns, readerState.packet->pkt, readerState.pktlen, readerState.pktlen)) {
                 arkime_packet_free(readerState.packet);
             } else {
                 arkime_packet_batch(&batch, readerState.packet);
