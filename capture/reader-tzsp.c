@@ -111,8 +111,7 @@ LOCAL void *tzsp_thread(gpointer UNUSED(uw))
 
         packets++;
 
-        if (config.bpf && bpf_filter(bpfp.bf_insns, BSB_WORK_PTR(bsb), BSB_REMAINING(bsb), BSB_REMAINING(bsb))) {
-            // Not dropped
+        if (config.bpf && !bpf_filter(bpfp.bf_insns, BSB_WORK_PTR(bsb), BSB_REMAINING(bsb), BSB_REMAINING(bsb))) {
             continue;
         }
 
