@@ -24,11 +24,12 @@ class ViewAPIs {
 
     const roles = [...await user.getRoles()]; // es requires an array for terms search
 
+    const allowedViewsSortFields = { name: 1, expression: 1, created: 1 };
     const params = {
       user: user.userId,
       roles,
       all: req.query.all && roles.includes('arkimeAdmin'),
-      sortField: req.query.sort || 'name',
+      sortField: allowedViewsSortFields[req.query.sort] ? req.query.sort : 'name',
       sortOrder: req.query.desc === 'true' ? 'desc' : 'asc',
       from: req.query.start || 0,
       size: req.query.length || 50,

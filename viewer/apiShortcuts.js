@@ -130,11 +130,12 @@ class ShortcutAPIs {
 
     const map = req.query.map && req.query.map === 'true';
 
+    const allowedShortcutsSortFields = { name: 1, description: 1, created: 1 };
     const params = {
       user: req.settingUser.userId,
       roles,
       all: req.query.all && roles.includes('arkimeAdmin'),
-      sortField: req.query.sort || 'name',
+      sortField: allowedShortcutsSortFields[req.query.sort] ? req.query.sort : 'name',
       sortOrder: req.query.desc === 'true' ? 'desc' : 'asc',
       size: req.query.length || 50,
       from: req.query.start || 0,
