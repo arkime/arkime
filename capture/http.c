@@ -155,14 +155,18 @@ LOCAL size_t arkime_http_curl_write_callback(void *contents, size_t size, size_t
     if (!request->dataIn) {
         double cl;
         curl_easy_getinfo(request->easy, CURLINFO_CONTENT_LENGTH_DOWNLOAD, &cl);
+        if (cl < 0 || cl > 0x7FFFFFFF)
+            cl = sz;
         request->used = sz;
-        request->size = MAX(sz, cl);
+        request->size = MAX(sz, (uint32_t)cl);
         request->dataIn = ARKIME_SIZE_ALLOC("dataIn", request->size + 1);
         memcpy(request->dataIn, contents, sz);
         return sz;
     }
 
     if (request->used + sz >= request->size) {
+        if (request->used + sz > 0x7FFFFFFF)
+            return 0;
         request->size += request->used + sz;
         ARKIME_SIZE_REALLOC("dataIn", request->dataIn, request->size + 1);
     }

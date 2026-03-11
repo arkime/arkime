@@ -140,7 +140,7 @@ class SplunkSource extends WISESource {
 
     const cache = this.type === 'ip' ? this.cache.items : this.cache;
     cache.forEach((value, key) => {
-      const str = `{"key": "${key}", "ops":\n` +
+      const str = `{"key": ${JSON.stringify(key)}, "ops":\n` +
         WISESource.result2JSON(WISESource.combineResults([this.tagsResult, value])) + '},\n';
       res.write(str);
     });

@@ -1,5 +1,5 @@
 # WISE tests
-use Test::More tests => 146;
+use Test::More tests => 148;
 use ArkimeTest;
 use Cwd;
 use URI::Escape;
@@ -282,6 +282,11 @@ is (scalar @{$wise->{"types"}}, 1);
 my $wise2 = from_json($ArkimeTest::userAgent->get("http://$ArkimeTest::host:8081/stats?search=do.*n")->content);
 
 eq_or_diff($wise, $wise2);
+
+# Stats with invalid regex should not crash
+$wise = from_json($ArkimeTest::userAgent->get("http://$ArkimeTest::host:8081/stats?search=(?:")->content);
+ok (exists $wise->{"sources"}, "invalid regex returns sources");
+ok (exists $wise->{"types"}, "invalid regex returns types");
 
 # Get
 $wise = $ArkimeTest::userAgent->post("http://$ArkimeTest::host:8081/get", Content => "XXX")->content;
