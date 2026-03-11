@@ -1,4 +1,4 @@
-use Test::More tests => 338;
+use Test::More tests => 340;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -150,6 +150,12 @@ my $hToken = getTokenCookie('sac-huntuser');
 
   $hunts = viewerGet("/api/hunts?history=true");
   is (@{$hunts->{data}}, 1, "Non admin user cannot delete another user's hunt");
+
+# Should be able to filter hunts by searchTerm
+  $hunts = viewerGet("/api/hunts?history=true&searchTerm=test+hunt+13");
+  is (@{$hunts->{data}}, 1, "searchTerm match");
+  $hunts = viewerGet("/api/hunts?history=true&searchTerm=zzznomatch");
+  is (@{$hunts->{data}}, 0, "searchTerm no match");
 
   $json = viewerPostToken("/api/hunt?arkimeRegressionUser=user2", '{"totalSessions":1,"name":"test hunt 14","size":"50","search":"test search text","searchType":"ascii","type":"raw","src":true,"dst":true,"query":{"startTime":18000,"stopTime":1536872891}}', $otherToken);
 

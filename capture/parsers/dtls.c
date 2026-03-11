@@ -87,11 +87,11 @@ LOCAL uint32_t dtls_process_client_hello(ArkimeSession_t *session, const uint8_t
 {
     char     ja4HasSNI = 'i';
     uint16_t ja4Ciphers[256];
-    uint8_t  ja4NumCiphers = 0;
-    uint8_t  ja4NumExtensions = 0;
+    uint16_t ja4NumCiphers = 0;
+    uint16_t ja4NumExtensions = 0;
     uint16_t ja4Extensions[256];
-    uint8_t  ja4NumExtensionsSome = 0;
-    uint8_t  ja4NumAlgos = 0;
+    uint16_t ja4NumExtensionsSome = 0;
+    uint16_t ja4NumAlgos = 0;
     uint16_t ja4Algos[256];
     uint8_t  ja4ALPN[2] = {'0', '0'};
 
@@ -120,8 +120,10 @@ LOCAL uint32_t dtls_process_client_hello(ArkimeSession_t *session, const uint8_t
         uint16_t c = 0;
         BSB_IMPORT_u16(cbsb, c);
         if (!dtls_is_grease_value(c)) {
-            ja4Ciphers[ja4NumCiphers] = c;
-            ja4NumCiphers++;
+            if (ja4NumCiphers < ARRAY_LEN(ja4Ciphers)) {
+                ja4Ciphers[ja4NumCiphers] = c;
+                ja4NumCiphers++;
+            }
         }
         skiplen -= 2;
     }
@@ -149,14 +151,17 @@ LOCAL uint32_t dtls_process_client_hello(ArkimeSession_t *session, const uint8_t
             }
 
             ja4NumExtensions++;
-            ja4Extensions[ja4NumExtensionsSome] = etype;
-            ja4NumExtensionsSome++;
+            if (ja4NumExtensionsSome < ARRAY_LEN(ja4Extensions)) {
+                ja4Extensions[ja4NumExtensionsSome] = etype;
+                ja4NumExtensionsSome++;
+            }
 
             if (elen > BSB_REMAINING(ebsb))
                 break;
 
             if (etype == 0) { // SNI
-                ja4NumExtensionsSome--;
+                if (ja4NumExtensionsSome > 0)
+                    ja4NumExtensionsSome--;
                 BSB bsb;
                 BSB_IMPORT_bsb(ebsb, bsb, elen);
 
@@ -184,11 +189,13 @@ LOCAL uint32_t dtls_process_client_hello(ArkimeSession_t *session, const uint8_t
                 while (llen > 0 && !BSB_IS_ERROR(bsb)) {
                     uint16_t a = 0;
                     BSB_IMPORT_u16(bsb, a);
-                    ja4Algos[ja4NumAlgos++] = a;
+                    if (ja4NumAlgos < ARRAY_LEN(ja4Algos))
+                        ja4Algos[ja4NumAlgos++] = a;
                     llen -= 2;
                 }
             } else if (etype == 0x10) { // ALPN
-                ja4NumExtensionsSome--;
+                if (ja4NumExtensionsSome > 0)
+                    ja4NumExtensionsSome--;
                 BSB bsb;
                 BSB_IMPORT_bsb(ebsb, bsb, elen);
 

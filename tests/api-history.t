@@ -1,4 +1,4 @@
-use Test::More tests => 51;
+use Test::More tests => 53;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -118,6 +118,12 @@ my ($url) = @_;
     is ($json->{recordsFiltered}, 1, "Test5: recordsFiltered");
     $json = viewerGet("/api/histories?userId=historytest1&startTime=18000&stopTime=$pastHour");
     is ($json->{recordsFiltered}, 0, "Test5: recordsFiltered");
+
+# Should be able to filter by searchTerm
+    $json = viewerGet("/api/histories?searchTerm=domainwise");
+    is ($json->{recordsFiltered}, 1, "Test6: searchTerm match");
+    $json = viewerGet("/api/histories?searchTerm=zzznomatch");
+    is ($json->{recordsFiltered}, 0, "Test6: searchTerm no match");
 
 # Can't delete items when not admin
     $json = viewerDeleteToken("/api/history/$item->{id}?arkimeRegressionUser=historytest1", $otherToken);

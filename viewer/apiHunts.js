@@ -963,11 +963,13 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
 
     if (req.query.history) { // only get finished jobs
       query.query.bool.filter.push({ term: { status: 'finished' } });
-      if (req.query.searchTerm) { // apply search term
+      if (req.query.searchTerm) { // apply search term across whitelisted fields only
         query.query.bool.filter.push({
-          query_string: {
-            query: req.query.searchTerm,
-            fields: ['name', 'userId']
+          bool: {
+            should: ['name', 'userId'].map(field => ({
+              wildcard: { [field]: `*${req.query.searchTerm}*` }
+            })),
+            minimum_should_match: 1
           }
         });
       }
@@ -1339,6 +1341,10 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
    * @returns {string} error - If an error occurred, describes the error.
    */
   static async remoteHunt (req, res) {
+    if (req.headers['x-arkime-auth'] === undefined) {
+      return res.status(401).send('remote hunt only allowed s2s');
+    }
+
     const huntId = req.params.huntId;
     const sessionId = req.params.sessionId;
 

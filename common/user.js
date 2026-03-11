@@ -1571,8 +1571,14 @@ function cleanSearchUser (iuser) {
 /******************************************************************************/
 // Sort Users
 /******************************************************************************/
+const allowedSortFields = { userId: 1, userName: 1, enabled: 1, webEnabled: 1, headerAuthEnabled: 1, createEnabled: 1, removeEnabled: 1, lastUsed: 1, roles: 1 };
+
 function sortUsers (users, sortField, sortDescending) {
   if (users.length <= 1) { return; }
+
+  if (!allowedSortFields[sortField]) {
+    sortField = 'userId';
+  }
 
   if (typeof users[0][sortField] === 'string') {
     if (sortDescending) {

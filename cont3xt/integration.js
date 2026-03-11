@@ -376,8 +376,11 @@ class Integration {
       let card = integration.card;
       const cardstr = integration.getUserConfig(req.user, 'card');
       if (cardstr) {
-        card = JSON.parse(cardstr);
-        // Should normalize here
+        try {
+          card = JSON.parse(cardstr);
+        } catch (e) {
+          console.log('WARNING - bad card config for user', req.user.userId, 'integration', integration.name, e);
+        }
       }
 
       // User can override order
