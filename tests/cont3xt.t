@@ -1,5 +1,5 @@
 # Test cont3xt.js
-use Test::More tests => 176;
+use Test::More tests => 177;
 use Test::Differences;
 use Data::Dumper;
 use ArkimeTest;
@@ -822,10 +822,16 @@ $json = cont3xtPost('/api/integration/ip/foo/search', to_json({
 }));
 eq_or_diff($json, from_json('{"purpose": "error", "text": "integration ip foo not found"}'));
 
-$json = cont3xtPost('/api/integration/bar/Maxmind/search', to_json({
+$json = cont3xtPost('/api/integration/ip/bar/search', to_json({
   query => "8.8.8.8"
 }));
-eq_or_diff($json, from_json('{"purpose": "error", "text": "integration bar Maxmind not found"}'));
+eq_or_diff($json, from_json('{"purpose": "error", "text": "integration ip bar not found"}'));
+
+# wrong itype for query value
+$json = cont3xtPost('/api/integration/domain/Maxmind/search', to_json({
+  query => "8.8.8.8"
+}));
+eq_or_diff($json, from_json('{"purpose": "error", "text": "query does not match itype domain"}'));
 
 $json = cont3xtPost('/api/integration/ip/Maxmind/search', to_json({
   query => "8.8.8.8"
@@ -844,7 +850,7 @@ is($json->{data}->{hits}->[1]->{source}->{ip}, "10.0.0.1");
 $json = cont3xtPost('/api/integration/ip/elasticsearch:test/search', to_json({
   query => "badip"
 }));
-is($json->{purpose}, "fail");
+is($json->{purpose}, "error");
 
 # json tests
 $json = cont3xtPost('/api/integration/ip/json:ipwise/search', to_json({
