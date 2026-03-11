@@ -83,12 +83,13 @@ class HistoryAPIs {
       if (req.query.searchTerm || userId) {
         query.query = { bool: { filter: [] } };
 
-        if (req.query.searchTerm) { // apply search term
+        if (req.query.searchTerm) { // apply search term across whitelisted fields only
           query.query.bool.filter.push({
-            multi_match: {
-              query: req.query.searchTerm,
-              fields: ['expression', 'userId', 'api', 'view.name', 'view.expression'],
-              type: 'phrase_prefix'
+            bool: {
+              should: ['expression', 'userId', 'api', 'view.name', 'view.expression'].map(field => ({
+                wildcard: { [field]: `*${req.query.searchTerm}*` }
+              })),
+              minimum_should_match: 1
             }
           });
         }

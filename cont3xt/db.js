@@ -656,11 +656,12 @@ class DbESImplementation {
     }
 
     if (searchTerm != null && typeof searchTerm === 'string') {
-      filter.push({ // apply search term
-        multi_match: {
-          query: searchTerm,
-          fields: ['indicator', 'iType', 'tags'],
-          type: 'phrase_prefix'
+      filter.push({ // apply search term across whitelisted fields only
+        bool: {
+          should: ['indicator', 'iType', 'tags'].map(field => ({
+            wildcard: { [field]: `*${searchTerm}*` }
+          })),
+          minimum_should_match: 1
         }
       });
     }

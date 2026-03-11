@@ -963,12 +963,13 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
 
     if (req.query.history) { // only get finished jobs
       query.query.bool.filter.push({ term: { status: 'finished' } });
-      if (req.query.searchTerm) { // apply search term
+      if (req.query.searchTerm) { // apply search term across whitelisted fields only
         query.query.bool.filter.push({
-          multi_match: {
-            query: req.query.searchTerm,
-            fields: ['name', 'userId'],
-            type: 'phrase_prefix'
+          bool: {
+            should: ['name', 'userId'].map(field => ({
+              wildcard: { [field]: `*${req.query.searchTerm}*` }
+            })),
+            minimum_should_match: 1
           }
         });
       }
