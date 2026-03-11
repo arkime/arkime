@@ -39,6 +39,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
 ## BREAKING
   - #3782 Previous redis user databases will be ignored
   - #3786 Dedup packets including VLAN/VNI by default, set dedupVlanVni=false to disable
+  - #3792 uploadFileSizeLimit now defaults to 2G instead of unlimited
 ## All
   - #3782 sqlite support added for user database and cont3xt/parliament databases
   - #3782 many fixes for lmdb and redis database implementation

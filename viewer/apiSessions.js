@@ -893,7 +893,7 @@ class SessionAPIs {
       } else {
         let sendPath = `/api/session/${fields.node}/${sid}/send?saveId=${saveId}&remoteCluster=${cluster}`;
         if (ArkimeUtil.isString(req.body.tags)) {
-          sendPath += `&tags=${req.body.tags}`;
+          sendPath += `&tags=${encodeURIComponent(req.body.tags)}`;
         }
 
         await new Promise((resolve) => {

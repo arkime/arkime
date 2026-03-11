@@ -965,9 +965,10 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
       query.query.bool.filter.push({ term: { status: 'finished' } });
       if (req.query.searchTerm) { // apply search term
         query.query.bool.filter.push({
-          query_string: {
+          multi_match: {
             query: req.query.searchTerm,
-            fields: ['name', 'userId']
+            fields: ['name', 'userId'],
+            type: 'phrase_prefix'
           }
         });
       }
@@ -1339,6 +1340,10 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
    * @returns {string} error - If an error occurred, describes the error.
    */
   static async remoteHunt (req, res) {
+    if (req.headers['x-arkime-auth'] === undefined) {
+      return res.status(401).send('remote hunt only allowed s2s');
+    }
+
     const huntId = req.params.huntId;
     const sessionId = req.params.sessionId;
 
