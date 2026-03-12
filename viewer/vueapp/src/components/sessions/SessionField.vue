@@ -687,7 +687,7 @@ export default {
             }
           }
 
-          this.asyncMenuItems[key] = { name: clickableName, value, url: result };
+          this.menuItems[key] = { name: clickableName, value, url: result };
         }
       }
     }
