@@ -47,7 +47,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #3782 many fixes for lmdb and redis database implementation
   - #3782 now regression test sqlite/lmdb/redis databases during builds
 ## Capture
-  - #3786 add VLAN/VNI deduplication support (thanks @waynieack)
+  - #3786, #3797 add VLAN/VNI deduplication support (thanks @waynieack)
   - #3790 fix VLAN parsing for Type III ERSPAN (thanks @waynieack)
   - #3794 Fixed bpf filter setting reversed for scheme, pcapoverip, and tzsp readers
 ## ES Proxy
