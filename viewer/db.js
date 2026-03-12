@@ -1441,7 +1441,9 @@ Db.updateLocalShortcuts = async () => {
             await internals.client7.index({
               id: remoteShortcut.id,
               index: internals.localShortcutsIndex,
-              body: remoteShortcut.source
+              body: remoteShortcut.source,
+              version_type: 'external',
+              version: remoteShortcut.version
             });
             changed = true;
           }
@@ -1454,7 +1456,9 @@ Db.updateLocalShortcuts = async () => {
         await internals.client7.index({
           id: remoteShortcut.id,
           index: internals.localShortcutsIndex,
-          body: remoteShortcut.source
+          body: remoteShortcut.source,
+          version_type: 'external',
+          version: remoteShortcut.version
         });
         changed = true;
       }

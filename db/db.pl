@@ -6847,7 +6847,7 @@ sub shareablesUpdate
     my $mapping = '
 {
   "_source": {"enabled": "true"},
-  "dynamic": "true",
+  "dynamic": "false",
   "dynamic_templates": [
     {
       "string_template": {
@@ -9482,6 +9482,7 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
         checkForOld7Indices();
         sessions3Update();
         historyUpdate();
+        shareablesUpdate();
     } else {
         logmsg "db.pl is hosed\n";
     }

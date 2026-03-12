@@ -197,14 +197,14 @@ class ShareableAPIs {
    */
   static async apiUpdateShareable (req, res) {
     try {
-      const dbItemSource = await Db.getShareable(req.params.id);
+      const shareable = await Db.getShareable(req.params.id);
       const user = req.settingUser;
 
-      if (!await ShareableAPIs.canEdit(user, dbItemSource)) {
+      if (!await ShareableAPIs.canEdit(user, shareable)) {
         return res.serverError(403, 'Not permitted to edit this shareable item', 'api.shareables.notPermittedToEdit');
       }
 
-      if (req.body.type !== undefined && req.body.type !== dbItemSource.type) {
+      if (req.body.type !== undefined && req.body.type !== shareable.type) {
         return res.serverError(403, 'Cannot change shareable type', 'api.shareables.cannotChangeType');
       }
 
@@ -212,10 +212,10 @@ class ShareableAPIs {
         return res.serverError(403, 'Description must be a string', 'api.shareables.descriptionMustBeString');
       }
 
-      let viewRoles = req.body.viewRoles !== undefined ? (ArkimeUtil.isStringArray(req.body.viewRoles) ? req.body.viewRoles : []) : (dbItemSource.viewRoles || []);
-      let viewUsers = req.body.viewUsers !== undefined ? (ArkimeUtil.isStringArray(req.body.viewUsers) ? req.body.viewUsers : []) : (dbItemSource.viewUsers || []);
-      let editRoles = req.body.editRoles !== undefined ? (ArkimeUtil.isStringArray(req.body.editRoles) ? req.body.editRoles : []) : (dbItemSource.editRoles || []);
-      let editUsers = req.body.editUsers !== undefined ? (ArkimeUtil.isStringArray(req.body.editUsers) ? req.body.editUsers : []) : (dbItemSource.editUsers || []);
+      let viewRoles = req.body.viewRoles !== undefined ? (ArkimeUtil.isStringArray(req.body.viewRoles) ? req.body.viewRoles : []) : (shareable.viewRoles || []);
+      let viewUsers = req.body.viewUsers !== undefined ? (ArkimeUtil.isStringArray(req.body.viewUsers) ? req.body.viewUsers : []) : (shareable.viewUsers || []);
+      let editRoles = req.body.editRoles !== undefined ? (ArkimeUtil.isStringArray(req.body.editRoles) ? req.body.editRoles : []) : (shareable.editRoles || []);
+      let editUsers = req.body.editUsers !== undefined ? (ArkimeUtil.isStringArray(req.body.editUsers) ? req.body.editUsers : []) : (shareable.editUsers || []);
 
       if (viewUsers.length > 0) {
         const validatedViewUsers = await User.validateUserIds(viewUsers);
@@ -228,29 +228,29 @@ class ShareableAPIs {
       }
 
       const doc = {
-        name: req.body.name !== undefined ? req.body.name : dbItemSource.name,
-        type: dbItemSource.type,
-        description: req.body.description !== undefined ? req.body.description : dbItemSource.description,
-        creator: dbItemSource.creator,
-        created: dbItemSource.created,
+        name: req.body.name !== undefined ? req.body.name : shareable.name,
+        type: shareable.type,
+        description: req.body.description !== undefined ? req.body.description : shareable.description,
+        creator: shareable.creator,
+        created: shareable.created,
         updated: new Date(),
         viewRoles,
         viewUsers,
         editRoles,
         editUsers,
-        data: req.body.data !== undefined ? req.body.data : (dbItemSource.data || {})
+        data: req.body.data !== undefined ? req.body.data : (shareable.data || {})
       };
 
       await Db.setShareable(req.params.id, doc);
-      const shareable = await Db.getShareable(req.params.id);
+      const updated = await Db.getShareable(req.params.id);
 
-      shareable.id = req.params.id;
-      shareable.canEdit = await ShareableAPIs.canEdit(user, shareable);
-      shareable.canDelete = ShareableAPIs.canDelete(user, shareable);
+      updated.id = req.params.id;
+      updated.canEdit = await ShareableAPIs.canEdit(user, updated);
+      updated.canDelete = ShareableAPIs.canDelete(user, updated);
 
       return res.json({
         success: true,
-        shareable,
+        shareable: updated,
         text: 'Updated shareable item!',
         i18n: 'api.shareables.updated'
       });
@@ -320,8 +320,8 @@ class ShareableAPIs {
         size: req.query.length || 50
       };
 
-      const { data: items, total: recordsTotal } = await Db.searchShareables(params);
-      const total = await Db.numberOfShareables(params);
+      const { data: items, total: recordsFiltered } = await Db.searchShareables(params);
+      const recordsTotal = await Db.numberOfShareables({ ...params, searchTerm: undefined });
 
       const results = items.map(async (item) => {
         const shareable = item.source;
@@ -343,7 +343,7 @@ class ShareableAPIs {
       return res.send({
         data: resolvedResults,
         recordsTotal,
-        recordsFiltered: total
+        recordsFiltered
       });
     } catch (err) {
       console.log(`ERROR - ${req.method} /api/shareables (listShareables)`, util.inspect(err, false, 50));

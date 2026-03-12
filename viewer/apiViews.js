@@ -36,8 +36,8 @@ class ViewAPIs {
       searchTerm: req.query.searchTerm
     };
 
-    const { data: views, total: recordsTotal } = await Db.searchViews(params);
-    const total = await Db.numberOfViews(params);
+    const { data: views, total: recordsFiltered } = await Db.searchViews(params);
+    const recordsTotal = await Db.numberOfViews({ ...params, searchTerm: undefined });
 
     const results = views.map((view) => {
       const id = view.id;
@@ -60,7 +60,7 @@ class ViewAPIs {
       return result;
     });
 
-    return { data: results, recordsTotal, recordsFiltered: total };
+    return { data: results, recordsTotal, recordsFiltered };
   }
 
   // --------------------------------------------------------------------------
@@ -114,15 +114,25 @@ class ViewAPIs {
 
     const user = req.settingUser;
 
-    req.body.user = user.userId;
-
     // comma/newline separated value -> array of values
     let users = ArkimeUtil.commaOrNewlineStringToArray(req.body.users || '');
     users = await User.validateUserIds(users);
-    req.body.users = users.validUsers;
+
+    const doc = {
+      name: req.body.name,
+      expression: req.body.expression,
+      user: user.userId,
+      users: users.validUsers,
+      roles: req.body.roles,
+      editRoles: req.body.editRoles
+    };
+
+    if (req.body.sessionsColConfig !== undefined) {
+      doc.sessionsColConfig = req.body.sessionsColConfig;
+    }
 
     try {
-      const id = await Db.createView(req.body);
+      const id = await Db.createView(doc);
       const view = await Db.getView(id);
 
       view.id = id;
@@ -181,26 +191,36 @@ class ViewAPIs {
       return res.serverError(403, 'Missing view expression', 'api.views.missingExpression');
     }
 
-    const view = req.body;
-
     try {
       const dbViewSource = await Db.getView(req.params.id);
 
-      // sets the owner if it has changed
-      if (!await User.setOwner(req, res, view, dbViewSource, 'user')) {
+      const doc = {
+        name: req.body.name,
+        expression: req.body.expression,
+        users: dbViewSource.users,
+        roles: req.body.roles,
+        editRoles: req.body.editRoles,
+        user: req.body.user ?? dbViewSource.user
+      };
+
+      if (req.body.sessionsColConfig !== undefined) {
+        doc.sessionsColConfig = req.body.sessionsColConfig;
+      } else if (dbViewSource.sessionsColConfig !== undefined) {
+        doc.sessionsColConfig = dbViewSource.sessionsColConfig;
+      }
+
+      // checks permission and validates new owner (only creator/admin can transfer)
+      if (!await User.setOwner(req, res, doc, dbViewSource, 'user')) {
         return;
       }
 
-      // can't update the id
-      if (view.id) { delete view.id; }
-
       // comma/newline separated value -> array of values
-      let users = ArkimeUtil.commaOrNewlineStringToArray(view.users || '');
+      let users = ArkimeUtil.commaOrNewlineStringToArray(req.body.users || '');
       users = await User.validateUserIds(users);
-      view.users = users.validUsers;
+      doc.users = users.validUsers;
 
       try {
-        await Db.setView(req.params.id, view);
+        await Db.setView(req.params.id, doc);
         const newView = await Db.getView(req.params.id);
         newView.users = newView.users?.join(',') ?? '';
         newView.id = req.params.id;

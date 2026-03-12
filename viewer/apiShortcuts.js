@@ -150,7 +150,7 @@ class ShortcutAPIs {
     try {
       const [{ data, total: recordsFiltered }, recordsTotal] = await Promise.all([
         Db.searchShortcuts(params),
-        Db.numberOfShortcuts(params)
+        Db.numberOfShortcuts({ ...params, searchTerm: undefined })
       ]);
 
       const results = { list: [], map: {} };
