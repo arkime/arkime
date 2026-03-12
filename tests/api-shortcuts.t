@@ -1,4 +1,4 @@
-use Test::More tests => 109;
+use Test::More tests => 121;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -201,6 +201,13 @@ $json = viewerPutToken("/api/shortcut/$shortcut4Id?arkimeRegressionUser=sac-user
 ok(!$json->{success}, "cannot transfer ownership without being admin or creator");
 eq_or_diff($json->{text}, "Permission denied");
 
+# editor cannot transfer ownership to a different valid user
+viewerPostToken("/api/user", '{"userId": "sac-user3", "userName": "user3", "enabled":true, "password":"password", "roles":["arkimeUser"]}', $token);
+$json = viewerPutToken("/api/shortcut/$shortcut4Id?arkimeRegressionUser=sac-user2", '{"userId":"sac-user3","name":"role_shared_shortcut","type":"string","value":"udp","users":"","roles":["arkimeUser"],"editRoles":["arkimeUser"]}', $otherToken);
+ok(!$json->{success}, "editor cannot transfer ownership to a different user");
+eq_or_diff($json->{text}, "Permission denied", "editor gets permission denied for ownership transfer");
+viewerDeleteToken("/api/user/sac-user3", $token);
+
 # can't transfer ownership to invalid user
 $json = viewerPutToken("/api/shortcut/$shortcut4Id", '{"userId":"asdf","name":"role_shared_shortcut","type":"string","value":"udp","users":"","roles":["arkimeUser"],"editRoles":["arkimeUser"]}', $token);
 ok(!$json->{success}, "cannot transfer ownership to an invalid user");
@@ -293,6 +300,37 @@ for (my $i=0; $i < scalar(@{$testsCluster}); $i++) { # indexes are different
 }
 
 eq_or_diff($testsCluster, $tests2Cluster, "cluster sync failed", { context => 2 });
+
+# --- Extra field sanitization tests ---
+
+# create shortcut with extra top-level fields
+$json = viewerPostToken("/api/shortcut", '{"name":"sanitize_test","type":"ip","value":"1.2.3.4","evil":"data","badField":123}', $token);
+ok($json->{success}, "create shortcut with extra fields succeeds");
+my $idSan = $json->{shortcut}->{id};
+ok(!exists $json->{shortcut}->{evil}, "extra field 'evil' not in create response");
+ok(!exists $json->{shortcut}->{badField}, "extra field 'badField' not in create response");
+
+# update shortcut with extra top-level fields
+$json = viewerPutToken("/api/shortcut/$idSan", '{"name":"sanitize_test","type":"ip","value":"1.2.3.4","injected":true,"foo":"bar"}', $token);
+ok($json->{success}, "update shortcut with extra fields succeeds");
+ok(!exists $json->{shortcut}->{injected}, "extra field 'injected' not in update response");
+ok(!exists $json->{shortcut}->{foo}, "extra field 'foo' not in update response");
+
+# create shortcut trying to override userId
+$json = viewerPostToken("/api/shortcut", '{"name":"creator_test","type":"ip","value":"5.6.7.8","userId":"sac-user2"}', $token);
+ok($json->{success}, "create shortcut with userId override succeeds");
+my $idCreator = $json->{shortcut}->{id};
+is($json->{shortcut}->{userId}, "anonymous", "userId set to actual user not request body");
+
+# update shortcut trying to override userId (not owner/admin)
+$json = viewerPutToken("/api/shortcut/$idCreator", '{"name":"creator_test","type":"ip","value":"5.6.7.8","users":"","roles":["arkimeUser"],"editRoles":["arkimeUser"]}', $token);
+$json = viewerPutToken("/api/shortcut/$idCreator?arkimeRegressionUser=sac-user2", '{"name":"creator_test","type":"ip","value":"5.6.7.8","userId":"sac-user2"}', $otherToken);
+ok(!$json->{success}, "editor cannot steal ownership via userId field");
+eq_or_diff($json->{text}, "Permission denied", "editor gets permission denied");
+
+# cleanup extra field test shortcuts
+viewerDeleteToken("/api/shortcut/$idSan", $token);
+viewerDeleteToken("/api/shortcut/$idCreator", $token);
 
 # remove sac-user2
 viewerDeleteToken("/api/user/sac-user2", $token);

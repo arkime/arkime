@@ -274,8 +274,16 @@ class ShortcutAPIs {
           }
         }
 
-        const newShortcut = req.body;
-        newShortcut.userId = user.userId;
+        const newShortcut = {
+          userId: user.userId,
+          name: req.body.name,
+          description: req.body.description,
+          type: req.body.type,
+          value: req.body.value,
+          users: req.body.users,
+          roles: req.body.roles,
+          editRoles: req.body.editRoles
+        };
 
         const { type, values, invalidUsers, error } = await ShortcutAPIs.#normalizeShortcut(newShortcut);
 
@@ -355,8 +363,16 @@ class ShortcutAPIs {
       return res.serverError(403, 'Users field must be a string', 'api.shortcuts.usersMustBeString');
     }
 
-    const sentShortcut = req.body;
-    sentShortcut.name = sentShortcut.name.replace(/[^-a-zA-Z0-9_]/g, '');
+    const sentShortcut = {
+      name: req.body.name.replace(/[^-a-zA-Z0-9_]/g, ''),
+      description: req.body.description,
+      type: req.body.type,
+      value: req.body.value,
+      users: req.body.users,
+      roles: req.body.roles,
+      editRoles: req.body.editRoles,
+      userId: req.body.userId
+    };
 
     try {
       const fetchedSource = await Db.getShortcut(req.params.id);
