@@ -1246,7 +1246,6 @@ int main(int argc, char **argv)
     arkime_config_init();
     arkime_command_register("version", arkime_cmd_version, "Arkime Version");
     arkime_command_register("shutdown", arkime_cmd_shutdown, "Shutdown Arkime");
-    arkime_dedup_init();
     arkime_cloud_init();
     arkime_writers_init();
     arkime_readers_init();
@@ -1276,6 +1275,7 @@ int main(int argc, char **argv)
     arkime_yara_init();
     arkime_parsers_init();
     arkime_session_init();
+    arkime_dedup_init();
     arkime_plugins_load(config.plugins);
     arkime_config_load_override_ips();
     arkime_rules_init();

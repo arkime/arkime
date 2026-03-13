@@ -1,5 +1,5 @@
 # Test cont3xt.js
-use Test::More tests => 177;
+use Test::More tests => 179;
 use Test::Differences;
 use Data::Dumper;
 use ArkimeTest;
@@ -193,6 +193,37 @@ $json = cont3xtPutToken('/api/linkGroup', to_json({
   }]
 }), $token);
 eq_or_diff($json, from_json('{"success": false, "text": "Link missing url"}'));
+
+# javascript: url should be rejected
+$json = cont3xtPutToken('/api/linkGroup', to_json({
+  name => "Links1",
+  viewRoles => ["superAdmin"],
+  editRoles => ["superAdmin"],
+  links => [{
+    name => "foo1",
+    url => "javascript:alert(1)",
+    itypes => ["ip", "domain"]
+  }]
+}), $token);
+eq_or_diff($json, from_json('{"success": false, "text": "Link url must start with http:// or https://"}'));
+
+# separator url should be allowed
+$json = cont3xtPutToken('/api/linkGroup', to_json({
+  name => "Links1",
+  viewRoles => ["superAdmin"],
+  editRoles => ["superAdmin"],
+  links => [{
+    name => "foo1",
+    url => "----------",
+    itypes => ["ip", "domain"]
+  }]
+}), $token);
+eq_or_diff($json, from_json('{"success": true, "text": "Success"}'));
+
+# clean up separator linkGroup
+$json = cont3xtGet('/api/linkGroup');
+my $sepId = $json->{linkGroups}->[0]->{_id};
+$json = cont3xtDeleteToken("/api/linkGroup/$sepId", "{}", $token);
 
 $json = cont3xtPutToken('/api/linkGroup', to_json({
   name => "Links1",
