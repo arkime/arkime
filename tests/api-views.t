@@ -1,4 +1,4 @@
-use Test::More tests => 40;
+use Test::More tests => 76;
 use ArkimeTest;
 use JSON;
 use Test::Differences;
@@ -7,8 +7,7 @@ use strict;
 
 # clean old users
 viewerGet("/regressionTests/deleteAllUsers");
-
-clearIndex("tests_views");
+viewerGet("/regressionTests/deleteAllViews");
 
 my $adminToken = getTokenCookie();
 my $token = getTokenCookie('sac-test1');
@@ -120,6 +119,11 @@ $info = viewerPutToken("/api/view/${id4}?arkimeRegressionUser=sac-test2", '{"nam
 ok(!$info->{success}, "cannot transfer ownership without being admin or creator");
 eq_or_diff($info->{text}, "Permission denied");
 
+# editor cannot transfer ownership even to a valid user
+$info = viewerPutToken("/api/view/${id4}?arkimeRegressionUser=sac-test2", '{"name": "view4", "expression": "ip == 4.3.2.1", "roles":["arkimeUser"], "users":"", "editRoles":["cont3xtUser"], "user":"sac-test2"}', $token2);
+ok(!$info->{success}, "editor cannot transfer ownership to valid user");
+eq_or_diff($info->{text}, "Permission denied", "editor gets permission denied not user not found");
+
 # can't transfer ownership to invalid user
 $info = viewerPutToken("/api/view/${id4}?arkimeRegressionUser=sac-test1", '{"name": "view4", "expression": "ip == 4.3.2.1", "roles":["arkimeUser"], "users":"", "editRoles":["cont3xtUser"], "user":"asdf"}', $token);
 ok(!$info->{success}, "cannot transfer ownership to an invalid user");
@@ -133,9 +137,122 @@ eq_or_diff($info->{view}->{user}, "sac-test2");
 # sac-test2 can delete view using editRoles (plus bonus cleanup)
 viewerDeleteToken("/api/view/${id4}?arkimeRegressionUser=sac-test2", $token2);
 
-# cleanup views
+# --- Input validation tests ---
+
+# create view missing name
+$info = viewerPostToken("/api/view?arkimeRegressionUser=sac-test1", '{"expression": "ip == 1.2.3.4"}', $token);
+ok(!$info->{success}, "create view fails without name");
+is($info->{text}, "Missing view name", "correct error for missing name");
+
+# create view missing expression
+$info = viewerPostToken("/api/view?arkimeRegressionUser=sac-test1", '{"name": "noexpr"}', $token);
+ok(!$info->{success}, "create view fails without expression");
+is($info->{text}, "Missing view expression", "correct error for missing expression");
+
+# update view missing name
+$info = viewerPutToken("/api/view/${id2}?arkimeRegressionUser=sac-test2", '{"expression": "ip == 1.2.3.4"}', $token2);
+ok(!$info->{success}, "update view fails without name");
+is($info->{text}, "Missing view name", "correct error for missing name on update");
+
+# update view missing expression
+$info = viewerPutToken("/api/view/${id2}?arkimeRegressionUser=sac-test2", '{"name": "view2"}', $token2);
+ok(!$info->{success}, "update view fails without expression");
+is($info->{text}, "Missing view expression", "correct error for missing expression on update");
+
+# update non-existent view
+$info = viewerPutToken("/api/view/nonexistent123?arkimeRegressionUser=sac-test1", '{"name": "x", "expression": "ip == 1.2.3.4"}', $token);
+ok(!$info->{success}, "update non-existent view fails");
+
+# --- Extra field sanitization tests ---
+
+# create view with extra top-level fields
+$info = viewerPostToken("/api/view?arkimeRegressionUser=sac-test1", '{"name": "sanitize-test", "expression": "ip == 1.2.3.4", "evil": "data", "badField": 123}', $token);
+ok($info->{success}, "create view with extra fields succeeds");
+my $idSan = $info->{view}->{id};
+ok(!exists $info->{view}->{evil}, "extra field 'evil' not in create response");
+ok(!exists $info->{view}->{badField}, "extra field 'badField' not in create response");
+
+# verify extra fields not persisted
+$info = viewerGet("/api/views?arkimeRegressionUser=sac-test1");
+my @san = grep { $_->{id} eq $idSan } @{$info->{data}};
+ok(!exists $san[0]->{evil}, "extra field 'evil' not in list response");
+ok(!exists $san[0]->{badField}, "extra field 'badField' not in list response");
+
+# update view with extra top-level fields
+$info = viewerPutToken("/api/view/${idSan}?arkimeRegressionUser=sac-test1", '{"name": "sanitize-test", "expression": "ip == 1.2.3.4", "injected": true, "foo": "bar"}', $token);
+ok($info->{success}, "update view with extra fields succeeds");
+ok(!exists $info->{view}->{injected}, "extra field 'injected' not in update response");
+ok(!exists $info->{view}->{foo}, "extra field 'foo' not in update response");
+
+viewerDeleteToken("/api/view/${idSan}?arkimeRegressionUser=sac-test1", $token);
+
+# cleanup id2 and id3 before sort/search/pagination tests
 viewerDeleteToken("/api/view/${id2}?arkimeRegressionUser=sac-test2", $token2);
 viewerDeleteToken("/api/view/${id3}?arkimeRegressionUser=sac-test1", $token);
+
+# --- Sorting tests ---
+# create views for sort/search/pagination tests
+$info = viewerPostToken("/api/view?arkimeRegressionUser=sac-test1", '{"name": "alpha", "expression": "ip == 1.2.3.4"}', $token);
+my $idA = $info->{view}->{id};
+$info = viewerPostToken("/api/view?arkimeRegressionUser=sac-test1", '{"name": "beta", "expression": "ip == 5.6.7.8"}', $token);
+my $idB = $info->{view}->{id};
+$info = viewerPostToken("/api/view?arkimeRegressionUser=sac-test1", '{"name": "gamma", "expression": "ip == 9.9.9.9"}', $token);
+my $idG = $info->{view}->{id};
+
+# default sort by name asc
+$info = viewerGet("/api/views?arkimeRegressionUser=sac-test1");
+is($info->{data}->[0]->{name}, "alpha", "default sort: first is alpha");
+is($info->{data}->[1]->{name}, "beta", "default sort: second is beta");
+is($info->{data}->[2]->{name}, "gamma", "default sort: third is gamma");
+
+# sort by name desc
+$info = viewerGet("/api/views?arkimeRegressionUser=sac-test1&sort=name&desc=true");
+is($info->{data}->[0]->{name}, "gamma", "desc sort: first is gamma");
+is($info->{data}->[2]->{name}, "alpha", "desc sort: last is alpha");
+
+# invalid sort field falls back to name
+$info = viewerGet("/api/views?arkimeRegressionUser=sac-test1&sort=invalidfield");
+is($info->{data}->[0]->{name}, "alpha", "invalid sort falls back to name asc");
+
+# --- Search tests ---
+
+# searchTerm filters by name
+$info = viewerGet("/api/views?arkimeRegressionUser=sac-test1&searchTerm=bet");
+is($info->{recordsFiltered}, 1, "searchTerm filters to 1 result");
+is($info->{data}->[0]->{name}, "beta", "searchTerm finds beta");
+
+# searchTerm with no match
+$info = viewerGet("/api/views?arkimeRegressionUser=sac-test1&searchTerm=nonexistent");
+is($info->{recordsFiltered}, 0, "searchTerm with no match returns 0");
+eq_or_diff($info->{data}, from_json("[]"), "searchTerm with no match returns empty data");
+
+# recordsTotal is unfiltered count, recordsFiltered reflects search
+$info = viewerGet("/api/views?arkimeRegressionUser=sac-test1&searchTerm=bet");
+is($info->{recordsTotal}, 3, "recordsTotal is unfiltered count");
+is($info->{recordsFiltered}, 1, "recordsFiltered is filtered count");
+
+# --- Pagination tests ---
+
+# length limits results
+$info = viewerGet("/api/views?arkimeRegressionUser=sac-test1&length=2");
+is(scalar @{$info->{data}}, 2, "length=2 returns 2 views");
+is($info->{recordsTotal}, 3, "recordsTotal still 3 with length=2");
+
+# start offsets results
+$info = viewerGet("/api/views?arkimeRegressionUser=sac-test1&length=2&start=2");
+is(scalar @{$info->{data}}, 1, "start=2 length=2 returns 1 remaining view");
+is($info->{data}->[0]->{name}, "gamma", "pagination offset returns gamma");
+
+# --- Non-admin all flag ---
+
+# non-admin all=true should not show other users' views
+$info = viewerGet("/api/views?arkimeRegressionUser=sac-test2&all=true");
+is($info->{recordsTotal}, 0, "non-admin all=true doesn't show other users views");
+
+# cleanup sort/search/pagination views
+viewerDeleteToken("/api/view/${idA}?arkimeRegressionUser=sac-test1", $token);
+viewerDeleteToken("/api/view/${idB}?arkimeRegressionUser=sac-test1", $token);
+viewerDeleteToken("/api/view/${idG}?arkimeRegressionUser=sac-test1", $token);
 
 # views are empty
 $info = viewerGet("/api/views?arkimeRegressionUser=sac-test1");

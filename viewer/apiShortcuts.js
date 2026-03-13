@@ -126,72 +126,37 @@ class ShortcutAPIs {
     if (!user) { return res.send({}); }
 
     const allRoles = await user.getRoles();
-    const roles = [...allRoles.keys()]; // es requires an array for terms search
+    const roles = [...allRoles.keys()];
 
     const map = req.query.map && req.query.map === 'true';
 
-    // only get shortcuts for setting user or shared
-    const query = {
-      query: {
-        bool: {
-          filter: [
-            {
-              bool: {
-                should: [
-                  { terms: { roles } }, // shared via user role
-                  { terms: { editRoles: roles } }, // shared via edit role
-                  { term: { users: req.settingUser.userId } }, // shared via userId
-                  { term: { userId: req.settingUser.userId } } // created by this user
-                ]
-              }
-            }
-          ]
-        }
-      },
-      sort: {},
+    const allowedShortcutsSortFields = { name: 1, description: 1, created: 1 };
+    const params = {
+      user: req.settingUser.userId,
+      roles,
+      all: req.query.all && roles.includes('arkimeAdmin'),
+      sortField: allowedShortcutsSortFields[req.query.sort] ? req.query.sort : 'name',
+      sortOrder: req.query.desc === 'true' ? 'desc' : 'asc',
       size: req.query.length || 50,
-      from: req.query.start || 0
+      from: req.query.start || 0,
+      searchTerm: req.query.searchTerm
     };
-
-    if (req.query.all && roles.includes('arkimeAdmin')) {
-      query.query.bool.filter = []; // remove sharing restrictions
-    }
-
-    const allowedSortFields = { name: 1, description: 1, created: 1 };
-    query.sort[allowedSortFields[req.query.sort] ? req.query.sort : 'name'] = {
-      order: req.query.desc === 'true' ? 'desc' : 'asc'
-    };
-
-    if (req.query.searchTerm) {
-      query.query.bool.filter.push({
-        wildcard: { name: '*' + req.query.searchTerm + '*' }
-      });
-    }
 
     // if fieldType exists, filter it
     if (req.query.fieldType) {
-      const fieldType = internals.shortcutTypeMap[req.query.fieldType];
-
-      if (fieldType) {
-        query.query.bool.filter.push({
-          exists: { field: fieldType }
-        });
-      }
+      params.fieldType = internals.shortcutTypeMap[req.query.fieldType];
     }
 
-    const numQuery = { ...query };
-    delete numQuery.sort;
-    delete numQuery.size;
-    delete numQuery.from;
+    try {
+      const [{ data, total: recordsFiltered }, recordsTotal] = await Promise.all([
+        Db.searchShortcuts(params),
+        Db.numberOfShortcuts({ ...params, searchTerm: undefined })
+      ]);
 
-    Promise.all([
-      Db.searchShortcuts(query),
-      Db.numberOfShortcuts(numQuery)
-    ]).then(([{ body: { hits: shortcuts } }, { body: { count: total } }]) => {
       const results = { list: [], map: {} };
-      for (const hit of shortcuts.hits) {
-        const shortcut = hit._source;
-        shortcut.id = hit._id;
+      for (const hit of data) {
+        const shortcut = hit.source;
+        shortcut.id = hit.id;
 
         if (shortcut.number) {
           shortcut.type = 'number';
@@ -239,15 +204,15 @@ class ShortcutAPIs {
         ? results.map
         : {
           data: results.list,
-          recordsTotal: total,
-          recordsFiltered: shortcuts.total
+          recordsTotal,
+          recordsFiltered
         };
 
       res.send(sendResults);
-    }).catch((err) => {
+    } catch (err) {
       console.log(`ERROR - ${req.method} /api/shortcuts`, util.inspect(err, false, 50));
       return res.serverError(500, 'Error retrieving shortcuts', 'api.shortcuts.retrieveFailed');
-    });
+    }
   }
 
   // --------------------------------------------------------------------------
@@ -295,31 +260,30 @@ class ShortcutAPIs {
     const user = req.settingUser;
     if (!user) { return res.send({}); }
 
-    const query = {
-      query: {
-        bool: {
-          filter: [
-            { term: { name: req.body.name } }
-          ]
-        }
-      }
-    };
+    const nameCheckParams = { nameCheck: req.body.name, all: true };
 
     ShortcutAPIs.#shortcutMutex.lock().then(async () => {
       try {
-        const { body: { hits: shortcuts } } = await Db.searchShortcuts(query);
+        const { data: shortcuts } = await Db.searchShortcuts(nameCheckParams);
 
         // search for shortcut name collision
-        for (const hit of shortcuts.hits) {
-          const shortcut = hit._source;
-          if (shortcut.name === req.body.name) {
+        for (const hit of shortcuts) {
+          if (hit.source.name === req.body.name) {
             ShortcutAPIs.#shortcutMutex.unlock();
             return res.serverError(403, `A shortcut with the name, ${req.body.name}, already exists`, 'api.shortcuts.nameExists', { name: req.body.name });
           }
         }
 
-        const newShortcut = req.body;
-        newShortcut.userId = user.userId;
+        const newShortcut = {
+          userId: user.userId,
+          name: req.body.name,
+          description: req.body.description,
+          type: req.body.type,
+          value: req.body.value,
+          users: req.body.users,
+          roles: req.body.roles,
+          editRoles: req.body.editRoles
+        };
 
         const { type, values, invalidUsers, error } = await ShortcutAPIs.#normalizeShortcut(newShortcut);
 
@@ -329,8 +293,8 @@ class ShortcutAPIs {
         }
 
         try {
-          const { body: result } = await Db.createShortcut(newShortcut);
-          newShortcut.id = result._id;
+          const id = await Db.createShortcut(newShortcut);
+          newShortcut.id = id;
           newShortcut.type = type;
           newShortcut.value = values.join('\n');
           delete newShortcut.ip;
@@ -399,37 +363,33 @@ class ShortcutAPIs {
       return res.serverError(403, 'Users field must be a string', 'api.shortcuts.usersMustBeString');
     }
 
-    const sentShortcut = req.body;
-    sentShortcut.name = sentShortcut.name.replace(/[^-a-zA-Z0-9_]/g, '');
+    const sentShortcut = {
+      name: req.body.name.replace(/[^-a-zA-Z0-9_]/g, ''),
+      description: req.body.description,
+      type: req.body.type,
+      value: req.body.value,
+      users: req.body.users,
+      roles: req.body.roles,
+      editRoles: req.body.editRoles,
+      userId: req.body.userId
+    };
 
     try {
-      const { body: fetchedShortcut } = await Db.getShortcut(req.params.id);
+      const fetchedSource = await Db.getShortcut(req.params.id);
 
-      if (fetchedShortcut._source.locked) {
+      if (fetchedSource.locked) {
         return res.serverError(403, 'Locked Shortcut. Use db.pl script to update this shortcut.', 'api.shortcuts.locked');
       }
 
-      const query = {
-        query: {
-          bool: {
-            filter: [
-              { term: { name: req.body.name } } // same name
-            ],
-            must_not: [
-              { ids: { values: [req.params.id] } } // but different ID
-            ]
-          }
-        }
-      };
+      const nameCheckParams = { nameCheck: req.body.name, excludeId: req.params.id, all: true };
 
       ShortcutAPIs.#shortcutMutex.lock().then(async () => {
         try {
-          const { body: { hits: shortcuts } } = await Db.searchShortcuts(query);
+          const { data: shortcuts } = await Db.searchShortcuts(nameCheckParams);
 
           // search for shortcut name collision
-          for (const hit of shortcuts.hits) {
-            const shortcut = hit._source;
-            if (shortcut.name === req.body.name) {
+          for (const hit of shortcuts) {
+            if (hit.source.name === req.body.name) {
               ShortcutAPIs.#shortcutMutex.unlock();
               return res.serverError(403, `A shortcut with the name, ${req.body.name}, already exists`, 'api.shortcuts.nameExists', { name: req.body.name });
             }
@@ -443,7 +403,7 @@ class ShortcutAPIs {
           }
 
           // sets the owner if it has changed
-          if (!await User.setOwner(req, res, sentShortcut, fetchedShortcut._source, 'userId')) {
+          if (!await User.setOwner(req, res, sentShortcut, fetchedSource, 'userId')) {
             ShortcutAPIs.#shortcutMutex.unlock();
             return;
           }

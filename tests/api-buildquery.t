@@ -23,7 +23,7 @@ my ($expression, $expected, $debug) = @_;
 }
 
 # Delete shortcuts
-clearIndex("tests_lookups");
+viewerGet("/regressionTests/deleteAllShortcuts");
 
 # Create shortcuts for testing
 my $token = getTokenCookie();
@@ -283,4 +283,4 @@ doTest('http.reqbody == ]/barney/,fred,fred*[', '{"bool":{"filter":[{"regexp":{"
 doTest('http.reqbody == ]"/barney/","fred","fred*"[', '{"bool":{"filter":[{"term":{"http.requestBody":"/barney/"}},{"term":{"http.requestBody":"fred"}},{"wildcard":{"http.requestBody":"fred*"}}]}}');
 
 # Delete shortcuts
-clearIndex("tests_lookups");
+viewerGet("/regressionTests/deleteAllShortcuts");

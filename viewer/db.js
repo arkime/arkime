@@ -16,6 +16,8 @@ const { Client } = require('@elastic/elasticsearch');
 const User = require('../common/user');
 const ArkimeUtil = require('../common/arkimeUtil');
 const { LRUCache } = require('lru-cache');
+const DbESImpl = require('./db.es');
+const DbSQLiteImpl = require('./db.sqlite');
 
 const cache10 = new LRUCache({ max: 1000, ttl: 1000 * 10 });
 const cache60 = new LRUCache({ max: 1000, ttl: 1000 * 60 });
@@ -151,6 +153,21 @@ Db.initialize = async (info) => {
   }
 
   internals.usersClient7 = User.getClient();
+
+  // Initialize the users DB backend for views, shareables, etc.
+  if (internals.usersClient7) {
+    internals.usersImpl = new DbESImpl(internals.usersClient7, internals.usersPrefix);
+  } else {
+    const dbUrl = User.getDbUrl();
+    if (dbUrl?.startsWith('sqlite')) {
+      internals.usersImpl = new DbSQLiteImpl(ArkimeUtil.createSQLiteDB(dbUrl));
+    } else if (dbUrl?.startsWith('redis') || dbUrl?.startsWith('lmdb')) {
+      console.log(`WARN - views/shareables not yet supported for '${dbUrl}', using ES only`);
+    } else {
+      console.log(`ERROR - Don't understand users db impl for '${dbUrl}'`);
+      process.exit(1);
+    }
+  }
 
   // Replace tag implementation
   if (internals.multiES) {
@@ -1149,8 +1166,8 @@ Db.allocationExplain = async (cluster, index, shard, primary) => {
 Db.flush = async (index, cluster) => {
   if (index === 'users') {
     return User.flush(cluster);
-  } else if (index === 'lookups') {
-    return internals.usersClient7.indices.flush({ index: `${internals.usersPrefix}${index}`, cluster });
+  } else if (index === 'lookups' || index === 'views' || index === 'shareables') {
+    return internals.usersImpl.flush(index, cluster);
   } else {
     return internals.client7.indices.flush({ index: fixIndex(index), cluster });
   }
@@ -1159,8 +1176,8 @@ Db.flush = async (index, cluster) => {
 Db.refresh = async (index, cluster) => {
   if (index === 'users') {
     return User.flush(cluster);
-  } else if (index === 'lookups') {
-    return internals.usersClient7.indices.refresh({ index: `${internals.usersPrefix}${index}`, cluster });
+  } else if (index === 'lookups' || index === 'views' || index === 'shareables') {
+    return internals.usersImpl.refresh(index, cluster);
   } else {
     return internals.client7.indices.refresh({ index: fixIndex(index), cluster });
   }
@@ -1348,28 +1365,16 @@ Db.getHunt = async (id, cluster) => {
   return internals.client7.get({ index: fixIndex('hunts'), id, cluster });
 };
 
-// fetches the version of the remote shortcuts index (remote db = user's es)
+// fetches the version of the shortcuts from the users backend
 async function getShortcutsVersion () {
-  const { body: doc } = await internals.usersClient7.indices.getMapping({
-    index: internals.remoteShortcutsIndex
-  });
-
-  // get version of the first index (always want the first and only index returned)
-  return doc[Object.keys(doc)[0]]?.mappings?._meta?.version || 0;
+  return internals.usersImpl.getShortcutsVersion();
 }
-// updates the shortcuts index version in the remote db so that the local
-// db knows to sync the shortcuts (remote db = user's es)
+// increments the shortcuts version so local ES nodes know to sync
 async function setShortcutsVersion () {
-  // fetch the remote shortcuts index version so it can be incremented
-  const version = await getShortcutsVersion();
-  return internals.usersClient7.indices.putMapping({
-    index: internals.remoteShortcutsIndex,
-    body: { _meta: { version: version + 1, initSync: true } }
-  });
+  return internals.usersImpl.setShortcutsVersion();
 }
-// updates the shortcuts in the local db if they are out of sync with the remote db (remote db = user's es)
-// if there's a users es set, then the shortcuts are saved in the remote db
-// so they need to be periodically updated in the local db for searching by shortcuts to work
+// updates the shortcuts in the local ES db if they are out of sync with the users backend
+// the users backend (ES or SQLite) is the source of truth, local ES nodes are replicas for session queries
 Db.updateLocalShortcuts = async () => {
   if (!internals.info.usersHost ||
      !internals.info.isPrimaryViewer || // If no isPrimaryViewer then we aren't actually viewer, don't do this
@@ -1379,41 +1384,41 @@ Db.updateLocalShortcuts = async () => {
   }
 
   if (internals.multiES) { return; } // don't sync shortcuts for multies
-  if (!internals.usersClient7) { return; } // users backend is not ES, no shortcuts to sync
+  if (!internals.usersImpl) { return; } // no users backend configured
 
-  const msg = `updating local shortcuts (${internals.info.host}/${internals.localShortcutsIndex}) from remote (${internals.info.usersHost}/${internals.remoteShortcutsIndex})`;
+  const msg = `updating local shortcuts (${internals.info.host}/${internals.localShortcutsIndex}) from users backend`;
 
   try {
-    // fetch the version of the remote shortcuts index to check if the local shortcuts index
-    // is up to date. if not, something has changed in the remote index and we need to sync
+    // fetch the version of the users backend shortcuts to check if the local shortcuts index
+    // is up to date. if not, something has changed and we need to sync
     const version = await getShortcutsVersion();
 
-    if (version === internals.localShortcutsVersion) { return; } // version's match, stop!
+    if (version === internals.localShortcutsVersion) { return; } // versions match, stop!
 
     console.log(msg);
 
     internals.shortcutsCache.clear(); // Clear cache when updating
-    // fetch shortcuts from remote and local indexes
-    const [{ body: remoteResults }, { body: localResults }] = await Promise.all([
-      Db.searchShortcuts({ size: 10000 }), Db.searchShortcutsLocal({ size: 10000 })
+    // fetch shortcuts from users backend and local ES index
+    const [remoteShortcuts, { body: localResults }] = await Promise.all([
+      internals.usersImpl.getAllShortcuts(),
+      Db.searchShortcutsLocal({ size: 10000 })
     ]);
 
     // compare the local shortcuts to the remote shortcuts to determine
-    // if any shortcuts have been deleted from the remote db
+    // if any shortcuts have been deleted from the users backend
     for (const localShortcut of localResults.hits.hits) {
       let missing = true;
-      for (const remoteShortcut of remoteResults.hits.hits) {
-        if (remoteShortcut._id === localShortcut._id) {
-          missing = false; // we found it, it's not missing
+      for (const remoteShortcut of remoteShortcuts) {
+        if (remoteShortcut.id === localShortcut._id) {
+          missing = false;
           break;
         }
       }
-      // if we get here without the missing flag set to false
-      if (missing) { // it's missing from the remote db
+      if (missing) {
         if (internals.debug > 1) {
           console.log(`SHORTCUT - deleting ${localShortcut._id} ${localShortcut._source.name} locally`);
         }
-        await internals.client7.delete({ // remove the shortcut from the local db
+        await internals.client7.delete({
           index: internals.localShortcutsIndex,
           id: localShortcut._id,
           refresh: true
@@ -1422,42 +1427,45 @@ Db.updateLocalShortcuts = async () => {
     }
 
     // compare remote shortcuts to local shortcuts to determine if any
-    // shortcuts have been added or updated from the remote db
-    for (const remoteShortcut of remoteResults.hits.hits) {
+    // shortcuts have been added or updated from the users backend
+    let changed = false;
+    for (const remoteShortcut of remoteShortcuts) {
       let missing = true;
       for (const localShortcut of localResults.hits.hits) {
-        if (remoteShortcut._id === localShortcut._id) {
-          missing = false; // found it, check if we need to update it
-          if (remoteShortcut._version !== localShortcut._version) {
+        if (remoteShortcut.id === localShortcut._id) {
+          missing = false;
+          if (remoteShortcut.version !== localShortcut._version) {
             if (internals.debug > 1) {
-              console.log(`SHORTCUT - update from remote ${remoteShortcut._id} ${remoteShortcut._source.name}`);
+              console.log(`SHORTCUT - update from remote ${remoteShortcut.id} ${remoteShortcut.source.name}`);
             }
-            // the versions don't match, this shortcut has been updated in the remote db
-            await internals.client7.index({ // update the shortcut in the local db
-              id: remoteShortcut._id,
+            await internals.client7.index({
+              id: remoteShortcut.id,
               index: internals.localShortcutsIndex,
-              body: remoteShortcut._source,
+              body: remoteShortcut.source,
               version_type: 'external',
-              // use remote shortcut version since that is where it was edited
-              version: remoteShortcut._version // (should have highest version)
+              version: remoteShortcut.version
             });
+            changed = true;
           }
         }
       }
-      // if we get here without the missing flag set to false
-      if (missing) { // it's missing from the local db
+      if (missing) {
         if (internals.debug > 1) {
-          console.log(`SHORTCUT - add from remote ${remoteShortcut._id} ${remoteShortcut._source.name}`);
+          console.log(`SHORTCUT - add from remote ${remoteShortcut.id} ${remoteShortcut.source.name}`);
         }
-        await internals.client7.index({ // add the shortcut in the local db
-          id: remoteShortcut._id,
+        await internals.client7.index({
+          id: remoteShortcut.id,
           index: internals.localShortcutsIndex,
-          body: remoteShortcut._source,
+          body: remoteShortcut.source,
           version_type: 'external',
-          // don't need to increment version because this is the first time the
-          version: remoteShortcut._version // local db has seen this shortcut
+          version: remoteShortcut.version
         });
+        changed = true;
       }
+    }
+
+    if (changed) {
+      await internals.client7.indices.refresh({ index: internals.localShortcutsIndex });
     }
 
     internals.localShortcutsVersion = version;
@@ -1465,50 +1473,43 @@ Db.updateLocalShortcuts = async () => {
     console.log(`ERROR - ${msg}:`, err);
   }
 };
-Db.searchShortcuts = async (query) => {
-  return internals.usersClient7.search({
-    index: internals.remoteShortcutsIndex, body: query, rest_total_hits_as_int: true, version: true
-  });
+Db.searchShortcuts = async (params) => {
+  return internals.usersImpl.searchShortcuts(params);
 };
 Db.searchShortcutsLocal = async (query) => {
   return internals.client7.search({
     index: internals.localShortcutsIndex, body: query, rest_total_hits_as_int: true, version: true
   });
 };
-Db.numberOfShortcuts = async (query) => {
-  return internals.usersClient7.count({
-    index: internals.remoteShortcutsIndex, body: query
-  });
+Db.numberOfShortcuts = async (params) => {
+  return internals.usersImpl.numberOfShortcuts(params);
 };
 Db.createShortcut = async (doc) => {
   internals.shortcutsCache.clear();
   await setShortcutsVersion();
-  const response = await internals.usersClient7.index({
-    index: internals.remoteShortcutsIndex, body: doc, refresh: 'wait_for', timeout: '10m'
-  });
+  const id = await internals.usersImpl.createShortcut(doc);
   await Db.updateLocalShortcuts();
-  return response;
+  return id;
 };
 Db.deleteShortcut = async (id) => {
   internals.shortcutsCache.clear();
   await setShortcutsVersion();
-  const response = await internals.usersClient7.delete({
-    index: internals.remoteShortcutsIndex, id, refresh: true
-  });
+  await internals.usersImpl.deleteShortcut(id);
   await Db.updateLocalShortcuts();
-  return response;
 };
 Db.setShortcut = async (id, doc) => {
   internals.shortcutsCache.clear();
   await setShortcutsVersion();
-  const response = await internals.usersClient7.index({
-    index: internals.remoteShortcutsIndex, body: doc, id, refresh: true, timeout: '10m'
-  });
+  await internals.usersImpl.setShortcut(id, doc);
   await Db.updateLocalShortcuts();
-  return response;
 };
 Db.getShortcut = async (id) => {
-  return internals.usersClient7.get({ index: internals.remoteShortcutsIndex, id });
+  return internals.usersImpl.getShortcut(id);
+};
+Db.deleteAllShortcuts = async () => {
+  internals.shortcutsCache.clear();
+  await internals.usersImpl.deleteAllShortcuts();
+  await setShortcutsVersion();
 };
 Db.getShortcutsCache = async (user) => {
   const cshortcuts = internals.shortcutsCache.get(user.userId);
@@ -1529,6 +1530,7 @@ Db.getShortcutsCache = async (user) => {
         ]
       }
     },
+    sort: { name: { order: 'asc' } },
     size: 10000
   };
 
@@ -1546,67 +1548,57 @@ Db.getShortcutsCache = async (user) => {
   return shortcutsMap;
 };
 
-Db.searchViews = async (query) => {
-  return internals.usersClient7.search({
-    index: `${internals.usersPrefix}views`, body: query, rest_total_hits_as_int: true, version: true
-  });
+Db.searchViews = async (params) => {
+  return internals.usersImpl.searchViews(params);
 };
-Db.numberOfViews = async (query) => {
-  return internals.usersClient7.count({
-    index: `${internals.usersPrefix}views`, body: query
-  });
+Db.numberOfViews = async (params) => {
+  return internals.usersImpl.numberOfViews(params);
 };
 Db.createView = async (doc) => {
-  return await internals.usersClient7.index({
-    index: `${internals.usersPrefix}views`, body: doc, refresh: 'wait_for', timeout: '10m'
-  });
+  return internals.usersImpl.createView(doc);
 };
 Db.deleteView = async (id) => {
-  return await internals.usersClient7.delete({
-    index: `${internals.usersPrefix}views`, id, refresh: true
-  });
+  return internals.usersImpl.deleteView(id);
+};
+Db.deleteAllViews = async () => {
+  return internals.usersImpl.deleteAllViews();
 };
 Db.setView = async (id, doc) => {
-  return await internals.usersClient7.index({
-    index: `${internals.usersPrefix}views`, body: doc, id, refresh: true, timeout: '10m'
-  });
+  return internals.usersImpl.setView(id, doc);
 };
 Db.getView = async (id) => {
-  return internals.usersClient7.get({ index: `${internals.usersPrefix}views`, id });
+  return internals.usersImpl.getView(id);
+};
+Db.getViewByIdOrName = async (idOrName, user, roles) => {
+  return internals.usersImpl.getViewByIdOrName(idOrName, user, roles);
 };
 
-Db.searchShareables = async (query) => {
-  return internals.usersClient7.search({
-    index: `${internals.usersPrefix}shareables`, body: query, rest_total_hits_as_int: true, version: true
-  });
+Db.searchShareables = async (params) => {
+  return internals.usersImpl.searchShareables(params);
 };
 
-Db.numberOfShareables = async (query) => {
-  return internals.usersClient7.count({
-    index: `${internals.usersPrefix}shareables`, body: query
-  });
+Db.numberOfShareables = async (params) => {
+  return internals.usersImpl.numberOfShareables(params);
 };
 
 Db.createShareable = async (doc) => {
-  return await internals.usersClient7.index({
-    index: `${internals.usersPrefix}shareables`, body: doc, refresh: 'wait_for', timeout: '10m'
-  });
+  return internals.usersImpl.createShareable(doc);
 };
 
 Db.deleteShareable = async (id) => {
-  return await internals.usersClient7.delete({
-    index: `${internals.usersPrefix}shareables`, id, refresh: true
-  });
+  return internals.usersImpl.deleteShareable(id);
+};
+
+Db.deleteAllShareables = async () => {
+  return internals.usersImpl.deleteAllShareables();
 };
 
 Db.setShareable = async (id, doc) => {
-  return await internals.usersClient7.index({
-    index: `${internals.usersPrefix}shareables`, body: doc, id, refresh: true, timeout: '10m'
-  });
+  return internals.usersImpl.setShareable(id, doc);
 };
 
 Db.getShareable = async (id) => {
-  return internals.usersClient7.get({ index: `${internals.usersPrefix}shareables`, id });
+  return internals.usersImpl.getShareable(id);
 };
 
 Db.arkimeNodeStats = async (nodeName) => {

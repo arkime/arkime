@@ -136,8 +136,8 @@ class ShareableAPIs {
     };
 
     try {
-      const { body: { _id: id } } = await Db.createShareable(doc);
-      const { body: { _source: shareable } } = await Db.getShareable(id);
+      const id = await Db.createShareable(doc);
+      const shareable = await Db.getShareable(id);
 
       shareable.id = id;
 
@@ -164,7 +164,7 @@ class ShareableAPIs {
    */
   static async apiGetShareable (req, res) {
     try {
-      const { body: { _source: shareable } } = await Db.getShareable(req.params.id);
+      const shareable = await Db.getShareable(req.params.id);
       const user = req.settingUser;
 
       if (!await ShareableAPIs.canView(user, shareable)) {
@@ -197,14 +197,14 @@ class ShareableAPIs {
    */
   static async apiUpdateShareable (req, res) {
     try {
-      const { body: dbItem } = await Db.getShareable(req.params.id);
+      const shareable = await Db.getShareable(req.params.id);
       const user = req.settingUser;
 
-      if (!await ShareableAPIs.canEdit(user, dbItem._source)) {
+      if (!await ShareableAPIs.canEdit(user, shareable)) {
         return res.serverError(403, 'Not permitted to edit this shareable item', 'api.shareables.notPermittedToEdit');
       }
 
-      if (req.body.type !== undefined && req.body.type !== dbItem._source.type) {
+      if (req.body.type !== undefined && req.body.type !== shareable.type) {
         return res.serverError(403, 'Cannot change shareable type', 'api.shareables.cannotChangeType');
       }
 
@@ -212,10 +212,10 @@ class ShareableAPIs {
         return res.serverError(403, 'Description must be a string', 'api.shareables.descriptionMustBeString');
       }
 
-      let viewRoles = req.body.viewRoles !== undefined ? (ArkimeUtil.isStringArray(req.body.viewRoles) ? req.body.viewRoles : []) : (dbItem._source.viewRoles || []);
-      let viewUsers = req.body.viewUsers !== undefined ? (ArkimeUtil.isStringArray(req.body.viewUsers) ? req.body.viewUsers : []) : (dbItem._source.viewUsers || []);
-      let editRoles = req.body.editRoles !== undefined ? (ArkimeUtil.isStringArray(req.body.editRoles) ? req.body.editRoles : []) : (dbItem._source.editRoles || []);
-      let editUsers = req.body.editUsers !== undefined ? (ArkimeUtil.isStringArray(req.body.editUsers) ? req.body.editUsers : []) : (dbItem._source.editUsers || []);
+      let viewRoles = req.body.viewRoles !== undefined ? (ArkimeUtil.isStringArray(req.body.viewRoles) ? req.body.viewRoles : []) : (shareable.viewRoles || []);
+      let viewUsers = req.body.viewUsers !== undefined ? (ArkimeUtil.isStringArray(req.body.viewUsers) ? req.body.viewUsers : []) : (shareable.viewUsers || []);
+      let editRoles = req.body.editRoles !== undefined ? (ArkimeUtil.isStringArray(req.body.editRoles) ? req.body.editRoles : []) : (shareable.editRoles || []);
+      let editUsers = req.body.editUsers !== undefined ? (ArkimeUtil.isStringArray(req.body.editUsers) ? req.body.editUsers : []) : (shareable.editUsers || []);
 
       if (viewUsers.length > 0) {
         const validatedViewUsers = await User.validateUserIds(viewUsers);
@@ -228,29 +228,29 @@ class ShareableAPIs {
       }
 
       const doc = {
-        name: req.body.name !== undefined ? req.body.name : dbItem._source.name,
-        type: dbItem._source.type,
-        description: req.body.description !== undefined ? req.body.description : dbItem._source.description,
-        creator: dbItem._source.creator,
-        created: dbItem._source.created,
+        name: req.body.name !== undefined ? req.body.name : shareable.name,
+        type: shareable.type,
+        description: req.body.description !== undefined ? req.body.description : shareable.description,
+        creator: shareable.creator,
+        created: shareable.created,
         updated: new Date(),
         viewRoles,
         viewUsers,
         editRoles,
         editUsers,
-        data: req.body.data !== undefined ? req.body.data : (dbItem._source.data || {})
+        data: req.body.data !== undefined ? req.body.data : (shareable.data || {})
       };
 
       await Db.setShareable(req.params.id, doc);
-      const { body: { _source: shareable } } = await Db.getShareable(req.params.id);
+      const updated = await Db.getShareable(req.params.id);
 
-      shareable.id = req.params.id;
-      shareable.canEdit = await ShareableAPIs.canEdit(user, shareable);
-      shareable.canDelete = ShareableAPIs.canDelete(user, shareable);
+      updated.id = req.params.id;
+      updated.canEdit = await ShareableAPIs.canEdit(user, updated);
+      updated.canDelete = ShareableAPIs.canDelete(user, updated);
 
       return res.json({
         success: true,
-        shareable,
+        shareable: updated,
         text: 'Updated shareable item!',
         i18n: 'api.shareables.updated'
       });
@@ -270,7 +270,7 @@ class ShareableAPIs {
    */
   static async apiDeleteShareable (req, res) {
     try {
-      const { body: { _source: shareable } } = await Db.getShareable(req.params.id);
+      const shareable = await Db.getShareable(req.params.id);
       const user = req.settingUser;
 
       if (!ShareableAPIs.canDelete(user, shareable)) {
@@ -309,71 +309,24 @@ class ShareableAPIs {
         return res.serverError(403, 'Missing or invalid type parameter', 'api.shareables.invalidTypeParam');
       }
 
-      const type = req.query.type;
-      const viewOnly = req.query.viewOnly !== 'false';
       const userRoles = [...await user.getRoles()];
 
-      // Build query
-      const query = {
-        query: {
-          bool: {
-            must: [
-              { term: { type } }
-            ],
-            filter: []
-          }
-        },
-        sort: { name: { order: 'asc' } },
+      const params = {
+        user: user.userId,
+        roles: userRoles,
+        type: req.query.type,
+        viewOnly: req.query.viewOnly !== 'false',
         from: req.query.start || 0,
         size: req.query.length || 50
       };
 
-      // Build permission filter
-      const permissionFilters = [];
+      const { data: items, total: recordsFiltered } = await Db.searchShareables(params);
+      const recordsTotal = await Db.numberOfShareables({ ...params, searchTerm: undefined });
 
-      // Creator filter
-      permissionFilters.push({ term: { creator: user.userId } });
-
-      if (viewOnly) {
-        // viewUsers filter
-        permissionFilters.push({ term: { viewUsers: user.userId } });
-        // viewRoles filter
-        if (userRoles.length > 0) {
-          permissionFilters.push({ terms: { viewRoles: userRoles } });
-        }
-      } else {
-        // editUsers filter
-        permissionFilters.push({ term: { editUsers: user.userId } });
-        // editRoles filter
-        if (userRoles.length > 0) {
-          permissionFilters.push({ terms: { editRoles: userRoles } });
-        }
-        // viewUsers filter
-        permissionFilters.push({ term: { viewUsers: user.userId } });
-        // viewRoles filter
-        if (userRoles.length > 0) {
-          permissionFilters.push({ terms: { viewRoles: userRoles } });
-        }
-      }
-
-      query.query.bool.filter.push({
-        bool: {
-          should: permissionFilters,
-          minimum_should_match: 1
-        }
-      });
-
-      const { body: { hits: items } } = await Db.searchShareables(query);
-
-      delete query.sort;
-      delete query.size;
-      delete query.from;
-      const { body: { count: total } } = await Db.numberOfShareables(query);
-
-      const results = items.hits.map(async (item) => {
-        const shareable = item._source;
+      const results = items.map(async (item) => {
+        const shareable = item.source;
         return {
-          id: item._id,
+          id: item.id,
           type: shareable.type,
           name: shareable.name,
           description: shareable.description,
@@ -389,8 +342,8 @@ class ShareableAPIs {
 
       return res.send({
         data: resolvedResults,
-        recordsTotal: items.total,
-        recordsFiltered: total
+        recordsTotal,
+        recordsFiltered
       });
     } catch (err) {
       console.log(`ERROR - ${req.method} /api/shareables (listShareables)`, util.inspect(err, false, 50));

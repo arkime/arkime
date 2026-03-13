@@ -3,104 +3,256 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 # Mini S3 server for testing. Stores everything in memory, ignores auth.
+# Non-blocking I/O with per-connection buffering to prevent one slow
+# client from starving others.
 # Supports: CreateMultipartUpload, UploadPart, CompleteMultipartUpload,
-#           PutObject, GetObject, DeleteObject
+#           PutObject, GetObject, DeleteObject, HeadObject,
+#           ListBuckets, ListObjects
 
 use strict;
 use warnings;
-use HTTP::Daemon;
-use HTTP::Status;
+$SIG{INT} = sub { exit 0; };
+use IO::Socket::INET;
+use IO::Select;
+use Fcntl qw(F_GETFL F_SETFL O_NONBLOCK);
 use Digest::MD5 qw(md5_hex);
 use POSIX qw(strftime);
 use File::Path qw(make_path);
 
+my $debug = 0;
+if (@ARGV && $ARGV[0] eq '--debug') {
+    $debug = 1;
+    shift @ARGV;
+}
+
 my $port = $ARGV[0] || 9000;
-my $USE_DISK = 0; # Set to 0 to store everything in memory
+my $USE_DISK = 0;
 my $DISK_DIR = "/tmp/mini-s3";
 
-# Storage: $objects{$bucket}{$key} = { data => ..., content_type => ..., etag => ... }
+# Storage: $objects{$bucket}{$key} = { data => ..., content_type => ..., etag => ..., size => ..., last_modified => ... }
 my %objects;
 
 # Multipart: $uploads{$uploadId} = { bucket => ..., key => ..., parts => { $partNum => { data => ..., etag => ... } } }
 my %uploads;
 my $nextUploadId = 1;
 
-my $daemon = HTTP::Daemon->new(
+# Per-connection state
+my %conn_buf;    # fileno => raw read buffer
+my %conn_state;  # fileno => { method, uri, query, headers, content_length, body, headers_done }
+
+my $server = IO::Socket::INET->new(
     LocalPort => $port,
+    Proto     => 'tcp',
+    Listen    => 128,
     ReuseAddr => 1,
-    ReusePort => 1,
 ) or die "Cannot start server on port $port: $!\n";
+
+my $flags = fcntl($server, F_GETFL, 0);
+fcntl($server, F_SETFL, $flags | O_NONBLOCK);
 
 print "Mini S3 listening on port $port\n";
 
-while (my $conn = $daemon->accept) {
-    binmode($conn);
-    while (my $req = $conn->get_request) {
-        eval {
-            handle_request($conn, $req);
-        };
-        if ($@) {
-            warn "Error handling request: $@\n";
-            $conn->send_error(500, "Internal Server Error");
+my $sel = IO::Select->new($server);
+
+while (1) {
+    my @ready = $sel->can_read(1);
+
+    for my $fh (@ready) {
+        if ($fh == $server) {
+            while (my $client = $server->accept()) {
+                $client->autoflush(1);
+                binmode($client);
+                my $cf = fcntl($client, F_GETFL, 0);
+                fcntl($client, F_SETFL, $cf | O_NONBLOCK);
+                my $fn = fileno($client);
+                $conn_buf{$fn} = '';
+                $conn_state{$fn} = {};
+                $sel->add($client);
+            }
+            next;
+        }
+
+        my $fn = fileno($fh);
+        my $data;
+        my $n = sysread($fh, $data, 65536);
+        if (!defined $n) {
+            next if $!{EAGAIN} || $!{EWOULDBLOCK};
+            cleanup_conn($fh, $fn);
+            next;
+        }
+        if ($n == 0) {
+            cleanup_conn($fh, $fn);
+            next;
+        }
+        $conn_buf{$fn} .= $data;
+
+        # Try to parse and handle complete HTTP requests from the buffer
+        while (length($conn_buf{$fn}) > 0) {
+            my $state = $conn_state{$fn} //= {};
+
+            # Parse headers if not done yet
+            if (!$state->{headers_done}) {
+                my $hdr_end = index($conn_buf{$fn}, "\r\n\r\n");
+                last if $hdr_end < 0;  # incomplete headers
+
+                my $header_block = substr($conn_buf{$fn}, 0, $hdr_end);
+                substr($conn_buf{$fn}, 0, $hdr_end + 4, '');
+
+                my @lines = split(/\r\n/, $header_block);
+                my $request_line = shift @lines;
+                if ($request_line =~ m{^(\S+)\s+(\S+)\s+HTTP/}) {
+                    $state->{method} = $1;
+                    my $full_uri = $2;
+                    if ($full_uri =~ /^([^?]*)(?:\?(.*))?$/) {
+                        $state->{uri} = $1;
+                        $state->{query} = $2 // '';
+                    } else {
+                        $state->{uri} = $full_uri;
+                        $state->{query} = '';
+                    }
+                } else {
+                    cleanup_conn($fh, $fn);
+                    last;
+                }
+
+                my %headers;
+                for my $line (@lines) {
+                    if ($line =~ /^([^:]+):\s*(.*)$/) {
+                        $headers{lc($1)} = $2;
+                    }
+                }
+                $state->{headers} = \%headers;
+                $state->{content_length} = int($headers{'content-length'} // 0);
+                $state->{body} = '';
+                $state->{headers_done} = 1;
+
+                # Handle Expect: 100-continue — client won't send body until we respond
+                if (($headers{'expect'} // '') =~ /100-continue/i) {
+                    write_all($fh, "HTTP/1.1 100 Continue\r\n\r\n");
+                }
+            }
+
+            # Accumulate body
+            my $need = $state->{content_length} - length($state->{body});
+            if ($need > 0) {
+                my $avail = length($conn_buf{$fn});
+                if ($avail == 0) { last; }
+                my $take = ($avail < $need) ? $avail : $need;
+                $state->{body} .= substr($conn_buf{$fn}, 0, $take, '');
+                $need -= $take;
+            }
+            last if $need > 0;  # still waiting for body
+
+            # We have a complete request — handle it
+            my $resp = handle_request($state);
+            if ($resp eq '_shutdown') {
+                write_all($fh, "HTTP/1.1 200 OK\r\nContent-Length: 0\r\nConnection: close\r\n\r\n");
+                cleanup_conn($fh, $fn);
+                exit(0);
+            }
+
+            write_all($fh, $resp);
+
+            # Check for Connection: close
+            my $conn_hdr = $state->{headers}{'connection'} // '';
+            $conn_state{$fn} = {};
+            if (lc($conn_hdr) eq 'close') {
+                cleanup_conn($fh, $fn);
+                last;
+            }
         }
     }
-    $conn->close;
+}
+
+sub cleanup_conn {
+    my ($fh, $fn) = @_;
+    delete $conn_buf{$fn};
+    delete $conn_state{$fn};
+    $sel->remove($fh);
+    close($fh);
+}
+
+# Write all data to a non-blocking socket, waiting for writability as needed
+sub write_all {
+    my ($fh, $data) = @_;
+    my $offset = 0;
+    my $len = length($data);
+    while ($offset < $len) {
+        my $n = syswrite($fh, $data, $len - $offset, $offset);
+        if (defined $n) {
+            $offset += $n;
+            next;
+        }
+        if ($!{EAGAIN} || $!{EWOULDBLOCK}) {
+            IO::Select->new($fh)->can_write(5);
+            next;
+        }
+        return;  # real error, give up
+    }
+}
+
+# Build a complete HTTP response string
+sub build_response {
+    my ($status, $status_text, $headers, $body) = @_;
+    $body //= '';
+    my $resp = "HTTP/1.1 $status $status_text\r\n";
+    $headers->{'Content-Length'} //= length($body);
+    for my $k (keys %$headers) {
+        $resp .= "$k: $headers->{$k}\r\n";
+    }
+    $resp .= "\r\n";
+    $resp .= $body;
+    return $resp;
 }
 
 sub handle_request {
-    my ($conn, $req) = @_;
-    my $method = $req->method;
-    my $uri    = $req->uri->path;
-    my $query  = $req->uri->query // '';
+    my ($state) = @_;
+    my $method  = $state->{method};
+    my $uri     = $state->{uri};
+    my $query   = $state->{query};
+    my $headers = $state->{headers};
+    my $body    = $state->{body};
 
-    my $range = $req->header('Range') // '';
-    my $body_size = length($req->content // '');
-    my $date = strftime("%Y-%m-%dT%H:%M:%S", gmtime());
-    print "$date $method $uri" . ($query ne '' ? "?$query" : "") . " body:$body_size" . ($range ne '' ? " Range:$range" : "") . "\n";
+    my $range = $headers->{'range'} // '';
+    my $body_size = length($body);
+    my $ts = strftime("%H:%M:%S", localtime);
+    print "$ts S3: $method $uri" . ($query ne '' ? "?$query" : "") . " body:$body_size" . ($range ne '' ? " Range:$range" : "") . "\n" if $debug;
 
     if ($uri eq '/_shutdown') {
-        my $resp = HTTP::Response->new(200);
-        $resp->header('Content-Length' => 0);
-        $conn->send_response($resp);
-        $conn->close;
-        exit(0);
+        return '_shutdown';
     }
 
     my ($bucket, $key) = parse_path($uri);
-    print "  bucket=$bucket key=$key\n" if defined $bucket;
+    print "  bucket=$bucket key=" . ($key // '') . "\n" if ($debug && defined $bucket);
 
     if ($method eq 'POST' && $query =~ /uploads\b/ && !($query =~ /uploadId/)) {
-        # CreateMultipartUpload
-        create_multipart_upload($conn, $bucket, $key, $req);
+        return create_multipart_upload($bucket, $key, $headers);
     } elsif ($method eq 'PUT' && $query =~ /uploadId=([^&]+)/) {
-        # UploadPart
-        my $uploadId  = $1;
+        my $uploadId = $1;
         $query =~ /partNumber=(\d+)/;
         my $partNum = $1;
-        upload_part($conn, $uploadId, $partNum, $req);
+        return upload_part($uploadId, $partNum, $body);
     } elsif ($method eq 'POST' && $query =~ /uploadId=([^&]+)/) {
-        # CompleteMultipartUpload
-        complete_multipart_upload($conn, $1, $req);
+        return complete_multipart_upload($1, $body);
     } elsif ($method eq 'GET' && !defined $bucket) {
-        list_buckets($conn);
+        return list_buckets_resp();
     } elsif ($method eq 'GET' && !defined $key && defined $bucket) {
-        list_objects($conn, $bucket, $req, $query);
+        return list_objects_resp($bucket, $query);
     } elsif ($method eq 'PUT' && defined $key) {
-        put_object($conn, $bucket, $key, $req);
+        return put_object_resp($bucket, $key, $body, $headers->{'content-type'});
     } elsif ($method eq 'GET' && defined $key) {
-        get_object($conn, $bucket, $key, $req);
+        return get_object_resp($bucket, $key, $headers->{'range'});
     } elsif ($method eq 'DELETE' && defined $key) {
-        delete_object($conn, $bucket, $key, $req);
+        return delete_object_resp($bucket, $key);
     } elsif ($method eq 'HEAD' && defined $key) {
-        head_object($conn, $bucket, $key, $req);
+        return head_object_resp($bucket, $key);
     } else {
-        send_s3_error($conn, 501, "NotImplemented", "Not implemented: $method $uri?$query");
+        return send_s3_error_resp(501, "NotImplemented", "Not implemented: $method $uri?$query");
     }
 }
 
 sub parse_path {
     my ($path) = @_;
-    # /bucket/key/parts...
     if ($path =~ m{^/([^/]+)/(.+)$}) {
         return ($1, $2);
     } elsif ($path =~ m{^/([^/]+)/?$}) {
@@ -115,8 +267,7 @@ sub amz_date {
 
 sub disk_path {
     my ($bucket, $key) = @_;
-    my $path = "$DISK_DIR/$bucket/$key";
-    return $path;
+    return "$DISK_DIR/$bucket/$key";
 }
 
 sub save_object {
@@ -163,167 +314,126 @@ sub load_object_data {
 }
 
 sub create_multipart_upload {
-    my ($conn, $bucket, $key, $req) = @_;
+    my ($bucket, $key, $headers) = @_;
     my $uploadId = $nextUploadId++;
-    $uploads{$uploadId} = {
-        bucket => $bucket,
-        key    => $key,
-        parts  => {},
-    };
+    $uploads{$uploadId} = { bucket => $bucket, key => $key, parts => {} };
     my $xml = qq{<?xml version="1.0" encoding="UTF-8"?>
 <InitiateMultipartUploadResult>
   <Bucket>$bucket</Bucket>
   <Key>$key</Key>
   <UploadId>$uploadId</UploadId>
 </InitiateMultipartUploadResult>};
-    send_xml($conn, 200, $xml);
+    return build_response(200, 'OK', { 'Content-Type' => 'application/xml' }, $xml);
 }
 
 sub upload_part {
-    my ($conn, $uploadId, $partNum, $req) = @_;
+    my ($uploadId, $partNum, $body) = @_;
     my $upload = $uploads{$uploadId};
     unless ($upload) {
-        send_s3_error($conn, 404, "NoSuchUpload", "Upload $uploadId not found");
-        return;
+        return send_s3_error_resp(404, "NoSuchUpload", "Upload $uploadId not found");
     }
-    my $data = $req->content_ref;
-    my $etag = '"' . md5_hex($$data) . '"';
-    $upload->{parts}{$partNum} = {
-        data => $$data,
-        etag => $etag,
-    };
-    my $resp = HTTP::Response->new(200);
-    $resp->header('ETag' => $etag);
-    $resp->header('Content-Length' => 0);
-    $conn->send_response($resp);
+    my $etag = '"' . md5_hex($body) . '"';
+    $upload->{parts}{$partNum} = { data => $body, etag => $etag };
+    return build_response(200, 'OK', { 'ETag' => $etag }, '');
 }
 
 sub complete_multipart_upload {
-    my ($conn, $uploadId, $req) = @_;
+    my ($uploadId, $body) = @_;
     my $upload = $uploads{$uploadId};
     unless ($upload) {
-        send_s3_error($conn, 404, "NoSuchUpload", "Upload $uploadId not found");
-        return;
+        return send_s3_error_resp(404, "NoSuchUpload", "Upload $uploadId not found");
     }
-
-    # Concatenate parts in order
     my $data = '';
     for my $partNum (sort { $a <=> $b } keys %{$upload->{parts}}) {
         $data .= $upload->{parts}{$partNum}{data};
     }
-
     my $etag   = save_object($upload->{bucket}, $upload->{key}, $data, 'application/octet-stream');
     my $bucket = $upload->{bucket};
     my $key    = $upload->{key};
     delete $uploads{$uploadId};
-
     my $xml = qq{<?xml version="1.0" encoding="UTF-8"?>
 <CompleteMultipartUploadResult>
   <Bucket>$bucket</Bucket>
   <Key>$key</Key>
   <ETag>$etag</ETag>
 </CompleteMultipartUploadResult>};
-    send_xml($conn, 200, $xml);
+    return build_response(200, 'OK', { 'Content-Type' => 'application/xml' }, $xml);
 }
 
-sub put_object {
-    my ($conn, $bucket, $key, $req) = @_;
-    my $data = ${$req->content_ref};
-    my $etag = save_object($bucket, $key, $data, $req->header('Content-Type') // 'application/octet-stream');
-    my $resp = HTTP::Response->new(200);
-    $resp->header('ETag' => $etag);
-    $resp->header('Content-Length' => 0);
-    $conn->send_response($resp);
+sub put_object_resp {
+    my ($bucket, $key, $body, $content_type) = @_;
+    my $etag = save_object($bucket, $key, $body, $content_type // 'application/octet-stream');
+    return build_response(200, 'OK', { 'ETag' => $etag }, '');
 }
 
-sub send_data {
-    my ($conn, $status, $headers, $dataref, $offset, $length) = @_;
-    $offset //= 0;
-    $length //= length($$dataref) - $offset;
-
-    my $header_str = "HTTP/1.1 $status " . HTTP::Status::status_message($status) . "\r\n";
-    for my $k (keys %$headers) {
-        $header_str .= "$k: $headers->{$k}\r\n";
-    }
-    $header_str .= "\r\n";
-    $conn->print($header_str);
-
-    my $chunk_size = 1024 * 1024;
-    my $pos = $offset;
-    my $end = $offset + $length;
-    while ($pos < $end) {
-        my $len = ($end - $pos < $chunk_size) ? $end - $pos : $chunk_size;
-        $conn->print(substr($$dataref, $pos, $len));
-        $pos += $len;
-    }
-}
-
-sub get_object {
-    my ($conn, $bucket, $key, $req) = @_;
+sub get_object_resp {
+    my ($bucket, $key, $range) = @_;
     my $obj = ($objects{$bucket} // {})->{$key};
     unless ($obj) {
-        send_s3_error($conn, 404, "NoSuchKey", "The specified key does not exist.");
-        return;
+        return send_s3_error_resp(404, "NoSuchKey", "The specified key does not exist.");
     }
-
     my $data = load_object_data($bucket, $key);
     unless (defined $data) {
-        send_s3_error($conn, 500, "InternalError", "Failed to read object data");
-        return;
+        return send_s3_error_resp(500, "InternalError", "Failed to read object data");
     }
 
     my $total = length($data);
-    my $range = $req->header('Range');
 
     if ($range && $range =~ /bytes=(\d+)-(\d*)/) {
         my $start = $1;
         if ($start >= $total) {
-            my $resp = HTTP::Response->new(416);
-            $resp->header('Content-Range' => "bytes */$total");
-            $resp->header('Content-Length' => 0);
-            $conn->send_response($resp);
-            return;
+            return build_response(416, 'Range Not Satisfiable', {
+                'Content-Range' => "bytes */$total",
+                'Connection'    => 'close',
+            }, '');
         }
         my $end = $2 ne '' ? $2 : $total - 1;
         $end = $total - 1 if $end >= $total;
         my $len = $end - $start + 1;
-        send_data($conn, 206, {
+        my $slice = substr($data, $start, $len);
+        return build_response(206, 'Partial Content', {
             'Content-Type'   => $obj->{content_type},
-            'Content-Length' => $len,
             'Content-Range'  => "bytes $start-$end/$total",
             'ETag'           => $obj->{etag},
             'Last-Modified'  => $obj->{last_modified},
             'Connection'     => 'close',
-        }, \$data, $start, $len);
-        return;
+        }, $slice);
     }
 
-    send_data($conn, 200, {
+    return build_response(200, 'OK', {
         'Content-Type'   => $obj->{content_type},
-        'Content-Length' => $total,
         'ETag'           => $obj->{etag},
         'Last-Modified'  => $obj->{last_modified},
         'Connection'     => 'close',
-    }, \$data);
+    }, $data);
 }
 
-sub head_object {
-    my ($conn, $bucket, $key, $req) = @_;
+sub head_object_resp {
+    my ($bucket, $key) = @_;
     my $obj = ($objects{$bucket} // {})->{$key};
     unless ($obj) {
-        send_s3_error($conn, 404, "NoSuchKey", "The specified key does not exist.");
-        return;
+        return send_s3_error_resp(404, "NoSuchKey", "The specified key does not exist.");
     }
-    my $resp = HTTP::Response->new(200);
-    $resp->header('Content-Type'   => $obj->{content_type});
-    $resp->header('Content-Length' => $obj->{size});
-    $resp->header('ETag'           => $obj->{etag});
-    $resp->header('Last-Modified'  => $obj->{last_modified});
-    $conn->send_response($resp);
+    return build_response(200, 'OK', {
+        'Content-Type'   => $obj->{content_type},
+        'Content-Length'  => $obj->{size},
+        'ETag'           => $obj->{etag},
+        'Last-Modified'  => $obj->{last_modified},
+    }, '');
 }
 
-sub list_buckets {
-    my ($conn) = @_;
+sub delete_object_resp {
+    my ($bucket, $key) = @_;
+    if ($objects{$bucket}) {
+        delete $objects{$bucket}{$key};
+        if ($USE_DISK) {
+            unlink(disk_path($bucket, $key));
+        }
+    }
+    return build_response(204, 'No Content', {}, '');
+}
+
+sub list_buckets_resp {
     my $xml = qq{<?xml version="1.0" encoding="UTF-8"?>
 <ListAllMyBucketsResult>
   <Owner>
@@ -339,11 +449,11 @@ sub list_buckets {
     </Bucket>};
     }
     $xml .= "\n  </Buckets>\n</ListAllMyBucketsResult>";
-    send_xml($conn, 200, $xml);
+    return build_response(200, 'OK', { 'Content-Type' => 'application/xml' }, $xml);
 }
 
-sub list_objects {
-    my ($conn, $bucket, $req, $query) = @_;
+sub list_objects_resp {
+    my ($bucket, $query) = @_;
     my %params;
     for my $pair (split /&/, $query) {
         my ($k, $v) = split /=/, $pair, 2;
@@ -401,37 +511,16 @@ sub list_objects {
     }
 
     $xml .= "\n</ListBucketResult>";
-    send_xml($conn, 200, $xml);
+    return build_response(200, 'OK', { 'Content-Type' => 'application/xml' }, $xml);
 }
 
-sub delete_object {
-    my ($conn, $bucket, $key, $req) = @_;
-    if ($objects{$bucket}) {
-        delete $objects{$bucket}{$key};
-        if ($USE_DISK) {
-            unlink(disk_path($bucket, $key));
-        }
-    }
-    my $resp = HTTP::Response->new(204);
-    $resp->header('Content-Length' => 0);
-    $conn->send_response($resp);
-}
-
-sub send_xml {
-    my ($conn, $status, $xml) = @_;
-    my $resp = HTTP::Response->new($status);
-    $resp->header('Content-Type'   => 'application/xml');
-    $resp->header('Content-Length' => length($xml));
-    $resp->content($xml);
-    $conn->send_response($resp);
-}
-
-sub send_s3_error {
-    my ($conn, $status, $code, $message) = @_;
+sub send_s3_error_resp {
+    my ($status, $code, $message) = @_;
+    my %status_text = (404 => 'Not Found', 500 => 'Internal Server Error', 501 => 'Not Implemented', 416 => 'Range Not Satisfiable');
     my $xml = qq{<?xml version="1.0" encoding="UTF-8"?>
 <Error>
   <Code>$code</Code>
   <Message>$message</Message>
 </Error>};
-    send_xml($conn, $status, $xml);
+    return build_response($status, $status_text{$status} // 'Error', { 'Content-Type' => 'application/xml' }, $xml);
 }

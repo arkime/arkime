@@ -466,6 +466,7 @@ my ($cmd) = @_;
         $main::userAgent->post("http://localhost:3218/regressionTests/shutdown");
         $main::userAgent->post("http://localhost:7200/regressionTests/shutdown");
         if (my $rs2 = IO::Socket::INET->new(PeerAddr => "127.0.0.1", PeerPort => 7379, Proto => "tcp")) { $rs2->autoflush(1); print $rs2 "*1\r\n\$8\r\nSHUTDOWN\r\n"; my $resp = <$rs2>; $rs2->close(); }
+        eval { $main::userAgent->get("http://localhost:4566/_shutdown"); };
     }
 
 # Coverage

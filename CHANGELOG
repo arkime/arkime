@@ -56,6 +56,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #3788 Fix abort when parliament file not set
 ## Viewer
   - #3781 Most server errors are now localized
+  - #3785 views/shareables/shortcuts can now live in sqlite instead of ES
   - #3796 Fix value-actions not working (thanks @waynieack)
 
 6.0.1 2026/03/09

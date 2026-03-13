@@ -1,4 +1,4 @@
-use Test::More tests => 64;
+use Test::More tests => 110;
 use ArkimeTest;
 use JSON;
 use Test::Differences;
@@ -7,8 +7,7 @@ use strict;
 
 # clean old users
 viewerGet("/regressionTests/deleteAllUsers");
-
-clearIndex("tests_shareables");
+viewerGet("/regressionTests/deleteAllShareables");
 
 my $adminToken = getTokenCookie();
 my $token = getTokenCookie('sac-test1');
@@ -188,3 +187,169 @@ is_deeply($info->{shareable}->{viewUsers}, ["sac-test2"], "only valid users stor
 
 # delete shareable
 viewerDeleteToken("/api/shareable/${id3}?arkimeRegressionUser=sac-test1", $token);
+
+# --- Input validation tests ---
+
+# create shareable missing name
+$info = viewerPostToken("/api/shareable?arkimeRegressionUser=sac-test1", '{"type": "test", "data": {}}', $token);
+ok(!$info->{success}, "create fails without name");
+is($info->{text}, "Missing shareable name", "correct error for missing name");
+
+# create shareable missing type
+$info = viewerPostToken("/api/shareable?arkimeRegressionUser=sac-test1", '{"name": "notype", "data": {}}', $token);
+ok(!$info->{success}, "create fails without type");
+is($info->{text}, "Missing shareable type", "correct error for missing type");
+
+# create shareable with non-string description
+$info = viewerPostToken("/api/shareable?arkimeRegressionUser=sac-test1", '{"name": "test", "type": "test", "description": 123}', $token);
+ok(!$info->{success}, "create fails with non-string description");
+is($info->{text}, "Description must be a string", "correct error for bad description");
+
+# update non-existent shareable
+$info = viewerPutToken("/api/shareable/nonexistent123?arkimeRegressionUser=sac-test1", '{"name": "x", "data": {}}', $token);
+ok(!$info->{success}, "update non-existent shareable fails");
+
+# get non-existent shareable
+$info = viewerGet("/api/shareable/nonexistent123?arkimeRegressionUser=sac-test1");
+ok(!$info->{success}, "get non-existent shareable fails");
+
+# update with non-string description
+$info = viewerPostToken("/api/shareable?arkimeRegressionUser=sac-test1", '{"name": "desctest", "type": "test", "data": {}}', $token);
+my $idDesc = $info->{id};
+$info = viewerPutToken("/api/shareable/${idDesc}?arkimeRegressionUser=sac-test1", '{"name": "desctest", "description": ["array"]}', $token);
+ok(!$info->{success}, "update fails with non-string description");
+is($info->{text}, "Description must be a string", "correct error for bad description on update");
+
+# --- Pagination tests ---
+# create multiple shareables for pagination
+$info = viewerPostToken("/api/shareable?arkimeRegressionUser=sac-test1", '{"name": "alpha", "type": "pagtest", "data": {}}', $token);
+my $idPA = $info->{id};
+$info = viewerPostToken("/api/shareable?arkimeRegressionUser=sac-test1", '{"name": "beta", "type": "pagtest", "data": {}}', $token);
+my $idPB = $info->{id};
+$info = viewerPostToken("/api/shareable?arkimeRegressionUser=sac-test1", '{"name": "gamma", "type": "pagtest", "data": {}}', $token);
+my $idPG = $info->{id};
+
+# length limits results
+$info = viewerGet("/api/shareables?type=pagtest&arkimeRegressionUser=sac-test1&length=2");
+is(scalar @{$info->{data}}, 2, "length=2 returns 2 shareables");
+is($info->{recordsTotal}, 3, "recordsTotal still 3 with length=2");
+
+# start offsets results
+$info = viewerGet("/api/shareables?type=pagtest&arkimeRegressionUser=sac-test1&length=2&start=2");
+is(scalar @{$info->{data}}, 1, "start=2 length=2 returns 1 remaining");
+
+# start beyond data returns empty
+$info = viewerGet("/api/shareables?type=pagtest&arkimeRegressionUser=sac-test1&start=100");
+is(scalar @{$info->{data}}, 0, "start beyond data returns empty");
+is($info->{recordsTotal}, 3, "recordsTotal still correct with large start");
+
+# --- Type isolation tests ---
+# shareables of different type should not appear
+$info = viewerGet("/api/shareables?type=other&arkimeRegressionUser=sac-test1");
+is($info->{recordsTotal}, 0, "different type returns 0");
+eq_or_diff($info->{data}, from_json("[]"), "different type returns empty data");
+
+# --- Permission edge cases ---
+
+# viewUser cannot edit
+$info = viewerPutToken("/api/shareable/${idPA}?arkimeRegressionUser=sac-test1", '{"name": "alpha", "data": {}, "viewUsers": ["sac-test2"]}', $token);
+ok($info->{success}, "add sac-test2 as viewUser");
+$info = viewerPutToken("/api/shareable/${idPA}?arkimeRegressionUser=sac-test2", '{"name": "hacked", "data": {}}', $token2);
+ok(!$info->{success}, "viewUser cannot edit shareable");
+
+# viewUser cannot delete
+$info = viewerDeleteToken("/api/shareable/${idPA}?arkimeRegressionUser=sac-test2", $token2);
+ok(!$info->{success}, "viewUser cannot delete shareable");
+
+# editUser cannot delete (only creator/admin)
+$info = viewerPutToken("/api/shareable/${idPA}?arkimeRegressionUser=sac-test1", '{"name": "alpha", "data": {}, "viewUsers": [], "editUsers": ["sac-test2"]}', $token);
+ok($info->{success}, "add sac-test2 as editUser");
+$info = viewerDeleteToken("/api/shareable/${idPA}?arkimeRegressionUser=sac-test2", $token2);
+ok(!$info->{success}, "editUser cannot delete shareable");
+
+# shared field is correct
+$info = viewerGet("/api/shareables?type=pagtest&arkimeRegressionUser=sac-test1&viewOnly=false");
+is($info->{data}->[0]->{shared}, 0, "creator sees shared=false");
+$info = viewerGet("/api/shareables?type=pagtest&arkimeRegressionUser=sac-test2&viewOnly=false");
+is($info->{data}->[0]->{shared}, 1, "non-creator sees shared=true");
+
+# --- Extra field sanitization tests ---
+
+# create shareable with extra top-level fields
+$info = viewerPostToken("/api/shareable?arkimeRegressionUser=sac-test1", '{"name": "sanitize-test", "type": "santest", "data": {"key":"val"}, "evil": "data", "badField": 123}', $token);
+ok($info->{success}, "create with extra fields succeeds");
+my $idSan = $info->{id};
+ok(!exists $info->{shareable}->{evil}, "extra field 'evil' not in create response");
+ok(!exists $info->{shareable}->{badField}, "extra field 'badField' not in create response");
+
+# verify extra fields not persisted
+$info = viewerGet("/api/shareable/${idSan}?arkimeRegressionUser=sac-test1");
+ok(!exists $info->{shareable}->{evil}, "extra field 'evil' not persisted");
+ok(!exists $info->{shareable}->{badField}, "extra field 'badField' not persisted");
+
+# update shareable with extra top-level fields
+$info = viewerPutToken("/api/shareable/${idSan}?arkimeRegressionUser=sac-test1", '{"name": "sanitize-test", "data": {"key":"val"}, "injected": true, "foo": "bar"}', $token);
+ok($info->{success}, "update with extra fields succeeds");
+ok(!exists $info->{shareable}->{injected}, "extra field 'injected' not in update response");
+ok(!exists $info->{shareable}->{foo}, "extra field 'foo' not in update response");
+
+# try to override creator via body on create
+$info = viewerPostToken("/api/shareable?arkimeRegressionUser=sac-test1", '{"name": "creator-test", "type": "santest", "data": {}, "creator": "sac-test2"}', $token);
+my $idCreator = $info->{id};
+is($info->{shareable}->{creator}, "sac-test1", "creator cannot be overridden on create");
+
+# try to override creator via body on update
+$info = viewerPutToken("/api/shareable/${idCreator}?arkimeRegressionUser=sac-test1", '{"name": "creator-test", "data": {}, "creator": "sac-test2"}', $token);
+is($info->{shareable}->{creator}, "sac-test1", "creator cannot be overridden on update");
+
+viewerDeleteToken("/api/shareable/${idSan}?arkimeRegressionUser=sac-test1", $token);
+viewerDeleteToken("/api/shareable/${idCreator}?arkimeRegressionUser=sac-test1", $token);
+
+# --- Ownership / permission tests ---
+
+# create shareable owned by sac-test1 with edit access for sac-test2
+$info = viewerPostToken("/api/shareable?arkimeRegressionUser=sac-test1", '{"name": "own-test", "type": "owntest", "data": {}, "editUsers": ["sac-test2"]}', $token);
+my $idOwn = $info->{id};
+
+# editor can update name/data but creator stays the same
+$info = viewerPutToken("/api/shareable/${idOwn}?arkimeRegressionUser=sac-test2", '{"name": "editor-changed", "data": {"edited": true}}', $token2);
+ok($info->{success}, "editor can update shareable");
+is($info->{shareable}->{name}, "editor-changed", "editor updated name");
+is($info->{shareable}->{creator}, "sac-test1", "creator unchanged after editor update");
+
+# editor tries to override creator field
+$info = viewerPutToken("/api/shareable/${idOwn}?arkimeRegressionUser=sac-test2", '{"name": "editor-changed", "data": {}, "creator": "sac-test2"}', $token2);
+is($info->{shareable}->{creator}, "sac-test1", "editor cannot steal ownership via creator field");
+
+# editor cannot delete
+$info = viewerDeleteToken("/api/shareable/${idOwn}?arkimeRegressionUser=sac-test2", $token2);
+ok(!$info->{success}, "editor cannot delete shareable");
+
+# editor cannot change permissions (editUsers/viewUsers)
+$info = viewerPutToken("/api/shareable/${idOwn}?arkimeRegressionUser=sac-test2", '{"name": "editor-changed", "data": {}, "editUsers": [], "viewUsers": ["sac-test2"]}', $token2);
+ok($info->{success}, "editor update with permission changes accepted");
+# verify editor removed themselves from editUsers
+$info = viewerGet("/api/shareable/${idOwn}?arkimeRegressionUser=sac-test1");
+is_deeply($info->{shareable}->{editUsers}, [], "editor can change editUsers (removed self)");
+
+# sac-test2 can no longer edit after removing self from editUsers
+$info = viewerPutToken("/api/shareable/${idOwn}?arkimeRegressionUser=sac-test2", '{"name": "nope", "data": {}}', $token2);
+ok(!$info->{success}, "editor who removed self can no longer edit");
+
+# creator can still edit and delete
+$info = viewerPutToken("/api/shareable/${idOwn}?arkimeRegressionUser=sac-test1", '{"name": "creator-edit", "data": {}}', $token);
+ok($info->{success}, "creator can still edit");
+$info = viewerDeleteToken("/api/shareable/${idOwn}?arkimeRegressionUser=sac-test1", $token);
+ok($info->{success}, "creator can delete");
+
+# cleanup pagination and validation shareables
+viewerDeleteToken("/api/shareable/${idPA}?arkimeRegressionUser=sac-test1", $token);
+viewerDeleteToken("/api/shareable/${idPB}?arkimeRegressionUser=sac-test1", $token);
+viewerDeleteToken("/api/shareable/${idPG}?arkimeRegressionUser=sac-test1", $token);
+viewerDeleteToken("/api/shareable/${idDesc}?arkimeRegressionUser=sac-test1", $token);
+
+# verify all clean
+$info = viewerGet("/api/shareables?type=pagtest&arkimeRegressionUser=sac-test1");
+is($info->{recordsTotal}, 0, "all pagtest shareables cleaned up");
+$info = viewerGet("/api/shareables?type=test&arkimeRegressionUser=sac-test1");
+is($info->{recordsTotal}, 0, "all test shareables cleaned up");
