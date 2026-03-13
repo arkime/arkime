@@ -146,7 +146,7 @@ class LinkGroup {
       if (!ArkimeUtil.isString(link.url)) {
         return { msg: 'Link missing url' };
       }
-      if (!/^https?:\/\//i.test(link.url)) {
+      if (!/^https?:\/\//i.test(link.url) && link.url !== '----------') {
         return { msg: 'Link url must start with http:// or https://' };
       }
       if (!Array.isArray(link.itypes)) {
