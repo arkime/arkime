@@ -482,6 +482,11 @@ class UserAPIs {
    * @name /user/css
    * @returns {css} css - The css file that includes user configured styles.
    */
+  static #validColor = /^#[0-9a-fA-F]{3,8}$/;
+  static #sanitizeColor (color) {
+    return (color && UserAPIs.#validColor.test(color.trim())) ? color.trim() : '#000000';
+  }
+
   static getUserCSS (req, res) {
     fs.readFile('./views/user.styl', 'utf8', (err, str) => {
       function error (msg) {
@@ -508,9 +513,11 @@ class UserAPIs {
 
       if (!colors) { return error('custom theme corrupted'); }
 
-      style.define('colorBackground', new stylus.nodes.Literal(colors[0]));
-      style.define('colorForeground', new stylus.nodes.Literal(colors[1]));
-      style.define('colorForegroundAccent', new stylus.nodes.Literal(colors[2]));
+      const sc = UserAPIs.#sanitizeColor;
+
+      style.define('colorBackground', new stylus.nodes.Literal(sc(colors[0])));
+      style.define('colorForeground', new stylus.nodes.Literal(sc(colors[1])));
+      style.define('colorForegroundAccent', new stylus.nodes.Literal(sc(colors[2])));
 
       style.define('colorWhite', new stylus.nodes.Literal('#FFFFFF'));
       style.define('colorBlack', new stylus.nodes.Literal('#333333'));
@@ -520,19 +527,19 @@ class UserAPIs {
       style.define('colorGrayLight', new stylus.nodes.Literal('#EEEEEE'));
       style.define('colorGrayLighter', new stylus.nodes.Literal('#F6F6F6'));
 
-      style.define('colorPrimary', new stylus.nodes.Literal(colors[3]));
-      style.define('colorPrimaryLightest', new stylus.nodes.Literal(colors[4]));
-      style.define('colorSecondary', new stylus.nodes.Literal(colors[5]));
-      style.define('colorSecondaryLightest', new stylus.nodes.Literal(colors[6]));
-      style.define('colorTertiary', new stylus.nodes.Literal(colors[7]));
-      style.define('colorTertiaryLightest', new stylus.nodes.Literal(colors[8]));
-      style.define('colorQuaternary', new stylus.nodes.Literal(colors[9]));
-      style.define('colorQuaternaryLightest', new stylus.nodes.Literal(colors[10]));
+      style.define('colorPrimary', new stylus.nodes.Literal(sc(colors[3])));
+      style.define('colorPrimaryLightest', new stylus.nodes.Literal(sc(colors[4])));
+      style.define('colorSecondary', new stylus.nodes.Literal(sc(colors[5])));
+      style.define('colorSecondaryLightest', new stylus.nodes.Literal(sc(colors[6])));
+      style.define('colorTertiary', new stylus.nodes.Literal(sc(colors[7])));
+      style.define('colorTertiaryLightest', new stylus.nodes.Literal(sc(colors[8])));
+      style.define('colorQuaternary', new stylus.nodes.Literal(sc(colors[9])));
+      style.define('colorQuaternaryLightest', new stylus.nodes.Literal(sc(colors[10])));
 
-      style.define('colorWater', new stylus.nodes.Literal(colors[11]));
-      style.define('colorLand', new stylus.nodes.Literal(colors[12]));
-      style.define('colorSrc', new stylus.nodes.Literal(colors[13]));
-      style.define('colorDst', new stylus.nodes.Literal(colors[14]));
+      style.define('colorWater', new stylus.nodes.Literal(sc(colors[11])));
+      style.define('colorLand', new stylus.nodes.Literal(sc(colors[12])));
+      style.define('colorSrc', new stylus.nodes.Literal(sc(colors[13])));
+      style.define('colorDst', new stylus.nodes.Literal(sc(colors[14])));
 
       style.render((err, css) => {
         if (err) { return error(err); }
