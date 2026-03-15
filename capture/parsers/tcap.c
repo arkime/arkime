@@ -56,7 +56,7 @@ LOCAL int tcap_get_app_context(const uint8_t *data, int len, char *out, int outl
             }
         }
 
-        if (BSB_IS_ERROR(bsb) || elemLen > BSB_REMAINING(bsb))
+        if (BSB_IS_ERROR(bsb) || elemLen <= 0 || elemLen > BSB_REMAINING(bsb))
             return 0;
 
         // Dialogue portion (0x6B)

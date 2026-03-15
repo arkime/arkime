@@ -51,6 +51,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #3786, #3797 add VLAN/VNI deduplication support (thanks @waynieack)
   - #3790 fix VLAN parsing for Type III ERSPAN (thanks @waynieack)
   - #3794 Fixed bpf filter setting reversed for scheme, pcapoverip, and tzsp readers
+  - #3803 Fix tcap parsing loop
 ## ES Proxy
   - #3789 Add AWS SigV4 signing support for managed OpenSearch
 ## Parliament
