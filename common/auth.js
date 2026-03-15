@@ -35,6 +35,7 @@ class Auth {
   static #requiredAuthHeader;
   static #requiredAuthHeaderVal;
   static #userAutoCreateTmpl;
+  static #userAutoCreateFuncs;
   static #userAuthIps;
   static #strategies;
   static #s2sRegressionTests;
@@ -144,6 +145,35 @@ class Auth {
     Auth.#requiredAuthHeader = options.requiredAuthHeader;
     Auth.#requiredAuthHeaderVal = options.requiredAuthHeaderVal?.split(',').map(s => s.trim()).filter(s => s !== '');
     Auth.#userAutoCreateTmpl = options.userAutoCreateTmpl;
+
+    const userAutoCreate = ArkimeConfig.getSection('user-auto-create');
+    if (userAutoCreate) {
+      if (Auth.#userAutoCreateTmpl) {
+        console.log('ERROR - Cannot use both userAutoCreateTmpl and [user-auto-create] section');
+        process.exit(1);
+      }
+      const allowedUserFields = new Set([
+        'userId', 'userName', 'passStore', 'enabled', 'webEnabled', 'headerAuthEnabled',
+        'emailSearch', 'createEnabled', 'removeEnabled', 'packetSearch',
+        'hideStats', 'hideFiles', 'hidePcap', 'disablePcapDownload',
+        'expression', 'settings', 'views', 'columnConfigs', 'spiviewFieldConfigs',
+        'tableStates', 'timeLimit', 'roles', 'roleAssigners', 'cont3xt'
+      ]);
+      Auth.#userAutoCreateFuncs = new Map();
+      for (const [field, func] of Object.entries(userAutoCreate)) {
+        if (!allowedUserFields.has(field)) {
+          console.log(`ERROR - user-auto-create field '${field}' is not a valid user property`);
+          process.exit(1);
+        }
+        try {
+          Auth.#userAutoCreateFuncs.set(field, new Function('vals', `return ${func};`));
+        } catch (e) {
+          console.log(`ERROR - user-auto-create syntax error in '${field}': ${e.message}`);
+          process.exit(1);
+        }
+      }
+    }
+
     Auth.#userAuthIps = new iptrie.IPTrie();
     Auth.#s2sRegressionTests = options.s2sRegressionTests;
     Auth.#authConfig = options.authConfig;
@@ -535,7 +565,7 @@ class Auth {
       }
 
       User.getUserCache(userId, (err, user) => {
-        if (Auth.#userAutoCreateTmpl === undefined) {
+        if (Auth.#userAutoCreateTmpl === undefined && Auth.#userAutoCreateFuncs === undefined) {
           return headerAuthCheck(err, user);
         } else if ((err && err.toString().includes('Not Found')) || (!user)) { // Try dynamic creation
           Auth.#dynamicCreate(userId, req.headers, headerAuthCheck);
@@ -602,7 +632,7 @@ class Auth {
         }
 
         User.getUserCache(userId, (err, user) => {
-          if (Auth.#userAutoCreateTmpl === undefined) {
+          if (Auth.#userAutoCreateTmpl === undefined && Auth.#userAutoCreateFuncs === undefined) {
             return oidcAuthCheck(err, user);
           } else if ((err && err.toString().includes('Not Found')) || (!user)) { // Try dynamic creation
             Auth.#dynamicCreate(userId, userinfo, oidcAuthCheck);
@@ -761,7 +791,22 @@ class Auth {
     if (ArkimeConfig.debug > 0) {
       console.log('AUTH - #dynamicCreate', ArkimeUtil.sanitizeStr(userId));
     }
-    const nuser = JSON.parse(new Function('return `' + Auth.#userAutoCreateTmpl + '`;').call(vars));
+
+    let nuser;
+    if (Auth.#userAutoCreateTmpl) {
+      nuser = JSON.parse(new Function('return `' + Auth.#userAutoCreateTmpl + '`;').call(vars));
+    } else {
+      nuser = {};
+      for (const [field, func] of Auth.#userAutoCreateFuncs) {
+        try {
+          nuser[field] = func(vars);
+        } catch (e) {
+          console.log(`ERROR - user-auto-create function for '${field}' failed:`, e.message);
+          return cb('User auto-create failed');
+        }
+      }
+    }
+
     if (nuser.passStore === undefined) {
       nuser.passStore = Auth.pass2store(nuser.userId, crypto.randomBytes(48));
     }
