@@ -113,13 +113,18 @@ class User {
 
     const userRoleMappings = ArkimeConfig.getSection('user-role-mappings');
     if (userRoleMappings) {
-      User.#dynamicRolesFuncs = {};
+      User.#dynamicRolesFuncs = new Map();
       for (const [role, func] of Object.entries(userRoleMappings)) {
         if (!systemRolesMapping[role] && !role.startsWith('role:')) {
           console.log(`ERROR - user-role-mappings ${role} must start with role: or be a system role`);
           process.exit();
         }
-        User.#dynamicRolesFuncs[role] = new Function('vals', `return ${func};`);
+        try {
+          User.#dynamicRolesFuncs.set(role, new Function('vals', `return ${func};`));
+        } catch (e) {
+          console.log(`ERROR - user-role-mappings syntax error in '${role}': ${e.message}`);
+          process.exit(1);
+        }
       }
     }
   }
@@ -1499,10 +1504,14 @@ class User {
     if (!User.#dynamicRolesFuncs) { return; }
 
     const newRoles = [];
-    for (const [role, func] of Object.entries(User.#dynamicRolesFuncs)) {
-      const result = await func.call(this, vals);
-      if (result) {
-        newRoles.push(role);
+    for (const [role, func] of User.#dynamicRolesFuncs) {
+      try {
+        const result = await func.call(this, vals);
+        if (result) {
+          newRoles.push(role);
+        }
+      } catch (e) {
+        console.log(`ERROR - user-role-mappings function for '${role}' failed:`, e.message);
       }
     }
 
