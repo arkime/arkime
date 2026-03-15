@@ -1,4 +1,4 @@
-use Test::More tests => 96;
+use Test::More tests => 100;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -265,14 +265,30 @@ eq_or_diff($result, from_json('{"groups": [{"clusters": [], "id": "' . $firstGro
 
 # Add cluster requires url
 $result = parliamentPostToken("/parliament/api/groups/$firstGroupId/clusters?arkimeRegressionUser=parliamentAdminP", '{"title": "cluster 1"}', $parliamentAdminToken);
-eq_or_diff($result, from_json('{"success":false,"text":"A cluster must have a url."}'));
+eq_or_diff($result, from_json('{"success":false,"text":"A cluster must have a url that starts with http or /."}'));
 
-# Add cluster
+# Add cluster url must start with http or /
 $result = parliamentPostToken("/parliament/api/groups/$firstGroupId/clusters?arkimeRegressionUser=parliamentAdminP", '{"title": "cluster 1", "url": "super/fancy/url"}', $parliamentAdminToken);
+eq_or_diff($result, from_json('{"success":false,"text":"A cluster must have a url that starts with http or /."}'));
+
+# Add cluster url must start with http or / - ftp
+$result = parliamentPostToken("/parliament/api/groups/$firstGroupId/clusters?arkimeRegressionUser=parliamentAdminP", '{"title": "cluster 1", "url": "ftp://example.com"}', $parliamentAdminToken);
+eq_or_diff($result, from_json('{"success":false,"text":"A cluster must have a url that starts with http or /."}'));
+
+# Add cluster with valid http url
+$result = parliamentPostToken("/parliament/api/groups/$firstGroupId/clusters?arkimeRegressionUser=parliamentAdminP", '{"title": "cluster 1", "url": "http://super/fancy/url"}', $parliamentAdminToken);
 my $firstClusterId = $result->{cluster}->{id};
 ok ($result->{success});
 
-# Update cluster
+# Update cluster url must start with http or /
+$result = parliamentPutToken("/parliament/api/groups/$firstGroupId/clusters/$firstClusterId?arkimeRegressionUser=parliamentAdminP", '{"title": "cluster 1a", "url": "gopher://evil"}', $parliamentAdminToken);
+eq_or_diff($result, from_json('{"success":false,"text":"A cluster must have a url that starts with http or /."}'));
+
+# Update cluster localUrl must start with http or /
+$result = parliamentPutToken("/parliament/api/groups/$firstGroupId/clusters/$firstClusterId?arkimeRegressionUser=parliamentAdminP", '{"title": "cluster 1a", "url": "http://localhost:8123", "localUrl": "file:///etc/passwd"}', $parliamentAdminToken);
+eq_or_diff($result, from_json('{"success":false,"text":"A cluster localUrl must start with http or /."}'));
+
+# Update cluster with valid url
 $result = parliamentPutToken("/parliament/api/groups/$firstGroupId/clusters/$firstClusterId?arkimeRegressionUser=parliamentAdminP", '{"title": "cluster 1a", "url": "http://localhost:8123"}', $parliamentAdminToken);
 ok ($result->{success});
 
