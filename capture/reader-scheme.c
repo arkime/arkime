@@ -80,7 +80,7 @@ LOCAL struct {
     uint8_t                readerPos;
     enum ArkimeSchemeMode  state;
     ArkimePacket_t        *packet;
-    int32_t                pktlen;
+    uint32_t               pktlen;
     uint8_t                tmpBuffer[0xffff];
     int                    tmpBufferLen;
     int                    blockSize;
@@ -659,7 +659,7 @@ LOCAL int arkime_reader_scheme_processNG(const char *uri, uint8_t *data, int len
 
             // Captured length is block_total_length - 16 (8 header + 4 orig_len + 4 trailing length)
             readerState.pktlen = readerState.blockSize - 4; // blockSize already had 8 subtracted, subtract trailing 4
-            if (unlikely(readerState.pktlen < 0 || readerState.pktlen > 0xffff)) {
+            if (unlikely(readerState.pktlen > 0xffff)) {
                 readerState.state = ARKIME_SCHEME_NG_SKIP;
                 continue;
             }
@@ -726,7 +726,7 @@ LOCAL int arkime_reader_scheme_processNG(const char *uri, uint8_t *data, int len
         }
         case ARKIME_SCHEME_NG_PACKET: {
             if (readerState.tmpBufferLen == 0) {
-                if (len < readerState.pktlen) {
+                if ((uint32_t)len < readerState.pktlen) {
                     memcpy(readerState.tmpBuffer, data, len);
                     readerState.tmpBufferLen = len;
                     readerState.blockSize -= len;
@@ -910,7 +910,7 @@ int arkime_reader_scheme_process(const char *uri, uint8_t *data, int len, const 
         }
         if (readerState.state == ARKIME_SCHEME_PACKET) {
             if (readerState.tmpBufferLen == 0) {
-                if (len < readerState.pktlen) {
+                if ((uint32_t)len < readerState.pktlen) {
                     memcpy(readerState.tmpBuffer, data, len);
                     readerState.tmpBufferLen = len;
                     goto process;
@@ -945,7 +945,7 @@ int arkime_reader_scheme_process(const char *uri, uint8_t *data, int len, const 
         if (readerState.state == ARKIME_SCHEME_PACKET_SKIP) {
             arkime_packet_free(readerState.packet);
             readerState.packet = 0;
-            if (len < readerState.pktlen) {
+            if ((uint32_t)len < readerState.pktlen) {
                 data += len;
                 readerState.pktlen -= len;
                 goto process;

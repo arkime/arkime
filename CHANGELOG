@@ -42,6 +42,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #3792 The setting uploadFileSizeLimit now defaults to 2G instead of unlimited
   - #3792 Link group urls in cont3xt must start with http(s):// now
   - #3794 Previously the bpf filter setting was reversed for scheme, pcapoverip, and tzsp readers
+  - #3802 Cluster urls in parliament must start with http or / now
 ## All
   - #3782 sqlite support added for user database and cont3xt/parliament databases
   - #3782 many fixes for lmdb and redis database implementation
