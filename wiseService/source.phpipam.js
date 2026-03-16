@@ -37,6 +37,8 @@ const iptrie = require('arkime-iptrie');
 
 // ---------------------------------------------------------------------------
 class PHPIPAMSource extends WISESource {
+  #httpsAgent;
+
   // -------------------------------------------------------------------------
   constructor (api, section) {
     // dontCache=false  → WISE caches results; cacheAgeMin config still applies
@@ -51,6 +53,11 @@ class PHPIPAMSource extends WISESource {
     this.preloadAddresses = api.getConfig(section, 'preloadAddresses', true) !== false;
     this.addrConcurrency = +api.getConfig(section, 'addrConcurrency', 10);
     this.reloadMins = +api.getConfig(section, 'reload', 60);
+
+    // Create a reusable https agent for TLS verification bypass if needed
+    if (!this.verifyTLS) {
+      this.#httpsAgent = new (require('https').Agent)({ rejectUnauthorized: false });
+    }
 
     if (!this.url || !this.appId || !this.appCode) {
       console.log(this.section, '- ERROR: url, appId, and appCode are required');
@@ -181,7 +188,7 @@ class PHPIPAMSource extends WISESource {
         {},
         {
           auth: { username, password },
-          httpsAgent: this.verifyTLS ? undefined : new (require('https').Agent)({ rejectUnauthorized: false })
+          httpsAgent: this.#httpsAgent
         }
       );
       if (resp.data?.data?.token) {
@@ -210,7 +217,7 @@ class PHPIPAMSource extends WISESource {
         headers: this.authHeaders(),
         timeout: 10000,
         validateStatus: null,  // handle all status codes ourselves
-        httpsAgent: this.verifyTLS ? undefined : new (require('https').Agent)({ rejectUnauthorized: false })
+        httpsAgent: this.#httpsAgent
       });
 
     let resp = await doGet();
@@ -274,7 +281,6 @@ class PHPIPAMSource extends WISESource {
     if (subnetIds.length === 0) return;
 
     const newHostCache = new Map();
-    let loaded = 0;
     let errors = 0;
 
     const tasks = subnetIds.map(id => async () => {
@@ -289,7 +295,6 @@ class PHPIPAMSource extends WISESource {
             subnetInfo: this.subnetById.get(String(addr.subnetId ?? id))
           });
         }
-        loaded++;
       } catch (e) {
         errors++;
       }
@@ -424,8 +429,8 @@ class PHPIPAMSource extends WISESource {
         // 1. Check host cache for an exact registered address
         const hostEntry = this.hostCache.get(ip);
         if (hostEntry) {
-          const subnetInfo = hostEntry.subnetInfo || this.subnetTrie.find(ip) || null;
-          return cb(null, this.buildResult(hostEntry.hostname, hostEntry.description, subnetInfo));
+          const hostSubnetInfo = hostEntry.subnetInfo || this.subnetTrie.find(ip) || null;
+          return cb(null, this.buildResult(hostEntry.hostname, hostEntry.description, hostSubnetInfo));
         }
 
         // 2. No registered address – fall back to subnet trie (subnet-only enrichment)
