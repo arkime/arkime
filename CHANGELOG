@@ -65,6 +65,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #3807 Only show "Only Data Nodes" on EsNodes Stats tab
 ## WISE
   - #3801 Add phpIPAM WISE source (thanks @waynieack)
+  - #3806 Add Cisco ISE pxGrid WISE source (thanks @waynieack)
 
 6.0.1 2026/03/09
 ## All
