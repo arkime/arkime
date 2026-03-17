@@ -73,7 +73,7 @@ SPDX-License-Identifier: Apache-2.0
             <!-- ESNode data node only toggle -->
             <div class="ms-3">
               <b-form-checkbox
-                v-if="this.$route.query.statsTab && parseInt(this.$route.query.statsTab) === 2"
+                v-if="showDataNodesToggle"
                 :id="`only-data-nodes-checkbox-${id}`"
                 @change="$emit('toggle-data-node-only')"
                 name="only-data-nodes-checkbox">
@@ -407,6 +407,10 @@ export default {
     noResultsMsg: { // message to display when there are no results
       type: String,
       default: 'No results match your search'
+    },
+    showDataNodesToggle: { // whether to show the "only data nodes" toggle (for ES Nodes stats)
+      type: Boolean,
+      default: false
     }
   },
   emits: ['toggle-data-node-only'],
