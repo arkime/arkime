@@ -62,7 +62,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #3781 Most server errors are now localized
   - #3785 views/shareables/shortcuts can now live in sqlite instead of ES
   - #3796 Fix value-actions not working (thanks @waynieack)
-  - #3806 Only show "Only Data Nodes" on Stats tab
+  - #3807 Only show "Only Data Nodes" on EsNodes Stats tab
 ## WISE
   - #3801 Add phpIPAM WISE source (thanks @waynieack)
 
