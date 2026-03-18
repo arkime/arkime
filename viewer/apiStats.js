@@ -242,6 +242,15 @@ class StatsAPIs {
       return res.send('{}');
     }
 
+    req.query.start = parseInt(req.query.start || 0);
+    req.query.stop = parseInt(req.query.stop || 0);
+    req.query.step = Math.max(parseInt(req.query.step || 60), 1);
+
+    const maxDataPoints = 100000;
+    if (Math.floor((req.query.stop - req.query.start) / req.query.step) > maxDataPoints) {
+      req.query.step = Math.ceil((req.query.stop - req.query.start) / maxDataPoints);
+    }
+
     const nodeName = req.query.nodeName;
 
     const query = {
