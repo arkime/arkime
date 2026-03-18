@@ -35,7 +35,7 @@ NOTICE: Restart wiseService before capture when upgrading
 NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at once after upgrading
 NOTICE: Create a parliament config file before upgrading (see https://arkime.com/settings#parliament and https://arkime.com/faq#how_do_i_upgrade_to_arkime_5)
 
-6.1.0 2026/04/xx
+6.1.0 2026/03/18
 ## BREAKING
   - #3782 Previous redis user databases will be ignored
   - #3786 Dedup packets including VLAN/VNI by default, set dedupVlanVni=false to disable
@@ -564,7 +564,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #2835 fix crash with bgp parsing and shifting time
   - #2835 create pcap files with at least config snapLen
   - #2835 fix files with no processed packets hanging capture
-  - #2856 suppport AWS SQS for notifications to process new S3 files
+  - #2856 support AWS SQS for notifications to process new S3 files
   - #2856 fix scheme pcap processor with corrupt pcap files
   - #2859 log error if maxStreams is too low
 ## Cont3xt
@@ -699,7 +699,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #2312 removed old v1 viewer APIs
   - #2349 parliament password removed, must configure common auth via the UI before upgrading or manually in the config file see [parliament](https://arkime.com/settings#parliament) and [how do I upgrade to 5](https://arkime.com/faq#how_do_i_upgrade_to_arkime_5)
   - #2402 WISE/tagger must now use http.request.FIELD/http.response.FIELD when referencing header defined with headers-http-request/headers-http-response
-  - #2450 Centos 7 build no longers includes pfring support
+  - #2450 Centos 7 build no longer includes pfring support
   - #2453 Increase simpleCompressionBlockSize default to 64000
 ## Release
   - #2448 zstd 1.5.5, nghttp2 1.57.0, maxmind 1.7.1, yara 4.2.3
@@ -964,7 +964,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
 4.0.3 2022/11/28
   - release - cyberchef 9.54.0
   - release - copy systemd files instead of soft linking
-  - releaes - capture/viewer systemd files now After OpenSearch/Elasticsearch
+  - release - capture/viewer systemd files now After OpenSearch/Elasticsearch
   - capture - on short runs, field definitions weren't getting updated
   - capture - s3 writer sets s3Compress to false with s3WriteGzip true
   - capture - JA3s value was sometimes incorrect
@@ -1038,7 +1038,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - viewer - share notifiers with specific users or roles (all previous notifiers will be shared with the "arkimeUser" role)
   - viewer - share queries with specific users or roles
   - viewer - share hunts with roles
-  - viewer - rework some settings UI, try and make UX similiar when adding things
+  - viewer - rework some settings UI, try and make UX similar when adding things
   - viewer - no more _moloch_shared user
   - viewer - configure auto-hiding map/graph on large queries using turnOffGraphDays (default = 30 days)
   - wise - fix some stats sorting
@@ -1111,7 +1111,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - capture - support pcap flies with 0 timestamp
   - capture - use .arkime file extension for non standard pcap files
   - capture - new _dropBySession rule op
-  - capture - fix infite recursion - thanks albntomat0_1
+  - capture - fix infinite recursion - thanks albntomat0_1
   - capture - improve udp/tcp header length checking
   - capture - improve error messages for field setting issues
   - capture - cache when getting pcap data from S3 (thanks pjsg)
@@ -1179,7 +1179,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - release - much improved arkime_config_interfaces.sh (thanks arkaØm)
   - release - node 14.18.0
   - viewer - stop upload menu showing up when empty command
-  - viewer - improve first load time by spliting bundle and lazy load items
+  - viewer - improve first load time by splitting bundle and lazy load items
   - viewer - combine multiple calls from UI into one call
   - viewer - added pcap expire debugging
   - viewer - uploadCommand can now use INSECURE-ORIGINALNAME to access uploaded filename
@@ -1865,7 +1865,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
              this means delay is shorter, although when upgrading to 1.0 some sessions will be not looked at.
 
 1.0.0-beta1 2018/02/20
-  - capture - calculate sha256 too (set supportSha256 tru)
+  - capture - calculate sha256 too (set supportSha256 true)
   - wise - support sha256 lookups
   - capture - fix disable fields
   - capture - src/dst ip/port can be used to trigger rules now
@@ -2394,10 +2394,10 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - viewer - Reuse Uncompress and Files settings between sessions
   - viewer - Anonymous users still have a singled saved settings
   - viewer - Switch actions/views menu to jquery-ContextMenu which looks more like a menu
-  - capture - Handle ASCII formated SMB strings
+  - capture - Handle ASCII formatted SMB strings
   - capture - payload8 wasn't always all 8 bytes
   - viewer - Initial configuration of displayed columns (issue #257)
-  - capture - reenabled ftp/lmtp classify
+  - capture - re-enabled ftp/lmtp classify
   - capture - vnc classify (issue #382)
   - capture - fixed tcp_flags for netflow (pr #386)
   - viewer - spiview shows protocols per category (issue #385)
@@ -2795,7 +2795,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - libnids was overreporting traffic, switch to libpcap stats,
     bytes/sec and total bytes/sec in stats will be lower
   - Fixed recent jade warnings
-  - Fixed openned export
+  - Fixed opened export
   - minor ui improvements
 
 0.8.5 2013/06/14

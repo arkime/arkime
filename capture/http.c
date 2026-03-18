@@ -772,9 +772,9 @@ LOCAL gboolean arkime_http_send_timer_callback(gpointer UNUSED(unused))
     return G_SOURCE_REMOVE;
 }
 /******************************************************************************/
-gboolean arkime_http_send(void *serverV, const char *method, const char *key, int32_t key_len, char *data, uint32_t data_len, char **headers, gboolean dropable, ArkimeHttpResponse_cb func, gpointer uw)
+gboolean arkime_http_send(void *serverV, const char *method, const char *key, int32_t key_len, char *data, uint32_t data_len, char **headers, gboolean droppable, ArkimeHttpResponse_cb func, gpointer uw)
 {
-    return arkime_http_schedule(serverV, method, key, key_len, data, data_len, headers, dropable ? ARKIME_HTTP_PRIORITY_DROPABLE : ARKIME_HTTP_PRIORITY_NORMAL, func, uw);
+    return arkime_http_schedule(serverV, method, key, key_len, data, data_len, headers, droppable ? ARKIME_HTTP_PRIORITY_DROPABLE : ARKIME_HTTP_PRIORITY_NORMAL, func, uw);
 }
 /******************************************************************************/
 gboolean arkime_http_schedule2(void *serverV, const char *method, const char *key, int32_t key_len, char *data, uint32_t data_len, char **headers, int priority, ArkimeHttpResponse_cb func, ArkimeHttpRead_cb rfunc, gpointer uw)
