@@ -40,7 +40,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
 6.1.0 2026/03/18
 ## BREAKING
   - #3782 Previous redis user databases will be ignored
-  - #3786 Dedup packets including VLAN/VNI by default, set dedupVlanVni=false to disable
+  - #3786 Dedup packets now include VLAN/VNI by default, set dedupVlanVni=false to disable
   - #3792 The setting uploadFileSizeLimit now defaults to 2G instead of unlimited
   - #3792 Link group urls in cont3xt must start with http(s):// now
   - #3794 Previously the bpf filter setting was reversed for scheme, pcapoverip, and tzsp readers
@@ -57,7 +57,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #3794 Fixed bpf filter setting reversed for scheme, pcapoverip, and tzsp readers
   - #3803 Fix tcap parsing loop
 ## ES Proxy
-  - #3789 Add AWS SigV4 signing support for managed OpenSearch
+  - #3789 Add AWS SigV4 signing support for managed OpenSearch (thanks @Kurlee)
 ## Parliament
   - #3788 Fix abort when parliament file not set
 ## Viewer
