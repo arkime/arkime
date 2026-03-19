@@ -120,9 +120,9 @@ class User {
           process.exit();
         }
         try {
-          User.#dynamicRolesFuncs.set(role, new Function('vals', `return ${func};`));
+          User.#dynamicRolesFuncs.set(role, ArkimeUtil.safeExpression(func, 'vals'));
         } catch (e) {
-          console.log(`ERROR - user-role-mappings syntax error in '${role}': ${e.message}`);
+          console.log(`ERROR - user-role-mappings '${role}': ${e.message}`);
           process.exit(1);
         }
       }

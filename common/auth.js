@@ -166,9 +166,9 @@ class Auth {
           process.exit(1);
         }
         try {
-          Auth.#userAutoCreateFuncs.set(field, new Function('vals', `return ${func};`));
+          Auth.#userAutoCreateFuncs.set(field, ArkimeUtil.safeExpression(func, 'vals'));
         } catch (e) {
-          console.log(`ERROR - user-auto-create syntax error in '${field}': ${e.message}`);
+          console.log(`ERROR - user-auto-create '${field}': ${e.message}`);
           process.exit(1);
         }
       }
