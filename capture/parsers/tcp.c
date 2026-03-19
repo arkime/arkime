@@ -13,6 +13,14 @@
 #include <arpa/inet.h>
 #include <errno.h>
 
+// Define TCP ECN flags if not provided by system headers
+#ifndef TH_ECE
+#define TH_ECE 0x40
+#endif
+#ifndef TH_CWR
+#define TH_CWR 0x80
+#endif
+
 
 /******************************************************************************/
 extern ArkimeConfig_t        config;
