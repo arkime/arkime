@@ -145,6 +145,9 @@ class Auth {
     Auth.#requiredAuthHeader = options.requiredAuthHeader;
     Auth.#requiredAuthHeaderVal = options.requiredAuthHeaderVal?.split(',').map(s => s.trim()).filter(s => s !== '');
     Auth.#userAutoCreateTmpl = options.userAutoCreateTmpl;
+    if (Auth.#userAutoCreateTmpl) {
+      console.log('WARNING - userAutoCreateTmpl is deprecated, use [user-auto-create] section instead');
+    }
 
     const userAutoCreate = ArkimeConfig.getSection('user-auto-create');
     if (userAutoCreate) {

@@ -131,9 +131,9 @@ class ArkimeUtil {
    */
   static isPP (str) {
     if (Array.isArray(str)) {
-      return str.some(s => s.startsWith('__') || ArkimeUtil.#DANGEROUS_PROPS.has(s));
+      return str.some(s => typeof s === 'string' && (s.startsWith('__') || ArkimeUtil.#DANGEROUS_PROPS.has(s)));
     }
-    return str.startsWith('__') || ArkimeUtil.#DANGEROUS_PROPS.has(str);
+    return typeof str === 'string' && (str.startsWith('__') || ArkimeUtil.#DANGEROUS_PROPS.has(str));
   }
 
   // ----------------------------------------------------------------------------
