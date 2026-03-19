@@ -297,7 +297,7 @@ class StatsAPIs {
 
       let i, ilen;
       const data = {};
-      const num = (req.query.stop - req.query.start) / req.query.step;
+      const num = Math.min(Math.floor((req.query.stop - req.query.start) / req.query.step), 100000);
 
       let mult = 1;
       if (req.query.name === 'freeSpaceM' || req.query.name === 'usedSpaceM') {
