@@ -1,269 +1,272 @@
 {
-   "sessions3" : [
-      {
-         "body" : {
-            "@timestamp" : "SET",
-            "client" : {
-               "bytes" : 3122
-            },
-            "destination" : {
-               "bytes" : 2308,
-               "geo" : {
-                  "country_iso_code" : "US"
-               },
-               "ip" : "205.188.186.167",
-               "mac" : [
-                  "00:00:5e:00:01:01",
-                  "00:26:88:ca:1f:c6"
-               ],
-               "mac-cnt" : 2,
-               "packets" : 22,
-               "port" : 587
-            },
-            "dstOui" : [
-               "ICANN, IANA Department",
-               "Juniper Networks"
-            ],
-            "dstOuiCnt" : 2,
-            "dstPayload8" : "3232302d6d74616f",
-            "dstRIR" : "ARIN",
-            "dstTTL" : [
-               55
-            ],
-            "dstTTLCnt" : 1,
-            "email" : {
-               "contentType" : [
-                  "multipart/alternative; boundary=\"xxxxxxxxxxxxxxxxxxx=xxxxxxxxxxxxxx\""
-               ],
-               "contentTypeCnt" : 1,
-               "dst" : [
-                  "xxxxx-xxxx@xxxx.xxx.xx.jp"
-               ],
-               "dstCnt" : 1,
-               "header" : [
-                  "content-type",
-                  "date",
-                  "from",
-                  "mime-version",
-                  "reply-to",
-                  "subject",
-                  "to"
-               ],
-               "headerCnt" : 7,
-               "headerField" : [
-                  "date",
-                  "reply-to"
-               ],
-               "headerValue" : [
-                  "\"1234567899@aol.com\" <1234567899@aol.com>",
-                  "Thu, 5 Dec 2013 14:56:55 +0100"
-               ],
-               "headerValueCnt" : 2,
-               "mimeVersion" : [
-                  "1.0"
-               ],
-               "mimeVersionCnt" : 1,
-               "smtpHello" : [
-                  "xxxxxxxx.xxx.aol.com"
-               ],
-               "smtpHelloCnt" : 1,
-               "src" : [
-                  "1234567899@aol.com"
-               ],
-               "srcCnt" : 1,
-               "subject" : [
-                  "Urgent Trip."
-               ],
-               "subjectCnt" : 1
-            },
-            "ethertype" : 2048,
-            "fileId" : [],
-            "firstPacket" : 1386251815266,
-            "initRTT" : 209,
-            "ipProtocol" : 6,
-            "lastPacket" : 1386251823511,
-            "length" : 8245,
-            "network" : {
-               "bytes" : 6494,
-               "community_id" : "1:YM2Rp2Xas6R1dgz686pLShQRVJA=",
-               "packets" : 38
-            },
-            "node" : "test",
-            "packetLen" : [
-               90,
-               90,
-               82,
-               504,
-               109,
-               82,
-               291,
-               94,
-               88,
-               120,
-               82,
-               119,
-               88,
-               82,
-               96,
-               115,
-               82,
-               96,
-               119,
-               82,
-               96,
-               88,
-               82,
-               119,
-               397,
-               82,
-               1430,
-               83,
-               82,
-               82,
-               1375,
-               82,
-               183,
-               82,
-               82,
-               88,
-               82,
-               76
-            ],
-            "packetPos" : [
-               24,
-               114,
-               204,
-               286,
-               790,
-               899,
-               981,
-               1272,
-               1366,
-               1454,
-               1574,
-               1656,
-               1775,
-               1863,
-               1945,
-               2041,
-               2156,
-               2238,
-               2334,
-               2453,
-               2535,
-               2631,
-               2719,
-               2801,
-               2920,
-               3317,
-               3399,
-               4829,
-               4912,
-               4994,
-               5076,
-               6451,
-               6533,
-               6716,
-               6798,
-               6880,
-               6968,
-               7050
-            ],
-            "packetRange" : {
-               "gte" : 1386251815266,
-               "lte" : 1386251823511
-            },
-            "protocol" : [
-               "smtp",
-               "tcp"
-            ],
-            "protocolCnt" : 2,
-            "segmentCnt" : 1,
-            "server" : {
-               "bytes" : 854
-            },
-            "source" : {
-               "as" : {
-                  "full" : "AS0 This is neat",
-                  "number" : 0,
-                  "organization" : {
-                     "name" : "This is neat"
-                  }
-               },
-               "bytes" : 4186,
-               "geo" : {
-                  "country_iso_code" : "RU"
-               },
-               "ip" : "10.0.0.1",
-               "mac" : [
-                  "00:0b:45:b7:08:80"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 16,
-               "port" : 56558
-            },
-            "srcOui" : [
-               "Cisco Systems, Inc"
-            ],
-            "srcOuiCnt" : 1,
-            "srcPayload8" : "45484c4f20787878",
-            "srcTTL" : [
-               126
-            ],
-            "srcTTLCnt" : 1,
-            "tags" : [
-               "smtp:authplain",
-               "smtp:statuscode:521",
-               "srcip"
-            ],
-            "tagsCnt" : 3,
-            "tcpflags" : {
-               "ack" : 12,
-               "dstZero" : 0,
-               "fin" : 2,
-               "psh" : 21,
-               "rst" : 1,
-               "srcZero" : 0,
-               "syn" : 1,
-               "syn-ack" : 1,
-               "urg" : 0
-            },
-            "tcpseq" : {
-               "dst" : 0,
-               "src" : 4234706091
-            },
-            "test" : {
-               "ASN" : [
-                  "AS0 This is neat"
-               ],
-               "GEO" : [
-                  "RU"
-               ],
-               "RIR" : [
-                  ""
-               ],
-               "ip" : [
-                  "10.0.0.1"
-               ],
-               "number" : [
-                  2814033101
-               ],
-               "string.snow" : [
-                  "16777226:56558,-1480934195:587"
-               ]
-            },
-            "totDataBytes" : 3976,
-            "user" : [
-               "123456789@aol.com"
-            ],
-            "userCnt" : 1
-         },
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions3-131205"
-            }
-         }
+ "sessions3" : [
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 3122
+    },
+    "destination" : {
+     "bytes" : 2308,
+     "geo" : {
+      "country_iso_code" : "US"
+     },
+     "ip" : "205.188.186.167",
+     "mac" : [
+      "00:00:5e:00:01:01",
+      "00:26:88:ca:1f:c6"
+     ],
+     "mac-cnt" : 2,
+     "packets" : 22,
+     "port" : 587
+    },
+    "dstOui" : [
+     "ICANN, IANA Department",
+     "Juniper Networks"
+    ],
+    "dstOuiCnt" : 2,
+    "dstPayload8" : "3232302d6d74616f",
+    "dstRIR" : "ARIN",
+    "dstTTL" : [
+     55
+    ],
+    "dstTTLCnt" : 1,
+    "email" : {
+     "contentType" : [
+      "multipart/alternative; boundary=\"xxxxxxxxxxxxxxxxxxx=xxxxxxxxxxxxxx\""
+     ],
+     "contentTypeCnt" : 1,
+     "dst" : [
+      "xxxxx-xxxx@xxxx.xxx.xx.jp"
+     ],
+     "dstCnt" : 1,
+     "header" : [
+      "content-type",
+      "date",
+      "from",
+      "mime-version",
+      "reply-to",
+      "subject",
+      "to"
+     ],
+     "headerCnt" : 7,
+     "headerField" : [
+      "date",
+      "reply-to"
+     ],
+     "headerValue" : [
+      "\"1234567899@aol.com\" <1234567899@aol.com>",
+      "Thu, 5 Dec 2013 14:56:55 +0100"
+     ],
+     "headerValueCnt" : 2,
+     "mimeVersion" : [
+      "1.0"
+     ],
+     "mimeVersionCnt" : 1,
+     "smtpHello" : [
+      "xxxxxxxx.xxx.aol.com"
+     ],
+     "smtpHelloCnt" : 1,
+     "src" : [
+      "1234567899@aol.com"
+     ],
+     "srcCnt" : 1,
+     "subject" : [
+      "Urgent Trip."
+     ],
+     "subjectCnt" : 1
+    },
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 1386251815266,
+    "initRTT" : 209,
+    "ipProtocol" : 6,
+    "lastPacket" : 1386251823511,
+    "length" : 8245,
+    "network" : {
+     "bytes" : 6494,
+     "community_id" : "1:YM2Rp2Xas6R1dgz686pLShQRVJA=",
+     "packets" : 38
+    },
+    "node" : "test",
+    "packetLen" : [
+     90,
+     90,
+     82,
+     504,
+     109,
+     82,
+     291,
+     94,
+     88,
+     120,
+     82,
+     119,
+     88,
+     82,
+     96,
+     115,
+     82,
+     96,
+     119,
+     82,
+     96,
+     88,
+     82,
+     119,
+     397,
+     82,
+     1430,
+     83,
+     82,
+     82,
+     1375,
+     82,
+     183,
+     82,
+     82,
+     88,
+     82,
+     76
+    ],
+    "packetPos" : [
+     24,
+     114,
+     204,
+     286,
+     790,
+     899,
+     981,
+     1272,
+     1366,
+     1454,
+     1574,
+     1656,
+     1775,
+     1863,
+     1945,
+     2041,
+     2156,
+     2238,
+     2334,
+     2453,
+     2535,
+     2631,
+     2719,
+     2801,
+     2920,
+     3317,
+     3399,
+     4829,
+     4912,
+     4994,
+     5076,
+     6451,
+     6533,
+     6716,
+     6798,
+     6880,
+     6968,
+     7050
+    ],
+    "packetRange" : {
+     "gte" : 1386251815266,
+     "lte" : 1386251823511
+    },
+    "protocol" : [
+     "smtp",
+     "tcp"
+    ],
+    "protocolCnt" : 2,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 854
+    },
+    "source" : {
+     "as" : {
+      "full" : "AS0 This is neat",
+      "number" : 0,
+      "organization" : {
+       "name" : "This is neat"
       }
-   ]
+     },
+     "bytes" : 4186,
+     "geo" : {
+      "country_iso_code" : "RU"
+     },
+     "ip" : "10.0.0.1",
+     "mac" : [
+      "00:0b:45:b7:08:80"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 16,
+     "port" : 56558
+    },
+    "srcOui" : [
+     "Cisco Systems, Inc"
+    ],
+    "srcOuiCnt" : 1,
+    "srcPayload8" : "45484c4f20787878",
+    "srcTTL" : [
+     126
+    ],
+    "srcTTLCnt" : 1,
+    "tags" : [
+     "smtp:authplain",
+     "smtp:statuscode:521",
+     "srcip"
+    ],
+    "tagsCnt" : 3,
+    "tcpflags" : {
+     "ack" : 12,
+     "ae" : 0,
+     "cwr" : 0,
+     "dstZero" : 0,
+     "ece" : 0,
+     "fin" : 2,
+     "psh" : 21,
+     "rst" : 1,
+     "srcZero" : 0,
+     "syn" : 1,
+     "syn-ack" : 1,
+     "urg" : 0
+    },
+    "tcpseq" : {
+     "dst" : 0,
+     "src" : 4234706091
+    },
+    "test" : {
+     "ASN" : [
+      "AS0 This is neat"
+     ],
+     "GEO" : [
+      "RU"
+     ],
+     "RIR" : [
+      ""
+     ],
+     "ip" : [
+      "10.0.0.1"
+     ],
+     "number" : [
+      2814033101
+     ],
+     "string.snow" : [
+      "16777226:56558,-1480934195:587"
+     ]
+    },
+    "totDataBytes" : 3976,
+    "user" : [
+     "123456789@aol.com"
+    ],
+    "userCnt" : 1
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-131205"
+    }
+   }
+  }
+ ]
 }
 

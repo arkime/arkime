@@ -1,524 +1,533 @@
 {
-   "sessions3" : [
-      {
-         "body" : {
-            "@timestamp" : "SET",
-            "client" : {
-               "bytes" : 4
-            },
-            "destination" : {
-               "bytes" : 340,
-               "geo" : {
-                  "country_iso_code" : "US"
-               },
-               "ip" : "10.180.156.249",
-               "mac" : [
-                  "00:13:72:c4:f1:e1"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 5,
-               "port" : 1080
-            },
-            "dstOui" : [
-               "Dell Inc."
-            ],
-            "dstOuiCnt" : 1,
-            "dstPayload8" : "05ff",
-            "dstTTL" : [
-               64
-            ],
-            "dstTTLCnt" : 1,
-            "ethertype" : 2048,
-            "fileId" : [],
-            "firstPacket" : 1386090517357,
-            "initRTT" : 0,
-            "ipProtocol" : 6,
-            "lastPacket" : 1386090517358,
-            "length" : 1,
-            "network" : {
-               "bytes" : 752,
-               "community_id" : "1:eMRxQSkNuVRbgi0elxmjkFvRujg=",
-               "packets" : 11
-            },
-            "node" : "test",
-            "packetLen" : [
-               94,
-               90,
-               82,
-               86,
-               82,
-               84,
-               82,
-               82,
-               82,
-               82,
-               82
-            ],
-            "packetPos" : [
-               24,
-               118,
-               208,
-               290,
-               376,
-               458,
-               542,
-               624,
-               706,
-               788,
-               870
-            ],
-            "packetRange" : {
-               "gte" : 1386090517357,
-               "lte" : 1386090517358
-            },
-            "protocol" : [
-               "tcp"
-            ],
-            "protocolCnt" : 1,
-            "segmentCnt" : 1,
-            "server" : {
-               "bytes" : 2
-            },
-            "source" : {
-               "bytes" : 412,
-               "geo" : {
-                  "country_iso_code" : "US"
-               },
-               "ip" : "10.180.156.185",
-               "mac" : [
-                  "00:1f:5b:ff:51:cb"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 6,
-               "port" : 54068
-            },
-            "srcOui" : [
-               "Apple, Inc."
-            ],
-            "srcOuiCnt" : 1,
-            "srcPayload8" : "05020001",
-            "srcTTL" : [
-               64
-            ],
-            "srcTTLCnt" : 1,
-            "tcpflags" : {
-               "ack" : 5,
-               "dstZero" : 0,
-               "fin" : 2,
-               "psh" : 2,
-               "rst" : 0,
-               "srcZero" : 0,
-               "syn" : 1,
-               "syn-ack" : 1,
-               "urg" : 0
-            },
-            "tcpseq" : {
-               "dst" : 0,
-               "src" : 3513271745
-            },
-            "totDataBytes" : 6
-         },
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions3-131203"
-            }
-         }
-      },
-      {
-         "body" : {
-            "@timestamp" : "SET",
-            "client" : {
-               "bytes" : 24
-            },
-            "destination" : {
-               "bytes" : 408,
-               "geo" : {
-                  "country_iso_code" : "US"
-               },
-               "ip" : "10.180.156.249",
-               "mac" : [
-                  "00:13:72:c4:f1:e1"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 6,
-               "port" : 1080
-            },
-            "dstOui" : [
-               "Dell Inc."
-            ],
-            "dstOuiCnt" : 1,
-            "dstPayload8" : "050201ff",
-            "dstTTL" : [
-               64
-            ],
-            "dstTTLCnt" : 1,
-            "ethertype" : 2048,
-            "fileId" : [],
-            "firstPacket" : 1386090528538,
-            "initRTT" : 0,
-            "ipProtocol" : 6,
-            "lastPacket" : 1386090528547,
-            "length" : 9,
-            "network" : {
-               "bytes" : 972,
-               "community_id" : "1:vmrJEOq8kOdIymsIuFNweCr7WFo=",
-               "packets" : 14
-            },
-            "node" : "test",
-            "packetLen" : [
-               94,
-               90,
-               82,
-               87,
-               82,
-               84,
-               82,
-               101,
-               84,
-               82,
-               82,
-               82,
-               82,
-               82
-            ],
-            "packetPos" : [
-               952,
-               1046,
-               1136,
-               1218,
-               1305,
-               1387,
-               1471,
-               1553,
-               1654,
-               1738,
-               1820,
-               1902,
-               1984,
-               2066
-            ],
-            "packetRange" : {
-               "gte" : 1386090528538,
-               "lte" : 1386090528547
-            },
-            "protocol" : [
-               "socks",
-               "tcp"
-            ],
-            "protocolCnt" : 2,
-            "segmentCnt" : 1,
-            "server" : {
-               "bytes" : 4
-            },
-            "socks" : {
-               "user" : "testuser"
-            },
-            "source" : {
-               "bytes" : 564,
-               "geo" : {
-                  "country_iso_code" : "US"
-               },
-               "ip" : "10.180.156.185",
-               "mac" : [
-                  "00:1f:5b:ff:51:cb"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 8,
-               "port" : 54069
-            },
-            "srcOui" : [
-               "Apple, Inc."
-            ],
-            "srcOuiCnt" : 1,
-            "srcPayload8" : "0503000102010874",
-            "srcTTL" : [
-               64
-            ],
-            "srcTTLCnt" : 1,
-            "tags" : [
-               "socks:password"
-            ],
-            "tagsCnt" : 1,
-            "tcpflags" : {
-               "ack" : 6,
-               "dstZero" : 0,
-               "fin" : 2,
-               "psh" : 4,
-               "rst" : 0,
-               "srcZero" : 0,
-               "syn" : 1,
-               "syn-ack" : 1,
-               "urg" : 0
-            },
-            "tcpseq" : {
-               "dst" : 0,
-               "src" : 511897415
-            },
-            "totDataBytes" : 28
-         },
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions3-131203"
-            }
-         }
-      },
-      {
-         "body" : {
-            "@timestamp" : "SET",
-            "client" : {
-               "bytes" : 180
-            },
-            "destination" : {
-               "bytes" : 2141,
-               "geo" : {
-                  "country_iso_code" : "US"
-               },
-               "ip" : "10.180.156.249",
-               "mac" : [
-                  "00:13:72:c4:f1:e1"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 8,
-               "port" : 1080
-            },
-            "dstOui" : [
-               "Dell Inc."
-            ],
-            "dstOuiCnt" : 1,
-            "dstPayload8" : "0502010005000001",
-            "dstTTL" : [
-               64
-            ],
-            "dstTTLCnt" : 1,
-            "ethertype" : 2048,
-            "fileId" : [],
-            "firstPacket" : 1386090534425,
-            "http" : {
-               "bodyMagic" : [
-                  "text/html"
-               ],
-               "bodyMagicCnt" : 1,
-               "clientVersion" : [
-                  "1.1"
-               ],
-               "clientVersionCnt" : 1,
-               "host" : [
-                  "www.example.com"
-               ],
-               "hostCnt" : 1,
-               "md5" : [
-                  "09b9c392dc1f6e914cea287cb6be34b0"
-               ],
-               "md5Cnt" : 1,
-               "method" : [
-                  "GET"
-               ],
-               "method-GET" : 1,
-               "methodCnt" : 1,
-               "path" : [
-                  "/"
-               ],
-               "pathCnt" : 1,
-               "requestHeader" : [
-                  "accept",
-                  "host",
-                  "user-agent"
-               ],
-               "requestHeaderCnt" : 3,
-               "requestHeaderField" : [
-                  "accept"
-               ],
-               "requestHeaderValue" : [
-                  "*/*"
-               ],
-               "requestHeaderValueCnt" : 1,
-               "responseHeader" : [
-                  "accept-ranges",
-                  "cache-control",
-                  "content-length",
-                  "content-type",
-                  "date",
-                  "etag",
-                  "expires",
-                  "last-modified",
-                  "server",
-                  "x-cache",
-                  "x-ec-custom-error"
-               ],
-               "responseHeaderCnt" : 11,
-               "responseHeaderField" : [
-                  "accept-ranges",
-                  "cache-control",
-                  "content-length",
-                  "content-type",
-                  "date",
-                  "etag",
-                  "expires",
-                  "last-modified",
-                  "server",
-                  "x-cache",
-                  "x-ec-custom-error"
-               ],
-               "responseHeaderValue" : [
-                  "\"359670651\"",
-                  "1",
-                  "1270",
-                  "bytes",
-                  "ecs (iad/1984)",
-                  "fri, 09 aug 2013 23:54:35 gmt",
-                  "hit",
-                  "max-age=604800",
-                  "text/html",
-                  "tue, 03 dec 2013 17:08:54 gmt",
-                  "tue, 10 dec 2013 17:08:54 gmt"
-               ],
-               "responseHeaderValueCnt" : 11,
-               "serverVersion" : [
-                  "1.1"
-               ],
-               "serverVersionCnt" : 1,
-               "sha256" : [
-                  "3587cb776ce0e4e8237f215800b7dffba0f25865cb84550e87ea8bbac838c423"
-               ],
-               "sha256Cnt" : 1,
-               "statuscode" : [
-                  200
-               ],
-               "statuscodeCnt" : 1,
-               "uri" : [
-                  "www.example.com/"
-               ],
-               "uriCnt" : 1,
-               "useragent" : [
-                  "curl/7.24.0 (x86_64-apple-darwin12.0) libcurl/7.24.0 OpenSSL/0.9.8y zlib/1.2.5"
-               ],
-               "useragentCnt" : 1
-            },
-            "initRTT" : 0,
-            "ipProtocol" : 6,
-            "lastPacket" : 1386090534579,
-            "length" : 154,
-            "network" : {
-               "bytes" : 3125,
-               "community_id" : "1:3SP/ANf6CUN3pV1WOn4Toh2a9e4=",
-               "packets" : 20
-            },
-            "node" : "test",
-            "packetLen" : [
-               94,
-               90,
-               82,
-               87,
-               82,
-               84,
-               82,
-               101,
-               84,
-               82,
-               92,
-               92,
-               82,
-               228,
-               1530,
-               225,
-               82,
-               82,
-               82,
-               82
-            ],
-            "packetPos" : [
-               2148,
-               2242,
-               2332,
-               2414,
-               2501,
-               2583,
-               2667,
-               2749,
-               2850,
-               2934,
-               3016,
-               3108,
-               3200,
-               3282,
-               3510,
-               5040,
-               5265,
-               5347,
-               5429,
-               5511
-            ],
-            "packetRange" : {
-               "gte" : 1386090534425,
-               "lte" : 1386090534579
-            },
-            "protocol" : [
-               "http",
-               "socks",
-               "tcp"
-            ],
-            "protocolCnt" : 3,
-            "segmentCnt" : 1,
-            "server" : {
-               "bytes" : 1605
-            },
-            "socks" : {
-               "ASN" : "AS15133 MCI Communications Services, Inc. d/b/a Verizon Business",
-               "GEO" : "US",
-               "RIR" : "RIPE",
-               "ip" : "93.184.216.119",
-               "port" : 80,
-               "user" : "testuser"
-            },
-            "source" : {
-               "bytes" : 984,
-               "geo" : {
-                  "country_iso_code" : "US"
-               },
-               "ip" : "10.180.156.185",
-               "mac" : [
-                  "00:1f:5b:ff:51:cb"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 12,
-               "port" : 54072
-            },
-            "srcOui" : [
-               "Apple, Inc."
-            ],
-            "srcOuiCnt" : 1,
-            "srcPayload8" : "0503000102010874",
-            "srcTTL" : [
-               64
-            ],
-            "srcTTLCnt" : 1,
-            "tags" : [
-               "socks:password"
-            ],
-            "tagsCnt" : 1,
-            "tcpflags" : {
-               "ack" : 8,
-               "dstZero" : 0,
-               "fin" : 2,
-               "psh" : 8,
-               "rst" : 0,
-               "srcZero" : 0,
-               "syn" : 1,
-               "syn-ack" : 1,
-               "urg" : 0
-            },
-            "tcpseq" : {
-               "dst" : 0,
-               "src" : 2170244552
-            },
-            "totDataBytes" : 1785
-         },
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions3-131203"
-            }
-         }
-      }
-   ]
+ "sessions3" : [
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 4
+    },
+    "destination" : {
+     "bytes" : 340,
+     "geo" : {
+      "country_iso_code" : "US"
+     },
+     "ip" : "10.180.156.249",
+     "mac" : [
+      "00:13:72:c4:f1:e1"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 5,
+     "port" : 1080
+    },
+    "dstOui" : [
+     "Dell Inc."
+    ],
+    "dstOuiCnt" : 1,
+    "dstPayload8" : "05ff",
+    "dstTTL" : [
+     64
+    ],
+    "dstTTLCnt" : 1,
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 1386090517357,
+    "initRTT" : 0,
+    "ipProtocol" : 6,
+    "lastPacket" : 1386090517358,
+    "length" : 1,
+    "network" : {
+     "bytes" : 752,
+     "community_id" : "1:eMRxQSkNuVRbgi0elxmjkFvRujg=",
+     "packets" : 11
+    },
+    "node" : "test",
+    "packetLen" : [
+     94,
+     90,
+     82,
+     86,
+     82,
+     84,
+     82,
+     82,
+     82,
+     82,
+     82
+    ],
+    "packetPos" : [
+     24,
+     118,
+     208,
+     290,
+     376,
+     458,
+     542,
+     624,
+     706,
+     788,
+     870
+    ],
+    "packetRange" : {
+     "gte" : 1386090517357,
+     "lte" : 1386090517358
+    },
+    "protocol" : [
+     "tcp"
+    ],
+    "protocolCnt" : 1,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 2
+    },
+    "source" : {
+     "bytes" : 412,
+     "geo" : {
+      "country_iso_code" : "US"
+     },
+     "ip" : "10.180.156.185",
+     "mac" : [
+      "00:1f:5b:ff:51:cb"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 6,
+     "port" : 54068
+    },
+    "srcOui" : [
+     "Apple, Inc."
+    ],
+    "srcOuiCnt" : 1,
+    "srcPayload8" : "05020001",
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
+    "tcpflags" : {
+     "ack" : 5,
+     "ae" : 0,
+     "cwr" : 0,
+     "dstZero" : 0,
+     "ece" : 0,
+     "fin" : 2,
+     "psh" : 2,
+     "rst" : 0,
+     "srcZero" : 0,
+     "syn" : 1,
+     "syn-ack" : 1,
+     "urg" : 0
+    },
+    "tcpseq" : {
+     "dst" : 0,
+     "src" : 3513271745
+    },
+    "totDataBytes" : 6
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-131203"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 24
+    },
+    "destination" : {
+     "bytes" : 408,
+     "geo" : {
+      "country_iso_code" : "US"
+     },
+     "ip" : "10.180.156.249",
+     "mac" : [
+      "00:13:72:c4:f1:e1"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 6,
+     "port" : 1080
+    },
+    "dstOui" : [
+     "Dell Inc."
+    ],
+    "dstOuiCnt" : 1,
+    "dstPayload8" : "050201ff",
+    "dstTTL" : [
+     64
+    ],
+    "dstTTLCnt" : 1,
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 1386090528538,
+    "initRTT" : 0,
+    "ipProtocol" : 6,
+    "lastPacket" : 1386090528547,
+    "length" : 9,
+    "network" : {
+     "bytes" : 972,
+     "community_id" : "1:vmrJEOq8kOdIymsIuFNweCr7WFo=",
+     "packets" : 14
+    },
+    "node" : "test",
+    "packetLen" : [
+     94,
+     90,
+     82,
+     87,
+     82,
+     84,
+     82,
+     101,
+     84,
+     82,
+     82,
+     82,
+     82,
+     82
+    ],
+    "packetPos" : [
+     952,
+     1046,
+     1136,
+     1218,
+     1305,
+     1387,
+     1471,
+     1553,
+     1654,
+     1738,
+     1820,
+     1902,
+     1984,
+     2066
+    ],
+    "packetRange" : {
+     "gte" : 1386090528538,
+     "lte" : 1386090528547
+    },
+    "protocol" : [
+     "socks",
+     "tcp"
+    ],
+    "protocolCnt" : 2,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 4
+    },
+    "socks" : {
+     "user" : "testuser"
+    },
+    "source" : {
+     "bytes" : 564,
+     "geo" : {
+      "country_iso_code" : "US"
+     },
+     "ip" : "10.180.156.185",
+     "mac" : [
+      "00:1f:5b:ff:51:cb"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 8,
+     "port" : 54069
+    },
+    "srcOui" : [
+     "Apple, Inc."
+    ],
+    "srcOuiCnt" : 1,
+    "srcPayload8" : "0503000102010874",
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
+    "tags" : [
+     "socks:password"
+    ],
+    "tagsCnt" : 1,
+    "tcpflags" : {
+     "ack" : 6,
+     "ae" : 0,
+     "cwr" : 0,
+     "dstZero" : 0,
+     "ece" : 0,
+     "fin" : 2,
+     "psh" : 4,
+     "rst" : 0,
+     "srcZero" : 0,
+     "syn" : 1,
+     "syn-ack" : 1,
+     "urg" : 0
+    },
+    "tcpseq" : {
+     "dst" : 0,
+     "src" : 511897415
+    },
+    "totDataBytes" : 28
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-131203"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 180
+    },
+    "destination" : {
+     "bytes" : 2141,
+     "geo" : {
+      "country_iso_code" : "US"
+     },
+     "ip" : "10.180.156.249",
+     "mac" : [
+      "00:13:72:c4:f1:e1"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 8,
+     "port" : 1080
+    },
+    "dstOui" : [
+     "Dell Inc."
+    ],
+    "dstOuiCnt" : 1,
+    "dstPayload8" : "0502010005000001",
+    "dstTTL" : [
+     64
+    ],
+    "dstTTLCnt" : 1,
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 1386090534425,
+    "http" : {
+     "bodyMagic" : [
+      "text/html"
+     ],
+     "bodyMagicCnt" : 1,
+     "clientVersion" : [
+      "1.1"
+     ],
+     "clientVersionCnt" : 1,
+     "host" : [
+      "www.example.com"
+     ],
+     "hostCnt" : 1,
+     "md5" : [
+      "09b9c392dc1f6e914cea287cb6be34b0"
+     ],
+     "md5Cnt" : 1,
+     "method" : [
+      "GET"
+     ],
+     "method-GET" : 1,
+     "methodCnt" : 1,
+     "path" : [
+      "/"
+     ],
+     "pathCnt" : 1,
+     "requestHeader" : [
+      "accept",
+      "host",
+      "user-agent"
+     ],
+     "requestHeaderCnt" : 3,
+     "requestHeaderField" : [
+      "accept"
+     ],
+     "requestHeaderValue" : [
+      "*/*"
+     ],
+     "requestHeaderValueCnt" : 1,
+     "responseHeader" : [
+      "accept-ranges",
+      "cache-control",
+      "content-length",
+      "content-type",
+      "date",
+      "etag",
+      "expires",
+      "last-modified",
+      "server",
+      "x-cache",
+      "x-ec-custom-error"
+     ],
+     "responseHeaderCnt" : 11,
+     "responseHeaderField" : [
+      "accept-ranges",
+      "cache-control",
+      "content-length",
+      "content-type",
+      "date",
+      "etag",
+      "expires",
+      "last-modified",
+      "server",
+      "x-cache",
+      "x-ec-custom-error"
+     ],
+     "responseHeaderValue" : [
+      "\"359670651\"",
+      "1",
+      "1270",
+      "bytes",
+      "ecs (iad/1984)",
+      "fri, 09 aug 2013 23:54:35 gmt",
+      "hit",
+      "max-age=604800",
+      "text/html",
+      "tue, 03 dec 2013 17:08:54 gmt",
+      "tue, 10 dec 2013 17:08:54 gmt"
+     ],
+     "responseHeaderValueCnt" : 11,
+     "serverVersion" : [
+      "1.1"
+     ],
+     "serverVersionCnt" : 1,
+     "sha256" : [
+      "3587cb776ce0e4e8237f215800b7dffba0f25865cb84550e87ea8bbac838c423"
+     ],
+     "sha256Cnt" : 1,
+     "statuscode" : [
+      200
+     ],
+     "statuscodeCnt" : 1,
+     "uri" : [
+      "www.example.com/"
+     ],
+     "uriCnt" : 1,
+     "useragent" : [
+      "curl/7.24.0 (x86_64-apple-darwin12.0) libcurl/7.24.0 OpenSSL/0.9.8y zlib/1.2.5"
+     ],
+     "useragentCnt" : 1
+    },
+    "initRTT" : 0,
+    "ipProtocol" : 6,
+    "lastPacket" : 1386090534579,
+    "length" : 154,
+    "network" : {
+     "bytes" : 3125,
+     "community_id" : "1:3SP/ANf6CUN3pV1WOn4Toh2a9e4=",
+     "packets" : 20
+    },
+    "node" : "test",
+    "packetLen" : [
+     94,
+     90,
+     82,
+     87,
+     82,
+     84,
+     82,
+     101,
+     84,
+     82,
+     92,
+     92,
+     82,
+     228,
+     1530,
+     225,
+     82,
+     82,
+     82,
+     82
+    ],
+    "packetPos" : [
+     2148,
+     2242,
+     2332,
+     2414,
+     2501,
+     2583,
+     2667,
+     2749,
+     2850,
+     2934,
+     3016,
+     3108,
+     3200,
+     3282,
+     3510,
+     5040,
+     5265,
+     5347,
+     5429,
+     5511
+    ],
+    "packetRange" : {
+     "gte" : 1386090534425,
+     "lte" : 1386090534579
+    },
+    "protocol" : [
+     "http",
+     "socks",
+     "tcp"
+    ],
+    "protocolCnt" : 3,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 1605
+    },
+    "socks" : {
+     "ASN" : "AS15133 MCI Communications Services, Inc. d/b/a Verizon Business",
+     "GEO" : "US",
+     "RIR" : "RIPE",
+     "ip" : "93.184.216.119",
+     "port" : 80,
+     "user" : "testuser"
+    },
+    "source" : {
+     "bytes" : 984,
+     "geo" : {
+      "country_iso_code" : "US"
+     },
+     "ip" : "10.180.156.185",
+     "mac" : [
+      "00:1f:5b:ff:51:cb"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 12,
+     "port" : 54072
+    },
+    "srcOui" : [
+     "Apple, Inc."
+    ],
+    "srcOuiCnt" : 1,
+    "srcPayload8" : "0503000102010874",
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
+    "tags" : [
+     "socks:password"
+    ],
+    "tagsCnt" : 1,
+    "tcpflags" : {
+     "ack" : 8,
+     "ae" : 0,
+     "cwr" : 0,
+     "dstZero" : 0,
+     "ece" : 0,
+     "fin" : 2,
+     "psh" : 8,
+     "rst" : 0,
+     "srcZero" : 0,
+     "syn" : 1,
+     "syn-ack" : 1,
+     "urg" : 0
+    },
+    "tcpseq" : {
+     "dst" : 0,
+     "src" : 2170244552
+    },
+    "totDataBytes" : 1785
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-131203"
+    }
+   }
+  }
+ ]
 }
 

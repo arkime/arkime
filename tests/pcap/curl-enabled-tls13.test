@@ -1,398 +1,401 @@
 {
-   "sessions3" : [
-      {
-         "body" : {
-            "@timestamp" : "SET",
-            "client" : {
-               "bytes" : 70
-            },
-            "destination" : {
-               "bytes" : 242,
-               "ip" : "192.168.65.1",
-               "mac" : [
-                  "f6:16:36:bc:f9:c6"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 2,
-               "port" : 53
-            },
-            "dns" : [
-               {
-                  "ASN" : [
-                     "AS13335 Cloudflare, Inc.",
-                     "AS13335 Cloudflare, Inc."
-                  ],
-                  "GEO" : [
-                     "US",
-                     "US"
-                  ],
-                  "RIR" : [
-                     "",
-                     ""
-                  ],
-                  "answers" : [
-                     {
-                        "class" : "IN",
-                        "ip" : "2606:4700::6810:7d22",
-                        "name" : "enabled.tls13.com",
-                        "ttl" : 188,
-                        "type" : "AAAA"
-                     },
-                     {
-                        "class" : "IN",
-                        "ip" : "2606:4700::6810:7e22",
-                        "name" : "enabled.tls13.com",
-                        "ttl" : 188,
-                        "type" : "AAAA"
-                     }
-                  ],
-                  "answersCnt" : 2,
-                  "headerFlags" : [
-                     "RA",
-                     "RD"
-                  ],
-                  "host" : [
-                     "enabled.tls13.com"
-                  ],
-                  "hostCnt" : 1,
-                  "ip" : [
-                     "2606:4700:0000:0000:0000:0000:6810:7d22",
-                     "2606:4700:0000:0000:0000:0000:6810:7e22"
-                  ],
-                  "ipCnt" : 2,
-                  "opcode" : "QUERY",
-                  "qc" : "IN",
-                  "qt" : "AAAA",
-                  "queryHost" : "enabled.tls13.com",
-                  "status" : "NOERROR"
-               },
-               {
-                  "ASN" : [
-                     "AS13335 Cloudflare, Inc.",
-                     "AS13335 Cloudflare, Inc."
-                  ],
-                  "GEO" : [
-                     "US",
-                     "US"
-                  ],
-                  "RIR" : [
-                     "ARIN",
-                     "ARIN"
-                  ],
-                  "answers" : [
-                     {
-                        "class" : "IN",
-                        "ip" : "104.16.125.34",
-                        "name" : "enabled.tls13.com",
-                        "ttl" : 188,
-                        "type" : "A"
-                     },
-                     {
-                        "class" : "IN",
-                        "ip" : "104.16.126.34",
-                        "name" : "enabled.tls13.com",
-                        "ttl" : 188,
-                        "type" : "A"
-                     }
-                  ],
-                  "answersCnt" : 2,
-                  "headerFlags" : [
-                     "RA",
-                     "RD"
-                  ],
-                  "host" : [
-                     "enabled.tls13.com"
-                  ],
-                  "hostCnt" : 1,
-                  "ip" : [
-                     "104.16.125.34",
-                     "104.16.126.34"
-                  ],
-                  "ipCnt" : 2,
-                  "opcode" : "QUERY",
-                  "qc" : "IN",
-                  "qt" : "A",
-                  "queryHost" : "enabled.tls13.com",
-                  "status" : "NOERROR"
-               }
-            ],
-            "dnsCnt" : 2,
-            "dstPayload8" : "ac66818000010002",
-            "dstRIR" : "ARIN",
-            "dstTTL" : [
-               38
-            ],
-            "dstTTLCnt" : 1,
-            "ethertype" : 2048,
-            "fileId" : [],
-            "firstPacket" : 1565212114674,
-            "ipProtocol" : 17,
-            "lastPacket" : 1565212114677,
-            "length" : 3,
-            "network" : {
-               "bytes" : 396,
-               "community_id" : "1:SB1sNGEQ5U+jmB3am3T8bnBNTKI=",
-               "packets" : 4
-            },
-            "node" : "test",
-            "packetLen" : [
-               93,
-               93,
-               125,
-               149
-            ],
-            "packetPos" : [
-               24,
-               117,
-               210,
-               335
-            ],
-            "packetRange" : {
-               "gte" : 1565212114674,
-               "lte" : 1565212114677
-            },
-            "protocol" : [
-               "dns",
-               "udp"
-            ],
-            "protocolCnt" : 2,
-            "segmentCnt" : 1,
-            "server" : {
-               "bytes" : 158
-            },
-            "source" : {
-               "bytes" : 154,
-               "ip" : "192.168.65.3",
-               "mac" : [
-                  "02:50:00:00:00:01"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 2,
-               "port" : 42060
-            },
-            "srcPayload8" : "ac66010000010000",
-            "srcRIR" : "ARIN",
-            "srcTTL" : [
-               64
-            ],
-            "srcTTLCnt" : 1,
-            "totDataBytes" : 228
-         },
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions3-190807"
-            }
-         }
-      },
-      {
-         "body" : {
-            "@timestamp" : "SET",
-            "client" : {
-               "bytes" : 845
-            },
-            "destination" : {
-               "as" : {
-                  "full" : "AS13335 Cloudflare, Inc.",
-                  "number" : 13335,
-                  "organization" : {
-                     "name" : "Cloudflare, Inc."
-                  }
-               },
-               "bytes" : 5056,
-               "geo" : {
-                  "country_iso_code" : "US"
-               },
-               "ip" : "104.16.125.34",
-               "mac" : [
-                  "f6:16:36:bc:f9:c6"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 15,
-               "port" : 443
-            },
-            "dstPayload8" : "160303007a020000",
-            "dstRIR" : "ARIN",
-            "dstTTL" : [
-               38
-            ],
-            "dstTTLCnt" : 1,
-            "ethertype" : 2048,
-            "fileId" : [],
-            "firstPacket" : 1565212114677,
-            "http" : {
-               "host" : [
-                  "enabled.tls13.com"
-               ],
-               "hostCnt" : 1
-            },
-            "initRTT" : 9,
-            "ipProtocol" : 6,
-            "lastPacket" : 1565212114804,
-            "length" : 127,
-            "network" : {
-               "bytes" : 6785,
-               "community_id" : "1:PpyBSRmS+2VJ1i6VN2xoHEI0ljc=",
-               "packets" : 31
-            },
-            "node" : "test",
-            "packetLen" : [
-               90,
-               78,
-               70,
-               587,
-               70,
-               1436,
-               70,
-               1436,
-               70,
-               328,
-               70,
-               150,
-               116,
-               70,
-               119,
-               105,
-               133,
-               70,
-               70,
-               639,
-               101,
-               70,
-               718,
-               101,
-               70,
-               94,
-               70,
-               70,
-               70,
-               70,
-               70
-            ],
-            "packetPos" : [
-               484,
-               574,
-               652,
-               722,
-               1309,
-               1379,
-               2815,
-               2885,
-               4321,
-               4391,
-               4719,
-               4789,
-               4939,
-               5055,
-               5125,
-               5244,
-               5349,
-               5482,
-               5552,
-               5622,
-               6261,
-               6362,
-               6432,
-               7150,
-               7251,
-               7321,
-               7415,
-               7485,
-               7555,
-               7625,
-               7695
-            ],
-            "packetRange" : {
-               "gte" : 1565212114677,
-               "lte" : 1565212114804
-            },
-            "protocol" : [
-               "tcp",
-               "tls"
-            ],
-            "protocolCnt" : 2,
-            "segmentCnt" : 1,
-            "server" : {
-               "bytes" : 4238
-            },
-            "source" : {
-               "bytes" : 1729,
-               "ip" : "192.168.65.3",
-               "mac" : [
-                  "02:50:00:00:00:01"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 16,
-               "port" : 46638
-            },
-            "srcPayload8" : "1603010200010001",
-            "srcRIR" : "ARIN",
-            "srcTTL" : [
-               64
-            ],
-            "srcTTLCnt" : 1,
-            "tcpflags" : {
-               "ack" : 13,
-               "dstZero" : 0,
-               "fin" : 2,
-               "psh" : 14,
-               "rst" : 0,
-               "srcZero" : 0,
-               "syn" : 1,
-               "syn-ack" : 1,
-               "urg" : 0
-            },
-            "tcpseq" : {
-               "dst" : 0,
-               "src" : 1336907319
-            },
-            "tls" : {
-               "cipher" : [
-                  "TLS_AES_256_GCM_SHA384"
-               ],
-               "cipherCnt" : 1,
-               "dstSessionId" : [
-                  "002ec375729614262a240f08055b7ef2a11799c7f032a7f5838890823f079bfc"
-               ],
-               "ja3" : [
-                  "eeadfd2f446a45ded96f804720a0c75b"
-               ],
-               "ja3Cnt" : 1,
-               "ja3s" : [
-                  "907bf3ecef1c987c889946b737b43de8"
-               ],
-               "ja3sCnt" : 1,
-               "ja3sstring" : [
-                  "771,4866,51-43"
-               ],
-               "ja3sstringCnt" : 1,
-               "ja3string" : [
-                  "771,4866-4867-4865-255,0-11-10-13172-16-22-23-49-13-43-45-51-21,29-23-30-25-24,0-1-2"
-               ],
-               "ja3stringCnt" : 1,
-               "ja4" : [
-                  "t13d0413h2_16476d049b0b_ffceb19bae65"
-               ],
-               "ja4Cnt" : 1,
-               "ja4_r" : [
-                  "t13d0413h2_00ff,1301,1302,1303_000a,000b,000d,0015,0016,0017,002b,002d,0031,0033,3374_0403,0503,0603,0807,0808,0809,080a,080b,0804,0805,0806,0401,0501,0601"
-               ],
-               "ja4_rCnt" : 1,
-               "srcSessionId" : [
-                  "002ec375729614262a240f08055b7ef2a11799c7f032a7f5838890823f079bfc"
-               ],
-               "version" : [
-                  "TLSv1.3"
-               ],
-               "versionCnt" : 1
-            },
-            "totDataBytes" : 5083
-         },
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions3-190807"
-            }
-         }
+ "sessions3" : [
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 70
+    },
+    "destination" : {
+     "bytes" : 242,
+     "ip" : "192.168.65.1",
+     "mac" : [
+      "f6:16:36:bc:f9:c6"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 2,
+     "port" : 53
+    },
+    "dns" : [
+     {
+      "ASN" : [
+       "AS13335 Cloudflare, Inc.",
+       "AS13335 Cloudflare, Inc."
+      ],
+      "GEO" : [
+       "US",
+       "US"
+      ],
+      "RIR" : [
+       "",
+       ""
+      ],
+      "answers" : [
+       {
+        "class" : "IN",
+        "ip" : "2606:4700::6810:7d22",
+        "name" : "enabled.tls13.com",
+        "ttl" : 188,
+        "type" : "AAAA"
+       },
+       {
+        "class" : "IN",
+        "ip" : "2606:4700::6810:7e22",
+        "name" : "enabled.tls13.com",
+        "ttl" : 188,
+        "type" : "AAAA"
+       }
+      ],
+      "answersCnt" : 2,
+      "headerFlags" : [
+       "RA",
+       "RD"
+      ],
+      "host" : [
+       "enabled.tls13.com"
+      ],
+      "hostCnt" : 1,
+      "ip" : [
+       "2606:4700:0000:0000:0000:0000:6810:7d22",
+       "2606:4700:0000:0000:0000:0000:6810:7e22"
+      ],
+      "ipCnt" : 2,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "AAAA",
+      "queryHost" : "enabled.tls13.com",
+      "status" : "NOERROR"
+     },
+     {
+      "ASN" : [
+       "AS13335 Cloudflare, Inc.",
+       "AS13335 Cloudflare, Inc."
+      ],
+      "GEO" : [
+       "US",
+       "US"
+      ],
+      "RIR" : [
+       "ARIN",
+       "ARIN"
+      ],
+      "answers" : [
+       {
+        "class" : "IN",
+        "ip" : "104.16.125.34",
+        "name" : "enabled.tls13.com",
+        "ttl" : 188,
+        "type" : "A"
+       },
+       {
+        "class" : "IN",
+        "ip" : "104.16.126.34",
+        "name" : "enabled.tls13.com",
+        "ttl" : 188,
+        "type" : "A"
+       }
+      ],
+      "answersCnt" : 2,
+      "headerFlags" : [
+       "RA",
+       "RD"
+      ],
+      "host" : [
+       "enabled.tls13.com"
+      ],
+      "hostCnt" : 1,
+      "ip" : [
+       "104.16.125.34",
+       "104.16.126.34"
+      ],
+      "ipCnt" : 2,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "enabled.tls13.com",
+      "status" : "NOERROR"
+     }
+    ],
+    "dnsCnt" : 2,
+    "dstPayload8" : "ac66818000010002",
+    "dstRIR" : "ARIN",
+    "dstTTL" : [
+     38
+    ],
+    "dstTTLCnt" : 1,
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 1565212114674,
+    "ipProtocol" : 17,
+    "lastPacket" : 1565212114677,
+    "length" : 3,
+    "network" : {
+     "bytes" : 396,
+     "community_id" : "1:SB1sNGEQ5U+jmB3am3T8bnBNTKI=",
+     "packets" : 4
+    },
+    "node" : "test",
+    "packetLen" : [
+     93,
+     93,
+     125,
+     149
+    ],
+    "packetPos" : [
+     24,
+     117,
+     210,
+     335
+    ],
+    "packetRange" : {
+     "gte" : 1565212114674,
+     "lte" : 1565212114677
+    },
+    "protocol" : [
+     "dns",
+     "udp"
+    ],
+    "protocolCnt" : 2,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 158
+    },
+    "source" : {
+     "bytes" : 154,
+     "ip" : "192.168.65.3",
+     "mac" : [
+      "02:50:00:00:00:01"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 2,
+     "port" : 42060
+    },
+    "srcPayload8" : "ac66010000010000",
+    "srcRIR" : "ARIN",
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
+    "totDataBytes" : 228
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-190807"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 845
+    },
+    "destination" : {
+     "as" : {
+      "full" : "AS13335 Cloudflare, Inc.",
+      "number" : 13335,
+      "organization" : {
+       "name" : "Cloudflare, Inc."
       }
-   ]
+     },
+     "bytes" : 5056,
+     "geo" : {
+      "country_iso_code" : "US"
+     },
+     "ip" : "104.16.125.34",
+     "mac" : [
+      "f6:16:36:bc:f9:c6"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 15,
+     "port" : 443
+    },
+    "dstPayload8" : "160303007a020000",
+    "dstRIR" : "ARIN",
+    "dstTTL" : [
+     38
+    ],
+    "dstTTLCnt" : 1,
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 1565212114677,
+    "http" : {
+     "host" : [
+      "enabled.tls13.com"
+     ],
+     "hostCnt" : 1
+    },
+    "initRTT" : 9,
+    "ipProtocol" : 6,
+    "lastPacket" : 1565212114804,
+    "length" : 127,
+    "network" : {
+     "bytes" : 6785,
+     "community_id" : "1:PpyBSRmS+2VJ1i6VN2xoHEI0ljc=",
+     "packets" : 31
+    },
+    "node" : "test",
+    "packetLen" : [
+     90,
+     78,
+     70,
+     587,
+     70,
+     1436,
+     70,
+     1436,
+     70,
+     328,
+     70,
+     150,
+     116,
+     70,
+     119,
+     105,
+     133,
+     70,
+     70,
+     639,
+     101,
+     70,
+     718,
+     101,
+     70,
+     94,
+     70,
+     70,
+     70,
+     70,
+     70
+    ],
+    "packetPos" : [
+     484,
+     574,
+     652,
+     722,
+     1309,
+     1379,
+     2815,
+     2885,
+     4321,
+     4391,
+     4719,
+     4789,
+     4939,
+     5055,
+     5125,
+     5244,
+     5349,
+     5482,
+     5552,
+     5622,
+     6261,
+     6362,
+     6432,
+     7150,
+     7251,
+     7321,
+     7415,
+     7485,
+     7555,
+     7625,
+     7695
+    ],
+    "packetRange" : {
+     "gte" : 1565212114677,
+     "lte" : 1565212114804
+    },
+    "protocol" : [
+     "tcp",
+     "tls"
+    ],
+    "protocolCnt" : 2,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 4238
+    },
+    "source" : {
+     "bytes" : 1729,
+     "ip" : "192.168.65.3",
+     "mac" : [
+      "02:50:00:00:00:01"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 16,
+     "port" : 46638
+    },
+    "srcPayload8" : "1603010200010001",
+    "srcRIR" : "ARIN",
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
+    "tcpflags" : {
+     "ack" : 13,
+     "ae" : 0,
+     "cwr" : 0,
+     "dstZero" : 0,
+     "ece" : 0,
+     "fin" : 2,
+     "psh" : 14,
+     "rst" : 0,
+     "srcZero" : 0,
+     "syn" : 1,
+     "syn-ack" : 1,
+     "urg" : 0
+    },
+    "tcpseq" : {
+     "dst" : 0,
+     "src" : 1336907319
+    },
+    "tls" : {
+     "cipher" : [
+      "TLS_AES_256_GCM_SHA384"
+     ],
+     "cipherCnt" : 1,
+     "dstSessionId" : [
+      "002ec375729614262a240f08055b7ef2a11799c7f032a7f5838890823f079bfc"
+     ],
+     "ja3" : [
+      "eeadfd2f446a45ded96f804720a0c75b"
+     ],
+     "ja3Cnt" : 1,
+     "ja3s" : [
+      "907bf3ecef1c987c889946b737b43de8"
+     ],
+     "ja3sCnt" : 1,
+     "ja3sstring" : [
+      "771,4866,51-43"
+     ],
+     "ja3sstringCnt" : 1,
+     "ja3string" : [
+      "771,4866-4867-4865-255,0-11-10-13172-16-22-23-49-13-43-45-51-21,29-23-30-25-24,0-1-2"
+     ],
+     "ja3stringCnt" : 1,
+     "ja4" : [
+      "t13d0413h2_16476d049b0b_ffceb19bae65"
+     ],
+     "ja4Cnt" : 1,
+     "ja4_r" : [
+      "t13d0413h2_00ff,1301,1302,1303_000a,000b,000d,0015,0016,0017,002b,002d,0031,0033,3374_0403,0503,0603,0807,0808,0809,080a,080b,0804,0805,0806,0401,0501,0601"
+     ],
+     "ja4_rCnt" : 1,
+     "srcSessionId" : [
+      "002ec375729614262a240f08055b7ef2a11799c7f032a7f5838890823f079bfc"
+     ],
+     "version" : [
+      "TLSv1.3"
+     ],
+     "versionCnt" : 1
+    },
+    "totDataBytes" : 5083
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-190807"
+    }
+   }
+  }
+ ]
 }
 

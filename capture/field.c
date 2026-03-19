@@ -1931,6 +1931,21 @@ LOCAL void *arkime_field_getcb_tcpflags_urg(const ArkimeSession_t *session, int 
     return (void *)(long)session->tcpData.tcpFlagCnt[ARKIME_TCPFLAG_URG];
 }
 /******************************************************************************/
+LOCAL void *arkime_field_getcb_tcpflags_ece(const ArkimeSession_t *session, int UNUSED(pos))
+{
+    return (void *)(long)session->tcpData.tcpFlagCnt[ARKIME_TCPFLAG_ECE];
+}
+/******************************************************************************/
+LOCAL void *arkime_field_getcb_tcpflags_cwr(const ArkimeSession_t *session, int UNUSED(pos))
+{
+    return (void *)(long)session->tcpData.tcpFlagCnt[ARKIME_TCPFLAG_CWR];
+}
+/******************************************************************************/
+LOCAL void *arkime_field_getcb_tcpflags_ae(const ArkimeSession_t *session, int UNUSED(pos))
+{
+    return (void *)(long)session->tcpData.tcpFlagCnt[ARKIME_TCPFLAG_AE];
+}
+/******************************************************************************/
 LOCAL void *arkime_field_getcb_tcp_synSet(const ArkimeSession_t *session, int UNUSED(pos))
 {
     return (void *)(long)session->synSet;
@@ -2022,6 +2037,9 @@ void arkime_field_init()
     arkime_field_by_exp_add_internal("tcpflags.rst", ARKIME_FIELD_TYPE_INT, arkime_field_getcb_tcpflags_rst, NULL);
     arkime_field_by_exp_add_internal("tcpflags.fin", ARKIME_FIELD_TYPE_INT, arkime_field_getcb_tcpflags_fin, NULL);
     arkime_field_by_exp_add_internal("tcpflags.urg", ARKIME_FIELD_TYPE_INT, arkime_field_getcb_tcpflags_urg, NULL);
+    arkime_field_by_exp_add_internal("tcpflags.ece", ARKIME_FIELD_TYPE_INT, arkime_field_getcb_tcpflags_ece, NULL);
+    arkime_field_by_exp_add_internal("tcpflags.cwr", ARKIME_FIELD_TYPE_INT, arkime_field_getcb_tcpflags_cwr, NULL);
+    arkime_field_by_exp_add_internal("tcpflags.ae", ARKIME_FIELD_TYPE_INT, arkime_field_getcb_tcpflags_ae, NULL);
     arkime_field_by_exp_add_internal("tcp.synSet", ARKIME_FIELD_TYPE_INT, arkime_field_getcb_tcp_synSet, NULL);
 
     arkime_field_by_exp_add_internal("packets.src", ARKIME_FIELD_TYPE_INT, arkime_field_getcb_packets_src, NULL);

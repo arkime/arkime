@@ -1,1628 +1,1655 @@
 {
-   "sessions3" : [
-      {
-         "body" : {
-            "@timestamp" : "SET",
-            "client" : {
-               "bytes" : 0
-            },
-            "destination" : {
-               "as" : {
-                  "full" : "AS15169 Google LLC",
-                  "number" : 15169,
-                  "organization" : {
-                     "name" : "Google LLC"
-                  }
-               },
-               "bytes" : 0,
-               "geo" : {
-                  "country_iso_code" : "US"
-               },
-               "ip" : "74.125.24.149",
-               "mac" : [
-                  "00:50:56:f4:62:21"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 0,
-               "port" : 80
-            },
-            "dstOui" : [
-               "VMware, Inc."
-            ],
-            "dstOuiCnt" : 1,
-            "dstRIR" : "ARIN",
-            "ethertype" : 2048,
-            "fileId" : [],
-            "firstPacket" : 1532525510773,
-            "http" : {
-               "clientVersion" : [
-                  "1.1"
-               ],
-               "clientVersionCnt" : 1,
-               "cookieKey" : [
-                  "IDE"
-               ],
-               "cookieKeyCnt" : 1,
-               "cookieValue" : [
-                  "AHWqTUmq5vKag4U1NoZpmbEiY1PYuAYVT8bFXA1KRM6sqXH_QR5G3_2xSz7V6E3B"
-               ],
-               "cookieValueCnt" : 1,
-               "host" : [
-                  "4378683.fls.doubleclick.net"
-               ],
-               "hostCnt" : 1,
-               "method" : [
-                  "GET"
-               ],
-               "method-GET" : 1,
-               "methodCnt" : 1,
-               "path" : [
-                  "/activityi;src=4378683;type=Shang0;cat=Conte0;ord=8420330732348;gtm=G7g;u4=undefined;~oref=http%3A%2F%2Fwww.shangri-la.com%2F"
-               ],
-               "pathCnt" : 1,
-               "request-referer" : [
-                  "http://www.shangri-la.com/"
-               ],
-               "request-refererCnt" : 1,
-               "requestHeader" : [
-                  "accept",
-                  "accept-encoding",
-                  "accept-language",
-                  "connection",
-                  "cookie",
-                  "host",
-                  "referer",
-                  "user-agent"
-               ],
-               "requestHeaderCnt" : 8,
-               "requestHeaderField" : [
-                  "accept",
-                  "accept-encoding",
-                  "accept-language",
-                  "connection",
-                  "cookie"
-               ],
-               "requestHeaderValue" : [
-                  "en-us",
-                  "gzip, deflate",
-                  "ide=ahwqtumq5vkag4u1nozpmbeiy1pyuayvt8bfxa1krm6sqxh_qr5g3_2xsz7v6e3b",
-                  "keep-alive",
-                  "text/html, application/xhtml+xml, image/jxr, */*"
-               ],
-               "requestHeaderValueCnt" : 5,
-               "uri" : [
-                  "4378683.fls.doubleclick.net/activityi;src=4378683;type=Shang0;cat=Conte0;ord=8420330732348;gtm=G7g;u4=undefined;~oref=http%3A%2F%2Fwww.shangri-la.com%2F?"
-               ],
-               "uriCnt" : 1,
-               "useragent" : [
-                  "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/42.0.2311.135 Safari/537.36 Edge/12.10240"
-               ],
-               "useragentCnt" : 1
-            },
-            "ipProtocol" : 6,
-            "lastPacket" : 1532525510773,
-            "length" : 0,
-            "network" : {
-               "bytes" : 628,
-               "community_id" : "1:TZq1zqZGQ14FqFo8bDSSyTDUExo=",
-               "packets" : 1
-            },
-            "node" : "test",
-            "packetLen" : [
-               644
-            ],
-            "packetPos" : [
-               24
-            ],
-            "packetRange" : {
-               "gte" : 1532525510773,
-               "lte" : 1532525510773
-            },
-            "protocol" : [
-               "http",
-               "tcp"
-            ],
-            "protocolCnt" : 2,
-            "segmentCnt" : 1,
-            "server" : {
-               "bytes" : 0
-            },
-            "source" : {
-               "bytes" : 628,
-               "ip" : "192.168.25.150",
-               "mac" : [
-                  "00:0c:29:6f:84:37"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 1,
-               "port" : 49677
-            },
-            "srcOui" : [
-               "VMware, Inc."
-            ],
-            "srcOuiCnt" : 1,
-            "srcRIR" : "ARIN",
-            "srcTTL" : [
-               128
-            ],
-            "srcTTLCnt" : 1,
-            "tcpflags" : {
-               "ack" : 0,
-               "dstZero" : 0,
-               "fin" : 0,
-               "psh" : 1,
-               "rst" : 0,
-               "srcZero" : 0,
-               "syn" : 0,
-               "syn-ack" : 0,
-               "urg" : 0
-            },
-            "totDataBytes" : 0
-         },
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions3-180725"
-            }
-         }
-      },
-      {
-         "body" : {
-            "@timestamp" : "SET",
-            "client" : {
-               "bytes" : 0
-            },
-            "destination" : {
-               "as" : {
-                  "full" : "AS4657 StarHub Ltd",
-                  "number" : 4657,
-                  "organization" : {
-                     "name" : "StarHub Ltd"
-                  }
-               },
-               "bytes" : 0,
-               "geo" : {
-                  "country_iso_code" : "SG"
-               },
-               "ip" : "118.215.80.242",
-               "mac" : [
-                  "00:50:56:f4:62:21"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 0,
-               "port" : 80
-            },
-            "dstOui" : [
-               "VMware, Inc."
-            ],
-            "dstOuiCnt" : 1,
-            "dstRIR" : "APNIC",
-            "ethertype" : 2048,
-            "fileId" : [],
-            "firstPacket" : 1532525512112,
-            "http" : {
-               "clientVersion" : [
-                  "1.1"
-               ],
-               "clientVersionCnt" : 1,
-               "cookieKey" : [
-                  "AMCVS_A70E15F354E99A260A4C98A4%40AdobeOrg",
-                  "AMCV_A70E15F354E99A260A4C98A4%40AdobeOrg",
-                  "_ga",
-                  "_gat",
-                  "_gid",
-                  "aam_uuid",
-                  "app_promotion",
-                  "mbox",
-                  "s_cc",
-                  "s_dfa",
-                  "s_ppv",
-                  "s_ppvl",
-                  "s_sq",
-                  "segmentid"
-               ],
-               "cookieKeyCnt" : 14,
-               "cookieValue" : [
-                  "%5B%5BB%5D%5D",
-                  "-330454231%7CMCIDTS%7C17738%7CMCMID%7C00834244270283740751404491874386840551%7CMCAAMLH-1533130240%7C3%7CMCAAMB-1533130240%7C6G1ynYcLPuiQxYZrsz_pkqfLG9yMXBpb2zX5dvJdYQJzPXImdj0y%7CMCOPTOUT-1532532640s%7CNONE%7CMCSYNCSOP%7C411-17745%7CMCAID%7CNONE%7CvVersion%7C3.1.2",
-                  "01107346641427687611431242460084872101",
-                  "1",
-                  "GA1.2.1042544967.1532525440",
-                  "GA1.2.349209205.1532525440",
-                  "segment%3DC%2Csegment%3Dtesting",
-                  "session#f11f91da64134d8183e8dda4dc10aaf4#1532527370|PC#f11f91da64134d8183e8dda4dc10aaf4.22_23#1540301510|check#true#1532525570",
-                  "shgshg-web-global",
-                  "true",
-                  "www.shangri-la.com%2C48%2C48%2C498%2C1350%2C498%2C1350%2C615%2C1%2CL",
-                  "www.shangri-la.com%2C52%2C52%2C499%2C1350%2C498%2C1350%2C615%2C1%2CL"
-               ],
-               "cookieValueCnt" : 12,
-               "host" : [
-                  "www.shangri-la.com"
-               ],
-               "hostCnt" : 1,
-               "key" : [
-                  "dt",
-                  "hj"
-               ],
-               "keyCnt" : 2,
-               "method" : [
-                  "GET"
-               ],
-               "method-GET" : 1,
-               "methodCnt" : 1,
-               "path" : [
-                  "/HotelBookableDateJson.json"
-               ],
-               "pathCnt" : 1,
-               "request-referer" : [
-                  "http://www.shangri-la.com/"
-               ],
-               "request-refererCnt" : 1,
-               "requestHeader" : [
-                  "accept",
-                  "accept-encoding",
-                  "accept-language",
-                  "connection",
-                  "cookie",
-                  "host",
-                  "referer",
-                  "user-agent",
-                  "x-requested-with"
-               ],
-               "requestHeaderCnt" : 9,
-               "requestHeaderField" : [
-                  "accept",
-                  "accept-encoding",
-                  "accept-language",
-                  "connection",
-                  "cookie",
-                  "x-requested-with"
-               ],
-               "requestHeaderValue" : [
-                  "_ga=ga1.2.349209205.1532525440; _gid=ga1.2.1042544967.1532525440; _gat=1; amcv_a70e15f354e99a260a4c98a4%40adobeorg=-330454231%7cmcidts%7c17738%7cmcmid%7c00834244270283740751404491874386840551%7cmcaamlh-1533130240%7c3%7cmcaamb-1533130240%7c6g1ynyclpuiqxyzrsz_pkqflg9ymxbpb2zx5dvjdyqjzpximdj0y%7cmcoptout-1532532640s%7cnone%7cmcsyncsop%7c411-17745%7cmcaid%7cnone%7cvversion%7c3.1.2; amcvs_a70e15f354e99a260a4c98a4%40adobeorg=1; mbox=session#f11f91da64134d8183e8dda4dc10aaf4#1532527370|pc#f11f91da64134d8183e8dda4dc10aaf4.22_23#1540301510|check#true#1532525570; s_dfa=shgshg-web-global; s_cc=true; s_ppvl=www.shangri-la.com%2c52%2c52%2c499%2c1350%2c498%2c1350%2c615%2c1%2cl; s_ppv=www.shangri-la.com%2c48%2c48%2c498%2c1350%2c498%2c1350%2c615%2c1%2cl; s_sq=%5b%5bb%5d%5d; segmentid=segment%3dc%2csegment%3dtesting; aam_uuid=01107346641427687611431242460084872101; app_promotion=1",
-                  "application/json, text/javascript, */*; q=0.01",
-                  "en-us",
-                  "gzip, deflate",
-                  "keep-alive",
-                  "xmlhttprequest"
-               ],
-               "requestHeaderValueCnt" : 6,
-               "uri" : [
-                  "www.shangri-la.com/HotelBookableDateJson.json?dt=2018072521&hj=1"
-               ],
-               "uriCnt" : 1,
-               "useragent" : [
-                  "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/42.0.2311.135 Safari/537.36 Edge/12.10240"
-               ],
-               "useragentCnt" : 1,
-               "value" : [
-                  "1",
-                  "2018072521"
-               ],
-               "valueCnt" : 2
-            },
-            "ipProtocol" : 6,
-            "lastPacket" : 1532525512112,
-            "length" : 0,
-            "network" : {
-               "bytes" : 1378,
-               "community_id" : "1:Xr3moorFsxAHU3AgXgAwT7VAl5w=",
-               "packets" : 1
-            },
-            "node" : "test",
-            "packetLen" : [
-               1394
-            ],
-            "packetPos" : [
-               668
-            ],
-            "packetRange" : {
-               "gte" : 1532525512112,
-               "lte" : 1532525512112
-            },
-            "protocol" : [
-               "http",
-               "tcp"
-            ],
-            "protocolCnt" : 2,
-            "segmentCnt" : 1,
-            "server" : {
-               "bytes" : 0
-            },
-            "source" : {
-               "bytes" : 1378,
-               "ip" : "192.168.25.150",
-               "mac" : [
-                  "00:0c:29:6f:84:37"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 1,
-               "port" : 49654
-            },
-            "srcOui" : [
-               "VMware, Inc."
-            ],
-            "srcOuiCnt" : 1,
-            "srcRIR" : "ARIN",
-            "srcTTL" : [
-               128
-            ],
-            "srcTTLCnt" : 1,
-            "tcpflags" : {
-               "ack" : 0,
-               "dstZero" : 0,
-               "fin" : 0,
-               "psh" : 1,
-               "rst" : 0,
-               "srcZero" : 0,
-               "syn" : 0,
-               "syn-ack" : 0,
-               "urg" : 0
-            },
-            "totDataBytes" : 0
-         },
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions3-180725"
-            }
-         }
-      },
-      {
-         "body" : {
-            "@timestamp" : "SET",
-            "client" : {
-               "bytes" : 0
-            },
-            "destination" : {
-               "as" : {
-                  "full" : "AS16509 Amazon.com, Inc.",
-                  "number" : 16509,
-                  "organization" : {
-                     "name" : "Amazon.com, Inc."
-                  }
-               },
-               "bytes" : 0,
-               "geo" : {
-                  "city_name" : "Tokyo",
-                  "country_iso_code" : "JP",
-                  "region_iso_code" : "13"
-               },
-               "ip" : "13.115.50.210",
-               "mac" : [
-                  "00:50:56:f4:62:21"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 0,
-               "port" : 80
-            },
-            "dstOui" : [
-               "VMware, Inc."
-            ],
-            "dstOuiCnt" : 1,
-            "dstRIR" : "ARIN",
-            "ethertype" : 2048,
-            "fileId" : [],
-            "firstPacket" : 1532525512547,
-            "http" : {
-               "clientVersion" : [
-                  "1.1"
-               ],
-               "clientVersionCnt" : 1,
-               "host" : [
-                  "rtb.gumgum.com"
-               ],
-               "hostCnt" : 1,
-               "key" : [
-                  "b",
-                  "i"
-               ],
-               "keyCnt" : 2,
-               "method" : [
-                  "GET"
-               ],
-               "method-GET" : 1,
-               "methodCnt" : 1,
-               "path" : [
-                  "/usersync"
-               ],
-               "pathCnt" : 1,
-               "request-referer" : [
-                  "http://www.shangri-la.com/"
-               ],
-               "request-refererCnt" : 1,
-               "requestHeader" : [
-                  "accept",
-                  "accept-encoding",
-                  "accept-language",
-                  "connection",
-                  "host",
-                  "referer",
-                  "user-agent"
-               ],
-               "requestHeaderCnt" : 7,
-               "requestHeaderField" : [
-                  "accept",
-                  "accept-encoding",
-                  "accept-language",
-                  "connection"
-               ],
-               "requestHeaderValue" : [
-                  "en-us",
-                  "gzip, deflate",
-                  "image/png, image/svg+xml, image/jxr, image/*;q=0.8, */*;q=0.5",
-                  "keep-alive"
-               ],
-               "requestHeaderValueCnt" : 4,
-               "uri" : [
-                  "rtb.gumgum.com/usersync?b=ada&i=407182987561"
-               ],
-               "uriCnt" : 1,
-               "useragent" : [
-                  "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/42.0.2311.135 Safari/537.36 Edge/12.10240"
-               ],
-               "useragentCnt" : 1,
-               "value" : [
-                  "407182987561",
-                  "ada"
-               ],
-               "valueCnt" : 2
-            },
-            "ipProtocol" : 6,
-            "lastPacket" : 1532525512547,
-            "length" : 0,
-            "network" : {
-               "bytes" : 454,
-               "community_id" : "1:7VGk+e41s6jkYHIWgawTY/6jbmI=",
-               "packets" : 1
-            },
-            "node" : "test",
-            "packetLen" : [
-               470
-            ],
-            "packetPos" : [
-               2062
-            ],
-            "packetRange" : {
-               "gte" : 1532525512547,
-               "lte" : 1532525512547
-            },
-            "protocol" : [
-               "http",
-               "tcp"
-            ],
-            "protocolCnt" : 2,
-            "segmentCnt" : 1,
-            "server" : {
-               "bytes" : 0
-            },
-            "source" : {
-               "bytes" : 454,
-               "ip" : "192.168.25.150",
-               "mac" : [
-                  "00:0c:29:6f:84:37"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 1,
-               "port" : 49683
-            },
-            "srcOui" : [
-               "VMware, Inc."
-            ],
-            "srcOuiCnt" : 1,
-            "srcRIR" : "ARIN",
-            "srcTTL" : [
-               128
-            ],
-            "srcTTLCnt" : 1,
-            "tcpflags" : {
-               "ack" : 0,
-               "dstZero" : 0,
-               "fin" : 0,
-               "psh" : 1,
-               "rst" : 0,
-               "srcZero" : 0,
-               "syn" : 0,
-               "syn-ack" : 0,
-               "urg" : 0
-            },
-            "totDataBytes" : 0
-         },
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions3-180725"
-            }
-         }
-      },
-      {
-         "body" : {
-            "@timestamp" : "SET",
-            "client" : {
-               "bytes" : 0
-            },
-            "destination" : {
-               "as" : {
-                  "full" : "AS16625 Akamai Technologies, Inc.",
-                  "number" : 16625,
-                  "organization" : {
-                     "name" : "Akamai Technologies, Inc."
-                  }
-               },
-               "bytes" : 0,
-               "geo" : {
-                  "country_iso_code" : "US"
-               },
-               "ip" : "104.89.119.175",
-               "mac" : [
-                  "00:50:56:f4:62:21"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 0,
-               "port" : 80
-            },
-            "dstOui" : [
-               "VMware, Inc."
-            ],
-            "dstOuiCnt" : 1,
-            "dstRIR" : "ARIN",
-            "ethertype" : 2048,
-            "fileId" : [],
-            "firstPacket" : 1532525514170,
-            "http" : {
-               "clientVersion" : [
-                  "1.1"
-               ],
-               "clientVersionCnt" : 1,
-               "cookieKey" : [
-                  "RT",
-                  "ServerPool"
-               ],
-               "cookieKeyCnt" : 2,
-               "cookieValue" : [
-                  "%1%enc%3Atg%2FlU7zufFPUle8wLxga3M9JuU9Wqi9L5JCsWOqGF5aUK4qCG413AHFq%2BvIG1jhcNox8JbUSTxk%3D",
-                  "R"
-               ],
-               "cookieValueCnt" : 2,
-               "host" : [
-                  "www.tamgrt.com"
-               ],
-               "hostCnt" : 1,
-               "md5" : [
-                  "7cf4549faee105109c96e5405eb822dc"
-               ],
-               "md5Cnt" : 1,
-               "method" : [
-                  "POST"
-               ],
-               "method-POST" : 1,
-               "methodCnt" : 1,
-               "path" : [
-                  "/RT"
-               ],
-               "pathCnt" : 1,
-               "request-referer" : [
-                  "http://www.shangri-la.com/"
-               ],
-               "request-refererCnt" : 1,
-               "requestBody" : [
-                  "id=455187796&event=PAGEVIEW&pixel_version=1"
-               ],
-               "requestHeader" : [
-                  "accept",
-                  "accept-encoding",
-                  "accept-language",
-                  "cache-control",
-                  "connection",
-                  "content-length",
-                  "content-type",
-                  "cookie",
-                  "host",
-                  "referer",
-                  "user-agent"
-               ],
-               "requestHeaderCnt" : 11,
-               "requestHeaderField" : [
-                  "accept",
-                  "accept-encoding",
-                  "accept-language",
-                  "cache-control",
-                  "connection",
-                  "content-length",
-                  "content-type",
-                  "cookie"
-               ],
-               "requestHeaderValue" : [
-                  "43",
-                  "application/x-www-form-urlencoded",
-                  "en-us",
-                  "gzip, deflate",
-                  "keep-alive",
-                  "no-cache",
-                  "rt=%1%enc%3atg%2flu7zuffpule8wlxga3m9juu9wqi9l5jcswoqgf5auk4qcg413ahfq%2bvig1jhcnox8jbustxk%3d; serverpool=r",
-                  "text/html, application/xhtml+xml, image/jxr, */*"
-               ],
-               "requestHeaderValueCnt" : 8,
-               "sha256" : [
-                  "0142144c65451fa7271bf7ad30f535706fa1df9d05b8dac160bb6833ad83f72c"
-               ],
-               "sha256Cnt" : 1,
-               "uri" : [
-                  "www.tamgrt.com/RT"
-               ],
-               "uriCnt" : 1,
-               "useragent" : [
-                  "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/42.0.2311.135 Safari/537.36 Edge/12.10240"
-               ],
-               "useragentCnt" : 1
-            },
-            "ipProtocol" : 6,
-            "lastPacket" : 1532525514170,
-            "length" : 0,
-            "network" : {
-               "bytes" : 670,
-               "community_id" : "1:pDHc/Xd19q1ZGWr8XRR6xT/GAko=",
-               "packets" : 1
-            },
-            "node" : "test",
-            "packetLen" : [
-               686
-            ],
-            "packetPos" : [
-               2532
-            ],
-            "packetRange" : {
-               "gte" : 1532525514170,
-               "lte" : 1532525514170
-            },
-            "protocol" : [
-               "http",
-               "tcp"
-            ],
-            "protocolCnt" : 2,
-            "segmentCnt" : 1,
-            "server" : {
-               "bytes" : 0
-            },
-            "source" : {
-               "bytes" : 670,
-               "ip" : "192.168.25.150",
-               "mac" : [
-                  "00:0c:29:6f:84:37"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 1,
-               "port" : 49708
-            },
-            "srcOui" : [
-               "VMware, Inc."
-            ],
-            "srcOuiCnt" : 1,
-            "srcRIR" : "ARIN",
-            "srcTTL" : [
-               128
-            ],
-            "srcTTLCnt" : 1,
-            "tcpflags" : {
-               "ack" : 0,
-               "dstZero" : 0,
-               "fin" : 0,
-               "psh" : 1,
-               "rst" : 0,
-               "srcZero" : 0,
-               "syn" : 0,
-               "syn-ack" : 0,
-               "urg" : 0
-            },
-            "totDataBytes" : 0
-         },
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions3-180725"
-            }
-         }
-      },
-      {
-         "body" : {
-            "@timestamp" : "SET",
-            "client" : {
-               "bytes" : 0
-            },
-            "destination" : {
-               "as" : {
-                  "full" : "AS2830 Verizon Nederland B.V.",
-                  "number" : 2830,
-                  "organization" : {
-                     "name" : "Verizon Nederland B.V."
-                  }
-               },
-               "bytes" : 0,
-               "geo" : {
-                  "city_name" : "Paris",
-                  "country_iso_code" : "FR",
-                  "region_iso_code" : "IDF"
-               },
-               "ip" : "193.242.192.43",
-               "mac" : [
-                  "00:50:56:f4:62:21"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 0,
-               "port" : 80
-            },
-            "dstOui" : [
-               "VMware, Inc."
-            ],
-            "dstOuiCnt" : 1,
-            "dstRIR" : "RIPE",
-            "ethertype" : 2048,
-            "fileId" : [],
-            "firstPacket" : 1532525525879,
-            "http" : {
-               "clientVersion" : [
-                  "1.1"
-               ],
-               "clientVersionCnt" : 1,
-               "cookieKey" : [
-                  "CFID",
-                  "CFTOKEN",
-                  "_ga",
-                  "_gat",
-                  "_gid",
-                  "unescomap"
-               ],
-               "cookieKeyCnt" : 6,
-               "cookieValue" : [
-                  "1",
-                  "64733241d30c35e0-304F31D8-AA72-F50C-3869AA2C5D0DFF17",
-                  "77281563",
-                  "GA1.2.1751603294.1532525413",
-                  "GA1.2.775336169.1532525413",
-                  "open"
-               ],
-               "cookieValueCnt" : 6,
-               "host" : [
-                  "whc.unesco.org"
-               ],
-               "hostCnt" : 1,
-               "key" : [
-                  "_dc",
-                  "cid",
-                  "l",
-                  "mode"
-               ],
-               "keyCnt" : 4,
-               "method" : [
-                  "GET"
-               ],
-               "method-GET" : 1,
-               "methodCnt" : 1,
-               "path" : [
-                  "/"
-               ],
-               "pathCnt" : 1,
-               "request-referer" : [
-                  "http://whc.unesco.org/en/interactive-map/"
-               ],
-               "request-refererCnt" : 1,
-               "requestHeader" : [
-                  "accept",
-                  "accept-encoding",
-                  "accept-language",
-                  "connection",
-                  "cookie",
-                  "host",
-                  "referer",
-                  "user-agent",
-                  "x-requested-with"
-               ],
-               "requestHeaderCnt" : 9,
-               "requestHeaderField" : [
-                  "accept",
-                  "accept-encoding",
-                  "accept-language",
-                  "connection",
-                  "cookie",
-                  "x-requested-with"
-               ],
-               "requestHeaderValue" : [
-                  "*/*",
-                  "cfid=77281563; cftoken=64733241d30c35e0-304f31d8-aa72-f50c-3869aa2c5d0dff17; unescomap=open; _ga=ga1.2.1751603294.1532525413; _gid=ga1.2.775336169.1532525413; _gat=1",
-                  "en-us",
-                  "gzip, deflate",
-                  "keep-alive",
-                  "xmlhttprequest"
-               ],
-               "requestHeaderValueCnt" : 6,
-               "uri" : [
-                  "whc.unesco.org/?cid=31&l=en&&mode=json&_dc=1532525525462"
-               ],
-               "uriCnt" : 1,
-               "useragent" : [
-                  "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/42.0.2311.135 Safari/537.36 Edge/12.10240"
-               ],
-               "useragentCnt" : 1,
-               "value" : [
-                  "1532525525462",
-                  "31",
-                  "en",
-                  "json"
-               ],
-               "valueCnt" : 4
-            },
-            "ipProtocol" : 6,
-            "lastPacket" : 1532525525879,
-            "length" : 0,
-            "network" : {
-               "bytes" : 632,
-               "community_id" : "1:XRzKP3QNF/rWqI/10PfCFrEzYS4=",
-               "packets" : 1
-            },
-            "node" : "test",
-            "packetLen" : [
-               648
-            ],
-            "packetPos" : [
-               3218
-            ],
-            "packetRange" : {
-               "gte" : 1532525525879,
-               "lte" : 1532525525879
-            },
-            "protocol" : [
-               "http",
-               "tcp"
-            ],
-            "protocolCnt" : 2,
-            "segmentCnt" : 1,
-            "server" : {
-               "bytes" : 0
-            },
-            "source" : {
-               "bytes" : 632,
-               "ip" : "192.168.25.150",
-               "mac" : [
-                  "00:0c:29:6f:84:37"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 1,
-               "port" : 49735
-            },
-            "srcOui" : [
-               "VMware, Inc."
-            ],
-            "srcOuiCnt" : 1,
-            "srcRIR" : "ARIN",
-            "srcTTL" : [
-               128
-            ],
-            "srcTTLCnt" : 1,
-            "tcpflags" : {
-               "ack" : 0,
-               "dstZero" : 0,
-               "fin" : 0,
-               "psh" : 1,
-               "rst" : 0,
-               "srcZero" : 0,
-               "syn" : 0,
-               "syn-ack" : 0,
-               "urg" : 0
-            },
-            "totDataBytes" : 0
-         },
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions3-180725"
-            }
-         }
-      },
-      {
-         "body" : {
-            "@timestamp" : "SET",
-            "client" : {
-               "bytes" : 0
-            },
-            "destination" : {
-               "as" : {
-                  "full" : "AS15169 Google LLC",
-                  "number" : 15169,
-                  "organization" : {
-                     "name" : "Google LLC"
-                  }
-               },
-               "bytes" : 0,
-               "geo" : {
-                  "country_iso_code" : "US"
-               },
-               "ip" : "74.125.24.100",
-               "mac" : [
-                  "00:50:56:f4:62:21"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 0,
-               "port" : 80
-            },
-            "dstOui" : [
-               "VMware, Inc."
-            ],
-            "dstOuiCnt" : 1,
-            "dstRIR" : "ARIN",
-            "ethertype" : 2048,
-            "fileId" : [],
-            "firstPacket" : 1532525528386,
-            "http" : {
-               "clientVersion" : [
-                  "1.1"
-               ],
-               "clientVersionCnt" : 1,
-               "host" : [
-                  "www.google-analytics.com"
-               ],
-               "hostCnt" : 1,
-               "key" : [
-                  "_gid",
-                  "_r",
-                  "_s",
-                  "_u",
-                  "_v",
-                  "a",
-                  "cid",
-                  "de",
-                  "dl",
-                  "dt",
-                  "fl",
-                  "gjid",
-                  "je",
-                  "jid",
-                  "sd",
-                  "sr",
-                  "t",
-                  "tid",
-                  "ul",
-                  "v",
-                  "vp",
-                  "z"
-               ],
-               "keyCnt" : 22,
-               "method" : [
-                  "GET"
-               ],
-               "method-GET" : 1,
-               "methodCnt" : 1,
-               "path" : [
-                  "/r/collect"
-               ],
-               "pathCnt" : 1,
-               "request-referer" : [
-                  "http://whc.unesco.org/en/interactive-map/"
-               ],
-               "request-refererCnt" : 1,
-               "requestHeader" : [
-                  "accept",
-                  "accept-encoding",
-                  "accept-language",
-                  "connection",
-                  "host",
-                  "referer",
-                  "user-agent"
-               ],
-               "requestHeaderCnt" : 7,
-               "requestHeaderField" : [
-                  "accept",
-                  "accept-encoding",
-                  "accept-language",
-                  "connection"
-               ],
-               "requestHeaderValue" : [
-                  "en-us",
-                  "gzip, deflate",
-                  "image/png, image/svg+xml, image/jxr, image/*;q=0.8, */*;q=0.5",
-                  "keep-alive"
-               ],
-               "requestHeaderValueCnt" : 4,
-               "uri" : [
-                  "www.google-analytics.com/r/collect?v=1&_v=j68&a=975770366&t=pageview&_s=1&dl=http%3A%2F%2Fwhc.unesco.org%2Fen%2Finteractive-map%2F&ul=en-us&de=utf-8&dt=UNESCO%20World%20Heritage%20Centre%20-%20Interactive%20Maps&sd=24-bit&sr=1350x615&vp=1350x498&je=1&fl=18.0%20r0&_u=AACAAAQ~&jid=1247892784&gjid=163867201&cid=1751603294.1532525413&tid=UA-6025718-3&_gid=775336169.1532525413&_r=1&z=687894861"
-               ],
-               "uriCnt" : 1,
-               "useragent" : [
-                  "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/42.0.2311.135 Safari/537.36 Edge/12.10240"
-               ],
-               "useragentCnt" : 1,
-               "value" : [
-                  "1",
-                  "1247892784",
-                  "1350x498",
-                  "1350x615",
-                  "163867201",
-                  "1751603294.1532525413",
-                  "18.0 r0",
-                  "24-bit",
-                  "687894861",
-                  "775336169.1532525413",
-                  "975770366",
-                  "AACAAAQ~",
-                  "UA-6025718-3",
-                  "UNESCO World Heritage Centre - Interactive Maps",
-                  "en-us",
-                  "http://whc.unesco.org/en/interactive-map/",
-                  "j68",
-                  "pageview",
-                  "utf-8"
-               ],
-               "valueCnt" : 19
-            },
-            "ipProtocol" : 6,
-            "lastPacket" : 1532525528386,
-            "length" : 0,
-            "network" : {
-               "bytes" : 816,
-               "community_id" : "1:TJNI9nAIXv4bSmp2zeP/lBtz9EI=",
-               "packets" : 1
-            },
-            "node" : "test",
-            "packetLen" : [
-               832
-            ],
-            "packetPos" : [
-               3866
-            ],
-            "packetRange" : {
-               "gte" : 1532525528386,
-               "lte" : 1532525528386
-            },
-            "protocol" : [
-               "http",
-               "tcp"
-            ],
-            "protocolCnt" : 2,
-            "segmentCnt" : 1,
-            "server" : {
-               "bytes" : 0
-            },
-            "source" : {
-               "bytes" : 816,
-               "ip" : "192.168.25.150",
-               "mac" : [
-                  "00:0c:29:6f:84:37"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 1,
-               "port" : 49733
-            },
-            "srcOui" : [
-               "VMware, Inc."
-            ],
-            "srcOuiCnt" : 1,
-            "srcRIR" : "ARIN",
-            "srcTTL" : [
-               128
-            ],
-            "srcTTLCnt" : 1,
-            "tcpflags" : {
-               "ack" : 0,
-               "dstZero" : 0,
-               "fin" : 0,
-               "psh" : 1,
-               "rst" : 0,
-               "srcZero" : 0,
-               "syn" : 0,
-               "syn-ack" : 0,
-               "urg" : 0
-            },
-            "totDataBytes" : 0
-         },
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions3-180725"
-            }
-         }
-      },
-      {
-         "body" : {
-            "@timestamp" : "SET",
-            "client" : {
-               "bytes" : 0
-            },
-            "destination" : {
-               "as" : {
-                  "full" : "AS15169 Google LLC",
-                  "number" : 15169,
-                  "organization" : {
-                     "name" : "Google LLC"
-                  }
-               },
-               "bytes" : 0,
-               "geo" : {
-                  "country_iso_code" : "US"
-               },
-               "ip" : "74.125.24.95",
-               "mac" : [
-                  "00:50:56:f4:62:21"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 0,
-               "port" : 80
-            },
-            "dstOui" : [
-               "VMware, Inc."
-            ],
-            "dstOuiCnt" : 1,
-            "dstRIR" : "ARIN",
-            "ethertype" : 2048,
-            "fileId" : [],
-            "firstPacket" : 1532525533174,
-            "http" : {
-               "clientVersion" : [
-                  "1.1"
-               ],
-               "clientVersionCnt" : 1,
-               "host" : [
-                  "maps.googleapis.com"
-               ],
-               "hostCnt" : 1,
-               "key" : [
-                  "10e1",
-                  "1shttp://whc.unesco.org/en/interactive-map/",
-                  "7s164tbp",
-                  "callback",
-                  "token"
-               ],
-               "keyCnt" : 5,
-               "method" : [
-                  "GET"
-               ],
-               "method-GET" : 1,
-               "methodCnt" : 1,
-               "path" : [
-                  "/maps/api/js/QuotaService.RecordEvent"
-               ],
-               "pathCnt" : 1,
-               "request-referer" : [
-                  "http://whc.unesco.org/en/interactive-map/"
-               ],
-               "request-refererCnt" : 1,
-               "requestHeader" : [
-                  "accept",
-                  "accept-encoding",
-                  "accept-language",
-                  "connection",
-                  "host",
-                  "referer",
-                  "user-agent"
-               ],
-               "requestHeaderCnt" : 7,
-               "requestHeaderField" : [
-                  "accept",
-                  "accept-encoding",
-                  "accept-language",
-                  "connection"
-               ],
-               "requestHeaderValue" : [
-                  "application/javascript, */*;q=0.8",
-                  "en-us",
-                  "gzip, deflate",
-                  "keep-alive"
-               ],
-               "requestHeaderValueCnt" : 4,
-               "uri" : [
-                  "maps.googleapis.com/maps/api/js/QuotaService.RecordEvent?1shttp%3A%2F%2Fwhc.unesco.org%2Fen%2Finteractive-map%2F&7s164tbp&10e1&callback=_xdc_._iqnmv1&token=71150"
-               ],
-               "uriCnt" : 1,
-               "useragent" : [
-                  "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/42.0.2311.135 Safari/537.36 Edge/12.10240"
-               ],
-               "useragentCnt" : 1,
-               "value" : [
-                  "71150",
-                  "_xdc_._iqnmv1"
-               ],
-               "valueCnt" : 2
-            },
-            "ipProtocol" : 6,
-            "lastPacket" : 1532525533174,
-            "length" : 0,
-            "network" : {
-               "bytes" : 558,
-               "community_id" : "1:wo4B1UeuDfXGS5DHxQtdYvNngS4=",
-               "packets" : 1
-            },
-            "node" : "test",
-            "packetLen" : [
-               574
-            ],
-            "packetPos" : [
-               4698
-            ],
-            "packetRange" : {
-               "gte" : 1532525533174,
-               "lte" : 1532525533174
-            },
-            "protocol" : [
-               "http",
-               "tcp"
-            ],
-            "protocolCnt" : 2,
-            "segmentCnt" : 1,
-            "server" : {
-               "bytes" : 0
-            },
-            "source" : {
-               "bytes" : 558,
-               "ip" : "192.168.25.150",
-               "mac" : [
-                  "00:0c:29:6f:84:37"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 1,
-               "port" : 49743
-            },
-            "srcOui" : [
-               "VMware, Inc."
-            ],
-            "srcOuiCnt" : 1,
-            "srcRIR" : "ARIN",
-            "srcTTL" : [
-               128
-            ],
-            "srcTTLCnt" : 1,
-            "tcpflags" : {
-               "ack" : 0,
-               "dstZero" : 0,
-               "fin" : 0,
-               "psh" : 1,
-               "rst" : 0,
-               "srcZero" : 0,
-               "syn" : 0,
-               "syn-ack" : 0,
-               "urg" : 0
-            },
-            "totDataBytes" : 0
-         },
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions3-180725"
-            }
-         }
-      },
-      {
-         "body" : {
-            "@timestamp" : "SET",
-            "client" : {
-               "bytes" : 0
-            },
-            "destination" : {
-               "as" : {
-                  "full" : "AS14618 Amazon.com, Inc.",
-                  "number" : 14618,
-                  "organization" : {
-                     "name" : "Amazon.com, Inc."
-                  }
-               },
-               "bytes" : 0,
-               "geo" : {
-                  "city_name" : "Ashburn",
-                  "country_iso_code" : "US",
-                  "region_iso_code" : "VA"
-               },
-               "ip" : "35.174.150.168",
-               "mac" : [
-                  "00:50:56:f4:62:21"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 0,
-               "port" : 80
-            },
-            "dstOui" : [
-               "VMware, Inc."
-            ],
-            "dstOuiCnt" : 1,
-            "dstRIR" : "ARIN",
-            "ethertype" : 2048,
-            "fileId" : [],
-            "firstPacket" : 1532525534767,
-            "http" : {
-               "clientVersion" : [
-                  "1.1"
-               ],
-               "clientVersionCnt" : 1,
-               "cookieKey" : [
-                  "pardot",
-                  "visitor_id413862",
-                  "visitor_id413862-hash"
-               ],
-               "cookieKeyCnt" : 3,
-               "cookieValue" : [
-                  "1f00bdb076b5fb707c70254849819ec1797d3e27cef91a61a9488cb7ca0ebf77f226caa4075591b2591bf9a1ccdf29432c67379b",
-                  "286585660",
-                  "tee2foreb3fefpgvk8u1056vt3"
-               ],
-               "cookieValueCnt" : 3,
-               "host" : [
-                  "build.usgbc.org"
-               ],
-               "hostCnt" : 1,
-               "key" : [
-                  "account_id",
-                  "campaign_id",
-                  "conly",
-                  "pi_opt_in",
-                  "referrer",
-                  "title",
-                  "url",
-                  "visitor_id",
-                  "visitor_id_sign"
-               ],
-               "keyCnt" : 9,
-               "method" : [
-                  "GET"
-               ],
-               "method-GET" : 1,
-               "methodCnt" : 1,
-               "path" : [
-                  "/analytics"
-               ],
-               "pathCnt" : 1,
-               "request-referer" : [
-                  "http://www.sustainablesites.org/"
-               ],
-               "request-refererCnt" : 1,
-               "requestHeader" : [
-                  "accept",
-                  "accept-encoding",
-                  "accept-language",
-                  "connection",
-                  "cookie",
-                  "host",
-                  "referer",
-                  "user-agent"
-               ],
-               "requestHeaderCnt" : 8,
-               "requestHeaderField" : [
-                  "accept",
-                  "accept-encoding",
-                  "accept-language",
-                  "connection",
-                  "cookie"
-               ],
-               "requestHeaderValue" : [
-                  "application/javascript, */*;q=0.8",
-                  "en-us",
-                  "gzip, deflate",
-                  "keep-alive",
-                  "visitor_id413862=286585660; visitor_id413862-hash=1f00bdb076b5fb707c70254849819ec1797d3e27cef91a61a9488cb7ca0ebf77f226caa4075591b2591bf9a1ccdf29432c67379b; pardot=tee2foreb3fefpgvk8u1056vt3"
-               ],
-               "requestHeaderValueCnt" : 5,
-               "uri" : [
-                  "build.usgbc.org/analytics?conly=true&visitor_id=286585660&pi_opt_in=&campaign_id=20694&account_id=414862&title=SITES%20%7C%20Developing%20sustainable%20landscapes&url=http%3A%2F%2Fwww.sustainablesites.org%2F&referrer=&visitor_id_sign=1f00bdb076b5fb707c70254849819ec1797d3e27cef91a61a9488cb7ca0ebf77f226caa4075591b2591bf9a1ccdf29432c67379b"
-               ],
-               "uriCnt" : 1,
-               "useragent" : [
-                  "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/42.0.2311.135 Safari/537.36 Edge/12.10240"
-               ],
-               "useragentCnt" : 1,
-               "value" : [
-                  "1f00bdb076b5fb707c70254849819ec1797d3e27cef91a61a9488cb7ca0ebf77f226caa4075591b2591bf9a1ccdf29432c67379b",
-                  "20694",
-                  "286585660",
-                  "414862",
-                  "SITES | Developing sustainable landscapes",
-                  "http://www.sustainablesites.org/",
-                  "true"
-               ],
-               "valueCnt" : 7
-            },
-            "ipProtocol" : 6,
-            "lastPacket" : 1532525534767,
-            "length" : 0,
-            "network" : {
-               "bytes" : 925,
-               "community_id" : "1:cS4Fc1Zfq5CWmbCwTlemXCCc0eQ=",
-               "packets" : 1
-            },
-            "node" : "test",
-            "packetLen" : [
-               941
-            ],
-            "packetPos" : [
-               5272
-            ],
-            "packetRange" : {
-               "gte" : 1532525534767,
-               "lte" : 1532525534767
-            },
-            "protocol" : [
-               "http",
-               "tcp"
-            ],
-            "protocolCnt" : 2,
-            "segmentCnt" : 1,
-            "server" : {
-               "bytes" : 0
-            },
-            "source" : {
-               "bytes" : 925,
-               "ip" : "192.168.25.150",
-               "mac" : [
-                  "00:0c:29:6f:84:37"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 1,
-               "port" : 49738
-            },
-            "srcOui" : [
-               "VMware, Inc."
-            ],
-            "srcOuiCnt" : 1,
-            "srcRIR" : "ARIN",
-            "srcTTL" : [
-               128
-            ],
-            "srcTTLCnt" : 1,
-            "tcpflags" : {
-               "ack" : 0,
-               "dstZero" : 0,
-               "fin" : 0,
-               "psh" : 1,
-               "rst" : 0,
-               "srcZero" : 0,
-               "syn" : 0,
-               "syn-ack" : 0,
-               "urg" : 0
-            },
-            "totDataBytes" : 0
-         },
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions3-180725"
-            }
-         }
-      },
-      {
-         "body" : {
-            "@timestamp" : "SET",
-            "client" : {
-               "bytes" : 0
-            },
-            "destination" : {
-               "as" : {
-                  "full" : "AS26496 GoDaddy.com, LLC",
-                  "number" : 26496,
-                  "organization" : {
-                     "name" : "GoDaddy.com, LLC"
-                  }
-               },
-               "bytes" : 0,
-               "geo" : {
-                  "city_name" : "Scottsdale",
-                  "country_iso_code" : "US",
-                  "region_iso_code" : "AZ"
-               },
-               "ip" : "68.178.213.61",
-               "mac" : [
-                  "00:0c:29:6f:84:37"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 0,
-               "port" : 80
-            },
-            "dstOui" : [
-               "VMware, Inc."
-            ],
-            "dstOuiCnt" : 1,
-            "dstRIR" : "ARIN",
-            "ethertype" : 2048,
-            "fileId" : [],
-            "firstPacket" : 1532525539024,
-            "http" : {
-               "bodyMagic" : [
-                  "text/html"
-               ],
-               "bodyMagicCnt" : 1,
-               "md5" : [
-                  "e96ddceb1c305b9ad21eaae42522c26f"
-               ],
-               "md5Cnt" : 1,
-               "requestBody" : [
-                  "<html><body><h1>403 Forbidden</h1>\nRequest forbidden by administrative rules.\n</body></html>\n\n"
-               ],
-               "requestHeader" : [
-                  "cache-control",
-                  "connection",
-                  "content-type"
-               ],
-               "requestHeaderCnt" : 3,
-               "requestHeaderField" : [
-                  "cache-control",
-                  "connection",
-                  "content-type"
-               ],
-               "requestHeaderValue" : [
-                  "close",
-                  "no-cache",
-                  "text/html"
-               ],
-               "requestHeaderValueCnt" : 3,
-               "serverVersion" : [
-                  "1.0"
-               ],
-               "serverVersionCnt" : 1,
-               "sha256" : [
-                  "9221cfedfc5e03790f46c7890bca21fcc47c5788d89dab0aa0799c492b6ae78a"
-               ],
-               "sha256Cnt" : 1,
-               "statuscode" : [
-                  403
-               ],
-               "statuscodeCnt" : 1
-            },
-            "ipProtocol" : 6,
-            "lastPacket" : 1532525539024,
-            "length" : 0,
-            "network" : {
-               "bytes" : 243,
-               "community_id" : "1:Ez5LrIoKmVgFpI/rMliXltCSNSQ=",
-               "packets" : 1
-            },
-            "node" : "test",
-            "packetLen" : [
-               259
-            ],
-            "packetPos" : [
-               6213
-            ],
-            "packetRange" : {
-               "gte" : 1532525539024,
-               "lte" : 1532525539024
-            },
-            "protocol" : [
-               "http",
-               "tcp"
-            ],
-            "protocolCnt" : 2,
-            "segmentCnt" : 1,
-            "server" : {
-               "bytes" : 0
-            },
-            "source" : {
-               "bytes" : 243,
-               "ip" : "192.168.25.150",
-               "mac" : [
-                  "00:50:56:f4:62:21"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 1,
-               "port" : 49749
-            },
-            "srcOui" : [
-               "VMware, Inc."
-            ],
-            "srcOuiCnt" : 1,
-            "srcRIR" : "ARIN",
-            "srcTTL" : [
-               128
-            ],
-            "srcTTLCnt" : 1,
-            "tags" : [
-               "flip test"
-            ],
-            "tagsCnt" : 1,
-            "tcpflags" : {
-               "ack" : 0,
-               "dstZero" : 0,
-               "fin" : 1,
-               "psh" : 1,
-               "rst" : 0,
-               "srcZero" : 0,
-               "syn" : 0,
-               "syn-ack" : 0,
-               "urg" : 0
-            },
-            "totDataBytes" : 0
-         },
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions3-180725"
-            }
-         }
+ "sessions3" : [
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 0
+    },
+    "destination" : {
+     "as" : {
+      "full" : "AS15169 Google LLC",
+      "number" : 15169,
+      "organization" : {
+       "name" : "Google LLC"
       }
-   ]
+     },
+     "bytes" : 0,
+     "geo" : {
+      "country_iso_code" : "US"
+     },
+     "ip" : "74.125.24.149",
+     "mac" : [
+      "00:50:56:f4:62:21"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 0,
+     "port" : 80
+    },
+    "dstOui" : [
+     "VMware, Inc."
+    ],
+    "dstOuiCnt" : 1,
+    "dstRIR" : "ARIN",
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 1532525510773,
+    "http" : {
+     "clientVersion" : [
+      "1.1"
+     ],
+     "clientVersionCnt" : 1,
+     "cookieKey" : [
+      "IDE"
+     ],
+     "cookieKeyCnt" : 1,
+     "cookieValue" : [
+      "AHWqTUmq5vKag4U1NoZpmbEiY1PYuAYVT8bFXA1KRM6sqXH_QR5G3_2xSz7V6E3B"
+     ],
+     "cookieValueCnt" : 1,
+     "host" : [
+      "4378683.fls.doubleclick.net"
+     ],
+     "hostCnt" : 1,
+     "method" : [
+      "GET"
+     ],
+     "method-GET" : 1,
+     "methodCnt" : 1,
+     "path" : [
+      "/activityi;src=4378683;type=Shang0;cat=Conte0;ord=8420330732348;gtm=G7g;u4=undefined;~oref=http%3A%2F%2Fwww.shangri-la.com%2F"
+     ],
+     "pathCnt" : 1,
+     "request-referer" : [
+      "http://www.shangri-la.com/"
+     ],
+     "request-refererCnt" : 1,
+     "requestHeader" : [
+      "accept",
+      "accept-encoding",
+      "accept-language",
+      "connection",
+      "cookie",
+      "host",
+      "referer",
+      "user-agent"
+     ],
+     "requestHeaderCnt" : 8,
+     "requestHeaderField" : [
+      "accept",
+      "accept-encoding",
+      "accept-language",
+      "connection",
+      "cookie"
+     ],
+     "requestHeaderValue" : [
+      "en-us",
+      "gzip, deflate",
+      "ide=ahwqtumq5vkag4u1nozpmbeiy1pyuayvt8bfxa1krm6sqxh_qr5g3_2xsz7v6e3b",
+      "keep-alive",
+      "text/html, application/xhtml+xml, image/jxr, */*"
+     ],
+     "requestHeaderValueCnt" : 5,
+     "uri" : [
+      "4378683.fls.doubleclick.net/activityi;src=4378683;type=Shang0;cat=Conte0;ord=8420330732348;gtm=G7g;u4=undefined;~oref=http%3A%2F%2Fwww.shangri-la.com%2F?"
+     ],
+     "uriCnt" : 1,
+     "useragent" : [
+      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/42.0.2311.135 Safari/537.36 Edge/12.10240"
+     ],
+     "useragentCnt" : 1
+    },
+    "ipProtocol" : 6,
+    "lastPacket" : 1532525510773,
+    "length" : 0,
+    "network" : {
+     "bytes" : 628,
+     "community_id" : "1:TZq1zqZGQ14FqFo8bDSSyTDUExo=",
+     "packets" : 1
+    },
+    "node" : "test",
+    "packetLen" : [
+     644
+    ],
+    "packetPos" : [
+     24
+    ],
+    "packetRange" : {
+     "gte" : 1532525510773,
+     "lte" : 1532525510773
+    },
+    "protocol" : [
+     "http",
+     "tcp"
+    ],
+    "protocolCnt" : 2,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 0
+    },
+    "source" : {
+     "bytes" : 628,
+     "ip" : "192.168.25.150",
+     "mac" : [
+      "00:0c:29:6f:84:37"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 1,
+     "port" : 49677
+    },
+    "srcOui" : [
+     "VMware, Inc."
+    ],
+    "srcOuiCnt" : 1,
+    "srcRIR" : "ARIN",
+    "srcTTL" : [
+     128
+    ],
+    "srcTTLCnt" : 1,
+    "tcpflags" : {
+     "ack" : 0,
+     "ae" : 0,
+     "cwr" : 0,
+     "dstZero" : 0,
+     "ece" : 0,
+     "fin" : 0,
+     "psh" : 1,
+     "rst" : 0,
+     "srcZero" : 0,
+     "syn" : 0,
+     "syn-ack" : 0,
+     "urg" : 0
+    },
+    "totDataBytes" : 0
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-180725"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 0
+    },
+    "destination" : {
+     "as" : {
+      "full" : "AS4657 StarHub Ltd",
+      "number" : 4657,
+      "organization" : {
+       "name" : "StarHub Ltd"
+      }
+     },
+     "bytes" : 0,
+     "geo" : {
+      "country_iso_code" : "SG"
+     },
+     "ip" : "118.215.80.242",
+     "mac" : [
+      "00:50:56:f4:62:21"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 0,
+     "port" : 80
+    },
+    "dstOui" : [
+     "VMware, Inc."
+    ],
+    "dstOuiCnt" : 1,
+    "dstRIR" : "APNIC",
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 1532525512112,
+    "http" : {
+     "clientVersion" : [
+      "1.1"
+     ],
+     "clientVersionCnt" : 1,
+     "cookieKey" : [
+      "AMCVS_A70E15F354E99A260A4C98A4%40AdobeOrg",
+      "AMCV_A70E15F354E99A260A4C98A4%40AdobeOrg",
+      "_ga",
+      "_gat",
+      "_gid",
+      "aam_uuid",
+      "app_promotion",
+      "mbox",
+      "s_cc",
+      "s_dfa",
+      "s_ppv",
+      "s_ppvl",
+      "s_sq",
+      "segmentid"
+     ],
+     "cookieKeyCnt" : 14,
+     "cookieValue" : [
+      "%5B%5BB%5D%5D",
+      "-330454231%7CMCIDTS%7C17738%7CMCMID%7C00834244270283740751404491874386840551%7CMCAAMLH-1533130240%7C3%7CMCAAMB-1533130240%7C6G1ynYcLPuiQxYZrsz_pkqfLG9yMXBpb2zX5dvJdYQJzPXImdj0y%7CMCOPTOUT-1532532640s%7CNONE%7CMCSYNCSOP%7C411-17745%7CMCAID%7CNONE%7CvVersion%7C3.1.2",
+      "01107346641427687611431242460084872101",
+      "1",
+      "GA1.2.1042544967.1532525440",
+      "GA1.2.349209205.1532525440",
+      "segment%3DC%2Csegment%3Dtesting",
+      "session#f11f91da64134d8183e8dda4dc10aaf4#1532527370|PC#f11f91da64134d8183e8dda4dc10aaf4.22_23#1540301510|check#true#1532525570",
+      "shgshg-web-global",
+      "true",
+      "www.shangri-la.com%2C48%2C48%2C498%2C1350%2C498%2C1350%2C615%2C1%2CL",
+      "www.shangri-la.com%2C52%2C52%2C499%2C1350%2C498%2C1350%2C615%2C1%2CL"
+     ],
+     "cookieValueCnt" : 12,
+     "host" : [
+      "www.shangri-la.com"
+     ],
+     "hostCnt" : 1,
+     "key" : [
+      "dt",
+      "hj"
+     ],
+     "keyCnt" : 2,
+     "method" : [
+      "GET"
+     ],
+     "method-GET" : 1,
+     "methodCnt" : 1,
+     "path" : [
+      "/HotelBookableDateJson.json"
+     ],
+     "pathCnt" : 1,
+     "request-referer" : [
+      "http://www.shangri-la.com/"
+     ],
+     "request-refererCnt" : 1,
+     "requestHeader" : [
+      "accept",
+      "accept-encoding",
+      "accept-language",
+      "connection",
+      "cookie",
+      "host",
+      "referer",
+      "user-agent",
+      "x-requested-with"
+     ],
+     "requestHeaderCnt" : 9,
+     "requestHeaderField" : [
+      "accept",
+      "accept-encoding",
+      "accept-language",
+      "connection",
+      "cookie",
+      "x-requested-with"
+     ],
+     "requestHeaderValue" : [
+      "_ga=ga1.2.349209205.1532525440; _gid=ga1.2.1042544967.1532525440; _gat=1; amcv_a70e15f354e99a260a4c98a4%40adobeorg=-330454231%7cmcidts%7c17738%7cmcmid%7c00834244270283740751404491874386840551%7cmcaamlh-1533130240%7c3%7cmcaamb-1533130240%7c6g1ynyclpuiqxyzrsz_pkqflg9ymxbpb2zx5dvjdyqjzpximdj0y%7cmcoptout-1532532640s%7cnone%7cmcsyncsop%7c411-17745%7cmcaid%7cnone%7cvversion%7c3.1.2; amcvs_a70e15f354e99a260a4c98a4%40adobeorg=1; mbox=session#f11f91da64134d8183e8dda4dc10aaf4#1532527370|pc#f11f91da64134d8183e8dda4dc10aaf4.22_23#1540301510|check#true#1532525570; s_dfa=shgshg-web-global; s_cc=true; s_ppvl=www.shangri-la.com%2c52%2c52%2c499%2c1350%2c498%2c1350%2c615%2c1%2cl; s_ppv=www.shangri-la.com%2c48%2c48%2c498%2c1350%2c498%2c1350%2c615%2c1%2cl; s_sq=%5b%5bb%5d%5d; segmentid=segment%3dc%2csegment%3dtesting; aam_uuid=01107346641427687611431242460084872101; app_promotion=1",
+      "application/json, text/javascript, */*; q=0.01",
+      "en-us",
+      "gzip, deflate",
+      "keep-alive",
+      "xmlhttprequest"
+     ],
+     "requestHeaderValueCnt" : 6,
+     "uri" : [
+      "www.shangri-la.com/HotelBookableDateJson.json?dt=2018072521&hj=1"
+     ],
+     "uriCnt" : 1,
+     "useragent" : [
+      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/42.0.2311.135 Safari/537.36 Edge/12.10240"
+     ],
+     "useragentCnt" : 1,
+     "value" : [
+      "1",
+      "2018072521"
+     ],
+     "valueCnt" : 2
+    },
+    "ipProtocol" : 6,
+    "lastPacket" : 1532525512112,
+    "length" : 0,
+    "network" : {
+     "bytes" : 1378,
+     "community_id" : "1:Xr3moorFsxAHU3AgXgAwT7VAl5w=",
+     "packets" : 1
+    },
+    "node" : "test",
+    "packetLen" : [
+     1394
+    ],
+    "packetPos" : [
+     668
+    ],
+    "packetRange" : {
+     "gte" : 1532525512112,
+     "lte" : 1532525512112
+    },
+    "protocol" : [
+     "http",
+     "tcp"
+    ],
+    "protocolCnt" : 2,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 0
+    },
+    "source" : {
+     "bytes" : 1378,
+     "ip" : "192.168.25.150",
+     "mac" : [
+      "00:0c:29:6f:84:37"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 1,
+     "port" : 49654
+    },
+    "srcOui" : [
+     "VMware, Inc."
+    ],
+    "srcOuiCnt" : 1,
+    "srcRIR" : "ARIN",
+    "srcTTL" : [
+     128
+    ],
+    "srcTTLCnt" : 1,
+    "tcpflags" : {
+     "ack" : 0,
+     "ae" : 0,
+     "cwr" : 0,
+     "dstZero" : 0,
+     "ece" : 0,
+     "fin" : 0,
+     "psh" : 1,
+     "rst" : 0,
+     "srcZero" : 0,
+     "syn" : 0,
+     "syn-ack" : 0,
+     "urg" : 0
+    },
+    "totDataBytes" : 0
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-180725"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 0
+    },
+    "destination" : {
+     "as" : {
+      "full" : "AS16509 Amazon.com, Inc.",
+      "number" : 16509,
+      "organization" : {
+       "name" : "Amazon.com, Inc."
+      }
+     },
+     "bytes" : 0,
+     "geo" : {
+      "city_name" : "Tokyo",
+      "country_iso_code" : "JP",
+      "region_iso_code" : "13"
+     },
+     "ip" : "13.115.50.210",
+     "mac" : [
+      "00:50:56:f4:62:21"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 0,
+     "port" : 80
+    },
+    "dstOui" : [
+     "VMware, Inc."
+    ],
+    "dstOuiCnt" : 1,
+    "dstRIR" : "ARIN",
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 1532525512547,
+    "http" : {
+     "clientVersion" : [
+      "1.1"
+     ],
+     "clientVersionCnt" : 1,
+     "host" : [
+      "rtb.gumgum.com"
+     ],
+     "hostCnt" : 1,
+     "key" : [
+      "b",
+      "i"
+     ],
+     "keyCnt" : 2,
+     "method" : [
+      "GET"
+     ],
+     "method-GET" : 1,
+     "methodCnt" : 1,
+     "path" : [
+      "/usersync"
+     ],
+     "pathCnt" : 1,
+     "request-referer" : [
+      "http://www.shangri-la.com/"
+     ],
+     "request-refererCnt" : 1,
+     "requestHeader" : [
+      "accept",
+      "accept-encoding",
+      "accept-language",
+      "connection",
+      "host",
+      "referer",
+      "user-agent"
+     ],
+     "requestHeaderCnt" : 7,
+     "requestHeaderField" : [
+      "accept",
+      "accept-encoding",
+      "accept-language",
+      "connection"
+     ],
+     "requestHeaderValue" : [
+      "en-us",
+      "gzip, deflate",
+      "image/png, image/svg+xml, image/jxr, image/*;q=0.8, */*;q=0.5",
+      "keep-alive"
+     ],
+     "requestHeaderValueCnt" : 4,
+     "uri" : [
+      "rtb.gumgum.com/usersync?b=ada&i=407182987561"
+     ],
+     "uriCnt" : 1,
+     "useragent" : [
+      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/42.0.2311.135 Safari/537.36 Edge/12.10240"
+     ],
+     "useragentCnt" : 1,
+     "value" : [
+      "407182987561",
+      "ada"
+     ],
+     "valueCnt" : 2
+    },
+    "ipProtocol" : 6,
+    "lastPacket" : 1532525512547,
+    "length" : 0,
+    "network" : {
+     "bytes" : 454,
+     "community_id" : "1:7VGk+e41s6jkYHIWgawTY/6jbmI=",
+     "packets" : 1
+    },
+    "node" : "test",
+    "packetLen" : [
+     470
+    ],
+    "packetPos" : [
+     2062
+    ],
+    "packetRange" : {
+     "gte" : 1532525512547,
+     "lte" : 1532525512547
+    },
+    "protocol" : [
+     "http",
+     "tcp"
+    ],
+    "protocolCnt" : 2,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 0
+    },
+    "source" : {
+     "bytes" : 454,
+     "ip" : "192.168.25.150",
+     "mac" : [
+      "00:0c:29:6f:84:37"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 1,
+     "port" : 49683
+    },
+    "srcOui" : [
+     "VMware, Inc."
+    ],
+    "srcOuiCnt" : 1,
+    "srcRIR" : "ARIN",
+    "srcTTL" : [
+     128
+    ],
+    "srcTTLCnt" : 1,
+    "tcpflags" : {
+     "ack" : 0,
+     "ae" : 0,
+     "cwr" : 0,
+     "dstZero" : 0,
+     "ece" : 0,
+     "fin" : 0,
+     "psh" : 1,
+     "rst" : 0,
+     "srcZero" : 0,
+     "syn" : 0,
+     "syn-ack" : 0,
+     "urg" : 0
+    },
+    "totDataBytes" : 0
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-180725"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 0
+    },
+    "destination" : {
+     "as" : {
+      "full" : "AS16625 Akamai Technologies, Inc.",
+      "number" : 16625,
+      "organization" : {
+       "name" : "Akamai Technologies, Inc."
+      }
+     },
+     "bytes" : 0,
+     "geo" : {
+      "country_iso_code" : "US"
+     },
+     "ip" : "104.89.119.175",
+     "mac" : [
+      "00:50:56:f4:62:21"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 0,
+     "port" : 80
+    },
+    "dstOui" : [
+     "VMware, Inc."
+    ],
+    "dstOuiCnt" : 1,
+    "dstRIR" : "ARIN",
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 1532525514170,
+    "http" : {
+     "clientVersion" : [
+      "1.1"
+     ],
+     "clientVersionCnt" : 1,
+     "cookieKey" : [
+      "RT",
+      "ServerPool"
+     ],
+     "cookieKeyCnt" : 2,
+     "cookieValue" : [
+      "%1%enc%3Atg%2FlU7zufFPUle8wLxga3M9JuU9Wqi9L5JCsWOqGF5aUK4qCG413AHFq%2BvIG1jhcNox8JbUSTxk%3D",
+      "R"
+     ],
+     "cookieValueCnt" : 2,
+     "host" : [
+      "www.tamgrt.com"
+     ],
+     "hostCnt" : 1,
+     "md5" : [
+      "7cf4549faee105109c96e5405eb822dc"
+     ],
+     "md5Cnt" : 1,
+     "method" : [
+      "POST"
+     ],
+     "method-POST" : 1,
+     "methodCnt" : 1,
+     "path" : [
+      "/RT"
+     ],
+     "pathCnt" : 1,
+     "request-referer" : [
+      "http://www.shangri-la.com/"
+     ],
+     "request-refererCnt" : 1,
+     "requestBody" : [
+      "id=455187796&event=PAGEVIEW&pixel_version=1"
+     ],
+     "requestHeader" : [
+      "accept",
+      "accept-encoding",
+      "accept-language",
+      "cache-control",
+      "connection",
+      "content-length",
+      "content-type",
+      "cookie",
+      "host",
+      "referer",
+      "user-agent"
+     ],
+     "requestHeaderCnt" : 11,
+     "requestHeaderField" : [
+      "accept",
+      "accept-encoding",
+      "accept-language",
+      "cache-control",
+      "connection",
+      "content-length",
+      "content-type",
+      "cookie"
+     ],
+     "requestHeaderValue" : [
+      "43",
+      "application/x-www-form-urlencoded",
+      "en-us",
+      "gzip, deflate",
+      "keep-alive",
+      "no-cache",
+      "rt=%1%enc%3atg%2flu7zuffpule8wlxga3m9juu9wqi9l5jcswoqgf5auk4qcg413ahfq%2bvig1jhcnox8jbustxk%3d; serverpool=r",
+      "text/html, application/xhtml+xml, image/jxr, */*"
+     ],
+     "requestHeaderValueCnt" : 8,
+     "sha256" : [
+      "0142144c65451fa7271bf7ad30f535706fa1df9d05b8dac160bb6833ad83f72c"
+     ],
+     "sha256Cnt" : 1,
+     "uri" : [
+      "www.tamgrt.com/RT"
+     ],
+     "uriCnt" : 1,
+     "useragent" : [
+      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/42.0.2311.135 Safari/537.36 Edge/12.10240"
+     ],
+     "useragentCnt" : 1
+    },
+    "ipProtocol" : 6,
+    "lastPacket" : 1532525514170,
+    "length" : 0,
+    "network" : {
+     "bytes" : 670,
+     "community_id" : "1:pDHc/Xd19q1ZGWr8XRR6xT/GAko=",
+     "packets" : 1
+    },
+    "node" : "test",
+    "packetLen" : [
+     686
+    ],
+    "packetPos" : [
+     2532
+    ],
+    "packetRange" : {
+     "gte" : 1532525514170,
+     "lte" : 1532525514170
+    },
+    "protocol" : [
+     "http",
+     "tcp"
+    ],
+    "protocolCnt" : 2,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 0
+    },
+    "source" : {
+     "bytes" : 670,
+     "ip" : "192.168.25.150",
+     "mac" : [
+      "00:0c:29:6f:84:37"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 1,
+     "port" : 49708
+    },
+    "srcOui" : [
+     "VMware, Inc."
+    ],
+    "srcOuiCnt" : 1,
+    "srcRIR" : "ARIN",
+    "srcTTL" : [
+     128
+    ],
+    "srcTTLCnt" : 1,
+    "tcpflags" : {
+     "ack" : 0,
+     "ae" : 0,
+     "cwr" : 0,
+     "dstZero" : 0,
+     "ece" : 0,
+     "fin" : 0,
+     "psh" : 1,
+     "rst" : 0,
+     "srcZero" : 0,
+     "syn" : 0,
+     "syn-ack" : 0,
+     "urg" : 0
+    },
+    "totDataBytes" : 0
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-180725"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 0
+    },
+    "destination" : {
+     "as" : {
+      "full" : "AS2830 Verizon Nederland B.V.",
+      "number" : 2830,
+      "organization" : {
+       "name" : "Verizon Nederland B.V."
+      }
+     },
+     "bytes" : 0,
+     "geo" : {
+      "city_name" : "Paris",
+      "country_iso_code" : "FR",
+      "region_iso_code" : "IDF"
+     },
+     "ip" : "193.242.192.43",
+     "mac" : [
+      "00:50:56:f4:62:21"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 0,
+     "port" : 80
+    },
+    "dstOui" : [
+     "VMware, Inc."
+    ],
+    "dstOuiCnt" : 1,
+    "dstRIR" : "RIPE",
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 1532525525879,
+    "http" : {
+     "clientVersion" : [
+      "1.1"
+     ],
+     "clientVersionCnt" : 1,
+     "cookieKey" : [
+      "CFID",
+      "CFTOKEN",
+      "_ga",
+      "_gat",
+      "_gid",
+      "unescomap"
+     ],
+     "cookieKeyCnt" : 6,
+     "cookieValue" : [
+      "1",
+      "64733241d30c35e0-304F31D8-AA72-F50C-3869AA2C5D0DFF17",
+      "77281563",
+      "GA1.2.1751603294.1532525413",
+      "GA1.2.775336169.1532525413",
+      "open"
+     ],
+     "cookieValueCnt" : 6,
+     "host" : [
+      "whc.unesco.org"
+     ],
+     "hostCnt" : 1,
+     "key" : [
+      "_dc",
+      "cid",
+      "l",
+      "mode"
+     ],
+     "keyCnt" : 4,
+     "method" : [
+      "GET"
+     ],
+     "method-GET" : 1,
+     "methodCnt" : 1,
+     "path" : [
+      "/"
+     ],
+     "pathCnt" : 1,
+     "request-referer" : [
+      "http://whc.unesco.org/en/interactive-map/"
+     ],
+     "request-refererCnt" : 1,
+     "requestHeader" : [
+      "accept",
+      "accept-encoding",
+      "accept-language",
+      "connection",
+      "cookie",
+      "host",
+      "referer",
+      "user-agent",
+      "x-requested-with"
+     ],
+     "requestHeaderCnt" : 9,
+     "requestHeaderField" : [
+      "accept",
+      "accept-encoding",
+      "accept-language",
+      "connection",
+      "cookie",
+      "x-requested-with"
+     ],
+     "requestHeaderValue" : [
+      "*/*",
+      "cfid=77281563; cftoken=64733241d30c35e0-304f31d8-aa72-f50c-3869aa2c5d0dff17; unescomap=open; _ga=ga1.2.1751603294.1532525413; _gid=ga1.2.775336169.1532525413; _gat=1",
+      "en-us",
+      "gzip, deflate",
+      "keep-alive",
+      "xmlhttprequest"
+     ],
+     "requestHeaderValueCnt" : 6,
+     "uri" : [
+      "whc.unesco.org/?cid=31&l=en&&mode=json&_dc=1532525525462"
+     ],
+     "uriCnt" : 1,
+     "useragent" : [
+      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/42.0.2311.135 Safari/537.36 Edge/12.10240"
+     ],
+     "useragentCnt" : 1,
+     "value" : [
+      "1532525525462",
+      "31",
+      "en",
+      "json"
+     ],
+     "valueCnt" : 4
+    },
+    "ipProtocol" : 6,
+    "lastPacket" : 1532525525879,
+    "length" : 0,
+    "network" : {
+     "bytes" : 632,
+     "community_id" : "1:XRzKP3QNF/rWqI/10PfCFrEzYS4=",
+     "packets" : 1
+    },
+    "node" : "test",
+    "packetLen" : [
+     648
+    ],
+    "packetPos" : [
+     3218
+    ],
+    "packetRange" : {
+     "gte" : 1532525525879,
+     "lte" : 1532525525879
+    },
+    "protocol" : [
+     "http",
+     "tcp"
+    ],
+    "protocolCnt" : 2,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 0
+    },
+    "source" : {
+     "bytes" : 632,
+     "ip" : "192.168.25.150",
+     "mac" : [
+      "00:0c:29:6f:84:37"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 1,
+     "port" : 49735
+    },
+    "srcOui" : [
+     "VMware, Inc."
+    ],
+    "srcOuiCnt" : 1,
+    "srcRIR" : "ARIN",
+    "srcTTL" : [
+     128
+    ],
+    "srcTTLCnt" : 1,
+    "tcpflags" : {
+     "ack" : 0,
+     "ae" : 0,
+     "cwr" : 0,
+     "dstZero" : 0,
+     "ece" : 0,
+     "fin" : 0,
+     "psh" : 1,
+     "rst" : 0,
+     "srcZero" : 0,
+     "syn" : 0,
+     "syn-ack" : 0,
+     "urg" : 0
+    },
+    "totDataBytes" : 0
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-180725"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 0
+    },
+    "destination" : {
+     "as" : {
+      "full" : "AS15169 Google LLC",
+      "number" : 15169,
+      "organization" : {
+       "name" : "Google LLC"
+      }
+     },
+     "bytes" : 0,
+     "geo" : {
+      "country_iso_code" : "US"
+     },
+     "ip" : "74.125.24.100",
+     "mac" : [
+      "00:50:56:f4:62:21"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 0,
+     "port" : 80
+    },
+    "dstOui" : [
+     "VMware, Inc."
+    ],
+    "dstOuiCnt" : 1,
+    "dstRIR" : "ARIN",
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 1532525528386,
+    "http" : {
+     "clientVersion" : [
+      "1.1"
+     ],
+     "clientVersionCnt" : 1,
+     "host" : [
+      "www.google-analytics.com"
+     ],
+     "hostCnt" : 1,
+     "key" : [
+      "_gid",
+      "_r",
+      "_s",
+      "_u",
+      "_v",
+      "a",
+      "cid",
+      "de",
+      "dl",
+      "dt",
+      "fl",
+      "gjid",
+      "je",
+      "jid",
+      "sd",
+      "sr",
+      "t",
+      "tid",
+      "ul",
+      "v",
+      "vp",
+      "z"
+     ],
+     "keyCnt" : 22,
+     "method" : [
+      "GET"
+     ],
+     "method-GET" : 1,
+     "methodCnt" : 1,
+     "path" : [
+      "/r/collect"
+     ],
+     "pathCnt" : 1,
+     "request-referer" : [
+      "http://whc.unesco.org/en/interactive-map/"
+     ],
+     "request-refererCnt" : 1,
+     "requestHeader" : [
+      "accept",
+      "accept-encoding",
+      "accept-language",
+      "connection",
+      "host",
+      "referer",
+      "user-agent"
+     ],
+     "requestHeaderCnt" : 7,
+     "requestHeaderField" : [
+      "accept",
+      "accept-encoding",
+      "accept-language",
+      "connection"
+     ],
+     "requestHeaderValue" : [
+      "en-us",
+      "gzip, deflate",
+      "image/png, image/svg+xml, image/jxr, image/*;q=0.8, */*;q=0.5",
+      "keep-alive"
+     ],
+     "requestHeaderValueCnt" : 4,
+     "uri" : [
+      "www.google-analytics.com/r/collect?v=1&_v=j68&a=975770366&t=pageview&_s=1&dl=http%3A%2F%2Fwhc.unesco.org%2Fen%2Finteractive-map%2F&ul=en-us&de=utf-8&dt=UNESCO%20World%20Heritage%20Centre%20-%20Interactive%20Maps&sd=24-bit&sr=1350x615&vp=1350x498&je=1&fl=18.0%20r0&_u=AACAAAQ~&jid=1247892784&gjid=163867201&cid=1751603294.1532525413&tid=UA-6025718-3&_gid=775336169.1532525413&_r=1&z=687894861"
+     ],
+     "uriCnt" : 1,
+     "useragent" : [
+      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/42.0.2311.135 Safari/537.36 Edge/12.10240"
+     ],
+     "useragentCnt" : 1,
+     "value" : [
+      "1",
+      "1247892784",
+      "1350x498",
+      "1350x615",
+      "163867201",
+      "1751603294.1532525413",
+      "18.0 r0",
+      "24-bit",
+      "687894861",
+      "775336169.1532525413",
+      "975770366",
+      "AACAAAQ~",
+      "UA-6025718-3",
+      "UNESCO World Heritage Centre - Interactive Maps",
+      "en-us",
+      "http://whc.unesco.org/en/interactive-map/",
+      "j68",
+      "pageview",
+      "utf-8"
+     ],
+     "valueCnt" : 19
+    },
+    "ipProtocol" : 6,
+    "lastPacket" : 1532525528386,
+    "length" : 0,
+    "network" : {
+     "bytes" : 816,
+     "community_id" : "1:TJNI9nAIXv4bSmp2zeP/lBtz9EI=",
+     "packets" : 1
+    },
+    "node" : "test",
+    "packetLen" : [
+     832
+    ],
+    "packetPos" : [
+     3866
+    ],
+    "packetRange" : {
+     "gte" : 1532525528386,
+     "lte" : 1532525528386
+    },
+    "protocol" : [
+     "http",
+     "tcp"
+    ],
+    "protocolCnt" : 2,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 0
+    },
+    "source" : {
+     "bytes" : 816,
+     "ip" : "192.168.25.150",
+     "mac" : [
+      "00:0c:29:6f:84:37"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 1,
+     "port" : 49733
+    },
+    "srcOui" : [
+     "VMware, Inc."
+    ],
+    "srcOuiCnt" : 1,
+    "srcRIR" : "ARIN",
+    "srcTTL" : [
+     128
+    ],
+    "srcTTLCnt" : 1,
+    "tcpflags" : {
+     "ack" : 0,
+     "ae" : 0,
+     "cwr" : 0,
+     "dstZero" : 0,
+     "ece" : 0,
+     "fin" : 0,
+     "psh" : 1,
+     "rst" : 0,
+     "srcZero" : 0,
+     "syn" : 0,
+     "syn-ack" : 0,
+     "urg" : 0
+    },
+    "totDataBytes" : 0
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-180725"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 0
+    },
+    "destination" : {
+     "as" : {
+      "full" : "AS15169 Google LLC",
+      "number" : 15169,
+      "organization" : {
+       "name" : "Google LLC"
+      }
+     },
+     "bytes" : 0,
+     "geo" : {
+      "country_iso_code" : "US"
+     },
+     "ip" : "74.125.24.95",
+     "mac" : [
+      "00:50:56:f4:62:21"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 0,
+     "port" : 80
+    },
+    "dstOui" : [
+     "VMware, Inc."
+    ],
+    "dstOuiCnt" : 1,
+    "dstRIR" : "ARIN",
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 1532525533174,
+    "http" : {
+     "clientVersion" : [
+      "1.1"
+     ],
+     "clientVersionCnt" : 1,
+     "host" : [
+      "maps.googleapis.com"
+     ],
+     "hostCnt" : 1,
+     "key" : [
+      "10e1",
+      "1shttp://whc.unesco.org/en/interactive-map/",
+      "7s164tbp",
+      "callback",
+      "token"
+     ],
+     "keyCnt" : 5,
+     "method" : [
+      "GET"
+     ],
+     "method-GET" : 1,
+     "methodCnt" : 1,
+     "path" : [
+      "/maps/api/js/QuotaService.RecordEvent"
+     ],
+     "pathCnt" : 1,
+     "request-referer" : [
+      "http://whc.unesco.org/en/interactive-map/"
+     ],
+     "request-refererCnt" : 1,
+     "requestHeader" : [
+      "accept",
+      "accept-encoding",
+      "accept-language",
+      "connection",
+      "host",
+      "referer",
+      "user-agent"
+     ],
+     "requestHeaderCnt" : 7,
+     "requestHeaderField" : [
+      "accept",
+      "accept-encoding",
+      "accept-language",
+      "connection"
+     ],
+     "requestHeaderValue" : [
+      "application/javascript, */*;q=0.8",
+      "en-us",
+      "gzip, deflate",
+      "keep-alive"
+     ],
+     "requestHeaderValueCnt" : 4,
+     "uri" : [
+      "maps.googleapis.com/maps/api/js/QuotaService.RecordEvent?1shttp%3A%2F%2Fwhc.unesco.org%2Fen%2Finteractive-map%2F&7s164tbp&10e1&callback=_xdc_._iqnmv1&token=71150"
+     ],
+     "uriCnt" : 1,
+     "useragent" : [
+      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/42.0.2311.135 Safari/537.36 Edge/12.10240"
+     ],
+     "useragentCnt" : 1,
+     "value" : [
+      "71150",
+      "_xdc_._iqnmv1"
+     ],
+     "valueCnt" : 2
+    },
+    "ipProtocol" : 6,
+    "lastPacket" : 1532525533174,
+    "length" : 0,
+    "network" : {
+     "bytes" : 558,
+     "community_id" : "1:wo4B1UeuDfXGS5DHxQtdYvNngS4=",
+     "packets" : 1
+    },
+    "node" : "test",
+    "packetLen" : [
+     574
+    ],
+    "packetPos" : [
+     4698
+    ],
+    "packetRange" : {
+     "gte" : 1532525533174,
+     "lte" : 1532525533174
+    },
+    "protocol" : [
+     "http",
+     "tcp"
+    ],
+    "protocolCnt" : 2,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 0
+    },
+    "source" : {
+     "bytes" : 558,
+     "ip" : "192.168.25.150",
+     "mac" : [
+      "00:0c:29:6f:84:37"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 1,
+     "port" : 49743
+    },
+    "srcOui" : [
+     "VMware, Inc."
+    ],
+    "srcOuiCnt" : 1,
+    "srcRIR" : "ARIN",
+    "srcTTL" : [
+     128
+    ],
+    "srcTTLCnt" : 1,
+    "tcpflags" : {
+     "ack" : 0,
+     "ae" : 0,
+     "cwr" : 0,
+     "dstZero" : 0,
+     "ece" : 0,
+     "fin" : 0,
+     "psh" : 1,
+     "rst" : 0,
+     "srcZero" : 0,
+     "syn" : 0,
+     "syn-ack" : 0,
+     "urg" : 0
+    },
+    "totDataBytes" : 0
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-180725"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 0
+    },
+    "destination" : {
+     "as" : {
+      "full" : "AS14618 Amazon.com, Inc.",
+      "number" : 14618,
+      "organization" : {
+       "name" : "Amazon.com, Inc."
+      }
+     },
+     "bytes" : 0,
+     "geo" : {
+      "city_name" : "Ashburn",
+      "country_iso_code" : "US",
+      "region_iso_code" : "VA"
+     },
+     "ip" : "35.174.150.168",
+     "mac" : [
+      "00:50:56:f4:62:21"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 0,
+     "port" : 80
+    },
+    "dstOui" : [
+     "VMware, Inc."
+    ],
+    "dstOuiCnt" : 1,
+    "dstRIR" : "ARIN",
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 1532525534767,
+    "http" : {
+     "clientVersion" : [
+      "1.1"
+     ],
+     "clientVersionCnt" : 1,
+     "cookieKey" : [
+      "pardot",
+      "visitor_id413862",
+      "visitor_id413862-hash"
+     ],
+     "cookieKeyCnt" : 3,
+     "cookieValue" : [
+      "1f00bdb076b5fb707c70254849819ec1797d3e27cef91a61a9488cb7ca0ebf77f226caa4075591b2591bf9a1ccdf29432c67379b",
+      "286585660",
+      "tee2foreb3fefpgvk8u1056vt3"
+     ],
+     "cookieValueCnt" : 3,
+     "host" : [
+      "build.usgbc.org"
+     ],
+     "hostCnt" : 1,
+     "key" : [
+      "account_id",
+      "campaign_id",
+      "conly",
+      "pi_opt_in",
+      "referrer",
+      "title",
+      "url",
+      "visitor_id",
+      "visitor_id_sign"
+     ],
+     "keyCnt" : 9,
+     "method" : [
+      "GET"
+     ],
+     "method-GET" : 1,
+     "methodCnt" : 1,
+     "path" : [
+      "/analytics"
+     ],
+     "pathCnt" : 1,
+     "request-referer" : [
+      "http://www.sustainablesites.org/"
+     ],
+     "request-refererCnt" : 1,
+     "requestHeader" : [
+      "accept",
+      "accept-encoding",
+      "accept-language",
+      "connection",
+      "cookie",
+      "host",
+      "referer",
+      "user-agent"
+     ],
+     "requestHeaderCnt" : 8,
+     "requestHeaderField" : [
+      "accept",
+      "accept-encoding",
+      "accept-language",
+      "connection",
+      "cookie"
+     ],
+     "requestHeaderValue" : [
+      "application/javascript, */*;q=0.8",
+      "en-us",
+      "gzip, deflate",
+      "keep-alive",
+      "visitor_id413862=286585660; visitor_id413862-hash=1f00bdb076b5fb707c70254849819ec1797d3e27cef91a61a9488cb7ca0ebf77f226caa4075591b2591bf9a1ccdf29432c67379b; pardot=tee2foreb3fefpgvk8u1056vt3"
+     ],
+     "requestHeaderValueCnt" : 5,
+     "uri" : [
+      "build.usgbc.org/analytics?conly=true&visitor_id=286585660&pi_opt_in=&campaign_id=20694&account_id=414862&title=SITES%20%7C%20Developing%20sustainable%20landscapes&url=http%3A%2F%2Fwww.sustainablesites.org%2F&referrer=&visitor_id_sign=1f00bdb076b5fb707c70254849819ec1797d3e27cef91a61a9488cb7ca0ebf77f226caa4075591b2591bf9a1ccdf29432c67379b"
+     ],
+     "uriCnt" : 1,
+     "useragent" : [
+      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/42.0.2311.135 Safari/537.36 Edge/12.10240"
+     ],
+     "useragentCnt" : 1,
+     "value" : [
+      "1f00bdb076b5fb707c70254849819ec1797d3e27cef91a61a9488cb7ca0ebf77f226caa4075591b2591bf9a1ccdf29432c67379b",
+      "20694",
+      "286585660",
+      "414862",
+      "SITES | Developing sustainable landscapes",
+      "http://www.sustainablesites.org/",
+      "true"
+     ],
+     "valueCnt" : 7
+    },
+    "ipProtocol" : 6,
+    "lastPacket" : 1532525534767,
+    "length" : 0,
+    "network" : {
+     "bytes" : 925,
+     "community_id" : "1:cS4Fc1Zfq5CWmbCwTlemXCCc0eQ=",
+     "packets" : 1
+    },
+    "node" : "test",
+    "packetLen" : [
+     941
+    ],
+    "packetPos" : [
+     5272
+    ],
+    "packetRange" : {
+     "gte" : 1532525534767,
+     "lte" : 1532525534767
+    },
+    "protocol" : [
+     "http",
+     "tcp"
+    ],
+    "protocolCnt" : 2,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 0
+    },
+    "source" : {
+     "bytes" : 925,
+     "ip" : "192.168.25.150",
+     "mac" : [
+      "00:0c:29:6f:84:37"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 1,
+     "port" : 49738
+    },
+    "srcOui" : [
+     "VMware, Inc."
+    ],
+    "srcOuiCnt" : 1,
+    "srcRIR" : "ARIN",
+    "srcTTL" : [
+     128
+    ],
+    "srcTTLCnt" : 1,
+    "tcpflags" : {
+     "ack" : 0,
+     "ae" : 0,
+     "cwr" : 0,
+     "dstZero" : 0,
+     "ece" : 0,
+     "fin" : 0,
+     "psh" : 1,
+     "rst" : 0,
+     "srcZero" : 0,
+     "syn" : 0,
+     "syn-ack" : 0,
+     "urg" : 0
+    },
+    "totDataBytes" : 0
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-180725"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 0
+    },
+    "destination" : {
+     "as" : {
+      "full" : "AS26496 GoDaddy.com, LLC",
+      "number" : 26496,
+      "organization" : {
+       "name" : "GoDaddy.com, LLC"
+      }
+     },
+     "bytes" : 0,
+     "geo" : {
+      "city_name" : "Scottsdale",
+      "country_iso_code" : "US",
+      "region_iso_code" : "AZ"
+     },
+     "ip" : "68.178.213.61",
+     "mac" : [
+      "00:0c:29:6f:84:37"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 0,
+     "port" : 80
+    },
+    "dstOui" : [
+     "VMware, Inc."
+    ],
+    "dstOuiCnt" : 1,
+    "dstRIR" : "ARIN",
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 1532525539024,
+    "http" : {
+     "bodyMagic" : [
+      "text/html"
+     ],
+     "bodyMagicCnt" : 1,
+     "md5" : [
+      "e96ddceb1c305b9ad21eaae42522c26f"
+     ],
+     "md5Cnt" : 1,
+     "requestBody" : [
+      "<html><body><h1>403 Forbidden</h1>\nRequest forbidden by administrative rules.\n</body></html>\n\n"
+     ],
+     "requestHeader" : [
+      "cache-control",
+      "connection",
+      "content-type"
+     ],
+     "requestHeaderCnt" : 3,
+     "requestHeaderField" : [
+      "cache-control",
+      "connection",
+      "content-type"
+     ],
+     "requestHeaderValue" : [
+      "close",
+      "no-cache",
+      "text/html"
+     ],
+     "requestHeaderValueCnt" : 3,
+     "serverVersion" : [
+      "1.0"
+     ],
+     "serverVersionCnt" : 1,
+     "sha256" : [
+      "9221cfedfc5e03790f46c7890bca21fcc47c5788d89dab0aa0799c492b6ae78a"
+     ],
+     "sha256Cnt" : 1,
+     "statuscode" : [
+      403
+     ],
+     "statuscodeCnt" : 1
+    },
+    "ipProtocol" : 6,
+    "lastPacket" : 1532525539024,
+    "length" : 0,
+    "network" : {
+     "bytes" : 243,
+     "community_id" : "1:Ez5LrIoKmVgFpI/rMliXltCSNSQ=",
+     "packets" : 1
+    },
+    "node" : "test",
+    "packetLen" : [
+     259
+    ],
+    "packetPos" : [
+     6213
+    ],
+    "packetRange" : {
+     "gte" : 1532525539024,
+     "lte" : 1532525539024
+    },
+    "protocol" : [
+     "http",
+     "tcp"
+    ],
+    "protocolCnt" : 2,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 0
+    },
+    "source" : {
+     "bytes" : 243,
+     "ip" : "192.168.25.150",
+     "mac" : [
+      "00:50:56:f4:62:21"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 1,
+     "port" : 49749
+    },
+    "srcOui" : [
+     "VMware, Inc."
+    ],
+    "srcOuiCnt" : 1,
+    "srcRIR" : "ARIN",
+    "srcTTL" : [
+     128
+    ],
+    "srcTTLCnt" : 1,
+    "tags" : [
+     "flip test"
+    ],
+    "tagsCnt" : 1,
+    "tcpflags" : {
+     "ack" : 0,
+     "ae" : 0,
+     "cwr" : 0,
+     "dstZero" : 0,
+     "ece" : 0,
+     "fin" : 1,
+     "psh" : 1,
+     "rst" : 0,
+     "srcZero" : 0,
+     "syn" : 0,
+     "syn-ack" : 0,
+     "urg" : 0
+    },
+    "totDataBytes" : 0
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-180725"
+    }
+   }
+  }
+ ]
 }
 

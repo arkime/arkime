@@ -238,100 +238,6 @@
    "body" : {
     "@timestamp" : "SET",
     "client" : {
-     "bytes" : 8
-    },
-    "destination" : {
-     "bytes" : 0,
-     "ip" : "ff02::2",
-     "packets" : 0,
-     "port" : 0
-    },
-    "dstOuterASN" : [
-     "---"
-    ],
-    "dstOuterGEO" : [
-     "---"
-    ],
-    "dstOuterIp" : [
-     "127.0.1.100"
-    ],
-    "dstOuterIpCnt" : 1,
-    "dstOuterRIR" : [
-     ""
-    ],
-    "fileId" : [],
-    "firstPacket" : 1415985409932,
-    "icmp" : {
-     "code" : [
-      0
-     ],
-     "type" : [
-      133
-     ]
-    },
-    "ipProtocol" : 58,
-    "lastPacket" : 1415985409932,
-    "length" : 0,
-    "network" : {
-     "bytes" : 100,
-     "community_id" : "1:ZSqdzCvRkWsggi2OBdL85sNCb6Q=",
-     "packets" : 1
-    },
-    "node" : "test",
-    "packetLen" : [
-     116
-    ],
-    "packetPos" : [
-     515
-    ],
-    "packetRange" : {
-     "gte" : 1415985409932,
-     "lte" : 1415985409932
-    },
-    "protocol" : [
-     "gtp",
-     "icmp"
-    ],
-    "protocolCnt" : 2,
-    "segmentCnt" : 1,
-    "server" : {
-     "bytes" : 0
-    },
-    "source" : {
-     "bytes" : 100,
-     "ip" : "fe80::fd00:183:1:1",
-     "packets" : 1,
-     "port" : 0
-    },
-    "srcOuterASN" : [
-     "---"
-    ],
-    "srcOuterGEO" : [
-     "---"
-    ],
-    "srcOuterIp" : [
-     "127.0.1.1"
-    ],
-    "srcOuterIpCnt" : 1,
-    "srcOuterRIR" : [
-     ""
-    ],
-    "srcTTL" : [
-     255
-    ],
-    "srcTTLCnt" : 1,
-    "totDataBytes" : 8
-   },
-   "header" : {
-    "index" : {
-     "_index" : "tests_sessions3-141114"
-    }
-   }
-  },
-  {
-   "body" : {
-    "@timestamp" : "SET",
-    "client" : {
      "bytes" : 48
     },
     "destination" : {
@@ -415,6 +321,100 @@
     ],
     "srcTTLCnt" : 1,
     "totDataBytes" : 48
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-141114"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 8
+    },
+    "destination" : {
+     "bytes" : 0,
+     "ip" : "ff02::2",
+     "packets" : 0,
+     "port" : 0
+    },
+    "dstOuterASN" : [
+     "---"
+    ],
+    "dstOuterGEO" : [
+     "---"
+    ],
+    "dstOuterIp" : [
+     "127.0.1.100"
+    ],
+    "dstOuterIpCnt" : 1,
+    "dstOuterRIR" : [
+     ""
+    ],
+    "fileId" : [],
+    "firstPacket" : 1415985409932,
+    "icmp" : {
+     "code" : [
+      0
+     ],
+     "type" : [
+      133
+     ]
+    },
+    "ipProtocol" : 58,
+    "lastPacket" : 1415985409932,
+    "length" : 0,
+    "network" : {
+     "bytes" : 100,
+     "community_id" : "1:ZSqdzCvRkWsggi2OBdL85sNCb6Q=",
+     "packets" : 1
+    },
+    "node" : "test",
+    "packetLen" : [
+     116
+    ],
+    "packetPos" : [
+     515
+    ],
+    "packetRange" : {
+     "gte" : 1415985409932,
+     "lte" : 1415985409932
+    },
+    "protocol" : [
+     "gtp",
+     "icmp"
+    ],
+    "protocolCnt" : 2,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 0
+    },
+    "source" : {
+     "bytes" : 100,
+     "ip" : "fe80::fd00:183:1:1",
+     "packets" : 1,
+     "port" : 0
+    },
+    "srcOuterASN" : [
+     "---"
+    ],
+    "srcOuterGEO" : [
+     "---"
+    ],
+    "srcOuterIp" : [
+     "127.0.1.1"
+    ],
+    "srcOuterIpCnt" : 1,
+    "srcOuterRIR" : [
+     ""
+    ],
+    "srcTTL" : [
+     255
+    ],
+    "srcTTLCnt" : 1,
+    "totDataBytes" : 8
    },
    "header" : {
     "index" : {
@@ -1011,7 +1011,10 @@
     "srcTTLCnt" : 1,
     "tcpflags" : {
      "ack" : 6,
+     "ae" : 0,
+     "cwr" : 0,
      "dstZero" : 0,
+     "ece" : 0,
      "fin" : 2,
      "psh" : 2,
      "rst" : 0,
@@ -1191,7 +1194,10 @@
     "srcTTLCnt" : 1,
     "tcpflags" : {
      "ack" : 6,
+     "ae" : 0,
+     "cwr" : 0,
      "dstZero" : 0,
+     "ece" : 0,
      "fin" : 2,
      "psh" : 2,
      "rst" : 0,
@@ -1540,7 +1546,10 @@
     "srcTTLCnt" : 1,
     "tcpflags" : {
      "ack" : 11,
+     "ae" : 0,
+     "cwr" : 0,
      "dstZero" : 0,
+     "ece" : 0,
      "fin" : 2,
      "psh" : 7,
      "rst" : 0,
@@ -2294,7 +2303,10 @@
     "srcTTLCnt" : 1,
     "tcpflags" : {
      "ack" : 6,
+     "ae" : 0,
+     "cwr" : 0,
      "dstZero" : 0,
+     "ece" : 0,
      "fin" : 2,
      "psh" : 2,
      "rst" : 0,

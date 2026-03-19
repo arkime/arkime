@@ -1,198 +1,201 @@
 {
-   "sessions3" : [
-      {
-         "body" : {
-            "@timestamp" : "SET",
-            "client" : {
-               "bytes" : 258
-            },
-            "destination" : {
-               "as" : {
-                  "full" : "AS1 Cool Beans!",
-                  "number" : 1,
-                  "organization" : {
-                     "name" : "Cool Beans!"
-                  }
-               },
-               "bytes" : 432,
-               "geo" : {
-                  "country_iso_code" : "CA"
-               },
-               "ip" : "10.0.0.2",
-               "mac" : [
-                  "00:22:83:3f:17:cc",
-                  "2c:6b:f5:d6:17:cc"
-               ],
-               "mac-cnt" : 2,
-               "packets" : 4,
-               "port" : 3268
-            },
-            "dot1q" : {
-               "id" : [
-                  50
-               ],
-               "idCnt" : 1
-            },
-            "dstOui" : [
-               "Juniper Networks"
-            ],
-            "dstOuiCnt" : 1,
-            "dstPayload8" : "3084000000100201",
-            "dstRIR" : "TEST",
-            "dstTTL" : [
-               124
-            ],
-            "dstTTLCnt" : 1,
-            "ethertype" : 2048,
-            "fileId" : [],
-            "firstPacket" : 1463256456040,
-            "initRTT" : 1,
-            "ipProtocol" : 6,
-            "lastPacket" : 1463256637560,
-            "ldap" : {
-               "authtype" : [
-                  "simple"
-               ],
-               "authtypeCnt" : 1,
-               "bindname" : [
-                  "CN=xxxxxxxx,OU=Users,OU=Accounts,DC=xx,DC=xxx,DC=xxxxx,DC=net",
-                  "xxxxxxxxxxx@xx.xxx.xxxxx.net"
-               ],
-               "bindnameCnt" : 2
-            },
-            "length" : 181520,
-            "network" : {
-               "bytes" : 1174,
-               "community_id" : "1:j4eVs7ZWhGeqgvl6jJda0FHPSqQ=",
-               "packets" : 12,
-               "vlan" : {
-                  "id" : [
-                     50
-                  ],
-                  "id-cnt" : 1
-               }
-            },
-            "node" : "test",
-            "packetLen" : [
-               86,
-               86,
-               76,
-               126,
-               96,
-               76,
-               187,
-               218,
-               167,
-               96,
-               76,
-               76
-            ],
-            "packetPos" : [
-               24,
-               110,
-               196,
-               272,
-               398,
-               494,
-               570,
-               757,
-               975,
-               1142,
-               1238,
-               1314
-            ],
-            "packetRange" : {
-               "gte" : 1463256456040,
-               "lte" : 1463256637560
-            },
-            "protocol" : [
-               "ldap",
-               "tcp"
-            ],
-            "protocolCnt" : 2,
-            "segmentCnt" : 1,
-            "server" : {
-               "bytes" : 188
-            },
-            "source" : {
-               "as" : {
-                  "full" : "AS0 This is neat",
-                  "number" : 0,
-                  "organization" : {
-                     "name" : "This is neat"
-                  }
-               },
-               "bytes" : 742,
-               "geo" : {
-                  "country_iso_code" : "RU"
-               },
-               "ip" : "10.0.0.1",
-               "mac" : [
-                  "00:22:83:3f:17:c5",
-                  "2c:6b:f5:d6:17:c5"
-               ],
-               "mac-cnt" : 2,
-               "packets" : 8,
-               "port" : 25936
-            },
-            "srcOui" : [
-               "Juniper Networks"
-            ],
-            "srcOuiCnt" : 1,
-            "srcPayload8" : "3032020101602d02",
-            "srcTTL" : [
-               "251",
-               "52"
-            ],
-            "srcTTLCnt" : 2,
-            "tags" : [
-               "dstip",
-               "srcip"
-            ],
-            "tagsCnt" : 2,
-            "tcpflags" : {
-               "ack" : 3,
-               "dstZero" : 0,
-               "fin" : 0,
-               "psh" : 6,
-               "rst" : 1,
-               "srcZero" : 0,
-               "syn" : 1,
-               "syn-ack" : 1,
-               "urg" : 0
-            },
-            "tcpseq" : {
-               "dst" : 0,
-               "src" : 414901193
-            },
-            "test" : {
-               "ASN" : [
-                  "AS0 This is neat"
-               ],
-               "GEO" : [
-                  "RU"
-               ],
-               "RIR" : [
-                  ""
-               ],
-               "ip" : [
-                  "10.0.0.1"
-               ],
-               "number" : [
-                  33554442
-               ],
-               "string.snow" : [
-                  "16777226:25936,33554442:3268"
-               ]
-            },
-            "totDataBytes" : 446
-         },
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions3-160514"
-            }
-         }
+ "sessions3" : [
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 258
+    },
+    "destination" : {
+     "as" : {
+      "full" : "AS1 Cool Beans!",
+      "number" : 1,
+      "organization" : {
+       "name" : "Cool Beans!"
       }
-   ]
+     },
+     "bytes" : 432,
+     "geo" : {
+      "country_iso_code" : "CA"
+     },
+     "ip" : "10.0.0.2",
+     "mac" : [
+      "00:22:83:3f:17:cc",
+      "2c:6b:f5:d6:17:cc"
+     ],
+     "mac-cnt" : 2,
+     "packets" : 4,
+     "port" : 3268
+    },
+    "dot1q" : {
+     "id" : [
+      50
+     ],
+     "idCnt" : 1
+    },
+    "dstOui" : [
+     "Juniper Networks"
+    ],
+    "dstOuiCnt" : 1,
+    "dstPayload8" : "3084000000100201",
+    "dstRIR" : "TEST",
+    "dstTTL" : [
+     124
+    ],
+    "dstTTLCnt" : 1,
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 1463256456040,
+    "initRTT" : 1,
+    "ipProtocol" : 6,
+    "lastPacket" : 1463256637560,
+    "ldap" : {
+     "authtype" : [
+      "simple"
+     ],
+     "authtypeCnt" : 1,
+     "bindname" : [
+      "CN=xxxxxxxx,OU=Users,OU=Accounts,DC=xx,DC=xxx,DC=xxxxx,DC=net",
+      "xxxxxxxxxxx@xx.xxx.xxxxx.net"
+     ],
+     "bindnameCnt" : 2
+    },
+    "length" : 181520,
+    "network" : {
+     "bytes" : 1174,
+     "community_id" : "1:j4eVs7ZWhGeqgvl6jJda0FHPSqQ=",
+     "packets" : 12,
+     "vlan" : {
+      "id" : [
+       50
+      ],
+      "id-cnt" : 1
+     }
+    },
+    "node" : "test",
+    "packetLen" : [
+     86,
+     86,
+     76,
+     126,
+     96,
+     76,
+     187,
+     218,
+     167,
+     96,
+     76,
+     76
+    ],
+    "packetPos" : [
+     24,
+     110,
+     196,
+     272,
+     398,
+     494,
+     570,
+     757,
+     975,
+     1142,
+     1238,
+     1314
+    ],
+    "packetRange" : {
+     "gte" : 1463256456040,
+     "lte" : 1463256637560
+    },
+    "protocol" : [
+     "ldap",
+     "tcp"
+    ],
+    "protocolCnt" : 2,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 188
+    },
+    "source" : {
+     "as" : {
+      "full" : "AS0 This is neat",
+      "number" : 0,
+      "organization" : {
+       "name" : "This is neat"
+      }
+     },
+     "bytes" : 742,
+     "geo" : {
+      "country_iso_code" : "RU"
+     },
+     "ip" : "10.0.0.1",
+     "mac" : [
+      "00:22:83:3f:17:c5",
+      "2c:6b:f5:d6:17:c5"
+     ],
+     "mac-cnt" : 2,
+     "packets" : 8,
+     "port" : 25936
+    },
+    "srcOui" : [
+     "Juniper Networks"
+    ],
+    "srcOuiCnt" : 1,
+    "srcPayload8" : "3032020101602d02",
+    "srcTTL" : [
+     "251",
+     "52"
+    ],
+    "srcTTLCnt" : 2,
+    "tags" : [
+     "dstip",
+     "srcip"
+    ],
+    "tagsCnt" : 2,
+    "tcpflags" : {
+     "ack" : 3,
+     "ae" : 0,
+     "cwr" : 0,
+     "dstZero" : 0,
+     "ece" : 0,
+     "fin" : 0,
+     "psh" : 6,
+     "rst" : 1,
+     "srcZero" : 0,
+     "syn" : 1,
+     "syn-ack" : 1,
+     "urg" : 0
+    },
+    "tcpseq" : {
+     "dst" : 0,
+     "src" : 414901193
+    },
+    "test" : {
+     "ASN" : [
+      "AS0 This is neat"
+     ],
+     "GEO" : [
+      "RU"
+     ],
+     "RIR" : [
+      ""
+     ],
+     "ip" : [
+      "10.0.0.1"
+     ],
+     "number" : [
+      33554442
+     ],
+     "string.snow" : [
+      "16777226:25936,33554442:3268"
+     ]
+    },
+    "totDataBytes" : 446
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-160514"
+    }
+   }
+  }
+ ]
 }
 

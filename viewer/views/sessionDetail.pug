@@ -359,6 +359,15 @@ dl
         b-dropdown-divider
         +clickableLabelBody('tcpflags.urg', 'URG')
         +clickableFieldActions('tcpflags.urg', false)
+        b-dropdown-divider
+        +clickableLabelBody('tcpflags.ece', 'ECE')
+        +clickableFieldActions('tcpflags.ece', false)
+        b-dropdown-divider
+        +clickableLabelBody('tcpflags.cwr', 'CWR')
+        +clickableFieldActions('tcpflags.cwr', false)
+        b-dropdown-divider
+        +clickableLabelBody('tcpflags.ae', 'AE')
+        +clickableFieldActions('tcpflags.ae', false)
     dd
       span.no-wrap
         strong.ms-1 SYN
@@ -381,6 +390,15 @@ dl
       span.no-wrap
         strong.ms-1 URG
         +clickableValue('tcpflags.urg', session.tcpflags.urg)
+      span.no-wrap
+        strong.ms-1 ECE
+        +clickableValue('tcpflags.ece', session.tcpflags.ece)
+      span.no-wrap
+        strong.ms-1 CWR
+        +clickableValue('tcpflags.cwr', session.tcpflags.cwr)
+      span.no-wrap
+        strong.ms-1 AE
+        +clickableValue('tcpflags.ae', session.tcpflags.ae)
 
   if (session.tcpseq)
     dt
