@@ -1521,7 +1521,11 @@ class User {
 
     this.roles = newRoles;
     await this.expandFromRoles();
-    this.save(() => { });
+    await new Promise((resolve, reject) => {
+      this.save((err) => {
+        if (err) { reject(err); } else { resolve(); }
+      });
+    });
   }
 
   // Set last used info for user, should only be used by Auth
