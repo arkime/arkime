@@ -1,5 +1,5 @@
 # Test addUser.js and general authentication
-use Test::More tests => 75;
+use Test::More tests => 92;
 use Test::Differences;
 use Data::Dumper;
 use ArkimeTest;
@@ -219,6 +219,49 @@ $response = $ArkimeTest::userAgent->post("http://$ArkimeTest::host:8126/Users", 
 is ($response->content, "Permission denied");
 
 
+#### user-role-mappings tests
+
+# Test role based on this.userId ending with '-test'
+$response = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8126/", ':arkime_user' => 'roleuser-test');
+is ($response->code, 200, "roleuser-test auth success");
+$response = viewerGet("/regressionTests/getUser/roleuser-test");
+ok(grep(/^role:testRole$/, @{$response->{roles}}), "roleuser-test has role:testRole");
+ok(grep(/^arkimeUser$/, @{$response->{roles}}), "roleuser-test still has arkimeUser");
+
+# Test role based on header value
+$response = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8126/", ':arkime_user' => 'headeruser', 'x-test-role' => 'special');
+is ($response->code, 200, "headeruser auth success");
+$response = viewerGet("/regressionTests/getUser/headeruser");
+ok(grep(/^role:headerRole$/, @{$response->{roles}}), "headeruser has role:headerRole");
+ok(grep(/^arkimeUser$/, @{$response->{roles}}), "headeruser still has arkimeUser");
+
+# Test that user without matching conditions does NOT get the role
+$response = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8126/", ':arkime_user' => 'normaluser');
+is ($response->code, 200, "normaluser auth success");
+$response = viewerGet("/regressionTests/getUser/normaluser");
+ok(!grep(/^role:testRole$/, @{$response->{roles}}), "normaluser does NOT have role:testRole");
+ok(!grep(/^role:headerRole$/, @{$response->{roles}}), "normaluser does NOT have role:headerRole");
+ok(grep(/^arkimeUser$/, @{$response->{roles}}), "normaluser still has arkimeUser");
+
+# Test combined role (both userId and header must match)
+$response = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8126/", ':arkime_user' => 'combouser', 'x-test-role' => 'combo');
+is ($response->code, 200, "combouser auth success");
+$response = viewerGet("/regressionTests/getUser/combouser");
+ok(grep(/^role:combinedRole$/, @{$response->{roles}}), "combouser has role:combinedRole");
+
+# Test that role is REMOVED when header is no longer present
+$response = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8126/", ':arkime_user' => 'headeruser');
+is ($response->code, 200, "headeruser without header auth success");
+$response = viewerGet("/regressionTests/getUser/headeruser");
+ok(!grep(/^role:headerRole$/, @{$response->{roles}}), "headeruser loses role:headerRole when header missing");
+ok(grep(/^arkimeUser$/, @{$response->{roles}}), "headeruser still has arkimeUser after role removal");
+
+# Test that expression returning false removes the role (combouser without matching header)
+$response = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8126/", ':arkime_user' => 'combouser', 'x-test-role' => 'wrong');
+is ($response->code, 200, "combouser with wrong header auth success");
+$response = viewerGet("/regressionTests/getUser/combouser");
+ok(!grep(/^role:combinedRole$/, @{$response->{roles}}), "combouser loses role:combinedRole when expression is false");
+
 # cleanup
 my $token = getTokenCookie();
 $response = viewerDeleteToken("/api/user/role:role", $token);
@@ -235,12 +278,16 @@ viewerDeleteToken("/api/user/test7", $token);
 viewerDeleteToken("/api/user/test8", $token);
 viewerDeleteToken("/api/user/authtest1", $token);
 viewerDeleteToken("/api/user/authtest2", $token);
+viewerDeleteToken("/api/user/roleuser-test", $token);
+viewerDeleteToken("/api/user/headeruser", $token);
+viewerDeleteToken("/api/user/normaluser", $token);
+viewerDeleteToken("/api/user/combouser", $token);
 
 $response = viewerGet("/api/user/__proto__");
 eq_or_diff($response, from_json('{"success": false, "text": "Bad path &#47;api&#47;user&#47;__proto__"}'));
 
 $users = viewerPostToken("/api/users?arkimeRegressionUser=admin", "", $adminToken);
-is (@{$users->{data}}, 3, "Two supers left");
+is (@{$users->{data}}, 6, "Two supers plus 3 role mappings left");
 
 viewerGet("/regressionTests/deleteAllUsers");
 
