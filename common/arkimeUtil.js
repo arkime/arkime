@@ -131,10 +131,9 @@ class ArkimeUtil {
    */
   static isPP (str) {
     if (Array.isArray(str)) {
-      return str.includes('__proto__') || str.includes('constructor') || str.includes('prototype');
+      return str.some(s => s.startsWith('__') || ArkimeUtil.#DANGEROUS_PROPS.has(s));
     }
-
-    return str === '__proto__' || str === 'constructor' || str === 'prototype';
+    return str.startsWith('__') || ArkimeUtil.#DANGEROUS_PROPS.has(str);
   }
 
   // ----------------------------------------------------------------------------
@@ -738,8 +737,7 @@ class ArkimeUtil {
   ]);
 
   static #DANGEROUS_PROPS = new Set([
-    'constructor', '__proto__', 'prototype', '__defineGetter__', '__defineSetter__',
-    '__lookupGetter__', '__lookupSetter__', 'eval', 'Function'
+    'constructor', 'prototype', 'eval', 'Function'
   ]);
 
   // ----------------------------------------------------------------------------
@@ -778,166 +776,166 @@ class ArkimeUtil {
     };
 
     // Recursive validator with proper scoping
-    const validate = (node, allowedIds, parent = null) => {
+    const validate = (node, allowedIds, theParent = null) => {
       if (!node || typeof node !== 'object') return;
 
       switch (node.type) {
-        case 'Program':
-        case 'ExpressionStatement':
-          for (const child of Object.values(node)) {
-            if (child && typeof child === 'object') {
-              validate(child, allowedIds, node);
-            }
+      case 'Program':
+      case 'ExpressionStatement':
+        for (const child of Object.values(node)) {
+          if (child && typeof child === 'object') {
+            validate(child, allowedIds, node);
           }
-          return;
+        }
+        return;
 
-        case 'Identifier':
-          // Skip if this is a property access (not computed)
-          if (parent?.type === 'MemberExpression' && parent.property === node && !parent.computed) {
-            return;
-          }
-          // Skip if this is a key in an object literal
-          if (parent?.type === 'Property' && parent.key === node) {
-            return;
-          }
-          if (!allowedIds.has(node.name)) {
-            throw new Error(`Identifier '${node.name}' is not allowed`);
-          }
+      case 'Identifier':
+        // Skip if this is a property access (not computed)
+        if (theParent?.type === 'MemberExpression' && theParent.property === node && !theParent.computed) {
           return;
+        }
+        // Skip if this is a key in an object literal
+        if (theParent?.type === 'Property' && theParent.key === node) {
+          return;
+        }
+        if (!allowedIds.has(node.name)) {
+          throw new Error(`Identifier '${node.name}' is not allowed`);
+        }
+        return;
 
-        case 'MemberExpression': {
-          let propName;
-          if (node.computed) {
-            if (node.property.type === 'Literal') {
-              propName = String(node.property.value);
-            } else {
-              throw new Error('Computed property access must use string/number literals');
-            }
-          } else if (node.property.type === 'Identifier') {
-            propName = node.property.name;
+      case 'MemberExpression': {
+        let propName;
+        if (node.computed) {
+          if (node.property.type === 'Literal') {
+            propName = String(node.property.value);
+          } else {
+            throw new Error('Computed property access must use string/number literals');
           }
-          if (propName && ArkimeUtil.#DANGEROUS_PROPS.has(propName)) {
-            throw new Error(`Property '${propName}' is not allowed`);
+        } else if (node.property.type === 'Identifier') {
+          propName = node.property.name;
+        }
+        if (propName && (ArkimeUtil.#DANGEROUS_PROPS.has(propName) || propName.startsWith('__'))) {
+          throw new Error(`Property '${propName}' is not allowed`);
+        }
+        validate(node.object, allowedIds, node);
+        validate(node.property, allowedIds, node);
+        return;
+      }
+
+      case 'CallExpression': {
+        const callPath = getCallPath(node.callee);
+        if (callPath && ArkimeUtil.#SAFE_GLOBAL_CALLS.has(callPath)) {
+          // Validate arguments only
+          for (const arg of node.arguments) {
+            validate(arg, allowedIds, node);
           }
-          validate(node.object, allowedIds, node);
-          validate(node.property, allowedIds, node);
           return;
         }
 
-        case 'CallExpression': {
-          const callPath = getCallPath(node.callee);
-          if (callPath && ArkimeUtil.#SAFE_GLOBAL_CALLS.has(callPath)) {
-            // Validate arguments only
-            for (const arg of node.arguments) {
-              validate(arg, allowedIds, node);
-            }
-            return;
+        if (node.callee.type === 'MemberExpression') {
+          const methodProp = node.callee.property;
+          let methodName;
+          if (node.callee.computed && methodProp.type === 'Literal') {
+            methodName = String(methodProp.value);
+          } else if (!node.callee.computed && methodProp.type === 'Identifier') {
+            methodName = methodProp.name;
           }
-
-          if (node.callee.type === 'MemberExpression') {
-            const methodProp = node.callee.property;
-            let methodName;
-            if (node.callee.computed && methodProp.type === 'Literal') {
-              methodName = String(methodProp.value);
-            } else if (!node.callee.computed && methodProp.type === 'Identifier') {
-              methodName = methodProp.name;
-            }
-            if (!methodName || !ArkimeUtil.#SAFE_METHODS.has(methodName)) {
-              throw new Error(`Method '${methodName || 'unknown'}' is not allowed`);
-            }
-            validate(node.callee.object, allowedIds, node);
-            for (const arg of node.arguments) {
-              validate(arg, allowedIds, node);
-            }
-            return;
-          } else if (node.callee.type === 'Identifier') {
-            throw new Error(`Function call '${node.callee.name}' is not allowed; only method calls permitted`);
+          if (!methodName || !ArkimeUtil.#SAFE_METHODS.has(methodName)) {
+            throw new Error(`Method '${methodName || 'unknown'}' is not allowed`);
           }
-          throw new Error('Only method calls on objects are allowed');
+          validate(node.callee.object, allowedIds, node);
+          for (const arg of node.arguments) {
+            validate(arg, allowedIds, node);
+          }
+          return;
+        } else if (node.callee.type === 'Identifier') {
+          throw new Error(`Function call '${node.callee.name}' is not allowed; only method calls permitted`);
         }
+        throw new Error('Only method calls on objects are allowed');
+      }
 
-        case 'ArrowFunctionExpression': {
-          // Create new scope with arrow params
-          const newAllowed = new Set(allowedIds);
-          for (const param of node.params) {
-            if (param.type === 'Identifier') {
-              newAllowed.add(param.name);
-            } else if (param.type === 'RestElement' && param.argument.type === 'Identifier') {
-              newAllowed.add(param.argument.name);
-            }
+      case 'ArrowFunctionExpression': {
+        // Create new scope with arrow params
+        const newAllowed = new Set(allowedIds);
+        for (const param of node.params) {
+          if (param.type === 'Identifier') {
+            newAllowed.add(param.name);
+          } else if (param.type === 'RestElement' && param.argument.type === 'Identifier') {
+            newAllowed.add(param.argument.name);
           }
-          validate(node.body, newAllowed, node);
-          return;
         }
+        validate(node.body, newAllowed, node);
+        return;
+      }
 
-        case 'ChainExpression':
-          validate(node.expression, allowedIds, node);
-          return;
+      case 'ChainExpression':
+        validate(node.expression, allowedIds, node);
+        return;
 
-        case 'UnaryExpression':
-          if (node.operator === 'delete') {
-            throw new Error("'delete' is not allowed");
-          }
-          validate(node.argument, allowedIds, node);
-          return;
+      case 'UnaryExpression':
+        if (node.operator === 'delete') {
+          throw new Error("'delete' is not allowed");
+        }
+        validate(node.argument, allowedIds, node);
+        return;
 
-        case 'NewExpression':
-          throw new Error("'new' expressions are not allowed");
+      case 'NewExpression':
+        throw new Error("'new' expressions are not allowed");
 
-        case 'AssignmentExpression':
-        case 'AssignmentPattern':
-          throw new Error('Assignments are not allowed');
+      case 'AssignmentExpression':
+      case 'AssignmentPattern':
+        throw new Error('Assignments are not allowed');
 
-        case 'UpdateExpression':
-          throw new Error('Update expressions (++/--) are not allowed');
+      case 'UpdateExpression':
+        throw new Error('Update expressions (++/--) are not allowed');
 
-        case 'FunctionExpression':
-        case 'FunctionDeclaration':
-          throw new Error('Function declarations are not allowed');
+      case 'FunctionExpression':
+      case 'FunctionDeclaration':
+        throw new Error('Function declarations are not allowed');
 
-        case 'ThisExpression':
-          // Allow read-only access to 'this' - assignments are already blocked
-          return;
+      case 'ThisExpression':
+        // Allow read-only access to 'this' - assignments are already blocked
+        return;
 
-        case 'MetaProperty':
-          throw new Error('Meta properties are not allowed');
+      case 'MetaProperty':
+        throw new Error('Meta properties are not allowed');
 
-        case 'ImportExpression':
-          throw new Error('Import expressions are not allowed');
+      case 'ImportExpression':
+        throw new Error('Import expressions are not allowed');
 
-        case 'AwaitExpression':
-          throw new Error('Await expressions are not allowed');
+      case 'AwaitExpression':
+        throw new Error('Await expressions are not allowed');
 
-        case 'YieldExpression':
-          throw new Error('Yield expressions are not allowed');
+      case 'YieldExpression':
+        throw new Error('Yield expressions are not allowed');
 
-        case 'TaggedTemplateExpression':
-          throw new Error('Tagged template expressions are not allowed');
+      case 'TaggedTemplateExpression':
+        throw new Error('Tagged template expressions are not allowed');
 
-        case 'ClassExpression':
-        case 'ClassDeclaration':
-          throw new Error('Class declarations are not allowed');
+      case 'ClassExpression':
+      case 'ClassDeclaration':
+        throw new Error('Class declarations are not allowed');
 
-        default:
-          // Recursively validate child nodes
-          for (const key of Object.keys(node)) {
-            if (key === 'type' || key === 'start' || key === 'end') continue;
-            const child = node[key];
-            if (Array.isArray(child)) {
-              for (const item of child) {
-                validate(item, allowedIds, node);
-              }
-            } else if (child && typeof child === 'object' && child.type) {
-              validate(child, allowedIds, node);
+      default:
+        // Recursively validate child nodes
+        for (const key of Object.keys(node)) {
+          if (key === 'type' || key === 'start' || key === 'end') continue;
+          const child = node[key];
+          if (Array.isArray(child)) {
+            for (const item of child) {
+              validate(item, allowedIds, node);
             }
+          } else if (child && typeof child === 'object' && child.type) {
+            validate(child, allowedIds, node);
           }
+        }
       }
     };
 
     validate(ast, baseAllowed);
 
     // If we get here, expression is safe - compile it
-    // eslint-disable-next-line no-new-func
+
     return new Function(argName, `return ${expr};`);
   }
 
