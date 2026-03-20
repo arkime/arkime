@@ -377,9 +377,6 @@ jobs:
       group: ${{ github.workflow }}-${{ matrix.version }}-${{ github.event.pull_request.number || github.ref }}
       cancel-in-progress: true
 
-    env:
-      PYTHON: ${{ matrix.python || 'python' }}
-
     runs-on: ${{ matrix.runson || 'ubuntu-latest' }}
 
     steps:
