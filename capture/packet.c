@@ -1994,6 +1994,24 @@ void arkime_packet_init()
                         (char *)NULL);
 
     arkime_field_define("general", "integer",
+                        "tcpflags.ece", "TCP Flag ECE", "tcpflags.ece",
+                        "Count of packets with ECE flag set",
+                        0,  ARKIME_FIELD_FLAG_FAKE,
+                        (char *)NULL);
+
+    arkime_field_define("general", "integer",
+                        "tcpflags.cwr", "TCP Flag CWR", "tcpflags.cwr",
+                        "Count of packets with CWR flag set",
+                        0,  ARKIME_FIELD_FLAG_FAKE,
+                        (char *)NULL);
+
+    arkime_field_define("general", "integer",
+                        "tcpflags.ae", "TCP Flag AE", "tcpflags.ae",
+                        "Count of packets with AE (Accurate ECN) flag set",
+                        0,  ARKIME_FIELD_FLAG_FAKE,
+                        (char *)NULL);
+
+    arkime_field_define("general", "integer",
                         "packets.src", "Src Packets", "srcPackets",
                         "Total number of packets sent by source in a session",
                         0,  ARKIME_FIELD_FLAG_FAKE,
