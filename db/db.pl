@@ -6096,10 +6096,19 @@ sub sessions3Update
         "ack" : {
           "type" : "long"
         },
+        "cwr" : {
+          "type" : "long"
+        },
         "dstZero" : {
           "type" : "long"
         },
+        "ece" : {
+          "type" : "long"
+        },
         "fin" : {
+          "type" : "long"
+        },
+        "ae" : {
           "type" : "long"
         },
         "psh" : {

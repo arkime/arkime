@@ -29,7 +29,7 @@ Arkime is built to be deployed across many systems and can scale to handle tens 
 
 ## Background
 
-Arkime, previously named Moloch, was created to replace commercial full packet systems at AOL in 2012. By having complete control of hardware and costs, we found we could deploy full packet capture across all our networks for the same cost as just one network using a commercial tool, with larger retention.
+Arkime was created to replace commercial full packet systems at AOL in 2012. By having complete control of hardware and costs, we found we could deploy full packet capture across all our networks for the same cost as just one network using a commercial tool, with larger retention.
 
 The Arkime system is comprised of 3 main components:
 * **capture** - A threaded C application that monitors network traffic, writes PCAP formatted files to local disk, parses the captured packets, and sends metadata (SPI data) to OpenSearch/Elasticsearch.

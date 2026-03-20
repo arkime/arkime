@@ -1,238 +1,241 @@
 {
-   "sessions3" : [
-      {
-         "body" : {
-            "@timestamp" : "SET",
-            "cert" : [
-               {
-                  "curve" : "secp384r1",
-                  "hash" : "fc:20:b6:0c:ad:ac:38:d1:ff:40:cf:1b:6e:ef:29:0f:10:b5:7a:bd",
-                  "issuerCN" : [
-                     "digicert high assurance ev root ca"
-                  ],
-                  "issuerON" : [
-                     "DigiCert Inc"
-                  ],
-                  "issuerOU" : [
-                     "www.digicert.com"
-                  ],
-                  "notAfter" : 1939812867000,
-                  "notBefore" : 1466513667000,
-                  "publicAlgorithm" : "id-ecPublicKey",
-                  "remainingDays" : 4002,
-                  "remainingSeconds" : 345832259,
-                  "serial" : "029707560cd4a9ebbfe272f1e096d882",
-                  "subjectCN" : [
-                     "digicert ecc extended validation server ca"
-                  ],
-                  "subjectON" : [
-                     "DigiCert Inc"
-                  ],
-                  "subjectOU" : [
-                     "www.digicert.com"
-                  ],
-                  "validDays" : 5478,
-                  "validSeconds" : 473299200
-               },
-               {
-                  "alt" : [
-                     "cloudflare.com",
-                     "www.cloudflare.com"
-                  ],
-                  "altCnt" : 2,
-                  "curve" : "prime256v1",
-                  "hash" : "6a:4c:b2:49:b7:1b:66:59:da:bb:96:01:15:fd:7a:01:bf:c9:96:8c",
-                  "issuerCN" : [
-                     "digicert ecc extended validation server ca"
-                  ],
-                  "issuerON" : [
-                     "DigiCert Inc"
-                  ],
-                  "issuerOU" : [
-                     "www.digicert.com"
-                  ],
-                  "notAfter" : 1604404800000,
-                  "notBefore" : 1540857600000,
-                  "publicAlgorithm" : "id-ecPublicKey",
-                  "remainingDays" : 120,
-                  "remainingSeconds" : 10424192,
-                  "serial" : "0a68bb984a507399f4716e809a44a7b0",
-                  "subjectCN" : [
-                     "cloudflare.com"
-                  ],
-                  "subjectON" : [
-                     "Cloudflare, Inc."
-                  ],
-                  "validDays" : 735,
-                  "validSeconds" : 63547200
-               }
-            ],
-            "certCnt" : 2,
-            "client" : {
-               "bytes" : 237
-            },
-            "destination" : {
-               "as" : {
-                  "full" : "AS13335 Cloudflare, Inc.",
-                  "number" : 13335,
-                  "organization" : {
-                     "name" : "Cloudflare, Inc."
-                  }
-               },
-               "bytes" : 3142,
-               "geo" : {
-                  "country_iso_code" : "US"
-               },
-               "ip" : "2606:4700::6811:d209",
-               "packets" : 5,
-               "port" : 443
-            },
-            "dstPayload8" : "1603030064020000",
-            "dstTTL" : [
-               59
-            ],
-            "dstTTLCnt" : 1,
-            "fileId" : [],
-            "firstPacket" : 1593980608621,
-            "http" : {
-               "host" : [
-                  "www.cloudflare.com"
-               ],
-               "hostCnt" : 1
-            },
-            "initRTT" : 18,
-            "ipProtocol" : 6,
-            "lastPacket" : 1593980608696,
-            "length" : 75,
-            "network" : {
-               "bytes" : 3659,
-               "community_id" : "1:/wxqZ626SZRx3CanjPRZ6tl4iH8=",
-               "packets" : 9
-            },
-            "node" : "test",
-            "packetLen" : [
-               104,
-               92,
-               80,
-               317,
-               80,
-               1426,
-               1426,
-               80,
-               198
-            ],
-            "packetPos" : [
-               24,
-               128,
-               220,
-               300,
-               617,
-               697,
-               2123,
-               3549,
-               3629
-            ],
-            "packetRange" : {
-               "gte" : 1593980608621,
-               "lte" : 1593980608696
-            },
-            "protocol" : [
-               "http2",
-               "tcp",
-               "tls"
-            ],
-            "protocolCnt" : 3,
-            "segmentCnt" : 1,
-            "server" : {
-               "bytes" : 2810
-            },
-            "source" : {
-               "as" : {
-                  "full" : "AS10310 Oath Holdings Inc.",
-                  "number" : 10310,
-                  "organization" : {
-                     "name" : "Oath Holdings Inc."
-                  }
-               },
-               "bytes" : 517,
-               "geo" : {
-                  "city_name" : "Lockport",
-                  "country_iso_code" : "US",
-                  "region_iso_code" : "NY"
-               },
-               "ip" : "2001:4998:ef83:14:8000::100d",
-               "packets" : 4,
-               "port" : 64034
-            },
-            "srcPayload8" : "16030100e8010000",
-            "srcTTL" : [
-               64
-            ],
-            "srcTTLCnt" : 1,
-            "tags" : [
-               "cert:certificate-authority"
-            ],
-            "tagsCnt" : 1,
-            "tcpflags" : {
-               "ack" : 5,
-               "dstZero" : 0,
-               "fin" : 0,
-               "psh" : 2,
-               "rst" : 0,
-               "srcZero" : 0,
-               "syn" : 1,
-               "syn-ack" : 1,
-               "urg" : 0
-            },
-            "tcpseq" : {
-               "dst" : 0,
-               "src" : 857026346
-            },
-            "tls" : {
-               "cipher" : [
-                  "TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256"
-               ],
-               "cipherCnt" : 1,
-               "dstSessionId" : [
-                  "b89ff1ab695278c69b8a73f76242ef755e0b13dc6d459aaaa784fec9c2dfce34"
-               ],
-               "ja3" : [
-                  "3faa4ad39f690c4ef1c3160caa375465"
-               ],
-               "ja3Cnt" : 1,
-               "ja3s" : [
-                  "7f76f3e952a1bc7d407366fafe1db7ed"
-               ],
-               "ja3sCnt" : 1,
-               "ja3sstring" : [
-                  "771,52393,0-65281-11-16"
-               ],
-               "ja3sstringCnt" : 1,
-               "ja3string" : [
-                  "771,49200-49196-49192-49188-49172-49162-159-107-57-52393-52392-52394-65413-196-136-129-157-61-53-192-132-49199-49195-49191-49187-49171-49161-158-103-51-190-69-156-60-47-186-65-49169-49159-5-4-49170-49160-22-10-255,0-11-10-13-16,29-23-24,0"
-               ],
-               "ja3stringCnt" : 1,
-               "ja4" : [
-                  "t12d4605h2_85626a9a5f7f_aaf95bb78ec9"
-               ],
-               "ja4Cnt" : 1,
-               "ja4_r" : [
-                  "t12d4605h2_0004,0005,000a,0016,002f,0033,0035,0039,003c,003d,0041,0045,0067,006b,0081,0084,0088,009c,009d,009e,009f,00ba,00be,00c0,00c4,00ff,c007,c008,c009,c00a,c011,c012,c013,c014,c023,c024,c027,c028,c02b,c02c,c02f,c030,cca8,cca9,ccaa,ff85_000a,000b,000d_0601,0603,efef,0501,0503,0401,0403,eeee,eded,0301,0303,0201,0203"
-               ],
-               "ja4_rCnt" : 1,
-               "version" : [
-                  "TLSv1.2"
-               ],
-               "versionCnt" : 1
-            },
-            "totDataBytes" : 3047
-         },
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions3-200705"
-            }
-         }
+ "sessions3" : [
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "cert" : [
+     {
+      "curve" : "secp384r1",
+      "hash" : "fc:20:b6:0c:ad:ac:38:d1:ff:40:cf:1b:6e:ef:29:0f:10:b5:7a:bd",
+      "issuerCN" : [
+       "digicert high assurance ev root ca"
+      ],
+      "issuerON" : [
+       "DigiCert Inc"
+      ],
+      "issuerOU" : [
+       "www.digicert.com"
+      ],
+      "notAfter" : 1939812867000,
+      "notBefore" : 1466513667000,
+      "publicAlgorithm" : "id-ecPublicKey",
+      "remainingDays" : 4002,
+      "remainingSeconds" : 345832259,
+      "serial" : "029707560cd4a9ebbfe272f1e096d882",
+      "subjectCN" : [
+       "digicert ecc extended validation server ca"
+      ],
+      "subjectON" : [
+       "DigiCert Inc"
+      ],
+      "subjectOU" : [
+       "www.digicert.com"
+      ],
+      "validDays" : 5478,
+      "validSeconds" : 473299200
+     },
+     {
+      "alt" : [
+       "cloudflare.com",
+       "www.cloudflare.com"
+      ],
+      "altCnt" : 2,
+      "curve" : "prime256v1",
+      "hash" : "6a:4c:b2:49:b7:1b:66:59:da:bb:96:01:15:fd:7a:01:bf:c9:96:8c",
+      "issuerCN" : [
+       "digicert ecc extended validation server ca"
+      ],
+      "issuerON" : [
+       "DigiCert Inc"
+      ],
+      "issuerOU" : [
+       "www.digicert.com"
+      ],
+      "notAfter" : 1604404800000,
+      "notBefore" : 1540857600000,
+      "publicAlgorithm" : "id-ecPublicKey",
+      "remainingDays" : 120,
+      "remainingSeconds" : 10424192,
+      "serial" : "0a68bb984a507399f4716e809a44a7b0",
+      "subjectCN" : [
+       "cloudflare.com"
+      ],
+      "subjectON" : [
+       "Cloudflare, Inc."
+      ],
+      "validDays" : 735,
+      "validSeconds" : 63547200
+     }
+    ],
+    "certCnt" : 2,
+    "client" : {
+     "bytes" : 237
+    },
+    "destination" : {
+     "as" : {
+      "full" : "AS13335 Cloudflare, Inc.",
+      "number" : 13335,
+      "organization" : {
+       "name" : "Cloudflare, Inc."
       }
-   ]
+     },
+     "bytes" : 3142,
+     "geo" : {
+      "country_iso_code" : "US"
+     },
+     "ip" : "2606:4700::6811:d209",
+     "packets" : 5,
+     "port" : 443
+    },
+    "dstPayload8" : "1603030064020000",
+    "dstTTL" : [
+     59
+    ],
+    "dstTTLCnt" : 1,
+    "fileId" : [],
+    "firstPacket" : 1593980608621,
+    "http" : {
+     "host" : [
+      "www.cloudflare.com"
+     ],
+     "hostCnt" : 1
+    },
+    "initRTT" : 18,
+    "ipProtocol" : 6,
+    "lastPacket" : 1593980608696,
+    "length" : 75,
+    "network" : {
+     "bytes" : 3659,
+     "community_id" : "1:/wxqZ626SZRx3CanjPRZ6tl4iH8=",
+     "packets" : 9
+    },
+    "node" : "test",
+    "packetLen" : [
+     104,
+     92,
+     80,
+     317,
+     80,
+     1426,
+     1426,
+     80,
+     198
+    ],
+    "packetPos" : [
+     24,
+     128,
+     220,
+     300,
+     617,
+     697,
+     2123,
+     3549,
+     3629
+    ],
+    "packetRange" : {
+     "gte" : 1593980608621,
+     "lte" : 1593980608696
+    },
+    "protocol" : [
+     "http2",
+     "tcp",
+     "tls"
+    ],
+    "protocolCnt" : 3,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 2810
+    },
+    "source" : {
+     "as" : {
+      "full" : "AS10310 Oath Holdings Inc.",
+      "number" : 10310,
+      "organization" : {
+       "name" : "Oath Holdings Inc."
+      }
+     },
+     "bytes" : 517,
+     "geo" : {
+      "city_name" : "Lockport",
+      "country_iso_code" : "US",
+      "region_iso_code" : "NY"
+     },
+     "ip" : "2001:4998:ef83:14:8000::100d",
+     "packets" : 4,
+     "port" : 64034
+    },
+    "srcPayload8" : "16030100e8010000",
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
+    "tags" : [
+     "cert:certificate-authority"
+    ],
+    "tagsCnt" : 1,
+    "tcpflags" : {
+     "ack" : 5,
+     "ae" : 0,
+     "cwr" : 0,
+     "dstZero" : 0,
+     "ece" : 0,
+     "fin" : 0,
+     "psh" : 2,
+     "rst" : 0,
+     "srcZero" : 0,
+     "syn" : 1,
+     "syn-ack" : 1,
+     "urg" : 0
+    },
+    "tcpseq" : {
+     "dst" : 0,
+     "src" : 857026346
+    },
+    "tls" : {
+     "cipher" : [
+      "TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256"
+     ],
+     "cipherCnt" : 1,
+     "dstSessionId" : [
+      "b89ff1ab695278c69b8a73f76242ef755e0b13dc6d459aaaa784fec9c2dfce34"
+     ],
+     "ja3" : [
+      "3faa4ad39f690c4ef1c3160caa375465"
+     ],
+     "ja3Cnt" : 1,
+     "ja3s" : [
+      "7f76f3e952a1bc7d407366fafe1db7ed"
+     ],
+     "ja3sCnt" : 1,
+     "ja3sstring" : [
+      "771,52393,0-65281-11-16"
+     ],
+     "ja3sstringCnt" : 1,
+     "ja3string" : [
+      "771,49200-49196-49192-49188-49172-49162-159-107-57-52393-52392-52394-65413-196-136-129-157-61-53-192-132-49199-49195-49191-49187-49171-49161-158-103-51-190-69-156-60-47-186-65-49169-49159-5-4-49170-49160-22-10-255,0-11-10-13-16,29-23-24,0"
+     ],
+     "ja3stringCnt" : 1,
+     "ja4" : [
+      "t12d4605h2_85626a9a5f7f_aaf95bb78ec9"
+     ],
+     "ja4Cnt" : 1,
+     "ja4_r" : [
+      "t12d4605h2_0004,0005,000a,0016,002f,0033,0035,0039,003c,003d,0041,0045,0067,006b,0081,0084,0088,009c,009d,009e,009f,00ba,00be,00c0,00c4,00ff,c007,c008,c009,c00a,c011,c012,c013,c014,c023,c024,c027,c028,c02b,c02c,c02f,c030,cca8,cca9,ccaa,ff85_000a,000b,000d_0601,0603,efef,0501,0503,0401,0403,eeee,eded,0301,0303,0201,0203"
+     ],
+     "ja4_rCnt" : 1,
+     "version" : [
+      "TLSv1.2"
+     ],
+     "versionCnt" : 1
+    },
+    "totDataBytes" : 3047
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-200705"
+    }
+   }
+  }
+ ]
 }
 

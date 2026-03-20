@@ -1,720 +1,723 @@
 {
-   "sessions3" : [
-      {
-         "body" : {
-            "@timestamp" : "SET",
-            "client" : {
-               "bytes" : 1056
-            },
-            "destination" : {
-               "bytes" : 0,
-               "ip" : "ff02::1:ff82:95b5",
-               "mac" : [
-                  "33:33:ff:82:95:b5"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 0,
-               "port" : 0
-            },
-            "ethertype" : 34525,
-            "fileId" : [],
-            "firstPacket" : 1186341079159,
-            "icmp" : {
-               "code" : [
-                  0
-               ],
-               "type" : [
-                  135
-               ]
-            },
-            "ipProtocol" : 58,
-            "lastPacket" : 1186341381164,
-            "length" : 302005,
-            "network" : {
-               "bytes" : 2838,
-               "community_id" : "1:0fx8iuIOVuN5EqSAPlk7AsecuJg=",
-               "packets" : 33
-            },
-            "node" : "test",
-            "packetLen" : [
-               102,
-               102,
-               102,
-               102,
-               102,
-               102,
-               102,
-               102,
-               102,
-               102,
-               102,
-               102,
-               102,
-               102,
-               102,
-               102,
-               102,
-               102,
-               102,
-               102,
-               102,
-               102,
-               102,
-               102,
-               102,
-               102,
-               102,
-               102,
-               102,
-               102,
-               102,
-               102,
-               102
-            ],
-            "packetPos" : [
-               24,
-               126,
-               228,
-               2546,
-               2648,
-               2750,
-               2852,
-               2954,
-               3056,
-               3158,
-               3260,
-               3362,
-               3464,
-               3566,
-               3668,
-               3770,
-               3872,
-               3974,
-               4076,
-               4178,
-               4280,
-               4508,
-               4610,
-               4712,
-               4814,
-               4916,
-               5018,
-               5120,
-               5222,
-               5324,
-               5426,
-               5528,
-               5630
-            ],
-            "packetRange" : {
-               "gte" : 1186341079159,
-               "lte" : 1186341381164
-            },
-            "protocol" : [
-               "icmp"
-            ],
-            "protocolCnt" : 1,
-            "segmentCnt" : 1,
-            "server" : {
-               "bytes" : 0
-            },
-            "source" : {
-               "bytes" : 2838,
-               "ip" : "fe80::211:25ff:fe82:95b5",
-               "mac" : [
-                  "00:11:25:82:95:b5"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 33,
-               "port" : 0
-            },
-            "srcOui" : [
-               "IBM Corp"
-            ],
-            "srcOuiCnt" : 1,
-            "srcTTL" : [
-               255
-            ],
-            "srcTTLCnt" : 1,
-            "totDataBytes" : 1056
-         },
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions3-070805"
-            }
-         }
-      },
-      {
-         "body" : {
-            "@timestamp" : "SET",
-            "client" : {
-               "bytes" : 56
-            },
-            "destination" : {
-               "bytes" : 0,
-               "ip" : "ff02::16",
-               "mac" : [
-                  "33:33:00:00:00:16"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 0,
-               "port" : 0
-            },
-            "ethertype" : 34525,
-            "fileId" : [],
-            "firstPacket" : 1186341098054,
-            "icmp" : {
-               "code" : [
-                  0
-               ],
-               "type" : [
-                  143
-               ]
-            },
-            "ipProtocol" : 58,
-            "lastPacket" : 1186341103914,
-            "length" : 5860,
-            "network" : {
-               "bytes" : 180,
-               "community_id" : "1:N1pYzX56SZ4pCJrRuglkQ+2ylvE=",
-               "packets" : 2
-            },
-            "node" : "test",
-            "packetLen" : [
-               106,
-               106
-            ],
-            "packetPos" : [
-               330,
-               2440
-            ],
-            "packetRange" : {
-               "gte" : 1186341098054,
-               "lte" : 1186341103914
-            },
-            "protocol" : [
-               "icmp"
-            ],
-            "protocolCnt" : 1,
-            "segmentCnt" : 1,
-            "server" : {
-               "bytes" : 0
-            },
-            "source" : {
-               "bytes" : 180,
-               "ip" : "fe80::2d0:9ff:fee3:e8de",
-               "mac" : [
-                  "00:d0:09:e3:e8:de"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 2,
-               "port" : 0
-            },
-            "srcOui" : [
-               "Hsing Tech. Enterprise Co. Ltd"
-            ],
-            "srcOuiCnt" : 1,
-            "srcTTL" : [
-               1
-            ],
-            "srcTTLCnt" : 1,
-            "totDataBytes" : 56
-         },
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions3-070805"
-            }
-         }
-      },
-      {
-         "body" : {
-            "@timestamp" : "SET",
-            "client" : {
-               "bytes" : 24
-            },
-            "destination" : {
-               "bytes" : 0,
-               "ip" : "ff02::1:ff98:6e1",
-               "mac" : [
-                  "33:33:ff:98:06:e1"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 0,
-               "port" : 0
-            },
-            "ethertype" : 34525,
-            "fileId" : [],
-            "firstPacket" : 1186341098474,
-            "icmp" : {
-               "code" : [
-                  0
-               ],
-               "type" : [
-                  135
-               ]
-            },
-            "ipProtocol" : 58,
-            "lastPacket" : 1186341098474,
-            "length" : 0,
-            "network" : {
-               "bytes" : 78,
-               "community_id" : "1:eilndz0cTfzOL/w14PcBW0lsMzo=",
-               "packets" : 1
-            },
-            "node" : "test",
-            "packetLen" : [
-               94
-            ],
-            "packetPos" : [
-               436
-            ],
-            "packetRange" : {
-               "gte" : 1186341098474,
-               "lte" : 1186341098474
-            },
-            "protocol" : [
-               "icmp"
-            ],
-            "protocolCnt" : 1,
-            "segmentCnt" : 1,
-            "server" : {
-               "bytes" : 0
-            },
-            "source" : {
-               "bytes" : 78,
-               "ip" : "::",
-               "mac" : [
-                  "00:d0:09:e3:e8:de"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 1,
-               "port" : 0
-            },
-            "srcOui" : [
-               "Hsing Tech. Enterprise Co. Ltd"
-            ],
-            "srcOuiCnt" : 1,
-            "srcTTL" : [
-               255
-            ],
-            "srcTTLCnt" : 1,
-            "totDataBytes" : 24
-         },
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions3-070805"
-            }
-         }
-      },
-      {
-         "body" : {
-            "@timestamp" : "SET",
-            "client" : {
-               "bytes" : 1286
-            },
-            "destination" : {
-               "bytes" : 0,
-               "ip" : "ff02::fb",
-               "mac" : [
-                  "33:33:00:00:00:fb"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 0,
-               "port" : 5353
-            },
-            "ethertype" : 34525,
-            "fileId" : [],
-            "firstPacket" : 1186341099605,
-            "ipProtocol" : 17,
-            "lastPacket" : 1186341103455,
-            "length" : 3850,
-            "network" : {
-               "bytes" : 1782,
-               "community_id" : "1:TL4Y0+L3PjIimj1u3COHbMG1wIA=",
-               "packets" : 8
-            },
-            "node" : "test",
-            "packetLen" : [
-               227,
-               208,
-               227,
-               227,
-               208,
-               215,
-               299,
-               299
-            ],
-            "packetPos" : [
-               530,
-               757,
-               965,
-               1192,
-               1419,
-               1627,
-               1842,
-               2141
-            ],
-            "packetRange" : {
-               "gte" : 1186341099605,
-               "lte" : 1186341103455
-            },
-            "protocol" : [
-               "iprulztest",
-               "mdns",
-               "udp"
-            ],
-            "protocolCnt" : 3,
-            "segmentCnt" : 1,
-            "server" : {
-               "bytes" : 0
-            },
-            "source" : {
-               "as" : {
-                  "full" : "AS4589 EASYNET Easynet Global Services",
-                  "number" : 4589,
-                  "organization" : {
-                     "name" : "EASYNET Easynet Global Services"
-                  }
-               },
-               "bytes" : 1782,
-               "geo" : {
-                  "country_iso_code" : "GB"
-               },
-               "ip" : "2001:6f8:102d:0:1033:c4c:7e57:b19e",
-               "mac" : [
-                  "00:d0:09:e3:e8:de"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 8,
-               "port" : 5353
-            },
-            "srcOui" : [
-               "Hsing Tech. Enterprise Co. Ltd"
-            ],
-            "srcOuiCnt" : 1,
-            "srcPayload8" : "0000000000020000",
-            "srcTTL" : [
-               255
-            ],
-            "srcTTLCnt" : 1,
-            "tags" : [
-               "dns:qdcount-not-1"
-            ],
-            "tagsCnt" : 1,
-            "totDataBytes" : 1286
-         },
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions3-070805"
-            }
-         }
-      },
-      {
-         "body" : {
-            "@timestamp" : "SET",
-            "client" : {
-               "bytes" : 56
-            },
-            "destination" : {
-               "bytes" : 0,
-               "ip" : "ff02::1",
-               "mac" : [
-                  "33:33:00:00:00:01"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 0,
-               "port" : 0
-            },
-            "ethertype" : 34525,
-            "fileId" : [],
-            "firstPacket" : 1186341269082,
-            "icmp" : {
-               "code" : [
-                  0
-               ],
-               "type" : [
-                  134
-               ]
-            },
-            "ipProtocol" : 58,
-            "lastPacket" : 1186341269082,
-            "length" : 0,
-            "network" : {
-               "bytes" : 110,
-               "community_id" : "1:0MCR19cydrs2qJRBo+L/DglvPSE=",
-               "packets" : 1
-            },
-            "node" : "test",
-            "packetLen" : [
-               126
-            ],
-            "packetPos" : [
-               4382
-            ],
-            "packetRange" : {
-               "gte" : 1186341269082,
-               "lte" : 1186341269082
-            },
-            "protocol" : [
-               "icmp"
-            ],
-            "protocolCnt" : 1,
-            "segmentCnt" : 1,
-            "server" : {
-               "bytes" : 0
-            },
-            "source" : {
-               "bytes" : 110,
-               "ip" : "fe80::211:25ff:fe82:95b5",
-               "mac" : [
-                  "00:11:25:82:95:b5"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 1,
-               "port" : 0
-            },
-            "srcOui" : [
-               "IBM Corp"
-            ],
-            "srcOuiCnt" : 1,
-            "srcTTL" : [
-               255
-            ],
-            "srcTTLCnt" : 1,
-            "totDataBytes" : 56
-         },
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions3-070805"
-            }
-         }
-      },
-      {
-         "body" : {
-            "@timestamp" : "SET",
-            "client" : {
-               "bytes" : 240
-            },
-            "destination" : {
-               "as" : {
-                  "full" : "AS4589 EASYNET Easynet Global Services",
-                  "number" : 4589,
-                  "organization" : {
-                     "name" : "EASYNET Easynet Global Services"
-                  }
-               },
-               "bytes" : 2563,
-               "geo" : {
-                  "country_iso_code" : "GB"
-               },
-               "ip" : "2001:6f8:900:7c0::2",
-               "mac" : [
-                  "00:11:25:82:95:b5"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 4,
-               "port" : 80
-            },
-            "dstOui" : [
-               "IBM Corp"
-            ],
-            "dstOuiCnt" : 1,
-            "dstPayload8" : "485454502f312e31",
-            "dstTTL" : [
-               64
-            ],
-            "dstTTLCnt" : 1,
-            "ethertype" : 34525,
-            "fileId" : [],
-            "firstPacket" : 1186341404189,
-            "http" : {
-               "bodyMagic" : [
-                  "text/html"
-               ],
-               "bodyMagicCnt" : 1,
-               "clientVersion" : [
-                  "1.0"
-               ],
-               "clientVersionCnt" : 1,
-               "host" : [
-                  "cl-1985.ham-01.de.sixxs.net"
-               ],
-               "hostCnt" : 1,
-               "md5" : [
-                  "27cb95a0c4fff954073bc23328021b96"
-               ],
-               "md5Cnt" : 1,
-               "method" : [
-                  "GET"
-               ],
-               "method-GET" : 1,
-               "methodCnt" : 1,
-               "path" : [
-                  "/"
-               ],
-               "pathCnt" : 1,
-               "requestHeader" : [
-                  "accept",
-                  "accept-encoding",
-                  "accept-language",
-                  "host",
-                  "user-agent"
-               ],
-               "requestHeaderCnt" : 5,
-               "requestHeaderField" : [
-                  "accept",
-                  "accept-encoding",
-                  "accept-language"
-               ],
-               "requestHeaderValue" : [
-                  "en",
-                  "gzip, bzip2",
-                  "text/html, text/plain, text/css, text/sgml, */*;q=0.01"
-               ],
-               "requestHeaderValueCnt" : 3,
-               "responseHeader" : [
-                  "connection",
-                  "content-length",
-                  "content-type",
-                  "date",
-                  "server"
-               ],
-               "responseHeaderCnt" : 5,
-               "responseHeaderField" : [
-                  "connection",
-                  "content-length",
-                  "content-type",
-                  "date",
-                  "server"
-               ],
-               "responseHeaderValue" : [
-                  "2121",
-                  "apache",
-                  "close",
-                  "sun, 05 aug 2007 19:16:44 gmt",
-                  "text/html"
-               ],
-               "responseHeaderValueCnt" : 5,
-               "serverVersion" : [
-                  "1.1"
-               ],
-               "serverVersionCnt" : 1,
-               "sha256" : [
-                  "c1c2b153153e166250d632e461b5a33177678e89d2ab8bc900ecd49e197884cb"
-               ],
-               "sha256Cnt" : 1,
-               "statuscode" : [
-                  200
-               ],
-               "statuscodeCnt" : 1,
-               "uri" : [
-                  "cl-1985.ham-01.de.sixxs.net/"
-               ],
-               "uriCnt" : 1,
-               "useragent" : [
-                  "Lynx/2.8.6rel.2 libwww-FM/2.14 SSL-MM/1.4.1 OpenSSL/0.9.8b"
-               ],
-               "useragentCnt" : 1
-            },
-            "initRTT" : 0,
-            "ipProtocol" : 6,
-            "lastPacket" : 1186341404219,
-            "length" : 30,
-            "network" : {
-               "bytes" : 3267,
-               "community_id" : "1:P/VOGxllF9rkDpAV0qCij17Tlnw=",
-               "packets" : 10
-            },
-            "node" : "test",
-            "packetLen" : [
-               110,
-               98,
-               90,
-               330,
-               1522,
-               917,
-               90,
-               90,
-               90,
-               90
-            ],
-            "packetPos" : [
-               5732,
-               5842,
-               5940,
-               6030,
-               6360,
-               7882,
-               8799,
-               8889,
-               8979,
-               9069
-            ],
-            "packetRange" : {
-               "gte" : 1186341404189,
-               "lte" : 1186341404219
-            },
-            "protocol" : [
-               "http",
-               "tcp"
-            ],
-            "protocolCnt" : 2,
-            "segmentCnt" : 1,
-            "server" : {
-               "bytes" : 2259
-            },
-            "source" : {
-               "as" : {
-                  "full" : "AS4589 EASYNET Easynet Global Services",
-                  "number" : 4589,
-                  "organization" : {
-                     "name" : "EASYNET Easynet Global Services"
-                  }
-               },
-               "bytes" : 704,
-               "geo" : {
-                  "country_iso_code" : "GB"
-               },
-               "ip" : "2001:6f8:102d:0:2d0:9ff:fee3:e8de",
-               "mac" : [
-                  "00:d0:09:e3:e8:de"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 6,
-               "port" : 59201
-            },
-            "srcOui" : [
-               "Hsing Tech. Enterprise Co. Ltd"
-            ],
-            "srcOuiCnt" : 1,
-            "srcPayload8" : "474554202f204854",
-            "srcTTL" : [
-               64
-            ],
-            "srcTTLCnt" : 1,
-            "tcpflags" : {
-               "ack" : 4,
-               "dstZero" : 0,
-               "fin" : 2,
-               "psh" : 2,
-               "rst" : 0,
-               "srcZero" : 0,
-               "syn" : 1,
-               "syn-ack" : 1,
-               "urg" : 0
-            },
-            "tcpseq" : {
-               "dst" : 0,
-               "src" : 2883376736
-            },
-            "totDataBytes" : 2499
-         },
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions3-070805"
-            }
-         }
+ "sessions3" : [
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 1056
+    },
+    "destination" : {
+     "bytes" : 0,
+     "ip" : "ff02::1:ff82:95b5",
+     "mac" : [
+      "33:33:ff:82:95:b5"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 0,
+     "port" : 0
+    },
+    "ethertype" : 34525,
+    "fileId" : [],
+    "firstPacket" : 1186341079159,
+    "icmp" : {
+     "code" : [
+      0
+     ],
+     "type" : [
+      135
+     ]
+    },
+    "ipProtocol" : 58,
+    "lastPacket" : 1186341381164,
+    "length" : 302005,
+    "network" : {
+     "bytes" : 2838,
+     "community_id" : "1:0fx8iuIOVuN5EqSAPlk7AsecuJg=",
+     "packets" : 33
+    },
+    "node" : "test",
+    "packetLen" : [
+     102,
+     102,
+     102,
+     102,
+     102,
+     102,
+     102,
+     102,
+     102,
+     102,
+     102,
+     102,
+     102,
+     102,
+     102,
+     102,
+     102,
+     102,
+     102,
+     102,
+     102,
+     102,
+     102,
+     102,
+     102,
+     102,
+     102,
+     102,
+     102,
+     102,
+     102,
+     102,
+     102
+    ],
+    "packetPos" : [
+     24,
+     126,
+     228,
+     2546,
+     2648,
+     2750,
+     2852,
+     2954,
+     3056,
+     3158,
+     3260,
+     3362,
+     3464,
+     3566,
+     3668,
+     3770,
+     3872,
+     3974,
+     4076,
+     4178,
+     4280,
+     4508,
+     4610,
+     4712,
+     4814,
+     4916,
+     5018,
+     5120,
+     5222,
+     5324,
+     5426,
+     5528,
+     5630
+    ],
+    "packetRange" : {
+     "gte" : 1186341079159,
+     "lte" : 1186341381164
+    },
+    "protocol" : [
+     "icmp"
+    ],
+    "protocolCnt" : 1,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 0
+    },
+    "source" : {
+     "bytes" : 2838,
+     "ip" : "fe80::211:25ff:fe82:95b5",
+     "mac" : [
+      "00:11:25:82:95:b5"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 33,
+     "port" : 0
+    },
+    "srcOui" : [
+     "IBM Corp"
+    ],
+    "srcOuiCnt" : 1,
+    "srcTTL" : [
+     255
+    ],
+    "srcTTLCnt" : 1,
+    "totDataBytes" : 1056
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-070805"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 56
+    },
+    "destination" : {
+     "bytes" : 0,
+     "ip" : "ff02::16",
+     "mac" : [
+      "33:33:00:00:00:16"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 0,
+     "port" : 0
+    },
+    "ethertype" : 34525,
+    "fileId" : [],
+    "firstPacket" : 1186341098054,
+    "icmp" : {
+     "code" : [
+      0
+     ],
+     "type" : [
+      143
+     ]
+    },
+    "ipProtocol" : 58,
+    "lastPacket" : 1186341103914,
+    "length" : 5860,
+    "network" : {
+     "bytes" : 180,
+     "community_id" : "1:N1pYzX56SZ4pCJrRuglkQ+2ylvE=",
+     "packets" : 2
+    },
+    "node" : "test",
+    "packetLen" : [
+     106,
+     106
+    ],
+    "packetPos" : [
+     330,
+     2440
+    ],
+    "packetRange" : {
+     "gte" : 1186341098054,
+     "lte" : 1186341103914
+    },
+    "protocol" : [
+     "icmp"
+    ],
+    "protocolCnt" : 1,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 0
+    },
+    "source" : {
+     "bytes" : 180,
+     "ip" : "fe80::2d0:9ff:fee3:e8de",
+     "mac" : [
+      "00:d0:09:e3:e8:de"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 2,
+     "port" : 0
+    },
+    "srcOui" : [
+     "Hsing Tech. Enterprise Co. Ltd"
+    ],
+    "srcOuiCnt" : 1,
+    "srcTTL" : [
+     1
+    ],
+    "srcTTLCnt" : 1,
+    "totDataBytes" : 56
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-070805"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 24
+    },
+    "destination" : {
+     "bytes" : 0,
+     "ip" : "ff02::1:ff98:6e1",
+     "mac" : [
+      "33:33:ff:98:06:e1"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 0,
+     "port" : 0
+    },
+    "ethertype" : 34525,
+    "fileId" : [],
+    "firstPacket" : 1186341098474,
+    "icmp" : {
+     "code" : [
+      0
+     ],
+     "type" : [
+      135
+     ]
+    },
+    "ipProtocol" : 58,
+    "lastPacket" : 1186341098474,
+    "length" : 0,
+    "network" : {
+     "bytes" : 78,
+     "community_id" : "1:eilndz0cTfzOL/w14PcBW0lsMzo=",
+     "packets" : 1
+    },
+    "node" : "test",
+    "packetLen" : [
+     94
+    ],
+    "packetPos" : [
+     436
+    ],
+    "packetRange" : {
+     "gte" : 1186341098474,
+     "lte" : 1186341098474
+    },
+    "protocol" : [
+     "icmp"
+    ],
+    "protocolCnt" : 1,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 0
+    },
+    "source" : {
+     "bytes" : 78,
+     "ip" : "::",
+     "mac" : [
+      "00:d0:09:e3:e8:de"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 1,
+     "port" : 0
+    },
+    "srcOui" : [
+     "Hsing Tech. Enterprise Co. Ltd"
+    ],
+    "srcOuiCnt" : 1,
+    "srcTTL" : [
+     255
+    ],
+    "srcTTLCnt" : 1,
+    "totDataBytes" : 24
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-070805"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 1286
+    },
+    "destination" : {
+     "bytes" : 0,
+     "ip" : "ff02::fb",
+     "mac" : [
+      "33:33:00:00:00:fb"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 0,
+     "port" : 5353
+    },
+    "ethertype" : 34525,
+    "fileId" : [],
+    "firstPacket" : 1186341099605,
+    "ipProtocol" : 17,
+    "lastPacket" : 1186341103455,
+    "length" : 3850,
+    "network" : {
+     "bytes" : 1782,
+     "community_id" : "1:TL4Y0+L3PjIimj1u3COHbMG1wIA=",
+     "packets" : 8
+    },
+    "node" : "test",
+    "packetLen" : [
+     227,
+     208,
+     227,
+     227,
+     208,
+     215,
+     299,
+     299
+    ],
+    "packetPos" : [
+     530,
+     757,
+     965,
+     1192,
+     1419,
+     1627,
+     1842,
+     2141
+    ],
+    "packetRange" : {
+     "gte" : 1186341099605,
+     "lte" : 1186341103455
+    },
+    "protocol" : [
+     "iprulztest",
+     "mdns",
+     "udp"
+    ],
+    "protocolCnt" : 3,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 0
+    },
+    "source" : {
+     "as" : {
+      "full" : "AS4589 EASYNET Easynet Global Services",
+      "number" : 4589,
+      "organization" : {
+       "name" : "EASYNET Easynet Global Services"
       }
-   ]
+     },
+     "bytes" : 1782,
+     "geo" : {
+      "country_iso_code" : "GB"
+     },
+     "ip" : "2001:6f8:102d:0:1033:c4c:7e57:b19e",
+     "mac" : [
+      "00:d0:09:e3:e8:de"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 8,
+     "port" : 5353
+    },
+    "srcOui" : [
+     "Hsing Tech. Enterprise Co. Ltd"
+    ],
+    "srcOuiCnt" : 1,
+    "srcPayload8" : "0000000000020000",
+    "srcTTL" : [
+     255
+    ],
+    "srcTTLCnt" : 1,
+    "tags" : [
+     "dns:qdcount-not-1"
+    ],
+    "tagsCnt" : 1,
+    "totDataBytes" : 1286
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-070805"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 56
+    },
+    "destination" : {
+     "bytes" : 0,
+     "ip" : "ff02::1",
+     "mac" : [
+      "33:33:00:00:00:01"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 0,
+     "port" : 0
+    },
+    "ethertype" : 34525,
+    "fileId" : [],
+    "firstPacket" : 1186341269082,
+    "icmp" : {
+     "code" : [
+      0
+     ],
+     "type" : [
+      134
+     ]
+    },
+    "ipProtocol" : 58,
+    "lastPacket" : 1186341269082,
+    "length" : 0,
+    "network" : {
+     "bytes" : 110,
+     "community_id" : "1:0MCR19cydrs2qJRBo+L/DglvPSE=",
+     "packets" : 1
+    },
+    "node" : "test",
+    "packetLen" : [
+     126
+    ],
+    "packetPos" : [
+     4382
+    ],
+    "packetRange" : {
+     "gte" : 1186341269082,
+     "lte" : 1186341269082
+    },
+    "protocol" : [
+     "icmp"
+    ],
+    "protocolCnt" : 1,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 0
+    },
+    "source" : {
+     "bytes" : 110,
+     "ip" : "fe80::211:25ff:fe82:95b5",
+     "mac" : [
+      "00:11:25:82:95:b5"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 1,
+     "port" : 0
+    },
+    "srcOui" : [
+     "IBM Corp"
+    ],
+    "srcOuiCnt" : 1,
+    "srcTTL" : [
+     255
+    ],
+    "srcTTLCnt" : 1,
+    "totDataBytes" : 56
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-070805"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 240
+    },
+    "destination" : {
+     "as" : {
+      "full" : "AS4589 EASYNET Easynet Global Services",
+      "number" : 4589,
+      "organization" : {
+       "name" : "EASYNET Easynet Global Services"
+      }
+     },
+     "bytes" : 2563,
+     "geo" : {
+      "country_iso_code" : "GB"
+     },
+     "ip" : "2001:6f8:900:7c0::2",
+     "mac" : [
+      "00:11:25:82:95:b5"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 4,
+     "port" : 80
+    },
+    "dstOui" : [
+     "IBM Corp"
+    ],
+    "dstOuiCnt" : 1,
+    "dstPayload8" : "485454502f312e31",
+    "dstTTL" : [
+     64
+    ],
+    "dstTTLCnt" : 1,
+    "ethertype" : 34525,
+    "fileId" : [],
+    "firstPacket" : 1186341404189,
+    "http" : {
+     "bodyMagic" : [
+      "text/html"
+     ],
+     "bodyMagicCnt" : 1,
+     "clientVersion" : [
+      "1.0"
+     ],
+     "clientVersionCnt" : 1,
+     "host" : [
+      "cl-1985.ham-01.de.sixxs.net"
+     ],
+     "hostCnt" : 1,
+     "md5" : [
+      "27cb95a0c4fff954073bc23328021b96"
+     ],
+     "md5Cnt" : 1,
+     "method" : [
+      "GET"
+     ],
+     "method-GET" : 1,
+     "methodCnt" : 1,
+     "path" : [
+      "/"
+     ],
+     "pathCnt" : 1,
+     "requestHeader" : [
+      "accept",
+      "accept-encoding",
+      "accept-language",
+      "host",
+      "user-agent"
+     ],
+     "requestHeaderCnt" : 5,
+     "requestHeaderField" : [
+      "accept",
+      "accept-encoding",
+      "accept-language"
+     ],
+     "requestHeaderValue" : [
+      "en",
+      "gzip, bzip2",
+      "text/html, text/plain, text/css, text/sgml, */*;q=0.01"
+     ],
+     "requestHeaderValueCnt" : 3,
+     "responseHeader" : [
+      "connection",
+      "content-length",
+      "content-type",
+      "date",
+      "server"
+     ],
+     "responseHeaderCnt" : 5,
+     "responseHeaderField" : [
+      "connection",
+      "content-length",
+      "content-type",
+      "date",
+      "server"
+     ],
+     "responseHeaderValue" : [
+      "2121",
+      "apache",
+      "close",
+      "sun, 05 aug 2007 19:16:44 gmt",
+      "text/html"
+     ],
+     "responseHeaderValueCnt" : 5,
+     "serverVersion" : [
+      "1.1"
+     ],
+     "serverVersionCnt" : 1,
+     "sha256" : [
+      "c1c2b153153e166250d632e461b5a33177678e89d2ab8bc900ecd49e197884cb"
+     ],
+     "sha256Cnt" : 1,
+     "statuscode" : [
+      200
+     ],
+     "statuscodeCnt" : 1,
+     "uri" : [
+      "cl-1985.ham-01.de.sixxs.net/"
+     ],
+     "uriCnt" : 1,
+     "useragent" : [
+      "Lynx/2.8.6rel.2 libwww-FM/2.14 SSL-MM/1.4.1 OpenSSL/0.9.8b"
+     ],
+     "useragentCnt" : 1
+    },
+    "initRTT" : 0,
+    "ipProtocol" : 6,
+    "lastPacket" : 1186341404219,
+    "length" : 30,
+    "network" : {
+     "bytes" : 3267,
+     "community_id" : "1:P/VOGxllF9rkDpAV0qCij17Tlnw=",
+     "packets" : 10
+    },
+    "node" : "test",
+    "packetLen" : [
+     110,
+     98,
+     90,
+     330,
+     1522,
+     917,
+     90,
+     90,
+     90,
+     90
+    ],
+    "packetPos" : [
+     5732,
+     5842,
+     5940,
+     6030,
+     6360,
+     7882,
+     8799,
+     8889,
+     8979,
+     9069
+    ],
+    "packetRange" : {
+     "gte" : 1186341404189,
+     "lte" : 1186341404219
+    },
+    "protocol" : [
+     "http",
+     "tcp"
+    ],
+    "protocolCnt" : 2,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 2259
+    },
+    "source" : {
+     "as" : {
+      "full" : "AS4589 EASYNET Easynet Global Services",
+      "number" : 4589,
+      "organization" : {
+       "name" : "EASYNET Easynet Global Services"
+      }
+     },
+     "bytes" : 704,
+     "geo" : {
+      "country_iso_code" : "GB"
+     },
+     "ip" : "2001:6f8:102d:0:2d0:9ff:fee3:e8de",
+     "mac" : [
+      "00:d0:09:e3:e8:de"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 6,
+     "port" : 59201
+    },
+    "srcOui" : [
+     "Hsing Tech. Enterprise Co. Ltd"
+    ],
+    "srcOuiCnt" : 1,
+    "srcPayload8" : "474554202f204854",
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
+    "tcpflags" : {
+     "ack" : 4,
+     "ae" : 0,
+     "cwr" : 0,
+     "dstZero" : 0,
+     "ece" : 0,
+     "fin" : 2,
+     "psh" : 2,
+     "rst" : 0,
+     "srcZero" : 0,
+     "syn" : 1,
+     "syn-ack" : 1,
+     "urg" : 0
+    },
+    "tcpseq" : {
+     "dst" : 0,
+     "src" : 2883376736
+    },
+    "totDataBytes" : 2499
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-070805"
+    }
+   }
+  }
+ ]
 }
 

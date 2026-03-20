@@ -1,347 +1,350 @@
 {
-   "sessions3" : [
-      {
-         "body" : {
-            "@timestamp" : "SET",
-            "cert" : [
-               {
-                  "hash" : "bb:dc:e1:3e:9d:53:7a:52:29:91:5c:b1:23:c7:aa:b0:a8:55:e7:98",
-                  "issuerCN" : [
-                     "geotrust global ca"
-                  ],
-                  "issuerON" : [
-                     "GeoTrust Inc."
-                  ],
-                  "notAfter" : 1483228799000,
-                  "notBefore" : 1365174955000,
-                  "publicAlgorithm" : "rsaEncryption",
-                  "remainingDays" : 808,
-                  "remainingSeconds" : 69890978,
-                  "serial" : "023a76",
-                  "subjectCN" : [
-                     "google internet authority g2"
-                  ],
-                  "subjectON" : [
-                     "Google Inc"
-                  ],
-                  "validDays" : 1366,
-                  "validSeconds" : 118053844
-               },
-               {
-                  "hash" : "73:59:75:5c:6d:f9:a0:ab:c3:06:0b:ce:36:95:64:c8:ec:45:42:a3",
-                  "issuerON" : [
-                     "Equifax"
-                  ],
-                  "issuerOU" : [
-                     "Equifax Secure Certificate Authority"
-                  ],
-                  "notAfter" : 1534824000000,
-                  "notBefore" : 1021953600000,
-                  "publicAlgorithm" : "rsaEncryption",
-                  "remainingDays" : 1406,
-                  "remainingSeconds" : 121486179,
-                  "serial" : "12bbe6",
-                  "subjectCN" : [
-                     "geotrust global ca"
-                  ],
-                  "subjectON" : [
-                     "GeoTrust Inc."
-                  ],
-                  "validDays" : 5936,
-                  "validSeconds" : 512870400
-               },
-               {
-                  "alt" : [
-                     "*.google.com",
-                     "*.android.com",
-                     "*.appengine.google.com",
-                     "*.cloud.google.com",
-                     "*.google-analytics.com",
-                     "*.google.ca",
-                     "*.google.cl",
-                     "*.google.co.in",
-                     "*.google.co.jp",
-                     "*.google.co.uk",
-                     "*.google.com.ar",
-                     "*.google.com.au",
-                     "*.google.com.br",
-                     "*.google.com.co",
-                     "*.google.com.mx",
-                     "*.google.com.tr",
-                     "*.google.com.vn",
-                     "*.google.de",
-                     "*.google.es",
-                     "*.google.fr",
-                     "*.google.hu",
-                     "*.google.it",
-                     "*.google.nl",
-                     "*.google.pl",
-                     "*.google.pt",
-                     "*.googleadapis.com",
-                     "*.googleapis.cn",
-                     "*.googlecommerce.com",
-                     "*.googlevideo.com",
-                     "*.gstatic.cn",
-                     "*.gstatic.com",
-                     "*.gvt1.com",
-                     "*.gvt2.com",
-                     "*.urchin.com",
-                     "*.url.google.com",
-                     "*.youtube-nocookie.com",
-                     "*.youtube.com",
-                     "*.youtubeeducation.com",
-                     "*.ytimg.com",
-                     "android.com",
-                     "g.co",
-                     "goo.gl",
-                     "google-analytics.com",
-                     "google.com",
-                     "googlecommerce.com",
-                     "urchin.com",
-                     "youtu.be",
-                     "youtube.com",
-                     "youtubeeducation.com"
-                  ],
-                  "altCnt" : 49,
-                  "hash" : "0e:a3:27:7c:eb:7f:b2:8c:2b:5d:7d:d7:6b:e9:ba:1a:ec:0d:ff:91",
-                  "issuerCN" : [
-                     "google internet authority g2"
-                  ],
-                  "issuerON" : [
-                     "Google Inc"
-                  ],
-                  "notAfter" : 1419292800000,
-                  "notBefore" : 1411553285000,
-                  "publicAlgorithm" : "rsaEncryption",
-                  "remainingDays" : 68,
-                  "remainingSeconds" : 5954979,
-                  "serial" : "7a5b0bd895632f87",
-                  "subjectCN" : [
-                     "*.google.com"
-                  ],
-                  "subjectON" : [
-                     "Google Inc"
-                  ],
-                  "validDays" : 89,
-                  "validSeconds" : 7739515
-               }
-            ],
-            "certCnt" : 3,
-            "client" : {
-               "bytes" : 318
-            },
-            "destination" : {
-               "as" : {
-                  "full" : "AS15169 Google LLC",
-                  "number" : 15169,
-                  "organization" : {
-                     "name" : "Google LLC"
-                  }
-               },
-               "bytes" : 5008,
-               "geo" : {
-                  "country_iso_code" : "US"
-               },
-               "ip" : "74.125.228.39",
-               "mac" : [
-                  "00:00:0c:07:ac:01",
-                  "00:0e:d6:0b:98:80"
-               ],
-               "mac-cnt" : 2,
-               "packets" : 8,
-               "port" : 443
-            },
-            "dstOui" : [
-               "Cisco Systems, Inc"
-            ],
-            "dstOuiCnt" : 1,
-            "dstPayload8" : "160301003d020000",
-            "dstRIR" : "ARIN",
-            "dstTTL" : [
-               51
-            ],
-            "dstTTLCnt" : 1,
-            "ethertype" : 2048,
-            "fileId" : [],
-            "firstPacket" : 1413337821624,
-            "initRTT" : 1,
-            "ipProtocol" : 6,
-            "lastPacket" : 1413337822763,
-            "length" : 1139,
-            "network" : {
-               "bytes" : 6126,
-               "community_id" : "1:0fpFZ67cFV8oLbPA0QZ5Ry59f4Q=",
-               "packets" : 20
-            },
-            "node" : "test",
-            "packetLen" : [
-               90,
-               90,
-               82,
-               251,
-               82,
-               1500,
-               1500,
-               82,
-               82,
-               1342,
-               232,
-               82,
-               82,
-               204,
-               308,
-               82,
-               109,
-               82,
-               82,
-               82
-            ],
-            "packetPos" : [
-               24,
-               114,
-               204,
-               286,
-               537,
-               619,
-               2119,
-               3619,
-               3701,
-               3783,
-               5125,
-               5357,
-               5439,
-               5521,
-               5725,
-               6033,
-               6115,
-               6224,
-               6306,
-               6388
-            ],
-            "packetRange" : {
-               "gte" : 1413337821624,
-               "lte" : 1413337822763
-            },
-            "protocol" : [
-               "tcp",
-               "tls"
-            ],
-            "protocolCnt" : 2,
-            "segmentCnt" : 1,
-            "server" : {
-               "bytes" : 4472
-            },
-            "source" : {
-               "as" : {
-                  "full" : "AS0 This is neat",
-                  "number" : 0,
-                  "organization" : {
-                     "name" : "This is neat"
-                  }
-               },
-               "bytes" : 1118,
-               "geo" : {
-                  "country_iso_code" : "RU"
-               },
-               "ip" : "10.0.0.1",
-               "mac" : [
-                  "00:13:72:c4:f1:e1"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 12,
-               "port" : 40111
-            },
-            "srcOui" : [
-               "Dell Inc."
-            ],
-            "srcOuiCnt" : 1,
-            "srcPayload8" : "16030100a4010000",
-            "srcTTL" : [
-               64
-            ],
-            "srcTTLCnt" : 1,
-            "tags" : [
-               "cert:certificate-authority",
-               "srcip"
-            ],
-            "tagsCnt" : 2,
-            "tcpflags" : {
-               "ack" : 10,
-               "dstZero" : 0,
-               "fin" : 2,
-               "psh" : 6,
-               "rst" : 0,
-               "srcZero" : 0,
-               "syn" : 1,
-               "syn-ack" : 1,
-               "urg" : 0
-            },
-            "tcpseq" : {
-               "dst" : 0,
-               "src" : 1782937220
-            },
-            "test" : {
-               "ASN" : [
-                  "AS0 This is neat"
-               ],
-               "GEO" : [
-                  "RU"
-               ],
-               "RIR" : [
-                  ""
-               ],
-               "ip" : [
-                  "10.0.0.1"
-               ],
-               "number" : [
-                  669285706
-               ],
-               "string.snow" : [
-                  "16777226:40111,669285706:443"
-               ]
-            },
-            "tls" : {
-               "cipher" : [
-                  "TLS_ECDHE_RSA_WITH_RC4_128_SHA"
-               ],
-               "cipherCnt" : 1,
-               "ja3" : [
-                  "503053a0c5b2bd9b9334bf7f3d3b8852"
-               ],
-               "ja3Cnt" : 1,
-               "ja3s" : [
-                  "bed95e1b525d2f41db3a6d68fac5b566"
-               ],
-               "ja3sCnt" : 1,
-               "ja3sstring" : [
-                  "769,49169,65281-11-35"
-               ],
-               "ja3sstringCnt" : 1,
-               "ja3string" : [
-                  "769,49172-49162-57-56-136-135-49167-49157-53-132-49170-49160-22-19-49165-49155-10-49171-49161-51-50-154-153-69-68-49166-49156-47-150-65-7-49169-49159-49164-49154-5-4-21-18-9-20-17-8-6-3-255,11-10-35-15,24-23,0-1-2"
-               ],
-               "ja3stringCnt" : 1,
-               "ja4" : [
-                  "t10i460400_234845559c90_282f11336259"
-               ],
-               "ja4Cnt" : 1,
-               "ja4_r" : [
-                  "t10i460400_0003,0004,0005,0006,0007,0008,0009,000a,0011,0012,0013,0014,0015,0016,002f,0032,0033,0035,0038,0039,0041,0044,0045,0084,0087,0088,0096,0099,009a,00ff,c002,c003,c004,c005,c007,c008,c009,c00a,c00c,c00d,c00e,c00f,c011,c012,c013,c014_000a,000b,000f,0023"
-               ],
-               "ja4_rCnt" : 1,
-               "version" : [
-                  "TLSv1"
-               ],
-               "versionCnt" : 1
-            },
-            "totDataBytes" : 4790
-         },
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions3-141015"
-            }
-         }
+ "sessions3" : [
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "cert" : [
+     {
+      "hash" : "bb:dc:e1:3e:9d:53:7a:52:29:91:5c:b1:23:c7:aa:b0:a8:55:e7:98",
+      "issuerCN" : [
+       "geotrust global ca"
+      ],
+      "issuerON" : [
+       "GeoTrust Inc."
+      ],
+      "notAfter" : 1483228799000,
+      "notBefore" : 1365174955000,
+      "publicAlgorithm" : "rsaEncryption",
+      "remainingDays" : 808,
+      "remainingSeconds" : 69890978,
+      "serial" : "023a76",
+      "subjectCN" : [
+       "google internet authority g2"
+      ],
+      "subjectON" : [
+       "Google Inc"
+      ],
+      "validDays" : 1366,
+      "validSeconds" : 118053844
+     },
+     {
+      "hash" : "73:59:75:5c:6d:f9:a0:ab:c3:06:0b:ce:36:95:64:c8:ec:45:42:a3",
+      "issuerON" : [
+       "Equifax"
+      ],
+      "issuerOU" : [
+       "Equifax Secure Certificate Authority"
+      ],
+      "notAfter" : 1534824000000,
+      "notBefore" : 1021953600000,
+      "publicAlgorithm" : "rsaEncryption",
+      "remainingDays" : 1406,
+      "remainingSeconds" : 121486179,
+      "serial" : "12bbe6",
+      "subjectCN" : [
+       "geotrust global ca"
+      ],
+      "subjectON" : [
+       "GeoTrust Inc."
+      ],
+      "validDays" : 5936,
+      "validSeconds" : 512870400
+     },
+     {
+      "alt" : [
+       "*.google.com",
+       "*.android.com",
+       "*.appengine.google.com",
+       "*.cloud.google.com",
+       "*.google-analytics.com",
+       "*.google.ca",
+       "*.google.cl",
+       "*.google.co.in",
+       "*.google.co.jp",
+       "*.google.co.uk",
+       "*.google.com.ar",
+       "*.google.com.au",
+       "*.google.com.br",
+       "*.google.com.co",
+       "*.google.com.mx",
+       "*.google.com.tr",
+       "*.google.com.vn",
+       "*.google.de",
+       "*.google.es",
+       "*.google.fr",
+       "*.google.hu",
+       "*.google.it",
+       "*.google.nl",
+       "*.google.pl",
+       "*.google.pt",
+       "*.googleadapis.com",
+       "*.googleapis.cn",
+       "*.googlecommerce.com",
+       "*.googlevideo.com",
+       "*.gstatic.cn",
+       "*.gstatic.com",
+       "*.gvt1.com",
+       "*.gvt2.com",
+       "*.urchin.com",
+       "*.url.google.com",
+       "*.youtube-nocookie.com",
+       "*.youtube.com",
+       "*.youtubeeducation.com",
+       "*.ytimg.com",
+       "android.com",
+       "g.co",
+       "goo.gl",
+       "google-analytics.com",
+       "google.com",
+       "googlecommerce.com",
+       "urchin.com",
+       "youtu.be",
+       "youtube.com",
+       "youtubeeducation.com"
+      ],
+      "altCnt" : 49,
+      "hash" : "0e:a3:27:7c:eb:7f:b2:8c:2b:5d:7d:d7:6b:e9:ba:1a:ec:0d:ff:91",
+      "issuerCN" : [
+       "google internet authority g2"
+      ],
+      "issuerON" : [
+       "Google Inc"
+      ],
+      "notAfter" : 1419292800000,
+      "notBefore" : 1411553285000,
+      "publicAlgorithm" : "rsaEncryption",
+      "remainingDays" : 68,
+      "remainingSeconds" : 5954979,
+      "serial" : "7a5b0bd895632f87",
+      "subjectCN" : [
+       "*.google.com"
+      ],
+      "subjectON" : [
+       "Google Inc"
+      ],
+      "validDays" : 89,
+      "validSeconds" : 7739515
+     }
+    ],
+    "certCnt" : 3,
+    "client" : {
+     "bytes" : 318
+    },
+    "destination" : {
+     "as" : {
+      "full" : "AS15169 Google LLC",
+      "number" : 15169,
+      "organization" : {
+       "name" : "Google LLC"
       }
-   ]
+     },
+     "bytes" : 5008,
+     "geo" : {
+      "country_iso_code" : "US"
+     },
+     "ip" : "74.125.228.39",
+     "mac" : [
+      "00:00:0c:07:ac:01",
+      "00:0e:d6:0b:98:80"
+     ],
+     "mac-cnt" : 2,
+     "packets" : 8,
+     "port" : 443
+    },
+    "dstOui" : [
+     "Cisco Systems, Inc"
+    ],
+    "dstOuiCnt" : 1,
+    "dstPayload8" : "160301003d020000",
+    "dstRIR" : "ARIN",
+    "dstTTL" : [
+     51
+    ],
+    "dstTTLCnt" : 1,
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 1413337821624,
+    "initRTT" : 1,
+    "ipProtocol" : 6,
+    "lastPacket" : 1413337822763,
+    "length" : 1139,
+    "network" : {
+     "bytes" : 6126,
+     "community_id" : "1:0fpFZ67cFV8oLbPA0QZ5Ry59f4Q=",
+     "packets" : 20
+    },
+    "node" : "test",
+    "packetLen" : [
+     90,
+     90,
+     82,
+     251,
+     82,
+     1500,
+     1500,
+     82,
+     82,
+     1342,
+     232,
+     82,
+     82,
+     204,
+     308,
+     82,
+     109,
+     82,
+     82,
+     82
+    ],
+    "packetPos" : [
+     24,
+     114,
+     204,
+     286,
+     537,
+     619,
+     2119,
+     3619,
+     3701,
+     3783,
+     5125,
+     5357,
+     5439,
+     5521,
+     5725,
+     6033,
+     6115,
+     6224,
+     6306,
+     6388
+    ],
+    "packetRange" : {
+     "gte" : 1413337821624,
+     "lte" : 1413337822763
+    },
+    "protocol" : [
+     "tcp",
+     "tls"
+    ],
+    "protocolCnt" : 2,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 4472
+    },
+    "source" : {
+     "as" : {
+      "full" : "AS0 This is neat",
+      "number" : 0,
+      "organization" : {
+       "name" : "This is neat"
+      }
+     },
+     "bytes" : 1118,
+     "geo" : {
+      "country_iso_code" : "RU"
+     },
+     "ip" : "10.0.0.1",
+     "mac" : [
+      "00:13:72:c4:f1:e1"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 12,
+     "port" : 40111
+    },
+    "srcOui" : [
+     "Dell Inc."
+    ],
+    "srcOuiCnt" : 1,
+    "srcPayload8" : "16030100a4010000",
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
+    "tags" : [
+     "cert:certificate-authority",
+     "srcip"
+    ],
+    "tagsCnt" : 2,
+    "tcpflags" : {
+     "ack" : 10,
+     "ae" : 0,
+     "cwr" : 0,
+     "dstZero" : 0,
+     "ece" : 0,
+     "fin" : 2,
+     "psh" : 6,
+     "rst" : 0,
+     "srcZero" : 0,
+     "syn" : 1,
+     "syn-ack" : 1,
+     "urg" : 0
+    },
+    "tcpseq" : {
+     "dst" : 0,
+     "src" : 1782937220
+    },
+    "test" : {
+     "ASN" : [
+      "AS0 This is neat"
+     ],
+     "GEO" : [
+      "RU"
+     ],
+     "RIR" : [
+      ""
+     ],
+     "ip" : [
+      "10.0.0.1"
+     ],
+     "number" : [
+      669285706
+     ],
+     "string.snow" : [
+      "16777226:40111,669285706:443"
+     ]
+    },
+    "tls" : {
+     "cipher" : [
+      "TLS_ECDHE_RSA_WITH_RC4_128_SHA"
+     ],
+     "cipherCnt" : 1,
+     "ja3" : [
+      "503053a0c5b2bd9b9334bf7f3d3b8852"
+     ],
+     "ja3Cnt" : 1,
+     "ja3s" : [
+      "bed95e1b525d2f41db3a6d68fac5b566"
+     ],
+     "ja3sCnt" : 1,
+     "ja3sstring" : [
+      "769,49169,65281-11-35"
+     ],
+     "ja3sstringCnt" : 1,
+     "ja3string" : [
+      "769,49172-49162-57-56-136-135-49167-49157-53-132-49170-49160-22-19-49165-49155-10-49171-49161-51-50-154-153-69-68-49166-49156-47-150-65-7-49169-49159-49164-49154-5-4-21-18-9-20-17-8-6-3-255,11-10-35-15,24-23,0-1-2"
+     ],
+     "ja3stringCnt" : 1,
+     "ja4" : [
+      "t10i460400_234845559c90_282f11336259"
+     ],
+     "ja4Cnt" : 1,
+     "ja4_r" : [
+      "t10i460400_0003,0004,0005,0006,0007,0008,0009,000a,0011,0012,0013,0014,0015,0016,002f,0032,0033,0035,0038,0039,0041,0044,0045,0084,0087,0088,0096,0099,009a,00ff,c002,c003,c004,c005,c007,c008,c009,c00a,c00c,c00d,c00e,c00f,c011,c012,c013,c014_000a,000b,000f,0023"
+     ],
+     "ja4_rCnt" : 1,
+     "version" : [
+      "TLSv1"
+     ],
+     "versionCnt" : 1
+    },
+    "totDataBytes" : 4790
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-141015"
+    }
+   }
+  }
+ ]
 }
 

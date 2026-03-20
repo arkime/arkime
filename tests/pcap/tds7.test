@@ -124,7 +124,10 @@
     "srcTTLCnt" : 1,
     "tcpflags" : {
      "ack" : 3,
+     "ae" : 0,
+     "cwr" : 0,
      "dstZero" : 0,
+     "ece" : 0,
      "fin" : 2,
      "psh" : 6,
      "rst" : 0,

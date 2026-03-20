@@ -1,158 +1,161 @@
 {
-   "sessions3" : [
-      {
-         "body" : {
-            "@timestamp" : "SET",
-            "client" : {
-               "bytes" : 902
-            },
-            "destination" : {
-               "bytes" : 1326,
-               "ip" : "192.168.114.129",
-               "mac" : [
-                  "00:0c:29:30:60:27"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 6,
-               "port" : 445
-            },
-            "dstOui" : [
-               "VMware, Inc."
-            ],
-            "dstOuiCnt" : 1,
-            "dstPayload8" : "00000095ff534d42",
-            "dstRIR" : "ARIN",
-            "dstTTL" : [
-               128
-            ],
-            "dstTTLCnt" : 1,
-            "ethertype" : 2048,
-            "fileId" : [],
-            "firstPacket" : 1132371118535,
-            "initRTT" : 0,
-            "ipProtocol" : 6,
-            "lastPacket" : 1132371118592,
-            "length" : 57,
-            "network" : {
-               "bytes" : 2764,
-               "community_id" : "1:MKEIesHzLctRLCFs3srzwj6vDhA=",
-               "packets" : 14
-            },
-            "node" : "test",
-            "packetLen" : [
-               90,
-               90,
-               82,
-               305,
-               235,
-               82,
-               298,
-               498,
-               406,
-               328,
-               182,
-               140,
-               121,
-               131
-            ],
-            "packetPos" : [
-               24,
-               114,
-               204,
-               286,
-               591,
-               826,
-               908,
-               1206,
-               1704,
-               2110,
-               2438,
-               2620,
-               2760,
-               2881
-            ],
-            "packetRange" : {
-               "gte" : 1132371118535,
-               "lte" : 1132371118592
-            },
-            "protocol" : [
-               "smb",
-               "tcp"
-            ],
-            "protocolCnt" : 2,
-            "segmentCnt" : 1,
-            "server" : {
-               "bytes" : 922
-            },
-            "smb" : {
-               "domain" : [
-                  "VNET3"
-               ],
-               "domainCnt" : 1,
-               "host" : [
-                  "BLU"
-               ],
-               "hostCnt" : 1,
-               "os" : [
-                  "Unix"
-               ],
-               "osCnt" : 1,
-               "share" : [
-                  "\\\\192.168.114.129\\TEST"
-               ],
-               "shareCnt" : 1,
-               "user" : [
-                  "administrator"
-               ],
-               "userCnt" : 1,
-               "version" : [
-                  "Samba 3.9.0-SVN-build-11572"
-               ],
-               "versionCnt" : 1
-            },
-            "source" : {
-               "bytes" : 1438,
-               "ip" : "192.168.114.1",
-               "mac" : [
-                  "00:50:56:c0:00:01"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 8,
-               "port" : 52703
-            },
-            "srcOui" : [
-               "VMware, Inc."
-            ],
-            "srcOuiCnt" : 1,
-            "srcPayload8" : "000000dbff534d42",
-            "srcRIR" : "ARIN",
-            "srcTTL" : [
-               64
-            ],
-            "srcTTLCnt" : 1,
-            "tcpflags" : {
-               "ack" : 2,
-               "dstZero" : 0,
-               "fin" : 0,
-               "psh" : 10,
-               "rst" : 0,
-               "srcZero" : 0,
-               "syn" : 1,
-               "syn-ack" : 1,
-               "urg" : 0
-            },
-            "tcpseq" : {
-               "dst" : 0,
-               "src" : 2297488850
-            },
-            "totDataBytes" : 1824
-         },
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions3-051119"
-            }
-         }
-      }
-   ]
+ "sessions3" : [
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 902
+    },
+    "destination" : {
+     "bytes" : 1326,
+     "ip" : "192.168.114.129",
+     "mac" : [
+      "00:0c:29:30:60:27"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 6,
+     "port" : 445
+    },
+    "dstOui" : [
+     "VMware, Inc."
+    ],
+    "dstOuiCnt" : 1,
+    "dstPayload8" : "00000095ff534d42",
+    "dstRIR" : "ARIN",
+    "dstTTL" : [
+     128
+    ],
+    "dstTTLCnt" : 1,
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 1132371118535,
+    "initRTT" : 0,
+    "ipProtocol" : 6,
+    "lastPacket" : 1132371118592,
+    "length" : 57,
+    "network" : {
+     "bytes" : 2764,
+     "community_id" : "1:MKEIesHzLctRLCFs3srzwj6vDhA=",
+     "packets" : 14
+    },
+    "node" : "test",
+    "packetLen" : [
+     90,
+     90,
+     82,
+     305,
+     235,
+     82,
+     298,
+     498,
+     406,
+     328,
+     182,
+     140,
+     121,
+     131
+    ],
+    "packetPos" : [
+     24,
+     114,
+     204,
+     286,
+     591,
+     826,
+     908,
+     1206,
+     1704,
+     2110,
+     2438,
+     2620,
+     2760,
+     2881
+    ],
+    "packetRange" : {
+     "gte" : 1132371118535,
+     "lte" : 1132371118592
+    },
+    "protocol" : [
+     "smb",
+     "tcp"
+    ],
+    "protocolCnt" : 2,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 922
+    },
+    "smb" : {
+     "domain" : [
+      "VNET3"
+     ],
+     "domainCnt" : 1,
+     "host" : [
+      "BLU"
+     ],
+     "hostCnt" : 1,
+     "os" : [
+      "Unix"
+     ],
+     "osCnt" : 1,
+     "share" : [
+      "\\\\192.168.114.129\\TEST"
+     ],
+     "shareCnt" : 1,
+     "user" : [
+      "administrator"
+     ],
+     "userCnt" : 1,
+     "version" : [
+      "Samba 3.9.0-SVN-build-11572"
+     ],
+     "versionCnt" : 1
+    },
+    "source" : {
+     "bytes" : 1438,
+     "ip" : "192.168.114.1",
+     "mac" : [
+      "00:50:56:c0:00:01"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 8,
+     "port" : 52703
+    },
+    "srcOui" : [
+     "VMware, Inc."
+    ],
+    "srcOuiCnt" : 1,
+    "srcPayload8" : "000000dbff534d42",
+    "srcRIR" : "ARIN",
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
+    "tcpflags" : {
+     "ack" : 2,
+     "ae" : 0,
+     "cwr" : 0,
+     "dstZero" : 0,
+     "ece" : 0,
+     "fin" : 0,
+     "psh" : 10,
+     "rst" : 0,
+     "srcZero" : 0,
+     "syn" : 1,
+     "syn-ack" : 1,
+     "urg" : 0
+    },
+    "tcpseq" : {
+     "dst" : 0,
+     "src" : 2297488850
+    },
+    "totDataBytes" : 1824
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-051119"
+    }
+   }
+  }
+ ]
 }
 

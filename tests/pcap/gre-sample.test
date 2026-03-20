@@ -530,7 +530,10 @@
     "tagsCnt" : 1,
     "tcpflags" : {
      "ack" : 10,
+     "ae" : 0,
+     "cwr" : 1,
      "dstZero" : 0,
+     "ece" : 2,
      "fin" : 2,
      "psh" : 8,
      "rst" : 0,
