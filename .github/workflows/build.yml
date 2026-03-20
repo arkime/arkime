@@ -377,9 +377,6 @@ jobs:
       group: ${{ github.workflow }}-${{ matrix.version }}-${{ github.event.pull_request.number || github.ref }}
       cancel-in-progress: true
 
-    env:
-      PYTHON: ${{ matrix.python || 'python' }}
-
     runs-on: ${{ matrix.runson || 'ubuntu-latest' }}
 
     steps:
@@ -402,6 +399,7 @@ jobs:
             git config --global --add safe.directory `pwd`
             git config --global --add safe.directory /home/runner/work/arkime/arkime
             ./easybutton-build.sh --dir /usr/local/share/arkime ${{ matrix.buildopt }} --rminstall --nothirdparty
+            echo "=== NPM DEBUG ===" && npm --version && npm config list -l 2>&1 | grep -i python || true && cat /usr/local/etc/npmrc 2>/dev/null || true && echo "=== END DEBUG ==="
             ls -l capture/capture
             (cd tests; ./tests.pl)
             INSTALL_BUNDLE=bundle gmake install
