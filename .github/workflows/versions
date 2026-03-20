@@ -102,6 +102,7 @@ include:
     docker: true
     ja4plus: true
     prbuild: true
+    viewertest: normal
 
   ############# ARM #############
   - version: al2023.aarch64
