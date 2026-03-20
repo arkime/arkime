@@ -117,7 +117,10 @@
     "srcTTLCnt" : 1,
     "tcpflags" : {
      "ack" : 1,
+     "ae" : 0,
+     "cwr" : 0,
      "dstZero" : 0,
+     "ece" : 0,
      "fin" : 0,
      "psh" : 2,
      "rst" : 0,
@@ -135,86 +138,6 @@
    "header" : {
     "index" : {
      "_index" : "tests_sessions3-100920"
-    }
-   }
-  },
-  {
-   "body" : {
-    "@timestamp" : "SET",
-    "client" : {
-     "bytes" : 32
-    },
-    "destination" : {
-     "bytes" : 0,
-     "ip" : "ff02::1:ffeb:3faf",
-     "mac" : [
-      "33:33:ff:eb:3f:af"
-     ],
-     "mac-cnt" : 1,
-     "packets" : 0,
-     "port" : 0
-    },
-    "ethertype" : 34525,
-    "fileId" : [],
-    "firstPacket" : 1313506515119,
-    "icmp" : {
-     "code" : [
-      0
-     ],
-     "type" : [
-      135
-     ]
-    },
-    "ipProtocol" : 58,
-    "lastPacket" : 1313506515119,
-    "length" : 0,
-    "network" : {
-     "bytes" : 86,
-     "community_id" : "1:ASYHBmmOHkFNLdAI/lXAXKFOaeg=",
-     "packets" : 1
-    },
-    "node" : "test",
-    "packetLen" : [
-     102
-    ],
-    "packetPos" : [
-     618
-    ],
-    "packetRange" : {
-     "gte" : 1313506515119,
-     "lte" : 1313506515119
-    },
-    "protocol" : [
-     "icmp"
-    ],
-    "protocolCnt" : 1,
-    "segmentCnt" : 1,
-    "server" : {
-     "bytes" : 0
-    },
-    "source" : {
-     "bytes" : 86,
-     "ip" : "fe80::21e:ecff:fe30:9474",
-     "mac" : [
-      "00:1e:ec:30:94:74"
-     ],
-     "mac-cnt" : 1,
-     "packets" : 1,
-     "port" : 0
-    },
-    "srcOui" : [
-     "Compal Information (Kunshan) Co., Ltd."
-    ],
-    "srcOuiCnt" : 1,
-    "srcTTL" : [
-     255
-    ],
-    "srcTTLCnt" : 1,
-    "totDataBytes" : 32
-   },
-   "header" : {
-    "index" : {
-     "_index" : "tests_sessions3-110816"
     }
    }
   },
@@ -288,6 +211,86 @@
     },
     "srcOui" : [
      "Intel Corporation"
+    ],
+    "srcOuiCnt" : 1,
+    "srcTTL" : [
+     255
+    ],
+    "srcTTLCnt" : 1,
+    "totDataBytes" : 32
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-110816"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 32
+    },
+    "destination" : {
+     "bytes" : 0,
+     "ip" : "ff02::1:ffeb:3faf",
+     "mac" : [
+      "33:33:ff:eb:3f:af"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 0,
+     "port" : 0
+    },
+    "ethertype" : 34525,
+    "fileId" : [],
+    "firstPacket" : 1313506515119,
+    "icmp" : {
+     "code" : [
+      0
+     ],
+     "type" : [
+      135
+     ]
+    },
+    "ipProtocol" : 58,
+    "lastPacket" : 1313506515119,
+    "length" : 0,
+    "network" : {
+     "bytes" : 86,
+     "community_id" : "1:ASYHBmmOHkFNLdAI/lXAXKFOaeg=",
+     "packets" : 1
+    },
+    "node" : "test",
+    "packetLen" : [
+     102
+    ],
+    "packetPos" : [
+     618
+    ],
+    "packetRange" : {
+     "gte" : 1313506515119,
+     "lte" : 1313506515119
+    },
+    "protocol" : [
+     "icmp"
+    ],
+    "protocolCnt" : 1,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 0
+    },
+    "source" : {
+     "bytes" : 86,
+     "ip" : "fe80::21e:ecff:fe30:9474",
+     "mac" : [
+      "00:1e:ec:30:94:74"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 1,
+     "port" : 0
+    },
+    "srcOui" : [
+     "Compal Information (Kunshan) Co., Ltd."
     ],
     "srcOuiCnt" : 1,
     "srcTTL" : [
@@ -425,7 +428,10 @@
     "srcTTLCnt" : 1,
     "tcpflags" : {
      "ack" : 4,
+     "ae" : 0,
+     "cwr" : 0,
      "dstZero" : 0,
+     "ece" : 0,
      "fin" : 1,
      "psh" : 2,
      "rst" : 0,

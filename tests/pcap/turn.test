@@ -181,7 +181,10 @@
     },
     "tcpflags" : {
      "ack" : 10,
+     "ae" : 0,
+     "cwr" : 1,
      "dstZero" : 0,
+     "ece" : 2,
      "fin" : 0,
      "psh" : 15,
      "rst" : 0,

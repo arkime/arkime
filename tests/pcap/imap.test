@@ -359,7 +359,10 @@
     "srcTTLCnt" : 1,
     "tcpflags" : {
      "ack" : 32,
+     "ae" : 0,
+     "cwr" : 0,
      "dstZero" : 0,
+     "ece" : 0,
      "fin" : 2,
      "psh" : 70,
      "rst" : 0,
@@ -601,7 +604,10 @@
     "srcTTLCnt" : 1,
     "tcpflags" : {
      "ack" : 4,
+     "ae" : 0,
+     "cwr" : 0,
      "dstZero" : 0,
+     "ece" : 0,
      "fin" : 0,
      "psh" : 6,
      "rst" : 0,
@@ -829,7 +835,10 @@
     "srcTTLCnt" : 1,
     "tcpflags" : {
      "ack" : 2,
+     "ae" : 0,
+     "cwr" : 0,
      "dstZero" : 0,
+     "ece" : 0,
      "fin" : 0,
      "psh" : 3,
      "rst" : 0,

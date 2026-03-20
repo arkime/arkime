@@ -1,244 +1,250 @@
 {
-   "sessions3" : [
-      {
-         "body" : {
-            "@timestamp" : "SET",
-            "bgp" : {
-               "type" : [
-                  "KEEPALIVE",
-                  "OPEN"
-               ]
-            },
-            "client" : {
-               "bytes" : 102
-            },
-            "destination" : {
-               "bytes" : 643,
-               "ip" : "192.168.100.2",
-               "mac" : [
-                  "c2:02:4f:3d:00:00"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 7,
-               "port" : 179
-            },
-            "dstDscp" : [
-               48
-            ],
-            "dstDscpCnt" : 1,
-            "dstPayload8" : "ffffffffffffffff",
-            "dstRIR" : "ARIN",
-            "dstTTL" : [
-               "1",
-               "255"
-            ],
-            "dstTTLCnt" : 2,
-            "ethertype" : 2048,
-            "fileId" : [],
-            "firstPacket" : 1259261324431,
-            "initRTT" : 3,
-            "ipProtocol" : 6,
-            "lastPacket" : 1259261384739,
-            "length" : 60308,
-            "network" : {
-               "bytes" : 1267,
-               "community_id" : "1:g99Vgks0T67b4ifViWJVGKZmmpU=",
-               "packets" : 14
-            },
-            "node" : "test",
-            "packetLen" : [
-               94,
-               94,
-               90,
-               135,
-               135,
-               109,
-               109,
-               109,
-               109,
-               109,
-               109,
-               90,
-               90,
-               109
-            ],
-            "packetPos" : [
-               24,
-               118,
-               212,
-               302,
-               437,
-               572,
-               681,
-               790,
-               899,
-               1008,
-               1117,
-               1226,
-               1316,
-               1406
-            ],
-            "packetRange" : {
-               "gte" : 1259261324431,
-               "lte" : 1259261384739
-            },
-            "protocol" : [
-               "bgp",
-               "tcp"
-            ],
-            "protocolCnt" : 2,
-            "rootId" : "SET",
-            "segmentCnt" : 1,
-            "server" : {
-               "bytes" : 102
-            },
-            "source" : {
-               "bytes" : 624,
-               "ip" : "192.168.100.1",
-               "mac" : [
-                  "c2:01:4f:3d:00:00"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 7,
-               "port" : 25820
-            },
-            "srcDscp" : [
-               48
-            ],
-            "srcDscpCnt" : 1,
-            "srcPayload8" : "ffffffffffffffff",
-            "srcRIR" : "ARIN",
-            "srcTTL" : [
-               1
-            ],
-            "srcTTLCnt" : 1,
-            "tcpflags" : {
-               "ack" : 3,
-               "dstZero" : 0,
-               "fin" : 0,
-               "psh" : 8,
-               "rst" : 0,
-               "srcZero" : 0,
-               "syn" : 1,
-               "syn-ack" : 1,
-               "urg" : 0
-            },
-            "tcpseq" : {
-               "dst" : 0,
-               "src" : 2672392074
-            },
-            "totDataBytes" : 204
-         },
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions3-091126"
-            }
-         }
-      },
-      {
-         "body" : {
-            "@timestamp" : "SET",
-            "bgp" : {
-               "type" : [
-                  "KEEPALIVE"
-               ]
-            },
-            "client" : {
-               "bytes" : 19
-            },
-            "destination" : {
-               "bytes" : 74,
-               "ip" : "192.168.100.2",
-               "mac" : [
-                  "c2:02:4f:3d:00:00"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 1,
-               "port" : 179
-            },
-            "dstDscp" : [
-               48
-            ],
-            "dstDscpCnt" : 1,
-            "dstPayload8" : "ffffffffffffffff",
-            "dstRIR" : "ARIN",
-            "dstTTL" : [
-               1
-            ],
-            "dstTTLCnt" : 1,
-            "ethertype" : 2048,
-            "fileId" : [],
-            "firstPacket" : 1259261324431,
-            "ipProtocol" : 6,
-            "lastPacket" : 1259261384967,
-            "length" : 60536,
-            "network" : {
-               "bytes" : 167,
-               "community_id" : "1:g99Vgks0T67b4ifViWJVGKZmmpU=",
-               "packets" : 2
-            },
-            "node" : "test",
-            "packetLen" : [
-               109,
-               90
-            ],
-            "packetPos" : [
-               1515,
-               1624
-            ],
-            "packetRange" : {
-               "gte" : 1259261324431,
-               "lte" : 1259261384967
-            },
-            "protocol" : [
-               "bgp",
-               "tcp"
-            ],
-            "protocolCnt" : 2,
-            "rootId" : "SET",
-            "segmentCnt" : 2,
-            "server" : {
-               "bytes" : 19
-            },
-            "source" : {
-               "bytes" : 93,
-               "ip" : "192.168.100.1",
-               "mac" : [
-                  "c2:01:4f:3d:00:00"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 1,
-               "port" : 25820
-            },
-            "srcDscp" : [
-               48
-            ],
-            "srcDscpCnt" : 1,
-            "srcPayload8" : "ffffffffffffffff",
-            "srcRIR" : "ARIN",
-            "srcTTL" : [
-               1
-            ],
-            "srcTTLCnt" : 1,
-            "tcpflags" : {
-               "ack" : 1,
-               "dstZero" : 0,
-               "fin" : 0,
-               "psh" : 2,
-               "rst" : 0,
-               "srcZero" : 0,
-               "syn" : 0,
-               "syn-ack" : 0,
-               "urg" : 0
-            },
-            "totDataBytes" : 38
-         },
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions3-091126"
-            }
-         }
-      }
-   ]
+ "sessions3" : [
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "bgp" : {
+     "type" : [
+      "KEEPALIVE",
+      "OPEN"
+     ]
+    },
+    "client" : {
+     "bytes" : 102
+    },
+    "destination" : {
+     "bytes" : 643,
+     "ip" : "192.168.100.2",
+     "mac" : [
+      "c2:02:4f:3d:00:00"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 7,
+     "port" : 179
+    },
+    "dstDscp" : [
+     48
+    ],
+    "dstDscpCnt" : 1,
+    "dstPayload8" : "ffffffffffffffff",
+    "dstRIR" : "ARIN",
+    "dstTTL" : [
+     "1",
+     "255"
+    ],
+    "dstTTLCnt" : 2,
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 1259261324431,
+    "initRTT" : 3,
+    "ipProtocol" : 6,
+    "lastPacket" : 1259261384739,
+    "length" : 60308,
+    "network" : {
+     "bytes" : 1267,
+     "community_id" : "1:g99Vgks0T67b4ifViWJVGKZmmpU=",
+     "packets" : 14
+    },
+    "node" : "test",
+    "packetLen" : [
+     94,
+     94,
+     90,
+     135,
+     135,
+     109,
+     109,
+     109,
+     109,
+     109,
+     109,
+     90,
+     90,
+     109
+    ],
+    "packetPos" : [
+     24,
+     118,
+     212,
+     302,
+     437,
+     572,
+     681,
+     790,
+     899,
+     1008,
+     1117,
+     1226,
+     1316,
+     1406
+    ],
+    "packetRange" : {
+     "gte" : 1259261324431,
+     "lte" : 1259261384739
+    },
+    "protocol" : [
+     "bgp",
+     "tcp"
+    ],
+    "protocolCnt" : 2,
+    "rootId" : "SET",
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 102
+    },
+    "source" : {
+     "bytes" : 624,
+     "ip" : "192.168.100.1",
+     "mac" : [
+      "c2:01:4f:3d:00:00"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 7,
+     "port" : 25820
+    },
+    "srcDscp" : [
+     48
+    ],
+    "srcDscpCnt" : 1,
+    "srcPayload8" : "ffffffffffffffff",
+    "srcRIR" : "ARIN",
+    "srcTTL" : [
+     1
+    ],
+    "srcTTLCnt" : 1,
+    "tcpflags" : {
+     "ack" : 3,
+     "ae" : 0,
+     "cwr" : 0,
+     "dstZero" : 0,
+     "ece" : 0,
+     "fin" : 0,
+     "psh" : 8,
+     "rst" : 0,
+     "srcZero" : 0,
+     "syn" : 1,
+     "syn-ack" : 1,
+     "urg" : 0
+    },
+    "tcpseq" : {
+     "dst" : 0,
+     "src" : 2672392074
+    },
+    "totDataBytes" : 204
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-091126"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "bgp" : {
+     "type" : [
+      "KEEPALIVE"
+     ]
+    },
+    "client" : {
+     "bytes" : 19
+    },
+    "destination" : {
+     "bytes" : 74,
+     "ip" : "192.168.100.2",
+     "mac" : [
+      "c2:02:4f:3d:00:00"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 1,
+     "port" : 179
+    },
+    "dstDscp" : [
+     48
+    ],
+    "dstDscpCnt" : 1,
+    "dstPayload8" : "ffffffffffffffff",
+    "dstRIR" : "ARIN",
+    "dstTTL" : [
+     1
+    ],
+    "dstTTLCnt" : 1,
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 1259261324431,
+    "ipProtocol" : 6,
+    "lastPacket" : 1259261384967,
+    "length" : 60536,
+    "network" : {
+     "bytes" : 167,
+     "community_id" : "1:g99Vgks0T67b4ifViWJVGKZmmpU=",
+     "packets" : 2
+    },
+    "node" : "test",
+    "packetLen" : [
+     109,
+     90
+    ],
+    "packetPos" : [
+     1515,
+     1624
+    ],
+    "packetRange" : {
+     "gte" : 1259261324431,
+     "lte" : 1259261384967
+    },
+    "protocol" : [
+     "bgp",
+     "tcp"
+    ],
+    "protocolCnt" : 2,
+    "rootId" : "SET",
+    "segmentCnt" : 2,
+    "server" : {
+     "bytes" : 19
+    },
+    "source" : {
+     "bytes" : 93,
+     "ip" : "192.168.100.1",
+     "mac" : [
+      "c2:01:4f:3d:00:00"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 1,
+     "port" : 25820
+    },
+    "srcDscp" : [
+     48
+    ],
+    "srcDscpCnt" : 1,
+    "srcPayload8" : "ffffffffffffffff",
+    "srcRIR" : "ARIN",
+    "srcTTL" : [
+     1
+    ],
+    "srcTTLCnt" : 1,
+    "tcpflags" : {
+     "ack" : 1,
+     "ae" : 0,
+     "cwr" : 0,
+     "dstZero" : 0,
+     "ece" : 0,
+     "fin" : 0,
+     "psh" : 2,
+     "rst" : 0,
+     "srcZero" : 0,
+     "syn" : 0,
+     "syn-ack" : 0,
+     "urg" : 0
+    },
+    "totDataBytes" : 38
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-091126"
+    }
+   }
+  }
+ ]
 }
 

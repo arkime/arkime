@@ -1,265 +1,268 @@
 {
-   "sessions3" : [
-      {
-         "body" : {
-            "@timestamp" : "SET",
-            "client" : {
-               "bytes" : 785
-            },
-            "destination" : {
-               "bytes" : 1696,
-               "geo" : {
-                  "country_iso_code" : "US"
-               },
-               "ip" : "13.12.11.10",
-               "mac" : [
-                  "40:a6:77:50:37:c2",
-                  "40:a6:77:53:e7:c3"
-               ],
-               "mac-cnt" : 2,
-               "packets" : 4,
-               "port" : 80
-            },
-            "dstOui" : [
-               "Juniper Networks"
-            ],
-            "dstOuiCnt" : 1,
-            "dstPayload8" : "485454502f312e31",
-            "dstRIR" : "ARIN",
-            "dstTTL" : [
-               57
-            ],
-            "dstTTLCnt" : 1,
-            "ethertype" : 2048,
-            "fileId" : [],
-            "firstPacket" : 1559004678546,
-            "http" : {
-               "bodyMagic" : [
-                  "text/html"
-               ],
-               "bodyMagicCnt" : 1,
-               "clientVersion" : [
-                  "1.1"
-               ],
-               "clientVersionCnt" : 1,
-               "host" : [
-                  "xxx.xxxxxxxxxxxx.xxx.xx"
-               ],
-               "hostCnt" : 1,
-               "key" : [
-                  "Command",
-                  "CurrentFolder",
-                  "Type"
-               ],
-               "keyCnt" : 3,
-               "md5" : [
-                  "01b1aa76bb06f3dc4fe1fa153f7b79d3"
-               ],
-               "md5Cnt" : 1,
-               "method" : [
-                  "POST"
-               ],
-               "method-POST" : 1,
-               "methodCnt" : 1,
-               "path" : [
-                  "/xxxxxxxxx/xxxxxx/xxxxxxxxxxx/xxxxxxxxxx/xxx/xxxxxxxxx.xxx"
-               ],
-               "pathCnt" : 1,
-               "request-referer" : [
-                  "http://xxx.xxxxxxxxxxxx.xxx.xx/xxxxxxxxx/xxxxxx/xxxxxxxxxxx/xxxxxxxxxx/xxx/xxxxxxxxx.xxx?Command=FileUpload&Type=File&CurrentFolder=%2F"
-               ],
-               "request-refererCnt" : 1,
-               "requestHeader" : [
-                  "accept",
-                  "connection",
-                  "content-length",
-                  "content-type",
-                  "host",
-                  "referer",
-                  "user-agent"
-               ],
-               "requestHeaderCnt" : 7,
-               "requestHeaderField" : [
-                  "accept",
-                  "connection",
-                  "content-length",
-                  "content-type"
-               ],
-               "requestHeaderValue" : [
-                  "*/*",
-                  "300",
-                  "keep-alive",
-                  "multipart/form-data; boundary=----7df271da040a"
-               ],
-               "requestHeaderValueCnt" : 4,
-               "responseHeader" : [
-                  "age",
-                  "cache-control",
-                  "connection",
-                  "content-length",
-                  "content-security-policy",
-                  "content-type",
-                  "date",
-                  "p3p",
-                  "referrer-policy",
-                  "server",
-                  "set-cookie",
-                  "vary",
-                  "x-content-type-options",
-                  "x-frame-options",
-                  "x-xss-protection"
-               ],
-               "responseHeaderCnt" : 15,
-               "responseHeaderField" : [
-                  "age",
-                  "cache-control",
-                  "connection",
-                  "content-length",
-                  "content-security-policy",
-                  "content-type",
-                  "date",
-                  "p3p",
-                  "referrer-policy",
-                  "server",
-                  "set-cookie",
-                  "vary",
-                  "x-content-type-options",
-                  "x-frame-options",
-                  "x-xss-protection"
-               ],
-               "responseHeaderValue" : [
-                  "0",
-                  "1; mode=block",
-                  "3388",
-                  "accept-encoding",
-                  "ats",
-                  "deny",
-                  "keep-alive",
-                  "max-age=3600, private",
-                  "nosniff",
-                  "policyref=\"https://policies.xxxxx.com/w3c/p3p.xml\", cp=\"cao dsp cor cur adm dev tai psa psd ivai ivdi coni telo otpi our deli sami otri unri pubi ind phy onl uni pur fin com nav int dem cnt sta pol hea pre loc gov\"",
-                  "sandbox; default-src 'self'; script-src 'none'; object-src 'none'; report-uri https://xxx.xxxxx.xxx/xxxxxx/xxx?xxx=xxxxxxx",
-                  "strict-origin-when-cross-origin",
-                  "text/html; charset=utf-8",
-                  "tue, 28 may 2019 00:51:19 gmt",
-                  "xx=xxxxxxxxxxxxx&x=x&x=xx; expires=wed, 27-may-2020 00:51:19 gmt; path=/; domain=.xxx.xx; secure"
-               ],
-               "responseHeaderValueCnt" : 15,
-               "serverVersion" : [
-                  "1.1"
-               ],
-               "serverVersionCnt" : 1,
-               "sha256" : [
-                  "728f5fbb505f80fceb0a4dde2d1a632de990dd6e7f0b8e3474b6f16c49ed8720"
-               ],
-               "sha256Cnt" : 1,
-               "statuscode" : [
-                  200
-               ],
-               "statuscodeCnt" : 1,
-               "uri" : [
-                  "xxx.xxxxxxxxxxxx.xxx.xx/xxxxxxxxx/xxxxxx/xxxxxxxxxxx/xxxxxxxxxx/xxx/xxxxxxxxx.xxx?Command=FileUpload&Type=File&CurrentFolder=%2F"
-               ],
-               "uriCnt" : 1,
-               "useragent" : [
-                  "Mozilla/5.0 (compatible; MSIE 10.0; Windows NT 6.2)"
-               ],
-               "useragentCnt" : 1,
-               "value" : [
-                  "/",
-                  "File",
-                  "FileUpload"
-               ],
-               "valueCnt" : 3
-            },
-            "initRTT" : 102,
-            "ipProtocol" : 6,
-            "lastPacket" : 1559004679353,
-            "length" : 807,
-            "network" : {
-               "bytes" : 2955,
-               "community_id" : "1:eJlWVTyMD/0EOX2chOPekExOXNA=",
-               "packets" : 7
-            },
-            "node" : "test",
-            "packetLen" : [
-               82,
-               82,
-               370,
-               82,
-               855,
-               82,
-               1514
-            ],
-            "packetPos" : [
-               24,
-               106,
-               188,
-               558,
-               640,
-               1495,
-               1577
-            ],
-            "packetRange" : {
-               "gte" : 1559004678546,
-               "lte" : 1559004679353
-            },
-            "protocol" : [
-               "http",
-               "tcp"
-            ],
-            "protocolCnt" : 2,
-            "segmentCnt" : 1,
-            "server" : {
-               "bytes" : 1444
-            },
-            "source" : {
-               "bytes" : 1259,
-               "ip" : "10.11.12.13",
-               "mac" : [
-                  "40:a6:77:50:2f:c3",
-                  "54:1e:56:b2:4f:c2"
-               ],
-               "mac-cnt" : 2,
-               "packets" : 3,
-               "port" : 54162
-            },
-            "srcOui" : [
-               "Juniper Networks"
-            ],
-            "srcOuiCnt" : 1,
-            "srcPayload8" : "504f5354202f7878",
-            "srcTTL" : [
-               116
-            ],
-            "srcTTLCnt" : 1,
-            "tags" : [
-               "out-of-order-src"
-            ],
-            "tagsCnt" : 1,
-            "tcpflags" : {
-               "ack" : 3,
-               "dstZero" : 0,
-               "fin" : 0,
-               "psh" : 2,
-               "rst" : 0,
-               "srcZero" : 0,
-               "syn" : 1,
-               "syn-ack" : 1,
-               "urg" : 0
-            },
-            "tcpseq" : {
-               "dst" : 0,
-               "src" : 3030076748
-            },
-            "totDataBytes" : 2229
-         },
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions3-190528"
-            }
-         }
-      }
-   ]
+ "sessions3" : [
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 785
+    },
+    "destination" : {
+     "bytes" : 1696,
+     "geo" : {
+      "country_iso_code" : "US"
+     },
+     "ip" : "13.12.11.10",
+     "mac" : [
+      "40:a6:77:50:37:c2",
+      "40:a6:77:53:e7:c3"
+     ],
+     "mac-cnt" : 2,
+     "packets" : 4,
+     "port" : 80
+    },
+    "dstOui" : [
+     "Juniper Networks"
+    ],
+    "dstOuiCnt" : 1,
+    "dstPayload8" : "485454502f312e31",
+    "dstRIR" : "ARIN",
+    "dstTTL" : [
+     57
+    ],
+    "dstTTLCnt" : 1,
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 1559004678546,
+    "http" : {
+     "bodyMagic" : [
+      "text/html"
+     ],
+     "bodyMagicCnt" : 1,
+     "clientVersion" : [
+      "1.1"
+     ],
+     "clientVersionCnt" : 1,
+     "host" : [
+      "xxx.xxxxxxxxxxxx.xxx.xx"
+     ],
+     "hostCnt" : 1,
+     "key" : [
+      "Command",
+      "CurrentFolder",
+      "Type"
+     ],
+     "keyCnt" : 3,
+     "md5" : [
+      "01b1aa76bb06f3dc4fe1fa153f7b79d3"
+     ],
+     "md5Cnt" : 1,
+     "method" : [
+      "POST"
+     ],
+     "method-POST" : 1,
+     "methodCnt" : 1,
+     "path" : [
+      "/xxxxxxxxx/xxxxxx/xxxxxxxxxxx/xxxxxxxxxx/xxx/xxxxxxxxx.xxx"
+     ],
+     "pathCnt" : 1,
+     "request-referer" : [
+      "http://xxx.xxxxxxxxxxxx.xxx.xx/xxxxxxxxx/xxxxxx/xxxxxxxxxxx/xxxxxxxxxx/xxx/xxxxxxxxx.xxx?Command=FileUpload&Type=File&CurrentFolder=%2F"
+     ],
+     "request-refererCnt" : 1,
+     "requestHeader" : [
+      "accept",
+      "connection",
+      "content-length",
+      "content-type",
+      "host",
+      "referer",
+      "user-agent"
+     ],
+     "requestHeaderCnt" : 7,
+     "requestHeaderField" : [
+      "accept",
+      "connection",
+      "content-length",
+      "content-type"
+     ],
+     "requestHeaderValue" : [
+      "*/*",
+      "300",
+      "keep-alive",
+      "multipart/form-data; boundary=----7df271da040a"
+     ],
+     "requestHeaderValueCnt" : 4,
+     "responseHeader" : [
+      "age",
+      "cache-control",
+      "connection",
+      "content-length",
+      "content-security-policy",
+      "content-type",
+      "date",
+      "p3p",
+      "referrer-policy",
+      "server",
+      "set-cookie",
+      "vary",
+      "x-content-type-options",
+      "x-frame-options",
+      "x-xss-protection"
+     ],
+     "responseHeaderCnt" : 15,
+     "responseHeaderField" : [
+      "age",
+      "cache-control",
+      "connection",
+      "content-length",
+      "content-security-policy",
+      "content-type",
+      "date",
+      "p3p",
+      "referrer-policy",
+      "server",
+      "set-cookie",
+      "vary",
+      "x-content-type-options",
+      "x-frame-options",
+      "x-xss-protection"
+     ],
+     "responseHeaderValue" : [
+      "0",
+      "1; mode=block",
+      "3388",
+      "accept-encoding",
+      "ats",
+      "deny",
+      "keep-alive",
+      "max-age=3600, private",
+      "nosniff",
+      "policyref=\"https://policies.xxxxx.com/w3c/p3p.xml\", cp=\"cao dsp cor cur adm dev tai psa psd ivai ivdi coni telo otpi our deli sami otri unri pubi ind phy onl uni pur fin com nav int dem cnt sta pol hea pre loc gov\"",
+      "sandbox; default-src 'self'; script-src 'none'; object-src 'none'; report-uri https://xxx.xxxxx.xxx/xxxxxx/xxx?xxx=xxxxxxx",
+      "strict-origin-when-cross-origin",
+      "text/html; charset=utf-8",
+      "tue, 28 may 2019 00:51:19 gmt",
+      "xx=xxxxxxxxxxxxx&x=x&x=xx; expires=wed, 27-may-2020 00:51:19 gmt; path=/; domain=.xxx.xx; secure"
+     ],
+     "responseHeaderValueCnt" : 15,
+     "serverVersion" : [
+      "1.1"
+     ],
+     "serverVersionCnt" : 1,
+     "sha256" : [
+      "728f5fbb505f80fceb0a4dde2d1a632de990dd6e7f0b8e3474b6f16c49ed8720"
+     ],
+     "sha256Cnt" : 1,
+     "statuscode" : [
+      200
+     ],
+     "statuscodeCnt" : 1,
+     "uri" : [
+      "xxx.xxxxxxxxxxxx.xxx.xx/xxxxxxxxx/xxxxxx/xxxxxxxxxxx/xxxxxxxxxx/xxx/xxxxxxxxx.xxx?Command=FileUpload&Type=File&CurrentFolder=%2F"
+     ],
+     "uriCnt" : 1,
+     "useragent" : [
+      "Mozilla/5.0 (compatible; MSIE 10.0; Windows NT 6.2)"
+     ],
+     "useragentCnt" : 1,
+     "value" : [
+      "/",
+      "File",
+      "FileUpload"
+     ],
+     "valueCnt" : 3
+    },
+    "initRTT" : 102,
+    "ipProtocol" : 6,
+    "lastPacket" : 1559004679353,
+    "length" : 807,
+    "network" : {
+     "bytes" : 2955,
+     "community_id" : "1:eJlWVTyMD/0EOX2chOPekExOXNA=",
+     "packets" : 7
+    },
+    "node" : "test",
+    "packetLen" : [
+     82,
+     82,
+     370,
+     82,
+     855,
+     82,
+     1514
+    ],
+    "packetPos" : [
+     24,
+     106,
+     188,
+     558,
+     640,
+     1495,
+     1577
+    ],
+    "packetRange" : {
+     "gte" : 1559004678546,
+     "lte" : 1559004679353
+    },
+    "protocol" : [
+     "http",
+     "tcp"
+    ],
+    "protocolCnt" : 2,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 1444
+    },
+    "source" : {
+     "bytes" : 1259,
+     "ip" : "10.11.12.13",
+     "mac" : [
+      "40:a6:77:50:2f:c3",
+      "54:1e:56:b2:4f:c2"
+     ],
+     "mac-cnt" : 2,
+     "packets" : 3,
+     "port" : 54162
+    },
+    "srcOui" : [
+     "Juniper Networks"
+    ],
+    "srcOuiCnt" : 1,
+    "srcPayload8" : "504f5354202f7878",
+    "srcTTL" : [
+     116
+    ],
+    "srcTTLCnt" : 1,
+    "tags" : [
+     "out-of-order-src"
+    ],
+    "tagsCnt" : 1,
+    "tcpflags" : {
+     "ack" : 3,
+     "ae" : 0,
+     "cwr" : 0,
+     "dstZero" : 0,
+     "ece" : 0,
+     "fin" : 0,
+     "psh" : 2,
+     "rst" : 0,
+     "srcZero" : 0,
+     "syn" : 1,
+     "syn-ack" : 1,
+     "urg" : 0
+    },
+    "tcpseq" : {
+     "dst" : 0,
+     "src" : 3030076748
+    },
+    "totDataBytes" : 2229
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-190528"
+    }
+   }
+  }
+ ]
 }
 

@@ -13,6 +13,14 @@
 #include <arpa/inet.h>
 #include <errno.h>
 
+// Define TCP ECN flags if not provided by system headers
+#ifndef TH_ECE
+#define TH_ECE 0x40
+#endif
+#ifndef TH_CWR
+#define TH_CWR 0x80
+#endif
+
 
 /******************************************************************************/
 extern ArkimeConfig_t        config;
@@ -32,6 +40,9 @@ LOCAL int tcpflagsPshField;
 LOCAL int tcpflagsRstField;
 LOCAL int tcpflagsFinField;
 LOCAL int tcpflagsUrgField;
+LOCAL int tcpflagsEceField;
+LOCAL int tcpflagsCwrField;
+LOCAL int tcpflagsAeField;
 
 /******************************************************************************/
 LOCAL void tcp_mid_save(ArkimeSession_t *session)
@@ -162,6 +173,25 @@ LOCAL int tcp_packet_process(ArkimeSession_t *const session, ArkimePacket_t *con
     if (tcphdr->th_flags & TH_URG) {
         session->tcpData.tcpFlagCnt[ARKIME_TCPFLAG_URG]++;
         ARKIME_RULES_RUN_FIELD_SET(session, tcpflagsUrgField, (gpointer)(long)session->tcpData.tcpFlagCnt[ARKIME_TCPFLAG_URG]);
+    }
+
+    if (tcphdr->th_flags & TH_ECE) {
+        session->tcpData.tcpFlagCnt[ARKIME_TCPFLAG_ECE]++;
+        ARKIME_RULES_RUN_FIELD_SET(session, tcpflagsEceField, (gpointer)(long)session->tcpData.tcpFlagCnt[ARKIME_TCPFLAG_ECE]);
+    }
+
+    if (tcphdr->th_flags & TH_CWR) {
+        session->tcpData.tcpFlagCnt[ARKIME_TCPFLAG_CWR]++;
+        ARKIME_RULES_RUN_FIELD_SET(session, tcpflagsCwrField, (gpointer)(long)session->tcpData.tcpFlagCnt[ARKIME_TCPFLAG_CWR]);
+    }
+
+#if defined(__linux__)
+    if (tcphdr->res1 & 0x01) {
+#else
+    if (tcphdr->th_x2 & 0x01) {
+#endif
+        session->tcpData.tcpFlagCnt[ARKIME_TCPFLAG_AE]++;
+        ARKIME_RULES_RUN_FIELD_SET(session, tcpflagsAeField, (gpointer)(long)session->tcpData.tcpFlagCnt[ARKIME_TCPFLAG_AE]);
     }
 
     // add to the long open
@@ -461,4 +491,7 @@ void arkime_parser_init()
     tcpflagsRstField = arkime_field_by_exp("tcpflags.rst");
     tcpflagsFinField = arkime_field_by_exp("tcpflags.fin");
     tcpflagsUrgField = arkime_field_by_exp("tcpflags.urg");
+    tcpflagsEceField = arkime_field_by_exp("tcpflags.ece");
+    tcpflagsCwrField = arkime_field_by_exp("tcpflags.cwr");
+    tcpflagsAeField = arkime_field_by_exp("tcpflags.ae");
 }

@@ -1,294 +1,297 @@
 {
-   "sessions3" : [
-      {
-         "body" : {
-            "@timestamp" : "SET",
-            "client" : {
-               "bytes" : 312
-            },
-            "destination" : {
-               "as" : {
-                  "full" : "AS1 Cool Beans!",
-                  "number" : 1,
-                  "organization" : {
-                     "name" : "Cool Beans!"
-                  }
-               },
-               "bytes" : 863,
-               "geo" : {
-                  "country_iso_code" : "CA"
-               },
-               "ip" : "10.0.0.2",
-               "mac" : [
-                  "00:00:5e:00:01:01",
-                  "5c:5e:ab:b3:67:c2"
-               ],
-               "mac-cnt" : 2,
-               "packets" : 5,
-               "port" : 80
-            },
-            "dstOui" : [
-               "ICANN, IANA Department",
-               "Juniper Networks"
-            ],
-            "dstOuiCnt" : 2,
-            "dstPayload8" : "485454502f312e31",
-            "dstRIR" : "TEST",
-            "dstTTL" : [
-               59
-            ],
-            "dstTTLCnt" : 1,
-            "ethertype" : 2048,
-            "fileId" : [],
-            "firstPacket" : 1454513228371,
-            "http" : {
-               "bodyMagic" : [
-                  "application/x-gzip"
-               ],
-               "bodyMagicCnt" : 1,
-               "clientVersion" : [
-                  "1.1"
-               ],
-               "clientVersionCnt" : 1,
-               "host" : [
-                  "www.xxxxxxxxx.xx"
-               ],
-               "hostCnt" : 1,
-               "key" : [
-                  "xx"
-               ],
-               "keyCnt" : 1,
-               "md5" : [
-                  "9daa848cbed13db71c8cce96e14a6d57"
-               ],
-               "md5Cnt" : 1,
-               "method" : [
-                  "GET"
-               ],
-               "method-GET" : 1,
-               "methodCnt" : 1,
-               "path" : [
-                  "/xx/xxxxx"
-               ],
-               "pathCnt" : 1,
-               "request-referer" : [
-                  "http://www.xxxxx.xxx/xxxx/xxxxxxxxxxxx"
-               ],
-               "request-refererCnt" : 1,
-               "requestHeader" : [
-                  "accept-encoding",
-                  "connection",
-                  "host",
-                  "referer",
-                  "user-agent",
-                  "x-forwarded-for"
-               ],
-               "requestHeaderCnt" : 6,
-               "requestHeaderField" : [
-                  "accept-encoding",
-                  "connection"
-               ],
-               "requestHeaderValue" : [
-                  "close",
-                  "gzip"
-               ],
-               "requestHeaderValueCnt" : 2,
-               "responseHeader" : [
-                  "cf-ray",
-                  "connection",
-                  "content-encoding",
-                  "content-type",
-                  "date",
-                  "server",
-                  "set-cookie",
-                  "transfer-encoding"
-               ],
-               "responseHeaderCnt" : 8,
-               "responseHeaderField" : [
-                  "cf-ray",
-                  "connection",
-                  "content-encoding",
-                  "content-type",
-                  "date",
-                  "server",
-                  "set-cookie",
-                  "transfer-encoding"
-               ],
-               "responseHeaderValue" : [
-                  "__cfduid=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx; expires=thu, 02-feb-17 15:27:08 gmt; path=/; domain=.xxxxxxxxx.xx; httponly",
-                  "chunked",
-                  "close",
-                  "gzip",
-                  "text/html",
-                  "wed, 03 feb 2016 15:27:08 gmt",
-                  "xxxxxxxxxxxxxxxx",
-                  "xxxxxxxxxxxxxxxx-iad"
-               ],
-               "responseHeaderValueCnt" : 8,
-               "serverVersion" : [
-                  "1.1"
-               ],
-               "serverVersionCnt" : 1,
-               "sha256" : [
-                  "af205d1c0b8409f29764420aa9b74fc81216a509d4d242aab62699fbb204c127"
-               ],
-               "sha256Cnt" : 1,
-               "statuscode" : [
-                  403
-               ],
-               "statuscodeCnt" : 1,
-               "uri" : [
-                  "www.xxxxxxxxx.xx/xx/xxxxx?xx=xxxxxxxxxxxx"
-               ],
-               "uriCnt" : 1,
-               "useragent" : [
-                  "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/44.0.2403.125 Safari/537.36"
-               ],
-               "useragentCnt" : 1,
-               "value" : [
-                  "xxxxxxxxxxxx"
-               ],
-               "valueCnt" : 1,
-               "xffASN" : [
-                  "AS2 Hmm!@#$%^&*()"
-               ],
-               "xffGEO" : [
-                  "---"
-               ],
-               "xffIp" : [
-                  "10.0.0.3"
-               ],
-               "xffIpCnt" : 1,
-               "xffRIR" : [
-                  ""
-               ]
-            },
-            "initRTT" : 26,
-            "ipProtocol" : 6,
-            "lastPacket" : 1454513228516,
-            "length" : 145,
-            "network" : {
-               "bytes" : 1543,
-               "community_id" : "1:5dijFYynZSTRexmiBqLOCUhge4k=",
-               "packets" : 11
-            },
-            "node" : "test",
-            "packetLen" : [
-               90,
-               82,
-               76,
-               382,
-               76,
-               619,
-               90,
-               76,
-               76,
-               76,
-               76
-            ],
-            "packetPos" : [
-               24,
-               114,
-               196,
-               272,
-               654,
-               730,
-               1349,
-               1439,
-               1515,
-               1591,
-               1667
-            ],
-            "packetRange" : {
-               "gte" : 1454513228371,
-               "lte" : 1454513228516
-            },
-            "protocol" : [
-               "http",
-               "tcp"
-            ],
-            "protocolCnt" : 2,
-            "segmentCnt" : 1,
-            "server" : {
-               "bytes" : 569
-            },
-            "source" : {
-               "as" : {
-                  "full" : "AS0 This is neat",
-                  "number" : 0,
-                  "organization" : {
-                     "name" : "This is neat"
-                  }
-               },
-               "bytes" : 680,
-               "geo" : {
-                  "country_iso_code" : "RU"
-               },
-               "ip" : "10.0.0.1",
-               "mac" : [
-                  "00:0a:f3:31:90:00"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 6,
-               "port" : 41954
-            },
-            "srcOui" : [
-               "Cisco Systems, Inc"
-            ],
-            "srcOuiCnt" : 1,
-            "srcPayload8" : "474554202f78782f",
-            "srcTTL" : [
-               62
-            ],
-            "srcTTLCnt" : 1,
-            "tags" : [
-               "dstip",
-               "srcip"
-            ],
-            "tagsCnt" : 2,
-            "tcpflags" : {
-               "ack" : 4,
-               "dstZero" : 0,
-               "fin" : 1,
-               "psh" : 3,
-               "rst" : 1,
-               "srcZero" : 0,
-               "syn" : 1,
-               "syn-ack" : 1,
-               "urg" : 0
-            },
-            "tcpseq" : {
-               "dst" : 0,
-               "src" : 2224296586
-            },
-            "test" : {
-               "ASN" : [
-                  "AS0 This is neat"
-               ],
-               "GEO" : [
-                  "RU"
-               ],
-               "RIR" : [
-                  ""
-               ],
-               "ip" : [
-                  "10.0.0.1"
-               ],
-               "number" : [
-                  33554442
-               ],
-               "string.snow" : [
-                  "16777226:41954,33554442:80"
-               ]
-            },
-            "totDataBytes" : 881
-         },
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions3-160203"
-            }
-         }
+ "sessions3" : [
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 312
+    },
+    "destination" : {
+     "as" : {
+      "full" : "AS1 Cool Beans!",
+      "number" : 1,
+      "organization" : {
+       "name" : "Cool Beans!"
       }
-   ]
+     },
+     "bytes" : 863,
+     "geo" : {
+      "country_iso_code" : "CA"
+     },
+     "ip" : "10.0.0.2",
+     "mac" : [
+      "00:00:5e:00:01:01",
+      "5c:5e:ab:b3:67:c2"
+     ],
+     "mac-cnt" : 2,
+     "packets" : 5,
+     "port" : 80
+    },
+    "dstOui" : [
+     "ICANN, IANA Department",
+     "Juniper Networks"
+    ],
+    "dstOuiCnt" : 2,
+    "dstPayload8" : "485454502f312e31",
+    "dstRIR" : "TEST",
+    "dstTTL" : [
+     59
+    ],
+    "dstTTLCnt" : 1,
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 1454513228371,
+    "http" : {
+     "bodyMagic" : [
+      "application/x-gzip"
+     ],
+     "bodyMagicCnt" : 1,
+     "clientVersion" : [
+      "1.1"
+     ],
+     "clientVersionCnt" : 1,
+     "host" : [
+      "www.xxxxxxxxx.xx"
+     ],
+     "hostCnt" : 1,
+     "key" : [
+      "xx"
+     ],
+     "keyCnt" : 1,
+     "md5" : [
+      "9daa848cbed13db71c8cce96e14a6d57"
+     ],
+     "md5Cnt" : 1,
+     "method" : [
+      "GET"
+     ],
+     "method-GET" : 1,
+     "methodCnt" : 1,
+     "path" : [
+      "/xx/xxxxx"
+     ],
+     "pathCnt" : 1,
+     "request-referer" : [
+      "http://www.xxxxx.xxx/xxxx/xxxxxxxxxxxx"
+     ],
+     "request-refererCnt" : 1,
+     "requestHeader" : [
+      "accept-encoding",
+      "connection",
+      "host",
+      "referer",
+      "user-agent",
+      "x-forwarded-for"
+     ],
+     "requestHeaderCnt" : 6,
+     "requestHeaderField" : [
+      "accept-encoding",
+      "connection"
+     ],
+     "requestHeaderValue" : [
+      "close",
+      "gzip"
+     ],
+     "requestHeaderValueCnt" : 2,
+     "responseHeader" : [
+      "cf-ray",
+      "connection",
+      "content-encoding",
+      "content-type",
+      "date",
+      "server",
+      "set-cookie",
+      "transfer-encoding"
+     ],
+     "responseHeaderCnt" : 8,
+     "responseHeaderField" : [
+      "cf-ray",
+      "connection",
+      "content-encoding",
+      "content-type",
+      "date",
+      "server",
+      "set-cookie",
+      "transfer-encoding"
+     ],
+     "responseHeaderValue" : [
+      "__cfduid=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx; expires=thu, 02-feb-17 15:27:08 gmt; path=/; domain=.xxxxxxxxx.xx; httponly",
+      "chunked",
+      "close",
+      "gzip",
+      "text/html",
+      "wed, 03 feb 2016 15:27:08 gmt",
+      "xxxxxxxxxxxxxxxx",
+      "xxxxxxxxxxxxxxxx-iad"
+     ],
+     "responseHeaderValueCnt" : 8,
+     "serverVersion" : [
+      "1.1"
+     ],
+     "serverVersionCnt" : 1,
+     "sha256" : [
+      "af205d1c0b8409f29764420aa9b74fc81216a509d4d242aab62699fbb204c127"
+     ],
+     "sha256Cnt" : 1,
+     "statuscode" : [
+      403
+     ],
+     "statuscodeCnt" : 1,
+     "uri" : [
+      "www.xxxxxxxxx.xx/xx/xxxxx?xx=xxxxxxxxxxxx"
+     ],
+     "uriCnt" : 1,
+     "useragent" : [
+      "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/44.0.2403.125 Safari/537.36"
+     ],
+     "useragentCnt" : 1,
+     "value" : [
+      "xxxxxxxxxxxx"
+     ],
+     "valueCnt" : 1,
+     "xffASN" : [
+      "AS2 Hmm!@#$%^&*()"
+     ],
+     "xffGEO" : [
+      "---"
+     ],
+     "xffIp" : [
+      "10.0.0.3"
+     ],
+     "xffIpCnt" : 1,
+     "xffRIR" : [
+      ""
+     ]
+    },
+    "initRTT" : 26,
+    "ipProtocol" : 6,
+    "lastPacket" : 1454513228516,
+    "length" : 145,
+    "network" : {
+     "bytes" : 1543,
+     "community_id" : "1:5dijFYynZSTRexmiBqLOCUhge4k=",
+     "packets" : 11
+    },
+    "node" : "test",
+    "packetLen" : [
+     90,
+     82,
+     76,
+     382,
+     76,
+     619,
+     90,
+     76,
+     76,
+     76,
+     76
+    ],
+    "packetPos" : [
+     24,
+     114,
+     196,
+     272,
+     654,
+     730,
+     1349,
+     1439,
+     1515,
+     1591,
+     1667
+    ],
+    "packetRange" : {
+     "gte" : 1454513228371,
+     "lte" : 1454513228516
+    },
+    "protocol" : [
+     "http",
+     "tcp"
+    ],
+    "protocolCnt" : 2,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 569
+    },
+    "source" : {
+     "as" : {
+      "full" : "AS0 This is neat",
+      "number" : 0,
+      "organization" : {
+       "name" : "This is neat"
+      }
+     },
+     "bytes" : 680,
+     "geo" : {
+      "country_iso_code" : "RU"
+     },
+     "ip" : "10.0.0.1",
+     "mac" : [
+      "00:0a:f3:31:90:00"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 6,
+     "port" : 41954
+    },
+    "srcOui" : [
+     "Cisco Systems, Inc"
+    ],
+    "srcOuiCnt" : 1,
+    "srcPayload8" : "474554202f78782f",
+    "srcTTL" : [
+     62
+    ],
+    "srcTTLCnt" : 1,
+    "tags" : [
+     "dstip",
+     "srcip"
+    ],
+    "tagsCnt" : 2,
+    "tcpflags" : {
+     "ack" : 4,
+     "ae" : 0,
+     "cwr" : 0,
+     "dstZero" : 0,
+     "ece" : 0,
+     "fin" : 1,
+     "psh" : 3,
+     "rst" : 1,
+     "srcZero" : 0,
+     "syn" : 1,
+     "syn-ack" : 1,
+     "urg" : 0
+    },
+    "tcpseq" : {
+     "dst" : 0,
+     "src" : 2224296586
+    },
+    "test" : {
+     "ASN" : [
+      "AS0 This is neat"
+     ],
+     "GEO" : [
+      "RU"
+     ],
+     "RIR" : [
+      ""
+     ],
+     "ip" : [
+      "10.0.0.1"
+     ],
+     "number" : [
+      33554442
+     ],
+     "string.snow" : [
+      "16777226:41954,33554442:80"
+     ]
+    },
+    "totDataBytes" : 881
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-160203"
+    }
+   }
+  }
+ ]
 }
 

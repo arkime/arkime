@@ -222,7 +222,10 @@
     "srcTTLCnt" : 1,
     "tcpflags" : {
      "ack" : 1,
+     "ae" : 0,
+     "cwr" : 0,
      "dstZero" : 0,
+     "ece" : 0,
      "fin" : 0,
      "psh" : 48,
      "rst" : 0,

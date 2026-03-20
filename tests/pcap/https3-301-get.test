@@ -1,274 +1,277 @@
 {
-   "sessions3" : [
-      {
-         "body" : {
-            "@timestamp" : "SET",
-            "cert" : [
-               {
-                  "hash" : "db:c7:e9:0b:0d:a5:d8:8a:55:35:43:0e:eb:66:5d:07:78:59:e8:e8",
-                  "issuerCN" : [
-                     "digicert high assurance ev root ca"
-                  ],
-                  "issuerON" : [
-                     "DigiCert Inc"
-                  ],
-                  "issuerOU" : [
-                     "www.digicert.com"
-                  ],
-                  "notAfter" : 1636502400000,
-                  "notBefore" : 1194609600000,
-                  "publicAlgorithm" : "rsaEncryption",
-                  "remainingDays" : 2906,
-                  "remainingSeconds" : 251105579,
-                  "serial" : "0337b928347c60a6aec5adb1217f3860",
-                  "subjectCN" : [
-                     "digicert high assurance ev ca-1"
-                  ],
-                  "subjectON" : [
-                     "DigiCert Inc"
-                  ],
-                  "subjectOU" : [
-                     "www.digicert.com"
-                  ],
-                  "validDays" : 5114,
-                  "validSeconds" : 441892800
-               },
-               {
-                  "alt" : [
-                     "github.com",
-                     "www.github.com"
-                  ],
-                  "altCnt" : 2,
-                  "hash" : "d7:12:e9:69:65:dc:f2:36:c8:74:c7:03:7d:c0:b2:24:a9:3b:d2:33",
-                  "issuerCN" : [
-                     "digicert high assurance ev ca-1"
-                  ],
-                  "issuerON" : [
-                     "DigiCert Inc"
-                  ],
-                  "issuerOU" : [
-                     "www.digicert.com"
-                  ],
-                  "notAfter" : 1441195200000,
-                  "notBefore" : 1370822400000,
-                  "publicAlgorithm" : "rsaEncryption",
-                  "remainingDays" : 645,
-                  "remainingSeconds" : 55798379,
-                  "serial" : "047fbe2e4bde0084d2caf8e3ecfe7058",
-                  "subjectCN" : [
-                     "github.com"
-                  ],
-                  "subjectON" : [
-                     "GitHub, Inc."
-                  ],
-                  "validDays" : 814,
-                  "validSeconds" : 70372800
-               }
-            ],
-            "certCnt" : 2,
-            "client" : {
-               "bytes" : 630
-            },
-            "destination" : {
-               "as" : {
-                  "full" : "AS36459 GitHub, Inc.",
-                  "number" : 36459,
-                  "organization" : {
-                     "name" : "GitHub, Inc."
-                  }
-               },
-               "bytes" : 4810,
-               "geo" : {
-                  "country_iso_code" : "US"
-               },
-               "ip" : "192.30.252.130",
-               "mac" : [
-                  "00:00:0c:07:ac:01",
-                  "00:0e:d6:0b:98:80"
-               ],
-               "mac-cnt" : 2,
-               "packets" : 9,
-               "port" : 443
-            },
-            "dstOui" : [
-               "Cisco Systems, Inc"
-            ],
-            "dstOuiCnt" : 1,
-            "dstPayload8" : "1603010055020000",
-            "dstRIR" : "ARIN",
-            "dstTTL" : [
-               50
-            ],
-            "dstTTLCnt" : 1,
-            "ethertype" : 2048,
-            "fileId" : [],
-            "firstPacket" : 1385396821013,
-            "http" : {
-               "host" : [
-                  "www.github.com"
-               ],
-               "hostCnt" : 1
-            },
-            "initRTT" : 17,
-            "ipProtocol" : 6,
-            "lastPacket" : 1385396821236,
-            "length" : 223,
-            "network" : {
-               "bytes" : 6340,
-               "community_id" : "1:JebvFh6+fkj6uRw7LYcK388Vcy8=",
-               "packets" : 23
-            },
-            "node" : "test",
-            "packetLen" : [
-               94,
-               90,
-               82,
-               201,
-               1506,
-               1506,
-               975,
-               82,
-               82,
-               396,
-               129,
-               82,
-               252,
-               475,
-               82,
-               109,
-               82,
-               109,
-               82,
-               70,
-               70,
-               82,
-               70
-            ],
-            "packetPos" : [
-               24,
-               118,
-               208,
-               290,
-               491,
-               1997,
-               3503,
-               4478,
-               4560,
-               4642,
-               5038,
-               5167,
-               5249,
-               5501,
-               5976,
-               6058,
-               6167,
-               6249,
-               6358,
-               6440,
-               6510,
-               6580,
-               6662
-            ],
-            "packetRange" : {
-               "gte" : 1385396821013,
-               "lte" : 1385396821236
-            },
-            "protocol" : [
-               "tcp",
-               "tls",
-               "tlsrulestest"
-            ],
-            "protocolCnt" : 3,
-            "segmentCnt" : 1,
-            "server" : {
-               "bytes" : 4208
-            },
-            "source" : {
-               "bytes" : 1530,
-               "geo" : {
-                  "country_iso_code" : "US"
-               },
-               "ip" : "10.180.156.141",
-               "mac" : [
-                  "00:1f:5b:ff:51:cb"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 14,
-               "port" : 62599
-            },
-            "srcOui" : [
-               "Apple, Inc."
-            ],
-            "srcOuiCnt" : 1,
-            "srcPayload8" : "1603010072010000",
-            "srcTTL" : [
-               64
-            ],
-            "srcTTLCnt" : 1,
-            "tags" : [
-               "cert:certificate-authority"
-            ],
-            "tagsCnt" : 1,
-            "tcpflags" : {
-               "ack" : 8,
-               "dstZero" : 0,
-               "fin" : 2,
-               "psh" : 8,
-               "rst" : 3,
-               "srcZero" : 0,
-               "syn" : 1,
-               "syn-ack" : 1,
-               "urg" : 0
-            },
-            "tcpseq" : {
-               "dst" : 0,
-               "src" : 4082536115
-            },
-            "tls" : {
-               "cipher" : [
-                  "TLS_RSA_WITH_RC4_128_SHA"
-               ],
-               "cipherCnt" : 1,
-               "dstSessionId" : [
-                  "dddbfd5162689bb01e3f0ba158a586de9097b26cfc83599391cbb5e128d34b97"
-               ],
-               "ja3" : [
-                  "06a92bf69b367389d2feb0d70501ddfe"
-               ],
-               "ja3Cnt" : 1,
-               "ja3s" : [
-                  "d2e6f7ef558ea8036c7e21b163b2d1af"
-               ],
-               "ja3sCnt" : 1,
-               "ja3sstring" : [
-                  "769,5,0-65281"
-               ],
-               "ja3sstringCnt" : 1,
-               "ja3string" : [
-                  "769,57-56-53-22-19-10-51-50-47-154-153-150-5-4-21-18-9-20-17-8-6-3-255,0,,"
-               ],
-               "ja3stringCnt" : 1,
-               "ja4" : [
-                  "t10d230100_6a57a6f57151_000000000000"
-               ],
-               "ja4Cnt" : 1,
-               "ja4_r" : [
-                  "t10d230100_0003,0004,0005,0006,0008,0009,000a,0011,0012,0013,0014,0015,0016,002f,0032,0033,0035,0038,0039,0096,0099,009a,00ff_"
-               ],
-               "ja4_rCnt" : 1,
-               "version" : [
-                  "TLSv1"
-               ],
-               "versionCnt" : 1
-            },
-            "totDataBytes" : 4838
-         },
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions3-131125"
-            }
-         }
+ "sessions3" : [
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "cert" : [
+     {
+      "hash" : "db:c7:e9:0b:0d:a5:d8:8a:55:35:43:0e:eb:66:5d:07:78:59:e8:e8",
+      "issuerCN" : [
+       "digicert high assurance ev root ca"
+      ],
+      "issuerON" : [
+       "DigiCert Inc"
+      ],
+      "issuerOU" : [
+       "www.digicert.com"
+      ],
+      "notAfter" : 1636502400000,
+      "notBefore" : 1194609600000,
+      "publicAlgorithm" : "rsaEncryption",
+      "remainingDays" : 2906,
+      "remainingSeconds" : 251105579,
+      "serial" : "0337b928347c60a6aec5adb1217f3860",
+      "subjectCN" : [
+       "digicert high assurance ev ca-1"
+      ],
+      "subjectON" : [
+       "DigiCert Inc"
+      ],
+      "subjectOU" : [
+       "www.digicert.com"
+      ],
+      "validDays" : 5114,
+      "validSeconds" : 441892800
+     },
+     {
+      "alt" : [
+       "github.com",
+       "www.github.com"
+      ],
+      "altCnt" : 2,
+      "hash" : "d7:12:e9:69:65:dc:f2:36:c8:74:c7:03:7d:c0:b2:24:a9:3b:d2:33",
+      "issuerCN" : [
+       "digicert high assurance ev ca-1"
+      ],
+      "issuerON" : [
+       "DigiCert Inc"
+      ],
+      "issuerOU" : [
+       "www.digicert.com"
+      ],
+      "notAfter" : 1441195200000,
+      "notBefore" : 1370822400000,
+      "publicAlgorithm" : "rsaEncryption",
+      "remainingDays" : 645,
+      "remainingSeconds" : 55798379,
+      "serial" : "047fbe2e4bde0084d2caf8e3ecfe7058",
+      "subjectCN" : [
+       "github.com"
+      ],
+      "subjectON" : [
+       "GitHub, Inc."
+      ],
+      "validDays" : 814,
+      "validSeconds" : 70372800
+     }
+    ],
+    "certCnt" : 2,
+    "client" : {
+     "bytes" : 630
+    },
+    "destination" : {
+     "as" : {
+      "full" : "AS36459 GitHub, Inc.",
+      "number" : 36459,
+      "organization" : {
+       "name" : "GitHub, Inc."
       }
-   ]
+     },
+     "bytes" : 4810,
+     "geo" : {
+      "country_iso_code" : "US"
+     },
+     "ip" : "192.30.252.130",
+     "mac" : [
+      "00:00:0c:07:ac:01",
+      "00:0e:d6:0b:98:80"
+     ],
+     "mac-cnt" : 2,
+     "packets" : 9,
+     "port" : 443
+    },
+    "dstOui" : [
+     "Cisco Systems, Inc"
+    ],
+    "dstOuiCnt" : 1,
+    "dstPayload8" : "1603010055020000",
+    "dstRIR" : "ARIN",
+    "dstTTL" : [
+     50
+    ],
+    "dstTTLCnt" : 1,
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 1385396821013,
+    "http" : {
+     "host" : [
+      "www.github.com"
+     ],
+     "hostCnt" : 1
+    },
+    "initRTT" : 17,
+    "ipProtocol" : 6,
+    "lastPacket" : 1385396821236,
+    "length" : 223,
+    "network" : {
+     "bytes" : 6340,
+     "community_id" : "1:JebvFh6+fkj6uRw7LYcK388Vcy8=",
+     "packets" : 23
+    },
+    "node" : "test",
+    "packetLen" : [
+     94,
+     90,
+     82,
+     201,
+     1506,
+     1506,
+     975,
+     82,
+     82,
+     396,
+     129,
+     82,
+     252,
+     475,
+     82,
+     109,
+     82,
+     109,
+     82,
+     70,
+     70,
+     82,
+     70
+    ],
+    "packetPos" : [
+     24,
+     118,
+     208,
+     290,
+     491,
+     1997,
+     3503,
+     4478,
+     4560,
+     4642,
+     5038,
+     5167,
+     5249,
+     5501,
+     5976,
+     6058,
+     6167,
+     6249,
+     6358,
+     6440,
+     6510,
+     6580,
+     6662
+    ],
+    "packetRange" : {
+     "gte" : 1385396821013,
+     "lte" : 1385396821236
+    },
+    "protocol" : [
+     "tcp",
+     "tls",
+     "tlsrulestest"
+    ],
+    "protocolCnt" : 3,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 4208
+    },
+    "source" : {
+     "bytes" : 1530,
+     "geo" : {
+      "country_iso_code" : "US"
+     },
+     "ip" : "10.180.156.141",
+     "mac" : [
+      "00:1f:5b:ff:51:cb"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 14,
+     "port" : 62599
+    },
+    "srcOui" : [
+     "Apple, Inc."
+    ],
+    "srcOuiCnt" : 1,
+    "srcPayload8" : "1603010072010000",
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
+    "tags" : [
+     "cert:certificate-authority"
+    ],
+    "tagsCnt" : 1,
+    "tcpflags" : {
+     "ack" : 8,
+     "ae" : 0,
+     "cwr" : 0,
+     "dstZero" : 0,
+     "ece" : 0,
+     "fin" : 2,
+     "psh" : 8,
+     "rst" : 3,
+     "srcZero" : 0,
+     "syn" : 1,
+     "syn-ack" : 1,
+     "urg" : 0
+    },
+    "tcpseq" : {
+     "dst" : 0,
+     "src" : 4082536115
+    },
+    "tls" : {
+     "cipher" : [
+      "TLS_RSA_WITH_RC4_128_SHA"
+     ],
+     "cipherCnt" : 1,
+     "dstSessionId" : [
+      "dddbfd5162689bb01e3f0ba158a586de9097b26cfc83599391cbb5e128d34b97"
+     ],
+     "ja3" : [
+      "06a92bf69b367389d2feb0d70501ddfe"
+     ],
+     "ja3Cnt" : 1,
+     "ja3s" : [
+      "d2e6f7ef558ea8036c7e21b163b2d1af"
+     ],
+     "ja3sCnt" : 1,
+     "ja3sstring" : [
+      "769,5,0-65281"
+     ],
+     "ja3sstringCnt" : 1,
+     "ja3string" : [
+      "769,57-56-53-22-19-10-51-50-47-154-153-150-5-4-21-18-9-20-17-8-6-3-255,0,,"
+     ],
+     "ja3stringCnt" : 1,
+     "ja4" : [
+      "t10d230100_6a57a6f57151_000000000000"
+     ],
+     "ja4Cnt" : 1,
+     "ja4_r" : [
+      "t10d230100_0003,0004,0005,0006,0008,0009,000a,0011,0012,0013,0014,0015,0016,002f,0032,0033,0035,0038,0039,0096,0099,009a,00ff_"
+     ],
+     "ja4_rCnt" : 1,
+     "version" : [
+      "TLSv1"
+     ],
+     "versionCnt" : 1
+    },
+    "totDataBytes" : 4838
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-131125"
+    }
+   }
+  }
+ ]
 }
 

@@ -1,296 +1,299 @@
 {
-   "sessions3" : [
-      {
-         "body" : {
-            "@timestamp" : "SET",
-            "client" : {
-               "bytes" : 113
-            },
-            "destination" : {
-               "as" : {
-                  "full" : "AS1 Cool Beans!",
-                  "number" : 1,
-                  "organization" : {
-                     "name" : "Cool Beans!"
-                  }
-               },
-               "bytes" : 4574,
-               "geo" : {
-                  "country_iso_code" : "CA"
-               },
-               "ip" : "10.0.0.2",
-               "mac" : [
-                  "00:09:0f:db:f4:3e"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 3,
-               "port" : 80
-            },
-            "dot1q" : {
-               "id" : [
-                  "200",
-                  "201"
-               ],
-               "idCnt" : 2
-            },
-            "dstOui" : [
-               "Fortinet Inc."
-            ],
-            "dstOuiCnt" : 1,
-            "dstPayload8" : "485454502f312e31",
-            "dstRIR" : "TEST",
-            "dstTTL" : [
-               54
-            ],
-            "dstTTLCnt" : 1,
-            "ethertype" : 2048,
-            "fileId" : [],
-            "firstPacket" : 1456042921641,
-            "http" : {
-               "bodyMagic" : [
-                  "text/html"
-               ],
-               "bodyMagicCnt" : 1,
-               "clientVersion" : [
-                  "1.1"
-               ],
-               "clientVersionCnt" : 1,
-               "host" : [
-                  "xxxxxxx.xxx.xxx"
-               ],
-               "hostCnt" : 1,
-               "method" : [
-                  "GET"
-               ],
-               "method-GET" : 1,
-               "methodCnt" : 1,
-               "path" : [
-                  "/"
-               ],
-               "pathCnt" : 1,
-               "requestHeader" : [
-                  "accept",
-                  "connection",
-                  "host",
-                  "user-agent"
-               ],
-               "requestHeaderCnt" : 4,
-               "requestHeaderField" : [
-                  "accept",
-                  "connection"
-               ],
-               "requestHeaderValue" : [
-                  "*/*",
-                  "keep-alive"
-               ],
-               "requestHeaderValueCnt" : 2,
-               "responseHeader" : [
-                  "accept-ranges",
-                  "access-control-allow-origin",
-                  "age",
-                  "cache-control",
-                  "connection",
-                  "content-length",
-                  "content-security-policy",
-                  "content-type",
-                  "date",
-                  "fastly-debug-digest",
-                  "set-cookie",
-                  "vary",
-                  "via",
-                  "x-cache",
-                  "x-cache-hits",
-                  "x-served-by",
-                  "x-servedbyhost",
-                  "x-timer",
-                  "x-xss-protection"
-               ],
-               "responseHeaderCnt" : 19,
-               "responseHeaderField" : [
-                  "accept-ranges",
-                  "access-control-allow-origin",
-                  "age",
-                  "cache-control",
-                  "connection",
-                  "content-length",
-                  "content-security-policy",
-                  "content-type",
-                  "date",
-                  "fastly-debug-digest",
-                  "set-cookie",
-                  "vary",
-                  "via",
-                  "via",
-                  "x-cache",
-                  "x-cache-hits",
-                  "x-served-by",
-                  "x-servedbyhost",
-                  "x-timer",
-                  "x-xss-protection"
-               ],
-               "responseHeaderValue" : [
-                  "*",
-                  "1.1 varnish",
-                  "1.1 varnish",
-                  "104548",
-                  "134",
-                  "1; mode=block",
-                  "2, 21",
-                  "9e523fa72b6a1185e15653a90e0ae5026a5c5a2b0b708f448b65bf55c62b08bc",
-                  "accept-encoding",
-                  "bytes",
-                  "cache-iad2140-iad, cache-ams4122-ams",
-                  "countrycode=il; domain=.xxx.xxx",
-                  "default-src 'self' http://*.xxx.xxx:* https://*.xxx.com:* *.xxx.net:* *.xxxxxx.com:* *.xxxxxxxxx.com:* *.xxxx.net:*; script-src 'unsafe-inline' 'unsafe-eval' 'self' *; style-src 'unsafe-inline' 'self' *; frame-src 'self' *; object-src 'self' *; img-src 'self' * data:; media-src 'self' *; font-src 'self' *; connect-src 'self' *;",
-                  "hit, hit",
-                  "keep-alive",
-                  "max-age=60",
-                  "prd-10-00-000-01.xxxxx.xxx.xxxxx.xxx",
-                  "s1456041369.500557,vs0,ve0",
-                  "sun, 21 feb 2016 07:56:09 gmt",
-                  "text/html; charset=utf-8"
-               ],
-               "responseHeaderValueCnt" : 20,
-               "serverVersion" : [
-                  "1.1"
-               ],
-               "serverVersionCnt" : 1,
-               "statuscode" : [
-                  200
-               ],
-               "statuscodeCnt" : 1,
-               "uri" : [
-                  "xxxxxxx.xxx.xxx/"
-               ],
-               "uriCnt" : 1,
-               "useragent" : [
-                  "Wget/1.15 (linux-gnu)"
-               ],
-               "useragentCnt" : 1
-            },
-            "initRTT" : 29,
-            "ipProtocol" : 6,
-            "lastPacket" : 1456042921761,
-            "length" : 120,
-            "network" : {
-               "bytes" : 4917,
-               "community_id" : "1:SPYgVgvcW0g9bsfBLLnTtlWJezA=",
-               "packets" : 6,
-               "vlan" : {
-                  "id" : [
-                     201,
-                     200
-                  ],
-                  "id-cnt" : 2
-               }
-            },
-            "node" : "test",
-            "packetLen" : [
-               98,
-               98,
-               90,
-               203,
-               90,
-               4434
-            ],
-            "packetPos" : [
-               24,
-               122,
-               220,
-               310,
-               513,
-               603
-            ],
-            "packetRange" : {
-               "gte" : 1456042921641,
-               "lte" : 1456042921761
-            },
-            "protocol" : [
-               "http",
-               "tcp"
-            ],
-            "protocolCnt" : 2,
-            "segmentCnt" : 1,
-            "server" : {
-               "bytes" : 4344
-            },
-            "source" : {
-               "as" : {
-                  "full" : "AS0 This is neat",
-                  "number" : 0,
-                  "organization" : {
-                     "name" : "This is neat"
-                  }
-               },
-               "bytes" : 343,
-               "geo" : {
-                  "country_iso_code" : "RU"
-               },
-               "ip" : "10.0.0.1",
-               "mac" : [
-                  "00:0c:29:c1:2d:24"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 3,
-               "port" : 54422
-            },
-            "srcOui" : [
-               "VMware, Inc."
-            ],
-            "srcOuiCnt" : 1,
-            "srcPayload8" : "474554202f204854",
-            "srcTTL" : [
-               64
-            ],
-            "srcTTLCnt" : 1,
-            "tags" : [
-               "dstip",
-               "srcip"
-            ],
-            "tagsCnt" : 2,
-            "tcpflags" : {
-               "ack" : 3,
-               "dstZero" : 0,
-               "fin" : 0,
-               "psh" : 1,
-               "rst" : 0,
-               "srcZero" : 0,
-               "syn" : 1,
-               "syn-ack" : 1,
-               "urg" : 0
-            },
-            "tcpseq" : {
-               "dst" : 0,
-               "src" : 3240623591
-            },
-            "test" : {
-               "ASN" : [
-                  "AS0 This is neat"
-               ],
-               "GEO" : [
-                  "RU"
-               ],
-               "RIR" : [
-                  ""
-               ],
-               "ip" : [
-                  "10.0.0.1"
-               ],
-               "number" : [
-                  33554442
-               ],
-               "string.snow" : [
-                  "16777226:54422,33554442:80"
-               ]
-            },
-            "totDataBytes" : 4457
-         },
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions3-160221"
-            }
-         }
+ "sessions3" : [
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 113
+    },
+    "destination" : {
+     "as" : {
+      "full" : "AS1 Cool Beans!",
+      "number" : 1,
+      "organization" : {
+       "name" : "Cool Beans!"
       }
-   ]
+     },
+     "bytes" : 4574,
+     "geo" : {
+      "country_iso_code" : "CA"
+     },
+     "ip" : "10.0.0.2",
+     "mac" : [
+      "00:09:0f:db:f4:3e"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 3,
+     "port" : 80
+    },
+    "dot1q" : {
+     "id" : [
+      "200",
+      "201"
+     ],
+     "idCnt" : 2
+    },
+    "dstOui" : [
+     "Fortinet Inc."
+    ],
+    "dstOuiCnt" : 1,
+    "dstPayload8" : "485454502f312e31",
+    "dstRIR" : "TEST",
+    "dstTTL" : [
+     54
+    ],
+    "dstTTLCnt" : 1,
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 1456042921641,
+    "http" : {
+     "bodyMagic" : [
+      "text/html"
+     ],
+     "bodyMagicCnt" : 1,
+     "clientVersion" : [
+      "1.1"
+     ],
+     "clientVersionCnt" : 1,
+     "host" : [
+      "xxxxxxx.xxx.xxx"
+     ],
+     "hostCnt" : 1,
+     "method" : [
+      "GET"
+     ],
+     "method-GET" : 1,
+     "methodCnt" : 1,
+     "path" : [
+      "/"
+     ],
+     "pathCnt" : 1,
+     "requestHeader" : [
+      "accept",
+      "connection",
+      "host",
+      "user-agent"
+     ],
+     "requestHeaderCnt" : 4,
+     "requestHeaderField" : [
+      "accept",
+      "connection"
+     ],
+     "requestHeaderValue" : [
+      "*/*",
+      "keep-alive"
+     ],
+     "requestHeaderValueCnt" : 2,
+     "responseHeader" : [
+      "accept-ranges",
+      "access-control-allow-origin",
+      "age",
+      "cache-control",
+      "connection",
+      "content-length",
+      "content-security-policy",
+      "content-type",
+      "date",
+      "fastly-debug-digest",
+      "set-cookie",
+      "vary",
+      "via",
+      "x-cache",
+      "x-cache-hits",
+      "x-served-by",
+      "x-servedbyhost",
+      "x-timer",
+      "x-xss-protection"
+     ],
+     "responseHeaderCnt" : 19,
+     "responseHeaderField" : [
+      "accept-ranges",
+      "access-control-allow-origin",
+      "age",
+      "cache-control",
+      "connection",
+      "content-length",
+      "content-security-policy",
+      "content-type",
+      "date",
+      "fastly-debug-digest",
+      "set-cookie",
+      "vary",
+      "via",
+      "via",
+      "x-cache",
+      "x-cache-hits",
+      "x-served-by",
+      "x-servedbyhost",
+      "x-timer",
+      "x-xss-protection"
+     ],
+     "responseHeaderValue" : [
+      "*",
+      "1.1 varnish",
+      "1.1 varnish",
+      "104548",
+      "134",
+      "1; mode=block",
+      "2, 21",
+      "9e523fa72b6a1185e15653a90e0ae5026a5c5a2b0b708f448b65bf55c62b08bc",
+      "accept-encoding",
+      "bytes",
+      "cache-iad2140-iad, cache-ams4122-ams",
+      "countrycode=il; domain=.xxx.xxx",
+      "default-src 'self' http://*.xxx.xxx:* https://*.xxx.com:* *.xxx.net:* *.xxxxxx.com:* *.xxxxxxxxx.com:* *.xxxx.net:*; script-src 'unsafe-inline' 'unsafe-eval' 'self' *; style-src 'unsafe-inline' 'self' *; frame-src 'self' *; object-src 'self' *; img-src 'self' * data:; media-src 'self' *; font-src 'self' *; connect-src 'self' *;",
+      "hit, hit",
+      "keep-alive",
+      "max-age=60",
+      "prd-10-00-000-01.xxxxx.xxx.xxxxx.xxx",
+      "s1456041369.500557,vs0,ve0",
+      "sun, 21 feb 2016 07:56:09 gmt",
+      "text/html; charset=utf-8"
+     ],
+     "responseHeaderValueCnt" : 20,
+     "serverVersion" : [
+      "1.1"
+     ],
+     "serverVersionCnt" : 1,
+     "statuscode" : [
+      200
+     ],
+     "statuscodeCnt" : 1,
+     "uri" : [
+      "xxxxxxx.xxx.xxx/"
+     ],
+     "uriCnt" : 1,
+     "useragent" : [
+      "Wget/1.15 (linux-gnu)"
+     ],
+     "useragentCnt" : 1
+    },
+    "initRTT" : 29,
+    "ipProtocol" : 6,
+    "lastPacket" : 1456042921761,
+    "length" : 120,
+    "network" : {
+     "bytes" : 4917,
+     "community_id" : "1:SPYgVgvcW0g9bsfBLLnTtlWJezA=",
+     "packets" : 6,
+     "vlan" : {
+      "id" : [
+       201,
+       200
+      ],
+      "id-cnt" : 2
+     }
+    },
+    "node" : "test",
+    "packetLen" : [
+     98,
+     98,
+     90,
+     203,
+     90,
+     4434
+    ],
+    "packetPos" : [
+     24,
+     122,
+     220,
+     310,
+     513,
+     603
+    ],
+    "packetRange" : {
+     "gte" : 1456042921641,
+     "lte" : 1456042921761
+    },
+    "protocol" : [
+     "http",
+     "tcp"
+    ],
+    "protocolCnt" : 2,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 4344
+    },
+    "source" : {
+     "as" : {
+      "full" : "AS0 This is neat",
+      "number" : 0,
+      "organization" : {
+       "name" : "This is neat"
+      }
+     },
+     "bytes" : 343,
+     "geo" : {
+      "country_iso_code" : "RU"
+     },
+     "ip" : "10.0.0.1",
+     "mac" : [
+      "00:0c:29:c1:2d:24"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 3,
+     "port" : 54422
+    },
+    "srcOui" : [
+     "VMware, Inc."
+    ],
+    "srcOuiCnt" : 1,
+    "srcPayload8" : "474554202f204854",
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
+    "tags" : [
+     "dstip",
+     "srcip"
+    ],
+    "tagsCnt" : 2,
+    "tcpflags" : {
+     "ack" : 3,
+     "ae" : 0,
+     "cwr" : 0,
+     "dstZero" : 0,
+     "ece" : 0,
+     "fin" : 0,
+     "psh" : 1,
+     "rst" : 0,
+     "srcZero" : 0,
+     "syn" : 1,
+     "syn-ack" : 1,
+     "urg" : 0
+    },
+    "tcpseq" : {
+     "dst" : 0,
+     "src" : 3240623591
+    },
+    "test" : {
+     "ASN" : [
+      "AS0 This is neat"
+     ],
+     "GEO" : [
+      "RU"
+     ],
+     "RIR" : [
+      ""
+     ],
+     "ip" : [
+      "10.0.0.1"
+     ],
+     "number" : [
+      33554442
+     ],
+     "string.snow" : [
+      "16777226:54422,33554442:80"
+     ]
+    },
+    "totDataBytes" : 4457
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-160221"
+    }
+   }
+  }
+ ]
 }
 

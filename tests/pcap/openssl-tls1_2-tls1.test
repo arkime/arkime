@@ -1,346 +1,349 @@
 {
-   "sessions3" : [
-      {
-         "body" : {
-            "@timestamp" : "SET",
-            "cert" : [
-               {
-                  "hash" : "c5:3e:73:07:3f:93:ce:78:95:de:74:84:12:6b:c3:03:da:b9:e6:57",
-                  "issuerCN" : [
-                     "entrust.net certification authority (2048)"
-                  ],
-                  "issuerON" : [
-                     "Entrust.net"
-                  ],
-                  "issuerOU" : [
-                     "www.entrust.net/CPS_2048 incorp. by ref. (limits liab.)",
-                     "(c) 1999 Entrust.net Limited"
-                  ],
-                  "notAfter" : 1636685477000,
-                  "notBefore" : 1321026040000,
-                  "publicAlgorithm" : "rsaEncryption",
-                  "remainingDays" : 2585,
-                  "remainingSeconds" : 223347403,
-                  "serial" : "4c0e8c39",
-                  "subjectCN" : [
-                     "entrust certification authority - l1c"
-                  ],
-                  "subjectON" : [
-                     "Entrust, Inc."
-                  ],
-                  "subjectOU" : [
-                     "www.entrust.net/rpa is incorporated by reference",
-                     "(c) 2009 Entrust, Inc."
-                  ],
-                  "validDays" : 3653,
-                  "validSeconds" : 315659437
-               },
-               {
-                  "alt" : [
-                     "toshiba.aol.ca",
-                     "main-w.welcomescreen.aol.com",
-                     "heroes.aol.com",
-                     "my.aol.com",
-                     "sb.welcomescreen.aol.com",
-                     "welcome.aol.com",
-                     "falltv.aol.com",
-                     "ipad.aol.com",
-                     "m.verizon.aol.com",
-                     "startpage.aol.com",
-                     "greenwich.patch.aol.com",
-                     "main.welcomescreen.aol.com",
-                     "skywire.aol.com",
-                     "n.main.welcomescreen.aol.com",
-                     "babylon-startpage.aol.com",
-                     "compaq-laptop.aol.com",
-                     "downloaded.aol.com",
-                     "netscape.aol.ca",
-                     "flyers.aol.ca",
-                     "m.verizon-b.aol.com",
-                     "fireworks.aol.com",
-                     "w.sb.welcomescreen.aol.com",
-                     "sportingnews-startpage.aol.com",
-                     "aolapps.aol.com",
-                     "compaq.aol.ca",
-                     "m.aol.com",
-                     "thr-startpage.aol.com",
-                     "debates.aol.com",
-                     "holiday.aol.com",
-                     "iphone.aol.com",
-                     "firefox-startpage.aol.com",
-                     "thevoiceof.aol.com",
-                     "n.sb.welcomescreen.aol.com",
-                     "freedompop.aol.com",
-                     "sb-w.welcomescreen.aol.com",
-                     "thanksgiving.aol.com",
-                     "favoritesbeta.aol.com",
-                     "live.aol.com",
-                     "www.aol.ca",
-                     "oscars.aol.com",
-                     "liveevents.aol.com",
-                     "main-n.welcomescreen.aol.com",
-                     "pokki.aol.com",
-                     "www.welcomescreen.aol.com",
-                     "compaq-desktop.aol.com",
-                     "hp-desktop.aol.com",
-                     "www.aol.com",
-                     "w.main.welcomescreen.aol.com",
-                     "thunderbird-startpage.aol.com",
-                     "w.verizon.aol.com",
-                     "netscape.aol.com",
-                     "t.verizon-b.aol.com",
-                     "sb-n.welcomescreen.aol.com",
-                     "hp-laptop.aol.com",
-                     "mypoints-startpage.aol.com",
-                     "olympics.aol.com",
-                     "homepage.aol.com",
-                     "oc-startpage.aol.com",
-                     "t.verizon.aol.com",
-                     "welcomescreen.aol.com",
-                     "m.article.aol.com",
-                     "hp.aol.ca"
-                  ],
-                  "altCnt" : 62,
-                  "hash" : "2f:b6:7a:b6:34:99:c2:65:69:0c:cc:f6:8d:8a:73:ee:e2:0e:7a:8b",
-                  "issuerCN" : [
-                     "entrust certification authority - l1c"
-                  ],
-                  "issuerON" : [
-                     "Entrust, Inc."
-                  ],
-                  "issuerOU" : [
-                     "www.entrust.net/rpa is incorporated by reference",
-                     "(c) 2009 Entrust, Inc."
-                  ],
-                  "notAfter" : 1497242632000,
-                  "notBefore" : 1402510723000,
-                  "publicAlgorithm" : "rsaEncryption",
-                  "remainingDays" : 971,
-                  "remainingSeconds" : 83904558,
-                  "serial" : "4c235548",
-                  "subjectCN" : [
-                     "www.aol.com"
-                  ],
-                  "subjectON" : [
-                     "AOL Inc."
-                  ],
-                  "subjectOU" : [
-                     "Homepages"
-                  ],
-                  "validDays" : 1096,
-                  "validSeconds" : 94731909
-               }
-            ],
-            "certCnt" : 2,
-            "client" : {
-               "bytes" : 596
-            },
-            "destination" : {
-               "bytes" : 4467,
-               "geo" : {
-                  "country_iso_code" : "US"
-               },
-               "ip" : "64.12.21.3",
-               "mac" : [
-                  "00:00:0c:07:ac:01",
-                  "00:0e:d6:0b:98:80"
-               ],
-               "mac-cnt" : 2,
-               "packets" : 8,
-               "port" : 443
-            },
-            "dstOui" : [
-               "Cisco Systems, Inc"
-            ],
-            "dstOuiCnt" : 1,
-            "dstPayload8" : "1603010f75020000",
-            "dstRIR" : "ARIN",
-            "dstTTL" : [
-               247
-            ],
-            "dstTTLCnt" : 1,
-            "ethertype" : 2048,
-            "fileId" : [],
-            "firstPacket" : 1413338074954,
-            "initRTT" : 0,
-            "ipProtocol" : 6,
-            "lastPacket" : 1413338075560,
-            "length" : 606,
-            "network" : {
-               "bytes" : 5677,
-               "community_id" : "1:1StLqJBlJ0qgwDf51aQni6PsXiM=",
-               "packets" : 19
-            },
-            "node" : "test",
-            "packetLen" : [
-               90,
-               82,
-               70,
-               333,
-               1530,
-               70,
-               1530,
-               1112,
-               70,
-               70,
-               380,
-               76,
-               113,
-               70,
-               93,
-               70,
-               76,
-               76,
-               70
-            ],
-            "packetPos" : [
-               24,
-               114,
-               196,
-               266,
-               599,
-               2129,
-               2199,
-               3729,
-               4841,
-               4911,
-               4981,
-               5361,
-               5437,
-               5550,
-               5620,
-               5713,
-               5783,
-               5859,
-               5935
-            ],
-            "packetRange" : {
-               "gte" : 1413338074954,
-               "lte" : 1413338075560
-            },
-            "protocol" : [
-               "tcp",
-               "tls"
-            ],
-            "protocolCnt" : 2,
-            "segmentCnt" : 1,
-            "server" : {
-               "bytes" : 4005
-            },
-            "source" : {
-               "as" : {
-                  "full" : "AS0 This is neat",
-                  "number" : 0,
-                  "organization" : {
-                     "name" : "This is neat"
-                  }
-               },
-               "bytes" : 1210,
-               "geo" : {
-                  "country_iso_code" : "RU"
-               },
-               "ip" : "10.0.0.1",
-               "mac" : [
-                  "00:13:72:c4:f1:e1"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 11,
-               "port" : 40291
-            },
-            "srcOui" : [
-               "Dell Inc."
-            ],
-            "srcOuiCnt" : 1,
-            "srcPayload8" : "1603010102010000",
-            "srcTTL" : [
-               64
-            ],
-            "srcTTLCnt" : 1,
-            "tags" : [
-               "cert:certificate-authority",
-               "srcip"
-            ],
-            "tagsCnt" : 2,
-            "tcpflags" : {
-               "ack" : 8,
-               "dstZero" : 0,
-               "fin" : 2,
-               "psh" : 7,
-               "rst" : 0,
-               "srcZero" : 0,
-               "syn" : 1,
-               "syn-ack" : 1,
-               "urg" : 0
-            },
-            "tcpseq" : {
-               "dst" : 0,
-               "src" : 675911683
-            },
-            "test" : {
-               "ASN" : [
-                  "AS0 This is neat"
-               ],
-               "GEO" : [
-                  "RU"
-               ],
-               "RIR" : [
-                  ""
-               ],
-               "ip" : [
-                  "10.0.0.1"
-               ],
-               "number" : [
-                  51711040
-               ],
-               "string.snow" : [
-                  "16777226:40291,51711040:443"
-               ]
-            },
-            "tls" : {
-               "cipher" : [
-                  "TLS_RSA_WITH_RC4_128_MD5"
-               ],
-               "cipherCnt" : 1,
-               "dstSessionId" : [
-                  "9938c44043b6f99f355b9381131c10d511608be1435144a0b0339d8d68aaf38e"
-               ],
-               "ja3" : [
-                  "c1a36e1a870786cc75edddc0009eaf3a"
-               ],
-               "ja3Cnt" : 1,
-               "ja3s" : [
-                  "53611273a714cb4789c8222932efd5a7"
-               ],
-               "ja3sCnt" : 1,
-               "ja3sstring" : [
-                  "769,4,"
-               ],
-               "ja3sstringCnt" : 1,
-               "ja3string" : [
-                  "771,49200-49196-49192-49188-49172-49162-163-159-107-106-57-56-136-135-49202-49198-49194-49190-49167-49157-157-61-53-132-49170-49160-22-19-49165-49155-10-49199-49195-49191-49187-49171-49161-162-158-103-64-51-50-154-153-69-68-49201-49197-49193-49189-49166-49156-156-60-47-150-65-7-49169-49159-49164-49154-5-4-21-18-9-20-17-8-6-3-255,11-10-35-13-15,24-23,0-1-2"
-               ],
-               "ja3stringCnt" : 1,
-               "ja4" : [
-                  "t12i740500_c43983326036_3eafcbe19126"
-               ],
-               "ja4Cnt" : 1,
-               "ja4_r" : [
-                  "t12i740500_0003,0004,0005,0006,0007,0008,0009,000a,0011,0012,0013,0014,0015,0016,002f,0032,0033,0035,0038,0039,003c,003d,0040,0041,0044,0045,0067,006a,006b,0084,0087,0088,0096,0099,009a,009c,009d,009e,009f,00a2,00a3,00ff,c002,c003,c004,c005,c007,c008,c009,c00a,c00c,c00d,c00e,c00f,c011,c012,c013,c014,c023,c024,c025,c026,c027,c028,c029,c02a,c02b,c02c,c02d,c02e,c02f,c030,c031,c032_000a,000b,000d,000f,0023_0601,0602,0603,0501,0502,0503,0401,0402,0403,0301,0302,0303,0201,0202,0203,0101"
-               ],
-               "ja4_rCnt" : 1,
-               "version" : [
-                  "TLSv1"
-               ],
-               "versionCnt" : 1
-            },
-            "totDataBytes" : 4601
-         },
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions3-141015"
-            }
-         }
+ "sessions3" : [
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "cert" : [
+     {
+      "hash" : "c5:3e:73:07:3f:93:ce:78:95:de:74:84:12:6b:c3:03:da:b9:e6:57",
+      "issuerCN" : [
+       "entrust.net certification authority (2048)"
+      ],
+      "issuerON" : [
+       "Entrust.net"
+      ],
+      "issuerOU" : [
+       "www.entrust.net/CPS_2048 incorp. by ref. (limits liab.)",
+       "(c) 1999 Entrust.net Limited"
+      ],
+      "notAfter" : 1636685477000,
+      "notBefore" : 1321026040000,
+      "publicAlgorithm" : "rsaEncryption",
+      "remainingDays" : 2585,
+      "remainingSeconds" : 223347403,
+      "serial" : "4c0e8c39",
+      "subjectCN" : [
+       "entrust certification authority - l1c"
+      ],
+      "subjectON" : [
+       "Entrust, Inc."
+      ],
+      "subjectOU" : [
+       "www.entrust.net/rpa is incorporated by reference",
+       "(c) 2009 Entrust, Inc."
+      ],
+      "validDays" : 3653,
+      "validSeconds" : 315659437
+     },
+     {
+      "alt" : [
+       "toshiba.aol.ca",
+       "main-w.welcomescreen.aol.com",
+       "heroes.aol.com",
+       "my.aol.com",
+       "sb.welcomescreen.aol.com",
+       "welcome.aol.com",
+       "falltv.aol.com",
+       "ipad.aol.com",
+       "m.verizon.aol.com",
+       "startpage.aol.com",
+       "greenwich.patch.aol.com",
+       "main.welcomescreen.aol.com",
+       "skywire.aol.com",
+       "n.main.welcomescreen.aol.com",
+       "babylon-startpage.aol.com",
+       "compaq-laptop.aol.com",
+       "downloaded.aol.com",
+       "netscape.aol.ca",
+       "flyers.aol.ca",
+       "m.verizon-b.aol.com",
+       "fireworks.aol.com",
+       "w.sb.welcomescreen.aol.com",
+       "sportingnews-startpage.aol.com",
+       "aolapps.aol.com",
+       "compaq.aol.ca",
+       "m.aol.com",
+       "thr-startpage.aol.com",
+       "debates.aol.com",
+       "holiday.aol.com",
+       "iphone.aol.com",
+       "firefox-startpage.aol.com",
+       "thevoiceof.aol.com",
+       "n.sb.welcomescreen.aol.com",
+       "freedompop.aol.com",
+       "sb-w.welcomescreen.aol.com",
+       "thanksgiving.aol.com",
+       "favoritesbeta.aol.com",
+       "live.aol.com",
+       "www.aol.ca",
+       "oscars.aol.com",
+       "liveevents.aol.com",
+       "main-n.welcomescreen.aol.com",
+       "pokki.aol.com",
+       "www.welcomescreen.aol.com",
+       "compaq-desktop.aol.com",
+       "hp-desktop.aol.com",
+       "www.aol.com",
+       "w.main.welcomescreen.aol.com",
+       "thunderbird-startpage.aol.com",
+       "w.verizon.aol.com",
+       "netscape.aol.com",
+       "t.verizon-b.aol.com",
+       "sb-n.welcomescreen.aol.com",
+       "hp-laptop.aol.com",
+       "mypoints-startpage.aol.com",
+       "olympics.aol.com",
+       "homepage.aol.com",
+       "oc-startpage.aol.com",
+       "t.verizon.aol.com",
+       "welcomescreen.aol.com",
+       "m.article.aol.com",
+       "hp.aol.ca"
+      ],
+      "altCnt" : 62,
+      "hash" : "2f:b6:7a:b6:34:99:c2:65:69:0c:cc:f6:8d:8a:73:ee:e2:0e:7a:8b",
+      "issuerCN" : [
+       "entrust certification authority - l1c"
+      ],
+      "issuerON" : [
+       "Entrust, Inc."
+      ],
+      "issuerOU" : [
+       "www.entrust.net/rpa is incorporated by reference",
+       "(c) 2009 Entrust, Inc."
+      ],
+      "notAfter" : 1497242632000,
+      "notBefore" : 1402510723000,
+      "publicAlgorithm" : "rsaEncryption",
+      "remainingDays" : 971,
+      "remainingSeconds" : 83904558,
+      "serial" : "4c235548",
+      "subjectCN" : [
+       "www.aol.com"
+      ],
+      "subjectON" : [
+       "AOL Inc."
+      ],
+      "subjectOU" : [
+       "Homepages"
+      ],
+      "validDays" : 1096,
+      "validSeconds" : 94731909
+     }
+    ],
+    "certCnt" : 2,
+    "client" : {
+     "bytes" : 596
+    },
+    "destination" : {
+     "bytes" : 4467,
+     "geo" : {
+      "country_iso_code" : "US"
+     },
+     "ip" : "64.12.21.3",
+     "mac" : [
+      "00:00:0c:07:ac:01",
+      "00:0e:d6:0b:98:80"
+     ],
+     "mac-cnt" : 2,
+     "packets" : 8,
+     "port" : 443
+    },
+    "dstOui" : [
+     "Cisco Systems, Inc"
+    ],
+    "dstOuiCnt" : 1,
+    "dstPayload8" : "1603010f75020000",
+    "dstRIR" : "ARIN",
+    "dstTTL" : [
+     247
+    ],
+    "dstTTLCnt" : 1,
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 1413338074954,
+    "initRTT" : 0,
+    "ipProtocol" : 6,
+    "lastPacket" : 1413338075560,
+    "length" : 606,
+    "network" : {
+     "bytes" : 5677,
+     "community_id" : "1:1StLqJBlJ0qgwDf51aQni6PsXiM=",
+     "packets" : 19
+    },
+    "node" : "test",
+    "packetLen" : [
+     90,
+     82,
+     70,
+     333,
+     1530,
+     70,
+     1530,
+     1112,
+     70,
+     70,
+     380,
+     76,
+     113,
+     70,
+     93,
+     70,
+     76,
+     76,
+     70
+    ],
+    "packetPos" : [
+     24,
+     114,
+     196,
+     266,
+     599,
+     2129,
+     2199,
+     3729,
+     4841,
+     4911,
+     4981,
+     5361,
+     5437,
+     5550,
+     5620,
+     5713,
+     5783,
+     5859,
+     5935
+    ],
+    "packetRange" : {
+     "gte" : 1413338074954,
+     "lte" : 1413338075560
+    },
+    "protocol" : [
+     "tcp",
+     "tls"
+    ],
+    "protocolCnt" : 2,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 4005
+    },
+    "source" : {
+     "as" : {
+      "full" : "AS0 This is neat",
+      "number" : 0,
+      "organization" : {
+       "name" : "This is neat"
       }
-   ]
+     },
+     "bytes" : 1210,
+     "geo" : {
+      "country_iso_code" : "RU"
+     },
+     "ip" : "10.0.0.1",
+     "mac" : [
+      "00:13:72:c4:f1:e1"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 11,
+     "port" : 40291
+    },
+    "srcOui" : [
+     "Dell Inc."
+    ],
+    "srcOuiCnt" : 1,
+    "srcPayload8" : "1603010102010000",
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
+    "tags" : [
+     "cert:certificate-authority",
+     "srcip"
+    ],
+    "tagsCnt" : 2,
+    "tcpflags" : {
+     "ack" : 8,
+     "ae" : 0,
+     "cwr" : 0,
+     "dstZero" : 0,
+     "ece" : 0,
+     "fin" : 2,
+     "psh" : 7,
+     "rst" : 0,
+     "srcZero" : 0,
+     "syn" : 1,
+     "syn-ack" : 1,
+     "urg" : 0
+    },
+    "tcpseq" : {
+     "dst" : 0,
+     "src" : 675911683
+    },
+    "test" : {
+     "ASN" : [
+      "AS0 This is neat"
+     ],
+     "GEO" : [
+      "RU"
+     ],
+     "RIR" : [
+      ""
+     ],
+     "ip" : [
+      "10.0.0.1"
+     ],
+     "number" : [
+      51711040
+     ],
+     "string.snow" : [
+      "16777226:40291,51711040:443"
+     ]
+    },
+    "tls" : {
+     "cipher" : [
+      "TLS_RSA_WITH_RC4_128_MD5"
+     ],
+     "cipherCnt" : 1,
+     "dstSessionId" : [
+      "9938c44043b6f99f355b9381131c10d511608be1435144a0b0339d8d68aaf38e"
+     ],
+     "ja3" : [
+      "c1a36e1a870786cc75edddc0009eaf3a"
+     ],
+     "ja3Cnt" : 1,
+     "ja3s" : [
+      "53611273a714cb4789c8222932efd5a7"
+     ],
+     "ja3sCnt" : 1,
+     "ja3sstring" : [
+      "769,4,"
+     ],
+     "ja3sstringCnt" : 1,
+     "ja3string" : [
+      "771,49200-49196-49192-49188-49172-49162-163-159-107-106-57-56-136-135-49202-49198-49194-49190-49167-49157-157-61-53-132-49170-49160-22-19-49165-49155-10-49199-49195-49191-49187-49171-49161-162-158-103-64-51-50-154-153-69-68-49201-49197-49193-49189-49166-49156-156-60-47-150-65-7-49169-49159-49164-49154-5-4-21-18-9-20-17-8-6-3-255,11-10-35-13-15,24-23,0-1-2"
+     ],
+     "ja3stringCnt" : 1,
+     "ja4" : [
+      "t12i740500_c43983326036_3eafcbe19126"
+     ],
+     "ja4Cnt" : 1,
+     "ja4_r" : [
+      "t12i740500_0003,0004,0005,0006,0007,0008,0009,000a,0011,0012,0013,0014,0015,0016,002f,0032,0033,0035,0038,0039,003c,003d,0040,0041,0044,0045,0067,006a,006b,0084,0087,0088,0096,0099,009a,009c,009d,009e,009f,00a2,00a3,00ff,c002,c003,c004,c005,c007,c008,c009,c00a,c00c,c00d,c00e,c00f,c011,c012,c013,c014,c023,c024,c025,c026,c027,c028,c029,c02a,c02b,c02c,c02d,c02e,c02f,c030,c031,c032_000a,000b,000d,000f,0023_0601,0602,0603,0501,0502,0503,0401,0402,0403,0301,0302,0303,0201,0202,0203,0101"
+     ],
+     "ja4_rCnt" : 1,
+     "version" : [
+      "TLSv1"
+     ],
+     "versionCnt" : 1
+    },
+    "totDataBytes" : 4601
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-141015"
+    }
+   }
+  }
+ ]
 }
 

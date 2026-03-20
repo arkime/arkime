@@ -833,6 +833,9 @@ void arkime_db_save_session(ArkimeSession_t *session, int final)
                            "\"fin\":%d,"
                            "\"rst\":%d,"
                            "\"urg\":%d,"
+                           "\"ece\":%d,"
+                           "\"cwr\":%d,"
+                           "\"ae\":%d,"
                            "\"srcZero\":%d,"
                            "\"dstZero\":%d"
                            "},",
@@ -843,6 +846,9 @@ void arkime_db_save_session(ArkimeSession_t *session, int final)
                            session->tcpData.tcpFlagCnt[ARKIME_TCPFLAG_FIN],
                            session->tcpData.tcpFlagCnt[ARKIME_TCPFLAG_RST],
                            session->tcpData.tcpFlagCnt[ARKIME_TCPFLAG_URG],
+                           session->tcpData.tcpFlagCnt[ARKIME_TCPFLAG_ECE],
+                           session->tcpData.tcpFlagCnt[ARKIME_TCPFLAG_CWR],
+                           session->tcpData.tcpFlagCnt[ARKIME_TCPFLAG_AE],
                            session->tcpData.tcpFlagCnt[ARKIME_TCPFLAG_SRC_ZERO],
                            session->tcpData.tcpFlagCnt[ARKIME_TCPFLAG_DST_ZERO]
                           );

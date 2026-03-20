@@ -1,182 +1,185 @@
 {
-   "sessions3" : [
-      {
-         "body" : {
-            "@timestamp" : "SET",
-            "client" : {
-               "bytes" : 47
-            },
-            "destination" : {
-               "as" : {
-                  "full" : "AS0 This is neat",
-                  "number" : 0,
-                  "organization" : {
-                     "name" : "This is neat"
-                  }
-               },
-               "bytes" : 854,
-               "geo" : {
-                  "country_iso_code" : "RU"
-               },
-               "ip" : "10.0.0.1",
-               "mac" : [
-                  "00:00:5e:00:01:01",
-                  "80:71:1f:82:cf:c6"
-               ],
-               "mac-cnt" : 2,
-               "packets" : 10,
-               "port" : 1080
-            },
-            "dstOui" : [
-               "ICANN, IANA Department",
-               "Juniper Networks"
-            ],
-            "dstOuiCnt" : 2,
-            "dstPayload8" : "0500050000010a00",
-            "dstTTL" : [
-               57
-            ],
-            "dstTTLCnt" : 1,
-            "email" : {
-               "smtpHello" : [
-                  "user"
-               ],
-               "smtpHelloCnt" : 1
-            },
-            "ethertype" : 2048,
-            "fileId" : [],
-            "firstPacket" : 1385474626674,
-            "initRTT" : 1730,
-            "ipProtocol" : 6,
-            "lastPacket" : 1385474639455,
-            "length" : 12781,
-            "network" : {
-               "bytes" : 1492,
-               "community_id" : "1:KdO+JlWkJWvdDSYy6M4JQxSc4yY=",
-               "packets" : 20
-            },
-            "node" : "test",
-            "packetLen" : [
-               82,
-               82,
-               76,
-               76,
-               76,
-               76,
-               76,
-               76,
-               91,
-               76,
-               80,
-               76,
-               146,
-               81,
-               76,
-               219,
-               82,
-               76,
-               113,
-               76
-            ],
-            "packetPos" : [
-               24,
-               106,
-               188,
-               264,
-               340,
-               416,
-               492,
-               568,
-               644,
-               735,
-               811,
-               891,
-               967,
-               1113,
-               1194,
-               1270,
-               1489,
-               1571,
-               1647,
-               1760
-            ],
-            "packetRange" : {
-               "gte" : 1385474626674,
-               "lte" : 1385474639455
-            },
-            "protocol" : [
-               "smtp",
-               "socks",
-               "tcp"
-            ],
-            "protocolCnt" : 3,
-            "segmentCnt" : 1,
-            "server" : {
-               "bytes" : 280
-            },
-            "socks" : {
-               "host" : "010.000.00.003",
-               "port" : 25
-            },
-            "source" : {
-               "as" : {
-                  "full" : "AS1 Cool Beans!",
-                  "number" : 1,
-                  "organization" : {
-                     "name" : "Cool Beans!"
-                  }
-               },
-               "bytes" : 638,
-               "geo" : {
-                  "country_iso_code" : "CA"
-               },
-               "ip" : "10.0.0.2",
-               "mac" : [
-                  "00:0a:f3:31:94:00"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 10,
-               "port" : 53709
-            },
-            "srcOui" : [
-               "Cisco Systems, Inc"
-            ],
-            "srcOuiCnt" : 1,
-            "srcPayload8" : "050100050100030e",
-            "srcRIR" : "TEST",
-            "srcTTL" : [
-               126
-            ],
-            "srcTTLCnt" : 1,
-            "tags" : [
-               "dstip",
-               "smtp:authlogin",
-               "srcip"
-            ],
-            "tagsCnt" : 3,
-            "tcpflags" : {
-               "ack" : 6,
-               "dstZero" : 0,
-               "fin" : 0,
-               "psh" : 10,
-               "rst" : 1,
-               "srcZero" : 0,
-               "syn" : 2,
-               "syn-ack" : 1,
-               "urg" : 0
-            },
-            "tcpseq" : {
-               "dst" : 0,
-               "src" : 3832188485
-            },
-            "totDataBytes" : 327
-         },
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions3-131126"
-            }
-         }
+ "sessions3" : [
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 47
+    },
+    "destination" : {
+     "as" : {
+      "full" : "AS0 This is neat",
+      "number" : 0,
+      "organization" : {
+       "name" : "This is neat"
       }
-   ]
+     },
+     "bytes" : 854,
+     "geo" : {
+      "country_iso_code" : "RU"
+     },
+     "ip" : "10.0.0.1",
+     "mac" : [
+      "00:00:5e:00:01:01",
+      "80:71:1f:82:cf:c6"
+     ],
+     "mac-cnt" : 2,
+     "packets" : 10,
+     "port" : 1080
+    },
+    "dstOui" : [
+     "ICANN, IANA Department",
+     "Juniper Networks"
+    ],
+    "dstOuiCnt" : 2,
+    "dstPayload8" : "0500050000010a00",
+    "dstTTL" : [
+     57
+    ],
+    "dstTTLCnt" : 1,
+    "email" : {
+     "smtpHello" : [
+      "user"
+     ],
+     "smtpHelloCnt" : 1
+    },
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 1385474626674,
+    "initRTT" : 1730,
+    "ipProtocol" : 6,
+    "lastPacket" : 1385474639455,
+    "length" : 12781,
+    "network" : {
+     "bytes" : 1492,
+     "community_id" : "1:KdO+JlWkJWvdDSYy6M4JQxSc4yY=",
+     "packets" : 20
+    },
+    "node" : "test",
+    "packetLen" : [
+     82,
+     82,
+     76,
+     76,
+     76,
+     76,
+     76,
+     76,
+     91,
+     76,
+     80,
+     76,
+     146,
+     81,
+     76,
+     219,
+     82,
+     76,
+     113,
+     76
+    ],
+    "packetPos" : [
+     24,
+     106,
+     188,
+     264,
+     340,
+     416,
+     492,
+     568,
+     644,
+     735,
+     811,
+     891,
+     967,
+     1113,
+     1194,
+     1270,
+     1489,
+     1571,
+     1647,
+     1760
+    ],
+    "packetRange" : {
+     "gte" : 1385474626674,
+     "lte" : 1385474639455
+    },
+    "protocol" : [
+     "smtp",
+     "socks",
+     "tcp"
+    ],
+    "protocolCnt" : 3,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 280
+    },
+    "socks" : {
+     "host" : "010.000.00.003",
+     "port" : 25
+    },
+    "source" : {
+     "as" : {
+      "full" : "AS1 Cool Beans!",
+      "number" : 1,
+      "organization" : {
+       "name" : "Cool Beans!"
+      }
+     },
+     "bytes" : 638,
+     "geo" : {
+      "country_iso_code" : "CA"
+     },
+     "ip" : "10.0.0.2",
+     "mac" : [
+      "00:0a:f3:31:94:00"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 10,
+     "port" : 53709
+    },
+    "srcOui" : [
+     "Cisco Systems, Inc"
+    ],
+    "srcOuiCnt" : 1,
+    "srcPayload8" : "050100050100030e",
+    "srcRIR" : "TEST",
+    "srcTTL" : [
+     126
+    ],
+    "srcTTLCnt" : 1,
+    "tags" : [
+     "dstip",
+     "smtp:authlogin",
+     "srcip"
+    ],
+    "tagsCnt" : 3,
+    "tcpflags" : {
+     "ack" : 6,
+     "ae" : 0,
+     "cwr" : 0,
+     "dstZero" : 0,
+     "ece" : 0,
+     "fin" : 0,
+     "psh" : 10,
+     "rst" : 1,
+     "srcZero" : 0,
+     "syn" : 2,
+     "syn-ack" : 1,
+     "urg" : 0
+    },
+    "tcpseq" : {
+     "dst" : 0,
+     "src" : 3832188485
+    },
+    "totDataBytes" : 327
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-131126"
+    }
+   }
+  }
+ ]
 }
 
