@@ -120,9 +120,9 @@ class User {
           process.exit();
         }
         try {
-          User.#dynamicRolesFuncs.set(role, new Function('vals', `return ${func};`));
+          User.#dynamicRolesFuncs.set(role, ArkimeUtil.safeExpression(func, 'vals'));
         } catch (e) {
-          console.log(`ERROR - user-role-mappings syntax error in '${role}': ${e.message}`);
+          console.log(`ERROR - user-role-mappings '${role}': ${e.message}`);
           process.exit(1);
         }
       }
@@ -1521,7 +1521,11 @@ class User {
 
     this.roles = newRoles;
     await this.expandFromRoles();
-    this.save(() => { });
+    await new Promise((resolve, reject) => {
+      this.save((err) => {
+        if (err) { reject(err); } else { resolve(); }
+      });
+    });
   }
 
   // Set last used info for user, should only be used by Auth

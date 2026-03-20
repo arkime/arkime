@@ -145,6 +145,9 @@ class Auth {
     Auth.#requiredAuthHeader = options.requiredAuthHeader;
     Auth.#requiredAuthHeaderVal = options.requiredAuthHeaderVal?.split(',').map(s => s.trim()).filter(s => s !== '');
     Auth.#userAutoCreateTmpl = options.userAutoCreateTmpl;
+    if (Auth.#userAutoCreateTmpl) {
+      console.log('WARNING - userAutoCreateTmpl is deprecated, use [user-auto-create] section instead');
+    }
 
     const userAutoCreate = ArkimeConfig.getSection('user-auto-create');
     if (userAutoCreate) {
@@ -166,9 +169,9 @@ class Auth {
           process.exit(1);
         }
         try {
-          Auth.#userAutoCreateFuncs.set(field, new Function('vals', `return ${func};`));
+          Auth.#userAutoCreateFuncs.set(field, ArkimeUtil.safeExpression(func, 'vals'));
         } catch (e) {
-          console.log(`ERROR - user-auto-create syntax error in '${field}': ${e.message}`);
+          console.log(`ERROR - user-auto-create '${field}': ${e.message}`);
           process.exit(1);
         }
       }
