@@ -767,6 +767,13 @@ LOCAL gboolean arkime_http_send_timer_callback(gpointer UNUSED(unused))
         LOG("HTTPDEBUG DO %p %d %s", request, request->server->outstanding, request->url);
 #endif
         curl_multi_add_handle(request->server->multi, request->easy);
+
+        /* Kick-start the transfer immediately. Without this call,
+         * newly added handles may not be processed until the next
+         * timer or socket event, causing ASYNC requests to sit idle
+         * with 0 bytes sent/received on systems with newer glib2. */
+        curl_multi_socket_action(request->server->multi, CURL_SOCKET_TIMEOUT, 0, &request->server->multiRunning);
+        arkime_http_curlm_check_multi_info(request->server);
     }
 
     return G_SOURCE_REMOVE;
