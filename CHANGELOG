@@ -1,7 +1,7 @@
 NOTICE: Please see https://arkime.com/faq#upgrading-arkime for upgrading info
 
 OpenSearch Versions:
-  * Arkime >= 5.7.0  supports 1.x, 2.x or 3.x
+  * Arkime >= 5.7.0  supports 1.x, 2.x (2.19.0 broken) or 3.x
   * Arkime >= 3.0.0  supports 1.x or 2.x
 
 Elasticsearch Versions:
