@@ -1579,7 +1579,10 @@ LOCAL uint64_t arkime_db_memory_size()
     buf[len] = 0;
 
     uint64_t size = 0;
-    sscanf(buf, "%" SCNu64, &size);
+    if (sscanf(buf, "%" SCNu64, &size) != 1) {
+        LOG("/proc/self/statm parse failed - %d '%.*s'", len, len, buf);
+        return 0;
+    }
 
     if (size == 0) {
         LOG("/proc/self/statm size 0 - %d '%.*s'", len, len, buf);
@@ -2410,7 +2413,7 @@ LOCAL void arkime_db_load_rir(const char *name)
             *ptr = 0;
             if (cnt == 0) {
                 num = atoi(start);
-                if (num > 255)
+                if (num < 0 || num > 255)
                     break;
             } else if (*start && cnt == 3) {
                 gchar **parts = g_strsplit(start, ".", 0);
