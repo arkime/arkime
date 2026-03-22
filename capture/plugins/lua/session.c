@@ -47,7 +47,7 @@ LOCAL void register_http_constants(lua_State *L)
     lua_pushstring(L, "HTTP");
     lua_newtable(L);
 
-    for (size_t i = 0; i < sizeof(http_constants) / sizeof(http_constants[0]); i++) {
+    for (size_t i = 0; i < ARRAY_LEN(http_constants); i++) {
         lua_pushstring(L, http_constants[i].name);
         lua_pushnumber(L, http_constants[i].value);
         lua_settable(L, -3);
