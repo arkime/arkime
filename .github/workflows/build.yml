@@ -232,7 +232,7 @@ jobs:
           mv /data/moloch/bin/capture /data/moloch/bin/moloch-capture
           /bin/cp -f common/version.js /data/moloch/common/
 
-          fpm -s dir -t rpm -n moloch -x data/moloch/logs -x data/molcoh/raw -v $ARKIME_VERSION --iteration ${{ github.run_id }} --template-scripts --url "https://arkime.com" --description "Moloch Full Packet System" ${{ matrix.fpmdeps }} --rpm-rpmbuild-define "_build_id_links none" -p moloch-${ARKIME_VERSION}-${{github.run_id}}.${{matrix.version}}.rpm /data/moloch
+          fpm -s dir -t rpm -n moloch -x data/moloch/logs -x data/moloch/raw -v $ARKIME_VERSION --iteration ${{ github.run_id }} --template-scripts --url "https://arkime.com" --description "Moloch Full Packet System" ${{ matrix.fpmdeps }} --rpm-rpmbuild-define "_build_id_links none" -p moloch-${ARKIME_VERSION}-${{github.run_id}}.${{matrix.version}}.rpm /data/moloch
           mv moloch*.rpm moloch-main.${{matrix.version}}.rpm
           ls -l *.rpm
 
@@ -281,7 +281,7 @@ jobs:
 
       - name: upload github
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-        uses: softprops/action-gh-release@69320dbe05506a9a39fc8ae11030b214ec2d1f87 # v2.0.5
+        uses: softprops/action-gh-release@5be0e66d93ac7ed76da52eca8bb058f665c3a5fe # v2.4.2
         with:
           tag_name: last-commit6
           draft: false
@@ -296,7 +296,7 @@ jobs:
 
       - name: upload github 7
         if: github.event_name == 'push' && github.ref == 'refs/heads/dev7'
-        uses: softprops/action-gh-release@69320dbe05506a9a39fc8ae11030b214ec2d1f87 # v2.0.5
+        uses: softprops/action-gh-release@5be0e66d93ac7ed76da52eca8bb058f665c3a5fe # v2.4.2
         with:
           tag_name: last-commit7
           draft: false
@@ -399,7 +399,6 @@ jobs:
             git config --global --add safe.directory `pwd`
             git config --global --add safe.directory /home/runner/work/arkime/arkime
             ./easybutton-build.sh --dir /usr/local/share/arkime ${{ matrix.buildopt }} --rminstall --nothirdparty
-            echo "=== NPM DEBUG ===" && npm --version && npm config list -l 2>&1 | grep -i python || true && cat /usr/local/etc/npmrc 2>/dev/null || true && echo "=== END DEBUG ==="
             ls -l capture/capture
             (cd tests; ./tests.pl)
             INSTALL_BUNDLE=bundle gmake install
@@ -423,7 +422,7 @@ jobs:
 
       - name: upload github 6
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-        uses: softprops/action-gh-release@69320dbe05506a9a39fc8ae11030b214ec2d1f87 # v2.0.5
+        uses: softprops/action-gh-release@5be0e66d93ac7ed76da52eca8bb058f665c3a5fe # v2.4.2
         with:
           tag_name: last-commit6
           draft: false
@@ -435,7 +434,7 @@ jobs:
 
       - name: upload github 7
         if: github.event_name == 'push' && github.ref == 'refs/heads/dev7'
-        uses: softprops/action-gh-release@69320dbe05506a9a39fc8ae11030b214ec2d1f87 # v2.0.5
+        uses: softprops/action-gh-release@5be0e66d93ac7ed76da52eca8bb058f665c3a5fe # v2.4.2
         with:
           tag_name: last-commit7
           draft: false
