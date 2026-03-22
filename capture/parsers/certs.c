@@ -432,7 +432,7 @@ LOCAL int certinfo_process_single_cert(ArkimeSession_t *session, const uint8_t *
 {
     GChecksum *const checksum = arkimeThreadData[session->thread].checksum1;
 
-    int            badreason = 0;
+    int            badreason;
 
     ArkimeFieldObject_t *fobject = ARKIME_TYPE_ALLOC0(ArkimeFieldObject_t);
 
@@ -579,7 +579,6 @@ LOCAL int certinfo_process_single_cert(ArkimeSession_t *session, const uint8_t *
 
     if (!arkime_field_object_add(certsField, session, fobject, clen * 2)) {
         certinfo_free(fobject);
-        fobject = 0;
         certs = 0;
     }
 

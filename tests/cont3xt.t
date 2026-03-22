@@ -1,5 +1,5 @@
 # Test cont3xt.js
-use Test::More tests => 179;
+use Test::More tests => 189;
 use Test::Differences;
 use Data::Dumper;
 use ArkimeTest;
@@ -1099,6 +1099,38 @@ ok($json =~ /SyntaxError: Unexpected token/);
 
 $json = cont3xtPutToken('/api/integration/settings', '{"__proto__": {"foo": 1}}', $token);
 is ($json, "SyntaxError: Object contains forbidden prototype property");
+
+################################################################################
+### General Settings (not integration settings)
+$json = cont3xtGet('/api/settings');
+is($json->{success}, 1, "get settings success");
+ok(exists $json->{settings}, "settings field exists");
+ok(exists $json->{linkGroup}, "linkGroup field exists");
+ok(exists $json->{selectedOverviews}, "selectedOverviews field exists");
+
+# PUT settings without token
+$json = cont3xtPut('/api/settings', '{}');
+eq_or_diff($json, from_json('{"success": false, "text": "Missing token"}'), "put settings missing token");
+
+# PUT settings with nothing to change
+$json = cont3xtPutToken('/api/settings', '{}', $token);
+eq_or_diff($json, from_json('{"success": false, "text": "Nothing sent to change"}'), "put settings nothing to change");
+
+# PUT settings with actual settings
+$json = cont3xtPutToken('/api/settings', '{"settings": {"foo": "bar"}}', $token);
+is($json->{success}, 1, "put settings success");
+
+################################################################################
+### Integration Stats
+$json = cont3xtGet('/api/integration/stats');
+is($json->{success}, 1, "integration stats success");
+ok(exists $json->{stats}, "stats field exists");
+
+################################################################################
+### Health Check
+$json = cont3xtGet('/api/health');
+is($json->{success}, 1, "health check success");
+
 ################################################################################
 ### Classify
 $json = cont3xtPost('/regressionTests/classify', '["aol.com", "1.2.3.4", "a----b.com", "https://a----b.com", "703-867-5309", "text", "foo@example.com", "d07708229fb0d2d513c82f36e5cdc68f", "25425d55a6af7586bf68c3989f0d4d89ffbb1641"]');

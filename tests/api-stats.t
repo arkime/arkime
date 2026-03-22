@@ -1,4 +1,4 @@
-use Test::More tests => 117;
+use Test::More tests => 125;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -85,6 +85,28 @@ my $test1Token = getTokenCookie("test1");
     is($indices->{success}, 0, "unknown cluster no results");
     is($indices->{i18n}, "api.stats.noResults", "unknown cluster no results i18n");
 
+# esindices delete - test with non-existent index
+    my $del = viewerDeleteToken("/api/esindices/nonexistent_fake_index_12345");
+    is($del->{success}, 0, "delete fake index fails");
+    is($del->{i18n}, "api.stats.errorDeletingIndex", "delete fake index error i18n");
+
+# esindices optimize
+    my $opt = viewerPostToken("/api/esindices/tests_users/optimize", "", $token);
+    is($opt->{success}, 1, "optimize index returns success");
+
+# esindices close - test with non-existent index
+    my $close = viewerPostToken("/api/esindices/nonexistent_fake_index_12345/close", "", $token);
+    is($close->{success}, 0, "close fake index fails");
+
+# esindices open - always returns success (non-blocking)
+    my $open = viewerPostToken("/api/esindices/tests_users/open", "", $token);
+    is($open->{success}, 1, "open index returns success");
+
+# esindices shrink - test missing target error
+    my $shrink = viewerPostToken("/api/esindices/tests_users/shrink", "{}", $token);
+    is($shrink->{success}, 0, "shrink without target fails");
+    is($shrink->{i18n}, "api.stats.missingTarget", "shrink missing target i18n");
+
 # estasks
     my $tasks = viewerGet("/api/estasks");
     cmp_ok (@{$tasks->{data}}, ">=", 1, "tasks array size");
@@ -97,6 +119,10 @@ my $test1Token = getTokenCookie("test1");
 
     my $tasks = multiGet("/api/estasks?cluster=unknown");
     cmp_ok (@{$tasks->{data}}, "==", 0, "tasks array size");
+
+# estasks cancel
+    my $result = viewerPostToken("/api/estasks/nonexistent/cancel", "", $token);
+    is($result->{success}, 0, "cancel nonexistent task");
 
 # esshards
     my $shards = viewerGet("/api/esshards?show=all");

@@ -621,7 +621,7 @@ LOCAL int arkime_reader_scheme_processNG(const char *uri, uint8_t *data, int len
 
                 if (otype == 9) {
                     if (options[0] & 0x80) {
-                        readerState.tsresol = 1LL << MIN((options[0] & 0x7F), 63);
+                        readerState.tsresol = 1ULL << MIN((options[0] & 0x7F), 63);
                     } else {
                         readerState.tsresol = 1;
                         for (int i = 0; i < options[0]; i++)

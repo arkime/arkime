@@ -243,12 +243,16 @@ class MiscAPIs {
    * @returns {string} domains - A comma separated string list of all the matching domain names.
    */
   static getReverseDNS (req, res) {
-    dns.reverse(req.query.ip, (err, data) => {
-      if (err) {
-        return res.type('text/plain').send('reverse error');
-      }
-      return res.type('text/plain').send(data.join(', '));
-    });
+    try {
+      dns.reverse(req.query.ip, (err, data) => {
+        if (err) {
+          return res.type('text/plain').send('reverse error');
+        }
+        return res.type('text/plain').send(data.join(', '));
+      });
+    } catch (err) {
+      return res.type('text/plain').send('reverse error');
+    }
   }
 
   // upload apis --------------------------------------------------------------
