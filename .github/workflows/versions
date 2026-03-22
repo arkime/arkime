@@ -169,8 +169,6 @@ include:
   - version: freebsd14.x86_64
     freebsdrelease: "14.3"
     buildopt: "--kafka"
-    vmaction: vmactions/freebsd-vm@v1
-    vmaction-opts: "release: 14.3 usesh: true"
     fpmdeps: "-d glib -d yara -d libyaml -d libmaxminddb -d libuuid -d python312 -d libinotify -d pcre2"
     ja4plus: true
     prbuild: true
@@ -178,16 +176,12 @@ include:
   - version: freebsd15.x86_64
     freebsdrelease: "15.0"
     buildopt: "--kafka"
-    vmaction: vmactions/freebsd-vm@v1
-    vmaction-opts: "release: 15.0 usesh: true"
     fpmdeps: "-d glib -d yara -d libyaml -d libmaxminddb -d libuuid -d python312 -d libinotify -d pcre2"
     prbuild: true
 
 #  - version: freebsd14.aarch64
 #    freebsdrelease: "14.3"
 #    buildopt: "--kafka"
-#    vmaction: vmactions/freebsd-vm@v1
-#    vmaction-opts: "release: 14.3 arch: aarch64 usesh: true"
 #    fpmdeps: "-d glib -d yara -d libyaml -d libmaxminddb -d libuuid -d python312 -d libinotify -d pcre2"
 #    ja4plus: true
 #    #runson: ubuntu-24.04-arm
@@ -195,7 +189,5 @@ include:
 #  - version: freebsd15.aarch64
 #    freebsdrelease: "15.0"
 #    buildopt: "--kafka"
-#    vmaction: vmactions/freebsd-vm@v1
-#    vmaction-opts: "release: 15.0 arch: aarch64 usesh: true"
 #    fpmdeps: "-d glib -d yara -d libyaml -d libmaxminddb -d libuuid -d python312 -d libinotify -d pcre2"
 #    #runson: ubuntu-24.04-arm

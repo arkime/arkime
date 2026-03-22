@@ -139,7 +139,7 @@ jobs:
           (npm install license-checker; release/notice.txt.pl /opt/arkime NOTICE release/CAPTURENOTICE > NOTICE.txt)
 
       - name: upload github
-        uses: softprops/action-gh-release@69320dbe05506a9a39fc8ae11030b214ec2d1f87 # v2.0.5
+        uses: softprops/action-gh-release@5be0e66d93ac7ed76da52eca8bb058f665c3a5fe # v2.4.2
         with:
           tag_name: "v${{ github.event.inputs.release_tag }}"
           draft: false
@@ -267,7 +267,7 @@ jobs:
             ls -l *.pkg
 
       - name: upload github
-        uses: softprops/action-gh-release@69320dbe05506a9a39fc8ae11030b214ec2d1f87 # v2.0.5
+        uses: softprops/action-gh-release@5be0e66d93ac7ed76da52eca8bb058f665c3a5fe # v2.4.2
         with:
           tag_name: "v${{ github.event.inputs.release_tag }}"
           draft: false
