@@ -60,7 +60,7 @@ LOCAL int tcap_get_app_context(const uint8_t *data, int len, char *out, int outl
             return 0;
 
         // Dialogue portion (0x6B)
-        if (tag == 0x6B && elemLen > 0) {
+        if (tag == 0x6B) {
             // Search for OID 0x06 with prefix 04 00 00 01 (CAMEL/MAP prefix)
             // The structure is: External(0x28) -> context[0](0xA0) -> AARQ/AARE(0x60/0x61) -> context[1](0xA1) -> OID
             const uint8_t *dlgData = BSB_WORK_PTR(bsb);

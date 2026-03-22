@@ -106,11 +106,11 @@ LOCAL int imap_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, i
         /* Combine with any buffered data */
         if (imap->line->len > 0) {
             g_string_append_len(imap->line, (const char *)data, lineLen);
-            const char *line = imap->line->str;
-            int len = imap->line->len;
 
             /* Process the complete line - same logic as unbuffered */
             if (which == imap->serverWhich) {
+                const char *line = imap->line->str;
+                int len = imap->line->len;
                 /* Check for FETCH response */
                 if (len > 6 && line[0] == '*' && line[1] == ' ') {
                     if (arkime_memcasestr(line, len, "fetch", 5)) {

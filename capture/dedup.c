@@ -182,7 +182,7 @@ int arkime_dedup_should_drop (const ArkimePacket_t *packet, int headerLen)
         }
 
         int count = seconds[s].counts[h];
-        uint8_t *ctrl_base = seconds[s].ctrl + h * DEDUP_SIZE_FACTOR;
+        const uint8_t *ctrl_base = seconds[s].ctrl + h * DEDUP_SIZE_FACTOR;
         for (int c = 0; c < count; c++) {
             if (tag == ctrl_base[c] && memcmp(md, seconds[s].hashes + 16 * (h * DEDUP_SIZE_FACTOR + c), 16) == 0) {
                 return 1;

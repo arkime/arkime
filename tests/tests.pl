@@ -525,8 +525,11 @@ while (scalar (@ARGV) > 0) {
     } elsif ($ARGV[0] eq "--copy") {
         $main::copy = "--copy";
         shift @ARGV;
-    } elsif ($ARGV[0] =~ /^--(viewer|fix|make|capture|viewernostart|viewerstart|viewerhang|viewerload|help|reip|fuzz|fuzz2pcap|fuzz2pcapAll)$/) {
+    } elsif ($ARGV[0] =~ /^--(viewer|api-full|fix|make|capture|viewernostart|viewerstart|api-fast|viewerhang|viewerload|help|reip|fuzz|fuzz2pcap|fuzz2pcapAll)$/) {
         $main::cmd = $ARGV[0];
+        # Map new aliases to existing commands
+        $main::cmd = "--viewer" if ($main::cmd eq "--api-full");
+        $main::cmd = "--viewerstart" if ($main::cmd eq "--api-fast");
         shift @ARGV;
     } elsif ($ARGV[0] =~ /^--/) {
         print "Unknown option $ARGV[0]\n";
@@ -563,9 +566,11 @@ if ($main::cmd eq "--fix") {
     print "  --help                 This help\n";
     print "  --make                 Create a .test file for each .pcap file on command line\n";
     print "  --reip file ip newip   Create file.tmp, replace ip with newip\n";
-    print "  --viewer               viewer tests\n";
+    print "  --api-full             API tests with full data reload (alias for --viewer)\n";
     print "                         This will init local ES, import data, start a viewer, run tests\n";
-    print "  --viewerstart          Viewer tests without reloading pcap\n";
+    print "  --api-fast             API tests without reloading data (alias for --viewerstart)\n";
+    print "  --viewer               (legacy) Same as --api-full\n";
+    print "  --viewerstart          (legacy) Same as --api-fast\n";
     print "  --fuzz [fuzzoptions]   Run fuzzloch\n";
     print "  --fuzz2pcap            Convert list of fuzzloch crash file into matching pcap file\n";
     print "  --fuzz2pcapAll <f> <g> Convert list of fuzzloch crash file into all.pcap file\n";

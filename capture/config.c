@@ -195,10 +195,10 @@ LOCAL int config_ipprotocol_lookup(const char *str)
     if (isdigit(str[0]))
         return atoi(str);
 
-    IpProtocolEntry_t *entry = bsearch(str, ipProtocols,
-                                       sizeof(ipProtocols) / sizeof(ipProtocols[0]),
-                                       sizeof(ipProtocols[0]),
-                                       config_ipprotocol_cmp);
+    const IpProtocolEntry_t *entry = bsearch(str, ipProtocols,
+                                             ARRAY_LEN(ipProtocols),
+                                             sizeof(ipProtocols[0]),
+                                             config_ipprotocol_cmp);
     if (entry)
         return entry->num;
     return -1;
@@ -271,10 +271,10 @@ LOCAL int config_ethertype_lookup(const char *str)
     if (isdigit(str[0]))
         return strtol(str, NULL, 0);
 
-    EthertypeEntry_t *entry = bsearch(str, ethertypes,
-                                      sizeof(ethertypes) / sizeof(ethertypes[0]),
-                                      sizeof(ethertypes[0]),
-                                      config_ethertype_cmp);
+    const EthertypeEntry_t *entry = bsearch(str, ethertypes,
+                                            ARRAY_LEN(ethertypes),
+                                            sizeof(ethertypes[0]),
+                                            config_ethertype_cmp);
     if (entry)
         return entry->num;
     return -1;

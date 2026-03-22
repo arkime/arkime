@@ -1,7 +1,7 @@
 # Many of these test user/roles start with sac- (skip auto create) because
 # otherwise viewer in regression mode would auto create the user.
 # Some day should remove all autocreate code.
-use Test::More tests => 209;
+use Test::More tests => 223;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -164,6 +164,17 @@ anonymous,,true,true,false,"arkimeAdmin, cont3xtUser, parliamentUser, usersAdmin
     $json = viewerGetToken("/api/user/settings?arkimeRegressionUser=sac-test1", $test1Token);
     ok(!exists $json->{__proto__}, "no prototype pollution");
     eq_or_diff($json->{logo}, "testlogo.png");
+
+# user css - no theme returns 404
+    my $cssResponse = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8123/api/user.css?arkimeRegressionUser=sac-test1");
+    is($cssResponse->code, 404, "user css returns 404 without theme");
+
+# user css - with theme returns CSS
+    $json = viewerPostToken("/api/user/settings?arkimeRegressionUser=sac-test1", '{"theme":"custom-theme:#000000,#FFFFFF,#CCCCCC,#007bff,#cce5ff,#28a745,#d4edda,#ffc107,#fff3cd,#dc3545,#f8d7da,#17a2b8,#d1ecf1,#6c757d,#e2e3e5"}', $test1Token);
+    is($json->{success}, 1, "update user settings with theme");
+    $cssResponse = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8123/api/user.css?arkimeRegressionUser=sac-test1");
+    is($cssResponse->code, 200, "user css returns 200 with theme");
+    like($cssResponse->content, qr/color/, "user css contains color styles");
 
 # Add User 2
     my $json = viewerPostToken2("/api/user", '{"userId": "sac-test2", "userName": "UserName2", "enabled":true, "password":"password"}', $token2);
@@ -367,6 +378,17 @@ anonymous,,true,true,false,"arkimeAdmin, cont3xtUser, parliamentUser, usersAdmin
     $info = viewerGetToken("/api/user/layouts/spiview?arkimeRegressionUser=sac-test1", $test1Token);
     eq_or_diff($info, from_json("[]"), "spiview fields: empty");
 
+# Page config tests
+    $info = viewerGetToken("/api/user/config/sessions?arkimeRegressionUser=sac-test1", $test1Token);
+    ok(exists $info->{colConfigs}, "sessions config has colConfigs");
+    ok(exists $info->{infoConfigs}, "sessions config has infoConfigs");
+
+    $info = viewerGetToken("/api/user/config/spiview?arkimeRegressionUser=sac-test1", $test1Token);
+    ok(exists $info->{fieldConfigs}, "spiview config has fieldConfigs");
+
+    $info = viewerGetToken("/api/user/config/badpage?arkimeRegressionUser=sac-test1", $test1Token);
+    ok(!$info->{success}, "unsupported page returns error");
+
 # Messages
     $info = viewerPutToken("/api/user/sac-test1/acknowledge", '{"msgNum":2}', $token2);
     ok(!$info->{success}, "can't update welcome message number for another user");
@@ -426,6 +448,14 @@ anonymous,,true,true,false,"arkimeAdmin, cont3xtUser, parliamentUser, usersAdmin
     # notUser:
     $json = viewerGet("/api/fieldActions?arkimeRegressionUser=test101");
     eq_or_diff($json, from_json('{"ALLTEST":{"url":"https://www.asdf.com?expression=%EXPRESSION%&date=%DATE%&field=%FIELD%&dbField=%DBFIELD%","all":true,"name":"All Field Action %FIELDNAME%!"},"ALLTESTWISE":{"url":"http:/www.example.com","all":true,"name":"AllWiseTest"}}'), 'notUser fieldActions');
+
+# reverseDNS tests
+    my $txt = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8123/api/reversedns?ip=thisisnotanip")->content;
+    is($txt, "reverse error", "reversedns returns error for invalid IP");
+    $txt = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8123/api/reversedns")->content;
+    is($txt, "reverse error", "reversedns returns error for missing IP");
+    $txt = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8123/api/reversedns?ip=1.1.1.1")->content;
+    is($txt, "one.one.one.one", "reversedns returns one.one.one.one for 1.1.1.1");
 
 # state tests
     $json = viewerPostToken("/api/user/state/state1?arkimeRegressionUser=sac-test1", '{"order":"test","visibleHeaders":["firstPacket","lastPacket","src","srcPort","dst","dstPort","totPackets","dbby","node"]}', $test1Token);
@@ -686,6 +716,15 @@ my $uaToken = getTokenCookie('testusersadmin');
 
     $json = cont3xtGet("/api/appversion");
     is($json->{app}, "cont3xt", "cont3xt appversion app field");
+
+# Check locales endpoint
+    $json = viewerGet("/api/locales");
+    ok(exists $json->{locales}->{'en'}, "locales has English");
+
+# Check user roles endpoint
+    $json = viewerGetToken("/api/user/roles", $token);
+    ok($json->{success}, "user roles returns success");
+    ok(ref $json->{roles} eq 'ARRAY', "user roles returns array");
 
 # clean old users
     viewerGet("/regressionTests/deleteAllUsers");

@@ -1,4 +1,4 @@
-use Test::More tests => 132;
+use Test::More tests => 135;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -228,6 +228,12 @@ tcp,1386004309468,1386004309478,10.180.156.185,53533,US,10.180.156.249,1080,US,2
     $response = getBinary("/api/sessions/pcap/sessions.pcap?date=-1&segments=no&ids=". $id);
     is (unpack("H*", $response->content), "a1b2c3d40002000400000000000000000000ffff000000014fa11b2900025436000000620000006200005e0001b10021280529ba08004500005430a70000ff010348c0a8b1a00a400b3108000afb43a800004fa11b290002538d08090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f202122232425262728292a2b2c2d2e2f30313233343536374fa11b2d00081331000000620000006200005e0001b10021280529ba08004500005430a80000ff010347c0a8b1a00a400b3108004bcb43ca00004fa11b2d0008129108090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f202122232425262728292a2b2c2d2e2f3031323334353637", "can download pcap using list of ids");
 
+# should be able to download entire session pcap (related sessions by rootId)
+    my $longSession = viewerGet("/sessions.json?date=-1&expression=" . uri_escape("file=$pwd/long-session.pcap"));
+    my $rootId = $longSession->{data}->[0]->{rootId};
+    $response = getBinary("/api/session/entire/test/" . $rootId . ".pcap");
+    ok(length($response->content) >= 24, "entire pcap has content");
+
 # should get error if get pcap can't find sessions from list of ids
     $json = viewerGet("/api/sessions/pcap/sessions.pcap?date=-1&segments=no&ids=nonexistingid");
     is ($json->{text}, "no sessions found", "can't download pcap because sessions can't be found with list of ids");
@@ -312,3 +318,7 @@ tcp,1386004309468,1386004309478,10.180.156.185,53533,US,10.180.156.249,1080,US,2
     is($json->{graph}->{'destination.bytesHisto'}->[0]->[1], 126);
     is($json->{graph}->{'destination.bytesHisto'}->[15]->[0], 1401386280000);
     is($json->{graph}->{'destination.bytesHisto'}->[15]->[1], 126);
+
+# Test /api/sessions/decodings
+    $json = viewerGet("/api/sessions/decodings");
+    ok(ref $json eq 'HASH', "decodings returns an object");
