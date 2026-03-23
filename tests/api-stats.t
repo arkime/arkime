@@ -86,7 +86,7 @@ my $test1Token = getTokenCookie("test1");
     is($indices->{i18n}, "api.stats.noResults", "unknown cluster no results i18n");
 
 # esindices delete - test with non-existent index
-    my $del = viewerDeleteToken("/api/esindices/nonexistent_fake_index_12345");
+    my $del = viewerDeleteToken("/api/esindices/nonexistent_fake_index_12345", $token);
     is($del->{success}, 0, "delete fake index fails");
     is($del->{i18n}, "api.stats.errorDeletingIndex", "delete fake index error i18n");
 
