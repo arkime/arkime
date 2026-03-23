@@ -1189,6 +1189,7 @@ sub fieldsUpdate
 sub fields82Fix
 {
     esPost("/${PREFIX}fields/_update/host.dns.all", '{"doc":{"regex": "^host\\\\.dns(?:(?!\\\\.(cnt|all|tokens)$).)*$"}}', 1);
+    esDelete("/${PREFIX}fields/_doc/snmp.error", 1);
 }
 
 ################################################################################
