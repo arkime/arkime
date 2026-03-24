@@ -502,10 +502,18 @@ class SessionAPIs {
         session._err = err;
         SessionAPIs.#localSessionDetailReturn(req, res, session, results || []);
       } else if (packets[0].ip.p === 6) {
-        const key = ipaddr.parse(session.source.ip).toString();
-        const { err, results } = await Pcap.reassemble_tcp(packets, +req.query.packets || 200, key + ':' + session.source.port);
-        session._err = err;
-        SessionAPIs.#localSessionDetailReturn(req, res, session, results || []);
+        // Check if any packets are fragments (p=0 due to pcap.js fragment handling)
+        const hasFragments = packets.some(p => !p.tcp);
+        if (hasFragments) {
+          const { err, results } = Pcap.reassemble_generic_ip(packets, +req.query.packets || 200);
+          session._err = err;
+          SessionAPIs.#localSessionDetailReturn(req, res, session, results || []);
+        } else {
+          const key = ipaddr.parse(session.source.ip).toString();
+          const { err, results } = await Pcap.reassemble_tcp(packets, +req.query.packets || 200, key + ':' + session.source.port);
+          session._err = err;
+          SessionAPIs.#localSessionDetailReturn(req, res, session, results || []);
+        }
       } else if (packets[0].ip.p === 17) {
         const { err, results } = Pcap.reassemble_udp(packets, +req.query.packets || 200);
         session._err = err;
@@ -1455,10 +1463,18 @@ class SessionAPIs {
           if (reassembleErr) return reject(reassembleErr);
           return resolve({ session, packets: results });
         } else if (packets[0].ip.p === 6) {
-          const key = ipaddr.parse(session.source.ip).toString();
-          const { err, results } = await Pcap.reassemble_tcp(packets, numPackets, key + ':' + session.source.port);
-          if (err) return reject(err);
-          return resolve({ session, packets: results });
+          // Check if any packets are fragments (p=0 due to pcap.js fragment handling)
+          const hasFragments = packets.some(p => !p.tcp);
+          if (hasFragments) {
+            const { err: reassembleErr, results } = Pcap.reassemble_generic_ip(packets, numPackets);
+            if (reassembleErr) return reject(reassembleErr);
+            return resolve({ session, packets: results });
+          } else {
+            const key = ipaddr.parse(session.source.ip).toString();
+            const { err, results } = await Pcap.reassemble_tcp(packets, numPackets, key + ':' + session.source.port);
+            if (err) return reject(err);
+            return resolve({ session, packets: results });
+          }
         } else if (packets[0].ip.p === 17) {
           const { err: reassembleErr, results } = Pcap.reassemble_udp(packets, numPackets);
           if (reassembleErr) return reject(reassembleErr);

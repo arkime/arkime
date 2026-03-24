@@ -734,6 +734,11 @@ class Pcap {
       addr2: Pcap.inet_ntoa(buffer.readUInt32BE(16))
     };
 
+    // Non-first fragments don't have transport headers, force raw handling
+    if ((obj.ip.off & 0x1fff) !== 0) {
+      obj.ip.p = 0;
+    }
+
     switch (obj.ip.p) {
     case 1:
       this.icmp(buffer.slice(obj.ip.hl * 4, obj.ip.len), obj, pos + obj.ip.hl * 4);
@@ -1202,14 +1207,15 @@ class Pcap {
     packets.length = Math.min(packets.length, numPackets);
     for (const packet of packets) {
       const key = packet.ip.addr1;
+      const data = packet.tcp?.data ?? packet.udp?.data ?? packet.ip.data;
       if (results.length === 0 || key !== results[results.length - 1].key) {
         results.push({
           key,
-          buffers: [packet.ip.data],
+          buffers: [data],
           ts: packet.pcap.ts_sec * 1000 + Math.round(packet.pcap.ts_usec / 1000)
         });
       } else {
-        results[results.length - 1].buffers.push(packet.ip.data);
+        results[results.length - 1].buffers.push(data);
       }
     }
     for (const result of results) {
