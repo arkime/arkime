@@ -44,6 +44,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
 ## Capture
   - #3813 Add ECE, CWR, and AE TCP flag support
   - #3818 Improve scheduling http requests with libcurl (thanks @swannman)
+  - #3829 Add ADB (Android Debug Bridge) parser (thanks @h0wdee)
 ## Viewer
   - #3826 Handle ip frag pcap display better
 
