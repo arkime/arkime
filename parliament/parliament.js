@@ -1542,6 +1542,11 @@ async function updateParliament () {
   internals.updateInProgress = true;
   const parliament = await Parliament.getParliament();
 
+  if (!parliament) {
+    internals.updateInProgress = false;
+    return Promise.resolve();
+  }
+
   return new Promise((resolve, reject) => {
     const promises = [];
     for (const group of parliament.groups) {

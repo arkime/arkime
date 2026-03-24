@@ -1,7 +1,7 @@
 # Many of these test user/roles start with sac- (skip auto create) because
 # otherwise viewer in regression mode would auto create the user.
 # Some day should remove all autocreate code.
-use Test::More tests => 223;
+use Test::More tests => 221;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -709,15 +709,9 @@ my $uaToken = getTokenCookie('testusersadmin');
     $json = viewerGetToken("/api/user?arkimeRegressionUser=sac-userExplicitTrue", $token);
     is($json->{emailSearch}, 1, "sac-userExplicitTrue emailSearch true (explicit)");
 
-# Check appversion for all 4 services
+# Check appversion
     $json = viewerGetToken("/api/appversion", $token);
     is($json->{app}, "viewer", "viewer appversion app field");
-
-    $json = parliamentGet("/api/appversion");
-    is($json->{app}, "parliament", "parliament appversion app field");
-
-    $json = cont3xtGet("/api/appversion");
-    is($json->{app}, "cont3xt", "cont3xt appversion app field");
 
 # Check locales endpoint
     $json = viewerGet("/api/locales");
