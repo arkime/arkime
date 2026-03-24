@@ -572,8 +572,12 @@ app.get('/:index/:type/:id', function (req, res) {
   simpleGather(req, res, null, (err, results) => {
     for (let i = 0; i < results.length; i++) {
       if (results[i].found) {
+        results[i].cluster = results[i].cluster;
         if (results[i]._source) {
           results[i]._source.cluster = results[i].cluster;
+        }
+        if (results[i].fields) {
+          results[i].fields.cluster = results[i].cluster;
         }
         return res.send(results[i]);
       }
@@ -1021,6 +1025,23 @@ app.post(['/MULTIPREFIX_fields/field/_search', '/MULTIPREFIX_fields/_search'], f
         }
       }
     }
+
+    // Add the cluster field definition for multi-viewer
+    if (!unique.cluster) {
+      obj.hits.total++;
+      obj.hits.hits.push({
+        _index: 'fields_v30',
+        _id: 'cluster',
+        _source: {
+          friendlyName: 'Cluster',
+          group: 'general',
+          help: 'Cluster name the session was recorded on (multi-viewer only)',
+          type: 'termfield',
+          dbField2: 'cluster'
+        }
+      });
+    }
+
     res.send(obj);
   });
 });
