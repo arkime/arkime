@@ -1928,7 +1928,6 @@ class UserLMDBImplementation {
         const user = this.store.get(userId);
         if (!user) {
           await this.store.put(userId, doc);
-          await this.store.flushed;
           User.deleteCache(userId);
           cb(null);
         } else {
@@ -1936,7 +1935,6 @@ class UserLMDBImplementation {
         }
       } else {
         await this.store.put(userId, doc);
-        await this.store.flushed;
         User.deleteCache(userId);
         cb(null);
       }
@@ -2042,11 +2040,17 @@ class UserRedisImplementation {
     doc = JSON.stringify(doc);
     try {
       if (createOnly) {
-        this.client.setnx(this.prefix + userId, doc, cb);
-        User.deleteCache(userId);
+        const result = await this.client.setnx(this.prefix + userId, doc);
+        if (result === 0) {
+          cb({ meta: { body: { error: { type: 'version_conflict_engine_exception' } } } });
+        } else {
+          User.deleteCache(userId);
+          cb(null);
+        }
       } else {
-        this.client.set(this.prefix + userId, doc, cb);
+        await this.client.set(this.prefix + userId, doc);
         User.deleteCache(userId);
+        cb(null);
       }
     } catch (err) {
       cb(err);
