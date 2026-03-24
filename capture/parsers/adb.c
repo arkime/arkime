@@ -76,15 +76,24 @@ extern ArkimeConfig_t        config;
 LOCAL const char *adb_command_to_string(uint32_t cmd)
 {
     switch (cmd) {
-        case A_SYNC:  return "sync";
-        case A_CNXN:  return "cnxn";
-        case A_OPEN:  return "open";
-        case A_OKAY:  return "okay";
-        case A_CLSE:  return "clse";
-        case A_WRTE:  return "wrte";
-        case A_AUTH:  return "auth";
-        case A_STLS:  return "stls";
-        default:      return "unknown";
+    case A_SYNC:
+        return "sync";
+    case A_CNXN:
+        return "cnxn";
+    case A_OPEN:
+        return "open";
+    case A_OKAY:
+        return "okay";
+    case A_CLSE:
+        return "clse";
+    case A_WRTE:
+        return "wrte";
+    case A_AUTH:
+        return "auth";
+    case A_STLS:
+        return "stls";
+    default:
+        return "unknown";
     }
 }
 
@@ -92,17 +101,28 @@ LOCAL const char *adb_command_to_string(uint32_t cmd)
 LOCAL const char *sync_id_to_string(uint32_t id)
 {
     switch (id) {
-        case SYNC_STAT:  return "STAT";
-        case SYNC_LIST:  return "LIST";
-        case SYNC_SEND:  return "SEND";
-        case SYNC_RECV:  return "RECV";
-        case SYNC_DATA:  return "DATA";
-        case SYNC_DONE:  return "DONE";
-        case SYNC_OKAY:  return "OKAY";
-        case SYNC_FAIL:  return "FAIL";
-        case SYNC_DENT:  return "DENT";
-        case SYNC_QUIT:  return "QUIT";
-        default:         return NULL;
+    case SYNC_STAT:
+        return "STAT";
+    case SYNC_LIST:
+        return "LIST";
+    case SYNC_SEND:
+        return "SEND";
+    case SYNC_RECV:
+        return "RECV";
+    case SYNC_DATA:
+        return "DATA";
+    case SYNC_DONE:
+        return "DONE";
+    case SYNC_OKAY:
+        return "OKAY";
+    case SYNC_FAIL:
+        return "FAIL";
+    case SYNC_DENT:
+        return "DENT";
+    case SYNC_QUIT:
+        return "QUIT";
+    default:
+        return NULL;
     }
 }
 
@@ -117,9 +137,10 @@ LOCAL void adb_parse_sync_payload(ArkimeSession_t *session, const uint8_t *data,
     BSB_INIT(bsb, data, len);
 
     while (BSB_REMAINING(bsb) >= 8) {
-        uint32_t id, arg;
+        uint32_t id = 0, arg = 0;
         BSB_LIMPORT_u32(bsb, id);
         BSB_LIMPORT_u32(bsb, arg);
+        if (BSB_IS_ERROR(bsb)) break;
 
         const char *op_str = sync_id_to_string(id);
         if (op_str) {
@@ -169,8 +190,8 @@ LOCAL void adb_parse_shell_v2_payload(ArkimeSession_t *session, const uint8_t *d
     BSB_INIT(bsb, data, len);
 
     while (BSB_REMAINING(bsb) >= 5) {
-        uint8_t id;
-        uint32_t pkt_len;
+        uint8_t id = 0;
+        uint32_t pkt_len = 0;
         BSB_IMPORT_u08(bsb, id);
         BSB_LIMPORT_u32(bsb, pkt_len);
 
@@ -180,7 +201,7 @@ LOCAL void adb_parse_shell_v2_payload(ArkimeSession_t *session, const uint8_t *d
 
         if (id == SHELL_ID_EXIT && pkt_len >= 1) {
             /* Exit code is in the payload */
-            uint8_t exit_code;
+            uint8_t exit_code = 0;
             BSB_IMPORT_u08(bsb, exit_code);
             char exit_str[16];
             snprintf(exit_str, sizeof(exit_str), "%u", exit_code);
@@ -241,7 +262,7 @@ LOCAL void adb_parse_connect(ArkimeSession_t *session, const uint8_t *data, int 
     BSB bsb;
     BSB_INIT(bsb, data, remaining);
 
-    uint32_t command, arg0, arg1, data_length, data_check, magic;
+    uint32_t command = 0, arg0 = 0, arg1 = 0, data_length = 0, data_check = 0, magic = 0;
     BSB_LIMPORT_u32(bsb, command);
     BSB_LIMPORT_u32(bsb, arg0);  /* version */
     BSB_LIMPORT_u32(bsb, arg1);  /* maxdata */
@@ -303,14 +324,15 @@ LOCAL void adb_parse_open(ArkimeSession_t *session, const uint8_t *data, int rem
     BSB bsb;
     BSB_INIT(bsb, data, remaining);
 
-    uint32_t command, arg0, arg1, data_length, data_check, magic;
+    uint32_t command = 0, arg0 = 0, arg1 = 0, data_length = 0, data_check = 0, magic = 0;
     BSB_LIMPORT_u32(bsb, command);
     BSB_LIMPORT_u32(bsb, arg0);  /* local-id */
     BSB_LIMPORT_u32(bsb, arg1);
     BSB_LIMPORT_u32(bsb, data_length);
     BSB_LIMPORT_u32(bsb, data_check);
     BSB_LIMPORT_u32(bsb, magic);
-    (void)arg1; (void)data_check;  /* Suppress unused variable warnings */
+    (void)arg1;
+    (void)data_check;  /* Suppress unused variable warnings */
 
     if (magic != (command ^ 0xffffffff) || command != A_OPEN) {
         return;
@@ -373,9 +395,9 @@ LOCAL void adb_parse_client_server(ArkimeSession_t *session, const uint8_t *data
 {
     /* Client-server protocol format: <hex4><service-name> */
     /* hex4 is a 4-byte hexadecimal string (ASCII) indicating length */
-    
+
     /* Add data to buffer */
-    int to_copy = MIN(remaining, (int)sizeof(adb->buf[which]) - adb->len[which]);
+    int to_copy = MIN(remaining, (int)(sizeof(adb->buf[which]) - adb->len[which]));
     if (to_copy > 0) {
         memcpy(adb->buf[which] + adb->len[which], data, to_copy);
         adb->len[which] += to_copy;
@@ -390,7 +412,7 @@ LOCAL void adb_parse_client_server(ArkimeSession_t *session, const uint8_t *data
         char hex_str[5];
         memcpy(hex_str, adb->buf[which], 4);
         hex_str[4] = '\0';
-        
+
         /* Validate hex string */
         int valid = 1;
         for (int i = 0; i < 4; i++) {
@@ -399,7 +421,7 @@ LOCAL void adb_parse_client_server(ArkimeSession_t *session, const uint8_t *data
                 break;
             }
         }
-        
+
         if (valid) {
             adb->expectedLen[which] = (uint32_t)strtoul(hex_str, NULL, 16);
             if (adb->expectedLen[which] > 4096) {
@@ -419,7 +441,7 @@ LOCAL void adb_parse_client_server(ArkimeSession_t *session, const uint8_t *data
     if (adb->len[which] >= 4 + adb->expectedLen[which]) {
         const uint8_t *service = adb->buf[which] + 4;
         int service_len = adb->expectedLen[which];
-        
+
         /* Extract service name */
         char service_str[512];
         int copy_len = MIN(service_len, 511);
@@ -427,7 +449,7 @@ LOCAL void adb_parse_client_server(ArkimeSession_t *session, const uint8_t *data
         service_str[copy_len] = '\0';
 
         /* Check for port forwarding */
-        if (strncmp(service_str, "forward:", 8) == 0 || 
+        if (strncmp(service_str, "forward:", 8) == 0 ||
             strncmp(service_str, "reverse:", 8) == 0 ||
             strncmp(service_str, "host:forward:", 13) == 0 ||
             strncmp(service_str, "host:reverse:", 13) == 0) {
@@ -437,7 +459,7 @@ LOCAL void adb_parse_client_server(ArkimeSession_t *session, const uint8_t *data
                 adb_parse_forward_service(session, fwd_start);
             }
         }
-        
+
         /* Extract base service name */
         char *colon = strchr(service_str, ':');
         if (colon && colon > service_str) {
@@ -449,7 +471,7 @@ LOCAL void adb_parse_client_server(ArkimeSession_t *session, const uint8_t *data
         } else {
             arkime_field_string_add_lower(serviceField, session, service_str, strlen(service_str));
         }
-        
+
         /* Remove processed message */
         uint32_t total_len = 4 + adb->expectedLen[which];
         adb->len[which] -= total_len;
@@ -493,7 +515,7 @@ LOCAL int adb_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, in
     }
 
     /* Add data to buffer for transport protocol */
-    int to_copy = MIN(remaining, (int)sizeof(adb->buf[which]) - adb->len[which]);
+    int to_copy = MIN(remaining, (int)(sizeof(adb->buf[which]) - adb->len[which]));
     if (to_copy > 0) {
         memcpy(adb->buf[which] + adb->len[which], data, to_copy);
         adb->len[which] += to_copy;
@@ -504,7 +526,7 @@ LOCAL int adb_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, in
         BSB bsb;
         BSB_INIT(bsb, adb->buf[which], adb->len[which]);
 
-        uint32_t command, arg0, arg1, data_length, data_check, magic;
+        uint32_t command = 0, arg0 = 0, arg1 = 0, data_length = 0, data_check = 0, magic = 0;
         BSB_LIMPORT_u32(bsb, command);
         BSB_LIMPORT_u32(bsb, arg0);
         BSB_LIMPORT_u32(bsb, arg1);
@@ -533,69 +555,75 @@ LOCAL int adb_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, in
 
         /* Process specific commands */
         switch (command) {
-            case A_CNXN:
-                adb_parse_connect(session, adb->buf[which], total_len, which);
-                adb->connected[which] = 1;
-                break;
+        case A_CNXN:
+            adb_parse_connect(session, adb->buf[which], total_len, which);
+            adb->connected[which] = 1;
+            break;
 
-            case A_OPEN:
-                /* Parse OPEN regardless of connected state - service info is valuable */
-                adb_parse_open(session, adb->buf[which], total_len, which, adb);
-                break;
+        case A_OPEN:
+            /* Parse OPEN regardless of connected state - service info is valuable */
+            adb_parse_open(session, adb->buf[which], total_len, which, adb);
+            break;
 
-            case A_AUTH:
-                /* Parse AUTH regardless of connected state (fixes Priority 1.1) */
-                {
-                    const char *auth_type_str = "unknown";
-                    switch (arg0) {
-                        case ADB_AUTH_TOKEN:        auth_type_str = "token"; break;
-                        case ADB_AUTH_SIGNATURE:    auth_type_str = "signature"; break;
-                        case ADB_AUTH_RSAPUBLICKEY: auth_type_str = "rsapublickey"; break;
-                    }
-                    arkime_field_string_add_lower(authTypeField, session, auth_type_str, -1);
+        case A_AUTH:
+            /* Parse AUTH regardless of connected state (fixes Priority 1.1) */
+        {
+            const char *auth_type_str = "unknown";
+            switch (arg0) {
+            case ADB_AUTH_TOKEN:
+                auth_type_str = "token";
+                break;
+            case ADB_AUTH_SIGNATURE:
+                auth_type_str = "signature";
+                break;
+            case ADB_AUTH_RSAPUBLICKEY:
+                auth_type_str = "rsapublickey";
+                break;
+            }
+            arkime_field_string_add_lower(authTypeField, session, auth_type_str, -1);
+        }
+        break;
+
+        case A_STLS:
+            adb->tls[which] = 1;
+            arkime_session_add_tag(session, "adb:tls");
+            /* Check if both sides have done TLS */
+            if (adb->tls[0] && adb->tls[1]) {
+                adb->tlsHandshakeDone = 1;
+                arkime_session_add_tag(session, "adb:tls-encrypted");
+            }
+            break;
+
+        case A_OKAY:
+            /* Extract stream IDs */
+        {
+            char stream_str[64];
+            snprintf(stream_str, sizeof(stream_str), "%u-%u", arg0, arg1);
+            arkime_field_string_add(streamIdField, session, stream_str, -1, TRUE);
+        }
+        break;
+
+        case A_WRTE:
+            /* Parse WRTE payload for sync and shell v2 protocols */
+            if (data_length > 0) {
+                const uint8_t *payload = adb->buf[which] + 24;
+
+                /* Check if this stream is in sync mode */
+                if (adb->syncMode[0] || adb->syncMode[1]) {
+                    adb_parse_sync_payload(session, payload, data_length);
                 }
-                break;
 
-            case A_STLS:
-                adb->tls[which] = 1;
-                arkime_session_add_tag(session, "adb:tls");
-                /* Check if both sides have done TLS */
-                if (adb->tls[0] && adb->tls[1]) {
-                    adb->tlsHandshakeDone = 1;
-                    arkime_session_add_tag(session, "adb:tls-encrypted");
+                /* Check if this stream is using shell v2 */
+                if (adb->shellV2[0] || adb->shellV2[1]) {
+                    adb_parse_shell_v2_payload(session, payload, data_length);
                 }
-                break;
+            }
+            break;
 
-            case A_OKAY:
-                /* Extract stream IDs */
-                {
-                    char stream_str[64];
-                    snprintf(stream_str, sizeof(stream_str), "%u-%u", arg0, arg1);
-                    arkime_field_string_add(streamIdField, session, stream_str, -1, TRUE);
-                }
-                break;
-
-            case A_WRTE:
-                /* Parse WRTE payload for sync and shell v2 protocols */
-                if (data_length > 0) {
-                    const uint8_t *payload = adb->buf[which] + 24;
-
-                    /* Check if this stream is in sync mode */
-                    if (adb->syncMode[0] || adb->syncMode[1]) {
-                        adb_parse_sync_payload(session, payload, data_length);
-                    }
-
-                    /* Check if this stream is using shell v2 */
-                    if (adb->shellV2[0] || adb->shellV2[1]) {
-                        adb_parse_shell_v2_payload(session, payload, data_length);
-                    }
-                }
-                break;
-
-            case A_CLSE:
-            case A_SYNC:
-                /* These are less interesting for parsing, but we've already logged the command */
-                break;
+        case A_CLSE:
+        case A_SYNC:
+            /* These are less interesting for parsing, but we've already logged the command */
+            break;
         }
 
         /* Remove processed message from buffer */
@@ -667,9 +695,9 @@ LOCAL void adb_classify(ArkimeSession_t *session, const uint8_t *data, int len, 
 
     /* Check for valid ADB message header (little-endian) */
     uint32_t command, magic;
-    command = ((uint32_t)data[0]) | ((uint32_t)data[1] << 8) | 
+    command = ((uint32_t)data[0]) | ((uint32_t)data[1] << 8) |
               ((uint32_t)data[2] << 16) | ((uint32_t)data[3] << 24);
-    magic = ((uint32_t)data[20]) | ((uint32_t)data[21] << 8) | 
+    magic = ((uint32_t)data[20]) | ((uint32_t)data[21] << 8) |
             ((uint32_t)data[22] << 16) | ((uint32_t)data[23] << 24);
 
     /* Validate magic field (command ^ 0xffffffff) */
@@ -679,17 +707,17 @@ LOCAL void adb_classify(ArkimeSession_t *session, const uint8_t *data, int len, 
 
     /* Check if command is a known ADB command */
     switch (command) {
-        case A_SYNC:
-        case A_CNXN:
-        case A_OPEN:
-        case A_OKAY:
-        case A_CLSE:
-        case A_WRTE:
-        case A_AUTH:
-        case A_STLS:
-            break;
-        default:
-            return;
+    case A_SYNC:
+    case A_CNXN:
+    case A_OPEN:
+    case A_OKAY:
+    case A_CLSE:
+    case A_WRTE:
+    case A_AUTH:
+    case A_STLS:
+        break;
+    default:
+        return;
     }
 
     /* Looks like ADB protocol */
@@ -710,12 +738,10 @@ void arkime_parser_init()
 
     /* Also try to classify by magic bytes (ADB message header) */
     /* Look for A_CNXN (CONNECT) which is typically the first message */
-    uint8_t cnxn_match[4] = {0x43, 0x4e, 0x58, 0x4e}; /* A_CNXN in little-endian */
-    arkime_parsers_classifier_register_tcp("adb", NULL, 0, cnxn_match, 4, adb_classify);
+    arkime_parsers_classifier_register_tcp("adb", NULL, 0, (uint8_t *)"\x43\x4e\x58\x4e", 4, adb_classify); /* A_CNXN */
 
     /* Also match A_AUTH for cases where AUTH comes before CNXN */
-    uint8_t auth_match[4] = {0x41, 0x55, 0x54, 0x48}; /* A_AUTH in little-endian */
-    arkime_parsers_classifier_register_tcp("adb", NULL, 0, auth_match, 4, adb_classify);
+    arkime_parsers_classifier_register_tcp("adb", NULL, 0, (uint8_t *)"\x41\x55\x54\x48", 4, adb_classify); /* A_AUTH */
 
     /* Define fields */
     versionField = arkime_field_define("adb", "termfield",
