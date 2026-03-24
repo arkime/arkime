@@ -1928,6 +1928,7 @@ class UserLMDBImplementation {
         const user = this.store.get(userId);
         if (!user) {
           await this.store.put(userId, doc);
+          await this.store.flushed;
           User.deleteCache(userId);
           cb(null);
         } else {
@@ -1935,6 +1936,7 @@ class UserLMDBImplementation {
         }
       } else {
         await this.store.put(userId, doc);
+        await this.store.flushed;
         User.deleteCache(userId);
         cb(null);
       }
