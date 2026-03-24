@@ -1,5 +1,5 @@
 # Test cont3xt.js
-use Test::More tests => 189;
+use Test::More tests => 190;
 use Test::Differences;
 use Data::Dumper;
 use ArkimeTest;
@@ -16,6 +16,11 @@ viewerPostToken("/api/user", '{"userId": "sac-test", "userName": "test", "enable
 my $token2 = getTokenCookie('sac-test');
 
 my $json;
+
+# Check appversion
+$json = cont3xtGet("/api/appversion");
+is($json->{app}, "cont3xt", "cont3xt appversion app field");
+
 ################################################################################
 ### LINK GROUPS
 # Make sure delete worked
