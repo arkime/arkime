@@ -383,7 +383,9 @@ class MiscAPIs {
       const clusters = await MiscAPIs.#getClusters(); // { active: [], inactive: [] }
       const remoteclusters = MiscAPIs.#remoteClusters(); // {}
       const fieldhistory = UserAPIs.findUserState('fieldHistory', req.user); // {}
-      const { data: views } = await View.getViews(req);
+      // views not supported for redis/lmdb user backends
+      const dbUrl = User.getDbUrl();
+      const views = (dbUrl?.startsWith('redis') || dbUrl?.startsWith('lmdb')) ? undefined : (await View.getViews(req)).data;
       const roles = await User.getRoles();
 
       // can't fetch user or fields is FATAL, so let it fall through to outer

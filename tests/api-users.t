@@ -157,6 +157,8 @@ anonymous,,true,true,false,"arkimeAdmin, cont3xtUser, parliamentUser, usersAdmin
     eq_or_diff($users->{data}->[$sacpos], from_json('{"roles": ["usersAdmin", "arkimeUser"], "userId": "sac-test1", "removeEnabled": true, "expression": "foo", "headerAuthEnabled": true, "userName": "UserNameUpdated", "id": "sac-test1", "emailSearch": true, "enabled": false, "webEnabled": true, "packetSearch": false, "welcomeMsgNum": 0, "roleAssigners": []}', {relaxed => 1}), "Test User Update", { context => 3 });
 
 # update user settings
+# Do a GET first to trigger setLastUsed, avoiding race condition with POST in Redis mode
+    $json = viewerGetToken("/api/user/settings?arkimeRegressionUser=sac-test1", $test1Token);
     $json = viewerPostToken("/api/user/settings?arkimeRegressionUser=sac-test1", '{"logo":"testlogo.png","__proto":{"bad":"stuff"}}', $test1Token);
     is($json->{success}, 1, "update user settings");
     is($json->{i18n}, "api.users.settingsUpdated", "update user settings i18n");
