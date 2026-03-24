@@ -572,7 +572,6 @@ app.get('/:index/:type/:id', function (req, res) {
   simpleGather(req, res, null, (err, results) => {
     for (let i = 0; i < results.length; i++) {
       if (results[i].found) {
-        results[i].cluster = results[i].cluster;
         if (results[i]._source) {
           results[i]._source.cluster = results[i].cluster;
         }
