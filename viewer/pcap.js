@@ -118,8 +118,20 @@ class Pcap {
     this.encoding = info.encoding ?? 'normal';
 
     if (info.dek) {
-      const decipher = ArkimeUtil.createDecipherAES192NoIV(info.kek);
-      this.encKey = Buffer.concat([decipher.update(Buffer.from(info.dek, 'hex')), decipher.final()]);
+      if (info.dekEncoding === 'aes-256-gcm') {
+        // New method: PBKDF2 + AES-256-GCM
+        this.encKey = ArkimeUtil.decryptDEKWithGCM(
+          info.kek,
+          Buffer.from(info.dek, 'hex'),
+          Buffer.from(info.dekSalt, 'hex'),
+          Buffer.from(info.dekIv, 'hex'),
+          Buffer.from(info.dekTag, 'hex')
+        );
+      } else {
+        // Old method: EVP_BytesToKey + AES-192-CBC
+        const decipher = ArkimeUtil.createDecipherAES192NoIV(info.kek);
+        this.encKey = Buffer.concat([decipher.update(Buffer.from(info.dek, 'hex')), decipher.final()]);
+      }
     }
 
     if (info.uncompressedBits) {
