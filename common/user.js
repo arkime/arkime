@@ -1142,6 +1142,150 @@ class User {
   }
 
   /******************************************************************************/
+  // TOTP (Two-Factor Authentication) APIs
+  /******************************************************************************/
+
+  /**
+   * GET - /api/user/totp/status
+   *
+   * Check if TOTP is enabled for the current user
+   * @name /user/totp/status
+   * @returns {boolean} success - Whether the request was successful.
+   * @returns {boolean} enabled - Whether TOTP is enabled for this user.
+   */
+  static apiGetTotpStatus (req, res) {
+    return res.json({
+      success: true,
+      enabled: !!req.user.totpSecret
+    });
+  }
+
+  /**
+   * POST - /api/user/totp/setup
+   *
+   * Start TOTP enrollment - generates a new secret and returns the QR code URI.
+   * The secret is not saved until confirmed with a valid code.
+   * @name /user/totp/setup
+   * @returns {boolean} success - Whether the setup initiation was successful.
+   * @returns {string} secret - The TOTP secret (Base32 encoded) for manual entry.
+   * @returns {string} qrCodeDataUrl - The QR code as a data URL for display.
+   */
+  static async apiSetupTotp (req, res) {
+    const secret = Auth.generateTotpSecret();
+    const qrCodeUri = Auth.getTotpKeyUri(req.user.userId, secret);
+
+    // Generate QR code as data URL
+    const QRCode = require('qrcode');
+    try {
+      const qrCodeDataUrl = await QRCode.toDataURL(qrCodeUri);
+      return res.json({
+        success: true,
+        secret,
+        qrCodeDataUrl
+      });
+    } catch (err) {
+      console.log('ERROR - Failed to generate QR code', err);
+      return res.serverError(500, 'Failed to generate QR code');
+    }
+  }
+
+  /**
+   * POST - /api/user/totp/confirm
+   *
+   * Confirm TOTP enrollment by verifying a code from the authenticator app.
+   * If valid, the secret is encrypted and saved to the user record.
+   * @name /user/totp/confirm
+   * @returns {boolean} success - Whether the confirmation was successful.
+   * @returns {string} text - The success/error message to display to the user.
+   */
+  static async apiConfirmTotp (req, res) {
+    if (!ArkimeUtil.isString(req.body.secret)) {
+      return res.serverError(403, 'Missing secret');
+    }
+    if (!ArkimeUtil.isString(req.body.code)) {
+      return res.serverError(403, 'Missing verification code');
+    }
+
+    const otplib = require('otplib');
+    const result = otplib.verifySync({ secret: req.body.secret, token: req.body.code });
+    if (!result.valid) {
+      return res.serverError(403, 'Invalid verification code');
+    }
+
+    const user = req.settingUser;
+    user.totpSecret = Auth.totp2store(req.body.secret);
+
+    try {
+      await User.setUser(user.userId, user);
+      return res.json({
+        success: true,
+        text: 'Two-factor authentication enabled successfully'
+      });
+    } catch (err) {
+      console.log(`ERROR - ${req.method} /api/user/totp/confirm update error`, util.inspect(err, false, 50));
+      return res.serverError(500, 'Failed to enable two-factor authentication');
+    }
+  }
+
+  /**
+   * POST - /api/user/totp/disable
+   *
+   * Disable TOTP for a user. Admins (usersAdmin) can disable anyone's TOTP.
+   * Regular users must provide a valid TOTP code to disable their own.
+   * @name /user/totp/disable
+   * @returns {boolean} success - Whether the disable operation was successful.
+   * @returns {string} text - The success/error message to display to the user.
+   */
+  static async apiDisableTotp (req, res) {
+    const user = req.settingUser;
+
+    if (!user.totpSecret) {
+      return res.serverError(403, 'Two-factor authentication is not enabled');
+    }
+
+    // Admins can disable OTHER users' TOTP without code, but not their own
+    const isAdmin = req.user.hasRole('usersAdmin');
+    const isSelf = req.user.userId === user.userId;
+
+    if (isSelf || !isAdmin) {
+      // Must provide valid TOTP code to disable your own (even admins)
+      if (!ArkimeUtil.isString(req.body.code)) {
+        return res.serverError(403, 'TOTP code required');
+      }
+
+      if (!Auth.verifyTotp(user.totpSecret, req.body.code, user.userId)) {
+        return res.serverError(403, 'Invalid verification code');
+      }
+    } else if (!isAdmin) {
+      // Non-admins can't disable other users' TOTP
+      return res.serverError(403, 'Not authorized to disable TOTP for other users');
+    }
+
+    // Skip this check if we are a superAdmin
+    if (!req.user.hasRole('superAdmin')) {
+      // Only disable TOTP if we have the same admin roles(s)
+      for (const role of adminRolesWithSuper) {
+        if (!req.user.hasRole(role) && user.hasRole(role)) {
+          return res.serverError(403, `Not allowed to disable TOTP for ${role}`);
+        }
+      }
+    }
+
+    delete user.totpSecret;
+
+    try {
+      await User.setUser(user.userId, user);
+      return res.json({
+        success: true,
+        text: 'Two-factor authentication disabled successfully'
+      });
+    } catch (err) {
+      console.log(`ERROR - ${req.method} /api/user/totp/disable update error`, util.inspect(err, false, 50));
+      return res.serverError(500, 'Failed to disable two-factor authentication');
+    }
+  }
+
+  /******************************************************************************/
   // Regression Tests APIs
   /******************************************************************************/
 

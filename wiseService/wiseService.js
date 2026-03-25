@@ -230,14 +230,24 @@ function setupAuth () {
 }
 
 // ----------------------------------------------------------------------------
+// Check authorization for config changes - supports both PIN code and TOTP
 function checkConfigCode (req, res, next) {
-  console.log(req.body);
-  if (req.body !== undefined && req.body.configCode !== undefined && req.body.configCode === internals.configCode) {
+  const code = req.body?.configCode;
+
+  // Check PIN code
+  if (code && code === internals.configCode) {
     return next();
-  } else {
-    console.log(`Incorrect pin code used - Config pin code is: ${internals.configCode}`);
-    return res.send(JSON.stringify({ success: false, text: 'Not authorized, check log file' })); // not specific error
   }
+
+  // Check TOTP code if exactly 6 digits
+  if (code && code.length === 6 && /^\d{6}$/.test(code) && req.user?.totpSecret) {
+    if (Auth.verifyTotp(req.user.totpSecret, code, req.user.userId)) {
+      return next();
+    }
+  }
+
+  console.log(`Incorrect pin/TOTP code used - Config pin code is: ${internals.configCode}`);
+  return res.send(JSON.stringify({ success: false, text: 'Not authorized, check log file' })); // not specific error
 }
 
 // ----------------------------------------------------------------------------

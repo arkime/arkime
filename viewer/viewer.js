@@ -1323,6 +1323,30 @@ app.post( // update user password endpoint
   User.apiUpdateUserPassword
 );
 
+app.get( // get TOTP status endpoint
+  ['/api/user/totp/status'],
+  [ArkimeUtil.noCacheJson],
+  User.apiGetTotpStatus
+);
+
+app.post( // setup TOTP endpoint - generates secret and QR URI
+  ['/api/user/totp/setup'],
+  [ArkimeUtil.noCacheJson, checkCookieToken],
+  User.apiSetupTotp
+);
+
+app.post( // confirm TOTP endpoint - verifies code and saves secret
+  ['/api/user/totp/confirm'],
+  [ArkimeUtil.noCacheJson, checkCookieToken, Auth.getSettingUserDb],
+  User.apiConfirmTotp
+);
+
+app.post( // disable TOTP endpoint
+  ['/api/user/totp/disable'],
+  [ArkimeUtil.noCacheJson, checkCookieToken, Auth.getSettingUserDb],
+  User.apiDisableTotp
+);
+
 app.get( // user settings endpoint
   ['/api/user/settings'],
   [ArkimeUtil.noCacheJson, recordResponseTime, Auth.getSettingUserDb, User.checkPermissions(['webEnabled']), setCookie],

@@ -203,7 +203,8 @@ app.use((req, res, next) => {
 
 // Demo mode - disable some APIs
 app.all([
-  '/api/user/password*'
+  '/api/user/password*',
+  '/api/user/totp/*'
 ], (req, res, next) => {
   if (!req.user.isDemoMode()) {
     return next();
@@ -227,6 +228,13 @@ app.post('/api/users/csv', [jsonParser, User.checkRole('usersAdmin'), setCookie]
 app.post('/api/users/min', [jsonParser, checkCookieToken, User.checkAssignableRole], User.apiGetUsersMin);
 app.post('/api/user', [jsonParser, checkCookieToken, User.checkRole('usersAdmin')], User.apiCreateUser);
 app.post('/api/user/password', [jsonParser, checkCookieToken, Auth.getSettingUserDb], User.apiUpdateUserPassword);
+
+// TOTP endpoints
+app.get('/api/user/totp/status', [ArkimeUtil.noCacheJson], User.apiGetTotpStatus);
+app.post('/api/user/totp/setup', [jsonParser, checkCookieToken, Auth.getSettingUserDb, ArkimeUtil.noCacheJson], User.apiSetupTotp);
+app.post('/api/user/totp/confirm', [jsonParser, checkCookieToken, Auth.getSettingUserDb, ArkimeUtil.noCacheJson], User.apiConfirmTotp);
+app.post('/api/user/totp/disable', [jsonParser, checkCookieToken, Auth.getSettingUserDb, ArkimeUtil.noCacheJson], User.apiDisableTotp);
+
 app.delete('/api/user/:id', [jsonParser, checkCookieToken, User.checkRole('usersAdmin')], User.apiDeleteUser);
 app.post('/api/user/:id', [jsonParser, checkCookieToken, User.checkRole('usersAdmin')], User.apiUpdateUser);
 app.post('/api/user/:id/assignment', [jsonParser, checkCookieToken, User.checkAssignableRole], User.apiUpdateUserRole);

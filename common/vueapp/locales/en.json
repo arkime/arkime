@@ -1218,6 +1218,24 @@
       "mismatchedPassword": "Your new password and confirmation do not match",
       "changePassword": "Change Password"
     },
+    "totp": {
+      "title": "Two-Factor Authentication",
+      "description": "Add an extra layer of security by requiring a code from an authenticator app (Authy, Google Authenticator, etc.) when making sensitive changes.",
+      "status": "Status",
+      "enabled": "Enabled",
+      "disabled": "Not Enabled",
+      "enroll": "Enable 2FA",
+      "unenroll": "Disable 2FA",
+      "scanQR": "Scan QR Code",
+      "generatingQR": "Generating QR code...",
+      "manualEntry": "Manual entry",
+      "verifyCode": "Verification Code",
+      "codePlaceholder": "000000",
+      "verify": "Verify & Enable",
+      "invalidCode": "Please enter a valid 6-digit code",
+      "confirmDisable": "Enter Code to Disable",
+      "confirmUnenroll": "Disable 2FA"
+    },
     "shortcuts": {
       "newShortcut": "New Shortcut",
       "editShortcut": "Edit Shortcut",

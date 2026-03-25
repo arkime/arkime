@@ -6976,6 +6976,9 @@ sub usersUpdate
     "passStore": {
       "type": "keyword"
     },
+    "totpSecret": {
+      "type": "keyword"
+    },
     "expression": {
       "type": "keyword"
     },
@@ -9488,11 +9491,13 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
         filesUpdate();
         fields82Fix();
         shareablesCreate();
+        usersUpdate();
     } elsif ($main::versionNumber <= 85) {
         checkForOld7Indices();
         sessions3Update();
         historyUpdate();
         shareablesUpdate();
+        usersUpdate();
     } else {
         logmsg "db.pl is hosed\n";
     }
