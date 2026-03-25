@@ -1256,10 +1256,8 @@ class User {
       if (!Auth.verifyTotp(user.totpSecret, req.body.code, user.userId)) {
         return res.serverError(403, 'Invalid verification code');
       }
-    } else if (!isAdmin) {
-      // Non-admins can't disable other users' TOTP
-      return res.serverError(403, 'Not authorized to disable TOTP for other users');
     }
+    // else: admin disabling another user's TOTP - no code required
 
     // Skip this check if we are a superAdmin
     if (!req.user.hasRole('superAdmin')) {
