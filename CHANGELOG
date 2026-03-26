@@ -42,6 +42,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #3812 The user-auto-create and user-role-mappings now security limit what
           Javascript can be used in expressions.
 ## All
+  - #3835 Fix reverse proxy being unhappy with no params after a ? in urls
   - #3812 Validate expression in user-auto-create and user-role-mappings
 ## Capture
   - #3813 Add ECE, CWR, and AE TCP flag support

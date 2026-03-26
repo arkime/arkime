@@ -53,7 +53,9 @@ export async function fetchWrapper (options) {
       }
     }
     const params = new URLSearchParams(options.params);
-    url += `?${params}`;
+    if (params.toString()) {
+      url += `?${params}`;
+    }
     delete options.params;
   }
 
