@@ -11,11 +11,10 @@ dl
     +clickableValue('id', Db.sid2Id(session.id))
 
   if session.cluster
-    dt Cluster
-    dd(style="margin-left: 170px;")
-      span.detail-field
-        | &nbsp;
-        span.field= session.cluster
+    dt
+      +clickableLabel('cluster', 'Cluster')
+    dd
+      +clickableValue('cluster', session.cluster)
 
   +arrayList(session, "rootId", "Root Id", "rootId")
 
