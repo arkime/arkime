@@ -1444,6 +1444,13 @@ if (internals.webconfig) {
   // Set up auth, all APIs registered below will use passport
   Auth.app(app);
 
+  // Authenticated checkCode endpoint for TOTP testing in regression tests
+  if (ArkimeConfig.regressionTests) {
+    app.post('/regressionTests/checkCodeAuth', [jsonParser, checkConfigCode], (req, res) => {
+      return res.send(JSON.stringify({ success: true, text: 'Authorized' }));
+    });
+  }
+
   app.get('/api/appversion', (req, res) => {
     return res.send({ app: 'wiseService', version: version.version });
   });
