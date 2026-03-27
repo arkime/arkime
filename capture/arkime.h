@@ -1080,6 +1080,7 @@ void     arkime_command_client_ref_decref(void *ref);
 uint32_t arkime_command_next_notify_id();
 void     arkime_command_notify_file_done(void *clientRef, uint32_t notifyId, const char *filename, uint64_t bytes, uint64_t packets);
 void     arkime_command_notify_file_error(void *clientRef, uint32_t notifyId, const char *filename);
+void     arkime_command_notify_register(uint32_t notifyId, const char *filename);
 
 /******************************************************************************/
 /*

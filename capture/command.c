@@ -234,6 +234,7 @@ typedef struct {
 } CommandClientRef_t;
 
 LOCAL uint32_t nextNotifyId = 1;
+LOCAL void arkime_command_notify_deregister(uint32_t notifyId);
 
 void *arkime_command_client_ref_new(gpointer cc)
 {
@@ -294,6 +295,7 @@ LOCAL gboolean arkime_command_notify_idle_cb(gpointer data)
         g_clear_error(&error);
     }
 
+    arkime_command_notify_deregister(fn->notifyId);
     arkime_command_client_ref_decref(fn->clientRef);
     g_free(fn->filename);
     ARKIME_TYPE_FREE(FileNotification_t, fn);
@@ -322,6 +324,55 @@ void arkime_command_notify_file_error(void *clientRef, uint32_t notifyId, const 
     fn->isError = TRUE;
     arkime_command_client_ref_incref(clientRef);
     g_idle_add(arkime_command_notify_idle_cb, fn);
+}
+/******************************************************************************/
+/*
+ * File-status tracking: simple linked list of outstanding file notifications.
+ * All access is from the main thread (register from command handler,
+ * deregister from idle callback), so no locking needed.
+ */
+typedef struct FileStatusEntry {
+    struct FileStatusEntry *next;
+    uint32_t                notifyId;
+    char                   *filename;
+} FileStatusEntry_t;
+
+LOCAL FileStatusEntry_t *fileStatusHead = NULL;
+
+void arkime_command_notify_register(uint32_t notifyId, const char *filename)
+{
+    FileStatusEntry_t *entry = ARKIME_TYPE_ALLOC0(FileStatusEntry_t);
+    entry->notifyId = notifyId;
+    entry->filename = g_strdup(filename);
+    entry->next = fileStatusHead;
+    fileStatusHead = entry;
+}
+/******************************************************************************/
+LOCAL void arkime_command_notify_deregister(uint32_t notifyId)
+{
+    FileStatusEntry_t **prev = &fileStatusHead;
+    while (*prev) {
+        if ((*prev)->notifyId == notifyId) {
+            FileStatusEntry_t *entry = *prev;
+            *prev = entry->next;
+            g_free(entry->filename);
+            ARKIME_TYPE_FREE(FileStatusEntry_t, entry);
+            return;
+        }
+        prev = &(*prev)->next;
+    }
+}
+/******************************************************************************/
+LOCAL void arkime_command_file_status(int UNUSED(argc), char UNUSED(**argv), gpointer cc)
+{
+    char msg[2048];
+    FileStatusEntry_t *entry = fileStatusHead;
+    while (entry) {
+        snprintf(msg, sizeof(msg), "file-status id=%u filename=%s\n", entry->notifyId, entry->filename);
+        arkime_command_respond(cc, msg, -1);
+        entry = entry->next;
+    }
+    arkime_command_respond(cc, "file-status done\n", -1);
 }
 /******************************************************************************/
 LOCAL int arkime_command_cmp(const void *a, const void *b)
@@ -382,6 +433,7 @@ void arkime_command_init()
 {
     arkime_command_register("help", arkime_command_help, "This help");
     arkime_command_register("exit", arkime_command_exit, "Close the connection, can also use Ctrl-D");
+    arkime_command_register("file-status", arkime_command_file_status, "Show outstanding file processing items");
 
     if (!config.commandSocket) {
         return;

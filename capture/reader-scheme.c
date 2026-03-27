@@ -1082,6 +1082,7 @@ LOCAL int arkime_scheme_cmd_add(int argc, char **argv, gpointer cc, ArkimeScheme
     if (notify && cc) {
         actions->notifyId = arkime_command_next_notify_id();
         actions->notifyClientRef = arkime_command_client_ref_new(cc);
+        arkime_command_notify_register(actions->notifyId, argv[argc - 1]);
         if (outNotifyId)
             *outNotifyId = actions->notifyId;
     }
