@@ -20,6 +20,7 @@ const expressSession = require('express-session');
 const OIDC = require('openid-client');
 const { LRUCache } = require('lru-cache');
 const bodyParser = require('body-parser');
+const otplib = require('otplib');
 
 class Auth {
   static mode;
@@ -982,6 +983,58 @@ class Auth {
       console.log(`passwordSecret set in the [${Auth.#passwordSecretSection}] section can not decrypt '${userId}' information.  Make sure passwordSecret is the same for all nodes/applications. You may need to re-add users or reset passwords if you've changed the secret.`, e);
       return '';
     }
+  }
+
+  // ----------------------------------------------------------------------------
+  // TOTP (Time-based One-Time Password) Support
+  // ----------------------------------------------------------------------------
+
+  // Generate a new TOTP secret
+  static generateTotpSecret () {
+    return otplib.generateSecret();
+  }
+
+  // Generate the otpauth:// URI for QR code scanning
+  static getTotpKeyUri (userId, secret, issuer = 'Arkime') {
+    return otplib.generateURI({ issuer, label: userId, secret, type: 'totp' });
+  }
+
+  // Encrypt TOTP secret for storage (same pattern as ha12store)
+  static totp2store (secret) {
+    const iv = crypto.randomBytes(16);
+    const c = crypto.createCipheriv('aes-256-cbc', Auth.passwordSecret256, iv);
+    let e = c.update(secret, 'utf8', 'hex');
+    e += c.final('hex');
+    return iv.toString('hex') + '.' + e;
+  }
+
+  // Decrypt stored TOTP secret
+  static store2totp (stored, userId) {
+    try {
+      const parts = stored.split('.');
+      if (parts.length === 2) {
+        const c = crypto.createDecipheriv('aes-256-cbc', Auth.passwordSecret256, Buffer.from(parts[0], 'hex'));
+        let d = c.update(parts[1], 'hex', 'utf8');
+        d += c.final('utf8');
+        return d;
+      } else {
+        console.log(`WARNING - user '${userId}' totpSecret is using invalid format`);
+        return null;
+      }
+    } catch (e) {
+      console.log(`passwordSecret can not decrypt TOTP secret for '${userId}'. Make sure passwordSecret is the same for all nodes/applications.`, e);
+      return null;
+    }
+  }
+
+  // Verify a TOTP token against the stored encrypted secret
+  static verifyTotp (stored, token, userId) {
+    const secret = Auth.store2totp(stored, userId);
+    if (!secret) {
+      return false;
+    }
+    const result = otplib.verifySync({ secret, token });
+    return result.valid;
   }
 
   // ----------------------------------------------------------------------------

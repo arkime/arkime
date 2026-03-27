@@ -4,7 +4,7 @@ use Carp;
 use strict;
 use Test::More;
 @ArkimeTest::ISA = qw(Exporter);
-@ArkimeTest::EXPORT = qw (esGet esPost esPut esDelete esCopy viewerGet viewerGetToken viewerGet2 viewerDelete viewerDeleteToken viewerDeleteToken2 viewerPost viewerPost2 viewerPostToken viewerPostToken2 countTest countTestToken countTest2 countTestMulti errTest bin2hex mesGet mesPost multiGet multiGetToken multiPost multiPostToken getTokenCookie getTokenCookie2 parliamentGet parliamentGetToken parliamentPost parliamentPostToken parliamentPut parliamentPutToken parliamentDelete parliamentDeleteToken getParliamentTokenCookie waitFor viewerPutToken viewerPut getCont3xtTokenCookie cont3xtGet cont3xtGetToken cont3xtPut cont3xtPutToken cont3xtDelete cont3xtDeleteToken cont3xtPost cont3xtPostToken addUser clearIndex);
+@ArkimeTest::EXPORT = qw (esGet esPost esPut esDelete esCopy viewerGet viewerGetToken viewerGet2 viewerDelete viewerDeleteToken viewerDeleteToken2 viewerPost viewerPost2 viewerPostToken viewerPostToken2 countTest countTestToken countTest2 countTestMulti errTest bin2hex mesGet mesPost multiGet multiGetToken multiPost multiPostToken getTokenCookie getTokenCookie2 parliamentGet parliamentGetToken parliamentPost parliamentPostToken parliamentPut parliamentPutToken parliamentDelete parliamentDeleteToken getParliamentTokenCookie waitFor viewerPutToken viewerPut getCont3xtTokenCookie cont3xtGet cont3xtGetToken cont3xtPut cont3xtPutToken cont3xtDelete cont3xtDeleteToken cont3xtPost cont3xtPostToken addUser clearIndex generate_totp);
 
 use LWP::UserAgent;
 use HTTP::Request::Common;
@@ -561,6 +561,37 @@ my ($index) = @_;
     esGet("/_flush");
     esGet("/_refresh");
     return esPost("/$index/_delete_by_query?conflicts=proceed&refresh", '{ "query": { "match_all": {} } }');
+}
+################################################################################
+# TOTP helper functions
+use Digest::SHA qw(hmac_sha1);
+
+sub _decode_base32 {
+    my ($input) = @_;
+    my $alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
+    my %lookup = map { substr($alphabet, $_, 1) => $_ } 0..31;
+    $input = uc($input);
+    $input =~ s/=+$//;
+    my $bits = '';
+    for my $char (split //, $input) {
+        $bits .= sprintf('%05b', $lookup{$char});
+    }
+    my $bytes = '';
+    while (length($bits) >= 8) {
+        $bytes .= chr(oct('0b' . substr($bits, 0, 8, '')));
+    }
+    return $bytes;
+}
+
+sub generate_totp {
+    my ($secret) = @_;
+    my $time = int(time() / 30);
+    my $key = _decode_base32($secret);
+    my $msg = pack('N*', 0, $time);
+    my $hash = hmac_sha1($msg, $key);
+    my $offset = ord(substr($hash, -1)) & 0x0F;
+    my $code = (unpack('N', substr($hash, $offset, 4)) & 0x7FFFFFFF) % 1000000;
+    return sprintf('%06d', $code);
 }
 
 return 1;

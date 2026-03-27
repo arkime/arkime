@@ -1,5 +1,5 @@
 # Test cont3xt.js
-use Test::More tests => 190;
+use Test::More tests => 217;
 use Test::Differences;
 use Data::Dumper;
 use ArkimeTest;
@@ -14,6 +14,14 @@ my $token = getCont3xtTokenCookie();
 # create sac-test cont3xtUser and get their token
 viewerPostToken("/api/user", '{"userId": "sac-test", "userName": "test", "enabled":true, "password":"password", "roles":["cont3xtUser"]}', $token);
 my $token2 = getTokenCookie('sac-test');
+
+# create users for TOTP tests
+viewerPostToken("/api/user", '{"userId": "sac-nonadmin", "userName": "Non-Admin User", "enabled":true, "webEnabled":true, "password":"nonadminpass", "roles": ["cont3xtUser"]}', $token);
+my $nonAdminToken = getCont3xtTokenCookie('sac-nonadmin');
+addUser("-n testuser sac-totpuser sac-totpuser sac-totpuser --roles cont3xtAdmin,cont3xtUser");
+my $totpToken = getCont3xtTokenCookie('sac-totpuser');
+addUser("-n testuser sac-cont3xtadmin sac-cont3xtadmin sac-cont3xtadmin --roles cont3xtAdmin,cont3xtUser,usersAdmin");
+my $adminToken = getCont3xtTokenCookie('sac-cont3xtadmin');
 
 my $json;
 
@@ -1146,3 +1154,97 @@ eq_or_diff($json, from_json('[{"itype":"phone"}, {"itype":"phone"}, {"itype":"ph
 
 $json = cont3xtPost('/regressionTests/classify', '["xn--yho-ela6g.com"]');
 eq_or_diff($json, from_json('[{"itype":"domain", "decoded":"yáhoó.com"}]'));
+
+################################################################################
+### TOTP Tests
+# Non-admin users should be denied TOTP access
+$json = cont3xtGetToken("/api/user/totp/status?arkimeRegressionUser=sac-nonadmin", $nonAdminToken);
+is($json->{success}, 0, "Non-admin cannot access TOTP status");
+
+$json = cont3xtPostToken("/api/user/totp/setup?arkimeRegressionUser=sac-nonadmin", '{}', $nonAdminToken);
+is($json->{success}, 0, "Non-admin cannot setup TOTP");
+
+# Get TOTP status - should be not enabled
+$json = cont3xtGetToken("/api/user/totp/status?arkimeRegressionUser=sac-totpuser", $totpToken);
+ok($json->{success}, "TOTP status returns success");
+is($json->{enabled}, 0, "TOTP not enabled initially");
+
+# Setup TOTP - get QR code
+$json = cont3xtPostToken("/api/user/totp/setup?arkimeRegressionUser=sac-totpuser", '{}', $totpToken);
+ok($json->{success}, "TOTP setup returns success");
+ok(defined $json->{secret}, "TOTP setup returns secret");
+ok(defined $json->{qrCodeDataUrl}, "TOTP setup returns qrCodeDataUrl");
+like($json->{qrCodeDataUrl}, qr/^data:image\/png;base64,/, "TOTP qrCodeDataUrl is data URL");
+my $totpSecret = $json->{secret};
+
+# Confirm TOTP with invalid code
+$json = cont3xtPostToken("/api/user/totp/confirm?arkimeRegressionUser=sac-totpuser", '{"secret": "' . $totpSecret . '", "code": "000000"}', $totpToken);
+is($json->{success}, 0, "TOTP confirm fails with invalid code");
+
+# Generate valid TOTP code
+my $validCode = generate_totp($totpSecret);
+
+# Confirm TOTP with valid code
+$json = cont3xtPostToken("/api/user/totp/confirm?arkimeRegressionUser=sac-totpuser", '{"secret": "' . $totpSecret . '", "code": "' . $validCode . '"}', $totpToken);
+ok($json->{success}, "TOTP confirm succeeds with valid code");
+
+# Get TOTP status - should be enabled now
+$json = cont3xtGetToken("/api/user/totp/status?arkimeRegressionUser=sac-totpuser", $totpToken);
+ok($json->{success}, "TOTP status returns success after enrollment");
+is($json->{enabled}, 1, "TOTP enabled after confirm");
+
+# Disable TOTP with invalid code
+$json = cont3xtPostToken("/api/user/totp/disable?arkimeRegressionUser=sac-totpuser", '{"code": "000000"}', $totpToken);
+is($json->{success}, 0, "TOTP disable fails with invalid code");
+
+# Disable TOTP with valid code
+$validCode = generate_totp($totpSecret);
+$json = cont3xtPostToken("/api/user/totp/disable?arkimeRegressionUser=sac-totpuser", '{"code": "' . $validCode . '"}', $totpToken);
+ok($json->{success}, "TOTP disable succeeds with valid code");
+
+# Get TOTP status - should be not enabled again
+$json = cont3xtGetToken("/api/user/totp/status?arkimeRegressionUser=sac-totpuser", $totpToken);
+is($json->{enabled}, 0, "TOTP not enabled after disable");
+
+# Try to disable TOTP when not enabled
+$json = cont3xtPostToken("/api/user/totp/disable?arkimeRegressionUser=sac-totpuser", '{"code": "123456"}', $totpToken);
+is($json->{success}, 0, "TOTP disable fails when not enabled");
+like($json->{text}, qr/not enabled/i, "TOTP disable returns not enabled message");
+
+# TOTP admin disable tests - Re-enroll the test user
+$json = cont3xtPostToken("/api/user/totp/setup?arkimeRegressionUser=sac-totpuser", '{}', $totpToken);
+ok($json->{success}, "TOTP re-setup for admin tests");
+$totpSecret = $json->{secret};
+$validCode = generate_totp($totpSecret);
+$json = cont3xtPostToken("/api/user/totp/confirm?arkimeRegressionUser=sac-totpuser", '{"secret": "' . $totpSecret . '", "code": "' . $validCode . '"}', $totpToken);
+ok($json->{success}, "TOTP re-confirm for admin tests");
+
+# Admin enroll TOTP
+$json = cont3xtPostToken("/api/user/totp/setup?arkimeRegressionUser=sac-cont3xtadmin", '{}', $adminToken);
+ok($json->{success}, "Admin TOTP setup");
+my $adminTotpSecret = $json->{secret};
+my $adminValidCode = generate_totp($adminTotpSecret);
+$json = cont3xtPostToken("/api/user/totp/confirm?arkimeRegressionUser=sac-cont3xtadmin", '{"secret": "' . $adminTotpSecret . '", "code": "' . $adminValidCode . '"}', $adminToken);
+ok($json->{success}, "Admin TOTP confirm");
+
+# Admin trying to disable own TOTP without code - should fail
+$json = cont3xtPostToken("/api/user/totp/disable?arkimeRegressionUser=sac-cont3xtadmin", '{}', $adminToken);
+is($json->{success}, 0, "Admin cannot disable own TOTP without code");
+like($json->{text}, qr/code required/i, "Admin disable own returns code required");
+
+# Admin trying to disable own TOTP with wrong code - should fail
+$json = cont3xtPostToken("/api/user/totp/disable?arkimeRegressionUser=sac-cont3xtadmin", '{"code": "000000"}', $adminToken);
+is($json->{success}, 0, "Admin cannot disable own TOTP with wrong code");
+
+# Admin can disable another user's TOTP without code
+$json = cont3xtPostToken("/api/user/totp/disable?arkimeRegressionUser=sac-cont3xtadmin&userId=sac-totpuser", '{}', $adminToken);
+ok($json->{success}, "Admin can disable other user TOTP without code");
+
+# Verify other user's TOTP is disabled
+$json = cont3xtGetToken("/api/user/totp/status?arkimeRegressionUser=sac-totpuser", $totpToken);
+is($json->{enabled}, 0, "Other user TOTP disabled by admin");
+
+# Clean up - disable admin TOTP with valid code
+$adminValidCode = generate_totp($adminTotpSecret);
+$json = cont3xtPostToken("/api/user/totp/disable?arkimeRegressionUser=sac-cont3xtadmin", '{"code": "' . $adminValidCode . '"}', $adminToken);
+ok($json->{success}, "Admin disable own TOTP with valid code");

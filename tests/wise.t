@@ -1,5 +1,5 @@
 # WISE tests
-use Test::More tests => 148;
+use Test::More tests => 151;
 use ArkimeTest;
 use Cwd;
 use URI::Escape;
@@ -12,7 +12,7 @@ my $wise;
 my @wise;
 
 addUser("-n testuser wiseUser wiseUser wiseUser --roles 'wiseUser' ");
-addUser("-n testuser wiseAdmin wiseAdmin wiseAdmin --roles 'wiseAdmin' ");
+addUser("-n testuser wiseAdmin wiseAdmin wiseAdmin --roles 'wiseAdmin,arkimeUser' ");
 
 # IP Query
 $wise = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8081/ip/10.0.0.3")->content;
@@ -330,6 +330,24 @@ eq_or_diff($wise, '{"success":false,"text":"Not authorized, check log file"}');
 
 $wise = $ArkimeTest::userAgent->post("http://$ArkimeTest::host:8081/regressionTests/checkCode", Content => '{"configCode": "thecode"}', "Content-Type" => "application/json;charset=UTF-8")->content;
 eq_or_diff($wise, '{"success":true,"text":"Authorized"}');
+
+# Set up TOTP for wiseAdmin user via viewer API
+my $wiseAdminToken = getTokenCookie('wiseAdmin');
+my $json = viewerPostToken("/api/user/totp/setup?arkimeRegressionUser=wiseAdmin", '{}', $wiseAdminToken);
+ok($json->{success}, "TOTP setup for wiseAdmin");
+my $totpSecret = $json->{secret};
+my $totpCode = generate_totp($totpSecret);
+$json = viewerPostToken("/api/user/totp/confirm?arkimeRegressionUser=wiseAdmin", '{"secret": "' . $totpSecret . '", "code": "' . $totpCode . '"}', $wiseAdminToken);
+ok($json->{success}, "TOTP confirm for wiseAdmin");
+
+# test checkCode with TOTP - need to authenticate as wiseAdmin first (uses checkCodeAuth which has auth)
+$ArkimeTest::userAgent->credentials( "$ArkimeTest::host:8081", 'Moloch', 'wiseAdmin', 'wiseAdmin' );
+$totpCode = generate_totp($totpSecret);
+$wise = $ArkimeTest::userAgent->post("http://$ArkimeTest::host:8081/regressionTests/checkCodeAuth", Content => '{"configCode": "' . $totpCode . '"}', "Content-Type" => "application/json;charset=UTF-8")->content;
+eq_or_diff($wise, '{"success":true,"text":"Authorized"}');
+
+# clear credentials for subsequent tests
+$ArkimeTest::userAgent->credentials( "$ArkimeTest::host:8081", 'Moloch', '', '' );
 
 #### Web
 
