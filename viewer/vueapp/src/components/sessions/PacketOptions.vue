@@ -190,6 +190,7 @@ SPDX-License-Identifier: Apache-2.0
           <button
             ref="cancelDecoding"
             type="button"
+            :aria-label="$t('common.cancel')"
             class="btn btn-warning"
             @click="closeDecodingForm(false)">
             <span class="fa fa-ban" />
@@ -200,6 +201,7 @@ SPDX-License-Identifier: Apache-2.0
           <button
             ref="applyDecoding"
             type="button"
+            :aria-label="$t('common.apply')"
             class="btn btn-theme-primary"
             @click="applyDecoding(decodingForm)">
             <span class="fa fa-check" />

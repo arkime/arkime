@@ -1293,6 +1293,7 @@
     "hideViz": "See klaster on seadistatud peitma graafiku, kui päritakse {days} päeva või suurem ajavahemik",
     "hideVizTip": "See aitab jõudlusele kaasa",
     "hideVizMore": "Klõpsake ülal nupul 'Too Viz Andmed', et tuua selle päringu visualiseerimisandmed (või avage rippmenüü lisavalikute jaoks).",
+    "toggleMapSize": "Lülita kaardi suurust",
     "toggleSrcCountry": "Lülita allika riigid",
     "toggleDstCountry": "Lülita sihtkoha riigid",
     "graphLines": "Jooned",

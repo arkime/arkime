@@ -24,6 +24,7 @@ SPDX-License-Identifier: Apache-2.0
         {{ interactionError }}
         <button
           type="button"
+          :aria-label="$t('common.dismiss')"
           class="btn-close pull-right"
           @click="interactionError = ''"
           data-dismiss="alert" />
@@ -37,6 +38,7 @@ SPDX-License-Identifier: Apache-2.0
         {{ interactionSuccess }}
         <button
           type="button"
+          :aria-label="$t('common.dismiss')"
           class="btn-close pull-right"
           @click="interactionSuccess = ''"
           data-dismiss="alert" />
@@ -116,6 +118,7 @@ SPDX-License-Identifier: Apache-2.0
               type="button"
               @click="restoreToAll(setting)"
               :id="`restore-${setting.key}`"
+              :aria-label="$t('stats.esAdmin.restoreAllocationTip')"
               class="btn btn-warning">
               <span class="fa fa-undo" />
               <BTooltip
