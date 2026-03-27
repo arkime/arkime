@@ -1686,12 +1686,9 @@ typedef enum {
 typedef struct {
     int refs;
     ArkimeFieldOps_t ops;
+    void            *notifyClientRef;  // Opaque CommandClientRef_t* for async completion notification
+    uint32_t         notifyId;         // Correlation ID returned in add-file ack
 } ArkimeSchemeAction_t;
-
-typedef struct {
-    void    *clientRef;  // Opaque CommandClientRef_t* for async completion notification
-    uint32_t notifyId;   // Correlation ID returned in add-file ack
-} ArkimeFileNotifyCtx_t;
 
 typedef int  (*ArkimeSchemeLoad)(const char *uri, ArkimeSchemeFlags flags, ArkimeSchemeAction_t *actions);
 typedef void (*ArkimeSchemeExit)();
