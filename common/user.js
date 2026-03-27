@@ -1156,7 +1156,7 @@ class User {
   static apiGetTotpStatus (req, res) {
     return res.json({
       success: true,
-      enabled: !!req.user.totpSecret
+      enabled: !!req.settingUser.totpSecret
     });
   }
 
@@ -1172,7 +1172,7 @@ class User {
    */
   static async apiSetupTotp (req, res) {
     const secret = Auth.generateTotpSecret();
-    const qrCodeUri = Auth.getTotpKeyUri(req.user.userId, secret);
+    const qrCodeUri = Auth.getTotpKeyUri(req.settingUser.userId, secret);
 
     // Generate QR code as data URL
     const QRCode = require('qrcode');
@@ -1515,6 +1515,19 @@ class User {
     return async (req, res, next) => {
       if (!req.user.hasAllRole(role)) {
         console.log(`Permission denied to ${req.user.userId} while requesting resource: ${req._parsedUrl.pathname}, using role ${role}`);
+        return res.serverError(403, 'You do not have permission to access this resource');
+      }
+      next();
+    };
+  }
+
+  /**
+   * Denies access if the setting user lacks ANY of the required roles (OR logic)
+   */
+  static checkSettingUserAnyRole (roles) {
+    return async (req, res, next) => {
+      if (!req.settingUser.hasRole(roles)) {
+        console.log(`Permission denied to ${req.settingUser.userId} while requesting resource: ${req._parsedUrl.pathname}, requires one of roles ${roles}`);
         return res.serverError(403, 'You do not have permission to access this resource');
       }
       next();

@@ -1,5 +1,5 @@
 # Test cont3xt.js
-use Test::More tests => 215;
+use Test::More tests => 217;
 use Test::Differences;
 use Data::Dumper;
 use ArkimeTest;
@@ -16,7 +16,9 @@ viewerPostToken("/api/user", '{"userId": "sac-test", "userName": "test", "enable
 my $token2 = getTokenCookie('sac-test');
 
 # create users for TOTP tests
-viewerPostToken("/api/user", '{"userId": "sac-totpuser", "userName": "TOTP Test User", "enabled":true, "webEnabled":true, "password":"totppass", "roles": ["cont3xtUser"]}', $token);
+viewerPostToken("/api/user", '{"userId": "sac-nonadmin", "userName": "Non-Admin User", "enabled":true, "webEnabled":true, "password":"nonadminpass", "roles": ["cont3xtUser"]}', $token);
+my $nonAdminToken = getCont3xtTokenCookie('sac-nonadmin');
+addUser("-n testuser sac-totpuser sac-totpuser sac-totpuser --roles cont3xtAdmin,cont3xtUser");
 my $totpToken = getCont3xtTokenCookie('sac-totpuser');
 addUser("-n testuser sac-cont3xtadmin sac-cont3xtadmin sac-cont3xtadmin --roles cont3xtAdmin,cont3xtUser,usersAdmin");
 my $adminToken = getCont3xtTokenCookie('sac-cont3xtadmin');
@@ -1155,6 +1157,13 @@ eq_or_diff($json, from_json('[{"itype":"domain", "decoded":"yáhoó.com"}]'));
 
 ################################################################################
 ### TOTP Tests
+# Non-admin users should be denied TOTP access
+$json = cont3xtGetToken("/api/user/totp/status?arkimeRegressionUser=sac-nonadmin", $nonAdminToken);
+is($json->{success}, 0, "Non-admin cannot access TOTP status");
+
+$json = cont3xtPostToken("/api/user/totp/setup?arkimeRegressionUser=sac-nonadmin", '{}', $nonAdminToken);
+is($json->{success}, 0, "Non-admin cannot setup TOTP");
+
 # Get TOTP status - should be not enabled
 $json = cont3xtGetToken("/api/user/totp/status?arkimeRegressionUser=sac-totpuser", $totpToken);
 ok($json->{success}, "TOTP status returns success");

@@ -229,11 +229,11 @@ app.post('/api/users/min', [jsonParser, checkCookieToken, User.checkAssignableRo
 app.post('/api/user', [jsonParser, checkCookieToken, User.checkRole('usersAdmin')], User.apiCreateUser);
 app.post('/api/user/password', [jsonParser, checkCookieToken, Auth.getSettingUserDb], User.apiUpdateUserPassword);
 
-// TOTP endpoints
-app.get('/api/user/totp/status', [ArkimeUtil.noCacheJson], User.apiGetTotpStatus);
-app.post('/api/user/totp/setup', [jsonParser, checkCookieToken, Auth.getSettingUserDb, ArkimeUtil.noCacheJson], User.apiSetupTotp);
-app.post('/api/user/totp/confirm', [jsonParser, checkCookieToken, Auth.getSettingUserDb, ArkimeUtil.noCacheJson], User.apiConfirmTotp);
-app.post('/api/user/totp/disable', [jsonParser, checkCookieToken, Auth.getSettingUserDb, ArkimeUtil.noCacheJson], User.apiDisableTotp);
+// TOTP endpoints (only available to admin users)
+app.get('/api/user/totp/status', [ArkimeUtil.noCacheJson, Auth.getSettingUserDb, User.checkSettingUserAnyRole(['arkimeAdmin', 'cont3xtAdmin', 'wiseAdmin'])], User.apiGetTotpStatus);
+app.post('/api/user/totp/setup', [jsonParser, checkCookieToken, Auth.getSettingUserDb, ArkimeUtil.noCacheJson, User.checkSettingUserAnyRole(['arkimeAdmin', 'cont3xtAdmin', 'wiseAdmin'])], User.apiSetupTotp);
+app.post('/api/user/totp/confirm', [jsonParser, checkCookieToken, Auth.getSettingUserDb, ArkimeUtil.noCacheJson, User.checkSettingUserAnyRole(['arkimeAdmin', 'cont3xtAdmin', 'wiseAdmin'])], User.apiConfirmTotp);
+app.post('/api/user/totp/disable', [jsonParser, checkCookieToken, Auth.getSettingUserDb, ArkimeUtil.noCacheJson, User.checkSettingUserAnyRole(['arkimeAdmin', 'cont3xtAdmin', 'wiseAdmin'])], User.apiDisableTotp);
 
 app.delete('/api/user/:id', [jsonParser, checkCookieToken, User.checkRole('usersAdmin')], User.apiDeleteUser);
 app.post('/api/user/:id', [jsonParser, checkCookieToken, User.checkRole('usersAdmin')], User.apiUpdateUser);

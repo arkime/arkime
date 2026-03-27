@@ -1325,25 +1325,25 @@ app.post( // update user password endpoint
 
 app.get( // get TOTP status endpoint
   ['/api/user/totp/status'],
-  [ArkimeUtil.noCacheJson],
+  [ArkimeUtil.noCacheJson, Auth.getSettingUserDb, User.checkSettingUserAnyRole(['arkimeAdmin', 'cont3xtAdmin', 'wiseAdmin'])],
   User.apiGetTotpStatus
 );
 
 app.post( // setup TOTP endpoint - generates secret and QR URI
   ['/api/user/totp/setup'],
-  [ArkimeUtil.noCacheJson, checkCookieToken],
+  [ArkimeUtil.noCacheJson, checkCookieToken, Auth.getSettingUserDb, User.checkSettingUserAnyRole(['arkimeAdmin', 'cont3xtAdmin', 'wiseAdmin'])],
   User.apiSetupTotp
 );
 
 app.post( // confirm TOTP endpoint - verifies code and saves secret
   ['/api/user/totp/confirm'],
-  [ArkimeUtil.noCacheJson, checkCookieToken, Auth.getSettingUserDb],
+  [ArkimeUtil.noCacheJson, checkCookieToken, Auth.getSettingUserDb, User.checkSettingUserAnyRole(['arkimeAdmin', 'cont3xtAdmin', 'wiseAdmin'])],
   User.apiConfirmTotp
 );
 
 app.post( // disable TOTP endpoint
   ['/api/user/totp/disable'],
-  [ArkimeUtil.noCacheJson, checkCookieToken, Auth.getSettingUserDb],
+  [ArkimeUtil.noCacheJson, checkCookieToken, Auth.getSettingUserDb, User.checkSettingUserAnyRole(['arkimeAdmin', 'cont3xtAdmin', 'wiseAdmin'])],
   User.apiDisableTotp
 );
 

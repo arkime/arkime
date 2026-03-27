@@ -1,7 +1,7 @@
 # Many of these test user/roles start with sac- (skip auto create) because
 # otherwise viewer in regression mode would auto create the user.
 # Some day should remove all autocreate code.
-use Test::More tests => 247;
+use Test::More tests => 249;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -723,9 +723,20 @@ my $uaToken = getTokenCookie('testusersadmin');
     ok(ref $json->{roles} eq 'ARRAY', "user roles returns array");
 
 # TOTP tests
-    # Create test user for TOTP tests
-    $json = viewerPostToken("/api/user", '{"userId": "sac-totpuser", "userName": "TOTP Test User", "enabled":true, "webEnabled":true, "password":"totppass", "roles": ["arkimeUser"]}', $token);
-    ok($json->{success}, "TOTP test user created");
+    # Create non-admin test user to verify TOTP requires admin role
+    $json = viewerPostToken("/api/user", '{"userId": "sac-nonadmin", "userName": "Non-Admin User", "enabled":true, "webEnabled":true, "password":"nonadminpass", "roles": ["arkimeUser"]}', $token);
+    ok($json->{success}, "Non-admin test user created");
+    my $nonAdminToken = getTokenCookie('sac-nonadmin');
+
+    # Non-admin users should be denied TOTP access
+    $json = viewerGetToken("/api/user/totp/status?arkimeRegressionUser=sac-nonadmin", $nonAdminToken);
+    is($json->{success}, 0, "Non-admin cannot access TOTP status");
+
+    $json = viewerPostToken("/api/user/totp/setup?arkimeRegressionUser=sac-nonadmin", '{}', $nonAdminToken);
+    is($json->{success}, 0, "Non-admin cannot setup TOTP");
+
+    # Create admin test user for TOTP tests
+    addUser("-n testuser sac-totpuser sac-totpuser sac-totpuser --roles arkimeAdmin");
     my $totpToken = getTokenCookie('sac-totpuser');
 
     # Get TOTP status - should be not enabled
