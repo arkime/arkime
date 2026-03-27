@@ -1076,7 +1076,6 @@ void arkime_command_register(const char *name, ArkimeCommandFunc func, const cha
 void arkime_command_register_opts(const char *name, ArkimeCommandFunc func, const char *help, ...);
 void arkime_command_respond(gpointer cc, const char *data, int len);
 void    *arkime_command_client_ref_new(gpointer cc);
-void     arkime_command_client_ref_incref(void *ref);
 void     arkime_command_client_ref_decref(void *ref);
 uint32_t arkime_command_next_notify_id();
 void     arkime_command_notify_file_done(void *clientRef, uint32_t notifyId, const char *filename, uint64_t bytes, uint64_t packets);

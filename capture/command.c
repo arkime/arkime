@@ -245,16 +245,17 @@ void *arkime_command_client_ref_new(gpointer cc)
     return ref;
 }
 /******************************************************************************/
-void arkime_command_client_ref_incref(void *vref)
+LOCAL void arkime_command_client_ref_incref(void *vref)
 {
     CommandClientRef_t *ref = (CommandClientRef_t *)vref;
-    __sync_add_and_fetch(&ref->refs, 1);
+    ARKIME_THREAD_INCR(ref->refs);
 }
 /******************************************************************************/
 void arkime_command_client_ref_decref(void *vref)
 {
     CommandClientRef_t *ref = (CommandClientRef_t *)vref;
-    if (__sync_sub_and_fetch(&ref->refs, 1) == 0) {
+    int newrefs = __sync_sub_and_fetch(&ref->refs, 1);
+    if (newrefs == 0) {
         g_object_unref(ref->socket);
         ARKIME_TYPE_FREE(CommandClientRef_t, ref);
     }
