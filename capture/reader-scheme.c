@@ -1003,6 +1003,8 @@ LOCAL int arkime_scheme_cmd_add(int argc, char **argv, gpointer cc, ArkimeScheme
 {
     int opsNum = 0;
     char *ops[11];
+    gboolean notify = FALSE;
+
     if (config.pcapMonitor) {
         flags |= ARKIME_SCHEME_FLAG_MONITOR;
     }
@@ -1038,6 +1040,10 @@ LOCAL int arkime_scheme_cmd_add(int argc, char **argv, gpointer cc, ArkimeScheme
             flags |= ARKIME_SCHEME_FLAG_DELETE;
         } else if (strcmp(cmp, "-nodelete") == 0) {
             flags &= (ArkimeSchemeFlags)(~ARKIME_SCHEME_FLAG_DELETE);
+        } else if (strcmp(cmp, "-notify") == 0) {
+            notify = TRUE;
+        } else if (strcmp(cmp, "-nonotify") == 0) {
+            notify = FALSE;
         } else if (strcmp(cmp, "-op") == 0) {
             if (opsNum >= 10) {
                 arkime_command_respond(cc, "Too many ops\n", -1);
@@ -1057,8 +1063,11 @@ LOCAL int arkime_scheme_cmd_add(int argc, char **argv, gpointer cc, ArkimeScheme
     }
 
     ArkimeSchemeAction_t *actions = NULL;
-    if (opsNum > 0) {
+    if (opsNum > 0 || notify) {
         actions = ARKIME_TYPE_ALLOC0(ArkimeSchemeAction_t);
+    }
+
+    if (opsNum > 0) {
         ops[opsNum] = 0;
         const char *error = arkime_field_ops_parse(&actions->ops, ARKIME_FIELD_OPS_FLAGS_COPY, ops);
         if (error) {
@@ -1069,14 +1078,12 @@ LOCAL int arkime_scheme_cmd_add(int argc, char **argv, gpointer cc, ArkimeScheme
         }
     }
 
-    // Attach async notification context if requested
-    if (cc && outNotifyId) {
-        if (!actions) {
-            actions = ARKIME_TYPE_ALLOC0(ArkimeSchemeAction_t);
-        }
+    // Attach async notification context if --notify was specified
+    if (notify && cc) {
         actions->notifyId = arkime_command_next_notify_id();
         actions->notifyClientRef = arkime_command_client_ref_new(cc);
-        *outNotifyId = actions->notifyId;
+        if (outNotifyId)
+            *outNotifyId = actions->notifyId;
     }
 
     arkime_reader_scheme_enqueue(argv[argc - 1], flags, actions);
@@ -1093,9 +1100,13 @@ LOCAL void arkime_scheme_cmd_add_file(int argc, char **argv, gpointer cc)
 
     uint32_t notifyId = 0;
     if (!arkime_scheme_cmd_add(argc, argv, cc, ARKIME_SCHEME_FLAG_NONE, &notifyId)) {
-        char msg[128];
-        snprintf(msg, sizeof(msg), "Added file id=%u\n", notifyId);
-        arkime_command_respond(cc, msg, -1);
+        if (notifyId > 0) {
+            char msg[128];
+            snprintf(msg, sizeof(msg), "Added file id=%u\n", notifyId);
+            arkime_command_respond(cc, msg, -1);
+        } else {
+            arkime_command_respond(cc, "Added file\n", -1);
+        }
     }
 }
 /******************************************************************************/
@@ -1137,12 +1148,14 @@ void arkime_reader_scheme_init()
 
     arkime_command_register_opts("add-file", arkime_scheme_cmd_add_file, "Add a file to process",
                                  "[--delete|--nodelete]", "Override command line delete files after processing",
+                                 "[--notify|--nonotify]", "Send async completion notification (file-done/file-error) on this connection",
                                  "[--op <field>=<value>]", "Can be multiple, override command line op option",
                                  "[--skip|--noskip]", "Override command line skip files already processed",
                                  "<file>", "File to process",
                                  NULL);
     arkime_command_register_opts("add-dir", arkime_scheme_cmd_add_dir, "Add a directory to process",
                                  "[--delete|--nodelete]", "Override command line delete files after processing",
+                                 "[--notify|--nonotify]", "Send async completion notification (file-done/file-error) for each file",
                                  "[--op <field>=<value>]", "Can be multiple, override command line op option",
                                  "[--skip|--noskip]", "Override command line skip files already processed",
                                  "[--monitor|--nomonitor]", "Override command line monitor the directory for new files option",
