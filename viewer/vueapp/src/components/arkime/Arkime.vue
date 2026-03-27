@@ -123,6 +123,7 @@ SPDX-License-Identifier: Apache-2.0
       {{ error }}
       <button
         type="button"
+        aria-label="Clear error"
         class="btn-close float-end"
         @click="error = ''" />
     </div>
