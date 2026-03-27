@@ -27,6 +27,7 @@ typedef struct ArkimeSchemeLater {
     char                     *uri;
     ArkimeSchemeFlags         flags;
     ArkimeSchemeAction_t     *actions;
+    ArkimeFileNotifyCtx_t    *notifyCtx;
 } ArkimeSchemeLater_t;
 
 LOCAL ArkimeSchemeLater_t *laterHead;
@@ -89,6 +90,7 @@ LOCAL struct {
 } readerState;
 
 LOCAL void reader_scheme_pause();
+LOCAL void arkime_reader_scheme_enqueue(const char *uri, ArkimeSchemeFlags flags, ArkimeSchemeAction_t *actions, ArkimeFileNotifyCtx_t *notifyCtx);
 
 /******************************************************************************/
 LOCAL void reader_scheme_actions_ref(ArkimeSchemeAction_t *actions)
@@ -133,7 +135,7 @@ LOCAL ArkimeScheme_t *uri2scheme(const char *uri)
 }
 /******************************************************************************/
 /* Actually call the scheme load function. This is guaranteed to be on the scheme thread */
-LOCAL void arkime_reader_scheme_load_thread(const char *uri, ArkimeSchemeFlags flags, ArkimeSchemeAction_t *actions)
+LOCAL void arkime_reader_scheme_load_thread(const char *uri, ArkimeSchemeFlags flags, ArkimeSchemeAction_t *actions, ArkimeFileNotifyCtx_t *notifyCtx)
 {
     reader_scheme_pause();
 
@@ -141,6 +143,8 @@ LOCAL void arkime_reader_scheme_load_thread(const char *uri, ArkimeSchemeFlags f
     ArkimeScheme_t *readerScheme = uri2scheme(uri);
     if (!readerScheme) {
         LOG("ERROR - Unknown scheme for %s", uri);
+        if (notifyCtx)
+            arkime_command_notify_file_error(notifyCtx->clientRef, notifyCtx->notifyId, uri);
         return;
     }
 
@@ -169,6 +173,18 @@ LOCAL void arkime_reader_scheme_load_thread(const char *uri, ArkimeSchemeFlags f
             usleep(5000);
         }
     }
+
+    // Send async completion notification if requested via command socket
+    if (notifyCtx) {
+        if (rcl != 0) {
+            arkime_command_notify_file_error(notifyCtx->clientRef, notifyCtx->notifyId, uri);
+        } else {
+            arkime_command_notify_file_done(
+                notifyCtx->clientRef, notifyCtx->notifyId, uri,
+                offlineInfo[readerState.readerPos].lastBytes,
+                offlineInfo[readerState.readerPos].lastPackets);
+        }
+    }
 }
 /******************************************************************************/
 void arkime_reader_scheme_load(const char *uri, ArkimeSchemeFlags flags, ArkimeSchemeAction_t *actions)
@@ -177,17 +193,22 @@ void arkime_reader_scheme_load(const char *uri, ArkimeSchemeFlags flags, ArkimeS
     // if on the scheme thread and stack isn't too deep just process right away
     if (g_thread_self() == schemeThread && depth < 20) {
         depth++;
-        arkime_reader_scheme_load_thread(uri, flags, actions);
+        arkime_reader_scheme_load_thread(uri, flags, actions, NULL);
         depth--;
         return;
     }
 
-    // Enqueue for later
+    arkime_reader_scheme_enqueue(uri, flags, actions, NULL);
+}
+/******************************************************************************/
+LOCAL void arkime_reader_scheme_enqueue(const char *uri, ArkimeSchemeFlags flags, ArkimeSchemeAction_t *actions, ArkimeFileNotifyCtx_t *notifyCtx)
+{
     ArkimeSchemeLater_t *item = ARKIME_TYPE_ALLOC(ArkimeSchemeLater_t);
     item->next = 0;
     item->uri = g_strdup(uri);
     item->flags = flags;
     item->actions = actions;
+    item->notifyCtx = notifyCtx;
     reader_scheme_actions_ref(actions);
     ARKIME_LOCK(laterLock);
     if (laterHead) {
@@ -317,7 +338,7 @@ LOCAL void *reader_scheme_thread(void *UNUSED(arg))
 
     // Load files
     for (int i = 0; config.pcapReadFiles && config.pcapReadFiles[i]; i++) {
-        arkime_reader_scheme_load_thread(config.pcapReadFiles[i], flags, NULL);
+        arkime_reader_scheme_load_thread(config.pcapReadFiles[i], flags, NULL, NULL);
     }
 
     // Load list of files
@@ -350,7 +371,7 @@ LOCAL void *reader_scheme_thread(void *UNUSED(arg))
             g_strstrip(line);
             if (!line[0] || line[0] == '#')
                 continue;
-            arkime_reader_scheme_load_thread(line, flags, NULL);
+            arkime_reader_scheme_load_thread(line, flags, NULL, NULL);
         }
         if (file && file != stdin) {
             fclose(file);
@@ -358,7 +379,7 @@ LOCAL void *reader_scheme_thread(void *UNUSED(arg))
     }
 
     for (int i = 0; config.pcapReadDirs && config.pcapReadDirs[i]; i++) {
-        arkime_reader_scheme_load_thread(config.pcapReadDirs[i], flags | ARKIME_SCHEME_FLAG_DIRHINT, NULL);
+        arkime_reader_scheme_load_thread(config.pcapReadDirs[i], flags | ARKIME_SCHEME_FLAG_DIRHINT, NULL, NULL);
     }
 
     while (config.commandWait || config.pcapMonitor || laterHead) {
@@ -376,9 +397,13 @@ LOCAL void *reader_scheme_thread(void *UNUSED(arg))
         ArkimeSchemeLater_t *item = laterHead;
         laterHead = laterHead->next;
         ARKIME_UNLOCK(laterLock);
-        arkime_reader_scheme_load_thread(item->uri, item->flags, item->actions);
+        arkime_reader_scheme_load_thread(item->uri, item->flags, item->actions, item->notifyCtx);
         g_free(item->uri);
         reader_scheme_actions_deref(item->actions);
+        if (item->notifyCtx) {
+            arkime_command_client_ref_decref(item->notifyCtx->clientRef);
+            ARKIME_TYPE_FREE(ArkimeFileNotifyCtx_t, item->notifyCtx);
+        }
         ARKIME_TYPE_FREE(ArkimeSchemeLater_t, item);
     }
 
@@ -978,7 +1003,7 @@ void arkime_reader_scheme_register(char *name, ArkimeSchemeLoad load, ArkimeSche
     }
 }
 /******************************************************************************/
-LOCAL int arkime_scheme_cmd_add(int argc, char **argv, gpointer cc, ArkimeSchemeFlags flags)
+LOCAL int arkime_scheme_cmd_add(int argc, char **argv, gpointer cc, ArkimeSchemeFlags flags, uint32_t *outNotifyId)
 {
     int opsNum = 0;
     char *ops[11];
@@ -1048,7 +1073,16 @@ LOCAL int arkime_scheme_cmd_add(int argc, char **argv, gpointer cc, ArkimeScheme
         }
     }
 
-    arkime_reader_scheme_load(argv[argc - 1], flags, actions);
+    // Create async notification context if called from a command socket client
+    ArkimeFileNotifyCtx_t *notifyCtx = NULL;
+    if (cc && outNotifyId) {
+        notifyCtx = ARKIME_TYPE_ALLOC0(ArkimeFileNotifyCtx_t);
+        notifyCtx->notifyId = arkime_command_next_notify_id();
+        notifyCtx->clientRef = arkime_command_client_ref_new(cc);
+        *outNotifyId = notifyCtx->notifyId;
+    }
+
+    arkime_reader_scheme_enqueue(argv[argc - 1], flags, actions, notifyCtx);
     return 0;
 }
 
@@ -1060,8 +1094,12 @@ LOCAL void arkime_scheme_cmd_add_file(int argc, char **argv, gpointer cc)
         return;
     }
 
-    if (!arkime_scheme_cmd_add(argc, argv, cc, ARKIME_SCHEME_FLAG_NONE))
-        arkime_command_respond(cc, "Added file\n", -1);
+    uint32_t notifyId = 0;
+    if (!arkime_scheme_cmd_add(argc, argv, cc, ARKIME_SCHEME_FLAG_NONE, &notifyId)) {
+        char msg[128];
+        snprintf(msg, sizeof(msg), "Added file id=%u\n", notifyId);
+        arkime_command_respond(cc, msg, -1);
+    }
 }
 /******************************************************************************/
 LOCAL void arkime_scheme_cmd_add_dir(int argc, char **argv, gpointer cc)
@@ -1071,7 +1109,7 @@ LOCAL void arkime_scheme_cmd_add_dir(int argc, char **argv, gpointer cc)
         return;
     }
 
-    if (!arkime_scheme_cmd_add(argc, argv, cc, ARKIME_SCHEME_FLAG_DIRHINT))
+    if (!arkime_scheme_cmd_add(argc, argv, cc, ARKIME_SCHEME_FLAG_DIRHINT, NULL))
         arkime_command_respond(cc, "Added directory\n", -1);
 }
 /******************************************************************************/
