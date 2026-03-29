@@ -49,6 +49,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #3818 Improve scheduling http requests with libcurl (thanks @swannman)
   - #3829 Add ADB (Android Debug Bridge) parser (thanks @h0wdee)
   - #3836 Fix bacnet false positives on dns ports
+  - #3843 Improve JSON encoding of UTF8 strings
 ## Viewer
   - #3826 Handle ip frag pcap display better
 
