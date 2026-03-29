@@ -191,7 +191,7 @@ void arkime_db_js0n_str(BSB *bsb, uint8_t *in, gboolean utf8)
             if (*in < 32) {
                 BSB_EXPORT_sprintf(*bsb, "\\u%04x", *in);
             } else if (utf8) {
-                if ((*in & 0xf0) == 0xf0) {
+                if ((*in & 0xf8) == 0xf0) {
                     if (!in[1] || !in[2] || !in[3]) goto end;
                     BSB_EXPORT_ptr(*bsb, in, 4);
                     in += 3;
@@ -199,7 +199,7 @@ void arkime_db_js0n_str(BSB *bsb, uint8_t *in, gboolean utf8)
                     if (!in[1] || !in[2]) goto end;
                     BSB_EXPORT_ptr(*bsb, in, 3);
                     in += 2;
-                } else if ((*in & 0xf0) == 0xd0) {
+                } else if ((*in & 0xe0) == 0xc0) {
                     if (!in[1]) goto end;
                     BSB_EXPORT_ptr(*bsb, in, 2);
                     in += 1;
@@ -262,7 +262,7 @@ void arkime_db_js0n_str_unquoted(BSB *bsb, uint8_t *in, int len, gboolean utf8)
             if (*in < 32) {
                 BSB_EXPORT_sprintf(*bsb, "\\u%04x", *in);
             } else if (utf8) {
-                if ((*in & 0xf0) == 0xf0) {
+                if ((*in & 0xf8) == 0xf0) {
                     if (!in[1] || !in[2] || !in[3]) return;
                     BSB_EXPORT_ptr(*bsb, in, 4);
                     in += 3;
@@ -270,7 +270,7 @@ void arkime_db_js0n_str_unquoted(BSB *bsb, uint8_t *in, int len, gboolean utf8)
                     if (!in[1] || !in[2]) return;
                     BSB_EXPORT_ptr(*bsb, in, 3);
                     in += 2;
-                } else if ((*in & 0xf0) == 0xd0) {
+                } else if ((*in & 0xe0) == 0xc0) {
                     if (!in[1]) return;
                     BSB_EXPORT_ptr(*bsb, in, 2);
                     in += 1;
@@ -925,7 +925,9 @@ void arkime_db_save_session(ArkimeSession_t *session, int final)
                 BSB_EXPORT_sprintf(jbsb, "\"region_iso_code\":\"%.*s\",", geo1.regionLen, geo1.region);
             }
             if (geo1.city) {
-                BSB_EXPORT_sprintf(jbsb, "\"city_name\":\"%.*s\",", geo1.cityLen, geo1.city);
+                BSB_EXPORT_cstr(jbsb, "\"city_name\":\"");
+                arkime_db_js0n_str_unquoted(&jbsb, (uint8_t *)geo1.city, geo1.cityLen, TRUE);
+                BSB_EXPORT_cstr(jbsb, "\",");
             }
             BSB_EXPORT_rewind(jbsb, 1); // Remove last comma
             BSB_EXPORT_cstr(jbsb, "},");
@@ -965,7 +967,9 @@ void arkime_db_save_session(ArkimeSession_t *session, int final)
                 BSB_EXPORT_sprintf(jbsb, "\"region_iso_code\":\"%.*s\",", geo2.regionLen, geo2.region);
             }
             if (geo2.city) {
-                BSB_EXPORT_sprintf(jbsb, "\"city_name\":\"%.*s\",", geo2.cityLen, geo2.city);
+                BSB_EXPORT_cstr(jbsb, "\"city_name\":\"");
+                arkime_db_js0n_str_unquoted(&jbsb, (uint8_t *)geo2.city, geo2.cityLen, TRUE);
+                BSB_EXPORT_cstr(jbsb, "\",");
             }
             BSB_EXPORT_rewind(jbsb, 1); // Remove last comma
             BSB_EXPORT_cstr(jbsb, "},");
