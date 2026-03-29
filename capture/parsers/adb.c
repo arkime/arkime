@@ -41,8 +41,7 @@
 #define SHELL_ID_WINDOW_SIZE_CHANGE 5
 
 typedef struct {
-    uint8_t  buf[2][8192];      /* Buffer for incomplete messages (increased for larger payloads) */
-    uint32_t len[2];            /* Length of data in buffer */
+    ArkimeParserBuf_t *pb;      /* Buffer for incomplete messages */
     uint8_t  connected[2];      /* Have we seen CONNECT message */
     uint8_t  tls[2];            /* Is TLS enabled */
     uint8_t  tlsHandshakeDone;  /* Have both sides done TLS */
@@ -262,14 +261,13 @@ LOCAL void adb_parse_connect(ArkimeSession_t *session, const uint8_t *data, int 
     BSB bsb;
     BSB_INIT(bsb, data, remaining);
 
-    uint32_t command = 0, arg0 = 0, arg1 = 0, data_length = 0, data_check = 0, magic = 0;
+    uint32_t command = 0, arg0 = 0, arg1 = 0, data_length = 0, magic = 0;
     BSB_LIMPORT_u32(bsb, command);
     BSB_LIMPORT_u32(bsb, arg0);  /* version */
     BSB_LIMPORT_u32(bsb, arg1);  /* maxdata */
     BSB_LIMPORT_u32(bsb, data_length);
-    BSB_LIMPORT_u32(bsb, data_check);
+    BSB_LIMPORT_skip(bsb, 4); // data_check
     BSB_LIMPORT_u32(bsb, magic);
-    (void)data_check;  /* Suppress unused variable warning */
 
     /* Validate magic field */
     if (magic != (command ^ 0xffffffff)) {
@@ -324,15 +322,13 @@ LOCAL void adb_parse_open(ArkimeSession_t *session, const uint8_t *data, int rem
     BSB bsb;
     BSB_INIT(bsb, data, remaining);
 
-    uint32_t command = 0, arg0 = 0, arg1 = 0, data_length = 0, data_check = 0, magic = 0;
+    uint32_t command = 0, arg0 = 0, data_length = 0, magic = 0;
     BSB_LIMPORT_u32(bsb, command);
     BSB_LIMPORT_u32(bsb, arg0);  /* local-id */
-    BSB_LIMPORT_u32(bsb, arg1);
+    BSB_LIMPORT_skip(bsb, 4); // arg1
     BSB_LIMPORT_u32(bsb, data_length);
-    BSB_LIMPORT_u32(bsb, data_check);
+    BSB_LIMPORT_skip(bsb, 4); // data_check
     BSB_LIMPORT_u32(bsb, magic);
-    (void)arg1;
-    (void)data_check;  /* Suppress unused variable warnings */
 
     if (magic != (command ^ 0xffffffff) || command != A_OPEN) {
         return;
@@ -397,20 +393,16 @@ LOCAL void adb_parse_client_server(ArkimeSession_t *session, const uint8_t *data
     /* hex4 is a 4-byte hexadecimal string (ASCII) indicating length */
 
     /* Add data to buffer */
-    int to_copy = MIN(remaining, (int)(sizeof(adb->buf[which]) - adb->len[which]));
-    if (to_copy > 0) {
-        memcpy(adb->buf[which] + adb->len[which], data, to_copy);
-        adb->len[which] += to_copy;
-    }
+    arkime_parser_buf_add(adb->pb, which, data, remaining);
 
     /* Need at least 4 bytes for hex length */
-    if (adb->len[which] < 4)
+    if (adb->pb->len[which] < 4)
         return;
 
     /* Check if we have a valid hex string */
     if (adb->expectedLen[which] == 0) {
         char hex_str[5];
-        memcpy(hex_str, adb->buf[which], 4);
+        memcpy(hex_str, adb->pb->buf[which], 4);
         hex_str[4] = '\0';
 
         /* Validate hex string */
@@ -426,7 +418,7 @@ LOCAL void adb_parse_client_server(ArkimeSession_t *session, const uint8_t *data
             adb->expectedLen[which] = (uint32_t)strtoul(hex_str, NULL, 16);
             if (adb->expectedLen[which] > 4096) {
                 /* Invalid length, reset */
-                adb->len[which] = 0;
+                adb->pb->len[which] = 0;
                 adb->expectedLen[which] = 0;
                 return;
             }
@@ -438,8 +430,8 @@ LOCAL void adb_parse_client_server(ArkimeSession_t *session, const uint8_t *data
     }
 
     /* Check if we have complete message (4 bytes hex + service name) */
-    if (adb->len[which] >= 4 + adb->expectedLen[which]) {
-        const uint8_t *service = adb->buf[which] + 4;
+    if ((uint32_t)adb->pb->len[which] >= 4 + adb->expectedLen[which]) {
+        const uint8_t *service = adb->pb->buf[which] + 4;
         int service_len = adb->expectedLen[which];
 
         /* Extract service name */
@@ -474,11 +466,8 @@ LOCAL void adb_parse_client_server(ArkimeSession_t *session, const uint8_t *data
 
         /* Remove processed message */
         uint32_t total_len = 4 + adb->expectedLen[which];
-        adb->len[which] -= total_len;
+        arkime_parser_buf_del(adb->pb, which, total_len);
         adb->expectedLen[which] = 0;
-        if (adb->len[which] > 0) {
-            memmove(adb->buf[which], adb->buf[which] + total_len, adb->len[which]);
-        }
     }
 }
 
@@ -487,14 +476,15 @@ LOCAL int adb_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, in
 {
     ADBInfo_t *adb = uw;
 
-    /* If TLS handshake is complete on both sides, stop parsing */
+    /* If TLS handshake is complete on both sides, hand off to TLS classifier */
     if (adb->tlsHandshakeDone) {
-        return 0;
+        arkime_parsers_classify_tcp(session, data, remaining, which);
+        return ARKIME_PARSER_UNREGISTER;
     }
 
     /* Check if this is client-server protocol (port 5037) */
     /* Client-server protocol starts with 4 hex digits (ASCII) */
-    if (adb->isClientServer[which] == 0 && adb->len[which] == 0 && remaining >= 4) {
+    if (adb->isClientServer[which] == 0 && adb->pb->len[which] == 0 && remaining >= 4) {
         /* Check if first 4 bytes are hex digits */
         int is_hex = 1;
         for (int i = 0; i < 4 && i < remaining; i++) {
@@ -515,36 +505,37 @@ LOCAL int adb_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, in
     }
 
     /* Add data to buffer for transport protocol */
-    int to_copy = MIN(remaining, (int)(sizeof(adb->buf[which]) - adb->len[which]));
-    if (to_copy > 0) {
-        memcpy(adb->buf[which] + adb->len[which], data, to_copy);
-        adb->len[which] += to_copy;
-    }
+    arkime_parser_buf_add(adb->pb, which, data, remaining);
 
     /* Process complete messages */
-    while (adb->len[which] >= 24) {
+    while (adb->pb->len[which] >= 24) {
         BSB bsb;
-        BSB_INIT(bsb, adb->buf[which], adb->len[which]);
+        BSB_INIT(bsb, adb->pb->buf[which], adb->pb->len[which]);
 
-        uint32_t command = 0, arg0 = 0, arg1 = 0, data_length = 0, data_check = 0, magic = 0;
+        uint32_t command = 0, arg0 = 0, arg1 = 0, data_length = 0, magic = 0;
         BSB_LIMPORT_u32(bsb, command);
         BSB_LIMPORT_u32(bsb, arg0);
         BSB_LIMPORT_u32(bsb, arg1);
         BSB_LIMPORT_u32(bsb, data_length);
-        BSB_LIMPORT_u32(bsb, data_check);
+        BSB_LIMPORT_skip(bsb, 4); // data_check
         BSB_LIMPORT_u32(bsb, magic);
-        (void)data_check;  /* Suppress unused variable warning */
 
         /* Validate magic field */
         if (magic != (command ^ 0xffffffff)) {
             /* Invalid message, clear buffer */
-            adb->len[which] = 0;
+            adb->pb->len[which] = 0;
+            return 0;
+        }
+
+        /* Sanity check data_length to prevent integer overflow */
+        if (data_length > (uint32_t)sizeof(adb->pb->buf[which]) - 24) {
+            adb->pb->len[which] = 0;
             return 0;
         }
 
         /* Check if we have complete message (header + payload) */
         uint32_t total_len = 24 + data_length;
-        if (adb->len[which] < total_len) {
+        if ((uint32_t)adb->pb->len[which] < total_len) {
             /* Need more data */
             return 0;
         }
@@ -556,13 +547,13 @@ LOCAL int adb_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, in
         /* Process specific commands */
         switch (command) {
         case A_CNXN:
-            adb_parse_connect(session, adb->buf[which], total_len, which);
+            adb_parse_connect(session, adb->pb->buf[which], total_len, which);
             adb->connected[which] = 1;
             break;
 
         case A_OPEN:
             /* Parse OPEN regardless of connected state - service info is valuable */
-            adb_parse_open(session, adb->buf[which], total_len, which, adb);
+            adb_parse_open(session, adb->pb->buf[which], total_len, which, adb);
             break;
 
         case A_AUTH:
@@ -606,7 +597,7 @@ LOCAL int adb_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, in
         case A_WRTE:
             /* Parse WRTE payload for sync and shell v2 protocols */
             if (data_length > 0) {
-                const uint8_t *payload = adb->buf[which] + 24;
+                const uint8_t *payload = adb->pb->buf[which] + 24;
 
                 /* Check if this stream is in sync mode */
                 if (adb->syncMode[0] || adb->syncMode[1]) {
@@ -627,10 +618,7 @@ LOCAL int adb_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, in
         }
 
         /* Remove processed message from buffer */
-        adb->len[which] -= total_len;
-        if (adb->len[which] > 0) {
-            memmove(adb->buf[which], adb->buf[which] + total_len, adb->len[which]);
-        }
+        arkime_parser_buf_del(adb->pb, which, total_len);
     }
 
     return 0;
@@ -640,6 +628,7 @@ LOCAL int adb_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, in
 LOCAL void adb_free(ArkimeSession_t UNUSED(*session), void *uw)
 {
     ADBInfo_t *adb = uw;
+    arkime_parser_buf_free(adb->pb);
     ARKIME_TYPE_FREE(ADBInfo_t, adb);
 }
 
@@ -679,6 +668,7 @@ LOCAL void adb_classify_client_server(ArkimeSession_t *session, const uint8_t *d
     arkime_session_add_protocol(session, "adb");
 
     ADBInfo_t *adb = ARKIME_TYPE_ALLOC0(ADBInfo_t);
+    adb->pb = arkime_parser_buf_create();
     adb->isClientServer[which] = 1;
     arkime_parsers_register(session, adb_parser, adb, adb_free);
 }
@@ -724,6 +714,7 @@ LOCAL void adb_classify(ArkimeSession_t *session, const uint8_t *data, int len, 
     arkime_session_add_protocol(session, "adb");
 
     ADBInfo_t *adb = ARKIME_TYPE_ALLOC0(ADBInfo_t);
+    adb->pb = arkime_parser_buf_create();
     arkime_parsers_register(session, adb_parser, adb, adb_free);
 }
 

@@ -1,0 +1,1287 @@
+{
+ "sessions3" : [
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "adb" : {
+     "authtype" : [
+      "rsapublickey",
+      "signature",
+      "token"
+     ],
+     "authtypeCnt" : 3,
+     "command" : [
+      "auth",
+      "clse",
+      "cnxn",
+      "okay",
+      "open",
+      "wrte"
+     ],
+     "commandCnt" : 6,
+     "maxpayload" : [
+      "262144"
+     ],
+     "maxpayloadCnt" : 1,
+     "serial" : [
+      "HVA12345"
+     ],
+     "serialCnt" : 1,
+     "service" : [
+      "shell"
+     ],
+     "serviceCnt" : 1,
+     "streamid" : [
+      "1",
+      "1-2",
+      "2-1"
+     ],
+     "streamidCnt" : 3,
+     "systemtype" : [
+      "device",
+      "host"
+     ],
+     "systemtypeCnt" : 2,
+     "version" : [
+      "0x01000001"
+     ],
+     "versionCnt" : 1
+    },
+    "client" : {
+     "bytes" : 219
+    },
+    "destination" : {
+     "as" : {
+      "full" : "AS1 Cool Beans!",
+      "number" : 1,
+      "organization" : {
+       "name" : "Cool Beans!"
+      }
+     },
+     "bytes" : 587,
+     "geo" : {
+      "country_iso_code" : "CA"
+     },
+     "ip" : "10.0.0.2",
+     "mac" : [
+      "66:77:88:99:00:11"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 7,
+     "port" : 5555
+    },
+    "dstPayload8" : "4155544801000000",
+    "dstRIR" : "TEST",
+    "dstTTL" : [
+     64
+    ],
+    "dstTTLCnt" : 1,
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 1000000000010,
+    "initRTT" : 5,
+    "ipProtocol" : 6,
+    "lastPacket" : 1000000000150,
+    "length" : 140,
+    "network" : {
+     "bytes" : 1346,
+     "community_id" : "1:9WJka+U3Z51hT0g5gv+I4EWqOlI=",
+     "packets" : 17
+    },
+    "node" : "test",
+    "packetLen" : [
+     70,
+     70,
+     70,
+     101,
+     114,
+     126,
+     117,
+     128,
+     107,
+     94,
+     129,
+     94,
+     94,
+     94,
+     70,
+     70,
+     70
+    ],
+    "packetPos" : [
+     24,
+     94,
+     164,
+     234,
+     335,
+     449,
+     575,
+     692,
+     820,
+     927,
+     1021,
+     1150,
+     1244,
+     1338,
+     1432,
+     1502,
+     1572
+    ],
+    "packetRange" : {
+     "gte" : 1000000000010,
+     "lte" : 1000000000150
+    },
+    "protocol" : [
+     "adb",
+     "tcp"
+    ],
+    "protocolCnt" : 2,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 209
+    },
+    "source" : {
+     "as" : {
+      "full" : "AS0 This is neat",
+      "number" : 0,
+      "organization" : {
+       "name" : "This is neat"
+      }
+     },
+     "bytes" : 759,
+     "geo" : {
+      "country_iso_code" : "RU"
+     },
+     "ip" : "10.0.0.1",
+     "mac" : [
+      "00:11:22:33:44:55"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 10,
+     "port" : 40001
+    },
+    "srcOui" : [
+     "CIMSYS Inc"
+    ],
+    "srcOuiCnt" : 1,
+    "srcPayload8" : "434e584e01000001",
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
+    "tags" : [
+     "dstip",
+     "srcip"
+    ],
+    "tagsCnt" : 2,
+    "tcpflags" : {
+     "ack" : 2,
+     "ae" : 0,
+     "cwr" : 0,
+     "dstZero" : 0,
+     "ece" : 0,
+     "fin" : 2,
+     "psh" : 11,
+     "rst" : 0,
+     "srcZero" : 0,
+     "syn" : 1,
+     "syn-ack" : 1,
+     "urg" : 0
+    },
+    "tcpseq" : {
+     "dst" : 0,
+     "src" : 1000
+    },
+    "test" : {
+     "ASN" : [
+      "AS0 This is neat"
+     ],
+     "GEO" : [
+      "RU"
+     ],
+     "RIR" : [
+      ""
+     ],
+     "ip" : [
+      "10.0.0.1"
+     ],
+     "number" : [
+      33554442
+     ],
+     "string.snow" : [
+      "16777226:40001,33554442:5555"
+     ]
+    },
+    "totDataBytes" : 428
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-010909"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "adb" : {
+     "command" : [
+      "clse",
+      "cnxn",
+      "okay",
+      "open",
+      "wrte"
+     ],
+     "commandCnt" : 5,
+     "maxpayload" : [
+      "262144"
+     ],
+     "maxpayloadCnt" : 1,
+     "serial" : [
+      "SYNC001"
+     ],
+     "serialCnt" : 1,
+     "service" : [
+      "sync"
+     ],
+     "serviceCnt" : 1,
+     "streamid" : [
+      "1",
+      "1-2",
+      "2-1"
+     ],
+     "streamidCnt" : 3,
+     "sync.operation" : [
+      "DATA",
+      "DONE",
+      "FAIL",
+      "LIST",
+      "OKAY",
+      "QUIT",
+      "RECV",
+      "SEND",
+      "STAT"
+     ],
+     "sync.operationCnt" : 9,
+     "sync.path" : [
+      "/sdcard/",
+      "/sdcard/download.txt",
+      "/sdcard/test.txt",
+      "/sdcard/upload.txt"
+     ],
+     "sync.pathCnt" : 4,
+     "systemtype" : [
+      "device",
+      "host"
+     ],
+     "systemtypeCnt" : 2,
+     "version" : [
+      "0x01000001"
+     ],
+     "versionCnt" : 1
+    },
+    "client" : {
+     "bytes" : 372
+    },
+    "destination" : {
+     "as" : {
+      "full" : "AS1 Cool Beans!",
+      "number" : 1,
+      "organization" : {
+       "name" : "Cool Beans!"
+      }
+     },
+     "bytes" : 854,
+     "geo" : {
+      "country_iso_code" : "CA"
+     },
+     "ip" : "10.0.0.2",
+     "mac" : [
+      "66:77:88:99:00:11"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 11,
+     "port" : 5555
+    },
+    "dstPayload8" : "434e584e01000001",
+    "dstRIR" : "TEST",
+    "dstTTL" : [
+     64
+    ],
+    "dstTTLCnt" : 1,
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 1000000002160,
+    "initRTT" : 5,
+    "ipProtocol" : 6,
+    "lastPacket" : 1000000002370,
+    "length" : 210,
+    "network" : {
+     "bytes" : 1928,
+     "community_id" : "1:QquMrAF4lw6AWf0gFI06z0e8Aco=",
+     "packets" : 24
+    },
+    "node" : "test",
+    "packetLen" : [
+     70,
+     70,
+     70,
+     101,
+     110,
+     100,
+     94,
+     134,
+     94,
+     161,
+     94,
+     102,
+     94,
+     122,
+     94,
+     114,
+     94,
+     102,
+     94,
+     94,
+     94,
+     70,
+     70,
+     70
+    ],
+    "packetPos" : [
+     1642,
+     1712,
+     1782,
+     1852,
+     1953,
+     2063,
+     2163,
+     2257,
+     2391,
+     2485,
+     2646,
+     2740,
+     2842,
+     2936,
+     3058,
+     3152,
+     3266,
+     3360,
+     3462,
+     3556,
+     3650,
+     3744,
+     3814,
+     3884
+    ],
+    "packetRange" : {
+     "gte" : 1000000002160,
+     "lte" : 1000000002370
+    },
+    "protocol" : [
+     "adb",
+     "tcp"
+    ],
+    "protocolCnt" : 2,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 260
+    },
+    "source" : {
+     "as" : {
+      "full" : "AS0 This is neat",
+      "number" : 0,
+      "organization" : {
+       "name" : "This is neat"
+      }
+     },
+     "bytes" : 1074,
+     "geo" : {
+      "country_iso_code" : "RU"
+     },
+     "ip" : "10.0.0.1",
+     "mac" : [
+      "00:11:22:33:44:55"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 13,
+     "port" : 40002
+    },
+    "srcOui" : [
+     "CIMSYS Inc"
+    ],
+    "srcOuiCnt" : 1,
+    "srcPayload8" : "434e584e01000001",
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
+    "tags" : [
+     "adb:sync",
+     "dstip",
+     "srcip"
+    ],
+    "tagsCnt" : 3,
+    "tcpflags" : {
+     "ack" : 2,
+     "ae" : 0,
+     "cwr" : 0,
+     "dstZero" : 0,
+     "ece" : 0,
+     "fin" : 2,
+     "psh" : 18,
+     "rst" : 0,
+     "srcZero" : 0,
+     "syn" : 1,
+     "syn-ack" : 1,
+     "urg" : 0
+    },
+    "tcpseq" : {
+     "dst" : 0,
+     "src" : 1000
+    },
+    "test" : {
+     "ASN" : [
+      "AS0 This is neat"
+     ],
+     "GEO" : [
+      "RU"
+     ],
+     "RIR" : [
+      ""
+     ],
+     "ip" : [
+      "10.0.0.1"
+     ],
+     "number" : [
+      33554442
+     ],
+     "string.snow" : [
+      "16777226:40002,33554442:5555"
+     ]
+    },
+    "totDataBytes" : 632
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-010909"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "adb" : {
+     "command" : [
+      "clse",
+      "cnxn",
+      "okay",
+      "open",
+      "wrte"
+     ],
+     "commandCnt" : 5,
+     "maxpayload" : [
+      "262144"
+     ],
+     "maxpayloadCnt" : 1,
+     "serial" : [
+      "SHELL01"
+     ],
+     "serialCnt" : 1,
+     "service" : [
+      "shell"
+     ],
+     "serviceCnt" : 1,
+     "shell.exitcode" : [
+      "42"
+     ],
+     "shell.exitcodeCnt" : 1,
+     "streamid" : [
+      "1",
+      "1-2",
+      "2-1"
+     ],
+     "streamidCnt" : 3,
+     "systemtype" : [
+      "device",
+      "host"
+     ],
+     "systemtypeCnt" : 2,
+     "version" : [
+      "0x01000001"
+     ],
+     "versionCnt" : 1
+    },
+    "client" : {
+     "bytes" : 147
+    },
+    "destination" : {
+     "as" : {
+      "full" : "AS1 Cool Beans!",
+      "number" : 1,
+      "organization" : {
+       "name" : "Cool Beans!"
+      }
+     },
+     "bytes" : 572,
+     "geo" : {
+      "country_iso_code" : "CA"
+     },
+     "ip" : "10.0.0.2",
+     "mac" : [
+      "66:77:88:99:00:11"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 7,
+     "port" : 5555
+    },
+    "dstPayload8" : "434e584e01000001",
+    "dstRIR" : "TEST",
+    "dstTTL" : [
+     64
+    ],
+    "dstTTLCnt" : 1,
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 1000000004380,
+    "initRTT" : 5,
+    "ipProtocol" : 6,
+    "lastPacket" : 1000000004510,
+    "length" : 130,
+    "network" : {
+     "bytes" : 1205,
+     "community_id" : "1:MfU1Wfc9WXLB13aFn74oQ8G5t4w=",
+     "packets" : 16
+    },
+    "node" : "test",
+    "packetLen" : [
+     70,
+     70,
+     70,
+     101,
+     127,
+     114,
+     94,
+     129,
+     94,
+     100,
+     94,
+     94,
+     94,
+     70,
+     70,
+     70
+    ],
+    "packetPos" : [
+     3954,
+     4024,
+     4094,
+     4164,
+     4265,
+     4392,
+     4506,
+     4600,
+     4729,
+     4823,
+     4923,
+     5017,
+     5111,
+     5205,
+     5275,
+     5345
+    ],
+    "packetRange" : {
+     "gte" : 1000000004380,
+     "lte" : 1000000004510
+    },
+    "protocol" : [
+     "adb",
+     "tcp"
+    ],
+    "protocolCnt" : 2,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 194
+    },
+    "source" : {
+     "as" : {
+      "full" : "AS0 This is neat",
+      "number" : 0,
+      "organization" : {
+       "name" : "This is neat"
+      }
+     },
+     "bytes" : 633,
+     "geo" : {
+      "country_iso_code" : "RU"
+     },
+     "ip" : "10.0.0.1",
+     "mac" : [
+      "00:11:22:33:44:55"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 9,
+     "port" : 40003
+    },
+    "srcOui" : [
+     "CIMSYS Inc"
+    ],
+    "srcOuiCnt" : 1,
+    "srcPayload8" : "434e584e01000001",
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
+    "tags" : [
+     "adb:shell-v2",
+     "dstip",
+     "srcip"
+    ],
+    "tagsCnt" : 3,
+    "tcpflags" : {
+     "ack" : 2,
+     "ae" : 0,
+     "cwr" : 0,
+     "dstZero" : 0,
+     "ece" : 0,
+     "fin" : 2,
+     "psh" : 10,
+     "rst" : 0,
+     "srcZero" : 0,
+     "syn" : 1,
+     "syn-ack" : 1,
+     "urg" : 0
+    },
+    "tcpseq" : {
+     "dst" : 0,
+     "src" : 1000
+    },
+    "test" : {
+     "ASN" : [
+      "AS0 This is neat"
+     ],
+     "GEO" : [
+      "RU"
+     ],
+     "RIR" : [
+      ""
+     ],
+     "ip" : [
+      "10.0.0.1"
+     ],
+     "number" : [
+      33554442
+     ],
+     "string.snow" : [
+      "16777226:40003,33554442:5555"
+     ]
+    },
+    "totDataBytes" : 341
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-010909"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "adb" : {
+     "command" : [
+      "cnxn",
+      "okay",
+      "open"
+     ],
+     "commandCnt" : 3,
+     "forward.direction" : [
+      "forward",
+      "reverse"
+     ],
+     "forward.directionCnt" : 2,
+     "forward.local" : [
+      "tcp:8080",
+      "tcp:9090"
+     ],
+     "forward.localCnt" : 2,
+     "forward.remote" : [
+      "tcp:443",
+      "tcp:80"
+     ],
+     "forward.remoteCnt" : 2,
+     "maxpayload" : [
+      "262144"
+     ],
+     "maxpayloadCnt" : 1,
+     "serial" : [
+      "FWD001"
+     ],
+     "serialCnt" : 1,
+     "service" : [
+      "forward",
+      "reverse"
+     ],
+     "serviceCnt" : 2,
+     "streamid" : [
+      "1",
+      "2-1",
+      "3",
+      "4-3",
+      "5",
+      "6-5"
+     ],
+     "streamidCnt" : 6,
+     "systemtype" : [
+      "device",
+      "host"
+     ],
+     "systemtypeCnt" : 2,
+     "version" : [
+      "0x01000001"
+     ],
+     "versionCnt" : 1
+    },
+    "client" : {
+     "bytes" : 173
+    },
+    "destination" : {
+     "as" : {
+      "full" : "AS1 Cool Beans!",
+      "number" : 1,
+      "organization" : {
+       "name" : "Cool Beans!"
+      }
+     },
+     "bytes" : 435,
+     "geo" : {
+      "country_iso_code" : "CA"
+     },
+     "ip" : "10.0.0.2",
+     "mac" : [
+      "66:77:88:99:00:11"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 6,
+     "port" : 5555
+    },
+    "dstPayload8" : "434e584e01000001",
+    "dstRIR" : "TEST",
+    "dstTTL" : [
+     64
+    ],
+    "dstTTLCnt" : 1,
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 1000000006520,
+    "initRTT" : 5,
+    "ipProtocol" : 6,
+    "lastPacket" : 1000000006630,
+    "length" : 110,
+    "network" : {
+     "bytes" : 1040,
+     "community_id" : "1:20Gqu9CRMfyxboXxvVks6+TAs9I=",
+     "packets" : 14
+    },
+    "node" : "test",
+    "packetLen" : [
+     70,
+     70,
+     70,
+     101,
+     109,
+     118,
+     94,
+     127,
+     94,
+     107,
+     94,
+     70,
+     70,
+     70
+    ],
+    "packetPos" : [
+     5415,
+     5485,
+     5555,
+     5625,
+     5726,
+     5835,
+     5953,
+     6047,
+     6174,
+     6268,
+     6375,
+     6469,
+     6539,
+     6609
+    ],
+    "packetRange" : {
+     "gte" : 1000000006520,
+     "lte" : 1000000006630
+    },
+    "protocol" : [
+     "adb",
+     "tcp"
+    ],
+    "protocolCnt" : 2,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 111
+    },
+    "source" : {
+     "as" : {
+      "full" : "AS0 This is neat",
+      "number" : 0,
+      "organization" : {
+       "name" : "This is neat"
+      }
+     },
+     "bytes" : 605,
+     "geo" : {
+      "country_iso_code" : "RU"
+     },
+     "ip" : "10.0.0.1",
+     "mac" : [
+      "00:11:22:33:44:55"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 8,
+     "port" : 40004
+    },
+    "srcOui" : [
+     "CIMSYS Inc"
+    ],
+    "srcOuiCnt" : 1,
+    "srcPayload8" : "434e584e01000001",
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
+    "tags" : [
+     "dstip",
+     "srcip"
+    ],
+    "tagsCnt" : 2,
+    "tcpflags" : {
+     "ack" : 2,
+     "ae" : 0,
+     "cwr" : 0,
+     "dstZero" : 0,
+     "ece" : 0,
+     "fin" : 2,
+     "psh" : 8,
+     "rst" : 0,
+     "srcZero" : 0,
+     "syn" : 1,
+     "syn-ack" : 1,
+     "urg" : 0
+    },
+    "tcpseq" : {
+     "dst" : 0,
+     "src" : 1000
+    },
+    "test" : {
+     "ASN" : [
+      "AS0 This is neat"
+     ],
+     "GEO" : [
+      "RU"
+     ],
+     "RIR" : [
+      ""
+     ],
+     "ip" : [
+      "10.0.0.1"
+     ],
+     "number" : [
+      33554442
+     ],
+     "string.snow" : [
+      "16777226:40004,33554442:5555"
+     ]
+    },
+    "totDataBytes" : 284
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-010909"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "adb" : {
+     "command" : [
+      "cnxn",
+      "stls",
+      "sync"
+     ],
+     "commandCnt" : 3,
+     "maxpayload" : [
+      "262144"
+     ],
+     "maxpayloadCnt" : 1,
+     "serial" : [
+      "TLS001"
+     ],
+     "serialCnt" : 1,
+     "systemtype" : [
+      "device",
+      "host"
+     ],
+     "systemtypeCnt" : 2,
+     "version" : [
+      "0x01000001"
+     ],
+     "versionCnt" : 1
+    },
+    "client" : {
+     "bytes" : 187
+    },
+    "destination" : {
+     "as" : {
+      "full" : "AS1 Cool Beans!",
+      "number" : 1,
+      "organization" : {
+       "name" : "Cool Beans!"
+      }
+     },
+     "bytes" : 420,
+     "geo" : {
+      "country_iso_code" : "CA"
+     },
+     "ip" : "10.0.0.2",
+     "mac" : [
+      "66:77:88:99:00:11"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 5,
+     "port" : 5555
+    },
+    "dstPayload8" : "434e584e01000001",
+    "dstRIR" : "TEST",
+    "dstTTL" : [
+     64
+    ],
+    "dstTTLCnt" : 1,
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 1000000008640,
+    "http" : {
+     "host" : [
+      "adb-device.local"
+     ],
+     "hostCnt" : 1
+    },
+    "initRTT" : 5,
+    "ipProtocol" : 6,
+    "lastPacket" : 1000000008740,
+    "length" : 100,
+    "network" : {
+     "bytes" : 1039,
+     "community_id" : "1:DAtdjJfg0kz8uZg8O9rXn2e+vUM=",
+     "packets" : 13
+    },
+    "node" : "test",
+    "packetLen" : [
+     70,
+     70,
+     70,
+     101,
+     109,
+     94,
+     94,
+     94,
+     178,
+     157,
+     70,
+     70,
+     70
+    ],
+    "packetPos" : [
+     6679,
+     6749,
+     6819,
+     6889,
+     6990,
+     7099,
+     7193,
+     7287,
+     7381,
+     7559,
+     7716,
+     7786,
+     7856
+    ],
+    "packetRange" : {
+     "gte" : 1000000008640,
+     "lte" : 1000000008740
+    },
+    "protocol" : [
+     "adb",
+     "tcp",
+     "tls"
+    ],
+    "protocolCnt" : 3,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 150
+    },
+    "source" : {
+     "as" : {
+      "full" : "AS0 This is neat",
+      "number" : 0,
+      "organization" : {
+       "name" : "This is neat"
+      }
+     },
+     "bytes" : 619,
+     "geo" : {
+      "country_iso_code" : "RU"
+     },
+     "ip" : "10.0.0.1",
+     "mac" : [
+      "00:11:22:33:44:55"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 8,
+     "port" : 40005
+    },
+    "srcOui" : [
+     "CIMSYS Inc"
+    ],
+    "srcOuiCnt" : 1,
+    "srcPayload8" : "434e584e01000001",
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
+    "tags" : [
+     "adb:tls",
+     "adb:tls-encrypted",
+     "dstip",
+     "srcip"
+    ],
+    "tagsCnt" : 4,
+    "tcpflags" : {
+     "ack" : 2,
+     "ae" : 0,
+     "cwr" : 0,
+     "dstZero" : 0,
+     "ece" : 0,
+     "fin" : 2,
+     "psh" : 7,
+     "rst" : 0,
+     "srcZero" : 0,
+     "syn" : 1,
+     "syn-ack" : 1,
+     "urg" : 0
+    },
+    "tcpseq" : {
+     "dst" : 0,
+     "src" : 1000
+    },
+    "test" : {
+     "ASN" : [
+      "AS0 This is neat"
+     ],
+     "GEO" : [
+      "RU"
+     ],
+     "RIR" : [
+      ""
+     ],
+     "ip" : [
+      "10.0.0.1"
+     ],
+     "number" : [
+      33554442
+     ],
+     "string.snow" : [
+      "16777226:40005,33554442:5555"
+     ]
+    },
+    "tls" : {
+     "cipher" : [
+      "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256"
+     ],
+     "cipherCnt" : 1,
+     "dstSessionId" : [
+      "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+     ],
+     "ja3" : [
+      "dace93cf139f3f47da84d54b7e3891d6"
+     ],
+     "ja3Cnt" : 1,
+     "ja3s" : [
+      "0e3405775384b4a1a9d2222182e76972"
+     ],
+     "ja3sCnt" : 1,
+     "ja3sstring" : [
+      "771,49199,43"
+     ],
+     "ja3sstringCnt" : 1,
+     "ja3string" : [
+      "771,49199-49200-156,0-43-13-10,29-23,"
+     ],
+     "ja3stringCnt" : 1,
+     "ja4" : [
+      "t12d030400_13bac7b83268_c91bed236abd"
+     ],
+     "ja4Cnt" : 1,
+     "ja4_r" : [
+      "t12d030400_009c,c02f,c030_000a,000d,002b_0401,0501"
+     ],
+     "ja4_rCnt" : 1,
+     "version" : [
+      "TLSv1.2"
+     ],
+     "versionCnt" : 1
+    },
+    "totDataBytes" : 337
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-010909"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "adb" : {
+     "forward.direction" : [
+      "forward"
+     ],
+     "forward.directionCnt" : 1,
+     "forward.local" : [
+      "tcp:8080"
+     ],
+     "forward.localCnt" : 1,
+     "forward.remote" : [
+      "tcp:80"
+     ],
+     "forward.remoteCnt" : 1,
+     "service" : [
+      "host"
+     ],
+     "serviceCnt" : 1
+    },
+    "client" : {
+     "bytes" : 48
+    },
+    "destination" : {
+     "bytes" : 108,
+     "ip" : "10.0.0.4",
+     "mac" : [
+      "66:77:88:99:00:11"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 2,
+     "port" : 5037
+    },
+    "dstTTL" : [
+     64
+    ],
+    "dstTTLCnt" : 1,
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 1000000010750,
+    "initRTT" : 5,
+    "ipProtocol" : 6,
+    "lastPacket" : 1000000010800,
+    "length" : 50,
+    "network" : {
+     "bytes" : 480,
+     "community_id" : "1:vMy9TsQx/2L4EXvXDjA10nVuy64=",
+     "packets" : 8
+    },
+    "node" : "test",
+    "packetLen" : [
+     70,
+     70,
+     70,
+     86,
+     102,
+     70,
+     70,
+     70
+    ],
+    "packetPos" : [
+     7926,
+     7996,
+     8066,
+     8136,
+     8222,
+     8324,
+     8394,
+     8464
+    ],
+    "packetRange" : {
+     "gte" : 1000000010750,
+     "lte" : 1000000010800
+    },
+    "protocol" : [
+     "adb",
+     "tcp"
+    ],
+    "protocolCnt" : 2,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 0
+    },
+    "source" : {
+     "as" : {
+      "full" : "AS2 Hmm!@#$%^&*()",
+      "number" : 2,
+      "organization" : {
+       "name" : "Hmm!@#$%^&*()"
+      }
+     },
+     "bytes" : 372,
+     "ip" : "10.0.0.3",
+     "mac" : [
+      "00:11:22:33:44:55"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 6,
+     "port" : 40006
+    },
+    "srcOui" : [
+     "CIMSYS Inc"
+    ],
+    "srcOuiCnt" : 1,
+    "srcPayload8" : "30303063686f7374",
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
+    "tcpflags" : {
+     "ack" : 2,
+     "ae" : 0,
+     "cwr" : 0,
+     "dstZero" : 0,
+     "ece" : 0,
+     "fin" : 2,
+     "psh" : 2,
+     "rst" : 0,
+     "srcZero" : 0,
+     "syn" : 1,
+     "syn-ack" : 1,
+     "urg" : 0
+    },
+    "tcpseq" : {
+     "dst" : 0,
+     "src" : 1000
+    },
+    "totDataBytes" : 48
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-010909"
+    }
+   }
+  }
+ ]
+}
+
