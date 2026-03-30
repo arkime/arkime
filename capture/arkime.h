@@ -656,6 +656,7 @@ typedef struct {
     uint32_t        sessionsPresent;
     uint8_t         didBatch;
     uint8_t         finishWaiting;
+    uint32_t        notifyId;         // Per-file correlation ID for file-status and notifications
 } ArkimeOfflineInfo_t;
 /******************************************************************************/
 typedef enum {
@@ -1081,6 +1082,8 @@ uint32_t arkime_command_next_notify_id();
 void     arkime_command_notify_file_done(void *clientRef, uint32_t notifyId, const char *filename, uint64_t bytes, uint64_t packets);
 void     arkime_command_notify_file_error(void *clientRef, uint32_t notifyId, const char *filename);
 void     arkime_command_notify_register(uint32_t notifyId, const char *filename);
+void     arkime_command_notify_deregister(uint32_t notifyId);
+void     arkime_command_notify_deregister_async(uint32_t notifyId);
 
 /******************************************************************************/
 /*
@@ -1688,7 +1691,6 @@ typedef struct {
     int refs;
     ArkimeFieldOps_t ops;
     void            *notifyClientRef;  // Opaque CommandClientRef_t* for async completion notification
-    uint32_t         notifyId;         // Correlation ID returned in add-file ack
 } ArkimeSchemeAction_t;
 
 typedef int  (*ArkimeSchemeLoad)(const char *uri, ArkimeSchemeFlags flags, ArkimeSchemeAction_t *actions);
@@ -1696,6 +1698,7 @@ typedef void (*ArkimeSchemeExit)();
 
 void arkime_reader_scheme_register(char *name, ArkimeSchemeLoad load, ArkimeSchemeExit exit);
 int arkime_reader_scheme_process(const char *uri, uint8_t *data, int len, const char *extraInfo, ArkimeSchemeAction_t *actions);
+void arkime_reader_scheme_actions_ref(ArkimeSchemeAction_t *actions);
 void arkime_reader_scheme_load(const char *uri, ArkimeSchemeFlags flags, ArkimeSchemeAction_t *actions);
 
 /******************************************************************************/

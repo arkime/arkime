@@ -234,7 +234,6 @@ typedef struct {
 } CommandClientRef_t;
 
 LOCAL uint32_t nextNotifyId = 1;
-LOCAL void arkime_command_notify_deregister(uint32_t notifyId);
 
 void *arkime_command_client_ref_new(gpointer cc)
 {
@@ -264,7 +263,7 @@ void arkime_command_client_ref_decref(void *vref)
 /******************************************************************************/
 uint32_t arkime_command_next_notify_id()
 {
-    return nextNotifyId++;
+    return ARKIME_THREAD_INCRNEW(nextNotifyId);
 }
 /******************************************************************************/
 typedef struct {
@@ -327,9 +326,9 @@ void arkime_command_notify_file_error(void *clientRef, uint32_t notifyId, const 
 }
 /******************************************************************************/
 /*
- * File-status tracking: simple linked list of outstanding file notifications.
- * All access is from the main thread (register from command handler,
- * deregister from idle callback), so no locking needed.
+ * File-status tracking: simple linked list of outstanding files.
+ * Keyed by notifyId (unique per file). Protected by mutex since
+ * registration can happen on the scheme thread and reads on the main thread.
  */
 typedef struct FileStatusEntry {
     struct FileStatusEntry *next;
@@ -338,40 +337,60 @@ typedef struct FileStatusEntry {
 } FileStatusEntry_t;
 
 LOCAL FileStatusEntry_t *fileStatusHead = NULL;
+ARKIME_LOCK_DEFINE(fileStatusLock);
 
 void arkime_command_notify_register(uint32_t notifyId, const char *filename)
 {
     FileStatusEntry_t *entry = ARKIME_TYPE_ALLOC0(FileStatusEntry_t);
     entry->notifyId = notifyId;
     entry->filename = g_strdup(filename);
+    ARKIME_LOCK(fileStatusLock);
     entry->next = fileStatusHead;
     fileStatusHead = entry;
+    ARKIME_UNLOCK(fileStatusLock);
 }
 /******************************************************************************/
-LOCAL void arkime_command_notify_deregister(uint32_t notifyId)
+void arkime_command_notify_deregister(uint32_t notifyId)
 {
+    ARKIME_LOCK(fileStatusLock);
     FileStatusEntry_t **prev = &fileStatusHead;
     while (*prev) {
         if ((*prev)->notifyId == notifyId) {
             FileStatusEntry_t *entry = *prev;
             *prev = entry->next;
+            ARKIME_UNLOCK(fileStatusLock);
             g_free(entry->filename);
             ARKIME_TYPE_FREE(FileStatusEntry_t, entry);
             return;
         }
         prev = &(*prev)->next;
     }
+    ARKIME_UNLOCK(fileStatusLock);
+}
+/******************************************************************************/
+LOCAL gboolean arkime_command_deregister_idle_cb(gpointer data)
+{
+    uint32_t notifyId = GPOINTER_TO_UINT(data);
+    arkime_command_notify_deregister(notifyId);
+    return G_SOURCE_REMOVE;
+}
+/******************************************************************************/
+void arkime_command_notify_deregister_async(uint32_t notifyId)
+{
+    g_idle_add(arkime_command_deregister_idle_cb, GUINT_TO_POINTER(notifyId));
 }
 /******************************************************************************/
 LOCAL void arkime_command_file_status(int UNUSED(argc), char UNUSED(**argv), gpointer cc)
 {
     char msg[2048];
+    ARKIME_LOCK(fileStatusLock);
     FileStatusEntry_t *entry = fileStatusHead;
     while (entry) {
         snprintf(msg, sizeof(msg), "file-status id=%u filename=%s\n", entry->notifyId, entry->filename);
         arkime_command_respond(cc, msg, -1);
         entry = entry->next;
     }
+    ARKIME_UNLOCK(fileStatusLock);
     arkime_command_respond(cc, "file-status done\n", -1);
 }
 /******************************************************************************/

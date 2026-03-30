@@ -2,16 +2,18 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 #
-# Tests for the command socket add-file async notification feature.
+# Tests for the command socket add-file/add-dir async notification feature.
 # Starts capture with --command-socket --command-wait --flush, connects via
 # Unix domain socket, and validates:
 # - add-file without --notify (backward compatible, no async notification)
-# - add-file --notify (correlation ID in ack + async file-done/file-error)
-# - file-status command (polling for outstanding items)
+# - add-file --notify (async file-done/file-error with per-file IDs)
+# - add-dir --notify (each file gets its own unique ID)
+# - file-status tracking after completion
+# - error handling for nonexistent files
 
 use lib ".";
 use strict;
-use Test::More tests => 12;
+use Test::More tests => 18;
 use IO::Socket::UNIX;
 use IO::Select;
 use POSIX ":sys_wait_h";
@@ -25,6 +27,12 @@ my $capture = "../capture/capture";
 my $config = "config.test.ini";
 my $pcap = "$cwd/pcap/dns-udp.pcap";
 
+# Create a temp directory with symlinks to two pcap files for add-dir tests
+my $pcapdir = "$tmpdir/pcaps";
+mkdir($pcapdir);
+symlink("$cwd/pcap/dns-udp.pcap", "$pcapdir/dns-udp.pcap");
+symlink("$cwd/pcap/dns-mx.pcap", "$pcapdir/dns-mx.pcap");
+
 # Helper: read a full line from socket with timeout
 sub read_line {
     my ($sock, $sel, $timeout) = @_;
@@ -37,7 +45,6 @@ sub read_line {
             my $n = $sock->sysread($chunk, 4096);
             return undef if (!defined $n || $n == 0);
             $buf .= $chunk;
-            # Return once we have at least one complete line
             return $buf if ($buf =~ /\n/);
         }
     }
@@ -63,13 +70,13 @@ sub read_all {
 # Verify prerequisites
 ok(-x $capture, "capture binary exists and is executable");
 ok(-f $pcap, "test pcap file exists");
+ok(-d $pcapdir, "test pcap directory exists");
 
 # Start capture in command socket mode as a background process
 my $pid = fork();
 die "fork failed: $!" unless defined $pid;
 
 if ($pid == 0) {
-    # Child: exec capture
     exec($capture,
         "-c", $config,
         "-n", "test",
@@ -81,74 +88,103 @@ if ($pid == 0) {
     die "exec failed: $!";
 }
 
-# Parent: wait for the socket file to appear (up to 10 seconds)
+# Wait for the socket file to appear (up to 10 seconds)
 my $ready = 0;
 for (my $i = 0; $i < 100; $i++) {
     if (-S $sockpath) {
         $ready = 1;
         last;
     }
-    select(undef, undef, undef, 0.1);  # sleep 100ms
+    select(undef, undef, undef, 0.1);
 }
-ok($ready, "command socket appeared at $sockpath");
+ok($ready, "command socket appeared");
 
 SKIP: {
-    skip "capture did not start, skipping socket tests", 10 unless $ready;
+    skip "capture did not start, skipping socket tests", 14 unless $ready;
 
-    # Connect to the command socket
     my $sock = IO::Socket::UNIX->new(
         Peer => $sockpath,
         Type => SOCK_STREAM,
     );
     ok(defined $sock, "connected to command socket");
 
-    skip "could not connect to socket", 9 unless defined $sock;
+    skip "could not connect to socket", 13 unless defined $sock;
 
     $sock->autoflush(1);
     my $sel = IO::Select->new($sock);
 
-    # Verify capture is ready by sending a version command
-    print $sock "version\n";
-    my $ver = read_line($sock, $sel, 5);
-    ok(defined $ver && length($ver) > 0, "capture is responsive");
+    # Verify capture is ready -- send file-status and wait for response
+    print $sock "file-status\n";
+    my $init = read_all($sock, $sel, 2);
+    ok(defined $init && $init =~ /file-status done/, "capture is responsive");
 
-    # --- Test backward compatibility: add-file WITHOUT --notify ---
+    # --- Test 1: add-file WITHOUT --notify (backward compat) ---
     print $sock "add-file $pcap\n";
     my $compat_ack = read_line($sock, $sel, 10);
     is($compat_ack, "Added file\n", "add-file without --notify returns plain ack");
 
-    # Wait for processing then verify no async notification arrives
+    # Wait for processing, verify no async notification
     ok(!$sel->can_read(3), "no async notification without --notify");
 
-    # --- Test add-file WITH --notify ---
+    # Verify file-status is empty after completion
+    print $sock "file-status\n";
+    my $status1 = read_line($sock, $sel, 5);
+    is($status1, "file-status done\n", "file-status empty after non-notify file completes");
+
+    # --- Test 2: add-file WITH --notify ---
     print $sock "add-file --notify $pcap\n";
     my $ack = read_line($sock, $sel, 10);
-    like($ack, qr/^Added file id=(\d+)\n/, "add-file --notify ack contains correlation ID");
+    is($ack, "Added file\n", "add-file --notify returns plain ack");
 
-    my ($ack_id) = ($ack =~ /id=(\d+)/);
-
-    # Read the async completion notification
+    # Read the async completion notification (contains per-file ID)
     my $notify = read_line($sock, $sel, 30);
-    like($notify, qr/^file-done id=\Q$ack_id\E\b/, "file-done notification has matching ID");
-    like($notify, qr/filename=.*dns-udp\.pcap/, "notification contains filename");
+    like($notify, qr/^file-done id=\d+ filename=.*dns-udp\.pcap/, "file-done notification with per-file ID and filename");
 
-    # --- Test file-status command (should be empty after completion) ---
+    # --- Test 3: add-dir WITH --notify (each file gets unique ID) ---
+    print $sock "add-dir --notify $pcapdir\n";
+    my $dir_ack = read_line($sock, $sel, 10);
+    is($dir_ack, "Added directory\n", "add-dir --notify returns plain ack");
+
+    # Collect all file-done notifications from the directory
+    my @dir_notifications;
+    my %dir_ids;
+    for (my $i = 0; $i < 2; $i++) {
+        my $n = read_line($sock, $sel, 30);
+        if ($n && $n =~ /^file-done id=(\d+)/) {
+            push @dir_notifications, $n;
+            $dir_ids{$1} = 1;
+        }
+    }
+    is(scalar @dir_notifications, 2, "add-dir --notify produces file-done for each file");
+    is(scalar keys %dir_ids, 2, "each file in directory has a unique notification ID");
+
+    # Drain any remaining notifications from the directory
+    read_all($sock, $sel, 2);
+
+    # --- Test 4: add-dir WITHOUT --notify (no notifications, status clears) ---
+    print $sock "add-dir $pcapdir\n";
+    my $dir_ack2 = read_line($sock, $sel, 10);
+    is($dir_ack2, "Added directory\n", "add-dir without --notify returns plain ack");
+
+    # Wait for processing, verify no async notification
+    ok(!$sel->can_read(3), "no async notification for add-dir without --notify");
+
+    # Verify file-status is empty after completion
     print $sock "file-status\n";
-    my $status = read_line($sock, $sel, 5);
-    is($status, "file-status done\n", "file-status shows no outstanding items after completion");
+    my $status3 = read_line($sock, $sel, 5);
+    is($status3, "file-status done\n", "file-status empty after non-notify directory completes");
 
-    # --- Test error case: add-file --notify with non-existent file ---
+    # --- Test 5: error case ---
     print $sock "add-file --notify /nonexistent/file.pcap\n";
-    # Read ack + async error (may come in one or two reads)
     my $err_all = read_all($sock, $sel, 10);
-    like($err_all, qr/file-error id=\d+/, "received file-error for nonexistent file");
+    like($err_all, qr/file-error/, "received file-error for nonexistent file");
 
-    # Shutdown capture
+    # Shutdown
     print $sock "shutdown\n";
     $sock->close();
 }
 
-# Wait for capture to exit (up to 10 seconds)
+# Wait for capture to exit
 my $exited = 0;
 for (my $i = 0; $i < 100; $i++) {
     my $ret = waitpid($pid, WNOHANG);
@@ -164,5 +200,4 @@ if (!$exited) {
     waitpid($pid, 0);
 }
 
-# Cleanup socket file if still present
 unlink($sockpath) if (-e $sockpath);

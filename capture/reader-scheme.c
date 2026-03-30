@@ -92,7 +92,7 @@ LOCAL void reader_scheme_pause();
 LOCAL void arkime_reader_scheme_enqueue(const char *uri, ArkimeSchemeFlags flags, ArkimeSchemeAction_t *actions);
 
 /******************************************************************************/
-LOCAL void reader_scheme_actions_ref(ArkimeSchemeAction_t *actions)
+void arkime_reader_scheme_actions_ref(ArkimeSchemeAction_t *actions)
 {
     if (!actions)
         return;
@@ -145,7 +145,7 @@ LOCAL void arkime_reader_scheme_load_thread(const char *uri, ArkimeSchemeFlags f
     if (!readerScheme) {
         LOG("ERROR - Unknown scheme for %s", uri);
         if (actions && actions->notifyClientRef)
-            arkime_command_notify_file_error(actions->notifyClientRef, actions->notifyId, uri);
+            arkime_command_notify_file_error(actions->notifyClientRef, 0, uri);
         return;
     }
 
@@ -175,15 +175,22 @@ LOCAL void arkime_reader_scheme_load_thread(const char *uri, ArkimeSchemeFlags f
         }
     }
 
-    // Send async completion notification if requested via command socket
-    if (actions && actions->notifyClientRef) {
-        if (rcl != 0) {
-            arkime_command_notify_file_error(actions->notifyClientRef, actions->notifyId, uri);
-        } else {
-            arkime_command_notify_file_done(
-                actions->notifyClientRef, actions->notifyId, uri,
-                offlineInfo[readerState.readerPos].lastBytes,
-                offlineInfo[readerState.readerPos].lastPackets);
+    // Send async completion notification if requested via command socket.
+    // Skip for directory entries (DIRHINT) — only individual files get notifications.
+    if (!(flags & ARKIME_SCHEME_FLAG_DIRHINT)) {
+        uint32_t notifyId = offlineInfo[readerState.readerPos].notifyId;
+        if (actions && actions->notifyClientRef) {
+            if (rcl != 0) {
+                arkime_command_notify_file_error(actions->notifyClientRef, notifyId, uri);
+            } else {
+                arkime_command_notify_file_done(
+                    actions->notifyClientRef, notifyId, uri,
+                    offlineInfo[readerState.readerPos].lastBytes,
+                    offlineInfo[readerState.readerPos].lastPackets);
+            }
+        } else if (notifyId) {
+            // No notification client, but still deregister from file-status
+            arkime_command_notify_deregister_async(notifyId);
         }
     }
 }
@@ -209,7 +216,7 @@ LOCAL void arkime_reader_scheme_enqueue(const char *uri, ArkimeSchemeFlags flags
     item->uri = g_strdup(uri);
     item->flags = flags;
     item->actions = actions;
-    reader_scheme_actions_ref(actions);
+    arkime_reader_scheme_actions_ref(actions);
     ARKIME_LOCK(laterLock);
     if (laterHead) {
         laterTail->next = item;
@@ -232,6 +239,9 @@ LOCAL int reader_scheme_header_common(const char *uri, int dlt, int snaplen, con
     }
     offlineInfo[readerState.readerPos].filename = g_strdup(uri);
 
+    offlineInfo[readerState.readerPos].notifyId = arkime_command_next_notify_id();
+    arkime_command_notify_register(offlineInfo[readerState.readerPos].notifyId, uri);
+
     ArkimeScheme_t *readerScheme = uri2scheme(uri);
     offlineInfo[readerState.readerPos].scheme = readerScheme->name;
     offlineInfo[readerState.readerPos].extra = g_strdup(extraInfo);
@@ -240,7 +250,7 @@ LOCAL int reader_scheme_header_common(const char *uri, int dlt, int snaplen, con
         reader_scheme_actions_deref(schemeActions[readerState.readerPos]);
 
     schemeActions[readerState.readerPos] = actions;
-    reader_scheme_actions_ref(actions);
+    arkime_reader_scheme_actions_ref(actions);
 
     if (readerFilenameOpsNum > 0) {
         // Free any previously allocated
@@ -999,7 +1009,7 @@ void arkime_reader_scheme_register(char *name, ArkimeSchemeLoad load, ArkimeSche
     }
 }
 /******************************************************************************/
-LOCAL int arkime_scheme_cmd_add(int argc, char **argv, gpointer cc, ArkimeSchemeFlags flags, uint32_t *outNotifyId)
+LOCAL int arkime_scheme_cmd_add(int argc, char **argv, gpointer cc, ArkimeSchemeFlags flags)
 {
     int opsNum = 0;
     char *ops[11];
@@ -1078,13 +1088,9 @@ LOCAL int arkime_scheme_cmd_add(int argc, char **argv, gpointer cc, ArkimeScheme
         }
     }
 
-    // Attach async notification context if --notify was specified
+    // Attach async notification client ref if --notify was specified
     if (notify && cc) {
-        actions->notifyId = arkime_command_next_notify_id();
         actions->notifyClientRef = arkime_command_client_ref_new(cc);
-        arkime_command_notify_register(actions->notifyId, argv[argc - 1]);
-        if (outNotifyId)
-            *outNotifyId = actions->notifyId;
     }
 
     arkime_reader_scheme_enqueue(argv[argc - 1], flags, actions);
@@ -1099,16 +1105,8 @@ LOCAL void arkime_scheme_cmd_add_file(int argc, char **argv, gpointer cc)
         return;
     }
 
-    uint32_t notifyId = 0;
-    if (!arkime_scheme_cmd_add(argc, argv, cc, ARKIME_SCHEME_FLAG_NONE, &notifyId)) {
-        if (notifyId > 0) {
-            char msg[128];
-            snprintf(msg, sizeof(msg), "Added file id=%u\n", notifyId);
-            arkime_command_respond(cc, msg, -1);
-        } else {
-            arkime_command_respond(cc, "Added file\n", -1);
-        }
-    }
+    if (!arkime_scheme_cmd_add(argc, argv, cc, ARKIME_SCHEME_FLAG_NONE))
+        arkime_command_respond(cc, "Added file\n", -1);
 }
 /******************************************************************************/
 LOCAL void arkime_scheme_cmd_add_dir(int argc, char **argv, gpointer cc)
@@ -1118,9 +1116,10 @@ LOCAL void arkime_scheme_cmd_add_dir(int argc, char **argv, gpointer cc)
         return;
     }
 
-    if (!arkime_scheme_cmd_add(argc, argv, cc, ARKIME_SCHEME_FLAG_DIRHINT, NULL))
+    if (!arkime_scheme_cmd_add(argc, argv, cc, ARKIME_SCHEME_FLAG_DIRHINT))
         arkime_command_respond(cc, "Added directory\n", -1);
 }
+/******************************************************************************/
 /******************************************************************************/
 void arkime_reader_scheme_init()
 {
