@@ -255,7 +255,7 @@ LOCAL void arkime_command_client_ref_incref(void *vref)
 void arkime_command_client_ref_decref(void *vref)
 {
     CommandClientRef_t *ref = (CommandClientRef_t *)vref;
-    int newrefs = __sync_sub_and_fetch(&ref->refs, 1);
+    int newrefs = ARKIME_THREAD_DECRNEW(ref->refs)
     if (newrefs == 0) {
         g_object_unref(ref->socket);
         ARKIME_TYPE_FREE(CommandClientRef_t, ref);
