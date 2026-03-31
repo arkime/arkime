@@ -656,7 +656,6 @@ typedef struct {
     uint32_t        sessionsPresent;
     uint8_t         didBatch;
     uint8_t         finishWaiting;
-    uint32_t        notifyId;         // Per-file correlation ID for file-status and notifications
 } ArkimeOfflineInfo_t;
 /******************************************************************************/
 typedef enum {
@@ -1078,12 +1077,8 @@ void arkime_command_register_opts(const char *name, ArkimeCommandFunc func, cons
 void arkime_command_respond(gpointer cc, const char *data, int len);
 void    *arkime_command_client_ref_new(gpointer cc);
 void     arkime_command_client_ref_decref(void *ref);
-uint32_t arkime_command_next_notify_id();
-void     arkime_command_notify_file_done(void *clientRef, uint32_t notifyId, const char *filename, uint64_t bytes, uint64_t packets);
-void     arkime_command_notify_file_error(void *clientRef, uint32_t notifyId, const char *filename);
-void     arkime_command_notify_register(uint32_t notifyId, const char *filename);
-void     arkime_command_notify_deregister(uint32_t notifyId);
-void     arkime_command_notify_deregister_async(uint32_t notifyId);
+void     arkime_command_notify_file_done(void *clientRef, const char *filename, uint64_t bytes, uint64_t packets);
+void     arkime_command_notify_file_error(void *clientRef, const char *filename);
 
 /******************************************************************************/
 /*

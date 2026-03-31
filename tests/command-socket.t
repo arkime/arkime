@@ -6,14 +6,14 @@
 # Starts capture with --command-socket --command-wait --flush, connects via
 # Unix domain socket, and validates:
 # - add-file without --notify (backward compatible, no async notification)
-# - add-file --notify (async file-done/file-error with per-file IDs)
-# - add-dir --notify (each file gets its own unique ID)
+# - add-file --notify (async file-done/file-error notifications)
+# - add-dir --notify (file-done for each file in directory)
 # - file-status tracking after completion
 # - error handling for nonexistent files
 
 use lib ".";
 use strict;
-use Test::More tests => 18;
+use Test::More tests => 17;
 use IO::Socket::UNIX;
 use IO::Select;
 use POSIX ":sys_wait_h";
@@ -100,7 +100,7 @@ for (my $i = 0; $i < 100; $i++) {
 ok($ready, "command socket appeared");
 
 SKIP: {
-    skip "capture did not start, skipping socket tests", 14 unless $ready;
+    skip "capture did not start, skipping socket tests", 13 unless $ready;
 
     my $sock = IO::Socket::UNIX->new(
         Peer => $sockpath,
@@ -108,14 +108,14 @@ SKIP: {
     );
     ok(defined $sock, "connected to command socket");
 
-    skip "could not connect to socket", 13 unless defined $sock;
+    skip "could not connect to socket", 12 unless defined $sock;
 
     $sock->autoflush(1);
     my $sel = IO::Select->new($sock);
 
     # Verify capture is ready -- send file-status and wait for response
     print $sock "file-status\n";
-    my $init = read_all($sock, $sel, 2);
+    my $init = read_line($sock, $sel, 10);
     ok(defined $init && $init =~ /file-status done/, "capture is responsive");
 
     # --- Test 1: add-file WITHOUT --notify (backward compat) ---
@@ -136,27 +136,24 @@ SKIP: {
     my $ack = read_line($sock, $sel, 10);
     is($ack, "Added file\n", "add-file --notify returns plain ack");
 
-    # Read the async completion notification (contains per-file ID)
+    # Read the async completion notification
     my $notify = read_line($sock, $sel, 30);
-    like($notify, qr/^file-done id=\d+ filename=.*dns-udp\.pcap/, "file-done notification with per-file ID and filename");
+    like($notify, qr/^file-done filename=.*dns-udp\.pcap/, "file-done notification with filename");
 
-    # --- Test 3: add-dir WITH --notify (each file gets unique ID) ---
+    # --- Test 3: add-dir WITH --notify (file-done for each file) ---
     print $sock "add-dir --notify $pcapdir\n";
     my $dir_ack = read_line($sock, $sel, 10);
     is($dir_ack, "Added directory\n", "add-dir --notify returns plain ack");
 
     # Collect all file-done notifications from the directory
     my @dir_notifications;
-    my %dir_ids;
     for (my $i = 0; $i < 2; $i++) {
         my $n = read_line($sock, $sel, 30);
-        if ($n && $n =~ /^file-done id=(\d+)/) {
+        if ($n && $n =~ /^file-done filename=/) {
             push @dir_notifications, $n;
-            $dir_ids{$1} = 1;
         }
     }
     is(scalar @dir_notifications, 2, "add-dir --notify produces file-done for each file");
-    is(scalar keys %dir_ids, 2, "each file in directory has a unique notification ID");
 
     # Drain any remaining notifications from the directory
     read_all($sock, $sel, 2);

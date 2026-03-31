@@ -33,6 +33,7 @@ LOCAL ArkimeSchemeLater_t *laterHead;
 LOCAL ArkimeSchemeLater_t *laterTail;
 ARKIME_COND_DEFINE(laterLock);
 ARKIME_LOCK_DEFINE(laterLock);
+LOCAL char *currentProcessingUri;
 LOCAL GThread *schemeThread;
 
 LOCAL  ArkimeStringHashStd_t  schemesHash;
@@ -145,7 +146,7 @@ LOCAL void arkime_reader_scheme_load_thread(const char *uri, ArkimeSchemeFlags f
     if (!readerScheme) {
         LOG("ERROR - Unknown scheme for %s", uri);
         if (actions && actions->notifyClientRef)
-            arkime_command_notify_file_error(actions->notifyClientRef, 0, uri);
+            arkime_command_notify_file_error(actions->notifyClientRef, uri);
         return;
     }
 
@@ -177,20 +178,14 @@ LOCAL void arkime_reader_scheme_load_thread(const char *uri, ArkimeSchemeFlags f
 
     // Send async completion notification if requested via command socket.
     // Skip for directory entries (DIRHINT) — only individual files get notifications.
-    if (!(flags & ARKIME_SCHEME_FLAG_DIRHINT)) {
-        uint32_t notifyId = offlineInfo[readerState.readerPos].notifyId;
-        if (actions && actions->notifyClientRef) {
-            if (rcl != 0) {
-                arkime_command_notify_file_error(actions->notifyClientRef, notifyId, uri);
-            } else {
-                arkime_command_notify_file_done(
-                    actions->notifyClientRef, notifyId, uri,
-                    offlineInfo[readerState.readerPos].lastBytes,
-                    offlineInfo[readerState.readerPos].lastPackets);
-            }
-        } else if (notifyId) {
-            // No notification client, but still deregister from file-status
-            arkime_command_notify_deregister_async(notifyId);
+    if (!(flags & ARKIME_SCHEME_FLAG_DIRHINT) && actions && actions->notifyClientRef) {
+        if (rcl != 0) {
+            arkime_command_notify_file_error(actions->notifyClientRef, uri);
+        } else {
+            arkime_command_notify_file_done(
+                actions->notifyClientRef, uri,
+                offlineInfo[readerState.readerPos].lastBytes,
+                offlineInfo[readerState.readerPos].lastPackets);
         }
     }
 }
@@ -238,9 +233,6 @@ LOCAL int reader_scheme_header_common(const char *uri, int dlt, int snaplen, con
         memset(&offlineInfo[readerState.readerPos], 0, sizeof(ArkimeOfflineInfo_t));
     }
     offlineInfo[readerState.readerPos].filename = g_strdup(uri);
-
-    offlineInfo[readerState.readerPos].notifyId = arkime_command_next_notify_id();
-    arkime_command_notify_register(offlineInfo[readerState.readerPos].notifyId, uri);
 
     ArkimeScheme_t *readerScheme = uri2scheme(uri);
     offlineInfo[readerState.readerPos].scheme = readerScheme->name;
@@ -406,8 +398,12 @@ LOCAL void *reader_scheme_thread(void *UNUSED(arg))
         }
         ArkimeSchemeLater_t *item = laterHead;
         laterHead = laterHead->next;
+        currentProcessingUri = item->uri;
         ARKIME_UNLOCK(laterLock);
         arkime_reader_scheme_load_thread(item->uri, item->flags, item->actions);
+        ARKIME_LOCK(laterLock);
+        currentProcessingUri = NULL;
+        ARKIME_UNLOCK(laterLock);
         g_free(item->uri);
         reader_scheme_actions_deref(item->actions);
         ARKIME_TYPE_FREE(ArkimeSchemeLater_t, item);
@@ -1120,6 +1116,27 @@ LOCAL void arkime_scheme_cmd_add_dir(int argc, char **argv, gpointer cc)
         arkime_command_respond(cc, "Added directory\n", -1);
 }
 /******************************************************************************/
+LOCAL void arkime_scheme_file_status(int UNUSED(argc), char UNUSED(**argv), gpointer cc)
+{
+    GString *output = g_string_new(NULL);
+
+    ARKIME_LOCK(laterLock);
+    if (currentProcessingUri) {
+        g_string_append_printf(output, "file-status filename=%s\n", currentProcessingUri);
+    }
+    ArkimeSchemeLater_t *item = laterHead;
+    while (item) {
+        g_string_append_printf(output, "file-status filename=%s\n", item->uri);
+        item = item->next;
+    }
+    ARKIME_UNLOCK(laterLock);
+
+    if (output->len > 0) {
+        arkime_command_respond(cc, output->str, output->len);
+    }
+    arkime_command_respond(cc, "file-status done\n", -1);
+    g_string_free(output, TRUE);
+}
 /******************************************************************************/
 void arkime_reader_scheme_init()
 {
@@ -1145,6 +1162,8 @@ void arkime_reader_scheme_init()
 
     void arkime_reader_scheme_sqs_init();
     arkime_reader_scheme_sqs_init();
+
+    arkime_command_register("file-status", arkime_scheme_file_status, "Show outstanding file processing items");
 
     arkime_command_register_opts("add-file", arkime_scheme_cmd_add_file, "Add a file to process",
                                  "[--delete|--nodelete]", "Override command line delete files after processing",
