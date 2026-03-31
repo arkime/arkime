@@ -541,7 +541,7 @@ LOCAL void *arkime_packet_thread(void *threadp)
             // Could do a lock per file pos but this shouldn't happen too often
             ARKIME_LOCK(offlineInfoLock);
             ArkimeOfflineInfo_t *oi = &offlineInfo[packet->readerPos];
-            oi->finishWaiting--;
+            ARKIME_THREAD_DECR(oi->finishWaiting);
             if (oi->finishWaiting == 0) {
                 arkime_db_update_file(oi->outputId, oi->lastBytes, oi->lastBytes, oi->lastPackets, &oi->lastPacketTime, oi->sessionsStarted, oi->sessionsPresent);
             }
