@@ -56,7 +56,8 @@
     "stylus": "^0.64.0",
     "through2": "^4.0.2",
     "unzipper": "^0.12.3",
-    "uuid": "^9.0.1"
+    "uuid": "^9.0.1",
+    "vuetify": "^3.12.4"
   },
   "scripts": {
     "lint": "eslint parliament viewer wiseService capture/plugins common cont3xt",
@@ -128,7 +129,7 @@
     "postcss": "^8.4.31",
     "postcss-import": "^14.0.0",
     "qs": "^6.15.0",
-    "sass": "^1.98.0",
+    "sass": "^1.94.0",
     "sortablejs": "^1.15.7",
     "unplugin-vue-components": "^31.0.0",
     "vite": "^7.1.12",
