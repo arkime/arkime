@@ -45,9 +45,11 @@ LOCAL int tcap_get_app_context(const uint8_t *data, int len, char *out, int outl
         BSB_IMPORT_u08(bsb, tag);
         BSB_IMPORT_u08(bsb, lenByte);
 
-        int elemLen = lenByte;
+        uint32_t elemLen = lenByte;
         if (lenByte & 0x80) {
             int numBytes = lenByte & 0x7f;
+            if (numBytes > 4)
+                return 0;
             elemLen = 0;
             for (int i = 0; i < numBytes && BSB_REMAINING(bsb) > 0; i++) {
                 uint8_t b = 0;
@@ -56,7 +58,7 @@ LOCAL int tcap_get_app_context(const uint8_t *data, int len, char *out, int outl
             }
         }
 
-        if (BSB_IS_ERROR(bsb) || elemLen <= 0 || elemLen > BSB_REMAINING(bsb))
+        if (BSB_IS_ERROR(bsb) || elemLen == 0 || elemLen > BSB_REMAINING(bsb))
             return 0;
 
         // Dialogue portion (0x6B)
@@ -65,7 +67,7 @@ LOCAL int tcap_get_app_context(const uint8_t *data, int len, char *out, int outl
             // The structure is: External(0x28) -> context[0](0xA0) -> AARQ/AARE(0x60/0x61) -> context[1](0xA1) -> OID
             const uint8_t *dlgData = BSB_WORK_PTR(bsb);
             // Scan for OID tags in the dialogue portion
-            for (int i = 0; i < elemLen - 8; i++) {
+            for (uint32_t i = 0; i + 8 < elemLen; i++) {
                 if (dlgData[i] == 0x06) {
                     int oidLen = dlgData[i + 1];
                     if (oidLen > 0 && oidLen < 20 && i + 2 + oidLen <= elemLen) {

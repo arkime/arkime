@@ -326,16 +326,16 @@ LOCAL void parse_args(int argc, char **argv)
         exit(1);
     }
 
-    if (config.copyPcap && !config.pcapReadOffline) {
-        printf("--copy requires -r or -R\n");
-        exit(1);
-    }
-
     if (config.commandList)
         config.pcapReadOffline = 1;
 
     if ((config.pcapMonitor || config.commandWait) && config.commandSocket) {
         config.pcapReadOffline = 1;
+    }
+
+    if (config.copyPcap && !config.pcapReadOffline) {
+        printf("--copy requires -r or -R\n");
+        exit(1);
     }
 
     if (config.pcapMonitor && !config.pcapReadDirs && !config.commandSocket && !config.commandList) {

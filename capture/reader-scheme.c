@@ -150,6 +150,10 @@ LOCAL void arkime_reader_scheme_load_thread(const char *uri, ArkimeSchemeFlags f
     readerState.fileHeaderLen = 24;
     readerState.isPcapNG = 0;
     readerState.haveInterface = -1;
+    if (readerState.packet) {
+        arkime_packet_free(readerState.packet);
+        readerState.packet = 0;
+    }
 
     int rcl = readerScheme->load(uri, flags, actions);
 
@@ -943,8 +947,10 @@ int arkime_reader_scheme_process(const char *uri, uint8_t *data, int len, const 
             readerState.state = ARKIME_SCHEME_PACKET_HEADER;
         }
         if (readerState.state == ARKIME_SCHEME_PACKET_SKIP) {
-            arkime_packet_free(readerState.packet);
-            readerState.packet = 0;
+            if (readerState.packet) {
+                arkime_packet_free(readerState.packet);
+                readerState.packet = 0;
+            }
             if ((uint32_t)len < readerState.pktlen) {
                 data += len;
                 readerState.pktlen -= len;

@@ -119,7 +119,7 @@ LOCAL int64_t sctp_tsn_diff(int64_t a, int64_t b)
 }
 /******************************************************************************/
 /* Add to the list of data chunk we have sorted by tsn */
-LOCAL void sctp_add_data(ArkimeSCTP_t *sctp, uint32_t tsn, int which, BSB *const cbsb, int chunkFlags, int protoId)
+LOCAL void sctp_add_data(ArkimeSCTP_t *sctp, uint32_t tsn, int which, BSB *const cbsb, int chunkFlags, uint32_t protoId)
 {
     int addBefore = 0;
     ArkimeSctpData_t *fsd = 0 ;
@@ -155,14 +155,14 @@ LOCAL void sctp_add_data(ArkimeSCTP_t *sctp, uint32_t tsn, int which, BSB *const
 }
 /******************************************************************************/
 /* Send the data to the right parser */
-LOCAL void sctp_send_data(ArkimeSession_t *const session, const uint8_t *data, int len, int protoId, int which)
+LOCAL void sctp_send_data(ArkimeSession_t *const session, const uint8_t *data, int len, uint32_t protoId, int which)
 {
     int dir = ARKIME_WHICH_GET_DIR(which);
     if (session->firstBytesLen[dir] == 0) {
         session->firstBytesLen[dir] = MIN(8, len);
         memcpy(session->firstBytes[dir], data, session->firstBytesLen[dir]);
         arkime_parsers_classify_sctp(session, protoId, data, len, which);
-        arkime_field_int_add(protoIdField, session, protoId);
+        arkime_field_int_add(protoIdField, session, (int)protoId);
     }
 
     arkime_packet_process_data(session, data, len, which);
@@ -220,7 +220,7 @@ LOCAL void sctp_maybe_send(ArkimeSession_t *const session, int which)
 
     uint8_t *data = ARKIME_SIZE_ALLOC("sctp data", totalsize);
     int     off = 0;
-    int     protoId = fsd->protoId;
+    uint32_t protoId = fsd->protoId;
     sd = fsd;
 
     ArkimeSctpData_t *tmpsd;
