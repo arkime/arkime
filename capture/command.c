@@ -29,6 +29,7 @@ typedef struct {
     char                    data[2048];
     uint32_t                len;
     int                     readWatch;
+    int                     refs;
 } CommandClient_t;
 
 #define MAX_INDENT 40
@@ -39,9 +40,7 @@ LOCAL void arkime_command_exit(int argc, char **argv, gpointer cc);
 LOCAL void arkime_command_client_free(CommandClient_t *cc)
 {
     g_source_remove(cc->readWatch);
-    g_object_unref (cc->socket);
-
-    ARKIME_TYPE_FREE(CommandClient_t, cc);
+    arkime_command_client_decref(cc);
 }
 /******************************************************************************/
 LOCAL gboolean arkime_command_run(const char *line, gpointer cc)
@@ -128,6 +127,7 @@ LOCAL gboolean arkime_command_server_read_cb(gint UNUSED(fd), GIOCondition UNUSE
 
     CommandClient_t *cc = ARKIME_TYPE_ALLOC0(CommandClient_t);
     cc->socket = client;
+    cc->refs = 1;
 
     int cfd = g_socket_get_fd(client);
     cc->readWatch = arkime_watch_fd(cfd, ARKIME_GIO_READ_COND, arkime_command_data_read_cb, cc);
@@ -224,43 +224,24 @@ void arkime_command_respond(gpointer cc, const char *data, int len)
     }
 }
 /******************************************************************************/
-/*
- * Ref-counted wrapper around a GSocket for async notifications.
- * Holds its own g_object_ref so the socket survives client disconnect.
- */
-typedef struct {
-    GSocket  *socket;
-    int       refs;   // atomic ref count
-} CommandClientRef_t;
-
-void *arkime_command_client_ref_new(gpointer cc)
+void arkime_command_client_incref(void *vcc)
 {
-    CommandClient_t *client = (CommandClient_t *)cc;
-    CommandClientRef_t *ref = ARKIME_TYPE_ALLOC0(CommandClientRef_t);
-    ref->socket = client->socket;
-    g_object_ref(ref->socket);
-    ref->refs = 1;
-    return ref;
+    CommandClient_t *cc = (CommandClient_t *)vcc;
+    ARKIME_THREAD_INCR(cc->refs);
 }
 /******************************************************************************/
-LOCAL void arkime_command_client_ref_incref(void *vref)
+void arkime_command_client_decref(void *vcc)
 {
-    CommandClientRef_t *ref = (CommandClientRef_t *)vref;
-    ARKIME_THREAD_INCR(ref->refs);
-}
-/******************************************************************************/
-void arkime_command_client_ref_decref(void *vref)
-{
-    CommandClientRef_t *ref = (CommandClientRef_t *)vref;
-    int newrefs = ARKIME_THREAD_DECRNEW(ref->refs)
+    CommandClient_t *cc = (CommandClient_t *)vcc;
+    int newrefs = ARKIME_THREAD_DECRNEW(cc->refs)
     if (newrefs == 0) {
-        g_object_unref(ref->socket);
-        ARKIME_TYPE_FREE(CommandClientRef_t, ref);
+        g_object_unref(cc->socket);
+        ARKIME_TYPE_FREE(CommandClient_t, cc);
     }
 }
 /******************************************************************************/
 typedef struct {
-    CommandClientRef_t *clientRef;
+    CommandClient_t    *client;
     char               *filename;
     uint64_t            bytes;
     uint64_t            packets;
@@ -280,13 +261,13 @@ LOCAL gboolean arkime_command_notify_idle_cb(gpointer data)
                  fn->filename, fn->packets, fn->bytes);
     }
 
-    if (g_socket_send(fn->clientRef->socket, msg, strlen(msg), NULL, &error) < 0) {
+    if (g_socket_send(fn->client->socket, msg, strlen(msg), NULL, &error) < 0) {
         if (config.debug)
             LOG("DEBUG - Notification send failed (client disconnected?): %s", error ? error->message : "unknown");
         g_clear_error(&error);
     }
 
-    arkime_command_client_ref_decref(fn->clientRef);
+    arkime_command_client_decref(fn->client);
     g_free(fn->filename);
     ARKIME_TYPE_FREE(FileNotification_t, fn);
     return G_SOURCE_REMOVE;
@@ -295,22 +276,22 @@ LOCAL gboolean arkime_command_notify_idle_cb(gpointer data)
 void arkime_command_notify_file_done(void *clientRef, const char *filename, uint64_t bytes, uint64_t packets)
 {
     FileNotification_t *fn = ARKIME_TYPE_ALLOC0(FileNotification_t);
-    fn->clientRef = (CommandClientRef_t *)clientRef;
+    fn->client = (CommandClient_t *)clientRef;
     fn->filename = g_strdup(filename);
     fn->bytes = bytes;
     fn->packets = packets;
     fn->isError = FALSE;
-    arkime_command_client_ref_incref(clientRef);
+    arkime_command_client_incref(clientRef);
     g_idle_add(arkime_command_notify_idle_cb, fn);
 }
 /******************************************************************************/
 void arkime_command_notify_file_error(void *clientRef, const char *filename)
 {
     FileNotification_t *fn = ARKIME_TYPE_ALLOC0(FileNotification_t);
-    fn->clientRef = (CommandClientRef_t *)clientRef;
+    fn->client = (CommandClient_t *)clientRef;
     fn->filename = g_strdup(filename);
     fn->isError = TRUE;
-    arkime_command_client_ref_incref(clientRef);
+    arkime_command_client_incref(clientRef);
     g_idle_add(arkime_command_notify_idle_cb, fn);
 }
 /******************************************************************************/

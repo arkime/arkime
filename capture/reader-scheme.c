@@ -113,7 +113,7 @@ LOCAL void reader_scheme_actions_deref(ArkimeSchemeAction_t *actions)
 
     arkime_field_ops_free(&actions->ops);
     if (actions->notifyClientRef)
-        arkime_command_client_ref_decref(actions->notifyClientRef);
+        arkime_command_client_decref(actions->notifyClientRef);
     ARKIME_TYPE_FREE(ArkimeSchemeAction_t, actions);
 }
 /******************************************************************************/
@@ -1086,7 +1086,8 @@ LOCAL int arkime_scheme_cmd_add(int argc, char **argv, gpointer cc, ArkimeScheme
 
     // Attach async notification client ref if --notify was specified
     if (notify && cc) {
-        actions->notifyClientRef = arkime_command_client_ref_new(cc);
+        arkime_command_client_incref(cc);
+        actions->notifyClientRef = cc;
     }
 
     arkime_reader_scheme_enqueue(argv[argc - 1], flags, actions);
