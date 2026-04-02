@@ -50,6 +50,8 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #3829 Add ADB (Android Debug Bridge) parser (thanks @h0wdee)
   - #3836 Fix bacnet false positives on dns ports
   - #3843 Improve JSON encoding of UTF8 strings
+  - #3841 command socket add-file/dir now supports notify on complete
+          (--notify) and new file-status command (thanks @wegman12)
   - #3847 Fix crash when parsing malformed packets
   - #3855 Fix --copy not working in command socket mode (thanks @wegman12)
 ## Multies
