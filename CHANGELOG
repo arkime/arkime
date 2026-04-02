@@ -51,6 +51,8 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #3836 Fix bacnet false positives on dns ports
   - #3843 Improve JSON encoding of UTF8 strings
   - #3847 Fix crash when parsing malformed packets
+  - #3855 Fix --copy not working in command socket mode (thanks @wegman12)
+
 ## Viewer
   - #3826 Handle ip frag pcap display better
 
