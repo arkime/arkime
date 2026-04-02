@@ -59,6 +59,7 @@ class Notifier {
   // --------------------------------------------------------------------------
 
   /**
+   * @ignore
    * Get a notifier by id
    * @returns {object} { id, ...notifierDoc }
    */
@@ -67,6 +68,7 @@ class Notifier {
   }
 
   /**
+   * @ignore
    * Search notifiers with optional filters
    * @param {object} options
    * @param {string} options.name - Filter by exact name
@@ -82,6 +84,7 @@ class Notifier {
   }
 
   /**
+   * @ignore
    * Create a notifier document
    * @returns {string} The id of the created notifier
    */
@@ -90,6 +93,7 @@ class Notifier {
   }
 
   /**
+   * @ignore
    * Delete a notifier by id
    */
   static async deleteNotifier (id) {
@@ -97,6 +101,7 @@ class Notifier {
   }
 
   /**
+   * @ignore
    * Update a notifier by id
    */
   static async setNotifier (id, doc) {
@@ -104,6 +109,7 @@ class Notifier {
   }
 
   /**
+   * @ignore
    * Delete all notifiers (for regression tests)
    */
   static async deleteAllNotifiers () {
