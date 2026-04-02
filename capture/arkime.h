@@ -1075,6 +1075,10 @@ void arkime_command_start();
 void arkime_command_register(const char *name, ArkimeCommandFunc func, const char *help);
 void arkime_command_register_opts(const char *name, ArkimeCommandFunc func, const char *help, ...);
 void arkime_command_respond(gpointer cc, const char *data, int len);
+void     arkime_command_client_incref(void *cc);
+void     arkime_command_client_decref(void *cc);
+void     arkime_command_notify_file_done(void *clientRef, const char *filename, uint64_t bytes, uint64_t packets);
+void     arkime_command_notify_file_error(void *clientRef, const char *filename);
 
 /******************************************************************************/
 /*
@@ -1681,6 +1685,7 @@ typedef enum {
 typedef struct {
     int refs;
     ArkimeFieldOps_t ops;
+    void            *notifyClientRef;  // Opaque CommandClientRef_t* for async completion notification
 } ArkimeSchemeAction_t;
 
 typedef int  (*ArkimeSchemeLoad)(const char *uri, ArkimeSchemeFlags flags, ArkimeSchemeAction_t *actions);
@@ -1688,6 +1693,7 @@ typedef void (*ArkimeSchemeExit)();
 
 void arkime_reader_scheme_register(char *name, ArkimeSchemeLoad load, ArkimeSchemeExit exit);
 int arkime_reader_scheme_process(const char *uri, uint8_t *data, int len, const char *extraInfo, ArkimeSchemeAction_t *actions);
+void arkime_reader_scheme_actions_ref(ArkimeSchemeAction_t *actions);
 void arkime_reader_scheme_load(const char *uri, ArkimeSchemeFlags flags, ArkimeSchemeAction_t *actions);
 
 /******************************************************************************/
