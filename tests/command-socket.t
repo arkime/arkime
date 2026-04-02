@@ -13,7 +13,7 @@
 
 use lib ".";
 use strict;
-use Test::More tests => 17;
+use Test::More tests => 20;
 use IO::Socket::UNIX;
 use IO::Select;
 use POSIX ":sys_wait_h";
@@ -100,7 +100,7 @@ for (my $i = 0; $i < 100; $i++) {
 ok($ready, "command socket appeared");
 
 SKIP: {
-    skip "capture did not start, skipping socket tests", 13 unless $ready;
+    skip "capture did not start, skipping socket tests", 16 unless $ready;
 
     my $sock = IO::Socket::UNIX->new(
         Peer => $sockpath,
@@ -108,7 +108,7 @@ SKIP: {
     );
     ok(defined $sock, "connected to command socket");
 
-    skip "could not connect to socket", 12 unless defined $sock;
+    skip "could not connect to socket", 15 unless defined $sock;
 
     $sock->autoflush(1);
     my $sel = IO::Select->new($sock);
@@ -176,9 +176,42 @@ SKIP: {
     my $err_all = read_all($sock, $sel, 10);
     like($err_all, qr/file-error/, "received file-error for nonexistent file");
 
-    # Shutdown
-    print $sock "shutdown\n";
+    # --- Test 6: exit after --notify doesn't hang ---
+    # Regression test: schemeActions held a ref to the client, preventing exit
+    # from closing the socket. Send add-file --notify, wait for completion,
+    # then exit. If the ref leak is present, the socket won't close.
+    print $sock "add-file --notify $pcap\n";
+    read_line($sock, $sel, 10);    # ack
+    read_line($sock, $sel, 30);    # file-done
+    print $sock "exit\n";
+    # Wait up to 5 seconds for the socket to close (become readable with EOF).
+    # If the ref leak is present, the socket stays open and can_read times out.
+    my $closed = 0;
+    if ($sel->can_read(5)) {
+        my $n = $sock->sysread(my $buf, 1);
+        $closed = 1 if (!defined $n || $n == 0);
+    }
+    ok($closed, "exit closes connection after --notify file completes");
     $sock->close();
+
+    # Reconnect to verify capture is still healthy
+    my $sock2 = IO::Socket::UNIX->new(
+        Peer => $sockpath,
+        Type => SOCK_STREAM,
+    );
+    ok(defined $sock2, "reconnected after exit");
+
+    skip "could not reconnect", 1 unless defined $sock2;
+
+    $sock2->autoflush(1);
+    my $sel2 = IO::Select->new($sock2);
+    print $sock2 "file-status\n";
+    my $status4 = read_line($sock2, $sel2, 5);
+    is($status4, "file-status done\n", "capture still responsive after exit");
+
+    # Shutdown
+    print $sock2 "shutdown\n";
+    $sock2->close();
 }
 
 # Wait for capture to exit

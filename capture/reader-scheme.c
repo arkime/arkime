@@ -187,6 +187,13 @@ LOCAL void arkime_reader_scheme_load_thread(const char *uri, ArkimeSchemeFlags f
                 offlineInfo[readerState.readerPos].lastBytes,
                 offlineInfo[readerState.readerPos].lastPackets);
         }
+        // Release the schemeActions slot — the idle callback holds its own client ref.
+        // Without this, schemeActions keeps actions alive (holding a client ref) until
+        // this slot wraps around, preventing the socket from closing.
+        if (schemeActions[readerState.readerPos]) {
+            reader_scheme_actions_deref(schemeActions[readerState.readerPos]);
+            schemeActions[readerState.readerPos] = NULL;
+        }
     }
 }
 /******************************************************************************/
