@@ -65,6 +65,7 @@ SPDX-License-Identifier: Apache-2.0
           <!-- export all charts as PNG -->
           <button
             id="exportAllPNGBtn"
+            :aria-label="$t('sessions.summary.exportAllPNG')"
             class="btn btn-sm btn-secondary ms-2"
             @click="exportAllPNG">
             <span class="fa fa-download" />
@@ -123,6 +124,7 @@ SPDX-License-Identifier: Apache-2.0
       {{ error }}
       <button
         type="button"
+        :aria-label="$t('common.dismiss')"
         class="btn-close float-end"
         @click="error = ''" />
     </div>
@@ -158,6 +160,7 @@ SPDX-License-Identifier: Apache-2.0
       </button>
       <button
         type="button"
+        :aria-label="$t('common.dismiss')"
         class="btn-close float-end"
         @click="summaryCanceled = false" />
     </div>

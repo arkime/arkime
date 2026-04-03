@@ -53,6 +53,7 @@ SPDX-License-Identifier: Apache-2.0
                   <button
                     type="button"
                     id="spiViewFieldConfigSave"
+                    :aria-label="$t('common.save')"
                     class="btn btn-theme-secondary"
                     :disabled="!newFieldConfigName"
                     @click.stop.prevent="saveFieldConfiguration">
@@ -88,12 +89,14 @@ SPDX-License-Identifier: Apache-2.0
                     <button
                       class="btn btn-xs btn-danger pull-right ms-1"
                       type="button"
+                      :aria-label="$t('common.delete')"
                       @click.stop.prevent="deleteFieldConfiguration(config.name, key)">
                       <span class="fa fa-trash-o" />
                     </button>
                     <button
                       class="btn btn-xs btn-warning pull-right"
                       type="button"
+                      :aria-label="$t('common.save')"
                       :id="`spiViewUpdateFieldConfig-${config.name}`"
                       @click.stop.prevent="updateFieldConfiguration(config.name, key)">
                       <span class="fa fa-save" />

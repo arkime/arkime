@@ -28,6 +28,7 @@ SPDX-License-Identifier: Apache-2.0
     <button
       role="button"
       type="button"
+      :aria-label="$t('common.dismiss')"
       class="btn-close mt-2"
       @click="done(null)" /> <!-- /dismiss alert button -->
   </div> <!-- /alert -->

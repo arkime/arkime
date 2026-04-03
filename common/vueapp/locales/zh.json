@@ -1293,6 +1293,7 @@
     "hideViz": "如果请求的时间范围大于或等于 {days} 天，则此集群设置为隐藏图表",
     "hideVizTip": "这有助于提高性能",
     "hideVizMore": "点击上面的“获取可视化数据”按钮以获取此查询的可视化数据（或打开下拉菜单以获取更多选项）。",
+    "toggleMapSize": "切换地图大小",
     "toggleSrcCountry": "切换源国家",
     "toggleDstCountry": "切换目标国家",
     "graphLines": "线条",
