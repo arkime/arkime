@@ -38,6 +38,8 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
 6.1.2 2026/04/xx
 ## Capture/Viewer
   - #3833 New simpleDEKEncoding setting which controls how the DEK is encrypted
+## db.pl
+  - #3860 Add --compression option
 ## Viewer
   - #3842 Add internationalized aria-labels
 
