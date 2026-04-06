@@ -1293,6 +1293,7 @@
     "hideViz": "Este cluster está configurado para ocultar o gráfico se um intervalo de tempo de {days} dias ou maior for solicitado",
     "hideVizTip": "Isso ajuda com o desempenho",
     "hideVizMore": "Clique no botão 'Buscar Dados de Visualização' acima para buscar dados de visualização para esta consulta (ou abra o dropdown para mais opções).",
+    "toggleMapSize": "Alternar tamanho do mapa",
     "toggleSrcCountry": "Alternar países de origem",
     "toggleDstCountry": "Alternar países de destino",
     "graphLines": "Linhas",

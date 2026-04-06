@@ -204,6 +204,7 @@ SPDX-License-Identifier: Apache-2.0
             <button
               :id="`deleteView${value.id}`"
               type="button"
+              :aria-label="$t('search.deleteView')"
               class="btn btn-xs btn-danger pull-right ms-1"
               @click.stop.prevent="deleteView(value.id, index)">
               <span class="fa fa-trash-o" />
@@ -214,6 +215,7 @@ SPDX-License-Identifier: Apache-2.0
             <button
               :id="`editView${value.id}`"
               type="button"
+              :aria-label="$t('search.editView')"
               @click.stop.prevent="modView(views[index])"
               class="btn btn-xs btn-warning pull-right ms-1">
               <span class="fa fa-edit" />
@@ -224,6 +226,7 @@ SPDX-License-Identifier: Apache-2.0
           </template>
           <button
             :id="`applyView${value.id}`"
+            :aria-label="$t('search.applyView')"
             class="btn btn-xs btn-theme-secondary pull-right ms-1"
             type="button"
             @click.stop.prevent="applyView(value)">
@@ -235,6 +238,7 @@ SPDX-License-Identifier: Apache-2.0
           <button
             v-if="value.sessionsColConfig && $route.name === 'Sessions'"
             :id="`applyColumns${value.id}`"
+            :aria-label="$t('search.applyColumns')"
             class="btn btn-xs btn-theme-tertiary pull-right"
             type="button"
             @click.stop.prevent="applyColumns(value)">

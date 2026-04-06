@@ -1293,6 +1293,7 @@
     "hideViz": "이 클러스터는 {days}일 이상의 시간 범위를 요청할 경우 그래프를 숨기도록 설정되어 있습니다.",
     "hideVizTip": "이는 성능 향상에 도움이 됩니다.",
     "hideVizMore": "위의 '시각화 데이터 가져오기' 버튼을 클릭하여 시각화 데이터를 가져오거나 드롭다운에서 다른 옵션을 확인하세요.",
+    "toggleMapSize": "지도 크기 전환",
     "toggleSrcCountry": "출발지 국가 전환",
     "toggleDstCountry": "목적지 국가 전환",
     "graphLines": "선형",

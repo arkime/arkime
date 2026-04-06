@@ -133,6 +133,7 @@ SPDX-License-Identifier: Apache-2.0
                 v-if="spiGraphType !== 'default' && spiGraphType !== 'sankey'"
                 class="btn btn-default btn-sm ms-1"
                 id="exportCSVSPIGraph"
+                :aria-label="$t('spigraph.exportCSVSPIGraphTip')"
                 @click.stop.prevent="exportCSV">
                 <span class="fa fa-download" />
                 <BTooltip target="exportCSVSPIGraph">{{ $t('spigraph.exportCSVSPIGraphTip') }}</BTooltip>
