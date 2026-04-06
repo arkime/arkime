@@ -87,6 +87,7 @@ LOCAL  ARKIME_LOCK_DEFINE(simpleQ);
 LOCAL  ARKIME_COND_DEFINE(simpleQ);
 
 enum ArkimeSimpleMode { ARKIME_SIMPLE_NORMAL, ARKIME_SIMPLE_XOR2048, ARKIME_SIMPLE_AES256CTR};
+enum ArkimeDEKMode { ARKIME_DEK_AES192CBC, ARKIME_DEK_AES256GCM };
 
 #define INDEX_FILES_CACHE_SIZE (ARKIME_MAX_PACKET_THREADS-1)
 
@@ -108,6 +109,7 @@ LOCAL ArkimeSimpleHead_t     freeList;
 ARKIME_LOCK_DEFINE(freeList);
 LOCAL uint32_t               pageSize;
 LOCAL enum ArkimeSimpleMode  simpleMode;
+LOCAL enum ArkimeDEKMode     simpleDEKMode;
 LOCAL int                    simpleMaxQ;
 LOCAL const EVP_CIPHER      *cipher;
 LOCAL int                    openOptions;
@@ -285,13 +287,11 @@ LOCAL ArkimeSimple_t *writer_simple_process_buf(int thread, int closing)
     return simpleThreadData[thread].currentInfo;
 }
 /******************************************************************************/
-LOCAL void writer_simple_encrypt_key(const char *kekId, const uint8_t *dek, int deklen, char *outkeyhex)
+LOCAL void writer_simple_encrypt_key(const char *kekId, const uint8_t *dek, int deklen,
+                                      char *outkeyhex, char *outsalthex, char *outivhex, char *outtaghex)
 {
-
     uint8_t ciphertext[1024];
     int     len, ciphertext_len;
-    uint8_t kek[EVP_MAX_KEY_LENGTH];
-    uint8_t kekiv[EVP_MAX_IV_LENGTH];
 
     if (!kekId)
         CONFIGEXIT("simpleKEKId must be set");
@@ -300,16 +300,54 @@ LOCAL void writer_simple_encrypt_key(const char *kekId, const uint8_t *dek, int 
     if (!kekstr)
         CONFIGEXIT("No kek with id '%s' found in keks config section", kekId);
 
-    EVP_BytesToKey(EVP_aes_192_cbc(), EVP_md5(), NULL, (uint8_t *)kekstr, strlen(kekstr), 1, kek, kekiv);
-    g_free(kekstr);
-
     EVP_CIPHER_CTX *ctx = EVP_CIPHER_CTX_new();
-    EVP_EncryptInit_ex(ctx, EVP_aes_192_cbc(), NULL, kek, kekiv);
-    if (!EVP_EncryptUpdate(ctx, ciphertext, &len, dek, deklen))
-        LOGEXIT("ERROR - Encrypting key failed");
-    ciphertext_len = len;
-    EVP_EncryptFinal_ex(ctx, ciphertext + len, &len);
-    ciphertext_len += len;
+
+    if (simpleDEKMode == ARKIME_DEK_AES256GCM) {
+        uint8_t salt[16];
+        uint8_t iv[12];
+        uint8_t tag[16];
+        uint8_t kek[32];
+
+        // Generate random salt and IV
+        RAND_bytes(salt, sizeof(salt));
+        RAND_bytes(iv, sizeof(iv));
+
+        // Derive key using PBKDF2 with SHA-256, 350000 iterations
+        PKCS5_PBKDF2_HMAC(kekstr, strlen(kekstr), salt, sizeof(salt), 350000, EVP_sha256(), sizeof(kek), kek);
+
+        // Encrypt using AES-256-GCM
+        EVP_EncryptInit_ex(ctx, EVP_aes_256_gcm(), NULL, NULL, NULL);
+        EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_GCM_SET_IVLEN, sizeof(iv), NULL);
+        EVP_EncryptInit_ex(ctx, NULL, NULL, kek, iv);
+
+        if (!EVP_EncryptUpdate(ctx, ciphertext, &len, dek, deklen))
+            LOGEXIT("ERROR - Encrypting key failed");
+        ciphertext_len = len;
+
+        EVP_EncryptFinal_ex(ctx, ciphertext + len, &len);
+        ciphertext_len += len;
+
+        // Get the GCM tag
+        EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_GCM_GET_TAG, sizeof(tag), tag);
+
+        arkime_sprint_hex_string(outsalthex, salt, sizeof(salt));
+        arkime_sprint_hex_string(outivhex, iv, sizeof(iv));
+        arkime_sprint_hex_string(outtaghex, tag, sizeof(tag));
+    } else {
+        uint8_t kek[EVP_MAX_KEY_LENGTH];
+        uint8_t kekiv[EVP_MAX_IV_LENGTH];
+
+        EVP_BytesToKey(EVP_aes_192_cbc(), EVP_md5(), NULL, (uint8_t *)kekstr, strlen(kekstr), 1, kek, kekiv);
+
+        EVP_EncryptInit_ex(ctx, EVP_aes_192_cbc(), NULL, kek, kekiv);
+        if (!EVP_EncryptUpdate(ctx, ciphertext, &len, dek, deklen))
+            LOGEXIT("ERROR - Encrypting key failed");
+        ciphertext_len = len;
+        EVP_EncryptFinal_ex(ctx, ciphertext + len, &len);
+        ciphertext_len += len;
+    }
+
+    g_free(kekstr);
     EVP_CIPHER_CTX_free(ctx);
 
     arkime_sprint_hex_string(outkeyhex, ciphertext, ciphertext_len);
@@ -540,15 +578,22 @@ LOCAL void writer_simple_write(const ArkimeSession_t *const session, ArkimePacke
                                               "indexFilename", indexFilename[0] ? indexFilename : ARKIME_VAR_ARG_STR_SKIP,
                                               (char *)NULL);
             break;
-        case ARKIME_SIMPLE_XOR2048:
+        case ARKIME_SIMPLE_XOR2048: {
             name = ".arkime";
             kekId = writer_simple_get_kekId();
             RAND_bytes(info->file->dek, 256);
-            writer_simple_encrypt_key(kekId, info->file->dek, 256, dekhex);
+            char deksalthex[33] = "";
+            char dekivhex[25] = "";
+            char dektaghex[33] = "";
+            writer_simple_encrypt_key(kekId, info->file->dek, 256, dekhex, deksalthex, dekivhex, dektaghex);
             name = arkime_db_create_file_full(&packet->ts, name, 0, 0, &info->file->id,
                                               "encoding", "xor-2048",
                                               "dek", dekhex,
                                               "kekId", kekId,
+                                              "dekEncoding", simpleDEKMode == ARKIME_DEK_AES256GCM ? "aes-256-gcm" : ARKIME_VAR_ARG_STR_SKIP,
+                                              "dekSalt", deksalthex[0] ? deksalthex : ARKIME_VAR_ARG_STR_SKIP,
+                                              "dekIv", dekivhex[0] ? dekivhex : ARKIME_VAR_ARG_STR_SKIP,
+                                              "dekTag", dektaghex[0] ? dektaghex : ARKIME_VAR_ARG_STR_SKIP,
                                               "packetPosEncoding", packetPosEncoding,
                                               "#uncompressedBits", uncompressedBitsArg,
                                               "compression", compressionArg,
@@ -556,17 +601,21 @@ LOCAL void writer_simple_write(const ArkimeSession_t *const session, ArkimePacke
                                               (char *)NULL);
             g_free(kekId);
             break;
+        }
         case ARKIME_SIMPLE_AES256CTR: {
             info->file->cipher_ctx = EVP_CIPHER_CTX_new();
             name = ".arkime";
             uint8_t dek[32];
             uint8_t iv[16];
             char    ivhex[33];
+            char    deksalthex[33] = "";
+            char    dekivhex[25] = "";
+            char    dektaghex[33] = "";
             RAND_bytes(iv, 12);
             RAND_bytes(dek, 32);
             memset(iv + 12, 0, 4);
             kekId = writer_simple_get_kekId();
-            writer_simple_encrypt_key(kekId, dek, 32, dekhex);
+            writer_simple_encrypt_key(kekId, dek, 32, dekhex, deksalthex, dekivhex, dektaghex);
             arkime_sprint_hex_string(ivhex, iv, 12);
             EVP_EncryptInit(info->file->cipher_ctx, cipher, dek, iv);
             name = arkime_db_create_file_full(&packet->ts, name, 0, 0, &info->file->id,
@@ -574,6 +623,10 @@ LOCAL void writer_simple_write(const ArkimeSession_t *const session, ArkimePacke
                                               "iv", ivhex,
                                               "dek", dekhex,
                                               "kekId", kekId,
+                                              "dekEncoding", simpleDEKMode == ARKIME_DEK_AES256GCM ? "aes-256-gcm" : ARKIME_VAR_ARG_STR_SKIP,
+                                              "dekSalt", deksalthex[0] ? deksalthex : ARKIME_VAR_ARG_STR_SKIP,
+                                              "dekIv", dekivhex[0] ? dekivhex : ARKIME_VAR_ARG_STR_SKIP,
+                                              "dekTag", dektaghex[0] ? dektaghex : ARKIME_VAR_ARG_STR_SKIP,
                                               "packetPosEncoding", packetPosEncoding,
                                               "#uncompressedBits", uncompressedBitsArg,
                                               "compression", compressionArg,
@@ -1005,6 +1058,16 @@ void writer_simple_init(const char *name)
     if (mode) {
         g_free(mode);
     }
+
+    char *dekMode = arkime_config_str(NULL, "simpleDEKEncoding", "aes-192-cbc");
+    if (strcmp(dekMode, "aes-256-gcm") == 0) {
+        simpleDEKMode = ARKIME_DEK_AES256GCM;
+    } else if (strcmp(dekMode, "aes-192-cbc") == 0) {
+        simpleDEKMode = ARKIME_DEK_AES192CBC;
+    } else {
+        CONFIGEXIT("Unknown simpleDEKEncoding '%s', must be 'aes-256-gcm' or 'aes-192-cbc'", dekMode);
+    }
+    g_free(dekMode);
 
     // Since we are doing direct IO must be a multiple of pagesize;
     pageSize = getpagesize();

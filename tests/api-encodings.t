@@ -38,6 +38,9 @@ sub doTest {
     $cmd = "../capture/capture --norefresh $ArkimeTest::es $ENV{SCHEME} -c config.test.ini -n test --copy -r pcap/socks-http-pass.pcap --tag $stag -o simpleCompression=$compression";
     if (defined $encryption) {
         $cmd .= " -o simpleEncoding=$encryption -o simpleKEKId=test";
+        if ($blocksize == 64000) {
+            $cmd .= " -o simpleDEKEncoding=aes-256-gcm";
+        }
     }
     if (defined $blocksize) {
         $cmd .= " -o simpleCompressionBlockSize=$blocksize";
