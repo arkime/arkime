@@ -42,6 +42,7 @@
       <button
         id="cancelExportPcap"
         class="btn btn-sm btn-warning"
+        :aria-label="$t('common.cancel')"
         @click="$emit('done', null, false, false)"
         type="button">
         <span class="fa fa-ban" />

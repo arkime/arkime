@@ -35,16 +35,31 @@ NOTICE: Restart wiseService before capture when upgrading
 NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at once after upgrading
 NOTICE: Create a parliament config file before upgrading (see https://arkime.com/settings#parliament and https://arkime.com/faq#how_do_i_upgrade_to_arkime_5)
 
-6.1.1 2026/04/xx
+6.1.2 2026/04/xx
+## Viewer
+  - #3842 Add internationalized aria-labels
+
+6.1.1 2026/04/06
 ## BREAKING
-  - #3812 The user-auto-create and user-role-mappings now security limit what
-          Javascript can be used in expressions.
+  - #3812 The user-auto-create and user-role-mappings sections now limit what Javascript 
+          can be used for security.
+## Release
+  - #3834 Node 22.22.2
 ## All
-  - #3812 Validate expression in user-auto-create and user-role-mappings
+  - #3812 Validate javascript expression in user-auto-create and user-role-mappings
+  - #3835 Fix reverse proxy being unhappy with no params after a ? in urls
 ## Capture
   - #3813 Add ECE, CWR, and AE TCP flag support
   - #3818 Improve scheduling http requests with libcurl (thanks @swannman)
   - #3829 Add ADB (Android Debug Bridge) parser (thanks @h0wdee)
+  - #3836 Fix bacnet false positives on dns ports
+  - #3843 Improve JSON encoding of UTF8 strings
+  - #3841 command socket add-file/dir now supports notify on complete
+          (--notify) and new file-status command (thanks @wegman12)
+  - #3847 Fix crash when parsing malformed packets
+  - #3855 Fix --copy not working in command socket mode (thanks @wegman12)
+## Multies
+  - #3830 Show cluster when using multies
 ## Viewer
   - #3826 Handle ip frag pcap display better
 

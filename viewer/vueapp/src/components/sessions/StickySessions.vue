@@ -96,6 +96,7 @@ SPDX-License-Identifier: Apache-2.0
               <div class="list-group-item-text">
                 <button
                   class="btn btn-xs btn-link pull-right"
+                  :aria-label="$t('common.close')"
                   @click.stop="closeSessionDetail(session)">
                   <span class="fa fa-close fa-lg" />
                 </button>

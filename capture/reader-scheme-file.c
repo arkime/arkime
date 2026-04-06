@@ -105,6 +105,7 @@ LOCAL void scheme_file_monitor_dir(const char *dirname, ArkimeSchemeFlags flags,
         sw->dirname = g_strdup(dirname);
         sw->flags = flags;
         sw->actions = actions;
+        arkime_reader_scheme_actions_ref(actions);
         g_hash_table_insert(wdHashTable, (void *)(long)rc, sw);
     }
 
