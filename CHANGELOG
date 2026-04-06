@@ -38,6 +38,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
 6.1.2 2026/04/xx
 ## Capture/Viewer
   - #3833 New simpleDEKEncoding setting which controls how the DEK is encrypted
+  - #3857 Fix scheme pcapNG not handling large files (thanks @wegman12)
 ## db.pl
   - #3860 Add --compression option
 ## Viewer
