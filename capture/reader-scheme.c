@@ -521,7 +521,7 @@ LOCAL int arkime_reader_scheme_processNG(const char *uri, uint8_t *data, int len
             if (len < need) {
                 memcpy(readerState.tmpBuffer + readerState.tmpBufferLen, data, len);
                 readerState.tmpBufferLen += len;
-                return 0;
+                goto processNG;
             }
             memcpy(readerState.tmpBuffer + readerState.tmpBufferLen, data, need);
             readerState.tmpBufferLen += need;
@@ -687,7 +687,7 @@ LOCAL int arkime_reader_scheme_processNG(const char *uri, uint8_t *data, int len
                 memcpy(readerState.tmpBuffer + readerState.tmpBufferLen, data, len);
                 readerState.tmpBufferLen += len;
                 readerState.blockSize -= len;
-                return 0;
+                goto processNG;
             }
 
             memcpy(readerState.tmpBuffer + readerState.tmpBufferLen, data, need);
@@ -721,7 +721,7 @@ LOCAL int arkime_reader_scheme_processNG(const char *uri, uint8_t *data, int len
                 memcpy(readerState.tmpBuffer + readerState.tmpBufferLen, data, len);
                 readerState.tmpBufferLen += len;
                 readerState.blockSize -= len;
-                return 0;
+                goto processNG;
             }
 
             memcpy(readerState.tmpBuffer + readerState.tmpBufferLen, data, need);
