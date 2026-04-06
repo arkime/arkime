@@ -333,10 +333,10 @@ my ($cmd) = @_;
         print ("Initializing ES\n");
         if ($main::debug) {
             system("../db/db.pl $INSECURE --prefix tests $ELASTICSEARCH initnoprompt");
-            system("../db/db.pl $INSECURE --prefix tests2 $ELASTICSEARCH initnoprompt");
+            system("../db/db.pl $INSECURE --prefix tests2 $ELASTICSEARCH initnoprompt --compression best_compression");
         } else {
             system("../db/db.pl $INSECURE --prefix tests $ELASTICSEARCH initnoprompt 2>&1 1>/dev/null");
-            system("../db/db.pl $INSECURE --prefix tests2 $ELASTICSEARCH initnoprompt 2>&1 1>/dev/null");
+            system("../db/db.pl $INSECURE --prefix tests2 $ELASTICSEARCH initnoprompt --compression best_compression 2>&1 1>/dev/null");
         }
 
         print ("Loading tagger\n");
