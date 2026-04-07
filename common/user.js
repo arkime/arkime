@@ -12,6 +12,7 @@ const util = require('util');
 const cryptoLib = require('crypto');
 const { LRUCache } = require('lru-cache');
 const otplib = require('otplib');
+const QRCode = require('qrcode');
 
 const systemRolesMapping = {
   superAdmin: ['usersAdmin', 'arkimeAdmin', 'arkimeUser', 'parliamentAdmin', 'parliamentUser', 'wiseAdmin', 'wiseUser', 'cont3xtAdmin', 'cont3xtUser'],
@@ -1234,8 +1235,6 @@ class User {
     // Store encrypted pending secret server-side; overwrites any previous setup
     User.#totpPendingSecrets.set(req.settingUser.userId, Auth.totp2store(secret));
 
-    // Generate QR code as data URL
-    const QRCode = require('qrcode');
     try {
       const qrCodeDataUrl = await QRCode.toDataURL(qrCodeUri);
       return res.json({
@@ -1333,7 +1332,7 @@ class User {
 
     // Skip this check if we are a superAdmin
     if (!req.user.hasRole('superAdmin')) {
-      // Only disable TOTP if we have the same admin roles(s)
+      // Only disable TOTP if we have the same admin role(s)
       for (const role of adminRolesWithSuper) {
         if (!req.user.hasRole(role) && user.hasRole(role)) {
           return res.serverError(403, `Not allowed to disable TOTP for ${role}`);

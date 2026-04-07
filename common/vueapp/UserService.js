@@ -304,16 +304,15 @@ export default {
 
   /**
    * Disables TOTP for the current user
-   * @param {string} code - The 6-digit TOTP code OR password
-   * @param {string} password - The user's password (alternative to code)
+   * @param {string} code - The 6-digit TOTP code from authenticator app
    * @returns {Promise} Promise A promise object that signals the completion
    */
-  disableTotp (code, password) {
+  disableTotp (code) {
     return new Promise((resolve, reject) => {
       fetch('api/user/totp/disable', {
         method: 'POST',
         headers: setReqHeaders({ 'Content-Type': 'application/json' }),
-        body: JSON.stringify({ code, password })
+        body: JSON.stringify({ code })
       }).then((response) => {
         return response.json();
       }).then((response) => {
