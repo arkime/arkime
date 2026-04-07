@@ -36,6 +36,8 @@ NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at o
 NOTICE: Create a parliament config file before upgrading (see https://arkime.com/settings#parliament and https://arkime.com/faq#how_do_i_upgrade_to_arkime_5)
 
 6.1.2 2026/04/xx
+## Release
+  - #3864 CyberChef 10.23.0
 ## All
   - #3831 New TOTP support for wise config instead of code
 ## Capture/Viewer
@@ -45,6 +47,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #3860 Add --compression option
 ## Viewer
   - #3842 Add internationalized aria-labels
+  - #3863 Add per-cluster serverSecret in S2S auth for multicluster pcap retrieval
 
 6.1.1 2026/04/06
 ## BREAKING
@@ -69,7 +72,6 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #3830 Show cluster when using multies
 ## Viewer
   - #3826 Handle ip frag pcap display better
-	- #3863 Add per-cluster serverSecret in S2S auth for multicluster pcap retrieval
 
 6.1.0 2026/03/18
 ## BREAKING
