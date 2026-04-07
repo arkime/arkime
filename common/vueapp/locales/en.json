@@ -1311,6 +1311,7 @@
     "hideViz": "This cluster is set to hide the graph if a time range of {days} days or greater is requested",
     "hideVizTip": "This helps with performance",
     "hideVizMore": "Click the 'Fetch Viz Data' button above to fetch visualization data for this query (or open the dropdown for more options).",
+    "toggleMapSize": "Toggle map size",
     "toggleSrcCountry": "Toggle source countries",
     "toggleDstCountry": "Toggle destination countries",
     "graphLines": "Lines",

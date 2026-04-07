@@ -330,7 +330,7 @@ LOCAL char *dns_name(ArkimeSession_t *session, const uint8_t *full, int fulllen,
     BSB  tmpbsb;
     BSB *curbsb;
 
-    BSB_INIT(nbsb, name, *namelen);
+    BSB_INIT(nbsb, name, *namelen - 1);
 
     curbsb = inbsb;
 
@@ -369,7 +369,8 @@ LOCAL char *dns_name(ArkimeSession_t *session, const uint8_t *full, int fulllen,
             BSB_EXPORT_rewind(nbsb, 1); // Remove last .
     }
     *namelen = BSB_LENGTH(nbsb);
-    BSB_EXPORT_u08(nbsb, 0);
+    // Write null terminator directly since BSB was initialized 1 byte short to guarantee room
+    name[*namelen] = 0;
     return name;
 }
 /******************************************************************************/
@@ -384,7 +385,7 @@ LOCAL DNSSVCBRData_t *dns_parser_rr_svcb(ArkimeSession_t *session, const uint8_t
     BSB_INIT(bsb, data, length);
     BSB_IMPORT_u16(bsb, svcbData->priority);
 
-    char namebuf[8000];
+    char namebuf[8001];
     int namelen = sizeof(namebuf);
     const char *name = dns_name(session, data, length, &bsb, namebuf, &namelen);
 
@@ -516,15 +517,7 @@ LOCAL int dns_add_host(ArkimeSession_t *session, DNS_t *dns, ArkimeStringHashStd
     if (len == -1)
         len = strlen(string);
 
-    char *host;
-    if (string[len] == 0)
-        host = g_hostname_to_unicode(string);
-    else {
-        char ch = string[len];
-        string[len] = 0;
-        host = g_hostname_to_unicode(string);
-        string[len] = ch;
-    }
+    char *host = g_hostname_to_unicode(string);
 
     if (uniSet)
         *uniSet = host;
@@ -627,7 +620,7 @@ LOCAL void dns_parser(ArkimeSession_t *session, int kind, const uint8_t *data, i
     BSB_INIT(bsb, data + 12, len - 12);
 
     /* QD Section */
-    char namebuf[8000];
+    char namebuf[8001];
     int namelen = sizeof(namebuf);
     char *name = dns_name(session, data, len, &bsb, namebuf, &namelen);
 

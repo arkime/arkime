@@ -961,6 +961,26 @@ class ArkimeUtil {
     const result = ArkimeUtil.#evpBytesToKey(password, 24, 16);
     return crypto.createDecipheriv('aes-192-cbc', result.key, result.iv);
   }
+
+  // ----------------------------------------------------------------------------
+  /**
+   * Decrypt DEK using PBKDF2 + AES-256-GCM
+   * @param password - The KEK password string
+   * @param encryptedDek - The encrypted DEK as a Buffer
+   * @param salt - The PBKDF2 salt as a Buffer
+   * @param iv - The GCM IV as a Buffer
+   * @param tag - The GCM auth tag as a Buffer
+   * @returns The decrypted DEK as a Buffer
+   */
+  static decryptDEKWithGCM (password, encryptedDek, salt, iv, tag) {
+    // Derive key using PBKDF2 with SHA-256, 350000 iterations
+    const kek = crypto.pbkdf2Sync(password, salt, 350000, 32, 'sha256');
+
+    // Decrypt using AES-256-GCM
+    const decipher = crypto.createDecipheriv('aes-256-gcm', kek, iv);
+    decipher.setAuthTag(tag);
+    return Buffer.concat([decipher.update(encryptedDek), decipher.final()]);
+  }
 }
 
 module.exports = ArkimeUtil;

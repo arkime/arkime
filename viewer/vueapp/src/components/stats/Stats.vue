@@ -371,6 +371,7 @@ SPDX-License-Identifier: Apache-2.0
             {{ childError }}
             <button
               type="button"
+              :aria-label="$t('common.dismiss')"
               class="btn-close"
               @click="childError = ''">
               <span>&times;</span>
@@ -424,6 +425,7 @@ SPDX-License-Identifier: Apache-2.0
             <button
               class="btn btn-sm btn-success pull-right ms-2"
               @click="executeShrink(shrinkIndex)"
+              :aria-label="$t('common.apply')"
               type="button">
               <span class="fa fa-check" />
             </button> <!-- /ok button -->
@@ -431,6 +433,7 @@ SPDX-License-Identifier: Apache-2.0
             <button
               class="btn btn-sm btn-warning pull-right ms-2"
               @click="cancelShrink"
+              :aria-label="$t('common.cancel')"
               type="button">
               <span class="fa fa-ban" />
             </button> <!-- /cancel button -->

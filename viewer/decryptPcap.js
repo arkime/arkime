@@ -38,8 +38,14 @@ async function main () {
     }
 
     // Decrypt the dek
-    const kdecipher = ArkimeUtil.createDecipherAES192NoIV(kek);
-    const encKey = Buffer.concat([kdecipher.update(Buffer.from(info.dek, 'hex')), kdecipher.final()]);
+    let encKey;
+    if (info.dekEncoding === 'aes-256-gcm') {
+      encKey = ArkimeUtil.decryptDEKWithGCM(kek, Buffer.from(info.dek, 'hex'),
+        Buffer.from(info.dekSalt, 'hex'), Buffer.from(info.dekIv, 'hex'), Buffer.from(info.dekTag, 'hex'));
+    } else {
+      const kdecipher = ArkimeUtil.createDecipherAES192NoIV(kek);
+      encKey = Buffer.concat([kdecipher.update(Buffer.from(info.dek, 'hex')), kdecipher.final()]);
+    }
 
     const r = fs.createReadStream(process.argv[2]);
 

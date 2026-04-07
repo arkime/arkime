@@ -10,6 +10,11 @@ dl
   dd
     +clickableValue('id', Db.sid2Id(session.id))
 
+  if session.cluster
+    dt Cluster
+    dd
+      span(style="padding: 2px 1px 2px 2px;")= session.cluster
+
   +arrayList(session, "rootId", "Root Id", "rootId")
 
   if (session.network && session.network.community_id)

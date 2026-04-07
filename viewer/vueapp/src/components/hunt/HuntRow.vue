@@ -107,6 +107,7 @@ SPDX-License-Identifier: Apache-2.0
           @click="$emit('removeJob', job, arrayName)"
           :disabled="job.loading"
           type="button"
+          :aria-label="$t('hunts.removeHuntTip')"
           class="ms-1 pull-right btn btn-sm btn-danger">
           <span
             v-if="!job.loading"
@@ -123,6 +124,7 @@ SPDX-License-Identifier: Apache-2.0
         type="button"
         :id="`remove${job.id}`"
         @click="$emit('removeFromSessions', job)"
+        :aria-label="$t('common.remove')"
         class="ms-1 pull-right btn btn-sm btn-danger"
         v-if="canEdit && canRemoveFromSessions"
         :disabled="job.loading || !job.matchedSessions || job.removed || !user.removeEnabled">
@@ -144,6 +146,7 @@ SPDX-License-Identifier: Apache-2.0
           @click="$emit('openSessions', job)"
           :disabled="!job.matchedSessions || job.removed"
           :id="`openresults${job.id}`"
+          :aria-label="$t('common.open')"
           class="ms-1 pull-right btn btn-sm btn-theme-primary">
           <span class="fa fa-folder-open fa-fw" />
           <BTooltip
@@ -158,6 +161,7 @@ SPDX-License-Identifier: Apache-2.0
           :id="`rerun${job.id}`"
           type="button"
           @click="$emit('rerunJob', job)"
+          :aria-label="$t('hunts.rerunTip')"
           class="ms-1 pull-right btn btn-sm btn-theme-secondary">
           <span class="fa fa-refresh fa-fw" />
           <BTooltip :target="`rerun${job.id}`">
@@ -170,6 +174,7 @@ SPDX-License-Identifier: Apache-2.0
           :id="`repeat${job.id}`"
           type="button"
           @click="$emit('repeatJob', job)"
+          :aria-label="$t('hunts.repeatTip')"
           class="ms-1 pull-right btn btn-sm btn-theme-tertiary">
           <span class="fa fa-repeat fa-fw" />
           <BTooltip :target="`repeat${job.id}`">
@@ -183,6 +188,7 @@ SPDX-License-Identifier: Apache-2.0
           @click="$emit('cancelJob', job)"
           :disabled="job.loading"
           type="button"
+          :aria-label="$t('hunts.cancelTip')"
           class="ms-1 pull-right btn btn-sm btn-danger">
           <span
             v-if="!job.loading"
@@ -201,6 +207,7 @@ SPDX-License-Identifier: Apache-2.0
           :disabled="job.loading"
           @click="$emit('pauseJob', job)"
           type="button"
+          :aria-label="$t('hunts.pauseTip')"
           class="ms-1 pull-right btn btn-sm btn-warning">
           <span
             v-if="!job.loading"
@@ -219,6 +226,7 @@ SPDX-License-Identifier: Apache-2.0
           :disabled="job.loading"
           @click="$emit('playJob', job)"
           type="button"
+          :aria-label="$t('hunts.resumeTip')"
           class="ms-1 pull-right btn btn-sm btn-theme-secondary">
           <span
             v-if="!job.loading"

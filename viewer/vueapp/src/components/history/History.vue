@@ -47,6 +47,7 @@ SPDX-License-Identifier: Apache-2.0
               type="button"
               @click="clear"
               :disabled="!searchTerm"
+              :aria-label="$t('common.clear')"
               class="btn btn-outline-secondary btn-clear-input">
               <span class="fa fa-close" />
             </button>
@@ -90,6 +91,7 @@ SPDX-License-Identifier: Apache-2.0
           <th width="100px;">
             <button
               id="toggleColFilters"
+              :aria-label="$t('history.toggleColFiltersTip')"
               class="btn btn-xs btn-primary margined-bottom-sm"
               @click="showColFilters = !showColFilters">
               <span class="fa fa-filter" />
@@ -194,6 +196,7 @@ SPDX-License-Identifier: Apache-2.0
                 type="button"
                 role="button"
                 title="Delete history"
+                :aria-label="$t('common.delete')"
                 class="btn btn-xs btn-warning ms-1"
                 v-has-role="{user:user,roles:'arkimeAdmin'}"
                 v-has-permission="'removeEnabled'"
@@ -204,6 +207,7 @@ SPDX-License-Identifier: Apache-2.0
                 :id="`openPage-${item.id}`"
                 class="btn btn-xs btn-info ms-1"
                 v-if="item.uiPage"
+                :aria-label="$t('common.open')"
                 tooltip-placement="right"
                 @click="openPage(item)">
                 <span class="fa fa-folder-open" />

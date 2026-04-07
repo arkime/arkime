@@ -14,6 +14,7 @@ SPDX-License-Identifier: Apache-2.0
       <button
         type="button"
         v-if="showFitButton"
+        :aria-label="$t('utils.fitBtnTip')"
         class="btn btn-xs btn-theme-quaternary fit-btn"
         @click="fitTable"
         id="fitBtn">
@@ -108,6 +109,7 @@ SPDX-License-Identifier: Apache-2.0
               :id="`zero-btn-${column.name}`"
               type="button"
               @click="zeroColValues(column)"
+              :aria-label="$t('common.clear')"
               class="btn btn-xs btn-secondary">
               <span class="fa fa-ban" />
               <BTooltip :target="`zero-btn-${column.name}`">

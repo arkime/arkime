@@ -6,6 +6,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+#include <inttypes.h>
 #include "gio/gio.h"
 #include "glib-object.h"
 #include "arkime.h"
@@ -28,6 +29,7 @@ typedef struct {
     char                    data[2048];
     uint32_t                len;
     int                     readWatch;
+    int                     refs;
 } CommandClient_t;
 
 #define MAX_INDENT 40
@@ -38,9 +40,7 @@ LOCAL void arkime_command_exit(int argc, char **argv, gpointer cc);
 LOCAL void arkime_command_client_free(CommandClient_t *cc)
 {
     g_source_remove(cc->readWatch);
-    g_object_unref (cc->socket);
-
-    ARKIME_TYPE_FREE(CommandClient_t, cc);
+    arkime_command_client_decref(cc);
 }
 /******************************************************************************/
 LOCAL gboolean arkime_command_run(const char *line, gpointer cc)
@@ -127,6 +127,7 @@ LOCAL gboolean arkime_command_server_read_cb(gint UNUSED(fd), GIOCondition UNUSE
 
     CommandClient_t *cc = ARKIME_TYPE_ALLOC0(CommandClient_t);
     cc->socket = client;
+    cc->refs = 1;
 
     int cfd = g_socket_get_fd(client);
     cc->readWatch = arkime_watch_fd(cfd, ARKIME_GIO_READ_COND, arkime_command_data_read_cb, cc);
@@ -221,6 +222,77 @@ void arkime_command_respond(gpointer cc, const char *data, int len)
         LOG("ERROR - Sending response: %s", error ? error->message : "Unknown error");
         g_clear_error(&error);
     }
+}
+/******************************************************************************/
+void arkime_command_client_incref(void *vcc)
+{
+    CommandClient_t *cc = (CommandClient_t *)vcc;
+    ARKIME_THREAD_INCR(cc->refs);
+}
+/******************************************************************************/
+void arkime_command_client_decref(void *vcc)
+{
+    CommandClient_t *cc = (CommandClient_t *)vcc;
+    int newrefs = ARKIME_THREAD_DECRNEW(cc->refs)
+    if (newrefs == 0) {
+        g_object_unref(cc->socket);
+        ARKIME_TYPE_FREE(CommandClient_t, cc);
+    }
+}
+/******************************************************************************/
+typedef struct {
+    CommandClient_t    *client;
+    char               *filename;
+    uint64_t            bytes;
+    uint64_t            packets;
+    gboolean            isError;
+} FileNotification_t;
+
+LOCAL gboolean arkime_command_notify_idle_cb(gpointer data)
+{
+    FileNotification_t *fn = (FileNotification_t *)data;
+    char msg[2048];
+    GError *error = NULL;
+
+    if (fn->isError) {
+        snprintf(msg, sizeof(msg), "file-error filename=%s\n", fn->filename);
+    } else {
+        snprintf(msg, sizeof(msg), "file-done filename=%s packets=%" PRIu64 " bytes=%" PRIu64 "\n",
+                 fn->filename, fn->packets, fn->bytes);
+    }
+
+    if (g_socket_send(fn->client->socket, msg, strlen(msg), NULL, &error) < 0) {
+        if (config.debug)
+            LOG("DEBUG - Notification send failed (client disconnected?): %s", error ? error->message : "unknown");
+        g_clear_error(&error);
+    }
+
+    arkime_command_client_decref(fn->client);
+    g_free(fn->filename);
+    ARKIME_TYPE_FREE(FileNotification_t, fn);
+    return G_SOURCE_REMOVE;
+}
+/******************************************************************************/
+void arkime_command_notify_file_done(void *clientRef, const char *filename, uint64_t bytes, uint64_t packets)
+{
+    FileNotification_t *fn = ARKIME_TYPE_ALLOC0(FileNotification_t);
+    fn->client = (CommandClient_t *)clientRef;
+    fn->filename = g_strdup(filename);
+    fn->bytes = bytes;
+    fn->packets = packets;
+    fn->isError = FALSE;
+    arkime_command_client_incref(clientRef);
+    g_idle_add(arkime_command_notify_idle_cb, fn);
+}
+/******************************************************************************/
+void arkime_command_notify_file_error(void *clientRef, const char *filename)
+{
+    FileNotification_t *fn = ARKIME_TYPE_ALLOC0(FileNotification_t);
+    fn->client = (CommandClient_t *)clientRef;
+    fn->filename = g_strdup(filename);
+    fn->isError = TRUE;
+    arkime_command_client_incref(clientRef);
+    g_idle_add(arkime_command_notify_idle_cb, fn);
 }
 /******************************************************************************/
 LOCAL int arkime_command_cmp(const void *a, const void *b)

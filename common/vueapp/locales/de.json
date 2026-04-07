@@ -1293,6 +1293,7 @@
     "hideViz": "Dieser Cluster ist so eingestellt, dass der Graph ausgeblendet wird, wenn ein Zeitbereich von {days} Tagen oder mehr angefordert wird",
     "hideVizTip": "Dies hilft der Leistung",
     "hideVizMore": "Klicken Sie oben auf die Schaltfläche 'Viz-Daten abrufen', um Visualisierungsdaten für diese Abfrage abzurufen (oder öffnen Sie das Dropdown-Menü für weitere Optionen).",
+    "toggleMapSize": "Kartengröße umschalten",
     "toggleSrcCountry": "Quellländer umschalten",
     "toggleDstCountry": "Zielländer umschalten",
     "graphLines": "Linien",
