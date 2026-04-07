@@ -1218,6 +1218,24 @@
       "mismatchedPassword": "新しいパスワードと確認用パスワードが一致しません",
       "changePassword": "パスワードを変更"
     },
+    "totp": {
+      "title": "二要素認証",
+      "description": "重要な変更を行う際に認証アプリ（Authy、Google Authenticatorなど）からのコードを要求することで、セキュリティをさらに強化します。",
+      "status": "ステータス",
+      "enabled": "有効",
+      "disabled": "無効",
+      "enroll": "2FAを有効にする",
+      "unenroll": "2FAを無効にする",
+      "scanQR": "QRコードをスキャン",
+      "generatingQR": "QRコードを生成中...",
+      "manualEntry": "手動入力",
+      "verifyCode": "確認コード",
+      "codePlaceholder": "000000",
+      "verify": "確認して有効にする",
+      "invalidCode": "有効な6桁のコードを入力してください",
+      "confirmDisable": "無効にするコードを入力",
+      "confirmUnenroll": "2FAを無効にする"
+    },
     "shortcuts": {
       "newShortcut": "新しいショートカット",
       "editShortcut": "ショートカットを編集",

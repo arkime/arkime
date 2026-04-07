@@ -1218,6 +1218,24 @@
       "mismatchedPassword": "您的新密码和确认不匹配",
       "changePassword": "更改密码"
     },
+    "totp": {
+      "title": "双因素认证",
+      "description": "通过在进行敏感更改时要求使用认证应用程序（Authy、Google Authenticator等）中的代码，增加额外的安全层。",
+      "status": "状态",
+      "enabled": "已启用",
+      "disabled": "未启用",
+      "enroll": "启用 2FA",
+      "unenroll": "停用 2FA",
+      "scanQR": "扫描 QR 码",
+      "generatingQR": "正在生成 QR 码...",
+      "manualEntry": "手动输入",
+      "verifyCode": "验证码",
+      "codePlaceholder": "000000",
+      "verify": "验证并启用",
+      "invalidCode": "请输入有效的6位数代码",
+      "confirmDisable": "输入代码以停用",
+      "confirmUnenroll": "停用 2FA"
+    },
     "shortcuts": {
       "newShortcut": "新建快捷方式",
       "editShortcut": "编辑快捷方式",

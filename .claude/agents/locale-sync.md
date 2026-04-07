@@ -14,7 +14,7 @@ description: |
 ## Locale file structure
  - Locale files live in `common/vueapp/locales/`
  - `en.json` is the source of truth for keys and line numbers
- - Other locale files: de.json, es.json, et.json, fr.json, ja.json, ko.json, zh.json, x-pl.json
+ - Other locale files: de.json, es.json, et.json, fr.json, ja.json, ko.json, pt-BR.json, zh.json, x-pl.json
  - x-pl.json (Pig Latin) has one extra line in `__meta` for `"customFlag": "🐷"`, so all its keys are offset by +1 line compared to en.json
  - All other locale files must have identical keys at identical line numbers as en.json
 
@@ -47,7 +47,7 @@ def get_key(line):
             return key
     return None
 
-for lang in ['de', 'es', 'et', 'fr', 'ja', 'ko', 'zh']:
+for lang in ['de', 'es', 'et', 'fr', 'ja', 'ko', 'pt-BR', 'zh']:
     with open(f'{lang}.json') as f:
         lang_lines = f.readlines()
     if len(en_lines) != len(lang_lines):
