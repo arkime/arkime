@@ -1,7 +1,7 @@
 # Many of these test user/roles start with sac- (skip auto create) because
 # otherwise viewer in regression mode would auto create the user.
 # Some day should remove all autocreate code.
-use Test::More tests => 221;
+use Test::More tests => 249;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -721,6 +721,113 @@ my $uaToken = getTokenCookie('testusersadmin');
     $json = viewerGetToken("/api/user/roles", $token);
     ok($json->{success}, "user roles returns success");
     ok(ref $json->{roles} eq 'ARRAY', "user roles returns array");
+
+# TOTP tests
+    # Create non-admin test user to verify TOTP requires admin role
+    $json = viewerPostToken("/api/user", '{"userId": "sac-nonadmin", "userName": "Non-Admin User", "enabled":true, "webEnabled":true, "password":"nonadminpass", "roles": ["arkimeUser"]}', $token);
+    ok($json->{success}, "Non-admin test user created");
+    my $nonAdminToken = getTokenCookie('sac-nonadmin');
+
+    # Non-admin users should be denied TOTP access
+    $json = viewerGetToken("/api/user/totp/status?arkimeRegressionUser=sac-nonadmin", $nonAdminToken);
+    is($json->{success}, 0, "Non-admin cannot access TOTP status");
+
+    $json = viewerPostToken("/api/user/totp/setup?arkimeRegressionUser=sac-nonadmin", '{}', $nonAdminToken);
+    is($json->{success}, 0, "Non-admin cannot setup TOTP");
+
+    # Create admin test user for TOTP tests
+    addUser("-n testuser sac-totpuser sac-totpuser sac-totpuser --roles arkimeAdmin");
+    my $totpToken = getTokenCookie('sac-totpuser');
+
+    # Get TOTP status - should be not enabled
+    $json = viewerGetToken("/api/user/totp/status?arkimeRegressionUser=sac-totpuser", $totpToken);
+    ok($json->{success}, "TOTP status returns success");
+    is($json->{enabled}, 0, "TOTP not enabled initially");
+
+    # Setup TOTP - get QR code
+    $json = viewerPostToken("/api/user/totp/setup?arkimeRegressionUser=sac-totpuser", '{}', $totpToken);
+    ok($json->{success}, "TOTP setup returns success");
+    ok(defined $json->{secret}, "TOTP setup returns secret");
+    ok(defined $json->{qrCodeDataUrl}, "TOTP setup returns qrCodeDataUrl");
+    like($json->{qrCodeDataUrl}, qr/^data:image\/png;base64,/, "TOTP qrCodeDataUrl is data URL");
+    my $totpSecret = $json->{secret};
+
+    # Confirm TOTP with invalid code
+    $json = viewerPostToken("/api/user/totp/confirm?arkimeRegressionUser=sac-totpuser", '{"code": "000000"}', $totpToken);
+    is($json->{success}, 0, "TOTP confirm fails with invalid code");
+
+    # Generate valid TOTP code using the secret
+    my $validCode = generate_totp($totpSecret);
+
+    # Need to re-setup since invalid attempt doesn't invalidate pending secret
+    # but the secret is still pending from the setup above
+
+    # Confirm TOTP with valid code
+    $json = viewerPostToken("/api/user/totp/confirm?arkimeRegressionUser=sac-totpuser", '{"code": "' . $validCode . '"}', $totpToken);
+    ok($json->{success}, "TOTP confirm succeeds with valid code");
+
+    # Get TOTP status - should be enabled now
+    $json = viewerGetToken("/api/user/totp/status?arkimeRegressionUser=sac-totpuser", $totpToken);
+    ok($json->{success}, "TOTP status returns success after enrollment");
+    is($json->{enabled}, 1, "TOTP enabled after confirm");
+
+    # Disable TOTP with invalid code
+    $json = viewerPostToken("/api/user/totp/disable?arkimeRegressionUser=sac-totpuser", '{"code": "000000"}', $totpToken);
+    is($json->{success}, 0, "TOTP disable fails with invalid code");
+
+    # Disable TOTP with valid code
+    $validCode = generate_totp($totpSecret);
+    $json = viewerPostToken("/api/user/totp/disable?arkimeRegressionUser=sac-totpuser", '{"code": "' . $validCode . '"}', $totpToken);
+    ok($json->{success}, "TOTP disable succeeds with valid code");
+
+    # Get TOTP status - should be not enabled again
+    $json = viewerGetToken("/api/user/totp/status?arkimeRegressionUser=sac-totpuser", $totpToken);
+    is($json->{enabled}, 0, "TOTP not enabled after disable");
+
+    # Try to disable TOTP when not enabled (no totpSecret)
+    $json = viewerPostToken("/api/user/totp/disable?arkimeRegressionUser=sac-totpuser", '{"code": "123456"}', $totpToken);
+    is($json->{success}, 0, "TOTP disable fails when not enabled");
+    like($json->{text}, qr/not enabled/i, "TOTP disable returns not enabled message");
+
+# TOTP admin disable tests
+    # Re-enroll the test user for admin tests
+    $json = viewerPostToken("/api/user/totp/setup?arkimeRegressionUser=sac-totpuser", '{}', $totpToken);
+    ok($json->{success}, "TOTP re-setup for admin tests");
+    $totpSecret = $json->{secret};
+    $validCode = generate_totp($totpSecret);
+    $json = viewerPostToken("/api/user/totp/confirm?arkimeRegressionUser=sac-totpuser", '{"code": "' . $validCode . '"}', $totpToken);
+    ok($json->{success}, "TOTP re-confirm for admin tests");
+
+    # Admin (anonymous user has usersAdmin) trying to disable their own TOTP without code should fail
+    # First enroll admin user
+    $json = viewerPostToken("/api/user/totp/setup", '{}', $token);
+    ok($json->{success}, "Admin TOTP setup");
+    my $adminTotpSecret = $json->{secret};
+    my $adminValidCode = generate_totp($adminTotpSecret);
+    $json = viewerPostToken("/api/user/totp/confirm", '{"code": "' . $adminValidCode . '"}', $token);
+    ok($json->{success}, "Admin TOTP confirm");
+
+    # Admin trying to disable own TOTP without code - should fail
+    $json = viewerPostToken("/api/user/totp/disable", '{}', $token);
+    is($json->{success}, 0, "Admin cannot disable own TOTP without code");
+    like($json->{text}, qr/code required/i, "Admin disable own returns code required");
+
+    # Admin trying to disable own TOTP with wrong code - should fail
+    $json = viewerPostToken("/api/user/totp/disable", '{"code": "000000"}', $token);
+    is($json->{success}, 0, "Admin cannot disable own TOTP with wrong code");
+
+    # Admin can disable another user's TOTP without code
+    $json = viewerPostToken("/api/user/totp/disable?userId=sac-totpuser", '{}', $token);
+    ok($json->{success}, "Admin can disable other user TOTP without code");
+
+    # Verify other user's TOTP is disabled
+    $json = viewerGetToken("/api/user/totp/status?arkimeRegressionUser=sac-totpuser", $totpToken);
+    is($json->{enabled}, 0, "Other user TOTP disabled by admin");
+
+    # Clean up - disable admin TOTP with valid code
+    $adminValidCode = generate_totp($adminTotpSecret);
+    $json = viewerPostToken("/api/user/totp/disable", '{"code": "' . $adminValidCode . '"}', $token);
+    ok($json->{success}, "Admin disable own TOTP with valid code");
 
 # clean old users
     viewerGet("/regressionTests/deleteAllUsers");

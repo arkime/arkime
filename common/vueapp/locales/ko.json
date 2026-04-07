@@ -1218,6 +1218,24 @@
       "mismatchedPassword": "새 비밀번호와 확인 비밀번호가 일치하지 않습니다",
       "changePassword": "비밀번호 변경"
     },
+    "totp": {
+      "title": "이중 인증",
+      "description": "민감한 변경 시 인증 앱(Authy, Google Authenticator 등)의 코드를 요구하여 추가 보안 계층을 추가합니다.",
+      "status": "상태",
+      "enabled": "활성화됨",
+      "disabled": "비활성화됨",
+      "enroll": "2FA 활성화",
+      "unenroll": "2FA 비활성화",
+      "scanQR": "QR 코드 스캔",
+      "generatingQR": "QR 코드 생성 중...",
+      "manualEntry": "수동 입력",
+      "verifyCode": "인증 코드",
+      "codePlaceholder": "000000",
+      "verify": "확인 및 활성화",
+      "invalidCode": "유효한 6자리 코드를 입력하세요",
+      "confirmDisable": "비활성화 코드 입력",
+      "confirmUnenroll": "2FA 비활성화"
+    },
     "shortcuts": {
       "newShortcut": "새 바로가기",
       "editShortcut": "바로가기 편집",

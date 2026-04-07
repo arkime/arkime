@@ -10,6 +10,9 @@ const { Client } = require('@elastic/elasticsearch');
 const fs = require('fs');
 const util = require('util');
 const cryptoLib = require('crypto');
+const { LRUCache } = require('lru-cache');
+const otplib = require('otplib');
+const QRCode = require('qrcode');
 
 const systemRolesMapping = {
   superAdmin: ['usersAdmin', 'arkimeAdmin', 'arkimeUser', 'parliamentAdmin', 'parliamentUser', 'wiseAdmin', 'wiseUser', 'cont3xtAdmin', 'cont3xtUser'],
@@ -66,6 +69,15 @@ class User {
   static #dbUrl;
   static #demoMode;
   static #dynamicRolesFuncs;
+  static #totpPendingSecrets = new LRUCache({ max: 1000, ttl: 5 * 60 * 1000 });
+  static #totpAttempts = new LRUCache({ max: 1000, ttl: 60 * 1000 });
+  static #totpMaxAttempts = 5;
+  static #totpOptions = {
+    algorithm: 'sha1',
+    digits: 6,
+    period: 30,
+    epochTolerance: 30 // ±1 time step (30s) for clock drift
+  };
 
   /**
    * Initialize the User subsystem
@@ -1142,6 +1154,207 @@ class User {
   }
 
   /******************************************************************************/
+  // TOTP (Two-Factor Authentication) APIs
+  /******************************************************************************/
+
+  static #verifyTotp (stored, token, userId) {
+    const secret = Auth.store2totp(stored, userId);
+    if (!secret) {
+      return false;
+    }
+    const result = otplib.verifySync({ secret, token, ...User.#totpOptions });
+    return result.valid;
+  }
+
+  // Verify a TOTP code for this user (with rate limiting)
+  verifyTotp (code) {
+    if (!this.totpSecret) {
+      return false;
+    }
+    if (!this.#checkTotpRateLimit()) {
+      return 'rate-limited';
+    }
+    if (!User.#verifyTotp(this.totpSecret, code, this.userId)) {
+      this.#recordTotpFailure();
+      return false;
+    }
+    this.#clearTotpAttempts();
+    return true;
+  }
+
+  #checkTotpRateLimit () {
+    return (User.#totpAttempts.get(this.userId) || 0) < User.#totpMaxAttempts;
+  }
+
+  #recordTotpFailure () {
+    const attempts = (User.#totpAttempts.get(this.userId) || 0) + 1;
+    User.#totpAttempts.set(this.userId, attempts);
+  }
+
+  #clearTotpAttempts () {
+    User.#totpAttempts.delete(this.userId);
+  }
+
+  static #generateTotpSecret () {
+    return otplib.generateSecret();
+  }
+
+  static #getTotpKeyUri (userId, secret, issuer = 'Arkime') {
+    return otplib.generateURI({ issuer, label: userId, secret, type: 'totp', ...User.#totpOptions });
+  }
+
+  /**
+   * GET - /api/user/totp/status
+   *
+   * Check if TOTP is enabled for the current user
+   * @name /user/totp/status
+   * @returns {boolean} success - Whether the request was successful.
+   * @returns {boolean} enabled - Whether TOTP is enabled for this user.
+   */
+  static apiGetTotpStatus (req, res) {
+    return res.json({
+      success: true,
+      enabled: !!req.settingUser.totpSecret
+    });
+  }
+
+  /**
+   * POST - /api/user/totp/setup
+   *
+   * Start TOTP enrollment - generates a new secret and returns the QR code URI.
+   * The secret is not saved until confirmed with a valid code.
+   * @name /user/totp/setup
+   * @returns {boolean} success - Whether the setup initiation was successful.
+   * @returns {string} secret - The TOTP secret (Base32 encoded) for manual entry.
+   * @returns {string} qrCodeDataUrl - The QR code as a data URL for display.
+   */
+  static async apiSetupTotp (req, res) {
+    const secret = User.#generateTotpSecret();
+    const qrCodeUri = User.#getTotpKeyUri(req.settingUser.userId, secret);
+
+    // Store encrypted pending secret server-side; overwrites any previous setup
+    User.#totpPendingSecrets.set(req.settingUser.userId, Auth.totp2store(secret));
+
+    try {
+      const qrCodeDataUrl = await QRCode.toDataURL(qrCodeUri);
+      return res.json({
+        success: true,
+        secret,
+        qrCodeDataUrl
+      });
+    } catch (err) {
+      console.log('ERROR - Failed to generate QR code', err);
+      User.#totpPendingSecrets.delete(req.settingUser.userId);
+      return res.serverError(500, 'Failed to generate QR code');
+    }
+  }
+
+  /**
+   * POST - /api/user/totp/confirm
+   *
+   * Confirm TOTP enrollment by verifying a code from the authenticator app.
+   * If valid, the secret is encrypted and saved to the user record.
+   * @name /user/totp/confirm
+   * @returns {boolean} success - Whether the confirmation was successful.
+   * @returns {string} text - The success/error message to display to the user.
+   */
+  static async apiConfirmTotp (req, res) {
+    if (!ArkimeUtil.isString(req.body.code)) {
+      return res.serverError(403, 'Missing verification code');
+    }
+
+    if (!req.settingUser.#checkTotpRateLimit()) {
+      return res.serverError(429, 'Too many attempts. Try again later.');
+    }
+
+    const pendingStore = User.#totpPendingSecrets.get(req.settingUser.userId);
+    if (!pendingStore) {
+      return res.serverError(403, 'No pending TOTP setup. Please start setup again.');
+    }
+
+    if (!User.#verifyTotp(pendingStore, req.body.code, req.settingUser.userId)) {
+      req.settingUser.#recordTotpFailure();
+      return res.serverError(403, 'Invalid verification code');
+    }
+
+    req.settingUser.#clearTotpAttempts();
+    const user = req.settingUser;
+    user.totpSecret = pendingStore;
+    User.#totpPendingSecrets.delete(user.userId);
+
+    try {
+      await User.setUser(user.userId, user);
+      return res.json({
+        success: true,
+        text: 'Two-factor authentication enabled successfully'
+      });
+    } catch (err) {
+      console.log(`ERROR - ${req.method} /api/user/totp/confirm update error`, util.inspect(err, false, 50));
+      return res.serverError(500, 'Failed to enable two-factor authentication');
+    }
+  }
+
+  /**
+   * POST - /api/user/totp/disable
+   *
+   * Disable TOTP for a user. Admins (usersAdmin) can disable anyone's TOTP.
+   * Regular users must provide a valid TOTP code to disable their own.
+   * @name /user/totp/disable
+   * @returns {boolean} success - Whether the disable operation was successful.
+   * @returns {string} text - The success/error message to display to the user.
+   */
+  static async apiDisableTotp (req, res) {
+    const user = req.settingUser;
+
+    if (!user.totpSecret) {
+      return res.serverError(403, 'Two-factor authentication is not enabled');
+    }
+
+    // Admins can disable OTHER users' TOTP without code, but not their own
+    const isAdmin = req.user.hasRole('usersAdmin');
+    const isSelf = req.user.userId === user.userId;
+
+    if (isSelf || !isAdmin) {
+      // Must provide valid TOTP code to disable your own (even admins)
+      if (!ArkimeUtil.isString(req.body.code)) {
+        return res.serverError(403, 'TOTP code required');
+      }
+
+      const result = user.verifyTotp(req.body.code);
+      if (result === 'rate-limited') {
+        return res.serverError(429, 'Too many attempts. Try again later.');
+      }
+      if (!result) {
+        return res.serverError(403, 'Invalid verification code');
+      }
+    }
+    // else: admin disabling another user's TOTP - no code required
+
+    // Skip this check if we are a superAdmin
+    if (!req.user.hasRole('superAdmin')) {
+      // Only disable TOTP if we have the same admin role(s)
+      for (const role of adminRolesWithSuper) {
+        if (!req.user.hasRole(role) && user.hasRole(role)) {
+          return res.serverError(403, `Not allowed to disable TOTP for ${role}`);
+        }
+      }
+    }
+
+    delete user.totpSecret;
+
+    try {
+      await User.setUser(user.userId, user);
+      return res.json({
+        success: true,
+        text: 'Two-factor authentication disabled successfully'
+      });
+    } catch (err) {
+      console.log(`ERROR - ${req.method} /api/user/totp/disable update error`, util.inspect(err, false, 50));
+      return res.serverError(500, 'Failed to disable two-factor authentication');
+    }
+  }
+
+  /******************************************************************************/
   // Regression Tests APIs
   /******************************************************************************/
 
@@ -1373,6 +1586,19 @@ class User {
     return async (req, res, next) => {
       if (!req.user.hasAllRole(role)) {
         console.log(`Permission denied to ${req.user.userId} while requesting resource: ${req._parsedUrl.pathname}, using role ${role}`);
+        return res.serverError(403, 'You do not have permission to access this resource');
+      }
+      next();
+    };
+  }
+
+  /**
+   * Denies access if the setting user lacks ANY of the required roles (OR logic)
+   */
+  static checkSettingUserAnyRole (roles) {
+    return async (req, res, next) => {
+      if (!req.settingUser.hasRole(roles)) {
+        console.log(`Permission denied to ${req.settingUser.userId} while requesting resource: ${req._parsedUrl.pathname}, requires one of roles ${roles}`);
         return res.serverError(403, 'You do not have permission to access this resource');
       }
       next();

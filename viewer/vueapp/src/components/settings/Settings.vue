@@ -1381,6 +1381,129 @@ SPDX-License-Identifier: Apache-2.0
               </span>
             </div>
           </div> <!-- /change password button/error -->
+
+          <!-- TOTP Two-Factor Authentication (only for admins) -->
+          <div v-has-role="{user:user,roles:'arkimeAdmin,cont3xtAdmin,wiseAdmin'}">
+            <hr class="my-4">
+            <div class="d-flex align-items-center mb-1">
+              <h4 class="mb-0 me-2">
+                {{ $t('settings.totp.title') }}
+              </h4>
+              <!-- Enroll button (when not enrolled) -->
+              <button
+                v-if="!totpEnabled && !totpSetupMode"
+                type="button"
+                class="btn btn-sm btn-theme-primary"
+                @click="startTotpSetup">
+                {{ $t('settings.totp.enroll') }}
+              </button>
+              <!-- Enabled status + Unenroll button (when enrolled) -->
+              <span
+                v-if="totpEnabled && !totpSetupMode"
+                class="text-success me-2">
+                <span class="fa fa-check" /> {{ $t('settings.totp.enabled') }}
+              </span>
+              <button
+                v-if="totpEnabled && !totpSetupMode"
+                type="button"
+                class="btn btn-sm btn-danger"
+                @click="showTotpDisable = true">
+                {{ $t('settings.totp.unenroll') }}
+              </button>
+              <!-- Cancel button (when in setup mode) -->
+              <button
+                v-if="totpSetupMode"
+                type="button"
+                class="btn btn-sm btn-warning"
+                @click="cancelTotpSetup">
+                {{ $t('common.cancel') }}
+              </button>
+            </div>
+            <p class="small mb-3">
+              {{ $t('settings.totp.description') }}
+            </p>
+
+            <!-- TOTP Setup (QR Code + Verification) -->
+            <div
+              v-if="totpSetupMode"
+              class="mb-3">
+              <div class="my-2">
+                <img
+                  v-if="totpQRDataUrl"
+                  :src="totpQRDataUrl"
+                  alt="TOTP QR Code"
+                  class="rounded p-2"
+                  style="border: 1px solid var(--color-foreground, #333); background-color: var(--color-background, #fff);">
+                <span
+                  v-else>{{ $t('settings.totp.generatingQR') }}</span>
+              </div>
+              <div class="small mb-2">
+                {{ $t('settings.totp.manualEntry') }}: <code>{{ totpSecret }}</code>
+              </div>
+              <div
+                class="input-group input-group-sm"
+                style="width: 400px;">
+                <span class="input-group-text">{{ $t('settings.totp.verifyCode') }}</span>
+                <input
+                  type="text"
+                  maxlength="6"
+                  class="form-control"
+                  v-model="totpVerifyCode"
+                  :placeholder="$t('settings.totp.codePlaceholder')"
+                  @keyup.enter="confirmTotpSetup">
+                <button
+                  type="button"
+                  class="btn btn-sm btn-success"
+                  :disabled="!totpVerifyCode || totpVerifyCode.length !== 6"
+                  @click="confirmTotpSetup">
+                  {{ $t('settings.totp.verify') }}
+                </button>
+              </div>
+              <span
+                v-if="totpError"
+                class="small text-danger d-block mt-2">
+                <span class="fa fa-exclamation-triangle" />&nbsp;
+                {{ totpError }}
+              </span>
+            </div>
+
+            <!-- TOTP Disable Confirmation -->
+            <div
+              v-if="showTotpDisable"
+              class="mb-3">
+              <div
+                class="input-group input-group-sm"
+                style="width: 400px;">
+                <span class="input-group-text">{{ $t('settings.totp.confirmDisable') }}</span>
+                <input
+                  type="text"
+                  maxlength="6"
+                  class="form-control"
+                  v-model="totpDisableCode"
+                  :placeholder="$t('settings.totp.codePlaceholder')"
+                  @keyup.enter="disableTotp">
+                <button
+                  type="button"
+                  class="btn btn-sm btn-danger"
+                  :disabled="!totpDisableCode || totpDisableCode.length !== 6"
+                  @click="disableTotp">
+                  {{ $t('settings.totp.confirmUnenroll') }}
+                </button>
+              </div>
+              <button
+                type="button"
+                class="btn btn-sm btn-secondary mt-2"
+                @click="showTotpDisable = false; totpDisableCode = ''">
+                {{ $t('common.cancel') }}
+              </button>
+              <span
+                v-if="totpError"
+                class="small text-danger d-block mt-2">
+                <span class="fa fa-exclamation-triangle" />&nbsp;
+                {{ totpError }}
+              </span>
+            </div>
+          </div> <!-- /TOTP Two-Factor Authentication (only for admins) -->
         </form> <!-- /password settings -->
 
         <!-- notifiers settings -->
@@ -1523,6 +1646,15 @@ export default {
       newPassword: '',
       confirmNewPassword: '',
       changePasswordError: '',
+      // TOTP settings vars
+      totpEnabled: false,
+      totpSetupMode: false,
+      totpSecret: '',
+      totpQRDataUrl: '',
+      totpVerifyCode: '',
+      totpDisableCode: '',
+      totpError: '',
+      showTotpDisable: false,
       multiviewer: this.$constants.MULTIVIEWER,
       hasUsersES: this.$constants.HASUSERSES
     };
@@ -1603,6 +1735,9 @@ export default {
       // so response.settings might be stale
       // NOTE: this kicks of fetching all the other data
       this.getSettings(true);
+
+      // Load TOTP status
+      this.loadTotpStatus();
     }).catch((error) => {
       this.error = error.text;
       this.loading = false;
@@ -1926,6 +2061,70 @@ export default {
       }).catch((error) => {
         // display error message to user
         this.displayMessage({ msg: error.text, type: 'danger' });
+      });
+    },
+
+    /* TOTP ---------------------------------------- */
+    /* loads the current TOTP status */
+    loadTotpStatus: function () {
+      CommonUserService.getTotpStatus().then((response) => {
+        this.totpEnabled = response.enabled;
+      }).catch((error) => {
+        console.error('Failed to get TOTP status:', error);
+      });
+    },
+    /* starts the TOTP enrollment process */
+    startTotpSetup: function () {
+      this.totpError = '';
+      this.totpVerifyCode = '';
+      CommonUserService.setupTotp().then((response) => {
+        this.totpSetupMode = true;
+        this.totpSecret = response.secret;
+        this.totpQRDataUrl = response.qrCodeDataUrl;
+      }).catch((error) => {
+        this.totpError = error;
+      });
+    },
+    /* confirms TOTP enrollment with a verification code */
+    confirmTotpSetup: function () {
+      if (!this.totpVerifyCode || this.totpVerifyCode.length !== 6) {
+        this.totpError = this.$t('settings.totp.invalidCode');
+        return;
+      }
+      CommonUserService.confirmTotp(this.totpVerifyCode).then((response) => {
+        this.totpSetupMode = false;
+        this.totpEnabled = true;
+        this.totpSecret = '';
+        this.totpQRDataUrl = '';
+        this.totpVerifyCode = '';
+        this.totpError = '';
+        this.displayMessage({ msg: response.text });
+      }).catch((error) => {
+        this.totpError = error;
+      });
+    },
+    /* cancels TOTP setup */
+    cancelTotpSetup: function () {
+      this.totpSetupMode = false;
+      this.totpSecret = '';
+      this.totpQRDataUrl = '';
+      this.totpVerifyCode = '';
+      this.totpError = '';
+    },
+    /* disables TOTP with a verification code */
+    disableTotp: function () {
+      if (!this.totpDisableCode || this.totpDisableCode.length !== 6) {
+        this.totpError = this.$t('settings.totp.invalidCode');
+        return;
+      }
+      CommonUserService.disableTotp(this.totpDisableCode).then((response) => {
+        this.totpEnabled = false;
+        this.showTotpDisable = false;
+        this.totpDisableCode = '';
+        this.totpError = '';
+        this.displayMessage({ msg: response.text });
+      }).catch((error) => {
+        this.totpError = error;
       });
     },
 

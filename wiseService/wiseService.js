@@ -230,14 +230,28 @@ function setupAuth () {
 }
 
 // ----------------------------------------------------------------------------
+// Check authorization for config changes - supports both PIN code and TOTP
 function checkConfigCode (req, res, next) {
-  console.log(req.body);
-  if (req.body !== undefined && req.body.configCode !== undefined && req.body.configCode === internals.configCode) {
+  const code = req.body?.configCode;
+
+  // Check PIN code
+  if (code && code === internals.configCode) {
     return next();
-  } else {
-    console.log(`Incorrect pin code used - Config pin code is: ${internals.configCode}`);
-    return res.send(JSON.stringify({ success: false, text: 'Not authorized, check log file' })); // not specific error
   }
+
+  // Check TOTP code if exactly 6 digits
+  if (code && code.length === 6 && /^\d{6}$/.test(code) && req.user?.totpSecret) {
+    const result = req.user.verifyTotp(code);
+    if (result === 'rate-limited') {
+      return res.send(JSON.stringify({ success: false, text: 'Too many attempts, try again later' }));
+    }
+    if (result) {
+      return next();
+    }
+  }
+
+  console.log(`Incorrect pin/TOTP code used - Config pin code is: ${internals.configCode}`);
+  return res.send(JSON.stringify({ success: false, text: 'Not authorized, check log file' })); // not specific error
 }
 
 // ----------------------------------------------------------------------------
@@ -1433,6 +1447,13 @@ function isWiseUser (req, res, next) {
 if (internals.webconfig) {
   // Set up auth, all APIs registered below will use passport
   Auth.app(app);
+
+  // Authenticated checkCode endpoint for TOTP testing in regression tests
+  if (ArkimeConfig.regressionTests) {
+    app.post('/regressionTests/checkCodeAuth', [jsonParser, checkConfigCode], (req, res) => {
+      return res.send(JSON.stringify({ success: true, text: 'Authorized' }));
+    });
+  }
 
   app.get('/api/appversion', (req, res) => {
     return res.send({ app: 'wiseService', version: version.version });

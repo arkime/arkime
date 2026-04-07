@@ -1219,6 +1219,24 @@
       "mismatchedPassword": "OurYay ewnay asswordpay andway onfirmationcay odway otnay atchmay",
       "changePassword": "AngeChay Asswordpay"
     },
+    "totp": {
+      "title": "Otway-Actorfay Uthenticationay",
+      "description": "Adday anway extraway ayerlay ofway ecuritysay ybay equiringray away odecay omfray anway authenticatorway appway (Authyway, Ooglegay Authenticatorway, etcway.) enwhay akingmay ensitivesay angeschay.",
+      "status": "Atusstay",
+      "enabled": "Enabledway",
+      "disabled": "Otnay Enabledway",
+      "enroll": "Enableway 2FA",
+      "unenroll": "Isableday 2FA",
+      "scanQR": "Ansay QR Odecay",
+      "generatingQR": "Eneratinggay QR odecay...",
+      "manualEntry": "Anualmay entryway",
+      "verifyCode": "Erificationvay Odecay",
+      "codePlaceholder": "000000",
+      "verify": "Erifyvay & Enableway",
+      "invalidCode": "Easeplay enterway away alidvay 6-igitday odecay",
+      "confirmDisable": "Enterway Odecay otay Isableday",
+      "confirmUnenroll": "Isableday 2FA"
+    },
     "shortcuts": {
       "newShortcut": "EwNay Ortcutshay",
       "editShortcut": "Editway Ortcutshay",

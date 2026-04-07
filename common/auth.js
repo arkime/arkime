@@ -985,6 +985,38 @@ class Auth {
   }
 
   // ----------------------------------------------------------------------------
+  // TOTP (Time-based One-Time Password) Support
+  // ----------------------------------------------------------------------------
+
+  // Encrypt TOTP secret for storage (same pattern as ha12store)
+  static totp2store (secret) {
+    const iv = crypto.randomBytes(16);
+    const c = crypto.createCipheriv('aes-256-cbc', Auth.passwordSecret256, iv);
+    let e = c.update(secret, 'utf8', 'hex');
+    e += c.final('hex');
+    return iv.toString('hex') + '.' + e;
+  }
+
+  // Decrypt stored TOTP secret
+  static store2totp (stored, userId) {
+    try {
+      const parts = stored.split('.');
+      if (parts.length === 2) {
+        const c = crypto.createDecipheriv('aes-256-cbc', Auth.passwordSecret256, Buffer.from(parts[0], 'hex'));
+        let d = c.update(parts[1], 'hex', 'utf8');
+        d += c.final('utf8');
+        return d;
+      } else {
+        console.log(`WARNING - user '${userId}' totpSecret is using invalid format`);
+        return null;
+      }
+    } catch (e) {
+      console.log(`passwordSecret can not decrypt TOTP secret for '${userId}'. Make sure passwordSecret is the same for all nodes/applications.`, e);
+      return null;
+    }
+  }
+
+  // ----------------------------------------------------------------------------
   // Encrypt an object into an auth string
   static obj2authNext (obj, secret) {
     secret ??= Auth.#serverSecret;

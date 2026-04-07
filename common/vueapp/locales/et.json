@@ -1218,6 +1218,24 @@
       "mismatchedPassword": "Sinu uus parool ja kinnitus ei vasta",
       "changePassword": "Muuda parool"
     },
+    "totp": {
+      "title": "Kaheastmeline autentimine",
+      "description": "Lisage täiendav turvakiht, nõudes tundlike muudatuste tegemisel koodi autentimisrakendusest (Authy, Google Authenticator jne).",
+      "status": "Olek",
+      "enabled": "Lubatud",
+      "disabled": "Pole lubatud",
+      "enroll": "Luba 2FA",
+      "unenroll": "Keela 2FA",
+      "scanQR": "Skanni QR-kood",
+      "generatingQR": "QR-koodi genereerimine...",
+      "manualEntry": "Käsitsi sisestamine",
+      "verifyCode": "Kinnituskood",
+      "codePlaceholder": "000000",
+      "verify": "Kinnita ja luba",
+      "invalidCode": "Palun sisestage kehtiv 6-kohaline kood",
+      "confirmDisable": "Sisestage kood keelamiseks",
+      "confirmUnenroll": "Keela 2FA"
+    },
     "shortcuts": {
       "newShortcut": "Uus otsetee",
       "editShortcut": "Muuda otseteed",
