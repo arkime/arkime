@@ -785,7 +785,7 @@ class SessionAPIs {
             url = new URL(sessionPath, viewUrl);
           }
 
-          Auth.addS2SAuth(options, req.user, fields.node, url.pathname);
+          Auth.addS2SAuth(options, req.user, fields.node, url.pathname, ViewerUtils.getClusterSecret(req.query.cluster));
           options.ca = ca;
 
           await new Promise((resolve) => {
