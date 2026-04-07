@@ -277,7 +277,18 @@ class ViewerUtils {
   }
 
   // ----------------------------------------------------------------------------
-  static async makeRequest (node, path, user, cb) {
+  static getClusterSecret (cluster) {
+    if (cluster && internals.remoteClusters) {
+      const sobj = internals.remoteClusters[cluster];
+      if (sobj) {
+        return sobj.serverSecret || sobj.passwordSecret;
+      }
+    }
+    return undefined;
+  }
+
+  // ----------------------------------------------------------------------------
+  static async makeRequest (node, path, user, cb, cluster) {
     try {
       const { viewUrl, client } = await ViewerUtils.getViewUrl(node);
 
@@ -293,7 +304,7 @@ class ViewerUtils {
         agent: client === http ? internals.httpAgent : internals.httpsAgent
       };
 
-      Auth.addS2SAuth(options, user, node, url.pathname);
+      Auth.addS2SAuth(options, user, node, url.pathname, ViewerUtils.getClusterSecret(cluster));
       ViewerUtils.addCaTrust(options, node);
 
       function responseFunc (pres) {
@@ -343,7 +354,7 @@ class ViewerUtils {
       };
 
       const urlPath = url.pathname + (url.search ?? '');
-      Auth.addS2SAuth(options, req.user, req.params.nodeName, urlPath);
+      Auth.addS2SAuth(options, req.user, req.params.nodeName, urlPath, ViewerUtils.getClusterSecret(req.query.cluster));
       ViewerUtils.addCaTrust(options, req.params.nodeName);
 
       const preq = client.request(url, options, (pres) => {

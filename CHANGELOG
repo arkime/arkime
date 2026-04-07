@@ -67,6 +67,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #3830 Show cluster when using multies
 ## Viewer
   - #3826 Handle ip frag pcap display better
+	- #3863 Add per-cluster serverSecret in S2S auth for multicluster pcap retrieval
 
 6.1.0 2026/03/18
 ## BREAKING
