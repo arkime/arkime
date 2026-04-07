@@ -241,7 +241,11 @@ function checkConfigCode (req, res, next) {
 
   // Check TOTP code if exactly 6 digits
   if (code && code.length === 6 && /^\d{6}$/.test(code) && req.user?.totpSecret) {
-    if (Auth.verifyTotp(req.user.totpSecret, code, req.user.userId)) {
+    const result = req.user.verifyTotp(code);
+    if (result === 'rate-limited') {
+      return res.send(JSON.stringify({ success: false, text: 'Too many attempts, try again later' }));
+    }
+    if (result) {
       return next();
     }
   }

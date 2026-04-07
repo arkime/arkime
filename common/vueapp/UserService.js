@@ -279,16 +279,15 @@ export default {
 
   /**
    * Confirms TOTP enrollment by verifying a code
-   * @param {string} secret - The TOTP secret from setup
    * @param {string} code - The 6-digit code from authenticator app
    * @returns {Promise} Promise A promise object that signals the completion
    */
-  confirmTotp (secret, code) {
+  confirmTotp (code) {
     return new Promise((resolve, reject) => {
       fetch('api/user/totp/confirm', {
         method: 'POST',
         headers: setReqHeaders({ 'Content-Type': 'application/json' }),
-        body: JSON.stringify({ secret, code })
+        body: JSON.stringify({ code })
       }).then((response) => {
         return response.json();
       }).then((response) => {

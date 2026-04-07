@@ -2091,7 +2091,7 @@ export default {
         this.totpError = this.$t('settings.totp.invalidCode');
         return;
       }
-      CommonUserService.confirmTotp(this.totpSecret, this.totpVerifyCode).then((response) => {
+      CommonUserService.confirmTotp(this.totpVerifyCode).then((response) => {
         this.totpSetupMode = false;
         this.totpEnabled = true;
         this.totpSecret = '';

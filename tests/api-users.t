@@ -753,14 +753,17 @@ my $uaToken = getTokenCookie('testusersadmin');
     my $totpSecret = $json->{secret};
 
     # Confirm TOTP with invalid code
-    $json = viewerPostToken("/api/user/totp/confirm?arkimeRegressionUser=sac-totpuser", '{"secret": "' . $totpSecret . '", "code": "000000"}', $totpToken);
+    $json = viewerPostToken("/api/user/totp/confirm?arkimeRegressionUser=sac-totpuser", '{"code": "000000"}', $totpToken);
     is($json->{success}, 0, "TOTP confirm fails with invalid code");
 
     # Generate valid TOTP code using the secret
     my $validCode = generate_totp($totpSecret);
 
+    # Need to re-setup since invalid attempt doesn't invalidate pending secret
+    # but the secret is still pending from the setup above
+
     # Confirm TOTP with valid code
-    $json = viewerPostToken("/api/user/totp/confirm?arkimeRegressionUser=sac-totpuser", '{"secret": "' . $totpSecret . '", "code": "' . $validCode . '"}', $totpToken);
+    $json = viewerPostToken("/api/user/totp/confirm?arkimeRegressionUser=sac-totpuser", '{"code": "' . $validCode . '"}', $totpToken);
     ok($json->{success}, "TOTP confirm succeeds with valid code");
 
     # Get TOTP status - should be enabled now
@@ -792,7 +795,7 @@ my $uaToken = getTokenCookie('testusersadmin');
     ok($json->{success}, "TOTP re-setup for admin tests");
     $totpSecret = $json->{secret};
     $validCode = generate_totp($totpSecret);
-    $json = viewerPostToken("/api/user/totp/confirm?arkimeRegressionUser=sac-totpuser", '{"secret": "' . $totpSecret . '", "code": "' . $validCode . '"}', $totpToken);
+    $json = viewerPostToken("/api/user/totp/confirm?arkimeRegressionUser=sac-totpuser", '{"code": "' . $validCode . '"}', $totpToken);
     ok($json->{success}, "TOTP re-confirm for admin tests");
 
     # Admin (anonymous user has usersAdmin) trying to disable their own TOTP without code should fail
@@ -801,7 +804,7 @@ my $uaToken = getTokenCookie('testusersadmin');
     ok($json->{success}, "Admin TOTP setup");
     my $adminTotpSecret = $json->{secret};
     my $adminValidCode = generate_totp($adminTotpSecret);
-    $json = viewerPostToken("/api/user/totp/confirm", '{"secret": "' . $adminTotpSecret . '", "code": "' . $adminValidCode . '"}', $token);
+    $json = viewerPostToken("/api/user/totp/confirm", '{"code": "' . $adminValidCode . '"}', $token);
     ok($json->{success}, "Admin TOTP confirm");
 
     # Admin trying to disable own TOTP without code - should fail

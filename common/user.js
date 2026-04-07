@@ -10,6 +10,8 @@ const { Client } = require('@elastic/elasticsearch');
 const fs = require('fs');
 const util = require('util');
 const cryptoLib = require('crypto');
+const { LRUCache } = require('lru-cache');
+const otplib = require('otplib');
 
 const systemRolesMapping = {
   superAdmin: ['usersAdmin', 'arkimeAdmin', 'arkimeUser', 'parliamentAdmin', 'parliamentUser', 'wiseAdmin', 'wiseUser', 'cont3xtAdmin', 'cont3xtUser'],
@@ -66,6 +68,15 @@ class User {
   static #dbUrl;
   static #demoMode;
   static #dynamicRolesFuncs;
+  static #totpPendingSecrets = new LRUCache({ max: 1000, ttl: 5 * 60 * 1000 });
+  static #totpAttempts = new LRUCache({ max: 1000, ttl: 60 * 1000 });
+  static #totpMaxAttempts = 5;
+  static #totpOptions = {
+    algorithm: 'sha1',
+    digits: 6,
+    period: 30,
+    epochTolerance: 30 // ±1 time step (30s) for clock drift
+  };
 
   /**
    * Initialize the User subsystem
@@ -1145,6 +1156,52 @@ class User {
   // TOTP (Two-Factor Authentication) APIs
   /******************************************************************************/
 
+  static #verifyTotp (stored, token, userId) {
+    const secret = Auth.store2totp(stored, userId);
+    if (!secret) {
+      return false;
+    }
+    const result = otplib.verifySync({ secret, token, ...User.#totpOptions });
+    return result.valid;
+  }
+
+  // Verify a TOTP code for this user (with rate limiting)
+  verifyTotp (code) {
+    if (!this.totpSecret) {
+      return false;
+    }
+    if (!this.#checkTotpRateLimit()) {
+      return 'rate-limited';
+    }
+    if (!User.#verifyTotp(this.totpSecret, code, this.userId)) {
+      this.#recordTotpFailure();
+      return false;
+    }
+    this.#clearTotpAttempts();
+    return true;
+  }
+
+  #checkTotpRateLimit () {
+    return (User.#totpAttempts.get(this.userId) || 0) < User.#totpMaxAttempts;
+  }
+
+  #recordTotpFailure () {
+    const attempts = (User.#totpAttempts.get(this.userId) || 0) + 1;
+    User.#totpAttempts.set(this.userId, attempts);
+  }
+
+  #clearTotpAttempts () {
+    User.#totpAttempts.delete(this.userId);
+  }
+
+  static #generateTotpSecret () {
+    return otplib.generateSecret();
+  }
+
+  static #getTotpKeyUri (userId, secret, issuer = 'Arkime') {
+    return otplib.generateURI({ issuer, label: userId, secret, type: 'totp', ...User.#totpOptions });
+  }
+
   /**
    * GET - /api/user/totp/status
    *
@@ -1171,8 +1228,11 @@ class User {
    * @returns {string} qrCodeDataUrl - The QR code as a data URL for display.
    */
   static async apiSetupTotp (req, res) {
-    const secret = Auth.generateTotpSecret();
-    const qrCodeUri = Auth.getTotpKeyUri(req.settingUser.userId, secret);
+    const secret = User.#generateTotpSecret();
+    const qrCodeUri = User.#getTotpKeyUri(req.settingUser.userId, secret);
+
+    // Store encrypted pending secret server-side; overwrites any previous setup
+    User.#totpPendingSecrets.set(req.settingUser.userId, Auth.totp2store(secret));
 
     // Generate QR code as data URL
     const QRCode = require('qrcode');
@@ -1185,6 +1245,7 @@ class User {
       });
     } catch (err) {
       console.log('ERROR - Failed to generate QR code', err);
+      User.#totpPendingSecrets.delete(req.settingUser.userId);
       return res.serverError(500, 'Failed to generate QR code');
     }
   }
@@ -1199,21 +1260,28 @@ class User {
    * @returns {string} text - The success/error message to display to the user.
    */
   static async apiConfirmTotp (req, res) {
-    if (!ArkimeUtil.isString(req.body.secret)) {
-      return res.serverError(403, 'Missing secret');
-    }
     if (!ArkimeUtil.isString(req.body.code)) {
       return res.serverError(403, 'Missing verification code');
     }
 
-    const otplib = require('otplib');
-    const result = otplib.verifySync({ secret: req.body.secret, token: req.body.code });
-    if (!result.valid) {
+    if (!req.settingUser.#checkTotpRateLimit()) {
+      return res.serverError(429, 'Too many attempts. Try again later.');
+    }
+
+    const pendingStore = User.#totpPendingSecrets.get(req.settingUser.userId);
+    if (!pendingStore) {
+      return res.serverError(403, 'No pending TOTP setup. Please start setup again.');
+    }
+
+    if (!User.#verifyTotp(pendingStore, req.body.code, req.settingUser.userId)) {
+      req.settingUser.#recordTotpFailure();
       return res.serverError(403, 'Invalid verification code');
     }
 
+    req.settingUser.#clearTotpAttempts();
     const user = req.settingUser;
-    user.totpSecret = Auth.totp2store(req.body.secret);
+    user.totpSecret = pendingStore;
+    User.#totpPendingSecrets.delete(user.userId);
 
     try {
       await User.setUser(user.userId, user);
@@ -1253,7 +1321,11 @@ class User {
         return res.serverError(403, 'TOTP code required');
       }
 
-      if (!Auth.verifyTotp(user.totpSecret, req.body.code, user.userId)) {
+      const result = user.verifyTotp(req.body.code);
+      if (result === 'rate-limited') {
+        return res.serverError(429, 'Too many attempts. Try again later.');
+      }
+      if (!result) {
         return res.serverError(403, 'Invalid verification code');
       }
     }

@@ -82,6 +82,7 @@
 # 83 - added files sessionsStarted, sessionsPresent
 # 84 - added shareables index
 # 85 - added packetRange field to sessions
+# 86 - added totpSecret field to users
 
 use HTTP::Request::Common;
 use LWP::UserAgent;
@@ -95,7 +96,7 @@ use URI;
 use strict;
 use warnings;
 
-my $VERSION = 85;
+my $VERSION = 86;
 my $verbose = 0;
 my $PREFIX = $ENV{ARKIME_default__prefix} || $ENV{ARKIME__prefix};
 my $OLDPREFIX = "";
@@ -9517,6 +9518,10 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
         historyUpdate();
         shareablesUpdate();
         usersUpdate();
+    } elsif ($main::versionNumber <= 86) {
+        checkForOld7Indices();
+        sessions3Update();
+        historyUpdate();
     } else {
         logmsg "db.pl is hosed\n";
     }

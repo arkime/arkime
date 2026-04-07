@@ -1178,14 +1178,14 @@ like($json->{qrCodeDataUrl}, qr/^data:image\/png;base64,/, "TOTP qrCodeDataUrl i
 my $totpSecret = $json->{secret};
 
 # Confirm TOTP with invalid code
-$json = cont3xtPostToken("/api/user/totp/confirm?arkimeRegressionUser=sac-totpuser", '{"secret": "' . $totpSecret . '", "code": "000000"}', $totpToken);
+$json = cont3xtPostToken("/api/user/totp/confirm?arkimeRegressionUser=sac-totpuser", '{"code": "000000"}', $totpToken);
 is($json->{success}, 0, "TOTP confirm fails with invalid code");
 
 # Generate valid TOTP code
 my $validCode = generate_totp($totpSecret);
 
 # Confirm TOTP with valid code
-$json = cont3xtPostToken("/api/user/totp/confirm?arkimeRegressionUser=sac-totpuser", '{"secret": "' . $totpSecret . '", "code": "' . $validCode . '"}', $totpToken);
+$json = cont3xtPostToken("/api/user/totp/confirm?arkimeRegressionUser=sac-totpuser", '{"code": "' . $validCode . '"}', $totpToken);
 ok($json->{success}, "TOTP confirm succeeds with valid code");
 
 # Get TOTP status - should be enabled now
@@ -1216,7 +1216,7 @@ $json = cont3xtPostToken("/api/user/totp/setup?arkimeRegressionUser=sac-totpuser
 ok($json->{success}, "TOTP re-setup for admin tests");
 $totpSecret = $json->{secret};
 $validCode = generate_totp($totpSecret);
-$json = cont3xtPostToken("/api/user/totp/confirm?arkimeRegressionUser=sac-totpuser", '{"secret": "' . $totpSecret . '", "code": "' . $validCode . '"}', $totpToken);
+$json = cont3xtPostToken("/api/user/totp/confirm?arkimeRegressionUser=sac-totpuser", '{"code": "' . $validCode . '"}', $totpToken);
 ok($json->{success}, "TOTP re-confirm for admin tests");
 
 # Admin enroll TOTP
@@ -1224,7 +1224,7 @@ $json = cont3xtPostToken("/api/user/totp/setup?arkimeRegressionUser=sac-cont3xta
 ok($json->{success}, "Admin TOTP setup");
 my $adminTotpSecret = $json->{secret};
 my $adminValidCode = generate_totp($adminTotpSecret);
-$json = cont3xtPostToken("/api/user/totp/confirm?arkimeRegressionUser=sac-cont3xtadmin", '{"secret": "' . $adminTotpSecret . '", "code": "' . $adminValidCode . '"}', $adminToken);
+$json = cont3xtPostToken("/api/user/totp/confirm?arkimeRegressionUser=sac-cont3xtadmin", '{"code": "' . $adminValidCode . '"}', $adminToken);
 ok($json->{success}, "Admin TOTP confirm");
 
 # Admin trying to disable own TOTP without code - should fail

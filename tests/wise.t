@@ -337,7 +337,7 @@ my $json = viewerPostToken("/api/user/totp/setup?arkimeRegressionUser=wiseAdmin"
 ok($json->{success}, "TOTP setup for wiseAdmin");
 my $totpSecret = $json->{secret};
 my $totpCode = generate_totp($totpSecret);
-$json = viewerPostToken("/api/user/totp/confirm?arkimeRegressionUser=wiseAdmin", '{"secret": "' . $totpSecret . '", "code": "' . $totpCode . '"}', $wiseAdminToken);
+$json = viewerPostToken("/api/user/totp/confirm?arkimeRegressionUser=wiseAdmin", '{"code": "' . $totpCode . '"}', $wiseAdminToken);
 ok($json->{success}, "TOTP confirm for wiseAdmin");
 
 # test checkCode with TOTP - need to authenticate as wiseAdmin first (uses checkCodeAuth which has auth)

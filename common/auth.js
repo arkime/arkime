@@ -20,7 +20,6 @@ const expressSession = require('express-session');
 const OIDC = require('openid-client');
 const { LRUCache } = require('lru-cache');
 const bodyParser = require('body-parser');
-const otplib = require('otplib');
 
 class Auth {
   static mode;
@@ -989,16 +988,6 @@ class Auth {
   // TOTP (Time-based One-Time Password) Support
   // ----------------------------------------------------------------------------
 
-  // Generate a new TOTP secret
-  static generateTotpSecret () {
-    return otplib.generateSecret();
-  }
-
-  // Generate the otpauth:// URI for QR code scanning
-  static getTotpKeyUri (userId, secret, issuer = 'Arkime') {
-    return otplib.generateURI({ issuer, label: userId, secret, type: 'totp' });
-  }
-
   // Encrypt TOTP secret for storage (same pattern as ha12store)
   static totp2store (secret) {
     const iv = crypto.randomBytes(16);
@@ -1025,16 +1014,6 @@ class Auth {
       console.log(`passwordSecret can not decrypt TOTP secret for '${userId}'. Make sure passwordSecret is the same for all nodes/applications.`, e);
       return null;
     }
-  }
-
-  // Verify a TOTP token against the stored encrypted secret
-  static verifyTotp (stored, token, userId) {
-    const secret = Auth.store2totp(stored, userId);
-    if (!secret) {
-      return false;
-    }
-    const result = otplib.verifySync({ secret, token });
-    return result.valid;
   }
 
   // ----------------------------------------------------------------------------
