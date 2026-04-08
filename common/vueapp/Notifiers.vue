@@ -12,7 +12,7 @@ SPDX-License-Identifier: Apache-2.0
           variant="primary"
           :key="notifier.name"
           class="pull-right ms-1"
-          v-for="notifier of notifierTypes"
+          v-for="notifier of sortedNotifierTypes"
           @click="createNewNotifier(notifier)">
           <span class="fa fa-plus-circle me-1" />
           {{ $t('settings.notifiers.new', { name: notifier.name }) }}
@@ -369,6 +369,9 @@ export default {
     };
   },
   computed: {
+    sortedNotifierTypes () {
+      return Object.values(this.notifierTypes).sort((a, b) => b.name.localeCompare(a.name));
+    },
     notifiers: {
       get () { return this.$store.state.notifiers || []; },
       set (notifiers) { this.$store.commit('setNotifiers', notifiers); }
