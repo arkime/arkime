@@ -128,6 +128,7 @@ SPDX-License-Identifier: Apache-2.0
           hover
           small
           borderless
+          must-sort
           :dark="getTheme === 'dark'"
           :items="searchResult"
           :fields="tableFields" />

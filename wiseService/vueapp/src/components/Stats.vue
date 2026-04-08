@@ -42,6 +42,7 @@ SPDX-License-Identifier: Apache-2.0
           <BTable
             small
             striped
+            must-sort
             :items="sourceStats"
             :fields="sourceTableFields"
             :dark="getTheme === 'dark'" />
@@ -63,6 +64,7 @@ SPDX-License-Identifier: Apache-2.0
           <BTable
             small
             striped
+            must-sort
             :items="typeStats"
             :fields="typeTableFields"
             :dark="getTheme === 'dark'" />

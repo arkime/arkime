@@ -88,9 +88,11 @@ SPDX-License-Identifier: Apache-2.0
         small
         striped
         show-empty
+        must-sort
         no-local-sorting
         :items="users"
         :fields="fields"
+        v-model:sort-by="sortBy"
         @sorted="sortChanged"
         class="small-table-font"
         :empty-text="searchTerm ? $t('users.noUsersOrRolesMatch') : $t('users.noUsersOrRoles')">
@@ -536,8 +538,7 @@ export default {
       recordsTotal: 0,
       perPage: 100,
       currentPage: 1,
-      sortField: 'userId',
-      desc: false,
+      sortBy: [{ key: 'userId', order: 'asc' }],
       createMode: 'user',
       // password
       newPassword: '',
@@ -592,9 +593,7 @@ export default {
       this.perPage = newVal;
       this.loadUsers(false);
     },
-    sortChanged (newSort) {
-      this.sortField = newSort.key;
-      this.desc = newSort.order === 'desc';
+    sortChanged () {
       this.loadUsers();
     },
     negativeToggle (user, field, existing) {
@@ -789,10 +788,10 @@ export default {
     },
     getUsersQuery () {
       return {
-        desc: this.desc,
+        desc: this.sortBy[0]?.order === 'desc',
         length: this.perPage,
         filter: this.searchTerm,
-        sortField: this.sortField,
+        sortField: this.sortBy[0]?.key,
         start: (this.currentPage - 1) * this.perPage
       };
     },
@@ -813,10 +812,10 @@ export default {
     },
     reloadUsers () {
       const query = {
-        desc: this.desc,
+        desc: this.sortBy[0]?.order === 'desc',
         length: this.perPage,
         filter: this.searchTerm,
-        sortField: this.sortField,
+        sortField: this.sortBy[0]?.key,
         start: (this.currentPage - 1) * this.perPage
       };
 
