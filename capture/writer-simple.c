@@ -288,7 +288,7 @@ LOCAL ArkimeSimple_t *writer_simple_process_buf(int thread, int closing)
 }
 /******************************************************************************/
 LOCAL void writer_simple_encrypt_key(const char *kekId, const uint8_t *dek, int deklen,
-                                      char *outkeyhex, char *outsalthex, char *outivhex, char *outtaghex)
+                                     char *outkeyhex, char *outsalthex, char *outivhex, char *outtaghex)
 {
     uint8_t ciphertext[1024];
     int     len, ciphertext_len;

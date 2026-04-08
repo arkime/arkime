@@ -40,7 +40,8 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #3864 CyberChef 10.23.0
 ## All
   - #3831 New TOTP support for wise config instead of code
-  - #3865 Support syslog notifier
+  - #3865 Add syslog notifier
+  - #3866 Add snmp notifier
 ## Capture/Viewer
   - #3833 New simpleDEKEncoding setting which controls how the DEK is encrypted
   - #3857 Fix scheme pcapNG not handling large files (thanks @wegman12)
