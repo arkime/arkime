@@ -12,7 +12,7 @@
     "@elastic/elasticsearch": "7.10.0",
     "acorn": "^8.16.0",
     "arkime-iptrie": "^0.0.9",
-    "arkime-notifme-sdk": "^1.11.9",
+    "arkime-notifme-sdk": "^1.11.10",
     "async": "^3.2.6",
     "aws4": "^1.13.2",
     "axios": "^1.13.6",
