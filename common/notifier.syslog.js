@@ -50,6 +50,10 @@ exports.init = function (api) {
     }, {
       name: 'tag',
       description: 'Syslog app-name / tag (default: arkime)'
+    }, {
+      name: 'insecure',
+      type: 'checkbox',
+      description: 'Disable TLS certificate verification (not recommended)'
     }],
     sendAlert: exports.sendSyslogAlert
   });
@@ -90,22 +94,20 @@ exports.sendSyslogAlert = function (config, message, links, cb) {
   }
 
   const syslogMsg = exports.buildSyslogMessage(config, message);
-  const port = parseInt(config.port, 10);
 
   if (protocol === 'udp') {
-    exports.sendUdp(config.host, port, syslogMsg, cb);
-  } else if (protocol === 'tcp') {
-    exports.sendTcp(config.host, port, syslogMsg, false, cb);
+    exports.sendUdp(config, syslogMsg, cb);
   } else {
-    exports.sendTcp(config.host, port, syslogMsg, true, cb);
+    exports.sendTcp(config, syslogMsg, protocol === 'tls', cb);
   }
 };
 
-exports.sendUdp = function (host, port, message, cb) {
+exports.sendUdp = function (config, message, cb) {
   const client = dgram.createSocket('udp4');
   const buf = Buffer.from(message);
+  const port = parseInt(config.port, 10);
 
-  client.send(buf, 0, buf.length, port, host, (err) => {
+  client.send(buf, 0, buf.length, port, config.host, (err) => {
     client.close();
     if (err) {
       console.error('Syslog UDP error:', err.message);
@@ -116,11 +118,11 @@ exports.sendUdp = function (host, port, message, cb) {
   });
 };
 
-exports.sendTcp = function (host, port, message, useTls, cb) {
+exports.sendTcp = function (config, message, useTls, cb) {
   const connectFn = useTls ? tls.connect : net.connect;
-  const options = { host, port };
+  const options = { host: config.host, port: parseInt(config.port, 10) };
   if (useTls) {
-    options.rejectUnauthorized = false;
+    options.rejectUnauthorized = !config.insecure;
   }
 
   const client = connectFn(options, () => {
