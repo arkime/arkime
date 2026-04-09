@@ -1662,6 +1662,9 @@ ArkimePacketRC arkime_packet_run_ethernet_cb(ArkimePacketBatch_t *batch, ArkimeP
     LOG("enter %p type:%u (0x%x) %s %p %d", packet, type, type, str, data, len);
 #endif
 
+    if (++packet->tunnelDepth > 10)
+        return ARKIME_PACKET_CORRUPT;
+
     if (type == ARKIME_ETHERTYPE_DETECT) {
         if (len < 2)
             return ARKIME_PACKET_CORRUPT;
@@ -1722,6 +1725,9 @@ ArkimePacketRC arkime_packet_run_ip_cb(ArkimePacketBatch_t *batch, ArkimePacket_
 #ifdef DEBUG_PACKET
     LOG("enter %p %d %s %p %d", packet, type, str, data, len);
 #endif
+
+    if (++packet->tunnelDepth > 10)
+        return ARKIME_PACKET_CORRUPT;
 
     if (type >= ARKIME_IPPROTO_MAX) {
         return ARKIME_PACKET_CORRUPT;

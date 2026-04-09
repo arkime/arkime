@@ -43,6 +43,8 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #3831 New TOTP support for wise config instead of code
   - #3865 Add syslog notifier
   - #3866 Add snmp notifier
+## Capture
+  - #3871 Packets with more than 10 ip/ethernet headers are now marked as corrupt
 ## Capture/Viewer
   - #3833 New simpleDEKEncoding setting which controls how the DEK is encrypted
   - #3857 Fix scheme pcapNG not handling large files (thanks @wegman12)
