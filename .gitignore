@@ -11,6 +11,8 @@
 *.njsproj
 *.sln
 .DS_Store
+*.save
+*~
 
 # dependencies
 node_modules
@@ -31,6 +33,7 @@ capture/capture
 tests/GeoLite2*
 tests/oui.txt
 tests/lmdbCache
+tests/fuzz*
 
 # Require force update
 tests/cont3xt.ini
@@ -83,6 +86,9 @@ GeoIPv6.dat
 ipv4-address-space.csv
 autom4te.cache
 stamp-h1
+OUT
+asan*
+ja4plus.c
 
 # vite
 components.d.ts

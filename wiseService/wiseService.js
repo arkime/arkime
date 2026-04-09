@@ -69,7 +69,7 @@ const internals = {
       singleton: true,
       service: true,
       fields: [
-        { name: 'type', required: false, regex: '^(memory|redis|memcached|lmdb)$', help: 'Where to cache results: memory (default), redis, memcached, lmdb' },
+        { name: 'type', required: false, regex: '^(memory|redis|memcached|lmdb|sqlite)$', help: 'Where to cache results: memory (default), redis, memcached, lmdb, sqlite' },
         { name: 'cacheSize', required: false, help: 'How many elements to cache in memory. Defaults to 100000' },
         { name: 'redisURL', password: true, required: false, ifField: 'type', ifValue: 'redis', help: 'Format is redis://[:password@]host:port/db-number, redis-sentinel://[[sentinelPassword]:[password]@]host[:port]/redis-name/db-number, or redis-cluster://[:password@]host:port/db-number' },
         { name: 'redisFormat', required: false, ifField: 'type', ifValue: 'redis', help: 'Use 2 (default) if WISE 2.x & WISE 3.x in use or 3 if just WISE 3.x', regex: '[23]' },
