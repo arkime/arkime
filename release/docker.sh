@@ -17,33 +17,31 @@ copy_elasticsearch() {
 
 }
 ######################################################################
-run_wise() {
-    copy_elasticsearch
+run_forever() {
+    local dir="$1"
+    shift
     while true; do
-        (cd $BASEDIR/wiseService; $BASEDIR/bin/node wiseService.js "$@")
+        (cd "$dir" && "$@")
         if [ $FOREVER -eq 0 ]; then break; fi
         sleep 1
-
     done
+}
+
+######################################################################
+run_wise() {
+    copy_elasticsearch
+    run_forever "$BASEDIR/wiseService" "$BASEDIR/bin/node" wiseService.js "$@"
 }
 
 ######################################################################
 run_parliament() {
     copy_elasticsearch
-    while true; do
-        (cd $BASEDIR/parliament; $BASEDIR/bin/node parliament.js "$@")
-        if [ $FOREVER -eq 0 ]; then break; fi
-        sleep 1
-    done
+    run_forever "$BASEDIR/parliament" "$BASEDIR/bin/node" parliament.js "$@"
 }
 
 ######################################################################
 run_viewer() {
-    while true; do
-        (cd $BASEDIR/viewer; $BASEDIR/bin/node viewer.js "$@")
-        if [ $FOREVER -eq 0 ]; then break; fi
-        sleep 1
-    done
+    run_forever "$BASEDIR/viewer" "$BASEDIR/bin/node" viewer.js "$@"
 }
 
 ######################################################################
@@ -54,11 +52,7 @@ run_db() {
 ######################################################################
 run_cont3xt() {
     copy_elasticsearch
-    while true; do
-        (cd $BASEDIR/cont3xt; $BASEDIR/bin/node cont3xt.js "$@")
-        if [ $FOREVER -eq 0 ]; then break; fi
-        sleep 1
-    done
+    run_forever "$BASEDIR/cont3xt" "$BASEDIR/bin/node" cont3xt.js "$@"
 }
 
 ######################################################################
@@ -68,11 +62,7 @@ run_capture() {
     fi
 
     $BASEDIR/bin/arkime_config_interfaces.sh
-    while true; do
-        (cd $BASEDIR/bin; ./capture "$@")
-        if [ $FOREVER -eq 0 ]; then break; fi
-        sleep 1
-    done
+    run_forever "$BASEDIR/bin" ./capture "$@"
 }
 
 ######################################################################
@@ -100,16 +90,22 @@ show_help() {
     echo "Options:"
     echo "  --add-admin            Add an admin user if missing, please change password ASAP"
     echo "  --basedir <dir>        Use a different base directory for Arkime, default is /opt/arkime"
+    echo "  --db <args>            Run db.pl with args, can be specified multiple times"
     echo "  --forever              Run the tools forever, default is just once"
-    echo "  --init <dburl>         Run db.pl init if needed, not recommended"
-    echo "  --ilm <force> <delete> Run db.pl init/upgrade with --ilm and ilm command"
-    echo "  --ism <force> <delete> Run db.pl init/upgrade with --ism and ism command"
-    echo "    force                  Time in hours/days before (moving to warm) and force merge (number followed by h or d)";
-    echo "    delete                 Time in hours/days before deleting index (number followed by h or d)";
     echo "  --update-geo           Run /opt/arkime/bin/arkime_update_geo.sh"
-    echo "  --upgrade <dburl>      Run db.pl upgrade if needed, not recommended"
     echo "  --wait-for-db <dburl>  Wait for Elasticsearch/OpenSearch to be ready before running command"
     echo "  --                     All arguments after this are passed to the command"
+    echo
+    echo "Examples:"
+    echo "  $0 capture --db 'http://es:9200 init --ifneeded'"
+    echo "  $0 capture --db 'http://es:9200 init --ifneeded --ilm' --db 'http://es:9200 ilm 12h 7d'"
+    echo "  $0 capture --db 'http://es:9200 upgradenoprompt --ifneeded --compression gzip'"
+    echo
+    echo "Deprecated (use --db instead):"
+    echo "  --init <dburl>         Use: --db '<dburl> init --ifneeded'"
+    echo "  --upgrade <dburl>      Use: --db '<dburl> upgradenoprompt --ifneeded'"
+    echo "  --ilm <force> <delete> Use: --db '<dburl> init --ifneeded --ilm' --db '<dburl> ilm <force> <delete>'"
+    echo "  --ism <force> <delete> Use: --db '<dburl> init --ifneeded --ism' --db '<dburl> ism <force> <delete>'"
     echo
 }
 
@@ -131,6 +127,7 @@ ISM_OPTION=""
 ISM_PARAM=""
 ILM_OPTION=""
 ILM_PARAM=""
+DB_COMMANDS=()
 while [ $# -gt 0 ]; do
     case "$1" in
         --add-admin)
@@ -141,6 +138,11 @@ while [ $# -gt 0 ]; do
         --basedir)
             shift
             BASEDIR=$1
+            shift
+            ;;
+        --db)
+            shift
+            DB_COMMANDS+=("$1")
             shift
             ;;
         --forever)
@@ -190,11 +192,14 @@ while [ $# -gt 0 ]; do
             shift
             WAIT_DB_URL=$1
             echo "Waiting for Elasticsearch/OpenSearch to be ready..."
-            CURL_AUTH=""
+            CURL_OPTS="-sf"
             if [ -n "$ARKIME__elasticsearchBasicAuth" ]; then
-                CURL_AUTH="--user $ARKIME__elasticsearchBasicAuth"
+                CURL_OPTS="$CURL_OPTS --user $ARKIME__elasticsearchBasicAuth"
             fi
-            until curl -sf $CURL_AUTH "$WAIT_DB_URL/_cluster/health?wait_for_status=yellow&timeout=30s"; do
+            if [ -n "$ARKIME__insecure" ]; then
+                CURL_OPTS="$CURL_OPTS -k"
+            fi
+            until curl $CURL_OPTS "$WAIT_DB_URL/_cluster/health?wait_for_status=yellow&timeout=30s"; do
                 echo "Waiting for Elasticsearch/OpenSearch..."
                 sleep 2
             done
@@ -211,28 +216,33 @@ while [ $# -gt 0 ]; do
     esac
 done
 
-# Handle init
+# Handle legacy --init/--upgrade with --ilm/--ism flags
 if [ $DOINIT -eq 1 ]; then
     if [ -n "$ISM_OPTION" ]; then
-        $BASEDIR/db/db.pl --insecure "$DBURL" init --ifneeded --ism
-        $BASEDIR/db/db.pl --insecure "$DBURL" ism $ISM_OPTION $ISM_PARAM
+        DB_COMMANDS+=("$DBURL init --ifneeded --ism")
+        DB_COMMANDS+=("$DBURL ism $ISM_OPTION $ISM_PARAM")
     elif [ -n "$ILM_OPTION" ]; then
-        $BASEDIR/db/db.pl --insecure "$DBURL" init --ifneeded --ilm
-        $BASEDIR/db/db.pl --insecure "$DBURL" ilm $ILM_OPTION $ILM_PARAM
+        DB_COMMANDS+=("$DBURL init --ifneeded --ilm")
+        DB_COMMANDS+=("$DBURL ilm $ILM_OPTION $ILM_PARAM")
     else
-        $BASEDIR/db/db.pl --insecure "$DBURL" init --ifneeded
+        DB_COMMANDS+=("$DBURL init --ifneeded")
     fi
 elif [ $DOUPGRADE -eq 1 ]; then
     if [ -n "$ISM_OPTION" ]; then
-        $BASEDIR/db/db.pl --insecure "$DBURL" upgradenoprompt --ifneeded --ism
-        $BASEDIR/db/db.pl --insecure "$DBURL" ism $ISM_OPTION $ISM_PARAM
+        DB_COMMANDS+=("$DBURL upgradenoprompt --ifneeded --ism")
+        DB_COMMANDS+=("$DBURL ism $ISM_OPTION $ISM_PARAM")
     elif [ -n "$ILM_OPTION" ]; then
-        $BASEDIR/db/db.pl --insecure "$DBURL" upgradenoprompt --ifneeded --ilm
-        $BASEDIR/db/db.pl --insecure "$DBURL" ilm $ILM_OPTION $ILM_PARAM
+        DB_COMMANDS+=("$DBURL upgradenoprompt --ifneeded --ilm")
+        DB_COMMANDS+=("$DBURL ilm $ILM_OPTION $ILM_PARAM")
     else
-        $BASEDIR/db/db.pl --insecure "$DBURL" upgradenoprompt --ifneeded
+        DB_COMMANDS+=("$DBURL upgradenoprompt --ifneeded")
     fi
 fi
+
+# Run all db.pl commands
+for db_cmd in "${DB_COMMANDS[@]}"; do
+    $BASEDIR/db/db.pl --insecure $db_cmd || exit 1
+done
 
 # Figure out what to run
 case "$command" in
