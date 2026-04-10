@@ -51,9 +51,5 @@
     "jsdom": "^24.1.0",
     "vue-axios": "^3.5.2",
     "vue-json-pretty": "^2.4.0"
-  },
-  "optionalDependencies": {
-    "@rollup/rollup-darwin-arm64": "^4.24.0",
-    "@rollup/rollup-linux-x64-gnu": "^4.24.0"
   }
 }
