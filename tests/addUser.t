@@ -1,5 +1,5 @@
 # Test addUser.js and general authentication
-use Test::More tests => 92;
+use Test::More tests => 104;
 use Test::Differences;
 use Data::Dumper;
 use ArkimeTest;
@@ -262,6 +262,44 @@ is ($response->code, 200, "combouser with wrong header auth success");
 $response = viewerGet("/regressionTests/getUser/combouser");
 ok(!grep(/^role:combinedRole$/, @{$response->{roles}}), "combouser loses role:combinedRole when expression is false");
 
+
+#### JWT Auth Header tests (test4 node on port 8127)
+
+# Valid JWT with short_id claim — should auto-create user
+$response = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8127/", 'x-jwt-data' => 'eyJhbGciOiJub25lIiwidHlwIjoiSldUIn0.eyJzaG9ydF9pZCI6Imp3dHVzZXIxIiwicHJlZmVycmVkX3VzZXJuYW1lIjoiSldUIFVzZXIgMSJ9.fakesig');
+is ($response->code, 200, "JWT header auth success");
+
+# Verify user was created with short_id as userId
+$response = viewerGet("/regressionTests/getUser/jwtuser1");
+is ($response->{userId}, "jwtuser1", "JWT user created with short_id as userId");
+
+# Missing JWT header — should 401
+$response = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8127/");
+is ($response->code, 401, "Missing JWT header returns 401");
+
+# Invalid JWT (not 3 dot-separated parts) — should 403
+$response = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8127/", 'x-jwt-data' => 'not-a-jwt');
+is ($response->code, 403, "Invalid JWT returns 403");
+is ($response->content, '{"success":false,"text":"Invalid JWT in header"}');
+
+# JWT without the required short_id claim — should 403
+$response = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8127/", 'x-jwt-data' => 'eyJhbGciOiJub25lIiwidHlwIjoiSldUIn0.eyJlbWFpbCI6InRlc3RAdGVzdC5jb20ifQ.fakesig');
+is ($response->code, 403, "JWT without required claim returns 403");
+is ($response->content, '{"success":false,"text":"User name header is empty"}');
+
+# JWT with role: prefix in claim — should be rejected
+$response = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8127/", 'x-jwt-data' => 'eyJhbGciOiJub25lIiwidHlwIjoiSldUIn0.eyJzaG9ydF9pZCI6InJvbGU6ZXZpbCIsInByZWZlcnJlZF91c2VybmFtZSI6IkhhY2tlciJ9.fakesig');
+is ($response->code, 403, "JWT with role: prefix rejected");
+is ($response->content, '{"success":false,"text":"Can not authenticate with role"}');
+
+# JWT with department claim — should get role:securityTeam via role mappings
+$response = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8127/", 'x-jwt-data' => 'eyJhbGciOiJub25lIiwidHlwIjoiSldUIn0.eyJzaG9ydF9pZCI6Imp3dHVzZXIyIiwicHJlZmVycmVkX3VzZXJuYW1lIjoiSldUIFVzZXIgMiIsImRlcGFydG1lbnQiOiJzZWN1cml0eSJ9.fakesig');
+is ($response->code, 200, "JWT with department claim auth success");
+$response = viewerGet("/regressionTests/getUser/jwtuser2");
+ok(grep(/^role:securityTeam$/, @{$response->{roles}}), "jwtuser2 has role:securityTeam from JWT department claim");
+ok(grep(/^arkimeUser$/, @{$response->{roles}}), "jwtuser2 still has arkimeUser");
+
+
 # cleanup
 my $token = getTokenCookie();
 $response = viewerDeleteToken("/api/user/role:role", $token);
@@ -282,12 +320,14 @@ viewerDeleteToken("/api/user/roleuser-test", $token);
 viewerDeleteToken("/api/user/headeruser", $token);
 viewerDeleteToken("/api/user/normaluser", $token);
 viewerDeleteToken("/api/user/combouser", $token);
+viewerDeleteToken("/api/user/jwtuser1", $token);
+viewerDeleteToken("/api/user/jwtuser2", $token);
 
 $response = viewerGet("/api/user/__proto__");
 eq_or_diff($response, from_json('{"success": false, "text": "Bad path &#47;api&#47;user&#47;__proto__"}'));
 
 $users = viewerPostToken("/api/users?arkimeRegressionUser=admin", "", $adminToken);
-is (@{$users->{data}}, 6, "Two supers plus 3 role mappings left");
+is (@{$users->{data}}, 7, "Two supers plus 4 role mappings left");
 
 viewerGet("/regressionTests/deleteAllUsers");
 
