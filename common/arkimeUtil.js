@@ -916,6 +916,25 @@ class ArkimeUtil {
       case 'ClassDeclaration':
         throw new Error('Class declarations are not allowed');
 
+      case 'WhileStatement':
+      case 'DoWhileStatement':
+      case 'ForStatement':
+      case 'ForInStatement':
+      case 'ForOfStatement':
+        throw new Error('Loop statements are not allowed');
+
+      case 'WithStatement':
+        throw new Error("'with' statements are not allowed");
+
+      case 'ThrowStatement':
+        throw new Error("'throw' statements are not allowed");
+
+      case 'DebuggerStatement':
+        throw new Error("'debugger' statements are not allowed");
+
+      case 'TryStatement':
+        throw new Error("'try' statements are not allowed");
+
       default:
         // Recursively validate child nodes
         for (const key of Object.keys(node)) {
