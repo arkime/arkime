@@ -53,6 +53,10 @@ class PHPIPAMSource extends WISESource {
     this.preloadAddresses = api.getConfig(section, 'preloadAddresses', true) !== false;
     this.addrConcurrency = +api.getConfig(section, 'addrConcurrency', 10);
     this.reloadMins = +api.getConfig(section, 'reload', 60);
+    // Optional override for the right-click search base URL.
+    // Default: <phpIPAM base>/tools/search/
+    // e.g. searchUrl=https://arkime.example.com/?tab=ipam&goto=/ipam/tools/search/
+    this.searchUrlOverride = api.getConfig(section, 'searchUrl') || null;
 
     // Create a reusable https agent for TLS verification bypass if needed
     if (!this.verifyTLS) {
@@ -118,30 +122,30 @@ class PHPIPAMSource extends WISESource {
     // ---- Value actions (right-click links into phpIPAM UI) -----------------
     // Use func (not url) so the viewer puts them in menuItems and opens
     // them as target="_blank" links instead of fetching inline.
-    const base = this.url;
+    const searchUrl = this.searchUrlOverride || `${this.url}/tools/search/`;
     api.addValueAction(`${section}_search_ip`, {
       name: 'phpIPAM: Search IP',
-      func: `return { url: '${base}/tools/search/' + encodeURIComponent(value), name: 'phpIPAM: Search IP', value: value };`,
+      func: `return { url: '${searchUrl}' + encodeURIComponent(value), name: 'phpIPAM: Search IP', value: value };`,
       category: 'ip'
     });
     api.addValueAction(`${section}_search_hostname`, {
       name: 'phpIPAM: Search Hostname',
-      func: `return { url: '${base}/tools/search/' + encodeURIComponent(value), name: 'phpIPAM: Search Hostname', value: value };`,
+      func: `return { url: '${searchUrl}' + encodeURIComponent(value), name: 'phpIPAM: Search Hostname', value: value };`,
       fields: 'ipam.src.hostname,ipam.dst.hostname'
     });
     api.addValueAction(`${section}_search_subnet`, {
       name: 'phpIPAM: Search Subnet',
-      func: `return { url: '${base}/tools/search/' + encodeURIComponent(value), name: 'phpIPAM: Search Subnet', value: value };`,
+      func: `return { url: '${searchUrl}' + encodeURIComponent(value), name: 'phpIPAM: Search Subnet', value: value };`,
       fields: 'ipam.src.subnet,ipam.dst.subnet'
     });
     api.addValueAction(`${section}_search_vlan`, {
       name: 'phpIPAM: Search VLAN',
-      func: `return { url: '${base}/tools/search/' + encodeURIComponent(value), name: 'phpIPAM: Search VLAN', value: value };`,
+      func: `return { url: '${searchUrl}' + encodeURIComponent(value), name: 'phpIPAM: Search VLAN', value: value };`,
       fields: 'ipam.src.vlan,ipam.dst.vlan'
     });
     api.addValueAction(`${section}_search_vrf`, {
       name: 'phpIPAM: Search VRF',
-      func: `return { url: '${base}/tools/search/' + encodeURIComponent(value), name: 'phpIPAM: Search VRF', value: value };`,
+      func: `return { url: '${searchUrl}' + encodeURIComponent(value), name: 'phpIPAM: Search VRF', value: value };`,
       fields: 'ipam.src.vrf,ipam.dst.vrf'
     });
 
@@ -493,7 +497,8 @@ exports.initSource = function (api) {
       { name: 'preloadAddresses', required: false, help: 'Bulk-load all registered addresses per subnet at startup/reload (default true). Set false to do live per-IP lookups instead.' },
       { name: 'addrConcurrency', required: false, help: 'Max parallel subnet address-fetch requests during preload. Default 10.' },
       { name: 'reload', required: false, help: 'Minutes between full cache refresh. Default 60.' },
-      { name: 'cacheAgeMin', required: false, help: 'Minutes to cache per-IP WISE results. Default 60.' }
+      { name: 'cacheAgeMin', required: false, help: 'Minutes to cache per-IP WISE results. Default 60.' },
+      { name: 'searchUrl', required: false, help: 'Override the base URL for right-click search actions. Default: <phpIPAM base>/tools/search/. Example: https://arkime.example.com/?tab=ipam&goto=/ipam/tools/search/' }
     ]
   });
 
