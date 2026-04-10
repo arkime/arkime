@@ -759,7 +759,8 @@
       "molochtype": "Arkime类型",
       "shardsPerNode": "每节点分片数",
       "versionCreated": "创建版本",
-      "docSize": "文档大小"
+      "docSize": "文档大小",
+      "codec": "编解码器"
     },
     "esNodes": {
       "mainManaging": "主管理",

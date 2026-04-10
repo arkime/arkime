@@ -759,7 +759,8 @@
       "molochtype": "Hot/Warm",
       "shardsPerNode": "Shards/Node",
       "versionCreated": "ES Version",
-      "docSize": "Disk Per Doc"
+      "docSize": "Disk Per Doc",
+      "codec": "Codec"
     },
     "esNodes": {
       "mainManaging": "Main Managing Node",

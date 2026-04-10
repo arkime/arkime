@@ -574,6 +574,8 @@ class StatsAPIs {
           index.shardsPerNode = indicesSettings[index.index].settings['index.routing.allocation.total_shards_per_node'];
         }
 
+        index.codec = indicesSettings[index.index].settings['index.codec'] || 'default';
+
         index.creationDate = parseInt(indicesSettings[index.index].settings['index.creation_date']);
         index.versionCreated = parseInt(indicesSettings[index.index].settings['index.version.created']);
         index.docSize = index['docs.count'] === '0' ? 0 : Math.ceil(parseInt(index['store.size']) / parseInt(index['docs.count']));
@@ -581,7 +583,7 @@ class StatsAPIs {
 
       // sorting
       const sortField = req.query.sortField || 'index';
-      if (sortField === 'index' || sortField === 'status' || sortField === 'health') {
+      if (sortField === 'index' || sortField === 'status' || sortField === 'health' || sortField === 'codec') {
         if (req.query.desc === 'true') {
           findices = findices.sort((a, b) => { return b[sortField].localeCompare(a[sortField]); });
         } else {
