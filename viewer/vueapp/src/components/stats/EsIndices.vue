@@ -165,6 +165,7 @@ export default {
         intl({ id: 'molochtype', sort: 'molochtype', doStats: false, width: 100 }),
         intl({ id: 'shardsPerNode', sort: 'shardsPerNode', doStats: false, width: 100 }),
         intl({ id: 'versionCreated', sort: 'versionCreated', doStats: false, width: 100 }),
+        intl({ id: 'codec', sort: 'codec', doStats: false, width: 100 }),
         intl({ id: 'docSize', sort: 'docSize', doStats: true, width: 100, dataFunction: (item) => { return roundCommaString(item.docSize); } })
       ];
     },

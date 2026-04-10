@@ -759,7 +759,8 @@
       "molochtype": "Hot/Warm",
       "shardsPerNode": "노드당 샤드",
       "versionCreated": "ES 버전",
-      "docSize": "문서당 디스크"
+      "docSize": "문서당 디스크",
+      "codec": "코덱"
     },
     "esNodes": {
       "mainManaging": "주 관리 노드",

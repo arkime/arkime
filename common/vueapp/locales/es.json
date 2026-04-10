@@ -759,7 +759,8 @@
       "molochtype": "Caliente/Tibio",
       "shardsPerNode": "Shards/Nodo",
       "versionCreated": "Versión ES",
-      "docSize": "Disco por documento"
+      "docSize": "Disco por documento",
+      "codec": "Códec"
     },
     "esNodes": {
       "mainManaging": "Nodo principal de gestión",

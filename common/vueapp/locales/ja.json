@@ -759,7 +759,8 @@
       "molochtype": "Hot/Warm",
       "shardsPerNode": "シャード/ノード",
       "versionCreated": "ES バージョン",
-      "docSize": "1ドキュメントあたりのディスク量"
+      "docSize": "1ドキュメントあたりのディスク量",
+      "codec": "コーデック"
     },
     "esNodes": {
       "mainManaging": "メイン管理ノード",
