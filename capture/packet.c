@@ -1533,6 +1533,7 @@ skip_switch:
         if (rc == ARKIME_PACKET_CORRUPT) {
             // If we have at least 14 bytes (ethernet header) and corruptSavePcap is enabled, create a session
             if (config.corruptSavePcap && packet->pktlen >= packet->etherOffset + 14) {
+                packet->tunnelDepth = 0;
                 rc = arkime_packet_run_ethernet_cb(batch, packet, packet->pkt, packet->pktlen, ARKIME_ETHERTYPE_CORRUPT, "CORRUPT");
                 goto process_packet;
             } else {

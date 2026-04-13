@@ -1,4 +1,4 @@
-use Test::More tests => 125;
+use Test::More tests => 133;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -45,6 +45,11 @@ my $test1Token = getTokenCookie("test1");
     my $mstats = multiGet("/stats.json?cluster=unknown");
     is (@{$mstats->{data}}, 0);
 
+# stats isPP sortField should be rejected
+    my $badstats = viewerGet("/api/stats?sortField=__proto__");
+    is ($badstats->{success}, 0, "stats isPP sortField rejected");
+    is ($badstats->{text}, "Invalid value for sortField", "stats isPP sortField error text");
+
 # dstats.json
     my $dstats = viewerGet("/api/dstats?nodeName=test&start=1399680425&stop=1399680460&step=5&interval=5&name=deltaPackets");
     is (@{$dstats}, 7, "dstats.json array size");
@@ -62,6 +67,11 @@ my $test1Token = getTokenCookie("test1");
 
     my $messtats = multiGet("/esstats.json?cluster=unknown");
     is (@{$messtats->{data}}, 0);
+
+# esstats isPP sortField should be rejected
+    my $badesstats = viewerGet("/api/esstats?sortField=constructor");
+    is ($badesstats->{success}, 0, "esstats isPP sortField rejected");
+    is ($badesstats->{text}, "Invalid value for sortField", "esstats isPP sortField error text");
 
 # esindices
     my $indices = viewerGet("/api/esindices");
@@ -84,6 +94,11 @@ my $test1Token = getTokenCookie("test1");
     $indices = multiGet("/api/esindices?cluster=unknown");
     is($indices->{success}, 0, "unknown cluster no results");
     is($indices->{i18n}, "api.stats.noResults", "unknown cluster no results i18n");
+
+# esindices isPP sortField should be rejected
+    my $badindices = viewerGet("/api/esindices?sortField=__proto__");
+    is ($badindices->{success}, 0, "esindices isPP sortField rejected");
+    is ($badindices->{text}, "Invalid value for sortField", "esindices isPP sortField error text");
 
 # esindices delete - test with non-existent index
     my $del = viewerDeleteToken("/api/esindices/nonexistent_fake_index_12345", $token);
@@ -119,6 +134,11 @@ my $test1Token = getTokenCookie("test1");
 
     my $tasks = multiGet("/api/estasks?cluster=unknown");
     cmp_ok (@{$tasks->{data}}, "==", 0, "tasks array size");
+
+# estasks isPP sortField should be rejected
+    my $badtasks = viewerGet("/api/estasks?sortField=constructor");
+    is ($badtasks->{success}, 0, "estasks isPP sortField rejected");
+    is ($badtasks->{text}, "Invalid value for sortField", "estasks isPP sortField error text");
 
 # estasks cancel
     my $result = viewerPostToken("/api/estasks/nonexistent/cancel", "", $token);

@@ -104,13 +104,12 @@ LOCAL void scheme_s3_parse_region(const uint8_t *data, int data_len, const char 
 /******************************************************************************/
 LOCAL char *scheme_s3_escape(const char *str, int len)
 {
-    char out[3000];
+    // Worst case: every char expands to 3 bytes (%XX)
+    char *out = g_malloc(len * 3 + 1);
     int  s;
     int  o;
 
-    out[0] = 0;
-
-    for (s = o = 0; s < len && o + 3 < (int)sizeof(out); s++) {
+    for (s = o = 0; s < len; s++) {
         if (str[s] == '+') {
             out[o++] = '%';
             out[o++] = '2';
@@ -123,7 +122,8 @@ LOCAL char *scheme_s3_escape(const char *str, int len)
             out[o++] = str[s];
         }
     }
-    return g_strndup(out, o);
+    out[o] = '\0';
+    return out;
 }
 /******************************************************************************/
 LOCAL void scheme_s3_done(int UNUSED(code), uint8_t *data, int data_len, gpointer uw)
@@ -241,11 +241,11 @@ LOCAL void *scheme_s3_make_server(const ArkimeCredentials_t *creds, const char *
     int isNew;
     void *server = arkime_http_get_or_create_server(schemehostport, schemehostport, 2, 2, TRUE, &isNew);
     if (isNew) {
-        char userpwd[100];
+        char userpwd[256];
         snprintf(userpwd, sizeof(userpwd), "%s:%s", creds->id, creds->key);
         arkime_http_set_userpwd(server, userpwd);
 
-        char aws_sigv4[100];
+        char aws_sigv4[256];
         snprintf(aws_sigv4, sizeof(aws_sigv4), "aws:amz:%s:s3", region);
         arkime_http_set_aws_sigv4(server, aws_sigv4);
 
@@ -310,18 +310,19 @@ LOCAL int scheme_s3_load_dir(const char *dir, ArkimeSchemeFlags flags, ArkimeSch
 
     while (!s3Items->done || DLL_COUNT(item_, s3Items) > 0) {
         if (req.continuation) {
-            char uri2[3000];
+            char *uri2;
 
             if (uris[3]) {
-                snprintf(uri2, sizeof(uri2), "s3://%s/?continuation-token=%s&list-type=2&prefix=%s", uris[2], req.continuation, uris[3]);
+                uri2 = g_strdup_printf("s3://%s/?continuation-token=%s&list-type=2&prefix=%s", uris[2], req.continuation, uris[3]);
             } else {
-                snprintf(uri2, sizeof(uri2), "s3://%s/?continuation-token=%s&list-type=2", uris[2], req.continuation);
+                uri2 = g_strdup_printf("s3://%s/?continuation-token=%s&list-type=2", uris[2], req.continuation);
             }
 
             g_free(req.continuation);
             req.continuation = NULL;
 
             scheme_s3_request(server, creds, uri2 + 5 + strlen(uris[2]), uris[2], &req, s3PathAccessStyle, NULL);
+            g_free(uri2);
             ARKIME_LOCK(waitingdir);
         }
         ARKIME_LOCK(s3Items->lock);
@@ -426,18 +427,19 @@ LOCAL int scheme_s3_load_full_dir(const char *dir, ArkimeSchemeFlags flags, Arki
 
     while (!s3Items->done || DLL_COUNT(item_, s3Items) > 0) {
         if (req.continuation) {
-            char uri2[3000];
+            char *uri2;
 
             if (paths[2] && paths[2][0] != 0) {
-                snprintf(uri2, sizeof(uri2), "%s/?continuation-token=%s&list-type=2&prefix=%s", shpb, req.continuation, paths[2]);
+                uri2 = g_strdup_printf("%s/?continuation-token=%s&list-type=2&prefix=%s", shpb, req.continuation, paths[2]);
             } else {
-                snprintf(uri2, sizeof(uri2), "%s/?continuation-token=%s&list-type=2", shpb, req.continuation);
+                uri2 = g_strdup_printf("%s/?continuation-token=%s&list-type=2", shpb, req.continuation);
             }
 
             g_free(req.continuation);
             req.continuation = NULL;
 
             scheme_s3_request(server, creds, uri2 + strlen(shpb), paths[1], &req, TRUE, NULL);
+            g_free(uri2);
             ARKIME_LOCK(waitingdir);
         }
         ARKIME_LOCK(s3Items->lock);

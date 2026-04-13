@@ -1,4 +1,4 @@
-use Test::More tests => 135;
+use Test::More tests => 143;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -322,3 +322,23 @@ tcp,1386004309468,1386004309478,10.180.156.185,53533,US,10.180.156.249,1080,US,2
 # Test /api/sessions/decodings
     $json = viewerGet("/api/sessions/decodings");
     ok(ref $json eq 'HASH', "decodings returns an object");
+
+# unique with bad view should return error as text/plain
+    my $resp = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8123/api/unique?field=source.ip&view=unknown&date=-1&expression=" . uri_escape("file=$pwd/socks-http-example.pcap"));
+    like ($resp->content, qr/Can't find view/, "unique bad view error text");
+    is ($resp->header('Content-Type'), 'text/plain; charset=utf-8', "unique bad view content-type");
+
+# multiunique with unknown expression field should return error as text/plain
+    $resp = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8123/api/multiunique?exp=FAKEFIELD&date=-1&expression=" . uri_escape("file=$pwd/socks-http-example.pcap"));
+    like ($resp->content, qr/Unknown expression FAKEFIELD/, "multiunique bad field error text");
+    is ($resp->header('Content-Type'), 'text/plain; charset=utf-8', "multiunique bad field content-type");
+
+# multiunique with bad view should return error as text/plain (BuildQuery error path)
+    $resp = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8123/api/multiunique?exp=source.ip&date=-1&view=BADVIEW&expression=" . uri_escape("file=$pwd/socks-http-example.pcap"));
+    like ($resp->content, qr/Can't find view/, "multiunique bad view error text");
+    is ($resp->header('Content-Type'), 'text/plain; charset=utf-8', "multiunique bad view content-type");
+
+# spigraphhierarchy with bad view should return error as json (noCacheJson protected)
+    $resp = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8123/api/spigraphhierarchy?exp=source.ip&date=-1&view=BADVIEW&expression=" . uri_escape("file=$pwd/socks-http-example.pcap"));
+    like ($resp->content, qr/Can't find view/, "spigraphhierarchy bad view error text");
+    like ($resp->header('Content-Type'), qr|application/json|, "spigraphhierarchy bad view content-type is json");

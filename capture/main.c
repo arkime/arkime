@@ -400,13 +400,14 @@ LOCAL void arkime_free_later_init()
 /******************************************************************************/
 LOCAL void controlc(int UNUSED(sig))
 {
-    LOG("Control-C");
     signal(SIGINT, exit); // Double Control-C quits right away
+    LOG("Control-C");
     arkime_quit();
 }
 /******************************************************************************/
 LOCAL void terminate(int UNUSED(sig))
 {
+    signal(SIGTERM, exit); // Double terminate quits right away
     LOG("Terminate");
     arkime_quit();
 }

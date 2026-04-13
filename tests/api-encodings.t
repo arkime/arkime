@@ -106,6 +106,7 @@ sub doCheck {
 }
 
 ### MAIN ###
+system("rm -f /tmp/test-161019* /tmp/test-131203-*");
 
 # Load all the pcap, running some in background
 foreach my $e (undef, "xor-2048", "aes-256-ctr") {
@@ -152,3 +153,4 @@ foreach my $item (@{$json->{hits}->{hits}}) {
 
 # Delete the files entries
 esPost("/tests_files/_delete_by_query?conflicts=proceed&refresh", '{ "query": { "wildcard": { "name": "/tmp/test-*" } } }');
+system("rm -f /tmp/test-161019* /tmp/test-131203-*");

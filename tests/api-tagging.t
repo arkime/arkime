@@ -1,4 +1,4 @@
-use Test::More tests => 72;
+use Test::More tests => 76;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -97,3 +97,13 @@ my $json;
     esGet("/_refresh");
     countTest(0, "date=-1&expression=" . uri_escape("file=$pwd/irc.pcap && tags==MTAGTEST3"));
     countTest(1, "date=-1&expression=" . uri_escape("file=$pwd/irc.pcap && tags!=EXISTS!"));
+
+# addtags with bad view should return error as text/plain
+    my $resp = $ArkimeTest::userAgent->post("http://$ArkimeTest::host:8123/api/sessions/addtags?view=unknown&date=-1&expression=file=$pwd/socks-http-example.pcap", Content => "tags=BADVIEWTEST");
+    like ($resp->content, qr/Could not build query/, "addtags bad view error text");
+    is ($resp->header('Content-Type'), 'text/plain; charset=utf-8', "addtags bad view content-type");
+
+# removetags with bad view should return error as text/plain
+    $resp = $ArkimeTest::userAgent->post("http://$ArkimeTest::host:8123/api/sessions/removetags?view=unknown&date=-1&expression=file=$pwd/socks-http-example.pcap", Content => "tags=BADVIEWTEST");
+    like ($resp->content, qr/Could not build query/, "removetags bad view error text");
+    is ($resp->header('Content-Type'), 'text/plain; charset=utf-8', "removetags bad view content-type");

@@ -190,8 +190,8 @@ class HistoryAPIs {
       return res.serverError(403, 'Missing history index', 'api.history.missingIndex');
     }
 
-    if (!req.query.index.includes('history_v')) {
-      return res.serverError(403, 'Invalid history index', 'api.history.invalidIndex');
+    if (!/_history_v\d+-/.test(req.query.index)) {
+      return res.serverError(403, 'Invalid history index');
     }
 
     try {

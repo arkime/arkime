@@ -1,4 +1,4 @@
-use Test::More tests => 12;
+use Test::More tests => 14;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -118,3 +118,8 @@ my ($json, $mjson);
 "10.180.156.185","1418212800000",3,32958,26760,93,test
 "10.180.156.185","1648944000000",3,32958,26760,93,test
 ));
+
+# csv with bad view should return error as text/plain
+    my $resp = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8123/api/connections.csv?view=unknown&date=-1&expression=" . uri_escape("$files"));
+    like ($resp->content, qr/Can't find view/, "connections csv bad view error text");
+    is ($resp->header('Content-Type'), 'text/plain; charset=utf-8', "connections csv bad view content-type");
