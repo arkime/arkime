@@ -142,15 +142,15 @@ class ThreatFoxIntegration extends Integration {
   }
 
   fetchIp (user, ip) {
-    return this.fetch(user, `{ "query": "search_ioc", "search_term": "${ip}" }`);
+    return this.fetch(user, JSON.stringify({ query: 'search_ioc', search_term: ip }));
   }
 
   fetchHash (user, hash) {
-    return this.fetch(user, `{ "query": "search_hash", "hash": "${hash}" }`);
+    return this.fetch(user, JSON.stringify({ query: 'search_hash', hash: hash }));
   }
 
   fetchDomain (user, domain) {
-    return this.fetch(user, `{ "query": "search_ioc", "search_term": "${domain}" }`);
+    return this.fetch(user, JSON.stringify({ query: 'search_ioc', search_term: domain }));
   }
 }
 

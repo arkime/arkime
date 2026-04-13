@@ -609,13 +609,11 @@ SUPPRESS_UNSIGNED_INTEGER_OVERFLOW
 uint32_t arkime_string_hash(const void *key)
 {
     const uint8_t *p = (uint8_t *)key;
-    uint32_t n = 0;
+    uint32_t n = hashSalt;
     while (*p) {
         n = (n << 5) - n + *p;
         p++;
     }
-
-    n ^= hashSalt;
 
     return n;
 }
@@ -624,14 +622,12 @@ SUPPRESS_UNSIGNED_INTEGER_OVERFLOW
 uint32_t arkime_string_hash_len(const void *key, int len)
 {
     const uint8_t *p = (uint8_t *)key;
-    uint32_t n = 0;
+    uint32_t n = hashSalt;
     while (len) {
         n = (n << 5) - n + *p;
         p++;
         len--;
     }
-
-    n ^= hashSalt;
 
     return n;
 }

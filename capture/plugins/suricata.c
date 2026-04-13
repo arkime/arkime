@@ -387,7 +387,7 @@ LOCAL void suricata_read()
 {
     while (fgets(line + lineLen, lineSize - lineLen, file)) {
         lineLen = strlen(line);
-        if (line[lineLen - 1] == '\n') {
+        if (lineLen > 0 && line[lineLen - 1] == '\n') {
             suricata_process();
             lineLen = 0;
         } else if (lineLen == lineSize - 1) {

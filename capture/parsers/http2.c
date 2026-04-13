@@ -204,6 +204,8 @@ LOCAL void http2_parse_frame_headers(ArkimeSession_t *session, HTTP2Info_t *http
         if (inlen < 1)
             return;
         uint8_t padding = in[0];
+        if (padding >= inlen)
+            return;
         in++;
         inlen -= (1 + padding);
     }
@@ -215,8 +217,6 @@ LOCAL void http2_parse_frame_headers(ArkimeSession_t *session, HTTP2Info_t *http
         inlen -= 5;
     }
 
-    if (inlen < 0)
-        return;
     http2_parse_header_block(session, http2, which, flags, streamId, in, inlen);
 }
 /******************************************************************************/
@@ -237,6 +237,8 @@ LOCAL void http2_parse_frame_push_promise(ArkimeSession_t *session, HTTP2Info_t 
         if (inlen < 1)
             return;
         uint8_t padding = in[0];
+        if (padding >= inlen)
+            return;
         in++;
         inlen -= (1 + padding);
     }
@@ -277,11 +279,10 @@ LOCAL void http2_parse_frame_data(ArkimeSession_t *session, HTTP2Info_t *http2, 
 
     // If last packet in frame subtract saved padding
     if (http2->dataNeeded[which] == 0) {
+        if (http2->dataPadding[which] > inlen)
+            return;
         inlen -= http2->dataPadding[which];
     }
-
-    if (inlen < 0)
-        return;
 
     int spos = http2_spos_get(http2, streamId, FALSE);
     if (spos == -1) {

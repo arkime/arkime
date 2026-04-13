@@ -341,34 +341,34 @@ LOCAL int dtls_udp_parser(ArkimeSession_t *session, void *UNUSED(uw), const uint
         while (BSB_NOT_ERROR(bbuf) && BSB_NOT_ERROR(msgBuf) && BSB_REMAINING(msgBuf) > 12) {
             uint8_t handshakeType = 0;
             BSB_IMPORT_u08(msgBuf, handshakeType);
-            uint32_t handshakeLen = 0;
-            BSB_IMPORT_u24(msgBuf, handshakeLen);
+            BSB_IMPORT_skip(msgBuf, 3); // handshakeLen
             BSB_IMPORT_skip(msgBuf, 2); // msgSeq
             uint32_t frameOffset = 0;
             BSB_IMPORT_u24(msgBuf, frameOffset);
-            BSB_IMPORT_skip(msgBuf, 3); // frameLength
-            // ALW fix - don't handle fragmented packets yet
+            uint32_t fragmentLength = 0;
+            BSB_IMPORT_u24(msgBuf, fragmentLength);
+            // Don't handle fragmented packets yet
             if (frameOffset != 0) {
-                BSB_IMPORT_skip(msgBuf, handshakeLen);
+                BSB_IMPORT_skip(msgBuf, fragmentLength);
                 continue;
             }
 
             // Not enough data left
-            if (BSB_IS_ERROR(msgBuf) || handshakeLen > BSB_REMAINING(msgBuf))
+            if (BSB_IS_ERROR(msgBuf) || fragmentLength > BSB_REMAINING(msgBuf))
                 break;
 
             switch (handshakeType) {
             case 1: // client hello
-                arkime_parsers_call_named_func(dtls_process_client_hello_func, session, BSB_WORK_PTR(msgBuf), handshakeLen, NULL);
+                arkime_parsers_call_named_func(dtls_process_client_hello_func, session, BSB_WORK_PTR(msgBuf), fragmentLength, NULL);
                 break;
             case 2: // server hello
-                arkime_parsers_call_named_func(dtls_process_server_hello_func, session, BSB_WORK_PTR(msgBuf), handshakeLen, NULL);
+                arkime_parsers_call_named_func(dtls_process_server_hello_func, session, BSB_WORK_PTR(msgBuf), fragmentLength, NULL);
                 break;
             case 11: // Certificate
-                arkime_parsers_call_named_func(tls_process_server_certificate_func, session, BSB_WORK_PTR(msgBuf), handshakeLen, NULL);
+                arkime_parsers_call_named_func(tls_process_server_certificate_func, session, BSB_WORK_PTR(msgBuf), fragmentLength, NULL);
                 break;
             }
-            BSB_IMPORT_skip(msgBuf, handshakeLen);
+            BSB_IMPORT_skip(msgBuf, fragmentLength);
         }
     }
 

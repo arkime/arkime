@@ -370,7 +370,7 @@ LOCAL void writer_s3_header_cb (char *url, const char *field, const char *value,
 /******************************************************************************/
 LOCAL void writer_s3_request(const char *method, const char *path, const char *qs, const uint8_t *data, int len, gboolean specifyStorageClass, ArkimeHttpResponse_cb cb, gpointer uw)
 {
-    char           canonicalRequest[20000];
+    char           canonicalRequest[10000];
     char           datetime[17];
     char           objectkey[1000];
     char           fullpath[2000];
@@ -493,7 +493,7 @@ LOCAL void writer_s3_request(const char *method, const char *path, const char *q
     snprintf(fullpath, sizeof(fullpath), "%s?%s", objectkey, qs);
     //LOG("fullpath: %s", fullpath);
 
-    char strs[3][1000];
+    char strs[3][512];
     char *headers[8];
     headers[0] = "Expect:";
     headers[1] = "Content-Type:";
