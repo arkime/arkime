@@ -519,7 +519,7 @@ class ConnectionAPIs {
     const separator = req.query.separator ?? ',';
     ConnectionAPIs.#buildConnections(req, res, (err, nodes, links, total) => {
       if (err) {
-        return res.send(err);
+        return res.type('text/plain').send(err);
       }
 
       // write out the fields requested

@@ -846,11 +846,19 @@ class Auth {
       return ArkimeUtil.serverError.call(res, 403, 'Bad path ' + ArkimeUtil.safeStr(req.path));
     }
 
-    if (!req.query) { return next(); }
+    if (req.query) {
+      for (const key in req.query) {
+        if (ArkimeUtil.isPP(req.query[key])) {
+          return ArkimeUtil.serverError.call(res, 403, 'Invalid value for ' + ArkimeUtil.safeStr(key));
+        }
+      }
+    }
 
-    for (const key in req.query) {
-      if (ArkimeUtil.isPP(req.query[key])) {
-        return ArkimeUtil.serverError.call(res, 403, 'Invalid value for ' + ArkimeUtil.safeStr(key));
+    if (req.body) {
+      for (const key in req.body) {
+        if (ArkimeUtil.isPP(req.body[key])) {
+          return ArkimeUtil.serverError.call(res, 403, 'Invalid value for ' + ArkimeUtil.safeStr(key));
+        }
       }
     }
 

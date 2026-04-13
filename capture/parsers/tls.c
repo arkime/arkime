@@ -160,9 +160,9 @@ LOCAL uint32_t tls_process_server_hello(ArkimeSession_t *session, const uint8_t 
     }
 
 
-    char ja3[30000];
+    char ja3[13000];
     BSB ja3bsb;
-    char eja3[10000];
+    char eja3[13000];
     BSB eja3bsb;
 
     BSB_INIT(ja3bsb, ja3, sizeof(ja3));
@@ -301,13 +301,13 @@ LOCAL uint32_t tls_process_client_hello_data(ArkimeSession_t *session, const uin
     if (len < 7)
         return -1;
 
-    char ja3[30000];
+    char ja3[13000];
     BSB ja3bsb;
-    char ecfja3[1000];
+    char ecfja3[1024];
     BSB ecfja3bsb;
-    char eja3[10000];
+    char eja3[13000];
     BSB eja3bsb;
-    char ecja3[10000];
+    char ecja3[13000];
     BSB ecja3bsb;
 
     char     ja4HasSNI = 'i';
