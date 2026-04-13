@@ -424,7 +424,7 @@ class ArkimeUtil {
     if (res.headersSent) {
       return next(err);
     }
-    res.status(500).type('text/plain').send(err.message || 'Server error');
+    res.status(500).type('text/plain').send(err.toString());
   }
 
   // ----------------------------------------------------------------------------
