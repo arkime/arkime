@@ -39,6 +39,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
 ## BREAKING
   - #3874 The user-auto-create and user-role-mappings sections now limit what 
           loop and exception Javascript can be used for security.
+  - #3881 Command socket now chmod(0660) and removes Other access.
 ## Release
   - #3864 CyberChef 10.23.0
   - #3870 docker.sh supports generic --db with help examples

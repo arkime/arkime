@@ -1869,14 +1869,28 @@ LOCAL void arkime_config_cmd_set(int argc, char **argv, gpointer cc)
         }
 
         switch (acv->typelen) {
-        case 1:
-            *(char *)acv->var = atoi(argv[2]);
+        case 1: {
+            int val = atoi(argv[2]);
+            if (val < -128 || val > 127) {
+                BSB_EXPORT_sprintf(bsb, "Value %d out of range for %s (-128..127)\n", val, acv->name);
+                arkime_command_respond(cc, buf, BSB_LENGTH(bsb));
+                return;
+            }
+            *(char *)acv->var = val;
             BSB_EXPORT_sprintf(bsb, "%s=%d\n", acv->name, *(char *)acv->var);
             break;
-        case 2:
-            *(short *)acv->var = atoi(argv[2]);
+        }
+        case 2: {
+            int val = atoi(argv[2]);
+            if (val < -32768 || val > 32767) {
+                BSB_EXPORT_sprintf(bsb, "Value %d out of range for %s (-32768..32767)\n", val, acv->name);
+                arkime_command_respond(cc, buf, BSB_LENGTH(bsb));
+                return;
+            }
+            *(short *)acv->var = val;
             BSB_EXPORT_sprintf(bsb, "%s=%d\n", acv->name, *(short *)acv->var);
             break;
+        }
         case 4:
             *(int *)acv->var = atoi(argv[2]);
             BSB_EXPORT_sprintf(bsb, "%s=%d\n", acv->name, *(int *)acv->var);

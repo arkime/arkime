@@ -7,6 +7,7 @@
  */
 
 #include <inttypes.h>
+#include <sys/stat.h>
 #include "gio/gio.h"
 #include "glib-object.h"
 #include "arkime.h"
@@ -375,6 +376,8 @@ void arkime_command_init()
         CONFIGEXIT("Error binding command socket: %s", error->message);
     }
     g_object_unref (addr);
+
+    chmod(config.commandSocket, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP);
 
     if (!g_socket_listen (socket, &error)) {
         CONFIGEXIT("Error listening command socket: %s", error->message);

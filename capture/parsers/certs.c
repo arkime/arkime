@@ -341,11 +341,14 @@ LOCAL void certinfo_alt_names(ArkimeSession_t *session, ArkimeCertsInfo_t *certs
     return;
 }
 /******************************************************************************/
-LOCAL void certinfo_process(ArkimeCertInfo_t *ci, BSB *bsb)
+LOCAL void certinfo_process_depth(ArkimeCertInfo_t *ci, BSB *bsb, int depth)
 {
     uint32_t apc, atag, alen;
     char lastOid[1000];
     lastOid[0] = 0;
+
+    if (depth > 20) // ALW - prevent stack overflow from malicious deep nesting
+        return;
 
     while (BSB_REMAINING(*bsb)) {
         uint8_t *value = arkime_parsers_asn_get_tlv(bsb, &apc, &atag, &alen);
@@ -355,7 +358,7 @@ LOCAL void certinfo_process(ArkimeCertInfo_t *ci, BSB *bsb)
         if (apc) {
             BSB tbsb;
             BSB_INIT(tbsb, value, alen);
-            certinfo_process(ci, &tbsb);
+            certinfo_process_depth(ci, &tbsb, depth + 1);
         } else if (atag  == 6) {
             arkime_parsers_asn_decode_oid(lastOid, sizeof(lastOid), value, alen);
         } else if (lastOid[0] && (atag == 20 || atag == 19 || atag == 12)) {
@@ -512,7 +515,7 @@ LOCAL int certinfo_process_single_cert(ArkimeSession_t *session, const uint8_t *
     }
     BSB tbsb;
     BSB_INIT(tbsb, value, alen);
-    certinfo_process(&certs->issuer, &tbsb);
+    certinfo_process_depth(&certs->issuer, &tbsb, 0);
 
     /* validity */
     if (!(value = arkime_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen))) {
@@ -539,7 +542,7 @@ LOCAL int certinfo_process_single_cert(ArkimeSession_t *session, const uint8_t *
         goto bad_cert;
     }
     BSB_INIT(tbsb, value, alen);
-    certinfo_process(&certs->subject, &tbsb);
+    certinfo_process_depth(&certs->subject, &tbsb, 0);
 
     /* subjectPublicKeyInfo */
     if (!(value = arkime_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen))) {
