@@ -146,6 +146,19 @@ dropGroup=daemon
 # RequestHeader set ARKIME_USER %{ENV_RU}e
 #userNameHeader=arkime_user
 
+# If the header specified in userNameHeader contains a JWT (e.g., from AWS ALB
+# OIDC, Cloudflare Access, or Google IAP), set authMode=header-jwt and
+# authUserIdField to the JWT claim that contains the user id.
+# The JWT payload is decoded (base64) but NOT signature-verified — the
+# upstream proxy must have already verified the JWT before forwarding.
+# When enabled, JWT claims are also passed to [user-auto-create] and
+# [user-role-mappings] as the 'vals' object instead of raw request headers.
+#
+# Example for AWS ALB with Okta OIDC:
+#   authMode=header-jwt
+#   userNameHeader=x-amzn-oidc-data
+#   authUserIdField=short_id
+
 #
 # Headers to use to determine if user from `userNameHeader` is
 # authorized to use the system, and if so create a new user
