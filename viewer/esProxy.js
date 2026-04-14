@@ -10,7 +10,7 @@
  */
 const Config = require('./config.js');
 const express = require('express');
-const crypto = require('crypto');
+const cryptoLib = require('crypto');
 const http = require('http');
 const https = require('https');
 const fs = require('fs');
@@ -206,9 +206,9 @@ app.use((req, res, next) => {
   }
 
   if (sensors[credentials.name].pass !== undefined &&
-      !crypto.timingSafeEqual(
-        crypto.createHmac('sha256', 'compare').update(sensors[credentials.name].pass).digest(),
-        crypto.createHmac('sha256', 'compare').update(credentials.pass).digest())) {
+      !cryptoLib.timingSafeEqual(
+        cryptoLib.createHmac('sha256', 'compare').update(sensors[credentials.name].pass).digest(),
+        cryptoLib.createHmac('sha256', 'compare').update(credentials.pass).digest())) {
     console.log(`Incorrect password for ${credentials.name}`);
     return res.set('WWW-Authenticate', 'Basic').status(401).send();
   }
