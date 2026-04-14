@@ -21,6 +21,7 @@ const logger = require('morgan');
 const express = require('express');
 const ini = require('js-ini');
 const acorn = require('acorn');
+const RE2 = require('re2');
 
 class ArkimeUtil {
   static adminRole;
@@ -354,7 +355,7 @@ class ArkimeUtil {
   static wildcardToRegexp (wildcard) {
     // https://stackoverflow.com/revisions/57527468/5
     wildcard = wildcard.replace(/[.+^${}()|[\]\\]/g, '\\$&');
-    return new RegExp(`^${wildcard.replace(/\*/g, '.*').replace(/\?/g, '.')}$`, 'i');
+    return new RE2(`^${wildcard.replace(/\*/g, '.*').replace(/\?/g, '.')}$`, 'i');
   }
 
   // ----------------------------------------------------------------------------
