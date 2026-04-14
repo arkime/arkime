@@ -1,4 +1,4 @@
-use Test::More tests => 345;
+use Test::More tests => 349;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -115,6 +115,16 @@ my $hToken = getTokenCookie('sac-huntuser');
   $json = viewerPostToken("/api/hunt?arkimeRegressionUser=anonymous", '{"totalSessions":1,"name":"test hunt 18","size":"50","search":"test search text","searchType":"ascii","type":"raw","src":true,"dst":true,"query":{"startTime":18000,"stopTime":1536872891}, "users": [false]}', $token);
   is($json->{success}, 0, "users array not string");
   is($json->{i18n}, "api.hunts.usersMustBeString", "users array not string i18n");
+
+# Bad description (object)
+  $json = viewerPostToken("/api/hunt?arkimeRegressionUser=anonymous", '{"totalSessions":1,"name":"test hunt desc1","size":"50","search":"test search text","searchType":"ascii","type":"raw","src":true,"dst":true,"query":{"startTime":18000,"stopTime":1536872891},"description":{"evil":"object"}}', $token);
+  is($json->{success}, 0, "create hunt with object description fails");
+  is($json->{text}, "Description must be a string", "create hunt object description error message");
+
+# Bad description (array)
+  $json = viewerPostToken("/api/hunt?arkimeRegressionUser=anonymous", '{"totalSessions":1,"name":"test hunt desc2","size":"50","search":"test search text","searchType":"ascii","type":"raw","src":true,"dst":true,"query":{"startTime":18000,"stopTime":1536872891},"description":["arr"]}', $token);
+  is($json->{success}, 0, "create hunt with array description fails");
+  is($json->{text}, "Description must be a string", "create hunt array description error message");
 
 # Make sure no hunts
   my $hunts = viewerGet("/api/hunts?all");

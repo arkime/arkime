@@ -8,6 +8,7 @@ use Data::Dumper;
 use strict;
 
 my $pwd = "*/pcap";
+my $token = getTokenCookie();
 
 sub testMulti {
     my ($json, $mjson, $url) = @_;
@@ -287,15 +288,15 @@ tcp,1386004309468,1386004309478,10.180.156.185,53533,US,10.180.156.249,1080,US,2
     is($json->{i18n}, "api.sessions.missingIds", "send sessions missing ids i18n");
 
 # Test errors for /api/sessions/send
-    $json = viewerPost("/api/sessions/send", '');
+    $json = viewerPostToken("/api/sessions/send", '', $token);
     is($json->{success}, 0, "send all missing cluster");
     is($json->{i18n}, "api.sessions.missingCluster", "send all missing cluster i18n");
 
-    $json = viewerPost("/api/sessions/send", "cluster=unknown");
+    $json = viewerPostToken("/api/sessions/send", "wrongparam=unknown", $token);
     is($json->{success}, 0, "send all cluster param missing cluster");
     is($json->{i18n}, "api.sessions.missingCluster", "send all cluster param missing cluster i18n");
 
-    $json = viewerPost("/api/sessions/send", "remoteCluster=unknown");
+    $json = viewerPostToken("/api/sessions/send", "remoteCluster=unknown", $token);
     is($json->{success}, 0, "send all unknown cluster");
     is($json->{i18n}, "api.sessions.unknownCluster", "send all unknown cluster i18n");
 

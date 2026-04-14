@@ -576,7 +576,11 @@ class UserAPIs {
     req.settingUser.settings = ['ms', 'logo', 'theme', 'timezone', 'spiGraph', 'numPackets', 'infoFields', 'manualQuery', 'detailFormat',
       'connSrcField', 'connDstField', 'sortColumn', 'sortDirection', 'showTimestamps', 'connNodeFields',
       'connLinkFields', 'timelineDataFilters', 'hideTags', 'shiftyEyes'].reduce((obj, key) => {
-      obj[key] = req.body[key];
+      const val = req.body[key];
+      if (val !== undefined && val !== null && typeof val === 'object' && !Array.isArray(val)) {
+        return obj;
+      }
+      obj[key] = val;
       return obj;
     }, {});
 

@@ -293,7 +293,7 @@ class Auth {
         name: 'ARKIME-SID',
         secret: Auth.passwordSecret + Auth.#serverSecret,
         resave: false,
-        saveUninitialized: true,
+        saveUninitialized: false,
         cookie: { path: Auth.#basePath, secure: Auth.#authConfig.cookieSecure, sameSite: Auth.#authConfig.cookieSameSite ?? 'Lax', maxAge: 24 * 60 * 60 * 1000, httpOnly: true },
         store: new ESStore({ })
       }));

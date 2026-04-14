@@ -1,4 +1,4 @@
-use Test::More tests => 76;
+use Test::More tests => 93;
 use ArkimeTest;
 use JSON;
 use Test::Differences;
@@ -248,6 +248,56 @@ is($info->{data}->[0]->{name}, "gamma", "pagination offset returns gamma");
 # non-admin all=true should not show other users' views
 $info = viewerGet("/api/views?arkimeRegressionUser=sac-test2&all=true");
 is($info->{recordsTotal}, 0, "non-admin all=true doesn't show other users views");
+
+# --- sessionsColConfig type validation tests ---
+
+# create view with string sessionsColConfig should fail
+$info = viewerPostToken("/api/view?arkimeRegressionUser=sac-test1", '{"name":"bad_col_view","expression":"ip.src==1.2.3.4","sessionsColConfig":"not-an-object"}', $token);
+ok(!$info->{success}, "create view with string sessionsColConfig fails");
+is($info->{text}, "sessionsColConfig must be an object", "create string sessionsColConfig error message");
+
+# create view with array sessionsColConfig should fail
+$info = viewerPostToken("/api/view?arkimeRegressionUser=sac-test1", '{"name":"bad_col_view2","expression":"ip.src==1.2.3.4","sessionsColConfig":["bad"]}', $token);
+ok(!$info->{success}, "create view with array sessionsColConfig fails");
+is($info->{text}, "sessionsColConfig must be an object", "create array sessionsColConfig error message");
+
+# create view with valid object sessionsColConfig should succeed
+$info = viewerPostToken("/api/view?arkimeRegressionUser=sac-test1", '{"name":"good_col_view","expression":"ip.src==1.2.3.4","sessionsColConfig":{"visibleHeaders":["firstPacket"]}}', $token);
+ok($info->{success}, "create view with object sessionsColConfig succeeds");
+my $colViewId = $info->{view}->{id};
+
+# update view with string sessionsColConfig should fail
+$info = viewerPutToken("/api/view/${colViewId}?arkimeRegressionUser=sac-test1", '{"name":"good_col_view","expression":"ip.src==1.2.3.4","sessionsColConfig":123}', $token);
+ok(!$info->{success}, "update view with number sessionsColConfig fails");
+is($info->{text}, "sessionsColConfig must be an object", "update number sessionsColConfig error message");
+
+# create view with array users should fail
+$info = viewerPostToken("/api/view?arkimeRegressionUser=sac-test1", '{"name":"bad_users_view","expression":"ip.src==1.2.3.4","users":["sac-test2"]}', $token);
+ok(!$info->{success}, "create view with array users fails");
+is($info->{text}, "Users field must be a string", "create array users error message");
+
+# create view with object users should fail
+$info = viewerPostToken("/api/view?arkimeRegressionUser=sac-test1", '{"name":"bad_users_view2","expression":"ip.src==1.2.3.4","users":{"bad":"obj"}}', $token);
+ok(!$info->{success}, "create view with object users fails");
+is($info->{text}, "Users field must be a string", "create object users error message");
+
+# update view with array users should fail
+$info = viewerPutToken("/api/view/${colViewId}?arkimeRegressionUser=sac-test1", '{"name":"good_col_view","expression":"ip.src==1.2.3.4","users":["sac-test2"]}', $token);
+ok(!$info->{success}, "update view with array users fails");
+is($info->{text}, "Users field must be a string", "update array users error message");
+
+# update view with non-string user (owner) should fail
+$info = viewerPutToken("/api/view/${colViewId}?arkimeRegressionUser=sac-test1", '{"name":"good_col_view","expression":"ip.src==1.2.3.4","user":123}', $token);
+ok(!$info->{success}, "update view with number user (owner) fails");
+is($info->{text}, "User field must be a string", "update number user error message");
+
+# update view with object user (owner) should fail
+$info = viewerPutToken("/api/view/${colViewId}?arkimeRegressionUser=sac-test1", '{"name":"good_col_view","expression":"ip.src==1.2.3.4","user":{"bad":"obj"}}', $token);
+ok(!$info->{success}, "update view with object user (owner) fails");
+is($info->{text}, "User field must be a string", "update object user error message");
+
+# cleanup sessionsColConfig test view
+viewerDeleteToken("/api/view/${colViewId}?arkimeRegressionUser=sac-test1", $token);
 
 # cleanup sort/search/pagination views
 viewerDeleteToken("/api/view/${idA}?arkimeRegressionUser=sac-test1", $token);
