@@ -28,8 +28,6 @@ class Auth {
   static passwordSecret256;
 
   static #userNameHeader;
-  static #userNameHeaderJwt;
-  static #userNameHeaderJwtField;
   static #appAdminRole;
   static #serverSecret;
   static #serverSecret256;
@@ -75,8 +73,6 @@ class Auth {
    * @param {string} options.mode=digest What auth mode to run in
    * @param {string} options.basePath=/ What the web base path is for the app
    * @param {string} options.userNameHeader In header auth mode, which http header has the user id
-   * @param {boolean} options.userNameHeaderJwt In header auth mode, if true the header value is decoded as a JWT and the user id is extracted from a claim
-   * @param {string} options.userNameHeaderJwtField In header auth mode with JWT, which JWT claim field to use as the user id
    * @param {string} options.passwordSecret=password For basic/digest mode, what password to use to encrypt the password hash
    * @param {string} options.serverSecret=passwordSecret What password is used to encrypt S2S auth
    * @param {string} options.requiredAuthHeader In header auth mode, another header can be required
@@ -91,8 +87,6 @@ class Auth {
     options ??= {};
     options.mode ??= ArkimeConfig.get('authMode');
     options.userNameHeader ??= ArkimeConfig.get('userNameHeader');
-    options.userNameHeaderJwt ??= ArkimeConfig.get('userNameHeaderJwt', false);
-    options.userNameHeaderJwtField ??= ArkimeConfig.get('userNameHeaderJwtField');
     options.passwordSecret ??= ArkimeConfig.getFull(options.passwordSecretSection ?? undefined, 'passwordSecret');
     options.serverSecret ??= ArkimeConfig.get('serverSecret');
     options.requiredAuthHeader ??= ArkimeConfig.get('requiredAuthHeader');
@@ -136,12 +130,6 @@ class Auth {
 
     Auth.mode = options.mode;
     Auth.#userNameHeader = options.userNameHeader;
-    Auth.#userNameHeaderJwt = options.userNameHeaderJwt === true || options.userNameHeaderJwt === 'true';
-    Auth.#userNameHeaderJwtField = options.userNameHeaderJwtField;
-    if (Auth.#userNameHeaderJwt && !Auth.#userNameHeaderJwtField) {
-      console.log('ERROR - userNameHeaderJwt is set but userNameHeaderJwtField is missing');
-      process.exit(1);
-    }
     Auth.#appAdminRole = options.appAdminRole;
     Auth.#basePath = options.basePath ?? '/';
     Auth.#passwordSecretSection = options.passwordSecretSection ?? 'default';
@@ -212,7 +200,7 @@ class Auth {
           process.exit(1);
         }
       }
-    } else if (Auth.mode === 'header') {
+    } else if (Auth.mode === 'header' || Auth.mode === 'header-jwt') {
       Auth.#userAuthIps.add('::ffff:127.0.0.0', 96 + 8, 1);
       Auth.#userAuthIps.add('::1', 128, 1);
     } else {
@@ -270,6 +258,10 @@ class Auth {
       break;
     case 'header+basic':
       Auth.#strategies = ['header', 'basic'];
+      break;
+    case 'header-jwt':
+      check('userIdField', 'authUserIdField');
+      Auth.#strategies = ['header'];
       break;
     case 's2s':
       Auth.#strategies = ['s2s'];
@@ -563,7 +555,7 @@ class Auth {
       let userId;
       let vals = req.headers;
 
-      if (Auth.#userNameHeaderJwt) {
+      if (Auth.mode === 'header-jwt') {
         // No signature verification — the upstream proxy (ALB, Cloudflare Access, etc.)
         // has already verified the JWT before forwarding the request.
         try {
@@ -573,7 +565,7 @@ class Auth {
             return done('Invalid JWT in header');
           }
           const payload = JSON.parse(Buffer.from(parts[1], 'base64url').toString());
-          userId = payload[Auth.#userNameHeaderJwtField]?.toString().trim();
+          userId = payload[Auth.#authConfig.userIdField]?.toString().trim();
           vals = payload;
         } catch (e) {
           console.log('AUTH: Failed to decode JWT from header', Auth.#userNameHeader, e.message);
