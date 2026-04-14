@@ -421,18 +421,18 @@ function validateBulk (req) {
       if (typeof json.index === 'object') {
         if (typeof json.index._index !== 'string') { throw new Error('Missing index _index string'); }
 
-        // Eventually this should only allow fields
+        // Strict prefix match — prevent writes to arbitrary indices
         const _index = json.index._index;
-        if (!_index.includes('sessions2') && !_index.includes('sessions3') && !_index.includes('fields')) { throw new Error(`Bad index ${_index}`); }
+        if (!/^(arkime_)?(sessions[23]-|fields$)/.test(_index)) { throw new Error(`Bad index ${_index}`); }
       } else if (typeof json.create === 'object') {
         const _index = json.create._index;
-        if (!_index.includes('sessions2') && !_index.includes('sessions3')) { throw new Error(`Bad index ${_index}`); }
+        if (!/^(arkime_)?sessions[23]-/.test(_index)) { throw new Error(`Bad index ${_index}`); }
       } else if (typeof json.update === 'object') {
         const _index = json.update._index;
-        if (!_index.includes('fields')) { throw new Error(`Bad index ${_index}`); }
+        if (!/^(arkime_)?fields$/.test(_index)) { throw new Error(`Bad index ${_index}`); }
       } else if (typeof json.delete === 'object') {
         const _index = json.delete._index;
-        if (!_index.includes('fields')) { throw new Error(`Bad index ${_index}`); }
+        if (!/^(arkime_)?fields$/.test(_index)) { throw new Error(`Bad index ${_index}`); }
       } else {
         console.log('Failed bulk', JSON.stringify(json, false, 2));
         throw new Error('Missing create, update or index operation');
@@ -495,11 +495,9 @@ app.post('*', saveBody, (req, res) => {
   } else if ((path.startsWith(`/${oldprefix}sessions2`) || path.startsWith(`/${prefix}sessions3`)) && path.endsWith('/_search') && validateSearchIds(req)) {
   } else if (path.match(/^\/[^/]*history_v[^/]*\/_doc$/)) {
   } else if (path.match(/^\/[^/]*sessions[23]-[^/]+\/_update\/[^/]+$/) && validateUpdate(req)) {
-    console.log(`UPDATE : ${req.sensor.node} path:>%s<:`, ArkimeUtil.sanitizeStr(path));
-    console.log(req.body.toString('utf8'));
+    console.log(`UPDATE : ${ArkimeUtil.sanitizeStr(req.sensor.node)} path:>%s<: body:%d bytes`, ArkimeUtil.sanitizeStr(path), Buffer.isBuffer(req.body) ? req.body.length : 0);
   } else {
-    console.log(`POST failed node: ${req.sensor.node} path:>%s<:`, ArkimeUtil.sanitizeStr(path));
-    console.log(req.body.toString('utf8'));
+    console.log(`POST failed node: ${ArkimeUtil.sanitizeStr(req.sensor.node)} path:>%s<: body:%d bytes`, ArkimeUtil.sanitizeStr(path), Buffer.isBuffer(req.body) ? req.body.length : 0);
     return res.status(400).send('Not authorized for API');
   }
   doProxy(req, res).catch(e => {
