@@ -193,6 +193,14 @@ class Notifier {
       }
     }
 
+    if (notifier.roles !== undefined && !ArkimeUtil.isStringArray(notifier.roles)) {
+      return 'Roles field must be an array of strings';
+    }
+
+    if (notifier.users !== undefined && !ArkimeUtil.isString(notifier.users, 0)) {
+      return 'Users field must be a string';
+    }
+
     return;
   }
 
@@ -340,22 +348,30 @@ class Notifier {
     }
 
     // add user and created date
-    req.body.user = req.user.userId;
-    req.body.created = Math.floor(Date.now() / 1000);
+    const doc = {
+      name: req.body.name,
+      type: req.body.type,
+      fields: req.body.fields,
+      on: !!req.body.on,
+      alerts: req.body.alerts ?? Notifier.#defaultAlerts,
+      roles: req.body.roles,
+      user: req.user.userId,
+      created: Math.floor(Date.now() / 1000)
+    };
 
     // comma/newline separated value -> array of values
     let users = ArkimeUtil.commaOrNewlineStringToArray(req.body.users || '');
     users = await User.validateUserIds(users);
-    req.body.users = users.validUsers;
+    doc.users = users.validUsers;
 
     try {
-      const id = await Notifier.createNotifier(req.body);
+      const id = await Notifier.createNotifier(doc);
 
-      req.body.id = id;
-      req.body.users = req.body.users.join(',');
+      doc.id = id;
+      doc.users = doc.users.join(',');
       return res.json({
         success: true,
-        notifier: req.body,
+        notifier: doc,
         text: 'Created notifier!',
         invalidUsers: users.invalidUsers
       });

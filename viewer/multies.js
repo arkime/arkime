@@ -375,7 +375,12 @@ function simpleGather1Cluster (req, res) {
 
   // Remove cluster from body if there
   if (req._body) {
-    const body = JSON.parse(req.body);
+    let body;
+    try {
+      body = JSON.parse(req.body);
+    } catch (e) {
+      return res.status(400).send({ error: 'Invalid JSON body' });
+    }
     delete body.cluster;
     req.body = JSON.stringify(body);
   }
@@ -1051,7 +1056,7 @@ app.post(['/:index/:type/_search', '/:index/_search'], function (req, res) {
   try {
     search = JSON.parse(req.body);
   } catch (e) {
-    return res.status(400).send('Invalid JSON body');
+    return res.status(400).send({ error: 'Invalid JSON body' });
   }
 
   if (+search.size + (+search.from || 0) > 10000) {
@@ -1147,7 +1152,12 @@ function msearch (req, res) {
 }
 
 app.post(['/:index/:type/:id/_update', '/:index/_update/:id'], async (req, res) => {
-  const body = JSON.parse(req.body);
+  let body;
+  try {
+    body = JSON.parse(req.body);
+  } catch (e) {
+    return res.status(400).send({ error: 'Invalid JSON body' });
+  }
   const cluster = req.query.cluster ?? body.cluster;
   if (cluster && clusters[cluster]) {
     const node = clusters[cluster];

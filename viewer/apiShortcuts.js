@@ -254,6 +254,10 @@ class ShortcutAPIs {
       return res.serverError(403, 'Users field must be a string', 'api.shortcuts.usersMustBeString');
     }
 
+    if (req.body.description !== undefined && !ArkimeUtil.isString(req.body.description, 0)) {
+      return res.serverError(403, 'Description must be a string');
+    }
+
     req.body.name = req.body.name.replace(/[^-a-zA-Z0-9_]/g, '');
 
     // return nothing if we can't find the user
@@ -361,6 +365,10 @@ class ShortcutAPIs {
 
     if (req.body.users !== undefined && !ArkimeUtil.isString(req.body.users, 0)) {
       return res.serverError(403, 'Users field must be a string', 'api.shortcuts.usersMustBeString');
+    }
+
+    if (req.body.description !== undefined && !ArkimeUtil.isString(req.body.description, 0)) {
+      return res.serverError(403, 'Description must be a string');
     }
 
     const sentShortcut = {

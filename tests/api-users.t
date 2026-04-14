@@ -1,7 +1,7 @@
 # Many of these test user/roles start with sac- (skip auto create) because
 # otherwise viewer in regression mode would auto create the user.
 # Some day should remove all autocreate code.
-use Test::More tests => 249;
+use Test::More tests => 260;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -167,6 +167,16 @@ anonymous,,true,true,false,"arkimeAdmin, cont3xtUser, parliamentUser, usersAdmin
     ok(!exists $json->{__proto__}, "no prototype pollution");
     eq_or_diff($json->{logo}, "testlogo.png");
 
+# update user settings - object values should be silently skipped
+    $json = viewerPostToken("/api/user/settings?arkimeRegressionUser=sac-test1", '{"logo":{"bad":"object"}}', $test1Token);
+    is($json->{success}, 1, "update user settings with object value succeeds");
+    $json = viewerGetToken("/api/user/settings?arkimeRegressionUser=sac-test1", $test1Token);
+    ok(!defined $json->{logo} || ref($json->{logo}) eq '', "logo object was not stored");
+
+# restore logo to string value
+    $json = viewerPostToken("/api/user/settings?arkimeRegressionUser=sac-test1", '{"logo":"testlogo.png"}', $test1Token);
+    is($json->{success}, 1, "restore logo setting");
+
 # user css - no theme returns 404
     my $cssResponse = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8123/api/user.css?arkimeRegressionUser=sac-test1");
     is($cssResponse->code, 404, "user css returns 404 without theme");
@@ -281,8 +291,14 @@ anonymous,,true,true,false,"arkimeAdmin, cont3xtUser, parliamentUser, usersAdmin
     delete $users->{data}->[$test2pos]->{lastUsed};
     eq_or_diff($users->{data}->[$test2pos], from_json('{"roles": [], "userId": "sac-test2", "removeEnabled": true, "expression": "", "headerAuthEnabled": false, "userName": "UserNameUpdated3", "id": "sac-test2", "emailSearch": false, "enabled": false, "webEnabled": false, "packetSearch": false, "welcomeMsgNum": 0, "roleAssigners": []}', {relaxed => 1}), "Test User Update", { context => 3 });
 
+# isPP body param validation
+    my $info = viewerPostToken("/api/user/layouts/sessionstable?arkimeRegressionUser=sac-test1", '{"name": "__proto__", "columns": ["source.ip"], "order": [["lastPacket", "asc"]]}', $test1Token);
+    is($info->{text}, "Invalid value for name", "column: __proto__ body value blocked");
+    $info = viewerPostToken("/api/user/layouts/sessionstable?arkimeRegressionUser=sac-test1", '{"name": "constructor", "columns": ["source.ip"], "order": [["lastPacket", "asc"]]}', $test1Token);
+    is($info->{text}, "Invalid value for name", "column: constructor body value blocked");
+
 # Session Table Column Layout CRUD
-    my $info = viewerGetToken("/api/user/layouts/sessionstable?arkimeRegressionUser=sac-test1", $test1Token);
+    $info = viewerGetToken("/api/user/layouts/sessionstable?arkimeRegressionUser=sac-test1", $test1Token);
     eq_or_diff($info, from_json("[]"), "column: empty");
 
     $info = viewerPostToken("/api/user/layouts/sessionstable?arkimeRegressionUser=sac-test1", '{"name": "column1", "columns": ["source.ip","destination.ip"], "order": [["lastPacket", "asc"]]}', $test1Token);
@@ -307,6 +323,12 @@ anonymous,,true,true,false,"arkimeAdmin, cont3xtUser, parliamentUser, usersAdmin
 
     $info = viewerPutToken("/api/user/layouts/sessionstable?arkimeRegressionUser=sac-test1", '{"name": "column1", "columns": ["source.ip","destination.ip","info"], "order": [["lastPacket","asc"]]}', $test1Token);
     ok($info->{success}, "column: update");
+
+# column: mass assignment - extra properties should be stripped
+    $info = viewerPutToken("/api/user/layouts/sessionstable?arkimeRegressionUser=sac-test1", '{"name": "column1", "columns": ["source.ip"], "order": [["lastPacket","asc"]], "evil": "injected"}', $test1Token);
+    ok($info->{success}, "column: update with extra props");
+    $info = viewerGetToken("/api/user/layouts/sessionstable?arkimeRegressionUser=sac-test1", $test1Token);
+    ok(!exists $info->[0]->{evil}, "column: extra property stripped");
 
     $info = viewerDeleteToken("/api/user/layouts/sessionstable/column1?arkimeRegressionUser=sac-test1", $test1Token);
     ok($info->{success}, "column: delete found");
@@ -339,6 +361,12 @@ anonymous,,true,true,false,"arkimeAdmin, cont3xtUser, parliamentUser, usersAdmin
     $info = viewerPutToken("/api/user/layouts/sessionsinfofields?arkimeRegressionUser=sac-test1", '{"name": "sfields1", "fields": ["source.ip","destination.ip","node"]}', $test1Token);
     ok($info->{success}, "sessionsinfofields fields: update success");
 
+# sessionsinfofields: mass assignment - extra properties should be stripped
+    $info = viewerPutToken("/api/user/layouts/sessionsinfofields?arkimeRegressionUser=sac-test1", '{"name": "sfields1", "fields": ["source.ip","destination.ip","node"], "evil": "injected"}', $test1Token);
+    ok($info->{success}, "sessionsinfofields: update with extra props");
+    $info = viewerGetToken("/api/user/layouts/sessionsinfofields?arkimeRegressionUser=sac-test1", $test1Token);
+    ok(!exists $info->[0]->{evil}, "sessionsinfofields: extra property stripped");
+
     $info = viewerDeleteToken("/api/user/layouts/sessionsinfofields/fred?arkimeRegressionUser=sac-test1", $test1Token);
     ok(!$info->{success}, "sessionsinfofields fields: delete not found");
 
@@ -367,6 +395,12 @@ anonymous,,true,true,false,"arkimeAdmin, cont3xtUser, parliamentUser, usersAdmin
 
     $info = viewerPutToken("/api/user/layouts/spiview?arkimeRegressionUser=sac-test1", '{"name": "sfields1", "fields": ["source.ip","destination.ip","node"]}', $test1Token);
     ok($info->{success}, "spiview fields: update success");
+
+# spiview: mass assignment - extra properties should be stripped
+    $info = viewerPutToken("/api/user/layouts/spiview?arkimeRegressionUser=sac-test1", '{"name": "sfields1", "fields": ["source.ip","destination.ip","node"], "evil": "injected"}', $test1Token);
+    ok($info->{success}, "spiview: update with extra props");
+    $info = viewerGetToken("/api/user/layouts/spiview?arkimeRegressionUser=sac-test1", $test1Token);
+    ok(!exists $info->[0]->{evil}, "spiview: extra property stripped");
 
     $info = viewerDeleteToken("/api/user/layouts/spiview/fred?arkimeRegressionUser=sac-test1", $test1Token);
     ok(!$info->{success}, "spiview fields: delete not found");

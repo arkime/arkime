@@ -640,6 +640,7 @@ LOCAL void writer_simple_write(const ArkimeSession_t *const session, ArkimePacke
         }
 
         /* If offline pcap honor umask, otherwise disable other RW */
+        unlink(name);
         if (config.pcapReadOffline) {
             simpleThreadData[thread].currentInfo->file->fd = open(name,  openOptions, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
         } else {
@@ -1077,6 +1078,9 @@ void writer_simple_init(const char *name)
     }
 
     openOptions = O_NOATIME | O_WRONLY | O_CREAT | O_TRUNC;
+#ifdef O_EXCL
+    openOptions |= O_EXCL;
+#endif
     if (strcmp(name, "simple") == 0) {
 #ifdef O_DIRECT
         openOptions |= O_DIRECT;

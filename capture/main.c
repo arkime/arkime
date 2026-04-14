@@ -400,13 +400,14 @@ LOCAL void arkime_free_later_init()
 /******************************************************************************/
 LOCAL void controlc(int UNUSED(sig))
 {
-    LOG("Control-C");
     signal(SIGINT, exit); // Double Control-C quits right away
+    LOG("Control-C");
     arkime_quit();
 }
 /******************************************************************************/
 LOCAL void terminate(int UNUSED(sig))
 {
+    signal(SIGTERM, exit); // Double terminate quits right away
     LOG("Terminate");
     arkime_quit();
 }
@@ -608,13 +609,11 @@ SUPPRESS_UNSIGNED_INTEGER_OVERFLOW
 uint32_t arkime_string_hash(const void *key)
 {
     const uint8_t *p = (uint8_t *)key;
-    uint32_t n = 0;
+    uint32_t n = hashSalt;
     while (*p) {
         n = (n << 5) - n + *p;
         p++;
     }
-
-    n ^= hashSalt;
 
     return n;
 }
@@ -623,14 +622,12 @@ SUPPRESS_UNSIGNED_INTEGER_OVERFLOW
 uint32_t arkime_string_hash_len(const void *key, int len)
 {
     const uint8_t *p = (uint8_t *)key;
-    uint32_t n = 0;
+    uint32_t n = hashSalt;
     while (len) {
         n = (n << 5) - n + *p;
         p++;
         len--;
     }
-
-    n ^= hashSalt;
 
     return n;
 }

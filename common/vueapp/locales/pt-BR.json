@@ -759,7 +759,8 @@
       "molochtype": "Hot/Warm",
       "shardsPerNode": "Shards/Nó",
       "versionCreated": "Versão ES",
-      "docSize": "Disco Por Doc"
+      "docSize": "Disco Por Doc",
+      "codec": "Codec"
     },
     "esNodes": {
       "mainManaging": "Nó Gerenciador Principal",

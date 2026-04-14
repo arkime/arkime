@@ -297,7 +297,7 @@ class Auth {
         name: 'ARKIME-SID',
         secret: Auth.passwordSecret + Auth.#serverSecret,
         resave: false,
-        saveUninitialized: true,
+        saveUninitialized: false,
         cookie: { path: Auth.#basePath, secure: Auth.#authConfig.cookieSecure, sameSite: Auth.#authConfig.cookieSameSite ?? 'Lax', maxAge: 24 * 60 * 60 * 1000, httpOnly: true },
         store: new ESStore({ })
       }));
@@ -872,11 +872,19 @@ class Auth {
       return ArkimeUtil.serverError.call(res, 403, 'Bad path ' + ArkimeUtil.safeStr(req.path));
     }
 
-    if (!req.query) { return next(); }
+    if (req.query) {
+      for (const key in req.query) {
+        if (ArkimeUtil.isPP(req.query[key])) {
+          return ArkimeUtil.serverError.call(res, 403, 'Invalid value for ' + ArkimeUtil.safeStr(key));
+        }
+      }
+    }
 
-    for (const key in req.query) {
-      if (ArkimeUtil.isPP(req.query[key])) {
-        return ArkimeUtil.serverError.call(res, 403, 'Invalid value for ' + ArkimeUtil.safeStr(key));
+    if (req.body) {
+      for (const key in req.body) {
+        if (ArkimeUtil.isPP(req.body[key])) {
+          return ArkimeUtil.serverError.call(res, 403, 'Invalid value for ' + ArkimeUtil.safeStr(key));
+        }
       }
     }
 

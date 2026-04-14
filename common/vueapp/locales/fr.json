@@ -759,7 +759,8 @@
       "molochtype": "Type Arkime",
       "shardsPerNode": "Shards/Nœud",
       "versionCreated": "Version Créée",
-      "docSize": "Taille Doc"
+      "docSize": "Taille Doc",
+      "codec": "Codec"
     },
     "esNodes": {
       "mainManaging": "Gestion Principale",

@@ -434,7 +434,7 @@ class MiscAPIs {
       res.send({ data });
     } catch (err) {
       console.log(`ERROR - ${req.method} /%s/session/%s/cyberchef`, ArkimeUtil.sanitizeStr(req.params.nodeName), ArkimeUtil.sanitizeStr(req.params.id), util.inspect(err, false, 50));
-      return res.end('Error - ' + err);
+      return res.type('text/plain').end('Error - ' + err);
     }
   }
 

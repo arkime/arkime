@@ -293,7 +293,7 @@ class UserAPIs {
     // find the custom column configuration to update
     for (let i = 0, len = user.columnConfigs.length; i < len; i++) {
       if (result.layoutName === user.columnConfigs[i].name) {
-        user.columnConfigs[i] = req.body;
+        user.columnConfigs[i] = { name: req.body.name, columns: req.body.columns, order: req.body.order };
         return { success: true, layout: req.body, user };
       }
     }
@@ -321,7 +321,7 @@ class UserAPIs {
     // find the custom column configuration to update
     for (let i = 0, len = user.infoFieldConfigs.length; i < len; i++) {
       if (result.layoutName === user.infoFieldConfigs[i].name) {
-        user.infoFieldConfigs[i] = req.body;
+        user.infoFieldConfigs[i] = { name: req.body.name, fields: req.body.fields };
         return { success: true, layout: req.body, user };
       }
     }
@@ -350,7 +350,7 @@ class UserAPIs {
     // find the custom spiview layout to update
     for (let i = 0, len = user.spiviewFieldConfigs.length; i < len; i++) {
       if (result.layoutName === user.spiviewFieldConfigs[i].name) {
-        user.spiviewFieldConfigs[i] = req.body;
+        user.spiviewFieldConfigs[i] = { name: req.body.name, fields: req.body.fields };
         return { success: true, layout: req.body, user };
       }
     }
@@ -576,7 +576,11 @@ class UserAPIs {
     req.settingUser.settings = ['ms', 'logo', 'theme', 'timezone', 'spiGraph', 'numPackets', 'infoFields', 'manualQuery', 'detailFormat',
       'connSrcField', 'connDstField', 'sortColumn', 'sortDirection', 'showTimestamps', 'connNodeFields',
       'connLinkFields', 'timelineDataFilters', 'hideTags', 'shiftyEyes'].reduce((obj, key) => {
-      obj[key] = req.body[key];
+      const val = req.body[key];
+      if (val !== undefined && val !== null && typeof val === 'object' && !Array.isArray(val)) {
+        return obj;
+      }
+      obj[key] = val;
       return obj;
     }, {});
 

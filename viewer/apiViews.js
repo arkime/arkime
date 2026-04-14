@@ -112,6 +112,18 @@ class ViewAPIs {
       return res.serverError(403, 'Missing view expression', 'api.views.missingExpression');
     }
 
+    if (req.body.roles !== undefined && !ArkimeUtil.isStringArray(req.body.roles)) {
+      return res.serverError(403, 'Roles field must be an array of strings');
+    }
+
+    if (req.body.editRoles !== undefined && !ArkimeUtil.isStringArray(req.body.editRoles)) {
+      return res.serverError(403, 'Edit roles field must be an array of strings');
+    }
+
+    if (req.body.users !== undefined && !ArkimeUtil.isString(req.body.users, 0)) {
+      return res.serverError(403, 'Users field must be a string');
+    }
+
     const user = req.settingUser;
 
     // comma/newline separated value -> array of values
@@ -128,6 +140,9 @@ class ViewAPIs {
     };
 
     if (req.body.sessionsColConfig !== undefined) {
+      if (typeof req.body.sessionsColConfig !== 'object' || Array.isArray(req.body.sessionsColConfig) || req.body.sessionsColConfig === null) {
+        return res.serverError(403, 'sessionsColConfig must be an object');
+      }
       doc.sessionsColConfig = req.body.sessionsColConfig;
     }
 
@@ -191,6 +206,22 @@ class ViewAPIs {
       return res.serverError(403, 'Missing view expression', 'api.views.missingExpression');
     }
 
+    if (req.body.roles !== undefined && !ArkimeUtil.isStringArray(req.body.roles)) {
+      return res.serverError(403, 'Roles field must be an array of strings');
+    }
+
+    if (req.body.editRoles !== undefined && !ArkimeUtil.isStringArray(req.body.editRoles)) {
+      return res.serverError(403, 'Edit roles field must be an array of strings');
+    }
+
+    if (req.body.users !== undefined && !ArkimeUtil.isString(req.body.users, 0)) {
+      return res.serverError(403, 'Users field must be a string');
+    }
+
+    if (req.body.user !== undefined && !ArkimeUtil.isString(req.body.user)) {
+      return res.serverError(403, 'User field must be a string');
+    }
+
     try {
       const dbViewSource = await Db.getView(req.params.id);
 
@@ -204,6 +235,9 @@ class ViewAPIs {
       };
 
       if (req.body.sessionsColConfig !== undefined) {
+        if (typeof req.body.sessionsColConfig !== 'object' || Array.isArray(req.body.sessionsColConfig) || req.body.sessionsColConfig === null) {
+          return res.serverError(403, 'sessionsColConfig must be an object');
+        }
         doc.sessionsColConfig = req.body.sessionsColConfig;
       } else if (dbViewSource.sessionsColConfig !== undefined) {
         doc.sessionsColConfig = dbViewSource.sessionsColConfig;

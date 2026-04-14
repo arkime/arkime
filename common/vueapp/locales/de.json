@@ -759,7 +759,8 @@
       "molochtype": "Heiß/Warm",
       "shardsPerNode": "Shards/Knoten",
       "versionCreated": "ES-Version",
-      "docSize": "Festplatte pro Dokument"
+      "docSize": "Festplatte pro Dokument",
+      "codec": "Codec"
     },
     "esNodes": {
       "mainManaging": "Hauptverwaltungsknoten",

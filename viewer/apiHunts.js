@@ -875,6 +875,10 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
       return res.serverError(403, 'Users field must be a string', 'api.hunts.usersMustBeString');
     }
 
+    if (req.body.description !== undefined && !ArkimeUtil.isString(req.body.description, 0)) {
+      return res.serverError(403, 'Description must be a string');
+    }
+
     const now = Math.floor(Date.now() / 1000);
 
     req.body.name = req.body.name.replace(/[^-a-zA-Z0-9_: ]/g, '');
@@ -1008,7 +1012,7 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
         // clear out secret fields for users who don't have access to that hunt
         // if the user is not an admin and didn't create the hunt and isn't part of the user's list
         if (!req.user.hasRole('arkimeAdmin') && req.user.userId !== hunt.userId && !hunt.users.includes(req.user.userId)) {
-          if (!hunt.roles || (hunt.roles.length && !req.user.hasRole(hunt.roles))) {
+          if (!hunt.roles || !hunt.roles.length || !req.user.hasRole(hunt.roles)) {
             // since hunt isn't cached we can just modify
             hunt.id = '';
             hunt.search = '';

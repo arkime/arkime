@@ -759,7 +759,8 @@
       "molochtype": "Kuum/Soe",
       "shardsPerNode": "Kilde/Sõlm",
       "versionCreated": "ES versioon",
-      "docSize": "Ketas dokumendi kohta"
+      "docSize": "Ketas dokumendi kohta",
+      "codec": "Koodek"
     },
     "esNodes": {
       "mainManaging": "Peamine haldussõlm",

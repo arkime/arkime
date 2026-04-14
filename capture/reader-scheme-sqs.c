@@ -232,11 +232,11 @@ LOCAL int scheme_sqs_load(const char *uri, ArkimeSchemeFlags flags, ArkimeScheme
     if (isNew) {
         arkime_http_set_timeout(server, 0);
 
-        char userpwd[100];
+        char userpwd[256];
         snprintf(userpwd, sizeof(userpwd), "%s:%s", creds->id, creds->key);
         arkime_http_set_userpwd(server, userpwd);
 
-        char aws_sigv4[100];
+        char aws_sigv4[256];
         snprintf(aws_sigv4, sizeof(aws_sigv4), "aws:amz:%s:sqs", dots[1]);
         arkime_http_set_aws_sigv4(server, aws_sigv4);
     }
