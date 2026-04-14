@@ -85,6 +85,7 @@ e
 %%
 const util = require('util');
 const moment = require('moment');
+const RE2 = require('re2');
 
 /* Given a field name, if prefixed with 'db:' return dbFieldsMap entry (i.e., looked up according to
  * the OpenSearch/Elasticsearch field name); otherwise return fieldsMap entry (see #1461)
@@ -931,7 +932,7 @@ function ListToArrayShortcuts (yy, text) {
     const str = strs[i].replace('**COMMA**', ',').replace('**BACKSLASH**', '\\');
 
     if (str.match(/[*?]/)) {
-      const re = new RegExp('^' + str.substring(1).replace(/\*/g, '.*').replace(/\?/g, '.') + '$');
+      const re = new RE2('^' + str.substring(1).replace(/\*/g, '.*').replace(/\?/g, '.') + '$');
       for (const s of Object.keys(yy.shortcuts)) {
         if (s.match(re)) { nstrs.push('$' + s); }
       }
