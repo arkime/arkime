@@ -1,5 +1,5 @@
 # ESProxy
-use Test::More tests => 27;
+use Test::More tests => 37;
 use ArkimeTest;
 use Cwd;
 use URI::Escape;
@@ -113,3 +113,48 @@ $req->header('Content-Type' => 'application/x-ndjson');
 $req->content($bulk_update);
 $response = $ArkimeTest::userAgent->request($req);
 is ($response->code, 200, "bulk update to fields index succeeds");
+
+# Bulk - sessions index without dash should be rejected
+my $bulk_no_dash = qq({"index":{"_index":"tests_sessions3evil","_id":"1"}}\n{"field":"value"}\n);
+$req = HTTP::Request->new('POST', "http://test:test\@$ArkimeTest::host:7200/_bulk");
+$req->header('Content-Type' => 'application/x-ndjson');
+$req->content($bulk_no_dash);
+$response = $ArkimeTest::userAgent->request($req);
+is ($response->code, 400, "bulk sessions index without dash rejected");
+is ($response->content, "Not authorized for API");
+
+# Bulk - create to fields index should be rejected (create only allows sessions)
+my $bulk_create_fields = qq({"create":{"_index":"tests_fields","_id":"1"}}\n{"field":"value"}\n);
+$req = HTTP::Request->new('POST', "http://test:test\@$ArkimeTest::host:7200/_bulk");
+$req->header('Content-Type' => 'application/x-ndjson');
+$req->content($bulk_create_fields);
+$response = $ArkimeTest::userAgent->request($req);
+is ($response->code, 400, "bulk create to fields index rejected");
+is ($response->content, "Not authorized for API");
+
+# Bulk - update to sessions index should be rejected (update only allows fields)
+my $bulk_update_sessions = qq({"update":{"_index":"tests_sessions3-2024","_id":"1"}}\n{"doc":{"field":"value"}}\n);
+$req = HTTP::Request->new('POST', "http://test:test\@$ArkimeTest::host:7200/_bulk");
+$req->header('Content-Type' => 'application/x-ndjson');
+$req->content($bulk_update_sessions);
+$response = $ArkimeTest::userAgent->request($req);
+is ($response->code, 400, "bulk update to sessions index rejected");
+is ($response->content, "Not authorized for API");
+
+# Bulk - invalid JSON should be rejected
+my $bulk_bad_json = qq(not valid json\n);
+$req = HTTP::Request->new('POST', "http://test:test\@$ArkimeTest::host:7200/_bulk");
+$req->header('Content-Type' => 'application/x-ndjson');
+$req->content($bulk_bad_json);
+$response = $ArkimeTest::userAgent->request($req);
+is ($response->code, 400, "bulk with invalid JSON rejected");
+is ($response->content, "Not authorized for API");
+
+# Bulk - multiple operations in one action line should be rejected
+my $bulk_multi_op = qq({"index":{"_index":"tests_sessions3-2024","_id":"1"},"create":{"_index":"tests_sessions3-2024","_id":"2"}}\n{"field":"value"}\n);
+$req = HTTP::Request->new('POST', "http://test:test\@$ArkimeTest::host:7200/_bulk");
+$req->header('Content-Type' => 'application/x-ndjson');
+$req->content($bulk_multi_op);
+$response = $ArkimeTest::userAgent->request($req);
+is ($response->code, 400, "bulk with multiple ops in one line rejected");
+is ($response->content, "Not authorized for API");

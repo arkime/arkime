@@ -398,7 +398,7 @@ app.get('*', (req, res) => {
 // Validate Bulk
 
 function isSessionsIndex (_index) {
-  return _index.startsWith(`${oldprefix}sessions2`) || _index.startsWith(`${prefix}sessions3`);
+  return _index.startsWith(`${oldprefix}sessions2-`) || _index.startsWith(`${prefix}sessions3-`);
 }
 
 function isFieldsIndex (_index) {
