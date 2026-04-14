@@ -53,6 +53,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
 ## Viewer
   - #3842 Add internationalized aria-labels
   - #3863 Add per-cluster serverSecret in S2S auth for multicluster pcap retrieval
+  - #3878 Add JWT decoding support for header auth mode
 
 6.1.1 2026/04/06
 ## BREAKING
