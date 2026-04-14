@@ -1,4 +1,4 @@
-use Test::More tests => 37;
+use Test::More tests => 43;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -106,3 +106,21 @@ my $json;
     $json = mesPost("/MULTIPREFIX_sessions3-141015/_search?preference=primary_first&ignore_unavailable=true&rest_total_hits_as_int=true", '{"from": 100, "size":20000}');
     is (scalar @{$json->{hits}->{hits}}, 0);
     cmp_ok($json->{hits}->{total}, '>=', 6, "sessions count is at least 6");
+
+# invalid JSON body - simpleGather1Cluster
+    my $response = $ArkimeTest::userAgent->post("http://$ArkimeTest::host:8200/_tasks/_cancel?cluster=test", Content => "NOT_JSON");
+    is($response->code, 400, "invalid JSON body returns 400 for simpleGather1Cluster");
+    my $body = from_json($response->content);
+    is($body->{error}, "Invalid JSON body", "invalid JSON body error message for simpleGather1Cluster");
+
+# invalid JSON body - _update route
+    $response = $ArkimeTest::userAgent->post("http://$ArkimeTest::host:8200/MULTIPREFIX_stats/_update/foobar", Content => "NOT_JSON");
+    is($response->code, 400, "invalid JSON body returns 400 for _update");
+    $body = from_json($response->content);
+    is($body->{error}, "Invalid JSON body", "invalid JSON body error message for _update");
+
+# invalid JSON body - _search route
+    $response = $ArkimeTest::userAgent->post("http://$ArkimeTest::host:8200/MULTIPREFIX_stats/_search", Content => "NOT_JSON");
+    is($response->code, 400, "invalid JSON body returns 400 for _search");
+    $body = from_json($response->content);
+    is($body->{error}, "Invalid JSON body", "invalid JSON body error message for _search");

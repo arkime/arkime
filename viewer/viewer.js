@@ -1894,6 +1894,7 @@ app.post( // sessions send to node endpoint - used by CronAPIs.#sendSessionsList
 
 app.post( // sessions send endpoint - used by vueapp
   ['/api/sessions/send'],
+  [ArkimeUtil.noCacheJson, checkCookieToken, logAction()],
   SessionAPIs.sendSessions
 );
 

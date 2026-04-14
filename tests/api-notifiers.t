@@ -1,4 +1,4 @@
-use Test::More tests => 77;
+use Test::More tests => 94;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -82,9 +82,53 @@ viewerGet("/regressionTests/deleteAllNotifiers");
   is($json->{notifier}->{user}, "anonymous", "user field set");
   ok(exists $json->{notifier}->{created}, "created field was set");
 
-# update notifier requires admin access
+# mass assignment - extra fields should not be stored
+  $json = viewerPostToken("/api/notifier", '{"name":"testevil","type":"slack","fields":[{"name":"slackWebhookUrl","value":"evilurl"}],"evil":"injected"}', $token);
+  ok($json->{success}, "notifier with extra field creates ok");
+  my $evilId = $json->{notifier}->{id};
+  ok(!exists $json->{notifier}->{evil}, "extra field not in create response");
+  $notifiers = viewerGetToken("/api/notifiers", $token);
+  my ($evilNotifier) = grep { $_->{id} eq $evilId } @{$notifiers};
+  ok(!exists $evilNotifier->{evil}, "extra field not stored in notifier");
+  viewerDeleteToken("/api/notifier/$evilId", $token);
+
+# roles validation - create with non-array roles should fail
+  $json = viewerPostToken("/api/notifier", '{"name":"badroles","type":"slack","fields":[{"name":"slackWebhookUrl","value":"test"}],"roles":"notanarray"}', $token);
+  ok(!$json->{success}, "create notifier with string roles fails");
+  is($json->{text}, "Roles field must be an array of strings", "create string roles error message");
+
+# roles validation - create with array of non-strings should fail
+  $json = viewerPostToken("/api/notifier", '{"name":"badroles2","type":"slack","fields":[{"name":"slackWebhookUrl","value":"test"}],"roles":[123,456]}', $token);
+  ok(!$json->{success}, "create notifier with non-string array roles fails");
+  is($json->{text}, "Roles field must be an array of strings", "create non-string array roles error message");
+
+# roles validation - update with non-array roles should fail
+  $json = viewerPutToken("/api/notifier/$id1", '{"name":"slack1","type":"slack","fields":[{"name":"slackWebhookUrl","value":"test"}],"roles":{"bad":"object"}}', $token);
+  ok(!$json->{success}, "update notifier with object roles fails");
+  is($json->{text}, "Roles field must be an array of strings", "update object roles error message");
+
   $json = viewerPutToken("/api/notifier/$id1?arkimeRegressionUser=sac-notadmin", '{}', $notAdminToken);
   is($json->{text}, "You do not have permission to access this resource", "update notifier requires admin");
+
+# users validation - create with array users should fail
+  $json = viewerPostToken("/api/notifier", '{"name":"badusers","type":"slack","fields":[{"name":"slackWebhookUrl","value":"test"}],"users":["arr"]}', $token);
+  ok(!$json->{success}, "create notifier with array users fails");
+  is($json->{text}, "Users field must be a string", "create array users error message");
+
+# users validation - create with object users should fail
+  $json = viewerPostToken("/api/notifier", '{"name":"badusers2","type":"slack","fields":[{"name":"slackWebhookUrl","value":"test"}],"users":{"bad":"obj"}}', $token);
+  ok(!$json->{success}, "create notifier with object users fails");
+  is($json->{text}, "Users field must be a string", "create object users error message");
+
+# users validation - update with array users should fail
+  $json = viewerPutToken("/api/notifier/$id1", '{"name":"slack1","type":"slack","fields":[{"name":"slackWebhookUrl","value":"test"}],"users":["arr"]}', $token);
+  ok(!$json->{success}, "update notifier with array users fails");
+  is($json->{text}, "Users field must be a string", "update array users error message");
+
+# users validation - update with object users should fail
+  $json = viewerPutToken("/api/notifier/$id1", '{"name":"slack1","type":"slack","fields":[{"name":"slackWebhookUrl","value":"test"}],"users":{"bad":"obj"}}', $token);
+  ok(!$json->{success}, "update notifier with object users fails");
+  is($json->{text}, "Users field must be a string", "update object users error message");
 
 # update notifier needs valid id
   $json = viewerPutToken("/api/notifier/badid", '{"name":"hi","fields":[{"name":"slackWebhookUrl","value":"test"}],"type":"slack"}', $token);

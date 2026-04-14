@@ -1,7 +1,7 @@
 # Many of these test user/roles start with sac- (skip auto create) because
 # otherwise viewer in regression mode would auto create the user.
 # Some day should remove all autocreate code.
-use Test::More tests => 257;
+use Test::More tests => 260;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -166,6 +166,16 @@ anonymous,,true,true,false,"arkimeAdmin, cont3xtUser, parliamentUser, usersAdmin
     $json = viewerGetToken("/api/user/settings?arkimeRegressionUser=sac-test1", $test1Token);
     ok(!exists $json->{__proto__}, "no prototype pollution");
     eq_or_diff($json->{logo}, "testlogo.png");
+
+# update user settings - object values should be silently skipped
+    $json = viewerPostToken("/api/user/settings?arkimeRegressionUser=sac-test1", '{"logo":{"bad":"object"}}', $test1Token);
+    is($json->{success}, 1, "update user settings with object value succeeds");
+    $json = viewerGetToken("/api/user/settings?arkimeRegressionUser=sac-test1", $test1Token);
+    ok(!defined $json->{logo} || ref($json->{logo}) eq '', "logo object was not stored");
+
+# restore logo to string value
+    $json = viewerPostToken("/api/user/settings?arkimeRegressionUser=sac-test1", '{"logo":"testlogo.png"}', $test1Token);
+    is($json->{success}, 1, "restore logo setting");
 
 # user css - no theme returns 404
     my $cssResponse = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8123/api/user.css?arkimeRegressionUser=sac-test1");
