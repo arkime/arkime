@@ -10,6 +10,7 @@
  */
 const Config = require('./config.js');
 const express = require('express');
+const cryptoLib = require('crypto');
 const http = require('http');
 const https = require('https');
 const fs = require('fs');
@@ -204,7 +205,10 @@ app.use((req, res, next) => {
     return res.set('WWW-Authenticate', 'Basic').status(401).send();
   }
 
-  if (sensors[credentials.name].pass !== undefined && sensors[credentials.name].pass !== credentials.pass) {
+  if (sensors[credentials.name].pass !== undefined &&
+      !cryptoLib.timingSafeEqual(
+        cryptoLib.createHmac('sha256', 'compare').update(sensors[credentials.name].pass).digest(),
+        cryptoLib.createHmac('sha256', 'compare').update(credentials.pass).digest())) {
     console.log(`Incorrect password for ${credentials.name}`);
     return res.set('WWW-Authenticate', 'Basic').status(401).send();
   }
@@ -214,7 +218,7 @@ app.use((req, res, next) => {
     return next();
   }
 
-  let ip = req.connection.remoteAddress;
+  let ip = req.socket.remoteAddress;
   if (ip.startsWith('::ffff:')) {
     ip = ip.substring(7);
   }
@@ -344,6 +348,7 @@ async function doProxyFull (config, req, res) {
 
   preq.on('error', (e) => {
     console.log('Request error "%s"', ArkimeUtil.sanitizeStr(url), e);
+    try { res.status(502).send('ES proxy error'); } catch (err) { }
   });
   if (bodyToSend) {
     preq.end(bodyToSend);
@@ -391,6 +396,15 @@ app.get('*', (req, res) => {
 });
 
 // Validate Bulk
+
+function isSessionsIndex (_index) {
+  return _index.startsWith(`${oldprefix}sessions2-`) || _index.startsWith(`${prefix}sessions3-`);
+}
+
+function isFieldsIndex (_index) {
+  return _index.startsWith(`${prefix}fields`);
+}
+
 function validateBulk (req) {
   if (!req._body) {
     return true;
@@ -415,33 +429,37 @@ function validateBulk (req) {
   for (let i = 0; i < lines.length; i++) {
     // ES allows blank lines between pairs of meta/object
     if (lines[i].trim() === '') { continue; }
+    let json;
     try {
-      const json = JSON.parse(lines[i]);
+      json = JSON.parse(lines[i]);
       if (Object.keys(json).length !== 1) { throw new Error('More than 1 bulk operation in object'); }
       if (typeof json.index === 'object') {
         if (typeof json.index._index !== 'string') { throw new Error('Missing index _index string'); }
 
         // Eventually this should only allow fields
         const _index = json.index._index;
-        if (!_index.includes('sessions2') && !_index.includes('sessions3') && !_index.includes('fields')) { throw new Error(`Bad index ${_index}`); }
+        if (!isSessionsIndex(_index) && !isFieldsIndex(_index)) { throw new Error(`Bad index ${_index}`); }
       } else if (typeof json.create === 'object') {
         const _index = json.create._index;
-        if (!_index.includes('sessions2') && !_index.includes('sessions3')) { throw new Error(`Bad index ${_index}`); }
+        if (!isSessionsIndex(_index)) { throw new Error(`Bad index ${_index}`); }
       } else if (typeof json.update === 'object') {
         const _index = json.update._index;
-        if (!_index.includes('fields')) { throw new Error(`Bad index ${_index}`); }
+        if (!isFieldsIndex(_index)) { throw new Error(`Bad index ${_index}`); }
       } else if (typeof json.delete === 'object') {
         const _index = json.delete._index;
-        if (!_index.includes('fields')) { throw new Error(`Bad index ${_index}`); }
+        if (!isFieldsIndex(_index)) { throw new Error(`Bad index ${_index}`); }
       } else {
-        console.log('Failed bulk', JSON.stringify(json, false, 2));
+        console.log('Failed bulk', JSON.stringify(json, null, 2));
         throw new Error('Missing create, update or index operation');
       }
     } catch (err) {
       console.log('Bulk error', err, ArkimeUtil.sanitizeStr(lines[i]));
       return false;
     }
-    i++; // Skip object, must be there since we only support create/index
+    // delete has no body line, all others do
+    if (!json.delete) {
+      i++;
+    }
   }
 
   return true;
@@ -496,9 +514,12 @@ app.post('*', saveBody, (req, res) => {
   } else if (path.match(/^\/[^/]*history_v[^/]*\/_doc$/)) {
   } else if (path.match(/^\/[^/]*sessions[23]-[^/]+\/_update\/[^/]+$/) && validateUpdate(req)) {
     console.log(`UPDATE : ${req.sensor.node} path:>%s<:`, ArkimeUtil.sanitizeStr(path));
-    console.log(req.body.toString('utf8'));
+    if (Config.debug) {
+      console.log(req.body.toString('utf8'));
+    }
   } else {
     console.log(`POST failed node: ${req.sensor.node} path:>%s<:`, ArkimeUtil.sanitizeStr(path));
+    // Log failed body for debuging hacking
     console.log(req.body.toString('utf8'));
     return res.status(400).send('Not authorized for API');
   }
