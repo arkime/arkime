@@ -129,7 +129,7 @@ class User {
       for (const [role, func] of Object.entries(userRoleMappings)) {
         if (!systemRolesMapping[role] && !role.startsWith('role:')) {
           console.log(`ERROR - user-role-mappings ${role} must start with role: or be a system role`);
-          process.exit();
+          process.exit(1);
         }
         try {
           User.#dynamicRolesFuncs.set(role, ArkimeUtil.safeExpression(func, 'vals'));
@@ -258,7 +258,7 @@ class User {
 
   static async #makeRegressionUser (userId) {
     if (!Auth.regressionTests) {
-      process.exit();
+      process.exit(1);
     }
 
     // Skip Auto Create - SAC users. This means when in regression mode we don't
@@ -304,7 +304,7 @@ class User {
       let user;
       if (err || !data) {
         if (Auth.regressionTests) {
-          user = await User.#makeRegressionUser(userId, cb);
+          user = await User.#makeRegressionUser(userId);
           if (!user) {
             console.log(`Not making regression user ${userId}`);
             return cb(undefined, undefined);
@@ -394,8 +394,7 @@ class User {
 
     try {
       const users = await User.searchUsers({});
-      let usersList = [];
-      usersList = users.users.map((user) => {
+      const usersList = users.users.map((user) => {
         return user.userId;
       });
 
@@ -657,12 +656,9 @@ class User {
           if (value === undefined) {
             value = '';
           } else if (Array.isArray(value)) {
-            value = '"' + value.join(', ') + '"';
-          } else if (typeof (value) === 'string' && value.includes(',')) {
-            if (value.includes('"')) {
-              value = value.replace(/"/g, '""');
-            }
-            value = '"' + value + '"';
+            value = '"' + value.join(', ').replace(/"/g, '""') + '"';
+          } else if (typeof (value) === 'string' && (value.includes(',') || value.includes('"') || value.includes('\n') || value.includes('\r'))) {
+            value = '"' + value.replace(/"/g, '""') + '"';
           }
           values.push(value);
         }
@@ -1918,8 +1914,8 @@ class UserESImplementation {
   }
 
   async flush (cluster) {
-    this.client.indices.flush({ index: this.prefix + 'users', cluster });
-    this.client.indices.refresh({ index: this.prefix + 'users', cluster });
+    await this.client.indices.flush({ index: this.prefix + 'users', cluster });
+    await this.client.indices.refresh({ index: this.prefix + 'users', cluster });
   }
 
   // search against user index, promise only
@@ -2008,7 +2004,7 @@ class UserESImplementation {
       id: userId,
       refresh: true
     });
-    User.deleteCache(userId); // Delete again after db says its done refreshing
+    User.deleteCache(userId); // Delete again after db says it's done refreshing
   }
 
   // Set user, callback only
@@ -2023,7 +2019,7 @@ class UserESImplementation {
       timeout: '10m',
       op_type: createOnly ? 'create' : 'index'
     }, (err) => {
-      User.deleteCache(userId); // Delete again after db says its done refreshing
+      User.deleteCache(userId); // Delete again after db says it's done refreshing
       cb(err);
     });
   }
@@ -2096,7 +2092,6 @@ class UserLMDBImplementation {
   async searchUsers (query) {
     let hits = [];
     this.store.getRange({})
-      .filter(({ key, value }) => key !== '_moloch_shared')
       .forEach(({ key, value }) => {
         value = cleanSearchUser(value);
         value.id = key;
@@ -2124,25 +2119,13 @@ class UserLMDBImplementation {
   }
 
   async numberOfUsers () {
-    return await new Promise((resolve, reject) => {
-      try {
-        let count = 0;
-        for (const key of this.store.getKeys({})) {
-          if (key !== '_moloch_shared') {
-            count++;
-          }
-        }
-        resolve(count);
-      } catch (err) {
-        reject(err);
-      }
-    });
+    return this.store.getCount({});
   }
 
   // Delete user, promise only
   async deleteUser (userId) {
     await this.store.remove(userId);
-    User.deleteCache(userId); // Delete again after db says its done refreshing
+    User.deleteCache(userId); // Delete again after db says it's done refreshing
   }
 
   // Set user, callback only
@@ -2256,7 +2239,7 @@ class UserRedisImplementation {
   // Delete user, promise only
   async deleteUser (userId) {
     await this.client.del(this.prefix + userId);
-    User.deleteCache(userId); // Delete again after db says its done refreshing
+    User.deleteCache(userId); // Delete again after db says it's done refreshing
   }
 
   // Set user, callback only

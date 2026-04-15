@@ -610,7 +610,7 @@ class NotifierLMDBImplementation {
 
   async deleteAllNotifiers () {
     for (const { key } of this.store.getRange({})) {
-      this.store.remove(key);
+      await this.store.remove(key);
     }
   }
 }

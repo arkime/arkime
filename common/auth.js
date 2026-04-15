@@ -1,5 +1,5 @@
 /******************************************************************************/
-/* auth.js  -- common Auth apis
+/* auth.js  -- common Auth APIs
  *
  * Copyright Yahoo Inc.
  *
@@ -209,8 +209,8 @@ class Auth {
 
     function check (field, str) {
       if (!ArkimeUtil.isString(Auth.#authConfig[field])) {
-        console.log(`ERROR - ${str} missing from config file`);
-        process.exit();
+        console.log(`ERROR - ${str ?? field} missing from config file`);
+        process.exit(1);
       }
     }
 
@@ -312,10 +312,13 @@ class Auth {
           res.sendFile(path.join(__dirname, '../assets/Arkime_Logo_Mark_FullGradient.png'));
         });
 
+        let formHtmlTemplate;
         Auth.#authRouter.get('/auth', (req, res) => {
           // User is not authenticated, show the login form
-          let html = fs.readFileSync(path.join(__dirname, '/vueapp/formAuth.html'), 'utf-8');
-          html = html.toString().replace(/@@BASEHREF@@/g, Auth.#basePath)
+          if (!formHtmlTemplate) {
+            formHtmlTemplate = fs.readFileSync(path.join(__dirname, '/vueapp/formAuth.html'), 'utf-8');
+          }
+          const html = formHtmlTemplate.replace(/@@BASEHREF@@/g, Auth.#basePath)
             .replace(/@@MESSAGE@@/g, ArkimeConfig.get('loginMessage', ''))
             .replace(/@@OGURL@@/g, req.session.ogurl ?? Auth.#basePath);
           return res.send(html);
@@ -382,7 +385,7 @@ class Auth {
       logoutUrl = logoutUrl.replace('ARKIME_ID_TOKEN', req.session.id_token);
     }
     if (ArkimeConfig.debug > 0) {
-      console.log('Set logoutUrl to', req.user.userId, '=>', Auth.#logoutUrl);
+      console.log('Set logoutUrl to', req.user.userId, '=>', logoutUrl);
     }
     return logoutUrl;
   }
@@ -953,6 +956,9 @@ class Auth {
           }
           return res.redirect(Auth.#basePath);
         } else if (req._parsedUrl.pathname === '/auth/logout/callback') {
+          if (ArkimeConfig.debug > 0) {
+            console.log('AUTH - logout callback from', req.user?.userId, req.ip);
+          }
         }
         return next();
       }
@@ -1255,7 +1261,7 @@ class ESStore extends expressSession.Store {
       });
     } catch (err) {
       // If already exists ignore error
-      if (err.meta.body?.error?.type !== 'resource_already_exists_exception') {
+      if (err.meta?.body?.error?.type !== 'resource_already_exists_exception') {
         console.log(err);
         process.exit(1);
       }
