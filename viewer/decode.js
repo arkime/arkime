@@ -280,7 +280,7 @@ class ItemSMTPStream extends ItemTransform {
     header: 2,
     data: 3,
     mime: 4,
-    mime_data: 5,
+    mimedata: 5,
     starttls: 6,
     ignore: 7
   };
@@ -760,7 +760,7 @@ class ItemHTTPStream extends ItemTransform {
 }
 
 /// /////////////////////////////////////////////////////////////////////////////
-class ItemHexFormaterStream extends Transform {
+class ItemHexFormatterStream extends Transform {
   constructor (options) {
     super({ objectMode: true });
     mkname(this, 'ItemHexFormaterStream');
@@ -872,7 +872,7 @@ exports.register('ITEM-PRINTER', through.ctor({ objectMode: true }, function (it
   console.log();
   callback(null, item);
 }));
-exports.register('ITEM-HEX', ItemHexFormaterStream);
+exports.register('ITEM-HEX', ItemHexFormatterStream);
 exports.register('ITEM-UTF8', through.ctor({ objectMode: true }, function (item, encoding, callback) {
   if (item.html === undefined) {
     item.html = '<pre>' + ArkimeUtil.safeStr(item.data.toString('utf8')) + '</pre>';

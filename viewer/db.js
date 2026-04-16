@@ -47,12 +47,12 @@ function checkURLs (nodes) {
     for (const node of nodes) {
       if (!node.includes('://')) {
         console.log(`ERROR - endpoint url '${node}' must contain ://`);
-        process.exit();
+        process.exit(1);
       }
     }
   } else if (!nodes.includes('://')) {
     console.log(`ERROR - endpoint url '${nodes}' must contain ://`);
-    process.exit();
+    process.exit(1);
   }
 }
 
@@ -213,12 +213,12 @@ Db.initialize = async (info) => {
     if (data.version.distribution === 'opensearch') {
       if (data.version.number.match(/^[0]/)) {
         console.log(`ERROR - OpenSearch ${data.version.number} not supported, OpenSearch 1.0.0 or later required.`);
-        process.exit();
+        process.exit(1);
       }
     } else {
       if (data.version.number.match(/^([0-6]|7\.[0-9]\.)/)) {
         console.log(`ERROR - Elasticsearch ${data.version.number} not supported, Elasticsearch 7.10.0 or later required.`);
-        process.exit();
+        process.exit(1);
       }
     }
   } catch (err) {
@@ -1700,11 +1700,12 @@ Db.getESId2Node = (id, cluster) => {
 };
 
 Db.updateESId2Info = async (id, nodeName, hostname, cluster) => {
-  if (esId2Info.has(id) && esId2Info.get(id).nodeName === nodeName && esId2Info.get(id).hostname === hostname) {
+  const key = `${cluster}-${id}`;
+  if (esId2Info.has(key) && esId2Info.get(key).nodeName === nodeName && esId2Info.get(key).hostname === hostname) {
     return;
   }
 
-  esId2Info.set(`${cluster}-${id}`, { nodeName, hostname });
+  esId2Info.set(key, { nodeName, hostname });
   await Db.index('dstats', `es:${id}`, { nodeName: `es:${nodeName}`, hostname: `es:${hostname}` });
 };
 
@@ -2090,7 +2091,7 @@ Db.getIndices = async (startTime, stopTime, bounding, rotateIndex, extraIndices)
         }
 
         if (!queryExtraIndexTimeMatched) {
-          // monthly 24m10                        v year     w  v month
+          // monthly 24m10                        v year     m  v month
           queryExtraIndexTimeMatch = iname.match(/([0-9][0-9])[Mm](0[1-9]|1[0-2])$/);
           if (queryExtraIndexTimeMatch) {
             queryExtraIndexTimeMatched = true;
@@ -2147,7 +2148,7 @@ Db.getIndices = async (startTime, stopTime, bounding, rotateIndex, extraIndices)
           break;
         }
       } else if (isQueryExtraIndex) {
-        // this is a extra user-specified index pattetern from queryExtraIndices, and
+        // this is an extra user-specified index pattern from queryExtraIndices, and
         //   we couldn't grok it, so just query the whole thing
         indices.push(iname);
       }

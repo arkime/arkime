@@ -1,4 +1,4 @@
-use Test::More tests => 143;
+use Test::More tests => 159;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -343,3 +343,44 @@ tcp,1386004309468,1386004309478,10.180.156.185,53533,US,10.180.156.249,1080,US,2
     $resp = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8123/api/spigraphhierarchy?exp=source.ip&date=-1&view=BADVIEW&expression=" . uri_escape("file=$pwd/socks-http-example.pcap"));
     like ($resp->content, qr/Can't find view/, "spigraphhierarchy bad view error text");
     like ($resp->header('Content-Type'), qr|application/json|, "spigraphhierarchy bad view content-type is json");
+
+# TCP reassembly synthetic pcap tests
+    my $json = get("/sessions.json?length=1000&date=-1&expression=" . uri_escape("file=$pwd/tcp-reassembly-synthetic.pcap"));
+    is ($json->{recordsFiltered}, 7, "tcp-reassembly 7 sessions");
+
+    # Build a hash of source port -> session id
+    my %portToId;
+    for my $session (@{$json->{data}}) {
+        $portToId{$session->{source}->{port}} = $session->{id};
+    }
+
+    my $expectedHex = "3031323334353637383961626364656630313233343536373839616263646566";
+    my $expectedGapHex = "3031323334353637000000000000000030313233343536373839616263646566";
+
+    # Port 40001: Normal ordered segments
+    my $response = getBinary("/test/raw/" . $portToId{40001} . "?type=dst");
+    is (unpack("H*", $response->content), $expectedHex, "tcp-reassembly normal (40001)");
+
+    # Port 40002: Full retransmit
+    $response = getBinary("/test/raw/" . $portToId{40002} . "?type=dst");
+    is (unpack("H*", $response->content), $expectedHex, "tcp-reassembly full retransmit (40002)");
+
+    # Port 40003: Partial retransmit
+    $response = getBinary("/test/raw/" . $portToId{40003} . "?type=dst");
+    is (unpack("H*", $response->content), $expectedHex, "tcp-reassembly partial retransmit (40003)");
+
+    # Port 40004: Out of order
+    $response = getBinary("/test/raw/" . $portToId{40004} . "?type=dst");
+    is (unpack("H*", $response->content), $expectedHex, "tcp-reassembly out of order (40004)");
+
+    # Port 40005: Gap (8 missing bytes zero-filled)
+    $response = getBinary("/test/raw/" . $portToId{40005} . "?type=dst");
+    is (unpack("H*", $response->content), $expectedGapHex, "tcp-reassembly gap (40005)");
+
+    # Port 40006: Partial retransmit + cascade
+    $response = getBinary("/test/raw/" . $portToId{40006} . "?type=dst");
+    is (unpack("H*", $response->content), $expectedHex, "tcp-reassembly partial + cascade (40006)");
+
+    # Port 40007: Multiple partial retransmits
+    $response = getBinary("/test/raw/" . $portToId{40007} . "?type=dst");
+    is (unpack("H*", $response->content), $expectedHex, "tcp-reassembly multi-partial (40007)");
