@@ -1,7 +1,7 @@
 # Many of these test user/roles start with sac- (skip auto create) because
 # otherwise viewer in regression mode would auto create the user.
 # Some day should remove all autocreate code.
-use Test::More tests => 260;
+use Test::More tests => 262;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -329,6 +329,12 @@ anonymous,,true,true,false,"arkimeAdmin, cont3xtUser, parliamentUser, usersAdmin
     ok($info->{success}, "column: update with extra props");
     $info = viewerGetToken("/api/user/layouts/sessionstable?arkimeRegressionUser=sac-test1", $test1Token);
     ok(!exists $info->[0]->{evil}, "column: extra property stripped");
+
+# column: update should sanitize name (strip special chars)
+    $info = viewerPutToken("/api/user/layouts/sessionstable?arkimeRegressionUser=sac-test1", '{"name": "column1!", "columns": ["source.ip"], "order": [["lastPacket","asc"]]}', $test1Token);
+    ok($info->{success}, "column: update with special chars in name");
+    $info = viewerGetToken("/api/user/layouts/sessionstable?arkimeRegressionUser=sac-test1", $test1Token);
+    is($info->[0]->{name}, "column1", "column: updated name is sanitized");
 
     $info = viewerDeleteToken("/api/user/layouts/sessionstable/column1?arkimeRegressionUser=sac-test1", $test1Token);
     ok($info->{success}, "column: delete found");

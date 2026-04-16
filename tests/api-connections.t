@@ -1,4 +1,4 @@
-use Test::More tests => 14;
+use Test::More tests => 16;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -118,6 +118,19 @@ my ($json, $mjson);
 "10.180.156.185","1418212800000",3,32958,26760,93,test
 "10.180.156.185","1648944000000",3,32958,26760,93,test
 ));
+
+# csv with pipe separator
+    $csv = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8123/api/connections.csv?date=-1&separator=%7C&dstField=cert.notAfter&expression=" . uri_escape("$files"))->content;
+    $csv =~ s/\r//g;
+    eq_or_diff($csv, qq(Source| Destination| Sessions| Bytes| Bytes| Data bytes| Packets| Packets| Arkime Node
+"10.180.156.185"|"1418212800000"|3|32958|26760|93|test
+"10.180.156.185"|"1648944000000"|3|32958|26760|93|test
+), "csv with pipe separator");
+
+# csv with invalid field should not crash
+    $csv = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8123/api/connections.csv?date=-1&fields=network.bytes,DOESNOTEXIST,node&dstField=cert.notAfter&expression=" . uri_escape("$files"))->content;
+    $csv =~ s/\r//g;
+    like($csv, qr/^Source/, "csv with invalid field does not crash");
 
 # csv with bad view should return error as text/plain
     my $resp = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8123/api/connections.csv?view=unknown&date=-1&expression=" . uri_escape("$files"));

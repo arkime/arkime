@@ -1400,9 +1400,9 @@ class Pcap {
           } else if (gapSize < 0) {
             // Retransmitted data, trim off front
             if (-gapSize >= packet.tcp.data.length) {
-              packet.tcp.data = packet.tcp.data.slice(-gapSize);
-            } else {
               packet.tcp.data = EMPTY_BUFFER;
+            } else {
+              packet.tcp.data = packet.tcp.data.slice(-gapSize);
             }
           }
           lastResult.buffers.push(packet.tcp.data);

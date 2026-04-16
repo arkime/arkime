@@ -169,16 +169,13 @@ class SessionAPIs {
           }
 
           if (Array.isArray(value)) {
-            const singleValue = '"' + value.join(', ') + '"';
+            const singleValue = '"' + value.map(v => String(v).replace(/"/g, '""')).join(', ') + '"';
             values.push(singleValue);
           } else {
             if (value === undefined) {
               value = '';
-            } else if (typeof (value) === 'string' && value.includes(',')) {
-              if (value.includes('"')) {
-                value = value.replace(/"/g, '""');
-              }
-              value = '"' + value + '"';
+            } else if (typeof (value) === 'string' && (value.includes(',') || value.includes('"') || value.includes('\n') || value.includes('\r'))) {
+              value = '"' + value.replace(/"/g, '""') + '"';
             }
             values.push(value);
           }
@@ -458,7 +455,7 @@ class SessionAPIs {
         try {
           pcap.decode(buffer, obj);
         } catch (e) {
-          obj = { ip: { p: 'Error decoding' + e } };
+          obj = { ip: { p: 'Error decoding ' + e } };
           console.trace('loadSessionDetail error', ArkimeUtil.sanitizeStr(e.stack));
         }
       } else {
@@ -1054,7 +1051,7 @@ class SessionAPIs {
     }, (err, session) => {
       if (err) {
         console.log('ERROR - writePcapNg', util.inspect(err, false, 50));
-        return;
+        return doneCb(err);
       }
       res.write(b.slice(0, boffset));
 
@@ -1666,7 +1663,7 @@ class SessionAPIs {
   /**
    * POST/GET - /api/sessions/csv OR /sessions.csv
    *
-   * Return all the JSON formatted session data based on the query parameters.
+   * Return all the CSV formatted session data based on the query parameters.
    * @name /sessions/csv
    * @param {string} ids - Comma separated list of sessions to retrieve
    * @param {SessionsQuery} See_List - This API supports a common set of parameters documented in the SessionsQuery section
@@ -2312,7 +2309,7 @@ class SessionAPIs {
     /* How should each item be processed. */
     let eachCb = writeCb;
 
-    if (req.query.field.match(/(ip.src:port.src|a1:p1|srcIp:srtPort|ip.src:srcPort|ip.dst:port.dst|a2:p2|dstIp:dstPort|ip.dst:dstPort|source.ip:source.port|ip.src:source.port|ip.dst:destination.port)/)) {
+    if (req.query.field.match(/(ip.src:port.src|a1:p1|srcIp:srcPort|ip.src:srcPort|ip.dst:port.dst|a2:p2|dstIp:dstPort|ip.dst:dstPort|source.ip:source.port|ip.src:source.port|ip.dst:destination.port)/)) {
       eachCb = (item) => {
         const sep = (item.key.indexOf(':') === -1) ? ':' : '.';
         for (const item2 of item.field2.buckets) {
@@ -2355,7 +2352,9 @@ class SessionAPIs {
       }
 
       query.size = 0;
-      console.log('/api/unique aggregations', indices, JSON.stringify(query));
+      if (Config.debug) {
+        console.log('/api/unique aggregations', indices, JSON.stringify(query));
+      }
 
       async function findFileNames (result) {
         const intermediateResults = [];

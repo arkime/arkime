@@ -250,6 +250,7 @@ class ConnectionAPIs {
       for (const i in fields) {
         const dbField = fields[i];
         const field = Config.getDBField(dbField);
+        if (!field) { continue; }
         if (data[dbField]) {
           // sum integers
           if (field.type === 'integer' && field.category !== 'port') {
@@ -459,7 +460,7 @@ class ConnectionAPIs {
   /**
    * POST/GET - /api/connections
    *
-   * Builds an elasticsearch connections query. Gets a list of nodes and links and returns them to the client.
+   * Builds an Elasticsearch connections query. Gets a list of nodes and links and returns them to the client.
    * @name /connections
    * @param {SessionsQuery} See_List - This API supports a common set of parameters documented in the SessionsQuery section
    * @param {string} srcField=ip.src - The source database field name
@@ -506,7 +507,7 @@ class ConnectionAPIs {
   /**
    * POST/GET - /api/connections/csv OR /api/connections.csv
    *
-   * Builds an elasticsearch connections query. Gets a list of nodes and links in csv format and returns them to the client.
+   * Builds an Elasticsearch connections query. Gets a list of nodes and links in csv format and returns them to the client.
    * @name /connections/csv
    * @param {SessionsQuery} See_List - This API supports a common set of parameters documented in the SessionsQuery section
    * @param {string} srcField=ip.src - The source database field name
@@ -526,7 +527,7 @@ class ConnectionAPIs {
       let fields = ['network.bytes', 'totDataBytes', 'network.packets', 'node'];
       if (req.query.fields) { fields = req.query.fields.split(','); }
 
-      res.write('Source, Destination, Sessions');
+      res.write(`Source${separator} Destination${separator} Sessions`);
       const displayFields = {};
       const map = JSON.parse(fieldsMap);
       for (const field of fields) {
@@ -534,7 +535,7 @@ class ConnectionAPIs {
           if (map[f].dbField === field) {
             const friendlyName = map[f].friendlyName;
             displayFields[field] = map[f];
-            res.write(`, ${friendlyName}`);
+            res.write(`${separator} ${friendlyName}`);
           }
         }
       }
@@ -545,7 +546,13 @@ class ConnectionAPIs {
                   '"' + nodes[links[i].target].id.replaceAll('"', '""') + '"' + separator +
                        links[i].value + separator);
         for (let f = 0, flen = fields.length; f < flen; f++) {
-          res.write(links[i][displayFields[fields[f]].dbField].toString());
+          const df = displayFields[fields[f]];
+          if (df) {
+            const val = links[i][df.dbField];
+            res.write(val !== undefined && val !== null ? val.toString() : '');
+          } else {
+            res.write('');
+          }
           if (f !== flen - 1) { res.write(separator); }
         }
         res.write('\r\n');

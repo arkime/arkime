@@ -293,7 +293,7 @@ class UserAPIs {
     // find the custom column configuration to update
     for (let i = 0, len = user.columnConfigs.length; i < len; i++) {
       if (result.layoutName === user.columnConfigs[i].name) {
-        user.columnConfigs[i] = { name: req.body.name, columns: req.body.columns, order: req.body.order };
+        user.columnConfigs[i] = { name: result.layoutName, columns: req.body.columns, order: req.body.order };
         return { success: true, layout: req.body, user };
       }
     }
@@ -309,7 +309,7 @@ class UserAPIs {
    * @returns {boolean} success - Whether the operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
-  static #updateInfoFieldLayout (req, res) {
+  static #updateInfoFieldLayout (req) {
     const result = UserAPIs.#validateInfoFieldLayout(req);
     if (!result.success) {
       return result;
@@ -318,10 +318,10 @@ class UserAPIs {
     const user = req.settingUser;
     user.infoFieldConfigs = user.infoFieldConfigs ?? [];
 
-    // find the custom column configuration to update
+    // find the custom info field configuration to update
     for (let i = 0, len = user.infoFieldConfigs.length; i < len; i++) {
       if (result.layoutName === user.infoFieldConfigs[i].name) {
-        user.infoFieldConfigs[i] = { name: req.body.name, fields: req.body.fields };
+        user.infoFieldConfigs[i] = { name: result.layoutName, fields: req.body.fields };
         return { success: true, layout: req.body, user };
       }
     }
@@ -350,7 +350,7 @@ class UserAPIs {
     // find the custom spiview layout to update
     for (let i = 0, len = user.spiviewFieldConfigs.length; i < len; i++) {
       if (result.layoutName === user.spiviewFieldConfigs[i].name) {
-        user.spiviewFieldConfigs[i] = { name: req.body.name, fields: req.body.fields };
+        user.spiviewFieldConfigs[i] = { name: result.layoutName, fields: req.body.fields };
         return { success: true, layout: req.body, user };
       }
     }
@@ -735,7 +735,7 @@ class UserAPIs {
       layoutKey = 'spiviewFieldConfigs';
       break;
     default:
-      res.serverError(403, 'Invalid layout type', 'api.users.invalidLayoutType');
+      return res.serverError(403, 'Invalid layout type', 'api.users.invalidLayoutType');
     }
 
     const result = UserAPIs.#deleteLayout(layoutKey, req);
@@ -789,7 +789,7 @@ class UserAPIs {
 
       User.setUser(req.params.userId, user, (err, info) => {
         if (Config.debug) {
-          console.log(`ERROR - ${req.method} /api/user/%s/acknowledge (setUser)`, ArkimeUtil.sanitizeStr(req.params.userId), util.inspect(err, false, 50), user, info);
+          console.log(`${req.method} /api/user/%s/acknowledge (setUser)`, ArkimeUtil.sanitizeStr(req.params.userId), util.inspect(err, false, 50), user, info);
         }
 
         return res.json({

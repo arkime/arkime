@@ -519,7 +519,7 @@ app.post('*', saveBody, (req, res) => {
     }
   } else {
     console.log(`POST failed node: ${req.sensor.node} path:>%s<:`, ArkimeUtil.sanitizeStr(path));
-    // Log failed body for debuging hacking
+    // Log failed body for debugging hacking
     console.log(req.body.toString('utf8'));
     return res.status(400).send('Not authorized for API');
   }
