@@ -209,7 +209,7 @@ export default {
         if (group.clusters) {
           for (const cluster of group.clusters) {
             const clusterStats = this.stats[cluster.id];
-            if (clusterStats && (clusterStats.status === 'yellow' || clusterStats.status === 'red' || clusterStats.healthError)) {
+            if (clusterStats && cluster.type !== 'noAlerts' && (clusterStats.status === 'yellow' || clusterStats.status === 'red' || clusterStats.healthError)) {
               clusters.push({ groupId: group.id, clusterId: cluster.id, cluster });
             }
           }
