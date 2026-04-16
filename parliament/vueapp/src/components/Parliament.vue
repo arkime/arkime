@@ -857,7 +857,7 @@ export default {
       // create/edit/rearrange groups/clusters (or not)
       editMode: false,
       // hide all issues toggle
-      hideAllIssues: false,
+      hideAllIssues: this.$route.query.hideIssues === 'true',
       // highlighted cluster for ES status navigation
       highlightedClusterId: null
     };
@@ -1008,6 +1008,12 @@ export default {
     },
     toggleHideAllIssues () {
       this.hideAllIssues = !this.hideAllIssues;
+      this.$router.replace({
+        query: {
+          ...this.$route.query,
+          hideIssues: this.hideAllIssues ? 'true' : undefined
+        }
+      });
     },
     scrollToCluster (clusterId) {
       // Find the cluster element and scroll to it
