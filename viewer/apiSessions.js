@@ -1740,7 +1740,7 @@ class SessionAPIs {
     const spiDataMaxIndices = +Config.get('spiDataMaxIndices', 4);
 
     if (parseFloat(req.query.date) === -1 && spiDataMaxIndices !== -1) {
-      return res.send({ spi: {}, bsqErr: "'All' date range not allowed for spiview query" });
+      return res.send({ spi: {}, error: "'All' date range not allowed for spiview query" });
     }
 
     const response = { spi: {} };
