@@ -1373,19 +1373,24 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
       const options = HuntAPIs.#buildHuntOptions(huntId, hunt);
 
       HuntAPIs.#sessionHunt(sessionId, options, async (err, matched) => {
-        if (Config.debug > 1) {
-          console.log('HUNT - result', huntId, sessionId, err, matched);
-        }
-        if (err) {
-          if (!res.headersSent) { res.send({ matched: false, error: err }); }
-          return;
-        }
+        try {
+          if (Config.debug > 1) {
+            console.log('HUNT - result', huntId, sessionId, err, matched);
+          }
+          if (err) {
+            if (!res.headersSent) { res.send({ matched: false, error: err }); }
+            return;
+          }
 
-        if (matched) {
-          await HuntAPIs.#updateSessionWithHunt(session, sessionId, hunt, huntId);
-        }
+          if (matched) {
+            await HuntAPIs.#updateSessionWithHunt(session, sessionId, hunt, huntId);
+          }
 
-        if (!res.headersSent) { res.send({ matched }); }
+          if (!res.headersSent) { res.send({ matched }); }
+        } catch (cbErr) {
+          console.log(`ERROR - remoteHunt callback %s/%s`, ArkimeUtil.sanitizeStr(huntId), ArkimeUtil.sanitizeStr(sessionId), util.inspect(cbErr, false, 50));
+          if (!res.headersSent) { res.send({ matched: false, error: cbErr.message || 'callback error' }); }
+        }
       });
     }).catch((err) => {
       console.log(`ERROR - ${req.method} /api/hunt/%s/%s/remote/%s`, ArkimeUtil.sanitizeStr(req.params.nodeName), ArkimeUtil.sanitizeStr(req.params.huntId), ArkimeUtil.sanitizeStr(req.params.sessionId), util.inspect(err, false, 50));

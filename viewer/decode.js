@@ -612,7 +612,7 @@ class ItemHTTPStream extends ItemTransform {
       if (this.contentLength[item.client] === 0) {
         this.msgEnd(item);
       } else {
-        this.states[item.client] = ItemHTTPStream.STATES.res_body;
+        this.states[item.client] = ItemHTTPStream.STATES.req_body;
       }
       break;
 

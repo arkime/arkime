@@ -744,6 +744,7 @@ class CronAPIs {
             (!cq.lastNotified || (Math.floor(Date.now() / 1000) - cq.lastNotified >= 600))) {
             const newMatchCount = cq.lastNotifiedCount ? (doc.doc.count - cq.lastNotifiedCount) : doc.doc.count;
             doc.doc.lastNotifiedCount = doc.doc.count;
+            doc.doc.lastNotified = Math.floor(Date.now() / 1000);
 
             let urlPath = 'sessions?expression=';
             const tags = cq.tags.split(',');
@@ -768,6 +769,18 @@ ${Config.arkimeWebURL()}${urlPath}${cq.description ? '\n' + cq.description : ''}
               for (const notifierId of notifiers) {
                 Notifier.issueAlert(notifierId, message, () => {});
               }
+            }
+
+            // persist the notification state so the 10-minute throttle works
+            try {
+              await Db.update('queries', qid, {
+                doc: {
+                  lastNotified: doc.doc.lastNotified,
+                  lastNotifiedCount: doc.doc.lastNotifiedCount
+                }
+              }, { refresh: true });
+            } catch (err) {
+              console.log('ERROR CRON - updating lastNotified', err);
             }
           }
         }

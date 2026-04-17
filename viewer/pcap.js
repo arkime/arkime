@@ -627,13 +627,17 @@ class Pcap {
         next = data[offset];
         offset++;
       }
-      while (next !== 0) {
+      while (next !== 0 && offset < data.length) {
         const extlen = data[offset];
         offset++;
+        if (extlen === 0) { break; }
         offset += extlen * 4 - 2;
+        if (offset < 0 || offset >= data.length) { break; }
         next = data[offset];
         offset++;
       }
+
+      if (offset >= data.length) { return; }
 
       if ((data[offset] & 0xf0) === 0x60) {
         this.ip6(data.slice(offset), obj, pos + offset);
@@ -691,10 +695,12 @@ class Pcap {
     if (obj.gre.flags_version & 0x4000) {
       while (true) {
         bpos += 3;
+        if (bpos + 2 > buffer.length) { break; }
         const len = buffer.readUInt16BE(bpos);
         bpos++;
         if (len === 0) { break; }
         bpos += len;
+        if (bpos > buffer.length) { break; }
       }
     }
 
@@ -988,7 +994,9 @@ class Pcap {
           return this.ip6(buffer.slice(offset + 4), obj, pos + offset + 4);
         }
       } else {
-        offset += (len + 3) & 0xfffc;
+        const advance = (len + 3) & 0xfffc;
+        if (advance === 0) { break; }
+        offset += advance;
       }
     }
 

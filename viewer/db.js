@@ -868,6 +868,7 @@ Db.searchSessionsIterator = async function* (index, query, options) {
       if (hit.fields?.packetPos !== undefined) {
         await fixPacketPos(hit.fields);
       }
+      await fixFileIds(hit.fields);
     }
     yield chunk;
   }

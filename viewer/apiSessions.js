@@ -337,8 +337,8 @@ class SessionAPIs {
         res.send(data);
       });
     } else { // return SPI data and packets
-      res.send('HOW DID I GET HERE?');
-      console.trace('HOW DID I GET HERE');
+      console.trace('Unexpected code path in localSessionDetail');
+      return res.serverError(500, 'Internal error: unexpected code path');
     }
   }
 
@@ -1886,6 +1886,9 @@ class SessionAPIs {
         });
         sessions.aggregations.fileand = { doc_count_error_upper_bound: 0, sum_other_doc_count: sodc, buckets: nresults };
         return sendResult();
+      }).catch((err) => {
+        console.log(`ERROR - ${req.method} /api/spiview`, util.inspect(err, false, 50));
+        return res.serverError(500, 'Error retrieving spiview data');
       });
     });
   }

@@ -187,6 +187,9 @@ function mainWithPassword (password) {
     case '--timeLimit':
       if (i + 1 >= process.argv.length) { help('Missing value for --timeLimit'); }
       nuser.timeLimit = parseInt(process.argv[i + 1], 10);
+      if (!Number.isFinite(nuser.timeLimit) || nuser.timeLimit < 0) {
+        help(`--timeLimit must be a non-negative integer, got '${process.argv[i + 1]}'`);
+      }
       i++;
       break;
 
