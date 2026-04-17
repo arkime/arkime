@@ -16,12 +16,12 @@
 extern ArkimeConfig_t        config;
 
 /******************************************************************************/
-LOCAL ArkimePacketRC gre_packet_enqueue(ArkimePacketBatch_t *UNUSED(batch), ArkimePacket_t *const packet, const uint8_t *data, int UNUSED(len))
+LOCAL ArkimePacketRC gre_packet_enqueue(ArkimePacketBatch_t *batch, ArkimePacket_t *const packet, const uint8_t *data, int len)
 {
     packet->tunnel |= ARKIME_PACKET_TUNNEL_GRE;
 
     BSB bsb;
-    if (unlikely(len) < 4 || unlikely(!data))
+    if (unlikely(len < 4) || unlikely(!data))
         return ARKIME_PACKET_CORRUPT;
 
     BSB_INIT(bsb, data, len);

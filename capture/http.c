@@ -137,7 +137,7 @@ LOCAL GHashTable *servers;
 /******************************************************************************/
 LOCAL int arkime_http_conn_cmp(const void *keyv, const ArkimeHttpConn_t *conn)
 {
-    return memcmp(keyv, conn->sessionId, MIN(((uint8_t *)keyv)[0], conn->sessionId[0])) == 0;
+    return memcmp(keyv, conn->sessionId, conn->sessionId[0]) == 0;
 }
 /******************************************************************************/
 LOCAL size_t arkime_http_curl_write_callback(void *contents, size_t size, size_t nmemb, void *requestP)
@@ -164,7 +164,7 @@ LOCAL size_t arkime_http_curl_write_callback(void *contents, size_t size, size_t
         return sz;
     }
 
-    if (request->used + sz >= request->size) {
+    if (request->used + sz > request->size) {
         if (request->used + sz > 0x7FFFFFFF)
             return 0;
         request->size += request->used + sz;

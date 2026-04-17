@@ -269,7 +269,7 @@ LOCAL gboolean pcapoverip_server_read_cb(gint UNUSED(fd), GIOCondition UNUSED(co
 
     GSocket *client = g_socket_accept((GSocket *)data, NULL, &error);
     if (!client || error) {
-        LOGEXIT("ERROR - Error accepting pcap-over-ip: %s", error->message);
+        LOGEXIT("ERROR - Error accepting pcap-over-ip: %s", error ? error->message : "unknown error");
     }
 
     POIClient_t *poic = ARKIME_TYPE_ALLOC0(POIClient_t);
@@ -292,19 +292,19 @@ LOCAL void pcapoverip_server_start()
     socket = g_socket_new (G_SOCKET_FAMILY_IPV4, G_SOCKET_TYPE_STREAM, 0, &error);
 
     if (!socket || error) {
-        CONFIGEXIT("Error creating pcap-over-ip: %s", error->message);
+        CONFIGEXIT("Error creating pcap-over-ip: %s", error ? error->message : "unknown error");
     }
 
     g_socket_set_blocking (socket, FALSE);
     addr = g_inet_socket_address_new (g_inet_address_new_any (G_SOCKET_FAMILY_IPV4), port);
 
     if (!g_socket_bind (socket, addr, TRUE, &error)) {
-        CONFIGEXIT("Error binding pcap-over-ip: %s", error->message);
+        CONFIGEXIT("Error binding pcap-over-ip: %s", error ? error->message : "unknown error");
     }
     g_object_unref (addr);
 
     if (!g_socket_listen (socket, &error)) {
-        CONFIGEXIT("Error listening pcap-over-ip: %s", error->message);
+        CONFIGEXIT("Error listening pcap-over-ip: %s", error ? error->message : "unknown error");
     }
 
     int fd = g_socket_get_fd(socket);

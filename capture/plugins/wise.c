@@ -557,6 +557,9 @@ LOCAL void wise_lookup_ip(ArkimeSession_t *session, WiseRequest_t *request, stru
 /******************************************************************************/
 LOCAL void wise_lookup_tuple(ArkimeSession_t *session, WiseRequest_t *request)
 {
+    if (!session->fields[protocolField])
+        return;
+
     char    str[1000];
     BSB     bsb;
 

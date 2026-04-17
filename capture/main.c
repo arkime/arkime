@@ -456,10 +456,10 @@ void arkime_check_file_permissions(const char *filename)
 
             if (stats.st_mode & S_IROTH) {
                 // world readable
-            } else if ((stats.st_mode & S_IRGRP) && config.dropGroup && (strcmp (config.dropGroup, gr->gr_name) == 0)) {
+            } else if ((stats.st_mode & S_IRGRP) && config.dropGroup && gr && (strcmp (config.dropGroup, gr->gr_name) == 0)) {
                 // group readable and dropGroup matches file group
                 // TODO compare group id values as opposed to group name
-            } else if ((stats.st_mode & S_IRUSR) && config.dropUser && (strcmp (config.dropUser, pw->pw_name) == 0)) {
+            } else if ((stats.st_mode & S_IRUSR) && config.dropUser && pw && (strcmp (config.dropUser, pw->pw_name) == 0)) {
                 // user readable and dropUser matches file user
                 // TODO compare user id values as opposed to user name
             } else

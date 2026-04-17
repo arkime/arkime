@@ -20,8 +20,8 @@
     "firstPacket" : 1700000000000,
     "initRTT" : 50,
     "ipProtocol" : 6,
-    "lastPacket" : 1700000004100,
-    "length" : 4100,
+    "lastPacket" : 1700000004300,
+    "length" : 4300,
     "mqtt" : {
      "clientId" : [
       "sensor-001"
@@ -89,7 +89,7 @@
     ],
     "packetRange" : {
      "gte" : 1700000000000,
-     "lte" : 1700000004100
+     "lte" : 1700000004300
     },
     "protocol" : [
      "mqtt",
@@ -162,8 +162,8 @@
     "firstPacket" : 1700000010000,
     "initRTT" : 50,
     "ipProtocol" : 6,
-    "lastPacket" : 1700000012100,
-    "length" : 2100,
+    "lastPacket" : 1700000012200,
+    "length" : 2200,
     "mqtt" : {
      "clientId" : [
       "legacy-device"
@@ -223,7 +223,7 @@
     ],
     "packetRange" : {
      "gte" : 1700000010000,
-     "lte" : 1700000012100
+     "lte" : 1700000012200
     },
     "protocol" : [
      "mqtt",
@@ -292,8 +292,8 @@
     "firstPacket" : 1700000020000,
     "initRTT" : 50,
     "ipProtocol" : 6,
-    "lastPacket" : 1700000023100,
-    "length" : 3100,
+    "lastPacket" : 1700000023250,
+    "length" : 3250,
     "mqtt" : {
      "clientId" : [
       "iot-gateway-west"
@@ -350,7 +350,7 @@
     ],
     "packetRange" : {
      "gte" : 1700000020000,
-     "lte" : 1700000023100
+     "lte" : 1700000023250
     },
     "protocol" : [
      "mqtt",
@@ -423,8 +423,8 @@
     "firstPacket" : 1700000030000,
     "initRTT" : 50,
     "ipProtocol" : 6,
-    "lastPacket" : 1700000034100,
-    "length" : 4100,
+    "lastPacket" : 1700000034300,
+    "length" : 4300,
     "mqtt" : {
      "clientId" : [
       "anon-publisher"
@@ -489,7 +489,7 @@
     ],
     "packetRange" : {
      "gte" : 1700000030000,
-     "lte" : 1700000034100
+     "lte" : 1700000034300
     },
     "protocol" : [
      "mqtt",
@@ -542,7 +542,7 @@
    "body" : {
     "@timestamp" : "SET",
     "client" : {
-     "bytes" : 122
+     "bytes" : 124
     },
     "destination" : {
      "bytes" : 160,
@@ -558,8 +558,8 @@
     "firstPacket" : 1700000040000,
     "initRTT" : 50,
     "ipProtocol" : 6,
-    "lastPacket" : 1700000043100,
-    "length" : 3100,
+    "lastPacket" : 1700000043250,
+    "length" : 3250,
     "mqtt" : {
      "clientId" : [
       "mqtt5-client"
@@ -592,7 +592,7 @@
      "versionCnt" : 1
     },
     "network" : {
-     "bytes" : 482,
+     "bytes" : 484,
      "community_id" : "1:dlBNC/Fgo9MwnZL6jyq9YTX10e0=",
      "packets" : 9
     },
@@ -603,9 +603,9 @@
      56,
      107,
      56,
-     88,
+     89,
      56,
-     95,
+     96,
      56
     ],
     "packetPos" : [
@@ -615,13 +615,13 @@
      2750,
      2857,
      2913,
-     3001,
-     3057,
-     3152
+     3002,
+     3058,
+     3154
     ],
     "packetRange" : {
      "gte" : 1700000040000,
-     "lte" : 1700000043100
+     "lte" : 1700000043250
     },
     "protocol" : [
      "mqtt",
@@ -633,7 +633,7 @@
      "bytes" : 0
     },
     "source" : {
-     "bytes" : 322,
+     "bytes" : 324,
      "ip" : "192.168.1.50",
      "packets" : 5,
      "port" : 11111
@@ -662,7 +662,7 @@
      "dst" : 0,
      "src" : 1000
     },
-    "totDataBytes" : 122,
+    "totDataBytes" : 124,
     "user" : [
      "modern_user"
     ],

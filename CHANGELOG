@@ -50,6 +50,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #3888 Can now use - for password with addUser.js to get prompted
 ## Capture
   - #3871 Packets with more than 10 ip/ethernet headers are now marked as corrupt
+  - #3896 Improve MQTT parsing and tests
 ## Capture/Viewer
   - #3833 New simpleDEKEncoding setting which controls how the DEK is encrypted
   - #3857 Fix scheme pcapNG not handling large files (thanks @wegman12)

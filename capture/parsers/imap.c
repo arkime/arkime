@@ -176,7 +176,7 @@ LOCAL int imap_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, i
 
                         /* Remove quotes if present */
                         const char *folderEnd = line + len;
-                        if (*folder == '"') {
+                        if (folder < line + len && *folder == '"') {
                             folder++;
                             folderEnd = memchr(folder, '"', folderEnd - folder);
                             if (!folderEnd) folderEnd = line + len;

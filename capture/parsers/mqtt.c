@@ -62,7 +62,7 @@ LOCAL int mqtt_decode_varint(BSB *bsb, uint32_t *value)
     return -1; // Malformed varint
 }
 /******************************************************************************/
-LOCAL void mqtt_parse_connect(ArkimeSession_t *session, BSB *bsb)
+LOCAL void mqtt_parse_connect(ArkimeSession_t *session, ArkimeParserBuf_t *mqtt, BSB *bsb)
 {
     // Protocol name length + name
     int protoNameLen = 0;
@@ -104,6 +104,7 @@ LOCAL void mqtt_parse_connect(ArkimeSession_t *session, BSB *bsb)
         break;
     }
     arkime_field_string_add(versionField, session, versionStr, -1, TRUE);
+    mqtt->version = version;
 
     // Connect flags
     int flags = 0;
@@ -319,7 +320,7 @@ LOCAL int mqtt_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, i
 
         switch (packetType) {
         case 1: // CONNECT
-            mqtt_parse_connect(session, &packetBsb);
+            mqtt_parse_connect(session, mqtt, &packetBsb);
             break;
         case 8: // SUBSCRIBE
             mqtt_parse_subscribe(session, &packetBsb, mqtt->version);

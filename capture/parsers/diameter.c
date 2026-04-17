@@ -191,50 +191,37 @@ LOCAL void diameter_parse_avps(ArkimeSession_t *session, const uint8_t *data, in
 }
 
 /******************************************************************************/
-LOCAL int diameter_tcp_parser(ArkimeSession_t *session, void *UNUSED(uw), const uint8_t *data, int len, int UNUSED(which))
+LOCAL int diameter_tcp_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, int remaining, int which)
 {
-    // Diameter header is 20 bytes
-    if (len < 20)
-        return 0;
+    ArkimeParserBuf_t *pb = uw;
 
-    BSB bsb;
-    BSB_INIT(bsb, data, len);
+    arkime_parser_buf_add(pb, which, data, remaining);
 
-    while (BSB_REMAINING(bsb) >= 20) {
-        const uint8_t *msgStart = BSB_WORK_PTR(bsb);
+    while (pb->len[which] >= 20) {
+        const uint8_t *msg = pb->buf[which];
 
         // Version (1 byte)
-        uint8_t version = 0;
-        BSB_IMPORT_u08(bsb, version);
-        if (version != 1)
+        if (msg[0] != 1)
             return ARKIME_PARSER_UNREGISTER;
 
-        // Message Length (3 bytes)
-        uint32_t msgLen = 0;
-        BSB_IMPORT_u24(bsb, msgLen);
+        // Message Length (3 bytes, big-endian)
+        uint32_t msgLen = (msg[1] << 16) | (msg[2] << 8) | msg[3];
 
-        if (msgLen < 20 || msgLen > sizeof(((ArkimeParserBuf_t *)0)->buf[0]))
+        if (msgLen < 20 || msgLen > sizeof(pb->buf[0]))
             return ARKIME_PARSER_UNREGISTER;
 
-        // Check if we have the full message
-        if ((int)msgLen > len - (int)(msgStart - data))
-            return 0; // Need more data
+        // Wait for full message
+        if (pb->len[which] < (int)msgLen)
+            return 0;
 
         // Command Flags (1 byte) + Command Code (3 bytes)
-        uint8_t cmdFlags = 0;
-        uint32_t cmdCode = 0;
-        BSB_IMPORT_u08(bsb, cmdFlags);
-        BSB_IMPORT_u24(bsb, cmdCode);
+        uint8_t cmdFlags = msg[4];
+        uint32_t cmdCode = (msg[5] << 16) | (msg[6] << 8) | msg[7];
 
         // Application-ID (4 bytes)
-        uint32_t appId = 0;
-        BSB_IMPORT_u32(bsb, appId);
+        uint32_t appId = (msg[8] << 24) | (msg[9] << 16) | (msg[10] << 8) | msg[11];
 
-        // Skip Hop-by-Hop and End-to-End identifiers (8 bytes)
-        BSB_IMPORT_skip(bsb, 8);
-
-        if (BSB_IS_ERROR(bsb))
-            return ARKIME_PARSER_UNREGISTER;
+        // Skip Hop-by-Hop (msg[12..15]) and End-to-End (msg[16..19])
 
         // R flag (bit 7) indicates request vs answer
         const char *reqAns = (cmdFlags & 0x80) ? "Request" : "Answer";
@@ -264,13 +251,11 @@ LOCAL int diameter_tcp_parser(ArkimeSession_t *session, void *UNUSED(uw), const 
         }
 
         // Parse AVPs (remaining bytes in message)
-        int avpLen = msgLen - 20;
-        if (avpLen > 0 && BSB_REMAINING(bsb) >= avpLen) {
-            diameter_parse_avps(session, BSB_WORK_PTR(bsb), avpLen);
+        if (msgLen > 20) {
+            diameter_parse_avps(session, msg + 20, msgLen - 20);
         }
 
-        // Move to next message
-        BSB_INIT(bsb, msgStart + msgLen, len - (int)(msgStart - data) - msgLen);
+        arkime_parser_buf_del(pb, which, msgLen);
     }
 
     return 0;
@@ -315,7 +300,8 @@ LOCAL void diameter_tcp_classify(ArkimeSession_t *session, const uint8_t *data, 
         return;
 
     arkime_session_add_protocol(session, "diameter");
-    arkime_parsers_register(session, diameter_tcp_parser, 0, 0);
+    ArkimeParserBuf_t *pb = arkime_parser_buf_create();
+    arkime_parsers_register(session, diameter_tcp_parser, pb, arkime_parser_buf_session_free);
 }
 
 /******************************************************************************/
@@ -325,7 +311,8 @@ LOCAL void diameter_sctp_classify(ArkimeSession_t *session, const uint8_t *data,
         return;
 
     arkime_session_add_protocol(session, "diameter");
-    arkime_parsers_register(session, diameter_tcp_parser, 0, 0);
+    ArkimeParserBuf_t *pb = arkime_parser_buf_create();
+    arkime_parsers_register(session, diameter_tcp_parser, pb, arkime_parser_buf_session_free);
 }
 
 /******************************************************************************/
