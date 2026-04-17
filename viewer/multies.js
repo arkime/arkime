@@ -167,6 +167,12 @@ function getActiveNodes (clusterin) {
 
 function makeRequest (url, options, cb) {
   let result = '';
+  let called = false;
+  const done = (err, res) => {
+    if (called) { return; }
+    called = true;
+    if (cb) { cb(err, res); }
+  };
 
   const preq = options.arkime_client.request(url, options, (pres) => {
     pres.on('data', (chunk) => {
@@ -182,14 +188,16 @@ function makeRequest (url, options, cb) {
           result = JSON.parse(result);
         } catch (e) {
           console.log('ERROR - could not parse response from ES', e);
-          if (cb) { return cb(e, {}); }
+          return done(e, {});
         }
       } else {
         result = {};
       }
-      if (cb) {
-        cb(null, result);
-      }
+      done(null, result);
+    });
+    pres.on('error', (e) => {
+      console.log('Response error', e);
+      done(e, {});
     });
   });
   preq.setHeader('content-type', 'application/json');
@@ -204,6 +212,7 @@ function makeRequest (url, options, cb) {
   }
   preq.on('error', (e) => {
     console.log('Request error', e);
+    done(e, {});
   });
   preq.end();
 }
@@ -843,7 +852,7 @@ function fixQuery (node, body, doneCb) {
 
   let outstanding = 0;
   let finished = 0;
-  const err = null;
+  let outerErr = null;
 
   function convert (qParent, obj) {
     for (const item in obj) {
@@ -875,10 +884,10 @@ function fixQuery (node, body, doneCb) {
           obj.bool.should.push({ bool: { filter: [{ term: { node: file._source.node } }, { term: { fileId: file._source.num } }] } });
         }
         if (obj.bool.should.length === 0) {
-          err = 'No matching files found';
+          outerErr = 'No matching files found';
         }
         if (finished && outstanding === 0) {
-          doneCb(err, body);
+          doneCb(outerErr, body);
         }
       });
     } else if (typeof obj[item] === 'object') {
@@ -888,7 +897,7 @@ function fixQuery (node, body, doneCb) {
 
   convert(null, body);
   if (outstanding === 0) {
-    return doneCb(err, body);
+    return doneCb(outerErr, body);
   }
 
   finished = 1;

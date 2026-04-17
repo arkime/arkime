@@ -22,7 +22,7 @@ const httpAgent = new http.Agent({ family: 4 });
 // --------------------------------------------------------------------------
 async function getBlockHTTP (info, pos) {
   async function getBlockHttpInternal () {
-    const result = await axios.get(info.name, { responseType: 'arraybuffer', httpAgent, headers: { range: `bytes=${blockStart}-${blockStart + blockSize}` } });
+    const result = await axios.get(info.name, { responseType: 'arraybuffer', httpAgent, headers: { range: `bytes=${blockStart}-${blockStart + blockSize - 1}` } });
     return result.data;
   }
 
@@ -34,6 +34,7 @@ async function getBlockHTTP (info, pos) {
   if (!block) {
     block = getBlockHttpInternal();
     blocklru.set(key, block);
+    block.catch(() => { blocklru.delete(key); });
   }
   block = await block;
   return block.slice(pos - blockStart);
@@ -108,11 +109,12 @@ async function getBlockS3 (info, pos) {
     const params = {
       Bucket: parts[2],
       Key: parts[3],
-      Range: `bytes=${blockStart}-${blockStart + blockSize}`
+      Range: `bytes=${blockStart}-${blockStart + blockSize - 1}`
     };
 
     block = getBlockS3Internal(info, params);
     blocklru.set(key, block);
+    block.catch(() => { blocklru.delete(key); });
   }
 
   block = await block;
@@ -129,18 +131,15 @@ async function getBlockS3HTTP (info, pos) {
   const key = `${info.name}:${blockStart}`;
   let block = blocklru.get(key);
   if (!block) {
-    try {
-      const params = {
-        Bucket: info.extra.bucket,
-        Key: info.extra.path.replace(/^\//, ''),
-        Range: `bytes=${blockStart}-${blockStart + blockSize}`
-      };
+    const params = {
+      Bucket: info.extra.bucket,
+      Key: info.extra.path.replace(/^\//, ''),
+      Range: `bytes=${blockStart}-${blockStart + blockSize - 1}`
+    };
 
-      block = getBlockS3Internal(info, params);
-      blocklru.set(key, block);
-    } catch (err) {
-      console.error(err);
-    }
+    block = getBlockS3Internal(info, params);
+    blocklru.set(key, block);
+    block.catch(() => { blocklru.delete(key); });
   }
 
   // Return a new buffer starting at pos

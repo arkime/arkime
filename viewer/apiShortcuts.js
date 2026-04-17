@@ -481,7 +481,9 @@ class ShortcutAPIs {
    * @returns {boolean} success - Always true.
    */
   static syncShortcuts (req, res) {
-    Db.updateLocalShortcuts();
+    Db.updateLocalShortcuts().catch((err) => {
+      console.log(`ERROR - ${req.method} /api/syncshortcuts`, util.inspect(err, false, 50));
+    });
     return res.json({ success: true });
   }
 }
