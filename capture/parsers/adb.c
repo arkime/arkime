@@ -356,7 +356,7 @@ LOCAL void adb_parse_open(ArkimeSession_t *session, const uint8_t *data, int rem
         }
 
         /* Check for sync mode */
-        if (strcmp(service_str, "sync:") == 0 || strncmp(service_str, "sync:", 5) == 0) {
+        if (strncmp(service_str, "sync:", 5) == 0) {
             adb->syncMode[which] = 1;
             arkime_session_add_tag(session, "adb:sync");
         }

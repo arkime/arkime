@@ -212,7 +212,7 @@ void arkime_drophash_init(ArkimeDropHashGroup_t *group, const char *file, int ke
     int      cnt;
     int      ver;
     char     fkeyLen;
-    char     key[16];
+    char     key[ARKIME_SESSIONID_LEN];
     uint32_t last;
     uint32_t goodFor;
     uint16_t flags;
@@ -250,6 +250,12 @@ void arkime_drophash_init(ArkimeDropHashGroup_t *group, const char *file, int ke
     if (fkeyLen != keyLen) {
         fclose(fp);
         LOG("ERROR - keyLen mismatch %d != %d", fkeyLen, keyLen);
+        return;
+    }
+
+    if (keyLen > (int)sizeof(key)) {
+        fclose(fp);
+        LOG("ERROR - keyLen %d larger than internal buffer %zu for `%s`", keyLen, sizeof(key), group->file);
         return;
     }
 

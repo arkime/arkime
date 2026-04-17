@@ -47,7 +47,7 @@ LOCAL int modbus_tcp_parser(ArkimeSession_t *session, void *uw, const uint8_t *d
         BSB_IMPORT_u16(bsb, modbusLen);
 
         if (modbusLen < 2 || modbusLen > 255) {
-            return 0;
+            return ARKIME_PARSER_UNREGISTER;
         }
 
         if (modbusLen > BSB_REMAINING(bsb)) {

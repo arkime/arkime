@@ -799,6 +799,8 @@ LOCAL PyObject *arkime_python_session_add_int(PyObject UNUSED(*self), PyObject *
         pos = PyLong_AsLong(py_field_obj);
     } else if (PyUnicode_Check(py_field_obj)) {
         const char *field = PyUnicode_AsUTF8(py_field_obj);
+        if (!field)
+            return NULL;
         if (isdigit(field[0]))
             pos = atoi(field);
         else
@@ -832,6 +834,8 @@ LOCAL PyObject *arkime_python_session_add_string(PyObject UNUSED(*self), PyObjec
         pos = PyLong_AsLong(py_field_obj);
     } else if (PyUnicode_Check(py_field_obj)) {
         const char *field = PyUnicode_AsUTF8(py_field_obj);
+        if (!field)
+            return NULL;
         if (isdigit(field[0]))
             pos = atoi(field);
         else
@@ -1583,6 +1587,7 @@ LOCAL PyObject *arkime_python_run_ethernet_cb(PyObject UNUSED(*self), PyObject *
 
     ArkimePacketRC result = arkime_packet_run_ethernet_cb(batch, packet, py_data_buf.buf, py_data_buf.len, type, str);
 
+    PyBuffer_Release(&py_data_buf);
     return PyLong_FromLong(result);
 }
 
@@ -1611,6 +1616,7 @@ LOCAL PyObject *arkime_python_run_ip_cb(PyObject UNUSED(*self), PyObject *args)
 
     ArkimePacketRC result = arkime_packet_run_ip_cb(batch, packet, py_data_buf.buf, py_data_buf.len, type, str);
 
+    PyBuffer_Release(&py_data_buf);
     return PyLong_FromLong(result);
 }
 /******************************************************************************/

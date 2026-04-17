@@ -226,7 +226,7 @@ LOCAL int dcerpc_parser(ArkimeSession_t *session, void *uw, const uint8_t *data,
     ArkimeParserBuf_t *pb = uw;
 
     if (arkime_parser_buf_add(pb, which, data, remaining) < 0)
-        return 0;
+        return ARKIME_PARSER_UNREGISTER;
 
     while (pb->len[which] >= 16) {
         // Check byte order from data representation (byte 4, bit 4: 0=BE, 1=LE)

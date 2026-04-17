@@ -120,7 +120,7 @@ LOCAL void scrubspi_add_entry(const char *key, const char *value)
     GError *error = NULL;
     GRegex *search = g_regex_new(values[0], G_REGEX_OPTIMIZE, 0, &error);
     if (!search || error)
-        CONFIGEXIT("Couldn't compile %s %s", values[0], error->message);
+        CONFIGEXIT("Couldn't compile %s %s", values[0], error ? error->message : "unknown error");
 
     char **keys = g_strsplit(key, ",", 0);
 

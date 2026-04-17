@@ -344,13 +344,13 @@ void arkime_parser_init()
 
     macField = arkime_field_define("dhcp", "lotermfield",
                                    "dhcp.mac", "DHCP Client MAC", "dhcp.mac",
-                                   "Client ethernet MAC ",
+                                   "Client ethernet MAC",
                                    ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
                                    (char *)NULL);
 
     ouiField = arkime_field_define("dhcp", "termfield",
                                    "dhcp.oui", "DHCP Client OUI", "dhcp.oui",
-                                   "Client ethernet OUI ",
+                                   "Client ethernet OUI",
                                    ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
                                    (char *)NULL);
 

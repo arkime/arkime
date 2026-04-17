@@ -21,7 +21,7 @@ LOCAL void isis_create_sessionid(uint8_t *sessionId, ArkimePacket_t *UNUSED(pack
     // for now, lump all isis into the same session
 }
 /******************************************************************************/
-LOCAL int isis_pre_process(ArkimeSession_t *session, ArkimePacket_t *const UNUSED(packet), int isNewSession)
+LOCAL int isis_pre_process(ArkimeSession_t *session, ArkimePacket_t *const packet, int isNewSession)
 {
     char msg[32];
 

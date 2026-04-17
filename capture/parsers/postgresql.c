@@ -81,7 +81,7 @@ LOCAL void postgresql_free(ArkimeSession_t UNUSED(*session), void *uw)
     ARKIME_TYPE_FREE(Info_t, info);
 }
 /******************************************************************************/
-LOCAL void postgresql_classify(ArkimeSession_t *session, const uint8_t UNUSED(*data), int UNUSED(len), int which, void *UNUSED(uw))
+LOCAL void postgresql_classify(ArkimeSession_t *session, const uint8_t *data, int len, int which, void *UNUSED(uw))
 {
     if (arkime_session_has_protocol(session, "postgresql"))
         return;

@@ -78,7 +78,7 @@ LOCAL int radius_udp_parser(ArkimeSession_t *session, void *UNUSED(uw), const ui
     return 0;
 }
 /******************************************************************************/
-LOCAL void radius_udp_classify(ArkimeSession_t *session, const uint8_t *UNUSED(data), int len, int UNUSED(which), void *UNUSED(uw))
+LOCAL void radius_udp_classify(ArkimeSession_t *session, const uint8_t *data, int len, int UNUSED(which), void *UNUSED(uw))
 {
     if (len < 4 || len != ((data[2] << 8) | data[3])) {
         return;

@@ -43,12 +43,14 @@ LOCAL void tcp_server(void)
     err = bind(server_fd, (struct sockaddr *) &server, sizeof(server));
     if (err < 0) {
         LOG("Error binding socket: %d", err);
+        close(server_fd);
         return;
     }
 
     err = listen(server_fd, 128);
     if (err < 0) {
         LOG("Error listening on socket: %d", err);
+        close(server_fd);
         return;
     }
 
@@ -63,7 +65,7 @@ LOCAL void tcp_server(void)
             if (config.debug) {
                 char str[INET6_ADDRSTRLEN];
                 inet_ntop(AF_INET, &client.sin_addr, str, sizeof(str));
-                LOG("Incomding health check %s:%d", str, client.sin_port);
+                LOG("Incoming health check %s:%d", str, ntohs(client.sin_port));
             }
             close(client_fd);
         }

@@ -51,7 +51,7 @@ LOCAL gboolean arkime_command_run(const char *line, gpointer cc)
     GError *error = NULL;
 
     if (!g_shell_parse_argv(line, &argcp, &argvp, &error)) {
-        g_error_free(error);
+        g_clear_error(&error);
         arkime_command_respond(cc, "No command sent\n", -1);
         return TRUE;
     }
@@ -366,21 +366,21 @@ void arkime_command_init()
     socket = g_socket_new (G_SOCKET_FAMILY_UNIX, G_SOCKET_TYPE_STREAM, 0, &error);
 
     if (!socket || error) {
-        CONFIGEXIT("Error creating command: %s", error->message);
+        CONFIGEXIT("Error creating command: %s", error ? error->message : "unknown error");
     }
 
     unlink(config.commandSocket);
     addr = g_unix_socket_address_new (config.commandSocket);
 
     if (!g_socket_bind (socket, addr, TRUE, &error)) {
-        CONFIGEXIT("Error binding command socket: %s", error->message);
+        CONFIGEXIT("Error binding command socket: %s", error ? error->message : "unknown error");
     }
     g_object_unref (addr);
 
     chmod(config.commandSocket, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP);
 
     if (!g_socket_listen (socket, &error)) {
-        CONFIGEXIT("Error listening command socket: %s", error->message);
+        CONFIGEXIT("Error listening command socket: %s", error ? error->message : "unknown error");
     }
 
     int fd = g_socket_get_fd(socket);

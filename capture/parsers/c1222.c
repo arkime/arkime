@@ -134,6 +134,44 @@ LOCAL void c1222_parse(ArkimeSession_t *session, const uint8_t *data, int len)
 }
 
 /******************************************************************************/
+// Peek the total length of the outer ASN.1 TLV (tag byte + length bytes + value)
+// without consuming it. Returns 0 if more data is needed, -1 on malformed input,
+// otherwise the total byte count of the complete message.
+LOCAL int c1222_peek_total_len(const uint8_t *data, int len)
+{
+    if (len < 2)
+        return 0;
+
+    // Multi-byte tags (low 5 bits == 0x1f) are not expected for the outer 0x60
+    // C12.22 wrapper; treat them as malformed.
+    if ((data[0] & 0x1f) == 0x1f)
+        return -1;
+
+    int idx = 1; // skip tag
+    uint8_t lb = data[idx++];
+    uint32_t content_len;
+
+    if ((lb & 0x80) == 0) {
+        content_len = lb;
+    } else {
+        int cnt = lb & 0x7f;
+        if (cnt == 0 || cnt > 4)
+            return -1; // indefinite or unsupported
+        if (idx + cnt > len)
+            return 0; // need more data to decode length
+        content_len = 0;
+        for (int i = 0; i < cnt; i++) {
+            content_len = (content_len << 8) | data[idx++];
+        }
+    }
+
+    uint64_t total = (uint64_t)idx + content_len;
+    if (total > (uint64_t)INT_MAX)
+        return -1;
+    return (int)total;
+}
+
+/******************************************************************************/
 LOCAL int c1222_tcp_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, int len, int which)
 {
     ArkimeParserBuf_t *c1222 = uw;
@@ -141,18 +179,15 @@ LOCAL int c1222_tcp_parser(ArkimeSession_t *session, void *uw, const uint8_t *da
     arkime_parser_buf_add(c1222, which, data, len);
 
     while (c1222->len[which] >= 2) {
-        // Peek at ASN.1 length to determine message boundary
-        BSB bsb;
-        BSB_INIT(bsb, c1222->buf[which], c1222->len[which]);
-
-        uint32_t opc, otag, olen;
-        uint8_t *ovalue = arkime_parsers_asn_get_tlv(&bsb, &opc, &otag, &olen);
-        if (!ovalue)
-            break;
-
-        int total = (ovalue + olen) - c1222->buf[which];
-        if (total > (int)c1222->len[which])
-            break; // Need more data
+        int total = c1222_peek_total_len(c1222->buf[which], c1222->len[which]);
+        if (total == 0)
+            break; // need more data
+        if (total < 0 || total > (int)sizeof(c1222->buf[which])) {
+            // Malformed or too large to fit in our buffer; abandon parsing.
+            return ARKIME_PARSER_UNREGISTER;
+        }
+        if (total > c1222->len[which])
+            break; // need more data
 
         c1222_parse(session, c1222->buf[which], total);
         arkime_parser_buf_del(c1222, which, total);

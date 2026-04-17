@@ -1378,7 +1378,7 @@ LOCAL void arkime_config_parse_override_ips(GKeyFile *keyFile)
     gsize keys_len;
     gchar **keys = g_key_file_get_keys (keyFile, "override-ips", &keys_len, &error);
     if (error) {
-        CONFIGEXIT("Error with override-ips: %s", error->message);
+        CONFIGEXIT("Error with override-ips: %s", error->message ? error->message : "unknown error");
     }
 
     GRegex *asnRegex = g_regex_new("AS\\d+ .+", 0, 0, &error);
@@ -1479,7 +1479,7 @@ LOCAL void arkime_config_parse_packet_ips(GKeyFile *keyFile)
     gsize keys_len;
     gchar **keys = g_key_file_get_keys (keyFile, "packet-drop-ips", &keys_len, &error);
     if (error) {
-        CONFIGEXIT("Error with packet-drop-ips: %s", error->message);
+        CONFIGEXIT("Error with packet-drop-ips: %s", error->message ? error->message : "unknown error");
     }
 
     gsize k, v;
@@ -1558,7 +1558,7 @@ void arkime_config_load_header(char *section, char *group, char *helpBase, char 
     gsize keys_len;
     gchar **keys = g_key_file_get_keys (arkimeKeyFile, section, &keys_len, &error);
     if (error) {
-        CONFIGEXIT("Error with %s: %s", section, error->message);
+        CONFIGEXIT("Error with %s: %s", section, error->message ? error->message : "unknown error");
     }
 
     gsize k, v;
@@ -1850,7 +1850,7 @@ LOCAL void arkime_config_cmd_set(int argc, char **argv, gpointer cc)
             BSB_EXPORT_sprintf(bsb, "%" PRId64 "\n", *(int64_t *)acv->var);
             break;
         case ARKIME_CONFIG_CMD_VAR_STR_PTR:
-            if (!*(char *)acv->var)
+            if (!*(char **)acv->var)
                 BSB_EXPORT_sprintf(bsb, "NULL\n");
             else
                 BSB_EXPORT_sprintf(bsb, "%s\n", *(char **)acv->var);

@@ -69,7 +69,7 @@ LOCAL void misc_add_protocol_classify(ArkimeSession_t *session, const uint8_t *U
     arkime_session_add_protocol(session, uw);
 }
 /******************************************************************************/
-LOCAL void syslog_classify(ArkimeSession_t *session, const uint8_t *UNUSED(data), int len, int UNUSED(which), void *UNUSED(uw))
+LOCAL void syslog_classify(ArkimeSession_t *session, const uint8_t *data, int len, int UNUSED(which), void *UNUSED(uw))
 {
     for (int i = 2; i < len; i++) {
         if (data[i] == '>') {

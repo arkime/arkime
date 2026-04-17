@@ -139,7 +139,7 @@ LOCAL void synchrophasor_parse_frame(ArkimeSession_t *session, const uint8_t *da
 
             if (frameType == 5) {
                 // CFG-3: variable length channel names
-                for (uint16_t j = 0; j < phnmr + annmr + dgnmr && !BSB_IS_ERROR(bsb); j++) {
+                for (uint32_t j = 0; j < (uint32_t)phnmr + annmr + dgnmr && !BSB_IS_ERROR(bsb); j++) {
                     uint8_t chNameLen = 0;
                     BSB_IMPORT_u08(bsb, chNameLen);
                     BSB_IMPORT_skip(bsb, chNameLen);

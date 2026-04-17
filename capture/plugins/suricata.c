@@ -252,7 +252,7 @@ LOCAL void suricata_process_alert(char *data, int len, SuricataItem_t *item)
             item->rev = atoi(data + out[i + 2]);
         } else if (MATCH(data, "signature")) {
             item->signature = g_regex_replace_literal(slashslashRegex, data + out[i + 2], out[i + 3], 0, "/", 0, NULL);
-            item->signature_len = strlen(item->signature);
+            item->signature_len = item->signature ? strlen(item->signature) : 0;
         } else if (MATCH(data, "severity")) {
             item->severity = atoi(data + out[i + 2]);
         } else if (MATCH(data, "category")) {

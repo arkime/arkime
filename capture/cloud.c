@@ -76,7 +76,9 @@ LOCAL int aws_get_credentials_metadata(const char UNUSED(*service))
         const char *relativeURI = getenv("AWS_CONTAINER_CREDENTIALS_RELATIVE_URI");
         if (uri && relativeURI) {
             char *uriDup = g_strdup(uri);
-            char *slash = strchr(uriDup + 8, '/');
+            char *hostStart = strstr(uriDup, "://");
+            hostStart = hostStart ? hostStart + 3 : uriDup;
+            char *slash = strchr(hostStart, '/');
             if (slash) {
                 *slash = 0;
             }
@@ -106,7 +108,7 @@ LOCAL int aws_get_credentials_metadata(const char UNUSED(*service))
 /******************************************************************************/
 LOCAL int aws_get_credentials_env(const char UNUSED(*service))
 {
-    const char *id = getenv("AWS_ACCESS_KEY_ID");;
+    const char *id = getenv("AWS_ACCESS_KEY_ID");
     const char *key = getenv("AWS_SECRET_ACCESS_KEY");
     const char *token = getenv("AWS_SESSION_TOKEN");
 

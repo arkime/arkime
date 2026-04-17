@@ -117,6 +117,7 @@ void arkime_plugins_load(char **plugins)
                 loaded = 1;
                 break;
             }
+            g_free (path);
         }
 
         if (!loaded) {
