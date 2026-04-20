@@ -191,6 +191,54 @@ LOCAL void diameter_parse_avps(ArkimeSession_t *session, const uint8_t *data, in
 }
 
 /******************************************************************************/
+// Decode a single complete diameter message (msg, length msgLen).
+// msgLen must already be validated to be >= 20 and msg must contain at least
+// msgLen bytes.
+LOCAL void diameter_decode_message(ArkimeSession_t *session, const uint8_t *msg, uint32_t msgLen)
+{
+    // Command Flags (1 byte) + Command Code (3 bytes)
+    uint8_t cmdFlags = msg[4];
+    uint32_t cmdCode = (msg[5] << 16) | (msg[6] << 8) | msg[7];
+
+    // Application-ID (4 bytes)
+    uint32_t appId = (msg[8] << 24) | (msg[9] << 16) | (msg[10] << 8) | msg[11];
+
+    // Skip Hop-by-Hop (msg[12..15]) and End-to-End (msg[16..19])
+
+    // R flag (bit 7) indicates request vs answer
+    const char *reqAns = (cmdFlags & 0x80) ? "Request" : "Answer";
+
+    // Add command code with name if known
+    const char *cmdName = diameter_cmd_name(cmdCode);
+    if (cmdName) {
+        char cmdStr[80];
+        snprintf(cmdStr, sizeof(cmdStr), "%s-%s (%u)", cmdName, reqAns, cmdCode);
+        arkime_field_string_add(cmdCodeField, session, cmdStr, -1, TRUE);
+    } else {
+        char cmdStr[32];
+        snprintf(cmdStr, sizeof(cmdStr), "%s (%u)", reqAns, cmdCode);
+        arkime_field_string_add(cmdCodeField, session, cmdStr, -1, TRUE);
+    }
+
+    // Add application ID with name if known
+    const char *appName = diameter_app_name(appId);
+    if (appName) {
+        char appStr[64];
+        snprintf(appStr, sizeof(appStr), "%s (%u)", appName, appId);
+        arkime_field_string_add(appIdField, session, appStr, -1, TRUE);
+    } else {
+        char appStr[16];
+        snprintf(appStr, sizeof(appStr), "%u", appId);
+        arkime_field_string_add(appIdField, session, appStr, -1, TRUE);
+    }
+
+    // Parse AVPs (remaining bytes in message)
+    if (msgLen > 20) {
+        diameter_parse_avps(session, msg + 20, msgLen - 20);
+    }
+}
+
+/******************************************************************************/
 LOCAL int diameter_tcp_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, int remaining, int which)
 {
     ArkimeParserBuf_t *pb = uw;
@@ -214,50 +262,31 @@ LOCAL int diameter_tcp_parser(ArkimeSession_t *session, void *uw, const uint8_t 
         if (pb->len[which] < (int)msgLen)
             return 0;
 
-        // Command Flags (1 byte) + Command Code (3 bytes)
-        uint8_t cmdFlags = msg[4];
-        uint32_t cmdCode = (msg[5] << 16) | (msg[6] << 8) | msg[7];
-
-        // Application-ID (4 bytes)
-        uint32_t appId = (msg[8] << 24) | (msg[9] << 16) | (msg[10] << 8) | msg[11];
-
-        // Skip Hop-by-Hop (msg[12..15]) and End-to-End (msg[16..19])
-
-        // R flag (bit 7) indicates request vs answer
-        const char *reqAns = (cmdFlags & 0x80) ? "Request" : "Answer";
-
-        // Add command code with name if known
-        const char *cmdName = diameter_cmd_name(cmdCode);
-        if (cmdName) {
-            char cmdStr[80];
-            snprintf(cmdStr, sizeof(cmdStr), "%s-%s (%u)", cmdName, reqAns, cmdCode);
-            arkime_field_string_add(cmdCodeField, session, cmdStr, -1, TRUE);
-        } else {
-            char cmdStr[32];
-            snprintf(cmdStr, sizeof(cmdStr), "%s (%u)", reqAns, cmdCode);
-            arkime_field_string_add(cmdCodeField, session, cmdStr, -1, TRUE);
-        }
-
-        // Add application ID with name if known
-        const char *appName = diameter_app_name(appId);
-        if (appName) {
-            char appStr[64];
-            snprintf(appStr, sizeof(appStr), "%s (%u)", appName, appId);
-            arkime_field_string_add(appIdField, session, appStr, -1, TRUE);
-        } else {
-            char appStr[16];
-            snprintf(appStr, sizeof(appStr), "%u", appId);
-            arkime_field_string_add(appIdField, session, appStr, -1, TRUE);
-        }
-
-        // Parse AVPs (remaining bytes in message)
-        if (msgLen > 20) {
-            diameter_parse_avps(session, msg + 20, msgLen - 20);
-        }
+        diameter_decode_message(session, msg, msgLen);
 
         arkime_parser_buf_del(pb, which, msgLen);
     }
 
+    return 0;
+}
+
+/******************************************************************************/
+// SCTP is message oriented: each invocation delivers a fully reassembled
+// diameter message, so we don't need the TCP-style framing buffer.
+LOCAL int diameter_sctp_parser(ArkimeSession_t *session, void *UNUSED(uw), const uint8_t *data, int remaining, int UNUSED(which))
+{
+    if (remaining < 20)
+        return 0;
+
+    if (data[0] != 1)
+        return ARKIME_PARSER_UNREGISTER;
+
+    uint32_t msgLen = (data[1] << 16) | (data[2] << 8) | data[3];
+
+    if (msgLen < 20 || (int)msgLen > remaining)
+        return ARKIME_PARSER_UNREGISTER;
+
+    diameter_decode_message(session, data, msgLen);
     return 0;
 }
 
@@ -311,8 +340,7 @@ LOCAL void diameter_sctp_classify(ArkimeSession_t *session, const uint8_t *data,
         return;
 
     arkime_session_add_protocol(session, "diameter");
-    ArkimeParserBuf_t *pb = arkime_parser_buf_create();
-    arkime_parsers_register(session, diameter_tcp_parser, pb, arkime_parser_buf_session_free);
+    arkime_parsers_register(session, diameter_sctp_parser, NULL, NULL);
 }
 
 /******************************************************************************/
