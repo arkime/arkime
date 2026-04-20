@@ -62,7 +62,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #3878 Add JWT decoding support for header auth mode
   - #3877 Add ESIndices codec column
   - #3891 Improve tcp reassembly display when packets are retransmitted
-  - Add elasticsearchSigV4* and usersElasticsearchSigV4* settings so the viewer
+  - #3901 Add elasticsearchSigV4* and usersElasticsearchSigV4* settings so the viewer
 
 6.1.1 2026/04/06
 ## BREAKING
