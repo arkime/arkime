@@ -7,6 +7,7 @@
  */
 'use strict';
 const { Client } = require('@elastic/elasticsearch');
+const createSigV4Connection = require('./sigV4Connection');
 const fs = require('fs');
 const util = require('util');
 const cryptoLib = require('crypto');
@@ -1880,7 +1881,16 @@ class UserESImplementation {
       ssl: esSSLOptions
     };
 
-    if (options.apiKey) {
+    if (options.sigV4Credentials) {
+      // SigV4 signing via a credentials provider instance constructed and
+      // initialize()'d by the caller (e.g. viewer/db.js). Caller is
+      // responsible for credential lifecycle; we just sign outbound.
+      esOptions.Connection = createSigV4Connection(
+        options.sigV4Credentials,
+        options.sigV4Region,
+        options.sigV4Service || 'es'
+      );
+    } else if (options.apiKey) {
       esOptions.auth = {
         apiKey: options.apiKey
       };

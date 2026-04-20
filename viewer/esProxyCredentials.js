@@ -53,6 +53,16 @@ class EsProxyCredentials {
   }
 
   // --------------------------------------------------------------------------
+  // Synchronous read of cached credentials. Returns null if initialize() has
+  // not yet completed. Intended for hot paths that cannot await (e.g. the
+  // @elastic/elasticsearch Connection.buildRequestObject hook). Callers must
+  // await initialize() during startup; the background refresh timer keeps
+  // #credentials fresh thereafter.
+  getCachedCredentials () {
+    return this.#credentials;
+  }
+
+  // --------------------------------------------------------------------------
   async initialize () {
     console.log(`esProxyCredentials: initializing with source=${this.#source}`);
     await this.#fetchCredentials();

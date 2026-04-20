@@ -18,6 +18,8 @@ const ArkimeUtil = require('../common/arkimeUtil');
 const { LRUCache } = require('lru-cache');
 const DbESImpl = require('./db.es');
 const DbSQLiteImpl = require('./db.sqlite');
+const EsProxyCredentials = require('./esProxyCredentials');
+const createSigV4Connection = require('../common/sigV4Connection');
 
 const cache10 = new LRUCache({ max: 1000, ttl: 1000 * 10 });
 const cache60 = new LRUCache({ max: 1000, ttl: 1000 * 60 });
@@ -94,6 +96,28 @@ Db.initialize = async (info) => {
     }
   }
 
+  // SigV4 setup for AWS Managed OpenSearch. When enabled, the credentials
+  // provider is built here and initialized before the Client so the
+  // Connection's synchronous buildRequestObject hook always has creds to
+  // sign with. The same provider instance is handed to User.initialize
+  // below so users-ES shares a credential refresh cycle when it targets
+  // the same cluster.
+  let sigV4Credentials = null;
+  if (info.esSigV4 === true || info.esSigV4 === 'true') {
+    sigV4Credentials = new EsProxyCredentials({
+      credentialUrl: info.esSigV4CredentialUrl,
+      credentialCert: info.esSigV4CredentialCert,
+      credentialKey: info.esSigV4CredentialKey,
+      roleArn: info.esSigV4RoleArn,
+      accessKeyId: info.esSigV4AccessKeyId,
+      secretAccessKey: info.esSigV4SecretAccessKey,
+      sessionToken: info.esSigV4SessionToken,
+      roleSessionName: 'arkime-viewer'
+    });
+    await sigV4Credentials.initialize();
+    internals.sigV4Credentials = sigV4Credentials;
+  }
+
   const esClientOptions = {
     node: internals.info.host,
     maxRetries: 2,
@@ -101,7 +125,13 @@ Db.initialize = async (info) => {
     ssl: esSSLOptions
   };
 
-  if (info.esApiKey) {
+  if (sigV4Credentials) {
+    esClientOptions.Connection = createSigV4Connection(
+      sigV4Credentials,
+      info.esSigV4Region,
+      info.esSigV4Service || 'es'
+    );
+  } else if (info.esApiKey) {
     esClientOptions.auth = {
       apiKey: info.esApiKey
     };
@@ -119,6 +149,33 @@ Db.initialize = async (info) => {
 
   internals.client7 = new Client(esClientOptions);
 
+  // Decide what credentials the users-ES client should use. If
+  // usersElasticsearchSigV4 was set explicitly, build a separate
+  // credentials provider from usersEsSigV4* keys. Otherwise, when users-ES
+  // shares the primary cluster (no usersHost), reuse the primary provider.
+  let usersSigV4Credentials = null;
+  let usersSigV4Region;
+  let usersSigV4Service;
+  if (info.usersEsSigV4 === true || info.usersEsSigV4 === 'true') {
+    usersSigV4Credentials = new EsProxyCredentials({
+      credentialUrl: info.usersEsSigV4CredentialUrl,
+      credentialCert: info.usersEsSigV4CredentialCert,
+      credentialKey: info.usersEsSigV4CredentialKey,
+      roleArn: info.usersEsSigV4RoleArn,
+      accessKeyId: info.usersEsSigV4AccessKeyId,
+      secretAccessKey: info.usersEsSigV4SecretAccessKey,
+      sessionToken: info.usersEsSigV4SessionToken,
+      roleSessionName: 'arkime-viewer-users'
+    });
+    await usersSigV4Credentials.initialize();
+    usersSigV4Region = info.usersEsSigV4Region;
+    usersSigV4Service = info.usersEsSigV4Service || 'es';
+  } else if (!info.usersHost && sigV4Credentials) {
+    usersSigV4Credentials = sigV4Credentials;
+    usersSigV4Region = info.esSigV4Region;
+    usersSigV4Service = info.esSigV4Service || 'es';
+  }
+
   if (info.usersHost) {
     User.initialize({
       insecure: info.insecure,
@@ -130,6 +187,9 @@ Db.initialize = async (info) => {
       clientKeyPass: info.esClientKeyPass,
       apiKey: info.usersEsApiKey,
       basicAuth: info.usersEsBasicAuth,
+      sigV4Credentials: usersSigV4Credentials,
+      sigV4Region: usersSigV4Region,
+      sigV4Service: usersSigV4Service,
       prefix: internals.usersPrefix,
       getCurrentUserCB: info.getCurrentUserCB,
       noUsersCheck: info.noUsersCheck
@@ -145,6 +205,9 @@ Db.initialize = async (info) => {
       clientKeyPass: info.esClientKeyPass,
       apiKey: info.esApiKey,
       basicAuth: info.esBasicAuth,
+      sigV4Credentials: usersSigV4Credentials,
+      sigV4Region: usersSigV4Region,
+      sigV4Service: usersSigV4Service,
       prefix: internals.prefix,
       readOnly: internals.multiES,
       getCurrentUserCB: info.getCurrentUserCB,
