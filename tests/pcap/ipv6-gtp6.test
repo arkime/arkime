@@ -1,333 +1,333 @@
 {
-   "sessions3" : [
-      {
-         "body" : {
-            "@timestamp" : "SET",
-            "client" : {
-               "bytes" : 332
-            },
-            "destination" : {
-               "bytes" : 0,
-               "ip" : "1111:2222:3333:4444:5555:8888:a8ac:7bc0",
-               "mac" : [
-                  "2c:21:72:00:00:00"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 0,
-               "port" : 57030
-            },
-            "dns" : [
-               {
-                  "ASN" : [
-                     "---",
-                     "---",
-                     "---",
-                     "---",
-                     "---",
-                     "---",
-                     "---",
-                     "---",
-                     "---",
-                     "---",
-                     "---",
-                     "---",
-                     "---",
-                     "---",
-                     "---"
-                  ],
-                  "GEO" : [
-                     "---",
-                     "---",
-                     "---",
-                     "---",
-                     "---",
-                     "---",
-                     "---",
-                     "---",
-                     "---",
-                     "---",
-                     "---",
-                     "---",
-                     "---",
-                     "---",
-                     "---"
-                  ],
-                  "RIR" : [
-                     "",
-                     "",
-                     "",
-                     "",
-                     "",
-                     "",
-                     "",
-                     "",
-                     "",
-                     "",
-                     "",
-                     "",
-                     "",
-                     "",
-                     ""
-                  ],
-                  "answers" : [
-                     {
-                        "class" : "IN",
-                        "cname" : "xxxxx7.x.xxxxxx8.com",
-                        "name" : "xxxxxx5.xxxxxxx6.com",
-                        "ttl" : 7,
-                        "type" : "CNAME"
-                     },
-                     {
-                        "class" : "IN",
-                        "cname" : "xxxxxxx9.xxxxxx8.com",
-                        "name" : "xxxxx7.x.xxxxxx8.com",
-                        "ttl" : 2863,
-                        "type" : "CNAME"
-                     },
-                     {
-                        "class" : "IN",
-                        "ip" : "10.1.9.182",
-                        "name" : "xxxxxxx9.xxxxxx8.com",
-                        "ttl" : 37,
-                        "type" : "A"
-                     },
-                     {
-                        "class" : "IN",
-                        "ip" : "10.1.9.134",
-                        "name" : "xxxxxxx9.xxxxxx8.com",
-                        "ttl" : 37,
-                        "type" : "A"
-                     },
-                     {
-                        "class" : "IN",
-                        "ip" : "10.1.10.182",
-                        "name" : "xxxxxxx9.xxxxxx8.com",
-                        "ttl" : 37,
-                        "type" : "A"
-                     },
-                     {
-                        "class" : "IN",
-                        "ip" : "10.1.224.70",
-                        "name" : "xxxxxxx9.xxxxxx8.com",
-                        "ttl" : 37,
-                        "type" : "A"
-                     },
-                     {
-                        "class" : "IN",
-                        "ip" : "10.1.10.150",
-                        "name" : "xxxxxxx9.xxxxxx8.com",
-                        "ttl" : 37,
-                        "type" : "A"
-                     },
-                     {
-                        "class" : "IN",
-                        "ip" : "10.1.224.102",
-                        "name" : "xxxxxxx9.xxxxxx8.com",
-                        "ttl" : 37,
-                        "type" : "A"
-                     },
-                     {
-                        "class" : "IN",
-                        "ip" : "10.1.233.182",
-                        "name" : "xxxxxxx9.xxxxxx8.com",
-                        "ttl" : 37,
-                        "type" : "A"
-                     },
-                     {
-                        "class" : "IN",
-                        "ip" : "10.1.233.150",
-                        "name" : "xxxxxxx9.xxxxxx8.com",
-                        "ttl" : 37,
-                        "type" : "A"
-                     },
-                     {
-                        "class" : "IN",
-                        "ip" : "10.1.224.118",
-                        "name" : "xxxxxxx9.xxxxxx8.com",
-                        "ttl" : 37,
-                        "type" : "A"
-                     },
-                     {
-                        "class" : "IN",
-                        "ip" : "10.1.233.134",
-                        "name" : "xxxxxxx9.xxxxxx8.com",
-                        "ttl" : 37,
-                        "type" : "A"
-                     },
-                     {
-                        "class" : "IN",
-                        "ip" : "10.1.10.166",
-                        "name" : "xxxxxxx9.xxxxxx8.com",
-                        "ttl" : 37,
-                        "type" : "A"
-                     },
-                     {
-                        "class" : "IN",
-                        "ip" : "10.1.9.166",
-                        "name" : "xxxxxxx9.xxxxxx8.com",
-                        "ttl" : 37,
-                        "type" : "A"
-                     },
-                     {
-                        "class" : "IN",
-                        "ip" : "10.1.10.134",
-                        "name" : "xxxxxxx9.xxxxxx8.com",
-                        "ttl" : 37,
-                        "type" : "A"
-                     },
-                     {
-                        "class" : "IN",
-                        "ip" : "10.1.224.86",
-                        "name" : "xxxxxxx9.xxxxxx8.com",
-                        "ttl" : 37,
-                        "type" : "A"
-                     },
-                     {
-                        "class" : "IN",
-                        "ip" : "10.1.9.150",
-                        "name" : "xxxxxxx9.xxxxxx8.com",
-                        "ttl" : 37,
-                        "type" : "A"
-                     }
-                  ],
-                  "answersCnt" : 17,
-                  "headerFlags" : [
-                     "RA",
-                     "RD"
-                  ],
-                  "host" : [
-                     "xxxxx7.x.xxxxxx8.com",
-                     "xxxxxx5.xxxxxxx6.com",
-                     "xxxxxxx9.xxxxxx8.com"
-                  ],
-                  "hostCnt" : 3,
-                  "ip" : [
-                     "10.1.10.134",
-                     "10.1.10.150",
-                     "10.1.10.166",
-                     "10.1.10.182",
-                     "10.1.224.102",
-                     "10.1.224.118",
-                     "10.1.224.70",
-                     "10.1.224.86",
-                     "10.1.233.134",
-                     "10.1.233.150",
-                     "10.1.233.182",
-                     "10.1.9.134",
-                     "10.1.9.150",
-                     "10.1.9.166",
-                     "10.1.9.182"
-                  ],
-                  "ipCnt" : 15,
-                  "opcode" : "QUERY",
-                  "qc" : "IN",
-                  "qt" : "A",
-                  "queryHost" : "xxxxxx5.xxxxxxx6.com",
-                  "status" : "NOERROR"
-               }
-            ],
-            "dnsCnt" : 1,
-            "dot1q" : {
-               "id" : [
-                  2048
-               ],
-               "idCnt" : 1
-            },
-            "dstOui" : [
-               "Juniper Networks"
-            ],
-            "dstOuiCnt" : 1,
-            "dstOuterASN" : [
-               "---"
-            ],
-            "dstOuterGEO" : [
-               "---"
-            ],
-            "dstOuterIp" : [
-               "1111:2222:3333:4444:5555:6666::"
-            ],
-            "dstOuterIpCnt" : 1,
-            "dstOuterRIR" : [
-               ""
-            ],
-            "ethertype" : 34525,
-            "fileId" : [],
-            "firstPacket" : 1513078266494,
-            "ipProtocol" : 17,
-            "lastPacket" : 1513078266494,
-            "length" : 0,
-            "network" : {
-               "bytes" : 454,
-               "community_id" : "1:mNf0yqDrqQxOfOhpjw7hkxjMLNA=",
-               "packets" : 1,
-               "vlan" : {
-                  "id" : [
-                     2048
-                  ],
-                  "id-cnt" : 1
-               }
-            },
-            "node" : "test",
-            "packetLen" : [
-               470
-            ],
-            "packetPos" : [
-               24
-            ],
-            "packetRange" : {
-               "gte" : 1513078266494,
-               "lte" : 1513078266494
-            },
-            "protocol" : [
-               "dns",
-               "gtp",
-               "udp"
-            ],
-            "protocolCnt" : 3,
-            "segmentCnt" : 1,
-            "server" : {
-               "bytes" : 0
-            },
-            "source" : {
-               "bytes" : 454,
-               "ip" : "1111:2222:3333:4444:5555:7777::",
-               "mac" : [
-                  "00:25:ba:00:00:00"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 1,
-               "port" : 53
-            },
-            "srcOui" : [
-               "Alcatel-Lucent IPD"
-            ],
-            "srcOuiCnt" : 1,
-            "srcOuterASN" : [
-               "---"
-            ],
-            "srcOuterGEO" : [
-               "---"
-            ],
-            "srcOuterIp" : [
-               "1111:2222:3333:4444:5555:6666:0:1"
-            ],
-            "srcOuterIpCnt" : 1,
-            "srcOuterRIR" : [
-               ""
-            ],
-            "srcPayload8" : "9d46818000010011",
-            "srcTTL" : [
-               242
-            ],
-            "srcTTLCnt" : 1,
-            "totDataBytes" : 332
-         },
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions3-171212"
-            }
-         }
-      }
-   ]
+ "sessions3" : [
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 332
+    },
+    "destination" : {
+     "bytes" : 0,
+     "ip" : "1111:2222:3333:4444:5555:8888:a8ac:7bc0",
+     "mac" : [
+      "2c:21:72:00:00:00"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 0,
+     "port" : 57030
+    },
+    "dns" : [
+     {
+      "ASN" : [
+       "---",
+       "---",
+       "---",
+       "---",
+       "---",
+       "---",
+       "---",
+       "---",
+       "---",
+       "---",
+       "---",
+       "---",
+       "---",
+       "---",
+       "---"
+      ],
+      "GEO" : [
+       "---",
+       "---",
+       "---",
+       "---",
+       "---",
+       "---",
+       "---",
+       "---",
+       "---",
+       "---",
+       "---",
+       "---",
+       "---",
+       "---",
+       "---"
+      ],
+      "RIR" : [
+       "",
+       "",
+       "",
+       "",
+       "",
+       "",
+       "",
+       "",
+       "",
+       "",
+       "",
+       "",
+       "",
+       "",
+       ""
+      ],
+      "answers" : [
+       {
+        "class" : "IN",
+        "cname" : "xxxxx7.x.xxxxxx8.com",
+        "name" : "xxxxxx5.xxxxxxx6.com",
+        "ttl" : 7,
+        "type" : "CNAME"
+       },
+       {
+        "class" : "IN",
+        "cname" : "xxxxxxx9.xxxxxx8.com",
+        "name" : "xxxxx7.x.xxxxxx8.com",
+        "ttl" : 2863,
+        "type" : "CNAME"
+       },
+       {
+        "class" : "IN",
+        "ip" : "10.1.9.182",
+        "name" : "xxxxxxx9.xxxxxx8.com",
+        "ttl" : 37,
+        "type" : "A"
+       },
+       {
+        "class" : "IN",
+        "ip" : "10.1.9.134",
+        "name" : "xxxxxxx9.xxxxxx8.com",
+        "ttl" : 37,
+        "type" : "A"
+       },
+       {
+        "class" : "IN",
+        "ip" : "10.1.10.182",
+        "name" : "xxxxxxx9.xxxxxx8.com",
+        "ttl" : 37,
+        "type" : "A"
+       },
+       {
+        "class" : "IN",
+        "ip" : "10.1.224.70",
+        "name" : "xxxxxxx9.xxxxxx8.com",
+        "ttl" : 37,
+        "type" : "A"
+       },
+       {
+        "class" : "IN",
+        "ip" : "10.1.10.150",
+        "name" : "xxxxxxx9.xxxxxx8.com",
+        "ttl" : 37,
+        "type" : "A"
+       },
+       {
+        "class" : "IN",
+        "ip" : "10.1.224.102",
+        "name" : "xxxxxxx9.xxxxxx8.com",
+        "ttl" : 37,
+        "type" : "A"
+       },
+       {
+        "class" : "IN",
+        "ip" : "10.1.233.182",
+        "name" : "xxxxxxx9.xxxxxx8.com",
+        "ttl" : 37,
+        "type" : "A"
+       },
+       {
+        "class" : "IN",
+        "ip" : "10.1.233.150",
+        "name" : "xxxxxxx9.xxxxxx8.com",
+        "ttl" : 37,
+        "type" : "A"
+       },
+       {
+        "class" : "IN",
+        "ip" : "10.1.224.118",
+        "name" : "xxxxxxx9.xxxxxx8.com",
+        "ttl" : 37,
+        "type" : "A"
+       },
+       {
+        "class" : "IN",
+        "ip" : "10.1.233.134",
+        "name" : "xxxxxxx9.xxxxxx8.com",
+        "ttl" : 37,
+        "type" : "A"
+       },
+       {
+        "class" : "IN",
+        "ip" : "10.1.10.166",
+        "name" : "xxxxxxx9.xxxxxx8.com",
+        "ttl" : 37,
+        "type" : "A"
+       },
+       {
+        "class" : "IN",
+        "ip" : "10.1.9.166",
+        "name" : "xxxxxxx9.xxxxxx8.com",
+        "ttl" : 37,
+        "type" : "A"
+       },
+       {
+        "class" : "IN",
+        "ip" : "10.1.10.134",
+        "name" : "xxxxxxx9.xxxxxx8.com",
+        "ttl" : 37,
+        "type" : "A"
+       },
+       {
+        "class" : "IN",
+        "ip" : "10.1.224.86",
+        "name" : "xxxxxxx9.xxxxxx8.com",
+        "ttl" : 37,
+        "type" : "A"
+       },
+       {
+        "class" : "IN",
+        "ip" : "10.1.9.150",
+        "name" : "xxxxxxx9.xxxxxx8.com",
+        "ttl" : 37,
+        "type" : "A"
+       }
+      ],
+      "answersCnt" : 17,
+      "headerFlags" : [
+       "RA",
+       "RD"
+      ],
+      "host" : [
+       "xxxxx7.x.xxxxxx8.com",
+       "xxxxxx5.xxxxxxx6.com",
+       "xxxxxxx9.xxxxxx8.com"
+      ],
+      "hostCnt" : 3,
+      "ip" : [
+       "10.1.10.134",
+       "10.1.10.150",
+       "10.1.10.166",
+       "10.1.10.182",
+       "10.1.224.102",
+       "10.1.224.118",
+       "10.1.224.70",
+       "10.1.224.86",
+       "10.1.233.134",
+       "10.1.233.150",
+       "10.1.233.182",
+       "10.1.9.134",
+       "10.1.9.150",
+       "10.1.9.166",
+       "10.1.9.182"
+      ],
+      "ipCnt" : 15,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "xxxxxx5.xxxxxxx6.com",
+      "status" : "NOERROR"
+     }
+    ],
+    "dnsCnt" : 1,
+    "dot1q" : {
+     "id" : [
+      2048
+     ],
+     "idCnt" : 1
+    },
+    "dstOui" : [
+     "Juniper Networks"
+    ],
+    "dstOuiCnt" : 1,
+    "dstOuterASN" : [
+     "---"
+    ],
+    "dstOuterGEO" : [
+     "---"
+    ],
+    "dstOuterIp" : [
+     "1111:2222:3333:4444:5555:6666::"
+    ],
+    "dstOuterIpCnt" : 1,
+    "dstOuterRIR" : [
+     ""
+    ],
+    "ethertype" : 34525,
+    "fileId" : [],
+    "firstPacket" : 1513078266494,
+    "ipProtocol" : 17,
+    "lastPacket" : 1513078266494,
+    "length" : 0,
+    "network" : {
+     "bytes" : 454,
+     "community_id" : "1:mNf0yqDrqQxOfOhpjw7hkxjMLNA=",
+     "packets" : 1,
+     "vlan" : {
+      "id" : [
+       2048
+      ],
+      "id-cnt" : 1
+     }
+    },
+    "node" : "test",
+    "packetLen" : [
+     470
+    ],
+    "packetPos" : [
+     24
+    ],
+    "packetRange" : {
+     "gte" : 1513078266494,
+     "lte" : 1513078266494
+    },
+    "protocol" : [
+     "dns",
+     "gtp",
+     "udp"
+    ],
+    "protocolCnt" : 3,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 0
+    },
+    "source" : {
+     "bytes" : 454,
+     "ip" : "1111:2222:3333:4444:5555:7777::",
+     "mac" : [
+      "00:25:ba:00:00:00"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 1,
+     "port" : 53
+    },
+    "srcOui" : [
+     "Alcatel-Lucent IPD"
+    ],
+    "srcOuiCnt" : 1,
+    "srcOuterASN" : [
+     "---"
+    ],
+    "srcOuterGEO" : [
+     "---"
+    ],
+    "srcOuterIp" : [
+     "1111:2222:3333:4444:5555:6666:0:1"
+    ],
+    "srcOuterIpCnt" : 1,
+    "srcOuterRIR" : [
+     ""
+    ],
+    "srcPayload8" : "9d46818000010011",
+    "srcTTL" : [
+     242
+    ],
+    "srcTTLCnt" : 1,
+    "totDataBytes" : 332
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-17m12"
+    }
+   }
+  }
+ ]
 }
 

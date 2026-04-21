@@ -83,7 +83,7 @@
    },
    "header" : {
     "index" : {
-     "_index" : "tests_sessions3-000303"
+     "_index" : "tests_sessions3-00m03"
     }
    }
   },
@@ -170,7 +170,7 @@
    },
    "header" : {
     "index" : {
-     "_index" : "tests_sessions3-000303"
+     "_index" : "tests_sessions3-00m03"
     }
    }
   },
@@ -253,7 +253,7 @@
    },
    "header" : {
     "index" : {
-     "_index" : "tests_sessions3-000303"
+     "_index" : "tests_sessions3-00m03"
     }
    }
   },
@@ -324,7 +324,7 @@
    },
    "header" : {
     "index" : {
-     "_index" : "tests_sessions3-000303"
+     "_index" : "tests_sessions3-00m03"
     }
    }
   },
@@ -407,7 +407,7 @@
    },
    "header" : {
     "index" : {
-     "_index" : "tests_sessions3-000303"
+     "_index" : "tests_sessions3-00m03"
     }
    }
   },
@@ -515,7 +515,7 @@
    },
    "header" : {
     "index" : {
-     "_index" : "tests_sessions3-000303"
+     "_index" : "tests_sessions3-00m03"
     }
    }
   },
@@ -584,7 +584,7 @@
    },
    "header" : {
     "index" : {
-     "_index" : "tests_sessions3-000303"
+     "_index" : "tests_sessions3-00m03"
     }
    }
   },
@@ -647,7 +647,7 @@
    },
    "header" : {
     "index" : {
-     "_index" : "tests_sessions3-000303"
+     "_index" : "tests_sessions3-00m03"
     }
    }
   },
@@ -794,7 +794,7 @@
    },
    "header" : {
     "index" : {
-     "_index" : "tests_sessions3-000303"
+     "_index" : "tests_sessions3-00m03"
     }
    }
   },
@@ -870,7 +870,7 @@
    },
    "header" : {
     "index" : {
-     "_index" : "tests_sessions3-000303"
+     "_index" : "tests_sessions3-00m03"
     }
    }
   }

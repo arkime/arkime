@@ -129,7 +129,7 @@
    },
    "header" : {
     "index" : {
-     "_index" : "tests_sessions3-130822"
+     "_index" : "tests_sessions3-13m08"
     }
    }
   },
@@ -349,7 +349,7 @@
    },
    "header" : {
     "index" : {
-     "_index" : "tests_sessions3-130822"
+     "_index" : "tests_sessions3-13m08"
     }
    }
   },
@@ -573,7 +573,7 @@
    },
    "header" : {
     "index" : {
-     "_index" : "tests_sessions3-130822"
+     "_index" : "tests_sessions3-13m08"
     }
    }
   },
@@ -724,7 +724,7 @@
    },
    "header" : {
     "index" : {
-     "_index" : "tests_sessions3-130822"
+     "_index" : "tests_sessions3-13m08"
     }
    }
   },
@@ -875,7 +875,7 @@
    },
    "header" : {
     "index" : {
-     "_index" : "tests_sessions3-130822"
+     "_index" : "tests_sessions3-13m08"
     }
    }
   }
