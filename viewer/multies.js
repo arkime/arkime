@@ -8,6 +8,32 @@
 
 'use strict';
 
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('=== UNHANDLED REJECTION ===');
+  console.error('Promise:', promise);
+  if (reason instanceof Error) {
+    console.error('Reason:', reason.message);
+    console.error('Stack:', reason.stack);
+    if (reason.meta) { try { console.error('Meta:', JSON.stringify(reason.meta, null, 2)); } catch (e) {} }
+  } else {
+    console.error('Reason:', reason);
+  }
+  console.error('===========================');
+});
+process.on('uncaughtException', (err, origin) => {
+  console.error('=== UNCAUGHT EXCEPTION ===');
+  console.error('Origin:', origin);
+  console.error('Error:', err && err.message);
+  console.error('Stack:', err && err.stack);
+  console.error('==========================');
+});
+process.on('warning', (w) => {
+  console.error('=== NODE WARNING ===');
+  console.error(w.name, w.message);
+  console.error(w.stack);
+  console.error('====================');
+});
+
 /// / Modules
 /// ///////////////////////////////////////////////////////////////////////////////
 const Config = require('./config.js');
