@@ -185,8 +185,8 @@ jobs:
             sleep 1
           done
           curl -fsS http://localhost:9200/ || (cat /tmp/arkimedb.log; exit 1)
-          (cd tests ; G_SLICE=always-malloc ./tests.pl --viewer)
           head /tmp/arkimedb.log
+          (cd tests ; G_SLICE=always-malloc ./tests.pl --viewer)
 
       - name: otherdb viewer test
         if: ${{ matrix.otherdbtest == 'true' }}
