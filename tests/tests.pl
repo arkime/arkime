@@ -16,7 +16,7 @@ use TAP::Harness;
 use ArkimeTest;
 use Socket6 qw(AF_INET6 inet_pton);
 
-$main::userAgent = LWP::UserAgent->new(timeout => 20);
+$main::userAgent = LWP::UserAgent->new(timeout => 20, keep_alive => 10);
 
 my $ELASTICSEARCH = $ENV{ELASTICSEARCH} = "http://127.0.0.1:9200";
 my $USERSELASTICSEARCH = $ENV{USERSELASTICSEARCH} || $ELASTICSEARCH;
@@ -321,6 +321,21 @@ sub doReip {
     close($out);
 }
 ################################################################################
+sub doShutdown {
+    $main::userAgent->post("http://localhost:8123/regressionTests/shutdown");
+    $main::userAgent->post("http://localhost:8124/regressionTests/shutdown");
+    $main::userAgent->post("http://localhost:8125/regressionTests/shutdown");
+    $main::userAgent->post("http://localhost:8126/regressionTests/shutdown");
+    $main::userAgent->post("http://localhost:8127/regressionTests/shutdown");
+    $main::userAgent->post("http://localhost:8200/regressionTests/shutdown");
+    $main::userAgent->post("http://localhost:8081/regressionTests/shutdown");
+    $main::userAgent->post("http://localhost:8008/regressionTests/shutdown");
+    $main::userAgent->post("http://localhost:3218/regressionTests/shutdown");
+    $main::userAgent->post("http://localhost:7200/regressionTests/shutdown");
+    if (my $rs2 = IO::Socket::INET->new(PeerAddr => "127.0.0.1", PeerPort => 7379, Proto => "tcp")) { $rs2->autoflush(1); print $rs2 "*1\r\n\$8\r\nSHUTDOWN\r\n"; my $resp = <$rs2>; $rs2->close(); }
+    eval { $main::userAgent->get("http://localhost:4566/_shutdown"); };
+}
+
 sub doViewer {
 my ($cmd) = @_;
 
@@ -450,7 +465,7 @@ my ($cmd) = @_;
     $main::userAgent->get("$ELASTICSEARCH/_refresh");
     sleep 1;
 
-    my $harness = TAP::Harness->new();
+    my $harness = TAP::Harness->new({ verbosity => ($ENV{HARNESS_VERBOSE} ? 1 : 0) });
 
     my @tests = @ARGV;
     @tests = glob ("*.t") if ($#tests == -1);
@@ -458,18 +473,7 @@ my ($cmd) = @_;
 
 # Cleanup
     if ($cmd ne "--viewernostart") {
-        $main::userAgent->post("http://localhost:8123/regressionTests/shutdown");
-        $main::userAgent->post("http://localhost:8124/regressionTests/shutdown");
-        $main::userAgent->post("http://localhost:8125/regressionTests/shutdown");
-        $main::userAgent->post("http://localhost:8126/regressionTests/shutdown");
-        $main::userAgent->post("http://localhost:8127/regressionTests/shutdown");
-        $main::userAgent->post("http://localhost:8200/regressionTests/shutdown");
-        $main::userAgent->post("http://localhost:8081/regressionTests/shutdown");
-        $main::userAgent->post("http://localhost:8008/regressionTests/shutdown");
-        $main::userAgent->post("http://localhost:3218/regressionTests/shutdown");
-        $main::userAgent->post("http://localhost:7200/regressionTests/shutdown");
-        if (my $rs2 = IO::Socket::INET->new(PeerAddr => "127.0.0.1", PeerPort => 7379, Proto => "tcp")) { $rs2->autoflush(1); print $rs2 "*1\r\n\$8\r\nSHUTDOWN\r\n"; my $resp = <$rs2>; $rs2->close(); }
-        eval { $main::userAgent->get("http://localhost:4566/_shutdown"); };
+        doShutdown();
     }
 
 # Coverage
@@ -492,6 +496,9 @@ $main::cmd = "--capture";
 while (scalar (@ARGV) > 0) {
     if ($ARGV[0] eq "--debug") {
         $main::debug = 1;
+        shift @ARGV;
+    } elsif ($ARGV[0] eq "--verbose") {
+        $ENV{HARNESS_VERBOSE} = 1;
         shift @ARGV;
     } elsif ($ARGV[0] eq "--elasticsearch") {
         shift @ARGV;
@@ -528,7 +535,7 @@ while (scalar (@ARGV) > 0) {
     } elsif ($ARGV[0] eq "--copy") {
         $main::copy = "--copy";
         shift @ARGV;
-    } elsif ($ARGV[0] =~ /^--(viewer|api-full|fix|make|capture|viewernostart|viewerstart|api-fast|viewerhang|viewerload|help|reip|fuzz|fuzz2pcap|fuzz2pcapAll)$/) {
+    } elsif ($ARGV[0] =~ /^--(viewer|api-full|fix|make|capture|viewernostart|viewerstart|api-fast|viewerhang|viewerload|shutdown|help|reip|fuzz|fuzz2pcap|fuzz2pcapAll)$/) {
         $main::cmd = $ARGV[0];
         # Map new aliases to existing commands
         $main::cmd = "--viewer" if ($main::cmd eq "--api-full");
@@ -558,6 +565,8 @@ if ($main::cmd eq "--fix") {
     doFuzz2Pcap();
 } elsif ($main::cmd eq "--fuzz2pcapAll") {
     doFuzz2PcapAll();
+} elsif ($main::cmd eq "--shutdown") {
+    doShutdown();
 } elsif ($main::cmd eq "--help") {
     print "$ARGV[0] [OPTIONS] [COMMAND] <pcap> files\n";
     print "Options:\n";
@@ -577,6 +586,7 @@ if ($main::cmd eq "--fix") {
     print "  --fuzz [fuzzoptions]   Run fuzzloch\n";
     print "  --fuzz2pcap            Convert list of fuzzloch crash file into matching pcap file\n";
     print "  --fuzz2pcapAll <f> <g> Convert list of fuzzloch crash file into all.pcap file\n";
+    print "  --shutdown             Send shutdown to all running test services (viewers, wise, parliament, cont3xt, multies, redis, s3)\n";
     print " [default] [pcap files]  Run each .pcap (default pcap/*.pcap) file thru ../capture/capture and compare to .test file\n";
 } elsif ($main::cmd =~ "^--viewer") {
     doGeo();
