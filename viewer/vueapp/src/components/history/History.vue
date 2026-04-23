@@ -355,7 +355,17 @@ SPDX-License-Identifier: Apache-2.0
                   <div
                     class="mt-3"
                     v-if="item.esQuery">
-                    <h5>{{ $t('history.esQuery') }}</h5>
+                    <h5>
+                      {{ $t('history.esQuery') }}
+                      <button
+                        type="button"
+                        class="btn btn-xs btn-theme-secondary ms-2"
+                        :title="$t('common.copyValueTip')"
+                        @click="copyValue(item.esQuery)">
+                        <span class="fa fa-clipboard" />&nbsp;
+                        {{ $t('common.copy') }}
+                      </button>
+                    </h5>
                     <pre class="me-3 ms-3">{{ JSON.parse(item.esQuery) }}</pre>
                   </div>
                 </div>
@@ -507,6 +517,13 @@ export default {
   methods: {
     readableTime,
     timezoneDateString,
+    copyValue (val) {
+      if (!navigator.clipboard) {
+        alert(this.$t('common.clipboardNotSupported', { value: val }));
+        return;
+      }
+      navigator.clipboard.writeText(val);
+    },
     /* exposed page functions ------------------------------------ */
     toggleSeeAll () {
       this.filters.userId = this.seeAll ? '' : this.user.userId;
