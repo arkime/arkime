@@ -148,7 +148,7 @@
    },
    "header" : {
     "index" : {
-     "_index" : "tests_sessions3-150201"
+     "_index" : "tests_sessions3-15m02"
     }
    }
   },
@@ -386,7 +386,7 @@
    },
    "header" : {
     "index" : {
-     "_index" : "tests_sessions3-150201"
+     "_index" : "tests_sessions3-15m02"
     }
    }
   }

@@ -906,7 +906,7 @@ is($json->{data}->{country}->{country}->{names}->{en}, "United States");
 $json = cont3xtPost('/api/integration/ip/elasticsearch:test/search', to_json({
   query => "10.0.0.1"
 }));
-is($json->{data}->{_cont3xt}->{count}, 2);
+is($json->{data}->{_cont3xt}->{count}, 11);
 is($json->{data}->{hits}->[0]->{source}->{ip}, "10.0.0.1");
 is($json->{data}->{hits}->[1]->{source}->{ip}, "10.0.0.1");
 

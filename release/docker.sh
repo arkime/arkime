@@ -69,7 +69,11 @@ run_capture() {
 # Function to kill all background processes on script exit
 cleanup() {
     echo "Stopping all programs..."
-    pkill -P $$  # Kill all child processes of the current script
+    # Send SIGTERM to every process in this script's process group so
+    # grandchildren (e.g. node/capture spawned from subshells in run_forever)
+    # are stopped, not just direct children.
+    trap - SIGINT SIGTERM
+    kill -TERM 0 2>/dev/null
     exit 0
 }
 # Trap SIGINT (Ctrl+C) and call the cleanup function

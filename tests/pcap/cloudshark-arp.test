@@ -1,241 +1,241 @@
 {
-   "sessions3" : [
-      {
-         "body" : {
-            "@timestamp" : "SET",
-            "client" : {
-               "bytes" : 0
-            },
-            "destination" : {
-               "bytes" : 0,
-               "mac" : [
-                  "00:1a:6b:6c:0c:cc",
-                  "ff:ff:ff:ff:ff:ff"
-               ],
-               "mac-cnt" : 2,
-               "packets" : 0
-            },
-            "dstOui" : [
-               "Universal Global Scientific Industrial Co., Ltd."
-            ],
-            "dstOuiCnt" : 1,
-            "ethertype" : 2054,
-            "fileId" : [],
-            "firstPacket" : 1352595620652,
-            "ipProtocol" : 0,
-            "lastPacket" : 1352595620652,
-            "length" : 0,
-            "network" : {
-               "bytes" : 102,
-               "packets" : 2
-            },
-            "node" : "test",
-            "packetLen" : [
-               76,
-               58
-            ],
-            "packetPos" : [
-               24,
-               100
-            ],
-            "packetRange" : {
-               "gte" : 1352595620652,
-               "lte" : 1352595620652
-            },
-            "protocol" : [
-               "arp"
-            ],
-            "protocolCnt" : 1,
-            "segmentCnt" : 1,
-            "server" : {
-               "bytes" : 0
-            },
-            "source" : {
-               "bytes" : 102,
-               "mac" : [
-                  "00:1a:6b:6c:0c:cc",
-                  "00:1d:09:f0:92:ab"
-               ],
-               "mac-cnt" : 2,
-               "packets" : 2
-            },
-            "srcOui" : [
-               "Dell Inc.",
-               "Universal Global Scientific Industrial Co., Ltd."
-            ],
-            "srcOuiCnt" : 2,
-            "totDataBytes" : 0
-         },
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions3-121111"
-            }
-         }
-      },
-      {
-         "body" : {
-            "@timestamp" : "SET",
-            "client" : {
-               "bytes" : 64
-            },
-            "destination" : {
-               "bytes" : 98,
-               "ip" : "10.10.10.1",
-               "mac" : [
-                  "00:1d:09:f0:92:ab"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 1,
-               "port" : 0
-            },
-            "dstOui" : [
-               "Dell Inc."
-            ],
-            "dstOuiCnt" : 1,
-            "dstTTL" : [
-               64
-            ],
-            "dstTTLCnt" : 1,
-            "ethertype" : 2048,
-            "fileId" : [],
-            "firstPacket" : 1352595620652,
-            "icmp" : {
-               "code" : [
-                  0
-               ],
-               "type" : [
-                  0,
-                  8
-               ]
-            },
-            "ipProtocol" : 1,
-            "lastPacket" : 1352595620652,
-            "length" : 0,
-            "network" : {
-               "bytes" : 196,
-               "community_id" : "1:AkS9NH95WiqU1KG1Q6dF3s9Kjfc=",
-               "packets" : 2
-            },
-            "node" : "test",
-            "packetLen" : [
-               114,
-               114
-            ],
-            "packetPos" : [
-               158,
-               272
-            ],
-            "packetRange" : {
-               "gte" : 1352595620652,
-               "lte" : 1352595620652
-            },
-            "protocol" : [
-               "icmp"
-            ],
-            "protocolCnt" : 1,
-            "segmentCnt" : 1,
-            "server" : {
-               "bytes" : 64
-            },
-            "source" : {
-               "bytes" : 98,
-               "ip" : "10.10.10.2",
-               "mac" : [
-                  "00:1a:6b:6c:0c:cc"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 1,
-               "port" : 0
-            },
-            "srcOui" : [
-               "Universal Global Scientific Industrial Co., Ltd."
-            ],
-            "srcOuiCnt" : 1,
-            "srcTTL" : [
-               64
-            ],
-            "srcTTLCnt" : 1,
-            "totDataBytes" : 128
-         },
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions3-121111"
-            }
-         }
-      },
-      {
-         "body" : {
-            "@timestamp" : "SET",
-            "client" : {
-               "bytes" : 0
-            },
-            "destination" : {
-               "bytes" : 0,
-               "mac" : [
-                  "00:1a:6b:6c:0c:cc",
-                  "00:1d:09:f0:92:ab"
-               ],
-               "mac-cnt" : 2,
-               "packets" : 0
-            },
-            "dstOui" : [
-               "Dell Inc.",
-               "Universal Global Scientific Industrial Co., Ltd."
-            ],
-            "dstOuiCnt" : 2,
-            "ethertype" : 2054,
-            "fileId" : [],
-            "firstPacket" : 1352595625652,
-            "ipProtocol" : 0,
-            "lastPacket" : 1352595625653,
-            "length" : 1,
-            "network" : {
-               "bytes" : 102,
-               "packets" : 2
-            },
-            "node" : "test",
-            "packetLen" : [
-               58,
-               76
-            ],
-            "packetPos" : [
-               386,
-               444
-            ],
-            "packetRange" : {
-               "gte" : 1352595625652,
-               "lte" : 1352595625653
-            },
-            "protocol" : [
-               "arp"
-            ],
-            "protocolCnt" : 1,
-            "segmentCnt" : 1,
-            "server" : {
-               "bytes" : 0
-            },
-            "source" : {
-               "bytes" : 102,
-               "mac" : [
-                  "00:1a:6b:6c:0c:cc",
-                  "00:1d:09:f0:92:ab"
-               ],
-               "mac-cnt" : 2,
-               "packets" : 2
-            },
-            "srcOui" : [
-               "Dell Inc.",
-               "Universal Global Scientific Industrial Co., Ltd."
-            ],
-            "srcOuiCnt" : 2,
-            "totDataBytes" : 0
-         },
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions3-121111"
-            }
-         }
-      }
-   ]
+ "sessions3" : [
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 0
+    },
+    "destination" : {
+     "bytes" : 0,
+     "mac" : [
+      "00:1a:6b:6c:0c:cc",
+      "ff:ff:ff:ff:ff:ff"
+     ],
+     "mac-cnt" : 2,
+     "packets" : 0
+    },
+    "dstOui" : [
+     "Universal Global Scientific Industrial Co., Ltd."
+    ],
+    "dstOuiCnt" : 1,
+    "ethertype" : 2054,
+    "fileId" : [],
+    "firstPacket" : 1352595620652,
+    "ipProtocol" : 0,
+    "lastPacket" : 1352595620652,
+    "length" : 0,
+    "network" : {
+     "bytes" : 102,
+     "packets" : 2
+    },
+    "node" : "test",
+    "packetLen" : [
+     76,
+     58
+    ],
+    "packetPos" : [
+     24,
+     100
+    ],
+    "packetRange" : {
+     "gte" : 1352595620652,
+     "lte" : 1352595620652
+    },
+    "protocol" : [
+     "arp"
+    ],
+    "protocolCnt" : 1,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 0
+    },
+    "source" : {
+     "bytes" : 102,
+     "mac" : [
+      "00:1a:6b:6c:0c:cc",
+      "00:1d:09:f0:92:ab"
+     ],
+     "mac-cnt" : 2,
+     "packets" : 2
+    },
+    "srcOui" : [
+     "Dell Inc.",
+     "Universal Global Scientific Industrial Co., Ltd."
+    ],
+    "srcOuiCnt" : 2,
+    "totDataBytes" : 0
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-12m11"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 64
+    },
+    "destination" : {
+     "bytes" : 98,
+     "ip" : "10.10.10.1",
+     "mac" : [
+      "00:1d:09:f0:92:ab"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 1,
+     "port" : 0
+    },
+    "dstOui" : [
+     "Dell Inc."
+    ],
+    "dstOuiCnt" : 1,
+    "dstTTL" : [
+     64
+    ],
+    "dstTTLCnt" : 1,
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 1352595620652,
+    "icmp" : {
+     "code" : [
+      0
+     ],
+     "type" : [
+      0,
+      8
+     ]
+    },
+    "ipProtocol" : 1,
+    "lastPacket" : 1352595620652,
+    "length" : 0,
+    "network" : {
+     "bytes" : 196,
+     "community_id" : "1:AkS9NH95WiqU1KG1Q6dF3s9Kjfc=",
+     "packets" : 2
+    },
+    "node" : "test",
+    "packetLen" : [
+     114,
+     114
+    ],
+    "packetPos" : [
+     158,
+     272
+    ],
+    "packetRange" : {
+     "gte" : 1352595620652,
+     "lte" : 1352595620652
+    },
+    "protocol" : [
+     "icmp"
+    ],
+    "protocolCnt" : 1,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 64
+    },
+    "source" : {
+     "bytes" : 98,
+     "ip" : "10.10.10.2",
+     "mac" : [
+      "00:1a:6b:6c:0c:cc"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 1,
+     "port" : 0
+    },
+    "srcOui" : [
+     "Universal Global Scientific Industrial Co., Ltd."
+    ],
+    "srcOuiCnt" : 1,
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
+    "totDataBytes" : 128
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-12m11"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 0
+    },
+    "destination" : {
+     "bytes" : 0,
+     "mac" : [
+      "00:1a:6b:6c:0c:cc",
+      "00:1d:09:f0:92:ab"
+     ],
+     "mac-cnt" : 2,
+     "packets" : 0
+    },
+    "dstOui" : [
+     "Dell Inc.",
+     "Universal Global Scientific Industrial Co., Ltd."
+    ],
+    "dstOuiCnt" : 2,
+    "ethertype" : 2054,
+    "fileId" : [],
+    "firstPacket" : 1352595625652,
+    "ipProtocol" : 0,
+    "lastPacket" : 1352595625653,
+    "length" : 1,
+    "network" : {
+     "bytes" : 102,
+     "packets" : 2
+    },
+    "node" : "test",
+    "packetLen" : [
+     58,
+     76
+    ],
+    "packetPos" : [
+     386,
+     444
+    ],
+    "packetRange" : {
+     "gte" : 1352595625652,
+     "lte" : 1352595625653
+    },
+    "protocol" : [
+     "arp"
+    ],
+    "protocolCnt" : 1,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 0
+    },
+    "source" : {
+     "bytes" : 102,
+     "mac" : [
+      "00:1a:6b:6c:0c:cc",
+      "00:1d:09:f0:92:ab"
+     ],
+     "mac-cnt" : 2,
+     "packets" : 2
+    },
+    "srcOui" : [
+     "Dell Inc.",
+     "Universal Global Scientific Industrial Co., Ltd."
+    ],
+    "srcOuiCnt" : 2,
+    "totDataBytes" : 0
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-12m11"
+    }
+   }
+  }
+ ]
 }
 

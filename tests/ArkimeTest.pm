@@ -14,7 +14,7 @@ use Data::Dumper;
 use IO::Socket::INET;
 use Try::Tiny;
 
-$ArkimeTest::userAgent = LWP::UserAgent->new(timeout => 120);
+$ArkimeTest::userAgent = LWP::UserAgent->new(timeout => 120, keep_alive => 10);
 $ArkimeTest::host = "127.0.0.1";
 $ArkimeTest::elasticsearch = $ENV{ELASTICSEARCH} || "http://127.0.0.1:9200";
 $ArkimeTest::usersElasticsearch = $ENV{USERSELASTICSEARCH} || "http://127.0.0.1:9200";

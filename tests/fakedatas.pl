@@ -6,7 +6,7 @@ use Data::Dumper;
 use ArkimeTest;
 use Cwd;
 
-$main::userAgent = LWP::UserAgent->new(timeout => 20);
+$main::userAgent = LWP::UserAgent->new(timeout => 20, keep_alive => 10);
 
 my $ELASTICSEARCH = $ENV{ELASTICSEARCH} = "http://127.0.0.1:9200";
 my $DEBUG = 0;

@@ -1,152 +1,152 @@
 {
-   "sessions3" : [
-      {
-         "body" : {
-            "@timestamp" : "SET",
-            "client" : {
-               "bytes" : 1325
-            },
-            "destination" : {
-               "as" : {
-                  "full" : "AS15733 Zumtobel Group AG",
-                  "number" : 15733,
-                  "organization" : {
-                     "name" : "Zumtobel Group AG"
-                  }
-               },
-               "bytes" : 1338,
-               "geo" : {
-                  "country_iso_code" : "AT"
-               },
-               "ip" : "2a03:39a0:1f:1004:b93c:3e15:d1e3:6848",
-               "mac" : [
-                  "b0:d7:cc:00:0f:a8"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 8,
-               "port" : 49191
-            },
-            "dstOui" : [
-               "Tridonic GmbH & Co KG"
-            ],
-            "dstOuiCnt" : 1,
-            "dstPayload8" : "16fefd0000000000",
-            "dstTTL" : [
-               63
-            ],
-            "dstTTLCnt" : 1,
-            "ethertype" : 34525,
-            "fileId" : [],
-            "firstPacket" : 1527230471076,
-            "ipProtocol" : 17,
-            "lastPacket" : 1527230477913,
-            "length" : 6837,
-            "network" : {
-               "bytes" : 3221,
-               "community_id" : "1:4PhOv3nsOLIpcaSMYHb5JcJsUJo=",
-               "packets" : 17
-            },
-            "node" : "test",
-            "packetLen" : [
-               499,
-               114,
-               507,
-               515,
-               271,
-               103,
-               268,
-               92,
-               131,
-               92,
-               131,
-               131,
-               145,
-               145,
-               131,
-               109,
-               109
-            ],
-            "packetPos" : [
-               24,
-               523,
-               637,
-               1144,
-               1659,
-               1930,
-               2033,
-               2301,
-               2393,
-               2524,
-               2616,
-               2747,
-               2878,
-               3023,
-               3168,
-               3299,
-               3408
-            ],
-            "packetRange" : {
-               "gte" : 1527230471076,
-               "lte" : 1527230477913
-            },
-            "protocol" : [
-               "dtls",
-               "udp"
-            ],
-            "protocolCnt" : 2,
-            "segmentCnt" : 1,
-            "server" : {
-               "bytes" : 842
-            },
-            "source" : {
-               "as" : {
-                  "full" : "AS15733 Zumtobel Group AG",
-                  "number" : 15733,
-                  "organization" : {
-                     "name" : "Zumtobel Group AG"
-                  }
-               },
-               "bytes" : 1883,
-               "geo" : {
-                  "country_iso_code" : "AT"
-               },
-               "ip" : "2a03:39a0:1f:1000:38b6:67b7:3eea:fe28",
-               "mac" : [
-                  "78:f8:82:a3:f9:94",
-                  "e8:de:27:f6:e3:02"
-               ],
-               "mac-cnt" : 2,
-               "packets" : 9,
-               "port" : 48809
-            },
-            "srcOui" : [
-               "LG Electronics (Mobile Communications)",
-               "Tp-Link Technologies Co.,Ltd."
-            ],
-            "srcOuiCnt" : 2,
-            "srcPayload8" : "16fefd0000000000",
-            "srcTTL" : [
-               63
-            ],
-            "srcTTLCnt" : 1,
-            "tls" : {
-               "ja4" : [
-                  "dd2i030300_f7e428980f70_6c817ce3d217"
-               ],
-               "ja4Cnt" : 1,
-               "ja4_r" : [
-                  "dd2i030300_c037,c0a8,c0ff_000a,000b,0100"
-               ],
-               "ja4_rCnt" : 1
-            },
-            "totDataBytes" : 2167
-         },
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions3-180525"
-            }
-         }
+ "sessions3" : [
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 1325
+    },
+    "destination" : {
+     "as" : {
+      "full" : "AS15733 Zumtobel Group AG",
+      "number" : 15733,
+      "organization" : {
+       "name" : "Zumtobel Group AG"
       }
-   ]
+     },
+     "bytes" : 1338,
+     "geo" : {
+      "country_iso_code" : "AT"
+     },
+     "ip" : "2a03:39a0:1f:1004:b93c:3e15:d1e3:6848",
+     "mac" : [
+      "b0:d7:cc:00:0f:a8"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 8,
+     "port" : 49191
+    },
+    "dstOui" : [
+     "Tridonic GmbH & Co KG"
+    ],
+    "dstOuiCnt" : 1,
+    "dstPayload8" : "16fefd0000000000",
+    "dstTTL" : [
+     63
+    ],
+    "dstTTLCnt" : 1,
+    "ethertype" : 34525,
+    "fileId" : [],
+    "firstPacket" : 1527230471076,
+    "ipProtocol" : 17,
+    "lastPacket" : 1527230477913,
+    "length" : 6837,
+    "network" : {
+     "bytes" : 3221,
+     "community_id" : "1:4PhOv3nsOLIpcaSMYHb5JcJsUJo=",
+     "packets" : 17
+    },
+    "node" : "test",
+    "packetLen" : [
+     499,
+     114,
+     507,
+     515,
+     271,
+     103,
+     268,
+     92,
+     131,
+     92,
+     131,
+     131,
+     145,
+     145,
+     131,
+     109,
+     109
+    ],
+    "packetPos" : [
+     24,
+     523,
+     637,
+     1144,
+     1659,
+     1930,
+     2033,
+     2301,
+     2393,
+     2524,
+     2616,
+     2747,
+     2878,
+     3023,
+     3168,
+     3299,
+     3408
+    ],
+    "packetRange" : {
+     "gte" : 1527230471076,
+     "lte" : 1527230477913
+    },
+    "protocol" : [
+     "dtls",
+     "udp"
+    ],
+    "protocolCnt" : 2,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 842
+    },
+    "source" : {
+     "as" : {
+      "full" : "AS15733 Zumtobel Group AG",
+      "number" : 15733,
+      "organization" : {
+       "name" : "Zumtobel Group AG"
+      }
+     },
+     "bytes" : 1883,
+     "geo" : {
+      "country_iso_code" : "AT"
+     },
+     "ip" : "2a03:39a0:1f:1000:38b6:67b7:3eea:fe28",
+     "mac" : [
+      "78:f8:82:a3:f9:94",
+      "e8:de:27:f6:e3:02"
+     ],
+     "mac-cnt" : 2,
+     "packets" : 9,
+     "port" : 48809
+    },
+    "srcOui" : [
+     "LG Electronics (Mobile Communications)",
+     "Tp-Link Technologies Co.,Ltd."
+    ],
+    "srcOuiCnt" : 2,
+    "srcPayload8" : "16fefd0000000000",
+    "srcTTL" : [
+     63
+    ],
+    "srcTTLCnt" : 1,
+    "tls" : {
+     "ja4" : [
+      "dd2i030300_f7e428980f70_6c817ce3d217"
+     ],
+     "ja4Cnt" : 1,
+     "ja4_r" : [
+      "dd2i030300_c037,c0a8,c0ff_000a,000b,0100"
+     ],
+     "ja4_rCnt" : 1
+    },
+    "totDataBytes" : 2167
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-18m05"
+    }
+   }
+  }
+ ]
 }
 
