@@ -892,7 +892,7 @@ export default {
           pendingPromises.splice(index, 1);
         }
 
-        if (response.error) { this.error = response.error; }
+        if (response.error) { this.error = resolveMessage(response.error, this.$t); }
         this.mapData = response.map;
         if (graphData) {
           this.graphData = response.graph;
@@ -1124,8 +1124,9 @@ export default {
         this.countCategoryFieldsLoading(category, false);
 
         if (response.error) {
-          spiData.error = response.error;
-          if (!this.error) { this.error = response.error; }
+          const errMsg = resolveMessage(response.error, this.$t);
+          spiData.error = errMsg;
+          if (!this.error) { this.error = errMsg; }
         }
 
         // only update the requested spi data

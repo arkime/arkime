@@ -1740,7 +1740,7 @@ class SessionAPIs {
     const spiDataMaxIndices = +Config.get('spiDataMaxIndices', 4);
 
     if (parseFloat(req.query.date) === -1 && spiDataMaxIndices !== -1) {
-      return res.send({ spi: {}, error: "'All' date range not allowed for spiview query" });
+      return res.send({ spi: {}, error: { text: "'All' date range not allowed for spiview query", i18n: 'api.sessions.allDateNotAllowedSpiview' } });
     }
 
     const response = { spi: {} };
@@ -1888,7 +1888,7 @@ class SessionAPIs {
         return sendResult();
       }).catch((err) => {
         console.log(`ERROR - ${req.method} /api/spiview`, util.inspect(err, false, 50));
-        return res.serverError(500, 'Error retrieving spiview data');
+        return res.serverError(500, 'Error retrieving spiview data', 'api.sessions.spiviewFetchError');
       });
     });
   }

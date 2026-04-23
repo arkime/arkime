@@ -1759,6 +1759,8 @@
       "missingList": "セッションリストが未入力です",
       "noSessionsFound": "セッションが見つかりません",
       "cantGetSessions": "IDからセッションを取得できません",
+      "allDateNotAllowedSpiview": "spiviewクエリでは日付範囲'すべて'は許可されていません",
+      "spiviewFetchError": "spiviewデータの取得中にエラーが発生しました",
       "badFieldParam": "無効な'field'パラメータ",
       "missingExpParam": "expパラメータが未入力です",
       "sessionNotFound": "セッションが見つかりません",

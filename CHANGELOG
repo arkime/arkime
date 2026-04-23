@@ -37,6 +37,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
 
 6.2.1 2026/04/xx
 ## Viewer
+  - #3898 show error msg in spiview when All selected but not allowed
   - #3906 add copy button to History Elasticsearch Query section
 
 6.2.0 2026/04/20

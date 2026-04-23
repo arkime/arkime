@@ -1759,6 +1759,8 @@
       "missingList": "세션 목록이 없습니다",
       "noSessionsFound": "세션을 찾을 수 없습니다",
       "cantGetSessions": "ID에서 세션을 가져올 수 없습니다",
+      "allDateNotAllowedSpiview": "spiview 쿼리에는 '전체' 날짜 범위가 허용되지 않습니다",
+      "spiviewFetchError": "spiview 데이터를 가져오는 중 오류가 발생했습니다",
       "badFieldParam": "잘못된 'field' 매개변수",
       "missingExpParam": "exp 매개변수가 없습니다",
       "sessionNotFound": "세션을 찾을 수 없습니다",

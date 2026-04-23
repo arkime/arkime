@@ -1759,6 +1759,8 @@
       "missingList": "缺少会话列表",
       "noSessionsFound": "未找到会话",
       "cantGetSessions": "无法从ID获取会话",
+      "allDateNotAllowedSpiview": "spiview 查询不允许使用“全部”日期范围",
+      "spiviewFetchError": "检索 spiview 数据时出错",
       "badFieldParam": "无效的 'field' 参数",
       "missingExpParam": "缺少 exp 参数",
       "sessionNotFound": "未找到会话",
