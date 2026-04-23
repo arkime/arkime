@@ -1,146 +1,146 @@
 {
-   "sessions3" : [
-      {
-         "body" : {
-            "@timestamp" : "SET",
-            "cert" : [
-               {
-                  "hash" : "10:99:10:99:fc:73:97:ad:b4:bf:67:fb:19:9a:39:b1:be:d8:97:4c",
-                  "issuerCN" : [
-                     "snake oil ca"
-                  ],
-                  "issuerON" : [
-                     "Snake Oil, Ltd"
-                  ],
-                  "issuerOU" : [
-                     "Certificate Authority"
-                  ],
-                  "notAfter" : 1204562865000,
-                  "notBefore" : 1046882865000,
-                  "publicAlgorithm" : "rsaEncryption",
-                  "remainingDays" : 630,
-                  "remainingSeconds" : 54441796,
-                  "serial" : "01",
-                  "subjectCN" : [
-                     "www.snakeoil.dom"
-                  ],
-                  "subjectON" : [
-                     "Snake Oil, Ltd"
-                  ],
-                  "subjectOU" : [
-                     "Webserver Team"
-                  ],
-                  "validDays" : 1825,
-                  "validSeconds" : 157680000
-               }
-            ],
-            "certCnt" : 1,
-            "client" : {
-               "bytes" : 683
-            },
-            "destination" : {
-               "bytes" : 1224,
-               "ip" : "127.0.0.1",
-               "mac" : [
-                  "00:00:00:00:00:00"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 3,
-               "port" : 4433
-            },
-            "dstOui" : [
-               "Officially Xerox, but 0:0:0:0:0:0 is more common"
-            ],
-            "dstOuiCnt" : 1,
-            "dstPayload8" : "1601000000000000",
-            "dstTTL" : [
-               64
-            ],
-            "dstTTLCnt" : 1,
-            "ethertype" : 2048,
-            "fileId" : [],
-            "firstPacket" : 1150121069248,
-            "ipProtocol" : 17,
-            "lastPacket" : 1150121105510,
-            "length" : 36262,
-            "network" : {
-               "bytes" : 2159,
-               "community_id" : "1:10i7/OGGGXTjOeR3Pytn8gsfVw4=",
-               "packets" : 9
-            },
-            "node" : "test",
-            "packetLen" : [
-               177,
-               86,
-               177,
-               1035,
-               304,
-               151,
-               119,
-               119,
-               135
-            ],
-            "packetPos" : [
-               24,
-               201,
-               287,
-               464,
-               1499,
-               1803,
-               1954,
-               2073,
-               2192
-            ],
-            "packetRange" : {
-               "gte" : 1150121069248,
-               "lte" : 1150121105510
-            },
-            "protocol" : [
-               "dtls",
-               "udp"
-            ],
-            "protocolCnt" : 2,
-            "segmentCnt" : 1,
-            "server" : {
-               "bytes" : 1098
-            },
-            "source" : {
-               "bytes" : 935,
-               "ip" : "127.0.0.1",
-               "mac" : [
-                  "00:00:00:00:00:00"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 6,
-               "port" : 33192
-            },
-            "srcOui" : [
-               "Officially Xerox, but 0:0:0:0:0:0 is more common"
-            ],
-            "srcOuiCnt" : 1,
-            "srcPayload8" : "1601000000000000",
-            "srcTTL" : [
-               64
-            ],
-            "srcTTLCnt" : 1,
-            "tls" : {
-               "ja4" : [
-                  "d00i270000_fd1a708466c1_000000000000"
-               ],
-               "ja4Cnt" : 1,
-               "ja4_r" : [
-                  "d00i270000_0003,0004,0005,0006,0007,0008,0009,000a,0011,0012,0013,0014,0015,0016,002f,0032,0033,0035,0038,0039,0060,0061,0062,0063,0064,0065,0066_"
-               ],
-               "ja4_rCnt" : 1
-            },
-            "totDataBytes" : 1781
-         },
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions3-060612"
-            }
-         }
-      }
-   ]
+ "sessions3" : [
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "cert" : [
+     {
+      "hash" : "10:99:10:99:fc:73:97:ad:b4:bf:67:fb:19:9a:39:b1:be:d8:97:4c",
+      "issuerCN" : [
+       "snake oil ca"
+      ],
+      "issuerON" : [
+       "Snake Oil, Ltd"
+      ],
+      "issuerOU" : [
+       "Certificate Authority"
+      ],
+      "notAfter" : 1204562865000,
+      "notBefore" : 1046882865000,
+      "publicAlgorithm" : "rsaEncryption",
+      "remainingDays" : 630,
+      "remainingSeconds" : 54441796,
+      "serial" : "01",
+      "subjectCN" : [
+       "www.snakeoil.dom"
+      ],
+      "subjectON" : [
+       "Snake Oil, Ltd"
+      ],
+      "subjectOU" : [
+       "Webserver Team"
+      ],
+      "validDays" : 1825,
+      "validSeconds" : 157680000
+     }
+    ],
+    "certCnt" : 1,
+    "client" : {
+     "bytes" : 683
+    },
+    "destination" : {
+     "bytes" : 1224,
+     "ip" : "127.0.0.1",
+     "mac" : [
+      "00:00:00:00:00:00"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 3,
+     "port" : 4433
+    },
+    "dstOui" : [
+     "Officially Xerox, but 0:0:0:0:0:0 is more common"
+    ],
+    "dstOuiCnt" : 1,
+    "dstPayload8" : "1601000000000000",
+    "dstTTL" : [
+     64
+    ],
+    "dstTTLCnt" : 1,
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 1150121069248,
+    "ipProtocol" : 17,
+    "lastPacket" : 1150121105510,
+    "length" : 36262,
+    "network" : {
+     "bytes" : 2159,
+     "community_id" : "1:10i7/OGGGXTjOeR3Pytn8gsfVw4=",
+     "packets" : 9
+    },
+    "node" : "test",
+    "packetLen" : [
+     177,
+     86,
+     177,
+     1035,
+     304,
+     151,
+     119,
+     119,
+     135
+    ],
+    "packetPos" : [
+     24,
+     201,
+     287,
+     464,
+     1499,
+     1803,
+     1954,
+     2073,
+     2192
+    ],
+    "packetRange" : {
+     "gte" : 1150121069248,
+     "lte" : 1150121105510
+    },
+    "protocol" : [
+     "dtls",
+     "udp"
+    ],
+    "protocolCnt" : 2,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 1098
+    },
+    "source" : {
+     "bytes" : 935,
+     "ip" : "127.0.0.1",
+     "mac" : [
+      "00:00:00:00:00:00"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 6,
+     "port" : 33192
+    },
+    "srcOui" : [
+     "Officially Xerox, but 0:0:0:0:0:0 is more common"
+    ],
+    "srcOuiCnt" : 1,
+    "srcPayload8" : "1601000000000000",
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
+    "tls" : {
+     "ja4" : [
+      "d00i270000_fd1a708466c1_000000000000"
+     ],
+     "ja4Cnt" : 1,
+     "ja4_r" : [
+      "d00i270000_0003,0004,0005,0006,0007,0008,0009,000a,0011,0012,0013,0014,0015,0016,002f,0032,0033,0035,0038,0039,0060,0061,0062,0063,0064,0065,0066_"
+     ],
+     "ja4_rCnt" : 1
+    },
+    "totDataBytes" : 1781
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-06m06"
+    }
+   }
+  }
+ ]
 }
 

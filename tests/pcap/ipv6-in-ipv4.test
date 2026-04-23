@@ -1,143 +1,143 @@
 {
-   "sessions3" : [
-      {
-         "body" : {
-            "@timestamp" : "SET",
-            "client" : {
-               "bytes" : 300
-            },
-            "destination" : {
-               "bytes" : 670,
-               "ip" : "2001:db8:0:1::2",
-               "mac" : [
-                  "c2:01:42:02:00:00"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 5,
-               "port" : 0
-            },
-            "dstOuterASN" : [
-               "AS0 This is neat",
-               "AS1 Cool Beans!"
-            ],
-            "dstOuterGEO" : [
-               "CA",
-               "RU"
-            ],
-            "dstOuterIp" : [
-               "10.0.0.1",
-               "10.0.0.2"
-            ],
-            "dstOuterIpCnt" : 2,
-            "dstOuterRIR" : [
-               "",
-               "TEST"
-            ],
-            "dstTTL" : [
-               64
-            ],
-            "dstTTLCnt" : 1,
-            "ethertype" : 2048,
-            "fileId" : [],
-            "firstPacket" : 1214308747487,
-            "icmp" : {
-               "code" : [
-                  0
-               ],
-               "type" : [
-                  128,
-                  129
-               ]
-            },
-            "ipProtocol" : 58,
-            "lastPacket" : 1214308747559,
-            "length" : 72,
-            "network" : {
-               "bytes" : 1340,
-               "community_id" : "1:aLXS5HDS8xDo2lZExi+nBysy2SI=",
-               "packets" : 10
-            },
-            "node" : "test",
-            "packetLen" : [
-               150,
-               150,
-               150,
-               150,
-               150,
-               150,
-               150,
-               150,
-               150,
-               150
-            ],
-            "packetPos" : [
-               24,
-               174,
-               324,
-               474,
-               624,
-               774,
-               924,
-               1074,
-               1224,
-               1374
-            ],
-            "packetRange" : {
-               "gte" : 1214308747487,
-               "lte" : 1214308747559
-            },
-            "protocol" : [
-               "icmp"
-            ],
-            "protocolCnt" : 1,
-            "segmentCnt" : 1,
-            "server" : {
-               "bytes" : 300
-            },
-            "source" : {
-               "bytes" : 670,
-               "ip" : "2001:db8:0:1::1",
-               "mac" : [
-                  "c2:00:42:02:00:00"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 5,
-               "port" : 0
-            },
-            "srcOuterASN" : [
-               "AS0 This is neat",
-               "AS1 Cool Beans!"
-            ],
-            "srcOuterGEO" : [
-               "CA",
-               "RU"
-            ],
-            "srcOuterIp" : [
-               "10.0.0.1",
-               "10.0.0.2"
-            ],
-            "srcOuterIpCnt" : 2,
-            "srcOuterRIR" : [
-               "",
-               "TEST"
-            ],
-            "srcTTL" : [
-               64
-            ],
-            "srcTTLCnt" : 1,
-            "tags" : [
-               "dstip",
-               "srcip"
-            ],
-            "tagsCnt" : 2,
-            "totDataBytes" : 600
-         },
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions3-080624"
-            }
-         }
-      }
-   ]
+ "sessions3" : [
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 300
+    },
+    "destination" : {
+     "bytes" : 670,
+     "ip" : "2001:db8:0:1::2",
+     "mac" : [
+      "c2:01:42:02:00:00"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 5,
+     "port" : 0
+    },
+    "dstOuterASN" : [
+     "AS0 This is neat",
+     "AS1 Cool Beans!"
+    ],
+    "dstOuterGEO" : [
+     "CA",
+     "RU"
+    ],
+    "dstOuterIp" : [
+     "10.0.0.1",
+     "10.0.0.2"
+    ],
+    "dstOuterIpCnt" : 2,
+    "dstOuterRIR" : [
+     "",
+     "TEST"
+    ],
+    "dstTTL" : [
+     64
+    ],
+    "dstTTLCnt" : 1,
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 1214308747487,
+    "icmp" : {
+     "code" : [
+      0
+     ],
+     "type" : [
+      128,
+      129
+     ]
+    },
+    "ipProtocol" : 58,
+    "lastPacket" : 1214308747559,
+    "length" : 72,
+    "network" : {
+     "bytes" : 1340,
+     "community_id" : "1:aLXS5HDS8xDo2lZExi+nBysy2SI=",
+     "packets" : 10
+    },
+    "node" : "test",
+    "packetLen" : [
+     150,
+     150,
+     150,
+     150,
+     150,
+     150,
+     150,
+     150,
+     150,
+     150
+    ],
+    "packetPos" : [
+     24,
+     174,
+     324,
+     474,
+     624,
+     774,
+     924,
+     1074,
+     1224,
+     1374
+    ],
+    "packetRange" : {
+     "gte" : 1214308747487,
+     "lte" : 1214308747559
+    },
+    "protocol" : [
+     "icmp"
+    ],
+    "protocolCnt" : 1,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 300
+    },
+    "source" : {
+     "bytes" : 670,
+     "ip" : "2001:db8:0:1::1",
+     "mac" : [
+      "c2:00:42:02:00:00"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 5,
+     "port" : 0
+    },
+    "srcOuterASN" : [
+     "AS0 This is neat",
+     "AS1 Cool Beans!"
+    ],
+    "srcOuterGEO" : [
+     "CA",
+     "RU"
+    ],
+    "srcOuterIp" : [
+     "10.0.0.1",
+     "10.0.0.2"
+    ],
+    "srcOuterIpCnt" : 2,
+    "srcOuterRIR" : [
+     "",
+     "TEST"
+    ],
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
+    "tags" : [
+     "dstip",
+     "srcip"
+    ],
+    "tagsCnt" : 2,
+    "totDataBytes" : 600
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-08m06"
+    }
+   }
+  }
+ ]
 }
 

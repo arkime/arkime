@@ -291,7 +291,7 @@
    },
    "header" : {
     "index" : {
-     "_index" : "tests_sessions3-100510"
+     "_index" : "tests_sessions3-10m05"
     }
    }
   }

@@ -9279,9 +9279,10 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
     }
     esDelete("/tagger", 1);
 
+    esGet("/_refresh", 1);
     esGet("/_flush", 1);
     esGet("/_refresh", 1);
-    sleep(1);
+    esGet("/_flush", 1);
 
     exit 0 if ($ARGV[1] =~ "clean");
 
@@ -9535,6 +9536,7 @@ if ($DOHOTWARM) {
 
 logmsg "Finished\n";
 
-sleep 1;
+esGet("/_refresh", 1);
 esGet("/_flush", 1);
 esGet("/_refresh", 1);
+esGet("/_flush", 1);

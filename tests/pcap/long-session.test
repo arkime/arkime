@@ -155,7 +155,7 @@
    },
    "header" : {
     "index" : {
-     "_index" : "tests_sessions3-140529"
+     "_index" : "tests_sessions3-14m05"
     }
    }
   },
@@ -295,7 +295,7 @@
    },
    "header" : {
     "index" : {
-     "_index" : "tests_sessions3-140529"
+     "_index" : "tests_sessions3-14m05"
     }
    }
   }

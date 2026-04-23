@@ -1,122 +1,122 @@
 {
-   "sessions3" : [
-      {
-         "body" : {
-            "@timestamp" : "SET",
-            "client" : {
-               "bytes" : 1350
-            },
-            "destination" : {
-               "as" : {
-                  "full" : "AS15169 Google LLC",
-                  "number" : 15169,
-                  "organization" : {
-                     "name" : "Google LLC"
-                  }
-               },
-               "bytes" : 0,
-               "geo" : {
-                  "city_name" : "Bluffdale",
-                  "country_iso_code" : "US",
-                  "region_iso_code" : "UT"
-               },
-               "ip" : "216.58.194.195",
-               "mac" : [
-                  "00:00:5e:00:01:01"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 0,
-               "port" : 443
-            },
-            "dot1q" : {
-               "id" : [
-                  300
-               ],
-               "idCnt" : 1
-            },
-            "dstOui" : [
-               "ICANN, IANA Department"
-            ],
-            "dstOuiCnt" : 1,
-            "dstRIR" : "ARIN",
-            "ethertype" : 2048,
-            "fileId" : [],
-            "firstPacket" : 1467241187446,
-            "ipProtocol" : 17,
-            "lastPacket" : 1467241187446,
-            "length" : 0,
-            "network" : {
-               "bytes" : 1396,
-               "community_id" : "1:wsIXlWeJGuOz2bSIDvVc8VYIQ2Q=",
-               "packets" : 1,
-               "vlan" : {
-                  "id" : [
-                     300
-                  ],
-                  "id-cnt" : 1
-               }
-            },
-            "node" : "test",
-            "packetLen" : [
-               1412
-            ],
-            "packetPos" : [
-               24
-            ],
-            "packetRange" : {
-               "gte" : 1467241187446,
-               "lte" : 1467241187446
-            },
-            "protocol" : [
-               "quic",
-               "udp"
-            ],
-            "protocolCnt" : 2,
-            "quic" : {
-               "host" : [
-                  "ssl.gstatic.com"
-               ],
-               "hostCnt" : 1,
-               "useragent" : [
-                  "canary Chrome/53.0.2782.0 Windows NT 6.1; Win64; x64"
-               ],
-               "useragentCnt" : 1,
-               "version" : [
-                  "Q034"
-               ],
-               "versionCnt" : 1
-            },
-            "segmentCnt" : 1,
-            "server" : {
-               "bytes" : 0
-            },
-            "source" : {
-               "bytes" : 1396,
-               "ip" : "10.0.0.4",
-               "mac" : [
-                  "00:1b:17:00:02:30"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 1,
-               "port" : 54800
-            },
-            "srcOui" : [
-               "Palo Alto Networks"
-            ],
-            "srcOuiCnt" : 1,
-            "srcPayload8" : "0d9300a653775210",
-            "srcTTL" : [
-               127
-            ],
-            "srcTTLCnt" : 1,
-            "totDataBytes" : 1350
-         },
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions3-160629"
-            }
-         }
+ "sessions3" : [
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 1350
+    },
+    "destination" : {
+     "as" : {
+      "full" : "AS15169 Google LLC",
+      "number" : 15169,
+      "organization" : {
+       "name" : "Google LLC"
       }
-   ]
+     },
+     "bytes" : 0,
+     "geo" : {
+      "city_name" : "Bluffdale",
+      "country_iso_code" : "US",
+      "region_iso_code" : "UT"
+     },
+     "ip" : "216.58.194.195",
+     "mac" : [
+      "00:00:5e:00:01:01"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 0,
+     "port" : 443
+    },
+    "dot1q" : {
+     "id" : [
+      300
+     ],
+     "idCnt" : 1
+    },
+    "dstOui" : [
+     "ICANN, IANA Department"
+    ],
+    "dstOuiCnt" : 1,
+    "dstRIR" : "ARIN",
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 1467241187446,
+    "ipProtocol" : 17,
+    "lastPacket" : 1467241187446,
+    "length" : 0,
+    "network" : {
+     "bytes" : 1396,
+     "community_id" : "1:wsIXlWeJGuOz2bSIDvVc8VYIQ2Q=",
+     "packets" : 1,
+     "vlan" : {
+      "id" : [
+       300
+      ],
+      "id-cnt" : 1
+     }
+    },
+    "node" : "test",
+    "packetLen" : [
+     1412
+    ],
+    "packetPos" : [
+     24
+    ],
+    "packetRange" : {
+     "gte" : 1467241187446,
+     "lte" : 1467241187446
+    },
+    "protocol" : [
+     "quic",
+     "udp"
+    ],
+    "protocolCnt" : 2,
+    "quic" : {
+     "host" : [
+      "ssl.gstatic.com"
+     ],
+     "hostCnt" : 1,
+     "useragent" : [
+      "canary Chrome/53.0.2782.0 Windows NT 6.1; Win64; x64"
+     ],
+     "useragentCnt" : 1,
+     "version" : [
+      "Q034"
+     ],
+     "versionCnt" : 1
+    },
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 0
+    },
+    "source" : {
+     "bytes" : 1396,
+     "ip" : "10.0.0.4",
+     "mac" : [
+      "00:1b:17:00:02:30"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 1,
+     "port" : 54800
+    },
+    "srcOui" : [
+     "Palo Alto Networks"
+    ],
+    "srcOuiCnt" : 1,
+    "srcPayload8" : "0d9300a653775210",
+    "srcTTL" : [
+     127
+    ],
+    "srcTTLCnt" : 1,
+    "totDataBytes" : 1350
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-16m06"
+    }
+   }
+  }
+ ]
 }
 

@@ -174,7 +174,7 @@
    },
    "header" : {
     "index" : {
-     "_index" : "tests_sessions3-160616"
+     "_index" : "tests_sessions3-16m06"
     }
    }
   },
@@ -317,7 +317,7 @@
    },
    "header" : {
     "index" : {
-     "_index" : "tests_sessions3-160616"
+     "_index" : "tests_sessions3-16m06"
     }
    }
   }
