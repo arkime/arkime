@@ -1760,6 +1760,8 @@
       "missingList": "Issingmay istlay ofway essionssay",
       "noSessionsFound": "onay essionssay oundfay",
       "cantGetSessions": "Antcay etgay essionssay omfray IDsway",
+      "allDateNotAllowedSpiview": "'Allway' atedday angeray otnay allowedway orfay ipviewsay uerykay",
+      "spiviewFetchError": "Errorway etrievingray ipviewsay ataday",
       "badFieldParam": "Adbay 'ieldfay' arameterpay",
       "missingExpParam": "Issingmay expway arameterpay",
       "sessionNotFound": "Essionsay otnay oundfay",

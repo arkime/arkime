@@ -1759,6 +1759,8 @@
       "missingList": "Lista de sessões ausente",
       "noSessionsFound": "nenhuma sessão encontrada",
       "cantGetSessions": "Não é possível obter sessões dos IDs",
+      "allDateNotAllowedSpiview": "Intervalo de datas 'Todos' não permitido para consulta spiview",
+      "spiviewFetchError": "Erro ao recuperar dados do spiview",
       "badFieldParam": "Parâmetro 'field' inválido",
       "missingExpParam": "Parâmetro exp ausente",
       "sessionNotFound": "Sessão não encontrada",

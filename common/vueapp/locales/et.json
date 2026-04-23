@@ -1759,6 +1759,8 @@
       "missingList": "Seanside loend puudub",
       "noSessionsFound": "Seansside ei leitud",
       "cantGetSessions": "Seansside toomine ID-de järgi ebaõnnestus",
+      "allDateNotAllowedSpiview": "Kuupäevavahemik 'Kõik' pole spiview päringu jaoks lubatud",
+      "spiviewFetchError": "Viga spiview andmete toomisel",
       "badFieldParam": "Vigane 'field' parameeter",
       "missingExpParam": "exp parameeter puudub",
       "sessionNotFound": "Seanssi ei leitud",
