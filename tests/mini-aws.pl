@@ -2,12 +2,23 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 #
-# Mini S3 server for testing. Stores everything in memory, ignores auth.
-# Non-blocking I/O with per-connection buffering to prevent one slow
-# client from starving others.
+# Mini AWS server for testing (S3 + a minimal SQS). Stores everything in
+# memory, ignores auth. Non-blocking I/O with per-connection buffering to
+# prevent one slow client from starving others.
 # Supports: CreateMultipartUpload, UploadPart, CompleteMultipartUpload,
 #           PutObject, GetObject, DeleteObject, HeadObject,
 #           ListBuckets, ListObjects
+# Also a minimal SQS emulation compatible with Arkime's reader-scheme-sqs:
+#   POST /{account}/{queue}?Action=ReceiveMessage        -- long-poll receive
+#   POST /{account}/{queue}  body Action=DeleteMessage&ReceiptHandle=...
+#   POST /{account}/{queue}  body Action=SendMessage&MessageBody=...
+# Plus S3 bucket notification configuration (as used by
+# `aws s3api put-bucket-notification-configuration`) that publishes to an
+# SQS queue on object create/delete:
+#   PUT /{bucket}?notification   (XML NotificationConfiguration w/ <Queue> ARNs)
+#   GET /{bucket}?notification
+# Plus a test helper to enqueue an S3-event message directly:
+#   POST /_sqs_enqueue/{account}/{queue}?bucket=B&key=K
 
 use strict;
 use warnings;
@@ -27,7 +38,7 @@ if (@ARGV && $ARGV[0] eq '--debug') {
 
 my $port = $ARGV[0] || 9000;
 my $USE_DISK = 0;
-my $DISK_DIR = "/tmp/mini-s3";
+my $DISK_DIR = "/tmp/mini-aws";
 
 # Storage: $objects{$bucket}{$key} = { data => ..., content_type => ..., etag => ..., size => ..., last_modified => ... }
 my %objects;
@@ -35,6 +46,14 @@ my %objects;
 # Multipart: $uploads{$uploadId} = { bucket => ..., key => ..., parts => { $partNum => { data => ..., etag => ... } } }
 my %uploads;
 my $nextUploadId = 1;
+
+# SQS queues: $sqs_queues{"$account/$queue"} = [ { ReceiptHandle => ..., Body => ..., invisible => 0|1 }, ... ]
+my %sqs_queues;
+my $nextReceipt = 1;
+my $nextMsgId   = 1;
+
+# Bucket notification configs: $bucket_notifications{$bucket} = [ { queue => "acct/queue", events => [...] }, ... ]
+my %bucket_notifications;
 
 # Per-connection state
 my %conn_buf;    # fileno => raw read buffer
@@ -50,7 +69,7 @@ my $server = IO::Socket::INET->new(
 my $flags = fcntl($server, F_GETFL, 0);
 fcntl($server, F_SETFL, $flags | O_NONBLOCK);
 
-print "Mini S3 listening on port $port\n";
+print "Mini AWS listening on port $port\n";
 
 my $sel = IO::Select->new($server);
 
@@ -216,14 +235,44 @@ sub handle_request {
     my $range = $headers->{'range'} // '';
     my $body_size = length($body);
     my $ts = strftime("%H:%M:%S", localtime);
-    print "$ts S3: $method $uri" . ($query ne '' ? "?$query" : "") . " body:$body_size" . ($range ne '' ? " Range:$range" : "") . "\n" if $debug;
+    print "$ts AWS: $method $uri" . ($query ne '' ? "?$query" : "") . " body:$body_size" . ($range ne '' ? " Range:$range" : "") . "\n" if $debug;
 
     if ($uri eq '/_shutdown') {
         return '_shutdown';
     }
 
+    # SQS test helper: enqueue an S3-event style message
+    if ($method eq 'POST' && $uri =~ m{^/_sqs_enqueue/([^/]+)/([^/]+)/?$}) {
+        return sqs_enqueue_resp($1, $2, $query, $body);
+    }
+
+    # SQS: detect Action in query (ReceiveMessage) or body (Delete/Send)
+    if ($method eq 'POST' && $uri =~ m{^/([^/]+)/([^/]+)/?$}) {
+        my ($acct, $queue) = ($1, $2);
+        my $action;
+        if ($query =~ /(?:^|&)Action=([^&]+)/) { $action = $1; }
+        elsif ($body =~ /(?:^|&)Action=([^&]+)/) { $action = $1; }
+        if (defined $action) {
+            return sqs_receive_resp($acct, $queue, $query) if $action eq 'ReceiveMessage';
+            return sqs_delete_resp($acct, $queue, $body)    if $action eq 'DeleteMessage';
+            return sqs_send_resp($acct, $queue, $body)      if $action eq 'SendMessage';
+        }
+    }
+
     my ($bucket, $key) = parse_path($uri);
     print "  bucket=$bucket key=" . ($key // '') . "\n" if ($debug && defined $bucket);
+
+    # S3 bucket notification configuration
+    if (defined $bucket && !defined $key && $query =~ /(?:^|&)notification(?:=|&|$)/) {
+        if ($method eq 'PUT') {
+            return put_bucket_notification_resp($bucket, $body);
+        } elsif ($method eq 'GET') {
+            return get_bucket_notification_resp($bucket);
+        } elsif ($method eq 'DELETE') {
+            delete $bucket_notifications{$bucket};
+            return build_response(204, 'No Content', {}, '');
+        }
+    }
 
     if ($method eq 'POST' && $query =~ /uploads\b/ && !($query =~ /uploadId/)) {
         return create_multipart_upload($bucket, $key, $headers);
@@ -296,6 +345,7 @@ sub save_object {
             last_modified => amz_date(),
         };
     }
+    fire_bucket_notification($bucket, $key, 'ObjectCreated:Put', length($data), $etag);
     return $etag;
 }
 
@@ -430,6 +480,7 @@ sub delete_object_resp {
             unlink(disk_path($bucket, $key));
         }
     }
+    fire_bucket_notification($bucket, $key, 'ObjectRemoved:Delete', 0, '');
     return build_response(204, 'No Content', {}, '');
 }
 
@@ -437,8 +488,8 @@ sub list_buckets_resp {
     my $xml = qq{<?xml version="1.0" encoding="UTF-8"?>
 <ListAllMyBucketsResult>
   <Owner>
-    <ID>mini-s3</ID>
-    <DisplayName>mini-s3</DisplayName>
+    <ID>mini-aws</ID>
+    <DisplayName>mini-aws</DisplayName>
   </Owner>
   <Buckets>};
     for my $bucket (sort keys %objects) {
@@ -512,6 +563,222 @@ sub list_objects_resp {
 
     $xml .= "\n</ListBucketResult>";
     return build_response(200, 'OK', { 'Content-Type' => 'application/xml' }, $xml);
+}
+
+sub url_decode {
+    my $s = shift;
+    return '' unless defined $s;
+    $s =~ s/\+/ /g;
+    $s =~ s/%([0-9A-Fa-f]{2})/chr(hex($1))/ge;
+    return $s;
+}
+
+sub parse_form {
+    my $s = shift;
+    my %h;
+    return %h unless defined $s && length $s;
+    for my $pair (split /&/, $s) {
+        my ($k, $v) = split /=/, $pair, 2;
+        next unless defined $k && length $k;
+        $h{url_decode($k)} = url_decode($v);
+    }
+    return %h;
+}
+
+sub json_escape_string {
+    my $s = shift;
+    $s =~ s/\\/\\\\/g;
+    $s =~ s/"/\\"/g;
+    $s =~ s/\x08/\\b/g;
+    $s =~ s/\f/\\f/g;
+    $s =~ s/\n/\\n/g;
+    $s =~ s/\r/\\r/g;
+    $s =~ s/\t/\\t/g;
+    $s =~ s/([\x00-\x1f])/sprintf("\\u%04x", ord($1))/ge;
+    return $s;
+}
+
+sub sqs_receive_resp {
+    my ($account, $queue, $query) = @_;
+    my $qname = "$account/$queue";
+    my %params = parse_form($query);
+    my $max = int($params{MaxNumberOfMessages} // 1) || 1;
+    my $q = $sqs_queues{$qname} //= [];
+
+    my @msgs;
+    for my $m (@$q) {
+        last if @msgs >= $max;
+        next if $m->{invisible};
+        $m->{invisible} = 1;
+        push @msgs, $m;
+    }
+
+    my $msgs_json;
+    if (@msgs) {
+        my @parts;
+        for my $m (@msgs) {
+            my $body_enc = json_escape_string($m->{Body});
+            my $md5 = md5_hex($m->{Body});
+            push @parts, qq({"MessageId":"$m->{MessageId}","ReceiptHandle":"$m->{ReceiptHandle}","MD5OfBody":"$md5","Body":"$body_enc"});
+        }
+        $msgs_json = '[' . join(',', @parts) . ']';
+    } else {
+        $msgs_json = 'null';
+    }
+    my $json = qq({"ReceiveMessageResponse":{"ReceiveMessageResult":{"messages":$msgs_json},"ResponseMetadata":{"RequestId":"mini-aws"}}});
+    return build_response(200, 'OK', { 'Content-Type' => 'application/json' }, $json);
+}
+
+sub sqs_delete_resp {
+    my ($account, $queue, $body) = @_;
+    my $qname = "$account/$queue";
+    my %params = parse_form($body);
+    my $rh = $params{ReceiptHandle};
+    if (defined $rh && $sqs_queues{$qname}) {
+        @{$sqs_queues{$qname}} = grep { $_->{ReceiptHandle} ne $rh } @{$sqs_queues{$qname}};
+    }
+    my $json = qq({"DeleteMessageResponse":{"ResponseMetadata":{"RequestId":"mini-aws"}}});
+    return build_response(200, 'OK', { 'Content-Type' => 'application/json' }, $json);
+}
+
+sub sqs_add_message {
+    my ($qname, $msg_body) = @_;
+    my $rh  = "rh-" . ($nextReceipt++);
+    my $mid = "mid-" . ($nextMsgId++);
+    push @{$sqs_queues{$qname} //= []}, {
+        ReceiptHandle => $rh,
+        MessageId     => $mid,
+        Body          => $msg_body,
+        invisible     => 0,
+    };
+    return ($rh, $mid);
+}
+
+sub sqs_send_resp {
+    my ($account, $queue, $body) = @_;
+    my $qname = "$account/$queue";
+    my %params = parse_form($body);
+    my $msg_body = $params{MessageBody} // '';
+    my ($rh, $mid) = sqs_add_message($qname, $msg_body);
+    my $md5 = md5_hex($msg_body);
+    my $json = qq({"SendMessageResponse":{"SendMessageResult":{"MessageId":"$mid","MD5OfMessageBody":"$md5"},"ResponseMetadata":{"RequestId":"mini-aws"}}});
+    return build_response(200, 'OK', { 'Content-Type' => 'application/json' }, $json);
+}
+
+sub sqs_enqueue_resp {
+    my ($account, $queue, $query, $body) = @_;
+    my $qname = "$account/$queue";
+    my %qp = parse_form($query);
+
+    my $msg_body;
+    if (defined $body && length $body) {
+        $msg_body = $body;
+    } else {
+        my $bucket = $qp{bucket} // '';
+        my $key    = $qp{key}    // '';
+        my $b_esc  = json_escape_string($bucket);
+        my $k_esc  = json_escape_string($key);
+        $msg_body = qq({"Records":[{"s3":{"bucket":{"name":"$b_esc"},"object":{"key":"$k_esc"}}}]});
+    }
+    my ($rh, $mid) = sqs_add_message($qname, $msg_body);
+    my $json = qq({"MessageId":"$mid","ReceiptHandle":"$rh","Queue":"$qname"});
+    return build_response(200, 'OK', { 'Content-Type' => 'application/json' }, $json);
+}
+
+# Accept a flexible "ARN":
+#   arn:aws:sqs:region:account:queue  -> account/queue
+#   account/queue                     -> account/queue
+#   queue                             -> mini-aws/queue
+sub parse_queue_arn {
+    my $a = shift;
+    return undef unless defined $a && length $a;
+    if ($a =~ /^arn:[^:]*:sqs:[^:]*:([^:]+):([^:]+)$/) {
+        return "$1/$2";
+    }
+    if ($a =~ m{^([^/]+)/([^/]+)$}) {
+        return "$1/$2";
+    }
+    return "mini-aws/$a";
+}
+
+sub put_bucket_notification_resp {
+    my ($bucket, $body) = @_;
+    my @configs;
+
+    # Parse each <QueueConfiguration>...</QueueConfiguration> block.
+    while ($body =~ m{<QueueConfiguration\b[^>]*>(.*?)</QueueConfiguration>}gs) {
+        my $block = $1;
+        my $arn;
+        # AWS uses <Queue>, some SDKs use <QueueArn>
+        if    ($block =~ m{<QueueArn>\s*([^<]+?)\s*</QueueArn>}) { $arn = $1; }
+        elsif ($block =~ m{<Queue>\s*([^<]+?)\s*</Queue>})       { $arn = $1; }
+        next unless defined $arn;
+        my $qname = parse_queue_arn($arn);
+        next unless defined $qname;
+        my @events;
+        while ($block =~ m{<Event>\s*([^<]+?)\s*</Event>}g) {
+            push @events, $1;
+        }
+        @events = ('s3:ObjectCreated:*') unless @events;
+        push @configs, { queue => $qname, events => \@events };
+    }
+
+    if (@configs) {
+        $bucket_notifications{$bucket} = \@configs;
+    } else {
+        delete $bucket_notifications{$bucket};
+    }
+    return build_response(200, 'OK', {}, '');
+}
+
+sub get_bucket_notification_resp {
+    my ($bucket) = @_;
+    my $configs = $bucket_notifications{$bucket} // [];
+    my $xml = qq{<?xml version="1.0" encoding="UTF-8"?>\n<NotificationConfiguration>};
+    for my $c (@$configs) {
+        $xml .= qq{\n  <QueueConfiguration>\n    <Queue>$c->{queue}</Queue>};
+        for my $e (@{$c->{events}}) {
+            $xml .= qq{\n    <Event>$e</Event>};
+        }
+        $xml .= qq{\n  </QueueConfiguration>};
+    }
+    $xml .= qq{\n</NotificationConfiguration>};
+    return build_response(200, 'OK', { 'Content-Type' => 'application/xml' }, $xml);
+}
+
+sub event_matches {
+    my ($pattern, $name) = @_;
+    # name is e.g. ObjectCreated:Put, pattern like s3:ObjectCreated:* or s3:ObjectCreated:Put
+    $pattern =~ s/^s3://;
+    return 1 if $pattern eq '*' || $pattern eq $name;
+    if ($pattern =~ /^(.*):\*$/) {
+        my $prefix = $1;
+        return 1 if $name =~ /^\Q$prefix\E:/;
+    }
+    return 0;
+}
+
+sub fire_bucket_notification {
+    my ($bucket, $key, $event_name, $size, $etag) = @_;
+    my $configs = $bucket_notifications{$bucket} // return;
+    my $b_esc = json_escape_string($bucket);
+    my $k_esc = json_escape_string($key);
+    my $e_esc = json_escape_string("s3:$event_name");
+    my $etag_clean = $etag;
+    $etag_clean =~ s/^"|"$//g if defined $etag_clean;
+    $etag_clean //= '';
+    my $ts = strftime("%Y-%m-%dT%H:%M:%S.000Z", gmtime());
+    my $msg_body = qq({"Records":[{"eventVersion":"2.1","eventSource":"aws:s3","eventTime":"$ts","eventName":"$e_esc","s3":{"bucket":{"name":"$b_esc"},"object":{"key":"$k_esc","size":$size,"eTag":"$etag_clean"}}}]});
+
+    for my $c (@$configs) {
+        my $matched = 0;
+        for my $ev (@{$c->{events}}) {
+            if (event_matches($ev, $event_name)) { $matched = 1; last; }
+        }
+        next unless $matched;
+        sqs_add_message($c->{queue}, $msg_body);
+        print "  notify -> $c->{queue}: $event_name $bucket/$key\n" if $debug;
+    }
 }
 
 sub send_s3_error_resp {
