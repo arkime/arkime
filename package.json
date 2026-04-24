@@ -59,7 +59,7 @@
     "stylus": "^0.64.0",
     "through2": "^4.0.2",
     "unzipper": "^0.12.3",
-    "uuid": "^9.0.1",
+    "uuid": "^14.0.0",
     "vuetify": "^3.12.4"
   },
   "scripts": {
