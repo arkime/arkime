@@ -1202,7 +1202,7 @@ LOCAL int dns_tcp_parser(ArkimeSession_t *session, void *uw, const uint8_t *data
             return ARKIME_PARSER_UNREGISTER;
 
         int frameLen = dnslength + 2;
-        if (frameLen > (int)sizeof(pb->buf[which])) {
+        if (frameLen > pb->bufMax) {
             arkime_session_add_tag(session, "dns:tcp-message-too-long");
             arkime_parser_buf_skip(pb, which, frameLen);
             continue;

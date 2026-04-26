@@ -182,7 +182,7 @@ LOCAL int c1222_tcp_parser(ArkimeSession_t *session, void *uw, const uint8_t *da
         int total = c1222_peek_total_len(c1222->buf[which], c1222->len[which]);
         if (total == 0)
             break; // need more data
-        if (total < 0 || total > (int)sizeof(c1222->buf[which])) {
+        if (total < 0 || total > c1222->bufMax) {
             // Malformed or too large to fit in our buffer; abandon parsing.
             return ARKIME_PARSER_UNREGISTER;
         }

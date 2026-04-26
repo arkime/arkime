@@ -1435,12 +1435,43 @@ void arkime_parsers_call_named_func(uint32_t id, ArkimeSession_t *session, const
 /******************************************************************************/
 ArkimeParserBuf_t *arkime_parser_buf_create()
 {
-    ArkimeParserBuf_t *pb = ARKIME_TYPE_ALLOC(ArkimeParserBuf_t);
-    pb->len[0] = pb->len[1] = 0;
-    pb->state[0] = pb->state[1] = 0;
-    pb->skipping[0] = pb->skipping[1] = 0;
-    pb->serverWhich = 0;
+    return arkime_parser_buf_create2(1024, 8192);
+}
+/******************************************************************************/
+ArkimeParserBuf_t *arkime_parser_buf_create2(uint16_t initialSize, uint16_t maxSize)
+{
+    if (initialSize == 0)
+        initialSize = 1;
+    if (maxSize < initialSize)
+        maxSize = initialSize;
+
+    ArkimeParserBuf_t *pb = ARKIME_TYPE_ALLOC0(ArkimeParserBuf_t);
+    pb->buf[0] = malloc(initialSize);
+    pb->buf[1] = malloc(initialSize);
+    pb->bufSize[0] = pb->bufSize[1] = initialSize;
+    pb->bufMax = maxSize;
     return pb;
+}
+/******************************************************************************/
+LOCAL void arkime_parser_buf_grow(ArkimeParserBuf_t *pb, int which, int needed)
+{
+    if (needed <= pb->bufSize[which])
+        return;
+
+    // Double until we have enough, then clamp to bufMax
+    int newSize = pb->bufSize[which];
+    while (newSize < needed)
+        newSize *= 2;
+    if (newSize > pb->bufMax)
+        newSize = pb->bufMax;
+    if (newSize <= pb->bufSize[which])
+        return;
+
+    uint8_t *nb = realloc(pb->buf[which], newSize);
+    if (!nb)
+        return; // keep old buffer
+    pb->buf[which] = nb;
+    pb->bufSize[which] = newSize;
 }
 /******************************************************************************/
 int arkime_parser_buf_add(ArkimeParserBuf_t *pb, int which, const uint8_t *data, int len)
@@ -1459,8 +1490,13 @@ int arkime_parser_buf_add(ArkimeParserBuf_t *pb, int which, const uint8_t *data,
         pb->skipping[which] = 0;
     }
 
+    // Grow the buffer if needed (up to bufMax)
+    if (pb->len[which] + len > pb->bufSize[which]) {
+        arkime_parser_buf_grow(pb, which, pb->len[which] + len);
+    }
+
     // Calculate available space
-    int available = (int)sizeof(pb->buf[which]) - pb->len[which];
+    int available = (int)pb->bufSize[which] - pb->len[which];
     int tocopy = (len < available) ? len : available;
 
     if (tocopy > 0) {
@@ -1500,12 +1536,17 @@ void arkime_parser_buf_skip(ArkimeParserBuf_t *pb, int which, int skip)
 /******************************************************************************/
 void arkime_parser_buf_free(ArkimeParserBuf_t *pb)
 {
+    if (pb->buf[0]) free(pb->buf[0]);
+    if (pb->buf[1]) free(pb->buf[1]);
     ARKIME_TYPE_FREE(ArkimeParserBuf_t, pb);
 }
 /******************************************************************************/
 void arkime_parser_buf_session_free(ArkimeSession_t *UNUSED(session), void *uw)
 {
-    ARKIME_TYPE_FREE(ArkimeParserBuf_t, uw);
+    ArkimeParserBuf_t *pb = uw;
+    if (pb->buf[0]) free(pb->buf[0]);
+    if (pb->buf[1]) free(pb->buf[1]);
+    ARKIME_TYPE_FREE(ArkimeParserBuf_t, pb);
 }
 /******************************************************************************/
 // Sub-parser registration - allows parsers like M3UA, DCE/RPC to have sub-parsers register with them

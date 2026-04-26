@@ -195,7 +195,8 @@ LOCAL void mqtt_parse_connect(ArkimeSession_t *session, ArkimeParserBuf_t *mqtt,
     }
 }
 /******************************************************************************/
-// Returns total bytes to skip (header + payload) on success, or -1 if need more data
+// Returns total bytes to skip (header + payload) on success,
+// -1 if need more data, -2 if malformed/oversized
 LOCAL int mqtt_parse_publish(ArkimeSession_t *session, ArkimeParserBuf_t *mqtt, int which, BSB *bsb, int flags, uint32_t remainingLen)
 {
     int qos = (flags >> 1) & 0x03;
@@ -211,7 +212,11 @@ LOCAL int mqtt_parse_publish(ArkimeSession_t *session, ArkimeParserBuf_t *mqtt, 
     // Calculate how much of the header we need: 2 (topic len) + topicLen + (qos > 0 ? 2 : 0)
     int headerNeeded = 2 + topicLen + (qos > 0 ? 2 : 0);
     if (headerNeeded > (int)remainingLen)
-        return -1; // Malformed
+        return -2; // Malformed
+
+    // If header itself can never fit in the parser buffer, it's not parseable
+    if (headerNeeded > (int)mqtt->bufMax)
+        return -2;
 
     if (BSB_REMAINING(*bsb) < headerNeeded)
         return -1; // Need more data
@@ -272,12 +277,15 @@ LOCAL int mqtt_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, i
 {
     ArkimeParserBuf_t *mqtt = uw;
 
-    arkime_parser_buf_add(mqtt, which, data, len);
+    int truncated = (arkime_parser_buf_add(mqtt, which, data, len) < 0);
 
     BSB bsb;
     BSB_INIT(bsb, mqtt->buf[which], mqtt->len[which]);
 
     while (BSB_REMAINING(bsb) >= 2) {
+        // Save start of header so we can rewind on need-more-data
+        BSB headerStart = bsb;
+
         // Fixed header
         int packetType = 0;
         BSB_IMPORT_u08(bsb, packetType);
@@ -287,10 +295,17 @@ LOCAL int mqtt_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, i
 
         // Remaining length
         uint32_t remainingLen = 0;
-        if (mqtt_decode_varint(&bsb, &remainingLen) < 0)
-            break;
-
-        if (remainingLen > BSB_REMAINING(bsb)) {
+        if (mqtt_decode_varint(&bsb, &remainingLen) < 0) {
+            // Either malformed or need-more bytes for the varint. If there are
+            // already 4 length bytes available, it's malformed; otherwise it
+            // is incomplete and we should wait for more data.
+            int varintBytes = BSB_WORK_PTR(bsb) - (BSB_WORK_PTR(headerStart) + 1);
+            if (varintBytes >= 4) {
+                arkime_session_add_tag(session, "mqtt:bad-varint");
+                arkime_parsers_unregister(session, mqtt);
+                return 0;
+            }
+            bsb = headerStart;
             break;
         }
 
@@ -299,18 +314,44 @@ LOCAL int mqtt_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, i
             arkime_field_string_add(typeField, session, mqttTypes[packetType], -1, TRUE);
         }
 
-        // Handle PUBLISH specially - can skip large payloads
+        // Handle PUBLISH specially first - can skip large payloads even when
+        // they exceed the parser buffer capacity.
         if (packetType == 3) {
             int skipLen = mqtt_parse_publish(session, mqtt, which, &bsb, flags, remainingLen);
-            if (skipLen < 0)
-                break; // Need more data
+            if (skipLen == -1) {
+                // Need more data; rewind so we re-parse the fixed header next time.
+                bsb = headerStart;
+                break;
+            }
+            if (skipLen < 0) {
+                arkime_session_add_tag(session, "mqtt:bad-publish");
+                arkime_parsers_unregister(session, mqtt);
+                return 0;
+            }
 
             arkime_parser_buf_skip(mqtt, which, skipLen);
             BSB_INIT(bsb, mqtt->buf[which], mqtt->len[which]);
             continue;
         }
 
+        // For non-PUBLISH packets we must buffer the entire packet. If the
+        // declared length cannot fit in the parser buffer we would wedge
+        // forever, so tag and unregister.
+        if (remainingLen > (uint32_t)mqtt->bufMax) {
+            arkime_session_add_tag(session, "mqtt:message-too-long");
+            arkime_parsers_unregister(session, mqtt);
+            return 0;
+        }
+
         if (remainingLen > BSB_REMAINING(bsb)) {
+            // Not enough buffered yet. If add() truncated this read it can
+            // never complete, so unregister; otherwise wait for more data.
+            if (truncated) {
+                arkime_session_add_tag(session, "mqtt:message-too-long");
+                arkime_parsers_unregister(session, mqtt);
+                return 0;
+            }
+            bsb = headerStart;
             break;
         }
 

@@ -292,7 +292,7 @@ LOCAL int stun_tcp_parser(ArkimeSession_t *session, void *uw, const uint8_t *dat
     while (pb->len[which] >= 20) {
         uint16_t msgLen = (pb->buf[which][2] << 8) | pb->buf[which][3];
 
-        if (msgLen + 20 > (int)sizeof(pb->buf[0])) {
+        if (msgLen + 20 > pb->bufMax) {
             arkime_session_add_tag(session, "stun:message-too-long");
             return ARKIME_PARSER_UNREGISTER;
         }

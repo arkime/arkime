@@ -46,26 +46,36 @@
      ],
      "qosCnt" : 3,
      "topic" : [
+      "server/bigdata",
+      "server/interrupt",
       "test/#",
+      "test/afterbig",
+      "test/bigdata",
+      "test/interleaved",
       "test/qos1",
       "test/qos2",
       "test/small",
       "test/topic1",
       "test/topic2"
      ],
-     "topicCnt" : 6,
+     "topicCnt" : 11,
      "type" : [
       "CONNACK",
       "CONNECT",
+      "DISCONNECT",
+      "PINGREQ",
+      "PINGRESP",
       "PUBACK",
       "PUBCOMP",
       "PUBLISH",
       "PUBREC",
       "PUBREL",
       "SUBACK",
-      "SUBSCRIBE"
+      "SUBSCRIBE",
+      "UNSUBACK",
+      "UNSUBSCRIBE"
      ],
-     "typeCnt" : 9,
+     "typeCnt" : 14,
      "version" : [
       "3.1.1"
      ],

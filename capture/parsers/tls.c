@@ -636,7 +636,11 @@ LOCAL int tls_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, in
     ArkimeParserBuf_t    *tls          = uw;
 
     // Copy the data we have
-    arkime_parser_buf_add(tls, which, data, remaining);
+    if (arkime_parser_buf_add(tls, which, data, remaining) < 0) {
+        arkime_session_add_tag(session, "tls:record-too-long");
+        arkime_parsers_unregister(session, uw);
+        return 0;
+    }
 
     // Make sure we have header
     if (tls->len[which] < 5)
@@ -651,6 +655,11 @@ LOCAL int tls_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, in
 
     // Need the whole record
     int need = ((tls->buf[which][3] << 8) | tls->buf[which][4]) + 5;
+    if (need > tls->bufMax) {
+        arkime_session_add_tag(session, "tls:record-too-long");
+        arkime_parsers_unregister(session, uw);
+        return 0;
+    }
     if (need > tls->len[which])
         return 0;
 
@@ -703,7 +712,7 @@ LOCAL void tls_classify(ArkimeSession_t *session, const uint8_t *data, int len, 
     if (data[2] <= 0x03 && (data[5] == 1 || data[5] == 2)) {
         arkime_session_add_protocol(session, "tls");
 
-        ArkimeParserBuf_t  *tls = arkime_parser_buf_create();
+        ArkimeParserBuf_t  *tls = arkime_parser_buf_create2(2048, 18437);
 
         arkime_parsers_register2(session, tls_parser, tls, arkime_parser_buf_session_free, tls_save);
 
