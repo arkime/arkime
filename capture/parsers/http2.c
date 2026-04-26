@@ -341,6 +341,7 @@ LOCAL int http2_parse_frame(ArkimeSession_t *session, HTTP2Info_t *http2, int wh
 
     // type will only be DATA if this is the first part of a data frame, anything else will be shortcutted in http_parse
     if (type == NGHTTP2_DATA) {
+        int dataLen = MIN((int)len, BSB_REMAINING(bsb));
         http2->dataStreamId[which] = streamId;
         if (len > BSB_REMAINING(bsb)) {
             http2->used[which] = 0;
@@ -348,7 +349,7 @@ LOCAL int http2_parse_frame(ArkimeSession_t *session, HTTP2Info_t *http2, int wh
         } else {
             http2->dataNeeded[which] = 0;
         }
-        http2_parse_frame_data(session, http2, which, flags, streamId, BSB_WORK_PTR(bsb), BSB_REMAINING(bsb), TRUE);
+        http2_parse_frame_data(session, http2, which, flags, streamId, BSB_WORK_PTR(bsb), dataLen, TRUE);
 
         // Don't need to memmove below
         if (http2->dataNeeded[which] != 0)

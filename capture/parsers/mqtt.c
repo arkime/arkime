@@ -316,7 +316,7 @@ LOCAL int mqtt_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, i
 
         // Parse based on packet type
         BSB packetBsb;
-        BSB_INIT(packetBsb, BSB_WORK_PTR(bsb), remainingLen);
+        BSB_IMPORT_bsb(bsb, packetBsb, remainingLen);
 
         switch (packetType) {
         case 1: // CONNECT
@@ -329,8 +329,6 @@ LOCAL int mqtt_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, i
             mqtt_parse_subscribe(session, &packetBsb, mqtt->version);
             break;
         }
-
-        BSB_IMPORT_skip(bsb, remainingLen);
 
         if (BSB_IS_ERROR(bsb))
             break;

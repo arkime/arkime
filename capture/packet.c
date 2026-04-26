@@ -989,6 +989,9 @@ LOCAL ArkimePacketRC arkime_packet_ip4(ArkimePacketBatch_t *batch, ArkimePacket_
 
         udphdr = (struct udphdr *)((char *)ip4 + ip_hdr_len);
 
+        if (ntohs(udphdr->uh_ulen) < sizeof(struct udphdr))
+            return ARKIME_PACKET_CORRUPT;
+
         if (len > ip_hdr_len + (int)sizeof(struct udphdr) + 8 && udpPortCbs[udphdr->uh_dport]) {
             int rc = arkime_packet_call_enqueue(udpPortCbs[udphdr->uh_dport], batch, packet, (uint8_t *)ip4 + ip_hdr_len + sizeof(struct udphdr), len - ip_hdr_len - sizeof(struct udphdr));
             if (rc != ARKIME_PACKET_UNKNOWN_IP)
@@ -1165,6 +1168,9 @@ LOCAL ArkimePacketRC arkime_packet_ip6(ArkimePacketBatch_t *batch, ArkimePacket_
             }
 
             udphdr = (struct udphdr *)(data + ip_hdr_len);
+
+            if (ntohs(udphdr->uh_ulen) < sizeof(struct udphdr))
+                return ARKIME_PACKET_CORRUPT;
 
             arkime_session_id6(sessionId, ip6->ip6_src.s6_addr, udphdr->uh_sport,
                                ip6->ip6_dst.s6_addr, udphdr->uh_dport, packet->vlan, packet->vni);

@@ -137,7 +137,7 @@ LOCAL uint32_t dtls_process_client_hello(ArkimeSession_t *session, const uint8_t
         etotlen = MIN(etotlen, BSB_REMAINING(cbsb));
 
         BSB ebsb;
-        BSB_INIT(ebsb, BSB_WORK_PTR(cbsb), etotlen);
+        BSB_IMPORT_bsb(cbsb, ebsb, etotlen);
 
         while (BSB_REMAINING(ebsb) >= 4) {
             uint16_t etype = 0, elen = 0;
@@ -318,6 +318,9 @@ LOCAL int dtls_udp_parser(ArkimeSession_t *session, void *UNUSED(uw), const uint
 {
     BSB bbuf;
 
+    if (len < 13)
+        return 0;
+
     // 22 is handshake
     if (data[0] != 22) {
         arkime_parsers_unregister(session, uw);
@@ -326,7 +329,7 @@ LOCAL int dtls_udp_parser(ArkimeSession_t *session, void *UNUSED(uw), const uint
 
     BSB_INIT(bbuf, data, len);
 
-    while (BSB_NOT_ERROR(bbuf) && BSB_REMAINING(bbuf) > 11) {
+    while (BSB_NOT_ERROR(bbuf) && BSB_REMAINING(bbuf) >= 13) {
         BSB_IMPORT_skip(bbuf, 11);
         uint16_t tlen = 0;
         BSB_IMPORT_u16(bbuf, tlen);
@@ -335,8 +338,7 @@ LOCAL int dtls_udp_parser(ArkimeSession_t *session, void *UNUSED(uw), const uint
             return 0;
 
         BSB msgBuf;
-        BSB_INIT(msgBuf, BSB_WORK_PTR(bbuf), tlen);
-        BSB_IMPORT_skip(bbuf, tlen);
+        BSB_IMPORT_bsb(bbuf, msgBuf, tlen);
 
         while (BSB_NOT_ERROR(bbuf) && BSB_NOT_ERROR(msgBuf) && BSB_REMAINING(msgBuf) > 12) {
             uint8_t handshakeType = 0;
