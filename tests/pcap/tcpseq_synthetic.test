@@ -34,10 +34,10 @@
     "dstTTLCnt" : 1,
     "ethertype" : 2048,
     "fileId" : [],
-    "firstPacket" : 10000,
+    "firstPacket" : 1748736000000,
     "initRTT" : 1,
     "ipProtocol" : 6,
-    "lastPacket" : 10006,
+    "lastPacket" : 1748736000006,
     "length" : 6,
     "network" : {
      "bytes" : 386,
@@ -64,8 +64,8 @@
      452
     ],
     "packetRange" : {
-     "gte" : 10000,
-     "lte" : 10006
+     "gte" : 1748736000000,
+     "lte" : 1748736000006
     },
     "protocol" : [
      "tcp"
@@ -148,7 +148,7 @@
    },
    "header" : {
     "index" : {
-     "_index" : "tests_sessions3-70m01"
+     "_index" : "tests_sessions3-25m06"
     }
    }
   },
@@ -175,10 +175,10 @@
     "dstTTLCnt" : 1,
     "ethertype" : 2048,
     "fileId" : [],
-    "firstPacket" : 10007,
+    "firstPacket" : 1748736000006,
     "initRTT" : 1,
     "ipProtocol" : 6,
-    "lastPacket" : 10012,
+    "lastPacket" : 1748736000011,
     "length" : 5,
     "network" : {
      "bytes" : 332,
@@ -203,8 +203,8 @@
      880
     ],
     "packetRange" : {
-     "gte" : 10007,
-     "lte" : 10012
+     "gte" : 1748736000006,
+     "lte" : 1748736000011
     },
     "protocol" : [
      "tcp"
@@ -263,7 +263,7 @@
    },
    "header" : {
     "index" : {
-     "_index" : "tests_sessions3-70m01"
+     "_index" : "tests_sessions3-25m06"
     }
    }
   },
@@ -290,10 +290,10 @@
     "dstTTLCnt" : 1,
     "ethertype" : 2048,
     "fileId" : [],
-    "firstPacket" : 10013,
+    "firstPacket" : 1748736000012,
     "initRTT" : 1,
     "ipProtocol" : 6,
-    "lastPacket" : 10018,
+    "lastPacket" : 1748736000017,
     "length" : 5,
     "network" : {
      "bytes" : 332,
@@ -318,8 +318,8 @@
      1308
     ],
     "packetRange" : {
-     "gte" : 10013,
-     "lte" : 10018
+     "gte" : 1748736000012,
+     "lte" : 1748736000017
     },
     "protocol" : [
      "tcp"
@@ -367,7 +367,7 @@
    },
    "header" : {
     "index" : {
-     "_index" : "tests_sessions3-70m01"
+     "_index" : "tests_sessions3-25m06"
     }
    }
   },
@@ -394,10 +394,10 @@
     "dstTTLCnt" : 1,
     "ethertype" : 2048,
     "fileId" : [],
-    "firstPacket" : 10019,
-    "initRTT" : 1,
+    "firstPacket" : 1748736000018,
+    "initRTT" : 0,
     "ipProtocol" : 6,
-    "lastPacket" : 10029,
+    "lastPacket" : 1748736000028,
     "length" : 10,
     "network" : {
      "bytes" : 634,
@@ -432,8 +432,8 @@
      2118
     ],
     "packetRange" : {
-     "gte" : 10019,
-     "lte" : 10029
+     "gte" : 1748736000018,
+     "lte" : 1748736000028
     },
     "protocol" : [
      "tcp"
@@ -481,7 +481,7 @@
    },
    "header" : {
     "index" : {
-     "_index" : "tests_sessions3-70m01"
+     "_index" : "tests_sessions3-25m06"
     }
    }
   },
@@ -508,10 +508,10 @@
     "dstTTLCnt" : 1,
     "ethertype" : 2048,
     "fileId" : [],
-    "firstPacket" : 10030,
+    "firstPacket" : 1748736000029,
     "initRTT" : 1,
     "ipProtocol" : 6,
-    "lastPacket" : 10036,
+    "lastPacket" : 1748736000035,
     "length" : 6,
     "network" : {
      "bytes" : 402,
@@ -538,8 +538,8 @@
      2632
     ],
     "packetRange" : {
-     "gte" : 10030,
-     "lte" : 10036
+     "gte" : 1748736000029,
+     "lte" : 1748736000035
     },
     "protocol" : [
      "tcp"
@@ -587,7 +587,7 @@
    },
    "header" : {
     "index" : {
-     "_index" : "tests_sessions3-70m01"
+     "_index" : "tests_sessions3-25m06"
     }
    }
   }
