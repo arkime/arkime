@@ -150,7 +150,7 @@ LOCAL void stun_parse_address(ArkimeSession_t *session, BSB *bsb, int attrLen,
 LOCAL int stun_parser(ArkimeSession_t *session, void *UNUSED(uw), const uint8_t *data, int len, int UNUSED(which))
 {
     if (len < 20)
-        return 0;
+        return ARKIME_PARSER_UNREGISTER;
 
     BSB bsb;
     BSB_INIT(bsb, data, len);
@@ -172,8 +172,13 @@ LOCAL int stun_parser(ArkimeSession_t *session, void *UNUSED(uw), const uint8_t 
     if (magicCookie != STUN_MAGIC_COOKIE) {
         // Could be classic STUN (RFC 3489) without magic cookie
         if (msgLen + 20 != len)
-            return 0;
+            return ARKIME_PARSER_UNREGISTER;
+    } else if (msgLen + 20 > len) {
+        return ARKIME_PARSER_UNREGISTER;
     }
+
+    // Re-init BSB to bound attribute parsing to the declared msgLen
+    BSB_INIT(bsb, data + 20, msgLen);
 
     // Add message type using method/class lookup
     // Method: bits 0-3, 5-8, 11; Class: bits 4, 9

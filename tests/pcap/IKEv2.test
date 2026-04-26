@@ -40,6 +40,14 @@
     "firstPacket" : 1498561868006,
     "ipProtocol" : 17,
     "isakmp" : {
+     "dhGroup" : [
+      "ecp384"
+     ],
+     "dhGroupCnt" : 1,
+     "encryption" : [
+      "aes-ctr"
+     ],
+     "encryptionCnt" : 1,
      "exchangeType" : [
       "create-child-sa",
       "ike-auth",
@@ -47,6 +55,10 @@
       "informational"
      ],
      "exchangeTypeCnt" : 4,
+     "hash" : [
+      "prf-hmac-sha2-512"
+     ],
+     "hashCnt" : 1,
      "initiatorSpi" : [
       "8e7779464044673e",
       "e5bc67550fd4d3ea"

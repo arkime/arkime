@@ -238,13 +238,13 @@ LOCAL void ike_parse_transform_v1(ArkimeSession_t *session, BSB *bsb)
 LOCAL void ike_parse_transform_v2(ArkimeSession_t *session, BSB *bsb)
 {
     // IKEv2 Transform: Last (1) | Reserved (1) | Length (2) | Type (1) | Reserved (1) | ID (2)
-    if (BSB_REMAINING(*bsb) < 8)
+    // Caller has already consumed Last/Reserved/Length, so 4 bytes remain.
+    if (BSB_REMAINING(*bsb) < 4)
         return;
 
     uint8_t transformType = 0;
     uint16_t transformId = 0;
 
-    BSB_IMPORT_skip(*bsb, 4);  // last, reserved, length
     BSB_IMPORT_u08(*bsb, transformType);
     BSB_IMPORT_skip(*bsb, 1);
     BSB_IMPORT_u16(*bsb, transformId);
@@ -307,7 +307,7 @@ LOCAL void ike_parse_proposal_v2(ArkimeSession_t *session, BSB *bsb)
     uint8_t spiSize = 0;
     uint8_t numTransforms = 0;
 
-    BSB_IMPORT_skip(*bsb, 6);
+    BSB_IMPORT_skip(*bsb, 2);  // proposal#, protocolID
     BSB_IMPORT_u08(*bsb, spiSize);
     BSB_IMPORT_u08(*bsb, numTransforms);
 

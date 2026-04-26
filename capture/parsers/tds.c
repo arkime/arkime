@@ -37,7 +37,10 @@ LOCAL int tds_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, in
 {
     ArkimeParserBuf_t *tds = uw;
 
-    arkime_parser_buf_add(tds, which, data, remaining);
+    if (arkime_parser_buf_add(tds, which, data, remaining) < 0) {
+        arkime_session_add_tag(session, "tds:packet-too-long");
+        return ARKIME_PARSER_UNREGISTER;
+    }
 
     // Lots of info from http://www.freetds.org/tds.html
     if (tds->version == 7) {
@@ -50,7 +53,13 @@ LOCAL int tds_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, in
             uint8_t pktType = ptr[pos];
             uint16_t pktLen = (ptr[pos + 2] << 8) | ptr[pos + 3];
 
-            if (pktLen < 8 || pos + pktLen > tds->len[0]) {
+            if (pktLen < 8 || pktLen > tds->bufMax) {
+                // Malformed - too small or larger than buffer can ever hold
+                arkime_session_add_tag(session, "tds:packet-too-long");
+                arkime_parsers_unregister(session, uw);
+                return 0;
+            }
+            if (pos + pktLen > tds->len[0]) {
                 // Need more data
                 break;
             }
