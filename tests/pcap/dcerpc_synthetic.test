@@ -162,9 +162,10 @@
      "msgType" : [
       "bind",
       "bind-ack",
+      "fault",
       "request"
      ],
-     "msgTypeCnt" : 3,
+     "msgTypeCnt" : 4,
      "opnum" : [
       5
      ],
@@ -237,7 +238,7 @@
     "protocolCnt" : 3,
     "segmentCnt" : 1,
     "server" : {
-     "bytes" : 64
+     "bytes" : 84
     },
     "source" : {
      "bytes" : 332,
@@ -273,7 +274,7 @@
      "dst" : 0,
      "src" : 1000
     },
-    "totDataBytes" : 180
+    "totDataBytes" : 200
    },
    "header" : {
     "index" : {
@@ -294,9 +295,10 @@
      "interfaceCnt" : 1,
      "msgType" : [
       "bind",
-      "bind-ack"
+      "bind-ack",
+      "bind-nak"
      ],
-     "msgTypeCnt" : 2,
+     "msgTypeCnt" : 3,
      "uuid" : [
       "12345678-1234-abcd-ef00-01234567cffb"
      ],
@@ -363,7 +365,7 @@
     "protocolCnt" : 3,
     "segmentCnt" : 1,
     "server" : {
-     "bytes" : 60
+     "bytes" : 80
     },
     "source" : {
      "bytes" : 234,
@@ -399,7 +401,7 @@
      "dst" : 0,
      "src" : 1000
     },
-    "totDataBytes" : 132
+    "totDataBytes" : 152
    },
    "header" : {
     "index" : {
@@ -420,10 +422,11 @@
      "interfaceCnt" : 1,
      "msgType" : [
       "alter-context",
+      "alter-context-resp",
       "bind",
       "bind-ack"
      ],
-     "msgTypeCnt" : 3,
+     "msgTypeCnt" : 4,
      "uuid" : [
       "367abb81-9844-35f1-ad32-98f038001003"
      ],
@@ -492,7 +495,7 @@
     "protocolCnt" : 3,
     "segmentCnt" : 1,
     "server" : {
-     "bytes" : 92
+     "bytes" : 112
     },
     "source" : {
      "bytes" : 360,
@@ -528,7 +531,7 @@
      "dst" : 0,
      "src" : 1000
     },
-    "totDataBytes" : 236
+    "totDataBytes" : 256
    },
    "header" : {
     "index" : {
@@ -550,9 +553,10 @@
      "msgType" : [
       "bind",
       "bind-ack",
-      "request"
+      "request",
+      "shutdown"
      ],
-     "msgTypeCnt" : 3,
+     "msgTypeCnt" : 4,
      "opnum" : [
       21
      ],
@@ -625,7 +629,7 @@
     "protocolCnt" : 3,
     "segmentCnt" : 1,
     "server" : {
-     "bytes" : 60
+     "bytes" : 80
     },
     "source" : {
      "bytes" : 332,
@@ -661,7 +665,7 @@
      "dst" : 0,
      "src" : 1000
     },
-    "totDataBytes" : 176
+    "totDataBytes" : 196
    },
    "header" : {
     "index" : {
@@ -951,9 +955,10 @@
      "msgType" : [
       "bind",
       "bind-ack",
-      "request"
+      "request",
+      "response"
      ],
-     "msgTypeCnt" : 3,
+     "msgTypeCnt" : 4,
      "opnum" : [
       7
      ],
@@ -1026,7 +1031,7 @@
     "protocolCnt" : 3,
     "segmentCnt" : 1,
     "server" : {
-     "bytes" : 80
+     "bytes" : 100
     },
     "source" : {
      "bytes" : 332,
@@ -1044,10 +1049,6 @@
      64
     ],
     "srcTTLCnt" : 1,
-    "tags" : [
-     "dcerpc:bad-fraglen"
-    ],
-    "tagsCnt" : 1,
     "tcpflags" : {
      "ack" : 1,
      "ae" : 0,
@@ -1066,7 +1067,7 @@
      "dst" : 0,
      "src" : 1000
     },
-    "totDataBytes" : 196
+    "totDataBytes" : 216
    },
    "header" : {
     "index" : {
@@ -1088,9 +1089,10 @@
      "msgType" : [
       "bind",
       "bind-ack",
-      "request"
+      "request",
+      "response"
      ],
-     "msgTypeCnt" : 3,
+     "msgTypeCnt" : 4,
      "opnum" : [
       8
      ],
@@ -1163,7 +1165,7 @@
     "protocolCnt" : 3,
     "segmentCnt" : 1,
     "server" : {
-     "bytes" : 80
+     "bytes" : 100
     },
     "source" : {
      "bytes" : 332,
@@ -1181,10 +1183,6 @@
      64
     ],
     "srcTTLCnt" : 1,
-    "tags" : [
-     "dcerpc:bad-fraglen"
-    ],
-    "tagsCnt" : 1,
     "tcpflags" : {
      "ack" : 1,
      "ae" : 0,
@@ -1203,7 +1201,7 @@
      "dst" : 0,
      "src" : 1000
     },
-    "totDataBytes" : 196
+    "totDataBytes" : 216
    },
    "header" : {
     "index" : {
@@ -1225,9 +1223,10 @@
      "msgType" : [
       "bind",
       "bind-ack",
-      "request"
+      "request",
+      "response"
      ],
-     "msgTypeCnt" : 3,
+     "msgTypeCnt" : 4,
      "opnum" : [
       9
      ],
@@ -1300,7 +1299,7 @@
     "protocolCnt" : 3,
     "segmentCnt" : 1,
     "server" : {
-     "bytes" : 80
+     "bytes" : 100
     },
     "source" : {
      "bytes" : 332,
@@ -1318,10 +1317,6 @@
      64
     ],
     "srcTTLCnt" : 1,
-    "tags" : [
-     "dcerpc:bad-fraglen"
-    ],
-    "tagsCnt" : 1,
     "tcpflags" : {
      "ack" : 1,
      "ae" : 0,
@@ -1340,7 +1335,7 @@
      "dst" : 0,
      "src" : 1000
     },
-    "totDataBytes" : 196
+    "totDataBytes" : 216
    },
    "header" : {
     "index" : {
@@ -1362,9 +1357,10 @@
      "msgType" : [
       "bind",
       "bind-ack",
-      "request"
+      "request",
+      "response"
      ],
-     "msgTypeCnt" : 3,
+     "msgTypeCnt" : 4,
      "opnum" : [
       10
      ],
@@ -1437,7 +1433,7 @@
     "protocolCnt" : 3,
     "segmentCnt" : 1,
     "server" : {
-     "bytes" : 80
+     "bytes" : 100
     },
     "source" : {
      "bytes" : 332,
@@ -1455,10 +1451,6 @@
      64
     ],
     "srcTTLCnt" : 1,
-    "tags" : [
-     "dcerpc:bad-fraglen"
-    ],
-    "tagsCnt" : 1,
     "tcpflags" : {
      "ack" : 1,
      "ae" : 0,
@@ -1477,7 +1469,7 @@
      "dst" : 0,
      "src" : 1000
     },
-    "totDataBytes" : 196
+    "totDataBytes" : 216
    },
    "header" : {
     "index" : {
@@ -1499,9 +1491,10 @@
      "msgType" : [
       "bind",
       "bind-ack",
-      "request"
+      "request",
+      "response"
      ],
-     "msgTypeCnt" : 3,
+     "msgTypeCnt" : 4,
      "opnum" : [
       11
      ],
@@ -1574,7 +1567,7 @@
     "protocolCnt" : 3,
     "segmentCnt" : 1,
     "server" : {
-     "bytes" : 80
+     "bytes" : 100
     },
     "source" : {
      "bytes" : 332,
@@ -1592,10 +1585,6 @@
      64
     ],
     "srcTTLCnt" : 1,
-    "tags" : [
-     "dcerpc:bad-fraglen"
-    ],
-    "tagsCnt" : 1,
     "tcpflags" : {
      "ack" : 1,
      "ae" : 0,
@@ -1614,7 +1603,7 @@
      "dst" : 0,
      "src" : 1000
     },
-    "totDataBytes" : 196
+    "totDataBytes" : 216
    },
    "header" : {
     "index" : {
@@ -1636,9 +1625,10 @@
      "msgType" : [
       "bind",
       "bind-ack",
-      "request"
+      "request",
+      "response"
      ],
-     "msgTypeCnt" : 3,
+     "msgTypeCnt" : 4,
      "opnum" : [
       12
      ],
@@ -1711,7 +1701,7 @@
     "protocolCnt" : 3,
     "segmentCnt" : 1,
     "server" : {
-     "bytes" : 80
+     "bytes" : 100
     },
     "source" : {
      "bytes" : 332,
@@ -1729,10 +1719,6 @@
      64
     ],
     "srcTTLCnt" : 1,
-    "tags" : [
-     "dcerpc:bad-fraglen"
-    ],
-    "tagsCnt" : 1,
     "tcpflags" : {
      "ack" : 1,
      "ae" : 0,
@@ -1751,7 +1737,7 @@
      "dst" : 0,
      "src" : 1000
     },
-    "totDataBytes" : 196
+    "totDataBytes" : 216
    },
    "header" : {
     "index" : {
@@ -1773,9 +1759,10 @@
      "msgType" : [
       "bind",
       "bind-ack",
-      "request"
+      "request",
+      "response"
      ],
-     "msgTypeCnt" : 3,
+     "msgTypeCnt" : 4,
      "opnum" : [
       13
      ],
@@ -1848,7 +1835,7 @@
     "protocolCnt" : 3,
     "segmentCnt" : 1,
     "server" : {
-     "bytes" : 80
+     "bytes" : 100
     },
     "source" : {
      "bytes" : 332,
@@ -1866,10 +1853,6 @@
      64
     ],
     "srcTTLCnt" : 1,
-    "tags" : [
-     "dcerpc:bad-fraglen"
-    ],
-    "tagsCnt" : 1,
     "tcpflags" : {
      "ack" : 1,
      "ae" : 0,
@@ -1888,7 +1871,7 @@
      "dst" : 0,
      "src" : 1000
     },
-    "totDataBytes" : 196
+    "totDataBytes" : 216
    },
    "header" : {
     "index" : {
@@ -1910,9 +1893,10 @@
      "msgType" : [
       "bind",
       "bind-ack",
-      "request"
+      "request",
+      "response"
      ],
-     "msgTypeCnt" : 3,
+     "msgTypeCnt" : 4,
      "opnum" : [
       14
      ],
@@ -1985,7 +1969,7 @@
     "protocolCnt" : 3,
     "segmentCnt" : 1,
     "server" : {
-     "bytes" : 80
+     "bytes" : 100
     },
     "source" : {
      "bytes" : 332,
@@ -2003,10 +1987,6 @@
      64
     ],
     "srcTTLCnt" : 1,
-    "tags" : [
-     "dcerpc:bad-fraglen"
-    ],
-    "tagsCnt" : 1,
     "tcpflags" : {
      "ack" : 1,
      "ae" : 0,
@@ -2025,7 +2005,7 @@
      "dst" : 0,
      "src" : 1000
     },
-    "totDataBytes" : 196
+    "totDataBytes" : 216
    },
    "header" : {
     "index" : {
@@ -2047,9 +2027,10 @@
      "msgType" : [
       "bind",
       "bind-ack",
-      "request"
+      "request",
+      "response"
      ],
-     "msgTypeCnt" : 3,
+     "msgTypeCnt" : 4,
      "opnum" : [
       15
      ],
@@ -2122,7 +2103,7 @@
     "protocolCnt" : 3,
     "segmentCnt" : 1,
     "server" : {
-     "bytes" : 80
+     "bytes" : 100
     },
     "source" : {
      "bytes" : 332,
@@ -2140,10 +2121,6 @@
      64
     ],
     "srcTTLCnt" : 1,
-    "tags" : [
-     "dcerpc:bad-fraglen"
-    ],
-    "tagsCnt" : 1,
     "tcpflags" : {
      "ack" : 1,
      "ae" : 0,
@@ -2162,7 +2139,7 @@
      "dst" : 0,
      "src" : 1000
     },
-    "totDataBytes" : 196
+    "totDataBytes" : 216
    },
    "header" : {
     "index" : {
@@ -2184,9 +2161,10 @@
      "msgType" : [
       "bind",
       "bind-ack",
-      "request"
+      "request",
+      "response"
      ],
-     "msgTypeCnt" : 3,
+     "msgTypeCnt" : 4,
      "opnum" : [
       16
      ],
@@ -2259,7 +2237,7 @@
     "protocolCnt" : 3,
     "segmentCnt" : 1,
     "server" : {
-     "bytes" : 80
+     "bytes" : 100
     },
     "source" : {
      "bytes" : 332,
@@ -2277,10 +2255,6 @@
      64
     ],
     "srcTTLCnt" : 1,
-    "tags" : [
-     "dcerpc:bad-fraglen"
-    ],
-    "tagsCnt" : 1,
     "tcpflags" : {
      "ack" : 1,
      "ae" : 0,
@@ -2299,7 +2273,7 @@
      "dst" : 0,
      "src" : 1000
     },
-    "totDataBytes" : 196
+    "totDataBytes" : 216
    },
    "header" : {
     "index" : {
@@ -2317,9 +2291,10 @@
      "msgType" : [
       "bind",
       "bind-ack",
-      "request"
+      "request",
+      "response"
      ],
-     "msgTypeCnt" : 3,
+     "msgTypeCnt" : 4,
      "opnum" : [
       99
      ],
@@ -2391,7 +2366,7 @@
     "protocolCnt" : 2,
     "segmentCnt" : 1,
     "server" : {
-     "bytes" : 80
+     "bytes" : 100
     },
     "source" : {
      "bytes" : 332,
@@ -2409,10 +2384,6 @@
      64
     ],
     "srcTTLCnt" : 1,
-    "tags" : [
-     "dcerpc:bad-fraglen"
-    ],
-    "tagsCnt" : 1,
     "tcpflags" : {
      "ack" : 1,
      "ae" : 0,
@@ -2431,7 +2402,7 @@
      "dst" : 0,
      "src" : 1000
     },
-    "totDataBytes" : 196
+    "totDataBytes" : 216
    },
    "header" : {
     "index" : {
