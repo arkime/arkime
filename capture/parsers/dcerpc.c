@@ -240,9 +240,13 @@ LOCAL int dcerpc_parser(ArkimeSession_t *session, void *uw, const uint8_t *data,
             fragLen = (pb->buf[which][8] << 8) | pb->buf[which][9];
         }
 
-        if (fragLen < 16 || fragLen > 8192) {
-            arkime_parser_buf_skip(pb, which, pb->len[which]);
-            return 0;
+        if (fragLen < 16) {
+            arkime_session_add_tag(session, "dcerpc:bad-fraglen");
+            return ARKIME_PARSER_UNREGISTER;
+        }
+        if (fragLen > pb->bufMax) {
+            arkime_session_add_tag(session, "dcerpc:fragment-too-long");
+            return ARKIME_PARSER_UNREGISTER;
         }
 
         if (pb->len[which] < fragLen)

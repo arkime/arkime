@@ -55,7 +55,7 @@
 #endif
 #define ARKIME_CACHE_ALIGN __attribute__((aligned(ARKIME_CACHE_LINE_SIZE)))
 
-#define ARKIME_API_VERSION 605
+#define ARKIME_API_VERSION 606
 
 #define ARKIME_SESSIONID_LEN  40
 #define ARKIME_SESSIONID6_LEN 40
@@ -550,12 +550,14 @@ typedef struct {
 } ArkimeParserInfo_t;
 
 typedef struct {
-    uint8_t buf[2][8192];
-    int     len[2];
-    int     state[2];
-    int     skipping[2];
-    int     serverWhich;
-    uint8_t version;
+    uint8_t *buf[2];
+    int      len[2];
+    int      state[2];
+    int      skipping[2];
+    uint16_t bufSize[2];
+    uint16_t bufMax;
+    int      serverWhich;
+    uint8_t  version;
 } ArkimeParserBuf_t;
 
 /******************************************************************************/
@@ -1241,6 +1243,7 @@ void arkime_parsers_register_sub(const char *parserName, const char *hexKey, Ark
 GHashTable *arkime_parsers_get_sub(const char *parserName);
 
 ArkimeParserBuf_t *arkime_parser_buf_create();
+ArkimeParserBuf_t *arkime_parser_buf_create2(uint16_t initialSize, uint16_t maxSize);
 int arkime_parser_buf_add(ArkimeParserBuf_t *pb, int which, const uint8_t *data, int len);
 int arkime_parser_buf_del(ArkimeParserBuf_t *pb, int which, int len);
 void arkime_parser_buf_skip(ArkimeParserBuf_t *pb, int which, int skip);

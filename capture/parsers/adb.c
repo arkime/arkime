@@ -528,7 +528,7 @@ LOCAL int adb_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, in
         }
 
         /* Sanity check data_length to prevent integer overflow */
-        if (data_length > (uint32_t)sizeof(adb->pb->buf[which]) - 24) {
+        if (data_length > (uint32_t)adb->pb->bufMax - 24) {
             adb->pb->len[which] = 0;
             return 0;
         }

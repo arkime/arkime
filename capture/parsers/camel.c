@@ -226,10 +226,10 @@ LOCAL int camel_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, 
         BSB_IMPORT_u08(bsb, tag);
         BSB_IMPORT_u08(bsb, lenByte);
 
-        int elemLen = lenByte;
+        uint32_t elemLen = lenByte;
         if (lenByte & 0x80) {
             int numBytes = lenByte & 0x7f;
-            if (numBytes > 4)
+            if (numBytes == 0 || numBytes > 3)
                 return ARKIME_PARSER_UNREGISTER;
             elemLen = 0;
             for (int i = 0; i < numBytes && BSB_REMAINING(bsb) > 0; i++) {
@@ -251,10 +251,10 @@ LOCAL int camel_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, 
                 BSB_IMPORT_u08(compBsb, compTag);
                 BSB_IMPORT_u08(compBsb, lenByte);
 
-                int compLen = lenByte;
+                uint32_t compLen = lenByte;
                 if (lenByte & 0x80) {
                     int numBytes = lenByte & 0x7f;
-                    if (numBytes > 4)
+                    if (numBytes == 0 || numBytes > 3)
                         break;
                     compLen = 0;
                     for (int i = 0; i < numBytes && BSB_REMAINING(compBsb) > 0; i++) {
@@ -274,10 +274,10 @@ LOCAL int camel_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, 
                         BSB_IMPORT_u08(invBsb, invTag);
                         BSB_IMPORT_u08(invBsb, lenByte);
 
-                        int invLen = lenByte;
+                        uint32_t invLen = lenByte;
                         if (lenByte & 0x80) {
                             int numBytes = lenByte & 0x7f;
-                            if (numBytes > 4)
+                            if (numBytes == 0 || numBytes > 3)
                                 break;
                             invLen = 0;
                             for (int i = 0; i < numBytes && BSB_REMAINING(invBsb) > 0; i++) {

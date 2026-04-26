@@ -1,0 +1,596 @@
+{
+ "sessions3" : [
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 8
+    },
+    "destination" : {
+     "as" : {
+      "full" : "AS1 Cool Beans!",
+      "number" : 1,
+      "organization" : {
+       "name" : "Cool Beans!"
+      }
+     },
+     "bytes" : 162,
+     "geo" : {
+      "country_iso_code" : "CA"
+     },
+     "ip" : "10.0.0.2",
+     "mac" : [
+      "6a:70:c5:af:f1:f9",
+      "94:2a:6f:ee:8c:82"
+     ],
+     "mac-cnt" : 2,
+     "packets" : 3,
+     "port" : 8000
+    },
+    "dstRIR" : "TEST",
+    "dstTTL" : [
+     64
+    ],
+    "dstTTLCnt" : 1,
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 10000,
+    "initRTT" : 1,
+    "ipProtocol" : 6,
+    "lastPacket" : 10006,
+    "length" : 6,
+    "network" : {
+     "bytes" : 386,
+     "community_id" : "1:BfCXwDz+LOCK04q+3zDGuQngIr8=",
+     "packets" : 7
+    },
+    "node" : "test",
+    "packetLen" : [
+     70,
+     70,
+     70,
+     74,
+     70,
+     74,
+     70
+    ],
+    "packetPos" : [
+     24,
+     94,
+     164,
+     234,
+     308,
+     378,
+     452
+    ],
+    "packetRange" : {
+     "gte" : 10000,
+     "lte" : 10006
+    },
+    "protocol" : [
+     "tcp"
+    ],
+    "protocolCnt" : 1,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 0
+    },
+    "source" : {
+     "as" : {
+      "full" : "AS0 This is neat",
+      "number" : 0,
+      "organization" : {
+       "name" : "This is neat"
+      }
+     },
+     "bytes" : 224,
+     "geo" : {
+      "country_iso_code" : "RU"
+     },
+     "ip" : "10.0.0.1",
+     "mac" : [
+      "6a:70:c5:af:f1:f9",
+      "94:2a:6f:ee:8c:82"
+     ],
+     "mac-cnt" : 2,
+     "packets" : 4,
+     "port" : 40001
+    },
+    "srcPayload8" : "4141414142424242",
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
+    "tags" : [
+     "dstip",
+     "srcip"
+    ],
+    "tagsCnt" : 2,
+    "tcpflags" : {
+     "ack" : 3,
+     "ae" : 0,
+     "cwr" : 0,
+     "dstZero" : 0,
+     "ece" : 0,
+     "fin" : 0,
+     "psh" : 2,
+     "rst" : 0,
+     "srcZero" : 0,
+     "syn" : 1,
+     "syn-ack" : 1,
+     "urg" : 0
+    },
+    "tcpseq" : {
+     "dst" : 0,
+     "src" : 1000
+    },
+    "test" : {
+     "ASN" : [
+      "AS0 This is neat"
+     ],
+     "GEO" : [
+      "RU"
+     ],
+     "RIR" : [
+      ""
+     ],
+     "ip" : [
+      "10.0.0.1"
+     ],
+     "number" : [
+      33554442
+     ],
+     "string.snow" : [
+      "16777226:40001,33554442:8000"
+     ]
+    },
+    "totDataBytes" : 8
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-70m01"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 8
+    },
+    "destination" : {
+     "bytes" : 108,
+     "ip" : "10.0.0.4",
+     "mac" : [
+      "6a:70:c5:af:f1:f9",
+      "94:2a:6f:ee:8c:82"
+     ],
+     "mac-cnt" : 2,
+     "packets" : 2,
+     "port" : 8001
+    },
+    "dstTTL" : [
+     64
+    ],
+    "dstTTLCnt" : 1,
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 10007,
+    "initRTT" : 1,
+    "ipProtocol" : 6,
+    "lastPacket" : 10012,
+    "length" : 5,
+    "network" : {
+     "bytes" : 332,
+     "community_id" : "1:pKtiNNlU7CDtoTylVTGSrjO22R8=",
+     "packets" : 6
+    },
+    "node" : "test",
+    "packetLen" : [
+     70,
+     70,
+     70,
+     74,
+     74,
+     70
+    ],
+    "packetPos" : [
+     522,
+     592,
+     662,
+     732,
+     806,
+     880
+    ],
+    "packetRange" : {
+     "gte" : 10007,
+     "lte" : 10012
+    },
+    "protocol" : [
+     "tcp"
+    ],
+    "protocolCnt" : 1,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 0
+    },
+    "source" : {
+     "as" : {
+      "full" : "AS2 Hmm!@#$%^&*()",
+      "number" : 2,
+      "organization" : {
+       "name" : "Hmm!@#$%^&*()"
+      }
+     },
+     "bytes" : 224,
+     "ip" : "10.0.0.3",
+     "mac" : [
+      "6a:70:c5:af:f1:f9",
+      "94:2a:6f:ee:8c:82"
+     ],
+     "mac-cnt" : 2,
+     "packets" : 4,
+     "port" : 40002
+    },
+    "srcPayload8" : "5858585859595959",
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
+    "tags" : [
+     "out-of-order-src"
+    ],
+    "tagsCnt" : 1,
+    "tcpflags" : {
+     "ack" : 2,
+     "ae" : 0,
+     "cwr" : 0,
+     "dstZero" : 0,
+     "ece" : 0,
+     "fin" : 0,
+     "psh" : 2,
+     "rst" : 0,
+     "srcZero" : 0,
+     "syn" : 1,
+     "syn-ack" : 1,
+     "urg" : 0
+    },
+    "tcpseq" : {
+     "dst" : 0,
+     "src" : 3000
+    },
+    "totDataBytes" : 8
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-70m01"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 4
+    },
+    "destination" : {
+     "bytes" : 108,
+     "ip" : "10.0.0.6",
+     "mac" : [
+      "6a:70:c5:af:f1:f9",
+      "94:2a:6f:ee:8c:82"
+     ],
+     "mac-cnt" : 2,
+     "packets" : 2,
+     "port" : 8002
+    },
+    "dstTTL" : [
+     64
+    ],
+    "dstTTLCnt" : 1,
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 10013,
+    "initRTT" : 1,
+    "ipProtocol" : 6,
+    "lastPacket" : 10018,
+    "length" : 5,
+    "network" : {
+     "bytes" : 332,
+     "community_id" : "1:GOQTBuexWUrwVZtFVJDy+HWW4/A=",
+     "packets" : 6
+    },
+    "node" : "test",
+    "packetLen" : [
+     70,
+     70,
+     70,
+     74,
+     74,
+     70
+    ],
+    "packetPos" : [
+     950,
+     1020,
+     1090,
+     1160,
+     1234,
+     1308
+    ],
+    "packetRange" : {
+     "gte" : 10013,
+     "lte" : 10018
+    },
+    "protocol" : [
+     "tcp"
+    ],
+    "protocolCnt" : 1,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 0
+    },
+    "source" : {
+     "bytes" : 224,
+     "ip" : "10.0.0.5",
+     "mac" : [
+      "6a:70:c5:af:f1:f9",
+      "94:2a:6f:ee:8c:82"
+     ],
+     "mac-cnt" : 2,
+     "packets" : 4,
+     "port" : 40003
+    },
+    "srcPayload8" : "5a5a5a5a",
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
+    "tcpflags" : {
+     "ack" : 2,
+     "ae" : 0,
+     "cwr" : 0,
+     "dstZero" : 0,
+     "ece" : 0,
+     "fin" : 0,
+     "psh" : 2,
+     "rst" : 0,
+     "srcZero" : 0,
+     "syn" : 1,
+     "syn-ack" : 1,
+     "urg" : 0
+    },
+    "tcpseq" : {
+     "dst" : 0,
+     "src" : 5000
+    },
+    "totDataBytes" : 4
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-70m01"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 40
+    },
+    "destination" : {
+     "bytes" : 270,
+     "ip" : "10.0.0.8",
+     "mac" : [
+      "6a:70:c5:af:f1:f9",
+      "94:2a:6f:ee:8c:82"
+     ],
+     "mac-cnt" : 2,
+     "packets" : 5,
+     "port" : 8003
+    },
+    "dstTTL" : [
+     64
+    ],
+    "dstTTLCnt" : 1,
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 10019,
+    "initRTT" : 1,
+    "ipProtocol" : 6,
+    "lastPacket" : 10029,
+    "length" : 10,
+    "network" : {
+     "bytes" : 634,
+     "community_id" : "1:5vV5CsOOig6ffLPhMHUjoCfsX1E=",
+     "packets" : 11
+    },
+    "node" : "test",
+    "packetLen" : [
+     70,
+     70,
+     70,
+     78,
+     70,
+     78,
+     70,
+     86,
+     70,
+     78,
+     70
+    ],
+    "packetPos" : [
+     1378,
+     1448,
+     1518,
+     1588,
+     1666,
+     1736,
+     1814,
+     1884,
+     1970,
+     2040,
+     2118
+    ],
+    "packetRange" : {
+     "gte" : 10019,
+     "lte" : 10029
+    },
+    "protocol" : [
+     "tcp"
+    ],
+    "protocolCnt" : 1,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 0
+    },
+    "source" : {
+     "bytes" : 364,
+     "ip" : "10.0.0.7",
+     "mac" : [
+      "6a:70:c5:af:f1:f9",
+      "94:2a:6f:ee:8c:82"
+     ],
+     "mac-cnt" : 2,
+     "packets" : 6,
+     "port" : 40004
+    },
+    "srcPayload8" : "4141414141414141",
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
+    "tcpflags" : {
+     "ack" : 5,
+     "ae" : 0,
+     "cwr" : 0,
+     "dstZero" : 0,
+     "ece" : 0,
+     "fin" : 0,
+     "psh" : 4,
+     "rst" : 0,
+     "srcZero" : 0,
+     "syn" : 1,
+     "syn-ack" : 1,
+     "urg" : 0
+    },
+    "tcpseq" : {
+     "dst" : 0,
+     "src" : 4294967264
+    },
+    "totDataBytes" : 40
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-70m01"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 24
+    },
+    "destination" : {
+     "bytes" : 108,
+     "ip" : "10.0.0.10",
+     "mac" : [
+      "6a:70:c5:af:f1:f9",
+      "94:2a:6f:ee:8c:82"
+     ],
+     "mac-cnt" : 2,
+     "packets" : 2,
+     "port" : 8004
+    },
+    "dstTTL" : [
+     64
+    ],
+    "dstTTLCnt" : 1,
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 10030,
+    "initRTT" : 1,
+    "ipProtocol" : 6,
+    "lastPacket" : 10036,
+    "length" : 6,
+    "network" : {
+     "bytes" : 402,
+     "community_id" : "1:4a3Drx4EN9TdEVBWomZWzfPa26I=",
+     "packets" : 7
+    },
+    "node" : "test",
+    "packetLen" : [
+     70,
+     70,
+     70,
+     78,
+     78,
+     78,
+     70
+    ],
+    "packetPos" : [
+     2188,
+     2258,
+     2328,
+     2398,
+     2476,
+     2554,
+     2632
+    ],
+    "packetRange" : {
+     "gte" : 10030,
+     "lte" : 10036
+    },
+    "protocol" : [
+     "tcp"
+    ],
+    "protocolCnt" : 1,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 0
+    },
+    "source" : {
+     "bytes" : 294,
+     "ip" : "10.0.0.9",
+     "mac" : [
+      "6a:70:c5:af:f1:f9",
+      "94:2a:6f:ee:8c:82"
+     ],
+     "mac-cnt" : 2,
+     "packets" : 5,
+     "port" : 40005
+    },
+    "srcPayload8" : "3131313131313131",
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
+    "tcpflags" : {
+     "ack" : 2,
+     "ae" : 0,
+     "cwr" : 0,
+     "dstZero" : 0,
+     "ece" : 0,
+     "fin" : 0,
+     "psh" : 3,
+     "rst" : 0,
+     "srcZero" : 0,
+     "syn" : 1,
+     "syn-ack" : 1,
+     "urg" : 0
+    },
+    "tcpseq" : {
+     "dst" : 0,
+     "src" : 4294967280
+    },
+    "totDataBytes" : 24
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-70m01"
+    }
+   }
+  }
+ ]
+}
+

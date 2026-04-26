@@ -118,9 +118,10 @@
     ],
     "srcTTLCnt" : 1,
     "tags" : [
+     "dcerpc:bad-fraglen",
      "srcip"
     ],
-    "tagsCnt" : 1,
+    "tagsCnt" : 2,
     "tcpflags" : {
      "ack" : 1,
      "ae" : 0,
@@ -1043,6 +1044,10 @@
      64
     ],
     "srcTTLCnt" : 1,
+    "tags" : [
+     "dcerpc:bad-fraglen"
+    ],
+    "tagsCnt" : 1,
     "tcpflags" : {
      "ack" : 1,
      "ae" : 0,
@@ -1176,6 +1181,10 @@
      64
     ],
     "srcTTLCnt" : 1,
+    "tags" : [
+     "dcerpc:bad-fraglen"
+    ],
+    "tagsCnt" : 1,
     "tcpflags" : {
      "ack" : 1,
      "ae" : 0,
@@ -1309,6 +1318,10 @@
      64
     ],
     "srcTTLCnt" : 1,
+    "tags" : [
+     "dcerpc:bad-fraglen"
+    ],
+    "tagsCnt" : 1,
     "tcpflags" : {
      "ack" : 1,
      "ae" : 0,
@@ -1442,6 +1455,10 @@
      64
     ],
     "srcTTLCnt" : 1,
+    "tags" : [
+     "dcerpc:bad-fraglen"
+    ],
+    "tagsCnt" : 1,
     "tcpflags" : {
      "ack" : 1,
      "ae" : 0,
@@ -1575,6 +1592,10 @@
      64
     ],
     "srcTTLCnt" : 1,
+    "tags" : [
+     "dcerpc:bad-fraglen"
+    ],
+    "tagsCnt" : 1,
     "tcpflags" : {
      "ack" : 1,
      "ae" : 0,
@@ -1708,6 +1729,10 @@
      64
     ],
     "srcTTLCnt" : 1,
+    "tags" : [
+     "dcerpc:bad-fraglen"
+    ],
+    "tagsCnt" : 1,
     "tcpflags" : {
      "ack" : 1,
      "ae" : 0,
@@ -1841,6 +1866,10 @@
      64
     ],
     "srcTTLCnt" : 1,
+    "tags" : [
+     "dcerpc:bad-fraglen"
+    ],
+    "tagsCnt" : 1,
     "tcpflags" : {
      "ack" : 1,
      "ae" : 0,
@@ -1974,6 +2003,10 @@
      64
     ],
     "srcTTLCnt" : 1,
+    "tags" : [
+     "dcerpc:bad-fraglen"
+    ],
+    "tagsCnt" : 1,
     "tcpflags" : {
      "ack" : 1,
      "ae" : 0,
@@ -2107,6 +2140,10 @@
      64
     ],
     "srcTTLCnt" : 1,
+    "tags" : [
+     "dcerpc:bad-fraglen"
+    ],
+    "tagsCnt" : 1,
     "tcpflags" : {
      "ack" : 1,
      "ae" : 0,
@@ -2240,6 +2277,10 @@
      64
     ],
     "srcTTLCnt" : 1,
+    "tags" : [
+     "dcerpc:bad-fraglen"
+    ],
+    "tagsCnt" : 1,
     "tcpflags" : {
      "ack" : 1,
      "ae" : 0,
@@ -2368,6 +2409,10 @@
      64
     ],
     "srcTTLCnt" : 1,
+    "tags" : [
+     "dcerpc:bad-fraglen"
+    ],
+    "tagsCnt" : 1,
     "tcpflags" : {
      "ack" : 1,
      "ae" : 0,

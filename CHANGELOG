@@ -39,6 +39,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
 ## Capture
   - #3910 Corrupt UDP packets could have invalid byte counts
   - #3910 TCP DNS packets might not be parsed correctly depending on segmentation
+  - #3911 TCP sequence wrapping tests and improvements
 ## Viewer
   - #3898 show error msg in spiview when All selected but not allowed
   - #3906 add copy button to History Elasticsearch Query section
