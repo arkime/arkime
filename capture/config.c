@@ -874,6 +874,10 @@ LOCAL char *arkime_config_redis_get(const char *url)
 
     // AUTH if password provided
     if (pass) {
+        if (passLen > (int)sizeof(cmd) - 64) {
+            close(fd);
+            CONFIGEXIT("Redis password too long (max %d)", (int)sizeof(cmd) - 64);
+        }
         cmdLen = arkime_snprintf_len(cmd, sizeof(cmd), "*2\r\n$4\r\nAUTH\r\n$%d\r\n%.*s\r\n", passLen, passLen, pass);
         if (send(fd, cmd, cmdLen, 0) != cmdLen) {
             close(fd);
@@ -904,6 +908,10 @@ LOCAL char *arkime_config_redis_get(const char *url)
 
     // GET key
     int keyLen = strlen(key);
+    if (keyLen > (int)sizeof(cmd) - 64) {
+        close(fd);
+        CONFIGEXIT("Redis key too long (max %d)", (int)sizeof(cmd) - 64);
+    }
     cmdLen = arkime_snprintf_len(cmd, sizeof(cmd), "*2\r\n$3\r\nGET\r\n$%d\r\n%s\r\n", keyLen, key);
     if (send(fd, cmd, cmdLen, 0) != cmdLen) {
         close(fd);

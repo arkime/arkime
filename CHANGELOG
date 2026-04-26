@@ -41,6 +41,8 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #3910 TCP DNS packets might not be parsed correctly depending on segmentation
   - #3911 TCP sequence wrapping tests and improvements
   - #3912 Fix IKEv2 encryption/hash parsing
+  - #3913 Fix WISE plugin skipping fields after array-typed fields
+  - #3913 Fix S3 listing deadlock when bucket/prefix is empty
 ## Viewer
   - #3898 show error msg in spiview when All selected but not allowed
   - #3906 add copy button to History Elasticsearch Query section

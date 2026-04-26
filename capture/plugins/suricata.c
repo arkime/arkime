@@ -303,7 +303,12 @@ LOCAL void suricata_process()
 
         if (MATCH(line, "timestamp")) {
             struct tm tm;
-            strptime(line + out[i + 2], "%Y-%m-%dT%H:%M:%S", &tm);
+            memset(&tm, 0, sizeof(tm));
+            if (strptime(line + out[i + 2], "%Y-%m-%dT%H:%M:%S", &tm) == NULL) {
+                if (config.debug)
+                    LOG("WARNING - Couldn't parse suricata timestamp %.*s", out[i + 3], line + out[i + 2]);
+                continue;
+            }
             item->timestamp = timegm(&tm);
 
             if (out[i + 3] > 30) {

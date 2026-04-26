@@ -182,7 +182,10 @@ LOCAL void scheme_s3_done(int UNUSED(code), uint8_t *data, int data_len, gpointe
         s3_enqueue(s3Items, uri);
     }
 
+    ARKIME_LOCK(s3Items->lock);
     s3Items->done = 1;
+    ARKIME_COND_BROADCAST(s3Items->lock);
+    ARKIME_UNLOCK(s3Items->lock);
 }
 /******************************************************************************/
 LOCAL int scheme_s3_read(uint8_t *data, int data_len, gpointer uw)
@@ -258,6 +261,12 @@ LOCAL int scheme_s3_load_dir(const char *dir, ArkimeSchemeFlags flags, ArkimeSch
 {
     char **uris = g_strsplit(dir, "/", 4);
 
+    if (!uris[0] || !uris[1] || !uris[2] || !uris[2][0]) {
+        LOG("ERROR - Invalid S3 dir uri %s", dir);
+        g_strfreev(uris);
+        return 1;
+    }
+
     char uri[2000];
     if (uris[3]) {
         snprintf(uri, sizeof(uri), "s3://%s/?list-type=2&prefix=%s", uris[2], uris[3]);
@@ -326,8 +335,12 @@ LOCAL int scheme_s3_load_dir(const char *dir, ArkimeSchemeFlags flags, ArkimeSch
             ARKIME_LOCK(waitingdir);
         }
         ARKIME_LOCK(s3Items->lock);
-        while (DLL_COUNT(item_, s3Items) == 0) {
+        while (DLL_COUNT(item_, s3Items) == 0 && !s3Items->done) {
             ARKIME_COND_WAIT(s3Items->lock);
+        }
+        if (DLL_COUNT(item_, s3Items) == 0) {
+            ARKIME_UNLOCK(s3Items->lock);
+            break;
         }
         S3Item *item;
         DLL_POP_HEAD(item_, s3Items, item);
@@ -443,8 +456,12 @@ LOCAL int scheme_s3_load_full_dir(const char *dir, ArkimeSchemeFlags flags, Arki
             ARKIME_LOCK(waitingdir);
         }
         ARKIME_LOCK(s3Items->lock);
-        while (DLL_COUNT(item_, s3Items) == 0) {
+        while (DLL_COUNT(item_, s3Items) == 0 && !s3Items->done) {
             ARKIME_COND_WAIT(s3Items->lock);
+        }
+        if (DLL_COUNT(item_, s3Items) == 0) {
+            ARKIME_UNLOCK(s3Items->lock);
+            break;
         }
         S3Item *item;
         DLL_POP_HEAD(item_, s3Items, item);

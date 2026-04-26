@@ -34,6 +34,7 @@ LOCAL uint8_t *aws_get_instance_metadata(const char *key, int key_len, size_t *m
         if (token) {
             snprintf(tokenHeader, sizeof(tokenHeader), "X-aws-ec2-metadata-token: %s", token);
             requestHeaders[0] = tokenHeader;
+            free((void *)token);
         } else {
             LOG("WARNING - Failed to get IMDSv2 metadata token");
             requestHeaders[0] = NULL;
@@ -65,6 +66,8 @@ LOCAL gboolean aws_refresh_creds(gpointer UNUSED(user_data))
             arkime_credentials_set(id, key, token);
         }
     }
+    if (credentials)
+        free((void *)credentials);
 
     return G_SOURCE_CONTINUE;
 }
