@@ -1457,24 +1457,15 @@ LOCAL void arkime_parser_buf_grow(ArkimeParserBuf_t *pb, int which, int needed)
 {
     if (needed <= pb->bufSize[which])
         return;
-    if (needed > pb->bufMax)
-        needed = pb->bufMax;
-    if (needed <= pb->bufSize[which])
-        return;
 
-    // Round up to next power of 2 (capped at bufMax) to amortize growth
+    // Double until we have enough, then clamp to bufMax
     int newSize = pb->bufSize[which];
-    while (newSize < needed && newSize < pb->bufMax) {
-        if (newSize >= pb->bufMax / 2) {
-            newSize = pb->bufMax;
-            break;
-        }
+    while (newSize < needed)
         newSize *= 2;
-    }
-    if (newSize < needed)
-        newSize = needed;
     if (newSize > pb->bufMax)
         newSize = pb->bufMax;
+    if (newSize <= pb->bufSize[which])
+        return;
 
     uint8_t *nb = realloc(pb->buf[which], newSize);
     if (!nb)
