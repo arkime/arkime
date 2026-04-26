@@ -34,6 +34,10 @@ LOCAL ArkimePacketRC vxlan_gpe_packet_enqueue(ArkimePacketBatch_t *batch, Arkime
     if ((data[0] & 0xf0) != 0 || (data[1] & 0xff) != 0)
         return ARKIME_PACKET_UNKNOWN_IP;
 
+    if ((data[0] & 0x08) == 0x08) {
+        packet->vni = (data[4] << 16) | (data[5] << 8) | data[6];
+    }
+
     packet->tunnel |= ARKIME_PACKET_TUNNEL_VXLAN_GPE;
 
     switch (data[3]) {
