@@ -8,6 +8,8 @@
 
 //#define EMAILDEBUG
 
+#define SMTP_MAX_LINE_LEN 10000
+
 extern ArkimeConfig_t   config;
 extern char            *arkime_char_to_hex;
 extern uint8_t          arkime_char_to_hexstr[256][3];
@@ -861,6 +863,12 @@ LOCAL int smtp_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, i
             break;
         }
         }
+
+        if (line->len > SMTP_MAX_LINE_LEN) {
+            arkime_session_add_tag(session, "smtp:line-too-long");
+            return ARKIME_PARSER_UNREGISTER;
+        }
+
         data++;
         remaining--;
 

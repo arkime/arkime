@@ -139,7 +139,8 @@ void http_common_add_header_value(ArkimeSession_t *session, int pos, const char 
         break;
     case ARKIME_FIELD_TYPE_IP:
     case ARKIME_FIELD_TYPE_IP_GHASH: {
-        gchar **parts = g_strsplit(s, ",", 0);
+        char *ipstr = g_strndup(s, l);
+        gchar **parts = g_strsplit(ipstr, ",", 0);
 
         for (int i = 0; parts[i]; i++) {
             arkime_field_ip_add_str(pos, session, parts[i]);
@@ -155,6 +156,7 @@ void http_common_add_header_value(ArkimeSession_t *session, int pos, const char 
         }
 
         g_strfreev(parts);
+        g_free(ipstr);
         break;
     }
     case ARKIME_FIELD_TYPE_OBJECT:

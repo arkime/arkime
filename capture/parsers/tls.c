@@ -175,7 +175,7 @@ LOCAL uint32_t tls_process_server_hello(ArkimeSession_t *session, const uint8_t 
         etotlen = MIN(etotlen, BSB_REMAINING(bsb));
 
         BSB ebsb;
-        BSB_INIT(ebsb, BSB_WORK_PTR(bsb), etotlen);
+        BSB_IMPORT_bsb(bsb, ebsb, etotlen);
 
         while (BSB_REMAINING(ebsb) > 0) {
             int etype = 0, elen = 0;
@@ -384,7 +384,7 @@ LOCAL uint32_t tls_process_client_hello_data(ArkimeSession_t *session, const uin
             etotlen = MIN(etotlen, BSB_REMAINING(cbsb));
 
             BSB ebsb;
-            BSB_INIT(ebsb, BSB_WORK_PTR(cbsb), etotlen);
+            BSB_IMPORT_bsb(cbsb, ebsb, etotlen);
 
             while (BSB_REMAINING(ebsb) >= 4) {
                 uint16_t etype = 0, elen = 0;
@@ -797,4 +797,3 @@ void arkime_parser_init()
     tls_process_server_hello_func = arkime_parsers_add_named_func("tls_process_server_hello", tls_process_server_hello);
     tls_process_server_certificate_func = arkime_parsers_get_named_func("tls_process_server_certificate");
 }
-

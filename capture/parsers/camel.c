@@ -244,7 +244,7 @@ LOCAL int camel_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, 
 
         if (tag == 0x6C) {
             BSB compBsb;
-            BSB_INIT(compBsb, BSB_WORK_PTR(bsb), MIN(elemLen, BSB_REMAINING(bsb)));
+            BSB_IMPORT_bsb(bsb, compBsb, MIN(elemLen, BSB_REMAINING(bsb)));
 
             while (BSB_REMAINING(compBsb) >= 4) {
                 uint8_t compTag = 0;
@@ -266,7 +266,7 @@ LOCAL int camel_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, 
 
                 if (compTag == 0xA1 || compTag == 0xA2) {
                     BSB invBsb;
-                    BSB_INIT(invBsb, BSB_WORK_PTR(compBsb), MIN(compLen, BSB_REMAINING(compBsb)));
+                    BSB_IMPORT_bsb(compBsb, invBsb, MIN(compLen, BSB_REMAINING(compBsb)));
 
                     int currentOpcode = -1;
                     while (BSB_REMAINING(invBsb) >= 3) {
@@ -311,6 +311,7 @@ LOCAL int camel_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, 
                             BSB_IMPORT_skip(invBsb, invLen);
                         }
                     }
+                    continue;
                 }
 
                 BSB_IMPORT_skip(compBsb, compLen);

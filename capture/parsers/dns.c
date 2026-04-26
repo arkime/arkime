@@ -251,13 +251,6 @@ typedef struct {
 typedef HASH_VAR(t_, DNSHash_t, DNSHead_t, 1);
 typedef HASH_VAR(t_, DNSHashStd_t, DNSHead_t, 10);
 
-typedef struct {
-    uint8_t            *data[2];
-    uint16_t            size[2];
-    uint16_t            pos[2];
-    uint16_t            len[2];
-} DNSInfo_t;
-
 extern ArkimeConfig_t        config;
 LOCAL  int                   dnsField;
 LOCAL  int                   dnsHostField;
@@ -282,17 +275,6 @@ LOCAL int dns_cmp(const void *keyv, const void *elementv);
 
 LOCAL char                  *root = "<root>";
 
-/******************************************************************************/
-LOCAL void dns_free(ArkimeSession_t *UNUSED(session), void *uw)
-{
-    DNSInfo_t            *info          = uw;
-
-    if (info->data[0])
-        ARKIME_SIZE_FREE("dns data", info->data[0]);
-    if (info->data[1])
-        ARKIME_SIZE_FREE("dns data", info->data[1]);
-    ARKIME_TYPE_FREE(DNSInfo_t, info);
-}
 /******************************************************************************/
 LOCAL int dns_name_element(BSB *nbsb, BSB *bsb)
 {
@@ -1208,53 +1190,29 @@ continueerr:
 /******************************************************************************/
 LOCAL int dns_tcp_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, int len, int which)
 {
-    DNSInfo_t *info = uw;
-    while (len >= 2) {
+    ArkimeParserBuf_t *pb = uw;
 
-        // First packet of request
-        if (info->len[which] == 0) {
-            int dnslength = ((data[0] & 0xff) << 8) | (data[1] & 0xff);
+    if (arkime_parser_buf_add(pb, which, data, len) < 0)
+        return ARKIME_PARSER_UNREGISTER;
 
-            if (dnslength < 18) {
-                arkime_parsers_unregister(session, uw);
-                return 0;
-            }
+    while (pb->len[which] >= 2) {
+        int dnslength = ((pb->buf[which][0] & 0xff) << 8) | (pb->buf[which][1] & 0xff);
 
-            // Have all the data in this first packet, just parse it
-            if (dnslength <= len - 2) {
-                dns_parser(session, 0, data + 2, dnslength);
-                data += 2 + dnslength;
-                len -= 2 + dnslength;
-                continue;
-            }
-            // Don't have all the data, will need to save off
+        if (dnslength < 18)
+            return ARKIME_PARSER_UNREGISTER;
 
-            if (info->size[which] == 0) {
-                info->size[which] = MAX(1024, dnslength);
-                info->data[which] = ARKIME_SIZE_ALLOC("dns.data", info->size[which]);
-            } else if (info->size[which] < dnslength) {
-                ARKIME_SIZE_REALLOC("dns data", info->data[which], dnslength);
-                info->size[which] = dnslength;
-            }
-
-            memcpy(info->data[which], data + 2, len - 2);
-            info->len[which] = dnslength;
-            info->pos[which] = len - 2;
-            return 0;
-        } else {
-            int rem = info->len[which] - info->pos[which];
-            if (rem <= len) {
-                memcpy(info->data[which] + info->pos[which], data, rem);
-                len -= rem;
-                data += rem;
-                dns_parser(session, 0, info->data[which], info->len[which]);
-                info->len[which] = 0;
-            } else {
-                memcpy(info->data[which] + info->pos[which], data, len);
-                info->pos[which] += len;
-                return 0;
-            }
+        int frameLen = dnslength + 2;
+        if (frameLen > (int)sizeof(pb->buf[which])) {
+            arkime_session_add_tag(session, "dns:tcp-message-too-long");
+            arkime_parser_buf_skip(pb, which, frameLen);
+            continue;
         }
+
+        if (pb->len[which] < frameLen)
+            return 0;
+
+        dns_parser(session, 0, pb->buf[which] + 2, dnslength);
+        arkime_parser_buf_del(pb, which, frameLen);
     }
     return 0;
 }
@@ -1263,8 +1221,8 @@ LOCAL void dns_tcp_classify(ArkimeSession_t *session, const uint8_t *UNUSED(data
 {
     if (session->port2 == 53 && !arkime_session_has_protocol(session, "dns")) {
         arkime_session_add_protocol(session, "dns");
-        DNSInfo_t  *info = ARKIME_TYPE_ALLOC0(DNSInfo_t);
-        arkime_parsers_register(session, dns_tcp_parser, info, dns_free);
+        ArkimeParserBuf_t *info = arkime_parser_buf_create();
+        arkime_parsers_register(session, dns_tcp_parser, info, arkime_parser_buf_session_free);
     }
 }
 /******************************************************************************/

@@ -234,7 +234,7 @@ void arkime_command_client_incref(void *vcc)
 void arkime_command_client_decref(void *vcc)
 {
     CommandClient_t *cc = (CommandClient_t *)vcc;
-    int newrefs = ARKIME_THREAD_DECRNEW(cc->refs)
+    int newrefs = ARKIME_THREAD_DECRNEW(cc->refs);
     if (newrefs == 0) {
         g_object_unref(cc->socket);
         ARKIME_TYPE_FREE(CommandClient_t, cc);

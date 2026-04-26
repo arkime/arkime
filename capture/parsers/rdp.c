@@ -239,22 +239,25 @@ LOCAL int rdp_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, in
             break;  // Wait for more data
         }
 
+        BSB frameBsb;
+        BSB_IMPORT_bsb(bsb, frameBsb, tpktLen - 4);
+
         // X.224 header
         uint8_t x224Code = 0;
-        BSB_IMPORT_skip(bsb, 1);  // x224 length
-        BSB_IMPORT_u08(bsb, x224Code);
+        BSB_IMPORT_skip(frameBsb, 1);  // x224 length
+        BSB_IMPORT_u08(frameBsb, x224Code);
 
         // Connection Request (0xE0)
         if (x224Code == 0xE0) {
-            BSB_IMPORT_skip(bsb, 5);  // dst-ref, src-ref, class
+            BSB_IMPORT_skip(frameBsb, 5);  // dst-ref, src-ref, class
 
             // Look for cookie and RDP negotiation request
-            if (BSB_REMAINING(bsb) >= 17) {
-                const uint8_t *cookiePtr = BSB_WORK_PTR(bsb);
+            if (BSB_REMAINING(frameBsb) >= 17) {
+                const uint8_t *cookiePtr = BSB_WORK_PTR(frameBsb);
                 if (memcmp(cookiePtr, "Cookie: mstshash=", 17) == 0) {
-                    BSB_IMPORT_skip(bsb, 17);
-                    const uint8_t *start = BSB_WORK_PTR(bsb);
-                    int maxLen = BSB_REMAINING(bsb);
+                    BSB_IMPORT_skip(frameBsb, 17);
+                    const uint8_t *start = BSB_WORK_PTR(frameBsb);
+                    int maxLen = BSB_REMAINING(frameBsb);
                     int userLen = 0;
 
                     while (userLen < maxLen && start[userLen] != '\r' && start[userLen] != '\n')
@@ -263,22 +266,22 @@ LOCAL int rdp_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, in
                     if (userLen > 0)
                         arkime_field_string_add_lower(userField, session, (char *)start, userLen);
 
-                    BSB_IMPORT_skip(bsb, userLen);
+                    BSB_IMPORT_skip(frameBsb, userLen);
                     // Skip CRLF
-                    if (BSB_REMAINING(bsb) >= 2)
-                        BSB_IMPORT_skip(bsb, 2);
+                    if (BSB_REMAINING(frameBsb) >= 2)
+                        BSB_IMPORT_skip(frameBsb, 2);
                 }
             }
 
             // RDP Negotiation Request at end
-            if (BSB_REMAINING(bsb) >= 8) {
+            if (BSB_REMAINING(frameBsb) >= 8) {
                 uint8_t negType = 0;
-                BSB_IMPORT_u08(bsb, negType);
+                BSB_IMPORT_u08(frameBsb, negType);
 
                 if (negType == TYPE_RDP_NEG_REQ) {
-                    BSB_IMPORT_skip(bsb, 3);  // flags, length
+                    BSB_IMPORT_skip(frameBsb, 3);  // flags, length
                     uint32_t requestedProtocols = 0;
-                    BSB_LIMPORT_u32(bsb, requestedProtocols);
+                    BSB_LIMPORT_u32(frameBsb, requestedProtocols);
                     rdp_add_protocols(session, requestedProtocolsField, requestedProtocols);
                 }
             }
@@ -286,17 +289,17 @@ LOCAL int rdp_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, in
         }
         // Connection Confirm (0xD0)
         else if (x224Code == 0xD0) {
-            BSB_IMPORT_skip(bsb, 5);  // dst-ref, src-ref, class
+            BSB_IMPORT_skip(frameBsb, 5);  // dst-ref, src-ref, class
 
             // RDP Negotiation Response at end
-            if (BSB_REMAINING(bsb) >= 8) {
+            if (BSB_REMAINING(frameBsb) >= 8) {
                 uint8_t negType = 0;
-                BSB_IMPORT_u08(bsb, negType);
+                BSB_IMPORT_u08(frameBsb, negType);
 
                 if (negType == TYPE_RDP_NEG_RSP) {
-                    BSB_IMPORT_skip(bsb, 3);  // flags, length
+                    BSB_IMPORT_skip(frameBsb, 3);  // flags, length
                     uint32_t selectedProtocol = 0;
-                    BSB_LIMPORT_u32(bsb, selectedProtocol);
+                    BSB_LIMPORT_u32(frameBsb, selectedProtocol);
                     rdp_add_protocols(session, selectedProtocolField, selectedProtocol);
                 }
             }
@@ -304,23 +307,23 @@ LOCAL int rdp_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, in
         }
         // Data (0xF0) - could be MCS Connect Initial
         else if (x224Code == 0xF0) {
-            BSB_IMPORT_skip(bsb, 1);  // EOT
+            BSB_IMPORT_skip(frameBsb, 1);  // EOT
 
             // Check for MCS Connect Initial (BER tag 0x7f65)
-            if (BSB_REMAINING(bsb) >= 2) {
+            if (BSB_REMAINING(frameBsb) >= 2) {
                 uint8_t tag1 = 0, tag2 = 0;
-                BSB_IMPORT_u08(bsb, tag1);
-                BSB_IMPORT_u08(bsb, tag2);
+                BSB_IMPORT_u08(frameBsb, tag1);
+                BSB_IMPORT_u08(frameBsb, tag2);
 
                 if (tag1 == 0x7f && tag2 == 0x65) {
                     // Skip BER length encoding
                     uint8_t lenByte = 0;
-                    BSB_IMPORT_u08(bsb, lenByte);
+                    BSB_IMPORT_u08(frameBsb, lenByte);
                     if (lenByte & 0x80) {
                         int lenBytes = lenByte & 0x7f;
-                        BSB_IMPORT_skip(bsb, lenBytes);
+                        BSB_IMPORT_skip(frameBsb, lenBytes);
                     }
-                    rdp_parse_mcs_connect(session, &bsb);
+                    rdp_parse_mcs_connect(session, &frameBsb);
                     rdp->state[which] = RDP_STATE_GOT_MCS;
                 }
             }
