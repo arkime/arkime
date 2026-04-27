@@ -1711,7 +1711,7 @@ void arkime_field_ops_add_match(ArkimeFieldOps_t *ops, int fieldPos, char *value
         ARKIME_SIZE_REALLOC("ops", ops->ops, ops->size * sizeof(ArkimeFieldOp_t));
     }
 
-    if (fieldPos == -1 || fieldPos > config.maxDbField) {
+    if (fieldPos == -1 || fieldPos >= config.maxDbField) {
         LOG("WARNING - Not adding %d %s %d", fieldPos, value, valuelen);
         return;
     }

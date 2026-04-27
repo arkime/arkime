@@ -1037,7 +1037,7 @@ LOCAL ArkimePacketRC arkime_packet_ip6(ArkimePacketBatch_t *batch, ArkimePacket_
     }
 
     int ip_len = ntohs(ip6->ip6_plen);
-    if (len < ip_len) {
+    if (len < ip_len + (int)sizeof(struct ip6_hdr)) {
         return ARKIME_PACKET_CORRUPT;
     }
 

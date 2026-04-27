@@ -1034,7 +1034,15 @@
      "bytes" : 3192
     },
     "smb" : {
-     "dialect" : "SMB 3.1.1"
+     "dialect" : "SMB 3.1.1",
+     "filename" : [
+      "srvsvc"
+     ],
+     "filenameCnt" : 1,
+     "share" : [
+      "\\\\192.168.199.133\\IPC$"
+     ],
+     "shareCnt" : 1
     },
     "source" : {
      "bytes" : 3592,

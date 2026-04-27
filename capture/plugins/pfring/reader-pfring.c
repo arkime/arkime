@@ -119,17 +119,16 @@ LOCAL void reader_pfring_init(const char *UNUSED(name))
     for (i = 0; config.interface[i]; i++) {
         rings[i] = pfring_open(config.interface[i], config.snapLen, flags);
 
+        if (!rings[i]) {
+            CONFIGEXIT("pfring open failed! - %s", config.interface[i]);
+        }
+
         if (config.bpf) {
             int err = pfring_set_bpf_filter(rings[i], config.bpf);
 
             if (err < 0) {
                 CONFIGEXIT("pfring set filter error %d  for  %s", err, config.bpf);
             }
-        }
-
-
-        if (!rings[i]) {
-            CONFIGEXIT("pfring open failed! - %s", config.interface[i]);
         }
 
         pfring_set_cluster(rings[i], clusterId, cluster_per_flow_5_tuple);

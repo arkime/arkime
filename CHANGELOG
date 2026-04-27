@@ -45,6 +45,11 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #3913 Fix S3 listing deadlock when bucket/prefix is empty
   - #3914 Fix ASN.1 OID decoding of first arc per X.690
   - #3916 Improved NTP and IS-IS parsing
+  - #3917 Improved LUA ip handling
+  - #3917 Add DHCPv6 relay parsing
+  - #3917 Improved SMB parsing of share/filename
+  - #3917 Improved SNMP GetBulkRequest parsing
+  - #3917 Extract VNI from GENEVE tunnels
 ## Viewer
   - #3898 show error msg in spiview when All selected but not allowed
   - #3906 add copy button to History Elasticsearch Query section

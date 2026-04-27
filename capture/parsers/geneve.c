@@ -26,6 +26,7 @@ LOCAL ArkimePacketRC geneve_packet_enqueue(ArkimePacketBatch_t *batch, ArkimePac
     BSB_IMPORT_u08(bsb, veroptlen);
     BSB_IMPORT_skip(bsb, 1);
     BSB_IMPORT_u16(bsb, protocol);
+    packet->vni = (data[4] << 16) | (data[5] << 8) | data[6];
     BSB_IMPORT_skip(bsb, 4);
 
     if (BSB_IS_ERROR(bsb)) {

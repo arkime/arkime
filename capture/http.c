@@ -563,11 +563,14 @@ LOCAL size_t arkime_http_curlm_header_function(char *buffer, size_t size, size_t
     if (!colon)
         return sz;
 
+    char *end = buffer + i;
     *colon = 0;
     colon++;
-    while (isspace(*colon)) colon++;
+    while (colon < end && isspace((unsigned char) * colon)) colon++;
 
-    request->server->headerCb(request->url, buffer, colon, buffer + i - colon, request->uw);
+    int valueLen = (int)(end - colon);
+    if (valueLen < 0) valueLen = 0;
+    request->server->headerCb(request->url, buffer, colon, valueLen, request->uw);
     return sz;
 }
 /******************************************************************************/

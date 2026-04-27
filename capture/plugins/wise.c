@@ -717,7 +717,7 @@ LOCAL void wise_plugin_pre_save(ArkimeSession_t *session, int UNUSED(final))
             }
 
             // This session doesn't have this many fields or field isnt set
-            if (pos < 0 || pos > session->maxFields || !session->fields[pos])
+            if (pos < 0 || pos >= session->maxFields || !session->fields[pos] || !config.fields[pos])
                 continue;
 
             const ArkimeStringHashStd_t *shash;

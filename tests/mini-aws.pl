@@ -23,7 +23,7 @@
 use strict;
 use warnings;
 $SIG{INT} = sub { exit 0; };
-use IO::Socket::INET;
+use IO::Socket::IP;
 use IO::Select;
 use Fcntl qw(F_GETFL F_SETFL O_NONBLOCK);
 use Digest::MD5 qw(md5_hex);
@@ -59,11 +59,13 @@ my %bucket_notifications;
 my %conn_buf;    # fileno => raw read buffer
 my %conn_state;  # fileno => { method, uri, query, headers, content_length, body, headers_done }
 
-my $server = IO::Socket::INET->new(
+my $server = IO::Socket::IP->new(
+    LocalHost => '::',
     LocalPort => $port,
     Proto     => 'tcp',
     Listen    => 128,
     ReuseAddr => 1,
+    V6Only    => 0,
 ) or die "Cannot start server on port $port: $!\n";
 
 my $flags = fcntl($server, F_GETFL, 0);
@@ -170,6 +172,15 @@ while (1) {
                 exit(0);
             }
 
+            if ($debug) {
+                my ($status) = $resp =~ m{^HTTP/\S+\s+(\d+\s+[^\r\n]*)};
+                $status //= '???';
+                my $range = $state->{headers}{'range'} // '';
+                my $body_size = length($state->{body} // '');
+                my $ts2 = strftime("%H:%M:%S", localtime);
+                print "$ts2 AWS: $state->{method} $state->{uri}" . ($state->{query} ne '' ? "?$state->{query}" : "") . " body:$body_size" . ($range ne '' ? " Range:$range" : "") . " -> $status\n";
+            }
+
             write_all($fh, $resp);
 
             # Check for Connection: close
@@ -234,8 +245,6 @@ sub handle_request {
 
     my $range = $headers->{'range'} // '';
     my $body_size = length($body);
-    my $ts = strftime("%H:%M:%S", localtime);
-    print "$ts AWS: $method $uri" . ($query ne '' ? "?$query" : "") . " body:$body_size" . ($range ne '' ? " Range:$range" : "") . "\n" if $debug;
 
     if ($uri eq '/_shutdown') {
         return '_shutdown';

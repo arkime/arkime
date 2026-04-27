@@ -164,7 +164,7 @@ LOCAL void molua_http_cb(int callback_type, ArkimeSession_t *session, http_parse
     lua_State *L = Ls[session->thread];
     int i;
     for (i = 0; i < callbackRefsCnt[callback_type]; i++) {
-        if (mp && mp->callbackOff[callback_type] & (1 << i))
+        if (mp && mp->callbackOff[callback_type] & (1U << i))
             continue;
 
         uint8_t isArkimeData;
@@ -191,7 +191,7 @@ LOCAL void molua_http_cb(int callback_type, ArkimeSession_t *session, http_parse
             if (!mp) {
                 mp = session->pluginData[molua_pluginIndex] = ARKIME_TYPE_ALLOC0(MoluaPlugin_t);
             }
-            mp->callbackOff[callback_type] |= (1 << i);
+            mp->callbackOff[callback_type] |= (1U << i);
         }
         if (isArkimeData) {
             MD_markInvalid(L, -2);
@@ -206,7 +206,7 @@ LOCAL void molua_http_on_body_cb(ArkimeSession_t *session, http_parser *hp, cons
     lua_State *L = Ls[session->thread];
     int i;
     for (i = 0; i < callbackRefsCnt[MOLUA_REF_HTTP]; i++) {
-        if (mp && mp->callbackOff[MOLUA_REF_HTTP] & (1 << i))
+        if (mp && mp->callbackOff[MOLUA_REF_HTTP] & (1U << i))
             continue;
 
         molua_pushArkimeData(L, at, length);
@@ -224,7 +224,7 @@ LOCAL void molua_http_on_body_cb(ArkimeSession_t *session, http_parser *hp, cons
             if (!mp) {
                 mp = session->pluginData[molua_pluginIndex] = ARKIME_TYPE_ALLOC0(MoluaPlugin_t);
             }
-            mp->callbackOff[MOLUA_REF_HTTP] |= (1 << i);
+            mp->callbackOff[MOLUA_REF_HTTP] |= (1U << i);
         }
         MD_markInvalid(L, -2);
         lua_pop(L, 2);
@@ -366,7 +366,7 @@ LOCAL void molua_pre_save(ArkimeSession_t *session, int final)
     lua_State *L = Ls[session->thread];
     int i;
     for (i = 0; i < callbackRefsCnt[MOLUA_REF_PRE_SAVE]; i++) {
-        if (mp && mp->callbackOff[MOLUA_REF_PRE_SAVE] & (1 << i))
+        if (mp && mp->callbackOff[MOLUA_REF_PRE_SAVE] & (1U << i))
             continue;
 
         lua_getglobal(L, callbackRefs[MOLUA_REF_PRE_SAVE][i]);
@@ -386,7 +386,7 @@ LOCAL void molua_save(ArkimeSession_t *session, int final)
     lua_State *L = Ls[session->thread];
     int i;
     for (i = 0; i < callbackRefsCnt[MOLUA_REF_SAVE]; i++) {
-        if (mp && mp->callbackOff[MOLUA_REF_SAVE] & (1 << i))
+        if (mp && mp->callbackOff[MOLUA_REF_SAVE] & (1U << i))
             continue;
 
         lua_getglobal(L, callbackRefs[MOLUA_REF_SAVE][i]);
@@ -565,6 +565,10 @@ LOCAL int MS_add_string(lua_State *L)
         pos = arkime_field_by_exp(lua_tostring(L, 2));
     }
     gboolean result;
+    if (pos < 0 || pos >= ARKIME_FIELDS_MAX || !config.fields[pos]) {
+        lua_pushboolean(L, FALSE);
+        return 1;
+    }
     result = arkime_field_string_add(pos, session, string, len, TRUE) != NULL;
     lua_pushboolean(L, result);
 
@@ -589,6 +593,10 @@ LOCAL int MS_add_int(lua_State *L)
         pos = arkime_field_by_exp(lua_tostring(L, 2));
     }
     gboolean result;
+    if (pos < 0 || pos >= ARKIME_FIELDS_MAX || !config.fields[pos]) {
+        lua_pushboolean(L, FALSE);
+        return 1;
+    }
     result = arkime_field_int_add(pos, session, value);
     lua_pushboolean(L, result);
 
@@ -721,7 +729,7 @@ LOCAL int MS_get(lua_State *L)
         pos = arkime_field_by_exp(lua_tostring(L, 2));
     }
 
-    if (pos > session->maxFields || !session->fields[pos]) {
+    if (pos < 0 || pos >= session->maxFields || !session->fields[pos] || !config.fields[pos]) {
         lua_pushnil(L);
         return 1;
     }
@@ -800,9 +808,9 @@ LOCAL int MS_get(lua_State *L)
     case ARKIME_FIELD_TYPE_IP:
         ikey = field->ip;
         if (IN6_IS_ADDR_V4MAPPED((struct in6_addr *)ikey)) {
-            inet_ntop(AF_INET6, ikey, addrbuf, INET6_ADDRSTRLEN);
-        } else {
             inet_ntop(AF_INET, &ARKIME_V6_TO_V4(*(struct in6_addr *)ikey), addrbuf, INET6_ADDRSTRLEN);
+        } else {
+            inet_ntop(AF_INET6, ikey, addrbuf, INET6_ADDRSTRLEN);
         }
         lua_pushstring(L, addrbuf);
         break;
@@ -814,9 +822,9 @@ LOCAL int MS_get(lua_State *L)
         while (g_hash_table_iter_next(&iter, &ikey, NULL)) {
             lua_pushinteger(L, i + 1);
             if (IN6_IS_ADDR_V4MAPPED((struct in6_addr *)ikey)) {
-                inet_ntop(AF_INET6, ikey, addrbuf, INET6_ADDRSTRLEN);
-            } else {
                 inet_ntop(AF_INET, &ARKIME_V6_TO_V4(*(struct in6_addr *)ikey), addrbuf, INET6_ADDRSTRLEN);
+            } else {
+                inet_ntop(AF_INET6, ikey, addrbuf, INET6_ADDRSTRLEN);
             }
             lua_pushstring(L, addrbuf);
             lua_settable(L, -3);

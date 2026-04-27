@@ -47,7 +47,7 @@ LOCAL ArkimePacketRC gre_packet_enqueue(ArkimePacketBatch_t *batch, ArkimePacket
         if (flags_version & 0x0080) {
             BSB_IMPORT_skip(bsb, 4);
         }
-    } else {
+    } else if (version == 0) {
         // Standard GRE (RFC 2784/2890)
         if (flags_version & (0x8000 | 0x4000)) {
             BSB_IMPORT_skip(bsb, 4); // skip checksum and offset
@@ -74,6 +74,9 @@ LOCAL ArkimePacketRC gre_packet_enqueue(ArkimePacketBatch_t *batch, ArkimePacket
                 BSB_IMPORT_skip(bsb, tlen);
             }
         }
+    } else {
+        // Versions 2-7 are not defined for GRE; do not parse
+        return ARKIME_PACKET_UNKNOWN_ETHER;
     }
 
     if (BSB_IS_ERROR(bsb))

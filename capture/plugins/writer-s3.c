@@ -312,7 +312,11 @@ LOCAL void writer_s3_init_cb (int code, uint8_t *data, int len, gpointer uw)
         LOG("Init-Response: %s %d", file->outputFileName, len);
 
     if (len == 0) {
-        writer_s3_request("POST", file->outputPath, "uploads=", 0, 0, TRUE, writer_s3_init_cb, file);
+        if ((code >= 200 && code < 300) || code == 0) {
+            writer_s3_request("POST", file->outputPath, "uploads=", 0, 0, TRUE, writer_s3_init_cb, file);
+        } else {
+            LOG("ERROR - S3 init failed code=%d for %s, giving up", code, file->outputFileName);
+        }
         return;
     }
 

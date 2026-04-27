@@ -25,8 +25,12 @@ LOCAL ArkimePacketRC mpls_packet_enqueue(ArkimePacketBatch_t *batch, ArkimePacke
             packet->tunnel |= ARKIME_PACKET_TUNNEL_MPLS;
             switch (data[0] >> 4) {
             case 4:
+                if (len < (int)sizeof(struct ip))
+                    return ARKIME_PACKET_CORRUPT;
                 return arkime_packet_run_ethernet_cb(batch, packet, data, len, ETHERTYPE_IP, "MPLS");
             case 6:
+                if (len < (int)sizeof(struct ip6_hdr))
+                    return ARKIME_PACKET_CORRUPT;
                 return arkime_packet_run_ethernet_cb(batch, packet, data, len, ETHERTYPE_IPV6, "MPLS");
             default:
 #ifdef DEBUG_PACKET
