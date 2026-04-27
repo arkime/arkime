@@ -12,8 +12,6 @@ my $nodeFilter = '{ "query": { "terms": { "node": ["s3-test", "sqs-test"] } } }'
 esPost("/tests2_sessions*/_delete_by_query?conflicts=proceed&refresh", $nodeFilter);
 waitFor($ArkimeTest::host, 4566);
 
-diag "ALW1";
-
 sub run {
 my ($tag, $compression, $extension, $gap) = @_;
 
