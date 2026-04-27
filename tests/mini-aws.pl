@@ -66,7 +66,19 @@ my $server = IO::Socket::IP->new(
     Listen    => 128,
     ReuseAddr => 1,
     V6Only    => 0,
-) or die "Cannot start server on port $port: $!\n";
+);
+if (!$server) {
+    # Fall back to IPv4-only (e.g. CI runner without IPv6)
+    my $err = $!;
+    $server = IO::Socket::IP->new(
+        LocalHost => '0.0.0.0',
+        LocalPort => $port,
+        Proto     => 'tcp',
+        Listen    => 128,
+        ReuseAddr => 1,
+    ) or die "Cannot start server on port $port: dual-stack=$err v4=$!\n";
+    print "Mini AWS: dual-stack bind failed ($err), using IPv4-only\n";
+}
 
 my $flags = fcntl($server, F_GETFL, 0);
 fcntl($server, F_SETFL, $flags | O_NONBLOCK);
