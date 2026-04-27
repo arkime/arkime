@@ -289,7 +289,7 @@ LOCAL int camel_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, 
 
                         if (invTag == 0x02 && invLen >= 1 && invLen <= 2) {
                             int opcode = 0;
-                            for (int i = 0; i < invLen && BSB_REMAINING(invBsb) > 0; i++) {
+                            for (uint32_t i = 0; i < invLen && BSB_REMAINING(invBsb) > 0; i++) {
                                 uint8_t b = 0;
                                 BSB_IMPORT_u08(invBsb, b);
                                 opcode = (opcode << 8) | b;

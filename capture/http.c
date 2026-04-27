@@ -426,6 +426,13 @@ LOCAL void arkime_http_curlm_check_multi_info(ArkimeHttpServer_t *server)
                 curl_multi_remove_handle(server->multi, easy);
 
                 request->retries--;
+                if (request->dataIn) {
+                    if (!server->dontFreeResponse)
+                        ARKIME_SIZE_FREE("dataIn", request->dataIn);
+                    request->dataIn = 0;
+                }
+                request->used = 0;
+                request->size = 0;
                 struct timeval now;
                 gettimeofday(&now, NULL);
                 ARKIME_LOCK(requests);
@@ -619,6 +626,11 @@ LOCAL gboolean arkime_http_curl_watch_open_callback(int fd, GIOCondition conditi
     ArkimeHttpConn_t *conn;
 
     ARKIME_LOCK(connections);
+    if ((unsigned)fd >= ARRAY_LEN(connectionsSet) * 64) {
+        LOG("ERROR - fd %d exceeds connectionsSet capacity", fd);
+        ARKIME_UNLOCK(connections);
+        return CURLE_OK;
+    }
     BIT_SET(fd, connectionsSet);
     HASH_FIND(h_, connections, sessionId, conn);
     if (!conn) {
@@ -644,6 +656,10 @@ LOCAL curl_socket_t arkime_http_curl_open_callback(void *snameV, curlsocktype UN
     ArkimeHttpServer_t        *server = sname->server;
 
     int fd = socket(addr->family, addr->socktype, addr->protocol);
+    if (fd < 0) {
+        LOG("ERROR - socket() failed: %s", strerror(errno));
+        return CURL_SOCKET_BAD;
+    }
 
     long ev = arkime_watch_fd(fd, G_IO_OUT | G_IO_IN, arkime_http_curl_watch_open_callback, snameV);
     g_hash_table_insert(server->fd2ev, (void *)(long)fd, (void *)(long)ev);
@@ -655,7 +671,7 @@ LOCAL int arkime_http_curl_close_callback(void *snameV, curl_socket_t fd)
     ArkimeHttpServerName_t    *sname = snameV;
     ArkimeHttpServer_t        *server = sname->server;
 
-    if (! BIT_ISSET(fd, connectionsSet)) {
+    if ((unsigned)fd >= ARRAY_LEN(connectionsSet) * 64 || ! BIT_ISSET(fd, connectionsSet)) {
         long ev = (long)g_hash_table_lookup(server->fd2ev, (void *)(long)fd);
         LOG("Couldn't connect %s (%d, %ld) ", sname->name, fd, ev);
         close(fd);
@@ -717,7 +733,8 @@ LOCAL int arkime_http_curl_close_callback(void *snameV, curl_socket_t fd)
 
 
     ArkimeHttpConn_t *conn;
-    BIT_CLR(fd, connectionsSet);
+    if ((unsigned)fd < ARRAY_LEN(connectionsSet) * 64)
+        BIT_CLR(fd, connectionsSet);
 
     ARKIME_LOCK(connections);
     HASH_FIND(h_, connections, sessionId, conn);

@@ -489,6 +489,18 @@ LOCAL void tagger_load_file_cb(int UNUSED(code), uint8_t *data, int data_len, gp
     patricia_node_t *node;
     TaggerIP_t *tip;
 
+    if (!file->type || !file->elements) {
+        LOG("WARNING - Tagger file %s missing required 'type' or 'data' field", file->str);
+        HASH_REMOVE(s_, allFiles, file);
+        free(file->str);
+        if (file->md5) g_free(file->md5);
+        if (file->type) g_free(file->type);
+        if (file->tags) g_strfreev(file->tags);
+        if (file->elements) g_strfreev(file->elements);
+        ARKIME_TYPE_FREE(TaggerFile_t, file);
+        return;
+    }
+
     for (i = 0; file->elements[i]; i++) {
 
         int p = 2;
@@ -536,6 +548,7 @@ LOCAL void tagger_load_file_cb(int UNUSED(code), uint8_t *data, int data_len, gp
             node = make_and_lookup(allIps, parts[0]);
             if (!node) {
                 LOG("Couldn't create node for %s", parts[0]);
+                tagger_info_free(info);
                 continue;
             }
             if (!node->data) {
@@ -561,6 +574,7 @@ LOCAL void tagger_load_file_cb(int UNUSED(code), uint8_t *data, int data_len, gp
             break;
         default:
             LOG("ERROR - Unknown tagger type %s for %s", file->type, file->str);
+            tagger_info_free(info);
             continue;
         }
 

@@ -594,6 +594,10 @@ LOCAL int arkime_reader_scheme_processNG(const char *uri, uint8_t *data, int len
             } else if (blockHeader->block_type == 3) {
                 readerState.state = ARKIME_SCHEME_NG_SPB_HEADER;
             } else if (blockHeader->block_type == 1) {
+                if (readerState.blockSize < 8) {
+                    LOG("ERROR - Invalid IDB block size %d in pcapNG file '%s'", readerState.blockSize, uri);
+                    return 1;
+                }
                 readerState.state = ARKIME_SCHEME_NG_INTERFACE;
             } else if (blockHeader->block_type == 0x0A0D0D0A) {
                 // New Section Header Block - reset interface and tsresol state
