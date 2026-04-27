@@ -12,8 +12,12 @@ my $nodeFilter = '{ "query": { "terms": { "node": ["s3-test", "sqs-test"] } } }'
 esPost("/tests2_sessions*/_delete_by_query?conflicts=proceed&refresh", $nodeFilter);
 waitFor($ArkimeTest::host, 4566);
 
+diag "ALW1";
+
 sub run {
 my ($tag, $compression, $extension, $gap) = @_;
+
+    diag "ALW $tag $compression $extension $gap";
 
     my $cmd = "../capture/capture -o disablePython=true -o s3GapPacketPos=$gap -c config.test.ini -n s3-test --copy -R pcap --tag $tag -o s3Compression=$compression --flush > /tmp/arkime.capture.$tag.log 2>&1";
     system($cmd);
@@ -62,6 +66,8 @@ my $sqsvalue = int(rand() * 1000000);
 my $reftag   = "sqsref-$sqsvalue";
 my $sqstag   = "sqs-$sqsvalue";
 
+diag "ALW2";
+
 # Reference: ingest the pcap directly to learn expected session count.
 system("../capture/capture -o disablePython=true -c config.test.ini -n s3-test -R pcap/bt-tcp.pcap --tag $reftag > /tmp/arkime.capture.sqsref.log 2>&1");
 my $refjson = viewerGet2("/sessions.json?date=-1&expression=" . uri_escape("tags=$reftag"));
@@ -71,6 +77,7 @@ ok ($expected > 0, "SQS reference pcap yielded $expected sessions");
 # Configure S3 -> SQS bucket notification using the real AWS API shape.
 system(qq(curl -s -X PUT "http://localhost:4566/sqsbucket?notification" --data-binary '<NotificationConfiguration><QueueConfiguration><Queue>arn:aws:sqs:us-east-1:000000000000:sqsqueue</Queue><Event>s3:ObjectCreated:*</Event></QueueConfiguration></NotificationConfiguration>' > /dev/null));
 
+diag "ALW3";
 # Upload the pcap using the real AWS CLI; mini-aws will publish an S3 event to SQS.
 my $s3key = "bt-tcp-$sqsvalue.pcap";
 system("AWS_ACCESS_KEY_ID=foo AWS_SECRET_ACCESS_KEY=foo aws --endpoint-url http://localhost:4566 s3 cp pcap/bt-tcp.pcap s3://sqsbucket/$s3key > /dev/null 2>&1");
@@ -79,8 +86,11 @@ system("AWS_ACCESS_KEY_ID=foo AWS_SECRET_ACCESS_KEY=foo aws --endpoint-url http:
 # pcap back from S3 (mini-aws), index it, and delete the SQS message.
 system("../capture/capture -o disablePython=true -c config.test.ini -n sqs-test --tag $sqstag -r sqshttp://127.0.0.1:4566/000000000000/sqsqueue > /tmp/arkime.capture.sqs.log 2>&1");
 
+diag "ALW4";
 countTest2($expected, "date=-1&expression=" . uri_escape("tags=$sqstag"));
 
 system("curl -s http://localhost:4566/_shutdown > /dev/null 2>&1");
 
 esPost("/tests2_sessions*/_delete_by_query?conflicts=proceed&refresh", $nodeFilter);
+
+diag "ALW5";
