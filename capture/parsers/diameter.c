@@ -169,6 +169,9 @@ LOCAL void diameter_parse_avps(ArkimeSession_t *session, const uint8_t *data, in
         uint32_t padding = (4 - (avpLen & 3)) & 3;
         BSB_IMPORT_skip(bsb, padding);
 
+        if (BSB_IS_ERROR(bsb))
+            break;
+
         switch (avpCode) {
         case 1:   // User-Name
             arkime_field_string_add(userNameField, session, (char *)avpData, dataLen, TRUE);

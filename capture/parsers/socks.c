@@ -269,7 +269,7 @@ LOCAL void socks5_classify(ArkimeSession_t *session, const uint8_t *data, int le
     LOG("SOCKSDEBUG: enter %d %d", data[0], len);
 #endif
 
-    if ((len >= 3 && len <= 5) && data[1] == len - 2 && data[2] <= 3) {
+    if (len >= 3 && data[1] >= 1 && data[1] == len - 2 && data[2] <= 3) {
         SocksInfo_t *socks;
 
         socks = ARKIME_TYPE_ALLOC0(SocksInfo_t);

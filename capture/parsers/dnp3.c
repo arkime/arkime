@@ -127,6 +127,13 @@ LOCAL int dnp3_udp_parser(ArkimeSession_t *session, void *UNUSED(uw), const uint
         return 0;
     }
 
+    int userDataLen = pduLen - 5;
+    int numCrcBlocks = (userDataLen + 15) / 16;
+    int totalLen = 10 + userDataLen + (numCrcBlocks * 2);
+    if (totalLen > len) {
+        return 0;
+    }
+
     dnp3_parse_frame(session, &bsb);
 
     return 0;

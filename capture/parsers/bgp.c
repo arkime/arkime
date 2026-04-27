@@ -17,6 +17,10 @@ LOCAL int bgp_parser(ArkimeSession_t *session, void *UNUSED(uw), const uint8_t *
     if (len < 19 || memcmp("\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff", data, 16) != 0)
         return 0;
 
+    uint16_t bgpLen = (data[16] << 8) | data[17];
+    if (bgpLen < 19 || bgpLen > 4096 || bgpLen > len)
+        return ARKIME_PARSER_UNREGISTER;
+
     static const char *types[] = {NULL, "OPEN", "UPDATE", "NOTIFICATION", "KEEPALIVE"};
     if (data[18] > 0 && data[18] < ARRAY_LEN(types)) {
         arkime_field_string_add(typeField, session, types[data[18]], -1, TRUE);

@@ -100,7 +100,12 @@ LOCAL int ldap_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, i
     }
 
     // Copy the data we have
-    arkime_parser_buf_add(ldap, which, data, remaining);
+    if (arkime_parser_buf_add(ldap, which, data, remaining) == -1) {
+        ldap->len[which] = -1;
+        if (ldap->len[(which + 1) % 2] == -1)
+            return ARKIME_PARSER_UNREGISTER;
+        return 0;
+    }
 
     if (ldap->len[which] > 6000) {
         ldap_process(session, ldap, which);

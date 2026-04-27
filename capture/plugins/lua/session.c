@@ -130,7 +130,7 @@ LOCAL int MS_register_tcp_classifier(lua_State *L)
     }
 
     const char *name = g_strdup(lua_tostring(L, 1));
-    char  offset = lua_tonumber(L, 2);
+    int   offset = lua_tointeger(L, 2);
     int   match_len = lua_rawlen(L, 3);
     const uint8_t *match = g_memdup(lua_tostring(L, 3), match_len);
     char *function = g_strdup(lua_tostring(L, 4));
@@ -149,7 +149,7 @@ LOCAL int MS_register_udp_classifier(lua_State *L)
     }
 
     const char *name    = g_strdup(lua_tostring(L, 1));
-    char  offset        = lua_tonumber(L, 2);
+    int   offset        = lua_tointeger(L, 2);
     int   match_len     = lua_rawlen(L, 3);
     const guchar *match = g_memdup(lua_tostring(L, 3), match_len);
     char *function      = g_strdup(lua_tostring(L, 4));

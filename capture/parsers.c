@@ -556,10 +556,13 @@ void arkime_parsers_asn_decode_oid(char *buf, int bufsz, const uint8_t *oid, int
 
         if (first) {
             first = FALSE;
-            if (value > 40) /* two values in first byte */
-                buflen = arkime_snprintf_len(buf, bufsz, "%" PRIu64 ".%" PRIu64, value / 40, value % 40);
-            else /* one value in first byte */
-                buflen = arkime_snprintf_len(buf, bufsz, "%" PRIu64, value);
+            if (value < 40) {
+                buflen = arkime_snprintf_len(buf, bufsz, "0.%" PRIu64, value);
+            } else if (value < 80) {
+                buflen = arkime_snprintf_len(buf, bufsz, "1.%" PRIu64, value - 40);
+            } else {
+                buflen = arkime_snprintf_len(buf, bufsz, "2.%" PRIu64, value - 80);
+            }
         } else if (buflen < bufsz) {
             buflen += arkime_snprintf_len(buf + buflen, bufsz - buflen, ".%" PRIu64, value);
         }
