@@ -113,8 +113,16 @@ LOCAL void tcp_packet_finish(ArkimeSession_t *session)
                 continue;
             }
 
+            /* Compute wrap-aware offset within the packet. If it falls outside
+             * [0, ftd->len) the entry is stale across a wrap; skip without
+             * dereferencing past the packet bounds. */
+            const int64_t offsetDiff = tcp_sequence_diff(ftd->seq, tcpSeq);
+            if (offsetDiff < 0 || offsetDiff >= ftd->len) {
+                continue;
+            }
+
             /* This packet has the sequence number we are looking for */
-            const int offset = tcpSeq - ftd->seq;
+            const int offset = (int)offsetDiff;
             const uint8_t *data = ftd->packet->pkt + ftd->dataOffset + offset;
             const int len = ftd->len - offset;
 

@@ -39,7 +39,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
 ## Capture
   - #3910 Corrupt UDP packets could have invalid byte counts
   - #3910 TCP DNS packets might not be parsed correctly depending on segmentation
-  - #3911 TCP sequence wrapping tests and improvements
+  - #3911, #3913 TCP sequence wrapping tests and improvements
   - #3912 Fix IKEv2 encryption/hash parsing
   - #3913 Fix WISE plugin skipping fields after array-typed fields
   - #3913 Fix S3 listing deadlock when bucket/prefix is empty
