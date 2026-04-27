@@ -87,7 +87,8 @@ LOCAL gboolean pcapoverip_client_read_cb(gint UNUSED(fd), GIOCondition cond, gpo
 
             if (h->magic != 0xa1b2c3d4 && h->magic != 0xd4c3b2a1 &&
                 h->magic != 0xa1b23c4d && h->magic != 0x4d3cb2a1) {
-                LOG("ERROR - Unknown magic %xs", h->magic);
+                LOG("ERROR - Unknown magic 0x%x", h->magic);
+                pcapoverip_client_free(poic);
                 return FALSE;
             }
 

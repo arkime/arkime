@@ -41,7 +41,7 @@ typedef struct writer_s3_file {
     int                        partNumber;
     int                        partNumberResponses;
     char                       doClose;
-    char                      *partNumbers[2001];
+    char                      *partNumbers[10001];
 
     char                      *outputBuffer;
     uint32_t                   outputPos;
@@ -217,7 +217,8 @@ LOCAL void writer_s3_part_cb (int code, uint8_t *data, int len, gpointer uw)
         BSB_INIT(bsb, buf, 1000000);
         BSB_EXPORT_cstr(bsb, "<CompleteMultipartUpload>\n");
         int i;
-        for (i = 1; i < file->partNumber; i++) {
+        const int last = MIN(file->partNumber, (int)ARRAY_LEN(file->partNumbers));
+        for (i = 1; i < last; i++) {
             BSB_EXPORT_sprintf(bsb, "<Part><PartNumber>%d</PartNumber><ETag>%s</ETag></Part>\n", i, file->partNumbers[i]);
             g_free(file->partNumbers[i]);
         }

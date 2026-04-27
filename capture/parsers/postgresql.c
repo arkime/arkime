@@ -86,12 +86,20 @@ LOCAL void postgresql_classify(ArkimeSession_t *session, const uint8_t *data, in
     if (arkime_session_has_protocol(session, "postgresql"))
         return;
 
-    if ((len == 8 && memcmp(data + 3, "\x08\x04\xd2\x16\x2f", 5) == 0) ||
-        (len > 8 && data[3] <= len && data[4] == 0 && data[5] == 3 && data[6] == 0)) {
-
+    if (len == 8 && memcmp(data + 3, "\x08\x04\xd2\x16\x2f", 5) == 0) {
         Info_t *info = ARKIME_TYPE_ALLOC0(Info_t);
         info->which = which;
         arkime_parsers_register(session, postgresql_parser, info, postgresql_free);
+        return;
+    }
+
+    if (len > 8 && data[4] == 0 && data[5] == 3 && data[6] == 0) {
+        uint32_t plen = (data[0] << 24) | (data[1] << 16) | (data[2] << 8) | data[3];
+        if (plen >= 16 && plen <= (uint32_t)len) {
+            Info_t *info = ARKIME_TYPE_ALLOC0(Info_t);
+            info->which = which;
+            arkime_parsers_register(session, postgresql_parser, info, postgresql_free);
+        }
     }
 }
 /******************************************************************************/

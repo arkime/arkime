@@ -52,13 +52,16 @@ LOCAL void synchrophasor_parse_frame(ArkimeSession_t *session, const uint8_t *da
     BSB_IMPORT_u08(bsb, syncByte2);
     uint8_t frameType = (syncByte2 >> 4) & 0x07;
 
-    if (frameType < ARRAY_LEN(frameTypeNames)) {
-        arkime_field_string_add(frameTypeField, session, frameTypeNames[frameType], -1, TRUE);
-    }
-
     // FRAMESIZE
     uint16_t frameSize = 0;
     BSB_IMPORT_u16(bsb, frameSize);
+
+    if (frameSize < SYNCHROPHASOR_MIN_LEN || frameSize > len)
+        return;
+
+    if (frameType < ARRAY_LEN(frameTypeNames)) {
+        arkime_field_string_add(frameTypeField, session, frameTypeNames[frameType], -1, TRUE);
+    }
 
     // IDCODE (data stream ID)
     uint16_t idcode = 0;
@@ -205,6 +208,10 @@ LOCAL int synchrophasor_tcp_parser(ArkimeSession_t *session, void *uw, const uin
             // Invalid frame size, skip sync byte
             arkime_parser_buf_del(buf, which, 1);
             continue;
+        }
+
+        if ((int)frameSize > (int)buf->bufMax) {
+            return ARKIME_PARSER_UNREGISTER;
         }
 
         if ((int)frameSize > (int)buf->len[which]) {
