@@ -44,7 +44,11 @@ LOCAL ArkimePacketRC arp_packet_enqueue(ArkimePacketBatch_t *UNUSED(batch), Arki
     if (len < 28)
         return ARKIME_PACKET_CORRUPT;
 
-    if (data[7] > 2)
+    // Validate Ethernet/IPv4 ARP: htype=1, ptype=0x0800, hlen=6, plen=4, opcode 1 or 2
+    if (data[0] != 0x00 || data[1] != 0x01 ||
+        data[2] != 0x08 || data[3] != 0x00 ||
+        data[4] != 6 || data[5] != 4 ||
+        data[6] != 0 || data[7] < 1 || data[7] > 2)
         return ARKIME_PACKET_CORRUPT;
 
     packet->payloadOffset = data - packet->pkt;

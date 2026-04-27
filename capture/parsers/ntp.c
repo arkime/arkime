@@ -182,18 +182,8 @@ void arkime_parser_init()
                                      ARKIME_FIELD_TYPE_STR_GHASH, ARKIME_FIELD_FLAG_CNT,
                                      (char *)NULL);
 
-    // NTP uses UDP port 123
-    // First byte encodes LI (2 bits), Version (3 bits), Mode (3 bits)
-    // Common patterns: 0x1b (v3 client), 0x23 (v4 client), 0x24 (v4 server), 0xe3 (v4 broadcast)
-    arkime_parsers_classifier_register_udp("ntp", NULL, 0, (const uint8_t *)"\x13", 1, ntp_udp_classify);
-    arkime_parsers_classifier_register_udp("ntp", NULL, 0, (const uint8_t *)"\x19", 1, ntp_udp_classify);
-    arkime_parsers_classifier_register_udp("ntp", NULL, 0, (const uint8_t *)"\x1a", 1, ntp_udp_classify);
-    arkime_parsers_classifier_register_udp("ntp", NULL, 0, (const uint8_t *)"\x1b", 1, ntp_udp_classify);
-    arkime_parsers_classifier_register_udp("ntp", NULL, 0, (const uint8_t *)"\x1c", 1, ntp_udp_classify);
-    arkime_parsers_classifier_register_udp("ntp", NULL, 0, (const uint8_t *)"\x21", 1, ntp_udp_classify);
-    arkime_parsers_classifier_register_udp("ntp", NULL, 0, (const uint8_t *)"\x23", 1, ntp_udp_classify);
-    arkime_parsers_classifier_register_udp("ntp", NULL, 0, (const uint8_t *)"\x24", 1, ntp_udp_classify);
-    arkime_parsers_classifier_register_udp("ntp", NULL, 0, (const uint8_t *)"\xd9", 1, ntp_udp_classify);
-    arkime_parsers_classifier_register_udp("ntp", NULL, 0, (const uint8_t *)"\xdb", 1, ntp_udp_classify);
-    arkime_parsers_classifier_register_udp("ntp", NULL, 0, (const uint8_t *)"\xe3", 1, ntp_udp_classify);
+    // NTP uses UDP port 123. Register by port and let ntp_udp_classify
+    // validate version/mode/stratum so all valid first-byte combinations
+    // are covered (LI 0-3 x VN 1-4 x Mode 1-7).
+    arkime_parsers_classifier_register_port("ntp", NULL, 123, ARKIME_PARSERS_PORT_UDP, ntp_udp_classify);
 }
