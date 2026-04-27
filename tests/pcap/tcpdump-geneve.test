@@ -144,7 +144,12 @@
      64
     ],
     "srcTTLCnt" : 1,
-    "totDataBytes" : 384
+    "totDataBytes" : 384,
+    "vni" : [
+     "10",
+     "11"
+    ],
+    "vniCnt" : 2
    },
    "header" : {
     "index" : {
@@ -382,7 +387,12 @@
      "dst" : 0,
      "src" : 397610159
     },
-    "totDataBytes" : 4396
+    "totDataBytes" : 4396,
+    "vni" : [
+     "10",
+     "11"
+    ],
+    "vniCnt" : 2
    },
    "header" : {
     "index" : {

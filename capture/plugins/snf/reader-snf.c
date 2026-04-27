@@ -138,8 +138,10 @@ LOCAL void reader_snf_init(const char *UNUSED(name))
     snfProcNum  = arkime_config_int(NULL, "snfProcNum", 0, 0, MAX_PROCS);
 
     // Quick config sanity check for clustered processes
-    if (snfNumProcs > 1 && snfProcNum == 0) {
-        CONFIGEXIT("Myricom: snfNumProcs set > 1 but snfProcNum not present in config");
+    if (snfNumProcs > 1) {
+        if (snfProcNum == 0) {
+            CONFIGEXIT("Myricom: snfNumProcs set > 1 but snfProcNum not present in config");
+        }
     } else {
         snfProcNum = 1;
     }
@@ -157,6 +159,9 @@ LOCAL void reader_snf_init(const char *UNUSED(name))
     }
 
     int ringStartOffset = (snfProcNum - 1) * snfNumRings;
+    if (ringStartOffset + snfNumRings > MAX_RINGS) {
+        CONFIGEXIT("Myricom: snfProcNum * snfNumRings (%d) exceeds MAX_RINGS (%d)", ringStartOffset + snfNumRings, MAX_RINGS);
+    }
     int i, r;
     for (i = 0; config.interface[i]; i++) {
         const struct snf_ifaddrs *ifa = ifaddrs;

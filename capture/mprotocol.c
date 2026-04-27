@@ -80,8 +80,14 @@ LOCAL void corrupt_ether_create_sessionid(uint8_t *sessionId, ArkimePacket_t *co
 {
     sessionId[0] = 16;
     sessionId[1] = corruptEtherMProtocol;
-    // Use etherOffset to get src/dst MACs (12 bytes)
-    memcpy(sessionId + 2, packet->pkt + packet->etherOffset, 12);
+    int avail = (int)packet->pktlen - (int)packet->etherOffset;
+    if (avail >= 12) {
+        memcpy(sessionId + 2, packet->pkt + packet->etherOffset, 12);
+    } else {
+        memset(sessionId + 2, 0, 12);
+        if (avail > 0)
+            memcpy(sessionId + 2, packet->pkt + packet->etherOffset, avail);
+    }
     sessionId[14] = 0;
     sessionId[15] = 0;
 }

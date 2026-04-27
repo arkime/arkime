@@ -369,8 +369,10 @@ my ($cmd) = @_;
     if ($cmd ne "--viewernostart") {
         if ($main::debug) {
             system("perl mini-redis.pl --debug 7379 > /tmp/arkime.redis 2>&1 &");
+            system("perl mini-aws.pl --debug 4566 > /tmp/arkime.aws 2>&1 &");
         } else {
             system("perl mini-redis.pl 7379 &");
+            system("perl mini-aws.pl 4566 &");
         }
         my $wes = "-o 'wiseService.usersElasticsearch=$USERSELASTICSEARCH'";
         print ("Starting WISE\n");
@@ -459,6 +461,7 @@ my ($cmd) = @_;
     waitFor($ArkimeTest::host, 3218);
     waitFor($ArkimeTest::host, 7200);
     waitFor($ArkimeTest::host, 7379);
+    waitFor($ArkimeTest::host, 4566);
     sleep 1;
 
     $main::userAgent->get("$ELASTICSEARCH/_flush");

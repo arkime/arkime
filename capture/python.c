@@ -907,7 +907,7 @@ LOCAL PyObject *arkime_python_session_get(PyObject UNUSED(*self), PyObject *args
         pos = arkime_field_by_exp(field);
     }
 
-    if (pos >= config.minInternalField && config.fields[pos] && config.fields[pos]->getCb) {
+    if (pos >= config.minInternalField && pos < ARKIME_FIELDS_MAX && config.fields[pos] && config.fields[pos]->getCb) {
         void *value = config.fields[pos]->getCb(session, pos);
 
         if (!value) {
@@ -1022,7 +1022,7 @@ LOCAL PyObject *arkime_python_session_get(PyObject UNUSED(*self), PyObject *args
         py_list = PyList_New(g_hash_table_size(ghash));
         int i = 0;
         while (g_hash_table_iter_next (&iter, &ikey, NULL)) {
-            PyList_SetItem(py_list, i, PyFloat_FromDouble(*(double *)ikey));
+            PyList_SetItem(py_list, i, PyFloat_FromDouble(POINTER_TO_FLOAT(ikey)));
             i++;
         }
         return py_list;

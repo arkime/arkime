@@ -232,7 +232,9 @@ LOCAL void netflow_plugin_exit()
 {
     int thread;
     for (thread = 0; thread < config.packetThreads; thread++) {
-        netflow_send(thread);
+        if (netflowThreadData[thread].bufCount > 0) {
+            netflow_send(thread);
+        }
     }
 }
 

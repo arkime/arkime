@@ -152,10 +152,15 @@ LOCAL int snmp_parser(ArkimeSession_t *session, void *UNUSED(uw), const uint8_t 
 
     // GetBulkRequest (dataType == 5) has non-repeaters/max-repetitions instead of error
     if (dataType == 5) {
-        // Skip non-repeaters and max-repetitions
+        // Request Id
         value = arkime_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen);
         if (!value)
             return 0;
+        // Non-Repeaters
+        value = arkime_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen);
+        if (!value)
+            return 0;
+        // Max-Repetitions
         value = arkime_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen);
         if (!value)
             return 0;
@@ -198,7 +203,7 @@ LOCAL int snmp_parser(ArkimeSession_t *session, void *UNUSED(uw), const uint8_t 
         BSB_INIT(obsb, value, alen);
         value = arkime_parsers_asn_get_tlv(&obsb, &apc, &atag, &alen);
 
-        if (!value || apc != 0)
+        if (!value || apc != 0 || atag != 6)
             return 0;
 
         arkime_parsers_asn_decode_oid(oid, sizeof(oid), value, alen);

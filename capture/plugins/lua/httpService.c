@@ -128,6 +128,11 @@ LOCAL int MHS_request(lua_State *L)
                               mhs_http_response_cb,
                               lhttp);
 
+    if (!result) {
+        luaL_unref(L, LUA_REGISTRYINDEX, lhttp->ref);
+        ARKIME_TYPE_FREE(LuaHttp_t, lhttp);
+    }
+
     lua_pushboolean(L, result);
     return 1;
 }

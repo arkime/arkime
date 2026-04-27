@@ -88,24 +88,24 @@ LOCAL void smb_security_blob(ArkimeSession_t *session, uint8_t *data, int len)
     uint32_t apc, atag, alen;
     uint8_t *value = arkime_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen);
 
-    if (atag != 1)
+    if (!value || atag != 1)
         return;
 
     BSB_INIT(bsb, value, alen);
     value = arkime_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen);
 
-    if (atag != 16)
+    if (!value || atag != 16)
         return;
 
     BSB_INIT(bsb, value, alen);
     value = arkime_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen);
-    if (atag != 2)
+    if (!value || atag != 2)
         return;
 
     BSB_INIT(bsb, value, alen);
     value = arkime_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen);
 
-    if (atag != 4 || alen < 7 || memcmp("NTLMSSP", value, 7) != 0)
+    if (!value || atag != 4 || alen < 7 || memcmp("NTLMSSP", value, 7) != 0)
         return;
 
     /* Woot, have the part we need to decode */
@@ -517,10 +517,15 @@ LOCAL int smb2_parse(ArkimeSession_t *session, const SMBInfo_t *smb, BSB *bsb, c
         BSB_IMPORT_skip(*bsb, 4);
         BSB_LIMPORT_u16(*bsb, pathoffset);
         BSB_LIMPORT_u16(*bsb, pathlen);
+        if (pathoffset < (64 + 8)) {
+            *remlen -= (BSB_WORK_PTR(*bsb) - start);
+            *state = SMB_SKIP;
+            break;
+        }
         pathoffset -= (64 + 8);
         BSB_IMPORT_skip(*bsb, pathoffset);
 
-        if (!BSB_IS_ERROR(*bsb) && pathlen < BSB_REMAINING(*bsb)) {
+        if (!BSB_IS_ERROR(*bsb) && pathlen <= BSB_REMAINING(*bsb)) {
             smb_add_string(session, shareField, (char *)BSB_WORK_PTR(*bsb), pathlen, smb->flags2[which] & SMB1_FLAGS2_UNICODE);
         }
 
@@ -538,10 +543,15 @@ LOCAL int smb2_parse(ArkimeSession_t *session, const SMBInfo_t *smb, BSB *bsb, c
         BSB_IMPORT_skip(*bsb, 44);
         BSB_LIMPORT_u16(*bsb, nameoffset);
         BSB_LIMPORT_u16(*bsb, namelen);
+        if (nameoffset < (64 + 48)) {
+            *remlen -= (BSB_WORK_PTR(*bsb) - start);
+            *state = SMB_SKIP;
+            break;
+        }
         nameoffset -= (64 + 48);
         BSB_IMPORT_skip(*bsb, nameoffset);
 
-        if (!BSB_IS_ERROR(*bsb) && namelen < BSB_REMAINING(*bsb)) {
+        if (!BSB_IS_ERROR(*bsb) && namelen <= BSB_REMAINING(*bsb)) {
             gsize bread, bwritten;
             GError      *error = 0;
             char *out = g_convert((char *)BSB_WORK_PTR(*bsb), namelen, "utf-8", "ucs-2le", &bread, &bwritten, &error);
@@ -614,6 +624,11 @@ LOCAL int smb_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, in
 
                 BSB_IMPORT_skip(bsb, 1);
                 BSB_IMPORT_u24(bsb, *remlen);
+                if (*remlen < 32) {
+                    // Too short to contain even a minimal SMB header; skip the bytes.
+                    *state = SMB_SKIP;
+                    break;
+                }
                 // Peek at SMBHEADER for version
                 smb->version[which] = *(BSB_WORK_PTR(bsb));
                 *state = SMB_SMBHEADER;
