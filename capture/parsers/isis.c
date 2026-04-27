@@ -28,13 +28,17 @@ LOCAL int isis_pre_process(ArkimeSession_t *session, ArkimePacket_t *const packe
     if (isNewSession)
         arkime_session_add_protocol(session, "isis");
 
-    if (packet->pktlen < 22) {
-        snprintf(msg, sizeof(msg), "err-len-%d", packet->pktlen);
+    // The 0x83 IRPD byte is consumed by the ethernet dispatch, so payload
+    // starts at the length-indicator byte (offset 1 within the IS-IS PDU).
+    // PDU type is therefore at payloadOffset + 3 (IS-IS PDU offset 4).
+    if (packet->payloadLen < 4) {
+        snprintf(msg, sizeof(msg), "err-len-%d", packet->payloadLen);
         arkime_field_string_add(typeField, session, msg, -1, TRUE);
         return 0;
     }
 
-    switch (packet->pkt[21]) {
+    const uint8_t pduType = packet->pkt[packet->payloadOffset + 3] & 0x1F;
+    switch (pduType) {
     case 15:
         arkime_field_string_add(typeField, session, "lan-l1-hello", -1, TRUE);
         break;
@@ -63,7 +67,7 @@ LOCAL int isis_pre_process(ArkimeSession_t *session, ArkimePacket_t *const packe
         arkime_field_string_add(typeField, session, "l2-psnp", -1, TRUE);
         break;
     default:
-        snprintf(msg, sizeof(msg), "unk-%d", packet->pkt[21]);
+        snprintf(msg, sizeof(msg), "unk-%d", pduType);
         if (config.debug)
             LOG("isis %s\n", msg);
         arkime_field_string_add(typeField, session, msg, -1, TRUE);

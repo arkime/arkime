@@ -213,6 +213,10 @@ LOCAL void openvpn_tcp_classify(ArkimeSession_t *session, const uint8_t *data, i
     // OpenVPN TCP: 2-byte length prefix, then byte0 = (opcode << 3) | key_id
     if (len < 16)
         return;
+    uint16_t plen = (data[0] << 8) | data[1];
+    // OpenVPN record must contain at least the opcode byte and minimum payload
+    if (plen < 14 || plen > len - 2)
+        return;
     uint8_t opcode = data[2] >> 3;
     if (opcode < 1 || opcode > 10)
         return;

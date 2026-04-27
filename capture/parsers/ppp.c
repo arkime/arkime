@@ -26,15 +26,17 @@ LOCAL ArkimePacketRC pppoe_packet_enqueue(ArkimePacketBatch_t *batch, ArkimePack
     BSB_IMPORT_u16(bsb, plen);
     BSB_IMPORT_u16(bsb, type);
 
-    if (BSB_IS_ERROR(bsb) || plen != len - 6)
+    if (BSB_IS_ERROR(bsb) || plen < 2 || plen > len - 6)
         return ARKIME_PACKET_CORRUPT;
+
+    int payloadLen = plen - 2; // plen includes the 2-byte protocol type field
 
     packet->tunnel |= ARKIME_PACKET_TUNNEL_PPPOE;
     switch (type) {
     case 0x21:
-        return arkime_packet_run_ethernet_cb(batch, packet, BSB_WORK_PTR(bsb), BSB_REMAINING(bsb), ETHERTYPE_IP, "PPP");
+        return arkime_packet_run_ethernet_cb(batch, packet, BSB_WORK_PTR(bsb), payloadLen, ETHERTYPE_IP, "PPP");
     case 0x57:
-        return arkime_packet_run_ethernet_cb(batch, packet, BSB_WORK_PTR(bsb), BSB_REMAINING(bsb), ETHERTYPE_IPV6, "PPP");
+        return arkime_packet_run_ethernet_cb(batch, packet, BSB_WORK_PTR(bsb), payloadLen, ETHERTYPE_IPV6, "PPP");
     default:
         return ARKIME_PACKET_UNKNOWN_ETHER;
     }
