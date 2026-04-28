@@ -126,7 +126,7 @@ LOCAL char *scheme_s3_escape(const char *str, int len)
     return out;
 }
 /******************************************************************************/
-LOCAL void scheme_s3_done(int UNUSED(code), uint8_t *data, int data_len, gpointer uw)
+LOCAL void scheme_s3_done(int code, uint8_t *data, int data_len, gpointer uw)
 {
     S3Request *req = uw;
     if (!req->isDir) {
@@ -144,6 +144,15 @@ LOCAL void scheme_s3_done(int UNUSED(code), uint8_t *data, int data_len, gpointe
     }
 
     ARKIME_UNLOCK(waitingdir);
+
+    if (code < 200 || code >= 300) {
+        LOG("ERROR - S3 list request failed with HTTP %d for %s", code, req->url);
+        ARKIME_LOCK(s3Items->lock);
+        s3Items->done = 1;
+        ARKIME_COND_BROADCAST(s3Items->lock);
+        ARKIME_UNLOCK(s3Items->lock);
+        return;
+    }
 
     const char *next = arkime_memstr((const char *)data, data_len, "<NextContinuationToken>", 23);
 
@@ -205,7 +214,7 @@ LOCAL int scheme_s3_read(uint8_t *data, int data_len, gpointer uw)
 /******************************************************************************/
 LOCAL void scheme_s3_request(void *server, const ArkimeCredentials_t *creds, const char *path, const char *bucket, S3Request *req, gboolean pathStyle, ArkimeHttpRead_cb cb)
 {
-    char           objectkey[1000];
+    char           objectkey[1600];
 
     if (pathStyle)
         snprintf(objectkey, sizeof(objectkey), "/%s%s", bucket, path);
@@ -382,6 +391,17 @@ LOCAL int scheme_s3_load_full_dir(const char *dir, ArkimeSchemeFlags flags, Arki
     }
 
     char **paths = g_strsplit(path, "/", 3);  // Split into at most 3: empty, bucket, prefix
+
+    if (!paths[0] || !paths[1] || paths[1][0] == 0) {
+        LOG("ERROR - S3 directory URL missing bucket: %s", dir);
+        g_strfreev(paths);
+        curl_free(scheme);
+        curl_free(host);
+        curl_free(port);
+        curl_free(path);
+        curl_url_cleanup(h);
+        return 1;
+    }
 
     char schemehostport[300];
     if (port)
@@ -600,6 +620,17 @@ LOCAL int scheme_s3_load_full(const char *uri, ArkimeSchemeFlags flags, ArkimeSc
     }
 
     char **paths = g_strsplit(path, "/", 0);
+
+    if (!paths[0] || !paths[1] || paths[1][0] == 0) {
+        LOG("ERROR - S3 file URL missing bucket: %s", uri);
+        g_strfreev(paths);
+        curl_free(scheme);
+        curl_free(host);
+        curl_free(port);
+        curl_free(path);
+        curl_url_cleanup(h);
+        return 1;
+    }
 
     char schemehostport[300];
     if (port)

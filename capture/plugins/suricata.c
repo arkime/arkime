@@ -292,6 +292,8 @@ LOCAL void suricata_process()
     uint16_t        srcPort = 0;
     uint16_t        dstPort = 0;
     uint16_t        vlan = 0;
+    gboolean        srcIpOk = FALSE;
+    gboolean        dstIpOk = FALSE;
 
     memset(&srcIp, 0, sizeof(srcIp));
     memset(&dstIp, 0, sizeof(dstIp));
@@ -340,13 +342,23 @@ LOCAL void suricata_process()
                 return;
             }
         } else if (MATCH(line, "src_ip")) {
-            suricata_parse_ip(line + out[i + 2], out[i + 3], &srcIp);
+            srcIpOk = suricata_parse_ip(line + out[i + 2], out[i + 3], &srcIp);
         } else if (MATCH(line, "src_port")) {
-            srcPort = atoi(line + out[i + 2]);
+            int p = arkime_atoin(line + out[i + 2], out[i + 3]);
+            if (p < 0 || p > 65535) {
+                suricata_item_free(item);
+                return;
+            }
+            srcPort = (uint16_t)p;
         } else if (MATCH(line, "dest_ip")) {
-            suricata_parse_ip(line + out[i + 2], out[i + 3], &dstIp);
+            dstIpOk = suricata_parse_ip(line + out[i + 2], out[i + 3], &dstIp);
         } else if (MATCH(line, "dest_port")) {
-            dstPort = atoi(line + out[i + 2]);
+            int p = arkime_atoin(line + out[i + 2], out[i + 3]);
+            if (p < 0 || p > 65535) {
+                suricata_item_free(item);
+                return;
+            }
+            dstPort = (uint16_t)p;
         } else if (MATCH(line, "flow_id")) {
             item->flow_id = g_strndup(line + out[i + 2], out[i + 3]);
             item->flow_id_len = out[i + 3];
@@ -367,11 +379,18 @@ LOCAL void suricata_process()
             suricata_process_alert(line + out[i + 2], out[i + 3], item);
         } else if (MATCH(line, "vlan")) {
             if (*(line + out[i + 2]) == '[') {
-                vlan = atoi(line + out[i + 2] + 1);
+                vlan = arkime_atoin(line + out[i + 2] + 1, out[i + 3] - 1);
             } else {
-                vlan = atoi(line + out[i + 2]);
+                vlan = arkime_atoin(line + out[i + 2], out[i + 3]);
             }
         }
+    }
+
+    if (!srcIpOk || !dstIpOk) {
+        if (config.debug)
+            LOG("WARNING - Suricata alert missing/invalid src or dst ip");
+        suricata_item_free(item);
+        return;
     }
 
 #pragma GCC diagnostic push

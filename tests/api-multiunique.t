@@ -106,6 +106,7 @@ ipwise, 3
 ipwise2, 3
 ipwisecsv, 4
 smtp:authlogin, 1
+socks:auth-failed, 1
 socks:password, 2
 srcip, 4
 wisebyhost2, 7

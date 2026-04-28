@@ -129,6 +129,11 @@ LOCAL void sqs_done(int UNUSED(code), uint8_t *data, int data_len, gpointer uw)
         uint32_t receiptLen = 0;
         uint8_t *receipt = (uint8_t *)arkime_js0n_get(messages + out[i], out[i + 1], "ReceiptHandle", &receiptLen);
 
+        if (!receipt || receiptLen == 0) {
+            LOG("No ReceiptHandle %.*s", out[i + 1], messages + out[i]);
+            continue;
+        }
+
         uint32_t bodyLen = 0;
         uint8_t *body = (uint8_t *)arkime_js0n_get(messages + out[i], out[i + 1], "Body", &bodyLen);
         if (!body) {
@@ -242,13 +247,13 @@ LOCAL int scheme_sqs_load(const char *uri, ArkimeSchemeFlags flags, ArkimeScheme
     }
 
     // Construct the request URL
-    char receiveFullPath[1000];
+    char receiveFullPath[1600];
     snprintf(receiveFullPath, sizeof(receiveFullPath), "/%s/%s?Action=ReceiveMessage&Version=2012-11-05&MaxNumberOfMessages=1&WaitTimeSeconds=10", uris[3], uris[4]);
 
     if (config.debug)
         LOG("receiveFullPath: %s", receiveFullPath);
 
-    char deleteFullPath[1000];
+    char deleteFullPath[1600];
     snprintf(deleteFullPath, sizeof(deleteFullPath), "/%s/%s", uris[3], uris[4]);
 
     char *headers[5] = {"Content-Type: application/x-www-form-urlencoded", "Expect:", "Accept: application/json", NULL, NULL};
@@ -292,7 +297,7 @@ LOCAL int scheme_sqs_load(const char *uri, ArkimeSchemeFlags flags, ArkimeScheme
         ARKIME_UNLOCK(req->items->lock);
 
         if (item->bucket && item->key) {
-            char s3url[1000];
+            char s3url[1600];
             if (isaws) {
                 snprintf(s3url, sizeof(s3url), "s3://%s/%s", item->bucket, item->key);
             } else if (s3Host) {

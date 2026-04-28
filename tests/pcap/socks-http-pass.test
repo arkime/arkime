@@ -239,9 +239,10 @@
     ],
     "srcTTLCnt" : 1,
     "tags" : [
+     "socks:auth-failed",
      "socks:password"
     ],
-    "tagsCnt" : 1,
+    "tagsCnt" : 2,
     "tcpflags" : {
      "ack" : 6,
      "ae" : 0,
