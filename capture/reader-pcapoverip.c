@@ -31,7 +31,7 @@ LOCAL pcap_t               *deadPcap;
 
 typedef struct {
     GSocket                *socket;
-    char                    data[ARKIME_PACKET_MAX_LEN + 24];
+    char                    data[ARKIME_PACKET_MAX_LEN + 16 + 24];
     uint32_t                len;
     int                     readWatch;
     int                     interface;

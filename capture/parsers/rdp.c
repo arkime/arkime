@@ -219,8 +219,7 @@ LOCAL int rdp_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, in
         BSB_IMPORT_u08(bsb, version);
 
         if (version != 3) {
-            rdp->state[which] = RDP_STATE_DONE;
-            break;
+            return ARKIME_PARSER_UNREGISTER;
         }
 
         BSB_IMPORT_skip(bsb, 1);  // reserved
@@ -229,8 +228,7 @@ LOCAL int rdp_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, in
         BSB_IMPORT_u16(bsb, tpktLen);
 
         if (tpktLen < 7 || tpktLen > 8192) {
-            rdp->state[which] = RDP_STATE_DONE;
-            break;
+            return ARKIME_PARSER_UNREGISTER;
         }
 
         // Need full TPKT frame

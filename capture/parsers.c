@@ -426,6 +426,9 @@ uint8_t *arkime_parsers_asn_get_tlv(BSB *bsb, uint32_t *apc, uint32_t *atag, uin
             if ((*atag) & 0xFE000000)
                 goto get_tlv_error;
         }
+        // The terminating long-form tag byte is consumed above; the length
+        // byte still needs to be imported separately.
+        BSB_IMPORT_u08(*bsb, ch);
     } else {
         *atag = ch & 0x1f;
         BSB_IMPORT_u08(*bsb, ch);

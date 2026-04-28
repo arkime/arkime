@@ -914,6 +914,10 @@ LOCAL void writer_simple_index (ArkimeSession_t *session)
     for (guint i = 0; i < session->filePosArray->len; i++) {
         int64_t packetPos = (int64_t)g_array_index(session->filePosArray, int64_t, i);
         if (packetPos < 0) {
+            if (files >= 340) {
+                LOG("WARNING - session has too many file rotations (%d), truncating index", files);
+                break;
+            }
             if (fp) {
                 filePos[(files - 1) * 3 + 2] = BSB_LENGTH(bsb);
                 fwrite(buf, BSB_LENGTH(bsb), 1, fp);

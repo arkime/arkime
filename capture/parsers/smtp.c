@@ -474,7 +474,9 @@ LOCAL int smtp_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, i
             } else if (strncasecmp(line->str, "DATA", 4) == 0) {
                 *state = EMAIL_DATA_HEADER;
                 email->seenHeaders |= (1 << which);
-            } else if (strncasecmp(line->str, "BDAT", 4) == 0) {
+            } else if (strncasecmp(line->str, "BDAT", 4) == 0 &&
+                       line->len > 5 &&
+                       (line->str[4] == ' ' || line->str[4] == '\t')) {
                 email->inBDAT |= (1 << which);
                 email->bdatRemaining[which] = arkime_atoin(line->str + 5, line->len - 5) + 1;
                 if (email->bdatRemaining[which] == 0)

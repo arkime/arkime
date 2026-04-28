@@ -754,6 +754,12 @@ class Auth {
         return done('Unauthorized based on bad url');
       }
 
+      // Backwards compatible: only enforce method when the signed token includes it
+      if (obj.method !== undefined && obj.method !== req.method.toUpperCase()) {
+        console.log('ERROR - mismatch method object:', obj.method, 'request:', ArkimeUtil.sanitizeStr(req.method));
+        return done('Unauthorized based on bad method');
+      }
+
       if (Math.abs(Date.now() - obj.date) > 120000) { // Request has to be +- 2 minutes
         console.log('ERROR - Denying server to server based on timestamp, are clocks out of sync?', Date.now(), obj.date);
         return done('Unauthorized based on timestamp - check that all Arkime viewer machines have accurate clocks');
@@ -1187,7 +1193,8 @@ class Auth {
       date: Date.now(),
       user: user.userId,
       node,
-      path
+      path,
+      method: (options.method ?? 'GET').toUpperCase()
     }, secret);
   }
 
