@@ -39,6 +39,8 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
 ## BREAKING
   - #3911 ArkimeParserBuf_t.buf is now a heap-allocated pointer (uint8_t *buf[2]).
           You must use pb->bufSize[which] instead of sizeof(pb->buf[which])
+## All
+  - #3920 Log more information on role failures
 ## Capture
   - #3910 Corrupt UDP packets could have invalid byte counts
   - #3910 TCP DNS packets might not be parsed correctly depending on segmentation
@@ -56,12 +58,13 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #3918 scheme http no longer requires a port (defaults to 80/443)
   - #3918 fix SNMP sessions showing up as LDAP too
   - #3919 Remove ftp protocol if we are sure smtp
-## All
-  - #3920 Log more information on role failures
 ## Viewer
   - #3898 show error msg in spiview when All selected but not allowed
   - #3906 add copy button to History Elasticsearch Query section
   - #3908 fix download entire pcap missing filename
+  - #3921 Fix Cap Restart graph markers, Session Detail labels slider
+          width, Field Actions dropdown, Stats Shrink Index,
+          and shortcut ($) autocomplete in search expression
 
 6.2.0 2026/04/20
 ## BREAKING
