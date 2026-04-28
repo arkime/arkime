@@ -1802,13 +1802,13 @@ app.getpost(
 
 app.get( // session body file endpoint
   ['/api/session/:nodeName/:id/body/:bodyType/:bodyNum/:bodyName', '/:nodeName/:id/body/:bodyType/:bodyNum/:bodyName'],
-  [checkProxyRequest],
+  [checkProxyRequest, User.checkPermissions(['hidePcap', 'disablePcapDownload'])],
   SessionAPIs.getRawBody
 );
 
 app.get( // session body file image endpoint
   ['/api/session/:nodeName/:id/bodypng/:bodyType/:bodyNum/:bodyName', '/:nodeName/:id/bodypng/:bodyType/:bodyNum/:bodyName'],
-  [checkProxyRequest],
+  [checkProxyRequest, User.checkPermissions(['hidePcap', 'disablePcapDownload'])],
   SessionAPIs.getFilePNG
 );
 
@@ -1862,13 +1862,13 @@ app.get( // session raw packets endpoint
 
 app.get( // session file bodyhash endpoint
   ['/api/sessions/bodyhash/:hash', '/bodyHash/:hash'],
-  [logAction('bodyhash')],
+  [logAction('bodyhash'), User.checkPermissions(['hidePcap', 'disablePcapDownload'])],
   SessionAPIs.getBodyHash
 );
 
 app.get( // session file bodyhash endpoint
   ['/api/session/:nodeName/:id/bodyhash/:hash'],
-  [checkProxyRequest],
+  [checkProxyRequest, User.checkPermissions(['hidePcap', 'disablePcapDownload'])],
   SessionAPIs.getBodyHashFromNode
 );
 
