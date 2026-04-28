@@ -34,11 +34,10 @@
      "lte" : 1700000000000
     },
     "protocol" : [
-     "ldap",
      "snmp",
      "udp"
     ],
-    "protocolCnt" : 3,
+    "protocolCnt" : 2,
     "segmentCnt" : 1,
     "server" : {
      "bytes" : 0
@@ -181,11 +180,10 @@
      "lte" : 1700000002000
     },
     "protocol" : [
-     "ldap",
      "snmp",
      "udp"
     ],
-    "protocolCnt" : 3,
+    "protocolCnt" : 2,
     "segmentCnt" : 1,
     "server" : {
      "bytes" : 0
@@ -332,11 +330,10 @@
      "lte" : 1700000004000
     },
     "protocol" : [
-     "ldap",
      "snmp",
      "udp"
     ],
-    "protocolCnt" : 3,
+    "protocolCnt" : 2,
     "segmentCnt" : 1,
     "server" : {
      "bytes" : 0

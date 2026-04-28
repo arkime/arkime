@@ -274,6 +274,8 @@ LOCAL int quic_fb_tcp_parser(ArkimeSession_t *session, void *uw, const uint8_t *
         return 0;
 
     int len = (fbzero->buf[0][6] << 8) | fbzero->buf[0][5];
+    if (len + 9 > fbzero->bufMax)
+        return ARKIME_PARSER_UNREGISTER;
     if (fbzero->len[0] < len + 9)
         return 0;
 

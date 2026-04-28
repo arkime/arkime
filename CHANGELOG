@@ -50,6 +50,8 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #3917 Improved SMB parsing of share/filename
   - #3917 Improved SNMP GetBulkRequest parsing
   - #3917 Extract VNI from GENEVE tunnels
+  - #3918 scheme http no longer requires a port (defaults to 80/443)
+  - #3918 fix SNMP sessions showing up as LDAP too
 ## Viewer
   - #3898 show error msg in spiview when All selected but not allowed
   - #3906 add copy button to History Elasticsearch Query section
