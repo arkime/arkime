@@ -530,6 +530,7 @@ LOCAL int smtp_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, i
             } else if (strncasecmp(line->str, "HELO ", 5) == 0 ||
                        strncasecmp(line->str, "EHLO ", 5) == 0) {
                 arkime_field_string_add_lower(helloField, session, line->str + 5, -1);
+                arkime_session_rm_protocol(session, "ftp");
                 *state = EMAIL_CMD;
             } else {
                 *state = EMAIL_CMD;

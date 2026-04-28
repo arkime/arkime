@@ -130,11 +130,10 @@
      "lte" : 1476878885949
     },
     "protocol" : [
-     "ftp",
      "smtp",
      "tcp"
     ],
-    "protocolCnt" : 3,
+    "protocolCnt" : 2,
     "segmentCnt" : 1,
     "server" : {
      "bytes" : 130
