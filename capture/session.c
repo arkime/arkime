@@ -378,6 +378,23 @@ gboolean arkime_session_has_protocol(ArkimeSession_t *session, const char *proto
     return hstring != 0;
 }
 /******************************************************************************/
+gboolean arkime_session_rm_protocol(ArkimeSession_t *session, const char *protocol)
+{
+    if (!session->fields[protocolField])
+        return FALSE;
+
+    ArkimeStringHashStd_t   *shash = session->fields[protocolField]->shash;
+    ArkimeString_t          *hstring;
+    HASH_FIND(s_, *shash, protocol, hstring);
+    if (!hstring)
+        return FALSE;
+
+    HASH_REMOVE(s_, *shash, hstring);
+    g_free(hstring->str);
+    ARKIME_TYPE_FREE(ArkimeString_t, hstring);
+    return TRUE;
+}
+/******************************************************************************/
 void arkime_session_add_tag(ArkimeSession_t *session, const char *tag)
 {
     arkime_field_string_add(config.tagsStringField, session, tag, -1, TRUE);
