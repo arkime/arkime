@@ -627,7 +627,7 @@ export default {
           const response = await FieldService.getShortcuts(url);
           this.loadingValues = false;
           const escapedToken = lastToken.replaceAll('$', '\\$');
-          this.results = this.findMatch(escapedToken, response.data);
+          this.results = this.findMatch(escapedToken, response);
         } catch (error) {
           this.loadingValues = false;
           this.loadingError = resolveMessage(error, this.$t);

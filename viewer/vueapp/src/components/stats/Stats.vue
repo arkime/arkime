@@ -779,7 +779,7 @@ export default {
 
       try {
         const response = await StatsService.getDataNodes({ cluster: this.cluster });
-        this.nodes = response.data.data;
+        this.nodes = response.data;
         this.temporaryNode = this.nodes[0].name;
       } catch {
         this.shrinkError = 'Error fetching data nodes';
@@ -802,8 +802,8 @@ export default {
           target: this.temporaryNode,
           numShards: this.shrinkFactor
         }, { cluster: this.cluster });
-        if (!response.data.success) {
-          this.shrinkError = resolveMessage(response.data, this.$t);
+        if (!response.success) {
+          this.shrinkError = resolveMessage(response, this.$t);
           return;
         }
         this.cancelShrink();

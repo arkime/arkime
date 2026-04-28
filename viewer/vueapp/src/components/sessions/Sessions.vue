@@ -883,7 +883,7 @@ export default {
     window.addEventListener('resize', windowResizeEvent, { passive: true });
 
     UserService.getState('sessionDetailDLWidth').then((response) => {
-      this.$store.commit('setSessionDetailDLWidth', response.data?.width ?? 160);
+      this.$store.commit('setSessionDetailDLWidth', response?.width ?? 160);
     });
   },
   computed: {
@@ -1829,8 +1829,8 @@ export default {
         pendingPromise = { controller, cancelId };
 
         const response = await fetcher; // do the fetch
-        if (response.data.error) {
-          throw new Error(response.data.error);
+        if (response.error) {
+          throw new Error(response.error);
         }
 
         pendingPromise = null;

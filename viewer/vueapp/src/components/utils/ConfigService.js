@@ -71,15 +71,15 @@ export default {
 
       fetchWrapper({ url: 'api/fieldactions' }).then((response) => {
         getFieldActionsQIP = undefined;
-        for (const key in response.data) {
-          const item = response.data[key];
+        for (const key in response) {
+          const item = response[key];
           if (item.category !== undefined && !Array.isArray(item.category)) {
             item.category = item.category.split(',');
           }
         }
 
-        store.commit('setFieldActions', response.data);
-        return resolve(response.data);
+        store.commit('setFieldActions', response);
+        return resolve(response);
       }).catch((error) => {
         getFieldActionsQIP = undefined;
         return reject(error);
