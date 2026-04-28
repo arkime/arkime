@@ -1766,6 +1766,21 @@ class User {
       }
     }
   }
+
+  async logRoleFailure (role) {
+    try {
+      const roles = Array.isArray(role) ? role : [role];
+      let urm;
+      if (!User.#dynamicRolesFuncs) {
+        urm = 'not using';
+      } else {
+        urm = '{' + roles.map(r => `${r}: ${User.#dynamicRolesFuncs.has(r) ? 'set' : 'cleared'}`).join(', ') + '}';
+      }
+      console.log('Missing %s role - userId: %s roles: %s expanded roles: %s user-role-mappings: %s', roles.join(','), this.userId, this.roles, await this.getRoles(), urm);
+    } catch (e) {
+      console.log('ERROR - logRoleFailure failed:', e.message);
+    }
+  }
 }
 
 /******************************************************************************/

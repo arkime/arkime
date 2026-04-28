@@ -976,6 +976,7 @@ function isUser (req, res, next) {
     return next();
   }
 
+  req.user.logRoleFailure('parliamentUser');
   res.status(403).json({
     success: false,
     text: 'Permission Denied: Not a Parliament user'
@@ -987,6 +988,7 @@ function isAdmin (req, res, next) {
     return next();
   }
 
+  req.user.logRoleFailure('parliamentAdmin');
   res.status(403).json({
     success: false,
     text: 'Permission Denied: Not a Parliament admin'

@@ -278,6 +278,7 @@ class MiscAPIs {
     }
 
     if (!req.user.hasRole(internals.uploadRoles)) {
+      req.user.logRoleFailure(internals.uploadRoles);
       res.status(403);
       return res.end('Not covered by role');
     }

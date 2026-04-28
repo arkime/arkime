@@ -311,9 +311,7 @@ app.use(async (req, res, next) => {
   }
 
   if (!req.user.hasRole('arkimeUser')) {
-    if (Config.debug) {
-      console.log('Missing arkimeUser userId: %s roles: %s expanded roles: %s', req.user.userId, req.user.roles, await req.user.getRoles());
-    }
+    req.user.logRoleFailure('arkimeUser');
     return res.status(403).send('Need arkimeUser role assigned');
   }
   next();
