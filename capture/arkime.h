@@ -1323,6 +1323,7 @@ void     arkime_session_init();
 void     arkime_session_exit();
 void     arkime_session_add_protocol(ArkimeSession_t *session, const char *protocol);
 gboolean arkime_session_has_protocol(ArkimeSession_t *session, const char *protocol);
+gboolean arkime_session_rm_protocol(ArkimeSession_t *session, const char *protocol);
 void     arkime_session_add_tag(ArkimeSession_t *session, const char *tag);
 
 #define  arkime_session_incr_outstanding(session) (session)->outstandingQueries++
