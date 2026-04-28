@@ -196,6 +196,7 @@ Auth.app(app);
 // check for cont3xtUser
 app.use((req, res, next) => {
   if (!req.user.hasRole('cont3xtUser')) {
+    req.user.logRoleFailure('cont3xtUser');
     return res.send('Need cont3xtUser role assigned');
   }
   next();
