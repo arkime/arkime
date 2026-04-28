@@ -22,6 +22,8 @@
 
 use strict;
 use warnings;
+STDOUT->autoflush(1);
+STDERR->autoflush(1);
 $SIG{INT} = sub { exit 0; };
 use IO::Socket::IP;
 use IO::Select;
