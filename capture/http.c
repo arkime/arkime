@@ -144,7 +144,11 @@ LOCAL size_t arkime_http_curl_write_callback(void *contents, size_t size, size_t
 {
     ArkimeHttpRequest_t *request = requestP;
 
+    if (size != 0 && nmemb > (SIZE_MAX / size))
+        return 0;
     size_t sz = size * nmemb;
+    if (sz > 0x7FFFFFFF)
+        return 0;
 
     if (request->rfunc) {
         if (!request->rfunc(contents, sz, request->uw))
@@ -164,9 +168,9 @@ LOCAL size_t arkime_http_curl_write_callback(void *contents, size_t size, size_t
         return sz;
     }
 
+    if ((size_t)request->used + sz > 0x7FFFFFFF)
+        return 0;
     if (request->used + sz > request->size) {
-        if (request->used + sz > 0x7FFFFFFF)
-            return 0;
         request->size += request->used + sz;
         ARKIME_SIZE_REALLOC("dataIn", request->dataIn, request->size + 1);
     }

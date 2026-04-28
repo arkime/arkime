@@ -877,6 +877,9 @@ LOCAL ArkimePacketRC arkime_packet_ip4(ArkimePacketBatch_t *batch, ArkimePacket_
     LOG("enter %p %p %d", packet, data, len);
 #endif
 
+    if (++packet->tunnelDepth > ARKIME_PACKET_MAX_TUNNEL_DEPTH)
+        return ARKIME_PACKET_CORRUPT;
+
     if (len < (int)sizeof(struct ip)) {
 #ifdef DEBUG_PACKET
         LOG("BAD PACKET: too small for header %p %d", packet, len);
@@ -952,6 +955,15 @@ LOCAL ArkimePacketRC arkime_packet_ip4(ArkimePacketBatch_t *batch, ArkimePacket_
 
         tcphdr = (struct tcphdr *)((char *)ip4 + ip_hdr_len);
 
+        // th_off is the TCP header length in 32-bit words. Must be >= 5 (20 bytes)
+        // and the full TCP header must fit within the IP payload.
+        if (tcphdr->th_off < 5 || ip_hdr_len + 4 * tcphdr->th_off > len) {
+#ifdef DEBUG_PACKET
+            LOG("BAD PACKET: invalid TCP th_off %u (len=%d ip_hdr_len=%d)", tcphdr->th_off, len, ip_hdr_len);
+#endif
+            return ARKIME_PACKET_CORRUPT;
+        }
+
         if (packetDrop4.drops[tcphdr->th_sport] &&
             arkime_drophash_should_drop(&packetDrop4, tcphdr->th_sport, &ip4->ip_src.s_addr, packet->ts.tv_sec)) {
 
@@ -989,11 +1001,15 @@ LOCAL ArkimePacketRC arkime_packet_ip4(ArkimePacketBatch_t *batch, ArkimePacket_
 
         udphdr = (struct udphdr *)((char *)ip4 + ip_hdr_len);
 
-        if (ntohs(udphdr->uh_ulen) < sizeof(struct udphdr))
+        const int udpUlen = ntohs(udphdr->uh_ulen);
+        if (udpUlen < (int)sizeof(struct udphdr) || udpUlen > ip_len - ip_hdr_len)
             return ARKIME_PACKET_CORRUPT;
 
         if (len > ip_hdr_len + (int)sizeof(struct udphdr) + 8 && udpPortCbs[udphdr->uh_dport]) {
-            int rc = arkime_packet_call_enqueue(udpPortCbs[udphdr->uh_dport], batch, packet, (uint8_t *)ip4 + ip_hdr_len + sizeof(struct udphdr), len - ip_hdr_len - sizeof(struct udphdr));
+            // Use the UDP datagram length, not the IP remainder, so trailing
+            // padding is not fed to tunnel decapsulators as smuggled payload.
+            int cbLen = MIN(udpUlen, len - ip_hdr_len) - (int)sizeof(struct udphdr);
+            int rc = arkime_packet_call_enqueue(udpPortCbs[udphdr->uh_dport], batch, packet, (uint8_t *)ip4 + ip_hdr_len + sizeof(struct udphdr), cbLen);
             if (rc != ARKIME_PACKET_UNKNOWN_IP)
                 return rc;
 
@@ -1031,6 +1047,9 @@ LOCAL ArkimePacketRC arkime_packet_ip6(ArkimePacketBatch_t *batch, ArkimePacket_
 #ifdef DEBUG_PACKET
     LOG("enter %p %p %d", packet, data, len);
 #endif
+
+    if (++packet->tunnelDepth > ARKIME_PACKET_MAX_TUNNEL_DEPTH)
+        return ARKIME_PACKET_CORRUPT;
 
     if (len < (int)sizeof(struct ip6_hdr)) {
         return ARKIME_PACKET_CORRUPT;
@@ -1083,6 +1102,7 @@ LOCAL ArkimePacketRC arkime_packet_ip6(ArkimePacketBatch_t *batch, ArkimePacket_
     packet->mProtocol = 0;
     int nxt = ip6->ip6_nxt;
     int done = 0;
+    int extHdrCount = 0;
 
 #ifdef DEBUG_PACKET
     LOG("Got ip6 header %p %d nxt: %d", packet, packet->pktlen, nxt);
@@ -1094,23 +1114,36 @@ LOCAL ArkimePacketRC arkime_packet_ip6(ArkimePacketBatch_t *batch, ArkimePacket_
         case IPPROTO_HOPOPTS:
         case IPPROTO_DSTOPTS:
         case IPPROTO_ROUTING:
+            if (++extHdrCount > 16) {
+#ifdef DEBUG_PACKET
+                LOG("ERROR - Too many IPv6 extension headers");
+#endif
+                return ARKIME_PACKET_CORRUPT;
+            }
             if (len < ip_hdr_len + 2) {
 #ifdef DEBUG_PACKET
                 LOG("ERROR - %d < %d + 2", len, ip_hdr_len);
 #endif
                 return ARKIME_PACKET_CORRUPT;
             }
-            nxt = data[ip_hdr_len];
-            ip_hdr_len += ((data[ip_hdr_len + 1] + 1) << 3);
 
-            packet->payloadOffset = packet->ipOffset + ip_hdr_len;
+            // Validate the candidate header length BEFORE mutating any state.
+            // ext header length = (length-byte + 1) * 8, max 2048 bytes.
+            const int extLen = (data[ip_hdr_len + 1] + 1) << 3;
+            const int newHdrLen = ip_hdr_len + extLen;
 
-            if (ip_len + (int)sizeof(struct ip6_hdr) < ip_hdr_len) {
+            if (newHdrLen > ip_len + (int)sizeof(struct ip6_hdr) || newHdrLen > len) {
 #ifdef DEBUG_PACKET
-                LOG("ERROR - %d + %ld < %d", ip_len, (long)sizeof(struct ip6_hdr), ip_hdr_len);
+                LOG("ERROR - ext header overruns packet: %d > min(%d, %d)",
+                    newHdrLen, ip_len + (int)sizeof(struct ip6_hdr), len);
 #endif
                 return ARKIME_PACKET_CORRUPT;
             }
+
+            nxt = data[ip_hdr_len];
+            ip_hdr_len = newHdrLen;
+
+            packet->payloadOffset = packet->ipOffset + ip_hdr_len;
             packet->payloadLen = ip_len + sizeof(struct ip6_hdr) - ip_hdr_len;
 
             if (packet->pktlen < packet->payloadOffset + packet->payloadLen) {
@@ -1133,6 +1166,15 @@ LOCAL ArkimePacketRC arkime_packet_ip6(ArkimePacketBatch_t *batch, ArkimePacket_
             }
 
             tcphdr = (struct tcphdr *)(data + ip_hdr_len);
+
+            // th_off is the TCP header length in 32-bit words. Must be >= 5 (20 bytes)
+            // and the full TCP header must fit within the IP payload.
+            if (tcphdr->th_off < 5 || ip_hdr_len + 4 * tcphdr->th_off > len) {
+#ifdef DEBUG_PACKET
+                LOG("BAD PACKET: invalid TCP th_off %u (len=%d ip_hdr_len=%d)", tcphdr->th_off, len, ip_hdr_len);
+#endif
+                return ARKIME_PACKET_CORRUPT;
+            }
 
 
             if (packetDrop6.drops[tcphdr->th_sport] &&
@@ -1169,14 +1211,18 @@ LOCAL ArkimePacketRC arkime_packet_ip6(ArkimePacketBatch_t *batch, ArkimePacket_
 
             udphdr = (struct udphdr *)(data + ip_hdr_len);
 
-            if (ntohs(udphdr->uh_ulen) < sizeof(struct udphdr))
+            const int udpUlen = ntohs(udphdr->uh_ulen);
+            if (udpUlen < (int)sizeof(struct udphdr) || udpUlen > ip_len + (int)sizeof(struct ip6_hdr) - ip_hdr_len)
                 return ARKIME_PACKET_CORRUPT;
 
             arkime_session_id6(sessionId, ip6->ip6_src.s6_addr, udphdr->uh_sport,
                                ip6->ip6_dst.s6_addr, udphdr->uh_dport, packet->vlan, packet->vni);
 
             if (len > ip_hdr_len + (int)sizeof(struct udphdr) + 8 && udpPortCbs[udphdr->uh_dport]) {
-                int rc = arkime_packet_call_enqueue(udpPortCbs[udphdr->uh_dport], batch, packet, (uint8_t *)udphdr + sizeof(struct udphdr), len - ip_hdr_len - sizeof(struct udphdr));
+                // Use the UDP datagram length, not the IP remainder, so trailing
+                // padding is not fed to tunnel decapsulators as smuggled payload.
+                int cbLen = MIN(udpUlen, len - ip_hdr_len) - (int)sizeof(struct udphdr);
+                int rc = arkime_packet_call_enqueue(udpPortCbs[udphdr->uh_dport], batch, packet, (uint8_t *)udphdr + sizeof(struct udphdr), cbLen);
                 if (rc != ARKIME_PACKET_UNKNOWN_IP)
                     return rc;
 
@@ -1290,6 +1336,7 @@ LOCAL ArkimePacketRC arkime_packet_ether(ArkimePacketBatch_t *batch, ArkimePacke
 
 
     int n = 12;
+    int vlanDepth = 0;
     while (n + 2 < len) {
         int ethertype = data[n] << 8 | data[n + 1];
         if (ethertype <= 1500) {
@@ -1299,6 +1346,9 @@ LOCAL ArkimePacketRC arkime_packet_ether(ArkimePacketBatch_t *batch, ArkimePacke
         switch (ethertype) {
         case ETHERTYPE_VLAN:
         case ARKIME_ETHERTYPE_QINQ:
+            if (++vlanDepth > 8) {
+                return ARKIME_PACKET_CORRUPT;
+            }
             if (!packet->vlan && n + 2 < len) {
                 packet->vlan = (data[n] << 8 | data[n + 1]) & 0xfff;
                 packet->vlanCopy = 1;
@@ -1669,7 +1719,7 @@ ArkimePacketRC arkime_packet_run_ethernet_cb(ArkimePacketBatch_t *batch, ArkimeP
     LOG("enter %p type:%u (0x%x) %s %p %d", packet, type, type, str, data, len);
 #endif
 
-    if (++packet->tunnelDepth > 10)
+    if (++packet->tunnelDepth > ARKIME_PACKET_MAX_TUNNEL_DEPTH)
         return ARKIME_PACKET_CORRUPT;
 
     if (type == ARKIME_ETHERTYPE_DETECT) {
@@ -1733,7 +1783,7 @@ ArkimePacketRC arkime_packet_run_ip_cb(ArkimePacketBatch_t *batch, ArkimePacket_
     LOG("enter %p %d %s %p %d", packet, type, str, data, len);
 #endif
 
-    if (++packet->tunnelDepth > 10)
+    if (++packet->tunnelDepth > ARKIME_PACKET_MAX_TUNNEL_DEPTH)
         return ARKIME_PACKET_CORRUPT;
 
     if (type >= ARKIME_IPPROTO_MAX) {

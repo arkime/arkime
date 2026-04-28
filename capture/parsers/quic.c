@@ -398,19 +398,21 @@ LOCAL void quic_ietf_udp_classify(ArkimeSession_t *session, const uint8_t *data,
     BSB_IMPORT_skip(bsb, slen);
 
     // Token
-    uint32_t tlen = quic_get_number(&bsb);
+    uint64_t tlen = quic_get_number(&bsb);
+    if (tlen > (uint64_t)BSB_REMAINING(bsb))
+        return;
     BSB_IMPORT_skip(bsb, tlen);
 
     // Length
-    uint32_t packet_len = quic_get_number(&bsb);
+    uint64_t packet_len = quic_get_number(&bsb);
 
-    if (packet_len < 100 || packet_len > BSB_REMAINING(bsb)) {
+    if (packet_len < 100 || packet_len > (uint64_t)BSB_REMAINING(bsb)) {
         if (!config.debug)
             return;
 
         char ipStr[200];
         arkime_session_pretty_string(session, ipStr, sizeof(ipStr));
-        LOG("Couldn't parse header packet len %u remaining %ld %s", packet_len, (long)BSB_REMAINING(bsb), ipStr);
+        LOG("Couldn't parse header packet len %" PRIu64 " remaining %ld %s", packet_len, (long)BSB_REMAINING(bsb), ipStr);
         return;
     }
 

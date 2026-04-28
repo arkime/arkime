@@ -58,6 +58,8 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #3918 scheme http no longer requires a port (defaults to 80/443)
   - #3918 fix SNMP sessions showing up as LDAP too
   - #3919 Remove ftp protocol if we are sure smtp
+  - #3923 Packets with more than 8 VLANs marked as corrupt
+  - #3923 UDP packets enforce length correctly
 ## Viewer
   - #3898 show error msg in spiview when All selected but not allowed
   - #3906 add copy button to History Elasticsearch Query section

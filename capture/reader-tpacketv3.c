@@ -146,7 +146,7 @@ LOCAL void *reader_tpacketv3_thread(gpointer infov)
             if ((th->tp_status & TP_STATUS_VLAN_VALID) && th->hv1.tp_vlan_tci) {
                 if (tpacketv3OldVlan) {
                     packet->vlan = th->hv1.tp_vlan_tci & 0xfff;
-                } else {
+                } else if (th->tp_mac >= 4) {
                     // AFPacket removes the first VLAN so add it back in. Thanks to Suricata for the idea.
                     packet->pktlen += 4;
                     packet->pkt -= 4;
@@ -157,6 +157,9 @@ LOCAL void *reader_tpacketv3_thread(gpointer infov)
                     // Build VLAN header (network byte order)
                     vlanHeader = htonl((0x8100u << 16) | (th->hv1.tp_vlan_tci & 0xfff));
                     memcpy(packet->pkt + 12, &vlanHeader, 4);
+                } else {
+                    // Not enough headroom to reinsert the VLAN tag - record TCI only
+                    packet->vlan = th->hv1.tp_vlan_tci & 0xfff;
                 }
             }
 

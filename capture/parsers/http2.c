@@ -121,6 +121,8 @@ LOCAL void http2_parse_header_block(ArkimeSession_t *session, HTTP2Info_t *http2
         nghttp2_hd_inflate_new(&http2->hd_inflater[which]);
 
     int final = flags & NGHTTP2_FLAG_END_HEADERS;
+    int headerCount = 0;
+    size_t headerBytes = 0;
 
 #ifdef HTTPDEBUG
     LOG("%u,%d: which:%d inlen:%d final:%d %.*s", streamId, spos, which, inlen, final, inlen, in);
@@ -144,6 +146,13 @@ LOCAL void http2_parse_header_block(ArkimeSession_t *session, HTTP2Info_t *http2
         inlen -= rv;
 
         if (inflate_flags & NGHTTP2_HD_INFLATE_EMIT) {
+            headerCount++;
+            headerBytes += nv.namelen + nv.valuelen;
+            if (headerCount > 256 || headerBytes > 65536) {
+                arkime_session_add_tag(session, "http2:hpack-budget-exceeded");
+                nghttp2_hd_inflate_end_headers(http2->hd_inflater[which]);
+                return;
+            }
             if (nv.name[0] == ':') {
                 if (nv.namelen == 7 && memcmp(nv.name, ":method", 7) == 0) {
                     arkime_field_string_add(methodField, session, (char *)nv.value, nv.valuelen, TRUE);
@@ -341,6 +350,10 @@ LOCAL int http2_parse_frame(ArkimeSession_t *session, HTTP2Info_t *http2, int wh
 
     // type will only be DATA if this is the first part of a data frame, anything else will be shortcutted in http_parse
     if (type == NGHTTP2_DATA) {
+        if (len > (1 << 20)) {
+            arkime_session_add_tag(session, "http2:data-frame-too-large");
+            return 1;
+        }
         int dataLen = MIN((int)len, BSB_REMAINING(bsb));
         http2->dataStreamId[which] = streamId;
         if (len > BSB_REMAINING(bsb)) {

@@ -530,6 +530,11 @@ LOCAL int arkime_reader_scheme_processNG(const char *uri, uint8_t *data, int len
 
             const ArkimePcapNGFileHdr_t *h = (ArkimePcapNGFileHdr_t *)readerState.tmpBuffer;
 
+            if (h->byte_order_magic != 0x1A2B3C4D && h->byte_order_magic != 0x4D3C2B1A) {
+                LOG("ERROR - Invalid pcapNG byte_order_magic 0x%08x in '%s'", h->byte_order_magic, uri);
+                return 1;
+            }
+
             readerState.needSwap = h->byte_order_magic != 0x1A2B3C4D;
             readerState.tsresol = 1000000; // default to microsecond resolution
 
@@ -675,7 +680,8 @@ LOCAL int arkime_reader_scheme_processNG(const char *uri, uint8_t *data, int len
                         readerState.tsresol = 1ULL << MIN((options[0] & 0x7F), 63);
                     } else {
                         readerState.tsresol = 1;
-                        for (int i = 0; i < options[0]; i++)
+                        const int exp = MIN(options[0], 19);
+                        for (int i = 0; i < exp; i++)
                             readerState.tsresol *= 10;
                     }
                 }

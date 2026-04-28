@@ -132,6 +132,10 @@ LOCAL int s7comm_tcp_parser(ArkimeSession_t *session, void *uw, const uint8_t *d
             return ARKIME_PARSER_UNREGISTER;
         }
 
+        if (tpktLen > buf->bufMax) {
+            return ARKIME_PARSER_UNREGISTER;
+        }
+
         if (tpktLen > buf->len[which]) {
             return 0; // Need more data
         }
