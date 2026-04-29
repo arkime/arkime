@@ -456,6 +456,28 @@ For data tables with bounded data (e.g., summary cards with `resultsLimit: 20`):
 
 `hide-default-footer` removes the chrome entirely; `:items-per-page="-1"` shows all rows. Reserve the default footer for tables with unbounded server-side pagination.
 
+### `:title` on `v-list-item` is the visible label, not an HTML tooltip
+
+In BVN, `<b-dropdown-item :title="...">` set the native HTML `title` attribute (browser tooltip on hover). In Vuetify v3, `<v-list-item :title="...">` is the **visible item label** — it renders as text alongside (or instead of) your slot content.
+
+If you migrate a BVN dropdown item with `:title="..."` directly to v-list-item with the same prop, you'll see the title text leaking into the menu (e.g., "and 10.0.0.1, && ip.dst == 10.0.0.1" all on one row).
+
+**Use `<v-tooltip activator="parent">` inside the v-list-item instead:**
+
+```vue
+<v-list-item @click.stop="...">
+  <strong>and</strong>
+  {{ value }}
+  <v-tooltip activator="parent" location="end">
+    {{ '&& ' + expr + ' == ' + value }}
+  </v-tooltip>
+</v-list-item>
+```
+
+`activator="parent"` attaches the tooltip to the v-list-item's root element, so hovering the row shows the tooltip. This matches the existing BVN tooltip behavior and produces a Vuetify-styled tooltip (matches the rest of the migrated UI), not the browser's native one.
+
+The same applies to `v-btn`, `v-chip`, etc. — anywhere the BVN equivalent had `:title="..."` as a native HTML attribute.
+
 ### Table header vertical alignment after migration
 
 Bootstrap's default `<th>` is `vertical-align: middle`. When a header cell contains a tooltip activator, sort icon, filter input, AND label text, the middle alignment looks awkward — text floats away from the row's bottom edge. Add scoped style:
