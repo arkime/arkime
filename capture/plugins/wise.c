@@ -1006,6 +1006,10 @@ void arkime_plugin_init()
     }
 
     if (wiseURL) {
+        int wiseURLLen = strlen(wiseURL);
+        if (wiseURLLen > 0 && wiseURL[wiseURLLen - 1] == '/') {
+            wiseURL[wiseURLLen - 1] = 0;
+        }
         wiseService = arkime_http_create_server(wiseURL, maxConns, maxRequests, 0);
     } else {
         char hoststr[200];
