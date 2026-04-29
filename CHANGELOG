@@ -67,6 +67,8 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #3921 Fix Cap Restart graph markers, Session Detail labels slider
           width, Field Actions dropdown, Stats Shrink Index,
           and shortcut ($) autocomplete in search expression
+## WISE
+  - #3924 Remove trailing slash from wiseURL
 
 6.2.0 2026/04/20
 ## BREAKING
