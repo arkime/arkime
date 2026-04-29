@@ -51,100 +51,90 @@ SPDX-License-Identifier: Apache-2.0
             <v-list
               density="compact"
               class="session-field-list">
-              <v-list-item
-                @click.stop="fieldClick(expr, pd.queryVal, '==', '&&')"
-                :title="'&& ' + expr + ' == ' + pd.value">
+              <v-list-item @click.stop="fieldClick(expr, pd.queryVal, '==', '&&')">
                 <strong>and</strong>
                 {{ pd.value }}
+                <v-tooltip activator="parent" location="end">{{ '&& ' + expr + ' == ' + pd.value }}</v-tooltip>
               </v-list-item>
-              <v-list-item
-                @click.stop="fieldClick(expr, pd.queryVal, '!=', '&&')"
-                :title="'&& ' + expr + ' != ' + pd.value">
+              <v-list-item @click.stop="fieldClick(expr, pd.queryVal, '!=', '&&')">
                 <strong>and not</strong>
                 {{ pd.value }}
+                <v-tooltip activator="parent" location="end">{{ '&& ' + expr + ' != ' + pd.value }}</v-tooltip>
               </v-list-item>
-              <v-list-item
-                @click.stop="fieldClick(expr, pd.queryVal, '==', '||')"
-                :title="'|| ' + expr + ' == ' + pd.value">
+              <v-list-item @click.stop="fieldClick(expr, pd.queryVal, '==', '||')">
                 <strong>or</strong>
                 {{ pd.value }}
+                <v-tooltip activator="parent" location="end">{{ '|| ' + expr + ' == ' + pd.value }}</v-tooltip>
               </v-list-item>
-              <v-list-item
-                @click.stop="fieldClick(expr, pd.queryVal, '!=', '||')"
-                :title="'|| ' + expr + ' != ' + pd.value">
+              <v-list-item @click.stop="fieldClick(expr, pd.queryVal, '!=', '||')">
                 <strong>or not</strong>
                 {{ pd.value }}
+                <v-tooltip activator="parent" location="end">{{ '|| ' + expr + ' != ' + pd.value }}</v-tooltip>
               </v-list-item>
               <template v-if="session && field.portField && session[field.portField] !== undefined">
-                <v-list-item
-                  @click.stop="fieldClick(expr, pd.queryVal + sep + session[field.portField], '==', '&&')"
-                  :title="'&& ' + expr + ' == ' + pd.value">
+                <v-list-item @click.stop="fieldClick(expr, pd.queryVal + sep + session[field.portField], '==', '&&')">
                   <strong>and</strong>
                   {{ pd.value }}{{ sep }}{{ session[field.portField] }}
+                  <v-tooltip activator="parent" location="end">{{ '&& ' + expr + ' == ' + pd.value }}</v-tooltip>
                 </v-list-item>
-                <v-list-item
-                  @click.stop="fieldClick(expr, pd.queryVal + sep + session[field.portField], '!=', '&&')"
-                  :title="'&& ' + expr + ' != ' + pd.value">
+                <v-list-item @click.stop="fieldClick(expr, pd.queryVal + sep + session[field.portField], '!=', '&&')">
                   <strong>and not</strong>
                   {{ pd.value }}{{ sep }}{{ session[field.portField] }}
+                  <v-tooltip activator="parent" location="end">{{ '&& ' + expr + ' != ' + pd.value }}</v-tooltip>
                 </v-list-item>
-                <v-list-item
-                  @click.stop="fieldClick(expr, pd.queryVal + sep + session[field.portField], '==', '||')"
-                  :title="'|| ' + expr + ' == ' + pd.value">
+                <v-list-item @click.stop="fieldClick(expr, pd.queryVal + sep + session[field.portField], '==', '||')">
                   <strong>or</strong>
                   {{ pd.value }}{{ sep }}{{ session[field.portField] }}
+                  <v-tooltip activator="parent" location="end">{{ '|| ' + expr + ' == ' + pd.value }}</v-tooltip>
                 </v-list-item>
-                <v-list-item
-                  @click.stop="fieldClick(expr, pd.queryVal + sep + session[field.portField], '!=', '||')"
-                  :title="'|| ' + expr + ' != ' + pd.value">
+                <v-list-item @click.stop="fieldClick(expr, pd.queryVal + sep + session[field.portField], '!=', '||')">
                   <strong>or not</strong>
                   {{ pd.value }}{{ sep }}{{ session[field.portField] }}
+                  <v-tooltip activator="parent" location="end">{{ '|| ' + expr + ' != ' + pd.value }}</v-tooltip>
                 </v-list-item>
               </template>
               <v-divider />
               <v-list-item
                 v-for="(item, key) in menuItems"
                 :key="'sync-item-' + key"
-                :title="item.name + ' ' + item.value"
                 :href="item.url"
                 target="_blank">
                 <strong>{{ item.name }}</strong>
                 {{ item.value }}
+                <v-tooltip activator="parent" location="end">{{ item.name + ' ' + item.value }}</v-tooltip>
               </v-list-item>
               <v-list-item
                 v-for="(item, key) in asyncMenuItems"
                 :key="'async-item-' + key"
-                :title="item.name"
                 @click="fetchMenuData(item.url, key)">
                 <strong>{{ item.name }}</strong>
                 {{ item.value }}
+                <v-tooltip activator="parent" location="end">{{ item.name }}</v-tooltip>
               </v-list-item>
               <v-list-item
                 v-if="sessionBtn"
-                @click.stop="goToSessions(expr, pd.queryVal, '==')"
-                :title="$t('sessions.field.openSessionsTip', { query: expr + ' == ' + pd.queryVal})">
+                @click.stop="goToSessions(expr, pd.queryVal, '==')">
                 <span class="fa fa-folder-open-o fa-fw" />
                 {{ $t('sessions.field.openSessions') }}
+                <v-tooltip activator="parent" location="end">{{ $t('sessions.field.openSessionsTip', { query: expr + ' == ' + pd.queryVal}) }}</v-tooltip>
               </v-list-item>
-              <v-list-item
-                @click.stop="newTabSessions(expr, pd.queryVal, '==')"
-                :title="$t('sessions.field.newSessionsTip', { query: expr + ' == ' + pd.queryVal})">
+              <v-list-item @click.stop="newTabSessions(expr, pd.queryVal, '==')">
                 <span class="fa fa-external-link-square fa-fw" />
                 {{ $t('sessions.field.newSessions') }}
+                <v-tooltip activator="parent" location="end">{{ $t('sessions.field.newSessionsTip', { query: expr + ' == ' + pd.queryVal}) }}</v-tooltip>
               </v-list-item>
               <v-list-item
                 v-if="expression"
                 class="no-wrap"
-                @click.stop="newTabSessions(expr, pd.queryVal, '==', true)"
-                :title="$t('sessions.field.newSessionsOnlyTip', { query: expr + ' == ' + pd.queryVal})">
+                @click.stop="newTabSessions(expr, pd.queryVal, '==', true)">
                 <span class="fa fa-external-link fa-fw" />
                 {{ $t('sessions.field.newSessionsOnly') }}
+                <v-tooltip activator="parent" location="end">{{ $t('sessions.field.newSessionsOnlyTip', { query: expr + ' == ' + pd.queryVal}) }}</v-tooltip>
               </v-list-item>
-              <v-list-item
-                @click="doCopy(pd.value)"
-                :title="$t('common.copyValueTip')">
+              <v-list-item @click="doCopy(pd.value)">
                 <span class="fa fa-clipboard fa-fw" />
                 {{ $t('common.copyValue') }}
+                <v-tooltip activator="parent" location="end">{{ $t('common.copyValueTip') }}</v-tooltip>
               </v-list-item>
             </v-list>
           </v-menu>
