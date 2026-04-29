@@ -98,13 +98,21 @@ LOCAL int imap_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, i
                 lineLen--;
             }
         } else {
-            /* Incomplete line, buffer it */
+            /* Incomplete line, buffer it (cap to prevent unbounded growth) */
+            if (imap->line->len + remaining > 16384) {
+                arkime_session_add_tag(session, "imap:line-too-long");
+                return ARKIME_PARSER_UNREGISTER;
+            }
             g_string_append_len(imap->line, (const char *)data, remaining);
             return 0;
         }
 
         /* Combine with any buffered data */
         if (imap->line->len > 0) {
+            if (imap->line->len + lineLen > 16384) {
+                arkime_session_add_tag(session, "imap:line-too-long");
+                return ARKIME_PARSER_UNREGISTER;
+            }
             g_string_append_len(imap->line, (const char *)data, lineLen);
 
             /* Process the complete line - same logic as unbuffered */
