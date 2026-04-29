@@ -7,25 +7,34 @@
   </div>
 
   <!-- show info and controls -->
-  <div v-else>
+  <div
+    v-else
+    class="d-inline-flex align-items-center">
     <!-- page size -->
-    <BFormSelect
+    <v-select
       class="page-select"
-      :options="lengthOptions"
+      density="compact"
+      variant="outlined"
+      hide-details
+      item-title="text"
+      item-value="value"
+      :items="lengthOptions"
       :model-value="pageLength"
-      @update:model-value="lengthUpdated" /> <!-- /page size -->
+      @update:model-value="lengthUpdated">
+      <template #selection="{ item }"><span class="page-select-display">{{ item.raw.value }}</span></template>
+    </v-select> <!-- /page size -->
 
     <!-- paging -->
-    <BPagination
-      size="sm"
-      no-ellipsis
-      :per-page="pageLength"
+    <v-pagination
+      class="paging-control"
+      density="compact"
+      :total-visible="3"
+      :length="totalPages"
       :model-value="currentPage"
-      :total-rows="props.recordsFiltered"
       @update:model-value="currentPageUpdated" /> <!-- /paging -->
 
     <!-- page info -->
-    <div
+    <span
       id="pagingInfo"
       class="pagination-info cursor-help">
       <span v-if="recordsFiltered">
@@ -34,10 +43,10 @@
       <span v-else>
         {{ t('common.showingAll', { start: commaString(start), total: commaString(recordsFiltered) }) }}
       </span>
-      <BTooltip target="pagingInfo">
+      <v-tooltip activator="#pagingInfo">
         {{ pagingInfoTitle }}
-      </BTooltip>
-    </div> <!-- /page info -->
+      </v-tooltip>
+    </span> <!-- /page info -->
   </div>
 </template>
 
@@ -90,6 +99,10 @@ const pageLength = ref(Math.min(parseInt(route.query.length || props.lengthDefau
 const pagingInfoTitle = computed(() => {
   const total = commaString(props.recordsTotal);
   return t('common.filteredFrom', { total });
+});
+
+const totalPages = computed(() => {
+  return Math.max(1, Math.ceil(props.recordsFiltered / pageLength.value));
 });
 
 const lengthOptions = computed(() => {
@@ -168,38 +181,86 @@ function notifyParent () {
 </script>
 
 <style scoped>
-.pagination {
-  display: inline-flex;
+/* Page-size select: just shows the number; compact inline */
+.page-select {
+  width: 76px;
+  flex: 0 0 76px;
+  font-size: 0.8rem;
+}
+/* Flex-center children of .v-field so __field (text) and __append-inner
+   (caret) sit on the same baseline. */
+.page-select :deep(.v-field) {
+  --v-input-control-height: 32px;
+  align-items: center;
+}
+.page-select :deep(.v-field__field) {
+  align-items: center;
+}
+.page-select :deep(.v-field__input) {
+  font-size: 0.8rem;
+  padding-top: 0;
+  padding-bottom: 0;
+  padding-inline-start: 8px;
+  padding-inline-end: 0;
+  min-height: 32px;
+  display: flex;
+  align-items: center;
+}
+.page-select :deep(.v-field__append-inner) {
+  padding-top: 0;
+  padding-bottom: 0;
+  padding-inline: 4px;
+  align-items: center;
+}
+.page-select :deep(.v-field__append-inner .v-icon) {
+  font-size: 16px;
+  opacity: 0.6;
+}
+.page-select-display {
+  white-space: nowrap;
+  font-size: 0.8rem;
+  line-height: 1;
 }
 
-select.page-select {
-  width: 130px;
-  font-size: .8rem;
-  display: inline-flex;
-  height: 31px !important;
-  margin-top: 1px;
-  margin-right: -5px;
-  margin-bottom: var(--px-xs);
-  padding-top: var(--px-xs);
-  padding-bottom: var(--px-xs);
-  border-right: none;
-  border-radius: var(--px-sm) 0 0 var(--px-sm);
-  border-color: var(--color-gray-light);
-  -webkit-appearance: none;
+/* v-pagination: tight buttons, no inner list margin, baseline-aligned;
+   also kill the v-pagination wrapper padding so it sits flush against the
+   page-size select on the left and the info text on the right. */
+.paging-control {
+  padding-left: 0;
+  padding-right: 0;
+}
+.paging-control :deep(.v-pagination__list) {
+  margin: 0;
+  padding: 0;
+  gap: 0;
+}
+.paging-control :deep(.v-pagination__list > li:first-child) {
+  margin-inline-start: 0;
+}
+.paging-control :deep(.v-pagination__list > li:last-child) {
+  margin-inline-end: 0;
+}
+.paging-control :deep(.v-btn) {
+  --v-btn-height: 24px;
+  width: 24px;
+  min-width: 24px;
+  font-size: 0.75rem;
 }
 
+/* Inline pagination info -- no boxy chrome, just sits next to controls */
 .pagination-info {
   display: inline-block;
-  font-size: .8rem;
-  color: var(--color-gray-dark);
-  border: 1px solid var(--color-gray-light);
-  padding: 5px 10px 4px 10px;
-  margin-left: -6px;
-  border-radius: 0 var(--px-sm) var(--px-sm) 0;
-  background-color: var(--color-white);
+  font-size: 0.8rem;
+  color: var(--color-foreground);
+  white-space: nowrap;
 }
 
+/* When this component is used with infoOnly, restore a subtle pill */
 .pagination-info.info-only {
+  font-size: 0.8rem;
+  color: var(--color-gray-dark);
+  padding: 2px 8px;
   border-radius: var(--px-sm);
+  background-color: transparent;
 }
 </style>
