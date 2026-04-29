@@ -2760,6 +2760,12 @@ class SessionAPIs {
     if (req.query.length) {
       topNum = parseInt(req.query.length);
     }
+    if (!Number.isFinite(topNum) || topNum <= 0) {
+      topNum = 20;
+    }
+    if (topNum > 1000) {
+      topNum = 1000;
+    }
 
     const sortOrder = req.body.order === 'asc' ? 'asc' : 'desc';
 
