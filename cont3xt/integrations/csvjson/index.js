@@ -312,7 +312,11 @@ class CsvJsonIntegration extends Integration {
 
   // ----------------------------------------------------------------------------
   #loadHttp () {
-    axios.get(this.#url)
+    axios.get(this.#url, {
+      timeout: 60 * 1000,
+      maxContentLength: 1024 * 1024 * 1024,
+      maxBodyLength: 1024 * 1024 * 1024
+    })
       .then((response) => {
         return this.#process(response.data);
       })

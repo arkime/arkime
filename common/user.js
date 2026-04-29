@@ -1666,6 +1666,14 @@ class User {
       return true;
     }
 
+    // reject non-string / empty creator values; otherwise truthy non-strings
+    // would silently bypass the isString check below and be persisted,
+    // breaking ownership
+    if (!ArkimeUtil.isString(resource[creatorProperty])) {
+      res.serverError(403, 'Permission denied');
+      return false;
+    }
+
     if ( // if the resource has a new creator
       resource[creatorProperty] !== dbResource[creatorProperty] &&
       ArkimeUtil.isString(resource[creatorProperty])) {
