@@ -3,140 +3,139 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-  <BModal
-    size="lg"
+  <v-dialog
     :model-value="show"
-    @hidden="$emit('close')"
-    :title="editing ? $t('sessions.summary.config.editConfig') : $t('sessions.summary.config.saveConfig')">
-    <!-- Name input -->
-    <b-input-group
-      size="sm"
-      class="mb-2">
-      <b-input-group-text
-        id="configName"
-        class="cursor-help">
-        {{ $t('sessions.summary.config.name') }}<sup>*</sup>
-        <BTooltip target="configName">
-          {{ $t('sessions.summary.config.nameTip') }}
-        </BTooltip>
-      </b-input-group-text>
-      <b-form-input
-        v-model="configName"
-        :placeholder="$t('sessions.summary.config.namePlaceholder')" />
-    </b-input-group>
+    @update:model-value="(val) => { if (!val) $emit('close'); }"
+    max-width="900">
+    <v-card density="compact">
+      <v-card-title>
+        {{ editing ? $t('sessions.summary.config.editConfig') : $t('sessions.summary.config.saveConfig') }}
+      </v-card-title>
+      <v-card-text>
+        <!-- Name input -->
+        <div class="input-group input-group-sm mb-2">
+          <span id="configName" class="input-group-text cursor-help">
+            {{ $t('sessions.summary.config.name') }}<sup>*</sup>
+            <v-tooltip activator="#configName">
+              {{ $t('sessions.summary.config.nameTip') }}
+            </v-tooltip>
+          </span>
+          <input
+            type="text"
+            class="form-control"
+            v-model="configName"
+            :placeholder="$t('sessions.summary.config.namePlaceholder')">
+        </div>
 
-    <!-- Description input -->
-    <b-input-group
-      size="sm"
-      class="mb-2">
-      <b-input-group-text
-        id="configDescription"
-        class="cursor-help">
-        {{ $t('sessions.summary.config.description') }}
-        <BTooltip target="configDescription">
-          {{ $t('sessions.summary.config.descriptionTip') }}
-        </BTooltip>
-      </b-input-group-text>
-      <b-form-input
-        v-model="configDescription"
-        :placeholder="$t('sessions.summary.config.descriptionPlaceholder')" />
-    </b-input-group>
+        <!-- Description input -->
+        <div class="input-group input-group-sm mb-2">
+          <span id="configDescription" class="input-group-text cursor-help">
+            {{ $t('sessions.summary.config.description') }}
+            <v-tooltip activator="#configDescription">
+              {{ $t('sessions.summary.config.descriptionTip') }}
+            </v-tooltip>
+          </span>
+          <input
+            type="text"
+            class="form-control"
+            v-model="configDescription"
+            :placeholder="$t('sessions.summary.config.descriptionPlaceholder')">
+        </div>
 
-    <!-- Sharing controls -->
-    <div class="d-flex flex-wrap gap-2 mb-2">
-      <RoleDropdown
-        :roles="roles"
-        class="d-inline"
-        :selected-roles="viewRoles"
-        :display-text="$t('common.rolesCanView')"
-        @selected-roles-updated="viewRoles = $event" />
-      <RoleDropdown
-        :roles="roles"
-        class="d-inline"
-        :selected-roles="editRoles"
-        :display-text="$t('common.rolesCanEdit')"
-        @selected-roles-updated="editRoles = $event" />
-    </div>
+        <!-- Sharing controls -->
+        <div class="d-flex flex-wrap gap-2 mb-2">
+          <RoleDropdown
+            :roles="roles"
+            class="d-inline"
+            :selected-roles="viewRoles"
+            :display-text="$t('common.rolesCanView')"
+            @selected-roles-updated="viewRoles = $event" />
+          <RoleDropdown
+            :roles="roles"
+            class="d-inline"
+            :selected-roles="editRoles"
+            :display-text="$t('common.rolesCanEdit')"
+            @selected-roles-updated="editRoles = $event" />
+        </div>
 
-    <div class="d-flex gap-2 mb-2">
-      <b-input-group
-        size="sm"
-        class="flex-grow-1">
-        <b-input-group-text
-          id="configViewUsers"
-          class="cursor-help">
-          {{ $t('sessions.summary.config.viewUsers') }}
-          <BTooltip target="configViewUsers">
-            {{ $t('sessions.summary.config.viewUsersTip') }}
-          </BTooltip>
-        </b-input-group-text>
-        <b-form-input
-          v-model="viewUsers"
-          :placeholder="$t('sessions.summary.config.usersPlaceholder')" />
-      </b-input-group>
+        <div class="d-flex gap-2 mb-2">
+          <div class="input-group input-group-sm flex-grow-1">
+            <span id="configViewUsers" class="input-group-text cursor-help">
+              {{ $t('sessions.summary.config.viewUsers') }}
+              <v-tooltip activator="#configViewUsers">
+                {{ $t('sessions.summary.config.viewUsersTip') }}
+              </v-tooltip>
+            </span>
+            <input
+              type="text"
+              class="form-control"
+              v-model="viewUsers"
+              :placeholder="$t('sessions.summary.config.usersPlaceholder')">
+          </div>
 
-      <b-input-group
-        size="sm"
-        class="flex-grow-1">
-        <b-input-group-text
-          id="configEditUsers"
-          class="cursor-help">
-          {{ $t('sessions.summary.config.editUsers') }}
-          <BTooltip target="configEditUsers">
-            {{ $t('sessions.summary.config.editUsersTip') }}
-          </BTooltip>
-        </b-input-group-text>
-        <b-form-input
-          v-model="editUsers"
-          :placeholder="$t('sessions.summary.config.usersPlaceholder')" />
-      </b-input-group>
-    </div>
+          <div class="input-group input-group-sm flex-grow-1">
+            <span id="configEditUsers" class="input-group-text cursor-help">
+              {{ $t('sessions.summary.config.editUsers') }}
+              <v-tooltip activator="#configEditUsers">
+                {{ $t('sessions.summary.config.editUsersTip') }}
+              </v-tooltip>
+            </span>
+            <input
+              type="text"
+              class="form-control"
+              v-model="editUsers"
+              :placeholder="$t('sessions.summary.config.usersPlaceholder')">
+          </div>
+        </div>
 
-    <!-- Configuration preview -->
-    <div class="config-preview mt-3 p-2 border rounded bg-light">
-      <strong>{{ $t('sessions.summary.config.preview') }}</strong>
-      <div class="mt-1 small">
-        <span class="text-muted">{{ $t('sessions.summary.config.fieldsCount') }}:</span>
-        {{ config?.fields?.length || 0 }}
-        <span class="ms-3 text-muted">{{ $t('sessions.summary.config.resultsLimit') }}:</span>
-        {{ config?.resultsLimit || 20 }}
-      </div>
-      <div class="mt-1 small text-muted">
-        {{ fieldsList }}
-      </div>
-    </div>
+        <!-- Configuration preview -->
+        <div class="config-preview mt-3 p-2 border rounded bg-light">
+          <strong>{{ $t('sessions.summary.config.preview') }}</strong>
+          <div class="mt-1 small">
+            <span class="text-muted">{{ $t('sessions.summary.config.fieldsCount') }}:</span>
+            {{ config?.fields?.length || 0 }}
+            <span class="ms-3 text-muted">{{ $t('sessions.summary.config.resultsLimit') }}:</span>
+            {{ config?.resultsLimit || 20 }}
+          </div>
+          <div class="mt-1 small text-muted">
+            {{ fieldsList }}
+          </div>
+        </div>
 
-    <!-- Error message -->
-    <div
-      v-if="error"
-      class="alert alert-danger alert-sm mt-2 mb-0">
-      <span class="fa fa-exclamation-triangle me-1" />
-      {{ error }}
-    </div>
-
-    <template #footer>
-      <div class="w-100 d-flex justify-content-between">
-        <b-button
-          variant="danger"
-          @click="$emit('close')">
-          <span class="fa fa-times" />
-          {{ $t('common.cancel') }}
-        </b-button>
-        <b-button
-          variant="success"
-          :disabled="saving"
-          @click="saveConfig">
-          <span
-            v-if="saving"
-            class="fa fa-spinner fa-spin me-1" />
-          <span
-            v-else
-            class="fa fa-save me-1" />
-          {{ $t('common.save') }}
-        </b-button>
-      </div>
-    </template>
-  </BModal>
+        <!-- Error message -->
+        <div
+          v-if="error"
+          class="alert alert-danger alert-sm mt-2 mb-0">
+          <span class="fa fa-exclamation-triangle me-1" />
+          {{ error }}
+        </div>
+      </v-card-text>
+      <v-card-actions>
+        <div class="w-100 d-flex justify-content-between">
+          <button
+            type="button"
+            class="btn btn-danger"
+            @click="$emit('close')">
+            <span class="fa fa-times" />
+            {{ $t('common.cancel') }}
+          </button>
+          <button
+            type="button"
+            class="btn btn-success"
+            :disabled="saving"
+            @click="saveConfig">
+            <span
+              v-if="saving"
+              class="fa fa-spinner fa-spin me-1" />
+            <span
+              v-else
+              class="fa fa-save me-1" />
+            {{ $t('common.save') }}
+          </button>
+        </div>
+      </v-card-actions>
+    </v-card>
+  </v-dialog>
 </template>
 
 <script setup>
