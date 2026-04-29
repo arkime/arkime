@@ -1,4 +1,4 @@
-use Test::More tests => 159;
+use Test::More tests => 167;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -384,3 +384,25 @@ tcp,1386004309468,1386004309478,10.180.156.185,53533,US,10.180.156.249,1080,US,2
     # Port 40007: Multiple partial retransmits
     $response = getBinary("/test/raw/" . $portToId{40007} . "?type=dst");
     is (unpack("H*", $response->content), $expectedHex, "tcp-reassembly multi-partial (40007)");
+
+# hidePcap / disablePcapDownload authorization on body & bodyhash endpoints
+    my $bId = viewerGet("/sessions.json?date=-1&expression=" . uri_escape("file=$pwd/smtp-zip.pcap"))->{data}->[0]->{id};
+
+    addUser("-n testuser hpBodyUser hpBodyUser hpBodyUser --hidePcap --roles arkimeUser");
+    addUser("-n testuser dpdBodyUser dpdBodyUser dpdBodyUser --disablePcapDownload --roles arkimeUser");
+
+    my $base = "http://$ArkimeTest::host:8123";
+
+    # body & bodypng: only hidePcap blocks; disablePcapDownload users may still view
+    for my $url ("/api/session/test/$bId/body/file/1/x.pellet",
+                 "/api/session/test/$bId/bodypng/file/1/x") {
+        is   ($ArkimeTest::userAgent->get("$base$url?arkimeRegressionUser=hpBodyUser")->code,  403, "hidePcap blocks $url");
+        isnt ($ArkimeTest::userAgent->get("$base$url?arkimeRegressionUser=dpdBodyUser")->code, 403, "disablePcapDownload allowed on $url");
+    }
+
+    # bodyhash: both hidePcap and disablePcapDownload block
+    for my $url ("/api/sessions/bodyhash/abc123",
+                 "/api/session/test/$bId/bodyhash/abc123") {
+        is ($ArkimeTest::userAgent->get("$base$url?arkimeRegressionUser=hpBodyUser")->code,  403, "hidePcap blocks $url");
+        is ($ArkimeTest::userAgent->get("$base$url?arkimeRegressionUser=dpdBodyUser")->code, 403, "disablePcapDownload blocks $url");
+    }
