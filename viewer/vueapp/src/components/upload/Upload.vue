@@ -33,11 +33,10 @@ SPDX-License-Identifier: Apache-2.0
       <div class="row">
         <div class="col-md-6 offset-md-3">
           <!-- file -->
-          <BFormFile
+          <v-file-input
             :label="$t('uploads.pcapFileUpload')"
-            :model-value="file"
-            placeholder="Choose file..."
-            @update:model-value="(val) => file = val" /> <!-- /file -->
+            v-model="file"
+            placeholder="Choose file..." /> <!-- /file -->
 
           <!-- tag(s) -->
           <div class="form-group mt-2 mb-2">
@@ -96,7 +95,7 @@ export default {
   },
   data: function () {
     return {
-      file: '',
+      file: null,
       tags: '',
       uploading: false,
       error: '',
@@ -132,7 +131,7 @@ export default {
           throw new Error(responseText || this.$t('uploads.uploadFailed'));
         }
 
-        this.file = '';
+        this.file = null;
         this.tags = '';
         this.error = '';
         this.uploading = false;
