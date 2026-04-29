@@ -448,3 +448,7 @@ pre {
 .v-list-item--active:hover {
   background-color: var(--color-primary-light) !important;
 }
+.v-list .v-divider {
+  margin: 2px 0 !important;
+  border-color: var(--color-gray-light) !important;
+}

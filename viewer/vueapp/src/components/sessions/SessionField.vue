@@ -11,9 +11,8 @@ SPDX-License-Identifier: Apache-2.0
         :id="`field-tooltip-${expr}-${uuid}`">
         <span class="fa fa-exclamation-triangle fa-fw" />
         {{ missingFieldValue }}
-        <BTooltip
-          variant="danger"
-          :target="`field-tooltip-${expr}-${uuid}`">
+        <v-tooltip
+          :activator="`#field-tooltip-${expr}-${uuid}`">
           <h6 class="mb-1">
             {{ $t('sessions.field.cantLocate') }}: <strong>{{ expr }}</strong>
           </h6>
@@ -25,7 +24,7 @@ SPDX-License-Identifier: Apache-2.0
             {{ $t('sessions.field.unsupportedBrowser') }}</a>?
           <br>
           <em>{{ $t('sessions.field.contactAdmin') }}</em>
-        </BTooltip>
+        </v-tooltip>
       </span>
     </span>
 
@@ -37,115 +36,118 @@ SPDX-License-Identifier: Apache-2.0
         <!-- normal parsed value -->
         <span
           v-if="!time"
-          class="field cursor-pointer"
-          :class="{'dropdown-open': openDropdownId === pd.id}">
-          <a
-            @click="toggleDropdown(pd)"
-            class="value">
-            <span class="all-copy">{{ pd.value }}</span><span class="fa fa-caret-down" />
-          </a>
-          <!-- clickable field menu -->
-          <div
-            v-if="openDropdownId === pd.id"
-            class="session-field-dropdown"
-            :class="{'pull-right':!pullLeft,'pull-left':pullLeft}">
-            <b-dropdown-item
-              @click.prevent.stop="fieldClick(expr, pd.queryVal, '==', '&&')"
-              :title="'&& ' + expr + ' == ' + pd.value">
-              <strong>and</strong>
-              {{ pd.value }}
-            </b-dropdown-item>
-            <b-dropdown-item
-              @click.prevent.stop="fieldClick(expr, pd.queryVal, '!=', '&&')"
-              :title="'&& ' + expr + ' != ' + pd.value">
-              <strong>and not</strong>
-              {{ pd.value }}
-            </b-dropdown-item>
-            <b-dropdown-item
-              @click.prevent.stop="fieldClick(expr, pd.queryVal, '==', '||')"
-              :title="'|| ' + expr + ' == ' + pd.value">
-              <strong>or</strong>
-              {{ pd.value }}
-            </b-dropdown-item>
-            <b-dropdown-item
-              @click.prevent.stop="fieldClick(expr, pd.queryVal, '!=', '||')"
-              :title="'|| ' + expr + ' != ' + pd.value">
-              <strong>or not</strong>
-              {{ pd.value }}
-            </b-dropdown-item>
-            <span v-if="session && field.portField && session[field.portField] !== undefined">
-              <b-dropdown-item
-                @click.prevent.stop="fieldClick(expr, pd.queryVal + sep + session[field.portField], '==', '&&')"
+          class="field cursor-pointer">
+          <v-menu
+            :location="pullLeft ? 'bottom start' : 'bottom end'"
+            :max-width="700"
+            @update:model-value="(open) => onMenuToggle(open, pd)">
+            <template #activator="{ props: activatorProps }">
+              <a
+                v-bind="activatorProps"
+                class="value">
+                <span class="all-copy">{{ pd.value }}</span><span class="fa fa-caret-down" />
+              </a>
+            </template>
+            <v-list
+              density="compact"
+              class="session-field-list">
+              <v-list-item
+                @click.stop="fieldClick(expr, pd.queryVal, '==', '&&')"
                 :title="'&& ' + expr + ' == ' + pd.value">
                 <strong>and</strong>
-                {{ pd.value }}{{ sep }}{{ session[field.portField] }}
-              </b-dropdown-item>
-              <b-dropdown-item
-                @click.prevent.stop="fieldClick(expr, pd.queryVal + sep + session[field.portField], '!=', '&&')"
+                {{ pd.value }}
+              </v-list-item>
+              <v-list-item
+                @click.stop="fieldClick(expr, pd.queryVal, '!=', '&&')"
                 :title="'&& ' + expr + ' != ' + pd.value">
                 <strong>and not</strong>
-                {{ pd.value }}{{ sep }}{{ session[field.portField] }}
-              </b-dropdown-item>
-              <b-dropdown-item
-                @click.prevent.stop="fieldClick(expr, pd.queryVal + sep + session[field.portField], '==', '||')"
+                {{ pd.value }}
+              </v-list-item>
+              <v-list-item
+                @click.stop="fieldClick(expr, pd.queryVal, '==', '||')"
                 :title="'|| ' + expr + ' == ' + pd.value">
                 <strong>or</strong>
-                {{ pd.value }}{{ sep }}{{ session[field.portField] }}
-              </b-dropdown-item>
-              <b-dropdown-item
-                @click.prevent.stop="fieldClick(expr, pd.queryVal + sep + session[field.portField], '!=', '||')"
+                {{ pd.value }}
+              </v-list-item>
+              <v-list-item
+                @click.stop="fieldClick(expr, pd.queryVal, '!=', '||')"
                 :title="'|| ' + expr + ' != ' + pd.value">
                 <strong>or not</strong>
-                {{ pd.value }}{{ sep }}{{ session[field.portField] }}
-              </b-dropdown-item>
-            </span>
-            <b-dropdown-divider />
-            <b-dropdown-item
-              v-for="(item, key) in menuItems"
-              :key="'sync-item-' + key"
-              :title="item.name + ' ' + item.value"
-              :href="item.url"
-              target="_blank">
-              <strong>{{ item.name }}</strong>
-              {{ item.value }}
-            </b-dropdown-item>
-            <b-dropdown-item
-              v-for="(item, key) in asyncMenuItems"
-              :key="'async-item-' + key"
-              :title="item.name"
-              @click="fetchMenuData(item.url, key)">
-              <strong>{{ item.name }}</strong>
-              {{ item.value }}
-            </b-dropdown-item>
-            <b-dropdown-item
-              v-if="sessionBtn"
-              @click.prevent.stop="goToSessions(expr, pd.queryVal, '==')"
-              :title="$t('sessions.field.openSessionsTip', { query: expr + ' == ' + pd.queryVal})">
-              <span class="fa fa-folder-open-o fa-fw" />
-              {{ $t('sessions.field.openSessions') }}
-            </b-dropdown-item>
-            <b-dropdown-item
-              @click.prevent.stop="newTabSessions(expr, pd.queryVal, '==')"
-              :title="$t('sessions.field.newSessionsTip', { query: expr + ' == ' + pd.queryVal})">
-              <span class="fa fa-external-link-square fa-fw" />
-              {{ $t('sessions.field.newSessions') }}
-            </b-dropdown-item>
-            <b-dropdown-item
-              v-if="expression"
-              class="no-wrap"
-              @click.prevent.stop="newTabSessions(expr, pd.queryVal, '==', true)"
-              :title="$t('sessions.field.newSessionsOnlyTip', { query: expr + ' == ' + pd.queryVal})">
-              <span class="fa fa-external-link fa-fw" />
-              {{ $t('sessions.field.newSessionsOnly') }}
-            </b-dropdown-item>
-            <b-dropdown-item
-              @click="doCopy(pd.value)"
-              :title="$t('common.copyValueTip')">
-              <span class="fa fa-clipboard fa-fw" />
-              {{ $t('common.copyValue') }}
-            </b-dropdown-item>
-          </div>
-          <!-- /clickable field menu -->
+                {{ pd.value }}
+              </v-list-item>
+              <template v-if="session && field.portField && session[field.portField] !== undefined">
+                <v-list-item
+                  @click.stop="fieldClick(expr, pd.queryVal + sep + session[field.portField], '==', '&&')"
+                  :title="'&& ' + expr + ' == ' + pd.value">
+                  <strong>and</strong>
+                  {{ pd.value }}{{ sep }}{{ session[field.portField] }}
+                </v-list-item>
+                <v-list-item
+                  @click.stop="fieldClick(expr, pd.queryVal + sep + session[field.portField], '!=', '&&')"
+                  :title="'&& ' + expr + ' != ' + pd.value">
+                  <strong>and not</strong>
+                  {{ pd.value }}{{ sep }}{{ session[field.portField] }}
+                </v-list-item>
+                <v-list-item
+                  @click.stop="fieldClick(expr, pd.queryVal + sep + session[field.portField], '==', '||')"
+                  :title="'|| ' + expr + ' == ' + pd.value">
+                  <strong>or</strong>
+                  {{ pd.value }}{{ sep }}{{ session[field.portField] }}
+                </v-list-item>
+                <v-list-item
+                  @click.stop="fieldClick(expr, pd.queryVal + sep + session[field.portField], '!=', '||')"
+                  :title="'|| ' + expr + ' != ' + pd.value">
+                  <strong>or not</strong>
+                  {{ pd.value }}{{ sep }}{{ session[field.portField] }}
+                </v-list-item>
+              </template>
+              <v-divider />
+              <v-list-item
+                v-for="(item, key) in menuItems"
+                :key="'sync-item-' + key"
+                :title="item.name + ' ' + item.value"
+                :href="item.url"
+                target="_blank">
+                <strong>{{ item.name }}</strong>
+                {{ item.value }}
+              </v-list-item>
+              <v-list-item
+                v-for="(item, key) in asyncMenuItems"
+                :key="'async-item-' + key"
+                :title="item.name"
+                @click="fetchMenuData(item.url, key)">
+                <strong>{{ item.name }}</strong>
+                {{ item.value }}
+              </v-list-item>
+              <v-list-item
+                v-if="sessionBtn"
+                @click.stop="goToSessions(expr, pd.queryVal, '==')"
+                :title="$t('sessions.field.openSessionsTip', { query: expr + ' == ' + pd.queryVal})">
+                <span class="fa fa-folder-open-o fa-fw" />
+                {{ $t('sessions.field.openSessions') }}
+              </v-list-item>
+              <v-list-item
+                @click.stop="newTabSessions(expr, pd.queryVal, '==')"
+                :title="$t('sessions.field.newSessionsTip', { query: expr + ' == ' + pd.queryVal})">
+                <span class="fa fa-external-link-square fa-fw" />
+                {{ $t('sessions.field.newSessions') }}
+              </v-list-item>
+              <v-list-item
+                v-if="expression"
+                class="no-wrap"
+                @click.stop="newTabSessions(expr, pd.queryVal, '==', true)"
+                :title="$t('sessions.field.newSessionsOnlyTip', { query: expr + ' == ' + pd.queryVal})">
+                <span class="fa fa-external-link fa-fw" />
+                {{ $t('sessions.field.newSessionsOnly') }}
+              </v-list-item>
+              <v-list-item
+                @click="doCopy(pd.value)"
+                :title="$t('common.copyValueTip')">
+                <span class="fa fa-clipboard fa-fw" />
+                {{ $t('common.copyValue') }}
+              </v-list-item>
+            </v-list>
+          </v-menu>
         </span> <!-- /normal parsed value -->
 
         <!-- time value -->
@@ -249,20 +251,12 @@ export default {
   },
   data: function () {
     return {
-      isOpen: false,
-      openDropdownId: null,
       openDropdownPd: null,
       menuItems: {},
       asyncMenuItems: {},
       arkimeClickables: undefined,
       menuItemTimeout: null
     };
-  },
-  mounted () {
-    document.addEventListener('click', this.handleClickOutside);
-  },
-  beforeUnmount () {
-    document.removeEventListener('click', this.handleClickOutside);
   },
   watch: {
     // watch route update of time params to rebuild the menu
@@ -355,23 +349,30 @@ export default {
   methods: {
     /* exposed page functions ---------------------------------------------- */
     /**
-     * Closes the dropdown and clears related state
+     * Triggered when v-menu opens or closes for a parsed datum.
+     * On open: track which pd is active and build clickable menu items.
+     * On close: clear the menu items.
+     * @param {boolean} open  Whether the menu is opening or closing
+     * @param {Object} pd     The parsed data object for the clicked value
      */
-    closeDropdown: function () {
-      this.isOpen = false;
-      this.openDropdownId = null;
-      this.openDropdownPd = null;
-      this.clearMenuItems();
-    },
-    /**
-     * Handles clicks outside the dropdown to close it
-     * @param {Event} evt The click event
-     */
-    handleClickOutside (evt) {
-      if (!this.isOpen) return;
-      // Check if click is inside this component's element
-      if (!this.$el.contains(evt.target)) {
-        this.closeDropdown();
+    onMenuToggle (open, pd) {
+      if (open) {
+        this.openDropdownPd = pd;
+        if (!this.arkimeClickables) {
+          ConfigService.getArkimeClickables()
+            .then((response) => {
+              this.arkimeClickables = response;
+              if (!this.arkimeClickables) { return; }
+              if (Object.keys(this.arkimeClickables).length !== 0) {
+                this.buildMenu();
+              }
+            });
+        } else if (Object.keys(this.arkimeClickables).length !== 0) {
+          this.buildMenu();
+        }
+      } else {
+        this.openDropdownPd = null;
+        this.clearMenuItems();
       }
     },
     /**
@@ -392,46 +393,6 @@ export default {
       }
     },
     /**
-     * Toggles the dropdown menu for a field
-     * If the dropdown menu is opened for the first time, get more menu options
-     * @param {Object} pd The parsed data object for the clicked value
-     */
-    toggleDropdown: function (pd) {
-      // If clicking on a different value, close current and open new
-      if (this.openDropdownId && this.openDropdownId !== pd.id) {
-        this.isOpen = false;
-        this.openDropdownId = null;
-        this.openDropdownPd = null;
-        this.clearMenuItems();
-      }
-
-      this.isOpen = !this.isOpen;
-      this.openDropdownId = this.isOpen ? pd.id : null;
-      this.openDropdownPd = this.isOpen ? pd : null;
-
-      if (this.isOpen) {
-        if (!this.arkimeClickables) {
-          ConfigService.getArkimeClickables()
-            .then((response) => {
-              this.arkimeClickables = response;
-
-              if (!this.arkimeClickables) { return; }
-
-              if (Object.keys(this.arkimeClickables).length !== 0) {
-                // add items to the menu if they exist
-                this.buildMenu();
-              }
-            });
-        } else if (Object.keys(this.arkimeClickables).length !== 0) {
-          // Rebuild menu for the current value
-          this.buildMenu();
-        }
-      } else {
-        // Clear menu items when closing
-        this.clearMenuItems();
-      }
-    },
-    /**
      * Triggered when a field's menu item is clicked
      * Emits an event to add an expression to the query in the search bar
      * @param {string} field  The field name
@@ -439,8 +400,8 @@ export default {
      * @param {string} op     The relational operator
      */
     fieldClick: function (field, value, op, andor) {
-      this.closeDropdown(); // close the dropdown
-
+      // v-menu closes automatically on item click; openDropdownPd / menuItems
+      // are reset by onMenuToggle when @update:model-value(false) fires.
       value = value.toString();
 
       const fullExpression = buildExpression(field, value, op);
@@ -475,8 +436,6 @@ export default {
      * @param {boolean} root  Whether the expression should be added as the root expression
      */
     newTabSessions: function (field, value, op, root) {
-      this.closeDropdown(); // close the dropdown
-
       value = value.toString();
 
       const appendExpression = buildExpression(field, value, op);
@@ -512,7 +471,6 @@ export default {
         return;
       }
       navigator.clipboard.writeText(value);
-      this.closeDropdown();
     },
     /* helper functions ---------------------------------------------------- */
     /**
@@ -739,8 +697,7 @@ export default {
   margin-right: 6px;
 }
 
-.field:hover,
-.field.dropdown-open {
+.field:hover {
   z-index: 4;
   background-color: var(--color-white);
   border: 1px solid var(--color-gray-light);
@@ -758,8 +715,7 @@ export default {
           user-select: all;
 }
 
-.field:hover .fa,
-.field.dropdown-open .fa {
+.field:hover .fa {
   opacity: 1;
   visibility: visible;
 }
@@ -767,61 +723,16 @@ export default {
 .field-children:not(:first-child) {
   margin-top: -3px;
 }
-
-/* custom session field dropdown styles because we can't use the dropdown-menu
- * class as it is specific to bootstraps dropdown implementation
- * this class is the same as dropdown-menu, but LESS whitespace */
-.session-field-dropdown {
-  font-size: 12px;
-  position: absolute;
-  max-width: 700px;
-  min-width: 160px;
-  max-height: 300px;
-  overflow-y: auto;
-  z-index: 1000;
-  display: block;
-  padding: 0;
-  text-align: left;
-  list-style: none;
-  border-radius: 4px;
-  background-color: var(--color-white);
-  border: 1px solid var(--color-gray-light);
-  margin-top: 0;
-  margin-left: -2px;
-
-          background-clip: padding-box;
-  -webkit-background-clip: padding-box;
-
-          box-shadow: 0 6px 12px -3px #333;
-  -webkit-box-shadow: 0 6px 12px -3px #333;
-}
-
-.session-field-dropdown.pull-right {
-  right: 0;
-  left: auto;
-}
-.session-field-dropdown.pull-left {
-  left: 0;
-  right: auto;
-}
 </style>
 
 <style>
-.session-field-dropdown .dropdown-item {
+/* The session field menu is rendered via v-menu, which teleports to body --
+   scoped styles can't reach it. Global styling lives in overrides.css under
+   the Vuetify section (.v-list / .v-list-item). Per-instance overrides here
+   only if they need to apply to this specific menu. */
+.session-field-list .v-list-item {
   overflow: hidden;
   text-overflow: ellipsis;
-  display: block;
-  padding: 2px 8px;
-  clear: both;
-  font-weight: normal;
-  line-height: 1.42857143;
-  color: var(--color-foreground, #212529);
   white-space: nowrap;
-}
-
-.session-field-dropdown .dropdown-item:hover {
-  text-decoration: none;
-  color: var(--color-black);
-  background-color: var(--color-gray-lighter);
 }
 </style>
