@@ -421,6 +421,41 @@ After this, Vuetify's symbolic aliases (`$file`, `$close`, `$next`, `$prev`, `$e
 
 This matches existing project convention (`History.vue` already uses raw checkboxes for the per-column "exists" toggles). Reserve `v-checkbox` for forms where you actually want the labeled input + validation surface.
 
+### Vuetify components don't inherit the legacy --color-* theme
+
+The viewer's 8 theme CSS files in `src/themes/*` set `--color-*` custom properties on the body and target Bootstrap classes (`.table`, `.dropdown-menu`, etc.). Vuetify renders different DOM (`.v-table`, `.v-list-item`, `.v-data-table-footer`) so those existing rules don't reach.
+
+Rather than per-component scoped CSS for every migrated file, **the bridge lives in `viewer/vueapp/src/overrides.css`** at the bottom in the "Vuetify overrides" section. That file is imported once by `main.js` and applies globally:
+
+- `.v-table` — transparent backgrounds + `--color-foreground` text so the body theme shows through
+- `.v-data-table-footer` — compressed pagination chrome (Vuetify's defaults are too tall for analyst UI)
+- `.v-list` / `.v-list-item` — matched to the existing `.dropdown-menu` styling (28px row height, 0.85rem font, --color-* hover/active states)
+
+When you migrate a new component and find it doesn't pick up the theme, **prefer extending `overrides.css`** over per-component styles. Per-component scoped styles are the right tool for one-off layout fixes; the overrides file is for app-wide Vuetify integration with the existing theme system.
+
+A proper Vuetify-native theme rework (translating the 8 CSS theme files into Vuetify theme objects) is deferred to a post-migration redesign pass. The override approach is intentionally a stopgap.
+
+### Density chrome on `v-data-table` / `v-list-item`
+
+Even at `density="compact"`, Vuetify's defaults are spacious for an analyst dense UI:
+- `v-list-item` defaults to `min-height: 40px` at compact density.
+- `v-data-table` shows a full-size pagination footer regardless of dataset size.
+
+For dropdowns / menus: the override CSS in `overrides.css` brings `v-list-item` to ~28px. No per-component override needed.
+
+For data tables with bounded data (e.g., summary cards with `resultsLimit: 20`):
+
+```vue
+<v-data-table
+  density="compact"
+  :items-per-page="-1"
+  hide-default-footer
+  ...
+/>
+```
+
+`hide-default-footer` removes the chrome entirely; `:items-per-page="-1"` shows all rows. Reserve the default footer for tables with unbounded server-side pagination.
+
 ### Table header vertical alignment after migration
 
 Bootstrap's default `<th>` is `vertical-align: middle`. When a header cell contains a tooltip activator, sort icon, filter input, AND label text, the middle alignment looks awkward — text floats away from the row's bottom edge. Add scoped style:
