@@ -8,6 +8,7 @@ import { defineConfig } from 'vite';
 import vue from '@vitejs/plugin-vue';
 import Components from 'unplugin-vue-components/vite';
 import { BootstrapVueNextResolver } from 'bootstrap-vue-next';
+import Vuetify from 'vite-plugin-vuetify';
 
 import { git } from '../../common/git';
 
@@ -26,10 +27,19 @@ export default defineConfig({
     vue({}),
     inject({ // jquery must be first
       $: 'jquery',
-      jQuery: 'jquery'
+      jQuery: 'jquery',
+      // Skip vuetify's SCSS/CSS — the inject plugin tries to parse them and warns.
+      // Restrict to scripts only.
+      include: ['**/*.js', '**/*.mjs', '**/*.vue']
     }),
     Components({
       resolvers: [BootstrapVueNextResolver()],
+    }),
+    Vuetify({
+      treeShake: true,
+      styles: {
+        configFile: 'viewer/vueapp/src/vuetify-settings.scss'
+      }
     })
   ],
   resolve: {
@@ -50,5 +60,10 @@ export default defineConfig({
   logLevel: 'warn',
   compilerOptions: {
     whitespace: 'preserve'
+  },
+  css: {
+    preprocessorOptions: {
+      sass: { api: 'modern' }
+    }
   }
 });

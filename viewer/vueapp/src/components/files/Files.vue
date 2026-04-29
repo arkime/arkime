@@ -7,20 +7,20 @@ SPDX-License-Identifier: Apache-2.0
     <ArkimeCollapsible>
       <span class="fixed-header">
         <div class="files-search p-1">
-          <BRow
-            gutter-x="1"
-            align-h="start">
-            <BCol cols="auto">
+          <v-row
+            dense
+            justify="start">
+            <v-col cols="auto">
               <arkime-paging
                 v-if="files"
                 :records-total="recordsTotal"
                 :records-filtered="recordsFiltered"
                 @change-paging="changePaging"
                 :length-default="500" />
-            </BCol>
-            <BCol cols="auto">
-              <BInputGroup size="sm">
-                <BInputGroupText class="input-group-text-fw">
+            </v-col>
+            <v-col cols="auto">
+              <div class="input-group input-group-sm">
+                <span class="input-group-text input-group-text-fw">
                   <span
                     v-if="!shiftKeyHold"
                     class="fa fa-search fa-fw" />
@@ -29,7 +29,7 @@ SPDX-License-Identifier: Apache-2.0
                     class="query-shortcut">
                     Q
                   </span>
-                </BInputGroupText>
+                </span>
                 <input
                   type="text"
                   class="form-control"
@@ -39,19 +39,20 @@ SPDX-License-Identifier: Apache-2.0
                   @input="searchForFiles"
                   @keydown.enter="searchForFiles"
                   :placeholder="$t('files.searchPlaceholder')">
-                <BButton
-                  variant="outline-secondary"
+                <button
+                  type="button"
+                  class="btn btn-outline-secondary btn-clear-input"
                   @click="clear"
                   :disabled="!query.filter"
-                  class="btn-clear-input">
+                  :aria-label="$t('common.clear')">
                   <span class="fa fa-close" />
-                </BButton>
-              </BInputGroup>
-            </BCol>
-            <BCol cols="auto">
+                </button>
+              </div>
+            </v-col>
+            <v-col cols="auto">
               <Clusters />
-            </BCol>
-          </BRow>
+            </v-col>
+          </v-row>
         </div>
       </span>
     </ArkimeCollapsible>

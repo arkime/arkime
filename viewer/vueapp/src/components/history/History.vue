@@ -23,8 +23,8 @@ SPDX-License-Identifier: Apache-2.0
               <div class="enter-arm" />
             </span>
           </button>
-          <BInputGroup size="sm">
-            <BInputGroupText class="input-group-text-fw">
+          <div class="input-group input-group-sm">
+            <span class="input-group-text input-group-text-fw">
               <span
                 v-if="!shiftKeyHold"
                 class="fa fa-search fa-fw" />
@@ -33,7 +33,7 @@ SPDX-License-Identifier: Apache-2.0
                 class="query-shortcut">
                 Q
               </span>
-            </BInputGroupText>
+            </span>
             <input
               type="text"
               @keyup.enter="loadData"
@@ -51,13 +51,13 @@ SPDX-License-Identifier: Apache-2.0
               class="btn btn-outline-secondary btn-clear-input">
               <span class="fa fa-close" />
             </button>
-            <BInputGroupText id="searchHistory">
+            <span id="searchHistory" class="input-group-text">
               <span class="fa fa-lg fa-question-circle text-theme-primary help-cursor" />
-              <BTooltip target="searchHistory">
+              <v-tooltip activator="#searchHistory">
                 <div v-html="$t('history.searchHistoryTipHtml')" />
-              </BTooltip>
-            </BInputGroupText>
-          </BInputGroup>
+              </v-tooltip>
+            </span>
+          </div>
           <arkime-time
             class="mt-1"
             :timezone="user.settings.timezone"
@@ -95,9 +95,9 @@ SPDX-License-Identifier: Apache-2.0
               class="btn btn-xs btn-primary margined-bottom-sm"
               @click="showColFilters = !showColFilters">
               <span class="fa fa-filter" />
-              <BTooltip target="toggleColFilters">
+              <v-tooltip activator="#toggleColFilters">
                 {{ $t('history.toggleColFiltersTip') }}
-              </BTooltip>
+              </v-tooltip>
             </button>
           </th>
           <th
@@ -107,17 +107,17 @@ SPDX-License-Identifier: Apache-2.0
             :style="{'width': `${column.width}%`}"
             v-has-role="{user:user,roles:column.role}"
             :class="`cursor-pointer ${column.classes}`">
-            <b-form-checkbox
+            <input
+              type="checkbox"
               id="seeAll"
-              @input="toggleSeeAll"
-              class="d-inline me-2"
-              v-if="column.sort == 'userId'" />
-            <BTooltip
-              target="seeAll"
-              noninteractive
-              placement="bottom">
+              @change="toggleSeeAll"
+              class="checkbox d-inline me-2"
+              v-if="column.sort == 'userId'">
+            <v-tooltip
+              activator="#seeAll"
+              location="bottom">
               <span v-html="$t('history.seeAllTipHtml')" />
-            </BTooltip>
+            </v-tooltip>
             <input
               type="text"
               @click.stop
@@ -138,12 +138,11 @@ SPDX-License-Identifier: Apache-2.0
                 class="checkbox"
                 @change="loadData"
                 v-model="column.exists">
-              <BTooltip
-                placement="bottom"
-                triggers="hover"
-                :target="`exists-${column.name}`">
+              <v-tooltip
+                location="bottom"
+                :activator="`#exists-${column.name}`">
                 {{ $t('history.existsTip', { name: column.name }) }}
-              </BTooltip>
+              </v-tooltip>
             </div>
             <div
               class="header-div break-word"
@@ -161,12 +160,11 @@ SPDX-License-Identifier: Apache-2.0
                   class="fa fa-sort" />
               </span>
               {{ column.name }}
-              <BTooltip
-                placement="bottom"
-                triggers="hover"
-                :target="`column-${column.name}`">
+              <v-tooltip
+                location="bottom"
+                :activator="`#column-${column.name}`">
                 {{ column.help }}
-              </BTooltip>
+              </v-tooltip>
             </div>
           </th>
         </tr>
@@ -211,9 +209,9 @@ SPDX-License-Identifier: Apache-2.0
                 tooltip-placement="right"
                 @click="openPage(item)">
                 <span class="fa fa-folder-open" />
-                <BTooltip :target="`openPage-${item.id}`">
+                <v-tooltip :activator="`#openPage-${item.id}`">
                   {{ $t('history.openPageTip', { uiPage: item.uiPage }) }}
-                </BTooltip>
+                </v-tooltip>
               </a>
             </td>
             <td class="no-wrap">
@@ -688,6 +686,10 @@ export default {
 .history-page table {
   margin-top: 10px;
   table-layout: fixed;
+}
+.history-page table thead tr th {
+  vertical-align: bottom;
+  padding-top: 4px;
 }
 .history-page table tbody tr td.no-wrap {
   white-space: nowrap;
