@@ -361,3 +361,85 @@ pre {
 .modal-content {
   background-color: var(--color-background);
 }
+
+
+/* ========================================================================== */
+/* Vuetify overrides (Phase 1 of Vuetify migration)                           */
+/*                                                                            */
+/* These are minimal bridges so Vuetify components pick up the existing       */
+/* --color-* theme variables. A proper Vuetify-native theme system is         */
+/* deferred to post-migration redesign work -- see                            */
+/* docs/frontend/bvn-to-vuetify.md.                                           */
+/* ========================================================================== */
+
+/* v-data-table: keep backgrounds transparent so the surrounding body theme
+   shows through, and let the color cascade in. Override padding to be even
+   tighter than Vuetify's compact density. */
+.v-table {
+  background: transparent !important;
+  color: var(--color-foreground) !important;
+}
+.v-table .v-table__wrapper {
+  background: transparent !important;
+}
+.v-table thead th {
+  color: var(--color-foreground) !important;
+  background-color: var(--color-background) !important;
+  border-bottom-color: var(--color-gray-light) !important;
+}
+.v-table tbody td {
+  color: var(--color-foreground) !important;
+  border-bottom-color: var(--color-gray-light) !important;
+}
+.v-table tbody tr:hover td {
+  filter: brightness(90%);
+}
+
+/* v-data-table-footer: shrink pagination/per-page-selector chrome which is
+   far too tall by default for analyst-grade dense UI. */
+.v-data-table-footer {
+  font-size: 0.8rem;
+  padding: 2px 8px !important;
+  min-height: 32px;
+}
+.v-data-table-footer .v-data-table-footer__items-per-page {
+  align-items: center;
+  gap: 4px;
+}
+.v-data-table-footer .v-data-table-footer__pagination .v-btn {
+  width: 24px;
+  height: 24px;
+}
+
+/* v-menu / v-list: match the existing .dropdown-menu styling above so menus
+   feel like part of the same app. */
+.v-overlay__content > .v-list,
+.v-list {
+  padding: 2px 0 !important;
+  font-size: 0.85rem;
+  border: 1px solid var(--color-gray-light);
+  background-color: var(--color-background) !important;
+  color: var(--color-foreground) !important;
+}
+.v-list-item {
+  min-height: 28px !important;
+  padding-top: 2px !important;
+  padding-bottom: 2px !important;
+  padding-left: 8px !important;
+  padding-right: 8px !important;
+}
+.v-list-item .v-list-item__content {
+  font-size: 0.85rem;
+}
+.v-list-item:hover {
+  color: var(--color-foreground) !important;
+  background-color: var(--color-gray-light) !important;
+}
+.v-list-item--active,
+.v-list-item.v-list-item--active {
+  color: var(--color-white, #FFF) !important;
+  background-color: var(--color-primary) !important;
+}
+.v-list-item--active:hover {
+  background-color: var(--color-primary-light) !important;
+}

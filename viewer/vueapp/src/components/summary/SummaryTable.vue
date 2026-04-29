@@ -4,6 +4,8 @@
     must-sort
     :items="data"
     :headers="tableHeaders"
+    :items-per-page="-1"
+    hide-default-footer
     class="summary-table summary-table-striped">
     <!-- Custom cell rendering for columns with useSessionField -->
     <template
@@ -79,8 +81,10 @@ const formatValue = (value, format) => {
 
 <style scoped>
 /* Vuetify v-data-table doesn't have a built-in striped prop; preserve the
-   alternate-row look BTable's striped prop gave us. */
+   alternate-row look BTable's striped prop gave us. Use the same
+   --color-gray-lighter token Bootstrap's .table-striped uses (see
+   overrides.css). */
 .summary-table-striped :deep(tbody tr:nth-of-type(odd) > td) {
-  background-color: rgba(0, 0, 0, 0.03);
+  background-color: var(--color-gray-lighter) !important;
 }
 </style>
