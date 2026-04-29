@@ -1,88 +1,86 @@
 <template>
-  <v-menu
-    :close-on-content-click="false"
-    location="bottom start"
-    @update:model-value="onMenuToggle">
-    <template #activator="{ props: activatorProps }">
-      <button
-        v-bind="activatorProps"
-        type="button"
-        class="btn btn-sm field-dropdown d-inline-block"
-        :class="`btn-${buttonVariant}`"
+  <b-dropdown
+    lazy
+    no-flip
+    no-caret
+    auto-close="outside"
+    size="sm"
+    menu-class="field-dropdown-menu"
+    class="field-dropdown d-inline-block"
+    :variant="buttonVariant"
+    @show="menuOpen = true"
+    @hide="menuOpen = false; showAllFields = false">
+    <template #button-content>
+      <span
+        class="fa fa-bars"
         :id="dropdownId">
-        <span class="fa fa-bars" />
-      </button>
-      <v-tooltip
-        :activator="`#${dropdownId}`"
-        location="right">
-        {{ tooltipText }}
-      </v-tooltip>
+        <BTooltip
+          :target="dropdownId"
+          noninteractive
+          placement="right">{{ tooltipText }}</BTooltip>
+      </span>
     </template>
-
-    <v-list
-      density="compact"
-      class="field-dropdown-menu">
-      <!-- Search header -->
-      <div class="px-1 py-1">
-        <input
-          type="text"
-          autofocus
-          v-model="query"
-          class="form-control form-control-sm"
-          @input="debounceQuery"
-          @click.stop
-          :placeholder="searchPlaceholder">
-      </div>
-
-      <!-- Clear all -->
-      <v-list-item
-        v-if="selectedFields.length > 0"
-        class="text-danger"
+    <b-dropdown-header header-class="p-1">
+      <b-input
+        size="sm"
+        autofocus
+        type="text"
+        v-model="query"
+        @input="debounceQuery"
+        @click.stop
+        :placeholder="searchPlaceholder" />
+    </b-dropdown-header>
+    <li v-if="selectedFields.length > 0">
+      <button
+        type="button"
+        class="dropdown-item text-danger py-1"
         @click="$emit('clear')">
         <span class="fa fa-times me-1" />
         Clear all
-      </v-list-item>
-      <v-divider />
-
-      <!-- No matches -->
-      <v-list-item v-if="!filteredFieldsCount">
+      </button>
+    </li>
+    <b-dropdown-divider />
+    <template v-if="menuOpen">
+      <b-dropdown-item v-if="!filteredFieldsCount">
         No fields match
-      </v-list-item>
-
-      <!-- Grouped fields -->
+      </b-dropdown-item>
       <template
         v-for="(groupFields, group) in visibleFilteredFields"
         :key="group">
-        <div
+        <b-dropdown-header
           v-if="groupFields.length"
-          class="group-header px-2 py-1 text-uppercase">
+          class="group-header"
+          header-class="p-1 text-uppercase">
           {{ group }}
-        </div>
-        <v-list-item
+        </b-dropdown-header>
+        <li
           v-for="(field, idx) in groupFields"
-          :key="group + idx + 'item'"
-          :id="group + idx + 'item'"
-          :active="isSelected(getFieldId(field))"
-          @click="toggle(getFieldId(field))">
-          {{ field.friendlyName }}
-          <small>({{ field.exp }})</small>
-          <v-tooltip
-            v-if="field.help"
-            :activator="`#${group}${idx}item`">
-            {{ field.help }}
-          </v-tooltip>
-        </v-list-item>
+          :key="group + idx + 'item'">
+          <button
+            type="button"
+            :id="group + idx + 'item'"
+            class="dropdown-item"
+            :class="{ active: isSelected(getFieldId(field)) }"
+            @click="toggle(getFieldId(field))">
+            {{ field.friendlyName }}
+            <small>({{ field.exp }})</small>
+            <BTooltip
+              v-if="field.help"
+              :target="group + idx + 'item'">
+              {{ field.help }}
+            </BTooltip>
+          </button>
+        </li>
       </template>
-
-      <!-- Show more -->
-      <v-list-item
+      <button
         v-if="hasMoreFields"
-        class="text-center"
-        @click.stop="showAllFields = true">
+        type="button"
+        @click.stop="showAllFields = true"
+        class="dropdown-item text-center cursor-pointer">
         <strong>Show {{ filteredFieldsCount - maxVisibleFields }} more fields</strong>
-      </v-list-item>
-    </v-list>
-  </v-menu>
+      </button>
+    </template>
+  </b-dropdown>
 </template>
 
 <script>
@@ -188,10 +186,6 @@ export default {
     }
   },
   methods: {
-    onMenuToggle (open) {
-      this.menuOpen = open;
-      if (!open) this.showAllFields = false;
-    },
     buildGroupedFields () {
       const existingFieldsLookup = {};
       this.groupedFields = {};
