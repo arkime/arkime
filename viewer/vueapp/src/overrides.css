@@ -412,24 +412,29 @@ pre {
 }
 
 /* v-menu / v-list: match the existing .dropdown-menu styling above so menus
-   feel like part of the same app. */
+   feel like part of the same app. Arkime is a dense analyst UI -- err on the
+   small side. */
 .v-overlay__content > .v-list,
 .v-list {
   padding: 2px 0 !important;
-  font-size: 0.85rem;
+  font-size: 0.78rem;
   border: 1px solid var(--color-gray-light);
   background-color: var(--color-background) !important;
   color: var(--color-foreground) !important;
 }
 .v-list-item {
-  min-height: 28px !important;
-  padding-top: 2px !important;
-  padding-bottom: 2px !important;
+  min-height: 22px !important;
+  padding-top: 1px !important;
+  padding-bottom: 1px !important;
   padding-left: 8px !important;
   padding-right: 8px !important;
+  font-size: 0.78rem !important;
+  line-height: 1.2 !important;
 }
-.v-list-item .v-list-item__content {
-  font-size: 0.85rem;
+.v-list-item .v-list-item__content,
+.v-list-item .v-list-item-title {
+  font-size: 0.78rem !important;
+  line-height: 1.2 !important;
 }
 .v-list-item:hover {
   color: var(--color-foreground) !important;
