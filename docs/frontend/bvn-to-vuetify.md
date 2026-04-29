@@ -456,6 +456,26 @@ For data tables with bounded data (e.g., summary cards with `resultsLimit: 20`):
 
 `hide-default-footer` removes the chrome entirely; `:items-per-page="-1"` shows all rows. Reserve the default footer for tables with unbounded server-side pagination.
 
+### IDs containing dots break `v-tooltip activator="#..."`
+
+BVN's `<BTooltip target="...">` took an **element ID string** — internally it did a `getElementById`, so dots in IDs (e.g. `http.uri-fieldHelp`) worked fine.
+
+Vuetify's `<v-tooltip activator="...">` takes a **CSS selector**. `#http.uri-fieldHelp` parses as `#http` (id "http") plus `.uri-fieldHelp` (class) — the tooltip never finds its target.
+
+This bites for any element with a field-name-derived id: Arkime field names use dots (`http.uri`, `tls.cipher`, `dns.host`, etc.) extensively. Pages affected include settings col/info/spiview field configurations, the views/shortcuts field badges, History column headers, etc.
+
+**Use the `[id="..."]` attribute-selector form instead** — it handles dots fine:
+
+```vue
+<!-- Wrong: breaks for fields with dots in their dbField -->
+<v-tooltip :activator="`#${field}DefaultInfoFieldLayoutSetting`">...</v-tooltip>
+
+<!-- Right: -->
+<v-tooltip :activator="`[id='${field}DefaultInfoFieldLayoutSetting']`">...</v-tooltip>
+```
+
+Use single-quotes inside the brackets to avoid escaping in the template literal. Static IDs (`#millisecondsSetting`, `#viewFormName`) without dots can keep the `#` form — it's the dynamic IDs derived from field names that need this.
+
 ### `:title` on `v-list-item` is the visible label, not an HTML tooltip
 
 In BVN, `<b-dropdown-item :title="...">` set the native HTML `title` attribute (browser tooltip on hover). In Vuetify v3, `<v-list-item :title="...">` is the **visible item label** — it renders as text alongside (or instead of) your slot content.

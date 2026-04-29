@@ -452,3 +452,41 @@ pre {
   margin: 2px 0 !important;
   border-color: var(--color-gray-light) !important;
 }
+
+/* v-btn outlined (used by v-btn-toggle radio groups in Settings, plus
+   standalone toggle buttons): bridge to --color-* vars. Vuetify's
+   default secondary color is faint in both light and dark modes;
+   themes-driven colors give better contrast. */
+.v-btn--variant-outlined {
+  border-color: var(--color-gray) !important;
+  color: var(--color-foreground) !important;
+  background-color: var(--color-background) !important;
+}
+.v-btn--variant-outlined:hover {
+  background-color: var(--color-gray-lighter) !important;
+}
+.v-btn--variant-outlined.v-btn--active {
+  background-color: var(--color-primary) !important;
+  color: var(--color-button, #FFF) !important;
+  border-color: var(--color-primary) !important;
+}
+.v-btn--variant-outlined.v-btn--disabled {
+  opacity: 0.5;
+}
+
+/* v-card / v-dialog: bridge to the --color-* theme. v-dialog is just an
+   overlay; the styling comes from the v-card composed inside. Without
+   this, modals always render with Vuetify's default light surface even
+   in dark themes. */
+.v-card {
+  background-color: var(--color-background) !important;
+  color: var(--color-foreground) !important;
+}
+.v-card .v-card-title,
+.v-card .v-card-text,
+.v-card .v-card-actions {
+  color: var(--color-foreground) !important;
+}
+.v-overlay__scrim {
+  background-color: rgba(0, 0, 0, 0.6);
+}
