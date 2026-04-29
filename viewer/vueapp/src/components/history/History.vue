@@ -140,7 +140,7 @@ SPDX-License-Identifier: Apache-2.0
                 v-model="column.exists">
               <v-tooltip
                 location="bottom"
-                :activator="`#exists-${column.name}`">
+                :activator="`[id='exists-${column.name}']`">
                 {{ $t('history.existsTip', { name: column.name }) }}
               </v-tooltip>
             </div>
@@ -162,7 +162,7 @@ SPDX-License-Identifier: Apache-2.0
               {{ column.name }}
               <v-tooltip
                 location="bottom"
-                :activator="`#column-${column.name}`">
+                :activator="`[id='column-${column.name}']`">
                 {{ column.help }}
               </v-tooltip>
             </div>
