@@ -155,35 +155,38 @@ SPDX-License-Identifier: Apache-2.0
               {{ $t('settings.general.timezoneFormat') }}
             </label>
             <div class="col-sm-9">
-              <v-btn-toggle
-                density="compact"
-                divided
-                variant="outlined"
-                color="secondary"
-                class="d-inline-flex me-2"
-                :model-value="settings.timezone"
-                @update:model-value="updateTimezone"
-                mandatory>
-                <v-btn value="local">{{ $t('settings.general.tz-local') }}</v-btn>
-                <v-btn value="localtz">{{ $t('settings.general.tz-localtz') }}</v-btn>
-                <v-btn value="gmt">{{ $t('settings.general.tz-gmt') }}</v-btn>
-              </v-btn-toggle>
-              <v-btn
-                density="compact"
-                variant="outlined"
-                color="secondary"
-                class="d-inline-flex"
-                id="millisecondsSetting"
-                :active="settings.ms"
-                @click="updateMs(!settings.ms)">
-                {{ $t('common.milliseconds') }}
-                <v-tooltip activator="parent" location="top">
-                  {{ $t('settings.general.millisecondsSettingTip') }}
-                </v-tooltip>
-              </v-btn>
-              <label class="ms-2 fw-bold text-theme-primary align-bottom">
-                {{ timezoneDateString(date, settings.timezone, settings.ms) }}
-              </label>
+              <div class="d-inline-flex align-items-center">
+                <v-btn-toggle
+                  density="compact"
+                  divided
+                  variant="outlined"
+                  color="secondary"
+                  class="me-2"
+                  :model-value="settings.timezone"
+                  @update:model-value="updateTimezone"
+                  mandatory>
+                  <v-btn value="local">{{ $t('settings.general.tz-local') }}</v-btn>
+                  <v-btn value="localtz">{{ $t('settings.general.tz-localtz') }}</v-btn>
+                  <v-btn value="gmt">{{ $t('settings.general.tz-gmt') }}</v-btn>
+                </v-btn-toggle>
+                <v-btn-toggle
+                  density="compact"
+                  variant="outlined"
+                  color="secondary"
+                  multiple
+                  :model-value="settings.ms ? ['ms'] : []"
+                  @update:model-value="(val) => updateMs(val.includes('ms'))">
+                  <v-btn value="ms" id="millisecondsSetting">
+                    {{ $t('common.milliseconds') }}
+                    <v-tooltip activator="parent" location="top">
+                      {{ $t('settings.general.millisecondsSettingTip') }}
+                    </v-tooltip>
+                  </v-btn>
+                </v-btn-toggle>
+                <label class="ms-2 fw-bold text-theme-primary">
+                  {{ timezoneDateString(date, settings.timezone, settings.ms) }}
+                </label>
+              </div>
             </div>
           </div> <!-- /timezone -->
 
@@ -425,7 +428,7 @@ SPDX-License-Identifier: Apache-2.0
                   :id="filter.dbField + 'DataFilterBadge'">
                   <span class="fa fa-times" />
                   {{ filter.friendlyName || 'unknown field' }}
-                  <v-tooltip :activator="`#${filter.dbField}DataFilterBadge`">{{ filter.help }}</v-tooltip>
+                  <v-tooltip :activator="`[id='${filter.dbField}DataFilterBadge']`">{{ filter.help }}</v-tooltip>
                 </label>
               </h4>
               <button
@@ -488,7 +491,7 @@ SPDX-License-Identifier: Apache-2.0
                       :id="`${col}DefaultColConfigSetting`"
                       v-if="fieldsMap[col]">
                       {{ fieldsMap[col].friendlyName }}
-                      <v-tooltip :activator="`#${col}DefaultColConfigSetting`">{{ fieldsMap[col].help }}</v-tooltip>
+                      <v-tooltip :activator="`[id='${col}DefaultColConfigSetting']`">{{ fieldsMap[col].help }}</v-tooltip>
                     </label>
                   </template>
                 </td>
@@ -499,10 +502,10 @@ SPDX-License-Identifier: Apache-2.0
                     <label
                       class="badge bg-secondary me-1 help-cursor"
                       v-if="fieldsMap[order[0]]"
-                      :id="`${order[0]}DefaultColConfigSetting`">
+                      :id="`${order[0]}DefaultColConfigSettingOrder`">
                       {{ fieldsMap[order[0]].friendlyName }}&nbsp;
                       ({{ order[1] }})
-                      <v-tooltip :activator="`#${order[0]}DefaultColConfigSetting`">{{ fieldsMap[order[0]].help }}</v-tooltip>
+                      <v-tooltip :activator="`[id='${order[0]}DefaultColConfigSettingOrder']`">{{ fieldsMap[order[0]].help }}</v-tooltip>
                     </label>
                   </span>
                 </td>
@@ -525,7 +528,7 @@ SPDX-License-Identifier: Apache-2.0
                         v-if="fieldsMap[col]"
                         :id="`${index}${col}ColConfigSetting`">
                         {{ fieldsMap[col].friendlyName }}
-                        <v-tooltip :activator="`#${index}${col}ColConfigSetting`">{{ fieldsMap[col].help }}</v-tooltip>
+                        <v-tooltip :activator="`[id='${index}${col}ColConfigSetting']`">{{ fieldsMap[col].help }}</v-tooltip>
                       </label>
                     </template>
                   </td>
@@ -539,7 +542,7 @@ SPDX-License-Identifier: Apache-2.0
                         :id="`${index}-${order[0]}ColConfigSetting`">
                         {{ fieldsMap[order[0]].friendlyName }}&nbsp;
                         ({{ order[1] }})
-                        <v-tooltip :activator="`#${index}-${order[0]}ColConfigSetting`">{{ fieldsMap[order[0]].help }}</v-tooltip>
+                        <v-tooltip :activator="`[id='${index}-${order[0]}ColConfigSetting']`">{{ fieldsMap[order[0]].help }}</v-tooltip>
                       </label>
                     </span>
                   </td>
@@ -612,7 +615,7 @@ SPDX-License-Identifier: Apache-2.0
                       :id="`${field}DefaultInfoFieldLayoutSetting`"
                       v-if="fieldsMap[field]">
                       {{ fieldsMap[field].friendlyName }}
-                      <v-tooltip :activator="`#${field}DefaultInfoFieldLayoutSetting`">{{ fieldsMap[field].help }}</v-tooltip>
+                      <v-tooltip :activator="`[id='${field}DefaultInfoFieldLayoutSetting']`">{{ fieldsMap[field].help }}</v-tooltip>
                     </label>
                   </template>
                 </td>
@@ -635,7 +638,7 @@ SPDX-License-Identifier: Apache-2.0
                         :id="`${field}InfoFieldLayoutSetting`"
                         v-if="fieldsMap[field]">
                         {{ fieldsMap[field].friendlyName }}
-                        <v-tooltip :activator="`#${field}InfoFieldLayoutSetting`">{{ fieldsMap[field].help }}</v-tooltip>
+                        <v-tooltip :activator="`[id='${field}InfoFieldLayoutSetting']`">{{ fieldsMap[field].help }}</v-tooltip>
                       </label>
                     </template>
                   </td>
@@ -708,7 +711,7 @@ SPDX-License-Identifier: Apache-2.0
                       v-if="fieldsMap[field]"
                       class="badge bg-secondary me-1 help-cursor">
                       {{ fieldsMap[field].friendlyName }} (100)
-                      <v-tooltip :activator="`#${field}DefaultSpiviewFieldConfigSetting`">{{ fieldsMap[field].help }}</v-tooltip>
+                      <v-tooltip :activator="`[id='${field}DefaultSpiviewFieldConfigSetting']`">{{ fieldsMap[field].help }}</v-tooltip>
                     </label>
                   </template>
                 </td>
@@ -730,7 +733,7 @@ SPDX-License-Identifier: Apache-2.0
                       :key="fieldObj.dbField">
                       {{ fieldObj.friendlyName }}
                       ({{ fieldObj.count }})
-                      <v-tooltip :activator="`#${fieldObj.dbField}SpiviewFieldConfigSetting`">{{ fieldObj.help }}</v-tooltip>
+                      <v-tooltip :activator="`[id='${fieldObj.dbField}SpiviewFieldConfigSetting']`">{{ fieldObj.help }}</v-tooltip>
                     </label>
                   </td>
                   <td>
