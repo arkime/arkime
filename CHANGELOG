@@ -73,6 +73,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
           width, Field Actions dropdown, Stats Shrink Index,
           and shortcut ($) autocomplete in search expression
   - #3928 Cap /api/sessions/summary length parameter at 1000
+  - #3931 Remove last manualQuery option which wasn't implemented
 
 6.2.0 2026/04/20
 ## BREAKING
