@@ -6,28 +6,29 @@ SPDX-License-Identifier: Apache-2.0
   <div>
     <h3>
       {{ $t('settings.cron.title') }}
-      <BFormCheckbox
-        inline
-        button
-        size="sm"
-        class="ms-1"
+      <v-btn-toggle
         v-if="user.roles.includes('arkimeAdmin')"
-        id="seeAllPeriodicQueries"
-        @update:model-value="updateSeeAll"
-        :model-value="seeAll">
-        {{ $t(seeAll ? 'settings.cron.allPeriodicQueries' : 'settings.cron.myPeriodicQueries') }}
-        <BTooltip target="seeAllPeriodicQueries">
-          {{ $t(seeAll ? 'settings.cron.allPeriodicQueriesTip' : 'settings.cron.myPeriodicQueriesTip') }}
-        </BTooltip>
-      </BFormCheckbox>
-      <b-button
-        size="sm"
-        variant="success"
-        class="pull-right d-inline"
+        density="compact"
+        variant="outlined"
+        color="secondary"
+        class="ms-1"
+        multiple
+        :model-value="seeAll ? ['seeAll'] : []"
+        @update:model-value="(val) => updateSeeAll(val.includes('seeAll'))">
+        <v-btn value="seeAll" id="seeAllPeriodicQueries">
+          {{ $t(seeAll ? 'settings.cron.allPeriodicQueries' : 'settings.cron.myPeriodicQueries') }}
+          <v-tooltip activator="parent" location="top">
+            {{ $t(seeAll ? 'settings.cron.allPeriodicQueriesTip' : 'settings.cron.myPeriodicQueriesTip') }}
+          </v-tooltip>
+        </v-btn>
+      </v-btn-toggle>
+      <button
+        type="button"
+        class="btn btn-sm btn-success pull-right d-inline"
         @click="showCronModal = true">
         <span class="fa fa-plus-circle me-1" />
         {{ $t('settings.cron.newPeriodicQuery') }}
-      </b-button>
+      </button>
     </h3>
 
     <p>
@@ -56,305 +57,265 @@ SPDX-License-Identifier: Apache-2.0
     </div> <!-- /no results -->
 
     <!-- new cron query form -->
-    <b-modal
-      size="xl"
+    <v-dialog
       :model-value="showCronModal"
-      @hidden="showCronModal = false"
-      title="Create New Periodic Query">
-      <!-- create form -->
-      <b-form>
-        <div class="row mb-2">
-          <div class="col-md-4">
-            <b-input-group size="sm">
-              <template #prepend>
-                <b-input-group-text
-                  id="newCronQueryName"
-                  class="cursor-help">
-                  {{ $t('settings.cron.queryName') }}<sup>*</sup>
-                </b-input-group-text>
+      @update:model-value="(val) => { if (!val) showCronModal = false; }"
+      max-width="1140">
+      <v-card density="compact">
+        <v-card-title>Create New Periodic Query</v-card-title>
+        <v-card-text>
+          <!-- create form -->
+          <form>
+            <div class="row mb-2">
+              <div class="col-md-4">
+                <div class="input-group input-group-sm">
+                  <span id="newCronQueryName" class="input-group-text cursor-help">
+                    {{ $t('settings.cron.queryName') }}<sup>*</sup>
+                  </span>
+                  <input
+                    type="text"
+                    class="form-control"
+                    maxlength="20"
+                    :value="newCronQueryName"
+                    @input="newCronQueryName = $event.target.value"
+                    :placeholder="$t('settings.cron.queryNamePlaceholder')">
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="input-group input-group-sm">
+                  <span id="newCronQueryAction" class="input-group-text cursor-help">
+                    {{ $t('settings.cron.queryAction') }}<sup>*</sup>
+                    <v-tooltip activator="#newCronQueryAction">
+                      {{ $t('settings.cron.queryActionTip') }}
+                    </v-tooltip>
+                  </span>
+                  <select
+                    class="form-control form-control-sm"
+                    :value="newCronQueryAction"
+                    @input="newCronQueryAction = $event.target.value">
+                    <option value="tag">
+                      {{ $t('settings.cron.queryAction-tag') }}
+                    </option>
+                    <option
+                      v-for="(cluster, key) in clusters"
+                      :key="key"
+                      :value="`forward:${key}`">
+                      {{ $t('settings.cron.queryAction-forward', { cluster: cluster.name }) }}
+                    </option>
+                  </select>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="input-group input-group-sm">
+                  <span id="newCronQueryTags" class="input-group-text cursor-help">
+                    {{ $t('settings.cron.tags') }}<sup>*</sup>
+                    <v-tooltip activator="#newCronQueryTags">
+                      {{ $t('settings.cron.tagsTip') }}
+                    </v-tooltip>
+                  </span>
+                  <input
+                    type="text"
+                    class="form-control"
+                    :value="newCronQueryTags"
+                    @input="newCronQueryTags = $event.target.value"
+                    :placeholder="$t('settings.cron.tagsPlaceholder')">
+                </div>
+              </div>
+            </div>
+            <div class="row mb-2">
+              <div class="col">
+                <div class="input-group input-group-sm">
+                  <span id="newCronQueryExpression" class="input-group-text cursor-help">
+                    {{ $t('settings.cron.searchExpression') }}<sup>*</sup>
+                    <v-tooltip activator="#newCronQueryExpression">
+                      {{ $t('settings.cron.searchExpressionTip') }}
+                    </v-tooltip>
+                  </span>
+                  <ExpressionAutocompleteInput
+                    :model-value="newCronQueryExpression"
+                    @update:model-value="newCronQueryExpression = $event"
+                    :placeholder="$t('settings.cron.searchExpressionPlaceholder')" />
+                </div>
+              </div>
+            </div>
+            <div class="row mb-2">
+              <div class="col-md-6">
+                <div class="input-group input-group-sm">
+                  <span id="newCronQueryProcess" class="input-group-text cursor-help">
+                    {{ $t('settings.cron.querySince') }}<sup>*</sup>
+                    <v-tooltip activator="#newCronQueryProcess">
+                      {{ $t('settings.cron.querySinceTip') }}
+                    </v-tooltip>
+                  </span>
+                  <select
+                    class="form-control form-control-sm"
+                    :value="newCronQueryProcess"
+                    @input="newCronQueryProcess = parseInt($event.target.value)">
+                    <option
+                      v-for="opt in cronProcessOptions"
+                      :key="opt.value"
+                      :value="opt.value">
+                      {{ opt.text }}
+                    </option>
+                  </select>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <NotifierDropdown
+                  :notifiers="notifiers"
+                  :selected-notifiers="newCronQueryNotifier"
+                  @selected-notifiers-updated="newCronQueryNotifier = $event"
+                  :display-text="newCronQueryNotifier.length > 0 ? $t('common.notifierCount', newCronQueryNotifier.length) : $t('settings.cron.selectNotifier')" />
+              </div>
+            </div>
+            <div class="row mb-2">
+              <div class="col">
+                <div class="input-group input-group-sm">
+                  <span id="newCronQueryDescription" class="input-group-text cursor-help">
+                    {{ $t('settings.cron.queryDescription') }}
+                    <v-tooltip activator="#newCronQueryDescription">
+                      {{ $t('settings.cron.queryDescriptionTip') }}
+                    </v-tooltip>
+                  </span>
+                  <textarea
+                    class="form-control"
+                    :value="newCronQueryDescription"
+                    @input="newCronQueryDescription = $event.target.value"
+                    :placeholder="$t('settings.cron.queryDescriptionPlaceholder')" />
+                </div>
+              </div>
+            </div>
+            <div class="d-flex">
+              <div class="me-3 flex-grow-1 no-wrap">
+                <RoleDropdown
+                  :roles="roles"
+                  class="d-inline"
+                  :display-text="$t('common.rolesCanView')"
+                  :selected-roles="newCronQueryRoles"
+                  @selected-roles-updated="updateNewCronQueryRoles" />
+                <RoleDropdown
+                  :roles="roles"
+                  class="d-inline ms-1"
+                  :display-text="$t('common.rolesCanEdit')"
+                  :selected-roles="newCronQueryEditRoles"
+                  @selected-roles-updated="updateNewCronQueryEditRoles" />
+              </div>
+              <div class="input-group input-group-sm flex-grow-1">
+                <span id="newCronQueryUsers" class="input-group-text cursor-help">
+                  {{ $t('common.shareWithUsers') }}
+                  <v-tooltip activator="#newCronQueryUsers">
+                    {{ $t('settings.cron.shareWithUsersTip') }}
+                  </v-tooltip>
+                </span>
+                <input
+                  type="text"
+                  class="form-control"
+                  :value="newCronQueryUsers"
+                  @input="newCronQueryUsers = $event.target.value"
+                  :placeholder="$t('settings.cron.shareWithUsersPlaceholder')">
+              </div>
+            </div>
+          </form> <!-- /create form -->
+          <!-- create error -->
+          <div
+            v-if="cronQueryFormError"
+            style="z-index: 2000;"
+            class="mt-2 mb-0 alert alert-danger">
+            <span class="fa fa-exclamation-triangle me-1" />
+            {{ cronQueryFormError }}
+          </div> <!-- /create error -->
+        </v-card-text>
+        <v-card-actions>
+          <div class="w-100 d-flex justify-content-between">
+            <button
+              type="button"
+              class="btn btn-danger"
+              :title="$t('common.cancel')"
+              @click="showCronModal = false">
+              <span class="fa fa-times" />
+              {{ $t('common.cancel') }}
+            </button>
+            <button
+              type="button"
+              class="btn btn-success"
+              :disabled="cronLoading"
+              @click="createCronQuery"
+              :class="{'disabled':cronLoading}">
+              <template v-if="!cronLoading">
+                <span class="fa fa-plus-circle me-1" />
+                {{ $t('common.create') }}
               </template>
-              <b-form-input
-                maxlength="20"
-                :model-value="newCronQueryName"
-                @update:model-value="newCronQueryName = $event"
-                :placeholder="$t('settings.cron.queryNamePlaceholder')" />
-            </b-input-group>
-          </div>
-          <div class="col-md-4">
-            <b-input-group size="sm">
-              <template #prepend>
-                <b-input-group-text
-                  class="cursor-help"
-                  id="newCronQueryAction">
-                  {{ $t('settings.cron.queryAction') }}<sup>*</sup>
-                  <BTooltip target="newCronQueryAction">
-                    {{ $t('settings.cron.queryActionTip') }}
-                  </BTooltip>
-                </b-input-group-text>
+              <template v-else>
+                <span class="fa fa-spinner fa-spin me-1" />
+                {{ $t('common.creating') }}
               </template>
-              <BFormSelect
-                :model-value="newCronQueryAction"
-                @update:model-value="newCronQueryAction = $event"
-                class="form-control form-control-sm">
-                <option value="tag">
-                  {{ $t('settings.cron.queryAction-tag') }}
-                </option>
-                <option
-                  v-for="(cluster, key) in clusters"
-                  :key="key"
-                  :value="`forward:${key}`">
-                  {{ $t('settings.cron.queryAction-forward', { cluster: cluster.name }) }}
-                </option>
-              </BFormSelect>
-            </b-input-group>
+            </button>
           </div>
-          <div class="col-md-4">
-            <b-input-group size="sm">
-              <template #prepend>
-                <b-input-group-text
-                  class="cursor-help"
-                  id="newCronQueryTags">
-                  {{ $t('settings.cron.tags') }}<sup>*</sup>
-                  <BTooltip target="newCronQueryTags">
-                    {{ $t('settings.cron.tagsTip') }}
-                  </BTooltip>
-                </b-input-group-text>
-              </template>
-              <b-form-input
-                :model-value="newCronQueryTags"
-                @update:model-value="newCronQueryTags = $event"
-                :placeholder="$t('settings.cron.tagsPlaceholder')" />
-            </b-input-group>
-          </div>
-        </div>
-        <div class="row mb-2">
-          <div class="col">
-            <b-input-group size="sm">
-              <template #prepend>
-                <b-input-group-text
-                  class="cursor-help"
-                  id="newCronQueryExpression">
-                  {{ $t('settings.cron.searchExpression') }}<sup>*</sup>
-                  <BTooltip target="newCronQueryExpression">
-                    {{ $t('settings.cron.searchExpressionTip') }}
-                  </BTooltip>
-                </b-input-group-text>
-              </template>
-              <ExpressionAutocompleteInput
-                :model-value="newCronQueryExpression"
-                @update:model-value="newCronQueryExpression = $event"
-                :placeholder="$t('settings.cron.searchExpressionPlaceholder')" />
-            </b-input-group>
-          </div>
-        </div>
-        <div class="row mb-2">
-          <div class="col-md-6">
-            <b-input-group size="sm">
-              <template #prepend>
-                <b-input-group-text
-                  class="cursor-help"
-                  id="newCronQueryProcess">
-                  {{ $t('settings.cron.querySince') }}<sup>*</sup>
-                  <BTooltip target="newCronQueryProcess">
-                    {{ $t('settings.cron.querySinceTip') }}
-                  </BTooltip>
-                </b-input-group-text>
-              </template>
-              <b-form-select
-                class="form-control"
-                :model-value="newCronQueryProcess"
-                @update:model-value="newCronQueryProcess = $event"
-                :options="[
-                  { value: 0, text: 'Now' },
-                  { value: 1, text: $t('common.hourAgoCount', 1) },
-                  { value: 6, text: $t('common.hourAgoCount', 6) },
-                  { value: 24, text: $t('common.hourAgoCount', 24) },
-                  { value: 48, text: $t('common.hourAgoCount', 48) },
-                  { value: 72, text: $t('common.hourAgoCount', 72) },
-                  { value: 168, text: $t('common.weekAgoCount', 1) },
-                  { value: 336, text: $t('common.weekAgoCount', 2) },
-                  { value: 720, text: $t('common.monthAgoCount', 1) },
-                  { value: 1440, text: $t('common.monthAgoCount', 2) },
-                  { value: 4380, text: $t('common.monthAgoCount', 6) },
-                  { value: 8760, text: $t('common.yearAgoCount', 1) },
-                  { value: -1, text: $t('common.allCareful') }
-                ]" />
-            </b-input-group>
-          </div>
-          <div class="col-md-6">
-            <NotifierDropdown
-              :notifiers="notifiers"
-              :selected-notifiers="newCronQueryNotifier"
-              @selected-notifiers-updated="newCronQueryNotifier = $event"
-              :display-text="newCronQueryNotifier.length > 0 ? $t('common.notifierCount', newCronQueryNotifier.length) : $t('settings.cron.selectNotifier')" />
-          </div>
-        </div>
-        <div class="row mb-2">
-          <div class="col">
-            <b-input-group size="sm">
-              <template #prepend>
-                <b-input-group-text
-                  class="cursor-help"
-                  id="newCronQueryDescription">
-                  {{ $t('settings.cron.queryDescription') }}
-                  <BTooltip target="newCronQueryDescription">
-                    {{ $t('settings.cron.queryDescriptionTip') }}
-                  </BTooltip>
-                </b-input-group-text>
-              </template>
-              <b-form-textarea
-                :model-value="newCronQueryDescription"
-                @update:model-value="newCronQueryDescription = $event"
-                :placeholder="$t('settings.cron.queryDescriptionPlaceholder')" />
-            </b-input-group>
-          </div>
-        </div>
-        <div class="d-flex">
-          <div class="me-3 flex-grow-1 no-wrap">
-            <RoleDropdown
-              :roles="roles"
-              class="d-inline"
-              :display-text="$t('common.rolesCanView')"
-              :selected-roles="newCronQueryRoles"
-              @selected-roles-updated="updateNewCronQueryRoles" />
-            <RoleDropdown
-              :roles="roles"
-              class="d-inline ms-1"
-              :display-text="$t('common.rolesCanEdit')"
-              :selected-roles="newCronQueryEditRoles"
-              @selected-roles-updated="updateNewCronQueryEditRoles" />
-          </div>
-          <b-input-group
-            size="sm"
-            class="flex-grow-1">
-            <template #prepend>
-              <b-input-group-text
-                class="cursor-help"
-                id="newCronQueryUsers">
-                {{ $t('common.shareWithUsers') }}
-                <BTooltip target="newCronQueryUsers">
-                  {{ $t('settings.cron.shareWithUsersTip') }}
-                </BTooltip>
-              </b-input-group-text>
-            </template>
-            <b-form-input
-              :model-value="newCronQueryUsers"
-              @update:model-value="newCronQueryUsers = $event"
-              :placeholder="$t('settings.cron.shareWithUsersPlaceholder')" />
-          </b-input-group>
-        </div>
-      </b-form> <!-- /create form -->
-      <!-- create error -->
-      <div
-        v-if="cronQueryFormError"
-        style="z-index: 2000;"
-        class="mt-2 mb-0 alert alert-danger">
-        <span class="fa fa-exclamation-triangle me-1" />
-        {{ cronQueryFormError }}
-      </div> <!-- /create error -->
-      <template #footer>
-        <div class="w-100 d-flex justify-content-between">
-          <b-button
-            :title="$t('common.cancel')"
-            variant="danger"
-            @click="showCronModal = false">
-            <span class="fa fa-times" />
-            {{ $t('common.cancel') }}
-          </b-button>
-          <b-button
-            variant="success"
-            :disabled="cronLoading"
-            @click="createCronQuery"
-            :class="{'disabled':cronLoading}">
-            <template v-if="!cronLoading">
-              <span class="fa fa-plus-circle me-1" />
-              {{ $t('common.create') }}
-            </template>
-            <template v-else>
-              <span class="fa fa-spinner fa-spin me-1" />
-              {{ $t('common.creating') }}
-            </template>
-          </b-button>
-        </div>
-      </template> <!-- /modal footer -->
-    </b-modal> <!-- /new cron query form -->
+        </v-card-actions>
+      </v-card>
+    </v-dialog> <!-- /new cron query form -->
 
     <!-- cron queries -->
-    <b-card-group
-      columns
-      class="mb-2">
-      <b-card
+    <div class="cron-card-columns mb-2">
+      <v-card
         :key="query.key"
+        class="cron-card mb-2"
         @keyup.esc="getCronQueries"
         v-for="(query, index) in cronQueries"
         @keyup.enter="updateCronQuery(query, index)">
-        <template #header>
+        <v-card-title class="cron-card-header">
           <h6 class="mb-0 d-flex">
-            <b-input-group
-              size="sm"
-              class="flex-grow-1">
-              <template #prepend>
-                <b-input-group-text>
-                  {{ $t('settings.cron.queryName') }}<sup>*</sup>
-                </b-input-group-text>
-              </template>
-              <b-form-input
+            <div class="input-group input-group-sm flex-grow-1">
+              <span class="input-group-text">
+                {{ $t('settings.cron.queryName') }}<sup>*</sup>
+              </span>
+              <input
+                type="text"
+                class="form-control"
                 maxlength="20"
-                :model-value="query.name"
-                @update:model-value="query.name = $event; cronQueryChanged(query)"
-                :disabled="!canEditCronQuery(query)" />
-            </b-input-group>
+                :value="query.name"
+                @input="query.name = $event.target.value; cronQueryChanged(query)"
+                :disabled="!canEditCronQuery(query)">
+            </div>
             <div class="ms-2 mt-1">
-              <BFormCheckbox
-                class="pull-right"
-                :model-value="query.enabled"
+              <input
+                type="checkbox"
+                class="form-check-input pull-right"
+                :checked="query.enabled"
                 :id="`queryEnabled${index}`"
                 :disabled="!canEditCronQuery(query)"
-                @update:model-value="query.enabled = $event; toggleCronQueryEnabled(index)">
-                <BTooltip :target="`queryEnabled${index}`">
-                  {{ query.enabled ? 'Enabled' : 'Disabled' }}
-                </BTooltip>
-              </BFormCheckbox>
+                @change="query.enabled = $event.target.checked; toggleCronQueryEnabled(index)">
+              <v-tooltip :activator="`#queryEnabled${index}`">
+                {{ query.enabled ? 'Enabled' : 'Disabled' }}
+              </v-tooltip>
             </div>
           </h6>
-        </template>
-        <b-card-text>
-          <b-input-group
-            size="sm"
-            class="mb-2">
-            <template #prepend>
-              <b-input-group-text
-                :id="`queryDescription${index}`"
-                class="cursor-help">
-                {{ $t('settings.cron.queryDescription') }}
-                <BTooltip :target="`queryDescription${index}`">
-                  {{ $t('settings.cron.queryDescriptionTip') }}
-                </BTooltip>
-              </b-input-group-text>
-            </template>
-            <b-form-textarea
-              :model-value="query.description"
-              @update:model-value="query.description = $event; cronQueryChanged(query)"
+        </v-card-title>
+        <v-card-text>
+          <div class="input-group input-group-sm mb-2">
+            <span :id="`queryDescription${index}`" class="input-group-text cursor-help">
+              {{ $t('settings.cron.queryDescription') }}
+              <v-tooltip :activator="`#queryDescription${index}`">
+                {{ $t('settings.cron.queryDescriptionTip') }}
+              </v-tooltip>
+            </span>
+            <textarea
               class="form-control form-control-sm"
+              :value="query.description"
+              @input="query.description = $event.target.value; cronQueryChanged(query)"
               :disabled="!canEditCronQuery(query)" />
-          </b-input-group>
-          <b-input-group
-            size="sm"
-            class="mb-2">
-            <template #prepend>
-              <b-input-group-text
-                :id="`queryAction${index}`"
-                class="cursor-help">
-                {{ $t('settings.cron.queryAction') }}<sup>*</sup>
-                <BTooltip :target="`queryAction${index}`">
-                  Action to perform when a session matches this query
-                </BTooltip>
-              </b-input-group-text>
-            </template>
-            <BFormSelect
-              :model-value="query.action"
-              @update:model-value="query.action = $event; cronQueryChanged(query)"
+          </div>
+          <div class="input-group input-group-sm mb-2">
+            <span :id="`queryAction${index}`" class="input-group-text cursor-help">
+              {{ $t('settings.cron.queryAction') }}<sup>*</sup>
+              <v-tooltip :activator="`#queryAction${index}`">
+                Action to perform when a session matches this query
+              </v-tooltip>
+            </span>
+            <select
               class="form-control form-control-sm"
+              :value="query.action"
+              @input="query.action = $event.target.value; cronQueryChanged(query)"
               :disabled="!canEditCronQuery(query)">
               <option value="tag">
                 {{ $t('settings.cron.queryAction-tag') }}
@@ -365,62 +326,49 @@ SPDX-License-Identifier: Apache-2.0
                 :value="`forward:${key}`">
                 {{ $t('settings.cron.queryAction-forward', { cluster: cluster.name }) }}
               </option>
-            </BFormSelect>
-          </b-input-group>
-          <b-input-group
-            size="sm"
-            class="mb-2">
-            <template #prepend>
-              <b-input-group-text
-                class="cursor-help"
-                :id="`queryTags${index}`">
-                {{ $t('settings.cron.tags') }}<sup>*</sup>
-                <BTooltip :target="`queryTags${index}`">
-                  {{ $t('settings.cron.tagsTip') }}
-                </BTooltip>
-              </b-input-group-text>
-            </template>
-            <b-form-input
-              :model-value="query.tags"
-              @update:model-value="query.tags = $event; cronQueryChanged(query)"
-              :disabled="!canEditCronQuery(query)" />
-          </b-input-group>
-          <b-input-group
-            size="sm"
-            class="mb-2">
-            <template #prepend>
-              <b-input-group-text
-                class="cursor-help"
-                :id="`queryExpression${index}`">
-                {{ $t('settings.cron.searchExpression') }}<sup>*</sup>
-                <BTooltip :target="`queryExpression${index}`">
-                  {{ $t('settings.cron.searchExpressionTip') }}
-                </BTooltip>
-              </b-input-group-text>
-            </template>
+            </select>
+          </div>
+          <div class="input-group input-group-sm mb-2">
+            <span class="input-group-text cursor-help" :id="`queryTags${index}`">
+              {{ $t('settings.cron.tags') }}<sup>*</sup>
+              <v-tooltip :activator="`#queryTags${index}`">
+                {{ $t('settings.cron.tagsTip') }}
+              </v-tooltip>
+            </span>
+            <input
+              type="text"
+              class="form-control"
+              :value="query.tags"
+              @input="query.tags = $event.target.value; cronQueryChanged(query)"
+              :disabled="!canEditCronQuery(query)">
+          </div>
+          <div class="input-group input-group-sm mb-2">
+            <span class="input-group-text cursor-help" :id="`queryExpression${index}`">
+              {{ $t('settings.cron.searchExpression') }}<sup>*</sup>
+              <v-tooltip :activator="`#queryExpression${index}`">
+                {{ $t('settings.cron.searchExpressionTip') }}
+              </v-tooltip>
+            </span>
             <ExpressionAutocompleteInput
               :model-value="query.query"
               @update:model-value="query.query = $event; cronQueryChanged(query)"
               :disabled="!canEditCronQuery(query)" />
-          </b-input-group>
-          <b-input-group
-            size="sm"
-            class="mb-2"
+          </div>
+          <div
+            class="input-group input-group-sm mb-2"
             v-if="canEditCronQuery(query)">
-            <template #prepend>
-              <b-input-group-text
-                class="cursor-help"
-                :id="`queryUsers${index}`">
-                {{ $t('common.shareWithUsers') }}
-                <BTooltip :target="`queryUsers${index}`">
-                  {{ $t('settings.cron.shareWithUsersTip') }}
-                </BTooltip>
-              </b-input-group-text>
-            </template>
-            <b-form-input
-              :model-value="query.users"
-              @update:model-value="query.users = $event; cronQueryChanged(query)" />
-          </b-input-group>
+            <span class="input-group-text cursor-help" :id="`queryUsers${index}`">
+              {{ $t('common.shareWithUsers') }}
+              <v-tooltip :activator="`#queryUsers${index}`">
+                {{ $t('settings.cron.shareWithUsersTip') }}
+              </v-tooltip>
+            </span>
+            <input
+              type="text"
+              class="form-control"
+              :value="query.users"
+              @input="query.users = $event.target.value; cronQueryChanged(query)">
+          </div>
           <div
             class="mb-2 no-wrap"
             v-if="canEditCronQuery(query)">
@@ -445,8 +393,8 @@ SPDX-License-Identifier: Apache-2.0
               @selected-roles-updated="updateCronQueryEditRoles"
               :display-text="query.editRoles && query.editRoles.length ? undefined : $t('common.rolesCanEdit')" />
           </div>
-        </b-card-text>
-        <b-card-text>
+        </v-card-text>
+        <v-card-text>
           <div class="row">
             <div class="col">
               <strong>{{ $t('settings.cron.matches') }}</strong>:
@@ -501,76 +449,72 @@ SPDX-License-Identifier: Apache-2.0
               by {{ query.lastToggledBy }}
             </div>
           </div>
-        </b-card-text>
-        <template #footer>
-          <b-button
-            size="sm"
-            variant="warning"
+        </v-card-text>
+        <v-card-actions>
+          <button
+            type="button"
+            class="btn btn-sm btn-warning"
             :id="`openMatches${index}`"
             @click="openCronSessions(query)">
             <span class="fa fa-folder-open fa-fw me-1" />
             {{ $t('settings.cron.openMatches') }}
-            <BTooltip :target="`openMatches${index}`">
+            <v-tooltip :activator="`#openMatches${index}`">
               {{ $t('settings.cron.openMatchesTip') }}
-            </BTooltip>
-          </b-button>
+            </v-tooltip>
+          </button>
           <template v-if="canEditCronQuery(query)">
             <template v-if="query.changed">
-              <b-button
-                size="sm"
-                class="ms-1"
-                variant="warning"
+              <button
+                type="button"
+                class="btn btn-sm btn-warning ms-1"
                 @click="getCronQueries"
                 :id="`cancel${index}`">
                 <span class="fa fa-ban fa-fw me-1" />
                 {{ $t('common.cancel') }}
-                <BTooltip :target="`cancel${index}`">
+                <v-tooltip :activator="`#cancel${index}`">
                   {{ $t('settings.cron.cancelTip') }}
-                </BTooltip>
-              </b-button>
-              <b-button
-                size="sm"
-                class="pull-right ms-1"
-                variant="theme-tertiary"
+                </v-tooltip>
+              </button>
+              <button
+                type="button"
+                class="btn btn-sm btn-theme-tertiary pull-right ms-1"
                 :id="`save${index}`"
                 @click="updateCronQuery(query, index)">
                 <span class="fa fa-save fa-fw me-1" />
                 {{ $t('common.save') }}
-                <BTooltip :target="`save${index}`">
+                <v-tooltip :activator="`#save${index}`">
                   {{ $t('settings.cron.saveTip') }}
-                </BTooltip>
-              </b-button>
+                </v-tooltip>
+              </button>
             </template>
             <template v-else>
-              <b-button
-                size="sm"
-                variant="danger"
-                class="pull-right ms-1"
+              <button
+                type="button"
+                class="btn btn-sm btn-danger pull-right ms-1"
                 :id="`delete${index}`"
                 @click="deleteCronQuery(query, index)">
                 <span class="fa fa-trash-o fa-fw me-1" />
                 {{ $t('common.delete') }}
-                <BTooltip :target="`delete${index}`">
+                <v-tooltip :activator="`#delete${index}`">
                   {{ $t('settings.cron.deleteTip') }}
-                </BTooltip>
-              </b-button>
-              <b-button
-                size="sm"
-                variant="info"
-                class="ms-1"
+                </v-tooltip>
+              </button>
+              <button
+                type="button"
+                class="btn btn-sm btn-info ms-1"
                 v-if="canTransfer(query)"
                 :id="`transfer${index}`"
                 @click="openTransferQuery(query)">
                 <span class="fa fa-share fa-fw" />
-                <BTooltip :target="`transfer${index}`">
+                <v-tooltip :activator="`#transfer${index}`">
                   {{ $t('settings.cron.transferTip') }}
-                </BTooltip>
-              </b-button>
+                </v-tooltip>
+              </button>
             </template>
           </template>
-        </template>
-      </b-card>
-    </b-card-group> <!-- /cron queries -->
+        </v-card-actions>
+      </v-card>
+    </div> <!-- /cron queries -->
 
     <transfer-resource
       :show-modal="showTransferModal"
@@ -640,6 +584,23 @@ export default {
     },
     clusters () {
       return this.$store.state.remoteclusters;
+    },
+    cronProcessOptions () {
+      return [
+        { value: 0, text: 'Now' },
+        { value: 1, text: this.$t('common.hourAgoCount', 1) },
+        { value: 6, text: this.$t('common.hourAgoCount', 6) },
+        { value: 24, text: this.$t('common.hourAgoCount', 24) },
+        { value: 48, text: this.$t('common.hourAgoCount', 48) },
+        { value: 72, text: this.$t('common.hourAgoCount', 72) },
+        { value: 168, text: this.$t('common.weekAgoCount', 1) },
+        { value: 336, text: this.$t('common.weekAgoCount', 2) },
+        { value: 720, text: this.$t('common.monthAgoCount', 1) },
+        { value: 1440, text: this.$t('common.monthAgoCount', 2) },
+        { value: 4380, text: this.$t('common.monthAgoCount', 6) },
+        { value: 8760, text: this.$t('common.yearAgoCount', 1) },
+        { value: -1, text: this.$t('common.allCareful') }
+      ];
     }
   },
   mounted () {
@@ -912,3 +873,22 @@ export default {
   }
 };
 </script>
+
+<style scoped>
+/* Pinterest-style masonry layout to replace b-card-group's columns prop. */
+.cron-card-columns {
+  column-count: 3;
+  column-gap: 0.75rem;
+}
+.cron-card {
+  display: inline-block;
+  width: 100%;
+  break-inside: avoid;
+}
+@media (max-width: 1199.98px) {
+  .cron-card-columns { column-count: 2; }
+}
+@media (max-width: 767.98px) {
+  .cron-card-columns { column-count: 1; }
+}
+</style>
