@@ -75,6 +75,11 @@ LOCAL DedupSeconds_t *seconds;
 /******************************************************************************/
 int arkime_dedup_should_drop (const ArkimePacket_t *packet, int headerLen)
 {
+    // Cap headerLen to prevent large stack VLA on attacker-controlled IPv6 ext headers
+    if (headerLen <= 0 || headerLen > 256) {
+        return 0;
+    }
+
     struct timespec currentTime;
     clock_gettime(CLOCK_MONOTONIC_COARSE, &currentTime);
 
@@ -134,7 +139,7 @@ int arkime_dedup_should_drop (const ArkimePacket_t *packet, int headerLen)
     }
     MD5_Final(md, &ctx);
 #else
-    uint8_t buf[headerLen + 4];
+    uint8_t buf[260];
     XXH128_hash_t hash;
     if (prefix_len) {
         memcpy(buf, prefix, prefix_len);

@@ -1125,6 +1125,15 @@ class Auth {
     try {
       const { iv, salt, data, tag } = JSON.parse(auth);
 
+      // Validate strict shapes BEFORE expensive PBKDF2 (DoS protection)
+      const isHex = /^[0-9a-fA-F]+$/;
+      if (typeof iv !== 'string' || iv.length !== 24 || !isHex.test(iv) ||
+          typeof salt !== 'string' || salt.length !== 32 || !isHex.test(salt) ||
+          typeof tag !== 'string' || tag.length !== 32 || !isHex.test(tag) ||
+          typeof data !== 'string' || data.length === 0 || data.length > 8192 || !isHex.test(data)) {
+        throw new Error('Malformed auth token');
+      }
+
       let key = Auth.#keyCache.get(`${secret}:${salt}`);
       if (!key) {
         key = crypto.pbkdf2Sync(secret, Buffer.from(salt, 'hex'), 300000, 32, 'sha256');

@@ -9,6 +9,7 @@
 //#define EMAILDEBUG
 
 #define SMTP_MAX_LINE_LEN 10000
+#define SMTP_MAX_BOUNDARIES 128
 
 extern ArkimeConfig_t   config;
 extern char            *arkime_char_to_hex;
@@ -477,10 +478,13 @@ LOCAL int smtp_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, i
             } else if (strncasecmp(line->str, "BDAT", 4) == 0 &&
                        line->len > 5 &&
                        (line->str[4] == ' ' || line->str[4] == '\t')) {
+                int bdatN = arkime_atoin(line->str + 5, line->len - 5);
+                if (bdatN < 0 || bdatN > (1 << 30)) {
+                    arkime_session_add_tag(session, "smtp:bad-bdat");
+                    return ARKIME_PARSER_UNREGISTER;
+                }
                 email->inBDAT |= (1 << which);
-                email->bdatRemaining[which] = arkime_atoin(line->str + 5, line->len - 5) + 1;
-                if (email->bdatRemaining[which] == 0)
-                    email->bdatRemaining[which] = 1;
+                email->bdatRemaining[which] = (guint)bdatN + 1;
 
                 if (email->seenHeaders & (1 << which))
                     *state = EMAIL_DATA;
@@ -648,7 +652,7 @@ LOCAL int smtp_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, i
 
                     arkime_field_string_add(ctField, session, s, -1, TRUE);
                     char *boundary = (char *)arkime_memcasestr(s, line->len - (s - line->str), "boundary=", 9);
-                    if (boundary) {
+                    if (boundary && DLL_COUNT(s_, &email->boundaries) < SMTP_MAX_BOUNDARIES) {
                         ArkimeString_t *string = ARKIME_TYPE_ALLOC0(ArkimeString_t);
                         string->str = g_strdup(smtp_remove_matching(boundary + 9, '"', '"'));
                         string->len = strlen(string->str);
@@ -845,7 +849,7 @@ LOCAL int smtp_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, i
                 const char *s = line->str + 13;
                 while (isspace(*s)) s++;
                 char *boundary = (char *)arkime_memcasestr(s, line->len - (s - line->str), "boundary=", 9);
-                if (boundary) {
+                if (boundary && DLL_COUNT(s_, &email->boundaries) < SMTP_MAX_BOUNDARIES) {
                     ArkimeString_t *string = ARKIME_TYPE_ALLOC0(ArkimeString_t);
                     string->str = g_strdup(smtp_remove_matching(boundary + 9, '"', '"'));
                     string->len = strlen(string->str);
