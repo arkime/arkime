@@ -9,6 +9,14 @@
 //#define HTTPDEBUG 1
 
 #define MAX_URL_LENGTH 4096
+#define HTTP_FIELD_MAX 8192
+#define HTTP_GSTR_APPEND(gs, at, length) do { \
+    if ((gs)->len < HTTP_FIELD_MAX) { \
+        size_t _avail = HTTP_FIELD_MAX - (gs)->len; \
+        size_t _add = (length) < _avail ? (length) : _avail; \
+        g_string_append_len((gs), (at), _add); \
+    } \
+} while (0)
 
 // Only track DELETE, GET, HEAD, POST, PUT, CONNECT, OPTIONS
 #define HTTP_MAX_METHOD 6
@@ -286,7 +294,7 @@ LOCAL int arkime_hp_cb_on_url (http_parser *parser, const char *at, size_t lengt
         http->urlString = g_string_new_len(at, length);
         http->urlWhich = http->which;
     } else
-        g_string_append_len(http->urlString, at, length);
+        HTTP_GSTR_APPEND(http->urlString, at, length);
 
     return 0;
 }
@@ -522,22 +530,22 @@ LOCAL int arkime_hp_cb_on_header_value (http_parser *parser, const char *at, siz
             if (!http->hostString)
                 http->hostString = g_string_new_len(at, length);
             else
-                g_string_append_len(http->hostString, at, length);
+                HTTP_GSTR_APPEND(http->hostString, at, length);
         } else if (strcasecmp("cookie", http->header[http->which]) == 0) {
             if (!http->cookieString)
                 http->cookieString = g_string_new_len(at, length);
             else
-                g_string_append_len(http->cookieString, at, length);
+                HTTP_GSTR_APPEND(http->cookieString, at, length);
         } else if (strcasecmp("authorization", http->header[http->which]) == 0) {
             if (!http->authString)
                 http->authString = g_string_new_len(at, length);
             else
-                g_string_append_len(http->authString, at, length);
+                HTTP_GSTR_APPEND(http->authString, at, length);
         } else if (strcasecmp("proxy-authorization", http->header[http->which]) == 0) {
             if (!http->proxyAuthString)
                 http->proxyAuthString = g_string_new_len(at, length);
             else
-                g_string_append_len(http->proxyAuthString, at, length);
+                HTTP_GSTR_APPEND(http->proxyAuthString, at, length);
         }
     }
 
@@ -545,7 +553,7 @@ LOCAL int arkime_hp_cb_on_header_value (http_parser *parser, const char *at, siz
         if (!http->valueString[http->which])
             http->valueString[http->which] = g_string_new_len(at, length);
         else
-            g_string_append_len(http->valueString[http->which], at, length);
+            HTTP_GSTR_APPEND(http->valueString[http->which], at, length);
     }
 
     return 0;
