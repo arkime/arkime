@@ -1802,13 +1802,13 @@ app.getpost(
 
 app.get( // session body file endpoint
   ['/api/session/:nodeName/:id/body/:bodyType/:bodyNum/:bodyName', '/:nodeName/:id/body/:bodyType/:bodyNum/:bodyName'],
-  [checkProxyRequest, User.checkPermissions(['hidePcap', 'disablePcapDownload'])],
+  [checkProxyRequest, User.checkPermissions(['hidePcap'])],
   SessionAPIs.getRawBody
 );
 
 app.get( // session body file image endpoint
   ['/api/session/:nodeName/:id/bodypng/:bodyType/:bodyNum/:bodyName', '/:nodeName/:id/bodypng/:bodyType/:bodyNum/:bodyName'],
-  [checkProxyRequest, User.checkPermissions(['hidePcap', 'disablePcapDownload'])],
+  [checkProxyRequest, User.checkPermissions(['hidePcap'])],
   SessionAPIs.getFilePNG
 );
 
