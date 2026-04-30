@@ -19,9 +19,9 @@ SPDX-License-Identifier: Apache-2.0
         class="pull-right btn btn-sm btn-warning">
         <span class="fa fa-ban" />&nbsp;
         {{ $t('stats.esTasks.cancelAll') }}
-        <BTooltip target="cancelAllTasks">
+        <v-tooltip activator="#cancelAllTasks">
           {{ $t('stats.esTasks.cancelAllTip') }}
-        </BTooltip>
+        </v-tooltip>
       </button>
 
       <arkime-paging

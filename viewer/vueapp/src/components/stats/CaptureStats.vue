@@ -14,9 +14,9 @@ SPDX-License-Identifier: Apache-2.0
       <span
         id="captureStatsHelp"
         class="fa fa-lg fa-question-circle-o cursor-help mt-2 pull-right">
-        <BTooltip target="captureStatsHelp">
+        <v-tooltip activator="#captureStatsHelp">
           <span v-html="$t('stats.cstats.helpTipHtml')" />
-        </BTooltip>
+        </v-tooltip>
       </span>
 
       <arkime-paging
