@@ -6,99 +6,115 @@ SPDX-License-Identifier: Apache-2.0
   <div class="d-inline-flex align-items-center">
     <label
       v-if="label"
-      :for="`user-dropdown-${roleId}`"
+      :for="activatorId"
       class="mb-0 me-1">{{ label }}</label>
-    <b-dropdown
-      size="sm"
-      @shown="setFocus"
-      class="users-dropdown"
-      data-testid="user-dropdown"
-      :id="`user-dropdown-${roleId}`">
-      <BTooltip
-        v-if="selectedTooltip"
-        :target="`user-dropdown-${roleId}`">
-        {{ selectedTooltip ? getUsersStr() : '' }}
-      </BTooltip>
 
-      <!--   Text on dropdown (configurable via default slot)   -->
-      <template #button-content>
-        <slot
-          :count="localSelectedUsers.length"
-          :filter="searchTerm"
-          :unknown="loading || error">
-          {{ getUsersStr() }}
-        </slot>
-      </template><!--   /Text on dropdown (configurable via default slot)   -->
+    <v-menu
+      :close-on-content-click="false"
+      location="bottom"
+      @update:model-value="onMenuToggle">
+      <template #activator="{ props: activatorProps }">
+        <button
+          v-bind="activatorProps"
+          type="button"
+          class="btn btn-sm btn-outline-secondary users-dropdown no-wrap"
+          data-testid="user-dropdown"
+          :id="activatorId">
+          <slot
+            :count="localSelectedUsers.length"
+            :filter="searchTerm"
+            :unknown="loading || error">
+            {{ getUsersStr() }}
+          </slot>
+          <span class="fa fa-caret-down ms-1" />
+          <v-tooltip
+            v-if="selectedTooltip"
+            :activator="`#${activatorId}`">
+            {{ selectedTooltip ? getUsersStr() : '' }}
+          </v-tooltip>
+        </button>
+      </template>
 
-      <b-dropdown-form>
+      <v-list
+        density="compact"
+        class="users-dropdown-menu">
         <!-- search bar -->
-        <b-dropdown-header class="w-100 sticky-top">
-          <b-input-group size="sm">
-            <b-form-input
-              debounce="400"
-              v-focus="focus"
-              v-model="searchTerm"
-              :placeholder="$t('users.searchUserPlaceholder')" />
-            <template #append>
-              <b-button
-                :disabled="!searchTerm"
-                @click="clearSearchTerm"
-                variant="outline-secondary">
-                <span class="fa fa-close" />
-              </b-button>
-            </template>
-          </b-input-group>
-          <b-dropdown-divider />
-        </b-dropdown-header> <!-- /search bar -->
+        <div class="px-2 py-1">
+          <div class="input-group input-group-sm">
+            <input
+              ref="searchInput"
+              type="text"
+              class="form-control"
+              :value="searchTerm"
+              @input="searchTerm = $event.target.value"
+              :placeholder="$t('users.searchUserPlaceholder')">
+            <button
+              type="button"
+              class="btn btn-outline-secondary"
+              :disabled="!searchTerm"
+              @click="clearSearchTerm">
+              <span class="fa fa-close" />
+            </button>
+          </div>
+        </div>
+        <v-divider />
 
         <!-- loading -->
-        <template v-if="loading">
-          <div class="mt-3 text-center">
-            <span class="fa fa-circle-o-notch fa-spin fa-2x" />
-            <p>{{ $t('common.loading') }}</p>
-          </div>
-        </template> <!-- /loading -->
+        <div
+          v-if="loading"
+          class="mt-3 text-center">
+          <span class="fa fa-circle-o-notch fa-spin fa-2x" />
+          <p>{{ $t('common.loading') }}</p>
+        </div> <!-- /loading -->
 
         <!-- error -->
-        <template v-else-if="error">
-          <div class="mt-3 alert alert-warning">
-            <span class="fa fa-exclamation-triangle" />&nbsp;
-            {{ error }}
-          </div>
-        </template> <!-- /error -->
+        <div
+          v-else-if="error"
+          class="mt-3 alert alert-warning">
+          <span class="fa fa-exclamation-triangle" />&nbsp;
+          {{ error }}
+        </div> <!-- /error -->
 
         <!-- user checkboxes -->
-        <template v-else>
-          <b-form-checkbox-group
-            class="d-flex flex-column ms-2 me-2"
-            v-model="localSelectedUsers">
-            <b-form-checkbox
-              :key="user.userId"
-              :value="user.userId"
-              v-for="user in users"
-              @change="updateUsers(user.userId)">
+        <div
+          v-else-if="users && users.length"
+          class="px-2 py-1 users-dropdown-options">
+          <div
+            v-for="user in users"
+            :key="user.userId"
+            class="form-check">
+            <input
+              :id="`userdd-${activatorId}-${user.userId}`"
+              type="checkbox"
+              class="form-check-input"
+              :checked="localSelectedUsers.includes(user.userId)"
+              @change="toggleUser(user.userId, $event.target.checked)">
+            <label
+              :for="`userdd-${activatorId}-${user.userId}`"
+              class="form-check-label">
               {{ user.userName }} ({{ user.userId }})
-            </b-form-checkbox>
-          </b-form-checkbox-group>
-        </template> <!-- /user checkboxes -->
-      </b-dropdown-form>
-      <b-dropdown-item
-        disabled
-        v-if="users && !users.length && searchTerm">
-        {{ $t('users.noUsersMatch') }}
-      </b-dropdown-item>
-    </b-dropdown>
+            </label>
+          </div>
+        </div> <!-- /user checkboxes -->
+
+        <v-list-item
+          v-else-if="users && !users.length && searchTerm"
+          disabled>
+          {{ $t('users.noUsersMatch') }}
+        </v-list-item>
+      </v-list>
+    </v-menu>
   </div>
 </template>
 
 <script>
 import UserService from './UserService';
-import Focus from './Focus.vue';
 import { resolveMessage } from './resolveI18nMessage';
+
+let searchTimeout;
 
 export default {
   name: 'UserDropdown',
-  directives: { Focus },
   emits: ['selected-users-updated'],
   props: {
     roleId: {
@@ -123,19 +139,31 @@ export default {
   data () {
     return {
       error: '',
-      focus: false,
       loading: true,
       searchTerm: '',
       users: undefined,
-      localSelectedUsers: this.selectedUsers || []
+      localSelectedUsers: this.selectedUsers || [],
+      activatorId: `userdd-${this.roleId || Math.random().toString(36).slice(2, 10)}`
     };
   },
   watch: {
     searchTerm () {
-      this.loadUsers();
+      // debounce search input (was BVN's `debounce="400"` on b-form-input)
+      if (searchTimeout) clearTimeout(searchTimeout);
+      searchTimeout = setTimeout(() => {
+        searchTimeout = null;
+        this.loadUsers();
+      }, 400);
     }
   },
   methods: {
+    onMenuToggle (opened) {
+      if (opened) {
+        this.$nextTick(() => {
+          this.$refs.searchInput?.focus();
+        });
+      }
+    },
     getUsersStr () {
       const userArr = [...this.localSelectedUsers];
       userArr.sort();
@@ -161,26 +189,23 @@ export default {
         this.error = resolveMessage(error, this.$t);
       });
     },
-    updateUsers (userId) { // emits both the new array and changed user-value
-      const oldLen = this.selectedUsers?.length || 0;
+    toggleUser (userId, checked) {
+      let newSelection;
+      if (checked) {
+        newSelection = [...this.localSelectedUsers, userId];
+      } else {
+        newSelection = this.localSelectedUsers.filter(u => u !== userId);
+      }
+      this.localSelectedUsers = newSelection;
       const change = {
-        newSelection: this.localSelectedUsers,
-        changedUser: {
-          userId,
-          newState: oldLen < this.localSelectedUsers.length
-        }
+        newSelection,
+        changedUser: { userId, newState: checked }
       };
       this.$emit('selected-users-updated', change, this.roleId);
     },
     clearSearchTerm () {
       this.searchTerm = '';
-      this.setFocus();
-    },
-    setFocus () {
-      this.focus = true;
-      setTimeout(() => {
-        this.focus = false;
-      }, 100);
+      this.$refs.searchInput?.focus();
     }
   },
   mounted () {
@@ -189,22 +214,21 @@ export default {
 };
 </script>
 
-<style scoped>
-/* hides elements scrolling behind sticky search bar */
-.users-dropdown .dropdown-header {
-  padding: 0rem 0.5rem;
-  background-color: var(--color-background);
+<style>
+/* The menu is teleported to body via v-menu, so styles must be unscoped to
+   reach the rendered list. */
+.users-dropdown-menu {
+  min-width: 280px;
+  max-height: 360px;
+  overflow-y: auto;
+  font-size: 0.85rem;
 }
-.users-dropdown .dropdown-header > li {
-  padding-top: 10px;
-  background-color: var(--color-background);
+.users-dropdown-menu .form-check {
+  padding-left: 1.6rem;
+  margin-bottom: 2px;
 }
-.users-dropdown .dropdown-divider {
-  margin-top: 0px;
-}
-
-.users-dropdown .dropdown-item,
-.users-dropdown .custom-control {
-  padding-left: 2rem;
+.users-dropdown-menu .form-check-label {
+  font-size: 0.85rem;
+  cursor: pointer;
 }
 </style>

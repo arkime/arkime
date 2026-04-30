@@ -72,10 +72,16 @@ async function initializeApp() {
   // symbolic aliases ($file, $close, $next, $prev, etc.) to FA 4 classes,
   // so v-file-input, v-select, v-data-table, etc. render with the FA icons
   // already loaded by viewer rather than missing MDI glyphs.
+  // Override the fa4 iconset's `clear` alias -- by default it maps to
+  // `fa-check-circle` which on clearable v-text-fields looks like a
+  // green check (mistaken for a checkbox). `fa-times-circle` is the
+  // intuitive X-in-circle for a clear action.
+  const arkimeFaAliases = { ...faAliases, clear: 'fa-times-circle' };
+
   const vuetify = createVuetify({
     icons: {
       defaultSet: 'fa',
-      aliases: faAliases,
+      aliases: arkimeFaAliases,
       sets: { fa: faSet }
     },
     defaults: {
