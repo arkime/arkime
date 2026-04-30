@@ -57,7 +57,9 @@ SPDX-License-Identifier: Apache-2.0
         <v-card-text>
           <!-- new notifier name -->
           <div class="input-group input-group-sm mb-2">
-            <span id="newNotifierName" class="input-group-text cursor-help">
+            <span
+              id="newNotifierName"
+              class="input-group-text cursor-help">
               {{ $t('settings.notifiers.name') }}
               <sup>*</sup>
               <v-tooltip activator="#newNotifierName">
@@ -68,7 +70,9 @@ SPDX-License-Identifier: Apache-2.0
               class="form-control"
               v-model="newNotifier.name"
               :placeholder="$t('settings.notifiers.namePlaceholder')">
-            <span id="newNotifierNameHelp" class="input-group-text cursor-help">
+            <span
+              id="newNotifierNameHelp"
+              class="input-group-text cursor-help">
               <span class="fa fa-info-circle" />
               <v-tooltip activator="#newNotifierNameHelp">
                 {{ $t('settings.notifiers.nameInfo', { type: newNotifier.type }) }}

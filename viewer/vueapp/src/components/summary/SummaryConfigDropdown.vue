@@ -20,7 +20,9 @@ SPDX-License-Identifier: Apache-2.0
         </v-tooltip>
       </template>
 
-      <v-list density="compact" class="summary-config-list">
+      <v-list
+        density="compact"
+        class="summary-config-list">
         <!-- Loading indicator -->
         <v-list-item
           v-if="loading"

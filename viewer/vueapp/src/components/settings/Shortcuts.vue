@@ -32,6 +32,7 @@ SPDX-License-Identifier: Apache-2.0
           density="compact"
           variant="outlined"
           hide-details
+          clearable
           prepend-inner-icon="fa-search"
           :model-value="shortcutsQuery.search"
           @update:model-value="updateSearch"
@@ -46,10 +47,14 @@ SPDX-License-Identifier: Apache-2.0
         multiple
         :model-value="seeAll ? ['seeAll'] : []"
         @update:model-value="(val) => updateSeeAll(val.includes('seeAll'))">
-        <v-btn value="seeAll" id="seeAllShortcuts">
+        <v-btn
+          value="seeAll"
+          id="seeAllShortcuts">
           <span class="fa fa-user-circle me-1" />
           {{ $t(seeAll ? 'settings.shortcuts.seeMy' : 'settings.shortcuts.seeAll') }}
-          <v-tooltip activator="parent" location="top">
+          <v-tooltip
+            activator="parent"
+            location="top">
             {{ $t(seeAll ? 'settings.shortcuts.seeMyTip' : 'settings.shortcuts.seeAllTip') }}
           </v-tooltip>
         </v-btn>
@@ -264,7 +269,9 @@ SPDX-License-Identifier: Apache-2.0
         </v-card-title>
         <v-card-text>
           <div class="input-group input-group-sm mb-2">
-            <span id="shortcutFormName" class="input-group-text cursor-help">
+            <span
+              id="shortcutFormName"
+              class="input-group-text cursor-help">
               {{ $t('settings.shortcuts.shortcutFormName') }}<sup>*</sup>
               <v-tooltip activator="#shortcutFormName">
                 {{ $t('settings.shortcuts.shortcutFormNameTip') }}
@@ -278,7 +285,9 @@ SPDX-License-Identifier: Apache-2.0
               @input="newShortcutName = $event.target.value">
           </div>
           <div class="input-group input-group-sm mb-2">
-            <span id="shortcutFormDesc" class="input-group-text cursor-help">
+            <span
+              id="shortcutFormDesc"
+              class="input-group-text cursor-help">
               {{ $t('settings.shortcuts.shortcutFormDesc') }}
               <v-tooltip activator="#shortcutFormDesc">
                 {{ $t('settings.shortcuts.shortcutFormDescTip') }}
@@ -292,7 +301,9 @@ SPDX-License-Identifier: Apache-2.0
               @input="newShortcutDescription = $event.target.value">
           </div>
           <div class="input-group input-group-sm mb-2">
-            <span id="shortCutFormValue" class="input-group-text cursor-help">
+            <span
+              id="shortCutFormValue"
+              class="input-group-text cursor-help">
               {{ $t('settings.shortcuts.shortcutFormValue') }}<sup>*</sup>
               <v-tooltip activator="#shortCutFormValue">
                 {{ $t('settings.shortcuts.shortcutFormValueTip') }}
@@ -306,7 +317,9 @@ SPDX-License-Identifier: Apache-2.0
               @input="newShortcutValue = $event.target.value" />
           </div>
           <div class="input-group input-group-sm mb-2">
-            <span id="shortcutFormType" class="input-group-text cursor-help">
+            <span
+              id="shortcutFormType"
+              class="input-group-text cursor-help">
               {{ $t('settings.shortcuts.shortcutFormType') }}<sup>*</sup>
               <v-tooltip activator="#shortcutFormType">
                 {{ $t('settings.shortcuts.shortcutFormTypeTip') }}
@@ -342,7 +355,9 @@ SPDX-License-Identifier: Apache-2.0
                 @selected-roles-updated="updateNewShortcutEditRoles" />
             </div>
             <div class="input-group input-group-sm">
-              <span id="shortcutFormUsers" class="input-group-text cursor-help">
+              <span
+                id="shortcutFormUsers"
+                class="input-group-text cursor-help">
                 {{ $t('common.shareWithUsers') }}
                 <v-tooltip activator="#shortcutFormUsers">
                   {{ $t('settings.shortcuts.shortcutFormUsersTip') }}
