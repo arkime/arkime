@@ -16,11 +16,10 @@ SPDX-License-Identifier: Apache-2.0
           @recalc-collapse="$emit('recalc-collapse')" /> <!-- /search navbar -->
 
         <!-- hunt create navbar -->
-        <BRow
-          gutter-x="1"
-          align-h="between"
-          class="hunt-create-navbar ps-2 pe-2 pt-1">
-          <BCol cols="auto">
+        <div
+          class="row g-1 hunt-create-navbar ps-2 pe-2 py-2 justify-content-between align-items-center"
+          style="min-height: 44px;">
+          <div class="col-auto">
             <span v-if="loadingSessions">
               <div
                 class="mt-1"
@@ -51,26 +50,26 @@ SPDX-License-Identifier: Apache-2.0
                 <span v-html="$t('hunts.createMsgHtml', { count: commaString(sessions.recordsFiltered) })" />
               </div>
             </span>
-          </BCol>
-          <BCol cols="auto">
-            <BButton
-              size="sm"
-              variant="theme-tertiary"
+          </div>
+          <div class="col-auto">
+            <button
+              type="button"
+              class="btn btn-sm btn-theme-tertiary"
               :disabled="loadingSessions"
               v-if="!createFormOpened"
               @click="createFormOpened = true">
               {{ $t('hunts.createJob') }}
-            </BButton>
-            <BButton
-              size="sm"
-              variant="warning"
+            </button>
+            <button
+              type="button"
+              class="btn btn-sm btn-warning"
               v-if="createFormOpened && loadingSessionsDetailError"
               @click="createFormOpened = false">
               <span class="fa fa-ban" />&nbsp;
               {{ $t('common.cancel') }}
-            </BButton>
-          </BCol>
-        </BRow> <!-- /hunt create navbar -->
+            </button>
+          </div>
+        </div> <!-- /hunt create navbar -->
       </span>
     </ArkimeCollapsible>
 
@@ -151,20 +150,18 @@ SPDX-License-Identifier: Apache-2.0
                   </div>
                 </div>
               </div>
-              <BRow gutter-x="1">
-                <BCol
-                  cols="auto"
-                  class="mb-2 flex-grow-1">
+              <div class="row g-1">
+                <div class="col-auto mb-2 flex-grow-1">
                   <!-- packet search job name -->
-                  <BInputGroup size="sm">
-                    <BInputGroupText
+                  <div class="input-group input-group-sm">
+                    <span
                       id="jobName"
-                      class="cursor-help">
+                      class="input-group-text cursor-help">
                       {{ $t('hunts.jobName') }}
-                      <BTooltip target="jobName">
+                      <v-tooltip activator="#jobName">
                         {{ $t('hunts.jobNameTip') }}
-                      </BTooltip>
-                    </BInputGroupText>
+                      </v-tooltip>
+                    </span>
                     <input
                       type="text"
                       v-model="jobName"
@@ -172,93 +169,111 @@ SPDX-License-Identifier: Apache-2.0
                       class="form-control"
                       :placeholder="$t('hunts.jobNamePlaceholder')"
                       maxlength="40">
-                  </BInputGroup> <!-- /packet search job name -->
-                </BCol>
+                  </div> <!-- /packet search job name -->
+                </div>
                 <!-- packet search size -->
-                <BCol>
-                  <BInputGroup size="sm">
-                    <BInputGroupText>
+                <div class="col">
+                  <div class="input-group input-group-sm">
+                    <span class="input-group-text">
                       {{ $t('hunts.jobSize') }}
-                    </BInputGroupText>
-                    <BFormSelect
-                      v-model="jobSize"
-                      :options="[50, 500, 5000, 10000]" />
-                  </BInputGroup>
-                </BCol> <!-- /packet search size -->
+                    </span>
+                    <select
+                      class="form-control form-control-sm"
+                      v-model="jobSize">
+                      <option
+                        v-for="size in [50, 500, 5000, 10000]"
+                        :key="size"
+                        :value="size">
+                        {{ size }}
+                      </option>
+                    </select>
+                  </div>
+                </div> <!-- /packet search size -->
                 <!-- notifier -->
-                <BCol>
+                <div class="col">
                   <NotifierDropdown
                     :notifiers="notifiers"
                     :selected-notifiers="jobNotifier"
                     @selected-notifiers-updated="updateJobNotifiers"
                     :display-text="jobNotifier.length > 0 ? undefined : $t('settings.cron.selectNotifier')" />
-                </BCol> <!-- /notifier -->
-              </BRow>
-              <BRow
-                gutter-x="1"
-                class="mb-2">
-                <BCol>
-                  <BInputGroup size="sm">
-                    <BInputGroupText
-                      class="cursor-help"
-                      id="jobDescription">
+                </div> <!-- /notifier -->
+              </div>
+              <div class="row g-1 mb-2">
+                <div class="col">
+                  <div class="input-group input-group-sm">
+                    <span
+                      id="jobDescription"
+                      class="input-group-text cursor-help">
                       {{ $t('hunts.jobDescription') }}
-                      <BTooltip target="jobDescription">
+                      <v-tooltip activator="#jobDescription">
                         {{ $t('hunts.jobDescriptionTip') }}
-                      </BTooltip>
-                    </BInputGroupText>
+                      </v-tooltip>
+                    </span>
                     <input
                       type="text"
                       class="form-control"
                       v-model="jobDescription"
                       :placeholder="$t('hunts.jobDescriptionPlaceholder')">
-                  </BInputGroup>
-                </BCol>
-              </BRow>
-              <BRow class="mb-2">
-                <BCol>
-                  <BInputGroup size="sm">
-                    <BInputGroupText
-                      class="cursor-help"
-                      id="jobSearch">
+                  </div>
+                </div>
+              </div>
+              <div class="row mb-2">
+                <div class="col">
+                  <div class="input-group input-group-sm">
+                    <span
+                      id="jobSearch"
+                      class="input-group-text cursor-help">
                       <span class="fa fa-search" />
-                      <BTooltip target="jobSearch">
+                      <v-tooltip activator="#jobSearch">
                         {{ $t('hunts.jobSearchTip') }}
-                      </BTooltip>
-                    </BInputGroupText>
+                      </v-tooltip>
+                    </span>
                     <input
                       type="text"
                       v-model="jobSearch"
                       :placeholder="$t('hunts.jobSearchPlaceholder')"
                       class="form-control">
-                  </BInputGroup>
-                </BCol>
-              </BRow>
-              <BRow
-                gutter-x="1"
-                align-h="start">
+                  </div>
+                </div>
+              </div>
+              <div class="row g-1 justify-content-start">
                 <!-- packet search text & text type -->
-                <BCol>
-                  <BFormRadioGroup
-                    class="d-inline"
+                <div class="col">
+                  <v-btn-toggle
+                    class="d-inline-flex"
+                    density="compact"
+                    divided
+                    variant="outlined"
+                    color="secondary"
                     v-model="jobSearchType"
-                    :options="[
-                      { text: 'ascii', value: 'ascii' },
-                      { text: 'ascii (case sensitive)', value: 'asciicase' },
-                      { text: 'hex', value: 'hex' },
-                      { text: 'safe regex', value: 'regex' },
-                      { text: 'safe hex regex', value: 'hexregex' }
-                    ]" />
+                    mandatory>
+                    <v-btn value="ascii">
+                      ascii
+                    </v-btn>
+                    <v-btn value="asciicase">
+                      ascii (case sensitive)
+                    </v-btn>
+                    <v-btn value="hex">
+                      hex
+                    </v-btn>
+                    <v-btn value="regex">
+                      safe regex
+                    </v-btn>
+                    <v-btn value="hexregex">
+                      safe hex regex
+                    </v-btn>
+                  </v-btn-toggle>
                   <a
                     href="https://github.com/google/re2/wiki/Syntax"
                     target="_blank"
-                    id="safeRegexHelp">
+                    id="safeRegexHelp"
+                    class="ms-2">
                     <span class="fa fa-question-circle fa-lg" />
-                    <BTooltip target="safeRegexHelp">{{ $t('hunts.safeRegexHelpTip') }}</BTooltip>
+                    <v-tooltip activator="#safeRegexHelp">{{ $t('hunts.safeRegexHelpTip') }}</v-tooltip>
                   </a>
-                </BCol>
-              </BRow>
-              <BRow gutter-x="1">
+                </div>
+              </div>
+              <div class="row g-1">
                 <!-- packet search direction -->
                 <div class="form-group col-lg-3 col-md-12">
                   <div class="form-check">
@@ -337,25 +352,25 @@ SPDX-License-Identifier: Apache-2.0
                       @selected-roles-updated="updateNewJobRoles" />
                   </div>
                   <div class="flex-grow-1 ms-2">
-                    <BInputGroup size="sm">
-                      <BInputGroupText
-                        class="cursor-help"
-                        id="jobUsers">
+                    <div class="input-group input-group-sm">
+                      <span
+                        id="jobUsers"
+                        class="input-group-text cursor-help">
                         <span class="fa fa-user" />
-                        <BTooltip target="jobUsers">
+                        <v-tooltip activator="#jobUsers">
                           {{ $t('hunts.jobUsersTip') }}
-                        </BTooltip>
-                      </BInputGroupText>
+                        </v-tooltip>
+                      </span>
                       <input
                         type="text"
                         v-model="jobUsers"
                         :placeholder="$t('hunts.jobUsersPlaceholder')"
                         class="form-control">
-                    </BInputGroup>
+                    </div>
                   </div>
                 </div> <!-- /sharing with users/roles -->
-              </BRow>
-              <BRow>
+              </div>
+              <div class="row">
                 <div class="col-12 mt-1">
                   <div
                     v-if="createFormError"
@@ -383,7 +398,7 @@ SPDX-License-Identifier: Apache-2.0
                     {{ $t('common.cancel') }}
                   </button> <!-- /cancel create search job button -->
                 </div>
-              </BRow>
+              </div>
             </form>
           </div>
         </transition>
@@ -412,9 +427,9 @@ SPDX-License-Identifier: Apache-2.0
                   <span
                     v-else
                     class="fa fa-spinner fa-spin fa-fw" />
-                  <BTooltip :target="`remove${runningJob.id}`">
+                  <v-tooltip :activator="`[id='remove${runningJob.id}']`">
                     {{ $t('hunts.cancelAndRemoveTip') }}
-                  </BTooltip>
+                  </v-tooltip>
                 </button>
                 <span v-if="canView">
                   <button
@@ -425,9 +440,9 @@ SPDX-License-Identifier: Apache-2.0
                     :aria-label="$t('common.open')"
                     class="ms-1 pull-right btn btn-sm btn-theme-primary">
                     <span class="fa fa-folder-open fa-fw" />
-                    <BTooltip :target="`openresults${runningJob.id}`">
+                    <v-tooltip :activator="`[id='openresults${runningJob.id}']`">
                       <span v-html="$t('hunts.openResultsTipHtml')" />
-                    </BTooltip>
+                    </v-tooltip>
                   </button>
                 </span>
                 <button
@@ -445,9 +460,9 @@ SPDX-License-Identifier: Apache-2.0
                     v-else
                     class="fa fa-spinner fa-spin fa-fw" />
                 </button>
-                <BTooltip :target="`cancel${runningJob.id}`">
+                <v-tooltip :activator="`[id='cancel${runningJob.id}']`">
                   {{ $t('hunts.cancelTip') }}
-                </BTooltip>
+                </v-tooltip>
                 <button
                   v-if="canEdit"
                   :id="`pause${runningJob.id}`"
@@ -462,9 +477,9 @@ SPDX-License-Identifier: Apache-2.0
                   <span
                     v-else
                     class="fa fa-spinner fa-spin fa-fw" />
-                  <BTooltip :target="`pause${runningJob.id}`">
+                  <v-tooltip :activator="`[id='pause${runningJob.id}']`">
                     {{ $t('hunts.pauseTip') }}
-                  </BTooltip>
+                  </v-tooltip>
                 </button>
               </span>
             </h5>
@@ -489,7 +504,7 @@ SPDX-License-Identifier: Apache-2.0
                       aria-valuemax="100">
                       {{ round(runningJob.progress, 1) }}%
                     </div>
-                    <BTooltip target="runningJob">
+                    <v-tooltip activator="#runningJob">
                       <div class="mt-2">
                         <span v-html="$t('hunts.runningJob-headHtml', { matched: commaString(runningJob.matchedSessions) })" />
                         <span
@@ -508,7 +523,7 @@ SPDX-License-Identifier: Apache-2.0
                             remaining: commaString(runningJob.totalSessions - runningJob.searchedSessions),
                             totalSessions: commaString(runningJob.totalSessions)})" />
                       </div>
-                    </BTooltip>
+                    </v-tooltip>
                   </div>
                 </div>
               </div>
@@ -645,15 +660,13 @@ SPDX-License-Identifier: Apache-2.0
           <span class="fa fa-clock-o me-2" />
           {{ $t('hunts.title') }}
         </h4>
-        <BRow
-          gutter-x="1"
-          align-h="start">
-          <BCol>
+        <div class="row g-1 justify-content-start">
+          <div class="col">
             <!-- search packet search jobs -->
-            <BInputGroup size="sm">
-              <BInputGroupText>
+            <div class="input-group input-group-sm">
+              <span class="input-group-text">
                 <span class="fa fa-search" />
-              </BInputGroupText>
+              </span>
               <input
                 type="text"
                 v-model="query.searchTerm"
@@ -667,16 +680,16 @@ SPDX-License-Identifier: Apache-2.0
                 class="btn btn-outline-secondary btn-clear-input">
                 <span class="fa fa-close" />
               </button>
-            </BInputGroup> <!-- /search packet search jobs -->
-          </BCol>
-          <BCol cols="auto">
+            </div> <!-- /search packet search jobs -->
+          </div>
+          <div class="col-auto">
             <!-- job history paging -->
             <arkime-paging
               :records-total="historyResults.recordsTotal"
               :records-filtered="historyResults.recordsFiltered"
               @change-paging="changePaging" /> <!-- /job history paging -->
-          </BCol>
-        </BRow>
+          </div>
+        </div>
 
         <table class="table table-sm table-striped">
           <thead>
@@ -827,7 +840,7 @@ SPDX-License-Identifier: Apache-2.0
             id="dismissError"
             class="no-decoration cursor-pointer pull-right">
             <span class="fa fa-close" />
-            <BTooltip target="dismissError">$t('common.dismiss')</BTooltip>
+            <v-tooltip activator="#dismissError">{{ $t('common.dismiss') }}</v-tooltip>
           </a>
           <span :class="floatingError ? 'text-danger' : 'text-success'">
             <span
