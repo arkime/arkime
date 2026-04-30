@@ -269,7 +269,6 @@ SPDX-License-Identifier: Apache-2.0
                 :model-value="settings.manualQuery"
                 @update:model-value="updateQueryOnPageLoad"
                 :options="[
-                  { text: $t('settings.general.lastUsed'), value: 'last' },
                   { text: $t('settings.general.query-false'), value: 'false' },
                   { text: $t('settings.general.query-true'), value: 'true' }
                 ]" />
@@ -2182,7 +2181,7 @@ export default {
         if (!response.showTimestamps) {
           this.settings.showTimestamps = 'last';
         }
-        if (!response.manualQuery) {
+        if (!response.manualQuery || response.manualQuery === 'last') {
           this.settings.manualQuery = false;
         }
 
