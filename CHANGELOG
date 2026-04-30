@@ -76,6 +76,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
           and shortcut ($) autocomplete in search expression
   - #3928 Cap /api/sessions/summary length parameter at 1000
   - #3931 Remove last manualQuery option which wasn't implemented
+  - #3934 Fix not handling sessions correctly with no PCAP
 
 6.2.0 2026/04/20
 ## BREAKING

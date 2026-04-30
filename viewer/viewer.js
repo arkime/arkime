@@ -423,7 +423,7 @@ function createSessionDetail () {
     });
   }, function () {
     internals.sessionDetailNew = 'include views/mixins.pug\n' +
-                                 'div.session-detail(sessionid=session.id,hidePackets=hidePackets)\n' +
+                                 'div.session-detail(sessionid=session.id,hidepackets=hidePackets)\n' +
                                  '  include views/sessionOptions\n' +
                                  '  b-card-group(columns)\n' +
                                  '    b-card\n' +
