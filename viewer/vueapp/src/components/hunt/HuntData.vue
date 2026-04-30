@@ -33,34 +33,39 @@ SPDX-License-Identifier: Apache-2.0
             :aria-label="$t('hunts.editDescriptionTip')"
             class="btn btn-xs btn-theme-secondary ms-1">
             <span class="fa fa-pencil" />
-            <BTooltip :target="'edit-description-' + localJob.id">
+            <v-tooltip :activator="`[id='edit-description-${localJob.id}']`">
               {{ $t('hunts.editDescriptionTip') }}
-            </BTooltip>
+            </v-tooltip>
           </button>
         </template>
         <div
           v-else-if="canEdit"
           class="flex-grow-1">
-          <b-input-group
-            size="sm"
-            :prepend="$t('hunts.jobDescription')">
-            <b-form-input
+          <div class="input-group input-group-sm">
+            <span class="input-group-text">
+              {{ $t('hunts.jobDescription') }}
+            </span>
+            <input
+              type="text"
+              class="form-control"
               v-model="newDescription"
               @keyup.enter="updateJobDescription"
-              :placeholder="$t('hunts.jobDescriptionPlaceholder')" />
-            <b-button
-              variant="warning"
+              :placeholder="$t('hunts.jobDescriptionPlaceholder')">
+            <button
+              type="button"
+              class="btn btn-warning"
               @click="editDescription = false"
               :title="$t('hunts.cancelDescriptionTip')">
               {{ $t('common.cancel') }}
-            </b-button>
-            <b-button
-              variant="success"
+            </button>
+            <button
+              type="button"
+              class="btn btn-success"
               @click="updateJobDescription"
               :title="$t('hunts.saveDescriptionTip')">
               {{ $t('common.save') }}
-            </b-button>
-          </b-input-group>
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -196,9 +201,9 @@ SPDX-License-Identifier: Apache-2.0
             :aria-label="$t('hunts.addUserTip')"
             @click="toggleAddUsers">
             <span class="fa fa-plus-circle" />
-            <BTooltip :target="'add-users-' + localJob.id">
+            <v-tooltip :activator="`[id='add-users-${localJob.id}']`">
               {{ $t('hunts.addUserTip') }}
-            </BTooltip>
+            </v-tooltip>
           </button>
           <template v-if="showAddUsers">
             <div class="input-group input-group-sm mb-3 mt-2">
@@ -206,9 +211,9 @@ SPDX-License-Identifier: Apache-2.0
                 :id="'users-' + localJob.id"
                 class="input-group-text cursor-help">
                 Users
-                <BTooltip :target="'users-' + localJob.id">
+                <v-tooltip :activator="`[id='users-${localJob.id}']`">
                   {{ $t('hunts.addedUserTip') }}
-                </BTooltip>
+                </v-tooltip>
               </div>
               <input
                 type="text"

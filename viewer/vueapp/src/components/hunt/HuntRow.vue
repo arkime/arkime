@@ -28,9 +28,9 @@ SPDX-License-Identifier: Apache-2.0
         class="badge bg-secondary cursor-help percent-done-badge"
         :id="`jobmatches${job.id}`">
         {{ round(((job.searchedSessions / job.totalSessions) * 100), 1) }}%
-        <BTooltip
+        <v-tooltip
           v-if="job.failedSessionIds && job.failedSessionIds.length"
-          :target="`jobmatches${job.id}`">
+          :activator="`[id='jobmatches${job.id}']`">
           <span
             v-html="$t('hunts.row-foundHtml', {
               matched: commaString(job.matchedSessions),
@@ -42,10 +42,10 @@ SPDX-License-Identifier: Apache-2.0
                 remaining: commaString(job.totalSessions - job.searchedSessions + job.failedSessionIds.length)
               })" />
           </div>
-        </BTooltip>
-        <BTooltip
+        </v-tooltip>
+        <v-tooltip
           v-else
-          :target="`jobmatches${job.id}`">
+          :activator="`[id='jobmatches${job.id}']`">
           <span
             v-html="$t('hunts.row-foundHtml', {
               matched: commaString(job.matchedSessions),
@@ -57,16 +57,16 @@ SPDX-License-Identifier: Apache-2.0
                 remaining: commaString(job.totalSessions - job.searchedSessions)
               })" />
           </div>
-        </BTooltip>
+        </v-tooltip>
       </span>
       <template v-if="job.errors && job.errors.length">
         <span
           :id="`joberrors${job.id}`"
           class="badge bg-danger cursor-help">
           <span class="fa fa-exclamation-triangle" />
-          <BTooltip :target="`joberrors${job.id}`">
+          <v-tooltip :activator="`[id='joberrors${job.id}']`">
             {{ $t('hunts.hadErrorsTip') }}
-          </BTooltip>
+          </v-tooltip>
         </span>
       </template>
     </td>
@@ -75,9 +75,9 @@ SPDX-License-Identifier: Apache-2.0
       <template v-if="job.removed">
         <span :id="`removed${job.id}`">
           <span class="fa fa-info-circle fa-fw cursor-help text-warning" />
-          <BTooltip :target="`removed${job.id}`">
+          <v-tooltip :activator="`[id='removed${job.id}']`">
             {{ $t('hunts.huntRemovedTip') }}
-          </BTooltip>
+          </v-tooltip>
         </span>
       </template>
     </td>
@@ -115,9 +115,9 @@ SPDX-License-Identifier: Apache-2.0
           <span
             v-else
             class="fa fa-spinner fa-spin fa-fw" />
-          <BTooltip :target="`removejob${job.id}`">
+          <v-tooltip :activator="`[id='removejob${job.id}']`">
             {{ $t('hunts.removeHuntTip') }}
-          </BTooltip>
+          </v-tooltip>
         </button>
       </template>
       <button
@@ -134,11 +134,11 @@ SPDX-License-Identifier: Apache-2.0
         <span
           v-else
           class="fa fa-spinner fa-spin fa-fw" />
-        <BTooltip
+        <v-tooltip
           v-if="job.matchedSessions && !job.removed && user.removeEnabled"
-          :target="`remove${job.id}`">
+          :activator="`[id='remove${job.id}']`">
           <span v-html="$t('hunts.removeFromSessionsTipHtml')" />
-        </BTooltip>
+        </v-tooltip>
       </button>
       <span v-if="canView">
         <button
@@ -149,11 +149,11 @@ SPDX-License-Identifier: Apache-2.0
           :aria-label="$t('common.open')"
           class="ms-1 pull-right btn btn-sm btn-theme-primary">
           <span class="fa fa-folder-open fa-fw" />
-          <BTooltip
+          <v-tooltip
             v-if="job.matchedSessions && !job.removed"
-            :target="`openresults${job.id}`">
+            :activator="`[id='openresults${job.id}']`">
             <span v-html="$t('hunts.openSessionsTipHtml')" />
-          </BTooltip>
+          </v-tooltip>
         </button>
       </span>
       <template v-if="canRerun && !job.unrunnable && (canView)">
@@ -164,9 +164,9 @@ SPDX-License-Identifier: Apache-2.0
           :aria-label="$t('hunts.rerunTip')"
           class="ms-1 pull-right btn btn-sm btn-theme-secondary">
           <span class="fa fa-refresh fa-fw" />
-          <BTooltip :target="`rerun${job.id}`">
+          <v-tooltip :activator="`[id='rerun${job.id}']`">
             {{ $t('hunts.rerunTip') }}
-          </BTooltip>
+          </v-tooltip>
         </button>
       </template>
       <template v-if="canRepeat && !job.unrunnable && canEdit">
@@ -177,9 +177,9 @@ SPDX-License-Identifier: Apache-2.0
           :aria-label="$t('hunts.repeatTip')"
           class="ms-1 pull-right btn btn-sm btn-theme-tertiary">
           <span class="fa fa-repeat fa-fw" />
-          <BTooltip :target="`repeat${job.id}`">
+          <v-tooltip :activator="`[id='repeat${job.id}']`">
             {{ $t('hunts.repeatTip') }}
-          </BTooltip>
+          </v-tooltip>
         </button>
       </template>
       <template v-if="canCancel && canEdit">
@@ -196,9 +196,9 @@ SPDX-License-Identifier: Apache-2.0
           <span
             v-else
             class="fa fa-spinner fa-spin fa-fw" />
-          <BTooltip :target="`cancel${job.id}`">
+          <v-tooltip :activator="`[id='cancel${job.id}']`">
             {{ $t('hunts.cancelTip') }}
-          </BTooltip>
+          </v-tooltip>
         </button>
       </template>
       <template v-if="(job.status === 'running' || job.status === 'queued') && canEdit">
@@ -215,9 +215,9 @@ SPDX-License-Identifier: Apache-2.0
           <span
             v-else
             class="fa fa-spinner fa-spin fa-fw" />
-          <BTooltip :target="`pause${job.id}`">
+          <v-tooltip :activator="`[id='pause${job.id}']`">
             {{ $t('hunts.pauseTip') }}
-          </BTooltip>
+          </v-tooltip>
         </button>
       </template>
       <template v-else-if="job.status === 'paused' && canEdit">
@@ -234,9 +234,9 @@ SPDX-License-Identifier: Apache-2.0
           <span
             v-else
             class="fa fa-spinner fa-spin fa-fw" />
-          <BTooltip :target="`resume${job.id}`">
+          <v-tooltip :activator="`[id='resume${job.id}']`">
             {{ $t('hunts.resumeTip') }}
-          </BTooltip>
+          </v-tooltip>
         </button>
       </template>
     </td>
