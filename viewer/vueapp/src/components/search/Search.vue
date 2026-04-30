@@ -364,16 +364,19 @@ SPDX-License-Identifier: Apache-2.0
               @update:model-value="newVal => actionFormItemRadio = newVal"
               mandatory>
               <v-btn
+                size="small"
                 value="open"
                 id="openSessions">
                 {{ $t('search.open') }}
               </v-btn>
               <v-btn
+                size="small"
                 value="visible"
                 id="visibleSessions">
                 {{ $t('search.visible') }}
               </v-btn>
               <v-btn
+                size="small"
                 value="matching"
                 id="matchingSessions">
                 {{ $t('search.matching') }}

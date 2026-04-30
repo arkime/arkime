@@ -4,29 +4,21 @@ SPDX-License-Identifier: Apache-2.0
 -->
 <template>
   <div>
-    <BRow
-      gutter-x="1"
-      class="text-start flex-nowrap d-flex justify-content-between"
-      align-h="start"
+    <div
+      class="d-flex flex-nowrap gap-1 align-items-start text-start"
       @keyup.stop.prevent.enter="modifyView">
-      <BCol cols="auto">
-        <div class="input-group input-group-sm">
-          <span class="input-group-text">
-            {{ $t('sessions.views.viewName') }}
-          </span>
-          <input
-            type="text"
-            class="form-control"
-            v-model="viewName"
-            :placeholder="$t('sessions.views.viewNamePlaceholder')"
-            @keydown.enter.stop>
-        </div>
-      </BCol>
+      <v-text-field
+        density="compact"
+        variant="outlined"
+        hide-details
+        v-model="viewName"
+        :label="$t('sessions.views.viewName')"
+        :placeholder="$t('sessions.views.viewNamePlaceholder')"
+        @keydown.enter.stop
+        class="modify-view-name" />
 
-      <BCol
-        cols="auto"
-        class="flex-fill">
-        <div class="input-group input-group-sm">
+      <div class="flex-fill d-flex align-items-center gap-1">
+        <div class="flex-fill input-group input-group-sm">
           <span class="input-group-text">
             {{ $t('sessions.views.expression') }}
           </span>
@@ -44,55 +36,50 @@ SPDX-License-Identifier: Apache-2.0
             <span
               class="fa"
               :class="showBigExpression ? 'fa-compress' : 'fa-expand'" />
-            <BTooltip target="expandViewExpressionBtn">
+            <v-tooltip activator="parent">
               {{ $t('sessions.views.expandExpressionTip') }}
-            </BTooltip>
+            </v-tooltip>
           </button>
         </div>
-      </BCol>
+      </div>
 
-      <BCol cols="auto">
-        <div class="input-group input-group-sm">
-          <span class="input-group-text">
-            {{ $t('sessions.views.users') }}
-          </span>
-          <input
-            type="text"
-            v-model="viewUsers"
-            class="form-control"
-            @keydown.enter.stop
-            :placeholder="$t('sessions.views.usersPlaceholder')">
-        </div>
-      </BCol>
+      <v-text-field
+        density="compact"
+        variant="outlined"
+        hide-details
+        v-model="viewUsers"
+        :label="$t('sessions.views.users')"
+        :placeholder="$t('sessions.views.usersPlaceholder')"
+        @keydown.enter.stop
+        class="modify-view-users" />
 
-      <BCol cols="auto">
-        <RoleDropdown
-          :roles="userRoles"
-          :selected-roles="viewRoles"
-          :display-text="$t('common.shareWithRoles')"
-          @selected-roles-updated="updateViewRoles" />
-      </BCol>
+      <RoleDropdown
+        :roles="userRoles"
+        :selected-roles="viewRoles"
+        :display-text="$t('common.shareWithRoles')"
+        @selected-roles-updated="updateViewRoles" />
 
-      <BCol
+      <span
         v-if="sessionsPage"
-        cols="auto">
-        <BFormCheckbox
-          id="useColConfig"
-          v-model="useColConfig">
-          {{ $t('sessions.views.saveColumns') }}
-          <BTooltip target="useColConfig">
-            {{ $t('sessions.views.saveColumnsTip') }}
-          </BTooltip>
-        </BFormCheckbox>
-      </BCol>
+        id="useColConfigWrap"
+        class="d-inline-block">
+        <v-checkbox
+          v-model="useColConfig"
+          density="compact"
+          hide-details
+          inline
+          :label="$t('sessions.views.saveColumns')" />
+        <v-tooltip activator="#useColConfigWrap">
+          {{ $t('sessions.views.saveColumnsTip') }}
+        </v-tooltip>
+      </span>
 
-      <BCol cols="auto">
+      <div>
         <button
           type="button"
           @click="modifyView"
           :class="{'disabled':loading}"
-          class="btn btn-sm btn-theme-tertiary me-1"
-          :title="`${mode === 'create' ? $t('common.create') : $t('common.save')}`">
+          class="btn btn-sm btn-theme-tertiary me-1">
           <span v-if="!loading">
             <span v-if="mode === 'create'">
               <span class="fa fa-plus-circle" />&nbsp;
@@ -120,53 +107,59 @@ SPDX-License-Identifier: Apache-2.0
           @click="$emit('done', null, false, false)"
           class="btn btn-sm btn-warning">
           <span class="fa fa-ban" />
-          <BTooltip target="cancelModifyView">
+          <v-tooltip activator="parent">
             {{ $t('common.cancel') }}
-          </BTooltip>
+          </v-tooltip>
         </button>
-      </BCol>
-    </BRow>
+      </div>
+    </div>
 
     <!-- big expression modal -->
-    <BModal
-      size="xl"
-      no-close-on-backdrop
-      :model-value="showBigExpression"
-      @hidden="showBigExpression = false"
-      @shown="focusBigExpressionTextarea">
-      <template #header>
-        <span class="fa fa-pencil fa-2x me-2" />
-        <span>{{ $t('sessions.views.expression') }}</span>
-      </template>
-      <ExpressionAutocompleteInput
-        textarea
-        rows="5"
-        v-model="viewExpression"
-        :placeholder="$t('sessions.views.expressionPlaceholder')"
-        @apply="showBigExpression = false" />
-      <template #footer>
-        <div class="d-flex w-100 justify-content-between">
-          <div>
-            <BButton
-              variant="secondary"
+    <v-dialog
+      v-model="showBigExpression"
+      max-width="900"
+      persistent
+      @after-enter="focusBigExpressionTextarea">
+      <v-card>
+        <v-card-title>
+          <span class="fa fa-pencil fa-2x me-2" />
+          <span>{{ $t('sessions.views.expression') }}</span>
+        </v-card-title>
+        <v-card-text>
+          <ExpressionAutocompleteInput
+            textarea
+            rows="5"
+            v-model="viewExpression"
+            :placeholder="$t('sessions.views.expressionPlaceholder')"
+            @apply="showBigExpression = false" />
+        </v-card-text>
+        <v-card-actions>
+          <div class="d-flex w-100 justify-content-between">
+            <div>
+              <v-btn
+                variant="flat"
+                color="secondary"
+                @click="showBigExpression = false">
+                {{ $t('common.close') }}
+              </v-btn>
+              <v-btn
+                variant="flat"
+                color="warning"
+                class="ms-2"
+                @click="viewExpression = ''">
+                {{ $t('common.clear') }}
+              </v-btn>
+            </div>
+            <button
+              type="button"
+              class="btn btn-theme-tertiary"
               @click="showBigExpression = false">
-              {{ $t('common.close') }}
-            </BButton>
-            <BButton
-              variant="warning"
-              class="ms-2"
-              @click="viewExpression = ''">
-              {{ $t('common.clear') }}
-            </BButton>
+              {{ $t('common.apply') }}
+            </button>
           </div>
-          <BButton
-            variant="theme-tertiary"
-            @click="showBigExpression = false">
-            {{ $t('common.apply') }}
-          </BButton>
-        </div>
-      </template>
-    </BModal> <!-- /big expression modal -->
+        </v-card-actions>
+      </v-card>
+    </v-dialog> <!-- /big expression modal -->
 
     <div
       v-if="error"
@@ -344,3 +337,14 @@ const modifyView = () => {
   }
 };
 </script>
+
+<style scoped>
+.modify-view-name {
+  width: 220px;
+  flex: 0 0 auto;
+}
+.modify-view-users {
+  width: 200px;
+  flex: 0 0 auto;
+}
+</style>
