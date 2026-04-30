@@ -23,7 +23,7 @@ SPDX-License-Identifier: Apache-2.0
             <button
               v-bind="activatorProps"
               type="button"
-              class="btn btn-primary dropdown-toggle dropdown-toggle-split">
+              class="btn btn-primary">
               <span class="fa fa-caret-down" />
             </button>
           </template>
@@ -102,60 +102,92 @@ SPDX-License-Identifier: Apache-2.0
         <v-list density="compact">
           <v-list-item
             @click="exportPCAP"
-            v-has-permission="'!disablePcapDownload'"
-            :title="$t('sessions.exports.exportPCAP')">
+            v-has-permission="'!disablePcapDownload'">
             <span class="fa fa-fw fa-file-o" />&nbsp;
             {{ $t('sessions.exports.exportPCAP') }}
+            <v-tooltip
+              activator="parent"
+              location="left">
+              {{ $t('sessions.exports.exportPCAP') }}
+            </v-tooltip>
           </v-list-item>
           <v-list-item
-            @click="exportCSV"
-            :title="$t('sessions.exports.exportCSV')">
+            @click="exportCSV">
             <span class="fa fa-fw fa-file-excel-o" />&nbsp;
             {{ $t('sessions.exports.exportCSV') }}
+            <v-tooltip
+              activator="parent"
+              location="left">
+              {{ $t('sessions.exports.exportCSV') }}
+            </v-tooltip>
           </v-list-item>
           <v-list-item
-            @click="addTags"
-            :title="$t('sessions.tag.addTags')">
+            @click="addTags">
             <span class="fa fa-fw fa-tags" />&nbsp;
             {{ $t('sessions.tag.addTags') }}
+            <v-tooltip
+              activator="parent"
+              location="left">
+              {{ $t('sessions.tag.addTags') }}
+            </v-tooltip>
           </v-list-item>
           <v-list-item
             @click="removeTags"
-            v-has-permission="'removeEnabled'"
-            :title="$t('sessions.tag.removeTags')">
+            v-has-permission="'removeEnabled'">
             <span class="fa fa-fw fa-eraser" />&nbsp;
             {{ $t('sessions.tag.removeTags') }}
+            <v-tooltip
+              activator="parent"
+              location="left">
+              {{ $t('sessions.tag.removeTags') }}
+            </v-tooltip>
           </v-list-item>
           <v-list-item
             @click="removeData"
-            v-has-permission="'removeEnabled'"
-            :title="$t('search.removeData')">
+            v-has-permission="'removeEnabled'">
             <span class="fa fa-fw fa-trash-o" />&nbsp;
             {{ $t('search.removeData') }}
+            <v-tooltip
+              activator="parent"
+              location="left">
+              {{ $t('search.removeData') }}
+            </v-tooltip>
           </v-list-item>
           <v-list-item
             v-for="(clusterInfo, key) in arkimeClusters"
             :key="key"
-            @click="sendSession(key)"
-            :title="$t('search.sendSession', { name: clusterInfo.name })">
+            @click="sendSession(key)">
             <span class="fa fa-fw fa-paper-plane-o" />&nbsp;
             {{ $t('search.sendSession', { name: clusterInfo.name }) }}
+            <v-tooltip
+              activator="parent"
+              location="left">
+              {{ $t('search.sendSession', { name: clusterInfo.name }) }}
+            </v-tooltip>
           </v-list-item>
           <v-list-item
-            @click="viewIntersection"
-            :title="$t('sessions.intersection.title')">
+            @click="viewIntersection">
             <span class="fa fa-fw fa-venn">
               <span class="fa fa-circle-o" />
               <span class="fa fa-circle-o" />
             </span>&nbsp;
             {{ $t('sessions.intersection.title') }}
+            <v-tooltip
+              activator="parent"
+              location="left">
+              {{ $t('sessions.intersection.title') }}
+            </v-tooltip>
           </v-list-item>
           <v-list-item
             v-if="!multiviewer"
-            @click="periodicQuery"
-            :title="$t('search.createPeriodicQuery')">
+            @click="periodicQuery">
             <span class="fa fa-fw fa-search" />&nbsp;
             {{ $t('search.createPeriodicQuery') }}
+            <v-tooltip
+              activator="parent"
+              location="left">
+              {{ $t('search.createPeriodicQuery') }}
+            </v-tooltip>
           </v-list-item>
         </v-list>
       </v-menu> <!-- /actions dropdown menu -->
@@ -185,10 +217,14 @@ SPDX-License-Identifier: Apache-2.0
         </template>
         <v-list density="compact">
           <v-list-item
-            @click="modView()"
-            title="Create a new view">
+            @click="modView()">
             <span class="fa fa-plus-circle" />&nbsp;
             {{ $t('search.newView') }}
+            <v-tooltip
+              activator="parent"
+              location="left">
+              Create a new view
+            </v-tooltip>
           </v-list-item>
           <v-divider />
           <v-list-item
@@ -255,7 +291,9 @@ SPDX-License-Identifier: Apache-2.0
             </button>
             <!-- /view action buttons -->
             {{ value.name }}&nbsp;
-            <v-tooltip :activator="`[id='view${value.id}']`">
+            <v-tooltip
+              :activator="`[id='view${value.id}']`"
+              location="left">
               {{ value.expression }}
             </v-tooltip>
           </v-list-item>
