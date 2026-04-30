@@ -1,37 +1,28 @@
 <template>
-  <BRow
-    gutter-x="1"
-    class="text-start flex-nowrap d-flex justify-content-between"
-    align-h="start"
+  <div
+    class="d-flex flex-nowrap gap-1 align-items-start text-start"
     @keyup.stop.prevent.enter="exportPcapAction">
-    <BCol cols="auto">
-      <SegmentSelect v-model:segments="segments" />
-    </BCol>
+    <SegmentSelect v-model:segments="segments" />
 
-    <BCol
-      cols="auto"
-      class="flex-fill">
-      <div class="input-group input-group-sm">
-        <span class="input-group-text">
-          {{ $t('sessions.exports.filename') }}
-        </span>
-        <b-form-input
-          autofocus
-          type="text"
-          :model-value="filename"
-          class="form-control"
-          :placeholder="$t('sessions.exports.filenamePlaceholder')"
-          @update:model-value="filename = $event" />
-      </div>
+    <div class="flex-fill">
+      <v-text-field
+        autofocus
+        density="compact"
+        variant="outlined"
+        hide-details
+        :model-value="filename"
+        :label="$t('sessions.exports.filename')"
+        :placeholder="$t('sessions.exports.filenamePlaceholder')"
+        @update:model-value="filename = $event" />
       <p
         v-if="error"
         class="small text-danger mb-0">
         <span class="fa fa-exclamation-triangle" />&nbsp;
         {{ error }}
       </p>
-    </BCol>
+    </div>
 
-    <BCol cols="auto">
+    <div>
       <button
         class="btn btn-sm btn-theme-tertiary me-1"
         @click="exportPcapAction"
@@ -46,12 +37,12 @@
         @click="$emit('done', null, false, false)"
         type="button">
         <span class="fa fa-ban" />
-        <BTooltip target="cancelExportPcap">
+        <v-tooltip activator="parent">
           {{ $t('common.cancel') }}
-        </BTooltip>
+        </v-tooltip>
       </button>
-    </BCol>
-  </BRow>
+    </div>
+  </div>
 </template>
 
 <script setup>
