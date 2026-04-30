@@ -6,85 +6,116 @@ SPDX-License-Identifier: Apache-2.0
   <div
     ref="roleDropdown"
     class="d-inline-block">
-    <BTooltip
-      v-if="tooltip"
-      :target="$refs.roleDropdown"
-      placement="top">
-      {{ tooltip }}
-    </BTooltip>
-    <b-dropdown
-      size="sm"
-      auto-close="outside"
-      teleport-disabled
-      @shown="setFocus"
-      :disabled="disabled"
-      class="roles-dropdown no-wrap"
-      :text="displayText || getRolesStr(localSelectedRoles)">
-      <!-- roles search -->
-      <b-dropdown-header class="w-100 sticky-top">
-        <b-input-group size="sm">
-          <b-form-input
-            v-focus="focus"
-            :model-value="searchTerm"
-            @update:model-value="searchRolesLocal"
-            :placeholder="$t('users.rolesSearchPlaceholder')" />
-          <template #append>
-            <b-button
+    <v-menu
+      :close-on-content-click="false"
+      location="bottom"
+      @update:model-value="onMenuToggle">
+      <template #activator="{ props: activatorProps }">
+        <button
+          v-bind="activatorProps"
+          type="button"
+          class="btn btn-sm btn-outline-secondary roles-dropdown no-wrap"
+          :id="activatorId"
+          :disabled="disabled">
+          {{ displayText || getRolesStr(localSelectedRoles) }}
+          <span class="fa fa-caret-down ms-1" />
+          <v-tooltip
+            v-if="tooltip"
+            :activator="`#${activatorId}`"
+            location="top">
+            {{ tooltip }}
+          </v-tooltip>
+        </button>
+      </template>
+
+      <v-list
+        density="compact"
+        class="roles-dropdown-menu">
+        <!-- roles search -->
+        <div class="px-2 py-1">
+          <div class="input-group input-group-sm">
+            <input
+              ref="searchInput"
+              type="text"
+              class="form-control"
+              :value="searchTerm"
+              @input="searchRolesLocal($event.target.value)"
+              :placeholder="$t('users.rolesSearchPlaceholder')">
+            <button
+              type="button"
+              class="btn btn-outline-secondary"
               :disabled="!searchTerm"
-              @click="clearSearchTerm"
-              variant="outline-secondary">
+              @click="clearSearchTerm">
               <span class="fa fa-close" />
-            </b-button>
-          </template>
-        </b-input-group>
-        <b-dropdown-divider />
-      </b-dropdown-header> <!-- /roles search -->
-      <b-dropdown-form v-if="filteredRoles && filteredRoles.length">
+            </button>
+          </div>
+        </div> <!-- /roles search -->
+        <v-divider />
+
         <!-- role checkboxes -->
-        <b-form-checkbox-group
-          stacked
-          :model-value="localSelectedRoles"
-          @update:model-value="updateRoles">
-          <b-form-checkbox
+        <div
+          v-if="filteredRoles && filteredRoles.length"
+          class="px-2 py-1 roles-dropdown-options">
+          <div
+            v-for="role in filteredRoles"
             :key="role.value"
-            :value="role.value"
-            v-for="role in filteredRoles">
-            {{ role.text }}
-            <span
-              v-if="role.userDefined"
-              :title="$t('users.userDefinedRoleMsg')"
-              class="fa fa-user cursor-help ms-2" />
-          </b-form-checkbox>
-          <template v-for="role in localSelectedRoles">
-            <!-- previously deleted roles -->
-            <b-form-checkbox
-              :key="role"
-              :value="role"
-              v-if="!roles.find(r => r.value === role)">
-              {{ role }}
+            class="form-check">
+            <input
+              :id="`roledd-${activatorId}-${role.value}`"
+              type="checkbox"
+              class="form-check-input"
+              :checked="localSelectedRoles.includes(role.value)"
+              @change="toggleRole(role.value, $event.target.checked)">
+            <label
+              :for="`roledd-${activatorId}-${role.value}`"
+              class="form-check-label">
+              {{ role.text }}
               <span
-                class="fa fa-times-circle cursor-help ms-2"
-                :title="$t('users.missingRoleMsg')" />
-            </b-form-checkbox>
+                v-if="role.userDefined"
+                :title="$t('users.userDefinedRoleMsg')"
+                class="fa fa-user cursor-help ms-2" />
+            </label>
+          </div>
+          <!-- previously deleted roles still selected on the user -->
+          <template
+            v-for="role in localSelectedRoles"
+            :key="role">
+            <div
+              v-if="!roles.find(r => r.value === role)"
+              class="form-check">
+              <input
+                :id="`roledd-${activatorId}-${role}`"
+                type="checkbox"
+                class="form-check-input"
+                :checked="true"
+                @change="toggleRole(role, $event.target.checked)">
+              <label
+                :for="`roledd-${activatorId}-${role}`"
+                class="form-check-label">
+                {{ role }}
+                <span
+                  class="fa fa-times-circle cursor-help ms-2"
+                  :title="$t('users.missingRoleMsg')" />
+              </label>
+            </div>
           </template>
-        </b-form-checkbox-group> <!-- /role checkboxes -->
-      </b-dropdown-form>
-      <b-dropdown-item
-        disabled
-        v-if="filteredRoles && !filteredRoles.length && searchTerm">
-        {{ $t('users.noRolesMatchSearch') }}
-      </b-dropdown-item>
-    </b-dropdown>
+        </div> <!-- /role checkboxes -->
+
+        <v-list-item
+          v-else-if="filteredRoles && !filteredRoles.length && searchTerm"
+          disabled>
+          {{ $t('users.noRolesMatchSearch') }}
+        </v-list-item>
+      </v-list>
+    </v-menu>
   </div>
 </template>
 
 <script>
-import Focus from './Focus.vue';
 import { searchRoles } from './vueFilters.js';
 
 export default {
   name: 'RoleDropdown',
-  directives: { Focus },
   emits: ['selected-roles-updated'],
   props: {
     id: {
@@ -109,10 +140,10 @@ export default {
   },
   data () {
     return {
-      focus: false,
       searchTerm: '',
       filteredRoles: this.roles,
-      localSelectedRoles: this.selectedRoles || []
+      localSelectedRoles: this.selectedRoles || [],
+      activatorId: `roledd-${this.id || Math.random().toString(36).slice(2, 10)}`
     };
   },
   watch: {
@@ -124,9 +155,23 @@ export default {
     }
   },
   methods: {
-    updateRoles (newVal) {
-      this.localSelectedRoles = newVal || [];
-      this.$emit('selected-roles-updated', newVal, this.id);
+    onMenuToggle (opened) {
+      if (opened) {
+        // focus the search input once the menu mounts
+        this.$nextTick(() => {
+          this.$refs.searchInput?.focus();
+        });
+      }
+    },
+    toggleRole (value, checked) {
+      let newSelection;
+      if (checked) {
+        newSelection = [...this.localSelectedRoles, value];
+      } else {
+        newSelection = this.localSelectedRoles.filter(r => r !== value);
+      }
+      this.localSelectedRoles = newSelection;
+      this.$emit('selected-roles-updated', newSelection, this.id);
     },
     getRolesStr (userRoles) {
       let userDefinedRoles = [];
@@ -154,46 +199,33 @@ export default {
       return allRoles.join(', ');
     },
     searchRolesLocal (newVal) {
-      this.searchTerm = newVal;
+      this.searchTerm = newVal || '';
       this.filteredRoles = searchRoles(this.roles, this.searchTerm);
     },
     clearSearchTerm () {
       this.searchTerm = '';
-      this.searchRolesLocal();
-      this.setFocus();
-    },
-    setFocus () {
-      this.focus = true;
-      setTimeout(() => {
-        this.focus = false;
-      }, 100);
+      this.searchRolesLocal('');
+      this.$refs.searchInput?.focus();
     }
   }
 };
 </script>
 
 <style>
-.roles-dropdown > ul.dropdown-menu li > form > div {
-  color: var(--color-foreground, black) !important;
+/* The menu is teleported to body via v-menu, so styles must be unscoped to
+   reach the rendered list. */
+.roles-dropdown-menu {
+  min-width: 240px;
+  max-height: 360px;
+  overflow-y: auto;
+  font-size: 0.85rem;
 }
-/* hides elements scrolling behind sticky search bar */
-.roles-dropdown .sticky-top {
-  top: -8px;
+.roles-dropdown-menu .form-check {
+  padding-left: 1.6rem;
+  margin-bottom: 2px;
 }
-.roles-dropdown .dropdown-header {
-  padding: 0rem 0.5rem;
-  background-color: var(--color-background);
-}
-.roles-dropdown .dropdown-header > li {
-  padding-top: 10px;
-  background-color: var(--color-background);
-}
-.roles-dropdown .dropdown-divider {
-  margin-top: 0px;
-}
-
-.roles-dropdown .dropdown-item,
-.roles-dropdown .custom-control {
-  padding-left: 0.5rem;
+.roles-dropdown-menu .form-check-label {
+  font-size: 0.85rem;
+  cursor: pointer;
 }
 </style>
