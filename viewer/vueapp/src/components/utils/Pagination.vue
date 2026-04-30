@@ -21,7 +21,9 @@
       :items="lengthOptions"
       :model-value="pageLength"
       @update:model-value="lengthUpdated">
-      <template #selection="{ item }"><span class="page-select-display">{{ item.raw.value }}</span></template>
+      <template #selection="{ item }">
+        <span class="page-select-display">{{ item.raw.value }}</span>
+      </template>
     </v-select> <!-- /page size -->
 
     <!-- paging -->

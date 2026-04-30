@@ -14,7 +14,9 @@ SPDX-License-Identifier: Apache-2.0
       <v-card-text>
         <!-- Name input -->
         <div class="input-group input-group-sm mb-2">
-          <span id="configName" class="input-group-text cursor-help">
+          <span
+            id="configName"
+            class="input-group-text cursor-help">
             {{ $t('sessions.summary.config.name') }}<sup>*</sup>
             <v-tooltip activator="#configName">
               {{ $t('sessions.summary.config.nameTip') }}
@@ -29,7 +31,9 @@ SPDX-License-Identifier: Apache-2.0
 
         <!-- Description input -->
         <div class="input-group input-group-sm mb-2">
-          <span id="configDescription" class="input-group-text cursor-help">
+          <span
+            id="configDescription"
+            class="input-group-text cursor-help">
             {{ $t('sessions.summary.config.description') }}
             <v-tooltip activator="#configDescription">
               {{ $t('sessions.summary.config.descriptionTip') }}
@@ -60,7 +64,9 @@ SPDX-License-Identifier: Apache-2.0
 
         <div class="d-flex gap-2 mb-2">
           <div class="input-group input-group-sm flex-grow-1">
-            <span id="configViewUsers" class="input-group-text cursor-help">
+            <span
+              id="configViewUsers"
+              class="input-group-text cursor-help">
               {{ $t('sessions.summary.config.viewUsers') }}
               <v-tooltip activator="#configViewUsers">
                 {{ $t('sessions.summary.config.viewUsersTip') }}
@@ -74,7 +80,9 @@ SPDX-License-Identifier: Apache-2.0
           </div>
 
           <div class="input-group input-group-sm flex-grow-1">
-            <span id="configEditUsers" class="input-group-text cursor-help">
+            <span
+              id="configEditUsers"
+              class="input-group-text cursor-help">
               {{ $t('sessions.summary.config.editUsers') }}
               <v-tooltip activator="#configEditUsers">
                 {{ $t('sessions.summary.config.editUsersTip') }}

@@ -165,9 +165,15 @@ SPDX-License-Identifier: Apache-2.0
                   :model-value="settings.timezone"
                   @update:model-value="updateTimezone"
                   mandatory>
-                  <v-btn value="local">{{ $t('settings.general.tz-local') }}</v-btn>
-                  <v-btn value="localtz">{{ $t('settings.general.tz-localtz') }}</v-btn>
-                  <v-btn value="gmt">{{ $t('settings.general.tz-gmt') }}</v-btn>
+                  <v-btn value="local">
+                    {{ $t('settings.general.tz-local') }}
+                  </v-btn>
+                  <v-btn value="localtz">
+                    {{ $t('settings.general.tz-localtz') }}
+                  </v-btn>
+                  <v-btn value="gmt">
+                    {{ $t('settings.general.tz-gmt') }}
+                  </v-btn>
                 </v-btn-toggle>
                 <v-btn-toggle
                   density="compact"
@@ -176,9 +182,13 @@ SPDX-License-Identifier: Apache-2.0
                   multiple
                   :model-value="settings.ms ? ['ms'] : []"
                   @update:model-value="(val) => updateMs(val.includes('ms'))">
-                  <v-btn value="ms" id="millisecondsSetting">
+                  <v-btn
+                    value="ms"
+                    id="millisecondsSetting">
                     {{ $t('common.milliseconds') }}
-                    <v-tooltip activator="parent" location="top">
+                    <v-tooltip
+                      activator="parent"
+                      location="top">
                       {{ $t('settings.general.millisecondsSettingTip') }}
                     </v-tooltip>
                   </v-btn>
@@ -205,11 +215,21 @@ SPDX-License-Identifier: Apache-2.0
                 :model-value="settings.detailFormat"
                 @update:model-value="updateSessionDetailFormat"
                 mandatory>
-                <v-btn value="last">{{ $t('settings.general.lastUsed') }}</v-btn>
-                <v-btn value="natural">{{ $t('settings.general.detail-natural') }}</v-btn>
-                <v-btn value="ascii">{{ $t('settings.general.detail-ascii') }}</v-btn>
-                <v-btn value="utf8">{{ $t('settings.general.detail-utf8') }}</v-btn>
-                <v-btn value="hex">{{ $t('settings.general.detail-hex') }}</v-btn>
+                <v-btn value="last">
+                  {{ $t('settings.general.lastUsed') }}
+                </v-btn>
+                <v-btn value="natural">
+                  {{ $t('settings.general.detail-natural') }}
+                </v-btn>
+                <v-btn value="ascii">
+                  {{ $t('settings.general.detail-ascii') }}
+                </v-btn>
+                <v-btn value="utf8">
+                  {{ $t('settings.general.detail-utf8') }}
+                </v-btn>
+                <v-btn value="hex">
+                  {{ $t('settings.general.detail-hex') }}
+                </v-btn>
               </v-btn-toggle>
             </div>
           </div> <!-- /session detail format -->
@@ -229,12 +249,24 @@ SPDX-License-Identifier: Apache-2.0
                 :model-value="settings.numPackets"
                 @update:model-value="updateNumberOfPackets"
                 mandatory>
-                <v-btn value="last">{{ $t('settings.general.lastUsed') }}</v-btn>
-                <v-btn value="50">50</v-btn>
-                <v-btn value="200">200</v-btn>
-                <v-btn value="500">500</v-btn>
-                <v-btn value="1000">1,000</v-btn>
-                <v-btn value="2000">2,000</v-btn>
+                <v-btn value="last">
+                  {{ $t('settings.general.lastUsed') }}
+                </v-btn>
+                <v-btn value="50">
+                  50
+                </v-btn>
+                <v-btn value="200">
+                  200
+                </v-btn>
+                <v-btn value="500">
+                  500
+                </v-btn>
+                <v-btn value="1000">
+                  1,000
+                </v-btn>
+                <v-btn value="2000">
+                  2,000
+                </v-btn>
               </v-btn-toggle>
             </div>
           </div> <!-- /number of packets -->
@@ -254,9 +286,15 @@ SPDX-License-Identifier: Apache-2.0
                 :model-value="settings.showTimestamps"
                 @update:model-value="updateShowPacketTimestamps"
                 mandatory>
-                <v-btn value="last">{{ $t('settings.general.lastUsed') }}</v-btn>
-                <v-btn value="on">{{ $t('settings.general.info-on') }}</v-btn>
-                <v-btn value="off">{{ $t('settings.general.info-off') }}</v-btn>
+                <v-btn value="last">
+                  {{ $t('settings.general.lastUsed') }}
+                </v-btn>
+                <v-btn value="on">
+                  {{ $t('settings.general.info-on') }}
+                </v-btn>
+                <v-btn value="off">
+                  {{ $t('settings.general.info-off') }}
+                </v-btn>
               </v-btn-toggle>
             </div>
           </div> <!-- /show packet timestamp -->
@@ -276,9 +314,15 @@ SPDX-License-Identifier: Apache-2.0
                 :model-value="settings.manualQuery"
                 @update:model-value="updateQueryOnPageLoad"
                 mandatory>
-                <v-btn value="last">{{ $t('settings.general.lastUsed') }}</v-btn>
-                <v-btn value="false">{{ $t('settings.general.query-false') }}</v-btn>
-                <v-btn value="true">{{ $t('settings.general.query-true') }}</v-btn>
+                <v-btn value="last">
+                  {{ $t('settings.general.lastUsed') }}
+                </v-btn>
+                <v-btn value="false">
+                  {{ $t('settings.general.query-false') }}
+                </v-btn>
+                <v-btn value="true">
+                  {{ $t('settings.general.query-true') }}
+                </v-btn>
               </v-btn-toggle>
             </div>
           </div> <!-- /issue query on initial page load -->
@@ -316,8 +360,12 @@ SPDX-License-Identifier: Apache-2.0
                 :model-value="settings.sortDirection"
                 @update:model-value="updateSortDirection"
                 mandatory>
-                <v-btn value="asc">{{ $t('settings.general.sort-asc') }}</v-btn>
-                <v-btn value="desc">{{ $t('settings.general.sort-desc') }}</v-btn>
+                <v-btn value="asc">
+                  {{ $t('settings.general.sort-asc') }}
+                </v-btn>
+                <v-btn value="desc">
+                  {{ $t('settings.general.sort-desc') }}
+                </v-btn>
               </v-btn-toggle>
             </div>
           </div> <!-- /session sort -->

@@ -15,9 +15,13 @@ SPDX-License-Identifier: Apache-2.0
         multiple
         :model-value="seeAll ? ['seeAll'] : []"
         @update:model-value="(val) => updateSeeAll(val.includes('seeAll'))">
-        <v-btn value="seeAll" id="seeAllPeriodicQueries">
+        <v-btn
+          value="seeAll"
+          id="seeAllPeriodicQueries">
           {{ $t(seeAll ? 'settings.cron.allPeriodicQueries' : 'settings.cron.myPeriodicQueries') }}
-          <v-tooltip activator="parent" location="top">
+          <v-tooltip
+            activator="parent"
+            location="top">
             {{ $t(seeAll ? 'settings.cron.allPeriodicQueriesTip' : 'settings.cron.myPeriodicQueriesTip') }}
           </v-tooltip>
         </v-btn>
@@ -69,7 +73,9 @@ SPDX-License-Identifier: Apache-2.0
             <div class="row mb-2">
               <div class="col-md-4">
                 <div class="input-group input-group-sm">
-                  <span id="newCronQueryName" class="input-group-text cursor-help">
+                  <span
+                    id="newCronQueryName"
+                    class="input-group-text cursor-help">
                     {{ $t('settings.cron.queryName') }}<sup>*</sup>
                   </span>
                   <input
@@ -83,7 +89,9 @@ SPDX-License-Identifier: Apache-2.0
               </div>
               <div class="col-md-4">
                 <div class="input-group input-group-sm">
-                  <span id="newCronQueryAction" class="input-group-text cursor-help">
+                  <span
+                    id="newCronQueryAction"
+                    class="input-group-text cursor-help">
                     {{ $t('settings.cron.queryAction') }}<sup>*</sup>
                     <v-tooltip activator="#newCronQueryAction">
                       {{ $t('settings.cron.queryActionTip') }}
@@ -107,7 +115,9 @@ SPDX-License-Identifier: Apache-2.0
               </div>
               <div class="col-md-4">
                 <div class="input-group input-group-sm">
-                  <span id="newCronQueryTags" class="input-group-text cursor-help">
+                  <span
+                    id="newCronQueryTags"
+                    class="input-group-text cursor-help">
                     {{ $t('settings.cron.tags') }}<sup>*</sup>
                     <v-tooltip activator="#newCronQueryTags">
                       {{ $t('settings.cron.tagsTip') }}
@@ -125,7 +135,9 @@ SPDX-License-Identifier: Apache-2.0
             <div class="row mb-2">
               <div class="col">
                 <div class="input-group input-group-sm">
-                  <span id="newCronQueryExpression" class="input-group-text cursor-help">
+                  <span
+                    id="newCronQueryExpression"
+                    class="input-group-text cursor-help">
                     {{ $t('settings.cron.searchExpression') }}<sup>*</sup>
                     <v-tooltip activator="#newCronQueryExpression">
                       {{ $t('settings.cron.searchExpressionTip') }}
@@ -141,7 +153,9 @@ SPDX-License-Identifier: Apache-2.0
             <div class="row mb-2">
               <div class="col-md-6">
                 <div class="input-group input-group-sm">
-                  <span id="newCronQueryProcess" class="input-group-text cursor-help">
+                  <span
+                    id="newCronQueryProcess"
+                    class="input-group-text cursor-help">
                     {{ $t('settings.cron.querySince') }}<sup>*</sup>
                     <v-tooltip activator="#newCronQueryProcess">
                       {{ $t('settings.cron.querySinceTip') }}
@@ -171,7 +185,9 @@ SPDX-License-Identifier: Apache-2.0
             <div class="row mb-2">
               <div class="col">
                 <div class="input-group input-group-sm">
-                  <span id="newCronQueryDescription" class="input-group-text cursor-help">
+                  <span
+                    id="newCronQueryDescription"
+                    class="input-group-text cursor-help">
                     {{ $t('settings.cron.queryDescription') }}
                     <v-tooltip activator="#newCronQueryDescription">
                       {{ $t('settings.cron.queryDescriptionTip') }}
@@ -201,7 +217,9 @@ SPDX-License-Identifier: Apache-2.0
                   @selected-roles-updated="updateNewCronQueryEditRoles" />
               </div>
               <div class="input-group input-group-sm flex-grow-1">
-                <span id="newCronQueryUsers" class="input-group-text cursor-help">
+                <span
+                  id="newCronQueryUsers"
+                  class="input-group-text cursor-help">
                   {{ $t('common.shareWithUsers') }}
                   <v-tooltip activator="#newCronQueryUsers">
                     {{ $t('settings.cron.shareWithUsersTip') }}
@@ -293,7 +311,9 @@ SPDX-License-Identifier: Apache-2.0
         </v-card-title>
         <v-card-text>
           <div class="input-group input-group-sm mb-2">
-            <span :id="`queryDescription${index}`" class="input-group-text cursor-help">
+            <span
+              :id="`queryDescription${index}`"
+              class="input-group-text cursor-help">
               {{ $t('settings.cron.queryDescription') }}
               <v-tooltip :activator="`#queryDescription${index}`">
                 {{ $t('settings.cron.queryDescriptionTip') }}
@@ -306,7 +326,9 @@ SPDX-License-Identifier: Apache-2.0
               :disabled="!canEditCronQuery(query)" />
           </div>
           <div class="input-group input-group-sm mb-2">
-            <span :id="`queryAction${index}`" class="input-group-text cursor-help">
+            <span
+              :id="`queryAction${index}`"
+              class="input-group-text cursor-help">
               {{ $t('settings.cron.queryAction') }}<sup>*</sup>
               <v-tooltip :activator="`#queryAction${index}`">
                 Action to perform when a session matches this query
@@ -329,7 +351,9 @@ SPDX-License-Identifier: Apache-2.0
             </select>
           </div>
           <div class="input-group input-group-sm mb-2">
-            <span class="input-group-text cursor-help" :id="`queryTags${index}`">
+            <span
+              class="input-group-text cursor-help"
+              :id="`queryTags${index}`">
               {{ $t('settings.cron.tags') }}<sup>*</sup>
               <v-tooltip :activator="`#queryTags${index}`">
                 {{ $t('settings.cron.tagsTip') }}
@@ -343,7 +367,9 @@ SPDX-License-Identifier: Apache-2.0
               :disabled="!canEditCronQuery(query)">
           </div>
           <div class="input-group input-group-sm mb-2">
-            <span class="input-group-text cursor-help" :id="`queryExpression${index}`">
+            <span
+              class="input-group-text cursor-help"
+              :id="`queryExpression${index}`">
               {{ $t('settings.cron.searchExpression') }}<sup>*</sup>
               <v-tooltip :activator="`#queryExpression${index}`">
                 {{ $t('settings.cron.searchExpressionTip') }}
@@ -357,7 +383,9 @@ SPDX-License-Identifier: Apache-2.0
           <div
             class="input-group input-group-sm mb-2"
             v-if="canEditCronQuery(query)">
-            <span class="input-group-text cursor-help" :id="`queryUsers${index}`">
+            <span
+              class="input-group-text cursor-help"
+              :id="`queryUsers${index}`">
               {{ $t('common.shareWithUsers') }}
               <v-tooltip :activator="`#queryUsers${index}`">
                 {{ $t('settings.cron.shareWithUsersTip') }}

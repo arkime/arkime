@@ -25,6 +25,7 @@ SPDX-License-Identifier: Apache-2.0
           density="compact"
           variant="outlined"
           hide-details
+          clearable
           prepend-inner-icon="fa-search"
           :model-value="viewsQuery.search"
           @update:model-value="updateSearch"
@@ -39,10 +40,14 @@ SPDX-License-Identifier: Apache-2.0
         multiple
         :model-value="seeAll ? ['seeAll'] : []"
         @update:model-value="(val) => updateSeeAll(val.includes('seeAll'))">
-        <v-btn value="seeAll" id="seeAllViews">
+        <v-btn
+          value="seeAll"
+          id="seeAllViews">
           <span class="fa fa-user-circle me-1" />
           {{ $t(seeAll ? 'settings.views.seeMy' : 'settings.views.seeAll') }}
-          <v-tooltip activator="parent" location="top">
+          <v-tooltip
+            activator="parent"
+            location="top">
             {{ $t(seeAll ? 'settings.views.seeMyTip' : 'settings.views.seeAllTip') }}
           </v-tooltip>
         </v-btn>
@@ -216,7 +221,9 @@ SPDX-License-Identifier: Apache-2.0
         </v-card-title>
         <v-card-text>
           <div class="input-group input-group-sm mb-2">
-            <span id="viewFormName" class="input-group-text cursor-help">
+            <span
+              id="viewFormName"
+              class="input-group-text cursor-help">
               {{ $t('settings.views.viewFormName') }}<sup>*</sup>
               <v-tooltip activator="#viewFormName">
                 {{ $t('settings.views.viewFormNameTip') }}
@@ -230,7 +237,9 @@ SPDX-License-Identifier: Apache-2.0
               :placeholder="$t('settings.views.viewFormNamePlaceholder')">
           </div>
           <div class="input-group input-group-sm mb-2">
-            <span id="viewFormExpression" class="input-group-text cursor-help">
+            <span
+              id="viewFormExpression"
+              class="input-group-text cursor-help">
               {{ $t('settings.views.viewFormExpression') }}<sup>*</sup>
               <v-tooltip activator="#viewFormExpression">
                 {{ $t('settings.views.viewFormExpressionTip') }}
@@ -259,7 +268,9 @@ SPDX-License-Identifier: Apache-2.0
                 @selected-roles-updated="updateNewViewEditRoles" />
             </div>
             <div class="input-group input-group-sm">
-              <span id="viewFormUsers" class="input-group-text cursor-help">
+              <span
+                id="viewFormUsers"
+                class="input-group-text cursor-help">
                 {{ $t('common.shareWithUsers') }}
                 <v-tooltip activator="#viewFormUsers">
                   {{ $t('settings.views.viewFormUsersTip') }}

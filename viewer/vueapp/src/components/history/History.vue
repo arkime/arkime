@@ -51,7 +51,9 @@ SPDX-License-Identifier: Apache-2.0
               class="btn btn-outline-secondary btn-clear-input">
               <span class="fa fa-close" />
             </button>
-            <span id="searchHistory" class="input-group-text">
+            <span
+              id="searchHistory"
+              class="input-group-text">
               <span class="fa fa-lg fa-question-circle text-theme-primary help-cursor" />
               <v-tooltip activator="#searchHistory">
                 <div v-html="$t('history.searchHistoryTipHtml')" />
