@@ -63,6 +63,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #3924, #3930 Remove trailing slash from wiseURL
   - #3927 Cap IMAP/SMTP/HTTP Header buffer lengths
   - #3932 Skip byte-based UDP classifiers on UDP/53 to avoid DNS false-matches
+  - #3933 Reassemble TLS ClientHello across multiple QUIC Initial packets
 ## Cont3xt
   - #3928 Threatstream: ignore per-user host override unless user/key also per-user
   - #3928 csvjson: add 60s timeout and 1GB content/body limits on remote feed loads

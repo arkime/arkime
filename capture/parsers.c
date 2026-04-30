@@ -985,6 +985,15 @@ void  arkime_parsers_register2(ArkimeSession_t *session, ArkimeParserFunc func, 
     session->parserNum++;
 }
 /******************************************************************************/
+gboolean arkime_parsers_has_registered(ArkimeSession_t *session, ArkimeParserFunc func)
+{
+    for (int i = 0; i < session->parserNum; i++) {
+        if (session->parserInfo[i].parserFunc == func)
+            return TRUE;
+    }
+    return FALSE;
+}
+/******************************************************************************/
 void  arkime_parsers_unregister(ArkimeSession_t *session, void *uw)
 {
     for (int i = 0; i < session->parserNum; i++) {
