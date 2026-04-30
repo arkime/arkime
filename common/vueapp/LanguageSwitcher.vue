@@ -3,30 +3,32 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-  <BDropdown
-    no-caret
-    size="xs"
-    variant="light"
-    id="language-dropdown"
-    :class="['btn-language', additionalClasses]">
-    <template #button-content>
-      <span class="flag-icon">{{ currentLanguageFlag }}</span>
+  <v-menu location="bottom end">
+    <template #activator="{ props: activatorProps }">
+      <button
+        v-bind="activatorProps"
+        type="button"
+        :class="['btn', 'btn-sm', 'btn-light', 'btn-language', additionalClasses]">
+        <span class="flag-icon">{{ currentLanguageFlag }}</span>
+        <v-tooltip
+          activator="parent"
+          location="left">
+          {{ currentLanguageLabel }}
+        </v-tooltip>
+      </button>
     </template>
-    <BDropdownItem
-      class="language-item"
-      v-for="lang in availableLanguages"
-      :key="lang.code"
-      :active="lang.code === currentLocale"
-      @click="changeLanguage(lang.code)">
-      <span class="flag-icon me-2">{{ lang.flag }}</span>
-      {{ lang.name }}
-    </BDropdownItem>
-  </BDropdown>
-  <BTooltip
-    target="language-dropdown"
-    placement="left">
-    {{ currentLanguageLabel }}
-  </BTooltip>
+    <v-list density="compact">
+      <v-list-item
+        class="language-item"
+        v-for="lang in availableLanguages"
+        :key="lang.code"
+        :active="lang.code === currentLocale"
+        @click="changeLanguage(lang.code)">
+        <span class="flag-icon me-2">{{ lang.flag }}</span>
+        {{ lang.name }}
+      </v-list-item>
+    </v-list>
+  </v-menu>
 </template>
 
 <script setup>
@@ -160,19 +162,15 @@ initializeLanguage();
 </script>
 
 <style scoped>
+.btn-language {
+  line-height: 1rem;
+  margin-bottom: 2px;
+  padding: 1px 5px 0 5px !important;
+}
 .flag-icon {
   font-size: 1rem;
 }
 .language-item {
   min-height: 28px;
-  max-height: 28px;
-}
-</style>
-
-<style>
-.btn-language button.btn {
-  line-height: 1rem;
-  margin-bottom: 2px;
-  padding: 1px 3px 0 3px !important;
 }
 </style>
