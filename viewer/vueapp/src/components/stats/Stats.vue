@@ -7,17 +7,13 @@ SPDX-License-Identifier: Apache-2.0
     <ArkimeCollapsible>
       <span class="fixed-header">
         <!-- stats sub navbar -->
-        <BRow
-          gutter-x="1"
-          align-h="start"
-          class="stats-form p-1">
+        <div class="row g-1 stats-form p-1 align-items-center justify-content-start">
 
-          <BCol
-            cols="auto"
-            class="flex-grow-1"
+          <div
+            class="col-auto flex-grow-1"
             v-if="tabIndex !== 7">
-            <BInputGroup size="sm">
-              <BInputGroupText class="input-group-text-fw">
+            <div class="input-group input-group-sm">
+              <span class="input-group-text input-group-text-fw">
                 <span
                   v-if="loadingData"
                   class="fa fa-spinner fa-spin text-theme-accent" />
@@ -29,7 +25,7 @@ SPDX-License-Identifier: Apache-2.0
                   class="query-shortcut">
                   Q
                 </span>
-              </BInputGroupText>
+              </span>
               <input
                 type="text"
                 class="form-control"
@@ -39,24 +35,24 @@ SPDX-License-Identifier: Apache-2.0
                 @input="debounceSearchInput"
                 @keydown.stop.prevent.enter="debounceSearchInput"
                 :placeholder="$t('stats.filterPlaceholder')">
-              <BButton
+              <button
+                type="button"
                 @click="clear"
-                variant="outline-secondary"
                 :disabled="!searchTerm"
-                class="btn-clear-input">
+                class="btn btn-outline-secondary btn-clear-input">
                 <span class="fa fa-close" />
-              </BButton>
-            </BInputGroup>
-          </BCol>
+              </button>
+            </div>
+          </div>
 
           <!-- graph type select -->
-          <BCol
-            cols="auto"
+          <div
+            class="col-auto"
             v-if="tabIndex === 0">
-            <BInputGroup size="sm">
-              <BInputGroupText>
+            <div class="input-group input-group-sm">
+              <span class="input-group-text">
                 {{ $t('stats.graphType') }}
-              </BInputGroupText>
+              </span>
               <select
                 class="form-control"
                 v-model="statsType"
@@ -161,17 +157,17 @@ SPDX-License-Identifier: Apache-2.0
                   value="deltaUnwrittenBytesPerSec"
                   v-i18n-value="'stats.cstats.'" />
               </select>
-            </BInputGroup>
-          </BCol> <!-- /graph type select -->
+            </div>
+          </div> <!-- /graph type select -->
 
           <!-- graph interval select -->
-          <BCol
-            cols="auto"
+          <div
+            class="col-auto"
             v-if="tabIndex === 0">
-            <BInputGroup size="sm">
-              <BInputGroupText>
+            <div class="input-group input-group-sm">
+              <span class="input-group-text">
                 {{ $t('stats.graphInterval') }}
-              </BInputGroupText>
+              </span>
               <select
                 class="form-control"
                 v-model="graphInterval"
@@ -180,15 +176,15 @@ SPDX-License-Identifier: Apache-2.0
                 <option value="60">{{ $t('common.minuteCount', 1) }}</option>
                 <option value="600">{{ $t('common.minuteCount', 10) }}</option>
               </select>
-            </BInputGroup>
-          </BCol> <!-- /graph interval select -->
+            </div>
+          </div> <!-- /graph interval select -->
 
           <!-- graph hide select -->
-          <BCol
-            cols="auto"
+          <div
+            class="col-auto"
             v-if="tabIndex === 0 || tabIndex === 1">
-            <BInputGroup size="sm">
-              <BInputGroupText>{{ $t('stats.graphHide') }}</BInputGroupText>
+            <div class="input-group input-group-sm">
+              <span class="input-group-text">{{ $t('stats.graphHide') }}</span>
               <select
                 class="form-control input-sm"
                 v-model="graphHide"
@@ -206,15 +202,15 @@ SPDX-License-Identifier: Apache-2.0
                   value="both"
                   v-i18n-value="'stats.graphHide-'" />
               </select>
-            </BInputGroup>
-          </BCol> <!-- /graph hide select -->
+            </div>
+          </div> <!-- /graph hide select -->
 
           <!-- graph sort select -->
-          <BCol
-            cols="auto"
+          <div
+            class="col-auto"
             v-if="tabIndex === 0">
-            <BInputGroup size="sm">
-              <BInputGroupText>{{ $t('stats.graphSort') }}</BInputGroupText>
+            <div class="input-group input-group-sm">
+              <span class="input-group-text">{{ $t('stats.graphSort') }}</span>
               <select
                 class="form-control input-sm"
                 v-model="graphSort">
@@ -225,15 +221,15 @@ SPDX-License-Identifier: Apache-2.0
                   value="desc"
                   v-i18n-value="'stats.graphSort-'" />
               </select>
-            </BInputGroup>
-          </BCol> <!-- /graph hide select -->
+            </div>
+          </div> <!-- /graph sort select -->
 
           <!-- page size select -->
-          <BCol
-            cols="auto"
+          <div
+            class="col-auto"
             v-if="tabIndex === 4">
-            <BInputGroup size="sm">
-              <BInputGroupText>{{ $t('stats.pageSize') }}</BInputGroupText>
+            <div class="input-group input-group-sm">
+              <span class="input-group-text">{{ $t('stats.pageSize') }}</span>
               <select
                 class="form-control "
                 v-model="pageSize"
@@ -245,15 +241,15 @@ SPDX-License-Identifier: Apache-2.0
                 <option value="5000">{{ $t('common.perPage', {count: "5,000"}) }}</option>
                 <option value="10000">{{ $t('common.perPage', {count: "10,000"}) }}</option>
               </select>
-            </BInputGroup>
-          </BCol><!-- /page size select -->
+            </div>
+          </div><!-- /page size select -->
 
           <!-- table data interval select -->
-          <BCol
-            cols="auto"
+          <div
+            class="col-auto"
             v-if="tabIndex !== 0 && tabIndex !== 7">
-            <BInputGroup size="sm">
-              <BInputGroupText>{{ $t('stats.refreshEvery') }}</BInputGroupText>
+            <div class="input-group input-group-sm">
+              <span class="input-group-text">{{ $t('stats.refreshEvery') }}</span>
               <select
                 class="form-control"
                 v-model="dataInterval"
@@ -265,15 +261,15 @@ SPDX-License-Identifier: Apache-2.0
                 <option value="600000">{{ $t('common.minuteCount', 10) }}</option>
                 <option value="0">{{ $t('common.never') }}</option>
               </select>
-            </BInputGroup>
-          </BCol> <!-- /table data interval select -->
+            </div>
+          </div> <!-- /table data interval select -->
 
           <!-- shards show select -->
-          <BCol
-            cols="auto"
+          <div
+            class="col-auto"
             v-if="tabIndex === 5">
-            <BInputGroup size="sm">
-              <BInputGroupText>{{ $t('stats.shardsShow') }}</BInputGroupText>
+            <div class="input-group input-group-sm">
+              <span class="input-group-text">{{ $t('stats.shardsShow') }}</span>
               <select
                 class="form-control"
                 v-model="shardsShow"
@@ -294,15 +290,15 @@ SPDX-License-Identifier: Apache-2.0
                   value="notstarted"
                   v-i18n-value="'stats.shardsShow-'" />
               </select>
-            </BInputGroup>
-          </BCol> <!-- /graph hide select -->
+            </div>
+          </div> <!-- /shards show select -->
 
           <!-- recovery show select -->
-          <BCol
-            cols="auto"
+          <div
+            class="col-auto"
             v-if="tabIndex === 6">
-            <BInputGroup size="sm">
-              <BInputGroupText>{{ $t('stats.recoveryShow') }}</BInputGroupText>
+            <div class="input-group input-group-sm">
+              <span class="input-group-text">{{ $t('stats.recoveryShow') }}</span>
               <select
                 class="form-control"
                 v-model="recoveryShow"
@@ -314,16 +310,16 @@ SPDX-License-Identifier: Apache-2.0
                   value="notdone"
                   v-i18n-value="'stats.recoveryShow-'" />
               </select>
-            </BInputGroup>
-          </BCol> <!-- /graph hide select -->
+            </div>
+          </div> <!-- /recovery show select -->
 
           <!-- refresh button -->
-          <BCol
-            cols="auto"
+          <div
+            class="col-auto"
             v-if="tabIndex !== 0 && tabIndex !== 7">
-            <BButton
-              size="sm"
-              variant="theme-tertiary"
+            <button
+              type="button"
+              class="btn btn-sm btn-theme-tertiary"
               @click="loadData">
               <span v-if="!shiftKeyHold">
                 {{ $t('common.refresh') }}
@@ -334,10 +330,10 @@ SPDX-License-Identifier: Apache-2.0
                 <span class="fa fa-long-arrow-left fa-lg" />
                 <div class="enter-arm" />
               </span>
-            </BButton>
-          </BCol> <!-- /refresh button -->
+            </button>
+          </div> <!-- /refresh button -->
 
-          <BCol>
+          <div class="col">
             <!-- confirm button -->
             <transition name="buttons">
               <button
@@ -361,7 +357,7 @@ SPDX-License-Identifier: Apache-2.0
                 {{ $t('common.cancel') }}
               </button>
             </transition> <!-- /cancel confirm button -->
-          </BCol>
+          </div>
 
           <!-- error (from child component) -->
           <div
@@ -445,122 +441,129 @@ SPDX-License-Identifier: Apache-2.0
           </span> <!-- /shrink index -->
 
           <!-- select cluster(s) -->
-          <BCol
-            cols="auto"
+          <div
+            class="col-auto"
             v-if="multiviewer">
             <Clusters
               @update-cluster="updateCluster"
               :select-one="clusterParamOverride && tabIndex > 1" />
-          </BCol> <!-- /select cluster(s) -->
+          </div> <!-- /select cluster(s) -->
 
           <!-- need this on non-multivierwer esAdmin tab to keep the layout consistent (empty navbar)-->
           <div v-else-if="tabIndex === 7">
             <button
+              type="button"
               class="btn btn-sm btn-theme-secondary"
               style="visibility: hidden;">placeholder</button>
           </div>
 
-        </BRow> <!-- /stats sub navbar -->
+        </div> <!-- /stats sub navbar -->
       </span>
     </ArkimeCollapsible>
 
     <!-- stats content -->
     <div class="stats-tabs">
-      <b-tabs
-        lazy
+      <v-tabs
         :model-value="tabIndex"
-        @update:index="tabIndexChange($event)">
-        <b-tab
-          :title="$t('stats.nav.captureGraphs')"
-          :active="tabIndex === 0">
-          <capture-graphs
-            :refresh-data="refreshData"
-            :search-term="searchTerm"
-            :graph-type="statsType"
-            :graph-interval="graphInterval"
-            :graph-hide="graphHide"
-            :graph-sort="graphSort"
-            :cluster="cluster"
-            :user="user" />
-        </b-tab>
-        <b-tab
-          :title="$t('stats.nav.captureStats')"
-          :active="tabIndex === 1">
-          <capture-stats
-            :graph-hide="graphHide"
-            :refresh-data="refreshData"
-            :search-term="searchTerm"
-            :data-interval="dataInterval"
-            :cluster="cluster"
-            :user="user" />
-        </b-tab>
-        <b-tab
-          :title="$t('stats.nav.esNodes')"
-          :active="tabIndex === 2">
-          <es-nodes
-            :refresh-data="refreshData"
-            :search-term="searchTerm"
-            :data-interval="dataInterval"
-            :cluster="cluster" />
-        </b-tab>
-        <b-tab
-          :title="$t('stats.nav.esIndices')"
-          :active="tabIndex === 3">
-          <es-indices
-            :refresh-data="refreshData"
-            :data-interval="dataInterval"
-            @errored="onError"
-            @confirm="confirm"
-            @shrink="shrink"
-            :search-term="searchTerm"
-            :issue-confirmation="issueConfirmation"
-            :user="user"
-            :cluster="cluster" />
-        </b-tab>
-        <b-tab
-          :title="$t('stats.nav.esTasks')"
-          :active="tabIndex === 4">
-          <es-tasks
-            :data-interval="dataInterval"
-            :refresh-data="refreshData"
-            :search-term="searchTerm"
-            :page-size="pageSize"
-            :user="user"
-            @errored="onError"
-            :cluster="cluster" />
-        </b-tab>
-        <b-tab
-          :title="$t('stats.nav.esShards')"
-          :active="tabIndex === 5">
-          <es-shards
-            :shards-show="shardsShow"
-            :refresh-data="refreshData"
-            :search-term="searchTerm"
-            :data-interval="dataInterval"
-            :cluster="cluster" />
-        </b-tab>
-        <b-tab
-          :title="$t('stats.nav.esRecovery')"
-          :active="tabIndex === 6">
-          <es-recovery
-            :recovery-show="recoveryShow"
-            :data-interval="dataInterval"
-            :refresh-data="refreshData"
-            :search-term="searchTerm"
-            :user="user"
-            :cluster="cluster" />
-        </b-tab>
-        <b-tab
-          :title="$t('stats.nav.esAdmin')"
-          :active="tabIndex === 7"
-          v-if="user.esAdminUser">
-          <es-admin
-            :data-interval="dataInterval"
-            :refresh-data="refreshData"
-            :user="user"
-            :cluster="cluster" />
-        </b-tab>
-      </b-tabs>
+        @update:model-value="tabIndexChange($event)"
+        density="compact"
+        color="primary">
+        <v-tab :value="0">
+          {{ $t('stats.nav.captureGraphs') }}
+        </v-tab>
+        <v-tab :value="1">
+          {{ $t('stats.nav.captureStats') }}
+        </v-tab>
+        <v-tab :value="2">
+          {{ $t('stats.nav.esNodes') }}
+        </v-tab>
+        <v-tab :value="3">
+          {{ $t('stats.nav.esIndices') }}
+        </v-tab>
+        <v-tab :value="4">
+          {{ $t('stats.nav.esTasks') }}
+        </v-tab>
+        <v-tab :value="5">
+          {{ $t('stats.nav.esShards') }}
+        </v-tab>
+        <v-tab :value="6">
+          {{ $t('stats.nav.esRecovery') }}
+        </v-tab>
+        <v-tab
+          v-if="user.esAdminUser"
+          :value="7">
+          {{ $t('stats.nav.esAdmin') }}
+        </v-tab>
+      </v-tabs>
+      <!-- Lazy-mount each tab pane via v-if so child components only initialize
+           when their tab is active (matches BVN's <b-tabs lazy> behavior). -->
+      <div class="stats-tab-content">
+        <capture-graphs
+          v-if="tabIndex === 0"
+          :refresh-data="refreshData"
+          :search-term="searchTerm"
+          :graph-type="statsType"
+          :graph-interval="graphInterval"
+          :graph-hide="graphHide"
+          :graph-sort="graphSort"
+          :cluster="cluster"
+          :user="user" />
+        <capture-stats
+          v-else-if="tabIndex === 1"
+          :graph-hide="graphHide"
+          :refresh-data="refreshData"
+          :search-term="searchTerm"
+          :data-interval="dataInterval"
+          :cluster="cluster"
+          :user="user" />
+        <es-nodes
+          v-else-if="tabIndex === 2"
+          :refresh-data="refreshData"
+          :search-term="searchTerm"
+          :data-interval="dataInterval"
+          :cluster="cluster" />
+        <es-indices
+          v-else-if="tabIndex === 3"
+          :refresh-data="refreshData"
+          :data-interval="dataInterval"
+          @errored="onError"
+          @confirm="confirm"
+          @shrink="shrink"
+          :search-term="searchTerm"
+          :issue-confirmation="issueConfirmation"
+          :user="user"
+          :cluster="cluster" />
+        <es-tasks
+          v-else-if="tabIndex === 4"
+          :data-interval="dataInterval"
+          :refresh-data="refreshData"
+          :search-term="searchTerm"
+          :page-size="pageSize"
+          :user="user"
+          @errored="onError"
+          :cluster="cluster" />
+        <es-shards
+          v-else-if="tabIndex === 5"
+          :shards-show="shardsShow"
+          :refresh-data="refreshData"
+          :search-term="searchTerm"
+          :data-interval="dataInterval"
+          :cluster="cluster" />
+        <es-recovery
+          v-else-if="tabIndex === 6"
+          :recovery-show="recoveryShow"
+          :data-interval="dataInterval"
+          :refresh-data="refreshData"
+          :search-term="searchTerm"
+          :user="user"
+          :cluster="cluster" />
+        <es-admin
+          v-else-if="tabIndex === 7 && user.esAdminUser"
+          :data-interval="dataInterval"
+          :refresh-data="refreshData"
+          :user="user"
+          :cluster="cluster" />
+      </div>
     </div> <!-- /stats content -->
   </div>
 </template>
