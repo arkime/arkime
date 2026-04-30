@@ -38,33 +38,41 @@ SPDX-License-Identifier: Apache-2.0
               :width="column.width">
               <div>
                 <!-- column dropdown menu -->
-                <b-dropdown
-                  right
-                  size="sm"
+                <v-menu
                   v-if="column.hasDropdown"
-                  class="column-actions-btn pull-right mb-1"
-                  v-has-role="{user:user,roles:'arkimeAdmin'}">
-                  <b-dropdown-item
-                    v-if="!column.nodeExcluded"
-                    @click="exclude('name', column)">
-                    {{ $t('stats.excludeNode') }}: {{ column.name }}
-                  </b-dropdown-item>
-                  <b-dropdown-item
-                    v-if="column.nodeExcluded"
-                    @click="include('name', column)">
-                    {{ $t('stats.includeNode') }}: {{ column.name }}
-                  </b-dropdown-item>
-                  <b-dropdown-item
-                    v-if="!column.ipExcluded"
-                    @click="exclude('ip', column)">
-                    {{ $t('stats.excludeIp') }}: {{ column.ip }}
-                  </b-dropdown-item>
-                  <b-dropdown-item
-                    v-if="column.ipExcluded"
-                    @click="include('ip', column)">
-                    {{ $t('stats.includeIp') }}: {{ column.ip }}
-                  </b-dropdown-item>
-                </b-dropdown> <!-- /column dropdown menu -->
+                  v-has-role="{user:user,roles:'arkimeAdmin'}"
+                  location="bottom end">
+                  <template #activator="{ props: activatorProps }">
+                    <button
+                      v-bind="activatorProps"
+                      type="button"
+                      class="btn btn-sm btn-outline-secondary column-actions-btn pull-right mb-1">
+                      <span class="fa fa-caret-down" />
+                    </button>
+                  </template>
+                  <v-list density="compact">
+                    <v-list-item
+                      v-if="!column.nodeExcluded"
+                      @click="exclude('name', column)">
+                      {{ $t('stats.excludeNode') }}: {{ column.name }}
+                    </v-list-item>
+                    <v-list-item
+                      v-if="column.nodeExcluded"
+                      @click="include('name', column)">
+                      {{ $t('stats.includeNode') }}: {{ column.name }}
+                    </v-list-item>
+                    <v-list-item
+                      v-if="!column.ipExcluded"
+                      @click="exclude('ip', column)">
+                      {{ $t('stats.excludeIp') }}: {{ column.ip }}
+                    </v-list-item>
+                    <v-list-item
+                      v-if="column.ipExcluded"
+                      @click="include('ip', column)">
+                      {{ $t('stats.includeIp') }}: {{ column.ip }}
+                    </v-list-item>
+                  </v-list>
+                </v-menu> <!-- /column dropdown menu -->
                 <div
                   class="header-text"
                   :class="{'cursor-pointer':column.sort !== undefined}"
@@ -95,32 +103,32 @@ SPDX-License-Identifier: Apache-2.0
                 v-has-role="{user:user,roles:'arkimeAdmin'}"
                 v-if="stat.nodes && stat.nodes.Unassigned && stat.nodes.Unassigned.length">
                 <transition name="buttons">
-                  <BButton
+                  <button
                     v-if="!stat.confirmDelete"
-                    size="xs"
-                    variant="danger"
+                    type="button"
+                    class="btn btn-xs btn-danger"
                     :id="`deleteUnassignedShards${index}`"
                     @click="deleteUnassignedShards(stat, index)">
                     <span class="fa fa-trash fa-fw" />
-                    <BTooltip
-                      :target="`deleteUnassignedShards${index}`"
-                      placement="right">
+                    <v-tooltip
+                      :activator="`[id='deleteUnassignedShards${index}']`"
+                      location="right">
                       {{ $t('stats.esShards.deleteUnassignedTip') }}
-                    </BTooltip>
-                  </BButton>
-                  <BButton
+                    </v-tooltip>
+                  </button>
+                  <button
                     v-else
-                    size="xs"
-                    variant="warning"
+                    type="button"
+                    class="btn btn-xs btn-warning"
                     :id="`confirmDeleteUnassignedShards${index}`"
                     @click="confirmDeleteUnassignedShards(stat, index)">
                     <span class="fa fa-check fa-fw" />
-                    <BTooltip
-                      :target="`confirmDeleteUnassignedShards${index}`"
-                      placement="right">
+                    <v-tooltip
+                      :activator="`[id='confirmDeleteUnassignedShards${index}']`"
+                      location="right">
                       {{ $t('stats.esShards.confirmDeleteUnassignedTip') }}
-                    </BTooltip>
-                  </BButton>
+                    </v-tooltip>
+                  </button>
                 </transition>
               </span>
             </td>
@@ -219,40 +227,44 @@ SPDX-License-Identifier: Apache-2.0
     </div>
 
     <!-- Allocation Explain Modal -->
-    <BModal
+    <v-dialog
       v-model="showAllocationModal"
-      size="xl"
-      :title="allocationModalTitle"
-      header-bg-variant="dark"
-      header-text-variant="white"
-      body-class="p-0">
-      <div
-        v-if="loadingAllocationExplain"
-        class="text-center p-4">
-        <span class="fa fa-spinner fa-spin fa-2x" />
-        <p class="mt-2">
-          {{ $t('common.loading') }}
-        </p>
-      </div>
-      <div
-        v-else-if="allocationExplainData"
-        class="allocation-explain-modal">
-        <pre class="mb-0">{{ JSON.stringify(allocationExplainData, null, 2) }}</pre>
-      </div>
-      <div
-        v-else-if="allocationExplainError"
-        class="alert alert-danger m-3">
-        <span class="fa fa-exclamation-triangle me-1" />
-        {{ allocationExplainError }}
-      </div>
-      <template #footer>
-        <BButton
-          variant="theme-primary"
-          @click="showAllocationModal = false">
-          {{ $t('common.close') }}
-        </BButton>
-      </template>
-    </BModal>
+      max-width="1140">
+      <v-card density="compact">
+        <v-card-title class="bg-dark text-white">
+          {{ allocationModalTitle }}
+        </v-card-title>
+        <v-card-text class="p-0">
+          <div
+            v-if="loadingAllocationExplain"
+            class="text-center p-4">
+            <span class="fa fa-spinner fa-spin fa-2x" />
+            <p class="mt-2">
+              {{ $t('common.loading') }}
+            </p>
+          </div>
+          <div
+            v-else-if="allocationExplainData"
+            class="allocation-explain-modal">
+            <pre class="mb-0">{{ JSON.stringify(allocationExplainData, null, 2) }}</pre>
+          </div>
+          <div
+            v-else-if="allocationExplainError"
+            class="alert alert-danger m-3">
+            <span class="fa fa-exclamation-triangle me-1" />
+            {{ allocationExplainError }}
+          </div>
+        </v-card-text>
+        <v-card-actions>
+          <button
+            type="button"
+            class="btn btn-theme-primary"
+            @click="showAllocationModal = false">
+            {{ $t('common.close') }}
+          </button>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </div>
 </template>
 

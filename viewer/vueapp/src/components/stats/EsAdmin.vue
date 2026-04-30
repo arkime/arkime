@@ -53,7 +53,7 @@ SPDX-License-Identifier: Apache-2.0
             id="retryFailed"
             class="btn btn-theme-primary ms-1">
             {{ $t('stats.esAdmin.retryFailed') }}
-            <BTooltip target="retryFailed">{{ $t('stats.esAdmin.retryFailedTip') }}</BTooltip>
+            <v-tooltip activator="#retryFailed">{{ $t('stats.esAdmin.retryFailedTip') }}</v-tooltip>
           </button>
           <button
             type="button"
@@ -61,7 +61,7 @@ SPDX-License-Identifier: Apache-2.0
             id="flush"
             class="btn btn-theme-secondary ms-1">
             {{ $t('stats.esAdmin.flush') }}
-            <BTooltip target="flush">{{ $t('stats.esAdmin.flushTip') }}</BTooltip>
+            <v-tooltip activator="#flush">{{ $t('stats.esAdmin.flushTip') }}</v-tooltip>
           </button>
           <button
             type="button"
@@ -69,7 +69,7 @@ SPDX-License-Identifier: Apache-2.0
             id="unflood"
             class="btn btn-theme-tertiary ms-1">
             {{ $t('stats.esAdmin.unflood') }}
-            <BTooltip target="unflood">{{ $t('stats.esAdmin.unfloodTip') }}</BTooltip>
+            <v-tooltip activator="#unflood">{{ $t('stats.esAdmin.unfloodTip') }}</v-tooltip>
           </button>
           <button
             type="button"
@@ -77,32 +77,34 @@ SPDX-License-Identifier: Apache-2.0
             id="clearCache"
             class="btn btn-theme-quaternary ms-1">
             {{ $t('stats.esAdmin.clearCache') }}
-            <BTooltip target="clearCache">{{ $t('stats.esAdmin.clearCacheTip') }}</BTooltip>
+            <v-tooltip activator="#clearCache">{{ $t('stats.esAdmin.clearCacheTip') }}</v-tooltip>
           </button>
         </span>
       </h3>
 
       <hr>
 
-      <BRow
+      <div
         v-for="setting in settings"
         :key="setting.key"
-        class="mt-2">
-        <BCol>
-          <BInputGroup>
-            <BInputGroupText :id="`setting-${setting.key}`">
+        class="row mt-2">
+        <div class="col">
+          <div class="input-group">
+            <span
+              :id="`setting-${setting.key}`"
+              class="input-group-text">
               {{ setting.name }}
-              <BTooltip :target="`setting-${setting.key}`">
+              <v-tooltip :activator="`[id='setting-${setting.key}']`">
                 {{ setting.key }}
-              </BTooltip>
-            </BInputGroupText>
+              </v-tooltip>
+            </span>
             <input
               type="text"
               @input="setting.changed = true"
               class="form-control"
               v-model="setting.current"
               :class="{'is-invalid':setting.error || (setting.key === 'cluster.routing.allocation.enable' && setting.current !== 'all')}">
-            <BInputGroupText>
+            <span class="input-group-text">
               {{ setting.type }}
               <small class="ms-2">
                 (<a
@@ -112,7 +114,7 @@ SPDX-License-Identifier: Apache-2.0
                   Learn more
                 </a>)
               </small>
-            </BInputGroupText>
+            </span>
             <button
               v-if="setting.key === 'cluster.routing.allocation.enable' && setting.current !== 'all'"
               type="button"
@@ -121,10 +123,9 @@ SPDX-License-Identifier: Apache-2.0
               :aria-label="$t('stats.esAdmin.restoreAllocationTip')"
               class="btn btn-warning">
               <span class="fa fa-undo" />
-              <BTooltip
-                :target="`restore-${setting.key}`">
+              <v-tooltip :activator="`[id='restore-${setting.key}']`">
                 {{ $t('stats.esAdmin.restoreAllocationTip') }}
-              </BTooltip>
+              </v-tooltip>
             </button>
             <button
               type="button"
@@ -140,15 +141,15 @@ SPDX-License-Identifier: Apache-2.0
               class="btn btn-theme-primary">
               {{ $t('common.save') }}
             </button>
-          </BInputGroup>
+          </div>
           <div
             v-if="setting.error"
             class="form-text text-danger">
             <span class="fa fa-exclamation-triangle" />
             {{ setting.error }}
           </div>
-        </BCol>
-      </BRow>
+        </div>
+      </div>
 
       <div class="alert alert-info mt-1">
         <span class="fa fa-info-circle me-1" />
