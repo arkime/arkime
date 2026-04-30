@@ -314,9 +314,6 @@ SPDX-License-Identifier: Apache-2.0
                 :model-value="settings.manualQuery"
                 @update:model-value="updateQueryOnPageLoad"
                 mandatory>
-                <v-btn value="last">
-                  {{ $t('settings.general.lastUsed') }}
-                </v-btn>
                 <v-btn value="false">
                   {{ $t('settings.general.query-false') }}
                 </v-btn>
