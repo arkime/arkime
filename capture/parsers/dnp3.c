@@ -166,8 +166,6 @@ LOCAL void dnp3_tcp_classify(ArkimeSession_t *session, const uint8_t *data, int 
 /******************************************************************************/
 LOCAL void dnp3_udp_classify(ArkimeSession_t *session, const uint8_t *data, int len, int UNUSED(which), void UNUSED(*uw))
 {
-    ARKIME_RETURN_IF_DNS_PORT;
-
     if (len < DNP3_MIN_LEN) {
         return;
     }

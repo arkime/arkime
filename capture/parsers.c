@@ -1254,6 +1254,10 @@ void arkime_parsers_classify_udp(ArkimeSession_t *session, const uint8_t *data, 
         classifersUdpPortDst[session->port2].arr[i]->func(session, data, remaining, which, classifersUdpPortDst[session->port2].arr[i]->uw);
     }
 
+    // Skip byte-based UDP classifiers on the DNS port
+    if (session->port1 == 53 || session->port2 == 53)
+        goto after_byte_classifiers;
+
     for (int i = 0; i < classifersUdp0.cnt; i++) {
         ArkimeClassify_t *c = classifersUdp0.arr[i];
         if (remaining >= c->minlen && memcmp(data + c->offset, c->match, c->matchlen) == 0) {
@@ -1271,6 +1275,7 @@ void arkime_parsers_classify_udp(ArkimeSession_t *session, const uint8_t *data, 
         }
     }
 
+after_byte_classifiers:
     arkime_rules_run_after_classify(session);
     if (config.yara && !config.yaraEveryPacket && !session->stopYara)
         arkime_yara_execute(session, data, remaining, 0);
