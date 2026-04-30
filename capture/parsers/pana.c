@@ -148,7 +148,6 @@ LOCAL void pana_udp_classify(ArkimeSession_t *session, const uint8_t *data, int 
         return;
 
     // Exclude DNS ports
-    ARKIME_RETURN_IF_DNS_PORT;
 
     // PANA header: 2 bytes reserved (0x0000), 2 bytes length, must match packet length
     if (len < 16)

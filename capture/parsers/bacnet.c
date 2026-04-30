@@ -368,8 +368,6 @@ LOCAL int bacnet_udp_parser(ArkimeSession_t *session, void *UNUSED(uw), const ui
 /******************************************************************************/
 LOCAL void bacnet_udp_classify(ArkimeSession_t *session, const uint8_t *data, int len, int UNUSED(which), void *UNUSED(uw))
 {
-    ARKIME_RETURN_IF_DNS_PORT;
-
     if (arkime_session_has_protocol(session, "bacnet"))
         return;
 

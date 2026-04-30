@@ -359,8 +359,6 @@ LOCAL int rdp_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, in
 /******************************************************************************/
 LOCAL void rdp_udp_classify(ArkimeSession_t *session, const uint8_t *data, int len, int UNUSED(which), void *UNUSED(uw))
 {
-    ARKIME_RETURN_IF_DNS_PORT;
-
     // MS-RDPEUDP SYN: snSourceAck(4) == 0xffffffff
     if (len >= 8 && memcmp(data, "\xff\xff\xff\xff", 4) == 0) {
         arkime_session_add_protocol(session, "rdpudp");
