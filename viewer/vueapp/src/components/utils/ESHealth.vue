@@ -8,7 +8,6 @@ SPDX-License-Identifier: Apache-2.0
     <!-- error -->
     <div
       v-if="error"
-      id="networkError"
       class="error-div text-muted pull-right">
       <small>
         {{ error || 'Network Error' }} - try
@@ -18,25 +17,31 @@ SPDX-License-Identifier: Apache-2.0
           reloading the page
         </a>
       </small>
-      <BTooltip target="networkError">{{ errorTitle }}</BTooltip>
+      <v-tooltip activator="parent">{{ errorTitle }}</v-tooltip>
     </div> <!-- /error -->
 
     <!-- info icon -->
-    <span
-      class="cursor-help"
-      id="infoTooltip">
-      <span
-        class="fa fa-info-circle fa-lg"
-        :class="esHealthClass"
-        v-if="!error && esHealth" />
-      <!-- tooltip content -->
-      <BTooltip target="infoTooltip">
+    <v-menu
+      open-on-hover
+      :close-on-content-click="false"
+      location="bottom end">
+      <template #activator="{ props: activatorProps }">
+        <span
+          v-bind="activatorProps"
+          class="cursor-help">
+          <span
+            class="fa fa-info-circle fa-lg"
+            :class="esHealthClass"
+            v-if="!error && esHealth" />
+        </span>
+      </template>
+      <div class="es-health-popup">
         <div class="text-center mb-1">
           <strong>{{ $t('eshealth.title') }}</strong>
         </div>
         <dl
           v-if="!error && esHealth"
-          class="dl-horizontal es-stats-dl">
+          class="dl-horizontal es-stats-dl mb-0">
           <dt>{{ $t('eshealth.userName') }}</dt>
           <dd>{{ user.userName }}&nbsp;</dd>
           <dt>{{ $t('eshealth.userId') }}</dt>
@@ -60,8 +65,8 @@ SPDX-License-Identifier: Apache-2.0
           <dt>{{ $t('eshealth.initializing') }}</dt>
           <dd>{{ esHealth.initializing_shards }}&nbsp;</dd>
         </dl>
-      </BTooltip> <!-- /tooltip content -->
-    </span> <!-- /info icon -->
+      </div>
+    </v-menu> <!-- /info icon -->
 
   </span>
 </template>
@@ -156,5 +161,16 @@ export default {
   margin-left: 145px;
   text-align: left;
   font-weight: bold;
+}
+
+.es-health-popup {
+  background-color: var(--color-background);
+  color: var(--color-foreground);
+  border: 1px solid var(--color-gray-light);
+  border-radius: 4px;
+  padding: 8px 12px;
+  font-size: 0.85rem;
+  min-width: 280px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
 }
 </style>
