@@ -3,91 +3,63 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-  <div class="container-fluid">
-    <div class="d-flex justify-content-between mt-3 mb-2">
+  <div class="container-fluid roles-page">
+    <div class="d-flex align-items-center mt-3 mb-2">
       <div class="me-2 flex-grow-1">
-        <b-input-group size="sm">
-          <template #prepend>
-            <b-input-group-text>
-              <span class="fa fa-search fa-fw" />
-            </b-input-group-text>
-          </template>
-          <b-form-input
-            autofocus
-            type="text"
-            debounce="400"
-            v-model="searchTerm"
-            :placeholder="$t('users.rolesSearchPlaceholder')" />
-          <template #append>
-            <b-button
-              :disabled="!searchTerm"
-              @click="searchTerm = ''"
-              variant="outline-secondary">
-              <span class="fa fa-close" />
-            </b-button>
-          </template>
-        </b-input-group>
+        <v-text-field
+          autofocus
+          density="compact"
+          variant="outlined"
+          hide-details
+          clearable
+          prepend-inner-icon="fa-search"
+          v-model="searchTerm"
+          :placeholder="$t('users.rolesSearchPlaceholder')" />
       </div>
       <h4>
         <span
           id="roles-page-tip"
-          class="fa fa-info-circle ms-2 cursor-help">
-          <BTooltip target="roles-page-tip">
-            <span v-html="$t('roles.pageTip')" />
-          </BTooltip>
-        </span>
+          class="fa fa-info-circle ms-2 cursor-help" />
+        <v-tooltip activator="#roles-page-tip">
+          <span v-html="$t('roles.pageTip')" />
+        </v-tooltip>
       </h4>
     </div>
-    <b-overlay
-      rounded="sm"
-      blur="0.2rem"
-      opacity="0.9"
-      :show="loading"
-      variant="transparent">
-      <!-- loading overlay template -->
-      <template #overlay>
-        <slot name="loading">
-          <div class="text-center">
-            <span class="fa fa-circle-o-notch fa-spin fa-2x" />
-            <p>{{ $t('common.loading') }}</p>
-          </div>
-        </slot>
-      </template> <!-- /loading overlay template -->
 
-      <BTable
-        small
-        hover
-        striped
-        show-empty
-        :fields="fields"
-        :items="roleData"
-        :empty-text="emptyTableText">
-        <!-- customize column sizes -->
-        <template #table-colgroup="scope">
-          <col
-            v-for="field in scope.fields"
-            :key="field.key"
-            :style="{ width: field.setWidth }">
-        </template>
-        <!-- /customize column sizes -->
+    <!-- loading -->
+    <div
+      v-if="loading"
+      class="text-center mt-4 mb-4">
+      <span class="fa fa-circle-o-notch fa-spin fa-2x" />
+      <p>{{ $t('common.loading') }}</p>
+    </div> <!-- /loading -->
 
-        <!-- members cell -->
-        <template #cell(members)="data">
-          <UserDropdown
-            :selected-tooltip="true"
-            :role-id="data.item.value"
-            @selected-users-updated="updateUserRole"
-            :request-role-status="true"
-            :initialize-selection-with-role="true"
-            v-slot="{ count, filter, unknown }">
-            {{ $t(filter ? 'roles.summaryFilter' : 'roles.summary', {
-              users: unknown ? '?' : $t('common.userCount', count),
-              matches: $t('common.matchWordCount', count),
-              filter}) }}
-          </UserDropdown>
-        </template> <!-- /members cell -->
-      </BTable>
-    </b-overlay>
+    <v-data-table
+      v-else
+      density="compact"
+      :items="roleData"
+      :headers="tableHeaders"
+      :items-per-page="-1"
+      hide-default-footer
+      class="roles-table-striped">
+      <template #no-data>
+        {{ emptyTableText }}
+      </template>
+      <template #[`item.members`]="{ item }">
+        <UserDropdown
+          :selected-tooltip="true"
+          :role-id="item.value"
+          @selected-users-updated="updateUserRole"
+          :request-role-status="true"
+          :initialize-selection-with-role="true"
+          v-slot="{ count, filter, unknown }">
+          {{ $t(filter ? 'roles.summaryFilter' : 'roles.summary', {
+            users: unknown ? '?' : $t('common.userCount', count),
+            matches: $t('common.matchWordCount', count),
+            filter}) }}
+        </UserDropdown>
+      </template>
+    </v-data-table>
 
     <!-- roles error -->
     <div
@@ -125,24 +97,26 @@ export default {
   },
   data () {
     return {
-      sortBy: 'text',
-      sortDesc: true,
-      fields: [
-        {
-          label: this.$t('roles.name'),
-          key: 'text',
-          setWidth: '10rem'
-        },
-        { // virtual members field
-          label: this.$t('roles.members'),
-          key: 'members'
-        }
-      ],
       error: '',
       searchTerm: ''
     };
   },
   computed: {
+    tableHeaders () {
+      return [
+        {
+          title: this.$t('roles.name'),
+          key: 'text',
+          width: '10rem',
+          sortable: true
+        },
+        {
+          title: this.$t('roles.members'),
+          key: 'members',
+          sortable: false
+        }
+      ];
+    },
     loading () {
       return this.currentUser?.assignableRoles == null;
     },
@@ -172,3 +146,9 @@ export default {
   }
 };
 </script>
+
+<style scoped>
+.roles-table-striped :deep(tbody tr:nth-of-type(odd) > td) {
+  background-color: var(--color-gray-lighter) !important;
+}
+</style>
