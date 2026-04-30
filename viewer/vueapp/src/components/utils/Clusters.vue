@@ -3,65 +3,66 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-  <b-dropdown
+  <v-menu
     v-if="multiviewer"
-    right
-    size="sm"
-    class="multies-menu-dropdown pull-right ms-1"
-    no-caret
-    toggle-class="rounded"
-    variant="theme-secondary"
-    @show="esVisMenuOpen = true"
-    @hide="esVisMenuOpen = false">
-    <template #button-content>
-      <div id="esMenuHoverText">
+    v-model="esVisMenuOpen"
+    :close-on-content-click="false"
+    location="bottom end">
+    <template #activator="{ props: activatorProps }">
+      <button
+        v-bind="activatorProps"
+        type="button"
+        class="btn btn-sm btn-theme-secondary pull-right ms-1 rounded multies-menu-trigger">
         <span class="fa fa-database me-1" />
         {{ selectedCluster.length }}
-        <BTooltip target="esMenuHoverText">
+        <v-tooltip activator="parent">
           {{ esMenuHoverText }}
-        </BTooltip>
+        </v-tooltip>
+      </button>
+    </template>
+    <v-list
+      density="compact"
+      class="multies-menu-list">
+      <div class="px-2 py-1">
+        <input
+          type="text"
+          v-model="esQuery"
+          class="form-control form-control-sm"
+          :placeholder="$t('utils.searchForClustersPlaceholder')">
       </div>
-    </template>
-    <b-dropdown-header>
-      <input
-        type="text"
-        v-model="esQuery"
-        class="form-control form-control-sm dropdown-typeahead"
-        :placeholder="$t('utils.searchForClustersPlaceholder')">
-    </b-dropdown-header>
-    <template v-if="!selectOne">
-      <b-dropdown-divider />
-      <b-dropdown-item @click.prevent.stop="selectAllCluster">
-        <span class="fa fa-list" />&nbsp;
-        {{ $t('common.selectAll') }}
-      </b-dropdown-item>
-      <b-dropdown-item @click.prevent.stop="clearAllCluster">
-        <span class="fa fa-eraser" />&nbsp;
-        {{ $t('common.clearAll') }}
-      </b-dropdown-item>
-    </template>
-    <b-dropdown-divider />
-    <template v-if="esVisMenuOpen">
-      <template
-        v-for="(clusters, group) in filteredClusters"
-        :key="group">
-        <b-dropdown-header
-          class="group-header">
-          {{ group + ' (' + clusters.length + ')' }}
-        </b-dropdown-header>
+      <template v-if="!selectOne">
+        <v-divider />
+        <v-list-item @click.prevent.stop="selectAllCluster">
+          <span class="fa fa-list" />&nbsp;
+          {{ $t('common.selectAll') }}
+        </v-list-item>
+        <v-list-item @click.prevent.stop="clearAllCluster">
+          <span class="fa fa-eraser" />&nbsp;
+          {{ $t('common.clearAll') }}
+        </v-list-item>
+      </template>
+      <v-divider />
+      <template v-if="esVisMenuOpen">
         <template
-          v-for="cluster in clusters"
-          :key="group + cluster + 'item'">
-          <b-dropdown-item
-            :id="group + cluster + 'item'"
-            :class="{'active':isClusterVis(cluster)}"
-            @click.prevent.stop="toggleClusterSelection(cluster)">
-            {{ cluster }}
-          </b-dropdown-item>
+          v-for="(clusters, group) in filteredClusters"
+          :key="group">
+          <div class="group-header">
+            {{ group + ' (' + clusters.length + ')' }}
+          </div>
+          <template
+            v-for="cluster in clusters"
+            :key="group + cluster + 'item'">
+            <v-list-item
+              :id="group + cluster + 'item'"
+              :active="isClusterVis(cluster)"
+              @click.prevent.stop="toggleClusterSelection(cluster)">
+              {{ cluster }}
+            </v-list-item>
+          </template>
         </template>
       </template>
-    </template>
-  </b-dropdown>
+    </v-list>
+  </v-menu>
   <div
     v-if="showMessage"
     class="alert alert-warning position-fixed fixed-bottom m-0 rounded-0"
@@ -252,3 +253,16 @@ export default {
   }
 };
 </script>
+
+<style scoped>
+.multies-menu-list {
+  width: 300px;
+}
+.group-header {
+  text-transform: uppercase;
+  margin-top: 8px;
+  padding: 0.2rem 0.5rem;
+  font-weight: bold;
+  font-size: 0.78rem;
+}
+</style>
