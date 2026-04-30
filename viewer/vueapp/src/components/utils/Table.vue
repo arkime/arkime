@@ -16,12 +16,11 @@ SPDX-License-Identifier: Apache-2.0
         v-if="showFitButton"
         :aria-label="$t('utils.fitBtnTip')"
         class="btn btn-xs btn-theme-quaternary fit-btn"
-        @click="fitTable"
-        id="fitBtn">
+        @click="fitTable">
         <span class="fa fa-arrows-h" />
-        <BTooltip target="fitBtn">
+        <v-tooltip activator="parent">
           {{ $t('utils.fitBtnTip') }}
-        </BTooltip>
+        </v-tooltip>
       </button>
       <tr ref="draggableColumns">
         <th
@@ -29,60 +28,66 @@ SPDX-License-Identifier: Apache-2.0
           style="width:70px;"
           class="ignore-element text-start">
           <div class="d-flex align-items-center">
-            <!-- column visibility button -->
-            <b-dropdown
-              size="sm"
-              no-flip
-              no-caret
-              role="dropdown"
-              class="col-vis-menu pull-left"
-              variant="theme-primary">
-              <template #button-content>
-                <span
-                  class="fa fa-th"
-                  id="colVisBtn">
-                  <BTooltip target="colVisBtn">{{ $t('utils.colVisBtnTip') }}</BTooltip>
-                </span>
+            <!-- column visibility menu -->
+            <v-menu
+              :close-on-content-click="false"
+              location="bottom start">
+              <template #activator="{ props: activatorProps }">
+                <button
+                  v-bind="activatorProps"
+                  type="button"
+                  class="btn btn-sm btn-theme-primary col-vis-trigger pull-left">
+                  <span class="fa fa-th" />
+                  <v-tooltip activator="parent">
+                    {{ $t('utils.colVisBtnTip') }}
+                  </v-tooltip>
+                </button>
               </template>
-              <b-dropdown-header>
-                <input
-                  type="text"
-                  v-model="colQuery"
-                  class="form-control form-control-sm dropdown-typeahead"
-                  :placeholder="$t('utils.colQueryPlaceholder')">
-              </b-dropdown-header>
-              <b-dropdown-divider />
-              <b-dropdown-item
-                @click="resetDefault">
-                {{ $t('utils.resultDefaultColumns') }}
-              </b-dropdown-item>
-              <b-dropdown-divider />
-              <b-dropdown-item
-                v-for="column in filteredColumns"
-                :key="column.id"
-                :id="`colVis-${column.id}`"
-                :class="{'active':isVisible(column.id) >= 0}"
-                @click.stop.prevent="toggleVisibility(column)">
-                {{ column.name }}
-                <BTooltip
-                  v-if="column.help"
-                  :target="`colVis-${column.id}`">
-                  {{ column.help }}
-                </BTooltip>
-              </b-dropdown-item>
-            </b-dropdown> <!-- /column visibility button -->
+              <v-list
+                density="compact"
+                class="col-vis-list">
+                <div class="px-2 py-1">
+                  <input
+                    type="text"
+                    v-model="colQuery"
+                    class="form-control form-control-sm"
+                    :placeholder="$t('utils.colQueryPlaceholder')">
+                </div>
+                <v-divider />
+                <v-list-item @click="resetDefault">
+                  {{ $t('utils.resultDefaultColumns') }}
+                </v-list-item>
+                <v-divider />
+                <v-list-item
+                  v-for="column in filteredColumns"
+                  :key="column.id"
+                  :id="`colVis-${column.id}`"
+                  :active="isVisible(column.id) >= 0"
+                  @click.stop.prevent="toggleVisibility(column)">
+                  {{ column.name }}
+                  <v-tooltip
+                    v-if="column.help"
+                    activator="parent"
+                    location="end">
+                    {{ column.help }}
+                  </v-tooltip>
+                </v-list-item>
+              </v-list>
+            </v-menu> <!-- /column visibility menu -->
             <!-- ESNode data node only toggle -->
-            <div class="ms-3">
-              <b-form-checkbox
-                v-if="showDataNodesToggle"
+            <span
+              v-if="showDataNodesToggle"
+              class="ms-2 d-inline-block">
+              <v-checkbox
+                density="compact"
+                hide-details
+                inline
                 :id="`only-data-nodes-checkbox-${id}`"
-                @change="$emit('toggle-data-node-only')"
-                name="only-data-nodes-checkbox">
-                <BTooltip :target="`only-data-nodes-checkbox-${id}`">
-                  {{ $t('utils.onlyShowDataNodesTip') }}
-                </BTooltip>
-              </b-form-checkbox>
-            </div><!-- ESNode data node only toggle -->
+                @update:model-value="$emit('toggle-data-node-only')" />
+              <v-tooltip :activator="`#only-data-nodes-checkbox-${id}`">
+                {{ $t('utils.onlyShowDataNodesTip') }}
+              </v-tooltip>
+            </span><!-- /ESNode data node only toggle -->
           </div>
         </th>
         <th
@@ -97,29 +102,28 @@ SPDX-License-Identifier: Apache-2.0
 &nbsp;
           </div>
           {{ column.name }}
-          <BTooltip
+          <v-tooltip
             v-if="column.help"
-            :target="`col-${column.name}`">
+            :activator="`#col-${column.name}`">
             {{ column.help }}
-          </BTooltip>
+          </v-tooltip>
           <span
             v-if="column.canClear"
             class="btn-zero">
             <button
-              :id="`zero-btn-${column.name}`"
               type="button"
               @click="zeroColValues(column)"
               :aria-label="$t('common.clear')"
               class="btn btn-xs btn-secondary">
               <span class="fa fa-ban" />
-              <BTooltip :target="`zero-btn-${column.name}`">
+              <v-tooltip activator="parent">
                 Set this column's values to 0.
                 <strong v-if="zeroedAt && zeroedAt[column.id]">
                   <br>
                   {{ $t('utils.lastClearedAt') }}
                   {{ timezoneDateString(zeroedAt[column.id], user.settings.timezone || 'local') }}
                 </strong>
-              </BTooltip>
+              </v-tooltip>
             </button>
           </span>
           <span v-if="column.sort">
@@ -857,21 +861,14 @@ export default {
 };
 </script>
 
-<style>
-/* force border radius on col vis menu btn */
-.col-vis-menu > button.btn {
-  border-top-right-radius: 4px !important;
-  border-bottom-right-radius: 4px !important;
-}
-
-/* don't let col vis menu overflow the page */
-.col-vis-menu .dropdown-menu {
+<style scoped>
+/* col visibility menu list (replaces old .col-vis-menu .dropdown-menu) */
+.col-vis-list {
   max-height: 300px;
   overflow: auto;
+  width: 280px;
 }
-</style>
 
-<style scoped>
 /* table fit button -------------------------- */
 /* make fit button pos relative to table */
 table {
@@ -886,11 +883,6 @@ button.fit-btn {
 }
 table > thead:hover button.fit-btn {
   visibility: visible;
-}
-
-/* column visibility menu styles ------------- */
-.col-vis-menu .dropdown-header {
-  padding: .25rem .5rem 0;
 }
 
 /* average/total delimiters ------------------ */
@@ -925,10 +917,15 @@ table thead th {
   position: relative;
 }
 table thead th .btn-zero {
-  top: 0;
-  left: 2px;
+  top: 1px;
+  right: 4px;
   position: absolute;
   visibility: hidden;
+}
+table thead th .btn-zero .btn {
+  padding: 0 4px;
+  font-size: 0.7rem;
+  line-height: 1.2;
 }
 table thead th:hover .btn-zero {
   visibility: visible;
