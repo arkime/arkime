@@ -3,18 +3,14 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-  <span>
-    <a
-      id="version"
-      :href="versionLink"
-      class="navbar-text me-2 text-right align-middle text-white">
-      v{{ version }}
-    </a>
-    <BTooltip
-      target="version">
+  <a
+    :href="versionLink"
+    class="navbar-text me-2 text-right align-middle text-white">
+    v{{ version }}
+    <v-tooltip activator="parent">
       {{ buildInfo }}
-    </BTooltip>
-  </span>
+    </v-tooltip>
+  </a>
 </template>
 
 <script>
