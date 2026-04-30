@@ -64,8 +64,6 @@ LOCAL void user_classify(ArkimeSession_t *session, const uint8_t *data, int len,
 /******************************************************************************/
 LOCAL void misc_add_protocol_classify(ArkimeSession_t *session, const uint8_t *UNUSED(data), int UNUSED(len), int UNUSED(which), void *uw)
 {
-    ARKIME_RETURN_IF_DNS_PORT;
-
     arkime_session_add_protocol(session, uw);
 }
 /******************************************************************************/
@@ -239,7 +237,6 @@ LOCAL void omron_fins_tcp_classify(ArkimeSession_t *session, const uint8_t *data
 /******************************************************************************/
 LOCAL void netflow_classify(ArkimeSession_t *session, const uint8_t *data, int len, int UNUSED(which), void *UNUSED(uw))
 {
-    ARKIME_RETURN_IF_DNS_PORT;
     if (len < 24)
         return;
 

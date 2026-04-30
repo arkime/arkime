@@ -2250,7 +2250,7 @@ export default {
         if (!response.showTimestamps) {
           this.settings.showTimestamps = 'last';
         }
-        if (!response.manualQuery) {
+        if (!response.manualQuery || response.manualQuery === 'last') {
           this.settings.manualQuery = false;
         }
 

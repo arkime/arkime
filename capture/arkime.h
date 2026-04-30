@@ -536,6 +536,7 @@ typedef struct {
 #define ARKIME_WHICH_SET_ID(_w, _id) ((_w & 0x1) | (_id << 8))
 
 #define ARKIME_PARSER_UNREGISTER -1
+// Deprecated: byte-based UDP classifiers are automatically skipped on UDP/53 in arkime_parsers_classify_udp.
 #define ARKIME_RETURN_IF_DNS_PORT if (session->port1 == 53 || session->port2 == 53) return
 typedef int  (* ArkimeParserFunc) (struct arkime_session *session, void *uw, const uint8_t *data, int remaining, int which);
 typedef void (* ArkimeParserFreeFunc) (struct arkime_session *session, void *uw);
@@ -1199,6 +1200,7 @@ typedef void (* ArkimeClassifyFunc) (ArkimeSession_t *session, const uint8_t *da
 void  arkime_parsers_unregister(ArkimeSession_t *session, void *uw);
 void  arkime_parsers_register2(ArkimeSession_t *session, ArkimeParserFunc func, void *uw, ArkimeParserFreeFunc ffunc, ArkimeParserSaveFunc sfunc);
 #define arkime_parsers_register(session, func, uw, ffunc) arkime_parsers_register2(session, func, uw, ffunc, NULL)
+gboolean arkime_parsers_has_registered(ArkimeSession_t *session, ArkimeParserFunc func);
 
 void  arkime_parsers_classifier_register_tcp_internal(const char *name, void *uw, int offset, const uint8_t *match, int matchlen, ArkimeClassifyFunc func, size_t sessionsize, int apiversion);
 #define arkime_parsers_classifier_register_tcp(name, uw, offset, match, matchlen, func) arkime_parsers_classifier_register_tcp_internal(name, uw, offset, match, matchlen, func, sizeof(ArkimeSession_t), ARKIME_API_VERSION)

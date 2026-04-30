@@ -1729,7 +1729,10 @@ export default {
       });
     },
     shouldIssueQuery: function () {
-      const manualQuery = this.user.settings.manualQuery && JSON.parse(this.user.settings.manualQuery);
+      let manualQuery = this.user.settings.manualQuery;
+      if (typeof manualQuery === 'string') {
+        manualQuery = manualQuery === 'true';
+      }
       const hasExpression = this.query.expression && this.query.expression.length;
       return searchIssued || !manualQuery || (manualQuery && hasExpression);
     },
