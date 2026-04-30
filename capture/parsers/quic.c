@@ -23,9 +23,9 @@ typedef struct {
 
 typedef struct {
     uint8_t        cbuf[8000];
-    int            clen;
-    int            cbytes;
-    int            chCalled;
+    uint16_t       clen;
+    uint16_t       cbytes;
+    uint8_t        packets;
 } QUICIetfInfo_t;
 
 LOCAL uint32_t tls_process_client_hello_func;
@@ -369,15 +369,21 @@ LOCAL void quic_ietf_free(ArkimeSession_t UNUSED(*session), void *uw)
     ARKIME_TYPE_FREE(QUICIetfInfo_t, (QUICIetfInfo_t *)uw);
 }
 /******************************************************************************/
-LOCAL void quic_ietf_process(ArkimeSession_t *session, QUICIetfInfo_t *info, const uint8_t *data, int len)
+LOCAL int quic_ietf_udp_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, int len, int UNUSED(which))
 {
+    QUICIetfInfo_t *info = (QUICIetfInfo_t *)uw;
+
+    // Give up if the ClientHello hasn't been assembled within a few packets
+    if (++info->packets >= 16)
+        return ARKIME_PARSER_UNREGISTER;
+
     // Min length for quic packets because of padding
     if (len < 1100 || len > 3000)
-        return;
+        return 0;
 
     // Only look for long form initial
     if ((data[0] & 0xf0) != 0xc0)
-        return;
+        return 0;
 
     int rc;
     BSB bsb;
@@ -397,19 +403,19 @@ LOCAL void quic_ietf_process(ArkimeSession_t *session, QUICIetfInfo_t *info, con
 
     // Skip server packets (dlen == 0) since we only want client initials
     if (dlen == 0)
-        return;
+        return 0;
 
     // Source
     int slen = 0;
     BSB_IMPORT_u08(bsb, slen);
     if (slen > 16)
-        return;
+        return 0;
     BSB_IMPORT_skip(bsb, slen);
 
     // Token
     uint64_t tlen = quic_get_number(&bsb);
     if (tlen > (uint64_t)BSB_REMAINING(bsb))
-        return;
+        return 0;
     BSB_IMPORT_skip(bsb, tlen);
 
     // Length
@@ -417,16 +423,16 @@ LOCAL void quic_ietf_process(ArkimeSession_t *session, QUICIetfInfo_t *info, con
 
     if (packet_len < 100 || packet_len > (uint64_t)BSB_REMAINING(bsb)) {
         if (!config.debug)
-            return;
+            return 0;
 
         char ipStr[200];
         arkime_session_pretty_string(session, ipStr, sizeof(ipStr));
         LOG("Couldn't parse header packet len %" PRIu64 " remaining %ld %s", packet_len, (long)BSB_REMAINING(bsb), ipStr);
-        return;
+        return 0;
     }
 
     if (BSB_IS_ERROR(bsb))
-        return;
+        return 0;
 
     // HKDF - HMAC-based Key Derivation Function
     // https://datatracker.ietf.org/doc/html/rfc5869
@@ -474,7 +480,7 @@ LOCAL void quic_ietf_process(ArkimeSession_t *session, QUICIetfInfo_t *info, con
     BSB_IMPORT_byte(bsb, maskInput, 16);
 
     if (BSB_IS_ERROR(bsb))
-        return;
+        return 0;
 
     BSB_IMPORT_rewind(bsb, 20); // Go back
 
@@ -493,7 +499,7 @@ LOCAL void quic_ietf_process(ArkimeSession_t *session, QUICIetfInfo_t *info, con
     if (rc != 2) {
         if (config.debug)
             LOG("Couldn't encrypt mask: %d", rc);
-        return;
+        return 0;
     }
 
     // Decrypt Packet Number using mask
@@ -545,7 +551,7 @@ LOCAL void quic_ietf_process(ArkimeSession_t *session, QUICIetfInfo_t *info, con
     if (rc != 2) {
         if (config.debug)
             LOG("Couldn't decrypt packet: %d", rc);
-        return;
+        return 0;
     }
 
     BSB_INIT(bsb, out, outLen);
@@ -584,18 +590,13 @@ LOCAL void quic_ietf_process(ArkimeSession_t *session, QUICIetfInfo_t *info, con
     // total of CRYPTO bytes copied (cbytes) with clen (max offset reached);
     // they match when there are no gaps and no overlap. The TLS handshake
     // header is type(1) + length(3).
-    if (!info->chCalled && info->clen >= 4 && info->cbytes == info->clen && info->cbuf[0] == 0x01) {
+    if (info->clen >= 4 && info->cbytes == info->clen && info->cbuf[0] == 0x01) {
         uint32_t hsLen = (info->cbuf[1] << 16) | (info->cbuf[2] << 8) | info->cbuf[3];
         if ((uint32_t)info->clen >= 4 + hsLen) {
-            info->chCalled = 1;
             arkime_parsers_call_named_func(tls_process_client_hello_func, session, info->cbuf, info->clen, NULL);
+            return ARKIME_PARSER_UNREGISTER;
         }
     }
-}
-/******************************************************************************/
-LOCAL int quic_ietf_udp_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, int len, int UNUSED(which))
-{
-    quic_ietf_process(session, (QUICIetfInfo_t *)uw, data, len);
     return 0;
 }
 /******************************************************************************/
