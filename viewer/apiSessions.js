@@ -1250,7 +1250,7 @@ class SessionAPIs {
       const fields = session.fields;
 
       if (!fields.packetPos) {
-        return endCb(null);
+        return endCb(null, fields);
       }
 
       if (maxPackets && fields.packetPos.length > maxPackets) {
@@ -2589,7 +2589,7 @@ class SessionAPIs {
           },
           allowedAttributes: {
             img: ['src'],
-            '*': [':download', 'download', '#button-content', 'class', 'value', 'sessionid', 'hidePackets', 'v-if', 'target', 'href', ':href', '@click', 'v-has-permission', 'text', ':text', ':sessions', '@done', ':cluster', ':single', ':message', ':type', ':done', 'expr', ':expr', ':separator', ':field', 'pull-left', 'size', 'variant', 'columns', 'style', 'suffix', 'target', 'v-for', 'key', ':key', ':add', 'title']
+            '*': [':download', 'download', '#button-content', 'class', 'value', 'sessionid', 'hidepackets', 'v-if', 'target', 'href', ':href', '@click', 'v-has-permission', 'text', ':text', ':sessions', '@done', ':cluster', ':single', ':message', ':type', ':done', 'expr', ':expr', ':separator', ':field', 'pull-left', 'size', 'variant', 'columns', 'style', 'suffix', 'target', 'v-for', 'key', ':key', ':add', 'title']
           }
         });
         res.send(html);
