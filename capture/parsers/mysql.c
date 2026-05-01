@@ -35,7 +35,7 @@ LOCAL int mysql_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, 
     }
 
     // MySQL framing: 3-byte little-endian payload length + 1 byte sequence id
-    int mysqlLen = data[0] | (data[1] << 8) | (data[2] << 16);
+    int mysqlLen = (uint32_t)data[0] | ((uint32_t)data[1] << 8) | ((uint32_t)data[2] << 16);
     if (mysqlLen < 32 || 4 + mysqlLen > len) {
         arkime_parsers_unregister(session, info);
         return 0;

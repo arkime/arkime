@@ -1,4 +1,4 @@
-use Test::More tests => 34;
+use Test::More tests => 39;
 
 use Cwd;
 use URI::Escape;
@@ -153,3 +153,41 @@ ok($sd =~ m{NETWORK PROGRAM 1.0}s);
 
 unlink "../assets/scheme1.pcap";
 esPost("/tests_files/_delete_by_query?conflicts=proceed&refresh", '{ "query": { "term": { "name": "http://localhost:8123/assets/scheme1.pcap" } } }');
+
+# Session with no packetPos / no fileId (e.g. session forwarded from a metadata-only
+# source). /detail must tell the client to hidepackets, and /packets must not crash
+# the viewer with TypeError: Cannot set properties of undefined (setting 'id').
+my $noPcapTag = "no-pcap-detail-regression-tag";
+my $noPcapDocId = "abcdef0123456789nopcap00";
+my $noPcapIndex = "tests_sessions3-26m04";
+my $noPcapDoc = '{
+  "@timestamp": 1745000000000,
+  "firstPacket": 1745000000000,
+  "lastPacket": 1745000001000,
+  "node": "test",
+  "ipProtocol": 17,
+  "source": {"ip": "10.99.99.10", "port": 1000, "bytes": 100, "packets": 1},
+  "destination": {"ip": "10.99.99.20", "port": 53, "bytes": 100, "packets": 1},
+  "network": {"packets": 2, "bytes": 200},
+  "totDataBytes": 100,
+  "length": 1,
+  "protocol": ["udp"],
+  "protocolCnt": 1,
+  "tags": ["' . $noPcapTag . '"],
+  "tagsCnt": 1
+}';
+esPost("/$noPcapIndex/_doc/$noPcapDocId?refresh=wait_for", $noPcapDoc);
+
+my $noPcapList = viewerGet("/sessions.json?date=-1&expression=" . uri_escape("tags=$noPcapTag"));
+is (scalar @{$noPcapList->{data}}, 1, "no-pcap session indexed");
+my $noPcapId = $noPcapList->{data}->[0]->{id};
+
+$sd = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8123/api/session/test/$noPcapId/detail")->content;
+ok($sd =~ m{sessionid="\Q$noPcapId\E"}s, "no-pcap /detail rendered");
+ok($sd =~ m{hidepackets="true"}, "no-pcap /detail sets hidepackets=\"true\"");
+
+my $noPcapPackets = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8123/api/session/test/$noPcapId/packets?line=false&ts=false&base=ascii");
+is ($noPcapPackets->code, 200, "no-pcap /packets returns 200 (no crash)");
+ok($noPcapPackets->content !~ m{Cannot set properties of undefined}, "no-pcap /packets does not throw TypeError");
+
+esPost("/$noPcapIndex/_delete_by_query?conflicts=proceed&refresh", '{ "query": { "term": { "tags": "' . $noPcapTag . '" } } }');

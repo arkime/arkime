@@ -518,8 +518,8 @@ LOCAL int smtp_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, i
                     if (nul1) {
                         gsize zation = nul1 - base;
                         const char *user = base + zation + 1;
-                        gsize remaining = out_len - zation - 1;
-                        const char *nul2 = memchr(user, 0, remaining);
+                        gsize auth_remaining = out_len - zation - 1;
+                        const char *nul2 = memchr(user, 0, auth_remaining);
                         if (nul2) {
                             arkime_field_string_add_lower(userField, session, (char *)user, nul2 - user);
                         }
@@ -567,8 +567,8 @@ LOCAL int smtp_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, i
             if (nul1) {
                 gsize zation = nul1 - line->str;
                 const char *user = line->str + zation + 1;
-                gsize remaining = out_len - zation - 1;
-                const char *nul2 = memchr(user, 0, remaining);
+                gsize auth_remaining = out_len - zation - 1;
+                const char *nul2 = memchr(user, 0, auth_remaining);
                 if (nul2) {
                     arkime_field_string_add_lower(userField, session, (char *)user, nul2 - user);
                 }

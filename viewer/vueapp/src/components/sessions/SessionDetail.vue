@@ -195,6 +195,7 @@ const createDetailDataComponent = () => {
   return defineAsyncComponent(async () => {
     try {
       const response = await SessionsService.getDetail(props.session.id, props.session.node, props.session.cluster);
+      hidePackets.value = /hidepackets="true"/i.test(response);
       return sessionDetailData.getVueInstance(response, props.session); // render the session detail data
     } catch (err) {
       console.log('Error loading session detail data', err);
