@@ -15,14 +15,12 @@ SPDX-License-Identifier: Apache-2.0
       @issue-change="issueChange" />
     {{ issue.message }}
     <br>
-    <small
-      class="cursor-help issue-date"
-      :id="`issueDateTooltip-${groupId}-${clusterId}-${index}`">
+    <small class="cursor-help issue-date">
       {{ moment(issue.lastNoticed || issue.firstNoticed, 'MM/DD HH:mm:ss') }}
+      <v-tooltip activator="parent">
+        <span v-html="issueDateTooltip(issue)" />
+      </v-tooltip>
     </small>
-    <BTooltip :target="`issueDateTooltip-${groupId}-${clusterId}-${index}`">
-      <span v-html="issueDateTooltip(issue)" />
-    </BTooltip>
   </div>
 </template>
 

@@ -64,7 +64,6 @@ SPDX-License-Identifier: Apache-2.0
         <button
           @click="toggleHideAllIssues"
           class="btn btn-sm btn-outline-secondary me-2"
-          id="hideIssuesBtn"
           :aria-label="$t(hideAllIssues ? 'parliament.showAllIssues' : 'parliament.hideAllIssues')">
           <span
             v-if="hideAllIssues"
@@ -72,24 +71,24 @@ SPDX-License-Identifier: Apache-2.0
           <span
             v-else
             class="fa fa-eye-slash" />
+          <v-tooltip
+            activator="parent"
+            location="bottom">
+            {{ $t(hideAllIssues ? 'parliament.showAllIssues' : 'parliament.hideAllIssues') }}
+          </v-tooltip>
         </button>
-        <BTooltip
-          target="hideIssuesBtn"
-          placement="bottom">
-          {{ $t(hideAllIssues ? 'parliament.showAllIssues' : 'parliament.hideAllIssues') }}
-        </BTooltip>
         <!-- /hide/show issues button -->
         <!-- edit mode toggle -->
         <span
           @click="toggleEditMode"
           class="fa fa-toggle-off fa-2x cursor-pointer mt-1"
-          :class="{'fa-toggle-off':!editMode, 'fa-toggle-on text-success':editMode}"
-          id="editModeToggle" />
-        <BTooltip
-          target="editModeToggle"
-          placement="bottom">
-          {{ $t('parliament.editModeToggleTip') }}
-        </BTooltip>
+          :class="{'fa-toggle-off':!editMode, 'fa-toggle-on text-success':editMode}">
+          <v-tooltip
+            activator="parent"
+            location="bottom">
+            {{ $t('parliament.editModeToggleTip') }}
+          </v-tooltip>
+        </span>
         <!-- /edit mode toggle -->
       </div>
     </div> <!-- /search & create group -->
@@ -234,15 +233,14 @@ SPDX-License-Identifier: Apache-2.0
               <template v-if="isAdmin && groupAddingCluster !== group.id && groupBeingEdited === group.id && editMode">
                 <a
                   @click="deleteGroup(group)"
-                  :id="`deleteGroupTooltip-${group.id}`"
                   class="btn btn-sm btn-outline-danger cursor-pointer ms-2">
                   <span class="fa fa-trash-o" />
+                  <v-tooltip
+                    activator="parent"
+                    location="top">
+                    {{ $t('parliament.deleteGroupTip') }}
+                  </v-tooltip>
                 </a>
-                <BTooltip
-                  :target="`deleteGroupTooltip-${group.id}`"
-                  placement="top">
-                  {{ $t('parliament.deleteGroupTip') }}
-                </BTooltip>
               </template>
             </h5>
             <p class="mb-2">
@@ -410,8 +408,7 @@ SPDX-License-Identifier: Apache-2.0
                   v-if="cluster.type !== 'disabled' && stats[cluster.id]"
                   class="badge badge-pill bg-secondary cursor-pointer pull-right no-decoration"
                   :href="`${cluster.url}/stats?statsTab=2`"
-                  :class="{'bg-success':stats[cluster.id].status === 'green','bg-warning':stats[cluster.id].status === 'yellow','bg-danger':stats[cluster.id].status === 'red'}"
-                  :id="`clusterStatsTooltip-${cluster.id}`">
+                  :class="{'bg-success':stats[cluster.id].status === 'green','bg-warning':stats[cluster.id].status === 'yellow','bg-danger':stats[cluster.id].status === 'red'}">
                   <span v-if="stats[cluster.id].status">
                     {{ stats[cluster.id].status }}
                   </span>
@@ -421,14 +418,14 @@ SPDX-License-Identifier: Apache-2.0
                   <span v-if="!stats[cluster.id].status && !stats[cluster.id].healthError">
                     ????
                   </span>
-                  <BTooltip
-                    :target="`clusterStatsTooltip-${cluster.id}`"
-                    placement="top">
+                  <v-tooltip
+                    activator="parent"
+                    location="top">
                     <span>{{ $t('parliament.esStatus') }}: <strong>{{ stats[cluster.id].healthError || stats[cluster.id].status || 'unreachable' }}</strong></span>
                     <span v-if="stats[cluster.id].esVersion">
                       <br>{{ $t('parliament.esVersion') }}: <strong>{{ stats[cluster.id].esVersion }}</strong>
                     </span>
-                  </BTooltip>
+                  </v-tooltip>
                 </a>
                 <h6>
                   <span
@@ -437,34 +434,31 @@ SPDX-License-Identifier: Apache-2.0
                     <span class="fa fa-th" />
                   </span>
                   <template v-if="cluster.type === 'multiviewer'">
-                    <span
-                      :id="`multiviewer-${cluster.id}`"
-                      class="fa fa-sitemap text-muted cursor-help me-2" />
-                    <BTooltip
-                      :target="`multiviewer-${cluster.id}`"
-                      placement="top">
-                      {{ $t('parliament.clusterType-multiviewerTip') }}
-                    </BTooltip>
+                    <span class="fa fa-sitemap text-muted cursor-help me-2">
+                      <v-tooltip
+                        activator="parent"
+                        location="top">
+                        {{ $t('parliament.clusterType-multiviewerTip') }}
+                      </v-tooltip>
+                    </span>
                   </template>
                   <template v-if="cluster.type === 'disabled'">
-                    <span
-                      :id="`disabled-${cluster.id}`"
-                      class="text-muted fa fa-eye-slash cursor-help me-2" />
-                    <BTooltip
-                      :target="`disabled-${cluster.id}`"
-                      placement="top">
-                      {{ $t('parliament.clusterType-disabledTip') }}
-                    </BTooltip>
+                    <span class="text-muted fa fa-eye-slash cursor-help me-2">
+                      <v-tooltip
+                        activator="parent"
+                        location="top">
+                        {{ $t('parliament.clusterType-disabledTip') }}
+                      </v-tooltip>
+                    </span>
                   </template>
                   <template v-if="cluster.type === 'noAlerts'">
-                    <span
-                      :id="`silent-${cluster.id}`"
-                      class="text-muted cursor-help fa fa-bell-slash me-2" />
-                    <BTooltip
-                      :target="`silent-${cluster.id}`"
-                      placement="top">
-                      {{ $t('parliament.clusterType-noAlertsTip') }}
-                    </BTooltip>
+                    <span class="text-muted cursor-help fa fa-bell-slash me-2">
+                      <v-tooltip
+                        activator="parent"
+                        location="top">
+                        {{ $t('parliament.clusterType-noAlertsTip') }}
+                      </v-tooltip>
+                    </span>
                   </template>
                   <a
                     v-if="cluster.type !== 'disabled'"
@@ -477,15 +471,14 @@ SPDX-License-Identifier: Apache-2.0
                   </span>
                   <a
                     :href="`${cluster.url}/stats?statsTab=0`"
-                    class="no-decoration ms-2"
-                    :id="`clusterStatsLink-${cluster.id}`">
+                    class="no-decoration ms-2">
                     <span class="fa fa-bar-chart" />
+                    <v-tooltip
+                      activator="parent"
+                      location="top">
+                      {{ $t('parliament.statsLinkTip') }}
+                    </v-tooltip>
                   </a>
-                  <BTooltip
-                    :target="`clusterStatsLink-${cluster.id}`"
-                    placement="top">
-                    {{ $t('parliament.statsLinkTip') }}
-                  </BTooltip>
                 </h6> <!-- /cluster title -->
                 <!-- cluster description -->
                 <p
@@ -516,9 +509,9 @@ SPDX-License-Identifier: Apache-2.0
                         </strong>
                         {{ $t('parliament.bitsPerSec') }}
                       </label>
-                      <BTooltip
-                        :target="'deltaBPS-' + cluster.id"
-                        :title="$t('parliament.bitsPerSecTip', {count: humanReadableBits(stats[cluster.id].deltaBPS)})" />
+                      <v-tooltip activator="parent">
+                        {{ $t('parliament.bitsPerSecTip', {count: humanReadableBits(stats[cluster.id].deltaBPS)}) }}
+                      </v-tooltip>
                     </div>
 
                     <div
@@ -538,9 +531,9 @@ SPDX-License-Identifier: Apache-2.0
                         </strong>
                         {{ $t('parliament.dropsPerSec') }}
                       </label>
-                      <BTooltip
-                        :target="'deltaTDPS-' + cluster.id"
-                        :title="$t('parliament.bitsPerSecTip', {count: commaString(stats[cluster.id].deltaTDPS)})" />
+                      <v-tooltip activator="parent">
+                        {{ $t('parliament.bitsPerSecTip', {count: commaString(stats[cluster.id].deltaTDPS)}) }}
+                      </v-tooltip>
                     </div>
 
                     <div
@@ -560,9 +553,9 @@ SPDX-License-Identifier: Apache-2.0
                         </strong>
                         {{ $t('common.sessions') }}
                       </label>
-                      <BTooltip
-                        :target="'monitoring-' + cluster.id"
-                        :title="$t('parliament.sessionsTip', {count: commaString(stats[cluster.id].monitoring)})" />
+                      <v-tooltip activator="parent">
+                        {{ $t('parliament.sessionsTip', {count: commaString(stats[cluster.id].monitoring)}) }}
+                      </v-tooltip>
                     </div>
 
                     <div
@@ -582,9 +575,9 @@ SPDX-License-Identifier: Apache-2.0
                         </strong>
                         {{ $t('parliament.captureNodes') }}
                       </label>
-                      <BTooltip
-                        :target="'arkimeNodes-' + cluster.id"
-                        :title="$t('parliament.captureNodesTip', {count: commaString(stats[cluster.id].arkimeNodes)})" />
+                      <v-tooltip activator="parent">
+                        {{ $t('parliament.captureNodesTip', {count: commaString(stats[cluster.id].arkimeNodes)}) }}
+                      </v-tooltip>
                     </div>
 
                     <div
@@ -617,9 +610,9 @@ SPDX-License-Identifier: Apache-2.0
                           {{ commaString(stats[cluster.id].totalNodes) }}
                         </strong>
                       </label>
-                      <BTooltip
-                        :target="'dataNodes-' + cluster.id"
-                        :title="getDataNodesTooltip(cluster.id)" />
+                      <v-tooltip activator="parent">
+                        {{ getDataNodesTooltip(cluster.id) }}
+                      </v-tooltip>
                       {{ $t('parliament.dbNodes') }}
                     </div>
                   </div>
@@ -751,15 +744,14 @@ SPDX-License-Identifier: Apache-2.0
                 <a
                   v-if="!hideAllIssues && issues[cluster.id] && issues[cluster.id].length && cluster.id !== clusterBeingEdited"
                   @click="acknowledgeAllIssues(cluster)"
-                  :id="`ackAllIssuesTooltip-${cluster.id}`"
                   class="btn btn-sm btn-outline-success pull-right cursor-pointer">
                   <span class="fa fa-check" />
+                  <v-tooltip
+                    activator="parent"
+                    location="top">
+                    {{ $t('parliament.ackAllIssuesTip') }}
+                  </v-tooltip>
                 </a>
-                <BTooltip
-                  :target="`ackAllIssuesTooltip-${cluster.id}`"
-                  placement="top">
-                  {{ $t('parliament.ackAllIssuesTip') }}
-                </BTooltip>
                 <span v-if="(isUser && !hideAllIssues && issues[cluster.id] && issues[cluster.id].length) || (isAdmin && editMode)">
                   <a
                     v-show="cluster.id !== clusterBeingEdited && editMode && isAdmin"

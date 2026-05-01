@@ -25,10 +25,11 @@ SPDX-License-Identifier: Apache-2.0
                   id="querySize"
                   class="cursor-help">
                   {{ $t('connections.querySize') }}
-                  <BTooltip
-                    target="querySize"
-                    :delay="{show: 300, hide: 0}"
-                    noninteractive>{{ $t('connections.querySizeTip') }}</BTooltip>
+                  <v-tooltip
+                    activator="parent"
+                    :open-delay="300">
+                    {{ $t('connections.querySizeTip') }}
+                  </v-tooltip>
                 </BInputGroupText>
                 <BFormSelect
                   class="form-control input-sm"
@@ -47,10 +48,11 @@ SPDX-License-Identifier: Apache-2.0
                   class="legend cursor-help primary-legend"
                   id="sourceField">
                   Src:
-                  <BTooltip
-                    target="sourceField"
-                    :delay="{show: 300, hide: 0}"
-                    noninteractive>{{ $t('connections.sourceFieldTip') }}</BTooltip>
+                  <v-tooltip
+                    activator="parent"
+                    :open-delay="300">
+                    {{ $t('connections.sourceFieldTip') }}
+                  </v-tooltip>
                 </BInputGroupText>
                 <arkime-field-typeahead
                   :fields="fields"
@@ -71,10 +73,11 @@ SPDX-License-Identifier: Apache-2.0
                   class="legend cursor-help secondary-legend"
                   id="dstField">
                   Dst:
-                  <BTooltip
-                    target="dstField"
-                    :delay="{show: 300, hide: 0}"
-                    noninteractive>{{ $t('connections.dstFieldTip') }}</BTooltip>
+                  <v-tooltip
+                    activator="parent"
+                    :open-delay="300">
+                    {{ $t('connections.dstFieldTip') }}
+                  </v-tooltip>
                 </BInputGroupText>
                 <arkime-field-typeahead
                   :fields="fields"
@@ -93,10 +96,11 @@ SPDX-License-Identifier: Apache-2.0
                   class="legend cursor-help tertiary-legend"
                   id="srcDstColor">
                   Src &amp; dst
-                  <BTooltip
-                    target="srcDstColor"
-                    :delay="{show: 300, hide: 0}"
-                    noninteractive>{{ $t('connections.srcDstColorTip') }}</BTooltip>
+                  <v-tooltip
+                    activator="parent"
+                    :open-delay="300">
+                    {{ $t('connections.srcDstColorTip') }}
+                  </v-tooltip>
                 </BInputGroupText>
               </BInputGroup>
             </BCol> <!-- /src & dst color -->
@@ -108,10 +112,11 @@ SPDX-License-Identifier: Apache-2.0
                   id="minConn"
                   class="help-cursor">
                   {{ $t('connections.minConn') }}
-                  <BTooltip
-                    target="minConn"
-                    :delay="{show: 300, hide: 0}"
-                    noninteractive>{{ $t('connections.minConnTip') }}</BTooltip>
+                  <v-tooltip
+                    activator="parent"
+                    :open-delay="300">
+                    {{ $t('connections.minConnTip') }}
+                  </v-tooltip>
                 </BInputGroupText>
                 <BFormSelect
                   size="sm"
@@ -128,10 +133,11 @@ SPDX-License-Identifier: Apache-2.0
                   class="help-cursor"
                   id="weight">
                   {{ $t('connections.weight') }}
-                  <BTooltip
-                    target="weight"
-                    :delay="{show: 300, hide: 0}"
-                    noninteractive>{{ $t('connections.weightTip') }}</BTooltip>
+                  <v-tooltip
+                    activator="parent"
+                    :open-delay="300">
+                    {{ $t('connections.weightTip') }}
+                  </v-tooltip>
                 </BInputGroupText>
                 <BFormSelect
                   size="sm"
@@ -171,10 +177,11 @@ SPDX-License-Identifier: Apache-2.0
                 <template #button-content>
                   <div id="nodeFields">
                     <span class="fa fa-circle-o" />
-                    <BTooltip
-                      target="nodeFields"
-                      :delay="{show: 300, hide: 0}"
-                      noninteractive>{{ $t('connections.nodeFieldsTip') }}</BTooltip>
+                    <v-tooltip
+                      activator="parent"
+                      :open-delay="300">
+                      {{ $t('connections.nodeFieldsTip') }}
+                    </v-tooltip>
                   </div>
                 </template>
                 <b-dropdown-header>
@@ -207,11 +214,11 @@ SPDX-License-Identifier: Apache-2.0
                       @click.stop.prevent="toggleFieldVisibility(field.dbField, nodeFields)">
                       {{ field.friendlyName }}
                       <small>({{ field.exp }})</small>
-                      <BTooltip
-                        v-if="field.help"
-                        :delay="{show: 300, hide: 0}"
-                        noninteractive
-                        :target="key + k + 'itemnode'">{{ field.help }}</BTooltip>
+                      <v-tooltip
+                        activator="parent"
+                        :open-delay="300">
+                        {{ field.help }}
+                      </v-tooltip>
                     </b-dropdown-item>
                   </template>
                 </template>
@@ -229,10 +236,11 @@ SPDX-License-Identifier: Apache-2.0
                 <template #button-content>
                   <div id="linkFields">
                     <span class="fa fa-link" />
-                    <BTooltip
-                      target="linkFields"
-                      :delay="{show: 300, hide: 0}"
-                      noninteractive>{{ $t('connections.linkFieldsTip') }}</BTooltip>
+                    <v-tooltip
+                      activator="parent"
+                      :open-delay="300">
+                      {{ $t('connections.linkFieldsTip') }}
+                    </v-tooltip>
                   </div>
                 </template>
                 <b-dropdown-header>
@@ -265,11 +273,11 @@ SPDX-License-Identifier: Apache-2.0
                       @click.stop.prevent="toggleFieldVisibility(field.dbField, linkFields)">
                       {{ field.friendlyName }}
                       <small>({{ field.exp }})</small>
-                      <BTooltip
-                        v-if="field.help"
-                        :delay="{show: 300, hide: 0}"
-                        noninteractive
-                        :target="key + k + 'itemlink'">{{ field.help }}</BTooltip>
+                      <v-tooltip
+                        activator="parent"
+                        :open-delay="300">
+                        {{ field.help }}
+                      </v-tooltip>
                     </b-dropdown-item>
                   </template>
                 </template>
@@ -283,10 +291,11 @@ SPDX-License-Identifier: Apache-2.0
                   class="help-cursor"
                   id="baselineDate">
                   {{ $t('connections.baselineDate') }}
-                  <BTooltip
-                    target="baselineDate"
-                    :delay="{show: 300, hide: 0}"
-                    noninteractive>{{ $t('connections.baselineDateTip') }}</BTooltip>
+                  <v-tooltip
+                    activator="parent"
+                    :open-delay="300">
+                    {{ $t('connections.baselineDateTip') }}
+                  </v-tooltip>
                 </BInputGroupText>
                 <select
                   class="form-control input-sm"
@@ -323,10 +332,11 @@ SPDX-License-Identifier: Apache-2.0
                   class="help-cursor"
                   id="baselineVis">
                   {{ $t('connections.baselineVis') }}
-                  <BTooltip
-                    target="baselineVis"
-                    :delay="{show: 300, hide: 0}"
-                    noninteractive>{{ $t('connections.baselineVisTip') }}</BTooltip>
+                  <v-tooltip
+                    activator="parent"
+                    :open-delay="300">
+                    {{ $t('connections.baselineVisTip') }}
+                  </v-tooltip>
                 </BInputGroupText>
                 <select
                   class="form-control input-sm"
@@ -417,12 +427,12 @@ SPDX-License-Identifier: Apache-2.0
               :aria-label="$t('connections.unlockNodesTip')"
               @click.stop.prevent="unlock">
               <span class="fa fa-unlock" />
-              <BTooltip
-                target="unlockNodes"
-                placement="bottom"
-                triggers="hover"
-                :delay="{show: 300, hide: 0}"
-                noninteractive>{{ $t('connections.unlockNodesTip') }}</BTooltip>
+              <v-tooltip
+                activator="parent"
+                location="bottom"
+                :open-delay="300">
+                {{ $t('connections.unlockNodesTip') }}
+              </v-tooltip>
             </button>
           </span> <!-- /unlock button-->
           <!-- export button-->
@@ -433,12 +443,12 @@ SPDX-License-Identifier: Apache-2.0
               :aria-label="$t('connections.exportGraphTip')"
               @click.stop.prevent="exportPng">
               <span class="fa fa-download" />
-              <BTooltip
-                target="exportGraph"
-                placement="bottom"
-                triggers="hover"
-                :delay="{show: 300, hide: 0}"
-                noninteractive>{{ $t('connections.exportGraphTip') }}</BTooltip>
+              <v-tooltip
+                activator="parent"
+                location="bottom"
+                :open-delay="300">
+                {{ $t('connections.exportGraphTip') }}
+              </v-tooltip>
             </button>
           </span> <!-- /export button-->
         </div>
@@ -454,12 +464,12 @@ SPDX-License-Identifier: Apache-2.0
             @click="changeNodeDist(10)">
             <span class="fa fa-plus" />
             <span class="fa fa-arrows-v" />
-            <BTooltip
-              target="nodeDistUp"
-              placement="bottom"
-              triggers="hover"
-              :delay="{show: 300, hide: 0}"
-              noninteractive>{{ $t('connections.nodeDistUpTip') }}</BTooltip>
+            <v-tooltip
+              activator="parent"
+              location="bottom"
+              :open-delay="300">
+              {{ $t('connections.nodeDistUpTip') }}
+            </v-tooltip>
           </button>
           <button
             id="nodeDistDown"
@@ -470,12 +480,12 @@ SPDX-License-Identifier: Apache-2.0
             @click="changeNodeDist(-10)">
             <span class="fa fa-minus" />
             <span class="fa fa-arrows-v" />
-            <BTooltip
-              target="nodeDistDown"
-              placement="bottom"
-              triggers="hover"
-              :delay="{show: 300, hide: 0}"
-              noninteractive>{{ $t('connections.nodeDistDownTip') }}</BTooltip>
+            <v-tooltip
+              activator="parent"
+              location="bottom"
+              :open-delay="300">
+              {{ $t('connections.nodeDistDownTip') }}
+            </v-tooltip>
           </button>
         </div> <!-- /node distance -->
 
@@ -490,12 +500,12 @@ SPDX-License-Identifier: Apache-2.0
             @click="updateTextSize(0.1)">
             <span class="fa fa-long-arrow-up" />
             <span class="fa fa-font" />
-            <BTooltip
-              target="textSizeUp"
-              placement="bottom"
-              triggers="hover"
-              :delay="{show: 300, hide: 0}"
-              noninteractive>{{ $t('connections.textSizeUpTip') }}</BTooltip>
+            <v-tooltip
+              activator="parent"
+              location="bottom"
+              :open-delay="300">
+              {{ $t('connections.textSizeUpTip') }}
+            </v-tooltip>
           </button>
           <button
             id="textSizeDown"
@@ -506,12 +516,12 @@ SPDX-License-Identifier: Apache-2.0
             @click="updateTextSize(-0.1)">
             <span class="fa fa-long-arrow-down" />
             <span class="fa fa-font" />
-            <BTooltip
-              target="textSizeDown"
-              placement="bottom"
-              triggers="hover"
-              :delay="{show: 300, hide: 0}"
-              noninteractive>{{ $t('connections.textSizeDownTip') }}</BTooltip>
+            <v-tooltip
+              activator="parent"
+              location="bottom"
+              :open-delay="300">
+              {{ $t('connections.textSizeDownTip') }}
+            </v-tooltip>
           </button>
         </div> <!-- /text size increase/decrease -->
 
@@ -525,12 +535,12 @@ SPDX-License-Identifier: Apache-2.0
             :class="{'disabled':zoomLevel >= 4}"
             @click="zoomConnections(2)">
             <span class="fa fa-lg fa-search-plus" />
-            <BTooltip
-              target="zoomIn"
-              placement="bottom"
-              triggers="hover"
-              :delay="{show: 300, hide: 0}"
-              noninteractive>{{ $t('connections.zoomInTip') }}</BTooltip>
+            <v-tooltip
+              activator="parent"
+              location="bottom"
+              :open-delay="300">
+              {{ $t('connections.zoomInTip') }}
+            </v-tooltip>
           </button>
           <button
             id="zoomOut"
@@ -540,12 +550,12 @@ SPDX-License-Identifier: Apache-2.0
             :class="{'disabled':zoomLevel <= 0.0625}"
             @click="zoomConnections(0.5)">
             <span class="fa fa-lg fa-search-minus" />
-            <BTooltip
-              target="zoomOut"
-              placement="bottom"
-              triggers="hover"
-              :delay="{show: 300, hide: 0}"
-              noninteractive>{{ $t('connections.zoomOutTip') }}</BTooltip>
+            <v-tooltip
+              activator="parent"
+              location="bottom"
+              :open-delay="300">
+              {{ $t('connections.zoomOutTip') }}
+            </v-tooltip>
           </button>
         </div> <!-- /zoom in/out -->
       </span> <!-- /Button group -->

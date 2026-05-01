@@ -16,12 +16,11 @@ SPDX-License-Identifier: Apache-2.0
         exact>
         <img
           alt="hoot"
-          id="help-img"
           class="arkime-logo"
           src="/assets/Arkime_Icon_ColorMint.png">
-        <BTooltip
-          target="help-img"
-          title="HOOT! Can I help you? Click me to see the help page" />
+        <v-tooltip activator="parent">
+          HOOT! Can I help you? Click me to see the help page
+        </v-tooltip>
       </router-link>
     </b-navbar-brand>
 
@@ -79,18 +78,15 @@ SPDX-License-Identifier: Apache-2.0
 
       <!-- help -->
       <router-link to="help">
-        <span
-          id="help-icon"
-          class="fa fa-2x fa-fw fa-question-circle me-2 help-link text-theme-button text-theme-gray-hover" />
-        <BTooltip
-          target="help-icon"
-          :title="$t('navigation.helpTip')" />
+        <span class="fa fa-2x fa-fw fa-question-circle me-2 help-link text-theme-button text-theme-gray-hover" />
+        <v-tooltip activator="parent">
+          {{ $t('navigation.helpTip') }}
+        </v-tooltip>
       </router-link> <!-- /help -->
 
       <!-- dark/light mode -->
       <button
         type="button"
-        id="theme-toggle"
         class="btn btn-sm btn-outline-secondary cursor-pointer me-2"
         @click="toggleTheme">
         <span
@@ -99,10 +95,10 @@ SPDX-License-Identifier: Apache-2.0
         <span
           v-if="wiseTheme === 'dark'"
           class="fa fa-moon-o fa-fw" />
+        <v-tooltip activator="parent">
+          {{ $t('navigation.toggleLightDark') }}
+        </v-tooltip>
       </button>
-      <BTooltip
-        target="theme-toggle"
-        :title="$t('navigation.toggleLightDark')" />
       <!-- /dark/light mode -->
       <Logout
         class="ms-2"

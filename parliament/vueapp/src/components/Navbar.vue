@@ -17,13 +17,12 @@ SPDX-License-Identifier: Apache-2.0
         <img
           :src="logo"
           alt="hoot"
-          id="hoot-hoot"
           class="arkime-logo">
-        <BTooltip
-          target="hoot-hoot"
-          placement="bottom">
+        <v-tooltip
+          activator="parent"
+          location="bottom">
           {{ $t('navigation.tooltipHelpTip') }}
-        </BTooltip>
+        </v-tooltip>
       </router-link>
     </b-navbar-brand>
 
@@ -69,19 +68,17 @@ SPDX-License-Identifier: Apache-2.0
       <button
         v-if="$route.path === '/' && nonGreenClusters.length > 0"
         @click="scrollToNextNonGreenCluster"
-        class="btn btn-sm btn-danger me-2 position-relative no-wrap"
-        id="esStatusBtn">
+        class="btn btn-sm btn-danger me-2 position-relative no-wrap">
         {{ $t('parliament.navEsIssues') }}
         <span class="badge rounded-pill bg-dark ms-1">
           {{ nonGreenClusters.length }}
         </span>
-      </button>
-      <BTooltip
-        v-if="$route.path === '/' && nonGreenClusters.length > 0"
-        target="esStatusBtn"
-        placement="bottom">
-        {{ $t('parliament.navEsIssuesTip', {cluster: $t('common.clusterCount', nonGreenClusters.length)}) }}
-      </BTooltip> <!-- /ES status indicator -->
+        <v-tooltip
+          activator="parent"
+          location="bottom">
+          {{ $t('parliament.navEsIssuesTip', {cluster: $t('common.clusterCount', nonGreenClusters.length)}) }}
+        </v-tooltip>
+      </button> <!-- /ES status indicator -->
       <!-- cont3xt url -->
       <a
         v-if="settings.general.cont3xtUrl"
