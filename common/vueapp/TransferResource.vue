@@ -3,50 +3,49 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-  <b-modal
-    id="transfer-modal"
+  <v-dialog
     :model-value="showModal"
-    @hidden="cancel"
-    @keyup.stop.prevent.enter="transferResource"
-    :title="$t('settings.transfer.title')">
-    <b-form
-      @submit="transferResource"
-      @keyup.stop.prevent.enter="transferResource">
-      <!-- user ID input -->
-      <b-input-group
-        :prepend="$t('settings.transfer.id')">
-        <b-form-input
+    @update:model-value="onDialogUpdate"
+    max-width="600"
+    @keyup.stop.prevent.enter="transferResource">
+    <v-card>
+      <v-card-title>{{ $t('settings.transfer.title') }}</v-card-title>
+      <v-card-text>
+        <v-text-field
           autofocus
           required
+          density="compact"
+          variant="outlined"
+          hide-details
           id="userId"
-          type="text"
+          :label="$t('settings.transfer.id')"
           :model-value="userId"
+          :placeholder="$t('settings.transfer.id')"
           @update:model-value="userId = $event"
-          :state="!userId ? false : true"
-          @keyup.stop.prevent.enter="transferResource"
-          :placeholder="$t('settings.transfer.id')" />
-      </b-input-group> <!-- /user ID input -->
-    </b-form>
-    <!-- modal footer -->
-    <template #footer>
-      <div class="w-100 d-flex justify-content-between">
-        <b-button
-          :title="$t('common.cancel')"
-          variant="danger"
-          @click="cancel">
-          <span class="fa fa-times" />
-          {{ $t('common.cancel') }}
-        </b-button>
-        <b-button
-          variant="success"
-          :disabled="!userId"
-          @click="transferResource">
-          <span class="fa fa-share me-1" />
-          {{ $t('common.transfer') }}
-        </b-button>
-      </div>
-    </template> <!-- /modal footer -->
-  </b-modal>
+          @keyup.stop.prevent.enter="transferResource" />
+      </v-card-text>
+      <v-card-actions>
+        <div class="w-100 d-flex justify-content-between">
+          <button
+            type="button"
+            class="btn btn-danger"
+            :title="$t('common.cancel')"
+            @click="cancel">
+            <span class="fa fa-times" />
+            {{ $t('common.cancel') }}
+          </button>
+          <button
+            type="button"
+            class="btn btn-success"
+            :disabled="!userId"
+            @click="transferResource">
+            <span class="fa fa-share me-1" />
+            {{ $t('common.transfer') }}
+          </button>
+        </div>
+      </v-card-actions>
+    </v-card>
+  </v-dialog>
 </template>
 
 <script>
@@ -65,6 +64,14 @@ export default {
     };
   },
   methods: {
+    /**
+     * v-dialog two-way binds its open state via update:model-value;
+     * we keep a one-way prop (showModal) as before, so when the dialog
+     * is closed externally (esc, click-outside) we route through cancel().
+     */
+    onDialogUpdate (val) {
+      if (!val) { this.cancel(); }
+    },
     /**
      * Cancel the transfer of a resource to another user and close the modal.
      * Emits a `transfer-resource` event with no payload to the parent.
