@@ -17,12 +17,10 @@ SPDX-License-Identifier: Apache-2.0
               <strong>
                 {{ $t('vis.hideViz', { days: turnOffGraphDays }) }}
               </strong>
-              <span
-                class="fa fa-info-circle fa-lg ms-1 me-1 cursor-help"
-                id="graphDisabledInfo">
-                <BTooltip target="graphDisabledInfo">
+              <span class="fa fa-info-circle fa-lg ms-1 me-1 cursor-help">
+                <v-tooltip activator="parent">
                   {{ $t('vis.hideVizTip') }}
-                </BTooltip>
+                </v-tooltip>
               </span>
               <br>
               {{ $t('vis.hideVizMore') }}
@@ -36,13 +34,12 @@ SPDX-License-Identifier: Apache-2.0
             <!-- map open button -->
             <div
               class="map-btn"
-              id="mapBtn"
               v-show="!showMap && primary"
               @click="toggleMap">
               <span class="fa fa-fw fa-globe" />
-              <BTooltip target="mapBtn">
+              <v-tooltip activator="parent">
                 {{ $t('common.openMap') }}
-              </BTooltip>
+              </v-tooltip>
             </div> <!-- /map open button -->
 
             <div class="inline-map">
@@ -79,23 +76,21 @@ SPDX-License-Identifier: Apache-2.0
                       type="button"
                       class="btn btn-xs btn-default"
                       :class="{'active':src}"
-                      @click="toggleSrcDstXff('src')"
-                      id="srcMapBtn">
+                      @click="toggleSrcDstXff('src')">
                       <strong>S</strong>
-                      <BTooltip target="srcMapBtn">
+                      <v-tooltip activator="parent">
                         {{ $t('vis.toggleSrcCountry') }}
-                      </BTooltip>
+                      </v-tooltip>
                     </button>
                     <button
                       type="button"
                       class="btn btn-xs btn-default"
                       :class="{'active':dst}"
-                      @click="toggleSrcDstXff('dst')"
-                      id="dstMapBtn">
+                      @click="toggleSrcDstXff('dst')">
                       <strong>D</strong>
-                      <BTooltip target="dstMapBtn">
+                      <v-tooltip activator="parent">
                         {{ $t('vis.toggleDstCountry') }}
-                      </BTooltip>
+                      </v-tooltip>
                     </button>
                   </div>
                   <button
@@ -223,7 +218,6 @@ SPDX-License-Identifier: Apache-2.0
               <!-- cap times -->
               <div
                 class="btn-group btn-group-xs btn-group-checkboxes ms-1"
-                id="toggleCapStartTimes"
                 style="margin-top: 4px;">
                 <b-form-checkbox
                   size="sm"
@@ -232,16 +226,15 @@ SPDX-License-Identifier: Apache-2.0
                   @update:model-value="toggleCapStartTimes">
                   {{ $t('vis.capRestarts') }}
                 </b-form-checkbox> <!-- /cap times -->
-                <BTooltip
-                  target="toggleCapStartTimes"
-                  placement="bottom">
+                <v-tooltip
+                  activator="parent"
+                  location="bottom">
                   {{ $t('vis.capRestartsTip') }}
-                </BTooltip>
+                </v-tooltip>
               </div>
               <!-- spanning -->
               <div
                 class="btn-group btn-group-xs btn-group-checkboxes ms-1"
-                id="toggleSpanning"
                 style="margin-top: 4px;">
                 <b-form-checkbox
                   size="sm"
@@ -251,11 +244,11 @@ SPDX-License-Identifier: Apache-2.0
                   @update:model-value="toggleSpanning">
                   {{ $t('search.timeBounding-spanning') }}
                 </b-form-checkbox>
-                <BTooltip
-                  target="toggleSpanning"
-                  placement="bottom">
+                <v-tooltip
+                  activator="parent"
+                  location="bottom">
                   {{ $t('search.spanningTip') }}
-                </BTooltip>
+                </v-tooltip>
               </div> <!-- /spanning -->
             </div> <!-- /graph controls -->
 

@@ -63,7 +63,6 @@ SPDX-License-Identifier: Apache-2.0
         <template v-if="isUser && issues && issues.length">
           <!-- remove/cancel all issues button -->
           <button
-            id="removeAllAckIssuesBtn"
             class="btn btn-outline-danger btn-sm cursor-pointer ms-2 me-1"
             @click="removeAllAcknowledgedIssues">
             <span class="fa fa-trash fa-fw" />
@@ -72,12 +71,12 @@ SPDX-License-Identifier: Apache-2.0
                 {{ $t('parliament.issue.removeAllAcknowledgedIssuesConfirm') }}
               </span>
             </transition>
+            <v-tooltip
+              activator="parent"
+              location="bottom">
+              {{ $t('parliament.issue.removeAllAckIssuesBtnTip') }}
+            </v-tooltip>
           </button>
-          <BTooltip
-            target="removeAllAckIssuesBtn"
-            placement="bottom">
-            {{ $t('parliament.issue.removeAllAckIssuesBtnTip') }}
-          </BTooltip>
           <transition name="slide-fade">
             <button
               class="btn btn-outline-warning btn-sm cursor-pointer"
@@ -314,28 +313,26 @@ SPDX-License-Identifier: Apache-2.0
               <!-- remove selected issues button -->
               <button
                 class="btn btn-outline-primary btn-xs cursor-pointer me-1"
-                id="removeSelectedIssuesBtn"
                 @click="removeSelectedAcknowledgedIssues">
                 <span class="fa fa-trash fa-fw" />
+                <v-tooltip
+                  activator="parent"
+                  location="bottom">
+                  {{ $t('parliament.issue.removeSelectedIssuesBtnTip') }}
+                </v-tooltip>
               </button>
-              <BTooltip
-                target="removeSelectedIssuesBtn"
-                placement="bottom">
-                {{ $t('parliament.issue.removeSelectedIssuesBtnTip') }}
-              </BTooltip>
               <!-- /remove selected issues button -->
               <!-- acknowledge issues button -->
               <button
                 class="btn btn-outline-success btn-xs cursor-pointer me-1"
-                id="acknowledgeIssuesBtn"
                 @click="acknowledgeIssues">
                 <span class="fa fa-check fa-fw" />
+                <v-tooltip
+                  activator="parent"
+                  location="bottom">
+                  {{ $t('parliament.issue.acknowledgeIssuesBtnTip') }}
+                </v-tooltip>
               </button>
-              <BTooltip
-                target="acknowledgeIssuesBtn"
-                placement="bottom">
-                {{ $t('parliament.issue.acknowledgeIssuesBtnTip') }}
-              </BTooltip>
               <!-- /acknowledge issues button -->
               <!-- ignore until dropdown -->
               <b-dropdown

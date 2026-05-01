@@ -56,28 +56,26 @@ SPDX-License-Identifier: Apache-2.0
           <hr>
           <b-button
             block
-            id="import-config"
             variant="warning"
             class="text-nowrap me-1"
             @click="showImportConfigModal = true">
             <span class="fa fa-download me-1" />
             <span>{{ $t('common.import') }}</span>
+            <v-tooltip activator="parent">
+              {{ $t('wise.config.importTip') }}
+            </v-tooltip>
           </b-button>
-          <BTooltip
-            target="import-config"
-            :title="$t('wise.config.importTip')" />
           <b-button
             block
-            id="create-source"
             variant="success"
             class="text-nowrap"
             @click="showSourceModal = true">
             <span class="fa fa-plus me-1" />
             <span>{{ $t('common.create') }}</span>
+            <v-tooltip activator="parent">
+              {{ $t('wise.config.createTip') }}
+            </v-tooltip>
           </b-button>
-          <BTooltip
-            target="create-source"
-            :title="$t('wise.config.createTip')" />
         </span>
       </div> <!-- /Sources sidebar -->
 
@@ -107,14 +105,15 @@ SPDX-License-Identifier: Apache-2.0
             <div class="input-group">
               <input
                 type="text"
-                id="config-pin-code"
+                id="config-pin-code-top"
                 class="form-control"
                 v-model="configCode"
                 :placeholder="$t('wise.config.configCodePlaceholder')">
-              <BTooltip
-                placement="left"
-                target="config-pin-code"
-                :title="$t('wise.config.configCodeTip')" />
+              <v-tooltip
+                activator="#config-pin-code-top"
+                location="left">
+                {{ $t('wise.config.configCodeTip') }}
+              </v-tooltip>
               <b-button
                 class="ms-auto"
                 variant="primary"
@@ -237,9 +236,9 @@ SPDX-License-Identifier: Apache-2.0
                           :model-value="line[field.name]"
                           @update:model-value="debounceValueActionsChange"
                           :state="valueActionsInputState(line, line[field.name], field.required, field.depends)" />
-                        <BTooltip
-                          :target="`value-action-${lineIndex}-${field.name}`"
-                          :title="field.help" />
+                        <v-tooltip :activator="`[id='value-action-${lineIndex}-${field.name}']`">
+                          {{ field.help }}
+                        </v-tooltip>
                       </b-input-group>
                     </transition>
                   </div>
@@ -576,13 +575,13 @@ SPDX-License-Identifier: Apache-2.0
             <div class="input-group input-group-sm">
               <input
                 type="text"
-                id="config-pin-code"
+                id="config-pin-code-import"
                 class="form-control"
                 v-model="configCode"
                 :placeholder="$t('wise.config.configCodePlaceholder')">
-              <BTooltip
-                target="config-pin-code"
-                :title="$t('wise.config.configCodeTip')" />
+              <v-tooltip activator="#config-pin-code-import">
+                {{ $t('wise.config.configCodeTip') }}
+              </v-tooltip>
               <b-button
                 class="ms-auto"
                 variant="success"

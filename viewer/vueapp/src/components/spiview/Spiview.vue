@@ -29,14 +29,12 @@ SPDX-License-Identifier: Apache-2.0
               toggle-class="rounded"
               variant="theme-secondary">
               <template #button-content>
-                <span
-                  class="fa fa-columns"
-                  id="spiViewFieldConfig">
-                  <BTooltip
-                    target="spiViewFieldConfig"
-                    placement="right"
-                    noninteractive>{{ $t('spiview.spiViewFieldConfigTip') }}
-                  </BTooltip>
+                <span class="fa fa-columns">
+                  <v-tooltip
+                    activator="parent"
+                    location="right">
+                    {{ $t('spiview.spiViewFieldConfigTip') }}
+                  </v-tooltip>
                 </span>
               </template>
               <b-dropdown-header>
@@ -52,16 +50,16 @@ SPDX-License-Identifier: Apache-2.0
                     @keydown.enter.stop.prevent="saveFieldConfiguration" />
                   <button
                     type="button"
-                    id="spiViewFieldConfigSave"
                     :aria-label="$t('common.save')"
                     class="btn btn-theme-secondary"
                     :disabled="!newFieldConfigName"
                     @click.stop.prevent="saveFieldConfiguration">
                     <span class="fa fa-save" />
-                    <BTooltip
-                      target="spiViewFieldConfigSave"
-                      placement="right"
-                      noninteractive>{{ $t('spiview.spiViewFieldConfigSaveTip') }}</BTooltip>
+                    <v-tooltip
+                      activator="parent"
+                      location="right">
+                      {{ $t('spiview.spiViewFieldConfigSaveTip') }}
+                    </v-tooltip>
                   </button>
                 </div>
               </b-dropdown-header>
@@ -74,12 +72,11 @@ SPDX-License-Identifier: Apache-2.0
                   id="spiViewConfigDefault"
                   @click.stop.prevent="loadFieldConfiguration(-1)">
                   {{ $t('spiview.arkimeDefault') }}
-                  <BTooltip
-                    target="spiViewConfigDefault"
-                    noninteractive
-                    placement="right">
+                  <v-tooltip
+                    activator="#spiViewConfigDefault"
+                    location="right">
                     {{ $t('spiview.spiViewConfigDefaultTip') }}
-                  </BTooltip>
+                  </v-tooltip>
                 </b-dropdown-item>
                 <template v-if="fieldConfigs">
                   <b-dropdown-item
@@ -97,10 +94,11 @@ SPDX-License-Identifier: Apache-2.0
                       class="btn btn-xs btn-warning pull-right"
                       type="button"
                       :aria-label="$t('common.save')"
-                      :id="`spiViewUpdateFieldConfig-${config.name}`"
                       @click.stop.prevent="updateFieldConfiguration(config.name, key)">
                       <span class="fa fa-save" />
-                      <BTooltip :target="`spiViewUpdateFieldConfig-${config.name}`">Update this field configuration with the currently visible fields</BTooltip>
+                      <v-tooltip activator="parent">
+                        Update this field configuration with the currently visible fields
+                      </v-tooltip>
                     </button>
                     {{ config.name }}
                   </b-dropdown-item>
@@ -298,7 +296,7 @@ SPDX-License-Identifier: Apache-2.0
                           <field-actions
                             :separator="true"
                             :expr="field.exp" />
-                          <BTooltip :target="`spiViewField-${field.dbField}`">{{ field.help }}</BTooltip>
+                          <v-tooltip :activator="`[id='spiViewField-${field.dbField}']`">{{ field.help }}</v-tooltip>
                         </b-dropdown>
                       </span>
                     </template>
