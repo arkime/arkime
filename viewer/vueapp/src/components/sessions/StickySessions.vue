@@ -12,7 +12,6 @@ SPDX-License-Identifier: Apache-2.0
     }">
     <!-- toggle button -->
     <div
-      id="toggleStickySessions"
       class="sticky-session-btn"
       @click="toggleStickySessions"
       v-if="sortedSessions && sortedSessions.length > 0">
@@ -22,9 +21,9 @@ SPDX-License-Identifier: Apache-2.0
           v-else
           class="fa fa-angle-double-right" />&nbsp;
       <small>{{ sortedSessions.length }}</small>
-      <BTooltip target="toggleStickySessions">
+      <v-tooltip activator="parent">
         {{ $t('sessions.sticky.toggleOpenTip') }}
-      </BTooltip>
+      </v-tooltip>
     </div> <!-- /toggle button -->
 
     <!-- sticky sessions content -->
@@ -36,34 +35,31 @@ SPDX-License-Identifier: Apache-2.0
         <ul class="list-group">
           <li class="list-group-item list-group-header">
             <a
-              id="closeAllFromSticky"
               @click="closeAll"
               class="btn btn-default btn-sm pull-right ms-1">
               <span class="fa fa-close" />
-              <BTooltip target="closeAllFromSticky">
+              <v-tooltip activator="parent">
                 {{ $t('sessions.sticky.closeAllTip') }}
-              </BTooltip>
+              </v-tooltip>
             </a>
             <span v-if="sortBy">
               <a
                 v-if="sortOrder === 'asc'"
-                id="toggleStickySortOrderDesc"
                 @click="toggleSortOrder"
                 class="btn btn-default btn-sm pull-right ms-1">
                 <span class="fa fa-sort-asc" />
-                <BTooltip target="toggleStickySortOrderDesc">
+                <v-tooltip activator="parent">
                   {{ $t('sessions.sticky.sortDescTip') }}
-                </BTooltip>
+                </v-tooltip>
               </a>
               <a
                 v-if="sortOrder === 'desc'"
-                id="toggleStickySortOrderAsc"
                 @click="toggleSortOrder"
                 class="btn btn-default btn-sm pull-right ms-1">
                 <span class="fa fa-sort-desc" />
-                <BTooltip target="toggleStickySortOrderAsc">
+                <v-tooltip activator="parent">
                   {{ $t('sessions.sticky.sortAscTip') }}
-                </BTooltip>
+                </v-tooltip>
               </a>
             </span>
             <select

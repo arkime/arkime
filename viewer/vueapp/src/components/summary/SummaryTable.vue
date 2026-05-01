@@ -1,16 +1,17 @@
 <template>
-  <BTable
-    small
-    striped
+  <v-data-table
+    density="compact"
     must-sort
     :items="data"
-    :fields="tableFields"
-    class="summary-table">
+    :headers="tableHeaders"
+    :items-per-page="-1"
+    hide-default-footer
+    class="summary-table summary-table-striped">
     <!-- Custom cell rendering for columns with useSessionField -->
     <template
       v-for="column in columns"
       :key="`cell-${column.key}`"
-      #[`cell(${column.key})`]="{ item }">
+      #[`item.${column.key}`]="{ item }">
       <!-- ArkimeSessionField for columns with fieldConfig -->
       <arkime-session-field
         v-if="column.useSessionField && fieldConfig"
@@ -25,12 +26,11 @@
         {{ formatValue(item[column.key], column.format) }}
       </template>
     </template>
-  </BTable>
+  </v-data-table>
 </template>
 
 <script setup>
 import { computed } from 'vue';
-import { BTable } from 'bootstrap-vue-next';
 import ArkimeSessionField from '../sessions/SessionField.vue';
 import { commaString, humanReadableBytes } from '@common/vueFilters.js';
 
@@ -52,14 +52,16 @@ const props = defineProps({
   }
 });
 
-// Transform columns to BTable fields format
-const tableFields = computed(() => {
+// Map Bootstrap-style alignment to Vuetify's align values
+const alignMap = { left: 'start', right: 'end', center: 'center' };
+
+// Transform columns to v-data-table headers format
+const tableHeaders = computed(() => {
   return props.columns.map(column => ({
     key: column.key,
-    label: column.header,
-    sortable: true, // Enable sorting for all columns
-    thClass: column.align ? `text-${column.align}` : '',
-    tdClass: column.align ? `text-${column.align}` : ''
+    title: column.header,
+    sortable: true,
+    align: column.align ? alignMap[column.align] : 'start'
   }));
 });
 
@@ -76,3 +78,13 @@ const formatValue = (value, format) => {
   }
 };
 </script>
+
+<style scoped>
+/* Vuetify v-data-table doesn't have a built-in striped prop; preserve the
+   alternate-row look BTable's striped prop gave us. Use the same
+   --color-gray-lighter token Bootstrap's .table-striped uses (see
+   overrides.css). */
+.summary-table-striped :deep(tbody tr:nth-of-type(odd) > td) {
+  background-color: var(--color-gray-lighter) !important;
+}
+</style>

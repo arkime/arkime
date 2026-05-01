@@ -47,77 +47,78 @@
       </h4>
       <div class="no-wrap">
         <!-- Consolidated Settings Dropdown -->
-        <b-dropdown
-          v-if="hasData"
-          size="sm"
-          variant="outline-secondary"
-          class="d-inline-block"
-          no-caret>
-          <template #button-content>
-            <span
-              class="fa fa-gear"
-              title="Settings" />
+        <v-menu v-if="hasData">
+          <template #activator="{ props: activatorProps }">
+            <button
+              v-bind="activatorProps"
+              type="button"
+              class="btn btn-sm btn-outline-secondary d-inline-block"
+              title="Settings">
+              <span class="fa fa-gear" />
+            </button>
           </template>
 
-          <!-- View Mode Options -->
-          <template v-if="enableViewMode">
-            <b-dropdown-item
-              :active="viewMode === 'pie'"
-              @click="$emit('change-mode', 'pie')">
-              <span><span class="fa fa-pie-chart" /> {{ $t('sessions.summary.pieChart') }}</span>
-            </b-dropdown-item>
+          <v-list density="compact">
+            <!-- View Mode Options -->
+            <template v-if="enableViewMode">
+              <v-list-item
+                :active="viewMode === 'pie'"
+                @click="$emit('change-mode', 'pie')">
+                <span><span class="fa fa-pie-chart" /> {{ $t('sessions.summary.pieChart') }}</span>
+              </v-list-item>
 
-            <b-dropdown-item
-              :active="viewMode === 'bar'"
-              @click="$emit('change-mode', 'bar')">
-              <span><span class="fa fa-bar-chart" /> {{ $t('sessions.summary.barChart') }}</span>
-            </b-dropdown-item>
+              <v-list-item
+                :active="viewMode === 'bar'"
+                @click="$emit('change-mode', 'bar')">
+                <span><span class="fa fa-bar-chart" /> {{ $t('sessions.summary.barChart') }}</span>
+              </v-list-item>
 
-            <b-dropdown-item
-              :active="viewMode === 'table'"
-              @click="$emit('change-mode', 'table')">
-              <span><span class="fa fa-table" /> {{ $t('sessions.summary.tableView') }}</span>
-            </b-dropdown-item>
+              <v-list-item
+                :active="viewMode === 'table'"
+                @click="$emit('change-mode', 'table')">
+                <span><span class="fa fa-table" /> {{ $t('sessions.summary.tableView') }}</span>
+              </v-list-item>
 
-            <!-- Metric Selector Options (only for charts, not table) -->
-            <template v-if="viewMode !== 'table'">
-              <b-dropdown-divider />
+              <!-- Metric Selector Options (only for charts, not table) -->
+              <template v-if="viewMode !== 'table'">
+                <v-divider />
 
-              <b-dropdown-item
-                :active="metricType === 'sessions'"
-                @click="$emit('change-metric', 'sessions')">
-                <span>{{ $t('sessions.summary.sessions') }}</span>
-              </b-dropdown-item>
+                <v-list-item
+                  :active="metricType === 'sessions'"
+                  @click="$emit('change-metric', 'sessions')">
+                  <span>{{ $t('sessions.summary.sessions') }}</span>
+                </v-list-item>
 
-              <b-dropdown-item
-                :active="metricType === 'packets'"
-                @click="$emit('change-metric', 'packets')">
-                <span>{{ $t('sessions.summary.packets') }}</span>
-              </b-dropdown-item>
+                <v-list-item
+                  :active="metricType === 'packets'"
+                  @click="$emit('change-metric', 'packets')">
+                  <span>{{ $t('sessions.summary.packets') }}</span>
+                </v-list-item>
 
-              <b-dropdown-item
-                :active="metricType === 'bytes'"
-                @click="$emit('change-metric', 'bytes')">
-                <span>{{ $t('sessions.summary.bytes') }}</span>
-              </b-dropdown-item>
+                <v-list-item
+                  :active="metricType === 'bytes'"
+                  @click="$emit('change-metric', 'bytes')">
+                  <span>{{ $t('sessions.summary.bytes') }}</span>
+                </v-list-item>
+              </template>
             </template>
-          </template>
 
-          <!-- Export Option -->
-          <template v-if="showExport">
-            <b-dropdown-divider v-if="enableViewMode" />
+            <!-- Export Option -->
+            <template v-if="showExport">
+              <v-divider v-if="enableViewMode" />
 
-            <b-dropdown-item @click="$emit('export', svgId)">
-              <span class="fa fa-download" /> {{ viewMode === 'table' ? $t('sessions.summary.downloadCSV') : $t('sessions.summary.downloadPNG') }}
-            </b-dropdown-item>
-          </template>
+              <v-list-item @click="$emit('export', svgId)">
+                <span class="fa fa-download" /> {{ viewMode === 'table' ? $t('sessions.summary.downloadCSV') : $t('sessions.summary.downloadPNG') }}
+              </v-list-item>
+            </template>
 
-          <!-- Remove Field Option -->
-          <b-dropdown-divider />
-          <b-dropdown-item @click="$emit('remove-field', field)">
-            <span class="fa fa-times text-danger" /> {{ $t('sessions.summary.removeField') }}
-          </b-dropdown-item>
-        </b-dropdown>
+            <!-- Remove Field Option -->
+            <v-divider />
+            <v-list-item @click="$emit('remove-field', field)">
+              <span class="fa fa-times text-danger" /> {{ $t('sessions.summary.removeField') }}
+            </v-list-item>
+          </v-list>
+        </v-menu>
       </div>
     </div>
 

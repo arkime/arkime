@@ -3,73 +3,97 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-  <div
-    ref="notifierDropdown"
-    class="d-inline-block">
-    <BTooltip
-      v-if="tooltip"
-      :target="$refs.notifierDropdown"
-      placement="top">
-      {{ tooltip }}
-    </BTooltip>
-    <b-dropdown
-      size="sm"
-      auto-close="outside"
-      @shown="setFocus"
+  <div class="d-inline-block">
+    <v-menu
+      v-model="menuOpen"
+      :close-on-content-click="false"
       :disabled="disabled"
-      class="notifiers-dropdown no-wrap"
-      :text="displayText || getNotifiersStr(localSelectedNotifiers)">
-      <!-- notifiers search -->
-      <b-dropdown-header class="w-100 sticky-top">
-        <b-input-group size="sm">
-          <b-form-input
-            v-focus="focus"
-            :model-value="searchTerm"
-            @update:model-value="searchNotifiersLocal"
-            :placeholder="$t('settings.notifiers.searchTermPlaceholder')" />
-          <template #append>
-            <b-button
+      location="bottom start">
+      <template #activator="{ props: activatorProps }">
+        <button
+          v-bind="activatorProps"
+          type="button"
+          :disabled="disabled"
+          class="btn btn-sm btn-secondary notifier-trigger no-wrap">
+          {{ displayText || getNotifiersStr(localSelectedNotifiers) }}
+          <v-icon end>
+            fa-caret-down
+          </v-icon>
+          <v-tooltip
+            v-if="tooltip"
+            activator="parent"
+            location="top">
+            {{ tooltip }}
+          </v-tooltip>
+        </button>
+      </template>
+      <v-list
+        density="compact"
+        class="notifier-list">
+        <!-- search -->
+        <div class="px-2 pt-2 pb-1 sticky-top notifier-search-row">
+          <div class="input-group input-group-sm">
+            <input
+              v-focus="focus"
+              type="text"
+              class="form-control"
+              :value="searchTerm"
+              @input="searchNotifiersLocal($event.target.value)"
+              :placeholder="$t('settings.notifiers.searchTermPlaceholder')">
+            <button
+              type="button"
+              class="btn btn-outline-secondary"
               :disabled="!searchTerm"
-              @click="clearSearchTerm"
-              variant="outline-secondary">
+              @click="clearSearchTerm">
               <span class="fa fa-close" />
-            </b-button>
-          </template>
-        </b-input-group>
-        <b-dropdown-divider />
-      </b-dropdown-header> <!-- /notifiers search -->
-      <b-dropdown-form v-if="filteredNotifiers && filteredNotifiers.length">
-        <!-- notifier checkboxes -->
-        <b-form-checkbox-group
-          stacked
-          :model-value="localSelectedNotifiers"
-          @update:model-value="updateNotifiers">
-          <b-form-checkbox
+            </button>
+          </div>
+        </div>
+        <v-divider />
+
+        <template v-if="filteredNotifiers && filteredNotifiers.length">
+          <v-list-item
+            v-for="notifier in filteredNotifiers"
             :key="notifier.id"
-            :value="notifier.id"
-            v-for="notifier in filteredNotifiers">
-            {{ notifier.name }} ({{ notifier.type }})
-          </b-form-checkbox>
-          <template v-for="notifierId in localSelectedNotifiers">
-            <!-- previously deleted notifiers -->
-            <b-form-checkbox
-              :key="notifierId"
-              :value="notifierId"
-              v-if="!notifiers.find(n => n.id === notifierId)">
-              {{ notifierId }}
-              <span
-                class="fa fa-times-circle cursor-help ms-2"
-                :title="$t('settings.notifiers.missingNotifier')" />
-            </b-form-checkbox>
+            @click.stop="toggleNotifier(notifier.id)">
+            <span class="d-flex align-items-center">
+              <input
+                type="checkbox"
+                class="form-check-input me-2 cursor-pointer"
+                :checked="localSelectedNotifiers.includes(notifier.id)"
+                @click.stop="toggleNotifier(notifier.id)">
+              {{ notifier.name }} ({{ notifier.type }})
+            </span>
+          </v-list-item>
+          <!-- previously deleted notifiers (still selected but no longer in the list) -->
+          <template
+            v-for="notifierId in localSelectedNotifiers"
+            :key="notifierId">
+            <v-list-item
+              v-if="!notifiers.find(n => n.id === notifierId)"
+              @click.stop="toggleNotifier(notifierId)">
+              <span class="d-flex align-items-center">
+                <input
+                  type="checkbox"
+                  class="form-check-input me-2 cursor-pointer"
+                  :checked="true"
+                  @click.stop="toggleNotifier(notifierId)">
+                {{ notifierId }}
+                <span
+                  class="fa fa-times-circle cursor-help ms-2"
+                  :title="$t('settings.notifiers.missingNotifier')" />
+              </span>
+            </v-list-item>
           </template>
-        </b-form-checkbox-group> <!-- /notifier checkboxes -->
-      </b-dropdown-form>
-      <b-dropdown-item
-        disabled
-        v-if="filteredNotifiers && !filteredNotifiers.length && searchTerm">
-        {{ $t('settings.notifiers.noMatch') }}
-      </b-dropdown-item>
-    </b-dropdown>
+        </template>
+
+        <v-list-item
+          disabled
+          v-if="filteredNotifiers && !filteredNotifiers.length && searchTerm">
+          {{ $t('settings.notifiers.noMatch') }}
+        </v-list-item>
+      </v-list>
+    </v-menu>
   </div>
 </template>
 
@@ -104,6 +128,7 @@ export default {
   data () {
     return {
       focus: false,
+      menuOpen: false,
       searchTerm: '',
       filteredNotifiers: this.notifiers,
       localSelectedNotifiers: this.selectedNotifiers || []
@@ -115,9 +140,21 @@ export default {
     },
     selectedNotifiers (newValue) { // localSelectedNotifiers must be changed whenever selectedNotifiers is (this syncs during sorting)
       this.localSelectedNotifiers = newValue || [];
+    },
+    menuOpen (opened) {
+      if (opened) { this.setFocus(); }
     }
   },
   methods: {
+    toggleNotifier (notifierId) {
+      const set = new Set(this.localSelectedNotifiers);
+      if (set.has(notifierId)) {
+        set.delete(notifierId);
+      } else {
+        set.add(notifierId);
+      }
+      this.updateNotifiers(Array.from(set));
+    },
     updateNotifiers (newVal) {
       this.localSelectedNotifiers = newVal || [];
       this.$emit('selected-notifiers-updated', newVal, this.id);
@@ -141,7 +178,7 @@ export default {
       return displayNames.join(', ');
     },
     searchNotifiersLocal (newVal) {
-      this.searchTerm = newVal;
+      this.searchTerm = newVal || '';
       if (!this.searchTerm) {
         this.filteredNotifiers = this.notifiers;
       } else {
@@ -168,28 +205,15 @@ export default {
 };
 </script>
 
-<style>
-.notifiers-dropdown > ul.dropdown-menu li > form > div {
-  color: var(--color-foreground, black) !important;
+<style scoped>
+.notifier-list {
+  min-width: 280px;
+  max-width: 360px;
+  max-height: 360px;
+  overflow-y: auto;
 }
-/* hides elements scrolling behind sticky search bar */
-.notifiers-dropdown .sticky-top {
-  top: -8px;
-}
-.notifiers-dropdown .dropdown-header {
-  padding: 0rem 0.5rem;
+.notifier-search-row {
   background-color: var(--color-background);
-}
-.notifiers-dropdown .dropdown-header > li {
-  padding-top: 10px;
-  background-color: var(--color-background);
-}
-.notifiers-dropdown .dropdown-divider {
-  margin-top: 0px;
-}
-
-.notifiers-dropdown .dropdown-item,
-.notifiers-dropdown .custom-control {
-  padding-left: 0.5rem;
+  z-index: 2;
 }
 </style>

@@ -21,14 +21,14 @@
             class="fa fa-close pull-right mt-1"
             :title="`Remove ${value.exp} from your field history`"
             @click.stop.prevent="removeFromFieldHistory(value)" />
-          <BTooltip
+          <v-tooltip
             v-if="value.help"
-            :target="key + 'history'">
+            :activator="`[id='${key}history']`">
             {{ value.help.substring(0, 100) }}
             <span v-if="value.help.length > 100">
               ...
             </span>
-          </BTooltip>
+          </v-tooltip>
         </a>
       </template>
     </template>
@@ -44,14 +44,14 @@
         <strong v-if="value.exp">{{ value.exp }}</strong>
         <strong v-if="!value.exp">{{ value }}</strong>
         <span v-if="value.friendlyName"> - {{ value.friendlyName }}</span>
-        <BTooltip
+        <v-tooltip
           v-if="value.help"
-          :target="key + 'item'">
+          :activator="`[id='${key}item']`">
           {{ value.help.substring(0, 100) }}
           <span v-if="value.help.length > 100">
             ...
           </span>
-        </BTooltip>
+        </v-tooltip>
       </a>
     </template>
   </div> <!-- /results dropdown -->

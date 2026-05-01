@@ -17,62 +17,71 @@ SPDX-License-Identifier: Apache-2.0
         <!-- toolbar row -->
         <div class="d-flex justify-content-start align-items-center m-1">
           <!-- results per widget dropdown -->
-          <b-dropdown
-            size="sm"
-            variant="secondary"
-            class="ms-2"
-            :text="String(summaryResultsLimit)">
-            <b-dropdown-item
-              :active="summaryResultsLimit === 10"
-              @click="updateSummaryResultsLimit(10)">
-              10
-            </b-dropdown-item>
-            <b-dropdown-item
-              :active="summaryResultsLimit === 20"
-              @click="updateSummaryResultsLimit(20)">
-              20
-            </b-dropdown-item>
-            <b-dropdown-item
-              :active="summaryResultsLimit === 50"
-              @click="updateSummaryResultsLimit(50)">
-              50
-            </b-dropdown-item>
-            <b-dropdown-item
-              :active="summaryResultsLimit === 100"
-              @click="updateSummaryResultsLimit(100)">
-              100
-            </b-dropdown-item>
-          </b-dropdown>
+          <v-menu>
+            <template #activator="{ props }">
+              <v-btn
+                v-bind="props"
+                size="small"
+                variant="flat"
+                color="secondary"
+                class="ms-2">
+                {{ summaryResultsLimit }}
+                <v-icon end>fa-caret-down</v-icon>
+              </v-btn>
+            </template>
+            <v-list density="compact">
+              <v-list-item
+                v-for="opt in [10, 20, 50, 100]"
+                :key="opt"
+                :active="summaryResultsLimit === opt"
+                @click="updateSummaryResultsLimit(opt)">
+                <v-list-item-title>{{ opt }}</v-list-item-title>
+              </v-list-item>
+            </v-list>
+          </v-menu>
 
           <!-- top/bottom results toggle -->
-          <b-dropdown
-            size="sm"
-            variant="secondary"
-            class="ms-2"
-            :text="summaryOrder === 'asc' ? 'Bottom' : 'Top'">
-            <b-dropdown-item
-              :active="summaryOrder === 'desc'"
-              @click="updateSummaryOrder('desc')">
-              Top
-            </b-dropdown-item>
-            <b-dropdown-item
-              :active="summaryOrder === 'asc'"
-              @click="updateSummaryOrder('asc')">
-              Bottom
-            </b-dropdown-item>
-          </b-dropdown>
+          <v-menu>
+            <template #activator="{ props }">
+              <v-btn
+                v-bind="props"
+                size="small"
+                variant="flat"
+                color="secondary"
+                class="ms-2">
+                {{ summaryOrder === 'asc' ? 'Bottom' : 'Top' }}
+                <v-icon end>fa-caret-down</v-icon>
+              </v-btn>
+            </template>
+            <v-list density="compact">
+              <v-list-item
+                :active="summaryOrder === 'desc'"
+                @click="updateSummaryOrder('desc')">
+                <v-list-item-title>Top</v-list-item-title>
+              </v-list-item>
+              <v-list-item
+                :active="summaryOrder === 'asc'"
+                @click="updateSummaryOrder('asc')">
+                <v-list-item-title>Bottom</v-list-item-title>
+              </v-list-item>
+            </v-list>
+          </v-menu>
 
           <!-- export all charts as PNG -->
-          <button
-            id="exportAllPNGBtn"
+          <v-btn
             :aria-label="$t('sessions.summary.exportAllPNG')"
-            class="btn btn-sm btn-secondary ms-2"
+            size="small"
+            variant="flat"
+            color="secondary"
+            class="ms-2"
             @click="exportAllPNG">
             <span class="fa fa-download" />
-          </button>
-          <BTooltip target="exportAllPNGBtn">
-            {{ $t('sessions.summary.exportAllPNG') }} — {{ $t('sessions.summary.exportPNGTableWarning') }}
-          </BTooltip>
+            <v-tooltip
+              activator="parent"
+              :open-delay="500">
+              {{ $t('sessions.summary.exportAllPNG') }} — {{ $t('sessions.summary.exportPNGTableWarning') }}
+            </v-tooltip>
+          </v-btn>
 
           <!-- summary field visibility dropdown -->
           <FieldSelectDropdown
@@ -94,14 +103,16 @@ SPDX-License-Identifier: Apache-2.0
             @message="displayMessage" />
 
           <!-- cancel loading button -->
-          <button
+          <v-btn
             v-if="summaryStreaming"
-            type="button"
-            class="btn btn-sm btn-warning ms-2"
+            size="small"
+            variant="flat"
+            color="warning"
+            class="ms-2"
             @click="cancelSummaryLoading">
             <span class="fa fa-ban" />&nbsp;
             {{ $t('common.cancel') }}
-          </button>
+          </v-btn>
         </div>
 
       </span>

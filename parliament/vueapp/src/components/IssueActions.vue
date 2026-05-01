@@ -9,31 +9,29 @@ SPDX-License-Identifier: Apache-2.0
     <!-- remove issue button -->
     <template v-if="issue.acknowledged">
       <button
-        :id="`removeIssueTooltip-${issue.clusterId}-${issue.type}-${issue.firstNoticed}`"
         class="btn btn-outline-primary btn-xs cursor-pointer me-1"
         @click="removeIssue">
         <span class="fa fa-trash fa-fw" />
+        <v-tooltip
+          activator="parent"
+          location="left">
+          {{ $t('parliament.issue.issueFixed') }}
+        </v-tooltip>
       </button>
-      <BTooltip
-        :target="`removeIssueTooltip-${issue.clusterId}-${issue.type}-${issue.firstNoticed}`"
-        placement="left">
-        {{ $t('parliament.issue.issueFixed') }}
-      </BTooltip>
     </template>
     <!-- /remove issue button -->
     <!-- acknowledge issue button -->
     <button
       v-if="!issue.acknowledged"
-      :id="`acknowledgeIssueTooltip-${issue.clusterId}-${issue.type}-${issue.firstNoticed}`"
       class="btn btn-outline-success btn-xs cursor-pointer me-1"
       @click="acknowledgeIssue">
       <span class="fa fa-check fa-fw" />
+      <v-tooltip
+        activator="parent"
+        location="left">
+        {{ $t('parliament.issue.issueAckTip') }}
+      </v-tooltip>
     </button>
-    <BTooltip
-      :target="`acknowledgeIssueTooltip-${issue.clusterId}-${issue.type}-${issue.firstNoticed}`"
-      placement="left">
-      {{ $t('parliament.issue.issueAckTip') }}
-    </BTooltip>
     <!-- /acknowledge issue button -->
     <!-- (un)ignore until dropdown -->
     <b-dropdown

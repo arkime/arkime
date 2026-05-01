@@ -4,101 +4,106 @@ SPDX-License-Identifier: Apache-2.0
 -->
 <template>
   <div class="summary-config-dropdown d-inline-block">
-    <b-dropdown
-      size="sm"
-      no-caret
-      variant="theme-primary"
-      @show="loadConfigs">
-      <template #button-content>
-        <span
-          class="fa fa-save"
+    <v-menu @update:model-value="(opened) => { if (opened) loadConfigs(); }">
+      <template #activator="{ props: activatorProps }">
+        <button
+          v-bind="activatorProps"
+          type="button"
+          class="btn btn-sm btn-theme-primary"
           id="summary-config-dropdown-btn">
-          <BTooltip
-            target="summary-config-dropdown-btn"
-            noninteractive
-            placement="right">{{ $t('sessions.summary.config.configurations') }}</BTooltip>
-        </span>
+          <span class="fa fa-save" />
+        </button>
+        <v-tooltip
+          activator="#summary-config-dropdown-btn"
+          location="right">
+          {{ $t('sessions.summary.config.configurations') }}
+        </v-tooltip>
       </template>
-      <!-- Loading indicator -->
-      <b-dropdown-item
-        v-if="loading"
-        disabled>
-        <span class="fa fa-spinner fa-spin me-1" />
-        {{ $t('common.loading') }}
-      </b-dropdown-item>
 
-      <!-- Error message -->
-      <b-dropdown-item
-        v-if="error && !loading"
-        disabled
-        class="text-danger">
-        <span class="fa fa-exclamation-triangle me-1" />
-        {{ error }}
-      </b-dropdown-item>
+      <v-list
+        density="compact"
+        class="summary-config-list">
+        <!-- Loading indicator -->
+        <v-list-item
+          v-if="loading"
+          disabled>
+          <span class="fa fa-spinner fa-spin me-1" />
+          {{ $t('common.loading') }}
+        </v-list-item>
 
-      <!-- Save current config -->
-      <b-dropdown-item @click="openSaveModal">
-        <span class="fa fa-save me-1" />
-        {{ $t('sessions.summary.config.saveCurrent') }}
-      </b-dropdown-item>
+        <!-- Error message -->
+        <v-list-item
+          v-if="error && !loading"
+          disabled
+          class="text-danger">
+          <span class="fa fa-exclamation-triangle me-1" />
+          {{ error }}
+        </v-list-item>
 
-      <!-- Reset to defaults -->
-      <b-dropdown-item @click="resetToDefaults">
-        <span class="fa fa-refresh me-1" />
-        {{ $t('sessions.summary.config.resetToDefault') }}
-      </b-dropdown-item>
+        <!-- Save current config -->
+        <v-list-item @click="openSaveModal">
+          <span class="fa fa-save me-1" />
+          {{ $t('sessions.summary.config.saveCurrent') }}
+        </v-list-item>
 
-      <b-dropdown-divider v-if="configs.length > 0" />
+        <!-- Reset to defaults -->
+        <v-list-item @click="resetToDefaults">
+          <span class="fa fa-refresh me-1" />
+          {{ $t('sessions.summary.config.resetToDefault') }}
+        </v-list-item>
 
-      <!-- Saved configurations -->
-      <b-dropdown-item
-        v-for="config in configs"
-        :key="config.id"
-        @click="loadConfig(config)">
-        <div class="d-flex justify-content-between align-items-center w-100">
-          <span class="config-name">
+        <v-divider v-if="configs.length > 0" />
+
+        <!-- Saved configurations -->
+        <v-list-item
+          v-for="config in configs"
+          :key="config.id"
+          @click="loadConfig(config)">
+          <div class="d-flex justify-content-between align-items-center w-100">
+            <span class="config-name">
+              <span
+                v-if="config.shared"
+                class="fa fa-share-square me-1" />
+              {{ config.name }}
+              <small
+                v-if="config.creator && config.creator !== user.userId"
+                class="text-muted ms-1">
+                ({{ config.creator }})
+              </small>
+            </span>
             <span
-              v-if="config.shared"
-              class="fa fa-share-square me-1" />
-            {{ config.name }}
-            <small
-              v-if="config.creator && config.creator !== user.userId"
-              class="text-muted ms-1">
-              ({{ config.creator }})
-            </small>
-          </span>
-          <span
-            class="config-actions"
-            @click.stop>
-            <button
-              v-if="config.canEdit"
-              class="btn btn-xs btn-theme-tertiary ms-1"
-              :title="$t('sessions.summary.config.edit')"
-              :aria-label="$t('sessions.summary.config.edit')"
-              @click.stop="openEditModal(config)">
-              <span class="fa fa-pencil" />
-            </button>
-            <button
-              v-if="config.canDelete"
-              class="btn btn-xs btn-danger ms-1"
-              :title="$t('sessions.summary.config.delete')"
-              :aria-label="$t('sessions.summary.config.delete')"
-              @click.stop="deleteConfig(config)">
-              <span class="fa fa-trash-o" />
-            </button>
-          </span>
-        </div>
-      </b-dropdown-item>
+              class="config-actions"
+              @click.stop>
+              <button
+                v-if="config.canEdit"
+                class="btn btn-xs btn-theme-tertiary ms-1"
+                :title="$t('sessions.summary.config.edit')"
+                :aria-label="$t('sessions.summary.config.edit')"
+                @click.stop="openEditModal(config)">
+                <span class="fa fa-pencil" />
+              </button>
+              <button
+                v-if="config.canDelete"
+                class="btn btn-xs btn-danger ms-1"
+                :title="$t('sessions.summary.config.delete')"
+                :aria-label="$t('sessions.summary.config.delete')"
+                @click.stop="deleteConfig(config)">
+                <span class="fa fa-trash-o" />
+              </button>
+            </span>
+          </div>
+        </v-list-item>
 
-      <!-- No configs message -->
-      <b-dropdown-item
-        v-if="!loading && !error && configs.length === 0"
-        disabled>
-        <span class="text-muted">
-          {{ $t('sessions.summary.config.noConfigs') }}
-        </span>
-      </b-dropdown-item>
-    </b-dropdown>
+        <!-- No configs message -->
+        <v-list-item
+          v-if="!loading && !error && configs.length === 0"
+          disabled>
+          <span class="text-muted">
+            {{ $t('sessions.summary.config.noConfigs') }}
+          </span>
+        </v-list-item>
+      </v-list>
+    </v-menu>
 
     <!-- Save/Edit Modal -->
     <SummaryConfigSaveModal
@@ -238,7 +243,7 @@ const deleteConfig = async (config) => {
   transition: opacity 0.15s;
 }
 
-.dropdown-item:hover .config-actions {
+.summary-config-list :deep(.v-list-item:hover) .config-actions {
   opacity: 1;
 }
 

@@ -37,11 +37,9 @@ SPDX-License-Identifier: Apache-2.0
             <!-- maxElements select -->
             <BCol cols="auto">
               <BInputGroup size="sm">
-                <BInputGroupText
-                  class="cursor-help"
-                  id="maxElementsTooltip">
+                <BInputGroupText class="cursor-help">
                   {{ $t('spigraph.maxElements') }}:
-                  <BTooltip target="maxElementsTooltip">{{ $t('spigraph.maxElementsTip') }}</BTooltip>
+                  <v-tooltip activator="parent">{{ $t('spigraph.maxElementsTip') }}</v-tooltip>
                 </BInputGroupText>
                 <BFormSelect
                   :model-value="query.size"
@@ -132,11 +130,10 @@ SPDX-License-Identifier: Apache-2.0
               <button
                 v-if="spiGraphType !== 'default' && spiGraphType !== 'sankey'"
                 class="btn btn-default btn-sm ms-1"
-                id="exportCSVSPIGraph"
                 :aria-label="$t('spigraph.exportCSVSPIGraphTip')"
                 @click.stop.prevent="exportCSV">
                 <span class="fa fa-download" />
-                <BTooltip target="exportCSVSPIGraph">{{ $t('spigraph.exportCSVSPIGraphTip') }}</BTooltip>
+                <v-tooltip activator="parent">{{ $t('spigraph.exportCSVSPIGraphTip') }}</v-tooltip>
               </button> <!-- /export button-->
             </BCol>
           </BRow>

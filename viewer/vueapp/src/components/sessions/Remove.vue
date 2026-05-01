@@ -3,36 +3,37 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-  <BRow
-    gutter-x="1"
-    class="text-start flex-nowrap d-flex justify-content-between"
-    align-h="start">
-    <BCol cols="auto">
-      <BFormCheckbox
-        inline
-        :model-value="pcap"
-        id="pcapCheckbox"
-        name="pcap"
-        @update:model-value="pcap = $event">
-        {{ $t('sessions.remove.scrubPCAP') }}
-        <BTooltip target="pcapCheckbox">
+  <div class="d-flex flex-nowrap gap-2 align-items-start text-start">
+    <div>
+      <span
+        id="pcapCheckboxWrap"
+        class="d-inline-block">
+        <v-checkbox
+          v-model="pcap"
+          density="compact"
+          hide-details
+          inline
+          :label="$t('sessions.remove.scrubPCAP')" />
+        <v-tooltip activator="#pcapCheckboxWrap">
           {{ $t('sessions.remove.scrubPCAPTip') }}
-        </BTooltip>
-      </BFormCheckbox>
-      <BFormCheckbox
-        inline
-        :model-value="spi"
-        id="spiCheckbox"
-        name="spi"
-        @update:model-value="spi = $event">
-        {{ $t('sessions.remove.deleteSPIData') }}
-        <BTooltip target="spiCheckbox">
+        </v-tooltip>
+      </span>
+      <span
+        id="spiCheckboxWrap"
+        class="d-inline-block ms-2">
+        <v-checkbox
+          v-model="spi"
+          density="compact"
+          hide-details
+          inline
+          :label="$t('sessions.remove.deleteSPIData')" />
+        <v-tooltip activator="#spiCheckboxWrap">
           {{ $t('sessions.remove.deleteSPIDataTip') }}
-        </BTooltip>
-      </BFormCheckbox>
-    </BCol>
+        </v-tooltip>
+      </span>
+    </div>
 
-    <BCol cols="auto">
+    <div>
       <SegmentSelect v-model:segments="segments" />
       <p
         v-if="error"
@@ -40,12 +41,11 @@ SPDX-License-Identifier: Apache-2.0
         <span class="fa fa-exclamation-triangle" />&nbsp;
         {{ error }}
       </p>
-    </BCol>
+    </div>
 
-    <BCol cols="auto">
+    <div class="ms-auto">
       <button
         type="button"
-        :title="$t('common.remove')"
         @click="deleteSessionsAction"
         :class="{'disabled':loading}"
         class="btn btn-danger btn-sm me-1">
@@ -65,12 +65,12 @@ SPDX-License-Identifier: Apache-2.0
         @click="emit('done', null, false, false)"
         type="button">
         <span class="fa fa-ban" />
-        <BTooltip target="cancelRemoveDataBtn">
+        <v-tooltip activator="parent">
           {{ $t('common.cancel') }}
-        </BTooltip>
+        </v-tooltip>
       </button>
-    </BCol>
-  </BRow>
+    </div>
+  </div>
 </template>
 
 <script setup>

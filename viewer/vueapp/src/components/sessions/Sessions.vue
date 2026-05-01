@@ -80,47 +80,41 @@ SPDX-License-Identifier: Apache-2.0
                 <div class="fit-btn-container">
                   <template v-if="sessions.data && sessions.data.length <= 50">
                     <button
-                      id="openAllSessions"
                       @click="openAll"
                       :aria-label="$t('sessions.sessions.openAll')"
                       class="btn btn-xs btn-theme-tertiary open-all-btn">
                       <span class="fa fa-plus-circle" />
-                      <BTooltip
-                        target="openAllSessions"
-                        noninteractive
-                        placement="right">
+                      <v-tooltip
+                        activator="parent"
+                        location="right">
                         {{ $t('sessions.sessions.openAll') }}
-                      </BTooltip>
+                      </v-tooltip>
                     </button>
                   </template>
                   <button
-                    id="closeAllSessions"
                     @click="closeAll"
                     v-if="!loading && stickySessions.length > 0"
                     :aria-label="$t('sessions.sessions.closeAll')"
                     class="btn btn-xs btn-theme-secondary close-all-btn ms-4">
                     <span class="fa fa-times-circle" />
-                    <BTooltip
-                      target="closeAllSessions"
-                      noninteractive
-                      placement="right">
+                    <v-tooltip
+                      activator="parent"
+                      location="right">
                       {{ $t('sessions.sessions.closeAll') }}
-                    </BTooltip>
+                    </v-tooltip>
                   </button>
                   <button
-                    id="fitTable"
                     @click="fitTable"
                     v-if="showFitButton && !loading"
                     :aria-label="$t('sessions.sessions.fitTable')"
                     class="btn btn-xs btn-theme-quaternary fit-btn"
                     :class="{'ms-4':stickySessions.length === 0, 'fit-btn-right':sessions.data && sessions.data.length <= 50 && stickySessions.length > 0}">
                     <span class="fa fa-arrows-h" />
-                    <BTooltip
-                      target="fitTable"
-                      noninteractive
-                      placement="right">
+                    <v-tooltip
+                      activator="parent"
+                      location="right">
                       {{ $t('sessions.sessions.fitTable') }}
-                    </BTooltip>
+                    </v-tooltip>
                   </button>
                 </div> <!-- /table fit button -->
                 <!-- column visibility button -->
@@ -134,62 +128,59 @@ SPDX-License-Identifier: Apache-2.0
                   field-id-key="dbField"
                   @toggle="toggleColVis" />
                 <!-- /column visibility button -->
-                <!-- column save button -->
-                <b-dropdown
-                  lazy
-                  no-flip
-                  no-caret
-                  size="sm"
-                  menu-class="col-dropdown-menu"
-                  class="col-dropdown d-inline-block"
-                  variant="theme-secondary">
-                  <template #button-content>
-                    <span
-                      class="fa fa-save"
-                      id="colConfigMenu">
-                      <BTooltip
-                        target="colConfigMenu"
-                        noninteractive
-                        placement="right">{{ $t('sessions.sessions.customColumnMsg') }}</BTooltip>
-                    </span>
+                <!-- column save menu -->
+                <v-menu
+                  :close-on-content-click="false"
+                  location="bottom start">
+                  <template #activator="{ props: activatorProps }">
+                    <button
+                      v-bind="activatorProps"
+                      type="button"
+                      class="btn btn-sm btn-theme-secondary col-config-trigger d-inline-block">
+                      <span class="fa fa-save" />
+                      <v-tooltip
+                        activator="parent"
+                        location="right">
+                        {{ $t('sessions.sessions.customColumnMsg') }}
+                      </v-tooltip>
+                    </button>
                   </template>
-                  <b-dropdown-header header-class="p-1">
-                    <div class="input-group input-group-sm">
-                      <b-input
-                        autofocus
-                        @click.stop
-                        maxlength="30"
-                        class="form-control"
-                        v-model="newColConfigName"
-                        :placeholder="$t('sessions.sessions.customColumnName')"
-                        @keydown.enter="saveColumnConfiguration" />
-                      <button
-                        type="button"
-                        :aria-label="$t('common.save')"
-                        class="btn btn-theme-secondary"
-                        :disabled="!newColConfigName"
-                        @click="saveColumnConfiguration">
-                        <span class="fa fa-save" />
-                      </button>
+                  <v-list
+                    density="compact"
+                    class="col-config-list">
+                    <div class="px-2 py-1">
+                      <div class="input-group input-group-sm">
+                        <input
+                          autofocus
+                          @click.stop
+                          maxlength="30"
+                          type="text"
+                          class="form-control"
+                          v-model="newColConfigName"
+                          :placeholder="$t('sessions.sessions.customColumnName')"
+                          @keydown.enter="saveColumnConfiguration">
+                        <button
+                          type="button"
+                          :aria-label="$t('common.save')"
+                          class="btn btn-theme-secondary"
+                          :disabled="!newColConfigName"
+                          @click="saveColumnConfiguration">
+                          <span class="fa fa-save" />
+                        </button>
+                      </div>
                     </div>
-                  </b-dropdown-header>
-                  <b-dropdown-divider />
-                  <transition-group
-                    name="list"
-                    tag="span">
-                    <b-dropdown-item
-                      id="colConfigDefault"
+                    <v-divider />
+                    <v-list-item
                       key="col-config-default"
                       @click.stop.prevent="loadColumnConfiguration(-1)">
                       {{ $t('sessions.sessions.arkimeDefault') }}
-                      <BTooltip
-                        target="colConfigDefault"
-                        noninteractive
-                        placement="right">
+                      <v-tooltip
+                        activator="parent"
+                        location="end">
                         {{ $t('sessions.sessions.customColumnReset') }}
-                      </BTooltip>
-                    </b-dropdown-item>
-                    <b-dropdown-item
+                      </v-tooltip>
+                    </v-list-item>
+                    <v-list-item
                       v-for="(config, key) in colConfigs"
                       :key="config.name"
                       @click.self.stop.prevent="loadColumnConfiguration(key)">
@@ -201,39 +192,37 @@ SPDX-License-Identifier: Apache-2.0
                         <span class="fa fa-trash-o" />
                       </button>
                       <button
-                        id="updateColumnConfiguration"
                         :aria-label="$t('sessions.sessions.customColumnUpdate')"
                         class="btn btn-xs btn-warning pull-right"
                         type="button"
                         @click.stop.prevent="updateColumnConfiguration(config.name, key)">
                         <span class="fa fa-save" />
-                        <BTooltip
-                          target="updateColumnConfiguration"
-                          noninteractive
-                          placement="right">
+                        <v-tooltip
+                          activator="parent"
+                          location="end">
                           {{ $t('sessions.sessions.customColumnUpdate') }}
-                        </BTooltip>
+                        </v-tooltip>
                       </button>
                       {{ config.name }}
-                    </b-dropdown-item>
-                    <b-dropdown-item
+                    </v-list-item>
+                    <v-list-item
                       key="col-config-error"
                       v-if="colConfigError">
                       <span class="text-danger">
                         <span class="fa fa-exclamation-triangle" />
                         {{ colConfigError }}
                       </span>
-                    </b-dropdown-item>
-                    <b-dropdown-item
+                    </v-list-item>
+                    <v-list-item
                       key="col-config-success"
                       v-if="colConfigSuccess">
                       <span class="text-success">
                         <span class="fa fa-check" />
                         {{ colConfigSuccess }}
                       </span>
-                    </b-dropdown-item>
-                  </transition-group>
-                </b-dropdown> <!-- /column save button -->
+                    </v-list-item>
+                  </v-list>
+                </v-menu> <!-- /column save menu -->
               </th> <!-- /table options -->
               <!-- table headers -->
               <template v-if="headers && headers.length">
@@ -264,13 +253,12 @@ SPDX-License-Identifier: Apache-2.0
                       menu-class="col-dropdown-menu"
                       class="info-vis-menu pull-right col-dropdown">
                       <template #button-content>
-                        <span
-                          class="fa fa-save"
-                          id="infoConfigMenuSave">
-                          <BTooltip
-                            target="infoConfigMenuSave"
-                            noninteractive
-                            placement="right">{{ $t('sessions.sessions.customInfoMsg') }}</BTooltip>
+                        <span class="fa fa-save">
+                          <v-tooltip
+                            activator="parent"
+                            location="right">
+                            {{ $t('sessions.sessions.customInfoMsg') }}
+                          </v-tooltip>
                         </span>
                       </template>
                       <b-dropdown-header header-class="p-1">
@@ -299,12 +287,11 @@ SPDX-License-Identifier: Apache-2.0
                         id="infodefault"
                         @click.stop.prevent="resetInfoVisibility">
                         {{ $t('sessions.sessions.arkimeDefault') }}
-                        <BTooltip
-                          target="infodefault"
-                          noninteractive
-                          placement="right">
+                        <v-tooltip
+                          activator="#infodefault"
+                          location="right">
                           {{ $t('sessions.sessions.customInfoReset') }}
-                        </BTooltip>
+                        </v-tooltip>
                       </b-dropdown-item>
                       <transition-group
                         name="list"
@@ -324,18 +311,16 @@ SPDX-License-Identifier: Apache-2.0
                             <span class="fa fa-trash-o" />
                           </button>
                           <button
-                            id="updateInfoFieldConfiguration"
                             :aria-label="$t('sessions.sessions.customInfoUpdate')"
                             class="btn btn-xs btn-warning pull-right"
                             type="button"
                             @click.stop.prevent="updateInfoFieldLayout(config.name, key)">
                             <span class="fa fa-save" />
-                            <BTooltip
-                              target="updateInfoFieldConfiguration"
-                              noninteractive
-                              placement="right">
+                            <v-tooltip
+                              activator="parent"
+                              location="right">
                               {{ $t('sessions.sessions.customInfoUpdate') }}
-                            </BTooltip>
+                            </v-tooltip>
                           </button>
                           {{ config.name }}
                         </b-dropdown-item>
@@ -370,15 +355,12 @@ SPDX-License-Identifier: Apache-2.0
                       @show="infoFieldVisMenuOpen = true"
                       @hide="infoFieldVisMenuOpen = false; showAllInfoFields = false">
                       <template #button-content>
-                        <span
-                          class="fa fa-bars"
-                          id="infoConfigMenu">
-                          <BTooltip
-                            target="infoConfigMenu"
-                            noninteractive
-                            placement="right">
+                        <span class="fa fa-bars">
+                          <v-tooltip
+                            activator="parent"
+                            location="right">
                             {{ $t('sessions.sessions.toggleInfoFields') }}
-                          </BTooltip>
+                          </v-tooltip>
                         </span>
                       </template>
                       <b-dropdown-header header-class="p-1">
@@ -413,11 +395,12 @@ SPDX-License-Identifier: Apache-2.0
                               @click.prevent.stop="toggleInfoVis(field.dbField)">
                               {{ field.friendlyName }}
                               <small>({{ field.exp }})</small>
-                              <BTooltip
+                              <v-tooltip
                                 v-if="field.help"
-                                :target="key + k + 'infoitem'"
-                                noninteractive
-                                placement="right">{{ field.help }}</BTooltip>
+                                :activator="`#${key + k + 'infoitem'}`"
+                                location="right">
+                                {{ field.help }}
+                              </v-tooltip>
                             </b-dropdown-item>
                           </template>
                         </template>
@@ -2169,6 +2152,14 @@ export default {
 
 .sessions-page .col-dropdown > ul {
   overflow-x: hidden;
+}
+
+/* column config save menu (Vuetify migrated) */
+.col-config-list {
+  overflow: auto;
+  min-width: 280px;
+  max-width: 350px;
+  max-height: 300px;
 }
 
 /* needed for grips */

@@ -155,35 +155,48 @@ SPDX-License-Identifier: Apache-2.0
               {{ $t('settings.general.timezoneFormat') }}
             </label>
             <div class="col-sm-9">
-              <BFormRadioGroup
-                buttons
-                size="sm"
-                class="d-inline me-2"
-                button-variant="outline-secondary"
-                :model-value="settings.timezone"
-                @update:model-value="updateTimezone"
-                :options="[
-                  { text: $t('settings.general.tz-local'), value: 'local' },
-                  { text: $t('settings.general.tz-localtz'), value: 'localtz' },
-                  { text: $t('settings.general.tz-gmt'), value: 'gmt' }
-                ]" />
-              <BFormCheckbox
-                button
-                size="sm"
-                class="d-inline"
-                id="millisecondsSetting"
-                :active="settings.ms"
-                :model-value="settings.ms"
-                @update:model-value="updateMs"
-                button-variant="outline-secondary">
-                {{ $t('common.milliseconds') }}
-                <BTooltip target="millisecondsSetting">
-                  {{ $t('settings.general.millisecondsSettingTip') }}
-                </BTooltip>
-              </BFormCheckbox>
-              <label class="ms-2 fw-bold text-theme-primary align-bottom">
-                {{ timezoneDateString(date, settings.timezone, settings.ms) }}
-              </label>
+              <div class="d-inline-flex align-items-center">
+                <v-btn-toggle
+                  density="compact"
+                  divided
+                  variant="outlined"
+                  color="secondary"
+                  class="me-2"
+                  :model-value="settings.timezone"
+                  @update:model-value="updateTimezone"
+                  mandatory>
+                  <v-btn value="local">
+                    {{ $t('settings.general.tz-local') }}
+                  </v-btn>
+                  <v-btn value="localtz">
+                    {{ $t('settings.general.tz-localtz') }}
+                  </v-btn>
+                  <v-btn value="gmt">
+                    {{ $t('settings.general.tz-gmt') }}
+                  </v-btn>
+                </v-btn-toggle>
+                <v-btn-toggle
+                  density="compact"
+                  variant="outlined"
+                  color="secondary"
+                  multiple
+                  :model-value="settings.ms ? ['ms'] : []"
+                  @update:model-value="(val) => updateMs(val.includes('ms'))">
+                  <v-btn
+                    value="ms"
+                    id="millisecondsSetting">
+                    {{ $t('common.milliseconds') }}
+                    <v-tooltip
+                      activator="parent"
+                      location="top">
+                      {{ $t('settings.general.millisecondsSettingTip') }}
+                    </v-tooltip>
+                  </v-btn>
+                </v-btn-toggle>
+                <label class="ms-2 fw-bold text-theme-primary">
+                  {{ timezoneDateString(date, settings.timezone, settings.ms) }}
+                </label>
+              </div>
             </div>
           </div> <!-- /timezone -->
 
@@ -193,20 +206,31 @@ SPDX-License-Identifier: Apache-2.0
               {{ $t('settings.general.sessionDetailFormat') }}
             </label>
             <div class="col-sm-9">
-              <BFormRadioGroup
-                buttons
-                size="sm"
-                class="d-inline"
-                button-variant="outline-secondary"
+              <v-btn-toggle
+                density="compact"
+                divided
+                variant="outlined"
+                color="secondary"
+                class="d-inline-flex"
                 :model-value="settings.detailFormat"
                 @update:model-value="updateSessionDetailFormat"
-                :options="[
-                  { text: $t('settings.general.lastUsed'), value: 'last' },
-                  { text: $t('settings.general.detail-natural'), value: 'natural' },
-                  { text: $t('settings.general.detail-ascii'), value: 'ascii' },
-                  { text: $t('settings.general.detail-utf8'), value: 'utf8' },
-                  { text: $t('settings.general.detail-hex'), value: 'hex' }
-                ]" />
+                mandatory>
+                <v-btn value="last">
+                  {{ $t('settings.general.lastUsed') }}
+                </v-btn>
+                <v-btn value="natural">
+                  {{ $t('settings.general.detail-natural') }}
+                </v-btn>
+                <v-btn value="ascii">
+                  {{ $t('settings.general.detail-ascii') }}
+                </v-btn>
+                <v-btn value="utf8">
+                  {{ $t('settings.general.detail-utf8') }}
+                </v-btn>
+                <v-btn value="hex">
+                  {{ $t('settings.general.detail-hex') }}
+                </v-btn>
+              </v-btn-toggle>
             </div>
           </div> <!-- /session detail format -->
 
@@ -216,21 +240,34 @@ SPDX-License-Identifier: Apache-2.0
               {{ $t('settings.general.numberOfPackets') }}
             </label>
             <div class="col-sm-9">
-              <BFormRadioGroup
-                buttons
-                size="sm"
-                class="d-inline"
-                button-variant="outline-secondary"
+              <v-btn-toggle
+                density="compact"
+                divided
+                variant="outlined"
+                color="secondary"
+                class="d-inline-flex"
                 :model-value="settings.numPackets"
                 @update:model-value="updateNumberOfPackets"
-                :options="[
-                  { text: $t('settings.general.lastUsed'), value: 'last' },
-                  { text: '50', value: '50' },
-                  { text: '200', value: '200' },
-                  { text: '500', value: '500' },
-                  { text: '1,000', value: '1000' },
-                  { text: '2,000', value: '2000' }
-                ]" />
+                mandatory>
+                <v-btn value="last">
+                  {{ $t('settings.general.lastUsed') }}
+                </v-btn>
+                <v-btn value="50">
+                  50
+                </v-btn>
+                <v-btn value="200">
+                  200
+                </v-btn>
+                <v-btn value="500">
+                  500
+                </v-btn>
+                <v-btn value="1000">
+                  1,000
+                </v-btn>
+                <v-btn value="2000">
+                  2,000
+                </v-btn>
+              </v-btn-toggle>
             </div>
           </div> <!-- /number of packets -->
 
@@ -240,18 +277,25 @@ SPDX-License-Identifier: Apache-2.0
               {{ $t('settings.general.showPacketInfo') }}
             </label>
             <div class="col-sm-9">
-              <BFormRadioGroup
-                buttons
-                size="sm"
-                class="d-inline"
-                button-variant="outline-secondary"
+              <v-btn-toggle
+                density="compact"
+                divided
+                variant="outlined"
+                color="secondary"
+                class="d-inline-flex"
                 :model-value="settings.showTimestamps"
                 @update:model-value="updateShowPacketTimestamps"
-                :options="[
-                  { text: $t('settings.general.lastUsed'), value: 'last' },
-                  { text: $t('settings.general.info-on'), value: 'on' },
-                  { text: $t('settings.general.info-off'), value: 'off' }
-                ]" />
+                mandatory>
+                <v-btn value="last">
+                  {{ $t('settings.general.lastUsed') }}
+                </v-btn>
+                <v-btn value="on">
+                  {{ $t('settings.general.info-on') }}
+                </v-btn>
+                <v-btn value="off">
+                  {{ $t('settings.general.info-off') }}
+                </v-btn>
+              </v-btn-toggle>
             </div>
           </div> <!-- /show packet timestamp -->
 
@@ -261,17 +305,22 @@ SPDX-License-Identifier: Apache-2.0
               {{ $t('settings.general.queryOnLoad') }}
             </label>
             <div class="col-sm-9">
-              <BFormRadioGroup
-                buttons
-                size="sm"
-                class="d-inline"
-                button-variant="outline-secondary"
+              <v-btn-toggle
+                density="compact"
+                divided
+                variant="outlined"
+                color="secondary"
+                class="d-inline-flex"
                 :model-value="settings.manualQuery"
                 @update:model-value="updateQueryOnPageLoad"
-                :options="[
-                  { text: $t('settings.general.query-false'), value: 'false' },
-                  { text: $t('settings.general.query-true'), value: 'true' }
-                ]" />
+                mandatory>
+                <v-btn value="false">
+                  {{ $t('settings.general.query-false') }}
+                </v-btn>
+                <v-btn value="true">
+                  {{ $t('settings.general.query-true') }}
+                </v-btn>
+              </v-btn-toggle>
             </div>
           </div> <!-- /issue query on initial page load -->
 
@@ -298,18 +347,23 @@ SPDX-License-Identifier: Apache-2.0
               </select>
             </div>
             <div class="col-sm-3">
-              <BFormRadioGroup
-                buttons
-                size="sm"
-                class="d-inline"
-                button-variant="outline-secondary"
+              <v-btn-toggle
                 v-if="settings.sortColumn !== 'last'"
+                density="compact"
+                divided
+                variant="outlined"
+                color="secondary"
+                class="d-inline-flex"
                 :model-value="settings.sortDirection"
                 @update:model-value="updateSortDirection"
-                :options="[
-                  { text: $t('settings.general.sort-asc'), value: 'asc' },
-                  { text: $t('settings.general.sort-desc'), value: 'desc' }
-                ]" />
+                mandatory>
+                <v-btn value="asc">
+                  {{ $t('settings.general.sort-asc') }}
+                </v-btn>
+                <v-btn value="desc">
+                  {{ $t('settings.general.sort-desc') }}
+                </v-btn>
+              </v-btn-toggle>
             </div>
           </div> <!-- /session sort -->
 
@@ -334,7 +388,7 @@ SPDX-License-Identifier: Apache-2.0
                   id="spiGraphFieldSetting"
                   class="badge bg-info cursor-help">
                   {{ spiGraphTypeahead || 'unknown field' }}
-                  <BTooltip target="spiGraphFieldSetting">{{ spiGraphField.help }}</BTooltip>
+                  <v-tooltip activator="#spiGraphFieldSetting">{{ spiGraphField.help }}</v-tooltip>
                 </label>
               </h4>
             </div>
@@ -361,7 +415,7 @@ SPDX-License-Identifier: Apache-2.0
                   class="badge bg-info cursor-help"
                   id="connSrcFieldSetting">
                   {{ connSrcFieldTypeahead || 'unknown field' }}
-                  <BTooltip target="connSrcFieldSetting">{{ connSrcField.help }}</BTooltip>
+                  <v-tooltip activator="#connSrcFieldSetting">{{ connSrcField.help }}</v-tooltip>
                 </label>
               </h4>
             </div>
@@ -388,7 +442,7 @@ SPDX-License-Identifier: Apache-2.0
                   class="badge bg-info cursor-help"
                   id="connDstFieldSetting">
                   {{ connDstFieldTypeahead || 'unknown field' }}
-                  <BTooltip target="connDstFieldSetting">{{ connDstField.help }}</BTooltip>
+                  <v-tooltip activator="#connDstFieldSetting">{{ connDstField.help }}</v-tooltip>
                 </label>
               </h4>
             </div>
@@ -419,15 +473,15 @@ SPDX-License-Identifier: Apache-2.0
                   :id="filter.dbField + 'DataFilterBadge'">
                   <span class="fa fa-times" />
                   {{ filter.friendlyName || 'unknown field' }}
-                  <BTooltip :target="filter.dbField + 'DataFilterBadge'">{{ filter.help }}</BTooltip>
+                  <v-tooltip :activator="`[id='${filter.dbField}DataFilterBadge']`">{{ filter.help }}</v-tooltip>
                 </label>
               </h4>
-              <b-button
-                size="sm"
-                variant="danger"
+              <button
+                type="button"
+                class="btn btn-sm btn-danger"
                 @click="resetDefaultFilters">
                 {{ $t('settings.general.resetTimelineDataFilters') }}
-              </b-button>
+              </button>
             </div>
           </div>
 
@@ -482,7 +536,7 @@ SPDX-License-Identifier: Apache-2.0
                       :id="`${col}DefaultColConfigSetting`"
                       v-if="fieldsMap[col]">
                       {{ fieldsMap[col].friendlyName }}
-                      <BTooltip :target="`${col}DefaultColConfigSetting`">{{ fieldsMap[col].help }}</BTooltip>
+                      <v-tooltip :activator="`[id='${col}DefaultColConfigSetting']`">{{ fieldsMap[col].help }}</v-tooltip>
                     </label>
                   </template>
                 </td>
@@ -493,10 +547,10 @@ SPDX-License-Identifier: Apache-2.0
                     <label
                       class="badge bg-secondary me-1 help-cursor"
                       v-if="fieldsMap[order[0]]"
-                      :id="`${order[0]}DefaultColConfigSetting`">
+                      :id="`${order[0]}DefaultColConfigSettingOrder`">
                       {{ fieldsMap[order[0]].friendlyName }}&nbsp;
                       ({{ order[1] }})
-                      <BTooltip :target="`${order[0]}DefaultColConfigSetting`">{{ fieldsMap[order[0]].help }}</BTooltip>
+                      <v-tooltip :activator="`[id='${order[0]}DefaultColConfigSettingOrder']`">{{ fieldsMap[order[0]].help }}</v-tooltip>
                     </label>
                   </span>
                 </td>
@@ -519,7 +573,7 @@ SPDX-License-Identifier: Apache-2.0
                         v-if="fieldsMap[col]"
                         :id="`${index}${col}ColConfigSetting`">
                         {{ fieldsMap[col].friendlyName }}
-                        <BTooltip :target="`${index}${col}ColConfigSetting`">{{ fieldsMap[col].help }}</BTooltip>
+                        <v-tooltip :activator="`[id='${index}${col}ColConfigSetting']`">{{ fieldsMap[col].help }}</v-tooltip>
                       </label>
                     </template>
                   </td>
@@ -533,7 +587,7 @@ SPDX-License-Identifier: Apache-2.0
                         :id="`${index}-${order[0]}ColConfigSetting`">
                         {{ fieldsMap[order[0]].friendlyName }}&nbsp;
                         ({{ order[1] }})
-                        <BTooltip :target="`${index}-${order[0]}ColConfigSetting`">{{ fieldsMap[order[0]].help }}</BTooltip>
+                        <v-tooltip :activator="`[id='${index}-${order[0]}ColConfigSetting']`">{{ fieldsMap[order[0]].help }}</v-tooltip>
                       </label>
                     </span>
                   </td>
@@ -606,7 +660,7 @@ SPDX-License-Identifier: Apache-2.0
                       :id="`${field}DefaultInfoFieldLayoutSetting`"
                       v-if="fieldsMap[field]">
                       {{ fieldsMap[field].friendlyName }}
-                      <BTooltip :target="`${field}DefaultInfoFieldLayoutSetting`">{{ fieldsMap[field].help }}</BTooltip>
+                      <v-tooltip :activator="`[id='${field}DefaultInfoFieldLayoutSetting']`">{{ fieldsMap[field].help }}</v-tooltip>
                     </label>
                   </template>
                 </td>
@@ -629,7 +683,7 @@ SPDX-License-Identifier: Apache-2.0
                         :id="`${field}InfoFieldLayoutSetting`"
                         v-if="fieldsMap[field]">
                         {{ fieldsMap[field].friendlyName }}
-                        <BTooltip :target="`${field}InfoFieldLayoutSetting`">{{ fieldsMap[field].help }}</BTooltip>
+                        <v-tooltip :activator="`[id='${field}InfoFieldLayoutSetting']`">{{ fieldsMap[field].help }}</v-tooltip>
                       </label>
                     </template>
                   </td>
@@ -702,7 +756,7 @@ SPDX-License-Identifier: Apache-2.0
                       v-if="fieldsMap[field]"
                       class="badge bg-secondary me-1 help-cursor">
                       {{ fieldsMap[field].friendlyName }} (100)
-                      <BTooltip :target="`${field}DefaultSpiviewFieldConfigSetting`">{{ fieldsMap[field].help }}</BTooltip>
+                      <v-tooltip :activator="`[id='${field}DefaultSpiviewFieldConfigSetting']`">{{ fieldsMap[field].help }}</v-tooltip>
                     </label>
                   </template>
                 </td>
@@ -724,7 +778,7 @@ SPDX-License-Identifier: Apache-2.0
                       :key="fieldObj.dbField">
                       {{ fieldObj.friendlyName }}
                       ({{ fieldObj.count }})
-                      <BTooltip :target="`${fieldObj.dbField}SpiviewFieldConfigSetting`">{{ fieldObj.help }}</BTooltip>
+                      <v-tooltip :activator="`[id='${fieldObj.dbField}SpiviewFieldConfigSetting']`">{{ fieldObj.help }}</v-tooltip>
                     </label>
                   </td>
                   <td>
@@ -846,18 +900,24 @@ SPDX-License-Identifier: Apache-2.0
                         <a class="btn btn-sm btn-default btn-theme-secondary-display me-1">
                           <span class="fa fa-eye fa-lg" />
                         </a>
-                        <b-dropdown
-                          right
-                          size="sm"
-                          class="pull-right action-menu-dropdown"
-                          variant="theme-primary-display">
-                          <b-dropdown-item>
-                            Example
-                          </b-dropdown-item>
-                          <b-dropdown-item class="active">
-                            Active Example
-                          </b-dropdown-item>
-                        </b-dropdown>
+                        <v-menu location="bottom end">
+                          <template #activator="{ props: activatorProps }">
+                            <button
+                              v-bind="activatorProps"
+                              type="button"
+                              class="btn btn-sm btn-theme-primary-display pull-right action-menu-dropdown">
+                              <span class="fa fa-caret-down" />
+                            </button>
+                          </template>
+                          <v-list density="compact">
+                            <v-list-item>
+                              Example
+                            </v-list-item>
+                            <v-list-item active>
+                              Active Example
+                            </v-list-item>
+                          </v-list>
+                        </v-menu>
                       </div>
                     </div>
                   </div>
@@ -1038,18 +1098,24 @@ SPDX-License-Identifier: Apache-2.0
                             <a class="btn btn-sm btn-default btn-theme-secondary-display me-1">
                               <span class="fa fa-eye fa-lg" />
                             </a>
-                            <b-dropdown
-                              right
-                              size="sm"
-                              class="pull-right action-menu-dropdown"
-                              variant="theme-primary-display">
-                              <b-dropdown-item>
-                                Example
-                              </b-dropdown-item>
-                              <b-dropdown-item class="active">
-                                Active Example
-                              </b-dropdown-item>
-                            </b-dropdown>
+                            <v-menu location="bottom end">
+                              <template #activator="{ props: activatorProps }">
+                                <button
+                                  v-bind="activatorProps"
+                                  type="button"
+                                  class="btn btn-sm btn-theme-primary-display pull-right action-menu-dropdown">
+                                  <span class="fa fa-caret-down" />
+                                </button>
+                              </template>
+                              <v-list density="compact">
+                                <v-list-item>
+                                  Example
+                                </v-list-item>
+                                <v-list-item active>
+                                  Active Example
+                                </v-list-item>
+                              </v-list>
+                            </v-menu>
                           </div>
                         </div>
                       </div>

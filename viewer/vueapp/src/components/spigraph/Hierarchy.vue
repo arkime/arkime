@@ -86,10 +86,9 @@ SPDX-License-Identifier: Apache-2.0
                   <a
                     v-if="index === fieldList.length - 1 && hiddenColumns"
                     class="pull-right cursor-pointer ms-2"
-                    id="showHiddenColumns"
                     @click="showHiddenColumns">
                     <span class="fa fa-plus-square" />
-                    <BTooltip target="showHiddenColumns">{{ $t('spigraph.showHiddenColumnsTip') }}</BTooltip>
+                    <v-tooltip activator="parent">{{ $t('spigraph.showHiddenColumnsTip') }}</v-tooltip>
                   </a>
                 </span>
               </th>
@@ -130,11 +129,10 @@ SPDX-License-Identifier: Apache-2.0
                   class="fa fa-sort ms-2" />
                 <a
                   @click="hideColumn(item)"
-                  id="hideColumn"
                   class="pull-right ms-2"
                   v-if="index !== fieldList.length - 1">
                   <span class="fa fa-minus-square" />
-                  <BTooltip target="hideColumn">{{ $t('spigraph.hideColumnTip') }}</BTooltip>
+                  <v-tooltip activator="parent">{{ $t('spigraph.hideColumnTip') }}</v-tooltip>
                 </a>
               </th>
             </template>

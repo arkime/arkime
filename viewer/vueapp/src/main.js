@@ -1,5 +1,7 @@
 import { createApp } from 'vue';
 import { createBootstrap } from 'bootstrap-vue-next';
+import { createVuetify } from 'vuetify/lib/framework.mjs';
+import { aliases as faAliases, fa as faSet } from 'vuetify/iconsets/fa4';
 
 // internationalization
 import { createI18nInstance } from '@common/i18nSetup.js';
@@ -7,6 +9,7 @@ import { createI18nInstance } from '@common/i18nSetup.js';
 // css frameworks
 import 'bootstrap/dist/css/bootstrap.css';
 import 'bootstrap-vue-next/dist/bootstrap-vue-next.css';
+import 'vuetify/styles';
 
 // vue color picker styles
 import 'vue-color/style.css';
@@ -19,12 +22,13 @@ import HasRole from '@common/HasRole.vue';
 import router from './router.js';
 import store from './store.js';
 import { i18nValue, i18nBDD } from '@common/i18nHelpers.js';
+import { createViewerTheme } from './theme.js';
 
 // common css
 import '../../../common/common.css';
 // bootstrap overrides
 import './overrides.css';
-// themed css deps
+// themed css deps -- these overlay on top of Vuetify; see theme.js notes
 import './themes/purp.css';
 import './themes/blue.css';
 import './themes/green.css';
@@ -58,6 +62,45 @@ async function initializeApp() {
       }
     }
   }));
+
+  // Vuetify mounts alongside Bootstrap Vue Next during the migration. Both
+  // libraries coexist until viewer is fully migrated and BVN is removed at
+  // Phase 4 cutover. Defaults match cont3xt's pattern -- analyst UI is dense.
+  //
+  // Icons: Font Awesome 4.7 is the icon library throughout viewer (per the
+  // migration plan -- MDI swap is deferred). The fa4 iconset maps Vuetify's
+  // symbolic aliases ($file, $close, $next, $prev, etc.) to FA 4 classes,
+  // so v-file-input, v-select, v-data-table, etc. render with the FA icons
+  // already loaded by viewer rather than missing MDI glyphs.
+  // Override the fa4 iconset's `clear` alias -- by default it maps to
+  // `fa-check-circle` which on clearable v-text-fields looks like a
+  // green check (mistaken for a checkbox). `fa-times-circle` is the
+  // intuitive X-in-circle for a clear action.
+  const arkimeFaAliases = { ...faAliases, clear: 'fa-times-circle' };
+
+  const vuetify = createVuetify({
+    icons: {
+      defaultSet: 'fa',
+      aliases: arkimeFaAliases,
+      sets: { fa: faSet }
+    },
+    defaults: {
+      VTextField: { density: 'compact', variant: 'outlined', hideDetails: 'auto' },
+      VSelect: { density: 'compact', variant: 'outlined', hideDetails: 'auto' },
+      VCheckbox: { density: 'compact', hideDetails: 'auto' },
+      VTooltip: { location: 'top', delay: 50, maxWidth: 400 },
+      VBtn: { density: 'compact', variant: 'flat' }
+    },
+    theme: {
+      options: { customProperties: true },
+      defaultTheme: 'arkimeLight',
+      themes: {
+        arkimeLight: createViewerTheme('light'),
+        arkimeDark: createViewerTheme('dark')
+      }
+    }
+  });
+  app.use(vuetify);
 
   app.directive('has-role', HasRole);
   app.directive('has-permission', HasPermission);

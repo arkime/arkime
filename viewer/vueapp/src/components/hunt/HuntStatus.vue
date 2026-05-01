@@ -8,36 +8,36 @@ SPDX-License-Identifier: Apache-2.0
       <span
         :id="`hunt-status-running-${id}`"
         class="fa fa-play-circle fa-fw cursor-help">
-        <BTooltip :target="`hunt-status-running-${id}`">
+        <v-tooltip :activator="`[id='hunt-status-running-${id}']`">
           {{ $t('hunts.status.runningTip') }}
-        </BTooltip>
+        </v-tooltip>
       </span>
     </template>
     <template v-else-if="status === 'paused'">
       <span
         :id="`hunt-status-paused-${id}`"
         class="fa fa-pause fa-fw cursor-help">
-        <BTooltip :target="`hunt-status-paused-${id}`">
+        <v-tooltip :activator="`[id='hunt-status-paused-${id}']`">
           {{ $t('hunts.status.pausedTip') }}
-        </BTooltip>
+        </v-tooltip>
       </span>
     </template>
     <template v-else-if="status === 'queued'">
       <span
         :id="`hunt-status-queued-${id}`"
         class="fa fa-clock-o fa-fw cursor-help">
-        <BTooltip :target="`hunt-status-queued-${id}`">
+        <v-tooltip :activator="`[id='hunt-status-queued-${id}']`">
           {{ $t('hunts.status.queuedTip', {count: queueCount}) }}
-        </BTooltip>
+        </v-tooltip>
       </span>
     </template>
     <template v-else-if="status === 'finished'">
       <span
         :id="`hunt-status-finished-${id}`"
         class="fa fa-check fa-fw cursor-help">
-        <BTooltip :target="`hunt-status-finished-${id}`">
+        <v-tooltip :activator="`[id='hunt-status-finished-${id}']`">
           {{ $t('hunts.status.finishedTip') }}
-        </BTooltip>
+        </v-tooltip>
       </span>
     </template>
   </span>

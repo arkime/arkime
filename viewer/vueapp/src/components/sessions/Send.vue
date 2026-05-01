@@ -3,42 +3,32 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-  <BRow
-    gutter-x="1"
-    class="text-start flex-nowrap d-flex justify-content-between"
-    align-h="start"
+  <div
+    class="d-flex flex-nowrap gap-1 align-items-start text-start"
     @keyup.stop.prevent.enter="sendAction">
-    <BCol cols="auto">
-      <SegmentSelect v-model:segments="segments" />
-    </BCol>
+    <SegmentSelect v-model:segments="segments" />
 
-    <BCol
-      cols="auto"
-      class="flex-fill">
-      <div class="input-group input-group-sm">
-        <span class="input-group-text">
-          {{ $t('sessions.tags') }}
-        </span>
-        <input
-          autofocus
-          type="text"
-          v-model="tags"
-          class="form-control"
-          :placeholder="$t('sessions.tagsPlaceholder')">
-      </div>
+    <div class="flex-fill">
+      <v-text-field
+        autofocus
+        density="compact"
+        variant="outlined"
+        hide-details
+        v-model="tags"
+        :label="$t('sessions.tags')"
+        :placeholder="$t('sessions.tagsPlaceholder')" />
       <p
         v-if="error"
         class="small text-danger mb-0">
         <span class="fa fa-exclamation-triangle" />&nbsp;
         {{ error }}
       </p>
-    </BCol>
+    </div>
 
-    <BCol cols="auto">
+    <div>
       <button
         type="button"
         @click="sendAction"
-        :title="$t('sessions.send.send')"
         :class="{'disabled':loading}"
         class="btn btn-sm btn-theme-tertiary me-1">
         <span v-if="!loading">
@@ -57,12 +47,12 @@ SPDX-License-Identifier: Apache-2.0
         @click="$emit('done', null, false, false)"
         class="btn btn-sm btn-warning">
         <span class="fa fa-ban" />
-        <BTooltip target="cancelSendBtn">
+        <v-tooltip activator="parent">
           {{ $t('common.cancel') }}
-        </BTooltip>
+        </v-tooltip>
       </button>
-    </BCol>
-  </BRow>
+    </div>
+  </div>
 
   <div class="row mt-2">
     <div class="col">

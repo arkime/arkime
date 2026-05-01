@@ -9,14 +9,12 @@ SPDX-License-Identifier: Apache-2.0
       <!-- source select -->
       <div class="form-group">
         <div class="input-group">
-          <span
-            class="input-group-text"
-            id="source-selection">
+          <span class="input-group-text">
             {{ $t('wise.query.source') }}
+            <v-tooltip activator="parent">
+              {{ $t('wise.query.sourceTip') }}
+            </v-tooltip>
           </span>
-          <BTooltip target="source-selection">
-            {{ $t('wise.query.sourceTip') }}
-          </BTooltip>
           <select
             class="form-control"
             v-model="chosenSource"
@@ -38,14 +36,12 @@ SPDX-License-Identifier: Apache-2.0
       <!-- type select -->
       <div class="form-group ms-3">
         <div class="input-group">
-          <span
-            class="input-group-text"
-            id="type-selection">
+          <span class="input-group-text">
             {{ $t('wise.query.type') }}
+            <v-tooltip activator="parent">
+              {{ $t('wise.query.typeTip') }}
+            </v-tooltip>
           </span>
-          <BTooltip target="type-selection">
-            {{ $t('wise.query.typeTip') }}
-          </BTooltip>
           <select
             class="form-control"
             @change="sendSearchQuery"

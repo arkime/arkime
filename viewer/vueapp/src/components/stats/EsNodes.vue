@@ -38,31 +38,38 @@ SPDX-License-Identifier: Apache-2.0
         table-classes="table-sm table-hover text-end small mt-2">
         <template #actions="item">
           <span class="no-wrap">
-            <b-dropdown
-              size="xs"
-              class="row-actions-btn d-inline"
-              v-has-role="{user:user,roles:'arkimeAdmin'}">
-              <b-dropdown-item
-                v-if="!item.item.nodeExcluded"
-                @click="exclude('name', item.item)">
-                {{ $t('stats.excludeNode') }}: {{ item.item.name }}
-              </b-dropdown-item>
-              <b-dropdown-item
-                v-else
-                @click="include('name', item.item)">
-                {{ $t('stats.includeNode') }}: {{ item.item.name }}
-              </b-dropdown-item>
-              <b-dropdown-item
-                v-if="!item.item.ipExcluded"
-                @click="exclude('ip', item.item)">
-                {{ $t('stats.excludeIp') }}: {{ item.item.ip }}
-              </b-dropdown-item>
-              <b-dropdown-item
-                v-else
-                @click="include('ip', item.item)">
-                {{ $t('stats.includeIp') }}: {{ item.item.ip }}
-              </b-dropdown-item>
-            </b-dropdown>
+            <v-menu v-has-role="{user:user,roles:'arkimeAdmin'}">
+              <template #activator="{ props: activatorProps }">
+                <button
+                  v-bind="activatorProps"
+                  type="button"
+                  class="btn btn-sm btn-outline-secondary row-actions-btn d-inline">
+                  <span class="fa fa-caret-down" />
+                </button>
+              </template>
+              <v-list density="compact">
+                <v-list-item
+                  v-if="!item.item.nodeExcluded"
+                  @click="exclude('name', item.item)">
+                  {{ $t('stats.excludeNode') }}: {{ item.item.name }}
+                </v-list-item>
+                <v-list-item
+                  v-else
+                  @click="include('name', item.item)">
+                  {{ $t('stats.includeNode') }}: {{ item.item.name }}
+                </v-list-item>
+                <v-list-item
+                  v-if="!item.item.ipExcluded"
+                  @click="exclude('ip', item.item)">
+                  {{ $t('stats.excludeIp') }}: {{ item.item.ip }}
+                </v-list-item>
+                <v-list-item
+                  v-else
+                  @click="include('ip', item.item)">
+                  {{ $t('stats.includeIp') }}: {{ item.item.ip }}
+                </v-list-item>
+              </v-list>
+            </v-menu>
             <span
               class="node-badge badge bg-primary badge-pill ms-1"
               :class="{'show-badge cursor-help': item.item.roles.indexOf('master') > -1, 'badge-master':item.item.isMaster}">
@@ -70,13 +77,13 @@ SPDX-License-Identifier: Apache-2.0
                 <span :id="'mainMasterBadge' + item.item.name">
                   M
                 </span>
-                <BTooltip :target="'mainMasterBadge' + item.item.name">{{ $t('stats.esNodes.mainManaging') }}</BTooltip>
+                <v-tooltip :activator="`[id='mainMasterBadge${item.item.name}']`">{{ $t('stats.esNodes.mainManaging') }}</v-tooltip>
               </template>
               <template v-else>
                 <span :id="'masterBadge' + item.item.name">
                   m
                 </span>
-                <BTooltip :target="'masterBadge' + item.item.name">{{ $t('stats.esNodes.managing') }}</BTooltip>
+                <v-tooltip :activator="`[id='masterBadge${item.item.name}']`">{{ $t('stats.esNodes.managing') }}</v-tooltip>
               </template>
             </span>
             <span
@@ -87,7 +94,7 @@ SPDX-License-Identifier: Apache-2.0
                 v-if="item.item.roles.some(role => role.startsWith('data'))"
                 :id="'dataBadge' + item.item.name">
                 D
-                <BTooltip :target="'dataBadge' + item.item.name">{{ $t('stats.esNodes.data') }}</BTooltip>
+                <v-tooltip :activator="`[id='dataBadge${item.item.name}']`">{{ $t('stats.esNodes.data') }}</v-tooltip>
               </span>
               <span v-else>&nbsp;</span>
             </span>

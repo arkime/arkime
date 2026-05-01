@@ -8,74 +8,70 @@ SPDX-License-Identifier: Apache-2.0
       'hide-tool-bars': !showToolBars,
       'show-sticky-sessions-btn': stickySessionsBtn
     }">
-    <b-navbar
-      fixed="top"
-      class="pe-2"
-      :container="false">
+    <nav class="navbar navbar-expand fixed-top pe-2 arkime-navbar">
 
-      <b-navbar-brand>
-        <router-link
-          class="me-2"
-          :to="{ path: helpLink.href, query: helpLink.query, name: 'Help', hash: helpLink.hash }">
-          <img
-            alt="hoot"
-            :src="userLogo"
-            id="tooltipHelp"
-            class="arkime-logo"
-            v-if="!shiftKeyHold">
-          <div
-            v-else
-            class="arkime-logo mt-1 ms-3 text-shortcut"><strong>H</strong></div>
-          <BTooltip target="tooltipHelp">{{ $t('navigation.tooltipHelpTip') }}</BTooltip>
-        </router-link>
-      </b-navbar-brand>
+      <router-link
+        class="me-2 navbar-brand"
+        :to="{ path: helpLink.href, query: helpLink.query, name: 'Help', hash: helpLink.hash }">
+        <img
+          alt="hoot"
+          :src="userLogo"
+          class="arkime-logo"
+          v-if="!shiftKeyHold">
+        <div
+          v-else
+          class="arkime-logo mt-1 ms-3 text-shortcut"><strong>H</strong></div>
+        <v-tooltip activator="parent">{{ $t('navigation.tooltipHelpTip') }}</v-tooltip>
+      </router-link>
 
-      <b-navbar-nav class="ms-4">
+      <ul class="navbar-nav d-flex flex-row arkime-nav-list">
         <template
           v-for="item of menuOrder"
           :key="item">
-          <template v-if="user && menu[item] && menu[item].hasPermission && menu[item].hasRole">
-            <!-- TODO i18n redo hotkey highlighting -->
-            <b-nav-item
-              :key="menu[item].link"
-              class="cursor-pointer"
+          <li
+            v-if="user && menu[item] && menu[item].hasPermission && menu[item].hasRole"
+            class="nav-item cursor-pointer">
+            <router-link
               :to="{ path: menu[item].link, query: menu[item].query, name: menu[item].name }"
+              class="nav-link"
+              active-class="router-link-active"
               :class="{'router-link-active': $route.path === `/${menu[item].link}`}">
               {{ menu[item].title }}
-            </b-nav-item>
-          </template>
+            </router-link>
+          </li>
         </template>
-      </b-navbar-nav>
+      </ul>
 
-      <b-navbar-nav
-        class="ms-auto">
+      <div class="ms-auto d-flex flex-row align-items-center">
         <small>
           <Version :timezone="timezone" />
         </small>
         <LanguageSwitcher additional-classes="ms-2" />
+
         <router-link
-          id="help"
+          class="ms-2"
           :to="{ path: helpLink.href, query: helpLink.query, name: 'Help' }">
           <span class="fa fa-lg fa-fw fa-question-circle help-link text-theme-button text-theme-gray-hover" />
-          <BTooltip target="help">{{ $t('navigation.helpTip') }}</BTooltip>
+          <v-tooltip activator="parent">{{ $t('navigation.helpTip') }}</v-tooltip>
         </router-link>
-        <e-s-health />
-      </b-navbar-nav>
 
-      <span
-        v-if="isAToolBarPage"
-        id="toggleTopStuff"
-        class="toggle-chevrons text-theme-button text-theme-gray-hover"
-        @click="toggleToolBars">
-        <span :class="showToolBars ? 'fa fa-chevron-circle-up fa-fw fa-lg' : 'fa fa-chevron-circle-down fa-fw fa-lg'" />
-        <BTooltip target="toggleTopStuff">{{ $t('navigation.toggleTopStuffTip') }}</BTooltip>
-      </span>
+        <e-s-health class="ms-2" />
 
-      <Logout
-        size="sm"
-        :base-path="path"
-        class="ms-2 me-2" />
-    </b-navbar>
+        <span
+          v-if="isAToolBarPage"
+          class="toggle-chevrons text-theme-button text-theme-gray-hover ms-2"
+          @click="toggleToolBars">
+          <span :class="showToolBars ? 'fa fa-chevron-circle-up fa-fw fa-lg' : 'fa fa-chevron-circle-down fa-fw fa-lg'" />
+          <v-tooltip activator="parent">{{ $t('navigation.toggleTopStuffTip') }}</v-tooltip>
+        </span>
+
+        <Logout
+          size="sm"
+          :base-path="path"
+          class="ms-2 me-2" />
+      </div>
+    </nav>
+
     <div class="navbarOffset" />
   </span>
 </template>
@@ -248,7 +244,7 @@ nav.navbar {
   margin-top: 1px;
 }
 .help-link {
-  margin-left: 10px;
+  margin-left: 0;
 }
 
 .navbar-text {
@@ -276,5 +272,127 @@ p.shortcut-letter.holding-shift::first-letter {
  button when the user has the toolbars collapsed and session(s) open */
 span.show-sticky-sessions-btn.hide-tool-bars > nav > div.navbar-collapse.collapse {
   margin-right: 32px;
+}
+
+/* v7: navbar nav links uppercase + monospace, with thin dividers
+   between items so the tabs read as distinct lozenges instead of one
+   long string of letters. */
+.arkime-navbar .navbar-nav .nav-link {
+  text-transform: uppercase;
+  font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  letter-spacing: 0.5px;
+  padding-left: 14px;
+  padding-right: 14px;
+  position: relative;
+  transition: color 0.18s ease;
+}
+.arkime-navbar .navbar-nav .nav-item {
+  position: relative;
+}
+.arkime-navbar .navbar-nav .nav-item + .nav-item::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 8px;
+  bottom: 8px;
+  width: 1px;
+  background-color: rgba(255, 255, 255, 0.18);
+  pointer-events: none;
+  transition: top 0.18s ease, bottom 0.18s ease, width 0.18s ease,
+              background-color 0.18s ease;
+}
+
+/* underline that grows from center on hover; full-width when active */
+.arkime-navbar .navbar-nav .nav-link::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  right: 50%;
+  bottom: 4px;
+  height: 2px;
+  background-color: var(--color-tertiary-lighter, #FFF);
+  transition: left 0.18s ease, right 0.18s ease, opacity 0.18s ease;
+  opacity: 0;
+}
+.arkime-navbar .navbar-nav .nav-link:hover::after {
+  left: 14px;
+  right: 14px;
+  opacity: 0.6;
+}
+
+/* override global nav.navbar li hover/active backgrounds (which just
+   tint the bg with the primary color); we want clean text-driven
+   feedback instead. */
+.arkime-navbar .navbar-nav .nav-item:hover,
+.arkime-navbar .navbar-nav .nav-item:focus,
+.arkime-navbar .navbar-nav .nav-item:has(.router-link-active) {
+  background-color: transparent !important;
+  border-bottom: none !important;
+}
+
+/* hover: brighten the text */
+.arkime-navbar .navbar-nav .nav-link:hover {
+  color: var(--color-tertiary-lighter, #FFF) !important;
+}
+
+/* active: brighter text + full underline + the two dividers framing
+   the active tab become full-height accents (so the tab reads as
+   "bracketed" by the dividers, not just colored in). The active
+   underline lives on the .nav-item parent (not on .nav-link) so it
+   spans full width and sits flush with the bottom edge of the
+   navbar, matching the full-height dividers' bottom. */
+.arkime-navbar .navbar-nav .nav-link.router-link-active {
+  color: var(--color-tertiary-lighter, #FFF) !important;
+  font-weight: 600;
+}
+.arkime-navbar .navbar-nav .nav-item:has(.router-link-active)::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 2px;
+  background-color: var(--color-tertiary-lighter, #FFF);
+  pointer-events: none;
+}
+.arkime-navbar .navbar-nav .nav-item:has(.router-link-active)::before,
+.arkime-navbar .navbar-nav .nav-item:has(.router-link-active) + .nav-item::before {
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background-color: var(--color-tertiary-lighter, #FFF);
+}
+
+/* push the nav list off the logo */
+.arkime-nav-list {
+  margin-left: 3rem;
+  position: relative;
+}
+
+/* left + right outer edge dividers (between-item dividers handle the
+   inner ones; these complete the frame) */
+.arkime-nav-list::before,
+.arkime-nav-list::after {
+  content: "";
+  position: absolute;
+  top: 8px;
+  bottom: 8px;
+  width: 1px;
+  background-color: rgba(255, 255, 255, 0.18);
+  pointer-events: none;
+  transition: top 0.18s ease, bottom 0.18s ease, width 0.18s ease,
+              background-color 0.18s ease;
+}
+.arkime-nav-list::before { left: 0; }
+.arkime-nav-list::after { right: 0; }
+
+/* if the first/last tab is active, light up the matching outer
+   edge divider so the active "bracket" stays consistent */
+.arkime-nav-list:has(.nav-item:first-child .router-link-active)::before,
+.arkime-nav-list:has(.nav-item:last-child .router-link-active)::after {
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background-color: var(--color-tertiary-lighter, #FFF);
 }
 </style>

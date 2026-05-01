@@ -25,21 +25,19 @@ SPDX-License-Identifier: Apache-2.0
           href="#"
           role="button"
           @click="dismissMsg"
-          id="dismissWelcomeMsg"
           class="no-decoration pull-left ms-1">
           <span class="fa fa-close" />
           {{ $t('common.dismiss') }}
-          <BTooltip target="dismissWelcomeMsg">{{ $t('welcome.dismissTip') }}</BTooltip>
+          <v-tooltip activator="parent">{{ $t('welcome.dismissTip') }}</v-tooltip>
         </a>
         <a
           href="#"
           role="button"
           @click="acknowledgeMsg"
-          id="acknowledgeWelcomeMsg"
           class="no-decoration pull-right me-1">
           {{ $t('welcome.gotIt') }}
           <span class="fa fa-thumbs-up" />
-          <BTooltip target="acknowledgeWelcomeMsg">{{ $t('welcome.gotItTip') }}</BTooltip>
+          <v-tooltip activator="parent">{{ $t('welcome.gotItTip') }}</v-tooltip>
         </a>
       </div>
     </div>

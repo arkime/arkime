@@ -6,49 +6,52 @@ SPDX-License-Identifier: Apache-2.0
   <div>
     <h3>
       {{ $t('settings.views.title') }}
-      <BButton
-        size="sm"
-        variant="success"
-        class="pull-right"
+      <button
+        type="button"
+        class="btn btn-sm btn-success pull-right"
         @click="showViewModal = !showViewModal">
         <span class="fa fa-plus-circle me-1" />
         {{ $t('settings.views.newView') }}
-      </BButton>
+      </button>
     </h3>
 
     <p>
       {{ $t('settings.views.info') }}
     </p>
 
-    <div class="d-flex">
-      <div class="flex-grow-1 me-2 mb-1">
-        <b-input-group size="sm">
-          <template #prepend>
-            <b-input-group-text>
-              <span class="fa fa-search" />
-            </b-input-group-text>
-          </template>
-          <b-form-input
-            debounce="400"
-            :model-value="viewsQuery.search"
-            @update:model-value="updateSearch"
-            :placeholder="$t('settings.views.searchPlaceholder')" />
-        </b-input-group>
+    <div class="d-flex align-items-center">
+      <div class="flex-grow-1 me-2">
+        <v-text-field
+          density="compact"
+          variant="outlined"
+          hide-details
+          clearable
+          prepend-inner-icon="fa-search"
+          :model-value="viewsQuery.search"
+          @update:model-value="updateSearch"
+          :placeholder="$t('settings.views.searchPlaceholder')" />
       </div>
-      <b-form-checkbox
-        button
-        size="sm"
+      <v-btn-toggle
+        v-if="user.roles.includes('arkimeAdmin')"
+        density="compact"
+        variant="outlined"
+        color="secondary"
         class="me-2"
-        :model-value="seeAll"
-        @update:model-value="updateSeeAll"
-        id="seeAllViews"
-        v-if="user.roles.includes('arkimeAdmin')">
-        <span class="fa fa-user-circle me-1" />
-        {{ $t(seeAll ? 'settings.views.seeMy' : 'settings.views.seeAll') }}
-        <BTooltip target="seeAllViews">
-          {{ $t(seeAll ? 'settings.views.seeMyTip' : 'settings.views.seeAllTip') }}
-        </BTooltip>
-      </b-form-checkbox>
+        multiple
+        :model-value="seeAll ? ['seeAll'] : []"
+        @update:model-value="(val) => updateSeeAll(val.includes('seeAll'))">
+        <v-btn
+          value="seeAll"
+          id="seeAllViews">
+          <span class="fa fa-user-circle me-1" />
+          {{ $t(seeAll ? 'settings.views.seeMy' : 'settings.views.seeAll') }}
+          <v-tooltip
+            activator="parent"
+            location="top">
+            {{ $t(seeAll ? 'settings.views.seeMyTip' : 'settings.views.seeAllTip') }}
+          </v-tooltip>
+        </v-btn>
+      </v-btn-toggle>
       <arkime-paging
         v-if="views"
         :length-default="size"
@@ -107,9 +110,9 @@ SPDX-License-Identifier: Apache-2.0
                   v-if="fieldsMap[col]"
                   :id="`viewField-${col}`">
                   {{ fieldsMap[col].friendlyName }}
-                  <BTooltip :target="`viewField-${col}`">
+                  <v-tooltip :activator="`[id='viewField-${col}']`">
                     {{ fieldsMap[col].help }}
-                  </BTooltip>
+                  </v-tooltip>
                 </label>
               </template>
             </span>
@@ -125,62 +128,58 @@ SPDX-License-Identifier: Apache-2.0
                   :id="`viewFieldOrder-${order[0]}`">
                   {{ fieldsMap[order[0]].friendlyName }}&nbsp;
                   ({{ order[1] }})
-                  <BTooltip :target="`viewFieldOrder-${order[0]}`">
+                  <v-tooltip :activator="`[id='viewFieldOrder-${order[0]}']`">
                     {{ fieldsMap[order[0]].help }}
-                  </BTooltip>
+                  </v-tooltip>
                 </label>
               </template>
             </span>
           </td>
           <td>
             <span class="pull-right no-wrap">
-              <b-button
-                size="sm"
-                class="ms-1"
+              <button
+                type="button"
+                class="btn btn-sm btn-theme-secondary ms-1"
                 :id="`copyView-${item.id}`"
-                variant="theme-secondary"
                 @click="$emit('copy-value', item.expression)">
                 <span class="fa fa-clipboard fa-fw" />
-                <BTooltip :target="`copyView-${item.id}`">
+                <v-tooltip :activator="`#copyView-${item.id}`">
                   {{ $t('settings.views.copyTip') }}
-                </BTooltip>
-              </b-button>
+                </v-tooltip>
+              </button>
               <template
                 v-if="canEdit(item)">
-                <b-button
-                  size="sm"
-                  class="ms-1"
-                  variant="info"
+                <button
+                  type="button"
+                  class="btn btn-sm btn-info ms-1"
                   :id="`transferView-${item.id}`"
                   v-if="canTransfer(item)"
                   @click="openTransferView(item)">
                   <span class="fa fa-share fa-fw" />
-                  <BTooltip :target="`transferView-${item.id}`">
+                  <v-tooltip :activator="`#transferView-${item.id}`">
                     {{ $t('settings.views.transferTip') }}
-                  </BTooltip>
-                </b-button>
-                <b-button
-                  size="sm"
-                  class="ms-1"
-                  variant="danger"
+                  </v-tooltip>
+                </button>
+                <button
+                  type="button"
+                  class="btn btn-sm btn-danger ms-1"
                   :id="`deleteView-${item.id}`"
                   @click="deleteView(item.id, index)">
                   <span class="fa fa-trash-o fa-fw" />
-                  <BTooltip :target="`deleteView-${item.id}`">
+                  <v-tooltip :activator="`#deleteView-${item.id}`">
                     {{ $t('settings.views.deleteTip') }}
-                  </BTooltip>
-                </b-button>
-                <b-button
-                  size="sm"
-                  class="ms-1"
+                  </v-tooltip>
+                </button>
+                <button
+                  type="button"
+                  class="btn btn-sm btn-theme-tertiary ms-1"
                   :id="`editView-${item.id}`"
-                  @click="editView(item)"
-                  variant="theme-tertiary">
+                  @click="editView(item)">
                   <span class="fa fa-pencil fa-fw" />
-                  <BTooltip :target="`editView-${item.id}`">
+                  <v-tooltip :activator="`#editView-${item.id}`">
                     {{ $t('settings.views.editTip') }}
-                  </BTooltip>
-                </b-button>
+                  </v-tooltip>
+                </button>
               </template>
             </span>
           </td>
@@ -212,108 +211,116 @@ SPDX-License-Identifier: Apache-2.0
     </div> <!-- /no results -->
 
     <!-- new view form -->
-    <BModal
-      size="xl"
+    <v-dialog
       :model-value="showViewModal"
-      @hidden="showViewModal = false"
-      :title="$t(editingView ? 'settings.views.editView' : 'settings.views.newView')">
-      <b-input-group
-        size="sm"
-        class="mb-2">
-        <b-input-group-text
-          id="viewFormName"
-          class="cursor-help">
-          {{ $t('settings.views.viewFormName') }}<sup>*</sup>
-          <BTooltip target="viewFormName">
-            {{ $t('settings.views.viewFormNameTip') }}
-          </BTooltip>
-        </b-input-group-text>
-        <b-form-input
-          :model-value="newViewName"
-          @update:model-value="newViewName = $event"
-          :placeholder="$t('settings.views.viewFormNamePlaceholder')" />
-      </b-input-group>
-      <b-input-group
-        size="sm"
-        class="mb-2">
-        <b-input-group-text
-          id="viewFormExpression"
-          class="cursor-help">
-          {{ $t('settings.views.viewFormExpression') }}<sup>*</sup>
-          <BTooltip target="viewFormExpression">
-            {{ $t('settings.views.viewFormExpressionTip') }}
-          </BTooltip>
-        </b-input-group-text>
-        <ExpressionAutocompleteInput
-          textarea
-          rows="3"
-          :model-value="newViewExpression"
-          @update:model-value="newViewExpression = $event"
-          :placeholder="$t('settings.views.viewFormExpressionPlaceholder')" />
-      </b-input-group>
-      <div class="d-flex">
-        <div class="me-3 flex-grow-1 no-wrap">
-          <RoleDropdown
-            :roles="roles"
-            class="d-inline"
-            :selected-roles="newViewRoles"
-            :display-text="$t('common.rolesCanView')"
-            @selected-roles-updated="updateNewViewRoles" />
-          <RoleDropdown
-            :roles="roles"
-            class="d-inline ms-1"
-            :display-text="$t('common.rolesCanEdit')"
-            :selected-roles="newViewEditRoles"
-            @selected-roles-updated="updateNewViewEditRoles" />
-        </div>
-        <b-input-group
-          size="sm">
-          <b-input-group-text
-            id="viewFormUsers"
-            class="cursor-help">
-            {{ $t('common.shareWithUsers') }}
-            <BTooltip target="viewFormUsers">
-              {{ $t('settings.views.viewFormUsersTip') }}
-            </BTooltip>
-          </b-input-group-text>
-          <b-form-input
-            :model-value="newViewUsers"
-            @update:model-value="newViewUsers = $event"
-            :placeholder="$t('settings.views.viewFormUsersPlaceholder')" />
-        </b-input-group>
-      </div>
-      <!-- form error -->
-      <div
-        v-if="viewFormError"
-        class="alert alert-danger alert-sm mt-2 mb-0">
-        <span class="fa fa-exclamation-triangle me-1" />
-        {{ viewFormError }}
-      </div> <!-- /form error -->
-      <template #footer>
-        <div class="w-100 d-flex justify-content-between">
-          <b-button
-            variant="danger"
-            @click="showViewModal = false">
-            <span class="fa fa-times" />
-            {{ $t('common.cancel') }}
-          </b-button>
-          <b-button
-            variant="success"
-            @click="createView"
-            v-if="!editingView">
-            <span class="fa fa-plus-circle me-1" />
-            {{ $t('common.create') }}
-          </b-button>
-          <b-button
-            v-else
-            variant="success"
-            @click="updateView">
-            <span class="fa fa-save me-1" />
-            {{ $t('common.save') }}
-          </b-button>
-        </div>
-      </template> <!-- /modal footer -->
-    </BModal> <!-- /new view form -->
+      @update:model-value="(val) => { if (!val) showViewModal = false; }"
+      max-width="1140">
+      <v-card density="compact">
+        <v-card-title>
+          {{ $t(editingView ? 'settings.views.editView' : 'settings.views.newView') }}
+        </v-card-title>
+        <v-card-text>
+          <div class="input-group input-group-sm mb-2">
+            <span
+              id="viewFormName"
+              class="input-group-text cursor-help">
+              {{ $t('settings.views.viewFormName') }}<sup>*</sup>
+              <v-tooltip activator="#viewFormName">
+                {{ $t('settings.views.viewFormNameTip') }}
+              </v-tooltip>
+            </span>
+            <input
+              type="text"
+              class="form-control"
+              :value="newViewName"
+              @input="newViewName = $event.target.value"
+              :placeholder="$t('settings.views.viewFormNamePlaceholder')">
+          </div>
+          <div class="input-group input-group-sm mb-2">
+            <span
+              id="viewFormExpression"
+              class="input-group-text cursor-help">
+              {{ $t('settings.views.viewFormExpression') }}<sup>*</sup>
+              <v-tooltip activator="#viewFormExpression">
+                {{ $t('settings.views.viewFormExpressionTip') }}
+              </v-tooltip>
+            </span>
+            <ExpressionAutocompleteInput
+              textarea
+              rows="3"
+              :model-value="newViewExpression"
+              @update:model-value="newViewExpression = $event"
+              :placeholder="$t('settings.views.viewFormExpressionPlaceholder')" />
+          </div>
+          <div class="d-flex">
+            <div class="me-3 flex-grow-1 no-wrap">
+              <RoleDropdown
+                :roles="roles"
+                class="d-inline"
+                :selected-roles="newViewRoles"
+                :display-text="$t('common.rolesCanView')"
+                @selected-roles-updated="updateNewViewRoles" />
+              <RoleDropdown
+                :roles="roles"
+                class="d-inline ms-1"
+                :display-text="$t('common.rolesCanEdit')"
+                :selected-roles="newViewEditRoles"
+                @selected-roles-updated="updateNewViewEditRoles" />
+            </div>
+            <div class="input-group input-group-sm">
+              <span
+                id="viewFormUsers"
+                class="input-group-text cursor-help">
+                {{ $t('common.shareWithUsers') }}
+                <v-tooltip activator="#viewFormUsers">
+                  {{ $t('settings.views.viewFormUsersTip') }}
+                </v-tooltip>
+              </span>
+              <input
+                type="text"
+                class="form-control"
+                :value="newViewUsers"
+                @input="newViewUsers = $event.target.value"
+                :placeholder="$t('settings.views.viewFormUsersPlaceholder')">
+            </div>
+          </div>
+          <!-- form error -->
+          <div
+            v-if="viewFormError"
+            class="alert alert-danger alert-sm mt-2 mb-0">
+            <span class="fa fa-exclamation-triangle me-1" />
+            {{ viewFormError }}
+          </div> <!-- /form error -->
+        </v-card-text>
+        <v-card-actions>
+          <div class="w-100 d-flex justify-content-between">
+            <button
+              type="button"
+              class="btn btn-danger"
+              @click="showViewModal = false">
+              <span class="fa fa-times" />
+              {{ $t('common.cancel') }}
+            </button>
+            <button
+              type="button"
+              class="btn btn-success"
+              @click="createView"
+              v-if="!editingView">
+              <span class="fa fa-plus-circle me-1" />
+              {{ $t('common.create') }}
+            </button>
+            <button
+              type="button"
+              class="btn btn-success"
+              v-else
+              @click="updateView">
+              <span class="fa fa-save me-1" />
+              {{ $t('common.save') }}
+            </button>
+          </div>
+        </v-card-actions>
+      </v-card>
+    </v-dialog> <!-- /new view form -->
 
     <transfer-resource
       :show-modal="showTransferModal"

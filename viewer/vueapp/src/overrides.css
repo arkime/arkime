@@ -361,3 +361,215 @@ pre {
 .modal-content {
   background-color: var(--color-background);
 }
+
+
+/* ========================================================================== */
+/* Vuetify overrides (Phase 1 of Vuetify migration)                           */
+/*                                                                            */
+/* These are minimal bridges so Vuetify components pick up the existing       */
+/* --color-* theme variables. A proper Vuetify-native theme system is         */
+/* deferred to post-migration redesign work -- see                            */
+/* docs/frontend/bvn-to-vuetify.md.                                           */
+/* ========================================================================== */
+
+/* v-data-table: keep backgrounds transparent so the surrounding body theme
+   shows through, and let the color cascade in. Override padding to be even
+   tighter than Vuetify's compact density. */
+.v-table {
+  background: transparent !important;
+  color: var(--color-foreground) !important;
+}
+.v-table .v-table__wrapper {
+  background: transparent !important;
+}
+.v-table thead th {
+  color: var(--color-foreground) !important;
+  background-color: var(--color-background) !important;
+  border-bottom-color: var(--color-gray-light) !important;
+}
+.v-table tbody td {
+  color: var(--color-foreground) !important;
+  border-bottom-color: var(--color-gray-light) !important;
+}
+.v-table tbody tr:hover td {
+  filter: brightness(90%);
+}
+
+/* v-data-table-footer: shrink pagination/per-page-selector chrome which is
+   far too tall by default for analyst-grade dense UI. */
+.v-data-table-footer {
+  font-size: 0.8rem;
+  padding: 2px 8px !important;
+  min-height: 32px;
+}
+.v-data-table-footer .v-data-table-footer__items-per-page {
+  align-items: center;
+  gap: 4px;
+}
+.v-data-table-footer .v-data-table-footer__pagination .v-btn {
+  width: 24px;
+  height: 24px;
+}
+
+/* v-menu / v-list: match the existing .dropdown-menu styling above so menus
+   feel like part of the same app. Arkime is a dense analyst UI -- err on the
+   small side. */
+.v-overlay__content > .v-list,
+.v-list {
+  padding: 2px 0 !important;
+  font-size: 0.78rem;
+  border: 1px solid var(--color-gray-light);
+  background-color: var(--color-background) !important;
+  color: var(--color-foreground) !important;
+}
+.v-list-item {
+  min-height: 22px !important;
+  padding-top: 1px !important;
+  padding-bottom: 1px !important;
+  padding-left: 8px !important;
+  padding-right: 8px !important;
+  font-size: 0.78rem !important;
+  line-height: 1.2 !important;
+}
+.v-list-item .v-list-item__content,
+.v-list-item .v-list-item-title {
+  font-size: 0.78rem !important;
+  line-height: 1.2 !important;
+}
+.v-list-item:hover {
+  color: var(--color-foreground) !important;
+  background-color: var(--color-gray-light) !important;
+}
+.v-list-item--active,
+.v-list-item.v-list-item--active {
+  color: var(--color-white, #FFF) !important;
+  background-color: var(--color-primary) !important;
+}
+.v-list-item--active:hover {
+  background-color: var(--color-primary-light) !important;
+}
+.v-list .v-divider {
+  margin: 2px 0 !important;
+  border-color: var(--color-gray-light) !important;
+}
+
+/* v-btn outlined (used by v-btn-toggle radio groups in Settings, plus
+   standalone toggle buttons): bridge to --color-* vars. Vuetify's
+   default secondary color is faint in both light and dark modes;
+   themes-driven colors give better contrast. */
+.v-btn--variant-outlined {
+  border-color: var(--color-gray) !important;
+  color: var(--color-foreground) !important;
+  background-color: var(--color-background) !important;
+}
+.v-btn--variant-outlined:hover {
+  background-color: var(--color-gray-lighter) !important;
+}
+.v-btn--variant-outlined.v-btn--active {
+  background-color: var(--color-primary) !important;
+  color: var(--color-button, #FFF) !important;
+  border-color: var(--color-primary) !important;
+}
+.v-btn--variant-outlined.v-btn--disabled {
+  opacity: 0.5;
+}
+
+/* v-card / v-dialog: bridge to the --color-* theme. v-dialog is just an
+   overlay; the styling comes from the v-card composed inside. Without
+   this, modals always render with Vuetify's default light surface even
+   in dark themes. */
+.v-card {
+  background-color: var(--color-background) !important;
+  color: var(--color-foreground) !important;
+}
+.v-card .v-card-title,
+.v-card .v-card-text,
+.v-card .v-card-actions {
+  color: var(--color-foreground) !important;
+}
+.v-overlay__scrim {
+  background-color: rgba(0, 0, 0, 0.6);
+}
+
+/* v-text-field / v-select compact density: Vuetify's compact density on
+   outlined variant is still ~40px tall, which is much taller than the
+   adjacent btn-sm (~31px) and feels out of place in Arkime's dense UI.
+   Force compact density to match btn-sm height. */
+.v-input--density-compact .v-field {
+  --v-field-padding-top: 0;
+  --v-field-padding-bottom: 0;
+  min-height: 30px !important;
+}
+.v-input--density-compact .v-field__input {
+  min-height: 30px !important;
+  padding-top: 2px;
+  padding-bottom: 2px;
+}
+.v-input--density-compact .v-field__field {
+  min-height: 30px !important;
+}
+.v-input--density-compact .v-label,
+.v-input--density-compact .v-field-label {
+  font-size: 0.78rem;
+}
+.v-input--density-compact input {
+  font-size: 0.85rem;
+  min-height: 26px;
+}
+.v-input--density-compact .v-field__append-inner {
+  padding-top: 4px;
+}
+
+/* v-btn-toggle compact: shrink toggle button heights to match
+   Arkime's btn-sm scale. Vuetify renders v-btn-toggle as a v-btn-group
+   under the hood; the group sets height via .v-btn-group--density-compact. */
+.v-btn-group--density-compact.v-btn-group {
+  height: 30px !important;
+}
+.v-btn-group--density-compact .v-btn,
+.v-btn-group--density-compact .v-btn--size-small {
+  min-width: 0 !important;
+  padding: 0 10px !important;
+  font-size: 0.78rem !important;
+}
+
+/* v-checkbox / v-radio compact: Vuetify's compact density on selection
+   controls is still oversized for Arkime's dense forms. Shrink the
+   icon, label, and surrounding padding so multiple selections fit in
+   a single toolbar row. */
+.v-input--density-compact.v-checkbox,
+.v-input--density-compact.v-radio-group {
+  --v-input-padding-top: 0;
+}
+.v-checkbox.v-input--density-compact .v-selection-control,
+.v-radio-group.v-input--density-compact .v-selection-control {
+  min-height: 24px !important;
+  --v-selection-control-size: 24px;
+}
+.v-checkbox.v-input--density-compact .v-selection-control__wrapper,
+.v-radio-group.v-input--density-compact .v-selection-control__wrapper {
+  width: 24px !important;
+  height: 24px !important;
+}
+.v-checkbox.v-input--density-compact .v-selection-control__input,
+.v-radio-group.v-input--density-compact .v-selection-control__input {
+  width: 24px !important;
+  height: 24px !important;
+}
+.v-checkbox.v-input--density-compact .v-selection-control__input > .v-icon,
+.v-radio-group.v-input--density-compact .v-selection-control__input > .v-icon {
+  font-size: 18px !important;
+}
+.v-checkbox.v-input--density-compact .v-label,
+.v-radio-group.v-input--density-compact .v-label {
+  font-size: 0.85rem !important;
+  opacity: 1 !important;
+  padding-inline-start: 4px !important;
+}
+.v-checkbox.v-input--density-compact .v-input__control,
+.v-radio-group.v-input--density-compact .v-input__control {
+  min-height: 24px !important;
+}
+.v-radio-group.v-input--density-compact .v-selection-control-group--inline {
+  gap: 4px;
+}
