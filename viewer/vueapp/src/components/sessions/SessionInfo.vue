@@ -9,36 +9,36 @@ SPDX-License-Identifier: Apache-2.0
       :key="infoField.dbField + index">
       <div v-if="session[infoField.dbField]">
         <!-- label dropdown menu -->
-        <b-dropdown
-          right
-          size="sm"
-          toggle-class="rounded"
-          class="field-dropdown d-inline-block me-1"
-          variant="default"
-          :text="infoField.friendlyName">
-          <b-dropdown-item
-            @click="exportUnique(infoField.rawField || infoField.exp, 0)">
-            {{ $t('sessions.exportUnique', {name: infoField.friendlyName}) }}
-          </b-dropdown-item>
-          <b-dropdown-item
-            @click="exportUnique(infoField.rawField || infoField.exp, 1)">
-            {{ $t('sessions.exportUniqueCounts', {name: infoField.friendlyName}) }}
-          </b-dropdown-item>
-          <template v-if="infoField.portField">
-            <b-dropdown-item
-              @click="exportUnique(infoField.rawField || infoField.exp + ':' + infoField.portField, 0)">
-              {{ $t('sessions.exportUniquePort', {name: infoField.friendlyName}) }}
-            </b-dropdown-item>
-            <b-dropdown-item
-              @click="exportUnique(infoField.rawField || infoField.exp + ':' + infoField.portField, 1)">
-              {{ $t('sessions.exportUniquePortCounts', {name: infoField.friendlyName}) }}
-            </b-dropdown-item>
+        <v-menu location="bottom end">
+          <template #activator="{ props: activatorProps }">
+            <button
+              v-bind="activatorProps"
+              type="button"
+              class="btn btn-xs btn-outline-secondary field-info-trigger me-1">
+              {{ infoField.friendlyName }}
+              <span class="fa fa-caret-down ms-1" />
+            </button>
           </template>
-          <b-dropdown-item
-            @click="openSpiGraph(infoField.dbField)">
-            {{ $t('sessions.openSpiGraph', {name: infoField.friendlyName}) }}
-          </b-dropdown-item>
-        </b-dropdown> <!-- /label dropdown menu -->
+          <v-list density="compact">
+            <v-list-item @click="exportUnique(infoField.rawField || infoField.exp, 0)">
+              {{ $t('sessions.exportUnique', {name: infoField.friendlyName}) }}
+            </v-list-item>
+            <v-list-item @click="exportUnique(infoField.rawField || infoField.exp, 1)">
+              {{ $t('sessions.exportUniqueCounts', {name: infoField.friendlyName}) }}
+            </v-list-item>
+            <template v-if="infoField.portField">
+              <v-list-item @click="exportUnique(infoField.rawField || infoField.exp + ':' + infoField.portField, 0)">
+                {{ $t('sessions.exportUniquePort', {name: infoField.friendlyName}) }}
+              </v-list-item>
+              <v-list-item @click="exportUnique(infoField.rawField || infoField.exp + ':' + infoField.portField, 1)">
+                {{ $t('sessions.exportUniquePortCounts', {name: infoField.friendlyName}) }}
+              </v-list-item>
+            </template>
+            <v-list-item @click="openSpiGraph(infoField.dbField)">
+              {{ $t('sessions.openSpiGraph', {name: infoField.friendlyName}) }}
+            </v-list-item>
+          </v-list>
+        </v-menu> <!-- /label dropdown menu -->
         <span v-if="Array.isArray(session[infoField.dbField])">
           <span
             v-for="(value, idx) in limitArrayLength(session[infoField.dbField], infoField.limit)"
@@ -152,13 +152,14 @@ export default {
 };
 </script>
 
-<style>
-/* clickable field labels */
-.session-info div.dropdown.field-dropdown > button {
+<style scoped>
+/* clickable field labels — small, outlined, sits inline with field values */
+.session-info .field-info-trigger {
   margin-top: 1px;
   margin-bottom: 1px;
-  padding: 0 4px;
-  font-size: .75rem;
+  padding: 0 6px;
+  font-size: 0.75rem;
   font-weight: 500;
+  line-height: 1.4;
 }
 </style>
