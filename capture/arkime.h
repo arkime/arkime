@@ -1200,7 +1200,7 @@ typedef void (* ArkimeClassifyFunc) (ArkimeSession_t *session, const uint8_t *da
 void  arkime_parsers_unregister(ArkimeSession_t *session, void *uw);
 void  arkime_parsers_register2(ArkimeSession_t *session, ArkimeParserFunc func, void *uw, ArkimeParserFreeFunc ffunc, ArkimeParserSaveFunc sfunc);
 #define arkime_parsers_register(session, func, uw, ffunc) arkime_parsers_register2(session, func, uw, ffunc, NULL)
-gboolean arkime_parsers_has_registered(ArkimeSession_t *session, ArkimeParserFunc func);
+gboolean arkime_parsers_has_registered(const ArkimeSession_t *session, ArkimeParserFunc func);
 
 void  arkime_parsers_classifier_register_tcp_internal(const char *name, void *uw, int offset, const uint8_t *match, int matchlen, ArkimeClassifyFunc func, size_t sessionsize, int apiversion);
 #define arkime_parsers_classifier_register_tcp(name, uw, offset, match, matchlen, func) arkime_parsers_classifier_register_tcp_internal(name, uw, offset, match, matchlen, func, sizeof(ArkimeSession_t), ARKIME_API_VERSION)

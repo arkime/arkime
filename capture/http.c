@@ -567,7 +567,7 @@ LOCAL size_t arkime_http_curlm_header_function(char *buffer, size_t size, size_t
     if (!colon)
         return sz;
 
-    char *end = buffer + i;
+    const char *end = buffer + i;
     *colon = 0;
     colon++;
     while (colon < end && isspace((unsigned char) * colon)) colon++;

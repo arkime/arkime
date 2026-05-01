@@ -350,11 +350,6 @@ LOCAL void adb_parse_open(ArkimeSession_t *session, const uint8_t *data, int rem
         memcpy(service_str, service, service_len);
         service_str[service_len] = '\0';
 
-        /* Remove null terminator if present */
-        if (service_len > 0 && service_str[service_len - 1] == '\0') {
-            service_len--;
-        }
-
         /* Check for sync mode */
         if (strncmp(service_str, "sync:", 5) == 0) {
             adb->syncMode[which] = 1;
@@ -373,7 +368,7 @@ LOCAL void adb_parse_open(ArkimeSession_t *session, const uint8_t *data, int rem
         }
 
         /* Extract base service name (before colon or comma) */
-        char *delim = strpbrk(service_str, ":,");
+        const char *delim = strpbrk(service_str, ":,");
         if (delim && delim > service_str) {
             char base_service[64];
             int base_len = MIN(delim - service_str, 63);
@@ -453,7 +448,7 @@ LOCAL void adb_parse_client_server(ArkimeSession_t *session, const uint8_t *data
         }
 
         /* Extract base service name */
-        char *colon = strchr(service_str, ':');
+        const char *colon = strchr(service_str, ':');
         if (colon && colon > service_str) {
             char base_service[64];
             int base_len = MIN(colon - service_str, 63);
@@ -487,7 +482,7 @@ LOCAL int adb_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, in
     if (adb->isClientServer[which] == 0 && adb->pb->len[which] == 0 && remaining >= 4) {
         /* Check if first 4 bytes are hex digits */
         int is_hex = 1;
-        for (int i = 0; i < 4 && i < remaining; i++) {
+        for (int i = 0; i < 4; i++) {
             if (!isxdigit(data[i])) {
                 is_hex = 0;
                 break;
