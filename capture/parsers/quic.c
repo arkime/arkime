@@ -567,13 +567,16 @@ LOCAL int quic_ietf_udp_parser(ArkimeSession_t *session, void *uw, const uint8_t
 
         if (type == 6) { // CRYPTO
             arkime_session_add_protocol(session, "quic");
-            uint32_t offset = quic_get_number(&bsb);
-            uint32_t length = quic_get_number(&bsb);
+            uint64_t offset = quic_get_number(&bsb);
+            uint64_t length = quic_get_number(&bsb);
 
-            if (offset < sizeof(info->cbuf) && BSB_REMAINING(bsb) >= (int)length) {
-                int toCopy = MIN((int)length, (int)sizeof(info->cbuf) - (int)offset);
+            if (BSB_IS_ERROR(bsb) || length > (uint64_t)BSB_REMAINING(bsb))
+                break;
+
+            if (offset < sizeof(info->cbuf)) {
+                uint32_t toCopy = MIN(length, sizeof(info->cbuf) - offset);
                 memcpy(info->cbuf + offset, BSB_WORK_PTR(bsb), toCopy);
-                if ((int)(offset + toCopy) > info->clen)
+                if (offset + toCopy > info->clen)
                     info->clen = offset + toCopy;
                 info->cbytes += toCopy;
             }
