@@ -24,7 +24,7 @@ import moment from 'moment-timezone';
 const HOST_HEIGHT = 140;
 const Y_AXIS_RESERVE = 60;
 const PADDING = 16;
-const MIN_PX_PER_BAR = 60;
+const MIN_PX_PER_BAR = 40;
 
 export default {
   name: 'ArkimeTimelineGraph',
