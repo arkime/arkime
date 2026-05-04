@@ -114,24 +114,54 @@ export default {
       return filter?.friendlyName || type;
     },
     /**
-     * Flot stores series as [[tsMs, value], ...]. uPlot uses columnar
-     * [xs[], y0[], y1[], ...] with timestamps in seconds. Take the union of
-     * all series timestamps so the x axis covers every point.
+     * Build a uniform time grid using the backend-provided interval so
+     * uPlot can size bars correctly. Flot used barWidth = interval*1000/1.7
+     * regardless of data sparsity. uPlot auto-derives bar width from the
+     * minimum gap between consecutive data points, which collapses to the
+     * source interval rather than the displayed slot when Arkime ships
+     * sparse non-zero buckets — bars come out as 1-2 px ticks. Generating
+     * a regular grid from xmin/xmax/interval and binning data into it
+     * gives uPlot uniform spacing to work with.
      */
     buildAlignedData (defs) {
-      const tsSet = new Set();
-      for (const d of defs) {
-        for (const [ts] of (this.graphData[d.key] || [])) tsSet.add(ts);
-      }
-      if (this.graphData.xmin) tsSet.add(this.graphData.xmin);
-      if (this.graphData.xmax) tsSet.add(this.graphData.xmax);
+      const intervalMs = (this.graphData.interval || 60) * 1000;
+      const xmin = this.graphData.xmin;
+      const xmax = this.graphData.xmax;
 
-      const sortedMs = [...tsSet].sort((a, b) => a - b);
-      const xs = sortedMs.map((ms) => ms / 1000);
+      if (!xmin || !xmax || !intervalMs) {
+        // Fall back to data-driven timestamps when bounds are missing.
+        const tsSet = new Set();
+        for (const d of defs) {
+          for (const [ts] of (this.graphData[d.key] || [])) tsSet.add(ts);
+        }
+        const sortedMs = [...tsSet].sort((a, b) => a - b);
+        const xs = sortedMs.map((ms) => ms / 1000);
+        const ys = defs.map((d) => {
+          const map = new Map(this.graphData[d.key] || []);
+          return sortedMs.map((ms) => map.get(ms) ?? 0);
+        });
+        return [xs, ...ys];
+      }
+
+      // Uniform grid at interval spacing
+      const xsMs = [];
+      for (let t = xmin; t <= xmax; t += intervalMs) {
+        xsMs.push(t);
+      }
+      const xs = xsMs.map((ms) => ms / 1000);
+
+      // Bin each series' points into the grid
       const ys = defs.map((d) => {
-        const map = new Map(this.graphData[d.key] || []);
-        return sortedMs.map((ms) => map.get(ms) ?? 0);
+        const seriesData = this.graphData[d.key] || [];
+        const arr = new Array(xsMs.length).fill(0);
+        for (const [ts, val] of seriesData) {
+          if (ts < xmin || ts > xmax) continue;
+          const idx = Math.floor((ts - xmin) / intervalMs);
+          if (idx >= 0 && idx < arr.length) arr[idx] += val;
+        }
+        return arr;
       });
+
       return [xs, ...ys];
     },
     /**
