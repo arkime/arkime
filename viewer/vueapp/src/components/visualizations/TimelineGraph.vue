@@ -331,6 +331,10 @@ export default {
         },
         cursor: {
           drag: { x: true, y: false, setScale: false },
+          // The default cursor dot defaults to the series color, which
+          // disappears against the bar of the same color. Hide it — the
+          // tooltip carries the same info plus more context.
+          points: { show: false },
           dataIdx: (u, seriesIdx, hoveredIdx, cursorXVal) => {
             this.updateTooltip(u, seriesIdx, hoveredIdx, cursorXVal);
             return hoveredIdx;
@@ -485,18 +489,29 @@ export default {
 .timeline-graph {
   position: relative;
   width: 100%;
+  max-width: 100%;
   /* Per request: top breathing room, flush left and bottom. */
   padding-top: 8px;
   padding-bottom: 0;
   padding-left: 0;
-  /* Belt-and-suspenders: tooltip is absolutely positioned with a flip-x
-     fallback so it shouldn't overflow horizontally, but if anything else
-     escapes it shouldn't trigger sessions-content's overflow-x:auto. */
-  overflow-x: hidden;
+  /* Hard guard against horizontal overflow — the parent .sessions-content
+     has overflow-x:auto, so a single pixel of overflow here triggers a
+     scroll that clips the rightmost table columns. */
+  overflow: hidden;
+  box-sizing: border-box;
 }
 .timeline-host {
   width: 100%;
+  max-width: 100%;
   height: 140px;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+/* uPlot renders its wrapper as inline-block; force it to behave like a
+   block-level element bound to host width so it can't extend past it. */
+.timeline-graph :deep(.uplot) {
+  display: block;
+  max-width: 100%;
 }
 .timeline-tooltip {
   position: absolute;
