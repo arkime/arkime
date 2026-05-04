@@ -135,12 +135,12 @@ export default {
           for (const [ts] of (this.graphData[d.key] || [])) tsSet.add(ts);
         }
         const sortedMs = [...tsSet].sort((a, b) => a - b);
-        const xs = sortedMs.map((ms) => ms / 1000);
-        const ys = defs.map((d) => {
+        const fallbackXs = sortedMs.map((ms) => ms / 1000);
+        const fallbackYs = defs.map((d) => {
           const map = new Map(this.graphData[d.key] || []);
           return sortedMs.map((ms) => map.get(ms) ?? 0);
         });
-        return [xs, ...ys];
+        return [fallbackXs, ...fallbackYs];
       }
 
       // Uniform grid at interval spacing
