@@ -9,7 +9,9 @@
     "d3": "^7.7.0",
     "jquery": "^3.6.0",
     "save-svg-as-png": "^1.4.17",
-    "uplot": "^1.6.32"
+    "topojson-client": "^3.1.0",
+    "uplot": "^1.6.32",
+    "world-atlas": "^2.0.2"
   },
   "scripts": {
     "bundle": "(cd vueapp && vite build --minify false)",
