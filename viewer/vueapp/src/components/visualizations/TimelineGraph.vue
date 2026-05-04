@@ -10,6 +10,7 @@ SPDX-License-Identifier: Apache-2.0
     <div
       v-if="tooltip"
       class="timeline-tooltip"
+      :class="{'flip-x': tooltip.flipX}"
       :style="{left: tooltip.x + 'px', top: tooltip.y + 'px'}"
       v-html="tooltip.html" />
   </div>
@@ -283,7 +284,10 @@ export default {
       const opts = {
         width: host.clientWidth || 800,
         height: HOST_HEIGHT,
-        padding: [8, 8, 8, 8],
+        // [top, right, bottom, left] — extra top breathing room, flush left
+        // and bottom so the chart doesn't push past the .sessions-content
+        // overflow-x:auto boundary that lives in the parent table component.
+        padding: [16, 8, 0, 0],
         legend: { show: false }, // tooltip overlay carries the same info
         scales: {
           x: { time: true },
@@ -365,9 +369,12 @@ export default {
           if (Math.abs(capXSec - xSec) <= tolSec) {
             const capDateStr = timezoneDateString(cap.startTime, this.timezone, false);
             const message = this.$t('vis.capNodeRestarted', { node: cap.nodeName, when: capDateStr });
+            const xRel = rect.left - hostRect.left + cursorX;
+            const flipX = xRel + 12 > hostRect.width * 0.6;
             this.tooltip = {
-              x: rect.left - hostRect.left + cursorX + 12,
+              x: flipX ? xRel - 12 : xRel + 12,
               y: rect.top - hostRect.top + cursorY - 28,
+              flipX,
               html: `<div class="graph-tooltip-inner">${this.escapeHtml(message)}</div>`
             };
             return;
@@ -406,9 +413,12 @@ export default {
         lines.push(`<em>(rebucketed ${this.bucketFactor}× client-side)</em>`);
       }
 
+      const xRel = rect.left - hostRect.left + cursorX;
+      const flipX = xRel + 12 > hostRect.width * 0.6;
       this.tooltip = {
-        x: rect.left - hostRect.left + cursorX + 12,
+        x: flipX ? xRel - 12 : xRel + 12,
         y: rect.top - hostRect.top + cursorY - 28,
+        flipX,
         html: `<div class="graph-tooltip-inner">${lines.join('<br>')}</div>`
       };
     },
@@ -475,6 +485,14 @@ export default {
 .timeline-graph {
   position: relative;
   width: 100%;
+  /* Per request: top breathing room, flush left and bottom. */
+  padding-top: 8px;
+  padding-bottom: 0;
+  padding-left: 0;
+  /* Belt-and-suspenders: tooltip is absolutely positioned with a flip-x
+     fallback so it shouldn't overflow horizontally, but if anything else
+     escapes it shouldn't trigger sessions-content's overflow-x:auto. */
+  overflow-x: hidden;
 }
 .timeline-host {
   width: 100%;
@@ -490,6 +508,11 @@ export default {
   font-size: 11px;
   border-radius: 3px;
   white-space: nowrap;
+}
+/* When the cursor is past the chart's mid-right, flip the tooltip so it
+   grows to the LEFT of the cursor instead of to the right. */
+.timeline-tooltip.flip-x {
+  transform: translateX(-100%) translateX(-24px);
 }
 .timeline-tooltip :deep(.graph-tooltip-inner) {
   line-height: 1.4;
