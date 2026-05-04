@@ -270,6 +270,15 @@ SPDX-License-Identifier: Apache-2.0
               :cap-start-times="capStartTimes"
               :show-cap-start-times="showCapStartTimes"
               @update-time-range="updateStopStartTime" />
+
+            <!-- Phase 2a D3+topojson map POC: only renders when ?vizpoc=d3map is set in URL -->
+            <world-map-d3-poc
+              v-if="showD3MapPoc && mapData && primary"
+              :map-data="mapData"
+              :src="src"
+              :dst="dst"
+              :xff-geo="xffGeo"
+              @region-click="onPocRegionClick" />
           </div> <!-- /graph content -->
         </template>
       </div>
@@ -283,6 +292,7 @@ import { commaString, timezoneDateString, humanReadableBytes, humanReadableNumbe
 import StatsService from '../stats/StatsService';
 import moment from 'moment-timezone';
 import TimelineUplotPoc from './TimelineUplotPoc.vue';
+import WorldMapD3Poc from './WorldMapD3Poc.vue';
 
 // color vars
 let foregroundColor;
@@ -305,7 +315,7 @@ let barWidthInPixels;
 
 export default {
   name: 'ArkimeVisualizations',
-  components: { TimelineUplotPoc },
+  components: { TimelineUplotPoc, WorldMapD3Poc },
   emits: ['fetchMapData', 'spanningChange'],
   props: {
     graphData: {
@@ -429,7 +439,10 @@ export default {
       return this.$route.query.bounding || 'last';
     },
     showUplotPoc: function () {
-      return this.$route.query.vizpoc === 'uplot';
+      return (this.$route.query.vizpoc || '').includes('uplot');
+    },
+    showD3MapPoc: function () {
+      return (this.$route.query.vizpoc || '').includes('d3map');
     }
   },
   watch: {
@@ -1006,6 +1019,12 @@ export default {
         this.mapExpanded = false;
         this.shrinkMapElement();
       }
+    },
+    onPocRegionClick: function (code) {
+      // Phase 2a POC: mirror the existing jvectormap onRegionClick behavior
+      this.$store.commit('addToExpression', {
+        expression: `country == ${code}`
+      });
     },
     displayMap: function () {
       // create jvectormap
