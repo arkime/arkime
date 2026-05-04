@@ -153,7 +153,7 @@ export default {
      * UI ideas idea #6 "better timeline graph").
      */
     aggregateIfDense (cols, hostWidth) {
-      const MIN_PX_PER_BAR = 20;
+      const MIN_PX_PER_BAR = 24;
       const Y_AXIS_RESERVE = 60;
       const PADDING = 16;
       const drawable = Math.max(100, hostWidth - Y_AXIS_RESERVE - PADDING);
