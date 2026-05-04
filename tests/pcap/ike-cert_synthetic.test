@@ -457,6 +457,105 @@
      "_index" : "tests_sessions3-23m11"
     }
    }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 96
+    },
+    "destination" : {
+     "bytes" : 74,
+     "ip" : "10.55.0.2",
+     "mac" : [
+      "02:00:00:00:00:02"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 1,
+     "port" : 4500
+    },
+    "dstPayload8" : "0000000011111111",
+    "dstTTL" : [
+     64
+    ],
+    "dstTTLCnt" : 1,
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 1700004000000,
+    "ipProtocol" : 17,
+    "isakmp" : {
+     "exchangeType" : [
+      "identity-protection"
+     ],
+     "exchangeTypeCnt" : 1,
+     "initiatorSpi" : [
+      "1111111111111111"
+     ],
+     "initiatorSpiCnt" : 1,
+     "responderSpi" : [
+      "2222222222222222"
+     ],
+     "responderSpiCnt" : 1,
+     "version" : [
+      "1.0"
+     ],
+     "versionCnt" : 1
+    },
+    "lastPacket" : 1700004000003,
+    "length" : 3,
+    "network" : {
+     "bytes" : 296,
+     "community_id" : "1:hhXRpPNJsthJ6VL/OilD3iMYfow=",
+     "packets" : 4
+    },
+    "node" : "test",
+    "packetLen" : [
+     90,
+     90,
+     90,
+     90
+    ],
+    "packetPos" : [
+     1700,
+     1790,
+     1880,
+     1970
+    ],
+    "packetRange" : {
+     "gte" : 1700004000000,
+     "lte" : 1700004000003
+    },
+    "protocol" : [
+     "isakmp",
+     "udp"
+    ],
+    "protocolCnt" : 2,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 32
+    },
+    "source" : {
+     "bytes" : 222,
+     "ip" : "10.55.0.1",
+     "mac" : [
+      "02:00:00:00:00:01"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 3,
+     "port" : 51000
+    },
+    "srcPayload8" : "deadbeef00000001",
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
+    "totDataBytes" : 128
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-23m11"
+    }
+   }
   }
  ]
 }

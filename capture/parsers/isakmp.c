@@ -392,10 +392,11 @@ LOCAL int ike_udp_parser(ArkimeSession_t *session, void *UNUSED(uw), const uint8
     BSB bsb;
     int offset = 0;
 
-    // NAT-T on port 4500 - skip 4-byte non-ESP marker
-    if ((session->port1 == 4500 || session->port2 == 4500) && len >= 4) {
-        if (data[0] == 0 && data[1] == 0 && data[2] == 0 && data[3] == 0)
-            offset = 4;
+    // NAT-T on port 4500 - require 4-byte non-ESP marker; otherwise this is ESP
+    if (session->port1 == 4500 || session->port2 == 4500) {
+        if (len < 4 || data[0] != 0 || data[1] != 0 || data[2] != 0 || data[3] != 0)
+            return 0;
+        offset = 4;
     }
 
     BSB_INIT(bsb, data + offset, len - offset);
