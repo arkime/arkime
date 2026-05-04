@@ -38,6 +38,8 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
 6.3.1 2026/05/xx
 ## Capture
   - #3940 Fix ISAKMP parser on UDP/4500 (NAT-T) misparsed ESP packets without the non-ESP marker
+## Viewer
+  - #3942 Fix hiding packets when we shouldn't
 
 6.3.0 2026/05/04
 ## BREAKING

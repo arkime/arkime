@@ -2559,7 +2559,7 @@ class SessionAPIs {
 
       SessionAPIs.#sortFields(session);
 
-      const hidePackets = (session.fileId === undefined || session.fileId.length === 0) ? 'true' : 'false';
+      const hidePackets = (session.packetPos === undefined || session.packetPos.length === 0) ? 'true' : 'false';
       pug.render(internals.sessionDetailNew, {
         filename: 'sessionDetail',
         cache: internals.isProduction,
