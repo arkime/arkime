@@ -153,7 +153,7 @@ export default {
      * UI ideas idea #6 "better timeline graph").
      */
     aggregateIfDense (cols, hostWidth) {
-      const MIN_PX_PER_BAR = 8;
+      const MIN_PX_PER_BAR = 20;
       const Y_AXIS_RESERVE = 60;
       const PADDING = 16;
       const drawable = Math.max(100, hostWidth - Y_AXIS_RESERVE - PADDING);
@@ -279,10 +279,11 @@ export default {
         : '(empty)';
 
       const isBars = this.seriesType === 'bars';
-      // 0.9 slot fill + 1px gap + center align gives discrete-looking bars.
-      // POC tuned 2026-05-04 from initial 0.6/right-align.
+      // Full slot fill + 1px gap + center align gives the thickest possible
+      // discrete-looking bars. Slot width is governed by MIN_PX_PER_BAR (20px)
+      // in aggregateIfDense, so each bar reads as ~19px wide minimum.
       const barsPath = isBars
-        ? uPlot.paths.bars({ size: [0.9, Infinity], align: 0, gap: 1 })
+        ? uPlot.paths.bars({ size: [1.0, Infinity], align: 0, gap: 1 })
         : undefined;
 
       const opts = {
