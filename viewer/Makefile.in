@@ -16,7 +16,7 @@ check:
 	npm run bundle
 
 cyberchef:
-	(cd public ; if [ ! -f CyberChef_v$(CYBERCHEF_VERSION).zip ]; then wget -nv -N https://github.com/gchq/CyberChef/releases/download/v$(CYBERCHEF_VERSION)/CyberChef_v$(CYBERCHEF_VERSION).zip; fi)
+	(cd public ; if [ ! -f CyberChef_v$(CYBERCHEF_VERSION).zip ]; then curl -sSfLO https://github.com/gchq/CyberChef/releases/download/v$(CYBERCHEF_VERSION)/CyberChef_v$(CYBERCHEF_VERSION).zip; fi)
 
 install: cyberchef
 	$(MKDIR_P) "$(VIEWERDIR)" "$(VIEWERDIR)/vueapp"

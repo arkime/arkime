@@ -23,7 +23,7 @@ include:
     container: andywick/arkime-build-8:6.0.0-2
     buildopt: "--thirdparty --kafka --pfring"
     package: rpm
-    fpmdeps: "-d perl-libwww-perl -d perl-JSON -d ethtool -d libyaml -d perl-LWP-Protocol-https -d python3.12-libs"
+    fpmdeps: "-d perl-libwww-perl -d perl-JSON -d ethtool -d libyaml -d perl-LWP-Protocol-https -d python3.12-libs -d curl"
     uitest: true
     python: python3.12
     prbuild: true
@@ -31,7 +31,7 @@ include:
   - version: el9.x86_64
     container: andywick/arkime-build-9:6.0.0-2
     buildopt: "--thirdparty --kafka --pfring"
-    fpmdeps: "-d perl-libwww-perl -d perl-JSON -d ethtool -d libyaml -d perl-LWP-Protocol-https -d libzstd -d python3.12-libs"
+    fpmdeps: "-d perl-libwww-perl -d perl-JSON -d ethtool -d libyaml -d perl-LWP-Protocol-https -d libzstd -d python3.12-libs -d curl"
     package: rpm
     python: python3
     prbuild: true
@@ -39,7 +39,7 @@ include:
   - version: el10.x86_64
     container: andywick/arkime-build-10:6.0.0-2
     buildopt: "--thirdparty --kafka"
-    fpmdeps: "-d perl-libwww-perl -d perl-JSON -d ethtool -d libyaml -d perl-LWP-Protocol-https -d libzstd -d libmaxminddb -d libpcap -d librdkafka -d python3-libs"
+    fpmdeps: "-d perl-libwww-perl -d perl-JSON -d ethtool -d libyaml -d perl-LWP-Protocol-https -d libzstd -d libmaxminddb -d libpcap -d librdkafka -d python3-libs -d curl"
     package: rpm
     python: python3
     notice: true
@@ -48,7 +48,7 @@ include:
   - version: ubuntu2204_amd64
     container: andywick/arkime-build-22:6.0.0-2
     buildopt: "--kafka --pfring"
-    fpmdeps: "-d libwww-perl -d libjson-perl -d ethtool -d libyaml-dev -d liblua5.4-0 -d libmaxminddb0 -d libcurl4 -d libpcap0.8 -d libglib2.0-0 -d libnghttp2-14 -d libyara8 -d librdkafka1"
+    fpmdeps: "-d libwww-perl -d libjson-perl -d ethtool -d libyaml-dev -d liblua5.4-0 -d libmaxminddb0 -d libcurl4 -d libpcap0.8 -d libglib2.0-0 -d libnghttp2-14 -d libyara8 -d librdkafka1 -d curl"
     package: deb
     sanitizebuild: make -j sanitize CC=clang-18
     prbuild: true
@@ -56,7 +56,7 @@ include:
   - version: ubuntu2404_amd64
     container: andywick/arkime-build-24:6.0.0-4
     buildopt: "--kafka"
-    fpmdeps: "-d libwww-perl -d libjson-perl -d ethtool -d libyaml-dev -d liblua5.4-0 -d libmaxminddb0 -d libcurl4 -d libpcap0.8 -d libglib2.0-0 -d libnghttp2-14 -d libyara10 -d librdkafka1 -d libpcre3 -d libpython3.12"
+    fpmdeps: "-d libwww-perl -d libjson-perl -d ethtool -d libyaml-dev -d liblua5.4-0 -d libmaxminddb0 -d libcurl4 -d libpcap0.8 -d libglib2.0-0 -d libnghttp2-14 -d libyara10 -d librdkafka1 -d libpcre3 -d libpython3.12 -d curl"
     package: deb
     python: python3
     viewertest: sanitize
@@ -66,7 +66,7 @@ include:
   - version: ubuntu2604_amd64
     container: andywick/arkime-build-26:6.0.0-5
     buildopt: "--kafka"
-    fpmdeps: "-d libwww-perl -d libjson-perl -d ethtool -d libyaml-dev -d liblua5.4-0 -d libmaxminddb0 -d libcurl4 -d libpcap0.8 -d libglib2.0-0 -d libnghttp2-14 -d libyara10 -d librdkafka1 -d libpcre3 -d libpython3.13"
+    fpmdeps: "-d libwww-perl -d libjson-perl -d ethtool -d libyaml-dev -d liblua5.4-0 -d libmaxminddb0 -d libcurl4 -d libpcap0.8 -d libglib2.0-0 -d libnghttp2-14 -d libyara10 -d librdkafka1 -d libpcre3 -d libpython3.13 -d curl"
     package: deb
     python: python3
     viewertest: normal
@@ -76,7 +76,7 @@ include:
   - version: "arch-x86_64"
     container: andywick/arkime-build-arch:6.0.0-4
     buildopt: "--kafka"
-    fpmdeps: "-d libmaxminddb -d libpcap -d yara -d perl-http-message -d perl-lwp-protocol-https -d perl-json -d libnet -d lua -d zstd -d openssl -d pcre"
+    fpmdeps: "-d libmaxminddb -d libpcap -d yara -d perl-http-message -d perl-lwp-protocol-https -d perl-json -d libnet -d lua -d zstd -d openssl -d pcre -d curl"
     package: arch
     viewertest: normal
     otherdbtest: "true"
@@ -85,19 +85,19 @@ include:
   - version: al2023.x86_64
     container: andywick/arkime-build-al2023:6.0.0-2
     buildopt: "--thirdparty --kafka"
-    fpmdeps: "-d perl-libwww-perl -d perl-JSON -d ethtool -d libyaml -d perl-LWP-Protocol-https"
+    fpmdeps: "-d perl-libwww-perl -d perl-JSON -d ethtool -d libyaml -d perl-LWP-Protocol-https -d curl"
     package: rpm
 
   - version: debian12_amd64
     container: andywick/arkime-build-d12:6.0.0-2
     buildopt: "--kafka"
-    fpmdeps: "-d libwww-perl -d libjson-perl -d ethtool -d libyaml-dev -d liblua5.4-0 -d libmaxminddb0 -d libcurl4 -d libpcap0.8 -d libglib2.0-0 -d libnghttp2-14 -d libyara9 -d librdkafka1 -d libpcre3"
+    fpmdeps: "-d libwww-perl -d libjson-perl -d ethtool -d libyaml-dev -d liblua5.4-0 -d libmaxminddb0 -d libcurl4 -d libpcap0.8 -d libglib2.0-0 -d libnghttp2-14 -d libyara9 -d librdkafka1 -d libpcre3 -d curl"
     package: deb
 
   - version: debian13_amd64
     container: andywick/arkime-build-d13:6.0.0-5
     buildopt: "--kafka"
-    fpmdeps: "-d libwww-perl -d libjson-perl -d ethtool -d libyaml-dev -d liblua5.4-0 -d libmaxminddb0 -d libcurl4 -d libpcap0.8 -d libglib2.0-0 -d libnghttp2-14 -d libyara10 -d librdkafka1 -d libpython3.13"
+    fpmdeps: "-d libwww-perl -d libjson-perl -d ethtool -d libyaml-dev -d liblua5.4-0 -d libmaxminddb0 -d libcurl4 -d libpcap0.8 -d libglib2.0-0 -d libnghttp2-14 -d libyara10 -d librdkafka1 -d libpython3.13 -d curl"
     package: deb
     docker: true
     ja4plus: true
@@ -108,14 +108,14 @@ include:
   - version: al2023.aarch64
     container: andywick/arkime-build-al2023-arm64:6.0.0-2
     buildopt: "--thirdparty --kafka"
-    fpmdeps: "-d perl-libwww-perl -d perl-JSON -d ethtool -d libyaml -d perl-LWP-Protocol-https"
+    fpmdeps: "-d perl-libwww-perl -d perl-JSON -d ethtool -d libyaml -d perl-LWP-Protocol-https -d curl"
     package: rpm
     runson: ubuntu-24.04-arm
 
   - version: ubuntu2204_arm64
     container: andywick/arkime-build-22-arm64:6.0.0-2
     buildopt: "--kafka"
-    fpmdeps: "-d libwww-perl -d libjson-perl -d ethtool -d libyaml-dev -d liblua5.4-0 -d libmaxminddb0 -d libcurl4 -d libpcap0.8 -d libglib2.0-0 -d libnghttp2-14 -d libyara8 -d librdkafka1"
+    fpmdeps: "-d libwww-perl -d libjson-perl -d ethtool -d libyaml-dev -d liblua5.4-0 -d libmaxminddb0 -d libcurl4 -d libpcap0.8 -d libglib2.0-0 -d libnghttp2-14 -d libyara8 -d librdkafka1 -d curl"
     package: deb
     runson: ubuntu-24.04-arm
     sanitizebuild: "make -j SANITIZE_LDFLAGS='-fno-common -fsanitize=address -fsanitize=undefined -fno-omit-frame-pointer' sanitize"
@@ -123,7 +123,7 @@ include:
   - version: ubuntu2404_arm64
     container: andywick/arkime-build-24-arm64:6.0.0-2
     buildopt: "--kafka"
-    fpmdeps: "-d libwww-perl -d libjson-perl -d ethtool -d libyaml-dev -d liblua5.4-0 -d libmaxminddb0 -d libcurl4 -d libpcap0.8 -d libglib2.0-0 -d libnghttp2-14 -d libyara10 -d librdkafka1 -d libpcre3 -d libpython3.12"
+    fpmdeps: "-d libwww-perl -d libjson-perl -d ethtool -d libyaml-dev -d liblua5.4-0 -d libmaxminddb0 -d libcurl4 -d libpcap0.8 -d libglib2.0-0 -d libnghttp2-14 -d libyara10 -d librdkafka1 -d libpcre3 -d libpython3.12 -d curl"
     package: deb
     runson: ubuntu-24.04-arm
     sanitizebuild: "make -j SANITIZE_LDFLAGS='-fno-common -fsanitize=address -fsanitize=undefined -fno-omit-frame-pointer' sanitize"
@@ -131,21 +131,21 @@ include:
   - version: ubuntu2604_arm64
     container: andywick/arkime-build-26-arm64:6.0.0-5
     buildopt: "--kafka"
-    fpmdeps: "-d libwww-perl -d libjson-perl -d ethtool -d libyaml-dev -d liblua5.4-0 -d libmaxminddb0 -d libcurl4 -d libpcap0.8 -d libglib2.0-0 -d libnghttp2-14 -d libyara10 -d librdkafka1 -d libpcre3 -d libpython3.12"
+    fpmdeps: "-d libwww-perl -d libjson-perl -d ethtool -d libyaml-dev -d liblua5.4-0 -d libmaxminddb0 -d libcurl4 -d libpcap0.8 -d libglib2.0-0 -d libnghttp2-14 -d libyara10 -d librdkafka1 -d libpcre3 -d libpython3.12 -d curl"
     package: deb
     runson: ubuntu-24.04-arm
 
   - version: debian12_arm64
     container: andywick/arkime-build-d12-arm64:6.0.0-2
     buildopt: "--kafka"
-    fpmdeps: "-d libwww-perl -d libjson-perl -d ethtool -d libyaml-dev -d liblua5.4-0 -d libmaxminddb0 -d libcurl4 -d libpcap0.8 -d libglib2.0-0 -d libnghttp2-14 -d libyara9 -d librdkafka1 -d libpcre3"
+    fpmdeps: "-d libwww-perl -d libjson-perl -d ethtool -d libyaml-dev -d liblua5.4-0 -d libmaxminddb0 -d libcurl4 -d libpcap0.8 -d libglib2.0-0 -d libnghttp2-14 -d libyara9 -d librdkafka1 -d libpcre3 -d curl"
     package: deb
     runson: ubuntu-24.04-arm
 
   - version: debian13_arm64
     container: andywick/arkime-build-d13-arm64:6.0.0-5
     buildopt: "--kafka"
-    fpmdeps: "-d libwww-perl -d libjson-perl -d ethtool -d libyaml-dev -d liblua5.4-0 -d libmaxminddb0 -d libcurl4 -d libpcap0.8 -d libglib2.0-0 -d libnghttp2-14 -d libyara10 -d librdkafka1 -d libpython3.13"
+    fpmdeps: "-d libwww-perl -d libjson-perl -d ethtool -d libyaml-dev -d liblua5.4-0 -d libmaxminddb0 -d libcurl4 -d libpcap0.8 -d libglib2.0-0 -d libnghttp2-14 -d libyara10 -d librdkafka1 -d libpython3.13 -d curl"
     package: deb
     runson: ubuntu-24.04-arm
     docker: true
@@ -156,14 +156,14 @@ include:
   - version: el9.aarch64
     container: andywick/arkime-build-9-arm64:6.0.0-2
     buildopt: "--thirdparty --kafka"
-    fpmdeps: "-d perl-libwww-perl -d perl-JSON -d ethtool -d libyaml -d perl-LWP-Protocol-https -d libzstd -d python3.12-libs"
+    fpmdeps: "-d perl-libwww-perl -d perl-JSON -d ethtool -d libyaml -d perl-LWP-Protocol-https -d libzstd -d python3.12-libs -d curl"
     package: rpm
     runson: ubuntu-24.04-arm
 
   - version: el10.aarch64
     container: andywick/arkime-build-10-arm64:6.0.0-3
     buildopt: "--thirdparty --kafka"
-    fpmdeps: "-d perl-libwww-perl -d perl-JSON -d ethtool -d libyaml -d perl-LWP-Protocol-https -d libzstd -d libmaxminddb -d libpcap -d librdkafka -d python3-libs"
+    fpmdeps: "-d perl-libwww-perl -d perl-JSON -d ethtool -d libyaml -d perl-LWP-Protocol-https -d libzstd -d libmaxminddb -d libpcap -d librdkafka -d python3-libs -d curl"
     package: rpm
     runson: ubuntu-24.04-arm
 
@@ -171,14 +171,14 @@ include:
   - version: freebsd14.x86_64
     freebsdrelease: "14.3"
     buildopt: "--kafka"
-    fpmdeps: "-d glib -d yara -d libyaml -d libmaxminddb -d libuuid -d python312 -d libinotify -d pcre2"
+    fpmdeps: "-d glib -d yara -d libyaml -d libmaxminddb -d libuuid -d python312 -d libinotify -d pcre2 -d curl"
     ja4plus: true
     prbuild: true
 
   - version: freebsd15.x86_64
     freebsdrelease: "15.0"
     buildopt: "--kafka"
-    fpmdeps: "-d glib -d yara -d libyaml -d libmaxminddb -d libuuid -d python312 -d libinotify -d pcre2"
+    fpmdeps: "-d glib -d yara -d libyaml -d libmaxminddb -d libuuid -d python312 -d libinotify -d pcre2 -d curl"
     prbuild: true
 
 #  - version: freebsd14.aarch64
