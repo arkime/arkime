@@ -21,10 +21,10 @@ import 'uplot/dist/uPlot.min.css';
 import { commaString, timezoneDateString, humanReadableBytes, humanReadableNumber } from '@common/vueFilters.js';
 import moment from 'moment-timezone';
 
-const HOST_HEIGHT = 170;
+const HOST_HEIGHT = 140;
 const Y_AXIS_RESERVE = 60;
 const PADDING = 16;
-const MIN_PX_PER_BAR = 36;
+const MIN_PX_PER_BAR = 60;
 
 export default {
   name: 'ArkimeTimelineGraph',
@@ -244,7 +244,7 @@ export default {
 
       const isBars = this.seriesType === 'bars';
       const barsPath = isBars
-        ? uPlot.paths.bars({ size: [1.0, Infinity], align: 0, gap: 1 })
+        ? uPlot.paths.bars({ size: [1.0, Infinity], align: 0, gap: 0 })
         : undefined;
       const linesPath = !isBars
         ? uPlot.paths.linear({ alignGaps: 0 })
@@ -280,7 +280,7 @@ export default {
             stroke: d.color,
             fill: isBars ? d.color : d.color + '33',
             paths: isBars ? barsPath : linesPath,
-            width: isBars ? 0 : 1.5,
+            width: isBars ? 1 : 1.5,
             points: { show: false }
           }))
         ],
@@ -448,7 +448,7 @@ export default {
 }
 .timeline-host {
   width: 100%;
-  height: 170px;
+  height: 140px;
 }
 .timeline-tooltip {
   position: absolute;
