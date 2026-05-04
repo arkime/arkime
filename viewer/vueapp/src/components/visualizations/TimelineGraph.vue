@@ -1,0 +1,443 @@
+<!--
+Copyright Yahoo Inc.
+SPDX-License-Identifier: Apache-2.0
+-->
+<template>
+  <div class="timeline-graph">
+    <div
+      ref="host"
+      class="timeline-host" />
+    <div
+      v-if="tooltip"
+      class="timeline-tooltip"
+      :style="{left: tooltip.x + 'px', top: tooltip.y + 'px'}"
+      v-html="tooltip.html" />
+  </div>
+</template>
+
+<script>
+import uPlot from 'uplot';
+import 'uplot/dist/uPlot.min.css';
+import { commaString, timezoneDateString, humanReadableBytes, humanReadableNumber } from '@common/vueFilters.js';
+import moment from 'moment-timezone';
+
+const HOST_HEIGHT = 170;
+const Y_AXIS_RESERVE = 60;
+const PADDING = 16;
+const MIN_PX_PER_BAR = 24;
+
+export default {
+  name: 'ArkimeTimelineGraph',
+  props: {
+    graphData: { type: Object, required: true },
+    graphType: { type: String, default: 'sessionsHisto' },
+    seriesType: { type: String, default: 'bars' },
+    timelineDataFilters: { type: Array, required: true },
+    capStartTimes: { type: Array, default: () => [] },
+    showCapStartTimes: { type: Boolean, default: false },
+    timezone: { type: String, default: 'local' }
+  },
+  emits: ['updateTimeRange'],
+  data () {
+    return {
+      tooltip: null,
+      bucketFactor: 1
+    };
+  },
+  watch: {
+    graphData: { handler () { this.rebuild(); }, deep: true },
+    graphType () { this.rebuild(); },
+    seriesType () { this.rebuild(); },
+    showCapStartTimes () { this.rebuild(); },
+    timezone () { this.rebuild(); }
+  },
+  mounted () {
+    this.readThemeColors();
+    this.rebuild();
+    this._resizeHandler = () => this.resize();
+    window.addEventListener('resize', this._resizeHandler);
+  },
+  beforeUnmount () {
+    window.removeEventListener('resize', this._resizeHandler);
+    this.destroyPlot();
+  },
+  methods: {
+    /** Pull theme colors from CSS custom properties, matching Flot's setup. */
+    readThemeColors () {
+      const styles = window.getComputedStyle(document.body);
+      this.foregroundColor = styles.getPropertyValue('--color-foreground').trim() || '#666';
+      this.srcColor = styles.getPropertyValue('--color-src').trim() || '#CA0404';
+      this.dstColor = styles.getPropertyValue('--color-dst').trim() || '#0000FF';
+      this.axisColor = styles.getPropertyValue('--color-gray').trim() || '#888';
+      this.gridColor = 'rgba(128,128,128,0.15)';
+      this.businessColor = 'rgba(255, 210, 50, 0.2)';
+      this.restartColor = this.foregroundColor;
+    },
+    seriesDefsFor (type) {
+      switch (type) {
+      case 'totPacketsHisto':
+      case 'network.packetsHisto':
+        return [
+          { label: 'Src packets', key: 'source.packetsHisto', color: this.srcColor },
+          { label: 'Dst packets', key: 'destination.packetsHisto', color: this.dstColor }
+        ];
+      case 'totBytesHisto':
+      case 'network.bytesHisto':
+        return [
+          { label: 'Src bytes', key: 'source.bytesHisto', color: this.srcColor },
+          { label: 'Dst bytes', key: 'destination.bytesHisto', color: this.dstColor }
+        ];
+      case 'totDataBytesHisto':
+        return [
+          { label: 'Client bytes', key: 'client.bytesHisto', color: this.srcColor },
+          { label: 'Server bytes', key: 'server.bytesHisto', color: this.dstColor }
+        ];
+      default:
+        return [{ label: this.friendlyTypeName(type), key: type, color: this.foregroundColor }];
+      }
+    },
+    friendlyTypeName (type) {
+      if (type === 'sessionsHisto') return 'Sessions';
+      const filter = this.timelineDataFilters?.find((f) => f.dbField === type.slice(0, -5));
+      return filter?.friendlyName || type;
+    },
+    /**
+     * Flot stores series as [[tsMs, value], ...]. uPlot uses columnar
+     * [xs[], y0[], y1[], ...] with timestamps in seconds. Take the union of
+     * all series timestamps so the x axis covers every point.
+     */
+    buildAlignedData (defs) {
+      const tsSet = new Set();
+      for (const d of defs) {
+        for (const [ts] of (this.graphData[d.key] || [])) tsSet.add(ts);
+      }
+      if (this.graphData.xmin) tsSet.add(this.graphData.xmin);
+      if (this.graphData.xmax) tsSet.add(this.graphData.xmax);
+
+      const sortedMs = [...tsSet].sort((a, b) => a - b);
+      const xs = sortedMs.map((ms) => ms / 1000);
+      const ys = defs.map((d) => {
+        const map = new Map(this.graphData[d.key] || []);
+        return sortedMs.map((ms) => map.get(ms) ?? 0);
+      });
+      return [xs, ...ys];
+    },
+    /**
+     * Adaptive client-side rebucketing: when the backend hands us more buckets
+     * than the chart can render at >= MIN_PX_PER_BAR pixels each, sum every N
+     * adjacent buckets into one. Trades timestamp precision for legible bars.
+     * v7 idea #6 ("better timeline graph") may move this to backend interval
+     * negotiation eventually.
+     */
+    aggregateIfDense (cols, hostWidth) {
+      const drawable = Math.max(100, hostWidth - Y_AXIS_RESERVE - PADDING);
+      const xs = cols[0];
+      const ys = cols.slice(1);
+      const maxBars = Math.max(1, Math.floor(drawable / MIN_PX_PER_BAR));
+      if (xs.length <= maxBars) return { data: cols, factor: 1 };
+
+      const factor = Math.ceil(xs.length / maxBars);
+      const reXs = [];
+      const reYs = ys.map(() => []);
+      for (let i = 0; i < xs.length; i += factor) {
+        reXs.push(xs[i]);
+        ys.forEach((y, idx) => {
+          let sum = 0;
+          for (let j = 0; j < factor && (i + j) < y.length; j++) {
+            sum += y[i + j];
+          }
+          reYs[idx].push(sum);
+        });
+      }
+      return { data: [reXs, ...reYs], factor };
+    },
+    /** uPlot draw hook: business-hours bands then capture-restart lines. */
+    drawMarkings (u) {
+      const ctx = u.ctx;
+      const xMin = u.scales.x.min;
+      const xMax = u.scales.x.max;
+      ctx.save();
+
+      const bands = this.computeBusinessHourBands(xMin, xMax);
+      ctx.fillStyle = this.businessColor;
+      for (const b of bands) {
+        const left = u.valToPos(b.from, 'x', true);
+        const right = u.valToPos(b.to, 'x', true);
+        ctx.fillRect(left, u.bbox.top, Math.max(1, right - left), u.bbox.height);
+      }
+
+      if (this.showCapStartTimes && this.capStartTimes?.length) {
+        ctx.strokeStyle = this.restartColor;
+        ctx.lineWidth = 1;
+        for (const cap of this.capStartTimes) {
+          if (!cap.startTime) continue;
+          const xSec = cap.startTime / 1000;
+          if (xSec < xMin || xSec > xMax) continue;
+          const x = u.valToPos(xSec, 'x', true);
+          ctx.beginPath();
+          ctx.moveTo(x, u.bbox.top);
+          ctx.lineTo(x, u.bbox.top + u.bbox.height);
+          ctx.stroke();
+        }
+      }
+      ctx.restore();
+    },
+    computeBusinessHourBands (xMinSec, xMaxSec) {
+      const out = [];
+      const c = this.$constants || {};
+      if (c.BUSINESS_DAY_START === undefined || c.BUSINESS_DAY_END === undefined || !c.BUSINESS_DAYS) {
+        return out;
+      }
+      const businessDays = c.BUSINESS_DAYS.split(',');
+      const startDate = moment(xMinSec * 1000);
+      const stopDate = moment(xMaxSec * 1000);
+      let daysInRange = stopDate.diff(startDate, 'days');
+      if (daysInRange > 31) return out;
+
+      const day = stopDate.startOf('day');
+      while (daysInRange >= 0) {
+        const dayOfWeek = day.day();
+        if (businessDays.indexOf(dayOfWeek.toString()) >= 0) {
+          const dayStart = day.clone().add(c.BUSINESS_DAY_START, 'hours');
+          const dayStop = day.clone().add(c.BUSINESS_DAY_END, 'hours');
+          out.push({ from: dayStart.valueOf() / 1000, to: dayStop.valueOf() / 1000 });
+        }
+        day.subtract(24, 'hours');
+        daysInRange--;
+      }
+      return out;
+    },
+    formatY (v) {
+      const isBytes = this.graphType === 'totBytesHisto' ||
+                      this.graphType === 'totDataBytesHisto' ||
+                      this.graphType === 'network.bytesHisto';
+      return isBytes ? humanReadableBytes(v) : humanReadableNumber(v);
+    },
+    destroyPlot () {
+      if (this.plot) {
+        this.plot.destroy();
+        this.plot = null;
+      }
+      this.tooltip = null;
+    },
+    rebuild () {
+      const host = this.$refs.host;
+      if (!host || !this.graphData) return;
+      this.destroyPlot();
+
+      const defs = this.seriesDefsFor(this.graphType);
+      const raw = this.buildAlignedData(defs);
+      const { data, factor } = this.aggregateIfDense(raw, host.clientWidth || 800);
+      this.bucketFactor = factor;
+
+      const isBars = this.seriesType === 'bars';
+      const barsPath = isBars
+        ? uPlot.paths.bars({ size: [1.0, Infinity], align: 0, gap: 1 })
+        : undefined;
+      const linesPath = !isBars
+        ? uPlot.paths.linear({ alignGaps: 0 })
+        : undefined;
+
+      const opts = {
+        width: host.clientWidth || 800,
+        height: HOST_HEIGHT,
+        padding: [8, 8, 8, 8],
+        scales: {
+          x: { time: true },
+          y: { auto: true, range: (u, dmin, dmax) => [0, (dmax || 1) * 1.05] }
+        },
+        axes: [
+          {
+            stroke: this.axisColor,
+            grid: { stroke: this.gridColor },
+            values: (u, vals) => vals.map((ts) => timezoneDateString(ts * 1000, this.timezone, false))
+          },
+          {
+            stroke: this.axisColor,
+            grid: { stroke: this.gridColor },
+            values: (u, vals) => vals.map((v) => this.formatY(v)),
+            size: Y_AXIS_RESERVE
+          }
+        ],
+        series: [
+          {},
+          ...defs.map((d) => ({
+            label: d.label,
+            stroke: d.color,
+            fill: isBars ? d.color : d.color + '33',
+            paths: isBars ? barsPath : linesPath,
+            width: isBars ? 0 : 1.5,
+            points: { show: false }
+          }))
+        ],
+        hooks: {
+          draw: [(u) => this.drawMarkings(u)],
+          setSelect: [(u) => this.onSelect(u)]
+        },
+        cursor: {
+          drag: { x: true, y: false, setScale: false },
+          dataIdx: (u, seriesIdx, hoveredIdx, cursorXVal) => {
+            this.updateTooltip(u, seriesIdx, hoveredIdx, cursorXVal);
+            return hoveredIdx;
+          }
+        },
+        select: { show: true }
+      };
+
+      this.plot = new uPlot(opts, data, host);
+    },
+    /**
+     * Replicate Flot's hover tooltip. For multi-series stacked types, label
+     * Src/Dst by seriesIdx. Show "<value> <type> out of <total> filtered
+     * <type> on <date>". When hovering a capture-restart marker (no series
+     * point), show the restart message instead.
+     */
+    updateTooltip (u, seriesIdx, dataIdx, cursorXVal) {
+      const overEl = u.over;
+      const rect = overEl.getBoundingClientRect();
+      const hostRect = this.$refs.host.getBoundingClientRect();
+      const cursorX = u.cursor.left;
+      const cursorY = u.cursor.top;
+      if (cursorX == null || cursorX < 0) {
+        this.tooltip = null;
+        return;
+      }
+
+      // Capture-restart hover: only when not hovering a real data point and
+      // the cursor x is near a restart marker (within half a bucket).
+      if ((dataIdx == null || seriesIdx === 0) && this.showCapStartTimes && this.capStartTimes?.length) {
+        const xSec = u.posToVal(cursorX, 'x');
+        const tolSec = this.graphData?.interval || 60;
+        for (const cap of this.capStartTimes) {
+          if (!cap.startTime) continue;
+          const capXSec = cap.startTime / 1000;
+          if (Math.abs(capXSec - xSec) <= tolSec) {
+            const capDateStr = timezoneDateString(cap.startTime, this.timezone, false);
+            const message = this.$t('vis.capNodeRestarted', { node: cap.nodeName, when: capDateStr });
+            this.tooltip = {
+              x: rect.left - hostRect.left + cursorX + 12,
+              y: rect.top - hostRect.top + cursorY - 28,
+              html: `<div class="graph-tooltip-inner">${this.escapeHtml(message)}</div>`
+            };
+            return;
+          }
+        }
+      }
+
+      if (dataIdx == null || seriesIdx == null || seriesIdx === 0) {
+        this.tooltip = null;
+        return;
+      }
+
+      const defs = this.seriesDefsFor(this.graphType);
+      const def = defs[seriesIdx - 1];
+      if (!def) { this.tooltip = null; return; }
+      const value = u.data[seriesIdx][dataIdx];
+      if (value == null) { this.tooltip = null; return; }
+
+      const filterName = this.friendlyTypeName(this.graphType);
+      const totalKey = this.graphType.slice(0, -5) + 'Total';
+      const total = this.graphData[totalKey];
+      const ts = u.data[0][dataIdx] * 1000;
+      const dateStr = timezoneDateString(ts, this.timezone, false);
+      const valStr = commaString(Math.round(value * 100) / 100);
+      const totalStr = total != null ? commaString(total) : null;
+      const seriesPrefix = defs.length > 1 ? `${def.label.split(' ')[0]} ` : '';
+
+      const lines = [
+        `<strong>${valStr}</strong> ${seriesPrefix}${this.escapeHtml(filterName)}`
+      ];
+      if (totalStr) {
+        lines.push(`out of <strong>${totalStr}</strong> filtered ${this.escapeHtml(filterName)}`);
+      }
+      lines.push(`on ${this.escapeHtml(dateStr)}`);
+      if (this.bucketFactor > 1) {
+        lines.push(`<em>(rebucketed ${this.bucketFactor}× client-side)</em>`);
+      }
+
+      this.tooltip = {
+        x: rect.left - hostRect.left + cursorX + 12,
+        y: rect.top - hostRect.top + cursorY - 28,
+        html: `<div class="graph-tooltip-inner">${lines.join('<br>')}</div>`
+      };
+    },
+    escapeHtml (s) {
+      return String(s).replace(/[&<>"']/g, (c) => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+      }[c]));
+    },
+    resize () {
+      if (!this.plot || !this.$refs.host) return;
+      this.plot.setSize({ width: this.$refs.host.clientWidth, height: HOST_HEIGHT });
+    },
+    onSelect (u) {
+      const sel = u.select;
+      if (!sel.width) return;
+      const fromSec = u.posToVal(sel.left, 'x');
+      const toSec = u.posToVal(sel.left + sel.width, 'x');
+      this.$emit('updateTimeRange', {
+        startTime: fromSec.toFixed(),
+        stopTime: toSec.toFixed()
+      });
+    },
+    /* Public API for parent: pan/zoom controls drive the plot via $ref. */
+    panLeft (frac = 0.1) {
+      if (!this.plot) return;
+      const { min, max } = this.plot.scales.x;
+      const delta = (max - min) * frac;
+      this.plot.setScale('x', { min: min - delta, max: max - delta });
+    },
+    panRight (frac = 0.1) {
+      if (!this.plot) return;
+      const { min, max } = this.plot.scales.x;
+      const delta = (max - min) * frac;
+      this.plot.setScale('x', { min: min + delta, max: max + delta });
+    },
+    zoomIn () {
+      if (!this.plot) return;
+      const { min, max } = this.plot.scales.x;
+      const span = max - min;
+      const center = (min + max) / 2;
+      this.plot.setScale('x', { min: center - span * 0.25, max: center + span * 0.25 });
+    },
+    zoomOut () {
+      if (!this.plot) return;
+      const { min, max } = this.plot.scales.x;
+      const span = max - min;
+      const center = (min + max) / 2;
+      this.plot.setScale('x', { min: center - span, max: center + span });
+    },
+    /** Read current x scale (in seconds). Returns null until the plot mounts. */
+    getXRange () {
+      if (!this.plot) return null;
+      const { min, max } = this.plot.scales.x;
+      return { startTime: min.toFixed(), stopTime: max.toFixed() };
+    }
+  }
+};
+</script>
+
+<style scoped>
+.timeline-graph {
+  position: relative;
+  width: 100%;
+}
+.timeline-host {
+  width: 100%;
+  height: 170px;
+}
+.timeline-tooltip {
+  position: absolute;
+  pointer-events: none;
+  z-index: 5;
+  background: rgba(0, 0, 0, 0.85);
+  color: #fff;
+  padding: 4px 8px;
+  font-size: 11px;
+  border-radius: 3px;
+  white-space: nowrap;
+}
+.timeline-tooltip :deep(.graph-tooltip-inner) {
+  line-height: 1.4;
+}
+</style>
