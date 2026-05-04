@@ -14,6 +14,9 @@ Throwaway code. Library-fit decision happens in the Phase 2 decision doc;
   <div class="timeline-uplot-poc">
     <div class="poc-banner">
       uPlot POC ({{ uplotVersion }}) — graphType={{ graphType }} seriesType={{ seriesType }}
+      <span
+        v-if="bucketFactor > 1"
+        class="poc-rebucketed">· rebucketed {{ bucketFactor }}× client-side</span>
     </div>
     <div class="poc-controls">
       <button
@@ -74,7 +77,8 @@ export default {
     return {
       uplotVersion: '1.6.x',
       pointCount: 0,
-      rangeLabel: ''
+      rangeLabel: '',
+      bucketFactor: 1
     };
   },
   watch: {
@@ -136,6 +140,42 @@ export default {
         return sortedMs.map((ms) => map.get(ms) ?? 0);
       });
       return [xs, ...ys];
+    },
+    /**
+     * Adaptive client-side rebucketing. When the backend returns more buckets
+     * than the chart can render at >= MIN_PX_PER_BAR pixels each, sum every
+     * `factor` adjacent buckets into one. Loses precision in exchange for
+     * legible bars. Returns { data, factor }.
+     *
+     * Phase 2a POC trigger: Elyse's "columns are hard to see" feedback.
+     * Phase 2b will revisit whether to drive bucketing from the backend
+     * histogram interval instead (bigger architectural change, see v7
+     * UI ideas idea #6 "better timeline graph").
+     */
+    aggregateIfDense (cols, hostWidth) {
+      const MIN_PX_PER_BAR = 8;
+      const Y_AXIS_RESERVE = 60;
+      const PADDING = 16;
+      const drawable = Math.max(100, hostWidth - Y_AXIS_RESERVE - PADDING);
+      const xs = cols[0];
+      const ys = cols.slice(1);
+      const maxBars = Math.max(1, Math.floor(drawable / MIN_PX_PER_BAR));
+      if (xs.length <= maxBars) return { data: cols, factor: 1 };
+
+      const factor = Math.ceil(xs.length / maxBars);
+      const reXs = [];
+      const reYs = ys.map(() => []);
+      for (let i = 0; i < xs.length; i += factor) {
+        reXs.push(xs[i]); // anchor on first timestamp of group
+        ys.forEach((y, idx) => {
+          let sum = 0;
+          for (let j = 0; j < factor && (i + j) < y.length; j++) {
+            sum += y[i + j];
+          }
+          reYs[idx].push(sum);
+        });
+      }
+      return { data: [reXs, ...reYs], factor };
     },
     /** uPlot draw hook: paints business-hours bands then capture-restart lines. */
     drawMarkings (u) {
@@ -230,15 +270,19 @@ export default {
       this.destroyPlot();
 
       const defs = this.seriesDefsFor(this.graphType);
-      const data = this.buildAlignedData(defs);
+      const raw = this.buildAlignedData(defs);
+      const { data, factor } = this.aggregateIfDense(raw, host.clientWidth || 800);
+      this.bucketFactor = factor;
       this.pointCount = data[0].length;
       this.rangeLabel = data[0].length
         ? `${moment(data[0][0] * 1000).format('MM/DD HH:mm')} → ${moment(data[0][data[0].length - 1] * 1000).format('MM/DD HH:mm')}`
         : '(empty)';
 
       const isBars = this.seriesType === 'bars';
+      // 0.9 slot fill + 1px gap + center align gives discrete-looking bars.
+      // POC tuned 2026-05-04 from initial 0.6/right-align.
       const barsPath = isBars
-        ? uPlot.paths.bars({ size: [0.6, Infinity], align: 1 })
+        ? uPlot.paths.bars({ size: [0.9, Infinity], align: 0, gap: 1 })
         : undefined;
 
       const opts = {
@@ -355,6 +399,10 @@ export default {
 .poc-status {
   margin-left: auto;
   color: #888;
+}
+.poc-rebucketed {
+  color: #ffd800;
+  margin-left: 6px;
 }
 .uplot-host {
   width: 100%;
