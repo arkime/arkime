@@ -256,20 +256,17 @@ SPDX-License-Identifier: Apache-2.0
             <div
               v-if="graphData"
               class="plot-container">
-              <div
-                class="plot-area"
-                :id="'plotArea' + id" />
+              <timeline-graph
+                ref="timelineGraph"
+                :graph-data="graphData"
+                :graph-type="graphType"
+                :series-type="seriesType"
+                :timeline-data-filters="timelineDataFilters"
+                :show-cap-start-times="showCapStartTimes"
+                :cap-start-times="capStartTimes"
+                :timezone="timezone"
+                @update-time-range="updateStopStartTime" />
             </div> <!-- /graph -->
-
-            <!-- Phase 2a uPlot POC: only renders when ?vizpoc=uplot is set in URL -->
-            <timeline-uplot-poc
-              v-if="showUplotPoc && graphData && primary"
-              :graph-data="graphData"
-              :graph-type="graphType"
-              :series-type="seriesType"
-              :cap-start-times="capStartTimes"
-              :show-cap-start-times="showCapStartTimes"
-              @update-time-range="updateStopStartTime" />
 
             <!-- Phase 2a D3+topojson map POC: only renders when ?vizpoc=d3map is set in URL -->
             <world-map-d3-poc
@@ -288,18 +285,13 @@ SPDX-License-Identifier: Apache-2.0
 
 <script>
 // imports
-import { commaString, timezoneDateString, humanReadableBytes, humanReadableNumber } from '@common/vueFilters.js';
+import { commaString } from '@common/vueFilters.js';
 import StatsService from '../stats/StatsService';
-import moment from 'moment-timezone';
-import TimelineUplotPoc from './TimelineUplotPoc.vue';
+import TimelineGraph from './TimelineGraph.vue';
 import WorldMapD3Poc from './WorldMapD3Poc.vue';
 
-// color vars
-let foregroundColor;
-let srcColor;
-let dstColor;
-let highlightColor;
-let axisColor;
+// color vars (jvectormap setup still consumes these; they go when the map
+// migrates to D3+topojson in the next 2b commit).
 let waterColor;
 let landColorDark;
 let landColorLight;
@@ -307,15 +299,9 @@ let landColorLight;
 let timeout;
 let basePath;
 
-// bar width vars
-let barWidth;
-let hoverBarWidth;
-let barWidthInUnits;
-let barWidthInPixels;
-
 export default {
   name: 'ArkimeVisualizations',
-  components: { TimelineUplotPoc, WorldMapD3Poc },
+  components: { TimelineGraph, WorldMapD3Poc },
   emits: ['fetchMapData', 'spanningChange'],
   props: {
     graphData: {
@@ -343,17 +329,11 @@ export default {
       mapEl: undefined,
       legend: [],
       mapExpanded: false,
-      // graph vars
-      plot: undefined,
-      plotArea: undefined,
-      plotWidth: undefined,
+      // graph vars (rendering lives in TimelineGraph; parent only owns pan
+      // step + showMap toggle now that Flot is gone)
       plotPan: 0.1,
-      graph: undefined,
-      graphOptions: {},
       showMap: undefined,
-      turnOffGraphDays: this.$constants.TURN_OFF_GRAPH_DAYS,
-      plotCheck: undefined,
-      initialized: false
+      turnOffGraphDays: this.$constants.TURN_OFF_GRAPH_DAYS
     };
   },
   computed: {
@@ -438,9 +418,6 @@ export default {
     timeBounding: function () {
       return this.$route.query.bounding || 'last';
     },
-    showUplotPoc: function () {
-      return (this.$route.query.vizpoc || '').includes('uplot');
-    },
     showD3MapPoc: function () {
       return (this.$route.query.vizpoc || '').includes('d3map');
     }
@@ -455,47 +432,11 @@ export default {
     xffGeo: function (newVal, oldVal) {
       this.setupMapData(this.mapData);
     },
-    graphType: function () {
-      if (!this.initialized) { return; }
-
-      function changeGraphType (that) {
-        let interval = 0;
-        // need to wait for graph to load initially if there is a req for cap times
-        if (!that.graph) { interval = 100; }
-        setTimeout(() => {
-          that.setupGraphData();
-          that.plot = $.plot(that.plotArea, that.graph, that.graphOptions);
-        }, interval);
-      }
-      if (this.primary) {
-        changeGraphType(this);
-      } else { // wait for the plot to be accessible
-        const id = parseInt(this.id);
-        setTimeout(() => { changeGraphType(this); }, id * 100);
-      }
-    },
-    seriesType: function () {
-      if (!this.initialized) { return; }
-
-      this.setupGraphData();
-      this.plot = $.plot(this.plotArea, this.graph, this.graphOptions);
-    },
+    // graphType/seriesType/graphData/capStartTimes are watched by
+    // TimelineGraph directly — parent only refreshes the map here.
     graphData: function (newVal, oldVal) {
       if (newVal && oldVal && !this.hideViz && !this.disabledAggregations) {
-        if (this.plotCheck) { clearInterval(this.plotCheck); }
-        this.plotCheck = setInterval(() => { // wait for plot func to be loaded
-          if ($.plot) {
-            clearInterval(this.plotCheck);
-            this.plotCheck = undefined;
-            // create map
-            this.displayMap();
-            // create graph
-            // setup the graph data and options
-            this.setupGraphData();
-            // create flot graph
-            this.setupGraphElement();
-          }
-        });
+        this.displayMap();
       }
     },
     mapData: function (newVal, oldVal) {
@@ -510,47 +451,18 @@ export default {
           this.showMap = newVal;
         }, id * 100);
       }
-    },
-    capStartTimes () {
-      if (!this.primary && this.initialized) {
-        this.setupGraphData();
-        this.plot = $.plot(this.plotArea, this.graph, this.graphOptions);
-      }
     }
   },
   created: async function () {
-    // load jquery libraries asynchronously so they aren't bundled and fetched only when necessary
-    // The `import(...)` will fetch and execute the script.
-    // We don't need the resolved value of the promise for these global scripts,
-    // as they modify the global jQuery object (e.g., adding $.plot).
-    // NOTE/IMPORTANT: The order of the imports matters, so don't change it.
-    await import('public/jquery.flot.min.js');
-    if (!$.plot) { // This is one that REALLY matters, so check if Flot has been initialized correctly
-      throw new Error('Flot ($.plot) failed to initialize after dynamic import.');
-    }
-    await import('public/jquery.event.drag.js');
-    await import('public/jquery.flot.resize.js');
+    // jvectormap is still a jQuery plugin loaded as a global script. Phase 2b
+    // for the timeline already replaced Flot's dynamic imports; the map swap
+    // (TimelineGraph siblings WorldMapD3Poc) lands in a follow-up.
     await import('public/jquery-jvectormap-1.2.2.min.js');
     await import('public/jquery-jvectormap-world-en.js');
 
-    function setupMapAndGraph (that) {
-      // create map
-      that.displayMap();
-      // create graph
-      // setup the graph data and options
-      that.setupGraphData();
-      // create flot graph
-      that.setupGraphElement();
-    }
-
-    // set styles for graph and map
+    // set styles for the map
     const styles = window.getComputedStyle(document.body);
 
-    foregroundColor = styles.getPropertyValue('--color-foreground').trim();
-    srcColor = styles.getPropertyValue('--color-src').trim() || '#CA0404';
-    dstColor = styles.getPropertyValue('--color-dst').trim() || '#0000FF';
-    highlightColor = styles.getPropertyValue('--color-gray-darker').trim();
-    axisColor = styles.getPropertyValue('--color-gray').trim();
     waterColor = styles.getPropertyValue('--color-water').trim();
     landColorDark = styles.getPropertyValue('--color-land-dark').trim();
     landColorLight = styles.getPropertyValue('--color-land-light').trim();
@@ -579,10 +491,10 @@ export default {
       this.seriesType = this.$route.query.seriesType || 'bars';
       this.$store.commit('updateSeriesType', this.seriesType);
 
-      StatsService.getCapRestartTimes(basePath).then(() => setupMapAndGraph(this));
+      StatsService.getCapRestartTimes(basePath).then(() => this.displayMap());
     } else { // wait for values in store to be accessible
       const id = parseInt(this.id);
-      setTimeout(() => { setupMapAndGraph(this); }, id * 100);
+      setTimeout(() => { this.displayMap(); }, id * 100);
     }
   },
   methods: {
@@ -647,22 +559,20 @@ export default {
       }
     },
     zoomOut: function () {
-      this.plot.zoomOut();
-      this.debounce(this.updateResults, this.plot, 600);
+      this.$refs.timelineGraph?.zoomOut();
+      this.debounce(this.updateResults, 600);
     },
     zoomIn: function () {
-      this.plot.zoom();
-      this.debounce(this.updateResults, this.plot, 600);
+      this.$refs.timelineGraph?.zoomIn();
+      this.debounce(this.updateResults, 600);
     },
     panLeft: function () {
-      const panValue = Math.floor(this.plotWidth * this.plotPan) * -1;
-      this.plot.pan({ left: panValue });
-      this.debounce(this.updateResults, this.plot, 600);
+      this.$refs.timelineGraph?.panLeft(this.plotPan);
+      this.debounce(this.updateResults, 600);
     },
     panRight: function () {
-      const panValue = Math.floor(this.plotWidth * this.plotPan);
-      this.plot.pan({ left: panValue });
-      this.debounce(this.updateResults, this.plot, 600);
+      this.$refs.timelineGraph?.panRight(this.plotPan);
+      this.debounce(this.updateResults, 600);
     },
     plotPanChange: function (value) {
       this.plotPan = value;
@@ -670,10 +580,9 @@ export default {
     toggleCapStartTimes (newValue) {
       this.showCapStartTimes = newValue;
       localStorage[`${basePath}-cap-times`] = this.showCapStartTimes;
-      StatsService.getCapRestartTimes(basePath).then(() => {
-        this.setupGraphData();
-        this.plot = $.plot(this.plotArea, this.graph, this.graphOptions);
-      });
+      // TimelineGraph re-renders via its own showCapStartTimes prop watcher
+      // once the cap-restart times are refreshed in the store.
+      StatsService.getCapRestartTimes(basePath);
     },
     toggleSpanning (newValue) {
       this.$router.push({
@@ -686,23 +595,16 @@ export default {
       });
     },
     /* helper functions ---------------------------------------------------- */
-    debounce: function (func, funcParam, ms) {
+    debounce: function (func, ms) {
       if (timeout) { clearTimeout(timeout); }
 
-      timeout = setTimeout(() => {
-        func(funcParam);
-      }, ms);
+      timeout = setTimeout(() => { func(); }, ms);
     },
     /* helper GRAPH functions */
-    updateResults: function (graph) {
-      const xAxis = graph.getXAxes();
-
-      const result = {
-        startTime: (xAxis[0].min / 1000).toFixed(),
-        stopTime: (xAxis[0].max / 1000).toFixed()
-      };
-
-      this.updateStopStartTime(result);
+    updateResults: function () {
+      const range = this.$refs.timelineGraph?.getXRange();
+      if (!range) return;
+      this.updateStopStartTime(range);
     },
     updateStopStartTime: function (times) {
       if (times.startTime && times.stopTime) {
@@ -720,267 +622,6 @@ export default {
             }
           });
         }
-      }
-    },
-    setupGraphElement: function () {
-      this.plotCheck = setInterval(() => {
-        if ($.plot) {
-          clearInterval(this.plotCheck);
-          this.plotCheck = undefined;
-        }
-      }, 50);
-
-      this.plotArea = $('#plotArea' + this.id);
-
-      if (!this.plotArea[0]) { return; } // don't continue if graph is hidden
-
-      this.plot = $.plot(this.plotArea, this.graph, this.graphOptions);
-      this.initialized = true;
-
-      this.calculateHoverBarWidth();
-
-      setTimeout(() => { // wait for plot to render
-        // account for size of the y axis labels
-        const yAxisLabel = $(this.plotArea.find('.yAxis > .tickLabel'));
-        const canvasArea = this.plotArea.find('canvas');
-        const yAxisLabelSize = (yAxisLabel?.width() || 0) * 2;
-        if (canvasArea && canvasArea.length) {
-          this.plotWidth = canvasArea[0].width - yAxisLabelSize;
-        }
-      }, 1000);
-
-      // triggered when an area of the graph is selected
-      $(this.plotArea).on('plotselected', (e, ranges) => {
-        const result = {
-          startTime: (ranges.xaxis.from / 1000).toFixed(),
-          stopTime: (ranges.xaxis.to / 1000).toFixed()
-        };
-
-        this.updateStopStartTime(result);
-      });
-
-      let previousPoint;
-      // triggered when hovering over the graph
-      $(this.plotArea).on('plothover', (e, pos, item) => {
-        if (item) {
-          if (!previousPoint ||
-            previousPoint.dataIndex !== item.dataIndex ||
-            previousPoint.seriesIndex !== item.seriesIndex) {
-            $(document.body).find('#tooltip').remove();
-
-            previousPoint = {
-              dataIndex: item.dataIndex,
-              seriesIndex: item.seriesIndex
-            };
-
-            let type;
-            if (this.graphType === 'totPacketsHisto' || this.graphType === 'network.packetsHisto' ||
-                this.graphType === 'totBytesHisto' || this.graphType === 'network.bytesHisto' ||
-                this.graphType === 'totDataBytesHisto') {
-              type = item.seriesIndex === 0 ? 'Src' : 'Dst';
-            }
-
-            const val = commaString(
-              Math.round(item.series.data[item.dataIndex][1] * 100) / 100
-            );
-            const total = commaString(
-              this.graphData[this.graphType.slice(0, -5) + 'Total']
-            );
-            const d = timezoneDateString(
-              parseInt(item.datapoint[0].toFixed(0)), this.timezone || 'local', false
-            );
-
-            const filterName = (this.graphType === 'sessionsHisto')
-              ? 'Sessions'
-              : this.timelineDataFilters.find(i => i.dbField === this.graphType.slice(0, -5)).friendlyName || '';
-
-            const tooltipHTML = `<div id="tooltip" class="graph-tooltip">
-                                <strong>${val}</strong> ${type || ''} ${filterName}
-                                out of <strong>${total}</strong> filtered ${filterName}
-                                on ${d}
-                              </div>`;
-
-            $(tooltipHTML).css({
-              top: item.pageY - 30,
-              left: item.pageX - 8
-            }).appendTo(document.body);
-          }
-        } else {
-          $(document.body).find('#tooltip').remove();
-          previousPoint = null;
-
-          // show capture process start time tooltip
-          // it is only 1px wide, but the hover displays if a user hovers over the
-          // surrounding line by half a bar width on either side (so it should
-          // still allow a user to see tooltips for data)
-          let capNode, capStartTime;
-          let isInCapTimeRange = false;
-          for (const cap of this.capStartTimes) {
-            if (cap.startTime) {
-              if (pos.x1 >= cap.startTime - hoverBarWidth && pos.x1 < cap.startTime + hoverBarWidth) {
-                capNode = cap.nodeName;
-                capStartTime = cap.startTime;
-                isInCapTimeRange = true;
-                break;
-              }
-            }
-          }
-          if (isInCapTimeRange) {
-            const tooltipHTML = `<div id="tooltip" class="graph-tooltip">
-                                ${this.$t('vis.capNodeRestarted', { node: capNode, when: timezoneDateString(capStartTime, this.timezone || 'local', false) })}
-                              </div>`;
-
-            $(tooltipHTML).css({
-              top: pos.pageY - 30,
-              left: pos.pageX - 8
-            }).appendTo(document.body);
-          }
-        }
-      });
-    },
-    setupGraphData: function () {
-      switch (this.graphType) {
-      case 'totPacketsHisto':
-      case 'network.packetsHisto':
-        this.graph = [
-          { data: this.graphData['source.packetsHisto'], color: srcColor },
-          { data: this.graphData['destination.packetsHisto'], color: dstColor }
-        ];
-        break;
-      case 'totBytesHisto':
-      case 'network.bytesHisto':
-        this.graph = [
-          { data: this.graphData['source.bytesHisto'], color: srcColor },
-          { data: this.graphData['destination.bytesHisto'], color: dstColor }
-        ];
-        break;
-      case 'totDataBytesHisto':
-        this.graph = [
-          { data: this.graphData['client.bytesHisto'], color: srcColor },
-          { data: this.graphData['server.bytesHisto'], color: dstColor }
-        ];
-        break;
-      default:
-        this.graph = [{ data: this.graphData[this.graphType], color: foregroundColor }];
-      } /* switch */
-
-      for (let i = 0, len = this.graph.length; i < len; ++i) {
-        this.graph[i].bars = { show: this.seriesType === 'bars' };
-
-        // if there's no value for the graph x min/max
-        // add it to the beginning/end of the data so that the graph
-        // shows the full time range (not just the data's time range)
-        if (!this.graph[i].data[0]) { continue; }
-
-        if (!this.graphData.xmin) { continue; }
-        if (this.graph[i].data[0][0] !== this.graphData.xmin) {
-          this.graph[i].data.unshift([this.graphData.xmin, 0]);
-        }
-
-        if (!this.graphData.xmax) { continue; }
-        if (this.graph[i].data[this.graph[i].data.length - 1][0] !== this.graphData.xmax) {
-          this.graph[i].data.push([this.graphData.xmax, 0]);
-        }
-      }
-
-      barWidth = (this.graphData.interval * 1000) / 1.7;
-
-      this.graphOptions = { // flot graph options
-        series: {
-          stack: true,
-          lines: { fill: true },
-          bars: { barWidth: [barWidth, true] }
-        },
-        selection: {
-          mode: 'x',
-          color: highlightColor
-        },
-        xaxis: {
-          mode: 'time',
-          label: 'Datetime',
-          color: axisColor,
-          timeBase: 'milliseconds',
-          min: this.graphData.xmin || null,
-          max: this.graphData.xmax || null,
-          tickFormatter: (v) => {
-            return timezoneDateString(
-              v, this.timezone, false
-            );
-          }
-        },
-        yaxis: {
-          min: 0,
-          color: axisColor,
-          zoomRange: false,
-          autoscaleMargin: 0.02,
-          tickFormatter: (v) => {
-            if (this.graphType === 'totBytesHisto' || this.graphType === 'totDataBytesHisto') {
-              return humanReadableBytes(v);
-            }
-            return humanReadableNumber(v);
-          }
-        },
-        grid: {
-          markings: [],
-          borderWidth: 0,
-          hoverable: true,
-          clickable: true,
-          color: axisColor
-        },
-        pan: { interactive: false },
-        zoom: { interactive: false }
-      };
-
-      if (this.showCapStartTimes) {
-        for (const capture of this.capStartTimes) {
-          this.graphOptions.grid.markings.push({
-            color: foregroundColor || '#666',
-            xaxis: {
-              from: capture.startTime,
-              to: capture.startTime
-            }
-          });
-        }
-      }
-
-      // add business hours to graph if they exist
-      if (this.$constants.BUSINESS_DAY_START && this.$constants.BUSINESS_DAY_END) {
-        this.addBusinessHours();
-      }
-    },
-    addBusinessHours () {
-      if (!this.$constants.BUSINESS_DAY_START || !this.$constants.BUSINESS_DAY_END) {
-        return;
-      }
-
-      const businessDays = this.$constants.BUSINESS_DAYS.split(',');
-      const startDate = moment(this.graphData.xmin); // the start of the graph
-      const stopDate = moment(this.graphData.xmax); // the end of the graph
-      let daysInRange = stopDate.diff(startDate, 'days'); // # days in graph
-      // don't bother showing business days if we're looking at more than a month of data
-      if (daysInRange > 31) { return; }
-
-      const day = stopDate.startOf('day');
-      const color = 'rgba(255, 210, 50, 0.2)';
-      while (daysInRange >= 0) { // iterate through each day starting from the end
-        const dayOfWeek = day.day();
-        // only display business hours on the specified business days
-        if (businessDays.indexOf(dayOfWeek.toString()) >= 0) {
-          // get the start of the business day
-          const dayStart = day.clone().add(this.$constants.BUSINESS_DAY_START, 'hours');
-          // get the end of the business day
-          const dayStop = day.clone().add(this.$constants.BUSINESS_DAY_END, 'hours');
-          // add business hours for this day to graph
-          this.graphOptions.grid.markings.push({
-            color,
-            xaxis: {
-              from: dayStart.valueOf(),
-              to: dayStop.valueOf()
-            }
-          });
-        }
-        day.subtract(24, 'hours'); // go back a day
-        daysInRange--;
       }
     },
     /* helper MAP functions */
@@ -1019,12 +660,6 @@ export default {
         this.mapExpanded = false;
         this.shrinkMapElement();
       }
-    },
-    onPocRegionClick: function (code) {
-      // Phase 2a POC: mirror the existing jvectormap onRegionClick behavior
-      this.$store.commit('addToExpression', {
-        expression: `country == ${code}`
-      });
     },
     displayMap: function () {
       // create jvectormap
@@ -1119,31 +754,14 @@ export default {
 
       this.legend = this.legend.slice(0, 10); // get top 10
     },
-    calculateHoverBarWidth: function () {
-      // calculate the bar with units for node start hover behavior
-      barWidthInUnits = this.plot.getOptions().series.bars.barWidth;
-      barWidthInPixels = barWidthInUnits * this.plot.getXAxes()[0].scale;
-      hoverBarWidth = barWidth / 2;
-      // make sure the barwidth isn't too small to activate hover on node start
-      // or too large to overflow bar width
-      if (barWidthInPixels <= 0.2) {
-        hoverBarWidth = barWidth * 10;
-      } else if (barWidthInPixels <= 1) {
-        hoverBarWidth = barWidth * 2;
-      } else if (barWidthInPixels <= 2) {
-        hoverBarWidth = barWidth;
-      } else if (barWidthInPixels >= 50) {
-        hoverBarWidth = barWidth / 10;
-      } else if (barWidthInPixels >= 200) {
-        hoverBarWidth = barWidth / 100;
-      }
+    onPocRegionClick: function (code) {
+      // Phase 2a POC: mirror the existing jvectormap onRegionClick behavior
+      this.$store.commit('addToExpression', {
+        expression: `country == ${code}`
+      });
     }
   },
   beforeUnmount () {
-    // turn of graph events
-    $(this.plotArea).off('plothover');
-    $(this.plotArea).off('plotselected');
-
     if (timeout) { clearTimeout(timeout); }
 
     // turn off map events
