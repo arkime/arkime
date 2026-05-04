@@ -2047,10 +2047,18 @@ export default {
       this.showFitButton = false;
       if (!this.colWidths) { return; }
 
-      const windowWidth = window.innerWidth - 20; // account for margins
+      // Use the sessions-content container's actual clientWidth instead of
+      // window.innerWidth — anything taking horizontal space outside the
+      // container (a sidebar, devtools dock, the viz map sibling) makes
+      // window-width an overestimate, sets the table wider than its
+      // container, and triggers .sessions-content's overflow-x:auto which
+      // visibly clips the rightmost columns. Fall back to window width on
+      // first call before the ref mounts.
+      const ref = this.$refs.sessionsContent;
+      const containerWidth = ref ? ref.clientWidth : (window.innerWidth - 20);
 
       if (this.tableState.visibleHeaders.indexOf('info') >= 0) {
-        const fillWithInfoCol = windowWidth - this.sumOfColWidths;
+        const fillWithInfoCol = containerWidth - this.sumOfColWidths;
         let newTableWidth = this.sumOfColWidths;
         for (let i = 0, len = this.headers.length; i < len; ++i) {
           if (this.headers[i].dbField === 'info') {
@@ -2062,9 +2070,9 @@ export default {
         this.tableWidth = newTableWidth;
       } else {
         this.tableWidth = this.sumOfColWidths;
-        // display a button to fit the table to the width of the window
-        // if the table is more than 10 pixels larger or smaller than the window
-        if (Math.abs(this.tableWidth - windowWidth) > 10) {
+        // display a button to fit the table to the width of the container
+        // if the table is more than 10 pixels larger or smaller than it
+        if (Math.abs(this.tableWidth - containerWidth) > 10) {
           this.showFitButton = true;
         }
       }
