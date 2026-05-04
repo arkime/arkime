@@ -646,7 +646,6 @@ SPDX-License-Identifier: Apache-2.0
 </template>
 
 <script>
-// IMPORTANT: don't change the order of imports (it messes up the flot graph)
 // import services
 import FieldService from '../search/FieldService';
 import SessionsService from './SessionsService';
