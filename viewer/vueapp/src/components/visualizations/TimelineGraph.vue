@@ -369,12 +369,12 @@ export default {
           if (Math.abs(capXSec - xSec) <= tolSec) {
             const capDateStr = timezoneDateString(cap.startTime, this.timezone, false);
             const message = this.$t('vis.capNodeRestarted', { node: cap.nodeName, when: capDateStr });
-            const xRel = rect.left - hostRect.left + cursorX;
-            const flipX = xRel + 12 > hostRect.width * 0.6;
+            const capXRel = rect.left - hostRect.left + cursorX;
+            const capFlipX = capXRel + 12 > hostRect.width * 0.6;
             this.tooltip = {
-              x: flipX ? xRel - 12 : xRel + 12,
+              x: capFlipX ? capXRel - 12 : capXRel + 12,
               y: rect.top - hostRect.top + cursorY - 28,
-              flipX,
+              flipX: capFlipX,
               html: `<div class="graph-tooltip-inner">${this.escapeHtml(message)}</div>`
             };
             return;
