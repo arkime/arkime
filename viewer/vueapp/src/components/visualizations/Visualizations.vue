@@ -260,6 +260,16 @@ SPDX-License-Identifier: Apache-2.0
                 class="plot-area"
                 :id="'plotArea' + id" />
             </div> <!-- /graph -->
+
+            <!-- Phase 2a uPlot POC: only renders when ?vizpoc=uplot is set in URL -->
+            <timeline-uplot-poc
+              v-if="showUplotPoc && graphData && primary"
+              :graph-data="graphData"
+              :graph-type="graphType"
+              :series-type="seriesType"
+              :cap-start-times="capStartTimes"
+              :show-cap-start-times="showCapStartTimes"
+              @update-time-range="updateStopStartTime" />
           </div> <!-- /graph content -->
         </template>
       </div>
@@ -272,6 +282,7 @@ SPDX-License-Identifier: Apache-2.0
 import { commaString, timezoneDateString, humanReadableBytes, humanReadableNumber } from '@common/vueFilters.js';
 import StatsService from '../stats/StatsService';
 import moment from 'moment-timezone';
+import TimelineUplotPoc from './TimelineUplotPoc.vue';
 
 // color vars
 let foregroundColor;
@@ -294,6 +305,7 @@ let barWidthInPixels;
 
 export default {
   name: 'ArkimeVisualizations',
+  components: { TimelineUplotPoc },
   emits: ['fetchMapData', 'spanningChange'],
   props: {
     graphData: {
@@ -415,6 +427,9 @@ export default {
     },
     timeBounding: function () {
       return this.$route.query.bounding || 'last';
+    },
+    showUplotPoc: function () {
+      return this.$route.query.vizpoc === 'uplot';
     }
   },
   watch: {
