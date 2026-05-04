@@ -24,7 +24,7 @@ import moment from 'moment-timezone';
 const HOST_HEIGHT = 170;
 const Y_AXIS_RESERVE = 60;
 const PADDING = 16;
-const MIN_PX_PER_BAR = 24;
+const MIN_PX_PER_BAR = 36;
 
 export default {
   name: 'ArkimeTimelineGraph',
@@ -56,9 +56,21 @@ export default {
     this.rebuild();
     this._resizeHandler = () => this.resize();
     window.addEventListener('resize', this._resizeHandler);
+    // ResizeObserver catches container-width changes that don't fire a
+    // window resize (e.g. when the map opens/closes and shrinks plot-container).
+    if (typeof ResizeObserver !== 'undefined') {
+      this._resizeObserver = new ResizeObserver(() => this.resize());
+      this._resizeObserver.observe(this.$refs.host);
+    }
+    // Belt for mouseleave: uPlot's setCursor doesn't always fire when the
+    // pointer exits via the chart edges, so wire it explicitly.
+    this._mouseLeaveHandler = () => { this.tooltip = null; };
+    this.$refs.host?.addEventListener('mouseleave', this._mouseLeaveHandler);
   },
   beforeUnmount () {
     window.removeEventListener('resize', this._resizeHandler);
+    if (this._resizeObserver) { this._resizeObserver.disconnect(); }
+    this.$refs.host?.removeEventListener('mouseleave', this._mouseLeaveHandler);
     this.destroyPlot();
   },
   methods: {
@@ -242,15 +254,17 @@ export default {
         width: host.clientWidth || 800,
         height: HOST_HEIGHT,
         padding: [8, 8, 8, 8],
+        legend: { show: false }, // tooltip overlay carries the same info
         scales: {
           x: { time: true },
           y: { auto: true, range: (u, dmin, dmax) => [0, (dmax || 1) * 1.05] }
         },
         axes: [
           {
+            // Let uPlot's built-in multi-resolution time formatter pick HH:mm
+            // / MM/DD / YYYY as appropriate for the current zoom level.
             stroke: this.axisColor,
-            grid: { stroke: this.gridColor },
-            values: (u, vals) => vals.map((ts) => timezoneDateString(ts * 1000, this.timezone, false))
+            grid: { stroke: this.gridColor }
           },
           {
             stroke: this.axisColor,
@@ -272,7 +286,14 @@ export default {
         ],
         hooks: {
           draw: [(u) => this.drawMarkings(u)],
-          setSelect: [(u) => this.onSelect(u)]
+          setSelect: [(u) => this.onSelect(u)],
+          // Belt-and-suspenders: clear tooltip whenever cursor goes off-canvas
+          // (uPlot signals this by setting cursor.left to -10).
+          setCursor: [(u) => {
+            if (u.cursor.left == null || u.cursor.left < 0) {
+              this.tooltip = null;
+            }
+          }]
         },
         cursor: {
           drag: { x: true, y: false, setScale: false },
@@ -367,8 +388,11 @@ export default {
       }[c]));
     },
     resize () {
-      if (!this.plot || !this.$refs.host) return;
-      this.plot.setSize({ width: this.$refs.host.clientWidth, height: HOST_HEIGHT });
+      if (!this.$refs.host) return;
+      // Full rebuild rather than plot.setSize: width change also affects how
+      // many buckets we aggregate (maxBars depends on drawable px), so the
+      // bar count needs to recompute when the container resizes.
+      this.rebuild();
     },
     onSelect (u) {
       const sel = u.select;
