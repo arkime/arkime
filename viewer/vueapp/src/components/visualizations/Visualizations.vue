@@ -154,29 +154,34 @@ SPDX-License-Identifier: Apache-2.0
                   @click="panLeft">
                   <span class="fa fa-chevron-left" />
                 </label>
-                <b-dropdown
-                  size="sm"
-                  variant="default"
-                  class="pan-dropdown">
-                  <template #button-content>
-                    {{ plotPan * 100 + '%' }}
+                <v-menu location="bottom">
+                  <template #activator="{ props: activatorProps }">
+                    <button
+                      v-bind="activatorProps"
+                      type="button"
+                      class="btn btn-sm btn-default pan-dropdown">
+                      {{ plotPan * 100 + '%' }}
+                      <span class="fa fa-caret-down ms-1" />
+                    </button>
                   </template>
-                  <b-dropdown-item @click="plotPanChange(0.05)">
-                    5%
-                  </b-dropdown-item>
-                  <b-dropdown-item @click="plotPanChange(0.1)">
-                    10%
-                  </b-dropdown-item>
-                  <b-dropdown-item @click="plotPanChange(0.2)">
-                    20%
-                  </b-dropdown-item>
-                  <b-dropdown-item @click="plotPanChange(0.5)">
-                    50%
-                  </b-dropdown-item>
-                  <b-dropdown-item @click="plotPanChange(1)">
-                    100%
-                  </b-dropdown-item>
-                </b-dropdown>
+                  <v-list density="compact">
+                    <v-list-item @click="plotPanChange(0.05)">
+                      5%
+                    </v-list-item>
+                    <v-list-item @click="plotPanChange(0.1)">
+                      10%
+                    </v-list-item>
+                    <v-list-item @click="plotPanChange(0.2)">
+                      20%
+                    </v-list-item>
+                    <v-list-item @click="plotPanChange(0.5)">
+                      50%
+                    </v-list-item>
+                    <v-list-item @click="plotPanChange(1)">
+                      100%
+                    </v-list-item>
+                  </v-list>
+                </v-menu>
                 <label
                   class="btn btn-default"
                   @click="panRight">
@@ -185,71 +190,69 @@ SPDX-License-Identifier: Apache-2.0
               </div> <!-- /pan left/right -->
               <!-- graph type -->
               <div
-                class="btn-group btn-group-xs btn-group-radios ms-1"
+                class="ms-1"
                 style="margin-top: 3px;">
-                <b-form-radio-group
-                  size="sm"
-                  class="buttons-with-boxes"
+                <v-radio-group
+                  inline
+                  density="compact"
+                  hide-details
                   :model-value="graphType"
                   @update:model-value="changeGraphType">
-                  <b-form-radio
+                  <v-radio
                     value="sessionsHisto"
-                    key="sessionsHisto">
-                    {{ $t('common.sessions') }}
-                  </b-form-radio>
-                  <b-form-radio
+                    key="sessionsHisto"
+                    :label="$t('common.sessions')" />
+                  <v-radio
                     v-for="filter in timelineDataFilters"
                     :value="filter.dbField + 'Histo'"
-                    :key="filter.dbField">
-                    {{ filter.friendlyName }}
-                  </b-form-radio>
-                </b-form-radio-group>
+                    :key="filter.dbField"
+                    :label="filter.friendlyName" />
+                </v-radio-group>
               </div> <!-- graph type -->
               <!-- series type -->
-              <div class="btn-group btn-group-xs btn-group-radios ms-1">
-                <b-form-radio-group
-                  size="sm"
-                  class="buttons-with-boxes"
+              <div class="ms-1">
+                <v-radio-group
+                  inline
+                  density="compact"
+                  hide-details
                   style="margin-top: 2px;"
                   :model-value="seriesType"
                   @update:model-value="changeSeriesType">
-                  <b-form-radio value="lines">
-                    {{ $t('vis.graphLines') }}
-                  </b-form-radio>
-                  <b-form-radio value="bars">
-                    {{ $t('vis.graphBars') }}
-                  </b-form-radio>
-                </b-form-radio-group>
+                  <v-radio
+                    value="lines"
+                    :label="$t('vis.graphLines')" />
+                  <v-radio
+                    value="bars"
+                    :label="$t('vis.graphBars')" />
+                </v-radio-group>
               </div> <!-- series type -->
               <!-- cap times -->
               <div
-                class="btn-group btn-group-xs btn-group-checkboxes ms-1"
+                class="ms-1"
                 style="margin-top: 4px;">
-                <b-form-checkbox
-                  size="sm"
-                  class="buttons-with-boxes"
+                <v-checkbox
+                  density="compact"
+                  hide-details
                   :model-value="showCapStartTimes"
-                  @update:model-value="toggleCapStartTimes">
-                  {{ $t('vis.capRestarts') }}
-                </b-form-checkbox> <!-- /cap times -->
+                  :label="$t('vis.capRestarts')"
+                  @update:model-value="toggleCapStartTimes" />
                 <v-tooltip
                   activator="parent"
                   location="bottom">
                   {{ $t('vis.capRestartsTip') }}
                 </v-tooltip>
-              </div>
+              </div> <!-- /cap times -->
               <!-- spanning -->
               <div
-                class="btn-group btn-group-xs btn-group-checkboxes ms-1"
+                class="ms-1"
                 style="margin-top: 4px;">
-                <b-form-checkbox
-                  size="sm"
-                  class="buttons-with-boxes"
+                <v-checkbox
+                  density="compact"
+                  hide-details
                   :model-value="spanning"
                   :disabled="timeBounding === 'database'"
-                  @update:model-value="toggleSpanning">
-                  {{ $t('search.timeBounding-spanning') }}
-                </b-form-checkbox>
+                  :label="$t('search.timeBounding-spanning')"
+                  @update:model-value="toggleSpanning" />
                 <v-tooltip
                   activator="parent"
                   location="bottom">
