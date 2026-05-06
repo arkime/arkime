@@ -801,7 +801,7 @@ export default {
   background: rgba(255, 255, 255, 0.55);
   backdrop-filter: blur(4px);
   -webkit-backdrop-filter: blur(4px);
-  border-radius: 6px 6px 4px 4px;
+  border-radius: 6px 6px 0 0;
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.6),
     0 2px 6px rgba(0, 0, 0, 0.12);
