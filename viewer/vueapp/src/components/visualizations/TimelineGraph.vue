@@ -22,8 +22,9 @@ import 'uplot/dist/uPlot.min.css';
 import { commaString, timezoneDateString, humanReadableBytes, humanReadableNumber } from '@common/vueFilters.js';
 import moment from 'moment-timezone';
 
-const HOST_HEIGHT = 140;
-const Y_AXIS_RESERVE = 60;
+const HOST_HEIGHT = 170;
+const Y_AXIS_RESERVE = 44;
+const X_AXIS_SIZE = 28;
 const PADDING = 16;
 const MIN_PX_PER_BAR = 40;
 
@@ -281,13 +282,28 @@ export default {
         ? uPlot.paths.linear({ alignGaps: 0 })
         : undefined;
 
+      // Subtle vertical gradient on bar fills — full color at the base,
+      // fading to ~60% alpha at the top. Tall bars get the gradient,
+      // short bars stay solid. Gives bars a "lit-from-top" feel without
+      // looking skeuomorphic.
+      const barFill = (color) => (u) => {
+        const ctx = u.ctx;
+        const grad = ctx.createLinearGradient(0, u.bbox.top, 0, u.bbox.top + u.bbox.height);
+        grad.addColorStop(0, color + '99'); // top, ~60% alpha
+        grad.addColorStop(0.6, color + 'cc'); // mid, ~80%
+        grad.addColorStop(1, color); // base, full
+        return grad;
+      };
+
+      const monoFont = '11px ui-monospace, "SF Mono", Menlo, Consolas, monospace';
+
       const opts = {
         width: host.clientWidth || 800,
         height: HOST_HEIGHT,
-        // [top, right, bottom, left] — extra top breathing room, flush left
-        // and bottom so the chart doesn't push past the .sessions-content
-        // overflow-x:auto boundary that lives in the parent table component.
-        padding: [16, 8, 0, 0],
+        // [top, right, bottom, left] — chart hugs left/bottom; tiny top
+        // gap is just enough to keep the y-axis top tick from getting
+        // clipped by the canvas edge.
+        padding: [4, 4, 0, 0],
         legend: { show: false }, // tooltip overlay carries the same info
         scales: {
           x: { time: true },
@@ -298,11 +314,16 @@ export default {
             // Let uPlot's built-in multi-resolution time formatter pick HH:mm
             // / MM/DD / YYYY as appropriate for the current zoom level.
             stroke: this.axisColor,
-            grid: { stroke: this.gridColor }
+            font: monoFont,
+            ticks: { stroke: this.gridColor, width: 1 },
+            grid: { stroke: this.gridColor, width: 1 },
+            size: X_AXIS_SIZE
           },
           {
             stroke: this.axisColor,
-            grid: { stroke: this.gridColor },
+            font: monoFont,
+            ticks: { stroke: this.gridColor, width: 1 },
+            grid: { stroke: this.gridColor, width: 1 },
             values: (u, vals) => vals.map((v) => this.formatY(v)),
             size: Y_AXIS_RESERVE
           }
@@ -312,7 +333,7 @@ export default {
           ...defs.map((d) => ({
             label: d.label,
             stroke: d.color,
-            fill: isBars ? d.color : d.color + '33',
+            fill: isBars ? barFill(d.color) : d.color + '33',
             paths: isBars ? barsPath : linesPath,
             width: isBars ? 1 : 1.5,
             points: { show: false }
@@ -490,20 +511,16 @@ export default {
   position: relative;
   width: 100%;
   max-width: 100%;
-  /* Per request: top breathing room, flush left and bottom. */
-  padding-top: 8px;
-  padding-bottom: 0;
-  padding-left: 0;
-  /* Hard guard against horizontal overflow — the parent .sessions-content
-     has overflow-x:auto, so a single pixel of overflow here triggers a
-     scroll that clips the rightmost table columns. */
+  padding: 0;
+  /* Hard guard against horizontal overflow — kept after the table-clipping
+     fix so chart-side overflow (long tooltips, etc.) can't propagate up. */
   overflow: hidden;
   box-sizing: border-box;
 }
 .timeline-host {
   width: 100%;
   max-width: 100%;
-  height: 140px;
+  height: 170px;
   overflow: hidden;
   box-sizing: border-box;
 }
