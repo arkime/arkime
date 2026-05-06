@@ -43,8 +43,7 @@ export default {
   data () {
     return {
       tooltip: null,
-      bucketFactor: 1,
-      hoveredIdx: null
+      bucketFactor: 1
     };
   },
   watch: {
@@ -197,11 +196,9 @@ export default {
       return { data: [reXs, ...reYs], factor };
     },
     /**
-     * uPlot draw hook: paints (in z-order from back to front)
+     * uPlot draw hook (z-order from back to front):
      *  - business-hours bands
-     *  - "now" indicator
-     *  - bar-peak (top edge) accent lines
-     *  - hover-bar highlight
+     *  - "now" indicator (only when current time is within the chart range)
      *  - capture-restart markers (line + bottom notch)
      */
     drawMarkings (u) {
@@ -210,7 +207,7 @@ export default {
       const xMax = u.scales.x.max;
       ctx.save();
 
-      // 1. Business-hour bands
+      // Business-hour bands
       const bands = this.computeBusinessHourBands(xMin, xMax);
       ctx.fillStyle = this.businessColor;
       for (const b of bands) {
@@ -219,7 +216,7 @@ export default {
         ctx.fillRect(left, u.bbox.top, Math.max(1, right - left), u.bbox.height);
       }
 
-      // 2. "Now" indicator — vertical dashed line at current time when in view
+      // "Now" indicator — vertical dashed line + label at current time
       const nowSec = Date.now() / 1000;
       if (nowSec >= xMin && nowSec <= xMax) {
         const x = u.valToPos(nowSec, 'x', true);
@@ -233,7 +230,6 @@ export default {
         ctx.stroke();
         ctx.restore();
 
-        // tiny "NOW" tag at top
         ctx.save();
         ctx.fillStyle = '#00ff88';
         ctx.font = '9px ui-monospace, monospace';
@@ -242,43 +238,7 @@ export default {
         ctx.restore();
       }
 
-      // 3. Top-edge accent on each bar — 2px brighter line at the bar's peak
-      if (this.seriesType === 'bars') {
-        const data = u.data;
-        const slotW = u.bbox.width / Math.max(1, data[0].length);
-        const halfBar = (slotW - 1) / 2;
-        for (let s = 1; s < data.length; s++) {
-          const series = u.series[s];
-          if (series.show === false) continue;
-          ctx.strokeStyle = this.brighten(series.stroke, 0.4);
-          ctx.lineWidth = 2;
-          for (let i = 0; i < data[0].length; i++) {
-            const yVal = data[s][i];
-            if (yVal == null || yVal <= 0) continue;
-            const xVal = data[0][i];
-            const xPos = u.valToPos(xVal, 'x', true);
-            const yPos = u.valToPos(yVal, 'y', true);
-            ctx.beginPath();
-            ctx.moveTo(xPos - halfBar, yPos);
-            ctx.lineTo(xPos + halfBar, yPos);
-            ctx.stroke();
-          }
-        }
-      }
-
-      // 4. Hover bar highlight — bright outline around the slot under cursor
-      if (this.hoveredIdx != null && u.data[0]?.[this.hoveredIdx] != null) {
-        const xVal = u.data[0][this.hoveredIdx];
-        const xPos = u.valToPos(xVal, 'x', true);
-        const slotW = u.bbox.width / Math.max(1, u.data[0].length);
-        ctx.save();
-        ctx.strokeStyle = '#ffd800';
-        ctx.lineWidth = 1.5;
-        ctx.strokeRect(xPos - slotW / 2 + 0.5, u.bbox.top + 0.5, slotW - 1, u.bbox.height - 1);
-        ctx.restore();
-      }
-
-      // 5. Capture-restart markers — colored vertical line + bottom notch
+      // Capture-restart markers — dashed red vertical + bottom triangle notch
       if (this.showCapStartTimes && this.capStartTimes?.length) {
         const restartC = '#dc3545';
         ctx.strokeStyle = restartC;
@@ -289,7 +249,6 @@ export default {
           const xSec = cap.startTime / 1000;
           if (xSec < xMin || xSec > xMax) continue;
           const x = u.valToPos(xSec, 'x', true);
-          // dashed vertical
           ctx.save();
           ctx.setLineDash([2, 3]);
           ctx.beginPath();
@@ -297,7 +256,6 @@ export default {
           ctx.lineTo(x, u.bbox.top + u.bbox.height);
           ctx.stroke();
           ctx.restore();
-          // notch triangle pointing up at the bottom
           const baseY = u.bbox.top + u.bbox.height;
           ctx.beginPath();
           ctx.moveTo(x - 4, baseY);
@@ -307,16 +265,6 @@ export default {
         }
       }
       ctx.restore();
-    },
-    /** Lighten a hex color toward white by `amount` (0..1). */
-    brighten (hex, amount) {
-      const h = hex.replace('#', '');
-      if (h.length !== 6) return hex;
-      const r = parseInt(h.slice(0, 2), 16);
-      const g = parseInt(h.slice(2, 4), 16);
-      const b = parseInt(h.slice(4, 6), 16);
-      const mix = (c) => Math.round(c + (255 - c) * amount);
-      return `rgb(${mix(r)}, ${mix(g)}, ${mix(b)})`;
     },
     computeBusinessHourBands (xMinSec, xMaxSec) {
       const out = [];
@@ -434,22 +382,11 @@ export default {
         hooks: {
           draw: [(u) => this.drawMarkings(u)],
           setSelect: [(u) => this.onSelect(u)],
-          // Track cursor position for the off-canvas tooltip clear AND the
-          // hover-bar highlight. When the hovered slot changes we trigger
-          // a uPlot redraw so the highlight follows the cursor.
+          // Belt-and-suspenders: clear tooltip whenever cursor goes off-canvas
+          // (uPlot signals this by setting cursor.left to -10).
           setCursor: [(u) => {
             if (u.cursor.left == null || u.cursor.left < 0) {
               this.tooltip = null;
-              if (this.hoveredIdx != null) {
-                this.hoveredIdx = null;
-                u.redraw(false, false);
-              }
-              return;
-            }
-            const idx = u.cursor.idx;
-            if (idx !== this.hoveredIdx) {
-              this.hoveredIdx = idx;
-              u.redraw(false, false);
             }
           }]
         },
@@ -537,9 +474,6 @@ export default {
         lines.push(`out of <strong>${totalStr}</strong> filtered ${this.escapeHtml(filterName)}`);
       }
       lines.push(`on ${this.escapeHtml(dateStr)}`);
-      if (this.bucketFactor > 1) {
-        lines.push(`<em>(rebucketed ${this.bucketFactor}× client-side)</em>`);
-      }
 
       const xRel = rect.left - hostRect.left + cursorX;
       const flipX = xRel + 12 > hostRect.width * 0.6;
@@ -614,15 +548,22 @@ export default {
   position: relative;
   width: 100%;
   max-width: 100%;
-  padding: 0;
-  /* Drop-zone gradient: subtle vertical fade at the chart's bottom anchors
-     the timeline visually without a heavy border. */
+  padding: 6px 4px 0 4px;
+  /* Panel feel: subtle vertical gradient + rounded corners + soft inset
+     top-edge highlight + faint bottom border. Distinguishes the timeline
+     from the search controls above and the table below without a heavy
+     hard-edge border. */
   background: linear-gradient(
-    to bottom,
-    transparent 0%,
-    transparent 75%,
-    rgba(128, 128, 128, 0.04) 100%
+    180deg,
+    rgba(255, 255, 255, 0.025) 0%,
+    rgba(255, 255, 255, 0.01) 30%,
+    rgba(0, 0, 0, 0.06) 100%
   );
+  border-radius: 6px;
+  border-bottom: 1px solid rgba(128, 128, 128, 0.18);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.04),
+    0 1px 2px rgba(0, 0, 0, 0.05);
   /* Hard guard against horizontal overflow — kept after the table-clipping
      fix so chart-side overflow (long tooltips, etc.) can't propagate up. */
   overflow: hidden;
