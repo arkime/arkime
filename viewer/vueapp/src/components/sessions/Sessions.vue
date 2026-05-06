@@ -868,22 +868,6 @@ export default {
       this.$store.commit('setSessionDetailDLWidth', response?.width ?? 160);
     });
   },
-  mounted: function () {
-    // ResizeObserver on the actual sessions-content container catches
-    // width changes that don't fire a window resize — e.g. devtools
-    // docking / undocking, sidebar toggles, or the post-mount layout
-    // pass that finalizes the container width after refs first attach.
-    // Without this, the initial calculateInfoColumnWidth call uses a
-    // stale window.innerWidth fallback before the ref is ready, the
-    // table is sized too wide, and .sessions-content's overflow-x:auto
-    // clips the rightmost columns.
-    if (typeof ResizeObserver !== 'undefined' && this.$refs.sessionsContent) {
-      this._sessionsContentObserver = new ResizeObserver(() => {
-        this.mapHeadersToFields();
-      });
-      this._sessionsContentObserver.observe(this.$refs.sessionsContent);
-    }
-  },
   computed: {
     query: function () {
       return { // query defaults
@@ -2063,25 +2047,10 @@ export default {
       this.showFitButton = false;
       if (!this.colWidths) { return; }
 
-      // Use the sessions-content container's actual clientWidth instead of
-      // window.innerWidth — anything taking horizontal space outside the
-      // container (a sidebar, devtools dock, the viz map sibling) makes
-      // window-width an overestimate, sets the table wider than its
-      // container, and triggers .sessions-content's overflow-x:auto which
-      // visibly clips the rightmost columns.
-      const ref = this.$refs.sessionsContent;
-      // Ref isn't mounted or hasn't been laid out yet — retry on the next
-      // tick so we read the real container width once Vue settles the DOM.
-      // The ResizeObserver in mounted() also kicks this off naturally on
-      // first layout, so the retry is a belt-and-suspenders fallback.
-      if (!ref || ref.clientWidth === 0) {
-        this.$nextTick(() => this.calculateInfoColumnWidth(infoColWidth));
-        return;
-      }
-      const containerWidth = ref.clientWidth;
+      const windowWidth = window.innerWidth - 20; // account for margins
 
       if (this.tableState.visibleHeaders.indexOf('info') >= 0) {
-        const fillWithInfoCol = containerWidth - this.sumOfColWidths;
+        const fillWithInfoCol = windowWidth - this.sumOfColWidths;
         let newTableWidth = this.sumOfColWidths;
         for (let i = 0, len = this.headers.length; i < len; ++i) {
           if (this.headers[i].dbField === 'info') {
@@ -2093,9 +2062,9 @@ export default {
         this.tableWidth = newTableWidth;
       } else {
         this.tableWidth = this.sumOfColWidths;
-        // display a button to fit the table to the width of the container
-        // if the table is more than 10 pixels larger or smaller than it
-        if (Math.abs(this.tableWidth - containerWidth) > 10) {
+        // display a button to fit the table to the width of the window
+        // if the table is more than 10 pixels larger or smaller than the window
+        if (Math.abs(this.tableWidth - windowWidth) > 10) {
           this.showFitButton = true;
         }
       }
@@ -2156,11 +2125,6 @@ export default {
     holdingClick = false;
     searchIssued = false;
     colDragDropInitialized = false;
-
-    if (this._sessionsContentObserver) {
-      this._sessionsContentObserver.disconnect();
-      this._sessionsContentObserver = null;
-    }
 
     if (pendingPromise) {
       pendingPromise.controller.abort(this.$t('sessions.sessions.closingCancelsSearchErr'));
