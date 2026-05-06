@@ -548,22 +548,24 @@ export default {
   position: relative;
   width: 100%;
   max-width: 100%;
-  padding: 6px 4px 0 4px;
-  /* Panel feel: subtle vertical gradient + rounded corners + soft inset
-     top-edge highlight + faint bottom border. Distinguishes the timeline
-     from the search controls above and the table below without a heavy
-     hard-edge border. */
+  padding: 8px 16px 0 4px;
+  /* Recessed panel: gradient is darker at the top (light hitting the
+     rim casts a shadow into the well) and fades to lighter near the
+     bottom. Layered inset shadows on all four sides reinforce the
+     "sunken into the page" feel. */
   background: linear-gradient(
     180deg,
-    rgba(255, 255, 255, 0.025) 0%,
-    rgba(255, 255, 255, 0.01) 30%,
-    rgba(0, 0, 0, 0.06) 100%
+    rgba(0, 0, 0, 0.10) 0%,
+    rgba(0, 0, 0, 0.05) 35%,
+    rgba(0, 0, 0, 0.02) 100%
   );
   border-radius: 6px;
-  border-bottom: 1px solid rgba(128, 128, 128, 0.18);
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.04),
-    0 1px 2px rgba(0, 0, 0, 0.05);
+    inset 0 3px 8px rgba(0, 0, 0, 0.18),
+    inset 0 1px 0 rgba(0, 0, 0, 0.22),
+    inset 1px 0 2px rgba(0, 0, 0, 0.10),
+    inset -1px 0 2px rgba(0, 0, 0, 0.10),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.06);
   /* Hard guard against horizontal overflow — kept after the table-clipping
      fix so chart-side overflow (long tooltips, etc.) can't propagate up. */
   overflow: hidden;
