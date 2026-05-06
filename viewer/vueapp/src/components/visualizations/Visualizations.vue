@@ -175,7 +175,9 @@ SPDX-License-Identifier: Apache-2.0
                         variant="flat"
                         color="secondary">
                         {{ plotPan * 100 + '%' }}
-                        <v-icon end>fa-caret-down</v-icon>
+                        <v-icon end>
+                          fa-caret-down
+                        </v-icon>
                       </v-btn>
                     </template>
                     <v-list density="compact">
