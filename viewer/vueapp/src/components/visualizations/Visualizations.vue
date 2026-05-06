@@ -130,7 +130,11 @@ SPDX-License-Identifier: Apache-2.0
 
           <!-- graph content -->
           <div class="graph-content">
-            <!-- graph controls -->
+            <!-- graph -->
+            <div
+              v-if="graphData"
+              class="plot-container">
+            <!-- graph controls overlay (slides down on hover) -->
             <div
               class="session-graph-btn-container"
               v-if="primary">
@@ -250,12 +254,7 @@ SPDX-License-Identifier: Apache-2.0
                   {{ $t('search.spanningTip') }}
                 </v-tooltip>
               </div> <!-- /spanning -->
-            </div> <!-- /graph controls -->
-
-            <!-- graph -->
-            <div
-              v-if="graphData"
-              class="plot-container">
+            </div> <!-- /graph controls overlay -->
               <timeline-graph
                 ref="timelineGraph"
                 :graph-data="graphData"
@@ -782,13 +781,10 @@ export default {
   width: 99%;
 }
 
-/* graph content wrapper — establishes the positioning context for the
-   slide-down toolbar overlay */
-.graph-content {
-  position: relative;
-}
 /* timeline controls toolbar — hidden above the chart by default,
-   slides down to overlay the top of the timeline on hover */
+   slides down to overlay the top of the timeline on hover. Trigger
+   is the plot-container itself (not graph-content) so hovering the
+   floated map next door doesn't fire it. */
 .session-graph-btn-container {
   position: absolute;
   top: 0;
@@ -800,27 +796,22 @@ export default {
   align-items: center;
   gap: 6px;
   padding: 6px 10px;
-  background: linear-gradient(
-    180deg,
-    rgba(20, 20, 20, 0.95) 0%,
-    rgba(20, 20, 20, 0.92) 35%,
-    rgba(20, 20, 20, 0.88) 100%
-  );
+  /* Light, mostly-transparent overlay so the chart is visible underneath
+     while the toolbar is pulled down. */
+  background: rgba(255, 255, 255, 0.55);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
   border-radius: 6px 6px 4px 4px;
   box-shadow:
-    inset 0 3px 8px rgba(0, 0, 0, 0.20),
-    inset 0 1px 0 rgba(0, 0, 0, 0.30),
-    0 4px 10px rgba(0, 0, 0, 0.25);
-  /* Slide-down state: hidden above the panel by default. On hover of the
-     graph-content wrapper (or focus-within for keyboard users) the
-     toolbar translates back into view. */
+    inset 0 1px 0 rgba(255, 255, 255, 0.6),
+    0 2px 6px rgba(0, 0, 0, 0.12);
   transform: translateY(-100%);
   opacity: 0;
   transition: transform 220ms ease-out, opacity 180ms ease-out;
   pointer-events: none;
 }
-.graph-content:hover .session-graph-btn-container,
-.graph-content:focus-within .session-graph-btn-container {
+.plot-container:hover .session-graph-btn-container,
+.plot-container:focus-within .session-graph-btn-container {
   transform: translateY(0);
   opacity: 1;
   pointer-events: auto;
