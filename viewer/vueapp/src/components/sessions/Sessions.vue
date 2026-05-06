@@ -2194,7 +2194,6 @@ export default {
 .sessions-content {
   padding-top: 30px;
   margin-top: -10px;
-  overflow-x: auto;
   min-height: 500px;
 }
 
