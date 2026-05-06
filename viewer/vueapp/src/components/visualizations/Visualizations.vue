@@ -793,9 +793,9 @@ export default {
   z-index: 4;
   display: flex;
   flex-wrap: wrap;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 10px;
+  align-items: stretch;
+  gap: 0;
+  padding: 4px 8px;
   /* Light, mostly-transparent overlay so the chart is visible underneath
      while the toolbar is pulled down. */
   background: rgba(255, 255, 255, 0.55);
@@ -809,6 +809,19 @@ export default {
   opacity: 0;
   transition: transform 220ms ease-out, opacity 180ms ease-out;
   pointer-events: none;
+}
+/* Each control group gets a vertical divider on its left + uniform
+   horizontal padding, so the groups read as discrete units that all
+   align on the same horizontal baseline. */
+.session-graph-btn-container > * {
+  display: flex;
+  align-items: center;
+  padding: 0 10px;
+  min-height: 30px;
+  margin: 0 !important;
+}
+.session-graph-btn-container > * + * {
+  border-left: 1px solid rgba(0, 0, 0, 0.12);
 }
 .plot-container:hover .session-graph-btn-container,
 .plot-container:focus-within .session-graph-btn-container {
