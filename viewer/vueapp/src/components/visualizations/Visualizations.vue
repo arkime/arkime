@@ -601,9 +601,11 @@ export default {
 /* map styles ---------------------- */
 .inline-map .map-container > .map {
   z-index: 3;
-  height: 170px;
+  /* Bumped from 170 — at .inline-map's 24% width on a typical viewport
+     this gives roughly the world's natural 2:1 aspect, which the
+     geoNaturalEarth1 projection looks best at. */
+  height: 230px;
   width: 100%;
-  margin-bottom: -25px;
 }
 
 .jvectormap-container {
