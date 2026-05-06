@@ -46,9 +46,15 @@ SPDX-License-Identifier: Apache-2.0
               <div v-if="mapData">
                 <div class="map-container">
                   <!-- map -->
-                  <div
+                  <world-map
+                    ref="worldMap"
                     class="map"
-                    :id="'arkimeMap' + id" /> <!-- /map -->
+                    :map-data="mapData"
+                    :src="src"
+                    :dst="dst"
+                    :xff-geo="xffGeo"
+                    @region-click="onMapRegionClick"
+                    @update-legend="onUpdateLegend" /> <!-- /map -->
 
                   <!-- map buttons -->
                   <button
@@ -267,15 +273,6 @@ SPDX-License-Identifier: Apache-2.0
                 :timezone="timezone"
                 @update-time-range="updateStopStartTime" />
             </div> <!-- /graph -->
-
-            <!-- Phase 2a D3+topojson map POC: only renders when ?vizpoc=d3map is set in URL -->
-            <world-map-d3-poc
-              v-if="showD3MapPoc && mapData && primary"
-              :map-data="mapData"
-              :src="src"
-              :dst="dst"
-              :xff-geo="xffGeo"
-              @region-click="onPocRegionClick" />
           </div> <!-- /graph content -->
         </template>
       </div>
@@ -288,20 +285,14 @@ SPDX-License-Identifier: Apache-2.0
 import { commaString } from '@common/vueFilters.js';
 import StatsService from '../stats/StatsService';
 import TimelineGraph from './TimelineGraph.vue';
-import WorldMapD3Poc from './WorldMapD3Poc.vue';
-
-// color vars (jvectormap setup still consumes these; they go when the map
-// migrates to D3+topojson in the next 2b commit).
-let waterColor;
-let landColorDark;
-let landColorLight;
+import WorldMap from './WorldMap.vue';
 
 let timeout;
 let basePath;
 
 export default {
   name: 'ArkimeVisualizations',
-  components: { TimelineGraph, WorldMapD3Poc },
+  components: { TimelineGraph, WorldMap },
   emits: ['fetchMapData', 'spanningChange'],
   props: {
     graphData: {
@@ -324,9 +315,8 @@ export default {
   },
   data: function () {
     return {
-      // map vars
-      map: undefined,
-      mapEl: undefined,
+      // map vars (rendering lives in WorldMap; parent owns the open/close
+      // toggle, expanded state, and the legend it emits)
       legend: [],
       mapExpanded: false,
       // graph vars (rendering lives in TimelineGraph; parent only owns pan
@@ -417,33 +407,12 @@ export default {
     },
     timeBounding: function () {
       return this.$route.query.bounding || 'last';
-    },
-    showD3MapPoc: function () {
-      return (this.$route.query.vizpoc || '').includes('d3map');
     }
   },
   watch: {
-    src: function (newVal, oldVal) {
-      this.setupMapData(this.mapData);
-    },
-    dst: function (newVal, oldVal) {
-      this.setupMapData(this.mapData);
-    },
-    xffGeo: function (newVal, oldVal) {
-      this.setupMapData(this.mapData);
-    },
     // graphType/seriesType/graphData/capStartTimes are watched by
-    // TimelineGraph directly — parent only refreshes the map here.
-    graphData: function (newVal, oldVal) {
-      if (newVal && oldVal && !this.hideViz && !this.disabledAggregations) {
-        this.displayMap();
-      }
-    },
-    mapData: function (newVal, oldVal) {
-      if (newVal && oldVal) {
-        this.setupMapData(); // setup this.mapData
-      }
-    },
+    // TimelineGraph directly. WorldMap watches mapData/src/dst/xffGeo
+    // directly. Only cross-component state stays here.
     '$store.state.showMaps': function (newVal, oldVal) {
       if (this.id !== 'primary') {
         const id = parseInt(this.id);
@@ -453,25 +422,7 @@ export default {
       }
     }
   },
-  created: async function () {
-    // jvectormap is still a jQuery plugin loaded as a global script. Phase 2b
-    // for the timeline already replaced Flot's dynamic imports; the map swap
-    // (TimelineGraph siblings WorldMapD3Poc) lands in a follow-up.
-    await import('public/jquery-jvectormap-1.2.2.min.js');
-    await import('public/jquery-jvectormap-world-en.js');
-
-    // set styles for the map
-    const styles = window.getComputedStyle(document.body);
-
-    waterColor = styles.getPropertyValue('--color-water').trim();
-    landColorDark = styles.getPropertyValue('--color-land-dark').trim();
-    landColorLight = styles.getPropertyValue('--color-land-light').trim();
-
-    if (!landColorDark || !landColorLight) {
-      landColorDark = styles.getPropertyValue('--color-primary-dark').trim();
-      landColorLight = styles.getPropertyValue('--color-primary-lightest').trim();
-    }
-
+  created: function () {
     basePath = this.$route.path.split('/')[1];
 
     const showMap = localStorage && localStorage[`${basePath}-open-map`] &&
@@ -491,10 +442,7 @@ export default {
       this.seriesType = this.$route.query.seriesType || 'bars';
       this.$store.commit('updateSeriesType', this.seriesType);
 
-      StatsService.getCapRestartTimes(basePath).then(() => this.displayMap());
-    } else { // wait for values in store to be accessible
-      const id = parseInt(this.id);
-      setTimeout(() => { this.displayMap(); }, id * 100);
+      StatsService.getCapRestartTimes(basePath);
     }
   },
   methods: {
@@ -532,11 +480,12 @@ export default {
     },
     toggleMapSize: function () {
       this.mapExpanded = !this.mapExpanded;
+      // The .expanded class on the parent div drives the fullscreen
+      // CSS layout for WorldMap; the component re-fits via its own
+      // ResizeObserver.
       if (this.mapExpanded) {
-        this.expandMapElement();
         $(document).on('mouseup', this.isOutsideClick);
       } else {
-        this.shrinkMapElement();
         $(document).off('mouseup', this.isOutsideClick);
       }
     },
@@ -625,152 +574,25 @@ export default {
       }
     },
     /* helper MAP functions */
-    onMapResize: function () {
-      if (this.hideViz) { return; }
-      if (this.mapExpanded) {
-        $(this.mapEl).css({
-          position: 'fixed',
-          right: '8px',
-          'z-index': 5,
-          top: '158px',
-          width: $(window).width() * 0.95,
-          height: $(window).height() - 175
-        });
-      }
-    },
-    expandMapElement: function () {
-      // onMapResize function expands the map
-      $(this.mapEl).resize();
-    },
-    shrinkMapElement: function () {
-      $(this.mapEl).css({
-        position: 'relative',
-        top: '0',
-        right: '0',
-        height: '170px',
-        width: '100%',
-        'z-index': 2,
-        'margin-bottom': '-25px'
-      });
-    },
     isOutsideClick: function (e) {
       const element = $('#vizContainer' + this.id);
       if (!$(element).is(e.target) &&
         $(element).has(e.target).length === 0) {
         this.mapExpanded = false;
-        this.shrinkMapElement();
       }
     },
-    displayMap: function () {
-      // create jvectormap
-      this.setupMapElement();
-      // setup map data
-      this.setupMapData();
-    },
-    setupMapElement: function () {
-      if (this.mapEl) {
-        this.map = $(this.mapEl).children('.jvectormap-container').remove();
-      }
-
-      this.mapEl = $('#arkimeMap' + this.id);
-
-      // watch for the window to resize to resize the expanded map
-      window.addEventListener('resize', this.onMapResize, { passive: true });
-      // watch for the map to resize to change its style
-      $(this.mapEl).on('resize', this.onMapResize);
-
-      $(this.mapEl).vectorMap({ // setup map
-        map: 'world_en',
-        backgroundColor: waterColor,
-        hoverColor: 'black',
-        hoverOpacity: 0.7,
-        series: {
-          regions: [{
-            scale: [landColorLight, landColorDark],
-            normalizeFunction: 'polynomial',
-            attribute: 'fill'
-          }]
-        },
-        onRegionLabelShow: (e, el, code) => {
-          el.html(el.html() + ' (' + code + ') - ' +
-            commaString(this.map.series.regions[0].values[code] || 0));
-        },
-        onRegionClick: (e, code) => {
-          this.$store.commit('addToExpression', {
-            expression: `country == ${code}`
-          });
-        }
-      });
-
-      // save reference to the map object to retrieve regions
-      this.map = $(this.mapEl).children('.jvectormap-container').data('mapObject');
-    },
-    setupMapData: function () {
-      if (!this.map) { return; }
-
-      this.map.series.regions[0].clear();
-      delete this.map.series.regions[0].params.min;
-      delete this.map.series.regions[0].params.max;
-
-      if (!Object.keys(this.mapData).length) { return; }
-
-      this.localMapData = JSON.parse(JSON.stringify(this.mapData));
-      this.localMapData.tot = {};
-      if (this.src) {
-        for (const k in this.localMapData.src) {
-          if (!this.localMapData.tot[k]) { this.localMapData.tot[k] = 0; }
-          this.localMapData.tot[k] += this.localMapData.src[k];
-        }
-      }
-      if (this.dst) {
-        for (const k in this.localMapData.dst) {
-          if (!this.localMapData.tot[k]) { this.localMapData.tot[k] = 0; }
-          this.localMapData.tot[k] += this.localMapData.dst[k];
-        }
-      }
-      if (this.xffGeo) {
-        for (const k in this.localMapData.xffGeo) {
-          if (!this.localMapData.tot[k]) { this.localMapData.tot[k] = 0; }
-          this.localMapData.tot[k] += this.localMapData.xffGeo[k];
-        }
-      }
-      this.map.series.regions[0].setValues(this.localMapData.tot);
-
-      const region = this.map.series.regions[0];
-      this.legend = [];
-      for (const key in region.values) {
-        if (region.elements[key]) {
-          this.legend.push({
-            name: key,
-            value: region.values[key],
-            color: region.elements[key].element.properties.fill
-          });
-        }
-      }
-
-      this.legend.sort((a, b) => {
-        return b.value - a.value;
-      });
-
-      this.legend = this.legend.slice(0, 10); // get top 10
-    },
-    onPocRegionClick: function (code) {
-      // Phase 2a POC: mirror the existing jvectormap onRegionClick behavior
+    onMapRegionClick: function (code) {
       this.$store.commit('addToExpression', {
         expression: `country == ${code}`
       });
+    },
+    onUpdateLegend: function (legend) {
+      this.legend = legend;
     }
   },
   beforeUnmount () {
     if (timeout) { clearTimeout(timeout); }
-
-    // turn off map events
-    window.removeEventListener('resize', this.onMapResize);
     $(document).off('mouseup', this.isOutsideClick);
-    $(this.mapEl).off('resize', this.onMapResize);
-    $(this.mapEl).remove();
-
-    this.initialized = false;
   }
 };
 </script>
@@ -981,6 +803,14 @@ export default {
   z-index: 5;
   right: 9px;
   top: 160px;
+  /* Replaces jvectormap's onMapResize JS that used to size the expanded
+     map (95% of window width, window height minus the headers). */
+  width: 95vw;
+  height: calc(100vh - 175px);
+}
+.expanded .map-container > .map {
+  height: 100%;
+  margin-bottom: 0;
 }
 
 /* show the buttons on top of the map */
