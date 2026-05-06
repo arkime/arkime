@@ -189,47 +189,40 @@ SPDX-License-Identifier: Apache-2.0
                 </label>
               </div> <!-- /pan left/right -->
               <!-- graph type -->
-              <div
+              <v-radio-group
+                inline
+                density="compact"
+                hide-details
                 class="ms-1"
-                style="margin-top: 3px;">
-                <v-radio-group
-                  inline
-                  density="compact"
-                  hide-details
-                  :model-value="graphType"
-                  @update:model-value="changeGraphType">
-                  <v-radio
-                    value="sessionsHisto"
-                    key="sessionsHisto"
-                    :label="$t('common.sessions')" />
-                  <v-radio
-                    v-for="filter in timelineDataFilters"
-                    :value="filter.dbField + 'Histo'"
-                    :key="filter.dbField"
-                    :label="filter.friendlyName" />
-                </v-radio-group>
-              </div> <!-- graph type -->
+                :model-value="graphType"
+                @update:model-value="changeGraphType">
+                <v-radio
+                  value="sessionsHisto"
+                  key="sessionsHisto"
+                  :label="$t('common.sessions')" />
+                <v-radio
+                  v-for="filter in timelineDataFilters"
+                  :value="filter.dbField + 'Histo'"
+                  :key="filter.dbField"
+                  :label="filter.friendlyName" />
+              </v-radio-group> <!-- /graph type -->
               <!-- series type -->
-              <div class="ms-1">
-                <v-radio-group
-                  inline
-                  density="compact"
-                  hide-details
-                  style="margin-top: 2px;"
-                  :model-value="seriesType"
-                  @update:model-value="changeSeriesType">
-                  <v-radio
-                    value="lines"
-                    :label="$t('vis.graphLines')" />
-                  <v-radio
-                    value="bars"
-                    :label="$t('vis.graphBars')" />
-                </v-radio-group>
-              </div> <!-- series type -->
-              <!-- cap times -->
-              <div
+              <v-radio-group
+                inline
+                density="compact"
+                hide-details
                 class="ms-1"
-                style="margin-top: 4px;">
+                :model-value="seriesType"
+                @update:model-value="changeSeriesType">
+                <v-radio
+                  value="lines"
+                  :label="$t('vis.graphLines')" />
+                <v-radio
+                  value="bars"
+                  :label="$t('vis.graphBars')" />
+              </v-radio-group> <!-- /series type -->
+              <!-- cap times -->
+              <div class="ms-1">
                 <v-checkbox
                   density="compact"
                   hide-details
@@ -243,9 +236,7 @@ SPDX-License-Identifier: Apache-2.0
                 </v-tooltip>
               </div> <!-- /cap times -->
               <!-- spanning -->
-              <div
-                class="ms-1"
-                style="margin-top: 4px;">
+              <div class="ms-1">
                 <v-checkbox
                   density="compact"
                   hide-details
@@ -791,28 +782,49 @@ export default {
   width: 99%;
 }
 
-/* center timeline buttons */
+/* timeline controls toolbar — sits as its own visible panel directly
+   above the timeline graph */
 .session-graph-btn-container {
-  position: absolute;
-  left: 50%;
-  white-space: nowrap;
-  z-index: 1;
-  /* Pushed down so the buttons sit cleanly inside the timeline graph
-     panel's top padding instead of overlaying the chart bars. */
-  margin-top: 6px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  margin-bottom: 6px;
+  background: linear-gradient(
+    180deg,
+    rgba(0, 0, 0, 0.10) 0%,
+    rgba(0, 0, 0, 0.05) 35%,
+    rgba(0, 0, 0, 0.02) 100%
+  );
+  border-radius: 6px;
+  box-shadow:
+    inset 0 3px 8px rgba(0, 0, 0, 0.18),
+    inset 0 1px 0 rgba(0, 0, 0, 0.22),
+    inset 1px 0 2px rgba(0, 0, 0, 0.10),
+    inset -1px 0 2px rgba(0, 0, 0, 0.10),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.06);
 }
-
-.session-graph-btn-container > div {
-  position: relative;
-  left: -50%;
+/* Tighten Vuetify's default vertical chrome on the radio groups
+   and checkboxes so they sit neatly inline with the bootstrap
+   button groups. */
+.session-graph-btn-container :deep(.v-radio-group),
+.session-graph-btn-container :deep(.v-checkbox) {
+  flex: 0 0 auto;
 }
-
-/* center timeline buttons on timeline graph if the map is collapsed */
-.map-visible .session-graph-btn-container {
-  left: 12%;
+.session-graph-btn-container :deep(.v-input__control),
+.session-graph-btn-container :deep(.v-selection-control-group) {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
 }
-.map-visible .session-graph-btn-container > div {
-  left: 0;
+.session-graph-btn-container :deep(.v-selection-control) {
+  min-height: 28px;
+  flex: 0 0 auto;
+}
+.session-graph-btn-container :deep(.v-label) {
+  font-size: 12px;
+  opacity: 0.9;
 }
 
 /* sticky visualizations styles --------------- */

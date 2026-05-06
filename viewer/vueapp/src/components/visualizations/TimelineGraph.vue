@@ -538,11 +538,11 @@ export default {
   position: relative;
   width: 100%;
   max-width: 100%;
-  /* Top padding reserves room for the absolutely-positioned overlay
-     buttons (zoom/pan/series-type) so they don't sit on top of the
-     chart bars. Bottom margin separates the panel from the sessions
-     table. Right padding keeps the rightmost bar off the panel edge. */
-  padding: 30px 22px 0 4px;
+  /* Controls now live in their own toolbar panel above. Tight top
+     padding here, generous bottom margin to separate from the
+     sessions table. Right padding keeps the rightmost bar off the
+     panel edge. */
+  padding: 6px 22px 0 4px;
   margin-bottom: 14px;
   /* Recessed panel: gradient is darker at the top (light hitting the
      rim casts a shadow into the well) and fades to lighter near the
