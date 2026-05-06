@@ -168,16 +168,14 @@ SPDX-License-Identifier: Apache-2.0
                     <span class="fa fa-chevron-left" />
                   </v-btn>
                   <v-menu>
-                    <template #activator="{ props }">
+                    <template #activator="{ props: activatorProps }">
                       <v-btn
-                        v-bind="props"
+                        v-bind="activatorProps"
                         size="small"
-                        variant="flat"
-                        color="secondary">
+                        variant="text"
+                        density="comfortable">
                         {{ plotPan * 100 + '%' }}
-                        <v-icon end>
-                          fa-caret-down
-                        </v-icon>
+                        <span class="fa fa-caret-down ms-1" />
                       </v-btn>
                     </template>
                     <v-list density="compact">
@@ -609,9 +607,10 @@ export default {
 /* map styles ---------------------- */
 .inline-map .map-container > .map {
   z-index: 3;
-  /* Match the timeline graph host so the two panels line up visually.
-     Left margin gives breathing room between the timeline and map. */
-  height: 180px;
+  /* 186 = TimelineGraph host (180) + wrapper top padding (6); the two
+     panels line up flush. Left margin gives breathing room between
+     the timeline and map. */
+  height: 186px;
   width: calc(100% - 8px);
   margin-left: 8px;
 }
