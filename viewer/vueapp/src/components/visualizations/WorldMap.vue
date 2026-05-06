@@ -249,6 +249,18 @@ export default {
   width: 100%;
   height: 100%;
   min-height: 120px;
+  /* Recessed panel treatment to match the timeline graph: rounded
+     corners, layered inset shadows on all four sides for a "sunken
+     into the page" feel. The SVG inside is clipped to the rounded
+     corners via overflow: hidden. */
+  border-radius: 6px;
+  overflow: hidden;
+  box-shadow:
+    inset 0 3px 8px rgba(0, 0, 0, 0.22),
+    inset 0 1px 0 rgba(0, 0, 0, 0.30),
+    inset 1px 0 2px rgba(0, 0, 0, 0.14),
+    inset -1px 0 2px rgba(0, 0, 0, 0.14),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.05);
 }
 .arkime-world-map svg {
   display: block;
