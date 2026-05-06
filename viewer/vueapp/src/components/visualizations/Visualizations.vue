@@ -134,127 +134,127 @@ SPDX-License-Identifier: Apache-2.0
             <div
               v-if="graphData"
               class="plot-container">
-            <!-- graph controls overlay (slides down on hover) -->
-            <div
-              class="session-graph-btn-container"
-              v-if="primary">
-              <!-- zoom in/out -->
-              <div class="btn-group btn-group-xs zoom-buttons">
-                <label
-                  class="btn btn-default"
-                  @click="zoomOut">
-                  <span class="fa fa-search-minus" />
-                </label>
-                <label
-                  class="btn btn-default"
-                  @click="zoomIn">
-                  <span class="fa fa-search-plus" />
-                </label>
-              </div> <!-- /zoom in/out -->
-              <!-- pan left/right -->
-              <div class="btn-group btn-group-xs ms-1 pan-buttons">
-                <label
-                  class="btn btn-default"
-                  @click="panLeft">
-                  <span class="fa fa-chevron-left" />
-                </label>
-                <v-menu location="bottom">
-                  <template #activator="{ props: activatorProps }">
-                    <button
-                      v-bind="activatorProps"
-                      type="button"
-                      class="btn btn-sm btn-default pan-dropdown">
-                      {{ plotPan * 100 + '%' }}
-                      <span class="fa fa-caret-down ms-1" />
-                    </button>
-                  </template>
-                  <v-list density="compact">
-                    <v-list-item @click="plotPanChange(0.05)">
-                      5%
-                    </v-list-item>
-                    <v-list-item @click="plotPanChange(0.1)">
-                      10%
-                    </v-list-item>
-                    <v-list-item @click="plotPanChange(0.2)">
-                      20%
-                    </v-list-item>
-                    <v-list-item @click="plotPanChange(0.5)">
-                      50%
-                    </v-list-item>
-                    <v-list-item @click="plotPanChange(1)">
-                      100%
-                    </v-list-item>
-                  </v-list>
-                </v-menu>
-                <label
-                  class="btn btn-default"
-                  @click="panRight">
-                  <span class="fa fa-chevron-right" />
-                </label>
-              </div> <!-- /pan left/right -->
-              <!-- graph type -->
-              <v-radio-group
-                inline
-                density="compact"
-                hide-details
-                class="ms-1"
-                :model-value="graphType"
-                @update:model-value="changeGraphType">
-                <v-radio
-                  value="sessionsHisto"
-                  key="sessionsHisto"
-                  :label="$t('common.sessions')" />
-                <v-radio
-                  v-for="filter in timelineDataFilters"
-                  :value="filter.dbField + 'Histo'"
-                  :key="filter.dbField"
-                  :label="filter.friendlyName" />
-              </v-radio-group> <!-- /graph type -->
-              <!-- series type -->
-              <v-radio-group
-                inline
-                density="compact"
-                hide-details
-                class="ms-1"
-                :model-value="seriesType"
-                @update:model-value="changeSeriesType">
-                <v-radio
-                  value="lines"
-                  :label="$t('vis.graphLines')" />
-                <v-radio
-                  value="bars"
-                  :label="$t('vis.graphBars')" />
-              </v-radio-group> <!-- /series type -->
-              <!-- cap times -->
-              <div class="ms-1">
-                <v-checkbox
+              <!-- graph controls overlay (slides down on hover) -->
+              <div
+                class="session-graph-btn-container"
+                v-if="primary">
+                <!-- zoom in/out -->
+                <div class="btn-group btn-group-xs zoom-buttons">
+                  <label
+                    class="btn btn-default"
+                    @click="zoomOut">
+                    <span class="fa fa-search-minus" />
+                  </label>
+                  <label
+                    class="btn btn-default"
+                    @click="zoomIn">
+                    <span class="fa fa-search-plus" />
+                  </label>
+                </div> <!-- /zoom in/out -->
+                <!-- pan left/right -->
+                <div class="btn-group btn-group-xs ms-1 pan-buttons">
+                  <label
+                    class="btn btn-default"
+                    @click="panLeft">
+                    <span class="fa fa-chevron-left" />
+                  </label>
+                  <v-menu location="bottom">
+                    <template #activator="{ props: activatorProps }">
+                      <button
+                        v-bind="activatorProps"
+                        type="button"
+                        class="btn btn-sm btn-default pan-dropdown">
+                        {{ plotPan * 100 + '%' }}
+                        <span class="fa fa-caret-down ms-1" />
+                      </button>
+                    </template>
+                    <v-list density="compact">
+                      <v-list-item @click="plotPanChange(0.05)">
+                        5%
+                      </v-list-item>
+                      <v-list-item @click="plotPanChange(0.1)">
+                        10%
+                      </v-list-item>
+                      <v-list-item @click="plotPanChange(0.2)">
+                        20%
+                      </v-list-item>
+                      <v-list-item @click="plotPanChange(0.5)">
+                        50%
+                      </v-list-item>
+                      <v-list-item @click="plotPanChange(1)">
+                        100%
+                      </v-list-item>
+                    </v-list>
+                  </v-menu>
+                  <label
+                    class="btn btn-default"
+                    @click="panRight">
+                    <span class="fa fa-chevron-right" />
+                  </label>
+                </div> <!-- /pan left/right -->
+                <!-- graph type -->
+                <v-radio-group
+                  inline
                   density="compact"
                   hide-details
-                  :model-value="showCapStartTimes"
-                  :label="$t('vis.capRestarts')"
-                  @update:model-value="toggleCapStartTimes" />
-                <v-tooltip
-                  activator="parent"
-                  location="bottom">
-                  {{ $t('vis.capRestartsTip') }}
-                </v-tooltip>
-              </div> <!-- /cap times -->
-              <!-- spanning -->
-              <div class="ms-1">
-                <v-checkbox
+                  class="ms-1"
+                  :model-value="graphType"
+                  @update:model-value="changeGraphType">
+                  <v-radio
+                    value="sessionsHisto"
+                    key="sessionsHisto"
+                    :label="$t('common.sessions')" />
+                  <v-radio
+                    v-for="filter in timelineDataFilters"
+                    :value="filter.dbField + 'Histo'"
+                    :key="filter.dbField"
+                    :label="filter.friendlyName" />
+                </v-radio-group> <!-- /graph type -->
+                <!-- series type -->
+                <v-radio-group
+                  inline
                   density="compact"
                   hide-details
-                  :model-value="spanning"
-                  :disabled="timeBounding === 'database'"
-                  :label="$t('search.timeBounding-spanning')"
-                  @update:model-value="toggleSpanning" />
-                <v-tooltip
-                  activator="parent"
-                  location="bottom">
-                  {{ $t('search.spanningTip') }}
-                </v-tooltip>
-              </div> <!-- /spanning -->
-            </div> <!-- /graph controls overlay -->
+                  class="ms-1"
+                  :model-value="seriesType"
+                  @update:model-value="changeSeriesType">
+                  <v-radio
+                    value="lines"
+                    :label="$t('vis.graphLines')" />
+                  <v-radio
+                    value="bars"
+                    :label="$t('vis.graphBars')" />
+                </v-radio-group> <!-- /series type -->
+                <!-- cap times -->
+                <div class="ms-1">
+                  <v-checkbox
+                    density="compact"
+                    hide-details
+                    :model-value="showCapStartTimes"
+                    :label="$t('vis.capRestarts')"
+                    @update:model-value="toggleCapStartTimes" />
+                  <v-tooltip
+                    activator="parent"
+                    location="bottom">
+                    {{ $t('vis.capRestartsTip') }}
+                  </v-tooltip>
+                </div> <!-- /cap times -->
+                <!-- spanning -->
+                <div class="ms-1">
+                  <v-checkbox
+                    density="compact"
+                    hide-details
+                    :model-value="spanning"
+                    :disabled="timeBounding === 'database'"
+                    :label="$t('search.timeBounding-spanning')"
+                    @update:model-value="toggleSpanning" />
+                  <v-tooltip
+                    activator="parent"
+                    location="bottom">
+                    {{ $t('search.spanningTip') }}
+                  </v-tooltip>
+                </div> <!-- /spanning -->
+              </div> <!-- /graph controls overlay -->
               <timeline-graph
                 ref="timelineGraph"
                 :graph-data="graphData"
