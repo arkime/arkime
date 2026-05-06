@@ -315,25 +315,14 @@ export default {
       this.bucketFactor = factor;
 
       const isBars = this.seriesType === 'bars';
+      // Bars at 80% of slot leaves a clean gap between adjacent buckets,
+      // so the columns read as discrete units instead of a wall.
       const barsPath = isBars
-        ? uPlot.paths.bars({ size: [1.0, Infinity], align: 0, gap: 0 })
+        ? uPlot.paths.bars({ size: [0.8, Infinity], align: 0, gap: 0 })
         : undefined;
       const linesPath = !isBars
         ? uPlot.paths.linear({ alignGaps: 0 })
         : undefined;
-
-      // Subtle vertical gradient on bar fills — full color at the base,
-      // fading to ~60% alpha at the top. Tall bars get the gradient,
-      // short bars stay solid. Gives bars a "lit-from-top" feel without
-      // looking skeuomorphic.
-      const barFill = (color) => (u) => {
-        const ctx = u.ctx;
-        const grad = ctx.createLinearGradient(0, u.bbox.top, 0, u.bbox.top + u.bbox.height);
-        grad.addColorStop(0, color + '99'); // top, ~60% alpha
-        grad.addColorStop(0.6, color + 'cc'); // mid, ~80%
-        grad.addColorStop(1, color); // base, full
-        return grad;
-      };
 
       const monoFont = '11px ui-monospace, "SF Mono", Menlo, Consolas, monospace';
 
@@ -373,7 +362,7 @@ export default {
           ...defs.map((d) => ({
             label: d.label,
             stroke: d.color,
-            fill: isBars ? barFill(d.color) : d.color + '33',
+            fill: isBars ? d.color : d.color + '33',
             paths: isBars ? barsPath : linesPath,
             width: isBars ? 1 : 1.5,
             points: { show: false }
