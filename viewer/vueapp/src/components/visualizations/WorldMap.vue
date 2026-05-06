@@ -18,7 +18,12 @@ methods exposed on this ref, and dispatches the country-click filter.
       ref="svgEl"
       :viewBox="`0 0 ${width} ${height}`"
       preserveAspectRatio="xMidYMid meet"
-      :style="{backgroundColor: waterColor}">
+      :class="{'is-dragging': isDragging}"
+      :style="{backgroundColor: waterColor}"
+      @mousedown="onMouseDown"
+      @mousemove="onMouseMove"
+      @mouseup="onMouseUp"
+      @mouseleave="onMouseUp">
       <g
         class="world-map-zoom"
         :style="zoomTransform">
@@ -94,6 +99,11 @@ export default {
       values: {},
       hover: null,
       zoomLevel: 1,
+      panX: 0,
+      panY: 0,
+      isDragging: false,
+      _dragStart: null,
+      _wasDragged: false,
       // theme colors — read from CSS custom props on mount
       waterColor: '#162a3d',
       landColorLight: '#2c3e50',
@@ -102,7 +112,10 @@ export default {
   },
   computed: {
     zoomTransform () {
-      return { transform: `scale(${this.zoomLevel})`, transformOrigin: 'center' };
+      return {
+        transform: `translate(${this.panX}px, ${this.panY}px) scale(${this.zoomLevel})`,
+        transformOrigin: 'center'
+      };
     },
     // Reverse alpha-2 → numeric lookup, materialized once for hover labels.
     numericToAlpha2 () {
@@ -227,9 +240,42 @@ export default {
     },
     onLeave () { this.hover = null; },
     onClick (feat) {
+      // Suppress click-to-filter when the user just panned. _wasDragged
+      // resets on the next mousedown.
+      if (this._wasDragged) return;
       const code = this.numericToAlpha2[feat.id];
       if (!code) return;
       this.$emit('regionClick', code);
+    },
+    /* Pan handlers — left-button drag translates the zoom group. A 3 px
+       movement threshold separates a pan from a click on a country path. */
+    onMouseDown (e) {
+      if (e.button !== 0) return;
+      this._dragStart = {
+        x: e.clientX,
+        y: e.clientY,
+        panX: this.panX,
+        panY: this.panY
+      };
+      this._wasDragged = false;
+    },
+    onMouseMove (e) {
+      if (!this._dragStart) return;
+      const dx = e.clientX - this._dragStart.x;
+      const dy = e.clientY - this._dragStart.y;
+      if (!this.isDragging && (dx * dx + dy * dy) > 9) {
+        this.isDragging = true;
+        this._wasDragged = true;
+        this.hover = null; // hide hover label while panning
+      }
+      if (this.isDragging) {
+        this.panX = this._dragStart.panX + dx;
+        this.panY = this._dragStart.panY + dy;
+      }
+    },
+    onMouseUp () {
+      this._dragStart = null;
+      this.isDragging = false;
     },
     /* Public API for parent: zoom controls drive the SVG via $ref. */
     zoomIn () {
@@ -237,8 +283,10 @@ export default {
     },
     zoomOut () {
       this.zoomLevel = Math.max(ZOOM_MIN, this.zoomLevel / ZOOM_STEP);
+      // Re-center when fully zoomed out so the map doesn't sit off-screen.
+      if (this.zoomLevel <= ZOOM_MIN) { this.panX = 0; this.panY = 0; }
     },
-    resetZoom () { this.zoomLevel = 1; }
+    resetZoom () { this.zoomLevel = 1; this.panX = 0; this.panY = 0; }
   }
 };
 </script>
@@ -266,6 +314,15 @@ export default {
   display: block;
   width: 100%;
   height: 100%;
+  cursor: grab;
+  user-select: none;
+}
+.arkime-world-map svg.is-dragging {
+  cursor: grabbing;
+}
+.arkime-world-map svg.is-dragging .world-map-country {
+  /* Don't waste paint on the per-country stroke transition during a pan. */
+  pointer-events: none;
 }
 .world-map-zoom {
   transition: transform 200ms ease-out;
