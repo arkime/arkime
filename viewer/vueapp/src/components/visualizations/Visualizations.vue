@@ -139,34 +139,44 @@ SPDX-License-Identifier: Apache-2.0
                 class="session-graph-btn-container"
                 v-if="primary">
                 <!-- zoom in/out -->
-                <div class="btn-group btn-group-xs zoom-buttons">
-                  <label
-                    class="btn btn-default"
+                <div class="zoom-buttons">
+                  <v-btn
+                    size="small"
+                    variant="text"
+                    density="comfortable"
+                    icon
                     @click="zoomOut">
                     <span class="fa fa-search-minus" />
-                  </label>
-                  <label
-                    class="btn btn-default"
+                  </v-btn>
+                  <v-btn
+                    size="small"
+                    variant="text"
+                    density="comfortable"
+                    icon
                     @click="zoomIn">
                     <span class="fa fa-search-plus" />
-                  </label>
+                  </v-btn>
                 </div> <!-- /zoom in/out -->
                 <!-- pan left/right -->
-                <div class="btn-group btn-group-xs ms-1 pan-buttons">
-                  <label
-                    class="btn btn-default"
+                <div class="pan-buttons">
+                  <v-btn
+                    size="small"
+                    variant="text"
+                    density="comfortable"
+                    icon
                     @click="panLeft">
                     <span class="fa fa-chevron-left" />
-                  </label>
+                  </v-btn>
                   <v-menu location="bottom">
                     <template #activator="{ props: activatorProps }">
-                      <button
+                      <v-btn
                         v-bind="activatorProps"
-                        type="button"
-                        class="btn btn-sm btn-default pan-dropdown">
+                        size="small"
+                        variant="text"
+                        density="comfortable">
                         {{ plotPan * 100 + '%' }}
                         <span class="fa fa-caret-down ms-1" />
-                      </button>
+                      </v-btn>
                     </template>
                     <v-list density="compact">
                       <v-list-item @click="plotPanChange(0.05)">
@@ -186,11 +196,14 @@ SPDX-License-Identifier: Apache-2.0
                       </v-list-item>
                     </v-list>
                   </v-menu>
-                  <label
-                    class="btn btn-default"
+                  <v-btn
+                    size="small"
+                    variant="text"
+                    density="comfortable"
+                    icon
                     @click="panRight">
                     <span class="fa fa-chevron-right" />
-                  </label>
+                  </v-btn>
                 </div> <!-- /pan left/right -->
                 <!-- graph type -->
                 <v-radio-group
@@ -795,33 +808,40 @@ export default {
   flex-wrap: wrap;
   align-items: stretch;
   gap: 0;
-  padding: 4px 8px;
-  /* Light, mostly-transparent overlay so the chart is visible underneath
-     while the toolbar is pulled down. */
-  background: rgba(255, 255, 255, 0.55);
+  padding: 2px 4px;
+  /* Theme-aware overlay: 60 % of the page background color from the
+     active theme. Light themes get a translucent white overlay, dark
+     themes get a translucent dark overlay — text contrast just works. */
+  background: color-mix(in srgb, var(--color-background, #fff) 60%, transparent);
   backdrop-filter: blur(4px);
   -webkit-backdrop-filter: blur(4px);
   border-radius: 6px 6px 0 0;
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.6),
-    0 2px 6px rgba(0, 0, 0, 0.12);
+    inset 0 1px 0 rgba(255, 255, 255, 0.15),
+    0 2px 6px rgba(0, 0, 0, 0.18);
   transform: translateY(-100%);
   opacity: 0;
   transition: transform 220ms ease-out, opacity 180ms ease-out;
   pointer-events: none;
 }
-/* Each control group gets a vertical divider on its left + uniform
-   horizontal padding, so the groups read as discrete units that all
-   align on the same horizontal baseline. */
+/* Each control group gets uniform horizontal padding + a vertical
+   divider on its left so the groups read as discrete cells. Wider
+   inter-group spacing for breathing room. */
 .session-graph-btn-container > * {
   display: flex;
   align-items: center;
-  padding: 0 10px;
+  gap: 2px;
+  padding: 0 14px;
   min-height: 30px;
   margin: 0 !important;
 }
 .session-graph-btn-container > * + * {
-  border-left: 1px solid rgba(0, 0, 0, 0.12);
+  border-left: 1px solid color-mix(in srgb, var(--color-foreground, #000) 18%, transparent);
+}
+/* v-btn theming inside the toolbar: snug icon buttons, neutral hover */
+.session-graph-btn-container :deep(.v-btn) {
+  min-width: 28px;
+  letter-spacing: 0;
 }
 .plot-container:hover .session-graph-btn-container,
 .plot-container:focus-within .session-graph-btn-container {
