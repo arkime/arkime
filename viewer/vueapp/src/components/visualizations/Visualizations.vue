@@ -129,7 +129,7 @@ SPDX-License-Identifier: Apache-2.0
           </div> <!-- /map content -->
 
           <!-- graph content -->
-          <div>
+          <div class="graph-content">
             <!-- graph controls -->
             <div
               class="session-graph-btn-container"
@@ -782,28 +782,48 @@ export default {
   width: 99%;
 }
 
-/* timeline controls toolbar — sits as its own visible panel directly
-   above the timeline graph */
+/* graph content wrapper — establishes the positioning context for the
+   slide-down toolbar overlay */
+.graph-content {
+  position: relative;
+}
+/* timeline controls toolbar — hidden above the chart by default,
+   slides down to overlay the top of the timeline on hover */
 .session-graph-btn-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 4;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: 6px;
   padding: 6px 10px;
-  margin-bottom: 6px;
   background: linear-gradient(
     180deg,
-    rgba(0, 0, 0, 0.10) 0%,
-    rgba(0, 0, 0, 0.05) 35%,
-    rgba(0, 0, 0, 0.02) 100%
+    rgba(20, 20, 20, 0.95) 0%,
+    rgba(20, 20, 20, 0.92) 35%,
+    rgba(20, 20, 20, 0.88) 100%
   );
-  border-radius: 6px;
+  border-radius: 6px 6px 4px 4px;
   box-shadow:
-    inset 0 3px 8px rgba(0, 0, 0, 0.18),
-    inset 0 1px 0 rgba(0, 0, 0, 0.22),
-    inset 1px 0 2px rgba(0, 0, 0, 0.10),
-    inset -1px 0 2px rgba(0, 0, 0, 0.10),
-    inset 0 -1px 0 rgba(255, 255, 255, 0.06);
+    inset 0 3px 8px rgba(0, 0, 0, 0.20),
+    inset 0 1px 0 rgba(0, 0, 0, 0.30),
+    0 4px 10px rgba(0, 0, 0, 0.25);
+  /* Slide-down state: hidden above the panel by default. On hover of the
+     graph-content wrapper (or focus-within for keyboard users) the
+     toolbar translates back into view. */
+  transform: translateY(-100%);
+  opacity: 0;
+  transition: transform 220ms ease-out, opacity 180ms ease-out;
+  pointer-events: none;
+}
+.graph-content:hover .session-graph-btn-container,
+.graph-content:focus-within .session-graph-btn-container {
+  transform: translateY(0);
+  opacity: 1;
+  pointer-events: auto;
 }
 /* Tighten Vuetify's default vertical chrome on the radio groups
    and checkboxes so they sit neatly inline with the bootstrap
