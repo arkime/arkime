@@ -339,10 +339,11 @@ export default {
 }
 .world-map-tooltip {
   position: absolute;
-  background: rgba(0, 0, 0, 0.85);
+  background: rgba(0, 0, 0, 0.88);
   color: #fff;
-  padding: 4px 8px;
-  font-size: 11px;
+  padding: 3px 6px;
+  font-size: 10px;
+  line-height: 1.35;
   border-radius: 3px;
   pointer-events: none;
   white-space: nowrap;
