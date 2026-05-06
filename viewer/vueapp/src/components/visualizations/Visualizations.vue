@@ -167,15 +167,15 @@ SPDX-License-Identifier: Apache-2.0
                     @click="panLeft">
                     <span class="fa fa-chevron-left" />
                   </v-btn>
-                  <v-menu location="bottom">
-                    <template #activator="{ props: activatorProps }">
+                  <v-menu>
+                    <template #activator="{ props }">
                       <v-btn
-                        v-bind="activatorProps"
+                        v-bind="props"
                         size="small"
-                        variant="text"
-                        density="comfortable">
+                        variant="flat"
+                        color="secondary">
                         {{ plotPan * 100 + '%' }}
-                        <span class="fa fa-caret-down ms-1" />
+                        <v-icon end>fa-caret-down</v-icon>
                       </v-btn>
                     </template>
                     <v-list density="compact">
@@ -607,10 +607,9 @@ export default {
 /* map styles ---------------------- */
 .inline-map .map-container > .map {
   z-index: 3;
-  /* Match the timeline graph wrapper height so the two panels line up
-     visually. Left margin gives breathing room between the timeline
-     and the map. */
-  height: 200px;
+  /* Match the timeline graph host so the two panels line up visually.
+     Left margin gives breathing room between the timeline and map. */
+  height: 180px;
   width: calc(100% - 8px);
   margin-left: 8px;
 }
@@ -843,8 +842,7 @@ export default {
   min-width: 28px;
   letter-spacing: 0;
 }
-.plot-container:hover .session-graph-btn-container,
-.plot-container:focus-within .session-graph-btn-container {
+.plot-container:hover .session-graph-btn-container {
   transform: translateY(0);
   opacity: 1;
   pointer-events: auto;

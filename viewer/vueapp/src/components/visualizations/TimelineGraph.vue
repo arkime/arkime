@@ -22,7 +22,7 @@ import 'uplot/dist/uPlot.min.css';
 import { commaString, timezoneDateString, humanReadableBytes, humanReadableNumber } from '@common/vueFilters.js';
 import moment from 'moment-timezone';
 
-const HOST_HEIGHT = 170;
+const HOST_HEIGHT = 180;
 const Y_AXIS_RESERVE = 44;
 const X_AXIS_SIZE = 28;
 const PADDING = 16;
@@ -569,7 +569,7 @@ export default {
 .timeline-host {
   width: 100%;
   max-width: 100%;
-  height: 170px;
+  height: 180px;
   overflow: hidden;
   box-sizing: border-box;
   /* On mount and on rebuild, fade + grow the canvas in. The animation
