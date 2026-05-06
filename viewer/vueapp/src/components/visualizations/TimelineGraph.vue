@@ -453,23 +453,27 @@ export default {
       }
 
       const defs = this.seriesDefsFor(this.graphType);
-      const def = defs[seriesIdx - 1];
-      if (!def) { this.tooltip = null; return; }
-      const value = u.data[seriesIdx][dataIdx];
-      if (value == null) { this.tooltip = null; return; }
-
       const filterName = this.friendlyTypeName(this.graphType);
       const totalKey = this.graphType.slice(0, -5) + 'Total';
       const total = this.graphData[totalKey];
       const ts = u.data[0][dataIdx] * 1000;
       const dateStr = timezoneDateString(ts, this.timezone, false);
-      const valStr = commaString(Math.round(value * 100) / 100);
       const totalStr = total != null ? commaString(total) : null;
-      const seriesPrefix = defs.length > 1 ? `${def.label.split(' ')[0]} ` : '';
 
-      const lines = [
-        `<strong>${valStr}</strong> ${seriesPrefix}${this.escapeHtml(filterName)}`
-      ];
+      // Render every series' value for this bucket — for stacked types
+      // (src/dst, client/server) the user wants to see both at once,
+      // not just the side the cursor happened to be closest to.
+      const lines = [];
+      let anyVal = false;
+      defs.forEach((def, i) => {
+        const v = u.data[i + 1]?.[dataIdx];
+        if (v == null) return;
+        anyVal = true;
+        const valStr = commaString(Math.round(v * 100) / 100);
+        const prefix = defs.length > 1 ? `<span style="color:${def.color}">${this.escapeHtml(def.label.split(' ')[0])}</span> ` : '';
+        lines.push(`${prefix}<strong>${valStr}</strong> ${this.escapeHtml(filterName)}`);
+      });
+      if (!anyVal) { this.tooltip = null; return; }
       if (totalStr) {
         lines.push(`out of <strong>${totalStr}</strong> filtered ${this.escapeHtml(filterName)}`);
       }
@@ -548,7 +552,12 @@ export default {
   position: relative;
   width: 100%;
   max-width: 100%;
-  padding: 8px 16px 0 4px;
+  /* Top padding reserves room for the absolutely-positioned overlay
+     buttons (zoom/pan/series-type) so they don't sit on top of the
+     chart bars. Bottom margin separates the panel from the sessions
+     table. Right padding keeps the rightmost bar off the panel edge. */
+  padding: 30px 22px 0 4px;
+  margin-bottom: 14px;
   /* Recessed panel: gradient is darker at the top (light hitting the
      rim casts a shadow into the well) and fades to lighter near the
      bottom. Layered inset shadows on all four sides reinforce the

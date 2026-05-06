@@ -1014,7 +1014,9 @@ export default {
   left: 50%;
   white-space: nowrap;
   z-index: 1;
-  margin-top: -7px;
+  /* Pushed down so the buttons sit cleanly inside the timeline graph
+     panel's top padding instead of overlaying the chart bars. */
+  margin-top: 6px;
 }
 
 .session-graph-btn-container > div {
