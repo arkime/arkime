@@ -601,11 +601,12 @@ export default {
 /* map styles ---------------------- */
 .inline-map .map-container > .map {
   z-index: 3;
-  /* Bumped from 170 — at .inline-map's 24% width on a typical viewport
-     this gives roughly the world's natural 2:1 aspect, which the
-     geoNaturalEarth1 projection looks best at. */
-  height: 230px;
-  width: 100%;
+  /* Match the timeline graph wrapper height so the two panels line up
+     visually. Left margin gives breathing room between the timeline
+     and the map. */
+  height: 200px;
+  width: calc(100% - 8px);
+  margin-left: 8px;
 }
 
 .jvectormap-container {
