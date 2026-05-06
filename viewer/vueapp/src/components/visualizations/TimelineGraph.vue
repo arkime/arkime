@@ -377,6 +377,11 @@ export default {
           }]
         },
         cursor: {
+          // Disable crosshairs (the dashed x/y lines that follow the
+          // cursor) — the tooltip alone carries all the hover affordance
+          // we need; crosshairs added visual noise on top of bars.
+          x: false,
+          y: false,
           drag: { x: true, y: false, setScale: false },
           // The default cursor dot defaults to the series color, which
           // disappears against the bar of the same color. Hide it — the
@@ -439,31 +444,26 @@ export default {
       }
 
       const defs = this.seriesDefsFor(this.graphType);
-      const filterName = this.friendlyTypeName(this.graphType);
-      const totalKey = this.graphType.slice(0, -5) + 'Total';
-      const total = this.graphData[totalKey];
       const ts = u.data[0][dataIdx] * 1000;
       const dateStr = timezoneDateString(ts, this.timezone, false);
-      const totalStr = total != null ? commaString(total) : null;
 
-      // Render every series' value for this bucket — for stacked types
-      // (src/dst, client/server) the user wants to see both at once,
-      // not just the side the cursor happened to be closest to.
-      const lines = [];
-      let anyVal = false;
+      // Compact format: per-series value chips on one row, date on the
+      // next. For multi-series (src/dst, client/server) each chip is
+      // colored to match its bar.
+      const chips = [];
       defs.forEach((def, i) => {
         const v = u.data[i + 1]?.[dataIdx];
         if (v == null) return;
-        anyVal = true;
         const valStr = commaString(Math.round(v * 100) / 100);
-        const prefix = defs.length > 1 ? `<span style="color:${def.color}">${this.escapeHtml(def.label.split(' ')[0])}</span> ` : '';
-        lines.push(`${prefix}<strong>${valStr}</strong> ${this.escapeHtml(filterName)}`);
+        if (defs.length > 1) {
+          const label = def.label.split(' ')[0];
+          chips.push(`<span style="color:${def.color}">${this.escapeHtml(label)}</span> <strong>${valStr}</strong>`);
+        } else {
+          chips.push(`<strong>${valStr}</strong>`);
+        }
       });
-      if (!anyVal) { this.tooltip = null; return; }
-      if (totalStr) {
-        lines.push(`out of <strong>${totalStr}</strong> filtered ${this.escapeHtml(filterName)}`);
-      }
-      lines.push(`on ${this.escapeHtml(dateStr)}`);
+      if (!chips.length) { this.tooltip = null; return; }
+      const lines = [chips.join(' · '), this.escapeHtml(dateStr)];
 
       const xRel = rect.left - hostRect.left + cursorX;
       const flipX = xRel + 12 > hostRect.width * 0.6;
@@ -599,10 +599,11 @@ export default {
   position: absolute;
   pointer-events: none;
   z-index: 5;
-  background: rgba(0, 0, 0, 0.85);
+  background: rgba(0, 0, 0, 0.88);
   color: #fff;
-  padding: 4px 8px;
-  font-size: 11px;
+  padding: 3px 6px;
+  font-size: 10px;
+  line-height: 1.35;
   border-radius: 3px;
   white-space: nowrap;
 }
