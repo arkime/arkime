@@ -42,8 +42,7 @@ export default {
   emits: ['updateTimeRange'],
   data () {
     return {
-      tooltip: null,
-      bucketFactor: 1
+      tooltip: null
     };
   },
   watch: {
@@ -178,7 +177,7 @@ export default {
       const xs = cols[0];
       const ys = cols.slice(1);
       const maxBars = Math.max(1, Math.floor(drawable / MIN_PX_PER_BAR));
-      if (xs.length <= maxBars) return { data: cols, factor: 1 };
+      if (xs.length <= maxBars) return cols;
 
       const factor = Math.ceil(xs.length / maxBars);
       const reXs = [];
@@ -193,7 +192,7 @@ export default {
           reYs[idx].push(sum);
         });
       }
-      return { data: [reXs, ...reYs], factor };
+      return [reXs, ...reYs];
     },
     /**
      * uPlot draw hook (z-order from back to front):
@@ -310,9 +309,7 @@ export default {
       this.destroyPlot();
 
       const defs = this.seriesDefsFor(this.graphType);
-      const raw = this.buildAlignedData(defs);
-      const { data, factor } = this.aggregateIfDense(raw, host.clientWidth || 800);
-      this.bucketFactor = factor;
+      const data = this.aggregateIfDense(this.buildAlignedData(defs), host.clientWidth || 800);
 
       const isBars = this.seriesType === 'bars';
       // Bars at 80% of slot leaves a clean gap between adjacent buckets,
@@ -385,8 +382,8 @@ export default {
           // disappears against the bar of the same color. Hide it — the
           // tooltip carries the same info plus more context.
           points: { show: false },
-          dataIdx: (u, seriesIdx, hoveredIdx, cursorXVal) => {
-            this.updateTooltip(u, seriesIdx, hoveredIdx, cursorXVal);
+          dataIdx: (u, seriesIdx, hoveredIdx) => {
+            this.updateTooltip(u, seriesIdx, hoveredIdx);
             return hoveredIdx;
           }
         },
@@ -401,7 +398,7 @@ export default {
      * <type> on <date>". When hovering a capture-restart marker (no series
      * point), show the restart message instead.
      */
-    updateTooltip (u, seriesIdx, dataIdx, cursorXVal) {
+    updateTooltip (u, seriesIdx, dataIdx) {
       const overEl = u.over;
       const rect = overEl.getBoundingClientRect();
       const hostRect = this.$refs.host.getBoundingClientRect();
