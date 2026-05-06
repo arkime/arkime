@@ -102,8 +102,8 @@ export default {
       panX: 0,
       panY: 0,
       isDragging: false,
-      _dragStart: null,
-      _wasDragged: false,
+      dragStart: null,
+      wasDragged: false,
       // theme colors — read from CSS custom props on mount
       waterColor: '#162a3d',
       landColorLight: '#2c3e50',
@@ -240,9 +240,9 @@ export default {
     },
     onLeave () { this.hover = null; },
     onClick (feat) {
-      // Suppress click-to-filter when the user just panned. _wasDragged
+      // Suppress click-to-filter when the user just panned. wasDragged
       // resets on the next mousedown.
-      if (this._wasDragged) return;
+      if (this.wasDragged) return;
       const code = this.numericToAlpha2[feat.id];
       if (!code) return;
       this.$emit('regionClick', code);
@@ -251,30 +251,30 @@ export default {
        movement threshold separates a pan from a click on a country path. */
     onMouseDown (e) {
       if (e.button !== 0) return;
-      this._dragStart = {
+      this.dragStart = {
         x: e.clientX,
         y: e.clientY,
         panX: this.panX,
         panY: this.panY
       };
-      this._wasDragged = false;
+      this.wasDragged = false;
     },
     onMouseMove (e) {
-      if (!this._dragStart) return;
-      const dx = e.clientX - this._dragStart.x;
-      const dy = e.clientY - this._dragStart.y;
+      if (!this.dragStart) return;
+      const dx = e.clientX - this.dragStart.x;
+      const dy = e.clientY - this.dragStart.y;
       if (!this.isDragging && (dx * dx + dy * dy) > 9) {
         this.isDragging = true;
-        this._wasDragged = true;
+        this.wasDragged = true;
         this.hover = null; // hide hover label while panning
       }
       if (this.isDragging) {
-        this.panX = this._dragStart.panX + dx;
-        this.panY = this._dragStart.panY + dy;
+        this.panX = this.dragStart.panX + dx;
+        this.panY = this.dragStart.panY + dy;
       }
     },
     onMouseUp () {
-      this._dragStart = null;
+      this.dragStart = null;
       this.isDragging = false;
     },
     /* Public API for parent: zoom controls drive the SVG via $ref. */
