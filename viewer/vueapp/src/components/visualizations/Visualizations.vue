@@ -609,53 +609,6 @@ export default {
   margin-left: 8px;
 }
 
-.jvectormap-container {
-  border: 1px solid var(--color-gray-light);
-  border-radius: 4px;
-  height: 100%;
-  width: 100%;
-}
-
-/* zoom buttons */
-.jvectormap-zoomin, .jvectormap-zoomout {
-  position: absolute;
-  left: 2px;
-  width: 18px;
-  height: 20px;
-  cursor: pointer;
-  line-height: 16px;
-  text-align: center;
-  border-radius: 3px;
-  color: var(--color-gray-darker);
-  border-color: var(--color-gray);
-  background-color: var(--color-white);
-  font-weight: bolder;
-}
-.jvectormap-zoomin:hover, .jvectormap-zoomout:hover {
-  color: var(--color-gray-darker);
-  border-color: var(--color-gray-dark);
-  background-color: var(--color-gray-light);
-}
-.jvectormap-zoomin {
-  top: 2px;
-}
-.jvectormap-zoomout {
-  top: 24px;
-}
-
-/* labels added to body by jvectormap */
-.jvectormap-label {
-  z-index: 6;
-  position: absolute;
-  display: none;
-  border: solid 1px var(--color-gray-light);
-  background: var(--color-gray-darker);
-  color: var(--color-white);
-  font-size: smaller;
-  padding: var(--px-none) var(--px-sm);
-  border-radius: 3px;
-}
-
 /* legend (top 10) */
 .map-container .map-legend {
   max-width: 94%;
@@ -825,12 +778,6 @@ export default {
 }
 
 /* graph styles -------------------- */
-.plot-area {
-  width: 102%;
-  height: 170px;
-  margin-left: -20px;
-}
-
 .map-visible .plot-container {
   position: relative;
   display: inline-block;
