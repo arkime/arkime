@@ -391,7 +391,6 @@ jobs:
         run: |
           export ARKIME_MAJOR_VERSION=`grep AC_INIT configure.ac | sed "s/.*\[\(.*\)\].*$/\1/" | cut -c 1-1`
           echo "ARKIME_MAJOR_VERSION=$ARKIME_MAJOR_VERSION" >> $GITHUB_ENV
-          echo "Test: $ARKIME_MAJOR_VERSION"
 
       - name: Build on FreeBSD
         uses: vmactions/freebsd-vm@4807432c7cab1c3f97688665332c0b932062d31f # v1.4.3
