@@ -556,7 +556,7 @@ class Auth {
       }
 
       let userId;
-      let vals = req.headers;
+      let vals;
 
       if (Auth.mode === 'header-jwt') {
         // No signature verification — the upstream proxy (ALB, Cloudflare Access, etc.)
@@ -575,7 +575,14 @@ class Auth {
           return done('Failed to decode JWT');
         }
       } else {
-        userId = req.headers[Auth.#userNameHeader].trim();
+        // Node decodes HTTP header values as ISO-8859-1 (RFC 7230). Reverse proxies
+        // (Caddy, nginx, oauth2-proxy, ALB OIDC, etc.) typically write UTF-8 bytes
+        // directly into headers, so non-ASCII characters arrive as mojibake. Re-decode
+        // each string header from latin-1 bytes back to UTF-8 so auto-create
+        // expressions, dynamic roles, and downstream consumers see the original UTF-8
+        // string. Pure-ASCII values are unchanged.
+        vals = Auth.#utf8Headers(req.headers);
+        userId = vals[Auth.#userNameHeader].trim();
       }
 
       if (!userId || userId === '') {
@@ -822,6 +829,18 @@ class Auth {
     }
 
     return 0;
+  }
+
+  // ----------------------------------------------------------------------------
+  // Re-decode header values from latin-1 (Node's default) back to UTF-8.
+  // Pure-ASCII values are unchanged; UTF-8 bytes that Node mis-decoded as latin-1
+  // (e.g. "AndrÃ©" -> "André") are restored to the original UTF-8 string.
+  static #utf8Headers (headers) {
+    const out = {};
+    for (const [k, v] of Object.entries(headers)) {
+      out[k] = typeof v === 'string' ? Buffer.from(v, 'latin1').toString('utf8') : v;
+    }
+    return out;
   }
 
   // ----------------------------------------------------------------------------
