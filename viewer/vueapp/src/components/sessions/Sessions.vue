@@ -243,272 +243,287 @@ SPDX-License-Identifier: Apache-2.0
                     class="cursor-pointer">
                     {{ header.friendlyName }}
                     <!-- info field config button -->
-                    <b-dropdown
-                      lazy
-                      right
-                      no-flip
-                      no-caret
-                      size="sm"
-                      variant="theme-secondary"
-                      menu-class="col-dropdown-menu"
-                      class="info-vis-menu pull-right col-dropdown">
-                      <template #button-content>
-                        <span class="fa fa-save">
+                    <v-menu
+                      :close-on-content-click="false"
+                      location="bottom end">
+                      <template #activator="{ props: activatorProps }">
+                        <button
+                          v-bind="activatorProps"
+                          type="button"
+                          class="info-vis-menu pull-right col-dropdown btn btn-sm btn-theme-secondary">
+                          <span class="fa fa-save" />
                           <v-tooltip
                             activator="parent"
                             location="right">
                             {{ $t('sessions.sessions.customInfoMsg') }}
                           </v-tooltip>
-                        </span>
+                        </button>
                       </template>
-                      <b-dropdown-header header-class="p-1">
-                        <div class="input-group input-group-sm">
-                          <b-input
-                            autofocus
-                            @click.stop
-                            maxlength="30"
-                            class="form-control"
-                            v-model="newInfoConfigName"
-                            :placeholder="$t('sessions.sessions.customInfoName')"
-                            @keydown.enter="saveInfoFieldLayout" />
-                          <button
-                            type="button"
-                            :aria-label="$t('common.save')"
-                            class="btn btn-theme-secondary"
-                            :disabled="!newInfoConfigName"
-                            @click="saveInfoFieldLayout">
-                            <span class="fa fa-save" />
-                          </button>
+                      <v-list
+                        density="compact"
+                        class="col-dropdown-menu">
+                        <div class="px-2 py-1">
+                          <div class="input-group input-group-sm">
+                            <input
+                              autofocus
+                              @click.stop
+                              maxlength="30"
+                              type="text"
+                              class="form-control"
+                              v-model="newInfoConfigName"
+                              :placeholder="$t('sessions.sessions.customInfoName')"
+                              @keydown.enter="saveInfoFieldLayout">
+                            <button
+                              type="button"
+                              :aria-label="$t('common.save')"
+                              class="btn btn-theme-secondary"
+                              :disabled="!newInfoConfigName"
+                              @click="saveInfoFieldLayout">
+                              <span class="fa fa-save" />
+                            </button>
+                          </div>
                         </div>
-                      </b-dropdown-header>
-                      <b-dropdown-divider />
-                      <b-dropdown-item
-                        key="infodefault"
-                        id="infodefault"
-                        @click.stop.prevent="resetInfoVisibility">
-                        {{ $t('sessions.sessions.arkimeDefault') }}
-                        <v-tooltip
-                          activator="#infodefault"
-                          location="right">
-                          {{ $t('sessions.sessions.customInfoReset') }}
-                        </v-tooltip>
-                      </b-dropdown-item>
-                      <transition-group
-                        name="list"
-                        tag="span">
-                        <b-dropdown-divider
-                          key="infodivider"
-                          v-if="infoConfigs.length" />
-                        <b-dropdown-item
-                          v-for="(config, key) in infoConfigs"
-                          :key="config.name"
-                          @click.self.stop.prevent="loadInfoFieldLayout(key)">
-                          <button
-                            class="btn btn-xs btn-danger pull-right ms-1"
-                            type="button"
-                            :aria-label="$t('common.delete')"
-                            @click.stop.prevent="deleteInfoFieldLayout(config.name, key)">
-                            <span class="fa fa-trash-o" />
-                          </button>
-                          <button
-                            :aria-label="$t('sessions.sessions.customInfoUpdate')"
-                            class="btn btn-xs btn-warning pull-right"
-                            type="button"
-                            @click.stop.prevent="updateInfoFieldLayout(config.name, key)">
-                            <span class="fa fa-save" />
-                            <v-tooltip
-                              activator="parent"
-                              location="right">
-                              {{ $t('sessions.sessions.customInfoUpdate') }}
-                            </v-tooltip>
-                          </button>
-                          {{ config.name }}
-                        </b-dropdown-item>
-                        <b-dropdown-item
-                          key="info-config-error"
-                          v-if="infoConfigError">
-                          <span class="text-danger">
-                            <span class="fa fa-exclamation-triangle" />
-                            {{ infoConfigError }}
-                          </span>
-                        </b-dropdown-item>
-                        <b-dropdown-item
-                          key="info-config-success"
-                          v-if="infoConfigSuccess">
-                          <span class="text-success">
-                            <span class="fa fa-check" />
-                            {{ infoConfigSuccess }}
-                          </span>
-                        </b-dropdown-item>
-                      </transition-group>
-                    </b-dropdown> <!-- /info field config button -->
+                        <v-divider />
+                        <v-list-item
+                          key="infodefault"
+                          data-tip-id="infodefault"
+                          @click.stop.prevent="resetInfoVisibility">
+                          {{ $t('sessions.sessions.arkimeDefault') }}
+                          <v-tooltip
+                            activator="parent"
+                            location="end">
+                            {{ $t('sessions.sessions.customInfoReset') }}
+                          </v-tooltip>
+                        </v-list-item>
+                        <transition-group
+                          name="list"
+                          tag="div">
+                          <v-divider
+                            key="infodivider"
+                            v-if="infoConfigs.length" />
+                          <v-list-item
+                            v-for="(config, key) in infoConfigs"
+                            :key="config.name"
+                            @click.self.stop.prevent="loadInfoFieldLayout(key)">
+                            <button
+                              class="btn btn-xs btn-danger pull-right ms-1"
+                              type="button"
+                              :aria-label="$t('common.delete')"
+                              @click.stop.prevent="deleteInfoFieldLayout(config.name, key)">
+                              <span class="fa fa-trash-o" />
+                            </button>
+                            <button
+                              :aria-label="$t('sessions.sessions.customInfoUpdate')"
+                              class="btn btn-xs btn-warning pull-right"
+                              type="button"
+                              @click.stop.prevent="updateInfoFieldLayout(config.name, key)">
+                              <span class="fa fa-save" />
+                              <v-tooltip
+                                activator="parent"
+                                location="end">
+                                {{ $t('sessions.sessions.customInfoUpdate') }}
+                              </v-tooltip>
+                            </button>
+                            {{ config.name }}
+                          </v-list-item>
+                        </transition-group>
+                        <v-alert
+                          v-if="infoConfigError"
+                          density="compact"
+                          variant="tonal"
+                          type="error"
+                          class="ma-1">
+                          {{ infoConfigError }}
+                        </v-alert>
+                        <v-alert
+                          v-if="infoConfigSuccess"
+                          density="compact"
+                          variant="tonal"
+                          type="success"
+                          class="ma-1">
+                          {{ infoConfigSuccess }}
+                        </v-alert>
+                      </v-list>
+                    </v-menu> <!-- /info field config button -->
                     <!-- info field visibility button -->
-                    <b-dropdown
-                      lazy
-                      right
-                      no-flip
-                      no-caret
-                      size="sm"
-                      menu-class="col-dropdown-menu"
-                      class="info-vis-menu pull-right col-dropdown me-1"
-                      variant="theme-primary"
-                      @show="infoFieldVisMenuOpen = true"
-                      @hide="infoFieldVisMenuOpen = false; showAllInfoFields = false">
-                      <template #button-content>
-                        <span class="fa fa-bars">
+                    <v-menu
+                      :close-on-content-click="false"
+                      location="bottom end"
+                      @update:model-value="(open) => {
+                        infoFieldVisMenuOpen = open;
+                        if (!open) showAllInfoFields = false;
+                      }">
+                      <template #activator="{ props: activatorProps }">
+                        <button
+                          v-bind="activatorProps"
+                          type="button"
+                          class="info-vis-menu pull-right col-dropdown me-1 btn btn-sm btn-theme-primary">
+                          <span class="fa fa-bars" />
                           <v-tooltip
                             activator="parent"
                             location="right">
                             {{ $t('sessions.sessions.toggleInfoFields') }}
                           </v-tooltip>
-                        </span>
-                      </template>
-                      <b-dropdown-header header-class="p-1">
-                        <b-input
-                          autofocus
-                          v-model="colQuery"
-                          @input="debounceInfoColQuery"
-                          @click.stop
-                          class="form-control form-control-sm dropdown-typeahead"
-                          :placeholder="$t('common.searchForFields')" />
-                      </b-dropdown-header>
-                      <b-dropdown-divider />
-                      <template v-if="infoFieldVisMenuOpen">
-                        <b-dropdown-item v-if="!filteredInfoFieldsCount">
-                          {{ $t('sessions.sessions.noFieldsMatch') }}
-                        </b-dropdown-item>
-                        <template
-                          v-for="(group, key) in visibleFilteredInfoFields"
-                          :key="key">
-                          <b-dropdown-header
-                            v-if="group.length"
-                            class="group-header"
-                            header-class="p-1 text-uppercase">
-                            {{ key }}
-                          </b-dropdown-header>
-                          <template
-                            v-for="(field, k) in group"
-                            :key="key + k + 'infoitem'">
-                            <b-dropdown-item
-                              :id="key + k + 'infoitem'"
-                              :class="{'active':isInfoVisible(field.dbField) >= 0}"
-                              @click.prevent.stop="toggleInfoVis(field.dbField)">
-                              {{ field.friendlyName }}
-                              <small>({{ field.exp }})</small>
-                              <v-tooltip
-                                v-if="field.help"
-                                :activator="`#${key + k + 'infoitem'}`"
-                                location="right">
-                                {{ field.help }}
-                              </v-tooltip>
-                            </b-dropdown-item>
-                          </template>
-                        </template>
-                        <button
-                          v-if="hasMoreInfoFields"
-                          type="button"
-                          @click.stop="showAllInfoFields = true"
-                          class="dropdown-item text-center cursor-pointer">
-                          <strong>Show {{ $t('sessions.sessions.showMoreFields', filteredInfoFieldsCount - maxVisibleFields) }}</strong>
                         </button>
                       </template>
-                    </b-dropdown> <!-- /info field visibility button -->
+                      <v-list
+                        density="compact"
+                        class="col-dropdown-menu">
+                        <div class="px-2 py-1">
+                          <input
+                            autofocus
+                            v-model="colQuery"
+                            @input="debounceInfoColQuery"
+                            @click.stop
+                            type="text"
+                            class="form-control form-control-sm dropdown-typeahead"
+                            :placeholder="$t('common.searchForFields')">
+                        </div>
+                        <v-divider />
+                        <template v-if="infoFieldVisMenuOpen">
+                          <v-list-item
+                            v-if="!filteredInfoFieldsCount"
+                            disabled>
+                            {{ $t('sessions.sessions.noFieldsMatch') }}
+                          </v-list-item>
+                          <template
+                            v-for="(group, key) in visibleFilteredInfoFields"
+                            :key="key">
+                            <v-list-subheader
+                              v-if="group.length"
+                              class="group-header text-uppercase">
+                              {{ key }}
+                            </v-list-subheader>
+                            <template
+                              v-for="(field, k) in group"
+                              :key="key + k + 'infoitem'">
+                              <v-list-item
+                                :data-tip-id="key + k + 'infoitem'"
+                                :active="isInfoVisible(field.dbField) >= 0"
+                                @click.prevent.stop="toggleInfoVis(field.dbField)">
+                                {{ field.friendlyName }}
+                                <small>({{ field.exp }})</small>
+                                <v-tooltip
+                                  v-if="field.help"
+                                  :activator="`[data-tip-id='${key + k + 'infoitem'}']`"
+                                  location="end">
+                                  {{ field.help }}
+                                </v-tooltip>
+                              </v-list-item>
+                            </template>
+                          </template>
+                          <v-list-item
+                            v-if="hasMoreInfoFields"
+                            class="text-center"
+                            @click.stop="showAllInfoFields = true">
+                            <strong>Show {{ $t('sessions.sessions.showMoreFields', filteredInfoFieldsCount - maxVisibleFields) }}</strong>
+                          </v-list-item>
+                        </template>
+                      </v-list>
+                    </v-menu> <!-- /info field visibility button -->
                   </span> <!-- /non-sortable column -->
                   <!-- column dropdown menu -->
-                  <b-dropdown
-                    lazy
-                    right
-                    no-flip
-                    size="sm"
-                    menu-class="col-dropdown-menu"
-                    class="pull-right col-dropdown">
-                    <b-dropdown-item
-                      @click="toggleColVis(header.dbField, header.sortBy)">
-                      {{ $t('sessions.hideColumn') }}
-                    </b-dropdown-item>
-                    <!-- single field column -->
-                    <template v-if="!header.children && header.type !== 'seconds'">
-                      <b-dropdown-divider />
-                      <b-dropdown-item
-                        @click="exportUnique(header.rawField || header.exp, 0)">
-                        {{ $t('sessions.exportUnique', {name: header.friendlyName}) }}
-                      </b-dropdown-item>
-                      <b-dropdown-item
-                        @click="exportUnique(header.rawField || header.exp, 1)">
-                        {{ $t('sessions.exportUniqueCounts', {name: header.friendlyName}) }}
-                      </b-dropdown-item>
-                      <template v-if="header.portField">
-                        <b-dropdown-item
-                          @click="exportUnique(header.rawField || header.exp + ':' + header.portField, 0)">
-                          {{ $t('sessions.exportUniquePort', {name: header.friendlyName}) }}
-                        </b-dropdown-item>
-                        <b-dropdown-item
-                          @click="exportUnique(header.rawField || header.exp + ':' + header.portField, 1)">
-                          {{ $t('sessions.exportUniquePortCounts', {name: header.friendlyName}) }}
-                        </b-dropdown-item>
-                      </template>
-                      <b-dropdown-item
-                        @click="openSpiGraph(header.dbField)">
-                        {{ $t('sessions.openSpiGraph', {name: header.friendlyName}) }}
-                      </b-dropdown-item>
-                      <b-dropdown-item
-                        @click="fieldExists(header.exp, '==')">
-                        {{ $t('sessions.addExists', {name: header.friendlyName}) }}
-                      </b-dropdown-item>
-                      <b-dropdown-item
-                        @click="pivot(header.dbField, header.exp)">
-                        {{ $t('sessions.pivotOn', {name: header.friendlyName}) }}
-                      </b-dropdown-item>
-                      <!-- field actions -->
-                      <field-actions
-                        :separator="true"
-                        :expr="header.exp" />
-                    </template> <!-- /single field column -->
-                    <!-- multiple field column -->
-                    <template v-else-if="header.children && header.type !== 'seconds'">
-                      <span
-                        v-for="(child, key) in header.children"
-                        :key="`child${key}`">
-                        <template v-if="child">
-                          <b-dropdown-divider />
-                          <b-dropdown-item
-                            @click="exportUnique(child.rawField || child.exp, 0)">
-                            {{ $t('sessions.exportUnique', {name: child.friendlyName}) }}
-                          </b-dropdown-item>
-                          <b-dropdown-item
-                            @click="exportUnique(child.rawField || child.exp, 1)">
-                            {{ $t('sessions.exportUniqueCounts', {name: child.friendlyName}) }}
-                          </b-dropdown-item>
-                          <template v-if="child.portField">
-                            <b-dropdown-item
-                              @click="exportUnique(child.rawField || child.exp + ':' + child.portField, 0)">
-                              {{ $t('sessions.exportUniquePort', {name: child.friendlyName}) }}
-                            </b-dropdown-item>
-                            <b-dropdown-item
-                              @click="exportUnique(child.rawField || child.exp + ':' + child.portField, 1)">
-                              {{ $t('sessions.exportUniquePortCounts', {name: child.friendlyName}) }}
-                            </b-dropdown-item>
-                          </template>
-                          <b-dropdown-item
-                            @click="openSpiGraph(child.dbField)">
-                            {{ $t('sessions.openSpiGraph', {name: child.friendlyName}) }}
-                          </b-dropdown-item>
-                          <b-dropdown-item
-                            @click="fieldExists(child.exp, '==')">
-                            {{ $t('sessions.addExists', {name: child.friendlyName}) }}
-                          </b-dropdown-item>
-                          <b-dropdown-item
-                            @click="pivot(child.dbField, child.exp)">
-                            {{ $t('sessions.pivotOn', {name: child.friendlyName}) }}
-                          </b-dropdown-item>
-                          <!-- field actions -->
-                          <field-actions
-                            :expr="child.exp"
-                            :separator="false" />
+                  <v-menu location="bottom end">
+                    <template #activator="{ props: activatorProps }">
+                      <button
+                        v-bind="activatorProps"
+                        type="button"
+                        :aria-label="$t('sessions.columnActions', 'Column actions')"
+                        class="pull-right col-dropdown col-context-trigger btn btn-xs btn-default">
+                        <span class="fa fa-caret-down" />
+                      </button>
+                    </template>
+                    <v-list
+                      density="compact"
+                      class="col-dropdown-menu">
+                      <v-list-item
+                        @click="toggleColVis(header.dbField, header.sortBy)">
+                        {{ $t('sessions.hideColumn') }}
+                      </v-list-item>
+                      <!-- single field column -->
+                      <template v-if="!header.children && header.type !== 'seconds'">
+                        <v-divider />
+                        <v-list-item
+                          @click="exportUnique(header.rawField || header.exp, 0)">
+                          {{ $t('sessions.exportUnique', {name: header.friendlyName}) }}
+                        </v-list-item>
+                        <v-list-item
+                          @click="exportUnique(header.rawField || header.exp, 1)">
+                          {{ $t('sessions.exportUniqueCounts', {name: header.friendlyName}) }}
+                        </v-list-item>
+                        <template v-if="header.portField">
+                          <v-list-item
+                            @click="exportUnique(header.rawField || header.exp + ':' + header.portField, 0)">
+                            {{ $t('sessions.exportUniquePort', {name: header.friendlyName}) }}
+                          </v-list-item>
+                          <v-list-item
+                            @click="exportUnique(header.rawField || header.exp + ':' + header.portField, 1)">
+                            {{ $t('sessions.exportUniquePortCounts', {name: header.friendlyName}) }}
+                          </v-list-item>
                         </template>
-                      </span>
-                    </template> <!-- /multiple field column -->
-                  </b-dropdown> <!-- /column dropdown menu -->
+                        <v-list-item
+                          @click="openSpiGraph(header.dbField)">
+                          {{ $t('sessions.openSpiGraph', {name: header.friendlyName}) }}
+                        </v-list-item>
+                        <v-list-item
+                          @click="fieldExists(header.exp, '==')">
+                          {{ $t('sessions.addExists', {name: header.friendlyName}) }}
+                        </v-list-item>
+                        <v-list-item
+                          @click="pivot(header.dbField, header.exp)">
+                          {{ $t('sessions.pivotOn', {name: header.friendlyName}) }}
+                        </v-list-item>
+                        <!-- field actions -->
+                        <field-actions
+                          :separator="true"
+                          :expr="header.exp" />
+                      </template> <!-- /single field column -->
+                      <!-- multiple field column -->
+                      <template v-else-if="header.children && header.type !== 'seconds'">
+                        <span
+                          v-for="(child, key) in header.children"
+                          :key="`child${key}`">
+                          <template v-if="child">
+                            <v-divider />
+                            <v-list-item
+                              @click="exportUnique(child.rawField || child.exp, 0)">
+                              {{ $t('sessions.exportUnique', {name: child.friendlyName}) }}
+                            </v-list-item>
+                            <v-list-item
+                              @click="exportUnique(child.rawField || child.exp, 1)">
+                              {{ $t('sessions.exportUniqueCounts', {name: child.friendlyName}) }}
+                            </v-list-item>
+                            <template v-if="child.portField">
+                              <v-list-item
+                                @click="exportUnique(child.rawField || child.exp + ':' + child.portField, 0)">
+                                {{ $t('sessions.exportUniquePort', {name: child.friendlyName}) }}
+                              </v-list-item>
+                              <v-list-item
+                                @click="exportUnique(child.rawField || child.exp + ':' + child.portField, 1)">
+                                {{ $t('sessions.exportUniquePortCounts', {name: child.friendlyName}) }}
+                              </v-list-item>
+                            </template>
+                            <v-list-item
+                              @click="openSpiGraph(child.dbField)">
+                              {{ $t('sessions.openSpiGraph', {name: child.friendlyName}) }}
+                            </v-list-item>
+                            <v-list-item
+                              @click="fieldExists(child.exp, '==')">
+                              {{ $t('sessions.addExists', {name: child.friendlyName}) }}
+                            </v-list-item>
+                            <v-list-item
+                              @click="pivot(child.dbField, child.exp)">
+                              {{ $t('sessions.pivotOn', {name: child.friendlyName}) }}
+                            </v-list-item>
+                            <!-- field actions -->
+                            <field-actions
+                              :expr="child.exp"
+                              :separator="false" />
+                          </template>
+                        </span>
+                      </template> <!-- /multiple field column -->
+                    </v-list>
+                  </v-menu> <!-- /column dropdown menu -->
                   <!-- sortable column -->
                   <span
                     v-if="(header.exp || header.sortBy) && !header.unsortable"
@@ -2167,15 +2182,11 @@ export default {
 }
 
 /* small dropdown buttons in column headers */
-.arkime-col-header .dropdown button.btn {
+.arkime-col-header .col-dropdown {
   padding: 0 6px;
 }
-.arkime-col-header .dropdown-menu {
-  max-height: 250px;
-  overflow: auto;
-}
 
-.arkime-col-header .dropdown:not(.info-vis-menu) {
+.arkime-col-header .col-dropdown:not(.info-vis-menu) {
   visibility: hidden;
   margin-left: -25px;
 }
@@ -2286,7 +2297,7 @@ table.sessions-table.sticky-header > tbody {
   color: var(--color-foreground-accent);
 }
 
-.arkime-col-header:hover .dropdown {
+.arkime-col-header:hover .col-dropdown {
   visibility: visible;
 }
 
@@ -2301,7 +2312,7 @@ table.sessions-table.sticky-header > tbody {
   vertical-align: top;
 }
 
-.info-col-header .dropdown:not(.info-vis-menu) {
+.info-col-header .col-dropdown:not(.info-vis-menu) {
   margin-right: 4px;
 }
 .info-vis-menu {
