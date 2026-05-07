@@ -161,8 +161,7 @@ jobs:
             # :sparkles: What's new :sparkles:
 
             ### :arrow_down: Download Info :arrow_down:
-            We offer downloads for different Linux distributions and versions because of library differences. For example, use the el8 download for Centos 8 or RHEL 8 not RHEL 9. A libssl version error means that most likely the wrong download was used for your Linux distribution and version, please double check. The moloch builds have the old filesystem layouts, we will stop providing the moloch builds in 2026.
-
+            We offer downloads for different Linux distributions and versions because of library differences. For example, use the el8 download for Centos 8 or RHEL 8 not RHEL 9. A libssl version error means that most likely the wrong download was used for your Linux distribution and version, please double check. The moloch builds have the old filesystem layouts, we will stop providing the moloch builds in 2026. The EL 8 builds will stop in May 2026, please upgrade.
 
 ############# DOCKER DOCKER DOCKER #############
       - name: Set up Docker Buildx

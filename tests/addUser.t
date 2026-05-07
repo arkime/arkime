@@ -79,7 +79,7 @@ $response = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8126/", ':arki
 is ($response->code, 403);
 is ($response->content, '{"success":false,"text":"User name header is empty"}');
 
-$response = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8126/", ':arkime_user' => 'authtest1');
+$response = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8126/", ':arkime_user' => 'authtest1', ':arkime_user_name' => "Andr\xc3\xa9");
 is ($response->code, 200);
 
 $response = viewerGet("/regressionTests/getUser/authtest1");
@@ -89,7 +89,7 @@ delete $mresponse->{lastUsed};
 eq_or_diff($response, $mresponse);
 
 delete $response->{passStore};
-eq_or_diff($response, from_json('{"headerAuthEnabled":true,"enabled":true,"userId":"authtest1","webEnabled":true,"removeEnabled":false,"userName":"authtest1","packetSearch":true,"emailSearch":true,"expression":"","settings":{},"roles":["arkimeUser","cont3xtUser","parliamentUser","wiseUser"]}'));
+eq_or_diff($response, from_json('{"headerAuthEnabled":true,"enabled":true,"userId":"authtest1","webEnabled":true,"removeEnabled":false,"userName":"' . "Andr\xc3\xa9" . '","packetSearch":true,"emailSearch":true,"expression":"","settings":{},"roles":["arkimeUser","cont3xtUser","parliamentUser","wiseUser"]}'));
 
 addUser("-n test3 authtest2 authtest2 authtest2");
 $response = viewerGet("/regressionTests/getUser/authtest2");

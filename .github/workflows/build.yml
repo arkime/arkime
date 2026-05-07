@@ -220,13 +220,9 @@ jobs:
 
       - name: Arkime ENV Variables
         run: |
-          export ARKIME_MAJOR_VERSION=`sed 's/.*"\(.*\)\".*$/\1/' /opt/arkime/common/version.js | head -n 1 | cut -c 1-1`
+          export ARKIME_MAJOR_VERSION=`grep AC_INIT configure.ac | sed "s/.*\[\(.*\)\].*$/\1/" | cut -c 1-1`
           echo "ARKIME_MAJOR_VERSION=$ARKIME_MAJOR_VERSION" >> $GITHUB_ENV
-          if [ "$ARKIME_MAJOR_VERSION" = "6" ]; then
-            echo "ARKIME_DOCKER_TAG=last-commit6" >> $GITHUB_ENV
-          else
-            echo "ARKIME_DOCKER_TAG=last-commit" >> $GITHUB_ENV
-          fi
+          echo "ARKIME_DOCKER_TAG=last-commit${ARKIME_MAJOR_VERSION}" >> $GITHUB_ENV
           arch=$(arch | sed s/aarch64/arm64/ | sed s/x86_64/amd64/)
           echo "ARKIME_ARCH=$arch" >> $GITHUB_ENV
 
@@ -306,25 +302,10 @@ jobs:
           ls -l NOT*
 
       - name: upload github
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev7')
         uses: softprops/action-gh-release@5be0e66d93ac7ed76da52eca8bb058f665c3a5fe # v2.4.2
         with:
-          tag_name: last-commit6
-          draft: false
-          prerelease: true
-          generate_release_notes: false
-          files: |
-            *.deb
-            *.so
-            *.rpm
-            *.zst
-            NOTICE.txt
-
-      - name: upload github 7
-        if: github.event_name == 'push' && github.ref == 'refs/heads/dev7'
-        uses: softprops/action-gh-release@5be0e66d93ac7ed76da52eca8bb058f665c3a5fe # v2.4.2
-        with:
-          tag_name: last-commit7
+          tag_name: last-commit${{ env.ARKIME_MAJOR_VERSION }}
           draft: false
           prerelease: true
           generate_release_notes: false
@@ -338,13 +319,8 @@ jobs:
       - name: tag last-commit
         if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev7') && matrix.notice
         run: |
-          if [ "$ARKIME_MAJOR_VERSION" = "6" ]; then
-            git tag --force last-commit6
-            git push --force origin last-commit6
-          else
-            git tag --force last-commit7
-            git push --force origin last-commit7
-          fi
+          git tag --force last-commit${ARKIME_MAJOR_VERSION}
+          git push --force origin last-commit${ARKIME_MAJOR_VERSION}
 
 ############# DOCKER DOCKER DOCKER #############
       - name: Set up Docker Buildx
@@ -411,6 +387,11 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: set major version
+        run: |
+          export ARKIME_MAJOR_VERSION=`grep AC_INIT configure.ac | sed "s/.*\[\(.*\)\].*$/\1/" | cut -c 1-1`
+          echo "ARKIME_MAJOR_VERSION=$ARKIME_MAJOR_VERSION" >> $GITHUB_ENV
+
       - name: Build on FreeBSD
         uses: vmactions/freebsd-vm@4807432c7cab1c3f97688665332c0b932062d31f # v1.4.3
         with:
@@ -446,23 +427,11 @@ jobs:
             gmake clean
             rm -rf node_modules */node_modules
 
-      - name: upload github 6
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+      - name: upload github
+        if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev7')
         uses: softprops/action-gh-release@5be0e66d93ac7ed76da52eca8bb058f665c3a5fe # v2.4.2
         with:
-          tag_name: last-commit6
-          draft: false
-          prerelease: true
-          generate_release_notes: false
-          files: |
-            *.pkg
-            *.so
-
-      - name: upload github 7
-        if: github.event_name == 'push' && github.ref == 'refs/heads/dev7'
-        uses: softprops/action-gh-release@5be0e66d93ac7ed76da52eca8bb058f665c3a5fe # v2.4.2
-        with:
-          tag_name: last-commit7
+          tag_name: last-commit${{ env.ARKIME_MAJOR_VERSION }}
           draft: false
           prerelease: true
           generate_release_notes: false

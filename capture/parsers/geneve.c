@@ -18,7 +18,7 @@ LOCAL ArkimePacketRC geneve_packet_enqueue(ArkimePacketBatch_t *batch, ArkimePac
         return ARKIME_PACKET_UNKNOWN_IP;
 
     uint8_t  veroptlen = 0;
-    uint16_t protocol;
+    uint16_t protocol = 0;
 
     BSB bsb;
     BSB_INIT(bsb, data, len);
