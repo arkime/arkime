@@ -19,15 +19,6 @@
 
 
 include:
-  - version: el8.x86_64
-    container: andywick/arkime-build-8:6.0.0-2
-    buildopt: "--thirdparty --kafka --pfring"
-    package: rpm
-    fpmdeps: "-d perl-libwww-perl -d perl-JSON -d ethtool -d libyaml -d perl-LWP-Protocol-https -d python3.12-libs"
-    uitest: true
-    python: python3.12
-    prbuild: true
-
   - version: el9.x86_64
     container: andywick/arkime-build-9:6.0.0-2
     buildopt: "--thirdparty --kafka --pfring"
