@@ -206,23 +206,23 @@ SPDX-License-Identifier: Apache-2.0
                         </button>
                         {{ config.name }}
                       </v-list-item>
-                      <v-list-item
-                        key="col-config-error"
-                        v-if="colConfigError">
-                        <span class="text-danger">
-                          <span class="fa fa-exclamation-triangle" />
-                          {{ colConfigError }}
-                        </span>
-                      </v-list-item>
-                      <v-list-item
-                        key="col-config-success"
-                        v-if="colConfigSuccess">
-                        <span class="text-success">
-                          <span class="fa fa-check" />
-                          {{ colConfigSuccess }}
-                        </span>
-                      </v-list-item>
                     </v-list>
+                    <v-alert
+                      v-if="colConfigError"
+                      density="compact"
+                      variant="tonal"
+                      type="error"
+                      class="ma-1">
+                      {{ colConfigError }}
+                    </v-alert>
+                    <v-alert
+                      v-if="colConfigSuccess"
+                      density="compact"
+                      variant="tonal"
+                      type="success"
+                      class="ma-1">
+                      {{ colConfigSuccess }}
+                    </v-alert>
                   </v-menu> <!-- /column save menu -->
                 </div> <!-- /column configuration action group -->
               </th> <!-- /table options -->
@@ -445,88 +445,51 @@ SPDX-License-Identifier: Apache-2.0
                         @click="toggleColVis(header.dbField, header.sortBy)">
                         {{ $t('sessions.hideColumn') }}
                       </v-list-item>
-                      <!-- single field column -->
-                      <template v-if="!header.children && header.type !== 'seconds'">
+                      <!-- per-field action group(s): one block per target.
+                           Single-field columns get [header]; multi-field
+                           columns get header.children. 'seconds' columns
+                           opt out entirely. -->
+                      <template
+                        v-for="(target, idx) in columnActionTargets(header)"
+                        :key="`col-actions-${idx}`">
                         <v-divider />
                         <v-list-item
-                          @click="exportUnique(header.rawField || header.exp, 0)">
-                          {{ $t('sessions.exportUnique', {name: header.friendlyName}) }}
+                          @click="exportUnique(target.rawField || target.exp, 0)">
+                          {{ $t('sessions.exportUnique', {name: target.friendlyName}) }}
                         </v-list-item>
                         <v-list-item
-                          @click="exportUnique(header.rawField || header.exp, 1)">
-                          {{ $t('sessions.exportUniqueCounts', {name: header.friendlyName}) }}
+                          @click="exportUnique(target.rawField || target.exp, 1)">
+                          {{ $t('sessions.exportUniqueCounts', {name: target.friendlyName}) }}
                         </v-list-item>
-                        <template v-if="header.portField">
+                        <template v-if="target.portField">
                           <v-list-item
-                            @click="exportUnique(header.rawField || header.exp + ':' + header.portField, 0)">
-                            {{ $t('sessions.exportUniquePort', {name: header.friendlyName}) }}
+                            @click="exportUnique(target.rawField || target.exp + ':' + target.portField, 0)">
+                            {{ $t('sessions.exportUniquePort', {name: target.friendlyName}) }}
                           </v-list-item>
                           <v-list-item
-                            @click="exportUnique(header.rawField || header.exp + ':' + header.portField, 1)">
-                            {{ $t('sessions.exportUniquePortCounts', {name: header.friendlyName}) }}
+                            @click="exportUnique(target.rawField || target.exp + ':' + target.portField, 1)">
+                            {{ $t('sessions.exportUniquePortCounts', {name: target.friendlyName}) }}
                           </v-list-item>
                         </template>
                         <v-list-item
-                          @click="openSpiGraph(header.dbField)">
-                          {{ $t('sessions.openSpiGraph', {name: header.friendlyName}) }}
+                          @click="openSpiGraph(target.dbField)">
+                          {{ $t('sessions.openSpiGraph', {name: target.friendlyName}) }}
                         </v-list-item>
                         <v-list-item
-                          @click="fieldExists(header.exp, '==')">
-                          {{ $t('sessions.addExists', {name: header.friendlyName}) }}
+                          @click="fieldExists(target.exp, '==')">
+                          {{ $t('sessions.addExists', {name: target.friendlyName}) }}
                         </v-list-item>
                         <v-list-item
-                          @click="pivot(header.dbField, header.exp)">
-                          {{ $t('sessions.pivotOn', {name: header.friendlyName}) }}
+                          @click="pivot(target.dbField, target.exp)">
+                          {{ $t('sessions.pivotOn', {name: target.friendlyName}) }}
                         </v-list-item>
-                        <!-- field actions -->
+                        <!-- field actions: separator only for single-field
+                             columns (multi-field already gets dividers
+                             between children) -->
                         <field-actions
-                          :separator="true"
-                          :expr="header.exp" />
-                      </template> <!-- /single field column -->
-                      <!-- multiple field column -->
-                      <template v-else-if="header.children && header.type !== 'seconds'">
-                        <span
-                          v-for="(child, key) in header.children"
-                          :key="`child${key}`">
-                          <template v-if="child">
-                            <v-divider />
-                            <v-list-item
-                              @click="exportUnique(child.rawField || child.exp, 0)">
-                              {{ $t('sessions.exportUnique', {name: child.friendlyName}) }}
-                            </v-list-item>
-                            <v-list-item
-                              @click="exportUnique(child.rawField || child.exp, 1)">
-                              {{ $t('sessions.exportUniqueCounts', {name: child.friendlyName}) }}
-                            </v-list-item>
-                            <template v-if="child.portField">
-                              <v-list-item
-                                @click="exportUnique(child.rawField || child.exp + ':' + child.portField, 0)">
-                                {{ $t('sessions.exportUniquePort', {name: child.friendlyName}) }}
-                              </v-list-item>
-                              <v-list-item
-                                @click="exportUnique(child.rawField || child.exp + ':' + child.portField, 1)">
-                                {{ $t('sessions.exportUniquePortCounts', {name: child.friendlyName}) }}
-                              </v-list-item>
-                            </template>
-                            <v-list-item
-                              @click="openSpiGraph(child.dbField)">
-                              {{ $t('sessions.openSpiGraph', {name: child.friendlyName}) }}
-                            </v-list-item>
-                            <v-list-item
-                              @click="fieldExists(child.exp, '==')">
-                              {{ $t('sessions.addExists', {name: child.friendlyName}) }}
-                            </v-list-item>
-                            <v-list-item
-                              @click="pivot(child.dbField, child.exp)">
-                              {{ $t('sessions.pivotOn', {name: child.friendlyName}) }}
-                            </v-list-item>
-                            <!-- field actions -->
-                            <field-actions
-                              :expr="child.exp"
-                              :separator="false" />
-                          </template>
-                        </span>
-                      </template> <!-- /multiple field column -->
+                          :expr="target.exp"
+                          :separator="!header.children" />
+                      </template>
                     </v-list>
                   </v-menu> <!-- /column dropdown menu -->
                   <!-- sortable column -->
@@ -1618,6 +1581,17 @@ export default {
 
       this.saveColumnWidths();
       this.toggleStickyHeader();
+    },
+    /**
+     * Returns the list of field targets a column-context menu should render
+     * action items for. Single-field columns yield `[header]`; multi-field
+     * columns yield `header.children` (filtered for falsy entries).
+     * 'seconds'-typed columns return [] (no actions apply).
+     */
+    columnActionTargets: function (header) {
+      if (header.type === 'seconds') return [];
+      if (header.children) return header.children.filter(Boolean);
+      return [header];
     },
     /**
      * Opens the spi graph page in a new browser tab
