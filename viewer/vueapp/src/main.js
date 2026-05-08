@@ -1,5 +1,4 @@
 import { createApp } from 'vue';
-import { createBootstrap } from 'bootstrap-vue-next';
 import { createVuetify } from 'vuetify/lib/framework.mjs';
 import { aliases as faAliases, fa as faSet } from 'vuetify/iconsets/fa4';
 
@@ -8,7 +7,6 @@ import { createI18nInstance } from '@common/i18nSetup.js';
 
 // css frameworks
 import 'bootstrap/dist/css/bootstrap.css';
-import 'bootstrap-vue-next/dist/bootstrap-vue-next.css';
 import 'vuetify/styles';
 
 // vue color picker styles
@@ -50,23 +48,7 @@ async function initializeApp() {
   app.use(store);
   app.use(router);
   app.use(i18n);
-  app.use(createBootstrap({
-    components: {
-      BTooltip: {
-        boundary: 'viewport',
-        teleportTo: 'body'
-      },
-      BDropdown: {
-        boundary: 'viewport',
-        teleportTo: 'body'
-      }
-    }
-  }));
 
-  // Vuetify mounts alongside Bootstrap Vue Next during the migration. Both
-  // libraries coexist until viewer is fully migrated and BVN is removed at
-  // Phase 4 cutover. Defaults match cont3xt's pattern -- analyst UI is dense.
-  //
   // Icons: Font Awesome 4.7 is the icon library throughout viewer (per the
   // migration plan -- MDI swap is deferred). The fa4 iconset maps Vuetify's
   // symbolic aliases ($file, $close, $next, $prev, etc.) to FA 4 classes,

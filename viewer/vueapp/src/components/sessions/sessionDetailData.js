@@ -1,7 +1,6 @@
 // external imports
 import qs from 'qs';
 import { useRoute } from 'vue-router';
-import { BDropdown, BDropdownItem, BDropdownDivider, BCardGroup, BCard, BTooltip } from 'bootstrap-vue-next';
 // Vuetify components used by the pug session-detail templates. The
 // runtime template compiler can't go through vite-plugin-vuetify's
 // auto-import path (that only sees .vue SFCs), so register them on
@@ -125,11 +124,6 @@ export default {
         ArkimeToast,
         FieldActions,
         ArkimeSessionField,
-        BDropdown,
-        BDropdownItem,
-        BDropdownDivider,
-        BCardGroup,
-        BCard,
         VMenu,
         VList,
         VListItem,
@@ -137,7 +131,6 @@ export default {
         VBtn
       },
       directives: {
-        BTooltip,
         HasPermission
       },
       computed: {
