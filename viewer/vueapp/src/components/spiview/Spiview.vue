@@ -1370,11 +1370,16 @@ export default {
 <style>
 /* Field-trigger label/caret buttons (used both inside the .field-dropdown
    group in btn-drawer and standalone in spi-buckets). Small + tight so
-   the row of toggle buttons stays compact. */
+   the row of toggle buttons stays compact. Height matches .form-control-sm
+   used by the per-category search input so the collapsed btn-drawer
+   (max-height: 22px) doesn't clip the input's bottom. */
 .spiview-page .field-dropdown-label,
 .spiview-page .field-dropdown-caret {
   padding: 0 5px;
   font-size: .75rem;
+  height: 22px;
+  min-height: 22px;
+  line-height: 20px;
 }
 
 /* Field-trigger group: a label button + a caret button sit side by
@@ -1460,6 +1465,15 @@ export default {
    sit on the trailing edge. */
 .spiview-page .spi-card-header > .category-title {
   margin-right: auto;
+}
+/* +/- toggle indicator goes on the far right of the header. DOM order
+   puts it right after the title; flex `order` shoves it past the
+   load-all/unload-all buttons and protocol values without touching
+   the markup. */
+.spiview-page .spi-card-header > .when-opened,
+.spiview-page .spi-card-header > .when-closed {
+  order: 99;
+  margin-left: 4px;
 }
 .spiview-page .spi-card-header.collapsed {
   border-bottom: 0;
