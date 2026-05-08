@@ -37,7 +37,6 @@ SPDX-License-Identifier: Apache-2.0
         <v-btn
           v-bind="activatorProps"
           variant="tonal"
-          size="small"
           class="packet-options-btn">
           {{ $t('sessions.packetOptions.packetOptions') }}
           <v-icon end>
@@ -347,10 +346,14 @@ export default {
   max-width: 180px;
 }
 
-.packet-options-btn {
+/* Match the v-select / v-btn-toggle compact height (~38px) so the
+   menu trigger doesn't look skinny next to the rest of the row. */
+.packet-options-btn.v-btn {
   text-transform: none;
   letter-spacing: normal;
   font-weight: 500;
+  min-height: 38px;
+  padding: 0 14px;
 }
 
 .decoding-form {
