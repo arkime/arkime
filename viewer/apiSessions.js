@@ -2629,15 +2629,18 @@ class SessionAPIs {
               // Standard HTML / Vue
               'class', 'style', 'title', 'value', 'target', 'href',
               'download', 'type', 'disabled',
-              // Vue directives / bindings
-              'v-if', 'v-for', 'v-has-permission', 'key', ':key',
+              // Vue directives / bindings (incl. slot props for v-menu's
+              // #activator slot which uses v-bind="activatorProps")
+              'v-if', 'v-for', 'v-bind', 'v-on',
+              'v-has-permission', 'key', ':key',
               ':href', ':download', '@click', '@done',
+              '#activator', '#default', '#button-content',
               // Component custom props / slots used across the template
               'sessionid', 'hidepackets', 'pull-left',
               'expr', ':expr', ':separator', ':field',
               ':sessions', ':cluster', ':single',
               ':message', ':type', ':done', ':add',
-              'text', ':text', '#button-content', 'suffix', 'columns',
+              'text', ':text', 'suffix', 'columns',
               // Vuetify component props (v-btn, v-menu, v-list)
               'variant', 'size', 'density', 'activator', 'location'
             ]
