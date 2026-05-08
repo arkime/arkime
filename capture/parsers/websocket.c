@@ -201,7 +201,10 @@ LOCAL int websocket_tcp_parser(ArkimeSession_t *session, void *uw, const uint8_t
             } else if (opcode == 8) {
                 if (payLen >= 2) {
                     uint8_t b0 = pay[0], b1 = pay[1];
-                    if (masked) { b0 ^= maskKey[0]; b1 ^= maskKey[1]; }
+                    if (masked) {
+                        b0 ^= maskKey[0];
+                        b1 ^= maskKey[1];
+                    }
                     int code = (b0 << 8) | b1;
                     arkime_field_int_add(closeCodeField, session, code);
 

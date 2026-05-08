@@ -47,6 +47,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
           files now opened with O_NOFOLLOW to prevent symlink attacks
   - #3958 PCAP files now opened with O_NOFOLLOW to prevent symlink attacks
   - #3962 Improved websocket parser; adds websocket.* fields and websocketTextSampleCnt config option
+  - #3963 Improved mDNS parsing: handle aggregated queries, unsolicited responses, and flags
 
 6.3.1 2026/05/04
 ## Capture

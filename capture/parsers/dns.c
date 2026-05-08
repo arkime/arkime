@@ -593,7 +593,13 @@ LOCAL void dns_parser(ArkimeSession_t *session, int kind, const uint8_t *data, i
         break;
     }
 
-    if (qd_count != 1) {
+    const int mdns = (kind == 2);
+
+    /* mDNS (RFC 6762 §5.3) allows aggregated queries (qd_count > 1) and
+     * unsolicited responses (qd_count == 0). qd_count > 1: parse the first
+     * question and walk past the rest before answers. qd_count == 0:
+     * synthesize a query keyed on root so answers attach to a session record. */
+    if (qd_count != 1 && !mdns) {
         arkime_session_add_tag(session, "dns:qdcount-not-1");
         return;
     }
@@ -601,35 +607,52 @@ LOCAL void dns_parser(ArkimeSession_t *session, int kind, const uint8_t *data, i
     BSB bsb;
     BSB_INIT(bsb, data + 12, len - 12);
 
-    /* QD Section */
     char namebuf[8001];
     int namelen = sizeof(namebuf);
-    char *name = dns_name(session, data, len, &bsb, namebuf, &namelen);
+    char *name = NULL;
 
-    if (BSB_IS_ERROR(bsb) || !name) {
-        return;
-    }
-
-    if (!namelen) {
+    if (qd_count == 0) {
+        /* mDNS response with no question: synthesize key */
         key.query.hostname = root;
+        key.query.type_id = 0;
+        key.query.class_id = 0;
         namelen = 6;
+        name = root;
     } else {
-        key.query.hostname = g_hostname_to_unicode(name);
-        if (!key.query.hostname) {
-            if (namelen > 4 && arkime_memstr((const char *)name, namelen, "xn--", 4)) {
-                arkime_session_add_tag(session, "bad-punycode");
-            } else {
-                arkime_session_add_tag(session, "bad-hostname");
-            }
+        /* QD Section */
+        name = dns_name(session, data, len, &bsb, namebuf, &namelen);
+
+        if (BSB_IS_ERROR(bsb) || !name) {
             return;
         }
+
+        if (!namelen) {
+            key.query.hostname = root;
+            namelen = 6;
+        } else {
+            key.query.hostname = g_hostname_to_unicode(name);
+            if (!key.query.hostname) {
+                if (namelen > 4 && arkime_memstr((const char *)name, namelen, "xn--", 4)) {
+                    arkime_session_add_tag(session, "bad-punycode");
+                } else {
+                    arkime_session_add_tag(session, "bad-hostname");
+                }
+                return;
+            }
+        }
+
+        key.query.type_id = 0;
+        BSB_IMPORT_u16(bsb, key.query.type_id);
+
+        key.query.class_id = 0;
+        BSB_IMPORT_u16(bsb, key.query.class_id);
+
+        /* mDNS (RFC 6762 §5.4): top bit of qclass is the "unicast-response"
+         * (QU) preference, not part of the class value. */
+        if (mdns) {
+            key.query.class_id &= 0x7FFF;
+        }
     }
-
-    key.query.type_id = 0;
-    BSB_IMPORT_u16(bsb, key.query.type_id);
-
-    key.query.class_id = 0;
-    BSB_IMPORT_u16(bsb, key.query.class_id);
 
     ArkimeFieldObject_t *fobject = NULL;;
     DNS_t *dns = NULL;
@@ -716,6 +739,20 @@ LOCAL void dns_parser(ArkimeSession_t *session, int kind, const uint8_t *data, i
         return;
     }
 
+    /* mDNS aggregated query: advance past the remaining question records
+     * so the answer parsing below starts at the correct offset. */
+    if (mdns && qd_count > 1) {
+        for (int q = 1; BSB_NOT_ERROR(bsb) && q < qd_count; q++) {
+            namelen = sizeof(namebuf);
+            dns_name(session, data, len, &bsb, namebuf, &namelen);
+            if (BSB_IS_ERROR(bsb))
+                return;
+            BSB_IMPORT_skip(bsb, 4); // type + class
+        }
+        if (BSB_IS_ERROR(bsb))
+            return;
+    }
+
     if (!dns->ips) {
         dns->ips = g_hash_table_new_full(arkime_field_ip_hash, arkime_field_ip_equal, g_free, NULL);
     }
@@ -770,6 +807,12 @@ LOCAL void dns_parser(ArkimeSession_t *session, int kind, const uint8_t *data, i
             BSB_IMPORT_u16 (bsb, antype);
             uint16_t anclass = 0;
             BSB_IMPORT_u16 (bsb, anclass);
+
+            /* mDNS (RFC 6762 §10.2): top bit of rrclass is the cache-flush
+             * indicator and must be masked off before comparing. */
+            if (mdns) {
+                anclass &= 0x7FFF;
+            }
             uint32_t anttl = 0;
             BSB_IMPORT_u32 (bsb, anttl);
             uint16_t rdlength = 0;
