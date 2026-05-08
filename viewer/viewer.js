@@ -422,11 +422,15 @@ function createSessionDetail () {
       return nextCb();
     });
   }, function () {
+    // Replaces the previous BVN structure (b-card-group(columns) > b-card).
+    // .session-detail-cards uses CSS columns (column-count) for the masonry
+    // layout, with each .session-detail-card child rendering as a bordered
+    // card via styles in viewer/vueapp/src/components/sessions/SessionDetail.vue.
     internals.sessionDetailNew = 'include views/mixins.pug\n' +
                                  'div.session-detail(sessionid=session.id,hidepackets=hidePackets)\n' +
                                  '  include views/sessionOptions\n' +
-                                 '  b-card-group(columns)\n' +
-                                 '    b-card\n' +
+                                 '  div.session-detail-cards\n' +
+                                 '    div.session-detail-card\n' +
                                  '      include views/sessionDetail\n';
     for (const k of Object.keys(found).sort()) {
       internals.sessionDetailNew += found[k].replaceAll(/^/mg, '  ') + '\n';
@@ -445,7 +449,7 @@ function createSessionDetail () {
           // Save current indent level, so we can look for line without it
           spaces = ' '.repeat(line.search(/\S/));
           state = 1;
-          return spaces + 'b-card\n  ' + line;
+          return spaces + 'div.session-detail-card\n  ' + line;
         } else {
           return line;
         }

@@ -747,26 +747,43 @@ dl:hover > .session-detail-grip {
   border-right: 1px dotted var(--color-gray) !important;
 }
 
-/* detail card styles */
-.session-detail-wrapper .card-columns { /* default */
+/* Detail card layout. Replaces the BVN b-card-group(columns) + b-card
+   structure. .session-detail-cards is the masonry-style column
+   container; .session-detail-card is each individual card body
+   (no separate .card-body wrapper -- dl/h4 are direct children). */
+.session-detail-wrapper .session-detail-cards { /* default 2-col */
   column-count: 2;
   -moz-column-count: 2;
 }
-.session-detail-wrapper.card-columns-1 .card-columns {
+.session-detail-wrapper.card-columns-1 .session-detail-cards {
   column-count: 1;
   -moz-column-count: 1;
 }
-.session-detail-wrapper.card-columns-3 .card-columns {
+.session-detail-wrapper.card-columns-3 .session-detail-cards {
   column-count: 3;
   -moz-column-count: 3;
 }
 @media (max-width: 1350px) {
-  .session-detail-wrapper .card-columns {
+  .session-detail-wrapper .session-detail-cards {
     column-count: 1;
     -moz-column-count: 1;
   }
 }
-.session-detail .card > .card-body > .card-title {
+
+/* Each card: keeps content together when columns wrap, gets card chrome */
+.session-detail .session-detail-card {
+  break-inside: avoid;
+  -webkit-column-break-inside: avoid;
+  page-break-inside: avoid;
+  background-color: var(--color-background);
+  color: var(--color-foreground);
+  border: 1px solid var(--color-gray-light);
+  border-radius: 4px;
+  padding: 1.25rem;
+  margin-bottom: 0.75rem;
+}
+
+.session-detail .session-detail-card > .card-title {
   cursor: pointer;
   padding: 0.5rem;
   margin: -1.25rem;
@@ -775,7 +792,7 @@ dl:hover > .session-detail-grip {
   background-color: var(--color-gray);
   color: var(--color-background, #333);
 }
-.session-detail .card > .card-body > dl .card-title {
+.session-detail .session-detail-card > dl .card-title {
   cursor: pointer;
   font-size: 1rem;
   padding: 0.25rem;
@@ -787,51 +804,49 @@ dl:hover > .session-detail-grip {
   background-color: var(--color-gray-light);
 }
 
-.session-detail .card > .card-body dl {
+.session-detail .session-detail-card > dl {
   margin-bottom: 0rem;
   margin-top: -0.75rem;
-  position:relative;
+  position: relative;
 }
 
-/* this is required to keep the dt and dd the same height
-   so that the values in dd are aligned with their labels in dt */
-.session-detail .card > .card-body dl dt,
-.session-detail .card > .card-body dl dd {
+/* keep dt and dd at the same height so values align with labels */
+.session-detail .session-detail-card dl dt,
+.session-detail .session-detail-card dl dd {
   min-height: 24px;
 }
 
-.session-detail .card > .card-body > dl > dt:hover + dd,
-.session-detail .card > .card-body > dl > dd:hover {
+.session-detail .session-detail-card > dl > dt:hover + dd,
+.session-detail .session-detail-card > dl > dd:hover {
   border-radius: 10px;
   background-color: var(--color-gray-lighter);
 }
 
-.session-detail .card > .card-body dt,
-.session-detail .card > .card-body dd {
+.session-detail .session-detail-card dt,
+.session-detail .session-detail-card dd {
   line-height: 1.7;
   margin-bottom: 0.2rem !important;
 }
 
-/* detail card collapse/expand */
-.session-detail .card h4:after {
+/* detail card collapse/expand chevron */
+.session-detail .session-detail-card h4:after {
   float: right;
   content: "\f078";
   font-family: FontAwesome;
 }
-.session-detail .card h4.collapsed:after {
+.session-detail .session-detail-card h4.collapsed:after {
   float: right;
   content: "\f077";
   font-family: FontAwesome;
 }
-
-.session-detail .card > .card-body.collapsed {
+.session-detail .session-detail-card.collapsed {
   padding-bottom: 0;
 }
-.session-detail .card > .card-body.collapsed > h4 {
+.session-detail .session-detail-card.collapsed > h4 {
   margin-bottom: 0;
   border-radius: 4px;
 }
-.session-detail .card > .card-body > dl > h4.collapsed {
+.session-detail .session-detail-card > dl > h4.collapsed {
   margin-bottom: 0;
 }
 </style>

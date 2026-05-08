@@ -2588,10 +2588,6 @@ class SessionAPIs {
             'h3', 'h4', 'h5', 'h6', 'a', 'b', 'i', 'strong', 'em', 'div',
             'pre', 'span', 'br', 'img', 'ul', 'li', 'dl', 'dt', 'dd',
             'template', 'button',
-            // Bootstrap-Vue-Next (still used by the session-detail
-            // master template's b-card-group / b-card wrapper)
-            'b-dropdown', 'b-dropdown-item', 'b-dropdown-divider',
-            'b-card-group', 'b-card',
             // Vuetify components used in the pug session-detail
             'v-menu', 'v-list', 'v-list-item', 'v-divider', 'v-btn',
             // Arkime / app components
@@ -2604,7 +2600,8 @@ class SessionAPIs {
               // App-specific
               'ts-value', 'text-theme-quaternary', 'imagetag', 'file',
               'sessionsrc', 'sessiondst', 'session-detail-ts',
-              'session-detail', 'session-options', 'session-options-btn',
+              'session-detail', 'session-detail-cards', 'session-detail-card',
+              'session-options', 'session-options-btn',
               'sessionln', 'src-col-tip', 'dst-col-tip', 'dstcol', 'srccol',
               'clickable-label', 'clickable-label-menu', 'detail-field',
               'tag-list', 'card-title', 'no-wrap', 'str', 'bytes',

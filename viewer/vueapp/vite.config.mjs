@@ -6,8 +6,6 @@ import inject from '@rollup/plugin-inject';
 import path from 'path';
 import { defineConfig } from 'vite';
 import vue from '@vitejs/plugin-vue';
-import Components from 'unplugin-vue-components/vite';
-import { BootstrapVueNextResolver } from 'bootstrap-vue-next';
 import Vuetify from 'vite-plugin-vuetify';
 
 import { git } from '../../common/git';
@@ -31,9 +29,6 @@ export default defineConfig({
       // Skip vuetify's SCSS/CSS — the inject plugin tries to parse them and warns.
       // Restrict to scripts only.
       include: ['**/*.js', '**/*.mjs', '**/*.vue']
-    }),
-    Components({
-      resolvers: [BootstrapVueNextResolver()],
     }),
     Vuetify({
       treeShake: true,
