@@ -2583,13 +2583,64 @@ class SessionAPIs {
           console.log('/api/session/%s/%s/detail rendering', ArkimeUtil.sanitizeStr(req.params.nodeName), ArkimeUtil.sanitizeStr(req.params.id), data.replace(/>/g, '>\n'));
         }
         const html = sanitizeHtml(data, {
-          allowedTags: ['h3', 'h4', 'h5', 'h6', 'a', 'b', 'i', 'strong', 'em', 'div', 'pre', 'span', 'br', 'img', 'ul', 'li', 'b-dropdown', 'b-dropdown-item', 'arkime-toast', 'arkime-session-field', 'arkime-tag-sessions', 'arkime-export-pcap', 'arkime-remove-data', 'arkime-send-sessions', 'b-card-group', 'b-card', 'h4', 'dl', 'dt', 'dd', 'field-actions', 'b-dropdown-divider', 'template'],
+          allowedTags: [
+            // Standard HTML
+            'h3', 'h4', 'h5', 'h6', 'a', 'b', 'i', 'strong', 'em', 'div',
+            'pre', 'span', 'br', 'img', 'ul', 'li', 'dl', 'dt', 'dd',
+            'template', 'button',
+            // Bootstrap-Vue-Next (still used by the session-detail
+            // master template's b-card-group / b-card wrapper)
+            'b-dropdown', 'b-dropdown-item', 'b-dropdown-divider',
+            'b-card-group', 'b-card',
+            // Vuetify components used in the pug session-detail
+            'v-menu', 'v-list', 'v-list-item', 'v-divider', 'v-btn',
+            // Arkime / app components
+            'arkime-toast', 'arkime-session-field', 'arkime-tag-sessions',
+            'arkime-export-pcap', 'arkime-remove-data',
+            'arkime-send-sessions', 'field-actions'
+          ],
           allowedClasses: {
-            '*': ['ts-value', 'text-theme-quaternary', 'imagetag', 'file', 'nav-link', 'cursor-pointer', 'nav', 'nav-link', 'nav-pills', 'nav-item', 'mb-3', 'mb-2', 'me-1', 'me-5', 'ms-1', 'row', 'col-md-6', 'offset-md-6', 'sessionsrc', 'sessiondst', 'session-detail-ts', 'alert', 'alert-danger', 'session-detail', 'pull-right', 'small', 'dstcol', 'srccol', 'fa', 'fa-info-circle', 'fa-lg', 'fa-exclamation-triangle', 'sessionln', 'src-col-tip', 'dst-col-tip', 'fa-download', 'fa-arrow-circle-up', 'fa-arrow-circle-down', 'fa-link', 'clickable-label', 'detail-field', 'no-wrap', 'card-title', 'tag-list', 'btn', 'btn-xs', 'btn-theme-secondary', 'fa-plus-circle', 'str', 'bytes']
+            '*': [
+              // App-specific
+              'ts-value', 'text-theme-quaternary', 'imagetag', 'file',
+              'sessionsrc', 'sessiondst', 'session-detail-ts',
+              'session-detail', 'session-options', 'session-options-btn',
+              'sessionln', 'src-col-tip', 'dst-col-tip', 'dstcol', 'srccol',
+              'clickable-label', 'clickable-label-menu', 'detail-field',
+              'tag-list', 'card-title', 'no-wrap', 'str', 'bytes',
+              // Bootstrap layout / nav / utility
+              'nav', 'nav-link', 'nav-pills', 'nav-item', 'cursor-pointer',
+              'mb-3', 'mb-2', 'me-1', 'me-5', 'ms-1', 'pull-right', 'small',
+              'row', 'col-md-6', 'offset-md-6', 'd-flex', 'flex-wrap',
+              'flex-column', 'align-items-center', 'gap-1',
+              // Bootstrap alerts / buttons
+              'alert', 'alert-danger', 'btn', 'btn-xs', 'btn-sm',
+              'btn-default', 'btn-theme-secondary',
+              // Font Awesome icons
+              'fa', 'fa-info-circle', 'fa-lg', 'fa-exclamation-triangle',
+              'fa-download', 'fa-arrow-circle-up', 'fa-arrow-circle-down',
+              'fa-link', 'fa-plus-circle', 'fa-columns', 'fa-cogs',
+              'fa-list', 'fa-cog'
+            ]
           },
           allowedAttributes: {
             img: ['src'],
-            '*': [':download', 'download', '#button-content', 'class', 'value', 'sessionid', 'hidepackets', 'v-if', 'target', 'href', ':href', '@click', 'v-has-permission', 'text', ':text', ':sessions', '@done', ':cluster', ':single', ':message', ':type', ':done', 'expr', ':expr', ':separator', ':field', 'pull-left', 'size', 'variant', 'columns', 'style', 'suffix', 'target', 'v-for', 'key', ':key', ':add', 'title']
+            '*': [
+              // Standard HTML / Vue
+              'class', 'style', 'title', 'value', 'target', 'href',
+              'download', 'type', 'disabled',
+              // Vue directives / bindings
+              'v-if', 'v-for', 'v-has-permission', 'key', ':key',
+              ':href', ':download', '@click', '@done',
+              // Component custom props / slots used across the template
+              'sessionid', 'hidepackets', 'pull-left',
+              'expr', ':expr', ':separator', ':field',
+              ':sessions', ':cluster', ':single',
+              ':message', ':type', ':done', ':add',
+              'text', ':text', '#button-content', 'suffix', 'columns',
+              // Vuetify component props (v-btn, v-menu, v-list)
+              'variant', 'size', 'density', 'activator', 'location'
+            ]
           }
         });
         res.send(html);
