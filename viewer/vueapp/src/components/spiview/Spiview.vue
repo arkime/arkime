@@ -78,14 +78,14 @@ SPDX-License-Identifier: Apache-2.0
                   :key="config.name"
                   @click.self.stop.prevent="loadFieldConfiguration(key)">
                   <button
-                    class="btn btn-xs btn-danger pull-right ms-1"
+                    class="btn btn-xs btn-danger ms-1"
                     type="button"
                     :aria-label="$t('common.delete')"
                     @click.stop.prevent="deleteFieldConfiguration(config.name, key)">
                     <span class="fa fa-trash-o" />
                   </button>
                   <button
-                    class="btn btn-xs btn-warning pull-right"
+                    class="btn btn-xs btn-warning"
                     type="button"
                     :aria-label="$t('common.save')"
                     @click.stop.prevent="updateFieldConfiguration(config.name, key)">
@@ -149,7 +149,7 @@ SPDX-License-Identifier: Apache-2.0
         v-if="staleData && !dataLoading">
         <span class="fa fa-exclamation-triangle" />&nbsp;<span v-html="$t('spiview.cancelWarningHtml')" />
         <span
-          class="fa fa-close pull-right cursor-pointer"
+          class="fa fa-close cursor-pointer"
           @click="staleData = false" />
       </div> <!-- /warning navbar -->
     </ArkimeCollapsible>
@@ -184,20 +184,20 @@ SPDX-License-Identifier: Apache-2.0
             <strong class="category-title">
               {{ category }}
             </strong>
-            <span class="when-opened mt-2 fa fa-minus pull-right" />
-            <span class="when-closed mt-2 fa fa-plus pull-right" />
+            <span class="when-opened mt-2 fa fa-minus" />
+            <span class="when-closed mt-2 fa fa-plus" />
             <span
               v-if="categoryObjects[category].loading"
-              class="fa fa-spin fa-spinner fa-lg pull-right mt-1 me-1" />
+              class="fa fa-spin fa-spinner fa-lg mt-1 me-1" />
             <span v-if="!categoryObjects[category].loading">
               <button
-                class="btn btn-theme-secondary btn-sm pull-right me-1"
+                class="btn btn-theme-secondary btn-sm me-1"
                 :title="$t('spiview.loadAllTip')"
                 @click.stop.prevent="toggleAllValues(category, true)">
                 {{ $t('spiview.loadAll') }}
               </button>
               <button
-                class="btn btn-theme-primary btn-sm pull-right me-1"
+                class="btn btn-theme-primary btn-sm me-1"
                 :title="$t('spiview.unloadAllTip')"
                 @click.stop.prevent="toggleAllValues(category, false)">
                 {{ $t('spiview.unloadAll') }}
@@ -205,7 +205,7 @@ SPDX-License-Identifier: Apache-2.0
             </span>
             <span
               v-if="categoryObjects[category].protocols"
-              class="pull-right">
+              class="">
               <span
                 v-for="(value, key) in categoryObjects[category].protocols"
                 :key="key"
@@ -262,7 +262,7 @@ SPDX-License-Identifier: Apache-2.0
                       :key="field.dbField"
                       :id="`spiViewField-${field.dbField}`"
                       class="me-1 mb-1 field-dropdown"
-                      :class="{'is-active':categoryObjects[category].spi[field.dbField] && categoryObjects[category].spi[field.dbField].active}">
+                      :class="{'is-active':isFieldActive(category, field)}">
                       <button
                         type="button"
                         class="btn btn-sm btn-default field-dropdown-label"
@@ -543,6 +543,13 @@ export default {
      * @param {string} categoryName The name (key) of the category to filter fields
      * @param {string} searchFilter The string to search for in fields
      */
+    /* Whether a field's spi data is currently being shown for the
+       given category. Drives the .is-active class on field-dropdown
+       triggers in the btn-drawer. */
+    isFieldActive: function (categoryName, field) {
+      const slot = this.categoryObjects[categoryName]?.spi?.[field.dbField];
+      return !!(slot && slot.active);
+    },
     updateFilteredFields: function (categoryName, searchFilter) {
       const category = this.categoryObjects[categoryName];
       let fields = category.fields;
@@ -1375,11 +1382,16 @@ export default {
    (max-height: 22px) doesn't clip the input's bottom. */
 .spiview-page .field-dropdown-label,
 .spiview-page .field-dropdown-caret {
-  padding: 0 5px;
   font-size: .75rem;
   height: 22px;
   min-height: 22px;
   line-height: 20px;
+}
+.spiview-page .field-dropdown-label {
+  padding: 0 5px;
+}
+.spiview-page .field-dropdown-caret {
+  padding: 0 4px;
 }
 
 /* Field-trigger group: a label button + a caret button sit side by
@@ -1396,7 +1408,6 @@ export default {
 .spiview-page .field-dropdown .field-dropdown-caret {
   border-top-left-radius: 0;
   border-bottom-left-radius: 0;
-  padding: 0 4px;
 }
 /* "selected/active" highlight on the per-field group */
 .spiview-page .field-dropdown.is-active > button {
