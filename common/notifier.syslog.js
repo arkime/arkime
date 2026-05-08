@@ -87,6 +87,12 @@ exports.sendSyslogAlert = function (config, message, links, cb) {
     return;
   }
 
+  const port = parseInt(config.port, 10);
+  if (!Number.isInteger(port) || port < 1 || port > 65535) {
+    if (cb) { cb({ errors: { syslog: 'Invalid port (must be 1-65535)' } }); }
+    return;
+  }
+
   if (links && links.length) {
     for (const link of links) {
       message += ` ${link.text}: ${link.url}`;

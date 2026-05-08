@@ -178,6 +178,11 @@ class ArkimeConfig {
       if (section === undefined || key === undefined) { continue; }
       key = key.replace(/DASH/g, '-').replace(/COLON/g, ':').replace(/DOT/g, '.').replace(/SLASH/g, '/');
 
+      if (ArkimeUtil.isPP(section) || ArkimeUtil.isPP(key)) {
+        console.log(`WARNING - Ignoring environment variable ${e}: section/key looks like prototype pollution`);
+        continue;
+      }
+
       if (ArkimeConfig.#config[section] === undefined) {
         ArkimeConfig.#config[section] = {};
       }
