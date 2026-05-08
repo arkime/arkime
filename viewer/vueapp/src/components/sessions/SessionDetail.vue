@@ -668,32 +668,11 @@ onUnmounted(() => {
   text-decoration: none;
 }
 
-/* top navigation links */
-.session-detail .nav-pills {
+/* Session-options toolbar -- flex row of v-btn entries */
+.session-detail .session-options {
   border-bottom: 1px solid var(--color-gray);
   padding-bottom: 4px;
   padding-top: 4px;
-}
-
-.session-detail .nav-pills > li.nav-item > a,
-.session-detail .nav-pills > div.nav-item > button {
-  color: var(--color-foreground);
-  background-color: transparent;
-  border: none;
-}
-
-.session-detail .nav-pills > li.nav-item > a:hover,
-.session-detail .nav-pills > div.nav-item > button:hover {
-  color: var(--color-button, #FFF);
-}
-
-.session-detail .nav-pills > li.nav-item > a:hover,
-.session-detail .nav-pills > li.nav-item.open > a,
-.session-detail .nav-pills > li.nav-item.open > a:hover,
-.session-detail .nav-pills > div.nav-item > button:hover,
-.session-detail .nav-pills > div.nav-item.open > button,
-.session-detail .nav-pills > div.nav-item.open > button:hover  {
-  background-color: var(--color-quaternary-lighter);
 }
 
 /* clickable labels -- the .clickable-label class is on the <button> itself
@@ -718,9 +697,10 @@ onUnmounted(() => {
   border-color: var(--color-gray);
 }
 
-/* Session options nav -- v-btn dropdown triggers (Columns / Actions).
-   Strip Vuetify's default button styling so they read as nav-links. */
-.session-detail .nav-pills > li.nav-item > .session-options-btn {
+/* Session-options v-btn entries (links + dropdown triggers). Strip
+   Vuetify's default button styling so they read as nav-links rather
+   than chunky flat buttons. */
+.session-detail .session-options-btn {
   text-transform: none;
   letter-spacing: normal;
   font-weight: 400;
@@ -729,9 +709,11 @@ onUnmounted(() => {
   padding: 0 10px;
   background-color: transparent;
   box-shadow: none;
+  color: var(--color-foreground);
 }
-.session-detail .nav-pills > li.nav-item > .session-options-btn:hover {
+.session-detail .session-options-btn:hover {
   background-color: var(--color-quaternary-lighter);
+  color: var(--color-button, #FFF);
 }
 
 /* Vuetify v-menu teleports its content to body, so these selectors
