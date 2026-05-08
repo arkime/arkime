@@ -696,13 +696,10 @@ onUnmounted(() => {
   background-color: var(--color-quaternary-lighter);
 }
 
-/* clickable labels */
-.session-detail .clickable-label {
+/* clickable labels -- the .clickable-label class is on the <button> itself
+   now (used to be on a wrapping div from b-dropdown). */
+.session-detail button.clickable-label {
   margin-top: -2px;
-  display: inline-block;
-}
-
-.session-detail .clickable-label button.btn {
   height: 21px;
   background-color: transparent;
   font-size: 11px;
@@ -715,10 +712,26 @@ onUnmounted(() => {
   text-overflow: ellipsis;
 }
 
-.session-detail .clickable-label button.btn:hover {
+.session-detail button.clickable-label:hover {
   color: #333;
   background-color: var(--color-gray);
   border-color: var(--color-gray);
+}
+
+/* Session options nav -- v-btn dropdown triggers (Columns / Actions).
+   Strip Vuetify's default button styling so they read as nav-links. */
+.session-detail .nav-pills > li.nav-item > .session-options-btn {
+  text-transform: none;
+  letter-spacing: normal;
+  font-weight: 400;
+  font-size: 14px;
+  min-width: 0;
+  padding: 0 10px;
+  background-color: transparent;
+  box-shadow: none;
+}
+.session-detail .nav-pills > li.nav-item > .session-options-btn:hover {
+  background-color: var(--color-quaternary-lighter);
 }
 
 /* Vuetify v-menu teleports its content to body, so these selectors
