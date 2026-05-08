@@ -41,7 +41,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
 ## All
   - #3951 Fix UTF-8 mojibake in user names auto-created via header auth (e.g. behind Caddy/oauth2-proxy)
 ## Capture
-  - #3899 Add trimEthernetPadding option to strip Ethernet padding/FCS so saved pcap and byte counts match the on-wire IP length
+  - #3954 Add trimEthernetPadding option to strip Ethernet padding/FCS so saved pcap and byte counts match the on-wire IP length
 
 6.3.1 2026/05/04
 ## Capture
