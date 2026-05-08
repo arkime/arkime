@@ -6177,6 +6177,43 @@ sub sessions3Update
     },
     "userCnt" : {
       "type" : "long"
+    },
+    "websocket" : {
+      "properties" : {
+        "opcode" : {
+          "type" : "keyword"
+        },
+        "opcodeCnt" : {
+          "type" : "long"
+        },
+        "closeCode" : {
+          "type" : "long"
+        },
+        "closeCodeCnt" : {
+          "type" : "long"
+        },
+        "closeReason" : {
+          "type" : "keyword"
+        },
+        "closeReasonCnt" : {
+          "type" : "long"
+        },
+        "textSample" : {
+          "type" : "keyword"
+        },
+        "textSampleCnt" : {
+          "type" : "long"
+        },
+        "frameCnt" : {
+          "type" : "long"
+        },
+        "payloadBytes" : {
+          "type" : "long"
+        },
+        "maskedFromClient" : {
+          "type" : "long"
+        }
+      }
     }
   }
 }

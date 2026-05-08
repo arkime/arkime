@@ -46,6 +46,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #3958 Add stateDir config option (default /tmp) for capture state files (drophash, stoppedsessions); 
           files now opened with O_NOFOLLOW to prevent symlink attacks
   - #3958 PCAP files now opened with O_NOFOLLOW to prevent symlink attacks
+  - #3962 Improved websocket parser; adds websocket.* fields and websocketTextSampleCnt config option
 
 6.3.1 2026/05/04
 ## Capture

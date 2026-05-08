@@ -199,7 +199,23 @@
      "dst" : 0,
      "src" : 3386158937
     },
-    "totDataBytes" : 884
+    "totDataBytes" : 884,
+    "websocket" : {
+     "frameCnt" : 5,
+     "maskedFromClient" : 2,
+     "opcode" : [
+      "Text"
+     ],
+     "opcodeCnt" : 1,
+     "payloadBytes" : 153,
+     "textSample" : [
+      "21:33:52 ('192.168.43.1', 50999) say: test message",
+      "Welcome, 192.168.43.1 !",
+      "hello websocket",
+      "test message"
+     ],
+     "textSampleCnt" : 4
+    }
    },
    "header" : {
     "index" : {
