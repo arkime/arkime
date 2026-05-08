@@ -159,129 +159,73 @@ SPDX-License-Identifier: Apache-2.0
             <div
               v-if="!loading"
               class="d-inline-flex">
-              <!-- node fields button -->
-              <v-menu
-                :close-on-content-click="false"
-                location="bottom start"
-                v-if="fields && groupedFields && nodeFields">
-                <template #activator="{ props: activatorProps }">
-                  <button
-                    v-bind="activatorProps"
-                    type="button"
-                    class="btn btn-sm btn-theme-primary rounded ms-1 field-vis-trigger"
-                    id="nodeFields">
-                    <span class="fa fa-circle-o" />
-                    <v-tooltip
-                      activator="parent"
-                      :open-delay="300">
-                      {{ $t('connections.nodeFieldsTip') }}
-                    </v-tooltip>
-                  </button>
-                </template>
-                <v-list
-                  density="compact"
-                  class="field-vis-list">
-                  <div class="px-2 py-1">
-                    <input
-                      type="text"
-                      v-model="fieldQuery"
-                      class="form-control form-control-sm"
-                      :placeholder="$t('common.searchForFields')">
-                  </div>
-                  <v-divider />
-                  <v-list-item @click.stop.prevent="resetNodeFieldsDefault">
-                    Reset to default
-                  </v-list-item>
-                  <v-divider />
-                  <template
-                    v-for="(group, key) in filteredFields"
-                    :key="key">
-                    <v-list-subheader
-                      v-if="group.length"
-                      class="field-vis-group-header">
-                      {{ key }}
-                    </v-list-subheader>
-                    <template
-                      v-for="(field, k) in group"
-                      :key="key + k + 'itemnode'">
-                      <v-list-item
-                        :data-tip-id="key + k + 'itemnode'"
-                        :active="isFieldVisible(field.dbField, nodeFields) >= 0"
-                        @click.stop.prevent="toggleFieldVisibility(field.dbField, nodeFields)">
-                        {{ field.friendlyName }}
-                        <small>({{ field.exp }})</small>
-                        <v-tooltip
-                          :activator="`[data-tip-id='${key + k + 'itemnode'}']`"
-                          :open-delay="300">
-                          {{ field.help }}
-                        </v-tooltip>
-                      </v-list-item>
-                    </template>
+              <!-- node + link field-visibility menus (same shape, kind='node'|'link') -->
+              <template
+                v-for="m in fieldVisMenus"
+                :key="m.kind">
+                <v-menu
+                  v-if="fields && groupedFields && fieldList(m.kind)"
+                  :close-on-content-click="false"
+                  location="bottom start">
+                  <template #activator="{ props: activatorProps }">
+                    <button
+                      v-bind="activatorProps"
+                      type="button"
+                      class="btn btn-sm btn-theme-primary rounded ms-1 field-vis-trigger"
+                      :id="`${m.kind}Fields`">
+                      <span
+                        class="fa"
+                        :class="m.icon" />
+                      <v-tooltip
+                        activator="parent"
+                        :open-delay="300">
+                        {{ $t(m.tipKey) }}
+                      </v-tooltip>
+                    </button>
                   </template>
-                </v-list>
-              </v-menu> <!-- /node fields button -->
-
-              <!-- link fields button -->
-              <v-menu
-                :close-on-content-click="false"
-                location="bottom start"
-                v-if="fields && groupedFields && linkFields">
-                <template #activator="{ props: activatorProps }">
-                  <button
-                    v-bind="activatorProps"
-                    type="button"
-                    class="btn btn-sm btn-theme-primary rounded ms-1 field-vis-trigger"
-                    id="linkFields">
-                    <span class="fa fa-link" />
-                    <v-tooltip
-                      activator="parent"
-                      :open-delay="300">
-                      {{ $t('connections.linkFieldsTip') }}
-                    </v-tooltip>
-                  </button>
-                </template>
-                <v-list
-                  density="compact"
-                  class="field-vis-list">
-                  <div class="px-2 py-1">
-                    <input
-                      type="text"
-                      v-model="fieldQuery"
-                      class="form-control form-control-sm"
-                      :placeholder="$t('common.searchForFields')">
-                  </div>
-                  <v-divider />
-                  <v-list-item @click.stop.prevent="resetLinkFieldsDefault">
-                    {{ $t('connections.reset') }}
-                  </v-list-item>
-                  <v-divider />
-                  <template
-                    v-for="(group, key) in filteredFields"
-                    :key="key">
-                    <v-list-subheader
-                      v-if="group.length"
-                      class="field-vis-group-header">
-                      {{ key }}
-                    </v-list-subheader>
+                  <v-list
+                    density="compact"
+                    class="field-vis-list">
+                    <div class="px-2 py-1">
+                      <input
+                        type="text"
+                        v-model="fieldQuery"
+                        class="form-control form-control-sm"
+                        :placeholder="$t('common.searchForFields')">
+                    </div>
+                    <v-divider />
+                    <v-list-item @click.stop.prevent="resetFieldVisibility(m.kind)">
+                      {{ $t('connections.reset') }}
+                    </v-list-item>
+                    <v-divider />
                     <template
-                      v-for="(field, k) in group"
-                      :key="key + k + 'itemlink'">
-                      <v-list-item
-                        :data-tip-id="key + k + 'itemlink'"
-                        :active="isFieldVisible(field.dbField, linkFields) >= 0"
-                        @click.stop.prevent="toggleFieldVisibility(field.dbField, linkFields)">
-                        {{ field.friendlyName }}
-                        <small>({{ field.exp }})</small>
-                        <v-tooltip
-                          :activator="`[data-tip-id='${key + k + 'itemlink'}']`"
-                          :open-delay="300">
-                          {{ field.help }}
-                        </v-tooltip>
-                      </v-list-item>
+                      v-for="(group, key) in filteredFields"
+                      :key="key">
+                      <v-list-subheader
+                        v-if="group.length"
+                        class="field-vis-group-header">
+                        {{ key }}
+                      </v-list-subheader>
+                      <template
+                        v-for="(field, k) in group"
+                        :key="key + k + m.kind">
+                        <v-list-item
+                          :data-tip-id="key + k + m.kind"
+                          :active="isFieldVisible(field.dbField, fieldList(m.kind)) >= 0"
+                          @click.stop.prevent="toggleFieldVisibility(field.dbField, fieldList(m.kind))">
+                          {{ field.friendlyName }}
+                          <small>({{ field.exp }})</small>
+                          <v-tooltip
+                            :activator="`[data-tip-id='${key + k + m.kind}']`"
+                            :open-delay="300">
+                            {{ field.help }}
+                          </v-tooltip>
+                        </v-list-item>
+                      </template>
                     </template>
-                  </template>
-                </v-list>
-              </v-menu> <!-- /link fields button -->
+                  </v-list>
+                </v-menu>
+              </template> <!-- /field-visibility menus -->
             </div>
 
             <!-- network baseline time range -->
@@ -706,7 +650,15 @@ export default {
       fieldHistoryConnectionsDst: undefined,
       showPopup: false, // whether to show the node/link data popup
       dataNode: undefined, // data for the node popup
-      dataLink: undefined // data for the link popup
+      dataLink: undefined, // data for the link popup
+      // node + link field-visibility menus share one v-menu template;
+      // kind drives which underlying list (nodeFields / linkFields)
+      // and reset-default array (defaultNodeFields / defaultLinkFields)
+      // the menu mutates.
+      fieldVisMenus: [
+        { kind: 'node', icon: 'fa-circle-o', tipKey: 'connections.nodeFieldsTip' },
+        { kind: 'link', icon: 'fa-link', tipKey: 'connections.linkFieldsTip' }
+      ]
     };
   },
   computed: {
@@ -965,14 +917,20 @@ export default {
     isFieldVisible: function (id, list) {
       return list.indexOf(id);
     },
-    resetNodeFieldsDefault: function () {
-      this.nodeFields = defaultNodeFields;
-      this.closePopups();
-      this.cancelAndLoad(true);
-      this.saveVisibleFields();
+    /* Returns the visible-fields ref array for a given menu kind
+       ('node' | 'link'). Used to drive the shared v-menu template. */
+    fieldList: function (kind) {
+      return kind === 'node' ? this.nodeFields : this.linkFields;
     },
-    resetLinkFieldsDefault: function () {
-      this.linkFields = defaultLinkFields;
+    /* Reset the visible fields for the given menu kind back to its
+       default array. Replaces resetNodeFieldsDefault /
+       resetLinkFieldsDefault. */
+    resetFieldVisibility: function (kind) {
+      if (kind === 'node') {
+        this.nodeFields = defaultNodeFields;
+      } else {
+        this.linkFields = defaultLinkFields;
+      }
       this.closePopups();
       this.cancelAndLoad(true);
       this.saveVisibleFields();
