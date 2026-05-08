@@ -22,12 +22,12 @@ SPDX-License-Identifier: Apache-2.0
                 id="querySize"
                 class="input-group-text cursor-help">
                 {{ $t('connections.querySize') }}
-                <v-tooltip
-                  activator="parent"
-                  :open-delay="300">
-                  {{ $t('connections.querySizeTip') }}
-                </v-tooltip>
               </span>
+              <v-tooltip
+                activator="#querySize"
+                :open-delay="300">
+                {{ $t('connections.querySizeTip') }}
+              </v-tooltip>
               <select
                 class="form-select form-select-sm"
                 :value="query.length"
@@ -47,12 +47,12 @@ SPDX-License-Identifier: Apache-2.0
                 class="input-group-text legend cursor-help primary-legend"
                 id="sourceField">
                 Src:
-                <v-tooltip
-                  activator="parent"
-                  :open-delay="300">
-                  {{ $t('connections.sourceFieldTip') }}
-                </v-tooltip>
               </span>
+              <v-tooltip
+                activator="#sourceField"
+                :open-delay="300">
+                {{ $t('connections.sourceFieldTip') }}
+              </v-tooltip>
               <arkime-field-typeahead
                 :fields="fields"
                 query-param="srcField"
@@ -70,12 +70,12 @@ SPDX-License-Identifier: Apache-2.0
                 class="input-group-text legend cursor-help secondary-legend"
                 id="dstField">
                 Dst:
-                <v-tooltip
-                  activator="parent"
-                  :open-delay="300">
-                  {{ $t('connections.dstFieldTip') }}
-                </v-tooltip>
               </span>
+              <v-tooltip
+                activator="#dstField"
+                :open-delay="300">
+                {{ $t('connections.dstFieldTip') }}
+              </v-tooltip>
               <arkime-field-typeahead
                 :fields="fields"
                 query-param="dstField"
@@ -91,12 +91,12 @@ SPDX-License-Identifier: Apache-2.0
                 class="input-group-text legend cursor-help tertiary-legend"
                 id="srcDstColor">
                 Src &amp; dst
-                <v-tooltip
-                  activator="parent"
-                  :open-delay="300">
-                  {{ $t('connections.srcDstColorTip') }}
-                </v-tooltip>
               </span>
+              <v-tooltip
+                activator="#srcDstColor"
+                :open-delay="300">
+                {{ $t('connections.srcDstColorTip') }}
+              </v-tooltip>
             </div> <!-- /src & dst color -->
 
             <!-- min connections select -->
@@ -105,12 +105,12 @@ SPDX-License-Identifier: Apache-2.0
                 id="minConn"
                 class="input-group-text help-cursor">
                 {{ $t('connections.minConn') }}
-                <v-tooltip
-                  activator="parent"
-                  :open-delay="300">
-                  {{ $t('connections.minConnTip') }}
-                </v-tooltip>
               </span>
+              <v-tooltip
+                activator="#minConn"
+                :open-delay="300">
+                {{ $t('connections.minConnTip') }}
+              </v-tooltip>
               <select
                 class="form-select form-select-sm"
                 :value="query.minConn"
@@ -128,12 +128,12 @@ SPDX-License-Identifier: Apache-2.0
                 class="input-group-text help-cursor"
                 id="weight">
                 {{ $t('connections.weight') }}
-                <v-tooltip
-                  activator="parent"
-                  :open-delay="300">
-                  {{ $t('connections.weightTip') }}
-                </v-tooltip>
               </span>
+              <v-tooltip
+                activator="#weight"
+                :open-delay="300">
+                {{ $t('connections.weightTip') }}
+              </v-tooltip>
               <select
                 class="form-select form-select-sm"
                 :value="weight"
@@ -290,12 +290,12 @@ SPDX-License-Identifier: Apache-2.0
                 class="input-group-text help-cursor"
                 id="baselineDate">
                 {{ $t('connections.baselineDate') }}
-                <v-tooltip
-                  activator="parent"
-                  :open-delay="300">
-                  {{ $t('connections.baselineDateTip') }}
-                </v-tooltip>
               </span>
+              <v-tooltip
+                activator="#baselineDate"
+                :open-delay="300">
+                {{ $t('connections.baselineDateTip') }}
+              </v-tooltip>
               <select
                 class="form-select form-select-sm"
                 v-model="query.baselineDate"
@@ -329,12 +329,12 @@ SPDX-License-Identifier: Apache-2.0
                 class="input-group-text help-cursor"
                 id="baselineVis">
                 {{ $t('connections.baselineVis') }}
-                <v-tooltip
-                  activator="parent"
-                  :open-delay="300">
-                  {{ $t('connections.baselineVisTip') }}
-                </v-tooltip>
               </span>
+              <v-tooltip
+                activator="#baselineVis"
+                :open-delay="300">
+                {{ $t('connections.baselineVisTip') }}
+              </v-tooltip>
               <select
                 class="form-select form-select-sm"
                 :disabled="query.baselineDate === '0'"
