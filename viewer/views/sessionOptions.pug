@@ -1,60 +1,56 @@
-ul.nav.nav-pills.mb-3
+div.d-flex.flex-wrap.align-items-center.gap-1.mb-3.session-options
   if (session.rootId)
-    li.nav-item
-      a.nav-link.cursor-pointer(@click='allSessions(' + '"' + session.rootId + '"' + ', ' + session.firstPacket + ')') All Sessions
+    v-btn.session-options-btn(variant="text" size="small" @click='allSessions(' + '"' + session.rootId + '"' + ', ' + session.firstPacket + ')')
+      | All Sessions
   if (session.packetPos && session.packetPos.length > 0)
     if (session.rootId)
-      li.nav-item
-        a.nav-link(href='api/session/' + session.node + '/' + session.id + '/pcap', :download="session.id + '-segment.pcap'") {{ $t('sessions.downloadSegmentPCAP') }}
-      li.nav-item
-        a.nav-link(href='api/session/entire/' + session.node + '/' + session.rootId + '/pcap', download=(session.network && session.network.community_id ? session.network.community_id : session.rootId) + '.pcap') {{ $t('sessions.downloadEntirePCAP') }}
+      v-btn.session-options-btn(variant="text" size="small" :href="'api/session/' + session.node + '/' + session.id + '/pcap'" :download="session.id + '-segment.pcap'")
+        span.fa.fa-download.me-1
+        | {{ $t('sessions.downloadSegmentPCAP') }}
+      v-btn.session-options-btn(variant="text" size="small" :href="'api/session/entire/' + session.node + '/' + session.rootId + '/pcap'" :download="(session.network && session.network.community_id ? session.network.community_id : session.rootId) + '.pcap'")
+        span.fa.fa-download.me-1
+        | {{ $t('sessions.downloadEntirePCAP') }}
     else
-      li.nav-item
-        a.nav-link(href='api/session/' + session.node + '/' + session.id + '/pcap', v-has-permission="'!disablePcapDownload'", :download="session.id + '.pcap'")
-          span.fa.fa-download.me-1
-          | {{ $t('sessions.downloadPCAP') }}
-    li.nav-item
-      a.nav-link(href='api/session/raw/' + session.node + '/' + session.id + '?type=src', :download="session.id + '-src-raw'")
-        span.fa.fa-arrow-circle-up.me-1
-        | {{ $t('sessions.sourceRaw') }}
-    li.nav-item
-      a.nav-link(href='api/session/raw/' + session.node + '/' + session.id + '?type=dst', :download="session.id + '-dst-raw'")
-        span.fa.fa-arrow-circle-down.me-1
-        | {{ $t('sessions.destinationRaw') }}
-  li.nav-item
-    a.nav-link.cursor-pointer(:href="permalink")
-      span.fa.fa-link.me-1
-      | {{ $t('sessions.link') }}
-  li.nav-item
-    v-btn.nav-link.session-options-btn(variant="text" size="small")
-      span.fa.fa-columns.me-1
-      | {{ $t('sessions.columns') }}
-      v-menu(activator="parent" location="bottom start")
-        v-list(density="compact")
-          v-list-item(@click="toggleLayout(1)")
-            | {{ $t('sessions.oneColumn') }}
-          v-list-item(@click="toggleLayout(2)")
-            | {{ $t('sessions.twoColumn') }}
-          v-list-item(@click="toggleLayout(3)")
-            | {{ $t('sessions.threeColumn') }}
-  li.nav-item
-    v-btn.nav-link.session-options-btn(variant="text" size="small")
-      span.fa.fa-cogs.me-1
-      | {{ $t('sessions.actions') }}
-      v-menu(activator="parent" location="bottom start")
-        v-list(density="compact")
-          if (session.packetPos && session.packetPos.length > 0)
-            v-list-item(@click="exportPCAP", v-has-permission="'!disablePcapDownload'")
-              | {{ $t('sessions.exports.exportPCAP') }}
-          v-list-item(@click="addTags")
-            | {{ $t('sessions.tag.addTags') }}
-          v-list-item(@click="removeTags", v-has-permission="'removeEnabled'")
-            | {{ $t('sessions.tag.removeTags') }}
-          v-list-item(@click="removeData()", v-has-permission="'removeEnabled'")
-            | {{ $t('search.removeData') }}
-          template(v-for="(value, key) in remoteclusters", :key="key")
-            v-list-item(v-if="value", @click="sendSession(key)")
-              | {{ $t('search.sendSession', { name: value.name }) }}
+      v-btn.session-options-btn(variant="text" size="small" v-has-permission="'!disablePcapDownload'" :href="'api/session/' + session.node + '/' + session.id + '/pcap'" :download="session.id + '.pcap'")
+        span.fa.fa-download.me-1
+        | {{ $t('sessions.downloadPCAP') }}
+    v-btn.session-options-btn(variant="text" size="small" :href="'api/session/raw/' + session.node + '/' + session.id + '?type=src'" :download="session.id + '-src-raw'")
+      span.fa.fa-arrow-circle-up.me-1
+      | {{ $t('sessions.sourceRaw') }}
+    v-btn.session-options-btn(variant="text" size="small" :href="'api/session/raw/' + session.node + '/' + session.id + '?type=dst'" :download="session.id + '-dst-raw'")
+      span.fa.fa-arrow-circle-down.me-1
+      | {{ $t('sessions.destinationRaw') }}
+  v-btn.session-options-btn(variant="text" size="small" :href="permalink")
+    span.fa.fa-link.me-1
+    | {{ $t('sessions.link') }}
+  v-btn.session-options-btn(variant="text" size="small")
+    span.fa.fa-columns.me-1
+    | {{ $t('sessions.columns') }}
+    v-menu(activator="parent" location="bottom start")
+      v-list(density="compact")
+        v-list-item(@click="toggleLayout(1)")
+          | {{ $t('sessions.oneColumn') }}
+        v-list-item(@click="toggleLayout(2)")
+          | {{ $t('sessions.twoColumn') }}
+        v-list-item(@click="toggleLayout(3)")
+          | {{ $t('sessions.threeColumn') }}
+  v-btn.session-options-btn(variant="text" size="small")
+    span.fa.fa-cogs.me-1
+    | {{ $t('sessions.actions') }}
+    v-menu(activator="parent" location="bottom start")
+      v-list(density="compact")
+        if (session.packetPos && session.packetPos.length > 0)
+          v-list-item(@click="exportPCAP", v-has-permission="'!disablePcapDownload'")
+            | {{ $t('sessions.exports.exportPCAP') }}
+        v-list-item(@click="addTags")
+          | {{ $t('sessions.tag.addTags') }}
+        v-list-item(@click="removeTags", v-has-permission="'removeEnabled'")
+          | {{ $t('sessions.tag.removeTags') }}
+        v-list-item(@click="removeData()", v-has-permission="'removeEnabled'")
+          | {{ $t('search.removeData') }}
+        template(v-for="(value, key) in remoteclusters", :key="key")
+          v-list-item(v-if="value", @click="sendSession(key)")
+            | {{ $t('search.sendSession', { name: value.name }) }}
 
 div.mb-2
   arkime-toast(:message="message", :type="messageType", :done="messageDone")
