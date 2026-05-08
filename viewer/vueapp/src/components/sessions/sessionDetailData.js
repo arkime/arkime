@@ -67,12 +67,11 @@ function gripUnclick (e, vueThis) {
       dt.nextElementSibling.style.marginLeft = `${newWidth + 10}px`;
     }
 
-    const labelBtns = document.getElementsByClassName('clickable-label');
-    if (labelBtns && labelBtns.length) {
-      const btn = labelBtns[0].getElementsByTagName('button');
-      if (btn && btn.length) {
-        btn[0].style.maxWidth = `${newWidth}px`;
-      }
+    // .clickable-label is on the <button> directly post-Vuetify migration
+    // (used to be a wrapping <div> from b-dropdown). Set maxWidth on every
+    // label button so the dt-aligned text stays clipped to the new width.
+    for (const btn of document.getElementsByClassName('clickable-label')) {
+      btn.style.maxWidth = `${newWidth}px`;
     }
 
     for (const grip of document.getElementsByClassName('session-detail-grip')) {
@@ -205,12 +204,8 @@ export default {
           // set the width of the dt and the margin of the dd based on user setting
           dt.style.width = `${this.dlWidth}px`;
           dt.nextElementSibling.style.marginLeft = `${this.dlWidth + 10}px`;
-          const labelBtn = dt.getElementsByClassName('clickable-label');
-          if (labelBtn && labelBtn.length) {
-            const btn = labelBtn[0].getElementsByTagName('button');
-            if (btn && btn.length) {
-              btn[0].style.maxWidth = `${dlWidth}px`;
-            }
+          for (const btn of dt.getElementsByClassName('clickable-label')) {
+            btn.style.maxWidth = `${dlWidth}px`;
           }
         }
 
