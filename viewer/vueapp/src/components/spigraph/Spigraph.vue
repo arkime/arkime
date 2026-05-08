@@ -14,129 +14,128 @@ SPDX-License-Identifier: Apache-2.0
 
         <!-- spigraph sub navbar -->
         <div class="spigraph-form m-1">
-          <BRow
-            gutter-x="1"
-            align-h="start">
+          <div class="d-flex flex-wrap align-items-center gap-1">
             <!-- field select -->
-            <BCol
-              cols="auto"
+            <div
+              class="input-group input-group-sm w-auto"
               v-if="fields && fields.length && fieldTypeahead">
-              <BInputGroup size="sm">
-                <BInputGroupText class="cursor-help">
-                  {{ $t('spigraph.field') }}:
-                </BInputGroupText>
-                <arkime-field-typeahead
-                  :fields="fields"
-                  query-param="exp"
-                  :initial-value="fieldTypeahead"
-                  @field-selected="changeField"
-                  page="Spigraph" />
-              </BInputGroup>
-            </BCol> <!-- /field select -->
+              <span class="input-group-text cursor-help">
+                {{ $t('spigraph.field') }}:
+              </span>
+              <arkime-field-typeahead
+                :fields="fields"
+                query-param="exp"
+                :initial-value="fieldTypeahead"
+                @field-selected="changeField"
+                page="Spigraph" />
+            </div> <!-- /field select -->
 
             <!-- maxElements select -->
-            <BCol cols="auto">
-              <BInputGroup size="sm">
-                <BInputGroupText class="cursor-help">
-                  {{ $t('spigraph.maxElements') }}:
-                  <v-tooltip activator="parent">{{ $t('spigraph.maxElementsTip') }}</v-tooltip>
-                </BInputGroupText>
-                <BFormSelect
-                  :model-value="query.size"
-                  @update:model-value="val => changeMaxElements(val)"
-                  :options="[5,10,15,20,30,50,100,200,500]" />
-              </BInputGroup>
-            </BCol> <!-- /maxElements select -->
+            <div class="input-group input-group-sm w-auto">
+              <span
+                id="maxElements"
+                class="input-group-text cursor-help">
+                {{ $t('spigraph.maxElements') }}:
+              </span>
+              <v-tooltip activator="#maxElements">
+                {{ $t('spigraph.maxElementsTip') }}
+              </v-tooltip>
+              <select
+                class="form-select form-select-sm"
+                :value="query.size"
+                @change="changeMaxElements(Number($event.target.value))">
+                <option
+                  v-for="opt in [5,10,15,20,30,50,100,200,500]"
+                  :key="opt"
+                  :value="opt">{{ opt }}</option>
+              </select>
+            </div> <!-- /maxElements select -->
 
             <!-- main graph type select -->
-            <BCol cols="auto">
-              <BInputGroup size="sm">
-                <BInputGroupText class="cursor-help">
-                  {{ $t('spigraph.graphType') }}:
-                </BInputGroupText>
-                <BFormSelect
-                  :model-value="spiGraphType"
-                  @update:model-value="(val) => changeSpiGraphType(val)">
-                  <option
-                    value="default"
-                    v-i18n-value="'spigraph.graphType-'" />
-                  <option
-                    value="pie"
-                    v-i18n-value="'spigraph.graphType-'" />
-                  <option
-                    value="table"
-                    v-i18n-value="'spigraph.graphType-'" />
-                  <option
-                    value="treemap"
-                    v-i18n-value="'spigraph.graphType-'" />
-                  <option
-                    value="sankey"
-                    v-i18n-value="'spigraph.graphType-'" />
-                </BFormSelect>
-              </BInputGroup>
-            </BCol> <!-- /main graph type select -->
+            <div class="input-group input-group-sm w-auto">
+              <span class="input-group-text cursor-help">
+                {{ $t('spigraph.graphType') }}:
+              </span>
+              <select
+                class="form-select form-select-sm"
+                :value="spiGraphType"
+                @change="changeSpiGraphType($event.target.value)">
+                <option
+                  value="default"
+                  v-i18n-value="'spigraph.graphType-'" />
+                <option
+                  value="pie"
+                  v-i18n-value="'spigraph.graphType-'" />
+                <option
+                  value="table"
+                  v-i18n-value="'spigraph.graphType-'" />
+                <option
+                  value="treemap"
+                  v-i18n-value="'spigraph.graphType-'" />
+                <option
+                  value="sankey"
+                  v-i18n-value="'spigraph.graphType-'" />
+              </select>
+            </div> <!-- /main graph type select -->
 
             <!-- sort select (not shown for the pie graph) -->
-            <BCol
-              cols="auto"
+            <div
+              class="input-group input-group-sm w-auto"
               v-if="spiGraphType === 'default'">
-              <BInputGroup size="sm">
-                <BInputGroupText class="cursor-help">
-                  {{ $t('spigraph.sortBy') }}:
-                </BInputGroupText>
-                <BFormSelect
-                  :model-value="sortBy"
-                  @update:model-value="(val) => changeSortBy(val)"
-                  :options="[
-                    { value: 'name', text: $t('spigraph.sortBy-name') },
-                    { value: 'graph', text: $t('spigraph.sortBy-graph') }
-                  ]" />
-              </BInputGroup>
-            </BCol> <!-- /sort select -->
+              <span class="input-group-text cursor-help">
+                {{ $t('spigraph.sortBy') }}:
+              </span>
+              <select
+                class="form-select form-select-sm"
+                :value="sortBy"
+                @change="changeSortBy($event.target.value)">
+                <option value="name">{{ $t('spigraph.sortBy-name') }}</option>
+                <option value="graph">{{ $t('spigraph.sortBy-graph') }}</option>
+              </select>
+            </div> <!-- /sort select -->
 
             <!-- refresh input (not shown for pie) -->
-            <BCol
-              cols="auto"
+            <div
+              class="input-group input-group-sm w-auto"
               v-if="spiGraphType === 'default'">
-              <BInputGroup size="sm">
-                <BInputGroupText class="cursor-help">
-                  {{ $t('spigraph.refreshEvery') }}:
-                </BInputGroupText>
-                <BFormSelect
-                  :model-value="refresh"
-                  @update:model-value="(val) => changeRefreshInterval(val)"
-                  :options="[0,5,10,15,30,45,60]" />
-                <BInputGroupText>
-                  {{ $t('common.seconds') }}
-                </BInputGroupText>
-              </BInputGroup>
-            </BCol> <!-- /refresh input-->
+              <span class="input-group-text cursor-help">
+                {{ $t('spigraph.refreshEvery') }}:
+              </span>
+              <select
+                class="form-select form-select-sm"
+                :value="refresh"
+                @change="changeRefreshInterval(Number($event.target.value))">
+                <option
+                  v-for="opt in [0,5,10,15,30,45,60]"
+                  :key="opt"
+                  :value="opt">{{ opt }}</option>
+              </select>
+              <span class="input-group-text">
+                {{ $t('common.seconds') }}
+              </span>
+            </div> <!-- /refresh input-->
 
             <!-- page info -->
-            <BCol
-              cols="auto"
-              align-self="center"
-              class="records-display"
+            <div
+              class="records-display align-self-center"
               v-if="spiGraphType === 'default'">
               <strong
                 class="text-theme-accent"
                 v-if="!error && recordsFiltered !== undefined">
                 {{ $t('common.showingAllTip', { count: commaString(recordsFiltered), total: commaString(recordsTotal) }) }}
               </strong>
-            </BCol> <!-- /page info -->
+            </div> <!-- /page info -->
 
             <!-- export button-->
-            <BCol cols="auto">
-              <button
-                v-if="spiGraphType !== 'default' && spiGraphType !== 'sankey'"
-                class="btn btn-default btn-sm ms-1"
-                :aria-label="$t('spigraph.exportCSVSPIGraphTip')"
-                @click.stop.prevent="exportCSV">
-                <span class="fa fa-download" />
-                <v-tooltip activator="parent">{{ $t('spigraph.exportCSVSPIGraphTip') }}</v-tooltip>
-              </button> <!-- /export button-->
-            </BCol>
-          </BRow>
+            <button
+              v-if="spiGraphType !== 'default' && spiGraphType !== 'sankey'"
+              class="btn btn-default btn-sm ms-1"
+              :aria-label="$t('spigraph.exportCSVSPIGraphTip')"
+              @click.stop.prevent="exportCSV">
+              <span class="fa fa-download" />
+              <v-tooltip activator="parent">{{ $t('spigraph.exportCSVSPIGraphTip') }}</v-tooltip>
+            </button> <!-- /export button-->
+          </div>
         </div>
       </span>
     </ArkimeCollapsible>
