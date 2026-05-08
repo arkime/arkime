@@ -24,12 +24,13 @@ mixin clickableLabelBody(field, title)
 
 //- Method to add a menu to field labels
 mixin clickableLabel(field, title)
-  button.btn.btn-sm.btn-default.clickable-label(type="button")
-    | #{title}
-    v-menu(activator="parent" location="bottom start")
-      v-list.clickable-label-menu(density="compact")
-        +clickableLabelBody(field, title)
-        +clickableFieldActions(field, true)
+  v-menu
+    template(#activator="{ props: activatorProps }")
+      button.btn.btn-sm.btn-default.clickable-label(v-bind="activatorProps" type="button")
+        | #{title}
+    v-list.clickable-label-menu(density="compact")
+      +clickableLabelBody(field, title)
+      +clickableFieldActions(field, true)
 
 //- Display a clickable field action in the field menu
 mixin clickableFieldActions(fieldExpr, sep)
@@ -126,40 +127,41 @@ mixin ipArrayList(container, field, title, expr, max)
     - max = 25
   if (container[field])
     dt
-      button.btn.btn-sm.btn-default.clickable-label(type="button")
-        | #{title}
-        v-menu(activator="parent" location="bottom start")
-          v-list.clickable-label-menu(density="compact")
-            v-list-item(@click="exportUnique('" + expr  + "', 0)")
-              | {{ $t('sessions.exportUnique', {name: "#{title}"} ) }}
-            v-list-item(@click="exportUnique('" + expr  + "', 1)")
-              | {{ $t('sessions.exportUniqueCounts', {name: "#{title}"} ) }}
-            v-list-item(@click="openSpiGraph('" + expr  + "')")
-              | {{ $t('sessions.openSpiGraph', {name: "#{title}"} ) }}
-            v-divider
-            v-list-item(@click="exportUnique('" + expr  + ".country', 0)")
-              | {{ $t('sessions.exportUniqueCountry', {name: "#{title}"} ) }}
-            v-list-item(@click="exportUnique('" + expr  + ".country', 1)")
-              | {{ $t('sessions.exportUniqueCountryCounts', {name: "#{title}"} ) }}
-            v-list-item(@click="openSpiGraph('" + expr  + ".country')")
-              | {{ $t('sessions.openSpiGraphCountry', {name: "#{title}"} ) }}
-            v-divider
-            v-list-item(@click="exportUnique('" + expr  + ".asn', 0)")
-              | {{ $t('sessions.exportUniqueASN', {name: "#{title}"} ) }}
-            v-list-item(@click="exportUnique('" + expr  + ".asn', 1)")
-              | {{ $t('sessions.exportUniqueASNCounts', {name: "#{title}"} ) }}
-            v-list-item(@click="openSpiGraph('" + expr  + ".asn')")
-              | {{ $t('sessions.openSpiGraphASN', {name: "#{title}"} ) }}
-            v-divider
-            v-list-item(@click="exportUnique('" + expr  + ".rir', 0)")
-              | {{ $t('sessions.exportUniqueRIR', {name: "#{title}"} ) }}
-            v-list-item(@click="exportUnique('" + expr  + ".rir', 1)")
-              | {{ $t('sessions.exportUniqueRIRCounts', {name: "#{title}"} ) }}
-            v-list-item(@click="openSpiGraph('" + expr  + ".rir')")
-              | {{ $t('sessions.openSpiGraphRIR', {name: "#{title}"} ) }}
-            v-divider
-            v-list-item(@click="fieldExists('" + field  + "', '==')")
-              | {{ $t('sessions.addExists', {name: "#{title}"} ) }}
+      v-menu
+        template(#activator="{ props: activatorProps }")
+          button.btn.btn-sm.btn-default.clickable-label(v-bind="activatorProps" type="button")
+            | #{title}
+        v-list.clickable-label-menu(density="compact")
+          v-list-item(@click="exportUnique('" + expr  + "', 0)")
+            | {{ $t('sessions.exportUnique', {name: "#{title}"} ) }}
+          v-list-item(@click="exportUnique('" + expr  + "', 1)")
+            | {{ $t('sessions.exportUniqueCounts', {name: "#{title}"} ) }}
+          v-list-item(@click="openSpiGraph('" + expr  + "')")
+            | {{ $t('sessions.openSpiGraph', {name: "#{title}"} ) }}
+          v-divider
+          v-list-item(@click="exportUnique('" + expr  + ".country', 0)")
+            | {{ $t('sessions.exportUniqueCountry', {name: "#{title}"} ) }}
+          v-list-item(@click="exportUnique('" + expr  + ".country', 1)")
+            | {{ $t('sessions.exportUniqueCountryCounts', {name: "#{title}"} ) }}
+          v-list-item(@click="openSpiGraph('" + expr  + ".country')")
+            | {{ $t('sessions.openSpiGraphCountry', {name: "#{title}"} ) }}
+          v-divider
+          v-list-item(@click="exportUnique('" + expr  + ".asn', 0)")
+            | {{ $t('sessions.exportUniqueASN', {name: "#{title}"} ) }}
+          v-list-item(@click="exportUnique('" + expr  + ".asn', 1)")
+            | {{ $t('sessions.exportUniqueASNCounts', {name: "#{title}"} ) }}
+          v-list-item(@click="openSpiGraph('" + expr  + ".asn')")
+            | {{ $t('sessions.openSpiGraphASN', {name: "#{title}"} ) }}
+          v-divider
+          v-list-item(@click="exportUnique('" + expr  + ".rir', 0)")
+            | {{ $t('sessions.exportUniqueRIR', {name: "#{title}"} ) }}
+          v-list-item(@click="exportUnique('" + expr  + ".rir', 1)")
+            | {{ $t('sessions.exportUniqueRIRCounts', {name: "#{title}"} ) }}
+          v-list-item(@click="openSpiGraph('" + expr  + ".rir')")
+            | {{ $t('sessions.openSpiGraphRIR', {name: "#{title}"} ) }}
+          v-divider
+          v-list-item(@click="fieldExists('" + field  + "', '==')")
+            | {{ $t('sessions.addExists', {name: "#{title}"} ) }}
 
     dd
       - fieldShort = (field.endsWith("Ip") ? field.slice(0, -2) : field)
@@ -199,12 +201,13 @@ mixin printHeader(inHeaderNames, inHeaderValues, expr)
   - headerNames = Object.keys(headers)
   for headerName in headerNames
     dt
-      button.btn.btn-sm.btn-default.clickable-label(type="button")
-        | #{headerName}
-        v-menu(activator="parent" location="bottom start")
-          v-list.clickable-label-menu(density="compact")
-            v-list-item(@click="exportUnique('" + expr  + "', 1)")
-              | {{ $t('sessions.exportUniqueHeader') }}
+      v-menu
+        template(#activator="{ props: activatorProps }")
+          button.btn.btn-sm.btn-default.clickable-label(v-bind="activatorProps" type="button")
+            | #{headerName}
+        v-list.clickable-label-menu(density="compact")
+          v-list-item(@click="exportUnique('" + expr  + "', 1)")
+            | {{ $t('sessions.exportUniqueHeader') }}
     - var headerValues = Array.from (headers[headerName]);
     dd
       each headerValue,i in headerValues
@@ -215,37 +218,38 @@ mixin ipArrayListDNS(container, field, title, expr, max)
     - max = 25
   if (container[field+ "Ip"])
     dt
-      button.btn.btn-sm.btn-default.clickable-label(type="button")
-        | #{title}
-        v-menu(activator="parent" location="bottom start")
-          v-list.clickable-label-menu(density="compact")
-            v-list-item(@click="exportUnique('" + "ip." + expr  + "', 0)")
-              | {{ $t('sessions.exportUnique', {name: "#{title}"} ) }}
-            v-list-item(@click="exportUnique('" + "ip." + expr  + "', 1)")
-              | {{ $t('sessions.exportUniqueCounts', {name: "#{title}"} ) }}
-            v-list-item(@click="openSpiGraph('" + "ip." + expr  + "')")
-              | {{ $t('sessions.openSpiGraph', {name: "#{title}"} ) }}
-            v-divider
-            v-list-item(@click="exportUnique('" +   "country." + expr + "', 0)")
-              | {{ $t('sessions.exportUniqueCountry', {name: "#{title}"} ) }}
-            v-list-item(@click="exportUnique('" +  "country." + expr + "', 1)")
-              | {{ $t('sessions.exportUniqueCountryCounts', {name: "#{title}"} ) }}
-            v-list-item(@click="openSpiGraph('" + "country." + expr +"')")
-              | {{ $t('sessions.openSpiGraphCountry', {name: "#{title}"} ) }}
-            v-divider
-            v-list-item(@click="exportUnique('" + "asn." + expr + "', 0)")
-              | {{ $t('sessions.exportUniqueASN', {name: "#{title}"} ) }}
-            v-list-item(@click="exportUnique('" + "asn."+ expr + "', 1)")
-              | {{ $t('sessions.exportUniqueASNCounts', {name: "#{title}"} ) }}
-            v-list-item(@click="openSpiGraph('" + "asn." + expr + "')")
-              | {{ $t('sessions.openSpiGraphASN', {name: "#{title}"} ) }}
-            v-divider
-            v-list-item(@click="exportUnique('" + "rir." + expr + "', 0)")
-              | {{ $t('sessions.exportUniqueRIR', {name: "#{title}"} ) }}
-            v-list-item(@click="exportUnique('" + "rir." + expr + "', 1)")
-              | {{ $t('sessions.exportUniqueRIRCounts', {name: "#{title}"} ) }}
-            v-list-item(@click="openSpiGraph('" + "rir." + expr + "')")
-              | {{ $t('sessions.openSpiGraphRIR', {name: "#{title}"} ) }}
+      v-menu
+        template(#activator="{ props: activatorProps }")
+          button.btn.btn-sm.btn-default.clickable-label(v-bind="activatorProps" type="button")
+            | #{title}
+        v-list.clickable-label-menu(density="compact")
+          v-list-item(@click="exportUnique('" + "ip." + expr  + "', 0)")
+            | {{ $t('sessions.exportUnique', {name: "#{title}"} ) }}
+          v-list-item(@click="exportUnique('" + "ip." + expr  + "', 1)")
+            | {{ $t('sessions.exportUniqueCounts', {name: "#{title}"} ) }}
+          v-list-item(@click="openSpiGraph('" + "ip." + expr  + "')")
+            | {{ $t('sessions.openSpiGraph', {name: "#{title}"} ) }}
+          v-divider
+          v-list-item(@click="exportUnique('" +   "country." + expr + "', 0)")
+            | {{ $t('sessions.exportUniqueCountry', {name: "#{title}"} ) }}
+          v-list-item(@click="exportUnique('" +  "country." + expr + "', 1)")
+            | {{ $t('sessions.exportUniqueCountryCounts', {name: "#{title}"} ) }}
+          v-list-item(@click="openSpiGraph('" + "country." + expr +"')")
+            | {{ $t('sessions.openSpiGraphCountry', {name: "#{title}"} ) }}
+          v-divider
+          v-list-item(@click="exportUnique('" + "asn." + expr + "', 0)")
+            | {{ $t('sessions.exportUniqueASN', {name: "#{title}"} ) }}
+          v-list-item(@click="exportUnique('" + "asn."+ expr + "', 1)")
+            | {{ $t('sessions.exportUniqueASNCounts', {name: "#{title}"} ) }}
+          v-list-item(@click="openSpiGraph('" + "asn." + expr + "')")
+            | {{ $t('sessions.openSpiGraphASN', {name: "#{title}"} ) }}
+          v-divider
+          v-list-item(@click="exportUnique('" + "rir." + expr + "', 0)")
+            | {{ $t('sessions.exportUniqueRIR', {name: "#{title}"} ) }}
+          v-list-item(@click="exportUnique('" + "rir." + expr + "', 1)")
+            | {{ $t('sessions.exportUniqueRIRCounts', {name: "#{title}"} ) }}
+          v-list-item(@click="openSpiGraph('" + "rir." + expr + "')")
+            | {{ $t('sessions.openSpiGraphRIR', {name: "#{title}"} ) }}
     dd
       each ip,i in container[field + "Ip"]
         if (i == max)

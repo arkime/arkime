@@ -1,18 +1,7 @@
 // external imports
 import qs from 'qs';
-import { compile } from 'vue';
 import { useRoute } from 'vue-router';
 import { BDropdown, BDropdownItem, BDropdownDivider, BCardGroup, BCard, BTooltip } from 'bootstrap-vue-next';
-// Vuetify components are tree-shaken by vite-plugin-vuetify, which only
-// auto-imports components it can statically detect in .vue SFCs. The pug
-// templates here are rendered server-side and compiled at runtime, so the
-// build-time analyzer can't see them -- we have to import the components
-// explicitly so they get into the bundle and the runtime template compiler
-// can resolve them.
-import { VMenu } from 'vuetify/components/VMenu';
-import { VList, VListItem } from 'vuetify/components/VList';
-import { VDivider } from 'vuetify/components/VDivider';
-import { VBtn } from 'vuetify/components/VBtn';
 // internal imports
 import store from '@/store';
 import SessionsService from './SessionsService';
@@ -70,10 +59,12 @@ function gripUnclick (e, vueThis) {
       dt.nextElementSibling.style.marginLeft = `${newWidth + 10}px`;
     }
 
-    // .clickable-label is now on the <button> directly (used to be on a
-    // wrapping <div> from b-dropdown). Set maxWidth on the buttons.
-    for (const btn of document.getElementsByClassName('clickable-label')) {
-      btn.style.maxWidth = `${newWidth}px`;
+    const labelBtns = document.getElementsByClassName('clickable-label');
+    if (labelBtns && labelBtns.length) {
+      const btn = labelBtns[0].getElementsByTagName('button');
+      if (btn && btn.length) {
+        btn[0].style.maxWidth = `${newWidth}px`;
+      }
     }
 
     for (const grip of document.getElementsByClassName('session-detail-grip')) {
@@ -105,12 +96,8 @@ function collapseSection (e) {
 // then passed to the client as an HTML string, used here as "template"
 export default {
   getVueInstance (template, session) {
-    // Compile the server-rendered HTML explicitly (rather than relying on
-    // the runtime template compiler hook) so component resolution happens
-    // in this module's scope where we control component registration.
-    const render = compile(template);
     return {
-      render,
+      template,
       data () {
         return {
           session,
@@ -135,12 +122,7 @@ export default {
         BDropdownItem,
         BDropdownDivider,
         BCardGroup,
-        BCard,
-        VMenu,
-        VList,
-        VListItem,
-        VDivider,
-        VBtn
+        BCard
       },
       directives: {
         BTooltip,
@@ -210,8 +192,12 @@ export default {
           // set the width of the dt and the margin of the dd based on user setting
           dt.style.width = `${this.dlWidth}px`;
           dt.nextElementSibling.style.marginLeft = `${this.dlWidth + 10}px`;
-          for (const btn of dt.getElementsByClassName('clickable-label')) {
-            btn.style.maxWidth = `${dlWidth}px`;
+          const labelBtn = dt.getElementsByClassName('clickable-label');
+          if (labelBtn && labelBtn.length) {
+            const btn = labelBtn[0].getElementsByTagName('button');
+            if (btn && btn.length) {
+              btn[0].style.maxWidth = `${dlWidth}px`;
+            }
           }
         }
 

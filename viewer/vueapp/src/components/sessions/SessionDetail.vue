@@ -668,17 +668,41 @@ onUnmounted(() => {
   text-decoration: none;
 }
 
-/* Session-options toolbar -- flex row of v-btn entries */
-.session-detail .session-options {
+/* top navigation links */
+.session-detail .nav-pills {
   border-bottom: 1px solid var(--color-gray);
   padding-bottom: 4px;
   padding-top: 4px;
 }
 
-/* clickable labels -- the .clickable-label class is on the <button> itself
-   now (used to be on a wrapping div from b-dropdown). */
-.session-detail button.clickable-label {
+.session-detail .nav-pills > li.nav-item > a,
+.session-detail .nav-pills > div.nav-item > button {
+  color: var(--color-foreground);
+  background-color: transparent;
+  border: none;
+}
+
+.session-detail .nav-pills > li.nav-item > a:hover,
+.session-detail .nav-pills > div.nav-item > button:hover {
+  color: var(--color-button, #FFF);
+}
+
+.session-detail .nav-pills > li.nav-item > a:hover,
+.session-detail .nav-pills > li.nav-item.open > a,
+.session-detail .nav-pills > li.nav-item.open > a:hover,
+.session-detail .nav-pills > div.nav-item > button:hover,
+.session-detail .nav-pills > div.nav-item.open > button,
+.session-detail .nav-pills > div.nav-item.open > button:hover  {
+  background-color: var(--color-quaternary-lighter);
+}
+
+/* clickable labels */
+.session-detail .clickable-label {
   margin-top: -2px;
+  display: inline-block;
+}
+
+.session-detail .clickable-label button.btn {
   height: 21px;
   background-color: transparent;
   font-size: 11px;
@@ -691,29 +715,10 @@ onUnmounted(() => {
   text-overflow: ellipsis;
 }
 
-.session-detail button.clickable-label:hover {
+.session-detail .clickable-label button.btn:hover {
   color: #333;
   background-color: var(--color-gray);
   border-color: var(--color-gray);
-}
-
-/* Session-options v-btn entries (links + dropdown triggers). Strip
-   Vuetify's default button styling so they read as nav-links rather
-   than chunky flat buttons. */
-.session-detail .session-options-btn {
-  text-transform: none;
-  letter-spacing: normal;
-  font-weight: 400;
-  font-size: 14px;
-  min-width: 0;
-  padding: 0 10px;
-  background-color: transparent;
-  box-shadow: none;
-  color: var(--color-foreground);
-}
-.session-detail .session-options-btn:hover {
-  background-color: var(--color-quaternary-lighter);
-  color: var(--color-button, #FFF);
 }
 
 /* Vuetify v-menu teleports its content to body, so these selectors

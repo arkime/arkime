@@ -3,20 +3,19 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-  <v-divider
-    data-testid="separator"
-    v-if="Object.keys(menuItems).length && separator" />
-  <template
-    v-for="(item, key) in menuItems"
-    :key="'sync-item-' + key">
+  <span>
+    <v-divider
+      data-testid="separator"
+      v-if="Object.keys(menuItems).length && separator" />
     <v-list-item
-      v-if="item"
+      v-for="(item, key) in menuItems"
+      :key="'sync-item-' + key"
       :href="item.url"
       target="_blank"
       rel="noopener noreferrer">
       {{ item.name }}
     </v-list-item>
-  </template>
+  </span>
 </template>
 
 <script>
