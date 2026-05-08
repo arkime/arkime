@@ -26,7 +26,7 @@ ul.nav.nav-pills.mb-3
       span.fa.fa-link.me-1
       | {{ $t('sessions.link') }}
   li.nav-item
-    a.nav-link.cursor-pointer(style="font-size:14px;")
+    v-btn.nav-link.session-options-btn(variant="text" size="small")
       span.fa.fa-columns.me-1
       | {{ $t('sessions.columns') }}
       v-menu(activator="parent" location="bottom start")
@@ -38,8 +38,8 @@ ul.nav.nav-pills.mb-3
           v-list-item(@click="toggleLayout(3)")
             | {{ $t('sessions.threeColumn') }}
   li.nav-item
-    a.nav-link.cursor-pointer(style="font-size:14px;")
-      span.fa.fa-columns.me-1
+    v-btn.nav-link.session-options-btn(variant="text" size="small")
+      span.fa.fa-cogs.me-1
       | {{ $t('sessions.actions') }}
       v-menu(activator="parent" location="bottom start")
         v-list(density="compact")
