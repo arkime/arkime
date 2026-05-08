@@ -54,8 +54,9 @@ ul.nav.nav-pills.mb-3
           | {{ $t('sessions.tag.removeTags') }}
         v-list-item(@click="removeData()", v-has-permission="'removeEnabled'")
           | {{ $t('search.removeData') }}
-        v-list-item(v-for="(value, key) in remoteclusters", :key="key", @click="sendSession(key)")
-          | {{ $t('search.sendSession', { name: value.name }) }}
+        template(v-for="(value, key) in remoteclusters", :key="key")
+          v-list-item(v-if="value", @click="sendSession(key)")
+            | {{ $t('search.sendSession', { name: value.name }) }}
 
 div.mb-2
   arkime-toast(:message="message", :type="messageType", :done="messageDone")
