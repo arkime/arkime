@@ -333,27 +333,59 @@ export default {
 </script>
 
 <style scoped>
+/* Tighten everything to a 28px-height row -- smaller than Vuetify's
+   compact default (~38px). Targets v-select, v-btn-toggle buttons,
+   and the menu trigger. Selectors include .v-... class to win against
+   Vuetify's defaults without !important. */
 .packet-options-row {
-  /* compact rhythm matching the session-options toolbar above */
-  font-size: 13px;
+  font-size: 12px;
 }
 
 /* Hold the v-select width down -- otherwise compact density still
    stretches the field to fill flex space. */
 .packet-options-select {
   display: inline-block;
-  min-width: 140px;
-  max-width: 180px;
+  min-width: 130px;
+  max-width: 170px;
 }
 
-/* Match the v-select / v-btn-toggle compact height (~38px) so the
-   menu trigger doesn't look skinny next to the rest of the row. */
+.packet-options-row :deep(.v-field) {
+  min-height: 28px;
+  font-size: 12px;
+}
+.packet-options-row :deep(.v-field__input),
+.packet-options-row :deep(.v-select__selection-text),
+.packet-options-row :deep(.v-select__selection) {
+  min-height: 28px;
+  padding-top: 0;
+  padding-bottom: 0;
+  font-size: 12px;
+}
+.packet-options-row :deep(.v-field__append-inner) {
+  padding-top: 4px;
+}
+
+/* Menu trigger + decoding form buttons */
+.packet-options-row :deep(.v-btn) {
+  min-height: 28px;
+  height: 28px;
+  font-size: 12px;
+}
 .packet-options-btn.v-btn {
   text-transform: none;
   letter-spacing: normal;
   font-weight: 500;
-  min-height: 38px;
-  padding: 0 14px;
+  padding: 0 12px;
+}
+
+/* Src/Dst + decoding toggle groups */
+.packet-options-row :deep(.v-btn-toggle) {
+  height: 28px;
+}
+.packet-options-row :deep(.v-btn-toggle .v-btn) {
+  text-transform: none;
+  letter-spacing: normal;
+  padding: 0 10px;
 }
 
 .decoding-form {
@@ -361,8 +393,8 @@ export default {
 }
 
 .decoding-form-field {
-  min-width: 160px;
-  max-width: 240px;
+  min-width: 150px;
+  max-width: 220px;
 }
 
 .decoding-form-help {
