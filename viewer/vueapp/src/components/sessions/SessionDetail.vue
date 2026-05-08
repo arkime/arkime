@@ -668,32 +668,32 @@ onUnmounted(() => {
   text-decoration: none;
 }
 
-/* top navigation links */
-.session-detail .nav-pills {
+/* Session-options toolbar -- flex row of v-btn entries */
+.session-detail .session-options {
   border-bottom: 1px solid var(--color-gray);
   padding-bottom: 4px;
   padding-top: 4px;
 }
 
-.session-detail .nav-pills > li.nav-item > a,
-.session-detail .nav-pills > div.nav-item > button {
-  color: var(--color-foreground);
+/* Strip Vuetify's default chunky button styling on the session-options
+   v-btn entries so they read as compact toolbar links rather than
+   uppercase pill buttons. */
+.session-detail .session-options-btn.v-btn {
+  text-transform: none;
+  letter-spacing: normal;
+  font-weight: 400;
+  font-size: 12.5px;
+  min-width: 0;
+  height: 28px;
+  padding: 0 10px;
   background-color: transparent;
-  border: none;
+  box-shadow: none;
+  color: var(--color-foreground);
 }
 
-.session-detail .nav-pills > li.nav-item > a:hover,
-.session-detail .nav-pills > div.nav-item > button:hover {
-  color: var(--color-button, #FFF);
-}
-
-.session-detail .nav-pills > li.nav-item > a:hover,
-.session-detail .nav-pills > li.nav-item.open > a,
-.session-detail .nav-pills > li.nav-item.open > a:hover,
-.session-detail .nav-pills > div.nav-item > button:hover,
-.session-detail .nav-pills > div.nav-item.open > button,
-.session-detail .nav-pills > div.nav-item.open > button:hover  {
+.session-detail .session-options-btn.v-btn:hover {
   background-color: var(--color-quaternary-lighter);
+  color: var(--color-button, #FFF);
 }
 
 /* clickable labels */
