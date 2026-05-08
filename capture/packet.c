@@ -51,6 +51,7 @@ LOCAL int                    ttlField[2];
 
 LOCAL uint64_t               droppedFrags;
 LOCAL gboolean               disableIp4Defrag;
+LOCAL gboolean               trimEthernetPadding;
 
 LOCAL patricia_tree_t       *ipTree4 = 0;
 LOCAL patricia_tree_t       *ipTree6 = 0;
@@ -902,6 +903,18 @@ LOCAL ArkimePacketRC arkime_packet_ip4(ArkimePacketBatch_t *batch, ArkimePacket_
         return ARKIME_PACKET_CORRUPT;
     }
 
+    // Optionally strip Ethernet padding/FCS at the outermost IP layer so
+    // saved pcap and byte counts match the on-wire IP datagram length.
+    // ipOffset is still 0 here on the first IP layer; tunneled inner IPs
+    // already have it set by the enclosing call.
+    if (trimEthernetPadding && packet->ipOffset == 0 && len > ip_len) {
+        int trim = len - ip_len;
+        if (packet->pktlen > trim) {
+            packet->pktlen -= trim;
+            len = ip_len;
+        }
+    }
+
     int ip_hdr_len = 4 * ip4->ip_hl;
     if (ip_hdr_len < 4 * 5 || len < ip_hdr_len || ip_len < ip_hdr_len) {
 #ifdef DEBUG_PACKET
@@ -1058,6 +1071,17 @@ LOCAL ArkimePacketRC arkime_packet_ip6(ArkimePacketBatch_t *batch, ArkimePacket_
     int ip_len = ntohs(ip6->ip6_plen);
     if (len < ip_len + (int)sizeof(struct ip6_hdr)) {
         return ARKIME_PACKET_CORRUPT;
+    }
+
+    // Optionally strip Ethernet padding/FCS at the outermost IP layer so
+    // saved pcap and byte counts match the on-wire IP datagram length.
+    if (trimEthernetPadding && packet->ipOffset == 0 &&
+        len > ip_len + (int)sizeof(struct ip6_hdr)) {
+        int trim = len - (ip_len + (int)sizeof(struct ip6_hdr));
+        if (packet->pktlen > trim) {
+            packet->pktlen -= trim;
+            len = ip_len + (int)sizeof(struct ip6_hdr);
+        }
     }
 
     // Corrupt ip6 header
@@ -1850,6 +1874,7 @@ void arkime_packet_init()
     nextLogPackets = config.logEveryXPackets;
 
     disableIp4Defrag = arkime_config_boolean(NULL, "disableIp4Defrag", FALSE);
+    trimEthernetPadding = arkime_config_boolean(NULL, "trimEthernetPadding", FALSE);
 
     pcapFileHeader.magic = 0xa1b2c3d4;
     pcapFileHeader.version_major = 2;
