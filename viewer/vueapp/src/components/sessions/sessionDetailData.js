@@ -2,6 +2,13 @@
 import qs from 'qs';
 import { useRoute } from 'vue-router';
 import { BDropdown, BDropdownItem, BDropdownDivider, BCardGroup, BCard, BTooltip } from 'bootstrap-vue-next';
+// Vuetify components used by the pug session-detail templates. The
+// runtime template compiler can't go through vite-plugin-vuetify's
+// auto-import path (that only sees .vue SFCs), so register them on
+// the runtime instance's components map.
+import { VMenu } from 'vuetify/components/VMenu';
+import { VList, VListItem } from 'vuetify/components/VList';
+import { VDivider } from 'vuetify/components/VDivider';
 // internal imports
 import store from '@/store';
 import SessionsService from './SessionsService';
@@ -122,7 +129,11 @@ export default {
         BDropdownItem,
         BDropdownDivider,
         BCardGroup,
-        BCard
+        BCard,
+        VMenu,
+        VList,
+        VListItem,
+        VDivider
       },
       directives: {
         BTooltip,
