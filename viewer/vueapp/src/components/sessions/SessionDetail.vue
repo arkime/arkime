@@ -696,13 +696,15 @@ onUnmounted(() => {
   color: var(--color-button, #FFF);
 }
 
-/* clickable labels */
-.session-detail .clickable-label {
+/* Field-label dropdown trigger. After the Vuetify migration, the
+   .clickable-label class is on the <button> itself (used to be on a
+   wrapping <div> from b-dropdown), so the selectors need to match the
+   button directly. Height matches the dt's line-height-derived height
+   (line-height: 1.7 ~= 21px) so labels stay aligned with their dd
+   values. */
+.session-detail button.clickable-label {
   margin-top: -2px;
   display: inline-block;
-}
-
-.session-detail .clickable-label button.btn {
   height: 21px;
   background-color: transparent;
   font-size: 11px;
@@ -713,9 +715,10 @@ onUnmounted(() => {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  vertical-align: baseline;
 }
 
-.session-detail .clickable-label button.btn:hover {
+.session-detail button.clickable-label:hover {
   color: #333;
   background-color: var(--color-gray);
   border-color: var(--color-gray);
