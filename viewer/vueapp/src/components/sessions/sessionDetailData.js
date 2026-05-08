@@ -9,6 +9,7 @@ import { BDropdown, BDropdownItem, BDropdownDivider, BCardGroup, BCard, BTooltip
 import { VMenu } from 'vuetify/components/VMenu';
 import { VList, VListItem } from 'vuetify/components/VList';
 import { VDivider } from 'vuetify/components/VDivider';
+import { VBtn } from 'vuetify/components/VBtn';
 // internal imports
 import store from '@/store';
 import SessionsService from './SessionsService';
@@ -133,7 +134,8 @@ export default {
         VMenu,
         VList,
         VListItem,
-        VDivider
+        VDivider,
+        VBtn
       },
       directives: {
         BTooltip,
