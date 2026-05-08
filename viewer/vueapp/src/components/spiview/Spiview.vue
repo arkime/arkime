@@ -1368,15 +1368,20 @@ export default {
 </script>
 
 <style>
+/* Field-trigger label/caret buttons (used both inside the .field-dropdown
+   group in btn-drawer and standalone in spi-buckets). Small + tight so
+   the row of toggle buttons stays compact. */
+.spiview-page .field-dropdown-label,
+.spiview-page .field-dropdown-caret {
+  padding: 0 5px;
+  font-size: .75rem;
+}
+
 /* Field-trigger group: a label button + a caret button sit side by
    side, sharing borders so they read as one widget. */
 .spiview-page .field-dropdown {
   display: inline-flex;
-  vertical-align: top;
-}
-.spiview-page .field-dropdown > button {
-  padding: 0 5px;
-  font-size: .75rem;
+  vertical-align: middle;
 }
 .spiview-page .field-dropdown .field-dropdown-label {
   border-top-right-radius: 0;
@@ -1431,25 +1436,31 @@ export default {
 
 /* panels -------------------------- */
 /* Replacement for b-card / b-card-header / b-card-body. Plain native
-   elements styled like a bordered card with a clickable header. */
+   elements styled like a bordered card with a clickable header.
+   Use the theme-aware variables defined in arkime-light.css /
+   arkime-dark.css so the card adapts to the active theme without
+   needing duplicate dark-mode rules. */
 .spiview-page .spi-card {
   border: 1px solid var(--color-gray);
-  background-color: var(--bs-body-bg, transparent);
+  background-color: var(--color-background);
+  color: var(--color-foreground);
   border-radius: 4px;
 }
 .spiview-page .spi-card-header {
-  background-color: var(--color-gray-lightest, transparent);
+  background-color: var(--color-quaternary-lightest);
+  color: var(--color-foreground);
   border-bottom: 1px solid var(--color-gray);
   display: flex;
   align-items: center;
   flex-wrap: wrap;
 }
-.spiview-page .spi-card.has-collapsed-header > .spi-card-header,
 .spiview-page .spi-card-header.collapsed {
   border-bottom: 0;
 }
 .spiview-page .spi-card-body {
   padding: 0;
+  background-color: var(--color-background);
+  color: var(--color-foreground);
 }
 
 /* +/- button on panel header */
@@ -1485,7 +1496,7 @@ export default {
   font-size: 12px;
   line-height: 1.5;
   border-radius: 3px;
-  vertical-align: top;
+  vertical-align: middle;
   width: 300px;
   min-height: 22px;
 }
