@@ -19,7 +19,7 @@ SPDX-License-Identifier: Apache-2.0
             <div
               class="input-group input-group-sm w-auto"
               v-if="fields && fields.length && fieldTypeahead">
-              <span class="input-group-text cursor-help">
+              <span class="input-group-text">
                 {{ $t('spigraph.field') }}:
               </span>
               <arkime-field-typeahead
@@ -53,7 +53,7 @@ SPDX-License-Identifier: Apache-2.0
 
             <!-- main graph type select -->
             <div class="input-group input-group-sm w-auto">
-              <span class="input-group-text cursor-help">
+              <span class="input-group-text">
                 {{ $t('spigraph.graphType') }}:
               </span>
               <select
@@ -82,7 +82,7 @@ SPDX-License-Identifier: Apache-2.0
             <div
               class="input-group input-group-sm w-auto"
               v-if="spiGraphType === 'default'">
-              <span class="input-group-text cursor-help">
+              <span class="input-group-text">
                 {{ $t('spigraph.sortBy') }}:
               </span>
               <select
@@ -98,7 +98,7 @@ SPDX-License-Identifier: Apache-2.0
             <div
               class="input-group input-group-sm w-auto"
               v-if="spiGraphType === 'default'">
-              <span class="input-group-text cursor-help">
+              <span class="input-group-text">
                 {{ $t('spigraph.refreshEvery') }}:
               </span>
               <select
