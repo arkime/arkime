@@ -496,7 +496,7 @@ SPDX-License-Identifier: Apache-2.0
         </v-tab>
       </v-tabs>
       <!-- Lazy-mount each tab pane via v-if so child components only initialize
-           when their tab is active (matches BVN's <b-tabs lazy> behavior). -->
+           when their tab is active. -->
       <div class="stats-tab-content">
         <capture-graphs
           v-if="tabIndex === 0"
