@@ -45,7 +45,7 @@ SPDX-License-Identifier: Apache-2.0
                 :value="query.size"
                 @change="changeMaxElements(Number($event.target.value))">
                 <option
-                  v-for="opt in [5,10,15,20,30,50,100,200,500]"
+                  v-for="opt in maxElementsOptions"
                   :key="opt"
                   :value="opt">{{ opt }}</option>
               </select>
@@ -61,19 +61,9 @@ SPDX-License-Identifier: Apache-2.0
                 :value="spiGraphType"
                 @change="changeSpiGraphType($event.target.value)">
                 <option
-                  value="default"
-                  v-i18n-value="'spigraph.graphType-'" />
-                <option
-                  value="pie"
-                  v-i18n-value="'spigraph.graphType-'" />
-                <option
-                  value="table"
-                  v-i18n-value="'spigraph.graphType-'" />
-                <option
-                  value="treemap"
-                  v-i18n-value="'spigraph.graphType-'" />
-                <option
-                  value="sankey"
+                  v-for="t in graphTypeOptions"
+                  :key="t"
+                  :value="t"
                   v-i18n-value="'spigraph.graphType-'" />
               </select>
             </div> <!-- /main graph type select -->
@@ -106,7 +96,7 @@ SPDX-License-Identifier: Apache-2.0
                 :value="refresh"
                 @change="changeRefreshInterval(Number($event.target.value))">
                 <option
-                  v-for="opt in [0,5,10,15,30,45,60]"
+                  v-for="opt in refreshOptions"
                   :key="opt"
                   :value="opt">{{ opt }}</option>
               </select>
@@ -283,7 +273,13 @@ export default {
       spiGraphType: this.$route.query.spiGraphType || 'default',
       tableResults: [],
       fieldTypeaheadList: [],
-      baseFieldObj: {}
+      baseFieldObj: {},
+      // Subnav option lists -- extracted from inline literals so the
+      // template stays readable and v-for collapses the repeated
+      // <option> blocks into one.
+      maxElementsOptions: [5, 10, 15, 20, 30, 50, 100, 200, 500],
+      refreshOptions: [0, 5, 10, 15, 30, 45, 60],
+      graphTypeOptions: ['default', 'pie', 'table', 'treemap', 'sankey']
     };
   },
   computed: {
