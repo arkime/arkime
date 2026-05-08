@@ -25,36 +25,37 @@ ul.nav.nav-pills.mb-3
     a.nav-link.cursor-pointer(:href="permalink")
       span.fa.fa-link.me-1
       | {{ $t('sessions.link') }}
-  b-dropdown.nav-item(:text="$t('sessions.columns')")
-    //- NOTE: this is a workaround to get the dropdown button to have the same size as the nav-item buttons
-        To get PUG to render <template #button-content> correctly, this is the syntax:
-    template(#button-content="")
-      span(style="font-size:14px;")
-        span.fa.fa-columns.me-1
-        | {{ $t('sessions.columns') }}
-    b-dropdown-item(@click="toggleLayout(1)")
-      | {{ $t('sessions.oneColumn') }}
-    b-dropdown-item(@click="toggleLayout(2)")
-      | {{ $t('sessions.twoColumn') }}
-    b-dropdown-item(@click="toggleLayout(3)")
-      | {{ $t('sessions.threeColumn') }}
-  b-dropdown.nav-item
-    //- NOTE: same as above ^
-    template(#button-content="")
-        span(style="font-size:14px;")
+  li.nav-item
+    v-menu
+      template(#activator="{ props: activatorProps }")
+        a.nav-link.cursor-pointer(v-bind="activatorProps" style="font-size:14px;")
+          span.fa.fa-columns.me-1
+          | {{ $t('sessions.columns') }}
+      v-list(density="compact")
+        v-list-item(@click="toggleLayout(1)")
+          | {{ $t('sessions.oneColumn') }}
+        v-list-item(@click="toggleLayout(2)")
+          | {{ $t('sessions.twoColumn') }}
+        v-list-item(@click="toggleLayout(3)")
+          | {{ $t('sessions.threeColumn') }}
+  li.nav-item
+    v-menu
+      template(#activator="{ props: activatorProps }")
+        a.nav-link.cursor-pointer(v-bind="activatorProps" style="font-size:14px;")
           span.fa.fa-columns.me-1
           | {{ $t('sessions.actions') }}
-    if (session.packetPos && session.packetPos.length > 0)
-      b-dropdown-item(@click="exportPCAP", v-has-permission="'!disablePcapDownload'")
-        | {{ $t('sessions.exports.exportPCAP') }}
-    b-dropdown-item(@click="addTags")
-      | {{ $t('sessions.tag.addTags') }}
-    b-dropdown-item(@click="removeTags", v-has-permission="'removeEnabled'")
-      | {{ $t('sessions.tag.removeTags') }}
-    b-dropdown-item(@click="removeData()", v-has-permission="'removeEnabled'")
-      | {{ $t('search.removeData') }}
-    b-dropdown-item(v-for="(value, key) in remoteclusters", key="key", @click="sendSession(key)")
-      | {{ $t('search.sendSession', { name: value.name }) }}
+      v-list(density="compact")
+        if (session.packetPos && session.packetPos.length > 0)
+          v-list-item(@click="exportPCAP", v-has-permission="'!disablePcapDownload'")
+            | {{ $t('sessions.exports.exportPCAP') }}
+        v-list-item(@click="addTags")
+          | {{ $t('sessions.tag.addTags') }}
+        v-list-item(@click="removeTags", v-has-permission="'removeEnabled'")
+          | {{ $t('sessions.tag.removeTags') }}
+        v-list-item(@click="removeData()", v-has-permission="'removeEnabled'")
+          | {{ $t('search.removeData') }}
+        v-list-item(v-for="(value, key) in remoteclusters", :key="key", @click="sendSession(key)")
+          | {{ $t('search.sendSession', { name: value.name }) }}
 
 div.mb-2
   arkime-toast(:message="message", :type="messageType", :done="messageDone")
