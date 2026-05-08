@@ -118,7 +118,7 @@ SPDX-License-Identifier: Apache-2.0
 
     <!-- decodings -->
     <v-btn-toggle
-      v-if="decodingsClone && Object.keys(decodingsClone).length"
+      v-if="hasDecodings"
       :model-value="activeDecodingKeys"
       multiple
       density="compact"
@@ -129,7 +129,6 @@ SPDX-License-Identifier: Apache-2.0
         v-for="(value, key) in decodingsClone"
         :key="key"
         :value="key"
-        :disabled="params.showFrames"
         @click="toggleDecoding(key)">
         {{ value.name }}
         <v-tooltip
@@ -162,7 +161,7 @@ SPDX-License-Identifier: Apache-2.0
         variant="tonal"
         color="warning"
         :aria-label="$t('common.cancel')"
-        @click="closeDecodingForm(false)">
+        @click="closeDecodingForm">
         <v-icon icon="fa-ban" />
         <v-tooltip activator="parent">
           {{ $t('common.cancel') }}
@@ -253,6 +252,9 @@ export default {
     },
     activeDecodingKeys () {
       return Object.keys(this.decodingsClone || {}).filter(k => this.decodingsClone[k].active);
+    },
+    hasDecodings () {
+      return this.decodingsClone && Object.keys(this.decodingsClone).length > 0;
     }
   },
   watch: {
@@ -291,11 +293,8 @@ export default {
         this.applyDecoding(key);
       }
     },
-    /**
-     * Closes the form for additional decoding input
-     * @param {bool} active The active state of the decoding
-     */
-    closeDecodingForm (active) {
+    /* Closes the additional-input form for the active decoding. */
+    closeDecodingForm () {
       if (this.decodingForm) {
         this.$emit('updateDecodings', this.decodingsClone);
       }
@@ -333,39 +332,37 @@ export default {
 </script>
 
 <style scoped>
-/* Tighten everything to a 28px-height row -- smaller than Vuetify's
-   compact default (~38px). Targets v-select, v-btn-toggle buttons,
-   and the menu trigger. Selectors include .v-... class to win against
-   Vuetify's defaults without !important. */
+/* Tighten everything to a single row height -- smaller than Vuetify's
+   compact default (~38px). --row-h is the shared height/line-height
+   that v-field, v-btn, and v-btn-toggle all snap to. */
 .packet-options-row {
+  --row-h: 28px;
   font-size: 12px;
 }
 
-/* Hold the v-select width down -- otherwise compact density still
-   stretches the field to fill flex space. */
+/* Cap v-select widths so flex doesn't stretch them. */
 .packet-options-select {
   display: inline-block;
   min-width: 130px;
   max-width: 170px;
 }
 
-.packet-options-row :deep(.v-field) {
-  min-height: 28px;
+/* v-select / v-text-field internals */
+.packet-options-row :deep(.v-field),
+.packet-options-row :deep(.v-field__input) {
+  min-height: var(--row-h);
   font-size: 12px;
 }
 .packet-options-row :deep(.v-field__input) {
-  min-height: 28px;
   padding-top: 0;
   padding-bottom: 0;
-  font-size: 12px;
   display: flex;
   align-items: center;
-  line-height: 28px;
+  line-height: var(--row-h);
 }
 .packet-options-row :deep(.v-select__selection),
 .packet-options-row :deep(.v-select__selection-text) {
-  font-size: 12px;
-  line-height: 28px;
+  line-height: var(--row-h);
   margin-top: 0;
   margin-bottom: 0;
 }
@@ -374,38 +371,35 @@ export default {
   align-items: center;
 }
 
-/* Menu trigger + decoding form buttons */
+/* Every v-btn in the row -- the menu trigger, both v-btn-toggle groups,
+   and the decoding-form action buttons all share the same height +
+   typographic reset (no uppercase, no extra letter-spacing). */
 .packet-options-row :deep(.v-btn) {
-  min-height: 28px;
-  height: 28px;
+  height: var(--row-h);
+  min-height: var(--row-h);
   font-size: 12px;
-}
-.packet-options-btn.v-btn {
   text-transform: none;
   letter-spacing: normal;
+}
+.packet-options-row :deep(.v-btn-toggle) {
+  height: var(--row-h);
+}
+.packet-options-row :deep(.v-btn-toggle .v-btn) {
+  padding: 0 10px;
+}
+.packet-options-btn.v-btn {
   font-weight: 500;
   padding: 0 12px;
 }
 
-/* Src/Dst + decoding toggle groups */
-.packet-options-row :deep(.v-btn-toggle) {
-  height: 28px;
-}
-.packet-options-row :deep(.v-btn-toggle .v-btn) {
-  text-transform: none;
-  letter-spacing: normal;
-  padding: 0 10px;
-}
-
+/* Decoding form */
 .decoding-form {
   border-top: 1px solid var(--color-gray);
 }
-
 .decoding-form-field {
   min-width: 150px;
   max-width: 220px;
 }
-
 .decoding-form-help {
   font-size: 12px;
 }
