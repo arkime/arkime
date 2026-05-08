@@ -903,10 +903,19 @@ LOCAL ArkimePacketRC arkime_packet_ip4(ArkimePacketBatch_t *batch, ArkimePacket_
         return ARKIME_PACKET_CORRUPT;
     }
 
+    int ip_hdr_len = 4 * ip4->ip_hl;
+    if (ip_hdr_len < 4 * 5 || len < ip_hdr_len || ip_len < ip_hdr_len) {
+#ifdef DEBUG_PACKET
+        LOG("BAD PACKET: too small for header and options %p %d %d", packet, len, ip_hdr_len);
+#endif
+        return ARKIME_PACKET_CORRUPT;
+    }
+
     // Optionally strip Ethernet padding/FCS at the outermost IP layer so
     // saved pcap and byte counts match the on-wire IP datagram length.
     // ipOffset is still 0 here on the first IP layer; tunneled inner IPs
-    // already have it set by the enclosing call.
+    // already have it set by the enclosing call. Done after structural
+    // validation so we don't mutate pktlen for packets we'd reject.
     if (trimEthernetPadding && packet->ipOffset == 0 && len > ip_len) {
         int trim = len - ip_len;
         if (packet->pktlen > trim) {
@@ -915,13 +924,6 @@ LOCAL ArkimePacketRC arkime_packet_ip4(ArkimePacketBatch_t *batch, ArkimePacket_
         }
     }
 
-    int ip_hdr_len = 4 * ip4->ip_hl;
-    if (ip_hdr_len < 4 * 5 || len < ip_hdr_len || ip_len < ip_hdr_len) {
-#ifdef DEBUG_PACKET
-        LOG("BAD PACKET: too small for header and options %p %d %d", packet, len, ip_hdr_len);
-#endif
-        return ARKIME_PACKET_CORRUPT;
-    }
     if (ipTree4) {
         const patricia_node_t *node;
 
@@ -1073,20 +1075,22 @@ LOCAL ArkimePacketRC arkime_packet_ip6(ArkimePacketBatch_t *batch, ArkimePacket_
         return ARKIME_PACKET_CORRUPT;
     }
 
+    // Corrupt ip6 header
+    if ((ip6->ip6_vfc & 0xf0) != 0x60) {
+        return ARKIME_PACKET_CORRUPT;
+    }
+
     // Optionally strip Ethernet padding/FCS at the outermost IP layer so
     // saved pcap and byte counts match the on-wire IP datagram length.
-    if (trimEthernetPadding && packet->ipOffset == 0 &&
+    // Done after structural validation so we don't mutate pktlen for
+    // packets we'd reject. ip_len > 0 skips RFC 2675 jumbograms.
+    if (trimEthernetPadding && packet->ipOffset == 0 && ip_len > 0 &&
         len > ip_len + (int)sizeof(struct ip6_hdr)) {
         int trim = len - (ip_len + (int)sizeof(struct ip6_hdr));
         if (packet->pktlen > trim) {
             packet->pktlen -= trim;
             len = ip_len + (int)sizeof(struct ip6_hdr);
         }
-    }
-
-    // Corrupt ip6 header
-    if ((ip6->ip6_vfc & 0xf0) != 0x60) {
-        return ARKIME_PACKET_CORRUPT;
     }
 
     if (ipTree6) {
