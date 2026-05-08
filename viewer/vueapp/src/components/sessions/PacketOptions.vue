@@ -353,16 +353,25 @@ export default {
   min-height: 28px;
   font-size: 12px;
 }
-.packet-options-row :deep(.v-field__input),
-.packet-options-row :deep(.v-select__selection-text),
-.packet-options-row :deep(.v-select__selection) {
+.packet-options-row :deep(.v-field__input) {
   min-height: 28px;
   padding-top: 0;
   padding-bottom: 0;
   font-size: 12px;
+  display: flex;
+  align-items: center;
+  line-height: 28px;
+}
+.packet-options-row :deep(.v-select__selection),
+.packet-options-row :deep(.v-select__selection-text) {
+  font-size: 12px;
+  line-height: 28px;
+  margin-top: 0;
+  margin-bottom: 0;
 }
 .packet-options-row :deep(.v-field__append-inner) {
-  padding-top: 4px;
+  padding-top: 0;
+  align-items: center;
 }
 
 /* Menu trigger + decoding form buttons */
