@@ -1437,11 +1437,11 @@ export default {
 /* panels -------------------------- */
 /* Replacement for b-card / b-card-header / b-card-body. Plain native
    elements styled like a bordered card with a clickable header.
-   Use the theme-aware variables defined in arkime-light.css /
-   arkime-dark.css so the card adapts to the active theme without
-   needing duplicate dark-mode rules. */
+   --color-gray-light is theme-aware (subtle on light, mid on dark),
+   matching the rest of viewer's bordered components (Settings.vue,
+   Hunt.vue, ESHealth.vue, WelcomeMessage.vue). */
 .spiview-page .spi-card {
-  border: 1px solid var(--color-gray);
+  border: 1px solid var(--color-gray-light);
   background-color: var(--color-background);
   color: var(--color-foreground);
   border-radius: 4px;
@@ -1449,10 +1449,17 @@ export default {
 .spiview-page .spi-card-header {
   background-color: var(--color-quaternary-lightest);
   color: var(--color-foreground);
-  border-bottom: 1px solid var(--color-gray);
+  border-bottom: 1px solid var(--color-gray-light);
   display: flex;
   align-items: center;
   flex-wrap: wrap;
+  gap: 4px;
+}
+/* Push everything after the title to the right. Title has margin-right:
+   auto so the +/- icon, load/unload buttons, spinner, and protocols all
+   sit on the trailing edge. */
+.spiview-page .spi-card-header > .category-title {
+  margin-right: auto;
 }
 .spiview-page .spi-card-header.collapsed {
   border-bottom: 0;
