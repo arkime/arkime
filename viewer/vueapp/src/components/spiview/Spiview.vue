@@ -1520,6 +1520,8 @@ export default {
   vertical-align: middle;
   width: 300px;
   min-height: 22px;
+  max-height: 22px;
+  margin-bottom: 4px;
 }
 .spiview-page .btn-drawer .btn-container {
   max-height: 22px;
