@@ -721,12 +721,14 @@ onUnmounted(() => {
   border-color: var(--color-gray);
 }
 
-.session-detail .clickable-label .dropdown-menu {
+/* Vuetify v-menu teleports its content to body, so these selectors
+   target the v-list by the class we put on it in mixins.pug /
+   sessionDetail.pug. Global (not scoped) so it reaches the portal. */
+.clickable-label-menu {
   max-height: 280px;
   overflow-y: auto;
 }
-
-.session-detail .clickable-label .dropdown-menu .dropdown-item {
+.clickable-label-menu .v-list-item {
   font-size: 12px;
 }
 
