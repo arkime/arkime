@@ -12,7 +12,7 @@ fi
 
 # Try and download ipv4-address-space.csv, only copy if it works
 FILENAME=$(mktemp)
-wget -nv --timeout=${TIMEOUT} --no-check-certificate -O "$FILENAME" https://www.iana.org/assignments/ipv4-address-space/ipv4-address-space.csv
+curl -sSfL -k --max-time ${TIMEOUT} -o "$FILENAME" https://www.iana.org/assignments/ipv4-address-space/ipv4-address-space.csv
 if (( $? == 0 )) ; then
   chmod a+r "$FILENAME"
   mv "$FILENAME" "${DEST_DIR}/ipv4-address-space.csv"
@@ -20,7 +20,7 @@ fi
 
 # Try and download manuf, only copy if it works
 FILENAME=$(mktemp)
-wget -nv --timeout=${TIMEOUT} -O "$FILENAME" https://www.wireshark.org/download/automated/data/manuf
+curl -sSfL --max-time ${TIMEOUT} -o "$FILENAME" https://www.wireshark.org/download/automated/data/manuf
 if (( $? == 0 )) ; then
   chmod a+r "$FILENAME"
   mv "$FILENAME" "${DEST_DIR}/oui.txt"

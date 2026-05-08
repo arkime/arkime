@@ -107,10 +107,20 @@ LOCAL void *reader_bpf_thread(gpointer readerv)
         // Process packets in the buffer
         p = reader->buf;
         while (p < reader->buf + bytes) {
+            if (p + sizeof(struct bpf_hdr) > reader->buf + bytes) {
+                LOG("ERROR - Truncated BPF header in buffer, skipping remaining %td bytes", reader->buf + bytes - p);
+                break;
+            }
             bh = (struct bpf_hdr *)p;
 
             caplen = bh->bh_caplen;
             u_char *pkt = p + bh->bh_hdrlen;
+
+            if (unlikely(pkt + caplen > reader->buf + bytes)) {
+                LOG("ERROR - BPF packet extends past buffer (hdrlen: %u caplen: %d remaining: %td), skipping",
+                    bh->bh_hdrlen, caplen, reader->buf + bytes - p);
+                break;
+            }
 
             // Check for truncated packets
             if (unlikely(caplen != (int)bh->bh_datalen) && !config.readTruncatedPackets && !config.ignoreErrors) {

@@ -150,7 +150,7 @@ esac
 buildYara () {
   if [ ! -f "yara/yara-$YARA.tar.gz" ]; then
     mkdir -p yara
-    wget -nv https://github.com/VirusTotal/yara/archive/v$YARA.tar.gz -O yara/yara-$YARA.tar.gz
+    curl -sSfL -o yara/yara-$YARA.tar.gz https://github.com/VirusTotal/yara/archive/v$YARA.tar.gz
   fi
 
   if [ ! -f "yara/yara-$YARA/libyara/.libs/libyara.a" ]; then
@@ -211,7 +211,7 @@ if [ -f "/etc/redhat-release" ] || [ -f "/etc/system-release" ]; then
     export KAFKA_LIBS="-lrdkafka"
     KAFKABUILD="--with-kafka=no"
   fi
-  sudo yum -y install --skip-broken wget curl pcre pcre-devel pkgconfig flex bison gcc-c++ zlib-devel e2fsprogs-devel openssl-devel file-devel make gettext libuuid-devel perl-JSON bzip2-libs bzip2-devel perl-libwww-perl libpng-devel xz libffi-devel readline-devel libtool libyaml-devel perl-Socket6 perl-Test-Differences perl-Try-Tiny
+  sudo yum -y install --skip-broken curl pcre pcre-devel pkgconfig flex bison gcc-c++ zlib-devel e2fsprogs-devel openssl-devel file-devel make gettext libuuid-devel perl-JSON bzip2-libs bzip2-devel perl-libwww-perl libpng-devel xz libffi-devel readline-devel libtool libyaml-devel perl-Socket6 perl-Test-Differences perl-Try-Tiny
   if [ $? -ne 0 ]; then
     echo "ARKIME: yum failed"
     exit 1
@@ -229,15 +229,15 @@ if [ -f "/etc/debian_version" ]; then
 
   if [[ "$VERSION_CODENAME" == "trixie" ]]; then
       # D13
-      sudo apt-get -qq install wget curl uuid-dev libmagic-dev pkg-config g++ flex bison zlib1g-dev libffi-dev gettext libgeoip-dev make libjson-perl libbz2-dev libwww-perl libpng-dev xz-utils libssl-dev libreadline-dev libtool libyaml-dev dh-autoreconf libsocket6-perl libtest-differences-perl
+      sudo apt-get -qq install curl uuid-dev libmagic-dev pkg-config g++ flex bison zlib1g-dev libffi-dev gettext libgeoip-dev make libjson-perl libbz2-dev libwww-perl libpng-dev xz-utils libssl-dev libreadline-dev libtool libyaml-dev dh-autoreconf libsocket6-perl libtest-differences-perl
   else
       # D12, U22, U24
-      sudo apt-get -qq install wget curl libpcre3-dev uuid-dev libmagic-dev pkg-config g++ flex bison zlib1g-dev libffi-dev gettext libgeoip-dev make libjson-perl libbz2-dev libwww-perl libpng-dev xz-utils libssl-dev libreadline-dev libtool libyaml-dev dh-autoreconf libsocket6-perl libtest-differences-perl
+      sudo apt-get -qq install curl libpcre3-dev uuid-dev libmagic-dev pkg-config g++ flex bison zlib1g-dev libffi-dev gettext libgeoip-dev make libjson-perl libbz2-dev libwww-perl libpng-dev xz-utils libssl-dev libreadline-dev libtool libyaml-dev dh-autoreconf libsocket6-perl libtest-differences-perl
   fi
 
   # Ubuntu 22 does not have libnl-genl-3-dev or python3-pip
   if [[ "$VERSION_CODENAME" != "jammy" ]]; then
-      sudo apt-get -qq install libnl-genl-3-dev python3-pip
+      sudo apt-get -qq install curl libnl-genl-3-dev python3-pip
   fi
 
   if [ $? -ne 0 ]; then
@@ -245,15 +245,15 @@ if [ -f "/etc/debian_version" ]; then
     exit 1
   fi
   if [ $DOJEMALLOC -eq 1 ]; then
-    sudo apt-get -qq install libjemalloc-dev
+    sudo apt-get -qq install curl libjemalloc-dev
   fi
   if [ $DOTCMALLOC -eq 1 ]; then
-    sudo apt-get -qq install libgoogle-perftools-dev
+    sudo apt-get -qq install curl libgoogle-perftools-dev
   fi
 
   # Just use OS packages, currently for Ubuntu 22/24
   if [ $DOTHIRDPARTY -eq 0 ]; then
-    sudo apt-get -qq install libmaxminddb-dev libcurl4-openssl-dev libyara-dev libglib2.0-dev libpcap-dev libnghttp2-dev liblua5.4-dev librdkafka-dev libzstd-dev
+    sudo apt-get -qq install curl libmaxminddb-dev libcurl4-openssl-dev libyara-dev libglib2.0-dev libpcap-dev libnghttp2-dev liblua5.4-dev librdkafka-dev libzstd-dev
     if [ $? -ne 0 ]; then
       echo "ARKIME: apt-get failed"
       exit 1
@@ -272,9 +272,9 @@ if [ "$UNAME" = "Darwin" ]; then
   DONODE=0
   DOINSTALL=0
   if [ -x "/opt/local/bin/port" ]; then
-    sudo port install libpcap yara glib2 jansson ossp-uuid libmaxminddb libmagic pcre lua libyaml wget nghttp2 librdkafka zstd
+    sudo port install curl libpcap yara glib2 jansson ossp-uuid libmaxminddb libmagic pcre lua libyaml nghttp2 librdkafka zstd
   elif [ -x "/usr/local/bin/brew" ] || [ -x "/opt/homebrew/bin/brew" ]; then
-    brew install libpcap yara glib jansson ossp-uuid libmaxminddb libmagic pcre lua libyaml openssl wget autoconf automake pkg-config nghttp2 zstd librdkafka
+    brew install curl libpcap yara glib jansson ossp-uuid libmaxminddb libmagic pcre lua libyaml openssl autoconf automake pkg-config nghttp2 zstd librdkafka
   else
     echo "ARKIME: Please install MacPorts or Homebrew"
     exit 1
@@ -282,7 +282,7 @@ if [ "$UNAME" = "Darwin" ]; then
 fi
 
 if [ "$UNAME" = "FreeBSD" ]; then
-  sudo pkg install -y gcc wget curl pcre2 flex bison gettext glib gmake yara lua53 librdkafka pkgconf node22 npm-node22 libyaml autotools libmaxminddb libuuid python312 libinotify
+  sudo pkg install -y gcc curl pcre2 flex bison gettext glib gmake yara lua53 librdkafka pkgconf node22 npm-node22 libyaml autotools libmaxminddb libuuid python312 libinotify
   MAKE=gmake
   DOTHIRDPARTY=0
   DOKAFKA=1
@@ -299,12 +299,12 @@ if [ "$UNAME" = "FreeBSD" ]; then
 fi
 
 if [ -f "/etc/alpine-release" ] ; then
-  sudo apk add --no-cache wget curl-dev file-dev g++ zstd-dev make glib-dev yaml-dev libpcap-dev librdkafka-dev libmaxminddb-dev autoconf automake pcre-dev libuuid lua-dev libtool perl-http-message perl-lwp-protocol-https perl-json perl-test-differences perl-socket6
+  sudo apk add --no-cache curl-dev file-dev g++ zstd-dev make glib-dev yaml-dev libpcap-dev librdkafka-dev libmaxminddb-dev autoconf automake pcre-dev libuuid lua-dev libtool perl-http-message perl-lwp-protocol-https perl-json perl-test-differences perl-socket6
   mkdir -p thirdparty
   NODEHOST=unofficial-builds.nodejs.org
   NODEARCH="$NODEARCH-musl"
 elif [ -f "/etc/arch-release" ]; then
-    sudo pacman -Sy --noconfirm gcc make python-pip git perl perl-test-differences sudo wget gawk lua geoip yara file libpcap libmaxminddb libnet libtool autoconf gettext automake perl-http-message perl-lwp-protocol-https perl-json perl-socket6 perl-clone perl-html-parser zstd pcre librdkafka openssl pkg-config
+    sudo pacman -Sy --noconfirm gcc make python-pip git perl perl-test-differences sudo gawk lua geoip yara file libpcap libmaxminddb libnet libtool autoconf gettext automake perl-http-message perl-lwp-protocol-https perl-json perl-socket6 perl-clone perl-html-parser zstd pcre librdkafka openssl pkg-config
 fi
 
 if [ $DOJEMALLOC -eq 1 ] && [ $DOTCMALLOC -eq 1 ]; then
@@ -483,7 +483,7 @@ else
     WITHGLIB="--with-glib2=thirdparty/glib-$GLIB"
     if [ ! -f "glib-$GLIB.tar.xz" ]; then
       GLIBDIR=$(echo $GLIB | cut -d. -f 1-2)
-      wget -nv "https://ftp.gnome.org/pub/gnome/sources/glib/$GLIBDIR/glib-$GLIB.tar.xz"
+      curl -sSfLO "https://ftp.gnome.org/pub/gnome/sources/glib/$GLIBDIR/glib-$GLIB.tar.xz"
     fi
 
     if [ ! -f "glib-$GLIB/_build/gio/libgio-2.0.a" ] || [ ! -f "glib-$GLIB/_build/glib/libglib-2.0.a" ]; then
@@ -508,7 +508,7 @@ else
     echo "ARKIME: withmaxmind $WITHMAXMIND"
   else
     if [ ! -f "libmaxminddb-$MAXMIND.tar.gz" ]; then
-      wget -nv https://github.com/maxmind/libmaxminddb/releases/download/$MAXMIND/libmaxminddb-$MAXMIND.tar.gz
+      curl -sSfLO https://github.com/maxmind/libmaxminddb/releases/download/$MAXMIND/libmaxminddb-$MAXMIND.tar.gz
     fi
 
     if [ ! -f "libmaxminddb-$MAXMIND/src/.libs/libmaxminddb.a" ]; then
@@ -530,7 +530,7 @@ else
     echo "ARKIME: pcapbuild $PCAPBUILD"
   else
     if [ ! -f "libpcap-$PCAP.tar.gz" ]; then
-      wget -nv https://www.tcpdump.org/release/libpcap-$PCAP.tar.gz
+      curl -sSfLO https://www.tcpdump.org/release/libpcap-$PCAP.tar.gz
     fi
     if [ ! -f "libpcap-$PCAP/libpcap.a" ]; then
       tar zxf libpcap-$PCAP.tar.gz
@@ -553,7 +553,7 @@ else
   else
     WITHCURL="--with-curl=thirdparty/curl-$CURL"
     if [ ! -f "curl-$CURL.tar.gz" ]; then
-      wget -nv https://curl.haxx.se/download/curl-$CURL.tar.gz
+      curl -sSfLO https://curl.haxx.se/download/curl-$CURL.tar.gz
     fi
 
     if [ ! -f "curl-$CURL/lib/.libs/libcurl.a" ]; then
@@ -570,7 +570,7 @@ else
 
   # nghttp2
   if [ ! -f "nghttp2-$NGHTTP2.tar.gz" ]; then
-    wget -nv https://github.com/nghttp2/nghttp2/releases/download/v$NGHTTP2/nghttp2-$NGHTTP2.tar.gz
+    curl -sSfLO https://github.com/nghttp2/nghttp2/releases/download/v$NGHTTP2/nghttp2-$NGHTTP2.tar.gz
   fi
 
   if [ ! -f "nghttp2-$NGHTTP2/lib/.libs/libnghttp2.a" ]; then
@@ -586,7 +586,7 @@ else
 
   # lua
   if [ ! -f "lua-$LUA.tar.gz" ]; then
-    wget -nv https://www.lua.org/ftp/lua-$LUA.tar.gz
+    curl -sSfLO https://www.lua.org/ftp/lua-$LUA.tar.gz
   fi
 
   if [ ! -f "lua-$LUA/src/liblua.a" ]; then
@@ -603,7 +603,7 @@ else
   # daq
   if [ $DODAQ -eq 1 ]; then
     if [ ! -f "daq-$DAQ.tar.gz" ]; then
-      wget -nv https://www.snort.org/downloads/snort/daq-$DAQ.tar.gz
+      curl -sSfLO https://www.snort.org/downloads/snort/daq-$DAQ.tar.gz
     fi
 
     if [ ! -f "daq-$DAQ/api/.libs/libdaq_static.a" ]; then
@@ -622,7 +622,7 @@ else
   if [ $BUILDZSTD -eq 1 ]; then
     WITHZSTD="--with-zstd=thirdparty/zstd-$ZSTD"
     if [ ! -f "zstd-$ZSTD.tar.gz" ]; then
-      wget -nv https://github.com/facebook/zstd/releases/download/v$ZSTD/zstd-$ZSTD.tar.gz
+      curl -sSfLO https://github.com/facebook/zstd/releases/download/v$ZSTD/zstd-$ZSTD.tar.gz
     fi
 
     if [ ! -f "zstd-$ZSTD/lib/libzstd.a" ]; then
@@ -642,7 +642,7 @@ else
   # kafka
   if [ $BUILDKAFKA -eq 1 ]; then
     if [ ! -f "librdkafka-$KAFKA.tar.gz" ]; then
-      wget -nv https://github.com/edenhill/librdkafka/archive/v$KAFKA.tar.gz -O librdkafka-$KAFKA.tar.gz
+      curl -sSfL -o librdkafka-$KAFKA.tar.gz https://github.com/edenhill/librdkafka/archive/v$KAFKA.tar.gz
     fi
     if [ ! -f "librdkafka-$KAFKA/src/librdkafka.a" ]; then
       tar zxf librdkafka-$KAFKA.tar.gz
@@ -713,7 +713,7 @@ if [ $DONODE -eq 1 ] && [ ! -f "$TDIR/bin/node" ]; then
     sudo mkdir -p $TDIR/bin $TDIR/etc
 
     if [ ! -f node-v$NODE-linux-$NODEARCH.tar.xz ] ; then
-	wget -nv https://$NODEHOST/download/release/v$NODE/node-v$NODE-linux-$NODEARCH.tar.xz
+	curl -sSfLO https://$NODEHOST/download/release/v$NODE/node-v$NODE-linux-$NODEARCH.tar.xz
     fi
     sudo tar xf node-v$NODE-linux-$NODEARCH.tar.xz -C $TDIR
     (cd $TDIR/bin ; sudo ln -sf ../node-v$NODE-linux-$NODEARCH/bin/* .)

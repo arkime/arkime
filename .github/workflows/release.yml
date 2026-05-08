@@ -236,7 +236,7 @@ jobs:
           arch: ${{ contains(matrix.version, 'aarch64') && 'aarch64' || 'x86_64' }}
           usesh: true
           prepare: |
-            pkg install -y bash git curl wget perl5 openssl jq yq sudo gmake autoconf automake m4 libtool autoconf-archive gtar p5-LWP-Protocol-https p5-JSON p5-Test-Differences p5-Socket6
+            pkg install -y bash git curl perl5 openssl jq yq sudo gmake autoconf automake m4 libtool autoconf-archive gtar p5-LWP-Protocol-https p5-JSON p5-Test-Differences p5-Socket6
           run: |
             pkg install -y git pcre2
             git config --global --add safe.directory `pwd`

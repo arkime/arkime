@@ -1012,6 +1012,7 @@ void arkime_quit();
 uint32_t arkime_get_next_prime(uint32_t v);
 uint32_t arkime_get_next_powerof2(uint32_t v);
 void arkime_check_file_permissions(const char *filename);
+FILE *arkime_state_file_open(const char *name, const char *mode);
 
 typedef void (*ArkimeCredentialsGet)(const char *service);
 void arkime_credentials_register(const char *name, ArkimeCredentialsGet func);

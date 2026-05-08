@@ -9,6 +9,7 @@
 #include <pwd.h>
 #include <grp.h>
 #include <errno.h>
+#include <fcntl.h>
 #include <sys/resource.h>
 #ifdef _POSIX_MEMLOCK
 #include <sys/mman.h>
@@ -415,6 +416,57 @@ LOCAL void terminate(int UNUSED(sig))
 LOCAL void reload(int UNUSED(sig))
 {
     arkime_plugins_reload();
+}
+/******************************************************************************/
+/* Open a per-node state file under the configured `stateDir` (default "/tmp")
+ * using O_NOFOLLOW so an attacker can't redirect Arkime's writes through a
+ * pre-placed symlink.  `name` is the basename of the file (typically
+ * "<nodeName>.<suffix>"); `mode` must be "r" or "w" (binary modes accepted).
+ *
+ * Read mode returns NULL silently if the file does not yet exist; other
+ * failures are logged.  Write mode creates the file with mode 0600 and
+ * truncates it.
+ */
+FILE *arkime_state_file_open(const char *name, const char *mode)
+{
+    static const char *stateDir = NULL;
+    if (!stateDir) {
+        stateDir = arkime_config_str(NULL, "stateDir", "/tmp");
+    }
+
+    char path[PATH_MAX];
+    int  plen = snprintf(path, sizeof(path), "%s/%s", stateDir, name);
+    if (plen <= 0 || plen >= (int)sizeof(path)) {
+        LOG("ERROR - state file path too long for `%s/%s`", stateDir, name);
+        return NULL;
+    }
+
+    int flags;
+    if (mode[0] == 'w') {
+        flags = O_WRONLY | O_CREAT | O_TRUNC | O_NOFOLLOW | O_CLOEXEC;
+    } else if (mode[0] == 'r') {
+        flags = O_RDONLY | O_NOFOLLOW | O_CLOEXEC;
+    } else {
+        LOG("ERROR - unsupported mode `%s` for state file `%s`", mode, path);
+        return NULL;
+    }
+
+    int fd = open(path, flags, 0600);
+    if (fd < 0) {
+        if (errno == ENOENT && mode[0] == 'r') {
+            return NULL;
+        }
+        LOG("ERROR - Couldn't open state file `%s` (%s): %s", path, mode, strerror(errno));
+        return NULL;
+    }
+
+    FILE *fp = fdopen(fd, mode);
+    if (!fp) {
+        LOG("ERROR - fdopen failed for state file `%s`: %s", path, strerror(errno));
+        close(fd);
+        return NULL;
+    }
+    return fp;
 }
 /******************************************************************************/
 void arkime_check_file_permissions(const char *filename)

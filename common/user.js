@@ -1009,7 +1009,15 @@ class User {
       user.hidePcap = req.body.hidePcap;
       user.disablePcapDownload = req.body.disablePcapDownload;
 
-      user.timeLimit = req.body.timeLimit ? parseInt(req.body.timeLimit) : undefined;
+      if (req.body.timeLimit !== undefined && req.body.timeLimit !== null && req.body.timeLimit !== '') {
+        const tl = parseInt(req.body.timeLimit, 10);
+        if (!Number.isFinite(tl) || tl < 0) {
+          return res.serverError(422, 'timeLimit must be a non-negative integer');
+        }
+        user.timeLimit = tl;
+      } else {
+        user.timeLimit = undefined;
+      }
       user.roles = req.body.roles;
       user.roleAssigners = req.body.roleAssigners ?? [];
 
