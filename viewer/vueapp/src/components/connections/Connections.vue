@@ -14,355 +14,351 @@ SPDX-License-Identifier: Apache-2.0
 
         <!-- connections sub navbar -->
         <div class="connections-form m-1">
-          <BRow
-            gutter-x="1"
-            align-h="start">
+          <div class="d-flex flex-wrap align-items-center gap-1">
 
             <!-- query size select -->
-            <BCol cols="auto">
-              <BInputGroup size="sm">
-                <BInputGroupText
-                  id="querySize"
-                  class="cursor-help">
-                  {{ $t('connections.querySize') }}
-                  <v-tooltip
-                    activator="parent"
-                    :open-delay="300">
-                    {{ $t('connections.querySizeTip') }}
-                  </v-tooltip>
-                </BInputGroupText>
-                <BFormSelect
-                  class="form-control input-sm"
-                  :model-value="query.length"
-                  @update:model-value="(val) => changeLength(val)"
-                  :options="[100, 500, 1000, 5000, 10000, 50000, 100000]" />
-              </BInputGroup>
-            </BCol> <!-- /query size select -->
+            <div class="input-group input-group-sm w-auto">
+              <span
+                id="querySize"
+                class="input-group-text cursor-help">
+                {{ $t('connections.querySize') }}
+                <v-tooltip
+                  activator="parent"
+                  :open-delay="300">
+                  {{ $t('connections.querySizeTip') }}
+                </v-tooltip>
+              </span>
+              <select
+                class="form-select form-select-sm"
+                :value="query.length"
+                @change="changeLength(Number($event.target.value))">
+                <option
+                  v-for="opt in [100, 500, 1000, 5000, 10000, 50000, 100000]"
+                  :key="opt"
+                  :value="opt">{{ opt }}</option>
+              </select>
+            </div> <!-- /query size select -->
 
             <!-- src select -->
-            <BCol
-              cols="auto"
+            <div
+              class="input-group input-group-sm w-auto"
               v-if="fields && fields.length && srcFieldTypeahead && fieldHistoryConnectionsSrc">
-              <BInputGroup size="sm">
-                <BInputGroupText
-                  class="legend cursor-help primary-legend"
-                  id="sourceField">
-                  Src:
-                  <v-tooltip
-                    activator="parent"
-                    :open-delay="300">
-                    {{ $t('connections.sourceFieldTip') }}
-                  </v-tooltip>
-                </BInputGroupText>
-                <arkime-field-typeahead
-                  :fields="fields"
-                  query-param="srcField"
-                  :initial-value="srcFieldTypeahead"
-                  @field-selected="changeSrcField"
-                  :history="fieldHistoryConnectionsSrc"
-                  page="ConnectionsSrc" />
-              </BInputGroup>
-            </BCol> <!-- /src select -->
+              <span
+                class="input-group-text legend cursor-help primary-legend"
+                id="sourceField">
+                Src:
+                <v-tooltip
+                  activator="parent"
+                  :open-delay="300">
+                  {{ $t('connections.sourceFieldTip') }}
+                </v-tooltip>
+              </span>
+              <arkime-field-typeahead
+                :fields="fields"
+                query-param="srcField"
+                :initial-value="srcFieldTypeahead"
+                @field-selected="changeSrcField"
+                :history="fieldHistoryConnectionsSrc"
+                page="ConnectionsSrc" />
+            </div> <!-- /src select -->
 
             <!-- dst select -->
-            <BCol
-              cols="auto"
+            <div
+              class="input-group input-group-sm w-auto"
               v-if="fields && dstFieldTypeahead && fieldHistoryConnectionsDst">
-              <BInputGroup size="sm">
-                <BInputGroupText
-                  class="legend cursor-help secondary-legend"
-                  id="dstField">
-                  Dst:
-                  <v-tooltip
-                    activator="parent"
-                    :open-delay="300">
-                    {{ $t('connections.dstFieldTip') }}
-                  </v-tooltip>
-                </BInputGroupText>
-                <arkime-field-typeahead
-                  :fields="fields"
-                  query-param="dstField"
-                  :initial-value="dstFieldTypeahead"
-                  @field-selected="changeDstField"
-                  :history="fieldHistoryConnectionsDst"
-                  page="ConnectionsDst" />
-              </BInputGroup>
-            </BCol> <!-- /dst select -->
+              <span
+                class="input-group-text legend cursor-help secondary-legend"
+                id="dstField">
+                Dst:
+                <v-tooltip
+                  activator="parent"
+                  :open-delay="300">
+                  {{ $t('connections.dstFieldTip') }}
+                </v-tooltip>
+              </span>
+              <arkime-field-typeahead
+                :fields="fields"
+                query-param="dstField"
+                :initial-value="dstFieldTypeahead"
+                @field-selected="changeDstField"
+                :history="fieldHistoryConnectionsDst"
+                page="ConnectionsDst" />
+            </div> <!-- /dst select -->
 
             <!-- src & dst color -->
-            <BCol cols="auto">
-              <BInputGroup size="sm">
-                <BInputGroupText
-                  class="legend cursor-help tertiary-legend"
-                  id="srcDstColor">
-                  Src &amp; dst
-                  <v-tooltip
-                    activator="parent"
-                    :open-delay="300">
-                    {{ $t('connections.srcDstColorTip') }}
-                  </v-tooltip>
-                </BInputGroupText>
-              </BInputGroup>
-            </BCol> <!-- /src & dst color -->
+            <div class="input-group input-group-sm w-auto">
+              <span
+                class="input-group-text legend cursor-help tertiary-legend"
+                id="srcDstColor">
+                Src &amp; dst
+                <v-tooltip
+                  activator="parent"
+                  :open-delay="300">
+                  {{ $t('connections.srcDstColorTip') }}
+                </v-tooltip>
+              </span>
+            </div> <!-- /src & dst color -->
 
             <!-- min connections select -->
-            <BCol cols="auto">
-              <BInputGroup size="sm">
-                <BInputGroupText
-                  id="minConn"
-                  class="help-cursor">
-                  {{ $t('connections.minConn') }}
-                  <v-tooltip
-                    activator="parent"
-                    :open-delay="300">
-                    {{ $t('connections.minConnTip') }}
-                  </v-tooltip>
-                </BInputGroupText>
-                <BFormSelect
-                  size="sm"
-                  :model-value="query.minConn"
-                  @update:model-value="(val) => changeMinConn(val)"
-                  :options="[1,2,3,4,5]" />
-              </BInputGroup>
-            </BCol> <!-- /min connections select -->
+            <div class="input-group input-group-sm w-auto">
+              <span
+                id="minConn"
+                class="input-group-text help-cursor">
+                {{ $t('connections.minConn') }}
+                <v-tooltip
+                  activator="parent"
+                  :open-delay="300">
+                  {{ $t('connections.minConnTip') }}
+                </v-tooltip>
+              </span>
+              <select
+                class="form-select form-select-sm"
+                :value="query.minConn"
+                @change="changeMinConn(Number($event.target.value))">
+                <option
+                  v-for="opt in [1,2,3,4,5]"
+                  :key="opt"
+                  :value="opt">{{ opt }}</option>
+              </select>
+            </div> <!-- /min connections select -->
 
             <!-- weight select -->
-            <BCol cols="auto">
-              <BInputGroup size="sm">
-                <BInputGroupText
-                  class="help-cursor"
-                  id="weight">
-                  {{ $t('connections.weight') }}
-                  <v-tooltip
-                    activator="parent"
-                    :open-delay="300">
-                    {{ $t('connections.weightTip') }}
-                  </v-tooltip>
-                </BInputGroupText>
-                <BFormSelect
-                  size="sm"
-                  :model-value="weight"
-                  @update:model-value="(val) => changeWeight(val)">
-                  <option
-                    value="sessions"
-                    v-i18n-value="'connections.weight-'" />
-                  <option
-                    value="network.packets"
-                    v-i18n-value="'connections.weight-'" />
-                  <option
-                    value="network.bytes"
-                    v-i18n-value="'connections.weight-'" />
-                  <option
-                    value="totDataBytes"
-                    v-i18n-value="'connections.weight-'" />
-                  <option
-                    value=""
-                    v-i18n-value="'connections.weight-'" />
-                </BFormSelect>
-              </BInputGroup>
-            </BCol> <!-- /weight select -->
+            <div class="input-group input-group-sm w-auto">
+              <span
+                class="input-group-text help-cursor"
+                id="weight">
+                {{ $t('connections.weight') }}
+                <v-tooltip
+                  activator="parent"
+                  :open-delay="300">
+                  {{ $t('connections.weightTip') }}
+                </v-tooltip>
+              </span>
+              <select
+                class="form-select form-select-sm"
+                :value="weight"
+                @change="changeWeight($event.target.value)">
+                <option
+                  value="sessions"
+                  v-i18n-value="'connections.weight-'" />
+                <option
+                  value="network.packets"
+                  v-i18n-value="'connections.weight-'" />
+                <option
+                  value="network.bytes"
+                  v-i18n-value="'connections.weight-'" />
+                <option
+                  value="totDataBytes"
+                  v-i18n-value="'connections.weight-'" />
+                <option
+                  value=""
+                  v-i18n-value="'connections.weight-'" />
+              </select>
+            </div> <!-- /weight select -->
 
-            <BCol
-              cols="auto"
-              v-if="!loading">
+            <div
+              v-if="!loading"
+              class="d-inline-flex">
               <!-- node fields button -->
-              <b-dropdown
-                size="sm"
-                no-flip
-                no-caret
-                toggle-class="rounded"
-                class="field-vis-menu ms-1 display-inline"
-                variant="theme-primary"
+              <v-menu
+                :close-on-content-click="false"
+                location="bottom start"
                 v-if="fields && groupedFields && nodeFields">
-                <template #button-content>
-                  <div id="nodeFields">
+                <template #activator="{ props: activatorProps }">
+                  <button
+                    v-bind="activatorProps"
+                    type="button"
+                    class="btn btn-sm btn-theme-primary rounded ms-1 field-vis-trigger"
+                    id="nodeFields">
                     <span class="fa fa-circle-o" />
                     <v-tooltip
                       activator="parent"
                       :open-delay="300">
                       {{ $t('connections.nodeFieldsTip') }}
                     </v-tooltip>
+                  </button>
+                </template>
+                <v-list
+                  density="compact"
+                  class="field-vis-list">
+                  <div class="px-2 py-1">
+                    <input
+                      type="text"
+                      v-model="fieldQuery"
+                      class="form-control form-control-sm"
+                      :placeholder="$t('common.searchForFields')">
                   </div>
-                </template>
-                <b-dropdown-header>
-                  <input
-                    type="text"
-                    v-model="fieldQuery"
-                    class="form-control form-control-sm dropdown-typeahead"
-                    :placeholder="$t('common.searchForFields')">
-                </b-dropdown-header>
-                <b-dropdown-divider />
-                <b-dropdown-item
-                  @click.stop.prevent="resetNodeFieldsDefault">
-                  Reset to default
-                </b-dropdown-item>
-                <b-dropdown-divider />
-                <template
-                  v-for="(group, key) in filteredFields"
-                  :key="key">
-                  <b-dropdown-header
-                    v-if="group.length"
-                    class="group-header">
-                    {{ key }}
-                  </b-dropdown-header>
+                  <v-divider />
+                  <v-list-item @click.stop.prevent="resetNodeFieldsDefault">
+                    Reset to default
+                  </v-list-item>
+                  <v-divider />
                   <template
-                    v-for="(field, k) in group"
-                    :key="key + k + 'itemnode'">
-                    <b-dropdown-item
-                      :id="key + k + 'itemnode'"
-                      :class="{'active':isFieldVisible(field.dbField, nodeFields) >= 0}"
-                      @click.stop.prevent="toggleFieldVisibility(field.dbField, nodeFields)">
-                      {{ field.friendlyName }}
-                      <small>({{ field.exp }})</small>
-                      <v-tooltip
-                        activator="parent"
-                        :open-delay="300">
-                        {{ field.help }}
-                      </v-tooltip>
-                    </b-dropdown-item>
+                    v-for="(group, key) in filteredFields"
+                    :key="key">
+                    <v-list-subheader
+                      v-if="group.length"
+                      class="field-vis-group-header">
+                      {{ key }}
+                    </v-list-subheader>
+                    <template
+                      v-for="(field, k) in group"
+                      :key="key + k + 'itemnode'">
+                      <v-list-item
+                        :data-tip-id="key + k + 'itemnode'"
+                        :active="isFieldVisible(field.dbField, nodeFields) >= 0"
+                        @click.stop.prevent="toggleFieldVisibility(field.dbField, nodeFields)">
+                        {{ field.friendlyName }}
+                        <small>({{ field.exp }})</small>
+                        <v-tooltip
+                          :activator="`[data-tip-id='${key + k + 'itemnode'}']`"
+                          :open-delay="300">
+                          {{ field.help }}
+                        </v-tooltip>
+                      </v-list-item>
+                    </template>
                   </template>
-                </template>
-              </b-dropdown> <!-- /node fields button -->
+                </v-list>
+              </v-menu> <!-- /node fields button -->
 
               <!-- link fields button -->
-              <b-dropdown
-                size="sm"
-                no-flip
-                no-caret
-                toggle-class="rounded"
-                class="field-vis-menu ms-1 display-inline"
-                variant="theme-primary"
+              <v-menu
+                :close-on-content-click="false"
+                location="bottom start"
                 v-if="fields && groupedFields && linkFields">
-                <template #button-content>
-                  <div id="linkFields">
+                <template #activator="{ props: activatorProps }">
+                  <button
+                    v-bind="activatorProps"
+                    type="button"
+                    class="btn btn-sm btn-theme-primary rounded ms-1 field-vis-trigger"
+                    id="linkFields">
                     <span class="fa fa-link" />
                     <v-tooltip
                       activator="parent"
                       :open-delay="300">
                       {{ $t('connections.linkFieldsTip') }}
                     </v-tooltip>
+                  </button>
+                </template>
+                <v-list
+                  density="compact"
+                  class="field-vis-list">
+                  <div class="px-2 py-1">
+                    <input
+                      type="text"
+                      v-model="fieldQuery"
+                      class="form-control form-control-sm"
+                      :placeholder="$t('common.searchForFields')">
                   </div>
-                </template>
-                <b-dropdown-header>
-                  <input
-                    type="text"
-                    v-model="fieldQuery"
-                    class="form-control form-control-sm dropdown-typeahead"
-                    :placeholder="$t('common.searchForFields')">
-                </b-dropdown-header>
-                <b-dropdown-divider />
-                <b-dropdown-item
-                  @click.stop.prevent="resetLinkFieldsDefault">
-                  {{ $t('connections.reset') }}
-                </b-dropdown-item>
-                <b-dropdown-divider />
-                <template
-                  v-for="(group, key) in filteredFields"
-                  :key="key">
-                  <b-dropdown-header
-                    v-if="group.length"
-                    class="group-header">
-                    {{ key }}
-                  </b-dropdown-header>
+                  <v-divider />
+                  <v-list-item @click.stop.prevent="resetLinkFieldsDefault">
+                    {{ $t('connections.reset') }}
+                  </v-list-item>
+                  <v-divider />
                   <template
-                    v-for="(field, k) in group"
-                    :key="key + k + 'itemlink'">
-                    <b-dropdown-item
-                      :id="key + k + 'itemlink'"
-                      :class="{'active':isFieldVisible(field.dbField, linkFields) >= 0}"
-                      @click.stop.prevent="toggleFieldVisibility(field.dbField, linkFields)">
-                      {{ field.friendlyName }}
-                      <small>({{ field.exp }})</small>
-                      <v-tooltip
-                        activator="parent"
-                        :open-delay="300">
-                        {{ field.help }}
-                      </v-tooltip>
-                    </b-dropdown-item>
+                    v-for="(group, key) in filteredFields"
+                    :key="key">
+                    <v-list-subheader
+                      v-if="group.length"
+                      class="field-vis-group-header">
+                      {{ key }}
+                    </v-list-subheader>
+                    <template
+                      v-for="(field, k) in group"
+                      :key="key + k + 'itemlink'">
+                      <v-list-item
+                        :data-tip-id="key + k + 'itemlink'"
+                        :active="isFieldVisible(field.dbField, linkFields) >= 0"
+                        @click.stop.prevent="toggleFieldVisibility(field.dbField, linkFields)">
+                        {{ field.friendlyName }}
+                        <small>({{ field.exp }})</small>
+                        <v-tooltip
+                          :activator="`[data-tip-id='${key + k + 'itemlink'}']`"
+                          :open-delay="300">
+                          {{ field.help }}
+                        </v-tooltip>
+                      </v-list-item>
+                    </template>
                   </template>
-                </template>
-              </b-dropdown> <!-- /link fields button -->
-            </BCol>
+                </v-list>
+              </v-menu> <!-- /link fields button -->
+            </div>
 
             <!-- network baseline time range -->
-            <BCol cols="auto">
-              <BInputGroup size="sm">
-                <BInputGroupText
-                  class="help-cursor"
-                  id="baselineDate">
-                  {{ $t('connections.baselineDate') }}
-                  <v-tooltip
-                    activator="parent"
-                    :open-delay="300">
-                    {{ $t('connections.baselineDateTip') }}
-                  </v-tooltip>
-                </BInputGroupText>
-                <select
-                  class="form-control input-sm"
-                  v-model="query.baselineDate"
-                  @change="changeBaselineDate">
-                  <option value="0">{{ $t('common.optionDisabled') }}</option>
-                  <option value="1x">{{ $t('connections.queryRange', 1) }}</option>
-                  <option value="2x">{{ $t('connections.queryRange', 2) }}</option>
-                  <option value="4x">{{ $t('connections.queryRange', 4) }}</option>
-                  <option value="6x">{{ $t('connections.queryRange', 6) }}</option>
-                  <option value="8x">{{ $t('connections.queryRange', 8) }}</option>
-                  <option value="10x">{{ $t('connections.queryRange', 10) }}</option>
-                  <option value="1">{{ $t('common.hourCount', 1) }}</option>
-                  <option value="6">{{ $t('common.hourCount', 6) }}</option>
-                  <option value="24">{{ $t('common.hourCount', 24) }}</option>
-                  <option value="48">{{ $t('common.hourCount', 48) }}</option>
-                  <option value="72">{{ $t('common.hourCount', 72) }}</option>
-                  <option value="168">{{ $t('common.weekCount', 1) }}</option>
-                  <option value="336">{{ $t('common.weekCount', 2) }}</option>
-                  <option value="720">{{ $t('common.monthCount', 1) }}</option>
-                  <option value="1440">{{ $t('common.monthCount', 2) }}</option>
-                  <option value="4380">{{ $t('common.monthCount', 6) }}</option>
-                  <option value="8760">{{ $t('common.yearCount', 1) }}</option>
-                </select>
-              </BInputGroup>
-            </BCol> <!-- /network baseline time range -->
+            <div class="input-group input-group-sm w-auto">
+              <span
+                class="input-group-text help-cursor"
+                id="baselineDate">
+                {{ $t('connections.baselineDate') }}
+                <v-tooltip
+                  activator="parent"
+                  :open-delay="300">
+                  {{ $t('connections.baselineDateTip') }}
+                </v-tooltip>
+              </span>
+              <select
+                class="form-select form-select-sm"
+                v-model="query.baselineDate"
+                @change="changeBaselineDate">
+                <option value="0">{{ $t('common.optionDisabled') }}</option>
+                <option value="1x">{{ $t('connections.queryRange', 1) }}</option>
+                <option value="2x">{{ $t('connections.queryRange', 2) }}</option>
+                <option value="4x">{{ $t('connections.queryRange', 4) }}</option>
+                <option value="6x">{{ $t('connections.queryRange', 6) }}</option>
+                <option value="8x">{{ $t('connections.queryRange', 8) }}</option>
+                <option value="10x">{{ $t('connections.queryRange', 10) }}</option>
+                <option value="1">{{ $t('common.hourCount', 1) }}</option>
+                <option value="6">{{ $t('common.hourCount', 6) }}</option>
+                <option value="24">{{ $t('common.hourCount', 24) }}</option>
+                <option value="48">{{ $t('common.hourCount', 48) }}</option>
+                <option value="72">{{ $t('common.hourCount', 72) }}</option>
+                <option value="168">{{ $t('common.weekCount', 1) }}</option>
+                <option value="336">{{ $t('common.weekCount', 2) }}</option>
+                <option value="720">{{ $t('common.monthCount', 1) }}</option>
+                <option value="1440">{{ $t('common.monthCount', 2) }}</option>
+                <option value="4380">{{ $t('common.monthCount', 6) }}</option>
+                <option value="8760">{{ $t('common.yearCount', 1) }}</option>
+              </select>
+            </div> <!-- /network baseline time range -->
 
             <!-- network baseline node visibility -->
-            <BCol
-              cols="auto"
+            <div
+              class="input-group input-group-sm w-auto"
               v-show="query.baselineDate !== '0'">
-              <BInputGroup size="sm">
-                <BInputGroupText
-                  class="help-cursor"
-                  id="baselineVis">
-                  {{ $t('connections.baselineVis') }}
-                  <v-tooltip
-                    activator="parent"
-                    :open-delay="300">
-                    {{ $t('connections.baselineVisTip') }}
-                  </v-tooltip>
-                </BInputGroupText>
-                <select
-                  class="form-control input-sm"
-                  :disabled="query.baselineDate === '0'"
-                  v-model="query.baselineVis"
-                  @change="changeBaselineVis">
-                  <option
-                    value="all"
-                    v-i18n-value="'connections.baselineVis-'" />
-                  <option
-                    value="actual"
-                    v-i18n-value="'connections.baselineVis-'" />
-                  <option
-                    value="actualold"
-                    v-i18n-value="'connections.baselineVis-'" />
-                  <option
-                    value="new"
-                    v-i18n-value="'connections.baselineVis-'" />
-                  <option
-                    value="old"
-                    v-i18n-value="'connections.baselineVis-'" />
-                </select>
-              </BInputGroup>
-            </BCol> <!-- /network baseline node visibility -->
+              <span
+                class="input-group-text help-cursor"
+                id="baselineVis">
+                {{ $t('connections.baselineVis') }}
+                <v-tooltip
+                  activator="parent"
+                  :open-delay="300">
+                  {{ $t('connections.baselineVisTip') }}
+                </v-tooltip>
+              </span>
+              <select
+                class="form-select form-select-sm"
+                :disabled="query.baselineDate === '0'"
+                v-model="query.baselineVis"
+                @change="changeBaselineVis">
+                <option
+                  value="all"
+                  v-i18n-value="'connections.baselineVis-'" />
+                <option
+                  value="actual"
+                  v-i18n-value="'connections.baselineVis-'" />
+                <option
+                  value="actualold"
+                  v-i18n-value="'connections.baselineVis-'" />
+                <option
+                  value="new"
+                  v-i18n-value="'connections.baselineVis-'" />
+                <option
+                  value="old"
+                  v-i18n-value="'connections.baselineVis-'" />
+              </select>
+            </div> <!-- /network baseline node visibility -->
 
-          </BRow>
+          </div>
         </div> <!-- /connections sub navbar -->
       </span>
     </ArkimeCollapsible>
@@ -1653,25 +1649,20 @@ export default {
   white-space: normal;
 }
 
-.field-vis-menu > button.btn {
-  border-top-right-radius: 4px !important;
-  border-bottom-right-radius: 4px !important;
-}
-.field-vis-menu .dropdown-menu input {
-  width: 100%;
-}
-.field-vis-menu .dropdown-menu {
+/* Field-vis menu trigger -- the round node/link icon buttons that open
+   the field-visibility dropdowns. Vuetify v-menu teleports the v-list
+   to body, so .field-vis-list is targeted globally (not under
+   .connections-page) to reach the portal. */
+.field-vis-list {
   max-height: 300px;
-  overflow: auto;
+  min-width: 260px;
 }
-.field-vis-menu .dropdown-header {
-  padding: .25rem .5rem 0;
-}
-.field-vis-menu .dropdown-header.group-header {
+.field-vis-list .field-vis-group-header {
   text-transform: uppercase;
   margin-top: 8px;
-  padding: .2rem;
-  font-size: 120%;
+  padding: .2rem .5rem;
+  font-size: 110%;
   font-weight: bold;
+  opacity: .75;
 }
 </style>
