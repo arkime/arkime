@@ -2,14 +2,6 @@ import { createApp } from 'vue';
 import { createBootstrap } from 'bootstrap-vue-next';
 import { createVuetify } from 'vuetify/lib/framework.mjs';
 import { aliases as faAliases, fa as faSet } from 'vuetify/iconsets/fa4';
-// Vuetify components used in runtime-compiled templates (pug-rendered
-// session-detail HTML). vite-plugin-vuetify's treeshake auto-imports
-// only see .vue SFCs, so anything used in pug needs to be registered
-// globally on the app.
-import { VMenu } from 'vuetify/components/VMenu';
-import { VList, VListItem } from 'vuetify/components/VList';
-import { VDivider } from 'vuetify/components/VDivider';
-import { VBtn } from 'vuetify/components/VBtn';
 
 // internationalization
 import { createI18nInstance } from '@common/i18nSetup.js';
@@ -109,13 +101,6 @@ async function initializeApp() {
     }
   });
   app.use(vuetify);
-
-  // Register Vuetify components used by pug-rendered runtime templates.
-  app.component('VMenu', VMenu);
-  app.component('VList', VList);
-  app.component('VListItem', VListItem);
-  app.component('VDivider', VDivider);
-  app.component('VBtn', VBtn);
 
   app.directive('has-role', HasRole);
   app.directive('has-permission', HasPermission);

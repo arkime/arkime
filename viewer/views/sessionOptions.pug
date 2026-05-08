@@ -1,32 +1,36 @@
-div.d-flex.flex-wrap.align-items-center.gap-1.mb-3.session-options
+ul.nav.nav-pills.mb-3
   if (session.rootId)
-    v-btn.session-options-btn(variant="text" size="small" @click='allSessions(' + '"' + session.rootId + '"' + ', ' + session.firstPacket + ')')
-      | All Sessions
+    li.nav-item
+      a.nav-link.cursor-pointer(@click='allSessions(' + '"' + session.rootId + '"' + ', ' + session.firstPacket + ')') All Sessions
   if (session.packetPos && session.packetPos.length > 0)
     if (session.rootId)
-      v-btn.session-options-btn(variant="text" size="small" :href="'api/session/' + session.node + '/' + session.id + '/pcap'" :download="session.id + '-segment.pcap'")
-        span.fa.fa-download.me-1
-        | {{ $t('sessions.downloadSegmentPCAP') }}
-      v-btn.session-options-btn(variant="text" size="small" :href="'api/session/entire/' + session.node + '/' + session.rootId + '/pcap'" :download="(session.network && session.network.community_id ? session.network.community_id : session.rootId) + '.pcap'")
-        span.fa.fa-download.me-1
-        | {{ $t('sessions.downloadEntirePCAP') }}
+      li.nav-item
+        a.nav-link(href='api/session/' + session.node + '/' + session.id + '/pcap', :download="session.id + '-segment.pcap'") {{ $t('sessions.downloadSegmentPCAP') }}
+      li.nav-item
+        a.nav-link(href='api/session/entire/' + session.node + '/' + session.rootId + '/pcap', download=(session.network && session.network.community_id ? session.network.community_id : session.rootId) + '.pcap') {{ $t('sessions.downloadEntirePCAP') }}
     else
-      v-btn.session-options-btn(variant="text" size="small" v-has-permission="'!disablePcapDownload'" :href="'api/session/' + session.node + '/' + session.id + '/pcap'" :download="session.id + '.pcap'")
-        span.fa.fa-download.me-1
-        | {{ $t('sessions.downloadPCAP') }}
-    v-btn.session-options-btn(variant="text" size="small" :href="'api/session/raw/' + session.node + '/' + session.id + '?type=src'" :download="session.id + '-src-raw'")
-      span.fa.fa-arrow-circle-up.me-1
-      | {{ $t('sessions.sourceRaw') }}
-    v-btn.session-options-btn(variant="text" size="small" :href="'api/session/raw/' + session.node + '/' + session.id + '?type=dst'" :download="session.id + '-dst-raw'")
-      span.fa.fa-arrow-circle-down.me-1
-      | {{ $t('sessions.destinationRaw') }}
-  v-btn.session-options-btn(variant="text" size="small" :href="permalink")
-    span.fa.fa-link.me-1
-    | {{ $t('sessions.link') }}
-  v-btn.session-options-btn(variant="text" size="small")
-    span.fa.fa-columns.me-1
-    | {{ $t('sessions.columns') }}
-    v-menu(activator="parent" location="bottom start")
+      li.nav-item
+        a.nav-link(href='api/session/' + session.node + '/' + session.id + '/pcap', v-has-permission="'!disablePcapDownload'", :download="session.id + '.pcap'")
+          span.fa.fa-download.me-1
+          | {{ $t('sessions.downloadPCAP') }}
+    li.nav-item
+      a.nav-link(href='api/session/raw/' + session.node + '/' + session.id + '?type=src', :download="session.id + '-src-raw'")
+        span.fa.fa-arrow-circle-up.me-1
+        | {{ $t('sessions.sourceRaw') }}
+    li.nav-item
+      a.nav-link(href='api/session/raw/' + session.node + '/' + session.id + '?type=dst', :download="session.id + '-dst-raw'")
+        span.fa.fa-arrow-circle-down.me-1
+        | {{ $t('sessions.destinationRaw') }}
+  li.nav-item
+    a.nav-link.cursor-pointer(:href="permalink")
+      span.fa.fa-link.me-1
+      | {{ $t('sessions.link') }}
+  li.nav-item
+    v-menu
+      template(#activator="{ props: activatorProps }")
+        a.nav-link.cursor-pointer(v-bind="activatorProps" style="font-size:14px;")
+          span.fa.fa-columns.me-1
+          | {{ $t('sessions.columns') }}
       v-list(density="compact")
         v-list-item(@click="toggleLayout(1)")
           | {{ $t('sessions.oneColumn') }}
@@ -34,10 +38,12 @@ div.d-flex.flex-wrap.align-items-center.gap-1.mb-3.session-options
           | {{ $t('sessions.twoColumn') }}
         v-list-item(@click="toggleLayout(3)")
           | {{ $t('sessions.threeColumn') }}
-  v-btn.session-options-btn(variant="text" size="small")
-    span.fa.fa-cogs.me-1
-    | {{ $t('sessions.actions') }}
-    v-menu(activator="parent" location="bottom start")
+  li.nav-item
+    v-menu
+      template(#activator="{ props: activatorProps }")
+        a.nav-link.cursor-pointer(v-bind="activatorProps" style="font-size:14px;")
+          span.fa.fa-columns.me-1
+          | {{ $t('sessions.actions') }}
       v-list(density="compact")
         if (session.packetPos && session.packetPos.length > 0)
           v-list-item(@click="exportPCAP", v-has-permission="'!disablePcapDownload'")
@@ -48,9 +54,8 @@ div.d-flex.flex-wrap.align-items-center.gap-1.mb-3.session-options
           | {{ $t('sessions.tag.removeTags') }}
         v-list-item(@click="removeData()", v-has-permission="'removeEnabled'")
           | {{ $t('search.removeData') }}
-        template(v-for="(value, key) in remoteclusters", :key="key")
-          v-list-item(v-if="value", @click="sendSession(key)")
-            | {{ $t('search.sendSession', { name: value.name }) }}
+        v-list-item(v-for="(value, key) in remoteclusters", :key="key", @click="sendSession(key)")
+          | {{ $t('search.sendSession', { name: value.name }) }}
 
 div.mb-2
   arkime-toast(:message="message", :type="messageType", :done="messageDone")
