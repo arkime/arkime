@@ -27,8 +27,8 @@ ul.nav.nav-pills.mb-3
       | {{ $t('sessions.link') }}
   li.nav-item
     v-menu
-      template(#activator="{ props: activatorProps }")
-        a.nav-link.cursor-pointer(v-bind="activatorProps" style="font-size:14px;")
+      template(v-slot:activator="{ props }")
+        a.nav-link.cursor-pointer(v-bind="props" style="font-size:14px;")
           span.fa.fa-columns.me-1
           | {{ $t('sessions.columns') }}
       v-list(density="compact")
@@ -40,8 +40,8 @@ ul.nav.nav-pills.mb-3
           | {{ $t('sessions.threeColumn') }}
   li.nav-item
     v-menu
-      template(#activator="{ props: activatorProps }")
-        a.nav-link.cursor-pointer(v-bind="activatorProps" style="font-size:14px;")
+      template(v-slot:activator="{ props }")
+        a.nav-link.cursor-pointer(v-bind="props" style="font-size:14px;")
           span.fa.fa-columns.me-1
           | {{ $t('sessions.actions') }}
       v-list(density="compact")

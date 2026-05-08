@@ -25,8 +25,8 @@ mixin clickableLabelBody(field, title)
 //- Method to add a menu to field labels
 mixin clickableLabel(field, title)
   v-menu
-    template(#activator="{ props: activatorProps }")
-      button.btn.btn-sm.btn-default.clickable-label(v-bind="activatorProps" type="button")
+    template(v-slot:activator="{ props }")
+      button.btn.btn-sm.btn-default.clickable-label(v-bind="props" type="button")
         | #{title}
     v-list.clickable-label-menu(density="compact")
       +clickableLabelBody(field, title)
@@ -128,8 +128,8 @@ mixin ipArrayList(container, field, title, expr, max)
   if (container[field])
     dt
       v-menu
-        template(#activator="{ props: activatorProps }")
-          button.btn.btn-sm.btn-default.clickable-label(v-bind="activatorProps" type="button")
+        template(v-slot:activator="{ props }")
+          button.btn.btn-sm.btn-default.clickable-label(v-bind="props" type="button")
             | #{title}
         v-list.clickable-label-menu(density="compact")
           v-list-item(@click="exportUnique('" + expr  + "', 0)")
@@ -202,8 +202,8 @@ mixin printHeader(inHeaderNames, inHeaderValues, expr)
   for headerName in headerNames
     dt
       v-menu
-        template(#activator="{ props: activatorProps }")
-          button.btn.btn-sm.btn-default.clickable-label(v-bind="activatorProps" type="button")
+        template(v-slot:activator="{ props }")
+          button.btn.btn-sm.btn-default.clickable-label(v-bind="props" type="button")
             | #{headerName}
         v-list.clickable-label-menu(density="compact")
           v-list-item(@click="exportUnique('" + expr  + "', 1)")
@@ -219,8 +219,8 @@ mixin ipArrayListDNS(container, field, title, expr, max)
   if (container[field+ "Ip"])
     dt
       v-menu
-        template(#activator="{ props: activatorProps }")
-          button.btn.btn-sm.btn-default.clickable-label(v-bind="activatorProps" type="button")
+        template(v-slot:activator="{ props }")
+          button.btn.btn-sm.btn-default.clickable-label(v-bind="props" type="button")
             | #{title}
         v-list.clickable-label-menu(density="compact")
           v-list-item(@click="exportUnique('" + "ip." + expr  + "', 0)")

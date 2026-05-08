@@ -2,6 +2,15 @@
 import qs from 'qs';
 import { useRoute } from 'vue-router';
 import { BDropdown, BDropdownItem, BDropdownDivider, BCardGroup, BCard, BTooltip } from 'bootstrap-vue-next';
+// Vuetify components are tree-shaken by vite-plugin-vuetify, which only
+// auto-imports components it can statically detect in .vue SFCs. The pug
+// templates here are rendered server-side and compiled at runtime, so the
+// build-time analyzer can't see them -- we have to import the components
+// explicitly so they get into the bundle and the runtime template compiler
+// can resolve them.
+import { VMenu } from 'vuetify/components/VMenu';
+import { VList, VListItem } from 'vuetify/components/VList';
+import { VDivider } from 'vuetify/components/VDivider';
 // internal imports
 import store from '@/store';
 import SessionsService from './SessionsService';
@@ -122,7 +131,11 @@ export default {
         BDropdownItem,
         BDropdownDivider,
         BCardGroup,
-        BCard
+        BCard,
+        VMenu,
+        VList,
+        VListItem,
+        VDivider
       },
       directives: {
         BTooltip,
