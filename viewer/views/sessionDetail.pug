@@ -46,19 +46,18 @@ dl
 
   if (session.source.bytes || session.destination.bytes)
     dt
-      v-menu
-        template(v-slot:activator="{ props }")
-          button.btn.btn-sm.btn-default.clickable-label(v-bind="props" type="button")
-            | Src
-        v-list.clickable-label-menu(density="compact")
-          +clickableLabelBody('packets.src', 'Src Packets')
-          +clickableFieldActions('packets.src', false)
-          v-divider
-          +clickableLabelBody('bytes.src', 'Src Bytes')
-          +clickableFieldActions('bytes.src', false)
-          v-divider
-          +clickableLabelBody('databytes.src', 'Src Databytes')
-          +clickableFieldActions('databytes.src', false)
+      button.btn.btn-sm.btn-default.clickable-label(type="button")
+        | Src
+        v-menu(activator="parent" location="bottom start")
+          v-list.clickable-label-menu(density="compact")
+            +clickableLabelBody('packets.src', 'Src Packets')
+            +clickableFieldActions('packets.src', false)
+            v-divider
+            +clickableLabelBody('bytes.src', 'Src Bytes')
+            +clickableFieldActions('bytes.src', false)
+            v-divider
+            +clickableLabelBody('databytes.src', 'Src Databytes')
+            +clickableFieldActions('databytes.src', false)
     dd
       span.no-wrap
         strong.ms-1 Packets
@@ -71,19 +70,18 @@ dl
         +clickableValue('databytes.src', session.client.bytes)
 
     dt
-      v-menu
-        template(v-slot:activator="{ props }")
-          button.btn.btn-sm.btn-default.clickable-label(v-bind="props" type="button")
-            | Dst
-        v-list.clickable-label-menu(density="compact")
-          +clickableLabelBody('packets.dst', 'Dst Packets')
-          +clickableFieldActions('packets.dst', false)
-          v-divider
-          +clickableLabelBody('bytes.dst', 'Dst Bytes')
-          +clickableFieldActions('bytes.dst', false)
-          v-divider
-          +clickableLabelBody('databytes.dst', 'Dst Databytes')
-          +clickableFieldActions('databytes.dst', false)
+      button.btn.btn-sm.btn-default.clickable-label(type="button")
+        | Dst
+        v-menu(activator="parent" location="bottom start")
+          v-list.clickable-label-menu(density="compact")
+            +clickableLabelBody('packets.dst', 'Dst Packets')
+            +clickableFieldActions('packets.dst', false)
+            v-divider
+            +clickableLabelBody('bytes.dst', 'Dst Bytes')
+            +clickableFieldActions('bytes.dst', false)
+            v-divider
+            +clickableLabelBody('databytes.dst', 'Dst Databytes')
+            +clickableFieldActions('databytes.dst', false)
     dd
       span.no-wrap
         strong.ms-1 Packets
@@ -97,16 +95,15 @@ dl
 
   if (session.source.mac)
     dt
-      v-menu
-        template(v-slot:activator="{ props }")
-          button.btn.btn-sm.btn-default.clickable-label(v-bind="props" type="button")
-            | Src Ethernet
-        v-list.clickable-label-menu(density="compact")
-          +clickableLabelBody('mac.src', 'Src Mac')
-          +clickableFieldActions('mac.src', false)
-          v-divider
-          +clickableLabelBody('oui.src', 'Src OUI')
-          +clickableFieldActions('oui.src', false)
+      button.btn.btn-sm.btn-default.clickable-label(type="button")
+        | Src Ethernet
+        v-menu(activator="parent" location="bottom start")
+          v-list.clickable-label-menu(density="compact")
+            +clickableLabelBody('mac.src', 'Src Mac')
+            +clickableFieldActions('mac.src', false)
+            v-divider
+            +clickableLabelBody('oui.src', 'Src OUI')
+            +clickableFieldActions('oui.src', false)
     dd
       strong.ms-1 Mac
       +arrayPrint(session.source, "mac", "mac.src")
@@ -117,16 +114,15 @@ dl
 
   if (session.destination.mac)
     dt
-      v-menu
-        template(v-slot:activator="{ props }")
-          button.btn.btn-sm.btn-default.clickable-label(v-bind="props" type="button")
-            | Dst Ethernet
-        v-list.clickable-label-menu(density="compact")
-          +clickableLabelBody('mac.dst', 'Dst Mac')
-          +clickableFieldActions('mac.dst', false)
-          v-divider
-          +clickableLabelBody('oui.dst', 'Dst OUI')
-          +clickableFieldActions('oui.dst', false)
+      button.btn.btn-sm.btn-default.clickable-label(type="button")
+        | Dst Ethernet
+        v-menu(activator="parent" location="bottom start")
+          v-list.clickable-label-menu(density="compact")
+            +clickableLabelBody('mac.dst', 'Dst Mac')
+            +clickableFieldActions('mac.dst', false)
+            v-divider
+            +clickableLabelBody('oui.dst', 'Dst OUI')
+            +clickableFieldActions('oui.dst', false)
     dd
       strong.ms-1 Mac
       +arrayPrint(session.destination, "mac", "mac.dst")
@@ -137,22 +133,21 @@ dl
 
   if (session.dot1q != undefined || session.dot1ad != undefined || (session.network && session.network.vlan !== undefined))
     dt
-      v-menu
-        template(v-slot:activator="{ props }")
-          button.btn.btn-sm.btn-default.clickable-label(v-bind="props" type="button")
-            | VLan
-        v-list.clickable-label-menu(density="compact")
-          if (session.network && session.network.vlan !== undefined)
-            +clickableLabelBody('vlan', 'VLan')
-            +clickableFieldActions('vlan', false)
-            v-divider
-          if (session.dot1q)
-            +clickableLabelBody('vlan.dot1q', 'VLan dot1q')
-            +clickableFieldActions('vlan.dot1q', false)
-            v-divider
-          if (session.dot1ad)
-            +clickableLabelBody('vlan.dot1ad', 'VLan dot1ad')
-            +clickableFieldActions('vlan.dot1ad', false)
+      button.btn.btn-sm.btn-default.clickable-label(type="button")
+        | VLan
+        v-menu(activator="parent" location="bottom start")
+          v-list.clickable-label-menu(density="compact")
+            if (session.network && session.network.vlan !== undefined)
+              +clickableLabelBody('vlan', 'VLan')
+              +clickableFieldActions('vlan', false)
+              v-divider
+            if (session.dot1q)
+              +clickableLabelBody('vlan.dot1q', 'VLan dot1q')
+              +clickableFieldActions('vlan.dot1q', false)
+              v-divider
+            if (session.dot1ad)
+              +clickableLabelBody('vlan.dot1ad', 'VLan dot1ad')
+              +clickableFieldActions('vlan.dot1ad', false)
 
     dd
       if (session.network && session.network.vlan !== undefined)
@@ -170,23 +165,22 @@ dl
 
   if (session.srcOuterMac || session.srcOuterIp )
     dt
-      v-menu
-        template(v-slot:activator="{ props }")
-          button.btn.btn-sm.btn-default.clickable-label(v-bind="props" type="button")
-            | Src Outer Layer
-        v-list.clickable-label-menu(density="compact")
-          if (session.srcOuterMac)
-            +clickableLabelBody('outermac.src', 'Outer Src Mac')
-            +clickableFieldActions('outermac.src', false)
-            v-divider
-          if (session.srcOuterIp)
-            +clickableLabelBody('outerip.src', 'Outer Src IP')
-            +clickableFieldActions('outerip.src', false)
-            v-divider
-          if (session.srcOuterOui)
-            +clickableLabelBody('outeroui.src', 'Outer Src OUI')
-            +clickableFieldActions('outeroui.src', false)
-            v-divider
+      button.btn.btn-sm.btn-default.clickable-label(type="button")
+        | Src Outer Layer
+        v-menu(activator="parent" location="bottom start")
+          v-list.clickable-label-menu(density="compact")
+            if (session.srcOuterMac)
+              +clickableLabelBody('outermac.src', 'Outer Src Mac')
+              +clickableFieldActions('outermac.src', false)
+              v-divider
+            if (session.srcOuterIp)
+              +clickableLabelBody('outerip.src', 'Outer Src IP')
+              +clickableFieldActions('outerip.src', false)
+              v-divider
+            if (session.srcOuterOui)
+              +clickableLabelBody('outeroui.src', 'Outer Src OUI')
+              +clickableFieldActions('outeroui.src', false)
+              v-divider
     dd
       if (session.srcOuterMac)
         strong.ms-1 Mac
@@ -200,22 +194,21 @@ dl
 
   if (session.dstOuterMac || session.dstOuterIp )
     dt
-      v-menu
-        template(v-slot:activator="{ props }")
-          button.btn.btn-sm.btn-default.clickable-label(v-bind="props" type="button")
-            | Dst Outer Layer
-        v-list.clickable-label-menu(density="compact")
-          if (session.dstOuterMac)
-            +clickableLabelBody('outermac.dst', 'Outer Dst Mac')
-            +clickableFieldActions('outermac.dst', false)
-            v-divider
-          if (session.dstOuterIp)
-            +clickableLabelBody('outerip.dst', 'Outer Dst IP')
-            +clickableFieldActions('outerip.dst', false)
-            v-divider
-          if (session.dstOuterOui)
-            +clickableLabelBody('outeroui.dst', 'Outer Dst OUI')
-            +clickableFieldActions('outeroui.dst', false)
+      button.btn.btn-sm.btn-default.clickable-label(type="button")
+        | Dst Outer Layer
+        v-menu(activator="parent" location="bottom start")
+          v-list.clickable-label-menu(density="compact")
+            if (session.dstOuterMac)
+              +clickableLabelBody('outermac.dst', 'Outer Dst Mac')
+              +clickableFieldActions('outermac.dst', false)
+              v-divider
+            if (session.dstOuterIp)
+              +clickableLabelBody('outerip.dst', 'Outer Dst IP')
+              +clickableFieldActions('outerip.dst', false)
+              v-divider
+            if (session.dstOuterOui)
+              +clickableLabelBody('outeroui.dst', 'Outer Dst OUI')
+              +clickableFieldActions('outeroui.dst', false)
     dd
       if (session.dstOuterMac)
         strong.ms-1 Mac
@@ -228,72 +221,69 @@ dl
         +ipArrayPrint(session, "dstOuterIp", "outerip.dst")
 
   dt
-    v-menu
-      template(v-slot:activator="{ props }")
-        button.btn.btn-sm.btn-default.clickable-label(v-bind="props" type="button")
-          | Src IP/Port
-      v-list.clickable-label-menu(density="compact")
-        +clickableLabelBody('ip.src', 'Src IP')
-        v-list-item(@click="exportUnique('ip.src:port.src', 0)")
-          | {{ $t('sessions.exportUnique', {name: "Src IP#{sep}Port"} ) }}
-        v-list-item(@click="exportUnique('ip.src:port.src', 1)")
-          | {{ $t('sessions.exportUniqueCounts', {name: "Src IP#{sep}Port"} ) }}
-        +clickableFieldActions('ip.src', false)
-        v-divider
-        +clickableLabelBody('port.src', 'Src Port')
-        +clickableFieldActions('port.src', false)
-        v-divider
-        +clickableLabelBody('country.src', 'Src Country')
-        +clickableFieldActions('country.src', false)
-        v-divider
-        +clickableLabelBody('source.as.full', 'Src ASN')
-        +clickableFieldActions('source.as.full', false)
-        v-divider
-        +clickableLabelBody('rir.src', 'Src RIR')
-        +clickableFieldActions('rir.src', false)
+    button.btn.btn-sm.btn-default.clickable-label(type="button")
+      | Src IP/Port
+      v-menu(activator="parent" location="bottom start")
+        v-list.clickable-label-menu(density="compact")
+          +clickableLabelBody('ip.src', 'Src IP')
+          v-list-item(@click="exportUnique('ip.src:port.src', 0)")
+            | {{ $t('sessions.exportUnique', {name: "Src IP#{sep}Port"} ) }}
+          v-list-item(@click="exportUnique('ip.src:port.src', 1)")
+            | {{ $t('sessions.exportUniqueCounts', {name: "Src IP#{sep}Port"} ) }}
+          +clickableFieldActions('ip.src', false)
+          v-divider
+          +clickableLabelBody('port.src', 'Src Port')
+          +clickableFieldActions('port.src', false)
+          v-divider
+          +clickableLabelBody('country.src', 'Src Country')
+          +clickableFieldActions('country.src', false)
+          v-divider
+          +clickableLabelBody('source.as.full', 'Src ASN')
+          +clickableFieldActions('source.as.full', false)
+          v-divider
+          +clickableLabelBody('rir.src', 'Src RIR')
+          +clickableFieldActions('rir.src', false)
 
   dd
     +ipPrint(session, session.source.ip, session.source.port, session.source.geo.country_iso_code, session.source.as.full, session.srcRIR, "src", false, session.source.geo.region_iso_code, session.source.geo.city_name)
 
   dt
-    v-menu
-      template(v-slot:activator="{ props }")
-        button.btn.btn-sm.btn-default.clickable-label(v-bind="props" type="button")
-          | Dst IP/Port
-      v-list.clickable-label-menu(density="compact")
-        +clickableLabelBody('ip.dst', 'Dst IP')
-        v-list-item(@click="exportUnique('ip.dst:port.dst', 0)")
-          | {{ $t('sessions.exportUnique', {name: "Dst IP#{sep}Port"} ) }}
-        v-list-item(@click="exportUnique('ip.dst:port.dst', 1)")
-          | {{ $t('sessions.exportUniqueCounts', {name: "Dst IP#{sep}Port"} ) }}
-        +clickableFieldActions('ip.dst', false)
-        v-divider
-        +clickableLabelBody('port.dst', 'Dst Port')
-        +clickableFieldActions('port.dst', false)
-        v-divider
-        +clickableLabelBody('country.dst', 'Dst Country')
-        +clickableFieldActions('country.dst', false)
-        v-divider
-        +clickableLabelBody('destination.as.full', 'Dst ASN')
-        +clickableFieldActions('destination.as.full', false)
-        v-divider
-        +clickableLabelBody('rir.dst', 'Dst RIR')
-        +clickableFieldActions('rir.dst', false)
+    button.btn.btn-sm.btn-default.clickable-label(type="button")
+      | Dst IP/Port
+      v-menu(activator="parent" location="bottom start")
+        v-list.clickable-label-menu(density="compact")
+          +clickableLabelBody('ip.dst', 'Dst IP')
+          v-list-item(@click="exportUnique('ip.dst:port.dst', 0)")
+            | {{ $t('sessions.exportUnique', {name: "Dst IP#{sep}Port"} ) }}
+          v-list-item(@click="exportUnique('ip.dst:port.dst', 1)")
+            | {{ $t('sessions.exportUniqueCounts', {name: "Dst IP#{sep}Port"} ) }}
+          +clickableFieldActions('ip.dst', false)
+          v-divider
+          +clickableLabelBody('port.dst', 'Dst Port')
+          +clickableFieldActions('port.dst', false)
+          v-divider
+          +clickableLabelBody('country.dst', 'Dst Country')
+          +clickableFieldActions('country.dst', false)
+          v-divider
+          +clickableLabelBody('destination.as.full', 'Dst ASN')
+          +clickableFieldActions('destination.as.full', false)
+          v-divider
+          +clickableLabelBody('rir.dst', 'Dst RIR')
+          +clickableFieldActions('rir.dst', false)
 
   dd
     +ipPrint(session, session.destination.ip, session.destination.port, session.destination.geo.country_iso_code, session.destination.as.full, session.dstRIR, "dst", false, session.destination.geo.region_iso_code, session.destination.geo.city_name)
 
   if (session.srcPayload8 || session.dstPayload8)
     dt
-      v-menu
-        template(v-slot:activator="{ props }")
-          button.btn.btn-sm.btn-default.clickable-label(v-bind="props" type="button")
-            | Payload8
-        v-list.clickable-label-menu(density="compact")
-          +clickableLabelBody('payload8.src.hex', 'Src Payload8')
-          v-divider
-          +clickableLabelBody('payload8.dst.hex', 'Dst Payload8')
-          +clickableFieldActions('payload8.dst.hex', false)
+      button.btn.btn-sm.btn-default.clickable-label(type="button")
+        | Payload8
+        v-menu(activator="parent" location="bottom start")
+          v-list.clickable-label-menu(density="compact")
+            +clickableLabelBody('payload8.src.hex', 'Src Payload8')
+            v-divider
+            +clickableLabelBody('payload8.dst.hex', 'Dst Payload8')
+            +clickableFieldActions('payload8.dst.hex', false)
 
     dd
       - function isprint(char) { return !( /[\x00-\x08\x0E-\x1F\x80-\xFF]/.test(char)); }
@@ -334,40 +324,38 @@ dl
 
   if (session.socks)
     dt
-      v-menu
-        template(v-slot:activator="{ props }")
-          button.btn.btn-sm.btn-default.clickable-label(v-bind="props" type="button")
-            | Socks Dst
-        v-list.clickable-label-menu(density="compact")
-          +clickableLabelBody('ip.socks', 'Socks Dst')
-          +clickableFieldActions('ip.socks', false)
-          v-divider
-          +clickableLabelBody('port.socks', 'Socks Port')
-          +clickableFieldActions('port.socks', false)
-          v-divider
-          +clickableLabelBody('country.socks', 'Socks Country')
-          +clickableFieldActions('country.socks', false)
-          v-divider
-          +clickableLabelBody('asn.socks', 'Socks ASN')
-          +clickableFieldActions('asn.socks', false)
-          v-divider
-          +clickableLabelBody('rir.socks', 'Socks RIR')
-          +clickableFieldActions('rir.socks', false)
+      button.btn.btn-sm.btn-default.clickable-label(type="button")
+        | Socks Dst
+        v-menu(activator="parent" location="bottom start")
+          v-list.clickable-label-menu(density="compact")
+            +clickableLabelBody('ip.socks', 'Socks Dst')
+            +clickableFieldActions('ip.socks', false)
+            v-divider
+            +clickableLabelBody('port.socks', 'Socks Port')
+            +clickableFieldActions('port.socks', false)
+            v-divider
+            +clickableLabelBody('country.socks', 'Socks Country')
+            +clickableFieldActions('country.socks', false)
+            v-divider
+            +clickableLabelBody('asn.socks', 'Socks ASN')
+            +clickableFieldActions('asn.socks', false)
+            v-divider
+            +clickableLabelBody('rir.socks', 'Socks RIR')
+            +clickableFieldActions('rir.socks', false)
 
     dd
       +ipPrint(session, session.socks.ip, session.socks.port, session.socks.GEO, session.socks.ASN, session.socks.RIR, "socks", false)
 
     dt
-      v-menu
-        template(v-slot:activator="{ props }")
-          button.btn.btn-sm.btn-default.clickable-label(v-bind="props" type="button")
-            | Socks Host
-        v-list.clickable-label-menu(density="compact")
-          +clickableLabelBody('host.socks', 'Socks Host')
-          +clickableFieldActions('host.socks', false)
-          v-divider
-          +clickableLabelBody('port.socks', 'Socks Port')
-          +clickableFieldActions('port.socks', false)
+      button.btn.btn-sm.btn-default.clickable-label(type="button")
+        | Socks Host
+        v-menu(activator="parent" location="bottom start")
+          v-list.clickable-label-menu(density="compact")
+            +clickableLabelBody('host.socks', 'Socks Host')
+            +clickableFieldActions('host.socks', false)
+            v-divider
+            +clickableLabelBody('port.socks', 'Socks Port')
+            +clickableFieldActions('port.socks', false)
 
     dd
       +clickableValue('host.socks', session.socks.host)
@@ -391,40 +379,39 @@ dl
 
   if (session.tcpflags)
     dt
-      v-menu
-        template(v-slot:activator="{ props }")
-          button.btn.btn-sm.btn-default.clickable-label(v-bind="props" type="button")
-            | TCP Flags
-        v-list.clickable-label-menu(density="compact")
-          +clickableLabelBody('tcpflags.syn', 'SYN')
-          +clickableFieldActions('tcpflags.syn', false)
-          v-divider
-          +clickableLabelBody('tcpflags.syn-ack', 'SYN-ACK')
-          +clickableFieldActions('tcpflags.syn-ack', false)
-          v-divider
-          +clickableLabelBody('tcpflags.ack', 'ACK')
-          +clickableFieldActions('tcpflags.ack', false)
-          v-divider
-          +clickableLabelBody('tcpflags.psh', 'PSH')
-          +clickableFieldActions('tcpflags.psh', false)
-          v-divider
-          +clickableLabelBody('tcpflags.rst', 'RST')
-          +clickableFieldActions('tcpflags.rst', false)
-          v-divider
-          +clickableLabelBody('tcpflags.fin', 'FIN')
-          +clickableFieldActions('tcpflags.fin', false)
-          v-divider
-          +clickableLabelBody('tcpflags.urg', 'URG')
-          +clickableFieldActions('tcpflags.urg', false)
-          v-divider
-          +clickableLabelBody('tcpflags.ece', 'ECE')
-          +clickableFieldActions('tcpflags.ece', false)
-          v-divider
-          +clickableLabelBody('tcpflags.cwr', 'CWR')
-          +clickableFieldActions('tcpflags.cwr', false)
-          v-divider
-          +clickableLabelBody('tcpflags.ae', 'AE')
-          +clickableFieldActions('tcpflags.ae', false)
+      button.btn.btn-sm.btn-default.clickable-label(type="button")
+        | TCP Flags
+        v-menu(activator="parent" location="bottom start")
+          v-list.clickable-label-menu(density="compact")
+            +clickableLabelBody('tcpflags.syn', 'SYN')
+            +clickableFieldActions('tcpflags.syn', false)
+            v-divider
+            +clickableLabelBody('tcpflags.syn-ack', 'SYN-ACK')
+            +clickableFieldActions('tcpflags.syn-ack', false)
+            v-divider
+            +clickableLabelBody('tcpflags.ack', 'ACK')
+            +clickableFieldActions('tcpflags.ack', false)
+            v-divider
+            +clickableLabelBody('tcpflags.psh', 'PSH')
+            +clickableFieldActions('tcpflags.psh', false)
+            v-divider
+            +clickableLabelBody('tcpflags.rst', 'RST')
+            +clickableFieldActions('tcpflags.rst', false)
+            v-divider
+            +clickableLabelBody('tcpflags.fin', 'FIN')
+            +clickableFieldActions('tcpflags.fin', false)
+            v-divider
+            +clickableLabelBody('tcpflags.urg', 'URG')
+            +clickableFieldActions('tcpflags.urg', false)
+            v-divider
+            +clickableLabelBody('tcpflags.ece', 'ECE')
+            +clickableFieldActions('tcpflags.ece', false)
+            v-divider
+            +clickableLabelBody('tcpflags.cwr', 'CWR')
+            +clickableFieldActions('tcpflags.cwr', false)
+            v-divider
+            +clickableLabelBody('tcpflags.ae', 'AE')
+            +clickableFieldActions('tcpflags.ae', false)
     dd
       span.no-wrap
         strong.ms-1 SYN
@@ -459,17 +446,16 @@ dl
 
   if (session.tcpseq)
     dt
-      v-menu
-        template(v-slot:activator="{ props }")
-          button.btn.btn-sm.btn-default.clickable-label(v-bind="props" type="button")
-            | TCP Initial Seq
-        v-list.clickable-label-menu(density="compact")
-          if (session.tcpseq.src !== undefined)
-            +clickableLabelBody('tcpseq.src', 'TCP Seq Src')
-            +clickableFieldActions('tcpseq.src', false)
-          if (session.tcpseq.dst !== undefined)
-            +clickableLabelBody('tcpseq.dst', 'TCP Seq Dst')
-            +clickableFieldActions('tcpseq.dst', false)
+      button.btn.btn-sm.btn-default.clickable-label(type="button")
+        | TCP Initial Seq
+        v-menu(activator="parent" location="bottom start")
+          v-list.clickable-label-menu(density="compact")
+            if (session.tcpseq.src !== undefined)
+              +clickableLabelBody('tcpseq.src', 'TCP Seq Src')
+              +clickableFieldActions('tcpseq.src', false)
+            if (session.tcpseq.dst !== undefined)
+              +clickableLabelBody('tcpseq.dst', 'TCP Seq Dst')
+              +clickableFieldActions('tcpseq.dst', false)
     dd
       if (session.tcpseq.src !== undefined)
         strong.ms-1 Src
@@ -480,16 +466,15 @@ dl
 
   if (session.icmp)
     dt
-      v-menu
-        template(v-slot:activator="{ props }")
-          button.btn.btn-sm.btn-default.clickable-label(v-bind="props" type="button")
-            | ICMP
-        v-list.clickable-label-menu(density="compact")
-          +clickableLabelBody('icmp.type', 'ICMP Type')
-          +clickableFieldActions('icmp.type', false)
-          v-divider
-          +clickableLabelBody('icmp.code', 'ICMP Code')
-          +clickableFieldActions('icmp.code', false)
+      button.btn.btn-sm.btn-default.clickable-label(type="button")
+        | ICMP
+        v-menu(activator="parent" location="bottom start")
+          v-list.clickable-label-menu(density="compact")
+            +clickableLabelBody('icmp.type', 'ICMP Type')
+            +clickableFieldActions('icmp.type', false)
+            v-divider
+            +clickableLabelBody('icmp.code', 'ICMP Code')
+            +clickableFieldActions('icmp.code', false)
     dd
       strong.ms-1 Type
       +arrayPrint(session.icmp, "type", "icmp.type")
@@ -498,17 +483,16 @@ dl
 
   if (session.srcDscp || session.dstDscp)
     dt
-      v-menu
-        template(v-slot:activator="{ props }")
-          button.btn.btn-sm.btn-default.clickable-label(v-bind="props" type="button")
-            | DSCP
-        v-list.clickable-label-menu(density="compact")
-          if (session.srcDscp)
-            +clickableLabelBody('dscp.src', 'Src DSCP')
-            +clickableFieldActions('dscp.src', false)
-          if (session.dstDscp)
-            +clickableLabelBody('dscp.dst', 'Dst DSCP')
-            +clickableFieldActions('dscp.dst', false)
+      button.btn.btn-sm.btn-default.clickable-label(type="button")
+        | DSCP
+        v-menu(activator="parent" location="bottom start")
+          v-list.clickable-label-menu(density="compact")
+            if (session.srcDscp)
+              +clickableLabelBody('dscp.src', 'Src DSCP')
+              +clickableFieldActions('dscp.src', false)
+            if (session.dstDscp)
+              +clickableLabelBody('dscp.dst', 'Dst DSCP')
+              +clickableFieldActions('dscp.dst', false)
     dd
       if (session.srcDscp)
         strong.ms-1 Src
@@ -519,19 +503,18 @@ dl
 
   if (session.srcTTL || session.dstTTL)
     dt
-      v-menu
-        template(v-slot:activator="{ props }")
-          button.btn.btn-sm.btn-default.clickable-label(v-bind="props" type="button")
-            | IP TTL
-        v-list.clickable-label-menu(density="compact")
-          if (session.srcTTL)
-            +clickableLabelBody('ttl.src', 'Src TTL')
-            +clickableFieldActions('ttl.src', false)
-          if (session.srcTTL && session.dstTTL)
-            v-divider
-          if (session.dstTTL)
-            +clickableLabelBody('ttl.dst', 'Dst TTL')
-            +clickableFieldActions('ttl.dst', false)
+      button.btn.btn-sm.btn-default.clickable-label(type="button")
+        | IP TTL
+        v-menu(activator="parent" location="bottom start")
+          v-list.clickable-label-menu(density="compact")
+            if (session.srcTTL)
+              +clickableLabelBody('ttl.src', 'Src TTL')
+              +clickableFieldActions('ttl.src', false)
+            if (session.srcTTL && session.dstTTL)
+              v-divider
+            if (session.dstTTL)
+              +clickableLabelBody('ttl.dst', 'Dst TTL')
+              +clickableFieldActions('ttl.dst', false)
     dd
       if (session.srcTTL)
         strong.ms-1 Src

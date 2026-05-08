@@ -132,8 +132,8 @@ export default {
       default: () => []
     },
     ms: {
-      type: Object,
-      default: () => ({})
+      type: Boolean,
+      default: false
     }
   },
   data: function () {

@@ -26,37 +26,35 @@ ul.nav.nav-pills.mb-3
       span.fa.fa-link.me-1
       | {{ $t('sessions.link') }}
   li.nav-item
-    v-menu
-      template(v-slot:activator="{ props }")
-        a.nav-link.cursor-pointer(v-bind="props" style="font-size:14px;")
-          span.fa.fa-columns.me-1
-          | {{ $t('sessions.columns') }}
-      v-list(density="compact")
-        v-list-item(@click="toggleLayout(1)")
-          | {{ $t('sessions.oneColumn') }}
-        v-list-item(@click="toggleLayout(2)")
-          | {{ $t('sessions.twoColumn') }}
-        v-list-item(@click="toggleLayout(3)")
-          | {{ $t('sessions.threeColumn') }}
+    a.nav-link.cursor-pointer(style="font-size:14px;")
+      span.fa.fa-columns.me-1
+      | {{ $t('sessions.columns') }}
+      v-menu(activator="parent" location="bottom start")
+        v-list(density="compact")
+          v-list-item(@click="toggleLayout(1)")
+            | {{ $t('sessions.oneColumn') }}
+          v-list-item(@click="toggleLayout(2)")
+            | {{ $t('sessions.twoColumn') }}
+          v-list-item(@click="toggleLayout(3)")
+            | {{ $t('sessions.threeColumn') }}
   li.nav-item
-    v-menu
-      template(v-slot:activator="{ props }")
-        a.nav-link.cursor-pointer(v-bind="props" style="font-size:14px;")
-          span.fa.fa-columns.me-1
-          | {{ $t('sessions.actions') }}
-      v-list(density="compact")
-        if (session.packetPos && session.packetPos.length > 0)
-          v-list-item(@click="exportPCAP", v-has-permission="'!disablePcapDownload'")
-            | {{ $t('sessions.exports.exportPCAP') }}
-        v-list-item(@click="addTags")
-          | {{ $t('sessions.tag.addTags') }}
-        v-list-item(@click="removeTags", v-has-permission="'removeEnabled'")
-          | {{ $t('sessions.tag.removeTags') }}
-        v-list-item(@click="removeData()", v-has-permission="'removeEnabled'")
-          | {{ $t('search.removeData') }}
-        template(v-for="(value, key) in remoteclusters", :key="key")
-          v-list-item(v-if="value", @click="sendSession(key)")
-            | {{ $t('search.sendSession', { name: value.name }) }}
+    a.nav-link.cursor-pointer(style="font-size:14px;")
+      span.fa.fa-columns.me-1
+      | {{ $t('sessions.actions') }}
+      v-menu(activator="parent" location="bottom start")
+        v-list(density="compact")
+          if (session.packetPos && session.packetPos.length > 0)
+            v-list-item(@click="exportPCAP", v-has-permission="'!disablePcapDownload'")
+              | {{ $t('sessions.exports.exportPCAP') }}
+          v-list-item(@click="addTags")
+            | {{ $t('sessions.tag.addTags') }}
+          v-list-item(@click="removeTags", v-has-permission="'removeEnabled'")
+            | {{ $t('sessions.tag.removeTags') }}
+          v-list-item(@click="removeData()", v-has-permission="'removeEnabled'")
+            | {{ $t('search.removeData') }}
+          template(v-for="(value, key) in remoteclusters", :key="key")
+            v-list-item(v-if="value", @click="sendSession(key)")
+              | {{ $t('search.sendSession', { name: value.name }) }}
 
 div.mb-2
   arkime-toast(:message="message", :type="messageType", :done="messageDone")
