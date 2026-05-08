@@ -1891,16 +1891,16 @@ void arkime_packet_init()
     arkime_packet_thread_exit_func = arkime_get_named_func("arkime_packet_thread_exit");
 
     char filename[PATH_MAX];
-    snprintf(filename, sizeof(filename), "/tmp/%s.tcp.drops.4", config.nodeName);
+    snprintf(filename, sizeof(filename), "%s.tcp.drops.4", config.nodeName);
     arkime_drophash_init(&packetDrop4, filename, 4);
 
-    snprintf(filename, sizeof(filename), "/tmp/%s.tcp.drops.6", config.nodeName);
+    snprintf(filename, sizeof(filename), "%s.tcp.drops.6", config.nodeName);
     arkime_drophash_init(&packetDrop6, filename, 16);
 
-    snprintf(filename, sizeof(filename), "/tmp/%s.tcp.drops.4S", config.nodeName);
+    snprintf(filename, sizeof(filename), "%s.tcp.drops.4S", config.nodeName);
     arkime_drophash_init(&packetDrop4S, filename, 12);
 
-    snprintf(filename, sizeof(filename), "/tmp/%s.tcp.drops.6S", config.nodeName);
+    snprintf(filename, sizeof(filename), "%s.tcp.drops.6S", config.nodeName);
     arkime_drophash_init(&packetDrop6S, filename, 36);
 
     g_timeout_add_seconds(10, arkime_packet_save_drophash, 0);
