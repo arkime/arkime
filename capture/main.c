@@ -429,7 +429,7 @@ LOCAL void reload(int UNUSED(sig))
  */
 FILE *arkime_state_file_open(const char *name, const char *mode)
 {
-    LOCAL const char *stateDir = NULL;
+    static const char *stateDir = NULL;
     if (!stateDir) {
         stateDir = arkime_config_str(NULL, "stateDir", "/tmp");
     }
