@@ -54,7 +54,6 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #3965 Add mqtt.connackCode for CONNACK return/reason codes
   - #3965 Add snmp.engineId and snmp.secLevel SNMPv3 fields
 
-
 6.3.1 2026/05/04
 ## Capture
   - #3940 Fix ISAKMP parser on UDP/4500 (NAT-T) misparsed ESP packets without the non-ESP marker
