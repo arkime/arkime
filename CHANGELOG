@@ -48,6 +48,11 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #3958 PCAP files now opened with O_NOFOLLOW to prevent symlink attacks
   - #3962 Improved websocket parser; adds websocket.* fields and websocketTextSampleCnt config option
   - #3963 Improved mDNS parsing: handle aggregated queries, unsolicited responses, and flags
+  - DNS TXT records now capture multiple items
+  - #3965 Add diameter.resultCode field (AVP 268) for 4G/5G core auth/error tracking
+  - #3965 Add dnp3.funcName and s7comm.funcName decoded ICS function-code names
+  - #3965 Add mqtt.connackCode for CONNACK return/reason codes
+  - #3965 Add snmp.engineId and snmp.secLevel SNMPv3 fields
 
 6.3.1 2026/05/04
 ## Capture

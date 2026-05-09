@@ -195,7 +195,7 @@ typedef struct dns_answer {
         char            *nsdname;
         uint32_t         ipA;
         struct in6_addr *ipAAAA;
-        char            *txt;
+        GPtrArray       *txts;
         DNSCAARData_t   *caa;
         DNSSVCBRData_t  *svcb;
         DNSRRSIGRData_t *rrsig;
@@ -998,23 +998,33 @@ LOCAL void dns_parser(ArkimeSession_t *session, int kind, const uint8_t *data, i
                 break;
             }
             case DNS_RR_TXT: {
-                BSB_IMPORT_u08(rdbsb, txtLen);
+                /* RFC 1035 §3.3.14: TXT rdata is one or more <length><string>
+                 * tuples until rdlength is consumed. mDNS DNS-SD heavily
+                 * uses multiple strings per record (one per key=value). */
+                answer->txts = g_ptr_array_new_with_free_func(g_free);
+                while (BSB_REMAINING(rdbsb) > 0) {
+                    BSB_IMPORT_u08(rdbsb, txtLen);
 
-                const uint8_t *ptr = 0;
-                BSB_IMPORT_ptr(rdbsb, ptr, txtLen);
+                    const uint8_t *ptr = 0;
+                    BSB_IMPORT_ptr(rdbsb, ptr, txtLen);
 
-                if (ptr) {
-                    answer->txt = g_strndup((const char *)ptr, txtLen);
-                } else {
-                    goto continueerr;
-                }
+                    if (BSB_IS_ERROR(rdbsb) || !ptr) {
+                        goto continueerr;
+                    }
+
+                    if (txtLen == 0)
+                        continue;
+
+                    char *txt = g_strndup((const char *)ptr, txtLen);
+                    g_ptr_array_add(answer->txts, txt);
 
 #ifdef DNSDEBUG
-                LOG("DNSDEBUG: RR_TXT=%s", answer->txt);
+                    LOG("DNSDEBUG: RR_TXT=%s", txt);
 #endif
 
-                jsonLen += txtLen;
-                txtLen = 0;
+                    jsonLen += txtLen + 3; // string + quotes + comma
+                    txtLen = 0;
+                }
                 break;
             }
             case DNS_RR_CAA: {
@@ -1494,10 +1504,19 @@ LOCAL void dns_save(BSB *jbsb, ArkimeFieldObject_t *object, struct arkime_sessio
                     }
                     break;
                     case DNS_RR_TXT: {
-                        BSB_EXPORT_cstr(*jbsb, "\"txt\":");
-                        arkime_db_js0n_str(jbsb, (uint8_t *)answer->txt, TRUE);
-                        BSB_EXPORT_u08(*jbsb, ',');
-                        g_free(answer->txt);
+                        if (answer->txts && answer->txts->len > 0) {
+                            BSB_EXPORT_cstr(*jbsb, "\"txt\":[");
+                            for (guint t = 0; t < answer->txts->len; t++) {
+                                if (t > 0)
+                                    BSB_EXPORT_u08(*jbsb, ',');
+                                arkime_db_js0n_str(jbsb, (uint8_t *)g_ptr_array_index(answer->txts, t), TRUE);
+                            }
+                            BSB_EXPORT_cstr(*jbsb, "],");
+                        }
+                        if (answer->txts) {
+                            g_ptr_array_free(answer->txts, TRUE);
+                            answer->txts = NULL;
+                        }
                     }
                     break;
                     case DNS_RR_HTTPS: {
@@ -1703,8 +1722,8 @@ LOCAL void dns_free_object(ArkimeFieldObject_t *object)
         }
         break;
         case DNS_RR_TXT: {
-            if (answer->txt) {
-                g_free(answer->txt);
+            if (answer->txts) {
+                g_ptr_array_free(answer->txts, TRUE);
             }
         }
         break;

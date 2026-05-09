@@ -5162,7 +5162,9 @@
         "class" : "IN",
         "name" : "example.org",
         "ttl" : 3600,
-        "txt" : "v=spf1 include:_spf.example.org ~all",
+        "txt" : [
+         "v=spf1 include:_spf.example.org ~all"
+        ],
         "type" : "TXT"
        }
       ],
@@ -14141,6 +14143,11 @@
       "129"
      ],
      "funcCnt" : 2,
+     "funcName" : [
+      "Read",
+      "Response"
+     ],
+     "funcNameCnt" : 2,
      "src" : [
       "1",
       "10"
@@ -15163,6 +15170,10 @@
       4
      ],
      "funcCnt" : 1,
+     "funcName" : [
+      "Read Var"
+     ],
+     "funcNameCnt" : 1,
      "opcode" : [
       49
      ],
@@ -16762,6 +16773,10 @@
       "arkime-test-001"
      ],
      "clientIdCnt" : 1,
+     "connackCode" : [
+      0
+     ],
+     "connackCodeCnt" : 1,
      "flags" : [
       "cleanSession",
       "hasPassword",

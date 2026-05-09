@@ -4517,6 +4517,12 @@ sub sessions3Update
         "originRealmCnt" : {
           "type" : "long"
         },
+        "resultCode" : {
+          "type" : "long"
+        },
+        "resultCodeCnt" : {
+          "type" : "long"
+        },
         "sessionId" : {
           "type" : "keyword"
         },
@@ -5255,6 +5261,12 @@ sub sessions3Update
         "funcCnt" : {
           "type" : "long"
         },
+        "funcName" : {
+          "type" : "keyword"
+        },
+        "funcNameCnt" : {
+          "type" : "long"
+        },
         "src" : {
           "type" : "long"
         },
@@ -5307,6 +5319,12 @@ sub sessions3Update
           "type" : "keyword"
         },
         "clientIdCnt" : {
+          "type" : "long"
+        },
+        "connackCode" : {
+          "type" : "long"
+        },
+        "connackCodeCnt" : {
           "type" : "long"
         },
         "flags" : {
@@ -5714,6 +5732,12 @@ sub sessions3Update
         "funcCnt" : {
           "type" : "long"
         },
+        "funcName" : {
+          "type" : "keyword"
+        },
+        "funcNameCnt" : {
+          "type" : "long"
+        },
         "opcode" : {
           "type" : "long"
         },
@@ -5799,10 +5823,22 @@ sub sessions3Update
         "communityCnt" : {
           "type" : "long"
         },
+        "engineId" : {
+          "type" : "keyword"
+        },
+        "engineIdCnt" : {
+          "type" : "long"
+        },
         "error" : {
           "type" : "keyword"
         },
         "errorCnt" : {
+          "type" : "long"
+        },
+        "secLevel" : {
+          "type" : "keyword"
+        },
+        "secLevelCnt" : {
           "type" : "long"
         },
         "trapOid" : {

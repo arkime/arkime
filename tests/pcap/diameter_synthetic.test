@@ -35,7 +35,11 @@
      "originRealm" : [
       "example.com"
      ],
-     "originRealmCnt" : 1
+     "originRealmCnt" : 1,
+     "resultCode" : [
+      2001
+     ],
+     "resultCodeCnt" : 1
     },
     "dstPayload8" : "0100005040000101",
     "dstRIR" : "ARIN",
@@ -180,6 +184,10 @@
       "epc.3gpp.com"
      ],
      "originRealmCnt" : 1,
+     "resultCode" : [
+      2001
+     ],
+     "resultCodeCnt" : 1,
      "sessionId" : [
       "gx-session-001;pcrf.3gpp.com;99999"
      ],
@@ -356,6 +364,10 @@
       "lte.operator.net"
      ],
      "originRealmCnt" : 1,
+     "resultCode" : [
+      2001
+     ],
+     "resultCodeCnt" : 1,
      "sessionId" : [
       "s6a-session-xyz;mme.lte.net;12345"
      ],
@@ -482,6 +494,10 @@
       "isp.com"
      ],
      "originRealmCnt" : 1,
+     "resultCode" : [
+      2001
+     ],
+     "resultCodeCnt" : 1,
      "sessionId" : [
       "acct-session-789;nas.isp.com;55555"
      ],
