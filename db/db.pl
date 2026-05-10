@@ -5275,6 +5275,52 @@ sub sessions3Update
         }
       }
     },
+    "enip" : {
+      "properties" : {
+        "class" : {
+          "type" : "keyword"
+        },
+        "classCnt" : {
+          "type" : "long"
+        },
+        "command" : {
+          "type" : "keyword"
+        },
+        "commandCnt" : {
+          "type" : "long"
+        },
+        "deviceType" : {
+          "type" : "keyword"
+        },
+        "deviceTypeCnt" : {
+          "type" : "long"
+        },
+        "product" : {
+          "type" : "keyword"
+        },
+        "productCnt" : {
+          "type" : "long"
+        },
+        "service" : {
+          "type" : "keyword"
+        },
+        "serviceCnt" : {
+          "type" : "long"
+        },
+        "status" : {
+          "type" : "long"
+        },
+        "statusCnt" : {
+          "type" : "long"
+        },
+        "vendor" : {
+          "type" : "keyword"
+        },
+        "vendorCnt" : {
+          "type" : "long"
+        }
+      }
+    },
     "m3ua" : {
       "properties" : {
         "si" : {

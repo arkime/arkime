@@ -1,0 +1,10 @@
+if (session.enip)
+  div.sessionDetailMeta.bold ENIP/CIP
+  dl.sessionDetailMeta
+    +arrayList(session.enip, "command", "ENIP Command", "enip.command")
+    +arrayList(session.enip, "status", "ENIP Status", "enip.status")
+    +arrayList(session.enip, "service", "CIP Service", "enip.service")
+    +arrayList(session.enip, "class", "CIP Class", "enip.class")
+    +arrayList(session.enip, "vendor", "Vendor", "enip.vendor")
+    +arrayList(session.enip, "product", "Product", "enip.product")
+    +arrayList(session.enip, "deviceType", "Device Type", "enip.device-type")
