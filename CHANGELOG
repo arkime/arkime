@@ -40,6 +40,8 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #3941 Move to using curl instead of wget everywhere and now depend on package
 ## All
   - #3951 Fix UTF-8 mojibake in user names auto-created via header auth (e.g. behind Caddy/oauth2-proxy)
+  - #3967 All header* auth modes (header, header-jwt, headerOnly, header+digest, header+basic) now
+          default userAuthIps to localhost-only when not explicitly configured
 ## Capture
   - #3954 Add trimEthernetPadding option to strip Ethernet padding/FCS so saved pcap and byte counts match the on-wire IP length
   - #3957 Even when not writing packets still save new sessions midway

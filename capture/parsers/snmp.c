@@ -122,12 +122,12 @@ LOCAL int snmp_parser(ArkimeSession_t *session, void *UNUSED(uw), const uint8_t 
         if (!value)
             return 0;
         if (atag == 4 && alen > 0) {
-            char hex[256];
-            uint32_t hbytes = (alen < (int)(sizeof(hex) / 2)) ? alen : (int)(sizeof(hex) / 2);
-            for (uint32_t i = 0; i < hbytes; i++) {
-                memcpy(hex + i * 2, arkime_char_to_hexstr[value[i]], 2);
+            char hex[257];
+            uint32_t hbytes = (alen < (int)((sizeof(hex) - 1) / 2)) ? alen : (int)((sizeof(hex) - 1) / 2);
+            if (hbytes > 0) {
+                arkime_sprint_hex_string(hex, value, hbytes);
+                arkime_field_string_add(engineIdField, session, hex, hbytes * 2, TRUE);
             }
-            arkime_field_string_add(engineIdField, session, hex, hbytes * 2, TRUE);
         }
 
         // msgAuthoritativeEngineBoots (INTEGER)

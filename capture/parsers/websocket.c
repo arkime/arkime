@@ -57,7 +57,7 @@ typedef struct {
 /******************************************************************************/
 LOCAL void websocket_save(ArkimeSession_t *session, void *uw, int UNUSED(final))
 {
-    WebSocketInfo_t *ws = uw;
+    const WebSocketInfo_t *ws = uw;
     if (!ws)
         return;
     if (ws->frameCnt) {
@@ -221,11 +221,12 @@ LOCAL int websocket_tcp_parser(ArkimeSession_t *session, void *uw, const uint8_t
                         }
                         // RFC 6455 §5.5.1 requires close reason text to be UTF-8.
                         const gchar *utf8End = NULL;
-                        if (g_utf8_validate(reason, rlen, &utf8End)) {
-                            if (rlen > 0)
+                        if (rlen > 0) {
+                            if (g_utf8_validate(reason, rlen, &utf8End)) {
                                 arkime_field_string_add(closeReasonField, session, reason, rlen, TRUE);
-                        } else if (utf8End && utf8End > reason) {
-                            arkime_field_string_add(closeReasonField, session, reason, (int)(utf8End - reason), TRUE);
+                            } else if (utf8End && utf8End > reason) {
+                                arkime_field_string_add(closeReasonField, session, reason, (int)(utf8End - reason), TRUE);
+                            }
                         }
                     }
                 }
