@@ -15,9 +15,93 @@ extern ArkimeConfig_t        config;
 LOCAL  int srcField;
 LOCAL  int dstField;
 LOCAL  int funcField;
+LOCAL  int funcNameField;
 
 #define DNP3_START_BYTES    0x0564
 #define DNP3_MIN_LEN        10      // Start(2) + Len(1) + Ctrl(1) + Dst(2) + Src(2) + CRC(2)
+
+// DNP3 Application Function Codes (IEEE 1815)
+LOCAL const char *dnp3_func_name(uint8_t code)
+{
+    switch (code) {
+    case 0:
+        return "Confirm";
+    case 1:
+        return "Read";
+    case 2:
+        return "Write";
+    case 3:
+        return "Select";
+    case 4:
+        return "Operate";
+    case 5:
+        return "DirectOperate";
+    case 6:
+        return "DirectOperateNoAck";
+    case 7:
+        return "ImmediateFreeze";
+    case 8:
+        return "ImmediateFreezeNoAck";
+    case 9:
+        return "FreezeClear";
+    case 10:
+        return "FreezeClearNoAck";
+    case 11:
+        return "FreezeAtTime";
+    case 12:
+        return "FreezeAtTimeNoAck";
+    case 13:
+        return "ColdRestart";
+    case 14:
+        return "WarmRestart";
+    case 15:
+        return "InitializeData";
+    case 16:
+        return "InitializeApplication";
+    case 17:
+        return "StartApplication";
+    case 18:
+        return "StopApplication";
+    case 19:
+        return "SaveConfiguration";
+    case 20:
+        return "EnableUnsolicited";
+    case 21:
+        return "DisableUnsolicited";
+    case 22:
+        return "AssignClass";
+    case 23:
+        return "DelayMeasure";
+    case 24:
+        return "RecordCurrentTime";
+    case 25:
+        return "OpenFile";
+    case 26:
+        return "CloseFile";
+    case 27:
+        return "DeleteFile";
+    case 28:
+        return "GetFileInfo";
+    case 29:
+        return "AuthenticateFile";
+    case 30:
+        return "AbortFile";
+    case 31:
+        return "ActivateConfig";
+    case 32:
+        return "AuthenticateRequest";
+    case 33:
+        return "AuthenticateError";
+    case 129:
+        return "Response";
+    case 130:
+        return "UnsolicitedResponse";
+    case 131:
+        return "AuthenticateResponse";
+    default:
+        return NULL;
+    }
+}
 
 /******************************************************************************/
 LOCAL void dnp3_parse_frame(ArkimeSession_t *session, BSB *bsb)
@@ -43,6 +127,10 @@ LOCAL void dnp3_parse_frame(ArkimeSession_t *session, BSB *bsb)
         BSB_IMPORT_u08(*bsb, funcCode);
 
         arkime_field_int_add(funcField, session, funcCode);
+        const char *fname = dnp3_func_name(funcCode);
+        if (fname) {
+            arkime_field_string_add(funcNameField, session, fname, -1, TRUE);
+        }
     }
 }
 /******************************************************************************/
@@ -211,4 +299,10 @@ void arkime_parser_init()
                                     "DNP3 Function Codes",
                                     ARKIME_FIELD_TYPE_INT_GHASH, ARKIME_FIELD_FLAG_CNT,
                                     (char *)NULL);
+
+    funcNameField = arkime_field_define("dnp3", "termfield",
+                                        "dnp3.funcName", "DNP3 Function Name", "dnp3.funcName",
+                                        "DNP3 Function Code Names (Read, Write, DirectOperate, Response, etc)",
+                                        ARKIME_FIELD_TYPE_STR_GHASH, ARKIME_FIELD_FLAG_CNT,
+                                        (char *)NULL);
 }

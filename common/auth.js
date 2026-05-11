@@ -200,7 +200,7 @@ class Auth {
           process.exit(1);
         }
       }
-    } else if (Auth.mode === 'header' || Auth.mode === 'header-jwt') {
+    } else if (Auth.mode.startsWith('header')) {
       Auth.#userAuthIps.add('::ffff:127.0.0.0', 96 + 8, 1);
       Auth.#userAuthIps.add('::1', 128, 1);
     } else {

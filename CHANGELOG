@@ -40,12 +40,25 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #3941 Move to using curl instead of wget everywhere and now depend on package
 ## All
   - #3951 Fix UTF-8 mojibake in user names auto-created via header auth (e.g. behind Caddy/oauth2-proxy)
+  - #3967 All header* auth modes (header, header-jwt, headerOnly, header+digest, header+basic) now
+          default userAuthIps to localhost-only when not explicitly configured
 ## Capture
   - #3954 Add trimEthernetPadding option to strip Ethernet padding/FCS so saved pcap and byte counts match the on-wire IP length
   - #3957 Even when not writing packets still save new sessions midway
   - #3958 Add stateDir config option (default /tmp) for capture state files (drophash, stoppedsessions); 
           files now opened with O_NOFOLLOW to prevent symlink attacks
   - #3958 PCAP files now opened with O_NOFOLLOW to prevent symlink attacks
+  - #3962 Improved websocket parser; adds websocket.* fields and websocketTextSampleCnt config option
+  - #3963 Improved mDNS parsing: handle aggregated queries, unsolicited responses, and flags
+  - DNS TXT records now capture multiple items
+  - #3965 Add diameter.resultCode field (AVP 268) for 4G/5G core auth/error tracking
+  - #3965 Add dnp3.funcName and s7comm.funcName decoded ICS function-code names
+  - #3965 Add mqtt.connackCode for CONNACK return/reason codes
+  - #3965 Add snmp.engineId and snmp.secLevel SNMPv3 fields
+  - #3966 Add enip parser
+## WISE
+  - #3968 Improve JSON Array Parsing: shortcut paths now expand arrays at any
+          intermediate position, not just the final value
 
 6.3.1 2026/05/04
 ## Capture

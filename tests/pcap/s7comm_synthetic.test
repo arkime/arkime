@@ -86,6 +86,11 @@
       "4"
      ],
      "funcCnt" : 2,
+     "funcName" : [
+      "Read Var",
+      "Setup communication"
+     ],
+     "funcNameCnt" : 2,
      "pduref" : [
       "1",
       "2"
@@ -266,6 +271,11 @@
       "5"
      ],
      "funcCnt" : 2,
+     "funcName" : [
+      "Setup communication",
+      "Write Var"
+     ],
+     "funcNameCnt" : 2,
      "pduref" : [
       "256",
       "257",
@@ -544,6 +554,12 @@
       "41"
      ],
      "funcCnt" : 4,
+     "funcName" : [
+      "PLC Control",
+      "PLC Stop",
+      "Setup communication"
+     ],
+     "funcNameCnt" : 3,
      "pduref" : [
       "1",
       "2",

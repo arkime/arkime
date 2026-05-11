@@ -195,7 +195,7 @@ typedef struct dns_answer {
         char            *nsdname;
         uint32_t         ipA;
         struct in6_addr *ipAAAA;
-        char            *txt;
+        GPtrArray       *txts;
         DNSCAARData_t   *caa;
         DNSSVCBRData_t  *svcb;
         DNSRRSIGRData_t *rrsig;
@@ -593,7 +593,13 @@ LOCAL void dns_parser(ArkimeSession_t *session, int kind, const uint8_t *data, i
         break;
     }
 
-    if (qd_count != 1) {
+    const int mdns = (kind == 2);
+
+    /* mDNS (RFC 6762 §5.3) allows aggregated queries (qd_count > 1) and
+     * unsolicited responses (qd_count == 0). qd_count > 1: parse the first
+     * question and walk past the rest before answers. qd_count == 0:
+     * synthesize a query keyed on root so answers attach to a session record. */
+    if (qd_count != 1 && !mdns) {
         arkime_session_add_tag(session, "dns:qdcount-not-1");
         return;
     }
@@ -601,35 +607,52 @@ LOCAL void dns_parser(ArkimeSession_t *session, int kind, const uint8_t *data, i
     BSB bsb;
     BSB_INIT(bsb, data + 12, len - 12);
 
-    /* QD Section */
     char namebuf[8001];
     int namelen = sizeof(namebuf);
-    char *name = dns_name(session, data, len, &bsb, namebuf, &namelen);
+    char *name = NULL;
 
-    if (BSB_IS_ERROR(bsb) || !name) {
-        return;
-    }
-
-    if (!namelen) {
+    if (qd_count == 0) {
+        /* mDNS response with no question: synthesize key */
         key.query.hostname = root;
+        key.query.type_id = 0;
+        key.query.class_id = 0;
         namelen = 6;
+        name = root;
     } else {
-        key.query.hostname = g_hostname_to_unicode(name);
-        if (!key.query.hostname) {
-            if (namelen > 4 && arkime_memstr((const char *)name, namelen, "xn--", 4)) {
-                arkime_session_add_tag(session, "bad-punycode");
-            } else {
-                arkime_session_add_tag(session, "bad-hostname");
-            }
+        /* QD Section */
+        name = dns_name(session, data, len, &bsb, namebuf, &namelen);
+
+        if (BSB_IS_ERROR(bsb) || !name) {
             return;
         }
+
+        if (!namelen) {
+            key.query.hostname = root;
+            namelen = 6;
+        } else {
+            key.query.hostname = g_hostname_to_unicode(name);
+            if (!key.query.hostname) {
+                if (namelen > 4 && arkime_memstr((const char *)name, namelen, "xn--", 4)) {
+                    arkime_session_add_tag(session, "bad-punycode");
+                } else {
+                    arkime_session_add_tag(session, "bad-hostname");
+                }
+                return;
+            }
+        }
+
+        key.query.type_id = 0;
+        BSB_IMPORT_u16(bsb, key.query.type_id);
+
+        key.query.class_id = 0;
+        BSB_IMPORT_u16(bsb, key.query.class_id);
+
+        /* mDNS (RFC 6762 §5.4): top bit of qclass is the "unicast-response"
+         * (QU) preference, not part of the class value. */
+        if (mdns) {
+            key.query.class_id &= 0x7FFF;
+        }
     }
-
-    key.query.type_id = 0;
-    BSB_IMPORT_u16(bsb, key.query.type_id);
-
-    key.query.class_id = 0;
-    BSB_IMPORT_u16(bsb, key.query.class_id);
 
     ArkimeFieldObject_t *fobject = NULL;;
     DNS_t *dns = NULL;
@@ -716,6 +739,20 @@ LOCAL void dns_parser(ArkimeSession_t *session, int kind, const uint8_t *data, i
         return;
     }
 
+    /* mDNS aggregated query: advance past the remaining question records
+     * so the answer parsing below starts at the correct offset. */
+    if (mdns && qd_count > 1) {
+        for (int q = 1; BSB_NOT_ERROR(bsb) && q < qd_count; q++) {
+            namelen = sizeof(namebuf);
+            dns_name(session, data, len, &bsb, namebuf, &namelen);
+            if (BSB_IS_ERROR(bsb))
+                return;
+            BSB_IMPORT_skip(bsb, 4); // type + class
+        }
+        if (BSB_IS_ERROR(bsb))
+            return;
+    }
+
     if (!dns->ips) {
         dns->ips = g_hash_table_new_full(arkime_field_ip_hash, arkime_field_ip_equal, g_free, NULL);
     }
@@ -770,6 +807,12 @@ LOCAL void dns_parser(ArkimeSession_t *session, int kind, const uint8_t *data, i
             BSB_IMPORT_u16 (bsb, antype);
             uint16_t anclass = 0;
             BSB_IMPORT_u16 (bsb, anclass);
+
+            /* mDNS (RFC 6762 §10.2): top bit of rrclass is the cache-flush
+             * indicator and must be masked off before comparing. */
+            if (mdns) {
+                anclass &= 0x7FFF;
+            }
             uint32_t anttl = 0;
             BSB_IMPORT_u32 (bsb, anttl);
             uint16_t rdlength = 0;
@@ -955,23 +998,33 @@ LOCAL void dns_parser(ArkimeSession_t *session, int kind, const uint8_t *data, i
                 break;
             }
             case DNS_RR_TXT: {
-                BSB_IMPORT_u08(rdbsb, txtLen);
+                /* RFC 1035 §3.3.14: TXT rdata is one or more <length><string>
+                 * tuples until rdlength is consumed. mDNS DNS-SD heavily
+                 * uses multiple strings per record (one per key=value). */
+                answer->txts = g_ptr_array_new_with_free_func(g_free);
+                while (BSB_REMAINING(rdbsb) > 0) {
+                    BSB_IMPORT_u08(rdbsb, txtLen);
 
-                const uint8_t *ptr = 0;
-                BSB_IMPORT_ptr(rdbsb, ptr, txtLen);
+                    const uint8_t *ptr = 0;
+                    BSB_IMPORT_ptr(rdbsb, ptr, txtLen);
 
-                if (ptr) {
-                    answer->txt = g_strndup((const char *)ptr, txtLen);
-                } else {
-                    goto continueerr;
-                }
+                    if (BSB_IS_ERROR(rdbsb) || !ptr) {
+                        goto continueerr;
+                    }
+
+                    if (txtLen == 0)
+                        continue;
+
+                    char *txt = g_strndup((const char *)ptr, txtLen);
+                    g_ptr_array_add(answer->txts, txt);
 
 #ifdef DNSDEBUG
-                LOG("DNSDEBUG: RR_TXT=%s", answer->txt);
+                    LOG("DNSDEBUG: RR_TXT=%s", txt);
 #endif
 
-                jsonLen += txtLen;
-                txtLen = 0;
+                    jsonLen += txtLen + 3; // string + quotes + comma
+                    txtLen = 0;
+                }
                 break;
             }
             case DNS_RR_CAA: {
@@ -1451,10 +1504,19 @@ LOCAL void dns_save(BSB *jbsb, ArkimeFieldObject_t *object, struct arkime_sessio
                     }
                     break;
                     case DNS_RR_TXT: {
-                        BSB_EXPORT_cstr(*jbsb, "\"txt\":");
-                        arkime_db_js0n_str(jbsb, (uint8_t *)answer->txt, TRUE);
-                        BSB_EXPORT_u08(*jbsb, ',');
-                        g_free(answer->txt);
+                        if (answer->txts && answer->txts->len > 0) {
+                            BSB_EXPORT_cstr(*jbsb, "\"txt\":[");
+                            for (guint t = 0; t < answer->txts->len; t++) {
+                                if (t > 0)
+                                    BSB_EXPORT_u08(*jbsb, ',');
+                                arkime_db_js0n_str(jbsb, (uint8_t *)g_ptr_array_index(answer->txts, t), TRUE);
+                            }
+                            BSB_EXPORT_cstr(*jbsb, "],");
+                        }
+                        if (answer->txts) {
+                            g_ptr_array_free(answer->txts, TRUE);
+                            answer->txts = NULL;
+                        }
                     }
                     break;
                     case DNS_RR_HTTPS: {
@@ -1660,8 +1722,8 @@ LOCAL void dns_free_object(ArkimeFieldObject_t *object)
         }
         break;
         case DNS_RR_TXT: {
-            if (answer->txt) {
-                g_free(answer->txt);
+            if (answer->txts) {
+                g_ptr_array_free(answer->txts, TRUE);
             }
         }
         break;

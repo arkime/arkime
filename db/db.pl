@@ -4517,6 +4517,12 @@ sub sessions3Update
         "originRealmCnt" : {
           "type" : "long"
         },
+        "resultCode" : {
+          "type" : "long"
+        },
+        "resultCodeCnt" : {
+          "type" : "long"
+        },
         "sessionId" : {
           "type" : "keyword"
         },
@@ -5255,10 +5261,62 @@ sub sessions3Update
         "funcCnt" : {
           "type" : "long"
         },
+        "funcName" : {
+          "type" : "keyword"
+        },
+        "funcNameCnt" : {
+          "type" : "long"
+        },
         "src" : {
           "type" : "long"
         },
         "srcCnt" : {
+          "type" : "long"
+        }
+      }
+    },
+    "enip" : {
+      "properties" : {
+        "class" : {
+          "type" : "keyword"
+        },
+        "classCnt" : {
+          "type" : "long"
+        },
+        "command" : {
+          "type" : "keyword"
+        },
+        "commandCnt" : {
+          "type" : "long"
+        },
+        "deviceType" : {
+          "type" : "keyword"
+        },
+        "deviceTypeCnt" : {
+          "type" : "long"
+        },
+        "product" : {
+          "type" : "keyword"
+        },
+        "productCnt" : {
+          "type" : "long"
+        },
+        "service" : {
+          "type" : "keyword"
+        },
+        "serviceCnt" : {
+          "type" : "long"
+        },
+        "status" : {
+          "type" : "long"
+        },
+        "statusCnt" : {
+          "type" : "long"
+        },
+        "vendor" : {
+          "type" : "keyword"
+        },
+        "vendorCnt" : {
           "type" : "long"
         }
       }
@@ -5307,6 +5365,12 @@ sub sessions3Update
           "type" : "keyword"
         },
         "clientIdCnt" : {
+          "type" : "long"
+        },
+        "connackCode" : {
+          "type" : "long"
+        },
+        "connackCodeCnt" : {
           "type" : "long"
         },
         "flags" : {
@@ -5714,6 +5778,12 @@ sub sessions3Update
         "funcCnt" : {
           "type" : "long"
         },
+        "funcName" : {
+          "type" : "keyword"
+        },
+        "funcNameCnt" : {
+          "type" : "long"
+        },
         "opcode" : {
           "type" : "long"
         },
@@ -5799,10 +5869,22 @@ sub sessions3Update
         "communityCnt" : {
           "type" : "long"
         },
+        "engineId" : {
+          "type" : "keyword"
+        },
+        "engineIdCnt" : {
+          "type" : "long"
+        },
         "error" : {
           "type" : "keyword"
         },
         "errorCnt" : {
+          "type" : "long"
+        },
+        "secLevel" : {
+          "type" : "keyword"
+        },
+        "secLevelCnt" : {
           "type" : "long"
         },
         "trapOid" : {
@@ -6177,6 +6259,43 @@ sub sessions3Update
     },
     "userCnt" : {
       "type" : "long"
+    },
+    "websocket" : {
+      "properties" : {
+        "opcode" : {
+          "type" : "keyword"
+        },
+        "opcodeCnt" : {
+          "type" : "long"
+        },
+        "closeCode" : {
+          "type" : "long"
+        },
+        "closeCodeCnt" : {
+          "type" : "long"
+        },
+        "closeReason" : {
+          "type" : "keyword"
+        },
+        "closeReasonCnt" : {
+          "type" : "long"
+        },
+        "textSample" : {
+          "type" : "keyword"
+        },
+        "textSampleCnt" : {
+          "type" : "long"
+        },
+        "frameCnt" : {
+          "type" : "long"
+        },
+        "payloadBytes" : {
+          "type" : "long"
+        },
+        "maskedFromClient" : {
+          "type" : "long"
+        }
+      }
     }
   }
 }

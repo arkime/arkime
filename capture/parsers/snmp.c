@@ -6,6 +6,7 @@
 #include "arkime.h"
 
 extern ArkimeConfig_t        config;
+extern uint8_t               arkime_char_to_hexstr[256][3];
 
 LOCAL  int                   versionField;
 LOCAL  int                   communityField;
@@ -14,6 +15,8 @@ LOCAL  int                   errorField;
 LOCAL  int                   variableField;
 LOCAL  int                   typeField;
 LOCAL  int                   trapOidField;
+LOCAL  int                   engineIdField;
+LOCAL  int                   secLevelField;
 
 LOCAL  char                 *types[8] = {"GetRequest", "GetNextRequest", "GetResponse", "SetRequest", "Trap", "GetBulkRequest", "InformRequest", "SNMPv2-Trap"};
 LOCAL  int                   lens[8];
@@ -73,10 +76,32 @@ LOCAL int snmp_parser(ArkimeSession_t *session, void *UNUSED(uw), const uint8_t 
 
     // SNMPv3 has different structure
     if (version == 3) {
-        // msgGlobalData (SEQUENCE)
+        // msgGlobalData (SEQUENCE) -- contains msgID, msgMaxSize, msgFlags, msgSecurityModel
         value = arkime_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen);
         if (!value || atag != 16)
             return 0;
+
+        {
+            BSB gbsb;
+            BSB_INIT(gbsb, value, alen);
+            // msgID
+            arkime_parsers_asn_get_tlv(&gbsb, &apc, &atag, &alen);
+            // msgMaxSize
+            arkime_parsers_asn_get_tlv(&gbsb, &apc, &atag, &alen);
+            // msgFlags (OCTET STRING, 1 byte)
+            value = arkime_parsers_asn_get_tlv(&gbsb, &apc, &atag, &alen);
+            if (value && atag == 4 && alen >= 1) {
+                uint8_t flags = value[0];
+                const char *secLevel;
+                if ((flags & 0x03) == 0x03)
+                    secLevel = "authPriv";
+                else if (flags & 0x01)
+                    secLevel = "authNoPriv";
+                else
+                    secLevel = "noAuthNoPriv";
+                arkime_field_string_add(secLevelField, session, secLevel, -1, TRUE);
+            }
+        }
 
         // Skip to msgSecurityParameters (OCTET STRING containing USM)
         value = arkime_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen);
@@ -96,6 +121,14 @@ LOCAL int snmp_parser(ArkimeSession_t *session, void *UNUSED(uw), const uint8_t 
         value = arkime_parsers_asn_get_tlv(&usm, &apc, &atag, &alen);
         if (!value)
             return 0;
+        if (atag == 4 && alen > 0) {
+            char hex[257];
+            uint32_t hbytes = (alen < (int)((sizeof(hex) - 1) / 2)) ? alen : (int)((sizeof(hex) - 1) / 2);
+            if (hbytes > 0) {
+                arkime_sprint_hex_string(hex, value, hbytes);
+                arkime_field_string_add(engineIdField, session, hex, hbytes * 2, TRUE);
+            }
+        }
 
         // msgAuthoritativeEngineBoots (INTEGER)
         value = arkime_parsers_asn_get_tlv(&usm, &apc, &atag, &alen);
@@ -303,4 +336,16 @@ void arkime_parser_init()
                                        "SNMP Trap OID",
                                        ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
                                        (char *)NULL);
+
+    engineIdField = arkime_field_define("snmp", "termfield",
+                                        "snmp.engineId", "Engine ID", "snmp.engineId",
+                                        "SNMPv3 msgAuthoritativeEngineID (hex)",
+                                        ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
+                                        (char *)NULL);
+
+    secLevelField = arkime_field_define("snmp", "termfield",
+                                        "snmp.secLevel", "Security Level", "snmp.secLevel",
+                                        "SNMPv3 security level (noAuthNoPriv/authNoPriv/authPriv)",
+                                        ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
+                                        (char *)NULL);
 }

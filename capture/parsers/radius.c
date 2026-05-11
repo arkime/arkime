@@ -104,19 +104,19 @@ void arkime_parser_init()
 
     macField = arkime_field_define("radius", "lotermfield",
                                    "radius.mac", "MAC", "radius.mac",
-                                   "Radius Mac",
+                                   "RADIUS MAC",
                                    ARKIME_FIELD_TYPE_STR_GHASH,  ARKIME_FIELD_FLAG_CNT,
                                    (char *)NULL);
 
     endpointIpField = arkime_field_define("radius", "ip",
                                           "radius.endpoint-ip", "Endpoint IP", "radius.endpointIp",
-                                          "Radius endpoint ip addresses for session",
+                                          "RADIUS endpoint IP addresses for session",
                                           ARKIME_FIELD_TYPE_IP_GHASH,  ARKIME_FIELD_FLAG_CNT,
                                           (char *)NULL);
 
     framedIpField = arkime_field_define("radius", "ip",
                                         "radius.framed-ip", "Framed IP", "radius.framedIp",
-                                        "Radius framed ip addresses for session",
+                                        "RADIUS framed IP addresses for session",
                                         ARKIME_FIELD_TYPE_IP_GHASH,  ARKIME_FIELD_FLAG_CNT,
                                         (char *)NULL);
 

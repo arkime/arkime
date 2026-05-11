@@ -1,0 +1,10 @@
+if (session.websocket)
+  div.sessionDetailMeta.bold WebSocket
+  dl.sessionDetailMeta
+    +arrayList(session.websocket, 'opcode', 'Opcode', 'websocket.opcode')
+    +arrayList(session.websocket, 'frameCnt', 'Frame Count', 'websocket.frameCnt')
+    +arrayList(session.websocket, 'payloadBytes', 'Payload Bytes', 'websocket.payloadBytes')
+    +arrayList(session.websocket, 'maskedFromClient', 'Masked Frames', 'websocket.maskedFromClient')
+    +arrayList(session.websocket, 'textSample', 'Text Sample', 'websocket.textSample')
+    +arrayList(session.websocket, 'closeCode', 'Close Code', 'websocket.closeCode')
+    +arrayList(session.websocket, 'closeReason', 'Close Reason', 'websocket.closeReason')
