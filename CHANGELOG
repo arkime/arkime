@@ -56,6 +56,9 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #3965 Add mqtt.connackCode for CONNACK return/reason codes
   - #3965 Add snmp.engineId and snmp.secLevel SNMPv3 fields
   - #3966 Add enip parser
+## WISE
+  - #3968 Improve JSON Array Parsing: shortcut paths now expand arrays at any
+          intermediate position, not just the final value
 
 6.3.1 2026/05/04
 ## Capture

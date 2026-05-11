@@ -44,6 +44,14 @@
   "keyPath": "ip",
   "fields": "field:tags;shortcut:tag"
  },
+ "file:ipjsonnested": {
+  "file": "../tests/ip.wise.nested.json",
+  "tags": "ipwisenested",
+  "type": "ip",
+  "format": "json",
+  "keyPath": "ip",
+  "fields": "field:tags;shortcut:info.tag"
+ },
  "file:md5": {
   "file": "../tests/md5.wise",
   "tags": "md5wise",

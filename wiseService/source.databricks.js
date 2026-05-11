@@ -86,17 +86,7 @@ class DatabricksSource extends WISESource {
       const key = item[this.keyPath];
       if (!key) { continue; }
 
-      const args = [];
-      for (const k in this.shortcuts) {
-        if (item[k] !== undefined) {
-          args.push(this.shortcuts[k].pos);
-          if (Array.isArray(item[k])) {
-            args.push(item[k][0]);
-          } else {
-            args.push(item[k]);
-          }
-        }
-      }
+      const args = this.parseJSONElement(item);
 
       const newitem = WISESource.encodeResult.apply(null, args);
 
@@ -168,17 +158,7 @@ class DatabricksSource extends WISESource {
 
     const item = results[0];
 
-    const args = [];
-    for (const k in this.shortcuts) {
-      if (item[k] !== undefined) {
-        args.push(this.shortcuts[k].pos);
-        if (Array.isArray(item[k])) {
-          args.push(item[k][0]);
-        } else {
-          args.push(item[k]);
-        }
-      }
-    }
+    const args = this.parseJSONElement(item);
     const newresult = WISESource.combineResults([WISESource.encodeResult.apply(null, args), this.tagsResult]);
     return cb(null, newresult);
   }
