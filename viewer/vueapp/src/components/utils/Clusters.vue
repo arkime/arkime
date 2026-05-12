@@ -3,76 +3,82 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-  <v-menu
-    v-if="multiviewer"
-    v-model="esVisMenuOpen"
-    :close-on-content-click="false"
-    location="bottom end">
-    <template #activator="{ props: activatorProps }">
-      <button
-        v-bind="activatorProps"
-        type="button"
-        class="btn btn-sm btn-theme-secondary pull-right ms-1 rounded multies-menu-trigger">
-        <span class="fa fa-database me-1" />
-        {{ selectedCluster.length }}
-        <v-tooltip activator="parent">
-          {{ esMenuHoverText }}
-        </v-tooltip>
-      </button>
-    </template>
-    <v-list
-      density="compact"
-      class="multies-menu-list">
-      <div class="px-2 py-1">
-        <input
-          type="text"
-          v-model="esQuery"
-          class="form-control form-control-sm"
-          :placeholder="$t('utils.searchForClustersPlaceholder')">
-      </div>
-      <template v-if="!selectOne">
-        <v-divider />
-        <v-list-item @click.prevent.stop="selectAllCluster">
-          <span class="fa fa-list" />&nbsp;
-          {{ $t('common.selectAll') }}
-        </v-list-item>
-        <v-list-item @click.prevent.stop="clearAllCluster">
-          <span class="fa fa-eraser" />&nbsp;
-          {{ $t('common.clearAll') }}
-        </v-list-item>
+  <!-- Single stable root: keeps Vue's component anchor present even when
+       v-menu (which teleports its content) is conditionally rendered.
+       Otherwise unmount-during-navigation hits 'Cannot read properties
+       of null (reading parentNode)'. -->
+  <div class="clusters-root d-inline-block">
+    <v-menu
+      v-if="multiviewer"
+      v-model="esVisMenuOpen"
+      :close-on-content-click="false"
+      location="bottom end">
+      <template #activator="{ props: activatorProps }">
+        <button
+          v-bind="activatorProps"
+          type="button"
+          class="btn btn-sm btn-theme-secondary ms-1 rounded multies-menu-trigger">
+          <span class="fa fa-database me-1" />
+          {{ selectedCluster.length }}
+          <v-tooltip activator="parent">
+            {{ esMenuHoverText }}
+          </v-tooltip>
+        </button>
       </template>
-      <v-divider />
-      <template v-if="esVisMenuOpen">
-        <template
-          v-for="(clusters, group) in filteredClusters"
-          :key="group">
-          <div class="group-header">
-            {{ group + ' (' + clusters.length + ')' }}
-          </div>
+      <v-list
+        density="compact"
+        class="multies-menu-list">
+        <div class="px-2 py-1">
+          <input
+            type="text"
+            v-model="esQuery"
+            class="form-control form-control-sm"
+            :placeholder="$t('utils.searchForClustersPlaceholder')">
+        </div>
+        <template v-if="!selectOne">
+          <v-divider />
+          <v-list-item @click.prevent.stop="selectAllCluster">
+            <span class="fa fa-list" />&nbsp;
+            {{ $t('common.selectAll') }}
+          </v-list-item>
+          <v-list-item @click.prevent.stop="clearAllCluster">
+            <span class="fa fa-eraser" />&nbsp;
+            {{ $t('common.clearAll') }}
+          </v-list-item>
+        </template>
+        <v-divider />
+        <template v-if="esVisMenuOpen">
           <template
-            v-for="cluster in clusters"
-            :key="group + cluster + 'item'">
-            <v-list-item
-              :id="group + cluster + 'item'"
-              :active="isClusterVis(cluster)"
-              @click.prevent.stop="toggleClusterSelection(cluster)">
-              {{ cluster }}
-            </v-list-item>
+            v-for="(clusters, group) in filteredClusters"
+            :key="group">
+            <div class="group-header">
+              {{ group + ' (' + clusters.length + ')' }}
+            </div>
+            <template
+              v-for="cluster in clusters"
+              :key="group + cluster + 'item'">
+              <v-list-item
+                :id="group + cluster + 'item'"
+                :active="isClusterVis(cluster)"
+                @click.prevent.stop="toggleClusterSelection(cluster)">
+                {{ cluster }}
+              </v-list-item>
+            </template>
           </template>
         </template>
-      </template>
-    </v-list>
-  </v-menu>
-  <div
-    v-if="showMessage"
-    class="alert alert-warning position-fixed fixed-bottom m-0 rounded-0"
-    style="z-index: 2000;">
-    <button
-      type="button"
-      :aria-label="$t('common.dismiss')"
-      class="btn-close pull-right"
-      @click="showMessage = false" />
-    {{ $t('utils.onlyOne') }}
+      </v-list>
+    </v-menu>
+    <div
+      v-if="showMessage"
+      class="alert alert-warning position-fixed fixed-bottom m-0 rounded-0"
+      style="z-index: 2000;">
+      <button
+        type="button"
+        :aria-label="$t('common.dismiss')"
+        class="btn-close float-end"
+        @click="showMessage = false" />
+      {{ $t('utils.onlyOne') }}
+    </div>
   </div>
 </template>
 
