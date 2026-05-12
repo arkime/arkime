@@ -14,6 +14,7 @@ LOCAL int routerIdField;
 LOCAL int areaIdField;
 
 /******************************************************************************/
+SUPPRESS_ALIGNMENT
 LOCAL void ospf_create_sessionid(uint8_t *sessionId, ArkimePacket_t *const packet)
 {
     const struct ip           *ip4 = (struct ip *)(packet->pkt + packet->ipOffset);
