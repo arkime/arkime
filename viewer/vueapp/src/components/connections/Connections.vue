@@ -14,13 +14,13 @@ SPDX-License-Identifier: Apache-2.0
 
         <!-- connections sub navbar -->
         <div class="connections-form m-1">
-          <div class="d-flex flex-wrap align-items-center gap-1">
+          <div class="d-flex flex-wrap align-center gap-1">
 
             <!-- query size select -->
-            <div class="input-group input-group-sm w-auto">
+            <div class="arkime-input-group">
               <span
                 id="querySize"
-                class="input-group-text cursor-help">
+                class="arkime-input-label cursor-help">
                 {{ $t('connections.querySize') }}
               </span>
               <v-tooltip
@@ -29,7 +29,7 @@ SPDX-License-Identifier: Apache-2.0
                 {{ $t('connections.querySizeTip') }}
               </v-tooltip>
               <select
-                class="form-select form-select-sm"
+                class="arkime-input-control"
                 :value="query.length"
                 @change="changeLength(Number($event.target.value))">
                 <option
@@ -41,10 +41,10 @@ SPDX-License-Identifier: Apache-2.0
 
             <!-- src select -->
             <div
-              class="input-group input-group-sm w-auto"
+              class="arkime-input-group"
               v-if="fields && fields.length && srcFieldTypeahead && fieldHistoryConnectionsSrc">
               <span
-                class="input-group-text legend cursor-help primary-legend"
+                class="arkime-input-label legend cursor-help primary-legend"
                 id="sourceField">
                 Src:
               </span>
@@ -64,10 +64,10 @@ SPDX-License-Identifier: Apache-2.0
 
             <!-- dst select -->
             <div
-              class="input-group input-group-sm w-auto"
+              class="arkime-input-group"
               v-if="fields && dstFieldTypeahead && fieldHistoryConnectionsDst">
               <span
-                class="input-group-text legend cursor-help secondary-legend"
+                class="arkime-input-label legend cursor-help secondary-legend"
                 id="dstField">
                 Dst:
               </span>
@@ -86,9 +86,9 @@ SPDX-License-Identifier: Apache-2.0
             </div> <!-- /dst select -->
 
             <!-- src & dst color -->
-            <div class="input-group input-group-sm w-auto">
+            <div class="arkime-input-group">
               <span
-                class="input-group-text legend cursor-help tertiary-legend"
+                class="arkime-input-label legend cursor-help tertiary-legend"
                 id="srcDstColor">
                 Src &amp; dst
               </span>
@@ -100,10 +100,10 @@ SPDX-License-Identifier: Apache-2.0
             </div> <!-- /src & dst color -->
 
             <!-- min connections select -->
-            <div class="input-group input-group-sm w-auto">
+            <div class="arkime-input-group">
               <span
                 id="minConn"
-                class="input-group-text help-cursor">
+                class="arkime-input-label help-cursor">
                 {{ $t('connections.minConn') }}
               </span>
               <v-tooltip
@@ -112,7 +112,7 @@ SPDX-License-Identifier: Apache-2.0
                 {{ $t('connections.minConnTip') }}
               </v-tooltip>
               <select
-                class="form-select form-select-sm"
+                class="arkime-input-control"
                 :value="query.minConn"
                 @change="changeMinConn(Number($event.target.value))">
                 <option
@@ -123,9 +123,9 @@ SPDX-License-Identifier: Apache-2.0
             </div> <!-- /min connections select -->
 
             <!-- weight select -->
-            <div class="input-group input-group-sm w-auto">
+            <div class="arkime-input-group">
               <span
-                class="input-group-text help-cursor"
+                class="arkime-input-label help-cursor"
                 id="weight">
                 {{ $t('connections.weight') }}
               </span>
@@ -135,7 +135,7 @@ SPDX-License-Identifier: Apache-2.0
                 {{ $t('connections.weightTip') }}
               </v-tooltip>
               <select
-                class="form-select form-select-sm"
+                class="arkime-input-control"
                 :value="weight"
                 @change="changeWeight($event.target.value)">
                 <option
@@ -168,10 +168,13 @@ SPDX-License-Identifier: Apache-2.0
                   :close-on-content-click="false"
                   location="bottom start">
                   <template #activator="{ props: activatorProps }">
-                    <button
+                    <v-btn
                       v-bind="activatorProps"
-                      type="button"
-                      class="btn btn-sm btn-theme-primary rounded ms-1 field-vis-trigger"
+                      variant="flat"
+                      size="small"
+                      density="comfortable"
+                      class="ms-1 field-vis-trigger"
+                      :style="primaryBtnStyle"
                       :id="`${m.kind}Fields`">
                       <span
                         class="fa"
@@ -181,7 +184,7 @@ SPDX-License-Identifier: Apache-2.0
                         :open-delay="300">
                         {{ $t(m.tipKey) }}
                       </v-tooltip>
-                    </button>
+                    </v-btn>
                   </template>
                   <v-list
                     density="compact"
@@ -190,7 +193,7 @@ SPDX-License-Identifier: Apache-2.0
                       <input
                         type="text"
                         v-model="fieldQuery"
-                        class="form-control form-control-sm"
+                        class="arkime-input-control"
                         :placeholder="$t('common.searchForFields')">
                     </div>
                     <v-divider />
@@ -229,9 +232,9 @@ SPDX-License-Identifier: Apache-2.0
             </div>
 
             <!-- network baseline time range -->
-            <div class="input-group input-group-sm w-auto">
+            <div class="arkime-input-group">
               <span
-                class="input-group-text help-cursor"
+                class="arkime-input-label help-cursor"
                 id="baselineDate">
                 {{ $t('connections.baselineDate') }}
               </span>
@@ -241,7 +244,7 @@ SPDX-License-Identifier: Apache-2.0
                 {{ $t('connections.baselineDateTip') }}
               </v-tooltip>
               <select
-                class="form-select form-select-sm"
+                class="arkime-input-control"
                 v-model="query.baselineDate"
                 @change="changeBaselineDate">
                 <option value="0">{{ $t('common.optionDisabled') }}</option>
@@ -267,10 +270,10 @@ SPDX-License-Identifier: Apache-2.0
 
             <!-- network baseline node visibility -->
             <div
-              class="input-group input-group-sm w-auto"
+              class="arkime-input-group"
               v-show="query.baselineDate !== '0'">
               <span
-                class="input-group-text help-cursor"
+                class="arkime-input-label help-cursor"
                 id="baselineVis">
                 {{ $t('connections.baselineVis') }}
               </span>
@@ -280,7 +283,7 @@ SPDX-License-Identifier: Apache-2.0
                 {{ $t('connections.baselineVisTip') }}
               </v-tooltip>
               <select
-                class="form-select form-select-sm"
+                class="arkime-input-control"
                 :disabled="query.baselineDate === '0'"
                 v-model="query.baselineVis"
                 @change="changeBaselineVis">
@@ -358,11 +361,14 @@ SPDX-License-Identifier: Apache-2.0
       <span
         class="connections-buttons"
         :style="[showToolBars ? {'top': '160px'} : {'top': '40px'}]">
-        <div class="btn-group-vertical unlock-btn overlay-btns">
+        <div class="d-flex flex-column unlock-btn overlay-btns">
           <!-- unlock button-->
           <span class="unlock-btn">
-            <button
-              class="btn btn-default btn-sm ms-1"
+            <v-btn
+              variant="outlined"
+              size="small"
+              density="comfortable"
+              class="ms-1"
               id="unlockNodes"
               :aria-label="$t('connections.unlockNodesTip')"
               @click.stop.prevent="unlock">
@@ -373,12 +379,15 @@ SPDX-License-Identifier: Apache-2.0
                 :open-delay="300">
                 {{ $t('connections.unlockNodesTip') }}
               </v-tooltip>
-            </button>
+            </v-btn>
           </span> <!-- /unlock button-->
           <!-- export button-->
           <span class="export-btn">
-            <button
-              class="btn btn-default btn-sm ms-1"
+            <v-btn
+              variant="outlined"
+              size="small"
+              density="comfortable"
+              class="ms-1"
               id="exportGraph"
               :aria-label="$t('connections.exportGraphTip')"
               @click.stop.prevent="exportPng">
@@ -389,17 +398,18 @@ SPDX-License-Identifier: Apache-2.0
                 :open-delay="300">
                 {{ $t('connections.exportGraphTip') }}
               </v-tooltip>
-            </button>
+            </v-btn>
           </span> <!-- /export button-->
         </div>
 
         <!-- node distance -->
-        <div class="btn-group-vertical node-distance-btns overlay-btns">
-          <button
+        <div class="d-flex flex-column node-distance-btns overlay-btns">
+          <v-btn
             id="nodeDistUp"
-            type="button"
             :aria-label="$t('connections.nodeDistUpTip')"
-            class="btn btn-default btn-sm"
+            variant="outlined"
+            size="small"
+            density="comfortable"
             :class="{'disabled':query.nodeDist >= 200}"
             @click="changeNodeDist(10)">
             <span class="fa fa-plus" />
@@ -410,12 +420,13 @@ SPDX-License-Identifier: Apache-2.0
               :open-delay="300">
               {{ $t('connections.nodeDistUpTip') }}
             </v-tooltip>
-          </button>
-          <button
+          </v-btn>
+          <v-btn
             id="nodeDistDown"
-            type="button"
             :aria-label="$t('connections.nodeDistDownTip')"
-            class="btn btn-default btn-sm"
+            variant="outlined"
+            size="small"
+            density="comfortable"
             :class="{'disabled':query.nodeDist <= 10}"
             @click="changeNodeDist(-10)">
             <span class="fa fa-minus" />
@@ -426,16 +437,17 @@ SPDX-License-Identifier: Apache-2.0
               :open-delay="300">
               {{ $t('connections.nodeDistDownTip') }}
             </v-tooltip>
-          </button>
+          </v-btn>
         </div> <!-- /node distance -->
 
         <!-- text size increase/decrease -->
-        <div class="btn-group-vertical text-size-btns overlay-btns">
-          <button
+        <div class="d-flex flex-column text-size-btns overlay-btns">
+          <v-btn
             id="textSizeUp"
-            type="button"
             :aria-label="$t('connections.textSizeUpTip')"
-            class="btn btn-default btn-sm"
+            variant="outlined"
+            size="small"
+            density="comfortable"
             :class="{'disabled':fontSize >= 1}"
             @click="updateTextSize(0.1)">
             <span class="fa fa-long-arrow-up" />
@@ -446,12 +458,13 @@ SPDX-License-Identifier: Apache-2.0
               :open-delay="300">
               {{ $t('connections.textSizeUpTip') }}
             </v-tooltip>
-          </button>
-          <button
+          </v-btn>
+          <v-btn
             id="textSizeDown"
-            type="button"
             :aria-label="$t('connections.textSizeDownTip')"
-            class="btn btn-default btn-sm"
+            variant="outlined"
+            size="small"
+            density="comfortable"
             :class="{'disabled':fontSize <= 0.2}"
             @click="updateTextSize(-0.1)">
             <span class="fa fa-long-arrow-down" />
@@ -462,16 +475,17 @@ SPDX-License-Identifier: Apache-2.0
               :open-delay="300">
               {{ $t('connections.textSizeDownTip') }}
             </v-tooltip>
-          </button>
+          </v-btn>
         </div> <!-- /text size increase/decrease -->
 
         <!-- zoom in/out -->
-        <div class="btn-group-vertical zoom-btns overlay-btns">
-          <button
+        <div class="d-flex flex-column zoom-btns overlay-btns">
+          <v-btn
             id="zoomIn"
-            type="button"
             :aria-label="$t('connections.zoomInTip')"
-            class="btn btn-default btn-sm"
+            variant="outlined"
+            size="small"
+            density="comfortable"
             :class="{'disabled':zoomLevel >= 4}"
             @click="zoomConnections(2)">
             <span class="fa fa-lg fa-search-plus" />
@@ -481,12 +495,13 @@ SPDX-License-Identifier: Apache-2.0
               :open-delay="300">
               {{ $t('connections.zoomInTip') }}
             </v-tooltip>
-          </button>
-          <button
+          </v-btn>
+          <v-btn
             id="zoomOut"
-            type="button"
             :aria-label="$t('connections.zoomOutTip')"
-            class="btn btn-default btn-sm"
+            variant="outlined"
+            size="small"
+            density="comfortable"
             :class="{'disabled':zoomLevel <= 0.0625}"
             @click="zoomConnections(0.5)">
             <span class="fa fa-lg fa-search-minus" />
@@ -496,7 +511,7 @@ SPDX-License-Identifier: Apache-2.0
               :open-delay="300">
               {{ $t('connections.zoomOutTip') }}
             </v-tooltip>
-          </button>
+          </v-btn>
         </div> <!-- /zoom in/out -->
       </span> <!-- /Button group -->
     </div>
@@ -658,7 +673,12 @@ export default {
       fieldVisMenus: [
         { kind: 'node', icon: 'fa-circle-o', tipKey: 'connections.nodeFieldsTip' },
         { kind: 'link', icon: 'fa-link', tipKey: 'connections.linkFieldsTip' }
-      ]
+      ],
+      // Arkime theme-color v-btn style. Vuetify :color can't take CSS vars.
+      primaryBtnStyle: {
+        backgroundColor: 'var(--color-primary)',
+        color: 'var(--color-button, #FFF)'
+      }
     };
   },
   computed: {
@@ -1521,6 +1541,44 @@ export default {
   -webkit-user-select: none;
   -moz-user-select: none;
   user-select: none;
+}
+
+/* Input-group bridge -- same as Stats/Files/Typeahead/Spigraph. Phase D dedupes. */
+.arkime-input-group {
+  display: inline-flex;
+  align-items: stretch;
+  width: auto;
+  flex-wrap: nowrap;
+}
+.arkime-input-label {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  background-color: color-mix(in srgb, var(--color-foreground, #000) 8%, var(--color-background, #fff));
+  border: 1px solid var(--color-gray);
+  border-right: none;
+  border-radius: 4px 0 0 4px;
+  font-size: 0.85rem;
+  color: var(--color-foreground);
+  white-space: nowrap;
+}
+.arkime-input-control {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 2px 8px;
+  background-color: var(--color-background, #fff);
+  color: var(--color-foreground, #495057);
+  border: 1px solid var(--color-gray);
+  font-size: 0.85rem;
+  line-height: 1.5;
+}
+.arkime-input-control:focus {
+  outline: none;
+  border-color: var(--color-primary, #0d6efd);
+}
+.arkime-input-group > :last-child {
+  border-top-right-radius: 4px;
+  border-bottom-right-radius: 4px;
 }
 
 /* position the subnavbar */

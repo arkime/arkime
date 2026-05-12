@@ -13,44 +13,51 @@ SPDX-License-Identifier: Apache-2.0
           @recalc-collapse="$emit('recalc-collapse')" /> <!-- /search navbar -->
 
         <!-- info navbar -->
-        <div class="d-flex align-items-center info-nav m-1 gap-2">
+        <div class="d-flex align-center info-nav m-1 gap-2">
           <div v-if="!dataLoading">
             <!-- field config save button -->
             <v-menu
               :close-on-content-click="false"
               location="bottom start">
               <template #activator="{ props: activatorProps }">
-                <button
+                <v-btn
                   v-bind="activatorProps"
-                  type="button"
-                  class="btn btn-sm btn-theme-secondary field-config-trigger">
+                  variant="flat"
+                  size="small"
+                  density="comfortable"
+                  class="field-config-trigger"
+                  :style="secondaryBtnStyle">
                   <span class="fa fa-columns" />
                   <v-tooltip
                     activator="parent"
                     location="right">
                     {{ $t('spiview.spiViewFieldConfigTip') }}
                   </v-tooltip>
-                </button>
+                </v-btn>
               </template>
               <v-list
                 density="compact"
                 class="field-config-list">
                 <div class="px-2 py-1">
-                  <div class="input-group input-group-sm">
+                  <div class="arkime-input-group">
                     <input
                       autofocus
                       @click.stop
                       maxlength="30"
                       type="text"
-                      class="form-control"
+                      class="arkime-input-control"
                       @input="debounceNewFieldConfigName"
                       v-model.lazy="newFieldConfigName"
                       :placeholder="$t('spiview.newConfigPlaceholder')"
                       @keydown.enter.stop.prevent="saveFieldConfiguration">
-                    <button
-                      type="button"
+                    <v-btn
                       :aria-label="$t('common.save')"
-                      class="btn btn-theme-secondary"
+                      variant="flat"
+                      size="small"
+                      density="comfortable"
+                      icon
+                      class="arkime-input-append-btn"
+                      :style="secondaryBtnStyle"
                       :disabled="!newFieldConfigName"
                       @click.stop.prevent="saveFieldConfiguration">
                       <span class="fa fa-save" />
@@ -59,7 +66,7 @@ SPDX-License-Identifier: Apache-2.0
                         location="right">
                         {{ $t('spiview.spiViewFieldConfigSaveTip') }}
                       </v-tooltip>
-                    </button>
+                    </v-btn>
                   </div>
                 </div>
                 <v-divider />
@@ -77,16 +84,23 @@ SPDX-License-Identifier: Apache-2.0
                   v-for="(config, key) in fieldConfigs"
                   :key="config.name"
                   @click.self.stop.prevent="loadFieldConfiguration(key)">
-                  <button
-                    class="btn btn-xs btn-danger ms-1"
-                    type="button"
+                  <v-btn
+                    color="error"
+                    variant="flat"
+                    size="x-small"
+                    density="comfortable"
+                    icon
+                    class="ms-1"
                     :aria-label="$t('common.delete')"
                     @click.stop.prevent="deleteFieldConfiguration(config.name, key)">
                     <span class="fa fa-trash-o" />
-                  </button>
-                  <button
-                    class="btn btn-xs btn-warning"
-                    type="button"
+                  </v-btn>
+                  <v-btn
+                    color="warning"
+                    variant="flat"
+                    size="x-small"
+                    density="comfortable"
+                    icon
                     :aria-label="$t('common.save')"
                     @click.stop.prevent="updateFieldConfiguration(config.name, key)">
                     <span class="fa fa-save" />
@@ -95,7 +109,7 @@ SPDX-License-Identifier: Apache-2.0
                       location="end">
                       Update this field configuration with the currently visible fields
                     </v-tooltip>
-                  </button>
+                  </v-btn>
                   {{ config.name }}
                 </v-list-item>
               </v-list>
@@ -131,14 +145,17 @@ SPDX-License-Identifier: Apache-2.0
             <em>
               {{ $t('common.loading') }}
             </em>
-            <button
-              type="button"
+            <v-btn
               :class="{'disabled-aggregations':disabledAggregations}"
-              class="btn btn-warning btn-sm ms-2"
+              color="warning"
+              variant="flat"
+              size="small"
+              density="comfortable"
+              class="ms-2"
               @click="cancelLoading">
-              <span class="fa fa-ban" />&nbsp;
+              <span class="fa fa-ban me-1" />
               {{ $t('common.cancel') }}
-            </button>
+            </v-btn>
           </div>
         </div> <!-- /info navbar -->
       </span>
@@ -190,18 +207,26 @@ SPDX-License-Identifier: Apache-2.0
               v-if="categoryObjects[category].loading"
               class="fa fa-spin fa-spinner fa-lg mt-1 me-1" />
             <span v-if="!categoryObjects[category].loading">
-              <button
-                class="btn btn-theme-secondary btn-sm me-1"
+              <v-btn
+                variant="flat"
+                size="small"
+                density="comfortable"
+                class="me-1"
+                :style="secondaryBtnStyle"
                 :title="$t('spiview.loadAllTip')"
                 @click.stop.prevent="toggleAllValues(category, true)">
                 {{ $t('spiview.loadAll') }}
-              </button>
-              <button
-                class="btn btn-theme-primary btn-sm me-1"
+              </v-btn>
+              <v-btn
+                variant="flat"
+                size="small"
+                density="comfortable"
+                class="me-1"
+                :style="primaryBtnStyle"
                 :title="$t('spiview.unloadAllTip')"
                 @click.stop.prevent="toggleAllValues(category, false)">
                 {{ $t('spiview.unloadAll') }}
-              </button>
+              </v-btn>
             </span>
             <span
               v-if="categoryObjects[category].protocols"
@@ -230,7 +255,7 @@ SPDX-License-Identifier: Apache-2.0
             class="spi-card-body">
             <!-- toggle buttons -->
             <div
-              class="card-text btn-drawer mt-1 me-1 ms-1"
+              class="btn-drawer mt-1 me-1 ms-1"
               :ref="category + '-btn-drawer'">
               <div class="btn-container">
                 <transition-group
@@ -239,7 +264,7 @@ SPDX-License-Identifier: Apache-2.0
                   <input
                     key="search-input"
                     type="text"
-                    class="form-control form-control-sm d-inline me-2 spi-cat-search"
+                    class="arkime-input-control d-inline me-2 spi-cat-search"
                     :placeholder="$t('spiview.searchCatPlaceholder')"
                     @input="debouncedFilterFields(category, $event.target.value)">
                   <span
@@ -265,7 +290,7 @@ SPDX-License-Identifier: Apache-2.0
                       :class="{'is-active':isFieldActive(category, field)}">
                       <button
                         type="button"
-                        class="btn btn-sm btn-default field-dropdown-label"
+                        class="field-dropdown-label"
                         @click="toggleSpiData(field, true, true)">
                         {{ field.friendlyName }}
                       </button>
@@ -274,7 +299,7 @@ SPDX-License-Identifier: Apache-2.0
                           <button
                             v-bind="activatorProps"
                             type="button"
-                            class="btn btn-sm btn-default field-dropdown-caret">
+                            class="field-dropdown-caret">
                             <span class="fa fa-caret-down" />
                           </button>
                         </template>
@@ -324,7 +349,7 @@ SPDX-License-Identifier: Apache-2.0
                         <button
                           v-bind="activatorProps"
                           type="button"
-                          class="btn btn-sm btn-default field-dropdown-label me-2">
+                          class="field-dropdown-label me-2">
                           {{ value.field.friendlyName }}
                           <span class="fa fa-caret-down ms-1" />
                         </button>
@@ -383,15 +408,13 @@ SPDX-License-Identifier: Apache-2.0
                     <a
                       v-if="value.count && value.count > 100 && value.value && value.value.buckets && value.value.buckets.length && value.value.buckets.length >= 100"
                       @click="showValues(value, false, value.value.buckets.length)"
-                      class="btn btn-link btn-xs"
-                      style="text-decoration:none;">
+                      class="spiview-more-less-link cursor-pointer">
                       {{ $t('common.less') }}
                     </a>
                     <a
                       v-if="value && value.value && value.value.doc_count_error_upper_bound < value.value.sum_other_doc_count"
                       @click="showValues(value, true, value.value.buckets.length)"
-                      class="btn btn-link btn-xs"
-                      style="text-decoration:none;">
+                      class="spiview-more-less-link cursor-pointer">
                       {{ $t('common.more') }}
                     </a> <!-- /spiview field more/less values -->
                     <!-- spiview field loading -->
@@ -478,7 +501,16 @@ export default {
       newFieldConfigName: '',
       fieldConfigError: '',
       fieldConfigSuccess: '',
-      spiviewFieldTransition: ''
+      spiviewFieldTransition: '',
+      // Arkime theme-color v-btn styles. Vuetify :color can't take CSS vars.
+      primaryBtnStyle: {
+        backgroundColor: 'var(--color-primary)',
+        color: 'var(--color-button, #FFF)'
+      },
+      secondaryBtnStyle: {
+        backgroundColor: 'var(--color-secondary)',
+        color: 'var(--color-button, #FFF)'
+      }
     };
   },
   computed: {
@@ -1432,6 +1464,52 @@ export default {
 <style scoped>
 .spiview-page {
   overflow-x: hidden;
+}
+
+/* Input-group bridge -- same as Stats/Files/Typeahead. Phase D dedupes. */
+.arkime-input-group {
+  display: inline-flex;
+  align-items: stretch;
+  width: auto;
+  flex-wrap: nowrap;
+}
+.arkime-input-control {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 2px 8px;
+  background-color: var(--color-background, #fff);
+  color: var(--color-foreground, #495057);
+  border: 1px solid var(--color-gray);
+  border-radius: 4px 0 0 4px;
+  font-size: 0.85rem;
+  line-height: 1.5;
+}
+.arkime-input-control:focus {
+  outline: none;
+  border-color: var(--color-primary, #0d6efd);
+}
+.arkime-input-group :deep(.arkime-input-append-btn.v-btn) {
+  border-radius: 0 4px 4px 0;
+  border-left: none;
+  min-width: 0;
+}
+
+/* The spi-cat-search input is used standalone (not inside an
+   .arkime-input-group), so give it its own rounded corners. */
+.spi-cat-search.arkime-input-control {
+  border-radius: 4px;
+}
+
+/* Replaces .btn-link.btn-xs underline-on-hover link style for the
+   spiview "more / less" toggles. */
+.spiview-more-less-link {
+  color: var(--color-primary);
+  font-size: 0.85rem;
+  text-decoration: none;
+}
+.spiview-more-less-link:hover {
+  color: var(--color-primary-dark);
+  text-decoration: underline;
 }
 
 /* info navbar --------------------- */
