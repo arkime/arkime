@@ -523,7 +523,6 @@ dl.dl-horizontal.dl-horizontal-wide dd {
 }
 
 /* enter icon for search/refresh button to be displayed on shift hold */
-.search-btn { width: 62px; }
 .refresh-btn { width: 66px; }
 .enter-icon > .fa-long-arrow-left {
   position: relative;

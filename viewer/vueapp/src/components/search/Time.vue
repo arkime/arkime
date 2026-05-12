@@ -332,8 +332,10 @@ SPDX-License-Identifier: Apache-2.0
     </div> <!-- /time interval select -->
 
     <!-- human readable time range or error -->
-    <div class="col-auto mt-2 time-range-display">
-      <strong class="text-theme-accent">
+    <div class="col-auto time-range-display">
+      <span
+        class="time-range-chip"
+        :class="{ 'time-range-chip--error': timeError }">
         <template v-if="deltaTime && !timeError">
           <span
             id="timeRangeDisplay"
@@ -348,10 +350,10 @@ SPDX-License-Identifier: Apache-2.0
           </span>
         </template>
         <template v-if="timeError">
-          <span class="fa fa-exclamation-triangle" />&nbsp;
+          <span class="fa fa-exclamation-triangle me-1" />
           {{ timeError }}
         </template>
-      </strong>
+      </span>
     </div> <!-- /human readable time range or error -->
   </div>
 </template>
@@ -897,5 +899,26 @@ export default {
 <style scoped>
 .time-range-display {
   font-size: 0.85rem;
+  margin-left: 8px;
+}
+/* Read-only readout chip that sits at the end of the time picker
+   row. Subtle outlined background lifts it off the navbar bg so the
+   delta-time text doesn't get lost next to the bordered inputs. */
+.time-range-chip {
+  display: inline-flex;
+  align-items: center;
+  height: 32px;
+  padding: 0 12px;
+  border-radius: 4px;
+  background-color: color-mix(in srgb, var(--color-foreground, #000) 6%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-foreground, #000) 12%, transparent);
+  color: var(--color-foreground-accent, var(--color-foreground));
+  font-weight: 600;
+  white-space: nowrap;
+}
+.time-range-chip--error {
+  color: var(--color-secondary, #d32f2f);
+  background-color: color-mix(in srgb, var(--color-secondary, #d32f2f) 12%, transparent);
+  border-color: color-mix(in srgb, var(--color-secondary, #d32f2f) 30%, transparent);
 }
 </style>

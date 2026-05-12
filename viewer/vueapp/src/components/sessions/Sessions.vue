@@ -24,7 +24,6 @@ SPDX-License-Identifier: Apache-2.0
         <div class="d-flex justify-content-start align-items-baseline m-1">
           <arkime-paging
             style="height: 32px;"
-            class="ms-2"
             :records-total="sessions.recordsTotal"
             :records-filtered="sessions.recordsFiltered"
             @change-paging="changePaging" />

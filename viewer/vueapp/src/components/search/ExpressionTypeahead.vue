@@ -40,7 +40,7 @@ SPDX-License-Identifier: Apache-2.0
         class="arkime-input-control search-control">
       <v-btn
         id="bigTypeaheadBtn"
-        variant="outlined"
+        variant="text"
         size="small"
         density="comfortable"
         icon
@@ -57,7 +57,7 @@ SPDX-License-Identifier: Apache-2.0
         <v-btn
           id="longExpression"
           href="settings#shortcuts"
-          variant="outlined"
+          variant="text"
           size="small"
           density="comfortable"
           icon
@@ -70,7 +70,7 @@ SPDX-License-Identifier: Apache-2.0
       </template>
       <v-btn
         id="saveExpression"
-        variant="outlined"
+        variant="text"
         size="small"
         density="comfortable"
         icon
@@ -83,7 +83,7 @@ SPDX-License-Identifier: Apache-2.0
         </v-tooltip>
       </v-btn>
       <v-btn
-        variant="outlined"
+        variant="text"
         size="small"
         density="comfortable"
         icon

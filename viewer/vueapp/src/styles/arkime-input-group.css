@@ -92,12 +92,14 @@ select.arkime-input-control {
 }
 
 /* an icon button appended to the group reads as an inline action
-   inside the field, like v-text-field's append-inner slot. Match
-   the group's content height closely so it doesn't look stunted. */
+   inside the field, like v-text-field's append-inner slot. Use
+   <v-btn variant="text" icon size="small"> on the call site: that
+   gives Vuetify's canonical circular text-button look. We just size
+   it to nestle inside the 32px group and keep margins/padding tight. */
 .arkime-input-group .arkime-input-append-btn.v-btn {
   height: 28px;
+  width: 28px;
   min-width: 0;
   margin: 0;
-  border-radius: 4px;
   align-self: center;
 }

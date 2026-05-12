@@ -93,6 +93,41 @@ SPDX-License-Identifier: Apache-2.0
     </div> <!-- /viz options button -->
 
     <div class="pe-1 ps-1 pt-1 pb-1">
+      <!-- search row: expression input + submit + actions all on one
+           flex line. Expression input grows to fill the remaining
+           space (via .arkime-input-group--fluid in ExpressionTypeahead). -->
+      <div class="d-flex align-start gap-1 mb-1 search-row">
+        <!-- search box typeahead -->
+        <expression-typeahead
+          class="flex-grow-1"
+          @mod-view="modView"
+          @apply-expression="applyParams"
+          @change-expression="changeExpression" /> <!-- /search box typeahead -->
+
+        <!-- search button -->
+        <v-btn
+          variant="flat"
+          size="small"
+          density="comfortable"
+          class="search-btn"
+          :style="tertiaryBtnStyle"
+          tabindex="2"
+          @click="applyParams">
+          <span v-if="!shiftKeyHold">
+            {{ $t('common.search') }}
+          </span>
+          <span
+            v-else
+            class="enter-icon">
+            <span class="fa fa-long-arrow-left fa-lg" />
+            <div class="enter-arm" />
+          </span>
+        </v-btn> <!-- /search button -->
+
+        <Clusters
+          v-if="multiviewer"
+          :select-one="$route.name === 'Hunt'" /> <!-- cluster dropdown menu -->
+
       <!-- actions dropdown menu -->
       <v-menu
         v-if="!hideActions && $route.name === 'Sessions'"
@@ -103,7 +138,7 @@ SPDX-License-Identifier: Apache-2.0
             variant="flat"
             size="small"
             density="comfortable"
-            class="float-right ms-1 action-menu-dropdown"
+            class="action-menu-dropdown"
             :style="primaryBtnStyle"
             title="Actions menu">
             <span class="fa fa-caret-down" />
@@ -210,7 +245,7 @@ SPDX-License-Identifier: Apache-2.0
             variant="flat"
             size="small"
             density="comfortable"
-            class="float-right ms-1 view-menu-dropdown"
+            class="view-menu-dropdown"
             :style="secondaryBtnStyle">
             <template v-if="view && views && getView(view)">
               <span id="viewMenuDropdown">
@@ -261,7 +296,7 @@ SPDX-License-Identifier: Apache-2.0
                 :aria-label="$t('search.deleteView')"
                 color="error"
                 variant="flat"
-                size="x-small"
+                size="small"
                 density="comfortable"
                 icon
                 class="float-right ms-1"
@@ -276,7 +311,7 @@ SPDX-License-Identifier: Apache-2.0
                 :aria-label="$t('search.editView')"
                 color="warning"
                 variant="flat"
-                size="x-small"
+                size="small"
                 density="comfortable"
                 icon
                 class="float-right ms-1"
@@ -291,7 +326,7 @@ SPDX-License-Identifier: Apache-2.0
               :id="`applyView${value.id}`"
               :aria-label="$t('search.applyView')"
               variant="flat"
-              size="x-small"
+              size="small"
               density="comfortable"
               icon
               class="float-right ms-1"
@@ -307,7 +342,7 @@ SPDX-License-Identifier: Apache-2.0
               :id="`applyColumns${value.id}`"
               :aria-label="$t('search.applyColumns')"
               variant="flat"
-              size="x-small"
+              size="small"
               density="comfortable"
               icon
               class="float-right"
@@ -328,34 +363,7 @@ SPDX-License-Identifier: Apache-2.0
           </v-list-item>
         </v-list>
       </v-menu> <!-- /views dropdown menu -->
-
-      <Clusters :select-one="$route.name === 'Hunt'" /> <!-- cluster dropdown menu -->
-
-      <!-- search button -->
-      <v-btn
-        variant="flat"
-        size="small"
-        density="comfortable"
-        class="float-right ms-1 search-btn"
-        :style="tertiaryBtnStyle"
-        tabindex="2"
-        @click="applyParams">
-        <span v-if="!shiftKeyHold">
-          {{ $t('common.search') }}
-        </span>
-        <span
-          v-else
-          class="enter-icon">
-          <span class="fa fa-long-arrow-left fa-lg" />
-          <div class="enter-arm" />
-        </span>
-      </v-btn> <!-- /search button -->
-
-      <!-- search box typeahead -->
-      <expression-typeahead
-        @mod-view="modView"
-        @apply-expression="applyParams"
-        @change-expression="changeExpression" /> <!-- /search box typeahead -->
+      </div> <!-- /search row -->
 
       <!-- time inputs -->
       <arkime-time
@@ -953,9 +961,23 @@ form {
  * but specifically above the sticky sessions button */
 .action-menu-dropdown { z-index: 1030; }
 
+/* In the search row, match all v-btns to the 32px height of the
+   .arkime-input-group expression input next to them. v-btn size=small
+   defaults to 28px, leaving them visibly shorter than the input. */
+.search-row :deep(.v-btn) {
+  height: 32px;
+}
+
+/* drop v-btn's built-in min-width: 42px on the SEARCH button so it
+   sizes to its content (the "Search" label or the enter-icon glyph)
+   instead of staying a fixed minimum. */
+.search-row :deep(.search-btn) {
+  min-width: 0;
+}
+
 /* viz options button position above viz in nav */
 .viz-options-btn-container {
-  top: 122px;
+  top: 128px;
   right: 4px;
   position: fixed;
 }

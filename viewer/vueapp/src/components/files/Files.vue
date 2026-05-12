@@ -40,7 +40,7 @@ SPDX-License-Identifier: Apache-2.0
                   @keydown.enter="searchForFiles"
                   :placeholder="$t('files.searchPlaceholder')">
                 <v-btn
-                  variant="outlined"
+                  variant="text"
                   size="small"
                   density="comfortable"
                   icon

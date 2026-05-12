@@ -9,48 +9,95 @@
   <!-- show info and controls -->
   <div
     v-else
-    class="d-inline-flex align-items-center">
-    <!-- page size -->
+    class="d-inline-flex align-center ga-1">
     <v-select
-      class="page-select"
       density="compact"
-      variant="outlined"
       hide-details
+      style="width: 130px;"
       item-title="text"
       item-value="value"
       :items="lengthOptions"
       :model-value="pageLength"
-      @update:model-value="lengthUpdated">
-      <template #selection="{ item }">
-        <span class="page-select-display">{{ item.raw.value }}</span>
-      </template>
-    </v-select> <!-- /page size -->
+      @update:model-value="lengthUpdated" />
 
-    <!-- paging -->
-    <v-pagination
-      class="paging-control"
-      density="compact"
-      :total-visible="3"
-      :length="totalPages"
-      :model-value="currentPage"
-      @update:model-value="currentPageUpdated" /> <!-- /paging -->
+    <div class="arkime-input-group paging-wrapper">
+      <v-pagination
+        density="compact"
+        size="small"
+        :total-visible="9"
+        :length="totalPages"
+        :model-value="currentPage"
+        @update:model-value="currentPageUpdated" />
+    </div>
 
-    <!-- page info -->
-    <span
+    <div
       id="pagingInfo"
-      class="pagination-info cursor-help">
-      <span v-if="recordsFiltered">
-        {{ t('common.showingRange', { start: commaString(start + 1), end: commaString(Math.min((start + pageLength), recordsFiltered)), total: commaString(recordsFiltered) }) }}
-      </span>
-      <span v-else>
-        {{ t('common.showingAll', { start: commaString(start), total: commaString(recordsFiltered) }) }}
+      class="arkime-input-group paging-info-wrapper cursor-help">
+      <span class="arkime-input-label">
+        <span v-if="recordsFiltered">
+          {{ t('common.showingRange', { start: commaString(start + 1), end: commaString(Math.min((start + pageLength), recordsFiltered)), total: commaString(recordsFiltered) }) }}
+        </span>
+        <span v-else>
+          {{ t('common.showingAll', { start: commaString(start), total: commaString(recordsFiltered) }) }}
+        </span>
       </span>
       <v-tooltip activator="#pagingInfo">
         {{ pagingInfoTitle }}
       </v-tooltip>
-    </span> <!-- /page info -->
+    </div>
   </div>
 </template>
+
+<style scoped>
+/* Bootstrap's global reset adds margin-bottom: 1rem to ul/ol/dl, which
+   hits v-pagination's internal <ul.v-pagination__list> and pushes
+   everything below it down. Zero it out here; goes away naturally
+   once bootstrap.css is dropped in phase E. */
+:deep(.v-pagination__list) {
+  margin-bottom: 0;
+  padding-left: 0;
+}
+
+/* v-pagination wrapped in an .arkime-input-group -- let the
+   v-pagination fill the container vertically and zero its margin so
+   the bordered box hugs it. */
+.paging-wrapper {
+  padding: 0 4px;
+}
+.paging-wrapper :deep(.v-pagination__list) {
+  height: 100%;
+  align-items: center;
+}
+/* Restyle the v-select to match .arkime-input-group -- override
+   Vuetify's outlined v-field border with our gray border, 4px radius,
+   32px height, theme-aware bg. Hides the SVG legend outline that
+   v-field renders for floating labels. */
+:deep(.v-select.v-input--density-compact) {
+  --v-input-control-height: 32px;
+  font-size: 0.8rem;
+}
+:deep(.v-select .v-field) {
+  border: 1px solid var(--color-gray);
+  border-radius: 4px;
+  background-color: var(--color-background, #fff);
+  min-height: 32px;
+  font-size: 0.8rem;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+:deep(.v-select .v-field__input) {
+  font-size: 0.8rem;
+}
+:deep(.v-select .v-field__outline) {
+  display: none;
+}
+:deep(.v-select .v-field:hover) {
+  border-color: var(--color-gray-dark, #555);
+}
+:deep(.v-select .v-field--focused) {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 1px var(--color-primary);
+}
+</style>
 
 <script setup>
 // setup ----------------------------------------------------------------------
@@ -182,87 +229,3 @@ function notifyParent () {
 }
 </script>
 
-<style scoped>
-/* Page-size select: just shows the number; compact inline */
-.page-select {
-  width: 76px;
-  flex: 0 0 76px;
-  font-size: 0.8rem;
-}
-/* Flex-center children of .v-field so __field (text) and __append-inner
-   (caret) sit on the same baseline. */
-.page-select :deep(.v-field) {
-  --v-input-control-height: 32px;
-  align-items: center;
-}
-.page-select :deep(.v-field__field) {
-  align-items: center;
-}
-.page-select :deep(.v-field__input) {
-  font-size: 0.8rem;
-  padding-top: 0;
-  padding-bottom: 0;
-  padding-inline-start: 8px;
-  padding-inline-end: 0;
-  min-height: 32px;
-  display: flex;
-  align-items: center;
-}
-.page-select :deep(.v-field__append-inner) {
-  padding-top: 0;
-  padding-bottom: 0;
-  padding-inline: 4px;
-  align-items: center;
-}
-.page-select :deep(.v-field__append-inner .v-icon) {
-  font-size: 16px;
-  opacity: 0.6;
-}
-.page-select-display {
-  white-space: nowrap;
-  font-size: 0.8rem;
-  line-height: 1;
-}
-
-/* v-pagination: tight buttons, no inner list margin, baseline-aligned;
-   also kill the v-pagination wrapper padding so it sits flush against the
-   page-size select on the left and the info text on the right. */
-.paging-control {
-  padding-left: 0;
-  padding-right: 0;
-}
-.paging-control :deep(.v-pagination__list) {
-  margin: 0;
-  padding: 0;
-  gap: 0;
-}
-.paging-control :deep(.v-pagination__list > li:first-child) {
-  margin-inline-start: 0;
-}
-.paging-control :deep(.v-pagination__list > li:last-child) {
-  margin-inline-end: 0;
-}
-.paging-control :deep(.v-btn) {
-  --v-btn-height: 24px;
-  width: 24px;
-  min-width: 24px;
-  font-size: 0.75rem;
-}
-
-/* Inline pagination info -- no boxy chrome, just sits next to controls */
-.pagination-info {
-  display: inline-block;
-  font-size: 0.8rem;
-  color: var(--color-foreground);
-  white-space: nowrap;
-}
-
-/* When this component is used with infoOnly, restore a subtle pill */
-.pagination-info.info-only {
-  font-size: 0.8rem;
-  color: var(--color-gray-dark);
-  padding: 2px 8px;
-  border-radius: var(--px-sm);
-  background-color: transparent;
-}
-</style>
