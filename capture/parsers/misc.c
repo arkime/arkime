@@ -194,33 +194,6 @@ LOCAL void telnet_tcp_classify(ArkimeSession_t *session, const uint8_t *data, in
         return;
     arkime_session_add_protocol(session, "telnet");
 }
-/******************************************************************************/
-LOCAL void openvpn_udp_classify(ArkimeSession_t *session, const uint8_t *data, int len, int UNUSED(which), void *UNUSED(uw))
-{
-    // OpenVPN UDP: byte0 = (opcode << 3) | key_id, valid opcodes 1-10
-    if (len < 14)
-        return;
-    uint8_t opcode = data[0] >> 3;
-    if (opcode < 1 || opcode > 10)
-        return;
-    arkime_session_add_protocol(session, "openvpn");
-}
-/******************************************************************************/
-LOCAL void openvpn_tcp_classify(ArkimeSession_t *session, const uint8_t *data, int len, int UNUSED(which), void *UNUSED(uw))
-{
-    // OpenVPN TCP: 2-byte length prefix, then byte0 = (opcode << 3) | key_id
-    if (len < 16)
-        return;
-    uint16_t plen = (data[0] << 8) | data[1];
-    // OpenVPN record must contain at least the opcode byte and minimum payload
-    if (plen < 14 || plen > len - 2)
-        return;
-    uint8_t opcode = data[2] >> 3;
-    if (opcode < 1 || opcode > 10)
-        return;
-    arkime_session_add_protocol(session, "openvpn");
-}
-/******************************************************************************/
 LOCAL void omron_fins_udp_classify(ArkimeSession_t *session, const uint8_t *data, int len, int UNUSED(which), void *UNUSED(uw))
 {
     if (len < 12 || data[1] != 0x00)
@@ -513,9 +486,6 @@ void arkime_parser_init()
     arkime_parsers_classifier_register_port("safet",  NULL, 23294, ARKIME_PARSERS_PORT_UDP, safet_udp_classify);
 
     arkime_parsers_classifier_register_port("telnet",  NULL, 23, ARKIME_PARSERS_PORT_TCP_DST, telnet_tcp_classify);
-
-    arkime_parsers_classifier_register_port("openvpn",  NULL, 1194, ARKIME_PARSERS_PORT_UDP_DST, openvpn_udp_classify);
-    arkime_parsers_classifier_register_port("openvpn",  NULL, 1194, ARKIME_PARSERS_PORT_TCP_DST, openvpn_tcp_classify);
 
     arkime_parsers_classifier_register_port("omron-fins",  NULL, 9600, ARKIME_PARSERS_PORT_UDP_DST, omron_fins_udp_classify);
     arkime_parsers_classifier_register_port("omron-fins",  NULL, 9600, ARKIME_PARSERS_PORT_TCP_DST, omron_fins_tcp_classify);

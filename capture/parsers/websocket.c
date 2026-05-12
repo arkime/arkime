@@ -146,8 +146,7 @@ LOCAL int websocket_tcp_parser(ArkimeSession_t *session, void *uw, const uint8_t
         // RFC limits is fine. We just don't want to wedge on absurd values.
         if (payLen > (uint64_t)0x7fffffff) {
             arkime_session_add_tag(session, "websocket:bad-length");
-            arkime_parsers_unregister(session, ws);
-            return 0;
+            return ARKIME_PARSER_UNREGISTER;
         }
 
         const uint8_t *hdr = buf->buf[which];
