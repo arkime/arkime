@@ -1543,44 +1543,6 @@ export default {
   user-select: none;
 }
 
-/* Input-group bridge -- same as Stats/Files/Typeahead/Spigraph. Phase D dedupes. */
-.arkime-input-group {
-  display: inline-flex;
-  align-items: stretch;
-  width: auto;
-  flex-wrap: nowrap;
-}
-.arkime-input-label {
-  display: inline-flex;
-  align-items: center;
-  padding: 2px 8px;
-  background-color: color-mix(in srgb, var(--color-foreground, #000) 8%, var(--color-background, #fff));
-  border: 1px solid var(--color-gray);
-  border-right: none;
-  border-radius: 4px 0 0 4px;
-  font-size: 0.85rem;
-  color: var(--color-foreground);
-  white-space: nowrap;
-}
-.arkime-input-control {
-  flex: 1 1 auto;
-  min-width: 0;
-  padding: 2px 8px;
-  background-color: var(--color-background, #fff);
-  color: var(--color-foreground, #495057);
-  border: 1px solid var(--color-gray);
-  font-size: 0.85rem;
-  line-height: 1.5;
-}
-.arkime-input-control:focus {
-  outline: none;
-  border-color: var(--color-primary, #0d6efd);
-}
-.arkime-input-group > :last-child {
-  border-top-right-radius: 4px;
-  border-bottom-right-radius: 4px;
-}
-
 /* position the subnavbar */
 .connections-page .connections-form {
   z-index: 4;

@@ -1466,38 +1466,15 @@ export default {
   overflow-x: hidden;
 }
 
-/* Input-group bridge -- same as Stats/Files/Typeahead. Phase D dedupes. */
-.arkime-input-group {
-  display: inline-flex;
-  align-items: stretch;
-  width: auto;
-  flex-wrap: nowrap;
-}
-.arkime-input-control {
-  flex: 1 1 auto;
-  min-width: 0;
-  padding: 2px 8px;
-  background-color: var(--color-background, #fff);
-  color: var(--color-foreground, #495057);
-  border: 1px solid var(--color-gray);
-  border-radius: 4px 0 0 4px;
-  font-size: 0.85rem;
-  line-height: 1.5;
-}
-.arkime-input-control:focus {
-  outline: none;
-  border-color: var(--color-primary, #0d6efd);
-}
-.arkime-input-group :deep(.arkime-input-append-btn.v-btn) {
-  border-radius: 0 4px 4px 0;
-  border-left: none;
-  min-width: 0;
-}
-
 /* The spi-cat-search input is used standalone (not inside an
-   .arkime-input-group), so give it its own rounded corners. */
+   .arkime-input-group). The shared bridge styles it transparently
+   inside a group; standalone needs its own visible border. */
 .spi-cat-search.arkime-input-control {
+  border: 1px solid var(--color-gray);
   border-radius: 4px;
+  height: 28px;
+  padding: 0 8px;
+  background-color: var(--color-background, #fff);
 }
 
 /* Replaces .btn-link.btn-xs underline-on-hover link style for the

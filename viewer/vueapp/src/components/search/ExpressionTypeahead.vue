@@ -947,60 +947,6 @@ export default {
 </script>
 
 <style scoped>
-/* Input-group bridge: same shape as Stats.vue/.arkime-input-group.
-   Replaces Bootstrap's .input-group + .form-control look without the
-   Bootstrap import. Phase D candidate for promotion to shared CSS. */
-.arkime-input-group {
-  display: inline-flex;
-  align-items: stretch;
-  width: auto;
-  flex-wrap: nowrap;
-}
-.arkime-input-label {
-  display: inline-flex;
-  align-items: center;
-  padding: 2px 8px;
-  background-color: color-mix(in srgb, var(--color-foreground, #000) 8%, var(--color-background, #fff));
-  border: 1px solid var(--color-gray);
-  border-right: none;
-  border-radius: 4px 0 0 4px;
-  font-size: 0.85rem;
-  color: var(--color-foreground);
-  white-space: nowrap;
-}
-.arkime-input-label-fw {
-  width: 36px;
-  justify-content: center;
-}
-.arkime-input-control {
-  flex: 1 1 auto;
-  min-width: 0;
-  padding: 2px 8px;
-  background-color: var(--color-background, #fff);
-  color: var(--color-foreground, #495057);
-  border: 1px solid var(--color-gray);
-  font-size: 0.85rem;
-  line-height: 1.5;
-}
-.arkime-input-control:focus {
-  outline: none;
-  border-color: var(--color-primary, #0d6efd);
-}
-/* the appended icon buttons in the input-group share borders + no
-   rounding except on the rightmost. Override v-btn defaults so they
-   sit flush with the input. */
-.arkime-input-group :deep(.arkime-input-append-btn.v-btn) {
-  border-radius: 0;
-  border-left: none;
-  min-width: 0;
-  height: auto;
-}
-.arkime-input-group > :last-child :deep(.v-btn__content),
-.arkime-input-group > :last-child.v-btn {
-  border-top-right-radius: 4px;
-  border-bottom-right-radius: 4px;
-}
-
 /* typeahead error/loading dropdown -- replaces .dropdown-menu CSS-only
    styling from Bootstrap. */
 .arkime-typeahead-results {

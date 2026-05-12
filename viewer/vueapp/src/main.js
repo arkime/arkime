@@ -26,6 +26,9 @@ import { createViewerTheme } from './theme.js';
 import '../../../common/common.css';
 // bootstrap overrides
 import './overrides.css';
+// shared bridge classes (e.g. .arkime-input-group used across multiple
+// components in place of Bootstrap's .input-group)
+import './styles/arkime-input-group.css';
 // themed css deps -- these overlay on top of Vuetify; see theme.js notes
 import './themes/purp.css';
 import './themes/blue.css';
