@@ -8,11 +8,11 @@ SPDX-License-Identifier: Apache-2.0
       'hide-tool-bars': !showToolBars,
       'show-sticky-sessions-btn': stickySessionsBtn
     }">
-    <nav class="navbar navbar-expand fixed-top pe-2 arkime-navbar">
+    <nav class="arkime-navbar d-flex align-center pe-2">
 
       <router-link
-        class="me-2 navbar-brand"
-        :to="{ path: helpLink.href, query: helpLink.query, name: 'Help', hash: helpLink.hash }">
+        :to="{ path: helpLink.href, query: helpLink.query, name: 'Help', hash: helpLink.hash }"
+        class="arkime-navbar-brand me-2">
         <img
           alt="hoot"
           :src="userLogo"
@@ -24,46 +24,53 @@ SPDX-License-Identifier: Apache-2.0
         <v-tooltip activator="parent">{{ $t('navigation.tooltipHelpTip') }}</v-tooltip>
       </router-link>
 
-      <ul class="navbar-nav d-flex flex-row arkime-nav-list">
+      <div class="arkime-nav-list d-flex align-center">
         <template
           v-for="item of menuOrder"
           :key="item">
-          <li
+          <v-btn
             v-if="user && menu[item] && menu[item].hasPermission && menu[item].hasRole"
-            class="nav-item cursor-pointer">
-            <router-link
-              :to="{ path: menu[item].link, query: menu[item].query, name: menu[item].name }"
-              class="nav-link"
-              active-class="router-link-active"
-              :class="{'router-link-active': $route.path === `/${menu[item].link}`}">
-              {{ menu[item].title }}
-            </router-link>
-          </li>
+            :to="{ path: menu[item].link, query: menu[item].query, name: menu[item].name }"
+            :active="menu[item].isActive"
+            :variant="menu[item].isActive ? 'flat' : 'text'"
+            :style="menu[item].isActive ? activePillStyle : null"
+            size="small"
+            class="arkime-nav-btn">
+            {{ menu[item].title }}
+          </v-btn>
         </template>
-      </ul>
+      </div>
 
-      <div class="ms-auto d-flex flex-row align-items-center">
-        <small>
-          <Version :timezone="timezone" />
-        </small>
+      <v-spacer />
+
+      <div class="arkime-navbar-actions d-flex align-center">
+        <Version :timezone="timezone" />
         <LanguageSwitcher additional-classes="ms-2" />
 
-        <router-link
-          class="ms-2"
-          :to="{ path: helpLink.href, query: helpLink.query, name: 'Help' }">
-          <span class="fa fa-lg fa-fw fa-question-circle help-link text-theme-button text-theme-gray-hover" />
+        <v-btn
+          :to="{ path: helpLink.href, query: helpLink.query, name: 'Help' }"
+          variant="text"
+          icon
+          size="small"
+          density="comfortable"
+          class="ms-2">
+          <span class="fa fa-fw fa-question-circle help-link text-theme-button text-theme-gray-hover" />
           <v-tooltip activator="parent">{{ $t('navigation.helpTip') }}</v-tooltip>
-        </router-link>
+        </v-btn>
 
         <e-s-health class="ms-2" />
 
-        <span
+        <v-btn
           v-if="isAToolBarPage"
-          class="toggle-chevrons text-theme-button text-theme-gray-hover ms-2"
+          variant="text"
+          icon
+          size="small"
+          density="comfortable"
+          class="ms-2 toggle-chevrons text-theme-button text-theme-gray-hover"
           @click="toggleToolBars">
-          <span :class="showToolBars ? 'fa fa-chevron-circle-up fa-fw fa-lg' : 'fa fa-chevron-circle-down fa-fw fa-lg'" />
+          <span :class="showToolBars ? 'fa fa-chevron-circle-up fa-fw' : 'fa fa-chevron-circle-down fa-fw'" />
           <v-tooltip activator="parent">{{ $t('navigation.toggleTopStuffTip') }}</v-tooltip>
-        </span>
+        </v-btn>
 
         <Logout
           size="sm"
@@ -99,7 +106,14 @@ export default {
       menuOrder: [
         'arkime', 'sessions', 'spiview', 'spigraph', 'connections', 'hunt',
         'files', 'stats', 'history', 'upload', 'settings', 'users', 'roles'
-      ]
+      ],
+      // active-pill colors -- use Arkime CSS vars so the pill flips
+      // between themes (white-on-dark in light theme, dark-on-light in
+      // dark theme) without us picking specific colors per theme.
+      activePillStyle: {
+        backgroundColor: 'var(--color-button)',
+        color: 'var(--color-foreground)'
+      }
     };
   },
   computed: {
@@ -158,6 +172,8 @@ export default {
             (this.user[item.permission] === undefined || (!this.user[item.permission] && item.reverse));
           item.hasRole = !item.role || this.user.roles?.includes(item.role);
         }
+
+        item.isActive = this.$route.path === `/${item.link}`;
       }
 
       return menu;
@@ -223,176 +239,136 @@ export default {
 </script>
 
 <style scoped>
-nav.navbar {
+/* navbar shell -- replaces what Bootstrap's .navbar + .fixed-top used
+   to give us, plus the global nav.navbar rules from common.css /
+   overrides.css that no longer match without the .navbar class. */
+.arkime-navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 36px;
   z-index: 7;
+  background-color: var(--color-primary-dark);
+  color: var(--color-button, #FFF);
+  padding-left: 0.5rem;
 }
 .navbarOffset {
   padding-top: 36px;
 }
-/* icon logos (logo in circle) are wider */
-.arkime-logo[src*="Icon"] {
-  left: 8px;
-}
-.arkime-logo[src*="Logo"] {
-  left: 20px;
-}
-.toggle-chevrons {
-  align-items: center;
-  cursor: pointer;
-  display: flex;
-  justify-content: center;
-  margin-top: 1px;
-}
-.help-link {
-  margin-left: 0;
-}
 
-.navbar-text {
-  color: var(--color-button, #FFF);
-}
-
-a.nav-link > a {
-  text-decoration: none;
-  color: var(--color-button, #FFF);
-}
-/* shortcut letter styles */
-p { /* ::first-letter only works on blocks */
-  margin-bottom: -16px;
+/* brand (logo) -- router-link, intentionally narrow; the 40px-tall
+   logo is absolutely positioned relative to .arkime-navbar so it
+   overhangs the 36px bar. .arkime-nav-list margin-left clears it. */
+.arkime-navbar-brand {
   display: inline-block;
+  height: 36px;
+  flex-shrink: 0;
+  text-decoration: none;
 }
-/* style the shortcut letter */
-p.shortcut-letter.holding-shift::first-letter {
-  color: var(--color-tertiary-lighter) !important;
-}
-.text-shortcut {
-  color: var(--color-tertiary-lighter) !important;
-}
-
-/* move the top nav content to the left to accommodate the sticky sessions
- button when the user has the toolbars collapsed and session(s) open */
-span.show-sticky-sessions-btn.hide-tool-bars > nav > div.navbar-collapse.collapse {
-  margin-right: 32px;
-}
-
-/* v7: navbar nav links uppercase + monospace, with thin dividers
-   between items so the tabs read as distinct lozenges instead of one
-   long string of letters. */
-.arkime-navbar .navbar-nav .nav-link {
-  text-transform: uppercase;
-  font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
-  letter-spacing: 0.5px;
-  padding-left: 14px;
-  padding-right: 14px;
-  position: relative;
-  transition: color 0.18s ease;
-}
-.arkime-navbar .navbar-nav .nav-item {
-  position: relative;
-}
-.arkime-navbar .navbar-nav .nav-item + .nav-item::before {
-  content: "";
+.arkime-logo {
   position: absolute;
-  left: 0;
-  top: 8px;
-  bottom: 8px;
-  width: 1px;
-  background-color: rgba(255, 255, 255, 0.18);
-  pointer-events: none;
-  transition: top 0.18s ease, bottom 0.18s ease, width 0.18s ease,
-              background-color 0.18s ease;
+  height: 40px;
+  top: 2px;
 }
-
-/* underline that grows from center on hover; full-width when active */
-.arkime-navbar .navbar-nav .nav-link::after {
-  content: "";
-  position: absolute;
-  left: 50%;
-  right: 50%;
-  bottom: 4px;
-  height: 2px;
-  background-color: var(--color-tertiary-lighter, #FFF);
-  transition: left 0.18s ease, right 0.18s ease, opacity 0.18s ease;
-  opacity: 0;
-}
-.arkime-navbar .navbar-nav .nav-link:hover::after {
-  left: 14px;
-  right: 14px;
-  opacity: 0.6;
-}
-
-/* override global nav.navbar li hover/active backgrounds (which just
-   tint the bg with the primary color); we want clean text-driven
-   feedback instead. */
-.arkime-navbar .navbar-nav .nav-item:hover,
-.arkime-navbar .navbar-nav .nav-item:focus,
-.arkime-navbar .navbar-nav .nav-item:has(.router-link-active) {
-  background-color: transparent !important;
-  border-bottom: none !important;
-}
-
-/* hover: brighten the text */
-.arkime-navbar .navbar-nav .nav-link:hover {
-  color: var(--color-tertiary-lighter, #FFF) !important;
-}
-
-/* active: brighter text + full underline + the two dividers framing
-   the active tab become full-height accents (so the tab reads as
-   "bracketed" by the dividers, not just colored in). The active
-   underline lives on the .nav-item parent (not on .nav-link) so it
-   spans full width and sits flush with the bottom edge of the
-   navbar, matching the full-height dividers' bottom. */
-.arkime-navbar .navbar-nav .nav-link.router-link-active {
-  color: var(--color-tertiary-lighter, #FFF) !important;
-  font-weight: 600;
-}
-.arkime-navbar .navbar-nav .nav-item:has(.router-link-active)::after {
-  content: "";
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  height: 2px;
-  background-color: var(--color-tertiary-lighter, #FFF);
-  pointer-events: none;
-}
-.arkime-navbar .navbar-nav .nav-item:has(.router-link-active)::before,
-.arkime-navbar .navbar-nav .nav-item:has(.router-link-active) + .nav-item::before {
-  top: 0;
-  bottom: 0;
-  width: 2px;
-  background-color: var(--color-tertiary-lighter, #FFF);
-}
+.arkime-logo[src*="Icon"] { left: 8px; }
+.arkime-logo[src*="Logo"] { left: 20px; }
 
 /* push the nav list off the logo */
 .arkime-nav-list {
   margin-left: 3rem;
-  position: relative;
 }
 
-/* left + right outer edge dividers (between-item dividers handle the
-   inner ones; these complete the frame) */
-.arkime-nav-list::before,
-.arkime-nav-list::after {
-  content: "";
-  position: absolute;
-  top: 8px;
-  bottom: 8px;
-  width: 1px;
-  background-color: rgba(255, 255, 255, 0.18);
-  pointer-events: none;
-  transition: top 0.18s ease, bottom 0.18s ease, width 0.18s ease,
-              background-color 0.18s ease;
+/* nav buttons -- typography only. Pill bg + text color handled by
+   :variant + :style on the v-btn (theme-adaptive via CSS vars). */
+.arkime-navbar :deep(.arkime-nav-btn) {
+  text-transform: uppercase;
+  font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  font-size: 0.85rem;
+  font-weight: 500;
+  letter-spacing: 0.4px;
+  margin: 0;
+  height: 26px !important;
+  padding: 0 12px !important;
+  border-radius: 5px;
 }
-.arkime-nav-list::before { left: 0; }
-.arkime-nav-list::after { right: 0; }
 
-/* if the first/last tab is active, light up the matching outer
-   edge divider so the active "bracket" stays consistent */
-.arkime-nav-list:has(.nav-item:first-child .router-link-active)::before,
-.arkime-nav-list:has(.nav-item:last-child .router-link-active)::after {
-  top: 0;
-  bottom: 0;
-  width: 2px;
-  background-color: var(--color-tertiary-lighter, #FFF);
+/* shortcut letter (shown in place of logo when shift is held) */
+.text-shortcut {
+  color: var(--color-tertiary-lighter) !important;
+}
+
+/* right-side action group: fill the navbar height and force every
+   child (text, FA-icon spans, v-btns, Logout, LanguageSwitcher) to
+   center its content vertically. Without this each item aligns by
+   its own baseline / box height and they drift visually. */
+.arkime-navbar-actions {
+  height: 100%;
+}
+.arkime-navbar-actions > * {
+  display: flex;
+  align-items: center;
+  height: 28px;
+}
+
+/* uniform icon size + tight line-height so the glyph fills its own
+   box exactly (no leading shifting it off-center). :deep() reaches
+   FA spans in ESHealth.vue and Logout.vue (different scope). */
+.arkime-navbar-actions :deep(.fa) {
+  font-size: 22px;
+  line-height: 1;
+}
+
+/* ESHealth's info icon lives in a bare span chain (no v-btn wrapper),
+   so its glyph aligns on the text baseline instead of geometrically
+   centered like the v-btn icons. Nudge it up to match the others. */
+.arkime-navbar-actions :deep(.fa-info-circle) {
+  transform: translateY(-2px);
+}
+
+/* Version link: rainbow gradient text via background-clip, bold, no
+   underline. -webkit-text-fill-color: transparent overrides any
+   existing color !important from Vuetify utility classes. */
+.arkime-navbar-actions :deep(.navbar-text) {
+  text-decoration: none;
+  font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  font-weight: 700;
+  font-size: 0.95rem;
+  white-space: nowrap;
+  background: linear-gradient(
+    90deg,
+    #FF8A95 0%,
+    #FFB36B 17%,
+    #FFE066 33%,
+    #8AE890 50%,
+    #7BCEFF 67%,
+    #B69DFF 83%,
+    #FF9DD8 100%
+  );
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: var(--color-button, #FFF);
+  transition: -webkit-text-fill-color 0.4s ease;
+}
+.arkime-navbar-actions :deep(.navbar-text:hover) {
+  -webkit-text-fill-color: transparent;
+}
+
+/* Language picker: smaller / more compact than the Bootstrap btn-sm
+   defaults to better fit the navbar. */
+.arkime-navbar-actions :deep(.btn-language) {
+  padding: 2px 6px;
+  font-size: 0.8rem;
+  min-height: 0;
+  height: 22px;
+  line-height: 1;
+}
+
+/* misc utilities still used by the icon row on the right */
+.toggle-chevrons {
+  cursor: pointer;
+}
+.help-link {
+  margin-left: 0;
 }
 </style>
