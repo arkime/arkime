@@ -834,7 +834,7 @@ sub fieldsUpdate
       "help": "Search all port fields",
       "type": "integer",
       "dbField2": "portall",
-      "regex": "(^port\\\\.(?:(?!\\\\.cnt$).)*$|\\\\.port$)"
+      "regex": "(^port\\\\.(?:(?!\\\\.cnt$).)*$|\\\\.port$|Port$)"
     }');
     esPost("/${PREFIX}fields_v30/_doc/rir?timeout=${ESTIMEOUT}s", '{
       "friendlyName": "All rir fields",
@@ -5963,6 +5963,12 @@ sub sessions3Update
     },
     "stun" : {
       "properties" : {
+        "attributes" : {
+          "type" : "keyword"
+        },
+        "attributesCnt" : {
+          "type" : "long"
+        },
         "error" : {
           "type" : "long"
         },
@@ -6015,6 +6021,18 @@ sub sessions3Update
           "type" : "long"
         },
         "xorMappedPortCnt" : {
+          "type" : "long"
+        },
+        "xorPeerIp" : {
+          "type" : "ip"
+        },
+        "xorPeerIpCnt" : {
+          "type" : "long"
+        },
+        "xorPeerPort" : {
+          "type" : "long"
+        },
+        "xorPeerPortCnt" : {
           "type" : "long"
         },
         "xorRelayedIp" : {
