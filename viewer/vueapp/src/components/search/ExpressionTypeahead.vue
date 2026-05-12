@@ -7,10 +7,10 @@ SPDX-License-Identifier: Apache-2.0
     class="mb-1"
     :class="{ 'big-typeahead': bigTypeahead }">
     <!-- typeahead input -->
-    <div class="input-group input-group-sm">
+    <div class="arkime-input-group">
       <span
         id="searchExpressionTooltip"
-        class="input-group-text input-group-text-fw cursor-help">
+        class="arkime-input-label arkime-input-label-fw cursor-help">
         <span
           v-if="!shiftKeyHold"
           class="fa fa-search fa-fw" />
@@ -37,49 +37,62 @@ SPDX-License-Identifier: Apache-2.0
         @input="debounceExprChange"
         @keydown.enter.prevent.stop="enterClick"
         @keydown.esc.tab.enter.down.up.prevent.stop="keyup($event)"
-        class="form-control search-control">
-      <button
-        type="button"
+        class="arkime-input-control search-control">
+      <v-btn
         id="bigTypeaheadBtn"
-        @click="bigTypeahead = !bigTypeahead"
-        class="btn btn-outline-secondary btn-clear-input">
+        variant="outlined"
+        size="small"
+        density="comfortable"
+        icon
+        class="arkime-input-append-btn"
+        @click="bigTypeahead = !bigTypeahead">
         <span
           class="fa"
           :class="bigTypeahead ? 'fa-compress' : 'fa-expand'" />
         <v-tooltip activator="#bigTypeaheadBtn">
           {{ $t('search.bigTypeaheadBtnTip') }}
         </v-tooltip>
-      </button>
+      </v-btn>
       <template v-if="expression && expression.length > 200">
-        <a
+        <v-btn
           id="longExpression"
           href="settings#shortcuts"
-          class="btn btn-outline-secondary btn-clear-input">
+          variant="outlined"
+          size="small"
+          density="comfortable"
+          icon
+          class="arkime-input-append-btn">
           <span class="fa fa-question-circle" />
           <v-tooltip activator="#longExpression">
             {{ $t('search.longExpressionTip') }}
           </v-tooltip>
-        </a>
+        </v-btn>
       </template>
-      <button
+      <v-btn
         id="saveExpression"
-        type="button"
-        @click="saveExpression"
+        variant="outlined"
+        size="small"
+        density="comfortable"
+        icon
+        class="arkime-input-append-btn"
         :disabled="!expression"
-        class="btn btn-outline-secondary btn-clear-input">
+        @click="saveExpression">
         <span class="fa fa-save" />
         <v-tooltip activator="#saveExpression">
           {{ $t('search.saveExpressionTip') }}
         </v-tooltip>
-      </button>
-      <button
-        type="button"
-        @click="clear"
+      </v-btn>
+      <v-btn
+        variant="outlined"
+        size="small"
+        density="comfortable"
+        icon
+        class="arkime-input-append-btn"
         :disabled="!expression"
         :title="$t('search.clearSearchTip')"
-        class="btn btn-outline-secondary btn-clear-input">
+        @click="clear">
         <span class="fa fa-close" />
-      </button>
+      </v-btn>
     </div> <!-- /typeahead input -->
 
     <!-- results dropdown -->
@@ -96,9 +109,9 @@ SPDX-License-Identifier: Apache-2.0
 
     <!-- error -->
     <div
-      class="dropdown-menu typeahead-results"
+      class="arkime-typeahead-results"
       v-show="expression && loadingError">
-      <a class="dropdown-item text-danger">
+      <a class="arkime-typeahead-item text-danger">
         <span class="fa fa-warning" />&nbsp;
         Error: {{ loadingError }}
       </a>
@@ -106,9 +119,9 @@ SPDX-License-Identifier: Apache-2.0
 
     <!-- loading -->
     <div
-      class="dropdown-menu typeahead-results"
+      class="arkime-typeahead-results"
       v-show="expression && loadingValues">
-      <a class="dropdown-item">
+      <a class="arkime-typeahead-item">
         <span class="fa fa-spinner fa-spin" />&nbsp;
         {{ $t('common.loading') }}
       </a>
@@ -134,27 +147,28 @@ SPDX-License-Identifier: Apache-2.0
             @apply="closeBigTypeahead(true)" />
         </v-card-text>
         <v-card-actions>
-          <div class="d-flex w-100 justify-content-between">
+          <div class="d-flex w-100 justify-space-between">
             <div>
-              <button
-                type="button"
-                class="btn btn-secondary"
+              <v-btn
+                color="secondary"
+                variant="flat"
                 @click="closeBigTypeahead(false)">
                 {{ $t('common.close') }}
-              </button>
-              <button
-                type="button"
-                class="btn btn-warning ms-2"
+              </v-btn>
+              <v-btn
+                color="warning"
+                variant="flat"
+                class="ms-2"
                 @click="clearBigTypeahead">
                 {{ $t('common.clear') }}
-              </button>
+              </v-btn>
             </div>
-            <button
-              type="button"
-              class="btn btn-theme-tertiary"
+            <v-btn
+              variant="flat"
+              :style="tertiaryBtnStyle"
               @click="closeBigTypeahead(true)">
               {{ $t('common.search') }}
-            </button>
+            </v-btn>
           </div>
         </v-card-actions>
       </v-card>
@@ -195,7 +209,12 @@ export default {
       autocompletingField: false,
       // saved expression vars
       savedExpressions: [],
-      bigTypeahead: false
+      bigTypeahead: false,
+      // Arkime theme-color v-btn style; Vuetify :color can't take CSS vars.
+      tertiaryBtnStyle: {
+        backgroundColor: 'var(--color-tertiary)',
+        color: 'var(--color-button, #FFF)'
+      }
     };
   },
   computed: {
@@ -928,8 +947,77 @@ export default {
 </script>
 
 <style scoped>
-.input-group {
-  flex-wrap: none;
+/* Input-group bridge: same shape as Stats.vue/.arkime-input-group.
+   Replaces Bootstrap's .input-group + .form-control look without the
+   Bootstrap import. Phase D candidate for promotion to shared CSS. */
+.arkime-input-group {
+  display: inline-flex;
+  align-items: stretch;
   width: auto;
+  flex-wrap: nowrap;
+}
+.arkime-input-label {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  background-color: color-mix(in srgb, var(--color-foreground, #000) 8%, var(--color-background, #fff));
+  border: 1px solid var(--color-gray);
+  border-right: none;
+  border-radius: 4px 0 0 4px;
+  font-size: 0.85rem;
+  color: var(--color-foreground);
+  white-space: nowrap;
+}
+.arkime-input-label-fw {
+  width: 36px;
+  justify-content: center;
+}
+.arkime-input-control {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 2px 8px;
+  background-color: var(--color-background, #fff);
+  color: var(--color-foreground, #495057);
+  border: 1px solid var(--color-gray);
+  font-size: 0.85rem;
+  line-height: 1.5;
+}
+.arkime-input-control:focus {
+  outline: none;
+  border-color: var(--color-primary, #0d6efd);
+}
+/* the appended icon buttons in the input-group share borders + no
+   rounding except on the rightmost. Override v-btn defaults so they
+   sit flush with the input. */
+.arkime-input-group :deep(.arkime-input-append-btn.v-btn) {
+  border-radius: 0;
+  border-left: none;
+  min-width: 0;
+  height: auto;
+}
+.arkime-input-group > :last-child :deep(.v-btn__content),
+.arkime-input-group > :last-child.v-btn {
+  border-top-right-radius: 4px;
+  border-bottom-right-radius: 4px;
+}
+
+/* typeahead error/loading dropdown -- replaces .dropdown-menu CSS-only
+   styling from Bootstrap. */
+.arkime-typeahead-results {
+  position: absolute;
+  background-color: var(--color-background, #fff);
+  border: 1px solid var(--color-gray);
+  border-radius: 4px;
+  padding: 4px 0;
+  margin-top: 2px;
+  z-index: 1000;
+  min-width: 200px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+.arkime-typeahead-item {
+  display: block;
+  padding: 4px 12px;
+  color: var(--color-foreground);
+  text-decoration: none;
 }
 </style>
