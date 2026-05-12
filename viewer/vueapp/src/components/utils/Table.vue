@@ -92,8 +92,8 @@ SPDX-License-Identifier: Apache-2.0
         </th>
         <th
           v-for="column in computedColumns"
-          :key="column.name"
-          :id="`col-${column.name}`"
+          :key="column.id"
+          :id="`col-${column.id}`"
           @click.self="sort(column)"
           :class="(column.classes ? `${column.classes} ` : '') + (column.sort ? 'cursor-pointer' : '')"
           :style="{'width': column.width > 0 ? `${column.width}px` : '100px'}"
@@ -104,7 +104,7 @@ SPDX-License-Identifier: Apache-2.0
           {{ column.name }}
           <v-tooltip
             v-if="column.help"
-            :activator="`#col-${column.name}`">
+            :activator="`#col-${column.id}`">
             {{ column.help }}
           </v-tooltip>
           <span
