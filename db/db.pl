@@ -5476,6 +5476,19 @@ sub sessions3Update
     "node" : {
       "type" : "keyword"
     },
+    "ospf" : {
+      "properties" : {
+        "msgType" : {
+          "type" : "keyword"
+        },
+        "routerId" : {
+          "type" : "keyword"
+        },
+        "areaId" : {
+          "type" : "keyword"
+        }
+      }
+    },
     "oracle" : {
       "properties" : {
         "host" : {

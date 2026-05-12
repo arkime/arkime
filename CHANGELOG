@@ -60,6 +60,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
           other UDP traffic with identical headers is no longer over-deduplicated
   - #3970 Added full OpenVPN classifier/parser
   - #3972 Improved STUN/TURN parser: extract XOR-PEER-ADDRESS, more methods, and stun.attributes field
+  - #3973 Improved OSPF parser: per-(src,dst) sessions and ospf.msgType/routerId/areaId fields, tag weak auth
 ## WISE
   - #3968 Improve JSON Array Parsing: shortcut paths now expand arrays at any
           intermediate position, not just the final value
