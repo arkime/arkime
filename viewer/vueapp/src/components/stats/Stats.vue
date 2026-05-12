@@ -12,8 +12,8 @@ SPDX-License-Identifier: Apache-2.0
           <div
             class="col-auto flex-grow-1"
             v-if="tabIndex !== 7">
-            <div class="input-group input-group-sm">
-              <span class="input-group-text input-group-text-fw">
+            <div class="arkime-input-group">
+              <span class="arkime-input-label arkime-input-label-fw">
                 <span
                   v-if="loadingData"
                   class="fa fa-spinner fa-spin text-theme-accent" />
@@ -28,20 +28,23 @@ SPDX-License-Identifier: Apache-2.0
               </span>
               <input
                 type="text"
-                class="form-control"
+                class="arkime-input-control"
                 v-model="searchTerm"
                 v-focus="focusInput"
                 @blur="onOffFocus"
                 @input="debounceSearchInput"
                 @keydown.stop.prevent.enter="debounceSearchInput"
                 :placeholder="$t('stats.filterPlaceholder')">
-              <button
-                type="button"
-                @click="clear"
+              <v-btn
+                v-if="searchTerm"
+                variant="outlined"
+                size="x-small"
+                density="comfortable"
+                icon
                 :disabled="!searchTerm"
-                class="btn btn-outline-secondary btn-clear-input">
+                @click="clear">
                 <span class="fa fa-close" />
-              </button>
+              </v-btn>
             </div>
           </div>
 
@@ -49,12 +52,12 @@ SPDX-License-Identifier: Apache-2.0
           <div
             class="col-auto"
             v-if="tabIndex === 0">
-            <div class="input-group input-group-sm">
-              <span class="input-group-text">
+            <div class="arkime-input-group">
+              <span class="arkime-input-label">
                 {{ $t('stats.graphType') }}
               </span>
               <select
-                class="form-control"
+                class="arkime-input-control"
                 v-model="statsType"
                 @change="statsTypeChange">
                 <option
@@ -164,12 +167,12 @@ SPDX-License-Identifier: Apache-2.0
           <div
             class="col-auto"
             v-if="tabIndex === 0">
-            <div class="input-group input-group-sm">
-              <span class="input-group-text">
+            <div class="arkime-input-group">
+              <span class="arkime-input-label">
                 {{ $t('stats.graphInterval') }}
               </span>
               <select
-                class="form-control"
+                class="arkime-input-control"
                 v-model="graphInterval"
                 @change="graphIntervalChange">
                 <option value="5">{{ $t('common.secondCount', 5) }}</option>
@@ -183,10 +186,10 @@ SPDX-License-Identifier: Apache-2.0
           <div
             class="col-auto"
             v-if="tabIndex === 0 || tabIndex === 1">
-            <div class="input-group input-group-sm">
-              <span class="input-group-text">{{ $t('stats.graphHide') }}</span>
+            <div class="arkime-input-group">
+              <span class="arkime-input-label">{{ $t('stats.graphHide') }}</span>
               <select
-                class="form-control input-sm"
+                class="arkime-input-control"
                 v-model="graphHide"
                 @change="graphHideChange">
                 <option
@@ -209,10 +212,10 @@ SPDX-License-Identifier: Apache-2.0
           <div
             class="col-auto"
             v-if="tabIndex === 0">
-            <div class="input-group input-group-sm">
-              <span class="input-group-text">{{ $t('stats.graphSort') }}</span>
+            <div class="arkime-input-group">
+              <span class="arkime-input-label">{{ $t('stats.graphSort') }}</span>
               <select
-                class="form-control input-sm"
+                class="arkime-input-control"
                 v-model="graphSort">
                 <option
                   value="asc"
@@ -228,10 +231,10 @@ SPDX-License-Identifier: Apache-2.0
           <div
             class="col-auto"
             v-if="tabIndex === 4">
-            <div class="input-group input-group-sm">
-              <span class="input-group-text">{{ $t('stats.pageSize') }}</span>
+            <div class="arkime-input-group">
+              <span class="arkime-input-label">{{ $t('stats.pageSize') }}</span>
               <select
-                class="form-control "
+                class="arkime-input-control"
                 v-model="pageSize"
                 @change="pageSizeChange">
                 <option value="100">{{ $t('common.perPage', 100) }}</option>
@@ -248,10 +251,10 @@ SPDX-License-Identifier: Apache-2.0
           <div
             class="col-auto"
             v-if="tabIndex !== 0 && tabIndex !== 7">
-            <div class="input-group input-group-sm">
-              <span class="input-group-text">{{ $t('stats.refreshEvery') }}</span>
+            <div class="arkime-input-group">
+              <span class="arkime-input-label">{{ $t('stats.refreshEvery') }}</span>
               <select
-                class="form-control"
+                class="arkime-input-control"
                 v-model="dataInterval"
                 @change="dataIntervalChange">
                 <option value="5000">{{ $t('common.secondCount', 5) }}</option>
@@ -268,10 +271,10 @@ SPDX-License-Identifier: Apache-2.0
           <div
             class="col-auto"
             v-if="tabIndex === 5">
-            <div class="input-group input-group-sm">
-              <span class="input-group-text">{{ $t('stats.shardsShow') }}</span>
+            <div class="arkime-input-group">
+              <span class="arkime-input-label">{{ $t('stats.shardsShow') }}</span>
               <select
-                class="form-control"
+                class="arkime-input-control"
                 v-model="shardsShow"
                 @change="shardsShowChange">
                 <option
@@ -297,10 +300,10 @@ SPDX-License-Identifier: Apache-2.0
           <div
             class="col-auto"
             v-if="tabIndex === 6">
-            <div class="input-group input-group-sm">
-              <span class="input-group-text">{{ $t('stats.recoveryShow') }}</span>
+            <div class="arkime-input-group">
+              <span class="arkime-input-label">{{ $t('stats.recoveryShow') }}</span>
               <select
-                class="form-control"
+                class="arkime-input-control"
                 v-model="recoveryShow"
                 @change="recoveryShowChange">
                 <option
@@ -317,9 +320,11 @@ SPDX-License-Identifier: Apache-2.0
           <div
             class="col-auto"
             v-if="tabIndex !== 0 && tabIndex !== 7">
-            <button
-              type="button"
-              class="btn btn-sm btn-theme-tertiary"
+            <v-btn
+              variant="flat"
+              size="small"
+              density="comfortable"
+              :style="tertiaryBtnStyle"
               @click="loadData">
               <span v-if="!shiftKeyHold">
                 {{ $t('common.refresh') }}
@@ -330,65 +335,68 @@ SPDX-License-Identifier: Apache-2.0
                 <span class="fa fa-long-arrow-left fa-lg" />
                 <div class="enter-arm" />
               </span>
-            </button>
+            </v-btn>
           </div> <!-- /refresh button -->
 
           <div class="col">
             <!-- confirm button -->
             <transition name="buttons">
-              <button
+              <v-btn
                 v-if="confirmMessage"
-                type="button"
-                class="btn btn-sm btn-danger ms-2"
+                color="error"
+                variant="flat"
+                size="small"
+                density="comfortable"
+                class="ms-2"
                 @click="confirmed">
-                <span class="fa fa-check" />&nbsp;
+                <span class="fa fa-check me-1" />
                 {{ confirmMessage }}
-              </button>
+              </v-btn>
             </transition> <!-- /confirm button -->
 
             <!-- cancel confirm button -->
             <transition name="buttons">
-              <button
+              <v-btn
                 v-if="confirmMessage"
-                type="button"
-                class="btn btn-sm btn-warning ms-2"
+                color="warning"
+                variant="flat"
+                size="small"
+                density="comfortable"
+                class="ms-2"
                 @click="cancelConfirm">
-                <span class="fa fa-ban" />&nbsp;
+                <span class="fa fa-ban me-1" />
                 {{ $t('common.cancel') }}
-              </button>
+              </v-btn>
             </transition> <!-- /cancel confirm button -->
           </div>
 
           <!-- error (from child component) -->
-          <div
+          <v-alert
             v-if="childError"
-            role="alert"
-            class="alert alert-sm alert-danger alert-dismissible fade show ms-2">
+            type="error"
+            density="compact"
+            variant="tonal"
+            closable
+            class="ms-2"
+            @click:close="childError = ''">
             {{ childError }}
-            <button
-              type="button"
-              :aria-label="$t('common.dismiss')"
-              class="btn-close"
-              @click="childError = ''">
-              <span>&times;</span>
-            </button>
-          </div> <!-- /error (from child component) -->
+          </v-alert> <!-- /error (from child component) -->
 
           <!-- shrink index -->
           <div
             v-if="shrinkIndex"
-            class="ms-4 form-inline">
+            class="ms-4 d-flex align-center">
             <strong>
               {{ $t('stats.shrink') }}  {{ shrinkIndex.index }}
             </strong>
             <!-- new # shards -->
-            <div class="input-group input-group-sm ms-2">
-              <span class="input-group-text">
+            <div class="arkime-input-group ms-2">
+              <span class="arkime-input-label">
                 {{ $t('stats.numShards') }}
               </span>
               <select
                 v-model="shrinkFactor"
-                class="form-control"
+                class="arkime-input-control"
                 style="-webkit-appearance:none;">
                 <option
                   v-for="factor in shrinkFactors"
@@ -401,13 +409,13 @@ SPDX-License-Identifier: Apache-2.0
             <!-- temporary node -->
             <div
               v-if="nodes && temporaryNode"
-              class="input-group input-group-sm ms-2">
-              <span class="input-group-text">
+              class="arkime-input-group ms-2">
+              <span class="arkime-input-label">
                 {{ $t('stats.temporaryNode') }}
               </span>
               <select
                 v-model="temporaryNode"
-                class="form-control"
+                class="arkime-input-control"
                 style="-webkit-appearance:none;">
                 <option
                   v-for="node in nodes"
@@ -418,21 +426,29 @@ SPDX-License-Identifier: Apache-2.0
               </select>
             </div> <!-- /new shards input -->
             <!-- ok button -->
-            <button
-              class="btn btn-sm btn-success pull-right ms-2"
-              @click="executeShrink(shrinkIndex)"
+            <v-btn
+              color="success"
+              variant="flat"
+              size="small"
+              density="comfortable"
+              icon
+              class="float-right ms-2"
               :aria-label="$t('common.apply')"
-              type="button">
+              @click="executeShrink(shrinkIndex)">
               <span class="fa fa-check" />
-            </button> <!-- /ok button -->
+            </v-btn> <!-- /ok button -->
             <!-- cancel button -->
-            <button
-              class="btn btn-sm btn-warning pull-right ms-2"
-              @click="cancelShrink"
+            <v-btn
+              color="warning"
+              variant="flat"
+              size="small"
+              density="comfortable"
+              icon
+              class="float-right ms-2"
               :aria-label="$t('common.cancel')"
-              type="button">
+              @click="cancelShrink">
               <span class="fa fa-ban" />
-            </button> <!-- /cancel button -->
+            </v-btn> <!-- /cancel button -->
           </div>
           <span
             v-if="shrinkIndex && shrinkError"
@@ -451,10 +467,13 @@ SPDX-License-Identifier: Apache-2.0
 
           <!-- need this on non-multivierwer esAdmin tab to keep the layout consistent (empty navbar)-->
           <div v-else-if="tabIndex === 7">
-            <button
-              type="button"
-              class="btn btn-sm btn-theme-secondary"
-              style="visibility: hidden;">placeholder</button>
+            <v-btn
+              variant="flat"
+              size="small"
+              density="comfortable"
+              :style="{ ...secondaryBtnStyle, visibility: 'hidden' }">
+              placeholder
+            </v-btn>
           </div>
 
         </div> <!-- /stats sub navbar -->
@@ -626,7 +645,17 @@ export default {
       nodes: undefined,
       shrinkError: undefined,
       clusterParamOverride: true,
-      multiviewer: this.$constants.MULTIVIEWER
+      multiviewer: this.$constants.MULTIVIEWER,
+      // Arkime theme-color v-btn styles. Vuetify's :color doesn't
+      // resolve CSS variables; inline :style keeps them theme-adaptive.
+      tertiaryBtnStyle: {
+        backgroundColor: 'var(--color-tertiary)',
+        color: 'var(--color-button, #FFF)'
+      },
+      secondaryBtnStyle: {
+        backgroundColor: 'var(--color-secondary)',
+        color: 'var(--color-button, #FFF)'
+      }
     };
   },
   computed: {
@@ -819,14 +848,8 @@ export default {
 </script>
 
 <style>
-table .btn-group.row-actions-btn > .btn-sm {
-  padding: 1px 4px;
-  font-size: 13px;
-  line-height: 1.2;
-}
-
-/* fix the nav tabs to the top and scroll the content */
-.stats-tabs .nav-tabs {
+/* fix the v-tabs strip to the top and pad the scrolled content. */
+.stats-tabs .v-tabs {
   position: fixed;
   left: 0;
   right: 0;
@@ -834,7 +857,7 @@ table .btn-group.row-actions-btn > .btn-sm {
   padding-top: 10px;
   background-color: var(--color-background, #FFFFFF);
 }
-.stats-tabs .tab-content {
+.stats-tabs .stats-tab-content {
   padding-top: 50px;
 }
 </style>
@@ -852,11 +875,57 @@ select {
   -webkit-appearance: none;
 }
 
-.stats-tabs .input-group {
-  max-width: 333px;
-  position: fixed;
-  right: 0;
-  z-index: 5;
-  margin-top: 10px;
+/* Input-group bridge: replaces what Bootstrap's .input-group +
+   .input-group-text + .form-control gave us, scoped to Stats.vue.
+   Phase D may promote these to a shared utility in overrides.css. */
+.arkime-input-group {
+  display: inline-flex;
+  align-items: stretch;
+  height: 28px;
+  flex-wrap: nowrap;
+}
+.arkime-input-label {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  background-color: color-mix(in srgb, var(--color-foreground, #000) 8%, var(--color-background, #fff));
+  border: 1px solid var(--color-gray);
+  border-right: none;
+  border-radius: 4px 0 0 4px;
+  font-size: 0.85rem;
+  color: var(--color-foreground);
+  white-space: nowrap;
+}
+.arkime-input-label-fw {
+  width: 36px;
+  justify-content: center;
+}
+.arkime-input-label + .arkime-input-control,
+.arkime-input-control + .arkime-input-label {
+  border-left: none;
+  border-radius: 0;
+}
+.arkime-input-group > :first-child {
+  border-top-left-radius: 4px;
+  border-bottom-left-radius: 4px;
+}
+.arkime-input-group > :last-child {
+  border-top-right-radius: 4px;
+  border-bottom-right-radius: 4px;
+  border-right: 1px solid var(--color-gray);
+}
+.arkime-input-control {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 2px 8px;
+  background-color: var(--color-background, #fff);
+  color: var(--color-foreground, #495057);
+  border: 1px solid var(--color-gray);
+  font-size: 0.85rem;
+  line-height: 1.5;
+}
+.arkime-input-control:focus {
+  outline: none;
+  border-color: var(--color-primary, #0d6efd);
 }
 </style>

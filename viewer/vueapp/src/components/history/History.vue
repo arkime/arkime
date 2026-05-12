@@ -9,9 +9,12 @@ SPDX-License-Identifier: Apache-2.0
         <!-- search navbar -->
         <div class="history-search p-1">
           <Clusters />
-          <button
-            type="button"
-            class="btn btn-sm btn-theme-tertiary pull-right ms-1 search-btn"
+          <v-btn
+            variant="flat"
+            size="small"
+            density="comfortable"
+            class="float-right ms-1 search-btn"
+            :style="tertiaryBtnStyle"
             @click="loadData">
             <span v-if="!shiftKeyHold">
               Search
@@ -22,9 +25,19 @@ SPDX-License-Identifier: Apache-2.0
               <span class="fa fa-long-arrow-left fa-lg" />
               <div class="enter-arm" />
             </span>
-          </button>
-          <div class="input-group input-group-sm">
-            <span class="input-group-text input-group-text-fw">
+          </v-btn>
+          <v-text-field
+            v-model="searchTerm"
+            density="compact"
+            variant="outlined"
+            hide-details
+            class="history-search-field"
+            :placeholder="$t('history.searchHistoryPlaceholder')"
+            v-focus="focusInput"
+            @keyup.enter="loadData"
+            @input="debounceSearch"
+            @blur="onOffFocus">
+            <template #prepend-inner>
               <span
                 v-if="!shiftKeyHold"
                 class="fa fa-search fa-fw" />
@@ -33,33 +46,28 @@ SPDX-License-Identifier: Apache-2.0
                 class="query-shortcut">
                 Q
               </span>
-            </span>
-            <input
-              type="text"
-              @keyup.enter="loadData"
-              @input="debounceSearch"
-              class="form-control"
-              v-model="searchTerm"
-              v-focus="focusInput"
-              @blur="onOffFocus"
-              :placeholder="$t('history.searchHistoryPlaceholder')">
-            <button
-              type="button"
-              @click="clear"
-              :disabled="!searchTerm"
-              :aria-label="$t('common.clear')"
-              class="btn btn-outline-secondary btn-clear-input">
-              <span class="fa fa-close" />
-            </button>
-            <span
-              id="searchHistory"
-              class="input-group-text">
-              <span class="fa fa-lg fa-question-circle text-theme-primary help-cursor" />
-              <v-tooltip activator="#searchHistory">
-                <div v-html="$t('history.searchHistoryTipHtml')" />
-              </v-tooltip>
-            </span>
-          </div>
+            </template>
+            <template #append-inner>
+              <v-btn
+                v-if="searchTerm"
+                icon
+                variant="text"
+                size="x-small"
+                density="comfortable"
+                :aria-label="$t('common.clear')"
+                @click="clear">
+                <span class="fa fa-close" />
+              </v-btn>
+              <span
+                id="searchHistory"
+                class="ms-1">
+                <span class="fa fa-lg fa-question-circle text-theme-primary help-cursor" />
+                <v-tooltip activator="#searchHistory">
+                  <div v-html="$t('history.searchHistoryTipHtml')" />
+                </v-tooltip>
+              </span>
+            </template>
+          </v-text-field>
           <arkime-time
             class="mt-1"
             :timezone="user.settings.timezone"
@@ -87,20 +95,24 @@ SPDX-License-Identifier: Apache-2.0
 
     <table
       v-if="!error"
-      class="table table-sm table-striped small">
+      class="history-table small">
       <thead>
         <tr>
           <th width="100px;">
-            <button
+            <v-btn
               id="toggleColFilters"
               :aria-label="$t('history.toggleColFiltersTip')"
-              class="btn btn-xs btn-primary margined-bottom-sm"
+              variant="flat"
+              color="primary"
+              size="x-small"
+              density="comfortable"
+              icon
               @click="showColFilters = !showColFilters">
               <span class="fa fa-filter" />
               <v-tooltip activator="#toggleColFilters">
                 {{ $t('history.toggleColFiltersTip') }}
               </v-tooltip>
-            </button>
+            </v-btn>
           </th>
           <th
             :key="column.name"
@@ -129,7 +141,7 @@ SPDX-License-Identifier: Apache-2.0
               v-has-permission="column.permission"
               v-if="column.filter && showColFilters"
               :placeholder="$t('history.filterByPlaceholder', { name: column.name })"
-              class="form-control form-control-sm input-filter"
+              class="input-filter"
               :id="`filter-${column.name}`">
             <div
               v-if="column.exists"
@@ -192,29 +204,36 @@ SPDX-License-Identifier: Apache-2.0
               <toggle-btn
                 :opened="item.expanded"
                 @toggle="toggleLogDetail(item)" />
-              <button
-                type="button"
-                role="button"
+              <v-btn
                 title="Delete history"
                 :aria-label="$t('common.delete')"
-                class="btn btn-xs btn-warning ms-1"
+                variant="flat"
+                color="warning"
+                size="x-small"
+                density="comfortable"
+                icon
+                class="ms-1"
                 v-has-role="{user:user,roles:'arkimeAdmin'}"
                 v-has-permission="'removeEnabled'"
                 @click="deleteLog(item, index)">
                 <span class="fa fa-trash-o" />
-              </button>
-              <a
+              </v-btn>
+              <v-btn
                 :id="`openPage-${item.id}`"
-                class="btn btn-xs btn-info ms-1"
                 v-if="item.uiPage"
                 :aria-label="$t('common.open')"
-                tooltip-placement="right"
+                variant="flat"
+                color="info"
+                size="x-small"
+                density="comfortable"
+                icon
+                class="ms-1"
                 @click="openPage(item)">
                 <span class="fa fa-folder-open" />
                 <v-tooltip :activator="`#openPage-${item.id}`">
                   {{ $t('history.openPageTip', { uiPage: item.uiPage }) }}
                 </v-tooltip>
-              </a>
+              </v-btn>
             </td>
             <td class="no-wrap">
               {{ timezoneDateString(item.timestamp * 1000, user.settings.timezone) }}
@@ -357,14 +376,17 @@ SPDX-License-Identifier: Apache-2.0
                     v-if="item.esQuery">
                     <h5>
                       {{ $t('history.esQuery') }}
-                      <button
-                        type="button"
-                        class="btn btn-xs btn-theme-secondary ms-2"
+                      <v-btn
+                        variant="flat"
+                        size="x-small"
+                        density="comfortable"
+                        class="ms-2"
+                        :style="secondaryBtnStyle"
                         :title="$t('common.copyValueTip')"
                         @click="copyValue(item.esQuery)">
-                        <span class="fa fa-clipboard" />&nbsp;
+                        <span class="fa fa-clipboard me-1" />
                         {{ $t('common.copy') }}
-                      </button>
+                      </v-btn>
                     </h5>
                     <pre class="me-3 ms-3">{{ JSON.parse(item.esQuery) }}</pre>
                   </div>
@@ -440,6 +462,17 @@ export default {
       msg: '',
       msgType: undefined,
       seeAll: false,
+      // Arkime theme-color v-btn styles. Vuetify's :color prop doesn't
+      // resolve CSS variables at runtime; inline :style keeps them
+      // theme-adaptive.
+      tertiaryBtnStyle: {
+        backgroundColor: 'var(--color-tertiary)',
+        color: 'var(--color-button, #FFF)'
+      },
+      secondaryBtnStyle: {
+        backgroundColor: 'var(--color-secondary)',
+        color: 'var(--color-button, #FFF)'
+      }
     };
   },
   computed: {
@@ -679,32 +712,52 @@ export default {
   height: 40px;
 }
 
-.input-group {
-  flex-wrap: none;
+.history-search-field {
   width: auto;
+  display: inline-block;
 }
 
-/* table styles -------------------- */
-.history-page table {
+/* table styles -- replaces what .table.table-sm.table-striped.small
+   used to provide once bootstrap.css is dropped. Width, vertical
+   alignment, cell padding, striping; theme-aware via Arkime CSS vars. */
+.history-page .history-table {
+  width: 100%;
   margin-top: 10px;
+  margin-bottom: 1rem;
   table-layout: fixed;
+  font-size: 0.875rem;
+  border-collapse: collapse;
+  color: var(--color-foreground);
 }
-.history-page table thead tr th {
+.history-page .history-table thead tr th {
   vertical-align: bottom;
-  padding-top: 4px;
+  padding: 4px 4px 4px 4px;
+  border-bottom: 2px solid var(--color-gray);
 }
-.history-page table tbody tr td.no-wrap {
+.history-page .history-table tbody tr td {
+  vertical-align: top;
+  padding: 4px;
+  border-top: 1px solid var(--color-gray-light);
+}
+.history-page .history-table tbody tr:nth-of-type(odd) > td {
+  background-color: color-mix(in srgb, var(--color-foreground, #000) 4%, transparent);
+}
+.history-page .history-table tbody tr td.no-wrap {
   white-space: nowrap;
   text-overflow: ellipsis;
   overflow: hidden;
 }
 /* super tiny input boxes for column filters */
-.history-page table thead tr th input.input-filter {
+.history-page .history-table thead tr th input.input-filter {
   height: 24px;
   padding: 2px 5px;
   font-size: 12px;
   margin-bottom: 2px;
   margin-top: 2px;
+  border: 1px solid var(--color-gray);
+  border-radius: 4px;
+  background-color: var(--color-background, #fff);
+  color: var(--color-foreground, #495057);
 }
 .history-page table thead tr th div.header-div {
   display: inline-block;
