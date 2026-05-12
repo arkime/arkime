@@ -5,8 +5,8 @@ SPDX-License-Identifier: Apache-2.0
 <template>
   <div class="row g-1 text-start flex-nowrap justify-content-start">
     <!-- time range select -->
-    <div class="col-auto">
-      <div class="arkime-input-group">
+    <div class="col">
+      <div class="arkime-input-group arkime-input-group--fluid">
         <span
           id="timeInput"
           class="arkime-input-label arkime-input-label-fw cursor-help">
@@ -107,8 +107,8 @@ SPDX-License-Identifier: Apache-2.0
     </div> <!-- /time range select -->
 
     <!-- start time -->
-    <div class="col-auto">
-      <div class="arkime-input-group">
+    <div class="col">
+      <div class="arkime-input-group arkime-input-group--fluid">
         <span
           id="startTimeLabel"
           class="arkime-input-label cursor-help">
@@ -178,8 +178,8 @@ SPDX-License-Identifier: Apache-2.0
     </div> <!-- /start time -->
 
     <!-- stop time -->
-    <div class="col-auto">
-      <div class="arkime-input-group">
+    <div class="col">
+      <div class="arkime-input-group arkime-input-group--fluid">
         <span
           id="stopTimeLabel"
           class="arkime-input-label cursor-help">
@@ -250,9 +250,9 @@ SPDX-License-Identifier: Apache-2.0
 
     <!-- time bounding select -->
     <div
-      class="col-auto"
+      class="col"
       v-if="!hideBounding">
-      <div class="arkime-input-group">
+      <div class="arkime-input-group arkime-input-group--fluid">
         <span
           id="timeBounding"
           class="arkime-input-label cursor-help">
@@ -290,9 +290,9 @@ SPDX-License-Identifier: Apache-2.0
 
     <!-- time interval select -->
     <div
-      class="col-auto"
+      class="col"
       v-if="!hideInterval">
-      <div class="arkime-input-group">
+      <div class="arkime-input-group arkime-input-group--fluid">
         <span
           id="timeInterval"
           class="arkime-input-label cursor-help">

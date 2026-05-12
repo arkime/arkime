@@ -27,6 +27,15 @@
   /* outer padding -- prepended labels and the input share this */
   padding: 0 2px;
 }
+/* Fluid modifier: grow to fill the available width in a flex parent.
+   Use when the group sits inside a row/flex layout that should stretch
+   (the main search bar, the time picker columns, etc.) instead of
+   shrinking to content width. */
+.arkime-input-group--fluid {
+  display: flex;
+  width: 100%;
+  flex: 1 1 auto;
+}
 .arkime-input-group:hover {
   border-color: var(--color-gray-dark, #555);
 }
@@ -83,11 +92,12 @@ select.arkime-input-control {
 }
 
 /* an icon button appended to the group reads as an inline action
-   inside the field, like v-text-field's append-inner slot. Shorter
-   than the group height so it visually nestles inside the border. */
-.arkime-input-group :deep(.arkime-input-append-btn.v-btn) {
-  height: 26px;
+   inside the field, like v-text-field's append-inner slot. Match
+   the group's content height closely so it doesn't look stunted. */
+.arkime-input-group .arkime-input-append-btn.v-btn {
+  height: 28px;
   min-width: 0;
-  margin-left: 2px;
+  margin: 0;
   border-radius: 4px;
+  align-self: center;
 }

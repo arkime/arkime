@@ -7,7 +7,7 @@ SPDX-License-Identifier: Apache-2.0
     class="mb-1"
     :class="{ 'big-typeahead': bigTypeahead }">
     <!-- typeahead input -->
-    <div class="arkime-input-group">
+    <div class="arkime-input-group arkime-input-group--fluid">
       <span
         id="searchExpressionTooltip"
         class="arkime-input-label arkime-input-label-fw cursor-help">
