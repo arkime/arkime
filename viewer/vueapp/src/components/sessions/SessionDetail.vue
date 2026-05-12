@@ -22,7 +22,7 @@
     <div
       v-show="!hidePackets && !user.hidePcap"
       class="packet-options me-1 ms-1">
-      <form class="form-inline mb-2 pt-2 border-top">
+      <form class="d-flex mb-2 pt-2 border-top">
         <fieldset :disabled="hidePackets || loadingPackets || renderingPackets">
           <packet-options
             :params="params"
@@ -50,13 +50,15 @@
       class="mt-4 mb-4 ms-2 me-2 large">
       <span class="fa fa-spinner fa-spin" />&nbsp;
       {{ $t('sessions.detail.loadingSessionPackets') }}&nbsp;
-      <button
-        type="button"
-        @click="cancelPacketLoad"
-        class="btn btn-warning btn-xs">
-        <span class="fa fa-ban" />&nbsp;
+      <v-btn
+        color="warning"
+        variant="flat"
+        size="x-small"
+        density="comfortable"
+        @click="cancelPacketLoad">
+        <span class="fa fa-ban me-1" />
         {{ $t('common.cancel') }}
-      </button>
+      </v-btn>
     </div> <!-- /packets loading -->
 
     <!-- packets rendering -->
@@ -75,13 +77,15 @@
         <span class="fa fa-exclamation-triangle" />&nbsp;
         {{ errorPackets }}&nbsp;
       </span>
-      <button
-        type="button"
-        @click="getPackets"
-        class="btn btn-success btn-xs">
-        <span class="fa fa-refresh" />&nbsp;
+      <v-btn
+        color="success"
+        variant="flat"
+        size="x-small"
+        density="comfortable"
+        @click="getPackets">
+        <span class="fa fa-refresh me-1" />
         retry
-      </button>
+      </v-btn>
     </div> <!-- /packets error -->
 
     <!-- packets -->
@@ -96,7 +100,7 @@
     <div
       v-show="!hidePackets && !user.hidePcap"
       class="packet-options me-1 ms-1">
-      <form class="form-inline mb-2 pt-2 border-top">
+      <form class="d-flex mb-2 pt-2 border-top">
         <fieldset :disabled="hidePackets || loadingPackets || renderingPackets">
           <packet-options
             :params="params"

@@ -10,22 +10,24 @@ SPDX-License-Identifier: Apache-2.0
       :class="{'map-visible':showMap,'map-invisible':!showMap}">
       <div v-show="!hideViz">
         <div
-          class="row"
-          v-if="disabledAggregations">
-          <div class="col text-center">
-            <div class="alert alert-sm alert-info container">
-              <strong>
-                {{ $t('vis.hideViz', { days: turnOffGraphDays }) }}
-              </strong>
-              <span class="fa fa-info-circle fa-lg ms-1 me-1 cursor-help">
-                <v-tooltip activator="parent">
-                  {{ $t('vis.hideVizTip') }}
-                </v-tooltip>
-              </span>
-              <br>
-              {{ $t('vis.hideVizMore') }}
-            </div>
-          </div>
+          v-if="disabledAggregations"
+          class="text-center">
+          <v-alert
+            type="info"
+            density="compact"
+            variant="tonal"
+            class="d-inline-block">
+            <strong>
+              {{ $t('vis.hideViz', { days: turnOffGraphDays }) }}
+            </strong>
+            <span class="fa fa-info-circle fa-lg ms-1 me-1 cursor-help">
+              <v-tooltip activator="parent">
+                {{ $t('vis.hideVizTip') }}
+              </v-tooltip>
+            </span>
+            <br>
+            {{ $t('vis.hideVizMore') }}
+          </v-alert>
         </div>
 
         <template v-else>
@@ -57,57 +59,66 @@ SPDX-License-Identifier: Apache-2.0
                     @update-legend="onUpdateLegend" /> <!-- /map -->
 
                   <!-- map buttons -->
-                  <button
-                    type="button"
+                  <v-btn
                     v-if="primary"
                     :aria-label="$t('common.close')"
-                    class="btn btn-xs btn-default btn-close-map btn-fw"
+                    variant="outlined"
+                    size="small"
+                    density="comfortable"
+                    icon
+                    class="btn-close-map"
                     @click="toggleMap">
                     <span class="fa fa-close" />
-                  </button>
-                  <button
-                    type="button"
+                  </v-btn>
+                  <v-btn
                     :aria-label="$t('vis.toggleMapSize')"
-                    class="btn btn-xs btn-default btn-fw btn-z-index-2"
-                    :class="{'btn-expand-map':primary,'btn-close-map':!primary}"
+                    variant="outlined"
+                    size="small"
+                    density="comfortable"
+                    icon
+                    :class="['btn-z-index-2', primary ? 'btn-expand-map' : 'btn-close-map']"
                     @click="toggleMapSize">
                     <span
                       class="fa"
                       :class="{'fa-expand':!mapExpanded,'fa-compress':mapExpanded}" />
-                  </button>
+                  </v-btn>
                   <div
                     v-if="primary"
-                    class="btn-group-vertical src-dst-btns btn-fw">
-                    <button
-                      type="button"
-                      class="btn btn-xs btn-default"
-                      :class="{'active':src}"
+                    class="src-dst-btns d-flex flex-column">
+                    <v-btn
+                      :variant="src ? 'flat' : 'outlined'"
+                      :color="src ? 'primary' : undefined"
+                      size="small"
+                      density="comfortable"
                       @click="toggleSrcDstXff('src')">
                       <strong>S</strong>
                       <v-tooltip activator="parent">
                         {{ $t('vis.toggleSrcCountry') }}
                       </v-tooltip>
-                    </button>
-                    <button
-                      type="button"
-                      class="btn btn-xs btn-default"
-                      :class="{'active':dst}"
+                    </v-btn>
+                    <v-btn
+                      :variant="dst ? 'flat' : 'outlined'"
+                      :color="dst ? 'primary' : undefined"
+                      size="small"
+                      density="comfortable"
                       @click="toggleSrcDstXff('dst')">
                       <strong>D</strong>
                       <v-tooltip activator="parent">
                         {{ $t('vis.toggleDstCountry') }}
                       </v-tooltip>
-                    </button>
+                    </v-btn>
                   </div>
-                  <button
+                  <v-btn
                     v-if="primary"
-                    type="button"
-                    class="btn btn-xs btn-default btn-fw xff-btn"
+                    :variant="xffGeo ? 'flat' : 'outlined'"
+                    :color="xffGeo ? 'primary' : undefined"
+                    size="small"
+                    density="comfortable"
+                    class="xff-btn"
                     @click="toggleSrcDstXff('xffGeo')"
-                    :class="{'active':xffGeo}"
                     title="Toggle XFF Countries">
                     <small>XFF</small>
-                  </button> <!-- /map buttons -->
+                  </v-btn> <!-- /map buttons -->
 
                   <!-- map legend -->
                   <div
@@ -708,11 +719,6 @@ export default {
   width: 5px !important;
 }
 
-/* fixed width buttons are the same width regardless of content */
-.btn-fw {
-  width: 26px;
-}
-
 .map-btn {
   display: block;
   position: absolute;
@@ -757,7 +763,6 @@ export default {
   top: 95px;
   right: 2px;
   z-index: 3;
-  padding: 0;
 }
 
 .expanded .map-container {
