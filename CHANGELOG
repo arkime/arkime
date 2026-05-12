@@ -58,6 +58,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #3966 Add enip parser
   - #3969 Include up to 12 bytes of UDP payload in the packet dedup hash so RTP and
           other UDP traffic with identical headers is no longer over-deduplicated
+  - #3970 Added full OpenVPN classifier/parser
 ## WISE
   - #3968 Improve JSON Array Parsing: shortcut paths now expand arrays at any
           intermediate position, not just the final value
