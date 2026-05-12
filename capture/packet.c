@@ -1039,8 +1039,12 @@ LOCAL ArkimePacketRC arkime_packet_ip4(ArkimePacketBatch_t *batch, ArkimePacket_
             packet->payloadLen = ip_len - ip_hdr_len;
         }
 
-        if (config.enablePacketDedup && arkime_dedup_should_drop(packet, ip_hdr_len + sizeof(struct udphdr)))
-            return ARKIME_PACKET_DUPLICATE_DROPPED;
+        if (config.enablePacketDedup) {
+            // Include up to 12 bytes of UDP payload in the dedup hash.
+            const int extra = MIN(12, MIN(udpUlen, len - ip_hdr_len) - (int)sizeof(struct udphdr));
+            if (arkime_dedup_should_drop(packet, ip_hdr_len + sizeof(struct udphdr) + extra))
+                return ARKIME_PACKET_DUPLICATE_DROPPED;
+        }
 
         arkime_session_id(sessionId, ip4->ip_src.s_addr, udphdr->uh_sport,
                           ip4->ip_dst.s_addr, udphdr->uh_dport, packet->vlan, packet->vni);
@@ -1265,8 +1269,12 @@ LOCAL ArkimePacketRC arkime_packet_ip6(ArkimePacketBatch_t *batch, ArkimePacket_
                 packet->payloadLen = ip_len + sizeof(struct ip6_hdr) - ip_hdr_len;
             }
 
-            if (config.enablePacketDedup && arkime_dedup_should_drop(packet, ip_hdr_len + sizeof(struct udphdr)))
-                return ARKIME_PACKET_DUPLICATE_DROPPED;
+            if (config.enablePacketDedup) {
+                // Include up to 12 bytes of UDP payload in the dedup hash.
+                const int extra = MIN(12, MIN(udpUlen, len - ip_hdr_len) - (int)sizeof(struct udphdr));
+                if (arkime_dedup_should_drop(packet, ip_hdr_len + sizeof(struct udphdr) + extra))
+                    return ARKIME_PACKET_DUPLICATE_DROPPED;
+            }
 
             packet->mProtocol = udpMProtocol;
             done = 1;
