@@ -19,8 +19,8 @@ SPDX-License-Identifier: Apache-2.0
                 :length-default="500" />
             </v-col>
             <v-col cols="auto">
-              <div class="input-group input-group-sm">
-                <span class="input-group-text input-group-text-fw">
+              <div class="arkime-input-group">
+                <span class="arkime-input-label arkime-input-label-fw">
                   <span
                     v-if="!shiftKeyHold"
                     class="fa fa-search fa-fw" />
@@ -32,21 +32,24 @@ SPDX-License-Identifier: Apache-2.0
                 </span>
                 <input
                   type="text"
-                  class="form-control"
+                  class="arkime-input-control"
                   v-model="query.filter"
                   v-focus="focusInput"
                   @blur="onOffFocus"
                   @input="searchForFiles"
                   @keydown.enter="searchForFiles"
                   :placeholder="$t('files.searchPlaceholder')">
-                <button
-                  type="button"
-                  class="btn btn-outline-secondary btn-clear-input"
-                  @click="clear"
+                <v-btn
+                  variant="outlined"
+                  size="small"
+                  density="comfortable"
+                  icon
+                  class="arkime-input-append-btn"
                   :disabled="!query.filter"
-                  :aria-label="$t('common.clear')">
+                  :aria-label="$t('common.clear')"
+                  @click="clear">
                   <span class="fa fa-close" />
-                </button>
+                </v-btn>
               </div>
             </v-col>
             <v-col cols="auto">
@@ -57,7 +60,7 @@ SPDX-License-Identifier: Apache-2.0
       </span>
     </ArkimeCollapsible>
 
-    <div class="mt-4 container-fluid">
+    <div class="mt-4 px-3">
       <arkime-loading v-if="loading && !error" />
 
       <arkime-error
@@ -253,5 +256,53 @@ export default {
   -webkit-box-shadow: 0 0 16px -2px black;
      -moz-box-shadow: 0 0 16px -2px black;
           box-shadow: 0 0 16px -2px black;
+}
+
+/* Input-group bridge -- same shape as Stats.vue/ExpressionTypeahead.vue.
+   Phase D candidate for promotion to a shared overrides.css block. */
+.arkime-input-group {
+  display: inline-flex;
+  align-items: stretch;
+  width: auto;
+  flex-wrap: nowrap;
+}
+.arkime-input-label {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  background-color: color-mix(in srgb, var(--color-foreground, #000) 8%, var(--color-background, #fff));
+  border: 1px solid var(--color-gray);
+  border-right: none;
+  border-radius: 4px 0 0 4px;
+  font-size: 0.85rem;
+  color: var(--color-foreground);
+  white-space: nowrap;
+}
+.arkime-input-label-fw {
+  width: 36px;
+  justify-content: center;
+}
+.arkime-input-control {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 2px 8px;
+  background-color: var(--color-background, #fff);
+  color: var(--color-foreground, #495057);
+  border: 1px solid var(--color-gray);
+  font-size: 0.85rem;
+  line-height: 1.5;
+}
+.arkime-input-control:focus {
+  outline: none;
+  border-color: var(--color-primary, #0d6efd);
+}
+.arkime-input-group :deep(.arkime-input-append-btn.v-btn) {
+  border-radius: 0;
+  border-left: none;
+  min-width: 0;
+}
+.arkime-input-group > :last-child {
+  border-top-right-radius: 4px;
+  border-bottom-right-radius: 4px;
 }
 </style>

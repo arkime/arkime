@@ -14,12 +14,12 @@ SPDX-License-Identifier: Apache-2.0
 
         <!-- spigraph sub navbar -->
         <div class="spigraph-form m-1">
-          <div class="d-flex flex-wrap align-items-center gap-1">
+          <div class="d-flex flex-wrap align-center gap-1">
             <!-- field select -->
             <div
-              class="input-group input-group-sm w-auto"
+              class="arkime-input-group"
               v-if="fields && fields.length && fieldTypeahead">
-              <span class="input-group-text">
+              <span class="arkime-input-label">
                 {{ $t('spigraph.field') }}:
               </span>
               <arkime-field-typeahead
@@ -31,17 +31,17 @@ SPDX-License-Identifier: Apache-2.0
             </div> <!-- /field select -->
 
             <!-- maxElements select -->
-            <div class="input-group input-group-sm w-auto">
+            <div class="arkime-input-group">
               <span
                 id="maxElements"
-                class="input-group-text cursor-help">
+                class="arkime-input-label cursor-help">
                 {{ $t('spigraph.maxElements') }}:
               </span>
               <v-tooltip activator="#maxElements">
                 {{ $t('spigraph.maxElementsTip') }}
               </v-tooltip>
               <select
-                class="form-select form-select-sm"
+                class="arkime-input-control"
                 :value="query.size"
                 @change="changeMaxElements(Number($event.target.value))">
                 <option
@@ -52,12 +52,12 @@ SPDX-License-Identifier: Apache-2.0
             </div> <!-- /maxElements select -->
 
             <!-- main graph type select -->
-            <div class="input-group input-group-sm w-auto">
-              <span class="input-group-text">
+            <div class="arkime-input-group">
+              <span class="arkime-input-label">
                 {{ $t('spigraph.graphType') }}:
               </span>
               <select
-                class="form-select form-select-sm"
+                class="arkime-input-control"
                 :value="spiGraphType"
                 @change="changeSpiGraphType($event.target.value)">
                 <option
@@ -70,13 +70,13 @@ SPDX-License-Identifier: Apache-2.0
 
             <!-- sort select (not shown for the pie graph) -->
             <div
-              class="input-group input-group-sm w-auto"
+              class="arkime-input-group"
               v-if="spiGraphType === 'default'">
-              <span class="input-group-text">
+              <span class="arkime-input-label">
                 {{ $t('spigraph.sortBy') }}:
               </span>
               <select
-                class="form-select form-select-sm"
+                class="arkime-input-control"
                 :value="sortBy"
                 @change="changeSortBy($event.target.value)">
                 <option value="name">{{ $t('spigraph.sortBy-name') }}</option>
@@ -86,13 +86,13 @@ SPDX-License-Identifier: Apache-2.0
 
             <!-- refresh input (not shown for pie) -->
             <div
-              class="input-group input-group-sm w-auto"
+              class="arkime-input-group"
               v-if="spiGraphType === 'default'">
-              <span class="input-group-text">
+              <span class="arkime-input-label">
                 {{ $t('spigraph.refreshEvery') }}:
               </span>
               <select
-                class="form-select form-select-sm"
+                class="arkime-input-control"
                 :value="refresh"
                 @change="changeRefreshInterval(Number($event.target.value))">
                 <option
@@ -100,7 +100,7 @@ SPDX-License-Identifier: Apache-2.0
                   :key="opt"
                   :value="opt">{{ opt }}</option>
               </select>
-              <span class="input-group-text">
+              <span class="arkime-input-label">
                 {{ $t('common.seconds') }}
               </span>
             </div> <!-- /refresh input-->
@@ -117,14 +117,18 @@ SPDX-License-Identifier: Apache-2.0
             </div> <!-- /page info -->
 
             <!-- export button-->
-            <button
+            <v-btn
               v-if="spiGraphType !== 'default' && spiGraphType !== 'sankey'"
-              class="btn btn-default btn-sm ms-1"
+              variant="outlined"
+              size="small"
+              density="comfortable"
+              icon
+              class="ms-1"
               :aria-label="$t('spigraph.exportCSVSPIGraphTip')"
               @click.stop.prevent="exportCSV">
               <span class="fa fa-download" />
               <v-tooltip activator="parent">{{ $t('spigraph.exportCSVSPIGraphTip') }}</v-tooltip>
-            </button> <!-- /export button-->
+            </v-btn> <!-- /export button-->
           </div>
         </div>
       </span>
@@ -578,8 +582,44 @@ export default {
   z-index: 4;
   background-color: var(--color-quaternary-lightest);
 }
-.spigraph-page .spigraph-form .form-inline {
-  flex-flow: row nowrap;
+
+/* Input-group bridge -- same shape as Stats/Files/Typeahead. Phase D
+   will dedupe these copies into a shared overrides.css block. */
+.arkime-input-group {
+  display: inline-flex;
+  align-items: stretch;
+  width: auto;
+  flex-wrap: nowrap;
+}
+.arkime-input-label {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  background-color: color-mix(in srgb, var(--color-foreground, #000) 8%, var(--color-background, #fff));
+  border: 1px solid var(--color-gray);
+  border-right: none;
+  border-radius: 4px 0 0 4px;
+  font-size: 0.85rem;
+  color: var(--color-foreground);
+  white-space: nowrap;
+}
+.arkime-input-control {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 2px 8px;
+  background-color: var(--color-background, #fff);
+  color: var(--color-foreground, #495057);
+  border: 1px solid var(--color-gray);
+  font-size: 0.85rem;
+  line-height: 1.5;
+}
+.arkime-input-control:focus {
+  outline: none;
+  border-color: var(--color-primary, #0d6efd);
+}
+.arkime-input-group > :last-child {
+  border-top-right-radius: 4px;
+  border-bottom-right-radius: 4px;
 }
 .spigraph-page .spigraph-form .records-display  {
   font-size: 0.85rem;

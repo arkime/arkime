@@ -8,24 +8,31 @@ SPDX-License-Identifier: Apache-2.0
     <div
       class="viz-options-btn-container"
       v-if="!actionForm && (basePath === 'spigraph' || basePath === 'sessions' || basePath === 'spiview' || basePath === 'arkime')">
-      <div class="btn-group btn-group-sm viz-options-btn">
-        <button
-          type="button"
-          class="btn btn-primary"
+      <v-btn-group
+        density="compact"
+        divided
+        class="viz-options-btn">
+        <v-btn
+          color="primary"
+          variant="flat"
+          size="small"
           @click="overrideDisabledAggregations(1)">
           <span class="fa fa-gear fa-fw" />
-          <span v-if="!hideViz && disabledAggregations">
+          <span
+            v-if="!hideViz && disabledAggregations"
+            class="ms-1">
             {{ $t('search.fetchVizData') }}
           </span>
-        </button>
+        </v-btn>
         <v-menu location="bottom end">
           <template #activator="{ props: activatorProps }">
-            <button
+            <v-btn
               v-bind="activatorProps"
-              type="button"
-              class="btn btn-primary">
+              color="primary"
+              variant="flat"
+              size="small">
               <span class="fa fa-caret-down" />
-            </button>
+            </v-btn>
           </template>
           <v-list density="compact">
             <template v-if="!hideViz && disabledAggregations">
@@ -82,7 +89,7 @@ SPDX-License-Identifier: Apache-2.0
             </v-list-item>
           </v-list>
         </v-menu>
-      </div>
+      </v-btn-group>
     </div> <!-- /viz options button -->
 
     <div class="pe-1 ps-1 pt-1 pb-1">
@@ -91,13 +98,16 @@ SPDX-License-Identifier: Apache-2.0
         v-if="!hideActions && $route.name === 'Sessions'"
         location="bottom end">
         <template #activator="{ props: activatorProps }">
-          <button
+          <v-btn
             v-bind="activatorProps"
-            type="button"
-            class="btn btn-sm btn-theme-primary pull-right ms-1 action-menu-dropdown"
+            variant="flat"
+            size="small"
+            density="comfortable"
+            class="float-right ms-1 action-menu-dropdown"
+            :style="primaryBtnStyle"
             title="Actions menu">
             <span class="fa fa-caret-down" />
-          </button>
+          </v-btn>
         </template>
         <v-list density="compact">
           <v-list-item
@@ -195,10 +205,13 @@ SPDX-License-Identifier: Apache-2.0
       <!-- views dropdown menu -->
       <v-menu location="bottom end">
         <template #activator="{ props: activatorProps }">
-          <button
+          <v-btn
             v-bind="activatorProps"
-            type="button"
-            class="btn btn-sm btn-theme-secondary pull-right ms-1 view-menu-dropdown rounded">
+            variant="flat"
+            size="small"
+            density="comfortable"
+            class="float-right ms-1 view-menu-dropdown"
+            :style="secondaryBtnStyle">
             <template v-if="view && views && getView(view)">
               <span id="viewMenuDropdown">
                 <span class="fa fa-eye me-1" />
@@ -213,7 +226,7 @@ SPDX-License-Identifier: Apache-2.0
               <span class="fa fa-eye" />
               <span class="sr-only">{{ $t('common.views') }}</span>
             </template>
-          </button>
+          </v-btn>
         </template>
         <v-list density="compact">
           <v-list-item
@@ -243,52 +256,68 @@ SPDX-License-Identifier: Apache-2.0
               class="fa fa-share-square" />
             <!-- view action buttons -->
             <template v-if="canEditView(value)">
-              <button
+              <v-btn
                 :id="`deleteView${value.id}`"
-                type="button"
                 :aria-label="$t('search.deleteView')"
-                class="btn btn-xs btn-danger pull-right ms-1"
+                color="error"
+                variant="flat"
+                size="x-small"
+                density="comfortable"
+                icon
+                class="float-right ms-1"
                 @click.stop.prevent="deleteView(value.id, index)">
                 <span class="fa fa-trash-o" />
                 <v-tooltip :activator="`[id='deleteView${value.id}']`">
                   {{ $t('search.deleteView') }}
                 </v-tooltip>
-              </button>
-              <button
+              </v-btn>
+              <v-btn
                 :id="`editView${value.id}`"
-                type="button"
                 :aria-label="$t('search.editView')"
-                @click.stop.prevent="modView(views[index])"
-                class="btn btn-xs btn-warning pull-right ms-1">
+                color="warning"
+                variant="flat"
+                size="x-small"
+                density="comfortable"
+                icon
+                class="float-right ms-1"
+                @click.stop.prevent="modView(views[index])">
                 <span class="fa fa-edit" />
                 <v-tooltip :activator="`[id='editView${value.id}']`">
                   {{ $t('search.editView') }}
                 </v-tooltip>
-              </button>
+              </v-btn>
             </template>
-            <button
+            <v-btn
               :id="`applyView${value.id}`"
               :aria-label="$t('search.applyView')"
-              class="btn btn-xs btn-theme-secondary pull-right ms-1"
-              type="button"
+              variant="flat"
+              size="x-small"
+              density="comfortable"
+              icon
+              class="float-right ms-1"
+              :style="secondaryBtnStyle"
               @click.stop.prevent="applyView(value)">
               <span class="fa fa-share fa-flip-horizontal" />
               <v-tooltip :activator="`[id='applyView${value.id}']`">
                 {{ $t('search.applyView') }}
               </v-tooltip>
-            </button>
-            <button
+            </v-btn>
+            <v-btn
               v-if="value.sessionsColConfig && $route.name === 'Sessions'"
               :id="`applyColumns${value.id}`"
               :aria-label="$t('search.applyColumns')"
-              class="btn btn-xs btn-theme-tertiary pull-right"
-              type="button"
+              variant="flat"
+              size="x-small"
+              density="comfortable"
+              icon
+              class="float-right"
+              :style="tertiaryBtnStyle"
               @click.stop.prevent="applyColumns(value)">
               <span class="fa fa-columns" />
               <v-tooltip :activator="`[id='applyColumns${value.id}']`">
                 {{ $t('search.applyColumns') }}
               </v-tooltip>
-            </button>
+            </v-btn>
             <!-- /view action buttons -->
             {{ value.name }}&nbsp;
             <v-tooltip
@@ -303,10 +332,14 @@ SPDX-License-Identifier: Apache-2.0
       <Clusters :select-one="$route.name === 'Hunt'" /> <!-- cluster dropdown menu -->
 
       <!-- search button -->
-      <a
-        class="btn btn-sm btn-theme-tertiary pull-right ms-1 search-btn"
-        @click="applyParams"
-        tabindex="2">
+      <v-btn
+        variant="flat"
+        size="small"
+        density="comfortable"
+        class="float-right ms-1 search-btn"
+        :style="tertiaryBtnStyle"
+        tabindex="2"
+        @click="applyParams">
         <span v-if="!shiftKeyHold">
           {{ $t('common.search') }}
         </span>
@@ -316,7 +349,7 @@ SPDX-License-Identifier: Apache-2.0
           <span class="fa fa-long-arrow-left fa-lg" />
           <div class="enter-arm" />
         </span>
-      </a> <!-- /search button -->
+      </v-btn> <!-- /search button -->
 
       <!-- search box typeahead -->
       <expression-typeahead
@@ -524,7 +557,20 @@ export default {
       updateTime: 'false',
       editableView: undefined, // Not necessarily active view
       multiviewer: this.$constants.MULTIVIEWER,
-      basePath: undefined
+      basePath: undefined,
+      // Arkime theme-color v-btn styles. Vuetify :color can't take CSS vars.
+      primaryBtnStyle: {
+        backgroundColor: 'var(--color-primary)',
+        color: 'var(--color-button, #FFF)'
+      },
+      secondaryBtnStyle: {
+        backgroundColor: 'var(--color-secondary)',
+        color: 'var(--color-button, #FFF)'
+      },
+      tertiaryBtnStyle: {
+        backgroundColor: 'var(--color-tertiary)',
+        color: 'var(--color-button, #FFF)'
+      }
     };
   },
   computed: {
