@@ -6,10 +6,10 @@ SPDX-License-Identifier: Apache-2.0
   <div class="row g-1 text-start flex-nowrap justify-content-start">
     <!-- time range select -->
     <div class="col-auto">
-      <div class="input-group input-group-sm">
+      <div class="arkime-input-group">
         <span
           id="timeInput"
-          class="input-group-text input-group-text-fw cursor-help">
+          class="arkime-input-label arkime-input-label-fw cursor-help">
           <span
             v-if="!shiftKeyHold"
             class="fa fa-clock-o fa-fw" />
@@ -28,7 +28,7 @@ SPDX-License-Identifier: Apache-2.0
         <select
           tabindex="3"
           role="listbox"
-          class="form-control"
+          class="arkime-input-control"
           v-model="timeRange"
           v-focus="focusTimeRange"
           @change="changeTimeRange"
@@ -108,10 +108,10 @@ SPDX-License-Identifier: Apache-2.0
 
     <!-- start time -->
     <div class="col-auto">
-      <div class="input-group input-group-sm">
+      <div class="arkime-input-group">
         <span
           id="startTimeLabel"
-          class="input-group-text cursor-help">
+          class="arkime-input-label cursor-help">
           {{ $t('search.startTime') }}
           <v-tooltip
             activator="#startTimeLabel"
@@ -126,13 +126,13 @@ SPDX-License-Identifier: Apache-2.0
           id="startTime"
           ref="startTime"
           name="startTime"
-          class="form-control"
+          class="arkime-input-control"
           @input="changeStartTime"
           :value="localStartTime.format('YYYY-MM-DDTHH:mm:ss')">
         <span
           v-if="timezone !== 'local'"
           id="startTimeTimezone"
-          class="input-group-text cursor-help">
+          class="arkime-input-label cursor-help">
           {{ timezone === 'gmt' ? 'UTC' : getTimezoneShort() }}
           <v-tooltip
             activator="#startTimeTimezone"
@@ -142,10 +142,13 @@ SPDX-License-Identifier: Apache-2.0
             {{ timezone === 'gmt' ? new Date().getTimezoneOffset() / -60 + ':00' : '' }}
           </v-tooltip>
         </span>
-        <button
-          type="button"
+        <v-btn
           id="prevStartTime"
-          class="btn btn-outline-secondary cursor-pointer"
+          variant="text"
+          size="small"
+          density="comfortable"
+          icon
+          class="arkime-input-append-btn"
           @click="prevTime('start')">
           <span class="fa fa-step-backward" />
           <v-tooltip
@@ -154,11 +157,14 @@ SPDX-License-Identifier: Apache-2.0
             :open-delay="500">
             {{ $t('search.prevStartTimeTip') }}
           </v-tooltip>
-        </button>
-        <button
-          type="button"
+        </v-btn>
+        <v-btn
           id="nextStartTime"
-          class="btn btn-outline-secondary cursor-pointer"
+          variant="text"
+          size="small"
+          density="comfortable"
+          icon
+          class="arkime-input-append-btn"
           @click="nextTime('start')">
           <span class="fa fa-step-forward" />
           <v-tooltip
@@ -167,16 +173,16 @@ SPDX-License-Identifier: Apache-2.0
             :open-delay="500">
             {{ $t('search.nextStartTimeTip') }}
           </v-tooltip>
-        </button>
+        </v-btn>
       </div>
     </div> <!-- /start time -->
 
     <!-- stop time -->
     <div class="col-auto">
-      <div class="input-group input-group-sm">
+      <div class="arkime-input-group">
         <span
           id="stopTimeLabel"
-          class="input-group-text cursor-help">
+          class="arkime-input-label cursor-help">
           {{ $t('search.stopTime') }}
           <v-tooltip
             activator="#stopTimeLabel"
@@ -191,13 +197,13 @@ SPDX-License-Identifier: Apache-2.0
           id="stopTime"
           ref="stopTime"
           name="stopTime"
-          class="form-control"
+          class="arkime-input-control"
           @input="changeStopTime"
           :value="localStopTime.format('YYYY-MM-DDTHH:mm:ss')">
         <span
           v-if="timezone !== 'local'"
           id="stopTimeTimezone"
-          class="input-group-text cursor-help">
+          class="arkime-input-label cursor-help">
           {{ timezone === 'gmt' ? 'UTC' : getTimezoneShort() }}
           <v-tooltip
             activator="#stopTimeTimezone"
@@ -207,10 +213,13 @@ SPDX-License-Identifier: Apache-2.0
             {{ timezone === 'gmt' ? new Date().getTimezoneOffset() / -60 + ':00' : '' }}
           </v-tooltip>
         </span>
-        <button
-          type="button"
+        <v-btn
           id="prevStopTime"
-          class="btn btn-outline-secondary cursor-pointer"
+          variant="text"
+          size="small"
+          density="comfortable"
+          icon
+          class="arkime-input-append-btn"
           @click="prevTime('stop')">
           <span class="fa fa-step-backward" />
           <v-tooltip
@@ -219,11 +228,14 @@ SPDX-License-Identifier: Apache-2.0
             :open-delay="500">
             {{ $t('search.prevStopTimeTip') }}
           </v-tooltip>
-        </button>
-        <button
-          type="button"
+        </v-btn>
+        <v-btn
           id="nextStopTime"
-          class="btn btn-outline-secondary cursor-pointer"
+          variant="text"
+          size="small"
+          density="comfortable"
+          icon
+          class="arkime-input-append-btn"
           @click="nextTime('stop')">
           <span class="fa fa-step-forward" />
           <v-tooltip
@@ -232,7 +244,7 @@ SPDX-License-Identifier: Apache-2.0
             :open-delay="500">
             {{ $t('search.nextStopTimeTip') }}
           </v-tooltip>
-        </button>
+        </v-btn>
       </div>
     </div> <!-- /stop time -->
 
@@ -240,10 +252,10 @@ SPDX-License-Identifier: Apache-2.0
     <div
       class="col-auto"
       v-if="!hideBounding">
-      <div class="input-group input-group-sm">
+      <div class="arkime-input-group">
         <span
           id="timeBounding"
-          class="input-group-text cursor-help">
+          class="arkime-input-label cursor-help">
           {{ $t('search.timeBounding') }}
           <v-tooltip
             activator="#timeBounding"
@@ -253,7 +265,7 @@ SPDX-License-Identifier: Apache-2.0
           </v-tooltip>
         </span>
         <select
-          class="form-control"
+          class="arkime-input-control"
           v-model="timeBounding"
           tabindex="6"
           @change="changeTimeBounding">
@@ -280,10 +292,10 @@ SPDX-License-Identifier: Apache-2.0
     <div
       class="col-auto"
       v-if="!hideInterval">
-      <div class="input-group input-group-sm">
+      <div class="arkime-input-group">
         <span
           id="timeInterval"
-          class="input-group-text cursor-help">
+          class="arkime-input-label cursor-help">
           {{ $t('search.timeInterval') }}
           <v-tooltip
             activator="#timeInterval"
@@ -293,7 +305,7 @@ SPDX-License-Identifier: Apache-2.0
           </v-tooltip>
         </span>
         <select
-          class="form-control"
+          class="arkime-input-control"
           v-model="timeInterval"
           tabindex="6"
           @change="changeTimeInterval">

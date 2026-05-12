@@ -41,10 +41,10 @@ SPDX-License-Identifier: Apache-2.0
 
             <!-- src select -->
             <div
-              class="arkime-input-group"
+              class="connections-field-row"
               v-if="fields && fields.length && srcFieldTypeahead && fieldHistoryConnectionsSrc">
               <span
-                class="arkime-input-label legend cursor-help primary-legend"
+                class="connections-legend-cell primary-legend cursor-help"
                 id="sourceField">
                 Src:
               </span>
@@ -64,10 +64,10 @@ SPDX-License-Identifier: Apache-2.0
 
             <!-- dst select -->
             <div
-              class="arkime-input-group"
+              class="connections-field-row"
               v-if="fields && dstFieldTypeahead && fieldHistoryConnectionsDst">
               <span
-                class="arkime-input-label legend cursor-help secondary-legend"
+                class="connections-legend-cell secondary-legend cursor-help"
                 id="dstField">
                 Dst:
               </span>
@@ -86,18 +86,16 @@ SPDX-License-Identifier: Apache-2.0
             </div> <!-- /dst select -->
 
             <!-- src & dst color -->
-            <div class="arkime-input-group">
-              <span
-                class="arkime-input-label legend cursor-help tertiary-legend"
-                id="srcDstColor">
-                Src &amp; dst
-              </span>
-              <v-tooltip
-                activator="#srcDstColor"
-                :open-delay="300">
-                {{ $t('connections.srcDstColorTip') }}
-              </v-tooltip>
-            </div> <!-- /src & dst color -->
+            <span
+              class="connections-legend-cell connections-legend-standalone tertiary-legend cursor-help"
+              id="srcDstColor">
+              Src &amp; dst
+            </span>
+            <v-tooltip
+              activator="#srcDstColor"
+              :open-delay="300">
+              {{ $t('connections.srcDstColorTip') }}
+            </v-tooltip> <!-- /src & dst color -->
 
             <!-- min connections select -->
             <div class="arkime-input-group">
@@ -1558,20 +1556,43 @@ export default {
   -webkit-appearance: none;
 }
 
-/* make the color for legend areas white */
-.connections-page .connections-form .legend.input-group-text {
+/* connections-field-row: label-cell + FieldTypeahead pair. No outer
+   container border (FieldTypeahead's own input border is the visible
+   one); a flush colored legend cell on the left and the typeahead
+   input flush against it. */
+.connections-field-row {
+  display: inline-flex;
+  align-items: stretch;
+  height: 32px;
+}
+.connections-legend-cell {
+  display: inline-flex;
+  align-items: center;
+  padding: 0 8px;
   font-weight: 700;
-  color: var(--color-button, #FFF) !important;
+  font-size: 0.875rem;
+  color: var(--color-button, #FFF);
+  border-radius: 4px 0 0 4px;
+  white-space: nowrap;
 }
-.connections-page .connections-form .legend.primary-legend {
-  background-color: var(--color-primary) !important;
-}
-.connections-page .connections-form .legend.tertiary-legend {
-  background-color: var(--color-tertiary) !important;
-}
-.connections-page .connections-form .legend.secondary-legend {
+/* the standalone "Src & dst" legend is its own self-contained chip,
+   not a label-cell glued to an input. */
+.connections-legend-standalone {
+  height: 32px;
   border-radius: 4px;
-  background-color: var(--color-secondary) !important;
+}
+.connections-field-row .primary-legend { background-color: var(--color-primary); }
+.connections-field-row .secondary-legend { background-color: var(--color-secondary); }
+.connections-legend-standalone.primary-legend { background-color: var(--color-primary); }
+.connections-legend-standalone.secondary-legend { background-color: var(--color-secondary); }
+.connections-legend-standalone.tertiary-legend { background-color: var(--color-tertiary); }
+
+/* Flush the inner FieldTypeahead's input against the legend cell:
+   straighten its left edge, keep its right side rounded. */
+.connections-field-row :deep(input) {
+  border-radius: 0 4px 4px 0;
+  border-left: none;
+  height: 100%;
 }
 
 /* apply foreground theme color */
