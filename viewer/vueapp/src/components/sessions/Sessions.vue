@@ -78,43 +78,58 @@ SPDX-License-Identifier: Apache-2.0
                 <!-- table fit button -->
                 <div class="fit-btn-container">
                   <template v-if="sessions.data && sessions.data.length <= 50">
-                    <button
-                      @click="openAll"
+                    <v-btn
+                      variant="flat"
+                      size="x-small"
+                      density="comfortable"
+                      icon
+                      :style="tertiaryBtnStyle"
+                      class="open-all-btn"
                       :aria-label="$t('sessions.sessions.openAll')"
-                      class="btn btn-xs btn-theme-tertiary open-all-btn">
+                      @click="openAll">
                       <span class="fa fa-plus-circle" />
                       <v-tooltip
                         activator="parent"
                         location="right">
                         {{ $t('sessions.sessions.openAll') }}
                       </v-tooltip>
-                    </button>
+                    </v-btn>
                   </template>
-                  <button
-                    @click="closeAll"
+                  <v-btn
                     v-if="!loading && stickySessions.length > 0"
+                    variant="flat"
+                    size="x-small"
+                    density="comfortable"
+                    icon
+                    :style="secondaryBtnStyle"
+                    class="close-all-btn ms-4"
                     :aria-label="$t('sessions.sessions.closeAll')"
-                    class="btn btn-xs btn-theme-secondary close-all-btn ms-4">
+                    @click="closeAll">
                     <span class="fa fa-times-circle" />
                     <v-tooltip
                       activator="parent"
                       location="right">
                       {{ $t('sessions.sessions.closeAll') }}
                     </v-tooltip>
-                  </button>
-                  <button
-                    @click="fitTable"
+                  </v-btn>
+                  <v-btn
                     v-if="showFitButton && !loading"
+                    variant="flat"
+                    size="x-small"
+                    density="comfortable"
+                    icon
+                    :style="quaternaryBtnStyle"
+                    class="fit-btn"
+                    :class="{'ms-4':stickySessions.length === 0, 'fit-btn-right':sessions.data && sessions.data.length <= 50 && stickySessions.length > 0}"
                     :aria-label="$t('sessions.sessions.fitTable')"
-                    class="btn btn-xs btn-theme-quaternary fit-btn"
-                    :class="{'ms-4':stickySessions.length === 0, 'fit-btn-right':sessions.data && sessions.data.length <= 50 && stickySessions.length > 0}">
+                    @click="fitTable">
                     <span class="fa fa-arrows-h" />
                     <v-tooltip
                       activator="parent"
                       location="right">
                       {{ $t('sessions.sessions.fitTable') }}
                     </v-tooltip>
-                  </button>
+                  </v-btn>
                 </div> <!-- /table fit button -->
                 <!-- column configuration action group: visibility + save layouts -->
                 <v-btn-group
@@ -409,30 +424,35 @@ SPDX-License-Identifier: Apache-2.0
                           if (!open) showAllInfoFields = false;
                         }">
                         <template #activator="{ props: activatorProps }">
-                          <button
+                          <v-btn
                             v-bind="activatorProps"
-                            type="button"
-                            class="info-vis-menu col-dropdown btn btn-sm btn-theme-primary">
+                            variant="flat"
+                            size="small"
+                            density="comfortable"
+                            :style="primaryBtnStyle"
+                            class="info-vis-menu col-dropdown">
                             <span class="fa fa-bars" />
                             <v-tooltip
                               activator="parent"
                               location="right">
                               {{ $t('sessions.sessions.toggleInfoFields') }}
                             </v-tooltip>
-                          </button>
+                          </v-btn>
                         </template>
                         <v-list
                           density="compact"
                           class="col-dropdown-menu">
                           <div class="px-2 py-1">
-                            <input
-                              autofocus
-                              v-model="colQuery"
-                              @input="debounceInfoColQuery"
-                              @click.stop
-                              type="text"
-                              class="form-control form-control-sm dropdown-typeahead"
-                              :placeholder="$t('common.searchForFields')">
+                            <div class="arkime-input-group arkime-input-group--fluid">
+                              <input
+                                autofocus
+                                v-model="colQuery"
+                                @input="debounceInfoColQuery"
+                                @click.stop
+                                type="text"
+                                class="arkime-input-control"
+                                :placeholder="$t('common.searchForFields')">
+                            </div>
                           </div>
                           <v-divider />
                           <template v-if="infoFieldVisMenuOpen">
@@ -481,13 +501,16 @@ SPDX-License-Identifier: Apache-2.0
                   <!-- column dropdown menu -->
                   <v-menu location="bottom end">
                     <template #activator="{ props: activatorProps }">
-                      <button
+                      <v-btn
                         v-bind="activatorProps"
-                        type="button"
+                        variant="text"
+                        size="x-small"
+                        density="comfortable"
+                        icon
                         :aria-label="$t('sessions.columnActions', 'Column actions')"
-                        class="pull-right col-dropdown col-context-trigger btn btn-xs btn-default">
+                        class="float-end col-dropdown col-context-trigger">
                         <span class="fa fa-caret-down" />
-                      </button>
+                      </v-btn>
                     </template>
                     <v-list
                       density="compact"
@@ -880,9 +903,21 @@ export default {
       showAllFields: false,
       showAllInfoFields: false,
       tableState: Utils.getDefaultTableState(),
-      // Arkime theme-color v-btn style. Vuetify :color can't take CSS vars.
+      // Arkime theme-color v-btn styles. Vuetify :color can't take CSS vars.
+      primaryBtnStyle: {
+        backgroundColor: 'var(--color-primary)',
+        color: 'var(--color-button, #FFF)'
+      },
       secondaryBtnStyle: {
         backgroundColor: 'var(--color-secondary)',
+        color: 'var(--color-button, #FFF)'
+      },
+      tertiaryBtnStyle: {
+        backgroundColor: 'var(--color-tertiary)',
+        color: 'var(--color-button, #FFF)'
+      },
+      quaternaryBtnStyle: {
+        backgroundColor: 'var(--color-quaternary)',
         color: 'var(--color-button, #FFF)'
       }
     };
@@ -2371,14 +2406,16 @@ div.fit-btn-container {
   z-index: 3;
   position: relative;
 }
-div.fit-btn-container > button.fit-btn,
-div.fit-btn-container > button.open-all-btn,
-div.fit-btn-container > button.close-all-btn {
-  height: 16px;
+div.fit-btn-container > .fit-btn,
+div.fit-btn-container > .open-all-btn,
+div.fit-btn-container > .close-all-btn {
+  height: 16px !important;
+  min-height: 16px !important;
+  width: 16px !important;
   line-height: 1;
   position: absolute;
 }
-div.fit-btn-container > button.fit-btn.fit-btn-right {
+div.fit-btn-container > .fit-btn.fit-btn-right {
   left: 48px;
 }
 

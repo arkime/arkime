@@ -167,21 +167,11 @@ SPDX-License-Identifier: Apache-2.0
       </h3>
       <div class="row">
         <div class="col-sm-12">
-          <a
-            class="btn btn-link"
-            href="https://arkime.com">Home Page</a> |
-          <a
-            class="btn btn-link"
-            href="https://arkime.com/faq">FAQ</a> |
-          <a
-            class="btn btn-link"
-            href="https://arkime.com/learn">Docs</a> |
-          <a
-            class="btn btn-link"
-            href="https://github.com/arkime/arkime">GitHub</a> |
-          <a
-            class="btn btn-link"
-            href="https://slackinvite.arkime.com/">Request Slack Invite</a>
+          <a href="https://arkime.com">Home Page</a> |
+          <a href="https://arkime.com/faq">FAQ</a> |
+          <a href="https://arkime.com/learn">Docs</a> |
+          <a href="https://github.com/arkime/arkime">GitHub</a> |
+          <a href="https://slackinvite.arkime.com/">Request Slack Invite</a>
         </div>
       </div>
 
@@ -1015,8 +1005,10 @@ SPDX-License-Identifier: Apache-2.0
         <p>
           The ES Shards tab displays a matrix containing the ES indices and nodes.
           Each cell describes the number of shards that that index has in that particular node.
-          <span class="badge badge-pill bg-secondary">Gray</span> means it's an alternate shard and the
-          <span class="badge badge-pill bg-primary">other color</span> means it's a primary shard.
+          <span class="arkime-badge arkime-badge--grey">Gray</span> means it's an alternate shard and the
+          <span
+            class="arkime-badge"
+            :style="{backgroundColor: 'var(--color-primary)', color: 'var(--color-button, #FFF)'}">other color</span> means it's a primary shard.
           Hover over a cell to get more information.
         </p>
         <h6>
@@ -1360,30 +1352,36 @@ SPDX-License-Identifier: Apache-2.0
 
       <hr>
 
-      <h3 id="fields">
-        <span class="fa fa-fw fa-list" />&nbsp;
-        Fields
-        <div class="input-group input-group-sm pull-right header-input">
-          <span class="input-group-text">
-            <span class="fa fa-search" />
+      <h3
+        id="fields"
+        class="d-flex align-center gap-2">
+        <span class="flex-grow-1">
+          <span class="fa fa-fw fa-list" />&nbsp;
+          Fields
+        </span>
+        <div class="arkime-input-group header-input">
+          <span class="arkime-input-label arkime-input-label-fw">
+            <span class="fa fa-search fa-fw" />
           </span>
           <input
             type="text"
             v-model="searchFields"
-            class="form-control"
+            class="arkime-input-control"
             :placeholder="$t('common.searchForFields')">
         </div>
-        <button
-          type="button"
-          class="btn btn-primary btn-sm pull-right me-1"
+        <v-btn
+          color="primary"
+          variant="flat"
+          size="small"
+          density="comfortable"
           @click="toggleDBFields">
           {{ showDBFields ? 'Hide' : 'Display' }} Database Fields
-        </button>
+        </v-btn>
       </h3>
 
       <table
         v-if="!error && fields"
-        class="table table-sm table-striped table-hover">
+        class="arkime-table">
         <thead>
           <tr>
             <th
@@ -1475,13 +1473,15 @@ SPDX-License-Identifier: Apache-2.0
         <span class="fa fa-warning" />&nbsp;
         No results match your search
       </div>
-      <div
+      <v-alert
         v-if="error"
-        class="alert alert-warning mt-3 mb-4">
-        <span class="fa fa-warning" />&nbsp;
+        type="warning"
+        variant="tonal"
+        density="compact"
+        class="mt-3 mb-4">
         Error retrieving fields:
         {{ error }}
-      </div>
+      </v-alert>
     </div> <!-- End of page content -->
   </div> <!-- /help content -->
 </template>
