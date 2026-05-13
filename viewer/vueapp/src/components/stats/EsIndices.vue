@@ -39,12 +39,15 @@ SPDX-License-Identifier: Apache-2.0
             v-has-role="{user:user,roles:'arkimeAdmin'}"
             v-has-permission="'removeEnabled'">
             <template #activator="{ props: activatorProps }">
-              <button
+              <v-btn
                 v-bind="activatorProps"
-                type="button"
-                class="btn btn-sm btn-outline-secondary row-actions-btn">
+                variant="outlined"
+                size="x-small"
+                density="comfortable"
+                icon
+                class="row-actions-btn">
                 <span class="fa fa-caret-down" />
-              </button>
+              </v-btn>
             </template>
             <v-list density="compact">
               <v-list-item @click.stop.prevent="confirmDeleteIndex(item.item.index)">
