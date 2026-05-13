@@ -18,10 +18,13 @@ LOCAL int xorMappedIpField;
 LOCAL int xorMappedPortField;
 LOCAL int xorRelayedIpField;
 LOCAL int xorRelayedPortField;
+LOCAL int xorPeerIpField;
+LOCAL int xorPeerPortField;
 LOCAL int usernameField;
 LOCAL int softwareField;
 LOCAL int realmField;
 LOCAL int errorCodeField;
+LOCAL int attributesField;
 
 // STUN magic cookie
 #define STUN_MAGIC_COOKIE 0x2112A442
@@ -57,25 +60,48 @@ LOCAL int errorCodeField;
 #define STUN_ATTR_XOR_PEER_ADDRESS  0x0012
 #define STUN_ATTR_DATA              0x0013
 #define STUN_ATTR_REALM             0x0014
-#define STUN_ATTR_NONCE             0x0015
 #define STUN_ATTR_XOR_RELAYED_ADDR  0x0016
 #define STUN_ATTR_REQ_TRANSPORT     0x0019
 #define STUN_ATTR_XOR_MAPPED_ADDR   0x0020
+#define STUN_ATTR_USE_CANDIDATE     0x0025
 #define STUN_ATTR_SOFTWARE          0x8022
+#define STUN_ATTR_FINGERPRINT       0x8028
+#define STUN_ATTR_ICE_CONTROLLED    0x8029
+#define STUN_ATTR_ICE_CONTROLLING   0x802A
 #define STUN_ATTR_XOR_MAPPED_ADDR2  0x8020  // Legacy
 
-// Message type lookup table indexed by method (0-9) and class (0-3)
-// Class: 0=request, 1=indication, 2=success response, 3=error response
-LOCAL const char *stunMethods[10] = {
-    [0] = NULL,
-    [1] = "Binding",
-    [3] = "Allocate",
-    [4] = "Refresh",
-    [6] = "Send",
-    [7] = "Data",
-    [8] = "CreatePermission",
-    [9] = "ChannelBind"
-};
+// Message type lookup -- methods scattered above 9 (Connect/ConnectionBind/
+// ConnectionAttempt for TURN-TCP per RFC 6062, and GooglePing for WebRTC) so
+// use a switch rather than an indexed table.
+LOCAL const char *stun_method_name(int method)
+{
+    switch (method) {
+    case 0x01:
+        return "Binding";
+    case 0x03:
+        return "Allocate";
+    case 0x04:
+        return "Refresh";
+    case 0x06:
+        return "Send";
+    case 0x07:
+        return "Data";
+    case 0x08:
+        return "CreatePermission";
+    case 0x09:
+        return "ChannelBind";
+    case 0x0A:
+        return "Connect";
+    case 0x0B:
+        return "ConnectionBind";
+    case 0x0C:
+        return "ConnectionAttempt";
+    case 0x80:
+        return "GooglePing";
+    default:
+        return NULL;
+    }
+}
 
 LOCAL const char *stunClasses[4] = {
     "Request",
@@ -85,8 +111,24 @@ LOCAL const char *stunClasses[4] = {
 };
 
 /******************************************************************************/
+// Returns TRUE if ip matches either endpoint of the session.
+// ip points to 4 bytes (AF_INET) or 16 bytes (AF_INET6).
+LOCAL gboolean stun_ip_matches_session(ArkimeSession_t *session, const uint8_t *ip, int family)
+{
+    if (family == AF_INET && ARKIME_SESSION_IS_v4(session)) {
+        uint32_t v4 = *(const uint32_t *)ip;
+        if (v4 == ARKIME_V6_TO_V4(session->addr1)) return TRUE;
+        if (v4 == ARKIME_V6_TO_V4(session->addr2)) return TRUE;
+    } else if (family == AF_INET6 && !ARKIME_SESSION_IS_v4(session)) {
+        if (memcmp(ip, &session->addr1, 16) == 0) return TRUE;
+        if (memcmp(ip, &session->addr2, 16) == 0) return TRUE;
+    }
+    return FALSE;
+}
+/******************************************************************************/
 LOCAL void stun_parse_address(ArkimeSession_t *session, BSB *bsb, int attrLen,
-                              int ipField, int portField, uint32_t xorMagic, const uint8_t *xorTxnId)
+                              int ipField, int portField, uint32_t xorMagic,
+                              const uint8_t *xorTxnId, gboolean checkNat)
 {
     if (attrLen < 8)
         return;
@@ -113,11 +155,11 @@ LOCAL void stun_parse_address(ArkimeSession_t *session, BSB *bsb, int attrLen,
             ip ^= xorMagic;
         }
 
-        struct in_addr addr;
-        addr.s_addr = htonl(ip);
-        char ipStr[INET_ADDRSTRLEN];
-        inet_ntop(AF_INET, &addr, ipStr, sizeof(ipStr));
-        arkime_field_ip_add_str(ipField, session, ipStr);
+        uint32_t v4 = htonl(ip);
+        arkime_field_ip4_add(ipField, session, v4);
+
+        if (checkNat && !stun_ip_matches_session(session, (const uint8_t *)&v4, AF_INET))
+            arkime_session_add_tag(session, "stun:nat-discovered");
     } else if (family == 0x02 && attrLen >= 20) {  // IPv6
         uint8_t ip6[16];
         const uint8_t *ip6ptr;
@@ -140,9 +182,10 @@ LOCAL void stun_parse_address(ArkimeSession_t *session, BSB *bsb, int attrLen,
             }
         }
 
-        char ipStr[INET6_ADDRSTRLEN];
-        inet_ntop(AF_INET6, ip6, ipStr, sizeof(ipStr));
-        arkime_field_ip_add_str(ipField, session, ipStr);
+        arkime_field_ip6_add(ipField, session, ip6);
+
+        if (checkNat && !stun_ip_matches_session(session, ip6, AF_INET6))
+            arkime_session_add_tag(session, "stun:nat-discovered");
     }
 }
 
@@ -184,9 +227,10 @@ LOCAL int stun_parser(ArkimeSession_t *session, void *UNUSED(uw), const uint8_t 
     // Method: bits 0-3, 5-8, 11; Class: bits 4, 9
     int method = ((msgType & 0x000F) | ((msgType & 0x00E0) >> 1) | ((msgType & 0x3E00) >> 2));
     int msgClass = ((msgType & 0x0010) >> 4) | ((msgType & 0x0100) >> 7);
-    if (method > 0 && method < (int)ARRAY_LEN(stunMethods) && stunMethods[method]) {
+    const char *methodName = stun_method_name(method);
+    if (methodName) {
         char typeStr[64];
-        snprintf(typeStr, sizeof(typeStr), "%s %s", stunMethods[method], stunClasses[msgClass]);
+        snprintf(typeStr, sizeof(typeStr), "%s %s", methodName, stunClasses[msgClass]);
         arkime_field_string_add(messageTypeField, session, typeStr, -1, TRUE);
     }
 
@@ -207,18 +251,23 @@ LOCAL int stun_parser(ArkimeSession_t *session, void *UNUSED(uw), const uint8_t 
 
         switch (attrType) {
         case STUN_ATTR_MAPPED_ADDRESS:
-            stun_parse_address(session, &attrBsb, attrLen, mappedIpField, mappedPortField, 0, NULL);
+            stun_parse_address(session, &attrBsb, attrLen, mappedIpField, mappedPortField, 0, NULL, FALSE);
             break;
 
         case STUN_ATTR_XOR_MAPPED_ADDR:
         case STUN_ATTR_XOR_MAPPED_ADDR2:
             stun_parse_address(session, &attrBsb, attrLen, xorMappedIpField, xorMappedPortField,
-                               STUN_MAGIC_COOKIE, txnId);
+                               STUN_MAGIC_COOKIE, txnId, TRUE);
             break;
 
         case STUN_ATTR_XOR_RELAYED_ADDR:
             stun_parse_address(session, &attrBsb, attrLen, xorRelayedIpField, xorRelayedPortField,
-                               STUN_MAGIC_COOKIE, txnId);
+                               STUN_MAGIC_COOKIE, txnId, FALSE);
+            break;
+
+        case STUN_ATTR_XOR_PEER_ADDRESS:
+            stun_parse_address(session, &attrBsb, attrLen, xorPeerIpField, xorPeerPortField,
+                               STUN_MAGIC_COOKIE, txnId, FALSE);
             break;
 
         case STUN_ATTR_USERNAME:
@@ -237,6 +286,22 @@ LOCAL int stun_parser(ArkimeSession_t *session, void *UNUSED(uw), const uint8_t 
             if (attrLen > 0 && attrLen < 763) {
                 arkime_field_string_add(realmField, session, (char *)attrStart, attrLen, TRUE);
             }
+            break;
+
+        case STUN_ATTR_USE_CANDIDATE:
+            arkime_field_string_add(attributesField, session, "use-candidate", -1, TRUE);
+            break;
+
+        case STUN_ATTR_ICE_CONTROLLED:
+            arkime_field_string_add(attributesField, session, "ice-controlled", -1, TRUE);
+            break;
+
+        case STUN_ATTR_ICE_CONTROLLING:
+            arkime_field_string_add(attributesField, session, "ice-controlling", -1, TRUE);
+            break;
+
+        case STUN_ATTR_FINGERPRINT:
+            arkime_field_string_add(attributesField, session, "fingerprint", -1, TRUE);
             break;
 
         case STUN_ATTR_ERROR_CODE:
@@ -414,6 +479,25 @@ void arkime_parser_init()
                                               "TURN XOR-RELAYED-ADDRESS port",
                                               ARKIME_FIELD_TYPE_INT_GHASH, ARKIME_FIELD_FLAG_CNT,
                                               (char *)NULL);
+
+    xorPeerIpField = arkime_field_define("stun", "ip",
+                                         "stun.xor-peer-ip", "XOR Peer IP", "stun.xorPeerIp",
+                                         "TURN XOR-PEER-ADDRESS IP (remote peer relayed through TURN server)",
+                                         ARKIME_FIELD_TYPE_IP_GHASH, ARKIME_FIELD_FLAG_CNT,
+                                         (char *)NULL);
+
+    xorPeerPortField = arkime_field_define("stun", "integer",
+                                           "stun.xorPeerPort", "XOR Peer Port", "stun.xorPeerPort",
+                                           "TURN XOR-PEER-ADDRESS port",
+                                           ARKIME_FIELD_TYPE_INT_GHASH, ARKIME_FIELD_FLAG_CNT,
+                                           "category", "port",
+                                           (char *)NULL);
+
+    attributesField = arkime_field_define("stun", "termfield",
+                                          "stun.attributes", "Attributes", "stun.attributes",
+                                          "STUN/TURN protocol attributes/flags (fingerprint, ice-controlled, ice-controlling, use-candidate)",
+                                          ARKIME_FIELD_TYPE_STR_GHASH, ARKIME_FIELD_FLAG_CNT,
+                                          (char *)NULL);
 
     // UDP classifiers for binary STUN
     arkime_parsers_classifier_register_udp("stun", NULL, 0, (uint8_t *)"\x00\x01\x00", 3, stun_classify);
