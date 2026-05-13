@@ -6,12 +6,15 @@ SPDX-License-Identifier: Apache-2.0
   <div class="container-fluid mt-3">
     <arkime-loading v-if="initialLoading && !error" />
 
-    <div
+    <v-alert
       v-if="error"
-      class="alert alert-warning position-fixed fixed-bottom m-0 rounded-0"
-      style="z-index: 2000;">
+      type="warning"
+      variant="tonal"
+      density="compact"
+      style="z-index: 2000;"
+      class="position-fixed fixed-bottom m-0 rounded-0">
       {{ error }}
-    </div>
+    </v-alert>
 
     <div>
       <div
@@ -27,7 +30,7 @@ SPDX-License-Identifier: Apache-2.0
 
       <table
         v-if="stats.indices && stats.indices.length"
-        class="table table-sm table-hover small table-bordered-vertical block-table mt-1">
+        class="arkime-table small block-table mt-1">
         <thead>
           <tr>
             <th />
@@ -43,12 +46,15 @@ SPDX-License-Identifier: Apache-2.0
                   v-has-role="{user:user,roles:'arkimeAdmin'}"
                   location="bottom end">
                   <template #activator="{ props: activatorProps }">
-                    <button
+                    <v-btn
                       v-bind="activatorProps"
-                      type="button"
-                      class="btn btn-sm btn-outline-secondary column-actions-btn pull-right mb-1">
+                      variant="outlined"
+                      size="x-small"
+                      density="comfortable"
+                      icon
+                      class="column-actions-btn float-end mb-1">
                       <span class="fa fa-caret-down" />
-                    </button>
+                    </v-btn>
                   </template>
                   <v-list density="compact">
                     <v-list-item
@@ -103,10 +109,13 @@ SPDX-License-Identifier: Apache-2.0
                 v-has-role="{user:user,roles:'arkimeAdmin'}"
                 v-if="stat.nodes && stat.nodes.Unassigned && stat.nodes.Unassigned.length">
                 <transition name="buttons">
-                  <button
+                  <v-btn
                     v-if="!stat.confirmDelete"
-                    type="button"
-                    class="btn btn-xs btn-danger"
+                    color="error"
+                    variant="flat"
+                    size="x-small"
+                    density="comfortable"
+                    icon
                     :id="`deleteUnassignedShards${index}`"
                     @click="deleteUnassignedShards(stat, index)">
                     <span class="fa fa-trash fa-fw" />
@@ -115,11 +124,14 @@ SPDX-License-Identifier: Apache-2.0
                       location="right">
                       {{ $t('stats.esShards.deleteUnassignedTip') }}
                     </v-tooltip>
-                  </button>
-                  <button
+                  </v-btn>
+                  <v-btn
                     v-else
-                    type="button"
-                    class="btn btn-xs btn-warning"
+                    color="warning"
+                    variant="flat"
+                    size="x-small"
+                    density="comfortable"
+                    icon
                     :id="`confirmDeleteUnassignedShards${index}`"
                     @click="confirmDeleteUnassignedShards(stat, index)">
                     <span class="fa fa-check fa-fw" />
@@ -128,7 +140,7 @@ SPDX-License-Identifier: Apache-2.0
                       location="right">
                       {{ $t('stats.esShards.confirmDeleteUnassignedTip') }}
                     </v-tooltip>
-                  </button>
+                  </v-btn>
                 </transition>
               </span>
             </td>
@@ -143,8 +155,8 @@ SPDX-License-Identifier: Apache-2.0
                   v-for="item in stat.nodes[node]"
                   :key="node + '-' + stat.name + '-' + item.shard + '-shard'">
                   <span
-                    class="badge badge-pill bg-secondary cursor-help"
-                    :class="{'bg-primary':item.prirep === 'p', 'badge-notstarted':item.state !== 'STARTED','render-tooltip-bottom':index < 5}"
+                    class="shard-badge cursor-help"
+                    :class="{'shard-badge--primary':item.prirep === 'p', 'shard-badge--notstarted':item.state !== 'STARTED','render-tooltip-bottom':index < 5}"
                     :id="node + '-' + stat.name + '-' + item.shard + '-btn'"
                     @mouseenter="showDetails(item, stat.name)"
                     @mouseleave="hideDetails(item)">
@@ -209,12 +221,16 @@ SPDX-License-Identifier: Apache-2.0
                         v-if="node === 'Unassigned' && user.esAdminUser"
                         class="mt-2 pt-2"
                         style="border-top: 1px solid #555;">
-                        <button
-                          @click="openAllocationModal(item, stat.name)"
-                          class="btn btn-xs btn-theme-primary w-100"
-                          :disabled="loadingAllocationExplain">
+                        <v-btn
+                          variant="flat"
+                          size="x-small"
+                          density="comfortable"
+                          block
+                          :style="primaryBtnStyle"
+                          :disabled="loadingAllocationExplain"
+                          @click="openAllocationModal(item, stat.name)">
                           {{ $t('stats.esShards.explainAllocation') }}
-                        </button>
+                        </v-btn>
                       </div>
                     </span>
                   </span>
@@ -248,20 +264,24 @@ SPDX-License-Identifier: Apache-2.0
             class="allocation-explain-modal">
             <pre class="mb-0">{{ JSON.stringify(allocationExplainData, null, 2) }}</pre>
           </div>
-          <div
+          <v-alert
             v-else-if="allocationExplainError"
-            class="alert alert-danger m-3">
-            <span class="fa fa-exclamation-triangle me-1" />
+            type="error"
+            variant="tonal"
+            density="compact"
+            class="m-3">
             {{ allocationExplainError }}
-          </div>
+          </v-alert>
         </v-card-text>
         <v-card-actions>
-          <button
-            type="button"
-            class="btn btn-theme-primary"
+          <v-btn
+            variant="flat"
+            size="small"
+            density="comfortable"
+            :style="primaryBtnStyle"
             @click="showAllocationModal = false">
             {{ $t('common.close') }}
-          </button>
+          </v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -325,7 +345,12 @@ export default {
       loadingAllocationExplain: false,
       allocationExplainData: null,
       allocationExplainError: '',
-      allocationModalTitle: ''
+      allocationModalTitle: '',
+      // Arkime theme-color v-btn style. Vuetify :color can't take CSS vars.
+      primaryBtnStyle: {
+        backgroundColor: 'var(--color-primary)',
+        color: 'var(--color-button, #FFF)'
+      }
     };
   },
   computed: {
@@ -617,27 +642,36 @@ table.table tbody > tr > td:first-child {
   padding-right: .5rem;
 }
 
-.badge {
+.shard-badge {
+  display: inline-block;
   padding: .1em .4em;
   font-weight: 500;
   font-size: 14px;
   white-space: normal;
+  color: var(--color-button, #FFF);
+  background-color: var(--color-gray);
+  border-radius: 0.375rem;
+  border: 2px dotted var(--color-gray-dark, #6c757d);
 }
-.badge.bg-primary {
+.shard-badge.shard-badge--primary {
   font-weight: bold;
   background-color: var(--color-primary);
+  border: 2px dotted var(--color-primary);
 }
-.badge:hover {
+.shard-badge.shard-badge--notstarted {
+  border: 2px dotted var(--color-quaternary);
+}
+.shard-badge:hover {
   position: relative;
 }
-.badge > span {
+.shard-badge > span {
   display: none;
 }
-.badge:hover > span.shard-detail {
+.shard-badge:hover > span.shard-detail {
   z-index: 2;
   display: block;
 }
-.badge > span:before {
+.shard-badge > span:before {
   content: '';
   display: block;
   width: 0;
@@ -649,7 +683,7 @@ table.table tbody > tr > td:first-child {
   right: -8px;
   bottom: 7px;
 }
-.badge > span.shard-detail {
+.shard-badge > span.shard-detail {
   font-weight: normal;
   position: absolute;
   margin: 10px;
@@ -664,7 +698,7 @@ table.table tbody > tr > td:first-child {
   max-width: 210px;
 }
 /* Interactive tooltip for unassigned shards */
-.badge > span.shard-detail-interactive {
+.shard-badge > span.shard-detail-interactive {
   pointer-events: auto;
   cursor: default;
 }
@@ -683,31 +717,22 @@ table.table tbody > tr > td:first-child {
   white-space: pre;
   font-family: 'Courier New', monospace;
 }
-.badge > span.shard-detail dl {
+.shard-badge > span.shard-detail dl {
   margin-bottom: 0;
 }
-.badge > span.shard-detail dt {
+.shard-badge > span.shard-detail dt {
   width: 85px;
 }
-.badge > span.shard-detail dd {
+.shard-badge > span.shard-detail dd {
   margin-left: 90px;
   text-align: left;
   overflow-wrap: break-word;
 }
 
-.badge.render-tooltip-bottom:hover > span {
+.shard-badge.render-tooltip-bottom:hover > span {
   bottom: -120px;
 }
-.badge.render-tooltip-bottom:hover > span:before {
+.shard-badge.render-tooltip-bottom:hover > span:before {
   bottom: 113px;
-}
-.badge.bg-secondary:not(.badge-notstarted):not(.bg-primary) {
-  border: 2px dotted #6c757d;
-}
-.badge.bg-primary {
-  border: 2px dotted var(--color-primary);
-}
-.badge-notstarted {
-  border: 2px dotted var(--color-quaternary);
 }
 </style>

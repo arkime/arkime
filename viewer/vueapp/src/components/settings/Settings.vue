@@ -6,18 +6,17 @@ SPDX-License-Identifier: Apache-2.0
   <!-- settings content -->
   <div class="settings-page">
     <!-- messages (success/error) displayed at bottom of page -->
-    <div
+    <v-alert
       v-if="showMessage"
+      :type="vuetifyMsgType"
+      variant="tonal"
+      density="compact"
+      closable
       style="z-index: 2000;"
-      :class="`alert-${msgType}`"
-      class="alert position-fixed fixed-bottom m-0 rounded-0">
+      class="position-fixed fixed-bottom m-0 rounded-0"
+      @click:close="showMessage = false">
       {{ msg }}
-      <button
-        type="button"
-        :aria-label="$t('common.dismiss')"
-        class="btn-close pull-right"
-        @click="showMessage = false" />
-    </div> <!-- /messages -->
+    </v-alert> <!-- /messages -->
 
     <!-- sub navbar -->
     <div class="sub-navbar">
@@ -51,83 +50,75 @@ SPDX-License-Identifier: Apache-2.0
         class="col-xl-2 col-lg-3 col-md-3 col-sm-4 col-xs-12"
         role="tablist"
         aria-orientation="vertical">
-        <div class="nav flex-column nav-pills">
-          <a
-            class="nav-link cursor-pointer"
-            @click="openView('general')"
-            :class="{'active':visibleTab === 'general'}">
+        <v-list
+          density="compact"
+          class="settings-nav-list">
+          <v-list-item
+            :active="visibleTab === 'general'"
+            @click="openView('general')">
             <span class="fa fa-fw fa-cog" />&nbsp;
             {{ $t('settings.nav.general') }}
-          </a>
-          <a
-            class="nav-link cursor-pointer"
-            @click="openView('col')"
-            :class="{'active':visibleTab === 'col'}">
+          </v-list-item>
+          <v-list-item
+            :active="visibleTab === 'col'"
+            @click="openView('col')">
             <span class="fa fa-fw fa-columns" />&nbsp;
             {{ $t('settings.nav.columnLayout') }}
-          </a>
-          <a
-            class="nav-link cursor-pointer"
-            @click="openView('info')"
-            :class="{'active':visibleTab === 'info'}">
+          </v-list-item>
+          <v-list-item
+            :active="visibleTab === 'info'"
+            @click="openView('info')">
             <span class="fa fa-fw fa-info" />&nbsp;
             {{ $t('settings.nav.infoFieldLayout') }}
-          </a>
-          <a
-            class="nav-link cursor-pointer"
-            @click="openView('spiview')"
-            :class="{'active':visibleTab === 'spiview'}">
+          </v-list-item>
+          <v-list-item
+            :active="visibleTab === 'spiview'"
+            @click="openView('spiview')">
             <span class="fa fa-fw fa-eyedropper" />&nbsp;
             {{ $t('settings.nav.spiViewLayout') }}
-          </a>
-          <a
-            class="nav-link cursor-pointer"
-            @click="openView('theme')"
-            :class="{'active':visibleTab === 'theme'}">
+          </v-list-item>
+          <v-list-item
+            :active="visibleTab === 'theme'"
+            @click="openView('theme')">
             <span class="fa fa-fw fa-paint-brush" />&nbsp;
             {{ $t('settings.nav.themes') }}
-          </a>
-          <a
+          </v-list-item>
+          <v-list-item
             v-if="(!multiviewer || hasUsersES) && !disablePassword"
-            class="nav-link cursor-pointer"
-            @click="openView('password')"
-            :class="{'active':visibleTab === 'password'}">
+            :active="visibleTab === 'password'"
+            @click="openView('password')">
             <span class="fa fa-fw fa-lock" />&nbsp;
             {{ $t('settings.nav.password') }}
-          </a>
-          <hr class="hr-small nav-separator">
-          <a
-            class="nav-link cursor-pointer"
-            @click="openView('views')"
-            :class="{'active':visibleTab === 'views'}">
+          </v-list-item>
+          <v-divider class="my-1" />
+          <v-list-item
+            :active="visibleTab === 'views'"
+            @click="openView('views')">
             <span class="fa fa-fw fa-eye" />&nbsp;
             {{ $t('settings.nav.views') }}
-          </a>
-          <a
+          </v-list-item>
+          <v-list-item
             v-if="!multiviewer || hasUsersES"
-            class="nav-link cursor-pointer"
-            @click="openView('shortcuts')"
-            :class="{'active':visibleTab === 'shortcuts'}">
+            :active="visibleTab === 'shortcuts'"
+            @click="openView('shortcuts')">
             <span class="fa fa-fw fa-list" />&nbsp;
             {{ $t('settings.nav.shortcuts') }}
-          </a>
-          <a
+          </v-list-item>
+          <v-list-item
             v-if="!multiviewer"
-            class="nav-link cursor-pointer"
-            @click="openView('cron')"
-            :class="{'active':visibleTab === 'cron'}">
+            :active="visibleTab === 'cron'"
+            @click="openView('cron')">
             <span class="fa fa-fw fa-search" />&nbsp;
             {{ $t('settings.nav.cron') }}
-          </a>
-          <a
-            class="nav-link cursor-pointer"
+          </v-list-item>
+          <v-list-item
             v-has-role="{user:user,roles:'arkimeAdmin'}"
-            @click="openView('notifiers')"
-            :class="{'active':visibleTab === 'notifiers'}">
+            :active="visibleTab === 'notifiers'"
+            @click="openView('notifiers')">
             <span class="fa fa-fw fa-bell" />&nbsp;
             {{ $t('settings.nav.notifiers') }}
-          </a>
-        </div>
+          </v-list-item>
+        </v-list>
       </div> <!-- /navigation -->
 
       <div class="col-xl-10 col-lg-9 col-md-9 col-sm-8 col-xs-12 settings-right-panel">
@@ -136,15 +127,17 @@ SPDX-License-Identifier: Apache-2.0
           class="form-horizontal"
           v-if="visibleTab === 'general'"
           id="general">
-          <h3>
-            {{ $t('settings.general.title') }}
-            <button
-              type="button"
-              @click="resetSettings"
-              class="btn btn-theme-quaternary btn-sm pull-right ms-1">
+          <h3 class="d-flex align-center">
+            <span class="flex-grow-1">{{ $t('settings.general.title') }}</span>
+            <v-btn
+              variant="flat"
+              size="small"
+              density="comfortable"
+              :style="quaternaryBtnStyle"
+              @click="resetSettings">
               <span class="fa fa-repeat me-2" />
               {{ $t('settings.general.reset') }}
-            </button>
+            </v-btn>
           </h3>
 
           <hr>
@@ -386,7 +379,7 @@ SPDX-License-Identifier: Apache-2.0
               <h4 v-if="spiGraphField">
                 <label
                   id="spiGraphFieldSetting"
-                  class="badge bg-info cursor-help">
+                  class="arkime-badge arkime-badge--info cursor-help">
                   {{ spiGraphTypeahead || 'unknown field' }}
                   <v-tooltip activator="#spiGraphFieldSetting">{{ spiGraphField.help }}</v-tooltip>
                 </label>
@@ -412,7 +405,7 @@ SPDX-License-Identifier: Apache-2.0
             <div class="col-sm-3">
               <h4 v-if="connSrcField">
                 <label
-                  class="badge bg-info cursor-help"
+                  class="arkime-badge arkime-badge--info cursor-help"
                   id="connSrcFieldSetting">
                   {{ connSrcFieldTypeahead || 'unknown field' }}
                   <v-tooltip activator="#connSrcFieldSetting">{{ connSrcField.help }}</v-tooltip>
@@ -439,7 +432,7 @@ SPDX-License-Identifier: Apache-2.0
             <div class="col-sm-3">
               <h4 v-if="connDstField">
                 <label
-                  class="badge bg-info cursor-help"
+                  class="arkime-badge arkime-badge--info cursor-help"
                   id="connDstFieldSetting">
                   {{ connDstFieldTypeahead || 'unknown field' }}
                   <v-tooltip activator="#connDstFieldSetting">{{ connDstField.help }}</v-tooltip>
@@ -466,7 +459,7 @@ SPDX-License-Identifier: Apache-2.0
             <div class="col-sm-3">
               <h4 v-if="timelineDataFilters.length > 0">
                 <label
-                  class="badge bg-info cursor-help small-badge"
+                  class="arkime-badge arkime-badge--info cursor-help arkime-badge--sm"
                   v-for="filter in timelineDataFilters"
                   :key="filter.dbField + 'DataFilterBadge'"
                   @click="timelineFilterSelected(filter)"
@@ -476,12 +469,14 @@ SPDX-License-Identifier: Apache-2.0
                   <v-tooltip :activator="`[id='${filter.dbField}DataFilterBadge']`">{{ filter.help }}</v-tooltip>
                 </label>
               </h4>
-              <button
-                type="button"
-                class="btn btn-sm btn-danger"
+              <v-btn
+                color="error"
+                variant="flat"
+                size="small"
+                density="comfortable"
                 @click="resetDefaultFilters">
                 {{ $t('settings.general.resetTimelineDataFilters') }}
-              </button>
+              </v-btn>
             </div>
           </div>
 
@@ -493,12 +488,14 @@ SPDX-License-Identifier: Apache-2.0
               {{ $t('settings.general.hideTags') }}
             </label>
             <div class="col-sm-6">
-              <input
-                type="text"
-                @change="update"
-                v-model="settings.hideTags"
-                class="form-control form-control-sm"
-                :placeholder="$t('settings.general.hideTagsPlaceholder')">
+              <div class="arkime-input-group arkime-input-group--fluid">
+                <input
+                  type="text"
+                  @change="update"
+                  v-model="settings.hideTags"
+                  class="arkime-input-control"
+                  :placeholder="$t('settings.general.hideTagsPlaceholder')">
+              </div>
             </div>
           </div> <!-- /hide tags field -->
         </form>
@@ -512,7 +509,7 @@ SPDX-License-Identifier: Apache-2.0
 
           <p>{{ $t('settings.ccl.info') }}</p>
 
-          <table class="table table-striped table-sm">
+          <table class="arkime-table">
             <thead>
               <tr>
                 <th>{{ $t('settings.ccl.table-name') }}</th>
@@ -532,7 +529,7 @@ SPDX-License-Identifier: Apache-2.0
                     v-for="col in defaultColConfig.visibleHeaders"
                     :key="col">
                     <label
-                      class="badge bg-secondary me-1 help-cursor"
+                      class="arkime-badge arkime-badge--grey me-1 cursor-help"
                       :id="`${col}DefaultColConfigSetting`"
                       v-if="fieldsMap[col]">
                       {{ fieldsMap[col].friendlyName }}
@@ -545,7 +542,7 @@ SPDX-License-Identifier: Apache-2.0
                     v-for="order in defaultColConfig.order"
                     :key="order[0]">
                     <label
-                      class="badge bg-secondary me-1 help-cursor"
+                      class="arkime-badge arkime-badge--grey me-1 cursor-help"
                       v-if="fieldsMap[order[0]]"
                       :id="`${order[0]}DefaultColConfigSettingOrder`">
                       {{ fieldsMap[order[0]].friendlyName }}&nbsp;
@@ -569,7 +566,7 @@ SPDX-License-Identifier: Apache-2.0
                       v-for="col in config.columns"
                       :key="col">
                       <label
-                        class="badge bg-secondary me-1 help-cursor"
+                        class="arkime-badge arkime-badge--grey me-1 cursor-help"
                         v-if="fieldsMap[col]"
                         :id="`${index}${col}ColConfigSetting`">
                         {{ fieldsMap[col].friendlyName }}
@@ -582,7 +579,7 @@ SPDX-License-Identifier: Apache-2.0
                       v-for="order in config.order"
                       :key="order[0]">
                       <label
-                        class="badge bg-secondary me-1 help-cursor"
+                        class="arkime-badge arkime-badge--grey me-1 cursor-help"
                         v-if="fieldsMap[order[0]]"
                         :id="`${index}-${order[0]}ColConfigSetting`">
                         {{ fieldsMap[order[0]].friendlyName }}&nbsp;
@@ -592,14 +589,17 @@ SPDX-License-Identifier: Apache-2.0
                     </span>
                   </td>
                   <td>
-                    <button
-                      type="button"
-                      class="btn btn-sm btn-danger pull-right"
+                    <v-btn
+                      color="error"
+                      variant="flat"
+                      size="small"
+                      density="comfortable"
+                      class="float-end"
                       @click="deleteLayout('sessionstable', config.name, 'colConfigs', index)"
                       :title="$t('settings.ccl.deleteTip')">
-                      <span class="fa fa-trash-o" />&nbsp;
+                      <span class="fa fa-trash-o me-1" />
                       {{ $t('common.delete') }}
-                    </button>
+                    </v-btn>
                   </td>
                 </tr>
               </template> <!-- /col configs -->
@@ -615,17 +615,18 @@ SPDX-License-Identifier: Apache-2.0
             </tbody>
           </table>
 
-          <div
+          <v-alert
             v-if="!colConfigs || !colConfigs.length"
-            class="alert alert-info">
-            <span class="fa fa-info-circle fa-lg" />
+            type="info"
+            variant="tonal"
+            density="compact">
             <strong>
               {{ $t('settings.ccl.empty') }}
             </strong>
             <br>
             <br>
             <span v-html="$t('settings.ccl.howToHtml')" />
-          </div>
+          </v-alert>
         </form> <!-- /col configs settings -->
 
         <!-- info field configs settings -->
@@ -637,7 +638,7 @@ SPDX-License-Identifier: Apache-2.0
 
           <p>{{ $t('settings.infoLayout.info') }}</p>
 
-          <table class="table table-striped table-sm">
+          <table class="arkime-table">
             <thead>
               <tr>
                 <th>{{ $t('settings.infoLayout.table-name') }}</th>
@@ -656,7 +657,7 @@ SPDX-License-Identifier: Apache-2.0
                     v-for="field in defaultInfoFieldLayout"
                     :key="field">
                     <label
-                      class="badge bg-secondary me-1 help-cursor"
+                      class="arkime-badge arkime-badge--grey me-1 cursor-help"
                       :id="`${field}DefaultInfoFieldLayoutSetting`"
                       v-if="fieldsMap[field]">
                       {{ fieldsMap[field].friendlyName }}
@@ -679,7 +680,7 @@ SPDX-License-Identifier: Apache-2.0
                       v-for="field in config.fields"
                       :key="field">
                       <label
-                        class="badge bg-secondary me-1 help-cursor"
+                        class="arkime-badge arkime-badge--grey me-1 cursor-help"
                         :id="`${field}InfoFieldLayoutSetting`"
                         v-if="fieldsMap[field]">
                         {{ fieldsMap[field].friendlyName }}
@@ -688,14 +689,17 @@ SPDX-License-Identifier: Apache-2.0
                     </template>
                   </td>
                   <td>
-                    <button
-                      type="button"
-                      class="btn btn-sm btn-danger pull-right"
+                    <v-btn
+                      color="error"
+                      variant="flat"
+                      size="small"
+                      density="comfortable"
+                      class="float-end"
                       @click="deleteLayout('sessionsinfofields', config.name, 'infoFieldLayouts', index)"
                       :title="$t('settings.infoLayout.deleteTip')">
-                      <span class="fa fa-trash-o" />&nbsp;
+                      <span class="fa fa-trash-o me-1" />
                       {{ $t('common.delete') }}
-                    </button>
+                    </v-btn>
                   </td>
                 </tr>
               </template> <!-- /info field configs -->
@@ -711,17 +715,18 @@ SPDX-License-Identifier: Apache-2.0
             </tbody>
           </table>
 
-          <div
+          <v-alert
             v-if="!infoFieldLayouts || !infoFieldLayouts.length"
-            class="alert alert-info">
-            <span class="fa fa-info-circle fa-lg" />
+            type="info"
+            variant="tonal"
+            density="compact">
             <strong>
               {{ $t('settings.infoLayout.empty') }}
             </strong>
             <br>
             <br>
             <span v-html="$t('settings.infoLayout.howToHtml')" />
-          </div>
+          </v-alert>
         </form> <!-- /info field configs settings -->
 
         <!-- spiview field configs settings -->
@@ -733,7 +738,7 @@ SPDX-License-Identifier: Apache-2.0
 
           <p>{{ $t('settings.spiview.info') }}</p>
 
-          <table class="table table-striped table-sm">
+          <table class="arkime-table">
             <thead>
               <tr>
                 <th>{{ $t('settings.spiview.table-name') }}</th>
@@ -754,7 +759,7 @@ SPDX-License-Identifier: Apache-2.0
                     <label
                       :id="`${field}DefaultSpiviewFieldConfigSetting`"
                       v-if="fieldsMap[field]"
-                      class="badge bg-secondary me-1 help-cursor">
+                      class="arkime-badge arkime-badge--grey me-1 cursor-help">
                       {{ fieldsMap[field].friendlyName }} (100)
                       <v-tooltip :activator="`[id='${field}DefaultSpiviewFieldConfigSetting']`">{{ fieldsMap[field].help }}</v-tooltip>
                     </label>
@@ -772,7 +777,7 @@ SPDX-License-Identifier: Apache-2.0
                   </td>
                   <td>
                     <label
-                      class="badge bg-secondary me-1 help-cursor"
+                      class="arkime-badge arkime-badge--grey me-1 cursor-help"
                       :id="`${fieldObj.dbField}SpiviewFieldConfigSetting`"
                       v-for="fieldObj in config.fieldObjs"
                       :key="fieldObj.dbField">
@@ -782,14 +787,17 @@ SPDX-License-Identifier: Apache-2.0
                     </label>
                   </td>
                   <td>
-                    <button
-                      type="button"
-                      class="btn btn-sm btn-danger pull-right"
+                    <v-btn
+                      color="error"
+                      variant="flat"
+                      size="small"
+                      density="comfortable"
+                      class="float-end"
                       @click="deleteLayout('spiview', config.name, 'spiviewConfigs', index)"
                       :title="$t('settings.spiview.deleteTip')">
-                      <span class="fa fa-trash-o" />&nbsp;
+                      <span class="fa fa-trash-o me-1" />
                       {{ $t('common.delete') }}
-                    </button>
+                    </v-btn>
                   </td>
                 </tr>
               </template> <!-- /spiview field configs -->
@@ -805,17 +813,18 @@ SPDX-License-Identifier: Apache-2.0
             </tbody>
           </table>
 
-          <div
+          <v-alert
             v-if="!spiviewConfigs || !spiviewConfigs.length"
-            class="alert alert-info">
-            <span class="fa fa-info-circle fa-lg" />
+            type="info"
+            variant="tonal"
+            density="compact">
             <strong>
               {{ $t('settings.spiview.empty') }}
             </strong>
             <br>
             <br>
             <span v-html="$t('settings.spiview.howToHtml')" />
-          </div>
+          </v-alert>
         </form> <!-- /spiview field configs settings -->
 
         <!-- theme settings -->
@@ -967,11 +976,15 @@ SPDX-License-Identifier: Apache-2.0
             <hr>
             <h3>
               Yahaha! You found me!
-              <button
-                class="btn btn-primary"
+              <v-btn
+                color="primary"
+                variant="flat"
+                size="small"
+                density="comfortable"
+                class="ms-2"
                 @click="toggleShiftyEyes">
                 Turn Me Off
-              </button>
+              </v-btn>
             </h3>
             <p>
               I am now watching you while data loads
@@ -997,13 +1010,15 @@ SPDX-License-Identifier: Apache-2.0
             <!-- custom theme display -->
             <div class="row">
               <div class="col-md-4">
-                <h3 class="mt-0 mb-3">
-                  Custom Theme
-                  <button
-                    type="button"
-                    class="btn btn-theme-tertiary pull-right"
+                <h3 class="mt-0 mb-3 d-flex align-center">
+                  <span class="flex-grow-1">Custom Theme</span>
+                  <v-btn
+                    variant="flat"
+                    size="small"
+                    density="comfortable"
+                    :style="tertiaryBtnStyle"
                     @click="displayHelp = !displayHelp">
-                    <span class="fa fa-question-circle" />&nbsp;
+                    <span class="fa fa-question-circle me-1" />
                     <span v-if="displayHelp">
                       Hide
                     </span>
@@ -1011,7 +1026,7 @@ SPDX-License-Identifier: Apache-2.0
                       Show
                     </span>
                     Help
-                  </button>
+                  </v-btn>
                 </h3>
                 <color-picker
                   :color="background"
@@ -1348,26 +1363,32 @@ SPDX-License-Identifier: Apache-2.0
                 <label>
                   Share your theme with others:
                 </label>
-                <div class="input-group input-group-sm">
+                <div class="arkime-input-group arkime-input-group--fluid">
                   <input
                     type="text"
-                    class="form-control"
+                    class="arkime-input-control"
                     v-model="themeString"
                     @keyup.up.down.left.right.a.b="secretStuff">
-                  <button
-                    class="btn btn-theme-secondary"
-                    type="button"
+                  <v-btn
+                    variant="flat"
+                    size="small"
+                    density="comfortable"
+                    :style="secondaryBtnStyle"
+                    class="me-1"
                     @click="copyValue(themeString)">
-                    <span class="fa fa-clipboard" />&nbsp;
+                    <span class="fa fa-clipboard me-1" />
                     {{ $t('common.copy') }}
-                  </button>
-                  <button
-                    class="btn btn-theme-primary"
-                    type="button"
+                  </v-btn>
+                  <v-btn
+                    variant="flat"
+                    size="small"
+                    density="comfortable"
+                    :style="primaryBtnStyle"
+                    class="me-1"
                     @click="updateThemeString">
-                    <span class="fa fa-check" />&nbsp;
+                    <span class="fa fa-check me-1" />
                     {{ $t('common.apply') }}
-                  </button>
+                  </v-btn>
                 </div>
               </div>
             </div>
@@ -1387,57 +1408,65 @@ SPDX-License-Identifier: Apache-2.0
           <!-- current password -->
           <div
             v-if="!userId"
-            class="form-group row">
+            class="row mb-2">
             <label class="col-sm-3 col-form-label text-end fw-bold">
               {{ $t('settings.password.currentPassword') }}
             </label>
             <div class="col-sm-6">
-              <input
-                type="password"
-                class="form-control form-control-sm"
-                v-model="currentPassword"
-                :placeholder="$t('settings.password.currentPasswordPlaceholder')">
+              <div class="arkime-input-group arkime-input-group--fluid">
+                <input
+                  type="password"
+                  class="arkime-input-control"
+                  v-model="currentPassword"
+                  :placeholder="$t('settings.password.currentPasswordPlaceholder')">
+              </div>
             </div>
           </div>
 
           <!-- new password -->
-          <div class="form-group row">
+          <div class="row mb-2">
             <label class="col-sm-3 col-form-label text-end fw-bold">
               {{ $t('settings.password.newPassword') }}
             </label>
             <div class="col-sm-6">
-              <input
-                type="password"
-                class="form-control form-control-sm"
-                v-model="newPassword"
-                :placeholder="$t('settings.password.newPasswordPlaceholder')">
+              <div class="arkime-input-group arkime-input-group--fluid">
+                <input
+                  type="password"
+                  class="arkime-input-control"
+                  v-model="newPassword"
+                  :placeholder="$t('settings.password.newPasswordPlaceholder')">
+              </div>
             </div>
           </div>
 
           <!-- confirm new password -->
-          <div class="form-group row">
+          <div class="row mb-2">
             <label class="col-sm-3 col-form-label text-end fw-bold">
               {{ $t('settings.password.confirmPassword') }}
             </label>
             <div class="col-sm-6">
-              <input
-                type="password"
-                class="form-control form-control-sm"
-                v-model="confirmNewPassword"
-                :placeholder="$t('settings.password.confirmPasswordPlaceholder')">
+              <div class="arkime-input-group arkime-input-group--fluid">
+                <input
+                  type="password"
+                  class="arkime-input-control"
+                  v-model="confirmNewPassword"
+                  :placeholder="$t('settings.password.confirmPasswordPlaceholder')">
+              </div>
             </div>
           </div>
 
           <!-- change password button/error -->
-          <div class="form-group row">
+          <div class="row mb-2">
             <label class="col-sm-3 col-form-label">&nbsp;</label>
             <div class="col-sm-9">
-              <button
-                type="button"
-                class="btn btn-theme-tertiary"
+              <v-btn
+                variant="flat"
+                size="small"
+                density="comfortable"
+                :style="tertiaryBtnStyle"
                 @click="changePassword">
                 {{ $t('settings.password.changePassword') }}
-              </button>
+              </v-btn>
               <span
                 v-if="changePasswordError"
                 class="small text-danger ps-4">
@@ -1455,34 +1484,40 @@ SPDX-License-Identifier: Apache-2.0
                 {{ $t('settings.totp.title') }}
               </h4>
               <!-- Enroll button (when not enrolled) -->
-              <button
+              <v-btn
                 v-if="!totpEnabled && !totpSetupMode"
-                type="button"
-                class="btn btn-sm btn-theme-primary"
+                variant="flat"
+                size="small"
+                density="comfortable"
+                :style="primaryBtnStyle"
                 @click="startTotpSetup">
                 {{ $t('settings.totp.enroll') }}
-              </button>
+              </v-btn>
               <!-- Enabled status + Unenroll button (when enrolled) -->
               <span
                 v-if="totpEnabled && !totpSetupMode"
                 class="text-success me-2">
                 <span class="fa fa-check" /> {{ $t('settings.totp.enabled') }}
               </span>
-              <button
+              <v-btn
                 v-if="totpEnabled && !totpSetupMode"
-                type="button"
-                class="btn btn-sm btn-danger"
+                color="error"
+                variant="flat"
+                size="small"
+                density="comfortable"
                 @click="showTotpDisable = true">
                 {{ $t('settings.totp.unenroll') }}
-              </button>
+              </v-btn>
               <!-- Cancel button (when in setup mode) -->
-              <button
+              <v-btn
                 v-if="totpSetupMode"
-                type="button"
-                class="btn btn-sm btn-warning"
+                color="warning"
+                variant="flat"
+                size="small"
+                density="comfortable"
                 @click="cancelTotpSetup">
                 {{ $t('common.cancel') }}
-              </button>
+              </v-btn>
             </div>
             <p class="small mb-3">
               {{ $t('settings.totp.description') }}
@@ -1506,23 +1541,26 @@ SPDX-License-Identifier: Apache-2.0
                 {{ $t('settings.totp.manualEntry') }}: <code>{{ totpSecret }}</code>
               </div>
               <div
-                class="input-group input-group-sm"
+                class="arkime-input-group"
                 style="width: 400px;">
-                <span class="input-group-text">{{ $t('settings.totp.verifyCode') }}</span>
+                <span class="arkime-input-label">{{ $t('settings.totp.verifyCode') }}</span>
                 <input
                   type="text"
                   maxlength="6"
-                  class="form-control"
+                  class="arkime-input-control"
                   v-model="totpVerifyCode"
                   :placeholder="$t('settings.totp.codePlaceholder')"
                   @keyup.enter="confirmTotpSetup">
-                <button
-                  type="button"
-                  class="btn btn-sm btn-success"
+                <v-btn
+                  color="success"
+                  variant="flat"
+                  size="small"
+                  density="comfortable"
+                  class="me-1"
                   :disabled="!totpVerifyCode || totpVerifyCode.length !== 6"
                   @click="confirmTotpSetup">
                   {{ $t('settings.totp.verify') }}
-                </button>
+                </v-btn>
               </div>
               <span
                 v-if="totpError"
@@ -1537,30 +1575,36 @@ SPDX-License-Identifier: Apache-2.0
               v-if="showTotpDisable"
               class="mb-3">
               <div
-                class="input-group input-group-sm"
+                class="arkime-input-group"
                 style="width: 400px;">
-                <span class="input-group-text">{{ $t('settings.totp.confirmDisable') }}</span>
+                <span class="arkime-input-label">{{ $t('settings.totp.confirmDisable') }}</span>
                 <input
                   type="text"
                   maxlength="6"
-                  class="form-control"
+                  class="arkime-input-control"
                   v-model="totpDisableCode"
                   :placeholder="$t('settings.totp.codePlaceholder')"
                   @keyup.enter="disableTotp">
-                <button
-                  type="button"
-                  class="btn btn-sm btn-danger"
+                <v-btn
+                  color="error"
+                  variant="flat"
+                  size="small"
+                  density="comfortable"
+                  class="me-1"
                   :disabled="!totpDisableCode || totpDisableCode.length !== 6"
                   @click="disableTotp">
                   {{ $t('settings.totp.confirmUnenroll') }}
-                </button>
+                </v-btn>
               </div>
-              <button
-                type="button"
-                class="btn btn-sm btn-secondary mt-2"
+              <v-btn
+                color="grey"
+                variant="flat"
+                size="small"
+                density="comfortable"
+                class="mt-2"
                 @click="showTotpDisable = false; totpDisableCode = ''">
                 {{ $t('common.cancel') }}
-              </button>
+              </v-btn>
               <span
                 v-if="totpError"
                 class="small text-danger d-block mt-2">
@@ -1721,12 +1765,34 @@ export default {
       totpError: '',
       showTotpDisable: false,
       multiviewer: this.$constants.MULTIVIEWER,
-      hasUsersES: this.$constants.HASUSERSES
+      hasUsersES: this.$constants.HASUSERSES,
+      // Arkime theme-color v-btn styles. Vuetify :color can't take CSS vars.
+      primaryBtnStyle: {
+        backgroundColor: 'var(--color-primary)',
+        color: 'var(--color-button, #FFF)'
+      },
+      secondaryBtnStyle: {
+        backgroundColor: 'var(--color-secondary)',
+        color: 'var(--color-button, #FFF)'
+      },
+      tertiaryBtnStyle: {
+        backgroundColor: 'var(--color-tertiary)',
+        color: 'var(--color-button, #FFF)'
+      },
+      quaternaryBtnStyle: {
+        backgroundColor: 'var(--color-quaternary)',
+        color: 'var(--color-button, #FFF)'
+      }
     };
   },
   computed: {
     user: function () {
       return this.$store.state.user;
+    },
+    // Vuetify v-alert accepts: success | info | warning | error.
+    // Map Bootstrap-flavored "danger" → Vuetify "error".
+    vuetifyMsgType: function () {
+      return this.msgType === 'danger' ? 'error' : (this.msgType || 'success');
     },
     sortableColumns: function () {
       return this.columns.filter(column => !column.unsortable);

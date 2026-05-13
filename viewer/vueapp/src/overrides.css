@@ -598,6 +598,27 @@ pre {
   gap: 4px;
 }
 
+/* arkime-badge: Bootstrap-free recreation of `.badge .bg-*` for inline
+   pill tags that need to stay <label>/<span> elements (typeable form
+   labels, click-handler-bearing tags). For non-semantic uses, prefer
+   <v-chip size="x-small" variant="flat" color="grey|info|..."/>. */
+.arkime-badge {
+  display: inline-block;
+  padding: 0.35em 0.65em;
+  font-size: 0.75em;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--color-button, #FFF);
+  text-align: center;
+  white-space: nowrap;
+  vertical-align: baseline;
+  border-radius: 0.375rem;
+}
+.arkime-badge--grey { background-color: var(--color-gray); }
+.arkime-badge--info { background-color: var(--color-info, #17a2b8); }
+.arkime-badge--sm { font-size: 60%; margin-right: 5px; }
+.arkime-badge--sm:hover { background-color: var(--color-danger, #dc3545); cursor: pointer; }
+
 /* arkime-table: Bootstrap-free recreation of `.table .table-sm .table-striped`
    for plain <table> elements used by Hunt, Files, Sessions, etc.
    - full-width, transparent background, borderless rows

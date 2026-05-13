@@ -13,10 +13,10 @@ SPDX-License-Identifier: Apache-2.0
       </v-card-title>
       <v-card-text>
         <!-- Name input -->
-        <div class="input-group input-group-sm mb-2">
+        <div class="arkime-input-group arkime-input-group--fluid mb-2">
           <span
             id="configName"
-            class="input-group-text cursor-help">
+            class="arkime-input-label cursor-help">
             {{ $t('sessions.summary.config.name') }}<sup>*</sup>
             <v-tooltip activator="#configName">
               {{ $t('sessions.summary.config.nameTip') }}
@@ -24,16 +24,16 @@ SPDX-License-Identifier: Apache-2.0
           </span>
           <input
             type="text"
-            class="form-control"
+            class="arkime-input-control"
             v-model="configName"
             :placeholder="$t('sessions.summary.config.namePlaceholder')">
         </div>
 
         <!-- Description input -->
-        <div class="input-group input-group-sm mb-2">
+        <div class="arkime-input-group arkime-input-group--fluid mb-2">
           <span
             id="configDescription"
-            class="input-group-text cursor-help">
+            class="arkime-input-label cursor-help">
             {{ $t('sessions.summary.config.description') }}
             <v-tooltip activator="#configDescription">
               {{ $t('sessions.summary.config.descriptionTip') }}
@@ -41,7 +41,7 @@ SPDX-License-Identifier: Apache-2.0
           </span>
           <input
             type="text"
-            class="form-control"
+            class="arkime-input-control"
             v-model="configDescription"
             :placeholder="$t('sessions.summary.config.descriptionPlaceholder')">
         </div>
@@ -63,10 +63,10 @@ SPDX-License-Identifier: Apache-2.0
         </div>
 
         <div class="d-flex gap-2 mb-2">
-          <div class="input-group input-group-sm flex-grow-1">
+          <div class="arkime-input-group arkime-input-group--fluid">
             <span
               id="configViewUsers"
-              class="input-group-text cursor-help">
+              class="arkime-input-label cursor-help">
               {{ $t('sessions.summary.config.viewUsers') }}
               <v-tooltip activator="#configViewUsers">
                 {{ $t('sessions.summary.config.viewUsersTip') }}
@@ -74,15 +74,15 @@ SPDX-License-Identifier: Apache-2.0
             </span>
             <input
               type="text"
-              class="form-control"
+              class="arkime-input-control"
               v-model="viewUsers"
               :placeholder="$t('sessions.summary.config.usersPlaceholder')">
           </div>
 
-          <div class="input-group input-group-sm flex-grow-1">
+          <div class="arkime-input-group arkime-input-group--fluid">
             <span
               id="configEditUsers"
-              class="input-group-text cursor-help">
+              class="arkime-input-label cursor-help">
               {{ $t('sessions.summary.config.editUsers') }}
               <v-tooltip activator="#configEditUsers">
                 {{ $t('sessions.summary.config.editUsersTip') }}
@@ -90,14 +90,14 @@ SPDX-License-Identifier: Apache-2.0
             </span>
             <input
               type="text"
-              class="form-control"
+              class="arkime-input-control"
               v-model="editUsers"
               :placeholder="$t('sessions.summary.config.usersPlaceholder')">
           </div>
         </div>
 
         <!-- Configuration preview -->
-        <div class="config-preview mt-3 p-2 border rounded bg-light">
+        <div class="config-preview mt-3 p-2 border rounded">
           <strong>{{ $t('sessions.summary.config.preview') }}</strong>
           <div class="mt-1 small">
             <span class="text-muted">{{ $t('sessions.summary.config.fieldsCount') }}:</span>
@@ -111,25 +111,31 @@ SPDX-License-Identifier: Apache-2.0
         </div>
 
         <!-- Error message -->
-        <div
+        <v-alert
           v-if="error"
-          class="alert alert-danger alert-sm mt-2 mb-0">
-          <span class="fa fa-exclamation-triangle me-1" />
+          type="error"
+          variant="tonal"
+          density="compact"
+          class="mt-2 mb-0">
           {{ error }}
-        </div>
+        </v-alert>
       </v-card-text>
       <v-card-actions>
         <div class="w-100 d-flex justify-content-between">
-          <button
-            type="button"
-            class="btn btn-danger"
+          <v-btn
+            color="error"
+            variant="flat"
+            size="small"
+            density="comfortable"
             @click="$emit('close')">
-            <span class="fa fa-times" />
+            <span class="fa fa-times me-1" />
             {{ $t('common.cancel') }}
-          </button>
-          <button
-            type="button"
-            class="btn btn-success"
+          </v-btn>
+          <v-btn
+            color="success"
+            variant="flat"
+            size="small"
+            density="comfortable"
             :disabled="saving"
             @click="saveConfig">
             <span
@@ -139,7 +145,7 @@ SPDX-License-Identifier: Apache-2.0
               v-else
               class="fa fa-save me-1" />
             {{ $t('common.save') }}
-          </button>
+          </v-btn>
         </div>
       </v-card-actions>
     </v-card>

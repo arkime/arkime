@@ -4,15 +4,17 @@ SPDX-License-Identifier: Apache-2.0
 -->
 <template>
   <div>
-    <h3>
-      {{ $t('settings.views.title') }}
-      <button
-        type="button"
-        class="btn btn-sm btn-success pull-right"
+    <h3 class="d-flex align-center">
+      <span class="flex-grow-1">{{ $t('settings.views.title') }}</span>
+      <v-btn
+        color="success"
+        variant="flat"
+        size="small"
+        density="comfortable"
         @click="showViewModal = !showViewModal">
         <span class="fa fa-plus-circle me-1" />
         {{ $t('settings.views.newView') }}
-      </button>
+      </v-btn>
     </h3>
 
     <p>
@@ -60,7 +62,7 @@ SPDX-License-Identifier: Apache-2.0
         @change-paging="changeViewsPaging" />
     </div>
 
-    <table class="table table-striped table-sm">
+    <table class="arkime-table">
       <thead>
         <tr>
           <th
@@ -106,7 +108,7 @@ SPDX-License-Identifier: Apache-2.0
                 v-for="col in item.sessionsColConfig.visibleHeaders"
                 :key="col">
                 <label
-                  class="badge bg-secondary me-1 mb-0 help-cursor"
+                  class="arkime-badge arkime-badge--grey me-1 mb-0 cursor-help"
                   v-if="fieldsMap[col]"
                   :id="`viewField-${col}`">
                   {{ fieldsMap[col].friendlyName }}
@@ -123,7 +125,7 @@ SPDX-License-Identifier: Apache-2.0
                 v-for="order in item.sessionsColConfig.order"
                 :key="order[0]">
                 <label
-                  class="badge bg-secondary me-1 help-cursor"
+                  class="arkime-badge arkime-badge--grey me-1 cursor-help"
                   v-if="fieldsMap[order[0]]"
                   :id="`viewFieldOrder-${order[0]}`">
                   {{ fieldsMap[order[0]].friendlyName }}&nbsp;
@@ -135,66 +137,81 @@ SPDX-License-Identifier: Apache-2.0
               </template>
             </span>
           </td>
-          <td>
-            <span class="pull-right no-wrap">
-              <button
-                type="button"
-                class="btn btn-sm btn-theme-secondary ms-1"
-                :id="`copyView-${item.id}`"
-                @click="$emit('copy-value', item.expression)">
-                <span class="fa fa-clipboard fa-fw" />
-                <v-tooltip :activator="`#copyView-${item.id}`">
-                  {{ $t('settings.views.copyTip') }}
+          <td class="text-end no-wrap">
+            <v-btn
+              variant="flat"
+              size="small"
+              density="comfortable"
+              icon
+              :style="secondaryBtnStyle"
+              class="ms-1"
+              :id="`copyView-${item.id}`"
+              @click="$emit('copy-value', item.expression)">
+              <span class="fa fa-clipboard fa-fw" />
+              <v-tooltip :activator="`#copyView-${item.id}`">
+                {{ $t('settings.views.copyTip') }}
+              </v-tooltip>
+            </v-btn>
+            <template v-if="canEdit(item)">
+              <v-btn
+                v-if="canTransfer(item)"
+                color="info"
+                variant="flat"
+                size="small"
+                density="comfortable"
+                icon
+                class="ms-1"
+                :id="`transferView-${item.id}`"
+                @click="openTransferView(item)">
+                <span class="fa fa-share fa-fw" />
+                <v-tooltip :activator="`#transferView-${item.id}`">
+                  {{ $t('settings.views.transferTip') }}
                 </v-tooltip>
-              </button>
-              <template
-                v-if="canEdit(item)">
-                <button
-                  type="button"
-                  class="btn btn-sm btn-info ms-1"
-                  :id="`transferView-${item.id}`"
-                  v-if="canTransfer(item)"
-                  @click="openTransferView(item)">
-                  <span class="fa fa-share fa-fw" />
-                  <v-tooltip :activator="`#transferView-${item.id}`">
-                    {{ $t('settings.views.transferTip') }}
-                  </v-tooltip>
-                </button>
-                <button
-                  type="button"
-                  class="btn btn-sm btn-danger ms-1"
-                  :id="`deleteView-${item.id}`"
-                  @click="deleteView(item.id, index)">
-                  <span class="fa fa-trash-o fa-fw" />
-                  <v-tooltip :activator="`#deleteView-${item.id}`">
-                    {{ $t('settings.views.deleteTip') }}
-                  </v-tooltip>
-                </button>
-                <button
-                  type="button"
-                  class="btn btn-sm btn-theme-tertiary ms-1"
-                  :id="`editView-${item.id}`"
-                  @click="editView(item)">
-                  <span class="fa fa-pencil fa-fw" />
-                  <v-tooltip :activator="`#editView-${item.id}`">
-                    {{ $t('settings.views.editTip') }}
-                  </v-tooltip>
-                </button>
-              </template>
-            </span>
+              </v-btn>
+              <v-btn
+                color="error"
+                variant="flat"
+                size="small"
+                density="comfortable"
+                icon
+                class="ms-1"
+                :id="`deleteView-${item.id}`"
+                @click="deleteView(item.id, index)">
+                <span class="fa fa-trash-o fa-fw" />
+                <v-tooltip :activator="`#deleteView-${item.id}`">
+                  {{ $t('settings.views.deleteTip') }}
+                </v-tooltip>
+              </v-btn>
+              <v-btn
+                variant="flat"
+                size="small"
+                density="comfortable"
+                icon
+                :style="tertiaryBtnStyle"
+                class="ms-1"
+                :id="`editView-${item.id}`"
+                @click="editView(item)">
+                <span class="fa fa-pencil fa-fw" />
+                <v-tooltip :activator="`#editView-${item.id}`">
+                  {{ $t('settings.views.editTip') }}
+                </v-tooltip>
+              </v-btn>
+            </template>
           </td>
         </tr> <!-- /views -->
       </tbody>
     </table>
 
     <!-- view list error -->
-    <div
+    <v-alert
       v-if="viewListError"
+      type="error"
+      variant="tonal"
+      density="compact"
       style="z-index: 2000;"
-      class="mt-2 mb-2 alert alert-danger">
-      <span class="fa fa-exclamation-triangle me-1" />
+      class="mt-2 mb-2">
       {{ viewListError }}
-    </div> <!-- /view list error -->
+    </v-alert> <!-- /view list error -->
 
     <!-- no results -->
     <div
@@ -220,10 +237,10 @@ SPDX-License-Identifier: Apache-2.0
           {{ $t(editingView ? 'settings.views.editView' : 'settings.views.newView') }}
         </v-card-title>
         <v-card-text>
-          <div class="input-group input-group-sm mb-2">
+          <div class="arkime-input-group arkime-input-group--fluid mb-2">
             <span
               id="viewFormName"
-              class="input-group-text cursor-help">
+              class="arkime-input-label cursor-help">
               {{ $t('settings.views.viewFormName') }}<sup>*</sup>
               <v-tooltip activator="#viewFormName">
                 {{ $t('settings.views.viewFormNameTip') }}
@@ -231,15 +248,15 @@ SPDX-License-Identifier: Apache-2.0
             </span>
             <input
               type="text"
-              class="form-control"
+              class="arkime-input-control"
               :value="newViewName"
               @input="newViewName = $event.target.value"
               :placeholder="$t('settings.views.viewFormNamePlaceholder')">
           </div>
-          <div class="input-group input-group-sm mb-2">
+          <div class="arkime-input-group arkime-input-group--fluid mb-2">
             <span
               id="viewFormExpression"
-              class="input-group-text cursor-help">
+              class="arkime-input-label cursor-help">
               {{ $t('settings.views.viewFormExpression') }}<sup>*</sup>
               <v-tooltip activator="#viewFormExpression">
                 {{ $t('settings.views.viewFormExpressionTip') }}
@@ -267,10 +284,10 @@ SPDX-License-Identifier: Apache-2.0
                 :selected-roles="newViewEditRoles"
                 @selected-roles-updated="updateNewViewEditRoles" />
             </div>
-            <div class="input-group input-group-sm">
+            <div class="arkime-input-group arkime-input-group--fluid">
               <span
                 id="viewFormUsers"
-                class="input-group-text cursor-help">
+                class="arkime-input-label cursor-help">
                 {{ $t('common.shareWithUsers') }}
                 <v-tooltip activator="#viewFormUsers">
                   {{ $t('settings.views.viewFormUsersTip') }}
@@ -278,45 +295,53 @@ SPDX-License-Identifier: Apache-2.0
               </span>
               <input
                 type="text"
-                class="form-control"
+                class="arkime-input-control"
                 :value="newViewUsers"
                 @input="newViewUsers = $event.target.value"
                 :placeholder="$t('settings.views.viewFormUsersPlaceholder')">
             </div>
           </div>
           <!-- form error -->
-          <div
+          <v-alert
             v-if="viewFormError"
-            class="alert alert-danger alert-sm mt-2 mb-0">
-            <span class="fa fa-exclamation-triangle me-1" />
+            type="error"
+            variant="tonal"
+            density="compact"
+            class="mt-2 mb-0">
             {{ viewFormError }}
-          </div> <!-- /form error -->
+          </v-alert> <!-- /form error -->
         </v-card-text>
         <v-card-actions>
           <div class="w-100 d-flex justify-content-between">
-            <button
-              type="button"
-              class="btn btn-danger"
+            <v-btn
+              color="error"
+              variant="flat"
+              size="small"
+              density="comfortable"
               @click="showViewModal = false">
-              <span class="fa fa-times" />
+              <span class="fa fa-times me-1" />
               {{ $t('common.cancel') }}
-            </button>
-            <button
-              type="button"
-              class="btn btn-success"
-              @click="createView"
-              v-if="!editingView">
+            </v-btn>
+            <v-btn
+              v-if="!editingView"
+              color="success"
+              variant="flat"
+              size="small"
+              density="comfortable"
+              @click="createView">
               <span class="fa fa-plus-circle me-1" />
               {{ $t('common.create') }}
-            </button>
-            <button
-              type="button"
-              class="btn btn-success"
+            </v-btn>
+            <v-btn
               v-else
+              color="success"
+              variant="flat"
+              size="small"
+              density="comfortable"
               @click="updateView">
               <span class="fa fa-save me-1" />
               {{ $t('common.save') }}
-            </button>
+            </v-btn>
           </div>
         </v-card-actions>
       </v-card>
@@ -371,7 +396,16 @@ export default {
       recordsTotal: 0,
       recordsFiltered: 0,
       seeAll: false,
-      transferView: undefined
+      transferView: undefined,
+      // Arkime theme-color v-btn styles. Vuetify :color can't take CSS vars.
+      secondaryBtnStyle: {
+        backgroundColor: 'var(--color-secondary)',
+        color: 'var(--color-button, #FFF)'
+      },
+      tertiaryBtnStyle: {
+        backgroundColor: 'var(--color-tertiary)',
+        color: 'var(--color-button, #FFF)'
+      }
     };
   },
   props: {
