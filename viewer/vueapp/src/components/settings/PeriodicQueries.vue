@@ -26,13 +26,16 @@ SPDX-License-Identifier: Apache-2.0
           </v-tooltip>
         </v-btn>
       </v-btn-toggle>
-      <button
-        type="button"
-        class="btn btn-sm btn-success pull-right d-inline"
+      <v-btn
+        color="success"
+        variant="flat"
+        size="small"
+        density="comfortable"
+        class="float-end d-inline"
         @click="showCronModal = true">
         <span class="fa fa-plus-circle me-1" />
         {{ $t('settings.cron.newPeriodicQuery') }}
-      </button>
+      </v-btn>
     </h3>
 
     <p>
@@ -42,13 +45,16 @@ SPDX-License-Identifier: Apache-2.0
     <hr>
 
     <!-- query list error -->
-    <div
+    <v-alert
       v-if="cronQueryListError"
+      type="error"
+      variant="tonal"
+      density="compact"
       style="z-index: 2000;"
-      class="mt-2 mb-2 alert alert-danger">
+      class="mt-2 mb-2">
       <span class="fa fa-exclamation-triangle me-1" />
       {{ cronQueryListError }}
-    </div> <!-- /query list error -->
+    </v-alert> <!-- /query list error -->
 
     <!-- no results -->
     <div
@@ -72,15 +78,15 @@ SPDX-License-Identifier: Apache-2.0
           <form>
             <div class="row mb-2">
               <div class="col-md-4">
-                <div class="input-group input-group-sm">
+                <div class="arkime-input-group arkime-input-group--fluid">
                   <span
                     id="newCronQueryName"
-                    class="input-group-text cursor-help">
+                    class="arkime-input-label cursor-help">
                     {{ $t('settings.cron.queryName') }}<sup>*</sup>
                   </span>
                   <input
                     type="text"
-                    class="form-control"
+                    class="arkime-input-control"
                     maxlength="20"
                     :value="newCronQueryName"
                     @input="newCronQueryName = $event.target.value"
@@ -88,17 +94,17 @@ SPDX-License-Identifier: Apache-2.0
                 </div>
               </div>
               <div class="col-md-4">
-                <div class="input-group input-group-sm">
+                <div class="arkime-input-group arkime-input-group--fluid">
                   <span
                     id="newCronQueryAction"
-                    class="input-group-text cursor-help">
+                    class="arkime-input-label cursor-help">
                     {{ $t('settings.cron.queryAction') }}<sup>*</sup>
                     <v-tooltip activator="#newCronQueryAction">
                       {{ $t('settings.cron.queryActionTip') }}
                     </v-tooltip>
                   </span>
                   <select
-                    class="form-control form-control-sm"
+                    class="arkime-input-control"
                     :value="newCronQueryAction"
                     @input="newCronQueryAction = $event.target.value">
                     <option value="tag">
@@ -114,10 +120,10 @@ SPDX-License-Identifier: Apache-2.0
                 </div>
               </div>
               <div class="col-md-4">
-                <div class="input-group input-group-sm">
+                <div class="arkime-input-group arkime-input-group--fluid">
                   <span
                     id="newCronQueryTags"
-                    class="input-group-text cursor-help">
+                    class="arkime-input-label cursor-help">
                     {{ $t('settings.cron.tags') }}<sup>*</sup>
                     <v-tooltip activator="#newCronQueryTags">
                       {{ $t('settings.cron.tagsTip') }}
@@ -125,7 +131,7 @@ SPDX-License-Identifier: Apache-2.0
                   </span>
                   <input
                     type="text"
-                    class="form-control"
+                    class="arkime-input-control"
                     :value="newCronQueryTags"
                     @input="newCronQueryTags = $event.target.value"
                     :placeholder="$t('settings.cron.tagsPlaceholder')">
@@ -134,10 +140,10 @@ SPDX-License-Identifier: Apache-2.0
             </div>
             <div class="row mb-2">
               <div class="col">
-                <div class="input-group input-group-sm">
+                <div class="arkime-input-group arkime-input-group--fluid">
                   <span
                     id="newCronQueryExpression"
-                    class="input-group-text cursor-help">
+                    class="arkime-input-label cursor-help">
                     {{ $t('settings.cron.searchExpression') }}<sup>*</sup>
                     <v-tooltip activator="#newCronQueryExpression">
                       {{ $t('settings.cron.searchExpressionTip') }}
@@ -152,17 +158,17 @@ SPDX-License-Identifier: Apache-2.0
             </div>
             <div class="row mb-2">
               <div class="col-md-6">
-                <div class="input-group input-group-sm">
+                <div class="arkime-input-group arkime-input-group--fluid">
                   <span
                     id="newCronQueryProcess"
-                    class="input-group-text cursor-help">
+                    class="arkime-input-label cursor-help">
                     {{ $t('settings.cron.querySince') }}<sup>*</sup>
                     <v-tooltip activator="#newCronQueryProcess">
                       {{ $t('settings.cron.querySinceTip') }}
                     </v-tooltip>
                   </span>
                   <select
-                    class="form-control form-control-sm"
+                    class="arkime-input-control"
                     :value="newCronQueryProcess"
                     @input="newCronQueryProcess = parseInt($event.target.value)">
                     <option
@@ -184,17 +190,17 @@ SPDX-License-Identifier: Apache-2.0
             </div>
             <div class="row mb-2">
               <div class="col">
-                <div class="input-group input-group-sm">
+                <div class="arkime-input-group arkime-input-group--fluid">
                   <span
                     id="newCronQueryDescription"
-                    class="input-group-text cursor-help">
+                    class="arkime-input-label cursor-help">
                     {{ $t('settings.cron.queryDescription') }}
                     <v-tooltip activator="#newCronQueryDescription">
                       {{ $t('settings.cron.queryDescriptionTip') }}
                     </v-tooltip>
                   </span>
                   <textarea
-                    class="form-control"
+                    class="arkime-input-control"
                     :value="newCronQueryDescription"
                     @input="newCronQueryDescription = $event.target.value"
                     :placeholder="$t('settings.cron.queryDescriptionPlaceholder')" />
@@ -216,10 +222,10 @@ SPDX-License-Identifier: Apache-2.0
                   :selected-roles="newCronQueryEditRoles"
                   @selected-roles-updated="updateNewCronQueryEditRoles" />
               </div>
-              <div class="input-group input-group-sm flex-grow-1">
+              <div class="arkime-input-group arkime-input-group--fluid flex-grow-1">
                 <span
                   id="newCronQueryUsers"
-                  class="input-group-text cursor-help">
+                  class="arkime-input-label cursor-help">
                   {{ $t('common.shareWithUsers') }}
                   <v-tooltip activator="#newCronQueryUsers">
                     {{ $t('settings.cron.shareWithUsersTip') }}
@@ -227,7 +233,7 @@ SPDX-License-Identifier: Apache-2.0
                 </span>
                 <input
                   type="text"
-                  class="form-control"
+                  class="arkime-input-control"
                   :value="newCronQueryUsers"
                   @input="newCronQueryUsers = $event.target.value"
                   :placeholder="$t('settings.cron.shareWithUsersPlaceholder')">
@@ -235,30 +241,36 @@ SPDX-License-Identifier: Apache-2.0
             </div>
           </form> <!-- /create form -->
           <!-- create error -->
-          <div
+          <v-alert
             v-if="cronQueryFormError"
+            type="error"
+            variant="tonal"
+            density="compact"
             style="z-index: 2000;"
-            class="mt-2 mb-0 alert alert-danger">
+            class="mt-2 mb-0">
             <span class="fa fa-exclamation-triangle me-1" />
             {{ cronQueryFormError }}
-          </div> <!-- /create error -->
+          </v-alert> <!-- /create error -->
         </v-card-text>
         <v-card-actions>
           <div class="w-100 d-flex justify-content-between">
-            <button
-              type="button"
-              class="btn btn-danger"
+            <v-btn
+              color="error"
+              variant="flat"
+              size="small"
+              density="comfortable"
               :title="$t('common.cancel')"
               @click="showCronModal = false">
-              <span class="fa fa-times" />
+              <span class="fa fa-times me-1" />
               {{ $t('common.cancel') }}
-            </button>
-            <button
-              type="button"
-              class="btn btn-success"
+            </v-btn>
+            <v-btn
+              color="success"
+              variant="flat"
+              size="small"
+              density="comfortable"
               :disabled="cronLoading"
-              @click="createCronQuery"
-              :class="{'disabled':cronLoading}">
+              @click="createCronQuery">
               <template v-if="!cronLoading">
                 <span class="fa fa-plus-circle me-1" />
                 {{ $t('common.create') }}
@@ -267,7 +279,7 @@ SPDX-License-Identifier: Apache-2.0
                 <span class="fa fa-spinner fa-spin me-1" />
                 {{ $t('common.creating') }}
               </template>
-            </button>
+            </v-btn>
           </div>
         </v-card-actions>
       </v-card>
@@ -282,27 +294,28 @@ SPDX-License-Identifier: Apache-2.0
         v-for="(query, index) in cronQueries"
         @keyup.enter="updateCronQuery(query, index)">
         <v-card-title class="cron-card-header">
-          <h6 class="mb-0 d-flex">
-            <div class="input-group input-group-sm flex-grow-1">
-              <span class="input-group-text">
+          <h6 class="mb-0 d-flex align-center">
+            <div class="arkime-input-group arkime-input-group--fluid">
+              <span class="arkime-input-label">
                 {{ $t('settings.cron.queryName') }}<sup>*</sup>
               </span>
               <input
                 type="text"
-                class="form-control"
+                class="arkime-input-control"
                 maxlength="20"
                 :value="query.name"
                 @input="query.name = $event.target.value; cronQueryChanged(query)"
                 :disabled="!canEditCronQuery(query)">
             </div>
-            <div class="ms-2 mt-1">
-              <input
-                type="checkbox"
-                class="form-check-input pull-right"
-                :checked="query.enabled"
+            <div class="ms-2">
+              <v-checkbox
                 :id="`queryEnabled${index}`"
+                :model-value="query.enabled"
                 :disabled="!canEditCronQuery(query)"
-                @change="query.enabled = $event.target.checked; toggleCronQueryEnabled(index)">
+                @update:model-value="query.enabled = $event; toggleCronQueryEnabled(index)"
+                density="compact"
+                hide-details
+                color="primary" />
               <v-tooltip :activator="`#queryEnabled${index}`">
                 {{ query.enabled ? 'Enabled' : 'Disabled' }}
               </v-tooltip>
@@ -310,32 +323,32 @@ SPDX-License-Identifier: Apache-2.0
           </h6>
         </v-card-title>
         <v-card-text>
-          <div class="input-group input-group-sm mb-2">
+          <div class="arkime-input-group arkime-input-group--fluid mb-2">
             <span
               :id="`queryDescription${index}`"
-              class="input-group-text cursor-help">
+              class="arkime-input-label cursor-help">
               {{ $t('settings.cron.queryDescription') }}
               <v-tooltip :activator="`#queryDescription${index}`">
                 {{ $t('settings.cron.queryDescriptionTip') }}
               </v-tooltip>
             </span>
             <textarea
-              class="form-control form-control-sm"
+              class="arkime-input-control"
               :value="query.description"
               @input="query.description = $event.target.value; cronQueryChanged(query)"
               :disabled="!canEditCronQuery(query)" />
           </div>
-          <div class="input-group input-group-sm mb-2">
+          <div class="arkime-input-group arkime-input-group--fluid mb-2">
             <span
               :id="`queryAction${index}`"
-              class="input-group-text cursor-help">
+              class="arkime-input-label cursor-help">
               {{ $t('settings.cron.queryAction') }}<sup>*</sup>
               <v-tooltip :activator="`#queryAction${index}`">
                 Action to perform when a session matches this query
               </v-tooltip>
             </span>
             <select
-              class="form-control form-control-sm"
+              class="arkime-input-control"
               :value="query.action"
               @input="query.action = $event.target.value; cronQueryChanged(query)"
               :disabled="!canEditCronQuery(query)">
@@ -350,9 +363,9 @@ SPDX-License-Identifier: Apache-2.0
               </option>
             </select>
           </div>
-          <div class="input-group input-group-sm mb-2">
+          <div class="arkime-input-group arkime-input-group--fluid mb-2">
             <span
-              class="input-group-text cursor-help"
+              class="arkime-input-label cursor-help"
               :id="`queryTags${index}`">
               {{ $t('settings.cron.tags') }}<sup>*</sup>
               <v-tooltip :activator="`#queryTags${index}`">
@@ -361,14 +374,14 @@ SPDX-License-Identifier: Apache-2.0
             </span>
             <input
               type="text"
-              class="form-control"
+              class="arkime-input-control"
               :value="query.tags"
               @input="query.tags = $event.target.value; cronQueryChanged(query)"
               :disabled="!canEditCronQuery(query)">
           </div>
-          <div class="input-group input-group-sm mb-2">
+          <div class="arkime-input-group arkime-input-group--fluid mb-2">
             <span
-              class="input-group-text cursor-help"
+              class="arkime-input-label cursor-help"
               :id="`queryExpression${index}`">
               {{ $t('settings.cron.searchExpression') }}<sup>*</sup>
               <v-tooltip :activator="`#queryExpression${index}`">
@@ -381,10 +394,10 @@ SPDX-License-Identifier: Apache-2.0
               :disabled="!canEditCronQuery(query)" />
           </div>
           <div
-            class="input-group input-group-sm mb-2"
+            class="arkime-input-group arkime-input-group--fluid mb-2"
             v-if="canEditCronQuery(query)">
             <span
-              class="input-group-text cursor-help"
+              class="arkime-input-label cursor-help"
               :id="`queryUsers${index}`">
               {{ $t('common.shareWithUsers') }}
               <v-tooltip :activator="`#queryUsers${index}`">
@@ -393,7 +406,7 @@ SPDX-License-Identifier: Apache-2.0
             </span>
             <input
               type="text"
-              class="form-control"
+              class="arkime-input-control"
               :value="query.users"
               @input="query.users = $event.target.value; cronQueryChanged(query)">
           </div>
@@ -479,9 +492,11 @@ SPDX-License-Identifier: Apache-2.0
           </div>
         </v-card-text>
         <v-card-actions>
-          <button
-            type="button"
-            class="btn btn-sm btn-warning"
+          <v-btn
+            color="warning"
+            variant="flat"
+            size="small"
+            density="comfortable"
             :id="`openMatches${index}`"
             @click="openCronSessions(query)">
             <span class="fa fa-folder-open fa-fw me-1" />
@@ -489,12 +504,16 @@ SPDX-License-Identifier: Apache-2.0
             <v-tooltip :activator="`#openMatches${index}`">
               {{ $t('settings.cron.openMatchesTip') }}
             </v-tooltip>
-          </button>
+          </v-btn>
+          <v-spacer />
           <template v-if="canEditCronQuery(query)">
             <template v-if="query.changed">
-              <button
-                type="button"
-                class="btn btn-sm btn-warning ms-1"
+              <v-btn
+                color="warning"
+                variant="flat"
+                size="small"
+                density="comfortable"
+                class="ms-1"
                 @click="getCronQueries"
                 :id="`cancel${index}`">
                 <span class="fa fa-ban fa-fw me-1" />
@@ -502,10 +521,13 @@ SPDX-License-Identifier: Apache-2.0
                 <v-tooltip :activator="`#cancel${index}`">
                   {{ $t('settings.cron.cancelTip') }}
                 </v-tooltip>
-              </button>
-              <button
-                type="button"
-                class="btn btn-sm btn-theme-tertiary pull-right ms-1"
+              </v-btn>
+              <v-btn
+                variant="flat"
+                size="small"
+                density="comfortable"
+                :style="tertiaryBtnStyle"
+                class="ms-1"
                 :id="`save${index}`"
                 @click="updateCronQuery(query, index)">
                 <span class="fa fa-save fa-fw me-1" />
@@ -513,12 +535,30 @@ SPDX-License-Identifier: Apache-2.0
                 <v-tooltip :activator="`#save${index}`">
                   {{ $t('settings.cron.saveTip') }}
                 </v-tooltip>
-              </button>
+              </v-btn>
             </template>
             <template v-else>
-              <button
-                type="button"
-                class="btn btn-sm btn-danger pull-right ms-1"
+              <v-btn
+                v-if="canTransfer(query)"
+                color="info"
+                variant="flat"
+                size="small"
+                density="comfortable"
+                icon
+                class="ms-1"
+                :id="`transfer${index}`"
+                @click="openTransferQuery(query)">
+                <span class="fa fa-share fa-fw" />
+                <v-tooltip :activator="`#transfer${index}`">
+                  {{ $t('settings.cron.transferTip') }}
+                </v-tooltip>
+              </v-btn>
+              <v-btn
+                color="error"
+                variant="flat"
+                size="small"
+                density="comfortable"
+                class="ms-1"
                 :id="`delete${index}`"
                 @click="deleteCronQuery(query, index)">
                 <span class="fa fa-trash-o fa-fw me-1" />
@@ -526,18 +566,7 @@ SPDX-License-Identifier: Apache-2.0
                 <v-tooltip :activator="`#delete${index}`">
                   {{ $t('settings.cron.deleteTip') }}
                 </v-tooltip>
-              </button>
-              <button
-                type="button"
-                class="btn btn-sm btn-info ms-1"
-                v-if="canTransfer(query)"
-                :id="`transfer${index}`"
-                @click="openTransferQuery(query)">
-                <span class="fa fa-share fa-fw" />
-                <v-tooltip :activator="`#transfer${index}`">
-                  {{ $t('settings.cron.transferTip') }}
-                </v-tooltip>
-              </button>
+              </v-btn>
             </template>
           </template>
         </v-card-actions>
@@ -597,7 +626,12 @@ export default {
       seeAll: false,
       transferQuery: undefined,
       showCronModal: false,
-      showTransferModal: false
+      showTransferModal: false,
+      // Arkime theme-color v-btn styles. Vuetify :color can't take CSS vars.
+      tertiaryBtnStyle: {
+        backgroundColor: 'var(--color-tertiary)',
+        color: 'var(--color-button, #FFF)'
+      }
     };
   },
   computed: {

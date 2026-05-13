@@ -117,7 +117,9 @@ SPDX-License-Identifier: Apache-2.0
                   </button>
                 </div> <!-- /table fit button -->
                 <!-- column configuration action group: visibility + save layouts -->
-                <div class="btn-group btn-group-sm column-config-actions">
+                <v-btn-group
+                  divided
+                  class="column-config-actions">
                   <!-- column visibility button -->
                   <FieldSelectDropdown
                     :selected-fields="tableState.visibleHeaders"
@@ -133,40 +135,47 @@ SPDX-License-Identifier: Apache-2.0
                     :close-on-content-click="false"
                     location="bottom start">
                     <template #activator="{ props: activatorProps }">
-                      <button
+                      <v-btn
                         v-bind="activatorProps"
-                        type="button"
-                        class="btn btn-sm btn-theme-secondary col-config-trigger d-inline-block">
+                        variant="flat"
+                        size="small"
+                        density="comfortable"
+                        :style="secondaryBtnStyle"
+                        class="col-config-trigger d-inline-block">
                         <span class="fa fa-save" />
                         <v-tooltip
                           activator="parent"
                           location="right">
                           {{ $t('sessions.sessions.customColumnMsg') }}
                         </v-tooltip>
-                      </button>
+                      </v-btn>
                     </template>
                     <v-list
                       density="compact"
                       class="col-config-list">
                       <div class="px-2 py-1">
-                        <div class="input-group input-group-sm">
+                        <div class="arkime-input-group arkime-input-group--fluid">
                           <input
                             autofocus
                             @click.stop
                             maxlength="30"
                             type="text"
-                            class="form-control"
+                            class="arkime-input-control"
                             v-model="newColConfigName"
                             :placeholder="$t('sessions.sessions.customColumnName')"
                             @keydown.enter="saveColumnConfiguration">
-                          <button
-                            type="button"
+                          <v-btn
                             :aria-label="$t('common.save')"
-                            class="btn btn-theme-secondary"
+                            variant="flat"
+                            size="small"
+                            density="comfortable"
+                            icon
+                            class="arkime-input-append-btn"
+                            :style="secondaryBtnStyle"
                             :disabled="!newColConfigName"
                             @click="saveColumnConfiguration">
                             <span class="fa fa-save" />
-                          </button>
+                          </v-btn>
                         </div>
                       </div>
                       <v-divider />
@@ -184,26 +193,43 @@ SPDX-License-Identifier: Apache-2.0
                         v-for="(config, key) in colConfigs"
                         :key="config.name"
                         @click.self.stop.prevent="loadColumnConfiguration(key)">
-                        <button
-                          class="btn btn-xs btn-danger pull-right ms-1"
-                          type="button"
-                          :aria-label="$t('common.delete')"
-                          @click.stop.prevent="deleteColumnConfiguration(config.name, key)">
-                          <span class="fa fa-trash-o" />
-                        </button>
-                        <button
-                          :aria-label="$t('sessions.sessions.customColumnUpdate')"
-                          class="btn btn-xs btn-warning pull-right"
-                          type="button"
-                          @click.stop.prevent="updateColumnConfiguration(config.name, key)">
-                          <span class="fa fa-save" />
-                          <v-tooltip
-                            activator="parent"
-                            location="end">
-                            {{ $t('sessions.sessions.customColumnUpdate') }}
-                          </v-tooltip>
-                        </button>
-                        {{ config.name }}
+                        <div
+                          class="d-flex align-center w-100"
+                          @click.self="loadColumnConfiguration(key)">
+                          <span
+                            class="flex-grow-1"
+                            @click="loadColumnConfiguration(key)">
+                            {{ config.name }}
+                          </span>
+                          <v-btn
+                            :id="`updateCol${key}`"
+                            :aria-label="$t('sessions.sessions.customColumnUpdate')"
+                            color="warning"
+                            variant="flat"
+                            size="small"
+                            density="comfortable"
+                            icon
+                            class="ms-1"
+                            @click.stop.prevent="updateColumnConfiguration(config.name, key)">
+                            <span class="fa fa-save" />
+                            <v-tooltip
+                              :activator="`[id='updateCol${key}']`"
+                              location="end">
+                              {{ $t('sessions.sessions.customColumnUpdate') }}
+                            </v-tooltip>
+                          </v-btn>
+                          <v-btn
+                            :aria-label="$t('common.delete')"
+                            color="error"
+                            variant="flat"
+                            size="small"
+                            density="comfortable"
+                            icon
+                            class="ms-1"
+                            @click.stop.prevent="deleteColumnConfiguration(config.name, key)">
+                            <span class="fa fa-trash-o" />
+                          </v-btn>
+                        </div>
                       </v-list-item>
                     </v-list>
                     <v-alert
@@ -223,7 +249,7 @@ SPDX-License-Identifier: Apache-2.0
                       {{ colConfigSuccess }}
                     </v-alert>
                   </v-menu> <!-- /column save menu -->
-                </div> <!-- /column configuration action group -->
+                </v-btn-group> <!-- /column configuration action group -->
               </th> <!-- /table options -->
               <!-- table headers -->
               <template v-if="headers && headers.length">
@@ -244,46 +270,55 @@ SPDX-License-Identifier: Apache-2.0
                     class="cursor-pointer">
                     {{ header.friendlyName }}
                     <!-- info column action group: save layouts + toggle field visibility -->
-                    <div class="btn-group btn-group-sm pull-right info-col-actions">
+                    <v-btn-group
+                      divided
+                      class="float-end info-col-actions">
                       <!-- info field config button -->
                       <v-menu
                         :close-on-content-click="false"
                         location="bottom end">
                         <template #activator="{ props: activatorProps }">
-                          <button
+                          <v-btn
                             v-bind="activatorProps"
-                            type="button"
-                            class="info-vis-menu col-dropdown btn btn-sm btn-theme-secondary">
+                            variant="flat"
+                            size="small"
+                            density="comfortable"
+                            :style="secondaryBtnStyle"
+                            class="info-vis-menu col-dropdown">
                             <span class="fa fa-save" />
                             <v-tooltip
                               activator="parent"
                               location="right">
                               {{ $t('sessions.sessions.customInfoMsg') }}
                             </v-tooltip>
-                          </button>
+                          </v-btn>
                         </template>
                         <v-list
                           density="compact"
                           class="col-dropdown-menu">
                           <div class="px-2 py-1">
-                            <div class="input-group input-group-sm">
+                            <div class="arkime-input-group arkime-input-group--fluid">
                               <input
                                 autofocus
                                 @click.stop
                                 maxlength="30"
                                 type="text"
-                                class="form-control"
+                                class="arkime-input-control"
                                 v-model="newInfoConfigName"
                                 :placeholder="$t('sessions.sessions.customInfoName')"
                                 @keydown.enter="saveInfoFieldLayout">
-                              <button
-                                type="button"
+                              <v-btn
                                 :aria-label="$t('common.save')"
-                                class="btn btn-theme-secondary"
+                                variant="flat"
+                                size="small"
+                                density="comfortable"
+                                icon
+                                class="arkime-input-append-btn"
+                                :style="secondaryBtnStyle"
                                 :disabled="!newInfoConfigName"
                                 @click="saveInfoFieldLayout">
                                 <span class="fa fa-save" />
-                              </button>
+                              </v-btn>
                             </div>
                           </div>
                           <v-divider />
@@ -308,26 +343,43 @@ SPDX-License-Identifier: Apache-2.0
                               v-for="(config, key) in infoConfigs"
                               :key="config.name"
                               @click.self.stop.prevent="loadInfoFieldLayout(key)">
-                              <button
-                                class="btn btn-xs btn-danger pull-right ms-1"
-                                type="button"
-                                :aria-label="$t('common.delete')"
-                                @click.stop.prevent="deleteInfoFieldLayout(config.name, key)">
-                                <span class="fa fa-trash-o" />
-                              </button>
-                              <button
-                                :aria-label="$t('sessions.sessions.customInfoUpdate')"
-                                class="btn btn-xs btn-warning pull-right"
-                                type="button"
-                                @click.stop.prevent="updateInfoFieldLayout(config.name, key)">
-                                <span class="fa fa-save" />
-                                <v-tooltip
-                                  activator="parent"
-                                  location="end">
-                                  {{ $t('sessions.sessions.customInfoUpdate') }}
-                                </v-tooltip>
-                              </button>
-                              {{ config.name }}
+                              <div
+                                class="d-flex align-center w-100"
+                                @click.self="loadInfoFieldLayout(key)">
+                                <span
+                                  class="flex-grow-1"
+                                  @click="loadInfoFieldLayout(key)">
+                                  {{ config.name }}
+                                </span>
+                                <v-btn
+                                  :id="`updateInfo${key}`"
+                                  :aria-label="$t('sessions.sessions.customInfoUpdate')"
+                                  color="warning"
+                                  variant="flat"
+                                  size="small"
+                                  density="comfortable"
+                                  icon
+                                  class="ms-1"
+                                  @click.stop.prevent="updateInfoFieldLayout(config.name, key)">
+                                  <span class="fa fa-save" />
+                                  <v-tooltip
+                                    :activator="`[id='updateInfo${key}']`"
+                                    location="end">
+                                    {{ $t('sessions.sessions.customInfoUpdate') }}
+                                  </v-tooltip>
+                                </v-btn>
+                                <v-btn
+                                  :aria-label="$t('common.delete')"
+                                  color="error"
+                                  variant="flat"
+                                  size="small"
+                                  density="comfortable"
+                                  icon
+                                  class="ms-1"
+                                  @click.stop.prevent="deleteInfoFieldLayout(config.name, key)">
+                                  <span class="fa fa-trash-o" />
+                                </v-btn>
+                              </div>
                             </v-list-item>
                           </transition-group>
                           <v-alert
@@ -424,7 +476,7 @@ SPDX-License-Identifier: Apache-2.0
                           </template>
                         </v-list>
                       </v-menu> <!-- /info field visibility button -->
-                    </div> <!-- /info column action group -->
+                    </v-btn-group> <!-- /info column action group -->
                   </span> <!-- /non-sortable column -->
                   <!-- column dropdown menu -->
                   <v-menu location="bottom end">
@@ -827,7 +879,12 @@ export default {
       maxVisibleFields: 50, // limit initial field rendering for performance
       showAllFields: false,
       showAllInfoFields: false,
-      tableState: Utils.getDefaultTableState()
+      tableState: Utils.getDefaultTableState(),
+      // Arkime theme-color v-btn style. Vuetify :color can't take CSS vars.
+      secondaryBtnStyle: {
+        backgroundColor: 'var(--color-secondary)',
+        color: 'var(--color-button, #FFF)'
+      }
     };
   },
   created: function () {
@@ -2300,26 +2357,12 @@ table.sessions-table.sticky-header > tbody {
   margin-right: 5px;
 }
 
-/* Action button groups: kill the per-button margins that the .info-vis-menu
-   / column-trigger global rules add, so adjacent buttons share corners and
-   read as one unified group. */
-.info-col-actions.btn-group {
+/* Action button groups: render adjacent v-btn dropdowns (column
+   visibility + column save / info field visibility + info save) as
+   one unified pill. v-btn-group + divided handles the shared-corner
+   styling natively; only nudge the info-col-actions margin. */
+.info-col-actions {
   margin-right: 5px;
-}
-.info-col-actions.btn-group > .btn,
-.column-config-actions.btn-group > .btn {
-  margin: 0 !important;
-}
-.info-col-actions.btn-group > .btn:not(:first-child),
-.column-config-actions.btn-group > .btn:not(:first-child) {
-  border-top-left-radius: 0;
-  border-bottom-left-radius: 0;
-  margin-left: -1px !important;
-}
-.info-col-actions.btn-group > .btn:not(:last-child),
-.column-config-actions.btn-group > .btn:not(:last-child) {
-  border-top-right-radius: 0;
-  border-bottom-right-radius: 0;
 }
 
 /* table fit button -------------------------- */

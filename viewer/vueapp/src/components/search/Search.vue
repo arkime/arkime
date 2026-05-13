@@ -128,241 +128,249 @@ SPDX-License-Identifier: Apache-2.0
           v-if="multiviewer"
           :select-one="$route.name === 'Hunt'" /> <!-- cluster dropdown menu -->
 
-      <!-- actions dropdown menu -->
-      <v-menu
-        v-if="!hideActions && $route.name === 'Sessions'"
-        location="bottom end">
-        <template #activator="{ props: activatorProps }">
-          <v-btn
-            v-bind="activatorProps"
-            variant="flat"
-            size="small"
-            density="comfortable"
-            class="action-menu-dropdown"
-            :style="primaryBtnStyle"
-            title="Actions menu">
-            <span class="fa fa-caret-down" />
-          </v-btn>
-        </template>
-        <v-list density="compact">
-          <v-list-item
-            @click="exportPCAP"
-            v-has-permission="'!disablePcapDownload'">
-            <span class="fa fa-fw fa-file-o" />&nbsp;
-            {{ $t('sessions.exports.exportPCAP') }}
-            <v-tooltip
-              activator="parent"
-              location="left">
-              {{ $t('sessions.exports.exportPCAP') }}
-            </v-tooltip>
-          </v-list-item>
-          <v-list-item
-            @click="exportCSV">
-            <span class="fa fa-fw fa-file-excel-o" />&nbsp;
-            {{ $t('sessions.exports.exportCSV') }}
-            <v-tooltip
-              activator="parent"
-              location="left">
-              {{ $t('sessions.exports.exportCSV') }}
-            </v-tooltip>
-          </v-list-item>
-          <v-list-item
-            @click="addTags">
-            <span class="fa fa-fw fa-tags" />&nbsp;
-            {{ $t('sessions.tag.addTags') }}
-            <v-tooltip
-              activator="parent"
-              location="left">
-              {{ $t('sessions.tag.addTags') }}
-            </v-tooltip>
-          </v-list-item>
-          <v-list-item
-            @click="removeTags"
-            v-has-permission="'removeEnabled'">
-            <span class="fa fa-fw fa-eraser" />&nbsp;
-            {{ $t('sessions.tag.removeTags') }}
-            <v-tooltip
-              activator="parent"
-              location="left">
-              {{ $t('sessions.tag.removeTags') }}
-            </v-tooltip>
-          </v-list-item>
-          <v-list-item
-            @click="removeData"
-            v-has-permission="'removeEnabled'">
-            <span class="fa fa-fw fa-trash-o" />&nbsp;
-            {{ $t('search.removeData') }}
-            <v-tooltip
-              activator="parent"
-              location="left">
-              {{ $t('search.removeData') }}
-            </v-tooltip>
-          </v-list-item>
-          <v-list-item
-            v-for="(clusterInfo, key) in arkimeClusters"
-            :key="key"
-            @click="sendSession(key)">
-            <span class="fa fa-fw fa-paper-plane-o" />&nbsp;
-            {{ $t('search.sendSession', { name: clusterInfo.name }) }}
-            <v-tooltip
-              activator="parent"
-              location="left">
-              {{ $t('search.sendSession', { name: clusterInfo.name }) }}
-            </v-tooltip>
-          </v-list-item>
-          <v-list-item
-            @click="viewIntersection">
-            <span class="fa fa-fw fa-venn">
-              <span class="fa fa-circle-o" />
-              <span class="fa fa-circle-o" />
-            </span>&nbsp;
-            {{ $t('sessions.intersection.title') }}
-            <v-tooltip
-              activator="parent"
-              location="left">
-              {{ $t('sessions.intersection.title') }}
-            </v-tooltip>
-          </v-list-item>
-          <v-list-item
-            v-if="!multiviewer"
-            @click="periodicQuery">
-            <span class="fa fa-fw fa-search" />&nbsp;
-            {{ $t('search.createPeriodicQuery') }}
-            <v-tooltip
-              activator="parent"
-              location="left">
-              {{ $t('search.createPeriodicQuery') }}
-            </v-tooltip>
-          </v-list-item>
-        </v-list>
-      </v-menu> <!-- /actions dropdown menu -->
-
-      <!-- views dropdown menu -->
-      <v-menu location="bottom end">
-        <template #activator="{ props: activatorProps }">
-          <v-btn
-            v-bind="activatorProps"
-            variant="flat"
-            size="small"
-            density="comfortable"
-            class="view-menu-dropdown"
-            :style="secondaryBtnStyle">
-            <template v-if="view && views && getView(view)">
-              <span id="viewMenuDropdown">
-                <span class="fa fa-eye me-1" />
-                <span v-if="view">{{ getView(view).name || view }}</span>
+        <!-- views dropdown menu -->
+        <v-menu location="bottom end">
+          <template #activator="{ props: activatorProps }">
+            <v-btn
+              v-bind="activatorProps"
+              variant="flat"
+              size="small"
+              density="comfortable"
+              class="view-menu-dropdown"
+              :style="secondaryBtnStyle">
+              <template v-if="view && views && getView(view)">
+                <span id="viewMenuDropdown">
+                  <span class="fa fa-eye me-1" />
+                  <span v-if="view">{{ getView(view).name || view }}</span>
+                  <span class="sr-only">{{ $t('common.views') }}</span>
+                </span>
+                <v-tooltip activator="#viewMenuDropdown">
+                  {{ getView(view).expression || '' }}
+                </v-tooltip>
+              </template>
+              <template v-else>
+                <span class="fa fa-eye" />
                 <span class="sr-only">{{ $t('common.views') }}</span>
-              </span>
-              <v-tooltip activator="#viewMenuDropdown">
-                {{ getView(view).expression || '' }}
+              </template>
+            </v-btn>
+          </template>
+          <v-list density="compact">
+            <v-list-item
+              @click="modView()">
+              <span class="fa fa-plus-circle" />&nbsp;
+              {{ $t('search.newView') }}
+              <v-tooltip
+                activator="parent"
+                location="left">
+                Create a new view
               </v-tooltip>
-            </template>
-            <template v-else>
-              <span class="fa fa-eye" />
-              <span class="sr-only">{{ $t('common.views') }}</span>
-            </template>
-          </v-btn>
-        </template>
-        <v-list density="compact">
-          <v-list-item
-            @click="modView()">
-            <span class="fa fa-plus-circle" />&nbsp;
-            {{ $t('search.newView') }}
-            <v-tooltip
-              activator="parent"
-              location="left">
-              Create a new view
-            </v-tooltip>
-          </v-list-item>
-          <v-divider />
-          <v-list-item
-            @click="setView(undefined)"
-            :active="!view">
-            {{ $t('common.none') }}
-          </v-list-item>
-          <v-list-item
-            v-for="(value, index) in views"
-            :id="`view${value.id}`"
-            :key="value.id"
-            :active="view === value.id"
-            @click.self="setView(value.id)">
-            <span
-              v-if="value.shared"
-              class="fa fa-share-square" />
-            <!-- view action buttons -->
-            <template v-if="canEditView(value)">
-              <v-btn
-                :id="`deleteView${value.id}`"
-                :aria-label="$t('search.deleteView')"
-                color="error"
-                variant="flat"
-                size="small"
-                density="comfortable"
-                icon
-                class="float-right ms-1"
-                @click.stop.prevent="deleteView(value.id, index)">
-                <span class="fa fa-trash-o" />
-                <v-tooltip :activator="`[id='deleteView${value.id}']`">
-                  {{ $t('search.deleteView') }}
-                </v-tooltip>
-              </v-btn>
-              <v-btn
-                :id="`editView${value.id}`"
-                :aria-label="$t('search.editView')"
-                color="warning"
-                variant="flat"
-                size="small"
-                density="comfortable"
-                icon
-                class="float-right ms-1"
-                @click.stop.prevent="modView(views[index])">
-                <span class="fa fa-edit" />
-                <v-tooltip :activator="`[id='editView${value.id}']`">
-                  {{ $t('search.editView') }}
-                </v-tooltip>
-              </v-btn>
-            </template>
+            </v-list-item>
+            <v-divider />
+            <v-list-item
+              @click="setView(undefined)"
+              :active="!view">
+              {{ $t('common.none') }}
+            </v-list-item>
+            <v-list-item
+              v-for="(value, index) in views"
+              :id="`view${value.id}`"
+              :key="value.id"
+              :active="view === value.id"
+              @click.self="setView(value.id)">
+              <div
+                class="d-flex align-center w-100"
+                @click.self="setView(value.id)">
+                <span
+                  v-if="value.shared"
+                  class="fa fa-share-square me-1" />
+                <span
+                  class="flex-grow-1"
+                  @click="setView(value.id)">
+                  {{ value.name }}
+                </span>
+                <!-- view action buttons -->
+                <v-btn
+                  v-if="value.sessionsColConfig && $route.name === 'Sessions'"
+                  :id="`applyColumns${value.id}`"
+                  :aria-label="$t('search.applyColumns')"
+                  variant="flat"
+                  size="small"
+                  density="comfortable"
+                  icon
+                  class="ms-1"
+                  :style="tertiaryBtnStyle"
+                  @click.stop.prevent="applyColumns(value)">
+                  <span class="fa fa-columns" />
+                  <v-tooltip :activator="`[id='applyColumns${value.id}']`">
+                    {{ $t('search.applyColumns') }}
+                  </v-tooltip>
+                </v-btn>
+                <v-btn
+                  :id="`applyView${value.id}`"
+                  :aria-label="$t('search.applyView')"
+                  variant="flat"
+                  size="small"
+                  density="comfortable"
+                  icon
+                  class="ms-1"
+                  :style="secondaryBtnStyle"
+                  @click.stop.prevent="applyView(value)">
+                  <span class="fa fa-share fa-flip-horizontal" />
+                  <v-tooltip :activator="`[id='applyView${value.id}']`">
+                    {{ $t('search.applyView') }}
+                  </v-tooltip>
+                </v-btn>
+                <template v-if="canEditView(value)">
+                  <v-btn
+                    :id="`editView${value.id}`"
+                    :aria-label="$t('search.editView')"
+                    color="warning"
+                    variant="flat"
+                    size="small"
+                    density="comfortable"
+                    icon
+                    class="ms-1"
+                    @click.stop.prevent="modView(views[index])">
+                    <span class="fa fa-edit" />
+                    <v-tooltip :activator="`[id='editView${value.id}']`">
+                      {{ $t('search.editView') }}
+                    </v-tooltip>
+                  </v-btn>
+                  <v-btn
+                    :id="`deleteView${value.id}`"
+                    :aria-label="$t('search.deleteView')"
+                    color="error"
+                    variant="flat"
+                    size="small"
+                    density="comfortable"
+                    icon
+                    class="ms-1"
+                    @click.stop.prevent="deleteView(value.id, index)">
+                    <span class="fa fa-trash-o" />
+                    <v-tooltip :activator="`[id='deleteView${value.id}']`">
+                      {{ $t('search.deleteView') }}
+                    </v-tooltip>
+                  </v-btn>
+                </template>
+                <!-- /view action buttons -->
+              </div>
+              <v-tooltip
+                :activator="`[id='view${value.id}']`"
+                location="left">
+                {{ value.expression }}
+              </v-tooltip>
+            </v-list-item>
+          </v-list>
+        </v-menu> <!-- /views dropdown menu -->
+
+        <!-- actions dropdown menu -->
+        <v-menu
+          v-if="!hideActions && $route.name === 'Sessions'"
+          location="bottom end">
+          <template #activator="{ props: activatorProps }">
             <v-btn
-              :id="`applyView${value.id}`"
-              :aria-label="$t('search.applyView')"
+              v-bind="activatorProps"
               variant="flat"
               size="small"
               density="comfortable"
-              icon
-              class="float-right ms-1"
-              :style="secondaryBtnStyle"
-              @click.stop.prevent="applyView(value)">
-              <span class="fa fa-share fa-flip-horizontal" />
-              <v-tooltip :activator="`[id='applyView${value.id}']`">
-                {{ $t('search.applyView') }}
-              </v-tooltip>
+              class="action-menu-dropdown"
+              :style="primaryBtnStyle"
+              title="Actions menu">
+              <span class="fa fa-caret-down" />
             </v-btn>
-            <v-btn
-              v-if="value.sessionsColConfig && $route.name === 'Sessions'"
-              :id="`applyColumns${value.id}`"
-              :aria-label="$t('search.applyColumns')"
-              variant="flat"
-              size="small"
-              density="comfortable"
-              icon
-              class="float-right"
-              :style="tertiaryBtnStyle"
-              @click.stop.prevent="applyColumns(value)">
-              <span class="fa fa-columns" />
-              <v-tooltip :activator="`[id='applyColumns${value.id}']`">
-                {{ $t('search.applyColumns') }}
+          </template>
+          <v-list density="compact">
+            <v-list-item
+              @click="exportPCAP"
+              v-has-permission="'!disablePcapDownload'">
+              <span class="fa fa-fw fa-file-o" />&nbsp;
+              {{ $t('sessions.exports.exportPCAP') }}
+              <v-tooltip
+                activator="parent"
+                location="left">
+                {{ $t('sessions.exports.exportPCAP') }}
               </v-tooltip>
-            </v-btn>
-            <!-- /view action buttons -->
-            {{ value.name }}&nbsp;
-            <v-tooltip
-              :activator="`[id='view${value.id}']`"
-              location="left">
-              {{ value.expression }}
-            </v-tooltip>
-          </v-list-item>
-        </v-list>
-      </v-menu> <!-- /views dropdown menu -->
+            </v-list-item>
+            <v-list-item
+              @click="exportCSV">
+              <span class="fa fa-fw fa-file-excel-o" />&nbsp;
+              {{ $t('sessions.exports.exportCSV') }}
+              <v-tooltip
+                activator="parent"
+                location="left">
+                {{ $t('sessions.exports.exportCSV') }}
+              </v-tooltip>
+            </v-list-item>
+            <v-list-item
+              @click="addTags">
+              <span class="fa fa-fw fa-tags" />&nbsp;
+              {{ $t('sessions.tag.addTags') }}
+              <v-tooltip
+                activator="parent"
+                location="left">
+                {{ $t('sessions.tag.addTags') }}
+              </v-tooltip>
+            </v-list-item>
+            <v-list-item
+              @click="removeTags"
+              v-has-permission="'removeEnabled'">
+              <span class="fa fa-fw fa-eraser" />&nbsp;
+              {{ $t('sessions.tag.removeTags') }}
+              <v-tooltip
+                activator="parent"
+                location="left">
+                {{ $t('sessions.tag.removeTags') }}
+              </v-tooltip>
+            </v-list-item>
+            <v-list-item
+              @click="removeData"
+              v-has-permission="'removeEnabled'">
+              <span class="fa fa-fw fa-trash-o" />&nbsp;
+              {{ $t('search.removeData') }}
+              <v-tooltip
+                activator="parent"
+                location="left">
+                {{ $t('search.removeData') }}
+              </v-tooltip>
+            </v-list-item>
+            <v-list-item
+              v-for="(clusterInfo, key) in arkimeClusters"
+              :key="key"
+              @click="sendSession(key)">
+              <span class="fa fa-fw fa-paper-plane-o" />&nbsp;
+              {{ $t('search.sendSession', { name: clusterInfo.name }) }}
+              <v-tooltip
+                activator="parent"
+                location="left">
+                {{ $t('search.sendSession', { name: clusterInfo.name }) }}
+              </v-tooltip>
+            </v-list-item>
+            <v-list-item
+              @click="viewIntersection">
+              <span class="fa fa-fw fa-venn">
+                <span class="fa fa-circle-o" />
+                <span class="fa fa-circle-o" />
+              </span>&nbsp;
+              {{ $t('sessions.intersection.title') }}
+              <v-tooltip
+                activator="parent"
+                location="left">
+                {{ $t('sessions.intersection.title') }}
+              </v-tooltip>
+            </v-list-item>
+            <v-list-item
+              v-if="!multiviewer"
+              @click="periodicQuery">
+              <span class="fa fa-fw fa-search" />&nbsp;
+              {{ $t('search.createPeriodicQuery') }}
+              <v-tooltip
+                activator="parent"
+                location="left">
+                {{ $t('search.createPeriodicQuery') }}
+              </v-tooltip>
+            </v-list-item>
+          </v-list>
+        </v-menu> <!-- /actions dropdown menu -->
       </div> <!-- /search row -->
 
       <!-- time inputs -->

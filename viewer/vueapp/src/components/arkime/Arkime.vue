@@ -15,16 +15,16 @@ SPDX-License-Identifier: Apache-2.0
           @recalc-collapse="$emit('recalc-collapse')" />
 
         <!-- toolbar row -->
-        <div class="d-flex justify-content-start align-items-center m-1">
+        <div class="d-flex justify-content-start align-items-center ms-2 m-1 gap-2">
           <!-- results per widget dropdown -->
           <v-menu>
             <template #activator="{ props }">
               <v-btn
                 v-bind="props"
                 size="small"
+                density="comfortable"
                 variant="flat"
-                color="secondary"
-                class="ms-2">
+                color="secondary">
                 {{ summaryResultsLimit }}
                 <v-icon end>fa-caret-down</v-icon>
               </v-btn>
@@ -46,9 +46,9 @@ SPDX-License-Identifier: Apache-2.0
               <v-btn
                 v-bind="props"
                 size="small"
+                density="comfortable"
                 variant="flat"
-                color="secondary"
-                class="ms-2">
+                color="secondary">
                 {{ summaryOrder === 'asc' ? 'Bottom' : 'Top' }}
                 <v-icon end>fa-caret-down</v-icon>
               </v-btn>
@@ -71,9 +71,9 @@ SPDX-License-Identifier: Apache-2.0
           <v-btn
             :aria-label="$t('sessions.summary.exportAllPNG')"
             size="small"
+            density="comfortable"
             variant="flat"
             color="secondary"
-            class="ms-2"
             @click="exportAllPNG">
             <span class="fa fa-download" />
             <v-tooltip
@@ -85,7 +85,6 @@ SPDX-License-Identifier: Apache-2.0
 
           <!-- summary field visibility dropdown -->
           <FieldSelectDropdown
-            class="ms-2"
             :selected-fields="summaryFields"
             :tooltip-text="$t('sessions.summary.toggleFields')"
             :search-placeholder="$t('sessions.summary.searchFields')"
@@ -96,7 +95,6 @@ SPDX-License-Identifier: Apache-2.0
 
           <!-- summary config dropdown -->
           <SummaryConfigDropdown
-            class="ms-2"
             :current-config="currentSummaryConfig"
             @load="loadSummaryConfigFromShareable"
             @reset="resetSummaryToDefaults"
@@ -106,9 +104,9 @@ SPDX-License-Identifier: Apache-2.0
           <v-btn
             v-if="summaryStreaming"
             size="small"
+            density="comfortable"
             variant="flat"
             color="warning"
-            class="ms-2"
             @click="cancelSummaryLoading">
             <span class="fa fa-ban" />&nbsp;
             {{ $t('common.cancel') }}

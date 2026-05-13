@@ -29,12 +29,14 @@ SPDX-License-Identifier: Apache-2.0
         <div
           v-if="canCancel"
           class="mt-1">
-          <button
-            type="button"
-            @click="cancel"
-            class="btn btn-sm btn-theme-primary">
+          <v-btn
+            variant="flat"
+            size="small"
+            density="comfortable"
+            :style="primaryBtnStyle"
+            @click="cancel">
             cancel
-          </button>
+          </v-btn>
         </div>
       </div>
     </div>
@@ -55,7 +57,12 @@ export default {
     return {
       bouncing: false,
       watching: 'assets/watching.gif',
-      logo: 'assets/Arkime_Logo_Mark_FullGradient.png'
+      logo: 'assets/Arkime_Logo_Mark_FullGradient.png',
+      // Arkime theme-color v-btn style. Vuetify :color can't take CSS vars.
+      primaryBtnStyle: {
+        backgroundColor: 'var(--color-primary)',
+        color: 'var(--color-button, #FFF)'
+      }
     };
   },
   computed: {

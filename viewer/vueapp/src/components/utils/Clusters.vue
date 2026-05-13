@@ -14,26 +14,31 @@ SPDX-License-Identifier: Apache-2.0
       :close-on-content-click="false"
       location="bottom end">
       <template #activator="{ props: activatorProps }">
-        <button
+        <v-btn
           v-bind="activatorProps"
-          type="button"
-          class="btn btn-sm btn-theme-secondary ms-1 rounded multies-menu-trigger">
+          variant="flat"
+          size="small"
+          density="comfortable"
+          :style="secondaryBtnStyle"
+          class="ms-1 multies-menu-trigger">
           <span class="fa fa-database me-1" />
           {{ selectedCluster.length }}
           <v-tooltip activator="parent">
             {{ esMenuHoverText }}
           </v-tooltip>
-        </button>
+        </v-btn>
       </template>
       <v-list
         density="compact"
         class="multies-menu-list">
         <div class="px-2 py-1">
-          <input
-            type="text"
-            v-model="esQuery"
-            class="form-control form-control-sm"
-            :placeholder="$t('utils.searchForClustersPlaceholder')">
+          <div class="arkime-input-group arkime-input-group--fluid">
+            <input
+              type="text"
+              v-model="esQuery"
+              class="arkime-input-control"
+              :placeholder="$t('utils.searchForClustersPlaceholder')">
+          </div>
         </div>
         <template v-if="!selectOne">
           <v-divider />
@@ -68,17 +73,17 @@ SPDX-License-Identifier: Apache-2.0
         </template>
       </v-list>
     </v-menu>
-    <div
+    <v-alert
       v-if="showMessage"
-      class="alert alert-warning position-fixed fixed-bottom m-0 rounded-0"
-      style="z-index: 2000;">
-      <button
-        type="button"
-        :aria-label="$t('common.dismiss')"
-        class="btn-close float-end"
-        @click="showMessage = false" />
+      type="warning"
+      variant="tonal"
+      density="compact"
+      closable
+      style="z-index: 2000;"
+      class="position-fixed fixed-bottom m-0 rounded-0"
+      @click:close="showMessage = false">
       {{ $t('utils.onlyOne') }}
-    </div>
+    </v-alert>
   </div>
 </template>
 
@@ -99,7 +104,12 @@ export default {
       esQuery: '', // query for ES to toggle visibility
       showMessage: false,
       esVisMenuOpen: false,
-      multiviewer: this.$constants.MULTIVIEWER
+      multiviewer: this.$constants.MULTIVIEWER,
+      // Arkime theme-color v-btn style. Vuetify :color can't take CSS vars.
+      secondaryBtnStyle: {
+        backgroundColor: 'var(--color-secondary)',
+        color: 'var(--color-button, #FFF)'
+      }
     };
   },
   watch: {

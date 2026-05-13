@@ -14,18 +14,23 @@ SPDX-License-Identifier: Apache-2.0
           class="text-center">
           <v-alert
             type="info"
+            :icon="false"
             density="compact"
             variant="tonal"
-            class="d-inline-block">
-            <strong>
-              {{ $t('vis.hideViz', { days: turnOffGraphDays }) }}
-            </strong>
-            <span class="fa fa-info-circle fa-lg ms-1 me-1 cursor-help">
-              <v-tooltip activator="parent">
+            class="d-inline-block text-start">
+            <template #title>
+              <span>
+                {{ $t('vis.hideViz', { days: turnOffGraphDays }) }}
+              </span>
+              <v-icon
+                id="hideVizInfo"
+                icon="fa-info-circle"
+                size="small"
+                class="ms-1 cursor-help" />
+              <v-tooltip activator="#hideVizInfo">
                 {{ $t('vis.hideVizTip') }}
               </v-tooltip>
-            </span>
-            <br>
+            </template>
             {{ $t('vis.hideVizMore') }}
           </v-alert>
         </div>

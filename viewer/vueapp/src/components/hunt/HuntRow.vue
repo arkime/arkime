@@ -17,15 +17,21 @@ SPDX-License-Identifier: Apache-2.0
         :queue-count="job.queueCount"
         :hide-text="true" />
       &nbsp;
-      <span
-        class="badge bg-secondary cursor-help percent-done-badge"
+      <v-chip
+        size="x-small"
+        variant="flat"
+        color="grey"
+        class="cursor-help percent-done-badge"
         v-if="job.failedSessionIds && job.failedSessionIds.length"
         :id="`jobmatches${job.id}`">
         {{ round((((job.searchedSessions - job.failedSessionIds.length) / job.totalSessions) * 100), 1) }}%
-      </span>
-      <span
+      </v-chip>
+      <v-chip
         v-else
-        class="badge bg-secondary cursor-help percent-done-badge"
+        size="x-small"
+        variant="flat"
+        color="grey"
+        class="cursor-help percent-done-badge"
         :id="`jobmatches${job.id}`">
         {{ round(((job.searchedSessions / job.totalSessions) * 100), 1) }}%
         <v-tooltip
@@ -58,16 +64,19 @@ SPDX-License-Identifier: Apache-2.0
               })" />
           </div>
         </v-tooltip>
-      </span>
+      </v-chip>
       <template v-if="job.errors && job.errors.length">
-        <span
+        <v-chip
           :id="`joberrors${job.id}`"
-          class="badge bg-danger cursor-help">
+          size="x-small"
+          variant="flat"
+          color="error"
+          class="cursor-help ms-1">
           <span class="fa fa-exclamation-triangle" />
           <v-tooltip :activator="`[id='joberrors${job.id}']`">
             {{ $t('hunts.hadErrorsTip') }}
           </v-tooltip>
-        </span>
+        </v-chip>
       </template>
     </td>
     <td>
@@ -100,15 +109,19 @@ SPDX-License-Identifier: Apache-2.0
         {{ job.id }}
       </span>
     </td>
-    <td class="no-wrap">
+    <td class="no-wrap text-end">
       <template v-if="canEdit">
-        <button
+        <v-btn
           :id="`removejob${job.id}`"
           @click="$emit('removeJob', job, arrayName)"
           :disabled="job.loading"
-          type="button"
+          icon
+          color="error"
+          variant="flat"
+          size="small"
+          density="comfortable"
           :aria-label="$t('hunts.removeHuntTip')"
-          class="ms-1 pull-right btn btn-sm btn-danger">
+          class="ms-1">
           <span
             v-if="!job.loading"
             class="fa fa-trash-o fa-fw" />
@@ -118,14 +131,18 @@ SPDX-License-Identifier: Apache-2.0
           <v-tooltip :activator="`[id='removejob${job.id}']`">
             {{ $t('hunts.removeHuntTip') }}
           </v-tooltip>
-        </button>
+        </v-btn>
       </template>
-      <button
-        type="button"
+      <v-btn
         :id="`remove${job.id}`"
         @click="$emit('removeFromSessions', job)"
         :aria-label="$t('common.remove')"
-        class="ms-1 pull-right btn btn-sm btn-danger"
+        icon
+        color="error"
+        variant="flat"
+        size="small"
+        density="comfortable"
+        class="ms-1"
         v-if="canEdit && canRemoveFromSessions"
         :disabled="job.loading || !job.matchedSessions || job.removed || !user.removeEnabled">
         <span
@@ -139,57 +156,73 @@ SPDX-License-Identifier: Apache-2.0
           :activator="`[id='remove${job.id}']`">
           <span v-html="$t('hunts.removeFromSessionsTipHtml')" />
         </v-tooltip>
-      </button>
-      <span v-if="canView">
-        <button
-          type="button"
+      </v-btn>
+      <template v-if="canView">
+        <v-btn
           @click="$emit('openSessions', job)"
           :disabled="!job.matchedSessions || job.removed"
           :id="`openresults${job.id}`"
           :aria-label="$t('common.open')"
-          class="ms-1 pull-right btn btn-sm btn-theme-primary">
+          icon
+          variant="flat"
+          size="small"
+          density="comfortable"
+          :style="primaryBtnStyle"
+          class="ms-1">
           <span class="fa fa-folder-open fa-fw" />
           <v-tooltip
             v-if="job.matchedSessions && !job.removed"
             :activator="`[id='openresults${job.id}']`">
             <span v-html="$t('hunts.openSessionsTipHtml')" />
           </v-tooltip>
-        </button>
-      </span>
+        </v-btn>
+      </template>
       <template v-if="canRerun && !job.unrunnable && (canView)">
-        <button
+        <v-btn
           :id="`rerun${job.id}`"
-          type="button"
           @click="$emit('rerunJob', job)"
           :aria-label="$t('hunts.rerunTip')"
-          class="ms-1 pull-right btn btn-sm btn-theme-secondary">
+          icon
+          variant="flat"
+          size="small"
+          density="comfortable"
+          :style="secondaryBtnStyle"
+          class="ms-1">
           <span class="fa fa-refresh fa-fw" />
           <v-tooltip :activator="`[id='rerun${job.id}']`">
             {{ $t('hunts.rerunTip') }}
           </v-tooltip>
-        </button>
+        </v-btn>
       </template>
       <template v-if="canRepeat && !job.unrunnable && canEdit">
-        <button
+        <v-btn
           :id="`repeat${job.id}`"
-          type="button"
           @click="$emit('repeatJob', job)"
           :aria-label="$t('hunts.repeatTip')"
-          class="ms-1 pull-right btn btn-sm btn-theme-tertiary">
+          icon
+          variant="flat"
+          size="small"
+          density="comfortable"
+          :style="tertiaryBtnStyle"
+          class="ms-1">
           <span class="fa fa-repeat fa-fw" />
           <v-tooltip :activator="`[id='repeat${job.id}']`">
             {{ $t('hunts.repeatTip') }}
           </v-tooltip>
-        </button>
+        </v-btn>
       </template>
       <template v-if="canCancel && canEdit">
-        <button
+        <v-btn
           :id="`cancel${job.id}`"
           @click="$emit('cancelJob', job)"
           :disabled="job.loading"
-          type="button"
           :aria-label="$t('hunts.cancelTip')"
-          class="ms-1 pull-right btn btn-sm btn-danger">
+          icon
+          color="error"
+          variant="flat"
+          size="small"
+          density="comfortable"
+          class="ms-1">
           <span
             v-if="!job.loading"
             class="fa fa-ban fa-fw" />
@@ -199,16 +232,20 @@ SPDX-License-Identifier: Apache-2.0
           <v-tooltip :activator="`[id='cancel${job.id}']`">
             {{ $t('hunts.cancelTip') }}
           </v-tooltip>
-        </button>
+        </v-btn>
       </template>
       <template v-if="(job.status === 'running' || job.status === 'queued') && canEdit">
-        <button
+        <v-btn
           :id="`pause${job.id}`"
           :disabled="job.loading"
           @click="$emit('pauseJob', job)"
-          type="button"
           :aria-label="$t('hunts.pauseTip')"
-          class="ms-1 pull-right btn btn-sm btn-warning">
+          icon
+          color="warning"
+          variant="flat"
+          size="small"
+          density="comfortable"
+          class="ms-1">
           <span
             v-if="!job.loading"
             class="fa fa-pause fa-fw" />
@@ -218,16 +255,20 @@ SPDX-License-Identifier: Apache-2.0
           <v-tooltip :activator="`[id='pause${job.id}']`">
             {{ $t('hunts.pauseTip') }}
           </v-tooltip>
-        </button>
+        </v-btn>
       </template>
       <template v-else-if="job.status === 'paused' && canEdit">
-        <button
+        <v-btn
           :id="`resume${job.id}`"
           :disabled="job.loading"
           @click="$emit('playJob', job)"
-          type="button"
           :aria-label="$t('hunts.resumeTip')"
-          class="ms-1 pull-right btn btn-sm btn-theme-secondary">
+          icon
+          variant="flat"
+          size="small"
+          density="comfortable"
+          :style="secondaryBtnStyle"
+          class="ms-1">
           <span
             v-if="!job.loading"
             class="fa fa-play fa-fw" />
@@ -237,7 +278,7 @@ SPDX-License-Identifier: Apache-2.0
           <v-tooltip :activator="`[id='resume${job.id}']`">
             {{ $t('hunts.resumeTip') }}
           </v-tooltip>
-        </button>
+        </v-btn>
       </template>
     </td>
   </tr>
@@ -277,6 +318,23 @@ export default {
   components: {
     ToggleBtn,
     HuntStatus
+  },
+  data () {
+    return {
+      // Arkime theme-color v-btn styles. Vuetify :color can't take CSS vars.
+      primaryBtnStyle: {
+        backgroundColor: 'var(--color-primary)',
+        color: 'var(--color-button, #FFF)'
+      },
+      secondaryBtnStyle: {
+        backgroundColor: 'var(--color-secondary)',
+        color: 'var(--color-button, #FFF)'
+      },
+      tertiaryBtnStyle: {
+        backgroundColor: 'var(--color-tertiary)',
+        color: 'var(--color-button, #FFF)'
+      }
+    };
   },
   computed: {
     canEdit () {

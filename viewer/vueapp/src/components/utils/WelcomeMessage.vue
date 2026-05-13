@@ -4,10 +4,11 @@ SPDX-License-Identifier: Apache-2.0
 -->
 <template>
   <transition name="slide-fade">
-    <div
+    <v-card
       v-if="!dismissed"
-      class="card welcome-msg">
-      <div class="card-body">
+      variant="outlined"
+      class="welcome-msg">
+      <div class="pa-3 text-center">
         <span class="fa fa-heart text-theme-accent me-1" />
         <strong class="text-theme-accent">
           {{ $t('welcome.greeting', { userName: user.userName }) }}
@@ -21,26 +22,28 @@ SPDX-License-Identifier: Apache-2.0
         </a>
         {{ $t('welcome.pageInfo') }}
         <br>
-        <a
-          href="#"
-          role="button"
-          @click="dismissMsg"
-          class="no-decoration pull-left ms-1">
-          <span class="fa fa-close" />
-          {{ $t('common.dismiss') }}
-          <v-tooltip activator="parent">{{ $t('welcome.dismissTip') }}</v-tooltip>
-        </a>
-        <a
-          href="#"
-          role="button"
-          @click="acknowledgeMsg"
-          class="no-decoration pull-right me-1">
-          {{ $t('welcome.gotIt') }}
-          <span class="fa fa-thumbs-up" />
-          <v-tooltip activator="parent">{{ $t('welcome.gotItTip') }}</v-tooltip>
-        </a>
+        <div class="d-flex justify-space-between align-center mt-1">
+          <a
+            href="#"
+            role="button"
+            @click="dismissMsg"
+            class="no-decoration ms-1">
+            <span class="fa fa-close" />
+            {{ $t('common.dismiss') }}
+            <v-tooltip activator="parent">{{ $t('welcome.dismissTip') }}</v-tooltip>
+          </a>
+          <a
+            href="#"
+            role="button"
+            @click="acknowledgeMsg"
+            class="no-decoration me-1">
+            {{ $t('welcome.gotIt') }}
+            <span class="fa fa-thumbs-up" />
+            <v-tooltip activator="parent">{{ $t('welcome.gotItTip') }}</v-tooltip>
+          </a>
+        </div>
       </div>
-    </div>
+    </v-card>
   </transition>
 </template>
 
@@ -91,26 +94,17 @@ export default {
 </script>
 
 <style scoped>
+/* themed welcome card: positioned bottom-left as a floating banner */
 .welcome-msg {
   position: fixed;
   bottom: 15px;
   left: 10px;
   z-index: 999;
   width: 333px;
-  text-align: center;
   font-size: 1.2rem;
-}
-
-/* apply theme color to welcome card */
-.card {
-  background-color: var(--color-gray-lighter);
-  border: 1px solid var(--color-gray-light);
-  -webkit-box-shadow: 4px 4px 16px -2px black;
-     -moz-box-shadow: 4px 4px 16px -2px black;
-          box-shadow: 4px 4px 16px -2px black;
-}
-.card > .card-body {
-  padding: 0.8rem;
+  background-color: var(--color-gray-lighter) !important;
+  border: 1px solid var(--color-gray-light) !important;
+  box-shadow: 4px 4px 16px -2px black;
 }
 
 /* slide/fade welcome message in/out */

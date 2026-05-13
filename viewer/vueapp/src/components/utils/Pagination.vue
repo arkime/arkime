@@ -228,4 +228,3 @@ function notifyParent () {
   emit('changePaging', pagingParams);
 }
 </script>
-

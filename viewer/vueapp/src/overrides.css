@@ -533,6 +533,30 @@ pre {
   font-size: 0.78rem !important;
 }
 
+/* v-btn size=small: Vuetify natively renders ~28px (and ~20px when
+   combined with density=comfortable), both of which read "thin" sitting
+   next to .arkime-input-group containers (32px tall). Bump min-height
+   to 32px so subnav action buttons (Stats refresh, Spiview load/unload,
+   Arkime summary controls, etc.) line up flush with their input
+   neighbors.
+
+   Excludes:
+   - .v-btn--icon                → icon-only buttons (Navbar action
+                                   cluster, HuntRow row actions) stay
+                                   at Vuetify's native small height
+   - .arkime-input-append-btn    → inline append-inner actions inside
+                                   an .arkime-input-group stay 28px
+                                   (sized by arkime-input-group.css)
+   - .v-btn-group--density-compact descendants → v-btn-toggle groups
+                                   stay 30px (group height wins via
+                                   the v-btn-toggle rule above) */
+.v-btn--size-small:not(.v-btn--icon):not(.arkime-input-append-btn) {
+  min-height: 32px !important;
+}
+.v-btn-group--density-compact .v-btn--size-small {
+  min-height: 30px !important;
+}
+
 /* v-checkbox / v-radio compact: Vuetify's compact density on selection
    controls is still oversized for Arkime's dense forms. Shrink the
    icon, label, and surrounding padding so multiple selections fit in
@@ -572,4 +596,42 @@ pre {
 }
 .v-radio-group.v-input--density-compact .v-selection-control-group--inline {
   gap: 4px;
+}
+
+/* arkime-table: Bootstrap-free recreation of `.table .table-sm .table-striped`
+   for plain <table> elements used by Hunt, Files, Sessions, etc.
+   - full-width, transparent background, borderless rows
+   - compact cell padding (matches Bootstrap's table-sm scale)
+   - alternating row tint via odd nth-of-type background (table-striped)
+   - row hover tint for interactive lists
+   Themed via Arkime's --color-* variables (no theme-color literals). */
+.arkime-table {
+  width: 100%;
+  margin-bottom: 1rem;
+  color: var(--color-foreground);
+  vertical-align: top;
+  border-color: var(--color-gray-light);
+}
+.arkime-table > thead {
+  vertical-align: bottom;
+}
+.arkime-table > thead > tr > th {
+  padding: 0.25rem;
+  font-weight: 600;
+  border-bottom: 2px solid var(--color-gray-light);
+  background-color: transparent;
+}
+.arkime-table > tbody > tr > td,
+.arkime-table > tbody > tr > th {
+  padding: 0.25rem;
+  border-bottom: 1px solid var(--color-gray-lighter);
+  background-color: transparent;
+}
+.arkime-table > tbody > tr:nth-of-type(odd) > td,
+.arkime-table > tbody > tr:nth-of-type(odd) > th {
+  background-color: var(--color-gray-lightest, rgba(0, 0, 0, 0.025));
+}
+.arkime-table > tbody > tr:hover > td,
+.arkime-table > tbody > tr:hover > th {
+  background-color: var(--color-gray-lighter, rgba(0, 0, 0, 0.05));
 }

@@ -26,45 +26,56 @@ SPDX-License-Identifier: Apache-2.0
             class="ps-1">
             {{ $t('hunts.noDescription') }}
           </em>
-          <button
+          <v-btn
             v-if="canEdit"
             :id="'edit-description-' + localJob.id"
             @click="editDescription = true"
             :aria-label="$t('hunts.editDescriptionTip')"
-            class="btn btn-xs btn-theme-secondary ms-1">
+            icon
+            variant="flat"
+            size="x-small"
+            density="comfortable"
+            :style="secondaryBtnStyle"
+            class="ms-1">
             <span class="fa fa-pencil" />
             <v-tooltip :activator="`[id='edit-description-${localJob.id}']`">
               {{ $t('hunts.editDescriptionTip') }}
             </v-tooltip>
-          </button>
+          </v-btn>
         </template>
         <div
           v-else-if="canEdit"
           class="flex-grow-1">
-          <div class="input-group input-group-sm">
-            <span class="input-group-text">
+          <div class="arkime-input-group arkime-input-group--fluid">
+            <span class="arkime-input-label">
               {{ $t('hunts.jobDescription') }}
             </span>
             <input
               type="text"
-              class="form-control"
+              class="arkime-input-control"
               v-model="newDescription"
               @keyup.enter="updateJobDescription"
               :placeholder="$t('hunts.jobDescriptionPlaceholder')">
-            <button
-              type="button"
-              class="btn btn-warning"
+            <v-btn
+              color="warning"
+              variant="flat"
+              size="small"
+              density="comfortable"
+              class="me-1"
               @click="editDescription = false"
               :title="$t('hunts.cancelDescriptionTip')">
               {{ $t('common.cancel') }}
-            </button>
-            <button
-              type="button"
-              class="btn btn-success"
+            </v-btn>
+            <v-btn
+              color="success"
+              variant="flat"
+              size="small"
+              density="comfortable"
+              class="me-1"
               @click="updateJobDescription"
               :title="$t('hunts.saveDescriptionTip')">
               {{ $t('common.save') }}
-            </button>
+            </v-btn>
           </div>
         </div>
       </div>
@@ -177,62 +188,73 @@ SPDX-License-Identifier: Apache-2.0
           <span class="fa fa-fw fa-share-alt" />&nbsp;
           <template v-if="localJob.users && localJob.users.length">
             {{ $t('hunts.sharedWithUsers') }}:
-            <span
+            <v-chip
               v-for="username in localJob.users"
               :key="username"
-              class="badge bg-secondary ms-1">
+              size="small"
+              variant="flat"
+              color="grey"
+              closable
+              class="ms-1"
+              :close-label="$t('hunts.removeUserTip')"
+              @click:close="removeUser(username, localJob)">
               {{ username }}
-              <button
-                type="button"
-                class="btn-close"
-                :title="$t('hunts.removeUserTip')"
-                :aria-label="$t('hunts.removeUserTip')"
-                @click="removeUser(username, localJob)">
-                &times;
-              </button>
-            </span>
+            </v-chip>
           </template>
           <template v-else-if="localJob.users && !localJob.users.length">
             {{ $t('hunts.notSharedWithUsers') }}
           </template>
-          <button
+          <v-btn
             :id="'add-users-' + localJob.id"
-            class="btn btn-xs btn-theme-secondary ms-1"
+            icon
+            variant="flat"
+            size="x-small"
+            density="comfortable"
+            :style="secondaryBtnStyle"
+            class="ms-1"
             :aria-label="$t('hunts.addUserTip')"
             @click="toggleAddUsers">
             <span class="fa fa-plus-circle" />
             <v-tooltip :activator="`[id='add-users-${localJob.id}']`">
               {{ $t('hunts.addUserTip') }}
             </v-tooltip>
-          </button>
+          </v-btn>
           <template v-if="showAddUsers">
-            <div class="input-group input-group-sm mb-3 mt-2">
-              <div
+            <div class="arkime-input-group arkime-input-group--fluid mb-3 mt-2">
+              <span
                 :id="'users-' + localJob.id"
-                class="input-group-text cursor-help">
+                class="arkime-input-label cursor-help">
                 Users
                 <v-tooltip :activator="`[id='users-${localJob.id}']`">
                   {{ $t('hunts.addedUserTip') }}
                 </v-tooltip>
-              </div>
+              </span>
               <input
                 type="text"
                 v-model="newUsers"
-                class="form-control"
+                class="arkime-input-control"
                 v-focus="focusInput"
                 @keyup.enter="addUsers(newUsers, localJob)"
                 :placeholder="$t('hunts.jobUsersPlaceholder')">
-              <button
-                class="btn btn-warning"
+              <v-btn
+                color="warning"
+                variant="flat"
+                size="small"
+                density="comfortable"
+                class="me-1"
                 @click="toggleAddUsers">
                 {{ $t('common.cancel') }}
-              </button>
-              <button
-                class="btn btn-theme-tertiary"
+              </v-btn>
+              <v-btn
+                variant="flat"
+                size="small"
+                density="comfortable"
+                :style="tertiaryBtnStyle"
+                class="me-1"
                 :title="$t('hunts.addedUserTip')"
                 @click="addUsers(newUsers, localJob)">
                 {{ $t('hunts.addUser') }}
-              </button>
+              </v-btn>
             </div>
           </template>
         </div>
@@ -318,7 +340,16 @@ export default {
       editDescription: false,
       newDescription: this.job.description,
       anonymousMode: this.$constants.ANONYMOUS_MODE,
-      localJob: JSON.parse(JSON.stringify(this.job)) // Deep copy to avoid mutating the original job object
+      localJob: JSON.parse(JSON.stringify(this.job)), // Deep copy to avoid mutating the original job object
+      // Arkime theme-color v-btn styles. Vuetify :color can't take CSS vars.
+      secondaryBtnStyle: {
+        backgroundColor: 'var(--color-secondary)',
+        color: 'var(--color-button, #FFF)'
+      },
+      tertiaryBtnStyle: {
+        backgroundColor: 'var(--color-tertiary)',
+        color: 'var(--color-button, #FFF)'
+      }
     };
   },
   computed: {

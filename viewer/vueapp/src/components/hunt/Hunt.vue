@@ -27,13 +27,16 @@ SPDX-License-Identifier: Apache-2.0
                 <span class="fa fa-spinner fa-spin fa-fw" />
                 {{ $t('common.loading') }}
               </div>
-              <button
-                type="button"
-                class="btn btn-warning btn-sm ms-3"
+              <v-btn
+                color="warning"
+                variant="flat"
+                size="small"
+                density="comfortable"
+                class="ms-3"
                 @click="cancelAndLoad">
                 <span class="fa fa-ban" />&nbsp;
                 {{ $t('common.cancel') }}
-              </button>
+              </v-btn>
             </span>
             <span v-else-if="loadingSessionsError">
               <div
@@ -52,22 +55,26 @@ SPDX-License-Identifier: Apache-2.0
             </span>
           </div>
           <div class="col-auto">
-            <button
-              type="button"
-              class="btn btn-sm btn-theme-tertiary"
+            <v-btn
+              variant="flat"
+              size="small"
+              density="comfortable"
+              :style="tertiaryBtnStyle"
               :disabled="loadingSessions"
               v-if="!createFormOpened"
               @click="createFormOpened = true">
               {{ $t('hunts.createJob') }}
-            </button>
-            <button
-              type="button"
-              class="btn btn-sm btn-warning"
+            </v-btn>
+            <v-btn
+              color="warning"
+              variant="flat"
+              size="small"
+              density="comfortable"
               v-if="createFormOpened && loadingSessionsDetailError"
               @click="createFormOpened = false">
               <span class="fa fa-ban" />&nbsp;
               {{ $t('common.cancel') }}
-            </button>
+            </v-btn>
           </div>
         </div> <!-- /hunt create navbar -->
       </span>
@@ -84,18 +91,24 @@ SPDX-License-Identifier: Apache-2.0
       class="mt-2 mb-2" /> <!-- /page error -->
 
     <!-- configuration error -->
-    <div
+    <v-alert
       v-if="nodeInfo && !nodeInfo.node"
+      type="error"
+      variant="tonal"
+      density="compact"
       style="z-index: 2000;"
-      class="alert alert-danger position-fixed fixed-bottom m-0 rounded-0">
+      class="position-fixed fixed-bottom m-0 rounded-0">
       <span class="fa fa-exclamation-triangle me-2" />
       <span v-html="$t('hunts.notConfiguredHtml')" />
-    </div> <!-- /configuration error -->
+    </v-alert> <!-- /configuration error -->
 
     <!-- permission error -->
-    <div
+    <v-alert
       v-if="permissionDenied"
-      class="alert alert-danger mt-4">
+      type="error"
+      variant="tonal"
+      density="compact"
+      class="mt-4">
       <p class="mb-0">
         <span class="fa fa-exclamation-triangle fa-fw me-2" />
         <strong>{{ $t('common.permisionDenied') }}</strong>
@@ -109,7 +122,7 @@ SPDX-License-Identifier: Apache-2.0
           {{ $t('hunts.adminEnable') }}
         </template>
       </p>
-    </div> <!-- /permission error -->
+    </v-alert> <!-- /permission error -->
 
     <!-- packet search jobs content -->
     <div
@@ -118,17 +131,18 @@ SPDX-License-Identifier: Apache-2.0
       <!-- create new packet search job -->
       <div class="mb-3">
         <transition name="slide">
-          <div
+          <v-card
             v-if="createFormOpened && !loadingSessionsDetailError"
-            class="card">
+            variant="outlined">
             <form
-              class="card-body"
+              class="pa-3"
               @keyup.enter="createJob">
               <div class="row">
                 <div class="col-12">
-                  <div
-                    class="alert"
-                    :class="{'alert-info':sessions.recordsFiltered < huntWarn || !sessions.recordsFiltered,'alert-danger':sessions.recordsFiltered >= huntWarn}">
+                  <v-alert
+                    :type="sessions.recordsFiltered >= huntWarn ? 'error' : 'info'"
+                    variant="tonal"
+                    density="compact">
                     <em v-if="sessions.recordsFiltered > huntWarn && !loadingSessions">
                       <span v-html="$t('hunts.lotOfSessionsHtml')" />
                       <br>
@@ -147,16 +161,16 @@ SPDX-License-Identifier: Apache-2.0
                       <span class="fa fa-info-circle fa-fw me-2" />
                       {{ $t('hunts.multiViewerHtml', { cluster: selectedCluster[0] }) }}
                     </span>
-                  </div>
+                  </v-alert>
                 </div>
               </div>
               <div class="row g-1">
                 <div class="col-auto mb-2 flex-grow-1">
                   <!-- packet search job name -->
-                  <div class="input-group input-group-sm">
+                  <div class="arkime-input-group arkime-input-group--fluid">
                     <span
                       id="jobName"
-                      class="input-group-text cursor-help">
+                      class="arkime-input-label cursor-help">
                       {{ $t('hunts.jobName') }}
                       <v-tooltip activator="#jobName">
                         {{ $t('hunts.jobNameTip') }}
@@ -166,19 +180,19 @@ SPDX-License-Identifier: Apache-2.0
                       type="text"
                       v-model="jobName"
                       v-focus="true"
-                      class="form-control"
+                      class="arkime-input-control"
                       :placeholder="$t('hunts.jobNamePlaceholder')"
                       maxlength="40">
                   </div> <!-- /packet search job name -->
                 </div>
                 <!-- packet search size -->
                 <div class="col">
-                  <div class="input-group input-group-sm">
-                    <span class="input-group-text">
+                  <div class="arkime-input-group arkime-input-group--fluid">
+                    <span class="arkime-input-label">
                       {{ $t('hunts.jobSize') }}
                     </span>
                     <select
-                      class="form-control form-control-sm"
+                      class="arkime-input-control"
                       v-model="jobSize">
                       <option
                         v-for="size in [50, 500, 5000, 10000]"
@@ -200,10 +214,10 @@ SPDX-License-Identifier: Apache-2.0
               </div>
               <div class="row g-1 mb-2">
                 <div class="col">
-                  <div class="input-group input-group-sm">
+                  <div class="arkime-input-group arkime-input-group--fluid">
                     <span
                       id="jobDescription"
-                      class="input-group-text cursor-help">
+                      class="arkime-input-label cursor-help">
                       {{ $t('hunts.jobDescription') }}
                       <v-tooltip activator="#jobDescription">
                         {{ $t('hunts.jobDescriptionTip') }}
@@ -211,7 +225,7 @@ SPDX-License-Identifier: Apache-2.0
                     </span>
                     <input
                       type="text"
-                      class="form-control"
+                      class="arkime-input-control"
                       v-model="jobDescription"
                       :placeholder="$t('hunts.jobDescriptionPlaceholder')">
                   </div>
@@ -219,10 +233,10 @@ SPDX-License-Identifier: Apache-2.0
               </div>
               <div class="row mb-2">
                 <div class="col">
-                  <div class="input-group input-group-sm">
+                  <div class="arkime-input-group arkime-input-group--fluid">
                     <span
                       id="jobSearch"
-                      class="input-group-text cursor-help">
+                      class="arkime-input-label cursor-help">
                       <span class="fa fa-search" />
                       <v-tooltip activator="#jobSearch">
                         {{ $t('hunts.jobSearchTip') }}
@@ -232,7 +246,7 @@ SPDX-License-Identifier: Apache-2.0
                       type="text"
                       v-model="jobSearch"
                       :placeholder="$t('hunts.jobSearchPlaceholder')"
-                      class="form-control">
+                      class="arkime-input-control">
                   </div>
                 </div>
               </div>
@@ -275,74 +289,42 @@ SPDX-License-Identifier: Apache-2.0
               </div>
               <div class="row g-1">
                 <!-- packet search direction -->
-                <div class="form-group col-lg-3 col-md-12">
-                  <div class="form-check">
-                    <input
-                      id="src"
-                      value="src"
-                      type="checkbox"
-                      role="checkbox"
-                      :checked="jobSrc"
-                      @click="jobSrc = !jobSrc"
-                      class="form-check-input">
-                    <label
-                      class="form-check-label"
-                      for="src">
-                      {{ $t('hunts.jobSrc') }}
-                    </label>
-                  </div>
-                  <div class="form-check">
-                    <input
-                      id="dst"
-                      value="dst"
-                      type="checkbox"
-                      role="checkbox"
-                      :checked="jobDst"
-                      class="form-check-input"
-                      @click="jobDst = !jobDst">
-                    <label
-                      class="form-check-label"
-                      for="dst">
-                      {{ $t('hunts.jobDst') }}
-                    </label>
-                  </div>
+                <div class="col-lg-3 col-md-12">
+                  <v-checkbox
+                    :model-value="jobSrc"
+                    @update:model-value="jobSrc = $event"
+                    :label="$t('hunts.jobSrc')"
+                    density="compact"
+                    hide-details
+                    color="primary" />
+                  <v-checkbox
+                    :model-value="jobDst"
+                    @update:model-value="jobDst = $event"
+                    :label="$t('hunts.jobDst')"
+                    density="compact"
+                    hide-details
+                    color="primary" />
                 </div> <!-- /packet search direction -->
                 <!-- packet search type -->
-                <div class="form-group col-lg-3 col-md-12">
-                  <div class="form-check">
-                    <input
-                      class="form-check-input"
-                      :checked="jobType === 'raw'"
-                      @click="setJobType('raw')"
-                      type="radio"
-                      id="raw"
+                <div class="col-lg-3 col-md-12">
+                  <v-radio-group
+                    :model-value="jobType"
+                    @update:model-value="setJobType($event)"
+                    density="compact"
+                    hide-details>
+                    <v-radio
+                      :label="$t('hunts.jobType-raw')"
                       value="raw"
-                      name="packetSearchType">
-                    <label
-                      class="form-check-label"
-                      for="raw">
-                      {{ $t('hunts.jobType-raw') }}
-                    </label>
-                  </div>
-                  <div class="form-check">
-                    <input
-                      class="form-check-input"
-                      :checked="jobType === 'reassembled'"
-                      @click="setJobType('reassembled')"
-                      type="radio"
-                      id="reassembled"
+                      color="primary" />
+                    <v-radio
+                      :label="$t('hunts.jobType-reassembled')"
                       value="reassembled"
-                      name="packetSearchType">
-                    <label
-                      class="form-check-label"
-                      for="reassembled">
-                      {{ $t('hunts.jobType-reassembled') }}
-                    </label>
-                  </div>
+                      color="primary" />
+                  </v-radio-group>
                 </div> <!-- /packet search type -->
                 <!-- sharing with users/roles -->
                 <div
-                  class="form-group d-flex col-lg-6 col-md-12"
+                  class="d-flex col-lg-6 col-md-12"
                   v-if="!anonymousMode">
                   <div class="align-self-start">
                     <RoleDropdown
@@ -352,10 +334,10 @@ SPDX-License-Identifier: Apache-2.0
                       @selected-roles-updated="updateNewJobRoles" />
                   </div>
                   <div class="flex-grow-1 ms-2">
-                    <div class="input-group input-group-sm">
+                    <div class="arkime-input-group arkime-input-group--fluid">
                       <span
                         id="jobUsers"
-                        class="input-group-text cursor-help">
+                        class="arkime-input-label cursor-help">
                         <span class="fa fa-user" />
                         <v-tooltip activator="#jobUsers">
                           {{ $t('hunts.jobUsersTip') }}
@@ -365,112 +347,76 @@ SPDX-License-Identifier: Apache-2.0
                         type="text"
                         v-model="jobUsers"
                         :placeholder="$t('hunts.jobUsersPlaceholder')"
-                        class="form-control">
+                        class="arkime-input-control">
                     </div>
                   </div>
                 </div> <!-- /sharing with users/roles -->
               </div>
               <div class="row">
-                <div class="col-12 mt-1">
-                  <div
+                <div class="col-12 mt-1 d-flex align-center gap-2">
+                  <v-alert
                     v-if="createFormError"
-                    class="pull-left alert alert-danger alert-sm">
+                    type="error"
+                    variant="tonal"
+                    density="compact"
+                    class="flex-grow-1">
                     <span class="fa fa-exclamation-triangle" />&nbsp;
                     {{ createFormError }}
-                  </div>
-                  <!-- create search job button -->
-                  <button
-                    type="button"
-                    @click="createJob"
-                    :disabled="loadingSessions || !!loadingSessionsError"
-                    title="Create this hunt"
-                    class="pull-right btn btn-theme-tertiary pull-right ms-1">
-                    <span class="fa fa-plus fa-fw" />&nbsp;
-                    {{ $t('common.create') }}
-                  </button> <!-- /create search job button -->
+                  </v-alert>
+                  <v-spacer v-else />
                   <!-- cancel create search job button -->
-                  <button
-                    type="button"
+                  <v-btn
+                    color="warning"
+                    variant="flat"
+                    size="small"
+                    density="comfortable"
                     @click="cancelCreateForm"
-                    title="Cancel creating this hunt"
-                    class="pull-right btn btn-warning pull-right">
+                    title="Cancel creating this hunt">
                     <span class="fa fa-ban fa-fw" />&nbsp;
                     {{ $t('common.cancel') }}
-                  </button> <!-- /cancel create search job button -->
+                  </v-btn> <!-- /cancel create search job button -->
+                  <!-- create search job button -->
+                  <v-btn
+                    variant="flat"
+                    size="small"
+                    density="comfortable"
+                    :style="tertiaryBtnStyle"
+                    @click="createJob"
+                    :disabled="loadingSessions || !!loadingSessionsError"
+                    title="Create this hunt">
+                    <span class="fa fa-plus fa-fw" />&nbsp;
+                    {{ $t('common.create') }}
+                  </v-btn> <!-- /create search job button -->
                 </div>
               </div>
             </form>
-          </div>
+          </v-card>
         </transition>
       </div> <!-- /create new packet search job -->
 
       <!-- running job -->
       <transition name="slide">
-        <div
+        <v-card
           v-if="runningJob"
-          class="card mb-3">
-          <div class="card-body">
-            <h5 class="card-title">
-              {{ $t('hunts.runningHuntJob', { name: runningJob.name, user: runningJob.userId }) }}
-              <span class="pull-right">
-                <button
-                  v-if="canEdit"
-                  :id="`remove${runningJob.id}`"
-                  @click="removeJob(runningJob, 'results')"
-                  :disabled="runningJob.disabled"
-                  type="button"
-                  :aria-label="$t('hunts.removeHuntTip')"
-                  class="ms-1 pull-right btn btn-sm btn-danger">
-                  <span
-                    v-if="!runningJob.loading"
-                    class="fa fa-trash-o fa-fw" />
-                  <span
-                    v-else
-                    class="fa fa-spinner fa-spin fa-fw" />
-                  <v-tooltip :activator="`[id='remove${runningJob.id}']`">
-                    {{ $t('hunts.cancelAndRemoveTip') }}
-                  </v-tooltip>
-                </button>
-                <span v-if="canView">
-                  <button
-                    type="button"
-                    @click="openSessions(runningJob)"
-                    v-if="runningJob.matchedSessions"
-                    :id="`openresults${runningJob.id}`"
-                    :aria-label="$t('common.open')"
-                    class="ms-1 pull-right btn btn-sm btn-theme-primary">
-                    <span class="fa fa-folder-open fa-fw" />
-                    <v-tooltip :activator="`[id='openresults${runningJob.id}']`">
-                      <span v-html="$t('hunts.openResultsTipHtml')" />
-                    </v-tooltip>
-                  </button>
-                </span>
-                <button
-                  v-if="canEdit"
-                  :id="`cancel${runningJob.id}`"
-                  @click="cancelJob(runningJob)"
-                  :disabled="runningJob.disabled"
-                  type="button"
-                  :aria-label="$t('hunts.cancelTip')"
-                  class="ms-1 pull-right btn btn-sm btn-danger">
-                  <span
-                    v-if="!runningJob.loading"
-                    class="fa fa-ban fa-fw" />
-                  <span
-                    v-else
-                    class="fa fa-spinner fa-spin fa-fw" />
-                </button>
-                <v-tooltip :activator="`[id='cancel${runningJob.id}']`">
-                  {{ $t('hunts.cancelTip') }}
-                </v-tooltip>
-                <button
-                  v-if="canEdit"
+          variant="outlined"
+          class="mb-3">
+          <div class="pa-3">
+            <h5 class="d-flex align-center gap-1 mb-2">
+              <span class="flex-grow-1">
+                {{ $t('hunts.runningHuntJob', { name: runningJob.name, user: runningJob.userId }) }}
+              </span>
+              <template v-if="canEdit">
+                <v-btn
                   :id="`pause${runningJob.id}`"
                   @click="pauseJob(runningJob)"
                   :disabled="runningJob.loading"
-                  type="button"
                   :aria-label="$t('hunts.pauseTip')"
-                  class="pull-right btn btn-sm btn-warning">
+                  icon
+                  color="warning"
+                  variant="flat"
+                  size="small"
+                  density="comfortable"
+                  class="ms-1">
                   <span
                     v-if="!runningJob.loading"
                     class="fa fa-pause fa-fw" />
@@ -480,51 +426,108 @@ SPDX-License-Identifier: Apache-2.0
                   <v-tooltip :activator="`[id='pause${runningJob.id}']`">
                     {{ $t('hunts.pauseTip') }}
                   </v-tooltip>
-                </button>
-              </span>
+                </v-btn>
+                <v-btn
+                  :id="`cancel${runningJob.id}`"
+                  @click="cancelJob(runningJob)"
+                  :disabled="runningJob.disabled"
+                  :aria-label="$t('hunts.cancelTip')"
+                  icon
+                  color="error"
+                  variant="flat"
+                  size="small"
+                  density="comfortable"
+                  class="ms-1">
+                  <span
+                    v-if="!runningJob.loading"
+                    class="fa fa-ban fa-fw" />
+                  <span
+                    v-else
+                    class="fa fa-spinner fa-spin fa-fw" />
+                  <v-tooltip :activator="`[id='cancel${runningJob.id}']`">
+                    {{ $t('hunts.cancelTip') }}
+                  </v-tooltip>
+                </v-btn>
+              </template>
+              <template v-if="canView">
+                <v-btn
+                  @click="openSessions(runningJob)"
+                  v-if="runningJob.matchedSessions"
+                  :id="`openresults${runningJob.id}`"
+                  :aria-label="$t('common.open')"
+                  icon
+                  variant="flat"
+                  size="small"
+                  density="comfortable"
+                  :style="primaryBtnStyle"
+                  class="ms-1">
+                  <span class="fa fa-folder-open fa-fw" />
+                  <v-tooltip :activator="`[id='openresults${runningJob.id}']`">
+                    <span v-html="$t('hunts.openResultsTipHtml')" />
+                  </v-tooltip>
+                </v-btn>
+              </template>
+              <v-btn
+                v-if="canEdit"
+                :id="`remove${runningJob.id}`"
+                @click="removeJob(runningJob, 'results')"
+                :disabled="runningJob.disabled"
+                :aria-label="$t('hunts.removeHuntTip')"
+                icon
+                color="error"
+                variant="flat"
+                size="small"
+                density="comfortable"
+                class="ms-1">
+                <span
+                  v-if="!runningJob.loading"
+                  class="fa fa-trash-o fa-fw" />
+                <span
+                  v-else
+                  class="fa fa-spinner fa-spin fa-fw" />
+                <v-tooltip :activator="`[id='remove${runningJob.id}']`">
+                  {{ $t('hunts.cancelAndRemoveTip') }}
+                </v-tooltip>
+              </v-btn>
             </h5>
-            <div class="card-text">
+            <div>
               <div class="row">
-                <div class="col">
+                <div class="col d-flex align-center gap-2">
                   <toggle-btn
                     v-if="canView"
                     :opened="runningJob.expanded"
                     @toggle="toggleJobDetail(runningJob)" />
-                  <div
-                    class="progress cursor-help"
+                  <v-progress-linear
                     id="runningJob"
-                    style="height:26px;"
-                    :class="{'progress-toggle':canView}">
-                    <div
-                      class="progress-bar bg-success progress-bar-striped progress-bar-animated"
-                      role="progressbar"
-                      :style="{width: runningJob.progress + '%'}"
-                      :aria-valuenow="runningJob.progress"
-                      aria-valuemin="0"
-                      aria-valuemax="100">
+                    color="success"
+                    striped
+                    height="26"
+                    :model-value="runningJob.progress"
+                    class="cursor-help flex-grow-1">
+                    <template #default>
                       {{ round(runningJob.progress, 1) }}%
+                    </template>
+                  </v-progress-linear>
+                  <v-tooltip activator="#runningJob">
+                    <div class="mt-2">
+                      <span v-html="$t('hunts.runningJob-headHtml', { matched: commaString(runningJob.matchedSessions) })" />
+                      <span
+                        v-if="canView"
+                        v-html="$t('hunts.runningJob-canViewHtml', { search: runningJob.search, searchType: runningJob.searchType })" />
+                      <span
+                        v-if="runningJob.failedSessionIds && runningJob.failedSessionIds.length"
+                        v-html="$t('hunts.runningJob-outOfHtml', {
+                          searched: commaString(runningJob.searchedSessions - runningJob.failedSessionIds.length),
+                          remaining: commaString(runningJob.totalSessions - runningJob.searchedSessions + runningJob.failedSessionIds.length),
+                          totalSessions: commaString(runningJob.totalSessions)})" />
+                      <span
+                        v-else
+                        v-html="$t('hunts.runningJob-outOfHtml', {
+                          searched: commaString(runningJob.searchedSessions),
+                          remaining: commaString(runningJob.totalSessions - runningJob.searchedSessions),
+                          totalSessions: commaString(runningJob.totalSessions)})" />
                     </div>
-                    <v-tooltip activator="#runningJob">
-                      <div class="mt-2">
-                        <span v-html="$t('hunts.runningJob-headHtml', { matched: commaString(runningJob.matchedSessions) })" />
-                        <span
-                          v-if="canView"
-                          v-html="$t('hunts.runningJob-canViewHtml', { search: runningJob.search, searchType: runningJob.searchType })" />
-                        <span
-                          v-if="runningJob.failedSessionIds && runningJob.failedSessionIds.length"
-                          v-html="$t('hunts.runningJob-outOfHtml', {
-                            searched: commaString(runningJob.searchedSessions - runningJob.failedSessionIds.length),
-                            remaining: commaString(runningJob.totalSessions - runningJob.searchedSessions + runningJob.failedSessionIds.length),
-                            totalSessions: commaString(runningJob.totalSessions)})" />
-                        <span
-                          v-else
-                          v-html="$t('hunts.runningJob-outOfHtml', {
-                            searched: commaString(runningJob.searchedSessions),
-                            remaining: commaString(runningJob.totalSessions - runningJob.searchedSessions),
-                            totalSessions: commaString(runningJob.totalSessions)})" />
-                      </div>
-                    </v-tooltip>
-                  </div>
+                  </v-tooltip>
                 </div>
               </div>
               <transition name="grow">
@@ -547,7 +550,7 @@ SPDX-License-Identifier: Apache-2.0
               </transition>
             </div>
           </div>
-        </div>
+        </v-card>
       </transition> <!-- /running job -->
 
       <h4 v-if="results.length">
@@ -556,21 +559,25 @@ SPDX-License-Identifier: Apache-2.0
       </h4>
 
       <!-- hunt job queue errors -->
-      <div
+      <v-alert
         v-if="queuedListError"
-        class="alert alert-danger">
+        type="error"
+        variant="tonal"
+        density="compact">
         {{ queuedListError }}
-      </div>
-      <div
+      </v-alert>
+      <v-alert
         v-if="queuedListLoadingError"
-        class="alert alert-danger">
+        type="error"
+        variant="tonal"
+        density="compact">
         {{ $t('hunts.errorLoadingQueue') }}:
         {{ queuedListLoadingError }}
-      </div> <!-- /hunt job queue errors -->
+      </v-alert> <!-- /hunt job queue errors -->
 
       <table
         v-if="results.length"
-        class="table table-sm table-striped mb-4">
+        class="arkime-table mb-4">
         <thead>
           <tr>
             <th width="40px">
@@ -641,19 +648,23 @@ SPDX-License-Identifier: Apache-2.0
       </table>
 
       <!-- hunt job history errors -->
-      <div
+      <v-alert
         v-if="historyListError"
-        class="alert alert-danger">
+        type="error"
+        variant="tonal"
+        density="compact">
         <span class="fa fa-exclamation-triangle me-2" />
         {{ historyListError }}
-      </div>
-      <div
+      </v-alert>
+      <v-alert
         v-if="historyListLoadingError"
-        class="alert alert-danger">
+        type="error"
+        variant="tonal"
+        density="compact">
         <span class="fa fa-exclamation-triangle me-2" />
         {{ $t('hunts.errorLoadingHistory') }}:
         {{ historyListLoadingError }}
-      </div> <!-- /hunt job history errors -->
+      </v-alert> <!-- /hunt job history errors -->
 
       <template v-if="!historyListLoadingError">
         <h4>
@@ -663,23 +674,27 @@ SPDX-License-Identifier: Apache-2.0
         <div class="row g-1 justify-content-start">
           <div class="col">
             <!-- search packet search jobs -->
-            <div class="input-group input-group-sm">
-              <span class="input-group-text">
-                <span class="fa fa-search" />
+            <div class="arkime-input-group arkime-input-group--fluid">
+              <span class="arkime-input-label arkime-input-label-fw">
+                <span class="fa fa-search fa-fw" />
               </span>
               <input
                 type="text"
                 v-model="query.searchTerm"
                 @input="debounceSearch"
                 :placeholder="$t('hunts.querySearchTermPlaceholder')"
-                class="form-control">
-              <button
-                type="button"
-                @click="clear"
+                class="arkime-input-control">
+              <v-btn
+                v-if="query.searchTerm"
+                variant="text"
+                size="x-small"
+                density="comfortable"
+                icon
+                class="arkime-input-append-btn"
                 :disabled="!query.searchTerm"
-                class="btn btn-outline-secondary btn-clear-input">
+                @click="clear">
                 <span class="fa fa-close" />
-              </button>
+              </v-btn>
             </div> <!-- /search packet search jobs -->
           </div>
           <div class="col-auto">
@@ -691,7 +706,7 @@ SPDX-License-Identifier: Apache-2.0
           </div>
         </div>
 
-        <table class="table table-sm table-striped">
+        <table class="arkime-table">
           <thead>
             <tr>
               <th width="40px">
@@ -831,14 +846,15 @@ SPDX-License-Identifier: Apache-2.0
 
     <!-- floating error -->
     <transition name="slide-fade">
-      <div
+      <v-card
         v-if="floatingError || floatingSuccess"
-        class="card floating-msg">
-        <div class="card-body">
+        variant="outlined"
+        class="floating-msg">
+        <div class="pa-3">
           <a
             @click="floatingError = false; floatingSuccess = false"
             id="dismissError"
-            class="no-decoration cursor-pointer pull-right">
+            class="no-decoration cursor-pointer float-end">
             <span class="fa fa-close" />
             <v-tooltip activator="#dismissError">{{ $t('common.dismiss') }}</v-tooltip>
           </a>
@@ -852,7 +868,7 @@ SPDX-License-Identifier: Apache-2.0
             {{ floatingError || floatingSuccess }}
           </span>
         </div>
-      </div>
+      </v-card>
     </transition> <!-- /floating error -->
   </div>
 </template>
@@ -944,7 +960,16 @@ export default {
       // hunt configured?
       nodeInfo: undefined,
       // multiviewer enabled?
-      multiviewer: this.$constants.MULTIVIEWER
+      multiviewer: this.$constants.MULTIVIEWER,
+      // Arkime theme-color v-btn styles. Vuetify :color can't take CSS vars.
+      primaryBtnStyle: {
+        backgroundColor: 'var(--color-primary)',
+        color: 'var(--color-button, #FFF)'
+      },
+      tertiaryBtnStyle: {
+        backgroundColor: 'var(--color-tertiary)',
+        color: 'var(--color-button, #FFF)'
+      }
     };
   },
   computed: {
@@ -1488,12 +1513,6 @@ export default {
           box-shadow: 0 0 16px -2px black;
 }
 
-/* offset the progress bar to accommodate toggle button */
-.progress-toggle {
-  margin-left: 40px;
-  margin-top: -26px;
-}
-
 /* slide running job in/out animation */
 .slide-leave-active {
   transition: all .3s;
@@ -1549,24 +1568,16 @@ export default {
   transition: transform .8s;
 }
 
-/* floating message */
+/* floating message: v-card with Arkime-themed surface + drop shadow */
 .floating-msg {
   position: fixed;
   bottom: 15px;
   left: 10px;
   z-index: 999;
   width: 350px;
-}
-
-.floating-msg .card {
-  background-color: var(--color-gray-lighter);
-  border: 1px solid var(--color-gray-light);
-  -webkit-box-shadow: 4px 4px 16px -2px black;
-     -moz-box-shadow: 4px 4px 16px -2px black;
-          box-shadow: 4px 4px 16px -2px black;
-}
-.floating-msg .card > .card-body {
-  padding: 0.8rem;
+  background-color: var(--color-gray-lighter) !important;
+  border: 1px solid var(--color-gray-light) !important;
+  box-shadow: 4px 4px 16px -2px black;
 }
 
 .slide-fade-enter-active {

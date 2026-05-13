@@ -6,13 +6,15 @@ SPDX-License-Identifier: Apache-2.0
   <div class="summary-config-dropdown d-inline-block">
     <v-menu @update:model-value="(opened) => { if (opened) loadConfigs(); }">
       <template #activator="{ props: activatorProps }">
-        <button
+        <v-btn
           v-bind="activatorProps"
-          type="button"
-          class="btn btn-sm btn-theme-primary"
+          variant="flat"
+          size="small"
+          density="comfortable"
+          :style="primaryBtnStyle"
           id="summary-config-dropdown-btn">
           <span class="fa fa-save" />
-        </button>
+        </v-btn>
         <v-tooltip
           activator="#summary-config-dropdown-btn"
           location="right">
@@ -74,22 +76,32 @@ SPDX-License-Identifier: Apache-2.0
             <span
               class="config-actions"
               @click.stop>
-              <button
+              <v-btn
                 v-if="config.canEdit"
-                class="btn btn-xs btn-theme-tertiary ms-1"
+                variant="flat"
+                size="small"
+                density="comfortable"
+                icon
+                :style="tertiaryBtnStyle"
+                class="ms-1"
                 :title="$t('sessions.summary.config.edit')"
                 :aria-label="$t('sessions.summary.config.edit')"
                 @click.stop="openEditModal(config)">
                 <span class="fa fa-pencil" />
-              </button>
-              <button
+              </v-btn>
+              <v-btn
                 v-if="config.canDelete"
-                class="btn btn-xs btn-danger ms-1"
+                color="error"
+                variant="flat"
+                size="small"
+                density="comfortable"
+                icon
+                class="ms-1"
                 :title="$t('sessions.summary.config.delete')"
                 :aria-label="$t('sessions.summary.config.delete')"
                 @click.stop="deleteConfig(config)">
                 <span class="fa fa-trash-o" />
-              </button>
+              </v-btn>
             </span>
           </div>
         </v-list-item>
@@ -142,6 +154,16 @@ const error = ref('');
 const configs = ref([]);
 const showSaveModal = ref(false);
 const editingConfig = ref(null);
+
+// Arkime theme-color v-btn styles. Vuetify :color can't take CSS vars.
+const primaryBtnStyle = {
+  backgroundColor: 'var(--color-primary)',
+  color: 'var(--color-button, #FFF)'
+};
+const tertiaryBtnStyle = {
+  backgroundColor: 'var(--color-tertiary)',
+  color: 'var(--color-button, #FFF)'
+};
 
 // Get user from store
 const user = computed(() => store.state.user);

@@ -4,31 +4,36 @@
     :close-on-content-click="false"
     location="bottom end">
     <template #activator="{ props: activatorProps }">
-      <button
+      <v-btn
         v-bind="activatorProps"
-        type="button"
-        class="btn btn-sm field-dropdown-trigger d-inline-block"
-        :class="`btn-${buttonVariant}`">
+        variant="flat"
+        size="small"
+        density="comfortable"
+        :color="vuetifyButtonColor"
+        :style="themeButtonStyle"
+        class="field-dropdown-trigger d-inline-block">
         <span class="fa fa-bars" />
         <v-tooltip
           activator="parent"
           location="right">
           {{ tooltipText }}
         </v-tooltip>
-      </button>
+      </v-btn>
     </template>
     <v-list
       density="compact"
       class="field-dropdown-menu">
       <div class="px-2 py-1">
-        <input
-          autofocus
-          type="text"
-          class="form-control form-control-sm"
-          v-model="query"
-          @input="debounceQuery"
-          @click.stop
-          :placeholder="searchPlaceholder">
+        <div class="arkime-input-group arkime-input-group--fluid">
+          <input
+            autofocus
+            type="text"
+            class="arkime-input-control"
+            v-model="query"
+            @input="debounceQuery"
+            @click.stop
+            :placeholder="searchPlaceholder">
+        </div>
       </div>
       <v-list-item
         v-if="selectedFields.length > 0"
@@ -140,6 +145,30 @@ export default {
     };
   },
   computed: {
+    /* Map `buttonVariant` prop ("theme-primary" / "theme-secondary" / etc.,
+       or plain Vuetify colors like "warning") to a Vuetify color name
+       when possible, else fall back to null and apply CSS-var-driven
+       inline style instead. Vuetify :color can't take CSS vars. */
+    vuetifyButtonColor () {
+      if (!this.buttonVariant || this.buttonVariant.startsWith('theme-')) return null;
+      return this.buttonVariant;
+    },
+    themeButtonStyle () {
+      // Only apply when the variant is a theme-* Arkime color, since those
+      // map to CSS vars (--color-primary, --color-secondary, etc.).
+      const themeMap = {
+        'theme-primary': 'primary',
+        'theme-secondary': 'secondary',
+        'theme-tertiary': 'tertiary',
+        'theme-quaternary': 'quaternary'
+      };
+      const themeKey = themeMap[this.buttonVariant];
+      if (!themeKey) return null;
+      return {
+        backgroundColor: `var(--color-${themeKey})`,
+        color: 'var(--color-button, #FFF)'
+      };
+    },
     fields () {
       const baseFields = this.$store.state.fieldsArr;
       if (this.includeSummaryFields) {
