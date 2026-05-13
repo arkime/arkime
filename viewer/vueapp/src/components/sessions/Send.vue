@@ -25,32 +25,37 @@ SPDX-License-Identifier: Apache-2.0
       </p>
     </div>
 
-    <div>
-      <button
-        type="button"
-        @click="sendAction"
-        :class="{'disabled':loading}"
-        class="btn btn-sm btn-theme-tertiary me-1">
+    <div class="d-flex gap-1">
+      <v-btn
+        variant="flat"
+        size="small"
+        density="comfortable"
+        :style="tertiaryBtnStyle"
+        :disabled="loading"
+        @click="sendAction">
         <span v-if="!loading">
-          <span class="fa fa-paper-plane-o" />&nbsp;
+          <span class="fa fa-paper-plane-o me-1" />
           {{ $t('sessions.send.send') }}
         </span>
         <span v-else>
-          <span class="fa fa-spinner fa-spin" />&nbsp;
+          <span class="fa fa-spinner fa-spin me-1" />
           {{ $t('common.sending') }}
         </span>
-      </button>
-      <button
-        type="button"
+      </v-btn>
+      <v-btn
         id="cancelSendBtn"
+        color="warning"
+        variant="flat"
+        size="small"
+        density="comfortable"
+        icon
         :aria-label="$t('common.cancel')"
-        @click="$emit('done', null, false, false)"
-        class="btn btn-sm btn-warning">
+        @click="$emit('done', null, false, false)">
         <span class="fa fa-ban" />
         <v-tooltip activator="parent">
           {{ $t('common.cancel') }}
         </v-tooltip>
-      </button>
+      </v-btn>
     </div>
   </div>
 
@@ -113,6 +118,12 @@ const error = ref('');
 const loading = ref(false);
 const segments = ref('no');
 const tags = ref(''); // This is named 'tags' but might be used for other purposes in send context or just for consistency
+
+// Arkime theme-color v-btn style. Vuetify :color can't take CSS vars.
+const tertiaryBtnStyle = {
+  backgroundColor: 'var(--color-tertiary)',
+  color: 'var(--color-button, #FFF)'
+};
 
 // Access route
 const route = useRoute();

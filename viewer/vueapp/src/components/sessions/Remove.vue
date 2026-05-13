@@ -43,32 +43,37 @@ SPDX-License-Identifier: Apache-2.0
       </p>
     </div>
 
-    <div class="ms-auto">
-      <button
-        type="button"
-        @click="deleteSessionsAction"
-        :class="{'disabled':loading}"
-        class="btn btn-danger btn-sm me-1">
+    <div class="ms-auto d-flex gap-1">
+      <v-btn
+        color="error"
+        variant="flat"
+        size="small"
+        density="comfortable"
+        :disabled="loading"
+        @click="deleteSessionsAction">
         <span v-if="!loading">
-          <span class="fa fa-trash-o" />&nbsp;
+          <span class="fa fa-trash-o me-1" />
           {{ $t('common.remove') }}
         </span>
         <span v-else>
-          <span class="fa fa-spinner fa-spin" />&nbsp;
+          <span class="fa fa-spinner fa-spin me-1" />
           {{ $t('common.removing') }}
         </span>
-      </button>
-      <button
-        class="btn btn-sm btn-warning"
+      </v-btn>
+      <v-btn
         id="cancelRemoveDataBtn"
+        color="warning"
+        variant="flat"
+        size="small"
+        density="comfortable"
+        icon
         :aria-label="$t('common.cancel')"
-        @click="emit('done', null, false, false)"
-        type="button">
+        @click="emit('done', null, false, false)">
         <span class="fa fa-ban" />
         <v-tooltip activator="parent">
           {{ $t('common.cancel') }}
         </v-tooltip>
-      </button>
+      </v-btn>
     </div>
   </div>
 </template>

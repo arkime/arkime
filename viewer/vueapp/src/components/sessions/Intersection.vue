@@ -30,28 +30,33 @@ SPDX-License-Identifier: Apache-2.0
         </v-radio-group>
       </div>
 
-      <div>
-        <button
-          class="btn btn-sm btn-theme-tertiary me-1"
-          @click="openIntersectionAction"
-          type="button">
-          <span class="fa fa-venn">
+      <div class="d-flex gap-1">
+        <v-btn
+          variant="flat"
+          size="small"
+          density="comfortable"
+          :style="tertiaryBtnStyle"
+          @click="openIntersectionAction">
+          <span class="fa fa-venn me-1">
             <span class="fa fa-circle-o" />
             <span class="fa fa-circle-o" />
-          </span>&nbsp;
+          </span>
           {{ $t('sessions.intersection.title') }}
-        </button>
-        <button
+        </v-btn>
+        <v-btn
           id="cancelExportIntersection"
-          class="btn btn-sm btn-warning"
+          color="warning"
+          variant="flat"
+          size="small"
+          density="comfortable"
+          icon
           :aria-label="$t('common.cancel')"
-          @click="$emit('done', null, false, false)"
-          type="button">
+          @click="$emit('done', null, false, false)">
           <span class="fa fa-ban" />
           <v-tooltip activator="parent">
             {{ $t('common.cancel') }}
           </v-tooltip>
-        </button>
+        </v-btn>
       </div>
     </div>
 
@@ -109,6 +114,12 @@ const error = ref('');
 const counts = ref(true);
 const sort = ref('count');
 const intersectionFields = ref(''); // Initialize as empty string, will be computed
+
+// Arkime theme-color v-btn style. Vuetify :color can't take CSS vars.
+const tertiaryBtnStyle = {
+  backgroundColor: 'var(--color-tertiary)',
+  color: 'var(--color-button, #FFF)'
+};
 
 // Access route
 const route = useRoute();

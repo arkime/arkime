@@ -22,25 +22,30 @@
       </p>
     </div>
 
-    <div>
-      <button
-        class="btn btn-sm btn-theme-tertiary me-1"
-        @click="exportPcapAction"
-        type="button">
-        <span class="fa fa-paper-plane-o" />&nbsp;
+    <div class="d-flex gap-1">
+      <v-btn
+        variant="flat"
+        size="small"
+        density="comfortable"
+        :style="tertiaryBtnStyle"
+        @click="exportPcapAction">
+        <span class="fa fa-paper-plane-o me-1" />
         {{ $t('sessions.exports.exportPCAP') }}
-      </button>
-      <button
+      </v-btn>
+      <v-btn
         id="cancelExportPcap"
-        class="btn btn-sm btn-warning"
+        color="warning"
+        variant="flat"
+        size="small"
+        density="comfortable"
+        icon
         :aria-label="$t('common.cancel')"
-        @click="$emit('done', null, false, false)"
-        type="button">
+        @click="$emit('done', null, false, false)">
         <span class="fa fa-ban" />
         <v-tooltip activator="parent">
           {{ $t('common.cancel') }}
         </v-tooltip>
-      </button>
+      </v-btn>
     </div>
   </div>
 </template>
@@ -85,6 +90,12 @@ const emit = defineEmits(['done']);
 const error = ref('');
 const segments = ref('no');
 const filename = ref('sessions.pcap');
+
+// Arkime theme-color v-btn style. Vuetify :color can't take CSS vars.
+const tertiaryBtnStyle = {
+  backgroundColor: 'var(--color-tertiary)',
+  color: 'var(--color-button, #FFF)'
+};
 
 // Access route
 const route = useRoute();

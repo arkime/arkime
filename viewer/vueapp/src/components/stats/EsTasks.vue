@@ -11,18 +11,21 @@ SPDX-License-Identifier: Apache-2.0
       :message="error" />
 
     <div v-show="!error">
-      <button
-        type="button"
+      <v-btn
         id="cancelAllTasks"
-        @click="cancelTasks"
+        color="warning"
+        variant="flat"
+        size="small"
+        density="comfortable"
+        class="float-end"
         v-has-role="{user:user,roles:'arkimeAdmin'}"
-        class="pull-right btn btn-sm btn-warning">
-        <span class="fa fa-ban" />&nbsp;
+        @click="cancelTasks">
+        <span class="fa fa-ban me-1" />
         {{ $t('stats.esTasks.cancelAll') }}
         <v-tooltip activator="#cancelAllTasks">
           {{ $t('stats.esTasks.cancelAllTip') }}
         </v-tooltip>
-      </button>
+      </v-btn>
 
       <arkime-paging
         v-if="stats"
@@ -46,13 +49,17 @@ SPDX-License-Identifier: Apache-2.0
         table-widths-state-name="esTasksColWidths"
         table-classes="table-sm table-hover text-end small mt-2">
         <template #actions="item">
-          <a
+          <v-btn
             v-if="item.item.cancellable"
-            class="btn btn-xs btn-danger"
-            @click="cancelTask(item.item.taskId)"
-            v-has-role="{user:user,roles:'arkimeAdmin'}">
+            color="error"
+            variant="flat"
+            size="x-small"
+            density="comfortable"
+            icon
+            v-has-role="{user:user,roles:'arkimeAdmin'}"
+            @click="cancelTask(item.item.taskId)">
             <span class="fa fa-trash-o" />
-          </a>
+          </v-btn>
         </template>
       </arkime-table>
     </div>
