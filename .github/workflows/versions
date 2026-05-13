@@ -179,7 +179,6 @@ include:
     freebsdrelease: "15.0"
     buildopt: "--kafka"
     fpmdeps: "-d glib -d yara -d libyaml -d libmaxminddb -d libuuid -d python312 -d libinotify -d pcre2 -d curl"
-    prbuild: true
 
 #  - version: freebsd14.aarch64
 #    freebsdrelease: "14.3"
