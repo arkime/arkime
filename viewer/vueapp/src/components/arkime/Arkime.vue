@@ -22,7 +22,7 @@ SPDX-License-Identifier: Apache-2.0
               <v-btn
                 v-bind="props"
                 size="small"
-                density="comfortable"
+                density="compact"
                 variant="flat"
                 color="secondary">
                 {{ summaryResultsLimit }}
@@ -46,7 +46,7 @@ SPDX-License-Identifier: Apache-2.0
               <v-btn
                 v-bind="props"
                 size="small"
-                density="comfortable"
+                density="compact"
                 variant="flat"
                 color="secondary">
                 {{ summaryOrder === 'asc' ? 'Bottom' : 'Top' }}
@@ -71,7 +71,7 @@ SPDX-License-Identifier: Apache-2.0
           <v-btn
             :aria-label="$t('sessions.summary.exportAllPNG')"
             size="small"
-            density="comfortable"
+            density="compact"
             variant="flat"
             color="secondary"
             @click="exportAllPNG">
@@ -83,28 +83,32 @@ SPDX-License-Identifier: Apache-2.0
             </v-tooltip>
           </v-btn>
 
-          <!-- summary field visibility dropdown -->
-          <FieldSelectDropdown
-            :selected-fields="summaryFields"
-            :tooltip-text="$t('sessions.summary.toggleFields')"
-            :search-placeholder="$t('sessions.summary.searchFields')"
-            :include-summary-fields="true"
-            field-id-key="exp"
-            @toggle="toggleSummaryField"
-            @clear="clearSummaryFields" />
-
-          <!-- summary config dropdown -->
-          <SummaryConfigDropdown
-            :current-config="currentSummaryConfig"
-            @load="loadSummaryConfigFromShareable"
-            @reset="resetSummaryToDefaults"
-            @message="displayMessage" />
+          <!-- summary field visibility + config group -->
+          <v-btn-group
+            divided
+            density="compact"
+            variant="flat"
+            color="secondary">
+            <FieldSelectDropdown
+              :selected-fields="summaryFields"
+              :tooltip-text="$t('sessions.summary.toggleFields')"
+              :search-placeholder="$t('sessions.summary.searchFields')"
+              :include-summary-fields="true"
+              field-id-key="exp"
+              @toggle="toggleSummaryField"
+              @clear="clearSummaryFields" />
+            <SummaryConfigDropdown
+              :current-config="currentSummaryConfig"
+              @load="loadSummaryConfigFromShareable"
+              @reset="resetSummaryToDefaults"
+              @message="displayMessage" />
+          </v-btn-group>
 
           <!-- cancel loading button -->
           <v-btn
             v-if="summaryStreaming"
             size="small"
-            density="comfortable"
+            density="compact"
             variant="flat"
             color="warning"
             @click="cancelSummaryLoading">

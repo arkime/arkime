@@ -50,75 +50,63 @@ SPDX-License-Identifier: Apache-2.0
         class="col-xl-2 col-lg-3 col-md-3 col-sm-4 col-xs-12"
         role="tablist"
         aria-orientation="vertical">
-        <v-list
+        <v-tabs
+          :model-value="visibleTab"
+          @update:model-value="openView($event)"
+          direction="vertical"
           density="compact"
-          class="settings-nav-list">
-          <v-list-item
-            :active="visibleTab === 'general'"
-            @click="openView('general')">
-            <span class="fa fa-fw fa-cog" />&nbsp;
+          color="primary"
+          selected-class="font-weight-bold">
+          <v-tab value="general">
+            <span class="fa fa-fw fa-cog me-1" />
             {{ $t('settings.nav.general') }}
-          </v-list-item>
-          <v-list-item
-            :active="visibleTab === 'col'"
-            @click="openView('col')">
-            <span class="fa fa-fw fa-columns" />&nbsp;
+          </v-tab>
+          <v-tab value="col">
+            <span class="fa fa-fw fa-columns me-1" />
             {{ $t('settings.nav.columnLayout') }}
-          </v-list-item>
-          <v-list-item
-            :active="visibleTab === 'info'"
-            @click="openView('info')">
-            <span class="fa fa-fw fa-info" />&nbsp;
+          </v-tab>
+          <v-tab value="info">
+            <span class="fa fa-fw fa-info me-1" />
             {{ $t('settings.nav.infoFieldLayout') }}
-          </v-list-item>
-          <v-list-item
-            :active="visibleTab === 'spiview'"
-            @click="openView('spiview')">
-            <span class="fa fa-fw fa-eyedropper" />&nbsp;
+          </v-tab>
+          <v-tab value="spiview">
+            <span class="fa fa-fw fa-eyedropper me-1" />
             {{ $t('settings.nav.spiViewLayout') }}
-          </v-list-item>
-          <v-list-item
-            :active="visibleTab === 'theme'"
-            @click="openView('theme')">
-            <span class="fa fa-fw fa-paint-brush" />&nbsp;
+          </v-tab>
+          <v-tab value="theme">
+            <span class="fa fa-fw fa-paint-brush me-1" />
             {{ $t('settings.nav.themes') }}
-          </v-list-item>
-          <v-list-item
+          </v-tab>
+          <v-tab
             v-if="(!multiviewer || hasUsersES) && !disablePassword"
-            :active="visibleTab === 'password'"
-            @click="openView('password')">
-            <span class="fa fa-fw fa-lock" />&nbsp;
+            value="password">
+            <span class="fa fa-fw fa-lock me-1" />
             {{ $t('settings.nav.password') }}
-          </v-list-item>
+          </v-tab>
           <v-divider class="my-1" />
-          <v-list-item
-            :active="visibleTab === 'views'"
-            @click="openView('views')">
-            <span class="fa fa-fw fa-eye" />&nbsp;
+          <v-tab value="views">
+            <span class="fa fa-fw fa-eye me-1" />
             {{ $t('settings.nav.views') }}
-          </v-list-item>
-          <v-list-item
+          </v-tab>
+          <v-tab
             v-if="!multiviewer || hasUsersES"
-            :active="visibleTab === 'shortcuts'"
-            @click="openView('shortcuts')">
-            <span class="fa fa-fw fa-list" />&nbsp;
+            value="shortcuts">
+            <span class="fa fa-fw fa-list me-1" />
             {{ $t('settings.nav.shortcuts') }}
-          </v-list-item>
-          <v-list-item
+          </v-tab>
+          <v-tab
             v-if="!multiviewer"
-            :active="visibleTab === 'cron'"
-            @click="openView('cron')">
-            <span class="fa fa-fw fa-search" />&nbsp;
+            value="cron">
+            <span class="fa fa-fw fa-search me-1" />
             {{ $t('settings.nav.cron') }}
-          </v-list-item>
-          <v-list-item
+          </v-tab>
+          <v-tab
             v-has-role="{user:user,roles:'arkimeAdmin'}"
-            :active="visibleTab === 'notifiers'"
-            @click="openView('notifiers')">
-            <span class="fa fa-fw fa-bell" />&nbsp;
+            value="notifiers">
+            <span class="fa fa-fw fa-bell me-1" />
             {{ $t('settings.nav.notifiers') }}
-          </v-list-item>
-        </v-list>
+          </v-tab>
+        </v-tabs>
       </div> <!-- /navigation -->
 
       <div class="col-xl-10 col-lg-9 col-md-9 col-sm-8 col-xs-12 settings-right-panel">

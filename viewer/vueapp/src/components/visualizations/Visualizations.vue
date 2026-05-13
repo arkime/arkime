@@ -95,6 +95,7 @@ SPDX-License-Identifier: Apache-2.0
                       :color="src ? 'primary' : undefined"
                       size="small"
                       density="comfortable"
+                      icon
                       @click="toggleSrcDstXff('src')">
                       <strong>S</strong>
                       <v-tooltip activator="parent">
@@ -106,6 +107,7 @@ SPDX-License-Identifier: Apache-2.0
                       :color="dst ? 'primary' : undefined"
                       size="small"
                       density="comfortable"
+                      icon
                       @click="toggleSrcDstXff('dst')">
                       <strong>D</strong>
                       <v-tooltip activator="parent">
@@ -119,6 +121,7 @@ SPDX-License-Identifier: Apache-2.0
                     :color="xffGeo ? 'primary' : undefined"
                     size="small"
                     density="comfortable"
+                    icon
                     class="xff-btn"
                     @click="toggleSrcDstXff('xffGeo')"
                     title="Toggle XFF Countries">
@@ -761,11 +764,12 @@ export default {
   top: 50px;
   right: 2px;
   z-index: 3;
+  gap: 4px;
 }
 
 .xff-btn {
   position: absolute;
-  top: 95px;
+  top: 106px;
   right: 2px;
   z-index: 3;
 }

@@ -53,7 +53,7 @@ SPDX-License-Identifier: Apache-2.0
             v-if="item.item.cancellable"
             color="error"
             variant="flat"
-            size="x-small"
+            size="small"
             density="comfortable"
             icon
             v-has-role="{user:user,roles:'arkimeAdmin'}"

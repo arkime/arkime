@@ -356,62 +356,61 @@ SPDX-License-Identifier: Apache-2.0
       </div> <!-- /popup area -->
 
       <!-- Button group -->
-      <span
-        class="connections-buttons"
-        :style="[showToolBars ? {'top': '160px'} : {'top': '40px'}]">
-        <div class="d-flex flex-column unlock-btn overlay-btns">
-          <!-- unlock button-->
-          <span class="unlock-btn">
-            <v-btn
-              variant="outlined"
-              size="small"
-              density="comfortable"
-              class="ms-1"
-              id="unlockNodes"
-              :aria-label="$t('connections.unlockNodesTip')"
-              @click.stop.prevent="unlock">
-              <span class="fa fa-unlock" />
-              <v-tooltip
-                activator="parent"
-                location="bottom"
-                :open-delay="300">
-                {{ $t('connections.unlockNodesTip') }}
-              </v-tooltip>
-            </v-btn>
-          </span> <!-- /unlock button-->
-          <!-- export button-->
-          <span class="export-btn">
-            <v-btn
-              variant="outlined"
-              size="small"
-              density="comfortable"
-              class="ms-1"
-              id="exportGraph"
-              :aria-label="$t('connections.exportGraphTip')"
-              @click.stop.prevent="exportPng">
-              <span class="fa fa-download" />
-              <v-tooltip
-                activator="parent"
-                location="bottom"
-                :open-delay="300">
-                {{ $t('connections.exportGraphTip') }}
-              </v-tooltip>
-            </v-btn>
-          </span> <!-- /export button-->
-        </div>
+      <div
+        class="connections-buttons d-flex align-center ga-2"
+        :style="[showToolBars ? {'top': '175px'} : {'top': '55px'}]">
+        <!-- unlock + export -->
+        <v-btn-group
+          divided
+          density="comfortable">
+          <v-btn
+            variant="outlined"
+            size="small"
+            density="comfortable"
+            icon
+            id="unlockNodes"
+            :aria-label="$t('connections.unlockNodesTip')"
+            @click.stop.prevent="unlock">
+            <span class="fa fa-unlock" />
+            <v-tooltip
+              activator="parent"
+              location="bottom"
+              :open-delay="300">
+              {{ $t('connections.unlockNodesTip') }}
+            </v-tooltip>
+          </v-btn>
+          <v-btn
+            variant="outlined"
+            size="small"
+            density="comfortable"
+            icon
+            id="exportGraph"
+            :aria-label="$t('connections.exportGraphTip')"
+            @click.stop.prevent="exportPng">
+            <span class="fa fa-download" />
+            <v-tooltip
+              activator="parent"
+              location="bottom"
+              :open-delay="300">
+              {{ $t('connections.exportGraphTip') }}
+            </v-tooltip>
+          </v-btn>
+        </v-btn-group>
 
         <!-- node distance -->
-        <div class="d-flex flex-column node-distance-btns overlay-btns">
+        <v-btn-group
+          divided
+          density="comfortable">
           <v-btn
             id="nodeDistUp"
             :aria-label="$t('connections.nodeDistUpTip')"
             variant="outlined"
             size="small"
             density="comfortable"
-            :class="{'disabled':query.nodeDist >= 200}"
+            icon
+            :disabled="query.nodeDist >= 200"
             @click="changeNodeDist(10)">
             <span class="fa fa-plus" />
-            <span class="fa fa-arrows-v" />
             <v-tooltip
               activator="parent"
               location="bottom"
@@ -425,9 +424,9 @@ SPDX-License-Identifier: Apache-2.0
             variant="outlined"
             size="small"
             density="comfortable"
-            :class="{'disabled':query.nodeDist <= 10}"
+            icon
+            :disabled="query.nodeDist <= 10"
             @click="changeNodeDist(-10)">
-            <span class="fa fa-minus" />
             <span class="fa fa-arrows-v" />
             <v-tooltip
               activator="parent"
@@ -436,19 +435,21 @@ SPDX-License-Identifier: Apache-2.0
               {{ $t('connections.nodeDistDownTip') }}
             </v-tooltip>
           </v-btn>
-        </div> <!-- /node distance -->
+        </v-btn-group>
 
         <!-- text size increase/decrease -->
-        <div class="d-flex flex-column text-size-btns overlay-btns">
+        <v-btn-group
+          divided
+          density="comfortable">
           <v-btn
             id="textSizeUp"
             :aria-label="$t('connections.textSizeUpTip')"
             variant="outlined"
             size="small"
             density="comfortable"
-            :class="{'disabled':fontSize >= 1}"
+            icon
+            :disabled="fontSize >= 1"
             @click="updateTextSize(0.1)">
-            <span class="fa fa-long-arrow-up" />
             <span class="fa fa-font" />
             <v-tooltip
               activator="parent"
@@ -463,10 +464,10 @@ SPDX-License-Identifier: Apache-2.0
             variant="outlined"
             size="small"
             density="comfortable"
-            :class="{'disabled':fontSize <= 0.2}"
+            icon
+            :disabled="fontSize <= 0.2"
             @click="updateTextSize(-0.1)">
-            <span class="fa fa-long-arrow-down" />
-            <span class="fa fa-font" />
+            <span class="fa fa-font fa-sm" />
             <v-tooltip
               activator="parent"
               location="bottom"
@@ -474,19 +475,22 @@ SPDX-License-Identifier: Apache-2.0
               {{ $t('connections.textSizeDownTip') }}
             </v-tooltip>
           </v-btn>
-        </div> <!-- /text size increase/decrease -->
+        </v-btn-group>
 
         <!-- zoom in/out -->
-        <div class="d-flex flex-column zoom-btns overlay-btns">
+        <v-btn-group
+          divided
+          density="comfortable">
           <v-btn
             id="zoomIn"
             :aria-label="$t('connections.zoomInTip')"
             variant="outlined"
             size="small"
             density="comfortable"
-            :class="{'disabled':zoomLevel >= 4}"
+            icon
+            :disabled="zoomLevel >= 4"
             @click="zoomConnections(2)">
-            <span class="fa fa-lg fa-search-plus" />
+            <span class="fa fa-search-plus" />
             <v-tooltip
               activator="parent"
               location="bottom"
@@ -500,9 +504,10 @@ SPDX-License-Identifier: Apache-2.0
             variant="outlined"
             size="small"
             density="comfortable"
-            :class="{'disabled':zoomLevel <= 0.0625}"
+            icon
+            :disabled="zoomLevel <= 0.0625"
             @click="zoomConnections(0.5)">
-            <span class="fa fa-lg fa-search-minus" />
+            <span class="fa fa-search-minus" />
             <v-tooltip
               activator="parent"
               location="bottom"
@@ -510,8 +515,8 @@ SPDX-License-Identifier: Apache-2.0
               {{ $t('connections.zoomOutTip') }}
             </v-tooltip>
           </v-btn>
-        </div> <!-- /zoom in/out -->
-      </span> <!-- /Button group -->
+        </v-btn-group>
+      </div> <!-- /Button group -->
     </div>
   </div>
 </template>

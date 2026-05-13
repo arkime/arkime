@@ -55,8 +55,7 @@
             <v-btn
               v-bind="activatorProps"
               variant="outlined"
-              size="small"
-              density="comfortable"
+              size="large"
               icon
               title="Settings">
               <span class="fa fa-gear" />

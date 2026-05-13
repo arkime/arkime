@@ -18,8 +18,8 @@ SPDX-License-Identifier: Apache-2.0
                 @change-paging="changePaging"
                 :length-default="500" />
             </v-col>
-            <v-col cols="auto">
-              <div class="arkime-input-group">
+            <v-col>
+              <div class="arkime-input-group arkime-input-group--fluid">
                 <span class="arkime-input-label arkime-input-label-fw">
                   <span
                     v-if="!shiftKeyHold"

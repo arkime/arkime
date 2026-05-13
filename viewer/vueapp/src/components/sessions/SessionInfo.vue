@@ -7,19 +7,19 @@ SPDX-License-Identifier: Apache-2.0
     <div
       v-for="(infoField, index) in infoFieldsClone"
       :key="infoField.dbField + index">
-      <div v-if="session[infoField.dbField]">
+      <div
+        v-if="session[infoField.dbField]"
+        class="info-field-row">
         <!-- label dropdown menu -->
         <v-menu location="bottom end">
           <template #activator="{ props: activatorProps }">
-            <v-btn
+            <button
               v-bind="activatorProps"
-              variant="outlined"
-              size="x-small"
-              density="comfortable"
-              class="field-info-trigger me-1">
+              type="button"
+              class="clickable-label me-1">
               {{ infoField.friendlyName }}
               <span class="fa fa-caret-down ms-1" />
-            </v-btn>
+            </button>
           </template>
           <v-list density="compact">
             <v-list-item @click="exportUnique(infoField.rawField || infoField.exp, 0)">
@@ -41,7 +41,8 @@ SPDX-License-Identifier: Apache-2.0
             </v-list-item>
           </v-list>
         </v-menu> <!-- /label dropdown menu -->
-        <span v-if="Array.isArray(session[infoField.dbField])">
+        <span
+          v-if="Array.isArray(session[infoField.dbField])">
           <span
             v-for="(value, idx) in limitArrayLength(session[infoField.dbField], infoField.limit)"
             :key="value + idx">
@@ -155,13 +156,35 @@ export default {
 </script>
 
 <style scoped>
-/* clickable field labels — small, outlined, sits inline with field values */
-.session-info .field-info-trigger {
-  margin-top: 1px;
-  margin-bottom: 1px;
-  padding: 0 6px;
-  font-size: 0.75rem;
-  font-weight: 500;
-  line-height: 1.4;
+/* one row per field — give a tiny vertical gap so adjacent rows don't
+   smoosh together when the info column gets dense */
+.session-info .info-field-row {
+  margin-bottom: 4px;
+}
+/* Field-label dropdown trigger — same visual treatment as the session
+   detail's .clickable-label (SessionDetail.vue). Self-contained;
+   doesn't depend on bootstrap.css. */
+.session-info button.clickable-label {
+  display: inline-block;
+  height: 21px;
+  background-color: transparent;
+  color: var(--color-foreground, #333);
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 21px;
+  padding: 0 5px;
+  border: 1px solid var(--color-gray);
+  border-radius: 0.25rem;
+  cursor: pointer;
+  max-width: 220px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  vertical-align: baseline;
+}
+.session-info button.clickable-label:hover {
+  color: #333;
+  background-color: var(--color-gray);
+  border-color: var(--color-gray);
 }
 </style>

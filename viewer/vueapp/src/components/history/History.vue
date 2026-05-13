@@ -8,68 +8,66 @@ SPDX-License-Identifier: Apache-2.0
       <span class="fixed-header">
         <!-- search navbar -->
         <div class="history-search p-1">
-          <Clusters />
-          <v-btn
-            variant="flat"
-            size="small"
-            density="comfortable"
-            class="float-right ms-1 search-btn"
-            :style="tertiaryBtnStyle"
-            @click="loadData">
-            <span v-if="!shiftKeyHold">
-              Search
-            </span>
-            <span
-              v-else
-              class="enter-icon">
-              <span class="fa fa-long-arrow-left fa-lg" />
-              <div class="enter-arm" />
-            </span>
-          </v-btn>
-          <v-text-field
-            v-model="searchTerm"
-            density="compact"
-            variant="outlined"
-            hide-details
-            class="history-search-field"
-            :placeholder="$t('history.searchHistoryPlaceholder')"
-            v-focus="focusInput"
-            @keyup.enter="loadData"
-            @input="debounceSearch"
-            @blur="onOffFocus">
-            <template #prepend-inner>
-              <span
-                v-if="!shiftKeyHold"
-                class="fa fa-search fa-fw" />
-              <span
-                v-else
-                class="query-shortcut">
-                Q
-              </span>
-            </template>
-            <template #append-inner>
-              <v-btn
-                v-if="searchTerm"
-                icon
-                variant="text"
-                size="x-small"
-                density="comfortable"
-                :aria-label="$t('common.clear')"
-                @click="clear">
-                <span class="fa fa-close" />
-              </v-btn>
+          <!-- search row: cluster + search expression + search button -->
+          <div class="d-flex align-center gap-1 mb-1">
+            <Clusters />
+            <div class="arkime-input-group arkime-input-group--fluid">
               <span
                 id="searchHistory"
-                class="ms-1">
-                <span class="fa fa-lg fa-question-circle text-theme-primary help-cursor" />
+                class="arkime-input-label arkime-input-label-fw cursor-help">
+                <span
+                  v-if="!shiftKeyHold"
+                  class="fa fa-search fa-fw" />
+                <span
+                  v-else
+                  class="query-shortcut">
+                  Q
+                </span>
                 <v-tooltip activator="#searchHistory">
                   <div v-html="$t('history.searchHistoryTipHtml')" />
                 </v-tooltip>
               </span>
-            </template>
-          </v-text-field>
+              <input
+                type="text"
+                v-model="searchTerm"
+                class="arkime-input-control"
+                :placeholder="$t('history.searchHistoryPlaceholder')"
+                v-focus="focusInput"
+                @keyup.enter="loadData"
+                @input="debounceSearch"
+                @blur="onOffFocus">
+              <v-btn
+                v-if="searchTerm"
+                variant="text"
+                size="x-small"
+                density="comfortable"
+                icon
+                class="arkime-input-append-btn"
+                :aria-label="$t('common.clear')"
+                @click="clear">
+                <span class="fa fa-close" />
+              </v-btn>
+            </div>
+            <v-btn
+              variant="flat"
+              size="small"
+              density="comfortable"
+              :style="tertiaryBtnStyle"
+              @click="loadData">
+              <span v-if="!shiftKeyHold">
+                Search
+              </span>
+              <span
+                v-else
+                class="enter-icon">
+                <span class="fa fa-long-arrow-left fa-lg" />
+                <div class="enter-arm" />
+              </span>
+            </v-btn>
+          </div> <!-- /search row -->
+
+          <!-- time row -->
           <arkime-time
-            class="mt-1"
             :timezone="user.settings.timezone"
             @time-change="loadData"
             :hide-bounding="true"
@@ -209,7 +207,7 @@ SPDX-License-Identifier: Apache-2.0
                 :aria-label="$t('common.delete')"
                 variant="flat"
                 color="warning"
-                size="x-small"
+                size="small"
                 density="comfortable"
                 icon
                 class="ms-1"
@@ -224,7 +222,7 @@ SPDX-License-Identifier: Apache-2.0
                 :aria-label="$t('common.open')"
                 variant="flat"
                 color="info"
-                size="x-small"
+                size="small"
                 density="comfortable"
                 icon
                 class="ms-1"
@@ -378,7 +376,7 @@ SPDX-License-Identifier: Apache-2.0
                       {{ $t('history.esQuery') }}
                       <v-btn
                         variant="flat"
-                        size="x-small"
+                        size="small"
                         density="comfortable"
                         class="ms-2"
                         :style="secondaryBtnStyle"
@@ -710,11 +708,6 @@ export default {
 .history-page .history-paging {
   z-index: 4;
   height: 40px;
-}
-
-.history-search-field {
-  width: auto;
-  display: inline-block;
 }
 
 /* table styles -- replaces what .table.table-sm.table-striped.small

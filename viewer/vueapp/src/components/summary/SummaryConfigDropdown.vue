@@ -3,128 +3,124 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-  <div class="summary-config-dropdown d-inline-block">
-    <v-menu @update:model-value="(opened) => { if (opened) loadConfigs(); }">
-      <template #activator="{ props: activatorProps }">
-        <v-btn
-          v-bind="activatorProps"
-          variant="flat"
-          size="small"
-          density="comfortable"
-          :style="primaryBtnStyle"
-          id="summary-config-dropdown-btn">
-          <span class="fa fa-save" />
-        </v-btn>
-        <v-tooltip
-          activator="#summary-config-dropdown-btn"
-          location="right">
-          {{ $t('sessions.summary.config.configurations') }}
-        </v-tooltip>
-      </template>
+  <v-menu @update:model-value="(opened) => { if (opened) loadConfigs(); }">
+    <template #activator="{ props: activatorProps }">
+      <v-btn
+        v-bind="activatorProps"
+        size="small"
+        id="summary-config-dropdown-btn">
+        <span class="fa fa-save" />
+      </v-btn>
+      <v-tooltip
+        activator="#summary-config-dropdown-btn"
+        location="right">
+        {{ $t('sessions.summary.config.configurations') }}
+      </v-tooltip>
+    </template>
 
-      <v-list
-        density="compact"
-        class="summary-config-list">
-        <!-- Loading indicator -->
-        <v-list-item
-          v-if="loading"
-          disabled>
-          <span class="fa fa-spinner fa-spin me-1" />
-          {{ $t('common.loading') }}
-        </v-list-item>
+    <v-list
+      density="compact"
+      class="summary-config-list">
+      <!-- Loading indicator -->
+      <v-list-item
+        v-if="loading"
+        disabled>
+        <span class="fa fa-spinner fa-spin me-1" />
+        {{ $t('common.loading') }}
+      </v-list-item>
 
-        <!-- Error message -->
-        <v-list-item
-          v-if="error && !loading"
-          disabled
-          class="text-danger">
-          <span class="fa fa-exclamation-triangle me-1" />
-          {{ error }}
-        </v-list-item>
+      <!-- Error message -->
+      <v-list-item
+        v-if="error && !loading"
+        disabled
+        class="text-danger">
+        <span class="fa fa-exclamation-triangle me-1" />
+        {{ error }}
+      </v-list-item>
 
-        <!-- Save current config -->
-        <v-list-item @click="openSaveModal">
-          <span class="fa fa-save me-1" />
-          {{ $t('sessions.summary.config.saveCurrent') }}
-        </v-list-item>
+      <!-- Save current config -->
+      <v-list-item @click="openSaveModal">
+        <span class="fa fa-save me-1" />
+        {{ $t('sessions.summary.config.saveCurrent') }}
+      </v-list-item>
 
-        <!-- Reset to defaults -->
-        <v-list-item @click="resetToDefaults">
-          <span class="fa fa-refresh me-1" />
-          {{ $t('sessions.summary.config.resetToDefault') }}
-        </v-list-item>
+      <!-- Reset to defaults -->
+      <v-list-item @click="resetToDefaults">
+        <span class="fa fa-refresh me-1" />
+        {{ $t('sessions.summary.config.resetToDefault') }}
+      </v-list-item>
 
-        <v-divider v-if="configs.length > 0" />
+      <v-divider v-if="configs.length > 0" />
 
-        <!-- Saved configurations -->
-        <v-list-item
-          v-for="config in configs"
-          :key="config.id"
-          @click="loadConfig(config)">
-          <div class="d-flex justify-content-between align-items-center w-100">
-            <span class="config-name">
-              <span
-                v-if="config.shared"
-                class="fa fa-share-square me-1" />
-              {{ config.name }}
-              <small
-                v-if="config.creator && config.creator !== user.userId"
-                class="text-muted ms-1">
-                ({{ config.creator }})
-              </small>
-            </span>
+      <!-- Saved configurations -->
+      <v-list-item
+        v-for="config in configs"
+        :key="config.id"
+        @click="loadConfig(config)">
+        <div class="d-flex justify-content-between align-items-center w-100">
+          <span class="config-name">
             <span
-              class="config-actions"
-              @click.stop>
-              <v-btn
-                v-if="config.canEdit"
-                variant="flat"
-                size="small"
-                density="comfortable"
-                icon
-                :style="tertiaryBtnStyle"
-                class="ms-1"
-                :title="$t('sessions.summary.config.edit')"
-                :aria-label="$t('sessions.summary.config.edit')"
-                @click.stop="openEditModal(config)">
-                <span class="fa fa-pencil" />
-              </v-btn>
-              <v-btn
-                v-if="config.canDelete"
-                color="error"
-                variant="flat"
-                size="small"
-                density="comfortable"
-                icon
-                class="ms-1"
-                :title="$t('sessions.summary.config.delete')"
-                :aria-label="$t('sessions.summary.config.delete')"
-                @click.stop="deleteConfig(config)">
-                <span class="fa fa-trash-o" />
-              </v-btn>
-            </span>
-          </div>
-        </v-list-item>
-
-        <!-- No configs message -->
-        <v-list-item
-          v-if="!loading && !error && configs.length === 0"
-          disabled>
-          <span class="text-muted">
-            {{ $t('sessions.summary.config.noConfigs') }}
+              v-if="config.shared"
+              class="fa fa-share-square me-1" />
+            {{ config.name }}
+            <small
+              v-if="config.creator && config.creator !== user.userId"
+              class="text-muted ms-1">
+              ({{ config.creator }})
+            </small>
           </span>
-        </v-list-item>
-      </v-list>
-    </v-menu>
+          <span
+            class="config-actions"
+            @click.stop>
+            <v-btn
+              v-if="config.canEdit"
+              variant="flat"
+              size="small"
+              density="comfortable"
+              icon
+              :style="tertiaryBtnStyle"
+              class="ms-1"
+              :title="$t('sessions.summary.config.edit')"
+              :aria-label="$t('sessions.summary.config.edit')"
+              @click.stop="openEditModal(config)">
+              <span class="fa fa-pencil" />
+            </v-btn>
+            <v-btn
+              v-if="config.canDelete"
+              color="error"
+              variant="flat"
+              size="small"
+              density="comfortable"
+              icon
+              class="ms-1"
+              :title="$t('sessions.summary.config.delete')"
+              :aria-label="$t('sessions.summary.config.delete')"
+              @click.stop="deleteConfig(config)">
+              <span class="fa fa-trash-o" />
+            </v-btn>
+          </span>
+        </div>
+      </v-list-item>
 
-    <!-- Save/Edit Modal -->
-    <SummaryConfigSaveModal
-      :show="showSaveModal"
-      :config="currentConfig"
-      :editing="editingConfig"
-      @close="closeSaveModal"
-      @saved="onConfigSaved" />
-  </div>
+      <!-- No configs message -->
+      <v-list-item
+        v-if="!loading && !error && configs.length === 0"
+        disabled>
+        <span class="text-muted">
+          {{ $t('sessions.summary.config.noConfigs') }}
+        </span>
+      </v-list-item>
+    </v-list>
+  </v-menu>
+  <!-- Save/Edit Modal: rendered as a fragment sibling so it doesn't
+       wrap the v-menu (which would break the parent v-btn-group). The
+       v-dialog inside teleports to body anyway. -->
+  <SummaryConfigSaveModal
+    :show="showSaveModal"
+    :config="currentConfig"
+    :editing="editingConfig"
+    @close="closeSaveModal"
+    @saved="onConfigSaved" />
 </template>
 
 <script setup>
@@ -155,11 +151,9 @@ const configs = ref([]);
 const showSaveModal = ref(false);
 const editingConfig = ref(null);
 
-// Arkime theme-color v-btn styles. Vuetify :color can't take CSS vars.
-const primaryBtnStyle = {
-  backgroundColor: 'var(--color-primary)',
-  color: 'var(--color-button, #FFF)'
-};
+// Arkime theme-color v-btn style for inline row-action buttons inside
+// the dropdown menu. The trigger button takes its color from the
+// parent v-btn-group.
 const tertiaryBtnStyle = {
   backgroundColor: 'var(--color-tertiary)',
   color: 'var(--color-button, #FFF)'

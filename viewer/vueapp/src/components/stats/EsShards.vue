@@ -113,7 +113,7 @@ SPDX-License-Identifier: Apache-2.0
                     v-if="!stat.confirmDelete"
                     color="error"
                     variant="flat"
-                    size="x-small"
+                    size="small"
                     density="comfortable"
                     icon
                     :id="`deleteUnassignedShards${index}`"
@@ -129,7 +129,7 @@ SPDX-License-Identifier: Apache-2.0
                     v-else
                     color="warning"
                     variant="flat"
-                    size="x-small"
+                    size="small"
                     density="comfortable"
                     icon
                     :id="`confirmDeleteUnassignedShards${index}`"

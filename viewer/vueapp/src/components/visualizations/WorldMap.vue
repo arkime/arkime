@@ -53,8 +53,7 @@ methods exposed on this ref, and dispatches the country-click filter.
     <div class="world-map-zoom-buttons">
       <v-btn
         variant="outlined"
-        size="x-small"
-        density="comfortable"
+        size="default"
         icon
         aria-label="Zoom in"
         @click="zoomIn">
@@ -62,8 +61,7 @@ methods exposed on this ref, and dispatches the country-click filter.
       </v-btn>
       <v-btn
         variant="outlined"
-        size="x-small"
-        density="comfortable"
+        size="default"
         icon
         aria-label="Zoom out"
         @click="zoomOut">

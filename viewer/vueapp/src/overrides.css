@@ -533,26 +533,8 @@ pre {
   font-size: 0.78rem !important;
 }
 
-/* v-btn size=small: Vuetify natively renders ~28px (and ~20px when
-   combined with density=comfortable), both of which read "thin" sitting
-   next to .arkime-input-group containers (32px tall). Bump min-height
-   to 32px so subnav action buttons (Stats refresh, Spiview load/unload,
-   Arkime summary controls, etc.) line up flush with their input
-   neighbors.
-
-   Excludes:
-   - .v-btn--icon                → icon-only buttons (Navbar action
-                                   cluster, HuntRow row actions) stay
-                                   at Vuetify's native small height
-   - .arkime-input-append-btn    → inline append-inner actions inside
-                                   an .arkime-input-group stay 28px
-                                   (sized by arkime-input-group.css)
-   - .v-btn-group--density-compact descendants → v-btn-toggle groups
-                                   stay 30px (group height wins via
-                                   the v-btn-toggle rule above) */
-.v-btn--size-small:not(.v-btn--icon):not(.arkime-input-append-btn) {
-  min-height: 32px !important;
-}
+/* v-btn-toggle compact groups: keep buttons at the group's 30px height
+   (Vuetify renders v-btn-toggle as a v-btn-group). */
 .v-btn-group--density-compact .v-btn--size-small {
   min-height: 30px !important;
 }

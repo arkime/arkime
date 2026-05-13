@@ -10,9 +10,9 @@ SPDX-License-Identifier: Apache-2.0
         <div class="row g-1 stats-form p-1 align-items-center justify-content-start">
 
           <div
-            class="col-auto flex-grow-1"
+            class="col flex-grow-1"
             v-if="tabIndex !== 7">
-            <div class="arkime-input-group">
+            <div class="arkime-input-group arkime-input-group--fluid">
               <span class="arkime-input-label arkime-input-label-fw">
                 <span
                   v-if="loadingData"
@@ -486,7 +486,9 @@ SPDX-License-Identifier: Apache-2.0
         :model-value="tabIndex"
         @update:model-value="tabIndexChange($event)"
         density="compact"
-        color="primary">
+        color="primary"
+        align-tabs="start"
+        selected-class="font-weight-bold">
         <v-tab :value="0">
           {{ $t('stats.nav.captureGraphs') }}
         </v-tab>

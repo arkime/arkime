@@ -6,12 +6,7 @@
     <template #activator="{ props: activatorProps }">
       <v-btn
         v-bind="activatorProps"
-        variant="flat"
-        size="small"
-        density="comfortable"
-        :color="vuetifyButtonColor"
-        :style="themeButtonStyle"
-        class="field-dropdown-trigger d-inline-block">
+        size="small">
         <span class="fa fa-bars" />
         <v-tooltip
           activator="parent"
@@ -102,10 +97,6 @@ export default {
       type: String,
       default: 'Search for fields...'
     },
-    buttonVariant: {
-      type: String,
-      default: 'theme-primary'
-    },
     // Which field property to use as the ID (dbField for columns, exp for summary)
     fieldIdKey: {
       type: String,
@@ -145,30 +136,6 @@ export default {
     };
   },
   computed: {
-    /* Map `buttonVariant` prop ("theme-primary" / "theme-secondary" / etc.,
-       or plain Vuetify colors like "warning") to a Vuetify color name
-       when possible, else fall back to null and apply CSS-var-driven
-       inline style instead. Vuetify :color can't take CSS vars. */
-    vuetifyButtonColor () {
-      if (!this.buttonVariant || this.buttonVariant.startsWith('theme-')) return null;
-      return this.buttonVariant;
-    },
-    themeButtonStyle () {
-      // Only apply when the variant is a theme-* Arkime color, since those
-      // map to CSS vars (--color-primary, --color-secondary, etc.).
-      const themeMap = {
-        'theme-primary': 'primary',
-        'theme-secondary': 'secondary',
-        'theme-tertiary': 'tertiary',
-        'theme-quaternary': 'quaternary'
-      };
-      const themeKey = themeMap[this.buttonVariant];
-      if (!themeKey) return null;
-      return {
-        backgroundColor: `var(--color-${themeKey})`,
-        color: 'var(--color-button, #FFF)'
-      };
-    },
     fields () {
       const baseFields = this.$store.state.fieldsArr;
       if (this.includeSummaryFields) {

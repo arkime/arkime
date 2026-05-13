@@ -134,6 +134,9 @@ SPDX-License-Identifier: Apache-2.0
                 <!-- column configuration action group: visibility + save layouts -->
                 <v-btn-group
                   divided
+                  density="compact"
+                  variant="flat"
+                  color="secondary"
                   class="column-config-actions">
                   <!-- column visibility button -->
                   <FieldSelectDropdown
@@ -152,11 +155,7 @@ SPDX-License-Identifier: Apache-2.0
                     <template #activator="{ props: activatorProps }">
                       <v-btn
                         v-bind="activatorProps"
-                        variant="flat"
-                        size="small"
-                        density="comfortable"
-                        :style="secondaryBtnStyle"
-                        class="col-config-trigger d-inline-block">
+                        size="small">
                         <span class="fa fa-save" />
                         <v-tooltip
                           activator="parent"
@@ -284,10 +283,91 @@ SPDX-License-Identifier: Apache-2.0
                     v-if="header.dbField === 'info'"
                     class="cursor-pointer">
                     {{ header.friendlyName }}
-                    <!-- info column action group: save layouts + toggle field visibility -->
+                    <!-- info column action group: toggle field visibility + save layouts -->
                     <v-btn-group
                       divided
+                      density="compact"
+                      variant="flat"
+                      color="secondary"
                       class="float-end info-col-actions">
+                      <!-- info field visibility button -->
+                      <v-menu
+                        :close-on-content-click="false"
+                        location="bottom end"
+                        @update:model-value="(open) => {
+                          infoFieldVisMenuOpen = open;
+                          if (!open) showAllInfoFields = false;
+                        }">
+                        <template #activator="{ props: activatorProps }">
+                          <v-btn
+                            v-bind="activatorProps"
+                            size="small"
+                            class="info-vis-menu col-dropdown">
+                            <span class="fa fa-bars" />
+                            <v-tooltip
+                              activator="parent"
+                              location="right">
+                              {{ $t('sessions.sessions.toggleInfoFields') }}
+                            </v-tooltip>
+                          </v-btn>
+                        </template>
+                        <v-list
+                          density="compact"
+                          class="col-dropdown-menu">
+                          <div class="px-2 py-1">
+                            <div class="arkime-input-group arkime-input-group--fluid">
+                              <input
+                                autofocus
+                                v-model="colQuery"
+                                @input="debounceInfoColQuery"
+                                @click.stop
+                                type="text"
+                                class="arkime-input-control"
+                                :placeholder="$t('common.searchForFields')">
+                            </div>
+                          </div>
+                          <v-divider />
+                          <template v-if="infoFieldVisMenuOpen">
+                            <v-list-item
+                              v-if="!filteredInfoFieldsCount"
+                              disabled>
+                              {{ $t('sessions.sessions.noFieldsMatch') }}
+                            </v-list-item>
+                            <template
+                              v-for="(group, key) in visibleFilteredInfoFields"
+                              :key="key">
+                              <v-list-subheader
+                                v-if="group.length"
+                                class="group-header text-uppercase">
+                                {{ key }}
+                              </v-list-subheader>
+                              <template
+                                v-for="(field, k) in group"
+                                :key="key + k + 'infoitem'">
+                                <v-list-item
+                                  :data-tip-id="key + k + 'infoitem'"
+                                  :active="isInfoVisible(field.dbField) >= 0"
+                                  @click.prevent.stop="toggleInfoVis(field.dbField)">
+                                  {{ field.friendlyName }}
+                                  <small>({{ field.exp }})</small>
+                                  <v-tooltip
+                                    v-if="field.help"
+                                    :activator="`[data-tip-id='${key + k + 'infoitem'}']`"
+                                    location="end">
+                                    {{ field.help }}
+                                  </v-tooltip>
+                                </v-list-item>
+                              </template>
+                            </template>
+                            <v-list-item
+                              v-if="hasMoreInfoFields"
+                              class="text-center"
+                              @click.stop="showAllInfoFields = true">
+                              <strong>Show {{ $t('sessions.sessions.showMoreFields', filteredInfoFieldsCount - maxVisibleFields) }}</strong>
+                            </v-list-item>
+                          </template>
+                        </v-list>
+                      </v-menu> <!-- /info field visibility button -->
                       <!-- info field config button -->
                       <v-menu
                         :close-on-content-click="false"
@@ -295,10 +375,7 @@ SPDX-License-Identifier: Apache-2.0
                         <template #activator="{ props: activatorProps }">
                           <v-btn
                             v-bind="activatorProps"
-                            variant="flat"
                             size="small"
-                            density="comfortable"
-                            :style="secondaryBtnStyle"
                             class="info-vis-menu col-dropdown">
                             <span class="fa fa-save" />
                             <v-tooltip
@@ -415,87 +492,6 @@ SPDX-License-Identifier: Apache-2.0
                           </v-alert>
                         </v-list>
                       </v-menu> <!-- /info field config button -->
-                      <!-- info field visibility button -->
-                      <v-menu
-                        :close-on-content-click="false"
-                        location="bottom end"
-                        @update:model-value="(open) => {
-                          infoFieldVisMenuOpen = open;
-                          if (!open) showAllInfoFields = false;
-                        }">
-                        <template #activator="{ props: activatorProps }">
-                          <v-btn
-                            v-bind="activatorProps"
-                            variant="flat"
-                            size="small"
-                            density="comfortable"
-                            :style="primaryBtnStyle"
-                            class="info-vis-menu col-dropdown">
-                            <span class="fa fa-bars" />
-                            <v-tooltip
-                              activator="parent"
-                              location="right">
-                              {{ $t('sessions.sessions.toggleInfoFields') }}
-                            </v-tooltip>
-                          </v-btn>
-                        </template>
-                        <v-list
-                          density="compact"
-                          class="col-dropdown-menu">
-                          <div class="px-2 py-1">
-                            <div class="arkime-input-group arkime-input-group--fluid">
-                              <input
-                                autofocus
-                                v-model="colQuery"
-                                @input="debounceInfoColQuery"
-                                @click.stop
-                                type="text"
-                                class="arkime-input-control"
-                                :placeholder="$t('common.searchForFields')">
-                            </div>
-                          </div>
-                          <v-divider />
-                          <template v-if="infoFieldVisMenuOpen">
-                            <v-list-item
-                              v-if="!filteredInfoFieldsCount"
-                              disabled>
-                              {{ $t('sessions.sessions.noFieldsMatch') }}
-                            </v-list-item>
-                            <template
-                              v-for="(group, key) in visibleFilteredInfoFields"
-                              :key="key">
-                              <v-list-subheader
-                                v-if="group.length"
-                                class="group-header text-uppercase">
-                                {{ key }}
-                              </v-list-subheader>
-                              <template
-                                v-for="(field, k) in group"
-                                :key="key + k + 'infoitem'">
-                                <v-list-item
-                                  :data-tip-id="key + k + 'infoitem'"
-                                  :active="isInfoVisible(field.dbField) >= 0"
-                                  @click.prevent.stop="toggleInfoVis(field.dbField)">
-                                  {{ field.friendlyName }}
-                                  <small>({{ field.exp }})</small>
-                                  <v-tooltip
-                                    v-if="field.help"
-                                    :activator="`[data-tip-id='${key + k + 'infoitem'}']`"
-                                    location="end">
-                                    {{ field.help }}
-                                  </v-tooltip>
-                                </v-list-item>
-                              </template>
-                            </template>
-                            <v-list-item
-                              v-if="hasMoreInfoFields"
-                              class="text-center"
-                              @click.stop="showAllInfoFields = true">
-                              <strong>Show {{ $t('sessions.sessions.showMoreFields', filteredInfoFieldsCount - maxVisibleFields) }}</strong>
-                            </v-list-item>
-                          </template>
-                        </v-list>
-                      </v-menu> <!-- /info field visibility button -->
                     </v-btn-group> <!-- /info column action group -->
                   </span> <!-- /non-sortable column -->
                   <!-- column dropdown menu -->
@@ -504,9 +500,10 @@ SPDX-License-Identifier: Apache-2.0
                       <v-btn
                         v-bind="activatorProps"
                         variant="text"
-                        size="x-small"
+                        size="small"
                         density="comfortable"
                         icon
+                        color="primary"
                         :aria-label="$t('sessions.columnActions', 'Column actions')"
                         class="float-end col-dropdown col-context-trigger">
                         <span class="fa fa-caret-down" />
@@ -2384,12 +2381,6 @@ table.sessions-table.sticky-header > tbody {
 
 .info-col-header .col-dropdown:not(.info-vis-menu) {
   margin-right: 4px;
-}
-.info-vis-menu {
-  margin-right: 10px;
-}
-.arkime-col-header:not(:last-child) .info-vis-menu {
-  margin-right: 5px;
 }
 
 /* Action button groups: render adjacent v-btn dropdowns (column

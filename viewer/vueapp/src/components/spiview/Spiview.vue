@@ -23,8 +23,8 @@ SPDX-License-Identifier: Apache-2.0
                 <v-btn
                   v-bind="activatorProps"
                   variant="flat"
-                  size="small"
-                  density="comfortable"
+                  size="x-small"
+                  icon
                   class="field-config-trigger"
                   :style="secondaryBtnStyle">
                   <span class="fa fa-columns" />
@@ -84,33 +84,43 @@ SPDX-License-Identifier: Apache-2.0
                   v-for="(config, key) in fieldConfigs"
                   :key="config.name"
                   @click.self.stop.prevent="loadFieldConfiguration(key)">
-                  <v-btn
-                    color="error"
-                    variant="flat"
-                    size="x-small"
-                    density="comfortable"
-                    icon
-                    class="ms-1"
-                    :aria-label="$t('common.delete')"
-                    @click.stop.prevent="deleteFieldConfiguration(config.name, key)">
-                    <span class="fa fa-trash-o" />
-                  </v-btn>
-                  <v-btn
-                    color="warning"
-                    variant="flat"
-                    size="x-small"
-                    density="comfortable"
-                    icon
-                    :aria-label="$t('common.save')"
-                    @click.stop.prevent="updateFieldConfiguration(config.name, key)">
-                    <span class="fa fa-save" />
-                    <v-tooltip
-                      activator="parent"
-                      location="end">
-                      Update this field configuration with the currently visible fields
-                    </v-tooltip>
-                  </v-btn>
-                  {{ config.name }}
+                  <div
+                    class="d-flex align-center w-100"
+                    @click.self="loadFieldConfiguration(key)">
+                    <span
+                      class="flex-grow-1"
+                      @click="loadFieldConfiguration(key)">
+                      {{ config.name }}
+                    </span>
+                    <v-btn
+                      :id="`updateFieldConfig${key}`"
+                      color="warning"
+                      variant="flat"
+                      size="small"
+                      density="comfortable"
+                      icon
+                      class="ms-1"
+                      :aria-label="$t('common.save')"
+                      @click.stop.prevent="updateFieldConfiguration(config.name, key)">
+                      <span class="fa fa-save" />
+                      <v-tooltip
+                        :activator="`[id='updateFieldConfig${key}']`"
+                        location="end">
+                        Update this field configuration with the currently visible fields
+                      </v-tooltip>
+                    </v-btn>
+                    <v-btn
+                      color="error"
+                      variant="flat"
+                      size="small"
+                      density="comfortable"
+                      icon
+                      class="ms-1"
+                      :aria-label="$t('common.delete')"
+                      @click.stop.prevent="deleteFieldConfiguration(config.name, key)">
+                      <span class="fa fa-trash-o" />
+                    </v-btn>
+                  </div>
                 </v-list-item>
               </v-list>
               <v-alert
@@ -1407,49 +1417,78 @@ export default {
 </script>
 
 <style>
-/* Field-trigger label/caret buttons (used both inside the .field-dropdown
-   group in btn-drawer and standalone in spi-buckets). Small + tight so
-   the row of toggle buttons stays compact. Height matches .form-control-sm
-   used by the per-category search input so the collapsed btn-drawer
-   (max-height: 22px) doesn't clip the input's bottom. */
-.spiview-page .field-dropdown-label,
-.spiview-page .field-dropdown-caret {
-  font-size: .75rem;
-  height: 22px;
-  min-height: 22px;
-  line-height: 20px;
-}
-.spiview-page .field-dropdown-label {
-  padding: 0 5px;
-}
-.spiview-page .field-dropdown-caret {
-  padding: 0 4px;
-}
-
-/* Field-trigger group: a label button + a caret button sit side by
-   side, sharing borders so they read as one widget. */
+/* Field-trigger group — single pill with label + caret reading as one
+   button (matches the session info column's clickable-label pattern).
+   The split button DOM stays for click-target separation (label =
+   toggle, caret = menu) but visually it's one chip. */
 .spiview-page .field-dropdown {
   display: inline-flex;
-  vertical-align: middle;
+  vertical-align: baseline;
+  height: 21px;
+  border: 1px solid var(--color-gray);
+  border-radius: 0.25rem;
+  background-color: transparent;
+  overflow: hidden;
+  cursor: pointer;
 }
-.spiview-page .field-dropdown .field-dropdown-label {
-  border-top-right-radius: 0;
-  border-bottom-right-radius: 0;
-  border-right: 0;
+.spiview-page .field-dropdown-label,
+.spiview-page .field-dropdown-caret {
+  background-color: transparent;
+  color: var(--color-foreground, #333);
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 19px;
+  border: none;
+  cursor: pointer;
+  white-space: nowrap;
 }
-.spiview-page .field-dropdown .field-dropdown-caret {
-  border-top-left-radius: 0;
-  border-bottom-left-radius: 0;
+.spiview-page .field-dropdown-label {
+  padding: 0 4px 0 6px;
+  max-width: 160px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.spiview-page .field-dropdown-caret {
+  padding: 0 6px 0 0;
+}
+.spiview-page .field-dropdown:hover {
+  background-color: var(--color-gray);
+  border-color: var(--color-gray);
+}
+.spiview-page .field-dropdown:hover .field-dropdown-label,
+.spiview-page .field-dropdown:hover .field-dropdown-caret {
+  color: #333;
 }
 /* "selected/active" highlight on the per-field group */
-.spiview-page .field-dropdown.is-active > button {
-  color: var(--color-foreground, #333);
+.spiview-page .field-dropdown.is-active {
   background-color: var(--color-gray-light);
-  box-shadow: inset 0 3px 5px rgba(0, 0, 0, .25);
+  border-color: var(--color-gray-dark);
 }
-/* Bold field label dropdown buttons inside a spi-bucket row */
+.spiview-page .field-dropdown.is-active .field-dropdown-label,
+.spiview-page .field-dropdown.is-active .field-dropdown-caret {
+  color: var(--color-foreground, #333);
+}
+
+/* Standalone field-dropdown-label inside .spi-buckets (single button
+   with caret-icon already inside it). Same visual as the grouped
+   chip above. */
 .spiview-page .spi-buckets > .field-dropdown-label {
-  font-weight: 600;
+  display: inline-block;
+  height: 21px;
+  padding: 0 6px;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 19px;
+  background-color: transparent;
+  color: var(--color-foreground, #333);
+  border: 1px solid var(--color-gray);
+  border-radius: 0.25rem;
+  cursor: pointer;
+}
+.spiview-page .spi-buckets > .field-dropdown-label:hover {
+  color: #333;
+  background-color: var(--color-gray);
+  border-color: var(--color-gray);
 }
 /* Wider menu for the field-config save/load dropdown so config names
    don't wrap awkwardly. Vuetify teleports the v-list to body, hence
