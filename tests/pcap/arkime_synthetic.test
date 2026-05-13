@@ -2438,6 +2438,17 @@
      "packets" : 1
     },
     "node" : "test",
+    "ospf" : {
+     "areaId" : [
+      "0.0.0.0"
+     ],
+     "msgType" : [
+      "Hello"
+     ],
+     "routerId" : [
+      "10.0.21.100"
+     ]
+    },
     "packetLen" : [
      94
     ],
@@ -2470,6 +2481,10 @@
      1
     ],
     "srcTTLCnt" : 1,
+    "tags" : [
+     "ospf:auth-null"
+    ],
+    "tagsCnt" : 1,
     "totDataBytes" : 0
    },
    "header" : {
@@ -13986,6 +14001,10 @@
       ""
      ]
     },
+    "tags" : [
+     "stun:nat-discovered"
+    ],
+    "tagsCnt" : 1,
     "totDataBytes" : 148
    },
    "header" : {

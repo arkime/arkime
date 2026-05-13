@@ -155,7 +155,7 @@ LOCAL int openvpn_consume_tls(OpenVPN_t *ov, ArkimeSession_t *session, int which
 /******************************************************************************/
 /* Process one OpenVPN record body (starting at the opcode byte). */
 LOCAL int openvpn_process_record(OpenVPN_t *ov, ArkimeSession_t *session,
-                                  const uint8_t *p, int len, int which)
+                                 const uint8_t *p, int len, int which)
 {
     if (++ov->frames > OPENVPN_MAX_FRAMES) {
         return ARKIME_PARSER_UNREGISTER;
