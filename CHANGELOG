@@ -38,6 +38,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
 6.3.2 2026/05/xx
 ## Release
   - #3941 Move to using curl instead of wget everywhere and now depend on package
+  - #3975 Node 22.22.3
 ## All
   - #3951 Fix UTF-8 mojibake in user names auto-created via header auth (e.g. behind Caddy/oauth2-proxy)
   - #3967 All header* auth modes (header, header-jwt, headerOnly, header+digest, header+basic) now
