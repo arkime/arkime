@@ -6,22 +6,26 @@ SPDX-License-Identifier: Apache-2.0
   <table
     v-if="computedColumns && computedColumns.length"
     :style="`width:${tableWidth}px`"
-    class="table-striped table-xs"
+    class="arkime-table arkime-table--xs"
     :class="tableClasses"
     ref="table"
     :id="id">
     <thead>
-      <button
-        type="button"
+      <v-btn
         v-if="showFitButton"
+        variant="flat"
+        size="x-small"
+        density="comfortable"
+        icon
+        :style="quaternaryBtnStyle"
+        class="fit-btn"
         :aria-label="$t('utils.fitBtnTip')"
-        class="btn btn-xs btn-theme-quaternary fit-btn"
         @click="fitTable">
         <span class="fa fa-arrows-h" />
         <v-tooltip activator="parent">
           {{ $t('utils.fitBtnTip') }}
         </v-tooltip>
-      </button>
+      </v-btn>
       <tr ref="draggableColumns">
         <th
           v-if="actionColumn"
@@ -33,25 +37,30 @@ SPDX-License-Identifier: Apache-2.0
               :close-on-content-click="false"
               location="bottom start">
               <template #activator="{ props: activatorProps }">
-                <button
+                <v-btn
                   v-bind="activatorProps"
-                  type="button"
-                  class="btn btn-sm btn-theme-primary col-vis-trigger pull-left">
+                  variant="flat"
+                  size="small"
+                  density="comfortable"
+                  :style="primaryBtnStyle"
+                  class="col-vis-trigger">
                   <span class="fa fa-th" />
                   <v-tooltip activator="parent">
                     {{ $t('utils.colVisBtnTip') }}
                   </v-tooltip>
-                </button>
+                </v-btn>
               </template>
               <v-list
                 density="compact"
                 class="col-vis-list">
                 <div class="px-2 py-1">
-                  <input
-                    type="text"
-                    v-model="colQuery"
-                    class="form-control form-control-sm"
-                    :placeholder="$t('utils.colQueryPlaceholder')">
+                  <div class="arkime-input-group arkime-input-group--fluid">
+                    <input
+                      type="text"
+                      v-model="colQuery"
+                      class="arkime-input-control"
+                      :placeholder="$t('utils.colQueryPlaceholder')">
+                  </div>
                 </div>
                 <v-divider />
                 <v-list-item @click="resetDefault">
@@ -110,11 +119,14 @@ SPDX-License-Identifier: Apache-2.0
           <span
             v-if="column.canClear"
             class="btn-zero">
-            <button
-              type="button"
-              @click="zeroColValues(column)"
+            <v-btn
+              color="grey"
+              variant="flat"
+              size="x-small"
+              density="comfortable"
+              icon
               :aria-label="$t('common.clear')"
-              class="btn btn-xs btn-secondary">
+              @click="zeroColValues(column)">
               <span class="fa fa-ban" />
               <v-tooltip activator="parent">
                 Set this column's values to 0.
@@ -124,7 +136,7 @@ SPDX-License-Identifier: Apache-2.0
                   {{ timezoneDateString(zeroedAt[column.id], user.settings.timezone || 'local') }}
                 </strong>
               </v-tooltip>
-            </button>
+            </v-btn>
           </span>
           <span v-if="column.sort">
             <span
@@ -435,7 +447,16 @@ export default {
       totalValues: {}, // list of total values
       zeroMap: {}, // list of values that have been cleared
       zeroedAt: {}, // list of times each column was cleared
-      tableWidth: $(this.tableDiv).width()
+      tableWidth: $(this.tableDiv).width(),
+      // Arkime theme-color v-btn styles. Vuetify :color can't take CSS vars.
+      primaryBtnStyle: {
+        backgroundColor: 'var(--color-primary)',
+        color: 'var(--color-button, #FFF)'
+      },
+      quaternaryBtnStyle: {
+        backgroundColor: 'var(--color-quaternary)',
+        color: 'var(--color-button, #FFF)'
+      }
     };
   },
   computed: {

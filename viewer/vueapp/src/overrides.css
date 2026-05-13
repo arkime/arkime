@@ -656,3 +656,9 @@ pre {
 .arkime-table > tbody > tr:hover > th {
   background-color: var(--color-gray-lighter, rgba(0, 0, 0, 0.05));
 }
+/* xs modifier: tighter cell padding for high-density tables (utils/Table.vue) */
+.arkime-table--xs > thead > tr > th,
+.arkime-table--xs > tbody > tr > td,
+.arkime-table--xs > tbody > tr > th {
+  padding: 0.15rem 0.25rem;
+}

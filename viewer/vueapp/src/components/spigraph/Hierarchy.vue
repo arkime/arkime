@@ -11,8 +11,8 @@ SPDX-License-Identifier: Apache-2.0
       <div
         class="d-inline"
         v-if="fields && fields.length">
-        <div class="input-group input-group-sm me-2">
-          <span class="input-group-text">
+        <div class="arkime-input-group me-2">
+          <span class="arkime-input-label">
             {{ $t('spigraph.addAnotherField') }}:
           </span>
           <arkime-field-typeahead
@@ -85,7 +85,7 @@ SPDX-License-Identifier: Apache-2.0
                   {{ field.friendlyName }}
                   <a
                     v-if="index === fieldList.length - 1 && hiddenColumns"
-                    class="pull-right cursor-pointer ms-2"
+                    class="float-end cursor-pointer ms-2"
                     @click="showHiddenColumns">
                     <span class="fa fa-plus-square" />
                     <v-tooltip activator="parent">{{ $t('spigraph.showHiddenColumnsTip') }}</v-tooltip>
@@ -129,7 +129,7 @@ SPDX-License-Identifier: Apache-2.0
                   class="fa fa-sort ms-2" />
                 <a
                   @click="hideColumn(item)"
-                  class="pull-right ms-2"
+                  class="float-end ms-2"
                   v-if="index !== fieldList.length - 1">
                   <span class="fa fa-minus-square" />
                   <v-tooltip activator="parent">{{ $t('spigraph.hideColumnTip') }}</v-tooltip>

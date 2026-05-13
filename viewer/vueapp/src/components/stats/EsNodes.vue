@@ -40,12 +40,15 @@ SPDX-License-Identifier: Apache-2.0
           <span class="no-wrap">
             <v-menu v-has-role="{user:user,roles:'arkimeAdmin'}">
               <template #activator="{ props: activatorProps }">
-                <button
+                <v-btn
                   v-bind="activatorProps"
-                  type="button"
-                  class="btn btn-sm btn-outline-secondary row-actions-btn d-inline">
+                  variant="outlined"
+                  size="x-small"
+                  density="comfortable"
+                  icon
+                  class="row-actions-btn d-inline">
                   <span class="fa fa-caret-down" />
-                </button>
+                </v-btn>
               </template>
               <v-list density="compact">
                 <v-list-item
@@ -71,7 +74,7 @@ SPDX-License-Identifier: Apache-2.0
               </v-list>
             </v-menu>
             <span
-              class="node-badge badge bg-primary badge-pill ms-1"
+              class="node-badge ms-1"
               :class="{'show-badge cursor-help': item.item.roles.indexOf('master') > -1, 'badge-master':item.item.isMaster}">
               <template v-if="item.item.isMaster">
                 <span :id="'mainMasterBadge' + item.item.name">
@@ -87,7 +90,7 @@ SPDX-License-Identifier: Apache-2.0
               </template>
             </span>
             <span
-              class="node-badge badge bg-primary badge-pill ms-1"
+              class="node-badge ms-1"
               style="padding-left:.5rem;"
               :class="{'show-badge cursor-help': item.item.roles.some(role => role.startsWith('data'))}">
               <span
@@ -349,17 +352,22 @@ table.table tr.border-top-bold > td {
 }
 
 .node-badge {
+  display: inline-block;
   opacity: 0;
   width: 1.6rem;
+  padding: 0.2em 0.4em;
   line-height: 1.2;
   font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--color-button, #FFF);
   background-color: var(--color-primary);
-
+  border-radius: 50rem;
+  text-align: center;
 }
 .node-badge.show-badge {
   opacity: 1;
 }
-.badge-master {
+.node-badge.badge-master {
   background-color: var(--color-quaternary) !important;
 }
 </style>

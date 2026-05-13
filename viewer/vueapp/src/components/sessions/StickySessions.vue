@@ -34,52 +34,63 @@ SPDX-License-Identifier: Apache-2.0
         <!-- sticky sessions list -->
         <ul class="list-group">
           <li class="list-group-item list-group-header">
-            <a
-              @click="closeAll"
-              class="btn btn-default btn-sm pull-right ms-1">
-              <span class="fa fa-close" />
-              <v-tooltip activator="parent">
-                {{ $t('sessions.sticky.closeAllTip') }}
-              </v-tooltip>
-            </a>
-            <span v-if="sortBy">
-              <a
-                v-if="sortOrder === 'asc'"
-                @click="toggleSortOrder"
-                class="btn btn-default btn-sm pull-right ms-1">
+            <div class="d-flex align-center gap-1">
+              <h4 class="mb-0 flex-grow-1">
+                {{ $t('sessions.sticky.openSessionCount', sortedSessions.length) }}
+              </h4>
+              <div class="arkime-input-group sort-by-select">
+                <select
+                  v-model="sortBy"
+                  class="arkime-input-control">
+                  <option
+                    disabled
+                    value="">
+                    {{ $t('sessions.sortBy') }}
+                  </option>
+                  <option value="firstPacket">
+                    {{ $t('sessions.startTime') }}
+                  </option>
+                  <option value="lastPacket">
+                    {{ $t('sessions.stopTime') }}
+                  </option>
+                </select>
+              </div>
+              <v-btn
+                v-if="sortBy && sortOrder === 'asc'"
+                variant="outlined"
+                size="small"
+                density="comfortable"
+                icon
+                @click="toggleSortOrder">
                 <span class="fa fa-sort-asc" />
                 <v-tooltip activator="parent">
                   {{ $t('sessions.sticky.sortDescTip') }}
                 </v-tooltip>
-              </a>
-              <a
-                v-if="sortOrder === 'desc'"
-                @click="toggleSortOrder"
-                class="btn btn-default btn-sm pull-right ms-1">
+              </v-btn>
+              <v-btn
+                v-if="sortBy && sortOrder === 'desc'"
+                variant="outlined"
+                size="small"
+                density="comfortable"
+                icon
+                @click="toggleSortOrder">
                 <span class="fa fa-sort-desc" />
                 <v-tooltip activator="parent">
                   {{ $t('sessions.sticky.sortAscTip') }}
                 </v-tooltip>
-              </a>
-            </span>
-            <select
-              v-model="sortBy"
-              class="form-control form-control-sm pull-right sort-by-select">
-              <option
-                disabled
-                value="">
-                {{ $t('sessions.sortBy') }}
-              </option>
-              <option value="firstPacket">
-                {{ $t('sessions.startTime') }}
-              </option>
-              <option value="lastPacket">
-                {{ $t('sessions.stopTime') }}
-              </option>
-            </select>
-            <h4>
-              {{ $t('sessions.sticky.openSessionCount', sortedSessions.length) }}
-            </h4>
+              </v-btn>
+              <v-btn
+                variant="outlined"
+                size="small"
+                density="comfortable"
+                icon
+                @click="closeAll">
+                <span class="fa fa-close" />
+                <v-tooltip activator="parent">
+                  {{ $t('sessions.sticky.closeAllTip') }}
+                </v-tooltip>
+              </v-btn>
+            </div>
           </li>
           <transition-group
             name="slide"
@@ -90,12 +101,16 @@ SPDX-License-Identifier: Apache-2.0
               v-for="session in sortedSessions"
               :key="session.id">
               <div class="list-group-item-text">
-                <button
-                  class="btn btn-xs btn-link pull-right"
+                <v-btn
+                  variant="text"
+                  size="x-small"
+                  density="comfortable"
+                  icon
+                  class="float-end"
                   :aria-label="$t('common.close')"
                   @click.stop="closeSessionDetail(session)">
                   <span class="fa fa-close fa-lg" />
-                </button>
+                </v-btn>
                 <small>
                   <span class="fa fa-clock-o fa-fw" />
                   <em>

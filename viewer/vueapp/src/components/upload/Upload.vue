@@ -12,7 +12,7 @@ SPDX-License-Identifier: Apache-2.0
         </span>&nbsp;
         {{ $t('uploads.uploadFile') }}
       </span>
-      <div class="pull-right small toast-container">
+      <div class="float-end small toast-container">
         <arkime-toast
           class="me-1"
           :message="msg"
@@ -23,12 +23,13 @@ SPDX-License-Identifier: Apache-2.0
 
     <div class="container">
       <!-- demo mode -->
-      <div
+      <v-alert
         v-if="demoMode"
-        class="alert alert-warning">
-        <span class="fa fa-exclamation-triangle me-1" />
+        type="warning"
+        variant="tonal"
+        density="compact">
         {{ $t('uploads.demoMode') }}
-      </div> <!-- /demo mode -->
+      </v-alert> <!-- /demo mode -->
 
       <div class="row">
         <div class="col-md-6 offset-md-3">
@@ -39,47 +40,53 @@ SPDX-License-Identifier: Apache-2.0
             placeholder="Choose file..." /> <!-- /file -->
 
           <!-- tag(s) -->
-          <div class="form-group mt-2 mb-2">
-            <div class="input-group">
-              <span class="input-group-text">
+          <div class="mt-2 mb-2">
+            <div class="arkime-input-group arkime-input-group--fluid">
+              <span class="arkime-input-label">
                 {{ $t('uploads.tags') }}:
               </span>
               <input
                 type="text"
                 v-model="tags"
-                class="form-control"
+                class="arkime-input-control"
                 :placeholder="$t('uploads.tagsPlaceholder')">
             </div>
           </div> <!-- /tag(s) -->
 
           <!-- submit/cancel -->
-          <div class="form-group row">
-            <div class="col-md-12">
-              <button
-                class="btn btn-theme-primary pull-right ms-1"
+          <div class="row mt-3">
+            <div class="col-md-12 text-end">
+              <v-btn
+                variant="flat"
+                size="small"
+                density="comfortable"
+                :style="primaryBtnStyle"
                 type="submit"
                 :disabled="!this.file"
                 @click="uploadFile">
                 <span v-if="!uploading">
-                  <span class="fa fa-upload" />&nbsp;
+                  <span class="fa fa-upload me-1" />
                   {{ $t('common.upload') }}
                 </span>
                 <span v-else>
-                  <span class="fa fa-spinner fa-spin" />&nbsp;
+                  <span class="fa fa-spinner fa-spin me-1" />
                   {{ $t('common.uploading') }}
                 </span>
-              </button>
+              </v-btn>
             </div>
           </div> <!-- /submit/cancel -->
         </div>
       </div>
 
       <!-- file upload error -->
-      <div
-        class="alert alert-danger mt-4"
-        v-if="error">
+      <v-alert
+        v-if="error"
+        type="error"
+        variant="tonal"
+        density="compact"
+        class="mt-4">
         <div v-html="error" />
-      </div> <!-- /file upload error -->
+      </v-alert> <!-- /file upload error -->
     </div>
   </div>
 </template>
@@ -101,7 +108,12 @@ export default {
       error: '',
       msg: '',
       msgType: undefined,
-      demoMode: this.$constants.DEMO_MODE
+      demoMode: this.$constants.DEMO_MODE,
+      // Arkime theme-color v-btn style. Vuetify :color can't take CSS vars.
+      primaryBtnStyle: {
+        backgroundColor: 'var(--color-primary)',
+        color: 'var(--color-button, #FFF)'
+      }
     };
   },
   methods: {

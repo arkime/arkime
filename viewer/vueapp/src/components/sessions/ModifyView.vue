@@ -18,8 +18,8 @@ SPDX-License-Identifier: Apache-2.0
         class="modify-view-name" />
 
       <div class="flex-fill d-flex align-items-center gap-1">
-        <div class="flex-fill input-group input-group-sm">
-          <span class="input-group-text">
+        <div class="flex-fill arkime-input-group arkime-input-group--fluid">
+          <span class="arkime-input-label">
             {{ $t('sessions.views.expression') }}
           </span>
           <ExpressionAutocompleteInput
@@ -27,11 +27,14 @@ SPDX-License-Identifier: Apache-2.0
             :placeholder="$t('sessions.views.expressionPlaceholder')"
             @apply="modifyView"
             @keyup.enter.stop />
-          <button
-            type="button"
+          <v-btn
             id="expandViewExpressionBtn"
+            variant="text"
+            size="x-small"
+            density="comfortable"
+            icon
+            class="arkime-input-append-btn"
             :aria-label="$t('sessions.views.expandExpressionTip')"
-            class="btn btn-outline-secondary btn-clear-input"
             @click="showBigExpression = !showBigExpression">
             <span
               class="fa"
@@ -39,7 +42,7 @@ SPDX-License-Identifier: Apache-2.0
             <v-tooltip activator="parent">
               {{ $t('sessions.views.expandExpressionTip') }}
             </v-tooltip>
-          </button>
+          </v-btn>
         </div>
       </div>
 
@@ -75,23 +78,26 @@ SPDX-License-Identifier: Apache-2.0
       </span>
 
       <div>
-        <button
-          type="button"
-          @click="modifyView"
-          :class="{'disabled':loading}"
-          class="btn btn-sm btn-theme-tertiary me-1">
+        <v-btn
+          variant="flat"
+          size="small"
+          density="comfortable"
+          :style="tertiaryBtnStyle"
+          :disabled="loading"
+          class="me-1"
+          @click="modifyView">
           <span v-if="!loading">
             <span v-if="mode === 'create'">
-              <span class="fa fa-plus-circle" />&nbsp;
+              <span class="fa fa-plus-circle me-1" />
               {{ $t('common.create') }}
             </span>
             <span v-else-if="mode === 'edit'">
-              <span class="fa fa-save" />&nbsp;
+              <span class="fa fa-save me-1" />
               {{ $t('common.save') }}
             </span>
           </span>
           <span v-if="loading">
-            <span class="fa fa-spinner fa-spin" />&nbsp;
+            <span class="fa fa-spinner fa-spin me-1" />
             <span v-if="mode === 'create'">
               {{ $t('common.creating') }}
             </span>
@@ -99,18 +105,21 @@ SPDX-License-Identifier: Apache-2.0
               {{ $t('common.saving') }}
             </span>
           </span>
-        </button>
-        <button
+        </v-btn>
+        <v-btn
           id="cancelModifyView"
-          type="button"
+          color="warning"
+          variant="flat"
+          size="small"
+          density="comfortable"
+          icon
           :aria-label="$t('common.cancel')"
-          @click="$emit('done', null, false, false)"
-          class="btn btn-sm btn-warning">
+          @click="$emit('done', null, false, false)">
           <span class="fa fa-ban" />
           <v-tooltip activator="parent">
             {{ $t('common.cancel') }}
           </v-tooltip>
-        </button>
+        </v-btn>
       </div>
     </div>
 
@@ -150,12 +159,14 @@ SPDX-License-Identifier: Apache-2.0
                 {{ $t('common.clear') }}
               </v-btn>
             </div>
-            <button
-              type="button"
-              class="btn btn-theme-tertiary"
+            <v-btn
+              variant="flat"
+              size="small"
+              density="comfortable"
+              :style="tertiaryBtnStyle"
               @click="showBigExpression = false">
               {{ $t('common.apply') }}
-            </button>
+            </v-btn>
           </div>
         </v-card-actions>
       </v-card>
@@ -231,6 +242,12 @@ const getInitialExpression = () => {
 
 const viewExpression = ref(getInitialExpression());
 const showBigExpression = ref(false);
+
+// Arkime theme-color v-btn style. Vuetify :color can't take CSS vars.
+const tertiaryBtnStyle = {
+  backgroundColor: 'var(--color-tertiary)',
+  color: 'var(--color-button, #FFF)'
+};
 
 // Computed properties
 const sessionsPage = computed(() => route.name === 'Sessions');
