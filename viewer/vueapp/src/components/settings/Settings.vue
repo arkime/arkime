@@ -885,38 +885,37 @@ SPDX-License-Identifier: Apache-2.0
                 <div class="display-sub-navbar">
                   <div class="row">
                     <div class="col-xl-5 col-lg-4 col-md-5">
-                      <div class="input-group input-group-sm ms-1">
-                        <span class="input-group-text">
-                          <span class="fa fa-search" />
+                      <div class="arkime-input-group ms-1">
+                        <span class="arkime-input-label arkime-input-label-fw">
+                          <span class="fa fa-search fa-fw" />
                         </span>
                         <input
                           type="text"
                           placeholder="Search"
-                          class="form-control">
+                          class="arkime-input-control">
                       </div>
                     </div>
                     <div class="col-xl-7 col-lg-8 col-sm-7">
                       <div class="fw-bold text-theme-accent ms-1">
                         Important text
                       </div>
-                      <div class="pull-right display-sub-navbar-buttons">
-                        <a class="btn btn-sm btn-default btn-theme-tertiary-display me-1">
+                      <div class="float-end display-sub-navbar-buttons">
+                        <a class="theme-display-btn btn-theme-tertiary-display me-1">
                           Search
                         </a>
-                        <a class="btn btn-sm btn-default btn-theme-quaternary-display me-1">
+                        <a class="theme-display-btn btn-theme-quaternary-display me-1">
                           <span class="fa fa-cog fa-lg" />
                         </a>
-                        <a class="btn btn-sm btn-default btn-theme-secondary-display me-1">
+                        <a class="theme-display-btn btn-theme-secondary-display me-1">
                           <span class="fa fa-eye fa-lg" />
                         </a>
                         <v-menu location="bottom end">
                           <template #activator="{ props: activatorProps }">
-                            <button
+                            <a
                               v-bind="activatorProps"
-                              type="button"
-                              class="btn btn-sm btn-theme-primary-display pull-right action-menu-dropdown">
+                              class="theme-display-btn btn-theme-primary-display float-end action-menu-dropdown">
                               <span class="fa fa-caret-down" />
-                            </button>
+                            </a>
                           </template>
                           <v-list density="compact">
                             <v-list-item>
@@ -1089,38 +1088,37 @@ SPDX-License-Identifier: Apache-2.0
                     <div class="display-sub-navbar">
                       <div class="row">
                         <div class="col-xl-5 col-lg-4 col-md-5">
-                          <div class="input-group input-group-sm ms-1">
-                            <span class="input-group-text">
-                              <span class="fa fa-search" />
+                          <div class="arkime-input-group ms-1">
+                            <span class="arkime-input-label arkime-input-label-fw">
+                              <span class="fa fa-search fa-fw" />
                             </span>
                             <input
                               type="text"
                               placeholder="Search"
-                              class="form-control">
+                              class="arkime-input-control">
                           </div>
                         </div>
                         <div class="col-xl-7 col-lg-8 col-sm-7">
                           <div class="fw-bold text-theme-accent ms-1">
                             Important text
                           </div>
-                          <div class="pull-right display-sub-navbar-buttons">
-                            <a class="btn btn-sm btn-default btn-theme-tertiary-display me-1">
+                          <div class="float-end display-sub-navbar-buttons">
+                            <a class="theme-display-btn btn-theme-tertiary-display me-1">
                               Search
                             </a>
-                            <a class="btn btn-sm btn-default btn-theme-quaternary-display me-1">
+                            <a class="theme-display-btn btn-theme-quaternary-display me-1">
                               <span class="fa fa-cog fa-lg" />
                             </a>
-                            <a class="btn btn-sm btn-default btn-theme-secondary-display me-1">
+                            <a class="theme-display-btn btn-theme-secondary-display me-1">
                               <span class="fa fa-eye fa-lg" />
                             </a>
                             <v-menu location="bottom end">
                               <template #activator="{ props: activatorProps }">
-                                <button
+                                <a
                                   v-bind="activatorProps"
-                                  type="button"
-                                  class="btn btn-sm btn-theme-primary-display pull-right action-menu-dropdown">
+                                  class="theme-display-btn btn-theme-primary-display float-end action-menu-dropdown">
                                   <span class="fa fa-caret-down" />
-                                </button>
+                                </a>
                               </template>
                               <v-list density="compact">
                                 <v-list-item>
@@ -1154,7 +1152,7 @@ SPDX-License-Identifier: Apache-2.0
                               <em class="ts-value">
                                 2013/11/18 03:06:52.831
                               </em>
-                              <span class="pull-right">
+                              <span class="float-end">
                                 27 bytes
                               </span>
                             </small>
@@ -1165,7 +1163,7 @@ SPDX-License-Identifier: Apache-2.0
                               <em class="ts-value">
                                 2013/11/18 03:06:52.841
                               </em>
-                              <span class="pull-right">
+                              <span class="float-end">
                                 160 bytes
                               </span>
                             </small>
@@ -2620,6 +2618,21 @@ export default {
   border-radius: 0 0 6px 6px;
   margin-top: -6px;
   padding-top: 6px;
+}
+
+/* theme-display button (preview swatch). Replaces Bootstrap's .btn base
+   so the theme picker preview survives the .btn class going away. The
+   per-theme variants below override color/background. */
+.theme-display-btn {
+  display: inline-block;
+  padding: 0.25rem 0.5rem;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  border: 1px solid transparent;
+  border-radius: 0.25rem;
+  cursor: pointer;
+  user-select: none;
+  text-decoration: none;
 }
 
 /* arkime light (default) */
