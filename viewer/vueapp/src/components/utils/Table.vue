@@ -895,14 +895,14 @@ export default {
 table {
   position: relative;
 }
-button.fit-btn {
+.fit-btn {
   top: 0;
   right: 0;
   z-index: 9;
   position: absolute;
   visibility: hidden;
 }
-table > thead:hover button.fit-btn {
+table > thead:hover .fit-btn {
   visibility: visible;
 }
 
