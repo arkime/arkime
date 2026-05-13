@@ -11,13 +11,15 @@ SPDX-License-Identifier: Apache-2.0
         <!-- label dropdown menu -->
         <v-menu location="bottom end">
           <template #activator="{ props: activatorProps }">
-            <button
+            <v-btn
               v-bind="activatorProps"
-              type="button"
-              class="btn btn-xs btn-outline-secondary field-info-trigger me-1">
+              variant="outlined"
+              size="x-small"
+              density="comfortable"
+              class="field-info-trigger me-1">
               {{ infoField.friendlyName }}
               <span class="fa fa-caret-down ms-1" />
-            </button>
+            </v-btn>
           </template>
           <v-list density="compact">
             <v-list-item @click="exportUnique(infoField.rawField || infoField.exp, 0)">

@@ -13,7 +13,7 @@ SPDX-License-Identifier: Apache-2.0
     <div v-show="!error">
       <span
         id="captureGraphHelp"
-        class="fa fa-lg fa-question-circle-o cursor-help mt-2 pull-right">
+        class="fa fa-lg fa-question-circle-o cursor-help mt-2 float-end">
         <v-tooltip activator="#captureGraphHelp">
           <span v-html="$t('stats.cgraphs.helpTipHtml')" />
         </v-tooltip>

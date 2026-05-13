@@ -12,10 +12,16 @@
           :value="data.item"
           :field="fieldConfig"
           :expr="fieldConfig.exp" />
-        <button
+        <v-btn
+          variant="text"
+          size="x-small"
+          density="comfortable"
+          icon
+          class="float-end mt-1"
           :aria-label="$t('common.close')"
-          class="btn-close btn-xs pull-right mt-1"
-          @click="$emit('close')" />
+          @click="$emit('close')">
+          <span class="fa fa-close" />
+        </v-btn>
 
         <!-- Statistics in vertical format -->
         <div class="stats-container">

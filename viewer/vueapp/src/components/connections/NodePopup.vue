@@ -10,7 +10,7 @@
           :pull-left="true" />
       </strong>
       <a
-        class="pull-right cursor-pointer no-decoration"
+        class="float-end cursor-pointer no-decoration"
         @click="$emit('close')">
         <span class="fa fa-close" />
       </a>
