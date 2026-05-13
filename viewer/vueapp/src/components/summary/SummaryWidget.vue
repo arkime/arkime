@@ -26,13 +26,16 @@
       <p class="text-danger mb-0">
         {{ error }}
       </p>
-      <button
-        type="button"
-        class="btn btn-success btn-xs mt-2"
+      <v-btn
+        color="success"
+        variant="flat"
+        size="x-small"
+        density="comfortable"
+        class="mt-2"
         @click="emit('retry-field', field)">
-        <span class="fa fa-refresh" />&nbsp;
+        <span class="fa fa-refresh me-1" />
         {{ $t('sessions.summary.retryField') }}
-      </button>
+      </v-btn>
     </div>
   </div>
 
@@ -49,13 +52,15 @@
         <!-- Consolidated Settings Dropdown -->
         <v-menu v-if="hasData">
           <template #activator="{ props: activatorProps }">
-            <button
+            <v-btn
               v-bind="activatorProps"
-              type="button"
-              class="btn btn-sm btn-outline-secondary d-inline-block"
+              variant="outlined"
+              size="small"
+              density="comfortable"
+              icon
               title="Settings">
               <span class="fa fa-gear" />
-            </button>
+            </v-btn>
           </template>
 
           <v-list density="compact">
