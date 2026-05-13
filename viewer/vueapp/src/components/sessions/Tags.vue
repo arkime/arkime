@@ -25,48 +25,55 @@ SPDX-License-Identifier: Apache-2.0
       </p>
     </div>
 
-    <div>
-      <button
+    <div class="d-flex gap-1">
+      <v-btn
         v-if="props.add"
-        type="button"
-        @click="applyAction(true)"
-        :class="{'disabled':loading}"
-        class="btn btn-sm btn-theme-tertiary me-1">
+        variant="flat"
+        size="small"
+        density="comfortable"
+        :style="tertiaryBtnStyle"
+        :disabled="loading"
+        @click="applyAction(true)">
         <span v-if="!loading">
-          <span class="fa fa-plus-circle" />&nbsp;
+          <span class="fa fa-plus-circle me-1" />
           {{ $t('sessions.tag.addTags') }}
         </span>
         <span v-else>
-          <span class="fa fa-spinner fa-spin" />&nbsp;
+          <span class="fa fa-spinner fa-spin me-1" />
           {{ $t('sessions.tag.addingTags') }}
         </span>
-      </button>
-      <button
+      </v-btn>
+      <v-btn
         v-else
-        type="button"
-        @click="applyAction(false)"
-        :class="{'disabled':loading}"
-        class="btn btn-sm btn-danger me-1">
+        color="error"
+        variant="flat"
+        size="small"
+        density="comfortable"
+        :disabled="loading"
+        @click="applyAction(false)">
         <span v-if="!loading">
-          <span class="fa fa-trash-o" />&nbsp;
+          <span class="fa fa-trash-o me-1" />
           {{ $t('sessions.tag.removeTags') }}
         </span>
         <span v-else>
-          <span class="fa fa-spinner fa-spin" />&nbsp;
+          <span class="fa fa-spinner fa-spin me-1" />
           {{ $t('sessions.tag.removingTags') }}
         </span>
-      </button>
-      <button
+      </v-btn>
+      <v-btn
         id="cancelTagSessionsBtn"
-        type="button"
+        color="warning"
+        variant="flat"
+        size="small"
+        density="comfortable"
+        icon
         :aria-label="$t('common.cancel')"
-        @click="$emit('done', null, false, false)"
-        class="btn btn-sm btn-warning">
+        @click="$emit('done', null, false, false)">
         <span class="fa fa-ban" />
         <v-tooltip activator="parent">
           {{ $t('common.cancel') }}
         </v-tooltip>
-      </button>
+      </v-btn>
     </div>
   </div>
 </template>
@@ -114,6 +121,12 @@ const error = ref('');
 const loading = ref(false);
 const segments = ref('no');
 const tags = ref('');
+
+// Arkime theme-color v-btn style. Vuetify :color can't take CSS vars.
+const tertiaryBtnStyle = {
+  backgroundColor: 'var(--color-tertiary)',
+  color: 'var(--color-button, #FFF)'
+};
 
 // Access route
 const route = useRoute();

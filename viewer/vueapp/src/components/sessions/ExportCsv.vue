@@ -27,31 +27,38 @@ SPDX-License-Identifier: Apache-2.0
         </p>
       </div>
 
-      <div>
-        <button
-          type="button"
-          @click="toggleChangeFields"
-          class="btn btn-sm btn-theme-secondary me-1">
+      <div class="d-flex gap-1">
+        <v-btn
+          variant="flat"
+          size="small"
+          density="comfortable"
+          :style="secondaryBtnStyle"
+          @click="toggleChangeFields">
           {{ $t('sessions.exports.changeFields') }}
-        </button>
-        <button
-          type="button"
-          @click="exportCsvAction"
-          class="btn btn-sm btn-theme-tertiary me-1">
-          <span class="fa fa-paper-plane-o" />&nbsp;
+        </v-btn>
+        <v-btn
+          variant="flat"
+          size="small"
+          density="comfortable"
+          :style="tertiaryBtnStyle"
+          @click="exportCsvAction">
+          <span class="fa fa-paper-plane-o me-1" />
           {{ $t('sessions.exports.exportCSV') }}
-        </button>
-        <button
+        </v-btn>
+        <v-btn
           id="cancelExportCsv"
-          class="btn btn-sm btn-warning"
+          color="warning"
+          variant="flat"
+          size="small"
+          density="comfortable"
+          icon
           :aria-label="$t('common.cancel')"
-          @click="$emit('done', null, false, false)"
-          type="button">
+          @click="$emit('done', null, false, false)">
           <span class="fa fa-ban" />
           <v-tooltip activator="parent">
             {{ $t('common.cancel') }}
           </v-tooltip>
-        </button>
+        </v-btn>
       </div>
     </div>
 
@@ -127,6 +134,16 @@ const segments = ref('no');
 const filename = ref('sessions.csv');
 const changeFields = ref(false);
 const exportFields = ref(''); // Initialize as empty string, will be computed
+
+// Arkime theme-color v-btn styles. Vuetify :color can't take CSS vars.
+const secondaryBtnStyle = {
+  backgroundColor: 'var(--color-secondary)',
+  color: 'var(--color-button, #FFF)'
+};
+const tertiaryBtnStyle = {
+  backgroundColor: 'var(--color-tertiary)',
+  color: 'var(--color-button, #FFF)'
+};
 
 // Access route
 const route = useRoute();

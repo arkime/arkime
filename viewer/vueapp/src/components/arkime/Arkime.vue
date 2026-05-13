@@ -126,17 +126,16 @@ SPDX-License-Identifier: Apache-2.0
       @spanning-change="reloadSummaryView" />
 
     <!-- error message -->
-    <div
+    <v-alert
       v-if="error"
-      class="alert alert-danger mx-2">
-      <span class="fa fa-exclamation-triangle me-1" />
+      type="error"
+      variant="tonal"
+      density="compact"
+      closable
+      class="mx-2"
+      @click:close="error = ''">
       {{ error }}
-      <button
-        type="button"
-        :aria-label="$t('common.dismiss')"
-        class="btn-close float-end"
-        @click="error = ''" />
-    </div>
+    </v-alert>
 
     <!-- summary content -->
     <div class="arkime-content ms-2">
@@ -154,25 +153,27 @@ SPDX-License-Identifier: Apache-2.0
     </div>
 
     <!-- stale data warning after cancellation -->
-    <div
+    <v-alert
       v-if="summaryCanceled && !summaryStreaming"
-      class="alert alert-warning position-fixed fixed-bottom m-0 rounded-0">
-      <span class="fa fa-exclamation-triangle me-2" />
+      type="warning"
+      variant="tonal"
+      density="compact"
+      closable
+      class="position-fixed fixed-bottom m-0 rounded-0"
+      @click:close="summaryCanceled = false">
       {{ $t('sessions.summary.canceledSearch') }}
       — {{ $t('sessions.summary.staleDataWarning') }}
-      <button
-        type="button"
-        class="btn btn-success btn-xs ms-2"
+      <v-btn
+        color="success"
+        variant="flat"
+        size="x-small"
+        density="comfortable"
+        class="ms-2"
         @click="retryAllFailed">
-        <span class="fa fa-refresh" />&nbsp;
+        <span class="fa fa-refresh me-1" />
         {{ $t('sessions.summary.retryAllFailed') }}
-      </button>
-      <button
-        type="button"
-        :aria-label="$t('common.dismiss')"
-        class="btn-close float-end"
-        @click="summaryCanceled = false" />
-    </div>
+      </v-btn>
+    </v-alert>
   </div>
 </template>
 

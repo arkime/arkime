@@ -10,7 +10,7 @@ SPDX-License-Identifier: Apache-2.0
     :placeholder="placeholder"
     :disabled="disabled"
     :value="modelValue"
-    class="form-control form-control-sm"
+    class="arkime-input-control"
     @input="onInput"
     @keydown="onKeydown"
     @click="updateCaretPos"
@@ -22,7 +22,7 @@ SPDX-License-Identifier: Apache-2.0
     :placeholder="placeholder"
     :disabled="disabled"
     :value="modelValue"
-    class="form-control form-control-sm"
+    class="arkime-input-control"
     @input="onInput"
     @keydown="onKeydown"
     @click="updateCaretPos"
@@ -46,7 +46,7 @@ SPDX-License-Identifier: Apache-2.0
             <strong v-if="!value.exp">{{ value }}</strong>
             <span v-if="value.friendlyName">- {{ value.friendlyName }}</span>
             <span
-              class="fa fa-close pull-right mt-1"
+              class="fa fa-close float-end mt-1"
               :title="`Remove ${value.exp} from your field history`"
               @click.stop.prevent="removeFromFieldHistory(value)" />
           </a>

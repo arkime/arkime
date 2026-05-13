@@ -51,20 +51,24 @@ methods exposed on this ref, and dispatches the country-click filter.
       {{ commaString(hover.value || 0) }}
     </div>
     <div class="world-map-zoom-buttons">
-      <button
-        type="button"
-        class="btn btn-xs btn-default"
+      <v-btn
+        variant="outlined"
+        size="x-small"
+        density="comfortable"
+        icon
         aria-label="Zoom in"
         @click="zoomIn">
         <span class="fa fa-plus" />
-      </button>
-      <button
-        type="button"
-        class="btn btn-xs btn-default"
+      </v-btn>
+      <v-btn
+        variant="outlined"
+        size="x-small"
+        density="comfortable"
+        icon
         aria-label="Zoom out"
         @click="zoomOut">
         <span class="fa fa-minus" />
-      </button>
+      </v-btn>
     </div>
   </div>
 </template>
