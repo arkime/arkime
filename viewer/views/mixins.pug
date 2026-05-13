@@ -26,7 +26,7 @@ mixin clickableLabelBody(field, title)
 mixin clickableLabel(field, title)
   v-menu
     template(#activator="{ props: activatorProps }")
-      button.btn.btn-sm.btn-default.clickable-label(v-bind="activatorProps" type="button")
+      button.clickable-label(v-bind="activatorProps" type="button")
         | #{title}
     v-list.clickable-label-menu(density="compact")
       +clickableLabelBody(field, title)
@@ -129,7 +129,7 @@ mixin ipArrayList(container, field, title, expr, max)
     dt
       v-menu
         template(#activator="{ props: activatorProps }")
-          button.btn.btn-sm.btn-default.clickable-label(v-bind="activatorProps" type="button")
+          button.clickable-label(v-bind="activatorProps" type="button")
             | #{title}
         v-list.clickable-label-menu(density="compact")
           v-list-item(@click="exportUnique('" + expr  + "', 0)")
@@ -203,7 +203,7 @@ mixin printHeader(inHeaderNames, inHeaderValues, expr)
     dt
       v-menu
         template(#activator="{ props: activatorProps }")
-          button.btn.btn-sm.btn-default.clickable-label(v-bind="activatorProps" type="button")
+          button.clickable-label(v-bind="activatorProps" type="button")
             | #{headerName}
         v-list.clickable-label-menu(density="compact")
           v-list-item(@click="exportUnique('" + expr  + "', 1)")
@@ -220,7 +220,7 @@ mixin ipArrayListDNS(container, field, title, expr, max)
     dt
       v-menu
         template(#activator="{ props: activatorProps }")
-          button.btn.btn-sm.btn-default.clickable-label(v-bind="activatorProps" type="button")
+          button.clickable-label(v-bind="activatorProps" type="button")
             | #{title}
         v-list.clickable-label-menu(density="compact")
           v-list-item(@click="exportUnique('" + "ip." + expr  + "', 0)")

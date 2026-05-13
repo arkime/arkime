@@ -1,7 +1,6 @@
 if (session._err)
-  div.alert.alert-danger
-    span.fa.fa-exclamation-triangle
-    strong &nbsp; #{session._err}
+  v-alert(type="error" variant="tonal" density="compact")
+    strong #{session._err}
 else
   if (session.network.packets[0] > reqPackets)
     h5.text-theme-quaternary
@@ -39,7 +38,7 @@ else
                   each flag, key in item.tcpflags
                     if (flag > 0)
                      | &nbsp; #{key} &nbsp;
-                span.pull-right #{item.bytes}&nbsp;
+                span.float-end #{item.bytes}&nbsp;
                   span.bytes
             |!{item.html}
           div.col-md-6
@@ -53,7 +52,7 @@ else
                   each flag, key in item.tcpflags
                     if (flag > 0)
                      | &nbsp; #{key} &nbsp;
-                span.pull-right #{item.bytes}&nbsp;
+                span.float-end #{item.bytes}&nbsp;
                   span.bytes
             |!{item.html}
 
@@ -65,7 +64,7 @@ else
             if (item.ts)
               div.session-detail-ts(value=item.ts)
                 em.ts-value #{item.ts}
-                span.pull-right #{item.bytes}&nbsp;
+                span.float-end #{item.bytes}&nbsp;
                   span.bytes
             |!{item.html}
           div.col-md-6
@@ -74,6 +73,6 @@ else
             if (item.ts)
               div.session-detail-ts(value=item.ts)
                 em.ts-value #{item.ts}
-                span.pull-right #{item.bytes}&nbsp;
+                span.float-end #{item.bytes}&nbsp;
                   span.bytes
             |!{item.html}

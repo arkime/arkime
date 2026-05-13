@@ -2590,6 +2590,7 @@ class SessionAPIs {
             'template', 'button',
             // Vuetify components used in the pug session-detail
             'v-menu', 'v-list', 'v-list-item', 'v-divider', 'v-btn',
+            'v-alert',
             // Arkime / app components
             'arkime-toast', 'arkime-session-field', 'arkime-tag-sessions',
             'arkime-export-pcap', 'arkime-remove-data',
@@ -2605,14 +2606,13 @@ class SessionAPIs {
               'sessionln', 'src-col-tip', 'dst-col-tip', 'dstcol', 'srccol',
               'clickable-label', 'clickable-label-menu', 'detail-field',
               'tag-list', 'card-title', 'no-wrap', 'str', 'bytes',
-              // Bootstrap layout / nav / utility
-              'nav', 'nav-link', 'nav-pills', 'nav-item', 'cursor-pointer',
-              'mb-3', 'mb-2', 'me-1', 'me-5', 'ms-1', 'pull-right', 'small',
+              // Bootstrap layout / utility
+              'cursor-pointer',
+              'mb-3', 'mb-2', 'me-1', 'me-5', 'ms-1', 'float-end', 'small',
               'row', 'col-md-6', 'offset-md-6', 'd-flex', 'flex-wrap',
               'flex-column', 'align-items-center', 'gap-1',
-              // Bootstrap alerts / buttons
-              'alert', 'alert-danger', 'btn', 'btn-xs', 'btn-sm',
-              'btn-default', 'btn-theme-secondary',
+              // Inline-HTML add-tag button (rendered by pug arrayList helper)
+              'arkime-tag-add-btn',
               // Font Awesome icons
               'fa', 'fa-info-circle', 'fa-lg', 'fa-exclamation-triangle',
               'fa-download', 'fa-arrow-circle-up', 'fa-arrow-circle-down',
@@ -2638,7 +2638,7 @@ class SessionAPIs {
               ':sessions', ':cluster', ':single',
               ':message', ':type', ':done', ':add',
               'text', ':text', 'suffix', 'columns',
-              // Vuetify component props (v-btn, v-menu, v-list)
+              // Vuetify component props (v-btn, v-menu, v-list, v-alert)
               'variant', 'size', 'density', 'activator', 'location'
             ]
           }

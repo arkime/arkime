@@ -705,16 +705,20 @@ onUnmounted(() => {
    wrapping <div> from b-dropdown), so the selectors need to match the
    button directly. Height matches the dt's line-height-derived height
    (line-height: 1.7 ~= 21px) so labels stay aligned with their dd
-   values. */
+   values. Self-contained — no longer extends .btn.btn-default. */
 .session-detail button.clickable-label {
   margin-top: -2px;
   display: inline-block;
   height: 21px;
   background-color: transparent;
+  color: var(--color-foreground, #333);
   font-size: 11px;
   font-weight: 600;
   line-height: 21px;
   padding: 0 5px 1px 5px;
+  border: 1px solid var(--color-gray);
+  border-radius: 0.25rem;
+  cursor: pointer;
   max-width: 160px; /* this gets updated by the dl resizing */
   white-space: nowrap;
   overflow: hidden;
@@ -726,6 +730,25 @@ onUnmounted(() => {
   color: #333;
   background-color: var(--color-gray);
   border-color: var(--color-gray);
+}
+
+/* "+" add-tag button rendered as inline HTML by the pug arrayList
+   helper (see sessionDetail.pug). Self-contained — was previously
+   .btn.btn-xs.btn-theme-secondary which depended on bootstrap.css. */
+.session-detail .arkime-tag-add-btn {
+  display: inline-block;
+  padding: 2px 6px;
+  font-size: 11px;
+  line-height: 1;
+  vertical-align: baseline;
+  background-color: var(--color-secondary);
+  color: var(--color-button, #FFF);
+  border: 1px solid var(--color-secondary);
+  border-radius: 0.2rem;
+  cursor: pointer;
+}
+.session-detail .arkime-tag-add-btn:hover {
+  filter: brightness(115%);
 }
 
 /* Vuetify v-menu teleports its content to body, so these selectors

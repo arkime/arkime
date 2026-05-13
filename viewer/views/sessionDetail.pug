@@ -48,7 +48,7 @@ dl
     dt
       v-menu
         template(#activator="{ props: activatorProps }")
-          button.btn.btn-sm.btn-default.clickable-label(v-bind="activatorProps" type="button")
+          button.clickable-label(v-bind="activatorProps" type="button")
             | Src
         v-list.clickable-label-menu(density="compact")
           +clickableLabelBody('packets.src', 'Src Packets')
@@ -73,7 +73,7 @@ dl
     dt
       v-menu
         template(#activator="{ props: activatorProps }")
-          button.btn.btn-sm.btn-default.clickable-label(v-bind="activatorProps" type="button")
+          button.clickable-label(v-bind="activatorProps" type="button")
             | Dst
         v-list.clickable-label-menu(density="compact")
           +clickableLabelBody('packets.dst', 'Dst Packets')
@@ -99,7 +99,7 @@ dl
     dt
       v-menu
         template(#activator="{ props: activatorProps }")
-          button.btn.btn-sm.btn-default.clickable-label(v-bind="activatorProps" type="button")
+          button.clickable-label(v-bind="activatorProps" type="button")
             | Src Ethernet
         v-list.clickable-label-menu(density="compact")
           +clickableLabelBody('mac.src', 'Src Mac')
@@ -119,7 +119,7 @@ dl
     dt
       v-menu
         template(#activator="{ props: activatorProps }")
-          button.btn.btn-sm.btn-default.clickable-label(v-bind="activatorProps" type="button")
+          button.clickable-label(v-bind="activatorProps" type="button")
             | Dst Ethernet
         v-list.clickable-label-menu(density="compact")
           +clickableLabelBody('mac.dst', 'Dst Mac')
@@ -139,7 +139,7 @@ dl
     dt
       v-menu
         template(#activator="{ props: activatorProps }")
-          button.btn.btn-sm.btn-default.clickable-label(v-bind="activatorProps" type="button")
+          button.clickable-label(v-bind="activatorProps" type="button")
             | VLan
         v-list.clickable-label-menu(density="compact")
           if (session.network && session.network.vlan !== undefined)
@@ -172,7 +172,7 @@ dl
     dt
       v-menu
         template(#activator="{ props: activatorProps }")
-          button.btn.btn-sm.btn-default.clickable-label(v-bind="activatorProps" type="button")
+          button.clickable-label(v-bind="activatorProps" type="button")
             | Src Outer Layer
         v-list.clickable-label-menu(density="compact")
           if (session.srcOuterMac)
@@ -202,7 +202,7 @@ dl
     dt
       v-menu
         template(#activator="{ props: activatorProps }")
-          button.btn.btn-sm.btn-default.clickable-label(v-bind="activatorProps" type="button")
+          button.clickable-label(v-bind="activatorProps" type="button")
             | Dst Outer Layer
         v-list.clickable-label-menu(density="compact")
           if (session.dstOuterMac)
@@ -230,7 +230,7 @@ dl
   dt
     v-menu
       template(#activator="{ props: activatorProps }")
-        button.btn.btn-sm.btn-default.clickable-label(v-bind="activatorProps" type="button")
+        button.clickable-label(v-bind="activatorProps" type="button")
           | Src IP/Port
       v-list.clickable-label-menu(density="compact")
         +clickableLabelBody('ip.src', 'Src IP')
@@ -258,7 +258,7 @@ dl
   dt
     v-menu
       template(#activator="{ props: activatorProps }")
-        button.btn.btn-sm.btn-default.clickable-label(v-bind="activatorProps" type="button")
+        button.clickable-label(v-bind="activatorProps" type="button")
           | Dst IP/Port
       v-list.clickable-label-menu(density="compact")
         +clickableLabelBody('ip.dst', 'Dst IP')
@@ -287,7 +287,7 @@ dl
     dt
       v-menu
         template(#activator="{ props: activatorProps }")
-          button.btn.btn-sm.btn-default.clickable-label(v-bind="activatorProps" type="button")
+          button.clickable-label(v-bind="activatorProps" type="button")
             | Payload8
         v-list.clickable-label-menu(density="compact")
           +clickableLabelBody('payload8.src.hex', 'Src Payload8')
@@ -315,7 +315,7 @@ dl
         | ( #{printstr(dstPayload8a)} )
 
   div.tag-list
-    +arrayList(session, "tags", "Tags", "tags", '<div @click="addTags()" title="Add a new tag to this session" class="btn btn-xs btn-theme-secondary ms-1"><span class="fa fa-plus-circle"></span></div>')
+    +arrayList(session, "tags", "Tags", "tags", '<div @click="addTags()" title="Add a new tag to this session" class="arkime-tag-add-btn ms-1"><span class="fa fa-plus-circle"></span></div>')
 
   if (session.fileId && session.fileId.length > 0)
     +arrayList(session, "fileId", "Files", "file")
@@ -336,7 +336,7 @@ dl
     dt
       v-menu
         template(#activator="{ props: activatorProps }")
-          button.btn.btn-sm.btn-default.clickable-label(v-bind="activatorProps" type="button")
+          button.clickable-label(v-bind="activatorProps" type="button")
             | Socks Dst
         v-list.clickable-label-menu(density="compact")
           +clickableLabelBody('ip.socks', 'Socks Dst')
@@ -360,7 +360,7 @@ dl
     dt
       v-menu
         template(#activator="{ props: activatorProps }")
-          button.btn.btn-sm.btn-default.clickable-label(v-bind="activatorProps" type="button")
+          button.clickable-label(v-bind="activatorProps" type="button")
             | Socks Host
         v-list.clickable-label-menu(density="compact")
           +clickableLabelBody('host.socks', 'Socks Host')
@@ -393,7 +393,7 @@ dl
     dt
       v-menu
         template(#activator="{ props: activatorProps }")
-          button.btn.btn-sm.btn-default.clickable-label(v-bind="activatorProps" type="button")
+          button.clickable-label(v-bind="activatorProps" type="button")
             | TCP Flags
         v-list.clickable-label-menu(density="compact")
           +clickableLabelBody('tcpflags.syn', 'SYN')
@@ -461,7 +461,7 @@ dl
     dt
       v-menu
         template(#activator="{ props: activatorProps }")
-          button.btn.btn-sm.btn-default.clickable-label(v-bind="activatorProps" type="button")
+          button.clickable-label(v-bind="activatorProps" type="button")
             | TCP Initial Seq
         v-list.clickable-label-menu(density="compact")
           if (session.tcpseq.src !== undefined)
@@ -482,7 +482,7 @@ dl
     dt
       v-menu
         template(#activator="{ props: activatorProps }")
-          button.btn.btn-sm.btn-default.clickable-label(v-bind="activatorProps" type="button")
+          button.clickable-label(v-bind="activatorProps" type="button")
             | ICMP
         v-list.clickable-label-menu(density="compact")
           +clickableLabelBody('icmp.type', 'ICMP Type')
@@ -500,7 +500,7 @@ dl
     dt
       v-menu
         template(#activator="{ props: activatorProps }")
-          button.btn.btn-sm.btn-default.clickable-label(v-bind="activatorProps" type="button")
+          button.clickable-label(v-bind="activatorProps" type="button")
             | DSCP
         v-list.clickable-label-menu(density="compact")
           if (session.srcDscp)
@@ -521,7 +521,7 @@ dl
     dt
       v-menu
         template(#activator="{ props: activatorProps }")
-          button.btn.btn-sm.btn-default.clickable-label(v-bind="activatorProps" type="button")
+          button.clickable-label(v-bind="activatorProps" type="button")
             | IP TTL
         v-list.clickable-label-menu(density="compact")
           if (session.srcTTL)
