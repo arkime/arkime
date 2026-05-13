@@ -119,9 +119,8 @@ SPDX-License-Identifier: Apache-2.0
             <span class="flex-grow-1">{{ $t('settings.general.title') }}</span>
             <v-btn
               variant="flat"
-              size="small"
-              density="comfortable"
-              :style="quaternaryBtnStyle"
+              size="large"
+              color="warning"
               @click="resetSettings">
               <span class="fa fa-repeat me-2" />
               {{ $t('settings.general.reset') }}
@@ -356,12 +355,14 @@ SPDX-License-Identifier: Apache-2.0
               {{ $t('settings.general.defaultSPIGraph') }}
             </label>
             <div class="col-sm-6">
-              <arkime-field-typeahead
-                :dropup="true"
-                :fields="fields"
-                query-param="field"
-                :initial-value="spiGraphTypeahead"
-                @field-selected="spiGraphFieldSelected" />
+              <div class="arkime-input-group arkime-input-group--fluid">
+                <arkime-field-typeahead
+                  :dropup="true"
+                  :fields="fields"
+                  query-param="field"
+                  :initial-value="spiGraphTypeahead"
+                  @field-selected="spiGraphFieldSelected" />
+              </div>
             </div>
             <div class="col-sm-3">
               <h4 v-if="spiGraphField">
@@ -383,12 +384,14 @@ SPDX-License-Identifier: Apache-2.0
               {{ $t('settings.general.connectionsSrc') }}
             </label>
             <div class="col-sm-6">
-              <arkime-field-typeahead
-                :dropup="true"
-                :fields="fields"
-                query-param="field"
-                :initial-value="connSrcFieldTypeahead"
-                @field-selected="connSrcFieldSelected" />
+              <div class="arkime-input-group arkime-input-group--fluid">
+                <arkime-field-typeahead
+                  :dropup="true"
+                  :fields="fields"
+                  query-param="field"
+                  :initial-value="connSrcFieldTypeahead"
+                  @field-selected="connSrcFieldSelected" />
+              </div>
             </div>
             <div class="col-sm-3">
               <h4 v-if="connSrcField">
@@ -410,12 +413,14 @@ SPDX-License-Identifier: Apache-2.0
               {{ $t('settings.general.connectionsDst') }}
             </label>
             <div class="col-sm-6">
-              <arkime-field-typeahead
-                :dropup="true"
-                :fields="fields"
-                query-param="field"
-                :initial-value="connDstFieldTypeahead"
-                @field-selected="connDstFieldSelected" />
+              <div class="arkime-input-group arkime-input-group--fluid">
+                <arkime-field-typeahead
+                  :dropup="true"
+                  :fields="fields"
+                  query-param="field"
+                  :initial-value="connDstFieldTypeahead"
+                  @field-selected="connDstFieldSelected" />
+              </div>
             </div>
             <div class="col-sm-3">
               <h4 v-if="connDstField">
@@ -437,34 +442,43 @@ SPDX-License-Identifier: Apache-2.0
             </label>
 
             <div class="col-sm-6">
-              <arkime-field-typeahead
-                :dropup="true"
-                :fields="integerFields"
-                :initial-value="filtersTypeahead"
-                query-param="field"
-                @field-selected="timelineFilterSelected" />
+              <div class="arkime-input-group arkime-input-group--fluid">
+                <arkime-field-typeahead
+                  :dropup="true"
+                  :fields="integerFields"
+                  :initial-value="filtersTypeahead"
+                  query-param="field"
+                  @field-selected="timelineFilterSelected" />
+              </div>
             </div>
             <div class="col-sm-3">
-              <h4 v-if="timelineDataFilters.length > 0">
-                <label
-                  class="arkime-badge arkime-badge--info cursor-help arkime-badge--sm"
-                  v-for="filter in timelineDataFilters"
-                  :key="filter.dbField + 'DataFilterBadge'"
-                  @click="timelineFilterSelected(filter)"
-                  :id="filter.dbField + 'DataFilterBadge'">
-                  <span class="fa fa-times" />
-                  {{ filter.friendlyName || 'unknown field' }}
-                  <v-tooltip :activator="`[id='${filter.dbField}DataFilterBadge']`">{{ filter.help }}</v-tooltip>
-                </label>
+              <h4 class="d-flex align-center gap-1">
+                <template v-if="timelineDataFilters.length > 0">
+                  <label
+                    class="arkime-badge arkime-badge--info cursor-help arkime-badge--sm"
+                    v-for="filter in timelineDataFilters"
+                    :key="filter.dbField + 'DataFilterBadge'"
+                    @click="timelineFilterSelected(filter)"
+                    :id="filter.dbField + 'DataFilterBadge'">
+                    <span class="fa fa-times" />
+                    {{ filter.friendlyName || 'unknown field' }}
+                    <v-tooltip :activator="`[id='${filter.dbField}DataFilterBadge']`">{{ filter.help }}</v-tooltip>
+                  </label>
+                </template>
+                <v-btn
+                  id="resetTimelineFilters"
+                  color="error"
+                  variant="flat"
+                  size="default"
+                  icon
+                  :aria-label="$t('settings.general.resetTimelineDataFilters')"
+                  @click="resetDefaultFilters">
+                  <span class="fa fa-refresh" />
+                  <v-tooltip activator="#resetTimelineFilters">
+                    {{ $t('settings.general.resetTimelineDataFilters') }}
+                  </v-tooltip>
+                </v-btn>
               </h4>
-              <v-btn
-                color="error"
-                variant="flat"
-                size="small"
-                density="comfortable"
-                @click="resetDefaultFilters">
-                {{ $t('settings.general.resetTimelineDataFilters') }}
-              </v-btn>
             </div>
           </div>
 
@@ -966,8 +980,7 @@ SPDX-License-Identifier: Apache-2.0
               <v-btn
                 color="primary"
                 variant="flat"
-                size="small"
-                density="comfortable"
+                size="large"
                 class="ms-2"
                 @click="toggleShiftyEyes">
                 Turn Me Off
@@ -1001,9 +1014,8 @@ SPDX-License-Identifier: Apache-2.0
                   <span class="flex-grow-1">Custom Theme</span>
                   <v-btn
                     variant="flat"
-                    size="small"
-                    density="comfortable"
-                    :style="tertiaryBtnStyle"
+                    size="large"
+                    color="tertiary"
                     @click="displayHelp = !displayHelp">
                     <span class="fa fa-question-circle me-1" />
                     <span v-if="displayHelp">
@@ -1447,9 +1459,8 @@ SPDX-License-Identifier: Apache-2.0
             <div class="col-sm-9">
               <v-btn
                 variant="flat"
-                size="small"
-                density="comfortable"
-                :style="tertiaryBtnStyle"
+                size="large"
+                color="tertiary"
                 @click="changePassword">
                 {{ $t('settings.password.changePassword') }}
               </v-btn>
@@ -1473,9 +1484,8 @@ SPDX-License-Identifier: Apache-2.0
               <v-btn
                 v-if="!totpEnabled && !totpSetupMode"
                 variant="flat"
-                size="small"
-                density="comfortable"
-                :style="primaryBtnStyle"
+                size="large"
+                color="primary"
                 @click="startTotpSetup">
                 {{ $t('settings.totp.enroll') }}
               </v-btn>
@@ -1489,8 +1499,7 @@ SPDX-License-Identifier: Apache-2.0
                 v-if="totpEnabled && !totpSetupMode"
                 color="error"
                 variant="flat"
-                size="small"
-                density="comfortable"
+                size="large"
                 @click="showTotpDisable = true">
                 {{ $t('settings.totp.unenroll') }}
               </v-btn>
@@ -1499,8 +1508,7 @@ SPDX-License-Identifier: Apache-2.0
                 v-if="totpSetupMode"
                 color="warning"
                 variant="flat"
-                size="small"
-                density="comfortable"
+                size="large"
                 @click="cancelTotpSetup">
                 {{ $t('common.cancel') }}
               </v-btn>
@@ -1585,8 +1593,7 @@ SPDX-License-Identifier: Apache-2.0
               <v-btn
                 color="grey"
                 variant="flat"
-                size="small"
-                density="comfortable"
+                size="large"
                 class="mt-2"
                 @click="showTotpDisable = false; totpDisableCode = ''">
                 {{ $t('common.cancel') }}

@@ -268,7 +268,7 @@ export default {
   width: 100px;
   display: block;
   position: fixed;
-  top: 76px;
+  top: 86px;
   right: 0;
   z-index: 5;
   margin-right: -50px;
@@ -293,7 +293,7 @@ export default {
 .sticky-session-detail {
   overflow-y: auto;
   position: fixed;
-  top: 150px;
+  top: 160px;
   right: 0;
   bottom: 0;
   z-index: 4;

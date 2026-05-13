@@ -50,9 +50,8 @@ SPDX-License-Identifier: Apache-2.0
             </div>
             <v-btn
               variant="flat"
-              size="small"
-              density="comfortable"
-              :style="tertiaryBtnStyle"
+              size="large"
+              color="tertiary"
               @click="loadData">
               <span v-if="!shiftKeyHold">
                 Search

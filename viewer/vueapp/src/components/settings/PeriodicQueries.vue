@@ -29,8 +29,7 @@ SPDX-License-Identifier: Apache-2.0
       <v-btn
         color="success"
         variant="flat"
-        size="small"
-        density="comfortable"
+        size="large"
         class="float-end d-inline"
         @click="showCronModal = true">
         <span class="fa fa-plus-circle me-1" />
@@ -257,8 +256,7 @@ SPDX-License-Identifier: Apache-2.0
             <v-btn
               color="error"
               variant="flat"
-              size="small"
-              density="comfortable"
+              size="large"
               :title="$t('common.cancel')"
               @click="showCronModal = false">
               <span class="fa fa-times me-1" />
@@ -267,8 +265,7 @@ SPDX-License-Identifier: Apache-2.0
             <v-btn
               color="success"
               variant="flat"
-              size="small"
-              density="comfortable"
+              size="large"
               :disabled="cronLoading"
               @click="createCronQuery">
               <template v-if="!cronLoading">

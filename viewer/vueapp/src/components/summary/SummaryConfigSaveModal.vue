@@ -125,8 +125,7 @@ SPDX-License-Identifier: Apache-2.0
           <v-btn
             color="error"
             variant="flat"
-            size="small"
-            density="comfortable"
+            size="large"
             @click="$emit('close')">
             <span class="fa fa-times me-1" />
             {{ $t('common.cancel') }}
@@ -134,8 +133,7 @@ SPDX-License-Identifier: Apache-2.0
           <v-btn
             color="success"
             variant="flat"
-            size="small"
-            density="comfortable"
+            size="large"
             :disabled="saving"
             @click="saveConfig">
             <span

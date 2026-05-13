@@ -21,8 +21,7 @@ SPDX-License-Identifier: Apache-2.0
             <template #activator="{ props }">
               <v-btn
                 v-bind="props"
-                size="small"
-                density="compact"
+                size="large"
                 variant="flat"
                 color="secondary">
                 {{ summaryResultsLimit }}
@@ -45,8 +44,7 @@ SPDX-License-Identifier: Apache-2.0
             <template #activator="{ props }">
               <v-btn
                 v-bind="props"
-                size="small"
-                density="compact"
+                size="large"
                 variant="flat"
                 color="secondary">
                 {{ summaryOrder === 'asc' ? 'Bottom' : 'Top' }}
@@ -70,8 +68,7 @@ SPDX-License-Identifier: Apache-2.0
           <!-- export all charts as PNG -->
           <v-btn
             :aria-label="$t('sessions.summary.exportAllPNG')"
-            size="small"
-            density="compact"
+            size="large"
             variant="flat"
             color="secondary"
             @click="exportAllPNG">
@@ -107,8 +104,7 @@ SPDX-License-Identifier: Apache-2.0
           <!-- cancel loading button -->
           <v-btn
             v-if="summaryStreaming"
-            size="small"
-            density="compact"
+            size="large"
             variant="flat"
             color="warning"
             @click="cancelSummaryLoading">

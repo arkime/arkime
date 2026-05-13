@@ -169,10 +169,9 @@ SPDX-License-Identifier: Apache-2.0
                     <v-btn
                       v-bind="activatorProps"
                       variant="flat"
-                      size="small"
-                      density="comfortable"
+                      size="large"
+                      color="primary"
                       class="ms-1 field-vis-trigger"
-                      :style="primaryBtnStyle"
                       :id="`${m.kind}Fields`">
                       <span
                         class="fa"
@@ -188,11 +187,16 @@ SPDX-License-Identifier: Apache-2.0
                     density="compact"
                     class="field-vis-list">
                     <div class="px-2 py-1">
-                      <input
-                        type="text"
-                        v-model="fieldQuery"
-                        class="arkime-input-control"
-                        :placeholder="$t('common.searchForFields')">
+                      <div class="arkime-input-group arkime-input-group--fluid">
+                        <span class="arkime-input-label arkime-input-label-fw">
+                          <span class="fa fa-search fa-fw" />
+                        </span>
+                        <input
+                          type="text"
+                          v-model="fieldQuery"
+                          class="arkime-input-control"
+                          :placeholder="$t('common.searchForFields')">
+                      </div>
                     </div>
                     <v-divider />
                     <v-list-item @click.stop.prevent="resetFieldVisibility(m.kind)">

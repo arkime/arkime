@@ -9,8 +9,7 @@ SPDX-License-Identifier: Apache-2.0
       <v-btn
         color="success"
         variant="flat"
-        size="small"
-        density="comfortable"
+        size="large"
         @click="showShortcutModal = true">
         <span class="fa fa-plus-circle me-1" />
         {{ $t('settings.shortcuts.newShortcut') }}
@@ -403,8 +402,7 @@ SPDX-License-Identifier: Apache-2.0
             <v-btn
               color="error"
               variant="flat"
-              size="small"
-              density="comfortable"
+              size="large"
               @click="showShortcutModal = false">
               <span class="fa fa-times me-1" />
               {{ $t('common.cancel') }}
@@ -413,8 +411,7 @@ SPDX-License-Identifier: Apache-2.0
               v-if="!editingShortcut"
               color="success"
               variant="flat"
-              size="small"
-              density="comfortable"
+              size="large"
               @click="createShortcut"
               :disabled="createShortcutLoading">
               <template v-if="!createShortcutLoading">
@@ -430,8 +427,7 @@ SPDX-License-Identifier: Apache-2.0
               v-else
               color="success"
               variant="flat"
-              size="small"
-              density="comfortable"
+              size="large"
               @click="updateShortcut"
               :disabled="createShortcutLoading">
               <template v-if="!createShortcutLoading">

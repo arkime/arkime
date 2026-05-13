@@ -23,10 +23,9 @@ SPDX-License-Identifier: Apache-2.0
                 <v-btn
                   v-bind="activatorProps"
                   variant="flat"
-                  size="x-small"
-                  icon
-                  class="field-config-trigger"
-                  :style="secondaryBtnStyle">
+                  size="large"
+                  color="secondary"
+                  class="field-config-trigger">
                   <span class="fa fa-columns" />
                   <v-tooltip
                     activator="parent"
@@ -159,8 +158,7 @@ SPDX-License-Identifier: Apache-2.0
               :class="{'disabled-aggregations':disabledAggregations}"
               color="warning"
               variant="flat"
-              size="small"
-              density="comfortable"
+              size="large"
               class="ms-2"
               @click="cancelLoading">
               <span class="fa fa-ban me-1" />
@@ -1629,7 +1627,7 @@ export default {
   margin-bottom: 4px;
 }
 .spiview-page .btn-drawer .btn-container {
-  max-height: 22px;
+  max-height: 28px;
   overflow: hidden;
   transition: all .8s;
 }

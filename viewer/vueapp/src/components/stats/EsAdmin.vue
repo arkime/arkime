@@ -46,9 +46,8 @@ SPDX-License-Identifier: Apache-2.0
         <span class="flex-grow-1">{{ $t('stats.esAdmin.esClusterSettings') }}</span>
         <v-btn
           variant="flat"
-          size="small"
-          density="comfortable"
-          :style="primaryBtnStyle"
+          size="large"
+          color="primary"
           class="ms-1"
           @click="retryFailed"
           id="retryFailed">
@@ -59,9 +58,8 @@ SPDX-License-Identifier: Apache-2.0
         </v-btn>
         <v-btn
           variant="flat"
-          size="small"
-          density="comfortable"
-          :style="secondaryBtnStyle"
+          size="large"
+          color="secondary"
           class="ms-1"
           @click="flush"
           id="flush">
@@ -72,9 +70,8 @@ SPDX-License-Identifier: Apache-2.0
         </v-btn>
         <v-btn
           variant="flat"
-          size="small"
-          density="comfortable"
-          :style="tertiaryBtnStyle"
+          size="large"
+          color="tertiary"
           class="ms-1"
           @click="unflood"
           id="unflood">
@@ -85,9 +82,8 @@ SPDX-License-Identifier: Apache-2.0
         </v-btn>
         <v-btn
           variant="flat"
-          size="small"
-          density="comfortable"
-          :style="quaternaryBtnStyle"
+          size="large"
+          color="warning"
           class="ms-1"
           @click="clearCache"
           id="clearCache">
@@ -180,7 +176,7 @@ SPDX-License-Identifier: Apache-2.0
         type="info"
         variant="tonal"
         density="compact"
-        class="mt-1">
+        class="mt-4 mb-4">
         <span v-html="$t('stats.esAdmin.controlHtml')" />
       </v-alert>
     </div>

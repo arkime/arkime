@@ -75,16 +75,19 @@ SPDX-License-Identifier: Apache-2.0
               <th
                 class="ignore-element"
                 style="width:85px;">
-                <!-- table fit button -->
-                <div class="fit-btn-container">
-                  <template v-if="sessions.data && sessions.data.length <= 50">
+                <div class="d-flex flex-column align-start">
+                  <!-- table action buttons -->
+                  <v-btn-group
+                    divided
+                    density="compact"
+                    variant="flat">
                     <v-btn
-                      variant="flat"
+                      v-if="sessions.data && sessions.data.length <= 50"
+                      :height="18"
                       size="x-small"
-                      density="comfortable"
+                      density="compact"
+                      color="primary"
                       icon
-                      :style="tertiaryBtnStyle"
-                      class="open-all-btn"
                       :aria-label="$t('sessions.sessions.openAll')"
                       @click="openAll">
                       <span class="fa fa-plus-circle" />
@@ -94,176 +97,171 @@ SPDX-License-Identifier: Apache-2.0
                         {{ $t('sessions.sessions.openAll') }}
                       </v-tooltip>
                     </v-btn>
-                  </template>
-                  <v-btn
-                    v-if="!loading && stickySessions.length > 0"
+                    <v-btn
+                      v-if="!loading && stickySessions.length > 0"
+                      :height="18"
+                      size="x-small"
+                      density="compact"
+                      color="secondary"
+                      icon
+                      :aria-label="$t('sessions.sessions.closeAll')"
+                      @click="closeAll">
+                      <span class="fa fa-times-circle" />
+                      <v-tooltip
+                        activator="parent"
+                        location="right">
+                        {{ $t('sessions.sessions.closeAll') }}
+                      </v-tooltip>
+                    </v-btn>
+                    <v-btn
+                      v-if="showFitButton && !loading"
+                      :height="18"
+                      size="x-small"
+                      density="compact"
+                      color="warning"
+                      icon
+                      :aria-label="$t('sessions.sessions.fitTable')"
+                      @click="fitTable">
+                      <span class="fa fa-arrows-h" />
+                      <v-tooltip
+                        activator="parent"
+                        location="right">
+                        {{ $t('sessions.sessions.fitTable') }}
+                      </v-tooltip>
+                    </v-btn>
+                  </v-btn-group> <!-- /table action buttons -->
+                  <!-- column configuration action group: visibility + save layouts -->
+                  <v-btn-group
+                    divided
+                    density="compact"
                     variant="flat"
-                    size="x-small"
-                    density="comfortable"
-                    icon
-                    :style="secondaryBtnStyle"
-                    class="close-all-btn ms-4"
-                    :aria-label="$t('sessions.sessions.closeAll')"
-                    @click="closeAll">
-                    <span class="fa fa-times-circle" />
-                    <v-tooltip
-                      activator="parent"
-                      location="right">
-                      {{ $t('sessions.sessions.closeAll') }}
-                    </v-tooltip>
-                  </v-btn>
-                  <v-btn
-                    v-if="showFitButton && !loading"
-                    variant="flat"
-                    size="x-small"
-                    density="comfortable"
-                    icon
-                    :style="quaternaryBtnStyle"
-                    class="fit-btn"
-                    :class="{'ms-4':stickySessions.length === 0, 'fit-btn-right':sessions.data && sessions.data.length <= 50 && stickySessions.length > 0}"
-                    :aria-label="$t('sessions.sessions.fitTable')"
-                    @click="fitTable">
-                    <span class="fa fa-arrows-h" />
-                    <v-tooltip
-                      activator="parent"
-                      location="right">
-                      {{ $t('sessions.sessions.fitTable') }}
-                    </v-tooltip>
-                  </v-btn>
-                </div> <!-- /table fit button -->
-                <!-- column configuration action group: visibility + save layouts -->
-                <v-btn-group
-                  divided
-                  density="compact"
-                  variant="flat"
-                  color="secondary"
-                  class="column-config-actions">
-                  <!-- column visibility button -->
-                  <FieldSelectDropdown
-                    :selected-fields="tableState.visibleHeaders"
-                    :tooltip-text="$t('sessions.sessions.toggleColumns')"
-                    :search-placeholder="$t('sessions.sessions.searchColumns')"
-                    :exclude-filename="true"
-                    :max-visible-fields="maxVisibleFields"
-                    field-id-key="dbField"
-                    @toggle="toggleColVis" />
-                  <!-- /column visibility button -->
-                  <!-- column save menu -->
-                  <v-menu
-                    :close-on-content-click="false"
-                    location="bottom start">
-                    <template #activator="{ props: activatorProps }">
-                      <v-btn
-                        v-bind="activatorProps"
-                        size="small">
-                        <span class="fa fa-save" />
-                        <v-tooltip
-                          activator="parent"
-                          location="right">
-                          {{ $t('sessions.sessions.customColumnMsg') }}
-                        </v-tooltip>
-                      </v-btn>
-                    </template>
-                    <v-list
-                      density="compact"
-                      class="col-config-list">
-                      <div class="px-2 py-1">
-                        <div class="arkime-input-group arkime-input-group--fluid">
-                          <input
-                            autofocus
-                            @click.stop
-                            maxlength="30"
-                            type="text"
-                            class="arkime-input-control"
-                            v-model="newColConfigName"
-                            :placeholder="$t('sessions.sessions.customColumnName')"
-                            @keydown.enter="saveColumnConfiguration">
-                          <v-btn
-                            :aria-label="$t('common.save')"
-                            variant="flat"
-                            size="small"
-                            density="comfortable"
-                            icon
-                            class="arkime-input-append-btn"
-                            :style="secondaryBtnStyle"
-                            :disabled="!newColConfigName"
-                            @click="saveColumnConfiguration">
-                            <span class="fa fa-save" />
-                          </v-btn>
+                    color="secondary"
+                    class="column-config-actions mt-n2">
+                    <!-- column visibility button -->
+                    <FieldSelectDropdown
+                      :selected-fields="tableState.visibleHeaders"
+                      :tooltip-text="$t('sessions.sessions.toggleColumns')"
+                      :search-placeholder="$t('sessions.sessions.searchColumns')"
+                      :exclude-filename="true"
+                      :max-visible-fields="maxVisibleFields"
+                      field-id-key="dbField"
+                      @toggle="toggleColVis" />
+                    <!-- /column visibility button -->
+                    <!-- column save menu -->
+                    <v-menu
+                      :close-on-content-click="false"
+                      location="bottom start">
+                      <template #activator="{ props: activatorProps }">
+                        <v-btn v-bind="activatorProps">
+                          <span class="fa fa-save" />
+                          <v-tooltip
+                            activator="parent"
+                            location="right">
+                            {{ $t('sessions.sessions.customColumnMsg') }}
+                          </v-tooltip>
+                        </v-btn>
+                      </template>
+                      <v-list
+                        density="compact"
+                        class="col-config-list">
+                        <div class="px-2 py-1">
+                          <div class="arkime-input-group arkime-input-group--fluid">
+                            <input
+                              autofocus
+                              @click.stop
+                              maxlength="30"
+                              type="text"
+                              class="arkime-input-control"
+                              v-model="newColConfigName"
+                              :placeholder="$t('sessions.sessions.customColumnName')"
+                              @keydown.enter="saveColumnConfiguration">
+                            <v-btn
+                              :aria-label="$t('common.save')"
+                              variant="flat"
+                              size="small"
+                              density="comfortable"
+                              icon
+                              class="arkime-input-append-btn"
+                              :style="secondaryBtnStyle"
+                              :disabled="!newColConfigName"
+                              @click="saveColumnConfiguration">
+                              <span class="fa fa-save" />
+                            </v-btn>
+                          </div>
                         </div>
-                      </div>
-                      <v-divider />
-                      <v-list-item
-                        key="col-config-default"
-                        @click.stop.prevent="loadColumnConfiguration(-1)">
-                        {{ $t('sessions.sessions.arkimeDefault') }}
-                        <v-tooltip
-                          activator="parent"
-                          location="end">
-                          {{ $t('sessions.sessions.customColumnReset') }}
-                        </v-tooltip>
-                      </v-list-item>
-                      <v-list-item
-                        v-for="(config, key) in colConfigs"
-                        :key="config.name"
-                        @click.self.stop.prevent="loadColumnConfiguration(key)">
-                        <div
-                          class="d-flex align-center w-100"
-                          @click.self="loadColumnConfiguration(key)">
-                          <span
-                            class="flex-grow-1"
-                            @click="loadColumnConfiguration(key)">
-                            {{ config.name }}
-                          </span>
-                          <v-btn
-                            :id="`updateCol${key}`"
-                            :aria-label="$t('sessions.sessions.customColumnUpdate')"
-                            color="warning"
-                            variant="flat"
-                            size="small"
-                            density="comfortable"
-                            icon
-                            class="ms-1"
-                            @click.stop.prevent="updateColumnConfiguration(config.name, key)">
-                            <span class="fa fa-save" />
-                            <v-tooltip
-                              :activator="`[id='updateCol${key}']`"
-                              location="end">
-                              {{ $t('sessions.sessions.customColumnUpdate') }}
-                            </v-tooltip>
-                          </v-btn>
-                          <v-btn
-                            :aria-label="$t('common.delete')"
-                            color="error"
-                            variant="flat"
-                            size="small"
-                            density="comfortable"
-                            icon
-                            class="ms-1"
-                            @click.stop.prevent="deleteColumnConfiguration(config.name, key)">
-                            <span class="fa fa-trash-o" />
-                          </v-btn>
-                        </div>
-                      </v-list-item>
-                    </v-list>
-                    <v-alert
-                      v-if="colConfigError"
-                      density="compact"
-                      variant="tonal"
-                      type="error"
-                      class="ma-1">
-                      {{ colConfigError }}
-                    </v-alert>
-                    <v-alert
-                      v-if="colConfigSuccess"
-                      density="compact"
-                      variant="tonal"
-                      type="success"
-                      class="ma-1">
-                      {{ colConfigSuccess }}
-                    </v-alert>
-                  </v-menu> <!-- /column save menu -->
-                </v-btn-group> <!-- /column configuration action group -->
+                        <v-divider />
+                        <v-list-item
+                          key="col-config-default"
+                          @click.stop.prevent="loadColumnConfiguration(-1)">
+                          {{ $t('sessions.sessions.arkimeDefault') }}
+                          <v-tooltip
+                            activator="parent"
+                            location="end">
+                            {{ $t('sessions.sessions.customColumnReset') }}
+                          </v-tooltip>
+                        </v-list-item>
+                        <v-list-item
+                          v-for="(config, key) in colConfigs"
+                          :key="config.name"
+                          @click.self.stop.prevent="loadColumnConfiguration(key)">
+                          <div
+                            class="d-flex align-center w-100"
+                            @click.self="loadColumnConfiguration(key)">
+                            <span
+                              class="flex-grow-1"
+                              @click="loadColumnConfiguration(key)">
+                              {{ config.name }}
+                            </span>
+                            <v-btn
+                              :id="`updateCol${key}`"
+                              :aria-label="$t('sessions.sessions.customColumnUpdate')"
+                              color="warning"
+                              variant="flat"
+                              size="small"
+                              density="comfortable"
+                              icon
+                              class="ms-1"
+                              @click.stop.prevent="updateColumnConfiguration(config.name, key)">
+                              <span class="fa fa-save" />
+                              <v-tooltip
+                                :activator="`[id='updateCol${key}']`"
+                                location="end">
+                                {{ $t('sessions.sessions.customColumnUpdate') }}
+                              </v-tooltip>
+                            </v-btn>
+                            <v-btn
+                              :aria-label="$t('common.delete')"
+                              color="error"
+                              variant="flat"
+                              size="small"
+                              density="comfortable"
+                              icon
+                              class="ms-1"
+                              @click.stop.prevent="deleteColumnConfiguration(config.name, key)">
+                              <span class="fa fa-trash-o" />
+                            </v-btn>
+                          </div>
+                        </v-list-item>
+                      </v-list>
+                      <v-alert
+                        v-if="colConfigError"
+                        density="compact"
+                        variant="tonal"
+                        type="error"
+                        class="ma-1">
+                        {{ colConfigError }}
+                      </v-alert>
+                      <v-alert
+                        v-if="colConfigSuccess"
+                        density="compact"
+                        variant="tonal"
+                        type="success"
+                        class="ma-1">
+                        {{ colConfigSuccess }}
+                      </v-alert>
+                    </v-menu> <!-- /column save menu -->
+                  </v-btn-group> <!-- /column configuration action group -->
+                </div>
               </th> <!-- /table options -->
               <!-- table headers -->
               <template v-if="headers && headers.length">
@@ -301,7 +299,6 @@ SPDX-License-Identifier: Apache-2.0
                         <template #activator="{ props: activatorProps }">
                           <v-btn
                             v-bind="activatorProps"
-                            size="small"
                             class="info-vis-menu col-dropdown">
                             <span class="fa fa-bars" />
                             <v-tooltip
@@ -375,7 +372,6 @@ SPDX-License-Identifier: Apache-2.0
                         <template #activator="{ props: activatorProps }">
                           <v-btn
                             v-bind="activatorProps"
-                            size="small"
                             class="info-vis-menu col-dropdown">
                             <span class="fa fa-save" />
                             <v-tooltip
@@ -2389,25 +2385,6 @@ table.sessions-table.sticky-header > tbody {
    styling natively; only nudge the info-col-actions margin. */
 .info-col-actions {
   margin-right: 5px;
-}
-
-/* table fit button -------------------------- */
-div.fit-btn-container {
-  top: -18px;
-  z-index: 3;
-  position: relative;
-}
-div.fit-btn-container > .fit-btn,
-div.fit-btn-container > .open-all-btn,
-div.fit-btn-container > .close-all-btn {
-  height: 16px !important;
-  min-height: 16px !important;
-  width: 16px !important;
-  line-height: 1;
-  position: absolute;
-}
-div.fit-btn-container > .fit-btn.fit-btn-right {
-  left: 48px;
 }
 
 /* animate sticky sessions enter/leave */

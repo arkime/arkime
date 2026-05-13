@@ -4,9 +4,7 @@
     :close-on-content-click="false"
     location="bottom end">
     <template #activator="{ props: activatorProps }">
-      <v-btn
-        v-bind="activatorProps"
-        size="small">
+      <v-btn v-bind="activatorProps">
         <span class="fa fa-bars" />
         <v-tooltip
           activator="parent"
