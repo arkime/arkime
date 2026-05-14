@@ -3,7 +3,7 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-  <div class="container-fluid mt-2">
+  <div class="arkime-container-fluid mt-2">
     <arkime-loading v-if="initialLoading && !error" />
 
     <arkime-error

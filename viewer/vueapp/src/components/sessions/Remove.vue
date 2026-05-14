@@ -3,7 +3,7 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-  <div class="d-flex flex-nowrap gap-2 align-items-start text-start">
+  <div class="d-flex flex-nowrap gap-2 align-start text-start">
     <div>
       <span
         id="pcapCheckboxWrap"

@@ -5,7 +5,7 @@ SPDX-License-Identifier: Apache-2.0
 <template>
   <div>
     <div
-      class="d-flex flex-nowrap gap-1 align-items-start text-start"
+      class="d-flex flex-nowrap gap-1 align-start text-start"
       @keyup.stop.prevent.enter="exportCsvAction">
       <SegmentSelect v-model:segments="segments" />
 

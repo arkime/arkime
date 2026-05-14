@@ -3,7 +3,7 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-  <div class="container-fluid">
+  <div class="arkime-container-fluid">
     <arkime-loading v-if="initialLoading && !error" />
 
     <arkime-error
@@ -13,7 +13,7 @@ SPDX-License-Identifier: Apache-2.0
     <div v-show="!error">
       <span
         id="captureGraphHelp"
-        class="fa fa-lg fa-question-circle-o cursor-help mt-2 float-end">
+        class="fa fa-lg fa-question-circle-o cursor-help mt-2 float-right">
         <v-tooltip activator="#captureGraphHelp">
           <span v-html="$t('stats.cgraphs.helpTipHtml')" />
         </v-tooltip>

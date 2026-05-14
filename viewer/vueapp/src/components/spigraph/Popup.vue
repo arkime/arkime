@@ -14,7 +14,7 @@ SPDX-License-Identifier: Apache-2.0
         <div class="popup-card-title">
           {{ field.friendlyName }}
           <a
-            class="float-end cursor-pointer no-decoration"
+            class="float-right cursor-pointer no-decoration"
             v-if="index === 0"
             @click="closeInfo">
             <span class="fa fa-close" />
@@ -31,7 +31,7 @@ SPDX-License-Identifier: Apache-2.0
         </div>
         <div class="popup-card-footer">
           <div
-            class="d-flex justify-content-around text-center"
+            class="d-flex justify-space-around text-center"
             style="line-height: 1;">
             <div
               v-for="stat in popupStats(index)"

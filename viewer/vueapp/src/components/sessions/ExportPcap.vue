@@ -1,6 +1,6 @@
 <template>
   <div
-    class="d-flex flex-nowrap gap-1 align-items-start text-start"
+    class="d-flex flex-nowrap gap-1 align-start text-start"
     @keyup.stop.prevent.enter="exportPcapAction">
     <SegmentSelect v-model:segments="segments" />
 

@@ -3,7 +3,7 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-  <div class="row g-1 text-start flex-nowrap justify-content-start">
+  <div class="row g-1 text-start flex-nowrap justify-start">
     <!-- time range select -->
     <div class="col">
       <div class="arkime-input-group arkime-input-group--fluid">

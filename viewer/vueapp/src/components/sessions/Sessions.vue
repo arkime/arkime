@@ -21,7 +21,7 @@ SPDX-License-Identifier: Apache-2.0
           @recalc-collapse="$emit('recalc-collapse')" /> <!-- /search navbar -->
 
         <!-- paging navbar -->
-        <div class="d-flex justify-content-start align-items-baseline m-1">
+        <div class="d-flex justify-start align-baseline m-1">
           <arkime-paging
             style="height: 32px;"
             :records-total="sessions.recordsTotal"
@@ -287,7 +287,7 @@ SPDX-License-Identifier: Apache-2.0
                       density="compact"
                       variant="flat"
                       color="secondary"
-                      class="float-end info-col-actions">
+                      class="float-right info-col-actions">
                       <!-- info field visibility button -->
                       <v-menu
                         :close-on-content-click="false"
@@ -501,7 +501,7 @@ SPDX-License-Identifier: Apache-2.0
                         icon
                         color="primary"
                         :aria-label="$t('sessions.columnActions', 'Column actions')"
-                        class="float-end col-dropdown col-context-trigger">
+                        class="float-right col-dropdown col-context-trigger">
                         <span class="fa fa-caret-down" />
                       </v-btn>
                     </template>

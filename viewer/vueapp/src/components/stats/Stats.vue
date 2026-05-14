@@ -7,7 +7,7 @@ SPDX-License-Identifier: Apache-2.0
     <ArkimeCollapsible>
       <span class="fixed-header">
         <!-- stats sub navbar -->
-        <div class="row g-1 stats-form p-1 align-items-center justify-content-start">
+        <div class="row g-1 stats-form p-1 align-center justify-start">
 
           <div
             class="col flex-grow-1"

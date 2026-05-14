@@ -106,7 +106,7 @@ SPDX-License-Identifier: Apache-2.0
                   size="x-small"
                   density="comfortable"
                   icon
-                  class="float-end"
+                  class="float-right"
                   :aria-label="$t('common.close')"
                   @click.stop="closeSessionDetail(session)">
                   <span class="fa fa-close fa-lg" />

@@ -56,7 +56,7 @@ SPDX-License-Identifier: Apache-2.0
         v-for="config in configs"
         :key="config.id"
         @click="loadConfig(config)">
-        <div class="d-flex justify-content-between align-items-center w-100">
+        <div class="d-flex justify-space-between align-center w-100">
           <span class="config-name">
             <span
               v-if="config.shared"

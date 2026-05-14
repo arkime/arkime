@@ -3,7 +3,7 @@
     <div class="mb-2 mt-2">
       <strong>Link</strong>
       <a
-        class="float-end cursor-pointer no-decoration"
+        class="float-right cursor-pointer no-decoration"
         @click="$emit('close')">
         <span class="fa fa-close" />
       </a>

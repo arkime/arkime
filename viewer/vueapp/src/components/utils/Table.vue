@@ -31,7 +31,7 @@ SPDX-License-Identifier: Apache-2.0
           v-if="actionColumn"
           style="width:70px;"
           class="ignore-element text-start">
-          <div class="d-flex align-items-center">
+          <div class="d-flex align-center">
             <!-- column visibility menu -->
             <v-menu
               :close-on-content-click="false"

@@ -3,7 +3,7 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-  <div class="container-fluid mt-2">
+  <div class="arkime-container-fluid mt-2">
     <arkime-loading v-if="initialLoading && !error" />
 
     <arkime-error
@@ -17,7 +17,7 @@ SPDX-License-Identifier: Apache-2.0
         variant="flat"
         size="small"
         density="comfortable"
-        class="float-end"
+        class="float-right"
         v-has-role="{user:user,roles:'arkimeAdmin'}"
         @click="cancelTasks">
         <span class="fa fa-ban me-1" />

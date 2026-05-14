@@ -17,7 +17,7 @@ SPDX-License-Identifier: Apache-2.0
 
         <!-- hunt create navbar -->
         <div
-          class="row g-1 hunt-create-navbar ps-2 pe-2 py-2 justify-content-between align-items-center"
+          class="row g-1 hunt-create-navbar ps-2 pe-2 py-2 justify-space-between align-center"
           style="min-height: 44px;">
           <div class="col-auto">
             <span v-if="loadingSessions">
@@ -250,7 +250,7 @@ SPDX-License-Identifier: Apache-2.0
                   </div>
                 </div>
               </div>
-              <div class="row g-1 justify-content-start">
+              <div class="row g-1 justify-start">
                 <!-- packet search text & text type -->
                 <div class="col">
                   <v-btn-toggle
@@ -671,7 +671,7 @@ SPDX-License-Identifier: Apache-2.0
           <span class="fa fa-clock-o me-2" />
           {{ $t('hunts.title') }}
         </h4>
-        <div class="row g-1 justify-content-start">
+        <div class="row g-1 justify-start">
           <div class="col">
             <!-- search packet search jobs -->
             <div class="arkime-input-group arkime-input-group--fluid">
@@ -854,7 +854,7 @@ SPDX-License-Identifier: Apache-2.0
           <a
             @click="floatingError = false; floatingSuccess = false"
             id="dismissError"
-            class="no-decoration cursor-pointer float-end">
+            class="no-decoration cursor-pointer float-right">
             <span class="fa fa-close" />
             <v-tooltip activator="#dismissError">{{ $t('common.dismiss') }}</v-tooltip>
           </a>

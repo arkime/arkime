@@ -18,7 +18,7 @@ SPDX-License-Identifier: Apache-2.0
       {{ field.friendlyName }}
       <small>({{ field.exp }})</small>
       <span
-        class="fa fa-close float-end mt-1"
+        class="fa fa-close float-right mt-1"
         :title="$t('utils.removeFromHistory')"
         @click.stop.prevent="removeFromFieldHistory(field)" />
     </a>

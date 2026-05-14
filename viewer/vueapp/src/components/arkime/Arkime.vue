@@ -15,7 +15,7 @@ SPDX-License-Identifier: Apache-2.0
           @recalc-collapse="$emit('recalc-collapse')" />
 
         <!-- toolbar row -->
-        <div class="d-flex justify-content-start align-items-center ms-2 m-1 gap-2">
+        <div class="d-flex justify-start align-center ms-2 m-1 gap-2">
           <!-- results per widget dropdown -->
           <v-menu>
             <template #activator="{ props }">

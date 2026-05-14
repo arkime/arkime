@@ -30,7 +30,7 @@ SPDX-License-Identifier: Apache-2.0
         color="success"
         variant="flat"
         size="large"
-        class="float-end d-inline"
+        class="float-right d-inline"
         @click="showCronModal = true">
         <span class="fa fa-plus-circle me-1" />
         {{ $t('settings.cron.newPeriodicQuery') }}
@@ -252,7 +252,7 @@ SPDX-License-Identifier: Apache-2.0
           </v-alert> <!-- /create error -->
         </v-card-text>
         <v-card-actions>
-          <div class="w-100 d-flex justify-content-between">
+          <div class="w-100 d-flex justify-space-between">
             <v-btn
               color="error"
               variant="flat"

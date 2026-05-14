@@ -27,7 +27,7 @@ SPDX-License-Identifier: Apache-2.0
       </template>
     </p>
 
-    <div class="d-flex align-items-center">
+    <div class="d-flex align-center">
       <div class="flex-grow-1 me-2">
         <v-text-field
           density="compact"
@@ -143,7 +143,7 @@ SPDX-License-Identifier: Apache-2.0
               <span
                 v-if="item.value.length > 50"
                 @click="toggleDisplayAllShortcut(item)"
-                class="fa float-end cursor-pointer mt-1"
+                class="fa float-right cursor-pointer mt-1"
                 :class="{'fa-chevron-down':!item.showAll,'fa-chevron-up':item.showAll}" />
               <span v-if="!item.showAll">
                 {{ item.value.substring(0, 50) }}
@@ -398,7 +398,7 @@ SPDX-License-Identifier: Apache-2.0
           </v-alert> <!-- /create form error -->
         </v-card-text>
         <v-card-actions>
-          <div class="w-100 d-flex justify-content-between">
+          <div class="w-100 d-flex justify-space-between">
             <v-btn
               color="error"
               variant="flat"

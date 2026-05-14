@@ -131,11 +131,11 @@ SPDX-License-Identifier: Apache-2.0
 
           <!-- timezone -->
           <div class="form-group row">
-            <label class="col-sm-3 col-form-label text-end fw-bold">
+            <label class="col-sm-3 col-form-label text-end font-weight-bold">
               {{ $t('settings.general.timezoneFormat') }}
             </label>
             <div class="col-sm-9">
-              <div class="d-inline-flex align-items-center">
+              <div class="d-inline-flex align-center">
                 <v-btn-toggle
                   density="compact"
                   divided
@@ -173,7 +173,7 @@ SPDX-License-Identifier: Apache-2.0
                     </v-tooltip>
                   </v-btn>
                 </v-btn-toggle>
-                <label class="ms-2 fw-bold text-theme-primary">
+                <label class="ms-2 font-weight-bold text-theme-primary">
                   {{ timezoneDateString(date, settings.timezone, settings.ms) }}
                 </label>
               </div>
@@ -182,7 +182,7 @@ SPDX-License-Identifier: Apache-2.0
 
           <!-- session detail format -->
           <div class="form-group row">
-            <label class="col-sm-3 col-form-label text-end fw-bold">
+            <label class="col-sm-3 col-form-label text-end font-weight-bold">
               {{ $t('settings.general.sessionDetailFormat') }}
             </label>
             <div class="col-sm-9">
@@ -216,7 +216,7 @@ SPDX-License-Identifier: Apache-2.0
 
           <!-- number of packets -->
           <div class="form-group row">
-            <label class="col-sm-3 col-form-label text-end fw-bold">
+            <label class="col-sm-3 col-form-label text-end font-weight-bold">
               {{ $t('settings.general.numberOfPackets') }}
             </label>
             <div class="col-sm-9">
@@ -253,7 +253,7 @@ SPDX-License-Identifier: Apache-2.0
 
           <!-- show packet timestamp -->
           <div class="form-group row">
-            <label class="col-sm-3 col-form-label text-end fw-bold">
+            <label class="col-sm-3 col-form-label text-end font-weight-bold">
               {{ $t('settings.general.showPacketInfo') }}
             </label>
             <div class="col-sm-9">
@@ -281,7 +281,7 @@ SPDX-License-Identifier: Apache-2.0
 
           <!-- issue query on initial page load -->
           <div class="form-group row">
-            <label class="col-sm-3 col-form-label text-end fw-bold">
+            <label class="col-sm-3 col-form-label text-end font-weight-bold">
               {{ $t('settings.general.queryOnLoad') }}
             </label>
             <div class="col-sm-9">
@@ -306,7 +306,7 @@ SPDX-License-Identifier: Apache-2.0
 
           <!-- session sort -->
           <div class="form-group row">
-            <label class="col-sm-3 col-form-label text-end fw-bold">
+            <label class="col-sm-3 col-form-label text-end font-weight-bold">
               {{ $t('settings.general.sortSessionsBy') }}
             </label>
             <div class="col-sm-6">
@@ -352,7 +352,7 @@ SPDX-License-Identifier: Apache-2.0
           <div
             v-if="fields && settings.spiGraph"
             class="form-group row">
-            <label class="col-sm-3 col-form-label text-end fw-bold">
+            <label class="col-sm-3 col-form-label text-end font-weight-bold">
               {{ $t('settings.general.defaultSPIGraph') }}
             </label>
             <div class="col-sm-6">
@@ -381,7 +381,7 @@ SPDX-License-Identifier: Apache-2.0
           <div
             v-if="fields && settings.connSrcField"
             class="form-group row">
-            <label class="col-sm-3 col-form-label text-end fw-bold">
+            <label class="col-sm-3 col-form-label text-end font-weight-bold">
               {{ $t('settings.general.connectionsSrc') }}
             </label>
             <div class="col-sm-6">
@@ -410,7 +410,7 @@ SPDX-License-Identifier: Apache-2.0
           <div
             v-if="fields && settings.connDstField"
             class="form-group row">
-            <label class="col-sm-3 col-form-label text-end fw-bold">
+            <label class="col-sm-3 col-form-label text-end font-weight-bold">
               {{ $t('settings.general.connectionsDst') }}
             </label>
             <div class="col-sm-6">
@@ -438,7 +438,7 @@ SPDX-License-Identifier: Apache-2.0
           <div
             v-if="integerFields"
             class="form-group row">
-            <label class="col-sm-3 col-form-label text-end fw-bold">
+            <label class="col-sm-3 col-form-label text-end font-weight-bold">
               {{ $t('settings.general.timelineDataFilters') }}
             </label>
 
@@ -487,7 +487,7 @@ SPDX-License-Identifier: Apache-2.0
           <div
             v-if="fields"
             class="form-group row">
-            <label class="col-sm-3 col-form-label text-end fw-bold">
+            <label class="col-sm-3 col-form-label text-end font-weight-bold">
               {{ $t('settings.general.hideTags') }}
             </label>
             <div class="col-sm-6">
@@ -597,7 +597,7 @@ SPDX-License-Identifier: Apache-2.0
                       variant="flat"
                       size="small"
                       density="comfortable"
-                      class="float-end"
+                      class="float-right"
                       @click="deleteLayout('sessionstable', config.name, 'colConfigs', index)"
                       :title="$t('settings.ccl.deleteTip')">
                       <span class="fa fa-trash-o me-1" />
@@ -697,7 +697,7 @@ SPDX-License-Identifier: Apache-2.0
                       variant="flat"
                       size="small"
                       density="comfortable"
-                      class="float-end"
+                      class="float-right"
                       @click="deleteLayout('sessionsinfofields', config.name, 'infoFieldLayouts', index)"
                       :title="$t('settings.infoLayout.deleteTip')">
                       <span class="fa fa-trash-o me-1" />
@@ -795,7 +795,7 @@ SPDX-License-Identifier: Apache-2.0
                       variant="flat"
                       size="small"
                       density="comfortable"
-                      class="float-end"
+                      class="float-right"
                       @click="deleteLayout('spiview', config.name, 'spiviewConfigs', index)"
                       :title="$t('settings.spiview.deleteTip')">
                       <span class="fa fa-trash-o me-1" />
@@ -899,10 +899,10 @@ SPDX-License-Identifier: Apache-2.0
                       </div>
                     </div>
                     <div class="col-xl-7 col-lg-8 col-sm-7">
-                      <div class="fw-bold text-theme-accent ms-1">
+                      <div class="font-weight-bold text-theme-accent ms-1">
                         Important text
                       </div>
-                      <div class="float-end display-sub-navbar-buttons">
+                      <div class="float-right display-sub-navbar-buttons">
                         <a class="theme-display-btn btn-theme-tertiary-display me-1">
                           Search
                         </a>
@@ -916,7 +916,7 @@ SPDX-License-Identifier: Apache-2.0
                           <template #activator="{ props: activatorProps }">
                             <a
                               v-bind="activatorProps"
-                              class="theme-display-btn btn-theme-primary-display float-end action-menu-dropdown">
+                              class="theme-display-btn btn-theme-primary-display float-right action-menu-dropdown">
                               <span class="fa fa-caret-down" />
                             </a>
                           </template>
@@ -1100,10 +1100,10 @@ SPDX-License-Identifier: Apache-2.0
                           </div>
                         </div>
                         <div class="col-xl-7 col-lg-8 col-sm-7">
-                          <div class="fw-bold text-theme-accent ms-1">
+                          <div class="font-weight-bold text-theme-accent ms-1">
                             Important text
                           </div>
-                          <div class="float-end display-sub-navbar-buttons">
+                          <div class="float-right display-sub-navbar-buttons">
                             <a class="theme-display-btn btn-theme-tertiary-display me-1">
                               Search
                             </a>
@@ -1117,7 +1117,7 @@ SPDX-License-Identifier: Apache-2.0
                               <template #activator="{ props: activatorProps }">
                                 <a
                                   v-bind="activatorProps"
-                                  class="theme-display-btn btn-theme-primary-display float-end action-menu-dropdown">
+                                  class="theme-display-btn btn-theme-primary-display float-right action-menu-dropdown">
                                   <span class="fa fa-caret-down" />
                                 </a>
                               </template>
@@ -1149,22 +1149,22 @@ SPDX-License-Identifier: Apache-2.0
                         <br><br>
                         <div class="row">
                           <div class="col-md-6 sessionsrc">
-                            <small class="session-detail-ts fw-bold">
+                            <small class="session-detail-ts font-weight-bold">
                               <em class="ts-value">
                                 2013/11/18 03:06:52.831
                               </em>
-                              <span class="float-end">
+                              <span class="float-right">
                                 27 bytes
                               </span>
                             </small>
                             <pre>Source packet text</pre>
                           </div>
                           <div class="col-md-6 sessiondst">
-                            <small class="session-detail-ts fw-bold">
+                            <small class="session-detail-ts font-weight-bold">
                               <em class="ts-value">
                                 2013/11/18 03:06:52.841
                               </em>
-                              <span class="float-end">
+                              <span class="float-right">
                                 160 bytes
                               </span>
                             </small>
@@ -1408,7 +1408,7 @@ SPDX-License-Identifier: Apache-2.0
           <div
             v-if="!userId"
             class="row mb-2">
-            <label class="col-sm-3 col-form-label text-end fw-bold">
+            <label class="col-sm-3 col-form-label text-end font-weight-bold">
               {{ $t('settings.password.currentPassword') }}
             </label>
             <div class="col-sm-6">
@@ -1424,7 +1424,7 @@ SPDX-License-Identifier: Apache-2.0
 
           <!-- new password -->
           <div class="row mb-2">
-            <label class="col-sm-3 col-form-label text-end fw-bold">
+            <label class="col-sm-3 col-form-label text-end font-weight-bold">
               {{ $t('settings.password.newPassword') }}
             </label>
             <div class="col-sm-6">
@@ -1440,7 +1440,7 @@ SPDX-License-Identifier: Apache-2.0
 
           <!-- confirm new password -->
           <div class="row mb-2">
-            <label class="col-sm-3 col-form-label text-end fw-bold">
+            <label class="col-sm-3 col-form-label text-end font-weight-bold">
               {{ $t('settings.password.confirmPassword') }}
             </label>
             <div class="col-sm-6">
@@ -1477,7 +1477,7 @@ SPDX-License-Identifier: Apache-2.0
           <!-- TOTP Two-Factor Authentication (only for admins) -->
           <div v-has-role="{user:user,roles:'arkimeAdmin,cont3xtAdmin,wiseAdmin'}">
             <hr class="my-4">
-            <div class="d-flex align-items-center mb-1">
+            <div class="d-flex align-center mb-1">
               <h4 class="mb-0 me-2">
                 {{ $t('settings.totp.title') }}
               </h4>

@@ -17,7 +17,7 @@
           size="x-small"
           density="comfortable"
           icon
-          class="float-end mt-1"
+          class="float-right mt-1"
           :aria-label="$t('common.close')"
           @click="$emit('close')">
           <span class="fa fa-close" />

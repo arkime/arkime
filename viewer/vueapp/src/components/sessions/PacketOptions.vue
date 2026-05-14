@@ -3,7 +3,7 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-  <div class="d-flex flex-row text-start gap-2 align-items-center flex-wrap packet-options-row">
+  <div class="d-flex flex-row text-start gap-2 align-center flex-wrap packet-options-row">
     <!-- # packets -->
     <span class="packet-options-select">
       <v-select
@@ -142,7 +142,7 @@ SPDX-License-Identifier: Apache-2.0
     <!-- decoding form -->
     <div
       v-if="decodingForm"
-      class="decoding-form mt-2 pt-2 d-flex flex-row gap-2 flex-wrap align-items-center w-100">
+      class="decoding-form mt-2 pt-2 d-flex flex-row gap-2 flex-wrap align-center w-100">
       <template
         v-for="field in decodingsClone[decodingForm].fields"
         :key="field.name">

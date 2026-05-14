@@ -44,7 +44,7 @@
     v-else
     class="chart-section widget-loaded">
     <!-- Header with title, view mode selector, and export button -->
-    <div class="d-flex justify-content-end align-items-center mb-2">
+    <div class="d-flex justify-end align-center mb-2">
       <h4 class="flex-grow-1">
         {{ title }}
       </h4>

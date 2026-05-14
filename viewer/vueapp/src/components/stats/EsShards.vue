@@ -3,7 +3,7 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-  <div class="container-fluid mt-3">
+  <div class="arkime-container-fluid mt-3">
     <arkime-loading v-if="initialLoading && !error" />
 
     <v-alert
@@ -52,7 +52,7 @@ SPDX-License-Identifier: Apache-2.0
                       size="x-small"
                       density="comfortable"
                       icon
-                      class="column-actions-btn float-end mb-1">
+                      class="column-actions-btn float-right mb-1">
                       <span class="fa fa-caret-down" />
                     </v-btn>
                   </template>

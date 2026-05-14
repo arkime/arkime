@@ -5,7 +5,7 @@ SPDX-License-Identifier: Apache-2.0
 <template>
   <div>
     <div
-      class="d-flex flex-nowrap gap-1 align-items-start text-start"
+      class="d-flex flex-nowrap gap-1 align-start text-start"
       @keyup.stop.prevent.enter="modifyView">
       <v-text-field
         density="compact"
@@ -17,7 +17,7 @@ SPDX-License-Identifier: Apache-2.0
         @keydown.enter.stop
         class="modify-view-name" />
 
-      <div class="flex-fill d-flex align-items-center gap-1">
+      <div class="flex-fill d-flex align-center gap-1">
         <div class="flex-fill arkime-input-group arkime-input-group--fluid">
           <span class="arkime-input-label">
             {{ $t('sessions.views.expression') }}
@@ -143,7 +143,7 @@ SPDX-License-Identifier: Apache-2.0
             @apply="showBigExpression = false" />
         </v-card-text>
         <v-card-actions>
-          <div class="d-flex w-100 justify-content-between">
+          <div class="d-flex w-100 justify-space-between">
             <div>
               <v-btn
                 variant="flat"

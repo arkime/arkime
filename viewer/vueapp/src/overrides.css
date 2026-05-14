@@ -71,6 +71,16 @@ textarea:disabled {
   border-top: 1px solid var(--color-gray-light);
 }
 
+/* full-width root container (used by stats + users pages) ------------- */
+.arkime-container-fluid {
+  width: 100%;
+  padding-right: 0.75rem;
+  padding-left: 0.75rem;
+  margin-right: auto;
+  margin-left: auto;
+}
+
+
 /* "well" panel used by 404.vue / UpgradeBrowser.vue ------------------- */
 .well {
   padding: 12px;

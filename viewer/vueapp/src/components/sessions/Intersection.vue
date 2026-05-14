@@ -5,9 +5,9 @@ SPDX-License-Identifier: Apache-2.0
 <template>
   <div>
     <div
-      class="d-flex flex-nowrap gap-2 align-items-start text-start"
+      class="d-flex flex-nowrap gap-2 align-start text-start"
       @keyup.stop.prevent.enter="openIntersectionAction">
-      <div class="flex-fill d-flex align-items-center gap-2">
+      <div class="flex-fill d-flex align-center gap-2">
         <v-checkbox
           v-model="counts"
           density="compact"
