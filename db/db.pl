@@ -5645,6 +5645,24 @@ sub sessions3Update
         "macCnt" : {
           "type" : "long"
         },
+        "msgType" : {
+          "type" : "keyword"
+        },
+        "msgTypeCnt" : {
+          "type" : "long"
+        },
+        "nasIp" : {
+          "type" : "ip"
+        },
+        "nasIpCnt" : {
+          "type" : "long"
+        },
+        "nasPort" : {
+          "type" : "integer"
+        },
+        "nasPortCnt" : {
+          "type" : "long"
+        },
         "user" : {
           "type" : "keyword"
         }

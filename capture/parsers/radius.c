@@ -10,13 +10,45 @@ LOCAL  int userField;
 LOCAL  int macField;
 LOCAL  int endpointIpField;
 LOCAL  int framedIpField;
+LOCAL  int msgTypeField;
+LOCAL  int nasIpField;
+LOCAL  int nasPortField;
 
+LOCAL const char *radius_code_name(uint8_t code)
+{
+    switch (code) {
+    case 1:
+        return "access-request";
+    case 2:
+        return "access-accept";
+    case 3:
+        return "access-reject";
+    case 4:
+        return "accounting-request";
+    case 5:
+        return "accounting-response";
+    case 11:
+        return "access-challenge";
+    case 12:
+        return "status-server";
+    case 13:
+        return "status-client";
+    default:
+        return NULL;
+    }
+}
 /******************************************************************************/
 LOCAL int radius_udp_parser(ArkimeSession_t *session, void *UNUSED(uw), const uint8_t *data, int len, int UNUSED(which))
 {
     BSB bsb;
 
     BSB_INIT(bsb, data, len);
+
+    if (len >= 1) {
+        const char *name = radius_code_name(data[0]);
+        if (name)
+            arkime_field_string_add(msgTypeField, session, name, -1, TRUE);
+    }
 
     BSB_IMPORT_skip(bsb, 20);
 
@@ -29,7 +61,7 @@ LOCAL int radius_udp_parser(ArkimeSession_t *session, void *UNUSED(uw), const ui
     while (BSB_REMAINING(bsb) > 2) {
         BSB_IMPORT_u08(bsb, type);
         BSB_IMPORT_u08(bsb, length);
-        if (length < 3)
+        if (length < 2)
             break;
         length -= 2; // length includes the type/length
         BSB_IMPORT_ptr(bsb, value, length);
@@ -40,9 +72,19 @@ LOCAL int radius_udp_parser(ArkimeSession_t *session, void *UNUSED(uw), const ui
         case 1:
             arkime_field_string_add(userField, session, (char *)value, length, TRUE);
             break;
-        /*    case 4:
-                LOG("NAS-IP-Address: %d %d %u.%u.%u.%u", type, length, value[0], value[1], value[2], value[3]);
-                break;*/
+        case 4:
+            if (length == 4) {
+                memcpy(&in.s_addr, value, 4);
+                arkime_field_ip4_add(nasIpField, session, in.s_addr);
+            }
+            break;
+        case 5:
+            if (length == 4) {
+                uint32_t port = ((uint32_t)value[0] << 24) | ((uint32_t)value[1] << 16) |
+                                ((uint32_t)value[2] << 8) | (uint32_t)value[3];
+                arkime_field_int_add(nasPortField, session, port);
+            }
+            break;
         case 8:
             if (length != 4)
                 return 0;
@@ -70,9 +112,6 @@ LOCAL int radius_udp_parser(ArkimeSession_t *session, void *UNUSED(uw), const ui
             str[length] = 0;
             arkime_field_ip_add_str(endpointIpField, session, str);
             break;
-
-            /*        default:
-                        LOG("%d %d %.*s", type, length, length, value);*/
         }
     }
     return 0;
@@ -119,6 +158,24 @@ void arkime_parser_init()
                                         "RADIUS framed IP addresses for session",
                                         ARKIME_FIELD_TYPE_IP_GHASH,  ARKIME_FIELD_FLAG_CNT,
                                         (char *)NULL);
+
+    msgTypeField = arkime_field_define("radius", "lotermfield",
+                                       "radius.msgType", "Msg Type", "radius.msgType",
+                                       "RADIUS message type",
+                                       ARKIME_FIELD_TYPE_STR_GHASH,  ARKIME_FIELD_FLAG_CNT,
+                                       (char *)NULL);
+
+    nasIpField = arkime_field_define("radius", "ip",
+                                     "radius.nasIp", "NAS IP", "radius.nasIp",
+                                     "RADIUS NAS IP address",
+                                     ARKIME_FIELD_TYPE_IP_GHASH,  ARKIME_FIELD_FLAG_CNT,
+                                     (char *)NULL);
+
+    nasPortField = arkime_field_define("radius", "integer",
+                                       "radius.nasPort", "NAS Port", "radius.nasPort",
+                                       "RADIUS NAS port",
+                                       ARKIME_FIELD_TYPE_INT_GHASH,  ARKIME_FIELD_FLAG_CNT,
+                                       (char *)NULL);
 
 
     arkime_parsers_classifier_register_udp("radius", NULL, 0, (const uint8_t *)"\x01", 1, radius_udp_classify);
