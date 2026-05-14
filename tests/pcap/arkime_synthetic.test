@@ -1297,6 +1297,10 @@
     ],
     "protocolCnt" : 2,
     "radius" : {
+     "msgType" : [
+      "access-request"
+     ],
+     "msgTypeCnt" : 1,
      "user" : [
       "testuser"
      ]
@@ -10469,6 +10473,11 @@
      "framedRIR" : [
       ""
      ],
+     "msgType" : [
+      "access-accept",
+      "access-request"
+     ],
+     "msgTypeCnt" : 2,
      "user" : [
       "testuser"
      ]
@@ -17071,6 +17080,24 @@
      "framedIpCnt" : 1,
      "framedRIR" : [
       "ARIN"
+     ],
+     "msgType" : [
+      "access-accept",
+      "access-request"
+     ],
+     "msgTypeCnt" : 2,
+     "nasASN" : [
+      "---"
+     ],
+     "nasGEO" : [
+      "---"
+     ],
+     "nasIp" : [
+      "10.20.29.1"
+     ],
+     "nasIpCnt" : 1,
+     "nasRIR" : [
+      ""
      ],
      "user" : [
       "testuser"

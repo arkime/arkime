@@ -95,6 +95,28 @@
       "98:5a:eb:89:80:00"
      ],
      "macCnt" : 1,
+     "msgType" : [
+      "accounting-request",
+      "accounting-response"
+     ],
+     "msgTypeCnt" : 2,
+     "nasASN" : [
+      "AS0 This is neat"
+     ],
+     "nasGEO" : [
+      "RU"
+     ],
+     "nasIp" : [
+      "10.0.0.1"
+     ],
+     "nasIpCnt" : 1,
+     "nasPort" : [
+      0
+     ],
+     "nasPortCnt" : 1,
+     "nasRIR" : [
+      ""
+     ],
      "user" : [
       "xxxxxxxxx"
      ]
