@@ -80,10 +80,6 @@ const formatValue = (value, format) => {
 </script>
 
 <style scoped>
-/* Vuetify v-data-table doesn't have a built-in striped prop; preserve the
-   alternate-row look BTable's striped prop gave us. Use the same
-   --color-gray-lighter token Bootstrap's .table-striped uses (see
-   overrides.css). */
 .summary-table-striped :deep(tbody tr:nth-of-type(odd) > td) {
   background-color: var(--color-gray-lighter) !important;
 }

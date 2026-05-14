@@ -44,7 +44,7 @@ SPDX-License-Identifier: Apache-2.0
         table-animation="list"
         table-state-name="captureStatsCols"
         table-widths-state-name="captureStatsColWidths"
-        table-classes="table-sm table-hover text-end small" />
+        table-classes="text-end small" />
     </div>
   </div>
 </template>

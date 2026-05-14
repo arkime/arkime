@@ -935,12 +935,8 @@ onUnmounted(() => {
   color: var(--color-button, #FFF);
 }
 
-/* Field-label dropdown trigger. After the Vuetify migration, the
-   .clickable-label class is on the <button> itself (used to be on a
-   wrapping <div> from b-dropdown), so the selectors need to match the
-   button directly. Height matches the dt's line-height-derived height
-   (line-height: 1.7 ~= 21px) so labels stay aligned with their dd
-   values. Self-contained — no longer extends .btn.btn-default. */
+/* Height (21px) matches the dt's line-height-derived height
+   (line-height: 1.7) so labels stay aligned with their dd values. */
 .session-detail button.clickable-label {
   margin-top: -2px;
   display: inline-block;
@@ -968,8 +964,7 @@ onUnmounted(() => {
 }
 
 /* "+" add-tag button rendered as inline HTML by the pug arrayList
-   helper (see sessionDetail.pug). Self-contained — was previously
-   .btn.btn-xs.btn-theme-secondary which depended on bootstrap.css. */
+   helper (see sessionDetail.pug). */
 .session-detail .arkime-tag-add-btn {
   display: inline-block;
   padding: 2px 6px;
@@ -1009,10 +1004,7 @@ dl:hover > .session-detail-grip {
   border-right: 1px dotted var(--color-gray) !important;
 }
 
-/* Detail card layout. Replaces the BVN b-card-group(columns) + b-card
-   structure. .session-detail-cards is the masonry-style column
-   container; .session-detail-card is each individual card body
-   (no separate .card-body wrapper -- dl/h4 are direct children). */
+/* Masonry-style multi-column detail card layout. */
 .session-detail-wrapper .session-detail-cards { /* default 2-col */
   column-count: 2;
   -moz-column-count: 2;

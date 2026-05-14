@@ -1,7 +1,7 @@
 <template>
   <div
     id="typeahead-results"
-    class="dropdown-menu"
+    class="arkime-dropdown-menu"
     :class="{'big-typeahead-results': bigTypeahead, 'typeahead-results': !bigTypeahead}"
     v-show="expression && results && results.length">
     <template v-if="autocompletingField">
@@ -10,7 +10,7 @@
         :key="key + 'history'">
         <a
           :id="key + 'history'"
-          class="dropdown-item cursor-pointer"
+          class="arkime-dropdown-item cursor-pointer"
           :class="{'active':key === activeIdx,'last-history-item':key === fieldHistoryResults.length - 1}"
           @click="addToQuery(value)">
           <span class="fa fa-history" />&nbsp;
@@ -37,7 +37,7 @@
       :key="value + 'item'">
       <a
         :id="key + 'item'"
-        class="dropdown-item cursor-pointer"
+        class="arkime-dropdown-item cursor-pointer"
         :title="value.help"
         :class="{'active':key + fieldHistoryResults.length === activeIdx}"
         @click="addToQuery(value)">

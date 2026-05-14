@@ -35,7 +35,7 @@ SPDX-License-Identifier: Apache-2.0
         table-animation="list"
         table-state-name="esNodesCols"
         table-widths-state-name="esNodesColWidths"
-        table-classes="table-sm table-hover text-end small mt-2">
+        table-classes="text-end small mt-2">
         <template #actions="item">
           <span class="no-wrap">
             <v-menu v-has-role="{user:user,roles:'arkimeAdmin'}">

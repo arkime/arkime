@@ -61,7 +61,7 @@ SPDX-License-Identifier: Apache-2.0
 
         <!-- sessions results -->
         <table
-          class="table-striped sessions-table"
+          class="sessions-table"
           :style="`width:${tableWidth}px`"
           :class="{'sticky-header':stickyHeader}"
           ref="sessionsTable"
@@ -2292,6 +2292,11 @@ table.sessions-table thead tr th:first-child {
 /* remove scrollbar from table header */
 table.sessions-table thead::-webkit-scrollbar {
   display: none;
+}
+
+/* alternate-row striping */
+table.sessions-table tbody tr:nth-of-type(odd) td {
+  background-color: var(--color-gray-lighter);
 }
 
 /* table hover */

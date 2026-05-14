@@ -244,37 +244,52 @@ input.field-typeahead + ul[uib-typeahead-popup] {
   overflow-x: hidden;
 }
 
-/* give dropdowns theme color and make them more condensed ----------------- */
-.dropdown-menu {
-  padding: 2px 0;
+/* condensed themed dropdowns (Arkime replacement for Bootstrap's
+   .dropdown-menu / .dropdown-item). Self-contained — base layout +
+   theme colors. */
+.arkime-dropdown-menu {
   min-width: 12rem;
+  padding: 2px 0;
+  margin: 0;
   font-size: .85rem;
-  border-color: var(--color-gray-light);
+  list-style: none;
+  color: var(--color-foreground, #212529);
   background-color: var(--color-background, #FFF);
+  background-clip: padding-box;
+  border: 1px solid var(--color-gray-light);
+  border-radius: 0.25rem;
 }
-.dropdown-menu .dropdown-item,
-.dropdown-menu div.custom-control {
+.arkime-dropdown-menu .arkime-dropdown-item,
+.arkime-dropdown-menu div.custom-control {
   display: block;
   padding: 2px 8px;
   color: var(--color-foreground, #212529);
+  text-decoration: none;
+  background-color: transparent;
+  white-space: nowrap;
 }
 
-.dropdown .dropdown-item:hover,
-.dropdown-menu .dropdown-item:hover,
-.dropdown-menu .dropdown-item:focus {
+.arkime-dropdown-menu .arkime-dropdown-item:hover,
+.arkime-dropdown-menu .arkime-dropdown-item:focus {
   color: var(--color-foreground, #212529);
   background-color: var(--color-gray-light);
 }
-.dropdown-menu .dropdown-item.active,
-.dropdown-menu .active .dropdown-item {
+.arkime-dropdown-menu .arkime-dropdown-item.active,
+.arkime-dropdown-menu .active .arkime-dropdown-item {
   color: var(--color-white, #FFF);
   background-color: var(--color-primary);
 }
-.dropdown-menu .dropdown-item.active:hover,
-.dropdown-menu .active:hover .dropdown-item,
-.dropdown-menu .dropdown-item.active:focus,
-.dropdown-menu .active:focus .dropdown-item {
+.arkime-dropdown-menu .arkime-dropdown-item.active:hover,
+.arkime-dropdown-menu .active:hover .arkime-dropdown-item,
+.arkime-dropdown-menu .arkime-dropdown-item.active:focus,
+.arkime-dropdown-menu .active:focus .arkime-dropdown-item {
   background-color: var(--color-primary-light);
+}
+.arkime-dropdown-divider {
+  height: 0;
+  margin: 0.5rem 0;
+  overflow: hidden;
+  border-top: 1px solid var(--color-gray-light);
 }
 
 .dropdown-sticky-search-bar-container {

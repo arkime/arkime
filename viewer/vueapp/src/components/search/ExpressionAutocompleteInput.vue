@@ -31,14 +31,14 @@ SPDX-License-Identifier: Apache-2.0
     <div
       v-show="modelValue && results && results.length"
       ref="dropdownEl"
-      class="dropdown-menu expression-autocomplete-dropdown"
+      class="arkime-dropdown-menu expression-autocomplete-dropdown"
       :style="dropdownStyle">
       <template v-if="autocompletingField">
         <template
           v-for="(value, key) in fieldHistoryResults"
           :key="key + 'history'">
           <a
-            class="dropdown-item cursor-pointer"
+            class="arkime-dropdown-item cursor-pointer"
             :class="{'active': key === activeIdx, 'last-history-item': key === fieldHistoryResults.length - 1}"
             @click="addToQuery(value)">
             <span class="fa fa-history" />&nbsp;
@@ -56,7 +56,7 @@ SPDX-License-Identifier: Apache-2.0
         v-for="(value, key) in results"
         :key="value + 'item'">
         <a
-          class="dropdown-item cursor-pointer"
+          class="arkime-dropdown-item cursor-pointer"
           :title="value.help"
           :class="{'active': key + fieldHistoryResults.length === activeIdx}"
           @click="addToQuery(value)">
@@ -67,19 +67,19 @@ SPDX-License-Identifier: Apache-2.0
       </template>
     </div>
     <div
-      class="dropdown-menu expression-autocomplete-dropdown"
+      class="arkime-dropdown-menu expression-autocomplete-dropdown"
       :style="dropdownStyle"
       v-show="modelValue && loadingError">
-      <a class="dropdown-item text-danger">
+      <a class="arkime-dropdown-item text-danger">
         <span class="fa fa-warning" />&nbsp;
         Error: {{ loadingError }}
       </a>
     </div>
     <div
-      class="dropdown-menu expression-autocomplete-dropdown"
+      class="arkime-dropdown-menu expression-autocomplete-dropdown"
       :style="dropdownStyle"
       v-show="modelValue && loadingValues">
-      <a class="dropdown-item">
+      <a class="arkime-dropdown-item">
         <span class="fa fa-spinner fa-spin" />&nbsp;
         Loading...
       </a>

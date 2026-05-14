@@ -31,7 +31,7 @@ SPDX-License-Identifier: Apache-2.0
         page="esRecovery"
         table-state-name="esRecoveryCols"
         table-widths-state-name="esRecoveryColWidths"
-        table-classes="table-sm table-hover text-end small mt-2" />
+        table-classes="text-end small mt-2" />
     </div>
   </div>
 </template>

@@ -47,7 +47,7 @@ SPDX-License-Identifier: Apache-2.0
         page="esTasks"
         table-state-name="esTasksCols"
         table-widths-state-name="esTasksColWidths"
-        table-classes="table-sm table-hover text-end small mt-2">
+        table-classes="text-end small mt-2">
         <template #actions="item">
           <v-btn
             v-if="item.item.cancellable"

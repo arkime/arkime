@@ -136,7 +136,6 @@ SPDX-License-Identifier: Apache-2.0
               variant="flat"
               size="small"
               density="comfortable"
-              class="view-menu-dropdown"
               :style="secondaryBtnStyle">
               <template v-if="view && views && getView(view)">
                 <span id="viewMenuDropdown">
@@ -925,32 +924,6 @@ export default {
   }
 };
 </script>
-
-<style>
-.view-menu-dropdown .dropdown-menu {
-  width: 300px;
-}
-</style>
-
-<style>
-.multies-menu-dropdown .dropdown-menu {
-  /* max-height: 300px; */
-  /* overflow: auto; */
-  width: 300px;
-}
-
-.multies-menu-dropdown .dropdown-header {
-  padding: .25rem .5rem 0;
-}
-
-.multies-menu-dropdown .group-header {
-  text-transform: uppercase;
-  margin-top: 8px;
-  padding: .2rem;
-  /* font-size: 120%; */
-  font-weight: bold;
-}
-</style>
 
 <style scoped>
 form {

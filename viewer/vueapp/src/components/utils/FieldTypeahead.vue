@@ -3,17 +3,16 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-  <!-- need this before input so bootstrap input group styles work -->
+  <!-- needs to come before input so .arkime-input-group sibling styles match -->
   <div
-    class="dropdown-menu field-typeahead"
-    :class="{'show':showDropdown}"
+    class="arkime-dropdown-menu field-typeahead"
     v-show="showDropdown"
     role="dropdown">
     <a
       v-for="(field, index) in filteredFieldHistory"
       :key="field.exp + '-history'"
       :class="{'active': index === current,'last-history-item':index === filteredFieldHistory.length - 1}"
-      class="dropdown-item cursor-pointer"
+      class="arkime-dropdown-item cursor-pointer"
       @click.stop="changeField(field)">
       <span class="fa fa-history" />&nbsp;
       {{ field.friendlyName }}
@@ -25,19 +24,19 @@ SPDX-License-Identifier: Apache-2.0
     </a>
     <div
       v-if="filteredFieldHistory.length"
-      class="dropdown-divider" />
+      class="arkime-dropdown-divider" />
     <a
       v-for="(field, index) in filteredFields"
       :key="field.exp"
       :class="{'active':index + filteredFieldHistory.length === current}"
-      class="dropdown-item cursor-pointer"
+      class="arkime-dropdown-item cursor-pointer"
       @click.stop="changeField(field)">
       {{ field.friendlyName }}
       <small>({{ field.exp }})</small>
     </a>
     <a
       v-if="(!filteredFields || !filteredFields.length)"
-      class="dropdown-item">
+      class="arkime-dropdown-item">
       {{ $t('utils.noFieldsMatch') }}
     </a>
   </div>
@@ -271,10 +270,7 @@ export default {
   width: 100%;
   margin-top: 2.2rem;
 }
-.input-group input {
-  border-radius: 0 .2rem .2rem 0;
-}
-.field-typeahead div.dropdown-divider {
+.field-typeahead div.arkime-dropdown-divider {
   margin: .15rem 0;
   border-color: var(--color-gray);
 }

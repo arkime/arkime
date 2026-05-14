@@ -2686,26 +2686,26 @@ export default {
   border-color: #27686F;
 }
 
-.settings-page .arkime-light-theme .dropdown-menu {
+.settings-page .arkime-light-theme .arkime-dropdown-menu {
   background-color: #FFFFFF;
   border-color: #EEEEEE;
   padding: 2px 0;
   font-size: .85rem;
   min-width: 12rem;
 }
-.settings-page .arkime-light-theme .dropdown-menu .dropdown-item {
+.settings-page .arkime-light-theme .arkime-dropdown-menu .arkime-dropdown-item {
   color: #212529;
   padding: 2px 8px;
 }
-.settings-page .arkime-light-theme .dropdown-menu .dropdown-item:hover {
+.settings-page .arkime-light-theme .arkime-dropdown-menu .arkime-dropdown-item:hover {
   background-color: #EEEEEE;
   color: #212529;
 }
-.settings-page .arkime-light-theme .dropdown-menu .dropdown-item:focus {
+.settings-page .arkime-light-theme .arkime-dropdown-menu .arkime-dropdown-item:focus {
   background-color: #FFFFFF;
   color: #212529;
 }
-.settings-page .arkime-light-theme .dropdown-menu li.active .dropdown-item {
+.settings-page .arkime-light-theme .arkime-dropdown-menu li.active .arkime-dropdown-item {
   background-color: #303030;
   color: #FFFFFF;
 }
@@ -2772,26 +2772,26 @@ export default {
   border-color: #52AC79;
 }
 
-.settings-page .arkime-dark-theme .dropdown-menu {
+.settings-page .arkime-dark-theme .arkime-dropdown-menu {
   background-color: #303030;
   border-color: #555555;
   padding: 2px 0;
   font-size: .85rem;
   min-width: 12rem;
 }
-.settings-page .arkime-dark-theme .dropdown-menu .dropdown-item {
+.settings-page .arkime-dark-theme .arkime-dropdown-menu .arkime-dropdown-item {
   color: #FFFFFF;
   padding: 2px 8px;
 }
-.settings-page .arkime-dark-theme .dropdown-menu .dropdown-item:hover {
+.settings-page .arkime-dark-theme .arkime-dropdown-menu .arkime-dropdown-item:hover {
   background-color: #555555;
   color: #FFFFFF;
 }
-.settings-page .arkime-dark-theme .dropdown-menu .dropdown-item:focus {
+.settings-page .arkime-dark-theme .arkime-dropdown-menu .arkime-dropdown-item:focus {
   background-color: #555555;
   color: #FFFFFF;
 }
-.settings-page .arkime-dark-theme .dropdown-menu li.active .dropdown-item {
+.settings-page .arkime-dark-theme .arkime-dropdown-menu li.active .arkime-dropdown-item {
   background-color: #ADADAD;
   color: #303030;
 }
@@ -2872,26 +2872,26 @@ export default {
   border-color: #CD9A09;
 }
 
-.settings-page .purp-theme .dropdown-menu {
+.settings-page .purp-theme .arkime-dropdown-menu {
   background-color: #FFFFFF;
   border-color: #EEEEEE;
   padding: 2px 0;
   font-size: .85rem;
   min-width: 12rem;
 }
-.settings-page .purp-theme .dropdown-menu .dropdown-item {
+.settings-page .purp-theme .arkime-dropdown-menu .arkime-dropdown-item {
   color: #212529;
   padding: 2px 8px;
 }
-.settings-page .purp-theme .dropdown-menu .dropdown-item:hover {
+.settings-page .purp-theme .arkime-dropdown-menu .arkime-dropdown-item:hover {
   background-color: #EEEEEE;
   color: #212529;
 }
-.settings-page .purp-theme .dropdown-menu .dropdown-item:focus {
+.settings-page .purp-theme .arkime-dropdown-menu .arkime-dropdown-item:focus {
   background-color: #FFFFFF;
   color: #212529;
 }
-.settings-page .purp-theme .dropdown-menu li.active .dropdown-item {
+.settings-page .purp-theme .arkime-dropdown-menu li.active .arkime-dropdown-item {
   background-color: #830B9C;
   color: #FFFFFF;
 }
@@ -2964,26 +2964,26 @@ export default {
   border-color: #CD9A09;
 }
 
-.settings-page .blue-theme .dropdown-menu {
+.settings-page .blue-theme .arkime-dropdown-menu {
   background-color: #FFFFFF;
   border-color: #EEEEEE;
   padding: 2px 0;
   font-size: .85rem;
   min-width: 12rem;
 }
-.settings-page .blue-theme .dropdown-menu .dropdown-item {
+.settings-page .blue-theme .arkime-dropdown-menu .arkime-dropdown-item {
   color: #212529;
   padding: 2px 8px;
 }
-.settings-page .blue-theme .dropdown-menu .dropdown-item:hover {
+.settings-page .blue-theme .arkime-dropdown-menu .arkime-dropdown-item:hover {
   background-color: #EEEEEE;
   color: #212529;
 }
-.settings-page .blue-theme .dropdown-menu .dropdown-item:focus {
+.settings-page .blue-theme .arkime-dropdown-menu .arkime-dropdown-item:focus {
   background-color: #FFFFFF;
   color: #212529;
 }
-.settings-page .blue-theme .dropdown-menu li.active .dropdown-item {
+.settings-page .blue-theme .arkime-dropdown-menu li.active .arkime-dropdown-item {
   background-color: #214B78;
   color: #FFFFFF;
 }
@@ -3056,26 +3056,26 @@ export default {
   border-color: #ADBC12;
 }
 
-.settings-page .green-theme .dropdown-menu {
+.settings-page .green-theme .arkime-dropdown-menu {
   background-color: #FFFFFF;
   border-color: #EEEEEE;
   padding: 2px 0;
   font-size: .85rem;
   min-width: 12rem;
 }
-.settings-page .green-theme .dropdown-menu .dropdown-item {
+.settings-page .green-theme .arkime-dropdown-menu .arkime-dropdown-item {
   color: #212529;
   padding: 2px 8px;
 }
-.settings-page .green-theme .dropdown-menu .dropdown-item:hover {
+.settings-page .green-theme .arkime-dropdown-menu .arkime-dropdown-item:hover {
   background-color: #EEEEEE;
   color: #212529;
 }
-.settings-page .green-theme .dropdown-menu .dropdown-item:focus {
+.settings-page .green-theme .arkime-dropdown-menu .arkime-dropdown-item:focus {
   background-color: #FFFFFF;
   color: #212529;
 }
-.settings-page .green-theme .dropdown-menu li.active .dropdown-item {
+.settings-page .green-theme .arkime-dropdown-menu li.active .arkime-dropdown-item {
   background-color: #2A7847;
   color: #FFFFFF;
 }
@@ -3148,26 +3148,26 @@ export default {
   border-color: #D78A10;
 }
 
-.settings-page .cotton-candy-theme .dropdown-menu {
+.settings-page .cotton-candy-theme .arkime-dropdown-menu {
   background-color: #FFFFFF;
   border-color: #EEEEEE;
   padding: 2px 0;
   font-size: .85rem;
   min-width: 12rem;
 }
-.settings-page .cotton-candy-theme .dropdown-menu .dropdown-item {
+.settings-page .cotton-candy-theme .arkime-dropdown-menu .arkime-dropdown-item {
   color: #212529;
   padding: 2px 8px;
 }
-.settings-page .cotton-candy-theme .dropdown-menu .dropdown-item:hover {
+.settings-page .cotton-candy-theme .arkime-dropdown-menu .arkime-dropdown-item:hover {
   background-color: #EEEEEE;
   color: #212529;
 }
-.settings-page .cotton-candy-theme .dropdown-menu .dropdown-item:focus {
+.settings-page .cotton-candy-theme .arkime-dropdown-menu .arkime-dropdown-item:focus {
   background-color: #FFFFFF;
   color: #212529;
 }
-.settings-page .cotton-candy-theme .dropdown-menu li.active .dropdown-item {
+.settings-page .cotton-candy-theme .arkime-dropdown-menu li.active .arkime-dropdown-item {
   background-color: #C43D75;
   color: #FFFFFF;
 }
@@ -3234,26 +3234,26 @@ export default {
   border-color: #AAAAAA !important;
 }
 
-.settings-page .dark-2-theme .dropdown-menu {
+.settings-page .dark-2-theme .arkime-dropdown-menu {
   background-color: #222222;
   border-color: #555555;
   padding: 2px 0;
   font-size: .85rem;
   min-width: 12rem;
 }
-.settings-page .dark-2-theme .dropdown-menu .dropdown-item {
+.settings-page .dark-2-theme .arkime-dropdown-menu .arkime-dropdown-item {
   color: #C7C7C7;
   padding: 2px 8px;
 }
-.settings-page .dark-2-theme .dropdown-menu .dropdown-item:hover {
+.settings-page .dark-2-theme .arkime-dropdown-menu .arkime-dropdown-item:hover {
   background-color: #555555;
   color: #C7C7C7;
 }
-.settings-page .dark-2-theme .dropdown-menu .dropdown-item:focus {
+.settings-page .dark-2-theme .arkime-dropdown-menu .arkime-dropdown-item:focus {
   background-color: #222222;
   color: #C7C7C7;
 }
-.settings-page .dark-2-theme .dropdown-menu li.active .dropdown-item {
+.settings-page .dark-2-theme .arkime-dropdown-menu li.active .arkime-dropdown-item {
   background-color: #444A9B;
   color: #333333;
 }
@@ -3332,26 +3332,26 @@ export default {
   border-color: #AAAAAA !important;
 }
 
-.settings-page .dark-3-theme .dropdown-menu {
+.settings-page .dark-3-theme .arkime-dropdown-menu {
   background-color: #002833;
   border-color: #555555;
   padding: 2px 0;
   font-size: .85rem;
   min-width: 12rem;
 }
-.settings-page .dark-3-theme .dropdown-menu .dropdown-item {
+.settings-page .dark-3-theme .arkime-dropdown-menu .arkime-dropdown-item {
   color: #ADC1C3;
   padding: 2px 8px;
 }
-.settings-page .dark-3-theme .dropdown-menu .dropdown-item:hover {
+.settings-page .dark-3-theme .arkime-dropdown-menu .arkime-dropdown-item:hover {
   background-color: #555555;
   color: #ADC1C3;
 }
-.settings-page .dark-3-theme .dropdown-menu .dropdown-item:focus {
+.settings-page .dark-3-theme .arkime-dropdown-menu .arkime-dropdown-item:focus {
   background-color: #002833;
   color: #ADC1C3;
 }
-.settings-page .dark-3-theme .dropdown-menu li.active .dropdown-item {
+.settings-page .dark-3-theme .arkime-dropdown-menu li.active .arkime-dropdown-item {
   background-color: #8A8A8A;
   color: #333333;
 }
@@ -3431,7 +3431,7 @@ export default {
   border-color: var(--color-quaternary-dark);
 }
 
-.settings-page .custom-theme .dropdown-menu {
+.settings-page .custom-theme .arkime-dropdown-menu {
   color: var(--color-foreground);
   background-color: var(--color-background, #FFFFFF);
   border-color: var(--color-gray-light);

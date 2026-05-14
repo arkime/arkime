@@ -33,7 +33,7 @@ SPDX-License-Identifier: Apache-2.0
         table-animation="list"
         table-state-name="esIndicesCols"
         table-widths-state-name="esIndicesColWidths"
-        table-classes="table-sm table-hover text-end small mt-2">
+        table-classes="text-end small mt-2">
         <template #actions="item">
           <v-menu
             v-has-role="{user:user,roles:'arkimeAdmin'}"
@@ -333,19 +333,6 @@ export default {
 };
 </script>
 
-<style>
-/* remove any space between dropdown button and menu to make
-   sure the menu doesn't get hidden */
-.hover-menu .dropdown-menu {
-  margin-top: 0;
-}
-/* widen the button to make sure the user has enough space to
-   move their mouse to the menu so that it doesn't get hidden */
-.hover-menu .btn-sm {
-  padding: 1px 8px !important;
-}
-</style>
-
 <style scoped>
 td {
   white-space: nowrap;
@@ -353,17 +340,10 @@ td {
 tr.bold {
   font-weight: bold;
 }
-table.table tr.border-bottom-bold > td {
-  border-bottom: 2px solid #dee2e6;
+table tr.border-bottom-bold > td {
+  border-bottom: 2px solid var(--color-gray-light);
 }
-table.table tr.border-top-bold > td {
-  border-top: 2px solid #dee2e6;
-}
-
-.table .hover-menu:hover .btn-group {
-  visibility: visible;
-}
-.table .hover-menu .btn-group {
-  visibility: hidden;
+table tr.border-top-bold > td {
+  border-top: 2px solid var(--color-gray-light);
 }
 </style>

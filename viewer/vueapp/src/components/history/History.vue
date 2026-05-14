@@ -709,9 +709,6 @@ export default {
   height: 40px;
 }
 
-/* table styles -- replaces what .table.table-sm.table-striped.small
-   used to provide once bootstrap.css is dropped. Width, vertical
-   alignment, cell padding, striping; theme-aware via Arkime CSS vars. */
 .history-page .history-table {
   width: 100%;
   margin-top: 10px;

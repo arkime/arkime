@@ -883,7 +883,7 @@ export default {
 </script>
 
 <style scoped>
-/* col visibility menu list (replaces old .col-vis-menu .dropdown-menu) */
+/* col visibility menu list */
 .col-vis-list {
   max-height: 300px;
   overflow: auto;
@@ -927,9 +927,6 @@ table thead tr th.ignore-element {
 
 /* remove terrible padding applied by the column resize lib */
 .JPadding > tbody > tr > td, .JPadding > tbody > tr > th {
-  padding: 0.75rem;
-}
-.table-sm.JPadding > tbody > tr > td, .table-sm.JPadding > tbody > tr > th {
   padding: 0.1rem 0.5rem !important;
 }
 

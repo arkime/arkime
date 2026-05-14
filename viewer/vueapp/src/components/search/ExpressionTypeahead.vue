@@ -947,8 +947,6 @@ export default {
 </script>
 
 <style scoped>
-/* typeahead error/loading dropdown -- replaces .dropdown-menu CSS-only
-   styling from Bootstrap. */
 .arkime-typeahead-results {
   position: absolute;
   background-color: var(--color-background, #fff);
