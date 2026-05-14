@@ -2711,10 +2711,11 @@ class SessionAPIs {
     const includeHidden = req.query.hidden === 'true';
     const includePayload = req.query.payload === 'true';
 
-    // tshark refuses non-regular stdin. On Linux Node's stdio pipe is a real
-    // pipe (S_ISFIFO) so we just pipe to child.stdin. On macOS it's a
-    // socketpair (S_ISSOCK) which tshark rejects, so we mkfifo a named pipe.
-    const useStdin = process.platform !== 'darwin';
+    // tshark refuses non-regular stdin (S_ISSOCK / S_ISFIFO can both trip it
+    // depending on version/build); Node's stdio 'pipe' is a socketpair on
+    // macOS and on some Linux configurations. Always go through a mkfifo'd
+    // named pipe so tshark sees a real openable path.
+    const useStdin = false;
 
     let finished = false;
     let child;
