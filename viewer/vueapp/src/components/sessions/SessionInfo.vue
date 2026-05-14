@@ -162,8 +162,7 @@ export default {
   margin-bottom: 4px;
 }
 /* Field-label dropdown trigger — same visual treatment as the session
-   detail's .clickable-label (SessionDetail.vue). Self-contained;
-   doesn't depend on bootstrap.css. */
+   detail's .clickable-label (SessionDetail.vue). */
 .session-info button.clickable-label {
   display: inline-block;
   height: 21px;

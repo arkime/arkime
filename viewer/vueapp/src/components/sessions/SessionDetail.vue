@@ -1033,6 +1033,16 @@ dl:hover > .session-detail-grip {
   margin-bottom: 0.75rem;
 }
 
+.session-detail .session-detail-card > .session-card-title {
+  cursor: pointer;
+  padding: 0.5rem;
+  margin: -1.25rem;
+  margin-bottom: 1.25rem;
+  border-radius: 4px 4px 0 0;
+  background-color: var(--color-gray);
+  color: var(--color-background, #333);
+}
+
 .session-detail .session-detail-card > dl {
   margin-bottom: 0rem;
   margin-top: -0.75rem;

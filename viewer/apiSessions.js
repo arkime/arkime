@@ -2608,7 +2608,7 @@ class SessionAPIs {
               'session-options', 'session-options-btn',
               'sessionln', 'src-col-tip', 'dst-col-tip', 'dstcol', 'srccol',
               'clickable-label', 'clickable-label-menu', 'detail-field',
-              'tag-list', 'card-title', 'no-wrap', 'str', 'bytes',
+              'tag-list', 'session-card-title', 'no-wrap', 'str', 'bytes',
               // Bootstrap layout / utility
               'cursor-pointer',
               'mb-3', 'mb-2', 'me-1', 'me-5', 'ms-1', 'float-end', 'small',

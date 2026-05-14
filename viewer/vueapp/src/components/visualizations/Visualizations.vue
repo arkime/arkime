@@ -863,8 +863,7 @@ export default {
   pointer-events: auto;
 }
 /* Tighten Vuetify's default vertical chrome on the radio groups
-   and checkboxes so they sit neatly inline with the bootstrap
-   button groups. */
+   and checkboxes so they sit neatly inline with the v-btn groups. */
 .session-graph-btn-container :deep(.v-radio-group),
 .session-graph-btn-container :deep(.v-checkbox) {
   flex: 0 0 auto;

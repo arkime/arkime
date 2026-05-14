@@ -49,10 +49,6 @@
 </template>
 
 <style scoped>
-/* Bootstrap's global reset adds margin-bottom: 1rem to ul/ol/dl, which
-   hits v-pagination's internal <ul.v-pagination__list> and pushes
-   everything below it down. Zero it out here; goes away naturally
-   once bootstrap.css is dropped in phase E. */
 :deep(.v-pagination__list) {
   margin-bottom: 0;
   padding-left: 0;

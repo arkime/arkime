@@ -6,7 +6,6 @@ import { aliases as faAliases, fa as faSet } from 'vuetify/iconsets/fa4';
 import { createI18nInstance } from '@common/i18nSetup.js';
 
 // css frameworks
-import 'bootstrap/dist/css/bootstrap.css';
 import 'vuetify/styles';
 
 // vue color picker styles
@@ -24,7 +23,7 @@ import { createViewerTheme } from './theme.js';
 
 // common css
 import '../../../common/common.css';
-// bootstrap overrides
+// arkime element + Vuetify-component bridge styles
 import './overrides.css';
 // shared bridge classes (e.g. .arkime-input-group used across multiple
 // components in place of Bootstrap's .input-group)
