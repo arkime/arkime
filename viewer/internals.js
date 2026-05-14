@@ -27,7 +27,9 @@ const internals = {
   writers: new Map(),
   uploadLimits: {},
   // Minimum supported tshark version (4.6.4), encoded as major*10000 + minor*100 + patch.
-  TSHARKMINVERSION: 40604,
+  //TSHARKMINVERSION: 40604,
+  // For now support debian 13
+  TSHARKMINVERSION: 40415,
 
   // http://garethrees.org/2007/11/14/pngcrush/
   emptyPNG: Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAACklEQVR4nGMAAQAABQABDQottAAAAABJRU5ErkJggg==', 'base64'),
