@@ -1,4 +1,4 @@
-/* Copyright 2012-2017 AOL Inc. All rights reserved.
+/* Copyright 2026 Andy Wick. All rights reserved.
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -15,7 +15,7 @@ LOCAL  int filenameField;
 LOCAL  int responseCodeField;
 LOCAL  int bannerField;
 
-#define FTP_LINE_MAX 8192
+#define FTP_LINE_MAX 4096
 
 typedef struct {
     GString  *line[2];
