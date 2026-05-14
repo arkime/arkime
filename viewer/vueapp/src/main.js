@@ -6,6 +6,14 @@ import { aliases as faAliases, fa as faSet } from 'vuetify/iconsets/fa4';
 import { createI18nInstance } from '@common/i18nSetup.js';
 
 // css frameworks
+// Bootstrap is kept for its grid (.row/.col-*) and utility classes
+// (.fw-bold, .float-end, .align-items-*, .justify-content-*,
+// .container-fluid) which Vuetify does not ship as bare classes (only
+// as <v-row>/<v-col> components). The Bootstrap component layer is
+// already migrated -- see commits 866fb4c6, 089e9505, b33eada5. Full
+// drop requires migrating those layouts to v-row/v-col or defining an
+// arkime grid layer.
+import 'bootstrap/dist/css/bootstrap.css';
 import 'vuetify/styles';
 
 // vue color picker styles
