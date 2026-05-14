@@ -2,6 +2,18 @@
    per-theme --color-* variables in src/themes/*.css. Vuetify component
    bridges live in the second half of this file. */
 
+/* --bs-* compatibility shims: a few shared components in common/vueapp/
+   (ToggleBtn, Users.vue avatar gradient) still reference Bootstrap CSS
+   variables. They get migrated in the common phase; until then, point
+   the --bs-* tokens at Arkime's --color-* palette so viewer renders
+   them correctly without bootstrap.css. */
+:root {
+  --bs-primary: var(--color-primary);
+  --bs-primary-border-subtle: var(--color-primary-lighter);
+  --bs-warning: var(--color-secondary);
+  --bs-pink: var(--color-quaternary);
+}
+
 /* native form controls -------------------------------------------------- */
 input,
 input:focus,
