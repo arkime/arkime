@@ -1,4 +1,4 @@
-use Test::More tests => 39;
+use Test::More tests => 42;
 
 use Cwd;
 use URI::Escape;
@@ -21,6 +21,20 @@ my $pwd = "*/pcap";
     $sd = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8125/api/session/test/$id/detail")->content;
     ok($sd =~ m{sessionid.*\Q$id\E}s, "multi /detail");
     ok($sd =~ m{Tags.*md5taggertest1}s, "multi /detail Tags");
+
+# tshark
+    my $tsharkProbe = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8123/api/session/test/$id/tshark");
+    SKIP: {
+        skip "tshark not configured on viewer", 2 if $tsharkProbe->code == 503;
+        ok($tsharkProbe->code == 200 && $tsharkProbe->content =~ m{"layers":\[.*"name":"frame"}s, "/tshark");
+
+        my $tsharkMulti = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8125/api/session/test/$id/tshark");
+        ok($tsharkMulti->code == 200 && $tsharkMulti->content =~ m{"layers":\[.*"name":"frame"}s, "multi /tshark");
+    }
+
+# multi /packets
+    $sd = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8125/api/session/test/$id/packets?line=false&ts=false&base=natural")->content;
+    ok(bin2hex($sd) =~ /636f6c3a2038303a71756963.*08000000000002/, "multi encoding:natural");
 
 # http
     $sd = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8123/api/session/test/$id/packets?line=false&ts=false&base=natural&showFrames=true")->content;

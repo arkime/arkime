@@ -54,6 +54,7 @@
     "qrcode": "^1.5.4",
     "re2": "^1.24.0",
     "sanitize-html": "^2.17.3",
+    "sax": "^1.6.0",
     "serve-favicon": "^2.5.1",
     "splunk-sdk": "^2.0.2",
     "stylus": "^0.64.0",

@@ -145,6 +145,25 @@ export default {
   },
 
   /**
+   * Gets a tshark dissection of the session pcap as NDJSON
+   * (one JSON-encoded packet per line). Streamed by the viewer.
+   * @param {string} id       The unique id of the session
+   * @param {string} node     The node that the session belongs to
+   * @param {string} cluster  The Elasticsearch cluster the session belongs to
+   * @param {Object} params   Extra query params (length, payload, hidden)
+   * @returns {Object} { controller, fetcher } as for cancelFetchWrapper
+   */
+  getTshark (id, node, cluster, params) {
+    const options = {
+      params: { ...params, cluster },
+      url: `api/session/${node}/${id}/tshark`,
+      headers: { 'Content-Type': 'text/plain', Accept: 'application/x-ndjson' }
+    };
+
+    return cancelFetchWrapper(options);
+  },
+
+  /**
    * Gets other decodings for session pcap data
    * @returns {Promise} Promise A promise object that signals the completion
    *                            or rejection of the request.

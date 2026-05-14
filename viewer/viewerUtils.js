@@ -335,6 +335,33 @@ class ViewerUtils {
   }
 
   // --------------------------------------------------------------------------
+  // Like makeRequest but invokes onResponse(IncomingMessage) so the caller can
+  // stream/pipe the body instead of buffering. No retry on error.
+  static async makeStreamRequest (node, path, user, onResponse, onError, cluster) {
+    try {
+      const { viewUrl, client } = await ViewerUtils.getViewUrl(node);
+      const nodePath = encodeURI(path);
+      let url;
+      if (nodePath.startsWith('/')) {
+        url = new URL(nodePath.substring(1), viewUrl);
+      } else {
+        url = new URL(nodePath, viewUrl);
+      }
+      const options = {
+        timeout: 20 * 60 * 1000,
+        agent: client === http ? internals.httpAgent : internals.httpsAgent
+      };
+      Auth.addS2SAuth(options, user, node, url.pathname, ViewerUtils.getClusterSecret(cluster));
+      ViewerUtils.addCaTrust(options, node);
+      const preq = client.request(url, options, onResponse);
+      preq.on('error', (err) => onError(err));
+      preq.end();
+    } catch (err) {
+      onError(err);
+    }
+  }
+
+  // --------------------------------------------------------------------------
   static async proxyRequest (req, res) {
     ArkimeUtil.noCache(req, res);
 

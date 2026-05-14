@@ -1786,6 +1786,12 @@ app.get( // session packets endpoint
   SessionAPIs.getPackets
 );
 
+app.get( // session tshark endpoint
+  ['/api/session/:nodeName/:id/tshark'],
+  [logAction(), User.checkPermissions(['hidePcap'])],
+  SessionAPIs.getTshark
+);
+
 app.post( // add tags endpoint
   ['/api/sessions/addtags'],
   [ArkimeUtil.noCacheJson, checkHeaderToken, logAction('addTags')],
@@ -2164,6 +2170,7 @@ app.use(cspHeader, setCookie, (req, res) => {
     demoMode: req.user.isDemoMode(),
     multiViewer: internals.multiES,
     hasUsersES: !!Config.get('usersElasticsearch', false),
+    hasTshark: !!internals.tsharkPath,
     themeUrl: theme === 'custom-theme' ? 'api/user/css' : '',
     huntWarn: Config.get('huntWarn', 100000),
     huntLimit: limit,

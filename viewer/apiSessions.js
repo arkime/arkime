@@ -10,12 +10,15 @@
 const Config = require('./config.js');
 const Db = require('./db.js');
 const async = require('async');
+const { spawn, spawnSync } = require('child_process');
 const contentDisposition = require('content-disposition');
 const fs = require('fs');
 const http = require('http');
+const os = require('os');
 const path = require('path');
 const PNG = require('pngjs').PNG;
 const pug = require('pug');
+const sax = require('sax');
 const util = require('util');
 const decode = require('./decode.js');
 const ArkimeUtil = require('../common/arkimeUtil');
@@ -2663,6 +2666,241 @@ class SessionAPIs {
       SessionAPIs.#localSessionDetail(req, res);
     } else {
       return ViewerUtils.proxyRequest(req, res);
+    }
+  }
+
+  // --------------------------------------------------------------------------
+  /**
+   * GET - /api/session/:nodeName/:id/tshark
+   *
+   * Runs tshark against the session's pcap and streams a converted PDML
+   * dissection as NDJSON (one JSON object per packet per line). Always
+   * dispatched on the *central* viewer that received the request; the pcap is
+   * fetched from the owning node when needed.
+   *
+   * Each emitted line looks like:
+   *   {"layers":[
+   *     {"name":"frame","label":"Frame 1: ...","fields":[
+   *       {"name":"frame.len","label":"Frame Length: 197","show":"197","pos":0,"size":0},
+   *       ...]
+   *     },
+   *     {"name":"eth","label":"Ethernet II, ...","fields":[
+   *       {"name":"eth.dst","label":"Destination: ...","show":"...","value":"<hex>","pos":0,"size":6,
+   *        "fields":[...]}
+   *     ]},
+   *     ...
+   *   ]}
+   *
+   * @name /session/:nodeName/:id/tshark
+   * @param {string} hidden=false - "true" to include fields tshark marks hide="yes"
+   * @param {string} payload=false - "true" to include the raw "data" proto layer
+   *   for unparsed payload bytes (otherwise passes `--disable-protocol data`
+   *   to tshark)
+   * @param {number} length - number of packets to dissect, capped at the
+   *   `tsharkMaxPackets` config value (which is also the default)
+   * @returns {ndjson} One JSON-encoded packet per line
+   */
+  static async getTshark (req, res) {
+    ArkimeUtil.noCache(req, res, 'application/x-ndjson');
+
+    if (!internals.tsharkPath) {
+      res.status(503);
+      return res.end(JSON.stringify({ success: false, text: 'tshark not configured on this viewer' }));
+    }
+
+    const includeHidden = req.query.hidden === 'true';
+    const includePayload = req.query.payload === 'true';
+
+    // tshark refuses non-regular stdin. On Linux Node's stdio pipe is a real
+    // pipe (S_ISFIFO) so we just pipe to child.stdin. On macOS it's a
+    // socketpair (S_ISSOCK) which tshark rejects, so we mkfifo a named pipe.
+    const useStdin = process.platform !== 'darwin';
+
+    let finished = false;
+    let child;
+    let writeStream;
+    let fifoPath;
+
+    const cleanup = () => {
+      if (writeStream && !writeStream.destroyed) { try { writeStream.destroy(); } catch (e) { /* ignore */ } }
+      if (fifoPath) { fs.unlink(fifoPath, () => {}); fifoPath = undefined; }
+    };
+    const finish = (errStatus, errText) => {
+      if (finished) { return; }
+      finished = true;
+      clearTimeout(timer);
+      if (child) { try { child.kill('SIGKILL'); } catch (e) { /* already exited */ } }
+      cleanup();
+      if (errStatus && !res.headersSent) {
+        res.status(errStatus);
+        res.end(JSON.stringify({ success: false, text: errText }));
+      } else if (!res.writableEnded) {
+        try { res.end(); } catch (e) { /* ignore */ }
+      }
+    };
+    const timer = setTimeout(() => {
+      finish(504, `tshark timed out after ${internals.tsharkTimeoutMs}ms`);
+    }, internals.tsharkTimeoutMs);
+    res.on('close', () => finish());
+
+    let pktLen = parseInt(req.query.length);
+    if (!Number.isFinite(pktLen) || pktLen <= 0) { pktLen = internals.tsharkMaxPackets; }
+    if (pktLen > internals.tsharkMaxPackets) { pktLen = internals.tsharkMaxPackets; }
+
+    const tsharkArgs = ['-T', 'pdml', '-n', '-c', String(pktLen)];
+    if (!includePayload) {
+      tsharkArgs.push('--disable-protocol', 'data');
+    }
+    if (useStdin) {
+      tsharkArgs.unshift('-r', '-');
+      try {
+        child = spawn(internals.tsharkPath, tsharkArgs, { stdio: ['pipe', 'pipe', 'pipe'] });
+      } catch (e) {
+        return finish(500, 'failed to spawn tshark: ' + ArkimeUtil.safeStr(e.message));
+      }
+      writeStream = child.stdin;
+    } else {
+      fifoPath = path.join(os.tmpdir(), `arkime-tshark-${process.pid}-${Date.now()}-${Math.random().toString(36).slice(2, 10)}.fifo`);
+      const mk = spawnSync('mkfifo', ['-m', '600', fifoPath]);
+      if (mk.status !== 0) {
+        fifoPath = undefined;
+        return finish(500, 'mkfifo failed: ' + ArkimeUtil.safeStr((mk.stderr || '').toString().trim() || ('exit ' + mk.status)));
+      }
+      tsharkArgs.unshift('-r', fifoPath);
+      try {
+        child = spawn(internals.tsharkPath, tsharkArgs, { stdio: ['ignore', 'pipe', 'pipe'] });
+      } catch (e) {
+        return finish(500, 'failed to spawn tshark: ' + ArkimeUtil.safeStr(e.message));
+      }
+    }
+
+    let stderrBuf = '';
+    child.stderr.on('data', (b) => {
+      if (stderrBuf.length < 8192) { stderrBuf += b.toString().slice(0, 8192 - stderrBuf.length); }
+    });
+
+    // --- PDML -> NDJSON streaming converter ---------------------------------
+    // SAX-stream tshark's PDML output. Build one packet at a time as a stack
+    // of proto/field nodes; on </packet> serialize a compact JSON line. We
+    // never buffer more than one packet at a time.
+    const parser = sax.createStream(true, { trim: false, normalize: false, lowercase: true });
+    let packet = null;          // { layers: [...] } currently being built
+    let stack = null;           // array of containers we're inside (proto or field), top is current
+    parser.on('opentag', (node) => {
+      if (!packet) {
+        if (node.name === 'packet') { packet = { layers: [] }; stack = []; }
+        return;
+      }
+      const a = node.attributes;
+      if (node.name === 'proto') {
+        const proto = { name: a.name || '', label: a.showname || a.name || '', fields: [] };
+        if (a.pos !== undefined) { proto.pos = parseInt(a.pos); }
+        if (a.size !== undefined) { proto.size = parseInt(a.size); }
+        packet.layers.push(proto);
+        stack.push(proto);
+      } else if (node.name === 'field') {
+        if (!includeHidden && a.hide === 'yes') { stack.push(null); return; }
+        const f = { name: a.name || '', label: a.showname || a.show || a.name || '' };
+        if (a.show !== undefined && a.show !== '') { f.show = a.show; }
+        if (a.value !== undefined && a.value !== '') { f.value = a.value; }
+        if (a.pos !== undefined) { f.pos = parseInt(a.pos); }
+        if (a.size !== undefined) { f.size = parseInt(a.size); }
+        if (a.hide === 'yes') { f.hide = true; }
+        const cur = stack[stack.length - 1];
+        if (cur) {
+          if (!cur.fields) { cur.fields = []; }
+          cur.fields.push(f);
+        }
+        stack.push(f);
+      }
+    });
+    parser.on('closetag', (tagName) => {
+      if (!packet) { return; }
+      if (tagName === 'packet') {
+        // Drop empty fields arrays for compactness.
+        const stripEmpty = (n) => {
+          if (n && n.fields) {
+            if (n.fields.length === 0) { delete n.fields; }
+            else { for (const c of n.fields) { stripEmpty(c); } }
+          }
+        };
+        for (const l of packet.layers) { stripEmpty(l); }
+        if (!res.writableEnded) {
+          res.write(JSON.stringify(packet));
+          res.write('\n');
+        }
+        packet = null;
+        stack = null;
+      } else if (tagName === 'proto' || tagName === 'field') {
+        if (stack) { stack.pop(); }
+      }
+    });
+    parser.on('error', (err) => {
+      // Don't kill the response on bad XML — log and keep going if possible.
+      console.log('tshark pdml parse error:', err.message);
+      try { parser._parser.error = null; parser._parser.resume(); } catch (e) { /* ignore */ }
+    });
+
+    child.stdout.pipe(parser);
+    child.on('error', (err) => finish(500, 'tshark process error: ' + ArkimeUtil.safeStr(err.message)));
+    child.on('close', (code) => {
+      if (code !== 0 && !res.headersSent) {
+        finish(500, 'tshark exited ' + code + ': ' + ArkimeUtil.safeStr(stderrBuf.trim()));
+      } else {
+        finish();
+      }
+    });
+
+    const wireWriteStream = () => {
+      writeStream.on('error', (err) => {
+        if (err.code !== 'EPIPE') { finish(500, 'pcap stream error: ' + ArkimeUtil.safeStr(err.message)); }
+      });
+    };
+
+    const startPcapPump = async () => {
+      if (await ViewerUtils.isLocalView(req.params.nodeName)) {
+        const sink = {
+          write: (chunk, cb) => {
+            if (!writeStream || !writeStream.writable) { if (cb) { setImmediate(cb); } return false; }
+            return writeStream.write(chunk, cb);
+          },
+          status: () => sink
+        };
+        SessionAPIs.#writePcap(sink, req.params.id, { writeHeader: true }, (err) => {
+          if (err && !finished) {
+            return finish(500, 'failed to read local pcap: ' + ArkimeUtil.safeStr(err.message || err));
+          }
+          if (writeStream && writeStream.writable) { writeStream.end(); }
+        });
+      } else {
+        const remotePath = `/api/session/${encodeURIComponent(req.params.nodeName)}/${encodeURIComponent(req.params.id)}/pcap`;
+        ViewerUtils.makeStreamRequest(req.params.nodeName, remotePath, req.user, (pres) => {
+          if (pres.statusCode !== 200) {
+            finish(502, 'remote node returned status ' + pres.statusCode);
+            pres.resume();
+            return;
+          }
+          pres.on('error', (err) => finish(502, 'error streaming remote pcap: ' + ArkimeUtil.safeStr(err.message)));
+          pres.pipe(writeStream);
+        }, (err) => {
+          finish(502, 'error contacting remote node: ' + ArkimeUtil.safeStr(err.message || err));
+        }, req.query.cluster);
+      }
+    };
+
+    if (useStdin) {
+      wireWriteStream();
+      startPcapPump();
+    } else {
+      fs.open(fifoPath, fs.constants.O_WRONLY, (openErr, fd) => {
+        if (openErr) {
+          return finish(500, 'failed to open fifo: ' + ArkimeUtil.safeStr(openErr.message));
+        }
+        if (finished) { try { fs.closeSync(fd); } catch (e) { /* ignore */ } return; }
+        writeStream = fs.createWriteStream(null, { fd, autoClose: true });
+        wireWriteStream();
+        startPcapPump();
+      });
     }
   }
 

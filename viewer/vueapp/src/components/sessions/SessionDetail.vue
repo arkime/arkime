@@ -96,6 +96,87 @@
       ref="packetContainerRef"
       :class="{'show-ts':params.ts,'hide-src':!params.showSrc,'hide-dst':!params.showDst}" /> <!-- packets -->
 
+    <!-- tshark -->
+    <div
+      v-if="hasTshark && !hidePackets && !user.hidePcap"
+      class="tshark-section me-1 ms-1 mt-3 pt-2 border-top">
+      <div class="d-flex align-items-center mb-2">
+        <strong class="me-2">tshark</strong>
+        <v-btn
+          v-if="!tsharkLoaded && !tsharkLoading"
+          color="primary"
+          variant="flat"
+          size="x-small"
+          density="comfortable"
+          @click="getTshark">
+          <span class="fa fa-play me-1" />
+          run
+        </v-btn>
+        <v-btn
+          v-if="tsharkLoaded && !tsharkLoading"
+          color="primary"
+          variant="flat"
+          size="x-small"
+          density="comfortable"
+          class="me-2"
+          @click="getTshark">
+          <span class="fa fa-refresh me-1" />
+          reload
+        </v-btn>
+        <span v-if="tsharkLoading">
+          <span class="fa fa-spinner fa-spin" /> running tshark…
+        </span>
+        <label class="ms-3 form-check form-check-inline mb-0">
+          <input
+            type="checkbox"
+            class="form-check-input"
+            v-model="tsharkPayload"> <span class="form-check-label small">payload</span>
+        </label>
+        <label class="form-check form-check-inline mb-0">
+          <input
+            type="checkbox"
+            class="form-check-input"
+            v-model="tsharkHidden"> <span class="form-check-label small">hidden fields</span>
+        </label>
+        <label class="form-check form-check-inline mb-0 small">
+          packets
+          <input
+            type="number"
+            class="form-control form-control-sm ms-1 tshark-length"
+            min="1"
+            v-model.number="tsharkLength">
+        </label>
+      </div>
+      <div
+        v-if="tsharkError"
+        class="text-danger small mb-2">
+        <span class="fa fa-exclamation-triangle me-1" />{{ tsharkError }}
+      </div>
+      <div
+        v-if="tsharkPackets.length"
+        class="tshark-output">
+        <details
+          v-for="(pkt, pi) in tsharkPackets"
+          :key="pi"
+          class="tshark-packet"
+          :style="packetProtoStyle(packetTopProto(pkt))">
+          <summary>
+            <strong>Packet {{ pi + 1 }}</strong>
+            <span
+              v-if="packetTopProto(pkt)"
+              class="tshark-proto-badge ms-2">{{ packetTopProto(pkt).toUpperCase() }}</span>
+            <span class="ms-2 small">{{ packetSummary(pkt) }}</span>
+          </summary>
+          <ul class="tshark-tree">
+            <tshark-node
+              v-for="(layer, li) in pkt.layers"
+              :key="li"
+              :node="layer" />
+          </ul>
+        </details>
+      </div>
+    </div> <!-- /tshark -->
+
     <!-- packet options -->
     <div
       v-show="!hidePackets && !user.hidePcap"
@@ -126,13 +207,14 @@
 
 <script setup>
 // external imports
-import { ref, defineAsyncComponent, computed, onMounted, nextTick, onUnmounted } from 'vue';
+import { ref, defineAsyncComponent, computed, onMounted, nextTick, onUnmounted, inject } from 'vue';
 // internal imports
 import store from '@/store';
 import { timezoneDateString } from '@common/vueFilters.js';
 import PacketOptions from './PacketOptions.vue';
 import SessionsService from './SessionsService';
 import sessionDetailData from './sessionDetailData.js';
+import TsharkNode from './TsharkNode.vue';
 // asynchronous component defined above with html injected by createDetailDataComponent
 let SessionDetailDataComponent = null;
 
@@ -165,6 +247,16 @@ const errorPackets = ref('');
 const loadingPackets = ref(false);
 const packetPromise = ref();
 const decodings = ref({});
+const constants = inject('constants', {});
+const hasTshark = computed(() => !!constants.HASTSHARK);
+const tsharkLoading = ref(false);
+const tsharkLoaded = ref(false);
+const tsharkError = ref('');
+const tsharkPackets = ref([]);
+const tsharkLength = ref(50);
+const tsharkPayload = ref(false);
+const tsharkHidden = ref(false);
+const tsharkPromise = ref();
 const params = ref({
   base: 'natural',
   line: false,
@@ -493,6 +585,106 @@ const getPackets = async () => {
   }
 };
 
+// Fetch /tshark NDJSON and decode line by line.
+const getTshark = async () => {
+  if (user.value.hidePcap || !hasTshark.value) { return; }
+  if (tsharkLoading.value) { return; }
+
+  tsharkLoading.value = true;
+  tsharkError.value = '';
+  tsharkPackets.value = [];
+
+  try {
+    const { controller, fetcher } = SessionsService.getTshark(
+      props.session.id,
+      props.session.node,
+      props.session.cluster,
+      {
+        length: tsharkLength.value || 50,
+        payload: tsharkPayload.value ? 'true' : 'false',
+        hidden: tsharkHidden.value ? 'true' : 'false'
+      }
+    );
+    tsharkPromise.value = { controller };
+
+    const text = await fetcher;
+    const out = [];
+    for (const line of String(text || '').split('\n')) {
+      const trimmed = line.trim();
+      if (!trimmed) { continue; }
+      try { out.push(JSON.parse(trimmed)); } catch (e) { /* skip non-json line */ }
+    }
+    tsharkPackets.value = out;
+    tsharkLoaded.value = true;
+  } catch (err) {
+    tsharkError.value = err.text || err.message || err;
+  } finally {
+    tsharkLoading.value = false;
+    tsharkPromise.value = undefined;
+  }
+};
+
+// Build a short header line for a tshark packet (frame summary if present).
+const packetSummary = (pkt) => {
+  if (!pkt || !Array.isArray(pkt.layers)) { return ''; }
+  const frame = pkt.layers.find(l => l.name === 'frame');
+  if (frame && frame.label) { return frame.label; }
+  return pkt.layers.map(l => l.name).filter(Boolean).join(' / ');
+};
+
+// Wireshark-like color map for common application/transport protocols. Anything
+// not listed falls back to a deterministic hashed hue so each protocol gets a
+// consistent color across packets.
+const tsharkProtoColors = {
+  http: '#9be3a4', http2: '#9be3a4', http3: '#9be3a4',
+  tls: '#f4d76b', ssl: '#f4d76b', quic: '#f4d76b',
+  dns: '#b5d6ff', mdns: '#b5d6ff', llmnr: '#b5d6ff',
+  tcp: '#e0e0e0', udp: '#e0e0e0',
+  icmp: '#ffd0a0', icmpv6: '#ffd0a0',
+  arp: '#ffc8c8',
+  smb: '#d8b6ff', smb2: '#d8b6ff', smb3: '#d8b6ff',
+  ssh: '#ffd0e0',
+  ftp: '#ffd0e0', 'ftp-data': '#ffd0e0',
+  smtp: '#ffd0e0', imap: '#ffd0e0', pop: '#ffd0e0',
+  dhcp: '#b5d6ff', dhcpv6: '#b5d6ff', bootp: '#b5d6ff',
+  ntp: '#cccccc',
+  rtp: '#fff0a0', sip: '#fff0a0',
+  ipsec: '#d0d0ff', esp: '#d0d0ff'
+};
+// Protocols to ignore when picking the "top" application protocol — these are
+// always present in a typical stack and aren't interesting.
+const tsharkSkipProtos = new Set(['eth', 'ethertype', 'ip', 'ipv6', 'sll', 'sll2', 'null', 'vlan', '802.1q', 'gre', 'ppp']);
+
+const tsharkHashColor = (s) => {
+  let h = 0;
+  for (let i = 0; i < s.length; i++) { h = (h * 31 + s.charCodeAt(i)) | 0; }
+  return `hsl(${Math.abs(h) % 360}, 70%, 80%)`;
+};
+
+const packetProtoStack = (pkt) => {
+  if (!pkt || !Array.isArray(pkt.layers)) { return []; }
+  const frame = pkt.layers.find(l => l.name === 'frame');
+  if (frame && Array.isArray(frame.fields)) {
+    const protos = frame.fields.find(f => f.name === 'frame.protocols');
+    if (protos && protos.show) { return String(protos.show).split(':').filter(Boolean); }
+  }
+  return pkt.layers.map(l => l.name).filter(Boolean);
+};
+
+const packetTopProto = (pkt) => {
+  const stack = packetProtoStack(pkt);
+  for (let i = stack.length - 1; i >= 0; i--) {
+    if (!tsharkSkipProtos.has(stack[i])) { return stack[i]; }
+  }
+  return stack[stack.length - 1] || '';
+};
+
+const packetProtoStyle = (proto) => {
+  if (!proto) { return {}; }
+  const color = tsharkProtoColors[proto] || tsharkHashColor(proto);
+  return { background: color, color: '#000' };
+};
+
 // mounted
 onMounted(async () => {
   setUserParams();
@@ -518,6 +710,49 @@ onUnmounted(() => {
 </script>
 
 <style>
+.tshark-section {
+  margin-top: 0.5rem;
+}
+.tshark-section .tshark-length {
+  width: 5.5em;
+  display: inline-block;
+  margin-left: 0.25rem;
+}
+.tshark-output {
+  font-family: var(--bs-font-monospace, monospace);
+  font-size: 0.85rem;
+}
+.tshark-output .tshark-packet {
+  margin-bottom: 0.25rem;
+  border-radius: 3px;
+  padding: 1px 4px;
+}
+.tshark-output .tshark-packet > summary {
+  cursor: pointer;
+}
+.tshark-output .tshark-packet[open] {
+  padding-bottom: 4px;
+}
+.tshark-proto-badge {
+  display: inline-block;
+  background: rgba(0,0,0,0.15);
+  color: #000;
+  font-weight: bold;
+  font-size: 0.75rem;
+  padding: 0 6px;
+  border-radius: 3px;
+  letter-spacing: 0.04em;
+}
+.tshark-output .tshark-tree {
+  padding-left: 1rem;
+}
+.tshark-output .tshark-tree ul {
+  padding-left: 1.25rem;
+}
+.tshark-output .tshark-tree li {
+  list-style: none;
+}
+
 .session-detail {
   display: block;
   margin-left: var(--px-md);
