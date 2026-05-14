@@ -155,9 +155,4 @@ const percentageLabel = computed(() => {
   text-align: right;
 }
 
-.btn-close.btn-xs {
-  font-size: 10px;
-  padding: 2px 3px;
-  margin-left: 6px;
-}
 </style>

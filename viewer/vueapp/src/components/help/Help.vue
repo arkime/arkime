@@ -5,135 +5,135 @@ SPDX-License-Identifier: Apache-2.0
 <template>
   <div class="help-content">
     <!-- Side navbar -->
-    <div class="nav nav-pills">
+    <div class="help-nav">
       <a
         href="help#about"
-        class="nav-link">
+        class="help-link">
         <span class="fa fa-fw fa-question-circle" />&nbsp;
         About
       </a>
       <a
         href="help#links"
-        class="nav-link">
+        class="help-link">
         <span class="fa fa-fw fa-link" />&nbsp;
         Links
       </a>
       <a
         href="help#search"
-        class="nav-link">
+        class="help-link">
         <span class="fa fa-fw fa-search" />&nbsp;
         Search Bar
       </a>
       <a
         href="help#basic"
-        class="nav-link nested">
+        class="help-link nested">
         Basic Query
       </a>
       <a
         href="help#timebounding"
-        class="nav-link nested">
+        class="help-link nested">
         Time Range
       </a>
       <a
         href="help#stringSearch"
-        class="nav-link nested">
+        class="help-link nested">
         String
       </a>
       <a
         href="help#ipSearch"
-        class="nav-link nested">
+        class="help-link nested">
         IP
       </a>
       <a
         href="help#numericSearch"
-        class="nav-link nested">
+        class="help-link nested">
         Numeric
       </a>
       <a
         href="help#dateSearch"
-        class="nav-link nested">
+        class="help-link nested">
         Date
       </a>
       <a
         href="help#fieldExistsSearch"
-        class="nav-link nested">
+        class="help-link nested">
         Field Exists
       </a>
       <a
         href="help#examples"
-        class="nav-link nested">
+        class="help-link nested">
         Examples
       </a>
       <a
         href="help#sessions"
-        class="nav-link">
+        class="help-link">
         <span class="fa fa-fw fa-exchange" />&nbsp;
         Sessions
       </a>
       <a
         href="help#spiview"
-        class="nav-link">
+        class="help-link">
         <span class="fa fa-fw fa-eyedropper" />&nbsp;
         SPI View
       </a>
       <a
         href="help#spigraph"
-        class="nav-link">
+        class="help-link">
         <span class="fa fa-fw fa-bar-chart" />&nbsp;
         SPI Graph
       </a>
       <a
         href="help#connections"
-        class="nav-link">
+        class="help-link">
         <span class="fa fa-fw fa-sitemap" />&nbsp;
         Connections
       </a>
       <a
         href="help#hunt"
-        class="nav-link">
+        class="help-link">
         <span class="fa fa-fw fa-eye" />&nbsp;
         Hunt
       </a>
       <a
         href="help#files"
-        class="nav-link">
+        class="help-link">
         <span class="fa fa-fw fa-files-o" />&nbsp;
         Files
       </a>
       <a
         href="help#stats"
-        class="nav-link">
+        class="help-link">
         <span class="fa fa-fw fa-line-chart" />&nbsp;
         Stats
       </a>
       <a
         href="help#history"
-        class="nav-link">
+        class="help-link">
         <span class="fa fa-fw fa-history" />&nbsp;
         History
       </a>
       <a
         href="help#settings"
-        class="nav-link">
+        class="help-link">
         <span class="fa fa-fw fa-cog" />&nbsp;
         Settings
       </a>
       <a
         href="help#users"
         v-has-role="{user:user,roles:'arkimeAdmin'}"
-        class="nav-link">
+        class="help-link">
         <span class="fa fa-fw fa-users" />&nbsp;
         Users
       </a>
       <a
         href="help#hotkeys"
-        class="nav-link">
+        class="help-link">
         <span class="fa fa-fw fa-keyboard-o" />&nbsp;
         Hot Keys
       </a>
       <a
         href="help#fields"
-        class="nav-link">
+        class="help-link">
         <span class="fa fa-fw fa-list" />&nbsp;
         Fields
       </a>
@@ -1618,7 +1618,9 @@ export default {
 }
 
 /* help navigation */
-.help-content div.nav-pills {
+.help-content .help-nav {
+  display: flex;
+  flex-direction: column;
   width: 150px;
   border: 1px solid var(--color-gray);
   border-radius: 0 8px 8px 0;
@@ -1628,10 +1630,23 @@ export default {
   overflow-x: hidden;
   overflow-y: auto;
   white-space: nowrap;
+  box-shadow: 0 0 16px -2px black;
+}
 
-  -webkit-box-shadow: 0 0 16px -2px black;
-     -moz-box-shadow: 0 0 16px -2px black;
-          box-shadow: 0 0 16px -2px black;
+.help-content .help-nav .help-link {
+  display: block;
+  width: 100%;
+  padding: 5px 8px;
+  color: var(--color-foreground);
+  text-decoration: none;
+}
+.help-content .help-nav .help-link:hover {
+  background-color: var(--color-gray-light);
+}
+.help-content .help-nav .help-link.nested {
+  margin-left: 2.4em;
+  font-size: 0.85em;
+  padding: 2px 5px;
 }
 
 /* content offset for left nav */
@@ -1640,27 +1655,8 @@ export default {
   overflow-x: hidden;
 }
 
-.help-content .nav-pills .nav-link {
-  width: 100%;
-}
-
-.help-content div.nav-pills a {
-  padding: 5px 8px !important;
-}
-
-.help-content div.nav-pills a.nested {
-  margin-left: 2.4em;
-  font-size: 0.85em;
-  padding: 2px 5px !important;
-}
-
 .help-content .header-input {
   width: 70%;
-}
-
-.badge.bg-primary {
-  font-weight: bold;
-  background-color: var(--color-primary);
 }
 
 /* field table animation */

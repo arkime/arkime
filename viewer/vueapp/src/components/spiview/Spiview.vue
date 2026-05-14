@@ -1514,8 +1514,7 @@ export default {
   background-color: var(--color-background, #fff);
 }
 
-/* Replaces .btn-link.btn-xs underline-on-hover link style for the
-   spiview "more / less" toggles. */
+/* "more / less" toggles inside spiview field cells. */
 .spiview-more-less-link {
   color: var(--color-primary);
   font-size: 0.85rem;
@@ -1613,18 +1612,6 @@ export default {
   background-color: var(--color-gray-lighter);
   margin-right: -4px;
   margin-left: -4px;
-}
-.spiview-page .btn-drawer .form-control-sm {
-  height: 22px;
-  padding: 2px 6px;
-  font-size: 12px;
-  line-height: 1.5;
-  border-radius: 3px;
-  vertical-align: middle;
-  width: 300px;
-  min-height: 22px;
-  max-height: 22px;
-  margin-bottom: 4px;
 }
 .spiview-page .btn-drawer .btn-container {
   max-height: 28px;

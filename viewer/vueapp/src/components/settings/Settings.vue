@@ -310,21 +310,22 @@ SPDX-License-Identifier: Apache-2.0
               {{ $t('settings.general.sortSessionsBy') }}
             </label>
             <div class="col-sm-6">
-              <select
-                size="sm"
-                class="form-select form-select-sm"
-                v-model="settings.sortColumn"
-                @change="update">
-                <option value="last">
-                  {{ $t('settings.general.lastUsed') }}
-                </option>
-                <option
-                  v-for="field in sortableColumns"
-                  :key="field.dbField"
-                  :value="field.dbField">
-                  {{ field.friendlyName }}
-                </option>
-              </select>
+              <div class="arkime-input-group arkime-input-group--fluid">
+                <select
+                  class="arkime-input-control"
+                  v-model="settings.sortColumn"
+                  @change="update">
+                  <option value="last">
+                    {{ $t('settings.general.lastUsed') }}
+                  </option>
+                  <option
+                    v-for="field in sortableColumns"
+                    :key="field.dbField"
+                    :value="field.dbField">
+                    {{ field.friendlyName }}
+                  </option>
+                </select>
+              </div>
             </div>
             <div class="col-sm-3">
               <v-btn-toggle
@@ -849,38 +850,38 @@ SPDX-License-Identifier: Apache-2.0
               <div class="theme-display">
                 <div class="row">
                   <div class="col-md-12">
-                    <div class="custom-control custom-radio ms-1">
+                    <div class="d-flex align-center ms-1">
                       <input
                         type="radio"
-                        class="custom-control-input cursor-pointer"
+                        class="cursor-pointer"
                         v-model="settings.theme"
                         @change="changeTheme(theme.class)"
                         :value="theme.class"
                         :id="theme.class">
                       <label
-                        class="custom-control-label cursor-pointer ms-2"
+                        class="cursor-pointer ms-2"
                         :for="theme.class">
                         {{ theme.name }}
                       </label>
                     </div>
                   </div>
                 </div>
-                <nav class="navbar navbar-dark">
-                  <a class="navbar-brand cursor-pointer">
+                <nav class="preview-navbar preview-navbar-dark">
+                  <a class="preview-navbar-brand cursor-pointer">
                     <img
                       :src="settings.logo"
                       class="arkime-logo"
                       alt="hoot">
                   </a>
-                  <ul class="nav">
-                    <a class="nav-item cursor-pointer no-decoration active">
+                  <ul class="preview-nav">
+                    <a class="preview-nav-item cursor-pointer no-decoration active">
                       Current Page
                     </a>
-                    <a class="nav-item cursor-pointer no-decoration ms-3">
+                    <a class="preview-nav-item cursor-pointer no-decoration ms-3">
                       Other Pages
                     </a>
                   </ul>
-                  <ul class="navbar-nav me-2">
+                  <ul class="preview-navbar-status me-2">
                     <span class="fa fa-info-circle fa-lg health-green" />
                   </ul>
                 </nav>
@@ -953,16 +954,16 @@ SPDX-License-Identifier: Apache-2.0
               class="col-lg-3 col-md-4 col-sm-6 col-xs-12 mb-2 mt-2 logos"
               v-for="logo in logos"
               :key="logo.location">
-              <div class="custom-control custom-radio ms-1">
+              <div class="d-flex align-center ms-1">
                 <input
                   type="radio"
                   :id="logo.location"
                   :value="logo.location"
                   v-model="settings.logo"
                   @change="changeLogo(logo.location)"
-                  class="custom-control-input cursor-pointer">
+                  class="cursor-pointer">
                 <label
-                  class="custom-control-label cursor-pointer ms-2"
+                  class="cursor-pointer ms-2"
                   :for="logo.location">
                   {{ logo.name }}
                 </label>
@@ -1066,22 +1067,22 @@ SPDX-License-Identifier: Apache-2.0
                   class="custom-theme"
                   id="custom-theme-display">
                   <div class="theme-display">
-                    <div class="navbar navbar-dark">
-                      <a class="navbar-brand cursor-pointer">
+                    <div class="preview-navbar preview-navbar-dark">
+                      <a class="preview-navbar-brand cursor-pointer">
                         <img
                           :src="settings.logo"
                           class="arkime-logo"
                           alt="hoot">
                       </a>
-                      <ul class="nav">
-                        <a class="nav-item cursor-pointer active">
+                      <ul class="preview-nav">
+                        <a class="preview-nav-item cursor-pointer active">
                           Current Page
                         </a>
-                        <a class="nav-item cursor-pointer ms-3">
+                        <a class="preview-nav-item cursor-pointer ms-3">
                           Other Pages
                         </a>
                       </ul>
-                      <ul class="navbar-nav me-2">
+                      <ul class="preview-navbar-status me-2">
                         <span class="fa fa-info-circle fa-lg health-green" />
                       </ul>
                     </div>
@@ -2489,16 +2490,6 @@ export default {
   cursor: pointer;
 }
 
-/* fixed tab buttons */
-.settings-page div.nav-pills {
-  position: fixed;
-}
-
-.settings-page .nav-separator {
-  width: 100%;
-  border-top: 1px solid var(--color-gray);
-}
-
 /* make sure the form is taller than the nav pills */
 .settings-page form:not(.b-dropdown-form) {
   min-height: 280px;
@@ -2549,38 +2540,38 @@ export default {
   padding-bottom: 20px;
 }
 
-.settings-page .navbar {
+.settings-page .preview-navbar {
   min-height: 20px;
   height: 36px;
   border-radius: 6px 6px 0 0;
   z-index: 1;
 }
 
-.settings-page .navbar .arkime-logo {
+.settings-page .preview-navbar .arkime-logo {
   top: 0;
   left: 20px;
   height: 36px;
   position: absolute;
 }
 /* icon logos (logo in circle) are wider */
-.settings-page .navbar .arkime-logo[src*="Icon"] {
+.settings-page .preview-navbar .arkime-logo[src*="Icon"] {
   left: 8px;
 }
 
-.settings-page .navbar .nav {
+.settings-page .preview-navbar .preview-nav {
   position: absolute;
   left: 50px
 }
 
-.settings-page .navbar .navbar-nav {
+.settings-page .preview-navbar .preview-navbar-status {
   margin-right: -8px;
 }
 
-.settings-page .navbar .navbar-nav .health-green {
+.settings-page .preview-navbar .preview-navbar-status .health-green {
   color: #00aa00;
 }
 
-.settings-page .navbar-dark a {
+.settings-page .preview-navbar-dark a {
   padding: 6px;
   color: #FFFFFF;
 }
@@ -2592,10 +2583,6 @@ export default {
      -moz-box-shadow: 0 0 16px -2px black;
           box-shadow: 0 0 16px -2px black;
 }
-.settings-page .display-sub-navbar .input-group {
-  padding-top: 4px;
-}
-
 .settings-page .display-sub-navbar .display-sub-navbar-buttons {
   margin-top: 4px;
   margin-right: 4px;
@@ -2631,26 +2618,14 @@ export default {
 }
 
 /* arkime light (default) */
-.settings-page .arkime-light-theme .navbar {
+.settings-page .arkime-light-theme .preview-navbar {
   background-color: #212121;
   border-color: #111111;
 }
 
-.settings-page .arkime-light-theme .navbar-dark a:hover,
-.settings-page .arkime-light-theme .navbar-dark a.active {
+.settings-page .arkime-light-theme .preview-navbar-dark a:hover,
+.settings-page .arkime-light-theme .preview-navbar-dark a.active {
   background-color: #303030;
-}
-
-.settings-page .arkime-light-theme .input-group > .input-group-text, .input-group:not(.color) > .input-group-text {
-  color: #333333 !important;
-  background-color: #EEEEEE !important;
-  border-color: #CCCCCC !important;
-}
-
-.settings-page .arkime-light-theme input.form-control,
-.settings-page .arkime-light-theme input.form-control:focus {
-  color: #000000 !important;
-  background-color: #FFFFFF !important;
 }
 
 .settings-page .arkime-light-theme .display-sub-navbar {
@@ -2723,20 +2698,14 @@ export default {
 }
 
 /* arkime dark */
-.settings-page .arkime-dark-theme .navbar {
+.settings-page .arkime-dark-theme .preview-navbar {
   background-color: #9E9E9E;
   border-color: #8E8E8E;
 }
 
-.settings-page .arkime-dark-theme .navbar-dark a:hover,
-.settings-page .arkime-dark-theme .navbar-dark a.active {
+.settings-page .arkime-dark-theme .preview-navbar-dark a:hover,
+.settings-page .arkime-dark-theme .preview-navbar-dark a.active {
   background-color: #ADADAD;
-}
-
-.settings-page .arkime-dark-theme .input-group > .input-group-text, .input-group:not(.color) > .input-group-text {
-  color: #FFFFFF !important;
-  background-color: #303030 !important;
-  border-color: #CCCCCC !important;
 }
 
 .settings-page .arkime-dark-theme .display-sub-navbar {
@@ -2808,35 +2777,15 @@ export default {
   color: #FFFFFF !important;
 }
 
-.settings-page .arkime-dark-theme input.form-control {
-  color: #FFFFFF !important;
-  background-color: #222222 !important;
-}
-.settings-page .arkime-dark-theme input.form-control::placeholder {
-  color: #CCC !important;
-}
-
 /* purp */
-.settings-page .purp-theme .navbar {
+.settings-page .purp-theme .preview-navbar {
   background-color: #530763;
   border-color: #360540;
 }
 
-.settings-page .purp-theme .navbar-dark a:hover,
-.settings-page .purp-theme .navbar-dark a.active {
+.settings-page .purp-theme .preview-navbar-dark a:hover,
+.settings-page .purp-theme .preview-navbar-dark a.active {
   background-color: #830b9c;
-}
-
-.settings-page .purp-theme .input-group > .input-group-text, .input-group:not(.color) > .input-group-text {
-  color: #333333 !important;
-  background-color: #EEEEEE !important;
-  border-color: #CCCCCC !important;
-}
-
-.settings-page .purp-theme input.form-control,
-.settings-page .purp-theme input.form-control:focus {
-  color: #000000 !important;
-  background-color: #FFFFFF !important;
 }
 
 .settings-page .purp-theme .display-sub-navbar {
@@ -2909,26 +2858,14 @@ export default {
 }
 
 /* blue */
-.settings-page .blue-theme .navbar {
+.settings-page .blue-theme .preview-navbar {
   background-color: #163254;
   border-color: #000000;
 }
 
-.settings-page .blue-theme .navbar-dark a:hover,
-.settings-page .blue-theme .navbar-dark a.active {
+.settings-page .blue-theme .preview-navbar-dark a:hover,
+.settings-page .blue-theme .preview-navbar-dark a.active {
   background-color: #214b78;
-}
-
-.settings-page .blue-theme .input-group > .input-group-text, .input-group:not(.color) > .input-group-text {
-  color: #333333 !important;
-  background-color: #EEEEEE !important;
-  border-color: #CCCCCC !important;
-}
-
-.settings-page .blue-theme input.form-control,
-.settings-page .blue-theme input.form-control:focus {
-  color: #000000 !important;
-  background-color: #FFFFFF !important;
 }
 
 .settings-page .blue-theme .display-sub-navbar {
@@ -3001,26 +2938,14 @@ export default {
 }
 
 /* green */
-.settings-page .green-theme .navbar {
+.settings-page .green-theme .preview-navbar {
   background-color: #2A6E3d;
   border-color: #235A32;
 }
 
-.settings-page .green-theme .navbar-dark a:hover,
-.settings-page .green-theme .navbar-dark a.active {
+.settings-page .green-theme .preview-navbar-dark a:hover,
+.settings-page .green-theme .preview-navbar-dark a.active {
   background-color: #2a7847;
-}
-
-.settings-page .green-theme .input-group > .input-group-text, .input-group:not(.color) > .input-group-text {
-  color: #333333 !important;
-  background-color: #EEEEEE !important;
-  border-color: #CCCCCC !important;
-}
-
-.settings-page .green-theme input.form-control,
-.settings-page .green-theme input.form-control:focus {
-  color: #000000 !important;
-  background-color: #FFFFFF !important;
 }
 
 .settings-page .green-theme .display-sub-navbar {
@@ -3093,26 +3018,14 @@ export default {
 }
 
 /* cotton candy */
-.settings-page .cotton-candy-theme .navbar {
+.settings-page .cotton-candy-theme .preview-navbar {
   background-color: #B0346D;
   border-color: #9B335A;
 }
 
-.settings-page .cotton-candy-theme .navbar-dark a:hover,
-.settings-page .cotton-candy-theme .navbar-dark a.active {
+.settings-page .cotton-candy-theme .preview-navbar-dark a:hover,
+.settings-page .cotton-candy-theme .preview-navbar-dark a.active {
   background-color: #c43d75;
-}
-
-.settings-page .cotton-candy-theme .input-group > .input-group-text, .input-group:not(.color) > .input-group-text {
-  color: #333333 !important;
-  background-color: #EEEEEE !important;
-  border-color: #CCCCCC !important;
-}
-
-.settings-page .cotton-candy-theme input.form-control,
-.settings-page .cotton-candy-theme input.form-control:focus {
-  color: #000000 !important;
-  background-color: #FFFFFF !important;
 }
 
 .settings-page .cotton-candy-theme .display-sub-navbar {
@@ -3185,13 +3098,13 @@ export default {
 }
 
 /* green on black */
-.settings-page .dark-2-theme .navbar {
+.settings-page .dark-2-theme .preview-navbar {
   background-color: #363A7D;
   border-color: #2F2F5F;
 }
 
-.settings-page .dark-2-theme .navbar-dark a:hover,
-.settings-page .dark-2-theme .navbar-dark a.active {
+.settings-page .dark-2-theme .preview-navbar-dark a:hover,
+.settings-page .dark-2-theme .preview-navbar-dark a.active {
   background-color: #444a9b;
 }
 
@@ -3226,12 +3139,6 @@ export default {
   color: #FFFFFF;
   background-color: #686868;
   border-color: #4B4B4B;
-}
-
-.settings-page .dark-2-theme .input-group > .input-group-text, .input-group:not(.color) > .input-group-text {
-  color: #C7C7C7 !important;
-  background-color: #222222 !important;
-  border-color: #AAAAAA !important;
 }
 
 .settings-page .dark-2-theme .arkime-dropdown-menu {
@@ -3270,26 +3177,18 @@ export default {
   color: #FFFFFF !important;
 }
 
-.settings-page .dark-2-theme input.form-control {
-  color: #FFFFFF !important;
-  background-color: #111111 !important;
-}
-.settings-page .dark-2-theme input.form-control::placeholder {
-  color: #CCC !important;
-}
-
 /* Dark Blue */
-.settings-page .dark-3-theme .navbar {
+.settings-page .dark-3-theme .preview-navbar {
   background-color: #9F9F9F;
   border-color: #C3C3C3;
 }
 
-.settings-page .dark-3-theme .navbar-dark a:hover,
-.settings-page .dark-3-theme .navbar-dark a.active {
+.settings-page .dark-3-theme .preview-navbar-dark a:hover,
+.settings-page .dark-3-theme .preview-navbar-dark a.active {
   background-color: #8A8A8A;
 }
 
-.settings-page .dark-3-theme .navbar-dark li.active a {
+.settings-page .dark-3-theme .preview-navbar-dark li.active a {
   color: #FFFFFF;
   background-color: #C3C3C3 !important;
 }
@@ -3324,12 +3223,6 @@ export default {
   color: #FFFFFF;
   background-color: #D33682;
   border-color: #B42C72;
-}
-
-.settings-page .dark-3-theme .input-group > .input-group-text, .input-group:not(.color) > .input-group-text {
-  color: #ADC1C3 !important;
-  background-color: #002833 !important;
-  border-color: #AAAAAA !important;
 }
 
 .settings-page .dark-3-theme .arkime-dropdown-menu {
@@ -3368,14 +3261,6 @@ export default {
   color: #FFFFFF !important;
 }
 
-.settings-page .dark-3-theme input.form-control {
-  color: #EEEEEE !important;
-  background-color: #222222 !important;
-}
-.settings-page .dark-3-theme input.form-control::placeholder {
-  color: #CCC !important;
-}
-
 /* Custom */
 .settings-page .custom-theme .theme-display {
   background-color: var(--color-background);
@@ -3385,15 +3270,15 @@ export default {
           box-shadow: 0 0 16px -2px black;
 }
 
-.settings-page .custom-theme .navbar {
+.settings-page .custom-theme .preview-navbar {
   background-color: var(--color-primary-dark);
   border-color: var(--color-primary-darker);
 }
-.settings-page .custom-theme .navbar a.nav-item {
+.settings-page .custom-theme .preview-navbar a.preview-nav-item {
   color: var(--color-button);
 }
-.settings-page .custom-theme .navbar a.nav-item:hover,
-.settings-page .custom-theme .navbar a.nav-item.active {
+.settings-page .custom-theme .preview-navbar a.preview-nav-item:hover,
+.settings-page .custom-theme .preview-navbar a.preview-nav-item.active {
   background-color: var(--color-primary);
 }
 

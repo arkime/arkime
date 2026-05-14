@@ -65,7 +65,7 @@ SPDX-License-Identifier: Apache-2.0
       v-show="spiGraphType === 'table' && tableData.length && fieldList.length"
       class="m-1 pt-5">
       <table
-        class="table-bordered table-hover spigraph-table"
+        class="spigraph-table"
         id="spigraphTable"
         ref="table">
         <thead>
@@ -1426,6 +1426,23 @@ export default {
 
 .col-header {
   position: relative;
+}
+
+/* cell borders + hover */
+.spigraph-table {
+  border-collapse: collapse;
+  width: 100%;
+  color: var(--color-foreground);
+}
+.spigraph-table > thead > tr > th,
+.spigraph-table > tbody > tr > td,
+.spigraph-table > tbody > tr > th {
+  border: 1px solid var(--color-gray-light);
+  padding: 0.25rem;
+}
+.spigraph-table > tbody > tr:hover > td,
+.spigraph-table > tbody > tr:hover > th {
+  background-color: var(--color-gray-lighter);
 }
 
 /* make sure field dropdowns are visible in the table */

@@ -68,9 +68,7 @@ export default {
 </script>
 
 <style scoped>
-/* draggable field chip: themed pill with inline close button. Avoids
-   Bootstrap's .badge/.btn-close so it stays consistent across themes
-   and during the Bootstrap rip. */
+/* draggable field chip: themed pill with inline close button. */
 .arkime-drag-badge {
   display: inline-flex;
   align-items: center;

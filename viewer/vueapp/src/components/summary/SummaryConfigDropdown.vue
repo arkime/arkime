@@ -261,9 +261,4 @@ const deleteConfig = async (config) => {
 .summary-config-list :deep(.v-list-item:hover) .config-actions {
   opacity: 1;
 }
-
-.btn-xs {
-  padding: 0.1rem 0.3rem;
-  font-size: 0.7rem;
-}
 </style>

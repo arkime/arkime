@@ -763,10 +763,6 @@ onUnmounted(() => {
   border-top: var(--color-gray) 1px solid;
 }
 
-.packet-container .tooltip .tooltip-inner {
-  max-width: 400px;
-}
-
 .packet-container .file {
   display: inline-block;
   margin-bottom: 20px;
@@ -1035,27 +1031,6 @@ dl:hover > .session-detail-grip {
   border-radius: 4px;
   padding: 1.25rem;
   margin-bottom: 0.75rem;
-}
-
-.session-detail .session-detail-card > .card-title {
-  cursor: pointer;
-  padding: 0.5rem;
-  margin: -1.25rem;
-  margin-bottom: 1.25rem;
-  border-radius: 4px 4px 0 0;
-  background-color: var(--color-gray);
-  color: var(--color-background, #333);
-}
-.session-detail .session-detail-card > dl .card-title {
-  cursor: pointer;
-  font-size: 1rem;
-  padding: 0.25rem;
-  margin-top: 0.3rem;
-  position: relative;
-  border-radius: 4px;
-  margin-bottom: 1rem;
-  color: var(--color-foreground, #333);
-  background-color: var(--color-gray-light);
 }
 
 .session-detail .session-detail-card > dl {
