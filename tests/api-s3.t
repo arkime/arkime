@@ -11,9 +11,9 @@ my $nodeFilter = '{ "query": { "terms": { "node": ["s3-test", "sqs-test"] } } }'
 esPost("/tests2_sessions*/_delete_by_query?conflicts=proceed&refresh", $nodeFilter);
 
 sub run {
-my ($tag, $compression, $extension, $gap) = @_;
+my ($tag, $compression, $extension, $gap, $input) = @_;
 
-    my $cmd = "../capture/capture -o disablePython=true -o s3GapPacketPos=$gap -c config.test.ini -n s3-test --copy -R pcap --tag $tag -o s3Compression=$compression --flush > /tmp/arkime.capture.$tag.log 2>&1";
+    my $cmd = "../capture/capture -o disablePython=true -o s3GapPacketPos=$gap -c config.test.ini -n s3-test --copy $input --tag $tag -o s3Compression=$compression --flush > /tmp/arkime.capture.$tag.log 2>&1";
     system($cmd);
 
     # Test 1
@@ -44,9 +44,11 @@ my ($tag, $compression, $extension, $gap) = @_;
 
 my $value = int(rand()*1000000);
 
-run("none-$value", "none", "", "true");
-run("gzip-$value", "gzip", ".gz", "true");
-run("zstd-$value", "zstd", ".zst", "false");
+my $files = "-r pcap/socks-http-pass.pcap -r pcap/wireshark-retrans.pcap";
+
+run("none-$value", "none", "",     "true",  $files);
+run("gzip-$value", "gzip", ".gz",  "true",  $files);
+run("zstd-$value", "zstd", ".zst", "false", $files);
 
 system("gzip -d /tmp/arkime.file.gzip.true.gz > /dev/null 2>&1");
 system("zstd -d /tmp/arkime.file.zstd.false.zst > /dev/null 2>&1");
