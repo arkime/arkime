@@ -63,6 +63,8 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #3972 Improved STUN/TURN parser: extract XOR-PEER-ADDRESS, more methods, and stun.attributes field
   - #3973 Improved OSPF parser: per-(src,dst) sessions and ospf.msgType/routerId/areaId fields, tag weak auth
   - #3977 Improved RADIUS parser: extract radius.msgType, radius.nasIp, and radius.nasPort
+  - #3978 New FTP parser: detect multi-line 220- banners and add ftp.banner, ftp.command,
+          ftp.filename, ftp.responseCode fields; tag ftp:password when PASS is seen
 ## WISE
   - #3968 Improve JSON Array Parsing: shortcut paths now expand arrays at any
           intermediate position, not just the final value
