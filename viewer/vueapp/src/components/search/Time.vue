@@ -3,7 +3,9 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-  <v-row class="g-1 text-start flex-nowrap justify-start">
+  <v-row
+    align="center"
+    class="g-1 text-start flex-nowrap justify-start">
     <!-- time range select -->
     <v-col cols="auto">
       <div class="arkime-input-group arkime-input-group--fluid">
@@ -332,7 +334,9 @@ SPDX-License-Identifier: Apache-2.0
     </v-col> <!-- /time interval select -->
 
     <!-- human readable time range or error -->
-    <div class="col-auto time-range-display">
+    <v-col
+      cols="auto"
+      class="time-range-display">
       <span
         class="time-range-chip"
         :class="{ 'time-range-chip--error': timeError }">
@@ -354,7 +358,7 @@ SPDX-License-Identifier: Apache-2.0
           {{ timeError }}
         </template>
       </span>
-    </div> <!-- /human readable time range or error -->
+    </v-col> <!-- /human readable time range or error -->
   </v-row>
 </template>
 

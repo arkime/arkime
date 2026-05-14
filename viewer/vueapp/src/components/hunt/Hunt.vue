@@ -19,7 +19,7 @@ SPDX-License-Identifier: Apache-2.0
         <v-row
           class="g-1 hunt-create-navbar ps-2 pe-2 py-2 justify-space-between align-center"
           style="min-height: 44px;">
-          <div class="col-auto">
+          <v-col cols="auto">
             <span v-if="loadingSessions">
               <div
                 class="mt-1"
@@ -53,8 +53,8 @@ SPDX-License-Identifier: Apache-2.0
                 <span v-html="$t('hunts.createMsgHtml', { count: commaString(sessions.recordsFiltered) })" />
               </div>
             </span>
-          </div>
-          <div class="col-auto">
+          </v-col>
+          <v-col cols="auto">
             <v-btn
               variant="flat"
               size="small"
@@ -75,7 +75,7 @@ SPDX-License-Identifier: Apache-2.0
               <span class="fa fa-ban" />&nbsp;
               {{ $t('common.cancel') }}
             </v-btn>
-          </div>
+          </v-col>
         </v-row> <!-- /hunt create navbar -->
       </span>
     </ArkimeCollapsible>
@@ -165,7 +165,9 @@ SPDX-License-Identifier: Apache-2.0
                 </v-col>
               </v-row>
               <v-row class="g-1">
-                <div class="col-auto mb-2 flex-grow-1">
+                <v-col
+                  cols="auto"
+                  class="mb-2 flex-grow-1">
                   <!-- packet search job name -->
                   <div class="arkime-input-group arkime-input-group--fluid">
                     <span
@@ -184,7 +186,7 @@ SPDX-License-Identifier: Apache-2.0
                       :placeholder="$t('hunts.jobNamePlaceholder')"
                       maxlength="40">
                   </div> <!-- /packet search job name -->
-                </div>
+                </v-col>
                 <!-- packet search size -->
                 <v-col cols="auto">
                   <div class="arkime-input-group arkime-input-group--fluid">
@@ -710,13 +712,13 @@ SPDX-License-Identifier: Apache-2.0
               </v-btn>
             </div> <!-- /search packet search jobs -->
           </v-col>
-          <div class="col-auto">
+          <v-col cols="auto">
             <!-- job history paging -->
             <arkime-paging
               :records-total="historyResults.recordsTotal"
               :records-filtered="historyResults.recordsFiltered"
               @change-paging="changePaging" /> <!-- /job history paging -->
-          </div>
+          </v-col>
         </v-row>
 
         <table class="arkime-table">

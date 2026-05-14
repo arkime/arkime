@@ -390,9 +390,9 @@ SPDX-License-Identifier: Apache-2.0
       <div v-if="actionForm">
         <hr class="action-form-separator">
         <v-row class="d-flex gap-1">
-          <div
-            v-if="showApplyButtons"
-            class="col-auto">
+          <v-col
+            cols="auto"
+            v-if="showApplyButtons">
             <v-tooltip activator="#openSessions">
               {{ openItemsTooltip }}
             </v-tooltip>
@@ -430,9 +430,11 @@ SPDX-License-Identifier: Apache-2.0
                 {{ $t('search.matching') }}
               </v-btn>
             </v-btn-toggle>
-          </div>
+          </v-col>
           <!-- actions menu forms -->
-          <div class="col-auto flex-grow-1">
+          <v-col
+            cols="auto"
+            class="flex-grow-1">
             <arkime-modify-view
               v-if="actionForm === 'modify:view'"
               @done="actionFormDone"
@@ -486,7 +488,7 @@ SPDX-License-Identifier: Apache-2.0
               v-else-if="actionForm === 'view:intersection'"
               @done="actionFormDone"
               :fields="fields" />
-          </div> <!-- /actions menu forms -->
+          </v-col> <!-- /actions menu forms -->
         </v-row>
       </div>
     </div>

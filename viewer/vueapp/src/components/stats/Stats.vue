@@ -50,8 +50,8 @@ SPDX-License-Identifier: Apache-2.0
           </v-col>
 
           <!-- graph type select -->
-          <div
-            class="col-auto"
+          <v-col
+            cols="auto"
             v-if="tabIndex === 0">
             <div class="arkime-input-group">
               <span class="arkime-input-label">
@@ -162,11 +162,11 @@ SPDX-License-Identifier: Apache-2.0
                   v-i18n-value="'stats.cstats.'" />
               </select>
             </div>
-          </div> <!-- /graph type select -->
+          </v-col> <!-- /graph type select -->
 
           <!-- graph interval select -->
-          <div
-            class="col-auto"
+          <v-col
+            cols="auto"
             v-if="tabIndex === 0">
             <div class="arkime-input-group">
               <span class="arkime-input-label">
@@ -181,11 +181,11 @@ SPDX-License-Identifier: Apache-2.0
                 <option value="600">{{ $t('common.minuteCount', 10) }}</option>
               </select>
             </div>
-          </div> <!-- /graph interval select -->
+          </v-col> <!-- /graph interval select -->
 
           <!-- graph hide select -->
-          <div
-            class="col-auto"
+          <v-col
+            cols="auto"
             v-if="tabIndex === 0 || tabIndex === 1">
             <div class="arkime-input-group">
               <span class="arkime-input-label">{{ $t('stats.graphHide') }}</span>
@@ -207,11 +207,11 @@ SPDX-License-Identifier: Apache-2.0
                   v-i18n-value="'stats.graphHide-'" />
               </select>
             </div>
-          </div> <!-- /graph hide select -->
+          </v-col> <!-- /graph hide select -->
 
           <!-- graph sort select -->
-          <div
-            class="col-auto"
+          <v-col
+            cols="auto"
             v-if="tabIndex === 0">
             <div class="arkime-input-group">
               <span class="arkime-input-label">{{ $t('stats.graphSort') }}</span>
@@ -226,11 +226,11 @@ SPDX-License-Identifier: Apache-2.0
                   v-i18n-value="'stats.graphSort-'" />
               </select>
             </div>
-          </div> <!-- /graph sort select -->
+          </v-col> <!-- /graph sort select -->
 
           <!-- page size select -->
-          <div
-            class="col-auto"
+          <v-col
+            cols="auto"
             v-if="tabIndex === 4">
             <div class="arkime-input-group">
               <span class="arkime-input-label">{{ $t('stats.pageSize') }}</span>
@@ -246,11 +246,11 @@ SPDX-License-Identifier: Apache-2.0
                 <option value="10000">{{ $t('common.perPage', {count: "10,000"}) }}</option>
               </select>
             </div>
-          </div><!-- /page size select -->
+          </v-col><!-- /page size select -->
 
           <!-- table data interval select -->
-          <div
-            class="col-auto"
+          <v-col
+            cols="auto"
             v-if="tabIndex !== 0 && tabIndex !== 7">
             <div class="arkime-input-group">
               <span class="arkime-input-label">{{ $t('stats.refreshEvery') }}</span>
@@ -266,11 +266,11 @@ SPDX-License-Identifier: Apache-2.0
                 <option value="0">{{ $t('common.never') }}</option>
               </select>
             </div>
-          </div> <!-- /table data interval select -->
+          </v-col> <!-- /table data interval select -->
 
           <!-- shards show select -->
-          <div
-            class="col-auto"
+          <v-col
+            cols="auto"
             v-if="tabIndex === 5">
             <div class="arkime-input-group">
               <span class="arkime-input-label">{{ $t('stats.shardsShow') }}</span>
@@ -295,11 +295,11 @@ SPDX-License-Identifier: Apache-2.0
                   v-i18n-value="'stats.shardsShow-'" />
               </select>
             </div>
-          </div> <!-- /shards show select -->
+          </v-col> <!-- /shards show select -->
 
           <!-- recovery show select -->
-          <div
-            class="col-auto"
+          <v-col
+            cols="auto"
             v-if="tabIndex === 6">
             <div class="arkime-input-group">
               <span class="arkime-input-label">{{ $t('stats.recoveryShow') }}</span>
@@ -315,11 +315,11 @@ SPDX-License-Identifier: Apache-2.0
                   v-i18n-value="'stats.recoveryShow-'" />
               </select>
             </div>
-          </div> <!-- /recovery show select -->
+          </v-col> <!-- /recovery show select -->
 
           <!-- refresh button -->
-          <div
-            class="col-auto"
+          <v-col
+            cols="auto"
             v-if="tabIndex !== 0 && tabIndex !== 7">
             <v-btn
               variant="flat"
@@ -337,7 +337,7 @@ SPDX-License-Identifier: Apache-2.0
                 <div class="enter-arm" />
               </span>
             </v-btn>
-          </div> <!-- /refresh button -->
+          </v-col> <!-- /refresh button -->
 
           <v-col cols="auto">
             <!-- confirm button -->
@@ -458,13 +458,13 @@ SPDX-License-Identifier: Apache-2.0
           </span> <!-- /shrink index -->
 
           <!-- select cluster(s) -->
-          <div
-            class="col-auto"
+          <v-col
+            cols="auto"
             v-if="multiviewer">
             <Clusters
               @update-cluster="updateCluster"
               :select-one="clusterParamOverride && tabIndex > 1" />
-          </div> <!-- /select cluster(s) -->
+          </v-col> <!-- /select cluster(s) -->
 
           <!-- need this on non-multivierwer esAdmin tab to keep the layout consistent (empty navbar)-->
           <div v-else-if="tabIndex === 7">

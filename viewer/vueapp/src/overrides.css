@@ -48,6 +48,157 @@ img, svg {
   vertical-align: middle;
 }
 
+/* Heading scale. Vuetify's ress.css does `* { margin: 0 }` and ships no
+   typographic rhythm for h1–h6, so all headings collapse to browser
+   default + zero margin (looks unstyled). Restore Bootstrap's heading
+   scale for the viewer's standalone <h1>–<h6> elements. */
+h1, h2, h3, h4, h5, h6 {
+  margin-top: 0;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  line-height: 1.2;
+  color: var(--color-foreground);
+}
+h1 { font-size: 2.5rem; }
+h2 { font-size: 2rem; }
+h3 { font-size: 1.75rem; }
+h4 { font-size: 1.5rem; }
+h5 { font-size: 1.25rem; }
+h6 { font-size: 1rem; }
+p {
+  margin-top: 0;
+  margin-bottom: 1rem;
+}
+hr {
+  margin: 1rem 0;
+  color: inherit;
+  border: 0;
+  border-top: 1px solid var(--color-gray-light);
+  opacity: 0.4;
+}
+
+/* Bootstrap button shim. common/vueapp/ components (Notifiers, etc.)
+   that are still shared with parliament/wise emit <button class="btn
+   btn-primary"> markup. With bootstrap.css gone from viewer those go
+   unstyled. Bridge them to look like Vuetify's flat v-btn so the
+   shared components blend in. */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 36px;
+  padding: 0 16px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: 0.0892857143em;
+  text-transform: uppercase;
+  text-decoration: none;
+  border: none;
+  border-radius: 4px;
+  background-color: transparent;
+  color: var(--color-foreground);
+  cursor: pointer;
+  transition: background-color 0.2s, box-shadow 0.2s;
+  white-space: nowrap;
+  vertical-align: middle;
+}
+.btn:hover {
+  filter: brightness(0.92);
+}
+.btn:disabled, .btn[disabled] {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+.btn-sm {
+  height: 28px;
+  padding: 0 12px;
+  font-size: 0.75rem;
+}
+.btn-lg {
+  height: 44px;
+  padding: 0 22px;
+  font-size: 1rem;
+}
+.btn-primary {
+  background-color: var(--color-primary);
+  color: var(--color-button, #FFF);
+}
+.btn-secondary {
+  background-color: var(--color-secondary);
+  color: var(--color-button, #FFF);
+}
+.btn-success {
+  background-color: var(--color-tertiary);
+  color: var(--color-button, #FFF);
+}
+.btn-warning {
+  background-color: var(--color-secondary);
+  color: var(--color-button, #FFF);
+}
+.btn-danger {
+  background-color: var(--color-secondary);
+  color: var(--color-button, #FFF);
+}
+.btn-info {
+  background-color: var(--color-quaternary);
+  color: var(--color-button, #FFF);
+}
+.btn-outline-warning {
+  background-color: transparent;
+  color: var(--color-secondary);
+  border: 1px solid var(--color-secondary);
+}
+.btn-outline-warning:hover {
+  background-color: var(--color-secondary);
+  color: var(--color-button, #FFF);
+}
+.btn-outline-primary {
+  background-color: transparent;
+  color: var(--color-primary);
+  border: 1px solid var(--color-primary);
+}
+.btn-outline-primary:hover {
+  background-color: var(--color-primary);
+  color: var(--color-button, #FFF);
+}
+
+/* Bootstrap 3-era utility classes still present in common/ markup
+   (Notifiers etc.). */
+.pull-right { float: right !important; }
+.pull-left { float: left !important; }
+
+/* Bootstrap alert shim — same pattern: common/ components still emit
+   `<div class="alert alert-danger">` markup. */
+.alert {
+  position: relative;
+  padding: 0.75rem 1rem;
+  margin-bottom: 1rem;
+  border: 1px solid transparent;
+  border-radius: 0.375rem;
+}
+.alert-danger {
+  color: var(--color-secondary-dark);
+  background-color: var(--color-secondary-lightest);
+  border-color: var(--color-secondary-light);
+}
+.alert-warning {
+  color: var(--color-quaternary-dark);
+  background-color: var(--color-quaternary-lightest);
+  border-color: var(--color-quaternary-light);
+}
+.alert-info {
+  color: var(--color-primary-dark);
+  background-color: var(--color-primary-lightest);
+  border-color: var(--color-primary-light);
+}
+.alert-success {
+  color: var(--color-tertiary-dark);
+  background-color: var(--color-tertiary-lightest);
+  border-color: var(--color-tertiary-light);
+}
+
 /* native form controls -------------------------------------------------- */
 input,
 input:focus,

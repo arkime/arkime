@@ -141,9 +141,13 @@ SPDX-License-Identifier: Apache-2.0
 
           <!-- timezone -->
           <v-row class="form-group">
-            <label class="col-sm-3 col-form-label text-end font-weight-bold">
+            <v-col
+              tag="label"
+              cols="12"
+              sm="3"
+              class="text-end font-weight-bold align-self-center">
               {{ $t('settings.general.timezoneFormat') }}
-            </label>
+            </v-col>
             <v-col
               cols="12"
               sm="9">
@@ -194,9 +198,13 @@ SPDX-License-Identifier: Apache-2.0
 
           <!-- session detail format -->
           <v-row class="form-group">
-            <label class="col-sm-3 col-form-label text-end font-weight-bold">
+            <v-col
+              tag="label"
+              cols="12"
+              sm="3"
+              class="text-end font-weight-bold align-self-center">
               {{ $t('settings.general.sessionDetailFormat') }}
-            </label>
+            </v-col>
             <v-col
               cols="12"
               sm="9">
@@ -230,9 +238,13 @@ SPDX-License-Identifier: Apache-2.0
 
           <!-- number of packets -->
           <v-row class="form-group">
-            <label class="col-sm-3 col-form-label text-end font-weight-bold">
+            <v-col
+              tag="label"
+              cols="12"
+              sm="3"
+              class="text-end font-weight-bold align-self-center">
               {{ $t('settings.general.numberOfPackets') }}
-            </label>
+            </v-col>
             <v-col
               cols="12"
               sm="9">
@@ -269,9 +281,13 @@ SPDX-License-Identifier: Apache-2.0
 
           <!-- show packet timestamp -->
           <v-row class="form-group">
-            <label class="col-sm-3 col-form-label text-end font-weight-bold">
+            <v-col
+              tag="label"
+              cols="12"
+              sm="3"
+              class="text-end font-weight-bold align-self-center">
               {{ $t('settings.general.showPacketInfo') }}
-            </label>
+            </v-col>
             <v-col
               cols="12"
               sm="9">
@@ -299,9 +315,13 @@ SPDX-License-Identifier: Apache-2.0
 
           <!-- issue query on initial page load -->
           <v-row class="form-group">
-            <label class="col-sm-3 col-form-label text-end font-weight-bold">
+            <v-col
+              tag="label"
+              cols="12"
+              sm="3"
+              class="text-end font-weight-bold align-self-center">
               {{ $t('settings.general.queryOnLoad') }}
-            </label>
+            </v-col>
             <v-col
               cols="12"
               sm="9">
@@ -326,9 +346,13 @@ SPDX-License-Identifier: Apache-2.0
 
           <!-- session sort -->
           <v-row class="form-group">
-            <label class="col-sm-3 col-form-label text-end font-weight-bold">
+            <v-col
+              tag="label"
+              cols="12"
+              sm="3"
+              class="text-end font-weight-bold align-self-center">
               {{ $t('settings.general.sortSessionsBy') }}
-            </label>
+            </v-col>
             <v-col
               cols="12"
               sm="6">
@@ -376,9 +400,13 @@ SPDX-License-Identifier: Apache-2.0
           <v-row
             v-if="fields && settings.spiGraph"
             class="form-group">
-            <label class="col-sm-3 col-form-label text-end font-weight-bold">
+            <v-col
+              tag="label"
+              cols="12"
+              sm="3"
+              class="text-end font-weight-bold align-self-center">
               {{ $t('settings.general.defaultSPIGraph') }}
-            </label>
+            </v-col>
             <v-col
               cols="12"
               sm="6">
@@ -409,9 +437,13 @@ SPDX-License-Identifier: Apache-2.0
           <v-row
             v-if="fields && settings.connSrcField"
             class="form-group">
-            <label class="col-sm-3 col-form-label text-end font-weight-bold">
+            <v-col
+              tag="label"
+              cols="12"
+              sm="3"
+              class="text-end font-weight-bold align-self-center">
               {{ $t('settings.general.connectionsSrc') }}
-            </label>
+            </v-col>
             <v-col
               cols="12"
               sm="6">
@@ -442,9 +474,13 @@ SPDX-License-Identifier: Apache-2.0
           <v-row
             v-if="fields && settings.connDstField"
             class="form-group">
-            <label class="col-sm-3 col-form-label text-end font-weight-bold">
+            <v-col
+              tag="label"
+              cols="12"
+              sm="3"
+              class="text-end font-weight-bold align-self-center">
               {{ $t('settings.general.connectionsDst') }}
-            </label>
+            </v-col>
             <v-col
               cols="12"
               sm="6">
@@ -474,9 +510,13 @@ SPDX-License-Identifier: Apache-2.0
           <v-row
             v-if="integerFields"
             class="form-group">
-            <label class="col-sm-3 col-form-label text-end font-weight-bold">
+            <v-col
+              tag="label"
+              cols="12"
+              sm="3"
+              class="text-end font-weight-bold align-self-center">
               {{ $t('settings.general.timelineDataFilters') }}
-            </label>
+            </v-col>
 
             <v-col
               cols="12"
@@ -527,9 +567,13 @@ SPDX-License-Identifier: Apache-2.0
           <v-row
             v-if="fields"
             class="form-group">
-            <label class="col-sm-3 col-form-label text-end font-weight-bold">
+            <v-col
+              tag="label"
+              cols="12"
+              sm="3"
+              class="text-end font-weight-bold align-self-center">
               {{ $t('settings.general.hideTags') }}
-            </label>
+            </v-col>
             <v-col
               cols="12"
               sm="6">
@@ -1509,9 +1553,13 @@ SPDX-License-Identifier: Apache-2.0
           <v-row
             v-if="!userId"
             class="mb-2">
-            <label class="col-sm-3 col-form-label text-end font-weight-bold">
+            <v-col
+              tag="label"
+              cols="12"
+              sm="3"
+              class="text-end font-weight-bold align-self-center">
               {{ $t('settings.password.currentPassword') }}
-            </label>
+            </v-col>
             <v-col
               cols="12"
               sm="6">
@@ -1527,9 +1575,13 @@ SPDX-License-Identifier: Apache-2.0
 
           <!-- new password -->
           <v-row class="mb-2">
-            <label class="col-sm-3 col-form-label text-end font-weight-bold">
+            <v-col
+              tag="label"
+              cols="12"
+              sm="3"
+              class="text-end font-weight-bold align-self-center">
               {{ $t('settings.password.newPassword') }}
-            </label>
+            </v-col>
             <v-col
               cols="12"
               sm="6">
@@ -1545,9 +1597,13 @@ SPDX-License-Identifier: Apache-2.0
 
           <!-- confirm new password -->
           <v-row class="mb-2">
-            <label class="col-sm-3 col-form-label text-end font-weight-bold">
+            <v-col
+              tag="label"
+              cols="12"
+              sm="3"
+              class="text-end font-weight-bold align-self-center">
               {{ $t('settings.password.confirmPassword') }}
-            </label>
+            </v-col>
             <v-col
               cols="12"
               sm="6">
@@ -1563,7 +1619,13 @@ SPDX-License-Identifier: Apache-2.0
 
           <!-- change password button/error -->
           <v-row class="mb-2">
-            <label class="col-sm-3 col-form-label">&nbsp;</label>
+            <v-col
+              tag="label"
+              cols="12"
+              sm="3"
+              class="align-self-center">
+&nbsp;
+            </v-col>
             <v-col
               cols="12"
               sm="9">
