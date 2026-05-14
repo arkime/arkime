@@ -30,8 +30,6 @@ LOCAL void other220_classify(ArkimeSession_t *session, const uint8_t *data, int 
 {
     if (g_strstr_len((char *)data, len, "LMTP") != NULL) {
         arkime_session_add_protocol(session, "lmtp");
-    } else if (g_strstr_len((char *)data, len, "SMTP") == NULL && g_strstr_len((char *)data, len, " TLS") == NULL) {
-        arkime_session_add_protocol(session, "ftp");
     }
 }
 /******************************************************************************/
@@ -344,6 +342,7 @@ void arkime_parser_init()
     SIMPLE_CLASSIFY_TCP("pop3", "+OK ");
     CLASSIFY_TCP("gh0st", 13, "\x78", gh0st_classify);
     CLASSIFY_TCP("other220", 0, "220 ", other220_classify);
+    CLASSIFY_TCP("other220", 0, "220-", other220_classify);
     CLASSIFY_TCP("vnc", 0, "RFB 0", vnc_classify);
 
     SIMPLE_CLASSIFY_TCP("redis", "+PONG");

@@ -1605,6 +1605,7 @@ int  arkime_field_count(int pos, ArkimeSession_t *session);
 void arkime_field_certsinfo_update_extra (void *cert, char *key, char *value);
 GPtrArray *arkime_field_certsinfo_get_extra(const ArkimeSession_t *session, const char *key);
 void arkime_field_free(ArkimeSession_t *session);
+void arkime_field_free_one(ArkimeSession_t *session, int pos);
 void arkime_field_exit();
 
 int arkime_field_by_exp_add_internal(const char *exp, ArkimeFieldType type, ArkimeFieldGetFunc getCb, ArkimeFieldSetFunc setCb);

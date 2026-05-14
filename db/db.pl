@@ -4876,6 +4876,34 @@ sub sessions3Update
     "dstOuterASN" : {
       "type" : "keyword"
     },
+    "ftp" : {
+      "properties" : {
+        "banner" : {
+          "type" : "keyword"
+        },
+        "bannerCnt" : {
+          "type" : "long"
+        },
+        "command" : {
+          "type" : "keyword"
+        },
+        "commandCnt" : {
+          "type" : "long"
+        },
+        "filename" : {
+          "type" : "keyword"
+        },
+        "filenameCnt" : {
+          "type" : "long"
+        },
+        "responseCode" : {
+          "type" : "integer"
+        },
+        "responseCodeCnt" : {
+          "type" : "long"
+        }
+      }
+    },
     "http" : {
       "properties" : {
         "authType" : {

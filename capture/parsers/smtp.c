@@ -930,7 +930,7 @@ LOCAL void smtp_classify(ArkimeSession_t *session, const uint8_t *data, int len,
 
     if (memcmp("HELO ", data, 5) == 0 ||
         memcmp("EHLO ", data, 5) == 0 ||
-        (memcmp("220 ", data, 4) == 0 &&
+        ((memcmp("220 ", data, 4) == 0 || memcmp("220-", data, 4) == 0) &&
          g_strstr_len((char *)data, len, "SMTP") != 0)) {
 
         if (arkime_session_has_protocol(session, "smtp"))
@@ -1111,4 +1111,5 @@ void arkime_parser_init()
     arkime_parsers_classifier_register_tcp("smtp", NULL, 0, (uint8_t *)"HELO", 4, smtp_classify);
     arkime_parsers_classifier_register_tcp("smtp", NULL, 0, (uint8_t *)"EHLO", 4, smtp_classify);
     arkime_parsers_classifier_register_tcp("smtp", NULL, 0, (uint8_t *)"220 ", 4, smtp_classify);
+    arkime_parsers_classifier_register_tcp("smtp", NULL, 0, (uint8_t *)"220-", 4, smtp_classify);
 }
