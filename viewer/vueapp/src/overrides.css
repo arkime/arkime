@@ -14,6 +14,40 @@
   --bs-pink: var(--color-quaternary);
 }
 
+/* utility-class shims for Bootstrap-named classes Vuetify does not
+   ship. Same 0.25rem scale Bootstrap uses (1=0.25, 2=0.5, 3=1, 4=1.5,
+   5=3). gap-* covers flex/grid layouts that depended on Bootstrap;
+   m-*/p-* are the all-sides forms (Vuetify ships ma-* / pa-* but not
+   the bare names). */
+.gap-0 { gap: 0 !important; }
+.gap-1 { gap: 0.25rem !important; }
+.gap-2 { gap: 0.5rem !important; }
+.gap-3 { gap: 1rem !important; }
+.gap-4 { gap: 1.5rem !important; }
+.gap-5 { gap: 3rem !important; }
+.m-0 { margin: 0 !important; }
+.m-1 { margin: 0.25rem !important; }
+.m-2 { margin: 0.5rem !important; }
+.m-3 { margin: 1rem !important; }
+.m-4 { margin: 1.5rem !important; }
+.m-5 { margin: 3rem !important; }
+.p-0 { padding: 0 !important; }
+.p-1 { padding: 0.25rem !important; }
+.p-2 { padding: 0.5rem !important; }
+.p-3 { padding: 1rem !important; }
+.p-4 { padding: 1.5rem !important; }
+.p-5 { padding: 3rem !important; }
+
+/* Inline-element baselines: Bootstrap reset svg/img to middle so they
+   don't carry the descender gap that inline elements get by default.
+   Vuetify's ress.css leaves them at baseline. Restore Bootstrap's
+   behavior so flex containers measuring chart heights via ResizeObserver
+   don't see an extra few pixels per render (and feedback-loop the
+   summary widget chart sizes). */
+img, svg {
+  vertical-align: middle;
+}
+
 /* native form controls -------------------------------------------------- */
 input,
 input:focus,
