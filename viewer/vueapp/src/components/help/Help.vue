@@ -165,15 +165,17 @@ SPDX-License-Identifier: Apache-2.0
         <span class="fa fa-fw fa-link" />&nbsp;
         Links
       </h3>
-      <div class="row">
-        <div class="col-sm-12">
+      <v-row>
+        <v-col
+          cols="12"
+          sm="12">
           <a href="https://arkime.com">Home Page</a> |
           <a href="https://arkime.com/faq">FAQ</a> |
           <a href="https://arkime.com/learn">Docs</a> |
           <a href="https://github.com/arkime/arkime">GitHub</a> |
           <a href="https://slackinvite.arkime.com/">Request Slack Invite</a>
-        </div>
-      </div>
+        </v-col>
+      </v-row>
 
       <hr>
 

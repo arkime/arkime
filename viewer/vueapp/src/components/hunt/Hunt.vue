@@ -16,8 +16,8 @@ SPDX-License-Identifier: Apache-2.0
           @recalc-collapse="$emit('recalc-collapse')" /> <!-- /search navbar -->
 
         <!-- hunt create navbar -->
-        <div
-          class="row g-1 hunt-create-navbar ps-2 pe-2 py-2 justify-space-between align-center"
+        <v-row
+          class="g-1 hunt-create-navbar ps-2 pe-2 py-2 justify-space-between align-center"
           style="min-height: 44px;">
           <div class="col-auto">
             <span v-if="loadingSessions">
@@ -76,7 +76,7 @@ SPDX-License-Identifier: Apache-2.0
               {{ $t('common.cancel') }}
             </v-btn>
           </div>
-        </div> <!-- /hunt create navbar -->
+        </v-row> <!-- /hunt create navbar -->
       </span>
     </ArkimeCollapsible>
 
@@ -137,8 +137,8 @@ SPDX-License-Identifier: Apache-2.0
             <form
               class="pa-3"
               @keyup.enter="createJob">
-              <div class="row">
-                <div class="col-12">
+              <v-row>
+                <v-col cols="12">
                   <v-alert
                     :type="sessions.recordsFiltered >= huntWarn ? 'error' : 'info'"
                     variant="tonal"
@@ -162,9 +162,9 @@ SPDX-License-Identifier: Apache-2.0
                       {{ $t('hunts.multiViewerHtml', { cluster: selectedCluster[0] }) }}
                     </span>
                   </v-alert>
-                </div>
-              </div>
-              <div class="row g-1">
+                </v-col>
+              </v-row>
+              <v-row class="g-1">
                 <div class="col-auto mb-2 flex-grow-1">
                   <!-- packet search job name -->
                   <div class="arkime-input-group arkime-input-group--fluid">
@@ -186,7 +186,7 @@ SPDX-License-Identifier: Apache-2.0
                   </div> <!-- /packet search job name -->
                 </div>
                 <!-- packet search size -->
-                <div class="col">
+                <v-col cols="auto">
                   <div class="arkime-input-group arkime-input-group--fluid">
                     <span class="arkime-input-label">
                       {{ $t('hunts.jobSize') }}
@@ -202,18 +202,18 @@ SPDX-License-Identifier: Apache-2.0
                       </option>
                     </select>
                   </div>
-                </div> <!-- /packet search size -->
+                </v-col> <!-- /packet search size -->
                 <!-- notifier -->
-                <div class="col">
+                <v-col cols="auto">
                   <NotifierDropdown
                     :notifiers="notifiers"
                     :selected-notifiers="jobNotifier"
                     @selected-notifiers-updated="updateJobNotifiers"
                     :display-text="jobNotifier.length > 0 ? undefined : $t('settings.cron.selectNotifier')" />
-                </div> <!-- /notifier -->
-              </div>
-              <div class="row g-1 mb-2">
-                <div class="col">
+                </v-col> <!-- /notifier -->
+              </v-row>
+              <v-row class="g-1 mb-2">
+                <v-col cols="auto">
                   <div class="arkime-input-group arkime-input-group--fluid">
                     <span
                       id="jobDescription"
@@ -229,10 +229,10 @@ SPDX-License-Identifier: Apache-2.0
                       v-model="jobDescription"
                       :placeholder="$t('hunts.jobDescriptionPlaceholder')">
                   </div>
-                </div>
-              </div>
-              <div class="row mb-2">
-                <div class="col">
+                </v-col>
+              </v-row>
+              <v-row class="mb-2">
+                <v-col cols="auto">
                   <div class="arkime-input-group arkime-input-group--fluid">
                     <span
                       id="jobSearch"
@@ -248,11 +248,11 @@ SPDX-License-Identifier: Apache-2.0
                       :placeholder="$t('hunts.jobSearchPlaceholder')"
                       class="arkime-input-control">
                   </div>
-                </div>
-              </div>
-              <div class="row g-1 justify-start">
+                </v-col>
+              </v-row>
+              <v-row class="g-1 justify-start">
                 <!-- packet search text & text type -->
-                <div class="col">
+                <v-col cols="auto">
                   <v-btn-toggle
                     class="d-inline-flex"
                     density="compact"
@@ -285,11 +285,14 @@ SPDX-License-Identifier: Apache-2.0
                     <span class="fa fa-question-circle fa-lg" />
                     <v-tooltip activator="#safeRegexHelp">{{ $t('hunts.safeRegexHelpTip') }}</v-tooltip>
                   </a>
-                </div>
-              </div>
-              <div class="row g-1">
+                </v-col>
+              </v-row>
+              <v-row class="g-1">
                 <!-- packet search direction -->
-                <div class="col-lg-3 col-md-12">
+                <v-col
+                  cols="12"
+                  lg="3"
+                  md="12">
                   <v-checkbox
                     :model-value="jobSrc"
                     @update:model-value="jobSrc = $event"
@@ -304,9 +307,12 @@ SPDX-License-Identifier: Apache-2.0
                     density="compact"
                     hide-details
                     color="primary" />
-                </div> <!-- /packet search direction -->
+                </v-col> <!-- /packet search direction -->
                 <!-- packet search type -->
-                <div class="col-lg-3 col-md-12">
+                <v-col
+                  cols="12"
+                  lg="3"
+                  md="12">
                   <v-radio-group
                     :model-value="jobType"
                     @update:model-value="setJobType($event)"
@@ -321,10 +327,13 @@ SPDX-License-Identifier: Apache-2.0
                       value="reassembled"
                       color="primary" />
                   </v-radio-group>
-                </div> <!-- /packet search type -->
+                </v-col> <!-- /packet search type -->
                 <!-- sharing with users/roles -->
-                <div
-                  class="d-flex col-lg-6 col-md-12"
+                <v-col
+                  cols="12"
+                  lg="6"
+                  md="12"
+                  class="d-flex"
                   v-if="!anonymousMode">
                   <div class="align-self-start">
                     <RoleDropdown
@@ -350,10 +359,12 @@ SPDX-License-Identifier: Apache-2.0
                         class="arkime-input-control">
                     </div>
                   </div>
-                </div> <!-- /sharing with users/roles -->
-              </div>
-              <div class="row">
-                <div class="col-12 mt-1 d-flex align-center gap-2">
+                </v-col> <!-- /sharing with users/roles -->
+              </v-row>
+              <v-row>
+                <v-col
+                  cols="12"
+                  class="mt-1 d-flex align-center gap-2">
                   <v-alert
                     v-if="createFormError"
                     type="error"
@@ -387,8 +398,8 @@ SPDX-License-Identifier: Apache-2.0
                     <span class="fa fa-plus fa-fw" />&nbsp;
                     {{ $t('common.create') }}
                   </v-btn> <!-- /create search job button -->
-                </div>
-              </div>
+                </v-col>
+              </v-row>
             </form>
           </v-card>
         </transition>
@@ -491,8 +502,10 @@ SPDX-License-Identifier: Apache-2.0
               </v-btn>
             </h5>
             <div>
-              <div class="row">
-                <div class="col d-flex align-center gap-2">
+              <v-row>
+                <v-col
+                  cols="auto"
+                  class="d-flex align-center gap-2">
                   <toggle-btn
                     v-if="canView"
                     :opened="runningJob.expanded"
@@ -528,18 +541,18 @@ SPDX-License-Identifier: Apache-2.0
                           totalSessions: commaString(runningJob.totalSessions)})" />
                     </div>
                   </v-tooltip>
-                </div>
-              </div>
+                </v-col>
+              </v-row>
               <transition name="grow">
                 <div
                   v-if="runningJob.expanded"
                   class="mt-3">
-                  <div class="row">
-                    <div class="col-12">
+                  <v-row>
+                    <v-col cols="12">
                       <span class="fa fa-id-card fa-fw" />&nbsp;
                       {{ $t('hunts.huntJobId', { id: runningJob.id }) }}:
-                    </div>
-                  </div>
+                    </v-col>
+                  </v-row>
                   <hunt-data
                     :job="runningJob"
                     @remove-user="removeUser"
@@ -671,8 +684,8 @@ SPDX-License-Identifier: Apache-2.0
           <span class="fa fa-clock-o me-2" />
           {{ $t('hunts.title') }}
         </h4>
-        <div class="row g-1 justify-start">
-          <div class="col">
+        <v-row class="g-1 justify-start">
+          <v-col cols="auto">
             <!-- search packet search jobs -->
             <div class="arkime-input-group arkime-input-group--fluid">
               <span class="arkime-input-label arkime-input-label-fw">
@@ -696,7 +709,7 @@ SPDX-License-Identifier: Apache-2.0
                 <span class="fa fa-close" />
               </v-btn>
             </div> <!-- /search packet search jobs -->
-          </div>
+          </v-col>
           <div class="col-auto">
             <!-- job history paging -->
             <arkime-paging
@@ -704,7 +717,7 @@ SPDX-License-Identifier: Apache-2.0
               :records-filtered="historyResults.recordsFiltered"
               @change-paging="changePaging" /> <!-- /job history paging -->
           </div>
-        </div>
+        </v-row>
 
         <table class="arkime-table">
           <thead>

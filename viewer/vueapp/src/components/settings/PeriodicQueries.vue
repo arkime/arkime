@@ -75,8 +75,10 @@ SPDX-License-Identifier: Apache-2.0
         <v-card-text>
           <!-- create form -->
           <form>
-            <div class="row mb-2">
-              <div class="col-md-4">
+            <v-row class="mb-2">
+              <v-col
+                cols="12"
+                md="4">
                 <div class="arkime-input-group arkime-input-group--fluid">
                   <span
                     id="newCronQueryName"
@@ -91,8 +93,10 @@ SPDX-License-Identifier: Apache-2.0
                     @input="newCronQueryName = $event.target.value"
                     :placeholder="$t('settings.cron.queryNamePlaceholder')">
                 </div>
-              </div>
-              <div class="col-md-4">
+              </v-col>
+              <v-col
+                cols="12"
+                md="4">
                 <div class="arkime-input-group arkime-input-group--fluid">
                   <span
                     id="newCronQueryAction"
@@ -117,8 +121,10 @@ SPDX-License-Identifier: Apache-2.0
                     </option>
                   </select>
                 </div>
-              </div>
-              <div class="col-md-4">
+              </v-col>
+              <v-col
+                cols="12"
+                md="4">
                 <div class="arkime-input-group arkime-input-group--fluid">
                   <span
                     id="newCronQueryTags"
@@ -135,10 +141,10 @@ SPDX-License-Identifier: Apache-2.0
                     @input="newCronQueryTags = $event.target.value"
                     :placeholder="$t('settings.cron.tagsPlaceholder')">
                 </div>
-              </div>
-            </div>
-            <div class="row mb-2">
-              <div class="col">
+              </v-col>
+            </v-row>
+            <v-row class="mb-2">
+              <v-col cols="auto">
                 <div class="arkime-input-group arkime-input-group--fluid">
                   <span
                     id="newCronQueryExpression"
@@ -153,10 +159,12 @@ SPDX-License-Identifier: Apache-2.0
                     @update:model-value="newCronQueryExpression = $event"
                     :placeholder="$t('settings.cron.searchExpressionPlaceholder')" />
                 </div>
-              </div>
-            </div>
-            <div class="row mb-2">
-              <div class="col-md-6">
+              </v-col>
+            </v-row>
+            <v-row class="mb-2">
+              <v-col
+                cols="12"
+                md="6">
                 <div class="arkime-input-group arkime-input-group--fluid">
                   <span
                     id="newCronQueryProcess"
@@ -178,17 +186,19 @@ SPDX-License-Identifier: Apache-2.0
                     </option>
                   </select>
                 </div>
-              </div>
-              <div class="col-md-6">
+              </v-col>
+              <v-col
+                cols="12"
+                md="6">
                 <NotifierDropdown
                   :notifiers="notifiers"
                   :selected-notifiers="newCronQueryNotifier"
                   @selected-notifiers-updated="newCronQueryNotifier = $event"
                   :display-text="newCronQueryNotifier.length > 0 ? $t('common.notifierCount', newCronQueryNotifier.length) : $t('settings.cron.selectNotifier')" />
-              </div>
-            </div>
-            <div class="row mb-2">
-              <div class="col">
+              </v-col>
+            </v-row>
+            <v-row class="mb-2">
+              <v-col cols="auto">
                 <div class="arkime-input-group arkime-input-group--fluid">
                   <span
                     id="newCronQueryDescription"
@@ -204,8 +214,8 @@ SPDX-License-Identifier: Apache-2.0
                     @input="newCronQueryDescription = $event.target.value"
                     :placeholder="$t('settings.cron.queryDescriptionPlaceholder')" />
                 </div>
-              </div>
-            </div>
+              </v-col>
+            </v-row>
             <div class="d-flex">
               <div class="me-3 flex-grow-1 no-wrap">
                 <RoleDropdown
@@ -433,60 +443,54 @@ SPDX-License-Identifier: Apache-2.0
           </div>
         </v-card-text>
         <v-card-text>
-          <div class="row">
-            <div class="col">
+          <v-row>
+            <v-col cols="auto">
               <strong>{{ $t('settings.cron.matches') }}</strong>:
               {{ query.count }}
-            </div>
-          </div>
-          <div
-            class="row"
+            </v-col>
+          </v-row>
+          <v-row
             v-if="query.creator">
-            <div class="col">
+            <v-col cols="auto">
               <strong>{{ $t('settings.cron.createdBy') }}</strong>:
               {{ query.creator }}
-            </div>
-          </div>
-          <div
-            class="row"
+            </v-col>
+          </v-row>
+          <v-row
             v-if="query.created">
-            <div class="col">
+            <v-col cols="auto">
               <strong>{{ $t('settings.cron.createdAt') }}</strong>:
               {{ timezoneDateString(query.created * 1000, user.settings.timezone, false) }}
-            </div>
-          </div>
-          <div
-            class="row"
+            </v-col>
+          </v-row>
+          <v-row
             v-if="query.lastRun">
-            <div class="col">
+            <v-col cols="auto">
               <strong>{{ $t('settings.cron.lastRun') }}</strong>:
               {{ timezoneDateString(query.lastRun * 1000, user.settings.timezone, false) }}
-            </div>
-          </div>
-          <div
-            class="row"
+            </v-col>
+          </v-row>
+          <v-row
             v-if="query.lastRun">
-            <div class="col">
+            <v-col cols="auto">
               <strong>{{ $t('settings.cron.lastMatches') }}</strong>:
               {{ query.lastCount || 0 }}
-            </div>
-          </div>
-          <div
-            class="row"
+            </v-col>
+          </v-row>
+          <v-row
             v-if="query.lastToggled">
-            <div class="col">
+            <v-col cols="auto">
               <strong>{{ query.enabled ? 'Enabled' : 'Disabled' }} at</strong>:
               {{ timezoneDateString(query.lastToggled * 1000, user.settings.timezone, false) }}
-            </div>
-          </div>
-          <div
-            class="row"
+            </v-col>
+          </v-row>
+          <v-row
             v-if="query.lastToggled">
-            <div class="col">
+            <v-col cols="auto">
               <strong>{{ $t('settings.cron.lastToggledBy') }}</strong>:
               by {{ query.lastToggledBy }}
-            </div>
-          </div>
+            </v-col>
+          </v-row>
         </v-card-text>
         <v-card-actions>
           <v-btn

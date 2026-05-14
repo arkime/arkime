@@ -4,16 +4,18 @@ SPDX-License-Identifier: Apache-2.0
 -->
 <template>
   <div>
-    <div class="row">
-      <div class="col-12">
+    <v-row>
+      <v-col cols="12">
         <hunt-status
           :id="localJob.id"
           :status="localJob.status"
           :queue-count="localJob.queueCount" />
-      </div>
-    </div>
-    <div class="row">
-      <div class="col-12 d-flex">
+      </v-col>
+    </v-row>
+    <v-row>
+      <v-col
+        cols="12"
+        class="d-flex">
         <span class="fa fa-fw fa-file-text mt-1" />&nbsp;
         <template v-if="!editDescription">
           <span
@@ -78,8 +80,8 @@ SPDX-License-Identifier: Apache-2.0
             </v-btn>
           </div>
         </div>
-      </div>
-    </div>
+      </v-col>
+    </v-row>
     <div>
       <span class="fa fa-fw fa-eye" />&nbsp;
       <span
@@ -115,36 +117,34 @@ SPDX-License-Identifier: Apache-2.0
           })" />
       </span>
     </div>
-    <div class="row">
-      <div class="col-12">
+    <v-row>
+      <v-col cols="12">
         <span class="fa fa-fw fa-clock-o" />&nbsp;
         {{ $t('common.created') }}:
         <strong>
           {{ timezoneDateString(localJob.created * 1000, user.settings.timezone, false) }}
         </strong>
-      </div>
-    </div>
-    <div
-      v-if="localJob.lastUpdated"
-      class="row">
-      <div class="col-12">
+      </v-col>
+    </v-row>
+    <v-row
+      v-if="localJob.lastUpdated">
+      <v-col cols="12">
         <span class="fa fa-fw fa-clock-o" />&nbsp;
         {{ $t('common.lastUpdated') }}:
         <strong>
           {{ timezoneDateString(localJob.lastUpdated * 1000, user.settings.timezone, false) }}
         </strong>
-      </div>
-    </div>
-    <div
-      class="row"
+      </v-col>
+    </v-row>
+    <v-row
       v-if="localJob.notifier">
-      <div class="col-12">
+      <v-col cols="12">
         <span class="fa fa-fw fa-bell" />&nbsp;
         Notifying: {{ getNotifierNames(localJob.notifier) }}
-      </div>
-    </div>
-    <div class="row">
-      <div class="col-12">
+      </v-col>
+    </v-row>
+    <v-row>
+      <v-col cols="12">
         <span class="fa fa-fw fa-search" />&nbsp;
         <span
           v-html="$t('hunts.results-examiningHtml', {
@@ -152,39 +152,37 @@ SPDX-License-Identifier: Apache-2.0
             type: localJob.type,
             srcdst: (localJob.src ? '<strong>' + $t('common.sourceLC') + '</strong>' : '') + (localJob.src && localJob.dst ? ' and ' : '') + (localJob.dst ? '<strong>' + $t('common.destinationLC') + '</strong>' : '')
           })" />
-      </div>
-    </div>
-    <div
-      v-if="localJob.query.expression"
-      class="row">
-      <div class="col-12">
+      </v-col>
+    </v-row>
+    <v-row
+      v-if="localJob.query.expression">
+      <v-col cols="12">
         <span class="fa fa-fw fa-search" />&nbsp;
         {{ $t('hunts.results-queryExpression') }}:
         <strong>{{ localJob.query.expression }}</strong>
-      </div>
-    </div>
-    <div
-      v-if="localJob.query.view"
-      class="row">
-      <div class="col-12">
+      </v-col>
+    </v-row>
+    <v-row
+      v-if="localJob.query.view">
+      <v-col cols="12">
         <span class="fa fa-fw fa-search" />&nbsp;
         {{ $t('hunts.results-queryView') }}:
         <strong>{{ getViewName(localJob.query.view) }}</strong>
-      </div>
-    </div>
-    <div class="row">
-      <div class="col-12">
+      </v-col>
+    </v-row>
+    <v-row>
+      <v-col cols="12">
         <span class="fa fa-fw fa-clock-o" />&nbsp;
         <span
           v-html="$t('hunts.results-timeRangeHtml', {
             start: timezoneDateString(localJob.query.startTime * 1000, user.settings.timezone, false),
             stop: timezoneDateString(localJob.query.stopTime * 1000, user.settings.timezone, false)
           })" />
-      </div>
-    </div>
+      </v-col>
+    </v-row>
     <template v-if="canEdit">
-      <div class="row mb-2">
-        <div class="col-12">
+      <v-row class="mb-2">
+        <v-col cols="12">
           <span class="fa fa-fw fa-share-alt" />&nbsp;
           <template v-if="localJob.users && localJob.users.length">
             {{ $t('hunts.sharedWithUsers') }}:
@@ -257,10 +255,10 @@ SPDX-License-Identifier: Apache-2.0
               </v-btn>
             </div>
           </template>
-        </div>
-      </div>
-      <div class="row mb-2">
-        <div class="col-12">
+        </v-col>
+      </v-row>
+      <v-row class="mb-2">
+        <v-col cols="12">
           <span class="fa fa-fw fa-share-alt" />&nbsp;
           <template v-if="localJob.roles && localJob.roles.length">
             {{ $t('hunts.addRoles') }}:
@@ -273,23 +271,23 @@ SPDX-License-Identifier: Apache-2.0
             :roles="roles"
             :selected-roles="localJob.roles"
             @selected-roles-updated="updateJobRoles" />
-        </div>
-      </div>
+        </v-col>
+      </v-row>
     </template>
-    <div
-      class="row mb-2"
+    <v-row
+      class="mb-2"
       v-else-if="isShared">
-      <div class="col-12">
+      <v-col cols="12">
         <span class="fa fa-fw fa-share-alt" />&nbsp;
         {{ $t('hunts.haveAccess') }}
-      </div>
-    </div>
+      </v-col>
+    </v-row>
     <template v-if="localJob.errors">
-      <div
+      <v-row
         v-for="(error, index) in localJob.errors"
         :key="index"
-        class="row text-danger">
-        <div class="col-12">
+        class="text-danger">
+        <v-col cols="12">
           <span class="fa fa-fw fa-exclamation-triangle" />&nbsp;
           <span v-if="error.time">
             {{ timezoneDateString(error.time * 1000, user.settings.timezone, false) }}
@@ -301,8 +299,8 @@ SPDX-License-Identifier: Apache-2.0
             -
           </span>
           {{ error.value }}
-        </div>
-      </div>
+        </v-col>
+      </v-row>
     </template>
   </div>
 </template>

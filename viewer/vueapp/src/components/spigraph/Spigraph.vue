@@ -170,8 +170,10 @@ SPDX-License-Identifier: Apache-2.0
             :key="item.name"
             class="spi-graph-item ps-1 pe-1 pt-1">
             <!-- field value -->
-            <div class="row">
-              <div class="col-md-12">
+            <v-row>
+              <v-col
+                cols="12"
+                md="12">
                 <div class="spi-bucket">
                   <strong>
                     <arkime-session-field
@@ -184,19 +186,21 @@ SPDX-License-Identifier: Apache-2.0
                   </strong>
                   <sup>({{ commaString(item[graphType]) }})</sup>
                 </div>
-              </div>
-            </div> <!-- /field value -->
+              </v-col>
+            </v-row> <!-- /field value -->
             <!-- field visualization -->
-            <div class="row">
-              <div class="col-md-12">
+            <v-row>
+              <v-col
+                cols="12"
+                md="12">
                 <arkime-visualizations
                   :id="(index + 1).toString()"
                   :graph-data="item.graph"
                   :map-data="item.map"
                   :primary="false"
                   :timeline-data-filters="timelineDataFilters" />
-              </div>
-            </div> <!-- /field visualization -->
+              </v-col>
+            </v-row> <!-- /field visualization -->
           </div>
         </template> <!-- /values -->
       </div> <!-- /default graph type -->

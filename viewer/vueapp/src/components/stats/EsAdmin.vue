@@ -96,11 +96,11 @@ SPDX-License-Identifier: Apache-2.0
 
       <hr>
 
-      <div
+      <v-row
         v-for="setting in settings"
         :key="setting.key"
-        class="row mt-2">
-        <div class="col">
+        class="mt-2">
+        <v-col cols="auto">
           <div class="arkime-input-group arkime-input-group--fluid">
             <span
               :id="`setting-${setting.key}`"
@@ -169,8 +169,8 @@ SPDX-License-Identifier: Apache-2.0
             <span class="fa fa-exclamation-triangle" />
             {{ setting.error }}
           </div>
-        </div>
-      </div>
+        </v-col>
+      </v-row>
 
       <v-alert
         type="info"

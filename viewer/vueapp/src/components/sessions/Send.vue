@@ -59,8 +59,8 @@ SPDX-License-Identifier: Apache-2.0
     </div>
   </div>
 
-  <div class="row mt-2">
-    <div class="col">
+  <v-row class="mt-2">
+    <v-col cols="auto">
       <p class="text-info small mb-0">
         <em>
           <strong>
@@ -69,8 +69,8 @@ SPDX-License-Identifier: Apache-2.0
           </strong>
         </em>
       </p>
-    </div>
-  </div>
+    </v-col>
+  </v-row>
 </template>
 
 <script setup>

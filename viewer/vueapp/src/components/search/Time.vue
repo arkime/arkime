@@ -3,9 +3,9 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-  <div class="row g-1 text-start flex-nowrap justify-start">
+  <v-row class="g-1 text-start flex-nowrap justify-start">
     <!-- time range select -->
-    <div class="col">
+    <v-col cols="auto">
       <div class="arkime-input-group arkime-input-group--fluid">
         <span
           id="timeInput"
@@ -104,10 +104,10 @@ SPDX-License-Identifier: Apache-2.0
           </option>
         </select>
       </div>
-    </div> <!-- /time range select -->
+    </v-col> <!-- /time range select -->
 
     <!-- start time -->
-    <div class="col">
+    <v-col cols="auto">
       <div class="arkime-input-group arkime-input-group--fluid">
         <span
           id="startTimeLabel"
@@ -175,10 +175,10 @@ SPDX-License-Identifier: Apache-2.0
           </v-tooltip>
         </v-btn>
       </div>
-    </div> <!-- /start time -->
+    </v-col> <!-- /start time -->
 
     <!-- stop time -->
-    <div class="col">
+    <v-col cols="auto">
       <div class="arkime-input-group arkime-input-group--fluid">
         <span
           id="stopTimeLabel"
@@ -246,11 +246,11 @@ SPDX-License-Identifier: Apache-2.0
           </v-tooltip>
         </v-btn>
       </div>
-    </div> <!-- /stop time -->
+    </v-col> <!-- /stop time -->
 
     <!-- time bounding select -->
-    <div
-      class="col"
+    <v-col
+      cols="auto"
       v-if="!hideBounding">
       <div class="arkime-input-group arkime-input-group--fluid">
         <span
@@ -286,11 +286,11 @@ SPDX-License-Identifier: Apache-2.0
             v-i18n-value="'search.timeBounding-'" />
         </select>
       </div>
-    </div>  <!-- /time bounding select -->
+    </v-col>  <!-- /time bounding select -->
 
     <!-- time interval select -->
-    <div
-      class="col"
+    <v-col
+      cols="auto"
       v-if="!hideInterval">
       <div class="arkime-input-group arkime-input-group--fluid">
         <span
@@ -329,7 +329,7 @@ SPDX-License-Identifier: Apache-2.0
             v-i18n-value="'search.timeInterval-'" />
         </select>
       </div>
-    </div> <!-- /time interval select -->
+    </v-col> <!-- /time interval select -->
 
     <!-- human readable time range or error -->
     <div class="col-auto time-range-display">
@@ -355,7 +355,7 @@ SPDX-License-Identifier: Apache-2.0
         </template>
       </span>
     </div> <!-- /human readable time range or error -->
-  </div>
+  </v-row>
 </template>
 
 <script>

@@ -172,14 +172,14 @@ SPDX-License-Identifier: Apache-2.0
       </v-card>
     </v-dialog> <!-- /big expression modal -->
 
-    <div
+    <v-row
       v-if="error"
-      class="row small text-danger mb-0 mt-1">
-      <div class="col">
+      class="small text-danger mb-0 mt-1">
+      <v-col cols="auto">
         <span class="fa fa-exclamation-triangle me-1" />
         {{ error }}
-      </div>
-    </div>
+      </v-col>
+    </v-row>
   </div>
 </template>
 

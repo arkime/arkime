@@ -389,7 +389,7 @@ SPDX-License-Identifier: Apache-2.0
 
       <div v-if="actionForm">
         <hr class="action-form-separator">
-        <div class="row d-flex gap-1">
+        <v-row class="d-flex gap-1">
           <div
             v-if="showApplyButtons"
             class="col-auto">
@@ -487,7 +487,7 @@ SPDX-License-Identifier: Apache-2.0
               @done="actionFormDone"
               :fields="fields" />
           </div> <!-- /actions menu forms -->
-        </div>
+        </v-row>
       </div>
     </div>
   </form>

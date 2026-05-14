@@ -7,10 +7,11 @@ SPDX-License-Identifier: Apache-2.0
     <ArkimeCollapsible>
       <span class="fixed-header">
         <!-- stats sub navbar -->
-        <div class="row g-1 stats-form p-1 align-center justify-start">
+        <v-row class="g-1 stats-form p-1 align-center justify-start">
 
-          <div
-            class="col flex-grow-1"
+          <v-col
+            cols="auto"
+            class="flex-grow-1"
             v-if="tabIndex !== 7">
             <div class="arkime-input-group arkime-input-group--fluid">
               <span class="arkime-input-label arkime-input-label-fw">
@@ -46,7 +47,7 @@ SPDX-License-Identifier: Apache-2.0
                 <span class="fa fa-close" />
               </v-btn>
             </div>
-          </div>
+          </v-col>
 
           <!-- graph type select -->
           <div
@@ -338,7 +339,7 @@ SPDX-License-Identifier: Apache-2.0
             </v-btn>
           </div> <!-- /refresh button -->
 
-          <div class="col">
+          <v-col cols="auto">
             <!-- confirm button -->
             <transition name="buttons">
               <v-btn
@@ -368,7 +369,7 @@ SPDX-License-Identifier: Apache-2.0
                 {{ $t('common.cancel') }}
               </v-btn>
             </transition> <!-- /cancel confirm button -->
-          </div>
+          </v-col>
 
           <!-- error (from child component) -->
           <v-alert
@@ -476,7 +477,7 @@ SPDX-License-Identifier: Apache-2.0
             </v-btn>
           </div>
 
-        </div> <!-- /stats sub navbar -->
+        </v-row> <!-- /stats sub navbar -->
       </span>
     </ArkimeCollapsible>
 

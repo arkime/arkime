@@ -42,12 +42,16 @@ SPDX-License-Identifier: Apache-2.0
       class="settings-error" /> <!-- /page error -->
 
     <!-- content -->
-    <div
-      class="settings-content row"
+    <v-row
+      class="settings-content"
       v-if="!loading && !error && settings">
       <!-- navigation -->
-      <div
-        class="col-xl-2 col-lg-3 col-md-3 col-sm-4 col-xs-12"
+      <v-col
+        cols="12"
+        xl="2"
+        lg="3"
+        md="3"
+        sm="4"
         role="tablist"
         aria-orientation="vertical">
         <v-tabs
@@ -107,9 +111,15 @@ SPDX-License-Identifier: Apache-2.0
             {{ $t('settings.nav.notifiers') }}
           </v-tab>
         </v-tabs>
-      </div> <!-- /navigation -->
+      </v-col> <!-- /navigation -->
 
-      <div class="col-xl-10 col-lg-9 col-md-9 col-sm-8 col-xs-12 settings-right-panel">
+      <v-col
+        cols="12"
+        xl="10"
+        lg="9"
+        md="9"
+        sm="8"
+        class="settings-right-panel">
         <!-- general settings -->
         <form
           class="form-horizontal"
@@ -130,11 +140,13 @@ SPDX-License-Identifier: Apache-2.0
           <hr>
 
           <!-- timezone -->
-          <div class="form-group row">
+          <v-row class="form-group">
             <label class="col-sm-3 col-form-label text-end font-weight-bold">
               {{ $t('settings.general.timezoneFormat') }}
             </label>
-            <div class="col-sm-9">
+            <v-col
+              cols="12"
+              sm="9">
               <div class="d-inline-flex align-center">
                 <v-btn-toggle
                   density="compact"
@@ -177,15 +189,17 @@ SPDX-License-Identifier: Apache-2.0
                   {{ timezoneDateString(date, settings.timezone, settings.ms) }}
                 </label>
               </div>
-            </div>
-          </div> <!-- /timezone -->
+            </v-col>
+          </v-row> <!-- /timezone -->
 
           <!-- session detail format -->
-          <div class="form-group row">
+          <v-row class="form-group">
             <label class="col-sm-3 col-form-label text-end font-weight-bold">
               {{ $t('settings.general.sessionDetailFormat') }}
             </label>
-            <div class="col-sm-9">
+            <v-col
+              cols="12"
+              sm="9">
               <v-btn-toggle
                 density="compact"
                 divided
@@ -211,15 +225,17 @@ SPDX-License-Identifier: Apache-2.0
                   {{ $t('settings.general.detail-hex') }}
                 </v-btn>
               </v-btn-toggle>
-            </div>
-          </div> <!-- /session detail format -->
+            </v-col>
+          </v-row> <!-- /session detail format -->
 
           <!-- number of packets -->
-          <div class="form-group row">
+          <v-row class="form-group">
             <label class="col-sm-3 col-form-label text-end font-weight-bold">
               {{ $t('settings.general.numberOfPackets') }}
             </label>
-            <div class="col-sm-9">
+            <v-col
+              cols="12"
+              sm="9">
               <v-btn-toggle
                 density="compact"
                 divided
@@ -248,15 +264,17 @@ SPDX-License-Identifier: Apache-2.0
                   2,000
                 </v-btn>
               </v-btn-toggle>
-            </div>
-          </div> <!-- /number of packets -->
+            </v-col>
+          </v-row> <!-- /number of packets -->
 
           <!-- show packet timestamp -->
-          <div class="form-group row">
+          <v-row class="form-group">
             <label class="col-sm-3 col-form-label text-end font-weight-bold">
               {{ $t('settings.general.showPacketInfo') }}
             </label>
-            <div class="col-sm-9">
+            <v-col
+              cols="12"
+              sm="9">
               <v-btn-toggle
                 density="compact"
                 divided
@@ -276,15 +294,17 @@ SPDX-License-Identifier: Apache-2.0
                   {{ $t('settings.general.info-off') }}
                 </v-btn>
               </v-btn-toggle>
-            </div>
-          </div> <!-- /show packet timestamp -->
+            </v-col>
+          </v-row> <!-- /show packet timestamp -->
 
           <!-- issue query on initial page load -->
-          <div class="form-group row">
+          <v-row class="form-group">
             <label class="col-sm-3 col-form-label text-end font-weight-bold">
               {{ $t('settings.general.queryOnLoad') }}
             </label>
-            <div class="col-sm-9">
+            <v-col
+              cols="12"
+              sm="9">
               <v-btn-toggle
                 density="compact"
                 divided
@@ -301,15 +321,17 @@ SPDX-License-Identifier: Apache-2.0
                   {{ $t('settings.general.query-true') }}
                 </v-btn>
               </v-btn-toggle>
-            </div>
-          </div> <!-- /issue query on initial page load -->
+            </v-col>
+          </v-row> <!-- /issue query on initial page load -->
 
           <!-- session sort -->
-          <div class="form-group row">
+          <v-row class="form-group">
             <label class="col-sm-3 col-form-label text-end font-weight-bold">
               {{ $t('settings.general.sortSessionsBy') }}
             </label>
-            <div class="col-sm-6">
+            <v-col
+              cols="12"
+              sm="6">
               <div class="arkime-input-group arkime-input-group--fluid">
                 <select
                   class="arkime-input-control"
@@ -326,8 +348,10 @@ SPDX-License-Identifier: Apache-2.0
                   </option>
                 </select>
               </div>
-            </div>
-            <div class="col-sm-3">
+            </v-col>
+            <v-col
+              cols="12"
+              sm="3">
               <v-btn-toggle
                 v-if="settings.sortColumn !== 'last'"
                 density="compact"
@@ -345,17 +369,19 @@ SPDX-License-Identifier: Apache-2.0
                   {{ $t('settings.general.sort-desc') }}
                 </v-btn>
               </v-btn-toggle>
-            </div>
-          </div> <!-- /session sort -->
+            </v-col>
+          </v-row> <!-- /session sort -->
 
           <!-- default spi graph -->
-          <div
+          <v-row
             v-if="fields && settings.spiGraph"
-            class="form-group row">
+            class="form-group">
             <label class="col-sm-3 col-form-label text-end font-weight-bold">
               {{ $t('settings.general.defaultSPIGraph') }}
             </label>
-            <div class="col-sm-6">
+            <v-col
+              cols="12"
+              sm="6">
               <div class="arkime-input-group arkime-input-group--fluid">
                 <arkime-field-typeahead
                   :dropup="true"
@@ -364,8 +390,10 @@ SPDX-License-Identifier: Apache-2.0
                   :initial-value="spiGraphTypeahead"
                   @field-selected="spiGraphFieldSelected" />
               </div>
-            </div>
-            <div class="col-sm-3">
+            </v-col>
+            <v-col
+              cols="12"
+              sm="3">
               <h4 v-if="spiGraphField">
                 <label
                   id="spiGraphFieldSetting"
@@ -374,17 +402,19 @@ SPDX-License-Identifier: Apache-2.0
                   <v-tooltip activator="#spiGraphFieldSetting">{{ spiGraphField.help }}</v-tooltip>
                 </label>
               </h4>
-            </div>
-          </div> <!-- /default spi graph -->
+            </v-col>
+          </v-row> <!-- /default spi graph -->
 
           <!-- connections src field -->
-          <div
+          <v-row
             v-if="fields && settings.connSrcField"
-            class="form-group row">
+            class="form-group">
             <label class="col-sm-3 col-form-label text-end font-weight-bold">
               {{ $t('settings.general.connectionsSrc') }}
             </label>
-            <div class="col-sm-6">
+            <v-col
+              cols="12"
+              sm="6">
               <div class="arkime-input-group arkime-input-group--fluid">
                 <arkime-field-typeahead
                   :dropup="true"
@@ -393,8 +423,10 @@ SPDX-License-Identifier: Apache-2.0
                   :initial-value="connSrcFieldTypeahead"
                   @field-selected="connSrcFieldSelected" />
               </div>
-            </div>
-            <div class="col-sm-3">
+            </v-col>
+            <v-col
+              cols="12"
+              sm="3">
               <h4 v-if="connSrcField">
                 <label
                   class="arkime-badge arkime-badge--info cursor-help"
@@ -403,17 +435,19 @@ SPDX-License-Identifier: Apache-2.0
                   <v-tooltip activator="#connSrcFieldSetting">{{ connSrcField.help }}</v-tooltip>
                 </label>
               </h4>
-            </div>
-          </div> <!-- /connections src field -->
+            </v-col>
+          </v-row> <!-- /connections src field -->
 
           <!-- connections dst field -->
-          <div
+          <v-row
             v-if="fields && settings.connDstField"
-            class="form-group row">
+            class="form-group">
             <label class="col-sm-3 col-form-label text-end font-weight-bold">
               {{ $t('settings.general.connectionsDst') }}
             </label>
-            <div class="col-sm-6">
+            <v-col
+              cols="12"
+              sm="6">
               <div class="arkime-input-group arkime-input-group--fluid">
                 <arkime-field-typeahead
                   :dropup="true"
@@ -422,8 +456,10 @@ SPDX-License-Identifier: Apache-2.0
                   :initial-value="connDstFieldTypeahead"
                   @field-selected="connDstFieldSelected" />
               </div>
-            </div>
-            <div class="col-sm-3">
+            </v-col>
+            <v-col
+              cols="12"
+              sm="3">
               <h4 v-if="connDstField">
                 <label
                   class="arkime-badge arkime-badge--info cursor-help"
@@ -432,17 +468,19 @@ SPDX-License-Identifier: Apache-2.0
                   <v-tooltip activator="#connDstFieldSetting">{{ connDstField.help }}</v-tooltip>
                 </label>
               </h4>
-            </div>
-          </div> <!-- /connections dst field -->
+            </v-col>
+          </v-row> <!-- /connections dst field -->
 
-          <div
+          <v-row
             v-if="integerFields"
-            class="form-group row">
+            class="form-group">
             <label class="col-sm-3 col-form-label text-end font-weight-bold">
               {{ $t('settings.general.timelineDataFilters') }}
             </label>
 
-            <div class="col-sm-6">
+            <v-col
+              cols="12"
+              sm="6">
               <div class="arkime-input-group arkime-input-group--fluid">
                 <arkime-field-typeahead
                   :dropup="true"
@@ -451,8 +489,10 @@ SPDX-License-Identifier: Apache-2.0
                   query-param="field"
                   @field-selected="timelineFilterSelected" />
               </div>
-            </div>
-            <div class="col-sm-3">
+            </v-col>
+            <v-col
+              cols="12"
+              sm="3">
               <h4 class="d-flex align-center gap-1">
                 <template v-if="timelineDataFilters.length > 0">
                   <label
@@ -480,17 +520,19 @@ SPDX-License-Identifier: Apache-2.0
                   </v-tooltip>
                 </v-btn>
               </h4>
-            </div>
-          </div>
+            </v-col>
+          </v-row>
 
           <!-- hide tags field -->
-          <div
+          <v-row
             v-if="fields"
-            class="form-group row">
+            class="form-group">
             <label class="col-sm-3 col-form-label text-end font-weight-bold">
               {{ $t('settings.general.hideTags') }}
             </label>
-            <div class="col-sm-6">
+            <v-col
+              cols="12"
+              sm="6">
               <div class="arkime-input-group arkime-input-group--fluid">
                 <input
                   type="text"
@@ -499,8 +541,8 @@ SPDX-License-Identifier: Apache-2.0
                   class="arkime-input-control"
                   :placeholder="$t('settings.general.hideTagsPlaceholder')">
               </div>
-            </div>
-          </div> <!-- /hide tags field -->
+            </v-col>
+          </v-row> <!-- /hide tags field -->
         </form>
 
         <!-- col configs settings -->
@@ -841,15 +883,19 @@ SPDX-License-Identifier: Apache-2.0
           <hr>
 
           <!-- theme picker -->
-          <div class="row">
-            <div
-              class="col-lg-6 col-md-12"
+          <v-row>
+            <v-col
+              cols="12"
+              lg="6"
+              md="12"
               v-for="theme in themeDisplays"
               :class="theme.class"
               :key="theme.class">
               <div class="theme-display">
-                <div class="row">
-                  <div class="col-md-12">
+                <v-row>
+                  <v-col
+                    cols="12"
+                    md="12">
                     <div class="d-flex align-center ms-1">
                       <input
                         type="radio"
@@ -864,8 +910,8 @@ SPDX-License-Identifier: Apache-2.0
                         {{ theme.name }}
                       </label>
                     </div>
-                  </div>
-                </div>
+                  </v-col>
+                </v-row>
                 <nav class="preview-navbar preview-navbar-dark">
                   <a class="preview-navbar-brand cursor-pointer">
                     <img
@@ -886,8 +932,12 @@ SPDX-License-Identifier: Apache-2.0
                   </ul>
                 </nav>
                 <div class="display-sub-navbar">
-                  <div class="row">
-                    <div class="col-xl-5 col-lg-4 col-md-5">
+                  <v-row>
+                    <v-col
+                      cols="12"
+                      xl="5"
+                      lg="4"
+                      md="5">
                       <div class="arkime-input-group ms-1">
                         <span class="arkime-input-label arkime-input-label-fw">
                           <span class="fa fa-search fa-fw" />
@@ -897,8 +947,12 @@ SPDX-License-Identifier: Apache-2.0
                           placeholder="Search"
                           class="arkime-input-control">
                       </div>
-                    </div>
-                    <div class="col-xl-7 col-lg-8 col-sm-7">
+                    </v-col>
+                    <v-col
+                      cols="12"
+                      xl="7"
+                      lg="8"
+                      sm="7">
                       <div class="font-weight-bold text-theme-accent ms-1">
                         Important text
                       </div>
@@ -930,8 +984,8 @@ SPDX-License-Identifier: Apache-2.0
                           </v-list>
                         </v-menu>
                       </div>
-                    </div>
-                  </div>
+                    </v-col>
+                  </v-row>
                 </div>
                 <div class="display-sub-sub-navbar">
                   <div class="ms-1 mt-2 pb-2">
@@ -942,16 +996,20 @@ SPDX-License-Identifier: Apache-2.0
                   </div>
                 </div>
               </div>
-            </div>
-          </div> <!-- /theme picker -->
+            </v-col>
+          </v-row> <!-- /theme picker -->
 
           <!-- logo picker -->
           <hr>
           <h3>{{ $t('settings.themes.logos') }}</h3>
           <p>{{ $t('settings.themes.pickLogo') }}</p>
-          <div class="row well logo-well me-1 ms-1">
-            <div
-              class="col-lg-3 col-md-4 col-sm-6 col-xs-12 mb-2 mt-2 logos"
+          <v-row class="well logo-well me-1 ms-1">
+            <v-col
+              cols="12"
+              lg="3"
+              md="4"
+              sm="6"
+              class="mb-2 mt-2 logos"
               v-for="logo in logos"
               :key="logo.location">
               <div class="d-flex align-center ms-1">
@@ -971,8 +1029,8 @@ SPDX-License-Identifier: Apache-2.0
               <img
                 :src="logo.location"
                 :alt="logo.name">
-            </div>
-          </div> <!-- /logo picker -->
+            </v-col>
+          </v-row> <!-- /logo picker -->
 
           <div v-if="settings.shiftyEyes">
             <hr>
@@ -1009,8 +1067,10 @@ SPDX-License-Identifier: Apache-2.0
 
           <div v-if="creatingCustom">
             <!-- custom theme display -->
-            <div class="row">
-              <div class="col-md-4">
+            <v-row>
+              <v-col
+                cols="12"
+                md="4">
                 <h3 class="mt-0 mb-3 d-flex align-center">
                   <span class="flex-grow-1">Custom Theme</span>
                   <v-btn
@@ -1061,8 +1121,10 @@ SPDX-License-Identifier: Apache-2.0
                   This color should stand out.
                   It displays session field values and important text in navbars.
                 </p>
-              </div>
-              <div class="col-md-8">
+              </v-col>
+              <v-col
+                cols="12"
+                md="8">
                 <div
                   class="custom-theme"
                   id="custom-theme-display">
@@ -1087,8 +1149,12 @@ SPDX-License-Identifier: Apache-2.0
                       </ul>
                     </div>
                     <div class="display-sub-navbar">
-                      <div class="row">
-                        <div class="col-xl-5 col-lg-4 col-md-5">
+                      <v-row>
+                        <v-col
+                          cols="12"
+                          xl="5"
+                          lg="4"
+                          md="5">
                           <div class="arkime-input-group ms-1">
                             <span class="arkime-input-label arkime-input-label-fw">
                               <span class="fa fa-search fa-fw" />
@@ -1098,8 +1164,12 @@ SPDX-License-Identifier: Apache-2.0
                               placeholder="Search"
                               class="arkime-input-control">
                           </div>
-                        </div>
-                        <div class="col-xl-7 col-lg-8 col-sm-7">
+                        </v-col>
+                        <v-col
+                          cols="12"
+                          xl="7"
+                          lg="8"
+                          sm="7">
                           <div class="font-weight-bold text-theme-accent ms-1">
                             Important text
                           </div>
@@ -1131,8 +1201,8 @@ SPDX-License-Identifier: Apache-2.0
                               </v-list>
                             </v-menu>
                           </div>
-                        </div>
-                      </div>
+                        </v-col>
+                      </v-row>
                     </div>
                     <div class="display-sub-sub-navbar">
                       <arkime-paging
@@ -1147,8 +1217,11 @@ SPDX-License-Identifier: Apache-2.0
                           <span class="fa fa-caret-down" />
                         </span>
                         <br><br>
-                        <div class="row">
-                          <div class="col-md-6 sessionsrc">
+                        <v-row>
+                          <v-col
+                            cols="12"
+                            md="6"
+                            class="sessionsrc">
                             <small class="session-detail-ts font-weight-bold">
                               <em class="ts-value">
                                 2013/11/18 03:06:52.831
@@ -1158,8 +1231,11 @@ SPDX-License-Identifier: Apache-2.0
                               </span>
                             </small>
                             <pre>Source packet text</pre>
-                          </div>
-                          <div class="col-md-6 sessiondst">
+                          </v-col>
+                          <v-col
+                            cols="12"
+                            md="6"
+                            class="sessiondst">
                             <small class="session-detail-ts font-weight-bold">
                               <em class="ts-value">
                                 2013/11/18 03:06:52.841
@@ -1169,14 +1245,14 @@ SPDX-License-Identifier: Apache-2.0
                               </span>
                             </small>
                             <pre>Destination packet text</pre>
-                          </div>
-                        </div>
+                          </v-col>
+                        </v-row>
                       </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            </div> <!-- /custom theme display -->
+              </v-col>
+            </v-row> <!-- /custom theme display -->
 
             <br>
 
@@ -1188,8 +1264,10 @@ SPDX-License-Identifier: Apache-2.0
             </p>
 
             <!-- main colors -->
-            <div class="row form-group">
-              <div class="col-md-3">
+            <v-row class="form-group">
+              <v-col
+                cols="12"
+                md="3">
                 <color-picker
                   :color="primary"
                   @color-selected="changeColor"
@@ -1200,8 +1278,10 @@ SPDX-License-Identifier: Apache-2.0
                   class="help-block small">
                   Primary navbar, buttons, active item(s) in lists
                 </p>
-              </div>
-              <div class="col-md-3">
+              </v-col>
+              <v-col
+                cols="12"
+                md="3">
                 <color-picker
                   :color="secondary"
                   @color-selected="changeColor"
@@ -1212,8 +1292,10 @@ SPDX-License-Identifier: Apache-2.0
                   class="help-block small">
                   Buttons
                 </p>
-              </div>
-              <div class="col-md-3">
+              </v-col>
+              <v-col
+                cols="12"
+                md="3">
                 <color-picker
                   :color="tertiary"
                   @color-selected="changeColor"
@@ -1224,8 +1306,10 @@ SPDX-License-Identifier: Apache-2.0
                   class="help-block small">
                   Action buttons (search, apply, open, etc)
                 </p>
-              </div>
-              <div class="col-md-3">
+              </v-col>
+              <v-col
+                cols="12"
+                md="3">
                 <color-picker
                   :color="quaternary"
                   @color-selected="changeColor"
@@ -1236,8 +1320,8 @@ SPDX-License-Identifier: Apache-2.0
                   class="help-block small">
                   Accent and all other buttons
                 </p>
-              </div>
-            </div> <!-- /main colors -->
+              </v-col>
+            </v-row> <!-- /main colors -->
 
             <p
               v-if="displayHelp"
@@ -1249,8 +1333,10 @@ SPDX-License-Identifier: Apache-2.0
             </p>
 
             <!-- main color highlights/backgrounds -->
-            <div class="row form-group">
-              <div class="col-md-3">
+            <v-row class="form-group">
+              <v-col
+                cols="12"
+                md="3">
                 <color-picker
                   :color="primaryLightest"
                   @color-selected="changeColor"
@@ -1261,8 +1347,10 @@ SPDX-License-Identifier: Apache-2.0
                   class="help-block small">
                   Backgrounds
                 </p>
-              </div>
-              <div class="col-md-3">
+              </v-col>
+              <v-col
+                cols="12"
+                md="3">
                 <color-picker
                   :color="secondaryLightest"
                   @color-selected="changeColor"
@@ -1273,8 +1361,10 @@ SPDX-License-Identifier: Apache-2.0
                   class="help-block small">
                   Search/Secondary navbar
                 </p>
-              </div>
-              <div class="col-md-3">
+              </v-col>
+              <v-col
+                cols="12"
+                md="3">
                 <color-picker
                   :color="tertiaryLightest"
                   @color-selected="changeColor"
@@ -1285,8 +1375,10 @@ SPDX-License-Identifier: Apache-2.0
                   class="help-block small">
                   Tertiary navbar, table hover
                 </p>
-              </div>
-              <div class="col-md-3">
+              </v-col>
+              <v-col
+                cols="12"
+                md="3">
                 <color-picker
                   :color="quaternaryLightest"
                   @color-selected="changeColor"
@@ -1297,68 +1389,77 @@ SPDX-License-Identifier: Apache-2.0
                   class="help-block small">
                   Session detail background
                 </p>
-              </div>
-            </div> <!-- /main color highlights/backgrounds -->
+              </v-col>
+            </v-row> <!-- /main color highlights/backgrounds -->
 
             <br>
 
-            <div
-              v-if="displayHelp"
-              class="row">
-              <div class="col-6">
+            <v-row
+              v-if="displayHelp">
+              <v-col cols="6">
                 <p class="help-block">
                   <em>Map colors</em>
                   <br>
                   These should be different to show contrast between land and water.
                 </p>
-              </div>
-              <div class="col-6">
+              </v-col>
+              <v-col cols="6">
                 <p class="help-block">
                   <em>Packet colors</em>
                   <br>
                   These are displayed when viewing session packets and in the
                   sessions timeline graph. They should be very different colors.
                 </p>
-              </div>
-            </div>
+              </v-col>
+            </v-row>
 
-            <div class="row form-group">
+            <v-row class="form-group">
               <!-- visualization colors -->
-              <div class="col-md-3">
+              <v-col
+                cols="12"
+                md="3">
                 <color-picker
                   :color="water"
                   @color-selected="changeColor"
                   color-name="water"
                   field-name="Map Water" />
-              </div>
-              <div class="col-md-3">
+              </v-col>
+              <v-col
+                cols="12"
+                md="3">
                 <color-picker
                   :color="land"
                   @color-selected="changeColor"
                   color-name="land"
                   field-name="Map Land" />
-              </div> <!-- /visualization colors -->
+              </v-col> <!-- /visualization colors -->
               <!-- packet colors -->
-              <div class="col-md-3">
+              <v-col
+                cols="12"
+                md="3">
                 <color-picker
                   :color="src"
                   @color-selected="changeColor"
                   color-name="src"
                   field-name="Source Packets" />
-              </div>
-              <div class="col-md-3">
+              </v-col>
+              <v-col
+                cols="12"
+                md="3">
                 <color-picker
                   :color="dst"
                   @color-selected="changeColor"
                   color-name="dst"
                   field-name="Destination Packets" />
-              </div> <!-- /packet colors -->
-            </div>
+              </v-col> <!-- /packet colors -->
+            </v-row>
 
             <br>
 
-            <div class="row mb-4">
-              <div class="col-md-12">
+            <v-row class="mb-4">
+              <v-col
+                cols="12"
+                md="12">
                 <label>
                   Share your theme with others:
                 </label>
@@ -1389,8 +1490,8 @@ SPDX-License-Identifier: Apache-2.0
                     {{ $t('common.apply') }}
                   </v-btn>
                 </div>
-              </div>
-            </div>
+              </v-col>
+            </v-row>
           </div> <!-- /custom theme -->
         </form> <!-- /theme settings -->
 
@@ -1405,13 +1506,15 @@ SPDX-License-Identifier: Apache-2.0
           <hr>
 
           <!-- current password -->
-          <div
+          <v-row
             v-if="!userId"
-            class="row mb-2">
+            class="mb-2">
             <label class="col-sm-3 col-form-label text-end font-weight-bold">
               {{ $t('settings.password.currentPassword') }}
             </label>
-            <div class="col-sm-6">
+            <v-col
+              cols="12"
+              sm="6">
               <div class="arkime-input-group arkime-input-group--fluid">
                 <input
                   type="password"
@@ -1419,15 +1522,17 @@ SPDX-License-Identifier: Apache-2.0
                   v-model="currentPassword"
                   :placeholder="$t('settings.password.currentPasswordPlaceholder')">
               </div>
-            </div>
-          </div>
+            </v-col>
+          </v-row>
 
           <!-- new password -->
-          <div class="row mb-2">
+          <v-row class="mb-2">
             <label class="col-sm-3 col-form-label text-end font-weight-bold">
               {{ $t('settings.password.newPassword') }}
             </label>
-            <div class="col-sm-6">
+            <v-col
+              cols="12"
+              sm="6">
               <div class="arkime-input-group arkime-input-group--fluid">
                 <input
                   type="password"
@@ -1435,15 +1540,17 @@ SPDX-License-Identifier: Apache-2.0
                   v-model="newPassword"
                   :placeholder="$t('settings.password.newPasswordPlaceholder')">
               </div>
-            </div>
-          </div>
+            </v-col>
+          </v-row>
 
           <!-- confirm new password -->
-          <div class="row mb-2">
+          <v-row class="mb-2">
             <label class="col-sm-3 col-form-label text-end font-weight-bold">
               {{ $t('settings.password.confirmPassword') }}
             </label>
-            <div class="col-sm-6">
+            <v-col
+              cols="12"
+              sm="6">
               <div class="arkime-input-group arkime-input-group--fluid">
                 <input
                   type="password"
@@ -1451,13 +1558,15 @@ SPDX-License-Identifier: Apache-2.0
                   v-model="confirmNewPassword"
                   :placeholder="$t('settings.password.confirmPasswordPlaceholder')">
               </div>
-            </div>
-          </div>
+            </v-col>
+          </v-row>
 
           <!-- change password button/error -->
-          <div class="row mb-2">
+          <v-row class="mb-2">
             <label class="col-sm-3 col-form-label">&nbsp;</label>
-            <div class="col-sm-9">
+            <v-col
+              cols="12"
+              sm="9">
               <v-btn
                 variant="flat"
                 size="large"
@@ -1471,8 +1580,8 @@ SPDX-License-Identifier: Apache-2.0
                 <span class="fa fa-exclamation-triangle" />&nbsp;
                 {{ changePasswordError }}
               </span>
-            </div>
-          </div> <!-- /change password button/error -->
+            </v-col>
+          </v-row> <!-- /change password button/error -->
 
           <!-- TOTP Two-Factor Authentication (only for admins) -->
           <div v-has-role="{user:user,roles:'arkimeAdmin,cont3xtAdmin,wiseAdmin'}">
@@ -1640,8 +1749,8 @@ SPDX-License-Identifier: Apache-2.0
           :user-id="userId"
           @display-message="displayMessage"
           v-if="visibleTab === 'cron' && !multiviewer" />
-      </div>
-    </div> <!-- /content -->
+      </v-col>
+    </v-row> <!-- /content -->
   </div> <!-- /settings content -->
 </template>
 

@@ -31,8 +31,11 @@ SPDX-License-Identifier: Apache-2.0
         {{ $t('uploads.demoMode') }}
       </v-alert> <!-- /demo mode -->
 
-      <div class="row">
-        <div class="col-md-6 offset-md-3">
+      <v-row>
+        <v-col
+          cols="12"
+          md="6"
+          class="offset-md-3">
           <!-- file -->
           <v-file-input
             :label="$t('uploads.pcapFileUpload')"
@@ -54,8 +57,11 @@ SPDX-License-Identifier: Apache-2.0
           </div> <!-- /tag(s) -->
 
           <!-- submit/cancel -->
-          <div class="row mt-3">
-            <div class="col-md-12 text-end">
+          <v-row class="mt-3">
+            <v-col
+              cols="12"
+              md="12"
+              class="text-end">
               <v-btn
                 variant="flat"
                 size="small"
@@ -73,10 +79,10 @@ SPDX-License-Identifier: Apache-2.0
                   {{ $t('common.uploading') }}
                 </span>
               </v-btn>
-            </div>
-          </div> <!-- /submit/cancel -->
-        </div>
-      </div>
+            </v-col>
+          </v-row> <!-- /submit/cancel -->
+        </v-col>
+      </v-row>
 
       <!-- file upload error -->
       <v-alert
