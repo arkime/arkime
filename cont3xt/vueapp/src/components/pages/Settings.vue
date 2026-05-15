@@ -462,7 +462,7 @@ SPDX-License-Identifier: Apache-2.0
             rows="20"
             size="sm"
             @input="e => debounceRawEdit(e)"
-            class="form-control form-control-sm"
+            class="cont3xt-textarea"
             :value="createINI(rawIntegrationSettings)" />
         </div>
       </div> <!-- /integrations settings -->

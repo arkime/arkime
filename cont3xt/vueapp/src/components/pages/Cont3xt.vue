@@ -257,29 +257,26 @@ SPDX-License-Identifier: Apache-2.0
           v-if="error.length || getIntegrationsError.length"
           class="w-100 d-flex flex-column mt-2 mx-3">
           <!-- search error -->
-          <div
+          <v-alert
             v-if="error.length"
-            class="alert alert-warning">
-            <v-icon icon="mdi-alert" />&nbsp;
+            type="warning"
+            variant="tonal"
+            density="compact"
+            closable
+            @click:close="error = ''">
             {{ error }}
-            <button
-              tabindex="-1"
-              type="button"
-              @click="error = ''"
-              class="close cursor-pointer">
-              <span>&times;</span>
-            </button>
-          </div> <!-- /search error -->
+          </v-alert> <!-- /search error -->
 
           <!-- integration error -->
-          <div
+          <v-alert
             v-if="getIntegrationsError.length"
-            class="alert alert-danger">
-            <v-icon icon="mdi-alert" />&nbsp;
+            type="error"
+            variant="tonal"
+            density="compact">
             Error fetching integrations. Viewing data for integrations will not work!
             <br>
             {{ getIntegrationsError }}
-          </div> <!-- /integration error -->
+          </v-alert> <!-- /integration error -->
         </div>
         <!-- /errors -->
 
