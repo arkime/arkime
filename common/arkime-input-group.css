@@ -103,3 +103,27 @@ select.arkime-input-control {
   margin: 0;
   align-self: center;
 }
+
+/* <textarea>: the base .arkime-input-control rule sets height:100%, which
+   pins a textarea to its parent's height (32px inside a group, or zero
+   in a flex-flow card-text). Override so any textarea grows with its
+   `rows` attr and keeps the native vertical resize handle. When the
+   textarea sits inside an arkime-input-group, also relax the group's
+   fixed height and top-align the label so it tracks the first line. */
+textarea.arkime-input-control {
+  height: auto;
+  min-height: 60px;
+  padding: 6px 8px;
+  resize: vertical;
+  font-family: inherit;
+  line-height: 1.4;
+}
+.arkime-input-group:has(textarea.arkime-input-control) {
+  height: auto;
+  min-height: 32px;
+  align-items: stretch;
+}
+.arkime-input-group:has(textarea.arkime-input-control) > .arkime-input-label {
+  align-self: stretch;
+  padding-top: 6px;
+}

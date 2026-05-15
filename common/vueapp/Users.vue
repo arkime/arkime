@@ -5,8 +5,31 @@ SPDX-License-Identifier: Apache-2.0
 <template>
   <div>
     <!-- search/paging/download chrome -->
-    <div class="d-flex align-items-center mt-3 mb-2">
-      <div class="me-2 flex-grow-1">
+    <div class="d-flex align-center mt-3 mb-2 gap-2">
+      <v-btn
+        v-if="roles"
+        size="large"
+        color="success"
+        variant="flat"
+        :title="$t('users.createRoleTip')"
+        @click="createMode = 'role'; showUserCreateModal = true">
+        <v-icon start>
+          fa-plus-circle
+        </v-icon>
+        {{ $t('common.role') }}
+      </v-btn>
+      <v-btn
+        size="large"
+        color="primary"
+        variant="flat"
+        :title="$t('users.createUserTip')"
+        @click="createMode = 'user'; showUserCreateModal = true">
+        <v-icon start>
+          fa-plus-circle
+        </v-icon>
+        {{ $t('common.user') }}
+      </v-btn>
+      <div class="flex-grow-1">
         <v-text-field
           autofocus
           density="compact"
@@ -47,7 +70,7 @@ SPDX-License-Identifier: Apache-2.0
         </span>
       </span>
       <v-btn
-        size="small"
+        size="large"
         color="primary"
         variant="flat"
         @click="download"
@@ -154,46 +177,14 @@ SPDX-License-Identifier: Apache-2.0
               location="top">{{ $t('users.lastUsedTip') }}</v-tooltip>
           </span>
         </template>
-        <template #[`header.action`]>
-          <div class="pull-right">
-            <v-btn
-              v-if="roles"
-              size="small"
-              color="success"
-              variant="flat"
-              :title="$t('users.createRoleTip')"
-              @click="createMode = 'role'; showUserCreateModal = true">
-              <v-icon start>
-                fa-plus-circle
-              </v-icon>
-              {{ $t('common.role') }}
-            </v-btn>
-            <v-btn
-              size="small"
-              color="primary"
-              variant="flat"
-              class="ms-2"
-              :title="$t('users.createUserTip')"
-              @click="createMode = 'user'; showUserCreateModal = true">
-              <v-icon start>
-                fa-plus-circle
-              </v-icon>
-              {{ $t('common.user') }}
-            </v-btn>
-          </div>
-        </template>
 
         <!-- expand-icon cell: keep auto-toggle but add restriction indicator class -->
         <template #[`item.data-table-expand`]="{ item, internalItem, toggleExpand, isExpanded }">
           <span :class="{'btn-indicator': hasRestrictions(item)}">
-            <v-btn
-              size="x-small"
-              variant="text"
-              density="comfortable"
+            <ToggleBtn
+              :opened="isExpanded(internalItem)"
               :title="hasRestrictions(item) ? $t('users.restrictedTip') : ''"
-              @click="toggleExpand(internalItem)">
-              <v-icon :icon="isExpanded(internalItem) ? 'fa-chevron-up' : 'fa-chevron-down'" />
-            </v-btn>
+              @toggle="toggleExpand(internalItem)" />
           </span>
         </template>
 
@@ -256,7 +247,7 @@ SPDX-License-Identifier: Apache-2.0
             <v-btn
               v-if="parentApp === 'Arkime' && isUser(item)"
               v-has-role="{user:currentUser,roles:'arkimeAdmin'}"
-              size="small"
+              size="large"
               color="primary"
               variant="flat"
               class="ms-1"
@@ -265,7 +256,7 @@ SPDX-License-Identifier: Apache-2.0
               :title="$t('users.settingsFor', {user: item.userId})" />
             <v-btn
               v-if="parentApp === 'Arkime'"
-              size="small"
+              size="large"
               color="secondary"
               variant="flat"
               class="ms-1"
@@ -275,7 +266,7 @@ SPDX-License-Identifier: Apache-2.0
             <transition name="buttons">
               <v-btn
                 v-if="confirmDelete[item.userId]"
-                size="small"
+                size="large"
                 color="warning"
                 variant="flat"
                 class="ms-1"
@@ -286,7 +277,7 @@ SPDX-License-Identifier: Apache-2.0
             <transition name="buttons">
               <v-btn
                 v-if="confirmDelete[item.userId]"
-                size="small"
+                size="large"
                 color="error"
                 variant="flat"
                 class="ms-1"
@@ -297,7 +288,7 @@ SPDX-License-Identifier: Apache-2.0
             <transition name="buttons">
               <v-btn
                 v-if="!confirmDelete[item.userId]"
-                size="small"
+                size="large"
                 color="error"
                 variant="flat"
                 class="ms-1"
@@ -358,9 +349,6 @@ SPDX-License-Identifier: Apache-2.0
                 </div>
 
                 <v-text-field
-                  density="compact"
-                  variant="outlined"
-                  hide-details
                   class="mt-2"
                   :label="$t('users.forcedExpression')"
                   v-model="item.expression"
@@ -376,10 +364,7 @@ SPDX-License-Identifier: Apache-2.0
                 </v-text-field>
 
                 <v-select
-                  density="compact"
-                  variant="outlined"
-                  hide-details
-                  class="mt-2 w-25"
+                  class="mt-1 w-25"
                   item-title="text"
                   item-value="value"
                   :items="timeLimitOptions"
@@ -401,12 +386,9 @@ SPDX-License-Identifier: Apache-2.0
                   <form
                     class="row"
                     v-if="isUser(item)">
-                    <div class="col-9 mt-4">
+                    <div class="col-9 mt-2">
                       <v-text-field
-                        density="compact"
-                        variant="outlined"
-                        hide-details
-                        class="mt-2"
+                        class="mt-1"
                         type="password"
                         :label="$t('users.newPassword')"
                         v-model="newPassword"
@@ -414,10 +396,7 @@ SPDX-License-Identifier: Apache-2.0
                         @keydown.enter="changePassword(item.userId)"
                         :placeholder="$t('users.newPasswordPlaceholder')" />
                       <v-text-field
-                        density="compact"
-                        variant="outlined"
-                        hide-details
-                        class="mt-2"
+                        class="mt-1"
                         type="password"
                         :label="$t('users.confirmPassword')"
                         autocomplete="new-password"
@@ -425,7 +404,7 @@ SPDX-License-Identifier: Apache-2.0
                         @keydown.enter="changePassword(item.userId)"
                         :placeholder="$t('users.confirmPasswordPlaceholder')" />
                       <v-btn
-                        size="small"
+                        size="large"
                         color="success"
                         variant="flat"
                         class="mt-2"
@@ -525,6 +504,7 @@ import UserService from './UserService.js';
 import RoleDropdown from './RoleDropdown.vue';
 import UserDropdown from './UserDropdown.vue';
 import TriStateToggle from './TriStateToggle.vue';
+import ToggleBtn from './ToggleBtn.vue';
 import { timezoneDateString, commaString } from './vueFilters.js';
 import { resolveMessage } from './resolveI18nMessage';
 
@@ -537,7 +517,8 @@ export default {
     UserCreate,
     RoleDropdown,
     UserDropdown,
-    TriStateToggle
+    TriStateToggle,
+    ToggleBtn
   },
   emits: ['update-roles', 'update-current-user'],
   props: {
@@ -1026,18 +1007,28 @@ export default {
   margin-left: 4px;
 }
 
-/* ---- Users table: more vertical breathing room so inputs/buttons don't run into each other ---- */
+/* ---- Users table: tight rows so the list fits more on screen. Cell
+   padding below Vuetify's compact default (8px); horizontal padding
+   stays comfortable for column separation. ---- */
 .users-table-striped :deep(tbody tr:nth-of-type(odd) > td) {
   background-color: var(--color-gray-lighter) !important;
 }
 .users-table-striped :deep(tbody tr > td),
 .users-table-striped :deep(thead tr > th) {
-  padding-top: 6px !important;
-  padding-bottom: 6px !important;
+  padding-top: 2px !important;
+  padding-bottom: 2px !important;
+  padding-left: 8px !important;
+  padding-right: 8px !important;
+  height: auto !important;
+}
+.users-table-striped :deep(tbody tr > td .v-input),
+.users-table-striped :deep(tbody tr > td .arkime-input-group) {
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
 }
 .users-table-striped :deep(.user-detail-row > td) {
-  padding-top: 12px !important;
-  padding-bottom: 12px !important;
+  padding-top: 8px !important;
+  padding-bottom: 8px !important;
 }
 .header-with-tip {
   cursor: help;

@@ -323,7 +323,7 @@ SPDX-License-Identifier: Apache-2.0
             v-if="tabIndex !== 0 && tabIndex !== 7">
             <v-btn
               variant="flat"
-              size="small"
+              size="large"
               density="comfortable"
               :style="tertiaryBtnStyle"
               @click="loadData">

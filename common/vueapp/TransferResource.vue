@@ -25,23 +25,27 @@ SPDX-License-Identifier: Apache-2.0
           @keyup.stop.prevent.enter="transferResource" />
       </v-card-text>
       <v-card-actions>
-        <div class="w-100 d-flex justify-content-between">
-          <button
-            type="button"
-            class="btn btn-danger"
+        <div class="w-100 d-flex justify-space-between">
+          <v-btn
+            color="error"
+            variant="flat"
             :title="$t('common.cancel')"
             @click="cancel">
-            <span class="fa fa-times" />
+            <v-icon start>
+              fa-times
+            </v-icon>
             {{ $t('common.cancel') }}
-          </button>
-          <button
-            type="button"
-            class="btn btn-success"
+          </v-btn>
+          <v-btn
+            color="success"
+            variant="flat"
             :disabled="!userId"
             @click="transferResource">
-            <span class="fa fa-share me-1" />
+            <v-icon start>
+              fa-share
+            </v-icon>
             {{ $t('common.transfer') }}
-          </button>
+          </v-btn>
         </div>
       </v-card-actions>
     </v-card>

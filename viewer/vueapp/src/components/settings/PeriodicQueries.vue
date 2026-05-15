@@ -75,7 +75,7 @@ SPDX-License-Identifier: Apache-2.0
         <v-card-text>
           <!-- create form -->
           <form>
-            <v-row class="mb-2">
+            <v-row>
               <v-col
                 cols="12"
                 md="4">
@@ -143,7 +143,7 @@ SPDX-License-Identifier: Apache-2.0
                 </div>
               </v-col>
             </v-row>
-            <v-row class="mb-2">
+            <v-row>
               <v-col cols="auto">
                 <div class="arkime-input-group arkime-input-group--fluid">
                   <span
@@ -161,7 +161,7 @@ SPDX-License-Identifier: Apache-2.0
                 </div>
               </v-col>
             </v-row>
-            <v-row class="mb-2">
+            <v-row>
               <v-col
                 cols="12"
                 md="6">
@@ -197,7 +197,7 @@ SPDX-License-Identifier: Apache-2.0
                   :display-text="newCronQueryNotifier.length > 0 ? $t('common.notifierCount', newCronQueryNotifier.length) : $t('settings.cron.selectNotifier')" />
               </v-col>
             </v-row>
-            <v-row class="mb-2">
+            <v-row>
               <v-col cols="auto">
                 <div class="arkime-input-group arkime-input-group--fluid">
                   <span

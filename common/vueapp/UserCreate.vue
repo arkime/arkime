@@ -254,6 +254,7 @@ SPDX-License-Identifier: Apache-2.0
       <v-card-actions>
         <div class="w-100 d-flex justify-space-between">
           <v-btn
+            size="large"
             color="error"
             variant="flat"
             :title="$t('common.cancel')"
@@ -264,6 +265,7 @@ SPDX-License-Identifier: Apache-2.0
             {{ $t('common.cancel') }}
           </v-btn>
           <v-btn
+            size="large"
             color="primary"
             variant="flat"
             @click="createUser(createMode === 'role')">

@@ -74,7 +74,12 @@ async function initializeApp() {
       VSelect: { density: 'compact', variant: 'outlined', hideDetails: 'auto' },
       VCheckbox: { density: 'compact', hideDetails: 'auto' },
       VTooltip: { location: 'top', delay: 50, maxWidth: 400 },
-      VBtn: { density: 'compact', variant: 'flat' }
+      VBtn: { density: 'compact', variant: 'flat' },
+      // tighter gutters everywhere — Vuetify's stock v-row uses 24px
+      // gutters which made the settings/PQ/hunt forms read airy compared
+      // to non-v-row pages (e.g. Views.vue). `dense` knocks that down to
+      // 8px which matches the rest of the app's density.
+      VRow: { dense: true }
     },
     theme: {
       options: { customProperties: true },

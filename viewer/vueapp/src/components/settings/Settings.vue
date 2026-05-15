@@ -143,7 +143,7 @@ SPDX-License-Identifier: Apache-2.0
           <hr>
 
           <!-- timezone -->
-          <v-row class="form-group">
+          <v-row>
             <v-col
               tag="label"
               cols="12"
@@ -200,7 +200,7 @@ SPDX-License-Identifier: Apache-2.0
           </v-row> <!-- /timezone -->
 
           <!-- session detail format -->
-          <v-row class="form-group">
+          <v-row>
             <v-col
               tag="label"
               cols="12"
@@ -240,7 +240,7 @@ SPDX-License-Identifier: Apache-2.0
           </v-row> <!-- /session detail format -->
 
           <!-- number of packets -->
-          <v-row class="form-group">
+          <v-row>
             <v-col
               tag="label"
               cols="12"
@@ -283,7 +283,7 @@ SPDX-License-Identifier: Apache-2.0
           </v-row> <!-- /number of packets -->
 
           <!-- show packet timestamp -->
-          <v-row class="form-group">
+          <v-row>
             <v-col
               tag="label"
               cols="12"
@@ -317,7 +317,7 @@ SPDX-License-Identifier: Apache-2.0
           </v-row> <!-- /show packet timestamp -->
 
           <!-- issue query on initial page load -->
-          <v-row class="form-group">
+          <v-row>
             <v-col
               tag="label"
               cols="12"
@@ -348,7 +348,7 @@ SPDX-License-Identifier: Apache-2.0
           </v-row> <!-- /issue query on initial page load -->
 
           <!-- session sort -->
-          <v-row class="form-group">
+          <v-row>
             <v-col
               tag="label"
               cols="12"
@@ -401,8 +401,7 @@ SPDX-License-Identifier: Apache-2.0
 
           <!-- default spi graph -->
           <v-row
-            v-if="fields && settings.spiGraph"
-            class="form-group">
+            v-if="fields && settings.spiGraph">
             <v-col
               tag="label"
               cols="12"
@@ -438,8 +437,7 @@ SPDX-License-Identifier: Apache-2.0
 
           <!-- connections src field -->
           <v-row
-            v-if="fields && settings.connSrcField"
-            class="form-group">
+            v-if="fields && settings.connSrcField">
             <v-col
               tag="label"
               cols="12"
@@ -475,8 +473,7 @@ SPDX-License-Identifier: Apache-2.0
 
           <!-- connections dst field -->
           <v-row
-            v-if="fields && settings.connDstField"
-            class="form-group">
+            v-if="fields && settings.connDstField">
             <v-col
               tag="label"
               cols="12"
@@ -511,8 +508,7 @@ SPDX-License-Identifier: Apache-2.0
           </v-row> <!-- /connections dst field -->
 
           <v-row
-            v-if="integerFields"
-            class="form-group">
+            v-if="integerFields">
             <v-col
               tag="label"
               cols="12"
@@ -568,8 +564,7 @@ SPDX-License-Identifier: Apache-2.0
 
           <!-- hide tags field -->
           <v-row
-            v-if="fields"
-            class="form-group">
+            v-if="fields">
             <v-col
               tag="label"
               cols="12"
@@ -1311,7 +1306,7 @@ SPDX-License-Identifier: Apache-2.0
             </p>
 
             <!-- main colors -->
-            <v-row class="form-group">
+            <v-row>
               <v-col
                 cols="12"
                 md="3">
@@ -1380,7 +1375,7 @@ SPDX-License-Identifier: Apache-2.0
             </p>
 
             <!-- main color highlights/backgrounds -->
-            <v-row class="form-group">
+            <v-row>
               <v-col
                 cols="12"
                 md="3">
@@ -1460,7 +1455,7 @@ SPDX-License-Identifier: Apache-2.0
               </v-col>
             </v-row>
 
-            <v-row class="form-group">
+            <v-row>
               <!-- visualization colors -->
               <v-col
                 cols="12"
@@ -1503,7 +1498,7 @@ SPDX-License-Identifier: Apache-2.0
 
             <br>
 
-            <v-row class="mb-4">
+            <v-row>
               <v-col
                 cols="12"
                 md="12">
@@ -1554,8 +1549,7 @@ SPDX-License-Identifier: Apache-2.0
 
           <!-- current password -->
           <v-row
-            v-if="!userId"
-            class="mb-2">
+            v-if="!userId">
             <v-col
               tag="label"
               cols="12"
@@ -1577,7 +1571,7 @@ SPDX-License-Identifier: Apache-2.0
           </v-row>
 
           <!-- new password -->
-          <v-row class="mb-2">
+          <v-row>
             <v-col
               tag="label"
               cols="12"
@@ -1599,7 +1593,7 @@ SPDX-License-Identifier: Apache-2.0
           </v-row>
 
           <!-- confirm new password -->
-          <v-row class="mb-2">
+          <v-row>
             <v-col
               tag="label"
               cols="12"
@@ -1621,7 +1615,7 @@ SPDX-License-Identifier: Apache-2.0
           </v-row>
 
           <!-- change password button/error -->
-          <v-row class="mb-2">
+          <v-row>
             <v-col
               tag="label"
               cols="12"

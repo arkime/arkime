@@ -62,18 +62,16 @@ SPDX-License-Identifier: Apache-2.0
     </v-data-table>
 
     <!-- roles error -->
-    <div
+    <v-alert
       v-if="error.length"
-      class="mt-2 alert alert-warning">
-      <span class="fa fa-exclamation-triangle" />&nbsp;
+      type="warning"
+      variant="tonal"
+      density="compact"
+      closable
+      class="mt-2"
+      @click:close="error = ''">
       {{ error }}
-      <button
-        type="button"
-        @click="error = ''"
-        class="close cursor-pointer">
-        <span>&times;</span>
-      </button>
-    </div> <!-- /roles error -->
+    </v-alert> <!-- /roles error -->
   </div>
 </template>
 

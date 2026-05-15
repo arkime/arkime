@@ -9,7 +9,7 @@ SPDX-License-Identifier: Apache-2.0
       <template v-if="notifierTypes">
         <v-btn
           :key="notifier.name"
-          size="small"
+          size="large"
           color="primary"
           variant="flat"
           class="pull-right ms-1"
@@ -157,6 +157,7 @@ SPDX-License-Identifier: Apache-2.0
         <v-card-actions>
           <div class="w-100 d-flex justify-space-between">
             <v-btn
+              size="large"
               color="error"
               variant="flat"
               :title="$t('common.cancel')"
@@ -168,6 +169,7 @@ SPDX-License-Identifier: Apache-2.0
             </v-btn>
             <div>
               <v-btn
+                size="large"
                 color="warning"
                 variant="flat"
                 class="me-1"
@@ -178,6 +180,7 @@ SPDX-License-Identifier: Apache-2.0
                 {{ $t('common.clear') }}
               </v-btn>
               <v-btn
+                size="large"
                 color="success"
                 variant="flat"
                 @click="createNotifier">
@@ -322,7 +325,7 @@ SPDX-License-Identifier: Apache-2.0
         <!-- notifier actions -->
         <v-card-actions>
           <v-btn
-            size="small"
+            size="large"
             color="warning"
             variant="outlined"
             :disabled="notifier.loading"
@@ -334,7 +337,7 @@ SPDX-License-Identifier: Apache-2.0
           </v-btn>
           <span class="pull-right">
             <v-btn
-              size="small"
+              size="large"
               color="error"
               variant="flat"
               class="me-1"
@@ -345,7 +348,7 @@ SPDX-License-Identifier: Apache-2.0
               {{ $t('common.delete') }}
             </v-btn>
             <v-btn
-              size="small"
+              size="large"
               color="success"
               variant="flat"
               @click="updateNotifier(notifier.id, index, notifier)">

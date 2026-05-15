@@ -13,7 +13,7 @@ SPDX-License-Identifier: Apache-2.0
       <template #activator="{ props: activatorProps }">
         <v-btn
           v-bind="activatorProps"
-          size="small"
+          size="large"
           variant="outlined"
           color="secondary"
           class="roles-dropdown text-none"

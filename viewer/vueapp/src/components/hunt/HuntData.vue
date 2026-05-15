@@ -181,7 +181,7 @@ SPDX-License-Identifier: Apache-2.0
       </v-col>
     </v-row>
     <template v-if="canEdit">
-      <v-row class="mb-2">
+      <v-row>
         <v-col cols="12">
           <span class="fa fa-fw fa-share-alt" />&nbsp;
           <template v-if="localJob.users && localJob.users.length">
@@ -257,7 +257,7 @@ SPDX-License-Identifier: Apache-2.0
           </template>
         </v-col>
       </v-row>
-      <v-row class="mb-2">
+      <v-row>
         <v-col cols="12">
           <span class="fa fa-fw fa-share-alt" />&nbsp;
           <template v-if="localJob.roles && localJob.roles.length">

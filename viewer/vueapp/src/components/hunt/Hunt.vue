@@ -233,7 +233,7 @@ SPDX-License-Identifier: Apache-2.0
                   </div>
                 </v-col>
               </v-row>
-              <v-row class="mb-2">
+              <v-row>
                 <v-col cols="auto">
                   <div class="arkime-input-group arkime-input-group--fluid">
                     <span

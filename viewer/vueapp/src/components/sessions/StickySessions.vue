@@ -32,8 +32,8 @@ SPDX-License-Identifier: Apache-2.0
         v-if="open"
         class="sticky-session-detail">
         <!-- sticky sessions list -->
-        <ul class="list-group">
-          <li class="list-group-item list-group-header">
+        <ul class="sticky-list">
+          <li class="sticky-list-item sticky-list-header">
             <div class="d-flex align-center gap-1">
               <h4 class="mb-0 flex-grow-1">
                 {{ $t('sessions.sticky.openSessionCount', sortedSessions.length) }}
@@ -96,11 +96,11 @@ SPDX-License-Identifier: Apache-2.0
             name="slide"
             tag="span">
             <a
-              class="list-group-item list-group-item-animate cursor-pointer"
+              class="sticky-list-item sticky-list-item-animate cursor-pointer"
               @click="scrollTo(session.id)"
               v-for="session in sortedSessions"
               :key="session.id">
-              <div class="list-group-item-text">
+              <div class="sticky-list-item-text">
                 <v-btn
                   variant="text"
                   size="x-small"
@@ -311,35 +311,33 @@ export default {
   top: 35px;
 }
 
-.sticky-session-detail ul {
+.sticky-session-detail .sticky-list {
   margin-bottom: 0;
+  padding-left: 0;
+  list-style: none;
 }
 
-.sticky-session-detail .list-group-item {
-  border-left : none;
-  border-right: none;
+.sticky-session-detail .sticky-list-item {
+  display: block;
+  border-top: 1px solid var(--color-gray-light, rgba(0,0,0,0.125));
   padding: 4px 8px;
   background-color: var(--color-background, #FFF);
   color: var(--color-foreground, #333);
 }
+.sticky-session-detail .sticky-list-item:first-child {
+  border-top: 0;
+}
 
-.sticky-session-detail .list-group-item .list-group-item-text {
+.sticky-session-detail .sticky-list-item .sticky-list-item-text {
   line-height: 1.25;
 }
 
-a.list-group-item:hover,
-a.list-group-item:focus {
+a.sticky-list-item:hover,
+a.sticky-list-item:focus {
   background-color: var(--color-tertiary-lightest);
 }
 
-.sticky-session-detail .list-group-item:last-child {
-  border-bottom-right-radius: 0;
-  border-bottom-left-radius: 0;
-}
-
-.sticky-session-detail .list-group-item.list-group-header {
-  border-top-right-radius: 0;
-  border-top-left-radius: 0;
+.sticky-session-detail .sticky-list-item.sticky-list-header {
   padding: 12px 8px;
   background-color: var(--color-gray-lighter);
 }
@@ -352,14 +350,14 @@ a.list-group-item:focus {
           animation: bounce 1000ms linear both;
 }
 
-/* animate sticky-session-detail and list-group-item slide in/out */
+/* animate sticky-session-detail and sticky-list-item slide in/out */
 .slide-enter-active, .slide-leave-active {
   transition: all .5s ease;
 }
 .slide-enter-from, .slide-leave-to {
   transform: translateX(360px);
 }
-.list-group-item.list-group-item-animate {
+.sticky-list-item.sticky-list-item-animate {
   width: 100%;
   transition: all .5s ease;
   display: inline-block;
