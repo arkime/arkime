@@ -168,7 +168,7 @@ jobs:
           (chown -R opensearch /opensearch-2.7.0; cd /opensearch-2.7.0 ; su opensearch -c "OPENSEARCH_JAVA_OPTS='-Xms2000m -Xmx2000m' bin/opensearch" > /tmp/os &)
           sleep 30
           cat /tmp/os
-          (cd tests ; G_SLICE=always-malloc ./tests.pl --debug --viewer)
+          (cd tests ; G_SLICE=always-malloc ./tests.pl --verbose --debug --viewer)
           free
 
       - name: viewer test arkimedb
