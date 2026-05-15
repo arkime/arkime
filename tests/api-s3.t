@@ -54,12 +54,16 @@ run("none-$value", "none", "",     "true",  $files);
 run("gzip-$value", "gzip", ".gz",  "true",  $files);
 run("zstd-$value", "zstd", ".zst", "false", $files);
 
+diag "ALW1";
 system("gzip -d /tmp/arkime.file.gzip.true.gz > /dev/null 2>&1");
+diag "ALW2";
 system("zstd -d /tmp/arkime.file.zstd.false.zst > /dev/null 2>&1");
+diag "ALW3";
 
 # Make sure all 3 downloads are the same
 is (system("diff /tmp/arkime.file.none.true /tmp/arkime.file.zstd.false"), 0);
 is (system("diff /tmp/arkime.file.none.true /tmp/arkime.file.gzip.true"), 0);
+diag "ALW4";
 
 # --- SQS end-to-end: bucket-notification -> SQS queue -> capture reads from SQS ---
 my $sqsvalue = int(rand() * 1000000);
@@ -72,6 +76,7 @@ my $refjson = viewerGet2("/sessions.json?date=-1&expression=" . uri_escape("tags
 my $expected = $refjson->{recordsFiltered};
 ok ($expected > 0, "SQS reference pcap yielded $expected sessions");
 
+diag "ALW5";
 # Configure S3 -> SQS bucket notification using the real AWS API shape.
 system(qq(curl -s -X PUT "http://localhost:4566/sqsbucket?notification" --data-binary '<NotificationConfiguration><QueueConfiguration><Queue>arn:aws:sqs:us-east-1:000000000000:sqsqueue</Queue><Event>s3:ObjectCreated:*</Event></QueueConfiguration></NotificationConfiguration>' > /dev/null));
 
@@ -79,6 +84,7 @@ system(qq(curl -s -X PUT "http://localhost:4566/sqsbucket?notification" --data-b
 my $s3key = "bt-tcp-$sqsvalue.pcap";
 system("AWS_ACCESS_KEY_ID=foo AWS_SECRET_ACCESS_KEY=foo aws --endpoint-url http://localhost:4566 s3 cp pcap/bt-tcp.pcap s3://sqsbucket/$s3key > /dev/null 2>&1");
 
+diag "ALW6";
 # Run capture pointing at the SQS queue; it should receive the event, fetch the
 # pcap back from S3 (mini-aws), index it, and delete the SQS message.
 system("../capture/capture -o disablePython=true -c config.test.ini -n sqs-test --tag $sqstag -r sqshttp://127.0.0.1:4566/000000000000/sqsqueue > /tmp/arkime.capture.sqs.log 2>&1");
@@ -87,4 +93,5 @@ countTest2($expected, "date=-1&expression=" . uri_escape("tags=$sqstag"));
 
 system("curl -s http://localhost:4566/_shutdown > /dev/null 2>&1");
 
+diag "ALW7";
 esPost("/tests2_sessions*/_delete_by_query?conflicts=proceed&refresh", $nodeFilter);
