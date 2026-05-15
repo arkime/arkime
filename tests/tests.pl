@@ -346,6 +346,7 @@ my ($cmd) = @_;
 
     if ($cmd ne "--viewernostart" && $cmd ne "--viewerstart" && $cmd ne "--viewerhang") {
         print ("Initializing ES\n");
+        system("free");
         if ($main::debug) {
             system("../db/db.pl $INSECURE --prefix tests $ELASTICSEARCH initnoprompt");
             system("../db/db.pl $INSECURE --prefix tests2 $ELASTICSEARCH initnoprompt --compression best_compression");
@@ -417,6 +418,7 @@ my ($cmd) = @_;
         die "Loaded" if ($cmd eq "--viewerload");
 
         esCopy("tests_fields", "tests2_fields", "field");
+        system("free");
     }
 
     if ($cmd ne "--viewernostart") {
