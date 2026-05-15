@@ -14,107 +14,82 @@ SPDX-License-Identifier: Apache-2.0
       <v-card-text>
         <!-- create form -->
         <form>
-          <div class="row">
-            <div class="col-md-6 mt-2">
-              <div class="input-group input-group-sm">
-                <span class="input-group-text">
-                  {{ $t('users.userId') }}<sup>*</sup>
-                </span>
-                <input
-                  type="text"
-                  class="form-control"
-                  autofocus
-                  autocomplete="userid"
-                  :placeholder="$t('users.userIdPlaceholder')"
-                  v-model.lazy="newUser.userId">
-              </div>
-            </div>
-            <div class="col-md-6 mt-2">
-              <div class="input-group input-group-sm">
-                <span class="input-group-text">
-                  {{ $t('users.userName') }}<sup>*</sup>
-                </span>
-                <input
-                  type="text"
-                  class="form-control"
-                  autocomplete="username"
-                  :placeholder="$t('users.userNamePlaceholder')"
-                  v-model.lazy="newUser.userName">
-              </div>
-            </div>
-          </div>
+          <v-row dense>
+            <v-col
+              cols="12"
+              md="6">
+              <v-text-field
+                density="compact"
+                variant="outlined"
+                hide-details
+                autofocus
+                autocomplete="userid"
+                :label="`${$t('users.userId')} *`"
+                :placeholder="$t('users.userIdPlaceholder')"
+                v-model.lazy="newUser.userId" />
+            </v-col>
+            <v-col
+              cols="12"
+              md="6">
+              <v-text-field
+                density="compact"
+                variant="outlined"
+                hide-details
+                autocomplete="username"
+                :label="`${$t('users.userName')} *`"
+                :placeholder="$t('users.userNamePlaceholder')"
+                v-model.lazy="newUser.userName" />
+            </v-col>
+          </v-row>
 
-          <div class="input-group input-group-sm mt-2">
-            <span
-              id="create-user-expression"
-              class="input-group-text cursor-help">
-              {{ $t('users.forcedExpression') }}
+          <v-text-field
+            density="compact"
+            variant="outlined"
+            hide-details
+            class="mt-2"
+            autocomplete="expression"
+            :label="$t('users.forcedExpression')"
+            :placeholder="$t('users.forcedExpressionPlaceholder')"
+            v-model.lazy="newUser.expression">
+            <template #append-inner>
+              <span
+                id="create-user-expression"
+                class="fa fa-info-circle cursor-help" />
               <v-tooltip activator="#create-user-expression">
                 {{ $t('users.forcedExpressionTip') }}
               </v-tooltip>
-            </span>
-            <input
-              type="text"
-              class="form-control"
-              autocomplete="expression"
-              :placeholder="$t('users.forcedExpressionPlaceholder')"
-              v-model.lazy="newUser.expression">
-          </div>
+            </template>
+          </v-text-field>
 
-          <div class="row">
-            <div class="col-md-6">
-              <div class="input-group input-group-sm mt-2">
-                <span
-                  id="create-user-time-limit"
-                  class="input-group-text cursor-help">
-                  {{ $t('users.queryTimeLimit') }}
+          <v-row
+            dense
+            class="mt-2">
+            <v-col
+              cols="12"
+              md="6">
+              <v-select
+                density="compact"
+                variant="outlined"
+                hide-details
+                item-title="text"
+                item-value="value"
+                :items="timeLimitOptions"
+                :label="$t('users.queryTimeLimit')"
+                v-model.lazy="newUser.timeLimit">
+                <template #append-inner>
+                  <span
+                    id="create-user-time-limit"
+                    class="fa fa-info-circle cursor-help" />
                   <v-tooltip activator="#create-user-time-limit">
                     {{ $t('users.queryTimeLimitTip') }}
                   </v-tooltip>
-                </span>
-                <select
-                  class="form-control"
-                  v-model.lazy="newUser.timeLimit">
-                  <option value="1">
-                    {{ $t('common.hourCount', { count: 1 }) }}
-                  </option>
-                  <option value="6">
-                    {{ $t('common.hourCount', { count: 6 }) }}
-                  </option>
-                  <option value="24">
-                    {{ $t('common.hourCount', { count: 24 }) }}
-                  </option>
-                  <option value="48">
-                    {{ $t('common.hourCount', { count: 48 }) }}
-                  </option>
-                  <option value="72">
-                    {{ $t('common.hourCount', { count: 72 }) }}
-                  </option>
-                  <option value="168">
-                    {{ $t('common.weekCount', { count: 1 }) }}
-                  </option>
-                  <option value="336">
-                    {{ $t('common.weekCount', { count: 2 }) }}
-                  </option>
-                  <option value="720">
-                    {{ $t('common.monthCount', { count: 1 }) }}
-                  </option>
-                  <option value="1440">
-                    {{ $t('common.monthCount', { count: 2 }) }}
-                  </option>
-                  <option value="4380">
-                    {{ $t('common.monthCount', { count: 6 }) }}
-                  </option>
-                  <option value="8760">
-                    {{ $t('common.yearCount', { count: 1 }) }}
-                  </option>
-                  <option value="undefined">
-                    {{ $t('common.allCareful') }}
-                  </option>
-                </select>
-              </div>
-            </div>
-            <div class="col-md-6 mt-2 d-inline-flex align-items-center">
+                </template>
+              </v-select>
+            </v-col>
+            <v-col
+              cols="12"
+              md="6"
+              class="d-inline-flex align-center">
               <template v-if="roles">
                 <RoleDropdown
                   :roles="roles"
@@ -142,50 +117,40 @@ SPDX-License-Identifier: Apache-2.0
                   {{ $t('users.roleAssignersTip') }}
                 </v-tooltip>
               </template>
-            </div>
-          </div>
+            </v-col>
+          </v-row>
 
-          <div
+          <v-text-field
             v-if="createMode === 'user'"
-            class="input-group input-group-sm mt-2 mb-2">
-            <span class="input-group-text">
-              {{ $t('users.password') }}<sup>*</sup>
-            </span>
-            <input
-              type="password"
-              class="form-control"
-              :class="{'is-invalid': validatePassword === false}"
-              :placeholder="$t('users.passwordPlaceholder')"
-              autocomplete="new-password"
-              v-model.lazy="newUser.password">
-          </div>
+            density="compact"
+            variant="outlined"
+            hide-details
+            class="mt-2"
+            type="password"
+            :error="validatePassword === false"
+            :label="`${$t('users.password')} *`"
+            :placeholder="$t('users.passwordPlaceholder')"
+            autocomplete="new-password"
+            v-model.lazy="newUser.password" />
 
-          <div class="d-inline-flex align-items-center gap-3 mt-2">
-            <label class="form-check form-check-inline mb-0">
-              <input
-                type="checkbox"
-                class="form-check-input"
-                v-model="newUser.enabled">
-              <span class="form-check-label">{{ $t('users.enabled') }}</span>
-            </label>
-            <label
+          <div class="d-inline-flex align-center gap-3 mt-2">
+            <v-checkbox
+              density="compact"
+              hide-details
+              :label="$t('users.enabled')"
+              v-model="newUser.enabled" />
+            <v-checkbox
               v-if="createMode === 'user'"
-              class="form-check form-check-inline mb-0">
-              <input
-                type="checkbox"
-                class="form-check-input"
-                v-model="newUser.webEnabled">
-              <span class="form-check-label">{{ $t('users.webEnabled') }}</span>
-            </label>
-            <label
+              density="compact"
+              hide-details
+              :label="$t('users.webEnabled')"
+              v-model="newUser.webEnabled" />
+            <v-checkbox
               v-if="createMode === 'user'"
-              class="form-check form-check-inline mb-0">
-              <input
-                type="checkbox"
-                class="form-check-input"
-                v-model="newUser.headerAuthEnabled">
-              <span class="form-check-label">{{ $t('users.headerAuthEnabled') }}</span>
-            </label>
+              density="compact"
+              hide-details
+              :label="$t('users.headerAuthEnabled')"
+              v-model="newUser.headerAuthEnabled" />
           </div>
 
           <!-- User permission tri-state toggles -->
@@ -277,29 +242,36 @@ SPDX-License-Identifier: Apache-2.0
           </div>
         </form> <!-- /create form -->
         <!-- create form error -->
-        <div
+        <v-alert
           v-if="createError"
-          class="alert alert-danger mt-2 mb-0">
+          type="error"
+          variant="tonal"
+          density="compact"
+          class="mt-2 mb-0">
           {{ createError }}
-        </div> <!-- /create form error -->
+        </v-alert> <!-- /create form error -->
       </v-card-text>
       <v-card-actions>
-        <div class="w-100 d-flex justify-content-between">
-          <button
-            type="button"
-            class="btn btn-danger"
+        <div class="w-100 d-flex justify-space-between">
+          <v-btn
+            color="error"
+            variant="flat"
             :title="$t('common.cancel')"
             @click="$emit('close')">
-            <span class="fa fa-times" />
+            <v-icon start>
+              fa-times
+            </v-icon>
             {{ $t('common.cancel') }}
-          </button>
-          <button
-            type="button"
-            class="btn btn-primary"
+          </v-btn>
+          <v-btn
+            color="primary"
+            variant="flat"
             @click="createUser(createMode === 'role')">
-            <span class="fa fa-plus-circle me-1" />
+            <v-icon start>
+              fa-plus-circle
+            </v-icon>
             {{ $t('common.create') }}
-          </button>
+          </v-btn>
         </div>
       </v-card-actions>
     </v-card>
@@ -360,6 +332,24 @@ export default {
       newUser: { ...defaultNewUser },
       validatePassword: undefined
     };
+  },
+  computed: {
+    timeLimitOptions () {
+      return [
+        { value: '1', text: this.$t('common.hourCount', { count: 1 }) },
+        { value: '6', text: this.$t('common.hourCount', { count: 6 }) },
+        { value: '24', text: this.$t('common.hourCount', { count: 24 }) },
+        { value: '48', text: this.$t('common.hourCount', { count: 48 }) },
+        { value: '72', text: this.$t('common.hourCount', { count: 72 }) },
+        { value: '168', text: this.$t('common.weekCount', { count: 1 }) },
+        { value: '336', text: this.$t('common.weekCount', { count: 2 }) },
+        { value: '720', text: this.$t('common.monthCount', { count: 1 }) },
+        { value: '1440', text: this.$t('common.monthCount', { count: 2 }) },
+        { value: '4380', text: this.$t('common.monthCount', { count: 6 }) },
+        { value: '8760', text: this.$t('common.yearCount', { count: 1 }) },
+        { value: 'undefined', text: this.$t('common.allCareful') }
+      ];
+    }
   },
   watch: {
     showModal (newVal) {

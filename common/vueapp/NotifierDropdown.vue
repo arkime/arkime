@@ -10,11 +10,13 @@ SPDX-License-Identifier: Apache-2.0
       :disabled="disabled"
       location="bottom start">
       <template #activator="{ props: activatorProps }">
-        <button
+        <v-btn
           v-bind="activatorProps"
-          type="button"
+          size="small"
+          variant="outlined"
+          color="secondary"
           :disabled="disabled"
-          class="btn btn-sm btn-secondary notifier-trigger no-wrap">
+          class="notifier-trigger text-none">
           {{ displayText || getNotifiersStr(localSelectedNotifiers) }}
           <v-icon end>
             fa-caret-down
@@ -25,29 +27,23 @@ SPDX-License-Identifier: Apache-2.0
             location="top">
             {{ tooltip }}
           </v-tooltip>
-        </button>
+        </v-btn>
       </template>
       <v-list
         density="compact"
         class="notifier-list">
         <!-- search -->
         <div class="px-2 pt-2 pb-1 sticky-top notifier-search-row">
-          <div class="input-group input-group-sm">
-            <input
-              v-focus="focus"
-              type="text"
-              class="form-control"
-              :value="searchTerm"
-              @input="searchNotifiersLocal($event.target.value)"
-              :placeholder="$t('settings.notifiers.searchTermPlaceholder')">
-            <button
-              type="button"
-              class="btn btn-outline-secondary"
-              :disabled="!searchTerm"
-              @click="clearSearchTerm">
-              <span class="fa fa-close" />
-            </button>
-          </div>
+          <v-text-field
+            v-focus="focus"
+            density="compact"
+            variant="outlined"
+            hide-details
+            clearable
+            prepend-inner-icon="fa-search"
+            :model-value="searchTerm"
+            @update:model-value="searchNotifiersLocal"
+            :placeholder="$t('settings.notifiers.searchTermPlaceholder')" />
         </div>
         <v-divider />
 
@@ -56,10 +52,10 @@ SPDX-License-Identifier: Apache-2.0
             v-for="notifier in filteredNotifiers"
             :key="notifier.id"
             @click.stop="toggleNotifier(notifier.id)">
-            <span class="d-flex align-items-center">
+            <span class="d-flex align-center">
               <input
                 type="checkbox"
-                class="form-check-input me-2 cursor-pointer"
+                class="dropdown-check-input me-2 cursor-pointer"
                 :checked="localSelectedNotifiers.includes(notifier.id)"
                 @click.stop="toggleNotifier(notifier.id)">
               {{ notifier.name }} ({{ notifier.type }})
@@ -72,10 +68,10 @@ SPDX-License-Identifier: Apache-2.0
             <v-list-item
               v-if="!notifiers.find(n => n.id === notifierId)"
               @click.stop="toggleNotifier(notifierId)">
-              <span class="d-flex align-items-center">
+              <span class="d-flex align-center">
                 <input
                   type="checkbox"
-                  class="form-check-input me-2 cursor-pointer"
+                  class="dropdown-check-input me-2 cursor-pointer"
                   :checked="true"
                   @click.stop="toggleNotifier(notifierId)">
                 {{ notifierId }}
@@ -190,11 +186,6 @@ export default {
         );
       }
     },
-    clearSearchTerm () {
-      this.searchTerm = '';
-      this.searchNotifiersLocal();
-      this.setFocus();
-    },
     setFocus () {
       this.focus = true;
       setTimeout(() => {
@@ -215,5 +206,26 @@ export default {
 .notifier-search-row {
   background-color: var(--color-background);
   z-index: 2;
+}
+/* native-checkbox dropdown row indicator. Replaces Bootstrap's
+   .form-check-input visuals. Uses --color-* tokens so it themes
+   correctly in dark mode. */
+.dropdown-check-input {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 14px;
+  height: 14px;
+  border: 1px solid var(--color-gray);
+  border-radius: 3px;
+  background-color: var(--color-background, #fff);
+  flex-shrink: 0;
+}
+.dropdown-check-input:checked {
+  background-color: var(--color-primary);
+  border-color: var(--color-primary);
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3e%3cpath fill='none' stroke='%23fff' stroke-linecap='round' stroke-linejoin='round' stroke-width='3' d='M6 10l3 3 6-6'/%3e%3c/svg%3e");
+  background-size: 14px 14px;
+  background-position: center;
+  background-repeat: no-repeat;
 }
 </style>

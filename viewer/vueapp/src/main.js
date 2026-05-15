@@ -23,11 +23,12 @@ import { createViewerTheme } from './theme.js';
 
 // common css
 import '../../../common/common.css';
+// shared bridge classes (e.g. .arkime-input-group used across multiple
+// components in place of Bootstrap's .input-group). Lives in common/ so it
+// also reaches parliament + WISE which still consume common/vueapp/ files.
+import '../../../common/arkime-input-group.css';
 // arkime element + Vuetify-component bridge styles
 import './overrides.css';
-// shared bridge classes (e.g. .arkime-input-group used across multiple
-// components in place of Bootstrap's .input-group)
-import './styles/arkime-input-group.css';
 // themed css deps -- these overlay on top of Vuetify; see theme.js notes
 import './themes/purp.css';
 import './themes/blue.css';

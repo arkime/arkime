@@ -3,7 +3,7 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-  <div class="d-inline-flex align-items-center">
+  <div class="d-inline-flex align-center">
     <label
       v-if="label"
       :for="activatorId"
@@ -14,10 +14,12 @@ SPDX-License-Identifier: Apache-2.0
       location="bottom"
       @update:model-value="onMenuToggle">
       <template #activator="{ props: activatorProps }">
-        <button
+        <v-btn
           v-bind="activatorProps"
-          type="button"
-          class="btn btn-sm btn-outline-secondary users-dropdown no-wrap"
+          size="small"
+          variant="outlined"
+          color="secondary"
+          class="users-dropdown text-none"
           data-testid="user-dropdown"
           :id="activatorId">
           <slot
@@ -26,13 +28,15 @@ SPDX-License-Identifier: Apache-2.0
             :unknown="loading || error">
             {{ getUsersStr() }}
           </slot>
-          <span class="fa fa-caret-down ms-1" />
+          <v-icon end>
+            fa-caret-down
+          </v-icon>
           <v-tooltip
             v-if="selectedTooltip"
             :activator="`#${activatorId}`">
             {{ selectedTooltip ? getUsersStr() : '' }}
           </v-tooltip>
-        </button>
+        </v-btn>
       </template>
 
       <v-list
@@ -40,22 +44,16 @@ SPDX-License-Identifier: Apache-2.0
         class="users-dropdown-menu">
         <!-- search bar -->
         <div class="px-2 py-1">
-          <div class="input-group input-group-sm">
-            <input
-              ref="searchInput"
-              type="text"
-              class="form-control"
-              :value="searchTerm"
-              @input="searchTerm = $event.target.value"
-              :placeholder="$t('users.searchUserPlaceholder')">
-            <button
-              type="button"
-              class="btn btn-outline-secondary"
-              :disabled="!searchTerm"
-              @click="clearSearchTerm">
-              <span class="fa fa-close" />
-            </button>
-          </div>
+          <v-text-field
+            ref="searchInput"
+            density="compact"
+            variant="outlined"
+            hide-details
+            clearable
+            prepend-inner-icon="fa-search"
+            :model-value="searchTerm"
+            @update:model-value="(val) => { searchTerm = val || ''; }"
+            :placeholder="$t('users.searchUserPlaceholder')" />
         </div>
         <v-divider />
 
@@ -68,12 +66,14 @@ SPDX-License-Identifier: Apache-2.0
         </div> <!-- /loading -->
 
         <!-- error -->
-        <div
+        <v-alert
           v-else-if="error"
-          class="mt-3 alert alert-warning">
-          <span class="fa fa-exclamation-triangle" />&nbsp;
+          type="warning"
+          variant="tonal"
+          density="compact"
+          class="mt-3 mx-2">
           {{ error }}
-        </div> <!-- /error -->
+        </v-alert> <!-- /error -->
 
         <!-- user checkboxes -->
         <div
@@ -82,16 +82,16 @@ SPDX-License-Identifier: Apache-2.0
           <div
             v-for="user in users"
             :key="user.userId"
-            class="form-check">
+            class="dropdown-check">
             <input
               :id="`userdd-${activatorId}-${user.userId}`"
               type="checkbox"
-              class="form-check-input"
+              class="dropdown-check-input"
               :checked="localSelectedUsers.includes(user.userId)"
               @change="toggleUser(user.userId, $event.target.checked)">
             <label
               :for="`userdd-${activatorId}-${user.userId}`"
-              class="form-check-label">
+              class="dropdown-check-label">
               {{ user.userName }} ({{ user.userId }})
             </label>
           </div>
@@ -202,10 +202,6 @@ export default {
         changedUser: { userId, newState: checked }
       };
       this.$emit('selected-users-updated', change, this.roleId);
-    },
-    clearSearchTerm () {
-      this.searchTerm = '';
-      this.$refs.searchInput?.focus();
     }
   },
   mounted () {
@@ -223,11 +219,33 @@ export default {
   overflow-y: auto;
   font-size: 0.85rem;
 }
-.users-dropdown-menu .form-check {
+.users-dropdown-menu .dropdown-check {
+  position: relative;
   padding-left: 1.6rem;
   margin-bottom: 2px;
 }
-.users-dropdown-menu .form-check-label {
+.users-dropdown-menu .dropdown-check-input {
+  appearance: none;
+  -webkit-appearance: none;
+  position: absolute;
+  left: 0;
+  top: 2px;
+  width: 14px;
+  height: 14px;
+  border: 1px solid var(--color-gray);
+  border-radius: 3px;
+  background-color: var(--color-background, #fff);
+  cursor: pointer;
+}
+.users-dropdown-menu .dropdown-check-input:checked {
+  background-color: var(--color-primary);
+  border-color: var(--color-primary);
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3e%3cpath fill='none' stroke='%23fff' stroke-linecap='round' stroke-linejoin='round' stroke-width='3' d='M6 10l3 3 6-6'/%3e%3c/svg%3e");
+  background-size: 14px 14px;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+.users-dropdown-menu .dropdown-check-label {
   font-size: 0.85rem;
   cursor: pointer;
 }

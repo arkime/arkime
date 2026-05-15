@@ -7,15 +7,19 @@ SPDX-License-Identifier: Apache-2.0
     <h3>
       {{ $t('settings.notifiers.title') }}
       <template v-if="notifierTypes">
-        <button
-          type="button"
+        <v-btn
           :key="notifier.name"
-          class="btn btn-sm btn-primary pull-right ms-1"
+          size="small"
+          color="primary"
+          variant="flat"
+          class="pull-right ms-1"
           v-for="notifier of sortedNotifierTypes"
           @click="createNewNotifier(notifier)">
-          <span class="fa fa-plus-circle me-1" />
+          <v-icon start>
+            fa-plus-circle
+          </v-icon>
           {{ $t('settings.notifiers.new', { name: notifier.name }) }}
-        </button>
+        </v-btn>
       </template>
     </h3>
 
@@ -26,12 +30,14 @@ SPDX-License-Identifier: Apache-2.0
     <hr>
 
     <!-- notifiers list error -->
-    <div
+    <v-alert
       v-if="error"
-      class="alert alert-danger mt-2 mb-2">
-      <span class="fa fa-exclamation-triangle me-1" />
+      type="error"
+      variant="tonal"
+      density="compact"
+      class="mt-2 mb-2">
       {{ error }}
-    </div> <!-- /notifiers list error -->
+    </v-alert> <!-- /notifiers list error -->
 
     <!-- no results -->
     <div
@@ -56,10 +62,10 @@ SPDX-License-Identifier: Apache-2.0
         </v-card-title>
         <v-card-text>
           <!-- new notifier name -->
-          <div class="input-group input-group-sm mb-2">
+          <div class="arkime-input-group arkime-input-group--fluid mb-2">
             <span
               id="newNotifierName"
-              class="input-group-text cursor-help">
+              class="arkime-input-label cursor-help">
               {{ $t('settings.notifiers.name') }}
               <sup>*</sup>
               <v-tooltip activator="#newNotifierName">
@@ -67,12 +73,12 @@ SPDX-License-Identifier: Apache-2.0
               </v-tooltip>
             </span>
             <input
-              class="form-control"
+              class="arkime-input-control"
               v-model="newNotifier.name"
               :placeholder="$t('settings.notifiers.namePlaceholder')">
             <span
               id="newNotifierNameHelp"
-              class="input-group-text cursor-help">
+              class="arkime-input-label arkime-input-label-fw cursor-help">
               <span class="fa fa-info-circle" />
               <v-tooltip activator="#newNotifierNameHelp">
                 {{ $t('settings.notifiers.nameInfo', { type: newNotifier.type }) }}
@@ -85,10 +91,10 @@ SPDX-License-Identifier: Apache-2.0
             :key="field.name">
             <span
               class="mb-2"
-              :class="{'input-group input-group-sm':field.type !== 'checkbox'}">
+              :class="{'arkime-input-group arkime-input-group--fluid':field.type !== 'checkbox'}">
               <span
                 v-if="field.type !== 'checkbox'"
-                class="input-group-text cursor-help"
+                class="arkime-input-label cursor-help"
                 :id="`newNotifierField-${field.name}`">
                 {{ field.name }}
                 <sup v-if="field.required">*</sup>
@@ -97,13 +103,13 @@ SPDX-License-Identifier: Apache-2.0
                 </v-tooltip>
               </span>
               <input
-                :class="{'form-control':field.type !== 'checkbox'}"
+                :class="{'arkime-input-control':field.type !== 'checkbox'}"
                 v-model="field.value"
                 :type="getFieldInputType(field)"
                 :placeholder="field.description">
               <span
                 v-if="field.type === 'secret'"
-                class="input-group-text cursor-pointer"
+                class="arkime-input-label arkime-input-label-fw cursor-pointer"
                 @click="toggleVisibleSecretField(field)">
                 <span
                   class="fa"
@@ -115,7 +121,7 @@ SPDX-License-Identifier: Apache-2.0
             </label>
           </div> <!-- /new notifier fields -->
           <!-- new notifier sharing -->
-          <div class="form-group row">
+          <div class="row">
             <div class="col d-flex">
               <div>
                 <RoleDropdown
@@ -125,11 +131,11 @@ SPDX-License-Identifier: Apache-2.0
                   @selected-roles-updated="updateNewNotifierRoles" />
               </div>
               <div class="ms-2 flex-grow-1">
-                <div class="input-group input-group-sm">
-                  <span class="input-group-text">{{ $t('common.shareWithUsers') }}</span>
+                <div class="arkime-input-group arkime-input-group--fluid">
+                  <span class="arkime-input-label">{{ $t('common.shareWithUsers') }}</span>
                   <input
                     type="text"
-                    class="form-control"
+                    class="arkime-input-control"
                     :value="newNotifier.users"
                     @input="newNotifier.users = $event.target.value"
                     :placeholder="$t('common.listOfUserIds')">
@@ -138,39 +144,48 @@ SPDX-License-Identifier: Apache-2.0
             </div>
           </div> <!-- /new notifier sharing -->
           <!-- create form error -->
-          <div
+          <v-alert
             v-if="newNotifierError"
-            class="alert alert-danger mt-2 mb-0">
-            <span class="fa fa-exclamation-triangle me-1" />
+            type="error"
+            variant="tonal"
+            density="compact"
+            class="mt-2 mb-0">
             {{ newNotifierError }}
-          </div> <!-- /create form error -->
+          </v-alert> <!-- /create form error -->
         </v-card-text>
         <!-- new notifier actions -->
         <v-card-actions>
-          <div class="w-100 d-flex justify-content-between">
-            <button
-              type="button"
-              class="btn btn-danger"
+          <div class="w-100 d-flex justify-space-between">
+            <v-btn
+              color="error"
+              variant="flat"
               :title="$t('common.cancel')"
               @click="showNotifierModal = false">
-              <span class="fa fa-times me-1" />
+              <v-icon start>
+                fa-times
+              </v-icon>
               {{ $t('common.cancel') }}
-            </button>
+            </v-btn>
             <div>
-              <button
-                type="button"
-                class="btn btn-warning me-1"
+              <v-btn
+                color="warning"
+                variant="flat"
+                class="me-1"
                 @click="clearNotifierFields">
-                <span class="fa fa-ban me-1" />
+                <v-icon start>
+                  fa-ban
+                </v-icon>
                 {{ $t('common.clear') }}
-              </button>
-              <button
-                type="button"
-                class="btn btn-success"
+              </v-btn>
+              <v-btn
+                color="success"
+                variant="flat"
                 @click="createNotifier">
-                <span class="fa fa-plus me-1" />
+                <v-icon start>
+                  fa-plus
+                </v-icon>
                 {{ $t('common.create') }}
-              </button>
+              </v-btn>
             </div>
           </div>
         </v-card-actions> <!-- /new notifier actions -->
@@ -200,16 +215,16 @@ SPDX-License-Identifier: Apache-2.0
         </v-card-title>
         <v-card-text>
           <!-- notifier name -->
-          <div class="input-group input-group-sm mb-2">
+          <div class="arkime-input-group arkime-input-group--fluid mb-2">
             <span
-              class="input-group-text cursor-help"
+              class="arkime-input-label cursor-help"
               :id="`notifierName-${index}`"
               :title="$t('settings.notifiers.uniqueName', { type: notifier.type })">
               {{ $t('settings.notifiers.name') }}
               <sup>*</sup>
             </span>
             <input
-              class="form-control"
+              class="arkime-input-control"
               v-model="notifier.name">
           </div> <!-- /notifier name -->
           <!-- notifier fields -->
@@ -218,9 +233,9 @@ SPDX-License-Identifier: Apache-2.0
             :key="field.name">
             <span
               class="mb-2"
-              :class="{'input-group input-group-sm':field.type !== 'checkbox'}">
+              :class="{'arkime-input-group arkime-input-group--fluid':field.type !== 'checkbox'}">
               <span
-                class="input-group-text cursor-help"
+                class="arkime-input-label cursor-help"
                 v-if="field.type !== 'checkbox'"
                 :id="`notifierField-${field.name}-${index}`">
                 {{ field.name }}
@@ -230,12 +245,12 @@ SPDX-License-Identifier: Apache-2.0
                 </v-tooltip>
               </span>
               <input
-                :class="{'form-control':field.type !== 'checkbox'}"
+                :class="{'arkime-input-control':field.type !== 'checkbox'}"
                 v-model="field.value"
                 :type="getFieldInputType(field)">
               <span
                 v-if="field.type === 'secret'"
-                class="input-group-text cursor-pointer"
+                class="arkime-input-label arkime-input-label-fw cursor-pointer"
                 @click="toggleVisibleSecretField(field)">
                 <span
                   class="fa"
@@ -247,10 +262,10 @@ SPDX-License-Identifier: Apache-2.0
             </label>
           </div> <!-- /notifier fields -->
           <!-- notifier sharing -->
-          <div class="input-group input-group-sm mb-2">
-            <span class="input-group-text">{{ $t('common.shareWithUsers') }}</span>
+          <div class="arkime-input-group arkime-input-group--fluid mb-2">
+            <span class="arkime-input-label">{{ $t('common.shareWithUsers') }}</span>
             <input
-              class="form-control"
+              class="arkime-input-control"
               v-model="notifier.users"
               :placeholder="$t('common.listOfUserIds')">
           </div>
@@ -274,7 +289,7 @@ SPDX-License-Identifier: Apache-2.0
                     class="me-2 d-inline-flex align-items-center">
                     <input
                       type="checkbox"
-                      class="form-check-input me-1"
+                      class="arkime-check-input me-1"
                       :id="notifierTypes[notifier.type.toLowerCase()].alerts[aKey].name + notifier.name"
                       :name="notifierTypes[notifier.type.toLowerCase()].alerts[aKey].name + notifier.name"
                       :checked="notifier.alerts[aKey]"
@@ -306,34 +321,39 @@ SPDX-License-Identifier: Apache-2.0
         </v-card-text>
         <!-- notifier actions -->
         <v-card-actions>
-          <button
-            type="button"
-            class="btn btn-sm btn-outline-warning"
+          <v-btn
+            size="small"
+            color="warning"
+            variant="outlined"
             :disabled="notifier.loading"
             @click="testNotifier(notifier.id, index)">
-            <span
-              v-if="notifier.loading"
-              class="fa fa-spinner fa-spin fa-fw me-1" />
-            <span
-              v-else
-              class="fa fa-bell fa-fw me-1" />
+            <v-icon start>
+              {{ notifier.loading ? 'fa-spinner fa-spin' : 'fa-bell' }}
+            </v-icon>
             {{ $t('common.test') }}
-          </button>
+          </v-btn>
           <span class="pull-right">
-            <button
-              type="button"
-              class="btn btn-sm btn-danger me-1"
+            <v-btn
+              size="small"
+              color="error"
+              variant="flat"
+              class="me-1"
               @click="removeNotifier(notifier.id, index)">
-              <span class="fa fa-trash-o fa-fw me-1" />
+              <v-icon start>
+                fa-trash-o
+              </v-icon>
               {{ $t('common.delete') }}
-            </button>
-            <button
-              type="button"
-              class="btn btn-sm btn-success"
+            </v-btn>
+            <v-btn
+              size="small"
+              color="success"
+              variant="flat"
               @click="updateNotifier(notifier.id, index, notifier)">
-              <span class="fa fa-save fa-fw me-1" />
+              <v-icon start>
+                fa-save
+              </v-icon>
               {{ $t('common.save') }}
-            </button>
+            </v-btn>
           </span>
         </v-card-actions> <!-- /notifier actions -->
       </v-card>

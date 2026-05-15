@@ -18,6 +18,7 @@ import router from './router.js';
 import store from './store.js';
 
 import '../../../common/common.css';
+import '../../../common/arkime-input-group.css';
 
 /**
  * Initialize the application with dynamically loaded locales

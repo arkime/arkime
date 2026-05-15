@@ -11,21 +11,25 @@ SPDX-License-Identifier: Apache-2.0
       location="bottom"
       @update:model-value="onMenuToggle">
       <template #activator="{ props: activatorProps }">
-        <button
+        <v-btn
           v-bind="activatorProps"
-          type="button"
-          class="btn btn-sm btn-outline-secondary roles-dropdown no-wrap"
+          size="small"
+          variant="outlined"
+          color="secondary"
+          class="roles-dropdown text-none"
           :id="activatorId"
           :disabled="disabled">
           {{ displayText || getRolesStr(localSelectedRoles) }}
-          <span class="fa fa-caret-down ms-1" />
+          <v-icon end>
+            fa-caret-down
+          </v-icon>
           <v-tooltip
             v-if="tooltip"
             :activator="`#${activatorId}`"
             location="top">
             {{ tooltip }}
           </v-tooltip>
-        </button>
+        </v-btn>
       </template>
 
       <v-list
@@ -33,22 +37,16 @@ SPDX-License-Identifier: Apache-2.0
         class="roles-dropdown-menu">
         <!-- roles search -->
         <div class="px-2 py-1">
-          <div class="input-group input-group-sm">
-            <input
-              ref="searchInput"
-              type="text"
-              class="form-control"
-              :value="searchTerm"
-              @input="searchRolesLocal($event.target.value)"
-              :placeholder="$t('users.rolesSearchPlaceholder')">
-            <button
-              type="button"
-              class="btn btn-outline-secondary"
-              :disabled="!searchTerm"
-              @click="clearSearchTerm">
-              <span class="fa fa-close" />
-            </button>
-          </div>
+          <v-text-field
+            ref="searchInput"
+            density="compact"
+            variant="outlined"
+            hide-details
+            clearable
+            prepend-inner-icon="fa-search"
+            :model-value="searchTerm"
+            @update:model-value="searchRolesLocal"
+            :placeholder="$t('users.rolesSearchPlaceholder')" />
         </div> <!-- /roles search -->
         <v-divider />
 
@@ -59,16 +57,16 @@ SPDX-License-Identifier: Apache-2.0
           <div
             v-for="role in filteredRoles"
             :key="role.value"
-            class="form-check">
+            class="dropdown-check">
             <input
               :id="`roledd-${activatorId}-${role.value}`"
               type="checkbox"
-              class="form-check-input"
+              class="dropdown-check-input"
               :checked="localSelectedRoles.includes(role.value)"
               @change="toggleRole(role.value, $event.target.checked)">
             <label
               :for="`roledd-${activatorId}-${role.value}`"
-              class="form-check-label">
+              class="dropdown-check-label">
               {{ role.text }}
               <span
                 v-if="role.userDefined"
@@ -82,16 +80,16 @@ SPDX-License-Identifier: Apache-2.0
             :key="role">
             <div
               v-if="!roles.find(r => r.value === role)"
-              class="form-check">
+              class="dropdown-check">
               <input
                 :id="`roledd-${activatorId}-${role}`"
                 type="checkbox"
-                class="form-check-input"
+                class="dropdown-check-input"
                 :checked="true"
                 @change="toggleRole(role, $event.target.checked)">
               <label
                 :for="`roledd-${activatorId}-${role}`"
-                class="form-check-label">
+                class="dropdown-check-label">
                 {{ role }}
                 <span
                   class="fa fa-times-circle cursor-help ms-2"
@@ -201,11 +199,6 @@ export default {
     searchRolesLocal (newVal) {
       this.searchTerm = newVal || '';
       this.filteredRoles = searchRoles(this.roles, this.searchTerm);
-    },
-    clearSearchTerm () {
-      this.searchTerm = '';
-      this.searchRolesLocal('');
-      this.$refs.searchInput?.focus();
     }
   }
 };
@@ -220,11 +213,33 @@ export default {
   overflow-y: auto;
   font-size: 0.85rem;
 }
-.roles-dropdown-menu .form-check {
+.roles-dropdown-menu .dropdown-check {
+  position: relative;
   padding-left: 1.6rem;
   margin-bottom: 2px;
 }
-.roles-dropdown-menu .form-check-label {
+.roles-dropdown-menu .dropdown-check-input {
+  appearance: none;
+  -webkit-appearance: none;
+  position: absolute;
+  left: 0;
+  top: 2px;
+  width: 14px;
+  height: 14px;
+  border: 1px solid var(--color-gray);
+  border-radius: 3px;
+  background-color: var(--color-background, #fff);
+  cursor: pointer;
+}
+.roles-dropdown-menu .dropdown-check-input:checked {
+  background-color: var(--color-primary);
+  border-color: var(--color-primary);
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3e%3cpath fill='none' stroke='%23fff' stroke-linecap='round' stroke-linejoin='round' stroke-width='3' d='M6 10l3 3 6-6'/%3e%3c/svg%3e");
+  background-size: 14px 14px;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+.roles-dropdown-menu .dropdown-check-label {
   font-size: 0.85rem;
   cursor: pointer;
 }

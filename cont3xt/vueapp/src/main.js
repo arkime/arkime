@@ -13,6 +13,7 @@ import C3Badge from '@/utils/C3Badge.vue';
 // styling/css
 import '@/index.scss';
 import '@real_common/../common.css';
+import '@real_common/../arkime-input-group.css';
 import 'vuetify/styles'; // vuetify css styles
 import '@/cont3xt.css'; // cont3xt css is applied after common.css and vuetify because it modifies some of their styles
 import '@/size.css'; // applied last to override all other styles

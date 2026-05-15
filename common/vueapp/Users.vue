@@ -46,13 +46,13 @@ SPDX-License-Identifier: Apache-2.0
           {{ $t('common.showingAll', { count: 0, total: 0 }) }}
         </span>
       </span>
-      <button
-        type="button"
-        class="btn btn-sm btn-primary"
+      <v-btn
+        size="small"
+        color="primary"
+        variant="flat"
         @click="download"
-        :title="$t('users.downloadCSVTip')">
-        <span class="fa fa-download" />
-      </button>
+        :title="$t('users.downloadCSVTip')"
+        icon="fa-download" />
     </div> <!-- /chrome -->
 
     <!-- error -->
@@ -156,38 +156,44 @@ SPDX-License-Identifier: Apache-2.0
         </template>
         <template #[`header.action`]>
           <div class="pull-right">
-            <button
-              type="button"
+            <v-btn
               v-if="roles"
-              class="btn btn-sm btn-success"
+              size="small"
+              color="success"
+              variant="flat"
               :title="$t('users.createRoleTip')"
               @click="createMode = 'role'; showUserCreateModal = true">
-              <span class="fa fa-plus-circle me-1" />
+              <v-icon start>
+                fa-plus-circle
+              </v-icon>
               {{ $t('common.role') }}
-            </button>
-            <button
-              type="button"
-              class="btn btn-sm btn-primary ms-2"
+            </v-btn>
+            <v-btn
+              size="small"
+              color="primary"
+              variant="flat"
+              class="ms-2"
               :title="$t('users.createUserTip')"
               @click="createMode = 'user'; showUserCreateModal = true">
-              <span class="fa fa-plus-circle me-1" />
+              <v-icon start>
+                fa-plus-circle
+              </v-icon>
               {{ $t('common.user') }}
-            </button>
+            </v-btn>
           </div>
         </template>
 
         <!-- expand-icon cell: keep auto-toggle but add restriction indicator class -->
         <template #[`item.data-table-expand`]="{ item, internalItem, toggleExpand, isExpanded }">
           <span :class="{'btn-indicator': hasRestrictions(item)}">
-            <button
-              type="button"
-              class="btn btn-xs btn-link p-0"
+            <v-btn
+              size="x-small"
+              variant="text"
+              density="comfortable"
               :title="hasRestrictions(item) ? $t('users.restrictedTip') : ''"
               @click="toggleExpand(internalItem)">
-              <span
-                class="fa"
-                :class="isExpanded(internalItem) ? 'fa-chevron-up' : 'fa-chevron-down'" />
-            </button>
+              <v-icon :icon="isExpanded(internalItem) ? 'fa-chevron-up' : 'fa-chevron-down'" />
+            </v-btn>
           </span>
         </template>
 
@@ -198,16 +204,17 @@ SPDX-License-Identifier: Apache-2.0
           </div>
         </template>
         <template #[`item.userName`]="{ item }">
-          <input
-            type="text"
-            class="form-control form-control-sm"
+          <v-text-field
+            density="compact"
+            variant="outlined"
+            hide-details
             v-model="item.userName"
-            @input="userHasChanged(item)">
+            @update:model-value="userHasChanged(item)" />
         </template>
         <template #[`item.enabled`]="{ item }">
           <input
             type="checkbox"
-            class="form-check-input mt-1"
+            class="arkime-check-input mt-1"
             data-testid="checkbox"
             v-model="item.enabled"
             @change="userHasChanged(item)">
@@ -216,7 +223,7 @@ SPDX-License-Identifier: Apache-2.0
           <input
             v-if="!item.userId.startsWith('role:')"
             type="checkbox"
-            class="form-check-input mt-1"
+            class="arkime-check-input mt-1"
             data-testid="checkbox"
             v-model="item.webEnabled"
             @change="userHasChanged(item)">
@@ -225,7 +232,7 @@ SPDX-License-Identifier: Apache-2.0
           <input
             v-if="!item.userId.startsWith('role:')"
             type="checkbox"
-            class="form-check-input mt-1"
+            class="arkime-check-input mt-1"
             data-testid="checkbox"
             v-model="item.headerAuthEnabled"
             @change="userHasChanged(item)">
@@ -246,52 +253,57 @@ SPDX-License-Identifier: Apache-2.0
         </template>
         <template #[`item.action`]="{ item, index }">
           <div class="pull-right">
-            <button
-              type="button"
-              class="btn btn-sm btn-primary ms-1"
+            <v-btn
               v-if="parentApp === 'Arkime' && isUser(item)"
               v-has-role="{user:currentUser,roles:'arkimeAdmin'}"
+              size="small"
+              color="primary"
+              variant="flat"
+              class="ms-1"
+              icon="fa-gear"
               @click="openSettings(item.userId)"
-              :title="$t('users.settingsFor', {user: item.userId})">
-              <span class="fa fa-gear" />
-            </button>
-            <button
-              type="button"
-              class="btn btn-sm btn-secondary ms-1"
+              :title="$t('users.settingsFor', {user: item.userId})" />
+            <v-btn
               v-if="parentApp === 'Arkime'"
+              size="small"
+              color="secondary"
+              variant="flat"
+              class="ms-1"
+              icon="fa-history"
               @click="openHistory(item.userId)"
-              :title="$t('users.historyFor', {user: item.userId})">
-              <span class="fa fa-history" />
-            </button>
+              :title="$t('users.historyFor', {user: item.userId})" />
             <transition name="buttons">
-              <button
-                type="button"
-                class="btn btn-sm btn-warning ms-1"
+              <v-btn
+                v-if="confirmDelete[item.userId]"
+                size="small"
+                color="warning"
+                variant="flat"
+                class="ms-1"
+                icon="fa-ban"
                 :title="$t('common.cancel')"
-                v-if="confirmDelete[item.userId]"
-                @click="toggleConfirmDeleteUser(item.userId)">
-                <span class="fa fa-ban" />
-              </button>
+                @click="toggleConfirmDeleteUser(item.userId)" />
             </transition>
             <transition name="buttons">
-              <button
-                type="button"
-                class="btn btn-sm btn-danger ms-1"
+              <v-btn
+                v-if="confirmDelete[item.userId]"
+                size="small"
+                color="error"
+                variant="flat"
+                class="ms-1"
+                icon="fa-check"
                 :title="$t('common.areYouSure')"
-                v-if="confirmDelete[item.userId]"
-                @click="deleteUser(item, index)">
-                <span class="fa fa-check" />
-              </button>
+                @click="deleteUser(item, index)" />
             </transition>
             <transition name="buttons">
-              <button
-                type="button"
-                class="btn btn-sm btn-danger ms-1"
-                :title="$t('users.deleteUser', {user: item.userId})"
+              <v-btn
                 v-if="!confirmDelete[item.userId]"
-                @click="toggleConfirmDeleteUser(item.userId)">
-                <span class="fa fa-trash-o" />
-              </button>
+                size="small"
+                color="error"
+                variant="flat"
+                class="ms-1"
+                icon="fa-trash-o"
+                :title="$t('users.deleteUser', {user: item.userId})"
+                @click="toggleConfirmDeleteUser(item.userId)" />
             </transition>
           </div>
         </template>
@@ -345,73 +357,44 @@ SPDX-License-Identifier: Apache-2.0
                     @update:model-value="setRoleField(item, 'disablePcapDownload', $event)" />
                 </div>
 
-                <div class="input-group input-group-sm mt-2">
-                  <span
-                    :id="`${item.userId}-expression`"
-                    class="input-group-text">
-                    {{ $t('users.forcedExpression') }}
+                <v-text-field
+                  density="compact"
+                  variant="outlined"
+                  hide-details
+                  class="mt-2"
+                  :label="$t('users.forcedExpression')"
+                  v-model="item.expression"
+                  @update:model-value="userHasChanged(item)">
+                  <template #append-inner>
+                    <span
+                      :id="`${item.userId}-expression`"
+                      class="fa fa-info-circle cursor-help" />
                     <v-tooltip :activator="`[id='${item.userId}-expression']`">
                       {{ $t('users.forcedExpressionTip') }}
                     </v-tooltip>
-                  </span>
-                  <input
-                    type="text"
-                    class="form-control"
-                    v-model="item.expression"
-                    @input="userHasChanged(item)">
-                </div>
+                  </template>
+                </v-text-field>
 
-                <div class="input-group input-group-sm mt-2 w-25">
-                  <span
-                    :id="`${item.userId}-timeLimit`"
-                    class="input-group-text">
-                    {{ $t('users.queryTimeLimit') }}
+                <v-select
+                  density="compact"
+                  variant="outlined"
+                  hide-details
+                  class="mt-2 w-25"
+                  item-title="text"
+                  item-value="value"
+                  :items="timeLimitOptions"
+                  :label="$t('users.queryTimeLimit')"
+                  v-model="item.timeLimit"
+                  @update:model-value="changeTimeLimit(item)">
+                  <template #append-inner>
+                    <span
+                      :id="`${item.userId}-timeLimit`"
+                      class="fa fa-info-circle cursor-help" />
                     <v-tooltip :activator="`[id='${item.userId}-timeLimit']`">
                       {{ $t('users.queryTimeLimitTip') }}
                     </v-tooltip>
-                  </span>
-                  <select
-                    class="form-control"
-                    v-model="item.timeLimit"
-                    @change="changeTimeLimit(item)">
-                    <option value="1">
-                      {{ $t('common.hourCount', { count: 1 }) }}
-                    </option>
-                    <option value="6">
-                      {{ $t('common.hourCount', { count: 6 }) }}
-                    </option>
-                    <option value="24">
-                      {{ $t('common.hourCount', { count: 24 }) }}
-                    </option>
-                    <option value="48">
-                      {{ $t('common.hourCount', { count: 48 }) }}
-                    </option>
-                    <option value="72">
-                      {{ $t('common.hourCount', { count: 72 }) }}
-                    </option>
-                    <option value="168">
-                      {{ $t('common.weekCount', { count: 1 }) }}
-                    </option>
-                    <option value="336">
-                      {{ $t('common.weekCount', { count: 2 }) }}
-                    </option>
-                    <option value="720">
-                      {{ $t('common.monthCount', { count: 1 }) }}
-                    </option>
-                    <option value="1440">
-                      {{ $t('common.monthCount', { count: 2 }) }}
-                    </option>
-                    <option value="4380">
-                      {{ $t('common.monthCount', { count: 6 }) }}
-                    </option>
-                    <option value="8760">
-                      {{ $t('common.yearCount', { count: 1 }) }}
-                    </option>
-                    <option value="undefined">
-                      {{ $t('common.allCareful') }}
-                    </option>
-                  </select>
-                </div>
+                  </template>
+                </v-select>
 
                 <!-- password change for users / role-permissions for roles -->
                 <template v-if="parentApp === 'Cont3xt' || parentApp === 'Arkime'">
@@ -419,32 +402,36 @@ SPDX-License-Identifier: Apache-2.0
                     class="row"
                     v-if="isUser(item)">
                     <div class="col-9 mt-4">
-                      <div class="input-group input-group-sm mt-2">
-                        <span class="input-group-text">{{ $t('users.newPassword') }}</span>
-                        <input
-                          type="password"
-                          class="form-control"
-                          v-model="newPassword"
-                          autocomplete="new-password"
-                          @keydown.enter="changePassword(item.userId)"
-                          :placeholder="$t('users.newPasswordPlaceholder')">
-                      </div>
-                      <div class="input-group input-group-sm mt-2">
-                        <span class="input-group-text">{{ $t('users.confirmPassword') }}</span>
-                        <input
-                          type="password"
-                          class="form-control"
-                          autocomplete="new-password"
-                          v-model="confirmNewPassword"
-                          @keydown.enter="changePassword(item.userId)"
-                          :placeholder="$t('users.confirmPasswordPlaceholder')">
-                      </div>
-                      <button
-                        type="button"
-                        class="btn btn-sm btn-success mt-2"
+                      <v-text-field
+                        density="compact"
+                        variant="outlined"
+                        hide-details
+                        class="mt-2"
+                        type="password"
+                        :label="$t('users.newPassword')"
+                        v-model="newPassword"
+                        autocomplete="new-password"
+                        @keydown.enter="changePassword(item.userId)"
+                        :placeholder="$t('users.newPasswordPlaceholder')" />
+                      <v-text-field
+                        density="compact"
+                        variant="outlined"
+                        hide-details
+                        class="mt-2"
+                        type="password"
+                        :label="$t('users.confirmPassword')"
+                        autocomplete="new-password"
+                        v-model="confirmNewPassword"
+                        @keydown.enter="changePassword(item.userId)"
+                        :placeholder="$t('users.confirmPasswordPlaceholder')" />
+                      <v-btn
+                        size="small"
+                        color="success"
+                        variant="flat"
+                        class="mt-2"
                         @click="changePassword(item.userId)">
                         {{ $t('users.changePassword') }}
-                      </button>
+                      </v-btn>
                     </div>
                   </form>
                   <div v-else>
@@ -513,17 +500,21 @@ SPDX-License-Identifier: Apache-2.0
       @close="showUserCreateModal = false" />
 
     <!-- messages (success/error) displayed at bottom of page -->
-    <div
-      v-if="msg"
-      style="z-index: 2000;"
-      :class="`alert-${msgType}`"
-      class="alert position-fixed fixed-bottom m-0 rounded-0">
+    <v-snackbar
+      :model-value="!!msg"
+      @update:model-value="(val) => { if (!val) msg = ''; }"
+      :color="snackbarColor"
+      location="bottom"
+      timeout="-1"
+      variant="flat">
       {{ msg }}
-      <button
-        type="button"
-        class="btn-close pull-right"
-        @click="msg = ''" />
-    </div> <!-- /messages -->
+      <template #actions>
+        <v-btn
+          variant="text"
+          icon="$close"
+          @click="msg = ''" />
+      </template>
+    </v-snackbar> <!-- /messages -->
   </div>
 </template>
 
@@ -620,6 +611,29 @@ export default {
     },
     totalPages () {
       return Math.max(1, Math.ceil(this.recordsTotal / this.perPage));
+    },
+    timeLimitOptions () {
+      return [
+        { value: '1', text: this.$t('common.hourCount', { count: 1 }) },
+        { value: '6', text: this.$t('common.hourCount', { count: 6 }) },
+        { value: '24', text: this.$t('common.hourCount', { count: 24 }) },
+        { value: '48', text: this.$t('common.hourCount', { count: 48 }) },
+        { value: '72', text: this.$t('common.hourCount', { count: 72 }) },
+        { value: '168', text: this.$t('common.weekCount', { count: 1 }) },
+        { value: '336', text: this.$t('common.weekCount', { count: 2 }) },
+        { value: '720', text: this.$t('common.monthCount', { count: 1 }) },
+        { value: '1440', text: this.$t('common.monthCount', { count: 2 }) },
+        { value: '4380', text: this.$t('common.monthCount', { count: 6 }) },
+        { value: '8760', text: this.$t('common.yearCount', { count: 1 }) },
+        { value: 'undefined', text: this.$t('common.allCareful') }
+      ];
+    },
+    /* Map Bootstrap alert variants to Vuetify color tokens. msgType is set
+       via showMessage() callers using strings like 'danger'/'success' that
+       date back to the BVN/bootstrap era. */
+    snackbarColor () {
+      const map = { danger: 'error', success: 'success', warning: 'warning', info: 'info' };
+      return map[this.msgType] || 'info';
     }
   },
   created () {
@@ -908,6 +922,29 @@ export default {
 
 .small-table-font {
   font-size: 0.9rem;
+}
+
+/* native checkbox styling for table-cell on/off toggles. Bootstrap used
+   to handle .form-check-input here; with that gone we paint our own
+   compact box using the --color-* theme tokens. */
+.arkime-check-input {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 16px;
+  height: 16px;
+  border: 1px solid var(--color-gray);
+  border-radius: 3px;
+  background-color: var(--color-background, #fff);
+  cursor: pointer;
+  vertical-align: middle;
+}
+.arkime-check-input:checked {
+  background-color: var(--color-primary);
+  border-color: var(--color-primary);
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3e%3cpath fill='none' stroke='%23fff' stroke-linecap='round' stroke-linejoin='round' stroke-width='3' d='M6 10l3 3 6-6'/%3e%3c/svg%3e");
+  background-size: 16px 16px;
+  background-position: center;
+  background-repeat: no-repeat;
 }
 
 .toggle-group {
