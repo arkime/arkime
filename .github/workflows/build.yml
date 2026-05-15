@@ -165,7 +165,7 @@ jobs:
         if: ${{ matrix.viewertest == 'normal' }}
         run: |
           export PATH=/opt/arkime/bin:$PATH
-          (chown -R opensearch /opensearch-2.7.0; cd /opensearch-2.7.0 ; su opensearch -c "ES_JAVA_OPTS='-Xms2000m -Xmx2000m' bin/opensearch" > /tmp/os &)
+          (chown -R opensearch /opensearch-2.7.0; cd /opensearch-2.7.0 ; su opensearch -c "OPENSEARCH_JAVA_OPTS='-Xms2000m -Xmx2000m' bin/opensearch" > /tmp/os &)
           sleep 30
           cat /tmp/os
           (cd tests ; G_SLICE=always-malloc ./tests.pl --viewer)
