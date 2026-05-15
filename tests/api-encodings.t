@@ -111,7 +111,7 @@ system("rm -f /tmp/test-161019* /tmp/test-131203-*");
 # Load all the pcap, running some in background
 foreach my $e (undef, "xor-2048", "aes-256-ctr") {
     foreach my $c ("none", "gzip", "zstd") {
-        foreach my $b (8000, 64000) {
+        foreach my $b (8192, 64000) {
             foreach my $s ("true", "false") {
                 doTest($e, $c, $b, $s);
             }
@@ -127,7 +127,7 @@ esGet("/_refresh");
 # Check the results
 foreach my $e (undef, "xor-2048", "aes-256-ctr") {
     foreach my $c ("none", "gzip", "zstd") {
-        foreach my $b (8000, 64000) {
+        foreach my $b (8192, 64000) {
             foreach my $s ("true", "false") {
                 doCheck($e, $c, $b, $s);
             }
