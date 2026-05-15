@@ -7,13 +7,17 @@ use Test::Differences;
 use Data::Dumper;
 use strict;
 
+diag "ALW started";
 my $nodeFilter = '{ "query": { "terms": { "node": ["s3-test", "sqs-test"] } } }';
 esPost("/tests2_sessions*/_delete_by_query?conflicts=proceed&refresh", $nodeFilter);
+
+diag "ALW dbq";
 
 sub run {
 my ($tag, $compression, $extension, $gap, $input) = @_;
 
     my $cmd = "../capture/capture -o disablePython=true -o s3GapPacketPos=$gap -c config.test.ini -n s3-test --copy $input --tag $tag -o s3Compression=$compression --flush > /tmp/arkime.capture.$tag.log 2>&1";
+    diag "ALW $cmd";
     system($cmd);
 
     # Test 1
