@@ -419,7 +419,7 @@ import Clusters from '../utils/Clusters.vue';
 import ArkimeToast from '../utils/Toast.vue';
 import ArkimeError from '../utils/Error.vue';
 import ArkimeLoading from '../utils/Loading.vue';
-import ArkimePaging from '../utils/Pagination.vue';
+import ArkimePaging from '@common/Pagination.vue';
 import HistoryService from './HistoryService';
 import Focus from '@common/Focus.vue';
 import ArkimeCollapsible from '../utils/CollapsibleWrapper.vue';

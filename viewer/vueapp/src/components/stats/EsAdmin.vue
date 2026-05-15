@@ -100,7 +100,7 @@ SPDX-License-Identifier: Apache-2.0
         v-for="setting in settings"
         :key="setting.key"
         class="mt-2">
-        <v-col cols="auto">
+        <v-col cols="12">
           <div class="arkime-input-group arkime-input-group--fluid">
             <span
               :id="`setting-${setting.key}`"

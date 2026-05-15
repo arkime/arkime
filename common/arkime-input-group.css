@@ -104,6 +104,36 @@ select.arkime-input-control {
   align-self: center;
 }
 
+/* Native checkbox styling for standalone checkboxes (not paired with a
+   v-checkbox). Replaces what Bootstrap's .form-check-input used to paint:
+   a compact box that picks up our --color-* theme tokens so it works in
+   light + dark themes. */
+/* !important on bg-color + bg-image is needed because overrides.css
+   forces every <input> to `background-color: var(--color-inputs) !important`
+   for the themed text-input look. Without !important on :checked, the
+   primary fill never paints and the white check glyph reads as invisible
+   against the forced white background. */
+.arkime-check-input {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 16px;
+  height: 16px;
+  border: 1px solid var(--color-gray);
+  border-radius: 3px;
+  background-color: var(--color-background, #fff) !important;
+  cursor: pointer;
+  vertical-align: middle;
+  flex-shrink: 0;
+}
+.arkime-check-input:checked {
+  background-color: var(--color-primary) !important;
+  border-color: var(--color-primary) !important;
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3e%3cpath fill='none' stroke='%23fff' stroke-linecap='round' stroke-linejoin='round' stroke-width='3' d='M6 10l3 3 6-6'/%3e%3c/svg%3e") !important;
+  background-size: 16px 16px !important;
+  background-position: center !important;
+  background-repeat: no-repeat !important;
+}
+
 /* <textarea>: the base .arkime-input-control rule sets height:100%, which
    pins a textarea to its parent's height (32px inside a group, or zero
    in a flex-flow card-text). Override so any textarea grows with its

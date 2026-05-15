@@ -6,29 +6,6 @@ SPDX-License-Identifier: Apache-2.0
   <div>
     <!-- search/paging/download chrome -->
     <div class="d-flex align-center mt-3 mb-2 gap-2">
-      <v-btn
-        v-if="roles"
-        size="large"
-        color="success"
-        variant="flat"
-        :title="$t('users.createRoleTip')"
-        @click="createMode = 'role'; showUserCreateModal = true">
-        <v-icon start>
-          fa-plus-circle
-        </v-icon>
-        {{ $t('common.role') }}
-      </v-btn>
-      <v-btn
-        size="large"
-        color="primary"
-        variant="flat"
-        :title="$t('users.createUserTip')"
-        @click="createMode = 'user'; showUserCreateModal = true">
-        <v-icon start>
-          fa-plus-circle
-        </v-icon>
-        {{ $t('common.user') }}
-      </v-btn>
       <div class="flex-grow-1">
         <v-text-field
           autofocus
@@ -40,42 +17,19 @@ SPDX-License-Identifier: Apache-2.0
           v-model="searchTerm"
           :placeholder="$t('users.searchPlaceholder')" />
       </div>
-      <v-select
-        class="users-per-page"
-        density="compact"
-        variant="outlined"
-        hide-details
-        item-title="text"
-        item-value="value"
-        :items="perPageOptions"
-        :model-value="perPage"
-        @update:model-value="perPageChange">
-        <template #selection="{ item }">
-          <span class="users-per-page-display">{{ item.raw.value }}</span>
-        </template>
-      </v-select>
-      <v-pagination
-        class="users-paging"
-        density="compact"
-        :total-visible="3"
-        :length="totalPages"
-        :model-value="currentPage"
-        @update:model-value="currentPage = $event" />
-      <span class="users-pagination-info me-2">
-        <span v-if="recordsTotal">
-          {{ $t('common.showingRange', { start: commaString(((currentPage - 1) * perPage) + 1), end: commaString(Math.min(currentPage * perPage, recordsTotal)), total: commaString(recordsTotal) }) }}
-        </span>
-        <span v-else>
-          {{ $t('common.showingAll', { count: 0, total: 0 }) }}
-        </span>
-      </span>
+      <ArkimePaging
+        :records-filtered="recordsTotal"
+        :records-total="recordsTotal"
+        :length-default="100"
+        @change-paging="onPagingChange" />
       <v-btn
         size="large"
         color="primary"
         variant="flat"
         @click="download"
-        :title="$t('users.downloadCSVTip')"
-        icon="fa-download" />
+        :title="$t('users.downloadCSVTip')">
+        <v-icon>fa-download</v-icon>
+      </v-btn>
     </div> <!-- /chrome -->
 
     <!-- error -->
@@ -178,6 +132,36 @@ SPDX-License-Identifier: Apache-2.0
           </span>
         </template>
 
+        <!-- +Role / +User in the right-most header column. -->
+        <template #[`header.action`]>
+          <div class="pull-right">
+            <v-btn
+              v-if="roles"
+              size="large"
+              color="success"
+              variant="flat"
+              :title="$t('users.createRoleTip')"
+              @click="createMode = 'role'; showUserCreateModal = true">
+              <v-icon start>
+                fa-plus-circle
+              </v-icon>
+              {{ $t('common.role') }}
+            </v-btn>
+            <v-btn
+              size="large"
+              color="primary"
+              variant="flat"
+              class="ms-2"
+              :title="$t('users.createUserTip')"
+              @click="createMode = 'user'; showUserCreateModal = true">
+              <v-icon start>
+                fa-plus-circle
+              </v-icon>
+              {{ $t('common.user') }}
+            </v-btn>
+          </div>
+        </template>
+
         <!-- expand-icon cell: keep auto-toggle but add restriction indicator class -->
         <template #[`item.data-table-expand`]="{ item, internalItem, toggleExpand, isExpanded }">
           <span :class="{'btn-indicator': hasRestrictions(item)}">
@@ -247,7 +231,6 @@ SPDX-License-Identifier: Apache-2.0
             <v-btn
               v-if="parentApp === 'Arkime' && isUser(item)"
               v-has-role="{user:currentUser,roles:'arkimeAdmin'}"
-              size="large"
               color="primary"
               variant="flat"
               class="ms-1"
@@ -256,7 +239,6 @@ SPDX-License-Identifier: Apache-2.0
               :title="$t('users.settingsFor', {user: item.userId})" />
             <v-btn
               v-if="parentApp === 'Arkime'"
-              size="large"
               color="secondary"
               variant="flat"
               class="ms-1"
@@ -266,7 +248,6 @@ SPDX-License-Identifier: Apache-2.0
             <transition name="buttons">
               <v-btn
                 v-if="confirmDelete[item.userId]"
-                size="large"
                 color="warning"
                 variant="flat"
                 class="ms-1"
@@ -277,7 +258,6 @@ SPDX-License-Identifier: Apache-2.0
             <transition name="buttons">
               <v-btn
                 v-if="confirmDelete[item.userId]"
-                size="large"
                 color="error"
                 variant="flat"
                 class="ms-1"
@@ -288,7 +268,6 @@ SPDX-License-Identifier: Apache-2.0
             <transition name="buttons">
               <v-btn
                 v-if="!confirmDelete[item.userId]"
-                size="large"
                 color="error"
                 variant="flat"
                 class="ms-1"
@@ -505,6 +484,7 @@ import RoleDropdown from './RoleDropdown.vue';
 import UserDropdown from './UserDropdown.vue';
 import TriStateToggle from './TriStateToggle.vue';
 import ToggleBtn from './ToggleBtn.vue';
+import ArkimePaging from './Pagination.vue';
 import { timezoneDateString, commaString } from './vueFilters.js';
 import { resolveMessage } from './resolveI18nMessage';
 
@@ -518,7 +498,8 @@ export default {
     RoleDropdown,
     UserDropdown,
     TriStateToggle,
-    ToggleBtn
+    ToggleBtn,
+    ArkimePaging
   },
   emits: ['update-roles', 'update-current-user'],
   props: {
@@ -547,8 +528,9 @@ export default {
       dbUserList: undefined,
       changed: {},
       recordsTotal: 0,
-      perPage: 100,
-      currentPage: 1,
+      // managed by the ArkimePaging component (length defaults to 100 via
+      // its length-default prop; start updates on page changes).
+      paging: { start: 0, length: 100 },
       sortBy: [{ key: 'userId', order: 'asc' }],
       createMode: 'user',
       // password
@@ -572,6 +554,9 @@ export default {
         ...opts
       });
       return [
+        // Explicit expand-toggle column at position 0; v-data-table's
+        // show-expand auto-injects it at the END otherwise.
+        { title: '', key: 'data-table-expand', sortable: false, width: '36px' },
         mk('userId'),
         mk('userName', { width: '250px' }),
         mk('enabled'),
@@ -579,19 +564,8 @@ export default {
         mk('headerAuthEnabled'),
         mk('roles', { sortable: false }),
         mk('lastUsed'),
-        { title: '', key: 'action', sortable: false, width: '190px' }
+        { title: '', key: 'action', sortable: false, width: '280px', align: 'end' }
       ];
-    },
-    perPageOptions () {
-      return [
-        { value: 50, text: this.$t('common.perPage', { count: 50 }) },
-        { value: 100, text: this.$t('common.perPage', { count: 100 }) },
-        { value: 200, text: this.$t('common.perPage', { count: 200 }) },
-        { value: 500, text: this.$t('common.perPage', { count: 500 }) }
-      ];
-    },
-    totalPages () {
-      return Math.max(1, Math.ceil(this.recordsTotal / this.perPage));
     },
     timeLimitOptions () {
       return [
@@ -623,9 +597,6 @@ export default {
   watch: {
     searchTerm () {
       this.loadUsers();
-    },
-    currentPage () {
-      this.loadUsers();
     }
   },
   methods: {
@@ -633,10 +604,6 @@ export default {
     commaString,
     tzDateStr (date, tz, ms) {
       return timezoneDateString(date, tz, ms);
-    },
-    perPageChange (newVal) {
-      this.perPage = newVal;
-      this.loadUsers(false);
     },
     sortChanged () {
       this.loadUsers();
@@ -839,11 +806,15 @@ export default {
     getUsersQuery () {
       return {
         desc: this.sortBy[0]?.order === 'desc',
-        length: this.perPage,
+        length: this.paging.length,
         filter: this.searchTerm,
         sortField: this.sortBy[0]?.key,
-        start: (this.currentPage - 1) * this.perPage
+        start: this.paging.start
       };
+    },
+    onPagingChange (params) {
+      this.paging = { start: params.start, length: params.length };
+      this.loadUsers();
     },
     loadUsers () {
       const query = this.getUsersQuery();
@@ -893,39 +864,26 @@ export default {
 
 /* indication that a user has additional permissions set */
 .btn-indicator .btn-toggle-user:not(.expanded) {
-  background: linear-gradient(135deg, var(--bs-primary) 1%, var(--bs-primary) 75%, var(--bs-primary) 75%, var(--bs-primary-border-subtle) 77%, var(--bs-primary-border-subtle) 100%);
+  background: linear-gradient(135deg, var(--color-primary) 1%, var(--color-primary) 75%, var(--color-primary) 75%, var(--color-primary-lighter) 77%, var(--color-primary-lighter) 100%);
 }
 
-/* make the roles dropdown text smaller */
-.roles-dropdown > button, .users-dropdown > button {
-  font-size: 0.8rem;
+/* shrink the RoleDropdown / UserDropdown trigger text -- when a user
+   has many selected roles the comma-joined list overflows the cell at
+   the default size="large" v-btn font (~14px). */
+.roles-dropdown.v-btn,
+.users-dropdown.v-btn,
+.notifier-trigger.v-btn {
+  font-size: 0.75rem !important;
+  line-height: 1.2 !important;
+}
+.roles-dropdown.v-btn .v-btn__content,
+.users-dropdown.v-btn .v-btn__content {
+  white-space: normal;
+  text-align: start;
 }
 
 .small-table-font {
   font-size: 0.9rem;
-}
-
-/* native checkbox styling for table-cell on/off toggles. Bootstrap used
-   to handle .form-check-input here; with that gone we paint our own
-   compact box using the --color-* theme tokens. */
-.arkime-check-input {
-  appearance: none;
-  -webkit-appearance: none;
-  width: 16px;
-  height: 16px;
-  border: 1px solid var(--color-gray);
-  border-radius: 3px;
-  background-color: var(--color-background, #fff);
-  cursor: pointer;
-  vertical-align: middle;
-}
-.arkime-check-input:checked {
-  background-color: var(--color-primary);
-  border-color: var(--color-primary);
-  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3e%3cpath fill='none' stroke='%23fff' stroke-linecap='round' stroke-linejoin='round' stroke-width='3' d='M6 10l3 3 6-6'/%3e%3c/svg%3e");
-  background-size: 16px 16px;
-  background-position: center;
-  background-repeat: no-repeat;
 }
 
 .toggle-group {
@@ -938,97 +896,40 @@ export default {
   border-bottom-right-radius: 0;
 }
 
-/* ---- Pagination chrome polish: same look as Pagination.vue ---- */
-.users-per-page {
-  width: 76px;
-  flex: 0 0 76px;
-  font-size: 0.8rem;
-}
-.users-per-page :deep(.v-field) {
-  --v-input-control-height: 32px;
-  align-items: center;
-}
-.users-per-page :deep(.v-field__field) {
-  align-items: center;
-}
-.users-per-page :deep(.v-field__input) {
-  font-size: 0.8rem;
-  padding-top: 0;
-  padding-bottom: 0;
-  padding-inline-start: 8px;
-  padding-inline-end: 0;
-  min-height: 32px;
-  display: flex;
-  align-items: center;
-}
-.users-per-page :deep(.v-field__append-inner) {
-  padding-top: 0;
-  padding-bottom: 0;
-  padding-inline: 4px;
-  align-items: center;
-}
-.users-per-page :deep(.v-field__append-inner .v-icon) {
-  font-size: 16px;
-  opacity: 0.6;
-}
-.users-per-page-display {
-  white-space: nowrap;
-  font-size: 0.8rem;
-  line-height: 1;
-}
-
-.users-paging {
-  padding-left: 0;
-  padding-right: 0;
-}
-.users-paging :deep(.v-pagination__list) {
-  margin: 0;
-  padding: 0;
-  gap: 0;
-}
-.users-paging :deep(.v-pagination__list > li:first-child) {
-  margin-inline-start: 0;
-}
-.users-paging :deep(.v-pagination__list > li:last-child) {
-  margin-inline-end: 0;
-}
-.users-paging :deep(.v-btn) {
-  --v-btn-height: 24px;
-  width: 24px;
-  min-width: 24px;
-  font-size: 0.75rem;
-}
-
-.users-pagination-info {
-  display: inline-block;
-  font-size: 0.8rem;
-  color: var(--color-foreground);
-  white-space: nowrap;
-  margin-left: 4px;
-}
-
-/* ---- Users table: tight rows so the list fits more on screen. Cell
-   padding below Vuetify's compact default (8px); horizontal padding
-   stays comfortable for column separation. ---- */
+/* ---- Users table: tight rows so the list fits more on screen.
+   Padding is below Vuetify's compact default (8px); font shrunk to
+   match the rest of the analyst-grade dense chrome. ---- */
 .users-table-striped :deep(tbody tr:nth-of-type(odd) > td) {
   background-color: var(--color-gray-lighter) !important;
 }
 .users-table-striped :deep(tbody tr > td),
 .users-table-striped :deep(thead tr > th) {
-  padding-top: 2px !important;
-  padding-bottom: 2px !important;
-  padding-left: 8px !important;
-  padding-right: 8px !important;
+  padding-top: 1px !important;
+  padding-bottom: 1px !important;
+  padding-left: 6px !important;
+  padding-right: 6px !important;
   height: auto !important;
+  font-size: 0.8rem !important;
+}
+.users-table-striped :deep(thead tr > th) {
+  font-size: 0.75rem !important;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
 }
 .users-table-striped :deep(tbody tr > td .v-input),
 .users-table-striped :deep(tbody tr > td .arkime-input-group) {
   margin-top: 0 !important;
   margin-bottom: 0 !important;
 }
+/* per-row icon-only v-btns: keep the button square chrome but shrink
+   so the rows aren't blown out by the action column. */
+.users-table-striped :deep(tbody tr > td .v-btn--icon) {
+  width: 28px !important;
+  height: 28px !important;
+}
 .users-table-striped :deep(.user-detail-row > td) {
-  padding-top: 8px !important;
-  padding-bottom: 8px !important;
+  padding-top: 6px !important;
+  padding-bottom: 6px !important;
 }
 .header-with-tip {
   cursor: help;

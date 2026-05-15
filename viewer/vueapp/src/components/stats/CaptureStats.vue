@@ -55,7 +55,7 @@ import Utils from '../utils/utils';
 import ArkimeError from '../utils/Error.vue';
 import ArkimeTable from '../utils/Table.vue';
 import ArkimeLoading from '../utils/Loading.vue';
-import ArkimePaging from '../utils/Pagination.vue';
+import ArkimePaging from '@common/Pagination.vue';
 import StatsService from './StatsService.js';
 import { round, roundCommaString, timezoneDateString, humanReadableBytes, humanReadableBits, readableTime, readableTimeCompact } from '@common/vueFilters.js';
 import { resolveMessage } from '@common/resolveI18nMessage';

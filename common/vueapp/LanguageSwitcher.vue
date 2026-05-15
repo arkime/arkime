@@ -5,17 +5,18 @@ SPDX-License-Identifier: Apache-2.0
 <template>
   <v-menu location="bottom end">
     <template #activator="{ props: activatorProps }">
-      <button
+      <v-btn
         v-bind="activatorProps"
-        type="button"
-        :class="['btn', 'btn-sm', 'btn-light', 'btn-language', additionalClasses]">
+        size="small"
+        variant="text"
+        :class="['btn-language', additionalClasses]">
         <span class="flag-icon">{{ currentLanguageFlag }}</span>
         <v-tooltip
           activator="parent"
           location="left">
           {{ currentLanguageLabel }}
         </v-tooltip>
-      </button>
+      </v-btn>
     </template>
     <v-list density="compact">
       <v-list-item

@@ -126,23 +126,23 @@
         <span v-if="tsharkLoading">
           <span class="fa fa-spinner fa-spin" /> running tshark…
         </span>
-        <label class="ms-3 form-check form-check-inline mb-0">
+        <label class="ms-3 d-inline-flex align-center small">
           <input
             type="checkbox"
-            class="form-check-input"
-            v-model="tsharkPayload"> <span class="form-check-label small">payload</span>
+            class="arkime-check-input me-1"
+            v-model="tsharkPayload">payload
         </label>
-        <label class="form-check form-check-inline mb-0">
+        <label class="ms-2 d-inline-flex align-center small">
           <input
             type="checkbox"
-            class="form-check-input"
-            v-model="tsharkHidden"> <span class="form-check-label small">hidden fields</span>
+            class="arkime-check-input me-1"
+            v-model="tsharkHidden">hidden fields
         </label>
-        <label class="form-check form-check-inline mb-0 small">
+        <label class="ms-2 d-inline-flex align-center small">
           packets
           <input
             type="number"
-            class="form-control form-control-sm ms-1 tshark-length"
+            class="arkime-input-control ms-1 tshark-length"
             min="1"
             v-model.number="tsharkLength">
         </label>
@@ -713,13 +713,21 @@ onUnmounted(() => {
 .tshark-section {
   margin-top: 0.5rem;
 }
+/* number input sits inline with the checkbox labels; arkime-input-control
+   alone gives it transparent bg + no border, so we paint a compact box. */
 .tshark-section .tshark-length {
   width: 5.5em;
+  height: 24px;
   display: inline-block;
   margin-left: 0.25rem;
+  padding: 0 6px;
+  border: 1px solid var(--color-gray);
+  border-radius: 3px;
+  background-color: var(--color-background, #fff);
+  font-size: 0.85rem;
 }
 .tshark-output {
-  font-family: var(--bs-font-monospace, monospace);
+  font-family: SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   font-size: 0.85rem;
 }
 .tshark-output .tshark-packet {

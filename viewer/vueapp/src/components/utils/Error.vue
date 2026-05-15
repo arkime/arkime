@@ -3,7 +3,7 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-  <div class="info-area vertical-center font-monospace">
+  <div class="info-area vertical-center arkime-error-box">
     <div class="text-danger">
       <span class="fa fa-2x fa-warning" />
       <span v-if="message">
@@ -33,6 +33,12 @@ export default {
 </script>
 
 <style scoped>
+/* Bootstrap used to provide .font-monospace; with bootstrap.css gone
+   we render the parse-error text monospace inline so unbalanced parens
+   etc. line up readably. */
+.arkime-error-box {
+  font-family: SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
 .info-area > .text-danger {
   white-space: pre-line;
   line-height: 1.1em;

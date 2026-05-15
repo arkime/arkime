@@ -705,7 +705,7 @@ import Utils from '../utils/utils';
 // import components
 import ArkimeSearch from '../search/Search.vue';
 import customCols from './customCols.json';
-import ArkimePaging from '../utils/Pagination.vue';
+import ArkimePaging from '@common/Pagination.vue';
 import ToggleBtn from '@common/ToggleBtn.vue';
 import ArkimeError from '../utils/Error.vue';
 import ArkimeLoading from '../utils/Loading.vue';

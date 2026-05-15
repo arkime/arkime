@@ -49,7 +49,7 @@ SPDX-License-Identifier: Apache-2.0
 <script>
 import '../../cubismoverrides.css';
 import Utils from '../utils/utils';
-import ArkimePaging from '../utils/Pagination.vue';
+import ArkimePaging from '@common/Pagination.vue';
 import ArkimeError from '../utils/Error.vue';
 import ArkimeLoading from '../utils/Loading.vue';
 import StatsService from './StatsService.js';

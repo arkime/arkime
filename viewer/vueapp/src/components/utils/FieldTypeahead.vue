@@ -3,44 +3,6 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-  <!-- needs to come before input so .arkime-input-group sibling styles match -->
-  <div
-    class="arkime-dropdown-menu field-typeahead"
-    v-show="showDropdown"
-    role="dropdown">
-    <a
-      v-for="(field, index) in filteredFieldHistory"
-      :key="field.exp + '-history'"
-      :class="{'active': index === current,'last-history-item':index === filteredFieldHistory.length - 1}"
-      class="arkime-dropdown-item cursor-pointer"
-      @click.stop="changeField(field)">
-      <span class="fa fa-history" />&nbsp;
-      {{ field.friendlyName }}
-      <small>({{ field.exp }})</small>
-      <span
-        class="fa fa-close float-right mt-1"
-        :title="$t('utils.removeFromHistory')"
-        @click.stop.prevent="removeFromFieldHistory(field)" />
-    </a>
-    <div
-      v-if="filteredFieldHistory.length"
-      class="arkime-dropdown-divider" />
-    <a
-      v-for="(field, index) in filteredFields"
-      :key="field.exp"
-      :class="{'active':index + filteredFieldHistory.length === current}"
-      class="arkime-dropdown-item cursor-pointer"
-      @click.stop="changeField(field)">
-      {{ field.friendlyName }}
-      <small>({{ field.exp }})</small>
-    </a>
-    <a
-      v-if="(!filteredFields || !filteredFields.length)"
-      class="arkime-dropdown-item">
-      {{ $t('utils.noFieldsMatch') }}
-    </a>
-  </div>
-
   <input
     type="text"
     ref="typeahead"
@@ -56,6 +18,51 @@ SPDX-License-Identifier: Apache-2.0
     @keyup.esc.stop="closeTypeaheadResults"
     class="arkime-input-control"
     :placeholder="$t('utils.beginTypingPlaceholder')">
+
+  <!-- dropdown is teleported to body so it escapes navbar/toolbar
+       overflow:hidden clipping. Positioned via fixed top/left from the
+       input's bounding rect. -->
+  <Teleport to="body">
+    <div
+      class="arkime-dropdown-menu field-typeahead-dropdown"
+      v-show="showDropdown"
+      :style="dropdownStyle"
+      role="dropdown">
+      <a
+        v-for="(field, index) in filteredFieldHistory"
+        :key="field.exp + '-history'"
+        :class="{'active': index === current,'last-history-item':index === filteredFieldHistory.length - 1}"
+        class="arkime-dropdown-item cursor-pointer"
+        @mousedown.prevent
+        @click.stop="changeField(field)">
+        <span class="fa fa-history" />&nbsp;
+        {{ field.friendlyName }}
+        <small>({{ field.exp }})</small>
+        <span
+          class="fa fa-close float-right mt-1"
+          :title="$t('utils.removeFromHistory')"
+          @click.stop.prevent="removeFromFieldHistory(field)" />
+      </a>
+      <div
+        v-if="filteredFieldHistory.length"
+        class="arkime-dropdown-divider" />
+      <a
+        v-for="(field, index) in filteredFields"
+        :key="field.exp"
+        :class="{'active':index + filteredFieldHistory.length === current}"
+        class="arkime-dropdown-item cursor-pointer"
+        @mousedown.prevent
+        @click.stop="changeField(field)">
+        {{ field.friendlyName }}
+        <small>({{ field.exp }})</small>
+      </a>
+      <a
+        v-if="(!filteredFields || !filteredFields.length)"
+        class="arkime-dropdown-item">
+        {{ $t('utils.noFieldsMatch') }}
+      </a>
+    </div>
+  </Teleport>
 </template>
 
 <script>
@@ -97,8 +104,35 @@ export default {
       value: this.initialValue,
       current: 0, // select first field
       fieldHistory: this.history || [],
-      filteredFieldHistory: this.history || []
+      filteredFieldHistory: this.history || [],
+      dropdownPos: { top: 0, left: 0, width: 0 }
     };
+  },
+  computed: {
+    routeParams: function () {
+      return this.$route.query[this.queryParam || 'exp'];
+    },
+    dropdownStyle: function () {
+      return {
+        position: 'fixed',
+        top: this.dropup
+          ? 'auto'
+          : `${this.dropdownPos.top}px`,
+        bottom: this.dropup
+          ? `${window.innerHeight - this.dropdownPos.top + (this.$refs.typeahead?.offsetHeight || 0)}px`
+          : 'auto',
+        left: `${this.dropdownPos.left}px`,
+        minWidth: `${this.dropdownPos.width}px`,
+        width: '360px',
+        maxWidth: 'calc(100vw - 20px)',
+        // Above Vuetify's v-dialog content (~2400) so the dropdown
+        // surfaces when the input lives inside a modal.
+        zIndex: 2500,
+        maxHeight: '300px',
+        overflowY: 'auto',
+        overflowX: 'hidden'
+      };
+    }
   },
   watch: {
     // update the value when the url query param
@@ -113,12 +147,6 @@ export default {
     },
     initialValue: function () {
       this.value = this.initialValue;
-    }
-  },
-  computed: {
-    // compute the route param because watcher only accepts dot-delimited paths
-    routeParams: function () {
-      return this.$route.query[this.queryParam || 'exp'];
     }
   },
   created: function () {
@@ -143,7 +171,20 @@ export default {
       }, 250);
     },
     openTypeaheadResults: function () {
+      this.updateDropdownPos();
       this.showDropdown = true;
+    },
+    /* recompute the teleported dropdown's fixed top/left/width from the
+       input's current bounding rect (called on open + on each keyup). */
+    updateDropdownPos: function () {
+      const input = this.$refs.typeahead;
+      if (!input) { return; }
+      const rect = input.getBoundingClientRect();
+      this.dropdownPos = {
+        top: rect.bottom,
+        left: rect.left,
+        width: rect.width
+      };
     },
     filterFields: function (searchFilter) {
       if (inputTimeout) { clearTimeout(inputTimeout); }
@@ -179,6 +220,7 @@ export default {
       if (e.key === 'Enter' || e.key === 'Escape') {
         return;
       }
+      this.updateDropdownPos();
       this.showDropdown = true;
     },
     /* navigates up through field and field history results */
@@ -263,14 +305,12 @@ export default {
 };
 </script>
 
-<style scoped>
-.field-typeahead {
-  max-height: 300px;
-  overflow-y: auto;
-  width: 100%;
-  margin-top: 2.2rem;
-}
-.field-typeahead div.arkime-dropdown-divider {
+<style>
+/* The dropdown is teleported to <body> so it lives outside the
+   component's scoped-CSS scope -- styles here must be unscoped to
+   reach it. Positioning (top/left/width/z-index/max-height) is
+   handled inline via :style="dropdownStyle". */
+.field-typeahead-dropdown div.arkime-dropdown-divider {
   margin: .15rem 0;
   border-color: var(--color-gray);
 }

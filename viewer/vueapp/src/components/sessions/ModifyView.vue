@@ -57,6 +57,7 @@ SPDX-License-Identifier: Apache-2.0
         class="modify-view-users" />
 
       <RoleDropdown
+        size="large"
         :roles="userRoles"
         :selected-roles="viewRoles"
         :display-text="$t('common.shareWithRoles')"
@@ -79,9 +80,8 @@ SPDX-License-Identifier: Apache-2.0
 
       <div>
         <v-btn
+          size="large"
           variant="flat"
-          size="small"
-          density="comfortable"
           :style="tertiaryBtnStyle"
           :disabled="loading"
           class="me-1"
@@ -108,11 +108,9 @@ SPDX-License-Identifier: Apache-2.0
         </v-btn>
         <v-btn
           id="cancelModifyView"
+          size="large"
           color="warning"
           variant="flat"
-          size="small"
-          density="comfortable"
-          icon
           :aria-label="$t('common.cancel')"
           @click="$emit('done', null, false, false)">
           <span class="fa fa-ban" />
@@ -123,54 +121,11 @@ SPDX-License-Identifier: Apache-2.0
       </div>
     </div>
 
-    <!-- big expression modal -->
-    <v-dialog
+    <!-- shared expanded-expression modal -->
+    <BigExpressionModal
       v-model="showBigExpression"
-      max-width="900"
-      persistent
-      @after-enter="focusBigExpressionTextarea">
-      <v-card>
-        <v-card-title>
-          <span class="fa fa-pencil fa-2x me-2" />
-          <span>{{ $t('sessions.views.expression') }}</span>
-        </v-card-title>
-        <v-card-text>
-          <ExpressionAutocompleteInput
-            textarea
-            rows="5"
-            v-model="viewExpression"
-            :placeholder="$t('sessions.views.expressionPlaceholder')"
-            @apply="showBigExpression = false" />
-        </v-card-text>
-        <v-card-actions>
-          <div class="d-flex w-100 justify-space-between">
-            <div>
-              <v-btn
-                variant="flat"
-                color="secondary"
-                @click="showBigExpression = false">
-                {{ $t('common.close') }}
-              </v-btn>
-              <v-btn
-                variant="flat"
-                color="warning"
-                class="ms-2"
-                @click="viewExpression = ''">
-                {{ $t('common.clear') }}
-              </v-btn>
-            </div>
-            <v-btn
-              variant="flat"
-              size="small"
-              density="comfortable"
-              :style="tertiaryBtnStyle"
-              @click="showBigExpression = false">
-              {{ $t('common.apply') }}
-            </v-btn>
-          </div>
-        </v-card-actions>
-      </v-card>
-    </v-dialog> <!-- /big expression modal -->
+      v-model:expression="viewExpression"
+      :placeholder="$t('sessions.views.expressionPlaceholder')" /> <!-- /big expression modal -->
 
     <v-row
       v-if="error"
@@ -198,6 +153,7 @@ import { resolveMessage } from '@common/resolveI18nMessage';
 // components
 import RoleDropdown from '@common/RoleDropdown.vue';
 import ExpressionAutocompleteInput from '../search/ExpressionAutocompleteInput.vue';
+import BigExpressionModal from '../search/BigExpressionModal.vue';
 
 // Define Props
 const props = defineProps({
@@ -269,12 +225,6 @@ watch(() => props.initialExpression, (newVal) => {
 });
 
 // Methods
-const focusBigExpressionTextarea = () => {
-  setTimeout(() => {
-    document.getElementById('bigViewExpression')?.focus();
-  }, 100);
-};
-
 const updateViewRoles = (roles) => {
   viewRoles.value = roles;
 };

@@ -271,12 +271,14 @@ SPDX-License-Identifier: Apache-2.0
           <div class="d-flex">
             <div class="me-3 flex-grow-1 no-wrap">
               <RoleDropdown
+                size="large"
                 :roles="roles"
                 class="d-inline"
                 :selected-roles="newViewRoles"
                 :display-text="$t('common.rolesCanView')"
                 @selected-roles-updated="updateNewViewRoles" />
               <RoleDropdown
+                size="large"
                 :roles="roles"
                 class="d-inline ms-1"
                 :display-text="$t('common.rolesCanEdit')"
@@ -356,7 +358,7 @@ import UserService from '@common/UserService';
 // utilities
 import { resolveMessage } from '@common/resolveI18nMessage';
 // components
-import ArkimePaging from '../utils/Pagination.vue';
+import ArkimePaging from '@common/Pagination.vue';
 import RoleDropdown from '@common/RoleDropdown.vue';
 import TransferResource from '@common/TransferResource.vue';
 import ExpressionAutocompleteInput from '../search/ExpressionAutocompleteInput.vue';

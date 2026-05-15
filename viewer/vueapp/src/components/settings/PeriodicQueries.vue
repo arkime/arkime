@@ -144,7 +144,7 @@ SPDX-License-Identifier: Apache-2.0
               </v-col>
             </v-row>
             <v-row>
-              <v-col cols="auto">
+              <v-col cols="12">
                 <div class="arkime-input-group arkime-input-group--fluid">
                   <span
                     id="newCronQueryExpression"
@@ -158,6 +158,19 @@ SPDX-License-Identifier: Apache-2.0
                     :model-value="newCronQueryExpression"
                     @update:model-value="newCronQueryExpression = $event"
                     :placeholder="$t('settings.cron.searchExpressionPlaceholder')" />
+                  <v-btn
+                    variant="text"
+                    size="small"
+                    density="comfortable"
+                    icon
+                    class="arkime-input-append-btn"
+                    :aria-label="$t('search.bigTypeaheadBtnTip')"
+                    @click="openBigExpression('new')">
+                    <span class="fa fa-expand" />
+                    <v-tooltip activator="parent">
+                      {{ $t('search.bigTypeaheadBtnTip') }}
+                    </v-tooltip>
+                  </v-btn>
                 </div>
               </v-col>
             </v-row>
@@ -198,7 +211,7 @@ SPDX-License-Identifier: Apache-2.0
               </v-col>
             </v-row>
             <v-row>
-              <v-col cols="auto">
+              <v-col cols="12">
                 <div class="arkime-input-group arkime-input-group--fluid">
                   <span
                     id="newCronQueryDescription"
@@ -219,12 +232,14 @@ SPDX-License-Identifier: Apache-2.0
             <div class="d-flex">
               <div class="me-3 flex-grow-1 no-wrap">
                 <RoleDropdown
+                  size="large"
                   :roles="roles"
                   class="d-inline"
                   :display-text="$t('common.rolesCanView')"
                   :selected-roles="newCronQueryRoles"
                   @selected-roles-updated="updateNewCronQueryRoles" />
                 <RoleDropdown
+                  size="large"
                   :roles="roles"
                   class="d-inline ms-1"
                   :display-text="$t('common.rolesCanEdit')"
@@ -399,6 +414,20 @@ SPDX-License-Identifier: Apache-2.0
               :model-value="query.query"
               @update:model-value="query.query = $event; cronQueryChanged(query)"
               :disabled="!canEditCronQuery(query)" />
+            <v-btn
+              v-if="canEditCronQuery(query)"
+              variant="text"
+              size="small"
+              density="comfortable"
+              icon
+              class="arkime-input-append-btn"
+              :aria-label="$t('search.bigTypeaheadBtnTip')"
+              @click="openBigExpression(query)">
+              <span class="fa fa-expand" />
+              <v-tooltip activator="parent">
+                {{ $t('search.bigTypeaheadBtnTip') }}
+              </v-tooltip>
+            </v-btn>
           </div>
           <div
             class="arkime-input-group arkime-input-group--fluid mb-2"
@@ -427,6 +456,7 @@ SPDX-License-Identifier: Apache-2.0
               @selected-notifiers-updated="query.notifier = $event; cronQueryChanged(query)"
               :display-text="query.notifier?.length > 0 ? $t('common.notifierCount', query.notifier.length) : $t('settings.cron.selectNotifier')" />
             <RoleDropdown
+              size="large"
               :roles="roles"
               :id="query.key"
               class="d-inline ms-1"
@@ -434,6 +464,7 @@ SPDX-License-Identifier: Apache-2.0
               @selected-roles-updated="updateCronQueryRoles"
               :display-text="query.roles && query.roles.length ? undefined : $t('common.rolesCanView')" />
             <RoleDropdown
+              size="large"
               :roles="roles"
               :id="query.key"
               class="d-inline ms-1"
@@ -577,6 +608,14 @@ SPDX-License-Identifier: Apache-2.0
     <transfer-resource
       :show-modal="showTransferModal"
       @transfer-resource="submitTransferQuery" />
+
+    <!-- shared expanded-expression modal -- bound to whichever expression
+         input fired the expand button (either the new-cron form or a
+         per-card edit row via bigExpressionTarget). -->
+    <BigExpressionModal
+      v-model="showBigExpression"
+      v-model:expression="bigExpressionValue"
+      :placeholder="$t('settings.cron.searchExpressionPlaceholder')" />
   </div>
 </template>
 
@@ -589,6 +628,7 @@ import RoleDropdown from '@common/RoleDropdown.vue';
 import NotifierDropdown from '@common/NotifierDropdown.vue';
 import TransferResource from '@common/TransferResource.vue';
 import ExpressionAutocompleteInput from '../search/ExpressionAutocompleteInput.vue';
+import BigExpressionModal from '../search/BigExpressionModal.vue';
 // utils
 import { timezoneDateString } from '@common/vueFilters.js';
 import { resolveMessage } from '@common/resolveI18nMessage';
@@ -600,7 +640,8 @@ export default {
     RoleDropdown,
     NotifierDropdown,
     TransferResource,
-    ExpressionAutocompleteInput
+    ExpressionAutocompleteInput,
+    BigExpressionModal
   },
   props: {
     userId: {
@@ -628,6 +669,11 @@ export default {
       transferQuery: undefined,
       showCronModal: false,
       showTransferModal: false,
+      // Big-expression modal state: target is either the literal 'new'
+      // (binds to newCronQueryExpression) or a query object (binds to
+      // its .query field + fires cronQueryChanged on update).
+      showBigExpression: false,
+      bigExpressionTarget: null,
       // Arkime theme-color v-btn styles. Vuetify :color can't take CSS vars.
       tertiaryBtnStyle: {
         backgroundColor: 'var(--color-tertiary)',
@@ -664,6 +710,25 @@ export default {
         { value: 8760, text: this.$t('common.yearAgoCount', 1) },
         { value: -1, text: this.$t('common.allCareful') }
       ];
+    },
+    /* Writable computed bound to BigExpressionModal's v-model:expression.
+       Reads/writes from whichever expression input fired the expand
+       button (new-cron-form vs per-card edit row); per-card writes also
+       fire cronQueryChanged so the save-button enables. */
+    bigExpressionValue: {
+      get () {
+        if (!this.bigExpressionTarget) { return ''; }
+        if (this.bigExpressionTarget === 'new') { return this.newCronQueryExpression; }
+        return this.bigExpressionTarget.query;
+      },
+      set (v) {
+        if (this.bigExpressionTarget === 'new') {
+          this.newCronQueryExpression = v;
+        } else if (this.bigExpressionTarget) {
+          this.bigExpressionTarget.query = v;
+          this.cronQueryChanged(this.bigExpressionTarget);
+        }
+      }
     }
   },
   mounted () {
@@ -686,6 +751,10 @@ export default {
   methods: {
     timezoneDateString,
     // EXPOSED PAGE FUNCTIONS ---------------------------------------------- //
+    openBigExpression (target) {
+      this.bigExpressionTarget = target;
+      this.showBigExpression = true;
+    },
     updateSeeAll (newSeeAll) {
       this.seeAll = newSeeAll;
       this.getCronQueries();

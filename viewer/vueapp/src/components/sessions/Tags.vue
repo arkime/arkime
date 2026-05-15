@@ -27,10 +27,9 @@ SPDX-License-Identifier: Apache-2.0
 
     <div class="d-flex gap-1">
       <v-btn
+        size="large"
         v-if="props.add"
         variant="flat"
-        size="small"
-        density="comfortable"
         :style="tertiaryBtnStyle"
         :disabled="loading"
         @click="applyAction(true)">
@@ -44,11 +43,10 @@ SPDX-License-Identifier: Apache-2.0
         </span>
       </v-btn>
       <v-btn
+        size="large"
         v-else
         color="error"
         variant="flat"
-        size="small"
-        density="comfortable"
         :disabled="loading"
         @click="applyAction(false)">
         <span v-if="!loading">
@@ -61,12 +59,10 @@ SPDX-License-Identifier: Apache-2.0
         </span>
       </v-btn>
       <v-btn
+        size="large"
         id="cancelTagSessionsBtn"
         color="warning"
         variant="flat"
-        size="small"
-        density="comfortable"
-        icon
         :aria-label="$t('common.cancel')"
         @click="$emit('done', null, false, false)">
         <span class="fa fa-ban" />

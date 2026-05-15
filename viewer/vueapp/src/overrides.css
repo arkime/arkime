@@ -2,18 +2,6 @@
    per-theme --color-* variables in src/themes/*.css. Vuetify component
    bridges live in the second half of this file. */
 
-/* --bs-* compatibility shims: a few shared components in common/vueapp/
-   (ToggleBtn, Users.vue avatar gradient) still reference Bootstrap CSS
-   variables. They get migrated in the common phase; until then, point
-   the --bs-* tokens at Arkime's --color-* palette so viewer renders
-   them correctly without bootstrap.css. */
-:root {
-  --bs-primary: var(--color-primary);
-  --bs-primary-border-subtle: var(--color-primary-lighter);
-  --bs-warning: var(--color-secondary);
-  --bs-pink: var(--color-quaternary);
-}
-
 /* utility-class shims for Bootstrap-named classes Vuetify does not
    ship. Same 0.25rem scale Bootstrap uses (1=0.25, 2=0.5, 3=1, 4=1.5,
    5=3). gap-* covers flex/grid layouts that depended on Bootstrap;
@@ -88,93 +76,6 @@ hr {
   opacity: 0.4;
 }
 
-/* Bootstrap button shim. common/vueapp/ components (Notifiers, etc.)
-   that are still shared with parliament/wise emit <button class="btn
-   btn-primary"> markup. With bootstrap.css gone from viewer those go
-   unstyled. Bridge them to look like Vuetify's flat v-btn so the
-   shared components blend in. */
-.btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  height: 36px;
-  padding: 0 16px;
-  font-size: 0.875rem;
-  font-weight: 500;
-  line-height: 1;
-  letter-spacing: 0.0892857143em;
-  text-transform: uppercase;
-  text-decoration: none;
-  border: none;
-  border-radius: 4px;
-  background-color: transparent;
-  color: var(--color-foreground);
-  cursor: pointer;
-  transition: background-color 0.2s, box-shadow 0.2s;
-  white-space: nowrap;
-  vertical-align: middle;
-}
-.btn:hover {
-  filter: brightness(0.92);
-}
-.btn:disabled, .btn[disabled] {
-  opacity: 0.5;
-  cursor: not-allowed;
-  pointer-events: none;
-}
-.btn-sm {
-  height: 28px;
-  padding: 0 12px;
-  font-size: 0.75rem;
-}
-.btn-lg {
-  height: 44px;
-  padding: 0 22px;
-  font-size: 1rem;
-}
-.btn-primary {
-  background-color: var(--color-primary);
-  color: var(--color-button, #FFF);
-}
-.btn-secondary {
-  background-color: var(--color-secondary);
-  color: var(--color-button, #FFF);
-}
-.btn-success {
-  background-color: var(--color-tertiary);
-  color: var(--color-button, #FFF);
-}
-.btn-warning {
-  background-color: var(--color-secondary);
-  color: var(--color-button, #FFF);
-}
-.btn-danger {
-  background-color: var(--color-secondary);
-  color: var(--color-button, #FFF);
-}
-.btn-info {
-  background-color: var(--color-quaternary);
-  color: var(--color-button, #FFF);
-}
-.btn-outline-warning {
-  background-color: transparent;
-  color: var(--color-secondary);
-  border: 1px solid var(--color-secondary);
-}
-.btn-outline-warning:hover {
-  background-color: var(--color-secondary);
-  color: var(--color-button, #FFF);
-}
-.btn-outline-primary {
-  background-color: transparent;
-  color: var(--color-primary);
-  border: 1px solid var(--color-primary);
-}
-.btn-outline-primary:hover {
-  background-color: var(--color-primary);
-  color: var(--color-button, #FFF);
-}
-
 /* Bootstrap 3-era utility classes still present in common/ markup
    (Notifiers etc.). */
 .pull-right { float: right !important; }
@@ -193,36 +94,6 @@ hr {
   position: fixed !important;
   bottom: 0; right: 0; left: 0;
   z-index: 1030;
-}
-
-/* Bootstrap alert shim — same pattern: common/ components still emit
-   `<div class="alert alert-danger">` markup. */
-.alert {
-  position: relative;
-  padding: 0.75rem 1rem;
-  margin-bottom: 1rem;
-  border: 1px solid transparent;
-  border-radius: 0.375rem;
-}
-.alert-danger {
-  color: var(--color-secondary-dark);
-  background-color: var(--color-secondary-lightest);
-  border-color: var(--color-secondary-light);
-}
-.alert-warning {
-  color: var(--color-quaternary-dark);
-  background-color: var(--color-quaternary-lightest);
-  border-color: var(--color-quaternary-light);
-}
-.alert-info {
-  color: var(--color-primary-dark);
-  background-color: var(--color-primary-lightest);
-  border-color: var(--color-primary-light);
-}
-.alert-success {
-  color: var(--color-tertiary-dark);
-  background-color: var(--color-tertiary-lightest);
-  border-color: var(--color-tertiary-light);
 }
 
 /* native form controls -------------------------------------------------- */

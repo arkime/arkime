@@ -29,29 +29,25 @@ SPDX-License-Identifier: Apache-2.0
 
       <div class="d-flex gap-1">
         <v-btn
+          size="large"
           variant="flat"
-          size="small"
-          density="comfortable"
           :style="secondaryBtnStyle"
           @click="toggleChangeFields">
           {{ $t('sessions.exports.changeFields') }}
         </v-btn>
         <v-btn
+          size="large"
           variant="flat"
-          size="small"
-          density="comfortable"
           :style="tertiaryBtnStyle"
           @click="exportCsvAction">
           <span class="fa fa-paper-plane-o me-1" />
           {{ $t('sessions.exports.exportCSV') }}
         </v-btn>
         <v-btn
+          size="large"
           id="cancelExportCsv"
           color="warning"
           variant="flat"
-          size="small"
-          density="comfortable"
-          icon
           :aria-label="$t('common.cancel')"
           @click="$emit('done', null, false, false)">
           <span class="fa fa-ban" />

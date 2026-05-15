@@ -45,10 +45,9 @@ SPDX-License-Identifier: Apache-2.0
 
     <div class="ms-auto d-flex gap-1">
       <v-btn
+        size="large"
         color="error"
         variant="flat"
-        size="small"
-        density="comfortable"
         :disabled="loading"
         @click="deleteSessionsAction">
         <span v-if="!loading">
@@ -61,12 +60,10 @@ SPDX-License-Identifier: Apache-2.0
         </span>
       </v-btn>
       <v-btn
+        size="large"
         id="cancelRemoveDataBtn"
         color="warning"
         variant="flat"
-        size="small"
-        density="comfortable"
-        icon
         :aria-label="$t('common.cancel')"
         @click="emit('done', null, false, false)">
         <span class="fa fa-ban" />

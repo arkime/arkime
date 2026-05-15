@@ -336,6 +336,7 @@ SPDX-License-Identifier: Apache-2.0
 
     <!-- human readable time range or error -->
     <v-col
+      v-if="(deltaTime && !timeError) || timeError"
       cols="auto"
       class="time-range-display">
       <span

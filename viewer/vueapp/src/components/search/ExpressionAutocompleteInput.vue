@@ -152,7 +152,10 @@ const dropdownStyle = computed(() => ({
   top: `${dropdownPos.value.top}px`,
   left: `${dropdownPos.value.left}px`,
   width: `${dropdownPos.value.width}px`,
-  zIndex: 1060,
+  // Above Vuetify's v-dialog content (~2400) so the autocomplete
+  // dropdown stays on top when the input lives inside the big-typeahead
+  // modal.
+  zIndex: 2500,
   maxHeight: '300px',
   overflowY: 'auto',
   overflowX: 'hidden'

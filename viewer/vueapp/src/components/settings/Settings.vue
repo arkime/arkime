@@ -1825,7 +1825,7 @@ import ArkimeError from '../utils/Error.vue';
 import ArkimeLoading from '../utils/Loading.vue';
 import ArkimeFieldTypeahead from '../utils/FieldTypeahead.vue';
 import ColorPicker from '../utils/ColorPicker.vue';
-import ArkimePaging from '../utils/Pagination.vue';
+import ArkimePaging from '@common/Pagination.vue';
 import Utils from '../utils/utils';
 import PeriodicQueries from './PeriodicQueries.vue';
 import Shortcuts from './Shortcuts.vue';

@@ -96,7 +96,7 @@ import ArkimeError from '../utils/Error.vue';
 import ArkimeTable from '../utils/Table.vue';
 import Clusters from '../utils/Clusters.vue';
 import ArkimeLoading from '../utils/Loading.vue';
-import ArkimePaging from '../utils/Pagination.vue';
+import ArkimePaging from '@common/Pagination.vue';
 import ArkimeCollapsible from '../utils/CollapsibleWrapper.vue';
 import Focus from '@common/Focus.vue';
 import { commaString, timezoneDateString } from '@common/vueFilters.js';

@@ -53,7 +53,7 @@ const displayLabel = computed(() => {
   padding-left: 1.25em;
 }
 .tshark-label {
-  font-family: var(--bs-font-monospace, monospace);
+  font-family: SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   font-size: 0.85rem;
 }
 </style>

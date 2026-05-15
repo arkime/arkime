@@ -339,6 +339,7 @@ SPDX-License-Identifier: Apache-2.0
                   v-if="!anonymousMode">
                   <div class="align-self-start">
                     <RoleDropdown
+                      size="large"
                       :roles="roles"
                       :selected-roles="jobRoles"
                       :display-text="$t('common.shareWithRoles')"
@@ -899,7 +900,7 @@ import ToggleBtn from '@common/ToggleBtn.vue';
 import ArkimeSearch from '../search/Search.vue';
 import ArkimeError from '../utils/Error.vue';
 import ArkimeLoading from '../utils/Loading.vue';
-import ArkimePaging from '../utils/Pagination.vue';
+import ArkimePaging from '@common/Pagination.vue';
 import ArkimeCollapsible from '../utils/CollapsibleWrapper.vue';
 import Focus from '@common/Focus.vue';
 import HuntData from './HuntData.vue';

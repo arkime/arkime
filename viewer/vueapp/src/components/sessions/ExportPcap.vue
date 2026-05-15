@@ -24,21 +24,18 @@
 
     <div class="d-flex gap-1">
       <v-btn
+        size="large"
         variant="flat"
-        size="small"
-        density="comfortable"
         :style="tertiaryBtnStyle"
         @click="exportPcapAction">
         <span class="fa fa-paper-plane-o me-1" />
         {{ $t('sessions.exports.exportPCAP') }}
       </v-btn>
       <v-btn
+        size="large"
         id="cancelExportPcap"
         color="warning"
         variant="flat"
-        size="small"
-        density="comfortable"
-        icon
         :aria-label="$t('common.cancel')"
         @click="$emit('done', null, false, false)">
         <span class="fa fa-ban" />

@@ -95,7 +95,8 @@ SPDX-License-Identifier: Apache-2.0
       </v-btn>
     </div> <!-- /typeahead input -->
 
-    <!-- results dropdown -->
+    <!-- results dropdown (teleported to body via TypeaheadResults so it
+         can escape the search-bar's overflow:hidden container). -->
     <TypeaheadResults
       v-if="!bigTypeahead"
       :expression="expression"
@@ -105,7 +106,8 @@ SPDX-License-Identifier: Apache-2.0
       :autocompleting-field="autocompletingField"
       :add-to-query="addToQuery"
       :remove-from-field-history="removeFromFieldHistory"
-      :big-typeahead="bigTypeahead" /> <!-- /results dropdown -->
+      :big-typeahead="bigTypeahead"
+      :dropdown-style="dropdownStyle" /> <!-- /results dropdown -->
 
     <!-- error -->
     <div
@@ -127,52 +129,13 @@ SPDX-License-Identifier: Apache-2.0
       </a>
     </div> <!-- /loading -->
 
-    <!-- big typeahead modal -->
-    <v-dialog
-      :model-value="bigTypeahead"
-      @update:model-value="(val) => { if (!val) closeBigTypeahead(false); }"
-      :persistent="false"
-      max-width="1140">
-      <v-card density="compact">
-        <v-card-title>
-          <span class="fa fa-search fa-2x" />
-        </v-card-title>
-        <v-card-text>
-          <ExpressionAutocompleteInput
-            textarea
-            rows="5"
-            ref="bigAutocomplete"
-            :placeholder="$t('common.search')"
-            v-model="expression"
-            @apply="closeBigTypeahead(true)" />
-        </v-card-text>
-        <v-card-actions>
-          <div class="d-flex w-100 justify-space-between">
-            <div>
-              <v-btn
-                color="secondary"
-                variant="flat"
-                @click="closeBigTypeahead(false)">
-                {{ $t('common.close') }}
-              </v-btn>
-              <v-btn
-                color="warning"
-                variant="flat"
-                class="ms-2"
-                @click="clearBigTypeahead">
-                {{ $t('common.clear') }}
-              </v-btn>
-            </div>
-            <v-btn
-              variant="flat"
-              :style="tertiaryBtnStyle"
-              @click="closeBigTypeahead(true)">
-              {{ $t('common.search') }}
-            </v-btn>
-          </div>
-        </v-card-actions>
-      </v-card>
-    </v-dialog> <!-- /big typeahead modal -->
+    <!-- shared expanded-expression modal -->
+    <BigExpressionModal
+      v-model="bigTypeahead"
+      v-model:expression="expression"
+      :placeholder="$t('common.search')"
+      :apply-label="$t('common.search')"
+      @apply="onBigApply" /> <!-- /big typeahead modal -->
   </div>
 </template>
 
@@ -182,7 +145,7 @@ import FieldService from './FieldService';
 import CaretPos from '../utils/CaretPos.vue';
 import Focus from '@common/Focus.vue';
 import TypeaheadResults from './TypeaheadResults.vue';
-import ExpressionAutocompleteInput from './ExpressionAutocompleteInput.vue';
+import BigExpressionModal from './BigExpressionModal.vue';
 import { resolveMessage } from '@common/resolveI18nMessage';
 
 let tokens;
@@ -193,7 +156,7 @@ const operations = ['==', '!=', '<', '<=', '>', '>='];
 export default {
   name: 'ExpressionTypeahead',
   emits: ['changeExpression', 'modView', 'applyExpression'],
-  components: { TypeaheadResults, ExpressionAutocompleteInput },
+  components: { TypeaheadResults, BigExpressionModal },
   directives: { CaretPos, Focus },
   data: function () {
     return {
@@ -210,6 +173,9 @@ export default {
       // saved expression vars
       savedExpressions: [],
       bigTypeahead: false,
+      // teleported-dropdown position (computed from the input's bounding
+      // rect on each results refresh).
+      dropdownPos: { top: 0, left: 0, width: 0 },
       // Arkime theme-color v-btn style; Vuetify :color can't take CSS vars.
       tertiaryBtnStyle: {
         backgroundColor: 'var(--color-tertiary)',
@@ -245,6 +211,21 @@ export default {
     },
     fields: function () {
       return this.$store.state.fieldsArr;
+    },
+    dropdownStyle () {
+      return {
+        position: 'fixed',
+        top: `${this.dropdownPos.top}px`,
+        left: `${this.dropdownPos.left}px`,
+        minWidth: `${this.dropdownPos.width}px`,
+        width: 'auto',
+        maxWidth: 'calc(100vw - 20px)',
+        // Above Vuetify's v-dialog content (~2400).
+        zIndex: 2500,
+        maxHeight: '500px',
+        overflowY: 'auto',
+        overflowX: 'hidden'
+      };
     }
   },
   watch: {
@@ -260,6 +241,14 @@ export default {
 
       // notify parent
       this.$emit('changeExpression');
+    },
+    /* refresh the teleported dropdown's position whenever it's about
+       to show (results or history populated). */
+    results () {
+      this.$nextTick(this.updateDropdownPos);
+    },
+    fieldHistoryResults () {
+      this.$nextTick(this.updateDropdownPos);
     }
   },
   created: function () {
@@ -271,6 +260,19 @@ export default {
     // resultsElement will be looked up dynamically when needed
   },
   methods: {
+    /* Recompute the teleported TypeaheadResults dropdown position from
+       the input's bounding rect. Called whenever results change (so the
+       dropdown lands below the current input regardless of layout). */
+    updateDropdownPos () {
+      const input = this.$refs.expression;
+      if (!input) { return; }
+      const rect = input.getBoundingClientRect();
+      this.dropdownPos = {
+        top: rect.bottom,
+        left: rect.left,
+        width: rect.width
+      };
+    },
     /* exposed page functions ------------------------------------ */
     clear: function () {
       this.expression = undefined;
@@ -278,23 +280,12 @@ export default {
     saveExpression: function () {
       this.$emit('modView');
     },
-    closeBigTypeahead: function (apply) {
-      this.bigTypeahead = false;
-      // clear results under the small input when modal closes
+    /* fired by BigExpressionModal when the user accepts the expanded
+       expression (Apply button or @apply event). Re-issues a search and
+       drops any in-flight result list under the small input. */
+    onBigApply: function () {
       this.results = [];
-      if (apply) {
-        this.$emit('applyExpression');
-      }
-    },
-    clearBigTypeahead: function () {
-      this.clear();
-    },
-    showBigTypeahead: function () {
-      setTimeout(() => {
-        if (this.$refs.bigAutocomplete) {
-          this.$refs.bigAutocomplete.focus();
-        }
-      }, 100);
+      this.$emit('applyExpression');
     },
     /**
      * Fired when a value from the typeahead menu is selected
@@ -958,6 +949,7 @@ export default {
   min-width: 200px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
+
 .arkime-typeahead-item {
   display: block;
   padding: 4px 12px;

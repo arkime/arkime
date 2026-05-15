@@ -430,8 +430,5 @@ dl.dl-horizontal.dl-horizontal-wide dd {
   z-index: 999;
   position: fixed;
 }
-.app-info-error > div.alert {
-  font-size: 17px;
-}
 
 </style>

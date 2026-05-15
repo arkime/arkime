@@ -32,9 +32,8 @@ SPDX-License-Identifier: Apache-2.0
 
       <div class="d-flex gap-1">
         <v-btn
+          size="large"
           variant="flat"
-          size="small"
-          density="comfortable"
           :style="tertiaryBtnStyle"
           @click="openIntersectionAction">
           <span class="fa fa-venn me-1">
@@ -44,12 +43,10 @@ SPDX-License-Identifier: Apache-2.0
           {{ $t('sessions.intersection.title') }}
         </v-btn>
         <v-btn
+          size="large"
           id="cancelExportIntersection"
           color="warning"
           variant="flat"
-          size="small"
-          density="comfortable"
-          icon
           :aria-label="$t('common.cancel')"
           @click="$emit('done', null, false, false)">
           <span class="fa fa-ban" />

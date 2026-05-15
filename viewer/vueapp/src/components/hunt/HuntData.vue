@@ -267,6 +267,7 @@ SPDX-License-Identifier: Apache-2.0
             {{ $t('hunts.noRoles') }}:
           </template>
           <RoleDropdown
+            size="large"
             class="d-inline"
             :roles="roles"
             :selected-roles="localJob.roles"
