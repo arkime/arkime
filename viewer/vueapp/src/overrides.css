@@ -48,6 +48,17 @@ img, svg {
   vertical-align: middle;
 }
 
+/* Strip the browser-default fieldset chrome (border + padding +
+   margin + min-width). Bootstrap's reboot did this; the SessionDetail
+   pug template renders <fieldset> around the packet options row, and
+   without the reset its native frame draws an unwanted border. */
+fieldset {
+  min-width: 0;
+  padding: 0;
+  margin: 0;
+  border: 0;
+}
+
 /* Heading scale. Vuetify's ress.css does `* { margin: 0 }` and ships no
    typographic rhythm for h1–h6, so all headings collapse to browser
    default + zero margin (looks unstyled). Restore Bootstrap's heading
@@ -168,6 +179,21 @@ hr {
    (Notifiers etc.). */
 .pull-right { float: right !important; }
 .pull-left { float: left !important; }
+
+/* Bootstrap fixed-top/fixed-bottom layout utilities. Vuetify ships
+   .position-fixed but not the bottom/top variants, so without these
+   shims any `class="position-fixed fixed-bottom"` alert ends up pinned
+   to the top of the viewport. */
+.fixed-top {
+  position: fixed !important;
+  top: 0; right: 0; left: 0;
+  z-index: 1030;
+}
+.fixed-bottom {
+  position: fixed !important;
+  bottom: 0; right: 0; left: 0;
+  z-index: 1030;
+}
 
 /* Bootstrap alert shim — same pattern: common/ components still emit
    `<div class="alert alert-danger">` markup. */
@@ -356,12 +382,18 @@ pre {
   background-color: var(--color-background) !important;
   color: var(--color-foreground) !important;
 }
-.v-list-item {
+/* Doubled-up selector to outrank Vuetify's combined density+line-count
+   rules like `.v-list-item--density-compact.v-list-item--one-line`
+   (specificity 0,2,0); without that mine ties on importance only and
+   loses on specificity, leaving v-list-items at Vuetify's default
+   40-48px row height. */
+.v-list-item.v-list-item {
   min-height: 22px !important;
   padding-top: 1px !important;
   padding-bottom: 1px !important;
   padding-left: 8px !important;
   padding-right: 8px !important;
+  padding-inline: 8px !important;
   font-size: 0.78rem !important;
   line-height: 1.2 !important;
 }

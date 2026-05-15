@@ -4,8 +4,9 @@ SPDX-License-Identifier: Apache-2.0
 -->
 <template>
   <v-row
+    no-gutters
     align="center"
-    class="g-1 text-start flex-nowrap justify-start">
+    class="text-start flex-nowrap justify-start gap-2">
     <!-- time range select -->
     <v-col cols="auto">
       <div class="arkime-input-group arkime-input-group--fluid">

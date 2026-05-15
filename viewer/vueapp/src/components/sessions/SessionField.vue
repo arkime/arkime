@@ -693,6 +693,7 @@ export default {
   border: 1px solid transparent;
   max-width: 98%;
   line-height: 1.3;
+  font-size: 14px;
 }
 
 .field:not(.time-field) {

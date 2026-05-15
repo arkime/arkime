@@ -6,17 +6,20 @@ SPDX-License-Identifier: Apache-2.0
   <!-- settings content -->
   <div class="settings-page">
     <!-- messages (success/error) displayed at bottom of page -->
-    <v-alert
-      v-if="showMessage"
-      :type="vuetifyMsgType"
-      variant="tonal"
-      density="compact"
-      closable
-      style="z-index: 2000;"
-      class="position-fixed fixed-bottom m-0 rounded-0"
-      @click:close="showMessage = false">
+    <v-snackbar
+      v-model="showMessage"
+      :color="vuetifyMsgType"
+      location="bottom"
+      timeout="-1"
+      variant="flat">
       {{ msg }}
-    </v-alert> <!-- /messages -->
+      <template #actions>
+        <v-btn
+          variant="text"
+          icon="$close"
+          @click="showMessage = false" />
+      </template>
+    </v-snackbar> <!-- /messages -->
 
     <!-- sub navbar -->
     <div class="sub-navbar">
@@ -2638,10 +2641,19 @@ export default {
 
 <style>
 .settings-content {
-  margin-top: 90px;
+  margin-top: 50px;
   margin-left: 0;
   margin-right: 0;
   overflow-x: hidden;
+}
+
+/* Tighten the vertical tab strip. Vuetify's v-tab default sits at
+   ~48px (compact density: 36px) which feels loose for a side nav. */
+.settings-content .v-tab {
+  min-height: 28px !important;
+  height: 28px !important;
+  padding: 0 12px !important;
+  font-size: 0.85rem !important;
 }
 .settings-content .settings-right-panel {
   overflow-x: auto;

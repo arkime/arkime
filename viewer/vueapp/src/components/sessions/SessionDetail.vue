@@ -21,7 +21,7 @@
     <!-- packet options -->
     <div
       v-show="!hidePackets && !user.hidePcap"
-      class="packet-options me-1 ms-1">
+      class="packet-options me-1 ms-1 mt-3">
       <form class="d-flex mb-2 pt-2 border-top">
         <fieldset :disabled="hidePackets || loadingPackets || renderingPackets">
           <packet-options
@@ -1063,8 +1063,8 @@ dl:hover > .session-detail-grip {
 
 .session-detail .session-detail-card dt,
 .session-detail .session-detail-card dd {
-  line-height: 1.7;
-  margin-bottom: 0.2rem !important;
+  line-height: 1.3;
+  margin-bottom: 0 !important;
 }
 
 /* detail card collapse/expand chevron */
@@ -1087,5 +1087,12 @@ dl:hover > .session-detail-grip {
 }
 .session-detail .session-detail-card > dl > h4.collapsed {
   margin-bottom: 0;
+}
+
+/* `.collapse` is toggled onto the <dl> sibling of the card title by
+   collapseSection() in sessionDetailData.js. Bootstrap used to provide
+   `display: none`; we have to set it ourselves now. */
+.session-detail .session-detail-card > dl.collapse {
+  display: none;
 }
 </style>

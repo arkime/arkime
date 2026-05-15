@@ -463,7 +463,7 @@ function createSessionDetail () {
       }
     }).join('\n');
 
-    internals.sessionDetailNew = internals.sessionDetailNew.replace(/div.sessionDetailMeta.bold/g, 'h4.card-title')
+    internals.sessionDetailNew = internals.sessionDetailNew.replace(/div.sessionDetailMeta.bold/g, 'h4.session-card-title')
       .replace(/dl.sessionDetailMeta/g, 'dl');
   });
 }

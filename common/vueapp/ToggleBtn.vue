@@ -5,7 +5,7 @@ SPDX-License-Identifier: Apache-2.0
 <template>
   <v-btn
     variant="flat"
-    size="x-small"
+    size="small"
     density="comfortable"
     icon
     :color="opened ? 'warning' : 'primary'"

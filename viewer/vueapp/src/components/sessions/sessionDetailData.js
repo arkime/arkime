@@ -208,7 +208,7 @@ export default {
         document.addEventListener('mouseup', (e) => gripUnclick(e, self));
 
         // find all the card titles and add a click listener to toggle the collapse
-        const elementsArray = sessionDetailSection.getElementsByClassName('card-title');
+        const elementsArray = sessionDetailSection.getElementsByClassName('session-card-title');
         for (const elem of elementsArray) {
           // check if the element was previously collapsed and collapse it
           if (localStorage && localStorage['arkime-detail-collapsed']) {
