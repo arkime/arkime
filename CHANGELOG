@@ -36,6 +36,11 @@ NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at o
 NOTICE: Create a parliament config file before upgrading (see https://arkime.com/settings#parliament and https://arkime.com/faq#how_do_i_upgrade_to_arkime_5)
 
 6.3.2 2026/05/xx
+## Breaking
+  - #3982 docker.sh: TLS verification is now enforced by default for Elasticsearch/OpenSearch
+          connections. Pass `--insecure` to skip verification (e.g. self-signed certs).
+          The `ARKIME__insecure` environment variable is no longer supported and the
+          container will exit if it is set.
 ## Release
   - #3941 Move to using curl instead of wget everywhere and now depend on package
   - #3975 Node 22.22.3
