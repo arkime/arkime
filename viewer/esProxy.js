@@ -51,6 +51,9 @@ ArkimeConfig.loaded(() => {
     if (sensors[sensor].ip) {
       sensors[sensor].ip = sensors[sensor].ip.split(',');
     }
+    if (sensors[sensor].pass === undefined && !sensors[sensor].ip) {
+      console.log(`WARNING - esproxy-sensors '${sensor}' has neither 'pass' nor 'ip' set; any client that knows the sensor name can authenticate.`);
+    }
   }
   console.log(`PREFIX: ${prefix} OLDPREFIX: ${oldprefix}`);
 
