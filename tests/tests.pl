@@ -288,6 +288,11 @@ my ($json) = @_;
 sub doMake {
     foreach my $filename (@ARGV) {
         $filename = substr($filename, 0, -5) if ($filename =~ /\.pcap$/);
+        # Reject filenames with shell metacharacters / NUL since we still need
+        # a shell to set up the pipe + redirection below.
+        if ($filename =~ /[\0\n\r`\$;&|<>(){}*?!"'\\]/) {
+            die "Invalid filename (contains shell metacharacter): $filename\n";
+        }
         if ($main::debug) {
           print("../capture/capture $EXTRA --tests -c config.test.ini -n test -r $filename.pcap 2>&1 1>/dev/null | ./tests.pl --fix > $filename.test\n");
         }
@@ -561,9 +566,11 @@ if ($main::cmd eq "--fix") {
     doReip();
 } elsif ($main::cmd eq "--fuzz") {
     doGeo();
-    my $cmd = "ASAN_OPTIONS=fast_unwind_on_malloc=0 G_SLICE=always-malloc ../capture/fuzzloch-capture -max_len=8196 -timeout=5 @ARGV";
-    print "$cmd\n";
-    system($cmd);
+    local $ENV{ASAN_OPTIONS} = "fast_unwind_on_malloc=0";
+    local $ENV{G_SLICE} = "always-malloc";
+    my @cmd = ("../capture/fuzzloch-capture", "-max_len=8196", "-timeout=5", @ARGV);
+    print join(' ', @cmd), "\n";
+    system(@cmd);
 } elsif ($main::cmd eq "--fuzz2pcap") {
     doFuzz2Pcap();
 } elsif ($main::cmd eq "--fuzz2pcapAll") {

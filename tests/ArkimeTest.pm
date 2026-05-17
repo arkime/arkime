@@ -13,6 +13,7 @@ use URI::Escape;
 use Data::Dumper;
 use IO::Socket::INET;
 use Try::Tiny;
+use Text::ParseWords qw(shellwords);
 
 $ArkimeTest::userAgent = LWP::UserAgent->new(timeout => 120, keep_alive => 10);
 $ArkimeTest::host = "127.0.0.1";
@@ -553,7 +554,21 @@ my ($host, $port, $extraSleep) = @_;
 ################################################################################
 sub addUser {
     #diag ("cd ../viewer ; node addUser.js $ArkimeTest::es -c ../tests/config.test.ini $_[0]\n");
-    return system("cd ../viewer ; node addUser.js $ArkimeTest::es -c ../tests/config.test.ini $_[0]");
+    my @es_args = (
+        '-o', "elasticsearch=$ArkimeTest::elasticsearch",
+        '-o', "usersElasticsearch=$ArkimeTest::usersElasticsearch",
+    );
+    push @es_args, $ENV{INSECURE} if defined $ENV{INSECURE} && $ENV{INSECURE} ne '';
+    my @extras = shellwords($_[0] // '');
+    my $pid = fork();
+    die "fork: $!" if !defined $pid;
+    if ($pid == 0) {
+        chdir('../viewer') or die "chdir ../viewer: $!";
+        exec('node', 'addUser.js', @es_args, '-c', '../tests/config.test.ini', @extras);
+        die "exec: $!";
+    }
+    waitpid($pid, 0);
+    return $?;
 }
 ################################################################################
 sub clearIndex {

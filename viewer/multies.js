@@ -18,6 +18,7 @@ const http = require('http');
 const https = require('https');
 const fs = require('fs');
 const path = require('path');
+const cryptoLib = require('crypto');
 const ArkimeUtil = require('../common/arkimeUtil');
 const ArkimeConfig = require('../common/arkimeConfig');
 
@@ -50,6 +51,7 @@ process.on('warning', (w) => {
 const esSSLOptions = { rejectUnauthorized: !ArkimeConfig.insecure };
 let httpAgent;
 let httpsAgent;
+let multiESBasicAuthHmac;
 ArkimeConfig.loaded(() => {
   const esClientKey = Config.get('esClientKey');
   const esClientCert = Config.get('esClientCert');
@@ -65,6 +67,11 @@ ArkimeConfig.loaded(() => {
   }
   httpAgent = new http.Agent({ keepAlive: true, keepAliveMsecs: 5000, maxSockets: 100 });
   httpsAgent = new https.Agent(Object.assign({ keepAlive: true, keepAliveMsecs: 5000, maxSockets: 100 }, esSSLOptions));
+
+  const expected = Config.get('multiESBasicAuth');
+  if (expected) {
+    multiESBasicAuthHmac = cryptoLib.createHmac('sha256', 'compare').update(expected).digest();
+  }
 });
 
 const clients = {};
@@ -116,6 +123,27 @@ app.use(function (req, res, next) {
     res.setTimeout(10 * 60 * 1000); // Increase default from 2 min to 10 min
     return next();
   }
+});
+
+// ============================================================================
+// Optional basic auth: if multiESBasicAuth ("user:password") is set in config,
+// require it on every request. Compared in constant time.
+// ============================================================================
+app.use((req, res, next) => {
+  if (!multiESBasicAuthHmac) { return next(); }
+
+  const header = req.headers.authorization;
+  if (!header || !header.startsWith('Basic ')) {
+    return res.set('WWW-Authenticate', 'Basic').status(401).send();
+  }
+
+  const supplied = Buffer.from(header.slice(6).trim(), 'base64').toString('utf8');
+  const b = cryptoLib.createHmac('sha256', 'compare').update(supplied).digest();
+  if (!cryptoLib.timingSafeEqual(multiESBasicAuthHmac, b)) {
+    return res.set('WWW-Authenticate', 'Basic').status(401).send();
+  }
+
+  return next();
 });
 
 function node2Url (node) {
@@ -1389,7 +1417,7 @@ async function premain () {
   activeESNodes = nodes.slice();
   console.log(nodes);
 
-  ArkimeUtil.createHttpServer(app, Config.get('multiESHost'), Config.get('multiESPort', 8200));
+  ArkimeUtil.createHttpServer(app, Config.get('multiESHost', '127.0.0.1'), Config.get('multiESPort', 8200));
 }
 
 premain();

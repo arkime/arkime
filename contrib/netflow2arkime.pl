@@ -69,7 +69,10 @@ my $ESUSER = $ENV{ARKIME_default__elasticsearchBasicAuth} || $ENV{ARKIME__elasti
 my $ESAPIKEY = $ENV{ARKIME_default__elasticsearchAPIKey} || $ENV{ARKIME__elasticsearchAPIKey} || "";
 my $INSECURE = 0;        # Disable SSL certificate verification
 
-my %seen_flows;          # For de-duplication
+my %seen_flows;          # For de-duplication; value is insertion epoch
+my $SEEN_FLOWS_TTL = 600;   # Seconds to retain dedup entries
+my $SEEN_FLOWS_MAX = 1_000_000;  # Hard cap to bound memory
+my $seen_flows_last_prune = time();
 my @batch;               # Batch of documents to send
 my $total_flows = 0;
 my $total_sent = 0;
@@ -77,10 +80,15 @@ my $total_skipped = 0;
 
 # For binary NetFlow
 my %templates;           # NetFlow v9/IPFIX templates per exporter
+my %templates_seen;      # stream_id -> last-seen epoch (for pruning)
+my $TEMPLATES_TTL = 3600;   # Drop templates not seen for an hour
+my $TEMPLATES_MAX = 10_000; # Hard cap on number of distinct exporter streams
+my $templates_last_prune = time();
 
 ################################################################################
 # Parse command line options
 ################################################################################
+my @ORIG_ARGV = @ARGV;
 Getopt::Long::Configure("pass_through");
 GetOptions(
     "elasticsearch=s" => \$ELASTICSEARCH,
@@ -114,6 +122,15 @@ if ($ESUSER ne "" && $ESUSER !~ /:/) {
     print STDERR "\n";
     chomp($pass);
     $ESUSER .= ":$pass";
+} elsif ($ESUSER =~ /:/ && grep { /^--?esuser(=|$)/ } @ORIG_ARGV) {
+    warn "WARNING: passing the password via --esuser USER:PASS exposes it through `ps`. " .
+         "Prefer the ARKIME__elasticsearchBasicAuth environment variable, " .
+         "or pass only --esuser USER to be prompted.\n";
+}
+
+if ($ESAPIKEY ne "" && grep { /^--?esapikey(=|$)/ } @ORIG_ARGV) {
+    warn "WARNING: passing --esapikey on the command line exposes it through `ps`. " .
+         "Prefer the ARKIME__elasticsearchAPIKey environment variable.\n";
 }
 
 usage() if $HELP;
@@ -235,6 +252,8 @@ my $ua = LWP::UserAgent->new(timeout => 120);
 
 # Configure SSL options
 if ($INSECURE) {
+    warn "WARNING: --insecure specified; TLS certificate verification is DISABLED. " .
+         "Connections are vulnerable to man-in-the-middle attacks.\n";
     $ua->ssl_opts(
         SSL_verify_mode => 0,
         verify_hostname => 0,
@@ -690,6 +709,51 @@ sub flush_all_pending {
 }
 
 ################################################################################
+# Bounded-cache pruning to prevent unbounded memory growth in long-running mode
+################################################################################
+sub prune_seen_flows {
+    my $now = time();
+    # Time-based prune at most once every 60s
+    if ($now - $seen_flows_last_prune >= 60) {
+        for my $k (keys %seen_flows) {
+            delete $seen_flows{$k} if $now - $seen_flows{$k} > $SEEN_FLOWS_TTL;
+        }
+        $seen_flows_last_prune = $now;
+    }
+    # Hard cap: if still over the limit, drop oldest entries
+    if (scalar(keys %seen_flows) > $SEEN_FLOWS_MAX) {
+        my @oldest = sort { $seen_flows{$a} <=> $seen_flows{$b} } keys %seen_flows;
+        my $drop = scalar(@oldest) - int($SEEN_FLOWS_MAX * 0.9);
+        for (my $i = 0; $i < $drop; $i++) {
+            delete $seen_flows{$oldest[$i]};
+        }
+        warn "seen_flows cache exceeded $SEEN_FLOWS_MAX entries; dropped $drop oldest\n" if $DEBUG;
+    }
+}
+
+sub prune_templates {
+    my $now = time();
+    if ($now - $templates_last_prune >= 60) {
+        for my $k (keys %templates_seen) {
+            if ($now - $templates_seen{$k} > $TEMPLATES_TTL) {
+                delete $templates{$k};
+                delete $templates_seen{$k};
+            }
+        }
+        $templates_last_prune = $now;
+    }
+    if (scalar(keys %templates_seen) > $TEMPLATES_MAX) {
+        my @oldest = sort { $templates_seen{$a} <=> $templates_seen{$b} } keys %templates_seen;
+        my $drop = scalar(@oldest) - int($TEMPLATES_MAX * 0.9);
+        for (my $i = 0; $i < $drop; $i++) {
+            delete $templates{$oldest[$i]};
+            delete $templates_seen{$oldest[$i]};
+        }
+        warn "templates cache exceeded $TEMPLATES_MAX entries; dropped $drop oldest\n" if $DEBUG;
+    }
+}
+
+################################################################################
 # Calculate index name from timestamp
 ################################################################################
 sub get_index_name {
@@ -739,13 +803,14 @@ sub process_flow {
     
     # De-duplication check
     if ($DEDUP) {
+        prune_seen_flows();
         my $dedup_key = flow_key($flow, 1);
         if (exists $seen_flows{$dedup_key}) {
             $total_skipped++;
             print STDERR "Skipping duplicate: $dedup_key\n" if $DEBUG > 1;
             return;
         }
-        $seen_flows{$dedup_key} = 1;
+        $seen_flows{$dedup_key} = time();
     }
     
     # Combine bidirectional flows
@@ -850,6 +915,7 @@ sub process_binary_netflow {
         }
         
         $templates{$stream_id} ||= [];
+        $templates_seen{$stream_id} = time();
         
         # Decode the NetFlow/IPFIX packet
         my ($HeaderHashRef, $TemplateArrayRef, $FlowArrayRef, $ErrorsArrayRef) =
@@ -857,6 +923,7 @@ sub process_binary_netflow {
         
         # Update templates
         $templates{$stream_id} = $TemplateArrayRef;
+        prune_templates();
         
         # Log errors
         if (@$ErrorsArrayRef) {
@@ -1038,8 +1105,13 @@ sub decode_binary_flow {
 sub process_nfdump_files {
     my @files = @_;
     
-    # Check if nfdump is available
-    my $nfdump_version = `$NFDUMP_PATH -V 2>&1`;
+    # Check if nfdump is available (use list-form to avoid shell interpretation of $NFDUMP_PATH)
+    my $nfdump_version = "";
+    if (open(my $vh, '-|', $NFDUMP_PATH, '-V')) {
+        local $/;
+        $nfdump_version = <$vh>;
+        close($vh);
+    }
     if ($? != 0) {
         die "Error: nfdump not found at '$NFDUMP_PATH'.\n" .
             "Install nfdump or specify path with --nfdump /path/to/nfdump\n";

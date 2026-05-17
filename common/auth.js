@@ -34,6 +34,7 @@ class Auth {
   static #basePath;
   static #requiredAuthHeader;
   static #requiredAuthHeaderVal;
+  static #requiredAuthHeaderHmacs;
   static #userAutoCreateTmpl;
   static #userAutoCreateFuncs;
   static #userAuthIps;
@@ -144,9 +145,10 @@ class Auth {
     }
     Auth.#requiredAuthHeader = options.requiredAuthHeader;
     Auth.#requiredAuthHeaderVal = options.requiredAuthHeaderVal?.split(',').map(s => s.trim()).filter(s => s !== '');
+    Auth.#requiredAuthHeaderHmacs = Auth.#requiredAuthHeaderVal?.map(v => crypto.createHmac('sha256', 'compare').update(v).digest());
     Auth.#userAutoCreateTmpl = options.userAutoCreateTmpl;
     if (Auth.#userAutoCreateTmpl) {
-      console.log('WARNING - userAutoCreateTmpl is deprecated, use [user-auto-create] section instead');
+      console.log('WARNING - userAutoCreateTmpl is deprecated and INSECURE, use [user-auto-create] section instead. This functionality will be removed in Arkime 7.');
     }
 
     const userAutoCreate = ArkimeConfig.getSection('user-auto-create');
@@ -543,14 +545,17 @@ class Auth {
         return done(null, false);
       }
 
-      if (Auth.#requiredAuthHeader !== undefined && Auth.#requiredAuthHeaderVal !== undefined) {
+      if (Auth.#requiredAuthHeader !== undefined && Auth.#requiredAuthHeaderHmacs !== undefined) {
         const authHeader = req.headers[Auth.#requiredAuthHeader];
         if (authHeader === undefined) {
           return done('Missing authorization header');
         }
-        const authorized = authHeader.split(',').some(headerVal => Auth.#requiredAuthHeaderVal.includes(headerVal.trim()));
+        const authorized = authHeader.split(',').some(headerVal => {
+          const h = crypto.createHmac('sha256', 'compare').update(headerVal.trim()).digest();
+          return Auth.#requiredAuthHeaderHmacs.some(expected => crypto.timingSafeEqual(expected, h));
+        });
         if (!authorized) {
-          console.log(`The required auth header '${Auth.#requiredAuthHeader}' expected '${Auth.#requiredAuthHeaderVal}' and has `, ArkimeUtil.sanitizeStr(authHeader));
+          console.log(`The required auth header '${Auth.#requiredAuthHeader}' did not match an expected value, got `, ArkimeUtil.sanitizeStr(authHeader));
           return done('Bad authorization header');
         }
       }
@@ -1119,22 +1124,7 @@ class Auth {
   // Encrypt an object into an auth string
   // IV.E.H
   static obj2auth (obj, secret) {
-    // HACK: Remove in future, for cookies use Next since local
-    if (obj.pid !== undefined) { return Auth.obj2authNext(obj, secret); }
-
-    if (secret) {
-      secret = crypto.createHash('sha256').update(secret).digest();
-    } else {
-      secret = Auth.#serverSecret256;
-    }
-
-    const iv = crypto.randomBytes(16);
-    const c = crypto.createCipheriv('aes-256-cbc', secret, iv);
-    let e = c.update(JSON.stringify(obj), 'utf8', 'hex');
-    e += c.final('hex');
-    e = iv.toString('hex') + '.' + e;
-    const h = crypto.createHmac('sha256', secret).update(e).digest('hex');
-    return e + '.' + h;
+    return Auth.obj2authNext(obj, secret);
   }
 
   // ----------------------------------------------------------------------------

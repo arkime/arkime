@@ -62,25 +62,12 @@ my %conn_buf;    # fileno => raw read buffer
 my %conn_state;  # fileno => { method, uri, query, headers, content_length, body, headers_done }
 
 my $server = IO::Socket::IP->new(
-    LocalHost => '::',
+    LocalHost => '127.0.0.1',
     LocalPort => $port,
     Proto     => 'tcp',
     Listen    => 128,
     ReuseAddr => 1,
-    V6Only    => 0,
-);
-if (!$server) {
-    # Fall back to IPv4-only (e.g. CI runner without IPv6)
-    my $err = $!;
-    $server = IO::Socket::IP->new(
-        LocalHost => '0.0.0.0',
-        LocalPort => $port,
-        Proto     => 'tcp',
-        Listen    => 128,
-        ReuseAddr => 1,
-    ) or die "Cannot start server on port $port: dual-stack=$err v4=$!\n";
-    print "Mini AWS: dual-stack bind failed ($err), using IPv4-only\n";
-}
+) or die "Cannot start server on port $port: $!\n";
 
 my $flags = fcntl($server, F_GETFL, 0);
 fcntl($server, F_SETFL, $flags | O_NONBLOCK);
@@ -325,12 +312,27 @@ sub handle_request {
 
 sub parse_path {
     my ($path) = @_;
+    my ($bucket, $key);
     if ($path =~ m{^/([^/]+)/(.+)$}) {
-        return ($1, $2);
+        ($bucket, $key) = ($1, $2);
     } elsif ($path =~ m{^/([^/]+)/?$}) {
-        return ($1, undef);
+        ($bucket, $key) = ($1, undef);
+    } else {
+        return (undef, undef);
     }
-    return (undef, undef);
+
+    # Reject path-traversal / absolute-path / NUL-byte attempts before any
+    # filesystem use. Bucket must be a single safe segment; key may contain
+    # subdirectories but no '..' components, no leading '/', no NULs.
+    return (undef, undef) if !defined $bucket || $bucket eq '' || $bucket eq '.' || $bucket eq '..';
+    return (undef, undef) if $bucket =~ m{[\\/\0]} || $bucket =~ /\0/;
+    if (defined $key) {
+        return (undef, undef) if $key eq '' || $key =~ /\0/ || $key =~ m{^/};
+        for my $seg (split m{/}, $key) {
+            return (undef, undef) if $seg eq '..';
+        }
+    }
+    return ($bucket, $key);
 }
 
 sub amz_date {

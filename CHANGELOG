@@ -36,18 +36,22 @@ NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at o
 NOTICE: Create a parliament config file before upgrading (see https://arkime.com/settings#parliament and https://arkime.com/faq#how_do_i_upgrade_to_arkime_5)
 
 6.3.2 2026/05/xx
+## Breaking
+  - #3967 All header* auth modes (header, header-jwt, headerOnly, header+digest, header+basic) now
+          default userAuthIps to localhost-only when not explicitly configured
+  - #3982 docker.sh: TLS verification is now enforced by default for Elasticsearch/OpenSearch
+          connections, use `--insecure` to skip verification
+  - #3983 multies now defaults `multiESHost` to `127.0.0.1` instead of binding to all interfaces.
 ## Release
-  - #3941 Move to using curl instead of wget everywhere and now depend on package
+  - #3941 Move to using curl instead of wget everywhere and now depend on curl package
   - #3975 Node 22.22.3
 ## All
   - #3951 Fix UTF-8 mojibake in user names auto-created via header auth (e.g. behind Caddy/oauth2-proxy)
-  - #3967 All header* auth modes (header, header-jwt, headerOnly, header+digest, header+basic) now
-          default userAuthIps to localhost-only when not explicitly configured
 ## Capture
   - #3954 Add trimEthernetPadding option to strip Ethernet padding/FCS so saved pcap and byte counts match the on-wire IP length
   - #3957 Even when not writing packets still save new sessions midway
-  - #3958 Add stateDir config option (default /tmp) for capture state files (drophash, stoppedsessions); 
-          files now opened with O_NOFOLLOW to prevent symlink attacks
+  - #3958 Add stateDir config option (default /tmp) for capture state files (drophash, stoppedsessions)
+  - #3958 State files now opened with O_NOFOLLOW to prevent symlink attacks
   - #3958 PCAP files now opened with O_NOFOLLOW to prevent symlink attacks
   - #3962 Improved websocket parser; adds websocket.* fields and websocketTextSampleCnt config option
   - #3963 Improved mDNS parsing: handle aggregated queries, unsolicited responses, and flags
@@ -65,6 +69,8 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #3977 Improved RADIUS parser: extract radius.msgType, radius.nasIp, and radius.nasPort
   - #3978 New FTP parser: detect multi-line 220- banners and add ftp.banner, ftp.command,
           ftp.filename, ftp.responseCode fields; tag ftp:password when PASS is seen
+## Multies
+  - #3983 Support optional HTTP Basic auth via the new `multiESBasicAuth` setting
 ## WISE
   - #3968 Improve JSON Array Parsing: shortcut paths now expand arrays at any
           intermediate position, not just the final value
