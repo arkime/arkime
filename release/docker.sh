@@ -96,6 +96,9 @@ show_help() {
     echo "  --basedir <dir>        Use a different base directory for Arkime, default is /opt/arkime"
     echo "  --db <args>            Run db.pl with args, can be specified multiple times"
     echo "  --forever              Run the tools forever, default is just once"
+    echo "  --insecure             Disable TLS certificate verification for ES/OS connections"
+    echo "                         (applies to --wait-for-db, --db, and --add-admin). INSECURE,"
+    echo "                         use only with self-signed certs in trusted networks."
     echo "  --update-geo           Run /opt/arkime/bin/arkime_update_geo.sh"
     echo "  --wait-for-db <dburl>  Wait for Elasticsearch/OpenSearch to be ready before running command"
     echo "  --                     All arguments after this are passed to the command"
@@ -127,16 +130,24 @@ shift
 # Parse options
 DOINIT=0
 DOUPGRADE=0
+INSECURE=0
+ADD_ADMIN=0
 ISM_OPTION=""
 ISM_PARAM=""
 ILM_OPTION=""
 ILM_PARAM=""
 DB_COMMANDS=()
+
+if [ -n "$ARKIME__insecure" ]; then
+    echo "ERROR: ARKIME__insecure environment variable is no longer supported." >&2
+    echo "       Pass --insecure as a CLI option to $0 instead." >&2
+    exit 1
+fi
+
 while [ $# -gt 0 ]; do
     case "$1" in
         --add-admin)
-            echo "Trying to add admin/admin user if missing, please change password ASAP"
-            (cd $BASEDIR/viewer; $BASEDIR/bin/node addUser.js --insecure admin admin admin --admin --createOnly)
+            ADD_ADMIN=1
             shift
             ;;
         --basedir)
@@ -151,6 +162,10 @@ while [ $# -gt 0 ]; do
             ;;
         --forever)
             FOREVER=1
+            shift
+            ;;
+        --insecure)
+            INSECURE=1
             shift
             ;;
         --ilm)
@@ -200,7 +215,7 @@ while [ $# -gt 0 ]; do
             if [ -n "$ARKIME__elasticsearchBasicAuth" ]; then
                 CURL_OPTS="$CURL_OPTS --user $ARKIME__elasticsearchBasicAuth"
             fi
-            if [ -n "$ARKIME__insecure" ]; then
+            if [ $INSECURE -eq 1 ]; then
                 CURL_OPTS="$CURL_OPTS -k"
             fi
             until curl $CURL_OPTS "$WAIT_DB_URL/_cluster/health?wait_for_status=yellow&timeout=30s"; do
@@ -219,6 +234,13 @@ while [ $# -gt 0 ]; do
             ;;
     esac
 done
+
+# Compute the --insecure pass-through for db.pl / addUser.js
+INSECURE_OPT=""
+if [ $INSECURE -eq 1 ]; then
+    echo "WARNING: --insecure specified; TLS certificate verification is DISABLED for ES/OS connections." >&2
+    INSECURE_OPT="--insecure"
+fi
 
 # Handle legacy --init/--upgrade with --ilm/--ism flags
 if [ $DOINIT -eq 1 ]; then
@@ -245,8 +267,14 @@ fi
 
 # Run all db.pl commands
 for db_cmd in "${DB_COMMANDS[@]}"; do
-    $BASEDIR/db/db.pl --insecure $db_cmd || exit 1
+    $BASEDIR/db/db.pl $INSECURE_OPT $db_cmd || exit 1
 done
+
+# Add admin user after DB init/upgrade so the users index exists
+if [ $ADD_ADMIN -eq 1 ]; then
+    echo "Trying to add admin/admin user if missing, please change password ASAP"
+    (cd $BASEDIR/viewer; $BASEDIR/bin/node addUser.js $INSECURE_OPT admin admin admin --admin --createOnly)
+fi
 
 # Figure out what to run
 case "$command" in

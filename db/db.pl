@@ -7758,7 +7758,7 @@ sub verify {
 }
 
 if ($ARGV[0] =~ /^urlinfile:\/\//) {
-    open( my $file, substr($ARGV[0], 12)) or die "Couldn't open file ", substr($ARGV[0], 12);
+    open( my $file, '<', substr($ARGV[0], 12)) or die "Couldn't open file ", substr($ARGV[0], 12);
     $main::elasticsearch = <$file>;
     chomp $main::elasticsearch;
     close ($file);
@@ -8435,7 +8435,7 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
         die "Couldn't find '$ARGV[2]' in db\n" if (@{$results->{hits}->{hits}} == 0);
 
         foreach my $hit (@{$results->{hits}->{hits}}) {
-            my $script = '{"script" : "ctx._source.name = \"' . $ARGV[3] . '\"; ctx._source.locked = 1;"}';
+            my $script = to_json({script => {source => 'ctx._source.name = params.n; ctx._source.locked = 1', params => {n => $ARGV[3]}}});
             esPost("/${PREFIX}files/_update/" . $hit->{_id}, $script);
         }
         logmsg "Moved " . scalar (@{$results->{hits}->{hits}}) . " file(s) in database\n";
