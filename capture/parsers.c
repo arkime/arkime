@@ -725,8 +725,8 @@ LOCAL gboolean arkime_ntlm_secbuf(const uint8_t *msg, uint32_t msglen,
 /******************************************************************************/
 LOCAL void arkime_ntlm_add_version(ArkimeSession_t *session, BSB *vb)
 {
-    uint8_t  major, minor;
-    uint16_t build;
+    uint8_t  major = 0, minor = 0;
+    uint16_t build = 0;
     BSB_LIMPORT_u08(*vb, major);
     BSB_LIMPORT_u08(*vb, minor);
     BSB_LIMPORT_u16(*vb, build);

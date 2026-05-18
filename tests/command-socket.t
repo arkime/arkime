@@ -259,7 +259,7 @@ SKIP: {
     }
 
     my $logfile = "/tmp/capture-racetest-$$.log";
-    diag("capture stdout/stderr -> $logfile");
+    # diag("capture stdout/stderr -> $logfile");
 
     my $pid2 = fork();
     die "fork failed: $!" unless defined $pid2;
