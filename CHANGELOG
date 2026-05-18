@@ -71,6 +71,8 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
           ftp.filename, ftp.responseCode fields; tag ftp:password when PASS is seen
   - #3985 Add shared NTLMSSP decoder with ntlm.* fields, wired into SMB, HTTP, LDAP, DCE-RPC, SMTP, IMAP, POP3, and TDS parsers
   - #3985 Add new POP3 parser that captures USER name and NTLM auth blobs
+  - #3988 Fix command-socket `--notify` without `--flush` crashing capture
+  - #3988 Fix crash when using rules with bpfs and different DLTs without using `--flush`
 ## Multies
   - #3983 Support optional HTTP Basic auth via the new `multiESBasicAuth` setting
 ## WISE

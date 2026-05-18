@@ -467,7 +467,8 @@ LOCAL int smtp_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, i
                 const char *b = line->str;
                 int blen = line->len;
                 if (blen > 4 && b[0] == '3' && b[1] == '3' && b[2] == '4' && b[3] == ' ') {
-                    b += 4; blen -= 4;
+                    b += 4;
+                    blen -= 4;
                 }
                 if (arkime_parsers_ntlm_decode_base64(session, b, blen)) {
                     *state = EMAIL_CMD;
