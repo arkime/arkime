@@ -31,7 +31,7 @@ SPDX-License-Identifier: Apache-2.0
           @click="$emit('update:modelValue', theme.id)">
           <v-card-title class="d-flex align-center pa-2">
             <v-icon
-              :icon="modelValue === theme.id ? 'fa-check-circle' : 'fa-circle-o'"
+              :icon="modelValue === theme.id ? '$radioOn' : '$radioOff'"
               :color="modelValue === theme.id ? 'primary' : undefined"
               class="me-2" />
             <span class="theme-card__name">{{ theme.name }}</span>
@@ -113,7 +113,7 @@ SPDX-License-Identifier: Apache-2.0
           variant="outlined">
           <v-card-title class="d-flex align-center pa-2">
             <v-icon
-              :icon="modelValue === 'custom1' ? 'fa-check-circle' : 'fa-circle-o'"
+              :icon="modelValue === 'custom1' ? '$radioOn' : '$radioOff'"
               :color="modelValue === 'custom1' ? 'primary' : undefined"
               class="me-2"
               @click.stop="onCustomCardClick" />
@@ -127,7 +127,7 @@ SPDX-License-Identifier: Apache-2.0
               variant="text"
               @click.stop="editorOpen = !editorOpen">
               <v-icon
-                :icon="editorOpen ? 'fa-chevron-up' : 'fa-chevron-down'"
+                :icon="editorOpen ? '$collapse' : '$expand'"
                 class="me-1" />
               {{ editorOpen ? 'Hide colors' : 'Edit colors' }}
             </v-btn>
@@ -149,7 +149,7 @@ SPDX-License-Identifier: Apache-2.0
               @click="initCustomFromActive">
               <v-icon
                 start
-                icon="fa-plus-circle" />
+                icon="$plus" />
               Create custom theme
             </v-btn>
           </div>
@@ -228,13 +228,10 @@ SPDX-License-Identifier: Apache-2.0
                   color="primary"
                   variant="tonal"
                   class="mb-3">
-                  <v-icon
-                    start
-                    icon="fa-download" />
                   Load colors from theme
                   <v-icon
                     end
-                    icon="fa-chevron-down" />
+                    icon="$expand" />
                 </v-btn>
               </template>
               <v-list density="compact">
@@ -295,7 +292,7 @@ SPDX-License-Identifier: Apache-2.0
                             @click="commitPendingHex(key); isActive.value = false">
                             <v-icon
                               start
-                              icon="fa-check" />
+                              icon="$complete" />
                             Apply
                           </v-btn>
                         </div>
@@ -331,8 +328,9 @@ SPDX-License-Identifier: Apache-2.0
                 class="ms-2"
                 @click="copyShareCode">
                 <v-icon
+                  v-if="copyStatus === 'ok'"
                   start
-                  :icon="copyStatus === 'ok' ? 'fa-check' : 'fa-copy'" />
+                  icon="$complete" />
                 {{ copyStatus === 'ok' ? 'Copied' : 'Copy' }}
               </v-btn>
               <v-btn
@@ -341,9 +339,6 @@ SPDX-License-Identifier: Apache-2.0
                 variant="tonal"
                 class="ms-2"
                 @click="applyShareInput">
-                <v-icon
-                  start
-                  icon="fa-paste" />
                 Apply
               </v-btn>
             </div>

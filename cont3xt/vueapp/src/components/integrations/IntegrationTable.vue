@@ -404,7 +404,7 @@ export default {
 }
 
 .cont3xt-table th, .cont3xt-table td {
-  border: 1px solid rgb(var(--v-theme-cont3xt-table-border));
+  border: 1px solid rgb(var(--v-theme-surface-card-border));
   padding: 0.1rem 0.25rem;
   vertical-align: top;
 }

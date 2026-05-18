@@ -153,7 +153,7 @@ export default {
 }
 
 .field:hover {
-  background-color: rgb(var(--v-theme-light)) !important;
+  background-color: rgb(var(--v-theme-neutral-lightest)) !important;
   color: rgb(var(--v-theme-secondary));
 }
 
@@ -230,7 +230,7 @@ export default {
   font-weight: normal;
   line-height: 1.42857143;
   white-space: nowrap;
-  color: rgb(var(--v-theme-dark)) !important;
+  color: rgb(var(--v-theme-foreground)) !important;
 }
 
 .field-dropdown a.dropdown-item:hover {

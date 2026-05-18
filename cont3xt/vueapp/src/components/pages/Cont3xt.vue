@@ -1332,14 +1332,11 @@ export default {
   padding: 16px 16px 0 16px;
   margin-top: 50px !important;
 }
-body.dark {
-  background-color: #222;
-}
 
 .cont3xt-welcome .well {
   border-radius: 6px;
-  background-color: rgb(var(--v-theme-well));
-  border: 1px solid rgb(var(--v-theme-well-border));
+  background-color: rgb(var(--v-theme-surface-well));
+  border: 1px solid rgb(var(--v-theme-surface-well-border));
   overflow-x: hidden;
 }
 /* better text-wrapping on the welcome screen for browsers that support it */

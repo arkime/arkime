@@ -92,13 +92,13 @@ body.dark hr {
 }
 
 textarea {
-  background-color: rgb(var(--v-theme-textarea)) !important;
-  border: 1px solid rgb(var(--v-theme-textarea-border)) !important;
+  background-color: rgb(var(--v-theme-input-bg)) !important;
+  border: 1px solid rgb(var(--v-theme-input-border)) !important;
   padding: .25rem .5rem;
 }
 
 textarea:disabled {
-  background-color: rgb(var(--v-theme-textarea-disabled)) !important;
+  background-color: rgb(var(--v-theme-input-bg-disabled)) !important;
 }
 
 a {

@@ -5,6 +5,34 @@ SPDX-License-Identifier: Apache-2.0
 import { createStore } from 'vuex';
 import { iTypes, iTypeIndexMap } from '@/utils/iTypes';
 import { indicatorFromId, localIndicatorId } from '@/utils/cont3xtUtil';
+import { THEMES, DEFAULT_THEME_ID } from '@real_common/themes/manifest.js';
+
+/* Load the saved theme id from localStorage. Migrates the legacy
+   'light' / 'dark' string format to the new manifest ids. Falls back
+   to the manifest default for missing or unknown values. */
+function loadSavedTheme () {
+  try {
+    const raw = localStorage.getItem('theme');
+    if (!raw) return DEFAULT_THEME_ID;
+    const parsed = JSON.parse(raw);
+    if (parsed === 'light') return 'arkime-light';
+    if (parsed === 'dark') return 'arkime-dark';
+    if (typeof parsed !== 'string') return DEFAULT_THEME_ID;
+    if (parsed === 'custom1') return parsed;
+    return THEMES.some(t => t.id === parsed) ? parsed : DEFAULT_THEME_ID;
+  } catch (e) {
+    return DEFAULT_THEME_ID;
+  }
+}
+
+function loadSavedCustomTheme () {
+  try {
+    const raw = localStorage.getItem('cont3xtCustomTheme');
+    return raw ? JSON.parse(raw) : null;
+  } catch (e) {
+    return null;
+  }
+}
 
 const store = createStore({
   state: {
@@ -47,7 +75,8 @@ const store = createStore({
     copyShareLink: false,
     toggleIntegrationPanel: false,
     immediateSubmissionReady: false,
-    theme: localStorage.getItem('theme') ? JSON.parse(localStorage.getItem('theme')) : undefined,
+    theme: loadSavedTheme(),
+    customTheme: loadSavedCustomTheme(),
     tags: [],
     tagDisplayCollapsed: true,
     seeAllViews: false,
@@ -235,6 +264,14 @@ const store = createStore({
     SET_THEME (state, data) {
       state.theme = data;
       localStorage.setItem('theme', JSON.stringify(data));
+    },
+    SET_CUSTOM_THEME (state, data) {
+      state.customTheme = data;
+      if (data) {
+        localStorage.setItem('cont3xtCustomTheme', JSON.stringify(data));
+      } else {
+        localStorage.removeItem('cont3xtCustomTheme');
+      }
     },
     SET_TAGS (state, data) {
       state.tags = data;
@@ -502,8 +539,14 @@ const store = createStore({
     getTheme (state) {
       return state.theme;
     },
+    getCustomTheme (state) {
+      return state.customTheme;
+    },
     getDarkThemeEnabled (state) {
-      return state.theme === 'dark';
+      const id = state.theme;
+      if (id === 'custom1') return !!(state.customTheme && state.customTheme.dark);
+      const t = THEMES.find(x => x.id === id);
+      return t ? !!t.dark : false;
     },
     getTags (state) {
       return state.tags;

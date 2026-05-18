@@ -147,6 +147,15 @@ SPDX-License-Identifier: Apache-2.0
           :active="visibleTab === 'password'">
           <v-icon icon="mdi-lock mdi-fw" />Password
         </v-btn>
+        <v-btn
+          @click="openView('themes')"
+          block
+          class="nav-link cursor-pointer justify-start"
+          color="primary"
+          variant="text"
+          :active="visibleTab === 'themes'">
+          <v-icon icon="mdi-palette mdi-fw" />Themes
+        </v-btn>
       </div>
     </v-col>
 
@@ -653,6 +662,23 @@ SPDX-License-Identifier: Apache-2.0
           </v-row>
         </v-form>
       </div> <!-- /password settings -->
+
+      <!-- theme settings -->
+      <div v-if="visibleTab === 'themes'">
+        <h1 class="mb-3">
+          Themes
+        </h1>
+        <p class="text-medium-emphasis mb-4">
+          Choose a theme or build your own. Themes apply across cont3xt
+          immediately and persist in your browser.
+        </p>
+        <ThemePicker
+          :model-value="getTheme"
+          :themes="themes"
+          :custom-theme="getCustomTheme"
+          @update:model-value="onThemeChange"
+          @update:custom-theme="onCustomThemeChange" />
+      </div> <!-- /theme settings -->
     </v-col>
     <!-- messages -->
     <v-alert
@@ -689,6 +715,9 @@ import { iTypes, iTypeIconMap, iTypeColorMap } from '@/utils/iTypes';
 import CommonUserService from '@real_common/UserService';
 import TransferResource from '@common/TransferResource.vue';
 import DragUpdateList from '@/utils/DragUpdateList.vue';
+import ThemePicker from '@real_common/ThemePicker.vue';
+import { THEMES } from '@real_common/themes/manifest.js';
+import { registerVuetifyTheme } from '@real_common/themes/registerVuetifyTheme.js';
 
 let timeout;
 
@@ -704,7 +733,8 @@ export default {
     CreateViewModal,
     CreateLinkGroupModal,
     TransferResource,
-    DragUpdateList
+    DragUpdateList,
+    ThemePicker
   },
   data () {
     return {
@@ -712,6 +742,8 @@ export default {
       msg: '',
       msgType: '',
       visibleTab: 'views',
+      // theme picker source list (the 10 baked-in themes)
+      themes: THEMES,
       // integrations
       integrationSettings: {},
       filteredIntegrationSettings: {},
@@ -769,7 +801,8 @@ export default {
   computed: {
     ...mapGetters([
       'getLinkGroups', 'getLinkGroupsError', 'getIntegrations', 'getViews', 'getUser',
-      'getOverviews', 'getOverviewsError', 'getSortedOverviews', 'getCorrectedSelectedOverviewIdMap'
+      'getOverviews', 'getOverviewsError', 'getSortedOverviews', 'getCorrectedSelectedOverviewIdMap',
+      'getTheme', 'getCustomTheme'
     ]),
     seeAllViews: {
       get () { return this.$store.state.seeAllViews; },
@@ -1253,6 +1286,22 @@ export default {
       this.filteredViews = editedViews.filter((view) => {
         return view.name.toString().toLowerCase().match(query)?.length > 0;
       });
+    },
+    /* THEME --------------------------------------------------- */
+    onThemeChange (newThemeId) {
+      this.$store.commit('SET_THEME', newThemeId);
+    },
+    onCustomThemeChange (newCustomTheme) {
+      if (!newCustomTheme || typeof newCustomTheme.colors !== 'object' || !newCustomTheme.colors) return;
+      const safe = {
+        dark: !!newCustomTheme.dark,
+        colors: { ...newCustomTheme.colors }
+      };
+      registerVuetifyTheme(this.$vuetify, 'custom1', safe);
+      this.$store.commit('SET_CUSTOM_THEME', safe);
+      if (this.getTheme !== 'custom1') {
+        this.$store.commit('SET_THEME', 'custom1');
+      }
     }
   }
 };

@@ -155,24 +155,6 @@ SPDX-License-Identifier: Apache-2.0
             v-tooltip="'HELP!'" />
         </v-btn>
       </router-link>
-      <!-- dark/light mode -->
-      <v-btn
-        size="small"
-        tabindex="-1"
-        @click="toggleTheme"
-        v-tooltip:start="'Toggle light/dark theme'"
-        class="square-btn cursor-pointer"
-        title="Toggle light/dark theme"
-        variant="outlined"
-        :color="(theme === 'light') ? 'warning' : 'info'">
-        <v-icon
-          v-if="theme === 'light'"
-          icon="mdi-white-balance-sunny mdi-fw" />
-        <v-icon
-          v-if="theme === 'dark'"
-          icon="mdi-weather-night mdi-fw" />
-      </v-btn>
-      <!-- </div> -->
       <Logout
         :base-path="path"
         size="small" />
@@ -207,6 +189,7 @@ import ShortCutTooltip from '@/utils/ShortCutTooltip.vue';
 import { useTheme } from 'vuetify';
 import { watchEffect } from 'vue';
 import { useGetters } from '@/vue3-helpers';
+import { registerVuetifyTheme } from '@real_common/themes/registerVuetifyTheme.js';
 
 let interval;
 const minTimeToWait = 10000;
@@ -222,12 +205,17 @@ export default {
   setup () {
     const theme = useTheme();
     const store = useStore();
-    const { getTheme } = useGetters(store);
+    const { getTheme, getCustomTheme, getDarkThemeEnabled } = useGetters(store);
+
+    // Register the user's saved custom theme (if any) so theme.change('custom1') works.
+    if (getCustomTheme.value && getCustomTheme.value.colors) {
+      registerVuetifyTheme({ theme }, 'custom1', getCustomTheme.value);
+    }
 
     watchEffect(() => {
-      theme.change((getTheme.value === 'dark') ? 'arkime-dark' : 'arkime-light');
-      // once the few lingering reliances on body.dark are removed, this can be safely removed
-      document.body.classList = getTheme.value === 'dark' ? ['dark'] : [];
+      theme.change(getTheme.value || 'arkime-light');
+      // legacy body.dark hook for the handful of non-Vuetify selectors that still read it
+      document.body.classList = getDarkThemeEnabled.value ? ['dark'] : [];
     });
   },
   data: function () {
@@ -251,26 +239,15 @@ export default {
     }
   },
   mounted: function () {
-    if (this.getTheme === undefined) {
-      if (window.matchMedia) {
-        const darkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
-        this.theme = darkMode ? 'dark' : 'light';
-      } else {
-        this.theme = 'light';
-      }
-    } else {
-      this.theme = this.getTheme; // initialize theme setting side-effects
+    if (!this.getTheme) {
+      const dark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+      this.theme = dark ? 'arkime-dark' : 'arkime-light';
     }
 
     this.getHealth();
   },
   methods: {
     /* page functions ------------------------------------------------------ */
-    toggleTheme () {
-      this.theme = (this.theme === 'dark') ? 'light' : 'dark';
-
-      localStorage.setItem('cont3xtTheme', this.theme);
-    },
     reload () {
       window.location.reload();
     },
