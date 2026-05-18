@@ -1,7 +1,7 @@
 # Many of these test user/roles start with sac- (skip auto create) because
 # otherwise viewer in regression mode would auto create the user.
 # Some day should remove all autocreate code.
-use Test::More tests => 262;
+use Test::More tests => 258;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
