@@ -549,6 +549,13 @@ LOCAL void *arkime_packet_thread(void *threadp)
             ARKIME_THREAD_DECR(oi->finishWaiting);
             if (oi->finishWaiting == 0) {
                 arkime_db_update_file(oi->outputId, oi->lastBytes, oi->lastBytes, oi->lastPackets, &oi->lastPacketTime, oi->sessionsStarted, oi->sessionsPresent);
+                if (oi->notifyClientRef) {
+                    arkime_command_notify_file_done(oi->notifyClientRef, oi->notifyFilename, oi->lastBytes, oi->lastPackets);
+                    arkime_command_client_decref(oi->notifyClientRef);
+                    g_free(oi->notifyFilename);
+                    oi->notifyClientRef = NULL;
+                    oi->notifyFilename = NULL;
+                }
             }
             ARKIME_UNLOCK(offlineInfoLock);
             arkime_packet_free(packet);

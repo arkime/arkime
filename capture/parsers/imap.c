@@ -104,7 +104,8 @@ LOCAL void imap_process_line(IMAPInfo_t *imap, ArkimeSession_t *session, const c
         int blen = len;
         /* Server continuation: "+ TlRMTVN..." */
         if (which == imap->serverWhich && blen > 2 && b[0] == '+' && b[1] == ' ') {
-            b += 2; blen -= 2;
+            b += 2;
+            blen -= 2;
         }
         if (arkime_parsers_ntlm_decode_base64(session, b, blen))
             return;

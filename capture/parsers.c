@@ -822,7 +822,10 @@ gboolean arkime_parsers_ntlm_decode_base64(ArkimeSession_t *session,
     if (!b64 || b64len < 11)
         return FALSE;
 
-    while (b64len > 0 && (*b64 == ' ' || *b64 == '\t')) { b64++; b64len--; }
+    while (b64len > 0 && (*b64 == ' ' || *b64 == '\t')) {
+        b64++;
+        b64len--;
+    }
     while (b64len > 0 && (b64[b64len - 1] == ' ' || b64[b64len - 1] == '\t' ||
                           b64[b64len - 1] == '\r' || b64[b64len - 1] == '\n'))
         b64len--;

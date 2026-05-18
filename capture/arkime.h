@@ -662,6 +662,8 @@ typedef struct {
     uint32_t        sessionsPresent;
     uint8_t         didBatch;
     uint8_t         finishWaiting;
+    void           *notifyClientRef; // command-socket --notify: client to receive file-done
+    char           *notifyFilename;  // filename to report in the notification
 } ArkimeOfflineInfo_t;
 /******************************************************************************/
 typedef enum {

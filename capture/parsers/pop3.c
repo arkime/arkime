@@ -37,7 +37,8 @@ LOCAL void pop3_process_line(POP3Info_t *pop3, ArkimeSession_t *session, const c
         int blen = len;
         /* Server continuation: "+ TlRMTVN..." */
         if (which == pop3->serverWhich && blen > 2 && b[0] == '+' && b[1] == ' ') {
-            b += 2; blen -= 2;
+            b += 2;
+            blen -= 2;
         }
         if (arkime_parsers_ntlm_decode_base64(session, b, blen)) {
             pop3->ntlmCount++;
@@ -53,7 +54,10 @@ LOCAL void pop3_process_line(POP3Info_t *pop3, ArkimeSession_t *session, const c
         strncasecmp(line, "USER ", 5) == 0) {
         const char *u = line + 5;
         int ulen = len - 5;
-        while (ulen > 0 && isspace((unsigned char)*u)) { u++; ulen--; }
+        while (ulen > 0 && isspace((unsigned char) * u)) {
+            u++;
+            ulen--;
+        }
         while (ulen > 0 && isspace((unsigned char)u[ulen - 1])) ulen--;
         if (ulen > 0)
             arkime_field_string_add_lower(userField, session, u, ulen);
