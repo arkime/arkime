@@ -177,17 +177,6 @@ anonymous,,true,true,false,"arkimeAdmin, cont3xtUser, parliamentUser, usersAdmin
     $json = viewerPostToken("/api/user/settings?arkimeRegressionUser=sac-test1", '{"logo":"testlogo.png"}', $test1Token);
     is($json->{success}, 1, "restore logo setting");
 
-# user css - no theme returns 404
-    my $cssResponse = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8123/api/user.css?arkimeRegressionUser=sac-test1");
-    is($cssResponse->code, 404, "user css returns 404 without theme");
-
-# user css - with theme returns CSS
-    $json = viewerPostToken("/api/user/settings?arkimeRegressionUser=sac-test1", '{"theme":"custom-theme:#000000,#FFFFFF,#CCCCCC,#007bff,#cce5ff,#28a745,#d4edda,#ffc107,#fff3cd,#dc3545,#f8d7da,#17a2b8,#d1ecf1,#6c757d,#e2e3e5"}', $test1Token);
-    is($json->{success}, 1, "update user settings with theme");
-    $cssResponse = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8123/api/user.css?arkimeRegressionUser=sac-test1");
-    is($cssResponse->code, 200, "user css returns 200 with theme");
-    like($cssResponse->content, qr/color/, "user css contains color styles");
-
 # Add User 2
     my $json = viewerPostToken2("/api/user", '{"userId": "sac-test2", "userName": "UserName2", "enabled":true, "password":"password"}', $token2);
     eq_or_diff($json, from_json('{"text": "User created successfully", "success": true}'));

@@ -352,7 +352,6 @@ SPDX-License-Identifier: Apache-2.0
 <script>
 import { expandShades, isDark } from './themes/colorShades.js';
 import {
-  SHAREABLE_KEYS,
   encodeShareableTheme,
   applyShareableTheme
 } from './themes/customTheme.js';
@@ -370,7 +369,6 @@ export default {
   },
   data () {
     return {
-      EDITABLE_KEYS: SHAREABLE_KEYS,
       // Visual grouping in the editor: the map (water/land) and
       // traffic (src/dst) pairs each get their own row so they read
       // as a related set instead of getting mixed in with the

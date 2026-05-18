@@ -228,22 +228,9 @@ export default {
     ...mapGetters(['getLoading', 'getUser', 'getShiftKeyHold', 'getTheme']),
     timezone () {
       return this.getUser?.settings?.timezone || 'local';
-    },
-    theme: {
-      get () {
-        return this.getTheme;
-      },
-      set (value) {
-        this.$store.commit('SET_THEME', value);
-      }
     }
   },
   mounted: function () {
-    if (!this.getTheme) {
-      const dark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-      this.theme = dark ? 'arkime-dark' : 'arkime-light';
-    }
-
     this.getHealth();
   },
   methods: {
