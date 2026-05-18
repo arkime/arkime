@@ -28,9 +28,9 @@ SPDX-License-Identifier: Apache-2.0
             :unknown="loading || error">
             {{ getUsersStr() }}
           </slot>
-          <v-icon end>
-            fa-caret-down
-          </v-icon>
+          <v-icon
+            end
+            icon="mdi:mdi-menu-down" />
           <v-tooltip
             v-if="selectedTooltip"
             :activator="`#${activatorId}`">
@@ -50,7 +50,7 @@ SPDX-License-Identifier: Apache-2.0
             variant="outlined"
             hide-details
             clearable
-            prepend-inner-icon="fa-search"
+            prepend-inner-icon="fa:fa-search"
             :model-value="searchTerm"
             @update:model-value="(val) => { searchTerm = val || ''; }"
             :placeholder="$t('users.searchUserPlaceholder')" />

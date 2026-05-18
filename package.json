@@ -10,6 +10,7 @@
     "@clickhouse/client": "^1.12.1",
     "@databricks/sql": "^1.13.0",
     "@elastic/elasticsearch": "7.10.0",
+    "@mdi/font": "^7.4.47",
     "acorn": "^8.16.0",
     "arkime-iptrie": "^0.0.9",
     "arkime-notifme-sdk": "^1.11.10",

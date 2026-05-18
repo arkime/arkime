@@ -12,7 +12,7 @@ SPDX-License-Identifier: Apache-2.0
           variant="outlined"
           hide-details
           clearable
-          prepend-inner-icon="fa-search"
+          prepend-inner-icon="fa:fa-search"
           v-model="searchTerm"
           :placeholder="$t('users.rolesSearchPlaceholder')" />
       </div>

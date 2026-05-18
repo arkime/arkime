@@ -612,8 +612,12 @@ class User {
       });
     }).catch((err) => {
       console.log(`ERROR - ${req.method} /api/users`, util.inspect(err, false, 50));
+      const message = err?.meta?.body?.error?.root_cause?.[0]?.reason
+        || err?.message
+        || (typeof err === 'string' ? err : 'Failed to load users');
       return res.send({
         success: false,
+        text: String(message),
         recordsTotal: 0,
         recordsFiltered: 0,
         data: []
@@ -1983,11 +1987,27 @@ class UserESImplementation {
       esQuery.sort[query.sortField].missing = usersMissing[query.sortField];
     }
 
-    const { body: users } = await this.client.search({
-      index: this.prefix + 'users',
-      body: esQuery,
-      rest_total_hits_as_int: true
-    });
+    // If the index's mapping has the sort field as `text` (instead of
+    // the canonical `keyword`), ES refuses with "Fielddata is disabled
+    // on [field]". Retry without sort + do an in-memory sort below.
+    let users;
+    try {
+      ({ body: users } = await this.client.search({
+        index: this.prefix + 'users',
+        body: esQuery,
+        rest_total_hits_as_int: true
+      }));
+    } catch (err) {
+      const isFielddata = err?.meta?.body?.error?.root_cause?.[0]?.type === 'illegal_argument_exception' &&
+        /Fielddata is disabled/.test(err?.meta?.body?.error?.root_cause?.[0]?.reason || '');
+      if (!isFielddata || !esQuery.sort) { throw err; }
+      delete esQuery.sort;
+      ({ body: users } = await this.client.search({
+        index: this.prefix + 'users',
+        body: esQuery,
+        rest_total_hits_as_int: true
+      }));
+    }
 
     if (users.error) {
       return { error: users.error };
@@ -2000,6 +2020,13 @@ class UserESImplementation {
       cleanUser(fields);
       hits.push(Object.assign(new User(), fields));
     }
+
+    // If we had to drop the ES sort (text-field mapping), sort
+    // the hits in JS so the client still gets ordered data.
+    if (!esQuery.sort && query.sortField && hits.length > 1) {
+      sortUsers(hits, query.sortField, query.sortDescending === true);
+    }
+
     return { users: hits, total: users.hits.total };
   }
 

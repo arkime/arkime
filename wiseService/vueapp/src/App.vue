@@ -4,14 +4,12 @@ SPDX-License-Identifier: Apache-2.0
 -->
 <template>
   <div id="app">
-    <div v-if="compatibleBrowser">
+    <template v-if="compatibleBrowser">
       <wise-navbar />
-      <router-view class="margin-for-nav-sm" />
+      <router-view class="wise-page-content" />
       <wise-footer />
-    </div>
-    <div v-else>
-      <wise-upgrade-browser />
-    </div>
+    </template>
+    <wise-upgrade-browser v-else />
   </div>
 </template>
 
@@ -32,16 +30,6 @@ export default {
       compatibleBrowser: true
     };
   },
-  computed: {
-    wiseTheme: {
-      get () {
-        return this.$store.state.wiseTheme;
-      },
-      set (wiseTheme) {
-        this.$store.commit('SET_THEME', wiseTheme);
-      }
-    }
-  },
   mounted: function () {
     this.compatibleBrowser = (typeof Object.__defineSetter__ === 'function') &&
       !!String.prototype.includes;
@@ -49,28 +37,16 @@ export default {
     if (!this.compatibleBrowser) {
       console.log('Incompatible browser, please upgrade!');
     }
-
-    if (window.matchMedia) {
-      const darkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
-
-      let hasTheme = false; // determine if there is a theme set
-      if (localStorage && localStorage.vuex) {
-        hasTheme = JSON.parse(localStorage.vuex).wiseTheme;
-      }
-
-      if (hasTheme) { return; } // don't do anything if theme is already set
-
-      // if there's no theme, default to the same theme as the OS
-      this.wiseTheme = darkMode ? 'dark' : 'light';
-      document.body.classList = darkMode ? ['dark'] : [];
-    }
   }
 };
 </script>
 
 <style>
 /* app styles -------------------------------- */
-body { background-color: #F0F0F0; }
+body {
+  background-color: rgb(var(--v-theme-background));
+  color: rgb(var(--v-theme-foreground));
+}
 
 .text-muted-more { color: #DDDDDD; }
 
@@ -85,8 +61,8 @@ body { background-color: #F0F0F0; }
 }
 
 /* see top level common.css info area for usage */
-.info-area { color: #777777; }
-.info-area div { background-color: #FFFFFF; }
+.info-area { color: rgb(var(--v-theme-foreground)); opacity: 0.7; }
+.info-area div { background-color: rgb(var(--v-theme-surface-card)); }
 
 /* styles for bottom footer */
 html {
@@ -95,5 +71,9 @@ html {
 }
 #app {
   padding-bottom: 25px;
+}
+/* a bit of breathing room under the fixed navbar */
+.wise-page-content {
+  padding-top: 12px;
 }
 </style>

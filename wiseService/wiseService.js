@@ -653,6 +653,10 @@ app.use('/font-awesome', express.static(
   path.join(__dirname, '/../node_modules/font-awesome'),
   { maxAge: dayMs, fallthrough: false }
 ), ArkimeUtil.missingResource);
+app.use('/mdi-font', express.static(
+  path.join(__dirname, '/../node_modules/@mdi/font'),
+  { maxAge: dayMs, fallthrough: false }
+), ArkimeUtil.missingResource);
 app.use('/assets', express.static(
   path.join(__dirname, 'vueapp/dist/assets'),
   { maxAge: dayMs, fallthrough: true }

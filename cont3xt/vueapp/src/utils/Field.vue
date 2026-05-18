@@ -164,7 +164,7 @@ export default {
 
 .field:hover {
   z-index: 4;
-  background-color: var(--color-light);
+  background-color: rgb(var(--v-theme-neutral-lighter));
 }
 
 .field:hover a {
@@ -195,8 +195,8 @@ export default {
   text-align: left;
   list-style: none;
   border-radius: 4px;
-  background-color: var(--color-light);
-  border: 1px solid var(--color-gray);
+  background-color: rgb(var(--v-theme-neutral-lighter));
+  border: 1px solid rgb(var(--v-theme-outline));
   margin-top: 0;
   margin-left: -2px;
 
@@ -236,6 +236,6 @@ export default {
 .field-dropdown a.dropdown-item:hover {
   text-decoration: none;
   color: rgb(var(--v-theme-primary)) !important;
-  background-color: var(--color-gray-light);
+  background-color: rgb(var(--v-theme-neutral-lighter));
 }
 </style>

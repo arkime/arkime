@@ -8,10 +8,10 @@ SPDX-License-Identifier: Apache-2.0
     class="d-flex flex-row flex-grow-1 overflow-hidden">
     <!-- navigation -->
     <v-col
-      xl="2"
-      lg="3"
-      md="3"
-      sm="4"
+      xl="1"
+      lg="2"
+      md="2"
+      sm="3"
       xs="12"
       role="tablist"
       aria-orientation="vertical"
@@ -154,16 +154,16 @@ SPDX-License-Identifier: Apache-2.0
           color="primary"
           variant="text"
           :active="visibleTab === 'themes'">
-          <v-icon icon="mdi-palette mdi-fw" />Themes
+          <v-icon icon="mdi-brush mdi-fw" />Themes
         </v-btn>
       </div>
     </v-col>
 
     <v-col
-      xl="10"
-      lg="9"
-      md="9"
-      sm="8"
+      xl="11"
+      lg="10"
+      md="10"
+      sm="9"
       xs="12"
       class="overflow-auto h-100 pt-3 pb-4 pr-4">
       <!-- view settings -->
@@ -712,12 +712,12 @@ import OverviewFormCard from '@/components/overviews/OverviewFormCard.vue';
 import CreateOverviewModal from '@/components/overviews/CreateOverviewModal.vue';
 import OverviewSelectorLine from '@/components/overviews/OverviewSelectorLine.vue';
 import { iTypes, iTypeIconMap, iTypeColorMap } from '@/utils/iTypes';
-import CommonUserService from '@real_common/UserService';
+import CommonUserService from '@common/UserService';
 import TransferResource from '@common/TransferResource.vue';
 import DragUpdateList from '@/utils/DragUpdateList.vue';
-import ThemePicker from '@real_common/ThemePicker.vue';
-import { THEMES } from '@real_common/themes/manifest.js';
-import { registerVuetifyTheme } from '@real_common/themes/registerVuetifyTheme.js';
+import ThemePicker from '@common/ThemePicker.vue';
+import { THEMES } from '@common/themes/manifest.js';
+import { registerVuetifyTheme } from '@common/themes/registerVuetifyTheme.js';
 
 let timeout;
 

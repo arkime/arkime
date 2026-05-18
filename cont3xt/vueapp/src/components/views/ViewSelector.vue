@@ -277,7 +277,7 @@ onMounted(() => {
   padding-inline: 0.25rem;
 }
 .top-searched-dropdown {
-  background-color: var(--color-gray-light);
+  background-color: rgb(var(--v-theme-neutral-lighter));
 }
 .integration-view-hotkey-v {
   /* pad the V shown when shifting to keep the button the same size */

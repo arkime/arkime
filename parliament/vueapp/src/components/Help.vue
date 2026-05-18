@@ -271,7 +271,7 @@ export default {
 /* help navigation */
 .help-content div.nav-pills {
   min-width: 150px;
-  border: 1px solid var(--color-gray);
+  border: 1px solid rgb(var(--v-theme-outline));
   border-radius: 4px;
   position: sticky;
   top: 70px;

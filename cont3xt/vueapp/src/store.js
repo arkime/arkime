@@ -5,7 +5,7 @@ SPDX-License-Identifier: Apache-2.0
 import { createStore } from 'vuex';
 import { iTypes, iTypeIndexMap } from '@/utils/iTypes';
 import { indicatorFromId, localIndicatorId } from '@/utils/cont3xtUtil';
-import { THEMES, DEFAULT_THEME_ID } from '@real_common/themes/manifest.js';
+import { THEMES, DEFAULT_THEME_ID } from '@common/themes/manifest.js';
 
 /* Load the saved theme id from localStorage. Migrates the legacy
    'light' / 'dark' string format to the new manifest ids. Falls back

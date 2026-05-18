@@ -4,14 +4,12 @@ SPDX-License-Identifier: Apache-2.0
 -->
 <template>
   <div id="app">
-    <div v-if="compatibleBrowser">
+    <template v-if="compatibleBrowser">
       <parliament-navbar />
-      <router-view class="margin-for-nav-sm" />
+      <router-view />
       <parliament-footer />
-    </div>
-    <div v-else>
-      <parliament-upgrade-browser />
-    </div>
+    </template>
+    <parliament-upgrade-browser v-else />
   </div>
 </template>
 
@@ -51,7 +49,10 @@ export default {
 
 <style>
 /* app styles -------------------------------- */
-body { background-color: #F0F0F0; }
+body {
+  background-color: rgb(var(--v-theme-background));
+  color: rgb(var(--v-theme-foreground));
+}
 
 a.no-href { color: #007bff !important; }
 a.no-href:hover { color: #0056b3 !important; }

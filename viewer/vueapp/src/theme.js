@@ -26,7 +26,14 @@ export function buildVuetifyThemes () {
     // Vuetify's algorithmic variation generation.
     variations: { colors: [], lighten: 0, darken: 0 },
     themes: Object.fromEntries(
-      THEMES.map(t => [t.id, { dark: t.dark, colors: t.colors }])
+      THEMES.map(t => [t.id, {
+        dark: t.dark,
+        colors: {
+          'surface-variant': t.colors.foreground,
+          'on-surface-variant': t.colors.background,
+          ...t.colors
+        }
+      }])
     )
   };
 }

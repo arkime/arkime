@@ -3,7 +3,7 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-  <div class="settings-content mb-4">
+  <div class="settings-content mb-4 mt-3">
     <div class="container-fluid">
       <!-- page error -->
       <div
@@ -29,340 +29,375 @@ SPDX-License-Identifier: Apache-2.0
       </div> <!-- /page error -->
 
       <!-- page content -->
-      <div
-        class="row"
-        v-if="isAdmin">
+      <v-row v-if="isAdmin">
         <!-- navigation -->
-        <div class="col-xl-2 col-lg-3 col-md-3 col-sm-4">
-          <div class="nav flex-column nav-pills">
-            <a
-              class="nav-link cursor-pointer"
-              @click="openView('general')"
-              :class="{'active':visibleTab === 'general'}">
-              <span class="fa fa-fw fa-cog" />&nbsp;
+        <v-col
+          cols="12"
+          xl="1"
+          lg="2"
+          md="2"
+          sm="3"
+          role="tablist"
+          aria-orientation="vertical">
+          <v-tabs
+            :model-value="visibleTab"
+            direction="vertical"
+            density="compact"
+            color="primary"
+            selected-class="font-weight-bold"
+            @update:model-value="openView($event)">
+            <v-tab value="general">
+              <span class="fa fa-fw fa-cog me-1" />
               {{ $t('parliament.settings.general') }}
-            </a>
-            <a
-              class="nav-link cursor-pointer"
-              @click="openView('notifiers')"
-              :class="{'active':visibleTab === 'notifiers'}">
-              <span class="fa fa-fw fa-bell" />&nbsp;
+            </v-tab>
+            <v-tab value="notifiers">
+              <span class="fa fa-fw fa-bell me-1" />
               {{ $t('parliament.settings.notifiers') }}
-            </a>
-          </div>
+            </v-tab>
+            <v-tab value="themes">
+              <span class="fa fa-fw fa-paint-brush me-1" />
+              Themes
+            </v-tab>
+          </v-tabs>
 
           <!-- bottom fixed messages -->
-          <b-alert
-            :show="!!message"
+          <v-alert
+            v-if="!!message"
+            :type="msgType === 'danger' ? 'error' : (msgType || 'success')"
             class="position-fixed fixed-bottom m-0 rounded-0"
             style="z-index: 2000;"
-            :variant="msgType"
-            dismissible>
-            <span class="fa fa-check mr-2" />
+            closable
+            @click:close="message = ''">
             {{ message }}
-          </b-alert>
+          </v-alert>
           <!-- /bottom fixed messages -->
-        </div> <!-- /navigation -->
+        </v-col> <!-- /navigation -->
 
-        <!-- general -->
-        <div
-          v-if="visibleTab === 'general' && settings"
-          class="col">
-          <div class="row">
-            <h3 class="col-xl-9 col-lg-12 form-group">
-              <button
-                type="button"
-                class="btn btn-sm btn-outline-warning pull-right"
-                @click="restoreDefaults('general')">
-                {{ $t('parliament.settings.reset') }}
-              </button>
-              {{ $t('parliament.settings.general') }}
-              <hr>
-            </h3>
-          </div>
+        <v-col
+          cols="12"
+          xl="11"
+          lg="10"
+          md="10"
+          sm="9">
+          <!-- general -->
           <div
-            class="row"
-            v-if="settings.general">
-            <!-- out of date -->
-            <div class="col-xl-9 col-lg-12 form-group">
-              <div class="input-group">
-                <span class="input-group-text">
-                  {{ $t('parliament.settings.outOfDate') }}
-                </span>
-                <input
-                  type="number"
-                  class="form-control"
-                  id="outOfDate"
-                  @input="debounceInput"
-                  v-model="settings.general.outOfDate"
-                  max="3600">
-                <span class="input-group-text">
-                  {{ $t('common.seconds') }}
-                </span>
-              </div>
-              <p
-                class="form-text small text-muted"
-                v-html="$t('parliament.settings.outOfDateHtml')" />
-            </div> <!-- /out of date -->
-            <!-- es query timeout -->
-            <div class="col-xl-9 col-lg-12 form-group">
-              <div class="input-group">
-                <span class="input-group-text">
-                  {{ $t('parliament.settings.esQueryTimeout') }}
-                </span>
-                <input
-                  type="number"
-                  class="form-control"
-                  id="esQueryTimeout"
-                  @input="debounceInput"
-                  v-model="settings.general.esQueryTimeout"
-                  max="60">
-                <span class="input-group-text">
-                  {{ $t('common.seconds') }}
-                </span>
-              </div>
-              <p
-                class="form-text small text-muted"
-                v-html="$t('parliament.settings.esQueryTimeoutHtml')" />
-            </div> <!-- /es query timeout -->
-            <!-- low packets -->
-            <div class="col-xl-9 col-lg-12 form-group">
-              <div class="d-flex">
-                <div class="input-group me-2">
-                  <span class="input-group-text">
-                    {{ $t('parliament.settings.noPackets') }}
-                  </span>
-                  <input
-                    type="number"
-                    class="form-control"
-                    id="noPackets"
-                    @input="debounceInput"
-                    v-model="settings.general.noPackets"
-                    max="100000"
-                    min="-1">
-                  <span class="input-group-text">
-                    packets
-                  </span>
-                </div>
+            v-if="visibleTab === 'general' && settings">
+            <div class="row">
+              <h3 class="col-xl-9 col-lg-12 form-group">
+                <button
+                  type="button"
+                  class="btn btn-sm btn-outline-warning pull-right"
+                  @click="restoreDefaults('general')">
+                  {{ $t('parliament.settings.reset') }}
+                </button>
+                {{ $t('parliament.settings.general') }}
+                <hr>
+              </h3>
+            </div>
+            <div
+              class="row"
+              v-if="settings.general">
+              <!-- out of date -->
+              <div class="col-xl-9 col-lg-12 form-group">
                 <div class="input-group">
                   <span class="input-group-text">
-                    {{ $t('parliament.settings.noPacketsLength') }}
+                    {{ $t('parliament.settings.outOfDate') }}
                   </span>
                   <input
                     type="number"
                     class="form-control"
-                    id="noPacketsLength"
+                    id="outOfDate"
                     @input="debounceInput"
-                    v-model="settings.general.noPacketsLength"
-                    max="100000"
-                    min="1">
+                    v-model="settings.general.outOfDate"
+                    max="3600">
                   <span class="input-group-text">
                     {{ $t('common.seconds') }}
                   </span>
                 </div>
-              </div>
-              <p
-                class="form-text small text-muted"
-                v-html="$t('parliament.settings.noPacketsHtml')" />
-            </div> <!-- /low packets -->
-            <!-- low disk space -->
-            <div class="col-xl-9 col-lg-12 form-group">
-              <div class="input-group">
-                <span class="input-group-text">
-                  {{ $t('parliament.settings.lowDiskSpace') }}
-                </span>
-                <input
-                  type="number"
-                  class="form-control"
-                  id="lowDiskSpace"
-                  @input="debounceInput"
-                  v-model="settings.general.lowDiskSpace"
-                  :max="settings.general.lowDiskSpaceType === 'percentage' ? 100 : 100000"
-                  min="0"
-                  :step="settings.general.lowDiskSpaceType === 'percentage' ? 0.1 : 1">
-                <select
-                  class="form-select"
-                  style="max-width: 150px;"
-                  @change="debounceInput"
-                  v-model="settings.general.lowDiskSpaceType">
-                  <option value="percentage">
-                    {{ $t('common.percent') }}
-                  </option>
-                  <option value="gb">
-                    GB
-                  </option>
-                </select>
-              </div>
-              <p
-                class="form-text small text-muted"
-                v-html="$t('parliament.settings.lowDiskSpaceHtml')" />
-            </div> <!-- /low disk space -->
-            <!-- low disk space ES -->
-            <div class="col-xl-9 col-lg-12 form-group">
-              <div class="input-group">
-                <span class="input-group-text">
-                  {{ $t('parliament.settings.lowDiskSpaceES') }}
-                </span>
-                <input
-                  type="number"
-                  class="form-control"
-                  id="lowDiskSpaceES"
-                  @input="debounceInput"
-                  v-model.number="settings.general.lowDiskSpaceES"
-                  :max="settings.general.lowDiskSpaceESType === 'percentage' ? 100 : 100000"
-                  min="0"
-                  :step="settings.general.lowDiskSpaceESType === 'percentage' ? 0.1 : 1">
-                <select
-                  class="form-select"
-                  style="max-width: 150px;"
-                  @change="debounceInput"
-                  v-model="settings.general.lowDiskSpaceESType">
-                  <option value="percentage">
-                    {{ $t('common.percent') }}
-                  </option>
-                  <option value="gb">
-                    GB
-                  </option>
-                </select>
-              </div>
-              <p
-                class="form-text small text-muted"
-                v-html="$t('parliament.settings.lowDiskSpaceESHtml')" />
-            </div> <!-- /low disk space ES -->
-            <!-- remove issues after -->
-            <div class="col-xl-9 col-lg-12 form-group">
-              <div class="input-group">
-                <span class="input-group-text">
-                  {{ $t('parliament.settings.removeIssuesAfter') }}
-                </span>
-                <input
-                  type="number"
-                  class="form-control"
-                  id="removeIssuesAfter"
-                  @input="debounceInput"
-                  v-model="settings.general.removeIssuesAfter"
-                  max="10080">
-                <span class="input-group-text">
-                  {{ $t('common.minutes') }}
-                </span>
-              </div>
-              <p
-                class="form-text small text-muted"
-                v-html="$t('parliament.settings.removeIssuesAfterHtml')" />
-            </div> <!-- /remove issues after -->
-            <!-- remove acknowledged issues after -->
-            <div class="col-xl-9 col-lg-12 form-group">
-              <div class="input-group">
-                <span class="input-group-text">
-                  {{ $t('parliament.settings.removeAcknowledgedAfter') }}
-                </span>
-                <input
-                  type="number"
-                  class="form-control"
-                  id="removeAcknowledgedAfter"
-                  @input="debounceInput"
-                  v-model="settings.general.removeAcknowledgedAfter"
-                  max="10080">
-                <span class="input-group-text">
-                  {{ $t('common.minutes') }}
-                </span>
-              </div>
-              <p
-                class="form-text small text-muted"
-                v-html="$t('parliament.settings.removeAcknowledgedAfterHtml')" />
-            </div> <!-- /remove acknowledged issues after -->
-            <!-- wise url -->
-            <div class="col-xl-9 col-lg-12 form-group">
-              <div class="input-group">
-                <span class="input-group-text">
-                  {{ $t('parliament.settings.wiseUrl') }}
-                </span>
-                <input
-                  type="text"
-                  class="form-control"
-                  id="wiseUrl"
-                  @input="debounceInput"
-                  v-model="settings.general.wiseUrl">
-              </div>
-              <p
-                class="form-text small text-muted"
-                v-html="$t('parliament.settings.wiseUrlHtml')" />
-            </div> <!-- /wise url -->
-            <!-- cont3xt url -->
-            <div class="col-xl-9 col-lg-12 form-group">
-              <div class="input-group">
-                <span class="input-group-text">
-                  {{ $t('parliament.settings.cont3xtUrl') }}
-                </span>
-                <input
-                  type="text"
-                  class="form-control"
-                  id="cont3xtUrl"
-                  @input="debounceInput"
-                  v-model="settings.general.cont3xtUrl">
-              </div>
-              <p
-                class="form-text small text-muted"
-                v-html="$t('parliament.settings.cont3xtUrlHtml')" />
-            </div> <!-- /cont3xt url -->
-          </div>
-        </div>
-        <!-- /general -->
-
-        <!-- notifiers tab -->
-        <div
-          v-if="visibleTab === 'notifiers' && settings"
-          class="col">
-          <!-- hostname -->
-          <div class="row form-group">
-            <div class="col-12">
-              <div class="input-group">
-                <span class="input-group-text">
-                  {{ $t('parliament.settings.parliamentHostname') }}
-                </span>
-                <input
-                  type="text"
-                  class="form-control"
-                  id="hostname"
-                  @input="debounceInput"
-                  v-model="settings.general.hostname">
-                <span class="input-group-text">
+                <p
+                  class="form-text small text-muted"
+                  v-html="$t('parliament.settings.outOfDateHtml')" />
+              </div> <!-- /out of date -->
+              <!-- es query timeout -->
+              <div class="col-xl-9 col-lg-12 form-group">
+                <div class="input-group">
+                  <span class="input-group-text">
+                    {{ $t('parliament.settings.esQueryTimeout') }}
+                  </span>
                   <input
-                    type="checkbox"
+                    type="number"
+                    class="form-control"
+                    id="esQueryTimeout"
                     @input="debounceInput"
-                    v-model="settings.general.includeUrl">
-                  &nbsp; {{ $t('parliament.settings.includeDashboardUrl') }}
-                </span>
-              </div>
-              <p
-                class="form-text small text-muted"
-                v-html="$t('parliament.settings.parliamentHostnameHtml')" />
+                    v-model="settings.general.esQueryTimeout"
+                    max="60">
+                  <span class="input-group-text">
+                    {{ $t('common.seconds') }}
+                  </span>
+                </div>
+                <p
+                  class="form-text small text-muted"
+                  v-html="$t('parliament.settings.esQueryTimeoutHtml')" />
+              </div> <!-- /es query timeout -->
+              <!-- low packets -->
+              <div class="col-xl-9 col-lg-12 form-group">
+                <div class="d-flex">
+                  <div class="input-group me-2">
+                    <span class="input-group-text">
+                      {{ $t('parliament.settings.noPackets') }}
+                    </span>
+                    <input
+                      type="number"
+                      class="form-control"
+                      id="noPackets"
+                      @input="debounceInput"
+                      v-model="settings.general.noPackets"
+                      max="100000"
+                      min="-1">
+                    <span class="input-group-text">
+                      packets
+                    </span>
+                  </div>
+                  <div class="input-group">
+                    <span class="input-group-text">
+                      {{ $t('parliament.settings.noPacketsLength') }}
+                    </span>
+                    <input
+                      type="number"
+                      class="form-control"
+                      id="noPacketsLength"
+                      @input="debounceInput"
+                      v-model="settings.general.noPacketsLength"
+                      max="100000"
+                      min="1">
+                    <span class="input-group-text">
+                      {{ $t('common.seconds') }}
+                    </span>
+                  </div>
+                </div>
+                <p
+                  class="form-text small text-muted"
+                  v-html="$t('parliament.settings.noPacketsHtml')" />
+              </div> <!-- /low packets -->
+              <!-- low disk space -->
+              <div class="col-xl-9 col-lg-12 form-group">
+                <div class="input-group">
+                  <span class="input-group-text">
+                    {{ $t('parliament.settings.lowDiskSpace') }}
+                  </span>
+                  <input
+                    type="number"
+                    class="form-control"
+                    id="lowDiskSpace"
+                    @input="debounceInput"
+                    v-model="settings.general.lowDiskSpace"
+                    :max="settings.general.lowDiskSpaceType === 'percentage' ? 100 : 100000"
+                    min="0"
+                    :step="settings.general.lowDiskSpaceType === 'percentage' ? 0.1 : 1">
+                  <select
+                    class="form-select"
+                    style="max-width: 150px;"
+                    @change="debounceInput"
+                    v-model="settings.general.lowDiskSpaceType">
+                    <option value="percentage">
+                      {{ $t('common.percent') }}
+                    </option>
+                    <option value="gb">
+                      GB
+                    </option>
+                  </select>
+                </div>
+                <p
+                  class="form-text small text-muted"
+                  v-html="$t('parliament.settings.lowDiskSpaceHtml')" />
+              </div> <!-- /low disk space -->
+              <!-- low disk space ES -->
+              <div class="col-xl-9 col-lg-12 form-group">
+                <div class="input-group">
+                  <span class="input-group-text">
+                    {{ $t('parliament.settings.lowDiskSpaceES') }}
+                  </span>
+                  <input
+                    type="number"
+                    class="form-control"
+                    id="lowDiskSpaceES"
+                    @input="debounceInput"
+                    v-model.number="settings.general.lowDiskSpaceES"
+                    :max="settings.general.lowDiskSpaceESType === 'percentage' ? 100 : 100000"
+                    min="0"
+                    :step="settings.general.lowDiskSpaceESType === 'percentage' ? 0.1 : 1">
+                  <select
+                    class="form-select"
+                    style="max-width: 150px;"
+                    @change="debounceInput"
+                    v-model="settings.general.lowDiskSpaceESType">
+                    <option value="percentage">
+                      {{ $t('common.percent') }}
+                    </option>
+                    <option value="gb">
+                      GB
+                    </option>
+                  </select>
+                </div>
+                <p
+                  class="form-text small text-muted"
+                  v-html="$t('parliament.settings.lowDiskSpaceESHtml')" />
+              </div> <!-- /low disk space ES -->
+              <!-- remove issues after -->
+              <div class="col-xl-9 col-lg-12 form-group">
+                <div class="input-group">
+                  <span class="input-group-text">
+                    {{ $t('parliament.settings.removeIssuesAfter') }}
+                  </span>
+                  <input
+                    type="number"
+                    class="form-control"
+                    id="removeIssuesAfter"
+                    @input="debounceInput"
+                    v-model="settings.general.removeIssuesAfter"
+                    max="10080">
+                  <span class="input-group-text">
+                    {{ $t('common.minutes') }}
+                  </span>
+                </div>
+                <p
+                  class="form-text small text-muted"
+                  v-html="$t('parliament.settings.removeIssuesAfterHtml')" />
+              </div> <!-- /remove issues after -->
+              <!-- remove acknowledged issues after -->
+              <div class="col-xl-9 col-lg-12 form-group">
+                <div class="input-group">
+                  <span class="input-group-text">
+                    {{ $t('parliament.settings.removeAcknowledgedAfter') }}
+                  </span>
+                  <input
+                    type="number"
+                    class="form-control"
+                    id="removeAcknowledgedAfter"
+                    @input="debounceInput"
+                    v-model="settings.general.removeAcknowledgedAfter"
+                    max="10080">
+                  <span class="input-group-text">
+                    {{ $t('common.minutes') }}
+                  </span>
+                </div>
+                <p
+                  class="form-text small text-muted"
+                  v-html="$t('parliament.settings.removeAcknowledgedAfterHtml')" />
+              </div> <!-- /remove acknowledged issues after -->
+              <!-- wise url -->
+              <div class="col-xl-9 col-lg-12 form-group">
+                <div class="input-group">
+                  <span class="input-group-text">
+                    {{ $t('parliament.settings.wiseUrl') }}
+                  </span>
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="wiseUrl"
+                    @input="debounceInput"
+                    v-model="settings.general.wiseUrl">
+                </div>
+                <p
+                  class="form-text small text-muted"
+                  v-html="$t('parliament.settings.wiseUrlHtml')" />
+              </div> <!-- /wise url -->
+              <!-- cont3xt url -->
+              <div class="col-xl-9 col-lg-12 form-group">
+                <div class="input-group">
+                  <span class="input-group-text">
+                    {{ $t('parliament.settings.cont3xtUrl') }}
+                  </span>
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="cont3xtUrl"
+                    @input="debounceInput"
+                    v-model="settings.general.cont3xtUrl">
+                </div>
+                <p
+                  class="form-text small text-muted"
+                  v-html="$t('parliament.settings.cont3xtUrlHtml')" />
+              </div> <!-- /cont3xt url -->
             </div>
-          </div> <!-- /hostname -->
+          </div>
+          <!-- /general -->
 
-          <hr>
+          <!-- notifiers tab -->
+          <div v-if="visibleTab === 'notifiers' && settings">
+            <!-- hostname -->
+            <div class="row form-group">
+              <div class="col-12">
+                <div class="input-group">
+                  <span class="input-group-text">
+                    {{ $t('parliament.settings.parliamentHostname') }}
+                  </span>
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="hostname"
+                    @input="debounceInput"
+                    v-model="settings.general.hostname">
+                  <span class="input-group-text">
+                    <input
+                      type="checkbox"
+                      @input="debounceInput"
+                      v-model="settings.general.includeUrl">
+                    &nbsp; {{ $t('parliament.settings.includeDashboardUrl') }}
+                  </span>
+                </div>
+                <p
+                  class="form-text small text-muted"
+                  v-html="$t('parliament.settings.parliamentHostnameHtml')" />
+              </div>
+            </div> <!-- /hostname -->
 
-          <Notifiers
-            parent-app="parliament"
-            @display-message="displayMessage"
-            help-intl-id="settings.notifiers.helpParliament" />
-        </div> <!-- /notifiers tab -->
-      </div> <!-- /page content -->
+            <hr>
+
+            <Notifiers
+              parent-app="parliament"
+              @display-message="displayMessage"
+              help-intl-id="settings.notifiers.helpParliament" />
+          </div> <!-- /notifiers tab -->
+
+          <!-- themes tab -->
+          <div v-if="visibleTab === 'themes'">
+            <h1 class="mb-3">
+              Themes
+            </h1>
+            <p class="text-medium-emphasis mb-4">
+              Choose a theme or build your own. Themes apply across parliament
+              immediately and persist in your browser.
+            </p>
+            <ThemePicker
+              :model-value="getTheme"
+              :themes="themes"
+              :custom-theme="getCustomTheme"
+              @update:model-value="onThemeChange"
+              @update:custom-theme="onCustomThemeChange" />
+          </div> <!-- /themes tab -->
+        </v-col> <!-- /content -->
+      </v-row> <!-- /page content -->
     </div>
   </div>
 </template>
 
 <script>
+import { mapGetters } from 'vuex';
+
 import SettingsService from './settings.service.js';
 import UserService from '@/components/user.service.js';
 import Notifiers from '@common/Notifiers.vue';
+import ThemePicker from '@common/ThemePicker.vue';
+import { THEMES } from '@common/themes/manifest.js';
+import { registerVuetifyTheme } from '@common/themes/registerVuetifyTheme.js';
 
 let inputDebounce;
 let msgCloseTimeout;
 
 export default {
   name: 'Settings',
-  components: { Notifiers },
+  components: { Notifiers, ThemePicker },
   data: function () {
     return {
       message: '',
@@ -371,10 +406,13 @@ export default {
       error: '',
       networkError: false,
       // default tab
-      visibleTab: 'general'
+      visibleTab: 'general',
+      // theme picker source list (the 10 baked-in themes)
+      themes: THEMES
     };
   },
   computed: {
+    ...mapGetters(['getTheme', 'getCustomTheme']),
     settings: {
       get () {
         const settings = this.$store.state.parliament?.settings || { general: {} };
@@ -404,7 +442,7 @@ export default {
     let tab = window.location.hash;
     if (tab) { // if there is a tab specified and it's a valid tab
       tab = tab.replace(/^#/, '');
-      if (tab === 'general' || tab === 'notifiers') {
+      if (tab === 'general' || tab === 'notifiers' || tab === 'themes') {
         this.visibleTab = tab;
       }
     }
@@ -516,6 +554,22 @@ export default {
       this.message = msg;
       this.msgType = type;
     },
+    /* THEME --------------------------------------------------- */
+    onThemeChange (newThemeId) {
+      this.$store.commit('setTheme', newThemeId);
+    },
+    onCustomThemeChange (newCustomTheme) {
+      if (!newCustomTheme || typeof newCustomTheme.colors !== 'object' || !newCustomTheme.colors) return;
+      const safe = {
+        dark: !!newCustomTheme.dark,
+        colors: { ...newCustomTheme.colors }
+      };
+      registerVuetifyTheme(this.$vuetify, 'custom1', safe);
+      this.$store.commit('setCustomTheme', safe);
+      if (this.getTheme !== 'custom1') {
+        this.$store.commit('setTheme', 'custom1');
+      }
+    },
     /* helper functions ---------------------------------------------------- */
     clearMessage: function (time) {
       if (msgCloseTimeout) { clearTimeout(msgCloseTimeout); }
@@ -531,5 +585,13 @@ export default {
 .settings-content div.nav-pills {
   position: sticky;
   top: 70px;
+}
+/* Tighten the vertical tab strip to match viewer's settings nav. */
+.v-tab {
+  min-height: 28px !important;
+  height: 28px !important;
+  padding: 0 12px !important;
+  font-size: 0.85rem !important;
+  justify-content: flex-start !important;
 }
 </style>

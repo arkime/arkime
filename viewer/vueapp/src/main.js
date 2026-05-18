@@ -1,6 +1,7 @@
 import { createApp } from 'vue';
 import { createVuetify } from 'vuetify/lib/framework.mjs';
 import { aliases as faAliases, fa as faSet } from 'vuetify/iconsets/fa4';
+import { mdi as mdiSet } from 'vuetify/iconsets/mdi';
 
 // internationalization
 import { createI18nInstance } from '@common/i18nSetup.js';
@@ -27,6 +28,9 @@ import '../../../common/common.css';
 // components in place of Bootstrap's .input-group). Lives in common/ so it
 // also reaches parliament + WISE which still consume common/vueapp/ files.
 import '../../../common/arkime-input-group.css';
+// shared navbar styles -- viewer is the source of truth for the
+// arkime-navbar look; every app imports this to stay in lockstep.
+import '@common/arkime-navbar.css';
 // arkime element + Vuetify-component bridge styles
 import './overrides.css';
 // Themes now live in common/vueapp/themes/manifest.js -- 10 Vuetify-native
@@ -61,7 +65,7 @@ async function initializeApp() {
     icons: {
       defaultSet: 'fa',
       aliases: arkimeFaAliases,
-      sets: { fa: faSet }
+      sets: { fa: faSet, mdi: mdiSet }
     },
     defaults: {
       VTextField: { density: 'compact', variant: 'outlined', hideDetails: 'auto' },

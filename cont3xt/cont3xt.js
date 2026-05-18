@@ -17,6 +17,7 @@ const Auth = require('../common/auth');
 const ArkimeCache = require('../common/arkimeCache');
 const ArkimeUtil = require('../common/arkimeUtil');
 const ArkimeConfig = require('../common/arkimeConfig');
+const Locales = require('../common/locales');
 const LinkGroup = require('./linkGroup');
 const Integration = require('./integration');
 const Audit = require('./audit');
@@ -141,7 +142,7 @@ app.use((req, res, next) => {
 // using fallthrough: false because there is no 404 endpoint (client router
 // handles 404s) and sending index.html is confusing
 app.use('/mdi-font', express.static(
-  path.join(__dirname, '/../cont3xt/node_modules/@mdi/font'),
+  path.join(__dirname, '/../node_modules/@mdi/font'),
   { maxAge: dayMs, fallthrough: false }
 ), ArkimeUtil.missingResource);
 // PRODUCTION BUNDLE (created by vite) - includes bundled js, css, & assets!
@@ -212,6 +213,9 @@ app.all([
   }
   return res.serverError(403, 'Disabled in demo mode.');
 });
+
+// locales endpoint -- backs vue-i18n in the SPA via common/vueapp/i18nSetup.js
+app.get('/api/locales', ArkimeUtil.noCacheJson, Locales.getLocales);
 
 app.get('/api/appversion', (req, res, next) => {
   return res.send({ app: 'cont3xt', version: version.version });

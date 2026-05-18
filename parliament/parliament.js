@@ -200,6 +200,10 @@ app.use('/parliament/font-awesome', express.static(
   path.join(__dirname, '/../node_modules/font-awesome'),
   { maxAge: dayMs, fallthrough: false }
 ), ArkimeUtil.missingResource);
+app.use('/parliament/mdi-font', express.static(
+  path.join(__dirname, '/../node_modules/@mdi/font'),
+  { maxAge: dayMs, fallthrough: false }
+), ArkimeUtil.missingResource);
 
 // log requests
 ArkimeUtil.logger(app);
@@ -210,6 +214,10 @@ app.use(favicon(path.join(__dirname, '/favicon.ico')));
 // handles 404s) and sending index.html is confusing
 app.use('/font-awesome', express.static(
   path.join(__dirname, '/../node_modules/font-awesome'),
+  { maxAge: dayMs, fallthrough: false }
+), ArkimeUtil.missingResource);
+app.use('/mdi-font', express.static(
+  path.join(__dirname, '/../node_modules/@mdi/font'),
   { maxAge: dayMs, fallthrough: false }
 ), ArkimeUtil.missingResource);
 // PRODUCTION BUNDLE (created by vite) - includes bundled js, css, & assets!

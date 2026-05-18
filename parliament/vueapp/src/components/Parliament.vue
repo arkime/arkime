@@ -5,36 +5,29 @@ SPDX-License-Identifier: Apache-2.0
 <template>
   <div class="container-fluid">
     <!-- page error -->
-    <b-alert
-      dismissible
-      :show="!!error"
-      variant="danger"
+    <v-alert
+      v-if="!!error"
+      closable
+      type="error"
       style="z-index: 2000;"
-      class="position-fixed fixed-bottom m-0 rounded-0">
-      <span class="fa fa-exclamation-triangle me-2" />
+      class="position-fixed fixed-bottom m-0 rounded-0"
+      @click:close="error = ''">
       {{ error }}
-    </b-alert> <!-- /page error -->
+    </v-alert> <!-- /page error -->
 
     <!-- search & create group -->
-    <div class="d-flex flex-row justify-content-between align-items-center flex-nowrap">
+    <div class="d-flex flex-row align-center flex-nowrap mb-2 arkime-toolbar ga-2">
       <!-- search -->
-      <b-input-group class="me-2">
-        <b-input-group-text>
-          <span class="fa fa-search" />
-        </b-input-group-text>
-        <b-form-input
-          tabindex="8"
-          debounce="400"
-          v-model="searchTerm"
-          placeholder="Search clusters" />
-        <button
-          type="button"
-          @click="clear"
-          :disabled="!searchTerm"
-          class="btn btn-outline-secondary btn-clear-input">
-          <span class="fa fa-close" />
-        </button>
-      </b-input-group>  <!-- /search -->
+      <v-text-field
+        v-model="searchTerm"
+        prepend-inner-icon="fa-search"
+        placeholder="Search clusters"
+        clearable
+        density="compact"
+        hide-details
+        class="me-2 flex-grow-1"
+        tabindex="8"
+        @click:clear="clear" /><!-- /search -->
       <div
         v-if="isAdmin"
         class="no-wrap d-flex">

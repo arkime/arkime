@@ -7,24 +7,7 @@
    5=3). gap-* covers flex/grid layouts that depended on Bootstrap;
    m-*/p-* are the all-sides forms (Vuetify ships ma-* / pa-* but not
    the bare names). */
-.gap-0 { gap: 0 !important; }
-.gap-1 { gap: 0.25rem !important; }
-.gap-2 { gap: 0.5rem !important; }
-.gap-3 { gap: 1rem !important; }
-.gap-4 { gap: 1.5rem !important; }
-.gap-5 { gap: 3rem !important; }
-.m-0 { margin: 0 !important; }
-.m-1 { margin: 0.25rem !important; }
-.m-2 { margin: 0.5rem !important; }
-.m-3 { margin: 1rem !important; }
-.m-4 { margin: 1.5rem !important; }
-.m-5 { margin: 3rem !important; }
-.p-0 { padding: 0 !important; }
-.p-1 { padding: 0.25rem !important; }
-.p-2 { padding: 0.5rem !important; }
-.p-3 { padding: 1rem !important; }
-.p-4 { padding: 1.5rem !important; }
-.p-5 { padding: 3rem !important; }
+/* gap-*/m-*/p-* utility shims live in common/common.css (shared) */
 
 /* Inline-element baselines: Bootstrap reset svg/img to middle so they
    don't carry the descender gap that inline elements get by default.
@@ -164,16 +147,6 @@ textarea:disabled {
   overflow: hidden;
   border-top: 1px solid rgb(var(--v-theme-neutral-light));
 }
-
-/* full-width root container (used by stats + users pages) ------------- */
-.arkime-container-fluid {
-  width: 100%;
-  padding-right: 0.75rem;
-  padding-left: 0.75rem;
-  margin-right: auto;
-  margin-left: auto;
-}
-
 
 /* "well" panel used by 404.vue / UpgradeBrowser.vue ------------------- */
 .well {
@@ -332,49 +305,12 @@ pre {
    outlined variant is still ~40px tall, which is much taller than the
    adjacent btn-sm (~31px) and feels out of place in Arkime's dense UI.
    Force compact density to match btn-sm height. */
-.v-input--density-compact .v-field {
-  --v-field-padding-top: 0;
-  --v-field-padding-bottom: 0;
-  min-height: 30px !important;
-}
-.v-input--density-compact .v-field__input {
-  min-height: 30px !important;
-  padding-top: 2px;
-  padding-bottom: 2px;
-}
-.v-input--density-compact .v-field__field {
-  min-height: 30px !important;
-}
-.v-input--density-compact .v-label,
-.v-input--density-compact .v-field-label {
-  font-size: 0.78rem;
-}
-.v-input--density-compact input {
-  font-size: 0.85rem;
-  min-height: 26px;
-}
-.v-input--density-compact .v-field__append-inner {
-  padding-top: 4px;
-}
+/* compact v-input rules live in common/common.css (shared across apps) */
 
-/* v-btn-toggle compact: shrink toggle button heights to match
-   Arkime's btn-sm scale. Vuetify renders v-btn-toggle as a v-btn-group
-   under the hood; the group sets height via .v-btn-group--density-compact. */
-.v-btn-group--density-compact.v-btn-group {
-  height: 30px !important;
-}
-.v-btn-group--density-compact .v-btn,
-.v-btn-group--density-compact .v-btn--size-small {
-  min-width: 0 !important;
-  padding: 0 10px !important;
-  font-size: 0.78rem !important;
-}
-
-/* v-btn-toggle compact groups: keep buttons at the group's 30px height
-   (Vuetify renders v-btn-toggle as a v-btn-group). */
-.v-btn-group--density-compact .v-btn--size-small {
-  min-height: 30px !important;
-}
+/* v-btn-toggle: leave at Vuetify defaults so the inherit/no/yes
+   pills in TriStateToggle render at a readable size (matches
+   parliament + cont3xt). The previous shrink-to-30px tweak made
+   them feel cramped. */
 
 /* v-checkbox / v-radio compact: Vuetify's compact density on selection
    controls is still oversized for Arkime's dense forms. Shrink the

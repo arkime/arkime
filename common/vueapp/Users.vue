@@ -5,30 +5,31 @@ SPDX-License-Identifier: Apache-2.0
 <template>
   <div>
     <!-- search/paging/download chrome -->
-    <div class="d-flex align-center mt-3 mb-2 gap-2">
-      <div class="flex-grow-1">
-        <v-text-field
-          autofocus
-          density="compact"
-          variant="outlined"
-          hide-details
-          clearable
-          prepend-inner-icon="fa-search"
-          v-model="searchTerm"
-          :placeholder="$t('users.searchPlaceholder')" />
-      </div>
+    <div class="d-flex align-center mt-3 mb-2 ga-2">
+      <v-text-field
+        autofocus
+        density="compact"
+        variant="outlined"
+        hide-details
+        clearable
+        prepend-inner-icon="mdi:mdi-magnify"
+        v-model="searchTerm"
+        :placeholder="$t('users.searchPlaceholder')"
+        class="flex-grow-1 align-self-center" />
       <ArkimePaging
+        class="align-self-center"
         :records-filtered="recordsTotal"
         :records-total="recordsTotal"
         :length-default="100"
         @change-paging="onPagingChange" />
       <v-btn
-        size="large"
-        color="primary"
-        variant="flat"
+        size="small"
+        color="secondary"
+        variant="outlined"
+        class="align-self-center"
         @click="download"
         :title="$t('users.downloadCSVTip')">
-        <v-icon>fa-download</v-icon>
+        <v-icon icon="mdi:mdi-download" />
       </v-btn>
     </div> <!-- /chrome -->
 
@@ -37,7 +38,7 @@ SPDX-License-Identifier: Apache-2.0
       v-if="error"
       class="info-area vertical-center text-monospace">
       <div class="text-danger">
-        <span class="fa fa-2x fa-warning" />
+        <span class="mdi mdi-alert mdi-24px" />
         {{ error }}
       </div>
     </div> <!-- /error -->
@@ -46,7 +47,7 @@ SPDX-License-Identifier: Apache-2.0
     <template v-if="loading">
       <slot name="loading">
         <div class="text-center mt-5">
-          <span class="fa fa-2x fa-spin fa-spinner" />
+          <span class="mdi mdi-loading mdi-spin mdi-24px" />
           <br>
           {{ $t('common.loading') }}
         </div>
@@ -117,7 +118,7 @@ SPDX-License-Identifier: Apache-2.0
             {{ $t('users.roles') }}
             <span
               id="roles-help"
-              class="fa fa-info-circle fa-lg cursor-help ms-2" />
+              class="mdi mdi-information mdi-18px cursor-help ms-2" />
             <v-tooltip activator="#roles-help">
               {{ $t('users.rolesTip') }}
             </v-tooltip>
@@ -137,26 +138,26 @@ SPDX-License-Identifier: Apache-2.0
           <div class="pull-right">
             <v-btn
               v-if="roles"
-              size="large"
+              size="x-small"
               color="success"
               variant="flat"
               :title="$t('users.createRoleTip')"
               @click="createMode = 'role'; showUserCreateModal = true">
-              <v-icon start>
-                fa-plus-circle
-              </v-icon>
+              <v-icon
+                start
+                icon="mdi:mdi-plus-circle" />
               {{ $t('common.role') }}
             </v-btn>
             <v-btn
-              size="large"
+              size="x-small"
               color="primary"
               variant="flat"
               class="ms-2"
               :title="$t('users.createUserTip')"
               @click="createMode = 'user'; showUserCreateModal = true">
-              <v-icon start>
-                fa-plus-circle
-              </v-icon>
+              <v-icon
+                start
+                icon="mdi:mdi-plus-circle" />
               {{ $t('common.user') }}
             </v-btn>
           </div>
@@ -234,7 +235,7 @@ SPDX-License-Identifier: Apache-2.0
               color="primary"
               variant="flat"
               class="ms-1"
-              icon="fa-gear"
+              icon="mdi:mdi-cog"
               @click="openSettings(item.userId)"
               :title="$t('users.settingsFor', {user: item.userId})" />
             <v-btn
@@ -242,7 +243,7 @@ SPDX-License-Identifier: Apache-2.0
               color="secondary"
               variant="flat"
               class="ms-1"
-              icon="fa-history"
+              icon="mdi:mdi-history"
               @click="openHistory(item.userId)"
               :title="$t('users.historyFor', {user: item.userId})" />
             <transition name="buttons">
@@ -251,7 +252,7 @@ SPDX-License-Identifier: Apache-2.0
                 color="warning"
                 variant="flat"
                 class="ms-1"
-                icon="fa-ban"
+                icon="mdi:mdi-cancel"
                 :title="$t('common.cancel')"
                 @click="toggleConfirmDeleteUser(item.userId)" />
             </transition>
@@ -261,7 +262,7 @@ SPDX-License-Identifier: Apache-2.0
                 color="error"
                 variant="flat"
                 class="ms-1"
-                icon="fa-check"
+                icon="mdi:mdi-check"
                 :title="$t('common.areYouSure')"
                 @click="deleteUser(item, index)" />
             </transition>
@@ -271,7 +272,7 @@ SPDX-License-Identifier: Apache-2.0
                 color="error"
                 variant="flat"
                 class="ms-1"
-                icon="fa-trash-o"
+                icon="mdi:mdi-delete"
                 :title="$t('users.deleteUser', {user: item.userId})"
                 @click="toggleConfirmDeleteUser(item.userId)" />
             </transition>
@@ -335,7 +336,7 @@ SPDX-License-Identifier: Apache-2.0
                   <template #append-inner>
                     <span
                       :id="`${item.userId}-expression`"
-                      class="fa fa-info-circle cursor-help" />
+                      class="mdi mdi-information cursor-help" />
                     <v-tooltip :activator="`[id='${item.userId}-expression']`">
                       {{ $t('users.forcedExpressionTip') }}
                     </v-tooltip>
@@ -353,7 +354,7 @@ SPDX-License-Identifier: Apache-2.0
                   <template #append-inner>
                     <span
                       :id="`${item.userId}-timeLimit`"
-                      class="fa fa-info-circle cursor-help" />
+                      class="mdi mdi-information cursor-help" />
                     <v-tooltip :activator="`[id='${item.userId}-timeLimit']`">
                       {{ $t('users.queryTimeLimitTip') }}
                     </v-tooltip>

@@ -2,6 +2,104 @@
  *  Common CSS for all web apps (viewer, wise, parliament)
  */
 
+/* Bootstrap utility-class shims -- viewer + cont3xt no longer load
+   bootstrap.css; provide gap-N / m-N / p-N utilities at Bootstrap's
+   0.25rem scale so existing markup keeps working in those apps.
+   (parliament + wise still have bootstrap.css; these shims are
+   harmless there.) */
+.gap-0 { gap: 0 !important; }
+.gap-1 { gap: 0.25rem !important; }
+.gap-2 { gap: 0.5rem !important; }
+.gap-3 { gap: 1rem !important; }
+.gap-4 { gap: 1.5rem !important; }
+.gap-5 { gap: 3rem !important; }
+.m-0 { margin: 0 !important; }
+.m-1 { margin: 0.25rem !important; }
+.m-2 { margin: 0.5rem !important; }
+.m-3 { margin: 1rem !important; }
+.m-4 { margin: 1.5rem !important; }
+.m-5 { margin: 3rem !important; }
+.p-0 { padding: 0 !important; }
+.p-1 { padding: 0.25rem !important; }
+.p-2 { padding: 0.5rem !important; }
+.p-3 { padding: 1rem !important; }
+.p-4 { padding: 1.5rem !important; }
+.p-5 { padding: 3rem !important; }
+
+/* Vuetify tooltip background -- Vuetify's built-in CSS uses
+   rgb(var(--v-theme-surface-variant)) which falls back to nothing when
+   that token isn't defined in a theme. Force a solid foreground/
+   background pair so tooltips always render opaque across every app
+   and every theme. */
+.v-tooltip > .v-overlay__content {
+  background: rgb(var(--v-theme-foreground)) !important;
+  color: rgb(var(--v-theme-background)) !important;
+}
+
+/* Cap v-btn height at 32px globally -- viewer applies the same via
+   Vuetify's $button-height SCSS variable (viewer/vueapp/src/vuetify-settings.scss);
+   apply it via CSS for the other apps so all v-btn instances render at
+   the same compact height as viewer. Exclude .v-btn--icon so Vuetify's
+   natural square sizing keeps icon buttons circular. */
+.v-btn:not(.v-pagination__item):not(.v-pagination__navigation):not(.v-btn--icon) {
+  height: 32px !important;
+  min-height: 32px !important;
+}
+
+/* Same treatment for compact-density v-input wrappers (v-select,
+   v-text-field, v-textarea, v-autocomplete) so they line up with the
+   buttons. Vuetify's default compact density is ~40px; we want 32px to
+   match viewer's existing overrides. Lifted from viewer/vueapp/src/overrides.css. */
+.v-input--density-compact .v-field {
+  --v-field-padding-top: 0;
+  --v-field-padding-bottom: 0;
+  min-height: 30px !important;
+}
+.v-input--density-compact .v-field__input {
+  min-height: 30px !important;
+  padding-top: 2px;
+  padding-bottom: 2px;
+}
+.v-input--density-compact .v-field__field {
+  min-height: 30px !important;
+}
+.v-input--density-compact .v-label,
+.v-input--density-compact .v-field-label {
+  font-size: 0.78rem;
+}
+.v-input--density-compact input {
+  font-size: 0.85rem;
+  min-height: 26px;
+}
+.v-input--density-compact .v-field__append-inner,
+.v-input--density-compact .v-field__prepend-inner {
+  padding-top: 4px;
+}
+
+/* Mixed-control toolbars (search field + buttons + Pagination etc.)
+   need a uniform child height. Vuetify's defaults disagree:
+     v-btn size="small"        ≈ 28px
+     v-btn (default)            ≈ 36px
+     v-input density="compact"  ≈ 40px
+     shared Pagination          = 32px
+   Apply class="arkime-toolbar" to a flex container to pin every v-btn
+   and v-input child to 32px so they align cleanly. */
+.arkime-toolbar .v-input__control,
+.arkime-toolbar .v-field {
+  height: 32px !important;
+  min-height: 32px !important;
+  --v-input-control-height: 32px;
+}
+.arkime-toolbar .v-field__input {
+  min-height: 32px !important;
+  padding-top: 4px !important;
+  padding-bottom: 4px !important;
+}
+.arkime-toolbar .v-btn {
+  height: 32px !important;
+  min-height: 32px !important;
+}
+
 /* ENTIRE PAGE ------------------------------- */
 body {
  -webkit-font-smoothing: antialiased;
@@ -93,7 +191,7 @@ body {
 /* table bordered vertical */
 .table-bordered-vertical th:not(:first-child),
 .table-bordered-vertical td:not(:first-child) {
-  border-left: 1px dotted var(--color-gray, #ccc);
+  border-left: 1px dotted rgb(var(--v-theme-outline));
 }
 
 /* user roles dropdown scrolls for long lists */
@@ -620,4 +718,13 @@ nav.navbar > .navbar-nav > .nav-item > a {
     flex: 0 0 16.666667%;
     max-width: 16.666667%;
   }
+}
+
+/* full-width root container (used by stats + users + other top-level pages) */
+.arkime-container-fluid {
+  width: 100%;
+  padding-right: 0.75rem;
+  padding-left: 0.75rem;
+  margin-right: auto;
+  margin-left: auto;
 }

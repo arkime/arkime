@@ -51,10 +51,10 @@ SPDX-License-Identifier: Apache-2.0
       <!-- navigation -->
       <v-col
         cols="12"
-        xl="2"
-        lg="3"
-        md="3"
-        sm="4"
+        xl="1"
+        lg="2"
+        md="2"
+        sm="3"
         role="tablist"
         aria-orientation="vertical">
         <v-tabs
@@ -118,10 +118,10 @@ SPDX-License-Identifier: Apache-2.0
 
       <v-col
         cols="12"
-        xl="10"
-        lg="9"
-        md="9"
-        sm="8"
+        xl="11"
+        lg="10"
+        md="10"
+        sm="9"
         class="settings-right-panel">
         <!-- general settings -->
         <form

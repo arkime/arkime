@@ -95,21 +95,10 @@ SPDX-License-Identifier: Apache-2.0
         <span class="fa fa-link me-2" />
         Links
       </h3>
-      <div class="row">
-        <div class="col-sm-12">
-          <a
-            class="btn btn-link"
-            href="https://arkime.com/wise">
-            All About WISE</a> |
-          <a
-            class="btn btn-link"
-            href="https://arkime.com/wisesources">
-            Building WISE Sources</a> |
-          <a
-            class="btn btn-link"
-            href="https://arkime.com/wiseapi">
-            WISE API</a>
-        </div>
+      <div class="wise-help-links">
+        <a href="https://arkime.com/wise">All About WISE</a> |
+        <a href="https://arkime.com/wisesources">Building WISE Sources</a> |
+        <a href="https://arkime.com/wiseapi">WISE API</a>
       </div>
 
       <hr>
@@ -286,7 +275,7 @@ export default {
 .help-content div.nav-pills {
   display: block;
   width: 150px;
-  border: 1px solid var(--color-gray);
+  border: 1px solid rgb(var(--v-theme-outline));
   border-radius: 0 8px 8px 0;
   position: fixed;
   top: 60px;

@@ -9,7 +9,7 @@ SPDX-License-Identifier: Apache-2.0
       class="d-flex flex-column h-100">
       <cont3xt-navbar />
       <div class="d-flex overflow-y-auto flex-grow-1">
-        <router-view />
+        <router-view class="flex-grow-1 w-100" />
         <keyboard-shortcuts
           @shift-hold-change="shiftHoldChange"
           shortcuts-class="cont3xt-shortcuts"
@@ -289,8 +289,8 @@ body {
   z-index: 9;
   position: fixed;
   color: rgb(var(--v-theme-info));
-  border: var(--color-gray);
-  background: var(--color-light);
+  border: rgb(var(--v-theme-outline));
+  background: rgb(var(--v-theme-neutral-lighter));
   border-radius: 4px 0 0 4px;
   border-right: none;
   -webkit-box-shadow: 0 0 16px -2px black;
