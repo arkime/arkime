@@ -359,15 +359,8 @@ LOCAL void arkime_http_parse_authorization(ArkimeSession_t *session, char *str)
         const char *scheme_end = space;
         const char *b64 = scheme_end;
         while (*b64 && isspace((unsigned char) * b64)) b64++;
-        if (*b64) {
-            char *dup = g_strdup(b64);
-            gsize dlen;
-            g_base64_decode_inplace(dup, &dlen);
-            if (dlen >= 8 && dlen <= UINT32_MAX && memcmp(dup, "NTLMSSP\0", 8) == 0) {
-                arkime_parsers_ntlm_decode(session, (const uint8_t *)dup, (uint32_t)dlen);
-            }
-            g_free(dup);
-        }
+        if (*b64)
+            arkime_parsers_ntlm_decode_base64(session, b64, strlen(b64));
         return;
     }
 
