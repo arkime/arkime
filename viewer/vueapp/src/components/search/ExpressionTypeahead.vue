@@ -178,8 +178,8 @@ export default {
       dropdownPos: { top: 0, left: 0, width: 0 },
       // Arkime theme-color v-btn style; Vuetify :color can't take CSS vars.
       tertiaryBtnStyle: {
-        backgroundColor: 'var(--color-tertiary)',
-        color: 'var(--color-button, #FFF)'
+        backgroundColor: 'rgb(var(--v-theme-tertiary))',
+        color: 'rgb(var(--v-theme-button-fg))'
       }
     };
   },
@@ -940,8 +940,8 @@ export default {
 <style scoped>
 .arkime-typeahead-results {
   position: absolute;
-  background-color: var(--color-background, #fff);
-  border: 1px solid var(--color-gray);
+  background-color: rgb(var(--v-theme-background));
+  border: 1px solid rgb(var(--v-theme-neutral));
   border-radius: 4px;
   padding: 4px 0;
   margin-top: 2px;
@@ -953,7 +953,7 @@ export default {
 .arkime-typeahead-item {
   display: block;
   padding: 4px 12px;
-  color: var(--color-foreground);
+  color: rgb(var(--v-theme-foreground));
   text-decoration: none;
 }
 </style>

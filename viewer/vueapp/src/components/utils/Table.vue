@@ -295,7 +295,7 @@ function gripClick (e, col) {
 function gripDrag (e) { // move the grip where the user moves their cursor
   if (selectedColElem && selectedGripElem) {
     const newWidth = colStartOffset + e.pageX;
-    selectedGripElem.style.borderLeft = '1px dotted var(--color-gray)';
+    selectedGripElem.style.borderLeft = '1px dotted rgb(var(--v-theme-neutral))';
     selectedGripElem.style.left = `${newWidth}px`;
   }
 }
@@ -450,12 +450,12 @@ export default {
       tableWidth: $(this.tableDiv).width(),
       // Arkime theme-color v-btn styles. Vuetify :color can't take CSS vars.
       primaryBtnStyle: {
-        backgroundColor: 'var(--color-primary)',
-        color: 'var(--color-button, #FFF)'
+        backgroundColor: 'rgb(var(--v-theme-primary))',
+        color: 'rgb(var(--v-theme-button-fg))'
       },
       quaternaryBtnStyle: {
-        backgroundColor: 'var(--color-quaternary)',
-        color: 'var(--color-button, #FFF)'
+        backgroundColor: 'rgb(var(--v-theme-quaternary))',
+        color: 'rgb(var(--v-theme-button-fg))'
       }
     };
   },
@@ -919,7 +919,7 @@ table tr.border-top-bold > td {
 
 /* slider grips indicator -------------------- */
 table thead tr th {
-  border-right: 1px dotted var(--color-gray);
+  border-right: 1px dotted rgb(var(--v-theme-neutral));
 }
 table thead tr th.ignore-element {
   border-right: none;

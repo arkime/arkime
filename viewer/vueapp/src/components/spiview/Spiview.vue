@@ -512,12 +512,12 @@ export default {
       spiviewFieldTransition: '',
       // Arkime theme-color v-btn styles. Vuetify :color can't take CSS vars.
       primaryBtnStyle: {
-        backgroundColor: 'var(--color-primary)',
-        color: 'var(--color-button, #FFF)'
+        backgroundColor: 'rgb(var(--v-theme-primary))',
+        color: 'rgb(var(--v-theme-button-fg))'
       },
       secondaryBtnStyle: {
-        backgroundColor: 'var(--color-secondary)',
-        color: 'var(--color-button, #FFF)'
+        backgroundColor: 'rgb(var(--v-theme-secondary))',
+        color: 'rgb(var(--v-theme-button-fg))'
       }
     };
   },
@@ -1423,7 +1423,7 @@ export default {
   display: inline-flex;
   vertical-align: baseline;
   height: 21px;
-  border: 1px solid var(--color-gray);
+  border: 1px solid rgb(var(--v-theme-neutral));
   border-radius: 0.25rem;
   background-color: transparent;
   overflow: hidden;
@@ -1432,7 +1432,7 @@ export default {
 .spiview-page .field-dropdown-label,
 .spiview-page .field-dropdown-caret {
   background-color: transparent;
-  color: var(--color-foreground, #333);
+  color: rgb(var(--v-theme-foreground));
   font-size: 11px;
   font-weight: 600;
   line-height: 19px;
@@ -1450,8 +1450,8 @@ export default {
   padding: 0 6px 0 0;
 }
 .spiview-page .field-dropdown:hover {
-  background-color: var(--color-gray);
-  border-color: var(--color-gray);
+  background-color: rgb(var(--v-theme-neutral));
+  border-color: rgb(var(--v-theme-neutral));
 }
 .spiview-page .field-dropdown:hover .field-dropdown-label,
 .spiview-page .field-dropdown:hover .field-dropdown-caret {
@@ -1459,12 +1459,12 @@ export default {
 }
 /* "selected/active" highlight on the per-field group */
 .spiview-page .field-dropdown.is-active {
-  background-color: var(--color-gray-light);
-  border-color: var(--color-gray-dark);
+  background-color: rgb(var(--v-theme-neutral-light));
+  border-color: rgb(var(--v-theme-neutral-dark));
 }
 .spiview-page .field-dropdown.is-active .field-dropdown-label,
 .spiview-page .field-dropdown.is-active .field-dropdown-caret {
-  color: var(--color-foreground, #333);
+  color: rgb(var(--v-theme-foreground));
 }
 
 /* Standalone field-dropdown-label inside .spi-buckets (single button
@@ -1478,15 +1478,15 @@ export default {
   font-weight: 700;
   line-height: 19px;
   background-color: transparent;
-  color: var(--color-foreground, #333);
-  border: 1px solid var(--color-gray);
+  color: rgb(var(--v-theme-foreground));
+  border: 1px solid rgb(var(--v-theme-neutral));
   border-radius: 0.25rem;
   cursor: pointer;
 }
 .spiview-page .spi-buckets > .field-dropdown-label:hover {
   color: #333;
-  background-color: var(--color-gray);
-  border-color: var(--color-gray);
+  background-color: rgb(var(--v-theme-neutral));
+  border-color: rgb(var(--v-theme-neutral));
 }
 /* Wider menu for the field-config save/load dropdown so config names
    don't wrap awkwardly. Vuetify teleports the v-list to body, hence
@@ -1507,28 +1507,28 @@ export default {
    .arkime-input-group). The shared bridge styles it transparently
    inside a group; standalone needs its own visible border. */
 .spi-cat-search.arkime-input-control {
-  border: 1px solid var(--color-gray);
+  border: 1px solid rgb(var(--v-theme-neutral));
   border-radius: 4px;
   height: 28px;
   padding: 0 8px;
-  background-color: var(--color-background, #fff);
+  background-color: rgb(var(--v-theme-background));
 }
 
 /* "more / less" toggles inside spiview field cells. */
 .spiview-more-less-link {
-  color: var(--color-primary);
+  color: rgb(var(--v-theme-primary));
   font-size: 0.85rem;
   text-decoration: none;
 }
 .spiview-more-less-link:hover {
-  color: var(--color-primary-dark);
+  color: rgb(var(--v-theme-primary-dark));
   text-decoration: underline;
 }
 
 /* info navbar --------------------- */
 .spiview-page .info-nav {
   height: 32px;
-  background-color: var(--color-quaternary-lightest);
+  background-color: rgb(var(--v-theme-quaternary-lightest));
 }
 
 .spiview-page .info-nav .info-nav-count {
@@ -1548,15 +1548,15 @@ export default {
    matching the rest of viewer's bordered components (Settings.vue,
    Hunt.vue, ESHealth.vue, WelcomeMessage.vue). */
 .spiview-page .spi-card {
-  border: 1px solid var(--color-gray-light);
-  background-color: var(--color-background);
-  color: var(--color-foreground);
+  border: 1px solid rgb(var(--v-theme-neutral-light));
+  background-color: rgb(var(--v-theme-background));
+  color: rgb(var(--v-theme-foreground));
   border-radius: 4px;
 }
 .spiview-page .spi-card-header {
-  background-color: var(--color-quaternary-lightest);
-  color: var(--color-foreground);
-  border-bottom: 1px solid var(--color-gray-light);
+  background-color: rgb(var(--v-theme-quaternary-lightest));
+  color: rgb(var(--v-theme-foreground));
+  border-bottom: 1px solid rgb(var(--v-theme-neutral-light));
   display: flex;
   align-items: center;
   flex-wrap: wrap;
@@ -1582,8 +1582,8 @@ export default {
 }
 .spiview-page .spi-card-body {
   padding: 0;
-  background-color: var(--color-background);
-  color: var(--color-foreground);
+  background-color: rgb(var(--v-theme-background));
+  color: rgb(var(--v-theme-foreground));
 }
 
 /* +/- button on panel header */
@@ -1609,7 +1609,7 @@ export default {
 
 /* btn drawer for toggling values -- */
 .spiview-page .btn-drawer-toggle {
-  background-color: var(--color-gray-lighter);
+  background-color: rgb(var(--v-theme-neutral-lighter));
   margin-right: -4px;
   margin-left: -4px;
 }
@@ -1644,7 +1644,7 @@ export default {
 
 /* stripes! */
 .spiview-page .spi-buckets:nth-child(odd) {
-  background-color: var(--color-quaternary-lightest);
+  background-color: rgb(var(--v-theme-quaternary-lightest));
 }
 
 /* force wrapping */

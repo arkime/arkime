@@ -51,6 +51,7 @@ SPDX-License-Identifier: Apache-2.0
 
 <script>
 import '../../cubismoverrides.css';
+import { themedColor } from '@common/themes/themedColor.js';
 import Utils from '../utils/utils';
 import ArkimeError from '../utils/Error.vue';
 import ArkimeTable from '../utils/Table.vue';
@@ -181,15 +182,14 @@ export default {
     },
     colors: function () {
       // build colors array from css variables
-      const styles = window.getComputedStyle(document.body);
-      const primaryLighter = styles.getPropertyValue('--color-primary-light').trim();
-      const primaryLight = styles.getPropertyValue('--color-primary').trim();
-      const primary = styles.getPropertyValue('--color-primary-dark').trim();
-      const primaryDark = styles.getPropertyValue('--color-primary-darker').trim();
-      const secondaryLighter = styles.getPropertyValue('--color-tertiary-light').trim();
-      const secondaryLight = styles.getPropertyValue('--color-tertiary').trim();
-      const secondary = styles.getPropertyValue('--color-tertiary-dark').trim();
-      const secondaryDark = styles.getPropertyValue('--color-tertiary-darker').trim();
+      const primaryLighter = themedColor('primary-light');
+      const primaryLight = themedColor('primary');
+      const primary = themedColor('primary-dark');
+      const primaryDark = themedColor('primary-darker');
+      const secondaryLighter = themedColor('tertiary-light');
+      const secondaryLight = themedColor('tertiary');
+      const secondary = themedColor('tertiary-dark');
+      const secondaryDark = themedColor('tertiary-darker');
       return [primaryDark, primary, primaryLight, primaryLighter, secondaryLighter, secondaryLight, secondary, secondaryDark];
     },
     loading: {

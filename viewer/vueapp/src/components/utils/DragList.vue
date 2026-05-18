@@ -76,8 +76,8 @@ export default {
   font-size: 0.875rem;
   font-weight: 600;
   line-height: 1;
-  color: var(--color-button, #FFF);
-  background-color: var(--color-gray);
+  color: rgb(var(--v-theme-button-fg));
+  background-color: rgb(var(--v-theme-neutral));
   border-radius: 0.375rem;
   white-space: nowrap;
   vertical-align: baseline;

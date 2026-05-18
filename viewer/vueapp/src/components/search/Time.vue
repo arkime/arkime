@@ -916,15 +916,15 @@ export default {
   height: 32px;
   padding: 0 12px;
   border-radius: 4px;
-  background-color: color-mix(in srgb, var(--color-foreground, #000) 6%, transparent);
-  border: 1px solid color-mix(in srgb, var(--color-foreground, #000) 12%, transparent);
-  color: var(--color-foreground-accent, var(--color-foreground));
+  background-color: color-mix(in srgb, rgb(var(--v-theme-foreground)) 6%, transparent);
+  border: 1px solid color-mix(in srgb, rgb(var(--v-theme-foreground)) 12%, transparent);
+  color: rgb(var(--v-theme-foreground-accent)));
   font-weight: 600;
   white-space: nowrap;
 }
 .time-range-chip--error {
-  color: var(--color-secondary, #d32f2f);
-  background-color: color-mix(in srgb, var(--color-secondary, #d32f2f) 12%, transparent);
-  border-color: color-mix(in srgb, var(--color-secondary, #d32f2f) 30%, transparent);
+  color: rgb(var(--v-theme-secondary));
+  background-color: color-mix(in srgb, rgb(var(--v-theme-secondary)) 12%, transparent);
+  border-color: color-mix(in srgb, rgb(var(--v-theme-secondary)) 30%, transparent);
 }
 </style>

@@ -584,7 +584,7 @@ export default {
 <style scoped>
 .spigraph-page .spigraph-form {
   z-index: 4;
-  background-color: var(--color-quaternary-lightest);
+  background-color: rgb(var(--v-theme-quaternary-lightest));
 }
 .spigraph-page .spigraph-form .records-display  {
   font-size: 0.85rem;
@@ -615,6 +615,6 @@ export default {
 
 /* stripes */
 .spigraph-page .spigraph-content .spi-graph-item:nth-child(odd) {
-  background-color: var(--color-quaternary-lightest);
+  background-color: rgb(var(--v-theme-quaternary-lightest));
 }
 </style>

@@ -154,8 +154,8 @@ const editingConfig = ref(null);
 // the dropdown menu. The trigger button takes its color from the
 // parent v-btn-group.
 const tertiaryBtnStyle = {
-  backgroundColor: 'var(--color-tertiary)',
-  color: 'var(--color-button, #FFF)'
+  backgroundColor: 'rgb(var(--v-theme-tertiary))',
+  color: 'rgb(var(--v-theme-button-fg))'
 };
 
 // Get user from store

@@ -60,8 +60,8 @@ export default {
       logo: 'assets/Arkime_Logo_Mark_FullGradient.png',
       // Arkime theme-color v-btn style. Vuetify :color can't take CSS vars.
       primaryBtnStyle: {
-        backgroundColor: 'var(--color-primary)',
-        color: 'var(--color-button, #FFF)'
+        backgroundColor: 'rgb(var(--v-theme-primary))',
+        color: 'rgb(var(--v-theme-button-fg))'
       }
     };
   },
@@ -115,7 +115,7 @@ export default {
   font-weight: bold;
   position: relative;
   top: calc(50% + 60px);
-  color: var(--color-foreground-accent);
+  color: rgb(var(--v-theme-foreground-accent));
 }
 .loading .im-hootin > h4.blinking {
   animation: blinker 0.5s linear infinite;
@@ -148,7 +148,7 @@ export default {
   opacity: 0.5;
   position: absolute;
   border-radius: 32px;
-  background-color: var(--color-gray);
+  background-color: rgb(var(--v-theme-neutral));
 }
 .loading .loader-section.rectangle.tall-rectangle {
   height: 245px;
@@ -197,17 +197,17 @@ export default {
   }
 }
 @keyframes rainbow-color {
-  0%  { border-top-color: var(--color-primary-light); border-right-color: var(--color-primary-light); }
-  24% { border-top-color: var(--color-primary-light); border-right-color: var(--color-primary-light); }
+  0%  { border-top-color: rgb(var(--v-theme-primary-light)); border-right-color: rgb(var(--v-theme-primary-light)); }
+  24% { border-top-color: rgb(var(--v-theme-primary-light)); border-right-color: rgb(var(--v-theme-primary-light)); }
 
-  25% { border-top-color: var(--color-secondary-light); border-right-color: var(--color-secondary-light); }
-  49% { border-top-color: var(--color-secondary-light); border-right-color: var(--color-secondary-light); }
+  25% { border-top-color: rgb(var(--v-theme-secondary-light)); border-right-color: rgb(var(--v-theme-secondary-light)); }
+  49% { border-top-color: rgb(var(--v-theme-secondary-light)); border-right-color: rgb(var(--v-theme-secondary-light)); }
 
-  50% { border-top-color: var(--color-tertiary-light); border-right-color: var(--color-tertiary-light); }
-  74% { border-top-color: var(--color-tertiary-light); border-right-color: var(--color-tertiary-light); }
+  50% { border-top-color: rgb(var(--v-theme-tertiary-light)); border-right-color: rgb(var(--v-theme-tertiary-light)); }
+  74% { border-top-color: rgb(var(--v-theme-tertiary-light)); border-right-color: rgb(var(--v-theme-tertiary-light)); }
 
-  75% { border-top-color: var(--color-quaternary-light); border-right-color: var(--color-quaternary-light); }
-  100% { border-top-color: var(--color-quaternary-light); border-right-color: var(--color-quaternary-light); }
+  75% { border-top-color: rgb(var(--v-theme-quaternary-light)); border-right-color: rgb(var(--v-theme-quaternary-light)); }
+  100% { border-top-color: rgb(var(--v-theme-quaternary-light)); border-right-color: rgb(var(--v-theme-quaternary-light)); }
 }
 @keyframes bounce {
   0%   { transform: scale(1,1)      translateY(0); }

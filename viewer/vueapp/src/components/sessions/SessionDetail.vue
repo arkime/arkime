@@ -721,9 +721,9 @@ onUnmounted(() => {
   display: inline-block;
   margin-left: 0.25rem;
   padding: 0 6px;
-  border: 1px solid var(--color-gray);
+  border: 1px solid rgb(var(--v-theme-neutral));
   border-radius: 3px;
-  background-color: var(--color-background, #fff);
+  background-color: rgb(var(--v-theme-background));
   font-size: 0.85rem;
 }
 .tshark-output {
@@ -768,7 +768,7 @@ onUnmounted(() => {
 }
 
 .packet-options {
-  border-top: var(--color-gray) 1px solid;
+  border-top: rgb(var(--v-theme-neutral)) 1px solid;
 }
 
 .packet-container .file {
@@ -835,10 +835,10 @@ onUnmounted(() => {
 /* timestamps */
 .packet-container .session-detail-ts {
   display: none;
-  color: var(--color-foreground-accent);
+  color: rgb(var(--v-theme-foreground-accent));
   font-weight: bold;
   padding: 0 4px;
-  border-bottom: 1px solid var(--color-gray);
+  border-bottom: 1px solid rgb(var(--v-theme-neutral));
 }
 .packet-container.show-ts .session-detail-ts {
   display: block !important;
@@ -874,16 +874,16 @@ onUnmounted(() => {
   white-space: pre-wrap;
 }
 .packet-container pre .sessionln {
-  color: var(--color-foreground-accent, green);
+  color: rgb(var(--v-theme-foreground-accent));
 }
 /* src/dst packet text colors */
 .packet-container .sessiondst {
-  color: var(--color-dst, #0000FF) !important;
+  color: rgb(var(--v-theme-dst)) !important;
   max-width: 50vw !important;
   word-wrap: break-word;
 }
 .packet-container .sessionsrc {
-  color: var(--color-src, #CA0404) !important;
+  color: rgb(var(--v-theme-src)) !important;
   max-width: 50vw !important;
   word-wrap: break-word;
 }
@@ -913,7 +913,7 @@ onUnmounted(() => {
 
 /* Session-options toolbar -- flex row of v-btn entries */
 .session-detail .session-options {
-  border-bottom: 1px solid var(--color-gray);
+  border-bottom: 1px solid rgb(var(--v-theme-neutral));
   padding-bottom: 4px;
   padding-top: 4px;
 }
@@ -931,12 +931,12 @@ onUnmounted(() => {
   padding: 0 10px;
   background-color: transparent;
   box-shadow: none;
-  color: var(--color-foreground);
+  color: rgb(var(--v-theme-foreground));
 }
 
 .session-detail .session-options-btn.v-btn:hover {
-  background-color: var(--color-quaternary-lighter);
-  color: var(--color-button, #FFF);
+  background-color: rgb(var(--v-theme-quaternary-lighter));
+  color: rgb(var(--v-theme-button-fg));
 }
 
 /* Height (21px) matches the dt's line-height-derived height
@@ -946,12 +946,12 @@ onUnmounted(() => {
   display: inline-block;
   height: 21px;
   background-color: transparent;
-  color: var(--color-foreground, #333);
+  color: rgb(var(--v-theme-foreground));
   font-size: 11px;
   font-weight: 600;
   line-height: 21px;
   padding: 0 5px 1px 5px;
-  border: 1px solid var(--color-gray);
+  border: 1px solid rgb(var(--v-theme-neutral));
   border-radius: 0.25rem;
   cursor: pointer;
   max-width: 160px; /* this gets updated by the dl resizing */
@@ -963,8 +963,8 @@ onUnmounted(() => {
 
 .session-detail button.clickable-label:hover {
   color: #333;
-  background-color: var(--color-gray);
-  border-color: var(--color-gray);
+  background-color: rgb(var(--v-theme-neutral));
+  border-color: rgb(var(--v-theme-neutral));
 }
 
 /* "+" add-tag button rendered as inline HTML by the pug arrayList
@@ -975,9 +975,9 @@ onUnmounted(() => {
   font-size: 11px;
   line-height: 1;
   vertical-align: baseline;
-  background-color: var(--color-secondary);
-  color: var(--color-button, #FFF);
-  border: 1px solid var(--color-secondary);
+  background-color: rgb(var(--v-theme-secondary));
+  color: rgb(var(--v-theme-button-fg));
+  border: 1px solid rgb(var(--v-theme-secondary));
   border-radius: 0.2rem;
   cursor: pointer;
 }
@@ -1005,7 +1005,7 @@ onUnmounted(() => {
   display: inline-block;
 }
 dl:hover > .session-detail-grip {
-  border-right: 1px dotted var(--color-gray) !important;
+  border-right: 1px dotted rgb(var(--v-theme-neutral)) !important;
 }
 
 /* Masonry-style multi-column detail card layout. */
@@ -1033,9 +1033,9 @@ dl:hover > .session-detail-grip {
   break-inside: avoid;
   -webkit-column-break-inside: avoid;
   page-break-inside: avoid;
-  background-color: var(--color-background);
-  color: var(--color-foreground);
-  border: 1px solid var(--color-gray-light);
+  background-color: rgb(var(--v-theme-background));
+  color: rgb(var(--v-theme-foreground));
+  border: 1px solid rgb(var(--v-theme-neutral-light));
   border-radius: 4px;
   padding: 1.25rem;
   margin-bottom: 0.75rem;
@@ -1047,8 +1047,8 @@ dl:hover > .session-detail-grip {
   margin: -1.25rem;
   margin-bottom: 1.25rem;
   border-radius: 4px 4px 0 0;
-  background-color: var(--color-gray);
-  color: var(--color-background, #333);
+  background-color: rgb(var(--v-theme-neutral));
+  color: rgb(var(--v-theme-background));
 }
 
 .session-detail .session-detail-card > dl {
@@ -1066,7 +1066,7 @@ dl:hover > .session-detail-grip {
 .session-detail .session-detail-card > dl > dt:hover + dd,
 .session-detail .session-detail-card > dl > dd:hover {
   border-radius: 10px;
-  background-color: var(--color-gray-lighter);
+  background-color: rgb(var(--v-theme-neutral-lighter));
 }
 
 .session-detail .session-detail-card dt,

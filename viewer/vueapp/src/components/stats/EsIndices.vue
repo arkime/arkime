@@ -341,9 +341,9 @@ tr.bold {
   font-weight: bold;
 }
 table tr.border-bottom-bold > td {
-  border-bottom: 2px solid var(--color-gray-light);
+  border-bottom: 2px solid rgb(var(--v-theme-neutral-light));
 }
 table tr.border-top-bold > td {
-  border-top: 2px solid var(--color-gray-light);
+  border-top: 2px solid rgb(var(--v-theme-neutral-light));
 }
 </style>

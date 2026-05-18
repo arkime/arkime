@@ -1,26 +1,32 @@
-// Minimal Vuetify theme scaffold for the viewer.
-//
-// During the Vuetify migration the 8 existing CSS theme files in src/themes/*
-// (purp, blue, green, cotton-candy, dark-2, dark-3, arkime-light, arkime-dark)
-// continue to provide the actual visual treatment via --color-* CSS variables
-// and a body class toggle (see App.vue). Vuetify's theme system here is a
-// minimal light/dark scaffolding those CSS overlays sit on top of -- a proper
-// Vuetify-native theme rework is deferred to a post-migration redesign pass.
-//
-// When that redesign happens, this file is the place to translate the 8
-// existing themes into Vuetify theme objects. Until then, leave the colors
-// block empty and let the legacy CSS drive the look.
+/*
+Copyright Yahoo Inc.
+SPDX-License-Identifier: Apache-2.0
+*/
 
 /**
- * @param {'light' | 'dark'} variant
- * @returns {{ dark: boolean, colors: Object<string, string> }}
+ * Viewer Vuetify theme configuration.
+ *
+ * Consumes the shared theme manifest at common/vueapp/themes/manifest.js
+ * (10 baked-in themes: 8 ports of the original CSS files + 2 new v7
+ * themes). The user's per-user custom theme is registered at runtime
+ * by App.vue's settings-load path (see common/vueapp/themes/customTheme.js).
+ *
+ * Vuetify 3 emits --v-theme-{key}: r,g,b custom properties for every
+ * color in each theme. All viewer + common Vue components consume
+ * these via rgb(var(--v-theme-X)). The legacy --color-* token system
+ * + per-theme CSS files (viewer/vueapp/src/themes/*.css) are gone.
  */
-export function createViewerTheme (variant) {
+
+import { THEMES, DEFAULT_THEME_ID } from '@common/themes/manifest.js';
+
+export function buildVuetifyThemes () {
   return {
-    dark: variant === 'dark',
-    colors: {
-      // Add overrides here only when needed. The src/themes/*.css files
-      // continue to drive the actual look via --color-* custom properties.
-    }
+    defaultTheme: DEFAULT_THEME_ID,
+    // We hand-author shade variants in the manifest; disable
+    // Vuetify's algorithmic variation generation.
+    variations: { colors: [], lighten: 0, darken: 0 },
+    themes: Object.fromEntries(
+      THEMES.map(t => [t.id, { dark: t.dark, colors: t.colors }])
+    )
   };
 }

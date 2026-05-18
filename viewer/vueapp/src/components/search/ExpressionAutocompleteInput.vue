@@ -748,6 +748,6 @@ onBeforeUnmount(() => {
   overflow-x: hidden;
 }
 .expression-autocomplete-dropdown a.last-history-item {
-  border-bottom: 1px solid var(--color-gray);
+  border-bottom: 1px solid rgb(var(--v-theme-neutral));
 }
 </style>

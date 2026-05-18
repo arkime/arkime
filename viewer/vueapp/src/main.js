@@ -19,7 +19,7 @@ import HasRole from '@common/HasRole.vue';
 import router from './router.js';
 import store from './store.js';
 import { i18nValue, i18nBDD } from '@common/i18nHelpers.js';
-import { createViewerTheme } from './theme.js';
+import { buildVuetifyThemes } from './theme.js';
 
 // common css
 import '../../../common/common.css';
@@ -29,15 +29,9 @@ import '../../../common/common.css';
 import '../../../common/arkime-input-group.css';
 // arkime element + Vuetify-component bridge styles
 import './overrides.css';
-// themed css deps -- these overlay on top of Vuetify; see theme.js notes
-import './themes/purp.css';
-import './themes/blue.css';
-import './themes/green.css';
-import './themes/cotton-candy.css';
-import './themes/dark-2.css';
-import './themes/dark-3.css';
-import './themes/arkime-light.css';
-import './themes/arkime-dark.css';
+// Themes now live in common/vueapp/themes/manifest.js -- 10 Vuetify-native
+// themes (8 ports + 2 new v7) registered via buildVuetifyThemes() below.
+// The legacy per-theme CSS files in src/themes/*.css are gone.
 
 /**
  * Initialize the application with dynamically loaded locales
@@ -81,14 +75,7 @@ async function initializeApp() {
       // 8px which matches the rest of the app's density.
       VRow: { dense: true }
     },
-    theme: {
-      options: { customProperties: true },
-      defaultTheme: 'arkimeLight',
-      themes: {
-        arkimeLight: createViewerTheme('light'),
-        arkimeDark: createViewerTheme('dark')
-      }
-    }
+    theme: buildVuetifyThemes()
   });
   app.use(vuetify);
 

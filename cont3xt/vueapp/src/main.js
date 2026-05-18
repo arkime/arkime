@@ -1,6 +1,6 @@
 import { createApp } from 'vue';
 import { createVuetify } from 'vuetify/lib/framework.mjs';
-import { createCont3xtTheme } from './theme.js';
+import { buildVuetifyThemes } from './theme.js';
 
 import vueDebounce from 'vue-debounce';
 
@@ -53,14 +53,7 @@ const vuetify = createVuetify({
       density: 'compact'
     }
   },
-  theme: {
-    options: { customProperties: true }, // creates css `var(--xxxxx)` for colors [eg: var(--v-primary-base)]
-    defaultTheme: 'cont3xtLightTheme',
-    themes: {
-      cont3xtLightTheme: createCont3xtTheme('light'),
-      cont3xtDarkTheme: createCont3xtTheme('dark')
-    }
-  }
+  theme: buildVuetifyThemes()
 });
 
 app.use(vuetify);

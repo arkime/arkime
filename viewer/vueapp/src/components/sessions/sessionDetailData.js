@@ -45,7 +45,7 @@ function gripClick (e, div) {
 function gripDrag (e) { // move the grip where the user moves their cursor
   if (selectedDT && selectedGrip) {
     const newWidth = dtOffset + e.pageX;
-    selectedGrip.style.borderRight = '1px dotted var(--color-gray)';
+    selectedGrip.style.borderRight = '1px dotted rgb(var(--v-theme-neutral))';
     selectedGrip.style.left = `${newWidth}px`;
   }
 }

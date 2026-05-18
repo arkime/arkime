@@ -102,8 +102,8 @@ export default {
   z-index: 999;
   width: 333px;
   font-size: 1.2rem;
-  background-color: var(--color-gray-lighter) !important;
-  border: 1px solid var(--color-gray-light) !important;
+  background-color: rgb(var(--v-theme-neutral-lighter)) !important;
+  border: 1px solid rgb(var(--v-theme-neutral-light)) !important;
   box-shadow: 4px 4px 16px -2px black;
 }
 

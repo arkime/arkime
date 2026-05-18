@@ -273,7 +273,7 @@ const saveConfig = async () => {
 
 <style scoped>
 .config-preview {
-  background-color: var(--color-quaternary-lightest) !important;
-  border-color: var(--color-gray) !important;
+  background-color: rgb(var(--v-theme-quaternary-lightest)) !important;
+  border-color: rgb(var(--v-theme-neutral)) !important;
 }
 </style>

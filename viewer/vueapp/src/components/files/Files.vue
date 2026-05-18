@@ -251,7 +251,7 @@ export default {
 .files-search {
   z-index: 5;
   border: none;
-  background-color: var(--color-secondary-lightest);
+  background-color: rgb(var(--v-theme-secondary-lightest));
 
   -webkit-box-shadow: 0 0 16px -2px black;
      -moz-box-shadow: 0 0 16px -2px black;

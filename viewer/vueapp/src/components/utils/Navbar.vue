@@ -111,8 +111,8 @@ export default {
       // between themes (white-on-dark in light theme, dark-on-light in
       // dark theme) without us picking specific colors per theme.
       activePillStyle: {
-        backgroundColor: 'var(--color-button)',
-        color: 'var(--color-foreground)'
+        backgroundColor: 'rgb(var(--v-theme-button-fg))',
+        color: 'rgb(var(--v-theme-foreground))'
       }
     };
   },
@@ -249,8 +249,8 @@ export default {
   right: 0;
   height: 36px;
   z-index: 7;
-  background-color: var(--color-primary-dark);
-  color: var(--color-button, #FFF);
+  background-color: rgb(var(--v-theme-primary-dark));
+  color: rgb(var(--v-theme-button-fg));
   padding-left: 0.5rem;
 }
 .navbarOffset {
@@ -271,7 +271,14 @@ export default {
   height: 40px;
   top: 2px;
 }
-.arkime-logo[src*="Icon"] { left: 8px; }
+/* Wide Logo_* assets overhang the 36px bar by design. Square Icon_*
+   assets are 1:1, so the 40px treatment makes them oversized inside
+   the navbar -- shrink them to fit the bar height. */
+.arkime-logo[src*="Icon"] {
+  height: 30px;
+  top: 3px;
+  left: 8px;
+}
 .arkime-logo[src*="Logo"] { left: 20px; }
 
 /* push the nav list off the logo */
@@ -295,7 +302,7 @@ export default {
 
 /* shortcut letter (shown in place of logo when shift is held) */
 .text-shortcut {
-  color: var(--color-tertiary-lighter) !important;
+  color: rgb(var(--v-theme-tertiary-lighter)) !important;
 }
 
 /* right-side action group: fill the navbar height and force every
@@ -347,7 +354,7 @@ export default {
   );
   background-clip: text;
   -webkit-background-clip: text;
-  -webkit-text-fill-color: var(--color-button, #FFF);
+  -webkit-text-fill-color: rgb(var(--v-theme-button-fg));
   transition: -webkit-text-fill-color 0.4s ease;
 }
 .arkime-navbar-actions :deep(.navbar-text:hover) {

@@ -463,12 +463,12 @@ export default {
       // resolve CSS variables at runtime; inline :style keeps them
       // theme-adaptive.
       tertiaryBtnStyle: {
-        backgroundColor: 'var(--color-tertiary)',
-        color: 'var(--color-button, #FFF)'
+        backgroundColor: 'rgb(var(--v-theme-tertiary))',
+        color: 'rgb(var(--v-theme-button-fg))'
       },
       secondaryBtnStyle: {
-        backgroundColor: 'var(--color-secondary)',
-        color: 'var(--color-button, #FFF)'
+        backgroundColor: 'rgb(var(--v-theme-secondary))',
+        color: 'rgb(var(--v-theme-button-fg))'
       }
     };
   },
@@ -692,7 +692,7 @@ export default {
 .history-page .history-search {
   z-index: 5;
   border: none;
-  background-color: var(--color-secondary-lightest);
+  background-color: rgb(var(--v-theme-secondary-lightest));
   position: relative;
   -webkit-box-shadow: 0 0 16px -2px black;
      -moz-box-shadow: 0 0 16px -2px black;
@@ -716,20 +716,20 @@ export default {
   table-layout: fixed;
   font-size: 0.875rem;
   border-collapse: collapse;
-  color: var(--color-foreground);
+  color: rgb(var(--v-theme-foreground));
 }
 .history-page .history-table thead tr th {
   vertical-align: bottom;
   padding: 4px 4px 4px 4px;
-  border-bottom: 2px solid var(--color-gray);
+  border-bottom: 2px solid rgb(var(--v-theme-neutral));
 }
 .history-page .history-table tbody tr td {
   vertical-align: top;
   padding: 4px;
-  border-top: 1px solid var(--color-gray-light);
+  border-top: 1px solid rgb(var(--v-theme-neutral-light));
 }
 .history-page .history-table tbody tr:nth-of-type(odd) > td {
-  background-color: color-mix(in srgb, var(--color-foreground, #000) 4%, transparent);
+  background-color: color-mix(in srgb, rgb(var(--v-theme-foreground)) 4%, transparent);
 }
 .history-page .history-table tbody tr td.no-wrap {
   white-space: nowrap;
@@ -743,10 +743,10 @@ export default {
   font-size: 12px;
   margin-bottom: 2px;
   margin-top: 2px;
-  border: 1px solid var(--color-gray);
+  border: 1px solid rgb(var(--v-theme-neutral));
   border-radius: 4px;
-  background-color: var(--color-background, #fff);
-  color: var(--color-foreground, #495057);
+  background-color: rgb(var(--v-theme-background));
+  color: rgb(var(--v-theme-foreground));
 }
 .history-page table thead tr th div.header-div {
   display: inline-block;

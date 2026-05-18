@@ -73,6 +73,7 @@ methods exposed on this ref, and dispatches the country-click filter.
 
 <script>
 import { commaString } from '@common/vueFilters.js';
+import { themedColor } from '@common/themes/themedColor.js';
 import { ALPHA2_TO_NUMERIC } from '@common/alpha2ToNumeric.js';
 
 const ZOOM_STEP = 1.4;
@@ -147,13 +148,12 @@ export default {
   methods: {
     commaString,
     readThemeColors () {
-      const styles = window.getComputedStyle(document.body);
-      const water = styles.getPropertyValue('--color-water').trim();
-      let lLight = styles.getPropertyValue('--color-land-light').trim();
-      let lDark = styles.getPropertyValue('--color-land-dark').trim();
+      const water = themedColor('water');
+      let lLight = themedColor('land-light');
+      let lDark = themedColor('land-dark');
       if (!lLight || !lDark) {
-        lLight = styles.getPropertyValue('--color-primary-lightest').trim();
-        lDark = styles.getPropertyValue('--color-primary-dark').trim();
+        lLight = themedColor('primary-lightest');
+        lDark = themedColor('primary-dark');
       }
       if (water) this.waterColor = water;
       if (lLight) this.landColorLight = lLight;

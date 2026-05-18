@@ -979,12 +979,12 @@ export default {
       multiviewer: this.$constants.MULTIVIEWER,
       // Arkime theme-color v-btn styles. Vuetify :color can't take CSS vars.
       primaryBtnStyle: {
-        backgroundColor: 'var(--color-primary)',
-        color: 'var(--color-button, #FFF)'
+        backgroundColor: 'rgb(var(--v-theme-primary))',
+        color: 'rgb(var(--v-theme-button-fg))'
       },
       tertiaryBtnStyle: {
-        backgroundColor: 'var(--color-tertiary)',
-        color: 'var(--color-button, #FFF)'
+        backgroundColor: 'rgb(var(--v-theme-tertiary))',
+        color: 'rgb(var(--v-theme-button-fg))'
       }
     };
   },
@@ -1522,7 +1522,7 @@ export default {
 .hunt-create-navbar {
   z-index: 4;
   height: 38px;
-  background-color: var(--color-quaternary-lightest);
+  background-color: rgb(var(--v-theme-quaternary-lightest));
 
   -webkit-box-shadow: 0 0 16px -2px black;
      -moz-box-shadow: 0 0 16px -2px black;
@@ -1591,8 +1591,8 @@ export default {
   left: 10px;
   z-index: 999;
   width: 350px;
-  background-color: var(--color-gray-lighter) !important;
-  border: 1px solid var(--color-gray-light) !important;
+  background-color: rgb(var(--v-theme-neutral-lighter)) !important;
+  border: 1px solid rgb(var(--v-theme-neutral-light)) !important;
   box-shadow: 4px 4px 16px -2px black;
 }
 

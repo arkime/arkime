@@ -774,7 +774,7 @@ function gripClick (e, col) {
 function gripDrag (e) { // move the grip where the user moves their cursor
   if (selectedColElem && selectedGripElem) {
     const newWidth = colStartOffset + e.pageX;
-    selectedGripElem.style.borderLeft = '1px dotted var(--color-gray)';
+    selectedGripElem.style.borderLeft = '1px dotted rgb(var(--v-theme-neutral))';
     selectedGripElem.style.left = `${newWidth}px`;
   }
 }
@@ -898,20 +898,20 @@ export default {
       tableState: Utils.getDefaultTableState(),
       // Arkime theme-color v-btn styles. Vuetify :color can't take CSS vars.
       primaryBtnStyle: {
-        backgroundColor: 'var(--color-primary)',
-        color: 'var(--color-button, #FFF)'
+        backgroundColor: 'rgb(var(--v-theme-primary))',
+        color: 'rgb(var(--v-theme-button-fg))'
       },
       secondaryBtnStyle: {
-        backgroundColor: 'var(--color-secondary)',
-        color: 'var(--color-button, #FFF)'
+        backgroundColor: 'rgb(var(--v-theme-secondary))',
+        color: 'rgb(var(--v-theme-button-fg))'
       },
       tertiaryBtnStyle: {
-        backgroundColor: 'var(--color-tertiary)',
-        color: 'var(--color-button, #FFF)'
+        backgroundColor: 'rgb(var(--v-theme-tertiary))',
+        color: 'rgb(var(--v-theme-button-fg))'
       },
       quaternaryBtnStyle: {
-        backgroundColor: 'var(--color-quaternary)',
-        color: 'var(--color-button, #FFF)'
+        backgroundColor: 'rgb(var(--v-theme-quaternary))',
+        color: 'rgb(var(--v-theme-button-fg))'
       }
     };
   },
@@ -2280,8 +2280,8 @@ table.sessions-table {
 /* borders for header */
 table.sessions-table thead tr th {
   vertical-align: top;
-  border-bottom: 2px solid var(--color-gray);
-  border-right: 1px dotted var(--color-gray);
+  border-bottom: 2px solid rgb(var(--v-theme-neutral));
+  border-right: 1px dotted rgb(var(--v-theme-neutral));
 }
 /* remove right border for first column because it is no resizeable */
 table.sessions-table thead tr th:first-child {
@@ -2296,18 +2296,18 @@ table.sessions-table thead::-webkit-scrollbar {
 
 /* alternate-row striping */
 table.sessions-table tbody tr:nth-of-type(odd) td {
-  background-color: var(--color-gray-lighter);
+  background-color: rgb(var(--v-theme-neutral-lighter));
 }
 
 /* table hover */
 table.sessions-table tbody tr:not(.session-detail-row):hover,
 table.sessions-table tbody tr:not(.session-detail-row):hover td.active {
-  background-color: var(--color-tertiary-lightest);
+  background-color: rgb(var(--v-theme-tertiary-lightest));
 }
 
 /* detail row background color */
 table.sessions-table tbody tr.session-detail-row {
-  background-color: var(--color-quaternary-lightest) !important;
+  background-color: rgb(var(--v-theme-quaternary-lightest)) !important;
 }
 
 /* condense the table and put values at the top of ceslls */
@@ -2337,7 +2337,7 @@ table.sessions-table.sticky-header > thead {
   overflow-x: scroll;
   padding-left: 8px;
   box-shadow: 0 6px 9px -6px black;
-  background-color: var(--color-background, white);
+  background-color: rgb(var(--v-theme-background));
 }
 table.sessions-table.sticky-header > thead > tr {
   display: table;
@@ -2362,7 +2362,7 @@ table.sessions-table.sticky-header > tbody {
 }
 
 .arkime-col-header.active {
-  color: var(--color-foreground-accent);
+  color: rgb(var(--v-theme-foreground-accent));
 }
 
 .arkime-col-header:hover .col-dropdown {

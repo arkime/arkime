@@ -422,7 +422,7 @@ export default {
 
 <style scoped>
 .toggle-group {
-  background-color: var(--color-white);
-  color: var(--color-gray-dark);
+  background-color: rgb(var(--v-theme-white));
+  color: rgb(var(--v-theme-neutral-dark));
 }
 </style>

@@ -348,8 +348,8 @@ export default {
       allocationModalTitle: '',
       // Arkime theme-color v-btn style. Vuetify :color can't take CSS vars.
       primaryBtnStyle: {
-        backgroundColor: 'var(--color-primary)',
-        color: 'var(--color-button, #FFF)'
+        backgroundColor: 'rgb(var(--v-theme-primary))',
+        color: 'rgb(var(--v-theme-button-fg))'
       }
     };
   },
@@ -648,18 +648,18 @@ table.table tbody > tr > td:first-child {
   font-weight: 500;
   font-size: 14px;
   white-space: normal;
-  color: var(--color-button, #FFF);
-  background-color: var(--color-gray);
+  color: rgb(var(--v-theme-button-fg));
+  background-color: rgb(var(--v-theme-neutral));
   border-radius: 0.375rem;
-  border: 2px dotted var(--color-gray-dark, #6c757d);
+  border: 2px dotted rgb(var(--v-theme-neutral-dark));
 }
 .shard-badge.shard-badge--primary {
   font-weight: bold;
-  background-color: var(--color-primary);
-  border: 2px dotted var(--color-primary);
+  background-color: rgb(var(--v-theme-primary));
+  border: 2px dotted rgb(var(--v-theme-primary));
 }
 .shard-badge.shard-badge--notstarted {
-  border: 2px dotted var(--color-quaternary);
+  border: 2px dotted rgb(var(--v-theme-quaternary));
 }
 .shard-badge:hover {
   position: relative;
@@ -707,13 +707,13 @@ table.table tbody > tr > td:first-child {
   max-height: 70vh;
   overflow-y: auto;
   overflow-x: auto;
-  background-color: var(--color-background);
+  background-color: rgb(var(--v-theme-background));
   padding: 1rem;
 }
 .allocation-explain-modal pre {
   font-size: 12px;
   line-height: 1.4;
-  color: var(--color-foreground);
+  color: rgb(var(--v-theme-foreground));
   white-space: pre;
   font-family: 'Courier New', monospace;
 }

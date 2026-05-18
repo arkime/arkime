@@ -147,6 +147,6 @@ export default {
 
 <style scoped>
 .roles-table-striped :deep(tbody tr:nth-of-type(odd) > td) {
-  background-color: var(--color-gray-lighter) !important;
+  background-color: rgb(var(--v-theme-neutral-lighter)) !important;
 }
 </style>

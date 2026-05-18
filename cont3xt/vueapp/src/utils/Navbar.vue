@@ -225,7 +225,7 @@ export default {
     const { getTheme } = useGetters(store);
 
     watchEffect(() => {
-      theme.change((getTheme.value === 'dark') ? 'cont3xtDarkTheme' : 'cont3xtLightTheme');
+      theme.change((getTheme.value === 'dark') ? 'arkime-dark' : 'arkime-light');
       // once the few lingering reliances on body.dark are removed, this can be safely removed
       document.body.classList = getTheme.value === 'dark' ? ['dark'] : [];
     });

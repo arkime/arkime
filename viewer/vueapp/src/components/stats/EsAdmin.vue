@@ -214,20 +214,20 @@ export default {
       },
       // Arkime theme-color v-btn styles. Vuetify :color can't take CSS vars.
       primaryBtnStyle: {
-        backgroundColor: 'var(--color-primary)',
-        color: 'var(--color-button, #FFF)'
+        backgroundColor: 'rgb(var(--v-theme-primary))',
+        color: 'rgb(var(--v-theme-button-fg))'
       },
       secondaryBtnStyle: {
-        backgroundColor: 'var(--color-secondary)',
-        color: 'var(--color-button, #FFF)'
+        backgroundColor: 'rgb(var(--v-theme-secondary))',
+        color: 'rgb(var(--v-theme-button-fg))'
       },
       tertiaryBtnStyle: {
-        backgroundColor: 'var(--color-tertiary)',
-        color: 'var(--color-button, #FFF)'
+        backgroundColor: 'rgb(var(--v-theme-tertiary))',
+        color: 'rgb(var(--v-theme-button-fg))'
       },
       quaternaryBtnStyle: {
-        backgroundColor: 'var(--color-quaternary)',
-        color: 'var(--color-button, #FFF)'
+        backgroundColor: 'rgb(var(--v-theme-quaternary))',
+        color: 'rgb(var(--v-theme-button-fg))'
       }
     };
   },

@@ -864,7 +864,7 @@ export default {
 
 /* indication that a user has additional permissions set */
 .btn-indicator .btn-toggle-user:not(.expanded) {
-  background: linear-gradient(135deg, var(--color-primary) 1%, var(--color-primary) 75%, var(--color-primary) 75%, var(--color-primary-lighter) 77%, var(--color-primary-lighter) 100%);
+  background: linear-gradient(135deg, rgb(var(--v-theme-primary)) 1%, rgb(var(--v-theme-primary)) 75%, rgb(var(--v-theme-primary)) 75%, rgb(var(--v-theme-primary-lighter)) 77%, rgb(var(--v-theme-primary-lighter)) 100%);
 }
 
 /* shrink the RoleDropdown / UserDropdown trigger text -- when a user
@@ -887,8 +887,8 @@ export default {
 }
 
 .toggle-group {
-  background-color: var(--color-white);
-  color: var(--color-gray-dark);
+  background-color: rgb(var(--v-theme-white));
+  color: rgb(var(--v-theme-neutral-dark));
 }
 
 .pagination-no-right-radius :deep(.page-item:last-child .page-link) {
@@ -900,7 +900,7 @@ export default {
    Padding is below Vuetify's compact default (8px); font shrunk to
    match the rest of the analyst-grade dense chrome. ---- */
 .users-table-striped :deep(tbody tr:nth-of-type(odd) > td) {
-  background-color: var(--color-gray-lighter) !important;
+  background-color: rgb(var(--v-theme-neutral-lighter)) !important;
 }
 .users-table-striped :deep(tbody tr > td),
 .users-table-striped :deep(thead tr > th) {

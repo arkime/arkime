@@ -1288,11 +1288,10 @@ app.delete( // user delete endpoint
   [ArkimeUtil.noCacheJson, logAction(), checkCookieToken, User.checkRole('usersAdmin')],
   User.apiDeleteUser
 );
-app.get( // user css endpoint
-  ['/api/user[/.]css'],
-  User.checkPermissions(['webEnabled']),
-  UserAPIs.getUserCSS
-);
+// Custom-theme CSS endpoint removed -- custom themes are now first-class
+// Vuetify themes registered client-side at boot time (see
+// common/vueapp/themes/customTheme.js + viewer/vueapp/src/App.vue's
+// applySavedTheme()), so no server-side stylus rendering is needed.
 
 // Locale endpoints ----------------------------------------------------------
 app.get( // get all locales endpoint - returns all locale files at once
@@ -2171,7 +2170,6 @@ app.use(cspHeader, setCookie, (req, res) => {
     multiViewer: internals.multiES,
     hasUsersES: !!Config.get('usersElasticsearch', false),
     hasTshark: !!internals.tsharkPath,
-    themeUrl: theme === 'custom-theme' ? 'api/user/css' : '',
     huntWarn: Config.get('huntWarn', 100000),
     huntLimit: limit,
     nonce: res.locals.nonce,

@@ -56,7 +56,7 @@ h1, h2, h3, h4, h5, h6 {
   margin-bottom: 0.5rem;
   font-weight: 500;
   line-height: 1.2;
-  color: var(--color-foreground);
+  color: rgb(var(--v-theme-foreground));
 }
 h1 { font-size: 2.5rem; }
 h2 { font-size: 2rem; }
@@ -72,7 +72,7 @@ hr {
   margin: 1rem 0;
   color: inherit;
   border: 0;
-  border-top: 1px solid var(--color-gray-light);
+  border-top: 1px solid rgb(var(--v-theme-neutral-light));
   opacity: 0.4;
 }
 
@@ -103,20 +103,20 @@ select,
 select:focus,
 textarea,
 textarea:focus {
-  color: var(--color-foreground, #000) !important;
-  background-color: var(--color-inputs, #FFF) !important;
+  color: rgb(var(--v-theme-foreground)) !important;
+  background-color: rgb(var(--v-theme-input-bg)) !important;
 }
 
 input:disabled,
 select:disabled,
 textarea:disabled {
-  color: var(--color-gray-darker, #333) !important;
-  background-color: var(--color-gray-lighter, #DDD) !important;
+  color: rgb(var(--v-theme-neutral-darker)) !important;
+  background-color: rgb(var(--v-theme-neutral-lighter)) !important;
 }
 
 /* error text ------------------------------------------------------------ */
 .text-danger {
-  color: var(--color-foreground-accent);
+  color: rgb(var(--v-theme-foreground-accent));
 }
 
 /* condensed themed dropdowns ------------------------------------------- */
@@ -126,17 +126,17 @@ textarea:disabled {
   margin: 0;
   font-size: .85rem;
   list-style: none;
-  color: var(--color-foreground, #212529);
-  background-color: var(--color-background, #FFF);
+  color: rgb(var(--v-theme-foreground));
+  background-color: rgb(var(--v-theme-background));
   background-clip: padding-box;
-  border: 1px solid var(--color-gray-light);
+  border: 1px solid rgb(var(--v-theme-neutral-light));
   border-radius: 0.25rem;
 }
 .arkime-dropdown-menu .arkime-dropdown-item,
 .arkime-dropdown-menu div.custom-control {
   display: block;
   padding: 2px 8px;
-  color: var(--color-foreground, #212529);
+  color: rgb(var(--v-theme-foreground));
   text-decoration: none;
   background-color: transparent;
   white-space: nowrap;
@@ -144,25 +144,25 @@ textarea:disabled {
 
 .arkime-dropdown-menu .arkime-dropdown-item:hover,
 .arkime-dropdown-menu .arkime-dropdown-item:focus {
-  color: var(--color-foreground, #212529);
-  background-color: var(--color-gray-light);
+  color: rgb(var(--v-theme-foreground));
+  background-color: rgb(var(--v-theme-neutral-light));
 }
 .arkime-dropdown-menu .arkime-dropdown-item.active,
 .arkime-dropdown-menu .active .arkime-dropdown-item {
-  color: var(--color-white, #FFF);
-  background-color: var(--color-primary);
+  color: rgb(var(--v-theme-white));
+  background-color: rgb(var(--v-theme-primary));
 }
 .arkime-dropdown-menu .arkime-dropdown-item.active:hover,
 .arkime-dropdown-menu .active:hover .arkime-dropdown-item,
 .arkime-dropdown-menu .arkime-dropdown-item.active:focus,
 .arkime-dropdown-menu .active:focus .arkime-dropdown-item {
-  background-color: var(--color-primary-light);
+  background-color: rgb(var(--v-theme-primary-light));
 }
 .arkime-dropdown-divider {
   height: 0;
   margin: 0.5rem 0;
   overflow: hidden;
-  border-top: 1px solid var(--color-gray-light);
+  border-top: 1px solid rgb(var(--v-theme-neutral-light));
 }
 
 /* full-width root container (used by stats + users pages) ------------- */
@@ -179,8 +179,8 @@ textarea:disabled {
 .well {
   padding: 12px;
   border-radius: 3px;
-  border: 1px solid var(--color-gray-light);
-  background-color: var(--color-gray-lighter);
+  border: 1px solid rgb(var(--v-theme-neutral-light));
+  background-color: rgb(var(--v-theme-neutral-lighter));
   box-shadow: inset 0 1px 1px rgba(0, 0, 0, .05);
 }
 .well-sm {
@@ -190,8 +190,8 @@ textarea:disabled {
 
 /* themed <pre> element ------------------------------------------------- */
 pre {
-  border-color: var(--color-gray-light);
-  background-color: var(--color-gray-lighter);
+  border-color: rgb(var(--v-theme-neutral-light));
+  background-color: rgb(var(--v-theme-neutral-lighter));
 }
 
 
@@ -208,19 +208,19 @@ pre {
    tighter than Vuetify's compact density. */
 .v-table {
   background: transparent !important;
-  color: var(--color-foreground) !important;
+  color: rgb(var(--v-theme-foreground)) !important;
 }
 .v-table .v-table__wrapper {
   background: transparent !important;
 }
 .v-table thead th {
-  color: var(--color-foreground) !important;
-  background-color: var(--color-background) !important;
-  border-bottom-color: var(--color-gray-light) !important;
+  color: rgb(var(--v-theme-foreground)) !important;
+  background-color: rgb(var(--v-theme-background)) !important;
+  border-bottom-color: rgb(var(--v-theme-neutral-light)) !important;
 }
 .v-table tbody td {
-  color: var(--color-foreground) !important;
-  border-bottom-color: var(--color-gray-light) !important;
+  color: rgb(var(--v-theme-foreground)) !important;
+  border-bottom-color: rgb(var(--v-theme-neutral-light)) !important;
 }
 .v-table tbody tr:hover td {
   filter: brightness(90%);
@@ -249,9 +249,9 @@ pre {
 .v-list {
   padding: 2px 0 !important;
   font-size: 0.78rem;
-  border: 1px solid var(--color-gray-light);
-  background-color: var(--color-background) !important;
-  color: var(--color-foreground) !important;
+  border: 1px solid rgb(var(--v-theme-neutral-light));
+  background-color: rgb(var(--v-theme-background)) !important;
+  color: rgb(var(--v-theme-foreground)) !important;
 }
 /* Doubled-up selector to outrank Vuetify's combined density+line-count
    rules like `.v-list-item--density-compact.v-list-item--one-line`
@@ -274,20 +274,20 @@ pre {
   line-height: 1.2 !important;
 }
 .v-list-item:hover {
-  color: var(--color-foreground) !important;
-  background-color: var(--color-gray-light) !important;
+  color: rgb(var(--v-theme-foreground)) !important;
+  background-color: rgb(var(--v-theme-neutral-light)) !important;
 }
 .v-list-item--active,
 .v-list-item.v-list-item--active {
-  color: var(--color-white, #FFF) !important;
-  background-color: var(--color-primary) !important;
+  color: rgb(var(--v-theme-white)) !important;
+  background-color: rgb(var(--v-theme-primary)) !important;
 }
 .v-list-item--active:hover {
-  background-color: var(--color-primary-light) !important;
+  background-color: rgb(var(--v-theme-primary-light)) !important;
 }
 .v-list .v-divider {
   margin: 2px 0 !important;
-  border-color: var(--color-gray-light) !important;
+  border-color: rgb(var(--v-theme-neutral-light)) !important;
 }
 
 /* v-btn outlined (used by v-btn-toggle radio groups in Settings, plus
@@ -295,17 +295,17 @@ pre {
    default secondary color is faint in both light and dark modes;
    themes-driven colors give better contrast. */
 .v-btn--variant-outlined {
-  border-color: var(--color-gray) !important;
-  color: var(--color-foreground) !important;
-  background-color: var(--color-background) !important;
+  border-color: rgb(var(--v-theme-neutral)) !important;
+  color: rgb(var(--v-theme-foreground)) !important;
+  background-color: rgb(var(--v-theme-background)) !important;
 }
 .v-btn--variant-outlined:hover {
-  background-color: var(--color-gray-lighter) !important;
+  background-color: rgb(var(--v-theme-neutral-lighter)) !important;
 }
 .v-btn--variant-outlined.v-btn--active {
-  background-color: var(--color-primary) !important;
-  color: var(--color-button, #FFF) !important;
-  border-color: var(--color-primary) !important;
+  background-color: rgb(var(--v-theme-primary)) !important;
+  color: rgb(var(--v-theme-button-fg)) !important;
+  border-color: rgb(var(--v-theme-primary)) !important;
 }
 .v-btn--variant-outlined.v-btn--disabled {
   opacity: 0.5;
@@ -316,13 +316,13 @@ pre {
    this, modals always render with Vuetify's default light surface even
    in dark themes. */
 .v-card {
-  background-color: var(--color-background) !important;
-  color: var(--color-foreground) !important;
+  background-color: rgb(var(--v-theme-background)) !important;
+  color: rgb(var(--v-theme-foreground)) !important;
 }
 .v-card .v-card-title,
 .v-card .v-card-text,
 .v-card .v-card-actions {
-  color: var(--color-foreground) !important;
+  color: rgb(var(--v-theme-foreground)) !important;
 }
 .v-overlay__scrim {
   background-color: rgba(0, 0, 0, 0.6);
@@ -427,16 +427,16 @@ pre {
   font-size: 0.75em;
   font-weight: 700;
   line-height: 1;
-  color: var(--color-button, #FFF);
+  color: rgb(var(--v-theme-button-fg));
   text-align: center;
   white-space: nowrap;
   vertical-align: baseline;
   border-radius: 0.375rem;
 }
-.arkime-badge--grey { background-color: var(--color-gray); }
-.arkime-badge--info { background-color: var(--color-info, #17a2b8); }
+.arkime-badge--grey { background-color: rgb(var(--v-theme-neutral)); }
+.arkime-badge--info { background-color: rgb(var(--v-theme-info)); }
 .arkime-badge--sm { font-size: 60%; margin-right: 5px; }
-.arkime-badge--sm:hover { background-color: var(--color-danger, #dc3545); cursor: pointer; }
+.arkime-badge--sm:hover { background-color: rgb(var(--v-theme-error)); cursor: pointer; }
 
 /* arkime-table: compact themed table for plain <table> elements used by
    Hunt, Files, Settings, etc. Full-width, transparent rows, compact cell
@@ -444,9 +444,9 @@ pre {
 .arkime-table {
   width: 100%;
   margin-bottom: 1rem;
-  color: var(--color-foreground);
+  color: rgb(var(--v-theme-foreground));
   vertical-align: top;
-  border-color: var(--color-gray-light);
+  border-color: rgb(var(--v-theme-neutral-light));
 }
 .arkime-table > thead {
   vertical-align: bottom;
@@ -454,22 +454,22 @@ pre {
 .arkime-table > thead > tr > th {
   padding: 0.25rem;
   font-weight: 600;
-  border-bottom: 2px solid var(--color-gray-light);
+  border-bottom: 2px solid rgb(var(--v-theme-neutral-light));
   background-color: transparent;
 }
 .arkime-table > tbody > tr > td,
 .arkime-table > tbody > tr > th {
   padding: 0.25rem;
-  border-bottom: 1px solid var(--color-gray-lighter);
+  border-bottom: 1px solid rgb(var(--v-theme-neutral-lighter));
   background-color: transparent;
 }
 .arkime-table > tbody > tr:nth-of-type(odd) > td,
 .arkime-table > tbody > tr:nth-of-type(odd) > th {
-  background-color: var(--color-gray-lightest, rgba(0, 0, 0, 0.025));
+  background-color: rgb(var(--v-theme-neutral-lightest)));
 }
 .arkime-table > tbody > tr:hover > td,
 .arkime-table > tbody > tr:hover > th {
-  background-color: var(--color-gray-lighter, rgba(0, 0, 0, 0.05));
+  background-color: rgb(var(--v-theme-neutral-lighter)));
 }
 /* xs modifier: tighter cell padding for high-density tables (utils/Table.vue) */
 .arkime-table--xs > thead > tr > th,

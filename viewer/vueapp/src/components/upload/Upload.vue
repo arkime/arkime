@@ -117,8 +117,8 @@ export default {
       demoMode: this.$constants.DEMO_MODE,
       // Arkime theme-color v-btn style. Vuetify :color can't take CSS vars.
       primaryBtnStyle: {
-        backgroundColor: 'var(--color-primary)',
-        color: 'var(--color-button, #FFF)'
+        backgroundColor: 'rgb(var(--v-theme-primary))',
+        color: 'rgb(var(--v-theme-button-fg))'
       }
     };
   },

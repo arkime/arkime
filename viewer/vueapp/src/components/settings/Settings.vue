@@ -924,128 +924,19 @@ SPDX-License-Identifier: Apache-2.0
 
           <hr>
 
-          <!-- theme picker -->
-          <v-row>
-            <v-col
-              cols="12"
-              lg="6"
-              md="12"
-              v-for="theme in themeDisplays"
-              :class="theme.class"
-              :key="theme.class">
-              <div class="theme-display">
-                <v-row>
-                  <v-col
-                    cols="12"
-                    md="12">
-                    <div class="d-flex align-center ms-1">
-                      <input
-                        type="radio"
-                        class="cursor-pointer"
-                        v-model="settings.theme"
-                        @change="changeTheme(theme.class)"
-                        :value="theme.class"
-                        :id="theme.class">
-                      <label
-                        class="cursor-pointer ms-2"
-                        :for="theme.class">
-                        {{ theme.name }}
-                      </label>
-                    </div>
-                  </v-col>
-                </v-row>
-                <nav class="preview-navbar preview-navbar-dark">
-                  <a class="preview-navbar-brand cursor-pointer">
-                    <img
-                      :src="settings.logo"
-                      class="arkime-logo"
-                      alt="hoot">
-                  </a>
-                  <ul class="preview-nav">
-                    <a class="preview-nav-item cursor-pointer no-decoration active">
-                      Current Page
-                    </a>
-                    <a class="preview-nav-item cursor-pointer no-decoration ms-3">
-                      Other Pages
-                    </a>
-                  </ul>
-                  <ul class="preview-navbar-status me-2">
-                    <span class="fa fa-info-circle fa-lg health-green" />
-                  </ul>
-                </nav>
-                <div class="display-sub-navbar">
-                  <v-row>
-                    <v-col
-                      cols="12"
-                      xl="5"
-                      lg="4"
-                      md="5">
-                      <div class="arkime-input-group ms-1">
-                        <span class="arkime-input-label arkime-input-label-fw">
-                          <span class="fa fa-search fa-fw" />
-                        </span>
-                        <input
-                          type="text"
-                          placeholder="Search"
-                          class="arkime-input-control">
-                      </div>
-                    </v-col>
-                    <v-col
-                      cols="12"
-                      xl="7"
-                      lg="8"
-                      sm="7">
-                      <div class="font-weight-bold text-theme-accent ms-1">
-                        Important text
-                      </div>
-                      <div class="float-right display-sub-navbar-buttons">
-                        <a class="theme-display-btn btn-theme-tertiary-display me-1">
-                          Search
-                        </a>
-                        <a class="theme-display-btn btn-theme-quaternary-display me-1">
-                          <span class="fa fa-cog fa-lg" />
-                        </a>
-                        <a class="theme-display-btn btn-theme-secondary-display me-1">
-                          <span class="fa fa-eye fa-lg" />
-                        </a>
-                        <v-menu location="bottom end">
-                          <template #activator="{ props: activatorProps }">
-                            <a
-                              v-bind="activatorProps"
-                              class="theme-display-btn btn-theme-primary-display float-right action-menu-dropdown">
-                              <span class="fa fa-caret-down" />
-                            </a>
-                          </template>
-                          <v-list density="compact">
-                            <v-list-item>
-                              Example
-                            </v-list-item>
-                            <v-list-item active>
-                              Active Example
-                            </v-list-item>
-                          </v-list>
-                        </v-menu>
-                      </div>
-                    </v-col>
-                  </v-row>
-                </div>
-                <div class="display-sub-sub-navbar">
-                  <div class="ms-1 mt-2 pb-2">
-                    <span class="field cursor-pointer">
-                      example field value
-                      <span class="fa fa-caret-down" />
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </v-col>
-          </v-row> <!-- /theme picker -->
+          <!-- theme picker (incl. Custom card) -->
+          <ThemePicker
+            :model-value="activeThemeId"
+            :themes="themes"
+            :custom-theme="settings.customTheme || null"
+            @update:model-value="changeTheme"
+            @update:custom-theme="onCustomThemeChange" />
 
           <!-- logo picker -->
           <hr>
           <h3>{{ $t('settings.themes.logos') }}</h3>
           <p>{{ $t('settings.themes.pickLogo') }}</p>
-          <v-row class="well logo-well me-1 ms-1">
+          <v-row class="well logo-well me-1 ms-1 mb-6">
             <v-col
               cols="12"
               lg="3"
@@ -1092,449 +983,6 @@ SPDX-License-Identifier: Apache-2.0
             </p>
             <img :src="watching">
           </div>
-
-          <hr>
-
-          <!-- custom theme -->
-          <p v-if="!creatingCustom">
-            <span v-html="$t('settings.themes.moreControlHtml')" />
-            <a
-              href="javascript:void(0)"
-              class="cursor-pointer"
-              @click="creatingCustom = true">
-              {{ $t('settings.themes.createCustom') }}
-            </a>
-            <br><br>
-          </p>
-
-          <div v-if="creatingCustom">
-            <!-- custom theme display -->
-            <v-row>
-              <v-col
-                cols="12"
-                md="4">
-                <h3 class="mt-0 mb-3 d-flex align-center">
-                  <span class="flex-grow-1">Custom Theme</span>
-                  <v-btn
-                    variant="flat"
-                    size="large"
-                    color="tertiary"
-                    @click="displayHelp = !displayHelp">
-                    <span class="fa fa-question-circle me-1" />
-                    <span v-if="displayHelp">
-                      Hide
-                    </span>
-                    <span v-else>
-                      Show
-                    </span>
-                    Help
-                  </v-btn>
-                </h3>
-                <color-picker
-                  :color="background"
-                  @color-selected="changeColor"
-                  color-name="background"
-                  field-name="Background"
-                  :class="{'mb-2':!displayHelp}" />
-                <p
-                  class="help-block small"
-                  v-if="displayHelp">
-                  This color should either be very light or very dark.
-                </p>
-                <color-picker
-                  :color="foreground"
-                  @color-selected="changeColor"
-                  color-name="foreground"
-                  field-name="Foreground"
-                  :class="{'mb-2':!displayHelp}" />
-                <p
-                  class="help-block small"
-                  v-if="displayHelp">
-                  This color should be visible on the background.
-                </p>
-                <color-picker
-                  :color="foregroundAccent"
-                  @color-selected="changeColor"
-                  color-name="foregroundAccent"
-                  field-name="Foreground Accent" />
-                <p
-                  class="help-block small"
-                  v-if="displayHelp">
-                  This color should stand out.
-                  It displays session field values and important text in navbars.
-                </p>
-              </v-col>
-              <v-col
-                cols="12"
-                md="8">
-                <div
-                  class="custom-theme"
-                  id="custom-theme-display">
-                  <div class="theme-display">
-                    <div class="preview-navbar preview-navbar-dark">
-                      <a class="preview-navbar-brand cursor-pointer">
-                        <img
-                          :src="settings.logo"
-                          class="arkime-logo"
-                          alt="hoot">
-                      </a>
-                      <ul class="preview-nav">
-                        <a class="preview-nav-item cursor-pointer active">
-                          Current Page
-                        </a>
-                        <a class="preview-nav-item cursor-pointer ms-3">
-                          Other Pages
-                        </a>
-                      </ul>
-                      <ul class="preview-navbar-status me-2">
-                        <span class="fa fa-info-circle fa-lg health-green" />
-                      </ul>
-                    </div>
-                    <div class="display-sub-navbar">
-                      <v-row>
-                        <v-col
-                          cols="12"
-                          xl="5"
-                          lg="4"
-                          md="5">
-                          <div class="arkime-input-group ms-1">
-                            <span class="arkime-input-label arkime-input-label-fw">
-                              <span class="fa fa-search fa-fw" />
-                            </span>
-                            <input
-                              type="text"
-                              placeholder="Search"
-                              class="arkime-input-control">
-                          </div>
-                        </v-col>
-                        <v-col
-                          cols="12"
-                          xl="7"
-                          lg="8"
-                          sm="7">
-                          <div class="font-weight-bold text-theme-accent ms-1">
-                            Important text
-                          </div>
-                          <div class="float-right display-sub-navbar-buttons">
-                            <a class="theme-display-btn btn-theme-tertiary-display me-1">
-                              Search
-                            </a>
-                            <a class="theme-display-btn btn-theme-quaternary-display me-1">
-                              <span class="fa fa-cog fa-lg" />
-                            </a>
-                            <a class="theme-display-btn btn-theme-secondary-display me-1">
-                              <span class="fa fa-eye fa-lg" />
-                            </a>
-                            <v-menu location="bottom end">
-                              <template #activator="{ props: activatorProps }">
-                                <a
-                                  v-bind="activatorProps"
-                                  class="theme-display-btn btn-theme-primary-display float-right action-menu-dropdown">
-                                  <span class="fa fa-caret-down" />
-                                </a>
-                              </template>
-                              <v-list density="compact">
-                                <v-list-item>
-                                  Example
-                                </v-list-item>
-                                <v-list-item active>
-                                  Active Example
-                                </v-list-item>
-                              </v-list>
-                            </v-menu>
-                          </div>
-                        </v-col>
-                      </v-row>
-                    </div>
-                    <div class="display-sub-sub-navbar">
-                      <arkime-paging
-                        class="mt-1 ms-1"
-                        :records-total="200"
-                        :records-filtered="100" />
-                    </div>
-                    <div>
-                      <div class="ms-1 me-1 mt-2 pb-2">
-                        <span class="field cursor-pointer">
-                          example field value
-                          <span class="fa fa-caret-down" />
-                        </span>
-                        <br><br>
-                        <v-row>
-                          <v-col
-                            cols="12"
-                            md="6"
-                            class="sessionsrc">
-                            <small class="session-detail-ts font-weight-bold">
-                              <em class="ts-value">
-                                2013/11/18 03:06:52.831
-                              </em>
-                              <span class="float-right">
-                                27 bytes
-                              </span>
-                            </small>
-                            <pre>Source packet text</pre>
-                          </v-col>
-                          <v-col
-                            cols="12"
-                            md="6"
-                            class="sessiondst">
-                            <small class="session-detail-ts font-weight-bold">
-                              <em class="ts-value">
-                                2013/11/18 03:06:52.841
-                              </em>
-                              <span class="float-right">
-                                160 bytes
-                              </span>
-                            </small>
-                            <pre>Destination packet text</pre>
-                          </v-col>
-                        </v-row>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </v-col>
-            </v-row> <!-- /custom theme display -->
-
-            <br>
-
-            <p
-              v-if="displayHelp"
-              class="help-block">
-              Main theme colors are lightened/darkened programmatically to
-              provide dark borders, active buttons, hover colors, etc.
-            </p>
-
-            <!-- main colors -->
-            <v-row>
-              <v-col
-                cols="12"
-                md="3">
-                <color-picker
-                  :color="primary"
-                  @color-selected="changeColor"
-                  color-name="primary"
-                  field-name="Primary" />
-                <p
-                  v-if="displayHelp"
-                  class="help-block small">
-                  Primary navbar, buttons, active item(s) in lists
-                </p>
-              </v-col>
-              <v-col
-                cols="12"
-                md="3">
-                <color-picker
-                  :color="secondary"
-                  @color-selected="changeColor"
-                  color-name="secondary"
-                  field-name="Secondary" />
-                <p
-                  v-if="displayHelp"
-                  class="help-block small">
-                  Buttons
-                </p>
-              </v-col>
-              <v-col
-                cols="12"
-                md="3">
-                <color-picker
-                  :color="tertiary"
-                  @color-selected="changeColor"
-                  color-name="tertiary"
-                  field-name="Tertiary" />
-                <p
-                  v-if="displayHelp"
-                  class="help-block small">
-                  Action buttons (search, apply, open, etc)
-                </p>
-              </v-col>
-              <v-col
-                cols="12"
-                md="3">
-                <color-picker
-                  :color="quaternary"
-                  @color-selected="changeColor"
-                  color-name="quaternary"
-                  field-name="Quaternary" />
-                <p
-                  v-if="displayHelp"
-                  class="help-block small">
-                  Accent and all other buttons
-                </p>
-              </v-col>
-            </v-row> <!-- /main colors -->
-
-            <p
-              v-if="displayHelp"
-              class="help-block">
-              <em>Highlight colors should be similar to their parent color, above.</em>
-              <br>
-              For <strong>light themes</strong>, the highlight color should be <strong>lighter</strong> than the original.
-              For <strong>dark themes</strong>, the highlight color should be <strong>darker</strong> than original.
-            </p>
-
-            <!-- main color highlights/backgrounds -->
-            <v-row>
-              <v-col
-                cols="12"
-                md="3">
-                <color-picker
-                  :color="primaryLightest"
-                  @color-selected="changeColor"
-                  color-name="primaryLightest"
-                  field-name="Highlight 1" />
-                <p
-                  v-if="displayHelp"
-                  class="help-block small">
-                  Backgrounds
-                </p>
-              </v-col>
-              <v-col
-                cols="12"
-                md="3">
-                <color-picker
-                  :color="secondaryLightest"
-                  @color-selected="changeColor"
-                  color-name="secondaryLightest"
-                  field-name="Highlight 2" />
-                <p
-                  v-if="displayHelp"
-                  class="help-block small">
-                  Search/Secondary navbar
-                </p>
-              </v-col>
-              <v-col
-                cols="12"
-                md="3">
-                <color-picker
-                  :color="tertiaryLightest"
-                  @color-selected="changeColor"
-                  color-name="tertiaryLightest"
-                  field-name="Highlight 3" />
-                <p
-                  v-if="displayHelp"
-                  class="help-block small">
-                  Tertiary navbar, table hover
-                </p>
-              </v-col>
-              <v-col
-                cols="12"
-                md="3">
-                <color-picker
-                  :color="quaternaryLightest"
-                  @color-selected="changeColor"
-                  color-name="quaternaryLightest"
-                  field-name="Highlight 4" />
-                <p
-                  v-if="displayHelp"
-                  class="help-block small">
-                  Session detail background
-                </p>
-              </v-col>
-            </v-row> <!-- /main color highlights/backgrounds -->
-
-            <br>
-
-            <v-row
-              v-if="displayHelp">
-              <v-col cols="6">
-                <p class="help-block">
-                  <em>Map colors</em>
-                  <br>
-                  These should be different to show contrast between land and water.
-                </p>
-              </v-col>
-              <v-col cols="6">
-                <p class="help-block">
-                  <em>Packet colors</em>
-                  <br>
-                  These are displayed when viewing session packets and in the
-                  sessions timeline graph. They should be very different colors.
-                </p>
-              </v-col>
-            </v-row>
-
-            <v-row>
-              <!-- visualization colors -->
-              <v-col
-                cols="12"
-                md="3">
-                <color-picker
-                  :color="water"
-                  @color-selected="changeColor"
-                  color-name="water"
-                  field-name="Map Water" />
-              </v-col>
-              <v-col
-                cols="12"
-                md="3">
-                <color-picker
-                  :color="land"
-                  @color-selected="changeColor"
-                  color-name="land"
-                  field-name="Map Land" />
-              </v-col> <!-- /visualization colors -->
-              <!-- packet colors -->
-              <v-col
-                cols="12"
-                md="3">
-                <color-picker
-                  :color="src"
-                  @color-selected="changeColor"
-                  color-name="src"
-                  field-name="Source Packets" />
-              </v-col>
-              <v-col
-                cols="12"
-                md="3">
-                <color-picker
-                  :color="dst"
-                  @color-selected="changeColor"
-                  color-name="dst"
-                  field-name="Destination Packets" />
-              </v-col> <!-- /packet colors -->
-            </v-row>
-
-            <br>
-
-            <v-row>
-              <v-col
-                cols="12"
-                md="12">
-                <label>
-                  Share your theme with others:
-                </label>
-                <div class="arkime-input-group arkime-input-group--fluid">
-                  <input
-                    type="text"
-                    class="arkime-input-control"
-                    v-model="themeString"
-                    @keyup.up.down.left.right.a.b="secretStuff">
-                  <v-btn
-                    variant="flat"
-                    size="small"
-                    density="comfortable"
-                    :style="secondaryBtnStyle"
-                    class="me-1"
-                    @click="copyValue(themeString)">
-                    <span class="fa fa-clipboard me-1" />
-                    {{ $t('common.copy') }}
-                  </v-btn>
-                  <v-btn
-                    variant="flat"
-                    size="small"
-                    density="comfortable"
-                    :style="primaryBtnStyle"
-                    class="me-1"
-                    @click="updateThemeString">
-                    <span class="fa fa-check me-1" />
-                    {{ $t('common.apply') }}
-                  </v-btn>
-                </div>
-              </v-col>
-            </v-row>
-          </div> <!-- /custom theme -->
         </form> <!-- /theme settings -->
 
         <!-- password settings -->
@@ -1696,7 +1144,7 @@ SPDX-License-Identifier: Apache-2.0
                   :src="totpQRDataUrl"
                   alt="TOTP QR Code"
                   class="rounded p-2"
-                  style="border: 1px solid var(--color-foreground, #333); background-color: var(--color-background, #fff);">
+                  style="border: 1px solid rgb(var(--v-theme-foreground)); background-color: rgb(var(--v-theme-background));">
                 <span
                   v-else>{{ $t('settings.totp.generatingQR') }}</span>
               </div>
@@ -1824,8 +1272,9 @@ import customCols from '../sessions/customCols.json';
 import ArkimeError from '../utils/Error.vue';
 import ArkimeLoading from '../utils/Loading.vue';
 import ArkimeFieldTypeahead from '../utils/FieldTypeahead.vue';
-import ColorPicker from '../utils/ColorPicker.vue';
-import ArkimePaging from '@common/Pagination.vue';
+import ThemePicker from '@common/ThemePicker.vue';
+import { THEMES } from '@common/themes/manifest.js';
+import { registerVuetifyTheme } from '@common/themes/registerVuetifyTheme.js';
 import Utils from '../utils/utils';
 import PeriodicQueries from './PeriodicQueries.vue';
 import Shortcuts from './Shortcuts.vue';
@@ -1845,8 +1294,7 @@ export default {
     ArkimeError,
     ArkimeLoading,
     ArkimeFieldTypeahead,
-    ColorPicker,
-    ArkimePaging,
+    ThemePicker,
     PeriodicQueries,
     Shortcuts,
     Notifiers,
@@ -1890,16 +1338,7 @@ export default {
       defaultSpiviewConfig,
       // theme settings vars
       watching: 'assets/watching.gif',
-      themeDisplays: [
-        { name: 'Arkime Light', class: 'arkime-light-theme' },
-        { name: 'Arkime Dark', class: 'arkime-dark-theme' },
-        { name: 'Purp-purp', class: 'purp-theme' },
-        { name: 'Blue', class: 'blue-theme' },
-        { name: 'Green', class: 'green-theme' },
-        { name: 'Cotton Candy', class: 'cotton-candy-theme' },
-        { name: 'Green on Black', class: 'dark-2-theme' },
-        { name: 'Dark Blue', class: 'dark-3-theme' }
-      ],
+      themes: THEMES, // from common/vueapp/themes/manifest.js
       logos: [
         { name: 'Arkime Light', location: 'assets/Arkime_Logo_Mark_White.png' },
         { name: 'Arkime Dark', location: 'assets/Arkime_Logo_Mark_Black.png' },
@@ -1910,7 +1349,6 @@ export default {
         { name: 'Arkime Circle Mint', location: 'assets/Arkime_Icon_ColorMint.png' },
         { name: 'Arkime Circle Blue', location: 'assets/Arkime_Icon_ColorBlue.png' }
       ],
-      creatingCustom: false,
       displayHelp: true,
       // password settings vars
       currentPassword: '',
@@ -1930,20 +1368,20 @@ export default {
       hasUsersES: this.$constants.HASUSERSES,
       // Arkime theme-color v-btn styles. Vuetify :color can't take CSS vars.
       primaryBtnStyle: {
-        backgroundColor: 'var(--color-primary)',
-        color: 'var(--color-button, #FFF)'
+        backgroundColor: 'rgb(var(--v-theme-primary))',
+        color: 'rgb(var(--v-theme-button-fg))'
       },
       secondaryBtnStyle: {
-        backgroundColor: 'var(--color-secondary)',
-        color: 'var(--color-button, #FFF)'
+        backgroundColor: 'rgb(var(--v-theme-secondary))',
+        color: 'rgb(var(--v-theme-button-fg))'
       },
       tertiaryBtnStyle: {
-        backgroundColor: 'var(--color-tertiary)',
-        color: 'var(--color-button, #FFF)'
+        backgroundColor: 'rgb(var(--v-theme-tertiary))',
+        color: 'rgb(var(--v-theme-button-fg))'
       },
       quaternaryBtnStyle: {
-        backgroundColor: 'var(--color-quaternary)',
-        color: 'var(--color-button, #FFF)'
+        backgroundColor: 'rgb(var(--v-theme-quaternary))',
+        color: 'rgb(var(--v-theme-button-fg))'
       }
     };
   },
@@ -1955,6 +1393,14 @@ export default {
     // Map Bootstrap-flavored "danger" → Vuetify "error".
     vuetifyMsgType: function () {
       return this.msgType === 'danger' ? 'error' : (this.msgType || 'success');
+    },
+    /* The id that ThemePicker should show as selected. Normalizes
+       legacy '...-theme' suffix strings to bare manifest ids; falls
+       back to the manifest default for unknown values. */
+    activeThemeId: function () {
+      const raw = (this.settings && this.settings.theme) || '';
+      if (raw.startsWith('custom1')) { return 'custom1'; }
+      return raw.replace(/-theme$/, '') || 'arkime-light';
     },
     sortableColumns: function () {
       return this.columns.filter(column => !column.unsortable);
@@ -1992,8 +1438,6 @@ export default {
         this.openView('general');
       }
     }
-
-    this.getThemeColors();
 
     UserService.getCurrent().then((response) => {
       this.displayName = response.userId;
@@ -2232,61 +1676,34 @@ export default {
     },
     /* THEMES ------------------------------------------ */
     setTheme: function () {
-      // default to default theme if the user has not set a theme
-      if (!this.settings.theme) { this.settings.theme = 'arkime-light-theme'; }
-      if (this.settings.theme.startsWith('custom')) {
-        this.creatingCustom = true;
+      // default to the arkime-light theme if the user has not set one;
+      // normalize any legacy '...-theme' suffix saved on prior versions.
+      if (!this.settings.theme) { this.settings.theme = 'arkime-light'; }
+      if (typeof this.settings.theme === 'string' && this.settings.theme.endsWith('-theme')) {
+        this.settings.theme = this.settings.theme.replace(/-theme$/, '');
       }
       if (!this.settings.logo) {
         this.settings.logo = 'assets/Arkime_Logo_Mark_White.png';
       }
     },
-    /* changes the ui theme (picked from existing themes) */
-    changeTheme: function (newTheme) {
-      document.body.className = newTheme;
-      this.getThemeColors();
+    changeTheme: function (newThemeId) {
+      this.settings.theme = newThemeId;
+      this.$vuetify.theme.change(newThemeId);
       this.update();
     },
-    /* changes a color value of a custom theme and applies the theme */
-    changeColor: function (newColor) {
-      if (newColor) {
-        this[newColor.name] = newColor.value;
+    onCustomThemeChange: function (newCustomTheme) {
+      if (!newCustomTheme || typeof newCustomTheme.colors !== 'object' || !newCustomTheme.colors) return;
+      const safe = {
+        dark: !!newCustomTheme.dark,
+        colors: { ...newCustomTheme.colors }
+      };
+      registerVuetifyTheme(this.$vuetify, 'custom1', safe);
+      this.settings.customTheme = safe;
+      if (this.settings.theme !== 'custom1') {
+        this.settings.theme = 'custom1';
+        this.$vuetify.theme.change('custom1');
       }
-
-      document.body.className = 'custom-theme';
-
-      this.setThemeString();
-
-      this.settings.theme = `custom1:${this.themeString}`;
-
-      this.update(true);
-    },
-    updateThemeString: function () {
-      const colors = this.themeString.split(',');
-
-      this.background = colors[0];
-      this.foreground = colors[1];
-      this.foregroundAccent = colors[2];
-
-      this.primary = colors[3];
-      this.primaryLightest = colors[4];
-
-      this.secondary = colors[5];
-      this.secondaryLightest = colors[6];
-
-      this.tertiary = colors[7];
-      this.tertiaryLightest = colors[8];
-
-      this.quaternary = colors[9];
-      this.quaternaryLightest = colors[10];
-
-      this.water = colors[11];
-      this.land = colors[12];
-
-      this.src = colors[13];
-      this.dst = colors[14];
-
-      this.changeColor();
+      this.update();
     },
     changeLogo: function (newLogoLocation) {
       this.settings.logo = newLogoLocation;
@@ -2422,37 +1839,6 @@ export default {
     },
 
     /* helper functions ---------------------------------------------------- */
-    /* retrieves the theme colors from the document body's property values */
-    getThemeColors: function () {
-      const styles = window.getComputedStyle(document.body);
-
-      this.background = styles.getPropertyValue('--color-background').trim() || '#FFFFFF';
-      this.foreground = styles.getPropertyValue('--color-foreground').trim() || '#333333';
-      this.foregroundAccent = styles.getPropertyValue('--color-foreground-accent').trim();
-
-      this.primary = styles.getPropertyValue('--color-primary').trim();
-      this.primaryLightest = styles.getPropertyValue('--color-primary-lightest').trim();
-
-      this.secondary = styles.getPropertyValue('--color-secondary').trim();
-      this.secondaryLightest = styles.getPropertyValue('--color-secondary-lightest').trim();
-
-      this.tertiary = styles.getPropertyValue('--color-tertiary').trim();
-      this.tertiaryLightest = styles.getPropertyValue('--color-tertiary-lightest').trim();
-
-      this.quaternary = styles.getPropertyValue('--color-quaternary').trim();
-      this.quaternaryLightest = styles.getPropertyValue('--color-quaternary-lightest').trim();
-
-      this.water = styles.getPropertyValue('--color-water').trim();
-      this.land = styles.getPropertyValue('--color-land').trim() || this.primary;
-
-      this.src = styles.getPropertyValue('--color-src').trim() || '#CA0404';
-      this.dst = styles.getPropertyValue('--color-dst').trim() || '#0000FF';
-
-      this.setThemeString();
-    },
-    setThemeString: function () {
-      this.themeString = `${this.background},${this.foreground},${this.foregroundAccent},${this.primary},${this.primaryLightest},${this.secondary},${this.secondaryLightest},${this.tertiary},${this.tertiaryLightest},${this.quaternary},${this.quaternaryLightest},${this.water},${this.land},${this.src},${this.dst}`;
-    },
     /* retrieves the specified user's settings */
     getSettings: function (initLoad) {
       UserService.getSettings(this.userId).then((response) => {
@@ -2680,8 +2066,8 @@ export default {
 /* apply theme color to notifier cards */
 .card {
   box-shadow: inset 0 1px 1px rgba(0, 0, 0, .05);
-  background-color: var(--color-gray-lighter);
-  border: 1px solid var(--color-gray-light);
+  background-color: rgb(var(--v-theme-neutral-lighter));
+  border: 1px solid rgb(var(--v-theme-neutral-light));
 }
 
 /* theme displays ----------------- */
@@ -2711,813 +2097,4 @@ export default {
   font-weight: bolder;
 }
 
-.settings-page .theme-display {
-  overflow: hidden;
-  border-radius: 6px;
-  padding-bottom: 20px;
-}
-
-.settings-page .preview-navbar {
-  min-height: 20px;
-  height: 36px;
-  border-radius: 6px 6px 0 0;
-  z-index: 1;
-}
-
-.settings-page .preview-navbar .arkime-logo {
-  top: 0;
-  left: 20px;
-  height: 36px;
-  position: absolute;
-}
-/* icon logos (logo in circle) are wider */
-.settings-page .preview-navbar .arkime-logo[src*="Icon"] {
-  left: 8px;
-}
-
-.settings-page .preview-navbar .preview-nav {
-  position: absolute;
-  left: 50px
-}
-
-.settings-page .preview-navbar .preview-navbar-status {
-  margin-right: -8px;
-}
-
-.settings-page .preview-navbar .preview-navbar-status .health-green {
-  color: #00aa00;
-}
-
-.settings-page .preview-navbar-dark a {
-  padding: 6px;
-  color: #FFFFFF;
-}
-
-.settings-page .display-sub-navbar {
-  height: 40px;
-  position: relative;
-  -webkit-box-shadow: 0 0 16px -2px black;
-     -moz-box-shadow: 0 0 16px -2px black;
-          box-shadow: 0 0 16px -2px black;
-}
-.settings-page .display-sub-navbar .display-sub-navbar-buttons {
-  margin-top: 4px;
-  margin-right: 4px;
-  margin-left: -10px;
-}
-
-.settings-page .display-sub-navbar .text-theme-accent {
-  display: inline-block;
-  margin-left: -20px;
-  padding-top: 11px;
-  font-size: 12px;
-}
-
-.settings-page .display-sub-sub-navbar {
-  border-radius: 0 0 6px 6px;
-  margin-top: -6px;
-  padding-top: 6px;
-}
-
-/* theme-display button (preview swatch). Replaces Bootstrap's .btn base
-   so the theme picker preview survives the .btn class going away. The
-   per-theme variants below override color/background. */
-.theme-display-btn {
-  display: inline-block;
-  padding: 0.25rem 0.5rem;
-  font-size: 0.875rem;
-  line-height: 1.5;
-  border: 1px solid transparent;
-  border-radius: 0.25rem;
-  cursor: pointer;
-  user-select: none;
-  text-decoration: none;
-}
-
-/* arkime light (default) */
-.settings-page .arkime-light-theme .preview-navbar {
-  background-color: #212121;
-  border-color: #111111;
-}
-
-.settings-page .arkime-light-theme .preview-navbar-dark a:hover,
-.settings-page .arkime-light-theme .preview-navbar-dark a.active {
-  background-color: #303030;
-}
-
-.settings-page .arkime-light-theme .display-sub-navbar {
-  background-color: #A4C2D6;
-}
-
-.settings-page .arkime-light-theme .display-sub-sub-navbar {
-  background-color: #E6F3EB;
-}
-
-.settings-page .arkime-light-theme .display-sub-navbar .text-theme-accent {
-  color: #004C83;
-}
-
-.settings-page .arkime-light-theme .display-sub-navbar .btn-theme-primary-display {
-  color: #FFFFFF;
-  background-color: #303030;
-  border-color: #212121;
-}
-.settings-page .arkime-light-theme .display-sub-navbar .btn-theme-secondary-display {
-  color: #FFFFFF;
-  background-color: #004C83;
-  border-color: #003A64;
-}
-.settings-page .arkime-light-theme .display-sub-navbar .btn-theme-tertiary-display {
-  color: #FFFFFF;
-  background-color: #66B689;
-  border-color: #52AC79;
-}
-.settings-page .arkime-light-theme .display-sub-navbar .btn-theme-quaternary-display {
-  color: #FFFFFF;
-  background-color: #2F7D86;
-  border-color: #27686F;
-}
-
-.settings-page .arkime-light-theme .arkime-dropdown-menu {
-  background-color: #FFFFFF;
-  border-color: #EEEEEE;
-  padding: 2px 0;
-  font-size: .85rem;
-  min-width: 12rem;
-}
-.settings-page .arkime-light-theme .arkime-dropdown-menu .arkime-dropdown-item {
-  color: #212529;
-  padding: 2px 8px;
-}
-.settings-page .arkime-light-theme .arkime-dropdown-menu .arkime-dropdown-item:hover {
-  background-color: #EEEEEE;
-  color: #212529;
-}
-.settings-page .arkime-light-theme .arkime-dropdown-menu .arkime-dropdown-item:focus {
-  background-color: #FFFFFF;
-  color: #212529;
-}
-.settings-page .arkime-light-theme .arkime-dropdown-menu li.active .arkime-dropdown-item {
-  background-color: #303030;
-  color: #FFFFFF;
-}
-
-.settings-page .arkime-light-theme .field {
-  color: #004C83;
-}
-.settings-page .arkime-light-theme .field:hover {
-  background-color: #FFFFFF;
-  border-color: #EEEEEE;
-}
-
-.settings-page .arkime-light-theme .btn {
-  color: #FFFFFF !important;
-}
-
-/* arkime dark */
-.settings-page .arkime-dark-theme .preview-navbar {
-  background-color: #9E9E9E;
-  border-color: #8E8E8E;
-}
-
-.settings-page .arkime-dark-theme .preview-navbar-dark a:hover,
-.settings-page .arkime-dark-theme .preview-navbar-dark a.active {
-  background-color: #ADADAD;
-}
-
-.settings-page .arkime-dark-theme .display-sub-navbar {
-  background-color: #003B66;
-}
-
-.settings-page .arkime-dark-theme .display-sub-sub-navbar {
-  background-color: #237543;
-}
-
-.settings-page .arkime-dark-theme .display-sub-navbar .text-theme-accent {
-  color: #D1E9DC;
-}
-
-.settings-page .arkime-dark-theme .display-sub-navbar .btn-theme-primary-display {
-  color: #FFFFFF;
-  background-color: #ADADAD;
-  border-color: #9E9E9E;
-}
-.settings-page .arkime-dark-theme .display-sub-navbar .btn-theme-secondary-display {
-  color: #FFFFFF;
-  background-color: #80A9C7;
-  border-color: #6B9BBE;
-}
-.settings-page .arkime-dark-theme .display-sub-navbar .btn-theme-tertiary-display {
-  color: #FFFFFF;
-  background-color: #079B72;
-  border-color: #077D5C;
-}
-.settings-page .arkime-dark-theme .display-sub-navbar .btn-theme-quaternary-display {
-  color: #FFFFFF;
-  background-color: #66B689;
-  border-color: #52AC79;
-}
-
-.settings-page .arkime-dark-theme .arkime-dropdown-menu {
-  background-color: #303030;
-  border-color: #555555;
-  padding: 2px 0;
-  font-size: .85rem;
-  min-width: 12rem;
-}
-.settings-page .arkime-dark-theme .arkime-dropdown-menu .arkime-dropdown-item {
-  color: #FFFFFF;
-  padding: 2px 8px;
-}
-.settings-page .arkime-dark-theme .arkime-dropdown-menu .arkime-dropdown-item:hover {
-  background-color: #555555;
-  color: #FFFFFF;
-}
-.settings-page .arkime-dark-theme .arkime-dropdown-menu .arkime-dropdown-item:focus {
-  background-color: #555555;
-  color: #FFFFFF;
-}
-.settings-page .arkime-dark-theme .arkime-dropdown-menu li.active .arkime-dropdown-item {
-  background-color: #ADADAD;
-  color: #303030;
-}
-
-.settings-page .arkime-dark-theme .field {
-  color: #D1E9DC;
-}
-.settings-page .arkime-dark-theme .field:hover {
-  background-color: #303030;
-  border-color: #555555;
-}
-
-.settings-page .arkime-dark-theme .btn {
-  color: #FFFFFF !important;
-}
-
-/* purp */
-.settings-page .purp-theme .preview-navbar {
-  background-color: #530763;
-  border-color: #360540;
-}
-
-.settings-page .purp-theme .preview-navbar-dark a:hover,
-.settings-page .purp-theme .preview-navbar-dark a.active {
-  background-color: #830b9c;
-}
-
-.settings-page .purp-theme .display-sub-navbar {
-  background-color: #EDFCFF;
-}
-
-.settings-page .purp-theme .display-sub-sub-navbar {
-  background-color: #FFF7E5;
-}
-
-.settings-page .purp-theme .display-sub-navbar .text-theme-accent {
-  color: #76207d;
-}
-
-.settings-page .purp-theme .display-sub-navbar .btn-theme-primary-display {
-  color: #FFFFFF;
-  background-color: #830B9C;
-  border-color: #530763;
-}
-.settings-page .purp-theme .display-sub-navbar .btn-theme-secondary-display {
-  color: #FFFFFF;
-  background-color: #1F1FA5;
-  border-color: #1A1A87;
-}
-.settings-page .purp-theme .display-sub-navbar .btn-theme-tertiary-display {
-  color: #FFFFFF;
-  background-color: #079B72;
-  border-color: #077D5C;
-}
-.settings-page .purp-theme .display-sub-navbar .btn-theme-quaternary-display {
-  color: #FFFFFF;
-  background-color: #ECB30A;
-  border-color: #CD9A09;
-}
-
-.settings-page .purp-theme .arkime-dropdown-menu {
-  background-color: #FFFFFF;
-  border-color: #EEEEEE;
-  padding: 2px 0;
-  font-size: .85rem;
-  min-width: 12rem;
-}
-.settings-page .purp-theme .arkime-dropdown-menu .arkime-dropdown-item {
-  color: #212529;
-  padding: 2px 8px;
-}
-.settings-page .purp-theme .arkime-dropdown-menu .arkime-dropdown-item:hover {
-  background-color: #EEEEEE;
-  color: #212529;
-}
-.settings-page .purp-theme .arkime-dropdown-menu .arkime-dropdown-item:focus {
-  background-color: #FFFFFF;
-  color: #212529;
-}
-.settings-page .purp-theme .arkime-dropdown-menu li.active .arkime-dropdown-item {
-  background-color: #830B9C;
-  color: #FFFFFF;
-}
-
-.settings-page .purp-theme .field {
-  color: #76207d;
-}
-.settings-page .purp-theme .field:hover {
-  background-color: #FFFFFF;
-  border-color: #EEEEEE;
-}
-
-.settings-page .purp-theme .btn {
-  color: #FFFFFF !important;
-}
-
-/* blue */
-.settings-page .blue-theme .preview-navbar {
-  background-color: #163254;
-  border-color: #000000;
-}
-
-.settings-page .blue-theme .preview-navbar-dark a:hover,
-.settings-page .blue-theme .preview-navbar-dark a.active {
-  background-color: #214b78;
-}
-
-.settings-page .blue-theme .display-sub-navbar {
-  background-color: #DBECE7;
-}
-
-.settings-page .blue-theme .display-sub-sub-navbar {
-  background-color: #FFF7E5;
-}
-
-.settings-page .blue-theme .display-sub-navbar .text-theme-accent {
-  color: #9A4E93;
-}
-
-.settings-page .blue-theme .display-sub-navbar .btn-theme-primary-display {
-  color: #FFFFFF;
-  background-color: #214B78;
-  border-color: #530763;
-}
-.settings-page .blue-theme .display-sub-navbar .btn-theme-secondary-display {
-  color: #FFFFFF;
-  background-color: #3D7B7E;
-  border-color: #306264;
-}
-.settings-page .blue-theme .display-sub-navbar .btn-theme-tertiary-display {
-  color: #FFFFFF;
-  background-color: #42B7C5;
-  border-color: #33919b;
-}
-.settings-page .blue-theme .display-sub-navbar .btn-theme-quaternary-display {
-  color: #FFFFFF;
-  background-color: #ECB30A;
-  border-color: #CD9A09;
-}
-
-.settings-page .blue-theme .arkime-dropdown-menu {
-  background-color: #FFFFFF;
-  border-color: #EEEEEE;
-  padding: 2px 0;
-  font-size: .85rem;
-  min-width: 12rem;
-}
-.settings-page .blue-theme .arkime-dropdown-menu .arkime-dropdown-item {
-  color: #212529;
-  padding: 2px 8px;
-}
-.settings-page .blue-theme .arkime-dropdown-menu .arkime-dropdown-item:hover {
-  background-color: #EEEEEE;
-  color: #212529;
-}
-.settings-page .blue-theme .arkime-dropdown-menu .arkime-dropdown-item:focus {
-  background-color: #FFFFFF;
-  color: #212529;
-}
-.settings-page .blue-theme .arkime-dropdown-menu li.active .arkime-dropdown-item {
-  background-color: #214B78;
-  color: #FFFFFF;
-}
-
-.settings-page .green-theme .field {
-  color: #9A4E93;
-}
-.settings-page .green-theme .field:hover {
-  background-color: #FFFFFF;
-  border-color: #EEEEEE;
-}
-
-.settings-page .blue-theme .btn {
-  color: #FFFFFF !important;
-}
-
-/* green */
-.settings-page .green-theme .preview-navbar {
-  background-color: #2A6E3d;
-  border-color: #235A32;
-}
-
-.settings-page .green-theme .preview-navbar-dark a:hover,
-.settings-page .green-theme .preview-navbar-dark a.active {
-  background-color: #2a7847;
-}
-
-.settings-page .green-theme .display-sub-navbar {
-  background-color: #DBECE7;
-}
-
-.settings-page .green-theme .display-sub-sub-navbar {
-  background-color: #FDFFE2;
-}
-
-.settings-page .green-theme .display-sub-navbar .text-theme-accent {
-  color: #38738d;
-}
-
-.settings-page .green-theme .display-sub-navbar .btn-theme-primary-display {
-  color: #FFFFFF;
-  background-color: #2A7847;
-  border-color: #2A6E3d;
-}
-.settings-page .green-theme .display-sub-navbar .btn-theme-secondary-display {
-  color: #FFFFFF;
-  background-color: #3D7B7E;
-  border-color: #306264;
-}
-.settings-page .green-theme .display-sub-navbar .btn-theme-tertiary-display {
-  color: #FFFFFF;
-  background-color: #91C563;
-  border-color: #7EAA57;
-}
-.settings-page .green-theme .display-sub-navbar .btn-theme-quaternary-display {
-  color: #FFFFFF;
-  background-color: #BECF14;
-  border-color: #ADBC12;
-}
-
-.settings-page .green-theme .arkime-dropdown-menu {
-  background-color: #FFFFFF;
-  border-color: #EEEEEE;
-  padding: 2px 0;
-  font-size: .85rem;
-  min-width: 12rem;
-}
-.settings-page .green-theme .arkime-dropdown-menu .arkime-dropdown-item {
-  color: #212529;
-  padding: 2px 8px;
-}
-.settings-page .green-theme .arkime-dropdown-menu .arkime-dropdown-item:hover {
-  background-color: #EEEEEE;
-  color: #212529;
-}
-.settings-page .green-theme .arkime-dropdown-menu .arkime-dropdown-item:focus {
-  background-color: #FFFFFF;
-  color: #212529;
-}
-.settings-page .green-theme .arkime-dropdown-menu li.active .arkime-dropdown-item {
-  background-color: #2A7847;
-  color: #FFFFFF;
-}
-
-.settings-page .blue-theme .field {
-  color: #38738d;
-}
-.settings-page .blue-theme .field:hover {
-  background-color: #FFFFFF;
-  border-color: #EEEEEE;
-}
-
-.settings-page .green-theme .btn {
-  color: #FFFFFF !important;
-}
-
-/* cotton candy */
-.settings-page .cotton-candy-theme .preview-navbar {
-  background-color: #B0346D;
-  border-color: #9B335A;
-}
-
-.settings-page .cotton-candy-theme .preview-navbar-dark a:hover,
-.settings-page .cotton-candy-theme .preview-navbar-dark a.active {
-  background-color: #c43d75;
-}
-
-.settings-page .cotton-candy-theme .display-sub-navbar {
-  background-color: #D7F1FF;
-}
-
-.settings-page .cotton-candy-theme .display-sub-sub-navbar {
-  background-color: #FFF8DD;
-}
-
-.settings-page .cotton-candy-theme .display-sub-navbar .text-theme-accent {
-  color: #9A4E93;
-}
-
-.settings-page .cotton-candy-theme .display-sub-navbar .btn-theme-primary-display {
-  color: #FFFFFF;
-  background-color: #C43D75;
-  border-color: #B0346D;
-}
-.settings-page .cotton-candy-theme .display-sub-navbar .btn-theme-secondary-display {
-  color: #FFFFFF;
-  background-color: #3CAED2;
-  border-color: #389BBE;
-}
-.settings-page .cotton-candy-theme .display-sub-navbar .btn-theme-tertiary-display {
-  color: #FFFFFF;
-  background-color: #079B72;
-  border-color: #077D5C;
-}
-.settings-page .cotton-candy-theme .display-sub-navbar .btn-theme-quaternary-display {
-  color: #FFFFFF;
-  background-color: #F39C12;
-  border-color: #D78A10;
-}
-
-.settings-page .cotton-candy-theme .arkime-dropdown-menu {
-  background-color: #FFFFFF;
-  border-color: #EEEEEE;
-  padding: 2px 0;
-  font-size: .85rem;
-  min-width: 12rem;
-}
-.settings-page .cotton-candy-theme .arkime-dropdown-menu .arkime-dropdown-item {
-  color: #212529;
-  padding: 2px 8px;
-}
-.settings-page .cotton-candy-theme .arkime-dropdown-menu .arkime-dropdown-item:hover {
-  background-color: #EEEEEE;
-  color: #212529;
-}
-.settings-page .cotton-candy-theme .arkime-dropdown-menu .arkime-dropdown-item:focus {
-  background-color: #FFFFFF;
-  color: #212529;
-}
-.settings-page .cotton-candy-theme .arkime-dropdown-menu li.active .arkime-dropdown-item {
-  background-color: #C43D75;
-  color: #FFFFFF;
-}
-
-.settings-page .cotton-candy-theme .field {
-  color: #9A4E93;
-}
-.settings-page .cotton-candy-theme .field:hover {
-  background-color: #FFFFFF;
-  border-color: #EEEEEE;
-}
-
-.settings-page .cotton-candy-theme .btn {
-  color: #FFFFFF !important;
-}
-
-/* green on black */
-.settings-page .dark-2-theme .preview-navbar {
-  background-color: #363A7D;
-  border-color: #2F2F5F;
-}
-
-.settings-page .dark-2-theme .preview-navbar-dark a:hover,
-.settings-page .dark-2-theme .preview-navbar-dark a.active {
-  background-color: #444a9b;
-}
-
-.settings-page .dark-2-theme .display-sub-navbar {
-  background-color: #0F2237;
-}
-
-.settings-page .dark-2-theme .display-sub-sub-navbar {
-  background-color: #191919;
-}
-
-.settings-page .dark-2-theme .display-sub-navbar .text-theme-accent {
-  color: #00CA16;
-}
-
-.settings-page .dark-2-theme .display-sub-navbar .btn-theme-primary-display {
-  color: #FFFFFF;
-  background-color: #444A9B;
-  border-color: #363A7D;
-}
-.settings-page .dark-2-theme .display-sub-navbar .btn-theme-secondary-display {
-  color: #FFFFFF;
-  background-color: #2E5D9B;
-  border-color: #264B7E;
-}
-.settings-page .dark-2-theme .display-sub-navbar .btn-theme-tertiary-display {
-  color: #FFFFFF;
-  background-color: #00BB20;
-  border-color: #009D1D;
-}
-.settings-page .dark-2-theme .display-sub-navbar .btn-theme-quaternary-display {
-  color: #FFFFFF;
-  background-color: #686868;
-  border-color: #4B4B4B;
-}
-
-.settings-page .dark-2-theme .arkime-dropdown-menu {
-  background-color: #222222;
-  border-color: #555555;
-  padding: 2px 0;
-  font-size: .85rem;
-  min-width: 12rem;
-}
-.settings-page .dark-2-theme .arkime-dropdown-menu .arkime-dropdown-item {
-  color: #C7C7C7;
-  padding: 2px 8px;
-}
-.settings-page .dark-2-theme .arkime-dropdown-menu .arkime-dropdown-item:hover {
-  background-color: #555555;
-  color: #C7C7C7;
-}
-.settings-page .dark-2-theme .arkime-dropdown-menu .arkime-dropdown-item:focus {
-  background-color: #222222;
-  color: #C7C7C7;
-}
-.settings-page .dark-2-theme .arkime-dropdown-menu li.active .arkime-dropdown-item {
-  background-color: #444A9B;
-  color: #333333;
-}
-
-.settings-page .dark-2-theme .field {
-  color: #00CA16;
-}
-.settings-page .dark-2-theme .field:hover {
-  background-color: #222222;
-  border-color: #555555;
-}
-
-.settings-page .dark-2-theme .btn {
-  color: #FFFFFF !important;
-}
-
-/* Dark Blue */
-.settings-page .dark-3-theme .preview-navbar {
-  background-color: #9F9F9F;
-  border-color: #C3C3C3;
-}
-
-.settings-page .dark-3-theme .preview-navbar-dark a:hover,
-.settings-page .dark-3-theme .preview-navbar-dark a.active {
-  background-color: #8A8A8A;
-}
-
-.settings-page .dark-3-theme .preview-navbar-dark li.active a {
-  color: #FFFFFF;
-  background-color: #C3C3C3 !important;
-}
-
-.settings-page .dark-3-theme .display-sub-navbar {
-  background-color: #124B47;
-}
-
-.settings-page .dark-3-theme .display-sub-sub-navbar {
-  background-color: #460C3A;
-}
-.settings-page .dark-3-theme .display-sub-navbar .text-theme-accent{
-  color: #A6A8E2;
-}
-
-.settings-page .dark-3-theme .display-sub-navbar .btn-theme-primary-display {
-  color: #FFFFFF;
-  background-color: #8A8A8A;
-  border-color: #9F9F9F;
-}
-.settings-page .dark-3-theme .display-sub-navbar .btn-theme-secondary-display {
-  color: #FFFFFF;
-  background-color: #2AA198;
-  border-color: #23837B;
-}
-.settings-page .dark-3-theme .display-sub-navbar .btn-theme-tertiary-display {
-  color: #FFFFFF;
-  background-color: #268BD2;
-  border-color: #1F76B4;
-}
-.settings-page .dark-3-theme .display-sub-navbar .btn-theme-quaternary-display {
-  color: #FFFFFF;
-  background-color: #D33682;
-  border-color: #B42C72;
-}
-
-.settings-page .dark-3-theme .arkime-dropdown-menu {
-  background-color: #002833;
-  border-color: #555555;
-  padding: 2px 0;
-  font-size: .85rem;
-  min-width: 12rem;
-}
-.settings-page .dark-3-theme .arkime-dropdown-menu .arkime-dropdown-item {
-  color: #ADC1C3;
-  padding: 2px 8px;
-}
-.settings-page .dark-3-theme .arkime-dropdown-menu .arkime-dropdown-item:hover {
-  background-color: #555555;
-  color: #ADC1C3;
-}
-.settings-page .dark-3-theme .arkime-dropdown-menu .arkime-dropdown-item:focus {
-  background-color: #002833;
-  color: #ADC1C3;
-}
-.settings-page .dark-3-theme .arkime-dropdown-menu li.active .arkime-dropdown-item {
-  background-color: #8A8A8A;
-  color: #333333;
-}
-
-.settings-page .dark-3-theme .field {
-  color: #A6A8E2;
-}
-.settings-page .dark-3-theme .field:hover {
-  background-color: #002833;
-  border-color: #555555;
-}
-
-.settings-page .dark-3-theme .btn {
-  color: #FFFFFF !important;
-}
-
-/* Custom */
-.settings-page .custom-theme .theme-display {
-  background-color: var(--color-background);
-  color: var(--color-foreground);
-  -webkit-box-shadow: 0 0 16px -2px black;
-     -moz-box-shadow: 0 0 16px -2px black;
-          box-shadow: 0 0 16px -2px black;
-}
-
-.settings-page .custom-theme .preview-navbar {
-  background-color: var(--color-primary-dark);
-  border-color: var(--color-primary-darker);
-}
-.settings-page .custom-theme .preview-navbar a.preview-nav-item {
-  color: var(--color-button);
-}
-.settings-page .custom-theme .preview-navbar a.preview-nav-item:hover,
-.settings-page .custom-theme .preview-navbar a.preview-nav-item.active {
-  background-color: var(--color-primary);
-}
-
-.settings-page .custom-theme .display-sub-navbar {
-  background-color: var(--color-secondary-lightest);
-}
-
-.settings-page .custom-theme .display-sub-sub-navbar {
-  border-radius: 0;
-  height: 46px;
-  background-color: var(--color-quaternary-lightest);
-  -webkit-box-shadow: 0 0 16px -2px black;
-     -moz-box-shadow: 0 0 16px -2px black;
-          box-shadow: 0 0 16px -2px black;
-}
-
-.settings-page .custom-theme .display-sub-navbar .btn-theme-primary-display {
-  color: #FFFFFF;
-  background-color: var(--color-primary);
-  border-color: var(--color-primary-dark);
-}
-.settings-page .custom-theme .display-sub-navbar .btn-theme-secondary-display {
-  color: #FFFFFF;
-  background-color: var(--color-secondary);
-  border-color: var(--color-secondary-dark);
-}
-.settings-page .custom-theme .display-sub-navbar .btn-theme-tertiary-display {
-  color: #FFFFFF;
-  background-color: var(--color-tertiary);
-  border-color: var(--color-tertiary-dark);
-}
-.settings-page .custom-theme .display-sub-navbar .btn-theme-quaternary-display {
-  color: #FFFFFF;
-  background-color: var(--color-quaternary);
-  border-color: var(--color-quaternary-dark);
-}
-
-.settings-page .custom-theme .arkime-dropdown-menu {
-  color: var(--color-foreground);
-  background-color: var(--color-background, #FFFFFF);
-  border-color: var(--color-gray-light);
-}
-
-.settings-page .custom-theme .field {
-  color: var(--color-foreground-accent);
-}
-.settings-page .custom-theme .field:hover {
-  z-index: 4;
-  background-color: var(--color-white);
-  border: 1px solid var(--color-gray-light);
-}
-
-.settings-page .custom-theme .session-detail-ts {
-  color: var(--color-foreground-accent);
-  padding: 0 4px;
-}
-.settings-page .custom-theme .sessionsrc > pre {
-  color: var(--color-src, #CA0404);
-  padding: 2px 4px;
-}
-.settings-page .custom-theme .sessiondst > pre {
-  color: var(--color-dst, #0000FF);
-  padding: 2px 4px;
-}
 </style>

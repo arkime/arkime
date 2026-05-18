@@ -167,12 +167,12 @@ export default {
   display: inline-block;
   height: 21px;
   background-color: transparent;
-  color: var(--color-foreground, #333);
+  color: rgb(var(--v-theme-foreground));
   font-size: 11px;
   font-weight: 600;
   line-height: 21px;
   padding: 0 5px;
-  border: 1px solid var(--color-gray);
+  border: 1px solid rgb(var(--v-theme-neutral));
   border-radius: 0.25rem;
   cursor: pointer;
   max-width: 220px;
@@ -183,7 +183,7 @@ export default {
 }
 .session-info button.clickable-label:hover {
   color: #333;
-  background-color: var(--color-gray);
-  border-color: var(--color-gray);
+  background-color: rgb(var(--v-theme-neutral));
+  border-color: rgb(var(--v-theme-neutral));
 }
 </style>

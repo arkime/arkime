@@ -90,8 +90,8 @@ const filename = ref('sessions.pcap');
 
 // Arkime theme-color v-btn style. Vuetify :color can't take CSS vars.
 const tertiaryBtnStyle = {
-  backgroundColor: 'var(--color-tertiary)',
-  color: 'var(--color-button, #FFF)'
+  backgroundColor: 'rgb(var(--v-theme-tertiary))',
+  color: 'rgb(var(--v-theme-button-fg))'
 };
 
 // Access route

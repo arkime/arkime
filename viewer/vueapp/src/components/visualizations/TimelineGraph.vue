@@ -18,6 +18,7 @@ SPDX-License-Identifier: Apache-2.0
 
 <script>
 import uPlot from 'uplot';
+import { themedColor } from '@common/themes/themedColor.js';
 import 'uplot/dist/uPlot.min.css';
 import { commaString, timezoneDateString, humanReadableBytes, humanReadableNumber } from '@common/vueFilters.js';
 import moment from 'moment-timezone';
@@ -77,11 +78,10 @@ export default {
   methods: {
     /** Pull theme colors from CSS custom properties, matching Flot's setup. */
     readThemeColors () {
-      const styles = window.getComputedStyle(document.body);
-      this.foregroundColor = styles.getPropertyValue('--color-foreground').trim() || '#666';
-      this.srcColor = styles.getPropertyValue('--color-src').trim() || '#CA0404';
-      this.dstColor = styles.getPropertyValue('--color-dst').trim() || '#0000FF';
-      this.axisColor = styles.getPropertyValue('--color-gray').trim() || '#888';
+      this.foregroundColor = themedColor('foreground', '#666');
+      this.srcColor = themedColor('src', '#CA0404');
+      this.dstColor = themedColor('dst', '#0000FF');
+      this.axisColor = themedColor('neutral', '#888');
       this.gridColor = 'rgba(128,128,128,0.15)';
       this.businessColor = 'rgba(255, 210, 50, 0.2)';
       this.restartColor = this.foregroundColor;

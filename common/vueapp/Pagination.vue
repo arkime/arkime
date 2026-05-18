@@ -73,9 +73,9 @@
   font-size: 0.8rem;
 }
 :deep(.v-select .v-field) {
-  border: 1px solid var(--color-gray);
+  border: 1px solid rgb(var(--v-theme-neutral));
   border-radius: 4px;
-  background-color: var(--color-background, #fff);
+  background-color: rgb(var(--v-theme-background));
   min-height: 32px;
   font-size: 0.8rem;
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
@@ -87,11 +87,11 @@
   display: none;
 }
 :deep(.v-select .v-field:hover) {
-  border-color: var(--color-gray-dark, #555);
+  border-color: rgb(var(--v-theme-neutral-dark));
 }
 :deep(.v-select .v-field--focused) {
-  border-color: var(--color-primary);
-  box-shadow: 0 0 0 1px var(--color-primary);
+  border-color: rgb(var(--v-theme-primary));
+  box-shadow: 0 0 0 1px rgb(var(--v-theme-primary));
 }
 </style>
 

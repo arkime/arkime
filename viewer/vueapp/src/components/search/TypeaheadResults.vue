@@ -122,7 +122,7 @@ defineProps({
 }
 
 .typeahead-results a.last-history-item {
-  border-bottom: 1px solid var(--color-gray);
+  border-bottom: 1px solid rgb(var(--v-theme-neutral));
 }
 
 @media screen and (max-height: 600px) {

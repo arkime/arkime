@@ -8,9 +8,7 @@
 'use strict';
 
 const Config = require('./config.js');
-const fs = require('fs');
 const util = require('util');
-const stylus = require('stylus');
 const User = require('../common/user');
 const ArkimeUtil = require('../common/arkimeUtil');
 const internals = require('./internals');
@@ -474,79 +472,10 @@ class UserAPIs {
    * @param {Array} fields=["firstPacket","lastPacket","src","source.port","dst","destination.port","network.packets","dbby","node"] - The list of Sessions table columns.
    */
 
-  // --------------------------------------------------------------------------
-  /**
-   * GET - /api/user/css OR /api/user.css
-   *
-   * Retrieves custom user css for the user's custom theme.
-   * @name /user/css
-   * @returns {css} css - The css file that includes user configured styles.
-   */
-  static #validColor = /^#[0-9a-fA-F]{3,8}$/;
-  static #sanitizeColor (color) {
-    return (color && UserAPIs.#validColor.test(color.trim())) ? color.trim() : '#000000';
-  }
-
-  static getUserCSS (req, res) {
-    fs.readFile('./views/user.styl', 'utf8', (err, str) => {
-      function error (msg) {
-        console.log(`ERROR - ${req.method} /api/user/css`, msg);
-        return res.status(404).end();
-      }
-
-      const date = new Date().toUTCString();
-      res.setHeader('Content-Type', 'text/css');
-      res.setHeader('Date', date);
-      res.setHeader('Cache-Control', 'public, max-age=0');
-      res.setHeader('Last-Modified', date);
-
-      if (err) { return error(err); }
-      if (!req.user.settings.theme) { return error('no custom theme defined'); }
-
-      const theme = req.user.settings.theme.split(':');
-
-      if (!theme[1]) { return error('custom theme corrupted'); }
-
-      const style = stylus(str);
-
-      const colors = theme[1].split(',');
-
-      if (!colors) { return error('custom theme corrupted'); }
-
-      const sc = UserAPIs.#sanitizeColor;
-
-      style.define('colorBackground', new stylus.nodes.Literal(sc(colors[0])));
-      style.define('colorForeground', new stylus.nodes.Literal(sc(colors[1])));
-      style.define('colorForegroundAccent', new stylus.nodes.Literal(sc(colors[2])));
-
-      style.define('colorWhite', new stylus.nodes.Literal('#FFFFFF'));
-      style.define('colorBlack', new stylus.nodes.Literal('#333333'));
-      style.define('colorGray', new stylus.nodes.Literal('#CCCCCC'));
-      style.define('colorGrayDark', new stylus.nodes.Literal('#777777'));
-      style.define('colorGrayDarker', new stylus.nodes.Literal('#555555'));
-      style.define('colorGrayLight', new stylus.nodes.Literal('#EEEEEE'));
-      style.define('colorGrayLighter', new stylus.nodes.Literal('#F6F6F6'));
-
-      style.define('colorPrimary', new stylus.nodes.Literal(sc(colors[3])));
-      style.define('colorPrimaryLightest', new stylus.nodes.Literal(sc(colors[4])));
-      style.define('colorSecondary', new stylus.nodes.Literal(sc(colors[5])));
-      style.define('colorSecondaryLightest', new stylus.nodes.Literal(sc(colors[6])));
-      style.define('colorTertiary', new stylus.nodes.Literal(sc(colors[7])));
-      style.define('colorTertiaryLightest', new stylus.nodes.Literal(sc(colors[8])));
-      style.define('colorQuaternary', new stylus.nodes.Literal(sc(colors[9])));
-      style.define('colorQuaternaryLightest', new stylus.nodes.Literal(sc(colors[10])));
-
-      style.define('colorWater', new stylus.nodes.Literal(sc(colors[11])));
-      style.define('colorLand', new stylus.nodes.Literal(sc(colors[12])));
-      style.define('colorSrc', new stylus.nodes.Literal(sc(colors[13])));
-      style.define('colorDst', new stylus.nodes.Literal(sc(colors[14])));
-
-      style.render((err, css) => {
-        if (err) { return error(err); }
-        return res.send(css);
-      });
-    });
-  }
+  // The legacy /api/user/css endpoint + its stylus-rendered custom theme
+  // (formerly viewer/views/user.styl) have been removed. Custom themes are
+  // now first-class Vuetify themes registered at app boot via
+  // common/vueapp/themes/customTheme.js -- no server round-trip needed.
 
   // USER SETTINGS --------------------------------------------------------------------------
   /**
@@ -573,11 +502,13 @@ class UserAPIs {
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
   static updateUserSettings (req, res) {
-    req.settingUser.settings = ['ms', 'logo', 'theme', 'timezone', 'spiGraph', 'numPackets', 'infoFields', 'manualQuery', 'detailFormat',
+    req.settingUser.settings = ['ms', 'logo', 'theme', 'customTheme', 'timezone', 'spiGraph', 'numPackets', 'infoFields', 'manualQuery', 'detailFormat',
       'connSrcField', 'connDstField', 'sortColumn', 'sortDirection', 'showTimestamps', 'connNodeFields',
       'connLinkFields', 'timelineDataFilters', 'hideTags', 'shiftyEyes'].reduce((obj, key) => {
       const val = req.body[key];
-      if (val !== undefined && val !== null && typeof val === 'object' && !Array.isArray(val)) {
+      // Reject non-array object values for all keys EXCEPT customTheme,
+      // which is a structured { dark, colors } record by design.
+      if (val !== undefined && val !== null && typeof val === 'object' && !Array.isArray(val) && key !== 'customTheme') {
         return obj;
       }
       obj[key] = val;

@@ -683,8 +683,8 @@ export default {
       ],
       // Arkime theme-color v-btn style. Vuetify :color can't take CSS vars.
       primaryBtnStyle: {
-        backgroundColor: 'var(--color-primary)',
-        color: 'var(--color-button, #FFF)'
+        backgroundColor: 'rgb(var(--v-theme-primary))',
+        color: 'rgb(var(--v-theme-button-fg))'
       }
     };
   },
@@ -1007,7 +1007,7 @@ export default {
                 // rendered outside connections page for saving as png
                 selector = 'text';
                 // make sure that the text uses the foreground property
-                // saveSvgAsPng cannot resolve var(--color-foreground)
+                // saveSvgAsPng cannot resolve rgb(var(--v-theme-foreground))
                 properties = `fill: ${foregroundColor}`;
               }
               return selector + '{' + properties + '}';
@@ -1131,15 +1131,22 @@ export default {
     },
     drawGraph: function (data) {
       if (!nodeFillColors) {
-        const styles = window.getComputedStyle(document.body);
-        this.backgroundColor = styles.getPropertyValue('--color-background').trim() || '#FFFFFF';
-        this.foregroundColor = styles.getPropertyValue('--color-foreground').trim() || '#212529';
-        this.primaryColor = styles.getPropertyValue('--color-primary').trim();
-        this.secondaryColor = styles.getPropertyValue('--color-quaternary').trim();
-        this.tertiaryColor = styles.getPropertyValue('--color-tertiary').trim();
-        this.highlightPrimaryColor = styles.getPropertyValue('--color-primary-lighter').trim();
-        this.highlightSecondaryColor = styles.getPropertyValue('--color-secondary-lighter').trim();
-        this.highlightTertiaryColor = styles.getPropertyValue('--color-tertiary-lighter').trim();
+        // D3 fills need real color values, not CSS var() refs. Read the
+        // active Vuetify theme's tokens (Vuetify emits each as `r,g,b`)
+        // and wrap in rgb() for the SVG fill attribute.
+        const styles = window.getComputedStyle(document.documentElement);
+        const themed = (key, fallback) => {
+          const v = styles.getPropertyValue(`--v-theme-${key}`).trim();
+          return v ? `rgb(${v})` : fallback;
+        };
+        this.backgroundColor = themed('background', '#FFFFFF');
+        this.foregroundColor = themed('foreground', '#212529');
+        this.primaryColor = themed('primary', '#000000');
+        this.secondaryColor = themed('quaternary', '#000000');
+        this.tertiaryColor = themed('tertiary', '#000000');
+        this.highlightPrimaryColor = themed('primary-lighter', this.primaryColor);
+        this.highlightSecondaryColor = themed('secondary-lighter', this.secondaryColor);
+        this.highlightTertiaryColor = themed('tertiary-lighter', this.tertiaryColor);
         nodeFillColors = ['', this.primaryColor, this.secondaryColor, this.tertiaryColor];
       }
 
@@ -1538,7 +1545,7 @@ export default {
 
 <style>
 .connections-page text {
-  fill: var(--color-foreground, #333);
+  fill: rgb(var(--v-theme-foreground));
 }
 </style>
 
@@ -1553,7 +1560,7 @@ export default {
 /* position the subnavbar */
 .connections-page .connections-form {
   z-index: 4;
-  background-color: var(--color-quaternary-lightest);
+  background-color: rgb(var(--v-theme-quaternary-lightest));
 
   -webkit-box-shadow: 0 0 16px -2px black;
      -moz-box-shadow: 0 0 16px -2px black;
@@ -1580,7 +1587,7 @@ export default {
   padding: 0 8px;
   font-weight: 700;
   font-size: 0.875rem;
-  color: var(--color-button, #FFF);
+  color: rgb(var(--v-theme-button-fg));
   border-radius: 4px 0 0 4px;
   white-space: nowrap;
 }
@@ -1590,11 +1597,11 @@ export default {
   height: 32px;
   border-radius: 4px;
 }
-.connections-field-row .primary-legend { background-color: var(--color-primary); }
-.connections-field-row .secondary-legend { background-color: var(--color-secondary); }
-.connections-legend-standalone.primary-legend { background-color: var(--color-primary); }
-.connections-legend-standalone.secondary-legend { background-color: var(--color-secondary); }
-.connections-legend-standalone.tertiary-legend { background-color: var(--color-tertiary); }
+.connections-field-row .primary-legend { background-color: rgb(var(--v-theme-primary)); }
+.connections-field-row .secondary-legend { background-color: rgb(var(--v-theme-secondary)); }
+.connections-legend-standalone.primary-legend { background-color: rgb(var(--v-theme-primary)); }
+.connections-legend-standalone.secondary-legend { background-color: rgb(var(--v-theme-secondary)); }
+.connections-legend-standalone.tertiary-legend { background-color: rgb(var(--v-theme-tertiary)); }
 
 /* Flush the inner FieldTypeahead's input against the legend cell:
    straighten its left edge, keep its right side rounded. */
@@ -1606,7 +1613,7 @@ export default {
 
 /* apply foreground theme color */
 .connections-page svg {
-  fill: var(--color-foreground, #333);
+  fill: rgb(var(--v-theme-foreground));
 }
 
 /* buttons overlaying the graph */
@@ -1638,8 +1645,8 @@ export default {
   padding: 4px 8px;
   max-width: 400px;
   min-width: 280px;
-  border: solid 1px var(--color-gray);
-  background: var(--color-primary-lightest);
+  border: solid 1px rgb(var(--v-theme-neutral));
+  background: rgb(var(--v-theme-primary-lightest));
   white-space: nowrap;
   overflow-x: visible;
   overflow-y: auto;

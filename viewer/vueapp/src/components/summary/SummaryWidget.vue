@@ -346,7 +346,7 @@ const emit = defineEmits(['export', 'change-mode', 'change-metric', 'show-toolti
 
 <style scoped>
 .chart-section {
-  background: var(--color-quaternary-lightest);
+  background: rgb(var(--v-theme-quaternary-lightest));
   padding: 1rem;
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
@@ -419,7 +419,7 @@ const emit = defineEmits(['export', 'change-mode', 'change-metric', 'show-toolti
   width: 14px;
   height: 14px;
   border-radius: 50%;
-  background: var(--color-tertiary, #6c757d);
+  background: rgb(var(--v-theme-tertiary));
   animation: bounce 1.2s ease-in-out infinite;
 }
 

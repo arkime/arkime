@@ -312,6 +312,6 @@ export default {
    handled inline via :style="dropdownStyle". */
 .field-typeahead-dropdown div.arkime-dropdown-divider {
   margin: .15rem 0;
-  border-color: var(--color-gray);
+  border-color: rgb(var(--v-theme-neutral));
 }
 </style>

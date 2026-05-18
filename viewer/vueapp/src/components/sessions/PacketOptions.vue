@@ -394,7 +394,7 @@ export default {
 
 /* Decoding form */
 .decoding-form {
-  border-top: 1px solid var(--color-gray);
+  border-top: 1px solid rgb(var(--v-theme-neutral));
 }
 .decoding-form-field {
   min-width: 150px;

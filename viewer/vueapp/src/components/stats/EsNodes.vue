@@ -359,8 +359,8 @@ table.table tr.border-top-bold > td {
   line-height: 1.2;
   font-size: 0.75rem;
   font-weight: 700;
-  color: var(--color-button, #FFF);
-  background-color: var(--color-primary);
+  color: rgb(var(--v-theme-button-fg));
+  background-color: rgb(var(--v-theme-primary));
   border-radius: 50rem;
   text-align: center;
 }
@@ -368,6 +368,6 @@ table.table tr.border-top-bold > td {
   opacity: 1;
 }
 .node-badge.badge-master {
-  background-color: var(--color-quaternary) !important;
+  background-color: rgb(var(--v-theme-quaternary)) !important;
 }
 </style>

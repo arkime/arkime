@@ -204,7 +204,7 @@ export default {
   overflow-y: auto;
 }
 .notifier-search-row {
-  background-color: var(--color-background);
+  background-color: rgb(var(--v-theme-background));
   z-index: 2;
 }
 /* native-checkbox dropdown row indicator. Replaces Bootstrap's
@@ -215,17 +215,17 @@ export default {
   -webkit-appearance: none;
   width: 14px;
   height: 14px;
-  border: 1px solid var(--color-gray);
+  border: 1px solid rgb(var(--v-theme-neutral));
   border-radius: 3px;
-  background-color: var(--color-background, #fff) !important;
+  background-color: rgb(var(--v-theme-background)) !important;
   flex-shrink: 0;
 }
 /* !important required to beat overrides.css's global `input { background:
-   var(--color-inputs) !important }` rule -- otherwise the primary fill
+   rgb(var(--v-theme-input-bg)) !important }` rule -- otherwise the primary fill
    doesn't paint and the white check glyph is invisible on the white bg. */
 .dropdown-check-input:checked {
-  background-color: var(--color-primary) !important;
-  border-color: var(--color-primary) !important;
+  background-color: rgb(var(--v-theme-primary)) !important;
+  border-color: rgb(var(--v-theme-primary)) !important;
   background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3e%3cpath fill='none' stroke='%23fff' stroke-linecap='round' stroke-linejoin='round' stroke-width='3' d='M6 10l3 3 6-6'/%3e%3c/svg%3e") !important;
   background-size: 14px 14px !important;
   background-position: center !important;

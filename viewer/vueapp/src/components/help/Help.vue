@@ -1010,7 +1010,7 @@ SPDX-License-Identifier: Apache-2.0
           <span class="arkime-badge arkime-badge--grey">Gray</span> means it's an alternate shard and the
           <span
             class="arkime-badge"
-            :style="{backgroundColor: 'var(--color-primary)', color: 'var(--color-button, #FFF)'}">other color</span> means it's a primary shard.
+            :style="{backgroundColor: 'rgb(var(--v-theme-primary))', color: 'rgb(var(--v-theme-button-fg))'}">other color</span> means it's a primary shard.
           Hover over a cell to get more information.
         </p>
         <h6>
@@ -1624,7 +1624,7 @@ export default {
   display: flex;
   flex-direction: column;
   width: 150px;
-  border: 1px solid var(--color-gray);
+  border: 1px solid rgb(var(--v-theme-neutral));
   border-radius: 0 8px 8px 0;
   position: fixed;
   top: 40px;
@@ -1639,11 +1639,11 @@ export default {
   display: block;
   width: 100%;
   padding: 5px 8px;
-  color: var(--color-foreground);
+  color: rgb(var(--v-theme-foreground));
   text-decoration: none;
 }
 .help-content .help-nav .help-link:hover {
-  background-color: var(--color-gray-light);
+  background-color: rgb(var(--v-theme-neutral-light));
 }
 .help-content .help-nav .help-link.nested {
   margin-left: 2.4em;

@@ -679,12 +679,12 @@ export default {
       // Arkime theme-color v-btn styles. Vuetify's :color doesn't
       // resolve CSS variables; inline :style keeps them theme-adaptive.
       tertiaryBtnStyle: {
-        backgroundColor: 'var(--color-tertiary)',
-        color: 'var(--color-button, #FFF)'
+        backgroundColor: 'rgb(var(--v-theme-tertiary))',
+        color: 'rgb(var(--v-theme-button-fg))'
       },
       secondaryBtnStyle: {
-        backgroundColor: 'var(--color-secondary)',
-        color: 'var(--color-button, #FFF)'
+        backgroundColor: 'rgb(var(--v-theme-secondary))',
+        color: 'rgb(var(--v-theme-button-fg))'
       }
     };
   },
@@ -889,8 +889,8 @@ export default {
   right: 0;
   z-index: 4;
   padding: 6px 12px;
-  background-color: var(--color-secondary-lightest);
-  border-bottom: 1px solid var(--color-gray-light);
+  background-color: rgb(var(--v-theme-secondary-lightest));
+  border-bottom: 1px solid rgb(var(--v-theme-neutral-light));
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
 }
 /* v-btn-toggle at density="compact" has a baked-in height (~24px) that
@@ -917,22 +917,22 @@ export default {
   min-width: 0 !important;
   border-radius: 17px !important;
   border: 0 !important;
-  color: var(--color-foreground) !important;
+  color: rgb(var(--v-theme-foreground)) !important;
   opacity: 0.78;
 }
 .stats-tabs .stats-tab-strip .v-btn:hover {
-  background-color: var(--color-background) !important;
+  background-color: rgb(var(--v-theme-background)) !important;
   opacity: 1;
 }
 .stats-tabs .stats-tab-strip .v-btn--active {
-  background-color: var(--color-primary) !important;
-  color: var(--color-button, #fff) !important;
+  background-color: rgb(var(--v-theme-primary)) !important;
+  color: rgb(var(--v-theme-button-fg)) !important;
   opacity: 1;
   font-weight: 700 !important;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.18);
 }
 .stats-tabs .stats-tab-strip .v-btn--active:hover {
-  background-color: var(--color-primary) !important;
+  background-color: rgb(var(--v-theme-primary)) !important;
   filter: brightness(1.08);
 }
 .stats-tabs .stats-tab-strip .v-btn .v-icon {
@@ -945,7 +945,7 @@ export default {
   width: 1px;
   height: 20px;
   margin: 0 8px;
-  background-color: var(--color-gray-light);
+  background-color: rgb(var(--v-theme-neutral-light));
 }
 .stats-tabs .stats-tab-content {
   padding-top: 50px;
@@ -957,7 +957,7 @@ export default {
 /* apply theme colors to subnavbar */
 .stats-form {
   z-index : 6;
-  background-color: var(--color-quaternary-lightest);
+  background-color: rgb(var(--v-theme-quaternary-lightest));
 }
 
 /* remove browser styles on select box (mostly for border-radius) */

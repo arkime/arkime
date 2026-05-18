@@ -671,12 +671,12 @@ export default {
   z-index: 4;
   position: absolute;
   white-space: nowrap;
-  color: var(--color-gray-lighter);
+  color: rgb(var(--v-theme-neutral-lighter));
   padding: 3px;
   font-size: 8pt;
-  background-color: var(--color-black);
+  background-color: rgb(var(--v-theme-black));
   border-radius: 4px;
-  border: 1px solid var(--color-black);
+  border: 1px solid rgb(var(--v-theme-black));
 }
 .graph-tooltip:after {
   content: '';
@@ -688,13 +688,13 @@ export default {
   top: 20px;
   border-style: solid;
   border-width: 8px 8px 0 8px;
-  border-color: var(--color-black) transparent transparent transparent;
+  border-color: rgb(var(--v-theme-black)) transparent transparent transparent;
 }
 
 /* make graph labels smaller */
 .tickLabel {
   font-size: 11px;
-  fill: var(--color-foreground);
+  fill: rgb(var(--v-theme-foreground));
 }
 
 /* position the pan dropdown between the pan buttons */
@@ -736,7 +736,7 @@ export default {
   padding: 2px 8px 3px 8px;
   border-radius: 4px 0 0 4px;
   cursor: pointer;
-  background-color: var(--color-primary);
+  background-color: rgb(var(--v-theme-primary));
   color: #FFFFFF;
 }
 
@@ -826,7 +826,7 @@ export default {
   /* Theme-aware overlay: 60 % of the page background color from the
      active theme. Light themes get a translucent white overlay, dark
      themes get a translucent dark overlay — text contrast just works. */
-  background: color-mix(in srgb, var(--color-background, #fff) 60%, transparent);
+  background: color-mix(in srgb, rgb(var(--v-theme-background)) 60%, transparent);
   backdrop-filter: blur(4px);
   -webkit-backdrop-filter: blur(4px);
   border-radius: 6px 6px 0 0;
@@ -850,7 +850,7 @@ export default {
   margin: 0 !important;
 }
 .session-graph-btn-container > * + * {
-  border-left: 1px solid color-mix(in srgb, var(--color-foreground, #000) 18%, transparent);
+  border-left: 1px solid color-mix(in srgb, rgb(var(--v-theme-foreground)) 18%, transparent);
 }
 /* v-btn theming inside the toolbar: snug icon buttons, neutral hover */
 .session-graph-btn-container :deep(.v-btn) {
@@ -896,7 +896,7 @@ export default {
   position: fixed;
   overflow: hidden;
   box-shadow: 0 0 16px -2px black;
-  background-color: var(--color-background, white);
+  background-color: rgb(var(--v-theme-background));
 }
 
 .sticky-viz.disabled-msg {

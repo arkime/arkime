@@ -60,6 +60,9 @@ import ArkimeFooter from '@common/Footer.vue';
 import ArkimeWelcomeMessage from './components/utils/WelcomeMessage.vue';
 import ArkimeUpgradeBrowser from './components/utils/UpgradeBrowser.vue';
 import KeyboardShortcuts from '@common/KeyboardShortcuts.vue';
+import UserService from './components/users/UserService.js';
+import { isLegacyCustomTheme, migrateLegacyCustomTheme } from '@common/themes/customTheme.js';
+import { registerVuetifyTheme } from '@common/themes/registerVuetifyTheme.js';
 
 export default {
   name: 'App',
@@ -107,9 +110,7 @@ export default {
     // get the information for the entire app
     // the rest of the app should compute from $store.state
     ConfigService.getAppInfo().then((response) => {
-      if (!response.user.settings.theme || response.user.settings.theme === 'default-theme') {
-        this.setTheme();
-      }
+      this.applySavedTheme(response.user.settings);
     }).catch((error) => {
       // display appwide error that floats at the bottom right of the screen on top of everything
       this.appInfoMissing = 'Error fetching app info! Arkime will not work as intended.';
@@ -208,11 +209,61 @@ export default {
         hash: this.$route.hash
       });
     },
-    // if the user doesn't have a theme preference, set dark/light theme based on OS color scheme
+    /* Activate the user's saved theme via Vuetify. Handles three shapes:
+       1. Legacy 'custom1:hex,hex,...' positional string -> migrate to
+          the new {customTheme object, theme:'custom1'} shape, persist
+          back, then activate.
+       2. Legacy '{name}-theme' suffix strings (e.g. 'arkime-light-theme')
+          -> strip suffix to get the new bare id.
+       3. Bare new id ('arkime-light', 'custom1', etc.) -> activate. */
+    applySavedTheme (settings) {
+      const setting = settings && settings.theme;
+
+      const registerCustom = (themeObj) => {
+        registerVuetifyTheme(this.$vuetify, 'custom1', {
+          dark: !!themeObj.dark,
+          colors: { ...themeObj.colors }
+        });
+      };
+
+      // Case 1: legacy 'custom1:...' positional format -> one-shot migration.
+      if (isLegacyCustomTheme(setting)) {
+        const migrated = migrateLegacyCustomTheme(setting);
+        if (migrated) {
+          settings.customTheme = migrated;
+          settings.theme = 'custom1';
+          // Persist the new shape; legacy string is dropped.
+          UserService.saveSettings(settings).catch(() => { /* idempotent on retry */ });
+          registerCustom(migrated);
+          this.$vuetify.theme.change('custom1');
+          return;
+        }
+      }
+
+      // Register a stored custom theme (regardless of which theme is active)
+      // so the user can switch to it via the picker.
+      if (settings && settings.customTheme && settings.customTheme.colors) {
+        registerCustom(settings.customTheme);
+      }
+
+      // Case 2/3: normalize id and activate.
+      if (!setting || setting === 'default-theme') {
+        this.setTheme();
+        return;
+      }
+      const id = String(setting).replace(/-theme$/, '');
+      const themesRecord = this.$vuetify.theme.themes.value || this.$vuetify.theme.themes;
+      if (themesRecord && themesRecord[id]) {
+        this.$vuetify.theme.change(id);
+      } else {
+        this.setTheme();
+      }
+    },
+    // OS-color-scheme fallback when the user has no saved theme.
     setTheme () {
       if (window.matchMedia) {
         const darkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
-        document.body.className = darkMode ? 'arkime-dark-theme' : 'arkime-light-theme';
+        this.$vuetify.theme.change(darkMode ? 'arkime-dark' : 'arkime-light');
       }
     },
     /* remove the message when user is done with it or duration ends */
@@ -235,22 +286,22 @@ html {
 
 /* global font, colors, and vars */
 body {
-  color: var(--color-foreground);
-  background-color: var(--color-background);
+  color: rgb(var(--v-theme-foreground));
+  background-color: rgb(var(--v-theme-background));
 }
 
 /* text */
-.text-theme-accent    { color: var(--color-foreground-accent); }
-.text-theme-primary   { color: var(--color-primary); }
-.text-theme-secondary { color: var(--color-secondary); }
-.text-theme-tertiary  { color: var(--color-tertiary); }
-.text-theme-quaternary{ color: var(--color-quaternary); }
-.text-muted-more      { color: var(--color-gray); }
-.text-theme-white     { color: var(--color-white); }
-.text-theme-button    { color: var(--color-button, #FFF); }
+.text-theme-accent    { color: rgb(var(--v-theme-foreground-accent)); }
+.text-theme-primary   { color: rgb(var(--v-theme-primary)); }
+.text-theme-secondary { color: rgb(var(--v-theme-secondary)); }
+.text-theme-tertiary  { color: rgb(var(--v-theme-tertiary)); }
+.text-theme-quaternary{ color: rgb(var(--v-theme-quaternary)); }
+.text-muted-more      { color: rgb(var(--v-theme-neutral)); }
+.text-theme-white     { color: rgb(var(--v-theme-white)); }
+.text-theme-button    { color: rgb(var(--v-theme-button-fg)); }
 
 .text-theme-gray-hover:hover {
-  color: var(--color-gray);
+  color: rgb(var(--v-theme-neutral));
 }
 
 /* displaying */
@@ -259,7 +310,7 @@ body {
   position: fixed;
   left: 0;
   right: 0;
-  background-color: var(--color-quaternary-lightest);
+  background-color: rgb(var(--v-theme-quaternary-lightest));
 
   -webkit-box-shadow: 0 0 16px -2px black;
      -moz-box-shadow: 0 0 16px -2px black;
@@ -268,14 +319,14 @@ body {
 
 /* themed buttons */
 .btn-clear-input {
-  color: var(--color-foreground, #555) !important;
-  background-color: var(--color-background, #EEE) !important;
-  border-color: var(--color-gray) !important;
+  color: rgb(var(--v-theme-foreground)) !important;
+  background-color: rgb(var(--v-theme-background)) !important;
+  border-color: rgb(var(--v-theme-neutral)) !important;
 }
 
 /* see top level common.css info area for usage */
-.info-area { color: var(--color-gray-dark); }
-.info-area > div { background-color: var(--color-gray-light); }
+.info-area { color: rgb(var(--v-theme-neutral-dark)); }
+.info-area > div { background-color: rgb(var(--v-theme-neutral-light)); }
 
 /* sub navbars */
 .sub-navbar {
@@ -284,7 +335,7 @@ body {
   left: 0;
   right: 0;
   padding: var(--px-lg) var(--px-md) var(--px-sm) 13px;
-  background-color: var(--color-secondary-lightest);
+  background-color: rgb(var(--v-theme-secondary-lightest));
   -webkit-box-shadow: 0 0 16px -2px black;
      -moz-box-shadow: 0 0 16px -2px black;
           box-shadow: 0 0 16px -2px black;
@@ -329,9 +380,9 @@ dl.dl-horizontal.dl-horizontal-wide dd {
   z-index: 9;
   position: fixed;
   border-radius: 0 4px 4px 0;
-  border: 1px solid var(--color-gray);
+  border: 1px solid rgb(var(--v-theme-neutral));
   border-left: none;
-  background: var(--color-background, white);
+  background: rgb(var(--v-theme-background));
   -webkit-box-shadow: 0 0 16px -2px black;
      -moz-box-shadow: 0 0 16px -2px black;
           box-shadow: 0 0 16px -2px black;
@@ -339,12 +390,12 @@ dl.dl-horizontal.dl-horizontal-wide dd {
 
 /* make the shortcut letter the same size/position as the icon */
 .query-shortcut {
-  color: var(--color-tertiary-lighter);
+  color: rgb(var(--v-theme-tertiary-lighter));
   font-size: 14px;
   width: 20px;
 }
 .time-shortcut {
-  color: var(--color-tertiary-lighter);
+  color: rgb(var(--v-theme-tertiary-lighter));
   font-size: 14px;
   width: 20px;
 }
@@ -358,7 +409,7 @@ dl.dl-horizontal.dl-horizontal-wide dd {
   display: inline-block;
   height: 9px;
   width: 3px;
-  background-color: var(--color-white, #FFFFFF);
+  background-color: rgb(var(--v-theme-white));
   position: relative;
   top: -2px;
   right: 3px;
@@ -409,7 +460,7 @@ dl.dl-horizontal.dl-horizontal-wide dd {
 
 .arkime-info .well > h1 {
   margin-top: 0;
-  color: var(--color-primary);
+  color: rgb(var(--v-theme-primary));
 }
 
 /* column resize grips */

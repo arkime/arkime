@@ -240,6 +240,6 @@ export default {
   font-weight: bold;
   font-size: 0.75rem;
   padding: 0.4rem 0.5rem 0.2rem;
-  color: var(--color-foreground-accent);
+  color: rgb(var(--v-theme-foreground-accent));
 }
 </style>

@@ -276,8 +276,8 @@ export default {
   padding: 1px 10px 2px 12px;
   border-radius: 4px 0 0 4px;
   cursor: pointer;
-  background-color: var(--color-quaternary);
-  color: var(--color-button, #FFF);
+  background-color: rgb(var(--v-theme-quaternary));
+  color: rgb(var(--v-theme-button-fg));
 }
 
 /* move the sticky session button up when the toolbars are hidden */
@@ -298,8 +298,8 @@ export default {
   bottom: 0;
   z-index: 4;
   width: 360px;
-  border-left: 1px solid var(--color-gray-light);
-  background-color: var(--color-gray-lighter);
+  border-left: 1px solid rgb(var(--v-theme-neutral-light));
+  background-color: rgb(var(--v-theme-neutral-lighter));
 
   -webkit-box-shadow: 0 0 16px -2px black;
      -moz-box-shadow: 0 0 16px -2px black;
@@ -319,10 +319,10 @@ export default {
 
 .sticky-session-detail .sticky-list-item {
   display: block;
-  border-top: 1px solid var(--color-gray-light, rgba(0,0,0,0.125));
+  border-top: 1px solid rgb(var(--v-theme-neutral-light)));
   padding: 4px 8px;
-  background-color: var(--color-background, #FFF);
-  color: var(--color-foreground, #333);
+  background-color: rgb(var(--v-theme-background));
+  color: rgb(var(--v-theme-foreground));
 }
 .sticky-session-detail .sticky-list-item:first-child {
   border-top: 0;
@@ -334,12 +334,12 @@ export default {
 
 a.sticky-list-item:hover,
 a.sticky-list-item:focus {
-  background-color: var(--color-tertiary-lightest);
+  background-color: rgb(var(--v-theme-tertiary-lightest));
 }
 
 .sticky-session-detail .sticky-list-item.sticky-list-header {
   padding: 12px 8px;
-  background-color: var(--color-gray-lighter);
+  background-color: rgb(var(--v-theme-neutral-lighter));
 }
 
 /* ANIMATIONS ---------------------- */

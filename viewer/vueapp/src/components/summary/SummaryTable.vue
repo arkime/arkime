@@ -81,6 +81,6 @@ const formatValue = (value, format) => {
 
 <style scoped>
 .summary-table-striped :deep(tbody tr:nth-of-type(odd) > td) {
-  background-color: var(--color-gray-lighter) !important;
+  background-color: rgb(var(--v-theme-neutral-lighter)) !important;
 }
 </style>

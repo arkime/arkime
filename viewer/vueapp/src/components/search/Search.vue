@@ -577,16 +577,16 @@ export default {
       basePath: undefined,
       // Arkime theme-color v-btn styles. Vuetify :color can't take CSS vars.
       primaryBtnStyle: {
-        backgroundColor: 'var(--color-primary)',
-        color: 'var(--color-button, #FFF)'
+        backgroundColor: 'rgb(var(--v-theme-primary))',
+        color: 'rgb(var(--v-theme-button-fg))'
       },
       secondaryBtnStyle: {
-        backgroundColor: 'var(--color-secondary)',
-        color: 'var(--color-button, #FFF)'
+        backgroundColor: 'rgb(var(--v-theme-secondary))',
+        color: 'rgb(var(--v-theme-button-fg))'
       },
       tertiaryBtnStyle: {
-        backgroundColor: 'var(--color-tertiary)',
-        color: 'var(--color-button, #FFF)'
+        backgroundColor: 'rgb(var(--v-theme-tertiary))',
+        color: 'rgb(var(--v-theme-button-fg))'
       }
     };
   },
@@ -931,14 +931,14 @@ export default {
 form {
   border: none;
   z-index: 5;
-  background-color: var(--color-secondary-lightest);
+  background-color: rgb(var(--v-theme-secondary-lightest));
   -webkit-box-shadow: 0 0 16px -2px black;
      -moz-box-shadow: 0 0 16px -2px black;
           box-shadow: 0 0 16px -2px black;
 }
 .action-form-separator {
   margin: 5px 0;
-  border-top: 1px solid var(--color-gray-light);
+  border-top: 1px solid rgb(var(--v-theme-neutral-light));
 }
 /* make sure action menu dropdown is above all the things
  * but specifically above the sticky sessions button */

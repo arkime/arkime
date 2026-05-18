@@ -11,18 +11,20 @@
  *   Stats.vue, ExpressionTypeahead.vue, Files.vue, Spigraph.vue,
  *   Spiview.vue, Connections.vue
  *
- * Colors come from Arkime's --color-* CSS variables (defined per theme
- * in src/themes/*.css), not Vuetify's --v-theme-* tokens, since the
- * Vuetify theme scaffold is intentionally minimal (see theme.js).
+ * Colors come from Vuetify's --v-theme-* tokens emitted by the shared
+ * theme manifest (common/vueapp/themes/manifest.js). All four apps
+ * that import this file (viewer + cont3xt + parliament + wise) consume
+ * the same tokens. Vuetify 3 emits each color as `r,g,b` so we wrap
+ * with `rgb()` / `rgba()` here.
  */
 
 .arkime-input-group {
   display: inline-flex;
   align-items: center;
   height: 32px;
-  border: 1px solid var(--color-gray);
+  border: 1px solid rgb(var(--v-theme-outline));
   border-radius: 4px;
-  background-color: var(--color-background, #fff);
+  background-color: rgb(var(--v-theme-background));
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
   /* outer padding -- prepended labels and the input share this */
   padding: 0 2px;
@@ -37,11 +39,11 @@
   flex: 1 1 auto;
 }
 .arkime-input-group:hover {
-  border-color: var(--color-gray-dark, #555);
+  border-color: rgba(var(--v-theme-on-surface), 0.6);
 }
 .arkime-input-group:focus-within {
-  border-color: var(--color-primary);
-  box-shadow: 0 0 0 1px var(--color-primary);
+  border-color: rgb(var(--v-theme-primary));
+  box-shadow: 0 0 0 1px rgb(var(--v-theme-primary));
 }
 
 /* the label that sits at the left edge of the group -- transparent
@@ -56,7 +58,7 @@
   border: none;
   border-radius: 0;
   font-size: 0.875rem;
-  color: var(--color-gray-dark, #6c757d);
+  color: rgba(var(--v-theme-on-surface), 0.6);
   white-space: nowrap;
   font-weight: 500;
 }
@@ -68,14 +70,14 @@
 }
 
 /* the input / select itself sits flush inside the container -- no
-   own border, transparent bg, takes its color from --color-foreground. */
+   own border, transparent bg, takes its color from foreground. */
 .arkime-input-control {
   flex: 1 1 auto;
   min-width: 0;
   height: 100%;
   padding: 0 8px;
   background-color: transparent;
-  color: var(--color-foreground, #212529);
+  color: rgb(var(--v-theme-on-surface));
   border: none;
   font-size: 0.875rem;
   line-height: 1.5;
@@ -106,28 +108,27 @@ select.arkime-input-control {
 
 /* Native checkbox styling for standalone checkboxes (not paired with a
    v-checkbox). Replaces what Bootstrap's .form-check-input used to paint:
-   a compact box that picks up our --color-* theme tokens so it works in
+   a compact box that picks up Vuetify theme tokens so it works in
    light + dark themes. */
 /* !important on bg-color + bg-image is needed because overrides.css
-   forces every <input> to `background-color: var(--color-inputs) !important`
-   for the themed text-input look. Without !important on :checked, the
-   primary fill never paints and the white check glyph reads as invisible
-   against the forced white background. */
+   forces every <input> to a themed background. Without !important on
+   :checked, the primary fill never paints and the white check glyph
+   reads as invisible against the forced background. */
 .arkime-check-input {
   appearance: none;
   -webkit-appearance: none;
   width: 16px;
   height: 16px;
-  border: 1px solid var(--color-gray);
+  border: 1px solid rgb(var(--v-theme-outline));
   border-radius: 3px;
-  background-color: var(--color-background, #fff) !important;
+  background-color: rgb(var(--v-theme-input-bg)) !important;
   cursor: pointer;
   vertical-align: middle;
   flex-shrink: 0;
 }
 .arkime-check-input:checked {
-  background-color: var(--color-primary) !important;
-  border-color: var(--color-primary) !important;
+  background-color: rgb(var(--v-theme-primary)) !important;
+  border-color: rgb(var(--v-theme-primary)) !important;
   background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3e%3cpath fill='none' stroke='%23fff' stroke-linecap='round' stroke-linejoin='round' stroke-width='3' d='M6 10l3 3 6-6'/%3e%3c/svg%3e") !important;
   background-size: 16px 16px !important;
   background-position: center !important;

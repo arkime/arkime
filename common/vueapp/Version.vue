@@ -60,9 +60,9 @@ export default {
 
 <style scoped>
 .version-popup {
-  background-color: var(--color-background);
-  color: var(--color-foreground);
-  border: 1px solid var(--color-gray-light);
+  background-color: rgb(var(--v-theme-background));
+  color: rgb(var(--v-theme-foreground));
+  border: 1px solid rgb(var(--v-theme-neutral-light));
   border-radius: 4px;
   padding: 6px 10px;
   font-size: 0.85rem;

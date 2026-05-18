@@ -107,8 +107,8 @@ export default {
       multiviewer: this.$constants.MULTIVIEWER,
       // Arkime theme-color v-btn style. Vuetify :color can't take CSS vars.
       secondaryBtnStyle: {
-        backgroundColor: 'var(--color-secondary)',
-        color: 'var(--color-button, #FFF)'
+        backgroundColor: 'rgb(var(--v-theme-secondary))',
+        color: 'rgb(var(--v-theme-button-fg))'
       }
     };
   },

@@ -204,6 +204,7 @@ SPDX-License-Identifier: Apache-2.0
 <script>
 // import services
 import SpigraphService from './SpigraphService';
+import { themedColor } from '@common/themes/themedColor.js';
 // import internal
 import ArkimeFieldTypeahead from '../utils/FieldTypeahead.vue';
 import Popup from './Popup.vue';
@@ -272,7 +273,7 @@ function gripClick (e, col) {
 function gripDrag (e) { // move the grip where the user moves their cursor
   if (selectedColElem && selectedGripElem) {
     const newWidth = colStartOffset + e.pageX;
-    selectedGripElem.style.borderLeft = '1px dotted var(--color-gray)';
+    selectedGripElem.style.borderLeft = '1px dotted rgb(var(--v-theme-neutral))';
     selectedGripElem.style.left = `${newWidth}px`;
   }
 }
@@ -431,9 +432,8 @@ export default {
   },
   async mounted () {
     // set colors to match the background
-    const styles = window.getComputedStyle(document.body);
-    background = styles.getPropertyValue('--color-background').trim() || '#FFFFFF';
-    foreground = styles.getPropertyValue('--color-foreground').trim() || '#333333';
+    background = themedColor('background', '#FFFFFF');
+    foreground = themedColor('foreground', '#333333');
 
     this.baseFieldObj = this.getFieldObj(this.baseField);
 
@@ -1432,17 +1432,17 @@ export default {
 .spigraph-table {
   border-collapse: collapse;
   width: 100%;
-  color: var(--color-foreground);
+  color: rgb(var(--v-theme-foreground));
 }
 .spigraph-table > thead > tr > th,
 .spigraph-table > tbody > tr > td,
 .spigraph-table > tbody > tr > th {
-  border: 1px solid var(--color-gray-light);
+  border: 1px solid rgb(var(--v-theme-neutral-light));
   padding: 0.25rem;
 }
 .spigraph-table > tbody > tr:hover > td,
 .spigraph-table > tbody > tr:hover > th {
-  background-color: var(--color-gray-lighter);
+  background-color: rgb(var(--v-theme-neutral-lighter));
 }
 
 /* make sure field dropdowns are visible in the table */

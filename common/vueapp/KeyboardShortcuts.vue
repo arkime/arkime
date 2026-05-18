@@ -191,15 +191,15 @@ export default {
   }
   20% {
     transform: translateX(-5px);
-    color: var(--color-tertiary);
+    color: rgb(var(--v-theme-tertiary));
   }
   50% {
     transform: translateX(0);
-    color: var(--color-tertiary);
+    color: rgb(var(--v-theme-tertiary));
   }
   70% {
     transform: translateX(-5px);
-    color: var(--color-tertiary);
+    color: rgb(var(--v-theme-tertiary));
   }
   100% {
     transform: translateX(0);    /* Final position */

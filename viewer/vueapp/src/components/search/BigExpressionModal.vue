@@ -81,8 +81,8 @@ export default {
     return {
       // Arkime theme-color v-btn style. Vuetify :color can't take CSS vars.
       tertiaryBtnStyle: {
-        backgroundColor: 'var(--color-tertiary)',
-        color: 'var(--color-button, #FFF)'
+        backgroundColor: 'rgb(var(--v-theme-tertiary))',
+        color: 'rgb(var(--v-theme-button-fg))'
       }
     };
   },
@@ -115,14 +115,14 @@ export default {
    invisible on the v-card surface. Paint a proper bordered field. */
 .big-expression-card-text textarea.arkime-input-control {
   width: 100%;
-  border: 1px solid var(--color-gray) !important;
+  border: 1px solid rgb(var(--v-theme-neutral)) !important;
   border-radius: 4px;
-  background-color: var(--color-background, #fff) !important;
+  background-color: rgb(var(--v-theme-background)) !important;
   padding: 8px 10px;
 }
 .big-expression-card-text textarea.arkime-input-control:focus {
-  border-color: var(--color-primary) !important;
-  box-shadow: 0 0 0 1px var(--color-primary);
+  border-color: rgb(var(--v-theme-primary)) !important;
+  box-shadow: 0 0 0 1px rgb(var(--v-theme-primary));
   outline: none;
 }
 </style>

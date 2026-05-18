@@ -678,7 +678,7 @@ export default {
 }
 
 .detail-field .field a {
-  color: var(--color-foreground-accent);
+  color: rgb(var(--v-theme-foreground-accent));
   word-break: break-word;
 }
 
@@ -701,7 +701,7 @@ export default {
 }
 
 .field a {
-  color: var(--color-foreground-accent);
+  color: rgb(var(--v-theme-foreground-accent));
   text-decoration: none;
 }
 
@@ -718,12 +718,12 @@ export default {
 
 .field:hover {
   z-index: 4;
-  background-color: var(--color-white);
-  border: 1px solid var(--color-gray-light);
+  background-color: rgb(var(--v-theme-white));
+  border: 1px solid rgb(var(--v-theme-neutral-light));
 }
 
 .field:hover a {
-  color: var(--color-black);
+  color: rgb(var(--v-theme-black));
 }
 
 /* if a user right clicks a value, highlight the entire value */
