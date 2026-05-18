@@ -19,6 +19,7 @@ typedef struct {
     uint8_t   serverWhich;
     uint8_t   inFetch;
     uint8_t   inHeaders;
+    uint8_t   inNtlmAuth;
 } IMAPInfo_t;
 
 /******************************************************************************/
@@ -82,6 +83,80 @@ LOCAL void imap_parse_header_line(IMAPInfo_t UNUSED(*imap), ArkimeSession_t *ses
     }
 }
 /******************************************************************************/
+LOCAL void imap_process_line(IMAPInfo_t *imap, ArkimeSession_t *session, const char *line, int len, int which)
+{
+    /* NTLM detection / decoding */
+    if (which != imap->serverWhich && len > 16) {
+        /* Client: "<tag> AUTHENTICATE NTLM [<base64>]" */
+        const char *cmd = line;
+        while (cmd < line + len && !isspace(*cmd)) cmd++;
+        while (cmd < line + len && isspace(*cmd)) cmd++;
+        if (line + len - cmd >= 17 && strncasecmp(cmd, "AUTHENTICATE NTLM", 17) == 0) {
+            imap->inNtlmAuth = 1;
+            const char *rest = cmd + 17;
+            if (rest < line + len && *rest == ' ')
+                arkime_parsers_ntlm_decode_base64(session, rest + 1, (line + len) - (rest + 1));
+            return;
+        }
+    }
+    if (imap->inNtlmAuth) {
+        const char *b = line;
+        int blen = len;
+        /* Server continuation: "+ TlRMTVN..." */
+        if (which == imap->serverWhich && blen > 2 && b[0] == '+' && b[1] == ' ') {
+            b += 2;
+            blen -= 2;
+        }
+        if (arkime_parsers_ntlm_decode_base64(session, b, blen))
+            return;
+    }
+
+    /* Server responses */
+    if (which == imap->serverWhich) {
+        if (len > 6 && line[0] == '*' && line[1] == ' ') {
+            if (arkime_memcasestr(line, len, "fetch", 5)) {
+                imap->inFetch = TRUE;
+                imap->inHeaders = TRUE;
+            }
+        } else if (imap->inFetch && len > 0 && line[0] == ')') {
+            imap->inFetch = FALSE;
+            imap->inHeaders = FALSE;
+        } else if (imap->inFetch && imap->inHeaders) {
+            if (len == 0) {
+                imap->inHeaders = FALSE;
+            } else {
+                imap_parse_header_line(imap, session, line, len);
+            }
+        }
+    }
+    /* Client commands */
+    else {
+        if (len > 7) {
+            const char *cmd = line;
+            while (cmd < line + len && !isspace(*cmd)) cmd++;
+            while (cmd < line + len && isspace(*cmd)) cmd++;
+
+            if (strncasecmp(cmd, "SELECT ", 7) == 0 || strncasecmp(cmd, "EXAMINE ", 8) == 0) {
+                const char *folder = cmd + (strncasecmp(cmd, "SELECT", 6) == 0 ? 7 : 8);
+                while (folder < line + len && isspace(*folder)) folder++;
+
+                const char *folderEnd = line + len;
+                if (folder < line + len && *folder == '"') {
+                    folder++;
+                    folderEnd = memchr(folder, '"', folderEnd - folder);
+                    if (!folderEnd) folderEnd = line + len;
+                } else {
+                    while (folderEnd > folder && isspace(folderEnd[-1])) folderEnd--;
+                }
+
+                if (folderEnd > folder) {
+                    arkime_field_string_add(folderField, session, folder, folderEnd - folder, TRUE);
+                }
+            }
+        }
+    }
+}
+/******************************************************************************/
 LOCAL int imap_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, int remaining, int which)
 {
     IMAPInfo_t *imap = uw;
@@ -114,90 +189,10 @@ LOCAL int imap_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, i
                 return ARKIME_PARSER_UNREGISTER;
             }
             g_string_append_len(imap->line, (const char *)data, lineLen);
-
-            /* Process the complete line - same logic as unbuffered */
-            if (which == imap->serverWhich) {
-                const char *line = imap->line->str;
-                int len = imap->line->len;
-                /* Check for FETCH response */
-                if (len > 6 && line[0] == '*' && line[1] == ' ') {
-                    if (arkime_memcasestr(line, len, "fetch", 5)) {
-                        imap->inFetch = TRUE;
-                        imap->inHeaders = TRUE;
-                    }
-                }
-                /* End of FETCH - closing paren */
-                else if (imap->inFetch && len > 0 && line[0] == ')') {
-                    imap->inFetch = FALSE;
-                    imap->inHeaders = FALSE;
-                }
-                /* Process headers within FETCH */
-                else if (imap->inFetch && imap->inHeaders) {
-                    if (len == 0) {
-                        imap->inHeaders = FALSE;
-                    } else {
-                        imap_parse_header_line(imap, session, line, len);
-                    }
-                }
-            }
-
+            imap_process_line(imap, session, imap->line->str, imap->line->len, which);
             g_string_truncate(imap->line, 0);
         } else {
-            const char *line = (const char *)data;
-            int len = lineLen;
-
-            /* Server responses */
-            if (which == imap->serverWhich) {
-                /* Check for FETCH response */
-                if (len > 6 && line[0] == '*' && line[1] == ' ') {
-                    if (arkime_memcasestr(line, len, "fetch", 5)) {
-                        imap->inFetch = TRUE;
-                        imap->inHeaders = TRUE;
-                    }
-                }
-                /* End of FETCH - closing paren or new tagged response */
-                else if (imap->inFetch && len > 0 && line[0] == ')') {
-                    imap->inFetch = FALSE;
-                    imap->inHeaders = FALSE;
-                }
-                /* Process headers within FETCH */
-                else if (imap->inFetch && imap->inHeaders) {
-                    if (len == 0) {
-                        imap->inHeaders = FALSE;
-                    } else {
-                        imap_parse_header_line(imap, session, line, len);
-                    }
-                }
-            }
-            /* Client commands */
-            else {
-                /* Check for SELECT/EXAMINE to capture folder name */
-                if (len > 7) {
-                    const char *cmd = line;
-                    /* Skip tag */
-                    while (cmd < line + len && !isspace(*cmd)) cmd++;
-                    while (cmd < line + len && isspace(*cmd)) cmd++;
-
-                    if (strncasecmp(cmd, "SELECT ", 7) == 0 || strncasecmp(cmd, "EXAMINE ", 8) == 0) {
-                        const char *folder = cmd + (strncasecmp(cmd, "SELECT", 6) == 0 ? 7 : 8);
-                        while (folder < line + len && isspace(*folder)) folder++;
-
-                        /* Remove quotes if present */
-                        const char *folderEnd = line + len;
-                        if (folder < line + len && *folder == '"') {
-                            folder++;
-                            folderEnd = memchr(folder, '"', folderEnd - folder);
-                            if (!folderEnd) folderEnd = line + len;
-                        } else {
-                            while (folderEnd > folder && isspace(folderEnd[-1])) folderEnd--;
-                        }
-
-                        if (folderEnd > folder) {
-                            arkime_field_string_add(folderField, session, folder, folderEnd - folder, TRUE);
-                        }
-                    }
-                }
-            }
+            imap_process_line(imap, session, (const char *)data, lineLen, which);
         }
 
         /* Move past this line */

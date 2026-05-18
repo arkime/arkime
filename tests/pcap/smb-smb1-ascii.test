@@ -50,6 +50,24 @@
      }
     },
     "node" : "test",
+    "ntlm" : {
+     "domain" : [
+      "LAB"
+     ],
+     "domainCnt" : 1,
+     "host" : [
+      "THEHOSTNAMEHEREX"
+     ],
+     "hostCnt" : 1,
+     "type" : [
+      3
+     ],
+     "typeCnt" : 1,
+     "version" : [
+      "0.0.0"
+     ],
+     "versionCnt" : 1
+    },
     "packetLen" : [
      82,
      82,
@@ -103,10 +121,11 @@
      "lte" : 1429783877023
     },
     "protocol" : [
+     "ntlm",
      "smb",
      "tcp"
     ],
-    "protocolCnt" : 2,
+    "protocolCnt" : 3,
     "segmentCnt" : 1,
     "server" : {
      "bytes" : 879
@@ -180,7 +199,11 @@
      "dst" : 0,
      "src" : 2695773310
     },
-    "totDataBytes" : 1844
+    "totDataBytes" : 1844,
+    "user" : [
+     "Administrator"
+    ],
+    "userCnt" : 1
    },
    "header" : {
     "index" : {

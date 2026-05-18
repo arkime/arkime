@@ -136,9 +136,16 @@ LOCAL ArkimeScheme_t *uri2scheme(const char *uri)
     return str ? str->uw : NULL;
 }
 /******************************************************************************/
+/******************************************************************************/
+/* Tracks recursion depth of load_thread on the scheme thread. depth==1 means
+ * the outermost call (i.e. add-file/add-dir top level). Nested calls happen
+ * when reading a directory: outer load_thread(DIRHINT) -> readerScheme->load
+ * -> arkime_reader_scheme_load(file) -> inner load_thread(no DIRHINT). */
+LOCAL int loadThreadDepth;
 /* Actually call the scheme load function. This is guaranteed to be on the scheme thread */
 LOCAL void arkime_reader_scheme_load_thread(const char *uri, ArkimeSchemeFlags flags, ArkimeSchemeAction_t *actions)
 {
+    loadThreadDepth++;
     reader_scheme_pause();
 
     LOG("Processing %s", uri);
@@ -147,7 +154,7 @@ LOCAL void arkime_reader_scheme_load_thread(const char *uri, ArkimeSchemeFlags f
         LOG("ERROR - Unknown scheme for %s", uri);
         if (actions && actions->notifyClientRef)
             arkime_command_notify_file_error(actions->notifyClientRef, uri);
-        return;
+        goto cleanup;
     }
 
     readerState.startPos = 0;
@@ -163,7 +170,17 @@ LOCAL void arkime_reader_scheme_load_thread(const char *uri, ArkimeSchemeFlags f
 
     int rcl = readerScheme->load(uri, flags, actions);
 
-    if (rcl == 0 && !config.dryRun && !config.copyPcap && offlineInfo[readerState.readerPos].didBatch) {
+    gboolean notifyHandedOff = FALSE;
+    if (rcl == 0 && offlineInfo[readerState.readerPos].didBatch) {
+        // Stash an async file-done notification on the offlineInfo slot. The
+        // packet thread will fire file-done + decref when the last packet of
+        // this file has been processed.
+        if (!(flags & ARKIME_SCHEME_FLAG_DIRHINT) && actions && actions->notifyClientRef) {
+            arkime_command_client_incref(actions->notifyClientRef);
+            offlineInfo[readerState.readerPos].notifyClientRef = actions->notifyClientRef;
+            offlineInfo[readerState.readerPos].notifyFilename = g_strdup(uri);
+            notifyHandedOff = TRUE;
+        }
         arkime_packet_batch_end_of_file(readerState.readerPos);
     }
 
@@ -180,25 +197,30 @@ LOCAL void arkime_reader_scheme_load_thread(const char *uri, ArkimeSchemeFlags f
         }
     }
 
-    // Send async completion notification if requested via command socket.
-    // Skip for directory entries (DIRHINT) — only individual files get notifications.
-    if (!(flags & ARKIME_SCHEME_FLAG_DIRHINT) && actions && actions->notifyClientRef) {
+    // Synchronous notification path: load failed or no packets batched. The
+    // packet thread won't fire FILE_DONE so we notify inline. We don't touch
+    // actions->notifyClientRef — for add-dir it's shared across files.
+    if (!(flags & ARKIME_SCHEME_FLAG_DIRHINT) && actions && actions->notifyClientRef && !notifyHandedOff) {
         if (rcl != 0) {
             arkime_command_notify_file_error(actions->notifyClientRef, uri);
         } else {
-            arkime_command_notify_file_done(
-                actions->notifyClientRef, uri,
-                offlineInfo[readerState.readerPos].lastBytes,
-                offlineInfo[readerState.readerPos].lastPackets);
-        }
-        // Release the schemeActions slot — the idle callback holds its own client ref.
-        // Without this, schemeActions keeps actions alive (holding a client ref) until
-        // this slot wraps around, preventing the socket from closing.
-        if (schemeActions[readerState.readerPos]) {
-            reader_scheme_actions_deref(schemeActions[readerState.readerPos]);
-            schemeActions[readerState.readerPos] = NULL;
+            arkime_command_notify_file_done(actions->notifyClientRef, uri,
+                                            offlineInfo[readerState.readerPos].lastBytes,
+                                            offlineInfo[readerState.readerPos].lastPackets);
         }
     }
+
+cleanup:
+    // Outermost load_thread call (depth==1 going to 0): release the client ref
+    // that was attached to actions when --notify was specified. Per-file
+    // notifications already incref'd their own copy onto offlineInfo, so it's
+    // safe to drop the actions-held ref here. Done at outermost depth so that
+    // recursive directory iteration can continue using actions->notifyClientRef.
+    if (loadThreadDepth == 1 && actions && actions->notifyClientRef) {
+        arkime_command_client_decref(actions->notifyClientRef);
+        actions->notifyClientRef = NULL;
+    }
+    loadThreadDepth--;
 }
 /******************************************************************************/
 void arkime_reader_scheme_load(const char *uri, ArkimeSchemeFlags flags, ArkimeSchemeAction_t *actions)

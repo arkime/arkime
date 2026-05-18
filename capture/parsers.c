@@ -659,6 +659,195 @@ gtdone:
     return 0;
 }
 /******************************************************************************/
+LOCAL int ntlmDomainField;
+LOCAL int ntlmHostField;
+LOCAL int ntlmTargetField;
+LOCAL int ntlmVersionField;
+LOCAL int ntlmTypeField;
+
+#define NTLM_NEGOTIATE_UNICODE   0x00000001
+#define NTLM_NEGOTIATE_VERSION   0x02000000
+
+/******************************************************************************/
+LOCAL void arkime_ntlm_add_string(ArkimeSession_t *session, int field, BSB *sb, int unicode)
+{
+    if (field < 0 || BSB_IS_ERROR(*sb))
+        return;
+    uint32_t len = BSB_REMAINING(*sb);
+    const uint8_t *buf = BSB_WORK_PTR(*sb);
+    if (len == 0)
+        return;
+
+    if (unicode) {
+        GError *error = NULL;
+        gsize bread, bwritten;
+        char *out = g_convert((const char *)buf, len, "utf-8", "ucs-2le", &bread, &bwritten, &error);
+        if (error) {
+            if (config.debug)
+                LOG("ntlm utf-8 convert error: %s", error->message);
+            g_error_free(error);
+            return;
+        }
+        if (!out)
+            return;
+        if (!arkime_field_string_add(field, session, out, -1, FALSE))
+            g_free(out);
+    } else {
+        arkime_field_string_add(field, session, (const char *)buf, len, TRUE);
+    }
+}
+/******************************************************************************/
+/* Read an NTLMSSP "security buffer" descriptor (Len u16 LE, MaxLen u16 LE,
+ * Offset u32 LE) at byte offset `pos` inside `msg`. On success initializes
+ * `out` to span the payload region inside `msg` and returns TRUE. */
+LOCAL gboolean arkime_ntlm_secbuf(const uint8_t *msg, uint32_t msglen,
+                                  uint32_t pos, BSB *out)
+{
+    BSB_INIT(*out, NULL, 0);
+    if (pos > msglen || msglen - pos < 8)
+        return FALSE;
+
+    BSB hdr;
+    uint16_t slen;
+    uint32_t soff;
+    BSB_INIT(hdr, msg + pos, 8);
+    BSB_LIMPORT_u16(hdr, slen);
+    BSB_LIMPORT_skip(hdr, 2);              // skip MaxLen
+    BSB_LIMPORT_u32(hdr, soff);
+    if (BSB_IS_ERROR(hdr) || slen == 0)
+        return FALSE;
+    /* Overflow-safe bounds check: soff <= msglen AND slen <= msglen - soff. */
+    if (soff > msglen || slen > msglen - soff)
+        return FALSE;
+    BSB_INIT(*out, msg + soff, slen);
+    return TRUE;
+}
+/******************************************************************************/
+LOCAL void arkime_ntlm_add_version(ArkimeSession_t *session, BSB *vb)
+{
+    uint8_t  major = 0, minor = 0;
+    uint16_t build = 0;
+    BSB_LIMPORT_u08(*vb, major);
+    BSB_LIMPORT_u08(*vb, minor);
+    BSB_LIMPORT_u16(*vb, build);
+    if (BSB_IS_ERROR(*vb))
+        return;
+    char buf[64];
+    snprintf(buf, sizeof(buf), "%u.%u.%u", major, minor, build);
+    arkime_field_string_add(ntlmVersionField, session, buf, -1, TRUE);
+}
+/******************************************************************************/
+/* Decode an NTLMSSP message (Type 1/2/3) starting at `data` of length `dlen`.
+ * Safe to call on any buffer; if the signature/type/structure don't match,
+ * the function returns without modifying the session. See [MS-NLMP]. */
+void arkime_parsers_ntlm_decode(ArkimeSession_t *session,
+                                const uint8_t *data, uint32_t dlen)
+{
+    if (!data || dlen < 12)
+        return;
+    if (memcmp(data, "NTLMSSP\0", 8) != 0)
+        return;
+
+    BSB msg;
+    BSB_INIT(msg, data, dlen);
+    BSB_LIMPORT_skip(msg, 8); // already validated NTLMSSP signature
+
+    uint32_t mtype;
+    BSB_LIMPORT_u32(msg, mtype);
+    if (BSB_IS_ERROR(msg) || mtype < 1 || mtype > 3)
+        return;
+
+    arkime_session_add_protocol(session, "ntlm");
+    arkime_field_int_add(ntlmTypeField, session, mtype);
+
+    uint32_t flags = 0;
+    uint32_t domainPos = 0, userPos = 0, hostPos = 0, targetPos = 0, versionPos = 0;
+
+    /* msg.ptr currently at offset 12 (after signature + mtype). */
+    switch (mtype) {
+    case 1: // NEGOTIATE_MESSAGE: flags @12
+        BSB_LIMPORT_u32(msg, flags);
+        domainPos  = 16;
+        hostPos    = 24;
+        versionPos = 32;
+        break;
+    case 2: // CHALLENGE_MESSAGE: target secbuf @12, flags @20
+        targetPos  = 12;
+        BSB_LIMPORT_skip(msg, 8);          // skip target secbuf
+        BSB_LIMPORT_u32(msg, flags);
+        versionPos = 48;
+        break;
+    case 3: // AUTHENTICATE_MESSAGE: lm/nt/domain/user/host/sessionkey, flags @60
+        domainPos  = 28;
+        userPos    = 36;
+        hostPos    = 44;
+        BSB_LIMPORT_skip(msg, 48);         // skip 6 secbufs (lm,nt,domain,user,host,sessionkey)
+        BSB_LIMPORT_u32(msg, flags);
+        versionPos = 64;
+        break;
+    }
+
+    if (BSB_IS_ERROR(msg))
+        return;
+
+    int unicode = (flags & NTLM_NEGOTIATE_UNICODE) ? 1 : 0;
+    if (mtype == 1)
+        unicode = 0; // Type 1 OemDomainName/OemWorkstationName are always OEM
+    BSB sb;
+
+    if (domainPos && arkime_ntlm_secbuf(data, dlen, domainPos, &sb))
+        arkime_ntlm_add_string(session, ntlmDomainField, &sb, unicode);
+    if (userPos && arkime_ntlm_secbuf(data, dlen, userPos, &sb))
+        arkime_ntlm_add_string(session, userField, &sb, unicode);
+    if (hostPos && arkime_ntlm_secbuf(data, dlen, hostPos, &sb))
+        arkime_ntlm_add_string(session, ntlmHostField, &sb, unicode);
+    if (targetPos && arkime_ntlm_secbuf(data, dlen, targetPos, &sb))
+        arkime_ntlm_add_string(session, ntlmTargetField, &sb, unicode);
+
+    if ((flags & NTLM_NEGOTIATE_VERSION) && versionPos) {
+        BSB vb;
+        BSB_INIT(vb, data, dlen);
+        BSB_LIMPORT_skip(vb, versionPos);
+        if (BSB_NOT_ERROR(vb) && BSB_REMAINING(vb) >= 8)
+            arkime_ntlm_add_version(session, &vb);
+    }
+}
+/******************************************************************************/
+/* Detect and decode a base64-encoded NTLMSSP message from a text line.
+ * Recognizes the base64 prefix of "NTLMSSP\0" ("TlRMTVNTUA"). Leading/trailing
+ * whitespace and CR/LF are tolerated. Returns TRUE if a message was dispatched. */
+gboolean arkime_parsers_ntlm_decode_base64(ArkimeSession_t *session,
+                                           const char *b64, int b64len)
+{
+    if (!b64 || b64len < 11)
+        return FALSE;
+
+    while (b64len > 0 && (*b64 == ' ' || *b64 == '\t')) {
+        b64++;
+        b64len--;
+    }
+    while (b64len > 0 && (b64[b64len - 1] == ' ' || b64[b64len - 1] == '\t' ||
+                          b64[b64len - 1] == '\r' || b64[b64len - 1] == '\n'))
+        b64len--;
+
+    if (b64len < 11 || memcmp(b64, "TlRMTVNTUA", 10) != 0)
+        return FALSE;
+
+    if (b64len > 16384)
+        b64len = 16384;
+
+    guchar decoded[12288];
+    gint state = 0;
+    guint save = 0;
+    gsize out_len = g_base64_decode_step(b64, b64len, decoded, &state, &save);
+
+    if (out_len < 12)
+        return FALSE;
+
+    arkime_parsers_ntlm_decode(session, decoded, out_len);
+    return TRUE;
+}
+/******************************************************************************/
 LOCAL int filewext_cmp(const void *a, const void *b)
 {
     return strcmp(((ArkimeFileWithExtension_t *)a)->filename, ((ArkimeFileWithExtension_t *)b)->filename);
@@ -832,6 +1021,37 @@ void arkime_parsers_init()
                                     ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT | ARKIME_FIELD_FLAG_LINKED_SESSIONS,
                                     "category", "user",
                                     (char *)NULL);
+
+    ntlmDomainField = arkime_field_define("ntlm", "termfield",
+                                          "ntlm.domain", "NTLM Domain", "ntlm.domain",
+                                          "NTLMSSP domain or target realm",
+                                          ARKIME_FIELD_TYPE_STR_HASH, ARKIME_FIELD_FLAG_CNT,
+                                          (char *)NULL);
+
+    ntlmHostField = arkime_field_define("ntlm", "termfield",
+                                        "ntlm.host", "NTLM Host", "ntlm.host",
+                                        "NTLMSSP workstation/host name",
+                                        ARKIME_FIELD_TYPE_STR_HASH, ARKIME_FIELD_FLAG_CNT,
+                                        "category", "host",
+                                        (char *)NULL);
+
+    ntlmTargetField = arkime_field_define("ntlm", "termfield",
+                                          "ntlm.targetName", "NTLM Target Name", "ntlm.targetName",
+                                          "NTLMSSP server-advertised target name (Type 2)",
+                                          ARKIME_FIELD_TYPE_STR_HASH, ARKIME_FIELD_FLAG_CNT,
+                                          (char *)NULL);
+
+    ntlmVersionField = arkime_field_define("ntlm", "termfield",
+                                           "ntlm.version", "NTLM Version", "ntlm.version",
+                                           "NTLMSSP client/server OS version (major.minor.build)",
+                                           ARKIME_FIELD_TYPE_STR_HASH, ARKIME_FIELD_FLAG_CNT,
+                                           (char *)NULL);
+
+    ntlmTypeField = arkime_field_define("ntlm", "integer",
+                                        "ntlm.type", "NTLM Message Type", "ntlm.type",
+                                        "NTLMSSP message type: 1=Negotiate, 2=Challenge, 3=Authenticate",
+                                        ARKIME_FIELD_TYPE_INT_GHASH, ARKIME_FIELD_FLAG_CNT,
+                                        (char *)NULL);
 
     int flags = MAGIC_MIME;
 
