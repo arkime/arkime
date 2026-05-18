@@ -39,6 +39,16 @@
      "packets" : 14
     },
     "node" : "test",
+    "ntlm" : {
+     "host" : [
+      "BLU"
+     ],
+     "hostCnt" : 1,
+     "type" : [
+      3
+     ],
+     "typeCnt" : 1
+    },
     "packetLen" : [
      90,
      90,
@@ -76,10 +86,11 @@
      "lte" : 1132371118592
     },
     "protocol" : [
+     "ntlm",
      "smb",
      "tcp"
     ],
-    "protocolCnt" : 2,
+    "protocolCnt" : 3,
     "segmentCnt" : 1,
     "server" : {
      "bytes" : 922
@@ -144,7 +155,11 @@
      "dst" : 0,
      "src" : 2297488850
     },
-    "totDataBytes" : 1824
+    "totDataBytes" : 1824,
+    "user" : [
+     "administrator"
+    ],
+    "userCnt" : 1
    },
    "header" : {
     "index" : {

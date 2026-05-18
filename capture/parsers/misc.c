@@ -339,7 +339,6 @@ void arkime_parser_init()
     /* Bitcoin namecoin fork */
     SIMPLE_CLASSIFY_TCP("bitcoin", "\xf9\xbe\xb4\xfe");
 
-    SIMPLE_CLASSIFY_TCP("pop3", "+OK ");
     CLASSIFY_TCP("gh0st", 13, "\x78", gh0st_classify);
     CLASSIFY_TCP("other220", 0, "220 ", other220_classify);
     CLASSIFY_TCP("other220", 0, "220-", other220_classify);
