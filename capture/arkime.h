@@ -313,6 +313,9 @@ typedef struct {
 #define ARKIME_THREAD_DECROLD(var)       __sync_fetch_and_sub(&var, 1)
 #define ARKIME_THREAD_DECR_NUM(var, num) __sync_sub_and_fetch(&var, num)
 
+#define ARKIME_THREAD_ATOMIC_STORE(var, val) __atomic_store_n(&(var), (val), __ATOMIC_RELEASE)
+#define ARKIME_THREAD_ATOMIC_LOAD(var)       __atomic_load_n(&(var), __ATOMIC_ACQUIRE)
+
 /* You are probably looking here because you think 24 is too low, really it isn't.
  * Instead, use jemalloc and increase the number of threads used for reading packets.
  * https://arkime.com/faq#why-am-i-dropping-packets
