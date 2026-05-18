@@ -830,20 +830,19 @@ gboolean arkime_parsers_ntlm_decode_base64(ArkimeSession_t *session,
     if (b64len < 11 || memcmp(b64, "TlRMTVNTUA", 10) != 0)
         return FALSE;
 
-    char *s = g_strndup(b64, b64len);
-    gsize out_len = 0;
-    guchar *decoded = g_base64_decode(s, &out_len);
-    g_free(s);
+    if (b64len > 16384)
+        b64len = 16384;
 
-    gboolean dispatched = FALSE;
-    if (decoded) {
-        if (out_len >= 12) {
-            arkime_parsers_ntlm_decode(session, decoded, out_len);
-            dispatched = TRUE;
-        }
-        g_free(decoded);
-    }
-    return dispatched;
+    guchar decoded[12288];
+    gint state = 0;
+    guint save = 0;
+    gsize out_len = g_base64_decode_step(b64, b64len, decoded, &state, &save);
+
+    if (out_len < 12)
+        return FALSE;
+
+    arkime_parsers_ntlm_decode(session, decoded, out_len);
+    return TRUE;
 }
 /******************************************************************************/
 LOCAL int filewext_cmp(const void *a, const void *b)
