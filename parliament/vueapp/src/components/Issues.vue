@@ -3,7 +3,9 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-  <div class="container-fluid mt-3">
+  <v-container
+    fluid
+    class="px-4 py-0">
     <!-- page error -->
     <v-alert
       v-if="!!error"
@@ -140,7 +142,7 @@ SPDX-License-Identifier: Apache-2.0
           icon="fa-circle-o-notch"
           class="fa-spin"
           size="x-large" />
-        <h4>{{ $t('common.loading') }}</h4>
+        <h3>{{ $t('common.loading') }}</h3>
       </div>
     </v-overlay> <!-- /table loading -->
 
@@ -148,13 +150,13 @@ SPDX-License-Identifier: Apache-2.0
     <table
       style="position:relative"
       v-if="issues && issues.length"
-      :class="{ 'table-dark': getTheme === 'dark' }"
-      class="table table-hover table-sm">
+      class="issues-table">
       <thead>
         <tr>
           <th v-if="isUser && issues.length">
             <input
               type="checkbox"
+              class="arkime-check-input"
               @click="toggleAllIssues"
               v-model="allIssuesSelected">
           </th>
@@ -273,28 +275,34 @@ SPDX-License-Identifier: Apache-2.0
             scope="col">
             <span v-if="atLeastOneIssueSelected">
               <!-- remove selected issues button -->
-              <button
-                class="btn btn-outline-primary btn-xs cursor-pointer me-1"
+              <v-btn
+                size="x-small"
+                variant="outlined"
+                color="primary"
+                class="me-1"
                 @click="removeSelectedAcknowledgedIssues">
-                <span class="fa fa-trash fa-fw" />
+                <v-icon icon="fa-trash" />
                 <v-tooltip
                   activator="parent"
                   location="bottom">
                   {{ $t('parliament.issue.removeSelectedIssuesBtnTip') }}
                 </v-tooltip>
-              </button>
+              </v-btn>
               <!-- /remove selected issues button -->
               <!-- acknowledge issues button -->
-              <button
-                class="btn btn-outline-success btn-xs cursor-pointer me-1"
+              <v-btn
+                size="x-small"
+                variant="outlined"
+                color="success"
+                class="me-1"
                 @click="acknowledgeIssues">
-                <span class="fa fa-check fa-fw" />
+                <v-icon icon="fa-check" />
                 <v-tooltip
                   activator="parent"
                   location="bottom">
                   {{ $t('parliament.issue.acknowledgeIssuesBtnTip') }}
                 </v-tooltip>
-              </button>
+              </v-btn>
               <!-- /acknowledge issues button -->
               <!-- ignore until dropdown -->
               <v-menu location="bottom end">
@@ -354,6 +362,7 @@ SPDX-License-Identifier: Apache-2.0
               @click.stop>
               <input
                 type="checkbox"
+                class="arkime-check-input"
                 v-model="issue.selected"
                 @change="toggleIssue(issue, index)">
             </td>
@@ -403,9 +412,9 @@ SPDX-License-Identifier: Apache-2.0
 
     <!-- no issues -->
     <div v-if="!loading && (!issues || !issues.length)">
-      <hr>
+      <v-divider class="my-3" />
       <div class="info-area vertical-center text-center">
-        <div class="text-muted mt-5">
+        <div class="text-medium-emphasis mt-5">
           <span v-if="!searchTerm && !filterIgnored && !filterAckd && !filterEsRed && !filterEsDown && !filterEsDropped && !filterOutOfDate && !filterNoPackets">
             <span class="fa fa-3x fa-smile-o text-muted-more" />
             {{ $t('parliament.issue.noIssues') }}
@@ -417,7 +426,7 @@ SPDX-License-Identifier: Apache-2.0
         </div>
       </div>
     </div> <!-- /no issues -->
-  </div>
+  </v-container>
 </template>
 
 <script>
@@ -630,11 +639,11 @@ export default {
     },
     getIssueRowClass: function (issue) {
       if (issue.ignoreUntil || issue.acknowledged) {
-        return 'table-secondary text-muted';
+        return 'issues-row--muted text-medium-emphasis';
       } else if (issue.severity === 'red') {
-        return 'table-danger';
+        return 'issues-row--danger';
       } else if (issue.severity === 'yellow') {
-        return 'table-warning';
+        return 'issues-row--warning';
       }
 
       return '';
@@ -895,35 +904,58 @@ export default {
 </script>
 
 <style scoped>
-.pagination {
-  margin-bottom: 0px;
-  display: inline-flex;
+/* compact themed table -- mirrors viewer's .arkime-table treatment.
+   Full-width, transparent rows, compact cells, alternating tint, hover tint. */
+.issues-table {
+  width: 100%;
+  margin-bottom: 1rem;
+  color: rgb(var(--v-theme-foreground));
+  vertical-align: top;
+  border-color: rgb(var(--v-theme-neutral-light));
+  border-collapse: collapse;
 }
-
-select.page-select {
-  width: 120px;
-  font-size: .8rem;
-  display: inline-flex;
-  height: 31px !important;
-  margin-top: 1px;
-  margin-right: -5px;
-  margin-bottom: var(--px-xs);
-  padding-top: var(--px-xs);
-  padding-bottom: var(--px-xs);
-  border-right: none;
-  -webkit-appearance: none;
-  border-radius: 4px 0 0 4px;
+.issues-table > thead {
+  vertical-align: bottom;
 }
-
-.pagination-info {
-  display: inline-block;
-  font-size: .8rem;
-  color: #495057;
-  border: 1px solid #CED4DA;
-  padding: 5px 10px;
-  margin-left: -6px;
-  border-radius: 0 var(--px-sm) var(--px-sm) 0;
-  background-color: #FFFFFF;
+.issues-table > thead > tr > th {
+  padding: 0.25rem;
+  font-weight: 600;
+  border-bottom: 2px solid rgb(var(--v-theme-neutral-light));
+  background-color: transparent;
+}
+.issues-table > tbody > tr > td,
+.issues-table > tbody > tr > th {
+  padding: 0.25rem;
+  border-bottom: 1px solid rgb(var(--v-theme-neutral-lighter));
+  background-color: transparent;
+}
+.issues-table > tbody > tr:nth-of-type(odd) > td,
+.issues-table > tbody > tr:nth-of-type(odd) > th {
+  background-color: rgb(var(--v-theme-neutral-lightest));
+}
+.issues-table > tbody > tr:hover > td,
+.issues-table > tbody > tr:hover > th {
+  background-color: rgb(var(--v-theme-neutral-lighter));
+}
+/* severity-tinted rows -- pick up the same error/warning tokens used
+   by v-alert so light + dark themes keep parity */
+.issues-table > tbody > tr.issues-row--danger > td {
+  background-color: rgba(var(--v-theme-error), 0.18);
+}
+.issues-table > tbody > tr.issues-row--danger:hover > td {
+  background-color: rgba(var(--v-theme-error), 0.28);
+}
+.issues-table > tbody > tr.issues-row--warning > td {
+  background-color: rgba(var(--v-theme-warning), 0.18);
+}
+.issues-table > tbody > tr.issues-row--warning:hover > td {
+  background-color: rgba(var(--v-theme-warning), 0.28);
+}
+.issues-table > tbody > tr.issues-row--muted > td {
+  background-color: rgba(var(--v-theme-on-surface), 0.08);
+}
+.issues-table > tbody > tr.issues-row--muted:hover > td {
+  background-color: rgba(var(--v-theme-on-surface), 0.12);
 }
 
 /* loading overlay */

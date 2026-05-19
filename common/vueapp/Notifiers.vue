@@ -6,28 +6,42 @@ SPDX-License-Identifier: Apache-2.0
   <div>
     <h3>
       {{ $t('settings.notifiers.title') }}
-      <template v-if="notifierTypes">
-        <v-btn
-          :key="notifier.name"
-          size="large"
-          color="primary"
-          variant="flat"
-          class="pull-right ms-1"
-          v-for="notifier of sortedNotifierTypes"
-          @click="createNewNotifier(notifier)">
-          <v-icon start>
-            fa-plus-circle
-          </v-icon>
-          {{ $t('settings.notifiers.new', { name: notifier.name }) }}
-        </v-btn>
-      </template>
+      <v-menu
+        v-if="notifierTypes"
+        location="bottom end">
+        <template #activator="{ props: activatorProps }">
+          <v-btn
+            v-bind="activatorProps"
+            color="primary"
+            variant="flat"
+            class="pull-right">
+            <v-icon
+              icon="fa-plus-circle"
+              start />
+            {{ $t('settings.notifiers.newGeneric', 'New Notifier') }}
+            <v-icon
+              icon="fa-caret-down"
+              end />
+          </v-btn>
+        </template>
+        <v-list density="compact">
+          <v-list-item
+            v-for="notifier of sortedNotifierTypes"
+            :key="notifier.name"
+            @click="createNewNotifier(notifier)">
+            <v-list-item-title>
+              {{ notifier.name.charAt(0).toUpperCase() + notifier.name.slice(1) }}
+            </v-list-item-title>
+          </v-list-item>
+        </v-list>
+      </v-menu>
     </h3>
 
     <p class="lead">
       {{ $t(helpIntlId) }}
     </p>
 
-    <hr>
+    <v-divider class="my-3" />
 
     <!-- notifiers list error -->
     <v-alert
@@ -278,8 +292,8 @@ SPDX-License-Identifier: Apache-2.0
             :selected-roles="notifier.roles"
             @selected-roles-updated="updateNotifierRoles"
             :display-text="notifier.roles && notifier.roles.length ? undefined : $t('common.shareWithRoles')" /> <!-- /notifier sharing -->
-          <template v-if="parentApp === 'parliament' && notifier.alerts">
-            <hr>
+          <template v-if="parentApp === 'parliament' && notifier.alerts && notifierTypes[notifier.type.toLowerCase()]">
+            <v-divider class="my-3" />
             <!-- notifier alerts -->
             <h5>Notify on</h5>
             <div class="row">
@@ -287,7 +301,7 @@ SPDX-License-Identifier: Apache-2.0
                 <template v-for="(alert, aKey) of notifier.alerts">
                   <span
                     :key="aKey"
-                    v-if="notifierTypes[notifier.type.toLowerCase()].alerts && notifierTypes[notifier.type.toLowerCase()].alerts[aKey]"
+                    v-if="notifierTypes[notifier.type.toLowerCase()]?.alerts && notifierTypes[notifier.type.toLowerCase()].alerts[aKey]"
                     :id="aKey + notifier.name"
                     class="me-2 d-inline-flex align-items-center">
                     <input

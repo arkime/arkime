@@ -59,16 +59,6 @@ a.no-href:hover { color: #0056b3 !important; }
 
 .text-muted-more { color: #DDDDDD; }
 
-/* small, condensed styles ------------------- */
-.alert.alert-sm  {
-  font-size: .85rem;
-  padding: .25rem .4rem;
-  margin-bottom: .5rem;
-}
-.alert.alert-sm > .close {
-  line-height: .75;
-}
-
 /* see top level common.css info area for usage */
 .info-area { color: #777777; }
 .info-area div { background-color: #FFFFFF; }

@@ -31,10 +31,16 @@ async function initializeApp () {
 
   const app = createApp(App);
 
+  // Override the fa4 iconset's `clear` alias -- by default it maps to
+  // `fa-check-circle` which on clearable v-text-fields looks like a
+  // green check (mistaken for a checkbox). `fa-times-circle` is the
+  // intuitive X-in-circle for a clear action.
+  const arkimeFaAliases = { ...faAliases, clear: 'fa-times-circle' };
+
   const vuetify = createVuetify({
     icons: {
       defaultSet: 'fa',
-      aliases: faAliases,
+      aliases: arkimeFaAliases,
       sets: { fa: faSet, mdi: mdiSet }
     },
     defaults: {

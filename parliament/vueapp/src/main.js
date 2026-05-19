@@ -18,11 +18,6 @@ import App from './App.vue';
 import router from './router.js';
 import store from './store.js';
 
-// bootstrap.css stays for now -- parliament still uses many bootstrap
-// utility classes (btn, form-control, row, col-*, input-group, etc.)
-// that need to be migrated to Vuetify equivalents incrementally,
-// matching the multi-step rip pattern used on viewer.
-import 'bootstrap/dist/css/bootstrap.css';
 // Vuetify FIRST so the shared common.css overrides win on source order.
 import 'vuetify/styles';
 import '../../../common/common.css';
@@ -38,10 +33,16 @@ async function initializeApp () {
 
   const app = createApp(App);
 
+  // Override the fa4 iconset's `clear` alias -- by default it maps to
+  // `fa-check-circle` which on clearable v-text-fields looks like a
+  // green check (mistaken for a checkbox). `fa-times-circle` is the
+  // intuitive X-in-circle for a clear action.
+  const arkimeFaAliases = { ...faAliases, clear: 'fa-times-circle' };
+
   const vuetify = createVuetify({
     icons: {
       defaultSet: 'fa',
-      aliases: faAliases,
+      aliases: arkimeFaAliases,
       sets: { fa: faSet, mdi: mdiSet }
     },
     defaults: {

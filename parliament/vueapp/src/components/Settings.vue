@@ -4,12 +4,15 @@ SPDX-License-Identifier: Apache-2.0
 -->
 <template>
   <div class="settings-content mb-4 mt-3">
-    <div class="container-fluid">
+    <v-container fluid>
       <!-- page error -->
-      <div
+      <v-alert
         v-if="error"
-        class="alert alert-danger">
-        <span class="fa fa-exclamation-triangle" />&nbsp;
+        type="error"
+        density="compact"
+        class="mb-3"
+        closable
+        @click:close="error = ''">
         {{ error }}
         <span v-if="!settings && !networkError">
           {{ $t('parliament.settings.ifProblem') }}
@@ -20,13 +23,7 @@ SPDX-License-Identifier: Apache-2.0
             {{ $t('parliament.settings.restoreDefaults') }}
           </a>
         </span>
-        <button
-          type="button"
-          class="close cursor-pointer"
-          @click="error = ''">
-          <span>&times;</span>
-        </button>
-      </div> <!-- /page error -->
+      </v-alert> <!-- /page error -->
 
       <!-- page content -->
       <v-row v-if="isAdmin">
@@ -61,15 +58,20 @@ SPDX-License-Identifier: Apache-2.0
           </v-tabs>
 
           <!-- bottom fixed messages -->
-          <v-alert
-            v-if="!!message"
-            :type="msgType === 'danger' ? 'error' : (msgType || 'success')"
-            class="position-fixed fixed-bottom m-0 rounded-0"
-            style="z-index: 2000;"
-            closable
-            @click:close="message = ''">
+          <v-snackbar
+            :model-value="!!message"
+            :color="msgType === 'danger' ? 'error' : (msgType || 'success')"
+            location="bottom"
+            :timeout="-1"
+            @update:model-value="(v) => { if (!v) message = '' }">
             {{ message }}
-          </v-alert>
+            <template #actions>
+              <v-btn
+                variant="text"
+                icon="fa-times"
+                @click="message = ''" />
+            </template>
+          </v-snackbar>
           <!-- /bottom fixed messages -->
         </v-col> <!-- /navigation -->
 
@@ -81,113 +83,132 @@ SPDX-License-Identifier: Apache-2.0
           sm="9">
           <!-- general -->
           <div
-            v-if="visibleTab === 'general' && settings">
-            <div class="row">
-              <h3 class="col-xl-9 col-lg-12 form-group">
-                <button
-                  type="button"
-                  class="btn btn-sm btn-outline-warning pull-right"
-                  @click="restoreDefaults('general')">
-                  {{ $t('parliament.settings.reset') }}
-                </button>
-                {{ $t('parliament.settings.general') }}
-                <hr>
-              </h3>
-            </div>
-            <div
-              class="row"
-              v-if="settings.general">
+            v-if="visibleTab === 'general' && settings"
+            class="compact-form">
+            <v-row>
+              <v-col
+                xl="9"
+                lg="12"
+                cols="12">
+                <h2 class="d-flex align-center mb-2">
+                  <span class="flex-grow-1">
+                    {{ $t('parliament.settings.general') }}
+                  </span>
+                  <v-btn
+                    size="small"
+                    variant="outlined"
+                    color="warning"
+                    @click="restoreDefaults('general')">
+                    {{ $t('parliament.settings.reset') }}
+                  </v-btn>
+                </h2>
+                <v-divider class="mb-3" />
+              </v-col>
+            </v-row>
+            <v-row v-if="settings.general">
               <!-- out of date -->
-              <div class="col-xl-9 col-lg-12 form-group">
-                <div class="input-group">
-                  <span class="input-group-text">
+              <v-col
+                xl="9"
+                lg="12"
+                cols="12">
+                <div class="arkime-input-group arkime-input-group--fluid">
+                  <span class="arkime-input-label">
                     {{ $t('parliament.settings.outOfDate') }}
                   </span>
                   <input
                     type="number"
-                    class="form-control"
+                    class="arkime-input-control"
                     id="outOfDate"
                     @input="debounceInput"
                     v-model="settings.general.outOfDate"
                     max="3600">
-                  <span class="input-group-text">
+                  <span class="arkime-input-label">
                     {{ $t('common.seconds') }}
                   </span>
                 </div>
-                <p
-                  class="form-text small text-muted"
+                <small
+                  class="d-block text-medium-emphasis mt-1"
                   v-html="$t('parliament.settings.outOfDateHtml')" />
-              </div> <!-- /out of date -->
+              </v-col> <!-- /out of date -->
               <!-- es query timeout -->
-              <div class="col-xl-9 col-lg-12 form-group">
-                <div class="input-group">
-                  <span class="input-group-text">
+              <v-col
+                xl="9"
+                lg="12"
+                cols="12">
+                <div class="arkime-input-group arkime-input-group--fluid">
+                  <span class="arkime-input-label">
                     {{ $t('parliament.settings.esQueryTimeout') }}
                   </span>
                   <input
                     type="number"
-                    class="form-control"
+                    class="arkime-input-control"
                     id="esQueryTimeout"
                     @input="debounceInput"
                     v-model="settings.general.esQueryTimeout"
                     max="60">
-                  <span class="input-group-text">
+                  <span class="arkime-input-label">
                     {{ $t('common.seconds') }}
                   </span>
                 </div>
-                <p
-                  class="form-text small text-muted"
+                <small
+                  class="d-block text-medium-emphasis mt-1"
                   v-html="$t('parliament.settings.esQueryTimeoutHtml')" />
-              </div> <!-- /es query timeout -->
+              </v-col> <!-- /es query timeout -->
               <!-- low packets -->
-              <div class="col-xl-9 col-lg-12 form-group">
-                <div class="d-flex">
-                  <div class="input-group me-2">
-                    <span class="input-group-text">
+              <v-col
+                xl="9"
+                lg="12"
+                cols="12">
+                <div class="d-flex ga-2">
+                  <div class="arkime-input-group arkime-input-group--fluid">
+                    <span class="arkime-input-label">
                       {{ $t('parliament.settings.noPackets') }}
                     </span>
                     <input
                       type="number"
-                      class="form-control"
+                      class="arkime-input-control"
                       id="noPackets"
                       @input="debounceInput"
                       v-model="settings.general.noPackets"
                       max="100000"
                       min="-1">
-                    <span class="input-group-text">
+                    <span class="arkime-input-label">
                       packets
                     </span>
                   </div>
-                  <div class="input-group">
-                    <span class="input-group-text">
+                  <div class="arkime-input-group arkime-input-group--fluid">
+                    <span class="arkime-input-label">
                       {{ $t('parliament.settings.noPacketsLength') }}
                     </span>
                     <input
                       type="number"
-                      class="form-control"
+                      class="arkime-input-control"
                       id="noPacketsLength"
                       @input="debounceInput"
                       v-model="settings.general.noPacketsLength"
                       max="100000"
                       min="1">
-                    <span class="input-group-text">
+                    <span class="arkime-input-label">
                       {{ $t('common.seconds') }}
                     </span>
                   </div>
                 </div>
-                <p
-                  class="form-text small text-muted"
+                <small
+                  class="d-block text-medium-emphasis mt-1"
                   v-html="$t('parliament.settings.noPacketsHtml')" />
-              </div> <!-- /low packets -->
+              </v-col> <!-- /low packets -->
               <!-- low disk space -->
-              <div class="col-xl-9 col-lg-12 form-group">
-                <div class="input-group">
-                  <span class="input-group-text">
+              <v-col
+                xl="9"
+                lg="12"
+                cols="12">
+                <div class="arkime-input-group arkime-input-group--fluid">
+                  <span class="arkime-input-label">
                     {{ $t('parliament.settings.lowDiskSpace') }}
                   </span>
                   <input
                     type="number"
-                    class="form-control"
+                    class="arkime-input-control"
                     id="lowDiskSpace"
                     @input="debounceInput"
                     v-model="settings.general.lowDiskSpace"
@@ -195,7 +216,7 @@ SPDX-License-Identifier: Apache-2.0
                     min="0"
                     :step="settings.general.lowDiskSpaceType === 'percentage' ? 0.1 : 1">
                   <select
-                    class="form-select"
+                    class="arkime-input-control"
                     style="max-width: 150px;"
                     @change="debounceInput"
                     v-model="settings.general.lowDiskSpaceType">
@@ -207,19 +228,22 @@ SPDX-License-Identifier: Apache-2.0
                     </option>
                   </select>
                 </div>
-                <p
-                  class="form-text small text-muted"
+                <small
+                  class="d-block text-medium-emphasis mt-1"
                   v-html="$t('parliament.settings.lowDiskSpaceHtml')" />
-              </div> <!-- /low disk space -->
+              </v-col> <!-- /low disk space -->
               <!-- low disk space ES -->
-              <div class="col-xl-9 col-lg-12 form-group">
-                <div class="input-group">
-                  <span class="input-group-text">
+              <v-col
+                xl="9"
+                lg="12"
+                cols="12">
+                <div class="arkime-input-group arkime-input-group--fluid">
+                  <span class="arkime-input-label">
                     {{ $t('parliament.settings.lowDiskSpaceES') }}
                   </span>
                   <input
                     type="number"
-                    class="form-control"
+                    class="arkime-input-control"
                     id="lowDiskSpaceES"
                     @input="debounceInput"
                     v-model.number="settings.general.lowDiskSpaceES"
@@ -227,7 +251,7 @@ SPDX-License-Identifier: Apache-2.0
                     min="0"
                     :step="settings.general.lowDiskSpaceESType === 'percentage' ? 0.1 : 1">
                   <select
-                    class="form-select"
+                    class="arkime-input-control"
                     style="max-width: 150px;"
                     @change="debounceInput"
                     v-model="settings.general.lowDiskSpaceESType">
@@ -239,120 +263,133 @@ SPDX-License-Identifier: Apache-2.0
                     </option>
                   </select>
                 </div>
-                <p
-                  class="form-text small text-muted"
+                <small
+                  class="d-block text-medium-emphasis mt-1"
                   v-html="$t('parliament.settings.lowDiskSpaceESHtml')" />
-              </div> <!-- /low disk space ES -->
+              </v-col> <!-- /low disk space ES -->
               <!-- remove issues after -->
-              <div class="col-xl-9 col-lg-12 form-group">
-                <div class="input-group">
-                  <span class="input-group-text">
+              <v-col
+                xl="9"
+                lg="12"
+                cols="12">
+                <div class="arkime-input-group arkime-input-group--fluid">
+                  <span class="arkime-input-label">
                     {{ $t('parliament.settings.removeIssuesAfter') }}
                   </span>
                   <input
                     type="number"
-                    class="form-control"
+                    class="arkime-input-control"
                     id="removeIssuesAfter"
                     @input="debounceInput"
                     v-model="settings.general.removeIssuesAfter"
                     max="10080">
-                  <span class="input-group-text">
+                  <span class="arkime-input-label">
                     {{ $t('common.minutes') }}
                   </span>
                 </div>
-                <p
-                  class="form-text small text-muted"
+                <small
+                  class="d-block text-medium-emphasis mt-1"
                   v-html="$t('parliament.settings.removeIssuesAfterHtml')" />
-              </div> <!-- /remove issues after -->
+              </v-col> <!-- /remove issues after -->
               <!-- remove acknowledged issues after -->
-              <div class="col-xl-9 col-lg-12 form-group">
-                <div class="input-group">
-                  <span class="input-group-text">
+              <v-col
+                xl="9"
+                lg="12"
+                cols="12">
+                <div class="arkime-input-group arkime-input-group--fluid">
+                  <span class="arkime-input-label">
                     {{ $t('parliament.settings.removeAcknowledgedAfter') }}
                   </span>
                   <input
                     type="number"
-                    class="form-control"
+                    class="arkime-input-control"
                     id="removeAcknowledgedAfter"
                     @input="debounceInput"
                     v-model="settings.general.removeAcknowledgedAfter"
                     max="10080">
-                  <span class="input-group-text">
+                  <span class="arkime-input-label">
                     {{ $t('common.minutes') }}
                   </span>
                 </div>
-                <p
-                  class="form-text small text-muted"
+                <small
+                  class="d-block text-medium-emphasis mt-1"
                   v-html="$t('parliament.settings.removeAcknowledgedAfterHtml')" />
-              </div> <!-- /remove acknowledged issues after -->
+              </v-col> <!-- /remove acknowledged issues after -->
               <!-- wise url -->
-              <div class="col-xl-9 col-lg-12 form-group">
-                <div class="input-group">
-                  <span class="input-group-text">
+              <v-col
+                xl="9"
+                lg="12"
+                cols="12">
+                <div class="arkime-input-group arkime-input-group--fluid">
+                  <span class="arkime-input-label">
                     {{ $t('parliament.settings.wiseUrl') }}
                   </span>
                   <input
                     type="text"
-                    class="form-control"
+                    class="arkime-input-control"
                     id="wiseUrl"
                     @input="debounceInput"
                     v-model="settings.general.wiseUrl">
                 </div>
-                <p
-                  class="form-text small text-muted"
+                <small
+                  class="d-block text-medium-emphasis mt-1"
                   v-html="$t('parliament.settings.wiseUrlHtml')" />
-              </div> <!-- /wise url -->
+              </v-col> <!-- /wise url -->
               <!-- cont3xt url -->
-              <div class="col-xl-9 col-lg-12 form-group">
-                <div class="input-group">
-                  <span class="input-group-text">
+              <v-col
+                xl="9"
+                lg="12"
+                cols="12">
+                <div class="arkime-input-group arkime-input-group--fluid">
+                  <span class="arkime-input-label">
                     {{ $t('parliament.settings.cont3xtUrl') }}
                   </span>
                   <input
                     type="text"
-                    class="form-control"
+                    class="arkime-input-control"
                     id="cont3xtUrl"
                     @input="debounceInput"
                     v-model="settings.general.cont3xtUrl">
                 </div>
-                <p
-                  class="form-text small text-muted"
+                <small
+                  class="d-block text-medium-emphasis mt-1"
                   v-html="$t('parliament.settings.cont3xtUrlHtml')" />
-              </div> <!-- /cont3xt url -->
-            </div>
+              </v-col> <!-- /cont3xt url -->
+            </v-row>
           </div>
           <!-- /general -->
 
           <!-- notifiers tab -->
           <div v-if="visibleTab === 'notifiers' && settings">
             <!-- hostname -->
-            <div class="row form-group">
-              <div class="col-12">
-                <div class="input-group">
-                  <span class="input-group-text">
+            <v-row>
+              <v-col cols="12">
+                <div class="arkime-input-group arkime-input-group--fluid">
+                  <span class="arkime-input-label">
                     {{ $t('parliament.settings.parliamentHostname') }}
                   </span>
                   <input
                     type="text"
-                    class="form-control"
+                    class="arkime-input-control"
                     id="hostname"
                     @input="debounceInput"
                     v-model="settings.general.hostname">
-                  <span class="input-group-text">
+                  <span class="arkime-input-label">
                     <input
                       type="checkbox"
+                      class="arkime-check-input me-2"
                       @input="debounceInput"
                       v-model="settings.general.includeUrl">
-                    &nbsp; {{ $t('parliament.settings.includeDashboardUrl') }}
+                    {{ $t('parliament.settings.includeDashboardUrl') }}
                   </span>
                 </div>
-                <p
-                  class="form-text small text-muted"
+                <small
+                  class="d-block text-medium-emphasis mt-1"
                   v-html="$t('parliament.settings.parliamentHostnameHtml')" />
-              </div>
-            </div> <!-- /hostname -->
+              </v-col>
+            </v-row> <!-- /hostname -->
 
-            <hr>
+            <v-divider class="my-3" />
 
             <Notifiers
               parent-app="parliament"
@@ -378,7 +415,7 @@ SPDX-License-Identifier: Apache-2.0
           </div> <!-- /themes tab -->
         </v-col> <!-- /content -->
       </v-row> <!-- /page content -->
-    </div>
+    </v-container>
   </div>
 </template>
 
@@ -582,10 +619,6 @@ export default {
 </script>
 
 <style scoped>
-.settings-content div.nav-pills {
-  position: sticky;
-  top: 70px;
-}
 /* Tighten the vertical tab strip to match viewer's settings nav. */
 .v-tab {
   min-height: 28px !important;
@@ -594,4 +627,26 @@ export default {
   font-size: 0.85rem !important;
   justify-content: flex-start !important;
 }
+
+/* General settings: keep each input visually paired with its helper
+   text (very tight together), but give clear separation between
+   groups. v-col padding-bottom carries the inter-group gap; the small
+   element hugs its input so it's obvious which row it belongs to. */
+.compact-form :deep(.v-row) {
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+  row-gap: 0 !important;
+}
+.compact-form :deep(.v-col),
+.compact-form :deep([class*="v-col-"]) {
+  padding-top: 0 !important;
+  padding-bottom: 14px !important;
+}
+.compact-form small {
+  margin-top: 2px !important;
+  margin-bottom: 0 !important;
+  line-height: 1.2;
+  font-size: 0.78rem;
+}
+
 </style>

@@ -2,11 +2,10 @@
  *  Common CSS for all web apps (viewer, wise, parliament)
  */
 
-/* Bootstrap utility-class shims -- viewer + cont3xt no longer load
-   bootstrap.css; provide gap-N / m-N / p-N utilities at Bootstrap's
-   0.25rem scale so existing markup keeps working in those apps.
-   (parliament + wise still have bootstrap.css; these shims are
-   harmless there.) */
+/* Bootstrap utility-class shims -- none of viewer / cont3xt / parliament /
+   wise load bootstrap.css anymore. These provide gap-N / m-N / p-N at
+   Bootstrap's 0.25rem scale so legacy markup keeps working without the
+   library. */
 .gap-0 { gap: 0 !important; }
 .gap-1 { gap: 0.25rem !important; }
 .gap-2 { gap: 0.5rem !important; }
@@ -26,14 +25,17 @@
 .p-4 { padding: 1.5rem !important; }
 .p-5 { padding: 3rem !important; }
 
-/* Vuetify tooltip background -- Vuetify's built-in CSS uses
+/* Vuetify tooltip -- Vuetify's built-in CSS uses
    rgb(var(--v-theme-surface-variant)) which falls back to nothing when
-   that token isn't defined in a theme. Force a solid foreground/
-   background pair so tooltips always render opaque across every app
-   and every theme. */
+   that token isn't defined in a theme. Use the page surface so the
+   tooltip blends with the current theme (light tooltip on light theme,
+   dark tooltip on dark theme), with a subtle outline so it's still
+   distinguishable from the page background. */
 .v-tooltip > .v-overlay__content {
-  background: rgb(var(--v-theme-foreground)) !important;
-  color: rgb(var(--v-theme-background)) !important;
+  background: rgb(var(--v-theme-surface)) !important;
+  color: rgb(var(--v-theme-foreground)) !important;
+  border: 1px solid rgb(var(--v-theme-outline)) !important;
+  box-shadow: 0 4px 12px -2px rgba(0, 0, 0, 0.25) !important;
 }
 
 /* Cap v-btn height at 32px globally -- viewer applies the same via
@@ -416,55 +418,6 @@ body.dark .btn-outline-dark:hover {
 
 body.dark hr {
   background-color: #ADB5BD;
-}
-
-/* darken tables */
-body.dark table.table {
-  color: #EEE;
-  background-color: #222;
-  border-color: #333;
-}
-
-body.dark .table-danger,
-body.dark .table-danger > th,
-body.dark .table-danger > td {
-  background-color: #871D45;
-}
-body.dark .table-hover .table-danger:hover,
-body.dark .table-hover .table-danger:hover > th,
-body.dark .table-hover .table-danger:hover > td {
-  background-color: #A32252;
-}
-body.dark .table-warning,
-body.dark .table-warning > th,
-body.dark .table-warning > td {
-  background-color: #895A10;
-}
-body.dark .table-hover .table-warning:hover,
-body.dark .table-hover .table-warning:hover > th,
-body.dark .table-hover .table-warning:hover > td {
-  background-color: #9B6611;
-}
-body.dark .table-secondary,
-body.dark .table-secondary > th,
-body.dark .table-secondary > td {
-  background-color: #494949;
-}
-body.dark .table-hover .table-secondary:hover,
-body.dark .table-hover .table-secondary:hover > th,
-body.dark .table-hover .table-secondary:hover > td {
-  background-color: #4F4F4F;
-}
-body.dark .table-striped tbody tr:nth-of-type(odd) {
-  background-color: rgba(255, 255, 255, 0.05);
-}
-
-/* lighten table text in dark mode */
-body.dark table.table {
-  color: #EEE !important;
-}
-body.dark table.table-hover tbody tr:hover {
-  color: #EEE !important;
 }
 
 /* dark form controls */

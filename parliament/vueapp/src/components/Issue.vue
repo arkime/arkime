@@ -3,9 +3,12 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-  <div
-    class="alert alert-sm mt-1 mb-0"
-    :class="{'alert-warning':issue.severity === 'yellow','alert-danger':issue.severity === 'red'}">
+  <v-alert
+    :type="alertType"
+    :icon="false"
+    variant="tonal"
+    density="compact"
+    class="mb-0">
     <issue-actions
       v-if="isUser"
       class="issue-btns"
@@ -21,7 +24,7 @@ SPDX-License-Identifier: Apache-2.0
         <span v-html="issueDateTooltip(issue)" />
       </v-tooltip>
     </small>
-  </div>
+  </v-alert>
 </template>
 
 <script>
@@ -55,6 +58,11 @@ export default {
   computed: {
     isUser () {
       return this.$store.state.isUser;
+    },
+    alertType () {
+      if (this.issue.severity === 'red') return 'error';
+      if (this.issue.severity === 'yellow') return 'warning';
+      return 'info';
     }
   },
   methods: {
@@ -91,14 +99,28 @@ export default {
 </script>
 
 <style scoped>
-.alert .issue-btns {
-  margin-top: -3px;
-  display: inline-block;
+.issue-btns {
   float: right;
+  margin-left: 8px;
 }
 
-.alert .issue-date {
+.issue-date {
   color: #676767;
   font-style: italic;
+}
+
+/* tighter v-alert -- no leading icon, 4px vertical / 8px horizontal
+   padding, 0.9rem body font. The font-size has to be on .v-alert__content
+   (and !important) because Vuetify's own scope wins over :deep on the
+   outer .v-alert selector. */
+:deep(.v-alert) {
+  padding: 4px 8px;
+  min-height: 0;
+  line-height: 1.2;
+}
+:deep(.v-alert),
+:deep(.v-alert__content),
+:deep(.v-alert .v-alert__content) {
+  font-size: 0.9rem !important;
 }
 </style>

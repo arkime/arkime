@@ -7,31 +7,36 @@ SPDX-License-Identifier: Apache-2.0
     v-if="isUser"
     class="text-end">
     <!-- remove issue button -->
-    <template v-if="issue.acknowledged">
-      <button
-        class="btn btn-outline-primary btn-xs cursor-pointer me-1"
-        @click="removeIssue">
-        <span class="fa fa-trash fa-fw" />
-        <v-tooltip
-          activator="parent"
-          location="left">
-          {{ $t('parliament.issue.issueFixed') }}
-        </v-tooltip>
-      </button>
-    </template>
+    <v-btn
+      v-if="issue.acknowledged"
+      size="x-small"
+      variant="outlined"
+      color="primary"
+      class="me-1"
+      @click="removeIssue">
+      <v-icon icon="fa-trash" />
+      <v-tooltip
+        activator="parent"
+        location="left">
+        {{ $t('parliament.issue.issueFixed') }}
+      </v-tooltip>
+    </v-btn>
     <!-- /remove issue button -->
     <!-- acknowledge issue button -->
-    <button
+    <v-btn
       v-if="!issue.acknowledged"
-      class="btn btn-outline-success btn-xs cursor-pointer me-1"
+      size="x-small"
+      variant="outlined"
+      color="success"
+      class="me-1"
       @click="acknowledgeIssue">
-      <span class="fa fa-check fa-fw" />
+      <v-icon icon="fa-check" />
       <v-tooltip
         activator="parent"
         location="left">
         {{ $t('parliament.issue.issueAckTip') }}
       </v-tooltip>
-    </button>
+    </v-btn>
     <!-- /acknowledge issue button -->
     <!-- (un)ignore until dropdown -->
     <v-menu location="bottom end">
@@ -42,6 +47,11 @@ SPDX-License-Identifier: Apache-2.0
           variant="outlined"
           class="d-inline">
           <v-icon :icon="issue.ignoreUntil ? 'fa-eye-slash' : 'fa-eye'" />
+          <v-tooltip
+            activator="parent"
+            location="left">
+            {{ $t(issue.ignoreUntil ? 'parliament.issue.unignoreTip' : 'parliament.issue.ignoreTip') }}
+          </v-tooltip>
         </v-btn>
       </template>
       <v-list density="compact">

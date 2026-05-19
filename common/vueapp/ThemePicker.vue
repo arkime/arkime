@@ -305,7 +305,7 @@ SPDX-License-Identifier: Apache-2.0
             </v-row>
 
             <!-- shareable code: copy this to share, paste a string to apply -->
-            <hr class="my-3">
+            <v-divider class="my-3" />
             <p class="text-caption text-medium-emphasis mb-1">
               Share this theme: copy the code below, or paste someone
               else's code and press Enter (or click Apply) to load it.
