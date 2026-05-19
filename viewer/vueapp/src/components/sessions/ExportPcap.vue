@@ -17,7 +17,7 @@
       <p
         v-if="error"
         class="small text-danger mb-0">
-        <span class="fa fa-exclamation-triangle" />&nbsp;
+        <v-icon icon="mdi-alert" />&nbsp;
         {{ error }}
       </p>
     </div>
@@ -28,7 +28,9 @@
         variant="flat"
         :style="tertiaryBtnStyle"
         @click="exportPcapAction">
-        <span class="fa fa-paper-plane-o me-1" />
+        <v-icon
+          icon="mdi-send-outline"
+          class="me-1" />
         {{ $t('sessions.exports.exportPCAP') }}
       </v-btn>
       <v-btn
@@ -38,7 +40,7 @@
         variant="flat"
         :aria-label="$t('common.cancel')"
         @click="$emit('done', null, false, false)">
-        <span class="fa fa-ban" />
+        <v-icon icon="mdi-cancel" />
         <v-tooltip activator="parent">
           {{ $t('common.cancel') }}
         </v-tooltip>

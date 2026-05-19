@@ -169,7 +169,7 @@
           <span
             class="widget-handle"
             :title="$t('sessions.summary.dragToReorder')">
-            <span class="fa fa-th" />
+            <v-icon icon="mdi-view-grid" />
           </span>
           <SummaryWidget
             :title="widget.title || FieldService.getField(widget.field, true)?.friendlyName || widget.field"

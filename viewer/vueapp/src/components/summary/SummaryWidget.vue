@@ -22,7 +22,10 @@
       {{ title }}
     </h4>
     <div class="error-content">
-      <span class="fa fa-exclamation-circle fa-2x text-danger mb-2" />
+      <v-icon
+        icon="mdi-alert-circle"
+        size="large"
+        class="text-danger mb-2" />
       <p class="text-danger mb-0">
         {{ error }}
       </p>
@@ -33,7 +36,9 @@
         density="comfortable"
         class="mt-2"
         @click="emit('retry-field', field)">
-        <span class="fa fa-refresh me-1" />
+        <v-icon
+          icon="mdi-refresh"
+          class="me-1" />
         {{ $t('sessions.summary.retryField') }}
       </v-btn>
     </div>
@@ -58,7 +63,7 @@
               size="large"
               icon
               title="Settings">
-              <span class="fa fa-gear" />
+              <v-icon icon="mdi-cog" />
             </v-btn>
           </template>
 
@@ -68,19 +73,19 @@
               <v-list-item
                 :active="viewMode === 'pie'"
                 @click="$emit('change-mode', 'pie')">
-                <span><span class="fa fa-pie-chart" /> {{ $t('sessions.summary.pieChart') }}</span>
+                <span><v-icon icon="mdi-chart-pie" /> {{ $t('sessions.summary.pieChart') }}</span>
               </v-list-item>
 
               <v-list-item
                 :active="viewMode === 'bar'"
                 @click="$emit('change-mode', 'bar')">
-                <span><span class="fa fa-bar-chart" /> {{ $t('sessions.summary.barChart') }}</span>
+                <span><v-icon icon="mdi-chart-bar" /> {{ $t('sessions.summary.barChart') }}</span>
               </v-list-item>
 
               <v-list-item
                 :active="viewMode === 'table'"
                 @click="$emit('change-mode', 'table')">
-                <span><span class="fa fa-table" /> {{ $t('sessions.summary.tableView') }}</span>
+                <span><v-icon icon="mdi-table" /> {{ $t('sessions.summary.tableView') }}</span>
               </v-list-item>
 
               <!-- Metric Selector Options (only for charts, not table) -->
@@ -112,14 +117,16 @@
               <v-divider v-if="enableViewMode" />
 
               <v-list-item @click="$emit('export', svgId)">
-                <span class="fa fa-download" /> {{ viewMode === 'table' ? $t('sessions.summary.downloadCSV') : $t('sessions.summary.downloadPNG') }}
+                <v-icon icon="mdi-download" /> {{ viewMode === 'table' ? $t('sessions.summary.downloadCSV') : $t('sessions.summary.downloadPNG') }}
               </v-list-item>
             </template>
 
             <!-- Remove Field Option -->
             <v-divider />
             <v-list-item @click="$emit('remove-field', field)">
-              <span class="fa fa-times text-danger" /> {{ $t('sessions.summary.removeField') }}
+              <v-icon
+                icon="mdi-close"
+                class="text-danger" /> {{ $t('sessions.summary.removeField') }}
             </v-list-item>
           </v-list>
         </v-menu>
@@ -130,7 +137,10 @@
     <div
       v-if="!hasValidField"
       class="empty-state">
-      <span class="fa fa-exclamation-triangle fa-4x mb-3 text-danger" />
+      <v-icon
+        icon="mdi-alert"
+        size="x-large"
+        class="mb-3 text-danger" />
       <p class="empty-state-text text-danger">
         Invalid field: {{ field }}
       </p>
@@ -171,7 +181,10 @@
     <div
       v-else
       class="empty-state">
-      <span class="fa fa-folder-open fa-4x mb-3 text-medium-emphasis" />
+      <v-icon
+        icon="mdi-folder-open"
+        size="x-large"
+        class="mb-3 text-medium-emphasis" />
       <p class="empty-state-text text-medium-emphasis">
         {{ $t(noDataMessage) }}
       </p>

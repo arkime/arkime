@@ -7,7 +7,9 @@
     <h5
       v-if="error"
       class="text-danger mt-3 mb-3 ms-2">
-      <span class="fa fa-exclamation-triangle me-2" />
+      <v-icon
+        icon="mdi-alert"
+        class="me-2" />
       {{ error }}
     </h5> <!-- /detail error -->
 
@@ -48,7 +50,9 @@
     <div
       v-if="loadingPackets && !hidePackets && !user.hidePcap"
       class="mt-4 mb-4 ms-2 me-2 large">
-      <span class="fa fa-spinner fa-spin" />&nbsp;
+      <v-icon
+        icon="mdi-loading"
+        class="fa-spin" />&nbsp;
       {{ $t('sessions.detail.loadingSessionPackets') }}&nbsp;
       <v-btn
         color="warning"
@@ -56,7 +60,9 @@
         size="x-small"
         density="comfortable"
         @click="cancelPacketLoad">
-        <span class="fa fa-ban me-1" />
+        <v-icon
+          icon="mdi-cancel"
+          class="me-1" />
         {{ $t('common.cancel') }}
       </v-btn>
     </div> <!-- /packets loading -->
@@ -65,7 +71,9 @@
     <div
       v-if="renderingPackets && !hidePackets && !user.hidePcap"
       class="mt-4 mb-4 ms-2 me-2 large">
-      <span class="fa fa-spinner fa-spin" />&nbsp;
+      <v-icon
+        icon="mdi-loading"
+        class="fa-spin" />&nbsp;
       {{ $t('sessions.detail.renderingSessionPackets') }}&nbsp;
     </div> <!-- /packets rendering -->
 
@@ -74,7 +82,7 @@
       v-if="!error && errorPackets"
       class="mt-4 mb-4 ms-2 me-2 large">
       <span class="text-danger">
-        <span class="fa fa-exclamation-triangle" />&nbsp;
+        <v-icon icon="mdi-alert" />&nbsp;
         {{ errorPackets }}&nbsp;
       </span>
       <v-btn
@@ -83,7 +91,9 @@
         size="x-small"
         density="comfortable"
         @click="getPackets">
-        <span class="fa fa-refresh me-1" />
+        <v-icon
+          icon="mdi-refresh"
+          class="me-1" />
         retry
       </v-btn>
     </div> <!-- /packets error -->
@@ -109,7 +119,9 @@
           size="x-small"
           density="comfortable"
           @click="getTshark">
-          <span class="fa fa-play me-1" />
+          <v-icon
+            icon="mdi-play"
+            class="me-1" />
           run
         </v-btn>
         <v-btn
@@ -120,11 +132,15 @@
           density="comfortable"
           class="me-2"
           @click="getTshark">
-          <span class="fa fa-refresh me-1" />
+          <v-icon
+            icon="mdi-refresh"
+            class="me-1" />
           reload
         </v-btn>
         <span v-if="tsharkLoading">
-          <span class="fa fa-spinner fa-spin" /> running tshark…
+          <v-icon
+            icon="mdi-loading"
+            class="fa-spin" /> running tshark…
         </span>
         <label class="ms-3 d-inline-flex align-center small">
           <input
@@ -150,7 +166,9 @@
       <div
         v-if="tsharkError"
         class="text-danger small mb-2">
-        <span class="fa fa-exclamation-triangle me-1" />{{ tsharkError }}
+        <v-icon
+          icon="mdi-alert"
+          class="me-1" />{{ tsharkError }}
       </div>
       <div
         v-if="tsharkPackets.length"

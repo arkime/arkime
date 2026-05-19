@@ -16,7 +16,9 @@ SPDX-License-Identifier: Apache-2.0
       <v-col
         cols="12"
         class="d-flex">
-        <span class="fa fa-fw fa-file-text mt-1" />&nbsp;
+        <v-icon
+          icon="mdi-file-document"
+          class="mt-1" />&nbsp;
         <template v-if="!editDescription">
           <span
             v-if="localJob.description"
@@ -39,7 +41,7 @@ SPDX-License-Identifier: Apache-2.0
             density="comfortable"
             :style="secondaryBtnStyle"
             class="ms-1">
-            <span class="fa fa-pencil" />
+            <v-icon icon="mdi-pencil" />
             <v-tooltip :activator="`[id='edit-description-${localJob.id}']`">
               {{ $t('hunts.editDescriptionTip') }}
             </v-tooltip>
@@ -83,7 +85,7 @@ SPDX-License-Identifier: Apache-2.0
       </v-col>
     </v-row>
     <div>
-      <span class="fa fa-fw fa-eye" />&nbsp;
+      <v-icon icon="mdi-eye" />&nbsp;
       <span
         v-html="$t('hunts.results-searchedHtml', {
           matched: commaString(localJob.matchedSessions),
@@ -94,14 +96,14 @@ SPDX-License-Identifier: Apache-2.0
         })" />
       <span v-if="localJob.failedSessionIds && localJob.failedSessionIds.length">
         <br>
-        <span class="fa fa-fw fa-search-plus" />&nbsp;
+        <v-icon icon="mdi-magnify-plus" />&nbsp;
         <span
           v-html="$t('hunts.results-stillNeedHtml', {
             remaining: commaString(localJob.totalSessions - localJob.searchedSessions + localJob.failedSessionIds.length),
             total: commaString(localJob.totalSessions),
           })" />
         <br>
-        <span class="fa fa-fw fa-exclamation-triangle" />&nbsp;
+        <v-icon icon="mdi-alert" />&nbsp;
         <span
           v-html="$t('hunts.results-failedHtml', {
             failed: commaString(localJob.failedSessionIds.length)
@@ -109,7 +111,7 @@ SPDX-License-Identifier: Apache-2.0
       </span>
       <span v-else-if="localJob.totalSessions !== localJob.searchedSessions">
         <br>
-        <span class="fa fa-fw fa-search-plus" />&nbsp;
+        <v-icon icon="mdi-magnify-plus" />&nbsp;
         <span
           v-html="$t('hunts.results-stillNeedHtml', {
             remaining: commaString(localJob.totalSessions - localJob.searchedSessions),
@@ -119,7 +121,7 @@ SPDX-License-Identifier: Apache-2.0
     </div>
     <v-row>
       <v-col cols="12">
-        <span class="fa fa-fw fa-clock-o" />&nbsp;
+        <v-icon icon="mdi-clock-outline" />&nbsp;
         {{ $t('common.created') }}:
         <strong>
           {{ timezoneDateString(localJob.created * 1000, user.settings.timezone, false) }}
@@ -129,7 +131,7 @@ SPDX-License-Identifier: Apache-2.0
     <v-row
       v-if="localJob.lastUpdated">
       <v-col cols="12">
-        <span class="fa fa-fw fa-clock-o" />&nbsp;
+        <v-icon icon="mdi-clock-outline" />&nbsp;
         {{ $t('common.lastUpdated') }}:
         <strong>
           {{ timezoneDateString(localJob.lastUpdated * 1000, user.settings.timezone, false) }}
@@ -139,13 +141,13 @@ SPDX-License-Identifier: Apache-2.0
     <v-row
       v-if="localJob.notifier">
       <v-col cols="12">
-        <span class="fa fa-fw fa-bell" />&nbsp;
+        <v-icon icon="mdi-bell" />&nbsp;
         Notifying: {{ getNotifierNames(localJob.notifier) }}
       </v-col>
     </v-row>
     <v-row>
       <v-col cols="12">
-        <span class="fa fa-fw fa-search" />&nbsp;
+        <v-icon icon="mdi-magnify" />&nbsp;
         <span
           v-html="$t('hunts.results-examiningHtml', {
             size: localJob.size > 0 ? localJob.size : $t('common.all'),
@@ -157,7 +159,7 @@ SPDX-License-Identifier: Apache-2.0
     <v-row
       v-if="localJob.query.expression">
       <v-col cols="12">
-        <span class="fa fa-fw fa-search" />&nbsp;
+        <v-icon icon="mdi-magnify" />&nbsp;
         {{ $t('hunts.results-queryExpression') }}:
         <strong>{{ localJob.query.expression }}</strong>
       </v-col>
@@ -165,14 +167,14 @@ SPDX-License-Identifier: Apache-2.0
     <v-row
       v-if="localJob.query.view">
       <v-col cols="12">
-        <span class="fa fa-fw fa-search" />&nbsp;
+        <v-icon icon="mdi-magnify" />&nbsp;
         {{ $t('hunts.results-queryView') }}:
         <strong>{{ getViewName(localJob.query.view) }}</strong>
       </v-col>
     </v-row>
     <v-row>
       <v-col cols="12">
-        <span class="fa fa-fw fa-clock-o" />&nbsp;
+        <v-icon icon="mdi-clock-outline" />&nbsp;
         <span
           v-html="$t('hunts.results-timeRangeHtml', {
             start: timezoneDateString(localJob.query.startTime * 1000, user.settings.timezone, false),
@@ -183,7 +185,7 @@ SPDX-License-Identifier: Apache-2.0
     <template v-if="canEdit">
       <v-row>
         <v-col cols="12">
-          <span class="fa fa-fw fa-share-alt" />&nbsp;
+          <v-icon icon="mdi-share-variant" />&nbsp;
           <template v-if="localJob.users && localJob.users.length">
             {{ $t('hunts.sharedWithUsers') }}:
             <v-chip
@@ -212,7 +214,7 @@ SPDX-License-Identifier: Apache-2.0
             class="ms-1"
             :aria-label="$t('hunts.addUserTip')"
             @click="toggleAddUsers">
-            <span class="fa fa-plus-circle" />
+            <v-icon icon="mdi-plus-circle" />
             <v-tooltip :activator="`[id='add-users-${localJob.id}']`">
               {{ $t('hunts.addUserTip') }}
             </v-tooltip>
@@ -259,7 +261,7 @@ SPDX-License-Identifier: Apache-2.0
       </v-row>
       <v-row>
         <v-col cols="12">
-          <span class="fa fa-fw fa-share-alt" />&nbsp;
+          <v-icon icon="mdi-share-variant" />&nbsp;
           <template v-if="localJob.roles && localJob.roles.length">
             {{ $t('hunts.addRoles') }}:
           </template>
@@ -279,7 +281,7 @@ SPDX-License-Identifier: Apache-2.0
       class="mb-2"
       v-else-if="isShared">
       <v-col cols="12">
-        <span class="fa fa-fw fa-share-alt" />&nbsp;
+        <v-icon icon="mdi-share-variant" />&nbsp;
         {{ $t('hunts.haveAccess') }}
       </v-col>
     </v-row>
@@ -289,7 +291,7 @@ SPDX-License-Identifier: Apache-2.0
         :key="index"
         class="text-danger">
         <v-col cols="12">
-          <span class="fa fa-fw fa-exclamation-triangle" />&nbsp;
+          <v-icon icon="mdi-alert" />&nbsp;
           <span v-if="error.time">
             {{ timezoneDateString(error.time * 1000, user.settings.timezone, false) }}
           </span>

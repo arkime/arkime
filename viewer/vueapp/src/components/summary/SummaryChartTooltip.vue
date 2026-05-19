@@ -20,7 +20,7 @@
           class="float-right mt-1"
           :aria-label="$t('common.close')"
           @click="$emit('close')">
-          <span class="fa fa-close" />
+          <v-icon icon="mdi-close" />
         </v-btn>
 
         <!-- Statistics in vertical format -->

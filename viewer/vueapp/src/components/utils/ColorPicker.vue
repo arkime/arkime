@@ -18,9 +18,9 @@ SPDX-License-Identifier: Apache-2.0
           class="color-swatch"
           :style="{'background-color':colorValue}">
           &nbsp;&nbsp;
-          <span
-            v-if="displayPicker"
-            class="fa fa-check" />
+          <v-icon
+            icon="mdi-check"
+            v-if="displayPicker" />
           &nbsp;&nbsp;
         </span>
       </div>

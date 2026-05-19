@@ -36,7 +36,10 @@ SPDX-License-Identifier: Apache-2.0
         class="text-center"
         v-if="!stats || !stats.recordsFiltered">
         <h3>
-          <span class="fa fa-folder-open fa-2x text-medium-emphasis" />
+          <v-icon
+            icon="mdi-folder-open"
+            size="large"
+            class="text-medium-emphasis" />
         </h3>
         <h5 class="lead">
           {{ $t( cluster ? 'stats.cgraphs.noDataCluster' : 'stats.cgraphs.noData' ) }}

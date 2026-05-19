@@ -20,7 +20,9 @@ SPDX-License-Identifier: Apache-2.0
         class="float-right"
         v-has-role="{user:user,roles:'arkimeAdmin'}"
         @click="cancelTasks">
-        <span class="fa fa-ban me-1" />
+        <v-icon
+          icon="mdi-cancel"
+          class="me-1" />
         {{ $t('stats.esTasks.cancelAll') }}
         <v-tooltip activator="#cancelAllTasks">
           {{ $t('stats.esTasks.cancelAllTip') }}
@@ -58,7 +60,7 @@ SPDX-License-Identifier: Apache-2.0
             icon
             v-has-role="{user:user,roles:'arkimeAdmin'}"
             @click="cancelTask(item.item.taskId)">
-            <span class="fa fa-trash-o" />
+            <v-icon icon="mdi-trash-can-outline" />
           </v-btn>
         </template>
       </arkime-table>

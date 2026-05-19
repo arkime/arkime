@@ -8,10 +8,9 @@ SPDX-License-Identifier: Apache-2.0
     <!-- sub navbar -->
     <div class="sub-navbar">
       <span class="sub-navbar-title">
-        <span class="fa-stack">
-          <span class="fa fa-cogs fa-stack-1x" />
-          <span class="fa fa-square-o fa-stack-2x" />
-        </span>&nbsp;
+        <v-icon
+          icon="mdi-cog"
+          class="me-1" />
         <span>{{ $t('wise.config.title') }}</span>
       </span>
     </div> <!-- /sub navbar -->
@@ -26,7 +25,7 @@ SPDX-License-Identifier: Apache-2.0
       <template #actions>
         <v-btn
           variant="text"
-          icon="fa-times"
+          icon="mdi-close"
           @click="alertState.text = ''" />
       </template>
     </v-snackbar>
@@ -73,7 +72,9 @@ SPDX-License-Identifier: Apache-2.0
             color="warning"
             class="mb-2"
             @click="showImportConfigModal = true">
-            <span class="fa fa-download me-1" />
+            <v-icon
+              icon="mdi-download"
+              class="me-1" />
             {{ $t('common.import') }}
             <v-tooltip activator="parent">
               {{ $t('wise.config.importTip') }}
@@ -83,7 +84,9 @@ SPDX-License-Identifier: Apache-2.0
             block
             color="success"
             @click="showSourceModal = true">
-            <span class="fa fa-plus me-1" />
+            <v-icon
+              icon="mdi-plus"
+              class="me-1" />
             {{ $t('common.create') }}
             <v-tooltip activator="parent">
               {{ $t('wise.config.createTip') }}
@@ -268,15 +271,15 @@ SPDX-License-Identifier: Apache-2.0
                       color="error"
                       class="me-2"
                       @click="removeValueAction(lineIndex)">
-                      <span class="fa fa-minus" />&nbsp;
+                      <v-icon icon="mdi-minus" />&nbsp;
                       {{ $t('wise.config.removeValueAction') }}
                     </v-btn>
                     <v-btn
                       color="info"
                       @click="toggleAdvancedFields(line.key)">
-                      <span
-                        class="fa fa-eye"
-                        :class="displayAdvancedFields[line.key] ? 'fa-eye-slash' : 'fa-eye'" />&nbsp;
+                      <v-icon
+                        icon="mdi-eye"
+                        :class="displayAdvancedFields[line.key] ? 'mdi-eye-off' : 'mdi-eye'" />&nbsp;
                       {{ $t('wise.config.toggleAdvancedOptions') }}
                     </v-btn>
                   </v-col>
@@ -288,7 +291,7 @@ SPDX-License-Identifier: Apache-2.0
               color="success"
               variant="flat"
               @click="addValueAction">
-              <span class="fa fa-plus" />&nbsp;
+              <v-icon icon="mdi-plus" />&nbsp;
               {{ $t('wise.config.addValueAction') }}
             </v-btn>
           </div>
@@ -334,7 +337,7 @@ SPDX-License-Identifier: Apache-2.0
                         size="small"
                         variant="outlined"
                         class="col-control">
-                        <v-icon icon="fa-caret-down" />
+                        <v-icon icon="mdi-menu-down" />
                       </v-btn>
                     </template>
                     <v-list density="compact">
@@ -371,7 +374,7 @@ SPDX-License-Identifier: Apache-2.0
                       size="small"
                       variant="outlined"
                       class="col-control">
-                      <v-icon icon="fa-caret-down" />
+                      <v-icon icon="mdi-menu-down" />
                     </v-btn>
                   </template>
                   <v-list density="compact">
@@ -479,7 +482,9 @@ SPDX-License-Identifier: Apache-2.0
             variant="flat"
             class="mx-auto mt-4"
             @click="copySource(selectedSourceKey)">
-            <span class="fa fa-copy me-1" />
+            <v-icon
+              icon="mdi-content-copy"
+              class="me-1" />
             {{ $t('wise.config.copyRawSource') }}
           </v-btn>
           <v-btn
@@ -488,7 +493,9 @@ SPDX-License-Identifier: Apache-2.0
             variant="flat"
             class="mt-4 float-right"
             @click="deleteSource()">
-            <span class="fa fa-trash me-1" />
+            <v-icon
+              icon="mdi-delete"
+              class="me-1" />
             {{ $t('wise.config.deleteSource') }}
           </v-btn>
         </div> <!-- else -->

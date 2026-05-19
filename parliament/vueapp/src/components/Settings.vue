@@ -7,10 +7,9 @@ SPDX-License-Identifier: Apache-2.0
     <!-- sub navbar -->
     <div class="sub-navbar">
       <span class="sub-navbar-title">
-        <span class="fa-stack">
-          <span class="fa fa-cogs fa-stack-1x" />
-          <span class="fa fa-square-o fa-stack-2x" />
-        </span>&nbsp;
+        <v-icon
+          icon="mdi-cog"
+          class="me-1" />
         <span>{{ $t('parliament.settings.title') }}</span>
       </span>
     </div> <!-- /sub navbar -->
@@ -55,15 +54,21 @@ SPDX-License-Identifier: Apache-2.0
             selected-class="font-weight-bold"
             @update:model-value="openView($event)">
             <v-tab value="general">
-              <span class="fa fa-fw fa-cog me-1" />
+              <v-icon
+                icon="mdi-cog"
+                class="me-1" />
               {{ $t('parliament.settings.general') }}
             </v-tab>
             <v-tab value="notifiers">
-              <span class="fa fa-fw fa-bell me-1" />
+              <v-icon
+                icon="mdi-bell"
+                class="me-1" />
               {{ $t('parliament.settings.notifiers') }}
             </v-tab>
             <v-tab value="themes">
-              <span class="fa fa-fw fa-paint-brush me-1" />
+              <v-icon
+                icon="mdi-brush"
+                class="me-1" />
               Themes
             </v-tab>
           </v-tabs>
@@ -79,7 +84,7 @@ SPDX-License-Identifier: Apache-2.0
             <template #actions>
               <v-btn
                 variant="text"
-                icon="fa-times"
+                icon="mdi-close"
                 @click="message = ''" />
             </template>
           </v-snackbar>

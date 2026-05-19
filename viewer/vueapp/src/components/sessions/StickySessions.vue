@@ -15,11 +15,11 @@ SPDX-License-Identifier: Apache-2.0
       class="sticky-session-btn"
       @click="toggleStickySessions"
       v-if="sortedSessions && sortedSessions.length > 0">
-      <span
-        v-if="!open"
-        class="fa fa-angle-double-left" /><span
-          v-else
-          class="fa fa-angle-double-right" />&nbsp;
+      <v-icon
+        icon="mdi-chevron-double-left"
+        v-if="!open" /><v-icon
+          icon="mdi-chevron-double-right"
+          v-else />&nbsp;
       <small>{{ sortedSessions.length }}</small>
       <v-tooltip activator="parent">
         {{ $t('sessions.sticky.toggleOpenTip') }}
@@ -62,7 +62,7 @@ SPDX-License-Identifier: Apache-2.0
                 density="comfortable"
                 icon
                 @click="toggleSortOrder">
-                <span class="fa fa-sort-asc" />
+                <v-icon icon="mdi-sort-ascending" />
                 <v-tooltip activator="parent">
                   {{ $t('sessions.sticky.sortDescTip') }}
                 </v-tooltip>
@@ -74,7 +74,7 @@ SPDX-License-Identifier: Apache-2.0
                 density="comfortable"
                 icon
                 @click="toggleSortOrder">
-                <span class="fa fa-sort-desc" />
+                <v-icon icon="mdi-sort-descending" />
                 <v-tooltip activator="parent">
                   {{ $t('sessions.sticky.sortAscTip') }}
                 </v-tooltip>
@@ -85,7 +85,7 @@ SPDX-License-Identifier: Apache-2.0
                 density="comfortable"
                 icon
                 @click="closeAll">
-                <span class="fa fa-close" />
+                <v-icon icon="mdi-close" />
                 <v-tooltip activator="parent">
                   {{ $t('sessions.sticky.closeAllTip') }}
                 </v-tooltip>
@@ -109,10 +109,12 @@ SPDX-License-Identifier: Apache-2.0
                   class="float-right"
                   :aria-label="$t('common.close')"
                   @click.stop="closeSessionDetail(session)">
-                  <span class="fa fa-close fa-lg" />
+                  <v-icon
+                    icon="mdi-close"
+                    size="small" />
                 </v-btn>
                 <small>
-                  <span class="fa fa-clock-o fa-fw" />
+                  <v-icon icon="mdi-clock-outline" />
                   <em>
                     {{ timezoneDateString(session.firstPacket, timezone, ms) }} -
                     {{ timezoneDateString(session.lastPacket, timezone, ms) }}

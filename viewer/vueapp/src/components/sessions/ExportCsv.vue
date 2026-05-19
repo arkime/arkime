@@ -22,7 +22,7 @@ SPDX-License-Identifier: Apache-2.0
         <p
           v-if="error"
           class="small text-danger mb-0">
-          <span class="fa fa-exclamation-triangle" />&nbsp;
+          <v-icon icon="mdi-alert" />&nbsp;
           {{ error }}
         </p>
       </div>
@@ -40,7 +40,9 @@ SPDX-License-Identifier: Apache-2.0
           variant="flat"
           :style="tertiaryBtnStyle"
           @click="exportCsvAction">
-          <span class="fa fa-paper-plane-o me-1" />
+          <v-icon
+            icon="mdi-send-outline"
+            class="me-1" />
           {{ $t('sessions.exports.exportCSV') }}
         </v-btn>
         <v-btn
@@ -50,7 +52,7 @@ SPDX-License-Identifier: Apache-2.0
           variant="flat"
           :aria-label="$t('common.cancel')"
           @click="$emit('done', null, false, false)">
-          <span class="fa fa-ban" />
+          <v-icon icon="mdi-cancel" />
           <v-tooltip activator="parent">
             {{ $t('common.cancel') }}
           </v-tooltip>
@@ -73,7 +75,7 @@ SPDX-License-Identifier: Apache-2.0
           <span
             id="exportFieldsHelp"
             class="cursor-help">
-            <span class="fa fa-question-circle" />
+            <v-icon icon="mdi-help-circle" />
             <v-tooltip activator="parent">
               {{ $t('sessions.exports.exportFieldsHelp') }}
             </v-tooltip>

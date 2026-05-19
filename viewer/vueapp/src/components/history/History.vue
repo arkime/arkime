@@ -15,9 +15,9 @@ SPDX-License-Identifier: Apache-2.0
               <span
                 id="searchHistory"
                 class="arkime-input-label arkime-input-label-fw cursor-help">
-                <span
-                  v-if="!shiftKeyHold"
-                  class="fa fa-search fa-fw" />
+                <v-icon
+                  icon="mdi-magnify"
+                  v-if="!shiftKeyHold" />
                 <span
                   v-else
                   class="query-shortcut">
@@ -45,7 +45,7 @@ SPDX-License-Identifier: Apache-2.0
                 class="arkime-input-append-btn"
                 :aria-label="$t('common.clear')"
                 @click="clear">
-                <span class="fa fa-close" />
+                <v-icon icon="mdi-close" />
               </v-btn>
             </div>
             <v-btn
@@ -59,7 +59,9 @@ SPDX-License-Identifier: Apache-2.0
               <span
                 v-else
                 class="enter-icon">
-                <span class="fa fa-long-arrow-left fa-lg" />
+                <v-icon
+                  icon="mdi-arrow-left"
+                  size="small" />
                 <div class="enter-arm" />
               </span>
             </v-btn>
@@ -105,7 +107,7 @@ SPDX-License-Identifier: Apache-2.0
               density="comfortable"
               icon
               @click="showColFilters = !showColFilters">
-              <span class="fa fa-filter" />
+              <v-icon icon="mdi-filter" />
               <v-tooltip activator="#toggleColFilters">
                 {{ $t('history.toggleColFiltersTip') }}
               </v-tooltip>
@@ -160,15 +162,15 @@ SPDX-License-Identifier: Apache-2.0
               :id="`column-${column.name}`"
               @click="columnClick(column.sort)">
               <span v-if="column.sort !== undefined">
-                <span
-                  v-show="sortField === column.sort && !desc"
-                  class="fa fa-sort-asc" />
-                <span
-                  v-show="sortField === column.sort && desc"
-                  class="fa fa-sort-desc" />
-                <span
-                  v-show="sortField !== column.sort"
-                  class="fa fa-sort" />
+                <v-icon
+                  icon="mdi-sort-ascending"
+                  v-show="sortField === column.sort && !desc" />
+                <v-icon
+                  icon="mdi-sort-descending"
+                  v-show="sortField === column.sort && desc" />
+                <v-icon
+                  icon="mdi-unfold-more-horizontal"
+                  v-show="sortField !== column.sort" />
               </span>
               {{ column.name }}
               <v-tooltip
@@ -186,7 +188,7 @@ SPDX-License-Identifier: Apache-2.0
           <td
             :colspan="colSpan"
             class="text-danger text-center">
-            <span class="fa fa-warning" />&nbsp;
+            <v-icon icon="mdi-alert" />&nbsp;
             <strong>
               {{ $t('history.noHistory') }}
             </strong>
@@ -213,7 +215,7 @@ SPDX-License-Identifier: Apache-2.0
                 v-has-role="{user:user,roles:'arkimeAdmin'}"
                 v-has-permission="'removeEnabled'"
                 @click="deleteLog(item, index)">
-                <span class="fa fa-trash-o" />
+                <v-icon icon="mdi-trash-can-outline" />
               </v-btn>
               <v-btn
                 :id="`openPage-${item.id}`"
@@ -226,7 +228,7 @@ SPDX-License-Identifier: Apache-2.0
                 icon
                 class="ms-1"
                 @click="openPage(item)">
-                <span class="fa fa-folder-open" />
+                <v-icon icon="mdi-folder-open" />
                 <v-tooltip :activator="`#openPage-${item.id}`">
                   {{ $t('history.openPageTip', { uiPage: item.uiPage }) }}
                 </v-tooltip>
@@ -331,7 +333,9 @@ SPDX-License-Identifier: Apache-2.0
                       <h5>
                         {{ $t('history.queryParameters') }}
                         <sup>
-                          <span class="fa fa-info-circle text-theme-primary" />
+                          <v-icon
+                            icon="mdi-information"
+                            class="text-theme-primary" />
                         </sup>
                       </h5>
                     </dt>
@@ -351,7 +355,9 @@ SPDX-License-Identifier: Apache-2.0
                   <div class="mt-2">
                     <em>
                       <strong v-if="item.query">
-                        <span class="fa fa-info-circle text-theme-primary" />&nbsp;
+                        <v-icon
+                          icon="mdi-information"
+                          class="text-theme-primary" />&nbsp;
                         {{ $t('history.parsedFrom') }}
                       </strong>
                       <span style="word-break:break-all;">
@@ -381,7 +387,9 @@ SPDX-License-Identifier: Apache-2.0
                         :style="secondaryBtnStyle"
                         :title="$t('common.copyValueTip')"
                         @click="copyValue(item.esQuery)">
-                        <span class="fa fa-clipboard me-1" />
+                        <v-icon
+                          icon="mdi-clipboard"
+                          class="me-1" />
                         {{ $t('common.copy') }}
                       </v-btn>
                     </h5>

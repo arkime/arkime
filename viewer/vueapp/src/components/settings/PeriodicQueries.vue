@@ -32,7 +32,9 @@ SPDX-License-Identifier: Apache-2.0
         size="large"
         class="float-right d-inline"
         @click="showCronModal = true">
-        <span class="fa fa-plus-circle me-1" />
+        <v-icon
+          icon="mdi-plus-circle"
+          class="me-1" />
         {{ $t('settings.cron.newPeriodicQuery') }}
       </v-btn>
     </h3>
@@ -51,7 +53,9 @@ SPDX-License-Identifier: Apache-2.0
       density="compact"
       style="z-index: 2000;"
       class="mt-2 mb-2">
-      <span class="fa fa-exclamation-triangle me-1" />
+      <v-icon
+        icon="mdi-alert"
+        class="me-1" />
       {{ cronQueryListError }}
     </v-alert> <!-- /query list error -->
 
@@ -60,7 +64,9 @@ SPDX-License-Identifier: Apache-2.0
       class="text-center mt-4"
       v-if="!cronQueries || !cronQueries.length">
       <h3>
-        <span class="fa fa-folder-open fa-2x" />
+        <v-icon
+          icon="mdi-folder-open"
+          size="large" />
       </h3>
       <h5 v-html="$t('settings.cron.noPeriodicQueriesHtml')" />
     </div> <!-- /no results -->
@@ -166,7 +172,7 @@ SPDX-License-Identifier: Apache-2.0
                     class="arkime-input-append-btn"
                     :aria-label="$t('search.bigTypeaheadBtnTip')"
                     @click="openBigExpression('new')">
-                    <span class="fa fa-expand" />
+                    <v-icon icon="mdi-arrow-expand" />
                     <v-tooltip activator="parent">
                       {{ $t('search.bigTypeaheadBtnTip') }}
                     </v-tooltip>
@@ -272,7 +278,9 @@ SPDX-License-Identifier: Apache-2.0
             density="compact"
             style="z-index: 2000;"
             class="mt-2 mb-0">
-            <span class="fa fa-exclamation-triangle me-1" />
+            <v-icon
+              icon="mdi-alert"
+              class="me-1" />
             {{ cronQueryFormError }}
           </v-alert> <!-- /create error -->
         </v-card-text>
@@ -284,7 +292,9 @@ SPDX-License-Identifier: Apache-2.0
               size="large"
               :title="$t('common.cancel')"
               @click="showCronModal = false">
-              <span class="fa fa-times me-1" />
+              <v-icon
+                icon="mdi-close"
+                class="me-1" />
               {{ $t('common.cancel') }}
             </v-btn>
             <v-btn
@@ -294,11 +304,15 @@ SPDX-License-Identifier: Apache-2.0
               :disabled="cronLoading"
               @click="createCronQuery">
               <template v-if="!cronLoading">
-                <span class="fa fa-plus-circle me-1" />
+                <v-icon
+                  icon="mdi-plus-circle"
+                  class="me-1" />
                 {{ $t('common.create') }}
               </template>
               <template v-else>
-                <span class="fa fa-spinner fa-spin me-1" />
+                <v-icon
+                  icon="mdi-loading"
+                  class="fa-spin me-1" />
                 {{ $t('common.creating') }}
               </template>
             </v-btn>
@@ -423,7 +437,7 @@ SPDX-License-Identifier: Apache-2.0
               class="arkime-input-append-btn"
               :aria-label="$t('search.bigTypeaheadBtnTip')"
               @click="openBigExpression(query)">
-              <span class="fa fa-expand" />
+              <v-icon icon="mdi-arrow-expand" />
               <v-tooltip activator="parent">
                 {{ $t('search.bigTypeaheadBtnTip') }}
               </v-tooltip>
@@ -531,7 +545,9 @@ SPDX-License-Identifier: Apache-2.0
             density="comfortable"
             :id="`openMatches${index}`"
             @click="openCronSessions(query)">
-            <span class="fa fa-folder-open fa-fw me-1" />
+            <v-icon
+              icon="mdi-folder-open"
+              class="me-1" />
             {{ $t('settings.cron.openMatches') }}
             <v-tooltip :activator="`#openMatches${index}`">
               {{ $t('settings.cron.openMatchesTip') }}
@@ -548,7 +564,9 @@ SPDX-License-Identifier: Apache-2.0
                 class="ms-1"
                 @click="getCronQueries"
                 :id="`cancel${index}`">
-                <span class="fa fa-ban fa-fw me-1" />
+                <v-icon
+                  icon="mdi-cancel"
+                  class="me-1" />
                 {{ $t('common.cancel') }}
                 <v-tooltip :activator="`#cancel${index}`">
                   {{ $t('settings.cron.cancelTip') }}
@@ -562,7 +580,9 @@ SPDX-License-Identifier: Apache-2.0
                 class="ms-1"
                 :id="`save${index}`"
                 @click="updateCronQuery(query, index)">
-                <span class="fa fa-save fa-fw me-1" />
+                <v-icon
+                  icon="mdi-content-save"
+                  class="me-1" />
                 {{ $t('common.save') }}
                 <v-tooltip :activator="`#save${index}`">
                   {{ $t('settings.cron.saveTip') }}
@@ -580,7 +600,7 @@ SPDX-License-Identifier: Apache-2.0
                 class="ms-1"
                 :id="`transfer${index}`"
                 @click="openTransferQuery(query)">
-                <span class="fa fa-share fa-fw" />
+                <v-icon icon="mdi-share" />
                 <v-tooltip :activator="`#transfer${index}`">
                   {{ $t('settings.cron.transferTip') }}
                 </v-tooltip>
@@ -593,7 +613,9 @@ SPDX-License-Identifier: Apache-2.0
                 class="ms-1"
                 :id="`delete${index}`"
                 @click="deleteCronQuery(query, index)">
-                <span class="fa fa-trash-o fa-fw me-1" />
+                <v-icon
+                  icon="mdi-trash-can-outline"
+                  class="me-1" />
                 {{ $t('common.delete') }}
                 <v-tooltip :activator="`#delete${index}`">
                   {{ $t('settings.cron.deleteTip') }}

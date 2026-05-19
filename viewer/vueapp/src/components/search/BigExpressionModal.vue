@@ -20,7 +20,10 @@ SPDX-License-Identifier: Apache-2.0
     max-width="1140">
     <v-card density="compact">
       <v-card-title>
-        <span class="fa fa-search fa-2x me-2" />
+        <v-icon
+          icon="mdi-magnify"
+          size="large"
+          class="me-2" />
       </v-card-title>
       <v-card-text class="big-expression-card-text">
         <ExpressionAutocompleteInput

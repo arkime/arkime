@@ -17,9 +17,10 @@ SPDX-License-Identifier: Apache-2.0
           :placeholder="$t('users.rolesSearchPlaceholder')" />
       </div>
       <h4>
-        <span
-          id="roles-page-tip"
-          class="fa fa-info-circle ms-2 cursor-help" />
+        <v-icon
+          icon="mdi-information"
+          class="ms-2 cursor-help"
+          id="roles-page-tip" />
         <v-tooltip activator="#roles-page-tip">
           <span v-html="$t('roles.pageTip')" />
         </v-tooltip>
@@ -30,7 +31,10 @@ SPDX-License-Identifier: Apache-2.0
     <div
       v-if="loading"
       class="text-center mt-4 mb-4">
-      <span class="fa fa-circle-o-notch fa-spin fa-2x" />
+      <v-icon
+        icon="mdi-loading"
+        size="large"
+        class="fa-spin" />
       <p>{{ $t('common.loading') }}</p>
     </div> <!-- /loading -->
 

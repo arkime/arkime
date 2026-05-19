@@ -28,7 +28,6 @@
     "ejs": "^3.1.10",
     "express": "^4.22.1",
     "express-session": "^1.18.2",
-    "font-awesome": "^4.7.0",
     "helmet": "^3.23.3",
     "ioredis": "^5.8.2",
     "ipaddr.js": "^2.4.0",

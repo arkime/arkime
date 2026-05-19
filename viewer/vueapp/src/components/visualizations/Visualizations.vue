@@ -24,7 +24,7 @@ SPDX-License-Identifier: Apache-2.0
               </span>
               <v-icon
                 id="hideVizInfo"
-                icon="fa-info-circle"
+                icon="mdi-information"
                 size="small"
                 class="ms-1 cursor-help" />
               <v-tooltip activator="#hideVizInfo">
@@ -43,7 +43,7 @@ SPDX-License-Identifier: Apache-2.0
               class="map-btn"
               v-show="!showMap && primary"
               @click="toggleMap">
-              <span class="fa fa-fw fa-globe" />
+              <v-icon icon="mdi-earth" />
               <v-tooltip activator="parent">
                 {{ $t('common.openMap') }}
               </v-tooltip>
@@ -73,7 +73,7 @@ SPDX-License-Identifier: Apache-2.0
                     icon
                     class="btn-close-map"
                     @click="toggleMap">
-                    <span class="fa fa-close" />
+                    <v-icon icon="mdi-close" />
                   </v-btn>
                   <v-btn
                     :aria-label="$t('vis.toggleMapSize')"
@@ -85,7 +85,7 @@ SPDX-License-Identifier: Apache-2.0
                     @click="toggleMapSize">
                     <span
                       class="fa"
-                      :class="{'fa-expand':!mapExpanded,'fa-compress':mapExpanded}" />
+                      :class="{'mdi-arrow-expand':!mapExpanded,'mdi-arrow-collapse':mapExpanded}" />
                   </v-btn>
                   <div
                     v-if="primary"
@@ -165,7 +165,7 @@ SPDX-License-Identifier: Apache-2.0
                     density="comfortable"
                     icon
                     @click="zoomOut">
-                    <span class="fa fa-search-minus" />
+                    <v-icon icon="mdi-magnify-minus" />
                   </v-btn>
                   <v-btn
                     size="small"
@@ -173,7 +173,7 @@ SPDX-License-Identifier: Apache-2.0
                     density="comfortable"
                     icon
                     @click="zoomIn">
-                    <span class="fa fa-search-plus" />
+                    <v-icon icon="mdi-magnify-plus" />
                   </v-btn>
                 </div> <!-- /zoom in/out -->
                 <!-- pan left/right -->
@@ -184,7 +184,7 @@ SPDX-License-Identifier: Apache-2.0
                     density="comfortable"
                     icon
                     @click="panLeft">
-                    <span class="fa fa-chevron-left" />
+                    <v-icon icon="mdi-chevron-left" />
                   </v-btn>
                   <v-menu>
                     <template #activator="{ props: activatorProps }">
@@ -194,7 +194,9 @@ SPDX-License-Identifier: Apache-2.0
                         variant="text"
                         density="comfortable">
                         {{ plotPan * 100 + '%' }}
-                        <span class="fa fa-caret-down ms-1" />
+                        <v-icon
+                          icon="mdi-menu-down"
+                          class="ms-1" />
                       </v-btn>
                     </template>
                     <v-list density="compact">
@@ -221,7 +223,7 @@ SPDX-License-Identifier: Apache-2.0
                     density="comfortable"
                     icon
                     @click="panRight">
-                    <span class="fa fa-chevron-right" />
+                    <v-icon icon="mdi-chevron-right" />
                   </v-btn>
                 </div> <!-- /pan left/right -->
                 <!-- graph type -->

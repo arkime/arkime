@@ -189,7 +189,7 @@ SPDX-License-Identifier: Apache-2.0
                     <div class="px-2 py-1">
                       <div class="arkime-input-group arkime-input-group--fluid">
                         <span class="arkime-input-label arkime-input-label-fw">
-                          <span class="fa fa-search fa-fw" />
+                          <v-icon icon="mdi-magnify" />
                         </span>
                         <input
                           type="text"
@@ -375,7 +375,7 @@ SPDX-License-Identifier: Apache-2.0
             id="unlockNodes"
             :aria-label="$t('connections.unlockNodesTip')"
             @click.stop.prevent="unlock">
-            <span class="fa fa-unlock" />
+            <v-icon icon="mdi-lock-open" />
             <v-tooltip
               activator="parent"
               location="bottom"
@@ -391,7 +391,7 @@ SPDX-License-Identifier: Apache-2.0
             id="exportGraph"
             :aria-label="$t('connections.exportGraphTip')"
             @click.stop.prevent="exportPng">
-            <span class="fa fa-download" />
+            <v-icon icon="mdi-download" />
             <v-tooltip
               activator="parent"
               location="bottom"
@@ -414,7 +414,7 @@ SPDX-License-Identifier: Apache-2.0
             icon
             :disabled="query.nodeDist >= 200"
             @click="changeNodeDist(10)">
-            <span class="fa fa-plus" />
+            <v-icon icon="mdi-plus" />
             <v-tooltip
               activator="parent"
               location="bottom"
@@ -431,7 +431,7 @@ SPDX-License-Identifier: Apache-2.0
             icon
             :disabled="query.nodeDist <= 10"
             @click="changeNodeDist(-10)">
-            <span class="fa fa-arrows-v" />
+            <v-icon icon="mdi-arrow-expand-vertical" />
             <v-tooltip
               activator="parent"
               location="bottom"
@@ -454,7 +454,7 @@ SPDX-License-Identifier: Apache-2.0
             icon
             :disabled="fontSize >= 1"
             @click="updateTextSize(0.1)">
-            <span class="fa fa-font" />
+            <v-icon icon="mdi-format-font" />
             <v-tooltip
               activator="parent"
               location="bottom"
@@ -471,7 +471,9 @@ SPDX-License-Identifier: Apache-2.0
             icon
             :disabled="fontSize <= 0.2"
             @click="updateTextSize(-0.1)">
-            <span class="fa fa-font fa-sm" />
+            <v-icon
+              icon="mdi-format-font"
+              class="fa-sm" />
             <v-tooltip
               activator="parent"
               location="bottom"
@@ -494,7 +496,7 @@ SPDX-License-Identifier: Apache-2.0
             icon
             :disabled="zoomLevel >= 4"
             @click="zoomConnections(2)">
-            <span class="fa fa-search-plus" />
+            <v-icon icon="mdi-magnify-plus" />
             <v-tooltip
               activator="parent"
               location="bottom"
@@ -511,7 +513,7 @@ SPDX-License-Identifier: Apache-2.0
             icon
             :disabled="zoomLevel <= 0.0625"
             @click="zoomConnections(0.5)">
-            <span class="fa fa-search-minus" />
+            <v-icon icon="mdi-magnify-minus" />
             <v-tooltip
               activator="parent"
               location="bottom"
@@ -678,8 +680,8 @@ export default {
       // and reset-default array (defaultNodeFields / defaultLinkFields)
       // the menu mutates.
       fieldVisMenus: [
-        { kind: 'node', icon: 'fa-circle-o', tipKey: 'connections.nodeFieldsTip' },
-        { kind: 'link', icon: 'fa-link', tipKey: 'connections.linkFieldsTip' }
+        { kind: 'node', icon: 'mdi-circle-outline', tipKey: 'connections.nodeFieldsTip' },
+        { kind: 'link', icon: 'mdi-link', tipKey: 'connections.linkFieldsTip' }
       ],
       // Arkime theme-color v-btn style. Vuetify :color can't take CSS vars.
       primaryBtnStyle: {

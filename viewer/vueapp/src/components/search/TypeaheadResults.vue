@@ -17,12 +17,13 @@
             class="arkime-dropdown-item cursor-pointer"
             :class="{'active':key === activeIdx,'last-history-item':key === fieldHistoryResults.length - 1}"
             @click="addToQuery(value)">
-            <span class="fa fa-history" />&nbsp;
+            <v-icon icon="mdi-history" />&nbsp;
             <strong v-if="value.exp">{{ value.exp }}</strong>
             <strong v-if="!value.exp">{{ value }}</strong>
             <span v-if="value.friendlyName"> - {{ value.friendlyName }}</span>
-            <span
-              class="fa fa-close float-right mt-1"
+            <v-icon
+              icon="mdi-close"
+              class="float-right mt-1"
               :title="`Remove ${value.exp} from your field history`"
               @click.stop.prevent="removeFromFieldHistory(value)" />
             <v-tooltip

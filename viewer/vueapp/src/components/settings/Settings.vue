@@ -25,8 +25,12 @@ SPDX-License-Identifier: Apache-2.0
     <div class="sub-navbar">
       <span class="sub-navbar-title">
         <span class="fa-stack">
-          <span class="fa fa-cogs fa-stack-1x" />
-          <span class="fa fa-square-o fa-stack-2x" />
+          <v-icon
+            icon="mdi-cog-outline"
+            class="fa-stack-1x" />
+          <v-icon
+            icon="mdi-checkbox-blank-outline"
+            class="fa-stack-2x" />
         </span>&nbsp;
         <span>
           {{ $t(displayName ? 'settings.settingsFor' : 'settings.settings', { user: displayName }) }}
@@ -65,52 +69,72 @@ SPDX-License-Identifier: Apache-2.0
           color="primary"
           selected-class="font-weight-bold">
           <v-tab value="general">
-            <span class="fa fa-fw fa-cog me-1" />
+            <v-icon
+              icon="mdi-cog"
+              class="me-1" />
             {{ $t('settings.nav.general') }}
           </v-tab>
           <v-tab value="col">
-            <span class="fa fa-fw fa-columns me-1" />
+            <v-icon
+              icon="mdi-view-column"
+              class="me-1" />
             {{ $t('settings.nav.columnLayout') }}
           </v-tab>
           <v-tab value="info">
-            <span class="fa fa-fw fa-info me-1" />
+            <v-icon
+              icon="mdi-information"
+              class="me-1" />
             {{ $t('settings.nav.infoFieldLayout') }}
           </v-tab>
           <v-tab value="spiview">
-            <span class="fa fa-fw fa-eyedropper me-1" />
+            <v-icon
+              icon="mdi-eyedropper"
+              class="me-1" />
             {{ $t('settings.nav.spiViewLayout') }}
           </v-tab>
           <v-tab value="theme">
-            <span class="fa fa-fw fa-paint-brush me-1" />
+            <v-icon
+              icon="mdi-brush"
+              class="me-1" />
             {{ $t('settings.nav.themes') }}
           </v-tab>
           <v-tab
             v-if="(!multiviewer || hasUsersES) && !disablePassword"
             value="password">
-            <span class="fa fa-fw fa-lock me-1" />
+            <v-icon
+              icon="mdi-lock"
+              class="me-1" />
             {{ $t('settings.nav.password') }}
           </v-tab>
           <v-divider class="my-1" />
           <v-tab value="views">
-            <span class="fa fa-fw fa-eye me-1" />
+            <v-icon
+              icon="mdi-eye"
+              class="me-1" />
             {{ $t('settings.nav.views') }}
           </v-tab>
           <v-tab
             v-if="!multiviewer || hasUsersES"
             value="shortcuts">
-            <span class="fa fa-fw fa-list me-1" />
+            <v-icon
+              icon="mdi-format-list-bulleted"
+              class="me-1" />
             {{ $t('settings.nav.shortcuts') }}
           </v-tab>
           <v-tab
             v-if="!multiviewer"
             value="cron">
-            <span class="fa fa-fw fa-search me-1" />
+            <v-icon
+              icon="mdi-magnify"
+              class="me-1" />
             {{ $t('settings.nav.cron') }}
           </v-tab>
           <v-tab
             v-has-role="{user:user,roles:'arkimeAdmin'}"
             value="notifiers">
-            <span class="fa fa-fw fa-bell me-1" />
+            <v-icon
+              icon="mdi-bell"
+              class="me-1" />
             {{ $t('settings.nav.notifiers') }}
           </v-tab>
         </v-tabs>
@@ -134,7 +158,9 @@ SPDX-License-Identifier: Apache-2.0
               size="large"
               color="warning"
               @click="resetSettings">
-              <span class="fa fa-repeat me-2" />
+              <v-icon
+                icon="mdi-repeat"
+                class="me-2" />
               {{ $t('settings.general.reset') }}
             </v-btn>
           </h3>
@@ -539,7 +565,7 @@ SPDX-License-Identifier: Apache-2.0
                     :key="filter.dbField + 'DataFilterBadge'"
                     @click="timelineFilterSelected(filter)"
                     :id="filter.dbField + 'DataFilterBadge'">
-                    <span class="fa fa-times" />
+                    <v-icon icon="mdi-close" />
                     {{ filter.friendlyName || 'unknown field' }}
                     <v-tooltip :activator="`[id='${filter.dbField}DataFilterBadge']`">{{ filter.help }}</v-tooltip>
                   </label>
@@ -552,7 +578,7 @@ SPDX-License-Identifier: Apache-2.0
                   icon
                   :aria-label="$t('settings.general.resetTimelineDataFilters')"
                   @click="resetDefaultFilters">
-                  <span class="fa fa-refresh" />
+                  <v-icon icon="mdi-refresh" />
                   <v-tooltip activator="#resetTimelineFilters">
                     {{ $t('settings.general.resetTimelineDataFilters') }}
                   </v-tooltip>
@@ -682,7 +708,9 @@ SPDX-License-Identifier: Apache-2.0
                       class="float-right"
                       @click="deleteLayout('sessionstable', config.name, 'colConfigs', index)"
                       :title="$t('settings.ccl.deleteTip')">
-                      <span class="fa fa-trash-o me-1" />
+                      <v-icon
+                        icon="mdi-trash-can-outline"
+                        class="me-1" />
                       {{ $t('common.delete') }}
                     </v-btn>
                   </td>
@@ -692,7 +720,7 @@ SPDX-License-Identifier: Apache-2.0
               <tr v-if="colConfigError">
                 <td colspan="3">
                   <p class="text-danger mb-0">
-                    <span class="fa fa-exclamation-triangle" />&nbsp;
+                    <v-icon icon="mdi-alert" />&nbsp;
                     {{ colConfigError }}
                   </p>
                 </td>
@@ -781,7 +809,9 @@ SPDX-License-Identifier: Apache-2.0
                       class="float-right"
                       @click="deleteLayout('sessionsinfofields', config.name, 'infoFieldLayouts', index)"
                       :title="$t('settings.infoLayout.deleteTip')">
-                      <span class="fa fa-trash-o me-1" />
+                      <v-icon
+                        icon="mdi-trash-can-outline"
+                        class="me-1" />
                       {{ $t('common.delete') }}
                     </v-btn>
                   </td>
@@ -791,7 +821,7 @@ SPDX-License-Identifier: Apache-2.0
               <tr v-if="infoFieldLayoutError">
                 <td colspan="3">
                   <p class="text-danger mb-0">
-                    <span class="fa fa-exclamation-triangle" />&nbsp;
+                    <v-icon icon="mdi-alert" />&nbsp;
                     {{ infoFieldLayoutError }}
                   </p>
                 </td>
@@ -878,7 +908,9 @@ SPDX-License-Identifier: Apache-2.0
                       class="float-right"
                       @click="deleteLayout('spiview', config.name, 'spiviewConfigs', index)"
                       :title="$t('settings.spiview.deleteTip')">
-                      <span class="fa fa-trash-o me-1" />
+                      <v-icon
+                        icon="mdi-trash-can-outline"
+                        class="me-1" />
                       {{ $t('common.delete') }}
                     </v-btn>
                   </td>
@@ -888,7 +920,7 @@ SPDX-License-Identifier: Apache-2.0
               <tr v-if="spiviewConfigError">
                 <td colspan="3">
                   <p class="text-danger mb-0">
-                    <span class="fa fa-exclamation-triangle" />&nbsp;
+                    <v-icon icon="mdi-alert" />&nbsp;
                     {{ spiviewConfigError }}
                   </p>
                 </td>
@@ -1079,7 +1111,7 @@ SPDX-License-Identifier: Apache-2.0
               <span
                 v-if="changePasswordError"
                 class="small text-danger ps-4">
-                <span class="fa fa-exclamation-triangle" />&nbsp;
+                <v-icon icon="mdi-alert" />&nbsp;
                 {{ changePasswordError }}
               </span>
             </v-col>
@@ -1105,7 +1137,7 @@ SPDX-License-Identifier: Apache-2.0
               <span
                 v-if="totpEnabled && !totpSetupMode"
                 class="text-success me-2">
-                <span class="fa fa-check" /> {{ $t('settings.totp.enabled') }}
+                <v-icon icon="mdi-check" /> {{ $t('settings.totp.enabled') }}
               </span>
               <v-btn
                 v-if="totpEnabled && !totpSetupMode"
@@ -1171,7 +1203,7 @@ SPDX-License-Identifier: Apache-2.0
               <span
                 v-if="totpError"
                 class="small text-danger d-block mt-2">
-                <span class="fa fa-exclamation-triangle" />&nbsp;
+                <v-icon icon="mdi-alert" />&nbsp;
                 {{ totpError }}
               </span>
             </div>
@@ -1213,7 +1245,7 @@ SPDX-License-Identifier: Apache-2.0
               <span
                 v-if="totpError"
                 class="small text-danger d-block mt-2">
-                <span class="fa fa-exclamation-triangle" />&nbsp;
+                <v-icon icon="mdi-alert" />&nbsp;
                 {{ totpError }}
               </span>
             </div>

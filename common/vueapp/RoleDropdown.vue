@@ -68,10 +68,11 @@ SPDX-License-Identifier: Apache-2.0
               :for="`roledd-${activatorId}-${role.value}`"
               class="dropdown-check-label">
               {{ role.text }}
-              <span
+              <v-icon
+                icon="mdi-account"
+                class="cursor-help ms-2"
                 v-if="role.userDefined"
-                :title="$t('users.userDefinedRoleMsg')"
-                class="fa fa-user cursor-help ms-2" />
+                :title="$t('users.userDefinedRoleMsg')" />
             </label>
           </div>
           <!-- previously deleted roles still selected on the user -->
@@ -91,8 +92,9 @@ SPDX-License-Identifier: Apache-2.0
                 :for="`roledd-${activatorId}-${role}`"
                 class="dropdown-check-label">
                 {{ role }}
-                <span
-                  class="fa fa-times-circle cursor-help ms-2"
+                <v-icon
+                  icon="mdi-close-circle"
+                  class="cursor-help ms-2"
                   :title="$t('users.missingRoleMsg')" />
               </label>
             </div>

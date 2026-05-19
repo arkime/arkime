@@ -14,7 +14,7 @@ SPDX-License-Identifier: Apache-2.0
       color="primary"
       class="me-1"
       @click="removeIssue">
-      <v-icon icon="fa-trash" />
+      <v-icon icon="mdi-delete" />
       <v-tooltip
         activator="parent"
         location="left">
@@ -30,7 +30,7 @@ SPDX-License-Identifier: Apache-2.0
       color="success"
       class="me-1"
       @click="acknowledgeIssue">
-      <v-icon icon="fa-check" />
+      <v-icon icon="mdi-check" />
       <v-tooltip
         activator="parent"
         location="left">
@@ -46,7 +46,7 @@ SPDX-License-Identifier: Apache-2.0
           size="x-small"
           variant="outlined"
           class="d-inline">
-          <v-icon :icon="issue.ignoreUntil ? 'fa-eye-slash' : 'fa-eye'" />
+          <v-icon :icon="issue.ignoreUntil ? 'mdi-eye-off' : 'mdi-eye'" />
           <v-tooltip
             activator="parent"
             location="left">

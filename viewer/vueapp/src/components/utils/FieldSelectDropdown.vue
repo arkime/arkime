@@ -5,7 +5,7 @@
     location="bottom end">
     <template #activator="{ props: activatorProps }">
       <v-btn v-bind="activatorProps">
-        <span class="fa fa-bars" />
+        <v-icon icon="mdi-menu" />
         <v-tooltip
           activator="parent"
           location="right">
@@ -32,7 +32,9 @@
         v-if="selectedFields.length > 0"
         class="text-danger"
         @click="$emit('clear')">
-        <span class="fa fa-times me-1" />
+        <v-icon
+          icon="mdi-close"
+          class="me-1" />
         Clear all
       </v-list-item>
       <v-divider />

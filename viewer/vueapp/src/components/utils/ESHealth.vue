@@ -29,8 +29,9 @@ SPDX-License-Identifier: Apache-2.0
         <span
           v-bind="activatorProps"
           class="cursor-help">
-          <span
-            class="fa fa-info-circle fa-lg"
+          <v-icon
+            icon="mdi-information"
+            size="small"
             :class="esHealthClass"
             v-if="!error && esHealth" />
         </span>

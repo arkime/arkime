@@ -18,19 +18,19 @@ SPDX-License-Identifier: Apache-2.0
             class="help-nav">
             <v-list-item
               href="help#about"
-              prepend-icon="fa-question-circle"
+              prepend-icon="mdi-help-circle"
               title="About" />
             <v-list-item
               href="help#dashboard"
-              prepend-icon="fa-tachometer"
+              prepend-icon="mdi-speedometer"
               title="Dashboard" />
             <v-list-item
               href="help#issues"
-              prepend-icon="fa-exclamation-triangle"
+              prepend-icon="mdi-alert"
               title="Issues" />
             <v-list-item
               href="help#settings"
-              prepend-icon="fa-cogs"
+              prepend-icon="mdi-cog-outline"
               title="Settings" />
             <v-list-item
               href="help#general"
@@ -46,7 +46,7 @@ SPDX-License-Identifier: Apache-2.0
         <v-col class="mt-2 mb-3">
           <!-- about -->
           <h2 id="about">
-            <span class="fa fa-question-circle" />&nbsp;
+            <v-icon icon="mdi-help-circle" />&nbsp;
             About
           </h2>
           <p class="lead">
@@ -64,7 +64,7 @@ SPDX-License-Identifier: Apache-2.0
 
           <!-- dashboard -->
           <h2 id="dashboard">
-            <span class="fa fa-tachometer" />&nbsp;
+            <v-icon icon="mdi-speedometer" />&nbsp;
             Parliament Dashboard
           </h2>
           <p class="lead">
@@ -87,7 +87,7 @@ SPDX-License-Identifier: Apache-2.0
 
           <!-- issues -->
           <h2 id="issues">
-            <span class="fa fa-exclamation-triangle" />&nbsp;
+            <v-icon icon="mdi-alert" />&nbsp;
             Issues
           </h2>
           <p class="lead">
@@ -98,13 +98,13 @@ SPDX-License-Identifier: Apache-2.0
             can ignore, acknowledge, and remove acknowledged issues for every cluster.
           </p>
           <p>
-            <span class="fa fa-check" />&nbsp;
+            <v-icon icon="mdi-check" />&nbsp;
             <strong>Acknowledged issues</strong> will not show up on the main Parliament page,
             but will remain here (grayed out) to be removed
             (via the trashcan button or by waiting for them to be removed automatically after the set time).
           </p>
           <p>
-            <span class="fa fa-eye-slash" />&nbsp;
+            <v-icon icon="mdi-eye-off" />&nbsp;
             <strong>Ignored issues</strong> will not show up on the main Parliament page,
             but will remain here (grayed out) to be unignored
             (via the ignore dropdown button or automatically after the set ignore time has expired).
@@ -154,7 +154,7 @@ SPDX-License-Identifier: Apache-2.0
 
           <!-- settings -->
           <h2 id="settings">
-            <span class="fa fa-cogs" />&nbsp;
+            <v-icon icon="mdi-cog-outline" />&nbsp;
             Settings
           </h2>
           <p class="lead">
@@ -169,7 +169,7 @@ SPDX-License-Identifier: Apache-2.0
           <div class="ms-4">
             <!-- general -->
             <h4 id="general">
-              <span class="fa fa-fw fa-cog" />&nbsp;
+              <v-icon icon="mdi-cog" />&nbsp;
               General
             </h4>
             <p>
@@ -230,7 +230,9 @@ SPDX-License-Identifier: Apache-2.0
 
             <!-- notifiers -->
             <h4 id="notifiers">
-              <span class="fa fa-fw fa-bell me-2" />
+              <v-icon
+                icon="mdi-bell"
+                class="me-2" />
               Notifiers
             </h4>
             <p>

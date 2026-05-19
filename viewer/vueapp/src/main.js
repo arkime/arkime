@@ -1,7 +1,6 @@
 import { createApp } from 'vue';
 import { createVuetify } from 'vuetify/lib/framework.mjs';
-import { aliases as faAliases, fa as faSet } from 'vuetify/iconsets/fa4';
-import { mdi as mdiSet } from 'vuetify/iconsets/mdi';
+import { aliases as mdiAliases, mdi as mdiSet } from 'vuetify/iconsets/mdi';
 
 // internationalization
 import { createI18nInstance } from '@common/i18nSetup.js';
@@ -50,22 +49,12 @@ async function initializeApp() {
   app.use(router);
   app.use(i18n);
 
-  // Icons: Font Awesome 4.7 is the icon library throughout viewer (per the
-  // migration plan -- MDI swap is deferred). The fa4 iconset maps Vuetify's
-  // symbolic aliases ($file, $close, $next, $prev, etc.) to FA 4 classes,
-  // so v-file-input, v-select, v-data-table, etc. render with the FA icons
-  // already loaded by viewer rather than missing MDI glyphs.
-  // Override the fa4 iconset's `clear` alias -- by default it maps to
-  // `fa-check-circle` which on clearable v-text-fields looks like a
-  // green check (mistaken for a checkbox). `fa-times-circle` is the
-  // intuitive X-in-circle for a clear action.
-  const arkimeFaAliases = { ...faAliases, clear: 'fa-times-circle' };
-
+  // Icons: Material Design Icons (mdi) across all four apps.
   const vuetify = createVuetify({
     icons: {
-      defaultSet: 'fa',
-      aliases: arkimeFaAliases,
-      sets: { fa: faSet, mdi: mdiSet }
+      defaultSet: 'mdi',
+      aliases: mdiAliases,
+      sets: { mdi: mdiSet }
     },
     defaults: {
       VTextField: { density: 'compact', variant: 'outlined', hideDetails: 'auto' },

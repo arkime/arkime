@@ -5,7 +5,9 @@ SPDX-License-Identifier: Apache-2.0
 <template>
   <div class="info-area vertical-center arkime-error-box">
     <div class="text-danger">
-      <span class="fa fa-2x fa-warning" />
+      <v-icon
+        icon="mdi-alert"
+        size="large" />
       <span v-if="message">
         {{ message }}
       </span>

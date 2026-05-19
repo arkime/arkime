@@ -5,8 +5,7 @@ SPDX-License-Identifier: Apache-2.0
 
 import { createApp } from 'vue';
 import { createVuetify } from 'vuetify/lib/framework.mjs';
-import { aliases as faAliases, fa as faSet } from 'vuetify/iconsets/fa4';
-import { mdi as mdiSet } from 'vuetify/iconsets/mdi';
+import { aliases as mdiAliases, mdi as mdiSet } from 'vuetify/iconsets/mdi';
 
 // internationalization
 import { createI18nInstance } from '@common/i18nSetup.js';
@@ -33,17 +32,11 @@ async function initializeApp () {
 
   const app = createApp(App);
 
-  // Override the fa4 iconset's `clear` alias -- by default it maps to
-  // `fa-check-circle` which on clearable v-text-fields looks like a
-  // green check (mistaken for a checkbox). `fa-times-circle` is the
-  // intuitive X-in-circle for a clear action.
-  const arkimeFaAliases = { ...faAliases, clear: 'fa-times-circle' };
-
   const vuetify = createVuetify({
     icons: {
-      defaultSet: 'fa',
-      aliases: arkimeFaAliases,
-      sets: { fa: faSet, mdi: mdiSet }
+      defaultSet: 'mdi',
+      aliases: mdiAliases,
+      sets: { mdi: mdiSet }
     },
     defaults: {
       VTextField: {

@@ -74,7 +74,7 @@ SPDX-License-Identifier: Apache-2.0
           size="small"
           density="comfortable"
           class="arkime-help-btn ms-2">
-          <v-icon icon="fa-question-circle" />
+          <v-icon icon="mdi-help-circle" />
           <v-tooltip activator="parent">
             {{ $t('navigation.helpTip') }}
           </v-tooltip>
@@ -133,7 +133,7 @@ SPDX-License-Identifier: Apache-2.0
           variant="outlined"
           hide-details
           class="refresh-interval-select ms-2"
-          prepend-inner-icon="fa-refresh" />
+          prepend-inner-icon="mdi-refresh" />
 
         <Logout
           :base-path="path"

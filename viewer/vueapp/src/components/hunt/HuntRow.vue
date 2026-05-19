@@ -72,7 +72,7 @@ SPDX-License-Identifier: Apache-2.0
           variant="flat"
           color="error"
           class="cursor-help ms-1">
-          <span class="fa fa-exclamation-triangle" />
+          <v-icon icon="mdi-alert" />
           <v-tooltip :activator="`[id='joberrors${job.id}']`">
             {{ $t('hunts.hadErrorsTip') }}
           </v-tooltip>
@@ -83,7 +83,9 @@ SPDX-License-Identifier: Apache-2.0
       {{ commaString(job.matchedSessions) }}
       <template v-if="job.removed">
         <span :id="`removed${job.id}`">
-          <span class="fa fa-info-circle fa-fw cursor-help text-warning" />
+          <v-icon
+            icon="mdi-information"
+            class="cursor-help text-warning" />
           <v-tooltip :activator="`[id='removed${job.id}']`">
             {{ $t('hunts.huntRemovedTip') }}
           </v-tooltip>
@@ -122,12 +124,13 @@ SPDX-License-Identifier: Apache-2.0
           density="comfortable"
           :aria-label="$t('hunts.removeHuntTip')"
           class="ms-1">
-          <span
-            v-if="!job.loading"
-            class="fa fa-trash-o fa-fw" />
-          <span
-            v-else
-            class="fa fa-spinner fa-spin fa-fw" />
+          <v-icon
+            icon="mdi-trash-can-outline"
+            v-if="!job.loading" />
+          <v-icon
+            icon="mdi-loading"
+            class="fa-spin"
+            v-else />
           <v-tooltip :activator="`[id='removejob${job.id}']`">
             {{ $t('hunts.removeHuntTip') }}
           </v-tooltip>
@@ -145,12 +148,13 @@ SPDX-License-Identifier: Apache-2.0
         class="ms-1"
         v-if="canEdit && canRemoveFromSessions"
         :disabled="job.loading || !job.matchedSessions || job.removed || !user.removeEnabled">
-        <span
-          v-if="!job.loading"
-          class="fa fa-times fa-fw" />
-        <span
-          v-else
-          class="fa fa-spinner fa-spin fa-fw" />
+        <v-icon
+          icon="mdi-close"
+          v-if="!job.loading" />
+        <v-icon
+          icon="mdi-loading"
+          class="fa-spin"
+          v-else />
         <v-tooltip
           v-if="job.matchedSessions && !job.removed && user.removeEnabled"
           :activator="`[id='remove${job.id}']`">
@@ -169,7 +173,7 @@ SPDX-License-Identifier: Apache-2.0
           density="comfortable"
           :style="primaryBtnStyle"
           class="ms-1">
-          <span class="fa fa-folder-open fa-fw" />
+          <v-icon icon="mdi-folder-open" />
           <v-tooltip
             v-if="job.matchedSessions && !job.removed"
             :activator="`[id='openresults${job.id}']`">
@@ -188,7 +192,7 @@ SPDX-License-Identifier: Apache-2.0
           density="comfortable"
           :style="secondaryBtnStyle"
           class="ms-1">
-          <span class="fa fa-refresh fa-fw" />
+          <v-icon icon="mdi-refresh" />
           <v-tooltip :activator="`[id='rerun${job.id}']`">
             {{ $t('hunts.rerunTip') }}
           </v-tooltip>
@@ -205,7 +209,7 @@ SPDX-License-Identifier: Apache-2.0
           density="comfortable"
           :style="tertiaryBtnStyle"
           class="ms-1">
-          <span class="fa fa-repeat fa-fw" />
+          <v-icon icon="mdi-repeat" />
           <v-tooltip :activator="`[id='repeat${job.id}']`">
             {{ $t('hunts.repeatTip') }}
           </v-tooltip>
@@ -223,12 +227,13 @@ SPDX-License-Identifier: Apache-2.0
           size="small"
           density="comfortable"
           class="ms-1">
-          <span
-            v-if="!job.loading"
-            class="fa fa-ban fa-fw" />
-          <span
-            v-else
-            class="fa fa-spinner fa-spin fa-fw" />
+          <v-icon
+            icon="mdi-cancel"
+            v-if="!job.loading" />
+          <v-icon
+            icon="mdi-loading"
+            class="fa-spin"
+            v-else />
           <v-tooltip :activator="`[id='cancel${job.id}']`">
             {{ $t('hunts.cancelTip') }}
           </v-tooltip>
@@ -246,12 +251,13 @@ SPDX-License-Identifier: Apache-2.0
           size="small"
           density="comfortable"
           class="ms-1">
-          <span
-            v-if="!job.loading"
-            class="fa fa-pause fa-fw" />
-          <span
-            v-else
-            class="fa fa-spinner fa-spin fa-fw" />
+          <v-icon
+            icon="mdi-pause"
+            v-if="!job.loading" />
+          <v-icon
+            icon="mdi-loading"
+            class="fa-spin"
+            v-else />
           <v-tooltip :activator="`[id='pause${job.id}']`">
             {{ $t('hunts.pauseTip') }}
           </v-tooltip>
@@ -269,12 +275,13 @@ SPDX-License-Identifier: Apache-2.0
           density="comfortable"
           :style="secondaryBtnStyle"
           class="ms-1">
-          <span
-            v-if="!job.loading"
-            class="fa fa-play fa-fw" />
-          <span
-            v-else
-            class="fa fa-spinner fa-spin fa-fw" />
+          <v-icon
+            icon="mdi-play"
+            v-if="!job.loading" />
+          <v-icon
+            icon="mdi-loading"
+            class="fa-spin"
+            v-else />
           <v-tooltip :activator="`[id='resume${job.id}']`">
             {{ $t('hunts.resumeTip') }}
           </v-tooltip>

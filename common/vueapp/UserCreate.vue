@@ -52,9 +52,10 @@ SPDX-License-Identifier: Apache-2.0
             :placeholder="$t('users.forcedExpressionPlaceholder')"
             v-model.lazy="newUser.expression">
             <template #append-inner>
-              <span
-                id="create-user-expression"
-                class="fa fa-info-circle cursor-help" />
+              <v-icon
+                icon="mdi-information"
+                class="cursor-help"
+                id="create-user-expression" />
               <v-tooltip activator="#create-user-expression">
                 {{ $t('users.forcedExpressionTip') }}
               </v-tooltip>
@@ -77,9 +78,10 @@ SPDX-License-Identifier: Apache-2.0
                 :label="$t('users.queryTimeLimit')"
                 v-model.lazy="newUser.timeLimit">
                 <template #append-inner>
-                  <span
-                    id="create-user-time-limit"
-                    class="fa fa-info-circle cursor-help" />
+                  <v-icon
+                    icon="mdi-information"
+                    class="cursor-help"
+                    id="create-user-time-limit" />
                   <v-tooltip activator="#create-user-time-limit">
                     {{ $t('users.queryTimeLimitTip') }}
                   </v-tooltip>
@@ -95,9 +97,11 @@ SPDX-License-Identifier: Apache-2.0
                   :roles="roles"
                   :display-text="$t('users.roles')"
                   @selected-roles-updated="updateNewUserRoles" />
-                <span
-                  id="create-user-roles"
-                  class="fa fa-info-circle fa-lg cursor-help ms-2" />
+                <v-icon
+                  icon="mdi-information"
+                  size="small"
+                  class="cursor-help ms-2"
+                  id="create-user-roles" />
                 <v-tooltip activator="#create-user-roles">
                   {{ $t('users.rolesTip') }}
                 </v-tooltip>
@@ -110,9 +114,11 @@ SPDX-License-Identifier: Apache-2.0
                   @selected-users-updated="updateNewRoleAssigners">
                   {{ $t('users.roleAssigners') }}
                 </UserDropdown>
-                <span
-                  id="create-user-role-assigners"
-                  class="fa fa-info-circle fa-lg cursor-help ms-2" />
+                <v-icon
+                  icon="mdi-information"
+                  size="small"
+                  class="cursor-help ms-2"
+                  id="create-user-role-assigners" />
                 <v-tooltip activator="#create-user-role-assigners">
                   {{ $t('users.roleAssignersTip') }}
                 </v-tooltip>

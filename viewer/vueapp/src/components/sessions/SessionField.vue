@@ -9,7 +9,7 @@ SPDX-License-Identifier: Apache-2.0
       <span
         class="cursor-help text-danger"
         :id="`field-tooltip-${expr}-${uuid}`">
-        <span class="fa fa-exclamation-triangle fa-fw" />
+        <v-icon icon="mdi-alert" />
         {{ missingFieldValue }}
         <v-tooltip
           :activator="`#field-tooltip-${expr}-${uuid}`">
@@ -45,7 +45,7 @@ SPDX-License-Identifier: Apache-2.0
               <a
                 v-bind="activatorProps"
                 class="value">
-                <span class="all-copy">{{ pd.value }}</span><span class="fa fa-caret-down" />
+                <span class="all-copy">{{ pd.value }}</span><v-icon icon="mdi-menu-down" />
               </a>
             </template>
             <v-list
@@ -134,14 +134,14 @@ SPDX-License-Identifier: Apache-2.0
               <v-list-item
                 v-if="sessionBtn"
                 @click.stop="goToSessions(expr, pd.queryVal, '==')">
-                <span class="fa fa-folder-open-o fa-fw" />
+                <v-icon icon="mdi-folder-open-outline" />
                 {{ $t('sessions.field.openSessions') }}
                 <v-tooltip
                   activator="parent"
                   location="end">{{ $t('sessions.field.openSessionsTip', { query: expr + ' == ' + pd.queryVal}) }}</v-tooltip>
               </v-list-item>
               <v-list-item @click.stop="newTabSessions(expr, pd.queryVal, '==')">
-                <span class="fa fa-external-link-square fa-fw" />
+                <v-icon icon="mdi-open-in-app" />
                 {{ $t('sessions.field.newSessions') }}
                 <v-tooltip
                   activator="parent"
@@ -151,14 +151,14 @@ SPDX-License-Identifier: Apache-2.0
                 v-if="expression"
                 class="no-wrap"
                 @click.stop="newTabSessions(expr, pd.queryVal, '==', true)">
-                <span class="fa fa-external-link fa-fw" />
+                <v-icon icon="mdi-open-in-new" />
                 {{ $t('sessions.field.newSessionsOnly') }}
                 <v-tooltip
                   activator="parent"
                   location="end">{{ $t('sessions.field.newSessionsOnlyTip', { query: expr + ' == ' + pd.queryVal}) }}</v-tooltip>
               </v-list-item>
               <v-list-item @click="doCopy(pd.value)">
-                <span class="fa fa-clipboard fa-fw" />
+                <v-icon icon="mdi-clipboard" />
                 {{ $t('common.copyValue') }}
                 <v-tooltip
                   activator="parent"

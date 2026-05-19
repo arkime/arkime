@@ -126,7 +126,7 @@ SPDX-License-Identifier: Apache-2.0
               class="ms-1"
               :aria-label="$t('spigraph.exportCSVSPIGraphTip')"
               @click.stop.prevent="exportCSV">
-              <span class="fa fa-download" />
+              <v-icon icon="mdi-download" />
               <v-tooltip activator="parent">{{ $t('spigraph.exportCSVSPIGraphTip') }}</v-tooltip>
             </v-btn> <!-- /export button-->
           </div>

@@ -38,7 +38,7 @@ SPDX-License-Identifier: Apache-2.0
             @click="showBigExpression = !showBigExpression">
             <span
               class="fa"
-              :class="showBigExpression ? 'fa-compress' : 'fa-expand'" />
+              :class="showBigExpression ? 'mdi-arrow-collapse' : 'mdi-arrow-expand'" />
             <v-tooltip activator="parent">
               {{ $t('sessions.views.expandExpressionTip') }}
             </v-tooltip>
@@ -88,16 +88,22 @@ SPDX-License-Identifier: Apache-2.0
           @click="modifyView">
           <span v-if="!loading">
             <span v-if="mode === 'create'">
-              <span class="fa fa-plus-circle me-1" />
+              <v-icon
+                icon="mdi-plus-circle"
+                class="me-1" />
               {{ $t('common.create') }}
             </span>
             <span v-else-if="mode === 'edit'">
-              <span class="fa fa-save me-1" />
+              <v-icon
+                icon="mdi-content-save"
+                class="me-1" />
               {{ $t('common.save') }}
             </span>
           </span>
           <span v-if="loading">
-            <span class="fa fa-spinner fa-spin me-1" />
+            <v-icon
+              icon="mdi-loading"
+              class="fa-spin me-1" />
             <span v-if="mode === 'create'">
               {{ $t('common.creating') }}
             </span>
@@ -113,7 +119,7 @@ SPDX-License-Identifier: Apache-2.0
           variant="flat"
           :aria-label="$t('common.cancel')"
           @click="$emit('done', null, false, false)">
-          <span class="fa fa-ban" />
+          <v-icon icon="mdi-cancel" />
           <v-tooltip activator="parent">
             {{ $t('common.cancel') }}
           </v-tooltip>
@@ -131,7 +137,9 @@ SPDX-License-Identifier: Apache-2.0
       v-if="error"
       class="small text-danger mb-0 mt-1">
       <v-col cols="auto">
-        <span class="fa fa-exclamation-triangle me-1" />
+        <v-icon
+          icon="mdi-alert"
+          class="me-1" />
         {{ error }}
       </v-col>
     </v-row>

@@ -11,7 +11,9 @@ SPDX-License-Identifier: Apache-2.0
         variant="flat"
         size="large"
         @click="showViewModal = !showViewModal">
-        <span class="fa fa-plus-circle me-1" />
+        <v-icon
+          icon="mdi-plus-circle"
+          class="me-1" />
         {{ $t('settings.views.newView') }}
       </v-btn>
     </h3>
@@ -27,7 +29,7 @@ SPDX-License-Identifier: Apache-2.0
           variant="outlined"
           hide-details
           clearable
-          prepend-inner-icon="fa-search"
+          prepend-inner-icon="mdi-magnify"
           :model-value="viewsQuery.search"
           @update:model-value="updateSearch"
           :placeholder="$t('settings.views.searchPlaceholder')" />
@@ -44,7 +46,9 @@ SPDX-License-Identifier: Apache-2.0
         <v-btn
           value="seeAll"
           id="seeAllViews">
-          <span class="fa fa-user-circle me-1" />
+          <v-icon
+            icon="mdi-account-circle"
+            class="me-1" />
           {{ $t(seeAll ? 'settings.views.seeMy' : 'settings.views.seeAll') }}
           <v-tooltip
             activator="parent"
@@ -68,15 +72,15 @@ SPDX-License-Identifier: Apache-2.0
             class="cursor-pointer"
             @click.self="sortViews('name')">
             {{ $t('settings.views.table-name') }}
-            <span
-              v-show="viewsQuery.sortField === 'name' && !viewsQuery.desc"
-              class="fa fa-sort-asc" />
-            <span
-              v-show="viewsQuery.sortField === 'name' && viewsQuery.desc"
-              class="fa fa-sort-desc" />
-            <span
-              v-show="viewsQuery.sortField !== 'name'"
-              class="fa fa-sort" />
+            <v-icon
+              icon="mdi-sort-ascending"
+              v-show="viewsQuery.sortField === 'name' && !viewsQuery.desc" />
+            <v-icon
+              icon="mdi-sort-descending"
+              v-show="viewsQuery.sortField === 'name' && viewsQuery.desc" />
+            <v-icon
+              icon="mdi-unfold-more-horizontal"
+              v-show="viewsQuery.sortField !== 'name'" />
           </th>
           <th>{{ $t('settings.views.table-creator') }}</th>
           <th>{{ $t('settings.views.table-expression') }}</th>
@@ -146,7 +150,7 @@ SPDX-License-Identifier: Apache-2.0
               class="ms-1"
               :id="`copyView-${item.id}`"
               @click="$emit('copy-value', item.expression)">
-              <span class="fa fa-clipboard fa-fw" />
+              <v-icon icon="mdi-clipboard" />
               <v-tooltip :activator="`#copyView-${item.id}`">
                 {{ $t('settings.views.copyTip') }}
               </v-tooltip>
@@ -162,7 +166,7 @@ SPDX-License-Identifier: Apache-2.0
                 class="ms-1"
                 :id="`transferView-${item.id}`"
                 @click="openTransferView(item)">
-                <span class="fa fa-share fa-fw" />
+                <v-icon icon="mdi-share" />
                 <v-tooltip :activator="`#transferView-${item.id}`">
                   {{ $t('settings.views.transferTip') }}
                 </v-tooltip>
@@ -176,7 +180,7 @@ SPDX-License-Identifier: Apache-2.0
                 class="ms-1"
                 :id="`deleteView-${item.id}`"
                 @click="deleteView(item.id, index)">
-                <span class="fa fa-trash-o fa-fw" />
+                <v-icon icon="mdi-trash-can-outline" />
                 <v-tooltip :activator="`#deleteView-${item.id}`">
                   {{ $t('settings.views.deleteTip') }}
                 </v-tooltip>
@@ -190,7 +194,7 @@ SPDX-License-Identifier: Apache-2.0
                 class="ms-1"
                 :id="`editView-${item.id}`"
                 @click="editView(item)">
-                <span class="fa fa-pencil fa-fw" />
+                <v-icon icon="mdi-pencil" />
                 <v-tooltip :activator="`#editView-${item.id}`">
                   {{ $t('settings.views.editTip') }}
                 </v-tooltip>
@@ -217,7 +221,9 @@ SPDX-License-Identifier: Apache-2.0
       class="text-center mt-4"
       v-if="!views || !views.length">
       <h3>
-        <span class="fa fa-folder-open fa-2x" />
+        <v-icon
+          icon="mdi-folder-open"
+          size="large" />
       </h3>
       <h5>
         {{ $t('settings.views.noMatch') }}
@@ -319,7 +325,9 @@ SPDX-License-Identifier: Apache-2.0
               variant="flat"
               size="large"
               @click="showViewModal = false">
-              <span class="fa fa-times me-1" />
+              <v-icon
+                icon="mdi-close"
+                class="me-1" />
               {{ $t('common.cancel') }}
             </v-btn>
             <v-btn
@@ -328,7 +336,9 @@ SPDX-License-Identifier: Apache-2.0
               variant="flat"
               size="large"
               @click="createView">
-              <span class="fa fa-plus-circle me-1" />
+              <v-icon
+                icon="mdi-plus-circle"
+                class="me-1" />
               {{ $t('common.create') }}
             </v-btn>
             <v-btn
@@ -337,7 +347,9 @@ SPDX-License-Identifier: Apache-2.0
               variant="flat"
               size="large"
               @click="updateView">
-              <span class="fa fa-save me-1" />
+              <v-icon
+                icon="mdi-content-save"
+                class="me-1" />
               {{ $t('common.save') }}
             </v-btn>
           </div>

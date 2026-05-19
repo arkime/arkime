@@ -32,7 +32,7 @@ SPDX-License-Identifier: Apache-2.0
             color="secondary"
             variant="flat"
             style="height: 32px;">
-            <v-icon icon="fa-filter" />
+            <v-icon icon="mdi-filter" />
           </v-btn>
         </template>
         <v-list density="compact">
@@ -87,7 +87,7 @@ SPDX-License-Identifier: Apache-2.0
       <v-text-field
         v-model="searchTerm"
         :placeholder="$t('parliament.issue.searchTermPlaceholder')"
-        prepend-inner-icon="fa-search"
+        prepend-inner-icon="mdi-magnify"
         clearable
         density="compact"
         hide-details
@@ -102,7 +102,7 @@ SPDX-License-Identifier: Apache-2.0
           variant="outlined"
           style="height: 32px;"
           @click="removeAllAcknowledgedIssues">
-          <v-icon icon="fa-trash" />
+          <v-icon icon="mdi-delete" />
           <transition name="visibility">
             <span
               v-if="removeAllAcknowledgedIssuesConfirm"
@@ -123,7 +123,7 @@ SPDX-License-Identifier: Apache-2.0
             variant="outlined"
             style="height: 32px;"
             @click="cancelRemoveAllAcknowledgedIssues">
-            <v-icon icon="fa-ban" />
+            <v-icon icon="mdi-cancel" />
             {{ $t('common.cancel') }}
           </v-btn>
         </transition>
@@ -139,8 +139,8 @@ SPDX-License-Identifier: Apache-2.0
       :scrim="theme === 'arkime-dark' ? 'black' : 'white'">
       <div class="text-center">
         <v-icon
-          icon="fa-circle-o-notch"
-          class="fa-spin"
+          icon="mdi-loading"
+          class="mdi-loading"
           size="x-large" />
         <h3>{{ $t('common.loading') }}</h3>
       </div>
@@ -165,60 +165,60 @@ SPDX-License-Identifier: Apache-2.0
             class="cursor-pointer"
             @click="sortBy('cluster')">
             {{ $t('common.cluster') }}
-            <span
-              v-if="query.sort !== 'cluster'"
-              class="fa fa-sort fa-fw" />
-            <span
-              v-if="query.sort === 'cluster' && query.order === 'asc'"
-              class="fa fa-sort-asc fa-fw" />
-            <span
-              v-if="query.sort === 'cluster' && query.order === 'desc'"
-              class="fa fa-sort-desc fa-fw" />
+            <v-icon
+              icon="mdi-unfold-more-horizontal"
+              v-if="query.sort !== 'cluster'" />
+            <v-icon
+              icon="mdi-sort-ascending"
+              v-if="query.sort === 'cluster' && query.order === 'asc'" />
+            <v-icon
+              icon="mdi-sort-descending"
+              v-if="query.sort === 'cluster' && query.order === 'desc'" />
           </th>
           <th
             scope="col"
             class="cursor-pointer"
             @click="sortBy('title')">
             {{ $t('parliament.issue.table-issue') }}
-            <span
-              v-if="query.sort !== 'title'"
-              class="fa fa-sort fa-fw" />
-            <span
-              v-if="query.sort === 'title' && query.order === 'asc'"
-              class="fa fa-sort-asc fa-fw" />
-            <span
-              v-if="query.sort === 'title' && query.order === 'desc'"
-              class="fa fa-sort-desc fa-fw" />
+            <v-icon
+              icon="mdi-unfold-more-horizontal"
+              v-if="query.sort !== 'title'" />
+            <v-icon
+              icon="mdi-sort-ascending"
+              v-if="query.sort === 'title' && query.order === 'asc'" />
+            <v-icon
+              icon="mdi-sort-descending"
+              v-if="query.sort === 'title' && query.order === 'desc'" />
           </th>
           <th
             scope="col"
             class="cursor-pointer"
             @click="sortBy('firstNoticed')">
             {{ $t('parliament.issue.table-firstNoticed') }}
-            <span
-              v-if="query.sort !== 'firstNoticed'"
-              class="fa fa-sort fa-fw" />
-            <span
-              v-if="query.sort === 'firstNoticed' && query.order === 'asc'"
-              class="fa fa-sort-asc fa-fw" />
-            <span
-              v-if="query.sort === 'firstNoticed' && query.order === 'desc'"
-              class="fa fa-sort-desc fa-fw" />
+            <v-icon
+              icon="mdi-unfold-more-horizontal"
+              v-if="query.sort !== 'firstNoticed'" />
+            <v-icon
+              icon="mdi-sort-ascending"
+              v-if="query.sort === 'firstNoticed' && query.order === 'asc'" />
+            <v-icon
+              icon="mdi-sort-descending"
+              v-if="query.sort === 'firstNoticed' && query.order === 'desc'" />
           </th>
           <th
             scope="col"
             class="cursor-pointer"
             @click="sortBy('lastNoticed')">
             {{ $t('parliament.issue.table-lastNoticed') }}
-            <span
-              v-if="query.sort !== 'lastNoticed'"
-              class="fa fa-sort fa-fw" />
-            <span
-              v-if="query.sort === 'lastNoticed' && query.order === 'asc'"
-              class="fa fa-sort-asc fa-fw" />
-            <span
-              v-if="query.sort === 'lastNoticed' && query.order === 'desc'"
-              class="fa fa-sort-desc fa-fw" />
+            <v-icon
+              icon="mdi-unfold-more-horizontal"
+              v-if="query.sort !== 'lastNoticed'" />
+            <v-icon
+              icon="mdi-sort-ascending"
+              v-if="query.sort === 'lastNoticed' && query.order === 'asc'" />
+            <v-icon
+              icon="mdi-sort-descending"
+              v-if="query.sort === 'lastNoticed' && query.order === 'desc'" />
           </th>
           <th scope="col">
             {{ $t('parliament.issue.table-value') }}
@@ -228,45 +228,45 @@ SPDX-License-Identifier: Apache-2.0
             class="cursor-pointer"
             @click="sortBy('node')">
             {{ $t('parliament.issue.table-node') }}
-            <span
-              v-if="query.sort !== 'node'"
-              class="fa fa-sort fa-fw" />
-            <span
-              v-if="query.sort === 'node' && query.order === 'asc'"
-              class="fa fa-sort-asc fa-fw" />
-            <span
-              v-if="query.sort === 'node' && query.order === 'desc'"
-              class="fa fa-sort-desc fa-fw" />
+            <v-icon
+              icon="mdi-unfold-more-horizontal"
+              v-if="query.sort !== 'node'" />
+            <v-icon
+              icon="mdi-sort-ascending"
+              v-if="query.sort === 'node' && query.order === 'asc'" />
+            <v-icon
+              icon="mdi-sort-descending"
+              v-if="query.sort === 'node' && query.order === 'desc'" />
           </th>
           <th
             scope="col"
             class="cursor-pointer"
             @click="sortBy('ignoreUntil')">
             {{ $t('parliament.issue.table-ignoreUntil') }}
-            <span
-              v-if="query.sort !== 'ignoreUntil'"
-              class="fa fa-sort fa-fw" />
-            <span
-              v-if="query.sort === 'ignoreUntil' && query.order === 'asc'"
-              class="fa fa-sort-asc fa-fw" />
-            <span
-              v-if="query.sort === 'ignoreUntil' && query.order === 'desc'"
-              class="fa fa-sort-desc fa-fw" />
+            <v-icon
+              icon="mdi-unfold-more-horizontal"
+              v-if="query.sort !== 'ignoreUntil'" />
+            <v-icon
+              icon="mdi-sort-ascending"
+              v-if="query.sort === 'ignoreUntil' && query.order === 'asc'" />
+            <v-icon
+              icon="mdi-sort-descending"
+              v-if="query.sort === 'ignoreUntil' && query.order === 'desc'" />
           </th>
           <th
             scope="col"
             class="cursor-pointer"
             @click="sortBy('acknowledged')">
             {{ $t('parliament.issue.table-ackedAt') }}
-            <span
-              v-if="query.sort !== 'acknowledged'"
-              class="fa fa-sort fa-fw" />
-            <span
-              v-if="query.sort === 'acknowledged' && query.order === 'asc'"
-              class="fa fa-sort-asc fa-fw" />
-            <span
-              v-if="query.sort === 'acknowledged' && query.order === 'desc'"
-              class="fa fa-sort-desc fa-fw" />
+            <v-icon
+              icon="mdi-unfold-more-horizontal"
+              v-if="query.sort !== 'acknowledged'" />
+            <v-icon
+              icon="mdi-sort-ascending"
+              v-if="query.sort === 'acknowledged' && query.order === 'asc'" />
+            <v-icon
+              icon="mdi-sort-descending"
+              v-if="query.sort === 'acknowledged' && query.order === 'desc'" />
           </th>
           <th
             v-if="isUser && issues && issues.length"
@@ -281,7 +281,7 @@ SPDX-License-Identifier: Apache-2.0
                 color="primary"
                 class="me-1"
                 @click="removeSelectedAcknowledgedIssues">
-                <v-icon icon="fa-trash" />
+                <v-icon icon="mdi-delete" />
                 <v-tooltip
                   activator="parent"
                   location="bottom">
@@ -296,7 +296,7 @@ SPDX-License-Identifier: Apache-2.0
                 color="success"
                 class="me-1"
                 @click="acknowledgeIssues">
-                <v-icon icon="fa-check" />
+                <v-icon icon="mdi-check" />
                 <v-tooltip
                   activator="parent"
                   location="bottom">
@@ -312,7 +312,7 @@ SPDX-License-Identifier: Apache-2.0
                     size="x-small"
                     variant="outlined"
                     class="d-inline">
-                    <v-icon icon="fa-eye-slash" />
+                    <v-icon icon="mdi-eye-off" />
                   </v-btn>
                 </template>
                 <v-list density="compact">
@@ -416,11 +416,17 @@ SPDX-License-Identifier: Apache-2.0
       <div class="info-area vertical-center text-center">
         <div class="text-medium-emphasis mt-5">
           <span v-if="!searchTerm && !filterIgnored && !filterAckd && !filterEsRed && !filterEsDown && !filterEsDropped && !filterOutOfDate && !filterNoPackets">
-            <span class="fa fa-3x fa-smile-o text-muted-more" />
+            <v-icon
+              icon="mdi-emoticon-happy-outline"
+              size="x-large"
+              class="text-muted-more" />
             {{ $t('parliament.issue.noIssues') }}
           </span>
           <span v-else>
-            <span class="fa fa-3x fa-folder-open-o text-muted-more" />
+            <v-icon
+              icon="mdi-folder-open-outline"
+              size="x-large"
+              class="text-muted-more" />
             {{ $t('parliament.issue.noIssuesMatch') }}
           </span>
         </div>

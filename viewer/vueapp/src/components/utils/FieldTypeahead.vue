@@ -35,11 +35,12 @@ SPDX-License-Identifier: Apache-2.0
         class="arkime-dropdown-item cursor-pointer"
         @mousedown.prevent
         @click.stop="changeField(field)">
-        <span class="fa fa-history" />&nbsp;
+        <v-icon icon="mdi-history" />&nbsp;
         {{ field.friendlyName }}
         <small>({{ field.exp }})</small>
-        <span
-          class="fa fa-close float-right mt-1"
+        <v-icon
+          icon="mdi-close"
+          class="float-right mt-1"
           :title="$t('utils.removeFromHistory')"
           @click.stop.prevent="removeFromFieldHistory(field)" />
       </a>

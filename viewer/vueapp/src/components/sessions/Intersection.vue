@@ -37,8 +37,8 @@ SPDX-License-Identifier: Apache-2.0
           :style="tertiaryBtnStyle"
           @click="openIntersectionAction">
           <span class="fa fa-venn me-1">
-            <span class="fa fa-circle-o" />
-            <span class="fa fa-circle-o" />
+            <v-icon icon="mdi-circle-outline" />
+            <v-icon icon="mdi-circle-outline" />
           </span>
           {{ $t('sessions.intersection.title') }}
         </v-btn>
@@ -49,7 +49,7 @@ SPDX-License-Identifier: Apache-2.0
           variant="flat"
           :aria-label="$t('common.cancel')"
           @click="$emit('done', null, false, false)">
-          <span class="fa fa-ban" />
+          <v-icon icon="mdi-cancel" />
           <v-tooltip activator="parent">
             {{ $t('common.cancel') }}
           </v-tooltip>
@@ -71,7 +71,7 @@ SPDX-License-Identifier: Apache-2.0
           <span
             id="intersectionFieldsHelp"
             class="cursor-help">
-            <span class="fa fa-question-circle" />
+            <v-icon icon="mdi-help-circle" />
             <v-tooltip activator="parent">
               {{ $t('sessions.intersection.exportFieldsHelp') }}
             </v-tooltip>
@@ -81,7 +81,7 @@ SPDX-License-Identifier: Apache-2.0
       <p
         v-if="error"
         class="small text-danger mb-0">
-        <span class="fa fa-exclamation-triangle" />&nbsp;
+        <v-icon icon="mdi-alert" />&nbsp;
         {{ error }}
       </p>
     </div>

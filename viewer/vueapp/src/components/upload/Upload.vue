@@ -7,8 +7,12 @@ SPDX-License-Identifier: Apache-2.0
     <div class="sub-navbar">
       <span class="sub-navbar-title">
         <span class="fa-stack">
-          <span class="fa fa-upload fa-stack-1x" />
-          <span class="fa fa-square-o fa-stack-2x" />
+          <v-icon
+            icon="mdi-upload"
+            class="fa-stack-1x" />
+          <v-icon
+            icon="mdi-checkbox-blank-outline"
+            class="fa-stack-2x" />
         </span>&nbsp;
         {{ $t('uploads.uploadFile') }}
       </span>
@@ -71,11 +75,15 @@ SPDX-License-Identifier: Apache-2.0
                 :disabled="!this.file"
                 @click="uploadFile">
                 <span v-if="!uploading">
-                  <span class="fa fa-upload me-1" />
+                  <v-icon
+                    icon="mdi-upload"
+                    class="me-1" />
                   {{ $t('common.upload') }}
                 </span>
                 <span v-else>
-                  <span class="fa fa-spinner fa-spin me-1" />
+                  <v-icon
+                    icon="mdi-loading"
+                    class="fa-spin me-1" />
                   {{ $t('common.uploading') }}
                 </span>
               </v-btn>

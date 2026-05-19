@@ -15,7 +15,7 @@ SPDX-License-Identifier: Apache-2.0
       <template #actions>
         <v-btn
           variant="text"
-          icon="fa-times"
+          icon="mdi-close"
           @click="error = ''" />
       </template>
     </v-snackbar> <!-- /page error -->
@@ -25,7 +25,7 @@ SPDX-License-Identifier: Apache-2.0
       <!-- search -->
       <v-text-field
         v-model="searchTerm"
-        prepend-inner-icon="fa-search"
+        prepend-inner-icon="mdi-magnify"
         placeholder="Search clusters"
         clearable
         density="compact"
@@ -43,7 +43,7 @@ SPDX-License-Identifier: Apache-2.0
           color="primary"
           @click="openNewGroupForm">
           <v-icon
-            icon="fa-plus-circle"
+            icon="mdi-plus-circle"
             class="me-1" />
           {{ $t('parliament.newGroup') }}
         </v-btn>
@@ -53,7 +53,7 @@ SPDX-License-Identifier: Apache-2.0
             color="warning"
             @click="cancelCreateNewGroup">
             <v-icon
-              icon="fa-ban"
+              icon="mdi-cancel"
               class="me-1" />
             {{ $t('common.cancel') }}
           </v-btn>
@@ -62,7 +62,7 @@ SPDX-License-Identifier: Apache-2.0
             color="success"
             @click="createNewGroup">
             <v-icon
-              icon="fa-plus-circle"
+              icon="mdi-plus-circle"
               class="me-1" />
             {{ $t('common.create') }}
           </v-btn>
@@ -74,7 +74,7 @@ SPDX-License-Identifier: Apache-2.0
           class="me-2"
           :aria-label="$t(hideAllIssues ? 'parliament.showAllIssues' : 'parliament.hideAllIssues')"
           @click="toggleHideAllIssues">
-          <v-icon :icon="hideAllIssues ? 'fa-eye' : 'fa-eye-slash'" />
+          <v-icon :icon="hideAllIssues ? 'mdi-eye' : 'mdi-eye-off'" />
           <v-tooltip
             activator="parent"
             location="bottom">
@@ -161,7 +161,10 @@ SPDX-License-Identifier: Apache-2.0
       v-if="searchTerm && !numFilteredClusters && parliament.groups && parliament.groups.length"
       class="info-area vertical-center">
       <div class="text-medium-emphasis">
-        <span class="fa fa-3x fa-folder-open text-muted-more" />
+        <v-icon
+          icon="mdi-folder-open"
+          size="x-large"
+          class="text-muted-more" />
         {{ $t('parliament.noClustersMatch') }}
       </div>
     </div> <!-- /no results for searchTerm filter -->
@@ -171,7 +174,10 @@ SPDX-License-Identifier: Apache-2.0
       v-if="parliament.groups && !parliament.groups.length && !showNewGroupForm"
       class="info-area text-center vertical-center">
       <div class="text-medium-emphasis mt-5">
-        <span class="fa fa-3x fa-folder-open text-muted-more" />
+        <v-icon
+          icon="mdi-folder-open"
+          size="x-large"
+          class="text-muted-more" />
         {{ $t('parliament.noClusters') }}
         <a
           v-if="isAdmin && editMode"
@@ -181,9 +187,13 @@ SPDX-License-Identifier: Apache-2.0
         </a>
         <template v-else-if="isAdmin">
           <p class="d-flex justify-space-between align-center mb-0 mt-3">
-            <span class="fa fa-lock text-muted-more me-3" />
+            <v-icon
+              icon="mdi-lock"
+              class="text-muted-more me-3" />
             {{ $t('parliament.needEditMode') }}
-            <span class="fa fa-lock text-muted-more ms-3" />
+            <v-icon
+              icon="mdi-lock"
+              class="text-muted-more ms-3" />
           </p>
           <a
             @click="toggleEditMode"
@@ -207,9 +217,10 @@ SPDX-License-Identifier: Apache-2.0
           v-if="!group.clusters || (group.clusters.length > 0 || (!group.clusters.length && !searchTerm))">
           <div class="d-flex align-center mb-1 pb-1 ga-2 flex-wrap">
             <h3 class="d-flex align-center mb-0 flex-grow-1">
-              <span
-                v-if="isAdmin && !searchTerm && editMode"
-                class="group-handle fa fa-th me-2" />
+              <v-icon
+                icon="mdi-view-grid"
+                class="group-handle me-2"
+                v-if="isAdmin && !searchTerm && editMode" />
               {{ group.title }}
               <template v-if="isAdmin && groupAddingCluster !== group.id && groupBeingEdited === group.id && editMode">
                 <v-btn
@@ -217,7 +228,7 @@ SPDX-License-Identifier: Apache-2.0
                   color="error"
                   class="ms-2"
                   @click="deleteGroup(group)">
-                  <v-icon icon="fa-trash-o" />
+                  <v-icon icon="mdi-trash-can-outline" />
                   <v-tooltip
                     activator="parent"
                     location="top">
@@ -236,7 +247,7 @@ SPDX-License-Identifier: Apache-2.0
                 color="warning"
                 @click="displayEditGroupForm(group)">
                 <v-icon
-                  icon="fa-pencil"
+                  icon="mdi-pencil"
                   class="me-1" />
                 {{ $t('parliament.editGroup') }}
               </v-btn>
@@ -246,7 +257,7 @@ SPDX-License-Identifier: Apache-2.0
                 color="success"
                 @click="editGroup(group)">
                 <v-icon
-                  icon="fa-save"
+                  icon="mdi-content-save"
                   class="me-1" />
                 {{ $t('common.save') }}
               </v-btn>
@@ -256,7 +267,7 @@ SPDX-License-Identifier: Apache-2.0
                 color="success"
                 @click="createNewCluster(group)">
                 <v-icon
-                  icon="fa-plus-circle"
+                  icon="mdi-plus-circle"
                   class="me-1" />
                 {{ $t('common.create') }}
               </v-btn>
@@ -266,7 +277,7 @@ SPDX-License-Identifier: Apache-2.0
                 color="warning"
                 @click="cancelUpdateGroup(group)">
                 <v-icon
-                  icon="fa-ban"
+                  icon="mdi-cancel"
                   class="me-1" />
                 {{ $t('common.cancel') }}
               </v-btn>
@@ -276,7 +287,7 @@ SPDX-License-Identifier: Apache-2.0
                 color="info"
                 @click="displayNewClusterForm(group)">
                 <v-icon
-                  icon="fa-plus-circle"
+                  icon="mdi-plus-circle"
                   class="me-1" />
                 {{ $t('parliament.newCluster') }}
               </v-btn>
@@ -501,7 +512,7 @@ SPDX-License-Identifier: Apache-2.0
                   </span>
                   <v-icon
                     v-if="stats[cluster.id].healthError"
-                    icon="fa-exclamation-triangle"
+                    icon="mdi-alert"
                     size="x-small" />
                   <span v-if="!stats[cluster.id].status && !stats[cluster.id].healthError">
                     ????
@@ -519,7 +530,7 @@ SPDX-License-Identifier: Apache-2.0
                   <span
                     v-if="isAdmin && !searchTerm && editMode"
                     class="cluster-handle">
-                    <span class="fa fa-th" />
+                    <v-icon icon="mdi-view-grid" />
                   </span>
                   <template v-if="cluster.type === 'multiviewer'">
                     <span class="fa fa-sitemap text-medium-emphasis cursor-help me-2">
@@ -560,7 +571,7 @@ SPDX-License-Identifier: Apache-2.0
                   <a
                     :href="`${cluster.url}/stats?statsTab=0`"
                     class="no-decoration ms-2">
-                    <span class="fa fa-bar-chart" />
+                    <v-icon icon="mdi-chart-bar" />
                     <v-tooltip
                       activator="parent"
                       location="top">
@@ -886,7 +897,7 @@ SPDX-License-Identifier: Apache-2.0
                   variant="outlined"
                   color="warning"
                   @click="displayEditClusterForm(cluster)">
-                  <v-icon icon="fa-pencil" />
+                  <v-icon icon="mdi-pencil" />
                 </v-btn>
                 <template v-if="cluster.id === clusterBeingEdited && editMode && isAdmin">
                   <v-btn
@@ -894,7 +905,7 @@ SPDX-License-Identifier: Apache-2.0
                     variant="outlined"
                     color="error"
                     @click="deleteCluster(group, cluster)">
-                    <v-icon icon="fa-trash-o" />
+                    <v-icon icon="mdi-trash-can-outline" />
                   </v-btn>
                 </template>
                 <v-spacer />
@@ -904,7 +915,7 @@ SPDX-License-Identifier: Apache-2.0
                     variant="outlined"
                     color="warning"
                     @click="cancelEditCluster(cluster)">
-                    <v-icon icon="fa-ban" />
+                    <v-icon icon="mdi-cancel" />
                   </v-btn>
                   <v-btn
                     size="small"
@@ -912,7 +923,7 @@ SPDX-License-Identifier: Apache-2.0
                     color="success"
                     @click="editCluster(group, cluster)">
                     <v-icon
-                      icon="fa-save"
+                      icon="mdi-content-save"
                       class="me-1" />
                     {{ $t('common.save') }}
                   </v-btn>
@@ -923,7 +934,7 @@ SPDX-License-Identifier: Apache-2.0
                   variant="outlined"
                   color="success"
                   @click="acknowledgeAllIssues(cluster)">
-                  <v-icon icon="fa-check" />
+                  <v-icon icon="mdi-check" />
                   <v-tooltip
                     activator="parent"
                     location="top">

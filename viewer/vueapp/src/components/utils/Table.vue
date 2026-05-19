@@ -21,7 +21,7 @@ SPDX-License-Identifier: Apache-2.0
         class="fit-btn"
         :aria-label="$t('utils.fitBtnTip')"
         @click="fitTable">
-        <span class="fa fa-arrows-h" />
+        <v-icon icon="mdi-arrow-expand-horizontal" />
         <v-tooltip activator="parent">
           {{ $t('utils.fitBtnTip') }}
         </v-tooltip>
@@ -44,7 +44,7 @@ SPDX-License-Identifier: Apache-2.0
                   density="comfortable"
                   :style="primaryBtnStyle"
                   class="col-vis-trigger">
-                  <span class="fa fa-th" />
+                  <v-icon icon="mdi-view-grid" />
                   <v-tooltip activator="parent">
                     {{ $t('utils.colVisBtnTip') }}
                   </v-tooltip>
@@ -127,7 +127,7 @@ SPDX-License-Identifier: Apache-2.0
               icon
               :aria-label="$t('common.clear')"
               @click="zeroColValues(column)">
-              <span class="fa fa-ban" />
+              <v-icon icon="mdi-cancel" />
               <v-tooltip activator="parent">
                 Set this column's values to 0.
                 <strong v-if="zeroedAt && zeroedAt[column.id]">
@@ -139,15 +139,15 @@ SPDX-License-Identifier: Apache-2.0
             </v-btn>
           </span>
           <span v-if="column.sort">
-            <span
-              v-show="tableSortField === column.sort && !tableDesc"
-              class="fa fa-sort-asc" />
-            <span
-              v-show="tableSortField === column.sort && tableDesc"
-              class="fa fa-sort-desc" />
-            <span
-              v-show="tableSortField !== column.sort"
-              class="fa fa-sort" />
+            <v-icon
+              icon="mdi-sort-ascending"
+              v-show="tableSortField === column.sort && !tableDesc" />
+            <v-icon
+              icon="mdi-sort-descending"
+              v-show="tableSortField === column.sort && tableDesc" />
+            <v-icon
+              icon="mdi-unfold-more-horizontal"
+              v-show="tableSortField !== column.sort" />
           </span>
         </th>
       </tr>
@@ -229,7 +229,7 @@ SPDX-License-Identifier: Apache-2.0
         <td
           :colspan="tableColspan"
           class="text-danger text-center">
-          <span class="fa fa-warning" />&nbsp;
+          <v-icon icon="mdi-alert" />&nbsp;
           {{ noResultsMsg }}
         </td>
       </tr> <!-- /no results -->

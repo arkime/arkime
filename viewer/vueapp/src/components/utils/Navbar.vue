@@ -54,7 +54,9 @@ SPDX-License-Identifier: Apache-2.0
           size="small"
           density="comfortable"
           class="ms-2">
-          <span class="fa fa-fw fa-question-circle help-link text-theme-button text-theme-gray-hover" />
+          <v-icon
+            icon="mdi-help-circle"
+            class="help-link text-theme-button text-theme-gray-hover" />
           <v-tooltip activator="parent">{{ $t('navigation.helpTip') }}</v-tooltip>
         </v-btn>
 

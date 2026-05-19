@@ -17,7 +17,7 @@ SPDX-License-Identifier: Apache-2.0
             class="float-right cursor-pointer no-decoration"
             v-if="index === 0"
             @click="closeInfo">
-            <span class="fa fa-close" />
+            <v-icon icon="mdi-close" />
           </a>
         </div>
         <div class="popup-card-body">

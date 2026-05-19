@@ -14,7 +14,7 @@ SPDX-License-Identifier: Apache-2.0
       <template #actions>
         <v-btn
           variant="text"
-          icon="fa-times"
+          icon="mdi-close"
           @click="alertMessage = ''" />
       </template>
     </v-snackbar>
@@ -24,7 +24,7 @@ SPDX-License-Identifier: Apache-2.0
         <v-text-field
           v-model="searchTerm"
           :placeholder="$t('wise.stats.searchPlaceholder')"
-          prepend-inner-icon="fa-search"
+          prepend-inner-icon="mdi-magnify"
           density="compact"
           hide-details
           @input="debounceInput" />
@@ -64,7 +64,11 @@ SPDX-License-Identifier: Apache-2.0
         v-else-if="searchTerm"
         class="vertical-center info-area mt-5 pt-5">
         <div class="text-center">
-          <h1><span class="fa fa-folder-open fa-2x" /></h1>
+          <h1>
+            <v-icon
+              icon="mdi-folder-open"
+              size="large" />
+          </h1>
           {{ $t('wise.stats.noSourceMatches') }}
         </div>
       </div>
@@ -80,7 +84,11 @@ SPDX-License-Identifier: Apache-2.0
         v-else-if="searchTerm"
         class="vertical-center info-area mt-5 pt-5">
         <div class="text-center">
-          <h1><span class="fa fa-folder-open fa-2x" /></h1>
+          <h1>
+            <v-icon
+              icon="mdi-folder-open"
+              size="large" />
+          </h1>
           {{ $t('wise.stats.noTypeMatches') }}
         </div>
       </div>
@@ -90,7 +98,11 @@ SPDX-License-Identifier: Apache-2.0
       v-if="showEmpty && !searchTerm && !sourceStats.length"
       class="vertical-center info-area mt-5 pt-5">
       <div>
-        <h1><span class="fa fa-folder-open fa-2x" /></h1>
+        <h1>
+          <v-icon
+            icon="mdi-folder-open"
+            size="large" />
+        </h1>
         <p v-html="$t('wise.noSourcesHtml')" />
       </div>
     </div>

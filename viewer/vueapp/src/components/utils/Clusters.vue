@@ -21,7 +21,9 @@ SPDX-License-Identifier: Apache-2.0
           density="comfortable"
           :style="secondaryBtnStyle"
           class="ms-1 multies-menu-trigger">
-          <span class="fa fa-database me-1" />
+          <v-icon
+            icon="mdi-database"
+            class="me-1" />
           {{ selectedCluster.length }}
           <v-tooltip activator="parent">
             {{ esMenuHoverText }}
@@ -43,11 +45,11 @@ SPDX-License-Identifier: Apache-2.0
         <template v-if="!selectOne">
           <v-divider />
           <v-list-item @click.prevent.stop="selectAllCluster">
-            <span class="fa fa-list" />&nbsp;
+            <v-icon icon="mdi-format-list-bulleted" />&nbsp;
             {{ $t('common.selectAll') }}
           </v-list-item>
           <v-list-item @click.prevent.stop="clearAllCluster">
-            <span class="fa fa-eraser" />&nbsp;
+            <v-icon icon="mdi-eraser" />&nbsp;
             {{ $t('common.clearAll') }}
           </v-list-item>
         </template>

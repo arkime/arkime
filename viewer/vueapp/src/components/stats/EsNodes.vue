@@ -47,7 +47,7 @@ SPDX-License-Identifier: Apache-2.0
                   density="comfortable"
                   icon
                   class="row-actions-btn d-inline">
-                  <span class="fa fa-caret-down" />
+                  <v-icon icon="mdi-menu-down" />
                 </v-btn>
               </template>
               <v-list density="compact">

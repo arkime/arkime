@@ -137,7 +137,7 @@ SPDX-License-Identifier: Apache-2.0
               :id="`restore-${setting.key}`"
               :aria-label="$t('stats.esAdmin.restoreAllocationTip')"
               @click="restoreToAll(setting)">
-              <span class="fa fa-undo" />
+              <v-icon icon="mdi-undo" />
               <v-tooltip :activator="`[id='restore-${setting.key}']`">
                 {{ $t('stats.esAdmin.restoreAllocationTip') }}
               </v-tooltip>
@@ -166,7 +166,7 @@ SPDX-License-Identifier: Apache-2.0
           <div
             v-if="setting.error"
             class="form-text text-danger">
-            <span class="fa fa-exclamation-triangle" />
+            <v-icon icon="mdi-alert" />
             {{ setting.error }}
           </div>
         </v-col>

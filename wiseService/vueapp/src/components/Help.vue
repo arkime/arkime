@@ -11,23 +11,23 @@ SPDX-License-Identifier: Apache-2.0
       class="help-nav">
       <v-list-item
         href="help#about"
-        prepend-icon="fa-question-circle"
+        prepend-icon="mdi-help-circle"
         title="About" />
       <v-list-item
         href="help#links"
-        prepend-icon="fa-link"
+        prepend-icon="mdi-link"
         title="Links" />
       <v-list-item
         href="help#getStarted"
-        prepend-icon="fa-play-circle"
+        prepend-icon="mdi-play-circle"
         title="Get Started" />
       <v-list-item
         href="help#query"
-        prepend-icon="fa-search"
+        prepend-icon="mdi-magnify"
         title="Query" />
       <v-list-item
         href="help#stats"
-        prepend-icon="fa-bar-chart"
+        prepend-icon="mdi-chart-bar"
         title="Stats" />
       <v-list-item
         href="help#sources"
@@ -39,7 +39,7 @@ SPDX-License-Identifier: Apache-2.0
         class="nested" />
       <v-list-item
         href="help#config"
-        prepend-icon="fa-gear"
+        prepend-icon="mdi-cog"
         title="Config" />
       <v-list-item
         href="help#configWiseService"
@@ -58,7 +58,9 @@ SPDX-License-Identifier: Apache-2.0
     <!-- page content -->
     <div class="mt-5 ms-4 me-4 navbar-offset">
       <h3 id="about">
-        <span class="fa fa-question-circle me-2" />
+        <v-icon
+          icon="mdi-help-circle"
+          class="me-2" />
         About
       </h3>
       <p class="lead">
@@ -78,7 +80,9 @@ SPDX-License-Identifier: Apache-2.0
       <v-divider class="my-3" />
 
       <h3 id="links">
-        <span class="fa fa-link me-2" />
+        <v-icon
+          icon="mdi-link"
+          class="me-2" />
         Links
       </h3>
       <div class="wise-help-links">
@@ -90,7 +94,9 @@ SPDX-License-Identifier: Apache-2.0
       <v-divider class="my-3" />
 
       <h3 id="getStarted">
-        <span class="fa fa-play-circle me-2" />
+        <v-icon
+          icon="mdi-play-circle"
+          class="me-2" />
         Get Started
       </h3>
 
@@ -126,7 +132,9 @@ SPDX-License-Identifier: Apache-2.0
       <v-divider class="my-3" />
 
       <h3 id="query">
-        <span class="fa fa-search me-2" />
+        <v-icon
+          icon="mdi-magnify"
+          class="me-2" />
         Query
       </h3>
 
@@ -138,7 +146,9 @@ SPDX-License-Identifier: Apache-2.0
       <v-divider class="my-3" />
 
       <h3 id="stats">
-        <span class="fa fa-bar-chart me-2" />
+        <v-icon
+          icon="mdi-chart-bar"
+          class="me-2" />
         Stats
       </h3>
 
@@ -163,7 +173,9 @@ SPDX-License-Identifier: Apache-2.0
       <v-divider class="my-3" />
 
       <h3 id="config">
-        <span class="fa fa-gear me-2" />
+        <v-icon
+          icon="mdi-cog"
+          class="me-2" />
         Config
       </h3>
 
@@ -202,7 +214,9 @@ SPDX-License-Identifier: Apache-2.0
 
       <div class="ms-4">
         <h6>
-          <span class="fa fa-plus me-2" />
+          <v-icon
+            icon="mdi-plus"
+            class="me-2" />
           Add Sources
         </h6>
         <p>
@@ -210,7 +224,9 @@ SPDX-License-Identifier: Apache-2.0
           continue to configure or any other source that has been added.
         </p>
         <h6>
-          <span class="fa fa-download me-2" />
+          <v-icon
+            icon="mdi-download"
+            class="me-2" />
           Import Config
         </h6>
         <p>
@@ -219,7 +235,9 @@ SPDX-License-Identifier: Apache-2.0
           to configure it.
         </p>
         <h6>
-          <span class="fa fa-pencil me-2" />
+          <v-icon
+            icon="mdi-pencil"
+            class="me-2" />
           Edit Source
         </h6>
         <p>
@@ -228,7 +246,9 @@ SPDX-License-Identifier: Apache-2.0
           the appropriate data into WISE.
         </p>
         <h6>
-          <span class="fa fa-eye me-2" />
+          <v-icon
+            icon="mdi-eye"
+            class="me-2" />
           View Source
         </h6>
         <p>

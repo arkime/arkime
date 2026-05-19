@@ -90,7 +90,7 @@ SPDX-License-Identifier: Apache-2.0
                       icon
                       :aria-label="$t('sessions.sessions.openAll')"
                       @click="openAll">
-                      <span class="fa fa-plus-circle" />
+                      <v-icon icon="mdi-plus-circle" />
                       <v-tooltip
                         activator="parent"
                         location="right">
@@ -106,7 +106,7 @@ SPDX-License-Identifier: Apache-2.0
                       icon
                       :aria-label="$t('sessions.sessions.closeAll')"
                       @click="closeAll">
-                      <span class="fa fa-times-circle" />
+                      <v-icon icon="mdi-close-circle" />
                       <v-tooltip
                         activator="parent"
                         location="right">
@@ -122,7 +122,7 @@ SPDX-License-Identifier: Apache-2.0
                       icon
                       :aria-label="$t('sessions.sessions.fitTable')"
                       @click="fitTable">
-                      <span class="fa fa-arrows-h" />
+                      <v-icon icon="mdi-arrow-expand-horizontal" />
                       <v-tooltip
                         activator="parent"
                         location="right">
@@ -153,7 +153,7 @@ SPDX-License-Identifier: Apache-2.0
                       location="bottom start">
                       <template #activator="{ props: activatorProps }">
                         <v-btn v-bind="activatorProps">
-                          <span class="fa fa-save" />
+                          <v-icon icon="mdi-content-save" />
                           <v-tooltip
                             activator="parent"
                             location="right">
@@ -185,7 +185,7 @@ SPDX-License-Identifier: Apache-2.0
                               :style="secondaryBtnStyle"
                               :disabled="!newColConfigName"
                               @click="saveColumnConfiguration">
-                              <span class="fa fa-save" />
+                              <v-icon icon="mdi-content-save" />
                             </v-btn>
                           </div>
                         </div>
@@ -222,7 +222,7 @@ SPDX-License-Identifier: Apache-2.0
                               icon
                               class="ms-1"
                               @click.stop.prevent="updateColumnConfiguration(config.name, key)">
-                              <span class="fa fa-save" />
+                              <v-icon icon="mdi-content-save" />
                               <v-tooltip
                                 :activator="`[id='updateCol${key}']`"
                                 location="end">
@@ -238,7 +238,7 @@ SPDX-License-Identifier: Apache-2.0
                               icon
                               class="ms-1"
                               @click.stop.prevent="deleteColumnConfiguration(config.name, key)">
-                              <span class="fa fa-trash-o" />
+                              <v-icon icon="mdi-trash-can-outline" />
                             </v-btn>
                           </div>
                         </v-list-item>
@@ -300,7 +300,7 @@ SPDX-License-Identifier: Apache-2.0
                           <v-btn
                             v-bind="activatorProps"
                             class="info-vis-menu col-dropdown">
-                            <span class="fa fa-bars" />
+                            <v-icon icon="mdi-menu" />
                             <v-tooltip
                               activator="parent"
                               location="right">
@@ -373,7 +373,7 @@ SPDX-License-Identifier: Apache-2.0
                           <v-btn
                             v-bind="activatorProps"
                             class="info-vis-menu col-dropdown">
-                            <span class="fa fa-save" />
+                            <v-icon icon="mdi-content-save" />
                             <v-tooltip
                               activator="parent"
                               location="right">
@@ -405,7 +405,7 @@ SPDX-License-Identifier: Apache-2.0
                                 :style="secondaryBtnStyle"
                                 :disabled="!newInfoConfigName"
                                 @click="saveInfoFieldLayout">
-                                <span class="fa fa-save" />
+                                <v-icon icon="mdi-content-save" />
                               </v-btn>
                             </div>
                           </div>
@@ -449,7 +449,7 @@ SPDX-License-Identifier: Apache-2.0
                                   icon
                                   class="ms-1"
                                   @click.stop.prevent="updateInfoFieldLayout(config.name, key)">
-                                  <span class="fa fa-save" />
+                                  <v-icon icon="mdi-content-save" />
                                   <v-tooltip
                                     :activator="`[id='updateInfo${key}']`"
                                     location="end">
@@ -465,7 +465,7 @@ SPDX-License-Identifier: Apache-2.0
                                   icon
                                   class="ms-1"
                                   @click.stop.prevent="deleteInfoFieldLayout(config.name, key)">
-                                  <span class="fa fa-trash-o" />
+                                  <v-icon icon="mdi-trash-can-outline" />
                                 </v-btn>
                               </div>
                             </v-list-item>
@@ -502,7 +502,7 @@ SPDX-License-Identifier: Apache-2.0
                         color="primary"
                         :aria-label="$t('sessions.columnActions', 'Column actions')"
                         class="float-right col-dropdown col-context-trigger">
-                        <span class="fa fa-caret-down" />
+                        <v-icon icon="mdi-menu-down" />
                       </v-btn>
                     </template>
                     <v-list
@@ -567,15 +567,16 @@ SPDX-License-Identifier: Apache-2.0
                     @click="sortBy($event, header.sortBy || header.dbField)"
                     class="cursor-pointer">
                     <div class="header-sort">
-                      <span
-                        v-if="isSorted(header.sortBy || header.dbField) < 0"
-                        class="fa fa-sort text-muted-more" />
-                      <span
-                        v-if="isSorted(header.sortBy || header.dbField) >= 0 && getSortOrder(header.sortBy || header.dbField) === 'asc'"
-                        class="fa fa-sort-asc" />
-                      <span
-                        v-if="isSorted(header.sortBy || header.dbField) >= 0 && getSortOrder(header.sortBy || header.dbField) === 'desc'"
-                        class="fa fa-sort-desc" />
+                      <v-icon
+                        icon="mdi-unfold-more-horizontal"
+                        class="text-muted-more"
+                        v-if="isSorted(header.sortBy || header.dbField) < 0" />
+                      <v-icon
+                        icon="mdi-sort-ascending"
+                        v-if="isSorted(header.sortBy || header.dbField) >= 0 && getSortOrder(header.sortBy || header.dbField) === 'asc'" />
+                      <v-icon
+                        icon="mdi-sort-descending"
+                        v-if="isSorted(header.sortBy || header.dbField) >= 0 && getSortOrder(header.sortBy || header.dbField) === 'desc'" />
                     </div>
                     <div class="header-text">
                       {{ header.friendlyName }}
@@ -661,7 +662,9 @@ SPDX-License-Identifier: Apache-2.0
                       @toggle-info-vis="toggleInfoVis" />
                     <template #fallback>
                       <div class="mt-1 mb-1 large">
-                        <span class="fa fa-spinner fa-spin me-2" />
+                        <v-icon
+                          icon="mdi-loading"
+                          class="fa-spin me-2" />
                         {{ $t('sessions.sessions.loadingSessionDetail') }}
                       </div>
                     </template>

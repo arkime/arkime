@@ -24,7 +24,9 @@ SPDX-License-Identifier: Apache-2.0
               <div
                 class="mt-1"
                 style="display:inline-block;">
-                <span class="fa fa-spinner fa-spin fa-fw" />
+                <v-icon
+                  icon="mdi-loading"
+                  class="fa-spin" />
                 {{ $t('common.loading') }}
               </div>
               <v-btn
@@ -34,7 +36,7 @@ SPDX-License-Identifier: Apache-2.0
                 density="comfortable"
                 class="ms-3"
                 @click="cancelAndLoad">
-                <span class="fa fa-ban" />&nbsp;
+                <v-icon icon="mdi-cancel" />&nbsp;
                 {{ $t('common.cancel') }}
               </v-btn>
             </span>
@@ -42,7 +44,9 @@ SPDX-License-Identifier: Apache-2.0
               <div
                 class="mt-1"
                 style="display:inline-block;">
-                <span class="fa fa-exclamation-triangle fa-fw text-danger" />
+                <v-icon
+                  icon="mdi-alert"
+                  class="text-danger" />
                 {{ loadingSessionsError }}
               </div>
             </span>
@@ -72,7 +76,7 @@ SPDX-License-Identifier: Apache-2.0
               density="comfortable"
               v-if="createFormOpened && loadingSessionsDetailError"
               @click="createFormOpened = false">
-              <span class="fa fa-ban" />&nbsp;
+              <v-icon icon="mdi-cancel" />&nbsp;
               {{ $t('common.cancel') }}
             </v-btn>
           </v-col>
@@ -98,7 +102,9 @@ SPDX-License-Identifier: Apache-2.0
       density="compact"
       style="z-index: 2000;"
       class="position-fixed fixed-bottom m-0 rounded-0">
-      <span class="fa fa-exclamation-triangle me-2" />
+      <v-icon
+        icon="mdi-alert"
+        class="me-2" />
       <span v-html="$t('hunts.notConfiguredHtml')" />
     </v-alert> <!-- /configuration error -->
 
@@ -110,11 +116,15 @@ SPDX-License-Identifier: Apache-2.0
       density="compact"
       class="mt-4">
       <p class="mb-0">
-        <span class="fa fa-exclamation-triangle fa-fw me-2" />
+        <v-icon
+          icon="mdi-alert"
+          class="me-2" />
         <strong>{{ $t('common.permisionDenied') }}</strong>
       </p>
       <p class="mb-0">
-        <span class="fa fa-info-circle fa-fw me-2" />
+        <v-icon
+          icon="mdi-information"
+          class="me-2" />
         <template v-if="user.roles.includes('usersAdmin')">
           {{ $t('hunts.selfEnable') }}
         </template>
@@ -148,17 +158,23 @@ SPDX-License-Identifier: Apache-2.0
                       <br>
                     </em>
                     <em v-if="loadingSessions">
-                      <span class="fa fa-spinner fa-spin fa-fw me-1" />
+                      <v-icon
+                        icon="mdi-loading"
+                        class="fa-spin me-1" />
                       {{ $t('hunts.waitForCalculation') }}
                       <br>
                     </em>
                     <span v-if="!loadingSessions">
-                      <span class="fa fa-exclamation-triangle fa-fw me-1" />
+                      <v-icon
+                        icon="mdi-alert"
+                        class="me-1" />
                       {{ $t('hunts.doubleCheckSessions') }}
                     </span>
                     <span v-if="multiviewer">
                       <br>
-                      <span class="fa fa-info-circle fa-fw me-2" />
+                      <v-icon
+                        icon="mdi-information"
+                        class="me-2" />
                       {{ $t('hunts.multiViewerHtml', { cluster: selectedCluster[0] }) }}
                     </span>
                   </v-alert>
@@ -239,7 +255,7 @@ SPDX-License-Identifier: Apache-2.0
                     <span
                       id="jobSearch"
                       class="arkime-input-label cursor-help">
-                      <span class="fa fa-search" />
+                      <v-icon icon="mdi-magnify" />
                       <v-tooltip activator="#jobSearch">
                         {{ $t('hunts.jobSearchTip') }}
                       </v-tooltip>
@@ -284,7 +300,9 @@ SPDX-License-Identifier: Apache-2.0
                     target="_blank"
                     id="safeRegexHelp"
                     class="ms-2">
-                    <span class="fa fa-question-circle fa-lg" />
+                    <v-icon
+                      icon="mdi-help-circle"
+                      size="small" />
                     <v-tooltip activator="#safeRegexHelp">{{ $t('hunts.safeRegexHelpTip') }}</v-tooltip>
                   </a>
                 </v-col>
@@ -350,7 +368,7 @@ SPDX-License-Identifier: Apache-2.0
                       <span
                         id="jobUsers"
                         class="arkime-input-label cursor-help">
-                        <span class="fa fa-user" />
+                        <v-icon icon="mdi-account" />
                         <v-tooltip activator="#jobUsers">
                           {{ $t('hunts.jobUsersTip') }}
                         </v-tooltip>
@@ -374,7 +392,7 @@ SPDX-License-Identifier: Apache-2.0
                     variant="tonal"
                     density="compact"
                     class="flex-grow-1">
-                    <span class="fa fa-exclamation-triangle" />&nbsp;
+                    <v-icon icon="mdi-alert" />&nbsp;
                     {{ createFormError }}
                   </v-alert>
                   <v-spacer v-else />
@@ -386,7 +404,7 @@ SPDX-License-Identifier: Apache-2.0
                     density="comfortable"
                     @click="cancelCreateForm"
                     title="Cancel creating this hunt">
-                    <span class="fa fa-ban fa-fw" />&nbsp;
+                    <v-icon icon="mdi-cancel" />&nbsp;
                     {{ $t('common.cancel') }}
                   </v-btn> <!-- /cancel create search job button -->
                   <!-- create search job button -->
@@ -398,7 +416,7 @@ SPDX-License-Identifier: Apache-2.0
                     @click="createJob"
                     :disabled="loadingSessions || !!loadingSessionsError"
                     title="Create this hunt">
-                    <span class="fa fa-plus fa-fw" />&nbsp;
+                    <v-icon icon="mdi-plus" />&nbsp;
                     {{ $t('common.create') }}
                   </v-btn> <!-- /create search job button -->
                 </v-col>
@@ -431,12 +449,13 @@ SPDX-License-Identifier: Apache-2.0
                   size="small"
                   density="comfortable"
                   class="ms-1">
-                  <span
-                    v-if="!runningJob.loading"
-                    class="fa fa-pause fa-fw" />
-                  <span
-                    v-else
-                    class="fa fa-spinner fa-spin fa-fw" />
+                  <v-icon
+                    icon="mdi-pause"
+                    v-if="!runningJob.loading" />
+                  <v-icon
+                    icon="mdi-loading"
+                    class="fa-spin"
+                    v-else />
                   <v-tooltip :activator="`[id='pause${runningJob.id}']`">
                     {{ $t('hunts.pauseTip') }}
                   </v-tooltip>
@@ -452,12 +471,13 @@ SPDX-License-Identifier: Apache-2.0
                   size="small"
                   density="comfortable"
                   class="ms-1">
-                  <span
-                    v-if="!runningJob.loading"
-                    class="fa fa-ban fa-fw" />
-                  <span
-                    v-else
-                    class="fa fa-spinner fa-spin fa-fw" />
+                  <v-icon
+                    icon="mdi-cancel"
+                    v-if="!runningJob.loading" />
+                  <v-icon
+                    icon="mdi-loading"
+                    class="fa-spin"
+                    v-else />
                   <v-tooltip :activator="`[id='cancel${runningJob.id}']`">
                     {{ $t('hunts.cancelTip') }}
                   </v-tooltip>
@@ -475,7 +495,7 @@ SPDX-License-Identifier: Apache-2.0
                   density="comfortable"
                   :style="primaryBtnStyle"
                   class="ms-1">
-                  <span class="fa fa-folder-open fa-fw" />
+                  <v-icon icon="mdi-folder-open" />
                   <v-tooltip :activator="`[id='openresults${runningJob.id}']`">
                     <span v-html="$t('hunts.openResultsTipHtml')" />
                   </v-tooltip>
@@ -493,12 +513,13 @@ SPDX-License-Identifier: Apache-2.0
                 size="small"
                 density="comfortable"
                 class="ms-1">
-                <span
-                  v-if="!runningJob.loading"
-                  class="fa fa-trash-o fa-fw" />
-                <span
-                  v-else
-                  class="fa fa-spinner fa-spin fa-fw" />
+                <v-icon
+                  icon="mdi-trash-can-outline"
+                  v-if="!runningJob.loading" />
+                <v-icon
+                  icon="mdi-loading"
+                  class="fa-spin"
+                  v-else />
                 <v-tooltip :activator="`[id='remove${runningJob.id}']`">
                   {{ $t('hunts.cancelAndRemoveTip') }}
                 </v-tooltip>
@@ -552,7 +573,7 @@ SPDX-License-Identifier: Apache-2.0
                   class="mt-3">
                   <v-row>
                     <v-col cols="12">
-                      <span class="fa fa-id-card fa-fw" />&nbsp;
+                      <v-icon icon="mdi-card-account-details" />&nbsp;
                       {{ $t('hunts.huntJobId', { id: runningJob.id }) }}:
                     </v-col>
                   </v-row>
@@ -570,7 +591,7 @@ SPDX-License-Identifier: Apache-2.0
       </transition> <!-- /running job -->
 
       <h4 v-if="results.length">
-        <span class="fa fa-list-ol" />&nbsp;
+        <v-icon icon="mdi-format-list-numbered" />&nbsp;
         {{ $t('hunts.huntJobQueue') }}:
       </h4>
 
@@ -669,7 +690,9 @@ SPDX-License-Identifier: Apache-2.0
         type="error"
         variant="tonal"
         density="compact">
-        <span class="fa fa-exclamation-triangle me-2" />
+        <v-icon
+          icon="mdi-alert"
+          class="me-2" />
         {{ historyListError }}
       </v-alert>
       <v-alert
@@ -677,14 +700,18 @@ SPDX-License-Identifier: Apache-2.0
         type="error"
         variant="tonal"
         density="compact">
-        <span class="fa fa-exclamation-triangle me-2" />
+        <v-icon
+          icon="mdi-alert"
+          class="me-2" />
         {{ $t('hunts.errorLoadingHistory') }}:
         {{ historyListLoadingError }}
       </v-alert> <!-- /hunt job history errors -->
 
       <template v-if="!historyListLoadingError">
         <h4>
-          <span class="fa fa-clock-o me-2" />
+          <v-icon
+            icon="mdi-clock-outline"
+            class="me-2" />
           {{ $t('hunts.title') }}
         </h4>
         <v-row class="g-1 justify-start">
@@ -692,7 +719,7 @@ SPDX-License-Identifier: Apache-2.0
             <!-- search packet search jobs -->
             <div class="arkime-input-group arkime-input-group--fluid">
               <span class="arkime-input-label arkime-input-label-fw">
-                <span class="fa fa-search fa-fw" />
+                <v-icon icon="mdi-magnify" />
               </span>
               <input
                 type="text"
@@ -709,7 +736,7 @@ SPDX-License-Identifier: Apache-2.0
                 class="arkime-input-append-btn"
                 :disabled="!query.searchTerm"
                 @click="clear">
-                <span class="fa fa-close" />
+                <v-icon icon="mdi-close" />
               </v-btn>
             </div> <!-- /search packet search jobs -->
           </v-col>
@@ -732,15 +759,15 @@ SPDX-License-Identifier: Apache-2.0
                 class="cursor-pointer"
                 @click="columnClick('status')">
                 {{ $t('hunts.jobStatus') }}
-                <span
-                  v-show="query.sortField === 'status' && !query.desc"
-                  class="fa fa-sort-asc" />
-                <span
-                  v-show="query.sortField === 'status' && query.desc"
-                  class="fa fa-sort-desc" />
-                <span
-                  v-show="query.sortField !== 'status'"
-                  class="fa fa-sort" />
+                <v-icon
+                  icon="mdi-sort-ascending"
+                  v-show="query.sortField === 'status' && !query.desc" />
+                <v-icon
+                  icon="mdi-sort-descending"
+                  v-show="query.sortField === 'status' && query.desc" />
+                <v-icon
+                  icon="mdi-unfold-more-horizontal"
+                  v-show="query.sortField !== 'status'" />
               </th>
               <th>
                 {{ $t('hunts.jobMatches') }}
@@ -749,29 +776,29 @@ SPDX-License-Identifier: Apache-2.0
                 class="cursor-pointer"
                 @click="columnClick('name')">
                 {{ $t('hunts.jobName') }}
-                <span
-                  v-show="query.sortField === 'name' && !query.desc"
-                  class="fa fa-sort-asc" />
-                <span
-                  v-show="query.sortField === 'name' && query.desc"
-                  class="fa fa-sort-desc" />
-                <span
-                  v-show="query.sortField !== 'name'"
-                  class="fa fa-sort" />
+                <v-icon
+                  icon="mdi-sort-ascending"
+                  v-show="query.sortField === 'name' && !query.desc" />
+                <v-icon
+                  icon="mdi-sort-descending"
+                  v-show="query.sortField === 'name' && query.desc" />
+                <v-icon
+                  icon="mdi-unfold-more-horizontal"
+                  v-show="query.sortField !== 'name'" />
               </th>
               <th
                 class="cursor-pointer no-wrap"
                 @click="columnClick('userId')">
                 {{ $t('hunts.jobUser') }}
-                <span
-                  v-show="query.sortField === 'userId' && !query.desc"
-                  class="fa fa-sort-asc" />
-                <span
-                  v-show="query.sortField === 'userId' && query.desc"
-                  class="fa fa-sort-desc" />
-                <span
-                  v-show="query.sortField !== 'userId'"
-                  class="fa fa-sort" />
+                <v-icon
+                  icon="mdi-sort-ascending"
+                  v-show="query.sortField === 'userId' && !query.desc" />
+                <v-icon
+                  icon="mdi-sort-descending"
+                  v-show="query.sortField === 'userId' && query.desc" />
+                <v-icon
+                  icon="mdi-unfold-more-horizontal"
+                  v-show="query.sortField !== 'userId'" />
               </th>
               <th>
                 {{ $t('hunts.jobSearch') }}
@@ -780,15 +807,15 @@ SPDX-License-Identifier: Apache-2.0
                 class="cursor-pointer"
                 @click="columnClick('created')">
                 {{ $t('common.created') }}
-                <span
-                  v-show="query.sortField === 'created' && !query.desc"
-                  class="fa fa-sort-asc" />
-                <span
-                  v-show="query.sortField === 'created' && query.desc"
-                  class="fa fa-sort-desc" />
-                <span
-                  v-show="query.sortField !== 'created'"
-                  class="fa fa-sort" />
+                <v-icon
+                  icon="mdi-sort-ascending"
+                  v-show="query.sortField === 'created' && !query.desc" />
+                <v-icon
+                  icon="mdi-sort-descending"
+                  v-show="query.sortField === 'created' && query.desc" />
+                <v-icon
+                  icon="mdi-unfold-more-horizontal"
+                  v-show="query.sortField !== 'created'" />
               </th>
               <th>
                 ID
@@ -843,7 +870,10 @@ SPDX-License-Identifier: Apache-2.0
           class="ms-1 me-1">
           <div class="mb-5 info-area horizontal-center">
             <div>
-              <span class="fa fa-3x text-muted-more fa-folder-open" />&nbsp;
+              <v-icon
+                icon="mdi-folder-open"
+                size="x-large"
+                class="text-muted-more" />&nbsp;
               <span v-if="!query.searchTerm">
                 {{ $t('hunts.emptyHistory') }}
                 <span v-if="!results.length">
@@ -871,16 +901,18 @@ SPDX-License-Identifier: Apache-2.0
             @click="floatingError = false; floatingSuccess = false"
             id="dismissError"
             class="no-decoration cursor-pointer float-right">
-            <span class="fa fa-close" />
+            <v-icon icon="mdi-close" />
             <v-tooltip activator="#dismissError">{{ $t('common.dismiss') }}</v-tooltip>
           </a>
           <span :class="floatingError ? 'text-danger' : 'text-success'">
-            <span
-              v-if="floatingError"
-              class="fa fa-exclamation-triangle me-2" />
-            <span
-              v-else
-              class="fa fa-check me-2" />
+            <v-icon
+              icon="mdi-alert"
+              class="me-2"
+              v-if="floatingError" />
+            <v-icon
+              icon="mdi-check"
+              class="me-2"
+              v-else />
             {{ floatingError || floatingSuccess }}
           </span>
         </div>

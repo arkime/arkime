@@ -21,7 +21,10 @@ SPDX-License-Identifier: Apache-2.0
         v-if="stats.indices && !stats.indices.length"
         class="text-center">
         <h3>
-          <span class="fa fa-folder-open fa-2x text-medium-emphasis" />
+          <v-icon
+            icon="mdi-folder-open"
+            size="large"
+            class="text-medium-emphasis" />
         </h3>
         <h5 class="lead">
           {{ $t( cluster ? 'stats.esShards.noResultsCluster' : 'stats.esShards.noResults' ) }}
@@ -53,7 +56,7 @@ SPDX-License-Identifier: Apache-2.0
                       density="comfortable"
                       icon
                       class="column-actions-btn float-right mb-1">
-                      <span class="fa fa-caret-down" />
+                      <v-icon icon="mdi-menu-down" />
                     </v-btn>
                   </template>
                   <v-list density="compact">
@@ -85,15 +88,15 @@ SPDX-License-Identifier: Apache-2.0
                   @click="columnClick(column.sort)">
                   {{ column.name }}
                   <span v-if="column.sort !== undefined">
-                    <span
-                      v-show="query.sortField === column.sort && !query.desc"
-                      class="fa fa-sort-asc" />
-                    <span
-                      v-show="query.sortField === column.sort && query.desc"
-                      class="fa fa-sort-desc" />
-                    <span
-                      v-show="query.sortField !== column.sort"
-                      class="fa fa-sort" />
+                    <v-icon
+                      icon="mdi-sort-ascending"
+                      v-show="query.sortField === column.sort && !query.desc" />
+                    <v-icon
+                      icon="mdi-sort-descending"
+                      v-show="query.sortField === column.sort && query.desc" />
+                    <v-icon
+                      icon="mdi-unfold-more-horizontal"
+                      v-show="query.sortField !== column.sort" />
                   </span>
                 </div>
               </div>
@@ -118,7 +121,7 @@ SPDX-License-Identifier: Apache-2.0
                     icon
                     :id="`deleteUnassignedShards${index}`"
                     @click="deleteUnassignedShards(stat, index)">
-                    <span class="fa fa-trash fa-fw" />
+                    <v-icon icon="mdi-delete" />
                     <v-tooltip
                       :activator="`[id='deleteUnassignedShards${index}']`"
                       location="right">
@@ -134,7 +137,7 @@ SPDX-License-Identifier: Apache-2.0
                     icon
                     :id="`confirmDeleteUnassignedShards${index}`"
                     @click="confirmDeleteUnassignedShards(stat, index)">
-                    <span class="fa fa-check fa-fw" />
+                    <v-icon icon="mdi-check" />
                     <v-tooltip
                       :activator="`[id='confirmDeleteUnassignedShards${index}']`"
                       location="right">
@@ -254,7 +257,10 @@ SPDX-License-Identifier: Apache-2.0
           <div
             v-if="loadingAllocationExplain"
             class="text-center p-4">
-            <span class="fa fa-spinner fa-spin fa-2x" />
+            <v-icon
+              icon="mdi-loading"
+              size="large"
+              class="fa-spin" />
             <p class="mt-2">
               {{ $t('common.loading') }}
             </p>

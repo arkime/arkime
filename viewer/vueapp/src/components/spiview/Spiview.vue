@@ -26,7 +26,7 @@ SPDX-License-Identifier: Apache-2.0
                   size="large"
                   color="secondary"
                   class="field-config-trigger">
-                  <span class="fa fa-columns" />
+                  <v-icon icon="mdi-view-column" />
                   <v-tooltip
                     activator="parent"
                     location="right">
@@ -59,7 +59,7 @@ SPDX-License-Identifier: Apache-2.0
                       :style="secondaryBtnStyle"
                       :disabled="!newFieldConfigName"
                       @click.stop.prevent="saveFieldConfiguration">
-                      <span class="fa fa-save" />
+                      <v-icon icon="mdi-content-save" />
                       <v-tooltip
                         activator="parent"
                         location="right">
@@ -101,7 +101,7 @@ SPDX-License-Identifier: Apache-2.0
                       class="ms-1"
                       :aria-label="$t('common.save')"
                       @click.stop.prevent="updateFieldConfiguration(config.name, key)">
-                      <span class="fa fa-save" />
+                      <v-icon icon="mdi-content-save" />
                       <v-tooltip
                         :activator="`[id='updateFieldConfig${key}']`"
                         location="end">
@@ -117,7 +117,7 @@ SPDX-License-Identifier: Apache-2.0
                       class="ms-1"
                       :aria-label="$t('common.delete')"
                       @click.stop.prevent="deleteFieldConfiguration(config.name, key)">
-                      <span class="fa fa-trash-o" />
+                      <v-icon icon="mdi-trash-can-outline" />
                     </v-btn>
                   </div>
                 </v-list-item>
@@ -150,7 +150,10 @@ SPDX-License-Identifier: Apache-2.0
           <div
             v-if="dataLoading"
             class="info-nav-loading">
-            <span class="fa fa-spinner fa-lg fa-spin" />&nbsp;
+            <v-icon
+              icon="mdi-loading"
+              size="small"
+              class="fa-spin" />&nbsp;
             <em>
               {{ $t('common.loading') }}
             </em>
@@ -161,7 +164,9 @@ SPDX-License-Identifier: Apache-2.0
               size="large"
               class="ms-2"
               @click="cancelLoading">
-              <span class="fa fa-ban me-1" />
+              <v-icon
+                icon="mdi-cancel"
+                class="me-1" />
               {{ $t('common.cancel') }}
             </v-btn>
           </div>
@@ -172,9 +177,10 @@ SPDX-License-Identifier: Apache-2.0
       <div
         class="text-theme-accent"
         v-if="staleData && !dataLoading">
-        <span class="fa fa-exclamation-triangle" />&nbsp;<span v-html="$t('spiview.cancelWarningHtml')" />
-        <span
-          class="fa fa-close cursor-pointer"
+        <v-icon icon="mdi-alert" />&nbsp;<span v-html="$t('spiview.cancelWarningHtml')" />
+        <v-icon
+          icon="mdi-close"
+          class="cursor-pointer"
           @click="staleData = false" />
       </div> <!-- /warning navbar -->
     </ArkimeCollapsible>
@@ -209,11 +215,17 @@ SPDX-License-Identifier: Apache-2.0
             <strong class="category-title">
               {{ category }}
             </strong>
-            <span class="when-opened mt-2 fa fa-minus" />
-            <span class="when-closed mt-2 fa fa-plus" />
-            <span
-              v-if="categoryObjects[category].loading"
-              class="fa fa-spin fa-spinner fa-lg mt-1 me-1" />
+            <v-icon
+              icon="mdi-minus"
+              class="when-opened mt-2" />
+            <v-icon
+              icon="mdi-plus"
+              class="when-closed mt-2" />
+            <v-icon
+              icon="mdi-loading"
+              size="small"
+              class="fa-spinner mt-1 me-1"
+              v-if="categoryObjects[category].loading" />
             <span v-if="!categoryObjects[category].loading">
               <v-btn
                 variant="flat"
@@ -279,7 +291,7 @@ SPDX-License-Identifier: Apache-2.0
                     class="small"
                     key="no-results"
                     v-if="!categoryObjects[category].fields.length">
-                    <span class="fa fa-fw fa-exclamation-circle" />&nbsp;
+                    <v-icon icon="mdi-alert-circle" />&nbsp;
                     {{ $t('spiview.noResults') }}
                   </span>
                   <template v-if="categoryObjects[category].spi">
@@ -287,7 +299,7 @@ SPDX-License-Identifier: Apache-2.0
                       class="small"
                       key="no-fields"
                       v-if="categoryObjects[category].filteredFields && !categoryObjects[category].filteredFields.length">
-                      <span class="fa fa-fw fa-exclamation-circle" />&nbsp;
+                      <v-icon icon="mdi-alert-circle" />&nbsp;
                       {{ $t('spiview.noResults') }}
                     </span>
                     <span
@@ -308,7 +320,7 @@ SPDX-License-Identifier: Apache-2.0
                             v-bind="activatorProps"
                             type="button"
                             class="field-dropdown-caret">
-                            <span class="fa fa-caret-down" />
+                            <v-icon icon="mdi-menu-down" />
                           </button>
                         </template>
                         <v-list density="compact">
@@ -334,8 +346,12 @@ SPDX-License-Identifier: Apache-2.0
               <div
                 class="text-center btn-drawer-toggle cursor-pointer"
                 @click="toggleBtnDrawer(category + '-btn-drawer')">
-                <span class="when-opened mt-2 fa fa-angle-double-up" />
-                <span class="when-closed mt-2 fa fa-angle-double-down" />
+                <v-icon
+                  icon="mdi-chevron-double-up"
+                  class="when-opened mt-2" />
+                <v-icon
+                  icon="mdi-chevron-double-down"
+                  class="when-closed mt-2" />
               </div>
             </div> <!-- toggle buttons -->
             <div
@@ -359,7 +375,9 @@ SPDX-License-Identifier: Apache-2.0
                           type="button"
                           class="field-dropdown-label me-2">
                           {{ value.field.friendlyName }}
-                          <span class="fa fa-caret-down ms-1" />
+                          <v-icon
+                            icon="mdi-menu-down"
+                            class="ms-1" />
                         </button>
                       </template>
                       <v-list density="compact">
@@ -426,14 +444,15 @@ SPDX-License-Identifier: Apache-2.0
                       {{ $t('common.more') }}
                     </a> <!-- /spiview field more/less values -->
                     <!-- spiview field loading -->
-                    <span
-                      v-if="value.loading"
-                      class="fa fa-spinner fa-spin" /> <!-- /spiview field loading -->
+                    <v-icon
+                      icon="mdi-loading"
+                      class="fa-spin"
+                      v-if="value.loading" /> <!-- /spiview field loading -->
                     <!-- spiview field error -->
                     <span
                       v-if="value.error && !error"
                       class="text-danger ms-2">
-                      <span class="fa fa-exclamation-triangle" />&nbsp;
+                      <v-icon icon="mdi-alert" />&nbsp;
                       {{ value.error }}
                     </span> <!-- /spiview field error -->
                   </div>

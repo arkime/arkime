@@ -127,7 +127,9 @@ SPDX-License-Identifier: Apache-2.0
             variant="flat"
             size="large"
             @click="$emit('close')">
-            <span class="fa fa-times me-1" />
+            <v-icon
+              icon="mdi-close"
+              class="me-1" />
             {{ $t('common.cancel') }}
           </v-btn>
           <v-btn
@@ -136,12 +138,14 @@ SPDX-License-Identifier: Apache-2.0
             size="large"
             :disabled="saving"
             @click="saveConfig">
-            <span
-              v-if="saving"
-              class="fa fa-spinner fa-spin me-1" />
-            <span
-              v-else
-              class="fa fa-save me-1" />
+            <v-icon
+              icon="mdi-loading"
+              class="fa-spin me-1"
+              v-if="saving" />
+            <v-icon
+              icon="mdi-content-save"
+              class="me-1"
+              v-else />
             {{ $t('common.save') }}
           </v-btn>
         </div>

@@ -57,7 +57,7 @@ methods exposed on this ref, and dispatches the country-click filter.
         icon
         aria-label="Zoom in"
         @click="zoomIn">
-        <span class="fa fa-plus" />
+        <v-icon icon="mdi-plus" />
       </v-btn>
       <v-btn
         variant="outlined"
@@ -65,7 +65,7 @@ methods exposed on this ref, and dispatches the country-click filter.
         icon
         aria-label="Zoom out"
         @click="zoomOut">
-        <span class="fa fa-minus" />
+        <v-icon icon="mdi-minus" />
       </v-btn>
     </div>
   </div>

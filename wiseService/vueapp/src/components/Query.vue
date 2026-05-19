@@ -40,7 +40,7 @@ SPDX-License-Identifier: Apache-2.0
       <v-text-field
         v-model="searchTerm"
         :placeholder="$t('wise.query.searchTermPlaceholder', { type: chosenType })"
-        :prepend-inner-icon="loading ? 'fa-spinner fa-spin' : 'fa-search'"
+        :prepend-inner-icon="loading ? 'mdi-loading fa-spin' : 'mdi-magnify'"
         clearable
         density="compact"
         class="ms-3 flex-grow-1"
@@ -60,7 +60,7 @@ SPDX-License-Identifier: Apache-2.0
       <template #actions>
         <v-btn
           variant="text"
-          icon="fa-times"
+          icon="mdi-close"
           @click="alertMessage = ''" />
       </template>
     </v-snackbar>
@@ -69,7 +69,9 @@ SPDX-License-Identifier: Apache-2.0
     <div v-if="!hasMadeASearch">
       <div class="vertical-center info-area mt-5">
         <div>
-          <span class="fa fa-3x fa-search" />
+          <v-icon
+            icon="mdi-magnify"
+            size="x-large" />
           {{ $t('wise.query.noSearchTerm') }}
           <span
             v-if="!sources.length"
@@ -117,7 +119,9 @@ SPDX-License-Identifier: Apache-2.0
     <div v-else>
       <div class="vertical-center info-area mt-5">
         <div>
-          <span class="fa fa-3x fa-search-minus" />
+          <v-icon
+            icon="mdi-magnify-minus"
+            size="x-large" />
           {{ $t('wise.query.noResults') }}
           <span
             v-if="!sources.length"

@@ -75,8 +75,9 @@ SPDX-License-Identifier: Apache-2.0
                   :checked="true"
                   @click.stop="toggleNotifier(notifierId)">
                 {{ notifierId }}
-                <span
-                  class="fa fa-times-circle cursor-help ms-2"
+                <v-icon
+                  icon="mdi-close-circle"
+                  class="cursor-help ms-2"
                   :title="$t('settings.notifiers.missingNotifier')" />
               </span>
             </v-list-item>

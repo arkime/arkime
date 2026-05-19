@@ -18,7 +18,9 @@ SPDX-License-Identifier: Apache-2.0
               type="button"
               class="clickable-label me-1">
               {{ infoField.friendlyName }}
-              <span class="fa fa-caret-down ms-1" />
+              <v-icon
+                icon="mdi-menu-down"
+                class="ms-1" />
             </button>
           </template>
           <v-list density="compact">

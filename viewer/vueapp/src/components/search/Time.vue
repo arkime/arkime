@@ -13,9 +13,9 @@ SPDX-License-Identifier: Apache-2.0
         <span
           id="timeInput"
           class="arkime-input-label arkime-input-label-fw cursor-help">
-          <span
-            v-if="!shiftKeyHold"
-            class="fa fa-clock-o fa-fw" />
+          <v-icon
+            icon="mdi-clock-outline"
+            v-if="!shiftKeyHold" />
           <span
             v-else
             class="time-shortcut">
@@ -153,7 +153,7 @@ SPDX-License-Identifier: Apache-2.0
           icon
           class="arkime-input-append-btn"
           @click="prevTime('start')">
-          <span class="fa fa-step-backward" />
+          <v-icon icon="mdi-skip-previous" />
           <v-tooltip
             activator="#prevStartTime"
             location="bottom"
@@ -169,7 +169,7 @@ SPDX-License-Identifier: Apache-2.0
           icon
           class="arkime-input-append-btn"
           @click="nextTime('start')">
-          <span class="fa fa-step-forward" />
+          <v-icon icon="mdi-skip-next" />
           <v-tooltip
             activator="#nextStartTime"
             location="bottom"
@@ -224,7 +224,7 @@ SPDX-License-Identifier: Apache-2.0
           icon
           class="arkime-input-append-btn"
           @click="prevTime('stop')">
-          <span class="fa fa-step-backward" />
+          <v-icon icon="mdi-skip-previous" />
           <v-tooltip
             activator="#prevStopTime"
             location="bottom"
@@ -240,7 +240,7 @@ SPDX-License-Identifier: Apache-2.0
           icon
           class="arkime-input-append-btn"
           @click="nextTime('stop')">
-          <span class="fa fa-step-forward" />
+          <v-icon icon="mdi-skip-next" />
           <v-tooltip
             activator="#nextStopTime"
             location="bottom"
@@ -356,7 +356,9 @@ SPDX-License-Identifier: Apache-2.0
           </span>
         </template>
         <template v-if="timeError">
-          <span class="fa fa-exclamation-triangle me-1" />
+          <v-icon
+            icon="mdi-alert"
+            class="me-1" />
           {{ timeError }}
         </template>
       </span>

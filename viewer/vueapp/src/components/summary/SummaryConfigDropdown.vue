@@ -8,7 +8,7 @@ SPDX-License-Identifier: Apache-2.0
       <v-btn
         v-bind="activatorProps"
         id="summary-config-dropdown-btn">
-        <span class="fa fa-save" />
+        <v-icon icon="mdi-content-save" />
       </v-btn>
       <v-tooltip
         activator="#summary-config-dropdown-btn"
@@ -24,7 +24,9 @@ SPDX-License-Identifier: Apache-2.0
       <v-list-item
         v-if="loading"
         disabled>
-        <span class="fa fa-spinner fa-spin me-1" />
+        <v-icon
+          icon="mdi-loading"
+          class="fa-spin me-1" />
         {{ $t('common.loading') }}
       </v-list-item>
 
@@ -33,19 +35,25 @@ SPDX-License-Identifier: Apache-2.0
         v-if="error && !loading"
         disabled
         class="text-danger">
-        <span class="fa fa-exclamation-triangle me-1" />
+        <v-icon
+          icon="mdi-alert"
+          class="me-1" />
         {{ error }}
       </v-list-item>
 
       <!-- Save current config -->
       <v-list-item @click="openSaveModal">
-        <span class="fa fa-save me-1" />
+        <v-icon
+          icon="mdi-content-save"
+          class="me-1" />
         {{ $t('sessions.summary.config.saveCurrent') }}
       </v-list-item>
 
       <!-- Reset to defaults -->
       <v-list-item @click="resetToDefaults">
-        <span class="fa fa-refresh me-1" />
+        <v-icon
+          icon="mdi-refresh"
+          class="me-1" />
         {{ $t('sessions.summary.config.resetToDefault') }}
       </v-list-item>
 
@@ -58,9 +66,10 @@ SPDX-License-Identifier: Apache-2.0
         @click="loadConfig(config)">
         <div class="d-flex justify-space-between align-center w-100">
           <span class="config-name">
-            <span
-              v-if="config.shared"
-              class="fa fa-share-square me-1" />
+            <v-icon
+              icon="mdi-share-all"
+              class="me-1"
+              v-if="config.shared" />
             {{ config.name }}
             <small
               v-if="config.creator && config.creator !== user.userId"
@@ -82,7 +91,7 @@ SPDX-License-Identifier: Apache-2.0
               :title="$t('sessions.summary.config.edit')"
               :aria-label="$t('sessions.summary.config.edit')"
               @click.stop="openEditModal(config)">
-              <span class="fa fa-pencil" />
+              <v-icon icon="mdi-pencil" />
             </v-btn>
             <v-btn
               v-if="config.canDelete"
@@ -95,7 +104,7 @@ SPDX-License-Identifier: Apache-2.0
               :title="$t('sessions.summary.config.delete')"
               :aria-label="$t('sessions.summary.config.delete')"
               @click.stop="deleteConfig(config)">
-              <span class="fa fa-trash-o" />
+              <v-icon icon="mdi-trash-can-outline" />
             </v-btn>
           </span>
         </div>

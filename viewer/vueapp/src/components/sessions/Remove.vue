@@ -38,7 +38,7 @@ SPDX-License-Identifier: Apache-2.0
       <p
         v-if="error"
         class="small text-danger mb-0">
-        <span class="fa fa-exclamation-triangle" />&nbsp;
+        <v-icon icon="mdi-alert" />&nbsp;
         {{ error }}
       </p>
     </div>
@@ -51,11 +51,15 @@ SPDX-License-Identifier: Apache-2.0
         :disabled="loading"
         @click="deleteSessionsAction">
         <span v-if="!loading">
-          <span class="fa fa-trash-o me-1" />
+          <v-icon
+            icon="mdi-trash-can-outline"
+            class="me-1" />
           {{ $t('common.remove') }}
         </span>
         <span v-else>
-          <span class="fa fa-spinner fa-spin me-1" />
+          <v-icon
+            icon="mdi-loading"
+            class="fa-spin me-1" />
           {{ $t('common.removing') }}
         </span>
       </v-btn>
@@ -66,7 +70,7 @@ SPDX-License-Identifier: Apache-2.0
         variant="flat"
         :aria-label="$t('common.cancel')"
         @click="emit('done', null, false, false)">
-        <span class="fa fa-ban" />
+        <v-icon icon="mdi-cancel" />
         <v-tooltip activator="parent">
           {{ $t('common.cancel') }}
         </v-tooltip>

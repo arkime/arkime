@@ -15,12 +15,13 @@ SPDX-License-Identifier: Apache-2.0
             v-if="tabIndex !== 7">
             <div class="arkime-input-group arkime-input-group--fluid">
               <span class="arkime-input-label arkime-input-label-fw">
-                <span
-                  v-if="loadingData"
-                  class="fa fa-spinner fa-spin text-theme-accent" />
-                <span
-                  v-else-if="!shiftKeyHold"
-                  class="fa fa-search fa-fw" />
+                <v-icon
+                  icon="mdi-loading"
+                  class="fa-spin text-theme-accent"
+                  v-if="loadingData" />
+                <v-icon
+                  icon="mdi-magnify"
+                  v-else-if="!shiftKeyHold" />
                 <span
                   v-else-if="shiftKeyHold"
                   class="query-shortcut">
@@ -44,7 +45,7 @@ SPDX-License-Identifier: Apache-2.0
                 icon
                 :disabled="!searchTerm"
                 @click="clear">
-                <span class="fa fa-close" />
+                <v-icon icon="mdi-close" />
               </v-btn>
             </div>
           </v-col>
@@ -333,7 +334,9 @@ SPDX-License-Identifier: Apache-2.0
               <span
                 v-else
                 class="enter-icon">
-                <span class="fa fa-long-arrow-left fa-lg" />
+                <v-icon
+                  icon="mdi-arrow-left"
+                  size="small" />
                 <div class="enter-arm" />
               </span>
             </v-btn>
@@ -350,7 +353,9 @@ SPDX-License-Identifier: Apache-2.0
                 density="comfortable"
                 class="ms-2"
                 @click="confirmed">
-                <span class="fa fa-check me-1" />
+                <v-icon
+                  icon="mdi-check"
+                  class="me-1" />
                 {{ confirmMessage }}
               </v-btn>
             </transition> <!-- /confirm button -->
@@ -365,7 +370,9 @@ SPDX-License-Identifier: Apache-2.0
                 density="comfortable"
                 class="ms-2"
                 @click="cancelConfirm">
-                <span class="fa fa-ban me-1" />
+                <v-icon
+                  icon="mdi-cancel"
+                  class="me-1" />
                 {{ $t('common.cancel') }}
               </v-btn>
             </transition> <!-- /cancel confirm button -->
@@ -436,7 +443,7 @@ SPDX-License-Identifier: Apache-2.0
               class="float-right ms-2"
               :aria-label="$t('common.apply')"
               @click="executeShrink(shrinkIndex)">
-              <span class="fa fa-check" />
+              <v-icon icon="mdi-check" />
             </v-btn> <!-- /ok button -->
             <!-- cancel button -->
             <v-btn
@@ -448,7 +455,7 @@ SPDX-License-Identifier: Apache-2.0
               class="float-right ms-2"
               :aria-label="$t('common.cancel')"
               @click="cancelShrink">
-              <span class="fa fa-ban" />
+              <v-icon icon="mdi-cancel" />
             </v-btn> <!-- /cancel button -->
           </div>
           <span

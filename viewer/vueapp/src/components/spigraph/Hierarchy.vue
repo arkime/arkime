@@ -87,7 +87,7 @@ SPDX-License-Identifier: Apache-2.0
                     v-if="index === fieldList.length - 1 && hiddenColumns"
                     class="float-right cursor-pointer ms-2"
                     @click="showHiddenColumns">
-                    <span class="fa fa-plus-square" />
+                    <v-icon icon="mdi-plus-box" />
                     <v-tooltip activator="parent">{{ $t('spigraph.showHiddenColumnsTip') }}</v-tooltip>
                   </a>
                 </span>
@@ -102,15 +102,18 @@ SPDX-License-Identifier: Apache-2.0
                 class="cursor-pointer"
                 @click="columnClick(index, 'name')">
                 {{ $t('spigraph.tableValue') }}
-                <span
-                  v-show="tableSortField === index && tableSortType === 'name' && !tableDesc"
-                  class="fa fa-sort-asc ms-2" />
-                <span
-                  v-show="tableSortField === index && tableSortType === 'name' && tableDesc"
-                  class="fa fa-sort-desc ms-2" />
-                <span
-                  v-show="tableSortField !== index || tableSortType !== 'name'"
-                  class="fa fa-sort ms-2" />
+                <v-icon
+                  icon="mdi-sort-ascending"
+                  class="ms-2"
+                  v-show="tableSortField === index && tableSortType === 'name' && !tableDesc" />
+                <v-icon
+                  icon="mdi-sort-descending"
+                  class="ms-2"
+                  v-show="tableSortField === index && tableSortType === 'name' && tableDesc" />
+                <v-icon
+                  icon="mdi-unfold-more-horizontal"
+                  class="ms-2"
+                  v-show="tableSortField !== index || tableSortType !== 'name'" />
               </th>
               <th
                 class="cursor-pointer"
@@ -118,20 +121,23 @@ SPDX-License-Identifier: Apache-2.0
                 @click="columnClick(index, 'size')"
                 v-if="item && !item.hide">
                 {{ $t('spigraph.tableCount') }}
-                <span
-                  v-show="tableSortField === index && tableSortType === 'size' && !tableDesc"
-                  class="fa fa-sort-asc ms-2" />
-                <span
-                  v-show="tableSortField === index && tableSortType === 'size' && tableDesc"
-                  class="fa fa-sort-desc ms-2" />
-                <span
-                  v-show="tableSortField !== index || tableSortType !== 'size'"
-                  class="fa fa-sort ms-2" />
+                <v-icon
+                  icon="mdi-sort-ascending"
+                  class="ms-2"
+                  v-show="tableSortField === index && tableSortType === 'size' && !tableDesc" />
+                <v-icon
+                  icon="mdi-sort-descending"
+                  class="ms-2"
+                  v-show="tableSortField === index && tableSortType === 'size' && tableDesc" />
+                <v-icon
+                  icon="mdi-unfold-more-horizontal"
+                  class="ms-2"
+                  v-show="tableSortField !== index || tableSortType !== 'size'" />
                 <a
                   @click="hideColumn(item)"
                   class="float-right ms-2"
                   v-if="index !== fieldList.length - 1">
-                  <span class="fa fa-minus-square" />
+                  <v-icon icon="mdi-minus-box" />
                   <v-tooltip activator="parent">{{ $t('spigraph.hideColumnTip') }}</v-tooltip>
                 </a>
               </th>

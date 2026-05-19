@@ -17,7 +17,7 @@ SPDX-License-Identifier: Apache-2.0
           variant="flat"
           size="small"
           @click="overrideDisabledAggregations(1)">
-          <span class="fa fa-gear fa-fw" />
+          <v-icon icon="mdi-cog" />
           <span
             v-if="!hideViz && disabledAggregations"
             class="ms-1">
@@ -31,7 +31,7 @@ SPDX-License-Identifier: Apache-2.0
               color="primary"
               variant="flat"
               size="small">
-              <span class="fa fa-caret-down" />
+              <v-icon icon="mdi-menu-down" />
             </v-btn>
           </template>
           <v-list density="compact">
@@ -119,7 +119,9 @@ SPDX-License-Identifier: Apache-2.0
           <span
             v-else
             class="enter-icon">
-            <span class="fa fa-long-arrow-left fa-lg" />
+            <v-icon
+              icon="mdi-arrow-left"
+              size="small" />
             <div class="enter-arm" />
           </span>
         </v-btn> <!-- /search button -->
@@ -139,7 +141,9 @@ SPDX-License-Identifier: Apache-2.0
               :style="secondaryBtnStyle">
               <template v-if="view && views && getView(view)">
                 <span id="viewMenuDropdown">
-                  <span class="fa fa-eye me-1" />
+                  <v-icon
+                    icon="mdi-eye"
+                    class="me-1" />
                   <span v-if="view">{{ getView(view).name || view }}</span>
                   <span class="sr-only">{{ $t('common.views') }}</span>
                 </span>
@@ -148,7 +152,7 @@ SPDX-License-Identifier: Apache-2.0
                 </v-tooltip>
               </template>
               <template v-else>
-                <span class="fa fa-eye" />
+                <v-icon icon="mdi-eye" />
                 <span class="sr-only">{{ $t('common.views') }}</span>
               </template>
             </v-btn>
@@ -156,7 +160,7 @@ SPDX-License-Identifier: Apache-2.0
           <v-list density="compact">
             <v-list-item
               @click="modView()">
-              <span class="fa fa-plus-circle" />&nbsp;
+              <v-icon icon="mdi-plus-circle" />&nbsp;
               {{ $t('search.newView') }}
               <v-tooltip
                 activator="parent"
@@ -179,9 +183,10 @@ SPDX-License-Identifier: Apache-2.0
               <div
                 class="d-flex align-center w-100"
                 @click.self="setView(value.id)">
-                <span
-                  v-if="value.shared"
-                  class="fa fa-share-square me-1" />
+                <v-icon
+                  icon="mdi-share-all"
+                  class="me-1"
+                  v-if="value.shared" />
                 <span
                   class="flex-grow-1"
                   @click="setView(value.id)">
@@ -199,7 +204,7 @@ SPDX-License-Identifier: Apache-2.0
                   class="ms-1"
                   :style="tertiaryBtnStyle"
                   @click.stop.prevent="applyColumns(value)">
-                  <span class="fa fa-columns" />
+                  <v-icon icon="mdi-view-column" />
                   <v-tooltip :activator="`[id='applyColumns${value.id}']`">
                     {{ $t('search.applyColumns') }}
                   </v-tooltip>
@@ -214,7 +219,9 @@ SPDX-License-Identifier: Apache-2.0
                   class="ms-1"
                   :style="secondaryBtnStyle"
                   @click.stop.prevent="applyView(value)">
-                  <span class="fa fa-share fa-flip-horizontal" />
+                  <v-icon
+                    icon="mdi-share"
+                    class="fa-flip-horizontal" />
                   <v-tooltip :activator="`[id='applyView${value.id}']`">
                     {{ $t('search.applyView') }}
                   </v-tooltip>
@@ -230,7 +237,7 @@ SPDX-License-Identifier: Apache-2.0
                     icon
                     class="ms-1"
                     @click.stop.prevent="modView(views[index])">
-                    <span class="fa fa-edit" />
+                    <v-icon icon="mdi-pencil-box" />
                     <v-tooltip :activator="`[id='editView${value.id}']`">
                       {{ $t('search.editView') }}
                     </v-tooltip>
@@ -245,7 +252,7 @@ SPDX-License-Identifier: Apache-2.0
                     icon
                     class="ms-1"
                     @click.stop.prevent="deleteView(value.id, index)">
-                    <span class="fa fa-trash-o" />
+                    <v-icon icon="mdi-trash-can-outline" />
                     <v-tooltip :activator="`[id='deleteView${value.id}']`">
                       {{ $t('search.deleteView') }}
                     </v-tooltip>
@@ -275,14 +282,14 @@ SPDX-License-Identifier: Apache-2.0
               class="action-menu-dropdown"
               :style="primaryBtnStyle"
               title="Actions menu">
-              <span class="fa fa-caret-down" />
+              <v-icon icon="mdi-menu-down" />
             </v-btn>
           </template>
           <v-list density="compact">
             <v-list-item
               @click="exportPCAP"
               v-has-permission="'!disablePcapDownload'">
-              <span class="fa fa-fw fa-file-o" />&nbsp;
+              <v-icon icon="mdi-file-outline" />&nbsp;
               {{ $t('sessions.exports.exportPCAP') }}
               <v-tooltip
                 activator="parent"
@@ -292,7 +299,7 @@ SPDX-License-Identifier: Apache-2.0
             </v-list-item>
             <v-list-item
               @click="exportCSV">
-              <span class="fa fa-fw fa-file-excel-o" />&nbsp;
+              <v-icon icon="mdi-file-excel-outline" />&nbsp;
               {{ $t('sessions.exports.exportCSV') }}
               <v-tooltip
                 activator="parent"
@@ -302,7 +309,7 @@ SPDX-License-Identifier: Apache-2.0
             </v-list-item>
             <v-list-item
               @click="addTags">
-              <span class="fa fa-fw fa-tags" />&nbsp;
+              <v-icon icon="mdi-tag-multiple" />&nbsp;
               {{ $t('sessions.tag.addTags') }}
               <v-tooltip
                 activator="parent"
@@ -313,7 +320,7 @@ SPDX-License-Identifier: Apache-2.0
             <v-list-item
               @click="removeTags"
               v-has-permission="'removeEnabled'">
-              <span class="fa fa-fw fa-eraser" />&nbsp;
+              <v-icon icon="mdi-eraser" />&nbsp;
               {{ $t('sessions.tag.removeTags') }}
               <v-tooltip
                 activator="parent"
@@ -324,7 +331,7 @@ SPDX-License-Identifier: Apache-2.0
             <v-list-item
               @click="removeData"
               v-has-permission="'removeEnabled'">
-              <span class="fa fa-fw fa-trash-o" />&nbsp;
+              <v-icon icon="mdi-trash-can-outline" />&nbsp;
               {{ $t('search.removeData') }}
               <v-tooltip
                 activator="parent"
@@ -336,7 +343,7 @@ SPDX-License-Identifier: Apache-2.0
               v-for="(clusterInfo, key) in arkimeClusters"
               :key="key"
               @click="sendSession(key)">
-              <span class="fa fa-fw fa-paper-plane-o" />&nbsp;
+              <v-icon icon="mdi-send-outline" />&nbsp;
               {{ $t('search.sendSession', { name: clusterInfo.name }) }}
               <v-tooltip
                 activator="parent"
@@ -347,8 +354,8 @@ SPDX-License-Identifier: Apache-2.0
             <v-list-item
               @click="viewIntersection">
               <span class="fa fa-fw fa-venn">
-                <span class="fa fa-circle-o" />
-                <span class="fa fa-circle-o" />
+                <v-icon icon="mdi-circle-outline" />
+                <v-icon icon="mdi-circle-outline" />
               </span>&nbsp;
               {{ $t('sessions.intersection.title') }}
               <v-tooltip
@@ -360,7 +367,7 @@ SPDX-License-Identifier: Apache-2.0
             <v-list-item
               v-if="!multiviewer"
               @click="periodicQuery">
-              <span class="fa fa-fw fa-search" />&nbsp;
+              <v-icon icon="mdi-magnify" />&nbsp;
               {{ $t('search.createPeriodicQuery') }}
               <v-tooltip
                 activator="parent"

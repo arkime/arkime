@@ -21,9 +21,9 @@ SPDX-License-Identifier: Apache-2.0
             <v-col>
               <div class="arkime-input-group arkime-input-group--fluid">
                 <span class="arkime-input-label arkime-input-label-fw">
-                  <span
-                    v-if="!shiftKeyHold"
-                    class="fa fa-search fa-fw" />
+                  <v-icon
+                    icon="mdi-magnify"
+                    v-if="!shiftKeyHold" />
                   <span
                     v-else
                     class="query-shortcut">
@@ -48,7 +48,7 @@ SPDX-License-Identifier: Apache-2.0
                   :disabled="!query.filter"
                   :aria-label="$t('common.clear')"
                   @click="clear">
-                  <span class="fa fa-close" />
+                  <v-icon icon="mdi-close" />
                 </v-btn>
               </div>
             </v-col>

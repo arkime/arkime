@@ -11,9 +11,9 @@ SPDX-License-Identifier: Apache-2.0
       <span
         id="searchExpressionTooltip"
         class="arkime-input-label arkime-input-label-fw cursor-help">
-        <span
-          v-if="!shiftKeyHold"
-          class="fa fa-search fa-fw" />
+        <v-icon
+          icon="mdi-magnify"
+          v-if="!shiftKeyHold" />
         <span
           v-else
           class="query-shortcut">
@@ -48,7 +48,7 @@ SPDX-License-Identifier: Apache-2.0
         @click="bigTypeahead = !bigTypeahead">
         <span
           class="fa"
-          :class="bigTypeahead ? 'fa-compress' : 'fa-expand'" />
+          :class="bigTypeahead ? 'mdi-arrow-collapse' : 'mdi-arrow-expand'" />
         <v-tooltip activator="#bigTypeaheadBtn">
           {{ $t('search.bigTypeaheadBtnTip') }}
         </v-tooltip>
@@ -62,7 +62,7 @@ SPDX-License-Identifier: Apache-2.0
           density="comfortable"
           icon
           class="arkime-input-append-btn">
-          <span class="fa fa-question-circle" />
+          <v-icon icon="mdi-help-circle" />
           <v-tooltip activator="#longExpression">
             {{ $t('search.longExpressionTip') }}
           </v-tooltip>
@@ -77,7 +77,7 @@ SPDX-License-Identifier: Apache-2.0
         class="arkime-input-append-btn"
         :disabled="!expression"
         @click="saveExpression">
-        <span class="fa fa-save" />
+        <v-icon icon="mdi-content-save" />
         <v-tooltip activator="#saveExpression">
           {{ $t('search.saveExpressionTip') }}
         </v-tooltip>
@@ -91,7 +91,7 @@ SPDX-License-Identifier: Apache-2.0
         :disabled="!expression"
         :title="$t('search.clearSearchTip')"
         @click="clear">
-        <span class="fa fa-close" />
+        <v-icon icon="mdi-close" />
       </v-btn>
     </div> <!-- /typeahead input -->
 
@@ -114,7 +114,7 @@ SPDX-License-Identifier: Apache-2.0
       class="arkime-typeahead-results"
       v-show="expression && loadingError">
       <a class="arkime-typeahead-item text-danger">
-        <span class="fa fa-warning" />&nbsp;
+        <v-icon icon="mdi-alert" />&nbsp;
         Error: {{ loadingError }}
       </a>
     </div> <!-- /error -->
@@ -124,7 +124,9 @@ SPDX-License-Identifier: Apache-2.0
       class="arkime-typeahead-results"
       v-show="expression && loadingValues">
       <a class="arkime-typeahead-item">
-        <span class="fa fa-spinner fa-spin" />&nbsp;
+        <v-icon
+          icon="mdi-loading"
+          class="fa-spin" />&nbsp;
         {{ $t('common.loading') }}
       </a>
     </div> <!-- /loading -->

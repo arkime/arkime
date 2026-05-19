@@ -9,7 +9,9 @@ SPDX-License-Identifier: Apache-2.0
       variant="outlined"
       class="welcome-msg">
       <div class="pa-3 text-center">
-        <span class="fa fa-heart text-theme-accent me-1" />
+        <v-icon
+          icon="mdi-heart"
+          class="text-theme-accent me-1" />
         <strong class="text-theme-accent">
           {{ $t('welcome.greeting', { userName: user.userName }) }}
         </strong>
@@ -28,7 +30,7 @@ SPDX-License-Identifier: Apache-2.0
             role="button"
             @click="dismissMsg"
             class="no-decoration ms-1">
-            <span class="fa fa-close" />
+            <v-icon icon="mdi-close" />
             {{ $t('common.dismiss') }}
             <v-tooltip activator="parent">{{ $t('welcome.dismissTip') }}</v-tooltip>
           </a>
@@ -38,7 +40,7 @@ SPDX-License-Identifier: Apache-2.0
             @click="acknowledgeMsg"
             class="no-decoration me-1">
             {{ $t('welcome.gotIt') }}
-            <span class="fa fa-thumbs-up" />
+            <v-icon icon="mdi-thumb-up" />
             <v-tooltip activator="parent">{{ $t('welcome.gotItTip') }}</v-tooltip>
           </a>
         </div>

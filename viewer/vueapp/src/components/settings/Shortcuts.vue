@@ -11,7 +11,9 @@ SPDX-License-Identifier: Apache-2.0
         variant="flat"
         size="large"
         @click="showShortcutModal = true">
-        <span class="fa fa-plus-circle me-1" />
+        <v-icon
+          icon="mdi-plus-circle"
+          class="me-1" />
         {{ $t('settings.shortcuts.newShortcut') }}
       </v-btn>
     </h3>
@@ -34,7 +36,7 @@ SPDX-License-Identifier: Apache-2.0
           variant="outlined"
           hide-details
           clearable
-          prepend-inner-icon="fa-search"
+          prepend-inner-icon="mdi-magnify"
           :model-value="shortcutsQuery.search"
           @update:model-value="updateSearch"
           placeholder="Search shortcuts" />
@@ -51,7 +53,9 @@ SPDX-License-Identifier: Apache-2.0
         <v-btn
           value="seeAll"
           id="seeAllShortcuts">
-          <span class="fa fa-user-circle me-1" />
+          <v-icon
+            icon="mdi-account-circle"
+            class="me-1" />
           {{ $t(seeAll ? 'settings.shortcuts.seeMy' : 'settings.shortcuts.seeAll') }}
           <v-tooltip
             activator="parent"
@@ -77,29 +81,29 @@ SPDX-License-Identifier: Apache-2.0
             class="cursor-pointer"
             @click.self="sortShortcuts('name')">
             {{ $t('settings.shortcuts.table-name') }}
-            <span
-              v-show="shortcutsQuery.sortField === 'name' && !shortcutsQuery.desc"
-              class="fa fa-sort-asc" />
-            <span
-              v-show="shortcutsQuery.sortField === 'name' && shortcutsQuery.desc"
-              class="fa fa-sort-desc" />
-            <span
-              v-show="shortcutsQuery.sortField !== 'name'"
-              class="fa fa-sort" />
+            <v-icon
+              icon="mdi-sort-ascending"
+              v-show="shortcutsQuery.sortField === 'name' && !shortcutsQuery.desc" />
+            <v-icon
+              icon="mdi-sort-descending"
+              v-show="shortcutsQuery.sortField === 'name' && shortcutsQuery.desc" />
+            <v-icon
+              icon="mdi-unfold-more-horizontal"
+              v-show="shortcutsQuery.sortField !== 'name'" />
           </th>
           <th
             class="cursor-pointer"
             @click.self="sortShortcuts('description')">
             {{ $t('settings.shortcuts.table-description') }}
-            <span
-              v-show="shortcutsQuery.sortField === 'description' && !shortcutsQuery.desc"
-              class="fa fa-sort-asc" />
-            <span
-              v-show="shortcutsQuery.sortField === 'description' && shortcutsQuery.desc"
-              class="fa fa-sort-desc" />
-            <span
-              v-show="shortcutsQuery.sortField !== 'description'"
-              class="fa fa-sort" />
+            <v-icon
+              icon="mdi-sort-ascending"
+              v-show="shortcutsQuery.sortField === 'description' && !shortcutsQuery.desc" />
+            <v-icon
+              icon="mdi-sort-descending"
+              v-show="shortcutsQuery.sortField === 'description' && shortcutsQuery.desc" />
+            <v-icon
+              icon="mdi-unfold-more-horizontal"
+              v-show="shortcutsQuery.sortField !== 'description'" />
           </th>
           <th>{{ $t('settings.shortcuts.table-values') }}</th>
           <th>{{ $t('settings.shortcuts.table-type') }}</th>
@@ -112,7 +116,9 @@ SPDX-License-Identifier: Apache-2.0
         <tr v-if="loading">
           <td colspan="9">
             <p class="text-center mb-0">
-              <span class="fa fa-spinner fa-spin" />
+              <v-icon
+                icon="mdi-loading"
+                class="fa-spin" />
               {{ $t('common.loading') }}
             </p>
           </td>
@@ -144,7 +150,7 @@ SPDX-License-Identifier: Apache-2.0
                 v-if="item.value.length > 50"
                 @click="toggleDisplayAllShortcut(item)"
                 class="fa float-right cursor-pointer mt-1"
-                :class="{'fa-chevron-down':!item.showAll,'fa-chevron-up':item.showAll}" />
+                :class="{'mdi-chevron-down':!item.showAll,'mdi-chevron-up':item.showAll}" />
               <span v-if="!item.showAll">
                 {{ item.value.substring(0, 50) }}
                 <span v-if="item.value.length > 50">...</span>
@@ -167,7 +173,7 @@ SPDX-License-Identifier: Apache-2.0
                 class="ms-1"
                 :id="`copy-${item.id}`"
                 @click="$emit('copy-value', item.value)">
-                <span class="fa fa-clipboard fa-fw" />
+                <v-icon icon="mdi-clipboard" />
                 <v-tooltip :activator="`#copy-${item.id}`">
                   {{ $t('settings.shortcuts.copyTip') }}
                 </v-tooltip>
@@ -183,7 +189,7 @@ SPDX-License-Identifier: Apache-2.0
                   class="ms-1"
                   :id="`transfer-${item.id}`"
                   @click="openTransferShortcut(item)">
-                  <span class="fa fa-share fa-fw" />
+                  <v-icon icon="mdi-share" />
                   <v-tooltip :activator="`#transfer-${item.id}`">
                     {{ $t('settings.shortcuts.transferTip') }}
                   </v-tooltip>
@@ -197,11 +203,12 @@ SPDX-License-Identifier: Apache-2.0
                   class="ms-1"
                   :id="`delete-${item.id}`"
                   @click="deleteShortcut(item, index)">
-                  <span
-                    class="fa fa-trash-o fa-fw"
+                  <v-icon
+                    icon="mdi-trash-can-outline"
                     v-if="!item.loading" />
-                  <span
-                    class="fa fa-spinner fa-spin fa-fw"
+                  <v-icon
+                    icon="mdi-loading"
+                    class="fa-spin"
                     v-else />
                   <v-tooltip :activator="`#delete-${item.id}`">
                     {{ $t('settings.shortcuts.deleteTip') }}
@@ -217,7 +224,7 @@ SPDX-License-Identifier: Apache-2.0
                   disabled
                   class="cursor-help ms-1"
                   :id="`locked-${item.id}`">
-                  <span class="fa fa-lock fa-fw" />
+                  <v-icon icon="mdi-lock" />
                   <v-tooltip :activator="`#locked-${item.id}`">
                     {{ $t('settings.shortcuts.lockedTip') }}
                   </v-tooltip>
@@ -232,11 +239,12 @@ SPDX-License-Identifier: Apache-2.0
                   class="ms-1"
                   :id="`update-${item.id}`"
                   @click="editShortcut(item)">
-                  <span
-                    class="fa fa-pencil fa-fw"
+                  <v-icon
+                    icon="mdi-pencil"
                     v-if="!item.loading" />
-                  <span
-                    class="fa fa-spinner fa-spin fa-fw"
+                  <v-icon
+                    icon="mdi-loading"
+                    class="fa-spin"
                     v-else />
                   <v-tooltip :activator="`#update-${item.id}`">
                     {{ $t('settings.shortcuts.updateTip') }}
@@ -265,7 +273,9 @@ SPDX-License-Identifier: Apache-2.0
       class="text-center mt-4"
       v-if="shortcuts.data && shortcuts.data.length === 0">
       <h3>
-        <span class="fa fa-folder-open fa-2x" />
+        <v-icon
+          icon="mdi-folder-open"
+          size="large" />
       </h3>
       <h5>
         {{ $t('settings.shortcuts.noMatch') }}
@@ -406,7 +416,9 @@ SPDX-License-Identifier: Apache-2.0
               variant="flat"
               size="large"
               @click="showShortcutModal = false">
-              <span class="fa fa-times me-1" />
+              <v-icon
+                icon="mdi-close"
+                class="me-1" />
               {{ $t('common.cancel') }}
             </v-btn>
             <v-btn
@@ -417,11 +429,15 @@ SPDX-License-Identifier: Apache-2.0
               @click="createShortcut"
               :disabled="createShortcutLoading">
               <template v-if="!createShortcutLoading">
-                <span class="fa fa-plus-circle me-1" />
+                <v-icon
+                  icon="mdi-plus-circle"
+                  class="me-1" />
                 {{ $t('common.create') }}
               </template>
               <template v-else>
-                <span class="fa fa-spinner fa-spin me-1" />
+                <v-icon
+                  icon="mdi-loading"
+                  class="fa-spin me-1" />
                 {{ $t('common.creating') }}
               </template>
             </v-btn>
@@ -433,11 +449,15 @@ SPDX-License-Identifier: Apache-2.0
               @click="updateShortcut"
               :disabled="createShortcutLoading">
               <template v-if="!createShortcutLoading">
-                <span class="fa fa-save me-1" />
+                <v-icon
+                  icon="mdi-content-save"
+                  class="me-1" />
                 {{ $t('common.save') }}
               </template>
               <template v-else>
-                <span class="fa fa-spinner fa-spin me-1" />
+                <v-icon
+                  icon="mdi-loading"
+                  class="fa-spin me-1" />
                 {{ $t('common.saving') }}
               </template>
             </v-btn>

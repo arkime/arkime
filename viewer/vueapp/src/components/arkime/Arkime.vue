@@ -72,7 +72,7 @@ SPDX-License-Identifier: Apache-2.0
             variant="flat"
             color="secondary"
             @click="exportAllPNG">
-            <span class="fa fa-download" />
+            <v-icon icon="mdi-download" />
             <v-tooltip
               activator="parent"
               :open-delay="500">
@@ -108,7 +108,7 @@ SPDX-License-Identifier: Apache-2.0
             variant="flat"
             color="warning"
             @click="cancelSummaryLoading">
-            <span class="fa fa-ban" />&nbsp;
+            <v-icon icon="mdi-cancel" />&nbsp;
             {{ $t('common.cancel') }}
           </v-btn>
         </div>
@@ -170,7 +170,9 @@ SPDX-License-Identifier: Apache-2.0
         density="comfortable"
         class="ms-2"
         @click="retryAllFailed">
-        <span class="fa fa-refresh me-1" />
+        <v-icon
+          icon="mdi-refresh"
+          class="me-1" />
         {{ $t('sessions.summary.retryAllFailed') }}
       </v-btn>
     </v-alert>

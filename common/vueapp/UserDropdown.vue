@@ -61,7 +61,10 @@ SPDX-License-Identifier: Apache-2.0
         <div
           v-if="loading"
           class="mt-3 text-center">
-          <span class="fa fa-circle-o-notch fa-spin fa-2x" />
+          <v-icon
+            icon="mdi-loading"
+            size="large"
+            class="fa-spin" />
           <p>{{ $t('common.loading') }}</p>
         </div> <!-- /loading -->
 

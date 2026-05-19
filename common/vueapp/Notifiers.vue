@@ -16,11 +16,11 @@ SPDX-License-Identifier: Apache-2.0
             variant="flat"
             class="float-right">
             <v-icon
-              icon="fa-plus-circle"
+              icon="mdi-plus-circle"
               start />
             {{ $t('settings.notifiers.newGeneric', 'New Notifier') }}
             <v-icon
-              icon="fa-caret-down"
+              icon="mdi-menu-down"
               end />
           </v-btn>
         </template>
@@ -58,7 +58,10 @@ SPDX-License-Identifier: Apache-2.0
       class="text-center mt-4"
       v-if="!notifiers || !Object.keys(notifiers).length">
       <h3>
-        <span class="fa fa-folder-open fa-3x text-medium-emphasis" />
+        <v-icon
+          icon="mdi-folder-open"
+          size="x-large"
+          class="text-medium-emphasis" />
       </h3>
       <h5 class="lead">
         {{ $t('settings.notifiers.createHelp') }}
@@ -93,7 +96,7 @@ SPDX-License-Identifier: Apache-2.0
             <span
               id="newNotifierNameHelp"
               class="arkime-input-label arkime-input-label-fw cursor-help">
-              <span class="fa fa-info-circle" />
+              <v-icon icon="mdi-information" />
               <v-tooltip activator="#newNotifierNameHelp">
                 {{ $t('settings.notifiers.nameInfo', { type: newNotifier.type }) }}
               </v-tooltip>
@@ -127,7 +130,7 @@ SPDX-License-Identifier: Apache-2.0
                 @click="toggleVisibleSecretField(field)">
                 <span
                   class="fa"
-                  :class="{'fa-eye':field.type === 'secret' && !field.showValue, 'fa-eye-slash':field.type === 'secret' && field.showValue}" />
+                  :class="{'mdi-eye':field.type === 'secret' && !field.showValue, 'mdi-eye-off':field.type === 'secret' && field.showValue}" />
               </span>
             </span>
             <label v-if="field.type === 'checkbox'">
@@ -223,7 +226,7 @@ SPDX-License-Identifier: Apache-2.0
             v-if="parentApp === 'parliament'"
             :id="`toggleNotifier-${index}`"
             @click="toggleNotifier(notifier, index)"
-            :class="{'fa-toggle-on text-success':notifier.on,'fa-toggle-off':!notifier.on}"
+            :class="{'mdi-toggle-switch text-success':notifier.on,'mdi-toggle-switch-off':!notifier.on}"
             class="fa fa-lg float-right cursor-pointer">
             <v-tooltip :activator="`#toggleNotifier-${index}`">
               {{ $t('settings.notifiers.turn' + (notifier.on ? 'Off' : 'On')) }}
@@ -271,7 +274,7 @@ SPDX-License-Identifier: Apache-2.0
                 @click="toggleVisibleSecretField(field)">
                 <span
                   class="fa"
-                  :class="{'fa-eye':field.type === 'secret' && !field.showValue, 'fa-eye-slash':field.type === 'secret' && field.showValue}" />
+                  :class="{'mdi-eye':field.type === 'secret' && !field.showValue, 'mdi-eye-off':field.type === 'secret' && field.showValue}" />
               </span>
             </span>
             <label v-if="field.type === 'checkbox'">
@@ -345,7 +348,7 @@ SPDX-License-Identifier: Apache-2.0
             :disabled="notifier.loading"
             @click="testNotifier(notifier.id, index)">
             <v-icon start>
-              {{ notifier.loading ? 'fa-spinner fa-spin' : 'fa-bell' }}
+              {{ notifier.loading ? 'mdi-loading fa-spin' : 'mdi-bell' }}
             </v-icon>
             {{ $t('common.test') }}
           </v-btn>

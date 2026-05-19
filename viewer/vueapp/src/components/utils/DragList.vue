@@ -19,7 +19,7 @@ SPDX-License-Identifier: Apache-2.0
       type="button"
       class="arkime-drag-close ms-1"
       @click.stop.prevent="$emit('remove', index)">
-      <span class="fa fa-close fa-fw" />
+      <v-icon icon="mdi-close" />
     </button>
   </label>
   <div

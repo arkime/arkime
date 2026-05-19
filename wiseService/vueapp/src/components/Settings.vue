@@ -21,7 +21,9 @@ SPDX-License-Identifier: Apache-2.0
         selected-class="font-weight-bold"
         @update:model-value="openView($event)">
         <v-tab value="themes">
-          <span class="fa fa-fw fa-paint-brush me-1" />
+          <v-icon
+            icon="mdi-brush"
+            class="me-1" />
           Themes
         </v-tab>
       </v-tabs>

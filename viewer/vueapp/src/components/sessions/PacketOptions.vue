@@ -162,7 +162,7 @@ SPDX-License-Identifier: Apache-2.0
         color="warning"
         :aria-label="$t('common.cancel')"
         @click="closeDecodingForm">
-        <v-icon icon="fa-ban" />
+        <v-icon icon="mdi-cancel" />
         <v-tooltip activator="parent">
           {{ $t('common.cancel') }}
         </v-tooltip>
@@ -173,14 +173,14 @@ SPDX-License-Identifier: Apache-2.0
         color="primary"
         :aria-label="$t('common.apply')"
         @click="applyDecoding(decodingForm)">
-        <v-icon icon="fa-check" />
+        <v-icon icon="mdi-check" />
         <v-tooltip activator="parent">
           {{ $t('common.apply') }}
         </v-tooltip>
       </v-btn>
       <span class="decoding-form-help text-medium-emphasis ms-2">
         <v-icon
-          icon="fa-info-circle"
+          icon="mdi-information"
           size="x-small"
           class="me-1" />
         {{ decodingsClone[decodingForm].title }}
