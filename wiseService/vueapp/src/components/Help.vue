@@ -5,69 +5,55 @@ SPDX-License-Identifier: Apache-2.0
 <template>
   <div class="help-content">
     <!-- side navbar -->
-    <div class="nav nav-pills col-1">
-      <a
+    <v-list
+      density="compact"
+      nav
+      class="help-nav">
+      <v-list-item
         href="help#about"
-        class="nav-link">
-        <span class="fa fa-question-circle me-2" />
-        About
-      </a>
-      <a
+        prepend-icon="fa-question-circle"
+        title="About" />
+      <v-list-item
         href="help#links"
-        class="nav-link">
-        <span class="fa fa-link me-2" />
-        Links
-      </a>
-      <a
+        prepend-icon="fa-link"
+        title="Links" />
+      <v-list-item
         href="help#getStarted"
-        class="nav-link">
-        <span class="fa fa-play-circle me-2" />
-        Get Started
-      </a>
-      <a
+        prepend-icon="fa-play-circle"
+        title="Get Started" />
+      <v-list-item
         href="help#query"
-        class="nav-link">
-        <span class="fa fa-search me-2" />
-        Query
-      </a>
-      <a
+        prepend-icon="fa-search"
+        title="Query" />
+      <v-list-item
         href="help#stats"
-        class="nav-link">
-        <span class="fa fa-bar-chart me-2" />
-        Stats
-      </a>
-      <a
+        prepend-icon="fa-bar-chart"
+        title="Stats" />
+      <v-list-item
         href="help#sources"
-        class="nav-link nested">
-        sources
-      </a>
-      <a
+        title="sources"
+        class="nested" />
+      <v-list-item
         href="help#types"
-        class="nav-link nested">
-        types
-      </a>
-      <a
+        title="types"
+        class="nested" />
+      <v-list-item
         href="help#config"
-        class="nav-link">
-        <span class="fa fa-gear me-2" />
-        Config
-      </a>
-      <a
+        prepend-icon="fa-gear"
+        title="Config" />
+      <v-list-item
         href="help#configWiseService"
-        class="nav-link nested">
-        WISE Service
-      </a>
-      <a
+        title="WISE Service"
+        class="nested" />
+      <v-list-item
         href="help#configCache"
-        class="nav-link nested">
-        WISE Cache
-      </a>
-      <a
+        title="WISE Cache"
+        class="nested" />
+      <v-list-item
         href="help#configSources"
-        class="nav-link nested">
-        WISE Sources
-      </a>
-    </div> <!-- /side navbar -->
+        title="WISE Sources"
+        class="nested" />
+    </v-list> <!-- /side navbar -->
 
     <!-- page content -->
     <div class="mt-5 ms-4 me-4 navbar-offset">
@@ -89,7 +75,7 @@ SPDX-License-Identifier: Apache-2.0
         Think of WISE as the next and better version of the tagger plugin.
       </p>
 
-      <hr>
+      <v-divider class="my-3" />
 
       <h3 id="links">
         <span class="fa fa-link me-2" />
@@ -101,7 +87,7 @@ SPDX-License-Identifier: Apache-2.0
         <a href="https://arkime.com/wiseapi">WISE API</a>
       </div>
 
-      <hr>
+      <v-divider class="my-3" />
 
       <h3 id="getStarted">
         <span class="fa fa-play-circle me-2" />
@@ -137,7 +123,7 @@ SPDX-License-Identifier: Apache-2.0
         </ol>
       </div>
 
-      <hr>
+      <v-divider class="my-3" />
 
       <h3 id="query">
         <span class="fa fa-search me-2" />
@@ -149,7 +135,7 @@ SPDX-License-Identifier: Apache-2.0
         This is basically the same thing that capture is doing when it uses the WISE plugin, but in a user friendly way.
       </p>
 
-      <hr>
+      <v-divider class="my-3" />
 
       <h3 id="stats">
         <span class="fa fa-bar-chart me-2" />
@@ -174,7 +160,7 @@ SPDX-License-Identifier: Apache-2.0
         The Types tab allows you to view data about your WISE source types.
       </p>
 
-      <hr>
+      <v-divider class="my-3" />
 
       <h3 id="config">
         <span class="fa fa-gear me-2" />
@@ -271,9 +257,8 @@ export default {
   padding-top: 16px;
 }
 
-/* help navigation */
-.help-content div.nav-pills {
-  display: block;
+/* help navigation -- fixed sidebar wrapping a Vuetify v-list */
+.help-content .help-nav {
   width: 150px;
   border: 1px solid rgb(var(--v-theme-outline));
   border-radius: 0 8px 8px 0;
@@ -283,10 +268,8 @@ export default {
   overflow-x: hidden;
   overflow-y: auto;
   white-space: nowrap;
-
-  -webkit-box-shadow: 0 0 16px -2px black;
-     -moz-box-shadow: 0 0 16px -2px black;
-          box-shadow: 0 0 16px -2px black;
+  background-color: rgb(var(--v-theme-surface));
+  box-shadow: 0 0 16px -2px black;
 }
 
 /* content offset for left nav */
@@ -295,17 +278,9 @@ export default {
   overflow-x: hidden;
 }
 
-.help-content .nav-pills .nav-link {
-  width: 100%;
-}
-
-.help-content div.nav-pills a {
-  padding: 5px 8px !important;
-}
-
-.help-content div.nav-pills a.nested {
-  margin-left: 2.4em;
+.help-content .help-nav :deep(.v-list-item.nested) {
+  margin-left: 2em;
   font-size: 0.85em;
-  padding: 2px 5px !important;
+  min-height: 28px;
 }
 </style>

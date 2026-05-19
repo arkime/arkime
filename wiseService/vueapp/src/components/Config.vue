@@ -85,11 +85,10 @@ SPDX-License-Identifier: Apache-2.0
         xl="11"
         class="d-flex flex-column px-5 pt-2 source-container">
         <h2>
-          <form
+          <div
             v-if="configViewSelected === 'edit'"
-            class="form-inline pull-right ms-5">
+            class="d-flex align-center float-right ms-5 ga-2">
             <v-btn
-              class="me-2"
               color="warning"
               variant="flat"
               :disabled="fileResetDisabled"
@@ -103,11 +102,10 @@ SPDX-License-Identifier: Apache-2.0
               @click="saveSourceFile">
               {{ $t('wise.config.saveFile') }}
             </v-btn>
-          </form>
+          </div>
           <div
             v-else-if="configViewSelected === 'config'"
-            class="d-flex align-center pull-right ms-5"
-            style="gap: 8px;">
+            class="d-flex align-center float-right ms-5 ga-2">
             <v-text-field
               id="config-pin-code-top"
               v-model="configCode"
@@ -390,14 +388,13 @@ SPDX-License-Identifier: Apache-2.0
           </div> <!-- /csv editor -->
           <p
             v-else
-            class="text-danger">
+            class="text-error">
             <span v-html="$t('wise.config.parseErrorHtml')" />
           </p>
-          <form
+          <div
             v-if="configViewSelected === 'edit'"
-            class="form-inline pull-right ms-5 mt-2 mb-3">
+            class="d-flex align-center float-right ms-5 mt-2 mb-3 ga-2">
             <v-btn
-              class="me-2"
               color="warning"
               variant="flat"
               :disabled="fileResetDisabled"
@@ -411,7 +408,7 @@ SPDX-License-Identifier: Apache-2.0
               @click="saveSourceFile">
               {{ $t('wise.config.saveFile') }}
             </v-btn>
-          </form>
+          </div>
         </div> <!-- edit -->
 
         <!-- display -->
@@ -473,7 +470,7 @@ SPDX-License-Identifier: Apache-2.0
             v-if="configDefs && configDefs[selectedSourceSplit] && !configDefs[selectedSourceSplit].service"
             color="error"
             variant="flat"
-            class="mx-auto mt-4 pull-right"
+            class="mt-4 float-right"
             @click="deleteSource()">
             <span class="fa fa-trash me-1" />
             {{ $t('wise.config.deleteSource') }}
