@@ -61,6 +61,7 @@ LOCAL int                    offlineDispatchAfter;
 extern void                 *esServer;
 
 extern ArkimeOfflineInfo_t   offlineInfo[256];
+extern ARKIME_LOCK_EXTERN(offlineInfoLock);
 
 extern ArkimeFieldOps_t     readerFieldOps[256];
 ArkimeSchemeAction_t       *schemeActions[256];
@@ -258,13 +259,38 @@ LOCAL void arkime_reader_scheme_enqueue(const char *uri, ArkimeSchemeFlags flags
 /******************************************************************************/
 LOCAL int reader_scheme_header_common(const char *uri, int dlt, int snaplen, const char *extraInfo, ArkimeSchemeAction_t *actions)
 {
-    readerState.readerPos++;
+    uint8_t nextPos = readerState.readerPos + 1;
+
+    // readerPos is uint8_t (wraps at 256). Before reusing a slot, wait until
+    // the prior file occupying it has been fully drained: packet threads
+    // have processed FILE_DONE (finishWaiting==0) AND the FILE_DONE handler
+    // has released the lock. Hold offlineInfoLock across the wait + cleanup
+    // so we can't race with the FILE_DONE handler in arkime_packet_thread,
+    // which also touches notifyClientRef/notifyFilename under this lock and
+    // does a slow arkime_db_update_file before the decref.
+    ARKIME_LOCK(offlineInfoLock);
+    while (!config.quitting && offlineInfo[nextPos].finishWaiting > 0) {
+        ARKIME_UNLOCK(offlineInfoLock);
+        LOG_RATE(5, "Waiting for reader slot %u to drain, finishWaiting=%u",
+                 nextPos, offlineInfo[nextPos].finishWaiting);
+        usleep(5000);
+        ARKIME_LOCK(offlineInfoLock);
+    }
+
+    readerState.readerPos = nextPos;
     // We've wrapped around all 256 reader items, clear the previous file information
     if (offlineInfo[readerState.readerPos].filename) {
         g_free(offlineInfo[readerState.readerPos].filename);
         g_free(offlineInfo[readerState.readerPos].extra);
+        if (offlineInfo[readerState.readerPos].notifyFilename) {
+            g_free(offlineInfo[readerState.readerPos].notifyFilename);
+        }
+        if (offlineInfo[readerState.readerPos].notifyClientRef) {
+            arkime_command_client_decref(offlineInfo[readerState.readerPos].notifyClientRef);
+        }
         memset(&offlineInfo[readerState.readerPos], 0, sizeof(ArkimeOfflineInfo_t));
     }
+    ARKIME_UNLOCK(offlineInfoLock);
     offlineInfo[readerState.readerPos].filename = g_strdup(uri);
 
     ArkimeScheme_t *readerScheme = uri2scheme(uri);
