@@ -1126,6 +1126,7 @@
       "helpParliament": "配置可用于警报 Parliament 内问题的通知器",
       "title": "通知器",
       "new": "新建 {name} 通知器",
+      "newGeneric": "新建通知器",
       "namePlaceholder": "通知器名称（具体）",
       "nameInfo": "请使用具体的通知器名称。可以有多个 {type} 通知器。",
       "createHelp": "点击上面的按钮之一即可创建一个。",
@@ -1440,6 +1441,8 @@
       "lastHtml": "<strong>最后</strong>发现于：<br> <strong> {last} </strong>",
       "issueFixed": "问题已修复！移除它。",
       "issueAckTip": "确认此问题。问题解决后将自动删除或可手动删除。",
+      "ignoreTip": "在选定的时间内忽略此问题",
+      "unignoreTip": "当前已忽略 — 请选择新的持续时间或停止忽略",
       "removeIgnore": "取消忽略",
       "ignoreHourCount": "未使用 | 忽略1小时 | 忽略{count}小时",
       "ignoreDayCount": "未使用 | 忽略1天 | 忽略{count}天",
@@ -1471,6 +1474,7 @@
       "noIssuesMatch": "没有问题匹配您的搜索和筛选条件"
     },
     "settings": {
+      "title": "Parliament 设置",
       "ifProblem": "如果问题持续存在，请尝试",
       "restoreDefaults": "恢复默认值",
       "general": "常规",
@@ -1519,6 +1523,7 @@
       "helpHtml": "或者，也许您需要一些 <a href=\"help\" class=\"no-decoration\">帮助</a>？"
     },
     "config": {
+      "title": "WISE 配置",
       "importTip": "导入新的源配置（JSON或INI）",
       "createTip": "通过界面创建新源",
       "resetFile": "重置文件",

@@ -1126,6 +1126,7 @@
       "helpParliament": "Parliament 내 이슈에 대해 경고하는 데 사용할 알림기를 구성합니다.",
       "title": "알림기",
       "new": "새 {name} 알림기",
+      "newGeneric": "새 알림기",
       "namePlaceholder": "알림기 이름 (구체적으로)",
       "nameInfo": "알림기 이름을 구체적으로 지정하세요. 동일한 유형의 알림기가 여러 개 있을 수 있습니다.",
       "createHelp": "위의 버튼 중 하나를 클릭하여 생성하세요.",
@@ -1440,6 +1441,8 @@
       "lastHtml": "<strong>마지막</strong> 감지됨: <br> <strong> {last} </strong>",
       "issueFixed": "이슈 해결됨! 제거하세요.",
       "issueAckTip": "이 이슈를 승인합니다. 이슈가 해결된 후 자동으로 또는 수동으로 제거할 수 있습니다.",
+      "ignoreTip": "선택한 기간 동안 이 이슈를 무시합니다",
+      "unignoreTip": "현재 무시 중 — 새 기간을 선택하거나 무시를 중지하세요",
       "removeIgnore": "무시 제거",
       "ignoreHourCount": "1시간 동안 무시 | {count}시간 동안 무시",
       "ignoreDayCount": "1일 동안 무시 | {count}일 동안 무시",
@@ -1471,6 +1474,7 @@
       "noIssuesMatch": "검색 및 필터와 일치하는 이슈가 없습니다"
     },
     "settings": {
+      "title": "Parliament 설정",
       "ifProblem": "문제가 지속되면,",
       "restoreDefaults": "기본값으로 복원해 보세요",
       "general": "일반",
@@ -1519,6 +1523,7 @@
       "helpHtml": "또는 <a href=\"help\" class=\"no-decoration\"> 도움말</a>이 필요하신가요?"
     },
     "config": {
+      "title": "WISE 구성",
       "importTip": "새로운 소스 설정 가져오기 (JSON 또는 INI)",
       "createTip": "UI를 통해 새 소스 생성",
       "resetFile": "파일 재설정",

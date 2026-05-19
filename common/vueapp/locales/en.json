@@ -1126,6 +1126,7 @@
       "helpParliament": "Configure notifiers that can be used to alert on issues within your Parliament",
       "title": "Notifiers",
       "new": "New {name} Notifier",
+      "newGeneric": "New Notifier",
       "namePlaceholder": "Notifier name (be specific)",
       "nameInfo": "Be specific with your notifier name. There can be multiple {type} notifiers.",
       "createHelp": "Create one by clicking one of the buttons above.",

@@ -1126,6 +1126,7 @@
       "helpParliament": "Konfigureeri teavitajad, mida saab kasutada hoiatamaks probleemidest sinu Parlamendis",
       "title": "Teavitajad",
       "new": "Uus {name} Teavitaja",
+      "newGeneric": "Uus Teavitaja",
       "namePlaceholder": "Teavitaja nimi (ole konkreetne)",
       "nameInfo": "Ole oma teavitaja nimega konkreetne. Võib olla mitu {type} teavitajat.",
       "createHelp": "Loo üks, klõpsates ühel ülaltoodud nupul.",
@@ -1440,6 +1441,8 @@
       "lastHtml": "<strong>Viimati</strong> märgatud: <br> <strong> {last} </strong>",
       "issueFixed": "Probleem lahendatud! Eemalda see.",
       "issueAckTip": "Kinnita see probleem. See eemaldatakse automaatselt või saab käsitsi eemaldada pärast probleemi lahendamist.",
+      "ignoreTip": "Ignoreeri seda probleemi valitud aja jooksul",
+      "unignoreTip": "Praegu ignoreeritud — vali uus kestus või lõpeta ignoreerimine",
       "removeIgnore": "Eemalda ignoreerimine",
       "ignoreHourCount": "ei kasutata | Ignoreeri 1 tund | Ignoreeri {count} tundi",
       "ignoreDayCount": "ei kasutata | Ignoreeri 1 päev | Ignoreeri {count} päeva",
@@ -1471,6 +1474,7 @@
       "noIssuesMatch": "Ükski probleem ei vasta teie otsingule ja filtritele"
     },
     "settings": {
+      "title": "Parliamenti seaded",
       "ifProblem": "Kui probleem püsib, proovige",
       "restoreDefaults": "taastada vaikeväärtused",
       "general": "Üldine",
@@ -1519,6 +1523,7 @@
       "helpHtml": "Või võib-olla vajate <a href=\"help\" class=\"no-decoration\"> abi</a>?"
     },
     "config": {
+      "title": "WISE seadistus",
       "importTip": "Impordi uus allika seadistus (JSON või INI)",
       "createTip": "Loo uus allikas kasutajaliidese kaudu",
       "resetFile": "Lähtesta fail",

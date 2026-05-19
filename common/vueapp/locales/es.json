@@ -1126,6 +1126,7 @@
       "helpParliament": "Configurar notificadores que se pueden usar para alertar sobre problemas dentro de tu Parliament",
       "title": "Notificadores",
       "new": "Nuevo notificador {name}",
+      "newGeneric": "Nuevo notificador",
       "namePlaceholder": "Nombre del notificador (sé específico)",
       "nameInfo": "Sé específico con el nombre de tu notificador. Puede haber múltiples notificadores {type}.",
       "createHelp": "Crea uno haciendo clic en uno de los botones de arriba.",
@@ -1440,6 +1441,8 @@
       "lastHtml": "<strong>Último</strong> notado en: <br> <strong> {last} </strong>",
       "issueFixed": "¡Problema solucionado! Eliminarlo.",
       "issueAckTip": "Reconocer este problema. Se eliminará automáticamente o puede eliminarse manualmente después de que se haya resuelto el problema.",
+      "ignoreTip": "Ignorar este problema durante un tiempo determinado",
+      "unignoreTip": "Actualmente ignorado — elija una nueva duración o deje de ignorar",
       "removeIgnore": "Eliminar ignorar",
       "ignoreHourCount": "no usado | Ignorar por 1 hora | Ignorar por {count} horas",
       "ignoreDayCount": "no usado | Ignorar por 1 día | Ignorar por {count} días",
@@ -1471,6 +1474,7 @@
       "noIssuesMatch": "Ningún problema coincide con su búsqueda y filtros"
     },
     "settings": {
+      "title": "Configuración de Parliament",
       "ifProblem": "Si el problema persiste, intente",
       "restoreDefaults": "restaurarlos a los valores predeterminados",
       "general": "General",
@@ -1519,6 +1523,7 @@
       "helpHtml": "¿O quizás necesita <a href=\"help\" class=\"no-decoration\"> ayuda</a>?"
     },
     "config": {
+      "title": "Configuración de WISE",
       "importTip": "Importar una nueva Configuración de Fuente (JSON o INI)",
       "createTip": "Crear una nueva Fuente a través de la interfaz",
       "resetFile": "Restablecer Archivo",

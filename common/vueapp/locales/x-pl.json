@@ -1127,6 +1127,7 @@
       "helpParliament": "OnfigureCay otifiersnay hattay ancay ebay usedway otay alertway onway issuesway ithinway ouryay Arliamentpay",
       "title": "Otifiersnay",
       "new": "EwNay {name} OtifierNay",
+      "newGeneric": "EwNay OtifierNay",
       "namePlaceholder": "Otifiernay amenay (ebway ecificspay)",
       "nameInfo": "Ebway ecificspay ithway ouryay otifiernay amenay. EreThay ancay ebay ultiplemay {type} otifiersnay.",
       "createHelp": "Eatecray oneway ybay ickingclayclay oneway ofway ethay uttonsbay aboveway.",
@@ -1441,6 +1442,8 @@
       "lastHtml": "<strong>AstLay</strong> oticednay atway: <br> <strong> {last} </strong>",
       "issueFixed": "Issueway ixedfay! Emovetay itway.",
       "issueAckTip": "AcknowledgeWay isthay issueway. Itway illway ebay emovedray automaticallyway orway ancay ebay emovedray anuallymay afterway ethay issueway ashay eenbay esolvedray.",
+      "ignoreTip": "Ignoreway isthay issueway orfay away osenchay amountway ofway imetay",
+      "unignoreTip": "Urrentlycay ignoredway — ickpay away ewnay urationday orway opstay ignoringway",
       "removeIgnore": "Emovetay ignoreway",
       "ignoreHourCount": "otusednay | Ignoreway orfay 1 ourhay | Ignoreway orfay {count} ourshay",
       "ignoreDayCount": "otusednay | Ignoreway orfay 1 ayday | Ignoreway orfay {count} aysday",
@@ -1472,6 +1475,7 @@
       "noIssuesMatch": "Onay issuesway atchmay ouryay earchsay andway iltersfay"
     },
     "settings": {
+      "title": "Arliamentpay Ettingssay",
       "ifProblem": "Ifway ethay oblempray ersistspay, ytraysay",
       "restoreDefaults": "estoringray emthay otay ethay efaultsday",
       "general": "Eneralgay",
@@ -1520,6 +1524,7 @@
       "helpHtml": "Orway, aybemay ouyay eednay omesay <a href=\"help\" class=\"no-decoration\"> elphay</a>?"
     },
     "config": {
+      "title": "ISEWAY OnfigurationCay",
       "importTip": "Importway away ewnay Ourcesay OnfigurationCay (JSONway orway INIWAY)",
       "createTip": "Eatecray away ewnay Ourcesay oughthray ethay UIWAY",
       "resetFile": "Esetray IleFay",

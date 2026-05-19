@@ -1126,6 +1126,7 @@
       "helpParliament": "Parliament 内の問題をアラートするために使用できる通知設定を構成します。",
       "title": "通知設定",
       "new": "新しい {name} 通知設定",
+      "newGeneric": "新しい通知設定",
       "namePlaceholder": "通知設定名（具体的に）",
       "nameInfo": "通知設定名は具体的に指定してください。同じ種類の通知設定を複数作成できます。",
       "createHelp": "上のいずれかのボタンをクリックして作成してください。",
@@ -1440,6 +1441,8 @@
       "lastHtml": "<strong>最後</strong>の検出:<br> <strong> {last} </strong>",
       "issueFixed": "問題解決！削除します。",
       "issueAckTip": "この問題を承認します。解決後に自動的に削除されるか、手動で削除できます。",
+      "ignoreTip": "選択した期間、この問題を無視します",
+      "unignoreTip": "現在無視中 — 新しい期間を選択するか、無視を停止してください",
       "removeIgnore": "無視を解除",
       "ignoreHourCount": "notused | 1 時間無視 | {count} 時間無視",
       "ignoreDayCount": "notused | 1 日無視 | {count} 日無視",
@@ -1471,6 +1474,7 @@
       "noIssuesMatch": "検索とフィルターに一致する問題はありません"
     },
     "settings": {
+      "title": "Parliament 設定",
       "ifProblem": "問題が解決しない場合は、",
       "restoreDefaults": "デフォルト設定への復元",
       "general": "全般",
@@ -1519,6 +1523,7 @@
       "helpHtml": "それとも <a href=\"help\" class=\"no-decoration\"> ヘルプ</a> が必要ですか？"
     },
     "config": {
+      "title": "WISE 設定",
       "importTip": "新しいソース設定をインポート (JSON または INI)",
       "createTip": "UI から新しいソースを作成",
       "resetFile": "ファイルをリセット",

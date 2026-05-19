@@ -1126,6 +1126,7 @@
       "helpParliament": "Benachrichtiger konfigurieren, die verwendet werden können, um auf Probleme in Ihrem Parliament aufmerksam zu machen",
       "title": "Benachrichtiger",
       "new": "Neuer {name}-Benachrichtiger",
+      "newGeneric": "Neuer Benachrichtiger",
       "namePlaceholder": "Name des Benachrichtigers (seien Sie spezifisch)",
       "nameInfo": "Seien Sie spezifisch mit Ihrem Benachrichtigernamen. Es kann mehrere {type}-Benachrichtiger geben.",
       "createHelp": "Erstellen Sie einen, indem Sie auf eine der obigen Schaltflächen klicken.",
@@ -1440,6 +1441,8 @@
       "lastHtml": "<strong>Zuletzt</strong> bemerkt am: <br> <strong> {last} </strong>",
       "issueFixed": "Problem behoben! Entfernen.",
       "issueAckTip": "Dieses Problem bestätigen. Es wird automatisch oder manuell entfernt, nachdem das Problem behoben wurde.",
+      "ignoreTip": "Dieses Problem für eine ausgewählte Zeitspanne ignorieren",
+      "unignoreTip": "Derzeit ignoriert — wählen Sie eine neue Dauer oder beenden Sie das Ignorieren",
       "removeIgnore": "Ignorieren aufheben",
       "ignoreHourCount": "nicht verwendet | 1 Stunde ignorieren | {count} Stunden ignorieren",
       "ignoreDayCount": "nicht verwendet | 1 Tag ignorieren | {count} Tage ignorieren",
@@ -1471,6 +1474,7 @@
       "noIssuesMatch": "Keine Probleme entsprechen Ihrer Suche und Ihren Filtern"
     },
     "settings": {
+      "title": "Parlament-Einstellungen",
       "ifProblem": "Wenn das Problem weiterhin besteht, versuchen Sie",
       "restoreDefaults": "sie auf die Standardwerte zurückzusetzen",
       "general": "Allgemein",
@@ -1519,6 +1523,7 @@
       "helpHtml": "Oder benötigen Sie vielleicht <a href=\"help\" class=\"no-decoration\"> Hilfe</a>?"
     },
     "config": {
+      "title": "WISE-Konfiguration",
       "importTip": "Eine neue Quellenkonfiguration importieren (JSON oder INI)",
       "createTip": "Eine neue Quelle über die Benutzeroberfläche erstellen",
       "resetFile": "Datei zurücksetzen",
