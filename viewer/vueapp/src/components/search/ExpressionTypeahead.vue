@@ -46,9 +46,7 @@ SPDX-License-Identifier: Apache-2.0
         icon
         class="arkime-input-append-btn"
         @click="bigTypeahead = !bigTypeahead">
-        <span
-          class="fa"
-          :class="bigTypeahead ? 'mdi-arrow-collapse' : 'mdi-arrow-expand'" />
+        <v-icon :icon="bigTypeahead ? 'mdi-arrow-collapse' : 'mdi-arrow-expand'" />
         <v-tooltip activator="#bigTypeaheadBtn">
           {{ $t('search.bigTypeaheadBtnTip') }}
         </v-tooltip>

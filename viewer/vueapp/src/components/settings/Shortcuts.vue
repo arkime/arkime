@@ -146,11 +146,11 @@ SPDX-License-Identifier: Apache-2.0
             <td
               class="shortcut-value"
               :class="{'show-all':item.showAll}">
-              <span
+              <v-icon
                 v-if="item.value.length > 50"
-                @click="toggleDisplayAllShortcut(item)"
-                class="fa float-right cursor-pointer mt-1"
-                :class="{'mdi-chevron-down':!item.showAll,'mdi-chevron-up':item.showAll}" />
+                :icon="item.showAll ? 'mdi-chevron-up' : 'mdi-chevron-down'"
+                class="float-right cursor-pointer mt-1"
+                @click="toggleDisplayAllShortcut(item)" />
               <span v-if="!item.showAll">
                 {{ item.value.substring(0, 50) }}
                 <span v-if="item.value.length > 50">...</span>

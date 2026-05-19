@@ -25,6 +25,18 @@
 .p-4 { padding: 1.5rem !important; }
 .p-5 { padding: 3rem !important; }
 
+/* fa-spin -- Font Awesome's spinning-loader animation class. We've
+   migrated to MDI but mdi-loading is a static icon; templates still
+   use class="fa-spin" on the v-icon so legacy callers keep working
+   without rewriting every loading-spinner site. */
+@keyframes fa-spin {
+  0%   { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+.fa-spin {
+  animation: fa-spin 2s infinite linear;
+}
+
 /* Visually-hidden accessibility utility (screen readers see it, sighted
    users don't). Vuetify doesn't ship this; common A11y class name. */
 .sr-only {
@@ -427,6 +439,14 @@ pre {
 .v-btn:not(.v-pagination__item):not(.v-pagination__navigation):not(.v-btn--icon) {
   height: 32px !important;
   min-height: 32px !important;
+}
+
+/* Force icon-only v-btns to render circular. Vuetify's .v-btn--icon
+   selector tends to win when `icon` prop is a string (icon="mdi-X"),
+   but the boolean-prop `<v-btn icon><v-icon>...</v-icon></v-btn>` form
+   sometimes loses its border-radius to other rules. */
+.v-btn.v-btn--icon {
+  border-radius: 50% !important;
 }
 
 /* Same treatment for compact-density v-input wrappers (v-select,

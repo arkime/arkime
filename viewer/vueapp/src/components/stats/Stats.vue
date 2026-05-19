@@ -499,54 +499,54 @@ SPDX-License-Identifier: Apache-2.0
           mandatory
           class="stats-tab-strip">
           <v-btn :value="0">
-            <v-icon start>
-              fa-area-chart
-            </v-icon>
+            <v-icon
+              start
+              icon="mdi-chart-areaspline" />
             {{ $t('stats.nav.captureGraphs') }}
           </v-btn>
           <v-btn :value="1">
-            <v-icon start>
-              fa-tachometer
-            </v-icon>
+            <v-icon
+              start
+              icon="mdi-speedometer" />
             {{ $t('stats.nav.captureStats') }}
           </v-btn>
           <span class="stats-tab-divider" />
           <v-btn :value="2">
-            <v-icon start>
-              fa-server
-            </v-icon>
+            <v-icon
+              start
+              icon="mdi-server" />
             {{ $t('stats.nav.esNodes') }}
           </v-btn>
           <v-btn :value="3">
-            <v-icon start>
-              fa-database
-            </v-icon>
+            <v-icon
+              start
+              icon="mdi-database" />
             {{ $t('stats.nav.esIndices') }}
           </v-btn>
           <v-btn :value="4">
-            <v-icon start>
-              fa-tasks
-            </v-icon>
+            <v-icon
+              start
+              icon="mdi-format-list-checks" />
             {{ $t('stats.nav.esTasks') }}
           </v-btn>
           <v-btn :value="5">
-            <v-icon start>
-              fa-sitemap
-            </v-icon>
+            <v-icon
+              start
+              icon="mdi-sitemap" />
             {{ $t('stats.nav.esShards') }}
           </v-btn>
           <v-btn :value="6">
-            <v-icon start>
-              fa-life-ring
-            </v-icon>
+            <v-icon
+              start
+              icon="mdi-lifebuoy" />
             {{ $t('stats.nav.esRecovery') }}
           </v-btn>
           <v-btn
             v-if="user.esAdminUser"
             :value="7">
-            <v-icon start>
-              fa-cogs
-            </v-icon>
+            <v-icon
+              start
+              icon="mdi-cog-outline" />
             {{ $t('stats.nav.esAdmin') }}
           </v-btn>
         </v-btn-toggle>

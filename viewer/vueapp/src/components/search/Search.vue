@@ -353,10 +353,10 @@ SPDX-License-Identifier: Apache-2.0
             </v-list-item>
             <v-list-item
               @click="viewIntersection">
-              <span class="fa fa-fw fa-venn">
+              <span class="arkime-venn me-2">
                 <v-icon icon="mdi-circle-outline" />
                 <v-icon icon="mdi-circle-outline" />
-              </span>&nbsp;
+              </span>
               {{ $t('sessions.intersection.title') }}
               <v-tooltip
                 activator="parent"

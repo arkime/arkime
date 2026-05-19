@@ -24,14 +24,9 @@ SPDX-License-Identifier: Apache-2.0
     <!-- sub navbar -->
     <div class="sub-navbar">
       <span class="sub-navbar-title">
-        <span class="fa-stack">
-          <v-icon
-            icon="mdi-cog-outline"
-            class="fa-stack-1x" />
-          <v-icon
-            icon="mdi-checkbox-blank-outline"
-            class="fa-stack-2x" />
-        </span>&nbsp;
+        <v-icon
+          icon="mdi-cog"
+          class="me-1" />
         <span>
           {{ $t(displayName ? 'settings.settingsFor' : 'settings.settings', { user: displayName }) }}
         </span>

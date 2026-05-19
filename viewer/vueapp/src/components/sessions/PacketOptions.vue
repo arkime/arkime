@@ -39,9 +39,9 @@ SPDX-License-Identifier: Apache-2.0
           variant="tonal"
           class="packet-options-btn">
           {{ $t('sessions.packetOptions.packetOptions') }}
-          <v-icon end>
-            fa-caret-down
-          </v-icon>
+          <v-icon
+            end
+            icon="mdi-menu-down" />
         </v-btn>
       </template>
       <v-list density="compact">

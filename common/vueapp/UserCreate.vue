@@ -265,9 +265,9 @@ SPDX-License-Identifier: Apache-2.0
             variant="flat"
             :title="$t('common.cancel')"
             @click="$emit('close')">
-            <v-icon start>
-              fa-times
-            </v-icon>
+            <v-icon
+              start
+              icon="mdi-close" />
             {{ $t('common.cancel') }}
           </v-btn>
           <v-btn
@@ -275,9 +275,9 @@ SPDX-License-Identifier: Apache-2.0
             color="primary"
             variant="flat"
             @click="createUser(createMode === 'role')">
-            <v-icon start>
-              fa-plus-circle
-            </v-icon>
+            <v-icon
+              start
+              icon="mdi-plus-circle" />
             {{ $t('common.create') }}
           </v-btn>
         </div>

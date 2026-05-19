@@ -216,7 +216,7 @@ SPDX-License-Identifier: Apache-2.0
           class="group"
           v-if="!group.clusters || (group.clusters.length > 0 || (!group.clusters.length && !searchTerm))">
           <div class="d-flex align-center mb-1 pb-1 ga-2 flex-wrap">
-            <h3 class="d-flex align-center mb-0 flex-grow-1">
+            <h4 class="d-flex align-center mb-0 flex-grow-1">
               <v-icon
                 icon="mdi-view-grid"
                 class="group-handle me-2"
@@ -236,7 +236,7 @@ SPDX-License-Identifier: Apache-2.0
                   </v-tooltip>
                 </v-btn>
               </template>
-            </h3>
+            </h4>
             <!-- group action buttons -->
             <div
               v-if="isAdmin && editMode"
@@ -513,7 +513,7 @@ SPDX-License-Identifier: Apache-2.0
                   <v-icon
                     v-if="stats[cluster.id].healthError"
                     icon="mdi-alert"
-                    size="x-small" />
+                    size="small" />
                   <span v-if="!stats[cluster.id].status && !stats[cluster.id].healthError">
                     ????
                   </span>
@@ -526,38 +526,49 @@ SPDX-License-Identifier: Apache-2.0
                     </span>
                   </v-tooltip>
                 </v-chip>
-                <h3>
+                <h5>
                   <span
                     v-if="isAdmin && !searchTerm && editMode"
                     class="cluster-handle">
-                    <v-icon icon="mdi-view-grid" />
+                    <v-icon
+                      icon="mdi-view-grid"
+                      size="x-small" />
                   </span>
                   <template v-if="cluster.type === 'multiviewer'">
-                    <span class="fa fa-sitemap text-medium-emphasis cursor-help me-2">
+                    <v-icon
+                      icon="mdi-sitemap"
+                      size="x-small"
+                      class="text-medium-emphasis cursor-help me-2">
                       <v-tooltip
                         activator="parent"
                         location="top">
                         {{ $t('parliament.clusterType-multiviewerTip') }}
                       </v-tooltip>
-                    </span>
+                    </v-icon>
                   </template>
                   <template v-if="cluster.type === 'disabled'">
-                    <span class="text-medium-emphasis fa fa-eye-slash cursor-help me-2">
+                    <v-icon
+                      icon="mdi-eye-off"
+                      size="x-small"
+                      class="text-medium-emphasis cursor-help me-2">
                       <v-tooltip
                         activator="parent"
                         location="top">
                         {{ $t('parliament.clusterType-disabledTip') }}
                       </v-tooltip>
-                    </span>
+                    </v-icon>
                   </template>
                   <template v-if="cluster.type === 'noAlerts'">
-                    <span class="text-medium-emphasis cursor-help fa fa-bell-slash me-2">
+                    <v-icon
+                      icon="mdi-bell-off"
+                      size="x-small"
+                      class="text-medium-emphasis cursor-help me-2">
                       <v-tooltip
                         activator="parent"
                         location="top">
                         {{ $t('parliament.clusterType-noAlertsTip') }}
                       </v-tooltip>
-                    </span>
+                    </v-icon>
                   </template>
                   <a
                     v-if="cluster.type !== 'disabled'"
@@ -571,14 +582,16 @@ SPDX-License-Identifier: Apache-2.0
                   <a
                     :href="`${cluster.url}/stats?statsTab=0`"
                     class="no-decoration ms-2">
-                    <v-icon icon="mdi-chart-bar" />
+                    <v-icon
+                      icon="mdi-chart-bar"
+                      size="x-small" />
                     <v-tooltip
                       activator="parent"
                       location="top">
                       {{ $t('parliament.statsLinkTip') }}
                     </v-tooltip>
                   </a>
-                </h3> <!-- /cluster title -->
+                </h5> <!-- /cluster title -->
                 <!-- cluster description -->
                 <p
                   class="text-medium-emphasis text-body-2 mb-2"

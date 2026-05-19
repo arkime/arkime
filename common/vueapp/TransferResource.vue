@@ -31,9 +31,9 @@ SPDX-License-Identifier: Apache-2.0
             variant="flat"
             :title="$t('common.cancel')"
             @click="cancel">
-            <v-icon start>
-              fa-times
-            </v-icon>
+            <v-icon
+              start
+              icon="mdi-close" />
             {{ $t('common.cancel') }}
           </v-btn>
           <v-btn
@@ -41,9 +41,9 @@ SPDX-License-Identifier: Apache-2.0
             variant="flat"
             :disabled="!userId"
             @click="transferResource">
-            <v-icon start>
-              fa-share
-            </v-icon>
+            <v-icon
+              start
+              icon="mdi-share" />
             {{ $t('common.transfer') }}
           </v-btn>
         </div>

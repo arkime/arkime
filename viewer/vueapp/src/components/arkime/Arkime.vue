@@ -25,7 +25,9 @@ SPDX-License-Identifier: Apache-2.0
                 variant="flat"
                 color="secondary">
                 {{ summaryResultsLimit }}
-                <v-icon end>fa-caret-down</v-icon>
+                <v-icon
+                  end
+                  icon="mdi-menu-down" />
               </v-btn>
             </template>
             <v-list density="compact">
@@ -48,7 +50,9 @@ SPDX-License-Identifier: Apache-2.0
                 variant="flat"
                 color="secondary">
                 {{ summaryOrder === 'asc' ? 'Bottom' : 'Top' }}
-                <v-icon end>fa-caret-down</v-icon>
+                <v-icon
+                  end
+                  icon="mdi-menu-down" />
               </v-btn>
             </template>
             <v-list density="compact">

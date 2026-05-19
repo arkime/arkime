@@ -392,24 +392,21 @@ dl.dl-horizontal.dl-horizontal-wide dd {
   right: 3px;
 }
 
-/* custom font awesome icons */
-.fa.fa-venn {
+/* custom venn-diagram composed icon: two overlapping circle outlines */
+.arkime-venn {
   position: relative;
   display: inline-block;
   vertical-align: middle;
-  width: 1.28571429em;
-  text-align: center;
+  width: 1.6em;
+  height: 1em;
 }
-.fa.fa-venn > span.fa-circle-o {
+.arkime-venn .v-icon {
   position: absolute;
-  top: -7px;
+  top: -2px;
+  font-size: 1.2em !important;
 }
-.fa.fa-venn> span.fa-circle-o:first-child {
-  left: 5px;
-}
-.fa.fa-venn> span.fa-circle-o:last-child {
-  right: 6px;
-}
+.arkime-venn .v-icon:first-child { left: 0; }
+.arkime-venn .v-icon:last-child  { right: 0; }
 
 /* info page (404 & upgrade) */
 .arkime-info {

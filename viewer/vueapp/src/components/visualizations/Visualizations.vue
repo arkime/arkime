@@ -83,9 +83,7 @@ SPDX-License-Identifier: Apache-2.0
                     icon
                     :class="['btn-z-index-2', primary ? 'btn-expand-map' : 'btn-close-map']"
                     @click="toggleMapSize">
-                    <span
-                      class="fa"
-                      :class="{'mdi-arrow-expand':!mapExpanded,'mdi-arrow-collapse':mapExpanded}" />
+                    <v-icon :icon="mapExpanded ? 'mdi-arrow-collapse' : 'mdi-arrow-expand'" />
                   </v-btn>
                   <div
                     v-if="primary"

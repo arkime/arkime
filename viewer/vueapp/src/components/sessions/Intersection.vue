@@ -36,7 +36,7 @@ SPDX-License-Identifier: Apache-2.0
           variant="flat"
           :style="tertiaryBtnStyle"
           @click="openIntersectionAction">
-          <span class="fa fa-venn me-1">
+          <span class="arkime-venn me-2">
             <v-icon icon="mdi-circle-outline" />
             <v-icon icon="mdi-circle-outline" />
           </span>

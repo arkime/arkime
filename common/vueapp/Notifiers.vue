@@ -128,9 +128,7 @@ SPDX-License-Identifier: Apache-2.0
                 v-if="field.type === 'secret'"
                 class="arkime-input-label arkime-input-label-fw cursor-pointer"
                 @click="toggleVisibleSecretField(field)">
-                <span
-                  class="fa"
-                  :class="{'mdi-eye':field.type === 'secret' && !field.showValue, 'mdi-eye-off':field.type === 'secret' && field.showValue}" />
+                <v-icon :icon="field.showValue ? 'mdi-eye-off' : 'mdi-eye'" />
               </span>
             </span>
             <label v-if="field.type === 'checkbox'">
@@ -179,9 +177,9 @@ SPDX-License-Identifier: Apache-2.0
               variant="flat"
               :title="$t('common.cancel')"
               @click="showNotifierModal = false">
-              <v-icon start>
-                fa-times
-              </v-icon>
+              <v-icon
+                start
+                icon="mdi-close" />
               {{ $t('common.cancel') }}
             </v-btn>
             <div>
@@ -191,9 +189,9 @@ SPDX-License-Identifier: Apache-2.0
                 variant="flat"
                 class="me-1"
                 @click="clearNotifierFields">
-                <v-icon start>
-                  fa-ban
-                </v-icon>
+                <v-icon
+                  start
+                  icon="mdi-cancel" />
                 {{ $t('common.clear') }}
               </v-btn>
               <v-btn
@@ -201,9 +199,9 @@ SPDX-License-Identifier: Apache-2.0
                 color="success"
                 variant="flat"
                 @click="createNotifier">
-                <v-icon start>
-                  fa-plus
-                </v-icon>
+                <v-icon
+                  start
+                  icon="mdi-plus" />
                 {{ $t('common.create') }}
               </v-btn>
             </div>
@@ -222,16 +220,17 @@ SPDX-License-Identifier: Apache-2.0
         v-for="(notifier, index) of notifiers">
         <v-card-title>
           {{ notifier.type.charAt(0).toUpperCase() + notifier.type.slice(1) }} Notifier
-          <span
+          <v-icon
             v-if="parentApp === 'parliament'"
             :id="`toggleNotifier-${index}`"
-            @click="toggleNotifier(notifier, index)"
-            :class="{'mdi-toggle-switch text-success':notifier.on,'mdi-toggle-switch-off':!notifier.on}"
-            class="fa fa-lg float-right cursor-pointer">
+            :icon="notifier.on ? 'mdi-toggle-switch' : 'mdi-toggle-switch-off'"
+            :class="{'text-success': notifier.on}"
+            class="float-right cursor-pointer"
+            @click="toggleNotifier(notifier, index)">
             <v-tooltip :activator="`#toggleNotifier-${index}`">
               {{ $t('settings.notifiers.turn' + (notifier.on ? 'Off' : 'On')) }}
             </v-tooltip>
-          </span>
+          </v-icon>
         </v-card-title>
         <v-card-text>
           <!-- notifier name -->
@@ -272,9 +271,7 @@ SPDX-License-Identifier: Apache-2.0
                 v-if="field.type === 'secret'"
                 class="arkime-input-label arkime-input-label-fw cursor-pointer"
                 @click="toggleVisibleSecretField(field)">
-                <span
-                  class="fa"
-                  :class="{'mdi-eye':field.type === 'secret' && !field.showValue, 'mdi-eye-off':field.type === 'secret' && field.showValue}" />
+                <v-icon :icon="field.showValue ? 'mdi-eye-off' : 'mdi-eye'" />
               </span>
             </span>
             <label v-if="field.type === 'checkbox'">
@@ -359,9 +356,9 @@ SPDX-License-Identifier: Apache-2.0
               variant="flat"
               class="me-1"
               @click="removeNotifier(notifier.id, index)">
-              <v-icon start>
-                fa-trash-o
-              </v-icon>
+              <v-icon
+                start
+                icon="mdi-trash-can-outline" />
               {{ $t('common.delete') }}
             </v-btn>
             <v-btn
@@ -369,9 +366,9 @@ SPDX-License-Identifier: Apache-2.0
               color="success"
               variant="flat"
               @click="updateNotifier(notifier.id, index, notifier)">
-              <v-icon start>
-                fa-save
-              </v-icon>
+              <v-icon
+                start
+                icon="mdi-content-save" />
               {{ $t('common.save') }}
             </v-btn>
           </span>

@@ -11,13 +11,15 @@ SPDX-License-Identifier: Apache-2.0
       :message="error" />
 
     <div v-show="!error">
-      <span
+      <v-icon
         id="captureGraphHelp"
-        class="fa fa-lg fa-question-circle-o cursor-help mt-2 float-right">
+        icon="mdi-help-circle-outline"
+        size="small"
+        class="cursor-help mt-2 float-right">
         <v-tooltip activator="#captureGraphHelp">
           <span v-html="$t('stats.cgraphs.helpTipHtml')" />
         </v-tooltip>
-      </span>
+      </v-icon>
 
       <arkime-paging
         v-if="stats"

@@ -104,6 +104,7 @@ select.arkime-input-control {
   min-width: 0;
   margin: 0;
   align-self: center;
+  border-radius: 50%;
 }
 
 /* Native checkbox styling for standalone checkboxes (not paired with a

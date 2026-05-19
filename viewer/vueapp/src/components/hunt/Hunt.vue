@@ -151,6 +151,7 @@ SPDX-License-Identifier: Apache-2.0
                 <v-col cols="12">
                   <v-alert
                     :type="sessions.recordsFiltered >= huntWarn ? 'error' : 'info'"
+                    :icon="false"
                     variant="tonal"
                     density="compact">
                     <em v-if="sessions.recordsFiltered > huntWarn && !loadingSessions">
