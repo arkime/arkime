@@ -3,7 +3,18 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-  <div class="settings-content mb-4 mt-3">
+  <div class="settings-page">
+    <!-- sub navbar -->
+    <div class="sub-navbar">
+      <span class="sub-navbar-title">
+        <span class="fa-stack">
+          <span class="fa fa-cogs fa-stack-1x" />
+          <span class="fa fa-square-o fa-stack-2x" />
+        </span>&nbsp;
+        <span>{{ $t('parliament.settings.title') }}</span>
+      </span>
+    </div> <!-- /sub navbar -->
+
     <v-container fluid>
       <!-- page error -->
       <v-alert

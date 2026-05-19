@@ -5,7 +5,7 @@ SPDX-License-Identifier: Apache-2.0
 <template>
   <v-container
     fluid
-    class="px-4 py-0">
+    class="px-4 pt-3 pb-0">
     <!-- page error -->
     <v-alert
       v-if="!!error"

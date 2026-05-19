@@ -299,6 +299,41 @@ pre {
 }
 
 /* ========================================================================== */
+/* Sub-navbar: a fixed band sitting under the primary 36px navbar.            */
+/* Used by Settings / Stats / Users page headers across viewer + parliament + */
+/* wise + cont3xt so page-level title chrome is consistent.                   */
+/* ========================================================================== */
+.sub-navbar {
+  position: fixed;
+  top: 36px;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  padding: var(--px-lg) var(--px-md) var(--px-sm) 13px;
+  background-color: rgb(var(--v-theme-secondary-lightest));
+  /* drop-shadow only below -- a full all-sides shadow leaks up under
+     the primary navbar. */
+  box-shadow: 0 8px 16px -8px black;
+}
+.sub-navbar .sub-navbar-title {
+  font-size: 19px;
+  font-weight: bold;
+}
+.sub-navbar .sub-navbar-title .fa-stack {
+  margin-top: -14px;
+}
+
+/* Settings page outer wrapper -- push the first content child down by
+   ~50px to clear the fixed sub-navbar band. Targeting the immediate
+   v-row / v-container child so we don't double up on margins inside
+   nested content. */
+.settings-page > .v-row,
+.settings-page > .v-container,
+.settings-page > .settings-content {
+  margin-top: 50px;
+}
+
+/* ========================================================================== */
 /* arkime-table: compact themed table for plain <table> elements used by      */
 /* viewer (Hunt/Files/Settings/Shortcuts/Views), parliament (Issues), and any */
 /* future page that needs a dense full-width table. Themed via v-theme tokens. */

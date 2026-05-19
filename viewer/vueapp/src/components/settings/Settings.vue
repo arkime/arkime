@@ -2021,7 +2021,6 @@ export default {
 
 <style>
 .settings-content {
-  margin-top: 50px;
   margin-left: 0;
   margin-right: 0;
   overflow-x: hidden;

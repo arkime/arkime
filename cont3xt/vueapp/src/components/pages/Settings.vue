@@ -3,697 +3,710 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-  <v-row
-    no-gutters
-    class="d-flex flex-row flex-grow-1 overflow-hidden">
-    <!-- navigation -->
-    <v-col
-      xl="1"
-      lg="2"
-      md="2"
-      sm="3"
-      xs="12"
-      role="tablist"
-      aria-orientation="vertical"
-      class="h-100 overflow-auto no-overflow-x">
-      <div class="nav d-flex flex-column nav-pills pt-3 pb-4 px-4">
-        <v-btn
-          @click="openView('views')"
-          block
-          class="nav-link cursor-pointer btn-space-between"
-          color="primary"
-          variant="text"
-          :active="visibleTab === 'views'">
-          <span>
-            <v-icon icon="mdi-eye mdi-fw" />Views
-          </span>
+  <div class="settings-page d-flex flex-column flex-grow-1 overflow-hidden">
+    <!-- sub navbar -->
+    <div class="sub-navbar">
+      <span class="sub-navbar-title">
+        <span class="fa-stack">
+          <span class="fa fa-cogs fa-stack-1x" />
+          <span class="fa fa-square-o fa-stack-2x" />
+        </span>&nbsp;
+        <span>{{ $t('cont3xt.settingsTitle', 'Cont3xt Settings') }}</span>
+      </span>
+    </div> <!-- /sub navbar -->
+
+    <v-row
+      no-gutters
+      class="d-flex flex-row flex-grow-1 overflow-hidden">
+      <!-- navigation -->
+      <v-col
+        xl="1"
+        lg="2"
+        md="2"
+        sm="3"
+        xs="12"
+        role="tablist"
+        aria-orientation="vertical"
+        class="h-100 overflow-auto no-overflow-x">
+        <div class="nav d-flex flex-column nav-pills pt-3 pb-4 px-4">
           <v-btn
-            size="x-small"
-            class="float-right"
-            color="secondary"
-            v-if="visibleTab === 'views'"
-            @click.stop.prevent="openViewForm"
-            v-tooltip="'Create a new view'">
-            <v-icon icon="mdi-plus-circle" />
-          </v-btn>
-        </v-btn>
-        <v-btn
-          @click="openView('integrations')"
-          block
-          class="nav-link cursor-pointer justify-start"
-          color="primary"
-          variant="text"
-          :active="visibleTab === 'integrations'">
-          <v-icon icon="mdi-key mdi-fw" />Integrations
-        </v-btn>
-        <v-btn
-          @click="openView('overviews')"
-          block
-          class="nav-link cursor-pointer btn-space-between"
-          :class="{ 'mb-1': visibleTab === 'overviews' }"
-          color="primary"
-          variant="text"
-          :active="visibleTab === 'overviews'">
-          <span>
-            <v-icon icon="mdi-file mdi-fw" />Overviews
-          </span>
-          <v-btn
-            size="x-small"
-            class="float-right"
-            color="secondary"
-            v-if="visibleTab === 'overviews'"
-            @click.stop.prevent="openOverviewForm"
-            v-tooltip="'Create a new overview'">
-            <v-icon icon="mdi-plus-circle" />
-          </v-btn>
-        </v-btn>
-        <template v-if="visibleTab === 'overviews'">
-          <!-- overviews -->
-          <div
-            v-for="iType in iTypes"
-            :key="iType"
-            class="itype-group-container"
-            :style="{ 'border-color': iTypeColorMap[iType] }">
-            <v-btn
-              v-for="overview in getSortedOverviews.filter(o => o.iType === iType)"
-              size="small"
-              :key="overview._id"
-              :title="overview.name"
-              @click="setActiveOverviewId(overview._id)"
-              block
-              class="nav-link cursor-pointer btn-space-between"
-              color="primary"
-              variant="text"
-              :active="activeOverviewId === overview._id">
-              <overview-selector-line :overview="overview" />
-            </v-btn>
-          </div>
-        </template>
-        <v-btn
-          @click="openView('linkgroups')"
-          block
-          class="nav-link cursor-pointer btn-space-between"
-          color="primary"
-          variant="text"
-          :active="visibleTab === 'linkgroups'">
-          <span>
-            <v-icon icon="mdi-link mdi-fw" />Link Groups
-          </span>
-          <v-btn
-            size="x-small"
-            class="float-right"
-            color="secondary"
-            v-if="visibleTab === 'linkgroups'"
-            @click.stop.prevent="openLinkGroupForm"
-            v-tooltip="'Create a new link group'">
-            <v-icon icon="mdi-plus-circle" />
-          </v-btn>
-        </v-btn>
-        <template v-if="visibleTab === 'linkgroups'">
-          <drag-update-list
-            class="d-flex flex-column"
-            style="margin-left: 1rem"
-            :value="getLinkGroups || []"
-            @update="updateList">
-            <v-btn
-              v-for="(lg, i) in getLinkGroups"
-              :key="lg._id"
-              block
-              size="small"
-              variant="text"
-              color="primary"
-              class="justify-start mt-1"
-              @click="selectedLinkGroup = i"
-              :title="lg.name"
-              :active="selectedLinkGroup === i">
-              <v-icon
-                icon="mdi-menu"
-                :id="`${lg._id}-tt`"
-                class="drag-handle mr-2" />
-              <id-tooltip :target="`${lg._id}-tt`">
-                Drag &amp; drop to reorder Link Groups
-              </id-tooltip>
-              {{ lg.name }}
-            </v-btn>
-          </drag-update-list>
-        </template>
-        <v-btn
-          v-if="!disablePassword"
-          @click="openView('password')"
-          block
-          class="nav-link cursor-pointer justify-start"
-          color="primary"
-          variant="text"
-          :active="visibleTab === 'password'">
-          <v-icon icon="mdi-lock mdi-fw" />Password
-        </v-btn>
-        <v-btn
-          @click="openView('themes')"
-          block
-          class="nav-link cursor-pointer justify-start"
-          color="primary"
-          variant="text"
-          :active="visibleTab === 'themes'">
-          <v-icon icon="mdi-brush mdi-fw" />Themes
-        </v-btn>
-      </div>
-    </v-col>
-
-    <v-col
-      xl="11"
-      lg="10"
-      md="10"
-      sm="9"
-      xs="12"
-      class="overflow-auto h-100 pt-3 pb-4 pr-4">
-      <!-- view settings -->
-      <div v-if="visibleTab === 'views'">
-        <!-- view create form -->
-        <create-view-modal v-model="viewModalOpen" />
-        <div class="mr-3 w-100 d-flex justify-space-between align-center">
-          <h1>
-            Views
-          </h1>
-          <v-text-field
-            class="ml-4 mr-2 flex-grow-1 medium-input"
-            autofocus
-            prepend-inner-icon="mdi-magnify"
-            v-debounce="val => searchTerm = val"
-            clearable />
-          <v-btn
-            class="no-wrap search-row-btn"
-            @click="openViewForm"
-            variant="outlined"
-            color="success">
-            <v-icon
-              icon="mdi-plus-circle"
-              class="mr-1" />
-            New View
-          </v-btn>
-
-          <v-btn
-            role="checkbox"
-            class="mx-2 no-wrap search-row-btn"
-            color="secondary"
-            flat
-            @click="seeAllViews = !seeAllViews; seeAllViewsChanged()"
-            v-tooltip="seeAllViews ? 'Just show the views created from your activity or shared with you' : 'See all the views that exist for all users (you can because you are an ADMIN!)'"
-            v-if="roles.includes('cont3xtAdmin')"
-            :title="seeAllViews ? 'Just show the views created from your activity or shared with you' : 'See all the views that exist for all users (you can because you are an ADMIN!)'">
-            <v-icon
-              class="mr-1"
-              icon="mdi-account-circle" />
-            See {{ seeAllViews ? ' MY ' : ' ALL ' }} Views
-          </v-btn>
-        </div>
-        <div class="d-flex flex-wrap">
-          <!-- no views -->
-          <div
-            class="row lead mt-4"
-            v-if="!viewSearchTerm && (!filteredViews.length || !filteredViews.filter(v => v._editable).length)">
-            <div class="col">
-              No Views are configured or shared for you to edit.
-              <v-btn
-                variant="text"
-                color="primary"
-                @click="openViewForm">
-                Create one!
-              </v-btn>
-            </div>
-          </div> <!-- /no views -->
-          <!-- no view results -->
-          <div
-            class="row lead mt-4"
-            v-else-if="viewSearchTerm && (!filteredViews.length || !filteredViews.filter(v => v._editable).length)">
-            <div class="col">
-              No Views match your search.
-            </div>
-          </div> <!-- /no view results -->
-          <!-- views -->
-          <div class="d-flex flex-row flex-wrap align-stretch justify-space-between">
-            <template v-for="view in filteredViews">
-              <div
-                class="px-2 pb-4 flex-grow-1"
-                :id="view._id"
-                :key="`${view._id}`"
-                v-if="view._editable || roles.includes('cont3xtAdmin')">
-                <v-card
-                  variant="tonal"
-                  elevation="4">
-                  <template #title>
-                    <div class="w-100 d-flex justify-space-between align-start">
-                      <div class="d-flex ga-1">
-                        <v-btn
-                          class="square-btn-sm"
-                          size="small"
-                          color="primary"
-                          v-tooltip="'Transfer ownership of this view'"
-                          title="Transfer ownership of this view"
-                          v-if="canTransferView(view)"
-                          @click="openTransferResource(view)">
-                          <v-icon icon="mdi-share" />
-                        </v-btn>
-                        <!-- delete button -->
-                        <transition name="buttons">
-                          <v-btn
-                            class="square-btn-sm"
-                            size="small"
-                            color="error"
-                            v-if="!confirmDeleteView[view._id]"
-                            v-tooltip:top="'Delete this view.'"
-                            @click.stop.prevent="toggleDeleteView(view._id)">
-                            <v-icon icon="mdi-trash-can" />
-                          </v-btn>
-                        </transition> <!-- /delete button -->
-                        <!-- cancel confirm delete button -->
-                        <transition name="buttons">
-                          <v-btn
-                            class="square-btn-sm"
-                            size="small"
-                            color="warning"
-                            v-tooltip="'Cancel'"
-                            title="Cancel"
-                            v-if="confirmDeleteView[view._id]"
-                            @click.stop.prevent="toggleDeleteView(view._id)">
-                            <v-icon icon="mdi-cancel" />
-                          </v-btn>
-                        </transition> <!-- /cancel confirm delete button -->
-                        <!-- confirm delete button -->
-                        <transition name="buttons">
-                          <v-btn
-                            class="square-btn-sm"
-                            size="small"
-                            color="error"
-                            v-tooltip="'Are you sure?'"
-                            title="Are you sure?"
-                            v-if="confirmDeleteView[view._id]"
-                            @click.stop.prevent="deleteView(view)">
-                            <v-icon icon="mdi-check-bold" />
-                          </v-btn>
-                        </transition> <!-- /confirm delete button -->
-                      </div>
-                      <v-alert
-                        color="success"
-                        height="32px"
-                        v-if="view.success"
-                        class="mb-0 mt-0 alert-sm mr-1 ml-1">
-                        <v-icon
-                          icon="mdi-check-bold"
-                          class="mr-2" />
-                        Saved!
-                      </v-alert>
-                      <v-alert
-                        color="error"
-                        height="32px"
-                        v-if="view.error"
-                        class="mb-0 mt-0 alert-sm mr-1 ml-1">
-                        <v-icon
-                          icon="mdi-alert"
-                          class="mr-2" />
-                        Error!
-                      </v-alert>
-                      <div class="d-flex ga-1">
-                        <transition name="buttons">
-                          <v-btn
-                            v-if="updatedViewMap[view._id]"
-                            class="square-btn-sm"
-                            size="small"
-                            color="warning"
-                            @click="cancelUpdateView(view)"
-                            v-tooltip="'Cancel changes to this view'">
-                            <v-icon icon="mdi-cancel" />
-                          </v-btn>
-                        </transition>
-                        <transition name="buttons">
-                          <v-btn
-                            v-if="updatedViewMap[view._id]"
-                            class="square-btn-sm"
-                            size="small"
-                            color="success"
-                            @click="saveView(view)"
-                            v-tooltip="'Save this view'">
-                            <v-icon icon="mdi-content-save" />
-                          </v-btn>
-                        </transition>
-                      </div>
-                    </div>
-                  </template>
-                  <ViewForm
-                    class="ma-4"
-                    :view="view"
-                    @update-view="updateView" />
-                </v-card>
-              </div>
-            </template> <!-- /views -->
-          </div>
-        </div>
-      </div> <!-- /view settings -->
-
-      <!-- integrations settings -->
-      <div v-if="visibleTab === 'integrations'">
-        <div class="ml-2 mr-3 w-100 d-flex justify-space-between align-center">
-          <h1>
-            Integrations
-          </h1>
-          <v-text-field
-            autofocus
-            class="ml-4 mr-2 medium-input"
-            prepend-inner-icon="mdi-magnify"
-            variant="outlined"
-            v-debounce="updateIntegrationSearchTerm"
-            placeholder="Search integrations"
-            clearable />
-          <div class="mr-3 no-wrap">
-            <v-btn
-              class="mr-1"
-              variant="outlined"
-              color="warning"
-              @click="toggleRawIntegrationSettings">
-              <v-icon
-                icon="mdi-pencil-box"
-                class="mr-2" />
-              Raw Edit
-            </v-btn>
-            <v-btn
-              variant="outlined"
-              color="success"
-              @click="saveIntegrationSettings">
-              <v-icon
-                icon="mdi-content-save"
-                class="mr-2" />
-              Save
-            </v-btn>
-          </div>
-        </div>
-        <div
-          class="d-flex flex-wrap"
-          :class="{ 'flex-column': rawIntegrationSettings }">
-          <template v-if="!rawIntegrationSettings">
-            <div
-              class="row lead mt-4"
-              v-if="Object.keys(sortedFilteredIntegrationSettings).length === 0">
-              <div class="col">
-                No Integrations match your search.
-              </div>
-            </div>
-            <div
-              :key="key"
-              class="px-2 pb-4 flex-grow-1"
-              v-for="([key, setting]) in sortedFilteredIntegrationSettings">
-              <v-card variant="tonal">
-                <v-card-title class="align-center d-flex flex-row justify-space-between bg-well mb-2">
-                  <img
-                    v-if="getIntegrations[key]"
-                    class="integration-setting-img"
-                    :src="getIntegrations[key].icon">
-                  <h4 class="ml-1 text-truncate">
-                    {{ key }}
-                  </h4>
-                  <div class="mb-2">
-                    <v-icon
-                      size="large"
-                      icon="mdi-lock"
-                      v-if="setting.locked"
-                      class="mr-2 cursor-help"
-                      v-tooltip="'This integration has been locked by your administrator. You cannot update this integration. Any previously configured settings for this integration will be ignored in favor of the global configuration.'" />
-                    <span
-                      size="large"
-                      icon="mdi-earth"
-                      class="mr-2 cursor-help"
-                      v-if="setting.globalConfiged"
-                      v-tooltip="'This integration has been globally configured by the administrator with a shared account. If you fill out the account fields below, it will override that configuration.'" />
-                    <a
-                      target="_blank"
-                      :href="setting.homePage"
-                      v-if="!!setting.homePage"
-                      v-tooltip="`${key} home page`">
-                      <v-icon
-                        icon="mdi-home"
-                        size="large" />
-                    </a>
-                  </div>
-                </v-card-title>
-                <div class="d-flex flex-column ga-2 mb-2">
-                  <template
-                    v-for="(field, name) in setting.settings"
-                    :key="name">
-                    <v-checkbox
-                      slim
-                      density="compact"
-                      class="ml-1"
-                      v-if="field.type === 'boolean'"
-                      v-model="setting.values[name]">
-                      <template #label>
-                        <span class="ma-0">{{ name }}</span>
-                      </template>
-                    </v-checkbox>
-                    <v-text-field
-                      v-else
-                      class="ml-2 mr-2"
-                      variant="outlined"
-                      :disabled="setting.locked"
-                      v-model="setting.values[name]"
-                      :rules="[(value) => !field.required || !!value?.length]"
-                      :type="field.password && !field.showValue ? 'password' : 'text'">
-                      <template #label>
-                        {{ name }}<span
-                          class="text-info"
-                          v-if="field.required">*</span>
-                      </template>
-                    </v-text-field>
-                  </template>
-                </div>
-              </v-card>
-            </div>
-          </template>
-          <textarea
-            v-else
-            rows="20"
-            size="sm"
-            @input="e => debounceRawEdit(e)"
-            class="cont3xt-textarea"
-            :value="createINI(rawIntegrationSettings)" />
-        </div>
-      </div> <!-- /integrations settings -->
-
-      <!-- overviews settings -->
-      <div v-if="visibleTab === 'overviews'">
-        <!-- overview create form -->
-        <create-overview-modal v-model="overviewModalOpen" />
-        <div class="ml-2 mr-3 w-100 d-flex flex-row justify-space-between align-center">
-          <h1>
-            Overviews
-          </h1>
-          <div class="d-flex flex-row">
-            <v-btn
-              variant="outlined"
-              color="primary"
-              @click="openOverviewForm">
-              <v-icon icon="mdi-plus-circle" />
-              New Overview
-            </v-btn>
-            <v-btn
-              role="checkbox"
-              class="mx-2 no-wrap"
-              color="secondary"
-              flat
-              @click="seeAllOverviews = !seeAllOverviews; seeAllOverviewsChanged()"
-              v-tooltip="seeAllOverviews ? 'Just show the overviews created from your activity or shared with you' : 'See all the overviews that exist for all users (you can because you are an ADMIN!)'"
-              v-if="roles.includes('cont3xtAdmin')"
-              :title="seeAllOverviews ? 'Just show the overviews created from your activity or shared with you' : 'See all the overviews that exist for all users (you can because you are an ADMIN!)'">
-              <v-icon
-                class="mr-1"
-                icon="mdi-account-circle" />
-              See {{ seeAllOverviews ? ' MY ' : ' ALL ' }} Overviews
-            </v-btn>
-          </div>
-        </div>
-
-        <!-- overview error -->
-        <v-alert
-          closable
-          color="error"
-          style="z-index: 2000;"
-          v-model="overviewsError"
-          class="position-fixed bottom-0 mb-2 ml-2 left-0">
-          {{ getOverviewsError }}
-        </v-alert> <!-- /overview error -->
-
-        <div class="d-flex flex-wrap pl-4">
-          <!-- overview-form-card uses :key to reset form when swapping active overview -->
-          <overview-form-card
-            v-if="activeOverviewId && activeUnModifiedOverview"
-            :key="activeOverviewId"
-            :overview="activeUnModifiedOverview"
-            :modified-overview="activeModifiedOverview"
-            @update-modified-overview="updateModifiedOverview"
-            @overview-deleted="activeOverviewDeleted"
-            @open-transfer-resource="openTransferResource" />
-          <div
-            v-else
-            class="d-flex flex-column">
+            @click="openView('views')"
+            block
+            class="nav-link cursor-pointer btn-space-between"
+            color="primary"
+            variant="text"
+            :active="visibleTab === 'views'">
             <span>
-              No Overviews configured.
+              <v-icon icon="mdi-eye mdi-fw" />Views
             </span>
             <v-btn
-              variant="outlined"
-              color="primary"
-              @click="openOverviewForm">
-              Create one!
+              size="x-small"
+              class="float-right"
+              color="secondary"
+              v-if="visibleTab === 'views'"
+              @click.stop.prevent="openViewForm"
+              v-tooltip="'Create a new view'">
+              <v-icon icon="mdi-plus-circle" />
             </v-btn>
-          </div>
-        </div>
-      </div> <!-- /overviews settings -->
-
-      <!-- link group settings -->
-      <div v-if="visibleTab === 'linkgroups'">
-        <!-- link group create form -->
-        <create-link-group-modal v-model="linkgroupModalOpen" />
-        <!-- link groups -->
-        <div class="ml-2 mr-3 w-100 d-flex flex-row justify-space-between align-center">
-          <h1>
-            Link Groups
-          </h1>
-          <span class="d-flex flex-row">
+          </v-btn>
+          <v-btn
+            @click="openView('integrations')"
+            block
+            class="nav-link cursor-pointer justify-start"
+            color="primary"
+            variant="text"
+            :active="visibleTab === 'integrations'">
+            <v-icon icon="mdi-key mdi-fw" />Integrations
+          </v-btn>
+          <v-btn
+            @click="openView('overviews')"
+            block
+            class="nav-link cursor-pointer btn-space-between"
+            :class="{ 'mb-1': visibleTab === 'overviews' }"
+            color="primary"
+            variant="text"
+            :active="visibleTab === 'overviews'">
+            <span>
+              <v-icon icon="mdi-file mdi-fw" />Overviews
+            </span>
             <v-btn
-              class="search-row-btn"
+              size="x-small"
+              class="float-right"
+              color="secondary"
+              v-if="visibleTab === 'overviews'"
+              @click.stop.prevent="openOverviewForm"
+              v-tooltip="'Create a new overview'">
+              <v-icon icon="mdi-plus-circle" />
+            </v-btn>
+          </v-btn>
+          <template v-if="visibleTab === 'overviews'">
+            <!-- overviews -->
+            <div
+              v-for="iType in iTypes"
+              :key="iType"
+              class="itype-group-container"
+              :style="{ 'border-color': iTypeColorMap[iType] }">
+              <v-btn
+                v-for="overview in getSortedOverviews.filter(o => o.iType === iType)"
+                size="small"
+                :key="overview._id"
+                :title="overview.name"
+                @click="setActiveOverviewId(overview._id)"
+                block
+                class="nav-link cursor-pointer btn-space-between"
+                color="primary"
+                variant="text"
+                :active="activeOverviewId === overview._id">
+                <overview-selector-line :overview="overview" />
+              </v-btn>
+            </div>
+          </template>
+          <v-btn
+            @click="openView('linkgroups')"
+            block
+            class="nav-link cursor-pointer btn-space-between"
+            color="primary"
+            variant="text"
+            :active="visibleTab === 'linkgroups'">
+            <span>
+              <v-icon icon="mdi-link mdi-fw" />Link Groups
+            </span>
+            <v-btn
+              size="x-small"
+              class="float-right"
+              color="secondary"
+              v-if="visibleTab === 'linkgroups'"
+              @click.stop.prevent="openLinkGroupForm"
+              v-tooltip="'Create a new link group'">
+              <v-icon icon="mdi-plus-circle" />
+            </v-btn>
+          </v-btn>
+          <template v-if="visibleTab === 'linkgroups'">
+            <drag-update-list
+              class="d-flex flex-column"
+              style="margin-left: 1rem"
+              :value="getLinkGroups || []"
+              @update="updateList">
+              <v-btn
+                v-for="(lg, i) in getLinkGroups"
+                :key="lg._id"
+                block
+                size="small"
+                variant="text"
+                color="primary"
+                class="justify-start mt-1"
+                @click="selectedLinkGroup = i"
+                :title="lg.name"
+                :active="selectedLinkGroup === i">
+                <v-icon
+                  icon="mdi-menu"
+                  :id="`${lg._id}-tt`"
+                  class="drag-handle mr-2" />
+                <id-tooltip :target="`${lg._id}-tt`">
+                  Drag &amp; drop to reorder Link Groups
+                </id-tooltip>
+                {{ lg.name }}
+              </v-btn>
+            </drag-update-list>
+          </template>
+          <v-btn
+            v-if="!disablePassword"
+            @click="openView('password')"
+            block
+            class="nav-link cursor-pointer justify-start"
+            color="primary"
+            variant="text"
+            :active="visibleTab === 'password'">
+            <v-icon icon="mdi-lock mdi-fw" />Password
+          </v-btn>
+          <v-btn
+            @click="openView('themes')"
+            block
+            class="nav-link cursor-pointer justify-start"
+            color="primary"
+            variant="text"
+            :active="visibleTab === 'themes'">
+            <v-icon icon="mdi-brush mdi-fw" />Themes
+          </v-btn>
+        </div>
+      </v-col>
+
+      <v-col
+        xl="11"
+        lg="10"
+        md="10"
+        sm="9"
+        xs="12"
+        class="overflow-auto h-100 pt-3 pb-4 pr-4">
+        <!-- view settings -->
+        <div v-if="visibleTab === 'views'">
+          <!-- view create form -->
+          <create-view-modal v-model="viewModalOpen" />
+          <div class="mr-3 w-100 d-flex justify-space-between align-center">
+            <h1>
+              Views
+            </h1>
+            <v-text-field
+              class="ml-4 mr-2 flex-grow-1 medium-input"
+              autofocus
+              prepend-inner-icon="mdi-magnify"
+              v-debounce="val => searchTerm = val"
+              clearable />
+            <v-btn
+              class="no-wrap search-row-btn"
+              @click="openViewForm"
               variant="outlined"
-              color="primary"
-              @click="openLinkGroupForm">
+              color="success">
               <v-icon
                 icon="mdi-plus-circle"
                 class="mr-1" />
-              New Group
+              New View
             </v-btn>
+
             <v-btn
               role="checkbox"
               class="mx-2 no-wrap search-row-btn"
               color="secondary"
               flat
-              @click="seeAllLinkGroups = !seeAllLinkGroups; seeAllLinkGroupsChanged()"
-              v-tooltip="seeAllLinkGroups ? 'Just show the link groups created from your activity or shared with you' : 'See all the link groups that exist for all users (you can because you are an ADMIN!)'"
+              @click="seeAllViews = !seeAllViews; seeAllViewsChanged()"
+              v-tooltip="seeAllViews ? 'Just show the views created from your activity or shared with you' : 'See all the views that exist for all users (you can because you are an ADMIN!)'"
               v-if="roles.includes('cont3xtAdmin')"
-              :title="seeAllLinkGroups ? 'Just show the link groups created from your activity or shared with you' : 'See all the link groups that exist for all users (you can because you are an ADMIN!)'">
+              :title="seeAllViews ? 'Just show the views created from your activity or shared with you' : 'See all the views that exist for all users (you can because you are an ADMIN!)'">
               <v-icon
                 class="mr-1"
                 icon="mdi-account-circle" />
-              See {{ seeAllLinkGroups ? ' MY ' : ' ALL ' }} Groups
-            </v-btn>
-          </span>
-        </div>
-
-        <!-- link group error -->
-        <v-alert
-          closable
-          color="error"
-          style="z-index: 2000;"
-          v-model="linkGroupsError"
-          class="position-fixed bottom-0 mb-2 ml-2 left-0">
-          {{ getLinkGroupsError }}
-        </v-alert> <!-- /link group error -->
-
-        <!-- link groups -->
-        <link-group-card
-          v-if="getLinkGroups && getLinkGroups.length && getLinkGroups[selectedLinkGroup]"
-          :link-group="getLinkGroups[selectedLinkGroup]"
-          :key="getLinkGroups[selectedLinkGroup]._id"
-          :pre-updated-link-group="updatedLinkGroupMap[getLinkGroups[selectedLinkGroup]._id]"
-          @update-link-group="updateLinkGroup"
-          @open-transfer-resource="openTransferResource" /> <!-- /link groups -->
-        <!-- no link groups -->
-        <div
-          class="row lead mt-4"
-          v-if="getLinkGroups && !getLinkGroups.length">
-          <div class="col">
-            No Link Groups are configured.
-            <v-btn
-              variant="text"
-              color="primary"
-              @click="openLinkGroupForm">
-              Create one!
+              See {{ seeAllViews ? ' MY ' : ' ALL ' }} Views
             </v-btn>
           </div>
-        </div> <!-- /no link groups -->
-      </div> <!-- /link group settings -->
+          <div class="d-flex flex-wrap">
+            <!-- no views -->
+            <div
+              class="row lead mt-4"
+              v-if="!viewSearchTerm && (!filteredViews.length || !filteredViews.filter(v => v._editable).length)">
+              <div class="col">
+                No Views are configured or shared for you to edit.
+                <v-btn
+                  variant="text"
+                  color="primary"
+                  @click="openViewForm">
+                  Create one!
+                </v-btn>
+              </div>
+            </div> <!-- /no views -->
+            <!-- no view results -->
+            <div
+              class="row lead mt-4"
+              v-else-if="viewSearchTerm && (!filteredViews.length || !filteredViews.filter(v => v._editable).length)">
+              <div class="col">
+                No Views match your search.
+              </div>
+            </div> <!-- /no view results -->
+            <!-- views -->
+            <div class="d-flex flex-row flex-wrap align-stretch justify-space-between">
+              <template v-for="view in filteredViews">
+                <div
+                  class="px-2 pb-4 flex-grow-1"
+                  :id="view._id"
+                  :key="`${view._id}`"
+                  v-if="view._editable || roles.includes('cont3xtAdmin')">
+                  <v-card
+                    variant="tonal"
+                    elevation="4">
+                    <template #title>
+                      <div class="w-100 d-flex justify-space-between align-start">
+                        <div class="d-flex ga-1">
+                          <v-btn
+                            class="square-btn-sm"
+                            size="small"
+                            color="primary"
+                            v-tooltip="'Transfer ownership of this view'"
+                            title="Transfer ownership of this view"
+                            v-if="canTransferView(view)"
+                            @click="openTransferResource(view)">
+                            <v-icon icon="mdi-share" />
+                          </v-btn>
+                          <!-- delete button -->
+                          <transition name="buttons">
+                            <v-btn
+                              class="square-btn-sm"
+                              size="small"
+                              color="error"
+                              v-if="!confirmDeleteView[view._id]"
+                              v-tooltip:top="'Delete this view.'"
+                              @click.stop.prevent="toggleDeleteView(view._id)">
+                              <v-icon icon="mdi-trash-can" />
+                            </v-btn>
+                          </transition> <!-- /delete button -->
+                          <!-- cancel confirm delete button -->
+                          <transition name="buttons">
+                            <v-btn
+                              class="square-btn-sm"
+                              size="small"
+                              color="warning"
+                              v-tooltip="'Cancel'"
+                              title="Cancel"
+                              v-if="confirmDeleteView[view._id]"
+                              @click.stop.prevent="toggleDeleteView(view._id)">
+                              <v-icon icon="mdi-cancel" />
+                            </v-btn>
+                          </transition> <!-- /cancel confirm delete button -->
+                          <!-- confirm delete button -->
+                          <transition name="buttons">
+                            <v-btn
+                              class="square-btn-sm"
+                              size="small"
+                              color="error"
+                              v-tooltip="'Are you sure?'"
+                              title="Are you sure?"
+                              v-if="confirmDeleteView[view._id]"
+                              @click.stop.prevent="deleteView(view)">
+                              <v-icon icon="mdi-check-bold" />
+                            </v-btn>
+                          </transition> <!-- /confirm delete button -->
+                        </div>
+                        <v-alert
+                          color="success"
+                          height="32px"
+                          v-if="view.success"
+                          class="mb-0 mt-0 alert-sm mr-1 ml-1">
+                          <v-icon
+                            icon="mdi-check-bold"
+                            class="mr-2" />
+                          Saved!
+                        </v-alert>
+                        <v-alert
+                          color="error"
+                          height="32px"
+                          v-if="view.error"
+                          class="mb-0 mt-0 alert-sm mr-1 ml-1">
+                          <v-icon
+                            icon="mdi-alert"
+                            class="mr-2" />
+                          Error!
+                        </v-alert>
+                        <div class="d-flex ga-1">
+                          <transition name="buttons">
+                            <v-btn
+                              v-if="updatedViewMap[view._id]"
+                              class="square-btn-sm"
+                              size="small"
+                              color="warning"
+                              @click="cancelUpdateView(view)"
+                              v-tooltip="'Cancel changes to this view'">
+                              <v-icon icon="mdi-cancel" />
+                            </v-btn>
+                          </transition>
+                          <transition name="buttons">
+                            <v-btn
+                              v-if="updatedViewMap[view._id]"
+                              class="square-btn-sm"
+                              size="small"
+                              color="success"
+                              @click="saveView(view)"
+                              v-tooltip="'Save this view'">
+                              <v-icon icon="mdi-content-save" />
+                            </v-btn>
+                          </transition>
+                        </div>
+                      </div>
+                    </template>
+                    <ViewForm
+                      class="ma-4"
+                      :view="view"
+                      @update-view="updateView" />
+                  </v-card>
+                </div>
+              </template> <!-- /views -->
+            </div>
+          </div>
+        </div> <!-- /view settings -->
 
-      <!-- password settings -->
-      <div v-if="visibleTab === 'password' && !disablePassword">
-        <h1>
-          Change Password
-        </h1>
-
-        <v-form>
-          <v-row no-gutters>
-            <v-col
-              cols="9"
-              class="mt-4">
-              <!-- current password -->
-              <v-text-field
-                type="password"
-                v-model="currentPassword"
-                @keydown.enter="changePassword"
-                label="Current Password"
-                placeholder="Enter your current password" />
-              <!-- new password -->
-              <v-text-field
-                class="mt-2"
-                type="password"
-                v-model="newPassword"
-                @keydown.enter="changePassword"
-                label="New Password"
-                placeholder="Enter a new password" />
-              <!-- confirm new password -->
-              <v-text-field
-                class="mt-2"
-                type="password"
-                v-model="confirmNewPassword"
-                @keydown.enter="changePassword"
-                label="Confirm New Password"
-                placeholder="Confirm your new password" />
-              <!-- change password button -->
+        <!-- integrations settings -->
+        <div v-if="visibleTab === 'integrations'">
+          <div class="ml-2 mr-3 w-100 d-flex justify-space-between align-center">
+            <h1>
+              Integrations
+            </h1>
+            <v-text-field
+              autofocus
+              class="ml-4 mr-2 medium-input"
+              prepend-inner-icon="mdi-magnify"
+              variant="outlined"
+              v-debounce="updateIntegrationSearchTerm"
+              placeholder="Search integrations"
+              clearable />
+            <div class="mr-3 no-wrap">
               <v-btn
-                type="button"
-                color="success"
-                class="mt-2"
-                @click="changePassword">
-                Change Password
+                class="mr-1"
+                variant="outlined"
+                color="warning"
+                @click="toggleRawIntegrationSettings">
+                <v-icon
+                  icon="mdi-pencil-box"
+                  class="mr-2" />
+                Raw Edit
               </v-btn>
-            </v-col>
-          </v-row>
-        </v-form>
-      </div> <!-- /password settings -->
+              <v-btn
+                variant="outlined"
+                color="success"
+                @click="saveIntegrationSettings">
+                <v-icon
+                  icon="mdi-content-save"
+                  class="mr-2" />
+                Save
+              </v-btn>
+            </div>
+          </div>
+          <div
+            class="d-flex flex-wrap"
+            :class="{ 'flex-column': rawIntegrationSettings }">
+            <template v-if="!rawIntegrationSettings">
+              <div
+                class="row lead mt-4"
+                v-if="Object.keys(sortedFilteredIntegrationSettings).length === 0">
+                <div class="col">
+                  No Integrations match your search.
+                </div>
+              </div>
+              <div
+                :key="key"
+                class="px-2 pb-4 flex-grow-1"
+                v-for="([key, setting]) in sortedFilteredIntegrationSettings">
+                <v-card variant="tonal">
+                  <v-card-title class="align-center d-flex flex-row justify-space-between bg-well mb-2">
+                    <img
+                      v-if="getIntegrations[key]"
+                      class="integration-setting-img"
+                      :src="getIntegrations[key].icon">
+                    <h4 class="ml-1 text-truncate">
+                      {{ key }}
+                    </h4>
+                    <div class="mb-2">
+                      <v-icon
+                        size="large"
+                        icon="mdi-lock"
+                        v-if="setting.locked"
+                        class="mr-2 cursor-help"
+                        v-tooltip="'This integration has been locked by your administrator. You cannot update this integration. Any previously configured settings for this integration will be ignored in favor of the global configuration.'" />
+                      <span
+                        size="large"
+                        icon="mdi-earth"
+                        class="mr-2 cursor-help"
+                        v-if="setting.globalConfiged"
+                        v-tooltip="'This integration has been globally configured by the administrator with a shared account. If you fill out the account fields below, it will override that configuration.'" />
+                      <a
+                        target="_blank"
+                        :href="setting.homePage"
+                        v-if="!!setting.homePage"
+                        v-tooltip="`${key} home page`">
+                        <v-icon
+                          icon="mdi-home"
+                          size="large" />
+                      </a>
+                    </div>
+                  </v-card-title>
+                  <div class="d-flex flex-column ga-2 mb-2">
+                    <template
+                      v-for="(field, name) in setting.settings"
+                      :key="name">
+                      <v-checkbox
+                        slim
+                        density="compact"
+                        class="ml-1"
+                        v-if="field.type === 'boolean'"
+                        v-model="setting.values[name]">
+                        <template #label>
+                          <span class="ma-0">{{ name }}</span>
+                        </template>
+                      </v-checkbox>
+                      <v-text-field
+                        v-else
+                        class="ml-2 mr-2"
+                        variant="outlined"
+                        :disabled="setting.locked"
+                        v-model="setting.values[name]"
+                        :rules="[(value) => !field.required || !!value?.length]"
+                        :type="field.password && !field.showValue ? 'password' : 'text'">
+                        <template #label>
+                          {{ name }}<span
+                            class="text-info"
+                            v-if="field.required">*</span>
+                        </template>
+                      </v-text-field>
+                    </template>
+                  </div>
+                </v-card>
+              </div>
+            </template>
+            <textarea
+              v-else
+              rows="20"
+              size="sm"
+              @input="e => debounceRawEdit(e)"
+              class="cont3xt-textarea"
+              :value="createINI(rawIntegrationSettings)" />
+          </div>
+        </div> <!-- /integrations settings -->
 
-      <!-- theme settings -->
-      <div v-if="visibleTab === 'themes'">
-        <h1 class="mb-3">
-          Themes
-        </h1>
-        <p class="text-medium-emphasis mb-4">
-          Choose a theme or build your own. Themes apply across cont3xt
-          immediately and persist in your browser.
-        </p>
-        <ThemePicker
-          :model-value="getTheme"
-          :themes="themes"
-          :custom-theme="getCustomTheme"
-          @update:model-value="onThemeChange"
-          @update:custom-theme="onCustomThemeChange" />
-      </div> <!-- /theme settings -->
-    </v-col>
-    <!-- messages -->
-    <v-alert
-      v-if="!!msg"
-      class="position-fixed bottom-0 mb-2 ml-2"
-      style="z-index: 2000;"
-      :color="msgType"
-      dismissible>
-      {{ msg }}
-    </v-alert> <!-- messages -->
+        <!-- overviews settings -->
+        <div v-if="visibleTab === 'overviews'">
+          <!-- overview create form -->
+          <create-overview-modal v-model="overviewModalOpen" />
+          <div class="ml-2 mr-3 w-100 d-flex flex-row justify-space-between align-center">
+            <h1>
+              Overviews
+            </h1>
+            <div class="d-flex flex-row">
+              <v-btn
+                variant="outlined"
+                color="primary"
+                @click="openOverviewForm">
+                <v-icon icon="mdi-plus-circle" />
+                New Overview
+              </v-btn>
+              <v-btn
+                role="checkbox"
+                class="mx-2 no-wrap"
+                color="secondary"
+                flat
+                @click="seeAllOverviews = !seeAllOverviews; seeAllOverviewsChanged()"
+                v-tooltip="seeAllOverviews ? 'Just show the overviews created from your activity or shared with you' : 'See all the overviews that exist for all users (you can because you are an ADMIN!)'"
+                v-if="roles.includes('cont3xtAdmin')"
+                :title="seeAllOverviews ? 'Just show the overviews created from your activity or shared with you' : 'See all the overviews that exist for all users (you can because you are an ADMIN!)'">
+                <v-icon
+                  class="mr-1"
+                  icon="mdi-account-circle" />
+                See {{ seeAllOverviews ? ' MY ' : ' ALL ' }} Overviews
+              </v-btn>
+            </div>
+          </div>
 
-    <transfer-resource
-      v-model="transferResourceModalOpen"
-      @transfer-resource="submitTransfer" />
-  </v-row>
+          <!-- overview error -->
+          <v-alert
+            closable
+            color="error"
+            style="z-index: 2000;"
+            v-model="overviewsError"
+            class="position-fixed bottom-0 mb-2 ml-2 left-0">
+            {{ getOverviewsError }}
+          </v-alert> <!-- /overview error -->
+
+          <div class="d-flex flex-wrap pl-4">
+            <!-- overview-form-card uses :key to reset form when swapping active overview -->
+            <overview-form-card
+              v-if="activeOverviewId && activeUnModifiedOverview"
+              :key="activeOverviewId"
+              :overview="activeUnModifiedOverview"
+              :modified-overview="activeModifiedOverview"
+              @update-modified-overview="updateModifiedOverview"
+              @overview-deleted="activeOverviewDeleted"
+              @open-transfer-resource="openTransferResource" />
+            <div
+              v-else
+              class="d-flex flex-column">
+              <span>
+                No Overviews configured.
+              </span>
+              <v-btn
+                variant="outlined"
+                color="primary"
+                @click="openOverviewForm">
+                Create one!
+              </v-btn>
+            </div>
+          </div>
+        </div> <!-- /overviews settings -->
+
+        <!-- link group settings -->
+        <div v-if="visibleTab === 'linkgroups'">
+          <!-- link group create form -->
+          <create-link-group-modal v-model="linkgroupModalOpen" />
+          <!-- link groups -->
+          <div class="ml-2 mr-3 w-100 d-flex flex-row justify-space-between align-center">
+            <h1>
+              Link Groups
+            </h1>
+            <span class="d-flex flex-row">
+              <v-btn
+                class="search-row-btn"
+                variant="outlined"
+                color="primary"
+                @click="openLinkGroupForm">
+                <v-icon
+                  icon="mdi-plus-circle"
+                  class="mr-1" />
+                New Group
+              </v-btn>
+              <v-btn
+                role="checkbox"
+                class="mx-2 no-wrap search-row-btn"
+                color="secondary"
+                flat
+                @click="seeAllLinkGroups = !seeAllLinkGroups; seeAllLinkGroupsChanged()"
+                v-tooltip="seeAllLinkGroups ? 'Just show the link groups created from your activity or shared with you' : 'See all the link groups that exist for all users (you can because you are an ADMIN!)'"
+                v-if="roles.includes('cont3xtAdmin')"
+                :title="seeAllLinkGroups ? 'Just show the link groups created from your activity or shared with you' : 'See all the link groups that exist for all users (you can because you are an ADMIN!)'">
+                <v-icon
+                  class="mr-1"
+                  icon="mdi-account-circle" />
+                See {{ seeAllLinkGroups ? ' MY ' : ' ALL ' }} Groups
+              </v-btn>
+            </span>
+          </div>
+
+          <!-- link group error -->
+          <v-alert
+            closable
+            color="error"
+            style="z-index: 2000;"
+            v-model="linkGroupsError"
+            class="position-fixed bottom-0 mb-2 ml-2 left-0">
+            {{ getLinkGroupsError }}
+          </v-alert> <!-- /link group error -->
+
+          <!-- link groups -->
+          <link-group-card
+            v-if="getLinkGroups && getLinkGroups.length && getLinkGroups[selectedLinkGroup]"
+            :link-group="getLinkGroups[selectedLinkGroup]"
+            :key="getLinkGroups[selectedLinkGroup]._id"
+            :pre-updated-link-group="updatedLinkGroupMap[getLinkGroups[selectedLinkGroup]._id]"
+            @update-link-group="updateLinkGroup"
+            @open-transfer-resource="openTransferResource" /> <!-- /link groups -->
+          <!-- no link groups -->
+          <div
+            class="row lead mt-4"
+            v-if="getLinkGroups && !getLinkGroups.length">
+            <div class="col">
+              No Link Groups are configured.
+              <v-btn
+                variant="text"
+                color="primary"
+                @click="openLinkGroupForm">
+                Create one!
+              </v-btn>
+            </div>
+          </div> <!-- /no link groups -->
+        </div> <!-- /link group settings -->
+
+        <!-- password settings -->
+        <div v-if="visibleTab === 'password' && !disablePassword">
+          <h1>
+            Change Password
+          </h1>
+
+          <v-form>
+            <v-row no-gutters>
+              <v-col
+                cols="9"
+                class="mt-4">
+                <!-- current password -->
+                <v-text-field
+                  type="password"
+                  v-model="currentPassword"
+                  @keydown.enter="changePassword"
+                  label="Current Password"
+                  placeholder="Enter your current password" />
+                <!-- new password -->
+                <v-text-field
+                  class="mt-2"
+                  type="password"
+                  v-model="newPassword"
+                  @keydown.enter="changePassword"
+                  label="New Password"
+                  placeholder="Enter a new password" />
+                <!-- confirm new password -->
+                <v-text-field
+                  class="mt-2"
+                  type="password"
+                  v-model="confirmNewPassword"
+                  @keydown.enter="changePassword"
+                  label="Confirm New Password"
+                  placeholder="Confirm your new password" />
+                <!-- change password button -->
+                <v-btn
+                  type="button"
+                  color="success"
+                  class="mt-2"
+                  @click="changePassword">
+                  Change Password
+                </v-btn>
+              </v-col>
+            </v-row>
+          </v-form>
+        </div> <!-- /password settings -->
+
+        <!-- theme settings -->
+        <div v-if="visibleTab === 'themes'">
+          <h1 class="mb-3">
+            Themes
+          </h1>
+          <p class="text-medium-emphasis mb-4">
+            Choose a theme or build your own. Themes apply across cont3xt
+            immediately and persist in your browser.
+          </p>
+          <ThemePicker
+            :model-value="getTheme"
+            :themes="themes"
+            :custom-theme="getCustomTheme"
+            @update:model-value="onThemeChange"
+            @update:custom-theme="onCustomThemeChange" />
+        </div> <!-- /theme settings -->
+      </v-col>
+      <!-- messages -->
+      <v-alert
+        v-if="!!msg"
+        class="position-fixed bottom-0 mb-2 ml-2"
+        style="z-index: 2000;"
+        :color="msgType"
+        dismissible>
+        {{ msg }}
+      </v-alert> <!-- messages -->
+
+      <transfer-resource
+        v-model="transferResourceModalOpen"
+        @transfer-resource="submitTransfer" />
+    </v-row>
+  </div>
 </template>
 
 <script>

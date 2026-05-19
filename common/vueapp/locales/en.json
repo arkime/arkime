@@ -1473,6 +1473,7 @@
       "noIssuesMatch": "No issues match your search and filters"
     },
     "settings": {
+      "title": "Parliament Settings",
       "ifProblem": "If the problem persists, try",
       "restoreDefaults": "restoring them to the defaults",
       "general": "General",
@@ -1521,6 +1522,7 @@
       "helpHtml": "Or, maybe you need some <a href=\"help\" class=\"no-decoration\"> help</a>?"
     },
     "config": {
+      "title": "WISE Configuration",
       "importTip": "Import a new Source Configuration (JSON or INI)",
       "createTip": "Create a new Source through the UI",
       "resetFile": "Reset File",

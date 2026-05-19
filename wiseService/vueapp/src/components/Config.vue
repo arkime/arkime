@@ -4,16 +4,32 @@ SPDX-License-Identifier: Apache-2.0
 -->
 <template>
   <!-- container -->
-  <div>
-    <v-alert
-      v-if="alertState.text"
-      closable
-      :type="alertVariantToType(alertState.variant)"
-      style="z-index: 2000;"
-      class="position-fixed fixed-bottom m-0 rounded-0"
-      @click:close="alertState.text = ''">
+  <div class="settings-page">
+    <!-- sub navbar -->
+    <div class="sub-navbar">
+      <span class="sub-navbar-title">
+        <span class="fa-stack">
+          <span class="fa fa-cogs fa-stack-1x" />
+          <span class="fa fa-square-o fa-stack-2x" />
+        </span>&nbsp;
+        <span>{{ $t('wise.config.title') }}</span>
+      </span>
+    </div> <!-- /sub navbar -->
+
+    <v-snackbar
+      :model-value="!!alertState.text"
+      :color="alertVariantToType(alertState.variant)"
+      location="bottom"
+      :timeout="-1"
+      @update:model-value="(v) => { if (!v) alertState.text = '' }">
       {{ alertState.text }}
-    </v-alert>
+      <template #actions>
+        <v-btn
+          variant="text"
+          icon="fa-times"
+          @click="alertState.text = ''" />
+      </template>
+    </v-snackbar>
 
     <v-row
       no-gutters

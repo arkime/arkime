@@ -328,29 +328,6 @@ body {
 .info-area { color: rgb(var(--v-theme-neutral-dark)); }
 .info-area > div { background-color: rgb(var(--v-theme-neutral-light)); }
 
-/* sub navbars */
-.sub-navbar {
-  position: fixed;
-  top: 36px;
-  left: 0;
-  right: 0;
-  padding: var(--px-lg) var(--px-md) var(--px-sm) 13px;
-  background-color: rgb(var(--v-theme-secondary-lightest));
-  -webkit-box-shadow: 0 0 16px -2px black;
-     -moz-box-shadow: 0 0 16px -2px black;
-          box-shadow: 0 0 16px -2px black;
-}
-.sub-navbar .sub-navbar-title {
-  font-size: 19px;
-  font-weight: bold;
-}
-.sub-navbar .sub-navbar-title .fa-stack {
-  margin-top: -14px;
-}
-.sub-navbar > .toast-container {
-  margin-top: -6px;
-}
-
 /* description list styles */
 dl.dl-horizontal dt {
   float: left;
