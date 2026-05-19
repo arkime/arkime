@@ -422,7 +422,7 @@ const showSrcBytesImg = () => {
     <br>
     <img src="${url}">
     <a class="no-decoration download-bytes" href="${url}" download="${props.session.id}-src.png">
-      <span class="fa fa-download"></span>&nbsp;
+      <i class="mdi mdi-download"></i>&nbsp;
       Download source bytes image
     </a>
   `;
@@ -435,7 +435,7 @@ const showDstBytesImg = () => {
     <br>
     <img src="${url}">
     <a class="no-decoration download-bytes" href="${url}" download="${props.session.id}-dst.png">
-      <span class="fa fa-download"></span>&nbsp;
+      <i class="mdi mdi-download"></i>&nbsp;
       Download destination bytes image
     </a>
   `;

@@ -70,7 +70,7 @@ SPDX-License-Identifier: Apache-2.0
           density="comfortable"
           class="ms-2 toggle-chevrons text-theme-button text-theme-gray-hover"
           @click="toggleToolBars">
-          <span :class="showToolBars ? 'fa fa-chevron-circle-up fa-fw' : 'fa fa-chevron-circle-down fa-fw'" />
+          <v-icon :icon="showToolBars ? 'mdi-chevron-up-circle' : 'mdi-chevron-down-circle'" />
           <v-tooltip activator="parent">{{ $t('navigation.toggleTopStuffTip') }}</v-tooltip>
         </v-btn>
 
