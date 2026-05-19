@@ -125,7 +125,6 @@ SPDX-License-Identifier: Apache-2.0
         class="settings-right-panel">
         <!-- general settings -->
         <form
-          class="form-horizontal"
           v-if="visibleTab === 'general'"
           id="general">
           <h3 class="d-flex align-center">
@@ -590,7 +589,6 @@ SPDX-License-Identifier: Apache-2.0
         <!-- col configs settings -->
         <form
           v-if="visibleTab === 'col'"
-          class="form-horizontal"
           id="col">
           <h3>{{ $t('settings.ccl.title') }}</h3>
 
@@ -719,7 +717,6 @@ SPDX-License-Identifier: Apache-2.0
         <!-- info field configs settings -->
         <form
           v-if="visibleTab === 'info'"
-          class="form-horizontal"
           id="col">
           <h3>{{ $t('settings.infoLayout.title') }}</h3>
 
@@ -819,7 +816,6 @@ SPDX-License-Identifier: Apache-2.0
         <!-- spiview field configs settings -->
         <form
           v-if="visibleTab === 'spiview'"
-          class="form-horizontal"
           id="spiview">
           <h3>{{ $t('settings.spiview.title') }}</h3>
 
@@ -988,7 +984,6 @@ SPDX-License-Identifier: Apache-2.0
         <!-- password settings -->
         <form
           v-if="visibleTab === 'password' && (!multiviewer || hasUsersES) && !disablePassword"
-          class="form-horizontal"
           @keyup.enter="changePassword"
           id="password">
           <h3>{{ $t('settings.password.title') }}</h3>
@@ -1390,7 +1385,7 @@ export default {
       return this.$store.state.user;
     },
     // Vuetify v-alert accepts: success | info | warning | error.
-    // Map Bootstrap-flavored "danger" → Vuetify "error".
+    // Map Bootstrap-flavored"danger" → Vuetify"error".
     vuetifyMsgType: function () {
       return this.msgType === 'danger' ? 'error' : (this.msgType || 'success');
     },
