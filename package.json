@@ -118,8 +118,6 @@
     "@vitejs/plugin-vue": "^6.0.4",
     "@vue/compiler-sfc": "^3.5.29",
     "autoprefixer": "^10.2.5",
-    "bootstrap": "^5.3.8",
-    "bootstrap-vue-next": "^0.40.6",
     "concurrently": "^8.1.0",
     "country-code-emoji": "^2.3.0",
     "d3-sankey": "^0.12.3",
