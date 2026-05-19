@@ -61,7 +61,11 @@ import ArkimeWelcomeMessage from './components/utils/WelcomeMessage.vue';
 import ArkimeUpgradeBrowser from './components/utils/UpgradeBrowser.vue';
 import KeyboardShortcuts from '@common/KeyboardShortcuts.vue';
 import UserService from './components/users/UserService.js';
-import { isLegacyCustomTheme, migrateLegacyCustomTheme } from '@common/themes/customTheme.js';
+import {
+  pickStoredTheme,
+  VUETIFY_THEME_KEY,
+  VUETIFY_CUSTOM_THEME_KEY
+} from '@common/themes/customTheme.js';
 import { registerVuetifyTheme } from '@common/themes/registerVuetifyTheme.js';
 
 export default {
@@ -209,15 +213,21 @@ export default {
         hash: this.$route.hash
       });
     },
-    /* Activate the user's saved theme via Vuetify. Handles three shapes:
-       1. Legacy 'custom1:hex,hex,...' positional string -> migrate to
-          the new {customTheme object, theme:'custom1'} shape, persist
-          back, then activate.
-       2. Legacy '{name}-theme' suffix strings (e.g. 'arkime-light-theme')
-          -> strip suffix to get the new bare id.
-       3. Bare new id ('arkime-light', 'custom1', etc.) -> activate. */
+    /* Activate the user's saved theme via Vuetify.
+     *
+     * v7+ persists the theme under `settings.vuetifyTheme` /
+     * `settings.vuetifyCustomTheme` so the legacy keys
+     * (`settings.theme` / `settings.customTheme`) remain untouched and
+     * usable by older arkime versions if the same user logs into both.
+     *
+     * Read order (pickStoredTheme):
+     *   1. vuetifyTheme / vuetifyCustomTheme           -- authoritative
+     *   2. legacy theme / customTheme (one-shot import) -- promoted into
+     *      the v7 keys on this load so subsequent loads skip the import
+     *   3. fallback to OS prefers-color-scheme           -- setTheme()
+     */
     applySavedTheme (settings) {
-      const setting = settings && settings.theme;
+      const { themeId, customTheme, fromLegacy } = pickStoredTheme(settings);
 
       const registerCustom = (themeObj) => {
         registerVuetifyTheme(this.$vuetify, 'custom1', {
@@ -226,35 +236,28 @@ export default {
         });
       };
 
-      // Case 1: legacy 'custom1:...' positional format -> one-shot migration.
-      if (isLegacyCustomTheme(setting)) {
-        const migrated = migrateLegacyCustomTheme(setting);
-        if (migrated) {
-          settings.customTheme = migrated;
-          settings.theme = 'custom1';
-          // Persist the new shape; legacy string is dropped.
-          UserService.saveSettings(settings).catch(() => { /* idempotent on retry */ });
-          registerCustom(migrated);
-          this.$vuetify.theme.change('custom1');
-          return;
-        }
+      // Register a stored custom theme (regardless of which theme is
+      // active) so the user can switch to it via the picker.
+      if (customTheme && customTheme.colors) {
+        registerCustom(customTheme);
       }
 
-      // Register a stored custom theme (regardless of which theme is active)
-      // so the user can switch to it via the picker.
-      if (settings && settings.customTheme && settings.customTheme.colors) {
-        registerCustom(settings.customTheme);
+      // If we imported from the legacy keys, persist into the new keys
+      // so subsequent loads short-circuit at step 1 above. We never
+      // mutate the legacy keys -- old arkime still reads them.
+      if (fromLegacy) {
+        if (themeId) settings[VUETIFY_THEME_KEY] = themeId;
+        if (customTheme) settings[VUETIFY_CUSTOM_THEME_KEY] = customTheme;
+        UserService.saveSettings(settings).catch(() => { /* idempotent on retry */ });
       }
 
-      // Case 2/3: normalize id and activate.
-      if (!setting || setting === 'default-theme') {
+      if (!themeId) {
         this.setTheme();
         return;
       }
-      const id = String(setting).replace(/-theme$/, '');
       const themesRecord = this.$vuetify.theme.themes.value || this.$vuetify.theme.themes;
-      if (themesRecord && themesRecord[id]) {
-        this.$vuetify.theme.change(id);
+      if (themesRecord && themesRecord[themeId]) {
+        this.$vuetify.theme.change(themeId);
       } else {
         this.setTheme();
       }

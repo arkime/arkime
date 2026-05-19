@@ -951,7 +951,7 @@ SPDX-License-Identifier: Apache-2.0
           <ThemePicker
             :model-value="activeThemeId"
             :themes="themes"
-            :custom-theme="settings.customTheme || null"
+            :custom-theme="settings.vuetifyCustomTheme || settings.customTheme || null"
             @update:model-value="changeTheme"
             @update:custom-theme="onCustomThemeChange" />
 
@@ -1420,7 +1420,9 @@ export default {
        legacy '...-theme' suffix strings to bare manifest ids; falls
        back to the manifest default for unknown values. */
     activeThemeId: function () {
-      const raw = (this.settings && this.settings.theme) || '';
+      // Prefer the v7 key; fall back to the legacy key for users who
+      // haven't yet had applySavedTheme() promote their preference.
+      const raw = (this.settings && (this.settings.vuetifyTheme || this.settings.theme)) || '';
       if (raw.startsWith('custom1')) { return 'custom1'; }
       return raw.replace(/-theme$/, '') || 'arkime-light';
     },
@@ -1552,7 +1554,7 @@ export default {
     },
     resetSettings: function () {
       // Choosing to skip reset of theme. UserService will save state to store
-      UserService.resetSettings(this.userId, this.settings.theme).then((response) => {
+      UserService.resetSettings(this.userId, this.settings.vuetifyTheme || this.settings.theme).then((response) => {
         // display success message to user
         this.displayMessage({ msg: response.text });
         this.getSettings(false);
@@ -1698,18 +1700,23 @@ export default {
     },
     /* THEMES ------------------------------------------ */
     setTheme: function () {
-      // default to the arkime-light theme if the user has not set one;
-      // normalize any legacy '...-theme' suffix saved on prior versions.
-      if (!this.settings.theme) { this.settings.theme = 'arkime-light'; }
-      if (typeof this.settings.theme === 'string' && this.settings.theme.endsWith('-theme')) {
-        this.settings.theme = this.settings.theme.replace(/-theme$/, '');
+      // Default to the arkime-light theme if the user has not set one.
+      // Prefer the v7 key; if the user only has a legacy `theme` value
+      // (e.g. they've never set anything in v7), seed the v7 key from
+      // it -- normalizing any legacy '...-theme' suffix. We DO NOT
+      // mutate settings.theme so legacy arkime keeps reading it intact.
+      if (!this.settings.vuetifyTheme) {
+        const legacy = typeof this.settings.theme === 'string'
+          ? this.settings.theme.replace(/-theme$/, '')
+          : '';
+        this.settings.vuetifyTheme = legacy || 'arkime-light';
       }
       if (!this.settings.logo) {
         this.settings.logo = 'assets/Arkime_Logo_Mark_White.png';
       }
     },
     changeTheme: function (newThemeId) {
-      this.settings.theme = newThemeId;
+      this.settings.vuetifyTheme = newThemeId;
       this.$vuetify.theme.change(newThemeId);
       this.update();
     },
@@ -1720,9 +1727,9 @@ export default {
         colors: { ...newCustomTheme.colors }
       };
       registerVuetifyTheme(this.$vuetify, 'custom1', safe);
-      this.settings.customTheme = safe;
-      if (this.settings.theme !== 'custom1') {
-        this.settings.theme = 'custom1';
+      this.settings.vuetifyCustomTheme = safe;
+      if (this.settings.vuetifyTheme !== 'custom1') {
+        this.settings.vuetifyTheme = 'custom1';
         this.$vuetify.theme.change('custom1');
       }
       this.update();

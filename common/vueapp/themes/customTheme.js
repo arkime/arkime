@@ -9,15 +9,24 @@ SPDX-License-Identifier: Apache-2.0
  * In the new theming system, a user's custom theme is a first-class
  * Vuetify theme object with the same { dark, colors } shape as the
  * baked-in entries in manifest.js. It's stored as
- * `settings.customTheme` (an object) and activated by setting
- * `settings.theme = 'custom1'`.
+ * `settings.vuetifyCustomTheme` (an object) and activated by setting
+ * `settings.vuetifyTheme = 'custom1'`.
  *
- * For back-compat with the legacy format -- where
+ * The legacy keys (`settings.theme` / `settings.customTheme`) are
+ * left untouched so a user who flips between v7 and legacy arkime
+ * keeps a working preference in each version. The boot path reads
+ * the new vuetify-prefixed keys first; only if both are absent does
+ * it import from the legacy keys as a one-shot fallback, persisting
+ * the result into the new keys. Once a user has set anything in v7
+ * the new keys are authoritative and the legacy keys are never
+ * mutated by v7 code again.
+ *
+ * For back-compat with the legacy custom-theme format -- where
  * `settings.theme = 'custom1:hex,hex,...'` packed 15 positional
  * colors into a colon-separated string -- this module provides a
  * one-shot migration helper. The App.vue boot path detects the legacy
  * format on first load, calls migrateLegacyCustomTheme() to produce
- * the new shape, and writes the result back to user settings.
+ * the new shape, and writes the result into the new vuetify keys.
  *
  * Legacy positional schema (15 hexes, ',' separated):
  *   [0]  background        -- was --color-background
@@ -197,6 +206,80 @@ export function migrateLegacyCustomTheme (legacyString) {
  * The custom theme id. There's exactly one custom slot per user.
  */
 export const CUSTOM_THEME_ID = 'custom1';
+
+/**
+ * user.settings keys where v7+ persists the theme preference. The
+ * legacy keys (`theme` / `customTheme`) are deliberately NOT touched
+ * so a user who flips between v7 and legacy arkime keeps a working
+ * preference in each version.
+ */
+export const VUETIFY_THEME_KEY = 'vuetifyTheme';
+export const VUETIFY_CUSTOM_THEME_KEY = 'vuetifyCustomTheme';
+
+/**
+ * Strip the legacy `-theme` suffix from a stored id (e.g.
+ * `'arkime-dark-theme'` -> `'arkime-dark'`). No-op for already-clean
+ * ids or empty values.
+ */
+export function stripLegacyThemeSuffix (themeId) {
+  if (typeof themeId !== 'string') return themeId;
+  return themeId.replace(/-theme$/, '');
+}
+
+/**
+ * Resolve which theme to activate from a user's `settings` blob.
+ *
+ * Read order:
+ *   1. `settings.vuetifyTheme` / `settings.vuetifyCustomTheme`  (authoritative for v7+)
+ *   2. one-shot import from the legacy keys  (`settings.theme` /
+ *      `settings.customTheme`, including the legacy `custom1:hex,hex,...`
+ *      string format)
+ *   3. nothing -> caller falls back to OS color-scheme default
+ *
+ * Returns `{ themeId, customTheme, fromLegacy }`. `fromLegacy` is
+ * true when the values were imported from the legacy keys -- the
+ * caller should then persist `themeId` + `customTheme` into the new
+ * keys so subsequent loads skip the import.
+ */
+export function pickStoredTheme (settings) {
+  if (!settings) return { themeId: null, customTheme: null, fromLegacy: false };
+
+  // 1. Prefer the v7 keys.
+  const v7Id = settings[VUETIFY_THEME_KEY];
+  const v7Custom = settings[VUETIFY_CUSTOM_THEME_KEY];
+  if (v7Id || (v7Custom && v7Custom.colors)) {
+    return {
+      themeId: v7Id || (v7Custom && v7Custom.colors ? CUSTOM_THEME_ID : null),
+      customTheme: (v7Custom && v7Custom.colors) ? v7Custom : null,
+      fromLegacy: false
+    };
+  }
+
+  // 2. Legacy import. Three legacy shapes to consider:
+  //    a. legacy custom1:hex,hex,... string
+  //    b. modern { dark, colors } object stored under settings.customTheme
+  //       (early-dev7 users got their custom theme written here)
+  //    c. plain string id, possibly with `-theme` suffix
+  const legacyTheme = settings.theme;
+  if (isLegacyCustomTheme(legacyTheme)) {
+    const migrated = migrateLegacyCustomTheme(legacyTheme);
+    if (migrated) {
+      return { themeId: CUSTOM_THEME_ID, customTheme: migrated, fromLegacy: true };
+    }
+  }
+  if (settings.customTheme && settings.customTheme.colors) {
+    return {
+      themeId: stripLegacyThemeSuffix(legacyTheme) || CUSTOM_THEME_ID,
+      customTheme: settings.customTheme,
+      fromLegacy: true
+    };
+  }
+  if (legacyTheme && legacyTheme !== 'default-theme') {
+    return { themeId: stripLegacyThemeSuffix(legacyTheme), customTheme: null, fromLegacy: true };
+  }
+
+  return { themeId: null, customTheme: null, fromLegacy: false };
+}
 
 /**
  * The base color keys that make up a shareable custom theme. Shade

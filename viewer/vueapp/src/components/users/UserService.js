@@ -91,7 +91,20 @@ export default {
     const settings = JSON.parse(JSON.stringify(store.state.userSettingDefaults));
 
     if (theme) {
-      settings.theme = theme;
+      // v7+ writes to vuetifyTheme; legacy theme key is left untouched
+      // so the user's preference under older arkime versions survives.
+      settings.vuetifyTheme = theme;
+    }
+
+    // Preserve the user's legacy theme preferences across a reset.
+    // saveSettings sends the whole object and the server's allowlist
+    // filter replaces the user's settings wholesale, so we have to
+    // carry these forward explicitly.
+    const current = store.state.user && store.state.user.settings;
+    if (current) {
+      if (current.theme) settings.theme = current.theme;
+      if (current.customTheme) settings.customTheme = current.customTheme;
+      if (current.vuetifyCustomTheme) settings.vuetifyCustomTheme = current.vuetifyCustomTheme;
     }
 
     return this.saveSettings(settings, userId);

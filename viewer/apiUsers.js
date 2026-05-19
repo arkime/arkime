@@ -502,13 +502,17 @@ class UserAPIs {
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
   static updateUserSettings (req, res) {
-    req.settingUser.settings = ['ms', 'logo', 'theme', 'customTheme', 'timezone', 'spiGraph', 'numPackets', 'infoFields', 'manualQuery', 'detailFormat',
+    req.settingUser.settings = ['ms', 'logo', 'theme', 'customTheme', 'vuetifyTheme', 'vuetifyCustomTheme', 'timezone', 'spiGraph', 'numPackets', 'infoFields', 'manualQuery', 'detailFormat',
       'connSrcField', 'connDstField', 'sortColumn', 'sortDirection', 'showTimestamps', 'connNodeFields',
       'connLinkFields', 'timelineDataFilters', 'hideTags', 'shiftyEyes'].reduce((obj, key) => {
       const val = req.body[key];
-      // Reject non-array object values for all keys EXCEPT customTheme,
-      // which is a structured { dark, colors } record by design.
-      if (val !== undefined && val !== null && typeof val === 'object' && !Array.isArray(val) && key !== 'customTheme') {
+      // Reject non-array object values for all keys EXCEPT customTheme +
+      // vuetifyCustomTheme, both of which are structured { dark, colors }
+      // records by design. customTheme stays in the allowlist for legacy
+      // arkime compat (a user on older arkime still writes customTheme);
+      // vuetifyTheme / vuetifyCustomTheme is where v7+ persists its
+      // preference so the two stay independent across version round-trips.
+      if (val !== undefined && val !== null && typeof val === 'object' && !Array.isArray(val) && key !== 'customTheme' && key !== 'vuetifyCustomTheme') {
         return obj;
       }
       obj[key] = val;
