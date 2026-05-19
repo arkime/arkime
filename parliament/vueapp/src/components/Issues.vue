@@ -150,7 +150,7 @@ SPDX-License-Identifier: Apache-2.0
     <table
       style="position:relative"
       v-if="issues && issues.length"
-      class="issues-table">
+      class="arkime-table">
       <thead>
         <tr>
           <th v-if="isUser && issues.length">
@@ -639,11 +639,11 @@ export default {
     },
     getIssueRowClass: function (issue) {
       if (issue.ignoreUntil || issue.acknowledged) {
-        return 'issues-row--muted text-medium-emphasis';
+        return 'arkime-table-row--muted text-medium-emphasis';
       } else if (issue.severity === 'red') {
-        return 'issues-row--danger';
+        return 'arkime-table-row--danger';
       } else if (issue.severity === 'yellow') {
-        return 'issues-row--warning';
+        return 'arkime-table-row--warning';
       }
 
       return '';
@@ -904,60 +904,6 @@ export default {
 </script>
 
 <style scoped>
-/* compact themed table -- mirrors viewer's .arkime-table treatment.
-   Full-width, transparent rows, compact cells, alternating tint, hover tint. */
-.issues-table {
-  width: 100%;
-  margin-bottom: 1rem;
-  color: rgb(var(--v-theme-foreground));
-  vertical-align: top;
-  border-color: rgb(var(--v-theme-neutral-light));
-  border-collapse: collapse;
-}
-.issues-table > thead {
-  vertical-align: bottom;
-}
-.issues-table > thead > tr > th {
-  padding: 0.25rem;
-  font-weight: 600;
-  border-bottom: 2px solid rgb(var(--v-theme-neutral-light));
-  background-color: transparent;
-}
-.issues-table > tbody > tr > td,
-.issues-table > tbody > tr > th {
-  padding: 0.25rem;
-  border-bottom: 1px solid rgb(var(--v-theme-neutral-lighter));
-  background-color: transparent;
-}
-.issues-table > tbody > tr:nth-of-type(odd) > td,
-.issues-table > tbody > tr:nth-of-type(odd) > th {
-  background-color: rgb(var(--v-theme-neutral-lightest));
-}
-.issues-table > tbody > tr:hover > td,
-.issues-table > tbody > tr:hover > th {
-  background-color: rgb(var(--v-theme-neutral-lighter));
-}
-/* severity-tinted rows -- pick up the same error/warning tokens used
-   by v-alert so light + dark themes keep parity */
-.issues-table > tbody > tr.issues-row--danger > td {
-  background-color: rgba(var(--v-theme-error), 0.18);
-}
-.issues-table > tbody > tr.issues-row--danger:hover > td {
-  background-color: rgba(var(--v-theme-error), 0.28);
-}
-.issues-table > tbody > tr.issues-row--warning > td {
-  background-color: rgba(var(--v-theme-warning), 0.18);
-}
-.issues-table > tbody > tr.issues-row--warning:hover > td {
-  background-color: rgba(var(--v-theme-warning), 0.28);
-}
-.issues-table > tbody > tr.issues-row--muted > td {
-  background-color: rgba(var(--v-theme-on-surface), 0.08);
-}
-.issues-table > tbody > tr.issues-row--muted:hover > td {
-  background-color: rgba(var(--v-theme-on-surface), 0.12);
-}
-
 /* loading overlay */
 .issues-loading {
   width: 400px;

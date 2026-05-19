@@ -21,6 +21,7 @@ import store from './store.js';
 // Vuetify FIRST so the shared common.css overrides win on source order.
 import 'vuetify/styles';
 import '../../../common/common.css';
+import '../../../common/arkime-input-group.css';
 import '../../../common/vueapp/arkime-navbar.css';
 
 /**
