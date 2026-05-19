@@ -171,8 +171,8 @@
     <div
       v-else
       class="empty-state">
-      <span class="fa fa-folder-open fa-4x mb-3 text-muted" />
-      <p class="empty-state-text text-muted">
+      <span class="fa fa-folder-open fa-4x mb-3 text-medium-emphasis" />
+      <p class="empty-state-text text-medium-emphasis">
         {{ $t(noDataMessage) }}
       </p>
     </div>

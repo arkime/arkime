@@ -17,7 +17,7 @@ SPDX-License-Identifier: Apache-2.0
       role="tablist"
       aria-orientation="vertical"
       class="no-overflow">
-      <div class="nav d-flex align-start flex-column nav-pills px-4">
+      <div class="nav d-flex align-start flex-column px-4">
         <v-btn
           v-for="{ name, text, icon } in [
             { name: 'general', text: 'General', icon: 'mdi-cog' },
@@ -31,7 +31,7 @@ SPDX-License-Identifier: Apache-2.0
           variant="text"
           @click="openView(name)"
           :active="visibleTab === name"
-          class="nav-link cursor-pointer w-100 justify-start"
+          class="cursor-pointer w-100 justify-start"
           :class="{'active':visibleTab === name}">
           <v-icon
             class="mr-2"

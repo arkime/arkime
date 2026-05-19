@@ -28,11 +28,11 @@ SPDX-License-Identifier: Apache-2.0
         role="tablist"
         aria-orientation="vertical"
         class="h-100 overflow-auto no-overflow-x">
-        <div class="nav d-flex flex-column nav-pills pt-3 pb-4 px-4">
+        <div class="nav d-flex flex-column pt-3 pb-4 px-4">
           <v-btn
             @click="openView('views')"
             block
-            class="nav-link cursor-pointer btn-space-between"
+            class="cursor-pointer btn-space-between"
             color="primary"
             variant="text"
             :active="visibleTab === 'views'">
@@ -52,7 +52,7 @@ SPDX-License-Identifier: Apache-2.0
           <v-btn
             @click="openView('integrations')"
             block
-            class="nav-link cursor-pointer justify-start"
+            class="cursor-pointer justify-start"
             color="primary"
             variant="text"
             :active="visibleTab === 'integrations'">
@@ -61,7 +61,7 @@ SPDX-License-Identifier: Apache-2.0
           <v-btn
             @click="openView('overviews')"
             block
-            class="nav-link cursor-pointer btn-space-between"
+            class="cursor-pointer btn-space-between"
             :class="{ 'mb-1': visibleTab === 'overviews' }"
             color="primary"
             variant="text"
@@ -93,7 +93,7 @@ SPDX-License-Identifier: Apache-2.0
                 :title="overview.name"
                 @click="setActiveOverviewId(overview._id)"
                 block
-                class="nav-link cursor-pointer btn-space-between"
+                class="cursor-pointer btn-space-between"
                 color="primary"
                 variant="text"
                 :active="activeOverviewId === overview._id">
@@ -104,7 +104,7 @@ SPDX-License-Identifier: Apache-2.0
           <v-btn
             @click="openView('linkgroups')"
             block
-            class="nav-link cursor-pointer btn-space-between"
+            class="cursor-pointer btn-space-between"
             color="primary"
             variant="text"
             :active="visibleTab === 'linkgroups'">
@@ -153,7 +153,7 @@ SPDX-License-Identifier: Apache-2.0
             v-if="!disablePassword"
             @click="openView('password')"
             block
-            class="nav-link cursor-pointer justify-start"
+            class="cursor-pointer justify-start"
             color="primary"
             variant="text"
             :active="visibleTab === 'password'">
@@ -162,7 +162,7 @@ SPDX-License-Identifier: Apache-2.0
           <v-btn
             @click="openView('themes')"
             block
-            class="nav-link cursor-pointer justify-start"
+            class="cursor-pointer justify-start"
             color="primary"
             variant="text"
             :active="visibleTab === 'themes'">
@@ -256,7 +256,6 @@ SPDX-License-Identifier: Apache-2.0
                       <div class="w-100 d-flex justify-space-between align-start">
                         <div class="d-flex ga-1">
                           <v-btn
-                            class="square-btn-sm"
                             size="small"
                             color="primary"
                             v-tooltip="'Transfer ownership of this view'"
@@ -268,7 +267,6 @@ SPDX-License-Identifier: Apache-2.0
                           <!-- delete button -->
                           <transition name="buttons">
                             <v-btn
-                              class="square-btn-sm"
                               size="small"
                               color="error"
                               v-if="!confirmDeleteView[view._id]"
@@ -280,7 +278,6 @@ SPDX-License-Identifier: Apache-2.0
                           <!-- cancel confirm delete button -->
                           <transition name="buttons">
                             <v-btn
-                              class="square-btn-sm"
                               size="small"
                               color="warning"
                               v-tooltip="'Cancel'"
@@ -293,7 +290,6 @@ SPDX-License-Identifier: Apache-2.0
                           <!-- confirm delete button -->
                           <transition name="buttons">
                             <v-btn
-                              class="square-btn-sm"
                               size="small"
                               color="error"
                               v-tooltip="'Are you sure?'"
@@ -328,7 +324,6 @@ SPDX-License-Identifier: Apache-2.0
                           <transition name="buttons">
                             <v-btn
                               v-if="updatedViewMap[view._id]"
-                              class="square-btn-sm"
                               size="small"
                               color="warning"
                               @click="cancelUpdateView(view)"
@@ -339,7 +334,6 @@ SPDX-License-Identifier: Apache-2.0
                           <transition name="buttons">
                             <v-btn
                               v-if="updatedViewMap[view._id]"
-                              class="square-btn-sm"
                               size="small"
                               color="success"
                               @click="saveView(view)"
@@ -1321,11 +1315,11 @@ export default {
 </script>
 
 <style scoped>
-.nav-pills {
+. {
   max-width: 100%;
   position: relative;
 }
-.nav-pills .nav-link {
+. .{
   max-width: 100%;
   overflow: hidden;
   position: relative;
@@ -1333,7 +1327,7 @@ export default {
   text-overflow: ellipsis;
 }
 
-.sub-nav-link {
+.sub-{
   padding-left: 32px !important;
 }
 .sub-nav-handle {

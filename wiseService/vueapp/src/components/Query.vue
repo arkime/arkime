@@ -50,15 +50,20 @@ SPDX-License-Identifier: Apache-2.0
         @click:clear="clear" />
     </div>
 
-    <v-alert
-      v-if="alertMessage"
-      type="error"
-      closable
-      style="z-index: 2000;"
-      class="position-fixed fixed-bottom m-0 rounded-0"
-      @click:close="alertMessage = ''">
+    <v-snackbar
+      :model-value="!!alertMessage"
+      color="error"
+      location="bottom"
+      :timeout="-1"
+      @update:model-value="(v) => { if (!v) alertMessage = '' }">
       {{ alertMessage }}
-    </v-alert>
+      <template #actions>
+        <v-btn
+          variant="text"
+          icon="fa-times"
+          @click="alertMessage = ''" />
+      </template>
+    </v-snackbar>
 
     <!-- empty search -->
     <div v-if="!hasMadeASearch">

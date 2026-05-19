@@ -25,10 +25,19 @@
 .p-4 { padding: 1.5rem !important; }
 .p-5 { padding: 3rem !important; }
 
-/* Float utilities. Bootstrap 3-era pull-right / pull-left -- still used
-   by common/Notifiers, common/Users, common/KeyboardShortcuts. */
-.pull-right { float: right !important; }
-.pull-left { float: left !important; }
+/* Visually-hidden accessibility utility (screen readers see it, sighted
+   users don't). Vuetify doesn't ship this; common A11y class name. */
+.sr-only {
+  position: absolute !important;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
 
 /* Fixed positioning utilities. Vuetify ships .position-fixed but not
    the bottom/top variants, so without these shims any

@@ -135,7 +135,7 @@ SPDX-License-Identifier: Apache-2.0
 
         <!-- +Role / +User in the right-most header column. -->
         <template #[`header.action`]>
-          <div class="pull-right">
+          <div class="float-right">
             <v-btn
               v-if="roles"
               size="x-small"
@@ -228,7 +228,7 @@ SPDX-License-Identifier: Apache-2.0
           </div>
         </template>
         <template #[`item.action`]="{ item, index }">
-          <div class="pull-right">
+          <div class="float-right">
             <v-btn
               v-if="parentApp === 'Arkime' && isUser(item)"
               v-has-role="{user:currentUser,roles:'arkimeAdmin'}"

@@ -21,7 +21,7 @@ SPDX-License-Identifier: Apache-2.0
         v-if="stats.indices && !stats.indices.length"
         class="text-center">
         <h3>
-          <span class="fa fa-folder-open fa-2x text-muted" />
+          <span class="fa fa-folder-open fa-2x text-medium-emphasis" />
         </h3>
         <h5 class="lead">
           {{ $t( cluster ? 'stats.esShards.noResultsCluster' : 'stats.esShards.noResults' ) }}

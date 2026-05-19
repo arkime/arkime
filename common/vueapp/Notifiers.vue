@@ -14,7 +14,7 @@ SPDX-License-Identifier: Apache-2.0
             v-bind="activatorProps"
             color="primary"
             variant="flat"
-            class="pull-right">
+            class="float-right">
             <v-icon
               icon="fa-plus-circle"
               start />
@@ -58,7 +58,7 @@ SPDX-License-Identifier: Apache-2.0
       class="text-center mt-4"
       v-if="!notifiers || !Object.keys(notifiers).length">
       <h3>
-        <span class="fa fa-folder-open fa-3x text-muted" />
+        <span class="fa fa-folder-open fa-3x text-medium-emphasis" />
       </h3>
       <h5 class="lead">
         {{ $t('settings.notifiers.createHelp') }}
@@ -224,7 +224,7 @@ SPDX-License-Identifier: Apache-2.0
             :id="`toggleNotifier-${index}`"
             @click="toggleNotifier(notifier, index)"
             :class="{'fa-toggle-on text-success':notifier.on,'fa-toggle-off':!notifier.on}"
-            class="fa fa-lg pull-right cursor-pointer">
+            class="fa fa-lg float-right cursor-pointer">
             <v-tooltip :activator="`#toggleNotifier-${index}`">
               {{ $t('settings.notifiers.turn' + (notifier.on ? 'Off' : 'On')) }}
             </v-tooltip>
@@ -297,7 +297,7 @@ SPDX-License-Identifier: Apache-2.0
             <!-- notifier alerts -->
             <h5>Notify on</h5>
             <div class="row">
-              <div class="col-12">
+              <div class="w-100">
                 <template v-for="(alert, aKey) of notifier.alerts">
                   <span
                     :key="aKey"
@@ -322,7 +322,7 @@ SPDX-License-Identifier: Apache-2.0
           </template> <!-- /notifier alerts -->
           <!-- notifier info -->
           <div class="row mt-2">
-            <div class="col-12 small">
+            <div class="w-100 text-caption">
               <p
                 v-if="notifier.created || notifier.user"
                 class="m-0">
@@ -349,7 +349,7 @@ SPDX-License-Identifier: Apache-2.0
             </v-icon>
             {{ $t('common.test') }}
           </v-btn>
-          <span class="pull-right">
+          <span class="float-right">
             <v-btn
               size="large"
               color="error"

@@ -100,12 +100,12 @@ SPDX-License-Identifier: Apache-2.0
         <div class="config-preview mt-3 p-2 border rounded">
           <strong>{{ $t('sessions.summary.config.preview') }}</strong>
           <div class="mt-1 small">
-            <span class="text-muted">{{ $t('sessions.summary.config.fieldsCount') }}:</span>
+            <span class="text-medium-emphasis">{{ $t('sessions.summary.config.fieldsCount') }}:</span>
             {{ config?.fields?.length || 0 }}
-            <span class="ms-3 text-muted">{{ $t('sessions.summary.config.resultsLimit') }}:</span>
+            <span class="ms-3 text-medium-emphasis">{{ $t('sessions.summary.config.resultsLimit') }}:</span>
             {{ config?.resultsLimit || 20 }}
           </div>
-          <div class="mt-1 small text-muted">
+          <div class="mt-1 small text-medium-emphasis">
             {{ fieldsList }}
           </div>
         </div>

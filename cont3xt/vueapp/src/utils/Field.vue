@@ -54,7 +54,7 @@ SPDX-License-Identifier: Apache-2.0
       <template v-else>
         {{ display || value }}
         <template v-if="decodedValue">
-          <span class="text-muted">({{ decodedValue }})</span>
+          <span class="text-medium-emphasis">({{ decodedValue }})</span>
         </template>
       </template>
       <v-icon icon="mdi-menu-down" />

@@ -21,7 +21,7 @@ SPDX-License-Identifier: Apache-2.0
             color="primary"
             variant="flat"
             density="comfortable"
-            class="pull-right me-1 mt-1"
+            class="float-right me-1 mt-1"
             :title="$t('help.keyboard.close')"
             @click="close">
             X

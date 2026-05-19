@@ -66,7 +66,7 @@ SPDX-License-Identifier: Apache-2.0
       </div>
     </div> <!-- /search -->
     <!-- data -->
-    <table class="table table-sm table-striped cont3xt-table small border-sm w-100">
+    <table class="arkime-table arkime-table--xs cont3xt-table text-caption w-100">
       <tbody>
         <tr>
           <th

@@ -8,7 +8,7 @@ SPDX-License-Identifier: Apache-2.0
     <!-- error -->
     <div
       v-if="error"
-      class="error-div text-muted">
+      class="error-div text-medium-emphasis">
       <small>
         {{ error || 'Network Error' }} - try
         <a

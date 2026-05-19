@@ -64,7 +64,7 @@ SPDX-License-Identifier: Apache-2.0
             {{ config.name }}
             <small
               v-if="config.creator && config.creator !== user.userId"
-              class="text-muted ms-1">
+              class="text-medium-emphasis ms-1">
               ({{ config.creator }})
             </small>
           </span>
@@ -105,7 +105,7 @@ SPDX-License-Identifier: Apache-2.0
       <v-list-item
         v-if="!loading && !error && configs.length === 0"
         disabled>
-        <span class="text-muted">
+        <span class="text-medium-emphasis">
           {{ $t('sessions.summary.config.noConfigs') }}
         </span>
       </v-list-item>

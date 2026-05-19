@@ -174,7 +174,7 @@ SPDX-License-Identifier: Apache-2.0
               :actions="createFieldActions(i)"
               color="primary"
               size="small"
-              class="ml-2 square-btn-sm"
+              class="ml-2\"
               v-tooltip="'Actions'" />
           </v-form>
           <template v-if="fieldRef.expanded">

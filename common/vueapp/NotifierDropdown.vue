@@ -33,7 +33,7 @@ SPDX-License-Identifier: Apache-2.0
         density="compact"
         class="notifier-list">
         <!-- search -->
-        <div class="px-2 pt-2 pb-1 sticky-top notifier-search-row">
+        <div class="px-2 pt-2 pb-1 position-sticky notifier-search-row">
           <v-text-field
             v-focus="focus"
             density="compact"
