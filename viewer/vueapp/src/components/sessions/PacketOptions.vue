@@ -3,141 +3,173 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-  <div class="d-flex flex-row text-start gap-2 align-center flex-wrap packet-options-row">
-    <!-- # packets -->
-    <span class="packet-options-select">
-      <v-select
-        :model-value="params.packets"
-        :items="packetCountItems"
-        :disabled="params.gzip || params.image"
-        density="compact"
-        variant="outlined"
-        hide-details
-        @update:model-value="$emit('updateNumPackets', $event)" />
+  <div class="d-flex flex-row text-start align-center flex-wrap packet-options-row">
+    <!-- packet count + display type (one group) -->
+    <div class="tb-group">
+      <v-menu location="bottom start">
+        <template #activator="{ props: activatorProps }">
+          <v-btn
+            v-bind="activatorProps"
+            variant="text"
+            :disabled="params.gzip || params.image"
+            class="packet-options-select-btn">
+            {{ packetsLabel }}
+            <v-icon
+              icon="mdi-menu-down"
+              class="ms-1" />
+          </v-btn>
+        </template>
+        <v-list density="compact">
+          <v-list-item
+            v-for="item in packetCountItems"
+            :key="item.value"
+            @click="$emit('updateNumPackets', item.value)">
+            {{ item.title }}
+          </v-list-item>
+        </v-list>
+      </v-menu>
       <v-tooltip
         v-if="params.gzip || params.image"
         activator="parent">
         {{ $t('sessions.packetOptions.noPacketSelector') }}
       </v-tooltip>
-    </span> <!-- /# packets -->
 
-    <!-- packet display type -->
-    <v-select
-      class="packet-options-select"
-      :model-value="params.base"
-      :items="baseItems"
-      density="compact"
-      variant="outlined"
-      hide-details
-      @update:model-value="$emit('updateBase', $event)" /> <!-- /packet display type -->
+      <v-menu location="bottom start">
+        <template #activator="{ props: activatorProps }">
+          <v-btn
+            v-bind="activatorProps"
+            variant="text"
+            class="packet-options-select-btn">
+            {{ baseLabel }}
+            <v-icon
+              icon="mdi-menu-down"
+              class="ms-1" />
+          </v-btn>
+        </template>
+        <v-list density="compact">
+          <v-list-item
+            v-for="item in baseItems"
+            :key="item.value"
+            @click="$emit('updateBase', item.value)">
+            {{ item.title }}
+          </v-list-item>
+        </v-list>
+      </v-menu>
+    </div>
 
-    <!-- toggle options menu -->
-    <v-menu location="bottom start">
-      <template #activator="{ props: activatorProps }">
-        <v-btn
-          v-bind="activatorProps"
-          variant="tonal"
-          class="packet-options-btn">
-          {{ $t('sessions.packetOptions.packetOptions') }}
-          <v-icon
-            end
-            icon="mdi-menu-down" />
-        </v-btn>
-      </template>
-      <v-list density="compact">
-        <v-list-item @click="$emit('toggleShowFrames')">
-          {{ $t(params.showFrames ? 'sessions.packetOptions.showReassembled' : 'sessions.packetOptions.showRaw') }}
-        </v-list-item>
-        <v-list-item @click="$emit('toggleTimestamps')">
-          {{ $t(params.ts ? 'sessions.packetOptions.hideInfo' : 'sessions.packetOptions.showInfo') }}
-        </v-list-item>
-        <v-list-item
-          v-if="params.base === 'hex'"
-          @click="$emit('toggleLineNumbers')">
-          {{ $t(params.line ? 'sessions.packetOptions.hideLineNumbers' : 'sessions.packetOptions.showLineNumbers') }}
-        </v-list-item>
-        <v-list-item
-          v-if="!params.showFrames"
-          @click="$emit('toggleCompression')">
-          {{ $t(params.gzip ? 'sessions.packetOptions.disableUncompressing' : 'sessions.packetOptions.enableUncompressing') }}
-          <v-tooltip
-            activator="parent"
-            location="end">
-            {{ $t(params.gzip ? 'sessions.packetOptions.disableUncompressing' : 'sessions.packetOptions.enableUncompressingTip') }}
-          </v-tooltip>
-        </v-list-item>
-        <v-list-item
-          v-if="!params.showFrames"
-          @click="$emit('toggleImages')">
-          {{ $t(params.image ? 'sessions.packetOptions.hideFiles' : 'sessions.packetOptions.showFiles') }}
-          <v-tooltip
-            activator="parent"
-            location="end">
-            {{ $t(params.image ? 'sessions.packetOptions.hideFiles' : 'sessions.packetOptions.showFilesTip') }}
-          </v-tooltip>
-        </v-list-item>
-        <v-divider />
-        <v-list-item
-          target="_blank"
-          :href="cyberChefSrcUrl">
-          {{ $t('sessions.packetOptions.openCyberChefSrc') }}
-        </v-list-item>
-        <v-list-item
-          target="_blank"
-          :href="cyberChefDstUrl">
-          {{ $t('sessions.packetOptions.openCyberChefDst') }}
-        </v-list-item>
-      </v-list>
-    </v-menu> <!-- /toggle options menu -->
+    <!-- options menu -->
+    <div class="tb-group">
+      <v-menu location="bottom start">
+        <template #activator="{ props: activatorProps }">
+          <v-btn
+            v-bind="activatorProps"
+            variant="text"
+            class="packet-options-btn">
+            {{ $t('sessions.packetOptions.packetOptions') }}
+            <v-icon
+              end
+              icon="mdi-menu-down" />
+          </v-btn>
+        </template>
+        <v-list density="compact">
+          <v-list-item @click="$emit('toggleShowFrames')">
+            {{ $t(params.showFrames ? 'sessions.packetOptions.showReassembled' : 'sessions.packetOptions.showRaw') }}
+          </v-list-item>
+          <v-list-item @click="$emit('toggleTimestamps')">
+            {{ $t(params.ts ? 'sessions.packetOptions.hideInfo' : 'sessions.packetOptions.showInfo') }}
+          </v-list-item>
+          <v-list-item
+            v-if="params.base === 'hex'"
+            @click="$emit('toggleLineNumbers')">
+            {{ $t(params.line ? 'sessions.packetOptions.hideLineNumbers' : 'sessions.packetOptions.showLineNumbers') }}
+          </v-list-item>
+          <v-list-item
+            v-if="!params.showFrames"
+            @click="$emit('toggleCompression')">
+            {{ $t(params.gzip ? 'sessions.packetOptions.disableUncompressing' : 'sessions.packetOptions.enableUncompressing') }}
+            <v-tooltip
+              activator="parent"
+              location="end">
+              {{ $t(params.gzip ? 'sessions.packetOptions.disableUncompressing' : 'sessions.packetOptions.enableUncompressingTip') }}
+            </v-tooltip>
+          </v-list-item>
+          <v-list-item
+            v-if="!params.showFrames"
+            @click="$emit('toggleImages')">
+            {{ $t(params.image ? 'sessions.packetOptions.hideFiles' : 'sessions.packetOptions.showFiles') }}
+            <v-tooltip
+              activator="parent"
+              location="end">
+              {{ $t(params.image ? 'sessions.packetOptions.hideFiles' : 'sessions.packetOptions.showFilesTip') }}
+            </v-tooltip>
+          </v-list-item>
+          <v-divider />
+          <v-list-item
+            target="_blank"
+            :href="cyberChefSrcUrl">
+            {{ $t('sessions.packetOptions.openCyberChefSrc') }}
+          </v-list-item>
+          <v-list-item
+            target="_blank"
+            :href="cyberChefDstUrl">
+            {{ $t('sessions.packetOptions.openCyberChefDst') }}
+          </v-list-item>
+        </v-list>
+      </v-menu>
+    </div> <!-- /options menu group -->
 
     <!-- src/dst packets -->
-    <v-btn-toggle
-      :model-value="srcDstValue"
-      multiple
-      density="compact"
-      variant="outlined"
-      divided
-      @update:model-value="onSrcDstToggle">
-      <v-btn value="src">
-        {{ $t('common.src') }}
+    <div class="tb-group">
+      <v-checkbox
+        :model-value="params.showSrc"
+        :label="$t('common.src')"
+        density="compact"
+        hide-details
+        @update:model-value="$emit('toggleShowSrc')">
         <v-tooltip
           activator="parent"
           location="bottom">
           {{ $t('sessions.packetOptions.srcVisTip') }}
         </v-tooltip>
-      </v-btn>
-      <v-btn value="dst">
-        {{ $t('common.dst') }}
+      </v-checkbox>
+      <v-checkbox
+        :model-value="params.showDst"
+        :label="$t('common.dst')"
+        density="compact"
+        hide-details
+        @update:model-value="$emit('toggleShowDst')">
         <v-tooltip
           activator="parent"
           location="bottom">
           {{ $t('sessions.packetOptions.dstVisTip') }}
         </v-tooltip>
-      </v-btn>
-    </v-btn-toggle> <!-- /src/dst packets -->
+      </v-checkbox>
+    </div>
 
     <!-- decodings -->
-    <v-btn-toggle
+    <div
       v-if="hasDecodings"
-      :model-value="activeDecodingKeys"
-      multiple
-      density="compact"
-      variant="outlined"
-      divided
-      :disabled="params.showFrames">
-      <v-btn
-        v-for="(value, key) in decodingsClone"
-        :key="key"
-        :value="key"
-        @click="toggleDecoding(key)">
-        {{ value.name }}
-        <v-tooltip
-          activator="parent"
-          location="bottom">
-          {{ $t('sessions.packetOptions.toggleDecodingTip', value.name) }}
-        </v-tooltip>
-      </v-btn>
-    </v-btn-toggle> <!-- /decodings -->
+      class="tb-group">
+      <v-btn-toggle
+        :model-value="activeDecodingKeys"
+        multiple
+        density="compact"
+        variant="text"
+        :disabled="params.showFrames">
+        <v-btn
+          v-for="(value, key) in decodingsClone"
+          :key="key"
+          :value="key"
+          @click="toggleDecoding(key)">
+          {{ value.name }}
+          <v-tooltip
+            activator="parent"
+            location="bottom">
+            {{ $t('sessions.packetOptions.toggleDecodingTip', value.name) }}
+          </v-tooltip>
+        </v-btn>
+      </v-btn-toggle>
+    </div>
 
     <!-- decoding form -->
     <div
@@ -244,11 +276,13 @@ export default {
         { value: 'hex', title: this.$t('sessions.packetOptions.hex') }
       ];
     },
-    srcDstValue () {
-      const v = [];
-      if (this.params.showSrc) v.push('src');
-      if (this.params.showDst) v.push('dst');
-      return v;
+    packetsLabel () {
+      const item = this.packetCountItems.find(i => i.value === this.params.packets);
+      return item ? item.title : String(this.params.packets);
+    },
+    baseLabel () {
+      const item = this.baseItems.find(i => i.value === this.params.base);
+      return item ? item.title : this.params.base;
     },
     activeDecodingKeys () {
       return Object.keys(this.decodingsClone || {}).filter(k => this.decodingsClone[k].active);
@@ -268,12 +302,6 @@ export default {
     }
   },
   methods: {
-    onSrcDstToggle (selected) {
-      const wantSrc = selected.includes('src');
-      const wantDst = selected.includes('dst');
-      if (wantSrc !== this.params.showSrc) this.$emit('toggleShowSrc');
-      if (wantDst !== this.params.showDst) this.$emit('toggleShowDst');
-    },
     /**
      * Toggles a decoding on or off
      * If a decoding needs more input, shows form
@@ -340,35 +368,13 @@ export default {
   font-size: 12px;
 }
 
-/* Cap v-select widths so flex doesn't stretch them. */
-.packet-options-select {
-  display: inline-block;
-  min-width: 130px;
-  max-width: 170px;
-}
-
-/* v-select / v-text-field internals */
-.packet-options-row :deep(.v-field),
-.packet-options-row :deep(.v-field__input) {
+/* Decoding-form v-text-field internals stay; v-select was replaced
+   by v-menu+v-btn so the field-input overrides are no longer needed
+   for the main row. */
+.packet-options-row .decoding-form :deep(.v-field),
+.packet-options-row .decoding-form :deep(.v-field__input) {
   min-height: var(--row-h);
   font-size: 12px;
-}
-.packet-options-row :deep(.v-field__input) {
-  padding-top: 0;
-  padding-bottom: 0;
-  display: flex;
-  align-items: center;
-  line-height: var(--row-h);
-}
-.packet-options-row :deep(.v-select__selection),
-.packet-options-row :deep(.v-select__selection-text) {
-  line-height: var(--row-h);
-  margin-top: 0;
-  margin-bottom: 0;
-}
-.packet-options-row :deep(.v-field__append-inner) {
-  padding-top: 0;
-  align-items: center;
 }
 
 /* Every v-btn in the row -- the menu trigger, both v-btn-toggle groups,

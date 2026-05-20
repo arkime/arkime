@@ -2593,7 +2593,7 @@ class SessionAPIs {
             'template', 'button',
             // Vuetify components used in the pug session-detail
             'v-menu', 'v-list', 'v-list-item', 'v-divider', 'v-btn',
-            'v-alert',
+            'v-alert', 'v-icon',
             // Arkime / app components
             'arkime-toast', 'arkime-session-field', 'arkime-tag-sessions',
             'arkime-export-pcap', 'arkime-remove-data',
@@ -2609,18 +2609,18 @@ class SessionAPIs {
               'sessionln', 'src-col-tip', 'dst-col-tip', 'dstcol', 'srccol',
               'clickable-label', 'clickable-label-menu', 'detail-field',
               'tag-list', 'session-card-title', 'no-wrap', 'str', 'bytes',
-              // Bootstrap layout / utility
+              // Layout / utility classes (Vuetify-equivalent spacing utils
+              // are the same syntax; no Bootstrap dependency)
               'cursor-pointer',
               'mb-3', 'mb-2', 'me-1', 'me-5', 'ms-1', 'float-end', 'small',
-              'row', 'col-md-6', 'offset-md-6', 'd-flex', 'flex-wrap',
-              'flex-column', 'align-items-center', 'gap-1',
+              'd-flex', 'flex-wrap', 'flex-column',
+              'align-items-center', 'gap-1',
               // Inline-HTML add-tag button (rendered by pug arrayList helper)
               'arkime-tag-add-btn',
-              // Font Awesome icons
-              'fa', 'fa-info-circle', 'fa-lg', 'fa-exclamation-triangle',
-              'fa-download', 'fa-arrow-circle-up', 'fa-arrow-circle-down',
-              'fa-link', 'fa-plus-circle', 'fa-columns', 'fa-cogs',
-              'fa-list', 'fa-cog'
+              // Material Design Icons (sessionPackets.pug renders via v-html
+              // so it can't use <v-icon>; must use raw <i class="mdi ..."> form)
+              'mdi', 'mdi-information', 'mdi-24px', 'mdi-lg',
+              'mdi-alert', 'mdi-plus-circle'
             ]
           },
           allowedAttributes: {
@@ -2641,8 +2641,9 @@ class SessionAPIs {
               ':sessions', ':cluster', ':single',
               ':message', ':type', ':done', ':add',
               'text', ':text', 'suffix', 'columns',
-              // Vuetify component props (v-btn, v-menu, v-list, v-alert)
-              'variant', 'size', 'density', 'activator', 'location'
+              // Vuetify component props (v-btn, v-menu, v-list, v-alert, v-icon)
+              'variant', 'size', 'density', 'activator', 'location',
+              'icon', 'prepend-icon', 'append-icon'
             ]
           }
         });

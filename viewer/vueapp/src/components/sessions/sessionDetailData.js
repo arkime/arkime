@@ -9,6 +9,7 @@ import { VMenu } from 'vuetify/components/VMenu';
 import { VList, VListItem } from 'vuetify/components/VList';
 import { VDivider } from 'vuetify/components/VDivider';
 import { VBtn } from 'vuetify/components/VBtn';
+import { VIcon } from 'vuetify/components/VIcon';
 // internal imports
 import store from '@/store';
 import SessionsService from './SessionsService';
@@ -128,7 +129,8 @@ export default {
         VList,
         VListItem,
         VDivider,
-        VBtn
+        VBtn,
+        VIcon
       },
       directives: {
         HasPermission

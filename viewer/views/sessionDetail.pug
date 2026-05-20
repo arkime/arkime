@@ -315,7 +315,7 @@ dl
         | ( #{printstr(dstPayload8a)} )
 
   div.tag-list
-    +arrayList(session, "tags", "Tags", "tags", '<div @click="addTags()" title="Add a new tag to this session" class="arkime-tag-add-btn ms-1"><span class="fa fa-plus-circle"></span></div>')
+    +arrayList(session, "tags", "Tags", "tags", '<div @click="addTags()" title="Add a new tag to this session" class="arkime-tag-add-btn ms-1"><span class="mdi mdi-plus-circle"></span></div>')
 
   if (session.fileId && session.fileId.length > 0)
     +arrayList(session, "fileId", "Files", "file")

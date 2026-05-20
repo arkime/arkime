@@ -20,12 +20,42 @@
       @toggle-col-vis="toggleColVis"
       @toggle-info-vis="toggleInfoVis" /> <!-- /async detail content -->
 
-    <!-- packet options -->
+    <!-- packets / tshark area -->
     <div
       v-show="!hidePackets && !user.hidePcap"
-      class="packet-options me-1 ms-1 mt-3">
-      <form class="d-flex mb-2 pt-2 border-top">
-        <fieldset :disabled="hidePackets || loadingPackets || renderingPackets">
+      class="session-detail-pcap-area">
+      <!-- tabs (only shown when tshark is available) -->
+      <v-tabs
+        v-if="hasTshark"
+        v-model="activeTab"
+        density="compact"
+        color="primary"
+        class="session-detail-tabs mt-2">
+        <v-tab value="packets">
+          <v-icon
+            icon="mdi-package-variant-closed"
+            size="small"
+            class="me-1" />
+          Packets
+        </v-tab>
+        <v-tab value="tshark">
+          <v-icon
+            icon="mdi-magnify-scan"
+            size="small"
+            class="me-1" />
+          tshark
+          <span
+            v-if="tsharkPackets.length"
+            class="ms-2 small text-medium-emphasis">{{ tsharkPackets.length }}</span>
+        </v-tab>
+      </v-tabs>
+
+      <!-- packets tab content -->
+      <div v-show="!hasTshark || activeTab === 'packets'">
+        <!-- packet options (top) -->
+        <fieldset
+          class="arkime-pcap-toolbar me-1 ms-1 mt-2 mb-2"
+          :disabled="hidePackets || loadingPackets || renderingPackets">
           <packet-options
             :params="params"
             :decodings="decodings"
@@ -43,164 +73,71 @@
             @toggle-line-numbers="toggleLineNumbers"
             @toggle-compression="toggleCompression" />
         </fieldset>
-      </form>
-    </div> <!-- /packet options -->
 
-    <!-- packets loading -->
-    <div
-      v-if="loadingPackets && !hidePackets && !user.hidePcap"
-      class="mt-4 mb-4 ms-2 me-2 large">
-      <v-icon
-        icon="mdi-loading"
-        class="fa-spin" />&nbsp;
-      {{ $t('sessions.detail.loadingSessionPackets') }}&nbsp;
-      <v-btn
-        color="warning"
-        variant="flat"
-        size="x-small"
-        density="comfortable"
-        @click="cancelPacketLoad">
-        <v-icon
-          icon="mdi-cancel"
-          class="me-1" />
-        {{ $t('common.cancel') }}
-      </v-btn>
-    </div> <!-- /packets loading -->
-
-    <!-- packets rendering -->
-    <div
-      v-if="renderingPackets && !hidePackets && !user.hidePcap"
-      class="mt-4 mb-4 ms-2 me-2 large">
-      <v-icon
-        icon="mdi-loading"
-        class="fa-spin" />&nbsp;
-      {{ $t('sessions.detail.renderingSessionPackets') }}&nbsp;
-    </div> <!-- /packets rendering -->
-
-    <!-- packets error -->
-    <div
-      v-if="!error && errorPackets"
-      class="mt-4 mb-4 ms-2 me-2 large">
-      <span class="text-danger">
-        <v-icon icon="mdi-alert" />&nbsp;
-        {{ errorPackets }}&nbsp;
-      </span>
-      <v-btn
-        color="success"
-        variant="flat"
-        size="x-small"
-        density="comfortable"
-        @click="getPackets">
-        <v-icon
-          icon="mdi-refresh"
-          class="me-1" />
-        retry
-      </v-btn>
-    </div> <!-- /packets error -->
-
-    <!-- packets -->
-    <div
-      v-if="!loadingPackets && !errorPackets && !hidePackets && !user.hidePcap"
-      class="inner packet-container me-1 ms-1"
-      v-html="packetHtml"
-      ref="packetContainerRef"
-      :class="{'show-ts':params.ts,'hide-src':!params.showSrc,'hide-dst':!params.showDst}" /> <!-- packets -->
-
-    <!-- tshark -->
-    <div
-      v-if="hasTshark && !hidePackets && !user.hidePcap"
-      class="tshark-section me-1 ms-1 mt-3 pt-2 border-top">
-      <div class="d-flex align-items-center mb-2">
-        <strong class="me-2">tshark</strong>
-        <v-btn
-          v-if="!tsharkLoaded && !tsharkLoading"
-          color="primary"
-          variant="flat"
-          size="x-small"
-          density="comfortable"
-          @click="getTshark">
-          <v-icon
-            icon="mdi-play"
-            class="me-1" />
-          run
-        </v-btn>
-        <v-btn
-          v-if="tsharkLoaded && !tsharkLoading"
-          color="primary"
-          variant="flat"
-          size="x-small"
-          density="comfortable"
-          class="me-2"
-          @click="getTshark">
-          <v-icon
-            icon="mdi-refresh"
-            class="me-1" />
-          reload
-        </v-btn>
-        <span v-if="tsharkLoading">
+        <!-- packets loading -->
+        <div
+          v-if="loadingPackets"
+          class="mt-4 mb-4 ms-2 me-2 large">
           <v-icon
             icon="mdi-loading"
-            class="fa-spin" /> running tshark…
-        </span>
-        <label class="ms-3 d-inline-flex align-center small">
-          <input
-            type="checkbox"
-            class="arkime-check-input me-1"
-            v-model="tsharkPayload">payload
-        </label>
-        <label class="ms-2 d-inline-flex align-center small">
-          <input
-            type="checkbox"
-            class="arkime-check-input me-1"
-            v-model="tsharkHidden">hidden fields
-        </label>
-        <label class="ms-2 d-inline-flex align-center small">
-          packets
-          <input
-            type="number"
-            class="arkime-input-control ms-1 tshark-length"
-            min="1"
-            v-model.number="tsharkLength">
-        </label>
-      </div>
-      <div
-        v-if="tsharkError"
-        class="text-danger small mb-2">
-        <v-icon
-          icon="mdi-alert"
-          class="me-1" />{{ tsharkError }}
-      </div>
-      <div
-        v-if="tsharkPackets.length"
-        class="tshark-output">
-        <details
-          v-for="(pkt, pi) in tsharkPackets"
-          :key="pi"
-          class="tshark-packet"
-          :style="packetProtoStyle(packetTopProto(pkt))">
-          <summary>
-            <strong>Packet {{ pi + 1 }}</strong>
-            <span
-              v-if="packetTopProto(pkt)"
-              class="tshark-proto-badge ms-2">{{ packetTopProto(pkt).toUpperCase() }}</span>
-            <span class="ms-2 small">{{ packetSummary(pkt) }}</span>
-          </summary>
-          <ul class="tshark-tree">
-            <tshark-node
-              v-for="(layer, li) in pkt.layers"
-              :key="li"
-              :node="layer" />
-          </ul>
-        </details>
-      </div>
-    </div> <!-- /tshark -->
+            class="fa-spin" />&nbsp;
+          {{ $t('sessions.detail.loadingSessionPackets') }}&nbsp;
+          <v-btn
+            color="warning"
+            variant="flat"
+            size="x-small"
+            density="comfortable"
+            @click="cancelPacketLoad">
+            <v-icon
+              icon="mdi-cancel"
+              class="me-1" />
+            {{ $t('common.cancel') }}
+          </v-btn>
+        </div>
 
-    <!-- packet options -->
-    <div
-      v-show="!hidePackets && !user.hidePcap"
-      class="packet-options me-1 ms-1">
-      <form class="d-flex mb-2 pt-2 border-top">
-        <fieldset :disabled="hidePackets || loadingPackets || renderingPackets">
+        <!-- packets rendering -->
+        <div
+          v-if="renderingPackets"
+          class="mt-4 mb-4 ms-2 me-2 large">
+          <v-icon
+            icon="mdi-loading"
+            class="fa-spin" />&nbsp;
+          {{ $t('sessions.detail.renderingSessionPackets') }}&nbsp;
+        </div>
+
+        <!-- packets error -->
+        <div
+          v-if="!error && errorPackets"
+          class="mt-4 mb-4 ms-2 me-2 large">
+          <span class="text-danger">
+            <v-icon icon="mdi-alert" />&nbsp;
+            {{ errorPackets }}&nbsp;
+          </span>
+          <v-btn
+            color="success"
+            variant="flat"
+            size="x-small"
+            density="comfortable"
+            @click="getPackets">
+            <v-icon
+              icon="mdi-refresh"
+              class="me-1" />
+            retry
+          </v-btn>
+        </div>
+
+        <!-- packets -->
+        <div
+          v-if="!loadingPackets && !errorPackets"
+          class="inner packet-container me-1 ms-1"
+          v-html="packetHtml"
+          ref="packetContainerRef"
+          :class="{'show-ts':params.ts,'hide-src':!params.showSrc,'hide-dst':!params.showDst}" />
+
+        <!-- packet options (bottom) -->
+        <fieldset
+          class="arkime-pcap-toolbar me-1 ms-1 mt-2"
+          :disabled="hidePackets || loadingPackets || renderingPackets">
           <packet-options
             :params="params"
             :decodings="decodings"
@@ -218,8 +155,207 @@
             @toggle-line-numbers="toggleLineNumbers"
             @toggle-compression="toggleCompression" />
         </fieldset>
-      </form>
-    </div> <!-- /packet options -->
+      </div> <!-- /packets tab -->
+
+      <!-- tshark tab content -->
+      <div
+        v-if="hasTshark"
+        v-show="activeTab === 'tshark'"
+        class="tshark-section me-1 ms-1 mt-3">
+        <!-- tshark toolbar -->
+        <div class="arkime-pcap-toolbar mb-2">
+          <!-- run / cancel -->
+          <div class="tb-group">
+            <v-btn
+              v-if="!tsharkLoading"
+              color="primary"
+              variant="text"
+              @click="getTshark">
+              <v-icon
+                :icon="tsharkLoaded ? 'mdi-refresh' : 'mdi-play'"
+                class="me-1" />
+              {{ tsharkLoaded ? 'reload' : 'run' }}
+            </v-btn>
+            <template v-else>
+              <span class="d-inline-flex align-center small text-medium-emphasis">
+                <v-icon
+                  icon="mdi-loading"
+                  class="fa-spin me-1" /> running…
+              </span>
+              <v-btn
+                color="warning"
+                variant="text"
+                @click="cancelTshark">
+                <v-icon
+                  icon="mdi-cancel"
+                  class="me-1" />
+                cancel
+              </v-btn>
+            </template>
+          </div>
+
+          <!-- field-include toggles -->
+          <div class="tb-group">
+            <v-checkbox
+              v-model="tsharkPayload"
+              label="payload"
+              density="compact"
+              hide-details />
+            <v-checkbox
+              v-model="tsharkHidden"
+              label="hidden fields"
+              density="compact"
+              hide-details />
+          </div>
+
+          <!-- packet count -->
+          <div class="tb-group">
+            <v-text-field
+              v-model.number="tsharkLength"
+              type="number"
+              label="packets"
+              min="1"
+              density="compact"
+              variant="outlined"
+              hide-details
+              class="tshark-length-input" />
+          </div>
+
+          <!-- spacer pushes right-side groups out -->
+          <div class="tb-spacer" />
+
+          <!-- filter -->
+          <div
+            v-if="tsharkPackets.length"
+            class="tb-group">
+            <v-text-field
+              v-model="tsharkFilter"
+              placeholder="filter packets…"
+              prepend-inner-icon="mdi-magnify"
+              clearable
+              density="compact"
+              variant="outlined"
+              hide-details
+              class="tshark-filter-input" />
+          </div>
+
+          <!-- expand / collapse -->
+          <div
+            v-if="tsharkPackets.length"
+            class="tb-group">
+            <v-btn
+              variant="text"
+              title="Expand all fields"
+              @click="tsharkExpandAll(true)">
+              <v-icon
+                icon="mdi-unfold-more-horizontal"
+                class="me-1" />
+              expand
+            </v-btn>
+            <v-btn
+              variant="text"
+              title="Collapse all fields"
+              @click="tsharkExpandAll(false)">
+              <v-icon
+                icon="mdi-unfold-less-horizontal"
+                class="me-1" />
+              collapse
+            </v-btn>
+          </div>
+        </div>
+
+        <!-- protocol histogram -->
+        <div
+          v-if="tsharkPackets.length"
+          class="d-flex flex-wrap gap-1 mb-2 tshark-histogram">
+          <v-chip
+            v-for="[proto, count] in tsharkProtoCounts"
+            :key="proto"
+            size="x-small"
+            variant="flat"
+            label
+            :style="packetProtoStyle(proto)"
+            @click="tsharkFilter = (tsharkFilter === proto) ? '' : proto">
+            {{ proto.toUpperCase() }}&nbsp;×{{ count }}
+          </v-chip>
+        </div>
+
+        <v-alert
+          v-if="tsharkError"
+          type="error"
+          variant="tonal"
+          density="compact"
+          class="mb-2">
+          {{ tsharkError }}
+        </v-alert>
+
+        <!-- empty state -->
+        <div
+          v-if="!tsharkLoading && !tsharkLoaded && !tsharkError"
+          class="text-medium-emphasis text-center my-6">
+          <v-icon
+            icon="mdi-magnify-scan"
+            size="x-large"
+            class="d-block mx-auto mb-2" />
+          Click <strong>run</strong> to dissect this session with tshark.
+        </div>
+
+        <!-- split view: packet list (left) + tree pane (right) -->
+        <div
+          v-if="tsharkPackets.length"
+          ref="tsharkOutputRef"
+          class="tshark-split"
+          :style="{ gridTemplateColumns: `${tsharkSplitWidth}px 6px 1fr` }">
+          <div class="tshark-list">
+            <div
+              v-for="entry in filteredTsharkPackets"
+              :key="entry.origIdx"
+              class="tshark-list-item"
+              :class="{ 'tshark-list-item--selected': tsharkSelectedIdx === entry.origIdx }"
+              :style="packetProtoStyle(packetTopProto(entry.pkt))"
+              @click="setTsharkSelected(entry.origIdx)">
+              <span class="tshark-list-idx">#{{ entry.origIdx + 1 }}</span>
+              <span
+                v-if="packetTopProto(entry.pkt)"
+                class="tshark-proto-badge ms-1">{{ packetTopProto(entry.pkt).toUpperCase() }}</span>
+              <span class="ms-2 small text-truncate">{{ packetSummary(entry.pkt) }}</span>
+            </div>
+            <div
+              v-if="!filteredTsharkPackets.length"
+              class="text-medium-emphasis small p-2">
+              No packets match "{{ tsharkFilter }}"
+            </div>
+          </div>
+
+          <div
+            class="tshark-split-handle"
+            title="Drag to resize"
+            @mousedown="startTsharkResize" />
+
+          <div class="tshark-tree-pane">
+            <div
+              v-if="tsharkSelectedPacket"
+              class="tshark-tree-header"
+              :style="packetProtoStyle(packetTopProto(tsharkSelectedPacket))">
+              <strong>Packet {{ tsharkSelectedIdx + 1 }}</strong>
+              <span
+                v-if="packetTopProto(tsharkSelectedPacket)"
+                class="tshark-proto-badge ms-2">{{ packetTopProto(tsharkSelectedPacket).toUpperCase() }}</span>
+              <span class="ms-2 small">{{ packetSummary(tsharkSelectedPacket) }}</span>
+            </div>
+            <ul
+              v-if="tsharkSelectedPacket"
+              class="tshark-tree">
+              <tshark-node
+                v-for="(layer, li) in tsharkSelectedPacket.layers"
+                :key="li"
+                :node="layer"
+                :expand-signal="tsharkExpandSignal" />
+            </ul>
+          </div>
+        </div>
+      </div> <!-- /tshark tab -->
+    </div>
   </div>
 </template>
 
@@ -275,6 +411,12 @@ const tsharkLength = ref(50);
 const tsharkPayload = ref(false);
 const tsharkHidden = ref(false);
 const tsharkPromise = ref();
+const tsharkOutputRef = ref(null);
+const activeTab = ref('packets');
+const tsharkFilter = ref('');
+const tsharkSelectedIdx = ref(0);
+const tsharkExpandSignal = ref(0);
+const tsharkSplitWidth = ref(280);
 const params = ref({
   base: 'natural',
   line: false,
@@ -611,6 +753,7 @@ const getTshark = async () => {
   tsharkLoading.value = true;
   tsharkError.value = '';
   tsharkPackets.value = [];
+  tsharkSelectedIdx.value = 0;
 
   try {
     const { controller, fetcher } = SessionsService.getTshark(
@@ -635,11 +778,70 @@ const getTshark = async () => {
     tsharkPackets.value = out;
     tsharkLoaded.value = true;
   } catch (err) {
-    tsharkError.value = err.text || err.message || err;
+    // Aborted requests aren't errors from the user's POV — leave error blank.
+    const aborted = err?.name === 'AbortError' || /aborted/i.test(err?.message || '');
+    if (!aborted) { tsharkError.value = err.text || err.message || err; }
   } finally {
     tsharkLoading.value = false;
     tsharkPromise.value = undefined;
   }
+};
+
+const cancelTshark = () => {
+  if (tsharkPromise.value?.controller) {
+    try { tsharkPromise.value.controller.abort(); } catch (e) { /* ignore */ }
+  }
+};
+
+// Filter packets by text against summary/protocol/layer names.
+const filteredTsharkPackets = computed(() => {
+  const list = tsharkPackets.value.map((p, i) => ({ pkt: p, origIdx: i }));
+  // v-text-field clearable sets the model to null, so coerce before trim().
+  const f = (tsharkFilter.value || '').trim().toLowerCase();
+  if (!f) { return list; }
+  return list.filter(({ pkt }) => {
+    if (packetTopProto(pkt).toLowerCase().includes(f)) { return true; }
+    if (packetSummary(pkt).toLowerCase().includes(f)) { return true; }
+    return (pkt.layers || []).some(l => (l.name || '').toLowerCase().includes(f));
+  });
+});
+
+const tsharkSelectedPacket = computed(() => {
+  return tsharkPackets.value[tsharkSelectedIdx.value] || null;
+});
+
+// Histogram of top-level protocols for the chip strip above the list.
+const tsharkProtoCounts = computed(() => {
+  const counts = new Map();
+  for (const pkt of tsharkPackets.value) {
+    const p = (packetTopProto(pkt) || 'other').toLowerCase();
+    counts.set(p, (counts.get(p) || 0) + 1);
+  }
+  return [...counts.entries()].sort((a, b) => b[1] - a[1]);
+});
+
+const setTsharkSelected = (idx) => {
+  tsharkSelectedIdx.value = idx;
+};
+
+// Drag the divider between the packet list and the tree pane.
+const startTsharkResize = (e) => {
+  e.preventDefault();
+  const startX = e.clientX;
+  const startW = tsharkSplitWidth.value;
+  const onMove = (ev) => {
+    tsharkSplitWidth.value = Math.max(160, Math.min(640, startW + (ev.clientX - startX)));
+  };
+  const onUp = () => {
+    window.removeEventListener('mousemove', onMove);
+    window.removeEventListener('mouseup', onUp);
+    document.body.style.userSelect = '';
+    document.body.style.cursor = '';
+  };
+  window.addEventListener('mousemove', onMove);
+  window.addEventListener('mouseup', onUp);
+  document.body.style.userSelect = 'none';
+  document.body.style.cursor = 'col-resize';
 };
 
 // Build a short header line for a tshark packet (frame summary if present).
@@ -697,6 +899,14 @@ const packetTopProto = (pkt) => {
   return stack[stack.length - 1] || '';
 };
 
+// Bump signal so TsharkNode children set their <details> open/closed.
+// Positive value → open, negative → close. Increment magnitude so each
+// click is a new value even if direction is the same.
+const tsharkExpandAll = (expanded) => {
+  const base = Math.abs(tsharkExpandSignal.value) + 1;
+  tsharkExpandSignal.value = expanded ? base : -base;
+};
+
 const packetProtoStyle = (proto) => {
   if (!proto) { return {}; }
   const color = tsharkProtoColors[proto] || tsharkHashColor(proto);
@@ -728,65 +938,225 @@ onUnmounted(() => {
 </script>
 
 <style>
+/* tab strip between detail-fields and packets/tshark content */
+.session-detail-tabs {
+  border-bottom: 1px solid rgb(var(--v-theme-neutral));
+  min-height: 36px;
+}
+.session-detail-tabs .v-tab {
+  text-transform: none;
+  letter-spacing: 0;
+  font-weight: 600;
+  min-width: 0;
+  padding-inline: 12px;
+}
+
 .tshark-section {
   margin-top: 0.5rem;
 }
-/* number input sits inline with the checkbox labels; arkime-input-control
-   alone gives it transparent bg + no border, so we paint a compact box. */
-.tshark-section .tshark-length {
-  width: 5.5em;
-  height: 24px;
-  display: inline-block;
-  margin-left: 0.25rem;
-  padding: 0 6px;
-  border: 1px solid rgb(var(--v-theme-neutral));
-  border-radius: 3px;
-  background-color: rgb(var(--v-theme-background));
-  font-size: 0.85rem;
+
+/* =============================================================
+ * Shared packet-detail toolbar — used by the Packets tab
+ * (wraps PacketOptions) and the tshark tab. Mirrors the
+ * visualization toolbar (session-graph-btn-container): translucent
+ * blurred bg, rounded, with each child group separated by a
+ * vertical divider. Always-visible (no slide-down).
+ * ============================================================= */
+.arkime-pcap-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+  gap: 0;
+  padding: 2px 4px;
+  background: color-mix(in srgb, rgb(var(--v-theme-background)) 60%, transparent);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  border-radius: 6px;
+  border: 1px solid color-mix(in srgb, rgb(var(--v-theme-foreground)) 14%, transparent);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.10),
+    0 1px 2px rgba(0, 0, 0, 0.08);
+  /* fieldset reset (used to wrap PacketOptions for disable-cascade) */
+  margin-inline-end: 0;
+  margin-inline-start: 0;
 }
-.tshark-output {
+.arkime-pcap-toolbar .tb-group,
+.arkime-pcap-toolbar .packet-options-row > .tb-group {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0 12px;
+  min-height: 30px;
+  margin: 0 !important;
+}
+/* divider between adjacent groups, regardless of whether they're
+   direct children of the toolbar or nested inside .packet-options-row */
+.arkime-pcap-toolbar .tb-group + .tb-group,
+.arkime-pcap-toolbar .packet-options-row > .tb-group + .tb-group {
+  border-left: 1px solid color-mix(in srgb, rgb(var(--v-theme-foreground)) 18%, transparent);
+}
+.arkime-pcap-toolbar .tb-spacer {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+/* PacketOptions wrapping row already has its own internal layout;
+   when it sits inside .arkime-pcap-toolbar make it take full width
+   so its groups flow normally. */
+.arkime-pcap-toolbar .packet-options-row {
+  flex: 1 1 auto;
+  min-width: 0;
+  width: 100%;
+}
+
+/* Tighter v-input chrome inside the toolbar — labels, checkboxes,
+   number/filter fields all snap to the toolbar's 30px row height. */
+.arkime-pcap-toolbar :deep(.v-selection-control) {
+  min-height: 0;
+  flex: 0 0 auto;
+}
+.arkime-pcap-toolbar :deep(.v-checkbox .v-selection-control__wrapper),
+.arkime-pcap-toolbar :deep(.v-checkbox .v-selection-control__input) {
+  height: 24px;
+  width: 24px;
+}
+.arkime-pcap-toolbar :deep(.v-label) {
+  font-size: 12px;
+  opacity: 0.9;
+}
+.arkime-pcap-toolbar .tshark-length-input {
+  flex: 0 0 6rem;
+  max-width: 6rem;
+}
+.arkime-pcap-toolbar .tshark-filter-input {
+  flex: 0 0 22rem;
+  max-width: 22rem;
+}
+.arkime-pcap-toolbar .tshark-length-input :deep(.v-field__input),
+.arkime-pcap-toolbar .tshark-filter-input :deep(.v-field__input) {
+  font-size: 12px;
+  padding-top: 2px;
+  padding-bottom: 2px;
+  min-height: 0;
+}
+.arkime-pcap-toolbar :deep(.v-btn) {
+  min-width: 28px;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.tshark-histogram .v-chip {
+  cursor: pointer;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+}
+
+/* split view: packet list (resizable) + grab handle + flexible tree pane */
+.tshark-split {
+  display: grid;
+  /* grid-template-columns is set inline so the divider can be dragged */
+  border: 1px solid rgb(var(--v-theme-neutral));
+  border-radius: 4px;
+  overflow: hidden;
+  min-height: 280px;
+}
+.tshark-list {
+  background: rgb(var(--v-theme-background));
+  max-height: 520px;
+  overflow-y: auto;
+}
+.tshark-split-handle {
+  cursor: col-resize;
+  background: rgb(var(--v-theme-neutral));
+  position: relative;
+  transition: background 0.15s;
+}
+.tshark-split-handle::before {
+  /* two faint dots to hint at drag */
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 2px;
+  height: 24px;
+  background: rgba(0, 0, 0, 0.35);
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.2);
+  border-radius: 1px;
+}
+.tshark-split-handle:hover,
+.tshark-split-handle:active {
+  background: rgb(var(--v-theme-primary));
+}
+.tshark-list-item {
+  padding: 2px 8px;
+  cursor: pointer;
+  font-family: SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.8rem;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+  overflow: hidden;
+}
+.tshark-list-item .tshark-list-idx {
+  font-weight: 700;
+  min-width: 3em;
+}
+.tshark-list-item .text-truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.tshark-list-item:hover {
+  filter: brightness(0.92);
+}
+.tshark-list-item--selected {
+  outline: 2px solid rgb(var(--v-theme-primary));
+  outline-offset: -2px;
+}
+
+.tshark-tree-pane {
+  max-height: 520px;
+  overflow-y: auto;
+  padding: 0.25rem 0.5rem;
+}
+.tshark-tree-header {
+  padding: 4px 8px;
+  border-radius: 3px;
   font-family: SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   font-size: 0.85rem;
-}
-.tshark-output .tshark-packet {
-  margin-bottom: 0.25rem;
-  border-radius: 3px;
-  padding: 1px 4px;
-}
-.tshark-output .tshark-packet > summary {
-  cursor: pointer;
-}
-.tshark-output .tshark-packet[open] {
-  padding-bottom: 4px;
+  margin-bottom: 0.5rem;
 }
 .tshark-proto-badge {
   display: inline-block;
   background: rgba(0,0,0,0.15);
   color: #000;
   font-weight: bold;
-  font-size: 0.75rem;
-  padding: 0 6px;
+  font-size: 0.7rem;
+  padding: 0 5px;
   border-radius: 3px;
   letter-spacing: 0.04em;
 }
-.tshark-output .tshark-tree {
-  padding-left: 1rem;
+.tshark-tree {
+  padding-left: 0.5rem;
+  font-family: SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.85rem;
 }
-.tshark-output .tshark-tree ul {
+.tshark-tree ul {
   padding-left: 1.25rem;
 }
-.tshark-output .tshark-tree li {
+.tshark-tree li {
   list-style: none;
+}
+.tshark-tree summary {
+  cursor: pointer;
 }
 
 .session-detail {
   display: block;
   margin-left: var(--px-md);
   margin-right: var(--px-md);
-}
-
-.packet-options {
-  border-top: rgb(var(--v-theme-neutral)) 1px solid;
 }
 
 .packet-container .file {
@@ -862,6 +1232,23 @@ onUnmounted(() => {
   display: block !important;
 }
 
+/* Two-column packet grid (replaces the Bootstrap .row / .col-md-6 /
+   .offset-md-6 markup the pug template used to emit). src packets
+   land in column 1, dst packets in column 2; the unused column is
+   left empty by the grid so we don't need filler divs. */
+.packet-container .packet-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+.packet-container .packet-cell--src {
+  grid-column: 1;
+  min-width: 0;
+}
+.packet-container .packet-cell--dst {
+  grid-column: 2;
+  min-width: 0;
+}
+
 /* src/dst packet visibility */
 .packet-container .sessionsrc {
   visibility: visible;
@@ -894,15 +1281,14 @@ onUnmounted(() => {
 .packet-container pre .sessionln {
   color: rgb(var(--v-theme-foreground-accent));
 }
-/* src/dst packet text colors */
+/* src/dst packet text colors (positioning is now done by the
+   .packet-row grid; widths come from grid columns, not 50vw). */
 .packet-container .sessiondst {
   color: rgb(var(--v-theme-dst)) !important;
-  max-width: 50vw !important;
   word-wrap: break-word;
 }
 .packet-container .sessionsrc {
   color: rgb(var(--v-theme-src)) !important;
-  max-width: 50vw !important;
   word-wrap: break-word;
 }
 
@@ -1093,16 +1479,18 @@ dl:hover > .session-detail-grip {
   margin-bottom: 0 !important;
 }
 
-/* detail card collapse/expand chevron */
+/* detail card collapse/expand chevron — MDI codepoints in the MDI
+   webfont. Renders as a box if you forget the font-family (FA was
+   removed). */
 .session-detail .session-detail-card h4:after {
   float: right;
-  content: "\f078";
-  font-family: FontAwesome;
+  content: "\F0140"; /* mdi-chevron-down */
+  font-family: "Material Design Icons";
 }
 .session-detail .session-detail-card h4.collapsed:after {
   float: right;
-  content: "\f077";
-  font-family: FontAwesome;
+  content: "\F0143"; /* mdi-chevron-up */
+  font-family: "Material Design Icons";
 }
 .session-detail .session-detail-card.collapsed {
   padding-bottom: 0;
