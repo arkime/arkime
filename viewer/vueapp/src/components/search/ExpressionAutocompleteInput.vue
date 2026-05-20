@@ -44,7 +44,7 @@ SPDX-License-Identifier: Apache-2.0
             <v-icon icon="mdi-history" />&nbsp;
             <strong v-if="value.exp">{{ value.exp }}</strong>
             <strong v-if="!value.exp">{{ value }}</strong>
-            <span v-if="value.friendlyName">- {{ value.friendlyName }}</span>
+            <span v-if="value.friendlyName">&nbsp;- {{ value.friendlyName }}</span>
             <v-icon
               icon="mdi-close"
               class="float-right mt-1"
@@ -63,7 +63,7 @@ SPDX-License-Identifier: Apache-2.0
           @click="addToQuery(value)">
           <strong v-if="value.exp">{{ value.exp }}</strong>
           <strong v-if="!value.exp">{{ value }}</strong>
-          <span v-if="value.friendlyName">- {{ value.friendlyName }}</span>
+          <span v-if="value.friendlyName">&nbsp;- {{ value.friendlyName }}</span>
         </a>
       </template>
     </div>

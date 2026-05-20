@@ -5,7 +5,7 @@ SPDX-License-Identifier: Apache-2.0
 <template>
   <div>
     <div
-      class="d-flex flex-nowrap gap-1 align-start text-start"
+      class="d-flex flex-nowrap gap-2 align-center text-start"
       @keyup.stop.prevent.enter="modifyView">
       <v-text-field
         density="compact"
@@ -66,7 +66,7 @@ SPDX-License-Identifier: Apache-2.0
       <span
         v-if="sessionsPage"
         id="useColConfigWrap"
-        class="d-inline-block">
+        class="d-inline-flex align-center mx-2">
         <v-checkbox
           v-model="useColConfig"
           density="compact"

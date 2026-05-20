@@ -210,6 +210,16 @@ export default {
 </script>
 
 <style>
+/* Force the activator button to match Vuetify's v-input--density-compact
+   height (40px). Several forms place a Share-with-Roles button next to a
+   compact v-text-field; with size="large" the button was 4px taller and
+   read as misaligned. Bypassing Vuetify's size-based height keeps the
+   pair flush regardless of the size prop. */
+.roles-dropdown.v-btn {
+  height: 30px;
+  min-height: 30px;
+}
+
 /* The menu is teleported to body via v-menu, so styles must be unscoped to
    reach the rendered list. */
 .roles-dropdown-menu {

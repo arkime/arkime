@@ -7,7 +7,9 @@ SPDX-License-Identifier: Apache-2.0
     <ArkimeCollapsible>
       <span class="fixed-header">
         <!-- stats sub navbar -->
-        <v-row class="g-1 stats-form p-1 align-center justify-start">
+        <v-row
+          class="g-1 stats-form p-1 align-center justify-start"
+          :class="{ 'stats-form--empty': tabIndex === 7 }">
 
           <v-col
             cols="auto"
@@ -965,6 +967,12 @@ export default {
 .stats-form {
   z-index : 6;
   background-color: rgb(var(--v-theme-quaternary-lightest));
+}
+/* Lock the height ONLY when the form has no controls (esAdmin tab) so
+   it doesn't collapse and leave a gap above the fixed tab strip. Other
+   tabs let their form controls drive the row height naturally. */
+.stats-form.stats-form--empty {
+  min-height: 44px;
 }
 
 /* remove browser styles on select box (mostly for border-radius) */

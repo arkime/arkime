@@ -3,11 +3,11 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-  <div class="d-flex flex-nowrap gap-2 align-start text-start">
-    <div>
+  <div class="d-flex flex-nowrap gap-2 align-center text-start">
+    <div class="d-flex align-center">
       <span
         id="pcapCheckboxWrap"
-        class="d-inline-block">
+        class="d-inline-flex align-center">
         <v-checkbox
           v-model="pcap"
           density="compact"
@@ -20,7 +20,7 @@ SPDX-License-Identifier: Apache-2.0
       </span>
       <span
         id="spiCheckboxWrap"
-        class="d-inline-block ms-2">
+        class="d-inline-flex align-center ms-2">
         <v-checkbox
           v-model="spi"
           density="compact"

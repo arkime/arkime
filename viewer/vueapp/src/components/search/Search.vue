@@ -8,7 +8,12 @@ SPDX-License-Identifier: Apache-2.0
     <div
       class="viz-options-btn-container"
       v-if="!actionForm && (basePath === 'spigraph' || basePath === 'sessions' || basePath === 'spiview' || basePath === 'arkime')">
+      <!-- Split-button vs single-dropdown depending on whether the gear
+           has a meaningful primary action. When viz is hidden or there
+           are no disabled aggregations to fetch, the gear has nothing
+           to do on its own, so we collapse to a single v-menu trigger. -->
       <v-btn-group
+        v-if="!hideViz && disabledAggregations"
         density="compact"
         divided
         class="viz-options-btn">
@@ -18,9 +23,7 @@ SPDX-License-Identifier: Apache-2.0
           size="small"
           @click="overrideDisabledAggregations(1)">
           <v-icon icon="mdi-cog" />
-          <span
-            v-if="!hideViz && disabledAggregations"
-            class="ms-1">
+          <span class="ms-1">
             {{ $t('search.fetchVizData') }}
           </span>
         </v-btn>
@@ -35,44 +38,42 @@ SPDX-License-Identifier: Apache-2.0
             </v-btn>
           </template>
           <v-list density="compact">
-            <template v-if="!hideViz && disabledAggregations">
-              <v-list-item
-                id="fetchVizQuery"
-                @click="overrideDisabledAggregations(1)">
-                {{ $t('search.fetchVizQuery') }}
-                <v-tooltip
-                  activator="#fetchVizQuery"
-                  location="left">
-                  {{ $t('search.fetchVizQueryTip') }}
-                </v-tooltip>
-              </v-list-item>
-              <v-list-item
-                id="fetchVizSession"
-                @click="overrideDisabledAggregations(0)">
-                {{ $t('search.fetchVizSession') }}
-                <v-tooltip
-                  activator="#fetchVizSession"
-                  location="left">
-                  {{ $t('search.fetchVizSessionTip') }}
-                </v-tooltip>
-              </v-list-item>
-              <v-list-item
-                id="fetchVizBrowser"
-                @click="overrideDisabledAggregations(-1)">
-                {{ $t('search.fetchVizBrowser') }}
-                <v-tooltip
-                  activator="#fetchVizBrowser"
-                  location="left">
-                  {{ $t('search.fetchVizBrowserTip') }}
-                </v-tooltip>
-              </v-list-item>
-            </template>
+            <v-list-item
+              id="fetchVizQuery"
+              @click="overrideDisabledAggregations(1)">
+              {{ $t('search.fetchVizQuery') }}
+              <v-tooltip
+                activator="#fetchVizQuery"
+                location="left">
+                {{ $t('search.fetchVizQueryTip') }}
+              </v-tooltip>
+            </v-list-item>
+            <v-list-item
+              id="fetchVizSession"
+              @click="overrideDisabledAggregations(0)">
+              {{ $t('search.fetchVizSession') }}
+              <v-tooltip
+                activator="#fetchVizSession"
+                location="left">
+                {{ $t('search.fetchVizSessionTip') }}
+              </v-tooltip>
+            </v-list-item>
+            <v-list-item
+              id="fetchVizBrowser"
+              @click="overrideDisabledAggregations(-1)">
+              {{ $t('search.fetchVizBrowser') }}
+              <v-tooltip
+                activator="#fetchVizBrowser"
+                location="left">
+                {{ $t('search.fetchVizBrowserTip') }}
+              </v-tooltip>
+            </v-list-item>
             <v-list-item
               v-if="forcedAggregations"
               @click="overrideDisabledAggregations(undefined)">
               {{ $t('search.disableVis') }}
             </v-list-item>
-            <v-divider v-if="!hideViz && disabledAggregations" />
+            <v-divider />
             <v-list-item @click="toggleStickyViz">
               {{ !stickyViz ? 'Pin' : 'Unpin' }}{{ basePath && basePath === 'spigraph' ? ' top' : '' }} {{ basePath && basePath === 'sessions' ? 'graph, map, and column headers' : 'graph and map' }}
             </v-list-item>
@@ -90,6 +91,44 @@ SPDX-License-Identifier: Apache-2.0
           </v-list>
         </v-menu>
       </v-btn-group>
+      <v-menu
+        v-else
+        location="bottom end">
+        <template #activator="{ props: activatorProps }">
+          <v-btn
+            v-bind="activatorProps"
+            color="primary"
+            variant="flat"
+            size="small"
+            class="viz-options-btn">
+            <v-icon icon="mdi-cog" />
+            <v-icon
+              icon="mdi-menu-down"
+              class="ms-1" />
+          </v-btn>
+        </template>
+        <v-list density="compact">
+          <v-list-item
+            v-if="forcedAggregations"
+            @click="overrideDisabledAggregations(undefined)">
+            {{ $t('search.disableVis') }}
+          </v-list-item>
+          <v-list-item @click="toggleStickyViz">
+            {{ !stickyViz ? 'Pin' : 'Unpin' }}{{ basePath && basePath === 'spigraph' ? ' top' : '' }} {{ basePath && basePath === 'sessions' ? 'graph, map, and column headers' : 'graph and map' }}
+          </v-list-item>
+          <v-list-item
+            id="hideViz"
+            @click="toggleHideViz"
+            v-if="basePath !== 'spigraph'">
+            {{ $t(!hideViz ? 'search.hideGraphMap' : 'search.showGraphMap') }}
+            <v-tooltip
+              activator="#hideViz"
+              location="left">
+              {{ $t(!hideViz ? 'search.speedUpTip' : 'search.showGraphTip') }}
+            </v-tooltip>
+          </v-list-item>
+        </v-list>
+      </v-menu>
     </div> <!-- /viz options button -->
 
     <div class="pe-1 ps-1 pt-1 pb-1">

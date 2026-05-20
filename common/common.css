@@ -435,8 +435,9 @@ pre {
    Vuetify's $button-height SCSS variable (viewer/vueapp/src/vuetify-settings.scss);
    apply it via CSS for the other apps so all v-btn instances render at
    the same compact height as viewer. Exclude .v-btn--icon so Vuetify's
-   natural square sizing keeps icon buttons circular. */
-.v-btn:not(.v-pagination__item):not(.v-pagination__navigation):not(.v-btn--icon) {
+   natural square sizing keeps icon buttons circular. .roles-dropdown
+   opts out so its own RoleDropdown.vue height rule wins. */
+.v-btn:not(.v-pagination__item):not(.v-pagination__navigation):not(.v-btn--icon):not(.roles-dropdown) {
   height: 32px !important;
   min-height: 32px !important;
 }
