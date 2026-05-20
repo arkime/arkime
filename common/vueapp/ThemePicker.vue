@@ -111,15 +111,14 @@ SPDX-License-Identifier: Apache-2.0
         <v-card
           :class="['theme-card', { 'theme-card--selected': modelValue === 'custom1' }]"
           variant="outlined">
-          <v-card-title class="d-flex align-center pa-2">
+          <v-card-title
+            class="d-flex align-center pa-2 theme-card__title-bar"
+            @click="onCustomCardClick">
             <v-icon
               :icon="modelValue === 'custom1' ? '$radioOn' : '$radioOff'"
               :color="modelValue === 'custom1' ? 'primary' : undefined"
-              class="me-2"
-              @click.stop="onCustomCardClick" />
-            <span
-              class="theme-card__name"
-              @click.stop="onCustomCardClick">Custom</span>
+              class="me-2" />
+            <span class="theme-card__name">Custom</span>
             <v-spacer />
             <v-btn
               v-if="customTheme"
@@ -569,6 +568,12 @@ export default {
 }
 .theme-card__name {
   font-weight: 600;
+}
+/* Whole Custom title-bar is clickable to select the theme; cursor
+   hint so users know the gap between "Custom" and the Edit button
+   isn't dead space. */
+.theme-card__title-bar {
+  cursor: pointer;
 }
 .theme-card__preview {
   display: flex;

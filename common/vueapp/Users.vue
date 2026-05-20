@@ -911,11 +911,13 @@ export default {
   padding-right: 6px !important;
   height: auto !important;
   font-size: 0.8rem !important;
+  vertical-align: middle;
 }
 .users-table-striped :deep(thead tr > th) {
   font-size: 0.75rem !important;
   text-transform: uppercase;
   letter-spacing: 0.03em;
+  text-align: left;
 }
 .users-table-striped :deep(tbody tr > td .v-input),
 .users-table-striped :deep(tbody tr > td .arkime-input-group) {

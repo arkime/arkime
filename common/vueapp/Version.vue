@@ -77,8 +77,7 @@ export default {
 <style>
 .arkime-version-link {
   text-decoration: none;
-  font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
-  font-weight: 700;
+  /* inherit the app's body font + weight; keep rainbow */
   font-size: 0.95rem;
   white-space: nowrap;
   background: linear-gradient(

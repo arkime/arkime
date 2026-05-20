@@ -20,7 +20,9 @@
       :model-value="pageLength"
       @update:model-value="lengthUpdated" />
 
-    <div class="arkime-input-group paging-wrapper">
+    <div
+      class="arkime-input-group paging-wrapper"
+      :class="{ 'paging-wrapper--hide-last': totalPages > 9 }">
       <v-pagination
         density="compact"
         size="small"
@@ -52,6 +54,16 @@
 :deep(.v-pagination__list) {
   margin-bottom: 0;
   padding-left: 0;
+}
+
+/* Drop the trailing "last page" button (e.g. ...1000) so the strip
+   reads "< 1 2 3 ... >" instead of "< 1 2 3 ... 1000 >". Only applied
+   when totalPages > totalVisible (i.e. when Vuetify would emit an
+   ellipsis), via the paging-wrapper--hide-last class. The last <li>
+   in v-pagination__list is .v-pagination__next; second-to-last is the
+   trailing page item. */
+.paging-wrapper--hide-last :deep(.v-pagination__list > li:nth-last-child(2)) {
+  display: none;
 }
 
 /* v-pagination wrapped in an .arkime-input-group -- let the

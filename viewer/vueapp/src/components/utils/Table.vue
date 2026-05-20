@@ -920,6 +920,11 @@ table tr.border-top-bold > td {
 /* slider grips indicator -------------------- */
 table thead tr th {
   border-right: 1px dotted rgb(var(--v-theme-neutral));
+  vertical-align: middle;
+  text-align: left;
+}
+table tbody tr td {
+  vertical-align: middle;
 }
 table thead tr th.ignore-element {
   border-right: none;

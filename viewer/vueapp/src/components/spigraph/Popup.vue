@@ -39,7 +39,7 @@ SPDX-License-Identifier: Apache-2.0
               class="stat">
               {{ stat.label }}
               <br>
-              <span class="badge bg-secondary">
+              <span class="stat-value">
                 {{ stat.value }}
               </span>
             </div>

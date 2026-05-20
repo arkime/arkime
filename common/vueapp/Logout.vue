@@ -7,7 +7,7 @@ SPDX-License-Identifier: Apache-2.0
     :size="vuetifySize"
     v-if="logoutUrl"
     class="ms-2"
-    variant="outlined"
+    variant="flat"
     color="warning"
     @click="logout">
     <v-icon icon="mdi-logout" />

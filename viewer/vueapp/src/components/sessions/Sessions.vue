@@ -619,7 +619,7 @@ SPDX-License-Identifier: Apache-2.0
                 <!-- toggle button and ip protocol -->
                 <td class="ignore-element">
                   <toggle-btn
-                    class="mt-1"
+                    class="mt-1 me-1"
                     :opened="session.expanded"
                     @toggle="toggleSessionDetail(session)" />
                   <span v-if="session.ipProtocol === 0">
@@ -2335,7 +2335,8 @@ table.sessions-table {
 
 /* borders for header */
 table.sessions-table thead tr th {
-  vertical-align: top;
+  vertical-align: middle;
+  text-align: left;
   border-bottom: 2px solid rgb(var(--v-theme-neutral));
   border-right: 1px dotted rgb(var(--v-theme-neutral));
 }
@@ -2355,8 +2356,10 @@ table.sessions-table tbody tr:nth-of-type(odd) td {
   background-color: rgb(var(--v-theme-neutral-lighter));
 }
 
-/* table hover */
-table.sessions-table tbody tr:not(.session-detail-row):hover,
+/* table hover -- target the tds directly because the zebra rule above
+   paints each cell, which would otherwise hide a hover bg set on the
+   tr for the odd rows. */
+table.sessions-table tbody tr:not(.session-detail-row):hover td,
 table.sessions-table tbody tr:not(.session-detail-row):hover td.active {
   background-color: rgb(var(--v-theme-tertiary-lightest));
 }
@@ -2370,7 +2373,7 @@ table.sessions-table tbody tr.session-detail-row {
 table.sessions-table tbody tr td {
   padding: 0 2px;
   line-height: 1.42857143;
-  vertical-align: top;
+  vertical-align: middle;
 }
 
 /* leftmost column is always the same */
@@ -2422,8 +2425,16 @@ table.sessions-table.sticky-header > tbody {
   color: rgb(var(--v-theme-foreground-accent));
 }
 
+/* Hovering anywhere on the column header reveals the chevron with a
+   button-like background tint. The tint is 60% alpha (applied to the
+   background only, not via opacity on the whole button) so the caret
+   itself stays crisp / fully opaque. */
 .arkime-col-header:hover .col-dropdown {
   visibility: visible;
+  opacity: 1;
+  /* Use the base quaternary color at low alpha so it still reads as
+     tinted (not washed-out gray like quaternary-lighter at 60% was). */
+  background-color: rgba(var(--v-theme-quaternary), 0.6);
 }
 
 .arkime-col-header .header-text {
