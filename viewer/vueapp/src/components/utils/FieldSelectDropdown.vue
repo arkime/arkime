@@ -1,5 +1,9 @@
 <template>
+  <!-- bodyOnly: render just the v-list so a parent v-menu can host us
+       as a submenu. Otherwise: the standalone v-menu + v-btn + v-list
+       form used everywhere a FieldSelectDropdown stands on its own. -->
   <v-menu
+    v-if="!bodyOnly"
     v-model="menuOpen"
     :close-on-content-click="false"
     location="bottom end">
@@ -16,69 +20,49 @@
     <v-list
       density="compact"
       class="field-dropdown-menu">
-      <div class="px-2 py-1">
-        <div class="arkime-input-group arkime-input-group--fluid">
-          <input
-            autofocus
-            type="text"
-            class="arkime-input-control"
-            v-model="query"
-            @input="debounceQuery"
-            @click.stop
-            :placeholder="searchPlaceholder">
-        </div>
-      </div>
-      <v-list-item
-        v-if="selectedFields.length > 0"
-        class="text-danger"
-        @click="$emit('clear')">
-        <v-icon
-          icon="mdi-close"
-          class="me-1" />
-        Clear all
-      </v-list-item>
-      <v-divider />
-      <template v-if="menuOpen">
-        <v-list-item v-if="!filteredFieldsCount">
-          No fields match
-        </v-list-item>
-        <template
-          v-for="(groupFields, group) in visibleFilteredFields"
-          :key="group">
-          <div
-            v-if="groupFields.length"
-            class="group-header">
-            {{ group }}
-          </div>
-          <v-list-item
-            v-for="(field, idx) in groupFields"
-            :id="group + idx + 'item'"
-            :key="group + idx + 'item'"
-            :active="isSelected(getFieldId(field))"
-            @click="toggle(getFieldId(field))">
-            {{ field.friendlyName }}
-            <small>({{ field.exp }})</small>
-            <v-tooltip
-              v-if="field.help"
-              activator="parent">
-              {{ field.help }}
-            </v-tooltip>
-          </v-list-item>
-        </template>
-        <v-list-item
-          v-if="hasMoreFields"
-          class="text-center cursor-pointer"
-          @click.stop="showAllFields = true">
-          <strong>Show {{ filteredFieldsCount - maxVisibleFields }} more fields</strong>
-        </v-list-item>
-      </template>
+      <FieldSelectDropdownBody
+        :menu-open="menuOpen"
+        :selected-fields="selectedFields"
+        :search-placeholder="searchPlaceholder"
+        :query="query"
+        :show-all-fields="showAllFields"
+        :visible-filtered-fields="visibleFilteredFields"
+        :filtered-fields-count="filteredFieldsCount"
+        :has-more-fields="hasMoreFields"
+        :get-field-id="getFieldId"
+        :is-selected="isSelected"
+        @update:query="onQueryInput"
+        @toggle="toggle"
+        @clear="$emit('clear')"
+        @show-all="showAllFields = true" />
     </v-list>
   </v-menu>
+  <v-list
+    v-else
+    density="compact"
+    class="field-dropdown-menu">
+    <FieldSelectDropdownBody
+      :menu-open="true"
+      :selected-fields="selectedFields"
+      :search-placeholder="searchPlaceholder"
+      :query="query"
+      :show-all-fields="showAllFields"
+      :visible-filtered-fields="visibleFilteredFields"
+      :filtered-fields-count="filteredFieldsCount"
+      :has-more-fields="hasMoreFields"
+      :get-field-id="getFieldId"
+      :is-selected="isSelected"
+      @update:query="onQueryInput"
+      @toggle="toggle"
+      @clear="$emit('clear')"
+      @show-all="showAllFields = true" />
+  </v-list>
 </template>
 
 <script>
 import { searchFields } from '@common/vueFilters.js';
 import FieldService from '../search/FieldService';
+import FieldSelectDropdownBody from './FieldSelectDropdownBody.vue';
 
 let filterTimeout;
 
@@ -122,9 +106,17 @@ export default {
     includeSummaryFields: {
       type: Boolean,
       default: false
+    },
+    // When true, render only the v-list body (no v-menu wrapper, no
+    // v-btn activator). Used when this component is nested inside a
+    // parent v-menu acting as a submenu.
+    bodyOnly: {
+      type: Boolean,
+      default: false
     }
   },
   emits: ['toggle', 'clear'],
+  components: { FieldSelectDropdownBody },
   data () {
     return {
       menuOpen: false,
@@ -217,6 +209,10 @@ export default {
         this.filterFields();
       }, 400);
     },
+    onQueryInput (value) {
+      this.query = value;
+      this.debounceQuery();
+    },
     getFieldId (field) {
       return field[this.fieldIdKey] || field.exp || field.dbField;
     },
@@ -236,12 +232,7 @@ export default {
   overflow-y: auto;
   width: 320px;
 }
-
-.group-header {
-  text-transform: uppercase;
-  font-weight: bold;
-  font-size: 0.75rem;
-  padding: 0.4rem 0.5rem 0.2rem;
-  color: rgb(var(--v-theme-foreground-accent));
-}
+/* .group-header + .field-item styling lives in FieldSelectDropdownBody.vue
+   since that's where those elements are now rendered (and scoped styles
+   here would no longer reach them across the component boundary). */
 </style>

@@ -71,197 +71,194 @@ SPDX-License-Identifier: Apache-2.0
             id="sessions-table-header"
             style="overflow:scroll">
             <tr ref="draggableColumns">
-              <!-- table options -->
+              <!-- table options: single dropdown collapsing five separate
+                   controls (open/close all, fit, toggle columns, save
+                   layouts) into one menu with side-popping submenus -->
               <th
-                class="ignore-element"
+                class="ignore-element sessions-options-cell"
                 style="width:85px;">
-                <div class="d-flex flex-column align-start">
-                  <!-- table action buttons -->
-                  <v-btn-group
-                    divided
-                    density="compact"
-                    variant="flat">
+                <v-menu
+                  :close-on-content-click="false"
+                  location="bottom start">
+                  <template #activator="{ props: activatorProps }">
                     <v-btn
+                      v-bind="activatorProps"
+                      size="small"
+                      variant="text"
+                      icon
+                      class="sessions-options-btn"
+                      :aria-label="$t('sessions.sessions.tableOptions')">
+                      <v-icon
+                        icon="mdi-table-cog"
+                        size="large" />
+                      <v-tooltip
+                        activator="parent"
+                        location="right">
+                        {{ $t('sessions.sessions.tableOptions') }}
+                      </v-tooltip>
+                    </v-btn>
+                  </template>
+                  <v-list
+                    density="compact"
+                    min-width="220"
+                    class="sessions-options-menu">
+                    <!-- direct actions -->
+                    <v-list-item
                       v-if="sessions.data && sessions.data.length <= 50"
-                      :height="18"
-                      size="x-small"
-                      density="compact"
-                      color="primary"
-                      icon
-                      :aria-label="$t('sessions.sessions.openAll')"
+                      prepend-icon="mdi-plus-circle"
                       @click="openAll">
-                      <v-icon icon="mdi-plus-circle" />
-                      <v-tooltip
-                        activator="parent"
-                        location="right">
-                        {{ $t('sessions.sessions.openAll') }}
-                      </v-tooltip>
-                    </v-btn>
-                    <v-btn
+                      {{ $t('sessions.sessions.openAll') }}
+                    </v-list-item>
+                    <v-list-item
                       v-if="!loading && stickySessions.length > 0"
-                      :height="18"
-                      size="x-small"
-                      density="compact"
-                      color="secondary"
-                      icon
-                      :aria-label="$t('sessions.sessions.closeAll')"
+                      prepend-icon="mdi-close-circle"
                       @click="closeAll">
-                      <v-icon icon="mdi-close-circle" />
-                      <v-tooltip
-                        activator="parent"
-                        location="right">
-                        {{ $t('sessions.sessions.closeAll') }}
-                      </v-tooltip>
-                    </v-btn>
-                    <v-btn
+                      {{ $t('sessions.sessions.closeAll') }}
+                    </v-list-item>
+                    <v-list-item
                       v-if="showFitButton && !loading"
-                      :height="18"
-                      size="x-small"
-                      density="compact"
-                      color="warning"
-                      icon
-                      :aria-label="$t('sessions.sessions.fitTable')"
+                      prepend-icon="mdi-arrow-expand-horizontal"
                       @click="fitTable">
-                      <v-icon icon="mdi-arrow-expand-horizontal" />
-                      <v-tooltip
+                      {{ $t('sessions.sessions.fitTable') }}
+                    </v-list-item>
+                    <v-divider />
+
+                    <!-- submenu: toggle column visibility -->
+                    <v-list-item
+                      prepend-icon="mdi-view-column"
+                      append-icon="mdi-chevron-right">
+                      <v-list-item-title>{{ $t('sessions.sessions.toggleColumns') }}</v-list-item-title>
+                      <v-menu
                         activator="parent"
-                        location="right">
-                        {{ $t('sessions.sessions.fitTable') }}
-                      </v-tooltip>
-                    </v-btn>
-                  </v-btn-group> <!-- /table action buttons -->
-                  <!-- column configuration action group: visibility + save layouts -->
-                  <v-btn-group
-                    divided
-                    density="compact"
-                    variant="flat"
-                    color="secondary"
-                    class="column-config-actions mt-n2">
-                    <!-- column visibility button -->
-                    <FieldSelectDropdown
-                      :selected-fields="tableState.visibleHeaders"
-                      :tooltip-text="$t('sessions.sessions.toggleColumns')"
-                      :search-placeholder="$t('sessions.sessions.searchColumns')"
-                      :exclude-filename="true"
-                      :max-visible-fields="maxVisibleFields"
-                      field-id-key="dbField"
-                      @toggle="toggleColVis" />
-                    <!-- /column visibility button -->
-                    <!-- column save menu -->
-                    <v-menu
-                      :close-on-content-click="false"
-                      location="bottom start">
-                      <template #activator="{ props: activatorProps }">
-                        <v-btn v-bind="activatorProps">
-                          <v-icon icon="mdi-content-save" />
-                          <v-tooltip
-                            activator="parent"
-                            location="right">
-                            {{ $t('sessions.sessions.customColumnMsg') }}
-                          </v-tooltip>
-                        </v-btn>
-                      </template>
-                      <v-list
-                        density="compact"
-                        class="col-config-list">
-                        <div class="px-2 py-1">
-                          <div class="arkime-input-group arkime-input-group--fluid">
-                            <input
-                              autofocus
-                              @click.stop
-                              maxlength="30"
-                              type="text"
-                              class="arkime-input-control"
-                              v-model="newColConfigName"
-                              :placeholder="$t('sessions.sessions.customColumnName')"
-                              @keydown.enter="saveColumnConfiguration">
-                            <v-btn
-                              :aria-label="$t('common.save')"
-                              variant="flat"
-                              size="small"
-                              density="comfortable"
-                              icon
-                              class="arkime-input-append-btn"
-                              :style="secondaryBtnStyle"
-                              :disabled="!newColConfigName"
-                              @click="saveColumnConfiguration">
-                              <v-icon icon="mdi-content-save" />
-                            </v-btn>
+                        :close-on-content-click="false"
+                        location="end"
+                        open-on-click
+                        :open-on-hover="false">
+                        <FieldSelectDropdown
+                          body-only
+                          :selected-fields="tableState.visibleHeaders"
+                          :tooltip-text="$t('sessions.sessions.toggleColumns')"
+                          :search-placeholder="$t('sessions.sessions.searchColumns')"
+                          :exclude-filename="true"
+                          :max-visible-fields="maxVisibleFields"
+                          field-id-key="dbField"
+                          @toggle="toggleColVis" />
+                      </v-menu>
+                    </v-list-item>
+
+                    <!-- submenu: save / load named column layouts -->
+                    <v-list-item
+                      prepend-icon="mdi-content-save"
+                      append-icon="mdi-chevron-right">
+                      <v-list-item-title>{{ $t('sessions.sessions.customColumnMsg') }}</v-list-item-title>
+                      <v-menu
+                        activator="parent"
+                        :close-on-content-click="false"
+                        location="end"
+                        open-on-click
+                        :open-on-hover="false">
+                        <v-list
+                          density="compact"
+                          class="col-config-list">
+                          <div class="px-2 py-1">
+                            <div class="arkime-input-group arkime-input-group--fluid">
+                              <input
+                                autofocus
+                                @click.stop
+                                maxlength="30"
+                                type="text"
+                                class="arkime-input-control"
+                                v-model="newColConfigName"
+                                :placeholder="$t('sessions.sessions.customColumnName')"
+                                @keydown.enter="saveColumnConfiguration">
+                              <v-btn
+                                :aria-label="$t('common.save')"
+                                variant="flat"
+                                size="small"
+                                density="comfortable"
+                                icon
+                                class="arkime-input-append-btn"
+                                :style="secondaryBtnStyle"
+                                :disabled="!newColConfigName"
+                                @click="saveColumnConfiguration">
+                                <v-icon icon="mdi-content-save" />
+                              </v-btn>
+                            </div>
                           </div>
-                        </div>
-                        <v-divider />
-                        <v-list-item
-                          key="col-config-default"
-                          @click.stop.prevent="loadColumnConfiguration(-1)">
-                          {{ $t('sessions.sessions.arkimeDefault') }}
-                          <v-tooltip
-                            activator="parent"
-                            location="end">
-                            {{ $t('sessions.sessions.customColumnReset') }}
-                          </v-tooltip>
-                        </v-list-item>
-                        <v-list-item
-                          v-for="(config, key) in colConfigs"
-                          :key="config.name"
-                          @click.self.stop.prevent="loadColumnConfiguration(key)">
-                          <div
-                            class="d-flex align-center w-100"
-                            @click.self="loadColumnConfiguration(key)">
-                            <span
-                              class="flex-grow-1"
-                              @click="loadColumnConfiguration(key)">
-                              {{ config.name }}
-                            </span>
-                            <v-btn
-                              :id="`updateCol${key}`"
-                              :aria-label="$t('sessions.sessions.customColumnUpdate')"
-                              color="warning"
-                              variant="flat"
-                              size="small"
-                              density="comfortable"
-                              icon
-                              class="ms-1"
-                              @click.stop.prevent="updateColumnConfiguration(config.name, key)">
-                              <v-icon icon="mdi-content-save" />
-                              <v-tooltip
-                                :activator="`[id='updateCol${key}']`"
-                                location="end">
-                                {{ $t('sessions.sessions.customColumnUpdate') }}
-                              </v-tooltip>
-                            </v-btn>
-                            <v-btn
-                              :aria-label="$t('common.delete')"
-                              color="error"
-                              variant="flat"
-                              size="small"
-                              density="comfortable"
-                              icon
-                              class="ms-1"
-                              @click.stop.prevent="deleteColumnConfiguration(config.name, key)">
-                              <v-icon icon="mdi-trash-can-outline" />
-                            </v-btn>
-                          </div>
-                        </v-list-item>
-                      </v-list>
-                      <v-alert
-                        v-if="colConfigError"
-                        density="compact"
-                        variant="tonal"
-                        type="error"
-                        class="ma-1">
-                        {{ colConfigError }}
-                      </v-alert>
-                      <v-alert
-                        v-if="colConfigSuccess"
-                        density="compact"
-                        variant="tonal"
-                        type="success"
-                        class="ma-1">
-                        {{ colConfigSuccess }}
-                      </v-alert>
-                    </v-menu> <!-- /column save menu -->
-                  </v-btn-group> <!-- /column configuration action group -->
-                </div>
+                          <v-divider />
+                          <v-list-item
+                            key="col-config-default"
+                            @click.stop.prevent="loadColumnConfiguration(-1)">
+                            {{ $t('sessions.sessions.arkimeDefault') }}
+                            <v-tooltip
+                              activator="parent"
+                              location="end">
+                              {{ $t('sessions.sessions.customColumnReset') }}
+                            </v-tooltip>
+                          </v-list-item>
+                          <v-list-item
+                            v-for="(config, key) in colConfigs"
+                            :key="config.name"
+                            @click.self.stop.prevent="loadColumnConfiguration(key)">
+                            <div
+                              class="d-flex align-center w-100"
+                              @click.self="loadColumnConfiguration(key)">
+                              <span
+                                class="flex-grow-1"
+                                @click="loadColumnConfiguration(key)">
+                                {{ config.name }}
+                              </span>
+                              <v-btn
+                                :id="`updateCol${key}`"
+                                :aria-label="$t('sessions.sessions.customColumnUpdate')"
+                                color="warning"
+                                variant="flat"
+                                size="small"
+                                density="comfortable"
+                                icon
+                                class="ms-1"
+                                @click.stop.prevent="updateColumnConfiguration(config.name, key)">
+                                <v-icon icon="mdi-content-save" />
+                                <v-tooltip
+                                  :activator="`[id='updateCol${key}']`"
+                                  location="end">
+                                  {{ $t('sessions.sessions.customColumnUpdate') }}
+                                </v-tooltip>
+                              </v-btn>
+                              <v-btn
+                                :aria-label="$t('common.delete')"
+                                color="error"
+                                variant="flat"
+                                size="small"
+                                density="comfortable"
+                                icon
+                                class="ms-1"
+                                @click.stop.prevent="deleteColumnConfiguration(config.name, key)">
+                                <v-icon icon="mdi-trash-can-outline" />
+                              </v-btn>
+                            </div>
+                          </v-list-item>
+                        </v-list>
+                        <v-alert
+                          v-if="colConfigError"
+                          density="compact"
+                          variant="tonal"
+                          type="error"
+                          class="ma-1">
+                          {{ colConfigError }}
+                        </v-alert>
+                        <v-alert
+                          v-if="colConfigSuccess"
+                          density="compact"
+                          variant="tonal"
+                          type="success"
+                          class="ma-1">
+                          {{ colConfigSuccess }}
+                        </v-alert>
+                      </v-menu>
+                    </v-list-item>
+                  </v-list>
+                </v-menu>
               </th> <!-- /table options -->
               <!-- table headers -->
               <template v-if="headers && headers.length">
@@ -279,216 +276,234 @@ SPDX-License-Identifier: Apache-2.0
                   <!-- non-sortable column -->
                   <span
                     v-if="header.dbField === 'info'"
-                    class="cursor-pointer">
-                    {{ header.friendlyName }}
-                    <!-- info column action group: toggle field visibility + save layouts -->
-                    <v-btn-group
-                      divided
-                      density="compact"
-                      variant="flat"
-                      color="secondary"
-                      class="float-right info-col-actions">
-                      <!-- info field visibility button -->
-                      <v-menu
-                        :close-on-content-click="false"
-                        location="bottom end"
-                        @update:model-value="(open) => {
-                          infoFieldVisMenuOpen = open;
-                          if (!open) showAllInfoFields = false;
-                        }">
-                        <template #activator="{ props: activatorProps }">
-                          <v-btn
-                            v-bind="activatorProps"
-                            class="info-vis-menu col-dropdown">
-                            <v-icon icon="mdi-menu" />
-                            <v-tooltip
-                              activator="parent"
-                              location="right">
-                              {{ $t('sessions.sessions.toggleInfoFields') }}
-                            </v-tooltip>
-                          </v-btn>
-                        </template>
-                        <v-list
+                    class="cursor-pointer info-col-header-inner">
+                    <!-- info column: single dropdown collapsing the field-
+                         visibility menu and the save-layouts menu into one
+                         (mirrors the table-options menu in the first cell).
+                         Rendered before the label so the cog sits to the
+                         left of "Info". -->
+                    <v-menu
+                      :close-on-content-click="false"
+                      location="bottom end"
+                      class="info-col-actions">
+                      <template #activator="{ props: activatorProps }">
+                        <v-btn
+                          v-bind="activatorProps"
+                          variant="text"
+                          size="small"
                           density="compact"
-                          class="col-dropdown-menu">
-                          <div class="px-2 py-1">
-                            <div class="arkime-input-group arkime-input-group--fluid">
-                              <input
-                                autofocus
-                                v-model="colQuery"
-                                @input="debounceInfoColQuery"
-                                @click.stop
-                                type="text"
-                                class="arkime-input-control"
-                                :placeholder="$t('common.searchForFields')">
-                            </div>
-                          </div>
-                          <v-divider />
-                          <template v-if="infoFieldVisMenuOpen">
-                            <v-list-item
-                              v-if="!filteredInfoFieldsCount"
-                              disabled>
-                              {{ $t('sessions.sessions.noFieldsMatch') }}
-                            </v-list-item>
-                            <template
-                              v-for="(group, key) in visibleFilteredInfoFields"
-                              :key="key">
-                              <v-list-subheader
-                                v-if="group.length"
-                                class="group-header text-uppercase">
-                                {{ key }}
-                              </v-list-subheader>
-                              <template
-                                v-for="(field, k) in group"
-                                :key="key + k + 'infoitem'">
+                          icon
+                          class="info-vis-menu col-dropdown"
+                          :aria-label="$t('sessions.sessions.toggleInfoFields')">
+                          <v-icon icon="mdi-table-cog" />
+                          <v-tooltip
+                            activator="parent"
+                            location="right">
+                            {{ $t('sessions.sessions.toggleInfoFields') }}
+                          </v-tooltip>
+                        </v-btn>
+                      </template>
+                      <v-list
+                        density="compact"
+                        min-width="220"
+                        class="sessions-options-menu">
+                        <!-- submenu: toggle info field visibility -->
+                        <v-list-item
+                          prepend-icon="mdi-view-list"
+                          append-icon="mdi-chevron-right">
+                          <v-list-item-title>{{ $t('sessions.sessions.toggleInfoFields') }}</v-list-item-title>
+                          <v-menu
+                            activator="parent"
+                            :close-on-content-click="false"
+                            location="end"
+                            open-on-click
+                            :open-on-hover="false"
+                            @update:model-value="(open) => {
+                              infoFieldVisMenuOpen = open;
+                              if (!open) showAllInfoFields = false;
+                            }">
+                            <v-list
+                              density="compact"
+                              class="col-dropdown-menu">
+                              <div class="px-2 py-1">
+                                <div class="arkime-input-group arkime-input-group--fluid">
+                                  <input
+                                    autofocus
+                                    v-model="colQuery"
+                                    @input="debounceInfoColQuery"
+                                    @click.stop
+                                    type="text"
+                                    class="arkime-input-control"
+                                    :placeholder="$t('common.searchForFields')">
+                                </div>
+                              </div>
+                              <v-divider />
+                              <template v-if="infoFieldVisMenuOpen">
                                 <v-list-item
-                                  :data-tip-id="key + k + 'infoitem'"
-                                  :active="isInfoVisible(field.dbField) >= 0"
-                                  @click.prevent.stop="toggleInfoVis(field.dbField)">
-                                  {{ field.friendlyName }}
-                                  <small>({{ field.exp }})</small>
-                                  <v-tooltip
-                                    v-if="field.help"
-                                    :activator="`[data-tip-id='${key + k + 'infoitem'}']`"
-                                    location="end">
-                                    {{ field.help }}
-                                  </v-tooltip>
+                                  v-if="!filteredInfoFieldsCount"
+                                  disabled>
+                                  {{ $t('sessions.sessions.noFieldsMatch') }}
+                                </v-list-item>
+                                <template
+                                  v-for="(group, key) in visibleFilteredInfoFields"
+                                  :key="key">
+                                  <v-list-subheader
+                                    v-if="group.length"
+                                    class="group-header text-uppercase">
+                                    {{ key }}
+                                  </v-list-subheader>
+                                  <template
+                                    v-for="(field, k) in group"
+                                    :key="key + k + 'infoitem'">
+                                    <v-list-item
+                                      :data-tip-id="key + k + 'infoitem'"
+                                      :active="isInfoVisible(field.dbField) >= 0"
+                                      class="field-item"
+                                      @click.prevent.stop="toggleInfoVis(field.dbField)">
+                                      {{ field.friendlyName }}
+                                      <small>({{ field.exp }})</small>
+                                      <v-tooltip
+                                        v-if="field.help"
+                                        :activator="`[data-tip-id='${key + k + 'infoitem'}']`"
+                                        location="end">
+                                        {{ field.help }}
+                                      </v-tooltip>
+                                    </v-list-item>
+                                  </template>
+                                </template>
+                                <v-list-item
+                                  v-if="hasMoreInfoFields"
+                                  class="text-center"
+                                  @click.stop="showAllInfoFields = true">
+                                  <strong>Show {{ $t('sessions.sessions.showMoreFields', filteredInfoFieldsCount - maxVisibleFields) }}</strong>
                                 </v-list-item>
                               </template>
-                            </template>
-                            <v-list-item
-                              v-if="hasMoreInfoFields"
-                              class="text-center"
-                              @click.stop="showAllInfoFields = true">
-                              <strong>Show {{ $t('sessions.sessions.showMoreFields', filteredInfoFieldsCount - maxVisibleFields) }}</strong>
-                            </v-list-item>
-                          </template>
-                        </v-list>
-                      </v-menu> <!-- /info field visibility button -->
-                      <!-- info field config button -->
-                      <v-menu
-                        :close-on-content-click="false"
-                        location="bottom end">
-                        <template #activator="{ props: activatorProps }">
-                          <v-btn
-                            v-bind="activatorProps"
-                            class="info-vis-menu col-dropdown">
-                            <v-icon icon="mdi-content-save" />
-                            <v-tooltip
-                              activator="parent"
-                              location="right">
-                              {{ $t('sessions.sessions.customInfoMsg') }}
-                            </v-tooltip>
-                          </v-btn>
-                        </template>
-                        <v-list
-                          density="compact"
-                          class="col-dropdown-menu">
-                          <div class="px-2 py-1">
-                            <div class="arkime-input-group arkime-input-group--fluid">
-                              <input
-                                autofocus
-                                @click.stop
-                                maxlength="30"
-                                type="text"
-                                class="arkime-input-control"
-                                v-model="newInfoConfigName"
-                                :placeholder="$t('sessions.sessions.customInfoName')"
-                                @keydown.enter="saveInfoFieldLayout">
-                              <v-btn
-                                :aria-label="$t('common.save')"
-                                variant="flat"
-                                size="small"
-                                density="comfortable"
-                                icon
-                                class="arkime-input-append-btn"
-                                :style="secondaryBtnStyle"
-                                :disabled="!newInfoConfigName"
-                                @click="saveInfoFieldLayout">
-                                <v-icon icon="mdi-content-save" />
-                              </v-btn>
-                            </div>
-                          </div>
-                          <v-divider />
-                          <v-list-item
-                            key="infodefault"
-                            data-tip-id="infodefault"
-                            @click.stop.prevent="resetInfoVisibility">
-                            {{ $t('sessions.sessions.arkimeDefault') }}
-                            <v-tooltip
-                              activator="parent"
-                              location="end">
-                              {{ $t('sessions.sessions.customInfoReset') }}
-                            </v-tooltip>
-                          </v-list-item>
-                          <transition-group
-                            name="list"
-                            tag="div">
-                            <v-divider
-                              key="infodivider"
-                              v-if="infoConfigs.length" />
-                            <v-list-item
-                              v-for="(config, key) in infoConfigs"
-                              :key="config.name"
-                              @click.self.stop.prevent="loadInfoFieldLayout(key)">
-                              <div
-                                class="d-flex align-center w-100"
-                                @click.self="loadInfoFieldLayout(key)">
-                                <span
-                                  class="flex-grow-1"
-                                  @click="loadInfoFieldLayout(key)">
-                                  {{ config.name }}
-                                </span>
-                                <v-btn
-                                  :id="`updateInfo${key}`"
-                                  :aria-label="$t('sessions.sessions.customInfoUpdate')"
-                                  color="warning"
-                                  variant="flat"
-                                  size="small"
-                                  density="comfortable"
-                                  icon
-                                  class="ms-1"
-                                  @click.stop.prevent="updateInfoFieldLayout(config.name, key)">
-                                  <v-icon icon="mdi-content-save" />
-                                  <v-tooltip
-                                    :activator="`[id='updateInfo${key}']`"
-                                    location="end">
-                                    {{ $t('sessions.sessions.customInfoUpdate') }}
-                                  </v-tooltip>
-                                </v-btn>
-                                <v-btn
-                                  :aria-label="$t('common.delete')"
-                                  color="error"
-                                  variant="flat"
-                                  size="small"
-                                  density="comfortable"
-                                  icon
-                                  class="ms-1"
-                                  @click.stop.prevent="deleteInfoFieldLayout(config.name, key)">
-                                  <v-icon icon="mdi-trash-can-outline" />
-                                </v-btn>
+                            </v-list>
+                          </v-menu>
+                        </v-list-item>
+
+                        <!-- submenu: save / load custom info field layouts -->
+                        <v-list-item
+                          prepend-icon="mdi-content-save"
+                          append-icon="mdi-chevron-right">
+                          <v-list-item-title>{{ $t('sessions.sessions.customInfoMsg') }}</v-list-item-title>
+                          <v-menu
+                            activator="parent"
+                            :close-on-content-click="false"
+                            location="end"
+                            open-on-click
+                            :open-on-hover="false">
+                            <v-list
+                              density="compact"
+                              class="col-dropdown-menu">
+                              <div class="px-2 py-1">
+                                <div class="arkime-input-group arkime-input-group--fluid">
+                                  <input
+                                    autofocus
+                                    @click.stop
+                                    maxlength="30"
+                                    type="text"
+                                    class="arkime-input-control"
+                                    v-model="newInfoConfigName"
+                                    :placeholder="$t('sessions.sessions.customInfoName')"
+                                    @keydown.enter="saveInfoFieldLayout">
+                                  <v-btn
+                                    :aria-label="$t('common.save')"
+                                    variant="flat"
+                                    size="small"
+                                    density="comfortable"
+                                    icon
+                                    class="arkime-input-append-btn"
+                                    :style="secondaryBtnStyle"
+                                    :disabled="!newInfoConfigName"
+                                    @click="saveInfoFieldLayout">
+                                    <v-icon icon="mdi-content-save" />
+                                  </v-btn>
+                                </div>
                               </div>
-                            </v-list-item>
-                          </transition-group>
-                          <v-alert
-                            v-if="infoConfigError"
-                            density="compact"
-                            variant="tonal"
-                            type="error"
-                            class="ma-1">
-                            {{ infoConfigError }}
-                          </v-alert>
-                          <v-alert
-                            v-if="infoConfigSuccess"
-                            density="compact"
-                            variant="tonal"
-                            type="success"
-                            class="ma-1">
-                            {{ infoConfigSuccess }}
-                          </v-alert>
-                        </v-list>
-                      </v-menu> <!-- /info field config button -->
-                    </v-btn-group> <!-- /info column action group -->
+                              <v-divider />
+                              <v-list-item
+                                key="infodefault"
+                                data-tip-id="infodefault"
+                                @click.stop.prevent="resetInfoVisibility">
+                                {{ $t('sessions.sessions.arkimeDefault') }}
+                                <v-tooltip
+                                  activator="parent"
+                                  location="end">
+                                  {{ $t('sessions.sessions.customInfoReset') }}
+                                </v-tooltip>
+                              </v-list-item>
+                              <transition-group
+                                name="list"
+                                tag="div">
+                                <v-divider
+                                  key="infodivider"
+                                  v-if="infoConfigs.length" />
+                                <v-list-item
+                                  v-for="(config, key) in infoConfigs"
+                                  :key="config.name"
+                                  @click.self.stop.prevent="loadInfoFieldLayout(key)">
+                                  <div
+                                    class="d-flex align-center w-100"
+                                    @click.self="loadInfoFieldLayout(key)">
+                                    <span
+                                      class="flex-grow-1"
+                                      @click="loadInfoFieldLayout(key)">
+                                      {{ config.name }}
+                                    </span>
+                                    <v-btn
+                                      :id="`updateInfo${key}`"
+                                      :aria-label="$t('sessions.sessions.customInfoUpdate')"
+                                      color="warning"
+                                      variant="flat"
+                                      size="small"
+                                      density="comfortable"
+                                      icon
+                                      class="ms-1"
+                                      @click.stop.prevent="updateInfoFieldLayout(config.name, key)">
+                                      <v-icon icon="mdi-content-save" />
+                                      <v-tooltip
+                                        :activator="`[id='updateInfo${key}']`"
+                                        location="end">
+                                        {{ $t('sessions.sessions.customInfoUpdate') }}
+                                      </v-tooltip>
+                                    </v-btn>
+                                    <v-btn
+                                      :aria-label="$t('common.delete')"
+                                      color="error"
+                                      variant="flat"
+                                      size="small"
+                                      density="comfortable"
+                                      icon
+                                      class="ms-1"
+                                      @click.stop.prevent="deleteInfoFieldLayout(config.name, key)">
+                                      <v-icon icon="mdi-trash-can-outline" />
+                                    </v-btn>
+                                  </div>
+                                </v-list-item>
+                              </transition-group>
+                              <v-alert
+                                v-if="infoConfigError"
+                                density="compact"
+                                variant="tonal"
+                                type="error"
+                                class="ma-1">
+                                {{ infoConfigError }}
+                              </v-alert>
+                              <v-alert
+                                v-if="infoConfigSuccess"
+                                density="compact"
+                                variant="tonal"
+                                type="success"
+                                class="ma-1">
+                                {{ infoConfigSuccess }}
+                              </v-alert>
+                            </v-list>
+                          </v-menu>
+                        </v-list-item>
+                      </v-list>
+                    </v-menu> <!-- /info column options menu -->
+                    {{ header.friendlyName }}
                   </span> <!-- /non-sortable column -->
                   <!-- column dropdown menu -->
                   <v-menu location="bottom end">
@@ -2245,6 +2260,41 @@ export default {
   max-height: 300px;
 }
 
+/* info-field visibility dropdown: same group-header → indented field
+   hierarchy as FieldSelectDropdownBody. v-list-subheader applies its own
+   padding so we tighten group-header here without the .field-item rule
+   stomping it. */
+.col-dropdown-menu .group-header {
+  text-transform: uppercase;
+  font-weight: bold;
+  font-size: 0.75rem;
+  padding: 0.4rem 0.5rem 0.2rem;
+  color: rgb(var(--v-theme-foreground-accent));
+  min-height: 0;
+}
+.col-dropdown-menu .field-item {
+  padding-inline-start: 1.25rem !important;
+}
+
+/* Single dropdown that collapses the old open/close/fit/columns/save
+   button cluster in the top-left table cell. */
+table.sessions-table thead tr th.sessions-options-cell {
+  /* override the global vertical-align: top on thead th so the menu
+     button sits centered in the cell instead of pinned to the top */
+  vertical-align: middle;
+  text-align: center;
+}
+.sessions-options-btn {
+  margin: 0;
+  vertical-align: baseline;
+}
+.sessions-options-menu :deep(.v-list-item__prepend) {
+  min-width: 32px;
+}
+.sessions-options-menu :deep(.v-list-item__append .v-icon) {
+  opacity: 0.5;
+}
+
 /* needed for grips */
 .arkime-col-header {
   position: relative;
@@ -2365,6 +2415,7 @@ table.sessions-table.sticky-header > tbody {
 /* table column headers -------------------- */
 .arkime-col-header {
   font-size: .9rem;
+  text-align: left;
 }
 
 .arkime-col-header.active {
@@ -2390,12 +2441,15 @@ table.sessions-table.sticky-header > tbody {
   margin-right: 4px;
 }
 
-/* Action button groups: render adjacent v-btn dropdowns (column
-   visibility + column save / info field visibility + info save) as
-   one unified pill. v-btn-group + divided handles the shared-corner
-   styling natively; only nudge the info-col-actions margin. */
+/* Info-column cog button sits to the left of the "Info" label; small
+   right margin separates it from the friendly name. */
 .info-col-actions {
   margin-right: 5px;
+}
+.info-col-header-inner {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
 }
 
 /* animate sticky sessions enter/leave */

@@ -512,6 +512,7 @@
       "openAll": "Open all visible sessions (up to 50)",
       "closeAll": "Close all open sessions",
       "fitTable": "Fit table to window size",
+      "tableOptions": "Table options",
       "toggleColumns": "Toggle visible columns",
       "searchColumns": "Search for columns...",
       "showMoreFields": "Show {count} more fields...",
