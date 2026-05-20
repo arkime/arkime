@@ -68,3 +68,11 @@
 .arkime-badge--info { background-color: rgb(var(--v-theme-info)); }
 .arkime-badge--sm { font-size: 60%; margin-right: 5px; }
 .arkime-badge--sm:hover { background-color: rgb(var(--v-theme-error)); cursor: pointer; }
+
+/* v-date-picker day buttons -- Vuetify ships a 24px button inside a 40px
+   cell, which leaves the selected/today circle looking marooned in empty
+   space. Bumping --v-btn-height fills the cell more proportionally. */
+.v-date-picker-month__day .v-btn.v-date-picker-month__day-btn {
+  --v-btn-height: 32px;
+  --v-btn-size: 0.875rem;
+}

@@ -124,14 +124,15 @@ SPDX-License-Identifier: Apache-2.0
           </v-tooltip>
         </span>
         <input
-          type="datetime-local"
+          type="text"
           tabindex="4"
           id="startTime"
           ref="startTime"
           name="startTime"
           class="arkime-input-control"
+          placeholder="YYYY-MM-DD HH:mm:ss"
           @input="changeStartTime"
-          :value="localStartTime.format('YYYY-MM-DDTHH:mm:ss')">
+          :value="typedStartTime">
         <span
           v-if="timezone !== 'local'"
           id="startTimeTimezone"
@@ -145,6 +146,29 @@ SPDX-License-Identifier: Apache-2.0
             {{ timezone === 'gmt' ? new Date().getTimezoneOffset() / -60 + ':00' : '' }}
           </v-tooltip>
         </span>
+        <v-btn
+          id="startDatePickerBtn"
+          variant="text"
+          size="small"
+          density="comfortable"
+          icon
+          class="arkime-input-append-btn">
+          <v-icon icon="mdi-calendar" />
+          <v-menu
+            activator="parent"
+            :close-on-content-click="false">
+            <v-date-picker
+              :model-value="localStartTime.toDate()"
+              show-adjacent-months
+              @update:model-value="applyStartDate" />
+          </v-menu>
+          <v-tooltip
+            activator="#startDatePickerBtn"
+            location="bottom"
+            :open-delay="500">
+            {{ $t('search.pickStartDateTip') }}
+          </v-tooltip>
+        </v-btn>
         <v-btn
           id="prevStartTime"
           variant="text"
@@ -195,14 +219,15 @@ SPDX-License-Identifier: Apache-2.0
           </v-tooltip>
         </span>
         <input
-          type="datetime-local"
+          type="text"
           tabindex="5"
           id="stopTime"
           ref="stopTime"
           name="stopTime"
           class="arkime-input-control"
+          placeholder="YYYY-MM-DD HH:mm:ss"
           @input="changeStopTime"
-          :value="localStopTime.format('YYYY-MM-DDTHH:mm:ss')">
+          :value="typedStopTime">
         <span
           v-if="timezone !== 'local'"
           id="stopTimeTimezone"
@@ -216,6 +241,29 @@ SPDX-License-Identifier: Apache-2.0
             {{ timezone === 'gmt' ? new Date().getTimezoneOffset() / -60 + ':00' : '' }}
           </v-tooltip>
         </span>
+        <v-btn
+          id="stopDatePickerBtn"
+          variant="text"
+          size="small"
+          density="comfortable"
+          icon
+          class="arkime-input-append-btn">
+          <v-icon icon="mdi-calendar" />
+          <v-menu
+            activator="parent"
+            :close-on-content-click="false">
+            <v-date-picker
+              :model-value="localStopTime.toDate()"
+              show-adjacent-months
+              @update:model-value="applyStopDate" />
+          </v-menu>
+          <v-tooltip
+            activator="#stopDatePickerBtn"
+            location="bottom"
+            :open-delay="500">
+            {{ $t('search.pickStopDateTip') }}
+          </v-tooltip>
+        </v-btn>
         <v-btn
           id="prevStopTime"
           variant="text"
@@ -411,17 +459,11 @@ export default {
       // watcher can compare time values to local (unaffected) start/stop times
       localStopTime: undefined,
       localStartTime: undefined,
-      datePickerOptions: {
-        useCurrent: false,
-        format: 'YYYY/MM/DD HH:mm:ss',
-        timeZone: this.timezone === 'local' || this.timezone === 'localtz' ? Intl.DateTimeFormat().resolvedOptions().timeZone : 'UTC',
-        showClose: true,
-        focusOnShow: false,
-        showTodayButton: true,
-        allowInputToggle: true,
-        minDate: moment(0),
-        keyBinds: null // disable all key binds and manually monitor enter and escape
-      }
+      // typedStart/typedStop hold the raw input string so cursor position is
+      // preserved as the analyst types. Re-binding :value to a fresh format()
+      // result on every keystroke would otherwise reset the caret to the end.
+      typedStartTime: '',
+      typedStopTime: ''
     };
   },
   computed: {
@@ -494,6 +536,22 @@ export default {
         // tell the parent the time params have changed, which will issue a query
         if (newVal === 'query') { this.$emit('timeChange'); }
       }
+    },
+    // Mirror localStart/Stop into the displayed string, but skip the update
+    // when the user is the source (the typed string already parses to the
+    // same moment). That avoids stomping on the in-progress edit and
+    // preserves caret position.
+    localStartTime: function (newVal) {
+      if (!newVal) { return; }
+      const parsed = moment(this.typedStartTime, 'YYYY-MM-DD HH:mm:ss', true);
+      if (parsed.isValid() && parsed.valueOf() === newVal.valueOf()) { return; }
+      this.typedStartTime = newVal.format('YYYY-MM-DD HH:mm:ss');
+    },
+    localStopTime: function (newVal) {
+      if (!newVal) { return; }
+      const parsed = moment(this.typedStopTime, 'YYYY-MM-DD HH:mm:ss', true);
+      if (parsed.isValid() && parsed.valueOf() === newVal.valueOf()) { return; }
+      this.typedStopTime = newVal.format('YYYY-MM-DD HH:mm:ss');
     }
   },
   created () {
@@ -568,20 +626,49 @@ export default {
         }
       });
     },
-    /* Fired when start datetime is changed */
+    /* Fired when start datetime is typed. Keep the raw string in
+     * typedStartTime so the input doesn't re-render mid-edit (which would
+     * jump the cursor). Only sync to localStartTime if the string parses
+     * strictly to a full date+time -- partial strings like "2025-05-20 1"
+     * shouldn't move the canonical state. */
     changeStartTime: function (e) {
-      const msDate = moment(e.target.value).valueOf();
-      this.localStartTime = moment(msDate);
-      this.time.startTime = Math.floor(msDate / 1000);
+      this.typedStartTime = e.target.value;
+      const parsed = moment(e.target.value, 'YYYY-MM-DD HH:mm:ss', true);
+      if (!parsed.isValid()) { return; }
+      this.localStartTime = parsed;
+      this.time.startTime = Math.floor(parsed.valueOf() / 1000);
       this.timeRange = '0'; // custom time range
       this.validateDate();
     },
-    /* Fired when stop datetime is changed */
+    /* Fired when stop datetime is typed -- see changeStartTime. */
     changeStopTime: function (e) {
-      const msDate = moment(e.target.value).valueOf();
-      this.localStopTime = moment(msDate);
-      this.time.stopTime = Math.floor(msDate / 1000);
+      this.typedStopTime = e.target.value;
+      const parsed = moment(e.target.value, 'YYYY-MM-DD HH:mm:ss', true);
+      if (!parsed.isValid()) { return; }
+      this.localStopTime = parsed;
+      this.time.stopTime = Math.floor(parsed.valueOf() / 1000);
       this.timeRange = '0'; // custom time range
+      this.validateDate();
+    },
+    /* Fired when a date is picked from the v-date-picker popup. Only
+     * overrides the date portion -- HH:mm:ss carry over from the current
+     * value so the picker doesn't silently zero out the time. */
+    applyStartDate: function (date) {
+      if (!date) { return; }
+      const newMoment = moment(this.localStartTime)
+        .year(date.getFullYear()).month(date.getMonth()).date(date.getDate());
+      this.localStartTime = newMoment;
+      this.time.startTime = Math.floor(newMoment.valueOf() / 1000);
+      this.timeRange = '0';
+      this.validateDate();
+    },
+    applyStopDate: function (date) {
+      if (!date) { return; }
+      const newMoment = moment(this.localStopTime)
+        .year(date.getFullYear()).month(date.getMonth()).date(date.getDate());
+      this.localStopTime = newMoment;
+      this.time.stopTime = Math.floor(newMoment.valueOf() / 1000);
+      this.timeRange = '0';
       this.validateDate();
     },
     /**

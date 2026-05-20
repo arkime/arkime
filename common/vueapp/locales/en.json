@@ -611,6 +611,8 @@
     "nextStartTimeTip": "Beginning of Next Day",
     "prevStopTimeTip": "Ending of Previous Day",
     "nextStopTimeTip": "Ending of Current Day / Next Day",
+    "pickStartDateTip": "Pick a start date",
+    "pickStopDateTip": "Pick a stop date",
     "timeBounding": "Bounding",
     "timeBoundingTip": "Which time field to use for selected time window",
     "timeBounding-first": "First Packet",
