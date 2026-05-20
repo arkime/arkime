@@ -365,12 +365,12 @@ export default {
             // splits ourselves keeps the axis to {0, 1, 10, 100, ...}.
             splits: this.yScale === 'log'
               ? (u, axisIdx, scaleMin, scaleMax) => {
-                  const out = [0];
-                  for (let p = 0; Math.pow(10, p) <= scaleMax; p++) {
-                    out.push(Math.pow(10, p));
-                  }
-                  return out;
+                const out = [0];
+                for (let p = 0; Math.pow(10, p) <= scaleMax; p++) {
+                  out.push(Math.pow(10, p));
                 }
+                return out;
+              }
               : undefined,
             size: Y_AXIS_RESERVE
           }

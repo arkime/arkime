@@ -159,11 +159,11 @@ dl
         +arrayPrint(session.network.vlan, "id", "vlan")
 
       if (session.dot1q)
-        strong.ml-1 dot1q
+        strong.ms-1 dot1q
         +arrayPrint(session.dot1q, "id", "vlan.dot1q")
 
       if (session.dot1ad)
-        strong.ml-1 dot1ad
+        strong.ms-1 dot1ad
         +arrayPrint(session.dot1ad, "id", "vlan.dot1ad")
 
   +arrayList(session, "vni", "VNI", "vni")

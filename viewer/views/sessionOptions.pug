@@ -1,8 +1,11 @@
-div.d-flex.flex-wrap.align-items-center.gap-1.mb-3.session-options
+div.arkime-pcap-toolbar.me-1.ms-1.mt-2.mb-2.session-options
   if (session.rootId)
     v-btn.session-options-btn(variant="text" size="small" @click='allSessions(' + '"' + session.rootId + '"' + ', ' + session.firstPacket + ')')
       v-icon.me-1(icon="mdi-source-branch")
       | All Sessions
+  v-btn.session-options-btn(variant="text" size="small" :href="permalink")
+    v-icon.me-1(icon="mdi-link")
+    | {{ $t('sessions.link') }}
   if (session.packetPos && session.packetPos.length > 0)
     if (session.rootId)
       v-btn.session-options-btn(variant="text" size="small" :href="'api/session/' + session.node + '/' + session.id + '/pcap'" :download="session.id + '-segment.pcap'")
@@ -21,12 +24,9 @@ div.d-flex.flex-wrap.align-items-center.gap-1.mb-3.session-options
     v-btn.session-options-btn(variant="text" size="small" :href="'api/session/raw/' + session.node + '/' + session.id + '?type=dst'" :download="session.id + '-dst-raw'")
       v-icon.me-1(icon="mdi-arrow-down-circle")
       | {{ $t('sessions.destinationRaw') }}
-  v-btn.session-options-btn(variant="text" size="small" :href="permalink")
-    v-icon.me-1(icon="mdi-link")
-    | {{ $t('sessions.link') }}
   v-menu
     template(#activator="{ props: activatorProps }")
-      v-btn.session-options-btn(v-bind="activatorProps" variant="text" size="small")
+      v-btn.session-options-btn.ms-auto(v-bind="activatorProps" variant="text" size="small")
         v-icon.me-1(icon="mdi-view-column")
         | {{ $t('sessions.columns') }}
         v-icon.ms-1(icon="mdi-menu-down")

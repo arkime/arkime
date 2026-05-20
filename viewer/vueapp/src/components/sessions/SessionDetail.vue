@@ -2,7 +2,7 @@
   <div
     :ref="session.id"
     :id="`${session.id}-detail`"
-    :class="['session-detail-wrapper', `card-columns-${numCols}`]">
+    :class="['session-detail-wrapper', `card-columns-${numCols}`, 'mb-2']">
     <!-- detail error -->
     <h5
       v-if="error"
@@ -13,45 +13,60 @@
       {{ error }}
     </h5> <!-- /detail error -->
 
-    <!-- async detail content -->
-    <SessionDetailDataComponent
-      :key="componentKey"
-      @reload="reload"
-      @toggle-col-vis="toggleColVis"
-      @toggle-info-vis="toggleInfoVis" /> <!-- /async detail content -->
+    <!-- tabs: Details / Packets / tshark. Tab bar always renders; individual
+         tabs hide based on user perms (hidePackets, user.hidePcap) and
+         tshark availability so an admin user without pcap still sees just
+         the Details tab cleanly. -->
+    <v-tabs
+      v-model="activeTab"
+      density="compact"
+      color="primary"
+      class="session-detail-tabs mt-1">
+      <v-tab value="details">
+        <v-icon
+          icon="mdi-information-outline"
+          size="small"
+          class="me-1" />
+        Details
+      </v-tab>
+      <v-tab
+        v-if="!hidePackets && !user.hidePcap"
+        value="packets">
+        <v-icon
+          icon="mdi-package-variant-closed"
+          size="small"
+          class="me-1" />
+        Packets
+      </v-tab>
+      <v-tab
+        v-if="hasTshark && !hidePackets && !user.hidePcap"
+        value="tshark">
+        <v-icon
+          icon="mdi-magnify-scan"
+          size="small"
+          class="me-1" />
+        tshark
+        <span
+          v-if="tsharkPackets.length"
+          class="ms-2 small text-medium-emphasis">{{ tsharkPackets.length }}</span>
+      </v-tab>
+    </v-tabs>
+
+    <!-- details tab content -->
+    <div v-show="activeTab === 'details'">
+      <SessionDetailDataComponent
+        :key="componentKey"
+        @reload="reload"
+        @toggle-col-vis="toggleColVis"
+        @toggle-info-vis="toggleInfoVis" />
+    </div>
 
     <!-- packets / tshark area -->
     <div
       v-show="!hidePackets && !user.hidePcap"
       class="session-detail-pcap-area">
-      <!-- tabs (only shown when tshark is available) -->
-      <v-tabs
-        v-if="hasTshark"
-        v-model="activeTab"
-        density="compact"
-        color="primary"
-        class="session-detail-tabs mt-2">
-        <v-tab value="packets">
-          <v-icon
-            icon="mdi-package-variant-closed"
-            size="small"
-            class="me-1" />
-          Packets
-        </v-tab>
-        <v-tab value="tshark">
-          <v-icon
-            icon="mdi-magnify-scan"
-            size="small"
-            class="me-1" />
-          tshark
-          <span
-            v-if="tsharkPackets.length"
-            class="ms-2 small text-medium-emphasis">{{ tsharkPackets.length }}</span>
-        </v-tab>
-      </v-tabs>
-
       <!-- packets tab content -->
-      <div v-show="!hasTshark || activeTab === 'packets'">
+      <div v-show="activeTab === 'packets'">
         <!-- packet options (top) -->
         <fieldset
           class="arkime-pcap-toolbar me-1 ms-1 mt-2 mb-2"
@@ -164,67 +179,28 @@
         class="tshark-section me-1 ms-1 mt-3">
         <!-- tshark toolbar -->
         <div class="arkime-pcap-toolbar mb-2">
-          <!-- run / cancel -->
-          <div class="tb-group">
-            <v-btn
-              v-if="!tsharkLoading"
-              color="primary"
-              variant="text"
-              @click="getTshark">
+          <!-- running state + cancel (no manual run/refresh -- tshark
+               auto-fetches the first time the tab is activated) -->
+          <div
+            v-if="tsharkLoading"
+            class="tb-group">
+            <span class="d-inline-flex align-center small text-medium-emphasis">
               <v-icon
-                :icon="tsharkLoaded ? 'mdi-refresh' : 'mdi-play'"
+                icon="mdi-loading"
+                class="fa-spin me-1" /> running…
+            </span>
+            <v-btn
+              color="warning"
+              variant="text"
+              @click="cancelTshark">
+              <v-icon
+                icon="mdi-cancel"
                 class="me-1" />
-              {{ tsharkLoaded ? 'reload' : 'run' }}
+              cancel
             </v-btn>
-            <template v-else>
-              <span class="d-inline-flex align-center small text-medium-emphasis">
-                <v-icon
-                  icon="mdi-loading"
-                  class="fa-spin me-1" /> running…
-              </span>
-              <v-btn
-                color="warning"
-                variant="text"
-                @click="cancelTshark">
-                <v-icon
-                  icon="mdi-cancel"
-                  class="me-1" />
-                cancel
-              </v-btn>
-            </template>
           </div>
 
-          <!-- field-include toggles -->
-          <div class="tb-group">
-            <v-checkbox
-              v-model="tsharkPayload"
-              label="payload"
-              density="compact"
-              hide-details />
-            <v-checkbox
-              v-model="tsharkHidden"
-              label="hidden fields"
-              density="compact"
-              hide-details />
-          </div>
-
-          <!-- packet count -->
-          <div class="tb-group">
-            <v-text-field
-              v-model.number="tsharkLength"
-              type="number"
-              label="packets"
-              min="1"
-              density="compact"
-              variant="outlined"
-              hide-details
-              class="tshark-length-input" />
-          </div>
-
-          <!-- spacer pushes right-side groups out -->
-          <div class="tb-spacer" />
-
-          <!-- filter -->
+          <!-- filter (leftmost) -->
           <div
             v-if="tsharkPackets.length"
             class="tb-group">
@@ -237,6 +213,34 @@
               variant="outlined"
               hide-details
               class="tshark-filter-input" />
+          </div>
+
+          <!-- spacer pushes right-side groups out -->
+          <div class="tb-spacer" />
+
+          <!-- packet count -- same v-menu+v-btn pattern PacketOptions uses -->
+          <div class="tb-group">
+            <v-menu location="bottom end">
+              <template #activator="{ props: activatorProps }">
+                <v-btn
+                  v-bind="activatorProps"
+                  variant="text"
+                  class="packet-options-select-btn">
+                  {{ tsharkLength }} packets
+                  <v-icon
+                    icon="mdi-menu-down"
+                    class="ms-1" />
+                </v-btn>
+              </template>
+              <v-list density="compact">
+                <v-list-item
+                  v-for="n in [50, 200, 500, 1000, 2000]"
+                  :key="n"
+                  @click="tsharkLength = n">
+                  {{ n }} packets
+                </v-list-item>
+              </v-list>
+            </v-menu>
           </div>
 
           <!-- expand / collapse -->
@@ -289,15 +293,17 @@
           {{ tsharkError }}
         </v-alert>
 
-        <!-- empty state -->
+        <!-- empty state (auto-run watcher fires on tab activation, so this
+             only shows in the rare race where the watcher hasn't kicked off
+             a fetch yet, or if the session simply has no tshark output) -->
         <div
-          v-if="!tsharkLoading && !tsharkLoaded && !tsharkError"
+          v-if="!tsharkLoading && tsharkLoaded && !tsharkError && !tsharkPackets.length"
           class="text-medium-emphasis text-center my-6">
           <v-icon
             icon="mdi-magnify-scan"
             size="x-large"
             class="d-block mx-auto mb-2" />
-          Click <strong>run</strong> to dissect this session with tshark.
+          No tshark output for this session.
         </div>
 
         <!-- split view: packet list (left) + tree pane (right) -->
@@ -361,7 +367,7 @@
 
 <script setup>
 // external imports
-import { ref, defineAsyncComponent, computed, onMounted, nextTick, onUnmounted, inject } from 'vue';
+import { ref, defineAsyncComponent, computed, onMounted, nextTick, onUnmounted, inject, watch } from 'vue';
 // internal imports
 import store from '@/store';
 import { timezoneDateString } from '@common/vueFilters.js';
@@ -408,11 +414,9 @@ const tsharkLoaded = ref(false);
 const tsharkError = ref('');
 const tsharkPackets = ref([]);
 const tsharkLength = ref(50);
-const tsharkPayload = ref(false);
-const tsharkHidden = ref(false);
 const tsharkPromise = ref();
 const tsharkOutputRef = ref(null);
-const activeTab = ref('packets');
+const activeTab = ref('details');
 const tsharkFilter = ref('');
 const tsharkSelectedIdx = ref(0);
 const tsharkExpandSignal = ref(0);
@@ -761,9 +765,7 @@ const getTshark = async () => {
       props.session.node,
       props.session.cluster,
       {
-        length: tsharkLength.value || 50,
-        payload: tsharkPayload.value ? 'true' : 'false',
-        hidden: tsharkHidden.value ? 'true' : 'false'
+        length: tsharkLength.value || 50
       }
     );
     tsharkPromise.value = { controller };
@@ -913,6 +915,14 @@ const packetProtoStyle = (proto) => {
   return { background: color, color: '#000' };
 };
 
+// Auto-run tshark the first time the user clicks the tshark tab. No manual
+// run/refresh button -- the user opens the tab, results stream in.
+watch(activeTab, (newTab) => {
+  if (newTab === 'tshark' && hasTshark.value && !tsharkLoaded.value && !tsharkLoading.value) {
+    getTshark();
+  }
+});
+
 // mounted
 onMounted(async () => {
   setUserParams();
@@ -1023,15 +1033,10 @@ onUnmounted(() => {
   font-size: 12px;
   opacity: 0.9;
 }
-.arkime-pcap-toolbar .tshark-length-input {
-  flex: 0 0 6rem;
-  max-width: 6rem;
-}
 .arkime-pcap-toolbar .tshark-filter-input {
   flex: 0 0 22rem;
   max-width: 22rem;
 }
-.arkime-pcap-toolbar .tshark-length-input :deep(.v-field__input),
 .arkime-pcap-toolbar .tshark-filter-input :deep(.v-field__input) {
   font-size: 12px;
   padding-top: 2px;
@@ -1061,8 +1066,6 @@ onUnmounted(() => {
 }
 .tshark-list {
   background: rgb(var(--v-theme-background));
-  max-height: 520px;
-  overflow-y: auto;
 }
 .tshark-split-handle {
   cursor: col-resize;
@@ -1117,8 +1120,6 @@ onUnmounted(() => {
 }
 
 .tshark-tree-pane {
-  max-height: 520px;
-  overflow-y: auto;
   padding: 0.25rem 0.5rem;
 }
 .tshark-tree-header {
@@ -1315,16 +1316,10 @@ onUnmounted(() => {
   text-decoration: none;
 }
 
-/* Session-options toolbar -- flex row of v-btn entries */
-.session-detail .session-options {
-  border-bottom: 1px solid rgb(var(--v-theme-neutral));
-  padding-bottom: 4px;
-  padding-top: 4px;
-}
-
 /* Strip Vuetify's default chunky button styling on the session-options
    v-btn entries so they read as compact toolbar links rather than
-   uppercase pill buttons. */
+   uppercase pill buttons. The wrapping .arkime-pcap-toolbar (shared with
+   the Packets + tshark toolbars) supplies the bar background and border. */
 .session-detail .session-options-btn.v-btn {
   text-transform: none;
   letter-spacing: normal;
@@ -1336,6 +1331,8 @@ onUnmounted(() => {
   background-color: transparent;
   box-shadow: none;
   color: rgb(var(--v-theme-foreground));
+  flex: 0 0 auto;
+  white-space: nowrap;
 }
 
 .session-detail .session-options-btn.v-btn:hover {

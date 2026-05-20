@@ -2602,25 +2602,25 @@ class SessionAPIs {
           allowedClasses: {
             '*': [
               // App-specific
-              'ts-value', 'text-theme-quaternary', 'imagetag', 'file',
+              'ts-value', 'text-theme-quaternary', 'file',
               'sessionsrc', 'sessiondst', 'session-detail-ts',
               'session-detail', 'session-detail-cards', 'session-detail-card',
               'session-options', 'session-options-btn',
-              'sessionln', 'src-col-tip', 'dst-col-tip', 'dstcol', 'srccol',
+              'src-col-tip', 'dst-col-tip', 'dstcol', 'srccol',
               'clickable-label', 'clickable-label-menu', 'detail-field',
               'tag-list', 'session-card-title', 'no-wrap', 'str', 'bytes',
-              // Layout / utility classes (Vuetify-equivalent spacing utils
-              // are the same syntax; no Bootstrap dependency)
+              // Vuetify spacing/utility classes used inside the pug
               'cursor-pointer',
-              'mb-3', 'mb-2', 'me-1', 'me-5', 'ms-1', 'float-end', 'small',
-              'd-flex', 'flex-wrap', 'flex-column',
-              'align-items-center', 'gap-1',
+              'mb-2', 'mt-2', 'me-1', 'me-5', 'ms-1', 'ms-auto',
+              'float-end', 'small',
+              // Shared toolbar styling -- matches the .arkime-pcap-toolbar
+              // bar used by the Packets + tshark toolbars in SessionDetail.vue
+              'arkime-pcap-toolbar',
               // Inline-HTML add-tag button (rendered by pug arrayList helper)
               'arkime-tag-add-btn',
               // Material Design Icons (sessionPackets.pug renders via v-html
               // so it can't use <v-icon>; must use raw <i class="mdi ..."> form)
-              'mdi', 'mdi-information', 'mdi-24px', 'mdi-lg',
-              'mdi-alert', 'mdi-plus-circle'
+              'mdi', 'mdi-information', 'mdi-24px', 'mdi-plus-circle'
             ]
           },
           allowedAttributes: {
