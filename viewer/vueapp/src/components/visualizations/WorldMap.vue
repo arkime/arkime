@@ -207,7 +207,10 @@ export default {
 
       const max = Math.max(...Object.values(numericValues), 1);
       if (this.d3) {
-        this.colorScale = this.d3.scaleLinear()
+        // sqrt (matches jvectormap's `normalizeFunction: 'polynomial'`) keeps
+        // the top country from crushing #2–10 to near-light when one region
+        // dominates — common with US-heavy traffic.
+        this.colorScale = this.d3.scaleSqrt()
           .domain([0, max])
           .range([this.landColorLight, this.landColorDark]);
       }

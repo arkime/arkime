@@ -1320,6 +1320,8 @@
     "toggleDstCountry": "Toggle destination countries",
     "graphLines": "Lines",
     "graphBars": "Bars",
+    "graphLinear": "Linear",
+    "graphLog": "Log",
     "capRestarts": "Cap Restarts",
     "capRestartsTip": "Toggle the capture process start times",
     "capNodeRestarted": "Capture node {node} started at {when}"

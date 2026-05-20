@@ -257,6 +257,21 @@ SPDX-License-Identifier: Apache-2.0
                     value="bars"
                     :label="$t('vis.graphBars')" />
                 </v-radio-group> <!-- /series type -->
+                <!-- y axis scale -->
+                <v-radio-group
+                  inline
+                  density="compact"
+                  hide-details
+                  class="ms-1"
+                  :model-value="yScale"
+                  @update:model-value="changeYScale">
+                  <v-radio
+                    value="linear"
+                    :label="$t('vis.graphLinear')" />
+                  <v-radio
+                    value="log"
+                    :label="$t('vis.graphLog')" />
+                </v-radio-group> <!-- /y axis scale -->
                 <!-- cap times -->
                 <div class="ms-1">
                   <v-checkbox
@@ -292,6 +307,7 @@ SPDX-License-Identifier: Apache-2.0
                 :graph-data="graphData"
                 :graph-type="graphType"
                 :series-type="seriesType"
+                :y-scale="yScale"
                 :timeline-data-filters="timelineDataFilters"
                 :show-cap-start-times="showCapStartTimes"
                 :cap-start-times="capStartTimes"
@@ -348,6 +364,9 @@ export default {
       // step + showMap toggle now that Flot is gone)
       plotPan: 0.1,
       showMap: undefined,
+      // yScale persists in localStorage per-app (sessions/spiview/spigraph/
+      // hunt/connections each get their own key) -- hydrated in created().
+      yScale: 'linear',
       turnOffGraphDays: this.$constants.TURN_OFF_GRAPH_DAYS
     };
   },
@@ -456,6 +475,10 @@ export default {
     this.showCapStartTimes = localStorage && localStorage[`${basePath}-cap-times`] &&
       localStorage[`${basePath}-cap-times`] !== 'false';
 
+    if (localStorage && localStorage[`${basePath}-y-scale`] === 'log') {
+      this.yScale = 'log';
+    }
+
     this.showMap = showMap;
 
     if (this.primary) {
@@ -550,6 +573,10 @@ export default {
     },
     plotPanChange: function (value) {
       this.plotPan = value;
+    },
+    changeYScale (newValue) {
+      this.yScale = newValue;
+      localStorage[`${basePath}-y-scale`] = newValue;
     },
     toggleCapStartTimes (newValue) {
       this.showCapStartTimes = newValue;

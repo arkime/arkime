@@ -35,6 +35,7 @@ export default {
     graphData: { type: Object, required: true },
     graphType: { type: String, default: 'sessionsHisto' },
     seriesType: { type: String, default: 'bars' },
+    yScale: { type: String, default: 'linear' }, // 'linear' | 'log'
     timelineDataFilters: { type: Array, required: true },
     capStartTimes: { type: Array, default: () => [] },
     showCapStartTimes: { type: Boolean, default: false },
@@ -50,6 +51,7 @@ export default {
     graphData: { handler () { this.rebuild(); }, deep: true },
     graphType () { this.rebuild(); },
     seriesType () { this.rebuild(); },
+    yScale () { this.rebuild(); },
     showCapStartTimes () { this.rebuild(); },
     timezone () { this.rebuild(); }
   },
@@ -291,6 +293,9 @@ export default {
       return out;
     },
     formatY (v) {
+      // Log scale can emit null/-Infinity ticks for values below the floor;
+      // the humanReadable* helpers crash on those, so render them as blank.
+      if (v == null || !Number.isFinite(v)) return '';
       const isBytes = this.graphType === 'totBytesHisto' ||
                       this.graphType === 'totDataBytesHisto' ||
                       this.graphType === 'network.bytesHisto';
@@ -312,11 +317,7 @@ export default {
       const data = this.aggregateIfDense(this.buildAlignedData(defs), host.clientWidth || 800);
 
       const isBars = this.seriesType === 'bars';
-      // Bars at 80% of slot leaves a clean gap between adjacent buckets,
-      // so the columns read as discrete units instead of a wall.
-      const barsPath = isBars
-        ? uPlot.paths.bars({ size: [0.8, Infinity], align: 0, gap: 0 })
-        : undefined;
+      const barsPath = isBars ? uPlot.paths.bars() : undefined;
       const linesPath = !isBars
         ? uPlot.paths.linear({ alignGaps: 0 })
         : undefined;
@@ -333,7 +334,14 @@ export default {
         legend: { show: false }, // tooltip overlay carries the same info
         scales: {
           x: { time: true },
-          y: { auto: true, range: (u, dmin, dmax) => [0, (dmax || 1) * 1.05] }
+          // asinh scale (distr:4) compresses outliers like log but is
+          // defined at 0 — so empty histogram buckets still render at the
+          // baseline instead of disappearing the way log(0) would. Behaves
+          // linear near 0 and log-like far from it. Labeled "Log" in the UI
+          // since that matches user expectations from other tools.
+          y: this.yScale === 'log'
+            ? { distr: 4, range: (u, dmin, dmax) => [0, Math.max(10, (dmax || 1) * 1.5)] }
+            : { auto: true, range: (u, dmin, dmax) => [0, (dmax || 1) * 1.05] }
         },
         axes: [
           {
@@ -351,6 +359,19 @@ export default {
             ticks: { stroke: this.gridColor, width: 1 },
             grid: { stroke: this.gridColor, width: 1 },
             values: (u, vals) => vals.map((v) => this.formatY(v)),
+            // Force power-of-10 splits in log mode. uPlot's default asinh
+            // splits are symmetric around 0 (..., -1, 0, 1, ...), so a -1
+            // tick shows up even when the data is non-negative. Generating
+            // splits ourselves keeps the axis to {0, 1, 10, 100, ...}.
+            splits: this.yScale === 'log'
+              ? (u, axisIdx, scaleMin, scaleMax) => {
+                  const out = [0];
+                  for (let p = 0; Math.pow(10, p) <= scaleMax; p++) {
+                    out.push(Math.pow(10, p));
+                  }
+                  return out;
+                }
+              : undefined,
             size: Y_AXIS_RESERVE
           }
         ],
