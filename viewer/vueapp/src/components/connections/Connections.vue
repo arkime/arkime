@@ -1041,7 +1041,7 @@ export default {
       const id = '#id' + this.dataNode.id.replace(idRegex, '_');
       svg.select(id).remove();
       svg.select(id + '-label').remove();
-      svg.selectAll('.link').filter(function (d, i) {
+      svg.selectAll('.link').filter((d) => {
         return d.source.id === this.dataNode.id || d.target.id === this.dataNode.id;
       }).remove();
       this.closePopups();

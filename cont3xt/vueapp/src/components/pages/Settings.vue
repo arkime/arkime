@@ -10,7 +10,7 @@ SPDX-License-Identifier: Apache-2.0
         <v-icon
           icon="mdi-cog"
           class="me-1" />
-        <span>{{ $t('cont3xt.settingsTitle', 'Cont3xt Settings') }}</span>
+        <span>Cont3xt Settings</span>
       </span>
     </div> <!-- /sub navbar -->
 

@@ -340,6 +340,7 @@
     "link": "Link",
     "actions": "Actions",
     "hideColumn": "Hide column",
+    "columnActions": "Column actions",
     "summary": {
       "generateSummary": "Generate Summary",
       "unknownErr": "An unexpected error occurred during summary generation.",

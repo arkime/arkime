@@ -22,12 +22,11 @@ const router = createRouter({
   // eslint-disable-next-line no-undef
   history: createWebHistory(PATH),
   scrollBehavior: function (to, from, savedPosition) {
-    if (to.hash) {
-      let yoffset = 150;
-
-      if (to.path === '/help') {
-        yoffset = 50;
-      }
+    // Hashes double as tab permalinks (e.g. /settings#info) for Vuetify v-tabs
+    // which don't render id-anchored DOM. Skip scrolling unless the hash
+    // actually matches an element, so vue-router doesn't warn.
+    if (to.hash && document.querySelector(to.hash)) {
+      const yoffset = to.path === '/help' ? 50 : 150;
 
       return {
         el: to.hash,
@@ -116,7 +115,7 @@ const router = createRouter({
   ]
 });
 
-router.beforeEach((to, from, next) => {
+router.beforeEach((to, from) => {
   // always use the expression in the url query parameter if the navigation
   // was initiated from anything not in the arkime UI (browser forward/back btns)
   // Skip for Arkime page which has independent state
@@ -134,8 +133,6 @@ router.beforeEach((to, from, next) => {
     .replace(/( *_-view|_view)_/g, view);
 
   document.title = title;
-
-  next();
 });
 
 export default router;

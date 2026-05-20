@@ -35,44 +35,46 @@ SPDX-License-Identifier: Apache-2.0
         table-widths-state-name="esIndicesColWidths"
         table-classes="text-end small mt-2">
         <template #actions="item">
-          <v-menu
+          <span
             v-has-role="{user:user,roles:'arkimeAdmin'}"
             v-has-permission="'removeEnabled'">
-            <template #activator="{ props: activatorProps }">
-              <v-btn
-                v-bind="activatorProps"
-                variant="outlined"
-                size="x-small"
-                density="comfortable"
-                icon
-                class="row-actions-btn">
-                <v-icon icon="mdi-menu-down" />
-              </v-btn>
-            </template>
-            <v-list density="compact">
-              <v-list-item @click.stop.prevent="confirmDeleteIndex(item.item.index)">
-                {{ $t('stats.esIndices.deleteIndex') }} {{ item.item.index }}
-              </v-list-item>
-              <v-list-item @click="optimizeIndex(item.item.index)">
-                {{ $t('stats.esIndices.optimizeIndex') }} {{ item.item.index }}
-              </v-list-item>
-              <v-list-item
-                v-if="item.item.status === 'open'"
-                @click="closeIndex(item.item)">
-                {{ $t('stats.esIndices.closeIndex') }} {{ item.item.index }}
-              </v-list-item>
-              <v-list-item
-                v-if="item.item.status === 'close'"
-                @click="openIndex(item.item)">
-                {{ $t('stats.esIndices.openIndex') }} {{ item.item.index }}
-              </v-list-item>
-              <v-list-item
-                v-if="item.item.pri > 1"
-                @click="openShrinkIndexForm(item.item)">
-                {{ $t('stats.esIndices.shrinkIndex') }} {{ item.item.index }}
-              </v-list-item>
-            </v-list>
-          </v-menu>
+            <v-menu>
+              <template #activator="{ props: activatorProps }">
+                <v-btn
+                  v-bind="activatorProps"
+                  variant="outlined"
+                  size="x-small"
+                  density="comfortable"
+                  icon
+                  class="row-actions-btn">
+                  <v-icon icon="mdi-menu-down" />
+                </v-btn>
+              </template>
+              <v-list density="compact">
+                <v-list-item @click.stop.prevent="confirmDeleteIndex(item.item.index)">
+                  {{ $t('stats.esIndices.deleteIndex') }} {{ item.item.index }}
+                </v-list-item>
+                <v-list-item @click="optimizeIndex(item.item.index)">
+                  {{ $t('stats.esIndices.optimizeIndex') }} {{ item.item.index }}
+                </v-list-item>
+                <v-list-item
+                  v-if="item.item.status === 'open'"
+                  @click="closeIndex(item.item)">
+                  {{ $t('stats.esIndices.closeIndex') }} {{ item.item.index }}
+                </v-list-item>
+                <v-list-item
+                  v-if="item.item.status === 'close'"
+                  @click="openIndex(item.item)">
+                  {{ $t('stats.esIndices.openIndex') }} {{ item.item.index }}
+                </v-list-item>
+                <v-list-item
+                  v-if="item.item.pri > 1"
+                  @click="openShrinkIndexForm(item.item)">
+                  {{ $t('stats.esIndices.shrinkIndex') }} {{ item.item.index }}
+                </v-list-item>
+              </v-list>
+            </v-menu>
+          </span>
         </template>
       </arkime-table>
     </div>

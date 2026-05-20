@@ -38,41 +38,43 @@ SPDX-License-Identifier: Apache-2.0
         table-classes="text-end small mt-2">
         <template #actions="item">
           <span class="no-wrap">
-            <v-menu v-has-role="{user:user,roles:'arkimeAdmin'}">
-              <template #activator="{ props: activatorProps }">
-                <v-btn
-                  v-bind="activatorProps"
-                  variant="outlined"
-                  size="x-small"
-                  density="comfortable"
-                  icon
-                  class="row-actions-btn d-inline">
-                  <v-icon icon="mdi-menu-down" />
-                </v-btn>
-              </template>
-              <v-list density="compact">
-                <v-list-item
-                  v-if="!item.item.nodeExcluded"
-                  @click="exclude('name', item.item)">
-                  {{ $t('stats.excludeNode') }}: {{ item.item.name }}
-                </v-list-item>
-                <v-list-item
-                  v-else
-                  @click="include('name', item.item)">
-                  {{ $t('stats.includeNode') }}: {{ item.item.name }}
-                </v-list-item>
-                <v-list-item
-                  v-if="!item.item.ipExcluded"
-                  @click="exclude('ip', item.item)">
-                  {{ $t('stats.excludeIp') }}: {{ item.item.ip }}
-                </v-list-item>
-                <v-list-item
-                  v-else
-                  @click="include('ip', item.item)">
-                  {{ $t('stats.includeIp') }}: {{ item.item.ip }}
-                </v-list-item>
-              </v-list>
-            </v-menu>
+            <span v-has-role="{user:user,roles:'arkimeAdmin'}">
+              <v-menu>
+                <template #activator="{ props: activatorProps }">
+                  <v-btn
+                    v-bind="activatorProps"
+                    variant="outlined"
+                    size="x-small"
+                    density="comfortable"
+                    icon
+                    class="row-actions-btn d-inline">
+                    <v-icon icon="mdi-menu-down" />
+                  </v-btn>
+                </template>
+                <v-list density="compact">
+                  <v-list-item
+                    v-if="!item.item.nodeExcluded"
+                    @click="exclude('name', item.item)">
+                    {{ $t('stats.excludeNode') }}: {{ item.item.name }}
+                  </v-list-item>
+                  <v-list-item
+                    v-else
+                    @click="include('name', item.item)">
+                    {{ $t('stats.includeNode') }}: {{ item.item.name }}
+                  </v-list-item>
+                  <v-list-item
+                    v-if="!item.item.ipExcluded"
+                    @click="exclude('ip', item.item)">
+                    {{ $t('stats.excludeIp') }}: {{ item.item.ip }}
+                  </v-list-item>
+                  <v-list-item
+                    v-else
+                    @click="include('ip', item.item)">
+                    {{ $t('stats.includeIp') }}: {{ item.item.ip }}
+                  </v-list-item>
+                </v-list>
+              </v-menu>
+            </span>
             <span
               class="node-badge ms-1"
               :class="{'show-badge cursor-help': item.item.roles.indexOf('master') > -1, 'badge-master':item.item.isMaster}">

@@ -44,44 +44,45 @@ SPDX-License-Identifier: Apache-2.0
               :width="column.width">
               <div>
                 <!-- column dropdown menu -->
-                <v-menu
+                <span
                   v-if="column.hasDropdown"
-                  v-has-role="{user:user,roles:'arkimeAdmin'}"
-                  location="bottom end">
-                  <template #activator="{ props: activatorProps }">
-                    <v-btn
-                      v-bind="activatorProps"
-                      variant="outlined"
-                      size="x-small"
-                      density="comfortable"
-                      icon
-                      class="column-actions-btn float-right mb-1">
-                      <v-icon icon="mdi-menu-down" />
-                    </v-btn>
-                  </template>
-                  <v-list density="compact">
-                    <v-list-item
-                      v-if="!column.nodeExcluded"
-                      @click="exclude('name', column)">
-                      {{ $t('stats.excludeNode') }}: {{ column.name }}
-                    </v-list-item>
-                    <v-list-item
-                      v-if="column.nodeExcluded"
-                      @click="include('name', column)">
-                      {{ $t('stats.includeNode') }}: {{ column.name }}
-                    </v-list-item>
-                    <v-list-item
-                      v-if="!column.ipExcluded"
-                      @click="exclude('ip', column)">
-                      {{ $t('stats.excludeIp') }}: {{ column.ip }}
-                    </v-list-item>
-                    <v-list-item
-                      v-if="column.ipExcluded"
-                      @click="include('ip', column)">
-                      {{ $t('stats.includeIp') }}: {{ column.ip }}
-                    </v-list-item>
-                  </v-list>
-                </v-menu> <!-- /column dropdown menu -->
+                  v-has-role="{user:user,roles:'arkimeAdmin'}">
+                  <v-menu location="bottom end">
+                    <template #activator="{ props: activatorProps }">
+                      <v-btn
+                        v-bind="activatorProps"
+                        variant="outlined"
+                        size="x-small"
+                        density="comfortable"
+                        icon
+                        class="column-actions-btn float-right mb-1">
+                        <v-icon icon="mdi-menu-down" />
+                      </v-btn>
+                    </template>
+                    <v-list density="compact">
+                      <v-list-item
+                        v-if="!column.nodeExcluded"
+                        @click="exclude('name', column)">
+                        {{ $t('stats.excludeNode') }}: {{ column.name }}
+                      </v-list-item>
+                      <v-list-item
+                        v-if="column.nodeExcluded"
+                        @click="include('name', column)">
+                        {{ $t('stats.includeNode') }}: {{ column.name }}
+                      </v-list-item>
+                      <v-list-item
+                        v-if="!column.ipExcluded"
+                        @click="exclude('ip', column)">
+                        {{ $t('stats.excludeIp') }}: {{ column.ip }}
+                      </v-list-item>
+                      <v-list-item
+                        v-if="column.ipExcluded"
+                        @click="include('ip', column)">
+                        {{ $t('stats.includeIp') }}: {{ column.ip }}
+                      </v-list-item>
+                    </v-list>
+                  </v-menu>
+                </span> <!-- /column dropdown menu -->
                 <div
                   class="header-text"
                   :class="{'cursor-pointer':column.sort !== undefined}"
