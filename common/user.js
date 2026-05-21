@@ -1163,11 +1163,11 @@ class User {
 
   /**
    * Build an Express handler that persists an allowlisted subset of
-   * `req.body` keys onto `req.settingUser.settings`. Used by the
-   * cont3xt / parliament / wise /api/user/settings POST endpoints to
-   * persist their per-app theme keys without duplicating the
-   * filter+merge+save pattern. The route is responsible for setting
-   * up `req.settingUser` via `Auth.getSettingUserDb`.
+   * `req.body` keys onto `req.settingUser.settings`. Used by viewer /
+   * cont3xt / parliament / wise /api/user/settings POST endpoints so
+   * the filter+merge+save pattern lives in one place. The route is
+   * responsible for setting up `req.settingUser` via
+   * `Auth.getSettingUserDb`.
    *
    * Non-array object values are dropped unless the key is in
    * `objectKeys` (used for structured records like the custom-theme
@@ -1175,11 +1175,15 @@ class User {
    *
    * @param {string[]} allowlist - Settings keys this endpoint may write.
    * @param {string[]} [objectKeys] - Subset of allowlist whose values may be objects.
+   * @param {object} [opts]
+   * @param {string} [opts.successI18n] - i18n key to include on success response.
+   * @param {string} [opts.failureI18n] - i18n key to include on failure response.
    * @returns {function} Express handler `(req, res) => void`.
    */
-  static apiUpdateSettingsHandler (allowlist, objectKeys = []) {
+  static apiUpdateSettingsHandler (allowlist, objectKeys = [], opts = {}) {
     const allowed = new Set(allowlist);
     const objAllowed = new Set(objectKeys);
+    const { successI18n, failureI18n } = opts;
     return (req, res) => {
       const merged = { ...(req.settingUser.settings ?? {}) };
       for (const key of allowed) {
@@ -1195,9 +1199,13 @@ class User {
       User.setUser(req.settingUser.userId, req.settingUser, (err) => {
         if (err) {
           console.log(`ERROR - ${req.method} ${req.originalUrl} settings update error`, util.inspect(err, false, 50));
-          return res.send({ success: false, text: 'User settings update failed' });
+          const failBody = { success: false, text: 'User settings update failed' };
+          if (failureI18n) failBody.i18n = failureI18n;
+          return res.send(failBody);
         }
-        return res.send({ success: true, text: 'Updated user settings successfully' });
+        const okBody = { success: true, text: 'Updated user settings successfully' };
+        if (successI18n) okBody.i18n = successI18n;
+        return res.send(okBody);
       });
     };
   }
