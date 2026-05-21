@@ -26,15 +26,18 @@ SPDX-License-Identifier: Apache-2.0
       :close-on-content-click="false"
       location="bottom end">
       <template #activator="{ props: activatorProps }">
-        <span
+        <v-btn
+          v-if="!error && esHealth"
           v-bind="activatorProps"
+          variant="text"
+          icon
+          size="small"
+          density="comfortable"
           class="cursor-help">
           <v-icon
             icon="mdi-information"
-            size="small"
-            :class="esHealthClass"
-            v-if="!error && esHealth" />
-        </span>
+            :class="esHealthClass" />
+        </v-btn>
       </template>
       <div class="es-health-popup">
         <div class="text-center mb-1">
