@@ -910,27 +910,43 @@ export default {
   opacity: 0.9;
 }
 
+/* Own stacking context so map buttons inside (zoom controls at z:5,
+   close-map at z:3) stay local and don't bubble up past the primary
+   sticky viz at z:3 -- this was bleeding lower-bucket map buttons over
+   the pinned top viz on Spigraph default view. */
+.viz-container {
+  position: relative;
+  z-index: 0;
+}
+
 /* sticky visualizations styles --------------- */
+/* 195 = 8 viz-container padding-top + 186 chart/map (TimelineGraph host
+   180 + wrapper padding-top 6; map matches at .inline-map > .map). +1
+   keeps the overflow-hidden clip off antialiased chart edges.
+   padding-bottom 200 = height + 5 gap below viz. */
 .sticky-viz {
-  padding-bottom: 178px;
+  padding-bottom: 200px;
 }
 
 .sticky-viz .viz-container {
   left: 0;
   right: 0;
   z-index: 3;
-  height: 183px;
+  height: 195px;
   position: fixed;
   overflow: hidden;
   box-shadow: 0 0 16px -2px black;
   background-color: rgb(var(--v-theme-background));
 }
 
+/* Disabled-aggregations variant: chart is replaced by a compact v-alert
+   info card (~80px with title + body). 90/95 preserves the normal-
+   variant spacing ratio so the thead still lands flush below the viz. */
 .sticky-viz.disabled-msg {
-  padding-bottom: 48px;
+  padding-bottom: 95px;
 }
 .sticky-viz.disabled-msg .viz-container {
-  height: 62px;
+  height: 90px;
 }
 
 /* viz options button styles ----------------- */

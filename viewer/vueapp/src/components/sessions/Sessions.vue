@@ -86,7 +86,7 @@ SPDX-License-Identifier: Apache-2.0
                       size="small"
                       variant="text"
                       icon
-                      class="sessions-options-btn"
+                      class="sessions-options-btn ms-1"
                       :aria-label="$t('sessions.sessions.tableOptions')">
                       <v-icon
                         icon="mdi-table-cog"
@@ -2323,7 +2323,7 @@ table.sessions-table thead tr th.sessions-options-cell {
 
 .sessions-content {
   padding-top: 30px;
-  margin-top: -10px;
+  margin-top: 10px;
   min-height: 500px;
 }
 
@@ -2390,8 +2390,8 @@ table.sessions-table.sticky-header > thead {
   /* need to unset right because sometimes the header overflows the window */
   right: auto;
   position: fixed;
-  margin-top: -20px;
-  padding-top: 24px;
+  margin-top: -50px;
+  padding-top: 5px;
   /* need x overflow for the table to be able to overflow the window width */
   overflow-x: scroll;
   padding-left: 8px;
@@ -2412,7 +2412,12 @@ table.sessions-table.sticky-header > tbody > tr {
 /* need this when reloading the page with sticky headers */
 table.sessions-table.sticky-header > tbody {
   display: block;
-  margin-top: 53px;
+  margin-top: -50px;
+}
+/* Disabled-aggregations variant uses a shorter sticky viz, so the
+   tbody needs less pull-up to land flush under the sticky thead. */
+.sticky-viz.disabled-msg ~ .sessions-content table.sessions-table.sticky-header > tbody {
+  margin-top: -15px;
 }
 
 /* table column headers -------------------- */
