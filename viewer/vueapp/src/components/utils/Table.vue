@@ -268,76 +268,9 @@ import Sortable from 'sortablejs';
 import UserService from '../users/UserService';
 import ToggleBtn from '@common/ToggleBtn.vue';
 import { timezoneDateString } from '@common/vueFilters.js';
+import { attachTableGrips } from '@common/composables/useColumnResize.js';
 
-// column resize variables and functions
-let selectedColElem; // store selected column to watch drag and calculate new column width
-let colStartOffset; // store column offset width to calculate new column width
-let colWidthBeforeResize; // sore column width before resize to calculate diff
-let tableWidthBeforeResize; // store table width before column resize to add to col resize diff
-let table; // store table element to update its width after column resize
-let cols; // store cols to add grip event handlers and save new widths
-let selectedGripElem; // store the grip to style it while resizing column
-
-// fired when a column resize grip is clicked
-// stores values for calculations when the grip is unclicked
-function gripClick (e, col) {
-  e.preventDefault();
-  e.stopPropagation();
-  selectedColElem = col;
-  colWidthBeforeResize = col.style.width.slice(0, -2);
-  tableWidthBeforeResize = table.style.width.slice(0, -2);
-  colStartOffset = col.offsetWidth - e.pageX;
-  selectedGripElem = col.getElementsByClassName('grip')[0];
-}
-
-// fired when the column resize grip is dragged
-// styles the grip to show where it's being dragged
-function gripDrag (e) { // move the grip where the user moves their cursor
-  if (selectedColElem && selectedGripElem) {
-    const newWidth = colStartOffset + e.pageX;
-    selectedGripElem.style.borderLeft = '1px dotted rgb(var(--v-theme-neutral))';
-    selectedGripElem.style.left = `${newWidth}px`;
-  }
-}
-
-// fired when a clicked and dragged grip is dropped
-// updates the column and table width and saves the values
-function gripUnclick (e, vueThis) {
-  e.preventDefault();
-  e.stopPropagation();
-  if (selectedColElem && selectedGripElem) {
-    const newWidth = Math.max(colStartOffset + e.pageX, 70); // min col width is 70px
-    selectedColElem.style.width = `${newWidth}px`;
-
-    for (let i = 0; i < cols.length; i++) { // get width of each col
-      const col = cols[i];
-      const colW = parseInt(col.style.width.slice(0, -2));
-      if (vueThis.computedColumns[i]) {
-        const header = vueThis.computedColumns[i];
-        header.width = colW;
-        vueThis.columnWidths[header.id] = colW;
-      }
-    }
-
-    vueThis.saveColumnWidths();
-
-    // update the width of the table. need to do this or else the table
-    // cannot overflow its container
-    const newTableWidth = parseInt(tableWidthBeforeResize) + newWidth - colWidthBeforeResize;
-    table.style.width = `${newTableWidth}px`;
-    vueThis.tableWidth = newTableWidth;
-
-    if (Math.abs(vueThis.tableWidth - window.innerWidth) > 15) {
-      vueThis.showFitButton = true;
-    }
-
-    selectedGripElem.style.borderLeft = 'unset';
-    selectedGripElem.style.left = 'unset';
-  }
-
-  selectedGripElem = undefined;
-  selectedColElem = undefined;
-}
+const MIN_COL_WIDTH = 70;
 
 /**
  * IMPORTANT! This component kicks off the loading of the
@@ -582,6 +515,15 @@ export default {
       this.initializeColResizable();
       this.loadData(this.tableSortField, this.tableDesc);
     });
+
+    // Surface the Fit Table button when the viewport shrinks past the content,
+    // without auto-fitting (which would clobber explicit user widths).
+    this._windowResizeHandler = () => {
+      if (Math.abs((this.tableWidth || 0) - window.innerWidth) > 15) {
+        this.showFitButton = true;
+      }
+    };
+    window.addEventListener('resize', this._windowResizeHandler);
   },
   methods: {
     timezoneDateString,
@@ -607,7 +549,8 @@ export default {
             column.width = parseInt(JSON.parse(JSON.stringify(col.width)));
           }
         }
-        const newWidth = Math.floor(column.width * percentChange);
+        // clamp to min so narrow viewports don't push columns past the grip floor
+        const newWidth = Math.max(MIN_COL_WIDTH, Math.floor(column.width * percentChange));
         column.width = newWidth;
         this.columnWidths[column.id] = newWidth;
       }
@@ -806,37 +749,35 @@ export default {
     },
     initializeColResizable: function () {
       this.$nextTick(() => {
-        cols = document.getElementsByClassName('col-header');
-        table = this.$refs.table;
-
-        for (const col of cols) { // listen for grip dragging
-          const grip = col.getElementsByClassName('grip')[0];
-          if (grip) {
-            grip.addEventListener('mousedown', (e) => gripClick(e, col));
+        this.destroyColResizable(); // idempotent re-init
+        this._gripAttachment = attachTableGrips({
+          cols: document.getElementsByClassName('col-header'),
+          table: this.$refs.table,
+          minWidth: MIN_COL_WIDTH,
+          onCommit: ({ cols, newTableWidth }) => {
+            // capture each column's actual rendered width into state
+            for (let i = 0; i < cols.length; i++) {
+              const w = cols[i].offsetWidth || parseInt(cols[i].style.width, 10) || 0;
+              const header = this.computedColumns[i];
+              if (header) {
+                header.width = w;
+                this.columnWidths[header.id] = w;
+              }
+            }
+            this.saveColumnWidths();
+            this.tableWidth = newTableWidth;
+            if (Math.abs(newTableWidth - window.innerWidth) > 15) {
+              this.showFitButton = true;
+            }
           }
-        }
-
-        document.addEventListener('mousemove', gripDrag);
-        const self = this;
-        document.addEventListener('mouseup', (e) => gripUnclick(e, self));
+        });
       });
     },
     destroyColResizable () {
-      if (!cols) return;
-
-      for (const col of cols) { // remove all grip dragging listeners
-        const grip = col.getElementsByClassName('grip')[0];
-        if (grip) {
-          grip.removeEventListener('mousedown', gripClick);
-        }
+      if (this._gripAttachment) {
+        this._gripAttachment.detach();
+        this._gripAttachment = null;
       }
-
-      // remove document listeners
-      document.removeEventListener('mousemove', gripDrag);
-      document.removeEventListener('mouseup', gripUnclick);
-
-      cols = undefined;
-      table = undefined;
     },
     saveTableState: function () {
       const tableState = {
@@ -878,6 +819,10 @@ export default {
   },
   beforeUnmount () {
     this.destroyColResizable();
+    if (this._windowResizeHandler) {
+      window.removeEventListener('resize', this._windowResizeHandler);
+      this._windowResizeHandler = null;
+    }
   }
 };
 </script>

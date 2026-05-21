@@ -23,67 +23,27 @@ import UserService from '../users/UserService';
 import ArkimeSessionField from './SessionField.vue';
 import HasPermission from '../utils/HasPermission.vue';
 import { buildExpression } from '@common/vueFilters.js';
+import { useColumnResize } from '@common/composables/useColumnResize.js';
 
-// dl resize variables and functions
-let selectedDT; // store selected dt to watch drag and calculate new width
-let dtOffset; // store offset width to calculate new width
-let selectedGrip; // the column resize grip that is currently being dragged
-let siblingDD; // the dd element following the dt element in the dl that is being resized
+const MIN_DL_WIDTH = 100;
 
-// fired when a column resize grip is clicked
-// stores values for calculations when the grip is unclicked
-function gripClick (e, div) {
-  e.preventDefault();
-  e.stopPropagation();
-  selectedDT = div.getElementsByTagName('dt')[0];
-  siblingDD = selectedDT.nextElementSibling;
-  dtOffset = selectedDT.offsetWidth - e.pageX;
-  selectedGrip = div.getElementsByClassName('session-detail-grip')[0];
-}
-
-// fired when the column resize grip is dragged
-// styles the grip to show where it's being dragged
-function gripDrag (e) { // move the grip where the user moves their cursor
-  if (selectedDT && selectedGrip) {
-    const newWidth = dtOffset + e.pageX;
-    selectedGrip.style.borderRight = '1px dotted rgb(var(--v-theme-neutral))';
-    selectedGrip.style.left = `${newWidth}px`;
-  }
-}
-
-// fired when a clicked and dragged grip is dropped
-// updates the column and table width and saves the values
-function gripUnclick (e, vueThis) {
-  if (selectedDT && selectedGrip) {
-    const newWidth = Math.max(dtOffset + e.pageX, 100); // min width is 100px
-    selectedDT.style.width = `${newWidth}px`;
-    siblingDD.style.marginLeft = `${newWidth + 10}px`;
-    selectedGrip.style.left = `${newWidth}px`;
-    selectedGrip.style.borderRight = 'none';
-
-    // update all the dt and dd styles to reflect the new width
-    for (const dt of document.getElementsByTagName('dt')) {
-      dt.style.width = `${newWidth}px`;
+// Propagate the committed dt width to every dt/dd/label/grip in the section.
+function applyDLWidth (newWidth) {
+  for (const dt of document.getElementsByTagName('dt')) {
+    dt.style.width = `${newWidth}px`;
+    if (dt.nextElementSibling) {
       dt.nextElementSibling.style.marginLeft = `${newWidth + 10}px`;
     }
-
-    // .clickable-label is on the <button> directly post-Vuetify migration
-    // (used to be a wrapping <div> from b-dropdown). Set maxWidth on every
-    // label button so the dt-aligned text stays clipped to the new width.
-    for (const btn of document.getElementsByClassName('clickable-label')) {
-      btn.style.maxWidth = `${newWidth}px`;
-    }
-
-    for (const grip of document.getElementsByClassName('session-detail-grip')) {
-      grip.style.left = `${newWidth}px`;
-    }
-
-    // save it as a user configuration
-    vueThis.saveDLWidth(newWidth);
   }
-
-  selectedGrip = undefined;
-  selectedDT = undefined;
+  // .clickable-label is on the <button> directly post-Vuetify migration
+  // (used to be a wrapping <div> from b-dropdown). Set maxWidth on every
+  // label button so the dt-aligned text stays clipped to the new width.
+  for (const btn of document.getElementsByClassName('clickable-label')) {
+    btn.style.maxWidth = `${newWidth}px`;
+  }
+  for (const grip of document.getElementsByClassName('session-detail-grip')) {
+    grip.style.left = `${newWidth}px`;
+  }
 }
 
 function collapseSection (e) {
@@ -185,13 +145,26 @@ export default {
 
         const sessionDetailDL = sessionDetailSection.getElementsByTagName('dl');
         const dlWidth = this.dlWidth;
+        const self = this;
+        const resizer = useColumnResize({
+          minWidth: MIN_DL_WIDTH,
+          guideSide: 'right'
+        });
+
         for (const div of sessionDetailDL) {
           // set the width of the session detail div based on user setting
           const grip = document.createElement('div');
           grip.classList.add('session-detail-grip');
           grip.style.left = `${dlWidth}px`;
           div.prepend(grip);
-          grip.addEventListener('mousedown', (e) => gripClick(e, div));
+          grip.addEventListener('pointerdown', (e) => {
+            const dt = div.getElementsByTagName('dt')[0];
+            if (!dt) return;
+            resizer.startResize(e, dt, grip, (newWidth) => {
+              applyDLWidth(newWidth);
+              self.saveDLWidth(newWidth);
+            });
+          });
         }
 
         const dts = sessionDetailSection.getElementsByTagName('dt');
@@ -203,11 +176,6 @@ export default {
             btn.style.maxWidth = `${dlWidth}px`;
           }
         }
-
-        // listen for grip drags
-        document.addEventListener('mousemove', gripDrag);
-        const self = this; // listen for grip unclicks
-        document.addEventListener('mouseup', (e) => gripUnclick(e, self));
 
         // find all the card titles and add a click listener to toggle the collapse
         const elementsArray = sessionDetailSection.getElementsByClassName('session-card-title');

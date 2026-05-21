@@ -740,6 +740,7 @@ import FieldSelectDropdown from '../utils/FieldSelectDropdown.vue';
 // import utils
 import { searchFields, buildExpression } from '@common/vueFilters.js';
 import { resolveMessage } from '@common/resolveI18nMessage';
+import { attachTableGrips } from '@common/composables/useColumnResize.js';
 // import external
 import Sortable from 'sortablejs';
 
@@ -768,83 +769,7 @@ const defaultColWidths = {
   info: 250
 };
 
-// column resize variables and functions
-let colResizeInitialized = false;
-let selectedColElem; // store selected column to watch drag and calculate new column width
-let colStartOffset; // store column offset width to calculate new column width
-let colWidthBeforeResize; // sore column width before resize to calculate diff
-let tableWidthBeforeResize; // store table width before column resize to add to col resize diff
-let table; // store table element to update its width after column resize
-let cols; // store cols to add grip event handlers and save new widths
-let selectedGripElem; // store the grip to style it while resizing column
-
-// fired when a column resize grip is clicked
-// stores values for calculations when the grip is unclicked
-function gripClick (e, col) {
-  e.preventDefault();
-  e.stopPropagation();
-  selectedColElem = col;
-  colWidthBeforeResize = col.style.width.slice(0, -2);
-  tableWidthBeforeResize = table.style.width.slice(0, -2);
-  colStartOffset = col.offsetWidth - e.pageX;
-  selectedGripElem = col.getElementsByClassName('grip')[0];
-}
-
-// fired when the column resize grip is dragged
-// styles the grip to show where it's being dragged
-function gripDrag (e) { // move the grip where the user moves their cursor
-  if (selectedColElem && selectedGripElem) {
-    const newWidth = colStartOffset + e.pageX;
-    selectedGripElem.style.borderLeft = '1px dotted rgb(var(--v-theme-neutral))';
-    selectedGripElem.style.left = `${newWidth}px`;
-  }
-}
-
-// fired when a clicked and dragged grip is dropped
-// updates the column and table width and saves the values
-function gripUnclick (e, vueThis) {
-  if (selectedColElem && selectedGripElem) {
-    vueThis.loading = true;
-
-    const newWidth = Math.max(colStartOffset + e.pageX, 70); // min col width is 70px
-    selectedColElem.style.width = `${newWidth}px`;
-
-    let hasInfo = false;
-    for (let i = 0; i < cols.length; i++) { // get width of each col
-      const col = cols[i];
-      const colW = parseInt(col.style.width.slice(0, -2));
-      if (vueThis.headers[i]) {
-        const header = vueThis.headers[i];
-        if (header.exp === 'info') { // ignore info col, it resizes to fit the window
-          hasInfo = true;
-          continue;
-        }
-        header.width = colW;
-        vueThis.colWidths[header.dbField] = colW;
-      }
-    }
-
-    vueThis.saveColumnWidths();
-    vueThis.mapHeadersToFields();
-
-    // update the width of the table. need to do this or else the table
-    // cannot overflow its container
-    if (!hasInfo) { // if there is no info column update the table width
-      // if there is an info column, don't do anything, the info column
-      // resizes to take up the rest of the window
-      const diff = newWidth - colWidthBeforeResize;
-      table.style.width = `${parseInt(tableWidthBeforeResize) + parseInt(diff)}px`;
-    }
-
-    selectedGripElem.style.borderLeft = 'unset';
-    selectedGripElem.style.left = 'unset';
-
-    vueThis.loading = false;
-  }
-
-  selectedGripElem = undefined;
-  selectedColElem = undefined;
-}
+const MIN_COL_WIDTH = 70;
 
 // fired when a scroll event is captured on this page
 // scrolls the table header and body together if the header is sticky
@@ -944,6 +869,11 @@ export default {
     // this is only registered when the user has not set widths for any
     // columns && the info column is visible
     windowResizeEvent = () => {
+      // Surface the Fit Table button when the viewport shrinks past the content.
+      // Cheap; runs every resize event so the affordance appears immediately.
+      if (Math.abs((this.tableWidth || 0) - window.innerWidth) > 15) {
+        this.showFitButton = true;
+      }
       if (resizeTimeout) { clearTimeout(resizeTimeout); }
       resizeTimeout = setTimeout(() => {
         this.mapHeadersToFields();
@@ -1674,7 +1604,8 @@ export default {
 
       for (let i = 0, len = this.headers.length; i < len; ++i) {
         const header = this.headers[i];
-        const newWidth = Math.floor(header.width * percentChange);
+        // clamp to min so narrow viewports don't push columns past the grip floor
+        const newWidth = Math.max(MIN_COL_WIDTH, Math.floor(header.width * percentChange));
         header.width = newWidth;
         this.colWidths[header.dbField] = newWidth;
       }
@@ -1941,7 +1872,7 @@ export default {
         }
 
         // initialize resizable columns now that there is data
-        if (!colResizeInitialized) { this.initializeColResizable(); }
+        if (!this._colResizeInitialized) { this.initializeColResizable(); }
 
         // initialize sortable table
         if (!colDragDropInitialized) { this.initializeColDragDrop(); }
@@ -2094,42 +2025,43 @@ export default {
     },
     /* Initializes resizable columns */
     initializeColResizable () {
-      colResizeInitialized = true;
-
-      cols = document.getElementsByClassName('arkime-col-header');
-      table = this.$refs.sessionsTable;
-
-      for (const col of cols) { // listen for grip dragging
-        const grip = col.getElementsByClassName('grip')[0];
-        if (grip) {
-          grip.addEventListener('mousedown', (e) => gripClick(e, col));
+      this.destroyColResizable(); // idempotent re-init
+      this._colResizeInitialized = true;
+      // info column absorbs slack; skip table-width update so it can reflow.
+      const hasInfoColumn = () => this.headers.some(h => h.exp === 'info');
+      this._gripAttachment = attachTableGrips({
+        cols: document.getElementsByClassName('arkime-col-header'),
+        table: this.$refs.sessionsTable,
+        minWidth: MIN_COL_WIDTH,
+        shouldUpdateTable: () => !hasInfoColumn(),
+        onCommit: ({ cols }) => {
+          this.loading = true;
+          for (let i = 0; i < cols.length; i++) {
+            const w = cols[i].offsetWidth || parseInt(cols[i].style.width, 10) || 0;
+            const header = this.headers[i];
+            if (header && header.exp !== 'info') {
+              header.width = w;
+              this.colWidths[header.dbField] = w;
+            }
+          }
+          this.saveColumnWidths();
+          this.mapHeadersToFields();
+          this.loading = false;
         }
-      }
-
-      document.addEventListener('mousemove', gripDrag);
-      const self = this;
-      document.addEventListener('mouseup', (e) => gripUnclick(e, self));
-
-      document.addEventListener('scroll', (e) => docScroll(e, self), true);
+      });
+      this._docScrollHandler = (e) => docScroll(e, this);
+      document.addEventListener('scroll', this._docScrollHandler, true);
     },
     destroyColResizable () {
-      if (!cols) return;
-
-      for (const col of cols) { // remove all grip dragging listeners
-        const grip = col.getElementsByClassName('grip')[0];
-        if (grip) {
-          grip.removeEventListener('mousedown', gripClick);
-        }
+      if (this._gripAttachment) {
+        this._gripAttachment.detach();
+        this._gripAttachment = null;
       }
-
-      // remove document listeners
-      document.removeEventListener('mousemove', gripDrag);
-      document.removeEventListener('mouseup', gripUnclick);
-      document.removeEventListener('scroll', docScroll);
-
-      cols = undefined;
-      table = undefined;
-      colResizeInitialized = false;
+      if (this._docScrollHandler) {
+        document.removeEventListener('scroll', this._docScrollHandler, true);
+        this._docScrollHandler = null;
+      }
+      this._colResizeInitialized = false;
     },
     /* Saves the column widths */
     saveColumnWidths: function () {
@@ -2322,9 +2254,15 @@ table.sessions-table thead tr th.sessions-options-cell {
 }
 
 .sessions-content {
+  margin-top: -12px;
+  min-height: 500px;
+}
+
+/* only pad above the table when the sticky-viz sibling is present;
+   otherwise the gap looks like dead space at the top of the page */
+.sticky-viz ~ .sessions-content {
   padding-top: 30px;
   margin-top: 10px;
-  min-height: 500px;
 }
 
 /* sessions table styles --------------------- */
@@ -2414,10 +2352,10 @@ table.sessions-table.sticky-header > tbody {
   display: block;
   margin-top: -50px;
 }
-/* Disabled-aggregations variant uses a shorter sticky viz, so the
-   tbody needs less pull-up to land flush under the sticky thead. */
+/* Disabled-aggregations variant: pull tbody up under the sticky thead so it
+   lands flush when the info column is showing and rows are pinned. */
 .sticky-viz.disabled-msg ~ .sessions-content table.sessions-table.sticky-header > tbody {
-  margin-top: -15px;
+  margin-top: -50px;
 }
 
 /* table column headers -------------------- */
