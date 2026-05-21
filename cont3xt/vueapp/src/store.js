@@ -6,6 +6,7 @@ import { createStore } from 'vuex';
 import { iTypes, iTypeIndexMap } from '@/utils/iTypes';
 import { indicatorFromId, localIndicatorId } from '@/utils/cont3xtUtil';
 import { THEMES, DEFAULT_THEME_ID } from '@common/themes/manifest.js';
+import { postThemeSettings } from '@common/themes/persistTheme.js';
 
 /* localStorage keys.
    - Legacy (pre-v7 cont3xt): `theme` (string 'light'/'dark') and
@@ -308,6 +309,7 @@ const store = createStore({
       // v7+ writes to the new key only; the legacy `theme` key stays
       // untouched so pre-v7 cont3xt keeps its own preference intact.
       localStorage.setItem(VUETIFY_THEME_KEY, JSON.stringify(data));
+      postThemeSettings('api/user/settings', { cont3xtVuetifyTheme: data });
     },
     SET_CUSTOM_THEME (state, data) {
       state.customTheme = data;
@@ -315,6 +317,20 @@ const store = createStore({
         localStorage.setItem(VUETIFY_CUSTOM_KEY, JSON.stringify(data));
       } else {
         localStorage.removeItem(VUETIFY_CUSTOM_KEY);
+      }
+      postThemeSettings('api/user/settings', { cont3xtVuetifyCustomTheme: data ?? null });
+    },
+    /* Apply theme values loaded from user.settings on app startup
+       *without* echoing them back to the server. Used by App.vue's
+       mounted hook after the initial /api/user fetch resolves. */
+    HYDRATE_THEME_FROM_SERVER (state, { themeId, customTheme }) {
+      if (customTheme && typeof customTheme === 'object' && customTheme.colors) {
+        state.customTheme = customTheme;
+        try { localStorage.setItem(VUETIFY_CUSTOM_KEY, JSON.stringify(customTheme)); } catch (e) { /* ignore */ }
+      }
+      if (themeId && (themeId === 'custom1' || THEMES.some(t => t.id === themeId))) {
+        state.theme = themeId;
+        try { localStorage.setItem(VUETIFY_THEME_KEY, JSON.stringify(themeId)); } catch (e) { /* ignore */ }
       }
     },
     SET_TAGS (state, data) {

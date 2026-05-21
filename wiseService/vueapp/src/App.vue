@@ -17,6 +17,7 @@ SPDX-License-Identifier: Apache-2.0
 import WiseNavbar from './components/Navbar.vue';
 import WiseUpgradeBrowser from './components/UpgradeBrowser.vue';
 import WiseFooter from '@common/Footer.vue';
+import { hydrateOrMigrateTheme } from '@common/themes/persistTheme.js';
 
 export default {
   name: 'App',
@@ -36,7 +37,25 @@ export default {
 
     if (!this.compatibleBrowser) {
       console.log('Incompatible browser, please upgrade!');
+      return;
     }
+
+    // Hydrate the Vuetify theme from user.settings; if the server has
+    // no value yet, push localStorage up so the choice follows the user
+    // to other browsers/devices on next load. wise has no other
+    // user-fetching hook on startup, so we hit /api/user/settings directly.
+    fetch('api/user/settings').then((r) => r.ok ? r.json() : {}).then((data) => {
+      hydrateOrMigrateTheme({
+        url: 'api/user/settings',
+        settings: data,
+        serverThemeKey: 'wiseVuetifyTheme',
+        serverCustomKey: 'wiseVuetifyCustomTheme',
+        localThemeKey: 'wiseTheme',
+        localCustomKey: 'wiseCustomTheme'
+      }, (themeId, customTheme) => {
+        this.$store.commit('HYDRATE_THEME_FROM_SERVER', { themeId, customTheme });
+      });
+    }).catch(() => { /* unauthenticated or backend offline -- localStorage covers us */ });
   }
 };
 </script>

@@ -1705,6 +1705,24 @@ app.post('/parliament/api/users', [jsonParser, User.checkRole('usersAdmin'), set
 app.post('/parliament/api/users/csv', [jsonParser, User.checkRole('usersAdmin'), setCookie], User.apiGetUsersCSV);
 app.post('/parliament/api/user', [jsonParser, checkCookieToken, User.checkRole('usersAdmin')], User.apiCreateUser);
 app.post('/parliament/api/user/password', [jsonParser, checkCookieToken, Auth.getSettingUserDb], User.apiUpdateUserPassword);
+// /api/user/settings must precede /api/user/:id so Express doesn't match
+// `:id = 'settings'` (which would gate on usersAdmin). Mirrors viewer's
+// route order at viewer/viewer.js:1353.
+/**
+ * POST - /parliament/api/user/settings
+ *
+ * Persists the parliament-specific theme keys
+ * (`parliamentVuetifyTheme`, `parliamentVuetifyCustomTheme`) onto the
+ * logged-in user's `settings`. Other keys posted here are dropped.
+ * @name /user/settings
+ * @returns {boolean} success - Whether the update was successful
+ * @returns {string} text - The success/error message
+ */
+app.post('/parliament/api/user/settings',
+  [jsonParser, ArkimeUtil.noCacheJson, checkCookieToken, Auth.getSettingUserDb],
+  User.apiUpdateSettingsHandler(['parliamentVuetifyTheme', 'parliamentVuetifyCustomTheme'], ['parliamentVuetifyCustomTheme'])
+);
+
 app.delete('/parliament/api/user/:id', [jsonParser, checkCookieToken, User.checkRole('usersAdmin')], User.apiDeleteUser);
 app.post('/parliament/api/user/:id', [jsonParser, checkCookieToken, User.checkRole('usersAdmin')], User.apiUpdateUser);
 app.post('/parliament/api/user/:id/assignment', [jsonParser, checkCookieToken, User.checkAssignableRole], User.apiUpdateUserRole);

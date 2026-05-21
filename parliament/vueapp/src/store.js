@@ -4,6 +4,7 @@ SPDX-License-Identifier: Apache-2.0
 */
 import { createStore } from 'vuex';
 import { THEMES, DEFAULT_THEME_ID } from '@common/themes/manifest.js';
+import { postThemeSettings } from '@common/themes/persistTheme.js';
 
 /* Load the saved theme id from localStorage. Migrates the legacy
    'light' / 'dark' string format to the new manifest ids. Falls back
@@ -52,6 +53,7 @@ const store = createStore({
     setTheme (state, value) {
       state.theme = value;
       localStorage.setItem('parliamentTheme', value);
+      postThemeSettings('api/user/settings', { parliamentVuetifyTheme: value });
     },
     setCustomTheme (state, value) {
       state.customTheme = value;
@@ -59,6 +61,20 @@ const store = createStore({
         localStorage.setItem('parliamentCustomTheme', JSON.stringify(value));
       } else {
         localStorage.removeItem('parliamentCustomTheme');
+      }
+      postThemeSettings('api/user/settings', { parliamentVuetifyCustomTheme: value ?? null });
+    },
+    /* Apply theme values loaded from user.settings on app startup
+       *without* echoing them back to the server. Called by App.vue
+       after the initial /parliament/api/user fetch resolves. */
+    hydrateThemeFromServer (state, { themeId, customTheme }) {
+      if (customTheme && typeof customTheme === 'object' && customTheme.colors) {
+        state.customTheme = customTheme;
+        try { localStorage.setItem('parliamentCustomTheme', JSON.stringify(customTheme)); } catch (e) { /* ignore */ }
+      }
+      if (themeId && (themeId === 'custom1' || THEMES.some(t => t.id === themeId))) {
+        state.theme = themeId;
+        try { localStorage.setItem('parliamentTheme', themeId); } catch (e) { /* ignore */ }
       }
     },
     setIsUser (state, value) {

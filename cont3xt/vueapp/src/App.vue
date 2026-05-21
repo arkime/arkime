@@ -87,6 +87,7 @@ import OverviewService from '@/components/services/OverviewService';
 import Cont3xtService from '@/components/services/Cont3xtService';
 import Cont3xtUpgradeBrowser from '@/components/pages/UpgradeBrowser.vue';
 import KeyboardShortcuts from '@common/KeyboardShortcuts.vue';
+import { hydrateOrMigrateTheme } from '@common/themes/persistTheme.js';
 
 export default {
   name: 'App',
@@ -121,7 +122,7 @@ export default {
     });
     LinkService.getLinkGroups();
     OverviewService.getOverviews();
-    UserService.getUser();
+    UserService.getUser().then((user) => { this.hydrateThemeFromUser(user); });
     UserService.getRoles();
     UserService.getUserSettings().then((response) => {
       this.$store.commit('SET_SELECTED_OVERVIEW_ID_MAP', response.selectedOverviews ?? {});
@@ -267,6 +268,19 @@ export default {
         path: url,
         hash: this.$route.hash,
         query: { ...this.$route.query }
+      });
+    },
+    hydrateThemeFromUser (user) {
+      hydrateOrMigrateTheme({
+        url: 'api/user/settings',
+        settings: user?.settings,
+        serverThemeKey: 'cont3xtVuetifyTheme',
+        serverCustomKey: 'cont3xtVuetifyCustomTheme',
+        localThemeKey: 'cont3xtVuetifyTheme',
+        localCustomKey: 'cont3xtVuetifyCustomTheme',
+        themeIsJsonEncoded: true
+      }, (themeId, customTheme) => {
+        this.$store.commit('HYDRATE_THEME_FROM_SERVER', { themeId, customTheme });
       });
     }
   }

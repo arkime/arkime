@@ -1161,6 +1161,47 @@ class User {
     });
   }
 
+  /**
+   * Build an Express handler that persists an allowlisted subset of
+   * `req.body` keys onto `req.settingUser.settings`. Used by the
+   * cont3xt / parliament / wise /api/user/settings POST endpoints to
+   * persist their per-app theme keys without duplicating the
+   * filter+merge+save pattern. The route is responsible for setting
+   * up `req.settingUser` via `Auth.getSettingUserDb`.
+   *
+   * Non-array object values are dropped unless the key is in
+   * `objectKeys` (used for structured records like the custom-theme
+   * `{ dark, colors }` payload).
+   *
+   * @param {string[]} allowlist - Settings keys this endpoint may write.
+   * @param {string[]} [objectKeys] - Subset of allowlist whose values may be objects.
+   * @returns {function} Express handler `(req, res) => void`.
+   */
+  static apiUpdateSettingsHandler (allowlist, objectKeys = []) {
+    const allowed = new Set(allowlist);
+    const objAllowed = new Set(objectKeys);
+    return (req, res) => {
+      const merged = { ...(req.settingUser.settings ?? {}) };
+      for (const key of allowed) {
+        const val = req.body[key];
+        if (val === undefined) continue;
+        if (val !== null && typeof val === 'object' && !Array.isArray(val) && !objAllowed.has(key)) {
+          continue;
+        }
+        merged[key] = val;
+      }
+      req.settingUser.settings = merged;
+
+      User.setUser(req.settingUser.userId, req.settingUser, (err) => {
+        if (err) {
+          console.log(`ERROR - ${req.method} ${req.originalUrl} settings update error`, util.inspect(err, false, 50));
+          return res.send({ success: false, text: 'User settings update failed' });
+        }
+        return res.send({ success: true, text: 'Updated user settings successfully' });
+      });
+    };
+  }
+
   /******************************************************************************/
   // TOTP (Two-Factor Authentication) APIs
   /******************************************************************************/

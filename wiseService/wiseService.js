@@ -1461,6 +1461,43 @@ if (internals.webconfig) {
 
   // ----------------------------------------------------------------------------
   /**
+   * GET - /api/user/settings
+   *
+   * Returns the wise-specific theme keys for the logged-in user. Used
+   * by the wise UI on startup to hydrate the Vuetify theme picker from
+   * the server (so a user's choice follows them across browsers).
+   *
+   * @name "/api/user/settings"
+   * @returns {string} wiseVuetifyTheme - The saved theme id
+   * @returns {object} wiseVuetifyCustomTheme - The saved custom-theme object
+   */
+  app.get('/api/user/settings', [ArkimeUtil.noCacheJson, isWiseUser, Auth.getSettingUserDb], (req, res) => {
+    const settings = req.settingUser?.settings ?? {};
+    return res.send({
+      wiseVuetifyTheme: settings.wiseVuetifyTheme,
+      wiseVuetifyCustomTheme: settings.wiseVuetifyCustomTheme
+    });
+  });
+
+  // ----------------------------------------------------------------------------
+  /**
+   * POST - /api/user/settings
+   *
+   * Persists the wise-specific theme keys (`wiseVuetifyTheme`,
+   * `wiseVuetifyCustomTheme`) onto the logged-in user's `settings`.
+   * Other keys posted here are dropped.
+   *
+   * @name "/api/user/settings"
+   * @returns {boolean} success
+   * @returns {string} text
+   */
+  app.post('/api/user/settings',
+    [ArkimeUtil.noCacheJson, jsonParser, isWiseUser, Auth.getSettingUserDb],
+    User.apiUpdateSettingsHandler(['wiseVuetifyTheme', 'wiseVuetifyCustomTheme'], ['wiseVuetifyCustomTheme'])
+  );
+
+  // ----------------------------------------------------------------------------
+  /**
    * GET - Used by wise UI to retrieve the raw file being used by the section.
    *       This is an authenticated API and requires wiseService to be started with --webconfig.
    *

@@ -240,6 +240,24 @@ app.post('/api/user/totp/setup', [jsonParser, checkCookieToken, Auth.getSettingU
 app.post('/api/user/totp/confirm', [jsonParser, checkCookieToken, Auth.getSettingUserDb, ArkimeUtil.noCacheJson, User.checkSettingUserAnyRole(['arkimeAdmin', 'cont3xtAdmin', 'wiseAdmin'])], User.apiConfirmTotp);
 app.post('/api/user/totp/disable', [jsonParser, checkCookieToken, Auth.getSettingUserDb, ArkimeUtil.noCacheJson, User.checkSettingUserAnyRole(['arkimeAdmin', 'cont3xtAdmin', 'wiseAdmin'])], User.apiDisableTotp);
 
+// /api/user/settings must precede /api/user/:id so Express doesn't match
+// `:id = 'settings'` (which would gate on usersAdmin). Mirrors viewer's
+// route order at viewer/viewer.js:1353.
+/**
+ * POST - /api/user/settings
+ *
+ * Persists the cont3xt-specific theme keys (`cont3xtVuetifyTheme`,
+ * `cont3xtVuetifyCustomTheme`) onto the logged-in user's `settings`.
+ * Other keys posted here are silently dropped.
+ * @name /user/settings
+ * @returns {boolean} success - Whether the update was successful
+ * @returns {string} text - The success/error message
+ */
+app.post('/api/user/settings',
+  [jsonParser, ArkimeUtil.noCacheJson, checkCookieToken, Auth.getSettingUserDb],
+  User.apiUpdateSettingsHandler(['cont3xtVuetifyTheme', 'cont3xtVuetifyCustomTheme'], ['cont3xtVuetifyCustomTheme'])
+);
+
 app.delete('/api/user/:id', [jsonParser, checkCookieToken, User.checkRole('usersAdmin')], User.apiDeleteUser);
 app.post('/api/user/:id', [jsonParser, checkCookieToken, User.checkRole('usersAdmin')], User.apiUpdateUser);
 app.post('/api/user/:id/assignment', [jsonParser, checkCookieToken, User.checkAssignableRole], User.apiUpdateUserRole);
