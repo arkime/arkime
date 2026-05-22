@@ -1073,7 +1073,7 @@ export default {
         // start processing tasks serially
         this.serial(tasks).then((response) => { // returns the last result in the series
           if (response && response.error) {
-            this.error = response.error;
+            this.error = resolveMessage(response.error, this.$t);
           }
           // Note: dataLoading is set to false when all individual requests complete
         }).catch((error) => {
