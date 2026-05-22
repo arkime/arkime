@@ -36,6 +36,9 @@ NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at o
 NOTICE: Create a parliament config file before upgrading (see https://arkime.com/settings#parliament and https://arkime.com/faq#how_do_i_upgrade_to_arkime_5)
 
 6.4.1 2026/06/xx
+## Capture
+  - #3996 Added mssing ntlm.detail.jade for NTLM session detail rendering
+  - #3996 Added opcua parser (OPC UA Binary) with opcua.endpointUrl, opcua.securityPolicyUri and SenderCertificate parsing
 ## Viewer
   - #3994 Fix SPIView all not allowed error message
 

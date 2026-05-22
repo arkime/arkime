@@ -5504,6 +5504,22 @@ sub sessions3Update
     "node" : {
       "type" : "keyword"
     },
+    "opcua" : {
+      "properties" : {
+        "endpointUrl" : {
+          "type" : "keyword"
+        },
+        "endpointUrlCnt" : {
+          "type" : "long"
+        },
+        "securityPolicyUri" : {
+          "type" : "keyword"
+        },
+        "securityPolicyUriCnt" : {
+          "type" : "long"
+        }
+      }
+    },
     "ospf" : {
       "properties" : {
         "msgType" : {
