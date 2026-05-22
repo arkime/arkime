@@ -926,7 +926,7 @@ export default {
       return this.$store.state.views;
     },
     tableWidthStyle () {
-      return { width: `${table.clientWidth}px` };
+      return { width: `${this.tableWidth}px` };
     },
     showToolBars: function () {
       return this.$store.state.showToolBars;
