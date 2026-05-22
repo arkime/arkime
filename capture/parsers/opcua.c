@@ -32,6 +32,16 @@ LOCAL  uint32_t tls_process_single_certificate_func;
 #define OPCUA_BUF_MAX     32768 /* allow large OPN with big certs */
 
 /******************************************************************************/
+/* Read the uint32 LE msgLen from an 8-byte common header. */
+LOCAL uint32_t opcua_msg_len(const uint8_t *p)
+{
+    BSB bsb;
+    BSB_INIT(bsb, p + 4, 4);
+    uint32_t msgLen = 0;
+    BSB_LIMPORT_u32(bsb, msgLen);
+    return msgLen;
+}
+/******************************************************************************/
 LOCAL int opcua_is_valid_header(const uint8_t *data)
 {
     /* chunk type must be F, C, or A */
@@ -66,13 +76,16 @@ LOCAL void opcua_parse_hel(ArkimeSession_t *session, const uint8_t *p, uint32_t 
     if (msgLen < OPCUA_HEADER_LEN + OPCUA_HEL_PRELUDE + 4)
         return;
 
-    const uint8_t *u = p + OPCUA_HEADER_LEN + OPCUA_HEL_PRELUDE;
-    int32_t urlLen = (int32_t)(u[0] | (u[1] << 8) | (u[2] << 16) | (u[3] << 24));
-    if (urlLen <= 0 || urlLen > OPCUA_MAX_URL)
+    BSB bsb;
+    BSB_INIT(bsb, p + OPCUA_HEADER_LEN + OPCUA_HEL_PRELUDE, msgLen - OPCUA_HEADER_LEN - OPCUA_HEL_PRELUDE);
+
+    int32_t urlLen = 0;
+    BSB_LIMPORT_u32(bsb, urlLen);
+    if (BSB_IS_ERROR(bsb))
         return;
-    if ((uint32_t)urlLen > msgLen - (OPCUA_HEADER_LEN + OPCUA_HEL_PRELUDE + 4))
+    if (urlLen <= 0 || urlLen > OPCUA_MAX_URL || (uint32_t)urlLen > BSB_REMAINING(bsb))
         return;
-    arkime_field_string_add(endpointUrlField, session, (const char *)(u + 4), urlLen, TRUE);
+    arkime_field_string_add(endpointUrlField, session, (const char *)BSB_WORK_PTR(bsb), urlLen, TRUE);
 }
 /******************************************************************************/
 /* Parse a complete OPN message starting at p (length msgLen). The OPN body
@@ -130,7 +143,7 @@ LOCAL int opcua_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, 
         if (!opcua_is_valid_header(p))
             return ARKIME_PARSER_UNREGISTER;
 
-        uint32_t msgLen = p[4] | (p[5] << 8) | (p[6] << 16) | (p[7] << 24);
+        uint32_t msgLen = opcua_msg_len(p);
         if (msgLen < OPCUA_HEADER_LEN || msgLen > OPCUA_MAX_MSG)
             return ARKIME_PARSER_UNREGISTER;
         if (msgLen > (uint32_t)info->bufMax)
@@ -158,7 +171,7 @@ LOCAL void opcua_classify(ArkimeSession_t *session, const uint8_t *data, int len
     if (len < OPCUA_HEADER_LEN || !opcua_is_valid_header(data))
         return;
 
-    uint32_t msgLen = data[4] | (data[5] << 8) | (data[6] << 16) | (data[7] << 24);
+    uint32_t msgLen = opcua_msg_len(data);
     if (msgLen < OPCUA_HEADER_LEN || msgLen > OPCUA_MAX_MSG)
         return;
 
