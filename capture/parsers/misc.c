@@ -228,6 +228,43 @@ LOCAL void netflow_classify(ArkimeSession_t *session, const uint8_t *data, int l
     arkime_session_add_protocol(session, "netflow");
 }
 /******************************************************************************/
+// IPFIX (RFC 7011) - NetFlow v10. Header is 16 bytes:
+//   Version(2)=10, Length(2), ExportTime(4), SeqNum(4), ObsDomainID(4)
+LOCAL void ipfix_classify(ArkimeSession_t *session, const uint8_t *data, int len, int UNUSED(which), void *UNUSED(uw))
+{
+    if (len < 16)
+        return;
+
+    uint16_t msgLen = (data[2] << 8) | data[3];
+    if (msgLen != len || msgLen < 16)
+        return;
+
+    uint32_t exportTime = ((uint32_t)data[4] << 24) | ((uint32_t)data[5] << 16) |
+                          ((uint32_t)data[6] << 8)  | (uint32_t)data[7];
+    if (exportTime < 1000000000 /*Sep 2001*/)
+        return;
+
+    arkime_session_add_protocol(session, "ipfix");
+}
+/******************************************************************************/
+// sFlow v5 (sflow.org). Datagram starts with 4-byte version=5 followed by
+// 4-byte agent-address type (1=IPv4, 2=IPv6). v2/v4 are obsolete and use a
+// different (and unverifiable) header layout, so we only classify v5.
+LOCAL void sflow_classify(ArkimeSession_t *session, const uint8_t *data, int len, int UNUSED(which), void *UNUSED(uw))
+{
+    if (len < 28)
+        return;
+
+    if (data[4] != 0 || data[5] != 0 || data[6] != 0 ||
+        (data[7] != 1 && data[7] != 2))
+        return;
+
+    if (data[7] == 2 && len < 40)
+        return;
+
+    arkime_session_add_protocol(session, "sflow");
+}
+/******************************************************************************/
 LOCAL void ident_protocol_classify(ArkimeSession_t *session, const uint8_t *data, int len, int UNUSED(which), void *UNUSED(uw))
 {
     if (g_strstr_len((char *)data, len, "USERID") != NULL || g_strstr_len((char *)data, len, "ERROR") != NULL) {
@@ -458,6 +495,10 @@ void arkime_parser_init()
     CLASSIFY_UDP("netflow", 0, "\x00\x05", netflow_classify);
     CLASSIFY_UDP("netflow", 0, "\x00\x07", netflow_classify);
     CLASSIFY_UDP("netflow", 0, "\x00\x09", netflow_classify);
+
+    CLASSIFY_UDP("ipfix", 0, "\x00\x0a", ipfix_classify);
+
+    CLASSIFY_UDP("sflow", 0, "\x00\x00\x00\x05", sflow_classify);
 
     SIMPLE_CLASSIFY_TCP("hbase", "HBas\x00");
 
