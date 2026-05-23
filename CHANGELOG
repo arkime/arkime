@@ -39,6 +39,8 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
 ## Capture
   - #3996 Added mssing ntlm.detail.jade for NTLM session detail rendering
   - #3996 Added opcua parser (OPC UA Binary) with opcua.endpointUrl, opcua.securityPolicyUri and SenderCertificate parsing
+  - #3997 Added IPFIX and sFlow v5 classifiers for flow telemetry visibility
+  - #3997 Added DCERPC interface labels for AD CS (MS-WCCE/ICPR), PrintNightmare (MS-RPRN/MS-PAR), DfsCoerce, ShadowCoerce, WMI, BackupKey (BKRP), EventLog6, DFS-R (FRS2), and IObjectExporter
 ## Viewer
   - #3994 Fix SPIView all not allowed error message
 
