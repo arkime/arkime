@@ -1887,7 +1887,7 @@
     },
     "dcerpc" : {
      "interface" : [
-      "ioxidresolver"
+      "iremunknown"
      ],
      "interfaceCnt" : 1,
      "msgType" : [
@@ -1963,7 +1963,7 @@
     },
     "protocol" : [
      "dcerpc",
-     "ioxidresolver",
+     "iremunknown",
      "tcp"
     ],
     "protocolCnt" : 3,
@@ -2021,7 +2021,7 @@
     },
     "dcerpc" : {
      "interface" : [
-      "iremunknown"
+      "iremunknown2"
      ],
      "interfaceCnt" : 1,
      "msgType" : [
@@ -2097,7 +2097,7 @@
     },
     "protocol" : [
      "dcerpc",
-     "iremunknown",
+     "iremunknown2",
      "tcp"
     ],
     "protocolCnt" : 3,
@@ -2155,7 +2155,7 @@
     },
     "dcerpc" : {
      "interface" : [
-      "iremunknown2"
+      "isystemactivator"
      ],
      "interfaceCnt" : 1,
      "msgType" : [
@@ -2231,7 +2231,7 @@
     },
     "protocol" : [
      "dcerpc",
-     "iremunknown2",
+     "isystemactivator",
      "tcp"
     ],
     "protocolCnt" : 3,
