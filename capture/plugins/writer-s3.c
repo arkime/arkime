@@ -6,10 +6,6 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 #define _FILE_OFFSET_BITS 64
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <string.h>
 #include <zlib.h>
 #include <sys/stat.h>
 #include <sys/mman.h>

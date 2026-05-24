@@ -500,6 +500,28 @@ void arkime_parser_init()
 
     CLASSIFY_UDP("sflow", 0, "\x00\x00\x00\x05", sflow_classify);
 
+    // AD CS web enrollment (MS-WCCE over HTTP) — ESC8 NTLM relay target
+    arkime_parsers_register_sub("http", "/certsrv/", arkime_parsers_add_protocol_cb, "adcs-web");
+    arkime_parsers_register_sub("http", "/certsrv/certfnsh.asp", arkime_parsers_add_protocol_cb, "adcs-web");
+    arkime_parsers_register_sub("http", "/certsrv/certrqxt.asp", arkime_parsers_add_protocol_cb, "adcs-web");
+    arkime_parsers_register_sub("http", "/certsrv/certrqma.asp", arkime_parsers_add_protocol_cb, "adcs-web");
+    arkime_parsers_register_sub("http", "/certsrv/certrqus.asp", arkime_parsers_add_protocol_cb, "adcs-web");
+    arkime_parsers_register_sub("http", "/certsrv/certcarc.asp", arkime_parsers_add_protocol_cb, "adcs-web");
+    arkime_parsers_register_sub("http", "/certsrv/mscep/mscep.dll", arkime_parsers_add_protocol_cb, "adcs-ndes");
+    arkime_parsers_register_sub("http", "/certsrv/mscep_admin/", arkime_parsers_add_protocol_cb, "adcs-ndes");
+    arkime_parsers_register_sub("http", "/adpolicyprovider_cep_kerberos/service.svc/cep", arkime_parsers_add_protocol_cb, "adcs-cep");
+    arkime_parsers_register_sub("http", "/adpolicyprovider_cep_usernamepassword/service.svc/cep", arkime_parsers_add_protocol_cb, "adcs-cep");
+    arkime_parsers_register_sub("http", "/enrollmentserver/service.svc", arkime_parsers_add_protocol_cb, "adcs-ces");
+
+    // RPC over HTTP / Outlook Anywhere (MS-RPCH) — uses non-standard HTTP
+    // verbs RPC_IN_DATA / RPC_OUT_DATA, so http_parser will not parse these
+    // sessions; classify directly on the request-line prefix instead.
+    CLASSIFY_TCP("rpc-over-http", 0, "RPC_IN_DATA ",  misc_add_protocol_classify);
+    CLASSIFY_TCP("rpc-over-http", 0, "RPC_OUT_DATA ", misc_add_protocol_classify);
+
+    // WS-Management / WinRM (PowerShell Remoting, evil-winrm, winrs, WEF)
+    arkime_parsers_register_sub("http", "/wsman", arkime_parsers_add_protocol_cb, "winrm");
+
     SIMPLE_CLASSIFY_TCP("hbase", "HBas\x00");
 
     SIMPLE_CLASSIFY_TCP("hadoop", "hrpc\x09");

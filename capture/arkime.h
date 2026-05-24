@@ -1254,6 +1254,7 @@ typedef int (* ArkimeParserLoadFunc) (const char *path);
 void arkime_parsers_register_load_extension(const char *extension, ArkimeParserLoadFunc loadFunc);
 
 void arkime_parsers_register_sub(const char *parserName, const char *hexKey, ArkimeParserFunc func, void *uw);
+int  arkime_parsers_add_protocol_cb(ArkimeSession_t *session, void *uw, const uint8_t *data, int remaining, int which);
 GHashTable *arkime_parsers_get_sub(const char *parserName);
 
 ArkimeParserBuf_t *arkime_parser_buf_create();

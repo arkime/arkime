@@ -29,7 +29,6 @@ void reader_tpacketv3_init(const char *UNUSED(name))
 #include <linux/if_packet.h>
 #include <linux/filter.h>
 #include <net/if.h>
-#include <netinet/in.h>
 #include <sys/mman.h>
 #include <errno.h>
 #include <poll.h>
