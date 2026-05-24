@@ -5,7 +5,6 @@
  * Basic FTP parser - extracts user, password, commands, filenames, response codes, banner
  */
 #include "arkime.h"
-#include <ctype.h>
 
 extern ArkimeConfig_t   config;
 

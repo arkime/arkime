@@ -4,7 +4,6 @@
  * sent via SASL AUTH NTLM (RFC 1734 / RFC 5034).
  */
 #include "arkime.h"
-#include <ctype.h>
 
 extern ArkimeConfig_t   config;
 extern int              userField;

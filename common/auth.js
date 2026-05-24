@@ -1132,7 +1132,12 @@ class Auth {
   static auth2objNext (auth, secret) {
     secret ??= Auth.#serverSecret;
     try {
-      const { iv, salt, data, tag } = JSON.parse(auth);
+      const parsed = JSON.parse(auth);
+      if (parsed === null || typeof parsed !== 'object' || Array.isArray(parsed) ||
+          ArkimeUtil.isPP(Object.keys(parsed))) {
+        throw new Error('Malformed auth token');
+      }
+      const { iv, salt, data, tag } = parsed;
 
       // Validate strict shapes BEFORE expensive PBKDF2 (DoS protection)
       const isHex = /^[0-9a-fA-F]+$/;
