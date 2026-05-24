@@ -44,6 +44,9 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #3998 Identify AD CS web enrollment over HTTP (ESC8) as protocols adcs-web/adcs-ndes/adcs-cep/adcs-ces based on URL path
   - #3998 Identify RPC-over-HTTP (Outlook Anywhere / RPC Proxy) as protocol rpc-over-http via RPC_IN_DATA/RPC_OUT_DATA verb classifiers
   - #3998 Identify WinRM / WS-Management (PowerShell Remoting, evil-winrm, WEF) as protocol winrm via POST /wsman
+  - #3999 Add DCERPC labels (even, mapi, iwbemlevel1login, msrp, dnsserver) and fix IRemUnknown/IRemUnknown2/ISystemActivator/ioxidresolver mislabels
+## Cont3xt
+  - #3999 Fix logoutUrl when logoutUrlMethod=GET
 ## Viewer
   - #3994 Fix SPIView all not allowed error message
 
