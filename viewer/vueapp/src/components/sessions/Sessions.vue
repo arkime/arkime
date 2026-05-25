@@ -618,22 +618,23 @@ SPDX-License-Identifier: Apache-2.0
                 :id="`session${session.id}`">
                 <!-- toggle button and ip protocol -->
                 <td class="ignore-element">
-                  <toggle-btn
-                    class="mt-1 me-1"
-                    :opened="session.expanded"
-                    @toggle="toggleSessionDetail(session)" />
-                  <span v-if="session.ipProtocol === 0">
-                    not-ip
-                  </span>
-                  <arkime-session-field
-                    v-else
-                    :field="{dbField:'ipProtocol', exp:'ip.protocol', type:'lotermfield', group:'general', transform:'ipProtocolLookup'}"
-                    :session="session"
-                    :expr="'ip.protocol'"
-                    :value="session.ipProtocol"
-                    :pull-left="true"
-                    :parse="true" />
-                &nbsp;
+                  <div class="d-flex align-center">
+                    <toggle-btn
+                      class="me-1"
+                      :opened="session.expanded"
+                      @toggle="toggleSessionDetail(session)" />
+                    <span v-if="session.ipProtocol === 0">
+                      not-ip
+                    </span>
+                    <arkime-session-field
+                      v-else
+                      :field="{dbField:'ipProtocol', exp:'ip.protocol', type:'lotermfield', group:'general', transform:'ipProtocolLookup'}"
+                      :session="session"
+                      :expr="'ip.protocol'"
+                      :value="session.ipProtocol"
+                      :pull-left="true"
+                      :parse="true" />
+                  </div>
                 </td> <!-- /toggle button and ip protocol -->
                 <!-- field values -->
                 <td

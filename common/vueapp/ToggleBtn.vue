@@ -13,7 +13,7 @@ SPDX-License-Identifier: Apache-2.0
     class="toggle-btn"
     title="toggle"
     @click="toggle">
-    <span class="mdi mdi-close" />
+    <v-icon icon="mdi-close" />
   </v-btn>
 </template>
 
@@ -38,11 +38,11 @@ export default {
 <style>
 /* Spin the close icon 45° when collapsed so the same glyph reads as
    a `+` (collapsed) or `×` (opened). */
-.toggle-btn .mdi {
+.toggle-btn .v-icon {
   transform-origin: 50% 50%;
-  transition: all 750ms;
+  transition: transform 750ms;
 }
-.toggle-btn.toggle-btn-collapsed > .v-btn__content > .mdi {
+.toggle-btn.toggle-btn-collapsed > .v-btn__content > .v-icon {
   transform: rotate(-45deg);
 }
 </style>

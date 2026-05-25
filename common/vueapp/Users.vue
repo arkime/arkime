@@ -65,8 +65,6 @@ SPDX-License-Identifier: Apache-2.0
         :headers="tableHeaders"
         :items-per-page="-1"
         hide-default-footer
-        sort-asc-icon="mdi-sort-ascending"
-        sort-desc-icon="mdi-sort-descending"
         v-model:sort-by="sortBy"
         @update:sort-by="sortChanged"
         class="users-table-striped">
