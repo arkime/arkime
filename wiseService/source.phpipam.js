@@ -485,11 +485,11 @@ exports.initSource = function (api) {
     fields: [
       { name: 'url', required: true, help: 'phpIPAM base URL, e.g. https://ipam.example.com' },
       { name: 'appId', required: true, help: 'phpIPAM Application ID' },
-      { name: 'appCode', required: true, help: 'phpIPAM Application Security Code (used as static token for App Code auth)' },
+      { name: 'appCode', required: true, password: true, help: 'phpIPAM Application Security Code (used as static token for App Code auth)' },
       { name: 'verifyTLS', required: false, help: 'Set false to disable TLS certificate verification (for self-signed/internal certs). Default true.' },
       { name: 'useSessionAuth', required: false, help: 'Set true to use user-token auth (POST /user/ to get session token). Default false.' },
       { name: 'username', required: false, help: 'Username for useSessionAuth=true. Defaults to appId.' },
-      { name: 'password', required: false, help: 'Password for useSessionAuth=true. Defaults to appCode.' },
+      { name: 'password', required: false, password: true, help: 'Password for useSessionAuth=true. Defaults to appCode.' },
       { name: 'preloadAddresses', required: false, help: 'Bulk-load all registered addresses per subnet at startup/reload (default true). Set false to do live per-IP lookups instead.' },
       { name: 'addrConcurrency', required: false, help: 'Max parallel subnet address-fetch requests during preload. Default 10.' },
       { name: 'reload', required: false, help: 'Minutes between full cache refresh. Default 60.' },

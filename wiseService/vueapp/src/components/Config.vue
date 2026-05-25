@@ -52,7 +52,9 @@ SPDX-License-Identifier: Apache-2.0
           </li>
         </ul>
 
-        <span class="px-1 no-wrap">
+        <span
+          class="px-1 no-wrap"
+          v-if="isWiseAdmin">
           <hr>
           <b-button
             block
@@ -95,6 +97,7 @@ SPDX-License-Identifier: Apache-2.0
               {{ $t('wise.config.resetFile') }}
             </b-button>
             <b-button
+              v-if="isWiseAdmin"
               variant="primary"
               :disabled="fileSaveDisabled"
               @click="saveSourceFile">
@@ -102,7 +105,7 @@ SPDX-License-Identifier: Apache-2.0
             </b-button>
           </form>
           <form
-            v-else-if="configViewSelected === 'config'"
+            v-else-if="configViewSelected === 'config' && isWiseAdmin"
             class="form-inline pull-right ms-5">
             <div class="input-group">
               <input
@@ -391,6 +394,7 @@ SPDX-License-Identifier: Apache-2.0
               {{ $t('wise.config.resetFile') }}
             </b-button>
             <b-button
+              v-if="isWiseAdmin"
               variant="primary"
               :disabled="fileSaveDisabled"
               @click="saveSourceFile">
@@ -620,6 +624,7 @@ export default {
     this.loadConfigDefs();
     this.loadCurrConfig();
     this.loadSourceData();
+    this.loadCurrentUser();
   },
   data: function () {
     return {
@@ -650,6 +655,7 @@ export default {
       displayAdvancedFields: {},
       rawValueActions: false,
       currValueActionsFile: [],
+      isWiseAdmin: false,
       valueActionsFields: [
         { name: 'key', required: true, class: 'col-md-6', help: 'The unique ID of the value action' },
         { name: 'name', required: true, depends: 'key', class: 'col-md-6', help: 'The name of the value action to show the user' },
@@ -742,6 +748,13 @@ export default {
     }
   },
   methods: {
+    loadCurrentUser: function () {
+      WiseService.getCurrentUser().then((user) => {
+        this.isWiseAdmin = user && Array.isArray(user.roles) && user.roles.includes('wiseAdmin');
+      }).catch(() => {
+        this.isWiseAdmin = false;
+      });
+    },
     selectSource: function (sourceKey) {
       this.selectedSourceKey = sourceKey;
       this.$router.push({
