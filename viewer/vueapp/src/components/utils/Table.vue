@@ -14,7 +14,7 @@ SPDX-License-Identifier: Apache-2.0
       <v-btn
         v-if="showFitButton"
         variant="flat"
-        size="x-small"
+        size="small"
         density="comfortable"
         icon
         :style="quaternaryBtnStyle"
@@ -138,16 +138,9 @@ SPDX-License-Identifier: Apache-2.0
               </v-tooltip>
             </v-btn>
           </span>
-          <span v-if="column.sort">
+          <span v-if="column.sort && tableSortField === column.sort">
             <v-icon
-              icon="mdi-sort-ascending"
-              v-show="tableSortField === column.sort && !tableDesc" />
-            <v-icon
-              icon="mdi-sort-descending"
-              v-show="tableSortField === column.sort && tableDesc" />
-            <v-icon
-              icon="mdi-unfold-more-horizontal"
-              v-show="tableSortField !== column.sort" />
+              :icon="tableDesc ? 'mdi-chevron-down' : 'mdi-chevron-up'" />
           </span>
         </th>
       </tr>
@@ -743,6 +736,10 @@ export default {
             this.computedColumns.splice(newIdx, 0, element);
 
             this.saveTableState();
+            // Grip handlers capture colIndex in a closure at attach time,
+            // so they go stale after a reorder. Rebuild them against the
+            // new column order.
+            this.initializeColResizable();
           }
         });
       });
@@ -754,15 +751,16 @@ export default {
           cols: document.getElementsByClassName('col-header'),
           table: this.$refs.table,
           minWidth: MIN_COL_WIDTH,
-          onCommit: ({ cols, newTableWidth }) => {
-            // capture each column's actual rendered width into state
-            for (let i = 0; i < cols.length; i++) {
-              const w = cols[i].offsetWidth || parseInt(cols[i].style.width, 10) || 0;
-              const header = this.computedColumns[i];
-              if (header) {
-                header.width = w;
-                this.columnWidths[header.id] = w;
-              }
+          onCommit: ({ colIndex, newWidth, newTableWidth }) => {
+            // Only update the dragged column. Reading offsetWidth from every
+            // column would clobber state with whatever widths the browser
+            // happened to render (table-layout:auto redistributes width based
+            // on content), so e.g. dragging the name|locked grip could end up
+            // growing the num column.
+            const header = this.computedColumns[colIndex];
+            if (header) {
+              header.width = newWidth;
+              this.columnWidths[header.id] = newWidth;
             }
             this.saveColumnWidths();
             this.tableWidth = newTableWidth;

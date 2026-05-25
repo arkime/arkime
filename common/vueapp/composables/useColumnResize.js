@@ -24,7 +24,8 @@ export function useColumnResize ({
 } = {}) {
   let col;
   let grip;
-  let startW;
+  let startW;       // requested width (style.width) — basis for commit math
+  let visualStartW; // rendered width (offsetWidth) — basis for guide position
   let startX;
   let commit;
 
@@ -48,7 +49,9 @@ export function useColumnResize ({
 
   function onPointerMove (e) {
     if (!col) return;
-    applyGuide(clamp(startW + (e.clientX - startX)));
+    // Guide tracks the cursor (offsetWidth-based) so it doesn't drift
+    // when style.width and offsetWidth disagree under table-layout:auto.
+    applyGuide(clamp(visualStartW + (e.clientX - startX)));
   }
 
   function onPointerEnd (e) {
@@ -56,6 +59,7 @@ export function useColumnResize ({
       detach();
       return;
     }
+    // Commit math uses startW (style.width) so a 50px drag = 50px column growth.
     const w = clamp(startW + (e.clientX - startX));
     const cb = commit;
     const delta = w - startW;
@@ -78,10 +82,10 @@ export function useColumnResize ({
     e.stopPropagation();
     col = columnEl;
     grip = gripEl;
-    // NaN-safe start width: offsetWidth is always numeric; only fall back if 0.
-    startW = columnEl.offsetWidth ||
-             parseInt(columnEl.style.width, 10) ||
+    startW = parseInt(columnEl.style.width, 10) ||
+             columnEl.offsetWidth ||
              minWidth;
+    visualStartW = columnEl.offsetWidth || startW;
     startX = e.clientX;
     commit = onCommit;
     document.addEventListener('pointermove', onPointerMove);
@@ -120,7 +124,13 @@ export function attachTableGrips ({
     const colIndex = i;
     const handler = (e) => {
       const tableWidthBefore = parseInt(table.style.width, 10) || table.offsetWidth || 0;
-      const colWidthBefore = colEl.offsetWidth;
+      // Use the column's *requested* width (style.width) rather than
+      // offsetWidth so the table-width delta matches the column-width
+      // delta exactly. With table-layout:auto the browser may render
+      // a column wider/narrower than requested; treating offsetWidth
+      // as the baseline causes a mismatch that other columns absorb.
+      const colWidthBefore = parseInt(colEl.style.width, 10) ||
+                             colEl.offsetWidth || 0;
       resizer.startResize(e, colEl, grip, (newWidth) => {
         colEl.style.width = `${newWidth}px`;
         const delta = newWidth - colWidthBefore;
