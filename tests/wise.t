@@ -1,5 +1,5 @@
 # WISE tests
-use Test::More tests => 153;
+use Test::More tests => 160;
 use ArkimeTest;
 use Cwd;
 use URI::Escape;
@@ -388,6 +388,11 @@ $wise = $ArkimeTest::userAgent->put("http://$ArkimeTest::host:8081/source/file:i
 is ($wise->code, 401);
 is ($wise->content, 'Unauthorized');
 
+# /api/user requires auth
+$wise = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8081/api/user");
+is ($wise->code, 401, "/api/user unauthenticated returns 401");
+is ($wise->content, 'Unauthorized');
+
 ##### wiseUser
 $ArkimeTest::userAgent->credentials( "$ArkimeTest::host:8081", 'Moloch', 'wiseUser', 'wiseUser' );
 
@@ -396,6 +401,12 @@ $wise = from_json($ArkimeTest::userAgent->get("http://$ArkimeTest::host:8081/con
 ok ($wise->{success});
 ok (exists $wise->{config});
 my $config = $wise->{config};
+
+# /api/user as wiseUser - should succeed and not include wiseAdmin role
+$wise = from_json($ArkimeTest::userAgent->get("http://$ArkimeTest::host:8081/api/user")->content);
+is ($wise->{userId}, 'wiseUser', "/api/user wiseUser userId");
+ok (grep { $_ eq 'wiseUser' } @{$wise->{roles}}, "/api/user wiseUser has wiseUser role");
+ok (!(grep { $_ eq 'wiseAdmin' } @{$wise->{roles}}), "/api/user wiseUser does not have wiseAdmin role");
 
 # save config - wiseUser
 $wise = $ArkimeTest::userAgent->put("http://$ArkimeTest::host:8081/config/save", Content => to_json({configCode => "thecode"}), "Content-Type" => "application/json;charset=UTF-8")->content;
@@ -411,6 +422,11 @@ is($wise->{app}, "wiseService", "wise appversion app field");
 
 ##### wiseAdmin
 $ArkimeTest::userAgent->credentials( "$ArkimeTest::host:8081", 'Moloch', 'wiseAdmin', 'wiseAdmin' );
+
+# /api/user as wiseAdmin - should include wiseAdmin role
+$wise = from_json($ArkimeTest::userAgent->get("http://$ArkimeTest::host:8081/api/user")->content);
+is ($wise->{userId}, 'wiseAdmin', "/api/user wiseAdmin userId");
+ok (grep { $_ eq 'wiseAdmin' } @{$wise->{roles}}, "/api/user wiseAdmin has wiseAdmin role");
 
 # save config - wiseAdmin
 $wise = $ArkimeTest::userAgent->put("http://$ArkimeTest::host:8081/config/save", Content => to_json({configCode => "thecode"}), "Content-Type" => "application/json;charset=UTF-8")->content;

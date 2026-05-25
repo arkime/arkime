@@ -5,7 +5,6 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 #include <string.h>
-#include <ctype.h>
 #include "arkimeconfig.h"
 #include "arkime.h"
 

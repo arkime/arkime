@@ -10,7 +10,6 @@
 #include <fcntl.h>
 #include "gmodule.h"
 #include "magic.h"
-#include "bsb.h"
 
 //#define DEBUG_PARSERS 1
 
@@ -1803,6 +1802,14 @@ void arkime_parsers_register_sub(const char *parserName, const char *hexKey, Ark
     info->parserFunc = func;
     info->uw = uw;
     g_hash_table_insert(parserTable, g_strdup(hexKey), info);
+}
+/******************************************************************************/
+// Generic sub-parser callback: tags the session with `uw` as a protocol string.
+// Useful for register_sub callers that only need to label the session.
+int arkime_parsers_add_protocol_cb(ArkimeSession_t *session, void *uw, const uint8_t *UNUSED(data), int UNUSED(remaining), int UNUSED(which))
+{
+    arkime_session_add_protocol(session, (const char *)uw);
+    return 0;
 }
 /******************************************************************************/
 GHashTable *arkime_parsers_get_sub(const char *parserName)

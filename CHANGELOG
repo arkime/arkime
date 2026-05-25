@@ -35,7 +35,25 @@ NOTICE: Restart wiseService before capture when upgrading
 NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at once after upgrading
 NOTICE: Create a parliament config file before upgrading (see https://arkime.com/settings#parliament and https://arkime.com/faq#how_do_i_upgrade_to_arkime_5)
 
-6.3.2 2026/05/xx
+6.4.1 2026/06/xx
+## Capture
+  - #3996 Added mssing ntlm.detail.jade for NTLM session detail rendering
+  - #3996 Added opcua parser (OPC UA Binary) with opcua.endpointUrl, opcua.securityPolicyUri and SenderCertificate parsing
+  - #3997 Added IPFIX and sFlow v5 classifiers for flow telemetry visibility
+  - #3997 Added DCERPC interface labels for AD CS (MS-WCCE/ICPR), PrintNightmare (MS-RPRN/MS-PAR), DfsCoerce, ShadowCoerce, WMI, BackupKey (BKRP), EventLog6, DFS-R (FRS2), and IObjectExporter
+  - #3998 Identify AD CS web enrollment over HTTP (ESC8) as protocols adcs-web/adcs-ndes/adcs-cep/adcs-ces based on URL path
+  - #3998 Identify RPC-over-HTTP (Outlook Anywhere / RPC Proxy) as protocol rpc-over-http via RPC_IN_DATA/RPC_OUT_DATA verb classifiers
+  - #3998 Identify WinRM / WS-Management (PowerShell Remoting, evil-winrm, WEF) as protocol winrm via POST /wsman
+  - #3999 Add DCERPC labels (even, mapi, iwbemlevel1login, msrp, dnsserver) and fix IRemUnknown/IRemUnknown2/ISystemActivator/ioxidresolver mislabels
+## Cont3xt
+  - #3999 Fix logoutUrl when logoutUrlMethod=GET
+## Wise
+  - #3999 Mark phpipam appCode/password and fieldactions/valueactions url fields as secret so they are redacted in /config/get
+  - #3999 Add /api/user endpoint and hide save/import/create-source UI controls from non-wiseAdmin users
+## Viewer
+  - #3994 Fix SPIView all not allowed error message
+
+6.4.0 2026/05/20
 ## Breaking
   - #3967 All header* auth modes (header, header-jwt, headerOnly, header+digest, header+basic) now
           default userAuthIps to localhost-only when not explicitly configured

@@ -5,7 +5,6 @@
  * Basic IMAP parser - parses email addresses from FETCH responses
  */
 #include "arkime.h"
-#include <ctype.h>
 
 extern ArkimeConfig_t   config;
 

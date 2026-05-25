@@ -1461,6 +1461,17 @@ if (internals.webconfig) {
 
   // ----------------------------------------------------------------------------
   /**
+   * GET - /api/user
+   *
+   * Fetches the currently logged in user, so the UI can gate admin-only actions.
+   *       This is an authenticated API and requires wiseService to be started with --webconfig.
+   * @name "/api/user"
+   * @returns {ArkimeUser} The currently logged in user.
+   */
+  app.get('/api/user', [ArkimeUtil.noCacheJson, isWiseUser], User.apiGetUser);
+
+  // ----------------------------------------------------------------------------
+  /**
    * GET - Used by wise UI to retrieve the raw file being used by the section.
    *       This is an authenticated API and requires wiseService to be started with --webconfig.
    *
@@ -1622,7 +1633,7 @@ if (internals.webconfig) {
   app.get('/api/appversion', (req, res) => {
     return res.send({ app: 'wiseService', version: version.version });
   });
-  app.get(['/source/:source/get', '/config/get'], (req, res) => {
+  app.get(['/source/:source/get', '/config/get', '/api/user'], (req, res) => {
     return res.send({ success: false, text: 'Must start wiseService with --webconfig option' });
   });
   app.put(['/source/:source/put', '/config/save'], (req, res) => {

@@ -66,7 +66,9 @@ SPDX-License-Identifier: Apache-2.0
           </v-tab>
         </v-tabs>
 
-        <div class="px-2 mt-2">
+        <div
+          v-if="isWiseAdmin"
+          class="px-2 mt-2">
           <v-btn
             block
             color="warning"
@@ -115,6 +117,7 @@ SPDX-License-Identifier: Apache-2.0
               {{ $t('wise.config.resetFile') }}
             </v-btn>
             <v-btn
+              v-if="isWiseAdmin"
               color="primary"
               variant="flat"
               :disabled="fileSaveDisabled"
@@ -123,7 +126,7 @@ SPDX-License-Identifier: Apache-2.0
             </v-btn>
           </div>
           <div
-            v-else-if="configViewSelected === 'config'"
+            v-else-if="configViewSelected === 'config' && isWiseAdmin"
             class="d-flex align-center float-right ms-5 ga-2">
             <v-text-field
               id="config-pin-code-top"
@@ -421,6 +424,7 @@ SPDX-License-Identifier: Apache-2.0
               {{ $t('wise.config.resetFile') }}
             </v-btn>
             <v-btn
+              v-if="isWiseAdmin"
               color="primary"
               variant="flat"
               :disabled="fileSaveDisabled"
@@ -630,6 +634,7 @@ export default {
     this.loadConfigDefs();
     this.loadCurrConfig();
     this.loadSourceData();
+    this.loadCurrentUser();
   },
   data: function () {
     return {
@@ -660,6 +665,7 @@ export default {
       displayAdvancedFields: {},
       rawValueActions: false,
       currValueActionsFile: [],
+      isWiseAdmin: false,
       valueActionsFields: [
         { name: 'key', required: true, class: 'col-md-6', help: 'The unique ID of the value action' },
         { name: 'name', required: true, depends: 'key', class: 'col-md-6', help: 'The name of the value action to show the user' },
@@ -769,6 +775,13 @@ export default {
       if (variant === 'warning') return 'warning';
       if (variant === 'success') return 'success';
       return 'info';
+    },
+    loadCurrentUser: function () {
+      WiseService.getCurrentUser().then((user) => {
+        this.isWiseAdmin = user && Array.isArray(user.roles) && user.roles.includes('wiseAdmin');
+      }).catch(() => {
+        this.isWiseAdmin = false;
+      });
     },
     selectSource: function (sourceKey) {
       this.selectedSourceKey = sourceKey;

@@ -7,7 +7,6 @@
  */
 
 #include "arkime.h"
-#include "dll.h"
 
 /******************************************************************************/
 extern ArkimeConfig_t        config;
