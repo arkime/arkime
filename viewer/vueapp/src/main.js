@@ -62,6 +62,8 @@ async function initializeApp() {
       VCheckbox: { density: 'compact', hideDetails: 'auto' },
       VTooltip: { location: 'top', delay: 50, maxWidth: 400 },
       VBtn: { density: 'compact', variant: 'flat' },
+      VDataTable: { sortAscIcon: 'mdi:mdi-chevron-up', sortDescIcon: 'mdi:mdi-chevron-down' },
+      VDataTableServer: { sortAscIcon: 'mdi:mdi-chevron-up', sortDescIcon: 'mdi:mdi-chevron-down' },
       // tighter gutters everywhere — Vuetify's stock v-row uses 24px
       // gutters which made the settings/PQ/hunt forms read airy compared
       // to non-v-row pages (e.g. Views.vue). `dense` knocks that down to
