@@ -161,10 +161,10 @@ export default {
       return [ // es indices table columns
         // default columns
         intl({ id: 'index', classes: 'text-start', sort: 'index', doStats: false, default: true, width: 200 }),
-        intl({ id: 'docs.count', sort: 'docs.count', doStats: true, default: true, width: 105, dataFunction: (item) => { return roundCommaString(item['docs.count']); } }),
-        intl({ id: 'store.size', sort: 'store.size', doStats: true, default: true, width: 100, dataFunction: (item) => { return humanReadableBytes(item['store.size']); } }),
+        intl({ id: 'docs.count', sort: 'docs.count', doStats: true, default: true, width: 120, dataFunction: (item) => { return roundCommaString(item['docs.count']); } }),
+        intl({ id: 'store.size', sort: 'store.size', doStats: true, default: true, width: 110, dataFunction: (item) => { return humanReadableBytes(item['store.size']); } }),
         intl({ id: 'pri', sort: 'pri', doStats: true, default: true, width: 100, dataFunction: (item) => { return roundCommaString(item.pri); } }),
-        intl({ id: 'segmentsCount', sort: 'segmentsCount', doStats: true, default: true, width: 100, dataFunction: (item) => { return roundCommaString(item.segmentsCount); } }),
+        intl({ id: 'segmentsCount', sort: 'segmentsCount', doStats: true, default: true, width: 110, dataFunction: (item) => { return roundCommaString(item.segmentsCount); } }),
         intl({ id: 'rep', sort: 'rep', doStats: true, default: true, width: 100, dataFunction: (item) => { return roundCommaString(item.rep); } }),
         intl({ id: 'memoryTotal', sort: 'memoryTotal', doStats: true, default: true, width: 100, dataFunction: (item) => { return humanReadableBytes(item.memoryTotal); } }),
         intl({ id: 'health', sort: 'health', doStats: false, default: true, width: 100 }),

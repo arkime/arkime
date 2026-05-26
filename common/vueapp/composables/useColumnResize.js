@@ -112,6 +112,7 @@ export function attachTableGrips ({
   guideSide = 'left',
   gripClassName = 'grip',
   onCommit,
+  onResetAll,
   shouldUpdateTable
 }) {
   const resizer = useColumnResize({ minWidth, guideSide });
@@ -123,6 +124,15 @@ export function attachTableGrips ({
     if (!grip) continue;
     const colIndex = i;
     const handler = (e) => {
+      // Ctrl+Shift+click on any grip resets all column widths to defaults.
+      // Useful for testing the in-code defaults without clearing user state
+      // through the menu.
+      if (onResetAll && e.ctrlKey && e.shiftKey) {
+        e.preventDefault();
+        e.stopPropagation();
+        onResetAll();
+        return;
+      }
       const tableWidthBefore = parseInt(table.style.width, 10) || table.offsetWidth || 0;
       // Use the column's *requested* width (style.width) rather than
       // offsetWidth so the table-width delta matches the column-width

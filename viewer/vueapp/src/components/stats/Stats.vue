@@ -963,6 +963,13 @@ export default {
 .stats-tabs .stats-tab-content {
   padding-top: 50px;
 }
+
+/* shrink the column header font on stats tables one notch so that the
+   long headers (Sessions/s, Packet Q, Free Space, etc.) fit without
+   needing per-column width tweaks */
+.stats-content .arkime-table > thead > tr > th {
+  font-size: 0.875rem;
+}
 </style>
 
 <style scoped>

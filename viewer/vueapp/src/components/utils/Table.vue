@@ -751,6 +751,11 @@ export default {
           cols: document.getElementsByClassName('col-header'),
           table: this.$refs.table,
           minWidth: MIN_COL_WIDTH,
+          onResetAll: () => {
+            // Ctrl+Shift+click any grip → reset column widths/order to the
+            // in-code defaults (handy for testing layout defaults).
+            this.resetDefault();
+          },
           onCommit: ({ colIndex, newWidth, newTableWidth }) => {
             // Only update the dragged column. Reading offsetWidth from every
             // column would clobber state with whatever widths the browser
