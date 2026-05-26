@@ -166,13 +166,10 @@ SPDX-License-Identifier: Apache-2.0
             @click="sortBy('cluster')">
             {{ $t('common.cluster') }}
             <v-icon
-              icon="mdi-unfold-more-horizontal"
-              v-if="query.sort !== 'cluster'" />
-            <v-icon
-              icon="mdi-sort-ascending"
+              icon="mdi-chevron-up"
               v-if="query.sort === 'cluster' && query.order === 'asc'" />
             <v-icon
-              icon="mdi-sort-descending"
+              icon="mdi-chevron-down"
               v-if="query.sort === 'cluster' && query.order === 'desc'" />
           </th>
           <th
@@ -181,13 +178,10 @@ SPDX-License-Identifier: Apache-2.0
             @click="sortBy('title')">
             {{ $t('parliament.issue.table-issue') }}
             <v-icon
-              icon="mdi-unfold-more-horizontal"
-              v-if="query.sort !== 'title'" />
-            <v-icon
-              icon="mdi-sort-ascending"
+              icon="mdi-chevron-up"
               v-if="query.sort === 'title' && query.order === 'asc'" />
             <v-icon
-              icon="mdi-sort-descending"
+              icon="mdi-chevron-down"
               v-if="query.sort === 'title' && query.order === 'desc'" />
           </th>
           <th
@@ -196,13 +190,10 @@ SPDX-License-Identifier: Apache-2.0
             @click="sortBy('firstNoticed')">
             {{ $t('parliament.issue.table-firstNoticed') }}
             <v-icon
-              icon="mdi-unfold-more-horizontal"
-              v-if="query.sort !== 'firstNoticed'" />
-            <v-icon
-              icon="mdi-sort-ascending"
+              icon="mdi-chevron-up"
               v-if="query.sort === 'firstNoticed' && query.order === 'asc'" />
             <v-icon
-              icon="mdi-sort-descending"
+              icon="mdi-chevron-down"
               v-if="query.sort === 'firstNoticed' && query.order === 'desc'" />
           </th>
           <th
@@ -211,13 +202,10 @@ SPDX-License-Identifier: Apache-2.0
             @click="sortBy('lastNoticed')">
             {{ $t('parliament.issue.table-lastNoticed') }}
             <v-icon
-              icon="mdi-unfold-more-horizontal"
-              v-if="query.sort !== 'lastNoticed'" />
-            <v-icon
-              icon="mdi-sort-ascending"
+              icon="mdi-chevron-up"
               v-if="query.sort === 'lastNoticed' && query.order === 'asc'" />
             <v-icon
-              icon="mdi-sort-descending"
+              icon="mdi-chevron-down"
               v-if="query.sort === 'lastNoticed' && query.order === 'desc'" />
           </th>
           <th scope="col">
@@ -229,13 +217,10 @@ SPDX-License-Identifier: Apache-2.0
             @click="sortBy('node')">
             {{ $t('parliament.issue.table-node') }}
             <v-icon
-              icon="mdi-unfold-more-horizontal"
-              v-if="query.sort !== 'node'" />
-            <v-icon
-              icon="mdi-sort-ascending"
+              icon="mdi-chevron-up"
               v-if="query.sort === 'node' && query.order === 'asc'" />
             <v-icon
-              icon="mdi-sort-descending"
+              icon="mdi-chevron-down"
               v-if="query.sort === 'node' && query.order === 'desc'" />
           </th>
           <th
@@ -244,13 +229,10 @@ SPDX-License-Identifier: Apache-2.0
             @click="sortBy('ignoreUntil')">
             {{ $t('parliament.issue.table-ignoreUntil') }}
             <v-icon
-              icon="mdi-unfold-more-horizontal"
-              v-if="query.sort !== 'ignoreUntil'" />
-            <v-icon
-              icon="mdi-sort-ascending"
+              icon="mdi-chevron-up"
               v-if="query.sort === 'ignoreUntil' && query.order === 'asc'" />
             <v-icon
-              icon="mdi-sort-descending"
+              icon="mdi-chevron-down"
               v-if="query.sort === 'ignoreUntil' && query.order === 'desc'" />
           </th>
           <th
@@ -259,13 +241,10 @@ SPDX-License-Identifier: Apache-2.0
             @click="sortBy('acknowledged')">
             {{ $t('parliament.issue.table-ackedAt') }}
             <v-icon
-              icon="mdi-unfold-more-horizontal"
-              v-if="query.sort !== 'acknowledged'" />
-            <v-icon
-              icon="mdi-sort-ascending"
+              icon="mdi-chevron-up"
               v-if="query.sort === 'acknowledged' && query.order === 'asc'" />
             <v-icon
-              icon="mdi-sort-descending"
+              icon="mdi-chevron-down"
               v-if="query.sort === 'acknowledged' && query.order === 'desc'" />
           </th>
           <th

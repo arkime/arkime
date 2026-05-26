@@ -90,14 +90,11 @@ SPDX-License-Identifier: Apache-2.0
                   {{ column.name }}
                   <span v-if="column.sort !== undefined">
                     <v-icon
-                      icon="mdi-sort-ascending"
+                      icon="mdi-chevron-up"
                       v-show="query.sortField === column.sort && !query.desc" />
                     <v-icon
-                      icon="mdi-sort-descending"
+                      icon="mdi-chevron-down"
                       v-show="query.sortField === column.sort && query.desc" />
-                    <v-icon
-                      icon="mdi-unfold-more-horizontal"
-                      v-show="query.sortField !== column.sort" />
                   </span>
                 </div>
               </div>

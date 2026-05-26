@@ -583,16 +583,11 @@ SPDX-License-Identifier: Apache-2.0
                     class="cursor-pointer">
                     <div class="header-sort">
                       <v-icon
-                        icon="mdi-unfold-more-horizontal"
-                        size="x-small"
-                        class="text-muted-more"
-                        v-if="isSorted(header.sortBy || header.dbField) < 0" />
-                      <v-icon
-                        icon="mdi-sort-ascending"
+                        icon="mdi-chevron-up"
                         size="x-small"
                         v-if="isSorted(header.sortBy || header.dbField) >= 0 && getSortOrder(header.sortBy || header.dbField) === 'asc'" />
                       <v-icon
-                        icon="mdi-sort-descending"
+                        icon="mdi-chevron-down"
                         size="x-small"
                         v-if="isSorted(header.sortBy || header.dbField) >= 0 && getSortOrder(header.sortBy || header.dbField) === 'desc'" />
                     </div>

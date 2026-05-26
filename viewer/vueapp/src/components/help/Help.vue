@@ -1100,7 +1100,7 @@ SPDX-License-Identifier: Apache-2.0
         Filter history by a time range by utilizing the time controls under the search bar.
       </div>
       <div class="ms-4">
-        <v-icon icon="mdi-unfold-more-horizontal" />&nbsp;
+        <v-icon icon="mdi-sort" />&nbsp;
         Sort history by clicking any column header.
       </div>
       <div class="ms-4">
@@ -1393,28 +1393,22 @@ SPDX-License-Identifier: Apache-2.0
               @click="sortFields('friendlyName')">
               Name
               <v-icon
-                icon="mdi-sort-ascending"
+                icon="mdi-chevron-up"
                 v-show="fieldQuery.sortField === 'friendlyName' && !fieldQuery.desc" />
               <v-icon
-                icon="mdi-sort-descending"
+                icon="mdi-chevron-down"
                 v-show="fieldQuery.sortField === 'friendlyName' && fieldQuery.desc" />
-              <v-icon
-                icon="mdi-unfold-more-horizontal"
-                v-show="fieldQuery.sortField !== 'friendlyName'" />
             </th>
             <th
               class="cursor-pointer"
               @click="sortFields('exp')">
               Field
               <v-icon
-                icon="mdi-sort-ascending"
+                icon="mdi-chevron-up"
                 v-show="fieldQuery.sortField === 'exp' && !fieldQuery.desc" />
               <v-icon
-                icon="mdi-sort-descending"
+                icon="mdi-chevron-down"
                 v-show="fieldQuery.sortField === 'exp' && fieldQuery.desc" />
-              <v-icon
-                icon="mdi-unfold-more-horizontal"
-                v-show="fieldQuery.sortField !== 'exp'" />
             </th>
             <th
               v-if="showDBFields"
@@ -1422,14 +1416,11 @@ SPDX-License-Identifier: Apache-2.0
               @click="sortFields('dbField')">
               Database Field
               <v-icon
-                icon="mdi-sort-ascending"
+                icon="mdi-chevron-up"
                 v-show="fieldQuery.sortField === 'dbField' && !fieldQuery.desc" />
               <v-icon
-                icon="mdi-sort-descending"
+                icon="mdi-chevron-down"
                 v-show="fieldQuery.sortField === 'dbField' && fieldQuery.desc" />
-              <v-icon
-                icon="mdi-unfold-more-horizontal"
-                v-show="fieldQuery.sortField !== 'dbField'" />
             </th>
             <th>
               Operators

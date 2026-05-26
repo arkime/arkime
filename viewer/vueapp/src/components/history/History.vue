@@ -160,19 +160,17 @@ SPDX-License-Identifier: Apache-2.0
             <div
               class="header-div break-word"
               :id="`column-${column.name}`"
-              @click="columnClick(column.sort)">
-              <span v-if="column.sort !== undefined">
+              :class="{ 'cursor-pointer': !column.nosort }"
+              @click="!column.nosort && columnClick(column.sort)">
+              {{ column.name }}
+              <span v-if="column.sort !== undefined && !column.nosort">
                 <v-icon
-                  icon="mdi-sort-ascending"
+                  icon="mdi-chevron-up"
                   v-show="sortField === column.sort && !desc" />
                 <v-icon
-                  icon="mdi-sort-descending"
+                  icon="mdi-chevron-down"
                   v-show="sortField === column.sort && desc" />
-                <v-icon
-                  icon="mdi-unfold-more-horizontal"
-                  v-show="sortField !== column.sort" />
               </span>
-              {{ column.name }}
               <v-tooltip
                 location="bottom"
                 :activator="`[id='column-${column.name}']`">
@@ -497,7 +495,7 @@ export default {
         intl({ sort: 'method', width: 8 }),
         intl({ sort: 'api', width: 15, filter: true }),
         intl({ sort: 'expression', width: 20, exists: false }),
-        intl({ sort: 'view.name', width: 15, exists: false })
+        intl({ sort: 'view.name', width: 15, exists: false, nosort: true })
       ];
     },
     query: function () {

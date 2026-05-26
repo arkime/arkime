@@ -103,17 +103,13 @@ SPDX-License-Identifier: Apache-2.0
                 @click="columnClick(index, 'name')">
                 {{ $t('spigraph.tableValue') }}
                 <v-icon
-                  icon="mdi-sort-ascending"
+                  icon="mdi-chevron-up"
                   class="ms-2"
                   v-show="tableSortField === index && tableSortType === 'name' && !tableDesc" />
                 <v-icon
-                  icon="mdi-sort-descending"
+                  icon="mdi-chevron-down"
                   class="ms-2"
                   v-show="tableSortField === index && tableSortType === 'name' && tableDesc" />
-                <v-icon
-                  icon="mdi-unfold-more-horizontal"
-                  class="ms-2"
-                  v-show="tableSortField !== index || tableSortType !== 'name'" />
               </th>
               <th
                 class="cursor-pointer"
@@ -122,17 +118,13 @@ SPDX-License-Identifier: Apache-2.0
                 v-if="item && !item.hide">
                 {{ $t('spigraph.tableCount') }}
                 <v-icon
-                  icon="mdi-sort-ascending"
+                  icon="mdi-chevron-up"
                   class="ms-2"
                   v-show="tableSortField === index && tableSortType === 'size' && !tableDesc" />
                 <v-icon
-                  icon="mdi-sort-descending"
+                  icon="mdi-chevron-down"
                   class="ms-2"
                   v-show="tableSortField === index && tableSortType === 'size' && tableDesc" />
-                <v-icon
-                  icon="mdi-unfold-more-horizontal"
-                  class="ms-2"
-                  v-show="tableSortField !== index || tableSortType !== 'size'" />
                 <a
                   @click="hideColumn(item)"
                   class="float-right ms-2"
