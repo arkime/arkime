@@ -928,6 +928,7 @@ export default {
   border: 0 !important;
   color: rgb(var(--v-theme-foreground)) !important;
   opacity: 0.78;
+  transform: translateY(3px);
 }
 .stats-tabs .stats-tab-strip .v-btn:hover {
   background-color: rgb(var(--v-theme-background)) !important;
@@ -943,6 +944,9 @@ export default {
 .stats-tabs .stats-tab-strip .v-btn--active:hover {
   background-color: rgb(var(--v-theme-primary)) !important;
   filter: brightness(1.08);
+}
+.stats-tabs .stats-tab-strip .v-btn .v-btn__content {
+  transform: translateY(-1px);
 }
 .stats-tabs .stats-tab-strip .v-btn .v-icon {
   font-size: 15px;
