@@ -510,7 +510,7 @@ SPDX-License-Identifier: Apache-2.0
                     <template #activator="{ props: activatorProps }">
                       <v-btn
                         v-bind="activatorProps"
-                        variant="text"
+                        variant="tonal"
                         size="small"
                         density="comfortable"
                         icon
@@ -1331,6 +1331,9 @@ export default {
         this.tableState.visibleHeaders.push(id);
       }
 
+      // keep info column pinned as the last visible column
+      this.normalizeInfoColumnLast();
+
       this.mapHeadersToFields();
 
       this.saveTableState();
@@ -1388,6 +1391,9 @@ export default {
         this.tableState.visibleHeaders = this.colConfigs[index].columns.slice();
         this.tableState.order = JSON.parse(JSON.stringify(this.colConfigs[index].order));
       }
+
+      // keep info column pinned as the last visible column
+      this.normalizeInfoColumnLast();
 
       this.sorts = this.tableState.order;
 
@@ -1727,6 +1733,11 @@ export default {
           this.tableState.visibleHeaders.shift();
         }
 
+        // info column auto-fills slack space and has no right-edge resize
+        // grip, so force it to always be the last visible column (it would
+        // otherwise leave a non-resizable seam in the middle of the table)
+        this.normalizeInfoColumnLast();
+
         // update the sort order for the session table query
         this.sorts = this.tableState.order;
 
@@ -1994,7 +2005,12 @@ export default {
         preventOnFilter: false, // allow clicks within the ignored element
         onMove: (e) => { // col header is being dragged
           // don't allow a column to be dropped in the far left column
-          return !e.related.classList.contains('ignore-element');
+          if (e.related.classList.contains('ignore-element')) { return false; }
+          // info is always pinned to the end; don't allow drops onto/past it
+          if (e.related.classList.contains('info-col-header')) { return false; }
+          // don't allow info itself to be dragged off the end
+          if (e.dragged.classList.contains('info-col-header')) { return false; }
+          return true;
         },
         onEnd: (e) => { // dragged col header was dropped
           // nothing has changed, so don't do stuff
@@ -2008,6 +2024,10 @@ export default {
           const element = this.tableState.visibleHeaders[oldIdx];
           this.tableState.visibleHeaders.splice(oldIdx, 1);
           this.tableState.visibleHeaders.splice(newIdx, 0, element);
+
+          // info column has no right-edge resize grip and absorbs slack,
+          // so keep it pinned as the last visible column
+          this.normalizeInfoColumnLast();
 
           this.mapHeadersToFields();
           this.saveTableState();
@@ -2063,6 +2083,18 @@ export default {
     saveColumnWidths: function () {
       UserService.saveState(this.colWidths, 'sessionsColWidths')
         .catch((error) => { this.error = error; });
+    },
+    /* Ensures the info column (if visible) is pinned as the last visible
+     * column. The info column auto-fills slack space and has no right-edge
+     * resize grip, so placing anything to its right leaves a non-resizable
+     * seam in the middle of the table. */
+    normalizeInfoColumnLast: function () {
+      const vh = this.tableState && this.tableState.visibleHeaders;
+      if (!vh || !vh.length) { return; }
+      const idx = vh.indexOf('info');
+      if (idx < 0 || idx === vh.length - 1) { return; }
+      vh.splice(idx, 1);
+      vh.push('info');
     },
     /**
      * Calculates the info column's width based on the width of the window
@@ -2236,6 +2268,25 @@ table.sessions-table thead tr th.sessions-options-cell {
 .arkime-col-header .col-dropdown:not(.info-vis-menu) {
   visibility: hidden;
   margin-left: -25px;
+}
+
+/* solid background on the column header dropdown trigger so the table
+   header text behind it doesn't bleed through the tonal overlay */
+.arkime-col-header .v-btn.col-context-trigger {
+  background-color: rgb(var(--v-theme-background)) !important;
+}
+
+/* the last column's chevron would otherwise float past the right edge of
+   the table (clipped by the viewport with no scrollbar, hidden under the
+   vertical scrollbar gutter when one is present). Pin it absolutely just
+   inside the th's right edge so it's visible in either case. */
+.arkime-col-header:last-child .col-dropdown.col-context-trigger {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translate(-100%, -50%);
+  float: none;
+  margin-left: 0;
 }
 
 /* clear the box shadow above the sticky column headers */
