@@ -66,7 +66,7 @@ include:
   - version: ubuntu2604_amd64
     container: andywick/arkime-build-26:6.0.0-5
     buildopt: "--kafka"
-    fpmdeps: "-d libwww-perl -d libjson-perl -d ethtool -d libyaml-dev -d liblua5.4-0 -d libmaxminddb0 -d libcurl4 -d libpcap0.8 -d libglib2.0-0 -d libnghttp2-14 -d libyara10 -d librdkafka1 -d libpcre3 -d libpython3.13 -d curl"
+    fpmdeps: "-d libwww-perl -d libjson-perl -d ethtool -d libyaml-dev -d liblua5.4-0 -d libmaxminddb0 -d libcurl4 -d libpcap0.8 -d libglib2.0-0 -d libnghttp2-14 -d libyara10 -d librdkafka1 -d libpython3.14 -d curl"
     package: deb
     python: python3
     viewertest: normal
@@ -131,7 +131,7 @@ include:
   - version: ubuntu2604_arm64
     container: andywick/arkime-build-26-arm64:6.0.0-5
     buildopt: "--kafka"
-    fpmdeps: "-d libwww-perl -d libjson-perl -d ethtool -d libyaml-dev -d liblua5.4-0 -d libmaxminddb0 -d libcurl4 -d libpcap0.8 -d libglib2.0-0 -d libnghttp2-14 -d libyara10 -d librdkafka1 -d libpcre3 -d libpython3.12 -d curl"
+    fpmdeps: "-d libwww-perl -d libjson-perl -d ethtool -d libyaml-dev -d liblua5.4-0 -d libmaxminddb0 -d libcurl4 -d libpcap0.8 -d libglib2.0-0 -d libnghttp2-14 -d libyara10 -d librdkafka1 -d libpython3.14 -d curl"
     package: deb
     runson: ubuntu-24.04-arm
 
