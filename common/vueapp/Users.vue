@@ -547,7 +547,7 @@ export default {
         mk('headerAuthEnabled'),
         mk('roles', { sortable: false }),
         mk('lastUsed'),
-        { title: '', key: 'action', sortable: false, width: '280px', align: 'end' }
+        { title: '', key: 'action', sortable: false, width: '230px', align: 'end' }
       ];
     },
     timeLimitOptions () {

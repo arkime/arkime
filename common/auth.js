@@ -813,22 +813,28 @@ class Auth {
 
   // ----------------------------------------------------------------------------
   static #checkIps (req, res) {
-    if (req.ip === undefined) {
+    // userAuthIps restricts which connecting peer (typically the trusted auth
+    // proxy) may send requests. It MUST be checked against the real socket peer
+    // address, not req.ip: when trust proxy is enabled req.ip is derived from the
+    // client-supplied X-Forwarded-For header and is therefore spoofable, which
+    // would let an attacker bypass userAuthIps (e.g. the header-auth loopback default).
+    const ip = req.socket?.remoteAddress;
+    if (ip === undefined) {
       return 0;
     }
 
-    if (req.ip.includes(':')) {
-      if (!Auth.#userAuthIps.find(req.ip)) {
+    if (ip.includes(':')) {
+      if (!Auth.#userAuthIps.find(ip)) {
         res.status(403);
-        res.json({ success: false, text: `Not allowed by ip (${req.ip})` });
-        console.log('Blocked (userAuthIps setting) by ip', req.ip, req.url);
+        res.json({ success: false, text: `Not allowed by ip (${ip})` });
+        console.log('Blocked (userAuthIps setting) by ip', ip, req.url);
         return 1;
       }
     } else {
-      if (!Auth.#userAuthIps.find(`::ffff:${req.ip}`)) {
+      if (!Auth.#userAuthIps.find(`::ffff:${ip}`)) {
         res.status(403);
-        res.json({ success: false, text: `Not allowed by ip (${req.ip})` });
-        console.log('Blocked (userAuthIps setting) by ip', req.ip, req.url);
+        res.json({ success: false, text: `Not allowed by ip (${ip})` });
+        console.log('Blocked (userAuthIps setting) by ip', ip, req.url);
         return 1;
       }
     }
