@@ -53,11 +53,11 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #3999 Add DCERPC labels (even, mapi, iwbemlevel1login, msrp, dnsserver) and fix IRemUnknown/IRemUnknown2/ISystemActivator/ioxidresolver mislabels
 ## Cont3xt
   - #3999 Fix logoutUrl when logoutUrlMethod=GET
+## Viewer
+  - #3994 Fix SPIView all not allowed error message
 ## Wise
   - #3999 Mark phpipam appCode/password and fieldactions/valueactions url fields as secret so they are redacted in /config/get
   - #3999 Add /api/user endpoint and hide save/import/create-source UI controls from non-wiseAdmin users
-## Viewer
-  - #3994 Fix SPIView all not allowed error message
 
 6.4.0 2026/05/20
 ## Breaking
