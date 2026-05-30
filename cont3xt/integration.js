@@ -562,7 +562,11 @@ class Integration {
           checkWriteDone();
         })
         .catch(err => {
-          console.log('failure in %s - itype: %s query: %s error:', integration.section, itype, query, err);
+          if (ArkimeConfig.debug > 0) {
+            console.log('failure in %s - itype: %s query: %s error:', integration.section, itype, query, err);
+          } else {
+            console.log('failure in %s - itype: %s error:', integration.section, itype, err.message ?? err);
+          }
           shared.sent++;
           stats.directError++;
           istats.directError++;

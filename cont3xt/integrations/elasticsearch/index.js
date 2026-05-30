@@ -107,7 +107,11 @@ class ElasticsearchIntegration extends Integration {
     try {
       this.#client = new Client(options);
     } catch (err) {
-      console.log(section, 'ERROR - creating Elasticsearch client for new Elasticsearch integration', err, options);
+      if (ArkimeConfig.debug) {
+        console.log(section, 'ERROR - creating Elasticsearch client for new Elasticsearch integration', err, options);
+      } else {
+        console.log(section, 'ERROR - creating Elasticsearch client for new Elasticsearch integration', err.message);
+      }
       return;
     }
 
