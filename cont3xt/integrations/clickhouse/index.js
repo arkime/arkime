@@ -56,7 +56,11 @@ class ClickHouseIntegration extends Integration {
     try {
       this.#client = createClient({ url: this.#url });
     } catch (err) {
-      console.log(section, 'ERROR - creating ClickHouse client', err, this.#url);
+      if (ArkimeConfig.debug) {
+        console.log(section, 'ERROR - creating ClickHouse client', err, this.#url);
+      } else {
+        console.log(section, 'ERROR - creating ClickHouse client', err.message);
+      }
       return;
     }
 

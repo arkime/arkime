@@ -297,12 +297,18 @@ class MiscAPIs {
       }
     }
 
+    // {ORIGINALNAME} is sanitized to a safe character set so it can be used in
+    // uploadCommand without risking shell injection from the uploaded filename.
+    const safeOriginalName = (req.file.originalname || '').replace(/[^-a-zA-Z0-9._]/g, '');
+
     // security-scanner-ignore: {INSECURE-ORIGINALNAME} is intentionally unsanitized.
     // Operators who use this template variable accept the risk — the variable name serves as the warning.
+    // Prefer the sanitized {ORIGINALNAME} variable instead.
     const cmd = uploadCommand
       .replace(/{TAGS}/g, tags)
       .replace(/{NODE}/g, Config.nodeName())
       .replace(/{TMPFILE}/g, req.file.path)
+      .replace(/{ORIGINALNAME}/g, safeOriginalName)
       .replace(/{INSECURE-ORIGINALNAME}/g, req.file.originalname)
       .replace(/{CONFIG}/g, ArkimeConfig.configFile);
 

@@ -755,10 +755,10 @@ class CronAPIs {
             }
 
             const message = `
-*${cq.name}* periodic query match alert:
+*${ArkimeUtil.safeStr(cq.name)}* periodic query match alert:
 *${newMatchCount} new* matches
 *${doc.doc.count} total* matches
-${Config.arkimeWebURL()}${urlPath}${cq.description ? '\n' + cq.description : ''}
+${Config.arkimeWebURL()}${urlPath}${cq.description ? '\n' + ArkimeUtil.safeStr(cq.description) : ''}
             `;
 
             Db.refresh('*'); // Before sending alert make sure everything has been refreshed
