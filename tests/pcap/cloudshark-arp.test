@@ -3,6 +3,34 @@
   {
    "body" : {
     "@timestamp" : "SET",
+    "arp" : {
+     "ASN" : [
+      "---"
+     ],
+     "GEO" : [
+      "---"
+     ],
+     "RIR" : [
+      ""
+     ],
+     "ip" : [
+      "10.10.10.1"
+     ],
+     "ipCnt" : 1,
+     "mac" : [
+      "00:1d:09:f0:92:ab"
+     ],
+     "macCnt" : 1,
+     "opcode" : [
+      "1",
+      "2"
+     ],
+     "opcodeCnt" : 2,
+     "oui" : [
+      "Dell Inc."
+     ],
+     "ouiCnt" : 1
+    },
     "client" : {
      "bytes" : 0
     },
@@ -166,6 +194,34 @@
   {
    "body" : {
     "@timestamp" : "SET",
+    "arp" : {
+     "ASN" : [
+      "---"
+     ],
+     "GEO" : [
+      "---"
+     ],
+     "RIR" : [
+      ""
+     ],
+     "ip" : [
+      "10.10.10.2"
+     ],
+     "ipCnt" : 1,
+     "mac" : [
+      "00:1a:6b:6c:0c:cc"
+     ],
+     "macCnt" : 1,
+     "opcode" : [
+      "1",
+      "2"
+     ],
+     "opcodeCnt" : 2,
+     "oui" : [
+      "Universal Global Scientific Industrial Co., Ltd."
+     ],
+     "ouiCnt" : 1
+    },
     "client" : {
      "bytes" : 0
     },
