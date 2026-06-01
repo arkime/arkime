@@ -18,7 +18,7 @@ SPDX-License-Identifier: Apache-2.0
         class="flex-grow-1 align-self-center" />
       <ArkimePaging
         class="align-self-center"
-        :records-filtered="recordsTotal"
+        :records-filtered="recordsFiltered"
         :records-total="recordsTotal"
         :length-default="100"
         @change-paging="onPagingChange" />
@@ -510,6 +510,7 @@ export default {
       dbUserList: undefined,
       changed: {},
       recordsTotal: 0,
+      recordsFiltered: 0,
       // managed by the ArkimePaging component (length defaults to 100 via
       // its length-default prop; start updates on page changes).
       paging: { start: 0, length: 100 },
@@ -806,6 +807,7 @@ export default {
         this.error = '';
         this.loading = false;
         this.recordsTotal = response.recordsTotal;
+        this.recordsFiltered = response.recordsFiltered;
         this.users = JSON.parse(JSON.stringify(response.data));
         // don't modify original list - used for comparing
         this.dbUserList = JSON.parse(JSON.stringify(response.data));
@@ -827,6 +829,7 @@ export default {
         this.error = '';
         this.loading = false;
         this.recordsTotal = response.recordsTotal;
+        this.recordsFiltered = response.recordsFiltered;
         this.users = JSON.parse(JSON.stringify(response.data));
         // don't modify original list - used for comparing
         this.dbUserList = JSON.parse(JSON.stringify(response.data));
