@@ -1083,7 +1083,7 @@ async function buildAlert (cluster, issue) {
 
   issue.alerted = Date.now();
 
-  const message = `${cluster.title} - ${issue.message}`;
+  const message = `${ArkimeUtil.safeStr(cluster.title)} - ${issue.message}`;
 
   for (const setNotifier of notifiers) {
 

@@ -5539,6 +5539,30 @@
   {
    "body" : {
     "@timestamp" : "SET",
+    "arp" : {
+     "ASN" : [
+      "---"
+     ],
+     "GEO" : [
+      "---"
+     ],
+     "RIR" : [
+      ""
+     ],
+     "ip" : [
+      "10.0.8.1"
+     ],
+     "ipCnt" : 1,
+     "mac" : [
+      "6a:70:c5:af:f1:f9"
+     ],
+     "macCnt" : 1,
+     "opcode" : [
+      "1",
+      "2"
+     ],
+     "opcodeCnt" : 2
+    },
     "client" : {
      "bytes" : 0
     },

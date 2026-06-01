@@ -250,6 +250,7 @@ function checkConfigCode (req, res, next) {
     }
   }
 
+  // TODO(Arkime 7): do not log the correct config PIN code - it leaks the secret to anyone with log access.
   console.log(`Incorrect pin/TOTP code used - Config pin code is: ${internals.configCode}`);
   return res.send(JSON.stringify({ success: false, text: 'Not authorized, check log file' })); // not specific error
 }
