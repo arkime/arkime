@@ -28,6 +28,7 @@ LOCAL void arp_create_sessionid(uint8_t *sessionId, ArkimePacket_t *packet)
     sessionId[6] = sessionId[7] = 0;
 }
 /******************************************************************************/
+SUPPRESS_ALIGNMENT
 LOCAL int arp_pre_process(ArkimeSession_t *session, ArkimePacket_t *const packet, int isNewSession)
 {
     const uint8_t *data = packet->pkt + packet->payloadOffset;
