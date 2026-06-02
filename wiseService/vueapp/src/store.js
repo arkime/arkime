@@ -7,68 +7,34 @@ import { THEMES, DEFAULT_THEME_ID } from '@common/themes/manifest.js';
 import { postThemeSettings } from '@common/themes/persistTheme.js';
 import { VUETIFY_THEME_KEY, VUETIFY_CUSTOM_THEME_KEY } from '@common/themes/customTheme.js';
 
-/* Load the saved theme id from localStorage. Migrates the legacy
-   'light' / 'dark' string format to the new manifest ids. Falls back
-   to the manifest default for missing or unknown values. */
-function loadSavedTheme () {
-  try {
-    const raw = localStorage.getItem('wiseTheme');
-    if (!raw) return DEFAULT_THEME_ID;
-    if (raw === 'light') return 'arkime-light';
-    if (raw === 'dark') return 'arkime-dark';
-    if (typeof raw !== 'string') return DEFAULT_THEME_ID;
-    if (raw === 'custom1') return raw;
-    return THEMES.some(t => t.id === raw) ? raw : DEFAULT_THEME_ID;
-  } catch (e) {
-    return DEFAULT_THEME_ID;
-  }
-}
-
-function loadSavedCustomTheme () {
-  try {
-    const raw = localStorage.getItem('wiseCustomTheme');
-    return raw ? JSON.parse(raw) : null;
-  } catch (e) {
-    return null;
-  }
-}
-
 const store = createStore({
   state: {
-    wiseTheme: loadSavedTheme(),
-    customTheme: loadSavedCustomTheme(),
+    // Theme comes from the server (user.settings.vuetifyTheme /
+    // vuetifyCustomTheme) on boot via HYDRATE_THEME_FROM_SERVER; the
+    // manifest default applies until that resolves.
+    wiseTheme: DEFAULT_THEME_ID,
+    customTheme: null,
     statsDataInterval: 30000
   },
   mutations: {
     SET_THEME (state, newTheme) {
       state.wiseTheme = newTheme;
-      // localStorage stays per-app (per-origin fast-paint cache); the
-      // server save uses the shared `vuetifyTheme` key every Arkime app
-      // reads/writes, so the pick follows the user into viewer / cont3xt
-      // / parliament too.
-      localStorage.setItem('wiseTheme', newTheme);
+      // Persist to the shared user.settings.vuetifyTheme so the pick
+      // follows the user into viewer / cont3xt / parliament too.
       postThemeSettings('api/settings/update', { [VUETIFY_THEME_KEY]: newTheme });
     },
     SET_CUSTOM_THEME (state, value) {
       state.customTheme = value;
-      if (value) {
-        localStorage.setItem('wiseCustomTheme', JSON.stringify(value));
-      } else {
-        localStorage.removeItem('wiseCustomTheme');
-      }
       postThemeSettings('api/settings/update', { [VUETIFY_CUSTOM_THEME_KEY]: value ?? null });
     },
-    /* Apply theme values loaded from user.settings on app startup
-       *without* echoing them back to the server. Called by App.vue
-       after the initial /api/settings fetch resolves. */
+    /* Apply theme values from user.settings on app startup. Called by
+       App.vue after the initial /api/settings fetch resolves. */
     HYDRATE_THEME_FROM_SERVER (state, { themeId, customTheme }) {
       if (customTheme && typeof customTheme === 'object' && customTheme.colors) {
         state.customTheme = customTheme;
-        try { localStorage.setItem('wiseCustomTheme', JSON.stringify(customTheme)); } catch (e) { /* ignore */ }
       }
       if (themeId && (themeId === 'custom1' || THEMES.some(t => t.id === themeId))) {
         state.wiseTheme = themeId;
-        try { localStorage.setItem('wiseTheme', themeId); } catch (e) { /* ignore */ }
       }
     },
     SET_STATS_DATA_INTERVAL (state, newInterval) {

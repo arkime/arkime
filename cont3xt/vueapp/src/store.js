@@ -9,77 +9,6 @@ import { THEMES, DEFAULT_THEME_ID } from '@common/themes/manifest.js';
 import { postThemeSettings } from '@common/themes/persistTheme.js';
 import { VUETIFY_THEME_KEY, VUETIFY_CUSTOM_THEME_KEY } from '@common/themes/customTheme.js';
 
-/* localStorage keys (per-origin paint cache only -- the cross-app source
-   of truth is the shared `vuetifyTheme` server setting that every Arkime
-   app reads/writes; see the imported VUETIFY_THEME_KEY used on save).
-   - Legacy (pre-v7 cont3xt): `theme` (string 'light'/'dark') and
-     `cont3xtCustomTheme` (object). Read-only on v7 -- imported once on
-     first load if the local keys are absent, never written back, so a
-     user who flips between v7 and pre-v7 cont3xt keeps a working
-     preference in each version.
-   - v7+ local cache: `cont3xtVuetifyTheme` (manifest id like
-     'arkime-dark' or 'custom1') and `cont3xtVuetifyCustomTheme` (the
-     { dark, colors } object). */
-const LEGACY_THEME_KEY = 'theme';
-const LEGACY_CUSTOM_KEY = 'cont3xtCustomTheme';
-const LOCAL_THEME_KEY = 'cont3xtVuetifyTheme';
-const LOCAL_CUSTOM_KEY = 'cont3xtVuetifyCustomTheme';
-
-/* Normalize a stored theme value to a manifest id. Accepts the legacy
-   'light' / 'dark' strings and the new manifest ids. Returns null for
-   anything we don't recognize. */
-function normalizeThemeId (parsed) {
-  if (parsed === 'light') return 'arkime-light';
-  if (parsed === 'dark') return 'arkime-dark';
-  if (typeof parsed !== 'string') return null;
-  if (parsed === 'custom1') return parsed;
-  return THEMES.some(t => t.id === parsed) ? parsed : null;
-}
-
-function readJSON (key) {
-  try {
-    const raw = localStorage.getItem(key);
-    if (!raw) return undefined;
-    return JSON.parse(raw);
-  } catch (e) {
-    return undefined;
-  }
-}
-
-/* Load the active theme id. Read order:
-   1. v7 key (`cont3xtVuetifyTheme`) -- authoritative for v7+
-   2. legacy key (`theme`) -- one-shot import; promote into the v7 key
-      so subsequent loads short-circuit at step 1
-   3. manifest default */
-function loadSavedTheme () {
-  const v7 = readJSON(LOCAL_THEME_KEY);
-  const fromV7 = normalizeThemeId(v7);
-  if (fromV7) return fromV7;
-
-  const legacy = readJSON(LEGACY_THEME_KEY);
-  const imported = normalizeThemeId(legacy);
-  if (imported) {
-    // Persist the import into the v7 key. The legacy key is left
-    // untouched so pre-v7 cont3xt can still read it.
-    try { localStorage.setItem(LOCAL_THEME_KEY, JSON.stringify(imported)); } catch (e) { /* ignore */ }
-    return imported;
-  }
-  return DEFAULT_THEME_ID;
-}
-
-/* Load the saved custom theme object. v7 key first, then legacy. */
-function loadSavedCustomTheme () {
-  const v7 = readJSON(LOCAL_CUSTOM_KEY);
-  if (v7 && typeof v7 === 'object' && v7.colors) return v7;
-
-  const legacy = readJSON(LEGACY_CUSTOM_KEY);
-  if (legacy && typeof legacy === 'object' && legacy.colors) {
-    try { localStorage.setItem(LOCAL_CUSTOM_KEY, JSON.stringify(legacy)); } catch (e) { /* ignore */ }
-    return legacy;
-  }
-  return null;
-}
-
 const store = createStore({
   state: {
     user: undefined,
@@ -121,8 +50,11 @@ const store = createStore({
     copyShareLink: false,
     toggleIntegrationPanel: false,
     immediateSubmissionReady: false,
-    theme: loadSavedTheme(),
-    customTheme: loadSavedCustomTheme(),
+    // Theme comes from the server (user.settings.vuetifyTheme /
+    // vuetifyCustomTheme) on boot via HYDRATE_THEME_FROM_SERVER; the
+    // manifest default applies until that resolves.
+    theme: DEFAULT_THEME_ID,
+    customTheme: null,
     tags: [],
     tagDisplayCollapsed: true,
     seeAllViews: false,
@@ -309,34 +241,22 @@ const store = createStore({
     },
     SET_THEME (state, data) {
       state.theme = data;
-      // localStorage stays per-app (per-origin fast-paint cache); the
-      // legacy `theme` key is left untouched so pre-v7 cont3xt keeps its
-      // own preference. The server save uses the shared `vuetifyTheme`
-      // key every Arkime app reads/writes, so the pick follows the user
-      // into viewer / parliament / wise too.
-      localStorage.setItem(LOCAL_THEME_KEY, JSON.stringify(data));
+      // Persist to the shared user.settings.vuetifyTheme so the pick
+      // follows the user into viewer / parliament / wise too.
       postThemeSettings('api/settings/update', { [VUETIFY_THEME_KEY]: data });
     },
     SET_CUSTOM_THEME (state, data) {
       state.customTheme = data;
-      if (data) {
-        localStorage.setItem(LOCAL_CUSTOM_KEY, JSON.stringify(data));
-      } else {
-        localStorage.removeItem(LOCAL_CUSTOM_KEY);
-      }
       postThemeSettings('api/settings/update', { [VUETIFY_CUSTOM_THEME_KEY]: data ?? null });
     },
-    /* Apply theme values loaded from user.settings on app startup
-       *without* echoing them back to the server. Used by App.vue's
-       mounted hook after the initial /api/user fetch resolves. */
+    /* Apply theme values from user.settings on app startup. Used by
+       App.vue's mounted hook after the initial /api/user fetch resolves. */
     HYDRATE_THEME_FROM_SERVER (state, { themeId, customTheme }) {
       if (customTheme && typeof customTheme === 'object' && customTheme.colors) {
         state.customTheme = customTheme;
-        try { localStorage.setItem(LOCAL_CUSTOM_KEY, JSON.stringify(customTheme)); } catch (e) { /* ignore */ }
       }
       if (themeId && (themeId === 'custom1' || THEMES.some(t => t.id === themeId))) {
         state.theme = themeId;
-        try { localStorage.setItem(LOCAL_THEME_KEY, JSON.stringify(themeId)); } catch (e) { /* ignore */ }
       }
     },
     SET_TAGS (state, data) {

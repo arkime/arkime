@@ -104,8 +104,6 @@ SPDX-License-Identifier: Apache-2.0
 import Logout from '@common/Logout.vue';
 import Version from '@common/Version.vue';
 import LanguageSwitcher from '@common/LanguageSwitcher.vue';
-import { useTheme } from 'vuetify';
-import { useStore } from 'vuex';
 import { registerVuetifyTheme } from '@common/themes/registerVuetifyTheme.js';
 import { THEMES } from '@common/themes/manifest.js';
 
@@ -115,15 +113,6 @@ export default {
     Logout,
     Version,
     LanguageSwitcher
-  },
-  setup () {
-    // Register the user's saved custom theme (if any) so theme.change('custom1') resolves.
-    const theme = useTheme();
-    const store = useStore();
-    const customTheme = store.getters.getCustomTheme;
-    if (customTheme && customTheme.colors) {
-      registerVuetifyTheme({ theme }, 'custom1', customTheme);
-    }
   },
   data () {
     return {
@@ -163,6 +152,12 @@ export default {
       immediate: true,
       handler (val) {
         if (this.$vuetify) {
+          // Register the saved custom palette before switching to it so
+          // theme.change('custom1') resolves -- the palette arrives async
+          // from the server via HYDRATE_THEME_FROM_SERVER.
+          if (val === 'custom1' && this.$store.state.customTheme?.colors) {
+            registerVuetifyTheme(this.$vuetify, 'custom1', this.$store.state.customTheme);
+          }
           this.$vuetify.theme.change(val);
         }
         // legacy body.dark hook -- works for ANY dark theme (arkime-dark,

@@ -87,7 +87,7 @@ import OverviewService from '@/components/services/OverviewService';
 import Cont3xtService from '@/components/services/Cont3xtService';
 import Cont3xtUpgradeBrowser from '@/components/pages/UpgradeBrowser.vue';
 import KeyboardShortcuts from '@common/KeyboardShortcuts.vue';
-import { hydrateOrMigrateTheme } from '@common/themes/persistTheme.js';
+import { applyServerTheme } from '@common/themes/persistTheme.js';
 
 export default {
   name: 'App',
@@ -271,13 +271,7 @@ export default {
       });
     },
     hydrateThemeFromUser (user) {
-      hydrateOrMigrateTheme({
-        url: 'api/settings/update',
-        settings: user?.settings,
-        localThemeKey: 'cont3xtVuetifyTheme',
-        localCustomKey: 'cont3xtVuetifyCustomTheme',
-        themeIsJsonEncoded: true
-      }, (themeId, customTheme) => {
+      applyServerTheme(user?.settings, (themeId, customTheme) => {
         this.$store.commit('HYDRATE_THEME_FROM_SERVER', { themeId, customTheme });
       });
     }

@@ -6,17 +6,15 @@ import setReqHeaders from '@common/setReqHeaders';
 import { VUETIFY_THEME_KEY, VUETIFY_CUSTOM_THEME_KEY } from '@common/themes/customTheme.js';
 
 /**
- * Fire-and-forget POST of one or more theme keys to an app's
- * /api/user/settings endpoint. Used by cont3xt / parliament / wise
- * stores to persist Vuetify theme picks to the shared `vuetifyTheme` /
- * `vuetifyCustomTheme` keys on `user.settings` -- the same keys every
- * Arkime app reads/writes, so a pick follows the user across all apps
- * and browsers. localStorage is still the source of truth for the
- * immediate paint after reload; this server save lets another app or
- * browser/device pick up the same preference. Failures are silently
- * ignored -- the next theme change retries.
+ * Fire-and-forget POST of the shared Vuetify theme keys to an app's
+ * /api/settings/update endpoint. Used by cont3xt / parliament / wise
+ * stores to persist a theme pick to `user.settings.vuetifyTheme` /
+ * `vuetifyCustomTheme` -- the same keys every Arkime app reads/writes,
+ * so the pick (including a custom palette) follows the user across apps,
+ * browsers, and devices. `user.settings` is the single source of truth.
+ * Failures are silently ignored -- the next theme change retries.
  *
- * @param {string} url - The /api/user/settings POST endpoint URL.
+ * @param {string} url - The /api/settings/update POST endpoint URL.
  * @param {object} payload - Settings keys to persist (e.g.
  *                           { vuetifyTheme: 'arkime-dark' }).
  */
@@ -31,53 +29,22 @@ export function postThemeSettings (url, payload) {
 }
 
 /**
- * On app startup: apply the user's server-saved theme if present, else
- * migrate the values they already have in localStorage up to the server
- * so the preference follows them to other browsers/devices on next load.
+ * On app startup, apply the user's server-saved Vuetify theme. The
+ * server (`user.settings.vuetifyTheme` / `vuetifyCustomTheme`) is the
+ * single source of truth, so a theme set in any app -- including a
+ * custom palette -- follows the user everywhere. Apps render the
+ * default theme until this resolves (same as viewer).
  *
- * Read order:
- *   1. settings[serverThemeKey] / settings[serverCustomKey] -> applyHydrated()
- *   2. localStorage[localThemeKey] / localStorage[localCustomKey] -> POST to url
- *   3. nothing at all -> caller's existing default applies
- *
- * @param {object} opts
- * @param {string} opts.url - POST endpoint for the server save
- * @param {object} opts.settings - The user.settings blob from /api/user
- * @param {string} [opts.serverThemeKey] - server settings key for the theme
- *        id; defaults to the shared cross-app 'vuetifyTheme' key.
- * @param {string} [opts.serverCustomKey] - server settings key for the
- *        custom theme; defaults to the shared 'vuetifyCustomTheme' key.
- * @param {string} opts.localThemeKey - localStorage key for the theme id
- * @param {string} opts.localCustomKey - localStorage key for the custom theme
- * @param {boolean} [opts.themeIsJsonEncoded] - true if the theme value in
- *        localStorage is JSON-stringified (cont3xt) vs a raw string
- *        (parliament, wise). Custom theme is always JSON.
- * @param {function} applyHydrated - (themeId, customTheme) => void; invoked
- *        with the server values when found, so the caller can commit them.
+ * @param {object} settings - The user.settings blob (viewer / cont3xt /
+ *        parliament) or the wise /api/settings response, holding the
+ *        shared theme keys.
+ * @param {function} applyHydrated - (themeId, customTheme) => void;
+ *        invoked with the server values when present.
  */
-export function hydrateOrMigrateTheme (opts, applyHydrated) {
-  const settings = opts.settings ?? {};
-  const serverThemeKey = opts.serverThemeKey ?? VUETIFY_THEME_KEY;
-  const serverCustomKey = opts.serverCustomKey ?? VUETIFY_CUSTOM_THEME_KEY;
-  const themeId = settings[serverThemeKey];
-  const customTheme = settings[serverCustomKey];
+export function applyServerTheme (settings, applyHydrated) {
+  const themeId = settings?.[VUETIFY_THEME_KEY];
+  const customTheme = settings?.[VUETIFY_CUSTOM_THEME_KEY];
   if (themeId || (customTheme && customTheme.colors)) {
     applyHydrated(themeId, customTheme);
-    return;
-  }
-
-  const payload = {};
-  const lsTheme = localStorage.getItem(opts.localThemeKey);
-  if (lsTheme) {
-    try {
-      payload[serverThemeKey] = opts.themeIsJsonEncoded ? JSON.parse(lsTheme) : lsTheme;
-    } catch (e) { /* ignore */ }
-  }
-  const lsCustom = localStorage.getItem(opts.localCustomKey);
-  if (lsCustom) {
-    try { payload[serverCustomKey] = JSON.parse(lsCustom); } catch (e) { /* ignore */ }
-  }
-  if (Object.keys(payload).length > 0) {
-    postThemeSettings(opts.url, payload);
   }
 }

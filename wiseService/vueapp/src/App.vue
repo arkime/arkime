@@ -17,7 +17,7 @@ SPDX-License-Identifier: Apache-2.0
 import WiseNavbar from './components/Navbar.vue';
 import WiseUpgradeBrowser from './components/UpgradeBrowser.vue';
 import WiseFooter from '@common/Footer.vue';
-import { hydrateOrMigrateTheme } from '@common/themes/persistTheme.js';
+import { applyServerTheme } from '@common/themes/persistTheme.js';
 
 export default {
   name: 'App',
@@ -45,15 +45,10 @@ export default {
     // to other browsers/devices on next load. wise has no other
     // user-fetching hook on startup, so we hit /api/settings directly.
     fetch('api/settings').then((r) => r.ok ? r.json() : {}).then((data) => {
-      hydrateOrMigrateTheme({
-        url: 'api/settings/update',
-        settings: data,
-        localThemeKey: 'wiseTheme',
-        localCustomKey: 'wiseCustomTheme'
-      }, (themeId, customTheme) => {
+      applyServerTheme(data, (themeId, customTheme) => {
         this.$store.commit('HYDRATE_THEME_FROM_SERVER', { themeId, customTheme });
       });
-    }).catch(() => { /* unauthenticated or backend offline -- localStorage covers us */ });
+    }).catch(() => { /* unauthenticated or backend offline -- default theme applies */ });
   }
 };
 </script>

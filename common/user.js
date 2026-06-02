@@ -1182,15 +1182,11 @@ class User {
    *
    * @param {string[]} allowlist - Settings keys this endpoint may write.
    * @param {string[]} [objectKeys] - Subset of allowlist whose values may be objects.
-   * @param {object} [opts]
-   * @param {string} [opts.successI18n] - i18n key to include on success response.
-   * @param {string} [opts.failureI18n] - i18n key to include on failure response.
    * @returns {function} Express handler `(req, res) => void`.
    */
-  static apiUpdateSettingsHandler (allowlist, objectKeys = [], opts = {}) {
+  static apiUpdateSettingsHandler (allowlist, objectKeys = []) {
     const allowed = new Set(allowlist);
     const objAllowed = new Set(objectKeys);
-    const { successI18n = 'api.users.settingsUpdated', failureI18n = 'api.users.settingsUpdateFailed' } = opts;
     return (req, res) => {
       const merged = { ...(req.settingUser.settings ?? {}) };
       for (const key of allowed) {
@@ -1206,13 +1202,9 @@ class User {
       User.setUser(req.settingUser.userId, req.settingUser, (err) => {
         if (err) {
           console.log(`ERROR - ${req.method} ${req.originalUrl} settings update error`, util.inspect(err, false, 50));
-          const failBody = { success: false, text: 'User settings update failed' };
-          if (failureI18n) failBody.i18n = failureI18n;
-          return res.send(failBody);
+          return res.send({ success: false, text: 'User settings update failed', i18n: 'api.users.settingsUpdateFailed' });
         }
-        const okBody = { success: true, text: 'Updated user settings successfully' };
-        if (successI18n) okBody.i18n = successI18n;
-        return res.send(okBody);
+        return res.send({ success: true, text: 'Updated user settings successfully', i18n: 'api.users.settingsUpdated' });
       });
     };
   }
