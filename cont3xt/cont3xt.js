@@ -255,7 +255,7 @@ app.post('/api/user/totp/disable', [jsonParser, checkCookieToken, Auth.getSettin
  */
 app.post('/api/settings/update',
   [jsonParser, ArkimeUtil.noCacheJson, checkCookieToken, Auth.getSettingUserDb],
-  User.apiUpdateSettingsHandler(User.THEME_SETTINGS_KEYS, User.THEME_SETTINGS_OBJECT_KEYS)
+  User.apiUpdateSettings
 );
 
 app.delete('/api/user/:id', [jsonParser, checkCookieToken, User.checkRole('usersAdmin')], User.apiDeleteUser);

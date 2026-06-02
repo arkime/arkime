@@ -1484,10 +1484,7 @@ if (internals.webconfig) {
    * @returns {string} vuetifyTheme - The saved theme id
    * @returns {object} vuetifyCustomTheme - The saved custom-theme object
    */
-  app.get('/api/settings', [ArkimeUtil.noCacheJson, isWiseUser, Auth.getSettingUserDb], (req, res) => {
-    const settings = req.settingUser?.settings ?? {};
-    return res.send(Object.fromEntries(User.THEME_SETTINGS_KEYS.map(k => [k, settings[k]])));
-  });
+  app.get('/api/settings', [ArkimeUtil.noCacheJson, isWiseUser, Auth.getSettingUserDb], User.apiGetSettings);
 
   // ----------------------------------------------------------------------------
   /**
@@ -1505,7 +1502,7 @@ if (internals.webconfig) {
    */
   app.post('/api/settings/update',
     [ArkimeUtil.noCacheJson, jsonParser, isWiseUser, Auth.getSettingUserDb],
-    User.apiUpdateSettingsHandler(User.THEME_SETTINGS_KEYS, User.THEME_SETTINGS_OBJECT_KEYS)
+    User.apiUpdateSettings
   );
 
   // ----------------------------------------------------------------------------

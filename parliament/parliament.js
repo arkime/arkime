@@ -1720,7 +1720,7 @@ app.post('/parliament/api/user/password', [jsonParser, checkCookieToken, Auth.ge
  */
 app.post('/parliament/api/settings/update',
   [jsonParser, ArkimeUtil.noCacheJson, checkCookieToken, Auth.getSettingUserDb],
-  User.apiUpdateSettingsHandler(User.THEME_SETTINGS_KEYS, User.THEME_SETTINGS_OBJECT_KEYS)
+  User.apiUpdateSettings
 );
 
 app.delete('/parliament/api/user/:id', [jsonParser, checkCookieToken, User.checkRole('usersAdmin')], User.apiDeleteUser);

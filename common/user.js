@@ -1217,6 +1217,23 @@ class User {
     };
   }
 
+  /**
+   * GET route handler returning just the shared cross-app Vuetify theme
+   * keys (`vuetifyTheme` / `vuetifyCustomTheme`) from the logged-in
+   * user's settings. Registered directly by wise; cont3xt / parliament
+   * read these via /api/user instead. The route sets up `req.settingUser`
+   * via `Auth.getSettingUserDb`.
+   */
+  static apiGetSettings (req, res) {
+    const settings = req.settingUser?.settings ?? {};
+    return res.send(Object.fromEntries(User.THEME_SETTINGS_KEYS.map(k => [k, settings[k]])));
+  }
+
+  // POST route handler persisting the shared theme keys. Registered
+  // directly by cont3xt / parliament / wise (viewer keeps its own
+  // multi-key settings handler built from apiUpdateSettingsHandler).
+  static apiUpdateSettings = User.apiUpdateSettingsHandler(User.THEME_SETTINGS_KEYS, User.THEME_SETTINGS_OBJECT_KEYS);
+
   /******************************************************************************/
   // TOTP (Two-Factor Authentication) APIs
   /******************************************************************************/
