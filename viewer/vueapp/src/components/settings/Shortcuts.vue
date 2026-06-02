@@ -82,28 +82,22 @@ SPDX-License-Identifier: Apache-2.0
             @click.self="sortShortcuts('name')">
             {{ $t('settings.shortcuts.table-name') }}
             <v-icon
-              icon="mdi-sort-ascending"
+              icon="mdi-chevron-up"
               v-show="shortcutsQuery.sortField === 'name' && !shortcutsQuery.desc" />
             <v-icon
-              icon="mdi-sort-descending"
+              icon="mdi-chevron-down"
               v-show="shortcutsQuery.sortField === 'name' && shortcutsQuery.desc" />
-            <v-icon
-              icon="mdi-unfold-more-horizontal"
-              v-show="shortcutsQuery.sortField !== 'name'" />
           </th>
           <th
             class="cursor-pointer"
             @click.self="sortShortcuts('description')">
             {{ $t('settings.shortcuts.table-description') }}
             <v-icon
-              icon="mdi-sort-ascending"
+              icon="mdi-chevron-up"
               v-show="shortcutsQuery.sortField === 'description' && !shortcutsQuery.desc" />
             <v-icon
-              icon="mdi-sort-descending"
+              icon="mdi-chevron-down"
               v-show="shortcutsQuery.sortField === 'description' && shortcutsQuery.desc" />
-            <v-icon
-              icon="mdi-unfold-more-horizontal"
-              v-show="shortcutsQuery.sortField !== 'description'" />
           </th>
           <th>{{ $t('settings.shortcuts.table-values') }}</th>
           <th>{{ $t('settings.shortcuts.table-type') }}</th>

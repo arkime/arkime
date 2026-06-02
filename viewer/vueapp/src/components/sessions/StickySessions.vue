@@ -62,7 +62,7 @@ SPDX-License-Identifier: Apache-2.0
                 density="comfortable"
                 icon
                 @click="toggleSortOrder">
-                <v-icon icon="mdi-sort-ascending" />
+                <v-icon icon="mdi-chevron-up" />
                 <v-tooltip activator="parent">
                   {{ $t('sessions.sticky.sortDescTip') }}
                 </v-tooltip>
@@ -74,7 +74,7 @@ SPDX-License-Identifier: Apache-2.0
                 density="comfortable"
                 icon
                 @click="toggleSortOrder">
-                <v-icon icon="mdi-sort-descending" />
+                <v-icon icon="mdi-chevron-down" />
                 <v-tooltip activator="parent">
                   {{ $t('sessions.sticky.sortAscTip') }}
                 </v-tooltip>

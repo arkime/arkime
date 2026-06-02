@@ -78,11 +78,11 @@ SPDX-License-Identifier: Apache-2.0
             {{ field.label }}
             <template v-if="isSortable(field)">
               <v-icon
-                icon="mdi-arrow-down"
+                icon="mdi-chevron-down"
                 :data-testid="`sort-desc-${field.label}`"
                 v-if="sortField === field.label && desc" />
               <v-icon
-                icon="mdi-arrow-up"
+                icon="mdi-chevron-up"
                 :data-testid="`sort-asc-${field.label}`"
                 v-else-if="sortField === field.label && !desc" />
             </template>

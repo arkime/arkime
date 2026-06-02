@@ -9,6 +9,10 @@
 extern ArkimeConfig_t        config;
 
 LOCAL int arpMProtocol;
+LOCAL int macField;
+LOCAL int ouiField;
+LOCAL int opcodeField;
+LOCAL int ipField;
 
 /******************************************************************************/
 LOCAL void arp_create_sessionid(uint8_t *sessionId, ArkimePacket_t *packet)
@@ -24,10 +28,25 @@ LOCAL void arp_create_sessionid(uint8_t *sessionId, ArkimePacket_t *packet)
     sessionId[6] = sessionId[7] = 0;
 }
 /******************************************************************************/
-LOCAL int arp_pre_process(ArkimeSession_t *session, ArkimePacket_t *const UNUSED(packet), int isNewSession)
+SUPPRESS_ALIGNMENT
+LOCAL int arp_pre_process(ArkimeSession_t *session, ArkimePacket_t *const packet, int isNewSession)
 {
+    const uint8_t *data = packet->pkt + packet->payloadOffset;
+    const int isReply = (data[7] == 2);
+
     if (isNewSession)
         arkime_session_add_protocol(session, "arp");
+
+    arkime_field_int_add(opcodeField, session, data[7]);
+
+    // ARP replies are the trustworthy IP↔MAC binding: announce arp.ip (sender
+    // protocol address) + arp.mac (sender hardware address). Polling/hunts
+    // recover the (ip, mac) tuple from session fields without parsing pcap.
+    // Requests get no arp.ip/arp.mac so they're naturally filtered out.
+    if (isReply) {
+        arkime_field_ip4_add(ipField, session, *(uint32_t *)(data + 14));
+        arkime_field_macoui_add(session, macField, ouiField, data + 8);
+    }
 
     return 0;
 }
@@ -64,6 +83,30 @@ LOCAL ArkimePacketRC arp_packet_enqueue(ArkimePacketBatch_t *UNUSED(batch), Arki
 /******************************************************************************/
 void arkime_parser_init()
 {
+    macField = arkime_field_define("arp", "lotermfield",
+                                   "arp.mac", "ARP Sender MAC", "arp.mac",
+                                   "Ethernet sender hardware address from ARP replies (the trustworthy IP↔MAC binding for srcIp)",
+                                   ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
+                                   (char *)NULL);
+
+    ouiField = arkime_field_define("arp", "termfield",
+                                   "arp.oui", "ARP Sender OUI", "arp.oui",
+                                   "Ethernet sender OUI from ARP replies",
+                                   ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
+                                   (char *)NULL);
+
+    opcodeField = arkime_field_define("arp", "integer",
+                                      "arp.opcode", "ARP Opcode", "arp.opcode",
+                                      "ARP operation (1=request, 2=reply)",
+                                      ARKIME_FIELD_TYPE_INT_GHASH, ARKIME_FIELD_FLAG_CNT,
+                                      (char *)NULL);
+
+    ipField = arkime_field_define("arp", "ip",
+                                  "arp.ip", "ARP Sender IP", "arp.ip",
+                                  "Sender protocol address from ARP replies (the IP side of the trustworthy IP↔MAC binding)",
+                                  ARKIME_FIELD_TYPE_IP_GHASH, ARKIME_FIELD_FLAG_CNT,
+                                  (char *)NULL);
+
     arkime_packet_set_ethernet_cb(0x0806, arp_packet_enqueue);
     arpMProtocol = arkime_mprotocol_register("arp",
                                              SESSION_OTHER,

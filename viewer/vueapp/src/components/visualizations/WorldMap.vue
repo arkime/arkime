@@ -207,10 +207,11 @@ export default {
 
       const max = Math.max(...Object.values(numericValues), 1);
       if (this.d3) {
-        // sqrt (matches jvectormap's `normalizeFunction: 'polynomial'`) keeps
-        // the top country from crushing #2–10 to near-light when one region
-        // dominates — common with US-heavy traffic.
-        this.colorScale = this.d3.scaleSqrt()
+        // 4th-root curve: sqrt (0.5) was still crushing #5-10 to
+        // near-light under US-heavy traffic. exponent 0.25 lifts a
+        // value at 10% of max to ~56% of light->dark instead of ~32%,
+        // so the top-10 legend reads as ten distinct shades.
+        this.colorScale = this.d3.scalePow().exponent(0.25)
           .domain([0, max])
           .range([this.landColorLight, this.landColorDark]);
       }

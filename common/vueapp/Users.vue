@@ -18,7 +18,7 @@ SPDX-License-Identifier: Apache-2.0
         class="flex-grow-1 align-self-center" />
       <ArkimePaging
         class="align-self-center"
-        :records-filtered="recordsTotal"
+        :records-filtered="recordsFiltered"
         :records-total="recordsTotal"
         :length-default="100"
         @change-paging="onPagingChange" />
@@ -72,66 +72,9 @@ SPDX-License-Identifier: Apache-2.0
           {{ searchTerm ? $t('users.noUsersOrRolesMatch') : $t('users.noUsersOrRoles') }}
         </template>
 
-        <!-- header slots: each column gets a hover tooltip with the help text -->
-        <template #[`header.userId`]="{ column }">
-          <span class="header-with-tip">
-            {{ column.title }}
-            <v-tooltip
-              activator="parent"
-              location="top">{{ $t('users.userIdTip') }}</v-tooltip>
-          </span>
-        </template>
-        <template #[`header.userName`]="{ column }">
-          <span class="header-with-tip">
-            {{ column.title }}
-            <v-tooltip
-              activator="parent"
-              location="top">{{ $t('users.userNameTip') }}</v-tooltip>
-          </span>
-        </template>
-        <template #[`header.enabled`]="{ column }">
-          <span class="header-with-tip">
-            {{ column.title }}
-            <v-tooltip
-              activator="parent"
-              location="top">{{ $t('users.enabledTip') }}</v-tooltip>
-          </span>
-        </template>
-        <template #[`header.webEnabled`]="{ column }">
-          <span class="header-with-tip">
-            {{ column.title }}
-            <v-tooltip
-              activator="parent"
-              location="top">{{ $t('users.webEnabledTip') }}</v-tooltip>
-          </span>
-        </template>
-        <template #[`header.headerAuthEnabled`]="{ column }">
-          <span class="header-with-tip">
-            {{ column.title }}
-            <v-tooltip
-              activator="parent"
-              location="top">{{ $t('users.headerAuthEnabledTip') }}</v-tooltip>
-          </span>
-        </template>
-        <template #[`header.roles`]>
-          <span class="header-with-tip">
-            {{ $t('users.roles') }}
-            <span
-              id="roles-help"
-              class="mdi mdi-information mdi-18px cursor-help ms-2" />
-            <v-tooltip activator="#roles-help">
-              {{ $t('users.rolesTip') }}
-            </v-tooltip>
-          </span>
-        </template>
-        <template #[`header.lastUsed`]="{ column }">
-          <span class="header-with-tip">
-            {{ column.title }}
-            <v-tooltip
-              activator="parent"
-              location="top">{{ $t('users.lastUsedTip') }}</v-tooltip>
-          </span>
-        </template>
+        <!-- Default Vuetify headers render title + sort icon when sortable.
+             Tooltips bind by id selector via each column's headerProps so
+             we don't have to override the header slot. -->
 
         <!-- +Role / +User in the right-most header column. -->
         <template #[`header.action`]>
@@ -175,9 +118,7 @@ SPDX-License-Identifier: Apache-2.0
 
         <!-- per-cell slots -->
         <template #[`item.userId`]="{ item }">
-          <div class="mt-1">
-            {{ item.userId }}
-          </div>
+          {{ item.userId }}
         </template>
         <template #[`item.userName`]="{ item }">
           <v-text-field
@@ -190,7 +131,7 @@ SPDX-License-Identifier: Apache-2.0
         <template #[`item.enabled`]="{ item }">
           <input
             type="checkbox"
-            class="arkime-check-input mt-1"
+            class="arkime-check-input"
             data-testid="checkbox"
             v-model="item.enabled"
             @change="userHasChanged(item)">
@@ -199,7 +140,7 @@ SPDX-License-Identifier: Apache-2.0
           <input
             v-if="!item.userId.startsWith('role:')"
             type="checkbox"
-            class="arkime-check-input mt-1"
+            class="arkime-check-input"
             data-testid="checkbox"
             v-model="item.webEnabled"
             @change="userHasChanged(item)">
@@ -208,7 +149,7 @@ SPDX-License-Identifier: Apache-2.0
           <input
             v-if="!item.userId.startsWith('role:')"
             type="checkbox"
-            class="arkime-check-input mt-1"
+            class="arkime-check-input"
             data-testid="checkbox"
             v-model="item.headerAuthEnabled"
             @change="userHasChanged(item)">
@@ -448,6 +389,46 @@ SPDX-License-Identifier: Apache-2.0
           </tr>
         </template>
       </v-data-table>
+
+      <!-- Hover tooltips for header help text. Default Vuetify headers
+           render title + sort icon; we bind tooltips by id selector via
+           each column's headerProps so we don't have to override the
+           header slot (which would replace the default sort UI). -->
+      <v-tooltip
+        activator="#users-header-userId"
+        location="top">
+        {{ $t('users.userIdTip') }}
+      </v-tooltip>
+      <v-tooltip
+        activator="#users-header-userName"
+        location="top">
+        {{ $t('users.userNameTip') }}
+      </v-tooltip>
+      <v-tooltip
+        activator="#users-header-enabled"
+        location="top">
+        {{ $t('users.enabledTip') }}
+      </v-tooltip>
+      <v-tooltip
+        activator="#users-header-webEnabled"
+        location="top">
+        {{ $t('users.webEnabledTip') }}
+      </v-tooltip>
+      <v-tooltip
+        activator="#users-header-headerAuthEnabled"
+        location="top">
+        {{ $t('users.headerAuthEnabledTip') }}
+      </v-tooltip>
+      <v-tooltip
+        activator="#users-header-roles"
+        location="top">
+        {{ $t('users.rolesTip') }}
+      </v-tooltip>
+      <v-tooltip
+        activator="#users-header-lastUsed"
+        location="top">
+        {{ $t('users.lastUsedTip') }}
+      </v-tooltip>
     </div> <!-- /users table -->
 
     <!-- create user -->
@@ -529,6 +510,7 @@ export default {
       dbUserList: undefined,
       changed: {},
       recordsTotal: 0,
+      recordsFiltered: 0,
       // managed by the ArkimePaging component (length defaults to 100 via
       // its length-default prop; start updates on page changes).
       paging: { start: 0, length: 100 },
@@ -552,6 +534,7 @@ export default {
         title: $t('users.' + key),
         key,
         sortable: opts.sortable ?? true,
+        headerProps: { id: `users-header-${key}` },
         ...opts
       });
       return [
@@ -565,7 +548,7 @@ export default {
         mk('headerAuthEnabled'),
         mk('roles', { sortable: false }),
         mk('lastUsed'),
-        { title: '', key: 'action', sortable: false, width: '280px', align: 'end' }
+        { title: '', key: 'action', sortable: false, width: '230px', align: 'end' }
       ];
     },
     timeLimitOptions () {
@@ -824,6 +807,7 @@ export default {
         this.error = '';
         this.loading = false;
         this.recordsTotal = response.recordsTotal;
+        this.recordsFiltered = response.recordsFiltered;
         this.users = JSON.parse(JSON.stringify(response.data));
         // don't modify original list - used for comparing
         this.dbUserList = JSON.parse(JSON.stringify(response.data));
@@ -845,6 +829,7 @@ export default {
         this.error = '';
         this.loading = false;
         this.recordsTotal = response.recordsTotal;
+        this.recordsFiltered = response.recordsFiltered;
         this.users = JSON.parse(JSON.stringify(response.data));
         // don't modify original list - used for comparing
         this.dbUserList = JSON.parse(JSON.stringify(response.data));
@@ -933,8 +918,5 @@ export default {
 .users-table-striped :deep(.user-detail-row > td) {
   padding-top: 6px !important;
   padding-bottom: 6px !important;
-}
-.header-with-tip {
-  cursor: help;
 }
 </style>

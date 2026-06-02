@@ -250,6 +250,7 @@ function checkConfigCode (req, res, next) {
     }
   }
 
+  // TODO(Arkime 7): do not log the correct config PIN code - it leaks the secret to anyone with log access.
   console.log(`Incorrect pin/TOTP code used - Config pin code is: ${internals.configCode}`);
   return res.send(JSON.stringify({ success: false, text: 'Not authorized, check log file' })); // not specific error
 }
@@ -1659,7 +1660,7 @@ if (internals.webconfig) {
   app.get('/api/appversion', (req, res) => {
     return res.send({ app: 'wiseService', version: version.version });
   });
-  app.get(['/source/:source/get', '/config/get'], (req, res) => {
+  app.get(['/source/:source/get', '/config/get', '/api/user'], (req, res) => {
     return res.send({ success: false, text: 'Must start wiseService with --webconfig option' });
   });
   app.put(['/source/:source/put', '/config/save'], (req, res) => {

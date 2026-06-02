@@ -4,7 +4,6 @@
  */
 #include "arkime.h"
 #include <arpa/inet.h>
-#include <netinet/udp.h>
 
 extern ArkimeConfig_t        config;
 

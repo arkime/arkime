@@ -73,14 +73,11 @@ SPDX-License-Identifier: Apache-2.0
             @click.self="sortViews('name')">
             {{ $t('settings.views.table-name') }}
             <v-icon
-              icon="mdi-sort-ascending"
+              icon="mdi-chevron-up"
               v-show="viewsQuery.sortField === 'name' && !viewsQuery.desc" />
             <v-icon
-              icon="mdi-sort-descending"
+              icon="mdi-chevron-down"
               v-show="viewsQuery.sortField === 'name' && viewsQuery.desc" />
-            <v-icon
-              icon="mdi-unfold-more-horizontal"
-              v-show="viewsQuery.sortField !== 'name'" />
           </th>
           <th>{{ $t('settings.views.table-creator') }}</th>
           <th>{{ $t('settings.views.table-expression') }}</th>

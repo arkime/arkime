@@ -197,7 +197,7 @@ class HuntAPIs {
     // Send notifier alert if configured
     if (hunt.notifier) {
       const message = `
-*${hunt.name}* hunt job paused with error: *${error.value}*
+*${ArkimeUtil.safeStr(hunt.name)}* hunt job paused with error: *${ArkimeUtil.safeStr(error.value)}*
 *${hunt.matchedSessions}* matched sessions out of *${hunt.searchedSessions}* searched sessions.
 ${Config.arkimeWebURL()}hunt
       `;
@@ -426,7 +426,7 @@ ${Config.arkimeWebURL()}hunt
 
         if (hunt.notifier) {
           const message = `
-*${hunt.name}* hunt job finished:
+*${ArkimeUtil.safeStr(hunt.name)}* hunt job finished:
 *${hunt.matchedSessions}* matched sessions out of *${hunt.searchedSessions}* searched sessions.
 ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.query.stopTime}&startTime=${hunt.query.startTime}
           `;
@@ -601,7 +601,7 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
 
         if (hunt.notifier) {
           const message = `
-*${hunt.name}* hunt job finished:
+*${ArkimeUtil.safeStr(hunt.name)}* hunt job finished:
 *${hunt.matchedSessions}* matched sessions out of *${hunt.searchedSessions}* searched sessions.
 ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.query.stopTime}&startTime=${hunt.query.startTime}
           `;

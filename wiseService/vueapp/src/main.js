@@ -61,6 +61,8 @@ async function initializeApp () {
         maxWidth: 400
       },
       VBtn: { density: 'compact', variant: 'flat' },
+      VDataTable: { sortAscIcon: 'mdi:mdi-chevron-up', sortDescIcon: 'mdi:mdi-chevron-down' },
+      VDataTableServer: { sortAscIcon: 'mdi:mdi-chevron-up', sortDescIcon: 'mdi:mdi-chevron-down' },
       VCard: {
         elevation: 4
       }

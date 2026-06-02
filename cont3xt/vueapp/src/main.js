@@ -64,6 +64,8 @@ async function initializeApp () {
         maxWidth: 400 // increase the width of tooltips (because andy said so)
       },
       VBtn: { density: 'compact', variant: 'flat' },
+      VDataTable: { sortAscIcon: 'mdi:mdi-chevron-up', sortDescIcon: 'mdi:mdi-chevron-down' },
+      VDataTableServer: { sortAscIcon: 'mdi:mdi-chevron-up', sortDescIcon: 'mdi:mdi-chevron-down' },
       VCard: {
         elevation: 4,
         density: 'compact'

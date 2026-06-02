@@ -6,14 +6,7 @@ SPDX-License-Identifier: Apache-2.0
   <div>
     <div class="sub-navbar">
       <span class="sub-navbar-title">
-        <span class="fa-stack">
-          <v-icon
-            icon="mdi-upload"
-            class="fa-stack-1x" />
-          <v-icon
-            icon="mdi-checkbox-blank-outline"
-            class="fa-stack-2x" />
-        </span>&nbsp;
+        <v-icon icon="mdi-tray-arrow-up" />&nbsp;
         {{ $t('uploads.uploadFile') }}
       </span>
       <div class="float-right small toast-container">

@@ -103,17 +103,13 @@ SPDX-License-Identifier: Apache-2.0
                 @click="columnClick(index, 'name')">
                 {{ $t('spigraph.tableValue') }}
                 <v-icon
-                  icon="mdi-sort-ascending"
+                  icon="mdi-chevron-up"
                   class="ms-2"
                   v-show="tableSortField === index && tableSortType === 'name' && !tableDesc" />
                 <v-icon
-                  icon="mdi-sort-descending"
+                  icon="mdi-chevron-down"
                   class="ms-2"
                   v-show="tableSortField === index && tableSortType === 'name' && tableDesc" />
-                <v-icon
-                  icon="mdi-unfold-more-horizontal"
-                  class="ms-2"
-                  v-show="tableSortField !== index || tableSortType !== 'name'" />
               </th>
               <th
                 class="cursor-pointer"
@@ -122,17 +118,13 @@ SPDX-License-Identifier: Apache-2.0
                 v-if="item && !item.hide">
                 {{ $t('spigraph.tableCount') }}
                 <v-icon
-                  icon="mdi-sort-ascending"
+                  icon="mdi-chevron-up"
                   class="ms-2"
                   v-show="tableSortField === index && tableSortType === 'size' && !tableDesc" />
                 <v-icon
-                  icon="mdi-sort-descending"
+                  icon="mdi-chevron-down"
                   class="ms-2"
                   v-show="tableSortField === index && tableSortType === 'size' && tableDesc" />
-                <v-icon
-                  icon="mdi-unfold-more-horizontal"
-                  class="ms-2"
-                  v-show="tableSortField !== index || tableSortType !== 'size'" />
                 <a
                   @click="hideColumn(item)"
                   class="float-right ms-2"
@@ -219,6 +211,7 @@ import DragList from '../utils/DragList.vue';
 import Utils from '../utils/utils';
 import { commaString } from '@common/vueFilters.js';
 import { resolveMessage } from '@common/resolveI18nMessage';
+import { attachTableGrips } from '@common/composables/useColumnResize.js';
 
 let d3; // lazy load d3
 let sankey, sankeyLinkHorizontal; // lazy load d3-sankey
@@ -252,57 +245,7 @@ const sankeyMargin = { top: 10, right: 10, bottom: 10, left: 10 };
 let sankeyWidth = getSankeyWidth();
 let sankeyHeight = getSankeyHeight();
 
-// column resize variables ------------------------------------------------- //
-let selectedColElem; // store selected column to watch drag and calculate new column width
-let colStartOffset; // store column offset width to calculate new column width
-let colWidthBeforeResize; // sore column width before resize to calculate diff
-let tableWidthBeforeResize; // store table width before column resize to add to col resize diff
-let table; // store table element to update its width after column resize
-let cols; // store cols to add grip event handlers and save new widths
-let selectedGripElem; // store the grip to style it while resizing column
-
-// column resize functions ------------------------------------------------- //
-// fired when a column resize grip is clicked
-// stores values for calculations when the grip is unclicked
-function gripClick (e, col) {
-  e.preventDefault();
-  e.stopPropagation();
-  selectedColElem = col;
-  colWidthBeforeResize = col.style.width.slice(0, -2);
-  tableWidthBeforeResize = table.style.width.slice(0, -2);
-  colStartOffset = col.offsetWidth - e.pageX;
-  selectedGripElem = col.getElementsByClassName('grip')[0];
-}
-
-// fired when the column resize grip is dragged
-// styles the grip to show where it's being dragged
-function gripDrag (e) { // move the grip where the user moves their cursor
-  if (selectedColElem && selectedGripElem) {
-    const newWidth = colStartOffset + e.pageX;
-    selectedGripElem.style.borderLeft = '1px dotted rgb(var(--v-theme-neutral))';
-    selectedGripElem.style.left = `${newWidth}px`;
-  }
-}
-
-// fired when a clicked and dragged grip is dropped
-// updates the column and table width and saves the values
-function gripUnclick (e, vueThis) {
-  if (selectedColElem && selectedGripElem) {
-    const newWidth = Math.max(colStartOffset + e.pageX, 70); // min col width is 70px
-    selectedColElem.style.width = `${newWidth}px`;
-
-    // update the width of the table. need to do this or else the table
-    // cannot overflow its container
-    const diff = newWidth - colWidthBeforeResize;
-    table.style.width = `${parseInt(tableWidthBeforeResize) + parseInt(diff)}px`;
-
-    selectedGripElem.style.borderLeft = 'unset';
-    selectedGripElem.style.left = 'unset';
-  }
-
-  selectedGripElem = undefined;
-  selectedColElem = undefined;
-}
+const MIN_COL_WIDTH = 70;
 
 // pie functions ----------------------------------------------------------- //
 function getWindowWidth () {
@@ -1233,39 +1176,19 @@ export default {
     },
     initializeColResizable: function () {
       this.destroyColResizable();
-
       this.$nextTick(() => {
-        cols = document.getElementsByClassName('col-header');
-        table = this.$refs.table;
-
-        for (const col of cols) { // listen for grip dragging
-          const grip = col.getElementsByClassName('grip')[0];
-          if (grip) {
-            grip.addEventListener('mousedown', (e) => gripClick(e, col));
-          }
-        }
-
-        document.addEventListener('mousemove', gripDrag);
-        const self = this;
-        document.addEventListener('mouseup', (e) => gripUnclick(e, self));
+        this._gripAttachment = attachTableGrips({
+          cols: document.getElementsByClassName('col-header'),
+          table: this.$refs.table,
+          minWidth: MIN_COL_WIDTH
+        });
       });
     },
     destroyColResizable () {
-      if (!cols) return;
-
-      for (const col of cols) { // remove all grip dragging listeners
-        const grip = col.getElementsByClassName('grip')[0];
-        if (grip) {
-          grip.removeEventListener('mousedown', gripClick);
-        }
+      if (this._gripAttachment) {
+        this._gripAttachment.detach();
+        this._gripAttachment = null;
       }
-
-      // remove document listeners
-      document.removeEventListener('mousemove', gripDrag);
-      document.removeEventListener('mouseup', gripUnclick);
-
-      cols = undefined;
-      table = undefined;
     },
     /**
      * Transforms sankey node data to match the popup component expectations

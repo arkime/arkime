@@ -65,6 +65,22 @@ SPDX-License-Identifier: Apache-2.0
                 <div class="enter-arm" />
               </span>
             </v-btn>
+            <v-btn
+              id="seeAllHistoryBtn"
+              class="ms-1"
+              variant="flat"
+              size="large"
+              color="primary"
+              v-has-role="{user:user,roles:'arkimeAdmin'}"
+              @click="toggleSeeAll">
+              <v-icon
+                class="me-1"
+                icon="mdi-account-circle" />
+              See {{ seeAll ? ' MY ' : ' ALL ' }} History
+              <v-tooltip activator="#seeAllHistoryBtn">
+                {{ seeAll ? $t('history.seeMyHistoryTip') : $t('history.seeAllHistoryTip') }}
+              </v-tooltip>
+            </v-btn>
           </div> <!-- /search row -->
 
           <!-- time row -->
@@ -98,20 +114,7 @@ SPDX-License-Identifier: Apache-2.0
       <thead>
         <tr>
           <th width="100px;">
-            <v-btn
-              id="toggleColFilters"
-              :aria-label="$t('history.toggleColFiltersTip')"
-              variant="flat"
-              color="primary"
-              size="x-small"
-              density="comfortable"
-              icon
-              @click="showColFilters = !showColFilters">
-              <v-icon icon="mdi-filter" />
-              <v-tooltip activator="#toggleColFilters">
-                {{ $t('history.toggleColFiltersTip') }}
-              </v-tooltip>
-            </v-btn>
+            &nbsp;
           </th>
           <th
             :key="column.name"
@@ -120,28 +123,6 @@ SPDX-License-Identifier: Apache-2.0
             :style="{'width': `${column.width}%`}"
             v-has-role="{user:user,roles:column.role}"
             :class="`cursor-pointer ${column.classes}`">
-            <input
-              type="checkbox"
-              id="seeAll"
-              @change="toggleSeeAll"
-              class="checkbox d-inline me-2"
-              v-if="column.sort == 'userId'">
-            <v-tooltip
-              activator="#seeAll"
-              location="bottom">
-              <span v-html="$t('history.seeAllTipHtml')" />
-            </v-tooltip>
-            <input
-              type="text"
-              @click.stop
-              data-lpignore="true"
-              @keyup="debounceSearch"
-              v-model="filters[column.sort]"
-              v-has-permission="column.permission"
-              v-if="column.filter && showColFilters"
-              :placeholder="$t('history.filterByPlaceholder', { name: column.name })"
-              class="input-filter"
-              :id="`filter-${column.name}`">
             <div
               v-if="column.exists"
               :id="`exists-${column.name}`"
@@ -160,19 +141,17 @@ SPDX-License-Identifier: Apache-2.0
             <div
               class="header-div break-word"
               :id="`column-${column.name}`"
-              @click="columnClick(column.sort)">
-              <span v-if="column.sort !== undefined">
+              :class="{ 'cursor-pointer': !column.nosort }"
+              @click="!column.nosort && columnClick(column.sort)">
+              {{ column.name }}
+              <span v-if="column.sort !== undefined && !column.nosort">
                 <v-icon
-                  icon="mdi-sort-ascending"
+                  icon="mdi-chevron-up"
                   v-show="sortField === column.sort && !desc" />
                 <v-icon
-                  icon="mdi-sort-descending"
+                  icon="mdi-chevron-down"
                   v-show="sortField === column.sort && desc" />
-                <v-icon
-                  icon="mdi-unfold-more-horizontal"
-                  v-show="sortField !== column.sort" />
               </span>
-              {{ column.name }}
               <v-tooltip
                 location="bottom"
                 :activator="`[id='column-${column.name}']`">
@@ -458,7 +437,6 @@ export default {
       recordsTotal: 0,
       recordsFiltered: 0,
       expandedLogs: { change: false },
-      showColFilters: false,
       colSpan: 8,
       filters: {},
       sortField: 'timestamp',
@@ -492,12 +470,12 @@ export default {
       return [
         intl({ sort: 'timestamp', width: 13 }),
         intl({ sort: 'range', width: 11, classes: 'text-end' }),
-        intl({ sort: 'userId', width: 10, filter: true, role: 'arkimeAdmin' }),
+        intl({ sort: 'userId', width: 10, role: 'arkimeAdmin' }),
         intl({ sort: 'queryTime', width: 8, classes: 'text-end' }),
         intl({ sort: 'method', width: 8 }),
-        intl({ sort: 'api', width: 15, filter: true }),
+        intl({ sort: 'api', width: 15 }),
         intl({ sort: 'expression', width: 20, exists: false }),
-        intl({ sort: 'view.name', width: 15, exists: false })
+        intl({ sort: 'view.name', width: 15, exists: false, nosort: true })
       ];
     },
     query: function () {
@@ -564,8 +542,8 @@ export default {
     },
     /* exposed page functions ------------------------------------ */
     toggleSeeAll () {
+      this.seeAll = !this.seeAll;
       this.filters.userId = this.seeAll ? '' : this.user.userId;
-      if (this.seeAll) { this.showColFilters = true; }
       this.loadData();
     },
     debounceSearch: function () {

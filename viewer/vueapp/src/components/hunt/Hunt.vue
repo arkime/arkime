@@ -761,14 +761,11 @@ SPDX-License-Identifier: Apache-2.0
                 @click="columnClick('status')">
                 {{ $t('hunts.jobStatus') }}
                 <v-icon
-                  icon="mdi-sort-ascending"
+                  icon="mdi-chevron-up"
                   v-show="query.sortField === 'status' && !query.desc" />
                 <v-icon
-                  icon="mdi-sort-descending"
+                  icon="mdi-chevron-down"
                   v-show="query.sortField === 'status' && query.desc" />
-                <v-icon
-                  icon="mdi-unfold-more-horizontal"
-                  v-show="query.sortField !== 'status'" />
               </th>
               <th>
                 {{ $t('hunts.jobMatches') }}
@@ -778,28 +775,22 @@ SPDX-License-Identifier: Apache-2.0
                 @click="columnClick('name')">
                 {{ $t('hunts.jobName') }}
                 <v-icon
-                  icon="mdi-sort-ascending"
+                  icon="mdi-chevron-up"
                   v-show="query.sortField === 'name' && !query.desc" />
                 <v-icon
-                  icon="mdi-sort-descending"
+                  icon="mdi-chevron-down"
                   v-show="query.sortField === 'name' && query.desc" />
-                <v-icon
-                  icon="mdi-unfold-more-horizontal"
-                  v-show="query.sortField !== 'name'" />
               </th>
               <th
                 class="cursor-pointer no-wrap"
                 @click="columnClick('userId')">
                 {{ $t('hunts.jobUser') }}
                 <v-icon
-                  icon="mdi-sort-ascending"
+                  icon="mdi-chevron-up"
                   v-show="query.sortField === 'userId' && !query.desc" />
                 <v-icon
-                  icon="mdi-sort-descending"
+                  icon="mdi-chevron-down"
                   v-show="query.sortField === 'userId' && query.desc" />
-                <v-icon
-                  icon="mdi-unfold-more-horizontal"
-                  v-show="query.sortField !== 'userId'" />
               </th>
               <th>
                 {{ $t('hunts.jobSearch') }}
@@ -809,14 +800,11 @@ SPDX-License-Identifier: Apache-2.0
                 @click="columnClick('created')">
                 {{ $t('common.created') }}
                 <v-icon
-                  icon="mdi-sort-ascending"
+                  icon="mdi-chevron-up"
                   v-show="query.sortField === 'created' && !query.desc" />
                 <v-icon
-                  icon="mdi-sort-descending"
+                  icon="mdi-chevron-down"
                   v-show="query.sortField === 'created' && query.desc" />
-                <v-icon
-                  icon="mdi-unfold-more-horizontal"
-                  v-show="query.sortField !== 'created'" />
               </th>
               <th>
                 ID

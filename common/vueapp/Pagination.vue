@@ -22,11 +22,11 @@
 
     <div
       class="arkime-input-group paging-wrapper"
-      :class="{ 'paging-wrapper--hide-last': totalPages > 9 }">
+      :class="{ 'paging-wrapper--hide-last': totalPages > 5 }">
       <v-pagination
         density="compact"
         size="small"
-        :total-visible="9"
+        :total-visible="5"
         :length="totalPages"
         :model-value="currentPage"
         @update:model-value="currentPageUpdated" />

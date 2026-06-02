@@ -928,6 +928,7 @@ export default {
   border: 0 !important;
   color: rgb(var(--v-theme-foreground)) !important;
   opacity: 0.78;
+  transform: translateY(3px);
 }
 .stats-tabs .stats-tab-strip .v-btn:hover {
   background-color: rgb(var(--v-theme-background)) !important;
@@ -944,6 +945,9 @@ export default {
   background-color: rgb(var(--v-theme-primary)) !important;
   filter: brightness(1.08);
 }
+.stats-tabs .stats-tab-strip .v-btn .v-btn__content {
+  transform: translateY(-1px);
+}
 .stats-tabs .stats-tab-strip .v-btn .v-icon {
   font-size: 15px;
   margin-inline-end: 6px;
@@ -958,6 +962,13 @@ export default {
 }
 .stats-tabs .stats-tab-content {
   padding-top: 50px;
+}
+
+/* shrink the column header font on stats tables one notch so that the
+   long headers (Sessions/s, Packet Q, Free Space, etc.) fit without
+   needing per-column width tweaks */
+.stats-content .arkime-table > thead > tr > th {
+  font-size: 0.875rem;
 }
 </style>
 

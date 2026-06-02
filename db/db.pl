@@ -4537,6 +4537,34 @@ sub sessions3Update
         }
       }
     },
+    "arp" : {
+      "properties" : {
+        "ip" : {
+          "type" : "ip"
+        },
+        "ipCnt" : {
+          "type" : "long"
+        },
+        "mac" : {
+          "type" : "keyword"
+        },
+        "macCnt" : {
+          "type" : "long"
+        },
+        "opcode" : {
+          "type" : "integer"
+        },
+        "opcodeCnt" : {
+          "type" : "long"
+        },
+        "oui" : {
+          "type" : "keyword"
+        },
+        "ouiCnt" : {
+          "type" : "long"
+        }
+      }
+    },
     "dhcp" : {
       "properties" : {
         "classId" : {
@@ -5503,6 +5531,22 @@ sub sessions3Update
     },
     "node" : {
       "type" : "keyword"
+    },
+    "opcua" : {
+      "properties" : {
+        "endpointUrl" : {
+          "type" : "keyword"
+        },
+        "endpointUrlCnt" : {
+          "type" : "long"
+        },
+        "securityPolicyUri" : {
+          "type" : "keyword"
+        },
+        "securityPolicyUriCnt" : {
+          "type" : "long"
+        }
+      }
     },
     "ospf" : {
       "properties" : {

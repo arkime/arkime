@@ -45,7 +45,7 @@
           icon="mdi-magnify-scan"
           size="small"
           class="me-1" />
-        tshark
+        Shark
         <span
           v-if="tsharkPackets.length"
           class="ms-2 small text-medium-emphasis">{{ tsharkPackets.length }}</span>
