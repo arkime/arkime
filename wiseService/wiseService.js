@@ -1462,6 +1462,17 @@ if (internals.webconfig) {
 
   // ----------------------------------------------------------------------------
   /**
+   * GET - /api/user
+   *
+   * Fetches the currently logged in user, so the UI can gate admin-only actions.
+   *       This is an authenticated API and requires wiseService to be started with --webconfig.
+   * @name "/api/user"
+   * @returns {ArkimeUser} The currently logged in user.
+   */
+  app.get('/api/user', [ArkimeUtil.noCacheJson, isWiseUser], User.apiGetUser);
+
+  // ----------------------------------------------------------------------------
+  /**
    * GET - /api/user/settings
    *
    * Returns the shared Vuetify theme keys for the logged-in user. Used
