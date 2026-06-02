@@ -43,10 +43,10 @@ export default {
     // Hydrate the Vuetify theme from user.settings; if the server has
     // no value yet, push localStorage up so the choice follows the user
     // to other browsers/devices on next load. wise has no other
-    // user-fetching hook on startup, so we hit /api/user/settings directly.
-    fetch('api/user/settings').then((r) => r.ok ? r.json() : {}).then((data) => {
+    // user-fetching hook on startup, so we hit /api/settings directly.
+    fetch('api/settings').then((r) => r.ok ? r.json() : {}).then((data) => {
       hydrateOrMigrateTheme({
-        url: 'api/user/settings',
+        url: 'api/settings/update',
         settings: data,
         localThemeKey: 'wiseTheme',
         localCustomKey: 'wiseCustomTheme'

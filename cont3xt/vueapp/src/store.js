@@ -315,7 +315,7 @@ const store = createStore({
       // key every Arkime app reads/writes, so the pick follows the user
       // into viewer / parliament / wise too.
       localStorage.setItem(LOCAL_THEME_KEY, JSON.stringify(data));
-      postThemeSettings('api/user/settings', { [VUETIFY_THEME_KEY]: data });
+      postThemeSettings('api/settings/update', { [VUETIFY_THEME_KEY]: data });
     },
     SET_CUSTOM_THEME (state, data) {
       state.customTheme = data;
@@ -324,7 +324,7 @@ const store = createStore({
       } else {
         localStorage.removeItem(LOCAL_CUSTOM_KEY);
       }
-      postThemeSettings('api/user/settings', { [VUETIFY_CUSTOM_THEME_KEY]: data ?? null });
+      postThemeSettings('api/settings/update', { [VUETIFY_CUSTOM_THEME_KEY]: data ?? null });
     },
     /* Apply theme values loaded from user.settings on app startup
        *without* echoing them back to the server. Used by App.vue's

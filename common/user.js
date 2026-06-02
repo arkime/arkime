@@ -1190,7 +1190,7 @@ class User {
   static apiUpdateSettingsHandler (allowlist, objectKeys = [], opts = {}) {
     const allowed = new Set(allowlist);
     const objAllowed = new Set(objectKeys);
-    const { successI18n, failureI18n } = opts;
+    const { successI18n = 'api.users.settingsUpdated', failureI18n = 'api.users.settingsUpdateFailed' } = opts;
     return (req, res) => {
       const merged = { ...(req.settingUser.settings ?? {}) };
       for (const key of allowed) {

@@ -1,7 +1,7 @@
 # Many of these test user/roles start with sac- (skip auto create) because
 # otherwise viewer in regression mode would auto create the user.
 # Some day should remove all autocreate code.
-use Test::More tests => 258;
+use Test::More tests => 265;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -176,6 +176,25 @@ anonymous,,true,true,false,"arkimeAdmin, cont3xtUser, parliamentUser, usersAdmin
 # restore logo to string value
     $json = viewerPostToken("/api/user/settings?arkimeRegressionUser=sac-test1", '{"logo":"testlogo.png"}', $test1Token);
     is($json->{success}, 1, "restore logo setting");
+
+# update user settings - vuetifyTheme is the shared cross-app theme key (string)
+    $json = viewerPostToken("/api/user/settings?arkimeRegressionUser=sac-test1", '{"vuetifyTheme":"cotton-candy"}', $test1Token);
+    is($json->{success}, 1, "update vuetifyTheme setting");
+    $json = viewerGetToken("/api/user/settings?arkimeRegressionUser=sac-test1", $test1Token);
+    is($json->{vuetifyTheme}, "cotton-candy", "vuetifyTheme string stored");
+
+# update user settings - vuetifyCustomTheme is on the object allowlist, so its object value is kept
+    $json = viewerPostToken("/api/user/settings?arkimeRegressionUser=sac-test1", '{"vuetifyCustomTheme":{"dark":true,"colors":{"primary":"#ff00ff"}}}', $test1Token);
+    is($json->{success}, 1, "update vuetifyCustomTheme object setting");
+    $json = viewerGetToken("/api/user/settings?arkimeRegressionUser=sac-test1", $test1Token);
+    eq_or_diff($json->{vuetifyCustomTheme}->{colors}->{primary}, "#ff00ff", "vuetifyCustomTheme object stored");
+    ok($json->{vuetifyCustomTheme}->{dark}, "vuetifyCustomTheme dark flag stored");
+
+# update user settings - keys not on the allowlist are silently dropped
+    $json = viewerPostToken("/api/user/settings?arkimeRegressionUser=sac-test1", '{"notARealSetting":"nope"}', $test1Token);
+    is($json->{success}, 1, "update with unknown key succeeds");
+    $json = viewerGetToken("/api/user/settings?arkimeRegressionUser=sac-test1", $test1Token);
+    ok(!exists $json->{notARealSetting}, "unknown setting key was dropped");
 
 # Add User 2
     my $json = viewerPostToken2("/api/user", '{"userId": "sac-test2", "userName": "UserName2", "enabled":true, "password":"password"}', $token2);

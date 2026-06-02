@@ -240,22 +240,20 @@ app.post('/api/user/totp/setup', [jsonParser, checkCookieToken, Auth.getSettingU
 app.post('/api/user/totp/confirm', [jsonParser, checkCookieToken, Auth.getSettingUserDb, ArkimeUtil.noCacheJson, User.checkSettingUserAnyRole(['arkimeAdmin', 'cont3xtAdmin', 'wiseAdmin'])], User.apiConfirmTotp);
 app.post('/api/user/totp/disable', [jsonParser, checkCookieToken, Auth.getSettingUserDb, ArkimeUtil.noCacheJson, User.checkSettingUserAnyRole(['arkimeAdmin', 'cont3xtAdmin', 'wiseAdmin'])], User.apiDisableTotp);
 
-// /api/user/settings must precede /api/user/:id so Express doesn't match
-// `:id = 'settings'` (which would gate on usersAdmin). Mirrors viewer's
-// route order at viewer/viewer.js:1353.
 /**
- * POST - /api/user/settings
+ * POST - /api/settings/update
  *
  * Persists the shared Vuetify theme keys (`vuetifyTheme`,
  * `vuetifyCustomTheme`) onto the logged-in user's `settings`. These
  * are the same keys every Arkime app reads/writes, so a theme picked
  * in any app follows the user into all of them. Other keys posted
- * here are silently dropped.
- * @name /user/settings
+ * here are silently dropped. Lives off `/api/user/` so a userId like
+ * `settings` isn't shadowed by the `/api/user/:id` routes.
+ * @name /settings/update
  * @returns {boolean} success - Whether the update was successful
  * @returns {string} text - The success/error message
  */
-app.post('/api/user/settings',
+app.post('/api/settings/update',
   [jsonParser, ArkimeUtil.noCacheJson, checkCookieToken, Auth.getSettingUserDb],
   User.apiUpdateSettingsHandler(User.THEME_SETTINGS_KEYS, User.THEME_SETTINGS_OBJECT_KEYS)
 );

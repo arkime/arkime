@@ -272,7 +272,7 @@ export default {
     },
     hydrateThemeFromUser (user) {
       hydrateOrMigrateTheme({
-        url: 'api/user/settings',
+        url: 'api/settings/update',
         settings: user?.settings,
         localThemeKey: 'cont3xtVuetifyTheme',
         localCustomKey: 'cont3xtVuetifyCustomTheme',

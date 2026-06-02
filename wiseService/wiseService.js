@@ -1473,25 +1473,25 @@ if (internals.webconfig) {
 
   // ----------------------------------------------------------------------------
   /**
-   * GET - /api/user/settings
+   * GET - /api/settings
    *
    * Returns the shared Vuetify theme keys for the logged-in user. Used
    * by the wise UI on startup to hydrate the Vuetify theme picker from
    * the server. These are the same keys every Arkime app reads/writes,
    * so a user's choice follows them across apps and browsers.
    *
-   * @name "/api/user/settings"
+   * @name "/api/settings"
    * @returns {string} vuetifyTheme - The saved theme id
    * @returns {object} vuetifyCustomTheme - The saved custom-theme object
    */
-  app.get('/api/user/settings', [ArkimeUtil.noCacheJson, isWiseUser, Auth.getSettingUserDb], (req, res) => {
+  app.get('/api/settings', [ArkimeUtil.noCacheJson, isWiseUser, Auth.getSettingUserDb], (req, res) => {
     const settings = req.settingUser?.settings ?? {};
     return res.send(Object.fromEntries(User.THEME_SETTINGS_KEYS.map(k => [k, settings[k]])));
   });
 
   // ----------------------------------------------------------------------------
   /**
-   * POST - /api/user/settings
+   * POST - /api/settings/update
    *
    * Persists the shared Vuetify theme keys (`vuetifyTheme`,
    * `vuetifyCustomTheme`) onto the logged-in user's `settings`. These
@@ -1499,11 +1499,11 @@ if (internals.webconfig) {
    * in any app follows the user into all of them. Other keys posted
    * here are dropped.
    *
-   * @name "/api/user/settings"
+   * @name "/api/settings/update"
    * @returns {boolean} success
    * @returns {string} text
    */
-  app.post('/api/user/settings',
+  app.post('/api/settings/update',
     [ArkimeUtil.noCacheJson, jsonParser, isWiseUser, Auth.getSettingUserDb],
     User.apiUpdateSettingsHandler(User.THEME_SETTINGS_KEYS, User.THEME_SETTINGS_OBJECT_KEYS)
   );

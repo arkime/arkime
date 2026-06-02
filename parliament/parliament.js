@@ -1705,22 +1705,20 @@ app.post('/parliament/api/users', [jsonParser, User.checkRole('usersAdmin'), set
 app.post('/parliament/api/users/csv', [jsonParser, User.checkRole('usersAdmin'), setCookie], User.apiGetUsersCSV);
 app.post('/parliament/api/user', [jsonParser, checkCookieToken, User.checkRole('usersAdmin')], User.apiCreateUser);
 app.post('/parliament/api/user/password', [jsonParser, checkCookieToken, Auth.getSettingUserDb], User.apiUpdateUserPassword);
-// /api/user/settings must precede /api/user/:id so Express doesn't match
-// `:id = 'settings'` (which would gate on usersAdmin). Mirrors viewer's
-// route order at viewer/viewer.js:1353.
 /**
- * POST - /parliament/api/user/settings
+ * POST - /parliament/api/settings/update
  *
  * Persists the shared Vuetify theme keys (`vuetifyTheme`,
  * `vuetifyCustomTheme`) onto the logged-in user's `settings`. These
  * are the same keys every Arkime app reads/writes, so a theme picked
  * in any app follows the user into all of them. Other keys posted
- * here are dropped.
- * @name /user/settings
+ * here are dropped. Lives off `/api/user/` so a userId like `settings`
+ * isn't shadowed by the `/api/user/:id` routes.
+ * @name /settings/update
  * @returns {boolean} success - Whether the update was successful
  * @returns {string} text - The success/error message
  */
-app.post('/parliament/api/user/settings',
+app.post('/parliament/api/settings/update',
   [jsonParser, ArkimeUtil.noCacheJson, checkCookieToken, Auth.getSettingUserDb],
   User.apiUpdateSettingsHandler(User.THEME_SETTINGS_KEYS, User.THEME_SETTINGS_OBJECT_KEYS)
 );

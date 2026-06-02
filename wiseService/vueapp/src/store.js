@@ -47,7 +47,7 @@ const store = createStore({
       // reads/writes, so the pick follows the user into viewer / cont3xt
       // / parliament too.
       localStorage.setItem('wiseTheme', newTheme);
-      postThemeSettings('api/user/settings', { [VUETIFY_THEME_KEY]: newTheme });
+      postThemeSettings('api/settings/update', { [VUETIFY_THEME_KEY]: newTheme });
     },
     SET_CUSTOM_THEME (state, value) {
       state.customTheme = value;
@@ -56,11 +56,11 @@ const store = createStore({
       } else {
         localStorage.removeItem('wiseCustomTheme');
       }
-      postThemeSettings('api/user/settings', { [VUETIFY_CUSTOM_THEME_KEY]: value ?? null });
+      postThemeSettings('api/settings/update', { [VUETIFY_CUSTOM_THEME_KEY]: value ?? null });
     },
     /* Apply theme values loaded from user.settings on app startup
        *without* echoing them back to the server. Called by App.vue
-       after the initial /api/user/settings fetch resolves. */
+       after the initial /api/settings fetch resolves. */
     HYDRATE_THEME_FROM_SERVER (state, { themeId, customTheme }) {
       if (customTheme && typeof customTheme === 'object' && customTheme.colors) {
         state.customTheme = customTheme;

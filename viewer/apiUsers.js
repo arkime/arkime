@@ -505,8 +505,7 @@ class UserAPIs {
 
   static #updateSettings = User.apiUpdateSettingsHandler(
     UserAPIs.#settingsAllowlist,
-    ['customTheme', ...User.THEME_SETTINGS_OBJECT_KEYS],
-    { successI18n: 'api.users.settingsUpdated', failureI18n: 'api.users.settingsUpdateFailed' }
+    ['customTheme', ...User.THEME_SETTINGS_OBJECT_KEYS]
   );
 
   /**

@@ -51,7 +51,7 @@ export default {
     // to other browsers/devices on next load.
     UserService.getUser().then((user) => {
       hydrateOrMigrateTheme({
-        url: 'api/user/settings',
+        url: 'api/settings/update',
         settings: user?.settings,
         localThemeKey: 'parliamentTheme',
         localCustomKey: 'parliamentCustomTheme'
