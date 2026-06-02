@@ -1154,7 +1154,7 @@ LLVMFuzzerInitialize(int *UNUSED(argc), char ***UNUSED(argv))
     arkime_yara_init();
     arkime_parsers_init();
     arkime_session_init();
-    arkime_plugins_load(config.plugins);
+    arkime_plugins_load(config.plugins, TRUE);
     arkime_config_load_override_ips();
     arkime_rules_init();
     arkime_reader_scheme_register("fuzz", NULL, NULL);
@@ -1213,7 +1213,7 @@ LLVMFuzzerInitialize(int *UNUSED(argc), char ***UNUSED(argv))
     arkime_parsers_init();
     arkime_session_init();
     arkime_dedup_init();
-    arkime_plugins_load(config.plugins);
+    arkime_plugins_load(config.plugins, TRUE);
     arkime_config_load_override_ips();
     arkime_rules_init();
     arkime_packet_batch_init(&batch);
@@ -1297,7 +1297,7 @@ int main(int argc, char **argv)
     arkime_writers_init();
     arkime_readers_init();
     arkime_plugins_init();
-    arkime_plugins_load(config.rootPlugins);
+    arkime_plugins_load(config.rootPlugins, FALSE);
     if (config.pcapReadOffline) {
         if (useScheme ||
             (config.pcapReadFiles && config.pcapReadFiles[0] && strstr(config.pcapReadFiles[0], "://")) ||
@@ -1323,7 +1323,7 @@ int main(int argc, char **argv)
     arkime_parsers_init();
     arkime_session_init();
     arkime_dedup_init();
-    arkime_plugins_load(config.plugins);
+    arkime_plugins_load(config.plugins, TRUE);
     arkime_config_load_override_ips();
     arkime_rules_init();
     g_timeout_add(1, arkime_ready_gfunc, 0);
