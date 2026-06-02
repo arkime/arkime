@@ -354,6 +354,15 @@ pre {
   margin-top: 50px;
 }
 
+/* Standardized padding for the settings content pane (the column holding
+   the active tab's content) so every app's settings page has the same
+   start/end/bottom spacing. !important overrides Vuetify's default v-col
+   gutter so it lands the same whether or not the row uses gutters; top
+   clearance comes from the margin-top rule above. */
+.settings-content-pane {
+  padding: 12px 20px 20px 20px !important;
+}
+
 /* ========================================================================== */
 /* arkime-table: compact themed table for plain <table> elements used by      */
 /* viewer (Hunt/Files/Settings/Shortcuts/Views), parliament (Issues), and any */

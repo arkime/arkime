@@ -45,6 +45,7 @@ SPDX-License-Identifier: Apache-2.0
 
     <!-- content -->
     <v-row
+      no-gutters
       class="settings-content"
       v-if="!loading && !error && settings">
       <!-- navigation -->
@@ -141,7 +142,7 @@ SPDX-License-Identifier: Apache-2.0
         lg="10"
         md="10"
         sm="9"
-        class="settings-right-panel">
+        class="settings-right-panel settings-content-pane">
         <!-- general settings -->
         <form
           v-if="visibleTab === 'general'"
@@ -941,11 +942,13 @@ SPDX-License-Identifier: Apache-2.0
         <form
           v-if="visibleTab === 'theme'"
           id="theme">
-          <h3>{{ $t('settings.themes.title') }}</h3>
-
-          <p>{{ $t('settings.themes.pickTheme') }}</p>
-
-          <hr>
+          <h1 class="mb-3">
+            Themes
+          </h1>
+          <p class="text-medium-emphasis mb-4">
+            Choose a theme or build your own. Themes are saved to your
+            account and apply across all Arkime apps.
+          </p>
 
           <!-- theme picker (incl. Custom card) -->
           <ThemePicker

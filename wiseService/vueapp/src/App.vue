@@ -6,7 +6,7 @@ SPDX-License-Identifier: Apache-2.0
   <div id="app">
     <template v-if="compatibleBrowser">
       <wise-navbar />
-      <router-view class="wise-page-content" />
+      <router-view />
       <wise-footer />
     </template>
     <wise-upgrade-browser v-else />
@@ -83,9 +83,5 @@ html {
 }
 #app {
   padding-bottom: 25px;
-}
-/* a bit of breathing room under the fixed navbar */
-.wise-page-content {
-  padding-top: 12px;
 }
 </style>
