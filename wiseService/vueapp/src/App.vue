@@ -48,8 +48,6 @@ export default {
       hydrateOrMigrateTheme({
         url: 'api/user/settings',
         settings: data,
-        serverThemeKey: 'wiseVuetifyTheme',
-        serverCustomKey: 'wiseVuetifyCustomTheme',
         localThemeKey: 'wiseTheme',
         localCustomKey: 'wiseCustomTheme'
       }, (themeId, customTheme) => {

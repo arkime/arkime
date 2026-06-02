@@ -1711,16 +1711,18 @@ app.post('/parliament/api/user/password', [jsonParser, checkCookieToken, Auth.ge
 /**
  * POST - /parliament/api/user/settings
  *
- * Persists the parliament-specific theme keys
- * (`parliamentVuetifyTheme`, `parliamentVuetifyCustomTheme`) onto the
- * logged-in user's `settings`. Other keys posted here are dropped.
+ * Persists the shared Vuetify theme keys (`vuetifyTheme`,
+ * `vuetifyCustomTheme`) onto the logged-in user's `settings`. These
+ * are the same keys every Arkime app reads/writes, so a theme picked
+ * in any app follows the user into all of them. Other keys posted
+ * here are dropped.
  * @name /user/settings
  * @returns {boolean} success - Whether the update was successful
  * @returns {string} text - The success/error message
  */
 app.post('/parliament/api/user/settings',
   [jsonParser, ArkimeUtil.noCacheJson, checkCookieToken, Auth.getSettingUserDb],
-  User.apiUpdateSettingsHandler(['parliamentVuetifyTheme', 'parliamentVuetifyCustomTheme'], ['parliamentVuetifyCustomTheme'])
+  User.apiUpdateSettingsHandler(User.THEME_SETTINGS_KEYS, User.THEME_SETTINGS_OBJECT_KEYS)
 );
 
 app.delete('/parliament/api/user/:id', [jsonParser, checkCookieToken, User.checkRole('usersAdmin')], User.apiDeleteUser);

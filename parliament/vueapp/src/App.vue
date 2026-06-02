@@ -53,8 +53,6 @@ export default {
       hydrateOrMigrateTheme({
         url: 'api/user/settings',
         settings: user?.settings,
-        serverThemeKey: 'parliamentVuetifyTheme',
-        serverCustomKey: 'parliamentVuetifyCustomTheme',
         localThemeKey: 'parliamentTheme',
         localCustomKey: 'parliamentCustomTheme'
       }, (themeId, customTheme) => {

@@ -5,6 +5,7 @@ SPDX-License-Identifier: Apache-2.0
 import { createStore } from 'vuex';
 import { THEMES, DEFAULT_THEME_ID } from '@common/themes/manifest.js';
 import { postThemeSettings } from '@common/themes/persistTheme.js';
+import { VUETIFY_THEME_KEY, VUETIFY_CUSTOM_THEME_KEY } from '@common/themes/customTheme.js';
 
 /* Load the saved theme id from localStorage. Migrates the legacy
    'light' / 'dark' string format to the new manifest ids. Falls back
@@ -52,8 +53,12 @@ const store = createStore({
     },
     setTheme (state, value) {
       state.theme = value;
+      // localStorage stays per-app (per-origin fast-paint cache); the
+      // server save uses the shared `vuetifyTheme` key every Arkime app
+      // reads/writes, so the pick follows the user into viewer / cont3xt
+      // / wise too.
       localStorage.setItem('parliamentTheme', value);
-      postThemeSettings('api/user/settings', { parliamentVuetifyTheme: value });
+      postThemeSettings('api/user/settings', { [VUETIFY_THEME_KEY]: value });
     },
     setCustomTheme (state, value) {
       state.customTheme = value;
@@ -62,7 +67,7 @@ const store = createStore({
       } else {
         localStorage.removeItem('parliamentCustomTheme');
       }
-      postThemeSettings('api/user/settings', { parliamentVuetifyCustomTheme: value ?? null });
+      postThemeSettings('api/user/settings', { [VUETIFY_CUSTOM_THEME_KEY]: value ?? null });
     },
     /* Apply theme values loaded from user.settings on app startup
        *without* echoing them back to the server. Called by App.vue

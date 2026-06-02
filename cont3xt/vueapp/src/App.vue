@@ -274,8 +274,6 @@ export default {
       hydrateOrMigrateTheme({
         url: 'api/user/settings',
         settings: user?.settings,
-        serverThemeKey: 'cont3xtVuetifyTheme',
-        serverCustomKey: 'cont3xtVuetifyCustomTheme',
         localThemeKey: 'cont3xtVuetifyTheme',
         localCustomKey: 'cont3xtVuetifyCustomTheme',
         themeIsJsonEncoded: true

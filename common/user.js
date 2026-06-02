@@ -1161,6 +1161,13 @@ class User {
     });
   }
 
+  // Shared cross-app Vuetify theme settings keys. viewer / cont3xt /
+  // parliament / wise all read+write these same keys on user.settings,
+  // so a theme set in any app follows the user into all of them.
+  // Frontend mirror: common/vueapp/themes/customTheme.js.
+  static THEME_SETTINGS_KEYS = ['vuetifyTheme', 'vuetifyCustomTheme'];
+  static THEME_SETTINGS_OBJECT_KEYS = ['vuetifyCustomTheme'];
+
   /**
    * Build an Express handler that persists an allowlisted subset of
    * `req.body` keys onto `req.settingUser.settings`. Used by viewer /

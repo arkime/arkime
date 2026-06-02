@@ -499,13 +499,13 @@ class UserAPIs {
   // versions still write it), while vuetifyTheme / vuetifyCustomTheme is
   // where v7+ persists its preference -- the two stay independent across
   // version round-trips.
-  static #settingsAllowlist = ['ms', 'logo', 'theme', 'customTheme', 'vuetifyTheme', 'vuetifyCustomTheme', 'timezone', 'spiGraph', 'numPackets', 'infoFields', 'manualQuery', 'detailFormat',
+  static #settingsAllowlist = ['ms', 'logo', 'theme', 'customTheme', ...User.THEME_SETTINGS_KEYS, 'timezone', 'spiGraph', 'numPackets', 'infoFields', 'manualQuery', 'detailFormat',
     'connSrcField', 'connDstField', 'sortColumn', 'sortDirection', 'showTimestamps', 'connNodeFields',
     'connLinkFields', 'timelineDataFilters', 'hideTags', 'shiftyEyes'];
 
   static #updateSettings = User.apiUpdateSettingsHandler(
     UserAPIs.#settingsAllowlist,
-    ['customTheme', 'vuetifyCustomTheme'],
+    ['customTheme', ...User.THEME_SETTINGS_OBJECT_KEYS],
     { successI18n: 'api.users.settingsUpdated', failureI18n: 'api.users.settingsUpdateFailed' }
   );
 

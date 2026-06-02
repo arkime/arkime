@@ -246,16 +246,18 @@ app.post('/api/user/totp/disable', [jsonParser, checkCookieToken, Auth.getSettin
 /**
  * POST - /api/user/settings
  *
- * Persists the cont3xt-specific theme keys (`cont3xtVuetifyTheme`,
- * `cont3xtVuetifyCustomTheme`) onto the logged-in user's `settings`.
- * Other keys posted here are silently dropped.
+ * Persists the shared Vuetify theme keys (`vuetifyTheme`,
+ * `vuetifyCustomTheme`) onto the logged-in user's `settings`. These
+ * are the same keys every Arkime app reads/writes, so a theme picked
+ * in any app follows the user into all of them. Other keys posted
+ * here are silently dropped.
  * @name /user/settings
  * @returns {boolean} success - Whether the update was successful
  * @returns {string} text - The success/error message
  */
 app.post('/api/user/settings',
   [jsonParser, ArkimeUtil.noCacheJson, checkCookieToken, Auth.getSettingUserDb],
-  User.apiUpdateSettingsHandler(['cont3xtVuetifyTheme', 'cont3xtVuetifyCustomTheme'], ['cont3xtVuetifyCustomTheme'])
+  User.apiUpdateSettingsHandler(User.THEME_SETTINGS_KEYS, User.THEME_SETTINGS_OBJECT_KEYS)
 );
 
 app.delete('/api/user/:id', [jsonParser, checkCookieToken, User.checkRole('usersAdmin')], User.apiDeleteUser);

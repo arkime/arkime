@@ -3,19 +3,22 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 */
 import setReqHeaders from '@common/setReqHeaders';
+import { VUETIFY_THEME_KEY, VUETIFY_CUSTOM_THEME_KEY } from '@common/themes/customTheme.js';
 
 /**
- * Fire-and-forget POST of one or more theme keys to a per-app
+ * Fire-and-forget POST of one or more theme keys to an app's
  * /api/user/settings endpoint. Used by cont3xt / parliament / wise
- * stores to persist Vuetify theme picks to `user.settings` so they
- * follow the user across browsers. localStorage is still the source
- * of truth for the immediate paint after reload; this server save
- * just lets a different browser/device pick up the same preference.
- * Failures are silently ignored -- the next theme change retries.
+ * stores to persist Vuetify theme picks to the shared `vuetifyTheme` /
+ * `vuetifyCustomTheme` keys on `user.settings` -- the same keys every
+ * Arkime app reads/writes, so a pick follows the user across all apps
+ * and browsers. localStorage is still the source of truth for the
+ * immediate paint after reload; this server save lets another app or
+ * browser/device pick up the same preference. Failures are silently
+ * ignored -- the next theme change retries.
  *
  * @param {string} url - The /api/user/settings POST endpoint URL.
  * @param {object} payload - Settings keys to persist (e.g.
- *                           { cont3xtVuetifyTheme: 'arkime-dark' }).
+ *                           { vuetifyTheme: 'arkime-dark' }).
  */
 export function postThemeSettings (url, payload) {
   try {
@@ -40,8 +43,10 @@ export function postThemeSettings (url, payload) {
  * @param {object} opts
  * @param {string} opts.url - POST endpoint for the server save
  * @param {object} opts.settings - The user.settings blob from /api/user
- * @param {string} opts.serverThemeKey - e.g. 'cont3xtVuetifyTheme'
- * @param {string} opts.serverCustomKey - e.g. 'cont3xtVuetifyCustomTheme'
+ * @param {string} [opts.serverThemeKey] - server settings key for the theme
+ *        id; defaults to the shared cross-app 'vuetifyTheme' key.
+ * @param {string} [opts.serverCustomKey] - server settings key for the
+ *        custom theme; defaults to the shared 'vuetifyCustomTheme' key.
  * @param {string} opts.localThemeKey - localStorage key for the theme id
  * @param {string} opts.localCustomKey - localStorage key for the custom theme
  * @param {boolean} [opts.themeIsJsonEncoded] - true if the theme value in
@@ -52,8 +57,10 @@ export function postThemeSettings (url, payload) {
  */
 export function hydrateOrMigrateTheme (opts, applyHydrated) {
   const settings = opts.settings ?? {};
-  const themeId = settings[opts.serverThemeKey];
-  const customTheme = settings[opts.serverCustomKey];
+  const serverThemeKey = opts.serverThemeKey ?? VUETIFY_THEME_KEY;
+  const serverCustomKey = opts.serverCustomKey ?? VUETIFY_CUSTOM_THEME_KEY;
+  const themeId = settings[serverThemeKey];
+  const customTheme = settings[serverCustomKey];
   if (themeId || (customTheme && customTheme.colors)) {
     applyHydrated(themeId, customTheme);
     return;
@@ -63,12 +70,12 @@ export function hydrateOrMigrateTheme (opts, applyHydrated) {
   const lsTheme = localStorage.getItem(opts.localThemeKey);
   if (lsTheme) {
     try {
-      payload[opts.serverThemeKey] = opts.themeIsJsonEncoded ? JSON.parse(lsTheme) : lsTheme;
+      payload[serverThemeKey] = opts.themeIsJsonEncoded ? JSON.parse(lsTheme) : lsTheme;
     } catch (e) { /* ignore */ }
   }
   const lsCustom = localStorage.getItem(opts.localCustomKey);
   if (lsCustom) {
-    try { payload[opts.serverCustomKey] = JSON.parse(lsCustom); } catch (e) { /* ignore */ }
+    try { payload[serverCustomKey] = JSON.parse(lsCustom); } catch (e) { /* ignore */ }
   }
   if (Object.keys(payload).length > 0) {
     postThemeSettings(opts.url, payload);

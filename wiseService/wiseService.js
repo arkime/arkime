@@ -1463,29 +1463,29 @@ if (internals.webconfig) {
   /**
    * GET - /api/user/settings
    *
-   * Returns the wise-specific theme keys for the logged-in user. Used
+   * Returns the shared Vuetify theme keys for the logged-in user. Used
    * by the wise UI on startup to hydrate the Vuetify theme picker from
-   * the server (so a user's choice follows them across browsers).
+   * the server. These are the same keys every Arkime app reads/writes,
+   * so a user's choice follows them across apps and browsers.
    *
    * @name "/api/user/settings"
-   * @returns {string} wiseVuetifyTheme - The saved theme id
-   * @returns {object} wiseVuetifyCustomTheme - The saved custom-theme object
+   * @returns {string} vuetifyTheme - The saved theme id
+   * @returns {object} vuetifyCustomTheme - The saved custom-theme object
    */
   app.get('/api/user/settings', [ArkimeUtil.noCacheJson, isWiseUser, Auth.getSettingUserDb], (req, res) => {
     const settings = req.settingUser?.settings ?? {};
-    return res.send({
-      wiseVuetifyTheme: settings.wiseVuetifyTheme,
-      wiseVuetifyCustomTheme: settings.wiseVuetifyCustomTheme
-    });
+    return res.send(Object.fromEntries(User.THEME_SETTINGS_KEYS.map(k => [k, settings[k]])));
   });
 
   // ----------------------------------------------------------------------------
   /**
    * POST - /api/user/settings
    *
-   * Persists the wise-specific theme keys (`wiseVuetifyTheme`,
-   * `wiseVuetifyCustomTheme`) onto the logged-in user's `settings`.
-   * Other keys posted here are dropped.
+   * Persists the shared Vuetify theme keys (`vuetifyTheme`,
+   * `vuetifyCustomTheme`) onto the logged-in user's `settings`. These
+   * are the same keys every Arkime app reads/writes, so a theme picked
+   * in any app follows the user into all of them. Other keys posted
+   * here are dropped.
    *
    * @name "/api/user/settings"
    * @returns {boolean} success
@@ -1493,7 +1493,7 @@ if (internals.webconfig) {
    */
   app.post('/api/user/settings',
     [ArkimeUtil.noCacheJson, jsonParser, isWiseUser, Auth.getSettingUserDb],
-    User.apiUpdateSettingsHandler(['wiseVuetifyTheme', 'wiseVuetifyCustomTheme'], ['wiseVuetifyCustomTheme'])
+    User.apiUpdateSettingsHandler(User.THEME_SETTINGS_KEYS, User.THEME_SETTINGS_OBJECT_KEYS)
   );
 
   // ----------------------------------------------------------------------------
