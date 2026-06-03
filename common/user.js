@@ -1161,12 +1161,14 @@ class User {
     });
   }
 
-  // Shared cross-app Vuetify theme settings keys. viewer / cont3xt /
-  // parliament / wise all read+write these same keys on user.settings,
-  // so a theme set in any app follows the user into all of them.
+  // User-settings keys shared across every Arkime app. viewer / cont3xt /
+  // parliament / wise all read+write these same keys on user.settings via
+  // the generic apiGetSettings / apiUpdateSettings handlers, so a value set
+  // in one app follows the user into all of them. Today this is just the
+  // Vuetify theme, but add a key here to sync any other setting cross-app.
   // Frontend mirror: common/vueapp/themes/customTheme.js.
-  static THEME_SETTINGS_KEYS = ['vuetifyTheme', 'vuetifyCustomTheme'];
-  static THEME_SETTINGS_OBJECT_KEYS = ['vuetifyCustomTheme'];
+  static USER_SETTINGS_KEYS = ['vuetifyTheme', 'vuetifyCustomTheme'];
+  static USER_SETTINGS_OBJECT_KEYS = ['vuetifyCustomTheme'];
 
   /**
    * Build an Express handler that persists an allowlisted subset of
@@ -1218,13 +1220,13 @@ class User {
    */
   static apiGetSettings (req, res) {
     const settings = req.settingUser?.settings ?? {};
-    return res.send(Object.fromEntries(User.THEME_SETTINGS_KEYS.map(k => [k, settings[k]])));
+    return res.send(Object.fromEntries(User.USER_SETTINGS_KEYS.map(k => [k, settings[k]])));
   }
 
   // POST route handler persisting the shared theme keys. Registered
   // directly by cont3xt / parliament / wise (viewer keeps its own
   // multi-key settings handler built from apiUpdateSettingsHandler).
-  static apiUpdateSettings = User.apiUpdateSettingsHandler(User.THEME_SETTINGS_KEYS, User.THEME_SETTINGS_OBJECT_KEYS);
+  static apiUpdateSettings = User.apiUpdateSettingsHandler(User.USER_SETTINGS_KEYS, User.USER_SETTINGS_OBJECT_KEYS);
 
   /******************************************************************************/
   // TOTP (Two-Factor Authentication) APIs
