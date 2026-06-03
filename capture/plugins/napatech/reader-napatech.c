@@ -219,75 +219,18 @@ LOCAL void *reader_napatech_thread(gpointer streamv)
 }
 
 /* -------------------------------------------------------------------------
- * Start: called after init, spawns capture threads
+ * Start: called after privilege drop — NT_Init and streams are already open
  * ---------------------------------------------------------------------- */
 
 LOCAL void reader_napatech_start()
 {
-    int  status;
-    char errBuf[256];
-
-    /* NT_Init and NT_NetRxOpen are both called here (not in init) so that
-     * ALL Arkime heap initialisation — parsers, session tables, plugins —
-     * completes before NTAPI's mmap64 calls.
+    /* NT_Init() and NT_NetRxOpen() were called in reader_napatech_init()
+     * (which runs as root, before Arkime drops privileges to dropUser).
+     * By the time start() is called, we are already running as nobody and
+     * /dev/nt3gd is no longer accessible, so NTAPI calls that open the
+     * device must NOT be placed here.
      *
-     * NT_Init calls mmap64 internally to map shared memory segments from
-     * ntservice. When called during init() (i.e. directly after dlopen of
-     * this plugin), those mmaps can collide with glibc's malloc arenas that
-     * Arkime is still setting up, causing silent heap corruption that then
-     * manifests as a SIGSEGV in arkime_parsers_load() or elsewhere.
-     *
-     * By deferring to start(), all arkime_parsers_init() / plugin loading /
-     * session table allocation has already completed before we touch NTAPI.
-     *
-     * NOTE: NT_INFO_CMD_READ_STREAM counts currently-open streams (always 0
-     * before our app opens any), NOT NTPL assignments.  Auto-detect by
-     * probing NT_NetRxOpen(0,1,2,...) until failure.  Set ntNumStreams>0 in
-     * config.ini to open an explicit count instead. */
-
-    if ((status = NT_Init(NTAPI_VERSION)) != NT_SUCCESS) {
-        NT_ExplainError(status, errBuf, sizeof(errBuf));
-        LOGEXIT("Napatech: NT_Init failed: %s", errBuf);
-    }
-
-    if (ntNumStreams == 0) {
-        int probed;
-        for (probed = 0; probed < NT_MAX_STREAMS; probed++) {
-            char streamName[64];
-            snprintf(streamName, sizeof(streamName), "arkime_rx_%d", probed);
-            status = NT_NetRxOpen(&ntStreams[probed].hStream, streamName,
-                                  NT_NET_INTERFACE_SEGMENT, probed, -1);
-            if (status != NT_SUCCESS)
-                break;
-            ntStreams[probed].streamId     = probed;
-            ntStreams[probed].interfacePos = (uint8_t)probed;
-            ntTotalPkts[probed]            = 0;
-        }
-        ntNumStreams = probed;
-        if (ntNumStreams == 0) {
-            NT_ExplainError(status, errBuf, sizeof(errBuf));
-            LOGEXIT("Napatech: No streams available (stream 0: %s). "
-                    "Check ntservice.ini HostBuffersRx and apply NTPL.", errBuf);
-        }
-        LOG("Napatech: auto-detected %d stream(s)", ntNumStreams);
-    } else {
-        LOG("Napatech: opening %d stream(s) from config.ini", ntNumStreams);
-        for (int s = 0; s < ntNumStreams; s++) {
-            char streamName[64];
-            snprintf(streamName, sizeof(streamName), "arkime_rx_%d", s);
-            status = NT_NetRxOpen(&ntStreams[s].hStream, streamName,
-                                  NT_NET_INTERFACE_SEGMENT, s, -1);
-            if (status != NT_SUCCESS) {
-                NT_ExplainError(status, errBuf, sizeof(errBuf));
-                LOGEXIT("Napatech: NT_NetRxOpen(stream %d) failed: %s. "
-                        "Check ntservice.ini HostBuffersRx and NTPL streamid=%d",
-                        s, errBuf, s);
-            }
-            ntStreams[s].streamId     = s;
-            ntStreams[s].interfacePos = (uint8_t)s;
-            ntTotalPkts[s]            = 0;
-        }
-    }
+     * All that remains is to tell Arkime the link type and spawn threads. */
 
     /* Tell Arkime the link type and snap length */
     arkime_packet_set_dltsnap(DLT_EN10MB, config.snapLen);
@@ -328,12 +271,74 @@ LOCAL void reader_napatech_exit()
 
 LOCAL void reader_napatech_init(const char *UNUSED(name))
 {
+    int  status;
+    char errBuf[NT_ERRBUF_SIZE];
+
     /* Read config */
     ntNumStreams    = arkime_config_int(NULL, "ntNumStreams",    0,    0,  NT_MAX_STREAMS);
     ntHostBufferMB  = arkime_config_int(NULL, "ntHostBufferMB", 2048, 64, 65536);
 
-    /* NT_Init is deferred to start() to prevent NTAPI's mmap64 calls from
-     * corrupting glibc's heap arenas during Arkime's init phase. */
+    /* --------------------------------------------------------------------- *
+     * NT_Init and stream opens MUST happen here (init), NOT in start().      *
+     *                                                                        *
+     * Arkime drops privileges (setuid to dropUser) immediately after calling *
+     * arkime_readers_set() in main(), which is what triggers this init()     *
+     * callback.  By the time start() runs (from arkime_ready_gfunc via the   *
+     * GLib main loop), the process is already running as dropUser (nobody)   *
+     * and cannot open /dev/nt3gd (crw------- root root).                     *
+     *                                                                        *
+     * NTAPI's NT_Init opens /dev/nt3gd for mmap; NT_NetRxOpen allocates     *
+     * per-stream host buffers mapped from ntservice.  Both require root.     *
+     * --------------------------------------------------------------------- */
+
+    if ((status = NT_Init(NTAPI_VERSION)) != NT_SUCCESS) {
+        NT_ExplainError(status, errBuf, sizeof(errBuf));
+        CONFIGEXIT("Napatech: NT_Init failed: %s", errBuf);
+    }
+
+    /* Open streams.
+     * NT_INFO_CMD_READ_STREAM counts currently-open streams (always 0 before
+     * our app opens any), NOT NTPL assignments.  Auto-detect by probing
+     * NT_NetRxOpen(0,1,2,...) until failure.  Set ntNumStreams>0 in
+     * config.ini to open an explicit count instead. */
+    if (ntNumStreams == 0) {
+        int probed;
+        for (probed = 0; probed < NT_MAX_STREAMS; probed++) {
+            char streamName[64];
+            snprintf(streamName, sizeof(streamName), "arkime_rx_%d", probed);
+            status = NT_NetRxOpen(&ntStreams[probed].hStream, streamName,
+                                  NT_NET_INTERFACE_SEGMENT, probed, -1);
+            if (status != NT_SUCCESS)
+                break;
+            ntStreams[probed].streamId     = probed;
+            ntStreams[probed].interfacePos = (uint8_t)probed;
+            ntTotalPkts[probed]            = 0;
+        }
+        ntNumStreams = probed;
+        if (ntNumStreams == 0) {
+            NT_ExplainError(status, errBuf, sizeof(errBuf));
+            CONFIGEXIT("Napatech: No streams available (stream 0: %s). "
+                       "Check ntservice.ini HostBuffersRx and apply NTPL.", errBuf);
+        }
+        LOG("Napatech: auto-detected %d stream(s)", ntNumStreams);
+    } else {
+        LOG("Napatech: opening %d stream(s) from config.ini", ntNumStreams);
+        for (int s = 0; s < ntNumStreams; s++) {
+            char streamName[64];
+            snprintf(streamName, sizeof(streamName), "arkime_rx_%d", s);
+            status = NT_NetRxOpen(&ntStreams[s].hStream, streamName,
+                                  NT_NET_INTERFACE_SEGMENT, s, -1);
+            if (status != NT_SUCCESS) {
+                NT_ExplainError(status, errBuf, sizeof(errBuf));
+                CONFIGEXIT("Napatech: NT_NetRxOpen(stream %d) failed: %s. "
+                           "Check ntservice.ini HostBuffersRx and NTPL streamid=%d",
+                           s, errBuf, s);
+            }
+            ntStreams[s].streamId     = s;
+            ntStreams[s].interfacePos = (uint8_t)s;
+            ntTotalPkts[s]            = 0;
+        }
+    }
 
     /* Software BPF filter: compile config.bpf using a dead pcap handle.
      * Same pattern as reader-tzsp.c. Filtering runs per-packet in the
@@ -358,7 +363,7 @@ LOCAL void reader_napatech_init(const char *UNUSED(name))
     arkime_reader_stop  = reader_napatech_stop;
     arkime_reader_exit  = reader_napatech_exit;
 
-    LOG("Napatech reader registered: ntNumStreams=%d (0=auto-detect), %d MB host buffer each",
+    LOG("Napatech reader initialized: %d stream(s) open, %d MB host buffer each",
         ntNumStreams, ntHostBufferMB);
 }
 
