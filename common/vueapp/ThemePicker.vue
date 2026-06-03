@@ -29,7 +29,7 @@ SPDX-License-Identifier: Apache-2.0
           :class="['theme-card', { 'theme-card--selected': modelValue === theme.id }]"
           variant="outlined"
           @click="$emit('update:modelValue', theme.id)">
-          <v-card-title class="d-flex align-center pa-2">
+          <v-card-title class="d-flex align-center px-2 pt-2 pb-1 theme-card__header">
             <v-icon
               :icon="modelValue === theme.id ? '$radioOn' : '$radioOff'"
               :color="modelValue === theme.id ? 'primary' : undefined"
@@ -72,6 +72,15 @@ SPDX-License-Identifier: Apache-2.0
                 title="error" />
             </div>
             <div
+              class="theme-card__subnavbar"
+              :style="subnavbarStyle(theme)">
+              <v-icon
+                icon="mdi-cog"
+                size="x-small"
+                class="me-1" />
+              <span class="theme-card__subnavbar-title">Settings</span>
+            </div>
+            <div
               class="theme-card__body"
               :style="{
                 background: theme.colors.background,
@@ -112,7 +121,7 @@ SPDX-License-Identifier: Apache-2.0
           :class="['theme-card', { 'theme-card--selected': modelValue === 'custom1' }]"
           variant="outlined">
           <v-card-title
-            class="d-flex align-center pa-2 theme-card__title-bar"
+            class="d-flex align-center px-2 pt-2 pb-1 theme-card__title-bar theme-card__header"
             @click="onCustomCardClick">
             <v-icon
               :icon="modelValue === 'custom1' ? '$radioOn' : '$radioOff'"
@@ -180,6 +189,15 @@ SPDX-License-Identifier: Apache-2.0
               <span
                 class="theme-card__dot"
                 :style="{ background: customTheme.colors.error }" />
+            </div>
+            <div
+              class="theme-card__subnavbar"
+              :style="subnavbarStyle(customTheme)">
+              <v-icon
+                icon="mdi-cog"
+                size="x-small"
+                class="me-1" />
+              <span class="theme-card__subnavbar-title">Settings</span>
             </div>
             <div
               class="theme-card__body"
@@ -418,6 +436,14 @@ export default {
         color: theme.colors['on-primary'] || '#fff'
       };
     },
+    subnavbarStyle (theme) {
+      // Match the real sub-navbar (.sub-navbar): secondary-lightest
+      // background, foreground text (it sets no explicit text color).
+      return {
+        background: theme.colors['secondary-lightest'],
+        color: theme.colors.foreground
+      };
+    },
     onCustomCardClick () {
       if (!this.customTheme) {
         this.initCustomFromActive();
@@ -575,9 +601,18 @@ export default {
 .theme-card__title-bar {
   cursor: pointer;
 }
+/* Faint tinted band so the radio/name control reads as a distinct header,
+   clearly separated from the theme preview below (two different surfaces
+   meeting at the divider line make the boundary unambiguous). */
+.theme-card__header {
+  background: rgba(var(--v-theme-foreground), 0.16);
+}
 .theme-card__preview {
   display: flex;
   flex-direction: column;
+  /* Faded foreground reads as a visible hairline in both light and dark
+     modes (Vuetify's default divider opacity is too faint on light cards). */
+  border-top: 1px solid rgba(var(--v-theme-foreground), 0.28);
 }
 .theme-card__navbar {
   display: flex;
@@ -598,6 +633,15 @@ export default {
   height: 14px;
   border-radius: 50%;
   border: 1px solid rgba(0, 0, 0, 0.15);
+}
+.theme-card__subnavbar {
+  display: flex;
+  align-items: center;
+  padding: 5px 10px;
+  font-size: 0.78rem;
+}
+.theme-card__subnavbar-title {
+  font-weight: 700;
 }
 .theme-card__body {
   padding: 12px;
@@ -628,6 +672,7 @@ export default {
 .theme-card__custom-empty {
   padding: 24px;
   text-align: center;
+  border-top: 1px solid rgba(var(--v-theme-foreground), 0.28);
 }
 .theme-card__editor {
   border-top: 1px solid rgba(0, 0, 0, 0.1);

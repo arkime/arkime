@@ -1314,21 +1314,6 @@ export default {
 </script>
 
 <style scoped>
-. {
-  max-width: 100%;
-  position: relative;
-}
-. .{
-  max-width: 100%;
-  overflow: hidden;
-  position: relative;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-}
-
-.sub-{
-  padding-left: 32px !important;
-}
 .sub-nav-handle {
   top: 12px;
   left: 1.4rem;

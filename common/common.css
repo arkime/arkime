@@ -360,7 +360,7 @@ pre {
    gutter so it lands the same whether or not the row uses gutters; top
    clearance comes from the margin-top rule above. */
 .settings-content-pane {
-  padding: 12px 20px 20px 20px !important;
+  padding: 12px 20px 20px 20px;
 }
 
 /* ========================================================================== */
