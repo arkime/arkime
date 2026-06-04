@@ -111,6 +111,7 @@ Or set `ntplFile=` in `config.ini` to apply automatically at each startup.
 ## Arkime `config.ini` Settings
 
 ```ini
+interface      = none
 pcapReadMethod = napatech
 rootPlugins    = reader-napatech.so
 ```
