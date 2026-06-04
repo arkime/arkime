@@ -23,22 +23,17 @@ typedef struct {
 } EntropyData_t;
 
 /******************************************************************************/
-LOCAL EntropyData_t *entropy_get_data(ArkimeSession_t *session)
-{
-    EntropyData_t *ed = session->pluginData[entropy_plugin_num];
-    if (!ed) {
-        ed = ARKIME_TYPE_ALLOC0(EntropyData_t);
-        session->pluginData[entropy_plugin_num] = ed;
-    }
-    return ed;
-}
-/******************************************************************************/
 LOCAL void entropy_add_bytes(ArkimeSession_t *session, const uint8_t *data, int len)
 {
     if (len <= 0)
         return;
 
-    EntropyData_t *ed = entropy_get_data(session);
+    EntropyData_t *ed = session->pluginData[entropy_plugin_num];
+    if (!ed) {
+        ed = ARKIME_TYPE_ALLOC0(EntropyData_t);
+        session->pluginData[entropy_plugin_num] = ed;
+    }
+
     for (int i = 0; i < len; i++) {
         ed->counts[data[i]]++;
     }
