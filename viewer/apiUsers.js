@@ -503,11 +503,6 @@ class UserAPIs {
     'connSrcField', 'connDstField', 'sortColumn', 'sortDirection', 'showTimestamps', 'connNodeFields',
     'connLinkFields', 'timelineDataFilters', 'hideTags', 'shiftyEyes'];
 
-  static #updateSettings = User.apiUpdateSettingsHandler(
-    UserAPIs.#settingsAllowlist,
-    ['customTheme', ...User.USER_SETTINGS_OBJECT_KEYS]
-  );
-
   /**
    * POST - /api/user/settings
    *
@@ -516,9 +511,10 @@ class UserAPIs {
    * @returns {boolean} success - Whether the update user settings operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
-  static updateUserSettings (req, res) {
-    return UserAPIs.#updateSettings(req, res);
-  }
+  static updateUserSettings = User.apiUpdateSettingsHandler(
+    UserAPIs.#settingsAllowlist,
+    ['customTheme', ...User.USER_SETTINGS_OBJECT_KEYS]
+  );
 
   // LAYOUTS --------------------------------------------------------------------------
   /**

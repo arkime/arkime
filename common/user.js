@@ -1173,14 +1173,16 @@ class User {
   /**
    * Build an Express handler that persists an allowlisted subset of
    * `req.body` keys onto `req.settingUser.settings`. Used by viewer /
-   * cont3xt / parliament / wise /api/user/settings POST endpoints so
-   * the filter+merge+save pattern lives in one place. The route is
-   * responsible for setting up `req.settingUser` via
-   * `Auth.getSettingUserDb`.
+   * cont3xt / parliament / wise settings POST endpoints so the
+   * filter+merge+save pattern lives in one place. Starts from the user's
+   * existing settings and only overwrites allowlisted keys present in the
+   * body -- keys outside the allowlist (and allowlisted keys omitted from
+   * the body) are preserved, never deleted. The route is responsible for
+   * setting up `req.settingUser` via `Auth.getSettingUserDb`.
    *
-   * Non-array object values are dropped unless the key is in
-   * `objectKeys` (used for structured records like the custom-theme
-   * `{ dark, colors }` payload).
+   * Non-array object values are dropped unless the key is in `objectKeys`
+   * (used for structured records like the custom-theme `{ dark, colors }`
+   * payload).
    *
    * @param {string[]} allowlist - Settings keys this endpoint may write.
    * @param {string[]} [objectKeys] - Subset of allowlist whose values may be objects.
@@ -1193,7 +1195,7 @@ class User {
       const merged = { ...(req.settingUser.settings ?? {}) };
       for (const key of allowed) {
         const val = req.body[key];
-        if (val === undefined) continue;
+        if (val === undefined) { continue; }
         if (val !== null && typeof val === 'object' && !Array.isArray(val) && !objAllowed.has(key)) {
           continue;
         }
@@ -1223,9 +1225,9 @@ class User {
     return res.send(Object.fromEntries(User.USER_SETTINGS_KEYS.map(k => [k, settings[k]])));
   }
 
-  // POST route handler persisting the shared theme keys. Registered
-  // directly by cont3xt / parliament / wise (viewer keeps its own
-  // multi-key settings handler built from apiUpdateSettingsHandler).
+  // POST route handler persisting the shared cross-app user-settings keys.
+  // Registered directly by cont3xt / parliament / wise; viewer builds its
+  // own handler from apiUpdateSettingsHandler with a wider allowlist.
   static apiUpdateSettings = User.apiUpdateSettingsHandler(User.USER_SETTINGS_KEYS, User.USER_SETTINGS_OBJECT_KEYS);
 
   /******************************************************************************/
