@@ -1,7 +1,7 @@
 # Many of these test user/roles start with sac- (skip auto create) because
 # otherwise viewer in regression mode would auto create the user.
 # Some day should remove all autocreate code.
-use Test::More tests => 265;
+use Test::More tests => 271;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -189,6 +189,21 @@ anonymous,,true,true,false,"arkimeAdmin, cont3xtUser, parliamentUser, usersAdmin
     $json = viewerGetToken("/api/user/settings?arkimeRegressionUser=sac-test1", $test1Token);
     eq_or_diff($json->{vuetifyCustomTheme}->{colors}->{primary}, "#ff00ff", "vuetifyCustomTheme object stored");
     ok($json->{vuetifyCustomTheme}->{dark}, "vuetifyCustomTheme dark flag stored");
+
+# update user settings - explicit null unsets the key (deleted, not stored as a literal null)
+    $json = viewerPostToken("/api/user/settings?arkimeRegressionUser=sac-test1", '{"vuetifyCustomTheme":null}', $test1Token);
+    is($json->{success}, 1, "unset vuetifyCustomTheme with null succeeds");
+    $json = viewerGetToken("/api/user/settings?arkimeRegressionUser=sac-test1", $test1Token);
+    ok(!exists $json->{vuetifyCustomTheme}, "vuetifyCustomTheme deleted by null, not stored as null");
+
+# update user settings - a key omitted from the body is preserved (partial save must not wipe siblings)
+    $json = viewerPostToken("/api/user/settings?arkimeRegressionUser=sac-test1", '{"vuetifyCustomTheme":{"dark":false,"colors":{"primary":"#abcdef"}}}', $test1Token);
+    is($json->{success}, 1, "re-set vuetifyCustomTheme object");
+    $json = viewerPostToken("/api/user/settings?arkimeRegressionUser=sac-test1", '{"vuetifyTheme":"arkime-dark"}', $test1Token);
+    is($json->{success}, 1, "partial update of vuetifyTheme only");
+    $json = viewerGetToken("/api/user/settings?arkimeRegressionUser=sac-test1", $test1Token);
+    is($json->{vuetifyTheme}, "arkime-dark", "vuetifyTheme updated by partial save");
+    eq_or_diff($json->{vuetifyCustomTheme}->{colors}->{primary}, "#abcdef", "omitted vuetifyCustomTheme preserved by partial save");
 
 # update user settings - keys not on the allowlist are silently dropped
     $json = viewerPostToken("/api/user/settings?arkimeRegressionUser=sac-test1", '{"notARealSetting":"nope"}', $test1Token);

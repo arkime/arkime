@@ -1171,44 +1171,54 @@ class User {
   static USER_SETTINGS_OBJECT_KEYS = ['vuetifyCustomTheme'];
 
   /**
-   * Build an Express handler that persists an allowlisted subset of
-   * `req.body` keys onto `req.settingUser.settings`. Used by viewer /
-   * cont3xt / parliament / wise settings POST endpoints so the
-   * filter+merge+save pattern lives in one place. Starts from the user's
-   * existing settings and only overwrites allowlisted keys present in the
-   * body -- keys outside the allowlist (and allowlisted keys omitted from
-   * the body) are preserved, never deleted. The route is responsible for
-   * setting up `req.settingUser` via `Auth.getSettingUserDb`.
+   * Build an Express settings-update handler shared by viewer / cont3xt /
+   * parliament / wise. Each app passes in its own writable key list
+   * (`allowlist`) and the subset of those keys whose values may be objects
+   * (`objectKeys`).
    *
-   * Non-array object values are dropped unless the key is in `objectKeys`
-   * (used for structured records like the custom-theme `{ dark, colors }`
-   * payload).
+   * Body semantics, per allowlisted key: a value sets it, an explicit `null`
+   * unsets (deletes) it, and an omitted key is left unchanged. The route must
+   * set up `req.settingUser` via `Auth.getSettingUserDb`.
    *
    * @param {string[]} allowlist - Settings keys this endpoint may write.
    * @param {string[]} [objectKeys] - Subset of allowlist whose values may be objects.
    * @returns {function} Express handler `(req, res) => void`.
    */
   static apiUpdateSettingsHandler (allowlist, objectKeys = []) {
-    const allowed = new Set(allowlist);
-    const objAllowed = new Set(objectKeys);
     return (req, res) => {
-      const merged = { ...(req.settingUser.settings ?? {}) };
-      for (const key of allowed) {
+      // Merge the allowlisted body keys into the user's existing settings.
+      // Per allowlisted key: a value sets it, an explicit null unsets it, and
+      // an omitted key is left untouched.
+      req.settingUser.settings = allowlist.reduce((obj, key) => {
         const val = req.body[key];
-        if (val === undefined) { continue; }
-        if (val !== null && typeof val === 'object' && !Array.isArray(val) && !objAllowed.has(key)) {
-          continue;
+        // Omitted from the body (JSON can't carry `undefined`): keep the
+        // existing value. cont3xt / parliament / wise each POST a single key,
+        // so treating "absent" as anything but "leave alone" would wipe the
+        // user's other settings on every save.
+        if (val === undefined) { return obj; }
+        // Explicit null is the unset signal: delete the key instead of
+        // persisting a literal null.
+        if (val === null) { delete obj[key]; return obj; }
+        // Reject stray object values unless this key may hold one (e.g. the
+        // vuetifyCustomTheme `{ dark, colors }` record).
+        if (val !== undefined && val !== null && typeof val === 'object' && !Array.isArray(val) && !objectKeys.includes(key)) {
+          return obj;
         }
-        merged[key] = val;
-      }
-      req.settingUser.settings = merged;
+        obj[key] = val;
+        return obj;
+      }, { ...req.settingUser.settings });
 
-      User.setUser(req.settingUser.userId, req.settingUser, (err) => {
+      User.setUser(req.settingUser.userId, req.settingUser, (err, info) => {
         if (err) {
-          console.log(`ERROR - ${req.method} ${req.originalUrl} settings update error`, util.inspect(err, false, 50));
+          console.log(`ERROR - ${req.method} ${req.originalUrl} settings update error`, util.inspect(err, false, 50), info);
+          // res.send, not res.serverError -- wise mounts this handler too and has no res.serverError.
           return res.send({ success: false, text: 'User settings update failed', i18n: 'api.users.settingsUpdateFailed' });
         }
-        return res.send({ success: true, text: 'Updated user settings successfully', i18n: 'api.users.settingsUpdated' });
+        return res.send({
+          success: true,
+          text: 'Updated user settings successfully',
+          i18n: 'api.users.settingsUpdated'
+        });
       });
     };
   }
