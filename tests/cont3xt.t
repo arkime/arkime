@@ -1154,14 +1154,17 @@ is($json->{success}, 1, "put settings success");
 
 ################################################################################
 ### Cross-app shared user settings
-viewerPostToken('/api/user/settings?arkimeRegressionUser=sac-test', '{"logo": "crossapp.png"}', $token2);
-$json = viewerGetToken('/api/user/settings?arkimeRegressionUser=sac-test', $token2);
+viewerPostToken('/api/user', '{"userId": "sac-crossapp", "userName": "crossapp", "enabled":true, "password":"password", "roles":["arkimeUser","cont3xtUser"]}', $token);
+my $crossappToken = getTokenCookie('sac-crossapp');
+
+viewerPostToken('/api/user/settings?arkimeRegressionUser=sac-crossapp', '{"logo": "crossapp.png"}', $crossappToken);
+$json = viewerGetToken('/api/user/settings?arkimeRegressionUser=sac-crossapp', $crossappToken);
 is($json->{logo}, "crossapp.png", "viewer set logo on the shared user");
 
-$json = cont3xtPostToken('/api/settings/update?arkimeRegressionUser=sac-test', '{"vuetifyTheme": "cotton-candy"}', $token2);
+$json = cont3xtPostToken('/api/settings/update?arkimeRegressionUser=sac-crossapp', '{"vuetifyTheme": "cotton-candy"}', $crossappToken);
 is($json->{success}, 1, "cont3xt updated the shared vuetifyTheme");
 
-$json = viewerGetToken('/api/user/settings?arkimeRegressionUser=sac-test', $token2);
+$json = viewerGetToken('/api/user/settings?arkimeRegressionUser=sac-crossapp', $crossappToken);
 is($json->{vuetifyTheme}, "cotton-candy", "cont3xt theme update is visible in viewer");
 is($json->{logo}, "crossapp.png", "viewer-set logo preserved after cont3xt theme update");
 
