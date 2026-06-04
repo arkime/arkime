@@ -8,18 +8,19 @@
  *
  * Arkime config.ini settings:
  *   pcapReadMethod   = napatech
- *   ntNumStreams      = 0             (0 = auto-detect from NTPL config; set >0 to override)
- *   ntHostBufferMB   = 2048          (host buffer size in MB per stream)
+ *   ntStreamIds       = 0-7          (comma-separated stream ID ranges to open, e.g. "0-3,5,8-10";
+ *                                     default: auto-detect from driver via NT_INFO_CMD_READ_STREAM)
+ *   ntplFile          = /path/to/arkime-streams.ntpl  (optional: apply NTPL at startup)
  *
- * NTPL must be applied before starting Arkime. See arkime-streams.ntpl.
- * The NTPL must assign ports to streams with TimestampType = UNIX_NANOTIME
- * and HashMode = Hash5TupleSorted for proper multi-thread flow affinity.
+ * NTPL must be applied before starting Arkime, or set ntplFile= to apply automatically.
+ * Assign rules must set TimestampType = UNIX_NANOTIME and HashMode = Hash5TupleSorted.
  *****************************************************************************/
 
 #define _FILE_OFFSET_BITS 64
 #include "arkime.h"
 #include <errno.h>
 #include <stdint.h>
+#include <stdlib.h>
 #include <string.h>
 
 /* Napatech NTAPI headers - installed by libntapi-dev package */
@@ -32,20 +33,17 @@ extern ArkimeConfig_t config;
  * Module-level state
  * ---------------------------------------------------------------------- */
 
-/* Maximum streams supported (each stream can cover one or more ports) */
-#define NT_MAX_STREAMS  16
-
 typedef struct {
     NtNetStreamRx_t  hStream;        /* NTAPI stream handle            */
     int              streamId;       /* NTAPI stream ID (0-based)      */
-    uint8_t          interfacePos;   /* Arkime interface index          */
+    uint8_t          interfacePos;   /* Arkime slot index (0-based)    */
 } NtStream_t;
 
-LOCAL NtStream_t    ntStreams[NT_MAX_STREAMS];
-LOCAL int           ntNumStreams;
+LOCAL NtStream_t   *ntStreams    = NULL;  /* heap-allocated; size = ntNumStreams */
+LOCAL int           ntNumStreams = 0;
 
-/* Stats */
-LOCAL uint64_t      ntTotalPkts[NT_MAX_STREAMS];
+/* Stats — indexed by slot (interfacePos), not by NTAPI stream ID */
+LOCAL uint64_t     *ntTotalPkts  = NULL;  /* heap-allocated; size = ntNumStreams */
 LOCAL uint64_t      ntDropped;
 LOCAL ARKIME_LOCK_DEFINE(ntStatsLock);
 
@@ -197,7 +195,7 @@ LOCAL void *reader_napatech_thread(gpointer streamv)
             /* VLANs preserved in wire order (no VLANStrip in NTPL) */
 
             ARKIME_LOCK(ntStatsLock);
-            ntTotalPkts[st->streamId]++;
+            ntTotalPkts[st->interfacePos]++;
             ARKIME_UNLOCK(ntStatsLock);
 
             arkime_packet_batch(&batch, packet);
@@ -259,9 +257,118 @@ LOCAL void reader_napatech_exit()
             ntStreams[s].hStream = 0;
         }
     }
+    g_free(ntStreams);   ntStreams   = NULL;
+    g_free(ntTotalPkts); ntTotalPkts = NULL;
+    ntNumStreams = 0;
     if (use_sw_bpf)
         pcap_freecode(&sw_bpf);
     NT_Done();
+}
+
+/* -------------------------------------------------------------------------
+ * Stream ID resolution
+ * ---------------------------------------------------------------------- */
+
+/* Parse a range string like "0-3,5,8-10" into a heap-allocated int[].
+ * Sets *ids_out and *count_out.  Returns 0 on success, -1 on error. */
+static int reader_napatech_parse_stream_range(const char *str,
+                                              int **ids_out, int *count_out)
+{
+    int  capacity = 32;
+    int *ids = g_malloc(capacity * sizeof(int));
+    int  count = 0;
+    const char *p = str;
+
+    while (*p) {
+        while (*p == ' ' || *p == '\t') p++;
+        if (*p == '\0') break;
+
+        char *end;
+        long lo = strtol(p, &end, 10);
+        if (end == p || lo < 0 || lo > 255) { g_free(ids); return -1; }
+        p = end;
+        while (*p == ' ' || *p == '\t') p++;
+
+        long hi = lo;
+        if (*p == '-') {
+            p++;
+            while (*p == ' ' || *p == '\t') p++;
+            hi = strtol(p, &end, 10);
+            if (end == p || hi < lo || hi > 255) { g_free(ids); return -1; }
+            p = end;
+        }
+        while (*p == ' ' || *p == '\t') p++;
+
+        for (long s = lo; s <= hi; s++) {
+            if (count == capacity) {
+                capacity *= 2;
+                ids = g_realloc(ids, capacity * sizeof(int));
+            }
+            ids[count++] = (int)s;
+        }
+        if (*p == ',') p++;
+    }
+
+    if (count == 0) { g_free(ids); return -1; }
+    *ids_out   = ids;
+    *count_out = count;
+    return 0;
+}
+
+/* Resolve the set of stream IDs to open.
+ * If ntStreamIds= is set in config.ini, parse the range string.
+ * Otherwise query the driver (NT_INFO_CMD_READ_STREAM) for stream IDs
+ * that have host buffers allocated in ntservice.ini HostBuffersRx.
+ * Returns heap-allocated int[] via *ids_out, count via *count_out.
+ * Calls CONFIGEXIT on fatal error; caller must g_free(*ids_out). */
+static void reader_napatech_get_stream_ids(int **ids_out, int *count_out)
+{
+    char errBuf[NT_ERRBUF_SIZE];
+    int  status;
+
+    char *cfgStr = arkime_config_str(NULL, "ntStreamIds", NULL);
+    if (cfgStr) {
+        int *ids;
+        int  count;
+        if (reader_napatech_parse_stream_range(cfgStr, &ids, &count) != 0) {
+            CONFIGEXIT("Napatech: ntStreamIds '%s' is invalid. "
+                       "Expected comma-separated IDs/ranges, e.g. '0-3,5,8-10'", cfgStr);
+        }
+        g_free(cfgStr);
+        *ids_out   = ids;
+        *count_out = count;
+        return;
+    }
+
+    /* Auto-detect: NT_INFO_CMD_READ_STREAM returns stream IDs that have
+     * host buffers allocated in ntservice.ini HostBuffersRx. */
+    NtInfoStream_t hInfo;
+    if ((status = NT_InfoOpen(&hInfo, "arkime-info")) != NT_SUCCESS) {
+        NT_ExplainError(status, errBuf, sizeof(errBuf));
+        CONFIGEXIT("Napatech: NT_InfoOpen failed: %s", errBuf);
+    }
+
+    NtInfo_t info;
+    memset(&info, 0, sizeof(info));
+    info.cmd = NT_INFO_CMD_READ_STREAM;
+    if ((status = NT_InfoRead(hInfo, &info)) != NT_SUCCESS) {
+        NT_ExplainError(status, errBuf, sizeof(errBuf));
+        NT_InfoClose(hInfo);
+        CONFIGEXIT("Napatech: NT_INFO_CMD_READ_STREAM failed: %s", errBuf);
+    }
+    NT_InfoClose(hInfo);
+
+    uint32_t count = info.u.stream.data.count;
+    if (count == 0) {
+        CONFIGEXIT("Napatech: No stream IDs with host buffers found. "
+                   "Check ntservice.ini HostBuffersRx and apply NTPL Assign rules.");
+    }
+
+    int *ids = g_malloc(count * sizeof(int));
+    for (uint32_t i = 0; i < count; i++)
+        ids[i] = info.u.stream.data.streamIDList[i];
+    *ids_out   = ids;
+    *count_out = (int)count;
 }
 
 /* -------------------------------------------------------------------------
@@ -272,9 +379,6 @@ LOCAL void reader_napatech_init(const char *UNUSED(name))
 {
     int  status;
     char errBuf[NT_ERRBUF_SIZE];
-
-    /* Read config */
-    ntNumStreams = arkime_config_int(NULL, "ntNumStreams", 0, 0, NT_MAX_STREAMS);
 
     /* --------------------------------------------------------------------- *
      * NT_Init and stream opens MUST happen here (init), NOT in start().      *
@@ -341,54 +445,38 @@ LOCAL void reader_napatech_init(const char *UNUSED(name))
         g_free(ntplFile);
     }
 
-    /* Open streams.
-     * NT_INFO_CMD_READ_STREAM counts currently-open streams (always 0 before
-     * our app opens any), NOT NTPL assignments.  Auto-detect by probing
-     * NT_NetRxOpen(0,1,2,...) until failure.  Set ntNumStreams>0 in
-     * config.ini to open an explicit count instead. */
-    if (ntNumStreams == 0) {
-        int probed;
-        for (probed = 0; probed < NT_MAX_STREAMS; probed++) {
-            char streamName[64];
-            snprintf(streamName, sizeof(streamName), "arkime_rx_%d", probed);
-            /* NT_NetRxOpen(hStream, name, interface, streamId, hostBufAllowance)
-            * Verified parameter order against ntnetflow/rx.c (Napatech GitHub).
-            * NT_NET_INTERFACE_SEGMENT: NT_NetRxGet returns a segment of N packets
-            * rather than one packet at a time, enabling zero-copy batch release.
-            * hostBufAllowance = -1 means "use maximum available host buffer"
-            * as configured in ntservice.ini HostBufferAllowance per stream. */
-            status = NT_NetRxOpen(&ntStreams[probed].hStream, streamName,
-                                  NT_NET_INTERFACE_SEGMENT, probed, -1);
-            if (status != NT_SUCCESS)
-                break;
-            ntStreams[probed].streamId     = probed;
-            ntStreams[probed].interfacePos = (uint8_t)probed;
-            ntTotalPkts[probed]            = 0;
-        }
-        ntNumStreams = probed;
-        if (ntNumStreams == 0) {
-            NT_ExplainError(status, errBuf, sizeof(errBuf));
-            CONFIGEXIT("Napatech: No streams available (stream 0: %s). "
-                       "Check ntservice.ini HostBuffersRx and apply NTPL.", errBuf);
-        }
-        LOG("Napatech: auto-detected %d stream(s)", ntNumStreams);
-    } else {
-        LOG("Napatech: opening %d stream(s) from config.ini", ntNumStreams);
-        for (int s = 0; s < ntNumStreams; s++) {
+    /* Resolve stream IDs (from ntStreamIds= config or driver) and open them.
+     * reader_napatech_get_stream_ids() returns a heap-allocated int[] whose
+     * length drives the allocation of ntStreams/ntTotalPkts — no static cap. */
+    {
+        int *streamIds;
+        int  streamCount;
+        reader_napatech_get_stream_ids(&streamIds, &streamCount);
+
+        ntStreams   = g_malloc0(streamCount * sizeof(NtStream_t));
+        ntTotalPkts = g_malloc0(streamCount * sizeof(uint64_t));
+        ntNumStreams = streamCount;
+
+        for (int i = 0; i < streamCount; i++) {
+            int s = streamIds[i];
             char streamName[64];
             snprintf(streamName, sizeof(streamName), "arkime_rx_%d", s);
-            status = NT_NetRxOpen(&ntStreams[s].hStream, streamName,
+            /* NT_NET_INTERFACE_SEGMENT: NT_NetRxGet returns a segment of N
+             * packets at a time, enabling zero-copy batch release.
+             * hostBufAllowance = -1: use the maximum host buffer for this
+             * stream as configured in ntservice.ini HostBuffersRx. */
+            status = NT_NetRxOpen(&ntStreams[i].hStream, streamName,
                                   NT_NET_INTERFACE_SEGMENT, s, -1);
             if (status != NT_SUCCESS) {
                 NT_ExplainError(status, errBuf, sizeof(errBuf));
-                CONFIGEXIT("Napatech: NT_NetRxOpen(stream %d) failed: %s. "
-                           "Check ntservice.ini HostBuffersRx and NTPL streamid=%d",
-                           s, errBuf, s);
+                g_free(streamIds);
+                CONFIGEXIT("Napatech: NT_NetRxOpen(stream %d) failed: %s", s, errBuf);
             }
-            ntStreams[s].streamId     = s;
-            ntStreams[s].interfacePos = (uint8_t)s;
-            ntTotalPkts[s]            = 0;
+            ntStreams[i].streamId     = s;
+            ntStreams[i].interfacePos = (uint8_t)i;
         }
+        g_free(streamIds);
+        LOG("Napatech: opened %d stream(s)", ntNumStreams);
     }
 
     /* Software BPF filter: compile config.bpf using a dead pcap handle.
