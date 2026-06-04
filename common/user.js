@@ -1185,40 +1185,35 @@ class User {
    * @returns {function} Express handler `(req, res) => void`.
    */
   static apiUpdateSettingsHandler (allowlist, objectKeys = []) {
+    const allowed = new Set(allowlist);
+    const objAllowed = new Set(objectKeys);
     return (req, res) => {
-      // Merge the allowlisted body keys into the user's existing settings.
-      // Per allowlisted key: a value sets it, an explicit null unsets it, and
-      // an omitted key is left untouched.
-      req.settingUser.settings = allowlist.reduce((obj, key) => {
+      // Shared handler -- viewer / cont3xt / parliament / wise all mount it.
+      // MERGE into the user's existing settings; do NOT rebuild from {}. The
+      // non-viewer apps POST a single key at a time and share one user store,
+      // so a from-{} rebuild would drop every key not in this body and wipe
+      // the user's other settings (logo, columns, ...) on every theme change.
+      const merged = { ...(req.settingUser.settings ?? {}) };
+      for (const key of allowed) {
         const val = req.body[key];
-        // Omitted from the body (JSON can't carry `undefined`): keep the
-        // existing value. cont3xt / parliament / wise each POST a single key,
-        // so treating "absent" as anything but "leave alone" would wipe the
-        // user's other settings on every save.
-        if (val === undefined) { return obj; }
-        // Explicit null is the unset signal: delete the key instead of
-        // persisting a literal null.
-        if (val === null) { delete obj[key]; return obj; }
+        // Omitted from the body (JSON can't carry `undefined`): leave it as-is.
+        if (val === undefined) { continue; }
+        // Explicit null is the unset signal: delete the key, don't store null.
+        if (val === null) { delete merged[key]; continue; }
         // Reject stray object values unless this key may hold one (e.g. the
         // vuetifyCustomTheme `{ dark, colors }` record).
-        if (val !== undefined && val !== null && typeof val === 'object' && !Array.isArray(val) && !objectKeys.includes(key)) {
-          return obj;
-        }
-        obj[key] = val;
-        return obj;
-      }, { ...req.settingUser.settings });
+        if (typeof val === 'object' && !Array.isArray(val) && !objAllowed.has(key)) { continue; }
+        merged[key] = val;
+      }
+      req.settingUser.settings = merged;
 
-      User.setUser(req.settingUser.userId, req.settingUser, (err, info) => {
+      User.setUser(req.settingUser.userId, req.settingUser, (err) => {
         if (err) {
-          console.log(`ERROR - ${req.method} ${req.originalUrl} settings update error`, util.inspect(err, false, 50), info);
+          console.log(`ERROR - ${req.method} ${req.originalUrl} settings update error`, util.inspect(err, false, 50));
           // res.send, not res.serverError -- wise mounts this handler too and has no res.serverError.
           return res.send({ success: false, text: 'User settings update failed', i18n: 'api.users.settingsUpdateFailed' });
         }
-        return res.send({
-          success: true,
-          text: 'Updated user settings successfully',
-          i18n: 'api.users.settingsUpdated'
-        });
+        return res.send({ success: true, text: 'Updated user settings successfully', i18n: 'api.users.settingsUpdated' });
       });
     };
   }
