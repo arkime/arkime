@@ -1891,7 +1891,7 @@ export default {
           this.settings.showTimestamps = 'last';
         }
         if (!response.manualQuery || response.manualQuery === 'last') {
-          this.settings.manualQuery = false;
+          this.settings.manualQuery = 'false';
         }
 
         this.setupFields().then(() => {
