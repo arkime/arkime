@@ -1,7 +1,7 @@
 # Makefile for Arkime Napatech reader plugin (reader-napatech.so)
 # Requires: Napatech Link-Capture Software (libntapi-dev) installed
 
-INCLUDE_PCAP  = -I/usr/include/pcap
+INCLUDE_PCAP  = $(shell pcap-config --cflags 2>/dev/null || pkg-config --cflags libpcap 2>/dev/null || echo -I/usr/include/pcap)
 
 INCLUDE_OTHER = -I../.. -I../../thirdparty \
                 $(shell pkg-config --cflags glib-2.0)

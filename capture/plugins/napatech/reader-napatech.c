@@ -43,7 +43,6 @@ typedef struct {
 
 LOCAL NtStream_t    ntStreams[NT_MAX_STREAMS];
 LOCAL int           ntNumStreams;
-LOCAL int           ntHostBufferMB;
 
 /* Stats */
 LOCAL uint64_t      ntTotalPkts[NT_MAX_STREAMS];
@@ -111,28 +110,28 @@ LOCAL void *reader_napatech_thread(gpointer streamv)
             break;
         }
 
-        /* ------ Walk all packets in this segment (zero-copy) ----------- *
+        /* ------ Walk all packets in this segment (zero-copy) ------------ *
          *                                                                  *
          * NT_NetRxGet in segment mode returns a contiguous buffer          *
          * containing back-to-back packet records. Each record starts with  *
-         * a NtStd0Descr_t (16-byte standard descriptor from               *
-         * pktdescr_std0.h), followed immediately by the L2 frame bytes,   *
+         * a NtStd0Descr_t (16-byte standard descriptor from                *
+         * pktdescr_std0.h), followed immediately by the L2 frame bytes,    *
          * then 0-7 bytes of 8-byte-alignment padding.                      *
          *                                                                  *
          * NtStd0Descr_t layout (128 bits, confirmed from SDK headers):     *
          *   [63:0]  timestamp   — 64-bit Unix nanoseconds (UNIX_NANOTIME)  *
          *   [79:64] storedLength:16 — total record bytes (stride), incl.   *
-         *                            descriptor + payload + padding         *
+         *                            descriptor + payload + padding        *
          *   [95:80] (bit fields: crcError, checksums, rxPort, etc.)        *
-         *   [111:96] wireLength:16 — original on-wire frame length          *
-         *   [127:112] (bit fields: txPort, flags, extensionLength:3, ...)   *
+         *   [111:96] wireLength:16 — original on-wire frame length         *
+         *   [127:112] (bit fields: txPort, flags, extensionLength:3, ...)  *
          *                                                                  *
-         * We set packet->copied = 0 and point packet->pkt directly into   *
+         * We set packet->copied = 0 and point packet->pkt directly into    *
          * the segment buffer (zero-copy). The segment is NOT released      *
          * until after arkime_packet_batch_flush(). Arkime's async packet   *
-         * threads will copy each packet (packet.c ~line 1556) before the  *
-         * FPGA can rotate the 2 GB host buffer back around (~1.6 s at     *
-         * 10 Gbps), matching the safety model used by tpacketv3 blocks.   *
+         * threads will copy each packet (packet.c ~line 1556) before the   *
+         * FPGA can rotate the host buffer back around (~1.6 s at           *
+         * 10 Gbps), matching the safety model used by tpacketv3 blocks.    *
          * ---------------------------------------------------------------- */
         uint64_t segLen  = NT_NET_GET_SEGMENT_LENGTH(hSegBuf);
         uint8_t *segBase = (uint8_t *)NT_NET_GET_SEGMENT_PTR(hSegBuf);
@@ -275,8 +274,7 @@ LOCAL void reader_napatech_init(const char *UNUSED(name))
     char errBuf[NT_ERRBUF_SIZE];
 
     /* Read config */
-    ntNumStreams    = arkime_config_int(NULL, "ntNumStreams",    0,    0,  NT_MAX_STREAMS);
-    ntHostBufferMB  = arkime_config_int(NULL, "ntHostBufferMB", 2048, 64, 65536);
+    ntNumStreams = arkime_config_int(NULL, "ntNumStreams", 0, 0, NT_MAX_STREAMS);
 
     /* --------------------------------------------------------------------- *
      * NT_Init and stream opens MUST happen here (init), NOT in start().      *
@@ -296,6 +294,53 @@ LOCAL void reader_napatech_init(const char *UNUSED(name))
         CONFIGEXIT("Napatech: NT_Init failed: %s", errBuf);
     }
 
+    /* Optionally apply NTPL from a file before opening streams.
+     * Set ntplFile=/path/to/arkime-streams.ntpl in config.ini to have the
+     * plugin configure stream/port assignments automatically at startup.
+     * If not set, NTPL must be applied manually (e.g. via ntpl -f ...). */
+    char *ntplFile = arkime_config_str(NULL, "ntplFile", NULL);
+    if (ntplFile) {
+        NtConfigStream_t hCfg;
+        NtNtplInfo_t     ntplInfo;
+
+        if ((status = NT_ConfigOpen(&hCfg, "arkime-ntpl")) != NT_SUCCESS) {
+            NT_ExplainError(status, errBuf, sizeof(errBuf));
+            g_free(ntplFile);
+            CONFIGEXIT("Napatech: NT_ConfigOpen failed: %s", errBuf);
+        }
+
+        FILE *f = fopen(ntplFile, "r");
+        if (!f) {
+            NT_ConfigClose(hCfg);
+            g_free(ntplFile);
+            CONFIGEXIT("Napatech: Cannot open ntplFile '%s': %s", ntplFile, strerror(errno));
+        }
+
+        char line[4096];
+        int  linenum = 0;
+        while (fgets(line, sizeof(line), f)) {
+            linenum++;
+            char *p = line;
+            while (*p == ' ' || *p == '\t') p++;
+            if (*p == '#' || *p == '\n' || *p == '\r' || *p == '\0') continue;
+            size_t len = strlen(p);
+            while (len > 0 && (p[len-1] == '\n' || p[len-1] == '\r')) p[--len] = '\0';
+            if (len == 0) continue;
+
+            if ((status = NT_NTPL(hCfg, p, &ntplInfo, NT_NTPL_PARSER_VALIDATE_NORMAL)) != NT_SUCCESS) {
+                NT_ExplainError(status, errBuf, sizeof(errBuf));
+                fclose(f);
+                NT_ConfigClose(hCfg);
+                g_free(ntplFile);
+                CONFIGEXIT("Napatech: NTPL line %d failed: %s", linenum, errBuf);
+            }
+        }
+        fclose(f);
+        NT_ConfigClose(hCfg);
+        LOG("Napatech: applied NTPL from '%s'", ntplFile);
+        g_free(ntplFile);
+    }
+
     /* Open streams.
      * NT_INFO_CMD_READ_STREAM counts currently-open streams (always 0 before
      * our app opens any), NOT NTPL assignments.  Auto-detect by probing
@@ -306,6 +351,12 @@ LOCAL void reader_napatech_init(const char *UNUSED(name))
         for (probed = 0; probed < NT_MAX_STREAMS; probed++) {
             char streamName[64];
             snprintf(streamName, sizeof(streamName), "arkime_rx_%d", probed);
+            /* NT_NetRxOpen(hStream, name, interface, streamId, hostBufAllowance)
+            * Verified parameter order against ntnetflow/rx.c (Napatech GitHub).
+            * NT_NET_INTERFACE_SEGMENT: NT_NetRxGet returns a segment of N packets
+            * rather than one packet at a time, enabling zero-copy batch release.
+            * hostBufAllowance = -1 means "use maximum available host buffer"
+            * as configured in ntservice.ini HostBufferAllowance per stream. */
             status = NT_NetRxOpen(&ntStreams[probed].hStream, streamName,
                                   NT_NET_INTERFACE_SEGMENT, probed, -1);
             if (status != NT_SUCCESS)
@@ -363,8 +414,7 @@ LOCAL void reader_napatech_init(const char *UNUSED(name))
     arkime_reader_stop  = reader_napatech_stop;
     arkime_reader_exit  = reader_napatech_exit;
 
-    LOG("Napatech reader initialized: %d stream(s) open, %d MB host buffer each",
-        ntNumStreams, ntHostBufferMB);
+    LOG("Napatech reader initialized: %d stream(s) open", ntNumStreams);
 }
 
 /* -------------------------------------------------------------------------
