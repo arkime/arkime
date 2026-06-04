@@ -36,9 +36,7 @@ SPDX-License-Identifier: Apache-2.0
             class="arkime-input-append-btn"
             :aria-label="$t('sessions.views.expandExpressionTip')"
             @click="showBigExpression = !showBigExpression">
-            <span
-              class="fa"
-              :class="showBigExpression ? 'mdi-arrow-collapse' : 'mdi-arrow-expand'" />
+            <v-icon :icon="showBigExpression ? 'mdi-arrow-collapse' : 'mdi-arrow-expand'" />
             <v-tooltip activator="parent">
               {{ $t('sessions.views.expandExpressionTip') }}
             </v-tooltip>
@@ -103,7 +101,7 @@ SPDX-License-Identifier: Apache-2.0
           <span v-if="loading">
             <v-icon
               icon="mdi-loading"
-              class="fa-spin me-1" />
+              class="mdi-spin me-1" />
             <span v-if="mode === 'create'">
               {{ $t('common.creating') }}
             </span>

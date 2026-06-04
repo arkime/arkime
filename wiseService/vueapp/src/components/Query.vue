@@ -40,7 +40,7 @@ SPDX-License-Identifier: Apache-2.0
       <v-text-field
         v-model="searchTerm"
         :placeholder="$t('wise.query.searchTermPlaceholder', { type: chosenType })"
-        :prepend-inner-icon="loading ? 'mdi-loading fa-spin' : 'mdi-magnify'"
+        :prepend-inner-icon="loading ? 'mdi-loading mdi-spin' : 'mdi-magnify'"
         clearable
         density="compact"
         class="ms-3 flex-grow-1"

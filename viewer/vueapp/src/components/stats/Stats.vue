@@ -19,7 +19,7 @@ SPDX-License-Identifier: Apache-2.0
               <span class="arkime-input-label arkime-input-label-fw">
                 <v-icon
                   icon="mdi-loading"
-                  class="fa-spin text-theme-accent"
+                  class="mdi-spin text-theme-accent"
                   v-if="loadingData" />
                 <v-icon
                   icon="mdi-magnify"

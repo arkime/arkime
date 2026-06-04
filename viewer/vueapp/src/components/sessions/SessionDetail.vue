@@ -95,7 +95,7 @@
           class="mt-4 mb-4 ms-2 me-2 large">
           <v-icon
             icon="mdi-loading"
-            class="fa-spin" />&nbsp;
+            class="mdi-spin" />&nbsp;
           {{ $t('sessions.detail.loadingSessionPackets') }}&nbsp;
           <v-btn
             color="warning"
@@ -116,7 +116,7 @@
           class="mt-4 mb-4 ms-2 me-2 large">
           <v-icon
             icon="mdi-loading"
-            class="fa-spin" />&nbsp;
+            class="mdi-spin" />&nbsp;
           {{ $t('sessions.detail.renderingSessionPackets') }}&nbsp;
         </div>
 
@@ -187,7 +187,7 @@
             <span class="d-inline-flex align-center small text-medium-emphasis">
               <v-icon
                 icon="mdi-loading"
-                class="fa-spin me-1" /> running…
+                class="mdi-spin me-1" /> running…
             </span>
             <v-btn
               color="warning"

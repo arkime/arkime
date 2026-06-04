@@ -124,7 +124,7 @@ SPDX-License-Identifier: Apache-2.0
       <a class="arkime-typeahead-item">
         <v-icon
           icon="mdi-loading"
-          class="fa-spin" />&nbsp;
+          class="mdi-spin" />&nbsp;
         {{ $t('common.loading') }}
       </a>
     </div> <!-- /loading -->

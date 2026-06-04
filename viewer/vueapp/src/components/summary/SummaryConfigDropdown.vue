@@ -26,7 +26,7 @@ SPDX-License-Identifier: Apache-2.0
         disabled>
         <v-icon
           icon="mdi-loading"
-          class="fa-spin me-1" />
+          class="mdi-spin me-1" />
         {{ $t('common.loading') }}
       </v-list-item>
 

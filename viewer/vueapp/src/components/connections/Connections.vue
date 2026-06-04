@@ -173,9 +173,7 @@ SPDX-License-Identifier: Apache-2.0
                       color="primary"
                       class="ms-1 field-vis-trigger"
                       :id="`${m.kind}Fields`">
-                      <span
-                        class="fa"
-                        :class="m.icon" />
+                      <v-icon :icon="m.icon" />
                       <v-tooltip
                         activator="parent"
                         :open-delay="300">
@@ -364,9 +362,7 @@ SPDX-License-Identifier: Apache-2.0
         class="connections-buttons d-flex align-center ga-2"
         :style="[showToolBars ? {'top': '175px'} : {'top': '55px'}]">
         <!-- unlock + export -->
-        <v-btn-group
-          divided
-          density="comfortable">
+        <div class="d-flex ga-1">
           <v-btn
             variant="outlined"
             size="small"
@@ -399,12 +395,10 @@ SPDX-License-Identifier: Apache-2.0
               {{ $t('connections.exportGraphTip') }}
             </v-tooltip>
           </v-btn>
-        </v-btn-group>
+        </div>
 
         <!-- node distance -->
-        <v-btn-group
-          divided
-          density="comfortable">
+        <div class="d-flex ga-1">
           <v-btn
             id="nodeDistUp"
             :aria-label="$t('connections.nodeDistUpTip')"
@@ -414,7 +408,7 @@ SPDX-License-Identifier: Apache-2.0
             icon
             :disabled="query.nodeDist >= 200"
             @click="changeNodeDist(10)">
-            <v-icon icon="mdi-plus" />
+            <v-icon icon="mdi-plus-network" />
             <v-tooltip
               activator="parent"
               location="bottom"
@@ -431,7 +425,7 @@ SPDX-License-Identifier: Apache-2.0
             icon
             :disabled="query.nodeDist <= 10"
             @click="changeNodeDist(-10)">
-            <v-icon icon="mdi-arrow-expand-vertical" />
+            <v-icon icon="mdi-minus-network" />
             <v-tooltip
               activator="parent"
               location="bottom"
@@ -439,12 +433,10 @@ SPDX-License-Identifier: Apache-2.0
               {{ $t('connections.nodeDistDownTip') }}
             </v-tooltip>
           </v-btn>
-        </v-btn-group>
+        </div>
 
         <!-- text size increase/decrease -->
-        <v-btn-group
-          divided
-          density="comfortable">
+        <div class="d-flex ga-1">
           <v-btn
             id="textSizeUp"
             :aria-label="$t('connections.textSizeUpTip')"
@@ -454,7 +446,7 @@ SPDX-License-Identifier: Apache-2.0
             icon
             :disabled="fontSize >= 1"
             @click="updateTextSize(0.1)">
-            <v-icon icon="mdi-format-font" />
+            <v-icon icon="mdi-format-font-size-increase" />
             <v-tooltip
               activator="parent"
               location="bottom"
@@ -471,9 +463,7 @@ SPDX-License-Identifier: Apache-2.0
             icon
             :disabled="fontSize <= 0.2"
             @click="updateTextSize(-0.1)">
-            <v-icon
-              icon="mdi-format-font"
-              class="fa-sm" />
+            <v-icon icon="mdi-format-font-size-decrease" />
             <v-tooltip
               activator="parent"
               location="bottom"
@@ -481,12 +471,10 @@ SPDX-License-Identifier: Apache-2.0
               {{ $t('connections.textSizeDownTip') }}
             </v-tooltip>
           </v-btn>
-        </v-btn-group>
+        </div>
 
         <!-- zoom in/out -->
-        <v-btn-group
-          divided
-          density="comfortable">
+        <div class="d-flex ga-1">
           <v-btn
             id="zoomIn"
             :aria-label="$t('connections.zoomInTip')"
@@ -521,7 +509,7 @@ SPDX-License-Identifier: Apache-2.0
               {{ $t('connections.zoomOutTip') }}
             </v-tooltip>
           </v-btn>
-        </v-btn-group>
+        </div>
       </div> <!-- /Button group -->
     </div>
   </div>
@@ -682,12 +670,7 @@ export default {
       fieldVisMenus: [
         { kind: 'node', icon: 'mdi-circle-outline', tipKey: 'connections.nodeFieldsTip' },
         { kind: 'link', icon: 'mdi-link', tipKey: 'connections.linkFieldsTip' }
-      ],
-      // Arkime theme-color v-btn style. Vuetify :color can't take CSS vars.
-      primaryBtnStyle: {
-        backgroundColor: 'rgb(var(--v-theme-primary))',
-        color: 'rgb(var(--v-theme-button-fg))'
-      }
+      ]
     };
   },
   computed: {
@@ -1619,16 +1602,6 @@ export default {
 }
 
 /* buttons overlaying the graph */
-.connections-content .overlay-btns {
-  margin-right: 4px;
-}
-.connections-content .overlay-btns > span:first-child > button {
-  border-bottom: none;
-  border-radius: 4px 4px 0 0;
-}
-.connections-content .overlay-btns > span:last-child > button {
-  border-radius: 0 0 4px 4px;
-}
 .connections-buttons {
   position: fixed;
   right: 10px;

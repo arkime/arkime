@@ -678,7 +678,7 @@ SPDX-License-Identifier: Apache-2.0
                       <div class="mt-1 mb-1 large">
                         <v-icon
                           icon="mdi-loading"
-                          class="fa-spin me-2" />
+                          class="mdi-spin me-2" />
                         {{ $t('sessions.sessions.loadingSessionDetail') }}
                       </div>
                     </template>

@@ -26,7 +26,7 @@ SPDX-License-Identifier: Apache-2.0
                 style="display:inline-block;">
                 <v-icon
                   icon="mdi-loading"
-                  class="fa-spin" />
+                  class="mdi-spin" />
                 {{ $t('common.loading') }}
               </div>
               <v-btn
@@ -161,7 +161,7 @@ SPDX-License-Identifier: Apache-2.0
                     <em v-if="loadingSessions">
                       <v-icon
                         icon="mdi-loading"
-                        class="fa-spin me-1" />
+                        class="mdi-spin me-1" />
                       {{ $t('hunts.waitForCalculation') }}
                       <br>
                     </em>
@@ -455,7 +455,7 @@ SPDX-License-Identifier: Apache-2.0
                     v-if="!runningJob.loading" />
                   <v-icon
                     icon="mdi-loading"
-                    class="fa-spin"
+                    class="mdi-spin"
                     v-else />
                   <v-tooltip :activator="`[id='pause${runningJob.id}']`">
                     {{ $t('hunts.pauseTip') }}
@@ -477,7 +477,7 @@ SPDX-License-Identifier: Apache-2.0
                     v-if="!runningJob.loading" />
                   <v-icon
                     icon="mdi-loading"
-                    class="fa-spin"
+                    class="mdi-spin"
                     v-else />
                   <v-tooltip :activator="`[id='cancel${runningJob.id}']`">
                     {{ $t('hunts.cancelTip') }}
@@ -519,7 +519,7 @@ SPDX-License-Identifier: Apache-2.0
                   v-if="!runningJob.loading" />
                 <v-icon
                   icon="mdi-loading"
-                  class="fa-spin"
+                  class="mdi-spin"
                   v-else />
                 <v-tooltip :activator="`[id='remove${runningJob.id}']`">
                   {{ $t('hunts.cancelAndRemoveTip') }}

@@ -260,7 +260,7 @@ SPDX-License-Identifier: Apache-2.0
                   @click.stop.prevent="applyView(value)">
                   <v-icon
                     icon="mdi-share"
-                    class="fa-flip-horizontal" />
+                    class="mdi-flip-h" />
                   <v-tooltip :activator="`[id='applyView${value.id}']`">
                     {{ $t('search.applyView') }}
                   </v-tooltip>

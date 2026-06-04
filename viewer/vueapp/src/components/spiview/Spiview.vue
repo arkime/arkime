@@ -153,7 +153,7 @@ SPDX-License-Identifier: Apache-2.0
             <v-icon
               icon="mdi-loading"
               size="small"
-              class="fa-spin" />&nbsp;
+              class="mdi-spin" />&nbsp;
             <em>
               {{ $t('common.loading') }}
             </em>
@@ -224,7 +224,7 @@ SPDX-License-Identifier: Apache-2.0
             <v-icon
               icon="mdi-loading"
               size="small"
-              class="fa-spinner mt-1 me-1"
+              class="mdi-spin mt-1 me-1"
               v-if="categoryObjects[category].loading" />
             <span v-if="!categoryObjects[category].loading">
               <v-btn
@@ -446,7 +446,7 @@ SPDX-License-Identifier: Apache-2.0
                     <!-- spiview field loading -->
                     <v-icon
                       icon="mdi-loading"
-                      class="fa-spin"
+                      class="mdi-spin"
                       v-if="value.loading" /> <!-- /spiview field loading -->
                     <!-- spiview field error -->
                     <span

@@ -345,7 +345,7 @@ SPDX-License-Identifier: Apache-2.0
             :disabled="notifier.loading"
             @click="testNotifier(notifier.id, index)">
             <v-icon start>
-              {{ notifier.loading ? 'mdi-loading fa-spin' : 'mdi-bell' }}
+              {{ notifier.loading ? 'mdi-loading mdi-spin' : 'mdi-bell' }}
             </v-icon>
             {{ $t('common.test') }}
           </v-btn>

@@ -487,7 +487,7 @@ SPDX-License-Identifier: Apache-2.0
               Put the view's search expression into the search expression input
               by clicking the apply expression button. ( <v-icon
                 icon="mdi-share"
-                class="fa-flip-horizontal" /> )
+                class="mdi-flip-h" /> )
               Note: this does not issue a search.
             </li>
             <li>

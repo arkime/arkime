@@ -112,7 +112,7 @@ SPDX-License-Identifier: Apache-2.0
             <p class="text-center mb-0">
               <v-icon
                 icon="mdi-loading"
-                class="fa-spin" />
+                class="mdi-spin" />
               {{ $t('common.loading') }}
             </p>
           </td>
@@ -202,7 +202,7 @@ SPDX-License-Identifier: Apache-2.0
                     v-if="!item.loading" />
                   <v-icon
                     icon="mdi-loading"
-                    class="fa-spin"
+                    class="mdi-spin"
                     v-else />
                   <v-tooltip :activator="`#delete-${item.id}`">
                     {{ $t('settings.shortcuts.deleteTip') }}
@@ -238,7 +238,7 @@ SPDX-License-Identifier: Apache-2.0
                     v-if="!item.loading" />
                   <v-icon
                     icon="mdi-loading"
-                    class="fa-spin"
+                    class="mdi-spin"
                     v-else />
                   <v-tooltip :activator="`#update-${item.id}`">
                     {{ $t('settings.shortcuts.updateTip') }}
@@ -431,7 +431,7 @@ SPDX-License-Identifier: Apache-2.0
               <template v-else>
                 <v-icon
                   icon="mdi-loading"
-                  class="fa-spin me-1" />
+                  class="mdi-spin me-1" />
                 {{ $t('common.creating') }}
               </template>
             </v-btn>
@@ -451,7 +451,7 @@ SPDX-License-Identifier: Apache-2.0
               <template v-else>
                 <v-icon
                   icon="mdi-loading"
-                  class="fa-spin me-1" />
+                  class="mdi-spin me-1" />
                 {{ $t('common.saving') }}
               </template>
             </v-btn>

@@ -129,7 +129,7 @@ SPDX-License-Identifier: Apache-2.0
             v-if="!job.loading" />
           <v-icon
             icon="mdi-loading"
-            class="fa-spin"
+            class="mdi-spin"
             v-else />
           <v-tooltip :activator="`[id='removejob${job.id}']`">
             {{ $t('hunts.removeHuntTip') }}
@@ -153,7 +153,7 @@ SPDX-License-Identifier: Apache-2.0
           v-if="!job.loading" />
         <v-icon
           icon="mdi-loading"
-          class="fa-spin"
+          class="mdi-spin"
           v-else />
         <v-tooltip
           v-if="job.matchedSessions && !job.removed && user.removeEnabled"
@@ -232,7 +232,7 @@ SPDX-License-Identifier: Apache-2.0
             v-if="!job.loading" />
           <v-icon
             icon="mdi-loading"
-            class="fa-spin"
+            class="mdi-spin"
             v-else />
           <v-tooltip :activator="`[id='cancel${job.id}']`">
             {{ $t('hunts.cancelTip') }}
@@ -256,7 +256,7 @@ SPDX-License-Identifier: Apache-2.0
             v-if="!job.loading" />
           <v-icon
             icon="mdi-loading"
-            class="fa-spin"
+            class="mdi-spin"
             v-else />
           <v-tooltip :activator="`[id='pause${job.id}']`">
             {{ $t('hunts.pauseTip') }}
@@ -280,7 +280,7 @@ SPDX-License-Identifier: Apache-2.0
             v-if="!job.loading" />
           <v-icon
             icon="mdi-loading"
-            class="fa-spin"
+            class="mdi-spin"
             v-else />
           <v-tooltip :activator="`[id='resume${job.id}']`">
             {{ $t('hunts.resumeTip') }}

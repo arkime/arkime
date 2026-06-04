@@ -83,7 +83,7 @@ SPDX-License-Identifier: Apache-2.0
       <a class="arkime-dropdown-item">
         <v-icon
           icon="mdi-loading"
-          class="fa-spin" />&nbsp;
+          class="mdi-spin" />&nbsp;
         Loading...
       </a>
     </div>

@@ -258,7 +258,7 @@ SPDX-License-Identifier: Apache-2.0
             <v-icon
               icon="mdi-loading"
               size="large"
-              class="fa-spin" />
+              class="mdi-spin" />
             <p class="mt-2">
               {{ $t('common.loading') }}
             </p>

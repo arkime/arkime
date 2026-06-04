@@ -312,7 +312,7 @@ SPDX-License-Identifier: Apache-2.0
               <template v-else>
                 <v-icon
                   icon="mdi-loading"
-                  class="fa-spin me-1" />
+                  class="mdi-spin me-1" />
                 {{ $t('common.creating') }}
               </template>
             </v-btn>

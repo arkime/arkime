@@ -140,7 +140,7 @@ SPDX-License-Identifier: Apache-2.0
             @click="saveConfig">
             <v-icon
               icon="mdi-loading"
-              class="fa-spin me-1"
+              class="mdi-spin me-1"
               v-if="saving" />
             <v-icon
               icon="mdi-content-save"
