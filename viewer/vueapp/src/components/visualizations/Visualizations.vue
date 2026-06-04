@@ -7,7 +7,7 @@ SPDX-License-Identifier: Apache-2.0
     <div
       class="pt-2 ps-2 pe-2 viz-container"
       :id="'vizContainer' + id"
-      :class="{'map-visible':showMap,'map-invisible':!showMap}">
+      :class="{'map-visible':showMap,'map-invisible':!showMap,'map-expanded':mapExpanded}">
       <div v-show="!hideViz">
         <div
           v-if="disabledAggregations"
@@ -937,6 +937,20 @@ export default {
   overflow: hidden;
   box-shadow: 0 0 16px -2px black;
   background-color: rgb(var(--v-theme-background));
+}
+
+/* When this panel's map is expanded to fullscreen, lift the whole
+   viz-container stacking context above page content. The expanded
+   .map-container is position:fixed, but position:fixed escapes layout --
+   NOT an ancestor stacking context. .viz-container sets z-index:0 above
+   (to keep inline map buttons local), so the expanded map's z-index:5 is
+   scoped inside this context at the page's z-index:0 level. Page UI with
+   any positive z-index then paints above the map and intercepts its
+   clicks ("I can click things underneath the expanded map"). Lifting the
+   context only while expanded fixes the click-through without touching
+   the intentional default-view button stacking. */
+.viz-container.map-expanded {
+  z-index: 10;
 }
 
 /* Disabled-aggregations variant: chart is replaced by a compact v-alert

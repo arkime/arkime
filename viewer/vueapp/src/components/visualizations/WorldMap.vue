@@ -79,6 +79,10 @@ import { ALPHA2_TO_NUMERIC } from '@common/alpha2ToNumeric.js';
 const ZOOM_STEP = 1.4;
 const ZOOM_MIN = 1;
 const ZOOM_MAX = 8;
+// Countries with no traffic render white so they read clearly as "no
+// data" instead of blending into the low (lightest) end of the
+// land-color scale, which a country with a small-but-nonzero count gets.
+const NO_DATA_COLOR = '#ffffff';
 
 export default {
   name: 'ArkimeWorldMap',
@@ -230,7 +234,7 @@ export default {
     },
     fillFor (feat) {
       const v = this.values[feat.id];
-      if (!v || !this.colorScale) return this.landColorLight;
+      if (!v || !this.colorScale) return NO_DATA_COLOR;
       return this.colorScale(v);
     },
     onHover (e, feat) {

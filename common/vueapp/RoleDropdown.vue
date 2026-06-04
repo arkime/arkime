@@ -146,7 +146,11 @@ export default {
       searchTerm: '',
       filteredRoles: this.roles,
       localSelectedRoles: this.selectedRoles || [],
-      activatorId: `roledd-${this.id || Math.random().toString(36).slice(2, 10)}`
+      // `id` may contain characters illegal in a CSS "#id" selector (Vuetify
+      // resolves the activator via document.querySelector). An unescaped
+      // colon etc. throws "not a valid selector" and wedges navigation -- see
+      // the matching note in UserDropdown.vue. Sanitize to a CSS-safe id.
+      activatorId: `roledd-${(this.id || Math.random().toString(36).slice(2, 10)).replace(/[^a-zA-Z0-9_-]/g, '-')}`
     };
   },
   watch: {

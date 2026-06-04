@@ -146,7 +146,12 @@ export default {
       searchTerm: '',
       users: undefined,
       localSelectedUsers: this.selectedUsers || [],
-      activatorId: `userdd-${this.roleId || Math.random().toString(36).slice(2, 10)}`
+      // roleId can contain a colon (e.g. "role:role1"). A colon is legal in
+      // an HTML id but NOT in a CSS "#id" selector, and Vuetify resolves the
+      // tooltip/menu activator via document.querySelector(`#${activatorId}`).
+      // An unescaped colon throws "not a valid selector", which aborts the
+      // render and wedges SPA navigation. Sanitize to a CSS-safe id.
+      activatorId: `userdd-${(this.roleId || Math.random().toString(36).slice(2, 10)).replace(/[^a-zA-Z0-9_-]/g, '-')}`
     };
   },
   watch: {
