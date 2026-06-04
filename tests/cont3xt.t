@@ -1,5 +1,5 @@
 # Test cont3xt.js
-use Test::More tests => 218;
+use Test::More tests => 222;
 use Test::Differences;
 use Data::Dumper;
 use ArkimeTest;
@@ -1151,6 +1151,19 @@ eq_or_diff($json, from_json('{"success": false, "text": "Nothing sent to change"
 # PUT settings with actual settings
 $json = cont3xtPutToken('/api/settings', '{"settings": {"foo": "bar"}}', $token);
 is($json->{success}, 1, "put settings success");
+
+################################################################################
+### Cross-app shared user settings
+viewerPostToken('/api/user/settings?arkimeRegressionUser=sac-test', '{"logo": "crossapp.png"}', $token2);
+$json = viewerGetToken('/api/user/settings?arkimeRegressionUser=sac-test', $token2);
+is($json->{logo}, "crossapp.png", "viewer set logo on the shared user");
+
+$json = cont3xtPostToken('/api/settings/update?arkimeRegressionUser=sac-test', '{"vuetifyTheme": "cotton-candy"}', $token2);
+is($json->{success}, 1, "cont3xt updated the shared vuetifyTheme");
+
+$json = viewerGetToken('/api/user/settings?arkimeRegressionUser=sac-test', $token2);
+is($json->{vuetifyTheme}, "cotton-candy", "cont3xt theme update is visible in viewer");
+is($json->{logo}, "crossapp.png", "viewer-set logo preserved after cont3xt theme update");
 
 ################################################################################
 ### Integration Stats
