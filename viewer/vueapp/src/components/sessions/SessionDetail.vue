@@ -1405,7 +1405,13 @@ onUnmounted(() => {
   position: absolute;
   display: inline-block;
 }
-dl:hover > .session-detail-grip {
+/* Only show the grip for the <dl> you're actually pointing at. Subsection
+   <dl>s are nested inside the card's outer <dl>, so hovering a subsection
+   also triggers :hover on the outer <dl> — which would light up its
+   full-height, card-spanning grip on top of the subsection's. Restricting
+   to the innermost hovered <dl> (:not(:has(dl:hover))) keeps the drag line
+   matched to the subsection you're over. */
+dl:hover:not(:has(dl:hover)) > .session-detail-grip {
   border-right: 1px dotted rgb(var(--v-theme-neutral)) !important;
 }
 
@@ -1458,6 +1464,26 @@ dl:hover > .session-detail-grip {
   position: relative;
 }
 
+/* Subsections nested inside a card's <dl> (DNS "Query", HTTP/email
+   "... Header Detail"). They render as a bold header + its own <dl>
+   nested inside the top-level <dl>, so the `> .session-card-title` /
+   `> dl` spacing above doesn't reach them. Without this the nested
+   header keeps its default margins and leaves an extra gap above its
+   content. Give the header a little room above and tuck its content
+   directly beneath it. */
+.session-detail .session-detail-card dl > .session-card-title {
+  cursor: pointer;
+  margin-top: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+.session-detail .session-detail-card dl > dl {
+  margin-top: 0;
+  margin-bottom: 0;
+  /* positioning context for this subsection's own resize grip, so the
+     grip's height:100% measures the subsection, not the outer <dl> */
+  position: relative;
+}
+
 /* keep dt and dd at the same height so values align with labels */
 .session-detail .session-detail-card dl dt,
 .session-detail .session-detail-card dl dd {
@@ -1502,8 +1528,12 @@ dl:hover > .session-detail-grip {
 
 /* `.collapse` is toggled onto the <dl> sibling of the card title by
    collapseSection() in sessionDetailData.js. Bootstrap used to provide
-   `display: none`; we have to set it ourselves now. */
-.session-detail .session-detail-card > dl.collapse {
+   `display: none`; we have to set it ourselves now. Use a descendant
+   selector (not `>`) so nested subsection lists (DNS "Query", HTTP/email
+   header detail) collapse too — `> dl` only matched top-level cards, so
+   clicking a subsection chevron toggled the header gap but never hid the
+   content. */
+.session-detail .session-detail-card dl.collapse {
   display: none;
 }
 </style>
