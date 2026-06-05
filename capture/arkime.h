@@ -1506,7 +1506,7 @@ typedef uint32_t (* ArkimePluginOutstandingFunc) ();
 #define ARKIME_PLUGIN_SMTP_OHC     0x00200000
 
 void arkime_plugins_init();
-void arkime_plugins_load(char **plugins);
+void arkime_plugins_load(char **plugins, gboolean loadParsers);
 void arkime_plugins_reload();
 
 int  arkime_plugins_register_internal(const char *name, gboolean storeData, size_t sessionsize, int apiversion);

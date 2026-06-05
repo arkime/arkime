@@ -58,6 +58,8 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #3998 Identify WinRM / WS-Management (PowerShell Remoting, evil-winrm, WEF) as protocol winrm via POST /wsman
   - #3999 Add DCERPC labels (even, mapi, iwbemlevel1login, msrp, dnsserver) and fix IRemUnknown/IRemUnknown2/ISystemActivator/ioxidresolver mislabels
   - #4008 Extract arp.ip / arp.mac / arp.oui / arp.opcode from ARP packets
+  - #4010 Fix crash on startup when rootPlugins is set
+  - #4013 Add entropy plugin to calculate the Shannon entropy of the TCP/UDP data bytes per direction, with entropyChunkSize and entropyMaxUniqueValues options
 ## Cont3xt
   - #3999 Fix logoutUrl when logoutUrlMethod=GET
 ## Viewer
