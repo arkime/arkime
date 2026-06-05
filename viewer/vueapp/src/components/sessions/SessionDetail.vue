@@ -37,6 +37,16 @@
           size="small"
           class="me-1" />
         Packets
+        <v-tooltip
+          v-if="actions?.packets != null"
+          location="bottom"
+          :text="`${actions.packets.toLocaleString()} packets in session`">
+          <template #activator="{ props: tipProps }">
+            <span
+              v-bind="tipProps"
+              class="ms-2 small text-medium-emphasis">({{ actions.packets.toLocaleString() }})</span>
+          </template>
+        </v-tooltip>
       </v-tab>
       <v-tab
         v-if="hasTshark && !hidePackets && !user.hidePcap"
@@ -46,17 +56,175 @@
           size="small"
           class="me-1" />
         Shark
-        <span
+        <v-tooltip
           v-if="tsharkPackets.length"
-          class="ms-2 small text-medium-emphasis">{{ tsharkPackets.length }}</span>
+          location="bottom"
+          :text="`${tsharkPackets.length.toLocaleString()} parsed packets`">
+          <template #activator="{ props: tipProps }">
+            <span
+              v-bind="tipProps"
+              class="ms-2 small text-medium-emphasis">({{ tsharkPackets.length.toLocaleString() }})</span>
+          </template>
+        </v-tooltip>
       </v-tab>
     </v-tabs>
+
+    <!-- single toolbar shared across tabs: session actions + the active
+         tab's own controls, so everything lives in one bar -->
+    <div
+      v-if="actions || activeTab !== 'details'"
+      class="arkime-pcap-toolbar session-options me-1 ms-1 mt-2 mb-2">
+      <session-actions
+        v-if="actions"
+        :actions="actions"
+        :show-menus="activeTab === 'details'"
+        @open-form="openForm" />
+
+      <!-- push each tab's own controls to the right (Details' Columns/Actions
+           already right-justify via ms-auto inside SessionActions) -->
+      <div
+        v-if="activeTab !== 'details'"
+        class="tb-spacer" />
+
+      <!-- packets controls -->
+      <fieldset
+        v-if="activeTab === 'packets'"
+        class="toolbar-fieldset"
+        :disabled="hidePackets || loadingPackets || renderingPackets">
+        <packet-options
+          v-bind="packetOptionsProps"
+          v-on="packetOptionsHandlers" />
+      </fieldset>
+
+      <!-- tshark controls -->
+      <template v-else-if="activeTab === 'tshark' && hasTshark">
+        <div class="tb-group">
+          <v-menu location="bottom start">
+            <template #activator="{ props: activatorProps }">
+              <v-btn
+                v-bind="activatorProps"
+                variant="text"
+                class="packet-options-select-btn">
+                {{ $t('common.packetCount', tsharkLength) }}
+                <v-icon
+                  icon="mdi-menu-down"
+                  class="ms-1" />
+              </v-btn>
+            </template>
+            <v-list density="compact">
+              <v-list-item
+                v-for="n in [50, 200, 500, 1000, 2000]"
+                :key="n"
+                @click="tsharkLength = n">
+                {{ $t('common.packetCount', n) }}
+              </v-list-item>
+            </v-list>
+          </v-menu>
+        </div>
+
+        <div
+          v-if="tsharkLoading"
+          class="tb-group">
+          <span class="d-inline-flex align-center small text-medium-emphasis">
+            <v-icon
+              icon="mdi-loading"
+              class="mdi-spin me-1" /> running…
+          </span>
+          <v-btn
+            color="warning"
+            variant="text"
+            @click="cancelTshark">
+            <v-icon
+              icon="mdi-cancel"
+              class="me-1" />
+            cancel
+          </v-btn>
+        </div>
+
+        <div
+          v-if="tsharkPackets.length"
+          class="tb-group">
+          <v-text-field
+            v-model="tsharkFilter"
+            placeholder="filter packets…"
+            prepend-inner-icon="mdi-magnify"
+            clearable
+            density="compact"
+            variant="outlined"
+            hide-details
+            class="tshark-filter-input" />
+        </div>
+
+        <div
+          v-if="tsharkPackets.length"
+          class="tb-group">
+          <v-btn
+            variant="text"
+            title="Expand all fields"
+            @click="tsharkExpandAll(true)">
+            <v-icon
+              icon="mdi-unfold-more-horizontal"
+              class="me-1" />
+            expand
+          </v-btn>
+          <v-btn
+            variant="text"
+            title="Collapse all fields"
+            @click="tsharkExpandAll(false)">
+            <v-icon
+              icon="mdi-unfold-less-horizontal"
+              class="me-1" />
+            collapse
+          </v-btn>
+        </div>
+      </template>
+    </div>
+
+    <!-- action forms + toast (opened from the bar or the inline +tag) -->
+    <div
+      v-if="actionMessage"
+      class="mb-2 ms-1 me-1">
+      <arkime-toast
+        :message="actionMessage"
+        :type="actionMessageType"
+        :done="messageDone" />
+    </div>
+    <div
+      v-if="actionForm"
+      class="mb-2 ms-1 me-5">
+      <arkime-tag-sessions
+        v-if="actionForm === 'add:tags'"
+        :sessions="actionSessions"
+        :add="true"
+        :single="true"
+        @done="actionFormDone" />
+      <arkime-tag-sessions
+        v-else-if="actionForm === 'remove:tags'"
+        :sessions="actionSessions"
+        :add="false"
+        :single="true"
+        @done="actionFormDone" />
+      <arkime-export-pcap
+        v-else-if="actionForm === 'export:pcap'"
+        :sessions="actionSessions"
+        @done="actionFormDone" />
+      <arkime-remove-data
+        v-else-if="actionForm === 'remove:data'"
+        :sessions="actionSessions"
+        :single="true"
+        @done="actionFormDone" />
+      <arkime-send-sessions
+        v-else-if="actionForm === 'send:session'"
+        :sessions="actionSessions"
+        :cluster="actionCluster"
+        @done="actionFormDone" />
+    </div>
 
     <!-- details tab content -->
     <div v-show="activeTab === 'details'">
       <SessionDetailDataComponent
         :key="componentKey"
-        @reload="reload"
+        @add-tags="openForm({ type: 'add:tags' })"
         @toggle-col-vis="toggleColVis"
         @toggle-info-vis="toggleInfoVis" />
     </div>
@@ -65,30 +233,8 @@
     <div
       v-show="!hidePackets && !user.hidePcap"
       class="session-detail-pcap-area">
-      <!-- packets tab content -->
+      <!-- packets tab content (toolbar lives in the shared bar above) -->
       <div v-show="activeTab === 'packets'">
-        <!-- packet options (top) -->
-        <fieldset
-          class="arkime-pcap-toolbar me-1 ms-1 mt-2 mb-2"
-          :disabled="hidePackets || loadingPackets || renderingPackets">
-          <packet-options
-            :params="params"
-            :decodings="decodings"
-            :cyber-chef-src-url="cyberChefSrcUrl"
-            :cyber-chef-dst-url="cyberChefDstUrl"
-            @update-base="updateBase"
-            @toggle-images="toggleImages"
-            @toggle-show-src="toggleShowSrc"
-            @toggle-show-dst="toggleShowDst"
-            @apply-decodings="applyDecodings"
-            @update-decodings="updateDecodings"
-            @toggle-timestamps="toggleTimestamps"
-            @toggle-show-frames="toggleShowFrames"
-            @update-num-packets="updateNumPackets"
-            @toggle-line-numbers="toggleLineNumbers"
-            @toggle-compression="toggleCompression" />
-        </fieldset>
-
         <!-- packets loading -->
         <div
           v-if="loadingPackets"
@@ -154,21 +300,8 @@
           class="arkime-pcap-toolbar me-1 ms-1 mt-2"
           :disabled="hidePackets || loadingPackets || renderingPackets">
           <packet-options
-            :params="params"
-            :decodings="decodings"
-            :cyber-chef-src-url="cyberChefSrcUrl"
-            :cyber-chef-dst-url="cyberChefDstUrl"
-            @update-base="updateBase"
-            @toggle-images="toggleImages"
-            @toggle-show-src="toggleShowSrc"
-            @toggle-show-dst="toggleShowDst"
-            @apply-decodings="applyDecodings"
-            @update-decodings="updateDecodings"
-            @toggle-timestamps="toggleTimestamps"
-            @toggle-show-frames="toggleShowFrames"
-            @update-num-packets="updateNumPackets"
-            @toggle-line-numbers="toggleLineNumbers"
-            @toggle-compression="toggleCompression" />
+            v-bind="packetOptionsProps"
+            v-on="packetOptionsHandlers" />
         </fieldset>
       </div> <!-- /packets tab -->
 
@@ -177,96 +310,7 @@
         v-if="hasTshark"
         v-show="activeTab === 'tshark'"
         class="tshark-section me-1 ms-1 mt-3">
-        <!-- tshark toolbar -->
-        <div class="arkime-pcap-toolbar mb-2">
-          <!-- running state + cancel (no manual run/refresh -- tshark
-               auto-fetches the first time the tab is activated) -->
-          <div
-            v-if="tsharkLoading"
-            class="tb-group">
-            <span class="d-inline-flex align-center small text-medium-emphasis">
-              <v-icon
-                icon="mdi-loading"
-                class="mdi-spin me-1" /> running…
-            </span>
-            <v-btn
-              color="warning"
-              variant="text"
-              @click="cancelTshark">
-              <v-icon
-                icon="mdi-cancel"
-                class="me-1" />
-              cancel
-            </v-btn>
-          </div>
-
-          <!-- filter (leftmost) -->
-          <div
-            v-if="tsharkPackets.length"
-            class="tb-group">
-            <v-text-field
-              v-model="tsharkFilter"
-              placeholder="filter packets…"
-              prepend-inner-icon="mdi-magnify"
-              clearable
-              density="compact"
-              variant="outlined"
-              hide-details
-              class="tshark-filter-input" />
-          </div>
-
-          <!-- spacer pushes right-side groups out -->
-          <div class="tb-spacer" />
-
-          <!-- packet count -- same v-menu+v-btn pattern PacketOptions uses -->
-          <div class="tb-group">
-            <v-menu location="bottom end">
-              <template #activator="{ props: activatorProps }">
-                <v-btn
-                  v-bind="activatorProps"
-                  variant="text"
-                  class="packet-options-select-btn">
-                  {{ tsharkLength }} packets
-                  <v-icon
-                    icon="mdi-menu-down"
-                    class="ms-1" />
-                </v-btn>
-              </template>
-              <v-list density="compact">
-                <v-list-item
-                  v-for="n in [50, 200, 500, 1000, 2000]"
-                  :key="n"
-                  @click="tsharkLength = n">
-                  {{ n }} packets
-                </v-list-item>
-              </v-list>
-            </v-menu>
-          </div>
-
-          <!-- expand / collapse -->
-          <div
-            v-if="tsharkPackets.length"
-            class="tb-group">
-            <v-btn
-              variant="text"
-              title="Expand all fields"
-              @click="tsharkExpandAll(true)">
-              <v-icon
-                icon="mdi-unfold-more-horizontal"
-                class="me-1" />
-              expand
-            </v-btn>
-            <v-btn
-              variant="text"
-              title="Collapse all fields"
-              @click="tsharkExpandAll(false)">
-              <v-icon
-                icon="mdi-unfold-less-horizontal"
-                class="me-1" />
-              collapse
-            </v-btn>
-          </div>
-        </div>
+        <!-- tshark toolbar lives in the shared bar above -->
 
         <!-- protocol histogram -->
         <div
@@ -372,9 +416,15 @@ import { ref, defineAsyncComponent, computed, onMounted, nextTick, onUnmounted, 
 import store from '@/store';
 import { timezoneDateString } from '@common/vueFilters.js';
 import PacketOptions from './PacketOptions.vue';
+import SessionActions from './SessionActions.vue';
 import SessionsService from './SessionsService';
 import sessionDetailData from './sessionDetailData.js';
 import TsharkNode from './TsharkNode.vue';
+import ArkimeTagSessions from './Tags.vue';
+import ArkimeRemoveData from './Remove.vue';
+import ArkimeSendSessions from './Send.vue';
+import ArkimeExportPcap from './ExportPcap.vue';
+import ArkimeToast from '../utils/Toast.vue';
 // asynchronous component defined above with html injected by createDetailDataComponent
 let SessionDetailDataComponent = null;
 
@@ -402,6 +452,14 @@ const user = computed(() => {
 const packetContainerRef = ref(null);
 const renderingPackets = ref(false);
 const packetHtml = ref('');
+const actions = ref(null);
+// action forms (add/remove tags, export pcap, remove data, send) opened
+// from the SessionActions bar or the inline "+ add tag" in the detail data
+const actionForm = ref('');
+const actionCluster = ref(undefined);
+const actionMessage = ref('');
+const actionMessageType = ref('');
+const actionSessions = computed(() => [{ id: props.session.id }]);
 const hidePackets = ref(false);
 const errorPackets = ref('');
 const loadingPackets = ref(false);
@@ -455,8 +513,9 @@ const createDetailDataComponent = () => {
   return defineAsyncComponent(async () => {
     try {
       const response = await SessionsService.getDetail(props.session.id, props.session.node, props.session.cluster);
-      hidePackets.value = /hidepackets="true"/i.test(response);
-      return sessionDetailData.getVueInstance(response, props.session); // render the session detail data
+      hidePackets.value = /hidepackets="true"/i.test(response.html);
+      actions.value = response.info;
+      return sessionDetailData.getVueInstance(response.html, props.session); // render the session detail data
     } catch (err) {
       console.log('Error loading session detail data', err);
       error.value = t('sessions.detail.loadingErr');
@@ -469,6 +528,22 @@ const reload = async () => {
   error.value = '';
   SessionDetailDataComponent = createDetailDataComponent();
   componentKey.value++; // force re-render
+};
+
+// open an action form (from the bar or the inline "+ add tag")
+const openForm = ({ type, cluster }) => {
+  actionForm.value = type;
+  actionCluster.value = cluster;
+};
+const actionFormDone = (doneMsg, success, doReload) => {
+  actionForm.value = '';
+  const type = success ? 'success' : 'warning';
+  if (doReload) { reload(); return; }
+  if (doneMsg) { actionMessage.value = doneMsg; actionMessageType.value = type; }
+};
+const messageDone = () => {
+  actionMessage.value = '';
+  actionMessageType.value = '';
 };
 
 const cancelPacketLoad = () => {
@@ -560,6 +635,27 @@ const applyDecodings = (newDecodings) => {
 
 const updateDecodings = (newDecodings) => {
   decodings.value = newDecodings;
+};
+
+// shared bindings for the two PacketOptions instances (top bar + bottom)
+const packetOptionsProps = computed(() => ({
+  params: params.value,
+  decodings: decodings.value,
+  cyberChefSrcUrl: cyberChefSrcUrl.value,
+  cyberChefDstUrl: cyberChefDstUrl.value
+}));
+const packetOptionsHandlers = {
+  updateBase,
+  updateNumPackets,
+  updateDecodings,
+  applyDecodings,
+  toggleImages,
+  toggleShowSrc,
+  toggleShowDst,
+  toggleTimestamps,
+  toggleShowFrames,
+  toggleLineNumbers,
+  toggleCompression
 };
 
 const showSrcBytesImg = () => {
@@ -978,6 +1074,7 @@ onUnmounted(() => {
   align-items: stretch;
   gap: 0;
   padding: 2px 4px;
+  font-size: 12px;
   background: color-mix(in srgb, rgb(var(--v-theme-background)) 60%, transparent);
   backdrop-filter: blur(4px);
   -webkit-backdrop-filter: blur(4px);
@@ -1009,27 +1106,31 @@ onUnmounted(() => {
   flex: 1 1 auto;
   min-width: 0;
 }
-/* PacketOptions wrapping row already has its own internal layout;
-   when it sits inside .arkime-pcap-toolbar make it take full width
-   so its groups flow normally. */
+/* PacketOptions wrapping row sits right-justified after the spacer in the
+   shared bar (don't grow, so the spacer keeps it on the right). */
 .arkime-pcap-toolbar .packet-options-row {
-  flex: 1 1 auto;
+  flex: 0 1 auto;
   min-width: 0;
-  width: 100%;
+}
+/* fieldset wrapping PacketOptions only exists for the disabled cascade
+   during packet loads -- keep it out of the flex flow. */
+.arkime-pcap-toolbar .toolbar-fieldset {
+  display: contents;
 }
 
 /* Tighter v-input chrome inside the toolbar — labels, checkboxes,
-   number/filter fields all snap to the toolbar's 30px row height. */
-.arkime-pcap-toolbar :deep(.v-selection-control) {
+   number/filter fields all snap to the toolbar's row height. Plain
+   descendant selectors (not :deep) because this <style> is unscoped. */
+.arkime-pcap-toolbar .v-selection-control {
   min-height: 0;
   flex: 0 0 auto;
 }
-.arkime-pcap-toolbar :deep(.v-checkbox .v-selection-control__wrapper),
-.arkime-pcap-toolbar :deep(.v-checkbox .v-selection-control__input) {
+.arkime-pcap-toolbar .v-checkbox .v-selection-control__wrapper,
+.arkime-pcap-toolbar .v-checkbox .v-selection-control__input {
   height: 24px;
   width: 24px;
 }
-.arkime-pcap-toolbar :deep(.v-label) {
+.arkime-pcap-toolbar .v-label {
   font-size: 12px;
   opacity: 0.9;
 }
@@ -1037,14 +1138,20 @@ onUnmounted(() => {
   flex: 0 0 22rem;
   max-width: 22rem;
 }
-.arkime-pcap-toolbar .tshark-filter-input :deep(.v-field__input) {
+.arkime-pcap-toolbar .tshark-filter-input .v-field__input {
   font-size: 12px;
   padding-top: 2px;
   padding-bottom: 2px;
   min-height: 0;
 }
-.arkime-pcap-toolbar :deep(.v-btn) {
+/* Shared button sizing for both toolbars so they render at the same
+   28px row / 12px font. Excludes .v-btn--icon so any icon-only buttons
+   keep Vuetify's natural square sizing. */
+.arkime-pcap-toolbar .v-btn:not(.v-btn--icon) {
   min-width: 28px;
+  height: 28px;
+  min-height: 28px;
+  font-size: 12px;
   letter-spacing: 0;
   text-transform: none;
 }
@@ -1320,7 +1427,7 @@ onUnmounted(() => {
    v-btn entries so they read as compact toolbar links rather than
    uppercase pill buttons. The wrapping .arkime-pcap-toolbar (shared with
    the Packets + tshark toolbars) supplies the bar background and border. */
-.session-detail .session-options-btn.v-btn {
+.session-options-btn.v-btn {
   text-transform: none;
   letter-spacing: normal;
   font-weight: 400;
@@ -1335,7 +1442,7 @@ onUnmounted(() => {
   white-space: nowrap;
 }
 
-.session-detail .session-options-btn.v-btn:hover {
+.session-options-btn.v-btn:hover {
   background-color: rgb(var(--v-theme-quaternary-lighter));
   color: rgb(var(--v-theme-button-fg));
 }

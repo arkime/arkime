@@ -113,14 +113,14 @@ export default {
    * @param {string} id         The unique id of the session
    * @param {string} node       The node that the session belongs to
    * @param {string} cluster  The Elasticsearch cluster that the session belongs to
-   * @returns {Promise} Promise A promise object that signals the completion
-   *                            or rejection of the request.
+   * @returns {Promise<{html: string, info: object}>} The detail html and the
+   *                            session fields (rootId, packets, etc.) the row omits.
    */
   getDetail: async function (id, node, cluster) {
     return await fetchWrapper({
       url: `api/session/${node}/${id}/detail`,
       params: { cluster },
-      headers: { 'Content-Type': 'text/html' }
+      headers: { 'Content-Type': 'application/json' }
     });
   },
 
