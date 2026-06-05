@@ -163,12 +163,14 @@ export default {
     const store = useStore();
     const { getTheme, getCustomTheme, getDarkThemeEnabled } = useGetters(store);
 
-    // Register the user's saved custom theme (if any) so theme.change('custom1') works.
-    if (getCustomTheme.value && getCustomTheme.value.colors) {
-      registerVuetifyTheme({ theme }, 'custom1', getCustomTheme.value);
-    }
-
+    // Re-runs when the theme id or custom palette arrives from the server
+    // (HYDRATE_THEME_FROM_SERVER). Register 'custom1' before switching to
+    // it so theme.change('custom1') resolves even when the palette only
+    // shows up after the async /api/user fetch.
     watchEffect(() => {
+      if (getCustomTheme.value && getCustomTheme.value.colors) {
+        registerVuetifyTheme({ theme }, 'custom1', getCustomTheme.value);
+      }
       theme.change(getTheme.value || 'arkime-light');
       // legacy body.dark hook for any non-Vuetify selectors that still read it
       document.body.classList = getDarkThemeEnabled.value ? ['dark'] : [];

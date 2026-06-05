@@ -16,8 +16,10 @@ SPDX-License-Identifier: Apache-2.0
 <script>
 import ParliamentNavbar from './components/Navbar.vue';
 import ParliamentService from './components/parliament.service.js';
+import UserService from './components/user.service.js';
 import ParliamentUpgradeBrowser from './components/UpgradeBrowser.vue';
 import ParliamentFooter from '@common/Footer.vue';
+import { applyServerTheme } from '@common/themes/persistTheme.js';
 
 export default {
   name: 'App',
@@ -43,6 +45,15 @@ export default {
     ParliamentService.getParliament().then((data) => {
       this.$store.commit('setParliament', data);
     });
+
+    // Hydrate the Vuetify theme from user.settings; if the server has
+    // no value yet, push localStorage up so the choice follows the user
+    // to other browsers/devices on next load.
+    UserService.getUser().then((user) => {
+      applyServerTheme(user?.settings, (themeId, customTheme) => {
+        this.$store.commit('hydrateThemeFromServer', { themeId, customTheme });
+      });
+    }).catch(() => { /* ignore */ });
   }
 };
 </script>

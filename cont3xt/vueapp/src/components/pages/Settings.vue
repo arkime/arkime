@@ -176,7 +176,7 @@ SPDX-License-Identifier: Apache-2.0
         md="10"
         sm="9"
         xs="12"
-        class="overflow-auto h-100 pt-3 pb-4 pr-4">
+        class="overflow-auto h-100 settings-content-pane">
         <!-- view settings -->
         <div v-if="visibleTab === 'views'">
           <!-- view create form -->
@@ -674,8 +674,8 @@ SPDX-License-Identifier: Apache-2.0
             Themes
           </h1>
           <p class="text-medium-emphasis mb-4">
-            Choose a theme or build your own. Themes apply across cont3xt
-            immediately and persist in your browser.
+            Choose a theme or build your own. Themes are saved to your
+            account and apply across all Arkime apps.
           </p>
           <ThemePicker
             :model-value="getTheme"
@@ -1314,21 +1314,6 @@ export default {
 </script>
 
 <style scoped>
-. {
-  max-width: 100%;
-  position: relative;
-}
-. .{
-  max-width: 100%;
-  overflow: hidden;
-  position: relative;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-}
-
-.sub-{
-  padding-left: 32px !important;
-}
 .sub-nav-handle {
   top: 12px;
   left: 1.4rem;

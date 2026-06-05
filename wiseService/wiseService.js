@@ -1473,6 +1473,40 @@ if (internals.webconfig) {
 
   // ----------------------------------------------------------------------------
   /**
+   * GET - /api/settings
+   *
+   * Returns the shared Vuetify theme keys for the logged-in user. Used
+   * by the wise UI on startup to hydrate the Vuetify theme picker from
+   * the server. These are the same keys every Arkime app reads/writes,
+   * so a user's choice follows them across apps and browsers.
+   *
+   * @name "/api/settings"
+   * @returns {string} vuetifyTheme - The saved theme id
+   * @returns {object} vuetifyCustomTheme - The saved custom-theme object
+   */
+  app.get('/api/settings', [ArkimeUtil.noCacheJson, isWiseUser, Auth.getSettingUserDb], User.apiGetSettings);
+
+  // ----------------------------------------------------------------------------
+  /**
+   * POST - /api/settings/update
+   *
+   * Persists the shared Vuetify theme keys (`vuetifyTheme`,
+   * `vuetifyCustomTheme`) onto the logged-in user's `settings`. These
+   * are the same keys every Arkime app reads/writes, so a theme picked
+   * in any app follows the user into all of them. Other keys posted
+   * here are dropped.
+   *
+   * @name "/api/settings/update"
+   * @returns {boolean} success
+   * @returns {string} text
+   */
+  app.post('/api/settings/update',
+    [ArkimeUtil.noCacheJson, jsonParser, isWiseUser, Auth.getSettingUserDb],
+    User.apiUpdateSettings
+  );
+
+  // ----------------------------------------------------------------------------
+  /**
    * GET - Used by wise UI to retrieve the raw file being used by the section.
    *       This is an authenticated API and requires wiseService to be started with --webconfig.
    *

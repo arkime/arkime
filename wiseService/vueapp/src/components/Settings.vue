@@ -3,57 +3,69 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-  <v-row no-gutters>
-    <!-- navigation -->
-    <v-col
-      cols="12"
-      xl="1"
-      lg="2"
-      md="2"
-      sm="3"
-      role="tablist"
-      aria-orientation="vertical">
-      <v-tabs
-        :model-value="visibleTab"
-        direction="vertical"
-        density="compact"
-        color="primary"
-        selected-class="font-weight-bold"
-        @update:model-value="openView($event)">
-        <v-tab value="themes">
-          <v-icon
-            icon="mdi-brush"
-            class="me-1" />
-          Themes
-        </v-tab>
-      </v-tabs>
-    </v-col> <!-- /navigation -->
+  <div class="settings-page">
+    <!-- sub navbar -->
+    <div class="sub-navbar">
+      <span class="sub-navbar-title">
+        <v-icon
+          icon="mdi-cog"
+          class="me-1" />
+        <span>WISE Settings</span>
+      </span>
+    </div> <!-- /sub navbar -->
 
-    <!-- content -->
-    <v-col
-      cols="12"
-      xl="11"
-      lg="10"
-      md="10"
-      sm="9"
-      class="px-5 pt-2">
-      <div v-if="visibleTab === 'themes'">
-        <h1 class="mb-3">
-          Themes
-        </h1>
-        <p class="text-medium-emphasis mb-4">
-          Choose a theme or build your own. Themes apply across WISE
-          immediately and persist in your browser.
-        </p>
-        <ThemePicker
-          :model-value="getTheme"
-          :themes="themes"
-          :custom-theme="getCustomTheme"
-          @update:model-value="onThemeChange"
-          @update:custom-theme="onCustomThemeChange" />
-      </div>
-    </v-col>
-  </v-row>
+    <v-row no-gutters>
+      <!-- navigation -->
+      <v-col
+        cols="12"
+        xl="1"
+        lg="2"
+        md="2"
+        sm="3"
+        role="tablist"
+        aria-orientation="vertical">
+        <v-tabs
+          :model-value="visibleTab"
+          direction="vertical"
+          density="compact"
+          color="primary"
+          selected-class="font-weight-bold"
+          @update:model-value="openView($event)">
+          <v-tab value="themes">
+            <v-icon
+              icon="mdi-brush"
+              class="me-1" />
+            Themes
+          </v-tab>
+        </v-tabs>
+      </v-col> <!-- /navigation -->
+
+      <!-- content -->
+      <v-col
+        cols="12"
+        xl="11"
+        lg="10"
+        md="10"
+        sm="9"
+        class="settings-content-pane">
+        <div v-if="visibleTab === 'themes'">
+          <h1 class="mb-3">
+            Themes
+          </h1>
+          <p class="text-medium-emphasis mb-4">
+            Choose a theme or build your own. Themes are saved to your
+            account and apply across all Arkime apps.
+          </p>
+          <ThemePicker
+            :model-value="getTheme"
+            :themes="themes"
+            :custom-theme="getCustomTheme"
+            @update:model-value="onThemeChange"
+            @update:custom-theme="onCustomThemeChange" />
+        </div>
+      </v-col>
+    </v-row>
+  </div>
 </template>
 
 <script>

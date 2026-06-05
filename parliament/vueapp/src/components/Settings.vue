@@ -14,7 +14,9 @@ SPDX-License-Identifier: Apache-2.0
       </span>
     </div> <!-- /sub navbar -->
 
-    <v-container fluid>
+    <v-container
+      fluid
+      class="pa-0">
       <!-- page error -->
       <v-alert
         v-if="error"
@@ -36,7 +38,9 @@ SPDX-License-Identifier: Apache-2.0
       </v-alert> <!-- /page error -->
 
       <!-- page content -->
-      <v-row v-if="isAdmin">
+      <v-row
+        v-if="isAdmin"
+        no-gutters>
         <!-- navigation -->
         <v-col
           cols="12"
@@ -96,7 +100,8 @@ SPDX-License-Identifier: Apache-2.0
           xl="11"
           lg="10"
           md="10"
-          sm="9">
+          sm="9"
+          class="settings-content-pane">
           <!-- general -->
           <div
             v-if="visibleTab === 'general' && settings"
@@ -419,8 +424,8 @@ SPDX-License-Identifier: Apache-2.0
               Themes
             </h1>
             <p class="text-medium-emphasis mb-4">
-              Choose a theme or build your own. Themes apply across parliament
-              immediately and persist in your browser.
+              Choose a theme or build your own. Themes are saved to your
+              account and apply across all Arkime apps.
             </p>
             <ThemePicker
               :model-value="getTheme"

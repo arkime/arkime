@@ -240,6 +240,24 @@ app.post('/api/user/totp/setup', [jsonParser, checkCookieToken, Auth.getSettingU
 app.post('/api/user/totp/confirm', [jsonParser, checkCookieToken, Auth.getSettingUserDb, ArkimeUtil.noCacheJson, User.checkSettingUserAnyRole(['arkimeAdmin', 'cont3xtAdmin', 'wiseAdmin'])], User.apiConfirmTotp);
 app.post('/api/user/totp/disable', [jsonParser, checkCookieToken, Auth.getSettingUserDb, ArkimeUtil.noCacheJson, User.checkSettingUserAnyRole(['arkimeAdmin', 'cont3xtAdmin', 'wiseAdmin'])], User.apiDisableTotp);
 
+/**
+ * POST - /api/settings/update
+ *
+ * Persists the shared Vuetify theme keys (`vuetifyTheme`,
+ * `vuetifyCustomTheme`) onto the logged-in user's `settings`. These
+ * are the same keys every Arkime app reads/writes, so a theme picked
+ * in any app follows the user into all of them. Other keys posted
+ * here are silently dropped. Lives off `/api/user/` so a userId like
+ * `settings` isn't shadowed by the `/api/user/:id` routes.
+ * @name /settings/update
+ * @returns {boolean} success - Whether the update was successful
+ * @returns {string} text - The success/error message
+ */
+app.post('/api/settings/update',
+  [jsonParser, ArkimeUtil.noCacheJson, checkCookieToken, Auth.getSettingUserDb],
+  User.apiUpdateSettings
+);
+
 app.delete('/api/user/:id', [jsonParser, checkCookieToken, User.checkRole('usersAdmin')], User.apiDeleteUser);
 app.post('/api/user/:id', [jsonParser, checkCookieToken, User.checkRole('usersAdmin')], User.apiUpdateUser);
 app.post('/api/user/:id/assignment', [jsonParser, checkCookieToken, User.checkAssignableRole], User.apiUpdateUserRole);

@@ -6,7 +6,7 @@ SPDX-License-Identifier: Apache-2.0
   <div id="app">
     <template v-if="compatibleBrowser">
       <wise-navbar />
-      <router-view class="wise-page-content" />
+      <router-view />
       <wise-footer />
     </template>
     <wise-upgrade-browser v-else />
@@ -17,6 +17,7 @@ SPDX-License-Identifier: Apache-2.0
 import WiseNavbar from './components/Navbar.vue';
 import WiseUpgradeBrowser from './components/UpgradeBrowser.vue';
 import WiseFooter from '@common/Footer.vue';
+import { applyServerTheme } from '@common/themes/persistTheme.js';
 
 export default {
   name: 'App',
@@ -36,7 +37,18 @@ export default {
 
     if (!this.compatibleBrowser) {
       console.log('Incompatible browser, please upgrade!');
+      return;
     }
+
+    // Hydrate the Vuetify theme from user.settings; if the server has
+    // no value yet, push localStorage up so the choice follows the user
+    // to other browsers/devices on next load. wise has no other
+    // user-fetching hook on startup, so we hit /api/settings directly.
+    fetch('api/settings').then((r) => r.ok ? r.json() : {}).then((data) => {
+      applyServerTheme(data, (themeId, customTheme) => {
+        this.$store.commit('HYDRATE_THEME_FROM_SERVER', { themeId, customTheme });
+      });
+    }).catch(() => { /* unauthenticated or backend offline -- default theme applies */ });
   }
 };
 </script>
@@ -71,9 +83,5 @@ html {
 }
 #app {
   padding-bottom: 25px;
-}
-/* a bit of breathing room under the fixed navbar */
-.wise-page-content {
-  padding-top: 12px;
 }
 </style>

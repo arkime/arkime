@@ -493,6 +493,16 @@ class UserAPIs {
     return res.send(settings);
   }
 
+  // Allowlist of viewer settings keys persisted via POST /api/user/settings.
+  // customTheme + vuetifyCustomTheme are the structured { dark, colors }
+  // records; customTheme stays in the list for legacy arkime compat (older
+  // versions still write it), while vuetifyTheme / vuetifyCustomTheme is
+  // where v7+ persists its preference -- the two stay independent across
+  // version round-trips.
+  static #settingsAllowlist = ['ms', 'logo', 'theme', 'customTheme', ...User.USER_SETTINGS_KEYS, 'timezone', 'spiGraph', 'numPackets', 'infoFields', 'manualQuery', 'detailFormat',
+    'connSrcField', 'connDstField', 'sortColumn', 'sortDirection', 'showTimestamps', 'connNodeFields',
+    'connLinkFields', 'timelineDataFilters', 'hideTags', 'shiftyEyes'];
+
   /**
    * POST - /api/user/settings
    *
@@ -501,37 +511,10 @@ class UserAPIs {
    * @returns {boolean} success - Whether the update user settings operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
-  static updateUserSettings (req, res) {
-    req.settingUser.settings = ['ms', 'logo', 'theme', 'customTheme', 'vuetifyTheme', 'vuetifyCustomTheme', 'timezone', 'spiGraph', 'numPackets', 'infoFields', 'manualQuery', 'detailFormat',
-      'connSrcField', 'connDstField', 'sortColumn', 'sortDirection', 'showTimestamps', 'connNodeFields',
-      'connLinkFields', 'timelineDataFilters', 'hideTags', 'shiftyEyes'].reduce((obj, key) => {
-      const val = req.body[key];
-      // Reject non-array object values for all keys EXCEPT customTheme +
-      // vuetifyCustomTheme, both of which are structured { dark, colors }
-      // records by design. customTheme stays in the allowlist for legacy
-      // arkime compat (a user on older arkime still writes customTheme);
-      // vuetifyTheme / vuetifyCustomTheme is where v7+ persists its
-      // preference so the two stay independent across version round-trips.
-      if (val !== undefined && val !== null && typeof val === 'object' && !Array.isArray(val) && key !== 'customTheme' && key !== 'vuetifyCustomTheme') {
-        return obj;
-      }
-      obj[key] = val;
-      return obj;
-    }, {});
-
-    User.setUser(req.settingUser.userId, req.settingUser, (err, info) => {
-      if (err) {
-        console.log(`ERROR - ${req.method} /api/user/settings update error`, util.inspect(err, false, 50), info);
-        return res.serverError(500, 'User settings update failed', 'api.users.settingsUpdateFailed');
-      }
-
-      return res.json({
-        success: true,
-        text: 'Updated user settings successfully',
-        i18n: 'api.users.settingsUpdated'
-      });
-    });
-  }
+  static updateUserSettings = User.apiUpdateSettingsHandler(
+    UserAPIs.#settingsAllowlist,
+    ['customTheme', ...User.USER_SETTINGS_OBJECT_KEYS]
+  );
 
   // LAYOUTS --------------------------------------------------------------------------
   /**
