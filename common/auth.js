@@ -1234,11 +1234,6 @@ class Auth {
     let userId;
 
     if (!req.query.userId || req.query.userId === req.user.userId) {
-      if (Auth.regressionTests) {
-        req.settingUser = req.user;
-        return next();
-      }
-
       userId = req.user.userId;
     } else if (!req.user.hasRole('usersAdmin') || (!req.url.toLowerCase().startsWith('/api/user/password') && Auth.#appAdminRole && !req.user.hasRole(Auth.#appAdminRole))) {
       // user is trying to get another user's settings without admin privilege
