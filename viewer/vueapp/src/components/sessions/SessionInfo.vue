@@ -17,10 +17,7 @@ SPDX-License-Identifier: Apache-2.0
               v-bind="activatorProps"
               type="button"
               class="clickable-label me-1">
-              {{ infoField.friendlyName }}
-              <v-icon
-                icon="mdi-menu-down"
-                class="ms-1" />
+              {{ infoField.friendlyName }}<v-icon icon="mdi-menu-down" />
             </button>
           </template>
           <v-list density="compact">
@@ -173,7 +170,7 @@ export default {
   font-size: 11px;
   font-weight: 600;
   line-height: 21px;
-  padding: 0 5px;
+  padding: 0 0 0 5px;
   border: 1px solid rgb(var(--v-theme-neutral));
   border-radius: 0.25rem;
   cursor: pointer;
@@ -187,5 +184,11 @@ export default {
   color: #333;
   background-color: rgb(var(--v-theme-neutral));
   border-color: rgb(var(--v-theme-neutral));
+}
+/* shrink the dropdown chevron to text size and strip its surrounding
+   whitespace (default v-icon is a 24px box, taller than the button) */
+.session-info button.clickable-label .v-icon {
+  font-size: 16px;
+  margin: 0;
 }
 </style>

@@ -705,10 +705,11 @@ export default {
   text-decoration: none;
 }
 
-.field a .fa {
+.field a .v-icon {
   opacity: 0;
   visibility: hidden;
-  margin-left: var(--px-xs);
+  font-size: 16px;
+  margin: 0;
 }
 
 .field.time-field {
@@ -734,7 +735,7 @@ export default {
           user-select: all;
 }
 
-.field:hover .fa {
+.field:hover .v-icon {
   opacity: 1;
   visibility: visible;
 }
