@@ -2544,7 +2544,8 @@ class SessionAPIs {
    *
    * Gets SPI data for a session.
    * @name /session/:nodeName/:id/detail
-   * @returns {html} The html to display as session detail
+   * @returns {object} { html, info } - the detail html plus the session
+   * fields the client row may not carry (rootId, communityId, packets, etc.)
    */
   static getDetail (req, res) {
     const options = ViewerUtils.addCluster(req.query.cluster);
@@ -2647,7 +2648,20 @@ class SessionAPIs {
             ]
           }
         });
-        res.send(html);
+        // getDetail returns scalar fields, but be tolerant of array-shaped ones
+        const netPackets = session.network?.packets;
+        const info = {
+          id: session.id,
+          node: session.node,
+          cluster: session.cluster,
+          rootId: session.rootId,
+          communityId: session.network?.community_id,
+          firstPacket: session.firstPacket,
+          lastPacket: session.lastPacket,
+          packets: Array.isArray(netPackets) ? netPackets[0] : netPackets,
+          hasPackets: !!(session.packetPos && session.packetPos.length > 0)
+        };
+        res.send({ html, info });
       });
     });
   }

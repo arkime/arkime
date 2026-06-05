@@ -1,5 +1,4 @@
 // external imports
-import qs from 'qs';
 import { useRoute } from 'vue-router';
 // Vuetify components used by the pug session-detail templates. The
 // runtime template compiler can't go through vite-plugin-vuetify's
@@ -8,20 +7,12 @@ import { useRoute } from 'vue-router';
 import { VMenu } from 'vuetify/components/VMenu';
 import { VList, VListItem } from 'vuetify/components/VList';
 import { VDivider } from 'vuetify/components/VDivider';
-import { VBtn } from 'vuetify/components/VBtn';
-import { VIcon } from 'vuetify/components/VIcon';
 // internal imports
 import store from '@/store';
 import SessionsService from './SessionsService';
-import ArkimeTagSessions from '../sessions/Tags.vue';
-import ArkimeRemoveData from '../sessions/Remove.vue';
-import ArkimeSendSessions from '../sessions/Send.vue';
-import ArkimeExportPcap from '../sessions/ExportPcap.vue';
-import ArkimeToast from '../utils/Toast.vue';
 import FieldActions from './FieldActions.vue';
 import UserService from '../users/UserService';
 import ArkimeSessionField from './SessionField.vue';
-import HasPermission from '../utils/HasPermission.vue';
 import { buildExpression } from '@common/vueFilters.js';
 import { useColumnResize } from '@common/composables/useColumnResize.js';
 
@@ -60,7 +51,9 @@ function collapseSection (e) {
 
 // This is the vue instance logic for the session detail template that is returned from the server
 // The template is written in pug (/viewer/views/sessionDetail.pug) and rendered on the server
-// then passed to the client as an HTML string, used here as "template"
+// then passed to the client as an HTML string, used here as "template".
+// The session action bar (link/download/tags/etc.) lives in SessionActions.vue;
+// the inline "+ add tag" button here emits addTags up to open that form.
 export default {
   getVueInstance (template, session) {
     return {
@@ -68,67 +61,20 @@ export default {
       data () {
         return {
           session,
-          form: undefined,
-          cluster: undefined,
-          message: undefined,
-          messageType: undefined,
           fields: store.state.fieldsMap,
-          remoteclusters: store.state.remoteclusters,
           route: useRoute()
         };
       },
       components: {
-        ArkimeTagSessions,
-        ArkimeRemoveData,
-        ArkimeSendSessions,
-        ArkimeExportPcap,
-        ArkimeToast,
         FieldActions,
         ArkimeSessionField,
         VMenu,
         VList,
         VListItem,
-        VDivider,
-        VBtn,
-        VIcon
+        VDivider
       },
-      directives: {
-        HasPermission
-      },
+      emits: ['toggleColVis', 'toggleInfoVis', 'addTags'],
       computed: {
-        expression: {
-          get: function () {
-            return store.state.expression;
-          },
-          set: function (newValue) {
-            store.commit('setExpression', newValue);
-          }
-        },
-        startTime: {
-          get: function () {
-            return store.state.time.startTime;
-          },
-          set: function (newValue) {
-            store.commit('setTime', { startTime: newValue });
-          }
-        },
-        permalink () {
-          const id = this.session.id.split(':');
-          let prefixlessId = id.length > 1 ? id[1] : id[0];
-          if (prefixlessId[1] === '@') {
-            prefixlessId = prefixlessId.substr(2);
-          }
-
-          const params = {
-            expression: `id == ${prefixlessId}`,
-            startTime: Math.floor(this.session.firstPacket / 1000),
-            stopTime: Math.ceil(this.session.lastPacket / 1000),
-            cluster: this.session.cluster,
-            openAll: 1
-          };
-
-          return `sessions?${qs.stringify(params)}`;
-        },
         dlWidth: {
           get: function () {
             return store.state.sessionDetailDLWidth || 160;
@@ -194,9 +140,6 @@ export default {
         }
       },
       methods: {
-        toggleLayout (numCols) {
-          store.commit('setSessionDetailCols', numCols);
-        },
         /* Saves the dl widths */
         saveDLWidth: function (width) {
           this.dlWidth = width;
@@ -208,59 +151,9 @@ export default {
           }
           return this.fields[expr];
         },
-        actionFormDone: function (doneMsg, success, reload) {
-          this.form = undefined; // clear the form
-          const doneMsgType = success ? 'success' : 'warning';
-
-          if (reload) {
-            this.$emit('reload', doneMsg, doneMsgType);
-            return;
-          }
-
-          if (doneMsg) {
-            this.message = doneMsg;
-            this.messageType = doneMsgType;
-          }
-        },
-        messageDone: function () {
-          this.message = undefined;
-          this.messageType = undefined;
-        },
+        // opens the add-tag form owned by SessionActions.vue
         addTags: function () {
-          this.form = 'add:tags';
-        },
-        removeTags: function () {
-          this.form = 'remove:tags';
-        },
-        exportPCAP: function () {
-          this.form = 'export:pcap';
-        },
-        removeData: function () {
-          this.form = 'remove:data';
-        },
-        sendSession: function (cluster) {
-          this.form = 'send:session';
-          this.cluster = cluster;
-        },
-        /**
-         * Adds a rootId expression and applies a new start time
-         * @param {string} rootId The root id of the session
-         * @param {int} startTime The start time of the session
-         */
-        allSessions: function (rootId, startTime) {
-          startTime = Math.floor(startTime / 1000);
-
-          const fullExpression = `rootId == ${rootId}`;
-
-          this.expression = fullExpression;
-
-          if (this.route.query.startTime) {
-            if (this.route.query.startTime < startTime) {
-              startTime = this.route.query.startTime;
-            }
-          }
-
-          this.startTime = startTime;
+          this.$emit('addTags');
         },
         /**
          * Opens a new browser tab containing all the unique values for a given field

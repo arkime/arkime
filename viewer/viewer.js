@@ -427,9 +427,11 @@ function createSessionDetail () {
     // .session-detail-cards uses CSS columns (column-count) for the masonry
     // layout, with each .session-detail-card child rendering as a bordered
     // card via styles in viewer/vueapp/src/components/sessions/SessionDetail.vue.
+    // The action bar (link/download/tags/etc.) is now the client-side
+    // SessionActions.vue component, fed by the `actions` object the
+    // /detail endpoint returns alongside this html.
     internals.sessionDetailNew = 'include views/mixins.pug\n' +
                                  'div.session-detail(sessionid=session.id,hidepackets=hidePackets)\n' +
-                                 '  include views/sessionOptions\n' +
                                  '  div.session-detail-cards\n' +
                                  '    div.session-detail-card\n' +
                                  '      include views/sessionDetail\n';
