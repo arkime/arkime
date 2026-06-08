@@ -266,20 +266,24 @@ if (ArkimeConfig.regressionTests) {
   });
 }
 
+// preauth router - routes added here bypass Auth.app() -----------------------
+const preauthRouter = express.Router();
+app.use(preauthRouter);
+
 // load balancer test - no auth ----------------------------------------------
-app.use(['/_ns_/nstest.html', '/health'], function (req, res) {
+preauthRouter.use(['/_ns_/nstest.html', '/health'], function (req, res) {
   res.end();
 });
 
 // parliament apis - no auth --------------------------------------------------
-app.get(
+preauthRouter.get(
   ['/api/parliament', '/parliament.json'],
   [ArkimeUtil.noCacheJson],
   StatsAPIs.getParliament
 );
 
 // stats apis - no auth -------------------------------------------------------
-app.get( // es health endpoint
+preauthRouter.get( // es health endpoint
   ['/api/eshealth', '/eshealth.json'],
   [ArkimeUtil.noCacheJson],
   StatsAPIs.getESHealth
@@ -802,7 +806,9 @@ function loadPlugins () {
       schemes.set(scheme, info);
     },
     getDb: function () { return Db; },
-    getPcap: function () { return Pcap; }
+    getPcap: function () { return Pcap; },
+    getPreauthRouter: function () { return preauthRouter; },
+    getRouter: function () { return pluginRouter; }
   };
   const plugins = Config.getArray('viewerPlugins', '');
   const dirs = Config.getArray('pluginsDir', `${version.config_prefix}/plugins`);
@@ -1177,6 +1183,11 @@ app.get('/about', User.checkPermissions(['webEnabled']), (req, res) => {
 // ============================================================================
 // APIS
 // ============================================================================
+
+// plugin router - routes added here run after auth and arkimeUser check ------
+const pluginRouter = express.Router();
+app.use(pluginRouter);
+
 app.all([
   '/user/current',
   '/user/create',

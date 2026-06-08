@@ -59,6 +59,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
 ## Viewer
   - #3994 Fix SPIView all not allowed error message
   - #4007 Add sanitized {ORIGINALNAME} uploadCommand variable as a safe alternative to {INSECURE-ORIGINALNAME}
+  - #4018 Added support for preauth and postauth endpoint registration to plugins
 ## Wise
   - #3999 Mark phpipam appCode/password and fieldactions/valueactions url fields as secret so they are redacted in /config/get
   - #3999 Add /api/user endpoint and hide save/import/create-source UI controls from non-wiseAdmin users
