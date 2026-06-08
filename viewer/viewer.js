@@ -266,28 +266,28 @@ if (ArkimeConfig.regressionTests) {
   });
 }
 
-// preauth router - routes added here bypass Auth.app() -----------------------
-const preauthRouter = express.Router();
-app.use(preauthRouter);
-
 // load balancer test - no auth ----------------------------------------------
-preauthRouter.use(['/_ns_/nstest.html', '/health'], function (req, res) {
+app.use(['/_ns_/nstest.html', '/health'], function (req, res) {
   res.end();
 });
 
 // parliament apis - no auth --------------------------------------------------
-preauthRouter.get(
+app.get(
   ['/api/parliament', '/parliament.json'],
   [ArkimeUtil.noCacheJson],
   StatsAPIs.getParliament
 );
 
 // stats apis - no auth -------------------------------------------------------
-preauthRouter.get( // es health endpoint
+app.get( // es health endpoint
   ['/api/eshealth', '/eshealth.json'],
   [ArkimeUtil.noCacheJson],
   StatsAPIs.getESHealth
 );
+
+// pre-auth plugin router - plugins may register unauthenticated /plugin/* routes
+const prePluginRouter = express.Router();
+app.use('/plugin', prePluginRouter);
 
 // password, testing, or anonymous mode setup ---------------------------------
 Auth.app(app);
@@ -807,8 +807,8 @@ function loadPlugins () {
     },
     getDb: function () { return Db; },
     getPcap: function () { return Pcap; },
-    getPreauthRouter: function () { return preauthRouter; },
-    getRouter: function () { return pluginRouter; }
+    getPrePluginRouter: function () { return prePluginRouter; },
+    getPostPluginRouter: function () { return postPluginRouter; }
   };
   const plugins = Config.getArray('viewerPlugins', '');
   const dirs = Config.getArray('pluginsDir', `${version.config_prefix}/plugins`);
@@ -1184,9 +1184,9 @@ app.get('/about', User.checkPermissions(['webEnabled']), (req, res) => {
 // APIS
 // ============================================================================
 
-// plugin router - routes added here run after auth and arkimeUser check ------
-const pluginRouter = express.Router();
-app.use(pluginRouter);
+// post-auth plugin router - plugins may register authenticated /plugin/* routes
+const postPluginRouter = express.Router();
+app.use('/plugin', postPluginRouter);
 
 app.all([
   '/user/current',
