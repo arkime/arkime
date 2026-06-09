@@ -346,7 +346,7 @@ tcp,1386004309468,1386004309478,10.180.156.185,53533,US,10.180.156.249,1080,US,2
 
 # TCP reassembly synthetic pcap tests
     my $json = get("/sessions.json?length=1000&date=-1&expression=" . uri_escape("file=$pwd/tcp-reassembly-synthetic.pcap"));
-    is ($json->{recordsFiltered}, 7, "tcp-reassembly 7 sessions");
+    is ($json->{recordsFiltered}, 10, "tcp-reassembly 10 sessions");
 
     # Build a hash of source port -> session id
     my %portToId;
