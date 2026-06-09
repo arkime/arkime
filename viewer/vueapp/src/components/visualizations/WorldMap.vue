@@ -20,12 +20,14 @@ methods exposed on this ref, and dispatches the country-click filter.
       preserveAspectRatio="xMidYMid meet"
       :class="{'is-dragging': isDragging}"
       :style="{backgroundColor: waterColor}"
+      @wheel.prevent="onWheel"
       @mousedown="onMouseDown"
       @mousemove="onMouseMove"
       @mouseup="onMouseUp"
       @mouseleave="onMouseUp">
       <g
         class="world-map-zoom"
+        :class="{'world-map-zoom--instant': wheeling}"
         :style="zoomTransform">
         <path
           v-if="sphere"
@@ -111,6 +113,7 @@ export default {
       isDragging: false,
       dragStart: null,
       wasDragged: false,
+      wheeling: false,
       // theme colors — read from CSS custom props on mount
       waterColor: '#162a3d',
       landColorLight: '#2c3e50',
@@ -148,6 +151,7 @@ export default {
   },
   beforeUnmount () {
     if (this._resizeObserver) this._resizeObserver.disconnect();
+    clearTimeout(this._wheelTimer);
   },
   methods: {
     commaString,
@@ -287,6 +291,25 @@ export default {
       this.dragStart = null;
       this.isDragging = false;
     },
+    /* Mouse-wheel zoom anchored on the cursor; transition is suppressed
+       (wheeling) so rapid scrolls track the pointer instead of lagging. */
+    onWheel (e) {
+      const rect = this.$refs.svgEl.getBoundingClientRect();
+      const oldZoom = this.zoomLevel;
+      const factor = e.deltaY < 0 ? ZOOM_STEP : 1 / ZOOM_STEP;
+      const newZoom = Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, oldZoom * factor));
+      if (newZoom === oldZoom) return;
+      // Keep the point under the cursor fixed (cursor in viewBox units).
+      const cx = (e.clientX - rect.left) * (this.width / rect.width);
+      const cy = (e.clientY - rect.top) * (this.height / rect.height);
+      this.panX -= (newZoom - oldZoom) * (cx - this.width / 2 - this.panX) / oldZoom;
+      this.panY -= (newZoom - oldZoom) * (cy - this.height / 2 - this.panY) / oldZoom;
+      this.zoomLevel = newZoom;
+      if (newZoom <= ZOOM_MIN) { this.panX = 0; this.panY = 0; }
+      this.wheeling = true;
+      clearTimeout(this._wheelTimer);
+      this._wheelTimer = setTimeout(() => { this.wheeling = false; }, 200);
+    },
     /* Public API for parent: zoom controls drive the SVG via $ref. */
     zoomIn () {
       this.zoomLevel = Math.min(ZOOM_MAX, this.zoomLevel * ZOOM_STEP);
@@ -336,6 +359,9 @@ export default {
 }
 .world-map-zoom {
   transition: transform 200ms ease-out;
+}
+.world-map-zoom--instant {
+  transition: none;
 }
 .world-map-country {
   stroke: rgba(0, 0, 0, 0.35);
