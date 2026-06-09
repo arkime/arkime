@@ -139,6 +139,7 @@ jobs:
       - name: thirdparty
         run: |
           (cd / ; curl https://raw.githubusercontent.com/arkime/arkime-test-data/main/snfmin.tar.gz | tar -zxvf -)
+          (cd / ; curl https://raw.githubusercontent.com/arkime/arkime-test-data/main/napatech.tar.gz | tar -zxvf -)
           if [ -d "/thirdparty" ]; then
             ln -s /thirdparty .
           fi
