@@ -46,8 +46,7 @@ LOCAL int           ntNumStreams = 0;
 
 /* Stats — indexed by slot (interfacePos), not by NTAPI stream ID */
 LOCAL uint64_t     *ntTotalPkts  = NULL;  /* heap-allocated; size = ntNumStreams */
-LOCAL uint64_t      ntDropped;
-LOCAL ARKIME_LOCK_DEFINE(ntStatsLock);
+LOCAL uint64_t      ntDropped ARKIME_CACHE_ALIGN;
 
 /* Software BPF filter (compiled from config.bpf at init time) */
 LOCAL struct bpf_program  sw_bpf;
@@ -71,13 +70,11 @@ static inline void nt_ts_to_timeval(uint64_t ts_ns, struct timeval *tv)
 
 LOCAL int reader_napatech_stats(ArkimeReaderStats_t *stats)
 {
-    ARKIME_LOCK(ntStatsLock);
     stats->total   = 0;
     stats->dropped = ntDropped;
     for (int s = 0; s < ntNumStreams; s++) {
         stats->total += ntTotalPkts[s];
     }
-    ARKIME_UNLOCK(ntStatsLock);
     return 0;
 }
 
@@ -141,7 +138,7 @@ LOCAL void *reader_napatech_thread(gpointer streamv)
         uint8_t *segBase = (uint8_t *)NT_NET_GET_SEGMENT_PTR(hSegBuf);
         uint8_t *segEnd  = segBase + segLen;
 
-        for (uint8_t *p = segBase; p < segEnd; ) {
+        for (uint8_t *p = segBase; p < segEnd;) {
             NtStd0Descr_t *d = (NtStd0Descr_t *)p;
 
             /* storedLength is in BYTES (already 8-byte-aligned) and is the
@@ -174,9 +171,7 @@ LOCAL void *reader_napatech_thread(gpointer streamv)
             /* Software BPF filter — applied before allocation, so dropped
              * packets cost only this check with no malloc. */
             if (use_sw_bpf && bpf_filter(sw_bpf.bf_insns, l2, wireLen, capLen) == 0) {
-                ARKIME_LOCK(ntStatsLock);
-                ntDropped++;
-                ARKIME_UNLOCK(ntStatsLock);
+                ARKIME_THREAD_INCR(ntDropped);
                 p += recSize;
                 continue;
             }
@@ -200,9 +195,7 @@ LOCAL void *reader_napatech_thread(gpointer streamv)
 
             /* VLANs preserved in wire order (no VLANStrip in NTPL) */
 
-            ARKIME_LOCK(ntStatsLock);
-            ntTotalPkts[st->interfacePos]++;
-            ARKIME_UNLOCK(ntStatsLock);
+            ARKIME_THREAD_INCR(ntTotalPkts[st->interfacePos]);
 
             arkime_packet_batch(&batch, packet);
 
@@ -266,8 +259,10 @@ LOCAL void reader_napatech_exit()
             ntStreams[s].hStream = 0;
         }
     }
-    g_free(ntStreams);   ntStreams   = NULL;
-    g_free(ntTotalPkts); ntTotalPkts = NULL;
+    g_free(ntStreams);
+    ntStreams   = NULL;
+    g_free(ntTotalPkts);
+    ntTotalPkts = NULL;
     ntNumStreams = 0;
     if (use_sw_bpf)
         pcap_freecode(&sw_bpf);
@@ -294,7 +289,10 @@ static int reader_napatech_parse_stream_range(const char *str,
 
         char *end;
         long lo = strtol(p, &end, 10);
-        if (end == p || lo < 0 || lo > 255) { g_free(ids); return -1; }
+        if (end == p || lo < 0 || lo > 255) {
+            g_free(ids);
+            return -1;
+        }
         p = end;
         while (*p == ' ' || *p == '\t') p++;
 
@@ -303,7 +301,10 @@ static int reader_napatech_parse_stream_range(const char *str,
             p++;
             while (*p == ' ' || *p == '\t') p++;
             hi = strtol(p, &end, 10);
-            if (end == p || hi < lo || hi > 255) { g_free(ids); return -1; }
+            if (end == p || hi < lo || hi > 255) {
+                g_free(ids);
+                return -1;
+            }
             p = end;
         }
         while (*p == ' ' || *p == '\t') p++;
@@ -318,7 +319,10 @@ static int reader_napatech_parse_stream_range(const char *str,
         if (*p == ',') p++;
     }
 
-    if (count == 0) { g_free(ids); return -1; }
+    if (count == 0) {
+        g_free(ids);
+        return -1;
+    }
     *ids_out   = ids;
     *count_out = count;
     return 0;
@@ -437,7 +441,7 @@ LOCAL void reader_napatech_init(const char *UNUSED(name))
             while (*p == ' ' || *p == '\t') p++;
             if (*p == '#' || *p == '\n' || *p == '\r' || *p == '\0') continue;
             size_t len = strlen(p);
-            while (len > 0 && (p[len-1] == '\n' || p[len-1] == '\r')) p[--len] = '\0';
+            while (len > 0 && (p[len - 1] == '\n' || p[len - 1] == '\r')) p[--len] = '\0';
             if (len == 0) continue;
 
             if ((status = NT_NTPL(hCfg, p, &ntplInfo, NT_NTPL_PARSER_VALIDATE_NORMAL)) != NT_SUCCESS) {
