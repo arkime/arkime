@@ -605,8 +605,8 @@ LOCAL int quic_ietf_udp_parser(ArkimeSession_t *session, void *uw, const uint8_t
 /******************************************************************************/
 LOCAL void quic_ietf_udp_classify(ArkimeSession_t *session, const uint8_t *UNUSED(data), int UNUSED(len), int UNUSED(which), void *UNUSED(uw))
 {
-// This is the most obfuscate protocol ever
-// Thank you wireshark/tshark/quicgo and other tools to verify (kindof) implementation
+// This is the most obfuscated protocol ever
+// Thank you wireshark/tshark/quicgo and other tools to verify (kind of) implementation
 
     if (arkime_parsers_has_registered(session, quic_ietf_udp_parser))
         return;

@@ -562,6 +562,7 @@ typedef struct {
     uint16_t bufMax;
     int      serverWhich;
     uint8_t  version;
+    uint8_t  flags;
 } ArkimeParserBuf_t;
 
 /******************************************************************************/

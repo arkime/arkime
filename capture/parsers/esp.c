@@ -76,7 +76,7 @@ LOCAL int esp_pre_process(ArkimeSession_t *session, ArkimePacket_t *const packet
                memcmp(session->addr2.s6_addr, ip6->ip6_dst.s6_addr, 16) == 0);
     }
 
-    packet->direction = dir;
+    packet->direction = dir ? 0 : 1;
     if (packet->pktlen >= packet->payloadOffset + 8)
         session->databytes[packet->direction] += (packet->pktlen - packet->payloadOffset - 8);
 
