@@ -114,7 +114,8 @@ SPDX-License-Identifier: Apache-2.0
                 v-for="(item, key) in menuItems"
                 :key="'sync-item-' + key"
                 :href="item.url"
-                target="_blank">
+                target="_blank"
+                @click="item.url || $event.stopPropagation()">
                 <strong>{{ item.name }}</strong>
                 {{ item.value }}
                 <v-tooltip
@@ -124,7 +125,7 @@ SPDX-License-Identifier: Apache-2.0
               <v-list-item
                 v-for="(item, key) in asyncMenuItems"
                 :key="'async-item-' + key"
-                @click="fetchMenuData(item.url, key)">
+                @click.stop="fetchMenuData(item.url, key)">
                 <strong>{{ item.name }}</strong>
                 {{ item.value }}
                 <v-tooltip
