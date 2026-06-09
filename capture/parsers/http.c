@@ -549,7 +549,7 @@ LOCAL int arkime_hp_cb_on_header_value (http_parser *parser, const char *at, siz
     arkime_plugins_cb_hp_ohv(session, parser, at, length);
 
     // Request side
-    if (parser->method) {
+    if (http->which == http->urlWhich) {
         if (strcasecmp("host", http->header[http->which]) == 0) {
             if (!http->hostString)
                 http->hostString = g_string_new_len(at, length);
@@ -932,7 +932,7 @@ void arkime_parser_init()
 
     arkime_field_define("http", "lotextfield",
                         "http.uri.tokens", "HTTP URI Tokens", "http.uriTokens",
-                        "URIs Tokens for request",
+                        "URI tokens for request",
                         ARKIME_FIELD_TYPE_STR_HASH, ARKIME_FIELD_FLAG_FAKE,
                         (char *)NULL);
 
@@ -1066,7 +1066,7 @@ void arkime_parser_init()
 
     cookieValueField = arkime_field_define("http", "termfield",
                                            "http.cookie.value", "HTTP Cookie Values", "http.cookieValue",
-                                           "The values to cookies sent up in requests",
+                                           "The values of cookies sent in requests",
                                            ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
                                            (char *)NULL);
 

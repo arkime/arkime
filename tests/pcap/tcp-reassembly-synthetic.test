@@ -1569,6 +1569,148 @@
      "_index" : "tests_sessions3-23m11"
     }
    }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 31
+    },
+    "destination" : {
+     "bytes" : 54,
+     "geo" : {
+      "country_iso_code" : "US"
+     },
+     "ip" : "10.180.156.2",
+     "mac" : [
+      "00:11:22:33:44:02"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 1,
+     "port" : 80
+    },
+    "dstOui" : [
+     "CIMSYS Inc"
+    ],
+    "dstOuiCnt" : 1,
+    "dstTTL" : [
+     64
+    ],
+    "dstTTLCnt" : 1,
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 1700000080000,
+    "http" : {
+     "clientVersion" : [
+      "1.0"
+     ],
+     "clientVersionCnt" : 1,
+     "host" : [
+      "t"
+     ],
+     "hostCnt" : 1,
+     "method" : [
+      "GET"
+     ],
+     "method-GET" : 1,
+     "methodCnt" : 1,
+     "path" : [
+      "/wrap"
+     ],
+     "pathCnt" : 1,
+     "requestHeader" : [
+      "host"
+     ],
+     "requestHeaderCnt" : 1,
+     "uri" : [
+      "t/wrap"
+     ],
+     "uriCnt" : 1
+    },
+    "initRTT" : 1,
+    "ipProtocol" : 6,
+    "lastPacket" : 1700000080004,
+    "length" : 4,
+    "network" : {
+     "bytes" : 301,
+     "community_id" : "1:W6Z20+NRjKM2IAajn6k3hplGoWo=",
+     "packets" : 5
+    },
+    "node" : "test",
+    "packetLen" : [
+     70,
+     70,
+     70,
+     101,
+     70
+    ],
+    "packetPos" : [
+     7820,
+     7890,
+     7960,
+     8030,
+     8131
+    ],
+    "packetRange" : {
+     "gte" : 1700000080000,
+     "lte" : 1700000080004
+    },
+    "protocol" : [
+     "http",
+     "tcp"
+    ],
+    "protocolCnt" : 2,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 0
+    },
+    "source" : {
+     "bytes" : 247,
+     "geo" : {
+      "country_iso_code" : "US"
+     },
+     "ip" : "10.180.156.1",
+     "mac" : [
+      "00:11:22:33:44:01"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 4,
+     "port" : 40010
+    },
+    "srcOui" : [
+     "CIMSYS Inc"
+    ],
+    "srcOuiCnt" : 1,
+    "srcPayload8" : "474554202f777261",
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
+    "tcpflags" : {
+     "ack" : 1,
+     "ae" : 0,
+     "cwr" : 0,
+     "dstZero" : 0,
+     "ece" : 0,
+     "fin" : 1,
+     "psh" : 1,
+     "rst" : 0,
+     "srcZero" : 0,
+     "syn" : 1,
+     "syn-ack" : 1,
+     "urg" : 0
+    },
+    "tcpseq" : {
+     "dst" : 0,
+     "src" : 1000
+    },
+    "totDataBytes" : 31
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-23m11"
+    }
+   }
   }
  ]
 }

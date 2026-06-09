@@ -110,10 +110,10 @@ LOCAL int sctp_pre_process(ArkimeSession_t *session, ArkimePacket_t *const packe
 LOCAL int64_t sctp_tsn_diff(int64_t a, int64_t b)
 {
     if (a > 0xc0000000 && b < 0x40000000)
-        return a + 0x100000000LL - b;
+        return b + 0x100000000LL - a;
 
     if (b > 0xc0000000 && a < 0x40000000)
-        return a - b - 0x100000000LL;
+        return b - a - 0x100000000LL;
 
     return b - a;
 }

@@ -317,7 +317,7 @@ LOCAL void smtp_email_add_encoded(ArkimeSession_t *session, int pos, char *strin
                 // No need to convert, will validate at the end
                 BSB_EXPORT_ptr_some(bsb, question + 3, olen);
             } else {
-                char *out = g_convert((char *)question + 3, strlen(question + 3), "utf-8", fmt, &bread, &bwritten, &error);
+                char *out = g_convert((char *)question + 3, olen, "utf-8", fmt, &bread, &bwritten, &error);
                 if (error) {
                     LOG("WARNING - failed converting %s to utf-8 %s ", str + 2, error->message);
                     arkime_field_string_add(pos, session, string, len, TRUE);
@@ -579,6 +579,7 @@ LOCAL int smtp_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, i
             if (out_len > 0) {
                 arkime_field_string_add_lower(userField, session, line->str, out_len);
             }
+            g_string_truncate(line, 0);
             *state = EMAIL_CMD;
             break;
         }
@@ -597,6 +598,7 @@ LOCAL int smtp_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, i
                     arkime_field_string_add_lower(userField, session, (char *)user, nul2 - user);
                 }
             }
+            g_string_truncate(line, 0);
             *state = EMAIL_CMD;
             break;
         }
@@ -739,7 +741,7 @@ LOCAL int smtp_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, i
             } else {
                 gboolean        found = FALSE;
 
-                if (line->str[0] == '-') {
+                if (line->str[0] == '-' && line->str[1] == '-') {
                     const ArkimeString_t *string;
                     DLL_FOREACH(s_, &email->boundaries, string) {
                         if ((int)line->len >= (int)(string->len + 2) && memcmp(line->str + 2, string->str, string->len) == 0) {
@@ -1044,7 +1046,7 @@ void arkime_parser_init()
 
     mvField = arkime_field_define("email", "termfield",
                                   "email.mime-version", "Mime-Version", "email.mimeVersion",
-                                  "Email Mime-Header header",
+                                  "Email Mime-Version header",
                                   ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
                                   (char *)NULL);
 

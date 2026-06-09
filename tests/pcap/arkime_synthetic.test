@@ -7982,22 +7982,18 @@
    "body" : {
     "@timestamp" : "SET",
     "client" : {
-     "bytes" : 0
+     "bytes" : 32
     },
     "destination" : {
-     "bytes" : 74,
+     "bytes" : 0,
      "ip" : "10.0.33.1",
      "mac" : [
-      "6a:70:c5:af:f1:f9"
+      "94:2a:6f:ee:8c:83"
      ],
      "mac-cnt" : 1,
-     "packets" : 1,
+     "packets" : 0,
      "port" : 0
     },
-    "dstTTL" : [
-     64
-    ],
-    "dstTTLCnt" : 1,
     "ethertype" : 2048,
     "fileId" : [],
     "firstPacket" : 1737752482000,
@@ -8026,18 +8022,22 @@
     "protocolCnt" : 1,
     "segmentCnt" : 1,
     "server" : {
-     "bytes" : 32
+     "bytes" : 0
     },
     "source" : {
-     "bytes" : 0,
+     "bytes" : 74,
      "ip" : "10.0.33.100",
      "mac" : [
-      "94:2a:6f:ee:8c:83"
+      "6a:70:c5:af:f1:f9"
      ],
      "mac-cnt" : 1,
-     "packets" : 0,
+     "packets" : 1,
      "port" : 0
     },
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
     "totDataBytes" : 32
    },
    "header" : {
