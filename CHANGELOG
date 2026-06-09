@@ -57,6 +57,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #4015 Initial napatech reader implementation (thanks @waynieack)
   - #4019 Fix TCP flow split into two sessions when a reordered original SYN (arriving after FIN/RST, e.g. across multiple capture interfaces/reader threads) was mistaken for a port reuse
   - #4021 Fix hunts and PCAP retrieval stalling with the writer-s3 plugin when a session's file is missing
+  - #4023 Fix TLS parser dropping the server hello/certificate  when the entire client direction was processed before the server's ServerHello
 ## Cont3xt
   - #3999 Fix logoutUrl when logoutUrlMethod=GET
 ## Viewer
