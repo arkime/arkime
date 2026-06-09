@@ -1546,10 +1546,6 @@ export default {
 .connections-page .connections-form {
   z-index: 4;
   background-color: rgb(var(--v-theme-quaternary-lightest));
-
-  -webkit-box-shadow: 0 0 16px -2px black;
-     -moz-box-shadow: 0 0 16px -2px black;
-          box-shadow: 0 0 16px -2px black;
 }
 
 /* remove select box styles */
