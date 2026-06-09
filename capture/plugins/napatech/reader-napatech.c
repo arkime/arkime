@@ -29,6 +29,8 @@
 
 extern ArkimeConfig_t config;
 
+LOCAL int ntThreadNum;
+
 /* -------------------------------------------------------------------------
  * Module-level state
  * ---------------------------------------------------------------------- */
@@ -88,6 +90,10 @@ LOCAL void *reader_napatech_thread(gpointer streamv)
     NtStream_t *st = (NtStream_t *)streamv;
     NtNetBuf_t  hSegBuf;     /* handle to one segment (N packets) */
     int         status;
+
+    int threadNum = ARKIME_THREAD_INCROLD(ntThreadNum);
+    int initFunc = arkime_get_named_func("arkime_reader_thread_init");
+    arkime_call_named_func(initFunc, threadNum, NULL);
 
     ArkimePacketBatch_t batch;
     arkime_packet_batch_init(&batch);
@@ -212,6 +218,9 @@ LOCAL void *reader_napatech_thread(gpointer streamv)
     }
 
     arkime_packet_batch_flush(&batch);
+
+    int exitFunc = arkime_get_named_func("arkime_reader_thread_exit");
+    arkime_call_named_func(exitFunc, threadNum, NULL);
     return NULL;
 }
 
@@ -506,29 +515,10 @@ LOCAL void reader_napatech_init(const char *UNUSED(name))
 }
 
 /* -------------------------------------------------------------------------
- * Stub extension-load callback: pre-initializes extensionsArr so that
- * arkime_parsers_load() does not crash when called (via tail-call) from
- * arkime_plugins_load() before arkime_python_init() runs.
- * ---------------------------------------------------------------------- */
-LOCAL int reader_napatech_ext_load(const char *path)
-{
-    (void)path;
-    return 0;
-}
-
-/* -------------------------------------------------------------------------
  * Plugin entry point - registers the reader with Arkime
  * ---------------------------------------------------------------------- */
 
 void arkime_plugin_init()
 {
-    /* Pre-initialize extensionsArr so that the tail-call from
-     * arkime_plugins_load(rootPlugins) to arkime_parsers_load() does not
-     * dereference a NULL extensionsArr pointer (which only gets populated
-     * later by arkime_python_init).  Registering a dummy ".nt" extension
-     * is sufficient to allocate the GPtrArray; the callback is never invoked
-     * because no .nt files exist in the parsers directory. */
-    arkime_parsers_register_load_extension(".nt", reader_napatech_ext_load);
-
     arkime_readers_add("napatech", reader_napatech_init);
 }

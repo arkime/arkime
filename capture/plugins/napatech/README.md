@@ -80,7 +80,7 @@ startup.
 Delete = All                    # Clear any previous rules
 
 # Sorted 5-tuple hash: both directions of each TCP/UDP flow land on the
-# same stream ID, which is required for Arkime's session reassembly engine.
+# same stream ID, which may improve Arkime's session reassembly.
 HashMode[Priority=0; Layer3Type=IP; Layer4Type=TCP,UDP,SCTP] = Hash5TupleSorted
 HashMode[Priority=1; Layer3Type=IP]                           = Hash2TupleSorted
 
@@ -102,9 +102,7 @@ Or set `ntplFile=` in `config.ini` to apply automatically at each startup.
 
 > **`Hash5TupleSorted` vs `Hash5Tuple`**: the sorted variant normalizes the
 > 5-tuple (lower IP first) before hashing, so forward and reverse packets of
-> the same flow always land on the same stream. Without it, opposite directions
-> of a TCP session can split across streams and Arkime will produce incomplete
-> sessions.
+> the same flow always land on the same stream.
 
 ---
 

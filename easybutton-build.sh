@@ -694,6 +694,10 @@ if [ -f "/opt/snf/lib/libsnf.so" ]; then
     (cd capture/plugins/snf; $MAKE)
 fi
 
+if [ -f "/opt/napatech3/lib/libntos.so" ]; then
+    (cd capture/plugins/napatech; $MAKE)
+fi
+
 if [ $DOKAFKA -eq 1 ]; then
     (cd capture/plugins/kafka; $MAKE)
     if [ $? -ne 0 ]; then
