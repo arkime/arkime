@@ -471,6 +471,8 @@
       "srcVisTip": "Toggle source packet visibility",
       "dstVisTip": "Toggle destination packet visibility",
       "toggleDecodingTip": "Toggle {name} Decoding",
+      "decodings": "Decodings",
+      "decodingsDisabledTip": "Decodings only work when frames are reassembled",
       "noPacketSelector": "Displaying all packets for this session.  You cannot select the number of packets because Show Images & Files OR Enable Uncompressing might need all packets."
     },
     "remove": {

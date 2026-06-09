@@ -471,6 +471,8 @@
       "srcVisTip": "Basculer la visibilité des paquets source",
       "dstVisTip": "Basculer la visibilité des paquets destination",
       "toggleDecodingTip": "Basculer le décodage {name}",
+      "decodings": "Décodages",
+      "decodingsDisabledTip": "Les décodages ne fonctionnent que lorsque les trames sont réassemblées",
       "noPacketSelector": "Affichage de tous les paquets pour cette session. Vous ne pouvez pas sélectionner le nombre de paquets car Afficher les images et les fichiers OU Activer la décompression pourrait nécessiter tous les paquets."
     },
     "remove": {

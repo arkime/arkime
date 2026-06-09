@@ -471,6 +471,8 @@
       "srcVisTip": "切换源数据包可见性",
       "dstVisTip": "切换目标数据包可见性",
       "toggleDecodingTip": "切换 {name} 解码",
+      "decodings": "解码",
+      "decodingsDisabledTip": "解码仅在帧被重组时有效",
       "noPacketSelector": "此会话的所有数据包都已显示。您无法选择数据包数量，因为“显示图像和文件”或“启用解压缩”可能需要所有数据包。"
     },
     "remove": {

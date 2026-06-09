@@ -471,6 +471,8 @@
       "srcVisTip": "Lülita allika paketi nähtavust",
       "dstVisTip": "Lülita sihtkoha paketi nähtavust",
       "toggleDecodingTip": "Lülita {name} Dekodeerimist",
+      "decodings": "Dekodeerimised",
+      "decodingsDisabledTip": "Dekodeerimised töötavad ainult kokkupandud kaadritega",
       "noPacketSelector": "Kuvatakse kõik selle seansi paketid. Pakettide arvu ei saa valida, kuna Piltide ja failide näitamine VÕI Lahtipakkimise lubamine võib vajada kõiki pakette."
     },
     "remove": {

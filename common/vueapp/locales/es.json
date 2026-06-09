@@ -471,6 +471,8 @@
       "srcVisTip": "Alternar visibilidad de paquetes de origen",
       "dstVisTip": "Alternar visibilidad de paquetes de destino",
       "toggleDecodingTip": "Alternar Decodificación de {name}",
+      "decodings": "Decodificaciones",
+      "decodingsDisabledTip": "Las decodificaciones solo funcionan cuando los frames están reensamblados",
       "noPacketSelector": "Mostrando todos los paquetes para esta sesión. No puedes seleccionar el número de paquetes porque 'Mostrar Imágenes y Archivos' O 'Activar Descompresión' pueden necesitar todos los paquetes."
     },
     "remove": {

@@ -471,6 +471,8 @@
       "srcVisTip": "Sichtbarkeit von Quellpaketen umschalten",
       "dstVisTip": "Sichtbarkeit von Zielpaketen umschalten",
       "toggleDecodingTip": "{name}-Dekodierung umschalten",
+      "decodings": "Dekodierungen",
+      "decodingsDisabledTip": "Dekodierungen funktionieren nur bei wieder zusammengesetzten Frames",
       "noPacketSelector": "Alle Pakete für diese Sitzung werden angezeigt. Sie können die Anzahl der Pakete nicht auswählen, da 'Bilder & Dateien anzeigen' ODER 'Dekomprimierung aktivieren' alle Pakete benötigen könnte."
     },
     "remove": {

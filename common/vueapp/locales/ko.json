@@ -471,6 +471,8 @@
       "srcVisTip": "출발지 패킷 가시성 전환",
       "dstVisTip": "목적지 패킷 가시성 전환",
       "toggleDecodingTip": "{name} 디코딩 전환",
+      "decodings": "디코딩",
+      "decodingsDisabledTip": "디코딩은 프레임이 재조립된 경우에만 작동합니다",
       "noPacketSelector": "이 세션의 모든 패킷을 표시하고 있습니다. 이미지 및 파일 표시 또는 압축 해제 활성화를 위해 모든 패킷이 필요할 수 있으므로 패킷 수를 선택할 수 없습니다."
     },
     "remove": {

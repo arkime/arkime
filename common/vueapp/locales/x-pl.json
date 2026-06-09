@@ -472,6 +472,8 @@
       "srcVisTip": "Oggletay ourcesay acketpay isibilityvay",
       "dstVisTip": "Oggletay estinationday acketpay isibilityvay",
       "toggleDecodingTip": "Oggletay {name} EcodingDay",
+      "decodings": "EcodingsDay",
+      "decodingsDisabledTip": "EcodingsDay onlyway orkway enwhay amesfray areway eassembledray",
       "noPacketSelector": "IsplayingDay allway acketspay orfay isthay essionsay. Ouyay annotcay electsay ethay umbernay ofway acketspay ecausebay Owshay Imagesway & Ilesfay ORWAY Enableway Uncompressingway ightmay eednay allway acketspay."
     },
     "remove": {
