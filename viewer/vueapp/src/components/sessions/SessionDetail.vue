@@ -1580,8 +1580,13 @@ dl:hover:not(:has(dl:hover)) > .session-detail-grip {
    directly beneath it. */
 .session-detail .session-detail-card dl > .session-card-title {
   cursor: pointer;
+  font-size: 1rem;
+  padding: 0.25rem;
+  border-radius: 4px;
   margin-top: 0.75rem;
   margin-bottom: 0.5rem;
+  color: rgb(var(--v-theme-background));
+  background-color: rgb(var(--v-theme-neutral));
 }
 .session-detail .session-detail-card dl > dl {
   margin-top: 0;
