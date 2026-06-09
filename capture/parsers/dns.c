@@ -358,7 +358,7 @@ LOCAL char *dns_name(ArkimeSession_t *session, const uint8_t *full, int fulllen,
 /******************************************************************************/
 LOCAL DNSSVCBRData_t *dns_parser_rr_svcb(ArkimeSession_t *session, const uint8_t *data, int length)
 {
-    if (length < 10)
+    if (length < 3)
         return NULL;
 
     DNSSVCBRData_t *svcbData = ARKIME_TYPE_ALLOC0(DNSSVCBRData_t);
@@ -542,7 +542,7 @@ LOCAL int dns_add_host(ArkimeSession_t *session, DNS_t *dns, ArkimeStringHashStd
     }
 
     if (arkime_memstr((const char *)string, len, "xn--", 4)) {
-        HASH_FIND_HASH(s_, *(dns->punyHosts), arkime_string_hash_len(host, hostlen), string, hstring);
+        HASH_FIND(s_, *(dns->punyHosts), string, hstring);
         if (!hstring) {
             hstring = ARKIME_TYPE_ALLOC0(ArkimeString_t);
             hstring->str = (char *)g_ascii_strdown((gchar *)string, len);
@@ -578,7 +578,7 @@ LOCAL void dns_parser(ArkimeSession_t *session, int kind, const uint8_t *data, i
     const int resultRecordCount[3] = {an_prereqs_count, ns_update_count, ar_count};
 
 #ifdef DNSDEBUG
-    LOG("DNSDEBUG: [Query/Zone Count: %d], [Answer or Prerequisite Count: %d], [Authoritative or Update RecordCount: %d], [Additional Record Count: %d]", qd_count, an_prereqs_count, ns_update_count, ar_count);
+    LOG("DNSDEBUG: [Query/Zone Count: %d], [Answer or Prerequisite Count: %d], [Authoritative or Update Record Count: %d], [Additional Record Count: %d]", qd_count, an_prereqs_count, ns_update_count, ar_count);
 #endif
 
     switch (kind) {
@@ -1028,7 +1028,7 @@ LOCAL void dns_parser(ArkimeSession_t *session, int kind, const uint8_t *data, i
                 break;
             }
             case DNS_RR_CAA: {
-                if (BSB_REMAINING(rdbsb) <= 3) {
+                if (BSB_REMAINING(rdbsb) < 3) {
                     goto continueerr;
                 }
 
@@ -1232,6 +1232,9 @@ continueerr:
             if (answer->name && answer->name != root) {
                 g_free(answer->name);
             }
+            if (answer->txts) {
+                g_ptr_array_free(answer->txts, TRUE);
+            }
             ARKIME_TYPE_FREE(DNSAnswer_t, answer);
         } // record loop
     } // record type loop
@@ -1251,7 +1254,7 @@ LOCAL int dns_tcp_parser(ArkimeSession_t *session, void *uw, const uint8_t *data
     while (pb->len[which] >= 2) {
         int dnslength = ((pb->buf[which][0] & 0xff) << 8) | (pb->buf[which][1] & 0xff);
 
-        if (dnslength < 18)
+        if (dnslength < 17)
             return ARKIME_PARSER_UNREGISTER;
 
         int frameLen = dnslength + 2;
