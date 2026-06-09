@@ -52,6 +52,7 @@ SPDX-License-Identifier: Apache-2.0
       <button
         id="cancelExportCsv"
         class="btn btn-sm btn-warning"
+        :aria-label="$t('common.cancel')"
         @click="$emit('done', null, false, false)"
         type="button">
         <span class="fa fa-ban" />

@@ -142,7 +142,8 @@ async function processSessionIdS3 (session, headerCb, packetCb, endCb, limit) {
       });
     }
   } catch (error) {
-    return;
+    console.log('WARNING - Only have SPI data, PCAP file no longer available', fields.node, error);
+    return endCb('Only have SPI data, PCAP file no longer available for ' + fields.node + '-' + (fields.packetPos[0] * -1), fields);
   }
 
   function readyToProcess () {

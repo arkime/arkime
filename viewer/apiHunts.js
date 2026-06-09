@@ -197,7 +197,7 @@ class HuntAPIs {
     // Send notifier alert if configured
     if (hunt.notifier) {
       const message = `
-*${hunt.name}* hunt job paused with error: *${error.value}*
+*${ArkimeUtil.safeStr(hunt.name)}* hunt job paused with error: *${ArkimeUtil.safeStr(error.value)}*
 *${hunt.matchedSessions}* matched sessions out of *${hunt.searchedSessions}* searched sessions.
 ${Config.arkimeWebURL()}hunt
       `;
@@ -218,7 +218,7 @@ ${Config.arkimeWebURL()}hunt
     }
 
     // update the hunt with number of matchedSessions and searchedSessions
-    // and the date of the first packet of the last searched session
+    // and the date of the last packet of the last searched session
     const lastPacketTime = session.lastPacket;
     const now = Math.floor(Date.now() / 1000);
 
@@ -426,7 +426,7 @@ ${Config.arkimeWebURL()}hunt
 
         if (hunt.notifier) {
           const message = `
-*${hunt.name}* hunt job finished:
+*${ArkimeUtil.safeStr(hunt.name)}* hunt job finished:
 *${hunt.matchedSessions}* matched sessions out of *${hunt.searchedSessions}* searched sessions.
 ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.query.stopTime}&startTime=${hunt.query.startTime}
           `;
@@ -601,7 +601,7 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
 
         if (hunt.notifier) {
           const message = `
-*${hunt.name}* hunt job finished:
+*${ArkimeUtil.safeStr(hunt.name)}* hunt job finished:
 *${hunt.matchedSessions}* matched sessions out of *${hunt.searchedSessions}* searched sessions.
 ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.query.stopTime}&startTime=${hunt.query.startTime}
           `;
@@ -875,6 +875,10 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
       return res.serverError(403, 'Users field must be a string', 'api.hunts.usersMustBeString');
     }
 
+    if (req.body.description !== undefined && !ArkimeUtil.isString(req.body.description, 0)) {
+      return res.serverError(403, 'Description must be a string');
+    }
+
     const now = Math.floor(Date.now() / 1000);
 
     req.body.name = req.body.name.replace(/[^-a-zA-Z0-9_: ]/g, '');
@@ -1008,7 +1012,7 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
         // clear out secret fields for users who don't have access to that hunt
         // if the user is not an admin and didn't create the hunt and isn't part of the user's list
         if (!req.user.hasRole('arkimeAdmin') && req.user.userId !== hunt.userId && !hunt.users.includes(req.user.userId)) {
-          if (!hunt.roles || (hunt.roles.length && !req.user.hasRole(hunt.roles))) {
+          if (!hunt.roles || !hunt.roles.length || !req.user.hasRole(hunt.roles)) {
             // since hunt isn't cached we can just modify
             hunt.id = '';
             hunt.search = '';
@@ -1369,19 +1373,24 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
       const options = HuntAPIs.#buildHuntOptions(huntId, hunt);
 
       HuntAPIs.#sessionHunt(sessionId, options, async (err, matched) => {
-        if (Config.debug > 1) {
-          console.log('HUNT - result', huntId, sessionId, err, matched);
-        }
-        if (err) {
-          if (!res.headersSent) { res.send({ matched: false, error: err }); }
-          return;
-        }
+        try {
+          if (Config.debug > 1) {
+            console.log('HUNT - result', huntId, sessionId, err, matched);
+          }
+          if (err) {
+            if (!res.headersSent) { res.send({ matched: false, error: err }); }
+            return;
+          }
 
-        if (matched) {
-          await HuntAPIs.#updateSessionWithHunt(session, sessionId, hunt, huntId);
-        }
+          if (matched) {
+            await HuntAPIs.#updateSessionWithHunt(session, sessionId, hunt, huntId);
+          }
 
-        if (!res.headersSent) { res.send({ matched }); }
+          if (!res.headersSent) { res.send({ matched }); }
+        } catch (cbErr) {
+          console.log(`ERROR - remoteHunt callback %s/%s`, ArkimeUtil.sanitizeStr(huntId), ArkimeUtil.sanitizeStr(sessionId), util.inspect(cbErr, false, 50));
+          if (!res.headersSent) { res.send({ matched: false, error: cbErr.message || 'callback error' }); }
+        }
       });
     }).catch((err) => {
       console.log(`ERROR - ${req.method} /api/hunt/%s/%s/remote/%s`, ArkimeUtil.sanitizeStr(req.params.nodeName), ArkimeUtil.sanitizeStr(req.params.huntId), ArkimeUtil.sanitizeStr(req.params.sessionId), util.inspect(err, false, 50));

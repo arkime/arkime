@@ -191,7 +191,7 @@ void arkime_db_js0n_str(BSB *bsb, uint8_t *in, gboolean utf8)
             if (*in < 32) {
                 BSB_EXPORT_sprintf(*bsb, "\\u%04x", *in);
             } else if (utf8) {
-                if ((*in & 0xf0) == 0xf0) {
+                if ((*in & 0xf8) == 0xf0) {
                     if (!in[1] || !in[2] || !in[3]) goto end;
                     BSB_EXPORT_ptr(*bsb, in, 4);
                     in += 3;
@@ -199,7 +199,7 @@ void arkime_db_js0n_str(BSB *bsb, uint8_t *in, gboolean utf8)
                     if (!in[1] || !in[2]) goto end;
                     BSB_EXPORT_ptr(*bsb, in, 3);
                     in += 2;
-                } else if ((*in & 0xf0) == 0xd0) {
+                } else if ((*in & 0xe0) == 0xc0) {
                     if (!in[1]) goto end;
                     BSB_EXPORT_ptr(*bsb, in, 2);
                     in += 1;
@@ -262,16 +262,16 @@ void arkime_db_js0n_str_unquoted(BSB *bsb, uint8_t *in, int len, gboolean utf8)
             if (*in < 32) {
                 BSB_EXPORT_sprintf(*bsb, "\\u%04x", *in);
             } else if (utf8) {
-                if ((*in & 0xf0) == 0xf0) {
-                    if (!in[1] || !in[2] || !in[3]) return;
+                if ((*in & 0xf8) == 0xf0) {
+                    if (in + 3 >= end) return;
                     BSB_EXPORT_ptr(*bsb, in, 4);
                     in += 3;
                 } else if ((*in & 0xf0) == 0xe0) {
-                    if (!in[1] || !in[2]) return;
+                    if (in + 2 >= end) return;
                     BSB_EXPORT_ptr(*bsb, in, 3);
                     in += 2;
-                } else if ((*in & 0xf0) == 0xd0) {
-                    if (!in[1]) return;
+                } else if ((*in & 0xe0) == 0xc0) {
+                    if (in + 1 >= end) return;
                     BSB_EXPORT_ptr(*bsb, in, 2);
                     in += 1;
                 } else {
@@ -833,6 +833,9 @@ void arkime_db_save_session(ArkimeSession_t *session, int final)
                            "\"fin\":%d,"
                            "\"rst\":%d,"
                            "\"urg\":%d,"
+                           "\"ece\":%d,"
+                           "\"cwr\":%d,"
+                           "\"ae\":%d,"
                            "\"srcZero\":%d,"
                            "\"dstZero\":%d"
                            "},",
@@ -843,6 +846,9 @@ void arkime_db_save_session(ArkimeSession_t *session, int final)
                            session->tcpData.tcpFlagCnt[ARKIME_TCPFLAG_FIN],
                            session->tcpData.tcpFlagCnt[ARKIME_TCPFLAG_RST],
                            session->tcpData.tcpFlagCnt[ARKIME_TCPFLAG_URG],
+                           session->tcpData.tcpFlagCnt[ARKIME_TCPFLAG_ECE],
+                           session->tcpData.tcpFlagCnt[ARKIME_TCPFLAG_CWR],
+                           session->tcpData.tcpFlagCnt[ARKIME_TCPFLAG_AE],
                            session->tcpData.tcpFlagCnt[ARKIME_TCPFLAG_SRC_ZERO],
                            session->tcpData.tcpFlagCnt[ARKIME_TCPFLAG_DST_ZERO]
                           );
@@ -919,7 +925,9 @@ void arkime_db_save_session(ArkimeSession_t *session, int final)
                 BSB_EXPORT_sprintf(jbsb, "\"region_iso_code\":\"%.*s\",", geo1.regionLen, geo1.region);
             }
             if (geo1.city) {
-                BSB_EXPORT_sprintf(jbsb, "\"city_name\":\"%.*s\",", geo1.cityLen, geo1.city);
+                BSB_EXPORT_cstr(jbsb, "\"city_name\":\"");
+                arkime_db_js0n_str_unquoted(&jbsb, (uint8_t *)geo1.city, geo1.cityLen, TRUE);
+                BSB_EXPORT_cstr(jbsb, "\",");
             }
             BSB_EXPORT_rewind(jbsb, 1); // Remove last comma
             BSB_EXPORT_cstr(jbsb, "},");
@@ -959,7 +967,9 @@ void arkime_db_save_session(ArkimeSession_t *session, int final)
                 BSB_EXPORT_sprintf(jbsb, "\"region_iso_code\":\"%.*s\",", geo2.regionLen, geo2.region);
             }
             if (geo2.city) {
-                BSB_EXPORT_sprintf(jbsb, "\"city_name\":\"%.*s\",", geo2.cityLen, geo2.city);
+                BSB_EXPORT_cstr(jbsb, "\"city_name\":\"");
+                arkime_db_js0n_str_unquoted(&jbsb, (uint8_t *)geo2.city, geo2.cityLen, TRUE);
+                BSB_EXPORT_cstr(jbsb, "\",");
             }
             BSB_EXPORT_rewind(jbsb, 1); // Remove last comma
             BSB_EXPORT_cstr(jbsb, "},");
@@ -1573,7 +1583,10 @@ LOCAL uint64_t arkime_db_memory_size()
     buf[len] = 0;
 
     uint64_t size = 0;
-    sscanf(buf, "%" SCNu64, &size);
+    if (sscanf(buf, "%" SCNu64, &size) != 1) {
+        LOG("/proc/self/statm parse failed - %d '%.*s'", len, len, buf);
+        return 0;
+    }
 
     if (size == 0) {
         LOG("/proc/self/statm size 0 - %d '%.*s'", len, len, buf);
@@ -2404,7 +2417,7 @@ LOCAL void arkime_db_load_rir(const char *name)
             *ptr = 0;
             if (cnt == 0) {
                 num = atoi(start);
-                if (num > 255)
+                if (num < 0 || num > 255)
                     break;
             } else if (*start && cnt == 3) {
                 gchar **parts = g_strsplit(start, ".", 0);

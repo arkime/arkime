@@ -760,7 +760,8 @@
       "molochtype": "OtHay/ArmWay",
       "shardsPerNode": "Ardsshay/OdeNay",
       "versionCreated": "ESway Ersionvay",
-      "docSize": "OcDay Izesay"
+      "docSize": "OcDay Izesay",
+      "codec": "Odeccay"
     },
     "esNodes": {
       "mainManaging": "Ainmay AnagingMay Odenay",
@@ -1219,6 +1220,24 @@
       "mismatchedPassword": "OurYay ewnay asswordpay andway onfirmationcay odway otnay atchmay",
       "changePassword": "AngeChay Asswordpay"
     },
+    "totp": {
+      "title": "Otway-Actorfay Uthenticationay",
+      "description": "Adday anway extraway ayerlay ofway ecuritysay ybay equiringray away odecay omfray anway authenticatorway appway (Authyway, Ooglegay Authenticatorway, etcway.) enwhay akingmay ensitivesay angeschay.",
+      "status": "Atusstay",
+      "enabled": "Enabledway",
+      "disabled": "Otnay Enabledway",
+      "enroll": "Enableway 2FA",
+      "unenroll": "Isableday 2FA",
+      "scanQR": "Ansay QR Odecay",
+      "generatingQR": "Eneratinggay QR odecay...",
+      "manualEntry": "Anualmay entryway",
+      "verifyCode": "Erificationvay Odecay",
+      "codePlaceholder": "000000",
+      "verify": "Erifyvay & Enableway",
+      "invalidCode": "Easeplay enterway away alidvay 6-igitday odecay",
+      "confirmDisable": "Enterway Odecay otay Isableday",
+      "confirmUnenroll": "Isableday 2FA"
+    },
     "shortcuts": {
       "newShortcut": "EwNay Ortcutshay",
       "editShortcut": "Editway Ortcutshay",
@@ -1294,6 +1313,7 @@
     "hideViz": "Isthay usterclay isway etsay otay idehay ethay raphgray ifway away imetay angeray ofway {days} aysday orway eatergray isway equestedray",
     "hideVizTip": "Isthay elpshay ithway erformancepay",
     "hideVizMore": "Ickclayclay ethay 'EtchFay IzVay Ataday' uttonbay aboveway otay etchfay isualizationvay ataday orfay isthay ueryqay (orway openway ethay opdownway orfay oremay optionsway).",
+    "toggleMapSize": "Oggletay apmay izesay",
     "toggleSrcCountry": "Oggletay ourcesay ountriescay",
     "toggleDstCountry": "Oggletay estinationday ountriescay",
     "graphLines": "Ineslay",
@@ -1740,6 +1760,8 @@
       "missingList": "Issingmay istlay ofway essionssay",
       "noSessionsFound": "onay essionssay oundfay",
       "cantGetSessions": "Antcay etgay essionssay omfray IDsway",
+      "allDateNotAllowedSpiview": "'Allway' atedday angeray otnay allowedway orfay ipviewsay uerykay",
+      "spiviewFetchError": "Errorway etrievingray ipviewsay ataday",
       "badFieldParam": "Adbay 'ieldfay' arameterpay",
       "missingExpParam": "Issingmay expway arameterpay",
       "sessionNotFound": "Essionsay otnay oundfay",

@@ -53,6 +53,7 @@ SPDX-License-Identifier: Apache-2.0
                   <button
                     type="button"
                     id="spiViewFieldConfigSave"
+                    :aria-label="$t('common.save')"
                     class="btn btn-theme-secondary"
                     :disabled="!newFieldConfigName"
                     @click.stop.prevent="saveFieldConfiguration">
@@ -88,12 +89,14 @@ SPDX-License-Identifier: Apache-2.0
                     <button
                       class="btn btn-xs btn-danger pull-right ms-1"
                       type="button"
+                      :aria-label="$t('common.delete')"
                       @click.stop.prevent="deleteFieldConfiguration(config.name, key)">
                       <span class="fa fa-trash-o" />
                     </button>
                     <button
                       class="btn btn-xs btn-warning pull-right"
                       type="button"
+                      :aria-label="$t('common.save')"
                       :id="`spiViewUpdateFieldConfig-${config.name}`"
                       @click.stop.prevent="updateFieldConfiguration(config.name, key)">
                       <span class="fa fa-save" />
@@ -889,7 +892,7 @@ export default {
           pendingPromises.splice(index, 1);
         }
 
-        if (response.error) { this.error = response.error; }
+        if (response.error) { this.error = resolveMessage(response.error, this.$t); }
         this.mapData = response.map;
         if (graphData) {
           this.graphData = response.graph;
@@ -1070,7 +1073,7 @@ export default {
         // start processing tasks serially
         this.serial(tasks).then((response) => { // returns the last result in the series
           if (response && response.error) {
-            this.error = response.error;
+            this.error = resolveMessage(response.error, this.$t);
           }
           // Note: dataLoading is set to false when all individual requests complete
         }).catch((error) => {
@@ -1121,8 +1124,9 @@ export default {
         this.countCategoryFieldsLoading(category, false);
 
         if (response.error) {
-          spiData.error = response.error;
-          if (!this.error) { this.error = response.error; }
+          const errMsg = resolveMessage(response.error, this.$t);
+          spiData.error = errMsg;
+          if (!this.error) { this.error = errMsg; }
         }
 
         // only update the requested spi data

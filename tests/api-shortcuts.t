@@ -1,4 +1,4 @@
-use Test::More tests => 121;
+use Test::More tests => 125;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -300,6 +300,21 @@ for (my $i=0; $i < scalar(@{$testsCluster}); $i++) { # indexes are different
 }
 
 eq_or_diff($testsCluster, $tests2Cluster, "cluster sync failed", { context => 2 });
+
+# --- Description type validation tests ---
+
+# create shortcut with object description should fail
+$json = viewerPostToken("/api/shortcut", '{"name":"bad_desc_create","type":"ip","value":"1.2.3.4","description":{"evil":"object"}}', $token);
+ok(!$json->{success}, "create shortcut with object description fails");
+is($json->{text}, "Description must be a string", "create object description error message");
+
+# update shortcut with object description should fail
+my $goodShortcut = viewerPostToken("/api/shortcut", '{"name":"good_desc_test","type":"ip","value":"1.2.3.4","description":"valid"}', $token);
+my $goodId = $goodShortcut->{shortcut}->{id};
+$json = viewerPutToken("/api/shortcut/$goodId", '{"name":"good_desc_test","type":"ip","value":"1.2.3.4","description":["array","desc"]}', $token);
+ok(!$json->{success}, "update shortcut with array description fails");
+is($json->{text}, "Description must be a string", "update array description error message");
+viewerDeleteToken("/api/shortcut/$goodId", $token);
 
 # --- Extra field sanitization tests ---
 

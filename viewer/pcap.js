@@ -118,8 +118,20 @@ class Pcap {
     this.encoding = info.encoding ?? 'normal';
 
     if (info.dek) {
-      const decipher = ArkimeUtil.createDecipherAES192NoIV(info.kek);
-      this.encKey = Buffer.concat([decipher.update(Buffer.from(info.dek, 'hex')), decipher.final()]);
+      if (info.dekEncoding === 'aes-256-gcm') {
+        // New method: PBKDF2 + AES-256-GCM
+        this.encKey = ArkimeUtil.decryptDEKWithGCM(
+          info.kek,
+          Buffer.from(info.dek, 'hex'),
+          Buffer.from(info.dekSalt, 'hex'),
+          Buffer.from(info.dekIv, 'hex'),
+          Buffer.from(info.dekTag, 'hex')
+        );
+      } else {
+        // Old method: EVP_BytesToKey + AES-192-CBC
+        const decipher = ArkimeUtil.createDecipherAES192NoIV(info.kek);
+        this.encKey = Buffer.concat([decipher.update(Buffer.from(info.dek, 'hex')), decipher.final()]);
+      }
     }
 
     if (info.uncompressedBits) {
@@ -615,13 +627,17 @@ class Pcap {
         next = data[offset];
         offset++;
       }
-      while (next !== 0) {
+      while (next !== 0 && offset < data.length) {
         const extlen = data[offset];
         offset++;
+        if (extlen === 0) { break; }
         offset += extlen * 4 - 2;
+        if (offset < 0 || offset >= data.length) { break; }
         next = data[offset];
         offset++;
       }
+
+      if (offset >= data.length) { return; }
 
       if ((data[offset] & 0xf0) === 0x60) {
         this.ip6(data.slice(offset), obj, pos + offset);
@@ -679,10 +695,12 @@ class Pcap {
     if (obj.gre.flags_version & 0x4000) {
       while (true) {
         bpos += 3;
+        if (bpos + 2 > buffer.length) { break; }
         const len = buffer.readUInt16BE(bpos);
         bpos++;
         if (len === 0) { break; }
         bpos += len;
+        if (bpos > buffer.length) { break; }
       }
     }
 
@@ -733,6 +751,11 @@ class Pcap {
       addr1: Pcap.inet_ntoa(buffer.readUInt32BE(12)),
       addr2: Pcap.inet_ntoa(buffer.readUInt32BE(16))
     };
+
+    // Non-first fragments don't have transport headers, force raw handling
+    if ((obj.ip.off & 0x1fff) !== 0) {
+      obj.ip.p = 0;
+    }
 
     switch (obj.ip.p) {
     case 1:
@@ -971,7 +994,9 @@ class Pcap {
           return this.ip6(buffer.slice(offset + 4), obj, pos + offset + 4);
         }
       } else {
-        offset += (len + 3) & 0xfffc;
+        const advance = (len + 3) & 0xfffc;
+        if (advance === 0) { break; }
+        offset += advance;
       }
     }
 
@@ -1202,14 +1227,15 @@ class Pcap {
     packets.length = Math.min(packets.length, numPackets);
     for (const packet of packets) {
       const key = packet.ip.addr1;
+      const data = packet.tcp?.data ?? packet.udp?.data ?? packet.ip.data;
       if (results.length === 0 || key !== results[results.length - 1].key) {
         results.push({
           key,
-          buffers: [packet.ip.data],
+          buffers: [data],
           ts: packet.pcap.ts_sec * 1000 + Math.round(packet.pcap.ts_usec / 1000)
         });
       } else {
-        results[results.length - 1].buffers.push(packet.ip.data);
+        results[results.length - 1].buffers.push(data);
       }
     }
     for (const result of results) {
@@ -1382,9 +1408,9 @@ class Pcap {
           } else if (gapSize < 0) {
             // Retransmitted data, trim off front
             if (-gapSize >= packet.tcp.data.length) {
-              packet.tcp.data = packet.tcp.data.slice(-gapSize);
-            } else {
               packet.tcp.data = EMPTY_BUFFER;
+            } else {
+              packet.tcp.data = packet.tcp.data.slice(-gapSize);
             }
           }
           lastResult.buffers.push(packet.tcp.data);

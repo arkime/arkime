@@ -38,6 +38,12 @@
       "2"
      ],
      "funcCnt" : 3,
+     "funcName" : [
+      "Read",
+      "Response",
+      "Write"
+     ],
+     "funcNameCnt" : 3,
      "src" : [
       "1",
       "2"
@@ -119,7 +125,10 @@
     "tagsCnt" : 3,
     "tcpflags" : {
      "ack" : 4,
+     "ae" : 0,
+     "cwr" : 0,
      "dstZero" : 0,
+     "ece" : 0,
      "fin" : 0,
      "psh" : 5,
      "rst" : 0,
@@ -156,7 +165,7 @@
    },
    "header" : {
     "index" : {
-     "_index" : "tests_sessions3-260204"
+     "_index" : "tests_sessions3-26m02"
     }
    }
   },
@@ -188,6 +197,12 @@
       "13"
      ],
      "funcCnt" : 3,
+     "funcName" : [
+      "ColdRestart",
+      "Read",
+      "Response"
+     ],
+     "funcNameCnt" : 3,
      "src" : [
       "10",
       "20"
@@ -266,7 +281,7 @@
    },
    "header" : {
     "index" : {
-     "_index" : "tests_sessions3-260204"
+     "_index" : "tests_sessions3-26m02"
     }
    }
   }

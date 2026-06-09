@@ -1,4 +1,4 @@
-use Test::More tests => 100;
+use Test::More tests => 101;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -21,6 +21,10 @@ addUser("-n testuser parliamentAdminP parliamentAdminP parliamentAdminP --roles 
 # authenticate non parliament user
 $ArkimeTest::userAgent->credentials( "$ArkimeTest::host:8008", 'Moloch', 'arkimeUserP', 'arkimeUserP' );
 my $arkimeUserToken = getParliamentTokenCookie('arkimeUserP');
+
+# Check appversion
+$result = parliamentGet("/api/appversion");
+is($result->{app}, "parliament", "parliament appversion app field");
 
 # non parliament user can view parliament - empty
 $result = parliamentGetToken("/parliament/api/parliament", $arkimeUserToken);

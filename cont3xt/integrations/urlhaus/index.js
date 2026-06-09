@@ -42,7 +42,7 @@ class URLHausIntegration extends Integration {
 
   async fetch (user, query) {
     try {
-      const result = await axios.post('https://urlhaus-api.abuse.ch/v1/host/', `host=${query}`, {
+      const result = await axios.post('https://urlhaus-api.abuse.ch/v1/host/', `host=${encodeURIComponent(query)}`, {
         headers: {
           'User-Agent': this.userAgent()
         }

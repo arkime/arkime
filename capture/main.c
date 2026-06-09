@@ -9,6 +9,7 @@
 #include <pwd.h>
 #include <grp.h>
 #include <errno.h>
+#include <fcntl.h>
 #include <sys/resource.h>
 #ifdef _POSIX_MEMLOCK
 #include <sys/mman.h>
@@ -326,16 +327,16 @@ LOCAL void parse_args(int argc, char **argv)
         exit(1);
     }
 
-    if (config.copyPcap && !config.pcapReadOffline) {
-        printf("--copy requires -r or -R\n");
-        exit(1);
-    }
-
     if (config.commandList)
         config.pcapReadOffline = 1;
 
     if ((config.pcapMonitor || config.commandWait) && config.commandSocket) {
         config.pcapReadOffline = 1;
+    }
+
+    if (config.copyPcap && !config.pcapReadOffline) {
+        printf("--copy requires -r or -R\n");
+        exit(1);
     }
 
     if (config.pcapMonitor && !config.pcapReadDirs && !config.commandSocket && !config.commandList) {
@@ -400,13 +401,14 @@ LOCAL void arkime_free_later_init()
 /******************************************************************************/
 LOCAL void controlc(int UNUSED(sig))
 {
-    LOG("Control-C");
     signal(SIGINT, exit); // Double Control-C quits right away
+    LOG("Control-C");
     arkime_quit();
 }
 /******************************************************************************/
 LOCAL void terminate(int UNUSED(sig))
 {
+    signal(SIGTERM, exit); // Double terminate quits right away
     LOG("Terminate");
     arkime_quit();
 }
@@ -416,6 +418,57 @@ LOCAL void reload(int UNUSED(sig))
     arkime_plugins_reload();
 }
 /******************************************************************************/
+/* Open a per-node state file under the configured `stateDir` (default "/tmp")
+ * using O_NOFOLLOW so an attacker can't redirect Arkime's writes through a
+ * pre-placed symlink.  `name` is the basename of the file (typically
+ * "<nodeName>.<suffix>"); `mode` must be "r" or "w" (binary modes accepted).
+ *
+ * Read mode returns NULL silently if the file does not yet exist; other
+ * failures are logged.  Write mode creates the file with mode 0600 and
+ * truncates it.
+ */
+FILE *arkime_state_file_open(const char *name, const char *mode)
+{
+    static const char *stateDir = NULL;
+    if (!stateDir) {
+        stateDir = arkime_config_str(NULL, "stateDir", "/tmp");
+    }
+
+    char path[PATH_MAX];
+    int  plen = snprintf(path, sizeof(path), "%s/%s", stateDir, name);
+    if (plen <= 0 || plen >= (int)sizeof(path)) {
+        LOG("ERROR - state file path too long for `%s/%s`", stateDir, name);
+        return NULL;
+    }
+
+    int flags;
+    if (mode[0] == 'w') {
+        flags = O_WRONLY | O_CREAT | O_TRUNC | O_NOFOLLOW | O_CLOEXEC;
+    } else if (mode[0] == 'r') {
+        flags = O_RDONLY | O_NOFOLLOW | O_CLOEXEC;
+    } else {
+        LOG("ERROR - unsupported mode `%s` for state file `%s`", mode, path);
+        return NULL;
+    }
+
+    int fd = open(path, flags, 0600);
+    if (fd < 0) {
+        if (errno == ENOENT && mode[0] == 'r') {
+            return NULL;
+        }
+        LOG("ERROR - Couldn't open state file `%s` (%s): %s", path, mode, strerror(errno));
+        return NULL;
+    }
+
+    FILE *fp = fdopen(fd, mode);
+    if (!fp) {
+        LOG("ERROR - fdopen failed for state file `%s`: %s", path, strerror(errno));
+        close(fd);
+        return NULL;
+    }
+    return fp;
+}
+/******************************************************************************/
 void arkime_check_file_permissions(const char *filename)
 {
     char                 path[PATH_MAX];
@@ -423,8 +476,6 @@ void arkime_check_file_permissions(const char *filename)
     const char          *token;
     char                *save_ptr;
     char                 tmpFilename[PATH_MAX];
-    const struct group  *gr;
-    const struct passwd *pw;
 
     if (strlen (filename) >= PATH_MAX) {
         // filename bigger than path buffer, skip check
@@ -452,15 +503,15 @@ void arkime_check_file_permissions(const char *filename)
         g_strlcat (path, token, sizeof(path));
 
         if (stat(path, &stats) != -1) {
-            gr = getgrgid (stats.st_gid);
-            pw = getpwuid (stats.st_uid);
+            const struct group  *gr = getgrgid (stats.st_gid);
+            const struct passwd *pw = getpwuid (stats.st_uid);
 
             if (stats.st_mode & S_IROTH) {
                 // world readable
-            } else if ((stats.st_mode & S_IRGRP) && config.dropGroup && (strcmp (config.dropGroup, gr->gr_name) == 0)) {
+            } else if ((stats.st_mode & S_IRGRP) && config.dropGroup && gr && (strcmp (config.dropGroup, gr->gr_name) == 0)) {
                 // group readable and dropGroup matches file group
                 // TODO compare group id values as opposed to group name
-            } else if ((stats.st_mode & S_IRUSR) && config.dropUser && (strcmp (config.dropUser, pw->pw_name) == 0)) {
+            } else if ((stats.st_mode & S_IRUSR) && config.dropUser && pw && (strcmp (config.dropUser, pw->pw_name) == 0)) {
                 // user readable and dropUser matches file user
                 // TODO compare user id values as opposed to user name
             } else
@@ -610,13 +661,11 @@ SUPPRESS_UNSIGNED_INTEGER_OVERFLOW
 uint32_t arkime_string_hash(const void *key)
 {
     const uint8_t *p = (uint8_t *)key;
-    uint32_t n = 0;
+    uint32_t n = hashSalt;
     while (*p) {
         n = (n << 5) - n + *p;
         p++;
     }
-
-    n ^= hashSalt;
 
     return n;
 }
@@ -625,14 +674,12 @@ SUPPRESS_UNSIGNED_INTEGER_OVERFLOW
 uint32_t arkime_string_hash_len(const void *key, int len)
 {
     const uint8_t *p = (uint8_t *)key;
-    uint32_t n = 0;
+    uint32_t n = hashSalt;
     while (len) {
         n = (n << 5) - n + *p;
         p++;
         len--;
     }
-
-    n ^= hashSalt;
 
     return n;
 }
@@ -1107,7 +1154,7 @@ LLVMFuzzerInitialize(int *UNUSED(argc), char ***UNUSED(argv))
     arkime_yara_init();
     arkime_parsers_init();
     arkime_session_init();
-    arkime_plugins_load(config.plugins);
+    arkime_plugins_load(config.plugins, TRUE);
     arkime_config_load_override_ips();
     arkime_rules_init();
     arkime_reader_scheme_register("fuzz", NULL, NULL);
@@ -1166,7 +1213,7 @@ LLVMFuzzerInitialize(int *UNUSED(argc), char ***UNUSED(argv))
     arkime_parsers_init();
     arkime_session_init();
     arkime_dedup_init();
-    arkime_plugins_load(config.plugins);
+    arkime_plugins_load(config.plugins, TRUE);
     arkime_config_load_override_ips();
     arkime_rules_init();
     arkime_packet_batch_init(&batch);
@@ -1250,7 +1297,7 @@ int main(int argc, char **argv)
     arkime_writers_init();
     arkime_readers_init();
     arkime_plugins_init();
-    arkime_plugins_load(config.rootPlugins);
+    arkime_plugins_load(config.rootPlugins, FALSE);
     if (config.pcapReadOffline) {
         if (useScheme ||
             (config.pcapReadFiles && config.pcapReadFiles[0] && strstr(config.pcapReadFiles[0], "://")) ||
@@ -1276,7 +1323,7 @@ int main(int argc, char **argv)
     arkime_parsers_init();
     arkime_session_init();
     arkime_dedup_init();
-    arkime_plugins_load(config.plugins);
+    arkime_plugins_load(config.plugins, TRUE);
     arkime_config_load_override_ips();
     arkime_rules_init();
     g_timeout_add(1, arkime_ready_gfunc, 0);

@@ -118,12 +118,16 @@
     ],
     "srcTTLCnt" : 1,
     "tags" : [
+     "dcerpc:bad-fraglen",
      "srcip"
     ],
-    "tagsCnt" : 1,
+    "tagsCnt" : 2,
     "tcpflags" : {
      "ack" : 1,
+     "ae" : 0,
+     "cwr" : 0,
      "dstZero" : 0,
+     "ece" : 0,
      "fin" : 0,
      "psh" : 4,
      "rst" : 0,
@@ -140,7 +144,7 @@
    },
    "header" : {
     "index" : {
-     "_index" : "tests_sessions3-231114"
+     "_index" : "tests_sessions3-23m11"
     }
    }
   },
@@ -158,9 +162,10 @@
      "msgType" : [
       "bind",
       "bind-ack",
+      "fault",
       "request"
      ],
-     "msgTypeCnt" : 3,
+     "msgTypeCnt" : 4,
      "opnum" : [
       5
      ],
@@ -233,7 +238,7 @@
     "protocolCnt" : 3,
     "segmentCnt" : 1,
     "server" : {
-     "bytes" : 64
+     "bytes" : 84
     },
     "source" : {
      "bytes" : 332,
@@ -253,7 +258,10 @@
     "srcTTLCnt" : 1,
     "tcpflags" : {
      "ack" : 1,
+     "ae" : 0,
+     "cwr" : 0,
      "dstZero" : 0,
+     "ece" : 0,
      "fin" : 0,
      "psh" : 4,
      "rst" : 0,
@@ -266,11 +274,11 @@
      "dst" : 0,
      "src" : 1000
     },
-    "totDataBytes" : 180
+    "totDataBytes" : 200
    },
    "header" : {
     "index" : {
-     "_index" : "tests_sessions3-231114"
+     "_index" : "tests_sessions3-23m11"
     }
    }
   },
@@ -287,9 +295,10 @@
      "interfaceCnt" : 1,
      "msgType" : [
       "bind",
-      "bind-ack"
+      "bind-ack",
+      "bind-nak"
      ],
-     "msgTypeCnt" : 2,
+     "msgTypeCnt" : 3,
      "uuid" : [
       "12345678-1234-abcd-ef00-01234567cffb"
      ],
@@ -356,7 +365,7 @@
     "protocolCnt" : 3,
     "segmentCnt" : 1,
     "server" : {
-     "bytes" : 60
+     "bytes" : 80
     },
     "source" : {
      "bytes" : 234,
@@ -376,7 +385,10 @@
     "srcTTLCnt" : 1,
     "tcpflags" : {
      "ack" : 1,
+     "ae" : 0,
+     "cwr" : 0,
      "dstZero" : 0,
+     "ece" : 0,
      "fin" : 0,
      "psh" : 3,
      "rst" : 0,
@@ -389,11 +401,11 @@
      "dst" : 0,
      "src" : 1000
     },
-    "totDataBytes" : 132
+    "totDataBytes" : 152
    },
    "header" : {
     "index" : {
-     "_index" : "tests_sessions3-231114"
+     "_index" : "tests_sessions3-23m11"
     }
    }
   },
@@ -410,10 +422,11 @@
      "interfaceCnt" : 1,
      "msgType" : [
       "alter-context",
+      "alter-context-resp",
       "bind",
       "bind-ack"
      ],
-     "msgTypeCnt" : 3,
+     "msgTypeCnt" : 4,
      "uuid" : [
       "367abb81-9844-35f1-ad32-98f038001003"
      ],
@@ -482,7 +495,7 @@
     "protocolCnt" : 3,
     "segmentCnt" : 1,
     "server" : {
-     "bytes" : 92
+     "bytes" : 112
     },
     "source" : {
      "bytes" : 360,
@@ -502,7 +515,10 @@
     "srcTTLCnt" : 1,
     "tcpflags" : {
      "ack" : 1,
+     "ae" : 0,
+     "cwr" : 0,
      "dstZero" : 0,
+     "ece" : 0,
      "fin" : 0,
      "psh" : 4,
      "rst" : 0,
@@ -515,11 +531,11 @@
      "dst" : 0,
      "src" : 1000
     },
-    "totDataBytes" : 236
+    "totDataBytes" : 256
    },
    "header" : {
     "index" : {
-     "_index" : "tests_sessions3-231114"
+     "_index" : "tests_sessions3-23m11"
     }
    }
   },
@@ -537,9 +553,10 @@
      "msgType" : [
       "bind",
       "bind-ack",
-      "request"
+      "request",
+      "shutdown"
      ],
-     "msgTypeCnt" : 3,
+     "msgTypeCnt" : 4,
      "opnum" : [
       21
      ],
@@ -612,7 +629,7 @@
     "protocolCnt" : 3,
     "segmentCnt" : 1,
     "server" : {
-     "bytes" : 60
+     "bytes" : 80
     },
     "source" : {
      "bytes" : 332,
@@ -632,7 +649,10 @@
     "srcTTLCnt" : 1,
     "tcpflags" : {
      "ack" : 1,
+     "ae" : 0,
+     "cwr" : 0,
      "dstZero" : 0,
+     "ece" : 0,
      "fin" : 0,
      "psh" : 4,
      "rst" : 0,
@@ -645,11 +665,11 @@
      "dst" : 0,
      "src" : 1000
     },
-    "totDataBytes" : 176
+    "totDataBytes" : 196
    },
    "header" : {
     "index" : {
-     "_index" : "tests_sessions3-231114"
+     "_index" : "tests_sessions3-23m11"
     }
    }
   },
@@ -763,7 +783,10 @@
     "srcTTLCnt" : 1,
     "tcpflags" : {
      "ack" : 1,
+     "ae" : 0,
+     "cwr" : 0,
      "dstZero" : 0,
+     "ece" : 0,
      "fin" : 0,
      "psh" : 4,
      "rst" : 0,
@@ -780,7 +803,7 @@
    },
    "header" : {
     "index" : {
-     "_index" : "tests_sessions3-231114"
+     "_index" : "tests_sessions3-23m11"
     }
    }
   },
@@ -894,7 +917,10 @@
     "srcTTLCnt" : 1,
     "tcpflags" : {
      "ack" : 1,
+     "ae" : 0,
+     "cwr" : 0,
      "dstZero" : 0,
+     "ece" : 0,
      "fin" : 0,
      "psh" : 4,
      "rst" : 0,
@@ -911,7 +937,7 @@
    },
    "header" : {
     "index" : {
-     "_index" : "tests_sessions3-231114"
+     "_index" : "tests_sessions3-23m11"
     }
    }
   },
@@ -929,9 +955,10 @@
      "msgType" : [
       "bind",
       "bind-ack",
-      "request"
+      "request",
+      "response"
      ],
-     "msgTypeCnt" : 3,
+     "msgTypeCnt" : 4,
      "opnum" : [
       7
      ],
@@ -1004,7 +1031,7 @@
     "protocolCnt" : 3,
     "segmentCnt" : 1,
     "server" : {
-     "bytes" : 80
+     "bytes" : 100
     },
     "source" : {
      "bytes" : 332,
@@ -1024,7 +1051,10 @@
     "srcTTLCnt" : 1,
     "tcpflags" : {
      "ack" : 1,
+     "ae" : 0,
+     "cwr" : 0,
      "dstZero" : 0,
+     "ece" : 0,
      "fin" : 0,
      "psh" : 4,
      "rst" : 0,
@@ -1037,11 +1067,11 @@
      "dst" : 0,
      "src" : 1000
     },
-    "totDataBytes" : 196
+    "totDataBytes" : 216
    },
    "header" : {
     "index" : {
-     "_index" : "tests_sessions3-231114"
+     "_index" : "tests_sessions3-23m11"
     }
    }
   },
@@ -1059,9 +1089,10 @@
      "msgType" : [
       "bind",
       "bind-ack",
-      "request"
+      "request",
+      "response"
      ],
-     "msgTypeCnt" : 3,
+     "msgTypeCnt" : 4,
      "opnum" : [
       8
      ],
@@ -1134,7 +1165,7 @@
     "protocolCnt" : 3,
     "segmentCnt" : 1,
     "server" : {
-     "bytes" : 80
+     "bytes" : 100
     },
     "source" : {
      "bytes" : 332,
@@ -1154,7 +1185,10 @@
     "srcTTLCnt" : 1,
     "tcpflags" : {
      "ack" : 1,
+     "ae" : 0,
+     "cwr" : 0,
      "dstZero" : 0,
+     "ece" : 0,
      "fin" : 0,
      "psh" : 4,
      "rst" : 0,
@@ -1167,11 +1201,11 @@
      "dst" : 0,
      "src" : 1000
     },
-    "totDataBytes" : 196
+    "totDataBytes" : 216
    },
    "header" : {
     "index" : {
-     "_index" : "tests_sessions3-231114"
+     "_index" : "tests_sessions3-23m11"
     }
    }
   },
@@ -1189,9 +1223,10 @@
      "msgType" : [
       "bind",
       "bind-ack",
-      "request"
+      "request",
+      "response"
      ],
-     "msgTypeCnt" : 3,
+     "msgTypeCnt" : 4,
      "opnum" : [
       9
      ],
@@ -1264,7 +1299,7 @@
     "protocolCnt" : 3,
     "segmentCnt" : 1,
     "server" : {
-     "bytes" : 80
+     "bytes" : 100
     },
     "source" : {
      "bytes" : 332,
@@ -1284,7 +1319,10 @@
     "srcTTLCnt" : 1,
     "tcpflags" : {
      "ack" : 1,
+     "ae" : 0,
+     "cwr" : 0,
      "dstZero" : 0,
+     "ece" : 0,
      "fin" : 0,
      "psh" : 4,
      "rst" : 0,
@@ -1297,11 +1335,11 @@
      "dst" : 0,
      "src" : 1000
     },
-    "totDataBytes" : 196
+    "totDataBytes" : 216
    },
    "header" : {
     "index" : {
-     "_index" : "tests_sessions3-231114"
+     "_index" : "tests_sessions3-23m11"
     }
    }
   },
@@ -1319,9 +1357,10 @@
      "msgType" : [
       "bind",
       "bind-ack",
-      "request"
+      "request",
+      "response"
      ],
-     "msgTypeCnt" : 3,
+     "msgTypeCnt" : 4,
      "opnum" : [
       10
      ],
@@ -1394,7 +1433,7 @@
     "protocolCnt" : 3,
     "segmentCnt" : 1,
     "server" : {
-     "bytes" : 80
+     "bytes" : 100
     },
     "source" : {
      "bytes" : 332,
@@ -1414,7 +1453,10 @@
     "srcTTLCnt" : 1,
     "tcpflags" : {
      "ack" : 1,
+     "ae" : 0,
+     "cwr" : 0,
      "dstZero" : 0,
+     "ece" : 0,
      "fin" : 0,
      "psh" : 4,
      "rst" : 0,
@@ -1427,11 +1469,11 @@
      "dst" : 0,
      "src" : 1000
     },
-    "totDataBytes" : 196
+    "totDataBytes" : 216
    },
    "header" : {
     "index" : {
-     "_index" : "tests_sessions3-231114"
+     "_index" : "tests_sessions3-23m11"
     }
    }
   },
@@ -1449,9 +1491,10 @@
      "msgType" : [
       "bind",
       "bind-ack",
-      "request"
+      "request",
+      "response"
      ],
-     "msgTypeCnt" : 3,
+     "msgTypeCnt" : 4,
      "opnum" : [
       11
      ],
@@ -1524,7 +1567,7 @@
     "protocolCnt" : 3,
     "segmentCnt" : 1,
     "server" : {
-     "bytes" : 80
+     "bytes" : 100
     },
     "source" : {
      "bytes" : 332,
@@ -1544,7 +1587,10 @@
     "srcTTLCnt" : 1,
     "tcpflags" : {
      "ack" : 1,
+     "ae" : 0,
+     "cwr" : 0,
      "dstZero" : 0,
+     "ece" : 0,
      "fin" : 0,
      "psh" : 4,
      "rst" : 0,
@@ -1557,11 +1603,11 @@
      "dst" : 0,
      "src" : 1000
     },
-    "totDataBytes" : 196
+    "totDataBytes" : 216
    },
    "header" : {
     "index" : {
-     "_index" : "tests_sessions3-231114"
+     "_index" : "tests_sessions3-23m11"
     }
    }
   },
@@ -1579,9 +1625,10 @@
      "msgType" : [
       "bind",
       "bind-ack",
-      "request"
+      "request",
+      "response"
      ],
-     "msgTypeCnt" : 3,
+     "msgTypeCnt" : 4,
      "opnum" : [
       12
      ],
@@ -1654,7 +1701,7 @@
     "protocolCnt" : 3,
     "segmentCnt" : 1,
     "server" : {
-     "bytes" : 80
+     "bytes" : 100
     },
     "source" : {
      "bytes" : 332,
@@ -1674,7 +1721,10 @@
     "srcTTLCnt" : 1,
     "tcpflags" : {
      "ack" : 1,
+     "ae" : 0,
+     "cwr" : 0,
      "dstZero" : 0,
+     "ece" : 0,
      "fin" : 0,
      "psh" : 4,
      "rst" : 0,
@@ -1687,11 +1737,11 @@
      "dst" : 0,
      "src" : 1000
     },
-    "totDataBytes" : 196
+    "totDataBytes" : 216
    },
    "header" : {
     "index" : {
-     "_index" : "tests_sessions3-231114"
+     "_index" : "tests_sessions3-23m11"
     }
    }
   },
@@ -1709,9 +1759,10 @@
      "msgType" : [
       "bind",
       "bind-ack",
-      "request"
+      "request",
+      "response"
      ],
-     "msgTypeCnt" : 3,
+     "msgTypeCnt" : 4,
      "opnum" : [
       13
      ],
@@ -1784,7 +1835,7 @@
     "protocolCnt" : 3,
     "segmentCnt" : 1,
     "server" : {
-     "bytes" : 80
+     "bytes" : 100
     },
     "source" : {
      "bytes" : 332,
@@ -1804,7 +1855,10 @@
     "srcTTLCnt" : 1,
     "tcpflags" : {
      "ack" : 1,
+     "ae" : 0,
+     "cwr" : 0,
      "dstZero" : 0,
+     "ece" : 0,
      "fin" : 0,
      "psh" : 4,
      "rst" : 0,
@@ -1817,11 +1871,11 @@
      "dst" : 0,
      "src" : 1000
     },
-    "totDataBytes" : 196
+    "totDataBytes" : 216
    },
    "header" : {
     "index" : {
-     "_index" : "tests_sessions3-231114"
+     "_index" : "tests_sessions3-23m11"
     }
    }
   },
@@ -1833,15 +1887,16 @@
     },
     "dcerpc" : {
      "interface" : [
-      "ioxidresolver"
+      "iremunknown"
      ],
      "interfaceCnt" : 1,
      "msgType" : [
       "bind",
       "bind-ack",
-      "request"
+      "request",
+      "response"
      ],
-     "msgTypeCnt" : 3,
+     "msgTypeCnt" : 4,
      "opnum" : [
       14
      ],
@@ -1908,13 +1963,13 @@
     },
     "protocol" : [
      "dcerpc",
-     "ioxidresolver",
+     "iremunknown",
      "tcp"
     ],
     "protocolCnt" : 3,
     "segmentCnt" : 1,
     "server" : {
-     "bytes" : 80
+     "bytes" : 100
     },
     "source" : {
      "bytes" : 332,
@@ -1934,7 +1989,10 @@
     "srcTTLCnt" : 1,
     "tcpflags" : {
      "ack" : 1,
+     "ae" : 0,
+     "cwr" : 0,
      "dstZero" : 0,
+     "ece" : 0,
      "fin" : 0,
      "psh" : 4,
      "rst" : 0,
@@ -1947,11 +2005,11 @@
      "dst" : 0,
      "src" : 1000
     },
-    "totDataBytes" : 196
+    "totDataBytes" : 216
    },
    "header" : {
     "index" : {
-     "_index" : "tests_sessions3-231114"
+     "_index" : "tests_sessions3-23m11"
     }
    }
   },
@@ -1963,15 +2021,16 @@
     },
     "dcerpc" : {
      "interface" : [
-      "iremunknown"
+      "iremunknown2"
      ],
      "interfaceCnt" : 1,
      "msgType" : [
       "bind",
       "bind-ack",
-      "request"
+      "request",
+      "response"
      ],
-     "msgTypeCnt" : 3,
+     "msgTypeCnt" : 4,
      "opnum" : [
       15
      ],
@@ -2038,13 +2097,13 @@
     },
     "protocol" : [
      "dcerpc",
-     "iremunknown",
+     "iremunknown2",
      "tcp"
     ],
     "protocolCnt" : 3,
     "segmentCnt" : 1,
     "server" : {
-     "bytes" : 80
+     "bytes" : 100
     },
     "source" : {
      "bytes" : 332,
@@ -2064,7 +2123,10 @@
     "srcTTLCnt" : 1,
     "tcpflags" : {
      "ack" : 1,
+     "ae" : 0,
+     "cwr" : 0,
      "dstZero" : 0,
+     "ece" : 0,
      "fin" : 0,
      "psh" : 4,
      "rst" : 0,
@@ -2077,11 +2139,11 @@
      "dst" : 0,
      "src" : 1000
     },
-    "totDataBytes" : 196
+    "totDataBytes" : 216
    },
    "header" : {
     "index" : {
-     "_index" : "tests_sessions3-231114"
+     "_index" : "tests_sessions3-23m11"
     }
    }
   },
@@ -2093,15 +2155,16 @@
     },
     "dcerpc" : {
      "interface" : [
-      "iremunknown2"
+      "isystemactivator"
      ],
      "interfaceCnt" : 1,
      "msgType" : [
       "bind",
       "bind-ack",
-      "request"
+      "request",
+      "response"
      ],
-     "msgTypeCnt" : 3,
+     "msgTypeCnt" : 4,
      "opnum" : [
       16
      ],
@@ -2168,13 +2231,13 @@
     },
     "protocol" : [
      "dcerpc",
-     "iremunknown2",
+     "isystemactivator",
      "tcp"
     ],
     "protocolCnt" : 3,
     "segmentCnt" : 1,
     "server" : {
-     "bytes" : 80
+     "bytes" : 100
     },
     "source" : {
      "bytes" : 332,
@@ -2194,7 +2257,10 @@
     "srcTTLCnt" : 1,
     "tcpflags" : {
      "ack" : 1,
+     "ae" : 0,
+     "cwr" : 0,
      "dstZero" : 0,
+     "ece" : 0,
      "fin" : 0,
      "psh" : 4,
      "rst" : 0,
@@ -2207,11 +2273,11 @@
      "dst" : 0,
      "src" : 1000
     },
-    "totDataBytes" : 196
+    "totDataBytes" : 216
    },
    "header" : {
     "index" : {
-     "_index" : "tests_sessions3-231114"
+     "_index" : "tests_sessions3-23m11"
     }
    }
   },
@@ -2225,9 +2291,10 @@
      "msgType" : [
       "bind",
       "bind-ack",
-      "request"
+      "request",
+      "response"
      ],
-     "msgTypeCnt" : 3,
+     "msgTypeCnt" : 4,
      "opnum" : [
       99
      ],
@@ -2299,7 +2366,7 @@
     "protocolCnt" : 2,
     "segmentCnt" : 1,
     "server" : {
-     "bytes" : 80
+     "bytes" : 100
     },
     "source" : {
      "bytes" : 332,
@@ -2319,7 +2386,10 @@
     "srcTTLCnt" : 1,
     "tcpflags" : {
      "ack" : 1,
+     "ae" : 0,
+     "cwr" : 0,
      "dstZero" : 0,
+     "ece" : 0,
      "fin" : 0,
      "psh" : 4,
      "rst" : 0,
@@ -2332,11 +2402,11 @@
      "dst" : 0,
      "src" : 1000
     },
-    "totDataBytes" : 196
+    "totDataBytes" : 216
    },
    "header" : {
     "index" : {
-     "_index" : "tests_sessions3-231114"
+     "_index" : "tests_sessions3-23m11"
     }
    }
   }

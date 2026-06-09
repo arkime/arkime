@@ -169,16 +169,13 @@ class SessionAPIs {
           }
 
           if (Array.isArray(value)) {
-            const singleValue = '"' + value.join(', ') + '"';
+            const singleValue = '"' + value.map(v => String(v).replace(/"/g, '""')).join(', ') + '"';
             values.push(singleValue);
           } else {
             if (value === undefined) {
               value = '';
-            } else if (typeof (value) === 'string' && value.includes(',')) {
-              if (value.includes('"')) {
-                value = value.replace(/"/g, '""');
-              }
-              value = '"' + value + '"';
+            } else if (typeof (value) === 'string' && (value.includes(',') || value.includes('"') || value.includes('\n') || value.includes('\r'))) {
+              value = '"' + value.replace(/"/g, '""') + '"';
             }
             values.push(value);
           }
@@ -340,8 +337,8 @@ class SessionAPIs {
         res.send(data);
       });
     } else { // return SPI data and packets
-      res.send('HOW DID I GET HERE?');
-      console.trace('HOW DID I GET HERE');
+      console.trace('Unexpected code path in localSessionDetail');
+      return res.serverError(500, 'Internal error: unexpected code path');
     }
   }
 
@@ -458,7 +455,7 @@ class SessionAPIs {
         try {
           pcap.decode(buffer, obj);
         } catch (e) {
-          obj = { ip: { p: 'Error decoding' + e } };
+          obj = { ip: { p: 'Error decoding ' + e } };
           console.trace('loadSessionDetail error', ArkimeUtil.sanitizeStr(e.stack));
         }
       } else {
@@ -468,7 +465,7 @@ class SessionAPIs {
       cb(null);
     }, async (err, session) => {
       if (err) {
-        return res.end('Problem loading packets for ' + ArkimeUtil.safeStr(req.params.id) + ' Error: ' + err);
+        return res.type('text/plain').end('Problem loading packets for ' + ArkimeUtil.safeStr(req.params.id) + ' Error: ' + err);
       }
       session.id = req.params.id;
       SessionAPIs.#sortFields(session);
@@ -502,10 +499,18 @@ class SessionAPIs {
         session._err = err;
         SessionAPIs.#localSessionDetailReturn(req, res, session, results || []);
       } else if (packets[0].ip.p === 6) {
-        const key = ipaddr.parse(session.source.ip).toString();
-        const { err, results } = await Pcap.reassemble_tcp(packets, +req.query.packets || 200, key + ':' + session.source.port);
-        session._err = err;
-        SessionAPIs.#localSessionDetailReturn(req, res, session, results || []);
+        // Check if any packets are fragments (p=0 due to pcap.js fragment handling)
+        const hasFragments = packets.some(p => !p.tcp);
+        if (hasFragments) {
+          const { err, results } = Pcap.reassemble_generic_ip(packets, +req.query.packets || 200);
+          session._err = err;
+          SessionAPIs.#localSessionDetailReturn(req, res, session, results || []);
+        } else {
+          const key = ipaddr.parse(session.source.ip).toString();
+          const { err, results } = await Pcap.reassemble_tcp(packets, +req.query.packets || 200, key + ':' + session.source.port);
+          session._err = err;
+          SessionAPIs.#localSessionDetailReturn(req, res, session, results || []);
+        }
       } else if (packets[0].ip.p === 17) {
         const { err, results } = Pcap.reassemble_udp(packets, +req.query.packets || 200);
         session._err = err;
@@ -777,7 +782,7 @@ class SessionAPIs {
             url = new URL(sessionPath, viewUrl);
           }
 
-          Auth.addS2SAuth(options, req.user, fields.node, url.pathname);
+          Auth.addS2SAuth(options, req.user, fields.node, url.pathname, ViewerUtils.getClusterSecret(req.query.cluster));
           options.ca = ca;
 
           await new Promise((resolve) => {
@@ -1046,7 +1051,7 @@ class SessionAPIs {
     }, (err, session) => {
       if (err) {
         console.log('ERROR - writePcapNg', util.inspect(err, false, 50));
-        return;
+        return doneCb(err);
       }
       res.write(b.slice(0, boffset));
 
@@ -1245,7 +1250,7 @@ class SessionAPIs {
       const fields = session.fields;
 
       if (!fields.packetPos) {
-        return endCb(null);
+        return endCb(null, fields);
       }
 
       if (maxPackets && fields.packetPos.length > maxPackets) {
@@ -1455,10 +1460,18 @@ class SessionAPIs {
           if (reassembleErr) return reject(reassembleErr);
           return resolve({ session, packets: results });
         } else if (packets[0].ip.p === 6) {
-          const key = ipaddr.parse(session.source.ip).toString();
-          const { err, results } = await Pcap.reassemble_tcp(packets, numPackets, key + ':' + session.source.port);
-          if (err) return reject(err);
-          return resolve({ session, packets: results });
+          // Check if any packets are fragments (p=0 due to pcap.js fragment handling)
+          const hasFragments = packets.some(p => !p.tcp);
+          if (hasFragments) {
+            const { err: reassembleErr, results } = Pcap.reassemble_generic_ip(packets, numPackets);
+            if (reassembleErr) return reject(reassembleErr);
+            return resolve({ session, packets: results });
+          } else {
+            const key = ipaddr.parse(session.source.ip).toString();
+            const { err, results } = await Pcap.reassemble_tcp(packets, numPackets, key + ':' + session.source.port);
+            if (err) return reject(err);
+            return resolve({ session, packets: results });
+          }
         } else if (packets[0].ip.p === 17) {
           const { err: reassembleErr, results } = Pcap.reassemble_udp(packets, numPackets);
           if (reassembleErr) return reject(reassembleErr);
@@ -1650,7 +1663,7 @@ class SessionAPIs {
   /**
    * POST/GET - /api/sessions/csv OR /sessions.csv
    *
-   * Return all the JSON formatted session data based on the query parameters.
+   * Return all the CSV formatted session data based on the query parameters.
    * @name /sessions/csv
    * @param {string} ids - Comma separated list of sessions to retrieve
    * @param {SessionsQuery} See_List - This API supports a common set of parameters documented in the SessionsQuery section
@@ -1693,7 +1706,7 @@ class SessionAPIs {
       }, (err) => {
         if (err) {
           console.log('ERROR - Could not build query for CSV', err);
-          return res.send('Could not build query. Err: ' + err);
+          return res.type('text/plain').send('Could not build query. Err: ' + err);
         } else {
           SessionAPIs.#csvListWriter(req, res, ['end'], null, reqFields);
         }
@@ -1727,7 +1740,7 @@ class SessionAPIs {
     const spiDataMaxIndices = +Config.get('spiDataMaxIndices', 4);
 
     if (parseFloat(req.query.date) === -1 && spiDataMaxIndices !== -1) {
-      return res.send({ spi: {}, bsqErr: "'All' date range not allowed for spiview query" });
+      return res.send({ spi: {}, error: { text: "'All' date range not allowed for spiview query", i18n: 'api.sessions.allDateNotAllowedSpiview' } });
     }
 
     const response = { spi: {} };
@@ -1873,6 +1886,9 @@ class SessionAPIs {
         });
         sessions.aggregations.fileand = { doc_count_error_upper_bound: 0, sum_other_doc_count: sodc, buckets: nresults };
         return sendResult();
+      }).catch((err) => {
+        console.log(`ERROR - ${req.method} /api/spiview`, util.inspect(err, false, 50));
+        return res.serverError(500, 'Error retrieving spiview data', 'api.sessions.spiviewFetchError');
       });
     });
   }
@@ -2157,7 +2173,7 @@ class SessionAPIs {
         if (err) {
           console.log(`ERROR - ${req.method} /api/spigraphhierarchy`, util.inspect(err, false, 50));
           res.status(400);
-          return res.end(err);
+          return res.type('text/plain').end(err);
         }
 
         if (Config.debug > 2) {
@@ -2296,7 +2312,7 @@ class SessionAPIs {
     /* How should each item be processed. */
     let eachCb = writeCb;
 
-    if (req.query.field.match(/(ip.src:port.src|a1:p1|srcIp:srtPort|ip.src:srcPort|ip.dst:port.dst|a2:p2|dstIp:dstPort|ip.dst:dstPort|source.ip:source.port|ip.src:source.port|ip.dst:destination.port)/)) {
+    if (req.query.field.match(/(ip.src:port.src|a1:p1|srcIp:srcPort|ip.src:srcPort|ip.dst:port.dst|a2:p2|dstIp:dstPort|ip.dst:dstPort|source.ip:source.port|ip.src:source.port|ip.dst:destination.port)/)) {
       eachCb = (item) => {
         const sep = (item.key.indexOf(':') === -1) ? ':' : '.';
         for (const item2 of item.field2.buckets) {
@@ -2310,7 +2326,7 @@ class SessionAPIs {
       if (err) {
         res.status(403);
 
-        return res.send(err.toString());
+        return res.type('text/plain').send(err.toString());
       }
 
       const fieldDef = Config.getFieldsMap()[req.query.field];
@@ -2339,7 +2355,9 @@ class SessionAPIs {
       }
 
       query.size = 0;
-      console.log('/api/unique aggregations', indices, JSON.stringify(query));
+      if (Config.debug) {
+        console.log('/api/unique aggregations', indices, JSON.stringify(query));
+      }
 
       async function findFileNames (result) {
         const intermediateResults = [];
@@ -2416,7 +2434,7 @@ class SessionAPIs {
     for (let i = 0; i < parts.length; i++) {
       const field = Config.getFieldsMap()[parts[i]];
       if (!field) {
-        return res.send(`Unknown expression ${parts[i]}\n`);
+        return res.type('text/plain').send(`Unknown expression ${parts[i]}\n`);
       }
       fields.push(field);
     }
@@ -2439,7 +2457,7 @@ class SessionAPIs {
       if (err) {
         console.log(`ERROR - ${req.method} /api/multiunique`, util.inspect(err, false, 50));
         res.status(400);
-        return res.end(err);
+        return res.type('text/plain').end(err);
       }
 
       delete query.sort;
@@ -2466,7 +2484,7 @@ class SessionAPIs {
         if (err) {
           console.log(`ERROR - ${req.method} /api/multiunique`, util.inspect(err, false, 50));
           res.status(400);
-          return res.end(err);
+          return res.type('text/plain').end(err);
         }
 
         if (Config.debug > 2) {
@@ -2541,7 +2559,7 @@ class SessionAPIs {
 
       SessionAPIs.#sortFields(session);
 
-      const hidePackets = (session.fileId === undefined || session.fileId.length === 0) ? 'true' : 'false';
+      const hidePackets = (session.packetPos === undefined || session.packetPos.length === 0) ? 'true' : 'false';
       pug.render(internals.sessionDetailNew, {
         filename: 'sessionDetail',
         cache: internals.isProduction,
@@ -2571,7 +2589,7 @@ class SessionAPIs {
           },
           allowedAttributes: {
             img: ['src'],
-            '*': [':download', '#button-content', 'class', 'value', 'sessionid', 'hidePackets', 'v-if', 'target', 'href', ':href', '@click', 'v-has-permission', 'text', ':text', ':sessions', '@done', ':cluster', ':single', ':message', ':type', ':done', 'expr', ':expr', ':separator', ':field', 'pull-left', 'size', 'variant', 'columns', 'style', 'suffix', 'target', 'v-for', 'key', ':key', ':add', 'title']
+            '*': [':download', 'download', '#button-content', 'class', 'value', 'sessionid', 'hidepackets', 'v-if', 'target', 'href', ':href', '@click', 'v-has-permission', 'text', ':text', ':sessions', '@done', ':cluster', ':single', ':message', ':type', ':done', 'expr', ':expr', ':separator', ':field', 'pull-left', 'size', 'variant', 'columns', 'style', 'suffix', 'target', 'v-for', 'key', ':key', ':add', 'title']
           }
         });
         res.send(html);
@@ -2647,7 +2665,7 @@ class SessionAPIs {
         }, async (err, total) => {
           if (err) {
             console.log('ERROR - Could not build query for addTags', err);
-            return res.send('Could not build query. Err: ' + err);
+            return res.type('text/plain').send('Could not build query. Err: ' + err);
           }
           if (!total) {
             return res.serverError(200, 'No sessions to add tags to', 'api.sessions.noSessionsToAddTags');
@@ -2712,7 +2730,7 @@ class SessionAPIs {
         }, async (err, total) => {
           if (err) {
             console.log('ERROR - Could not build query for removeTags', err);
-            return res.send('Could not build query. Err: ' + err);
+            return res.type('text/plain').send('Could not build query. Err: ' + err);
           }
           if (!total) {
             return res.serverError(200, 'No sessions to remove tags from', 'api.sessions.noSessionsToRemoveTags');
@@ -2741,6 +2759,12 @@ class SessionAPIs {
     let topNum = 20;
     if (req.query.length) {
       topNum = parseInt(req.query.length);
+    }
+    if (!Number.isFinite(topNum) || topNum <= 0) {
+      topNum = 20;
+    }
+    if (topNum > 1000) {
+      topNum = 1000;
     }
 
     const sortOrder = req.body.order === 'asc' ? 'asc' : 'desc';
@@ -3294,11 +3318,11 @@ class SessionAPIs {
         if (err) {
           console.log(`ERROR - ${req.method} /api/sessions/bodyhash/%s`, ArkimeUtil.sanitizeStr(req.params.hash), util.inspect(err, false, 50));
           res.status(400);
-          res.end(err);
+          res.type('text/plain').end(err);
         } else if (sessions.error) {
           console.log(`ERROR - ${req.method} /api/sessions/bodyhash/%s`, ArkimeUtil.sanitizeStr(req.params.hash), util.inspect(sessions.error, false, 50));
           res.status(400);
-          res.end(sessions.error);
+          res.type('text/plain').end(sessions.error);
         } else {
           if (Config.debug) {
             console.log('/api/sessions/bodyhash/%s result', ArkimeUtil.sanitizeStr(req.params.hash), util.inspect(sessions, false, 50));
@@ -3314,7 +3338,7 @@ class SessionAPIs {
               SessionAPIs.#localGetItemByHash(nodeName, sessionID, hash, (err, item) => {
                 if (err) {
                   res.status(400);
-                  return res.end(err);
+                  return res.type('text/plain').end(err);
                 } else if (item) {
                   ArkimeUtil.noCache(req, res, 'application/force-download');
                   res.setHeader('content-disposition', contentDisposition(item.bodyName + '.pellet'));
@@ -3367,7 +3391,7 @@ class SessionAPIs {
     SessionAPIs.#localGetItemByHash(req.params.nodeName, req.params.id, req.params.hash, (err, item) => {
       if (err) {
         res.status(400);
-        return res.end(err);
+        return res.type('text/plain').end(err);
       } else if (item) {
         ArkimeUtil.noCache(req, res, 'application/force-download');
         res.setHeader('content-disposition', contentDisposition(item.bodyName + '.pellet'));

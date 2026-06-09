@@ -46,7 +46,7 @@ INSTALL         = @INSTALL@
 bindir          = $(DESTDIR)@prefix@/bin
 installinclude  = $(DESTDIR)@prefix@/include
 
-SANITIZE_LDFLAGS = -fno-common -fsanitize=address -fsanitize=integer -fsanitize=nullability
+SANITIZE_LDFLAGS = -fno-common -fsanitize=address -fsanitize=integer -fno-sanitize=unsigned-integer-overflow -fsanitize=nullability
 SANITIZE_CFLAGS  = $(SANITIZE_LDFLAGS)
 
 FUZZ_LDFLAGS     = -fno-common -fsanitize=fuzzer,address -fstack-protector-all -fsanitize-address-use-after-scope

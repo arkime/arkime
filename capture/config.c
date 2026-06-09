@@ -195,10 +195,10 @@ LOCAL int config_ipprotocol_lookup(const char *str)
     if (isdigit(str[0]))
         return atoi(str);
 
-    IpProtocolEntry_t *entry = bsearch(str, ipProtocols,
-                                       sizeof(ipProtocols) / sizeof(ipProtocols[0]),
-                                       sizeof(ipProtocols[0]),
-                                       config_ipprotocol_cmp);
+    const IpProtocolEntry_t *entry = bsearch(str, ipProtocols,
+                                             ARRAY_LEN(ipProtocols),
+                                             sizeof(ipProtocols[0]),
+                                             config_ipprotocol_cmp);
     if (entry)
         return entry->num;
     return -1;
@@ -271,10 +271,10 @@ LOCAL int config_ethertype_lookup(const char *str)
     if (isdigit(str[0]))
         return strtol(str, NULL, 0);
 
-    EthertypeEntry_t *entry = bsearch(str, ethertypes,
-                                      sizeof(ethertypes) / sizeof(ethertypes[0]),
-                                      sizeof(ethertypes[0]),
-                                      config_ethertype_cmp);
+    const EthertypeEntry_t *entry = bsearch(str, ethertypes,
+                                            ARRAY_LEN(ethertypes),
+                                            sizeof(ethertypes[0]),
+                                            config_ethertype_cmp);
     if (entry)
         return entry->num;
     return -1;
@@ -874,6 +874,10 @@ LOCAL char *arkime_config_redis_get(const char *url)
 
     // AUTH if password provided
     if (pass) {
+        if (passLen > (int)sizeof(cmd) - 64) {
+            close(fd);
+            CONFIGEXIT("Redis password too long (max %d)", (int)sizeof(cmd) - 64);
+        }
         cmdLen = arkime_snprintf_len(cmd, sizeof(cmd), "*2\r\n$4\r\nAUTH\r\n$%d\r\n%.*s\r\n", passLen, passLen, pass);
         if (send(fd, cmd, cmdLen, 0) != cmdLen) {
             close(fd);
@@ -904,6 +908,10 @@ LOCAL char *arkime_config_redis_get(const char *url)
 
     // GET key
     int keyLen = strlen(key);
+    if (keyLen > (int)sizeof(cmd) - 64) {
+        close(fd);
+        CONFIGEXIT("Redis key too long (max %d)", (int)sizeof(cmd) - 64);
+    }
     cmdLen = arkime_snprintf_len(cmd, sizeof(cmd), "*2\r\n$3\r\nGET\r\n$%d\r\n%s\r\n", keyLen, key);
     if (send(fd, cmd, cmdLen, 0) != cmdLen) {
         close(fd);
@@ -1050,6 +1058,7 @@ LOCAL void arkime_config_load()
     if (!status || error) {
         if (config.noConfigOption) {
             LOG("Couldn't load config file (%s) %s", config.configFile, (error ? error->message : ""));
+            g_clear_error(&error);
             g_key_file_load_from_data(keyfile, (gchar *)"[default]\n", (gsize) -1, G_KEY_FILE_NONE, &error);
         } else
             CONFIGEXIT("Couldn't load config file (%s) %s", config.configFile, (error ? error->message : ""));
@@ -1378,7 +1387,7 @@ LOCAL void arkime_config_parse_override_ips(GKeyFile *keyFile)
     gsize keys_len;
     gchar **keys = g_key_file_get_keys (keyFile, "override-ips", &keys_len, &error);
     if (error) {
-        CONFIGEXIT("Error with override-ips: %s", error->message);
+        CONFIGEXIT("Error with override-ips: %s", error->message ? error->message : "unknown error");
     }
 
     GRegex *asnRegex = g_regex_new("AS\\d+ .+", 0, 0, &error);
@@ -1479,7 +1488,7 @@ LOCAL void arkime_config_parse_packet_ips(GKeyFile *keyFile)
     gsize keys_len;
     gchar **keys = g_key_file_get_keys (keyFile, "packet-drop-ips", &keys_len, &error);
     if (error) {
-        CONFIGEXIT("Error with packet-drop-ips: %s", error->message);
+        CONFIGEXIT("Error with packet-drop-ips: %s", error->message ? error->message : "unknown error");
     }
 
     gsize k, v;
@@ -1558,7 +1567,7 @@ void arkime_config_load_header(char *section, char *group, char *helpBase, char 
     gsize keys_len;
     gchar **keys = g_key_file_get_keys (arkimeKeyFile, section, &keys_len, &error);
     if (error) {
-        CONFIGEXIT("Error with %s: %s", section, error->message);
+        CONFIGEXIT("Error with %s: %s", section, error->message ? error->message : "unknown error");
     }
 
     gsize k, v;
@@ -1850,7 +1859,7 @@ LOCAL void arkime_config_cmd_set(int argc, char **argv, gpointer cc)
             BSB_EXPORT_sprintf(bsb, "%" PRId64 "\n", *(int64_t *)acv->var);
             break;
         case ARKIME_CONFIG_CMD_VAR_STR_PTR:
-            if (!*(char *)acv->var)
+            if (!*(char **)acv->var)
                 BSB_EXPORT_sprintf(bsb, "NULL\n");
             else
                 BSB_EXPORT_sprintf(bsb, "%s\n", *(char **)acv->var);
@@ -1869,14 +1878,28 @@ LOCAL void arkime_config_cmd_set(int argc, char **argv, gpointer cc)
         }
 
         switch (acv->typelen) {
-        case 1:
-            *(char *)acv->var = atoi(argv[2]);
+        case 1: {
+            int val = atoi(argv[2]);
+            if (val < -128 || val > 127) {
+                BSB_EXPORT_sprintf(bsb, "Value %d out of range for %s (-128..127)\n", val, acv->name);
+                arkime_command_respond(cc, buf, BSB_LENGTH(bsb));
+                return;
+            }
+            *(char *)acv->var = val;
             BSB_EXPORT_sprintf(bsb, "%s=%d\n", acv->name, *(char *)acv->var);
             break;
-        case 2:
-            *(short *)acv->var = atoi(argv[2]);
+        }
+        case 2: {
+            int val = atoi(argv[2]);
+            if (val < -32768 || val > 32767) {
+                BSB_EXPORT_sprintf(bsb, "Value %d out of range for %s (-32768..32767)\n", val, acv->name);
+                arkime_command_respond(cc, buf, BSB_LENGTH(bsb));
+                return;
+            }
+            *(short *)acv->var = val;
             BSB_EXPORT_sprintf(bsb, "%s=%d\n", acv->name, *(short *)acv->var);
             break;
+        }
         case 4:
             *(int *)acv->var = atoi(argv[2]);
             BSB_EXPORT_sprintf(bsb, "%s=%d\n", acv->name, *(int *)acv->var);

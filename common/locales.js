@@ -6,12 +6,18 @@ SPDX-License-Identifier: Apache-2.0
 const fs = require('fs');
 const path = require('path');
 
+let cachedLocales = null;
+
 /**
  * Handler for loading and serving locale files
  * @param {Object} req - Express request object
  * @param {Object} res - Express response object
  */
 function getLocales(req, res) {
+  if (cachedLocales !== null) {
+    return res.json(cachedLocales);
+  }
+
   const localesPath = path.join(__dirname, 'vueapp/locales');
 
   try {
@@ -37,7 +43,11 @@ function getLocales(req, res) {
       }
     }
 
-    res.json({ success: true, locales });
+    const result = { success: true, locales };
+    if (process.env.NODE_ENV !== 'development') {
+      cachedLocales = result;
+    }
+    res.json(result);
   } catch (error) {
     console.error('Error reading locales directory:', error);
     res.status(500).json({ success: false, error: 'Failed to read locales' });

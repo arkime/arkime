@@ -1,4 +1,4 @@
-use Test::More tests => 110;
+use Test::More tests => 121;
 use ArkimeTest;
 use JSON;
 use Test::Differences;
@@ -341,6 +341,41 @@ $info = viewerPutToken("/api/shareable/${idOwn}?arkimeRegressionUser=sac-test1",
 ok($info->{success}, "creator can still edit");
 $info = viewerDeleteToken("/api/shareable/${idOwn}?arkimeRegressionUser=sac-test1", $token);
 ok($info->{success}, "creator can delete");
+
+# --- data field type validation tests ---
+
+# create shareable with string data should fail
+$info = viewerPostToken("/api/shareable?arkimeRegressionUser=sac-test1", '{"name":"bad_data1","type":"test","data":"not-an-object"}', $token);
+ok(!$info->{success}, "create shareable with string data fails");
+is($info->{text}, "Data must be an object", "create string data error message");
+
+# create shareable with array data should fail
+$info = viewerPostToken("/api/shareable?arkimeRegressionUser=sac-test1", '{"name":"bad_data2","type":"test","data":["bad"]}', $token);
+ok(!$info->{success}, "create shareable with array data fails");
+is($info->{text}, "Data must be an object", "create array data error message");
+
+# create shareable with valid object data should succeed
+$info = viewerPostToken("/api/shareable?arkimeRegressionUser=sac-test1", '{"name":"good_data","type":"test","data":{"key":"value"}}', $token);
+ok($info->{success}, "create shareable with object data succeeds");
+my $idData = $info->{id};
+
+# update shareable with number data should fail
+$info = viewerPutToken("/api/shareable/${idData}?arkimeRegressionUser=sac-test1", '{"name":"good_data","data":123}', $token);
+ok(!$info->{success}, "update shareable with number data fails");
+is($info->{text}, "Data must be an object", "update number data error message");
+
+# update shareable with non-string name should fail
+$info = viewerPutToken("/api/shareable/${idData}?arkimeRegressionUser=sac-test1", '{"name":123}', $token);
+ok(!$info->{success}, "update shareable with number name fails");
+is($info->{text}, "Name must be a string", "update number name error message");
+
+# update shareable with object name should fail
+$info = viewerPutToken("/api/shareable/${idData}?arkimeRegressionUser=sac-test1", '{"name":{"bad":"object"}}', $token);
+ok(!$info->{success}, "update shareable with object name fails");
+is($info->{text}, "Name must be a string", "update object name error message");
+
+# cleanup data test shareable
+viewerDeleteToken("/api/shareable/${idData}?arkimeRegressionUser=sac-test1", $token);
 
 # cleanup pagination and validation shareables
 viewerDeleteToken("/api/shareable/${idPA}?arkimeRegressionUser=sac-test1", $token);

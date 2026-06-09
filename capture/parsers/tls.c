@@ -160,9 +160,9 @@ LOCAL uint32_t tls_process_server_hello(ArkimeSession_t *session, const uint8_t 
     }
 
 
-    char ja3[30000];
+    char ja3[13000];
     BSB ja3bsb;
-    char eja3[10000];
+    char eja3[13000];
     BSB eja3bsb;
 
     BSB_INIT(ja3bsb, ja3, sizeof(ja3));
@@ -175,7 +175,7 @@ LOCAL uint32_t tls_process_server_hello(ArkimeSession_t *session, const uint8_t 
         etotlen = MIN(etotlen, BSB_REMAINING(bsb));
 
         BSB ebsb;
-        BSB_INIT(ebsb, BSB_WORK_PTR(bsb), etotlen);
+        BSB_IMPORT_bsb(bsb, ebsb, etotlen);
 
         while (BSB_REMAINING(ebsb) > 0) {
             int etype = 0, elen = 0;
@@ -301,13 +301,13 @@ LOCAL uint32_t tls_process_client_hello_data(ArkimeSession_t *session, const uin
     if (len < 7)
         return -1;
 
-    char ja3[30000];
+    char ja3[13000];
     BSB ja3bsb;
-    char ecfja3[1000];
+    char ecfja3[1024];
     BSB ecfja3bsb;
-    char eja3[10000];
+    char eja3[13000];
     BSB eja3bsb;
-    char ecja3[10000];
+    char ecja3[13000];
     BSB ecja3bsb;
 
     char     ja4HasSNI = 'i';
@@ -384,7 +384,7 @@ LOCAL uint32_t tls_process_client_hello_data(ArkimeSession_t *session, const uin
             etotlen = MIN(etotlen, BSB_REMAINING(cbsb));
 
             BSB ebsb;
-            BSB_INIT(ebsb, BSB_WORK_PTR(cbsb), etotlen);
+            BSB_IMPORT_bsb(cbsb, ebsb, etotlen);
 
             while (BSB_REMAINING(ebsb) >= 4) {
                 uint16_t etype = 0, elen = 0;
@@ -636,7 +636,11 @@ LOCAL int tls_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, in
     ArkimeParserBuf_t    *tls          = uw;
 
     // Copy the data we have
-    arkime_parser_buf_add(tls, which, data, remaining);
+    if (arkime_parser_buf_add(tls, which, data, remaining) < 0) {
+        arkime_session_add_tag(session, "tls:record-too-long");
+        arkime_parsers_unregister(session, uw);
+        return 0;
+    }
 
     // Make sure we have header
     if (tls->len[which] < 5)
@@ -651,6 +655,11 @@ LOCAL int tls_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, in
 
     // Need the whole record
     int need = ((tls->buf[which][3] << 8) | tls->buf[which][4]) + 5;
+    if (need > tls->bufMax) {
+        arkime_session_add_tag(session, "tls:record-too-long");
+        arkime_parsers_unregister(session, uw);
+        return 0;
+    }
     if (need > tls->len[which])
         return 0;
 
@@ -703,7 +712,7 @@ LOCAL void tls_classify(ArkimeSession_t *session, const uint8_t *data, int len, 
     if (data[2] <= 0x03 && (data[5] == 1 || data[5] == 2)) {
         arkime_session_add_protocol(session, "tls");
 
-        ArkimeParserBuf_t  *tls = arkime_parser_buf_create();
+        ArkimeParserBuf_t  *tls = arkime_parser_buf_create2(2048, 18437);
 
         arkime_parsers_register2(session, tls_parser, tls, arkime_parser_buf_session_free, tls_save);
 
@@ -797,4 +806,3 @@ void arkime_parser_init()
     tls_process_server_hello_func = arkime_parsers_add_named_func("tls_process_server_hello", tls_process_server_hello);
     tls_process_server_certificate_func = arkime_parsers_get_named_func("tls_process_server_certificate");
 }
-

@@ -98,7 +98,7 @@ class MiscAPIs {
    *
    * Gets a list of PCAP files that Arkime knows about.
    * @name /files
-   * @param {number} length=100 - The number of items to return. Defaults to 500, Max is 10,000
+   * @param {number} length=10 - The number of items to return. Defaults to 10, Max is 10,000
    * @param {number} start=0 - The entry to start at. Defaults to 0
    * @returns {Array} data - The list of files
    * @returns {number} recordsTotal - The total number of files Arkime knows about
@@ -133,7 +133,7 @@ class MiscAPIs {
 
       const results = { total: files.hits.total, results: [] };
       for (const file of files.hits.hits) {
-        const fields = file._source || files.fields;
+        const fields = file._source || file.fields;
         if (fields.locked === undefined) {
           fields.locked = 0;
         }
@@ -243,12 +243,16 @@ class MiscAPIs {
    * @returns {string} domains - A comma separated string list of all the matching domain names.
    */
   static getReverseDNS (req, res) {
-    dns.reverse(req.query.ip, (err, data) => {
-      if (err) {
-        return res.type('text/plain').send('reverse error');
-      }
-      return res.type('text/plain').send(data.join(', '));
-    });
+    try {
+      dns.reverse(req.query.ip, (err, data) => {
+        if (err) {
+          return res.type('text/plain').send('reverse error');
+        }
+        return res.type('text/plain').send(data.join(', '));
+      });
+    } catch (err) {
+      return res.type('text/plain').send('reverse error');
+    }
   }
 
   // upload apis --------------------------------------------------------------
@@ -274,6 +278,7 @@ class MiscAPIs {
     }
 
     if (!req.user.hasRole(internals.uploadRoles)) {
+      req.user.logRoleFailure(internals.uploadRoles);
       res.status(403);
       return res.end('Not covered by role');
     }
@@ -292,12 +297,18 @@ class MiscAPIs {
       }
     }
 
+    // {ORIGINALNAME} is sanitized to a safe character set so it can be used in
+    // uploadCommand without risking shell injection from the uploaded filename.
+    const safeOriginalName = (req.file.originalname || '').replace(/[^-a-zA-Z0-9._]/g, '');
+
     // security-scanner-ignore: {INSECURE-ORIGINALNAME} is intentionally unsanitized.
     // Operators who use this template variable accept the risk — the variable name serves as the warning.
+    // Prefer the sanitized {ORIGINALNAME} variable instead.
     const cmd = uploadCommand
       .replace(/{TAGS}/g, tags)
       .replace(/{NODE}/g, Config.nodeName())
       .replace(/{TMPFILE}/g, req.file.path)
+      .replace(/{ORIGINALNAME}/g, safeOriginalName)
       .replace(/{INSECURE-ORIGINALNAME}/g, req.file.originalname)
       .replace(/{CONFIG}/g, ArkimeConfig.configFile);
 
@@ -379,7 +390,9 @@ class MiscAPIs {
       const clusters = await MiscAPIs.#getClusters(); // { active: [], inactive: [] }
       const remoteclusters = MiscAPIs.#remoteClusters(); // {}
       const fieldhistory = UserAPIs.findUserState('fieldHistory', req.user); // {}
-      const { data: views } = await View.getViews(req);
+      // views not supported for redis/lmdb user backends
+      const dbUrl = User.getDbUrl();
+      const views = (dbUrl?.startsWith('redis') || dbUrl?.startsWith('lmdb')) ? undefined : (await View.getViews(req)).data;
       const roles = await User.getRoles();
 
       // can't fetch user or fields is FATAL, so let it fall through to outer
@@ -428,7 +441,7 @@ class MiscAPIs {
       res.send({ data });
     } catch (err) {
       console.log(`ERROR - ${req.method} /%s/session/%s/cyberchef`, ArkimeUtil.sanitizeStr(req.params.nodeName), ArkimeUtil.sanitizeStr(req.params.id), util.inspect(err, false, 50));
-      return res.end('Error - ' + err);
+      return res.type('text/plain').end('Error - ' + err);
     }
   }
 

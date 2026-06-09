@@ -1,4 +1,4 @@
-use Test::More tests => 37;
+use Test::More tests => 43;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -72,8 +72,8 @@ my $json;
 
 # aliases
     $json = mesGet("/MULTIPREFIX_sessions2-*,MULTIPREFIX_sessions3-*/_alias");
-    is (exists $json->{"MULTIPREFIX_sessions2-050330"} || exists $json->{"MULTIPREFIX_sessions3-050330"}, 1, "Correct session alias");
-    is (exists $json->{"MULTIPREFIX_sessions2-140113"} || exists $json->{"MULTIPREFIX_sessions3-140113"}, 1, "Correct session alias");
+    is (exists $json->{"MULTIPREFIX_sessions2-05m03"} || exists $json->{"MULTIPREFIX_sessions3-05m03"}, 1, "Correct session alias");
+    is (exists $json->{"MULTIPREFIX_sessions2-14m01"} || exists $json->{"MULTIPREFIX_sessions3-14m01"}, 1, "Correct session alias");
 
 # _search
 
@@ -86,23 +86,41 @@ my $json;
     is ($json->{hits}->{hits}->[0]->{_index}, "MULTIPREFIX_stats_v30", "Correct stats index name");
 
     $json = mesPost("/MULTIPREFIX_fields/_search?rest_total_hits_as_int=true", "{\"size\":1000}");
-    cmp_ok($json->{hits}->{total}, '>=', 390, "fields count is at least 190");
-    cmp_ok($json->{hits}->{total}, '<',  700, "fields count is less then 700");
+    cmp_ok($json->{hits}->{total}, '>=', 590, "fields count is at least 590");
+    cmp_ok($json->{hits}->{total}, '<',  900, "fields count is less then 900");
     is ($json->{hits}->{hits}->[0]->{_index}, "MULTIPREFIX_fields_v30", "Correct fields index name");
 
-    $json = mesGet("/MULTIPREFIX_sessions3-141015/_search?preference=primary_first&ignore_unavailable=true&rest_total_hits_as_int=true");
+    $json = mesGet("/MULTIPREFIX_sessions3-14m10/_search?preference=primary_first&ignore_unavailable=true&rest_total_hits_as_int=true");
     if ($json->{hits}->{total} == 0) {
-        $json = mesGet("/MULTIPREFIX_sessions2-141015/_search?preference=primary_first&ignore_unavailable=true&rest_total_hits_as_int=true");
-        is ($json->{hits}->{hits}->[0]->{_index}, "MULTIPREFIX_sessions2-141015", "Correct sessions index name");
+        $json = mesGet("/MULTIPREFIX_sessions2-14m10/_search?preference=primary_first&ignore_unavailable=true&rest_total_hits_as_int=true");
+        is ($json->{hits}->{hits}->[0]->{_index}, "MULTIPREFIX_sessions2-14m10", "Correct sessions index name");
     } else {
-        is ($json->{hits}->{hits}->[0]->{_index}, "MULTIPREFIX_sessions3-141015", "Correct sessions index name");
+        is ($json->{hits}->{hits}->[0]->{_index}, "MULTIPREFIX_sessions3-14m10", "Correct sessions index name");
     }
     cmp_ok($json->{hits}->{total}, '>=', 6, "sessions count is at least 6");
 
-    $json = mesPost("/MULTIPREFIX_sessions3-141015/_search?preference=primary_first&ignore_unavailable=true&rest_total_hits_as_int=true", '{"size":20000}');
-    is ($json->{hits}->{hits}->[0]->{_index}, "MULTIPREFIX_sessions3-141015", "Correct sessions index name");
+    $json = mesPost("/MULTIPREFIX_sessions3-14m10/_search?preference=primary_first&ignore_unavailable=true&rest_total_hits_as_int=true", '{"size":20000}');
+    is ($json->{hits}->{hits}->[0]->{_index}, "MULTIPREFIX_sessions3-14m10", "Correct sessions index name");
     cmp_ok($json->{hits}->{total}, '>=', 6, "sessions count is at least 6");
 
-    $json = mesPost("/MULTIPREFIX_sessions3-141015/_search?preference=primary_first&ignore_unavailable=true&rest_total_hits_as_int=true", '{"from": 100, "size":20000}');
+    $json = mesPost("/MULTIPREFIX_sessions3-14m10/_search?preference=primary_first&ignore_unavailable=true&rest_total_hits_as_int=true", '{"from": 100, "size":20000}');
     is (scalar @{$json->{hits}->{hits}}, 0);
     cmp_ok($json->{hits}->{total}, '>=', 6, "sessions count is at least 6");
+
+# invalid JSON body - simpleGather1Cluster
+    my $response = $ArkimeTest::userAgent->post("http://$ArkimeTest::host:8200/_tasks/_cancel?cluster=test", Content => "NOT_JSON");
+    is($response->code, 400, "invalid JSON body returns 400 for simpleGather1Cluster");
+    my $body = from_json($response->content);
+    is($body->{error}, "Invalid JSON body", "invalid JSON body error message for simpleGather1Cluster");
+
+# invalid JSON body - _update route
+    $response = $ArkimeTest::userAgent->post("http://$ArkimeTest::host:8200/MULTIPREFIX_stats/_update/foobar", Content => "NOT_JSON");
+    is($response->code, 400, "invalid JSON body returns 400 for _update");
+    $body = from_json($response->content);
+    is($body->{error}, "Invalid JSON body", "invalid JSON body error message for _update");
+
+# invalid JSON body - _search route
+    $response = $ArkimeTest::userAgent->post("http://$ArkimeTest::host:8200/MULTIPREFIX_stats/_search", Content => "NOT_JSON");
+    is($response->code, 400, "invalid JSON body returns 400 for _search");
+    $body = from_json($response->content);
+    is($body->{error}, "Invalid JSON body", "invalid JSON body error message for _search");

@@ -799,6 +799,8 @@ LOCAL PyObject *arkime_python_session_add_int(PyObject UNUSED(*self), PyObject *
         pos = PyLong_AsLong(py_field_obj);
     } else if (PyUnicode_Check(py_field_obj)) {
         const char *field = PyUnicode_AsUTF8(py_field_obj);
+        if (!field)
+            return NULL;
         if (isdigit(field[0]))
             pos = atoi(field);
         else
@@ -832,6 +834,8 @@ LOCAL PyObject *arkime_python_session_add_string(PyObject UNUSED(*self), PyObjec
         pos = PyLong_AsLong(py_field_obj);
     } else if (PyUnicode_Check(py_field_obj)) {
         const char *field = PyUnicode_AsUTF8(py_field_obj);
+        if (!field)
+            return NULL;
         if (isdigit(field[0]))
             pos = atoi(field);
         else
@@ -903,7 +907,7 @@ LOCAL PyObject *arkime_python_session_get(PyObject UNUSED(*self), PyObject *args
         pos = arkime_field_by_exp(field);
     }
 
-    if (pos >= config.minInternalField && config.fields[pos] && config.fields[pos]->getCb) {
+    if (pos >= config.minInternalField && pos < ARKIME_FIELDS_MAX && config.fields[pos] && config.fields[pos]->getCb) {
         void *value = config.fields[pos]->getCb(session, pos);
 
         if (!value) {
@@ -1018,7 +1022,7 @@ LOCAL PyObject *arkime_python_session_get(PyObject UNUSED(*self), PyObject *args
         py_list = PyList_New(g_hash_table_size(ghash));
         int i = 0;
         while (g_hash_table_iter_next (&iter, &ikey, NULL)) {
-            PyList_SetItem(py_list, i, PyFloat_FromDouble(*(double *)ikey));
+            PyList_SetItem(py_list, i, PyFloat_FromDouble(POINTER_TO_FLOAT(ikey)));
             i++;
         }
         return py_list;
@@ -1583,6 +1587,7 @@ LOCAL PyObject *arkime_python_run_ethernet_cb(PyObject UNUSED(*self), PyObject *
 
     ArkimePacketRC result = arkime_packet_run_ethernet_cb(batch, packet, py_data_buf.buf, py_data_buf.len, type, str);
 
+    PyBuffer_Release(&py_data_buf);
     return PyLong_FromLong(result);
 }
 
@@ -1611,6 +1616,7 @@ LOCAL PyObject *arkime_python_run_ip_cb(PyObject UNUSED(*self), PyObject *args)
 
     ArkimePacketRC result = arkime_packet_run_ip_cb(batch, packet, py_data_buf.buf, py_data_buf.len, type, str);
 
+    PyBuffer_Release(&py_data_buf);
     return PyLong_FromLong(result);
 }
 /******************************************************************************/

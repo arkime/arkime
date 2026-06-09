@@ -1367,6 +1367,77 @@ void arkime_field_free(ArkimeSession_t *session)
     session->fields = 0;
 }
 /******************************************************************************/
+void arkime_field_free_one(ArkimeSession_t *session, int pos)
+{
+    ArkimeString_t             *hstring;
+    ArkimeStringHashStd_t      *shash;
+    ArkimeInt_t                *hint;
+    ArkimeIntHashStd_t         *ihash;
+    ArkimeFieldObject_t        *ho;
+    ArkimeFieldObjectHashStd_t *ohash;
+    ArkimeFieldObjectFreeFunc   freeCB;
+    ArkimeField_t              *field;
+
+    if (pos < 0 || pos >= session->maxFields)
+        return;
+    if (!(field = session->fields[pos]))
+        return;
+
+    switch (config.fields[pos]->type) {
+    case ARKIME_FIELD_TYPE_STR:
+        g_free(field->str);
+        break;
+    case ARKIME_FIELD_TYPE_STR_ARRAY:
+        g_ptr_array_free(field->sarray, TRUE);
+        break;
+    case ARKIME_FIELD_TYPE_STR_HASH:
+        shash = field->shash;
+        HASH_FORALL_POP_HEAD2(s_, *shash, hstring) {
+            g_free(hstring->str);
+            ARKIME_TYPE_FREE(ArkimeString_t, hstring);
+        }
+        ARKIME_TYPE_FREE(ArkimeStringHashStd_t, shash);
+        break;
+    case ARKIME_FIELD_TYPE_INT:
+        break;
+    case ARKIME_FIELD_TYPE_INT_ARRAY_UNIQUE:
+    case ARKIME_FIELD_TYPE_INT_ARRAY:
+        g_array_free(field->iarray, TRUE);
+        break;
+    case ARKIME_FIELD_TYPE_INT_HASH:
+        ihash = field->ihash;
+        HASH_FORALL_POP_HEAD2(i_, *ihash, hint) {
+            ARKIME_TYPE_FREE(ArkimeInt_t, hint);
+        }
+        ARKIME_TYPE_FREE(ArkimeIntHashStd_t, ihash);
+        break;
+    case ARKIME_FIELD_TYPE_FLOAT:
+        break;
+    case ARKIME_FIELD_TYPE_FLOAT_ARRAY:
+        g_array_free(field->farray, TRUE);
+        break;
+    case ARKIME_FIELD_TYPE_IP:
+        g_free(field->ip);
+        break;
+    case ARKIME_FIELD_TYPE_IP_GHASH:
+    case ARKIME_FIELD_TYPE_INT_GHASH:
+    case ARKIME_FIELD_TYPE_STR_GHASH:
+    case ARKIME_FIELD_TYPE_FLOAT_GHASH:
+        g_hash_table_destroy(field->ghash);
+        break;
+    case ARKIME_FIELD_TYPE_OBJECT:
+        freeCB = config.fields[pos]->object_free;
+        ohash = field->ohash;
+        HASH_FORALL_POP_HEAD2(o_, *ohash, ho) {
+            freeCB(ho);
+        }
+        ARKIME_TYPE_FREE(ArkimeFieldObjectHashStd_t, ohash);
+        break;
+    }
+    ARKIME_TYPE_FREE(ArkimeField_t, field);
+    session->fields[pos] = NULL;
+}
+/******************************************************************************/
 int arkime_field_object_register(const char *name, const char *help, ArkimeFieldObjectSaveFunc save, ArkimeFieldObjectFreeFunc free, ArkimeFieldObjectHashFunc hash, ArkimeFieldObjectCmpFunc cmp)
 {
     int object_pos;
@@ -1711,7 +1782,7 @@ void arkime_field_ops_add_match(ArkimeFieldOps_t *ops, int fieldPos, char *value
         ARKIME_SIZE_REALLOC("ops", ops->ops, ops->size * sizeof(ArkimeFieldOp_t));
     }
 
-    if (fieldPos == -1 || fieldPos > config.maxDbField) {
+    if (fieldPos == -1 || fieldPos >= config.maxDbField) {
         LOG("WARNING - Not adding %d %s %d", fieldPos, value, valuelen);
         return;
     }
@@ -1931,6 +2002,21 @@ LOCAL void *arkime_field_getcb_tcpflags_urg(const ArkimeSession_t *session, int 
     return (void *)(long)session->tcpData.tcpFlagCnt[ARKIME_TCPFLAG_URG];
 }
 /******************************************************************************/
+LOCAL void *arkime_field_getcb_tcpflags_ece(const ArkimeSession_t *session, int UNUSED(pos))
+{
+    return (void *)(long)session->tcpData.tcpFlagCnt[ARKIME_TCPFLAG_ECE];
+}
+/******************************************************************************/
+LOCAL void *arkime_field_getcb_tcpflags_cwr(const ArkimeSession_t *session, int UNUSED(pos))
+{
+    return (void *)(long)session->tcpData.tcpFlagCnt[ARKIME_TCPFLAG_CWR];
+}
+/******************************************************************************/
+LOCAL void *arkime_field_getcb_tcpflags_ae(const ArkimeSession_t *session, int UNUSED(pos))
+{
+    return (void *)(long)session->tcpData.tcpFlagCnt[ARKIME_TCPFLAG_AE];
+}
+/******************************************************************************/
 LOCAL void *arkime_field_getcb_tcp_synSet(const ArkimeSession_t *session, int UNUSED(pos))
 {
     return (void *)(long)session->synSet;
@@ -2022,6 +2108,9 @@ void arkime_field_init()
     arkime_field_by_exp_add_internal("tcpflags.rst", ARKIME_FIELD_TYPE_INT, arkime_field_getcb_tcpflags_rst, NULL);
     arkime_field_by_exp_add_internal("tcpflags.fin", ARKIME_FIELD_TYPE_INT, arkime_field_getcb_tcpflags_fin, NULL);
     arkime_field_by_exp_add_internal("tcpflags.urg", ARKIME_FIELD_TYPE_INT, arkime_field_getcb_tcpflags_urg, NULL);
+    arkime_field_by_exp_add_internal("tcpflags.ece", ARKIME_FIELD_TYPE_INT, arkime_field_getcb_tcpflags_ece, NULL);
+    arkime_field_by_exp_add_internal("tcpflags.cwr", ARKIME_FIELD_TYPE_INT, arkime_field_getcb_tcpflags_cwr, NULL);
+    arkime_field_by_exp_add_internal("tcpflags.ae", ARKIME_FIELD_TYPE_INT, arkime_field_getcb_tcpflags_ae, NULL);
     arkime_field_by_exp_add_internal("tcp.synSet", ARKIME_FIELD_TYPE_INT, arkime_field_getcb_tcp_synSet, NULL);
 
     arkime_field_by_exp_add_internal("packets.src", ARKIME_FIELD_TYPE_INT, arkime_field_getcb_packets_src, NULL);

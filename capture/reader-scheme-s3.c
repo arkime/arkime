@@ -104,13 +104,12 @@ LOCAL void scheme_s3_parse_region(const uint8_t *data, int data_len, const char 
 /******************************************************************************/
 LOCAL char *scheme_s3_escape(const char *str, int len)
 {
-    char out[3000];
+    // Worst case: every char expands to 3 bytes (%XX)
+    char *out = g_malloc(len * 3 + 1);
     int  s;
     int  o;
 
-    out[0] = 0;
-
-    for (s = o = 0; s < len && o + 3 < (int)sizeof(out); s++) {
+    for (s = o = 0; s < len; s++) {
         if (str[s] == '+') {
             out[o++] = '%';
             out[o++] = '2';
@@ -123,10 +122,11 @@ LOCAL char *scheme_s3_escape(const char *str, int len)
             out[o++] = str[s];
         }
     }
-    return g_strndup(out, o);
+    out[o] = '\0';
+    return out;
 }
 /******************************************************************************/
-LOCAL void scheme_s3_done(int UNUSED(code), uint8_t *data, int data_len, gpointer uw)
+LOCAL void scheme_s3_done(int code, uint8_t *data, int data_len, gpointer uw)
 {
     S3Request *req = uw;
     if (!req->isDir) {
@@ -144,6 +144,15 @@ LOCAL void scheme_s3_done(int UNUSED(code), uint8_t *data, int data_len, gpointe
     }
 
     ARKIME_UNLOCK(waitingdir);
+
+    if (code < 200 || code >= 300) {
+        LOG("ERROR - S3 list request failed with HTTP %d for %s", code, req->url);
+        ARKIME_LOCK(s3Items->lock);
+        s3Items->done = 1;
+        ARKIME_COND_BROADCAST(s3Items->lock);
+        ARKIME_UNLOCK(s3Items->lock);
+        return;
+    }
 
     const char *next = arkime_memstr((const char *)data, data_len, "<NextContinuationToken>", 23);
 
@@ -182,7 +191,10 @@ LOCAL void scheme_s3_done(int UNUSED(code), uint8_t *data, int data_len, gpointe
         s3_enqueue(s3Items, uri);
     }
 
+    ARKIME_LOCK(s3Items->lock);
     s3Items->done = 1;
+    ARKIME_COND_BROADCAST(s3Items->lock);
+    ARKIME_UNLOCK(s3Items->lock);
 }
 /******************************************************************************/
 LOCAL int scheme_s3_read(uint8_t *data, int data_len, gpointer uw)
@@ -202,7 +214,7 @@ LOCAL int scheme_s3_read(uint8_t *data, int data_len, gpointer uw)
 /******************************************************************************/
 LOCAL void scheme_s3_request(void *server, const ArkimeCredentials_t *creds, const char *path, const char *bucket, S3Request *req, gboolean pathStyle, ArkimeHttpRead_cb cb)
 {
-    char           objectkey[1000];
+    char           objectkey[1600];
 
     if (pathStyle)
         snprintf(objectkey, sizeof(objectkey), "/%s%s", bucket, path);
@@ -241,11 +253,11 @@ LOCAL void *scheme_s3_make_server(const ArkimeCredentials_t *creds, const char *
     int isNew;
     void *server = arkime_http_get_or_create_server(schemehostport, schemehostport, 2, 2, TRUE, &isNew);
     if (isNew) {
-        char userpwd[100];
+        char userpwd[256];
         snprintf(userpwd, sizeof(userpwd), "%s:%s", creds->id, creds->key);
         arkime_http_set_userpwd(server, userpwd);
 
-        char aws_sigv4[100];
+        char aws_sigv4[256];
         snprintf(aws_sigv4, sizeof(aws_sigv4), "aws:amz:%s:s3", region);
         arkime_http_set_aws_sigv4(server, aws_sigv4);
 
@@ -257,6 +269,12 @@ LOCAL void *scheme_s3_make_server(const ArkimeCredentials_t *creds, const char *
 LOCAL int scheme_s3_load_dir(const char *dir, ArkimeSchemeFlags flags, ArkimeSchemeAction_t *actions)
 {
     char **uris = g_strsplit(dir, "/", 4);
+
+    if (!uris[0] || !uris[1] || !uris[2] || !uris[2][0]) {
+        LOG("ERROR - Invalid S3 dir uri %s", dir);
+        g_strfreev(uris);
+        return 1;
+    }
 
     char uri[2000];
     if (uris[3]) {
@@ -310,23 +328,28 @@ LOCAL int scheme_s3_load_dir(const char *dir, ArkimeSchemeFlags flags, ArkimeSch
 
     while (!s3Items->done || DLL_COUNT(item_, s3Items) > 0) {
         if (req.continuation) {
-            char uri2[3000];
+            char *uri2;
 
             if (uris[3]) {
-                snprintf(uri2, sizeof(uri2), "s3://%s/?continuation-token=%s&list-type=2&prefix=%s", uris[2], req.continuation, uris[3]);
+                uri2 = g_strdup_printf("s3://%s/?continuation-token=%s&list-type=2&prefix=%s", uris[2], req.continuation, uris[3]);
             } else {
-                snprintf(uri2, sizeof(uri2), "s3://%s/?continuation-token=%s&list-type=2", uris[2], req.continuation);
+                uri2 = g_strdup_printf("s3://%s/?continuation-token=%s&list-type=2", uris[2], req.continuation);
             }
 
             g_free(req.continuation);
             req.continuation = NULL;
 
             scheme_s3_request(server, creds, uri2 + 5 + strlen(uris[2]), uris[2], &req, s3PathAccessStyle, NULL);
+            g_free(uri2);
             ARKIME_LOCK(waitingdir);
         }
         ARKIME_LOCK(s3Items->lock);
-        while (DLL_COUNT(item_, s3Items) == 0) {
+        while (DLL_COUNT(item_, s3Items) == 0 && !s3Items->done) {
             ARKIME_COND_WAIT(s3Items->lock);
+        }
+        if (DLL_COUNT(item_, s3Items) == 0) {
+            ARKIME_UNLOCK(s3Items->lock);
+            break;
         }
         S3Item *item;
         DLL_POP_HEAD(item_, s3Items, item);
@@ -368,6 +391,17 @@ LOCAL int scheme_s3_load_full_dir(const char *dir, ArkimeSchemeFlags flags, Arki
     }
 
     char **paths = g_strsplit(path, "/", 3);  // Split into at most 3: empty, bucket, prefix
+
+    if (!paths[0] || !paths[1] || paths[1][0] == 0) {
+        LOG("ERROR - S3 directory URL missing bucket: %s", dir);
+        g_strfreev(paths);
+        curl_free(scheme);
+        curl_free(host);
+        curl_free(port);
+        curl_free(path);
+        curl_url_cleanup(h);
+        return 1;
+    }
 
     char schemehostport[300];
     if (port)
@@ -426,23 +460,28 @@ LOCAL int scheme_s3_load_full_dir(const char *dir, ArkimeSchemeFlags flags, Arki
 
     while (!s3Items->done || DLL_COUNT(item_, s3Items) > 0) {
         if (req.continuation) {
-            char uri2[3000];
+            char *uri2;
 
             if (paths[2] && paths[2][0] != 0) {
-                snprintf(uri2, sizeof(uri2), "%s/?continuation-token=%s&list-type=2&prefix=%s", shpb, req.continuation, paths[2]);
+                uri2 = g_strdup_printf("%s/?continuation-token=%s&list-type=2&prefix=%s", shpb, req.continuation, paths[2]);
             } else {
-                snprintf(uri2, sizeof(uri2), "%s/?continuation-token=%s&list-type=2", shpb, req.continuation);
+                uri2 = g_strdup_printf("%s/?continuation-token=%s&list-type=2", shpb, req.continuation);
             }
 
             g_free(req.continuation);
             req.continuation = NULL;
 
             scheme_s3_request(server, creds, uri2 + strlen(shpb), paths[1], &req, TRUE, NULL);
+            g_free(uri2);
             ARKIME_LOCK(waitingdir);
         }
         ARKIME_LOCK(s3Items->lock);
-        while (DLL_COUNT(item_, s3Items) == 0) {
+        while (DLL_COUNT(item_, s3Items) == 0 && !s3Items->done) {
             ARKIME_COND_WAIT(s3Items->lock);
+        }
+        if (DLL_COUNT(item_, s3Items) == 0) {
+            ARKIME_UNLOCK(s3Items->lock);
+            break;
         }
         S3Item *item;
         DLL_POP_HEAD(item_, s3Items, item);
@@ -581,6 +620,17 @@ LOCAL int scheme_s3_load_full(const char *uri, ArkimeSchemeFlags flags, ArkimeSc
     }
 
     char **paths = g_strsplit(path, "/", 0);
+
+    if (!paths[0] || !paths[1] || paths[1][0] == 0) {
+        LOG("ERROR - S3 file URL missing bucket: %s", uri);
+        g_strfreev(paths);
+        curl_free(scheme);
+        curl_free(host);
+        curl_free(port);
+        curl_free(path);
+        curl_url_cleanup(h);
+        return 1;
+    }
 
     char schemehostport[300];
     if (port)

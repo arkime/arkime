@@ -1,7 +1,7 @@
 NOTICE: Please see https://arkime.com/faq#upgrading-arkime for upgrading info
 
 OpenSearch Versions:
-  * Arkime >= 5.7.0  supports 1.x, 2.x or 3.x
+  * Arkime >= 5.7.0  supports 1.x, 2.x (2.19.0 broken) or 3.x
   * Arkime >= 3.0.0  supports 1.x or 2.x
 
 Elasticsearch Versions:
@@ -35,10 +35,187 @@ NOTICE: Restart wiseService before capture when upgrading
 NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at once after upgrading
 NOTICE: Create a parliament config file before upgrading (see https://arkime.com/settings#parliament and https://arkime.com/faq#how_do_i_upgrade_to_arkime_5)
 
-6.1.0 2026/04/xx
+6.4.1 2026/06/xx
+## Breaking
+  - #4005 userAuthIps is now correctly matched against the real connecting peer address.
+          Deployments behind a proxy must ensure the proxy's own address is
+          covered by userAuthIps when authTrustProxy is used.
+## Release
+  - #4004 Fix Ubuntu 26.04 builds having the incorrect dependencies
+## Capture
+  - #3996 Added mssing ntlm.detail.jade for NTLM session detail rendering
+  - #3996 Added opcua parser (OPC UA Binary) with opcua.endpointUrl, opcua.securityPolicyUri and SenderCertificate parsing
+  - #3997 Added IPFIX and sFlow v5 classifiers for flow telemetry visibility
+  - #3997 Added DCERPC interface labels for AD CS (MS-WCCE/ICPR), PrintNightmare (MS-RPRN/MS-PAR), DfsCoerce, ShadowCoerce, WMI, BackupKey (BKRP), EventLog6, DFS-R (FRS2), and IObjectExporter
+  - #3998 Identify AD CS web enrollment over HTTP (ESC8) as protocols adcs-web/adcs-ndes/adcs-cep/adcs-ces based on URL path
+  - #3998 Identify RPC-over-HTTP (Outlook Anywhere / RPC Proxy) as protocol rpc-over-http via RPC_IN_DATA/RPC_OUT_DATA verb classifiers
+  - #3998 Identify WinRM / WS-Management (PowerShell Remoting, evil-winrm, WEF) as protocol winrm via POST /wsman
+  - #3999 Add DCERPC labels (even, mapi, iwbemlevel1login, msrp, dnsserver) and fix IRemUnknown/IRemUnknown2/ISystemActivator/ioxidresolver mislabels
+  - #4008 Extract arp.ip / arp.mac / arp.oui / arp.opcode from ARP packets
+  - #4010 Fix crash on startup when rootPlugins is set
+  - #4013 Add entropy plugin to calculate the Shannon entropy of the TCP/UDP data bytes per direction, with entropyChunkSize and entropyMaxUniqueValues options
+  - #4019 Fix TCP flow split into two sessions when a reordered original SYN (arriving after FIN/RST, e.g. across multiple capture interfaces/reader threads) was mistaken for a port reuse
+  - #4021 Fix hunts and PCAP retrieval stalling with the writer-s3 plugin when a session's file is missing
+## Cont3xt
+  - #3999 Fix logoutUrl when logoutUrlMethod=GET
+## Viewer
+  - #3994 Fix SPIView all not allowed error message
+  - #4007 Add sanitized {ORIGINALNAME} uploadCommand variable as a safe alternative to {INSECURE-ORIGINALNAME}
+  - #4018 Added support for preauth and postauth endpoint registration to plugins
+## Wise
+  - #3999 Mark phpipam appCode/password and fieldactions/valueactions url fields as secret so they are redacted in /config/get
+  - #3999 Add /api/user endpoint and hide save/import/create-source UI controls from non-wiseAdmin users
+
+6.4.0 2026/05/20
+## Breaking
+  - #3967 All header* auth modes (header, header-jwt, headerOnly, header+digest, header+basic) now
+          default userAuthIps to localhost-only when not explicitly configured
+  - #3982 docker.sh: TLS verification is now enforced by default for Elasticsearch/OpenSearch
+          connections, use `--insecure` to skip verification
+  - #3983 multies now defaults `multiESHost` to `127.0.0.1` instead of binding to all interfaces.
+## Release
+  - #3941 Move to using curl instead of wget everywhere and now depend on curl package
+  - #3975 Node 22.22.3
+## All
+  - #3951 Fix UTF-8 mojibake in user names auto-created via header auth (e.g. behind Caddy/oauth2-proxy)
+## Capture
+  - #3954 Add trimEthernetPadding option to strip Ethernet padding/FCS so saved pcap and byte counts match the on-wire IP length
+  - #3957 Even when not writing packets still save new sessions midway
+  - #3958 Add stateDir config option (default /tmp) for capture state files (drophash, stoppedsessions)
+  - #3958 State files now opened with O_NOFOLLOW to prevent symlink attacks
+  - #3958 PCAP files now opened with O_NOFOLLOW to prevent symlink attacks
+  - #3962 Improved websocket parser; adds websocket.* fields and websocketTextSampleCnt config option
+  - #3963 Improved mDNS parsing: handle aggregated queries, unsolicited responses, and flags
+  - DNS TXT records now capture multiple items
+  - #3965 Add diameter.resultCode field (AVP 268) for 4G/5G core auth/error tracking
+  - #3965 Add dnp3.funcName and s7comm.funcName decoded ICS function-code names
+  - #3965 Add mqtt.connackCode for CONNACK return/reason codes
+  - #3965 Add snmp.engineId and snmp.secLevel SNMPv3 fields
+  - #3966 Add enip parser
+  - #3969 Include up to 12 bytes of UDP payload in the packet dedup hash so RTP and
+          other UDP traffic with identical headers is no longer over-deduplicated
+  - #3970 Added full OpenVPN classifier/parser
+  - #3972 Improved STUN/TURN parser: extract XOR-PEER-ADDRESS, more methods, and stun.attributes field
+  - #3973 Improved OSPF parser: per-(src,dst) sessions and ospf.msgType/routerId/areaId fields, tag weak auth
+  - #3977 Improved RADIUS parser: extract radius.msgType, radius.nasIp, and radius.nasPort
+  - #3978 New FTP parser: detect multi-line 220- banners and add ftp.banner, ftp.command,
+          ftp.filename, ftp.responseCode fields; tag ftp:password when PASS is seen
+  - #3985 Add shared NTLMSSP decoder with ntlm.* fields, wired into SMB, HTTP, LDAP, DCE-RPC, SMTP, IMAP, POP3, and TDS parsers
+  - #3985 Add new POP3 parser that captures USER name and NTLM auth blobs
+  - #3988 Fix command-socket `--notify` without `--flush` crashing capture
+  - #3988 Fix crash when using rules with bpfs and different DLTs without using `--flush`
+## Multies
+  - #3983 Support optional HTTP Basic auth via the new `multiESBasicAuth` setting
+## WISE
+  - #3968 Improve JSON Array Parsing: shortcut paths now expand arrays at any
+          intermediate position, not just the final value
+
+6.3.1 2026/05/04
+## Capture
+  - #3940 Fix ISAKMP parser on UDP/4500 (NAT-T) misparsed ESP packets without the non-ESP marker
+## Viewer
+  - #3942 Fix hiding packets when we shouldn't
+
+6.3.0 2026/05/04
+## BREAKING
+  - #3911 ArkimeParserBuf_t.buf is now a heap-allocated pointer (uint8_t *buf[2]).
+          You must use pb->bufSize[which] instead of sizeof(pb->buf[which])
+## All
+  - #3920 Log more information on role failures
+## Capture
+  - #3910 Corrupt UDP packets could have invalid byte counts
+  - #3910 TCP DNS packets might not be parsed correctly depending on segmentation
+  - #3911, #3913 TCP sequence wrapping tests and improvements
+  - #3912 Fix IKEv2 encryption/hash parsing
+  - #3913 Fix WISE plugin skipping fields after array-typed fields
+  - #3913 Fix S3 listing deadlock when bucket/prefix is empty
+  - #3914 Fix ASN.1 OID decoding of first arc per X.690
+  - #3916 Improved NTP and IS-IS parsing
+  - #3917 Improved LUA ip handling
+  - #3917 Add DHCPv6 relay parsing
+  - #3917 Improved SMB parsing of share/filename
+  - #3917 Improved SNMP GetBulkRequest parsing
+  - #3917 Extract VNI from GENEVE tunnels
+  - #3918 scheme http no longer requires a port (defaults to 80/443)
+  - #3918 fix SNMP sessions showing up as LDAP too
+  - #3919 Remove ftp protocol if we are sure smtp
+  - #3923 Packets with more than 8 VLANs marked as corrupt
+  - #3923 UDP packets enforce length correctly
+  - #3924, #3930 Remove trailing slash from wiseURL
+  - #3927 Cap IMAP/SMTP/HTTP Header buffer lengths
+  - #3932 Skip byte-based UDP classifiers on UDP/53 to avoid DNS false-matches
+  - #3933 Reassemble TLS ClientHello across multiple QUIC Initial packets
+  - #3935 Validate QUIC packet lengths
+## Cont3xt
+  - #3928 Threatstream: ignore per-user host override unless user/key also per-user
+  - #3928 csvjson: add 60s timeout and 1GB content/body limits on remote feed loads
+## Viewer
+  - #3898 show error msg in spiview when All selected but not allowed
+  - #3906 add copy button to History Elasticsearch Query section
+  - #3908 fix download entire pcap missing filename
+  - #3921 Fix Cap Restart graph markers, Session Detail labels slider
+          width, Field Actions dropdown, Stats Shrink Index,
+          and shortcut ($) autocomplete in search expression
+  - #3928 Cap /api/sessions/summary length parameter at 1000
+  - #3931 Remove last manualQuery option which wasn't implemented
+  - #3934 Fix not handling sessions correctly with no PCAP
+
+6.2.0 2026/04/20
+## BREAKING
+  - #3874 The user-auto-create and user-role-mappings sections now limit what 
+          loop and exception Javascript can be used for security.
+  - #3881 Command sockets now chmod(0660) and removes Other access.
+## Release
+  - #3864 CyberChef 10.23.0
+  - #3870 docker.sh supports generic --db with help examples
+## All
+  - #3831 New TOTP support for wise config instead of code - requires db.pl upgrade
+  - #3865 Add syslog notifier
+  - #3866 Add snmp notifier
+  - #3888 Can now use - for password with addUser.js to get prompted
+## Capture
+  - #3871 Packets with more than 10 ip/ethernet headers are now marked as corrupt
+  - #3896 Improve MQTT parsing and tests
+## Capture/Viewer
+  - #3833 New simpleDEKEncoding setting which controls how the DEK is encrypted
+  - #3857 Fix scheme pcapNG not handling large files (thanks @wegman12)
+## db.pl
+  - #3860 Add --compression option
+## Viewer
+  - #3842 Add internationalized aria-labels
+  - #3863 Add per-cluster serverSecret in S2S auth for multicluster pcap retrieval
+  - #3878 Add JWT decoding support for header auth mode
+  - #3877 Add ESIndices codec column
+  - #3891 Improve tcp reassembly display when packets are retransmitted
+
+6.1.1 2026/04/06
+## BREAKING
+  - #3812 The user-auto-create and user-role-mappings sections now limit what Javascript 
+          can be used for security.
+## Release
+  - #3834 Node 22.22.2
+## All
+  - #3812 Validate javascript expression in user-auto-create and user-role-mappings
+  - #3835 Fix reverse proxy being unhappy with no params after a ? in urls
+## Capture
+  - #3813 Add ECE, CWR, and AE TCP flag support
+  - #3818 Improve scheduling http requests with libcurl (thanks @swannman)
+  - #3829 Add ADB (Android Debug Bridge) parser (thanks @h0wdee)
+  - #3836 Fix bacnet false positives on dns ports
+  - #3843 Improve JSON encoding of UTF8 strings
+  - #3841 command socket add-file/dir now supports notify on complete
+          (--notify) and new file-status command (thanks @wegman12)
+  - #3847 Fix crash when parsing malformed packets
+  - #3855 Fix --copy not working in command socket mode (thanks @wegman12)
+## Multies
+  - #3830 Show cluster when using multies
+## Viewer
+  - #3826 Handle ip frag pcap display better
+
+6.1.0 2026/03/18
 ## BREAKING
   - #3782 Previous redis user databases will be ignored
-  - #3786 Dedup packets including VLAN/VNI by default, set dedupVlanVni=false to disable
+  - #3786 Dedup packets now include VLAN/VNI by default, set dedupVlanVni=false to disable
   - #3792 The setting uploadFileSizeLimit now defaults to 2G instead of unlimited
   - #3792 Link group urls in cont3xt must start with http(s):// now
   - #3794 Previously the bpf filter setting was reversed for scheme, pcapoverip, and tzsp readers
@@ -55,15 +232,17 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #3794 Fixed bpf filter setting reversed for scheme, pcapoverip, and tzsp readers
   - #3803 Fix tcap parsing loop
 ## ES Proxy
-  - #3789 Add AWS SigV4 signing support for managed OpenSearch
+  - #3789 Add AWS SigV4 signing support for managed OpenSearch (thanks @Kurlee)
 ## Parliament
   - #3788 Fix abort when parliament file not set
 ## Viewer
   - #3781 Most server errors are now localized
   - #3785 views/shareables/shortcuts can now live in sqlite instead of ES
   - #3796 Fix value-actions not working (thanks @waynieack)
+  - #3807 Only show "Only Data Nodes" on EsNodes Stats tab
 ## WISE
   - #3801 Add phpIPAM WISE source (thanks @waynieack)
+  - #3806 Add Cisco ISE pxGrid WISE source (thanks @waynieack)
 
 6.0.1 2026/03/09
 ## All
@@ -562,7 +741,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #2835 fix crash with bgp parsing and shifting time
   - #2835 create pcap files with at least config snapLen
   - #2835 fix files with no processed packets hanging capture
-  - #2856 suppport AWS SQS for notifications to process new S3 files
+  - #2856 support AWS SQS for notifications to process new S3 files
   - #2856 fix scheme pcap processor with corrupt pcap files
   - #2859 log error if maxStreams is too low
 ## Cont3xt
@@ -697,7 +876,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #2312 removed old v1 viewer APIs
   - #2349 parliament password removed, must configure common auth via the UI before upgrading or manually in the config file see [parliament](https://arkime.com/settings#parliament) and [how do I upgrade to 5](https://arkime.com/faq#how_do_i_upgrade_to_arkime_5)
   - #2402 WISE/tagger must now use http.request.FIELD/http.response.FIELD when referencing header defined with headers-http-request/headers-http-response
-  - #2450 Centos 7 build no longers includes pfring support
+  - #2450 Centos 7 build no longer includes pfring support
   - #2453 Increase simpleCompressionBlockSize default to 64000
 ## Release
   - #2448 zstd 1.5.5, nghttp2 1.57.0, maxmind 1.7.1, yara 4.2.3
@@ -962,7 +1141,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
 4.0.3 2022/11/28
   - release - cyberchef 9.54.0
   - release - copy systemd files instead of soft linking
-  - releaes - capture/viewer systemd files now After OpenSearch/Elasticsearch
+  - release - capture/viewer systemd files now After OpenSearch/Elasticsearch
   - capture - on short runs, field definitions weren't getting updated
   - capture - s3 writer sets s3Compress to false with s3WriteGzip true
   - capture - JA3s value was sometimes incorrect
@@ -1036,7 +1215,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - viewer - share notifiers with specific users or roles (all previous notifiers will be shared with the "arkimeUser" role)
   - viewer - share queries with specific users or roles
   - viewer - share hunts with roles
-  - viewer - rework some settings UI, try and make UX similiar when adding things
+  - viewer - rework some settings UI, try and make UX similar when adding things
   - viewer - no more _moloch_shared user
   - viewer - configure auto-hiding map/graph on large queries using turnOffGraphDays (default = 30 days)
   - wise - fix some stats sorting
@@ -1109,7 +1288,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - capture - support pcap flies with 0 timestamp
   - capture - use .arkime file extension for non standard pcap files
   - capture - new _dropBySession rule op
-  - capture - fix infite recursion - thanks albntomat0_1
+  - capture - fix infinite recursion - thanks albntomat0_1
   - capture - improve udp/tcp header length checking
   - capture - improve error messages for field setting issues
   - capture - cache when getting pcap data from S3 (thanks pjsg)
@@ -1177,7 +1356,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - release - much improved arkime_config_interfaces.sh (thanks arkaØm)
   - release - node 14.18.0
   - viewer - stop upload menu showing up when empty command
-  - viewer - improve first load time by spliting bundle and lazy load items
+  - viewer - improve first load time by splitting bundle and lazy load items
   - viewer - combine multiple calls from UI into one call
   - viewer - added pcap expire debugging
   - viewer - uploadCommand can now use INSECURE-ORIGINALNAME to access uploaded filename
@@ -1863,7 +2042,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
              this means delay is shorter, although when upgrading to 1.0 some sessions will be not looked at.
 
 1.0.0-beta1 2018/02/20
-  - capture - calculate sha256 too (set supportSha256 tru)
+  - capture - calculate sha256 too (set supportSha256 true)
   - wise - support sha256 lookups
   - capture - fix disable fields
   - capture - src/dst ip/port can be used to trigger rules now
@@ -2392,10 +2571,10 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - viewer - Reuse Uncompress and Files settings between sessions
   - viewer - Anonymous users still have a singled saved settings
   - viewer - Switch actions/views menu to jquery-ContextMenu which looks more like a menu
-  - capture - Handle ASCII formated SMB strings
+  - capture - Handle ASCII formatted SMB strings
   - capture - payload8 wasn't always all 8 bytes
   - viewer - Initial configuration of displayed columns (issue #257)
-  - capture - reenabled ftp/lmtp classify
+  - capture - re-enabled ftp/lmtp classify
   - capture - vnc classify (issue #382)
   - capture - fixed tcp_flags for netflow (pr #386)
   - viewer - spiview shows protocols per category (issue #385)
@@ -2793,7 +2972,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - libnids was overreporting traffic, switch to libpcap stats,
     bytes/sec and total bytes/sec in stats will be lower
   - Fixed recent jade warnings
-  - Fixed openned export
+  - Fixed opened export
   - minor ui improvements
 
 0.8.5 2013/06/14

@@ -38,6 +38,7 @@ SPDX-License-Identifier: Apache-2.0
           <button
             type="button"
             id="expandViewExpressionBtn"
+            :aria-label="$t('sessions.views.expandExpressionTip')"
             class="btn btn-outline-secondary btn-clear-input"
             @click="showBigExpression = !showBigExpression">
             <span
@@ -115,6 +116,7 @@ SPDX-License-Identifier: Apache-2.0
         <button
           id="cancelModifyView"
           type="button"
+          :aria-label="$t('common.cancel')"
           @click="$emit('done', null, false, false)"
           class="btn btn-sm btn-warning">
           <span class="fa fa-ban" />

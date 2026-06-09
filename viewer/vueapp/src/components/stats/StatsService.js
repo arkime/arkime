@@ -54,7 +54,7 @@ export default {
 
     try {
       const response = await fetchWrapper({ url: 'api/stats' });
-      for (const data of response.data.data) {
+      for (const data of response.data) {
         fetchedCapStartTimes.push({
           nodeName: data.nodeName,
           startTime: data.startTime * 1000

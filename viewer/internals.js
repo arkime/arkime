@@ -18,7 +18,7 @@ const ArkimeConfig = require('../common/arkimeConfig');
 const internals = {
   isProduction: false,
   multiES: false,
-  CYBERCHEFVERSION: '10.19.2',
+  CYBERCHEFVERSION: '10.23.0',
   httpAgent: new http.Agent({ keepAlive: true, keepAliveMsecs: 20000, maxSockets: 50, maxFreeSockets: 25 }),
   rightClicks: {},
   fieldActions: {},

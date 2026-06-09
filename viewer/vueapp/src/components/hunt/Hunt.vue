@@ -404,6 +404,7 @@ SPDX-License-Identifier: Apache-2.0
                   @click="removeJob(runningJob, 'results')"
                   :disabled="runningJob.disabled"
                   type="button"
+                  :aria-label="$t('hunts.removeHuntTip')"
                   class="ms-1 pull-right btn btn-sm btn-danger">
                   <span
                     v-if="!runningJob.loading"
@@ -421,6 +422,7 @@ SPDX-License-Identifier: Apache-2.0
                     @click="openSessions(runningJob)"
                     v-if="runningJob.matchedSessions"
                     :id="`openresults${runningJob.id}`"
+                    :aria-label="$t('common.open')"
                     class="ms-1 pull-right btn btn-sm btn-theme-primary">
                     <span class="fa fa-folder-open fa-fw" />
                     <BTooltip :target="`openresults${runningJob.id}`">
@@ -434,6 +436,7 @@ SPDX-License-Identifier: Apache-2.0
                   @click="cancelJob(runningJob)"
                   :disabled="runningJob.disabled"
                   type="button"
+                  :aria-label="$t('hunts.cancelTip')"
                   class="ms-1 pull-right btn btn-sm btn-danger">
                   <span
                     v-if="!runningJob.loading"
@@ -451,6 +454,7 @@ SPDX-License-Identifier: Apache-2.0
                   @click="pauseJob(runningJob)"
                   :disabled="runningJob.loading"
                   type="button"
+                  :aria-label="$t('hunts.pauseTip')"
                   class="pull-right btn btn-sm btn-warning">
                   <span
                     v-if="!runningJob.loading"

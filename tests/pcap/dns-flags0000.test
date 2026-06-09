@@ -1,133 +1,133 @@
 {
-   "sessions3" : [
-      {
-         "body" : {
-            "@timestamp" : "SET",
-            "client" : {
-               "bytes" : 40
-            },
-            "destination" : {
-               "as" : {
-                  "full" : "AS0 This is neat",
-                  "number" : 0,
-                  "organization" : {
-                     "name" : "This is neat"
-                  }
-               },
-               "bytes" : 82,
-               "geo" : {
-                  "country_iso_code" : "RU"
-               },
-               "ip" : "10.0.0.1",
-               "mac" : [
-                  "00:10:db:ff:26:00"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 1,
-               "port" : 53
-            },
-            "dns" : [
-               {
-                  "answersCnt" : 0,
-                  "host" : [
-                     "flashservice.adobe.com"
-                  ],
-                  "hostCnt" : 1,
-                  "opcode" : "QUERY",
-                  "qc" : "IN",
-                  "qt" : "A",
-                  "queryHost" : "flashservice.adobe.com",
-                  "status" : "REFUSED"
-               }
-            ],
-            "dnsCnt" : 1,
-            "dstOui" : [
-               "Juniper Networks"
-            ],
-            "dstOuiCnt" : 1,
-            "dstPayload8" : "b2b5800500010000",
-            "dstTTL" : [
-               53
-            ],
-            "dstTTLCnt" : 1,
-            "ethertype" : 2048,
-            "fileId" : [],
-            "firstPacket" : 1393422583830,
-            "ipProtocol" : 17,
-            "lastPacket" : 1393422583932,
-            "length" : 102,
-            "network" : {
-               "bytes" : 164,
-               "community_id" : "1:QZSIg2XdG+L9Rsqn3tY6/MCUQBM=",
-               "packets" : 2
-            },
-            "node" : "test",
-            "packetLen" : [
-               98,
-               98
-            ],
-            "packetPos" : [
-               24,
-               122
-            ],
-            "packetRange" : {
-               "gte" : 1393422583830,
-               "lte" : 1393422583932
-            },
-            "protocol" : [
-               "dns",
-               "udp"
-            ],
-            "protocolCnt" : 2,
-            "segmentCnt" : 1,
-            "server" : {
-               "bytes" : 40
-            },
-            "source" : {
-               "as" : {
-                  "full" : "AS1 Cool Beans!",
-                  "number" : 1,
-                  "organization" : {
-                     "name" : "Cool Beans!"
-                  }
-               },
-               "bytes" : 82,
-               "geo" : {
-                  "country_iso_code" : "CA"
-               },
-               "ip" : "10.0.0.2",
-               "mac" : [
-                  "00:00:5e:00:01:03",
-                  "88:e0:f3:f1:91:f2"
-               ],
-               "mac-cnt" : 2,
-               "packets" : 1,
-               "port" : 61912
-            },
-            "srcOui" : [
-               "ICANN, IANA Department",
-               "Juniper Networks"
-            ],
-            "srcOuiCnt" : 2,
-            "srcPayload8" : "b2b5000000010000",
-            "srcRIR" : "TEST",
-            "srcTTL" : [
-               126
-            ],
-            "srcTTLCnt" : 1,
-            "tags" : [
-               "dstip",
-               "srcip"
-            ],
-            "tagsCnt" : 2,
-            "totDataBytes" : 80
-         },
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions3-140226"
-            }
-         }
+ "sessions3" : [
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 40
+    },
+    "destination" : {
+     "as" : {
+      "full" : "AS0 This is neat",
+      "number" : 0,
+      "organization" : {
+       "name" : "This is neat"
       }
-   ]
+     },
+     "bytes" : 82,
+     "geo" : {
+      "country_iso_code" : "RU"
+     },
+     "ip" : "10.0.0.1",
+     "mac" : [
+      "00:10:db:ff:26:00"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 1,
+     "port" : 53
+    },
+    "dns" : [
+     {
+      "answersCnt" : 0,
+      "host" : [
+       "flashservice.adobe.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "flashservice.adobe.com",
+      "status" : "REFUSED"
+     }
+    ],
+    "dnsCnt" : 1,
+    "dstOui" : [
+     "Juniper Networks"
+    ],
+    "dstOuiCnt" : 1,
+    "dstPayload8" : "b2b5800500010000",
+    "dstTTL" : [
+     53
+    ],
+    "dstTTLCnt" : 1,
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 1393422583830,
+    "ipProtocol" : 17,
+    "lastPacket" : 1393422583932,
+    "length" : 102,
+    "network" : {
+     "bytes" : 164,
+     "community_id" : "1:QZSIg2XdG+L9Rsqn3tY6/MCUQBM=",
+     "packets" : 2
+    },
+    "node" : "test",
+    "packetLen" : [
+     98,
+     98
+    ],
+    "packetPos" : [
+     24,
+     122
+    ],
+    "packetRange" : {
+     "gte" : 1393422583830,
+     "lte" : 1393422583932
+    },
+    "protocol" : [
+     "dns",
+     "udp"
+    ],
+    "protocolCnt" : 2,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 40
+    },
+    "source" : {
+     "as" : {
+      "full" : "AS1 Cool Beans!",
+      "number" : 1,
+      "organization" : {
+       "name" : "Cool Beans!"
+      }
+     },
+     "bytes" : 82,
+     "geo" : {
+      "country_iso_code" : "CA"
+     },
+     "ip" : "10.0.0.2",
+     "mac" : [
+      "00:00:5e:00:01:03",
+      "88:e0:f3:f1:91:f2"
+     ],
+     "mac-cnt" : 2,
+     "packets" : 1,
+     "port" : 61912
+    },
+    "srcOui" : [
+     "ICANN, IANA Department",
+     "Juniper Networks"
+    ],
+    "srcOuiCnt" : 2,
+    "srcPayload8" : "b2b5000000010000",
+    "srcRIR" : "TEST",
+    "srcTTL" : [
+     126
+    ],
+    "srcTTLCnt" : 1,
+    "tags" : [
+     "dstip",
+     "srcip"
+    ],
+    "tagsCnt" : 2,
+    "totDataBytes" : 80
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-14m02"
+    }
+   }
+  }
+ ]
 }
 

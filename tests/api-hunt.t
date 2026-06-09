@@ -1,4 +1,4 @@
-use Test::More tests => 340;
+use Test::More tests => 349;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -22,6 +22,11 @@ viewerGet("/regressionTests/deleteAllUsers");
   my $hunts = viewerGet("/api/hunts?all");
   delete $hunts->{nodeInfo};
   eq_or_diff($hunts, from_json('{"recordsTotal": 0, "data": [], "recordsFiltered": 0}'));
+
+# isPP sortField should be rejected
+  $json = viewerGet("/api/hunts?sortField=constructor");
+  is ($json->{success}, 0, "isPP sortField rejected");
+  is ($json->{text}, "Invalid value for sortField", "isPP sortField error text");
 
 # Create sac-huntuser
   $json = viewerPostToken("/api/user", '{"userId": "sac-huntuser", "userName": "UserName", "enabled":true, "password":"password", "packetSearch":true, "roles": ["arkimeUser"]}', $token);
@@ -110,6 +115,16 @@ my $hToken = getTokenCookie('sac-huntuser');
   $json = viewerPostToken("/api/hunt?arkimeRegressionUser=anonymous", '{"totalSessions":1,"name":"test hunt 18","size":"50","search":"test search text","searchType":"ascii","type":"raw","src":true,"dst":true,"query":{"startTime":18000,"stopTime":1536872891}, "users": [false]}', $token);
   is($json->{success}, 0, "users array not string");
   is($json->{i18n}, "api.hunts.usersMustBeString", "users array not string i18n");
+
+# Bad description (object)
+  $json = viewerPostToken("/api/hunt?arkimeRegressionUser=anonymous", '{"totalSessions":1,"name":"test hunt desc1","size":"50","search":"test search text","searchType":"ascii","type":"raw","src":true,"dst":true,"query":{"startTime":18000,"stopTime":1536872891},"description":{"evil":"object"}}', $token);
+  is($json->{success}, 0, "create hunt with object description fails");
+  is($json->{text}, "Description must be a string", "create hunt object description error message");
+
+# Bad description (array)
+  $json = viewerPostToken("/api/hunt?arkimeRegressionUser=anonymous", '{"totalSessions":1,"name":"test hunt desc2","size":"50","search":"test search text","searchType":"ascii","type":"raw","src":true,"dst":true,"query":{"startTime":18000,"stopTime":1536872891},"description":["arr"]}', $token);
+  is($json->{success}, 0, "create hunt with array description fails");
+  is($json->{text}, "Description must be a string", "create hunt array description error message");
 
 # Make sure no hunts
   my $hunts = viewerGet("/api/hunts?all");
@@ -320,6 +335,13 @@ my $hToken = getTokenCookie('sac-huntuser');
     is ($item->{searchType}, "", "should be missing searchType field");
     is ($item->{query}, undef, "should be missing query field");
   }
+
+# empty roles array should still hide secrets
+  $json = viewerPutToken("/api/hunt/$id7", '{"roles":[]}', $token);
+  is ($json->{success}, 1, "can set empty roles");
+  $hunts = viewerGetToken("/api/hunts?all&arkimeRegressionUser=user3", $nonadminToken);
+  is ($hunts->{data}->[3]->{id}, "", "empty roles: should hide id");
+  is ($hunts->{data}->[3]->{search}, "", "empty roles: should hide search");
 
 # can update hunt roles
   $json = viewerPutToken("/api/hunt/$id7", '{"roles":["arkimeUser"]}', $token);

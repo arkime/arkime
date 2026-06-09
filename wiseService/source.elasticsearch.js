@@ -77,14 +77,6 @@ class ElasticsearchSource extends WISESource {
     // TODO: Should be option to do search vs get
     // TODO: Should be an option to add more than most recent
 
-    // Convert shortcuts into array of key path
-    const shortcuts = [];
-    const shortcutsValue = [];
-    for (const k in this.shortcuts) {
-      shortcuts.push(k.split('.'));
-      shortcutsValue.push(this.shortcuts[k]);
-    }
-
     this.client.search({ index: this.esIndex, body: query }, (err, { body: result }) => {
       if (err || result.error || !result.hits || result.hits.hits.length === 0) {
         return cb(null, undefined);
@@ -94,26 +86,7 @@ class ElasticsearchSource extends WISESource {
       if (eskey === undefined) {
         return cb(null, undefined);
       }
-      const args = [];
-
-      for (let k = 0; k < shortcuts.length; k++) {
-        let objs = json;
-        // Walk the shortcut path
-        for (let j = 0; objs && j < shortcuts[k].length; j++) {
-          objs = objs[shortcuts[k][j]];
-        }
-
-        if (!objs) continue;
-
-        args.push(shortcutsValue[k].pos);
-        if (Array.isArray(objs)) {
-          args.push(objs[0]);
-        } else if (typeof objs !== 'string') {
-          args.push(objs.toString());
-        } else {
-          args.push(objs);
-        }
-      }
+      const args = this.parseJSONElement(json);
       const newresult = WISESource.combineResults([WISESource.encodeResult.apply(null, args), this.tagsResult]);
       return cb(null, newresult);
     });

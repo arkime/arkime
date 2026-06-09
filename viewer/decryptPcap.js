@@ -22,24 +22,30 @@ async function main () {
     const data = await Db.search('files', query);
     if (data.hits.hits.length === 0) {
       console.error('No matches');
-      process.exit();
+      process.exit(1);
     }
     const info = data.hits.hits[0]._source;
     if (!info.encoding || info.encoding === 'normal') {
       console.error('Not encrypted');
-      process.exit();
+      process.exit(1);
     }
 
     // Get the kek
     const kek = Config.sectionGet('keks', info.kekId, undefined);
     if (kek === undefined) {
       console.error("ERROR - Couldn't find kek", info.kekId, 'in keks section');
-      process.exit();
+      process.exit(1);
     }
 
     // Decrypt the dek
-    const kdecipher = ArkimeUtil.createDecipherAES192NoIV(kek);
-    const encKey = Buffer.concat([kdecipher.update(Buffer.from(info.dek, 'hex')), kdecipher.final()]);
+    let encKey;
+    if (info.dekEncoding === 'aes-256-gcm') {
+      encKey = ArkimeUtil.decryptDEKWithGCM(kek, Buffer.from(info.dek, 'hex'),
+        Buffer.from(info.dekSalt, 'hex'), Buffer.from(info.dekIv, 'hex'), Buffer.from(info.dekTag, 'hex'));
+    } else {
+      const kdecipher = ArkimeUtil.createDecipherAES192NoIV(kek);
+      encKey = Buffer.concat([kdecipher.update(Buffer.from(info.dek, 'hex')), kdecipher.final()]);
+    }
 
     const r = fs.createReadStream(process.argv[2]);
 
@@ -69,16 +75,17 @@ async function main () {
       });
     } else {
       console.log('Unknown encoding', info.encoding);
+      process.exit(1);
     }
   } catch (err) {
     console.error('ES Error', err);
-    process.exit();
+    process.exit(1);
   }
 }
 
 if (process.argv.length < 3) {
   console.log('Missing full path filename');
-  process.exit();
+  process.exit(1);
 }
 
 async function premain () {

@@ -99,7 +99,6 @@ eq_or_diff($txt,
 byip1, 1
 byip2, 1
 cert:certificate-authority, 3
-dns:qdcount-not-1, 1
 domainwise, 7
 dstip, 4
 hosttaggertest1, 7
@@ -110,6 +109,7 @@ ipwise, 3
 ipwise2, 3
 ipwisecsv, 4
 smtp:authlogin, 1
+socks:auth-failed, 1
 socks:password, 2
 srcip, 4
 wisebyhost2, 7

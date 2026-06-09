@@ -34,8 +34,15 @@ LOCAL int mysql_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, 
         return 0;
     }
 
+    // MySQL framing: 3-byte little-endian payload length + 1 byte sequence id
+    int mysqlLen = (uint32_t)data[0] | ((uint32_t)data[1] << 8) | ((uint32_t)data[2] << 16);
+    if (mysqlLen < 32 || 4 + mysqlLen > len) {
+        arkime_parsers_unregister(session, info);
+        return 0;
+    }
+
     const uint8_t *ptr = (uint8_t *)data + 36;
-    const uint8_t *end = (uint8_t *)data + len;
+    const uint8_t *end = (uint8_t *)data + 4 + mysqlLen;
 
     while (ptr < end) {
         if (*ptr == 0)
@@ -108,15 +115,14 @@ void arkime_parser_init()
 
     userField = arkime_field_define("mysql", "lotermfield",
                                     "mysql.user", "User", "mysql.user",
-                                    "Mysql user name",
+                                    "MySQL user name",
                                     ARKIME_FIELD_TYPE_STR,  ARKIME_FIELD_FLAG_LINKED_SESSIONS,
                                     "category", "user",
                                     (char *)NULL);
 
     versionField = arkime_field_define("mysql", "termfield",
                                        "mysql.ver", "Version", "mysql.version",
-                                       "Mysql server version string",
+                                       "MySQL server version string",
                                        ARKIME_FIELD_TYPE_STR,  ARKIME_FIELD_FLAG_LINKED_SESSIONS,
                                        (char *)NULL);
 }
-

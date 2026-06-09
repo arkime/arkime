@@ -7,7 +7,6 @@
  */
 
 #include "arkime.h"
-#include "dll.h"
 
 /******************************************************************************/
 extern ArkimeConfig_t        config;
@@ -203,7 +202,8 @@ void arkime_drophash_init(ArkimeDropHashGroup_t *group, const char *file, int ke
 
     group->file = g_strdup(file);
 
-    if (!g_file_test(file, G_FILE_TEST_EXISTS))
+    FILE *fp = arkime_state_file_open(group->file, "r");
+    if (!fp)
         return;
 
     struct timespec currentTime;
@@ -212,17 +212,11 @@ void arkime_drophash_init(ArkimeDropHashGroup_t *group, const char *file, int ke
     int      cnt;
     int      ver;
     char     fkeyLen;
-    char     key[16];
+    char     key[ARKIME_SESSIONID_LEN];
     uint32_t last;
     uint32_t goodFor;
     uint16_t flags;
     uint16_t port;
-
-    FILE *fp;
-    if (!(fp = fopen(group->file, "r"))) {
-        LOG("ERROR - Couldn't open `%s` to load drophash", group->file);
-        return;
-    }
 
     if (!fread(&ver, 4, 1, fp)) {
         fclose(fp);
@@ -250,6 +244,12 @@ void arkime_drophash_init(ArkimeDropHashGroup_t *group, const char *file, int ke
     if (fkeyLen != keyLen) {
         fclose(fp);
         LOG("ERROR - keyLen mismatch %d != %d", fkeyLen, keyLen);
+        return;
+    }
+
+    if (keyLen > (int)sizeof(key)) {
+        fclose(fp);
+        LOG("ERROR - keyLen %d larger than internal buffer %zu for `%s`", keyLen, sizeof(key), group->file);
         return;
     }
 
@@ -287,8 +287,7 @@ void arkime_drophash_save(ArkimeDropHashGroup_t *group)
     if (!group->file)
         return;
 
-    if (!(fp = fopen(group->file, "w"))) {
-        LOG("ERROR - Couldn't open `%s` to save drophash", group->file);
+    if (!(fp = arkime_state_file_open(group->file, "w"))) {
         return;
     }
     ARKIME_LOCK(group->lock);

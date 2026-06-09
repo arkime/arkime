@@ -13,6 +13,14 @@
 #include <arpa/inet.h>
 #include <errno.h>
 
+// Define TCP ECN flags if not provided by system headers
+#ifndef TH_ECE
+#define TH_ECE 0x40
+#endif
+#ifndef TH_CWR
+#define TH_CWR 0x80
+#endif
+
 
 /******************************************************************************/
 extern ArkimeConfig_t        config;
@@ -32,6 +40,9 @@ LOCAL int tcpflagsPshField;
 LOCAL int tcpflagsRstField;
 LOCAL int tcpflagsFinField;
 LOCAL int tcpflagsUrgField;
+LOCAL int tcpflagsEceField;
+LOCAL int tcpflagsCwrField;
+LOCAL int tcpflagsAeField;
 
 /******************************************************************************/
 LOCAL void tcp_mid_save(ArkimeSession_t *session)
@@ -95,15 +106,23 @@ LOCAL void tcp_packet_finish(ArkimeSession_t *session)
         if (tcpSeq >= ftd->seq) {
 
             /* The sequence number we are looking for is past the end of the packet, free it */
-            if (tcpSeq >= ftd->seq + ftd->len) {
+            if (tcp_sequence_diff(tcpSeq, (uint32_t)(ftd->seq + ftd->len)) <= 0) {
                 DLL_REMOVE(td_, tcpData, ftd);
                 arkime_packet_free(ftd->packet);
                 ARKIME_TYPE_FREE(ArkimeTcpData_t, ftd);
                 continue;
             }
 
+            /* Compute wrap-aware offset within the packet. If it falls outside
+             * [0, ftd->len) the entry is stale across a wrap; skip without
+             * dereferencing past the packet bounds. */
+            const int64_t offsetDiff = tcp_sequence_diff(ftd->seq, tcpSeq);
+            if (offsetDiff < 0 || offsetDiff >= ftd->len) {
+                continue;
+            }
+
             /* This packet has the sequence number we are looking for */
-            const int offset = tcpSeq - ftd->seq;
+            const int offset = (int)offsetDiff;
             const uint8_t *data = ftd->packet->pkt + ftd->dataOffset + offset;
             const int len = ftd->len - offset;
 
@@ -164,6 +183,25 @@ LOCAL int tcp_packet_process(ArkimeSession_t *const session, ArkimePacket_t *con
         ARKIME_RULES_RUN_FIELD_SET(session, tcpflagsUrgField, (gpointer)(long)session->tcpData.tcpFlagCnt[ARKIME_TCPFLAG_URG]);
     }
 
+    if (tcphdr->th_flags & TH_ECE) {
+        session->tcpData.tcpFlagCnt[ARKIME_TCPFLAG_ECE]++;
+        ARKIME_RULES_RUN_FIELD_SET(session, tcpflagsEceField, (gpointer)(long)session->tcpData.tcpFlagCnt[ARKIME_TCPFLAG_ECE]);
+    }
+
+    if (tcphdr->th_flags & TH_CWR) {
+        session->tcpData.tcpFlagCnt[ARKIME_TCPFLAG_CWR]++;
+        ARKIME_RULES_RUN_FIELD_SET(session, tcpflagsCwrField, (gpointer)(long)session->tcpData.tcpFlagCnt[ARKIME_TCPFLAG_CWR]);
+    }
+
+#if defined(__linux__)
+    if (tcphdr->res1 & 0x01) {
+#else
+    if (tcphdr->th_x2 & 0x01) {
+#endif
+        session->tcpData.tcpFlagCnt[ARKIME_TCPFLAG_AE]++;
+        ARKIME_RULES_RUN_FIELD_SET(session, tcpflagsAeField, (gpointer)(long)session->tcpData.tcpFlagCnt[ARKIME_TCPFLAG_AE]);
+    }
+
     // add to the long open
     if (!session->tcp_next) {
         DLL_PUSH_TAIL(tcp_, &arkimeThreadData[session->thread].tcpWriteQ, session);
@@ -180,14 +218,18 @@ LOCAL int tcp_packet_process(ArkimeSession_t *const session, ArkimePacket_t *con
 #endif
                 session->tcpData.tcpSeq[(packet->direction + 1) % 2] = ntohl(tcphdr->th_ack);
                 session->tcpData.synSeq[1] = seq;
+                // Record the client's initial seq (ISN) that this syn-ack acknowledges, so a
+                // reordered/retransmitted original client SYN can be recognized as belonging to
+                // this session instead of being mistaken for a port reuse.
+                session->tcpData.synSeq[0] = ntohl(tcphdr->th_ack) - 1;
             }
         } else {
             session->tcpData.tcpFlagCnt[ARKIME_TCPFLAG_SYN]++;
             ARKIME_RULES_RUN_FIELD_SET(session, tcpflagsSynField, (gpointer)(long)session->tcpData.tcpFlagCnt[ARKIME_TCPFLAG_SYN]);
             if (session->tcpData.synTime == 0) {
                 session->tcpData.synSeq[0] = seq;
-                session->tcpData.synTime = (packet->ts.tv_sec - session->firstPacket.tv_sec) * 1000 +
-                                           (packet->ts.tv_usec - session->firstPacket.tv_usec) / 1000 + 1;
+                session->tcpData.synTime = (uint32_t)((packet->ts.tv_sec - session->firstPacket.tv_sec) * 1000 +
+                                                      (packet->ts.tv_usec - session->firstPacket.tv_usec) / 1000 + 1);
                 session->tcpData.ackTime = 0;
             }
         }
@@ -229,8 +271,8 @@ LOCAL int tcp_packet_process(ArkimeSession_t *const session, ArkimePacket_t *con
         }
         ARKIME_RULES_RUN_FIELD_SET(session, tcpflagsAckField, (gpointer)(long)session->tcpData.tcpFlagCnt[ARKIME_TCPFLAG_ACK]);
         if (session->tcpData.ackTime == 0) {
-            session->tcpData.ackTime = (packet->ts.tv_sec - session->firstPacket.tv_sec) * 1000 +
-                                       (packet->ts.tv_usec - session->firstPacket.tv_usec) / 1000 + 1;
+            session->tcpData.ackTime = (uint32_t)((packet->ts.tv_sec - session->firstPacket.tv_sec) * 1000 +
+                                                  (packet->ts.tv_usec - session->firstPacket.tv_usec) / 1000 + 1);
         }
     }
 
@@ -382,9 +424,13 @@ LOCAL int tcp_pre_process(ArkimeSession_t *session, ArkimePacket_t *const packet
     const struct ip6_hdr      *ip6 = (struct ip6_hdr *)(packet->pkt + packet->ipOffset);
     const struct tcphdr       *tcphdr = (struct tcphdr *)(packet->pkt + packet->payloadOffset);
 
-    // If this is an old session that hash RSTs and we get a syn, probably a port reuse, close old session
+    // If this is an old session that has RSTs/FINs and we get a syn, probably a port reuse, close old session.
+    // But if the syn's seq matches the original client ISN we already know about, this is just the original
+    // SYN arriving reordered (e.g. spread across capture interfaces/reader threads) or a retransmit - keep it
+    // in the same session instead of splitting one flow into two.
     if (!isNewSession && (tcphdr->th_flags & TH_SYN) && ((tcphdr->th_flags & TH_ACK) == 0) &&
-        (session->tcpData.tcpFlagCnt[ARKIME_TCPFLAG_RST] || session->tcpData.tcpFlagCnt[ARKIME_TCPFLAG_FIN])) {
+        (session->tcpData.tcpFlagCnt[ARKIME_TCPFLAG_RST] || session->tcpData.tcpFlagCnt[ARKIME_TCPFLAG_FIN]) &&
+        ntohl(tcphdr->th_seq) != session->tcpData.synSeq[0]) {
         return 1;
     }
 
@@ -461,4 +507,7 @@ void arkime_parser_init()
     tcpflagsRstField = arkime_field_by_exp("tcpflags.rst");
     tcpflagsFinField = arkime_field_by_exp("tcpflags.fin");
     tcpflagsUrgField = arkime_field_by_exp("tcpflags.urg");
+    tcpflagsEceField = arkime_field_by_exp("tcpflags.ece");
+    tcpflagsCwrField = arkime_field_by_exp("tcpflags.cwr");
+    tcpflagsAeField = arkime_field_by_exp("tcpflags.ae");
 }

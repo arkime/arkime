@@ -53,6 +53,7 @@ SPDX-License-Identifier: Apache-2.0
       <button
         type="button"
         id="cancelSendBtn"
+        :aria-label="$t('common.cancel')"
         @click="$emit('done', null, false, false)"
         class="btn btn-sm btn-warning">
         <span class="fa fa-ban" />

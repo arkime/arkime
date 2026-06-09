@@ -460,7 +460,7 @@ async function changeExpression () {
       const response = await FieldService.getShortcuts(url);
       loadingValues.value = false;
       const escapedToken = lastToken.replaceAll('$', '\\$');
-      results.value = findMatch(escapedToken, response.data);
+      results.value = findMatch(escapedToken, response);
     } catch (error) {
       loadingValues.value = false;
       loadingError.value = resolveMessage(error, t);

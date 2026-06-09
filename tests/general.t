@@ -1,4 +1,4 @@
-use Test::More tests => 713;
+use Test::More tests => 723;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -428,6 +428,11 @@ if (0) {
     countTest(2, "date=-1&expression=" . uri_escape("(file=$pwd/socks-http-pass.pcap||file=$pwd/gre-sample.pcap)&&tcpflags.psh==8"));
     countTest(4, "date=-1&expression=" . uri_escape("(file=$pwd/socks-http-pass.pcap||file=$pwd/gre-sample.pcap)&&tcpflags.fin==2"));
     countTest(4, "date=-1&expression=" . uri_escape("(file=$pwd/socks-http-pass.pcap||file=$pwd/gre-sample.pcap)&&tcpflags.rst==0"));
+    countTest(3, "date=-1&expression=" . uri_escape("(file=$pwd/socks-http-pass.pcap||file=$pwd/gre-sample.pcap)&&tcpflags.ece==0"));
+    countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/socks-http-pass.pcap||file=$pwd/gre-sample.pcap)&&tcpflags.ece==2"));
+    countTest(3, "date=-1&expression=" . uri_escape("(file=$pwd/socks-http-pass.pcap||file=$pwd/gre-sample.pcap)&&tcpflags.cwr==0"));
+    countTest(1, "date=-1&expression=" . uri_escape("(file=$pwd/socks-http-pass.pcap||file=$pwd/gre-sample.pcap)&&tcpflags.cwr==1"));
+    countTest(4, "date=-1&expression=" . uri_escape("(file=$pwd/socks-http-pass.pcap||file=$pwd/gre-sample.pcap)&&tcpflags.ae==0"));
 
 # Check startTime parsing
     countTest(3, "startTime=0&stopTime=1387258118&expression=" . uri_escape("file=$pwd/bt-udp.pcap"));

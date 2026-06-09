@@ -65,7 +65,7 @@ int js0n(const unsigned char *js, unsigned int len, unsigned int *out, unsigned 
 	};
 	void **go = gostruct;
 
-	for(cur=js,end=js+len,oend=out+olen; cur<end && out<oend; cur++)
+	for(cur=js,end=js+len,oend=out+(olen/sizeof(*out)); cur<end && out<oend; cur++) // ALW - callers pass sizeof(out) which is bytes, convert to element count
 	{
 			goto *go[*cur];
 			l_loop:;

@@ -1,5 +1,5 @@
 # WISE tests
-use Test::More tests => 148;
+use Test::More tests => 160;
 use ArkimeTest;
 use Cwd;
 use URI::Escape;
@@ -12,7 +12,7 @@ my $wise;
 my @wise;
 
 addUser("-n testuser wiseUser wiseUser wiseUser --roles 'wiseUser' ");
-addUser("-n testuser wiseAdmin wiseAdmin wiseAdmin --roles 'wiseAdmin' ");
+addUser("-n testuser wiseAdmin wiseAdmin wiseAdmin --roles 'wiseAdmin,arkimeUser' ");
 
 # IP Query
 $wise = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8081/ip/10.0.0.3")->content;
@@ -83,6 +83,22 @@ eq_or_diff($wise, from_json('[{"field":"tags","len":12,"value":"ipwise-comma"},
 {"field":"tags","len":18,"value":"ipwise-jsonl-comma"},
 {"field":"tags","len":10,"value":"ipwisejson"},
 {"field":"tags","len":11,"value":"ipwisejsonl"}]'));
+
+# Nested-object array shortcut walking: shortcut "info.tag" over
+# { "info": [ {"tag": "nested-v1"}, {"tag": "nested-v2"} ] }
+$wise = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8081/ip/10.99.0.1")->content;
+$wise = [sort { $a->{value} cmp $b->{value}} @{from_json($wise)}];
+eq_or_diff($wise, from_json('[{"field":"tags","len":12,"value":"ipwisenested"},
+{"field":"tags","len":9,"value":"nested-v1"},
+{"field":"tags","len":9,"value":"nested-v2"}]'), "ipjsonnested intermediate array of objects");
+
+# Final-value array shortcut walking: shortcut "info.tag" over
+# { "info": { "tag": ["final-v3", "final-v4"] } }
+$wise = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8081/ip/10.99.0.2")->content;
+$wise = [sort { $a->{value} cmp $b->{value}} @{from_json($wise)}];
+eq_or_diff($wise, from_json('[{"field":"tags","len":8,"value":"final-v3"},
+{"field":"tags","len":8,"value":"final-v4"},
+{"field":"tags","len":12,"value":"ipwisenested"}]'), "ipjsonnested final value array");
 
 # IP File jsonl Dump
 $wise = "[" . $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8081/dump/file:ipjsonl")->content . "]";
@@ -255,7 +271,7 @@ eq_or_diff($wise, '[{"field":"tags","len":10,"value":"wisebymac1"},
 
 # Sources
 $wise = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8081/sources")->content;
-eq_or_diff($wise, '["fieldactions:test","file:domain","file:email","file:ip","file:ipcsv","file:ipjson","file:ipjsonl","file:ja3","file:mac","file:md5","file:sha256","file:url","reversedns","url:aws-ips","url:gcloud-ips4","url:gcloud-ips6","valueactions:test"]',"/sources");
+eq_or_diff($wise, '["fieldactions:test","file:domain","file:email","file:ip","file:ipcsv","file:ipjson","file:ipjsonl","file:ipjsonnested","file:ja3","file:mac","file:md5","file:sha256","file:url","reversedns","url:aws-ips","url:gcloud-ips4","url:gcloud-ips6","valueactions:test"]',"/sources");
 
 # Types
 $wise = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8081/types")->content;
@@ -331,6 +347,24 @@ eq_or_diff($wise, '{"success":false,"text":"Not authorized, check log file"}');
 $wise = $ArkimeTest::userAgent->post("http://$ArkimeTest::host:8081/regressionTests/checkCode", Content => '{"configCode": "thecode"}', "Content-Type" => "application/json;charset=UTF-8")->content;
 eq_or_diff($wise, '{"success":true,"text":"Authorized"}');
 
+# Set up TOTP for wiseAdmin user via viewer API
+my $wiseAdminToken = getTokenCookie('wiseAdmin');
+my $json = viewerPostToken("/api/user/totp/setup?arkimeRegressionUser=wiseAdmin", '{}', $wiseAdminToken);
+ok($json->{success}, "TOTP setup for wiseAdmin");
+my $totpSecret = $json->{secret};
+my $totpCode = generate_totp($totpSecret);
+$json = viewerPostToken("/api/user/totp/confirm?arkimeRegressionUser=wiseAdmin", '{"code": "' . $totpCode . '"}', $wiseAdminToken);
+ok($json->{success}, "TOTP confirm for wiseAdmin");
+
+# test checkCode with TOTP - need to authenticate as wiseAdmin first (uses checkCodeAuth which has auth)
+$ArkimeTest::userAgent->credentials( "$ArkimeTest::host:8081", 'Moloch', 'wiseAdmin', 'wiseAdmin' );
+$totpCode = generate_totp($totpSecret);
+$wise = $ArkimeTest::userAgent->post("http://$ArkimeTest::host:8081/regressionTests/checkCodeAuth", Content => '{"configCode": "' . $totpCode . '"}', "Content-Type" => "application/json;charset=UTF-8")->content;
+eq_or_diff($wise, '{"success":true,"text":"Authorized"}');
+
+# clear credentials for subsequent tests
+$ArkimeTest::userAgent->credentials( "$ArkimeTest::host:8081", 'Moloch', '', '' );
+
 #### Web
 
 # config defs
@@ -354,6 +388,11 @@ $wise = $ArkimeTest::userAgent->put("http://$ArkimeTest::host:8081/source/file:i
 is ($wise->code, 401);
 is ($wise->content, 'Unauthorized');
 
+# /api/user requires auth
+$wise = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8081/api/user");
+is ($wise->code, 401, "/api/user unauthenticated returns 401");
+is ($wise->content, 'Unauthorized');
+
 ##### wiseUser
 $ArkimeTest::userAgent->credentials( "$ArkimeTest::host:8081", 'Moloch', 'wiseUser', 'wiseUser' );
 
@@ -362,6 +401,12 @@ $wise = from_json($ArkimeTest::userAgent->get("http://$ArkimeTest::host:8081/con
 ok ($wise->{success});
 ok (exists $wise->{config});
 my $config = $wise->{config};
+
+# /api/user as wiseUser - should succeed and not include wiseAdmin role
+$wise = from_json($ArkimeTest::userAgent->get("http://$ArkimeTest::host:8081/api/user")->content);
+is ($wise->{userId}, 'wiseUser', "/api/user wiseUser userId");
+ok (grep { $_ eq 'wiseUser' } @{$wise->{roles}}, "/api/user wiseUser has wiseUser role");
+ok (!(grep { $_ eq 'wiseAdmin' } @{$wise->{roles}}), "/api/user wiseUser does not have wiseAdmin role");
 
 # save config - wiseUser
 $wise = $ArkimeTest::userAgent->put("http://$ArkimeTest::host:8081/config/save", Content => to_json({configCode => "thecode"}), "Content-Type" => "application/json;charset=UTF-8")->content;
@@ -377,6 +422,11 @@ is($wise->{app}, "wiseService", "wise appversion app field");
 
 ##### wiseAdmin
 $ArkimeTest::userAgent->credentials( "$ArkimeTest::host:8081", 'Moloch', 'wiseAdmin', 'wiseAdmin' );
+
+# /api/user as wiseAdmin - should include wiseAdmin role
+$wise = from_json($ArkimeTest::userAgent->get("http://$ArkimeTest::host:8081/api/user")->content);
+is ($wise->{userId}, 'wiseAdmin', "/api/user wiseAdmin userId");
+ok (grep { $_ eq 'wiseAdmin' } @{$wise->{roles}}, "/api/user wiseAdmin has wiseAdmin role");
 
 # save config - wiseAdmin
 $wise = $ArkimeTest::userAgent->put("http://$ArkimeTest::host:8081/config/save", Content => to_json({configCode => "thecode"}), "Content-Type" => "application/json;charset=UTF-8")->content;

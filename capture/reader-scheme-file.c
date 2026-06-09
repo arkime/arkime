@@ -105,6 +105,7 @@ LOCAL void scheme_file_monitor_dir(const char *dirname, ArkimeSchemeFlags flags,
         sw->dirname = g_strdup(dirname);
         sw->flags = flags;
         sw->actions = actions;
+        arkime_reader_scheme_actions_ref(actions);
         g_hash_table_insert(wdHashTable, (void *)(long)rc, sw);
     }
 
@@ -229,9 +230,9 @@ LOCAL int scheme_file_load(const char *uri, ArkimeSchemeFlags flags, ArkimeSchem
         }
 
 
-        fd = open(filename, O_RDONLY);
+        fd = open(filename, O_RDONLY | O_NOFOLLOW | O_CLOEXEC);
         if (fd < 0) {
-            LOG("ERROR - pcap open failed - Couldn't realpath file: '%s' with %s (%d)", filename, strerror(errno), errno);
+            LOG("ERROR - pcap open failed - Couldn't open file: '%s' with %s (%d)", filename, strerror(errno), errno);
             return 1;
         }
 

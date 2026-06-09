@@ -57,12 +57,14 @@ SPDX-License-Identifier: Apache-2.0
                   <button
                     type="button"
                     v-if="primary"
+                    :aria-label="$t('common.close')"
                     class="btn btn-xs btn-default btn-close-map btn-fw"
                     @click="toggleMap">
                     <span class="fa fa-close" />
                   </button>
                   <button
                     type="button"
+                    :aria-label="$t('vis.toggleMapSize')"
                     class="btn btn-xs btn-default btn-fw btn-z-index-2"
                     :class="{'btn-expand-map':primary,'btn-close-map':!primary}"
                     @click="toggleMapSize">

@@ -1,4 +1,4 @@
-use Test::More tests => 53;
+use Test::More tests => 56;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -125,6 +125,11 @@ my ($url) = @_;
     $json = viewerGet("/api/histories?searchTerm=zzznomatch");
     is ($json->{recordsFiltered}, 0, "Test6: searchTerm no match");
 
+# isPP sortField should be rejected
+    $json = viewerGet("/api/histories?sortField=__proto__");
+    is ($json->{success}, 0, "isPP sortField rejected");
+    is ($json->{text}, "Invalid value for sortField", "isPP sortField error text");
+
 # Can't delete items when not admin
     $json = viewerDeleteToken("/api/history/$item->{id}?arkimeRegressionUser=historytest1", $otherToken);
     eq_or_diff($json, from_json('{"success": false, "text": "You do not have permission to access this resource"}', {relaxed => 1}), "Test Delete Not Admin", { context => 3 });
@@ -133,6 +138,10 @@ my ($url) = @_;
     $json = viewerDeleteToken("/api/history/$item->{id}", $token);
     is($json->{success}, 0, "Test Delete No Index");
     is($json->{i18n}, "api.history.missingIndex", "Test Delete No Index i18n");
+
+# Delete item invalid index
+    $json = viewerDeleteToken("/api/history/$item->{id}?index=evil_nothistory", $token);
+    is($json->{success}, 0, "Test Delete Invalid Index");
 
 # Delete item
     $json = viewerDeleteToken("/api/history/$item->{id}?index=$item->{index}", $token);

@@ -285,6 +285,10 @@ app.get( // es health endpoint
   StatsAPIs.getESHealth
 );
 
+// pre-auth plugin router - plugins may register unauthenticated /plugin/* routes
+const prePluginRouter = express.Router();
+app.use('/plugin', prePluginRouter);
+
 // password, testing, or anonymous mode setup ---------------------------------
 Auth.app(app);
 
@@ -311,9 +315,7 @@ app.use(async (req, res, next) => {
   }
 
   if (!req.user.hasRole('arkimeUser')) {
-    if (Config.debug) {
-      console.log('Missing arkimeUser userId: %s roles: %s expanded roles: %s', req.user.userId, req.user.roles, await req.user.getRoles());
-    }
+    req.user.logRoleFailure('arkimeUser');
     return res.status(403).send('Need arkimeUser role assigned');
   }
   next();
@@ -339,7 +341,7 @@ function parseCustomView (key, input) {
   const req = match[1];
 
   match = input.match(/title:([^;]+)/);
-  const title = match[1] || key;
+  const title = match?.[1] || key;
 
   match = input.match(/fields:([^;]+)/);
   if (!match) {
@@ -425,7 +427,7 @@ function createSessionDetail () {
     });
   }, function () {
     internals.sessionDetailNew = 'include views/mixins.pug\n' +
-                                 'div.session-detail(sessionid=session.id,hidePackets=hidePackets)\n' +
+                                 'div.session-detail(sessionid=session.id,hidepackets=hidePackets)\n' +
                                  '  include views/sessionOptions\n' +
                                  '  b-card-group(columns)\n' +
                                  '    b-card\n' +
@@ -744,7 +746,7 @@ function getSettingUserCache (req, res, next) {
   }
 
   // user is trying to get another user's settings without admin privilege
-  if (!req.user.hasRole('usersAdmin') || !req.user.hasRole('arkimeAdmin')) { return res.serverError(403, 'Need admin privileges', 'api.viewer.needAdminPrivileges'); }
+  if (!req.user.hasRole(['usersAdmin', 'arkimeAdmin'])) { return res.serverError(403, 'Need admin privileges', 'api.viewer.needAdminPrivileges'); }
 
   User.getUserCache(req.query.userId, (err, user) => {
     if (err || !user) {
@@ -804,7 +806,9 @@ function loadPlugins () {
       schemes.set(scheme, info);
     },
     getDb: function () { return Db; },
-    getPcap: function () { return Pcap; }
+    getPcap: function () { return Pcap; },
+    getPrePluginRouter: function () { return prePluginRouter; },
+    getPostPluginRouter: function () { return postPluginRouter; }
   };
   const plugins = Config.getArray('viewerPlugins', '');
   const dirs = Config.getArray('pluginsDir', `${version.config_prefix}/plugins`);
@@ -1033,10 +1037,10 @@ async function expireDevice (nodes, dirs, minFreeSpaceG) {
       }
       if (freeG < minFreeSpaceG) {
         console.log('Deleting', item);
-        if (item.indexFilename) {
-          fs.unlink(item.indexFilename, (err) => {
+        if (fields.indexFilename) {
+          fs.unlink(fields.indexFilename, (err) => {
             if (err) {
-              console.log('EXPIRE - error deleting index file', item.indexFilename, err);
+              console.log('EXPIRE - error deleting index file', fields.indexFilename, err);
             }
           });
         }
@@ -1179,6 +1183,11 @@ app.get('/about', User.checkPermissions(['webEnabled']), (req, res) => {
 // ============================================================================
 // APIS
 // ============================================================================
+
+// post-auth plugin router - plugins may register authenticated /plugin/* routes
+const postPluginRouter = express.Router();
+app.use('/plugin', postPluginRouter);
+
 app.all([
   '/user/current',
   '/user/create',
@@ -1321,6 +1330,30 @@ app.post( // update user password endpoint
   ['/api/user/password'],
   [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), Auth.getSettingUserDb],
   User.apiUpdateUserPassword
+);
+
+app.get( // get TOTP status endpoint
+  ['/api/user/totp/status'],
+  [ArkimeUtil.noCacheJson, Auth.getSettingUserDb, User.checkSettingUserAnyRole(['arkimeAdmin', 'cont3xtAdmin', 'wiseAdmin'])],
+  User.apiGetTotpStatus
+);
+
+app.post( // setup TOTP endpoint - generates secret and QR URI
+  ['/api/user/totp/setup'],
+  [ArkimeUtil.noCacheJson, checkCookieToken, Auth.getSettingUserDb, User.checkSettingUserAnyRole(['arkimeAdmin', 'cont3xtAdmin', 'wiseAdmin'])],
+  User.apiSetupTotp
+);
+
+app.post( // confirm TOTP endpoint - verifies code and saves secret
+  ['/api/user/totp/confirm'],
+  [ArkimeUtil.noCacheJson, checkCookieToken, Auth.getSettingUserDb, User.checkSettingUserAnyRole(['arkimeAdmin', 'cont3xtAdmin', 'wiseAdmin'])],
+  User.apiConfirmTotp
+);
+
+app.post( // disable TOTP endpoint
+  ['/api/user/totp/disable'],
+  [ArkimeUtil.noCacheJson, checkCookieToken, Auth.getSettingUserDb, User.checkSettingUserAnyRole(['arkimeAdmin', 'cont3xtAdmin', 'wiseAdmin'])],
+  User.apiDisableTotp
 );
 
 app.get( // user settings endpoint
@@ -1643,7 +1676,7 @@ app.post( // unflood OpenSearch/Elasticsearch admin endpoint
   StatsAPIs.unfloodES
 );
 
-app.post( // unflood OpenSearch/Elasticsearch admin endpoint
+app.post( // clear cache OpenSearch/Elasticsearch admin endpoint
   ['/api/esadmin/clearcache'],
   [ArkimeUtil.noCacheJson, recordResponseTime, checkEsAdminUser, checkCookieToken],
   StatsAPIs.clearCacheES
@@ -1780,13 +1813,13 @@ app.getpost(
 
 app.get( // session body file endpoint
   ['/api/session/:nodeName/:id/body/:bodyType/:bodyNum/:bodyName', '/:nodeName/:id/body/:bodyType/:bodyNum/:bodyName'],
-  [checkProxyRequest],
+  [checkProxyRequest, User.checkPermissions(['hidePcap'])],
   SessionAPIs.getRawBody
 );
 
 app.get( // session body file image endpoint
   ['/api/session/:nodeName/:id/bodypng/:bodyType/:bodyNum/:bodyName', '/:nodeName/:id/bodypng/:bodyType/:bodyNum/:bodyName'],
-  [checkProxyRequest],
+  [checkProxyRequest, User.checkPermissions(['hidePcap'])],
   SessionAPIs.getFilePNG
 );
 
@@ -1840,13 +1873,13 @@ app.get( // session raw packets endpoint
 
 app.get( // session file bodyhash endpoint
   ['/api/sessions/bodyhash/:hash', '/bodyHash/:hash'],
-  [logAction('bodyhash')],
+  [logAction('bodyhash'), User.checkPermissions(['hidePcap', 'disablePcapDownload'])],
   SessionAPIs.getBodyHash
 );
 
 app.get( // session file bodyhash endpoint
   ['/api/session/:nodeName/:id/bodyhash/:hash'],
-  [checkProxyRequest],
+  [checkProxyRequest, User.checkPermissions(['hidePcap', 'disablePcapDownload'])],
   SessionAPIs.getBodyHashFromNode
 );
 
@@ -1870,6 +1903,7 @@ app.post( // sessions send to node endpoint - used by CronAPIs.#sendSessionsList
 
 app.post( // sessions send endpoint - used by vueapp
   ['/api/sessions/send'],
+  [ArkimeUtil.noCacheJson, checkCookieToken, logAction()],
   SessionAPIs.sendSessions
 );
 

@@ -41,12 +41,20 @@ SPDX-License-Identifier: Apache-2.0
             { value: 500, text: $t('common.perPage', {count: 500})}
           ]" />
       </div>
-      <div>
+      <div class="pagination-no-right-radius">
         <b-pagination
           size="sm"
           :per-page="perPage"
           v-model="currentPage"
           :total-rows="recordsTotal" />
+      </div>
+      <div class="d-flex align-items-center pagination-info">
+        <span v-if="recordsTotal">
+          {{ $t('common.showingRange', { start: commaString(((currentPage - 1) * perPage) + 1), end: commaString(Math.min(currentPage * perPage, recordsTotal)), total: commaString(recordsTotal) }) }}
+        </span>
+        <span v-else>
+          {{ $t('common.showingAll', { count: 0, total: 0 }) }}
+        </span>
       </div>
       <div>
         <b-button
@@ -88,9 +96,11 @@ SPDX-License-Identifier: Apache-2.0
         small
         striped
         show-empty
+        must-sort
         no-local-sorting
         :items="users"
         :fields="fields"
+        v-model:sort-by="sortBy"
         @sorted="sortChanged"
         class="small-table-font"
         :empty-text="searchTerm ? $t('users.noUsersOrRolesMatch') : $t('users.noUsersOrRoles')">
@@ -492,7 +502,7 @@ import UserService from './UserService.js';
 import RoleDropdown from './RoleDropdown.vue';
 import UserDropdown from './UserDropdown.vue';
 import TriStateToggle from './TriStateToggle.vue';
-import { timezoneDateString } from './vueFilters.js';
+import { timezoneDateString, commaString } from './vueFilters.js';
 import { resolveMessage } from './resolveI18nMessage';
 
 let userChangeTimeout;
@@ -536,8 +546,7 @@ export default {
       recordsTotal: 0,
       perPage: 100,
       currentPage: 1,
-      sortField: 'userId',
-      desc: false,
+      sortBy: [{ key: 'userId', order: 'asc' }],
       createMode: 'user',
       // password
       newPassword: '',
@@ -585,6 +594,7 @@ export default {
   },
   methods: {
     /* exposed page functions ---------------------------------------------- */
+    commaString,
     tzDateStr (date, tz, ms) {
       return timezoneDateString(date, tz, ms);
     },
@@ -592,9 +602,7 @@ export default {
       this.perPage = newVal;
       this.loadUsers(false);
     },
-    sortChanged (newSort) {
-      this.sortField = newSort.key;
-      this.desc = newSort.order === 'desc';
+    sortChanged () {
       this.loadUsers();
     },
     negativeToggle (user, field, existing) {
@@ -789,10 +797,10 @@ export default {
     },
     getUsersQuery () {
       return {
-        desc: this.desc,
+        desc: this.sortBy[0]?.order === 'desc',
         length: this.perPage,
         filter: this.searchTerm,
-        sortField: this.sortField,
+        sortField: this.sortBy[0]?.key,
         start: (this.currentPage - 1) * this.perPage
       };
     },
@@ -813,10 +821,10 @@ export default {
     },
     reloadUsers () {
       const query = {
-        desc: this.desc,
+        desc: this.sortBy[0]?.order === 'desc',
         length: this.perPage,
         filter: this.searchTerm,
-        sortField: this.sortField,
+        sortField: this.sortBy[0]?.key,
         start: (this.currentPage - 1) * this.perPage
       };
 
@@ -859,5 +867,21 @@ export default {
 .toggle-group {
   background-color: var(--color-white);
   color: var(--color-gray-dark);
+}
+
+.pagination-no-right-radius :deep(.page-item:last-child .page-link) {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+.pagination-info {
+  font-size: .8rem;
+  color: var(--color-gray-dark);
+  border: 1px solid var(--color-gray-light);
+  padding: 2px 10px;
+  border-radius: 0 var(--px-sm) var(--px-sm) 0;
+  margin-left: -1px;
+  background-color: var(--color-white);
+  height: 31px;
 }
 </style>

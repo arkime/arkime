@@ -20,7 +20,7 @@ LOCAL ArkimePacketRC nsh_packet_enqueue(ArkimePacketBatch_t *batch, ArkimePacket
 
     int length = (data[1] & 0x3f) * 4;
 
-    if (length < 4) {
+    if (length < 8) {
 #ifdef DEBUG_PACKET
         LOG("BAD PACKET: Invalid length %d", length);
 #endif

@@ -10,6 +10,9 @@ const { Client } = require('@elastic/elasticsearch');
 const fs = require('fs');
 const util = require('util');
 const cryptoLib = require('crypto');
+const { LRUCache } = require('lru-cache');
+const otplib = require('otplib');
+const QRCode = require('qrcode');
 
 const systemRolesMapping = {
   superAdmin: ['usersAdmin', 'arkimeAdmin', 'arkimeUser', 'parliamentAdmin', 'parliamentUser', 'wiseAdmin', 'wiseUser', 'cont3xtAdmin', 'cont3xtUser'],
@@ -66,6 +69,15 @@ class User {
   static #dbUrl;
   static #demoMode;
   static #dynamicRolesFuncs;
+  static #totpPendingSecrets = new LRUCache({ max: 1000, ttl: 5 * 60 * 1000 });
+  static #totpAttempts = new LRUCache({ max: 1000, ttl: 60 * 1000 });
+  static #totpMaxAttempts = 5;
+  static #totpOptions = {
+    algorithm: 'sha1',
+    digits: 6,
+    period: 30,
+    epochTolerance: 30 // ±1 time step (30s) for clock drift
+  };
 
   /**
    * Initialize the User subsystem
@@ -117,12 +129,12 @@ class User {
       for (const [role, func] of Object.entries(userRoleMappings)) {
         if (!systemRolesMapping[role] && !role.startsWith('role:')) {
           console.log(`ERROR - user-role-mappings ${role} must start with role: or be a system role`);
-          process.exit();
+          process.exit(1);
         }
         try {
-          User.#dynamicRolesFuncs.set(role, new Function('vals', `return ${func};`));
+          User.#dynamicRolesFuncs.set(role, ArkimeUtil.safeExpression(func, 'vals'));
         } catch (e) {
-          console.log(`ERROR - user-role-mappings syntax error in '${role}': ${e.message}`);
+          console.log(`ERROR - user-role-mappings '${role}': ${e.message}`);
           process.exit(1);
         }
       }
@@ -246,7 +258,7 @@ class User {
 
   static async #makeRegressionUser (userId) {
     if (!Auth.regressionTests) {
-      process.exit();
+      process.exit(1);
     }
 
     // Skip Auto Create - SAC users. This means when in regression mode we don't
@@ -292,7 +304,7 @@ class User {
       let user;
       if (err || !data) {
         if (Auth.regressionTests) {
-          user = await User.#makeRegressionUser(userId, cb);
+          user = await User.#makeRegressionUser(userId);
           if (!user) {
             console.log(`Not making regression user ${userId}`);
             return cb(undefined, undefined);
@@ -382,8 +394,7 @@ class User {
 
     try {
       const users = await User.searchUsers({});
-      let usersList = [];
-      usersList = users.users.map((user) => {
+      const usersList = users.users.map((user) => {
         return user.userId;
       });
 
@@ -645,12 +656,9 @@ class User {
           if (value === undefined) {
             value = '';
           } else if (Array.isArray(value)) {
-            value = '"' + value.join(', ') + '"';
-          } else if (typeof (value) === 'string' && value.includes(',')) {
-            if (value.includes('"')) {
-              value = value.replace(/"/g, '""');
-            }
-            value = '"' + value + '"';
+            value = '"' + value.join(', ').replace(/"/g, '""') + '"';
+          } else if (typeof (value) === 'string' && (value.includes(',') || value.includes('"') || value.includes('\n') || value.includes('\r'))) {
+            value = '"' + value.replace(/"/g, '""') + '"';
           }
           values.push(value);
         }
@@ -1001,7 +1009,15 @@ class User {
       user.hidePcap = req.body.hidePcap;
       user.disablePcapDownload = req.body.disablePcapDownload;
 
-      user.timeLimit = req.body.timeLimit ? parseInt(req.body.timeLimit) : undefined;
+      if (req.body.timeLimit !== undefined && req.body.timeLimit !== null && req.body.timeLimit !== '') {
+        const tl = parseInt(req.body.timeLimit, 10);
+        if (!Number.isFinite(tl) || tl < 0) {
+          return res.serverError(422, 'timeLimit must be a non-negative integer');
+        }
+        user.timeLimit = tl;
+      } else {
+        user.timeLimit = undefined;
+      }
       user.roles = req.body.roles;
       user.roleAssigners = req.body.roleAssigners ?? [];
 
@@ -1139,6 +1155,207 @@ class User {
         text: 'Changed password successfully'
       });
     });
+  }
+
+  /******************************************************************************/
+  // TOTP (Two-Factor Authentication) APIs
+  /******************************************************************************/
+
+  static #verifyTotp (stored, token, userId) {
+    const secret = Auth.store2totp(stored, userId);
+    if (!secret) {
+      return false;
+    }
+    const result = otplib.verifySync({ secret, token, ...User.#totpOptions });
+    return result.valid;
+  }
+
+  // Verify a TOTP code for this user (with rate limiting)
+  verifyTotp (code) {
+    if (!this.totpSecret) {
+      return false;
+    }
+    if (!this.#checkTotpRateLimit()) {
+      return 'rate-limited';
+    }
+    if (!User.#verifyTotp(this.totpSecret, code, this.userId)) {
+      this.#recordTotpFailure();
+      return false;
+    }
+    this.#clearTotpAttempts();
+    return true;
+  }
+
+  #checkTotpRateLimit () {
+    return (User.#totpAttempts.get(this.userId) || 0) < User.#totpMaxAttempts;
+  }
+
+  #recordTotpFailure () {
+    const attempts = (User.#totpAttempts.get(this.userId) || 0) + 1;
+    User.#totpAttempts.set(this.userId, attempts);
+  }
+
+  #clearTotpAttempts () {
+    User.#totpAttempts.delete(this.userId);
+  }
+
+  static #generateTotpSecret () {
+    return otplib.generateSecret();
+  }
+
+  static #getTotpKeyUri (userId, secret, issuer = 'Arkime') {
+    return otplib.generateURI({ issuer, label: userId, secret, type: 'totp', ...User.#totpOptions });
+  }
+
+  /**
+   * GET - /api/user/totp/status
+   *
+   * Check if TOTP is enabled for the current user
+   * @name /user/totp/status
+   * @returns {boolean} success - Whether the request was successful.
+   * @returns {boolean} enabled - Whether TOTP is enabled for this user.
+   */
+  static apiGetTotpStatus (req, res) {
+    return res.json({
+      success: true,
+      enabled: !!req.settingUser.totpSecret
+    });
+  }
+
+  /**
+   * POST - /api/user/totp/setup
+   *
+   * Start TOTP enrollment - generates a new secret and returns the QR code URI.
+   * The secret is not saved until confirmed with a valid code.
+   * @name /user/totp/setup
+   * @returns {boolean} success - Whether the setup initiation was successful.
+   * @returns {string} secret - The TOTP secret (Base32 encoded) for manual entry.
+   * @returns {string} qrCodeDataUrl - The QR code as a data URL for display.
+   */
+  static async apiSetupTotp (req, res) {
+    const secret = User.#generateTotpSecret();
+    const qrCodeUri = User.#getTotpKeyUri(req.settingUser.userId, secret);
+
+    // Store encrypted pending secret server-side; overwrites any previous setup
+    User.#totpPendingSecrets.set(req.settingUser.userId, Auth.totp2store(secret));
+
+    try {
+      const qrCodeDataUrl = await QRCode.toDataURL(qrCodeUri);
+      return res.json({
+        success: true,
+        secret,
+        qrCodeDataUrl
+      });
+    } catch (err) {
+      console.log('ERROR - Failed to generate QR code', err);
+      User.#totpPendingSecrets.delete(req.settingUser.userId);
+      return res.serverError(500, 'Failed to generate QR code');
+    }
+  }
+
+  /**
+   * POST - /api/user/totp/confirm
+   *
+   * Confirm TOTP enrollment by verifying a code from the authenticator app.
+   * If valid, the secret is encrypted and saved to the user record.
+   * @name /user/totp/confirm
+   * @returns {boolean} success - Whether the confirmation was successful.
+   * @returns {string} text - The success/error message to display to the user.
+   */
+  static async apiConfirmTotp (req, res) {
+    if (!ArkimeUtil.isString(req.body.code)) {
+      return res.serverError(403, 'Missing verification code');
+    }
+
+    if (!req.settingUser.#checkTotpRateLimit()) {
+      return res.serverError(429, 'Too many attempts. Try again later.');
+    }
+
+    const pendingStore = User.#totpPendingSecrets.get(req.settingUser.userId);
+    if (!pendingStore) {
+      return res.serverError(403, 'No pending TOTP setup. Please start setup again.');
+    }
+
+    if (!User.#verifyTotp(pendingStore, req.body.code, req.settingUser.userId)) {
+      req.settingUser.#recordTotpFailure();
+      return res.serverError(403, 'Invalid verification code');
+    }
+
+    req.settingUser.#clearTotpAttempts();
+    const user = req.settingUser;
+    user.totpSecret = pendingStore;
+    User.#totpPendingSecrets.delete(user.userId);
+
+    try {
+      await User.setUser(user.userId, user);
+      return res.json({
+        success: true,
+        text: 'Two-factor authentication enabled successfully'
+      });
+    } catch (err) {
+      console.log(`ERROR - ${req.method} /api/user/totp/confirm update error`, util.inspect(err, false, 50));
+      return res.serverError(500, 'Failed to enable two-factor authentication');
+    }
+  }
+
+  /**
+   * POST - /api/user/totp/disable
+   *
+   * Disable TOTP for a user. Admins (usersAdmin) can disable anyone's TOTP.
+   * Regular users must provide a valid TOTP code to disable their own.
+   * @name /user/totp/disable
+   * @returns {boolean} success - Whether the disable operation was successful.
+   * @returns {string} text - The success/error message to display to the user.
+   */
+  static async apiDisableTotp (req, res) {
+    const user = req.settingUser;
+
+    if (!user.totpSecret) {
+      return res.serverError(403, 'Two-factor authentication is not enabled');
+    }
+
+    // Admins can disable OTHER users' TOTP without code, but not their own
+    const isAdmin = req.user.hasRole('usersAdmin');
+    const isSelf = req.user.userId === user.userId;
+
+    if (isSelf || !isAdmin) {
+      // Must provide valid TOTP code to disable your own (even admins)
+      if (!ArkimeUtil.isString(req.body.code)) {
+        return res.serverError(403, 'TOTP code required');
+      }
+
+      const result = user.verifyTotp(req.body.code);
+      if (result === 'rate-limited') {
+        return res.serverError(429, 'Too many attempts. Try again later.');
+      }
+      if (!result) {
+        return res.serverError(403, 'Invalid verification code');
+      }
+    }
+    // else: admin disabling another user's TOTP - no code required
+
+    // Skip this check if we are a superAdmin
+    if (!req.user.hasRole('superAdmin')) {
+      // Only disable TOTP if we have the same admin role(s)
+      for (const role of adminRolesWithSuper) {
+        if (!req.user.hasRole(role) && user.hasRole(role)) {
+          return res.serverError(403, `Not allowed to disable TOTP for ${role}`);
+        }
+      }
+    }
+
+    delete user.totpSecret;
+
+    try {
+      await User.setUser(user.userId, user);
+      return res.json({
+        success: true,
+        text: 'Two-factor authentication disabled successfully'
+      });
+    } catch (err) {
+      console.log(`ERROR - ${req.method} /api/user/totp/disable update error`, util.inspect(err, false, 50));
+      return res.serverError(500, 'Failed to disable two-factor authentication');
+    }
   }
 
   /******************************************************************************/
@@ -1380,6 +1597,19 @@ class User {
   }
 
   /**
+   * Denies access if the setting user lacks ANY of the required roles (OR logic)
+   */
+  static checkSettingUserAnyRole (roles) {
+    return async (req, res, next) => {
+      if (!req.settingUser.hasRole(roles)) {
+        console.log(`Permission denied to ${req.settingUser.userId} while requesting resource: ${req._parsedUrl.pathname}, requires one of roles ${roles}`);
+        return res.serverError(403, 'You do not have permission to access this resource');
+      }
+      next();
+    };
+  }
+
+  /**
    * Fails request if a roleId is given in the body, but the user is not a roleAssigner for the given role
    */
   static async checkAssignableRole (req, res, next) {
@@ -1442,6 +1672,14 @@ class User {
         resource[creatorProperty] = dbResource[creatorProperty];
       }
       return true;
+    }
+
+    // reject non-string / empty creator values; otherwise truthy non-strings
+    // would silently bypass the isString check below and be persisted,
+    // breaking ownership
+    if (!ArkimeUtil.isString(resource[creatorProperty])) {
+      res.serverError(403, 'Permission denied');
+      return false;
     }
 
     if ( // if the resource has a new creator
@@ -1521,7 +1759,11 @@ class User {
 
     this.roles = newRoles;
     await this.expandFromRoles();
-    this.save(() => { });
+    await new Promise((resolve, reject) => {
+      this.save((err) => {
+        if (err) { reject(err); } else { resolve(); }
+      });
+    });
   }
 
   // Set last used info for user, should only be used by Auth
@@ -1538,6 +1780,21 @@ class User {
           console.log('DEBUG - user lastUsed update error', err);
         }
       }
+    }
+  }
+
+  async logRoleFailure (role) {
+    try {
+      const roles = Array.isArray(role) ? role : [role];
+      let urm;
+      if (!User.#dynamicRolesFuncs) {
+        urm = 'not using';
+      } else {
+        urm = '{' + roles.map(r => `${r}: ${User.#dynamicRolesFuncs.has(r) ? 'set' : 'cleared'}`).join(', ') + '}';
+      }
+      console.log('Missing %s role - userId: %s roles: %s expanded roles: %s user-role-mappings: %s', roles.join(','), this.userId, this.roles, await this.getRoles(), urm);
+    } catch (e) {
+      console.log('ERROR - logRoleFailure failed:', e.message);
     }
   }
 }
@@ -1688,8 +1945,8 @@ class UserESImplementation {
   }
 
   async flush (cluster) {
-    this.client.indices.flush({ index: this.prefix + 'users', cluster });
-    this.client.indices.refresh({ index: this.prefix + 'users', cluster });
+    await this.client.indices.flush({ index: this.prefix + 'users', cluster });
+    await this.client.indices.refresh({ index: this.prefix + 'users', cluster });
   }
 
   // search against user index, promise only
@@ -1778,7 +2035,7 @@ class UserESImplementation {
       id: userId,
       refresh: true
     });
-    User.deleteCache(userId); // Delete again after db says its done refreshing
+    User.deleteCache(userId); // Delete again after db says it's done refreshing
   }
 
   // Set user, callback only
@@ -1793,7 +2050,7 @@ class UserESImplementation {
       timeout: '10m',
       op_type: createOnly ? 'create' : 'index'
     }, (err) => {
-      User.deleteCache(userId); // Delete again after db says its done refreshing
+      User.deleteCache(userId); // Delete again after db says it's done refreshing
       cb(err);
     });
   }
@@ -1866,7 +2123,6 @@ class UserLMDBImplementation {
   async searchUsers (query) {
     let hits = [];
     this.store.getRange({})
-      .filter(({ key, value }) => key !== '_moloch_shared')
       .forEach(({ key, value }) => {
         value = cleanSearchUser(value);
         value.id = key;
@@ -1894,25 +2150,13 @@ class UserLMDBImplementation {
   }
 
   async numberOfUsers () {
-    return await new Promise((resolve, reject) => {
-      try {
-        let count = 0;
-        for (const key of this.store.getKeys({})) {
-          if (key !== '_moloch_shared') {
-            count++;
-          }
-        }
-        resolve(count);
-      } catch (err) {
-        reject(err);
-      }
-    });
+    return this.store.getCount({});
   }
 
   // Delete user, promise only
   async deleteUser (userId) {
     await this.store.remove(userId);
-    User.deleteCache(userId); // Delete again after db says its done refreshing
+    User.deleteCache(userId); // Delete again after db says it's done refreshing
   }
 
   // Set user, callback only
@@ -2026,7 +2270,7 @@ class UserRedisImplementation {
   // Delete user, promise only
   async deleteUser (userId) {
     await this.client.del(this.prefix + userId);
-    User.deleteCache(userId); // Delete again after db says its done refreshing
+    User.deleteCache(userId); // Delete again after db says it's done refreshing
   }
 
   // Set user, callback only
@@ -2036,11 +2280,17 @@ class UserRedisImplementation {
     doc = JSON.stringify(doc);
     try {
       if (createOnly) {
-        this.client.setnx(this.prefix + userId, doc, cb);
-        User.deleteCache(userId);
+        const result = await this.client.setnx(this.prefix + userId, doc);
+        if (result === 0) {
+          cb({ meta: { body: { error: { type: 'version_conflict_engine_exception' } } } });
+        } else {
+          User.deleteCache(userId);
+          cb(null);
+        }
       } else {
-        this.client.set(this.prefix + userId, doc, cb);
+        await this.client.set(this.prefix + userId, doc);
         User.deleteCache(userId);
+        cb(null);
       }
     } catch (err) {
       cb(err);

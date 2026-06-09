@@ -30,8 +30,6 @@ LOCAL void other220_classify(ArkimeSession_t *session, const uint8_t *data, int 
 {
     if (g_strstr_len((char *)data, len, "LMTP") != NULL) {
         arkime_session_add_protocol(session, "lmtp");
-    } else if (g_strstr_len((char *)data, len, "SMTP") == NULL && g_strstr_len((char *)data, len, " TLS") == NULL) {
-        arkime_session_add_protocol(session, "ftp");
     }
 }
 /******************************************************************************/
@@ -64,12 +62,10 @@ LOCAL void user_classify(ArkimeSession_t *session, const uint8_t *data, int len,
 /******************************************************************************/
 LOCAL void misc_add_protocol_classify(ArkimeSession_t *session, const uint8_t *UNUSED(data), int UNUSED(len), int UNUSED(which), void *uw)
 {
-    ARKIME_RETURN_IF_DNS_PORT;
-
     arkime_session_add_protocol(session, uw);
 }
 /******************************************************************************/
-LOCAL void syslog_classify(ArkimeSession_t *session, const uint8_t *UNUSED(data), int len, int UNUSED(which), void *UNUSED(uw))
+LOCAL void syslog_classify(ArkimeSession_t *session, const uint8_t *data, int len, int UNUSED(which), void *UNUSED(uw))
 {
     for (int i = 2; i < len; i++) {
         if (data[i] == '>') {
@@ -196,29 +192,6 @@ LOCAL void telnet_tcp_classify(ArkimeSession_t *session, const uint8_t *data, in
         return;
     arkime_session_add_protocol(session, "telnet");
 }
-/******************************************************************************/
-LOCAL void openvpn_udp_classify(ArkimeSession_t *session, const uint8_t *data, int len, int UNUSED(which), void *UNUSED(uw))
-{
-    // OpenVPN UDP: byte0 = (opcode << 3) | key_id, valid opcodes 1-10
-    if (len < 14)
-        return;
-    uint8_t opcode = data[0] >> 3;
-    if (opcode < 1 || opcode > 10)
-        return;
-    arkime_session_add_protocol(session, "openvpn");
-}
-/******************************************************************************/
-LOCAL void openvpn_tcp_classify(ArkimeSession_t *session, const uint8_t *data, int len, int UNUSED(which), void *UNUSED(uw))
-{
-    // OpenVPN TCP: 2-byte length prefix, then byte0 = (opcode << 3) | key_id
-    if (len < 16)
-        return;
-    uint8_t opcode = data[2] >> 3;
-    if (opcode < 1 || opcode > 10)
-        return;
-    arkime_session_add_protocol(session, "openvpn");
-}
-/******************************************************************************/
 LOCAL void omron_fins_udp_classify(ArkimeSession_t *session, const uint8_t *data, int len, int UNUSED(which), void *UNUSED(uw))
 {
     if (len < 12 || data[1] != 0x00)
@@ -235,7 +208,6 @@ LOCAL void omron_fins_tcp_classify(ArkimeSession_t *session, const uint8_t *data
 /******************************************************************************/
 LOCAL void netflow_classify(ArkimeSession_t *session, const uint8_t *data, int len, int UNUSED(which), void *UNUSED(uw))
 {
-    ARKIME_RETURN_IF_DNS_PORT;
     if (len < 24)
         return;
 
@@ -254,6 +226,43 @@ LOCAL void netflow_classify(ArkimeSession_t *session, const uint8_t *data, int l
         return;
 
     arkime_session_add_protocol(session, "netflow");
+}
+/******************************************************************************/
+// IPFIX (RFC 7011) - NetFlow v10. Header is 16 bytes:
+//   Version(2)=10, Length(2), ExportTime(4), SeqNum(4), ObsDomainID(4)
+LOCAL void ipfix_classify(ArkimeSession_t *session, const uint8_t *data, int len, int UNUSED(which), void *UNUSED(uw))
+{
+    if (len < 16)
+        return;
+
+    uint16_t msgLen = (data[2] << 8) | data[3];
+    if (msgLen != len || msgLen < 16)
+        return;
+
+    uint32_t exportTime = ((uint32_t)data[4] << 24) | ((uint32_t)data[5] << 16) |
+                          ((uint32_t)data[6] << 8)  | (uint32_t)data[7];
+    if (exportTime < 1000000000 /*Sep 2001*/)
+        return;
+
+    arkime_session_add_protocol(session, "ipfix");
+}
+/******************************************************************************/
+// sFlow v5 (sflow.org). Datagram starts with 4-byte version=5 followed by
+// 4-byte agent-address type (1=IPv4, 2=IPv6). v2/v4 are obsolete and use a
+// different (and unverifiable) header layout, so we only classify v5.
+LOCAL void sflow_classify(ArkimeSession_t *session, const uint8_t *data, int len, int UNUSED(which), void *UNUSED(uw))
+{
+    if (len < 28)
+        return;
+
+    if (data[4] != 0 || data[5] != 0 || data[6] != 0 ||
+        (data[7] != 1 && data[7] != 2))
+        return;
+
+    if (data[7] == 2 && len < 40)
+        return;
+
+    arkime_session_add_protocol(session, "sflow");
 }
 /******************************************************************************/
 LOCAL void ident_protocol_classify(ArkimeSession_t *session, const uint8_t *data, int len, int UNUSED(which), void *UNUSED(uw))
@@ -367,9 +376,9 @@ void arkime_parser_init()
     /* Bitcoin namecoin fork */
     SIMPLE_CLASSIFY_TCP("bitcoin", "\xf9\xbe\xb4\xfe");
 
-    SIMPLE_CLASSIFY_TCP("pop3", "+OK ");
     CLASSIFY_TCP("gh0st", 13, "\x78", gh0st_classify);
     CLASSIFY_TCP("other220", 0, "220 ", other220_classify);
+    CLASSIFY_TCP("other220", 0, "220-", other220_classify);
     CLASSIFY_TCP("vnc", 0, "RFB 0", vnc_classify);
 
     SIMPLE_CLASSIFY_TCP("redis", "+PONG");
@@ -487,6 +496,32 @@ void arkime_parser_init()
     CLASSIFY_UDP("netflow", 0, "\x00\x07", netflow_classify);
     CLASSIFY_UDP("netflow", 0, "\x00\x09", netflow_classify);
 
+    CLASSIFY_UDP("ipfix", 0, "\x00\x0a", ipfix_classify);
+
+    CLASSIFY_UDP("sflow", 0, "\x00\x00\x00\x05", sflow_classify);
+
+    // AD CS web enrollment (MS-WCCE over HTTP) — ESC8 NTLM relay target
+    arkime_parsers_register_sub("http", "/certsrv/", arkime_parsers_add_protocol_cb, "adcs-web");
+    arkime_parsers_register_sub("http", "/certsrv/certfnsh.asp", arkime_parsers_add_protocol_cb, "adcs-web");
+    arkime_parsers_register_sub("http", "/certsrv/certrqxt.asp", arkime_parsers_add_protocol_cb, "adcs-web");
+    arkime_parsers_register_sub("http", "/certsrv/certrqma.asp", arkime_parsers_add_protocol_cb, "adcs-web");
+    arkime_parsers_register_sub("http", "/certsrv/certrqus.asp", arkime_parsers_add_protocol_cb, "adcs-web");
+    arkime_parsers_register_sub("http", "/certsrv/certcarc.asp", arkime_parsers_add_protocol_cb, "adcs-web");
+    arkime_parsers_register_sub("http", "/certsrv/mscep/mscep.dll", arkime_parsers_add_protocol_cb, "adcs-ndes");
+    arkime_parsers_register_sub("http", "/certsrv/mscep_admin/", arkime_parsers_add_protocol_cb, "adcs-ndes");
+    arkime_parsers_register_sub("http", "/adpolicyprovider_cep_kerberos/service.svc/cep", arkime_parsers_add_protocol_cb, "adcs-cep");
+    arkime_parsers_register_sub("http", "/adpolicyprovider_cep_usernamepassword/service.svc/cep", arkime_parsers_add_protocol_cb, "adcs-cep");
+    arkime_parsers_register_sub("http", "/enrollmentserver/service.svc", arkime_parsers_add_protocol_cb, "adcs-ces");
+
+    // RPC over HTTP / Outlook Anywhere (MS-RPCH) — uses non-standard HTTP
+    // verbs RPC_IN_DATA / RPC_OUT_DATA, so http_parser will not parse these
+    // sessions; classify directly on the request-line prefix instead.
+    CLASSIFY_TCP("rpc-over-http", 0, "RPC_IN_DATA ",  misc_add_protocol_classify);
+    CLASSIFY_TCP("rpc-over-http", 0, "RPC_OUT_DATA ", misc_add_protocol_classify);
+
+    // WS-Management / WinRM (PowerShell Remoting, evil-winrm, winrs, WEF)
+    arkime_parsers_register_sub("http", "/wsman", arkime_parsers_add_protocol_cb, "winrm");
+
     SIMPLE_CLASSIFY_TCP("hbase", "HBas\x00");
 
     SIMPLE_CLASSIFY_TCP("hadoop", "hrpc\x09");
@@ -512,9 +547,6 @@ void arkime_parser_init()
     arkime_parsers_classifier_register_port("safet",  NULL, 23294, ARKIME_PARSERS_PORT_UDP, safet_udp_classify);
 
     arkime_parsers_classifier_register_port("telnet",  NULL, 23, ARKIME_PARSERS_PORT_TCP_DST, telnet_tcp_classify);
-
-    arkime_parsers_classifier_register_port("openvpn",  NULL, 1194, ARKIME_PARSERS_PORT_UDP_DST, openvpn_udp_classify);
-    arkime_parsers_classifier_register_port("openvpn",  NULL, 1194, ARKIME_PARSERS_PORT_TCP_DST, openvpn_tcp_classify);
 
     arkime_parsers_classifier_register_port("omron-fins",  NULL, 9600, ARKIME_PARSERS_PORT_UDP_DST, omron_fins_udp_classify);
     arkime_parsers_classifier_register_port("omron-fins",  NULL, 9600, ARKIME_PARSERS_PORT_TCP_DST, omron_fins_tcp_classify);

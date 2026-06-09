@@ -1,5 +1,5 @@
 # Test addUser.js and general authentication
-use Test::More tests => 75;
+use Test::More tests => 104;
 use Test::Differences;
 use Data::Dumper;
 use ArkimeTest;
@@ -79,7 +79,7 @@ $response = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8126/", ':arki
 is ($response->code, 403);
 is ($response->content, '{"success":false,"text":"User name header is empty"}');
 
-$response = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8126/", ':arkime_user' => 'authtest1');
+$response = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8126/", ':arkime_user' => 'authtest1', ':arkime_user_name' => "Andr\xc3\xa9");
 is ($response->code, 200);
 
 $response = viewerGet("/regressionTests/getUser/authtest1");
@@ -89,7 +89,7 @@ delete $mresponse->{lastUsed};
 eq_or_diff($response, $mresponse);
 
 delete $response->{passStore};
-eq_or_diff($response, from_json('{"headerAuthEnabled":true,"enabled":true,"userId":"authtest1","webEnabled":true,"removeEnabled":false,"userName":"authtest1","packetSearch":true,"emailSearch":true,"expression":"","settings":{},"roles":["arkimeUser","cont3xtUser","parliamentUser","wiseUser"]}'));
+eq_or_diff($response, from_json('{"headerAuthEnabled":true,"enabled":true,"userId":"authtest1","webEnabled":true,"removeEnabled":false,"userName":"' . "Andr\xc3\xa9" . '","packetSearch":true,"emailSearch":true,"expression":"","settings":{},"roles":["arkimeUser","cont3xtUser","parliamentUser","wiseUser"]}'));
 
 addUser("-n test3 authtest2 authtest2 authtest2");
 $response = viewerGet("/regressionTests/getUser/authtest2");
@@ -219,6 +219,87 @@ $response = $ArkimeTest::userAgent->post("http://$ArkimeTest::host:8126/Users", 
 is ($response->content, "Permission denied");
 
 
+#### user-role-mappings tests
+
+# Test role based on this.userId ending with '-test'
+$response = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8126/", ':arkime_user' => 'roleuser-test');
+is ($response->code, 200, "roleuser-test auth success");
+$response = viewerGet("/regressionTests/getUser/roleuser-test");
+ok(grep(/^role:testRole$/, @{$response->{roles}}), "roleuser-test has role:testRole");
+ok(grep(/^arkimeUser$/, @{$response->{roles}}), "roleuser-test still has arkimeUser");
+
+# Test role based on header value
+$response = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8126/", ':arkime_user' => 'headeruser', 'x-test-role' => 'special');
+is ($response->code, 200, "headeruser auth success");
+$response = viewerGet("/regressionTests/getUser/headeruser");
+ok(grep(/^role:headerRole$/, @{$response->{roles}}), "headeruser has role:headerRole");
+ok(grep(/^arkimeUser$/, @{$response->{roles}}), "headeruser still has arkimeUser");
+
+# Test that user without matching conditions does NOT get the role
+$response = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8126/", ':arkime_user' => 'normaluser');
+is ($response->code, 200, "normaluser auth success");
+$response = viewerGet("/regressionTests/getUser/normaluser");
+ok(!grep(/^role:testRole$/, @{$response->{roles}}), "normaluser does NOT have role:testRole");
+ok(!grep(/^role:headerRole$/, @{$response->{roles}}), "normaluser does NOT have role:headerRole");
+ok(grep(/^arkimeUser$/, @{$response->{roles}}), "normaluser still has arkimeUser");
+
+# Test combined role (both userId and header must match)
+$response = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8126/", ':arkime_user' => 'combouser', 'x-test-role' => 'combo');
+is ($response->code, 200, "combouser auth success");
+$response = viewerGet("/regressionTests/getUser/combouser");
+ok(grep(/^role:combinedRole$/, @{$response->{roles}}), "combouser has role:combinedRole");
+
+# Test that role is REMOVED when header is no longer present
+$response = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8126/", ':arkime_user' => 'headeruser');
+is ($response->code, 200, "headeruser without header auth success");
+$response = viewerGet("/regressionTests/getUser/headeruser");
+ok(!grep(/^role:headerRole$/, @{$response->{roles}}), "headeruser loses role:headerRole when header missing");
+ok(grep(/^arkimeUser$/, @{$response->{roles}}), "headeruser still has arkimeUser after role removal");
+
+# Test that expression returning false removes the role (combouser without matching header)
+$response = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8126/", ':arkime_user' => 'combouser', 'x-test-role' => 'wrong');
+is ($response->code, 200, "combouser with wrong header auth success");
+$response = viewerGet("/regressionTests/getUser/combouser");
+ok(!grep(/^role:combinedRole$/, @{$response->{roles}}), "combouser loses role:combinedRole when expression is false");
+
+
+#### JWT Auth Header tests (test4 node on port 8127)
+
+# Valid JWT with short_id claim — should auto-create user
+$response = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8127/", 'x-jwt-data' => 'eyJhbGciOiJub25lIiwidHlwIjoiSldUIn0.eyJzaG9ydF9pZCI6Imp3dHVzZXIxIiwicHJlZmVycmVkX3VzZXJuYW1lIjoiSldUIFVzZXIgMSJ9.fakesig');
+is ($response->code, 200, "JWT header auth success");
+
+# Verify user was created with short_id as userId
+$response = viewerGet("/regressionTests/getUser/jwtuser1");
+is ($response->{userId}, "jwtuser1", "JWT user created with short_id as userId");
+
+# Missing JWT header — should 401
+$response = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8127/");
+is ($response->code, 401, "Missing JWT header returns 401");
+
+# Invalid JWT (not 3 dot-separated parts) — should 403
+$response = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8127/", 'x-jwt-data' => 'not-a-jwt');
+is ($response->code, 403, "Invalid JWT returns 403");
+is ($response->content, '{"success":false,"text":"Invalid JWT in header"}');
+
+# JWT without the required short_id claim — should 403
+$response = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8127/", 'x-jwt-data' => 'eyJhbGciOiJub25lIiwidHlwIjoiSldUIn0.eyJlbWFpbCI6InRlc3RAdGVzdC5jb20ifQ.fakesig');
+is ($response->code, 403, "JWT without required claim returns 403");
+is ($response->content, '{"success":false,"text":"User name header is empty"}');
+
+# JWT with role: prefix in claim — should be rejected
+$response = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8127/", 'x-jwt-data' => 'eyJhbGciOiJub25lIiwidHlwIjoiSldUIn0.eyJzaG9ydF9pZCI6InJvbGU6ZXZpbCIsInByZWZlcnJlZF91c2VybmFtZSI6IkhhY2tlciJ9.fakesig');
+is ($response->code, 403, "JWT with role: prefix rejected");
+is ($response->content, '{"success":false,"text":"Can not authenticate with role"}');
+
+# JWT with department claim — should get role:securityTeam via role mappings
+$response = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8127/", 'x-jwt-data' => 'eyJhbGciOiJub25lIiwidHlwIjoiSldUIn0.eyJzaG9ydF9pZCI6Imp3dHVzZXIyIiwicHJlZmVycmVkX3VzZXJuYW1lIjoiSldUIFVzZXIgMiIsImRlcGFydG1lbnQiOiJzZWN1cml0eSJ9.fakesig');
+is ($response->code, 200, "JWT with department claim auth success");
+$response = viewerGet("/regressionTests/getUser/jwtuser2");
+ok(grep(/^role:securityTeam$/, @{$response->{roles}}), "jwtuser2 has role:securityTeam from JWT department claim");
+ok(grep(/^arkimeUser$/, @{$response->{roles}}), "jwtuser2 still has arkimeUser");
+
+
 # cleanup
 my $token = getTokenCookie();
 $response = viewerDeleteToken("/api/user/role:role", $token);
@@ -235,12 +316,18 @@ viewerDeleteToken("/api/user/test7", $token);
 viewerDeleteToken("/api/user/test8", $token);
 viewerDeleteToken("/api/user/authtest1", $token);
 viewerDeleteToken("/api/user/authtest2", $token);
+viewerDeleteToken("/api/user/roleuser-test", $token);
+viewerDeleteToken("/api/user/headeruser", $token);
+viewerDeleteToken("/api/user/normaluser", $token);
+viewerDeleteToken("/api/user/combouser", $token);
+viewerDeleteToken("/api/user/jwtuser1", $token);
+viewerDeleteToken("/api/user/jwtuser2", $token);
 
 $response = viewerGet("/api/user/__proto__");
 eq_or_diff($response, from_json('{"success": false, "text": "Bad path &#47;api&#47;user&#47;__proto__"}'));
 
 $users = viewerPostToken("/api/users?arkimeRegressionUser=admin", "", $adminToken);
-is (@{$users->{data}}, 3, "Two supers left");
+is (@{$users->{data}}, 7, "Two supers plus 4 role mappings left");
 
 viewerGet("/regressionTests/deleteAllUsers");
 

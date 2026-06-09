@@ -99,7 +99,7 @@ LOCAL int socks5_parser(ArkimeSession_t *session, void *uw, const uint8_t *data,
         socks->state5[(which + 1) % 2] = SOCKS5_STATE_VER_REPLY;
         break;
     case SOCKS5_STATE_VER_REPLY:
-        if (remaining != 2 || data[0] != 5 || data[1] > 2) {
+        if (remaining < 2 || data[0] != 5 || data[1] > 2) {
             arkime_parsers_unregister(session, uw);
             return 0;
         }
@@ -123,7 +123,7 @@ LOCAL int socks5_parser(ArkimeSession_t *session, void *uw, const uint8_t *data,
 
         return 2;
     case SOCKS5_STATE_USER_REQUEST:
-        if (remaining < 2 || (3 + data[1] > (int)remaining) || (2 + data[1] + 1 + data[data[1] + 2]  > (int)remaining)) {
+        if (remaining < 2 || data[0] != 1 || (3 + data[1] > (int)remaining) || (2 + data[1] + 1 + data[data[1] + 2]  > (int)remaining)) {
             arkime_parsers_unregister(session, uw);
             return 0;
         }
@@ -133,6 +133,15 @@ LOCAL int socks5_parser(ArkimeSession_t *session, void *uw, const uint8_t *data,
         socks->state5[which] = SOCKS5_STATE_CONN_REQUEST;
         return 2 + data[1] + 1 + data[data[1] + 2];
     case SOCKS5_STATE_USER_REPLY:
+        if (remaining < 2 || data[0] != 1) {
+            arkime_parsers_unregister(session, uw);
+            return 0;
+        }
+        if (data[1] != 0) {
+            arkime_session_add_tag(session, "socks:auth-failed");
+            arkime_parsers_unregister(session, uw);
+            return 0;
+        }
         socks->state5[which] = SOCKS5_STATE_CONN_REPLY;
         return 2;
     case SOCKS5_STATE_CONN_REQUEST:
@@ -175,7 +184,12 @@ LOCAL int socks5_parser(ArkimeSession_t *session, void *uw, const uint8_t *data,
         arkime_parsers_classify_tcp(session, data + consumed, remaining - consumed, which);
         return consumed;
     case SOCKS5_STATE_CONN_REPLY: {
-        if (remaining < 6) {
+        if (remaining < 6 || data[0] != 5 || data[2] != 0) {
+            arkime_parsers_unregister(session, uw);
+            return 0;
+        }
+        if (data[1] != 0) {
+            arkime_session_add_tag(session, "socks:connect-failed");
             arkime_parsers_unregister(session, uw);
             return 0;
         }
@@ -269,7 +283,7 @@ LOCAL void socks5_classify(ArkimeSession_t *session, const uint8_t *data, int le
     LOG("SOCKSDEBUG: enter %d %d", data[0], len);
 #endif
 
-    if ((len >= 3 && len <= 5) && data[1] == len - 2 && data[2] <= 3) {
+    if (len >= 3 && data[1] >= 1 && data[1] == len - 2 && data[2] <= 3) {
         SocksInfo_t *socks;
 
         socks = ARKIME_TYPE_ALLOC0(SocksInfo_t);

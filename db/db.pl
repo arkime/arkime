@@ -82,6 +82,7 @@
 # 83 - added files sessionsStarted, sessionsPresent
 # 84 - added shareables index
 # 85 - added packetRange field to sessions
+# 86 - added totpSecret field to users
 
 use HTTP::Request::Common;
 use LWP::UserAgent;
@@ -95,7 +96,7 @@ use URI;
 use strict;
 use warnings;
 
-my $VERSION = 85;
+my $VERSION = 86;
 my $verbose = 0;
 my $PREFIX = $ENV{ARKIME_default__prefix} || $ENV{ARKIME__prefix};
 my $OLDPREFIX = "";
@@ -104,6 +105,7 @@ my $CLIENTCERT = "";
 my $CLIENTKEY = "";
 my $NOCHANGES = 0;
 my $SHARDS = -1;
+my $COMPRESSION;
 my $REPLICAS = -1;
 my $HISTORY = 13;
 my $SEGMENTS = 1;
@@ -180,6 +182,7 @@ sub showHelp($)
     print "    --ilm                      - Use ilm (Elasticsearch) to manage\n";
     print "    --ism                      - Use ism (OpenSearch) to manage\n";
     print "    --ifneeded                 - Only init or upgrade if needed, otherwise just exit\n";
+    print "    --compression <mode>       - The compression codec\n";
     print "  wipe [<init opts>]           - Same as init, but leaves configs,user,views,parliament indices untouched\n";
     print "  clean                        - Remove all Arkime indices\n";
     print "  upgrade [<init opts>]        - Upgrade Arkime's mappings from a previous version or use to change settings\n";
@@ -831,7 +834,7 @@ sub fieldsUpdate
       "help": "Search all port fields",
       "type": "integer",
       "dbField2": "portall",
-      "regex": "(^port\\\\.(?:(?!\\\\.cnt$).)*$|\\\\.port$)"
+      "regex": "(^port\\\\.(?:(?!\\\\.cnt$).)*$|\\\\.port$|Port$)"
     }');
     esPost("/${PREFIX}fields_v30/_doc/rir?timeout=${ESTIMEOUT}s", '{
       "friendlyName": "All rir fields",
@@ -1189,6 +1192,7 @@ sub fieldsUpdate
 sub fields82Fix
 {
     esPost("/${PREFIX}fields/_update/host.dns.all", '{"doc":{"regex": "^host\\\\.dns(?:(?!\\\\.(cnt|all|tokens)$).)*$"}}', 1);
+    esDelete("/${PREFIX}fields/_doc/snmp.error", 1);
 }
 
 ################################################################################
@@ -4513,6 +4517,12 @@ sub sessions3Update
         "originRealmCnt" : {
           "type" : "long"
         },
+        "resultCode" : {
+          "type" : "long"
+        },
+        "resultCodeCnt" : {
+          "type" : "long"
+        },
         "sessionId" : {
           "type" : "keyword"
         },
@@ -4523,6 +4533,34 @@ sub sessions3Update
           "type" : "keyword"
         },
         "userCnt" : {
+          "type" : "long"
+        }
+      }
+    },
+    "arp" : {
+      "properties" : {
+        "ip" : {
+          "type" : "ip"
+        },
+        "ipCnt" : {
+          "type" : "long"
+        },
+        "mac" : {
+          "type" : "keyword"
+        },
+        "macCnt" : {
+          "type" : "long"
+        },
+        "opcode" : {
+          "type" : "integer"
+        },
+        "opcodeCnt" : {
+          "type" : "long"
+        },
+        "oui" : {
+          "type" : "keyword"
+        },
+        "ouiCnt" : {
           "type" : "long"
         }
       }
@@ -4865,6 +4903,34 @@ sub sessions3Update
     },
     "dstOuterASN" : {
       "type" : "keyword"
+    },
+    "ftp" : {
+      "properties" : {
+        "banner" : {
+          "type" : "keyword"
+        },
+        "bannerCnt" : {
+          "type" : "long"
+        },
+        "command" : {
+          "type" : "keyword"
+        },
+        "commandCnt" : {
+          "type" : "long"
+        },
+        "filename" : {
+          "type" : "keyword"
+        },
+        "filenameCnt" : {
+          "type" : "long"
+        },
+        "responseCode" : {
+          "type" : "integer"
+        },
+        "responseCodeCnt" : {
+          "type" : "long"
+        }
+      }
     },
     "http" : {
       "properties" : {
@@ -5251,10 +5317,62 @@ sub sessions3Update
         "funcCnt" : {
           "type" : "long"
         },
+        "funcName" : {
+          "type" : "keyword"
+        },
+        "funcNameCnt" : {
+          "type" : "long"
+        },
         "src" : {
           "type" : "long"
         },
         "srcCnt" : {
+          "type" : "long"
+        }
+      }
+    },
+    "enip" : {
+      "properties" : {
+        "class" : {
+          "type" : "keyword"
+        },
+        "classCnt" : {
+          "type" : "long"
+        },
+        "command" : {
+          "type" : "keyword"
+        },
+        "commandCnt" : {
+          "type" : "long"
+        },
+        "deviceType" : {
+          "type" : "keyword"
+        },
+        "deviceTypeCnt" : {
+          "type" : "long"
+        },
+        "product" : {
+          "type" : "keyword"
+        },
+        "productCnt" : {
+          "type" : "long"
+        },
+        "service" : {
+          "type" : "keyword"
+        },
+        "serviceCnt" : {
+          "type" : "long"
+        },
+        "status" : {
+          "type" : "long"
+        },
+        "statusCnt" : {
+          "type" : "long"
+        },
+        "vendor" : {
+          "type" : "keyword"
+        },
+        "vendorCnt" : {
           "type" : "long"
         }
       }
@@ -5303,6 +5421,12 @@ sub sessions3Update
           "type" : "keyword"
         },
         "clientIdCnt" : {
+          "type" : "long"
+        },
+        "connackCode" : {
+          "type" : "long"
+        },
+        "connackCodeCnt" : {
           "type" : "long"
         },
         "flags" : {
@@ -5407,6 +5531,35 @@ sub sessions3Update
     },
     "node" : {
       "type" : "keyword"
+    },
+    "opcua" : {
+      "properties" : {
+        "endpointUrl" : {
+          "type" : "keyword"
+        },
+        "endpointUrlCnt" : {
+          "type" : "long"
+        },
+        "securityPolicyUri" : {
+          "type" : "keyword"
+        },
+        "securityPolicyUriCnt" : {
+          "type" : "long"
+        }
+      }
+    },
+    "ospf" : {
+      "properties" : {
+        "msgType" : {
+          "type" : "keyword"
+        },
+        "routerId" : {
+          "type" : "keyword"
+        },
+        "areaId" : {
+          "type" : "keyword"
+        }
+      }
     },
     "oracle" : {
       "properties" : {
@@ -5564,6 +5717,24 @@ sub sessions3Update
         "macCnt" : {
           "type" : "long"
         },
+        "msgType" : {
+          "type" : "keyword"
+        },
+        "msgTypeCnt" : {
+          "type" : "long"
+        },
+        "nasIp" : {
+          "type" : "ip"
+        },
+        "nasIpCnt" : {
+          "type" : "long"
+        },
+        "nasPort" : {
+          "type" : "integer"
+        },
+        "nasPortCnt" : {
+          "type" : "long"
+        },
         "user" : {
           "type" : "keyword"
         }
@@ -5710,6 +5881,12 @@ sub sessions3Update
         "funcCnt" : {
           "type" : "long"
         },
+        "funcName" : {
+          "type" : "keyword"
+        },
+        "funcNameCnt" : {
+          "type" : "long"
+        },
         "opcode" : {
           "type" : "long"
         },
@@ -5795,10 +5972,22 @@ sub sessions3Update
         "communityCnt" : {
           "type" : "long"
         },
+        "engineId" : {
+          "type" : "keyword"
+        },
+        "engineIdCnt" : {
+          "type" : "long"
+        },
         "error" : {
           "type" : "keyword"
         },
         "errorCnt" : {
+          "type" : "long"
+        },
+        "secLevel" : {
+          "type" : "keyword"
+        },
+        "secLevelCnt" : {
           "type" : "long"
         },
         "trapOid" : {
@@ -5877,6 +6066,12 @@ sub sessions3Update
     },
     "stun" : {
       "properties" : {
+        "attributes" : {
+          "type" : "keyword"
+        },
+        "attributesCnt" : {
+          "type" : "long"
+        },
         "error" : {
           "type" : "long"
         },
@@ -5929,6 +6124,18 @@ sub sessions3Update
           "type" : "long"
         },
         "xorMappedPortCnt" : {
+          "type" : "long"
+        },
+        "xorPeerIp" : {
+          "type" : "ip"
+        },
+        "xorPeerIpCnt" : {
+          "type" : "long"
+        },
+        "xorPeerPort" : {
+          "type" : "long"
+        },
+        "xorPeerPortCnt" : {
           "type" : "long"
         },
         "xorRelayedIp" : {
@@ -6096,10 +6303,19 @@ sub sessions3Update
         "ack" : {
           "type" : "long"
         },
+        "cwr" : {
+          "type" : "long"
+        },
         "dstZero" : {
           "type" : "long"
         },
+        "ece" : {
+          "type" : "long"
+        },
         "fin" : {
+          "type" : "long"
+        },
+        "ae" : {
           "type" : "long"
         },
         "psh" : {
@@ -6164,6 +6380,43 @@ sub sessions3Update
     },
     "userCnt" : {
       "type" : "long"
+    },
+    "websocket" : {
+      "properties" : {
+        "opcode" : {
+          "type" : "keyword"
+        },
+        "opcodeCnt" : {
+          "type" : "long"
+        },
+        "closeCode" : {
+          "type" : "long"
+        },
+        "closeCodeCnt" : {
+          "type" : "long"
+        },
+        "closeReason" : {
+          "type" : "keyword"
+        },
+        "closeReasonCnt" : {
+          "type" : "long"
+        },
+        "textSample" : {
+          "type" : "keyword"
+        },
+        "textSampleCnt" : {
+          "type" : "long"
+        },
+        "frameCnt" : {
+          "type" : "long"
+        },
+        "payloadBytes" : {
+          "type" : "long"
+        },
+        "maskedFromClient" : {
+          "type" : "long"
+        }
+      }
     }
   }
 }
@@ -6182,6 +6435,11 @@ if ($DOHOTWARM) {
 if ($DOILM) {
   $settings .= qq/,
       "lifecycle.name": "${PREFIX}molochsessions"/;
+}
+
+if ($COMPRESSION) {
+  $settings .= qq/,
+      "codec": "${COMPRESSION}"/;
 }
 
     my $template = qq(
@@ -6966,6 +7224,9 @@ sub usersUpdate
     "passStore": {
       "type": "keyword"
     },
+    "totpSecret": {
+      "type": "keyword"
+    },
     "expression": {
       "type": "keyword"
     },
@@ -7390,6 +7651,9 @@ sub parseArgs {
         } elsif ($ARGV[$pos] eq "--description") {
             $pos++;
             $DESCRIPTION = $ARGV[$pos];
+        } elsif ($ARGV[$pos] eq "--compression") {
+            $pos++;
+            $COMPRESSION = $ARGV[$pos];
         } else {
             logmsg "Unknown option '$ARGV[$pos]'\n";
         }
@@ -7427,6 +7691,15 @@ sub checkPreviousSettings {
                 int($stemplate->{settings}->{"index.routing.allocation.total_shards_per_node"}),
                 $shardsPerNode,
                 int($stemplate->{settings}->{"index.routing.allocation.total_shards_per_node"});
+        $needNewline = 1;
+    }
+
+    if (!defined $stemplate->{settings}->{"index.codec"}) {
+    } elsif (!defined $COMPRESSION || $COMPRESSION ne $stemplate->{settings}->{"index.codec"}) {
+        printf "WARNING: Previous compression was %s, you are changing to %s. For old behaviour add:  --compression %s\n",
+                $stemplate->{settings}->{"index.codec"},
+                !defined $COMPRESSION ? "default" : $COMPRESSION,
+                $stemplate->{settings}->{"index.codec"};
         $needNewline = 1;
     }
 
@@ -7529,7 +7802,7 @@ sub verify {
 }
 
 if ($ARGV[0] =~ /^urlinfile:\/\//) {
-    open( my $file, substr($ARGV[0], 12)) or die "Couldn't open file ", substr($ARGV[0], 12);
+    open( my $file, '<', substr($ARGV[0], 12)) or die "Couldn't open file ", substr($ARGV[0], 12);
     $main::elasticsearch = <$file>;
     chomp $main::elasticsearch;
     close ($file);
@@ -8206,7 +8479,7 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
         die "Couldn't find '$ARGV[2]' in db\n" if (@{$results->{hits}->{hits}} == 0);
 
         foreach my $hit (@{$results->{hits}->{hits}}) {
-            my $script = '{"script" : "ctx._source.name = \"' . $ARGV[3] . '\"; ctx._source.locked = 1;"}';
+            my $script = to_json({script => {source => 'ctx._source.name = params.n; ctx._source.locked = 1', params => {n => $ARGV[3]}}});
             esPost("/${PREFIX}files/_update/" . $hit->{_id}, $script);
         }
         logmsg "Moved " . scalar (@{$results->{hits}->{hits}}) . " file(s) in database\n";
@@ -9246,9 +9519,10 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
     }
     esDelete("/tagger", 1);
 
+    esGet("/_refresh", 1);
     esGet("/_flush", 1);
     esGet("/_refresh", 1);
-    sleep(1);
+    esGet("/_flush", 1);
 
     exit 0 if ($ARGV[1] =~ "clean");
 
@@ -9478,11 +9752,17 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
         filesUpdate();
         fields82Fix();
         shareablesCreate();
+        usersUpdate();
     } elsif ($main::versionNumber <= 85) {
         checkForOld7Indices();
         sessions3Update();
         historyUpdate();
         shareablesUpdate();
+        usersUpdate();
+    } elsif ($main::versionNumber <= 86) {
+        checkForOld7Indices();
+        sessions3Update();
+        historyUpdate();
     } else {
         logmsg "db.pl is hosed\n";
     }
@@ -9496,6 +9776,7 @@ if ($DOHOTWARM) {
 
 logmsg "Finished\n";
 
-sleep 1;
+esGet("/_refresh", 1);
 esGet("/_flush", 1);
 esGet("/_refresh", 1);
+esGet("/_flush", 1);

@@ -295,9 +295,12 @@ LOCAL void certinfo_key_usage (ArkimeCertsInfo_t *certs, BSB *bsb)
     }
 }
 /******************************************************************************/
-LOCAL void certinfo_alt_names(ArkimeSession_t *session, ArkimeCertsInfo_t *certs, BSB *bsb, char *lastOid)
+LOCAL void certinfo_alt_names(ArkimeSession_t *session, ArkimeCertsInfo_t *certs, BSB *bsb, char *lastOid, int depth)
 {
     uint32_t apc, atag, alen;
+
+    if (depth > 20) // prevent stack overflow from malicious deep nesting
+        return;
 
     while (BSB_REMAINING(*bsb) >= 2) {
         uint8_t *value = arkime_parsers_asn_get_tlv(bsb, &apc, &atag, &alen);
@@ -308,7 +311,7 @@ LOCAL void certinfo_alt_names(ArkimeSession_t *session, ArkimeCertsInfo_t *certs
         if (apc) {
             BSB tbsb;
             BSB_INIT(tbsb, value, alen);
-            certinfo_alt_names(session, certs, &tbsb, lastOid);
+            certinfo_alt_names(session, certs, &tbsb, lastOid, depth + 1);
             if (certs->alt.s_count > 0) {
                 return;
             }
@@ -322,7 +325,7 @@ LOCAL void certinfo_alt_names(ArkimeSession_t *session, ArkimeCertsInfo_t *certs
         } else if (lastOid[0] && atag == 4) {
             BSB tbsb;
             BSB_INIT(tbsb, value, alen);
-            certinfo_alt_names(session, certs, &tbsb, lastOid);
+            certinfo_alt_names(session, certs, &tbsb, lastOid, depth + 1);
             return;
         } else if (lastOid[0] && atag == 2) {
             if (g_utf8_validate((char *)value, alen, NULL)) {
@@ -341,11 +344,14 @@ LOCAL void certinfo_alt_names(ArkimeSession_t *session, ArkimeCertsInfo_t *certs
     return;
 }
 /******************************************************************************/
-LOCAL void certinfo_process(ArkimeCertInfo_t *ci, BSB *bsb)
+LOCAL void certinfo_process_depth(ArkimeCertInfo_t *ci, BSB *bsb, int depth)
 {
     uint32_t apc, atag, alen;
     char lastOid[1000];
     lastOid[0] = 0;
+
+    if (depth > 20) // ALW - prevent stack overflow from malicious deep nesting
+        return;
 
     while (BSB_REMAINING(*bsb)) {
         uint8_t *value = arkime_parsers_asn_get_tlv(bsb, &apc, &atag, &alen);
@@ -355,7 +361,7 @@ LOCAL void certinfo_process(ArkimeCertInfo_t *ci, BSB *bsb)
         if (apc) {
             BSB tbsb;
             BSB_INIT(tbsb, value, alen);
-            certinfo_process(ci, &tbsb);
+            certinfo_process_depth(ci, &tbsb, depth + 1);
         } else if (atag  == 6) {
             arkime_parsers_asn_decode_oid(lastOid, sizeof(lastOid), value, alen);
         } else if (lastOid[0] && (atag == 20 || atag == 19 || atag == 12)) {
@@ -432,7 +438,7 @@ LOCAL int certinfo_process_single_cert(ArkimeSession_t *session, const uint8_t *
 {
     GChecksum *const checksum = arkimeThreadData[session->thread].checksum1;
 
-    int            badreason = 0;
+    int            badreason;
 
     ArkimeFieldObject_t *fobject = ARKIME_TYPE_ALLOC0(ArkimeFieldObject_t);
 
@@ -512,7 +518,7 @@ LOCAL int certinfo_process_single_cert(ArkimeSession_t *session, const uint8_t *
     }
     BSB tbsb;
     BSB_INIT(tbsb, value, alen);
-    certinfo_process(&certs->issuer, &tbsb);
+    certinfo_process_depth(&certs->issuer, &tbsb, 0);
 
     /* validity */
     if (!(value = arkime_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen))) {
@@ -539,7 +545,7 @@ LOCAL int certinfo_process_single_cert(ArkimeSession_t *session, const uint8_t *
         goto bad_cert;
     }
     BSB_INIT(tbsb, value, alen);
-    certinfo_process(&certs->subject, &tbsb);
+    certinfo_process_depth(&certs->subject, &tbsb, 0);
 
     /* subjectPublicKeyInfo */
     if (!(value = arkime_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen))) {
@@ -557,7 +563,7 @@ LOCAL int certinfo_process_single_cert(ArkimeSession_t *session, const uint8_t *
         BSB_INIT(tbsb, value, alen);
         char lastOid[100];
         lastOid[0] = 0;
-        certinfo_alt_names(session, certs, &tbsb, lastOid);
+        certinfo_alt_names(session, certs, &tbsb, lastOid, 0);
     }
 
     // no previous certs AND not a CA AND either no orgName or the same orgName AND the same 1 commonName
@@ -579,7 +585,6 @@ LOCAL int certinfo_process_single_cert(ArkimeSession_t *session, const uint8_t *
 
     if (!arkime_field_object_add(certsField, session, fobject, clen * 2)) {
         certinfo_free(fobject);
-        fobject = 0;
         certs = 0;
     }
 

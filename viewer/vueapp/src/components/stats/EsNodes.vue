@@ -27,6 +27,7 @@ SPDX-License-Identifier: Apache-2.0
         :no-results="true"
         :show-avg-tot="true"
         :action-column="true"
+        :show-data-nodes-toggle="true"
         :desc="query.desc"
         :sort-field="query.sortField"
         :no-results-msg="$t( cluster ? 'stats.noResultsCluster' : 'stats.noResults' )"

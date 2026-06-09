@@ -8,6 +8,9 @@
 
 //#define EMAILDEBUG
 
+#define SMTP_MAX_LINE_LEN 10000
+#define SMTP_MAX_BOUNDARIES 128
+
 extern ArkimeConfig_t   config;
 extern char            *arkime_char_to_hex;
 extern uint8_t          arkime_char_to_hexstr[256][3];
@@ -51,6 +54,7 @@ typedef struct {
     uint16_t           firstInContent: 2;
     uint16_t           seenHeaders: 2;
     uint16_t           inBDAT: 2;
+    uint16_t           inNtlmAuth: 1;
 } SMTPInfo_t;
 
 /******************************************************************************/
@@ -458,6 +462,23 @@ LOCAL int smtp_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, i
 #ifdef EMAILDEBUG
             printf("%d %d cmd => %s\n", which, *state, line->str);
 #endif
+            if (email->inNtlmAuth) {
+                /* Server "334 TlRMTVN..." or bare client base64 line */
+                const char *b = line->str;
+                int blen = line->len;
+                if (blen > 4 && b[0] == '3' && b[1] == '3' && b[2] == '4' && b[3] == ' ') {
+                    b += 4;
+                    blen -= 4;
+                }
+                if (arkime_parsers_ntlm_decode_base64(session, b, blen)) {
+                    *state = EMAIL_CMD;
+                    g_string_truncate(line, 0);
+                    if (*data != '\n')
+                        continue;
+                    else
+                        break;
+                }
+            }
             if (email->needStatus[(which + 1) % 2]) {
                 email->needStatus[(which + 1) % 2] = 0;
                 char tag[200];
@@ -472,11 +493,16 @@ LOCAL int smtp_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, i
             } else if (strncasecmp(line->str, "DATA", 4) == 0) {
                 *state = EMAIL_DATA_HEADER;
                 email->seenHeaders |= (1 << which);
-            } else if (strncasecmp(line->str, "BDAT", 4) == 0) {
+            } else if (strncasecmp(line->str, "BDAT", 4) == 0 &&
+                       line->len > 5 &&
+                       (line->str[4] == ' ' || line->str[4] == '\t')) {
+                int bdatN = arkime_atoin(line->str + 5, line->len - 5);
+                if (bdatN < 0 || bdatN > (1 << 30)) {
+                    arkime_session_add_tag(session, "smtp:bad-bdat");
+                    return ARKIME_PARSER_UNREGISTER;
+                }
                 email->inBDAT |= (1 << which);
-                email->bdatRemaining[which] = arkime_atoin(line->str + 5, line->len - 5) + 1;
-                if (email->bdatRemaining[which] == 0)
-                    email->bdatRemaining[which] = 1;
+                email->bdatRemaining[which] = (guint)bdatN + 1;
 
                 if (email->seenHeaders & (1 << which))
                     *state = EMAIL_DATA;
@@ -502,21 +528,30 @@ LOCAL int smtp_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, i
                 arkime_session_add_tag(session, "smtp:authplain");
                 if (line->len > 11) {
                     gsize out_len = 0;
-                    gsize zation = 0;
                     if (line->str[11] && line->str[12]) {
                         g_base64_decode_inplace(line->str + 11, &out_len);
                     }
-                    zation = strlen(line->str + 11);
-                    if (zation < out_len) {
-                        gsize cation = strlen(line->str + 11 + zation + 1);
-                        if (cation + zation + 1 < out_len) {
-                            arkime_field_string_add_lower(userField, session, line->str + 11 + zation + 1, cation);
+                    const char *base = line->str + 11;
+                    const char *nul1 = memchr(base, 0, out_len);
+                    if (nul1) {
+                        gsize zation = nul1 - base;
+                        const char *user = base + zation + 1;
+                        gsize auth_remaining = out_len - zation - 1;
+                        const char *nul2 = memchr(user, 0, auth_remaining);
+                        if (nul2) {
+                            arkime_field_string_add_lower(userField, session, (char *)user, nul2 - user);
                         }
                     }
                     *state = EMAIL_CMD;
                 } else {
                     *state = EMAIL_AUTHPLAIN;
                 }
+            } else if (strncasecmp(line->str, "AUTH NTLM", 9) == 0) {
+                arkime_session_add_tag(session, "smtp:authntlm");
+                email->inNtlmAuth = 1;
+                if (line->len > 10)
+                    arkime_parsers_ntlm_decode_base64(session, line->str + 10, line->len - 10);
+                *state = EMAIL_CMD;
             } else if (strncasecmp(line->str, "STARTTLS", 8) == 0) {
                 arkime_session_add_tag(session, "smtp:starttls");
                 *state = EMAIL_TLS;
@@ -525,6 +560,7 @@ LOCAL int smtp_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, i
             } else if (strncasecmp(line->str, "HELO ", 5) == 0 ||
                        strncasecmp(line->str, "EHLO ", 5) == 0) {
                 arkime_field_string_add_lower(helloField, session, line->str + 5, -1);
+                arkime_session_rm_protocol(session, "ftp");
                 *state = EMAIL_CMD;
             } else {
                 *state = EMAIL_CMD;
@@ -548,15 +584,17 @@ LOCAL int smtp_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, i
         }
         case EMAIL_AUTHPLAIN_RETURN: {
             gsize out_len = 0;
-            gsize zation = 0;
             if (line->str[0] && line->str[1]) {
                 g_base64_decode_inplace(line->str, &out_len);
             }
-            zation = strlen(line->str);
-            if (zation < out_len) {
-                gsize cation = strlen(line->str + zation + 1);
-                if (cation + zation + 1 < out_len) {
-                    arkime_field_string_add_lower(userField, session, line->str + zation + 1, cation);
+            const char *nul1 = memchr(line->str, 0, out_len);
+            if (nul1) {
+                gsize zation = nul1 - line->str;
+                const char *user = line->str + zation + 1;
+                gsize auth_remaining = out_len - zation - 1;
+                const char *nul2 = memchr(user, 0, auth_remaining);
+                if (nul2) {
+                    arkime_field_string_add_lower(userField, session, (char *)user, nul2 - user);
                 }
             }
             *state = EMAIL_CMD;
@@ -638,7 +676,7 @@ LOCAL int smtp_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, i
 
                     arkime_field_string_add(ctField, session, s, -1, TRUE);
                     char *boundary = (char *)arkime_memcasestr(s, line->len - (s - line->str), "boundary=", 9);
-                    if (boundary) {
+                    if (boundary && DLL_COUNT(s_, &email->boundaries) < SMTP_MAX_BOUNDARIES) {
                         ArkimeString_t *string = ARKIME_TYPE_ALLOC0(ArkimeString_t);
                         string->str = g_strdup(smtp_remove_matching(boundary + 9, '"', '"'));
                         string->len = strlen(string->str);
@@ -835,7 +873,7 @@ LOCAL int smtp_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, i
                 const char *s = line->str + 13;
                 while (isspace(*s)) s++;
                 char *boundary = (char *)arkime_memcasestr(s, line->len - (s - line->str), "boundary=", 9);
-                if (boundary) {
+                if (boundary && DLL_COUNT(s_, &email->boundaries) < SMTP_MAX_BOUNDARIES) {
                     ArkimeString_t *string = ARKIME_TYPE_ALLOC0(ArkimeString_t);
                     string->str = g_strdup(smtp_remove_matching(boundary + 9, '"', '"'));
                     string->len = strlen(string->str);
@@ -861,6 +899,12 @@ LOCAL int smtp_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, i
             break;
         }
         }
+
+        if (line->len > SMTP_MAX_LINE_LEN) {
+            arkime_session_add_tag(session, "smtp:line-too-long");
+            return ARKIME_PARSER_UNREGISTER;
+        }
+
         data++;
         remaining--;
 
@@ -910,7 +954,7 @@ LOCAL void smtp_classify(ArkimeSession_t *session, const uint8_t *data, int len,
 
     if (memcmp("HELO ", data, 5) == 0 ||
         memcmp("EHLO ", data, 5) == 0 ||
-        (memcmp("220 ", data, 4) == 0 &&
+        ((memcmp("220 ", data, 4) == 0 || memcmp("220-", data, 4) == 0) &&
          g_strstr_len((char *)data, len, "SMTP") != 0)) {
 
         if (arkime_session_has_protocol(session, "smtp"))
@@ -1091,4 +1135,5 @@ void arkime_parser_init()
     arkime_parsers_classifier_register_tcp("smtp", NULL, 0, (uint8_t *)"HELO", 4, smtp_classify);
     arkime_parsers_classifier_register_tcp("smtp", NULL, 0, (uint8_t *)"EHLO", 4, smtp_classify);
     arkime_parsers_classifier_register_tcp("smtp", NULL, 0, (uint8_t *)"220 ", 4, smtp_classify);
+    arkime_parsers_classifier_register_tcp("smtp", NULL, 0, (uint8_t *)"220-", 4, smtp_classify);
 }

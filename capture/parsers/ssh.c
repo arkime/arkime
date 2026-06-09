@@ -165,7 +165,7 @@ LOCAL int ssh_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, in
         uint32_t sshLen = 0;
         BSB_IMPORT_u32(bsb, sshLen);
 
-        if (sshLen < 2 || sshLen > MAX_SSH_BUFFER) {
+        if (sshLen < 2 || sshLen > MAX_SSH_BUFFER - 4) {
             ssh->done = 1;
             return 0;
         }

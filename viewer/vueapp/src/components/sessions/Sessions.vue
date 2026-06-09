@@ -82,6 +82,7 @@ SPDX-License-Identifier: Apache-2.0
                     <button
                       id="openAllSessions"
                       @click="openAll"
+                      :aria-label="$t('sessions.sessions.openAll')"
                       class="btn btn-xs btn-theme-tertiary open-all-btn">
                       <span class="fa fa-plus-circle" />
                       <BTooltip
@@ -96,6 +97,7 @@ SPDX-License-Identifier: Apache-2.0
                     id="closeAllSessions"
                     @click="closeAll"
                     v-if="!loading && stickySessions.length > 0"
+                    :aria-label="$t('sessions.sessions.closeAll')"
                     class="btn btn-xs btn-theme-secondary close-all-btn ms-4">
                     <span class="fa fa-times-circle" />
                     <BTooltip
@@ -109,6 +111,7 @@ SPDX-License-Identifier: Apache-2.0
                     id="fitTable"
                     @click="fitTable"
                     v-if="showFitButton && !loading"
+                    :aria-label="$t('sessions.sessions.fitTable')"
                     class="btn btn-xs btn-theme-quaternary fit-btn"
                     :class="{'ms-4':stickySessions.length === 0, 'fit-btn-right':sessions.data && sessions.data.length <= 50 && stickySessions.length > 0}">
                     <span class="fa fa-arrows-h" />
@@ -162,6 +165,7 @@ SPDX-License-Identifier: Apache-2.0
                         @keydown.enter="saveColumnConfiguration" />
                       <button
                         type="button"
+                        :aria-label="$t('common.save')"
                         class="btn btn-theme-secondary"
                         :disabled="!newColConfigName"
                         @click="saveColumnConfiguration">
@@ -192,11 +196,13 @@ SPDX-License-Identifier: Apache-2.0
                       <button
                         class="btn btn-xs btn-danger pull-right ms-1"
                         type="button"
+                        :aria-label="$t('common.delete')"
                         @click.stop.prevent="deleteColumnConfiguration(config.name, key)">
                         <span class="fa fa-trash-o" />
                       </button>
                       <button
                         id="updateColumnConfiguration"
+                        :aria-label="$t('sessions.sessions.customColumnUpdate')"
                         class="btn btn-xs btn-warning pull-right"
                         type="button"
                         @click.stop.prevent="updateColumnConfiguration(config.name, key)">
@@ -279,6 +285,7 @@ SPDX-License-Identifier: Apache-2.0
                             @keydown.enter="saveInfoFieldLayout" />
                           <button
                             type="button"
+                            :aria-label="$t('common.save')"
                             class="btn btn-theme-secondary"
                             :disabled="!newInfoConfigName"
                             @click="saveInfoFieldLayout">
@@ -312,11 +319,13 @@ SPDX-License-Identifier: Apache-2.0
                           <button
                             class="btn btn-xs btn-danger pull-right ms-1"
                             type="button"
+                            :aria-label="$t('common.delete')"
                             @click.stop.prevent="deleteInfoFieldLayout(config.name, key)">
                             <span class="fa fa-trash-o" />
                           </button>
                           <button
                             id="updateInfoFieldConfiguration"
+                            :aria-label="$t('sessions.sessions.customInfoUpdate')"
                             class="btn btn-xs btn-warning pull-right"
                             type="button"
                             @click.stop.prevent="updateInfoFieldLayout(config.name, key)">
@@ -874,7 +883,7 @@ export default {
     window.addEventListener('resize', windowResizeEvent, { passive: true });
 
     UserService.getState('sessionDetailDLWidth').then((response) => {
-      this.$store.commit('setSessionDetailDLWidth', response.data?.width ?? 160);
+      this.$store.commit('setSessionDetailDLWidth', response?.width ?? 160);
     });
   },
   computed: {
@@ -1720,7 +1729,10 @@ export default {
       });
     },
     shouldIssueQuery: function () {
-      const manualQuery = this.user.settings.manualQuery && JSON.parse(this.user.settings.manualQuery);
+      let manualQuery = this.user.settings.manualQuery;
+      if (typeof manualQuery === 'string') {
+        manualQuery = manualQuery === 'true';
+      }
       const hasExpression = this.query.expression && this.query.expression.length;
       return searchIssued || !manualQuery || (manualQuery && hasExpression);
     },
@@ -1820,8 +1832,8 @@ export default {
         pendingPromise = { controller, cancelId };
 
         const response = await fetcher; // do the fetch
-        if (response.data.error) {
-          throw new Error(response.data.error);
+        if (response.error) {
+          throw new Error(response.error);
         }
 
         pendingPromise = null;

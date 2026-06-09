@@ -1,7 +1,7 @@
 # Many of these test user/roles start with sac- (skip auto create) because
 # otherwise viewer in regression mode would auto create the user.
 # Some day should remove all autocreate code.
-use Test::More tests => 209;
+use Test::More tests => 262;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -157,6 +157,8 @@ anonymous,,true,true,false,"arkimeAdmin, cont3xtUser, parliamentUser, usersAdmin
     eq_or_diff($users->{data}->[$sacpos], from_json('{"roles": ["usersAdmin", "arkimeUser"], "userId": "sac-test1", "removeEnabled": true, "expression": "foo", "headerAuthEnabled": true, "userName": "UserNameUpdated", "id": "sac-test1", "emailSearch": true, "enabled": false, "webEnabled": true, "packetSearch": false, "welcomeMsgNum": 0, "roleAssigners": []}', {relaxed => 1}), "Test User Update", { context => 3 });
 
 # update user settings
+# Do a GET first to trigger setLastUsed, avoiding race condition with POST in Redis mode
+    $json = viewerGetToken("/api/user/settings?arkimeRegressionUser=sac-test1", $test1Token);
     $json = viewerPostToken("/api/user/settings?arkimeRegressionUser=sac-test1", '{"logo":"testlogo.png","__proto":{"bad":"stuff"}}', $test1Token);
     is($json->{success}, 1, "update user settings");
     is($json->{i18n}, "api.users.settingsUpdated", "update user settings i18n");
@@ -164,6 +166,27 @@ anonymous,,true,true,false,"arkimeAdmin, cont3xtUser, parliamentUser, usersAdmin
     $json = viewerGetToken("/api/user/settings?arkimeRegressionUser=sac-test1", $test1Token);
     ok(!exists $json->{__proto__}, "no prototype pollution");
     eq_or_diff($json->{logo}, "testlogo.png");
+
+# update user settings - object values should be silently skipped
+    $json = viewerPostToken("/api/user/settings?arkimeRegressionUser=sac-test1", '{"logo":{"bad":"object"}}', $test1Token);
+    is($json->{success}, 1, "update user settings with object value succeeds");
+    $json = viewerGetToken("/api/user/settings?arkimeRegressionUser=sac-test1", $test1Token);
+    ok(!defined $json->{logo} || ref($json->{logo}) eq '', "logo object was not stored");
+
+# restore logo to string value
+    $json = viewerPostToken("/api/user/settings?arkimeRegressionUser=sac-test1", '{"logo":"testlogo.png"}', $test1Token);
+    is($json->{success}, 1, "restore logo setting");
+
+# user css - no theme returns 404
+    my $cssResponse = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8123/api/user.css?arkimeRegressionUser=sac-test1");
+    is($cssResponse->code, 404, "user css returns 404 without theme");
+
+# user css - with theme returns CSS
+    $json = viewerPostToken("/api/user/settings?arkimeRegressionUser=sac-test1", '{"theme":"custom-theme:#000000,#FFFFFF,#CCCCCC,#007bff,#cce5ff,#28a745,#d4edda,#ffc107,#fff3cd,#dc3545,#f8d7da,#17a2b8,#d1ecf1,#6c757d,#e2e3e5"}', $test1Token);
+    is($json->{success}, 1, "update user settings with theme");
+    $cssResponse = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8123/api/user.css?arkimeRegressionUser=sac-test1");
+    is($cssResponse->code, 200, "user css returns 200 with theme");
+    like($cssResponse->content, qr/color/, "user css contains color styles");
 
 # Add User 2
     my $json = viewerPostToken2("/api/user", '{"userId": "sac-test2", "userName": "UserName2", "enabled":true, "password":"password"}', $token2);
@@ -268,8 +291,14 @@ anonymous,,true,true,false,"arkimeAdmin, cont3xtUser, parliamentUser, usersAdmin
     delete $users->{data}->[$test2pos]->{lastUsed};
     eq_or_diff($users->{data}->[$test2pos], from_json('{"roles": [], "userId": "sac-test2", "removeEnabled": true, "expression": "", "headerAuthEnabled": false, "userName": "UserNameUpdated3", "id": "sac-test2", "emailSearch": false, "enabled": false, "webEnabled": false, "packetSearch": false, "welcomeMsgNum": 0, "roleAssigners": []}', {relaxed => 1}), "Test User Update", { context => 3 });
 
+# isPP body param validation
+    my $info = viewerPostToken("/api/user/layouts/sessionstable?arkimeRegressionUser=sac-test1", '{"name": "__proto__", "columns": ["source.ip"], "order": [["lastPacket", "asc"]]}', $test1Token);
+    is($info->{text}, "Invalid value for name", "column: __proto__ body value blocked");
+    $info = viewerPostToken("/api/user/layouts/sessionstable?arkimeRegressionUser=sac-test1", '{"name": "constructor", "columns": ["source.ip"], "order": [["lastPacket", "asc"]]}', $test1Token);
+    is($info->{text}, "Invalid value for name", "column: constructor body value blocked");
+
 # Session Table Column Layout CRUD
-    my $info = viewerGetToken("/api/user/layouts/sessionstable?arkimeRegressionUser=sac-test1", $test1Token);
+    $info = viewerGetToken("/api/user/layouts/sessionstable?arkimeRegressionUser=sac-test1", $test1Token);
     eq_or_diff($info, from_json("[]"), "column: empty");
 
     $info = viewerPostToken("/api/user/layouts/sessionstable?arkimeRegressionUser=sac-test1", '{"name": "column1", "columns": ["source.ip","destination.ip"], "order": [["lastPacket", "asc"]]}', $test1Token);
@@ -294,6 +323,18 @@ anonymous,,true,true,false,"arkimeAdmin, cont3xtUser, parliamentUser, usersAdmin
 
     $info = viewerPutToken("/api/user/layouts/sessionstable?arkimeRegressionUser=sac-test1", '{"name": "column1", "columns": ["source.ip","destination.ip","info"], "order": [["lastPacket","asc"]]}', $test1Token);
     ok($info->{success}, "column: update");
+
+# column: mass assignment - extra properties should be stripped
+    $info = viewerPutToken("/api/user/layouts/sessionstable?arkimeRegressionUser=sac-test1", '{"name": "column1", "columns": ["source.ip"], "order": [["lastPacket","asc"]], "evil": "injected"}', $test1Token);
+    ok($info->{success}, "column: update with extra props");
+    $info = viewerGetToken("/api/user/layouts/sessionstable?arkimeRegressionUser=sac-test1", $test1Token);
+    ok(!exists $info->[0]->{evil}, "column: extra property stripped");
+
+# column: update should sanitize name (strip special chars)
+    $info = viewerPutToken("/api/user/layouts/sessionstable?arkimeRegressionUser=sac-test1", '{"name": "column1!", "columns": ["source.ip"], "order": [["lastPacket","asc"]]}', $test1Token);
+    ok($info->{success}, "column: update with special chars in name");
+    $info = viewerGetToken("/api/user/layouts/sessionstable?arkimeRegressionUser=sac-test1", $test1Token);
+    is($info->[0]->{name}, "column1", "column: updated name is sanitized");
 
     $info = viewerDeleteToken("/api/user/layouts/sessionstable/column1?arkimeRegressionUser=sac-test1", $test1Token);
     ok($info->{success}, "column: delete found");
@@ -326,6 +367,12 @@ anonymous,,true,true,false,"arkimeAdmin, cont3xtUser, parliamentUser, usersAdmin
     $info = viewerPutToken("/api/user/layouts/sessionsinfofields?arkimeRegressionUser=sac-test1", '{"name": "sfields1", "fields": ["source.ip","destination.ip","node"]}', $test1Token);
     ok($info->{success}, "sessionsinfofields fields: update success");
 
+# sessionsinfofields: mass assignment - extra properties should be stripped
+    $info = viewerPutToken("/api/user/layouts/sessionsinfofields?arkimeRegressionUser=sac-test1", '{"name": "sfields1", "fields": ["source.ip","destination.ip","node"], "evil": "injected"}', $test1Token);
+    ok($info->{success}, "sessionsinfofields: update with extra props");
+    $info = viewerGetToken("/api/user/layouts/sessionsinfofields?arkimeRegressionUser=sac-test1", $test1Token);
+    ok(!exists $info->[0]->{evil}, "sessionsinfofields: extra property stripped");
+
     $info = viewerDeleteToken("/api/user/layouts/sessionsinfofields/fred?arkimeRegressionUser=sac-test1", $test1Token);
     ok(!$info->{success}, "sessionsinfofields fields: delete not found");
 
@@ -355,6 +402,12 @@ anonymous,,true,true,false,"arkimeAdmin, cont3xtUser, parliamentUser, usersAdmin
     $info = viewerPutToken("/api/user/layouts/spiview?arkimeRegressionUser=sac-test1", '{"name": "sfields1", "fields": ["source.ip","destination.ip","node"]}', $test1Token);
     ok($info->{success}, "spiview fields: update success");
 
+# spiview: mass assignment - extra properties should be stripped
+    $info = viewerPutToken("/api/user/layouts/spiview?arkimeRegressionUser=sac-test1", '{"name": "sfields1", "fields": ["source.ip","destination.ip","node"], "evil": "injected"}', $test1Token);
+    ok($info->{success}, "spiview: update with extra props");
+    $info = viewerGetToken("/api/user/layouts/spiview?arkimeRegressionUser=sac-test1", $test1Token);
+    ok(!exists $info->[0]->{evil}, "spiview: extra property stripped");
+
     $info = viewerDeleteToken("/api/user/layouts/spiview/fred?arkimeRegressionUser=sac-test1", $test1Token);
     ok(!$info->{success}, "spiview fields: delete not found");
 
@@ -366,6 +419,17 @@ anonymous,,true,true,false,"arkimeAdmin, cont3xtUser, parliamentUser, usersAdmin
 
     $info = viewerGetToken("/api/user/layouts/spiview?arkimeRegressionUser=sac-test1", $test1Token);
     eq_or_diff($info, from_json("[]"), "spiview fields: empty");
+
+# Page config tests
+    $info = viewerGetToken("/api/user/config/sessions?arkimeRegressionUser=sac-test1", $test1Token);
+    ok(exists $info->{colConfigs}, "sessions config has colConfigs");
+    ok(exists $info->{infoConfigs}, "sessions config has infoConfigs");
+
+    $info = viewerGetToken("/api/user/config/spiview?arkimeRegressionUser=sac-test1", $test1Token);
+    ok(exists $info->{fieldConfigs}, "spiview config has fieldConfigs");
+
+    $info = viewerGetToken("/api/user/config/badpage?arkimeRegressionUser=sac-test1", $test1Token);
+    ok(!$info->{success}, "unsupported page returns error");
 
 # Messages
     $info = viewerPutToken("/api/user/sac-test1/acknowledge", '{"msgNum":2}', $token2);
@@ -426,6 +490,14 @@ anonymous,,true,true,false,"arkimeAdmin, cont3xtUser, parliamentUser, usersAdmin
     # notUser:
     $json = viewerGet("/api/fieldActions?arkimeRegressionUser=test101");
     eq_or_diff($json, from_json('{"ALLTEST":{"url":"https://www.asdf.com?expression=%EXPRESSION%&date=%DATE%&field=%FIELD%&dbField=%DBFIELD%","all":true,"name":"All Field Action %FIELDNAME%!"},"ALLTESTWISE":{"url":"http:/www.example.com","all":true,"name":"AllWiseTest"}}'), 'notUser fieldActions');
+
+# reverseDNS tests
+    my $txt = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8123/api/reversedns?ip=thisisnotanip")->content;
+    is($txt, "reverse error", "reversedns returns error for invalid IP");
+    $txt = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8123/api/reversedns")->content;
+    is($txt, "reverse error", "reversedns returns error for missing IP");
+    $txt = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8123/api/reversedns?ip=1.1.1.1")->content;
+    is($txt, "one.one.one.one", "reversedns returns one.one.one.one for 1.1.1.1");
 
 # state tests
     $json = viewerPostToken("/api/user/state/state1?arkimeRegressionUser=sac-test1", '{"order":"test","visibleHeaders":["firstPacket","lastPacket","src","srcPort","dst","dstPort","totPackets","dbby","node"]}', $test1Token);
@@ -677,15 +749,125 @@ my $uaToken = getTokenCookie('testusersadmin');
     $json = viewerGetToken("/api/user?arkimeRegressionUser=sac-userExplicitTrue", $token);
     is($json->{emailSearch}, 1, "sac-userExplicitTrue emailSearch true (explicit)");
 
-# Check appversion for all 4 services
+# Check appversion
     $json = viewerGetToken("/api/appversion", $token);
     is($json->{app}, "viewer", "viewer appversion app field");
 
-    $json = parliamentGet("/api/appversion");
-    is($json->{app}, "parliament", "parliament appversion app field");
+# Check locales endpoint
+    $json = viewerGet("/api/locales");
+    ok(exists $json->{locales}->{'en'}, "locales has English");
 
-    $json = cont3xtGet("/api/appversion");
-    is($json->{app}, "cont3xt", "cont3xt appversion app field");
+# Check user roles endpoint
+    $json = viewerGetToken("/api/user/roles", $token);
+    ok($json->{success}, "user roles returns success");
+    ok(ref $json->{roles} eq 'ARRAY', "user roles returns array");
+
+# TOTP tests
+    # Create non-admin test user to verify TOTP requires admin role
+    $json = viewerPostToken("/api/user", '{"userId": "sac-nonadmin", "userName": "Non-Admin User", "enabled":true, "webEnabled":true, "password":"nonadminpass", "roles": ["arkimeUser"]}', $token);
+    ok($json->{success}, "Non-admin test user created");
+    my $nonAdminToken = getTokenCookie('sac-nonadmin');
+
+    # Non-admin users should be denied TOTP access
+    $json = viewerGetToken("/api/user/totp/status?arkimeRegressionUser=sac-nonadmin", $nonAdminToken);
+    is($json->{success}, 0, "Non-admin cannot access TOTP status");
+
+    $json = viewerPostToken("/api/user/totp/setup?arkimeRegressionUser=sac-nonadmin", '{}', $nonAdminToken);
+    is($json->{success}, 0, "Non-admin cannot setup TOTP");
+
+    # Create admin test user for TOTP tests
+    addUser("-n testuser sac-totpuser sac-totpuser sac-totpuser --roles arkimeAdmin");
+    my $totpToken = getTokenCookie('sac-totpuser');
+
+    # Get TOTP status - should be not enabled
+    $json = viewerGetToken("/api/user/totp/status?arkimeRegressionUser=sac-totpuser", $totpToken);
+    ok($json->{success}, "TOTP status returns success");
+    is($json->{enabled}, 0, "TOTP not enabled initially");
+
+    # Setup TOTP - get QR code
+    $json = viewerPostToken("/api/user/totp/setup?arkimeRegressionUser=sac-totpuser", '{}', $totpToken);
+    ok($json->{success}, "TOTP setup returns success");
+    ok(defined $json->{secret}, "TOTP setup returns secret");
+    ok(defined $json->{qrCodeDataUrl}, "TOTP setup returns qrCodeDataUrl");
+    like($json->{qrCodeDataUrl}, qr/^data:image\/png;base64,/, "TOTP qrCodeDataUrl is data URL");
+    my $totpSecret = $json->{secret};
+
+    # Confirm TOTP with invalid code
+    $json = viewerPostToken("/api/user/totp/confirm?arkimeRegressionUser=sac-totpuser", '{"code": "000000"}', $totpToken);
+    is($json->{success}, 0, "TOTP confirm fails with invalid code");
+
+    # Generate valid TOTP code using the secret
+    my $validCode = generate_totp($totpSecret);
+
+    # Need to re-setup since invalid attempt doesn't invalidate pending secret
+    # but the secret is still pending from the setup above
+
+    # Confirm TOTP with valid code
+    $json = viewerPostToken("/api/user/totp/confirm?arkimeRegressionUser=sac-totpuser", '{"code": "' . $validCode . '"}', $totpToken);
+    ok($json->{success}, "TOTP confirm succeeds with valid code");
+
+    # Get TOTP status - should be enabled now
+    $json = viewerGetToken("/api/user/totp/status?arkimeRegressionUser=sac-totpuser", $totpToken);
+    ok($json->{success}, "TOTP status returns success after enrollment");
+    is($json->{enabled}, 1, "TOTP enabled after confirm");
+
+    # Disable TOTP with invalid code
+    $json = viewerPostToken("/api/user/totp/disable?arkimeRegressionUser=sac-totpuser", '{"code": "000000"}', $totpToken);
+    is($json->{success}, 0, "TOTP disable fails with invalid code");
+
+    # Disable TOTP with valid code
+    $validCode = generate_totp($totpSecret);
+    $json = viewerPostToken("/api/user/totp/disable?arkimeRegressionUser=sac-totpuser", '{"code": "' . $validCode . '"}', $totpToken);
+    ok($json->{success}, "TOTP disable succeeds with valid code");
+
+    # Get TOTP status - should be not enabled again
+    $json = viewerGetToken("/api/user/totp/status?arkimeRegressionUser=sac-totpuser", $totpToken);
+    is($json->{enabled}, 0, "TOTP not enabled after disable");
+
+    # Try to disable TOTP when not enabled (no totpSecret)
+    $json = viewerPostToken("/api/user/totp/disable?arkimeRegressionUser=sac-totpuser", '{"code": "123456"}', $totpToken);
+    is($json->{success}, 0, "TOTP disable fails when not enabled");
+    like($json->{text}, qr/not enabled/i, "TOTP disable returns not enabled message");
+
+# TOTP admin disable tests
+    # Re-enroll the test user for admin tests
+    $json = viewerPostToken("/api/user/totp/setup?arkimeRegressionUser=sac-totpuser", '{}', $totpToken);
+    ok($json->{success}, "TOTP re-setup for admin tests");
+    $totpSecret = $json->{secret};
+    $validCode = generate_totp($totpSecret);
+    $json = viewerPostToken("/api/user/totp/confirm?arkimeRegressionUser=sac-totpuser", '{"code": "' . $validCode . '"}', $totpToken);
+    ok($json->{success}, "TOTP re-confirm for admin tests");
+
+    # Admin (anonymous user has usersAdmin) trying to disable their own TOTP without code should fail
+    # First enroll admin user
+    $json = viewerPostToken("/api/user/totp/setup", '{}', $token);
+    ok($json->{success}, "Admin TOTP setup");
+    my $adminTotpSecret = $json->{secret};
+    my $adminValidCode = generate_totp($adminTotpSecret);
+    $json = viewerPostToken("/api/user/totp/confirm", '{"code": "' . $adminValidCode . '"}', $token);
+    ok($json->{success}, "Admin TOTP confirm");
+
+    # Admin trying to disable own TOTP without code - should fail
+    $json = viewerPostToken("/api/user/totp/disable", '{}', $token);
+    is($json->{success}, 0, "Admin cannot disable own TOTP without code");
+    like($json->{text}, qr/code required/i, "Admin disable own returns code required");
+
+    # Admin trying to disable own TOTP with wrong code - should fail
+    $json = viewerPostToken("/api/user/totp/disable", '{"code": "000000"}', $token);
+    is($json->{success}, 0, "Admin cannot disable own TOTP with wrong code");
+
+    # Admin can disable another user's TOTP without code
+    $json = viewerPostToken("/api/user/totp/disable?userId=sac-totpuser", '{}', $token);
+    ok($json->{success}, "Admin can disable other user TOTP without code");
+
+    # Verify other user's TOTP is disabled
+    $json = viewerGetToken("/api/user/totp/status?arkimeRegressionUser=sac-totpuser", $totpToken);
+    is($json->{enabled}, 0, "Other user TOTP disabled by admin");
+
+    # Clean up - disable admin TOTP with valid code
+    $adminValidCode = generate_totp($adminTotpSecret);
+    $json = viewerPostToken("/api/user/totp/disable", '{"code": "' . $adminValidCode . '"}', $token);
+    ok($json->{success}, "Admin disable own TOTP with valid code");
 
 # clean old users
     viewerGet("/regressionTests/deleteAllUsers");

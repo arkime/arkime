@@ -378,6 +378,23 @@ gboolean arkime_session_has_protocol(ArkimeSession_t *session, const char *proto
     return hstring != 0;
 }
 /******************************************************************************/
+gboolean arkime_session_rm_protocol(ArkimeSession_t *session, const char *protocol)
+{
+    if (!session->fields[protocolField])
+        return FALSE;
+
+    ArkimeStringHashStd_t   *shash = session->fields[protocolField]->shash;
+    ArkimeString_t          *hstring;
+    HASH_FIND(s_, *shash, protocol, hstring);
+    if (!hstring)
+        return FALSE;
+
+    HASH_REMOVE(s_, *shash, hstring);
+    g_free(hstring->str);
+    ARKIME_TYPE_FREE(ArkimeString_t, hstring);
+    return TRUE;
+}
+/******************************************************************************/
 void arkime_session_add_tag(ArkimeSession_t *session, const char *tag)
 {
     arkime_field_string_add(config.tagsStringField, session, tag, -1, TRUE);
@@ -965,14 +982,9 @@ void arkime_session_set_stop_spi(ArkimeSession_t *session, int value)
 /******************************************************************************/
 LOCAL void arkime_session_load_stopped()
 {
-    if (!g_file_test(stoppedFilename, G_FILE_TEST_EXISTS))
+    FILE *fp = arkime_state_file_open(stoppedFilename, "r");
+    if (!fp)
         return;
-
-    FILE *fp;
-    if (!(fp = fopen(stoppedFilename, "r"))) {
-        LOG("ERROR - Couldn't open `%s` to load stopped sessions", stoppedFilename);
-        return;
-    }
 
     int ver;
     if (!fread(&ver, 4, 1, fp)) {
@@ -1035,9 +1047,8 @@ LOCAL gboolean arkime_session_save_stopped(gpointer UNUSED(user_data))
         }
     }
 
-    FILE *fp;
-    if (!(fp = fopen(stoppedFilename, "w"))) {
-        LOG("ERROR - Couldn't open `%s` to save stopped sessions", stoppedFilename);
+    FILE *fp = arkime_state_file_open(stoppedFilename, "w");
+    if (!fp) {
         return G_SOURCE_CONTINUE;
     }
     uint32_t ver = 1;
@@ -1321,7 +1332,7 @@ void arkime_session_init()
 
     g_timeout_add_seconds(10, arkime_session_save_stopped, 0);
 
-    snprintf(stoppedFilename, sizeof(stoppedFilename), "/tmp/%s.stoppedsessions", config.nodeName);
+    snprintf(stoppedFilename, sizeof(stoppedFilename), "%s.stoppedsessions", config.nodeName);
     arkime_session_load_stopped();
     arkime_session_load_collapse();
 

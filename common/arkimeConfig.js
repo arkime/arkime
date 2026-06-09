@@ -47,7 +47,7 @@ class ArkimeConfig {
 
     if (options.defaultSections === undefined) {
       console.trace('defaultSections option must be set');
-      process.exit();
+      process.exit(1);
     } else if (Array.isArray(options.defaultSections)) {
       ArkimeConfig.#defaultSections = options.defaultSections;
     } else {
@@ -178,6 +178,11 @@ class ArkimeConfig {
       if (section === undefined || key === undefined) { continue; }
       key = key.replace(/DASH/g, '-').replace(/COLON/g, ':').replace(/DOT/g, '.').replace(/SLASH/g, '/');
 
+      if (ArkimeUtil.isPP(section) || ArkimeUtil.isPP(key)) {
+        console.log(`WARNING - Ignoring environment variable ${e}: section/key looks like prototype pollution`);
+        continue;
+      }
+
       if (ArkimeConfig.#config[section] === undefined) {
         ArkimeConfig.#config[section] = {};
       }
@@ -224,7 +229,7 @@ class ArkimeConfig {
     if (value === undefined) {
       if (d === ArkimeConfig.exit) {
         console.log(`ERROR - ${sectionKey} not found in sections: ${sections}`);
-        process.exit();
+        process.exit(1);
       }
       if (d === ArkimeConfig.throw) {
         throw new Error(`${sectionKey} not found in sections: ${sections}`);
@@ -353,7 +358,7 @@ class ArkimeConfig {
    * Get the full config for a section
    *
    * @param {string} section - The section of the config file to return
-   * @returns {object} - A list of all the sections in the config file
+   * @returns {object} - The config object for the given section
    */
   static getSection (section) {
     return ArkimeConfig.#config[section];
@@ -513,7 +518,7 @@ class ConfigRedisSentinel {
     const redisParts = uri.split('/');
     redisParts[1] = 'stoperror';
     if (redisParts.length !== 6 || redisParts.some(p => p === '')) {
-      throw new Error(`Invalid redis-sentinel url - ${redisParts[0]}//[sentinelPassword:redisPassword@]sentinelHost[:sentinelPort][,sentinelPortN:sentinelPortN]/redisName/redisDbNum`);
+      throw new Error(`Invalid redis-sentinel url - ${redisParts[0]}//[sentinelPassword:redisPassword@]sentinelHost[:sentinelPort][,sentinelPortN:sentinelPortN]/redisName/redisDbNum/key`);
     }
     ConfigRedisSentinel.#redisKey = redisParts[5];
     ConfigRedisSentinel.#redis = ArkimeUtil.createRedisClient(uri, 'config');

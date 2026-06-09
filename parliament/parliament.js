@@ -976,6 +976,7 @@ function isUser (req, res, next) {
     return next();
   }
 
+  req.user.logRoleFailure('parliamentUser');
   res.status(403).json({
     success: false,
     text: 'Permission Denied: Not a Parliament user'
@@ -987,6 +988,7 @@ function isAdmin (req, res, next) {
     return next();
   }
 
+  req.user.logRoleFailure('parliamentAdmin');
   res.status(403).json({
     success: false,
     text: 'Permission Denied: Not a Parliament admin'
@@ -1081,7 +1083,7 @@ async function buildAlert (cluster, issue) {
 
   issue.alerted = Date.now();
 
-  const message = `${cluster.title} - ${issue.message}`;
+  const message = `${ArkimeUtil.safeStr(cluster.title)} - ${issue.message}`;
 
   for (const setNotifier of notifiers) {
 
@@ -1541,6 +1543,11 @@ async function getStats (cluster) {
 async function updateParliament () {
   internals.updateInProgress = true;
   const parliament = await Parliament.getParliament();
+
+  if (!parliament) {
+    internals.updateInProgress = false;
+    return Promise.resolve();
+  }
 
   return new Promise((resolve, reject) => {
     const promises = [];

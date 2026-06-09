@@ -7,9 +7,9 @@
 extern ArkimeConfig_t        config;
 
 /******************************************************************************/
-LOCAL ArkimePacketRC erspan_packet_enqueue(ArkimePacketBatch_t *UNUSED(batch), ArkimePacket_t *const packet, const uint8_t *data, int len)
+LOCAL ArkimePacketRC erspan_packet_enqueue(ArkimePacketBatch_t *batch, ArkimePacket_t *const packet, const uint8_t *data, int len)
 {
-    if (unlikely(len) < 8 || unlikely(!data))
+    if (unlikely(len < 8) || unlikely(!data))
         return ARKIME_PACKET_CORRUPT;
 
     if ((*data >> 4) != 1) {
@@ -29,9 +29,9 @@ LOCAL ArkimePacketRC erspan_packet_enqueue(ArkimePacketBatch_t *UNUSED(batch), A
     return arkime_packet_run_ethernet_cb(batch, packet, data + 8, len - 8, ARKIME_ETHERTYPE_ETHER, "ERSpan");
 }
 /******************************************************************************/
-LOCAL ArkimePacketRC erspan_packet_enqueue3(ArkimePacketBatch_t *UNUSED(batch), ArkimePacket_t *const packet, const uint8_t *data, int len)
+LOCAL ArkimePacketRC erspan_packet_enqueue3(ArkimePacketBatch_t *batch, ArkimePacket_t *const packet, const uint8_t *data, int len)
 {
-    if (unlikely(len) < 12 || unlikely(!data))
+    if (unlikely(len < 12) || unlikely(!data))
         return ARKIME_PACKET_CORRUPT;
 
     if ((*data >> 4) != 2) {

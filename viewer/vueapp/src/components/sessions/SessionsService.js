@@ -319,10 +319,16 @@ export default {
   viewIntersection: function (params, routeParams) {
     const clonedParams = JSON.parse(JSON.stringify(routeParams));
 
-    params.date = clonedParams.date;
+    // use store state for time params (route query may be out of sync when
+    // the default time range was applied via window.history.replaceState)
+    if (parseInt(store.state.timeRange, 10) === -1) {
+      params.date = store.state.timeRange;
+    } else {
+      params.date = clonedParams.date;
+      params.stopTime = clonedParams.stopTime || store.state.time.stopTime;
+      params.startTime = clonedParams.startTime || store.state.time.startTime;
+    }
     params.view = clonedParams.view;
-    params.stopTime = clonedParams.stopTime;
-    params.startTime = clonedParams.startTime;
     params.expression = clonedParams.expression;
     params.cluster = clonedParams.cluster;
 
@@ -344,12 +350,19 @@ export default {
       exp,
       counts,
       view: clonedParams.view,
-      date: clonedParams.date,
-      stopTime: clonedParams.stopTime,
-      startTime: clonedParams.startTime,
       expression: clonedParams.expression,
       cluster: clonedParams.cluster
     };
+
+    // use store state for time params (route query may be out of sync when
+    // the default time range was applied via window.history.replaceState)
+    if (parseInt(store.state.timeRange, 10) === -1) {
+      params.date = store.state.timeRange;
+    } else {
+      params.date = clonedParams.date;
+      params.stopTime = clonedParams.stopTime || store.state.time.stopTime;
+      params.startTime = clonedParams.startTime || store.state.time.startTime;
+    }
 
     const url = `api/unique?${qs.stringify(params)}`;
 

@@ -44,11 +44,17 @@ void packet_handler(u_char *user_data, const struct pcap_pkthdr *pkthdr, const u
     // Add END tag (0x01)
     tzsp_packet[offset++] = 0x01;
 
+    // Defensive bound: cap caplen to actual remaining buffer space after header offset
+    unsigned int caplen = pkthdr->caplen;
+    unsigned int max_caplen = (unsigned int)(sizeof(tzsp_packet) - offset);
+    if (caplen > max_caplen)
+        caplen = max_caplen;
+
     // Copy packet data
-    memcpy(tzsp_packet + offset, packet, pkthdr->caplen);
+    memcpy(tzsp_packet + offset, packet, caplen);
 
     // Send TZSP packet
-    sendto(sock_fd, tzsp_packet, pkthdr->caplen + offset, 0,
+    sendto(sock_fd, tzsp_packet, caplen + offset, 0,
            (struct sockaddr *)&dest_addr, sizeof(dest_addr));
 }
 

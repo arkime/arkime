@@ -20,7 +20,7 @@ class ArkimeCache {
   constructor (options) {
     this.cacheSize = parseInt(options.cacheSize ?? 100000);
     this.cacheTimeout = ArkimeUtil.parseTimeStr(options.cacheTimeout ?? 24 * 60 * 60);
-    this.#lru = new LRUCache({ max: this.cacheSize });
+    this.#lru = new LRUCache({ max: this.cacheSize, ttl: this.cacheTimeout * 1000 });
   }
 
   // ----------------------------------------------------------------------------
@@ -179,11 +179,20 @@ class ArkimeLMDBCache extends ArkimeCache {
 
   // ----------------------------------------------------------------------------
   async get (key) {
-    return this.store.get(key);
+    if (super.has(key)) {
+      return super.get(key);
+    }
+
+    const result = this.store.get(key);
+    if (result !== undefined) {
+      super.set(key, result);
+    }
+    return result;
   }
 
   // ----------------------------------------------------------------------------
   set (key, result) {
+    super.set(key, result);
     this.store.put(key, result);
   }
 }

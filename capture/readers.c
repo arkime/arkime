@@ -84,6 +84,9 @@ void arkime_readers_start()
     interfaceOps = arkime_config_raw_str_list(NULL, "interfaceOps", "");
 
     for (int i = 0; interfaceOps[i]; i++) {
+        if (i >= 256) {
+            CONFIGEXIT("Too many interfaceOps, max is 256");
+        }
         if (!interfaceOps[i][0])
             continue;
 
@@ -103,7 +106,10 @@ void arkime_readers_start()
     char **filenameOpsStr;
     filenameOpsStr = arkime_config_str_list(NULL, "filenameOps", "");
 
-    for (int i = 0; filenameOpsStr && filenameOpsStr[i] && i < 100; i++) {
+    for (int i = 0; filenameOpsStr && filenameOpsStr[i]; i++) {
+        if (i >= 256) {
+            CONFIGEXIT("Too many filenameOps, max is 256");
+        }
         if (!filenameOpsStr[i][0])
             continue;
 

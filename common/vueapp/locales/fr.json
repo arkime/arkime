@@ -759,7 +759,8 @@
       "molochtype": "Type Arkime",
       "shardsPerNode": "Shards/Nœud",
       "versionCreated": "Version Créée",
-      "docSize": "Taille Doc"
+      "docSize": "Taille Doc",
+      "codec": "Codec"
     },
     "esNodes": {
       "mainManaging": "Gestion Principale",
@@ -1218,6 +1219,24 @@
       "mismatchedPassword": "Votre nouveau mot de passe et sa confirmation ne correspondent pas",
       "changePassword": "Changer le mot de passe"
     },
+    "totp": {
+      "title": "Authentification à deux facteurs",
+      "description": "Ajoutez une couche de sécurité supplémentaire en exigeant un code d'une application d'authentification (Authy, Google Authenticator, etc.) lors de modifications sensibles.",
+      "status": "Statut",
+      "enabled": "Activé",
+      "disabled": "Non activé",
+      "enroll": "Activer 2FA",
+      "unenroll": "Désactiver 2FA",
+      "scanQR": "Scanner le code QR",
+      "generatingQR": "Génération du code QR...",
+      "manualEntry": "Saisie manuelle",
+      "verifyCode": "Code de vérification",
+      "codePlaceholder": "000000",
+      "verify": "Vérifier et activer",
+      "invalidCode": "Veuillez entrer un code valide à 6 chiffres",
+      "confirmDisable": "Entrez le code pour désactiver",
+      "confirmUnenroll": "Désactiver 2FA"
+    },
     "shortcuts": {
       "newShortcut": "Nouveau raccourci",
       "editShortcut": "Modifier le raccourci",
@@ -1293,6 +1312,7 @@
     "hideViz": "Ce cluster est configuré pour masquer le graphique si une plage de temps de {days} jours ou plus est demandée",
     "hideVizTip": "Ceci aide aux performances",
     "hideVizMore": "Cliquez sur le bouton 'Récupérer les données de visualisation' ci-dessus pour récupérer les données de visualisation pour cette requête (ou ouvrez la liste déroulante pour plus d'options).",
+    "toggleMapSize": "Basculer la taille de la carte",
     "toggleSrcCountry": "Basculer les pays source",
     "toggleDstCountry": "Basculer les pays destination",
     "graphLines": "Lignes",
@@ -1739,6 +1759,8 @@
       "missingList": "Liste de sessions manquante",
       "noSessionsFound": "Aucune session trouvée",
       "cantGetSessions": "Impossible d'obtenir les sessions à partir des IDs",
+      "allDateNotAllowedSpiview": "Plage de dates 'Toutes' non autorisée pour la requête spiview",
+      "spiviewFetchError": "Erreur lors de la récupération des données spiview",
       "badFieldParam": "Paramètre 'field' invalide",
       "missingExpParam": "Paramètre exp manquant",
       "sessionNotFound": "Session introuvable",

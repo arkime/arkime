@@ -30,6 +30,7 @@ SPDX-License-Identifier: Apache-2.0
             v-if="canEdit"
             :id="'edit-description-' + localJob.id"
             @click="editDescription = true"
+            :aria-label="$t('hunts.editDescriptionTip')"
             class="btn btn-xs btn-theme-secondary ms-1">
             <span class="fa fa-pencil" />
             <BTooltip :target="'edit-description-' + localJob.id">
@@ -180,6 +181,7 @@ SPDX-License-Identifier: Apache-2.0
                 type="button"
                 class="btn-close"
                 :title="$t('hunts.removeUserTip')"
+                :aria-label="$t('hunts.removeUserTip')"
                 @click="removeUser(username, localJob)">
                 &times;
               </button>
@@ -191,6 +193,7 @@ SPDX-License-Identifier: Apache-2.0
           <button
             :id="'add-users-' + localJob.id"
             class="btn btn-xs btn-theme-secondary ms-1"
+            :aria-label="$t('hunts.addUserTip')"
             @click="toggleAddUsers">
             <span class="fa fa-plus-circle" />
             <BTooltip :target="'add-users-' + localJob.id">

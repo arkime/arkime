@@ -74,6 +74,7 @@ SPDX-License-Identifier: Apache-2.0
               v-if="config.canEdit"
               class="btn btn-xs btn-theme-tertiary ms-1"
               :title="$t('sessions.summary.config.edit')"
+              :aria-label="$t('sessions.summary.config.edit')"
               @click.stop="openEditModal(config)">
               <span class="fa fa-pencil" />
             </button>
@@ -81,6 +82,7 @@ SPDX-License-Identifier: Apache-2.0
               v-if="config.canDelete"
               class="btn btn-xs btn-danger ms-1"
               :title="$t('sessions.summary.config.delete')"
+              :aria-label="$t('sessions.summary.config.delete')"
               @click.stop="deleteConfig(config)">
               <span class="fa fa-trash-o" />
             </button>

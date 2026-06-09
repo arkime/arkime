@@ -55,7 +55,7 @@
 #endif
 #define ARKIME_CACHE_ALIGN __attribute__((aligned(ARKIME_CACHE_LINE_SIZE)))
 
-#define ARKIME_API_VERSION 603
+#define ARKIME_API_VERSION 606
 
 #define ARKIME_SESSIONID_LEN  40
 #define ARKIME_SESSIONID6_LEN 40
@@ -303,20 +303,21 @@ typedef struct {
 #define ARKIME_COND_BROADCAST(var)      pthread_cond_broadcast(&var##_cond)
 #define ARKIME_COND_SIGNAL(var)         pthread_cond_signal(&var##_cond)
 
-#define ARKIME_THREAD_INCR(var)          __sync_add_and_fetch(&var, 1);
-#define ARKIME_THREAD_INCRNEW(var)       __sync_add_and_fetch(&var, 1);
-#define ARKIME_THREAD_INCROLD(var)       __sync_fetch_and_add(&var, 1);
-#define ARKIME_THREAD_INCR_NUM(var, num) __sync_add_and_fetch(&var, num);
+#define ARKIME_THREAD_INCR(var)          __sync_add_and_fetch(&var, 1)
+#define ARKIME_THREAD_INCRNEW(var)       __sync_add_and_fetch(&var, 1)
+#define ARKIME_THREAD_INCROLD(var)       __sync_fetch_and_add(&var, 1)
+#define ARKIME_THREAD_INCR_NUM(var, num) __sync_add_and_fetch(&var, num)
 
-#define ARKIME_THREAD_DECR(var)          __sync_sub_and_fetch(&var, 1);
-#define ARKIME_THREAD_DECRNEW(var)       __sync_sub_and_fetch(&var, 1);
-#define ARKIME_THREAD_DECROLD(var)       __sync_fetch_and_sub(&var, 1);
-#define ARKIME_THREAD_DECR_NUM(var, num) __sync_sub_and_fetch(&var, num);
+#define ARKIME_THREAD_DECR(var)          __sync_sub_and_fetch(&var, 1)
+#define ARKIME_THREAD_DECRNEW(var)       __sync_sub_and_fetch(&var, 1)
+#define ARKIME_THREAD_DECROLD(var)       __sync_fetch_and_sub(&var, 1)
+#define ARKIME_THREAD_DECR_NUM(var, num) __sync_sub_and_fetch(&var, num)
 
-#define ARKIME_THREAD_CAS(ptr, old, new) __sync_bool_compare_and_swap((ptr), (old), (new))
+#define ARKIME_THREAD_ATOMIC_STORE(var, val) __atomic_store_n(&(var), (val), __ATOMIC_RELEASE)
+#define ARKIME_THREAD_ATOMIC_LOAD(var)       __atomic_load_n(&(var), __ATOMIC_ACQUIRE)
 
 /* You are probably looking here because you think 24 is too low, really it isn't.
- * Instead, increase the number of threads used for reading packets.
+ * Instead, use jemalloc and increase the number of threads used for reading packets.
  * https://arkime.com/faq#why-am-i-dropping-packets
  */
 #define ARKIME_MAX_PACKET_THREADS 24
@@ -538,6 +539,7 @@ typedef struct {
 #define ARKIME_WHICH_SET_ID(_w, _id) ((_w & 0x1) | (_id << 8))
 
 #define ARKIME_PARSER_UNREGISTER -1
+// Deprecated: byte-based UDP classifiers are automatically skipped on UDP/53 in arkime_parsers_classify_udp.
 #define ARKIME_RETURN_IF_DNS_PORT if (session->port1 == 53 || session->port2 == 53) return
 typedef int  (* ArkimeParserFunc) (struct arkime_session *session, void *uw, const uint8_t *data, int remaining, int which);
 typedef void (* ArkimeParserFreeFunc) (struct arkime_session *session, void *uw);
@@ -552,12 +554,14 @@ typedef struct {
 } ArkimeParserInfo_t;
 
 typedef struct {
-    uint8_t buf[2][8192];
-    int     len[2];
-    int     state[2];
-    int     skipping[2];
-    int     serverWhich;
-    uint8_t version;
+    uint8_t *buf[2];
+    int      len[2];
+    int      state[2];
+    int      skipping[2];
+    uint16_t bufSize[2];
+    uint16_t bufMax;
+    int      serverWhich;
+    uint8_t  version;
 } ArkimeParserBuf_t;
 
 /******************************************************************************/
@@ -608,10 +612,15 @@ typedef struct arkimepacket_t {
     uint32_t       copied: 1;           // don't need to copy
     uint32_t       wasfrag: 1;          // was a fragment
     uint32_t       vlanCopy: 1;         // vlan was copied from packet
+    uint32_t       tunnelDepth: 4;      // nesting depth for tunnel dispatch (see ARKIME_PACKET_MAX_TUNNEL_DEPTH)
     uint32_t       ipOffset: 11;        // offset to ip header from start
     uint32_t       outerIpOffset: 11;   // offset to outer ip header from start
     uint32_t       vni: 24;             // vxlan id
 } ArkimePacket_t;
+
+// Maximum tunnel/encapsulation nesting depth across IP-in-IP, GRE, ERSPAN,
+// VXLAN, etc. Must fit in the tunnelDepth bitfield above (4 bits, max 15).
+#define ARKIME_PACKET_MAX_TUNNEL_DEPTH 12
 
 typedef struct {
     struct arkimepacket_t   *packet_next, *packet_prev;
@@ -656,6 +665,8 @@ typedef struct {
     uint32_t        sessionsPresent;
     uint8_t         didBatch;
     uint8_t         finishWaiting;
+    void           *notifyClientRef; // command-socket --notify: client to receive file-done
+    char           *notifyFilename;  // filename to report in the notification
 } ArkimeOfflineInfo_t;
 /******************************************************************************/
 typedef enum {
@@ -666,6 +677,9 @@ typedef enum {
     ARKIME_TCPFLAG_FIN,
     ARKIME_TCPFLAG_RST,
     ARKIME_TCPFLAG_URG,
+    ARKIME_TCPFLAG_ECE,
+    ARKIME_TCPFLAG_CWR,
+    ARKIME_TCPFLAG_AE,
     ARKIME_TCPFLAG_SRC_ZERO,
     ARKIME_TCPFLAG_DST_ZERO,
     ARKIME_TCPFLAG_MAX
@@ -1003,6 +1017,7 @@ void arkime_quit();
 uint32_t arkime_get_next_prime(uint32_t v);
 uint32_t arkime_get_next_powerof2(uint32_t v);
 void arkime_check_file_permissions(const char *filename);
+FILE *arkime_state_file_open(const char *name, const char *mode);
 
 typedef void (*ArkimeCredentialsGet)(const char *service);
 void arkime_credentials_register(const char *name, ArkimeCredentialsGet func);
@@ -1072,6 +1087,10 @@ void arkime_command_start();
 void arkime_command_register(const char *name, ArkimeCommandFunc func, const char *help);
 void arkime_command_register_opts(const char *name, ArkimeCommandFunc func, const char *help, ...);
 void arkime_command_respond(gpointer cc, const char *data, int len);
+void     arkime_command_client_incref(void *cc);
+void     arkime_command_client_decref(void *cc);
+void     arkime_command_notify_file_done(void *clientRef, const char *filename, uint64_t bytes, uint64_t packets);
+void     arkime_command_notify_file_error(void *clientRef, const char *filename);
 
 /******************************************************************************/
 /*
@@ -1175,6 +1194,8 @@ const char *arkime_parsers_asn_sequence_to_string(ArkimeASNSeq_t *seq, int *len)
 int arkime_parsers_asn_sequence_to_int(ArkimeASNSeq_t *seq);
 void arkime_parsers_asn_decode_oid(char *buf, int bufsz, const uint8_t *oid, int len);
 uint64_t arkime_parsers_asn_parse_time(ArkimeSession_t *session, uint32_t tag, uint8_t *value, uint32_t len);
+void arkime_parsers_ntlm_decode(ArkimeSession_t *session, const uint8_t *buf, uint32_t len);
+gboolean arkime_parsers_ntlm_decode_base64(ArkimeSession_t *session, const char *b64, int b64len);
 void arkime_parsers_classify_tcp(ArkimeSession_t *session, const uint8_t *data, int remaining, int which);
 void arkime_parsers_classify_udp(ArkimeSession_t *session, const uint8_t *data, int remaining, int which);
 void arkime_parsers_classify_sctp(ArkimeSession_t *session, uint32_t protocol, const uint8_t *data, int remaining, int which);
@@ -1187,6 +1208,7 @@ typedef void (* ArkimeClassifyFunc) (ArkimeSession_t *session, const uint8_t *da
 void  arkime_parsers_unregister(ArkimeSession_t *session, void *uw);
 void  arkime_parsers_register2(ArkimeSession_t *session, ArkimeParserFunc func, void *uw, ArkimeParserFreeFunc ffunc, ArkimeParserSaveFunc sfunc);
 #define arkime_parsers_register(session, func, uw, ffunc) arkime_parsers_register2(session, func, uw, ffunc, NULL)
+gboolean arkime_parsers_has_registered(const ArkimeSession_t *session, ArkimeParserFunc func);
 
 void  arkime_parsers_classifier_register_tcp_internal(const char *name, void *uw, int offset, const uint8_t *match, int matchlen, ArkimeClassifyFunc func, size_t sessionsize, int apiversion);
 #define arkime_parsers_classifier_register_tcp(name, uw, offset, match, matchlen, func) arkime_parsers_classifier_register_tcp_internal(name, uw, offset, match, matchlen, func, sizeof(ArkimeSession_t), ARKIME_API_VERSION)
@@ -1232,9 +1254,11 @@ typedef int (* ArkimeParserLoadFunc) (const char *path);
 void arkime_parsers_register_load_extension(const char *extension, ArkimeParserLoadFunc loadFunc);
 
 void arkime_parsers_register_sub(const char *parserName, const char *hexKey, ArkimeParserFunc func, void *uw);
+int  arkime_parsers_add_protocol_cb(ArkimeSession_t *session, void *uw, const uint8_t *data, int remaining, int which);
 GHashTable *arkime_parsers_get_sub(const char *parserName);
 
 ArkimeParserBuf_t *arkime_parser_buf_create();
+ArkimeParserBuf_t *arkime_parser_buf_create2(uint16_t initialSize, uint16_t maxSize);
 int arkime_parser_buf_add(ArkimeParserBuf_t *pb, int which, const uint8_t *data, int len);
 int arkime_parser_buf_del(ArkimeParserBuf_t *pb, int which, int len);
 void arkime_parser_buf_skip(ArkimeParserBuf_t *pb, int which, int skip);
@@ -1314,6 +1338,7 @@ void     arkime_session_init();
 void     arkime_session_exit();
 void     arkime_session_add_protocol(ArkimeSession_t *session, const char *protocol);
 gboolean arkime_session_has_protocol(ArkimeSession_t *session, const char *protocol);
+gboolean arkime_session_rm_protocol(ArkimeSession_t *session, const char *protocol);
 void     arkime_session_add_tag(ArkimeSession_t *session, const char *tag);
 
 #define  arkime_session_incr_outstanding(session) (session)->outstandingQueries++
@@ -1481,7 +1506,7 @@ typedef uint32_t (* ArkimePluginOutstandingFunc) ();
 #define ARKIME_PLUGIN_SMTP_OHC     0x00200000
 
 void arkime_plugins_init();
-void arkime_plugins_load(char **plugins);
+void arkime_plugins_load(char **plugins, gboolean loadParsers);
 void arkime_plugins_reload();
 
 int  arkime_plugins_register_internal(const char *name, gboolean storeData, size_t sessionsize, int apiversion);
@@ -1588,6 +1613,7 @@ int  arkime_field_count(int pos, ArkimeSession_t *session);
 void arkime_field_certsinfo_update_extra (void *cert, char *key, char *value);
 GPtrArray *arkime_field_certsinfo_get_extra(const ArkimeSession_t *session, const char *key);
 void arkime_field_free(ArkimeSession_t *session);
+void arkime_field_free_one(ArkimeSession_t *session, int pos);
 void arkime_field_exit();
 
 int arkime_field_by_exp_add_internal(const char *exp, ArkimeFieldType type, ArkimeFieldGetFunc getCb, ArkimeFieldSetFunc setCb);
@@ -1678,6 +1704,7 @@ typedef enum {
 typedef struct {
     int refs;
     ArkimeFieldOps_t ops;
+    void            *notifyClientRef;  // Opaque CommandClientRef_t* for async completion notification
 } ArkimeSchemeAction_t;
 
 typedef int  (*ArkimeSchemeLoad)(const char *uri, ArkimeSchemeFlags flags, ArkimeSchemeAction_t *actions);
@@ -1685,6 +1712,7 @@ typedef void (*ArkimeSchemeExit)();
 
 void arkime_reader_scheme_register(char *name, ArkimeSchemeLoad load, ArkimeSchemeExit exit);
 int arkime_reader_scheme_process(const char *uri, uint8_t *data, int len, const char *extraInfo, ArkimeSchemeAction_t *actions);
+void arkime_reader_scheme_actions_ref(ArkimeSchemeAction_t *actions);
 void arkime_reader_scheme_load(const char *uri, ArkimeSchemeFlags flags, ArkimeSchemeAction_t *actions);
 
 /******************************************************************************/

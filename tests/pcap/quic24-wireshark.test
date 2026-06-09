@@ -1,124 +1,124 @@
 {
-   "sessions3" : [
-      {
-         "body" : {
-            "@timestamp" : "SET",
-            "client" : {
-               "bytes" : 2740
-            },
-            "destination" : {
-               "as" : {
-                  "full" : "AS15169 Google LLC",
-                  "number" : 15169,
-                  "organization" : {
-                     "name" : "Google LLC"
-                  }
-               },
-               "bytes" : 2784,
-               "geo" : {
-                  "city_name" : "Mountain View",
-                  "country_iso_code" : "US",
-                  "region_iso_code" : "CA"
-               },
-               "ip" : "216.58.208.195",
-               "mac" : [
-                  "00:12:ef:c0:d7:a3"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 2,
-               "port" : 443
-            },
-            "dstOui" : [
-               "OneAccess SA"
-            ],
-            "dstOuiCnt" : 1,
-            "dstPayload8" : "0c00db40daa3bbe2",
-            "dstRIR" : "ARIN",
-            "dstTTL" : [
-               53
-            ],
-            "dstTTLCnt" : 1,
-            "ethertype" : 2048,
-            "fileId" : [],
-            "firstPacket" : 1429686316293,
-            "ipProtocol" : 17,
-            "lastPacket" : 1429686316327,
-            "length" : 34,
-            "network" : {
-               "bytes" : 5650,
-               "community_id" : "1:bRWgLSiVmslsmUd2vovC1HYlvCc=",
-               "packets" : 5
-            },
-            "node" : "test",
-            "packetLen" : [
-               1408,
-               1408,
-               1408,
-               98,
-               1408
-            ],
-            "packetPos" : [
-               24,
-               1432,
-               2840,
-               4248,
-               4346
-            ],
-            "packetRange" : {
-               "gte" : 1429686316293,
-               "lte" : 1429686316327
-            },
-            "protocol" : [
-               "iprulztest",
-               "quic",
-               "udp"
-            ],
-            "protocolCnt" : 3,
-            "quic" : {
-               "host" : [
-                  "www.google.fr"
-               ],
-               "hostCnt" : 1,
-               "useragent" : [
-                  "canary Chrome/44.0.2375.0"
-               ],
-               "useragentCnt" : 1,
-               "version" : [
-                  "Q024"
-               ],
-               "versionCnt" : 1
-            },
-            "segmentCnt" : 1,
-            "server" : {
-               "bytes" : 2700
-            },
-            "source" : {
-               "bytes" : 2866,
-               "ip" : "10.44.100.22",
-               "mac" : [
-                  "a0:88:b4:1e:16:0c"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 3,
-               "port" : 50509
-            },
-            "srcOui" : [
-               "Intel Corporate"
-            ],
-            "srcOuiCnt" : 1,
-            "srcPayload8" : "0d00db40daa3bbe2",
-            "srcTTL" : [
-               128
-            ],
-            "srcTTLCnt" : 1,
-            "totDataBytes" : 5440
-         },
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions3-150422"
-            }
-         }
+ "sessions3" : [
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 2740
+    },
+    "destination" : {
+     "as" : {
+      "full" : "AS15169 Google LLC",
+      "number" : 15169,
+      "organization" : {
+       "name" : "Google LLC"
       }
-   ]
+     },
+     "bytes" : 2784,
+     "geo" : {
+      "city_name" : "Mountain View",
+      "country_iso_code" : "US",
+      "region_iso_code" : "CA"
+     },
+     "ip" : "216.58.208.195",
+     "mac" : [
+      "00:12:ef:c0:d7:a3"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 2,
+     "port" : 443
+    },
+    "dstOui" : [
+     "OneAccess SA"
+    ],
+    "dstOuiCnt" : 1,
+    "dstPayload8" : "0c00db40daa3bbe2",
+    "dstRIR" : "ARIN",
+    "dstTTL" : [
+     53
+    ],
+    "dstTTLCnt" : 1,
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 1429686316293,
+    "ipProtocol" : 17,
+    "lastPacket" : 1429686316327,
+    "length" : 34,
+    "network" : {
+     "bytes" : 5650,
+     "community_id" : "1:bRWgLSiVmslsmUd2vovC1HYlvCc=",
+     "packets" : 5
+    },
+    "node" : "test",
+    "packetLen" : [
+     1408,
+     1408,
+     1408,
+     98,
+     1408
+    ],
+    "packetPos" : [
+     24,
+     1432,
+     2840,
+     4248,
+     4346
+    ],
+    "packetRange" : {
+     "gte" : 1429686316293,
+     "lte" : 1429686316327
+    },
+    "protocol" : [
+     "iprulztest",
+     "quic",
+     "udp"
+    ],
+    "protocolCnt" : 3,
+    "quic" : {
+     "host" : [
+      "www.google.fr"
+     ],
+     "hostCnt" : 1,
+     "useragent" : [
+      "canary Chrome/44.0.2375.0"
+     ],
+     "useragentCnt" : 1,
+     "version" : [
+      "Q024"
+     ],
+     "versionCnt" : 1
+    },
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 2700
+    },
+    "source" : {
+     "bytes" : 2866,
+     "ip" : "10.44.100.22",
+     "mac" : [
+      "a0:88:b4:1e:16:0c"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 3,
+     "port" : 50509
+    },
+    "srcOui" : [
+     "Intel Corporate"
+    ],
+    "srcOuiCnt" : 1,
+    "srcPayload8" : "0d00db40daa3bbe2",
+    "srcTTL" : [
+     128
+    ],
+    "srcTTLCnt" : 1,
+    "totDataBytes" : 5440
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-15m04"
+    }
+   }
+  }
+ ]
 }
 

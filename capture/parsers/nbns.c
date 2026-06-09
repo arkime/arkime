@@ -174,7 +174,7 @@ LOCAL void nbns_parser(ArkimeSession_t *session, const uint8_t *data, int len)
         BSB_IMPORT_skip(bsb, 6);  // rclass + ttl
         BSB_IMPORT_u16(bsb, rdlength);
 
-        if (BSB_IS_ERROR(bsb))
+        if (BSB_IS_ERROR(bsb) || rdlength > BSB_REMAINING(bsb))
             return;
 
         if (nameLen > 0) {
@@ -191,10 +191,15 @@ LOCAL void nbns_parser(ArkimeSession_t *session, const uint8_t *data, int len)
                 // Read IP in network byte order
                 uint32_t ipAddr = 0;
                 BSB_IMPORT_byte(bsb, &ipAddr, 4);
+                if (BSB_IS_ERROR(bsb))
+                    break;
                 remaining -= 6;
 
                 arkime_field_ip4_add(ipField, session, ipAddr);
             }
+            // Skip any leftover bytes if rdlength is not a multiple of 6
+            if (remaining > 0)
+                BSB_IMPORT_skip(bsb, remaining);
         } else {
             // Skip rdata for other record types
             BSB_IMPORT_skip(bsb, rdlength);

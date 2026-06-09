@@ -273,7 +273,7 @@ filesDone:
         }
 
         int lineLen = strlen(line);
-        if (line[lineLen - 1] == '\n') {
+        if (lineLen > 0 && line[lineLen - 1] == '\n') {
             line[lineLen - 1] = 0;
         }
 

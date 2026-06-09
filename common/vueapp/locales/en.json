@@ -759,7 +759,8 @@
       "molochtype": "Hot/Warm",
       "shardsPerNode": "Shards/Node",
       "versionCreated": "ES Version",
-      "docSize": "Disk Per Doc"
+      "docSize": "Disk Per Doc",
+      "codec": "Codec"
     },
     "esNodes": {
       "mainManaging": "Main Managing Node",
@@ -1218,6 +1219,24 @@
       "mismatchedPassword": "Your new password and confirmation do not match",
       "changePassword": "Change Password"
     },
+    "totp": {
+      "title": "Two-Factor Authentication",
+      "description": "Add an extra layer of security by requiring a code from an authenticator app (Authy, Google Authenticator, etc.) when making sensitive changes.",
+      "status": "Status",
+      "enabled": "Enabled",
+      "disabled": "Not Enabled",
+      "enroll": "Enable 2FA",
+      "unenroll": "Disable 2FA",
+      "scanQR": "Scan QR Code",
+      "generatingQR": "Generating QR code...",
+      "manualEntry": "Manual entry",
+      "verifyCode": "Verification Code",
+      "codePlaceholder": "000000",
+      "verify": "Verify & Enable",
+      "invalidCode": "Please enter a valid 6-digit code",
+      "confirmDisable": "Enter Code to Disable",
+      "confirmUnenroll": "Disable 2FA"
+    },
     "shortcuts": {
       "newShortcut": "New Shortcut",
       "editShortcut": "Edit Shortcut",
@@ -1293,6 +1312,7 @@
     "hideViz": "This cluster is set to hide the graph if a time range of {days} days or greater is requested",
     "hideVizTip": "This helps with performance",
     "hideVizMore": "Click the 'Fetch Viz Data' button above to fetch visualization data for this query (or open the dropdown for more options).",
+    "toggleMapSize": "Toggle map size",
     "toggleSrcCountry": "Toggle source countries",
     "toggleDstCountry": "Toggle destination countries",
     "graphLines": "Lines",
@@ -1739,6 +1759,8 @@
       "missingList": "Missing list of sessions",
       "noSessionsFound": "no sessions found",
       "cantGetSessions": "Can't get sessions from IDs",
+      "allDateNotAllowedSpiview": "'All' date range not allowed for spiview query",
+      "spiviewFetchError": "Error retrieving spiview data",
       "badFieldParam": "Bad 'field' parameter",
       "missingExpParam": "Missing exp parameter",
       "sessionNotFound": "Session not found",

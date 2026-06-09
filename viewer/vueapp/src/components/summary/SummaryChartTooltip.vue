@@ -13,6 +13,7 @@
           :field="fieldConfig"
           :expr="fieldConfig.exp" />
         <button
+          :aria-label="$t('common.close')"
           class="btn-close btn-xs pull-right mt-1"
           @click="$emit('close')" />
 

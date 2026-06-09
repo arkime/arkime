@@ -1,131 +1,131 @@
 {
-   "sessions3" : [
-      {
-         "body" : {
-            "@timestamp" : "SET",
-            "client" : {
-               "bytes" : 544
-            },
-            "destination" : {
-               "bytes" : 684,
-               "ip" : "255.255.255.255",
-               "mac" : [
-                  "00:08:74:ad:f1:9b",
-                  "ff:ff:ff:ff:ff:ff"
-               ],
-               "mac-cnt" : 2,
-               "packets" : 2,
-               "port" : 67
-            },
-            "dhcp" : {
-               "id" : [
-                  "3d1d",
-                  "3d1e"
-               ],
-               "idCnt" : 2,
-               "mac" : [
-                  "00:0b:82:01:fc:42"
-               ],
-               "macCnt" : 1,
-               "oui" : [
-                  "Grandstream Networks, Inc."
-               ],
-               "ouiCnt" : 1,
-               "requestASN" : [
-                  "---",
-                  "---"
-               ],
-               "requestGEO" : [
-                  "---",
-                  "---"
-               ],
-               "requestIp" : [
-                  "0.0.0.0",
-                  "192.168.0.10"
-               ],
-               "requestIpCnt" : 2,
-               "requestRIR" : [
-                  "",
-                  "ARIN"
-               ],
-               "type" : [
-                  "ACK",
-                  "DISCOVER",
-                  "OFFER",
-                  "REQUEST"
-               ],
-               "typeCnt" : 4
-            },
-            "dstOui" : [
-               "Dell Inc."
-            ],
-            "dstOuiCnt" : 1,
-            "dstTTL" : [
-               128
-            ],
-            "dstTTLCnt" : 1,
-            "ethertype" : 2048,
-            "fileId" : [],
-            "firstPacket" : 1102274184317,
-            "ipProtocol" : 17,
-            "lastPacket" : 1102274184387,
-            "length" : 70,
-            "network" : {
-               "bytes" : 1312,
-               "packets" : 4
-            },
-            "node" : "test",
-            "packetLen" : [
-               330,
-               358,
-               330,
-               358
-            ],
-            "packetPos" : [
-               24,
-               354,
-               712,
-               1042
-            ],
-            "packetRange" : {
-               "gte" : 1102274184317,
-               "lte" : 1102274184387
-            },
-            "protocol" : [
-               "dhcp",
-               "udp"
-            ],
-            "protocolCnt" : 2,
-            "segmentCnt" : 1,
-            "server" : {
-               "bytes" : 600
-            },
-            "source" : {
-               "bytes" : 628,
-               "ip" : "0.0.0.0",
-               "mac" : [
-                  "00:0b:82:01:fc:42"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 2,
-               "port" : 68
-            },
-            "srcOui" : [
-               "Grandstream Networks, Inc."
-            ],
-            "srcOuiCnt" : 1,
-            "srcTTL" : [
-               250
-            ],
-            "srcTTLCnt" : 1,
-            "totDataBytes" : 1144
-         },
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions3-041205"
-            }
-         }
-      }
-   ]
+ "sessions3" : [
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 544
+    },
+    "destination" : {
+     "bytes" : 684,
+     "ip" : "255.255.255.255",
+     "mac" : [
+      "00:08:74:ad:f1:9b",
+      "ff:ff:ff:ff:ff:ff"
+     ],
+     "mac-cnt" : 2,
+     "packets" : 2,
+     "port" : 67
+    },
+    "dhcp" : {
+     "id" : [
+      "3d1d",
+      "3d1e"
+     ],
+     "idCnt" : 2,
+     "mac" : [
+      "00:0b:82:01:fc:42"
+     ],
+     "macCnt" : 1,
+     "oui" : [
+      "Grandstream Networks, Inc."
+     ],
+     "ouiCnt" : 1,
+     "requestASN" : [
+      "---",
+      "---"
+     ],
+     "requestGEO" : [
+      "---",
+      "---"
+     ],
+     "requestIp" : [
+      "0.0.0.0",
+      "192.168.0.10"
+     ],
+     "requestIpCnt" : 2,
+     "requestRIR" : [
+      "",
+      "ARIN"
+     ],
+     "type" : [
+      "ACK",
+      "DISCOVER",
+      "OFFER",
+      "REQUEST"
+     ],
+     "typeCnt" : 4
+    },
+    "dstOui" : [
+     "Dell Inc."
+    ],
+    "dstOuiCnt" : 1,
+    "dstTTL" : [
+     128
+    ],
+    "dstTTLCnt" : 1,
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 1102274184317,
+    "ipProtocol" : 17,
+    "lastPacket" : 1102274184387,
+    "length" : 70,
+    "network" : {
+     "bytes" : 1312,
+     "packets" : 4
+    },
+    "node" : "test",
+    "packetLen" : [
+     330,
+     358,
+     330,
+     358
+    ],
+    "packetPos" : [
+     24,
+     354,
+     712,
+     1042
+    ],
+    "packetRange" : {
+     "gte" : 1102274184317,
+     "lte" : 1102274184387
+    },
+    "protocol" : [
+     "dhcp",
+     "udp"
+    ],
+    "protocolCnt" : 2,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 600
+    },
+    "source" : {
+     "bytes" : 628,
+     "ip" : "0.0.0.0",
+     "mac" : [
+      "00:0b:82:01:fc:42"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 2,
+     "port" : 68
+    },
+    "srcOui" : [
+     "Grandstream Networks, Inc."
+    ],
+    "srcOuiCnt" : 1,
+    "srcTTL" : [
+     250
+    ],
+    "srcTTLCnt" : 1,
+    "totDataBytes" : 1144
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-04m12"
+    }
+   }
+  }
+ ]
 }
 

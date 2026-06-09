@@ -94,7 +94,13 @@ LOCAL int MD_new(lua_State *L)
 LOCAL int MD_pcre_create(lua_State *L)
 {
     const char *str = luaL_checkstring(L, 1);
-    GRegex     *regex = g_regex_new(str, G_REGEX_RAW, 0, 0);
+    GError     *error = NULL;
+    GRegex     *regex = g_regex_new(str, G_REGEX_RAW, 0, &error);
+    if (!regex) {
+        lua_pushfstring(L, "pcre_create: %s", error ? error->message : "compile failed");
+        g_clear_error(&error);
+        return lua_error(L);
+    }
     lua_pushlightuserdata(L, regex);
     return 1;
 }
@@ -123,8 +129,11 @@ LOCAL int MD_pcre_match(lua_State *L)
     }
     for (i = 0; i < cnt; i++) {
         gint start, end;
-        g_match_info_fetch_pos(match_info, i, &start, &end);
-        lua_pushlstring(L, data->str + start, end - start);
+        if (g_match_info_fetch_pos(match_info, i, &start, &end) && start >= 0 && end >= start) {
+            lua_pushlstring(L, data->str + start, end - start);
+        } else {
+            lua_pushnil(L);
+        }
     }
     g_match_info_free(match_info);
     return cnt + 1;

@@ -1,193 +1,193 @@
 {
-   "sessions3" : [
-      {
-         "body" : {
-            "@timestamp" : "SET",
-            "client" : {
-               "bytes" : 93
-            },
-            "destination" : {
-               "as" : {
-                  "full" : "AS0 This is neat",
-                  "number" : 0,
-                  "organization" : {
-                     "name" : "This is neat"
-                  }
-               },
-               "bytes" : 91,
-               "geo" : {
-                  "country_iso_code" : "RU"
-               },
-               "ip" : "10.0.0.1",
-               "mac" : [
-                  "00:1a:e3:dc:2e:c0",
-                  "00:23:04:17:9b:00"
-               ],
-               "mac-cnt" : 2,
-               "packets" : 1,
-               "port" : 62928
-            },
-            "dns" : [
-               {
-                  "ASN" : [
-                     "AS41231 Canonical Group Limited",
-                     "AS41231 Canonical Group Limited",
-                     "AS41231 Canonical Group Limited"
-                  ],
-                  "GEO" : [
-                     "GB",
-                     "GB",
-                     "GB"
-                  ],
-                  "RIR" : [
-                     "RIPE",
-                     "RIPE",
-                     "RIPE"
-                  ],
-                  "answers" : [
-                     {
-                        "class" : "IN",
-                        "ip" : "91.189.90.40",
-                        "name" : "start.ubuntu.com",
-                        "ttl" : 491,
-                        "type" : "A"
-                     },
-                     {
-                        "class" : "IN",
-                        "ip" : "91.189.90.41",
-                        "name" : "start.ubuntu.com",
-                        "ttl" : 491,
-                        "type" : "A"
-                     },
-                     {
-                        "class" : "IN",
-                        "ip" : "91.189.89.88",
-                        "name" : "start.ubuntu.com",
-                        "ttl" : 491,
-                        "type" : "A"
-                     }
-                  ],
-                  "answersCnt" : 3,
-                  "headerFlags" : [
-                     "CD",
-                     "RA",
-                     "RD"
-                  ],
-                  "host" : [
-                     "start.ubuntu.com"
-                  ],
-                  "hostCnt" : 1,
-                  "ip" : [
-                     "91.189.89.88",
-                     "91.189.90.40",
-                     "91.189.90.41"
-                  ],
-                  "ipCnt" : 3,
-                  "opcode" : "QUERY",
-                  "qc" : "IN",
-                  "qt" : "A",
-                  "queryHost" : "start.ubuntu.com",
-                  "status" : "NOERROR"
-               }
-            ],
-            "dnsCnt" : 1,
-            "dot1q" : {
-               "id" : [
-                  500
-               ],
-               "idCnt" : 1
-            },
-            "dstOui" : [
-               "Cisco Systems, Inc"
-            ],
-            "dstOuiCnt" : 1,
-            "dstPayload8" : "5aae011000010000",
-            "dstTTL" : [
-               61
-            ],
-            "dstTTLCnt" : 1,
-            "ethertype" : 2048,
-            "fileId" : [],
-            "firstPacket" : 1393428477363,
-            "ipProtocol" : 17,
-            "lastPacket" : 1393428477327,
-            "length" : 36,
-            "network" : {
-               "bytes" : 226,
-               "community_id" : "1:2vfsvYDDz/rJ/9NuhxyJ9fHqRNk=",
-               "packets" : 2,
-               "vlan" : {
-                  "id" : [
-                     500
-                  ],
-                  "id-cnt" : 1
-               }
-            },
-            "node" : "test",
-            "packetLen" : [
-               151,
-               107
-            ],
-            "packetPos" : [
-               24,
-               175
-            ],
-            "packetRange" : {
-               "gte" : 1393428477327,
-               "lte" : 1393428477363
-            },
-            "protocol" : [
-               "dns",
-               "udp"
-            ],
-            "protocolCnt" : 2,
-            "segmentCnt" : 1,
-            "server" : {
-               "bytes" : 45
-            },
-            "source" : {
-               "as" : {
-                  "full" : "AS15169 Google LLC",
-                  "number" : 15169,
-                  "organization" : {
-                     "name" : "Google LLC"
-                  }
-               },
-               "bytes" : 135,
-               "geo" : {
-                  "country_iso_code" : "US"
-               },
-               "ip" : "8.8.8.8",
-               "mac" : [
-                  "00:19:e2:b1:ef:c6",
-                  "00:19:e2:ba:2f:c1"
-               ],
-               "mac-cnt" : 2,
-               "packets" : 1,
-               "port" : 53
-            },
-            "srcOui" : [
-               "Juniper Networks"
-            ],
-            "srcOuiCnt" : 1,
-            "srcPayload8" : "5aae819000010003",
-            "srcRIR" : "ARIN",
-            "srcTTL" : [
-               48
-            ],
-            "srcTTLCnt" : 1,
-            "tags" : [
-               "srcip"
-            ],
-            "tagsCnt" : 1,
-            "totDataBytes" : 138
-         },
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions3-140226"
-            }
-         }
+ "sessions3" : [
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 93
+    },
+    "destination" : {
+     "as" : {
+      "full" : "AS0 This is neat",
+      "number" : 0,
+      "organization" : {
+       "name" : "This is neat"
       }
-   ]
+     },
+     "bytes" : 91,
+     "geo" : {
+      "country_iso_code" : "RU"
+     },
+     "ip" : "10.0.0.1",
+     "mac" : [
+      "00:1a:e3:dc:2e:c0",
+      "00:23:04:17:9b:00"
+     ],
+     "mac-cnt" : 2,
+     "packets" : 1,
+     "port" : 62928
+    },
+    "dns" : [
+     {
+      "ASN" : [
+       "AS41231 Canonical Group Limited",
+       "AS41231 Canonical Group Limited",
+       "AS41231 Canonical Group Limited"
+      ],
+      "GEO" : [
+       "GB",
+       "GB",
+       "GB"
+      ],
+      "RIR" : [
+       "RIPE",
+       "RIPE",
+       "RIPE"
+      ],
+      "answers" : [
+       {
+        "class" : "IN",
+        "ip" : "91.189.90.40",
+        "name" : "start.ubuntu.com",
+        "ttl" : 491,
+        "type" : "A"
+       },
+       {
+        "class" : "IN",
+        "ip" : "91.189.90.41",
+        "name" : "start.ubuntu.com",
+        "ttl" : 491,
+        "type" : "A"
+       },
+       {
+        "class" : "IN",
+        "ip" : "91.189.89.88",
+        "name" : "start.ubuntu.com",
+        "ttl" : 491,
+        "type" : "A"
+       }
+      ],
+      "answersCnt" : 3,
+      "headerFlags" : [
+       "CD",
+       "RA",
+       "RD"
+      ],
+      "host" : [
+       "start.ubuntu.com"
+      ],
+      "hostCnt" : 1,
+      "ip" : [
+       "91.189.89.88",
+       "91.189.90.40",
+       "91.189.90.41"
+      ],
+      "ipCnt" : 3,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "start.ubuntu.com",
+      "status" : "NOERROR"
+     }
+    ],
+    "dnsCnt" : 1,
+    "dot1q" : {
+     "id" : [
+      500
+     ],
+     "idCnt" : 1
+    },
+    "dstOui" : [
+     "Cisco Systems, Inc"
+    ],
+    "dstOuiCnt" : 1,
+    "dstPayload8" : "5aae011000010000",
+    "dstTTL" : [
+     61
+    ],
+    "dstTTLCnt" : 1,
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 1393428477363,
+    "ipProtocol" : 17,
+    "lastPacket" : 1393428477327,
+    "length" : 36,
+    "network" : {
+     "bytes" : 226,
+     "community_id" : "1:2vfsvYDDz/rJ/9NuhxyJ9fHqRNk=",
+     "packets" : 2,
+     "vlan" : {
+      "id" : [
+       500
+      ],
+      "id-cnt" : 1
+     }
+    },
+    "node" : "test",
+    "packetLen" : [
+     151,
+     107
+    ],
+    "packetPos" : [
+     24,
+     175
+    ],
+    "packetRange" : {
+     "gte" : 1393428477327,
+     "lte" : 1393428477363
+    },
+    "protocol" : [
+     "dns",
+     "udp"
+    ],
+    "protocolCnt" : 2,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 45
+    },
+    "source" : {
+     "as" : {
+      "full" : "AS15169 Google LLC",
+      "number" : 15169,
+      "organization" : {
+       "name" : "Google LLC"
+      }
+     },
+     "bytes" : 135,
+     "geo" : {
+      "country_iso_code" : "US"
+     },
+     "ip" : "8.8.8.8",
+     "mac" : [
+      "00:19:e2:b1:ef:c6",
+      "00:19:e2:ba:2f:c1"
+     ],
+     "mac-cnt" : 2,
+     "packets" : 1,
+     "port" : 53
+    },
+    "srcOui" : [
+     "Juniper Networks"
+    ],
+    "srcOuiCnt" : 1,
+    "srcPayload8" : "5aae819000010003",
+    "srcRIR" : "ARIN",
+    "srcTTL" : [
+     48
+    ],
+    "srcTTLCnt" : 1,
+    "tags" : [
+     "srcip"
+    ],
+    "tagsCnt" : 1,
+    "totDataBytes" : 138
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-14m02"
+    }
+   }
+  }
+ ]
 }
 

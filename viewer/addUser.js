@@ -12,12 +12,18 @@
 const Config = require('./config.js');
 const Db = require('./db.js');
 const cryptoLib = require('crypto');
+const readline = require('readline');
 const Auth = require('../common/auth');
 const User = require('../common/user');
 const ArkimeConfig = require('../common/arkimeConfig');
 
-function help () {
-  console.log('addUser.js [<config options>] <user id> <user friendly name> <password> [<options>]');
+function help (msg) {
+  if (msg) {
+    console.log(`${msg}\n`);
+  }
+  console.log('addUser.js [<config options>] <user id> <user friendly name> <password|-> [<options>]');
+  console.log('');
+  console.log('  Use - as password to be prompted (avoids password in process list)');
   console.log('');
   console.log('Options:');
   console.log('  --admin                   Has admin privileges');
@@ -48,19 +54,32 @@ function help () {
   console.log('  --insecure                Disable certificate verification for https calls');
   console.log('  -n <node name>            Node name section to use in config file');
 
-  process.exit(0);
+  process.exit(msg ? 1 : 0);
 }
 
 function main () {
   if (process.argv[2].length < 2) {
-    console.log('userId must be set');
-    process.exit(0);
+    help('userId must be set');
   }
 
+  if (process.argv[4] === '-') {
+    const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
+    rl._writeToOutput = (s) => { if (s === 'Password: ') { process.stdout.write(s); } };
+    rl.question('Password: ', (password) => {
+      rl.close();
+      console.log();
+      mainWithPassword(password);
+    });
+  } else {
+    mainWithPassword(process.argv[4]);
+  }
+}
+
+function mainWithPassword (password) {
   const nuser = {
     userId: process.argv[2],
     userName: process.argv[3],
-    passStore: Auth.pass2store(process.argv[2], process.argv[4]),
+    passStore: Auth.pass2store(process.argv[2], password),
     enabled: true,
     webEnabled: true,
     headerAuthEnabled: false,
@@ -110,6 +129,7 @@ function main () {
       break;
 
     case '--expression':
+      if (i + 1 >= process.argv.length) { help('Missing value for --expression'); }
       nuser.expression = process.argv[i + 1];
       i++;
       break;
@@ -127,6 +147,7 @@ function main () {
       break;
 
     case '--roles':
+      if (i + 1 >= process.argv.length) { help('Missing value for --roles'); }
       process.argv[i + 1].split(',').forEach(r => roles.add(r));
       i++;
       break;
@@ -164,13 +185,16 @@ function main () {
       break;
 
     case '--timeLimit':
+      if (i + 1 >= process.argv.length) { help('Missing value for --timeLimit'); }
       nuser.timeLimit = parseInt(process.argv[i + 1], 10);
+      if (!Number.isFinite(nuser.timeLimit) || nuser.timeLimit < 0) {
+        help(`--timeLimit must be a non-negative integer, got '${process.argv[i + 1]}'`);
+      }
       i++;
       break;
 
     default:
-      console.log('Unknown option', process.argv[i]);
-      help();
+      help(`Unknown option ${process.argv[i]}`);
     }
   }
 
@@ -185,10 +209,10 @@ function main () {
 
   User.setUser(process.argv[2], nuser, (err, info) => {
     if (err) {
-      if (err.meta.body.error.type === 'version_conflict_engine_exception') {
+      if (err?.meta?.body?.error?.type === 'version_conflict_engine_exception') {
         console.log('User already exists');
       } else {
-        console.log('OpenSearch/Elasticsearch error', JSON.stringify(err, false, 2));
+        console.log('OpenSearch/Elasticsearch error', JSON.stringify(err, null, 2));
       }
     } else {
       console.log('Added');

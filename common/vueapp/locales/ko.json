@@ -759,7 +759,8 @@
       "molochtype": "Hot/Warm",
       "shardsPerNode": "노드당 샤드",
       "versionCreated": "ES 버전",
-      "docSize": "문서당 디스크"
+      "docSize": "문서당 디스크",
+      "codec": "코덱"
     },
     "esNodes": {
       "mainManaging": "주 관리 노드",
@@ -1218,6 +1219,24 @@
       "mismatchedPassword": "새 비밀번호와 확인 비밀번호가 일치하지 않습니다",
       "changePassword": "비밀번호 변경"
     },
+    "totp": {
+      "title": "이중 인증",
+      "description": "민감한 변경 시 인증 앱(Authy, Google Authenticator 등)의 코드를 요구하여 추가 보안 계층을 추가합니다.",
+      "status": "상태",
+      "enabled": "활성화됨",
+      "disabled": "비활성화됨",
+      "enroll": "2FA 활성화",
+      "unenroll": "2FA 비활성화",
+      "scanQR": "QR 코드 스캔",
+      "generatingQR": "QR 코드 생성 중...",
+      "manualEntry": "수동 입력",
+      "verifyCode": "인증 코드",
+      "codePlaceholder": "000000",
+      "verify": "확인 및 활성화",
+      "invalidCode": "유효한 6자리 코드를 입력하세요",
+      "confirmDisable": "비활성화 코드 입력",
+      "confirmUnenroll": "2FA 비활성화"
+    },
     "shortcuts": {
       "newShortcut": "새 바로가기",
       "editShortcut": "바로가기 편집",
@@ -1293,6 +1312,7 @@
     "hideViz": "이 클러스터는 {days}일 이상의 시간 범위를 요청할 경우 그래프를 숨기도록 설정되어 있습니다.",
     "hideVizTip": "이는 성능 향상에 도움이 됩니다.",
     "hideVizMore": "위의 '시각화 데이터 가져오기' 버튼을 클릭하여 시각화 데이터를 가져오거나 드롭다운에서 다른 옵션을 확인하세요.",
+    "toggleMapSize": "지도 크기 전환",
     "toggleSrcCountry": "출발지 국가 전환",
     "toggleDstCountry": "목적지 국가 전환",
     "graphLines": "선형",
@@ -1739,6 +1759,8 @@
       "missingList": "세션 목록이 없습니다",
       "noSessionsFound": "세션을 찾을 수 없습니다",
       "cantGetSessions": "ID에서 세션을 가져올 수 없습니다",
+      "allDateNotAllowedSpiview": "spiview 쿼리에는 '전체' 날짜 범위가 허용되지 않습니다",
+      "spiviewFetchError": "spiview 데이터를 가져오는 중 오류가 발생했습니다",
       "badFieldParam": "잘못된 'field' 매개변수",
       "missingExpParam": "exp 매개변수가 없습니다",
       "sessionNotFound": "세션을 찾을 수 없습니다",

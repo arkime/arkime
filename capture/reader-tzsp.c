@@ -37,13 +37,13 @@ LOCAL void *tzsp_thread(gpointer UNUSED(uw))
     socket = g_socket_new(G_SOCKET_FAMILY_IPV4, G_SOCKET_TYPE_DATAGRAM, G_SOCKET_PROTOCOL_UDP, &error);
 
     if (!socket || error) {
-        CONFIGEXIT("Error creating tzsp: %s", error->message);
+        CONFIGEXIT("Error creating tzsp: %s", error ? error->message : "unknown error");
     }
 
     addr = g_inet_socket_address_new(g_inet_address_new_any(G_SOCKET_FAMILY_IPV4), tzspPort);
 
     if (!g_socket_bind(socket, addr, TRUE, &error)) {
-        CONFIGEXIT("Error binding tzsp: %s", error->message);
+        CONFIGEXIT("Error binding tzsp: %s", error ? error->message : "unknown error");
     }
 
     g_object_unref(addr);

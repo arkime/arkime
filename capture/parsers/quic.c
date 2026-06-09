@@ -21,6 +21,13 @@ typedef struct {
     int            which;
 } QUIC5xInfo_t;
 
+typedef struct {
+    uint8_t        cbuf[8000];
+    uint16_t       clen;
+    uint16_t       cbytes;
+    uint8_t        packets;
+} QUICIetfInfo_t;
+
 LOCAL uint32_t tls_process_client_hello_func;
 
 /******************************************************************************/
@@ -274,6 +281,8 @@ LOCAL int quic_fb_tcp_parser(ArkimeSession_t *session, void *uw, const uint8_t *
         return 0;
 
     int len = (fbzero->buf[0][6] << 8) | fbzero->buf[0][5];
+    if (len + 9 > fbzero->bufMax)
+        return ARKIME_PARSER_UNREGISTER;
     if (fbzero->len[0] < len + 9)
         return 0;
 
@@ -355,18 +364,26 @@ LOCAL void hkdfExpandLabel(const uint8_t *secret, int secretLen, const char *lab
     g_hmac_unref(hmac);
 }
 /******************************************************************************/
-LOCAL void quic_ietf_udp_classify(ArkimeSession_t *session, const uint8_t *data, int len, int UNUSED(which), void *UNUSED(uw))
+LOCAL void quic_ietf_free(ArkimeSession_t UNUSED(*session), void *uw)
 {
-// This is the most obfuscate protocol ever
-// Thank you wireshark/tshark/quicgo and other tools to verify (kindof) implementation
+    ARKIME_TYPE_FREE(QUICIetfInfo_t, (QUICIetfInfo_t *)uw);
+}
+/******************************************************************************/
+LOCAL int quic_ietf_udp_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, int len, int UNUSED(which))
+{
+    QUICIetfInfo_t *info = (QUICIetfInfo_t *)uw;
+
+    // Give up if the ClientHello hasn't been assembled within a few packets
+    if (++info->packets >= 16)
+        return ARKIME_PARSER_UNREGISTER;
 
     // Min length for quic packets because of padding
     if (len < 1100 || len > 3000)
-        return;
+        return 0;
 
     // Only look for long form initial
     if ((data[0] & 0xf0) != 0xc0)
-        return;
+        return 0;
 
     int rc;
     BSB bsb;
@@ -386,34 +403,36 @@ LOCAL void quic_ietf_udp_classify(ArkimeSession_t *session, const uint8_t *data,
 
     // Skip server packets (dlen == 0) since we only want client initials
     if (dlen == 0)
-        return;
+        return 0;
 
     // Source
     int slen = 0;
     BSB_IMPORT_u08(bsb, slen);
     if (slen > 16)
-        return;
+        return 0;
     BSB_IMPORT_skip(bsb, slen);
 
     // Token
-    uint32_t tlen = quic_get_number(&bsb);
+    uint64_t tlen = quic_get_number(&bsb);
+    if (tlen > (uint64_t)BSB_REMAINING(bsb))
+        return 0;
     BSB_IMPORT_skip(bsb, tlen);
 
     // Length
-    uint32_t packet_len = quic_get_number(&bsb);
+    uint64_t packet_len = quic_get_number(&bsb);
 
-    if (packet_len < 100 || packet_len > BSB_REMAINING(bsb)) {
+    if (packet_len < 100 || packet_len > (uint64_t)BSB_REMAINING(bsb)) {
         if (!config.debug)
-            return;
+            return 0;
 
         char ipStr[200];
         arkime_session_pretty_string(session, ipStr, sizeof(ipStr));
-        LOG("Couldn't parse header packet len %u remaining %ld %s", packet_len, (long)BSB_REMAINING(bsb), ipStr);
-        return;
+        LOG("Couldn't parse header packet len %" PRIu64 " remaining %ld %s", packet_len, (long)BSB_REMAINING(bsb), ipStr);
+        return 0;
     }
 
     if (BSB_IS_ERROR(bsb))
-        return;
+        return 0;
 
     // HKDF - HMAC-based Key Derivation Function
     // https://datatracker.ietf.org/doc/html/rfc5869
@@ -461,7 +480,7 @@ LOCAL void quic_ietf_udp_classify(ArkimeSession_t *session, const uint8_t *data,
     BSB_IMPORT_byte(bsb, maskInput, 16);
 
     if (BSB_IS_ERROR(bsb))
-        return;
+        return 0;
 
     BSB_IMPORT_rewind(bsb, 20); // Go back
 
@@ -480,7 +499,7 @@ LOCAL void quic_ietf_udp_classify(ArkimeSession_t *session, const uint8_t *data,
     if (rc != 2) {
         if (config.debug)
             LOG("Couldn't encrypt mask: %d", rc);
-        return;
+        return 0;
     }
 
     // Decrypt Packet Number using mask
@@ -532,15 +551,14 @@ LOCAL void quic_ietf_udp_classify(ArkimeSession_t *session, const uint8_t *data,
     if (rc != 2) {
         if (config.debug)
             LOG("Couldn't decrypt packet: %d", rc);
-        return;
+        return 0;
     }
 
     BSB_INIT(bsb, out, outLen);
 
-    int     clen = 0;
-    uint8_t cbuf[8000];
-
-    // Loop thru all the frames. The crypto frames can be out of order. Worst. Protocol. Every.
+    // Loop thru all the frames. The crypto frames can be out of order, and the
+    // TLS ClientHello may be split across multiple QUIC Initial packets, so we
+    // accumulate into a per-session buffer (info->cbuf) indexed by CRYPTO offset.
     while (!BSB_IS_ERROR(bsb) && BSB_REMAINING(bsb) > 1) {
         uint8_t type = 0;
         BSB_IMPORT_u08(bsb, type);
@@ -549,14 +567,18 @@ LOCAL void quic_ietf_udp_classify(ArkimeSession_t *session, const uint8_t *data,
 
         if (type == 6) { // CRYPTO
             arkime_session_add_protocol(session, "quic");
-            uint32_t offset = quic_get_number(&bsb);
-            uint32_t length = quic_get_number(&bsb);
+            uint64_t offset = quic_get_number(&bsb);
+            uint64_t length = quic_get_number(&bsb);
 
-            if (offset < sizeof(cbuf) && BSB_REMAINING(bsb) >= length) {
-                int toCopy = MIN(length, sizeof(cbuf) - offset);
-                memcpy(cbuf + offset, BSB_WORK_PTR(bsb), toCopy);
-                if ((int)(offset + toCopy) > clen)
-                    clen = offset + toCopy;
+            if (BSB_IS_ERROR(bsb) || length > (uint64_t)BSB_REMAINING(bsb))
+                break;
+
+            if (offset < sizeof(info->cbuf)) {
+                uint32_t toCopy = MIN(length, sizeof(info->cbuf) - offset);
+                memcpy(info->cbuf + offset, BSB_WORK_PTR(bsb), toCopy);
+                if (offset + toCopy > info->clen)
+                    info->clen = offset + toCopy;
+                info->cbytes += toCopy;
             }
 
             BSB_IMPORT_skip(bsb, length);
@@ -566,10 +588,31 @@ LOCAL void quic_ietf_udp_classify(ArkimeSession_t *session, const uint8_t *data,
         break;
     }
 
-    // Now actually decode the client hello
-    if (clen > 0) {
-        arkime_parsers_call_named_func(tls_process_client_hello_func, session, cbuf, clen, NULL);
+    // Try to decode the ClientHello once we have all bytes covered contiguously
+    // from offset 0. We detect contiguous coverage by comparing the running
+    // total of CRYPTO bytes copied (cbytes) with clen (max offset reached);
+    // they match when there are no gaps and no overlap. The TLS handshake
+    // header is type(1) + length(3).
+    if (info->clen >= 4 && info->cbytes == info->clen && info->cbuf[0] == 0x01) {
+        uint32_t hsLen = (info->cbuf[1] << 16) | (info->cbuf[2] << 8) | info->cbuf[3];
+        if ((uint32_t)info->clen >= 4 + hsLen) {
+            arkime_parsers_call_named_func(tls_process_client_hello_func, session, info->cbuf, info->clen, NULL);
+            return ARKIME_PARSER_UNREGISTER;
+        }
     }
+    return 0;
+}
+/******************************************************************************/
+LOCAL void quic_ietf_udp_classify(ArkimeSession_t *session, const uint8_t *UNUSED(data), int UNUSED(len), int UNUSED(which), void *UNUSED(uw))
+{
+// This is the most obfuscate protocol ever
+// Thank you wireshark/tshark/quicgo and other tools to verify (kindof) implementation
+
+    if (arkime_parsers_has_registered(session, quic_ietf_udp_parser))
+        return;
+
+    QUICIetfInfo_t *info = ARKIME_TYPE_ALLOC0(QUICIetfInfo_t);
+    arkime_parsers_register(session, quic_ietf_udp_parser, info, quic_ietf_free);
 }
 /******************************************************************************/
 void arkime_parser_init()

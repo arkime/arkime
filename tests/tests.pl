@@ -16,7 +16,7 @@ use TAP::Harness;
 use ArkimeTest;
 use Socket6 qw(AF_INET6 inet_pton);
 
-$main::userAgent = LWP::UserAgent->new(timeout => 20);
+$main::userAgent = LWP::UserAgent->new(timeout => 20, keep_alive => 10);
 
 my $ELASTICSEARCH = $ENV{ELASTICSEARCH} = "http://127.0.0.1:9200";
 my $USERSELASTICSEARCH = $ENV{USERSELASTICSEARCH} || $ELASTICSEARCH;
@@ -31,19 +31,19 @@ my $EXTRA = "";
 ################################################################################
 sub doGeo {
     if (! -f "ipv4-address-space.csv") {
-        system("wget -nv https://raw.githubusercontent.com/arkime/arkime-test-data/main/ipv4-address-space.csv");
+        system("curl -sSfLO https://raw.githubusercontent.com/arkime/arkime-test-data/main/ipv4-address-space.csv");
     }
 
     if (! -f "oui.txt") {
-        system("wget -nv https://raw.githubusercontent.com/arkime/arkime-test-data/main/oui.txt");
+        system("curl -sSfLO https://raw.githubusercontent.com/arkime/arkime-test-data/main/oui.txt");
     }
 
     if (! -f "GeoLite2-City.mmdb") {
-        system("wget -nv https://media.githubusercontent.com/media/arkime/arkime-test-data/main/GeoLite2-City.mmdb");
+        system("curl -sSfLO https://media.githubusercontent.com/media/arkime/arkime-test-data/main/GeoLite2-City.mmdb");
     }
 
     if (! -f "GeoLite2-ASN.mmdb") {
-        system("wget -nv https://raw.githubusercontent.com/arkime/arkime-test-data/main/GeoLite2-ASN.mmdb");
+        system("curl -sSfLO https://raw.githubusercontent.com/arkime/arkime-test-data/main/GeoLite2-ASN.mmdb");
     }
 
     if (! -f "plugins/test.so" || (stat('../capture/arkime.h'))[9] > (stat('plugins/test.so'))[9]) {
@@ -288,6 +288,11 @@ my ($json) = @_;
 sub doMake {
     foreach my $filename (@ARGV) {
         $filename = substr($filename, 0, -5) if ($filename =~ /\.pcap$/);
+        # Reject filenames with shell metacharacters / NUL since we still need
+        # a shell to set up the pipe + redirection below.
+        if ($filename =~ /[\0\n\r`\$;&|<>(){}*?!"'\\]/) {
+            die "Invalid filename (contains shell metacharacter): $filename\n";
+        }
         if ($main::debug) {
           print("../capture/capture $EXTRA --tests -c config.test.ini -n test -r $filename.pcap 2>&1 1>/dev/null | ./tests.pl --fix > $filename.test\n");
         }
@@ -321,6 +326,21 @@ sub doReip {
     close($out);
 }
 ################################################################################
+sub doShutdown {
+    $main::userAgent->post("http://localhost:8123/regressionTests/shutdown");
+    $main::userAgent->post("http://localhost:8124/regressionTests/shutdown");
+    $main::userAgent->post("http://localhost:8125/regressionTests/shutdown");
+    $main::userAgent->post("http://localhost:8126/regressionTests/shutdown");
+    $main::userAgent->post("http://localhost:8127/regressionTests/shutdown");
+    $main::userAgent->post("http://localhost:8200/regressionTests/shutdown");
+    $main::userAgent->post("http://localhost:8081/regressionTests/shutdown");
+    $main::userAgent->post("http://localhost:8008/regressionTests/shutdown");
+    $main::userAgent->post("http://localhost:3218/regressionTests/shutdown");
+    $main::userAgent->post("http://localhost:7200/regressionTests/shutdown");
+    if (my $rs2 = IO::Socket::INET->new(PeerAddr => "127.0.0.1", PeerPort => 7379, Proto => "tcp")) { $rs2->autoflush(1); print $rs2 "*1\r\n\$8\r\nSHUTDOWN\r\n"; my $resp = <$rs2>; $rs2->close(); }
+    eval { $main::userAgent->get("http://localhost:4566/_shutdown"); };
+}
+
 sub doViewer {
 my ($cmd) = @_;
 
@@ -333,10 +353,10 @@ my ($cmd) = @_;
         print ("Initializing ES\n");
         if ($main::debug) {
             system("../db/db.pl $INSECURE --prefix tests $ELASTICSEARCH initnoprompt");
-            system("../db/db.pl $INSECURE --prefix tests2 $ELASTICSEARCH initnoprompt");
+            system("../db/db.pl $INSECURE --prefix tests2 $ELASTICSEARCH initnoprompt --compression best_compression");
         } else {
             system("../db/db.pl $INSECURE --prefix tests $ELASTICSEARCH initnoprompt 2>&1 1>/dev/null");
-            system("../db/db.pl $INSECURE --prefix tests2 $ELASTICSEARCH initnoprompt 2>&1 1>/dev/null");
+            system("../db/db.pl $INSECURE --prefix tests2 $ELASTICSEARCH initnoprompt --compression best_compression 2>&1 1>/dev/null");
         }
 
         print ("Loading tagger\n");
@@ -354,8 +374,10 @@ my ($cmd) = @_;
     if ($cmd ne "--viewernostart") {
         if ($main::debug) {
             system("perl mini-redis.pl --debug 7379 > /tmp/arkime.redis 2>&1 &");
+            system("perl mini-aws.pl --debug 4566 > /tmp/arkime.aws 2>&1 &");
         } else {
             system("perl mini-redis.pl 7379 &");
+            system("perl mini-aws.pl 4566 &");
         }
         my $wes = "-o 'wiseService.usersElasticsearch=$USERSELASTICSEARCH'";
         print ("Starting WISE\n");
@@ -410,6 +432,7 @@ my ($cmd) = @_;
             system("cd ../viewer ; $node --trace-warnings viewer.js --regressionTests $es $ues -c ../tests/config.test.ini -n test --debug $INSECURE > /tmp/arkime.test &");
             system("cd ../viewer ; $node --trace-warnings viewer.js --regressionTests $es $ues -c ../tests/config.test.ini -n test2 --debug $INSECURE $s3 > /tmp/arkime.test2 &");
             system("cd ../viewer ; $node --trace-warnings viewer.js --regressionTests $es $ues -c ../tests/config.test.ini -n test3 --debug -o s2sRegressionTests=true $INSECURE > /tmp/arkime.test3 &");
+            system("cd ../viewer ; $node --trace-warnings viewer.js --regressionTests $es $ues -c ../tests/config.test.ini -n test4 --debug $INSECURE > /tmp/arkime.test4 &");
             system("cd ../viewer ; $node --trace-warnings viewer.js --regressionTests $ues -c ../tests/config.test.ini -n all --debug $INSECURE > /tmp/arkime.all &");
             system("cd ../parliament ; $node --trace-warnings parliament.js --regressionTests $pues -c ../tests/parliament.tests.ini -n parliamenttest --debug $INSECURE > /tmp/arkime.parliament 2>&1 &");
             system("cd ../cont3xt ; $node --trace-warnings cont3xt.js $ces $cues --regressionTests -c ../tests/cont3xt.tests.ini --debug $INSECURE > /tmp/arkime.cont3xt 2>&1 &");
@@ -420,6 +443,7 @@ my ($cmd) = @_;
             system("cd ../viewer ; $node viewer.js --regressionTests $es $ues -c ../tests/config.test.ini -n test $INSECURE > /dev/null &");
             system("cd ../viewer ; $node viewer.js --regressionTests $es $ues -c ../tests/config.test.ini -n test2 $INSECURE $s3 > /dev/null &");
             system("cd ../viewer ; $node viewer.js --regressionTests $es $ues -c ../tests/config.test.ini -n test3 -o s2sRegressionTests=true $INSECURE > /dev/null &");
+            system("cd ../viewer ; $node viewer.js --regressionTests $es $ues -c ../tests/config.test.ini -n test4 $INSECURE > /dev/null &");
             system("cd ../viewer ; $node viewer.js --regressionTests $ues -c ../tests/config.test.ini -n all $INSECURE > /dev/null &");
             system("cd ../parliament ; $node parliament.js --regressionTests $pues -c ../tests/parliament.tests.ini -n parliamenttest $INSECURE > /dev/null 2>&1 &");
             system("cd ../cont3xt ; $node cont3xt.js $ces $cues --regressionTests -c ../tests/cont3xt.tests.ini $INSECURE > /dev/null 2>&1 &");
@@ -442,13 +466,14 @@ my ($cmd) = @_;
     waitFor($ArkimeTest::host, 3218);
     waitFor($ArkimeTest::host, 7200);
     waitFor($ArkimeTest::host, 7379);
+    waitFor($ArkimeTest::host, 4566);
     sleep 1;
 
     $main::userAgent->get("$ELASTICSEARCH/_flush");
     $main::userAgent->get("$ELASTICSEARCH/_refresh");
     sleep 1;
 
-    my $harness = TAP::Harness->new();
+    my $harness = TAP::Harness->new({ verbosity => ($ENV{HARNESS_VERBOSE} ? 1 : 0) });
 
     my @tests = @ARGV;
     @tests = glob ("*.t") if ($#tests == -1);
@@ -456,17 +481,7 @@ my ($cmd) = @_;
 
 # Cleanup
     if ($cmd ne "--viewernostart") {
-        $main::userAgent->post("http://localhost:8123/regressionTests/shutdown");
-        $main::userAgent->post("http://localhost:8124/regressionTests/shutdown");
-        $main::userAgent->post("http://localhost:8125/regressionTests/shutdown");
-        $main::userAgent->post("http://localhost:8126/regressionTests/shutdown");
-        $main::userAgent->post("http://localhost:8200/regressionTests/shutdown");
-        $main::userAgent->post("http://localhost:8081/regressionTests/shutdown");
-        $main::userAgent->post("http://localhost:8008/regressionTests/shutdown");
-        $main::userAgent->post("http://localhost:3218/regressionTests/shutdown");
-        $main::userAgent->post("http://localhost:7200/regressionTests/shutdown");
-        if (my $rs2 = IO::Socket::INET->new(PeerAddr => "127.0.0.1", PeerPort => 7379, Proto => "tcp")) { $rs2->autoflush(1); print $rs2 "*1\r\n\$8\r\nSHUTDOWN\r\n"; my $resp = <$rs2>; $rs2->close(); }
-        eval { $main::userAgent->get("http://localhost:4566/_shutdown"); };
+        doShutdown();
     }
 
 # Coverage
@@ -489,6 +504,9 @@ $main::cmd = "--capture";
 while (scalar (@ARGV) > 0) {
     if ($ARGV[0] eq "--debug") {
         $main::debug = 1;
+        shift @ARGV;
+    } elsif ($ARGV[0] eq "--verbose") {
+        $ENV{HARNESS_VERBOSE} = 1;
         shift @ARGV;
     } elsif ($ARGV[0] eq "--elasticsearch") {
         shift @ARGV;
@@ -525,8 +543,11 @@ while (scalar (@ARGV) > 0) {
     } elsif ($ARGV[0] eq "--copy") {
         $main::copy = "--copy";
         shift @ARGV;
-    } elsif ($ARGV[0] =~ /^--(viewer|fix|make|capture|viewernostart|viewerstart|viewerhang|viewerload|help|reip|fuzz|fuzz2pcap|fuzz2pcapAll)$/) {
+    } elsif ($ARGV[0] =~ /^--(viewer|api-full|fix|make|capture|viewernostart|viewerstart|api-fast|viewerhang|viewerload|shutdown|help|reip|fuzz|fuzz2pcap|fuzz2pcapAll)$/) {
         $main::cmd = $ARGV[0];
+        # Map new aliases to existing commands
+        $main::cmd = "--viewer" if ($main::cmd eq "--api-full");
+        $main::cmd = "--viewerstart" if ($main::cmd eq "--api-fast");
         shift @ARGV;
     } elsif ($ARGV[0] =~ /^--/) {
         print "Unknown option $ARGV[0]\n";
@@ -545,13 +566,17 @@ if ($main::cmd eq "--fix") {
     doReip();
 } elsif ($main::cmd eq "--fuzz") {
     doGeo();
-    my $cmd = "ASAN_OPTIONS=fast_unwind_on_malloc=0 G_SLICE=always-malloc ../capture/fuzzloch-capture -max_len=8196 -timeout=5 @ARGV";
-    print "$cmd\n";
-    system($cmd);
+    local $ENV{ASAN_OPTIONS} = "fast_unwind_on_malloc=0";
+    local $ENV{G_SLICE} = "always-malloc";
+    my @cmd = ("../capture/fuzzloch-capture", "-max_len=8196", "-timeout=5", @ARGV);
+    print join(' ', @cmd), "\n";
+    system(@cmd);
 } elsif ($main::cmd eq "--fuzz2pcap") {
     doFuzz2Pcap();
 } elsif ($main::cmd eq "--fuzz2pcapAll") {
     doFuzz2PcapAll();
+} elsif ($main::cmd eq "--shutdown") {
+    doShutdown();
 } elsif ($main::cmd eq "--help") {
     print "$ARGV[0] [OPTIONS] [COMMAND] <pcap> files\n";
     print "Options:\n";
@@ -563,12 +588,16 @@ if ($main::cmd eq "--fix") {
     print "  --help                 This help\n";
     print "  --make                 Create a .test file for each .pcap file on command line\n";
     print "  --reip file ip newip   Create file.tmp, replace ip with newip\n";
-    print "  --viewer               viewer tests\n";
+    print "  --api-full             API tests with full data reload (alias for --viewer)\n";
     print "                         This will init local ES, import data, start a viewer, run tests\n";
-    print "  --viewerstart          Viewer tests without reloading pcap\n";
+    print "  --api-fast             API tests without reloading data (alias for --viewerstart)\n";
+    print "  --viewer               (legacy) Same as --api-full\n";
+    print "  --viewerload           Init local ES and import data (like --api-full), then exit before running tests\n";
+    print "  --viewerstart          (legacy) Same as --api-fast\n";
     print "  --fuzz [fuzzoptions]   Run fuzzloch\n";
     print "  --fuzz2pcap            Convert list of fuzzloch crash file into matching pcap file\n";
     print "  --fuzz2pcapAll <f> <g> Convert list of fuzzloch crash file into all.pcap file\n";
+    print "  --shutdown             Send shutdown to all running test services (viewers, wise, parliament, cont3xt, multies, redis, s3)\n";
     print " [default] [pcap files]  Run each .pcap (default pcap/*.pcap) file thru ../capture/capture and compare to .test file\n";
 } elsif ($main::cmd =~ "^--viewer") {
     doGeo();

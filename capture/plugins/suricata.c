@@ -7,18 +7,12 @@
 
 
 #include <sys/socket.h>
-#include <netinet/in.h>
 #include <arpa/inet.h>
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
 #include <netdb.h>
-#include <ctype.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <sys/stat.h>
 #include "arkime.h"
-#include "bsb.h"
 
 /******************************************************************************/
 
@@ -252,7 +246,7 @@ LOCAL void suricata_process_alert(char *data, int len, SuricataItem_t *item)
             item->rev = atoi(data + out[i + 2]);
         } else if (MATCH(data, "signature")) {
             item->signature = g_regex_replace_literal(slashslashRegex, data + out[i + 2], out[i + 3], 0, "/", 0, NULL);
-            item->signature_len = strlen(item->signature);
+            item->signature_len = item->signature ? strlen(item->signature) : 0;
         } else if (MATCH(data, "severity")) {
             item->severity = atoi(data + out[i + 2]);
         } else if (MATCH(data, "category")) {
@@ -292,6 +286,8 @@ LOCAL void suricata_process()
     uint16_t        srcPort = 0;
     uint16_t        dstPort = 0;
     uint16_t        vlan = 0;
+    gboolean        srcIpOk = FALSE;
+    gboolean        dstIpOk = FALSE;
 
     memset(&srcIp, 0, sizeof(srcIp));
     memset(&dstIp, 0, sizeof(dstIp));
@@ -303,7 +299,12 @@ LOCAL void suricata_process()
 
         if (MATCH(line, "timestamp")) {
             struct tm tm;
-            strptime(line + out[i + 2], "%Y-%m-%dT%H:%M:%S", &tm);
+            memset(&tm, 0, sizeof(tm));
+            if (strptime(line + out[i + 2], "%Y-%m-%dT%H:%M:%S", &tm) == NULL) {
+                if (config.debug)
+                    LOG("WARNING - Couldn't parse suricata timestamp %.*s", out[i + 3], line + out[i + 2]);
+                continue;
+            }
             item->timestamp = timegm(&tm);
 
             if (out[i + 3] > 30) {
@@ -335,13 +336,23 @@ LOCAL void suricata_process()
                 return;
             }
         } else if (MATCH(line, "src_ip")) {
-            suricata_parse_ip(line + out[i + 2], out[i + 3], &srcIp);
+            srcIpOk = suricata_parse_ip(line + out[i + 2], out[i + 3], &srcIp);
         } else if (MATCH(line, "src_port")) {
-            srcPort = atoi(line + out[i + 2]);
+            int p = arkime_atoin(line + out[i + 2], out[i + 3]);
+            if (p < 0 || p > 65535) {
+                suricata_item_free(item);
+                return;
+            }
+            srcPort = (uint16_t)p;
         } else if (MATCH(line, "dest_ip")) {
-            suricata_parse_ip(line + out[i + 2], out[i + 3], &dstIp);
+            dstIpOk = suricata_parse_ip(line + out[i + 2], out[i + 3], &dstIp);
         } else if (MATCH(line, "dest_port")) {
-            dstPort = atoi(line + out[i + 2]);
+            int p = arkime_atoin(line + out[i + 2], out[i + 3]);
+            if (p < 0 || p > 65535) {
+                suricata_item_free(item);
+                return;
+            }
+            dstPort = (uint16_t)p;
         } else if (MATCH(line, "flow_id")) {
             item->flow_id = g_strndup(line + out[i + 2], out[i + 3]);
             item->flow_id_len = out[i + 3];
@@ -362,11 +373,18 @@ LOCAL void suricata_process()
             suricata_process_alert(line + out[i + 2], out[i + 3], item);
         } else if (MATCH(line, "vlan")) {
             if (*(line + out[i + 2]) == '[') {
-                vlan = atoi(line + out[i + 2] + 1);
+                vlan = arkime_atoin(line + out[i + 2] + 1, out[i + 3] - 1);
             } else {
-                vlan = atoi(line + out[i + 2]);
+                vlan = arkime_atoin(line + out[i + 2], out[i + 3]);
             }
         }
+    }
+
+    if (!srcIpOk || !dstIpOk) {
+        if (config.debug)
+            LOG("WARNING - Suricata alert missing/invalid src or dst ip");
+        suricata_item_free(item);
+        return;
     }
 
 #pragma GCC diagnostic push
@@ -387,7 +405,7 @@ LOCAL void suricata_read()
 {
     while (fgets(line + lineLen, lineSize - lineLen, file)) {
         lineLen = strlen(line);
-        if (line[lineLen - 1] == '\n') {
+        if (lineLen > 0 && line[lineLen - 1] == '\n') {
             suricata_process();
             lineLen = 0;
         } else if (lineLen == lineSize - 1) {

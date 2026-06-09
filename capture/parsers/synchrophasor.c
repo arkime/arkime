@@ -52,13 +52,16 @@ LOCAL void synchrophasor_parse_frame(ArkimeSession_t *session, const uint8_t *da
     BSB_IMPORT_u08(bsb, syncByte2);
     uint8_t frameType = (syncByte2 >> 4) & 0x07;
 
-    if (frameType < ARRAY_LEN(frameTypeNames)) {
-        arkime_field_string_add(frameTypeField, session, frameTypeNames[frameType], -1, TRUE);
-    }
-
     // FRAMESIZE
     uint16_t frameSize = 0;
     BSB_IMPORT_u16(bsb, frameSize);
+
+    if (frameSize < SYNCHROPHASOR_MIN_LEN || frameSize > len)
+        return;
+
+    if (frameType < ARRAY_LEN(frameTypeNames)) {
+        arkime_field_string_add(frameTypeField, session, frameTypeNames[frameType], -1, TRUE);
+    }
 
     // IDCODE (data stream ID)
     uint16_t idcode = 0;
@@ -139,7 +142,7 @@ LOCAL void synchrophasor_parse_frame(ArkimeSession_t *session, const uint8_t *da
 
             if (frameType == 5) {
                 // CFG-3: variable length channel names
-                for (uint16_t j = 0; j < phnmr + annmr + dgnmr && !BSB_IS_ERROR(bsb); j++) {
+                for (uint32_t j = 0; j < (uint32_t)phnmr + annmr + dgnmr && !BSB_IS_ERROR(bsb); j++) {
                     uint8_t chNameLen = 0;
                     BSB_IMPORT_u08(bsb, chNameLen);
                     BSB_IMPORT_skip(bsb, chNameLen);
@@ -207,6 +210,10 @@ LOCAL int synchrophasor_tcp_parser(ArkimeSession_t *session, void *uw, const uin
             continue;
         }
 
+        if ((int)frameSize > (int)buf->bufMax) {
+            return ARKIME_PARSER_UNREGISTER;
+        }
+
         if ((int)frameSize > (int)buf->len[which]) {
             return 0; // Need more data
         }
@@ -262,8 +269,6 @@ LOCAL void synchrophasor_tcp_classify(ArkimeSession_t *session, const uint8_t *d
 /******************************************************************************/
 LOCAL void synchrophasor_udp_classify(ArkimeSession_t *session, const uint8_t *data, int len, int UNUSED(which), void UNUSED(*uw))
 {
-    ARKIME_RETURN_IF_DNS_PORT;
-
     if (len < SYNCHROPHASOR_MIN_LEN)
         return;
 

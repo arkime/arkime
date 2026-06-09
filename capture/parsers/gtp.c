@@ -59,7 +59,6 @@ LOCAL ArkimePacketRC gtp_packet_enqueue(ArkimePacketBatch_t *batch, ArkimePacket
 /******************************************************************************/
 LOCAL void gtp_control_udp_classify(ArkimeSession_t *session, const uint8_t *data, int len, int UNUSED(which), void *UNUSED(uw))
 {
-    ARKIME_RETURN_IF_DNS_PORT;
     if (len < 8)
         return;
 

@@ -69,7 +69,7 @@ const internals = {
       singleton: true,
       service: true,
       fields: [
-        { name: 'type', required: false, regex: '^(memory|redis|memcached|lmdb)$', help: 'Where to cache results: memory (default), redis, memcached, lmdb' },
+        { name: 'type', required: false, regex: '^(memory|redis|memcached|lmdb|sqlite)$', help: 'Where to cache results: memory (default), redis, memcached, lmdb, sqlite' },
         { name: 'cacheSize', required: false, help: 'How many elements to cache in memory. Defaults to 100000' },
         { name: 'redisURL', password: true, required: false, ifField: 'type', ifValue: 'redis', help: 'Format is redis://[:password@]host:port/db-number, redis-sentinel://[[sentinelPassword]:[password]@]host[:port]/redis-name/db-number, or redis-cluster://[:password@]host:port/db-number' },
         { name: 'redisFormat', required: false, ifField: 'type', ifValue: 'redis', help: 'Use 2 (default) if WISE 2.x & WISE 3.x in use or 3 if just WISE 3.x', regex: '[23]' },
@@ -230,14 +230,29 @@ function setupAuth () {
 }
 
 // ----------------------------------------------------------------------------
+// Check authorization for config changes - supports both PIN code and TOTP
 function checkConfigCode (req, res, next) {
-  console.log(req.body);
-  if (req.body !== undefined && req.body.configCode !== undefined && req.body.configCode === internals.configCode) {
+  const code = req.body?.configCode;
+
+  // Check PIN code
+  if (code && code === internals.configCode) {
     return next();
-  } else {
-    console.log(`Incorrect pin code used - Config pin code is: ${internals.configCode}`);
-    return res.send(JSON.stringify({ success: false, text: 'Not authorized, check log file' })); // not specific error
   }
+
+  // Check TOTP code if exactly 6 digits
+  if (code && code.length === 6 && /^\d{6}$/.test(code) && req.user?.totpSecret) {
+    const result = req.user.verifyTotp(code);
+    if (result === 'rate-limited') {
+      return res.send(JSON.stringify({ success: false, text: 'Too many attempts, try again later' }));
+    }
+    if (result) {
+      return next();
+    }
+  }
+
+  // TODO(Arkime 7): do not log the correct config PIN code - it leaks the secret to anyone with log access.
+  console.log(`Incorrect pin/TOTP code used - Config pin code is: ${internals.configCode}`);
+  return res.send(JSON.stringify({ success: false, text: 'Not authorized, check log file' })); // not specific error
 }
 
 // ----------------------------------------------------------------------------
@@ -1415,7 +1430,7 @@ function isWiseAdmin (req, res, next) {
   if (req.user.hasRole('wiseAdmin')) {
     return next();
   } else {
-    console.log(`${req.user.userId} is not wiseAdmin`);
+    req.user.logRoleFailure('wiseAdmin');
     return res.send(JSON.stringify({ success: false, text: 'Not authorized, check log file' }));
   }
 }
@@ -1425,7 +1440,7 @@ function isWiseUser (req, res, next) {
   if (req.user.hasRole('wiseUser')) {
     return next();
   } else {
-    console.log(`${req.user.userId} is not wiseUser`);
+    req.user.logRoleFailure('wiseUser');
     return res.send(JSON.stringify({ success: false, text: 'Not authorized, check log file' }));
   }
 }
@@ -1434,9 +1449,27 @@ if (internals.webconfig) {
   // Set up auth, all APIs registered below will use passport
   Auth.app(app);
 
+  // Authenticated checkCode endpoint for TOTP testing in regression tests
+  if (ArkimeConfig.regressionTests) {
+    app.post('/regressionTests/checkCodeAuth', [jsonParser, checkConfigCode], (req, res) => {
+      return res.send(JSON.stringify({ success: true, text: 'Authorized' }));
+    });
+  }
+
   app.get('/api/appversion', (req, res) => {
     return res.send({ app: 'wiseService', version: version.version });
   });
+
+  // ----------------------------------------------------------------------------
+  /**
+   * GET - /api/user
+   *
+   * Fetches the currently logged in user, so the UI can gate admin-only actions.
+   *       This is an authenticated API and requires wiseService to be started with --webconfig.
+   * @name "/api/user"
+   * @returns {ArkimeUser} The currently logged in user.
+   */
+  app.get('/api/user', [ArkimeUtil.noCacheJson, isWiseUser], User.apiGetUser);
 
   // ----------------------------------------------------------------------------
   /**
@@ -1601,7 +1634,7 @@ if (internals.webconfig) {
   app.get('/api/appversion', (req, res) => {
     return res.send({ app: 'wiseService', version: version.version });
   });
-  app.get(['/source/:source/get', '/config/get'], (req, res) => {
+  app.get(['/source/:source/get', '/config/get', '/api/user'], (req, res) => {
     return res.send({ success: false, text: 'Must start wiseService with --webconfig option' });
   });
   app.put(['/source/:source/put', '/config/save'], (req, res) => {

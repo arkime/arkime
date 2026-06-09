@@ -562,7 +562,11 @@ class Integration {
           checkWriteDone();
         })
         .catch(err => {
-          console.log('failure in %s - itype: %s query: %s error:', integration.section, itype, query, err);
+          if (ArkimeConfig.debug > 0) {
+            console.log('failure in %s - itype: %s query: %s error:', integration.section, itype, query, err);
+          } else {
+            console.log('failure in %s - itype: %s error:', integration.section, itype, err.message ?? err);
+          }
           shared.sent++;
           stats.directError++;
           istats.directError++;
@@ -948,6 +952,18 @@ class Integration {
       if (keys[configName]?.[key]) { return keys[configName]?.[key]; }
     }
     return ArkimeConfig.getFull(this.configName ?? this.section ?? this.name, key, d);
+  }
+
+  // Returns true if the user has set a per-user override for `key`.
+  // Useful to detect mixing of per-user values with globally configured
+  // credentials (which can leak global credentials to user-chosen hosts).
+  hasUserConfig (user, key) {
+    if (user.cont3xt?.keys && !this.locked) {
+      const keys = user.getCont3xtKeys();
+      const configName = this.configName ?? this.name;
+      if (keys[configName]?.[key]) { return true; }
+    }
+    return false;
   }
 
   userAgent () {

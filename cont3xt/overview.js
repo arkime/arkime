@@ -78,7 +78,10 @@ class Overview {
   }
 
   // Verify the given overview, returns error { msg: string } on failure, { custom } otherwise
-  static verifyOverviewCustomField (custom) {
+  static verifyOverviewCustomField (custom, depth = 0) {
+    if (depth > 20) {
+      return { msg: 'Custom field nested too deep' };
+    }
     // non-empty strings are always valid (they're applied as both label and field)
     if (ArkimeUtil.isString(custom)) { return { custom }; }
 
@@ -142,7 +145,7 @@ class Overview {
 
     if (custom.fields != null) {
       for (let i = 0; i < custom.fields.length; i++) {
-        const { custom: customSubField, msg } = this.verifyOverviewCustomField(custom.fields[i]);
+        const { custom: customSubField, msg } = this.verifyOverviewCustomField(custom.fields[i], depth + 1);
         if (msg) { return { msg }; }
 
         custom.fields[i] = customSubField;

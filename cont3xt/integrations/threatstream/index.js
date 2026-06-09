@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 const ArkimeUtil = require('../../../common/arkimeUtil');
+const ArkimeConfig = require('../../../common/arkimeConfig');
 const Integration = require('../../integration.js');
 const axios = require('axios');
 
@@ -134,17 +135,25 @@ class ThreatstreamIntegration extends Integration {
 
   async fetch (user, query) {
     try {
-      const host = this.getUserConfig(user, 'host', 'api.threatstream.com');
+      const tuser = this.getUserConfig(user, 'user');
+      const tkey = this.getUserConfig(user, 'key');
+      if (!tkey || !tuser) {
+        return undefined;
+      }
+
+      // Only honor a per-user host override when the credentials are also
+      // per-user; otherwise the user could redirect global credentials to
+      // an attacker-chosen host (SSRF + credential disclosure).
+      let host;
+      if (this.hasUserConfig(user, 'user') && this.hasUserConfig(user, 'key')) {
+        host = this.getUserConfig(user, 'host', 'api.threatstream.com');
+      } else {
+        host = ArkimeConfig.getFull(this.configName ?? this.section ?? this.name, 'host', 'api.threatstream.com');
+      }
 
       // https://www.oreilly.com/library/view/regular-expressions-cookbook/9781449327453/ch08s15.html + uppercase
       if (!host.match(/^([a-zA-Z0-9]+(-[a-zA-Z0-9]+)*\.)+[a-zA-Z]{2,}$/)) {
         console.log(`userId: '${user.userId}' bad threatstream hostname: '%s'`, ArkimeUtil.sanitizeStr(host));
-        return undefined;
-      }
-
-      const tuser = this.getUserConfig(user, 'user');
-      const tkey = this.getUserConfig(user, 'key');
-      if (!tkey || !tuser) {
         return undefined;
       }
       const result = await axios.get(`https://${host}/api/v2/intelligence`, {

@@ -20,6 +20,8 @@ const crypto = require('crypto');
 const logger = require('morgan');
 const express = require('express');
 const ini = require('js-ini');
+const acorn = require('acorn');
+const RE2 = require('re2');
 
 class ArkimeUtil {
   static adminRole;
@@ -130,10 +132,9 @@ class ArkimeUtil {
    */
   static isPP (str) {
     if (Array.isArray(str)) {
-      return str.includes('__proto__') || str.includes('constructor') || str.includes('prototype');
+      return str.some(s => typeof s === 'string' && (s.startsWith('__') || ArkimeUtil.#DANGEROUS_PROPS.has(s)));
     }
-
-    return str === '__proto__' || str === 'constructor' || str === 'prototype';
+    return typeof str === 'string' && (str.startsWith('__') || ArkimeUtil.#DANGEROUS_PROPS.has(str));
   }
 
   // ----------------------------------------------------------------------------
@@ -172,8 +173,8 @@ class ArkimeUtil {
   // ----------------------------------------------------------------------------
   /**
    * Create a redis client from the provided url
-   * @params {string} url - The redis url to connect to.
-   * @params {string} section - The section this redis client is being created for
+   * @param {string} url - The redis url to connect to.
+   * @param {string} section - The section this redis client is being created for
    */
   static createRedisClient (url, section) {
     url = ArkimeUtil.sanitizeStr(url);
@@ -205,10 +206,10 @@ class ArkimeUtil {
         options.sentinels.push({ host: hostport[0], port: hostport[1] || 26379 });
       }
 
-      if (match[3] !== '') {
+      if (match[3]) {
         options.sentinelPassword = match[3];
       }
-      if (match[4] !== '') {
+      if (match[4]) {
         options.password = match[4];
       }
 
@@ -233,7 +234,7 @@ class ArkimeUtil {
       }
 
       const options = { db: parseInt(match[5]) };
-      if (match[3] !== '') {
+      if (match[3]) {
         options.password = match[3];
       }
 
@@ -289,8 +290,8 @@ class ArkimeUtil {
   // ----------------------------------------------------------------------------
   /**
    * Create a memcached client from the provided url
-   * @params {string} url - The memcached url to connect to.
-   * @params {string} section - The section this memcached client is being created for
+   * @param {string} url - The memcached url to connect to.
+   * @param {string} section - The section this memcached client is being created for
    */
   static createMemcachedClient (url, section) {
     url = ArkimeUtil.sanitizeStr(url);
@@ -309,8 +310,8 @@ class ArkimeUtil {
   // ----------------------------------------------------------------------------
   /**
    * Create a LMDB store from the provided url
-   * @params {string} url - The LMDB url to connect to.
-   * @params {string} section - The section this LMDB client is being created for
+   * @param {string} url - The LMDB url to connect to.
+   * @param {string} section - The section this LMDB client is being created for
    */
   static createLMDBStore (url, section) {
     // eslint-disable-next-line no-shadow
@@ -354,7 +355,7 @@ class ArkimeUtil {
   static wildcardToRegexp (wildcard) {
     // https://stackoverflow.com/revisions/57527468/5
     wildcard = wildcard.replace(/[.+^${}()|[\]\\]/g, '\\$&');
-    return new RegExp(`^${wildcard.replace(/\*/g, '.*').replace(/\?/g, '.')}$`, 'i');
+    return new RE2(`^${wildcard.replace(/\*/g, '.*').replace(/\?/g, '.')}$`, 'i');
   }
 
   // ----------------------------------------------------------------------------
@@ -424,7 +425,7 @@ class ArkimeUtil {
     if (res.headersSent) {
       return next(err);
     }
-    res.status(500).send(err.toString());
+    res.status(500).type('text/plain').send(err.toString());
   }
 
   // ----------------------------------------------------------------------------
@@ -511,7 +512,7 @@ class ArkimeUtil {
 
   // ----------------------------------------------------------------------------
   /**
-   * Callback when of the cert files change
+   * Callback when one of the cert files changes
    */
   static #fsWait;
   static #httpsServer;
@@ -714,6 +715,251 @@ class ArkimeUtil {
   }
 
   // ----------------------------------------------------------------------------
+  // Whitelisted methods for safeExpression
+  static #SAFE_STRING_METHODS = new Set([
+    'startsWith', 'endsWith', 'includes', 'indexOf', 'lastIndexOf',
+    'toLowerCase', 'toUpperCase', 'trim', 'trimStart', 'trimEnd',
+    'split', 'slice', 'substring', 'charAt', 'charCodeAt', 'match', 'replace'
+  ]);
+
+  static #SAFE_ARRAY_METHODS = new Set([
+    'includes', 'indexOf', 'lastIndexOf', 'some', 'every', 'filter', 'map', 'find', 'findIndex',
+    'slice', 'join', 'concat', 'flat', 'flatMap', 'length'
+  ]);
+
+  static #SAFE_METHODS = new Set([
+    ...ArkimeUtil.#SAFE_STRING_METHODS,
+    ...ArkimeUtil.#SAFE_ARRAY_METHODS
+  ]);
+
+  // Allowed global function calls (object.method format)
+  static #SAFE_GLOBAL_CALLS = new Set([
+    'JSON.parse', 'JSON.stringify'
+  ]);
+
+  static #DANGEROUS_PROPS = new Set([
+    'constructor', 'prototype', 'eval', 'Function'
+  ]);
+
+  // ----------------------------------------------------------------------------
+  /**
+   * Validates a JavaScript expression string for safety and returns a compiled Function.
+   * Only allows safe operations: property access, comparisons, whitelisted methods, literals.
+   * Supports optional chaining (?.) and JSON.parse().
+   * @param {string} expr - The expression string to validate (e.g., "vals.foo.startsWith('bar')")
+   * @param {string} argName - The argument name to use in the function (default: 'vals')
+   * @returns {Function} A compiled function that takes the argName as parameter
+   * @throws {Error} If the expression contains unsafe constructs
+   */
+  static safeExpression (expr, argName = 'vals') {
+    // Parse the expression
+    let ast;
+    try {
+      ast = acorn.parse(expr, { ecmaVersion: 2020 });
+    } catch (e) {
+      throw new Error(`Parse error: ${e.message}`);
+    }
+
+    // Base allowed identifiers
+    const baseAllowed = new Set([argName, 'undefined', 'true', 'false', 'null', 'NaN', 'Infinity', 'JSON']);
+
+    // Helper to get the full call path (e.g., "JSON.parse")
+    const getCallPath = (node) => {
+      if (node.type === 'Identifier') {
+        return node.name;
+      }
+      if (node.type === 'MemberExpression' && !node.computed) {
+        const obj = getCallPath(node.object);
+        const prop = node.property.name;
+        return obj ? `${obj}.${prop}` : null;
+      }
+      return null;
+    };
+
+    // Recursive validator with proper scoping
+    const validate = (node, allowedIds, theParent = null) => {
+      if (!node || typeof node !== 'object') return;
+
+      switch (node.type) {
+      case 'Program':
+      case 'ExpressionStatement':
+        for (const child of Object.values(node)) {
+          if (child && typeof child === 'object') {
+            validate(child, allowedIds, node);
+          }
+        }
+        return;
+
+      case 'Identifier':
+        // Skip if this is a property access (not computed)
+        if (theParent?.type === 'MemberExpression' && theParent.property === node && !theParent.computed) {
+          return;
+        }
+        // Skip if this is a key in an object literal
+        if (theParent?.type === 'Property' && theParent.key === node) {
+          return;
+        }
+        if (!allowedIds.has(node.name)) {
+          throw new Error(`Identifier '${node.name}' is not allowed`);
+        }
+        return;
+
+      case 'MemberExpression': {
+        let propName;
+        if (node.computed) {
+          if (node.property.type === 'Literal') {
+            propName = String(node.property.value);
+          } else {
+            throw new Error('Computed property access must use string/number literals');
+          }
+        } else if (node.property.type === 'Identifier') {
+          propName = node.property.name;
+        }
+        if (propName && (ArkimeUtil.#DANGEROUS_PROPS.has(propName) || propName.startsWith('__'))) {
+          throw new Error(`Property '${propName}' is not allowed`);
+        }
+        validate(node.object, allowedIds, node);
+        validate(node.property, allowedIds, node);
+        return;
+      }
+
+      case 'CallExpression': {
+        const callPath = getCallPath(node.callee);
+        if (callPath && ArkimeUtil.#SAFE_GLOBAL_CALLS.has(callPath)) {
+          // Validate arguments only
+          for (const arg of node.arguments) {
+            validate(arg, allowedIds, node);
+          }
+          return;
+        }
+
+        if (node.callee.type === 'MemberExpression') {
+          const methodProp = node.callee.property;
+          let methodName;
+          if (node.callee.computed && methodProp.type === 'Literal') {
+            methodName = String(methodProp.value);
+          } else if (!node.callee.computed && methodProp.type === 'Identifier') {
+            methodName = methodProp.name;
+          }
+          if (!methodName || !ArkimeUtil.#SAFE_METHODS.has(methodName)) {
+            throw new Error(`Method '${methodName || 'unknown'}' is not allowed`);
+          }
+          validate(node.callee.object, allowedIds, node);
+          for (const arg of node.arguments) {
+            validate(arg, allowedIds, node);
+          }
+          return;
+        } else if (node.callee.type === 'Identifier') {
+          throw new Error(`Function call '${node.callee.name}' is not allowed; only method calls permitted`);
+        }
+        throw new Error('Only method calls on objects are allowed');
+      }
+
+      case 'ArrowFunctionExpression': {
+        // Create new scope with arrow params
+        const newAllowed = new Set(allowedIds);
+        for (const param of node.params) {
+          if (param.type === 'Identifier') {
+            newAllowed.add(param.name);
+          } else if (param.type === 'RestElement' && param.argument.type === 'Identifier') {
+            newAllowed.add(param.argument.name);
+          }
+        }
+        validate(node.body, newAllowed, node);
+        return;
+      }
+
+      case 'ChainExpression':
+        validate(node.expression, allowedIds, node);
+        return;
+
+      case 'UnaryExpression':
+        if (node.operator === 'delete') {
+          throw new Error("'delete' is not allowed");
+        }
+        validate(node.argument, allowedIds, node);
+        return;
+
+      case 'NewExpression':
+        throw new Error("'new' expressions are not allowed");
+
+      case 'AssignmentExpression':
+      case 'AssignmentPattern':
+        throw new Error('Assignments are not allowed');
+
+      case 'UpdateExpression':
+        throw new Error('Update expressions (++/--) are not allowed');
+
+      case 'FunctionExpression':
+      case 'FunctionDeclaration':
+        throw new Error('Function declarations are not allowed');
+
+      case 'ThisExpression':
+        // Allow read-only access to 'this' - assignments are already blocked
+        return;
+
+      case 'MetaProperty':
+        throw new Error('Meta properties are not allowed');
+
+      case 'ImportExpression':
+        throw new Error('Import expressions are not allowed');
+
+      case 'AwaitExpression':
+        throw new Error('Await expressions are not allowed');
+
+      case 'YieldExpression':
+        throw new Error('Yield expressions are not allowed');
+
+      case 'TaggedTemplateExpression':
+        throw new Error('Tagged template expressions are not allowed');
+
+      case 'ClassExpression':
+      case 'ClassDeclaration':
+        throw new Error('Class declarations are not allowed');
+
+      case 'WhileStatement':
+      case 'DoWhileStatement':
+      case 'ForStatement':
+      case 'ForInStatement':
+      case 'ForOfStatement':
+        throw new Error('Loop statements are not allowed');
+
+      case 'WithStatement':
+        throw new Error("'with' statements are not allowed");
+
+      case 'ThrowStatement':
+        throw new Error("'throw' statements are not allowed");
+
+      case 'DebuggerStatement':
+        throw new Error("'debugger' statements are not allowed");
+
+      case 'TryStatement':
+        throw new Error("'try' statements are not allowed");
+
+      default:
+        // Recursively validate child nodes
+        for (const key of Object.keys(node)) {
+          if (key === 'type' || key === 'start' || key === 'end') continue;
+          const child = node[key];
+          if (Array.isArray(child)) {
+            for (const item of child) {
+              validate(item, allowedIds, node);
+            }
+          } else if (child && typeof child === 'object' && child.type) {
+            validate(child, allowedIds, node);
+          }
+        }
+      }
+    };
+
+    validate(ast, baseAllowed);
+
+    // If we get here, expression is safe - compile it
+
+    return new Function(argName, `return ${expr};`);
+  }
+
+  // ----------------------------------------------------------------------------
   static #evpBytesToKey (password, keyLen, ivLen) {
     let data = Buffer.alloc(0);
     let prev = Buffer.alloc(0);
@@ -734,6 +980,26 @@ class ArkimeUtil {
   static createDecipherAES192NoIV (password) {
     const result = ArkimeUtil.#evpBytesToKey(password, 24, 16);
     return crypto.createDecipheriv('aes-192-cbc', result.key, result.iv);
+  }
+
+  // ----------------------------------------------------------------------------
+  /**
+   * Decrypt DEK using PBKDF2 + AES-256-GCM
+   * @param password - The KEK password string
+   * @param encryptedDek - The encrypted DEK as a Buffer
+   * @param salt - The PBKDF2 salt as a Buffer
+   * @param iv - The GCM IV as a Buffer
+   * @param tag - The GCM auth tag as a Buffer
+   * @returns The decrypted DEK as a Buffer
+   */
+  static decryptDEKWithGCM (password, encryptedDek, salt, iv, tag) {
+    // Derive key using PBKDF2 with SHA-256, 350000 iterations
+    const kek = crypto.pbkdf2Sync(password, salt, 350000, 32, 'sha256');
+
+    // Decrypt using AES-256-GCM
+    const decipher = crypto.createDecipheriv('aes-256-gcm', kek, iv);
+    decipher.setAuthTag(tag);
+    return Buffer.concat([decipher.update(encryptedDek), decipher.final()]);
   }
 }
 

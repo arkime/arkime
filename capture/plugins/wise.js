@@ -15,6 +15,9 @@ exports.init = function (Config, emitter) {
   if (baseURL === undefined) {
     baseURL = 'http://' + Config.get('wiseHost', '127.0.0.1') + ':' + Config.get('wisePort', 8081);
   }
+  if (baseURL.endsWith('/')) {
+    baseURL = baseURL.slice(0, -1);
+  }
 
   const client = baseURL.startsWith('https') ? https : http;
 

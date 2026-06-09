@@ -81,17 +81,25 @@ LOCAL void postgresql_free(ArkimeSession_t UNUSED(*session), void *uw)
     ARKIME_TYPE_FREE(Info_t, info);
 }
 /******************************************************************************/
-LOCAL void postgresql_classify(ArkimeSession_t *session, const uint8_t UNUSED(*data), int UNUSED(len), int which, void *UNUSED(uw))
+LOCAL void postgresql_classify(ArkimeSession_t *session, const uint8_t *data, int len, int which, void *UNUSED(uw))
 {
     if (arkime_session_has_protocol(session, "postgresql"))
         return;
 
-    if ((len == 8 && memcmp(data + 3, "\x08\x04\xd2\x16\x2f", 5) == 0) ||
-        (len > 8 && data[3] <= len && data[4] == 0 && data[5] == 3 && data[6] == 0)) {
-
+    if (len == 8 && memcmp(data + 3, "\x08\x04\xd2\x16\x2f", 5) == 0) {
         Info_t *info = ARKIME_TYPE_ALLOC0(Info_t);
         info->which = which;
         arkime_parsers_register(session, postgresql_parser, info, postgresql_free);
+        return;
+    }
+
+    if (len > 8 && data[4] == 0 && data[5] == 3 && data[6] == 0) {
+        uint32_t plen = (data[0] << 24) | (data[1] << 16) | (data[2] << 8) | data[3];
+        if (plen >= 16 && plen <= (uint32_t)len) {
+            Info_t *info = ARKIME_TYPE_ALLOC0(Info_t);
+            info->which = which;
+            arkime_parsers_register(session, postgresql_parser, info, postgresql_free);
+        }
     }
 }
 /******************************************************************************/
@@ -101,21 +109,20 @@ void arkime_parser_init()
 
     userField = arkime_field_define("postgresql", "termfield",
                                     "postgresql.user", "User", "postgresql.user",
-                                    "Postgresql user name",
+                                    "PostgreSQL user name",
                                     ARKIME_FIELD_TYPE_STR,  ARKIME_FIELD_FLAG_LINKED_SESSIONS,
                                     "category", "user",
                                     (char *)NULL);
 
     dbField = arkime_field_define("postgresql", "termfield",
                                   "postgresql.db", "Database", "postgresql.db",
-                                  "Postgresql database",
+                                  "PostgreSQL database",
                                   ARKIME_FIELD_TYPE_STR,  ARKIME_FIELD_FLAG_LINKED_SESSIONS,
                                   (char *)NULL);
 
     appField = arkime_field_define("postgresql", "termfield",
                                    "postgresql.app", "Application", "postgresql.app",
-                                   "Postgresql application",
+                                   "PostgreSQL application",
                                    ARKIME_FIELD_TYPE_STR,  ARKIME_FIELD_FLAG_LINKED_SESSIONS,
                                    (char *)NULL);
 }
-

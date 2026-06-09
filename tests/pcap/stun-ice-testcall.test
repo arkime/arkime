@@ -129,7 +129,7 @@
    },
    "header" : {
     "index" : {
-     "_index" : "tests_sessions3-130822"
+     "_index" : "tests_sessions3-13m08"
     }
    }
   },
@@ -303,6 +303,13 @@
     ],
     "srcTTLCnt" : 1,
     "stun" : {
+     "attributes" : [
+      "fingerprint",
+      "ice-controlled",
+      "ice-controlling",
+      "use-candidate"
+     ],
+     "attributesCnt" : 4,
      "error" : [
       401
      ],
@@ -345,11 +352,15 @@
       "ARIN"
      ]
     },
+    "tags" : [
+     "stun:nat-discovered"
+    ],
+    "tagsCnt" : 1,
     "totDataBytes" : 3960
    },
    "header" : {
     "index" : {
-     "_index" : "tests_sessions3-130822"
+     "_index" : "tests_sessions3-13m08"
     }
    }
   },
@@ -527,6 +538,13 @@
     ],
     "srcTTLCnt" : 1,
     "stun" : {
+     "attributes" : [
+      "fingerprint",
+      "ice-controlled",
+      "ice-controlling",
+      "use-candidate"
+     ],
+     "attributesCnt" : 4,
      "error" : [
       401
      ],
@@ -569,11 +587,15 @@
       "ARIN"
      ]
     },
+    "tags" : [
+     "stun:nat-discovered"
+    ],
+    "tagsCnt" : 1,
     "totDataBytes" : 4108
    },
    "header" : {
     "index" : {
-     "_index" : "tests_sessions3-130822"
+     "_index" : "tests_sessions3-13m08"
     }
    }
   },
@@ -677,6 +699,13 @@
     ],
     "srcTTLCnt" : 1,
     "stun" : {
+     "attributes" : [
+      "fingerprint",
+      "ice-controlled",
+      "ice-controlling",
+      "use-candidate"
+     ],
+     "attributesCnt" : 4,
      "error" : [
       "401",
       "500"
@@ -720,11 +749,15 @@
       "ARIN"
      ]
     },
+    "tags" : [
+     "stun:nat-discovered"
+    ],
+    "tagsCnt" : 1,
     "totDataBytes" : 576
    },
    "header" : {
     "index" : {
-     "_index" : "tests_sessions3-130822"
+     "_index" : "tests_sessions3-13m08"
     }
    }
   },
@@ -828,6 +861,13 @@
     ],
     "srcTTLCnt" : 1,
     "stun" : {
+     "attributes" : [
+      "fingerprint",
+      "ice-controlled",
+      "ice-controlling",
+      "use-candidate"
+     ],
+     "attributesCnt" : 4,
      "error" : [
       "401",
       "500"
@@ -871,11 +911,15 @@
       "ARIN"
      ]
     },
+    "tags" : [
+     "stun:nat-discovered"
+    ],
+    "tagsCnt" : 1,
     "totDataBytes" : 576
    },
    "header" : {
     "index" : {
-     "_index" : "tests_sessions3-130822"
+     "_index" : "tests_sessions3-13m08"
     }
    }
   }

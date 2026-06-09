@@ -376,12 +376,19 @@ LOCAL int krb5_tcp_parser(ArkimeSession_t *session, void *uw, const uint8_t *dat
 {
     ArkimeParserBuf_t *krb5 = uw;
 
-    arkime_parser_buf_add(krb5, which, data, remaining);
+    if (arkime_parser_buf_add(krb5, which, data, remaining) < 0) {
+        arkime_session_add_tag(session, "krb5:record-too-long");
+        return ARKIME_PARSER_UNREGISTER;
+    }
 
     if (krb5->len[which] < 4)
         return 0;
 
     int len = (krb5->buf[which][2] << 8) | krb5->buf[which][3];
+    if (len + 4 > (int)krb5->bufMax) {
+        arkime_session_add_tag(session, "krb5:record-too-long");
+        return ARKIME_PARSER_UNREGISTER;
+    }
     if (krb5->len[which] < len + 4)
         return 0;
     krb5_parse(session, krb5->buf[which] + 4, len);

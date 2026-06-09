@@ -45,9 +45,11 @@ LOCAL int tcap_get_app_context(const uint8_t *data, int len, char *out, int outl
         BSB_IMPORT_u08(bsb, tag);
         BSB_IMPORT_u08(bsb, lenByte);
 
-        int elemLen = lenByte;
+        uint32_t elemLen = lenByte;
         if (lenByte & 0x80) {
             int numBytes = lenByte & 0x7f;
+            if (numBytes > 4)
+                return 0;
             elemLen = 0;
             for (int i = 0; i < numBytes && BSB_REMAINING(bsb) > 0; i++) {
                 uint8_t b = 0;
@@ -56,21 +58,21 @@ LOCAL int tcap_get_app_context(const uint8_t *data, int len, char *out, int outl
             }
         }
 
-        if (BSB_IS_ERROR(bsb) || elemLen <= 0 || elemLen > BSB_REMAINING(bsb))
+        if (BSB_IS_ERROR(bsb) || elemLen == 0 || elemLen > BSB_REMAINING(bsb))
             return 0;
 
         // Dialogue portion (0x6B)
-        if (tag == 0x6B && elemLen > 0) {
+        if (tag == 0x6B) {
             // Search for OID 0x06 with prefix 04 00 00 01 (CAMEL/MAP prefix)
             // The structure is: External(0x28) -> context[0](0xA0) -> AARQ/AARE(0x60/0x61) -> context[1](0xA1) -> OID
             const uint8_t *dlgData = BSB_WORK_PTR(bsb);
             // Scan for OID tags in the dialogue portion
-            for (int i = 0; i < elemLen - 8; i++) {
+            for (uint32_t i = 0; i + 2 <= elemLen; i++) {
                 if (dlgData[i] == 0x06) {
                     int oidLen = dlgData[i + 1];
-                    if (oidLen > 0 && oidLen < 20 && i + 2 + oidLen <= elemLen) {
+                    if (oidLen >= 4 && oidLen < 20 && i + 2 + oidLen <= elemLen) {
                         // Check if it looks like CAMEL/MAP/INAP OID (starts with 04 00 00 01)
-                        if (oidLen >= 4 && dlgData[i + 2] == 0x04 && dlgData[i + 3] == 0x00 &&
+                        if (dlgData[i + 2] == 0x04 && dlgData[i + 3] == 0x00 &&
                             dlgData[i + 4] == 0x00 && dlgData[i + 5] == 0x01) {
                             const uint8_t *oid = dlgData + i + 2;
                             if (oidLen * 2 >= outlen)

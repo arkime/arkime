@@ -53,6 +53,10 @@ LOCAL int ptp_udp_parser(ArkimeSession_t *session, void *UNUSED(uw), const uint8
     if (BSB_REMAINING(bsb) < 34)
         return 0;
 
+    uint16_t msgLen = (data[2] << 8) | data[3];
+    if (msgLen < 34 || msgLen > len)
+        return 0;
+
     uint8_t byte0 = 0;
     BSB_IMPORT_u08(bsb, byte0);
 
@@ -95,6 +99,11 @@ LOCAL void ptp_udp_classify(ArkimeSession_t *session, const uint8_t *data, int l
     // Validate message type (byte 0 low nibble should be valid)
     uint8_t msgType = data[0] & 0x0f;
     if (msgType >= ARRAY_LEN(ptpMsgTypes) || (msgType > 0x03 && msgType < 0x08))
+        return;
+
+    // Validate messageLength (bytes 2-3) fits the datagram
+    uint16_t msgLen = (data[2] << 8) | data[3];
+    if (msgLen < 34 || msgLen > len)
         return;
 
     arkime_session_add_protocol(session, "ptp");

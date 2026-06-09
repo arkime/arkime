@@ -105,8 +105,12 @@ LOCAL int pana_udp_parser(ArkimeSession_t *session, void *UNUSED(uw), const uint
     if (len < 16)
         return ARKIME_PARSER_UNREGISTER;
 
+    uint16_t msgLen = (data[2] << 8) | data[3];
+    if (msgLen < 16 || msgLen > len)
+        return ARKIME_PARSER_UNREGISTER;
+
     BSB bsb;
-    BSB_INIT(bsb, data, len);
+    BSB_INIT(bsb, data, msgLen);
 
     uint16_t msgType = 0;
     uint32_t sessionId = 0;
@@ -144,7 +148,6 @@ LOCAL void pana_udp_classify(ArkimeSession_t *session, const uint8_t *data, int 
         return;
 
     // Exclude DNS ports
-    ARKIME_RETURN_IF_DNS_PORT;
 
     // PANA header: 2 bytes reserved (0x0000), 2 bytes length, must match packet length
     if (len < 16)

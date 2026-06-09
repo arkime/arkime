@@ -121,6 +121,10 @@ class ShareableAPIs {
       editUsers = validatedEditUsers.validUsers;
     }
 
+    if (req.body.data !== undefined && (typeof req.body.data !== 'object' || Array.isArray(req.body.data) || req.body.data === null)) {
+      return res.serverError(403, 'Data must be an object');
+    }
+
     const doc = {
       name: req.body.name,
       description: req.body.description,
@@ -208,6 +212,10 @@ class ShareableAPIs {
         return res.serverError(403, 'Cannot change shareable type', 'api.shareables.cannotChangeType');
       }
 
+      if (req.body.name !== undefined && !ArkimeUtil.isString(req.body.name)) {
+        return res.serverError(403, 'Name must be a string', 'api.shareables.nameMustBeString');
+      }
+
       if (req.body.description !== undefined && !ArkimeUtil.isString(req.body.description)) {
         return res.serverError(403, 'Description must be a string', 'api.shareables.descriptionMustBeString');
       }
@@ -225,6 +233,10 @@ class ShareableAPIs {
       if (editUsers.length > 0) {
         const validatedEditUsers = await User.validateUserIds(editUsers);
         editUsers = validatedEditUsers.validUsers;
+      }
+
+      if (req.body.data !== undefined && (typeof req.body.data !== 'object' || Array.isArray(req.body.data) || req.body.data === null)) {
+        return res.serverError(403, 'Data must be an object');
       }
 
       const doc = {

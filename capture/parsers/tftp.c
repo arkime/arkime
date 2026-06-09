@@ -80,16 +80,26 @@ LOCAL void tftp_udp_classify(ArkimeSession_t *session, const uint8_t *data, int 
     if (opcode < 1 || opcode > 5)
         return;
 
-    // RRQ/WRQ must have null-terminated strings
+    // RRQ/WRQ must have null-terminated filename followed by non-empty null-terminated mode (RFC 1350)
     if (opcode == 1 || opcode == 2) {
-        int hasNull = 0;
+        int fnameEnd = -1;
         for (int i = 2; i < len; i++) {
             if (data[i] == 0) {
-                hasNull = 1;
+                fnameEnd = i;
                 break;
             }
         }
-        if (!hasNull)
+        if (fnameEnd < 3) // need at least one filename byte before NUL
+            return;
+
+        int modeEnd = -1;
+        for (int i = fnameEnd + 1; i < len; i++) {
+            if (data[i] == 0) {
+                modeEnd = i;
+                break;
+            }
+        }
+        if (modeEnd <= fnameEnd + 1) // need at least one mode byte before NUL
             return;
     }
 

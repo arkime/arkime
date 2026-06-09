@@ -58,7 +58,7 @@ LOCAL int scheme_http_load(const char *uri, ArkimeSchemeFlags flags, ArkimeSchem
     rc += curl_url_get(h, CURLUPART_HOST, &host, 0);
 
     char *port = NULL;
-    rc += curl_url_get(h, CURLUPART_PORT, &port, 0);
+    curl_url_get(h, CURLUPART_PORT, &port, 0);
 
     char *path = NULL;
     rc += curl_url_get(h, CURLUPART_PATH, &path, 0);
@@ -73,8 +73,16 @@ LOCAL int scheme_http_load(const char *uri, ArkimeSchemeFlags flags, ArkimeSchem
         return 1;
     }
 
+    const char *effPort = port;
+    if (!effPort) {
+        if (scheme && strcasecmp(scheme, "https") == 0)
+            effPort = "443";
+        else
+            effPort = "80";
+    }
+
     char hostport[1000];
-    snprintf(hostport, sizeof(hostport), "%s://%s:%s", scheme, host, port);
+    snprintf(hostport, sizeof(hostport), "%s://%s:%s", scheme, host, effPort);
 
     void *server = g_hash_table_lookup(servers, hostport);
     if (!server) {

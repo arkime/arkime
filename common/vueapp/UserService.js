@@ -228,5 +228,102 @@ export default {
         reject(error);
       });
     });
+  },
+
+  /**
+   * Gets the TOTP status for the current user
+   * @returns {Promise} Promise A promise object that signals the completion
+   *                            or rejection of the request.
+   */
+  getTotpStatus () {
+    return new Promise((resolve, reject) => {
+      fetch('api/user/totp/status', {
+        method: 'GET',
+        headers: setReqHeaders({ 'Content-Type': 'application/json' })
+      }).then((response) => {
+        return response.json();
+      }).then((response) => {
+        if (response.success) {
+          return resolve(response);
+        } else {
+          return reject(response.text);
+        }
+      }).catch((err) => {
+        reject(err.message || err);
+      });
+    });
+  },
+
+  /**
+   * Starts TOTP enrollment - generates a new secret
+   * @returns {Promise} Promise A promise object with secret and qrCodeUri
+   */
+  setupTotp () {
+    return new Promise((resolve, reject) => {
+      fetch('api/user/totp/setup', {
+        method: 'POST',
+        headers: setReqHeaders({ 'Content-Type': 'application/json' })
+      }).then((response) => {
+        return response.json();
+      }).then((response) => {
+        if (response.success) {
+          return resolve(response);
+        } else {
+          return reject(response.text);
+        }
+      }).catch((err) => {
+        reject(err.message || err);
+      });
+    });
+  },
+
+  /**
+   * Confirms TOTP enrollment by verifying a code
+   * @param {string} code - The 6-digit code from authenticator app
+   * @returns {Promise} Promise A promise object that signals the completion
+   */
+  confirmTotp (code) {
+    return new Promise((resolve, reject) => {
+      fetch('api/user/totp/confirm', {
+        method: 'POST',
+        headers: setReqHeaders({ 'Content-Type': 'application/json' }),
+        body: JSON.stringify({ code })
+      }).then((response) => {
+        return response.json();
+      }).then((response) => {
+        if (response.success) {
+          return resolve(response);
+        } else {
+          return reject(response.text);
+        }
+      }).catch((err) => {
+        reject(err.message || err);
+      });
+    });
+  },
+
+  /**
+   * Disables TOTP for the current user
+   * @param {string} code - The 6-digit TOTP code from authenticator app
+   * @returns {Promise} Promise A promise object that signals the completion
+   */
+  disableTotp (code) {
+    return new Promise((resolve, reject) => {
+      fetch('api/user/totp/disable', {
+        method: 'POST',
+        headers: setReqHeaders({ 'Content-Type': 'application/json' }),
+        body: JSON.stringify({ code })
+      }).then((response) => {
+        return response.json();
+      }).then((response) => {
+        if (response.success) {
+          return resolve(response);
+        } else {
+          return reject(response.text);
+        }
+      }).catch((err) => {
+        reject(err.message || err);
+      });
+    });
   }
 };

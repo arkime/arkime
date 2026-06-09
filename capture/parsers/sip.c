@@ -302,7 +302,10 @@ LOCAL int sip_tcp_parser(ArkimeSession_t *session, void *uw, const uint8_t *data
 {
     ArkimeParserBuf_t *sip = uw;
 
-    arkime_parser_buf_add(sip, which, data, len);
+    if (arkime_parser_buf_add(sip, which, data, len) < 0) {
+        arkime_session_add_tag(session, "sip:headers-too-long");
+        return ARKIME_PARSER_UNREGISTER;
+    }
 
     // Find double CRLF to detect end of message headers
     while (sip->len[which] > 4) {
@@ -316,8 +319,14 @@ LOCAL int sip_tcp_parser(ArkimeSession_t *session, void *uw, const uint8_t *data
             }
         }
 
-        if (endPos < 0)
+        if (endPos < 0) {
+            // No header terminator yet; if the buffer is full it never will fit
+            if (sip->len[which] >= sip->bufMax) {
+                arkime_session_add_tag(session, "sip:headers-too-long");
+                return ARKIME_PARSER_UNREGISTER;
+            }
             break;
+        }
 
         int isResponse = 0;
         int contentLength = sip_process(session, sip->buf[which], endPos, &isResponse);

@@ -68,6 +68,7 @@ SPDX-License-Identifier: Apache-2.0
     style="z-index: 2000;">
     <button
       type="button"
+      :aria-label="$t('common.dismiss')"
       class="btn-close pull-right"
       @click="showMessage = false" />
     {{ $t('utils.onlyOne') }}

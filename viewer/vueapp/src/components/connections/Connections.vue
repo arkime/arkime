@@ -414,6 +414,7 @@ SPDX-License-Identifier: Apache-2.0
             <button
               class="btn btn-default btn-sm ms-1"
               id="unlockNodes"
+              :aria-label="$t('connections.unlockNodesTip')"
               @click.stop.prevent="unlock">
               <span class="fa fa-unlock" />
               <BTooltip
@@ -429,6 +430,7 @@ SPDX-License-Identifier: Apache-2.0
             <button
               class="btn btn-default btn-sm ms-1"
               id="exportGraph"
+              :aria-label="$t('connections.exportGraphTip')"
               @click.stop.prevent="exportPng">
               <span class="fa fa-download" />
               <BTooltip
@@ -446,6 +448,7 @@ SPDX-License-Identifier: Apache-2.0
           <button
             id="nodeDistUp"
             type="button"
+            :aria-label="$t('connections.nodeDistUpTip')"
             class="btn btn-default btn-sm"
             :class="{'disabled':query.nodeDist >= 200}"
             @click="changeNodeDist(10)">
@@ -461,6 +464,7 @@ SPDX-License-Identifier: Apache-2.0
           <button
             id="nodeDistDown"
             type="button"
+            :aria-label="$t('connections.nodeDistDownTip')"
             class="btn btn-default btn-sm"
             :class="{'disabled':query.nodeDist <= 10}"
             @click="changeNodeDist(-10)">
@@ -480,6 +484,7 @@ SPDX-License-Identifier: Apache-2.0
           <button
             id="textSizeUp"
             type="button"
+            :aria-label="$t('connections.textSizeUpTip')"
             class="btn btn-default btn-sm"
             :class="{'disabled':fontSize >= 1}"
             @click="updateTextSize(0.1)">
@@ -495,6 +500,7 @@ SPDX-License-Identifier: Apache-2.0
           <button
             id="textSizeDown"
             type="button"
+            :aria-label="$t('connections.textSizeDownTip')"
             class="btn btn-default btn-sm"
             :class="{'disabled':fontSize <= 0.2}"
             @click="updateTextSize(-0.1)">
@@ -514,6 +520,7 @@ SPDX-License-Identifier: Apache-2.0
           <button
             id="zoomIn"
             type="button"
+            :aria-label="$t('connections.zoomInTip')"
             class="btn btn-default btn-sm"
             :class="{'disabled':zoomLevel >= 4}"
             @click="zoomConnections(2)">
@@ -528,6 +535,7 @@ SPDX-License-Identifier: Apache-2.0
           <button
             id="zoomOut"
             type="button"
+            :aria-label="$t('connections.zoomOutTip')"
             class="btn btn-default btn-sm"
             :class="{'disabled':zoomLevel <= 0.0625}"
             @click="zoomConnections(0.5)">

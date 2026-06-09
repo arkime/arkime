@@ -137,7 +137,7 @@ LOCAL uint32_t dtls_process_client_hello(ArkimeSession_t *session, const uint8_t
         etotlen = MIN(etotlen, BSB_REMAINING(cbsb));
 
         BSB ebsb;
-        BSB_INIT(ebsb, BSB_WORK_PTR(cbsb), etotlen);
+        BSB_IMPORT_bsb(cbsb, ebsb, etotlen);
 
         while (BSB_REMAINING(ebsb) >= 4) {
             uint16_t etype = 0, elen = 0;
@@ -318,6 +318,9 @@ LOCAL int dtls_udp_parser(ArkimeSession_t *session, void *UNUSED(uw), const uint
 {
     BSB bbuf;
 
+    if (len < 13)
+        return 0;
+
     // 22 is handshake
     if (data[0] != 22) {
         arkime_parsers_unregister(session, uw);
@@ -326,7 +329,7 @@ LOCAL int dtls_udp_parser(ArkimeSession_t *session, void *UNUSED(uw), const uint
 
     BSB_INIT(bbuf, data, len);
 
-    while (BSB_NOT_ERROR(bbuf) && BSB_REMAINING(bbuf) > 11) {
+    while (BSB_NOT_ERROR(bbuf) && BSB_REMAINING(bbuf) >= 13) {
         BSB_IMPORT_skip(bbuf, 11);
         uint16_t tlen = 0;
         BSB_IMPORT_u16(bbuf, tlen);
@@ -335,40 +338,39 @@ LOCAL int dtls_udp_parser(ArkimeSession_t *session, void *UNUSED(uw), const uint
             return 0;
 
         BSB msgBuf;
-        BSB_INIT(msgBuf, BSB_WORK_PTR(bbuf), tlen);
-        BSB_IMPORT_skip(bbuf, tlen);
+        BSB_IMPORT_bsb(bbuf, msgBuf, tlen);
 
         while (BSB_NOT_ERROR(bbuf) && BSB_NOT_ERROR(msgBuf) && BSB_REMAINING(msgBuf) > 12) {
             uint8_t handshakeType = 0;
             BSB_IMPORT_u08(msgBuf, handshakeType);
-            uint32_t handshakeLen = 0;
-            BSB_IMPORT_u24(msgBuf, handshakeLen);
+            BSB_IMPORT_skip(msgBuf, 3); // handshakeLen
             BSB_IMPORT_skip(msgBuf, 2); // msgSeq
             uint32_t frameOffset = 0;
             BSB_IMPORT_u24(msgBuf, frameOffset);
-            BSB_IMPORT_skip(msgBuf, 3); // frameLength
-            // ALW fix - don't handle fragmented packets yet
+            uint32_t fragmentLength = 0;
+            BSB_IMPORT_u24(msgBuf, fragmentLength);
+            // Don't handle fragmented packets yet
             if (frameOffset != 0) {
-                BSB_IMPORT_skip(msgBuf, handshakeLen);
+                BSB_IMPORT_skip(msgBuf, fragmentLength);
                 continue;
             }
 
             // Not enough data left
-            if (BSB_IS_ERROR(msgBuf) || handshakeLen > BSB_REMAINING(msgBuf))
+            if (BSB_IS_ERROR(msgBuf) || fragmentLength > BSB_REMAINING(msgBuf))
                 break;
 
             switch (handshakeType) {
             case 1: // client hello
-                arkime_parsers_call_named_func(dtls_process_client_hello_func, session, BSB_WORK_PTR(msgBuf), handshakeLen, NULL);
+                arkime_parsers_call_named_func(dtls_process_client_hello_func, session, BSB_WORK_PTR(msgBuf), fragmentLength, NULL);
                 break;
             case 2: // server hello
-                arkime_parsers_call_named_func(dtls_process_server_hello_func, session, BSB_WORK_PTR(msgBuf), handshakeLen, NULL);
+                arkime_parsers_call_named_func(dtls_process_server_hello_func, session, BSB_WORK_PTR(msgBuf), fragmentLength, NULL);
                 break;
             case 11: // Certificate
-                arkime_parsers_call_named_func(tls_process_server_certificate_func, session, BSB_WORK_PTR(msgBuf), handshakeLen, NULL);
+                arkime_parsers_call_named_func(tls_process_server_certificate_func, session, BSB_WORK_PTR(msgBuf), fragmentLength, NULL);
                 break;
             }
-            BSB_IMPORT_skip(msgBuf, handshakeLen);
+            BSB_IMPORT_skip(msgBuf, fragmentLength);
         }
     }
 

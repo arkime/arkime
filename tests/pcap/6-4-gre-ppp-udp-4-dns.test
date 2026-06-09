@@ -1,179 +1,179 @@
 {
-   "sessions3" : [
-      {
-         "body" : {
-            "@timestamp" : "SET",
-            "client" : {
-               "bytes" : 71
-            },
-            "destination" : {
-               "as" : {
-                  "full" : "AS15169 Google LLC",
-                  "number" : 15169,
-                  "organization" : {
-                     "name" : "Google LLC"
-                  }
-               },
-               "bytes" : 268,
-               "geo" : {
-                  "country_iso_code" : "US"
-               },
-               "ip" : "8.8.8.8",
-               "mac" : [
-                  "00:19:06:e6:82:c4",
-                  "c5:00:00:00:82:c4"
-               ],
-               "mac-cnt" : 2,
-               "packets" : 1,
-               "port" : 53
-            },
-            "dns" : [
-               {
-                  "answers" : [
-                     {
-                        "class" : "IN",
-                        "name" : "<root>",
-                        "ttl" : 757,
-                        "type" : "SOA"
-                     }
-                  ],
-                  "answersCnt" : 1,
-                  "headerFlags" : [
-                     "RA",
-                     "RD"
-                  ],
-                  "host" : [
-                     "xqt-detect-mode2-97712e88-167a-45b9-93ee-913140e76678"
-                  ],
-                  "hostCnt" : 1,
-                  "opcode" : "QUERY",
-                  "qc" : "IN",
-                  "qt" : "AAAA",
-                  "queryHost" : "xqt-detect-mode2-97712e88-167a-45b9-93ee-913140e76678",
-                  "status" : "NXDOMAIN"
-               }
-            ],
-            "dnsCnt" : 1,
-            "dot1q" : {
-               "id" : [
-                  100
-               ],
-               "idCnt" : 1
-            },
-            "dstOui" : [
-               "Cisco Systems, Inc"
-            ],
-            "dstOuiCnt" : 1,
-            "dstOuterASN" : [
-               "---",
-               "AS8100 QuadraNet Enterprises LLC"
-            ],
-            "dstOuterGEO" : [
-               "US",
-               "US"
-            ],
-            "dstOuterIp" : [
-               "16.0.0.200",
-               "192.52.166.154"
-            ],
-            "dstOuterIpCnt" : 2,
-            "dstOuterRIR" : [
-               "ARIN",
-               "ARIN"
-            ],
-            "dstPayload8" : "a62c818300010000",
-            "dstRIR" : "ARIN",
-            "dstTTL" : [
-               50
-            ],
-            "dstTTLCnt" : 1,
-            "ethertype" : 34525,
-            "fileId" : [],
-            "firstPacket" : 1417577703821,
-            "ipProtocol" : 17,
-            "lastPacket" : 1417577704035,
-            "length" : 214,
-            "network" : {
-               "bytes" : 465,
-               "community_id" : "1:fZG4C8AY/jKS+Bf2SgfW9xMzRTg=",
-               "packets" : 2,
-               "vlan" : {
-                  "id" : [
-                     100
-                  ],
-                  "id-cnt" : 1
-               }
-            },
-            "node" : "test",
-            "packetLen" : [
-               213,
-               284
-            ],
-            "packetPos" : [
-               24,
-               237
-            ],
-            "packetRange" : {
-               "gte" : 1417577703821,
-               "lte" : 1417577704035
-            },
-            "protocol" : [
-               "dns",
-               "gre",
-               "ppp",
-               "udp"
-            ],
-            "protocolCnt" : 4,
-            "segmentCnt" : 1,
-            "server" : {
-               "bytes" : 146
-            },
-            "source" : {
-               "bytes" : 197,
-               "ip" : "172.16.44.3",
-               "mac" : [
-                  "00:12:1e:f2:61:3d",
-                  "0c:01:00:00:61:3d"
-               ],
-               "mac-cnt" : 2,
-               "packets" : 1,
-               "port" : 40768
-            },
-            "srcOui" : [
-               "Juniper Networks"
-            ],
-            "srcOuiCnt" : 1,
-            "srcOuterASN" : [
-               "---",
-               "AS8100 QuadraNet Enterprises LLC"
-            ],
-            "srcOuterGEO" : [
-               "US",
-               "US"
-            ],
-            "srcOuterIp" : [
-               "16.0.0.200",
-               "192.52.166.154"
-            ],
-            "srcOuterIpCnt" : 2,
-            "srcOuterRIR" : [
-               "ARIN",
-               "ARIN"
-            ],
-            "srcPayload8" : "a62c010000010000",
-            "srcRIR" : "ARIN",
-            "srcTTL" : [
-               60
-            ],
-            "srcTTLCnt" : 1,
-            "totDataBytes" : 217
-         },
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions3-141203"
-            }
-         }
+ "sessions3" : [
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 71
+    },
+    "destination" : {
+     "as" : {
+      "full" : "AS15169 Google LLC",
+      "number" : 15169,
+      "organization" : {
+       "name" : "Google LLC"
       }
-   ]
+     },
+     "bytes" : 268,
+     "geo" : {
+      "country_iso_code" : "US"
+     },
+     "ip" : "8.8.8.8",
+     "mac" : [
+      "00:19:06:e6:82:c4",
+      "c5:00:00:00:82:c4"
+     ],
+     "mac-cnt" : 2,
+     "packets" : 1,
+     "port" : 53
+    },
+    "dns" : [
+     {
+      "answers" : [
+       {
+        "class" : "IN",
+        "name" : "<root>",
+        "ttl" : 757,
+        "type" : "SOA"
+       }
+      ],
+      "answersCnt" : 1,
+      "headerFlags" : [
+       "RA",
+       "RD"
+      ],
+      "host" : [
+       "xqt-detect-mode2-97712e88-167a-45b9-93ee-913140e76678"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "AAAA",
+      "queryHost" : "xqt-detect-mode2-97712e88-167a-45b9-93ee-913140e76678",
+      "status" : "NXDOMAIN"
+     }
+    ],
+    "dnsCnt" : 1,
+    "dot1q" : {
+     "id" : [
+      100
+     ],
+     "idCnt" : 1
+    },
+    "dstOui" : [
+     "Cisco Systems, Inc"
+    ],
+    "dstOuiCnt" : 1,
+    "dstOuterASN" : [
+     "---",
+     "AS8100 QuadraNet Enterprises LLC"
+    ],
+    "dstOuterGEO" : [
+     "US",
+     "US"
+    ],
+    "dstOuterIp" : [
+     "16.0.0.200",
+     "192.52.166.154"
+    ],
+    "dstOuterIpCnt" : 2,
+    "dstOuterRIR" : [
+     "ARIN",
+     "ARIN"
+    ],
+    "dstPayload8" : "a62c818300010000",
+    "dstRIR" : "ARIN",
+    "dstTTL" : [
+     50
+    ],
+    "dstTTLCnt" : 1,
+    "ethertype" : 34525,
+    "fileId" : [],
+    "firstPacket" : 1417577703821,
+    "ipProtocol" : 17,
+    "lastPacket" : 1417577704035,
+    "length" : 214,
+    "network" : {
+     "bytes" : 465,
+     "community_id" : "1:fZG4C8AY/jKS+Bf2SgfW9xMzRTg=",
+     "packets" : 2,
+     "vlan" : {
+      "id" : [
+       100
+      ],
+      "id-cnt" : 1
+     }
+    },
+    "node" : "test",
+    "packetLen" : [
+     213,
+     284
+    ],
+    "packetPos" : [
+     24,
+     237
+    ],
+    "packetRange" : {
+     "gte" : 1417577703821,
+     "lte" : 1417577704035
+    },
+    "protocol" : [
+     "dns",
+     "gre",
+     "ppp",
+     "udp"
+    ],
+    "protocolCnt" : 4,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 146
+    },
+    "source" : {
+     "bytes" : 197,
+     "ip" : "172.16.44.3",
+     "mac" : [
+      "00:12:1e:f2:61:3d",
+      "0c:01:00:00:61:3d"
+     ],
+     "mac-cnt" : 2,
+     "packets" : 1,
+     "port" : 40768
+    },
+    "srcOui" : [
+     "Juniper Networks"
+    ],
+    "srcOuiCnt" : 1,
+    "srcOuterASN" : [
+     "---",
+     "AS8100 QuadraNet Enterprises LLC"
+    ],
+    "srcOuterGEO" : [
+     "US",
+     "US"
+    ],
+    "srcOuterIp" : [
+     "16.0.0.200",
+     "192.52.166.154"
+    ],
+    "srcOuterIpCnt" : 2,
+    "srcOuterRIR" : [
+     "ARIN",
+     "ARIN"
+    ],
+    "srcPayload8" : "a62c010000010000",
+    "srcRIR" : "ARIN",
+    "srcTTL" : [
+     60
+    ],
+    "srcTTLCnt" : 1,
+    "totDataBytes" : 217
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-14m12"
+    }
+   }
+  }
+ ]
 }
 

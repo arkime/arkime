@@ -16,12 +16,12 @@
 extern ArkimeConfig_t        config;
 
 /******************************************************************************/
-LOCAL ArkimePacketRC gre_packet_enqueue(ArkimePacketBatch_t *UNUSED(batch), ArkimePacket_t *const packet, const uint8_t *data, int UNUSED(len))
+LOCAL ArkimePacketRC gre_packet_enqueue(ArkimePacketBatch_t *batch, ArkimePacket_t *const packet, const uint8_t *data, int len)
 {
     packet->tunnel |= ARKIME_PACKET_TUNNEL_GRE;
 
     BSB bsb;
-    if (unlikely(len) < 4 || unlikely(!data))
+    if (unlikely(len < 4) || unlikely(!data))
         return ARKIME_PACKET_CORRUPT;
 
     BSB_INIT(bsb, data, len);
@@ -47,7 +47,7 @@ LOCAL ArkimePacketRC gre_packet_enqueue(ArkimePacketBatch_t *UNUSED(batch), Arki
         if (flags_version & 0x0080) {
             BSB_IMPORT_skip(bsb, 4);
         }
-    } else {
+    } else if (version == 0) {
         // Standard GRE (RFC 2784/2890)
         if (flags_version & (0x8000 | 0x4000)) {
             BSB_IMPORT_skip(bsb, 4); // skip checksum and offset
@@ -74,6 +74,9 @@ LOCAL ArkimePacketRC gre_packet_enqueue(ArkimePacketBatch_t *UNUSED(batch), Arki
                 BSB_IMPORT_skip(bsb, tlen);
             }
         }
+    } else {
+        // Versions 2-7 are not defined for GRE; do not parse
+        return ARKIME_PACKET_UNKNOWN_ETHER;
     }
 
     if (BSB_IS_ERROR(bsb))

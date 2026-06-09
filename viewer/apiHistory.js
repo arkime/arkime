@@ -48,7 +48,7 @@ class HistoryAPIs {
    * @param {number} startTime - If the date parameter is not set, this is the start time of data to return. Format is seconds since Unix EPOCH.
    * @param {number} stopTime  - If the date parameter is not set, this is the stop time of data to return. Format is seconds since Unix EPOCH.
    * @param {string} searchTerm - The search text to filter the history list by.
-   * @param {number} length=100 - The number of items to return. Defaults to 1,000.
+   * @param {number} length=1000 - The number of items to return. Defaults to 1,000.
    * @param {number} start=0 - The entry to start at. Defaults to 0.
    * @param {string} sortField=timestamp - The field to sort the results by.
    * @param {string} desc=true - Whether to sort the results descending or ascending. Default is descending.
@@ -190,8 +190,8 @@ class HistoryAPIs {
       return res.serverError(403, 'Missing history index', 'api.history.missingIndex');
     }
 
-    if (!req.query.index.includes('history_v')) {
-      return res.serverError(403, 'Invalid history index', 'api.history.invalidIndex');
+    if (!/_history_v\d+-/.test(req.query.index)) {
+      return res.serverError(403, 'Invalid history index');
     }
 
     try {

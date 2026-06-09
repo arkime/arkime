@@ -15,6 +15,7 @@ SPDX-License-Identifier: Apache-2.0
     :class="{dragging:dragging > -1}">
     {{ field.friendlyName }}
     <button
+      :aria-label="$t('common.remove')"
       class="btn-close btn-sm ms-1"
       @click.stop.prevent="$emit('remove', index)" />
   </label>

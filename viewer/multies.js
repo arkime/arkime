@@ -18,12 +18,40 @@ const http = require('http');
 const https = require('https');
 const fs = require('fs');
 const path = require('path');
+const cryptoLib = require('crypto');
 const ArkimeUtil = require('../common/arkimeUtil');
 const ArkimeConfig = require('../common/arkimeConfig');
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('=== UNHANDLED REJECTION ===');
+  console.error('Promise:', promise);
+  if (reason instanceof Error) {
+    console.error('Reason:', reason.message);
+    console.error('Stack:', reason.stack);
+    if (reason.meta) { try { console.error('Meta:', JSON.stringify(reason.meta, null, 2)); } catch (e) {} }
+  } else {
+    console.error('Reason:', reason);
+  }
+  console.error('===========================');
+});
+process.on('uncaughtException', (err, o) => {
+  console.error('=== UNCAUGHT EXCEPTION ===');
+  console.error('Origin:', o);
+  console.error('Error:', err && err.message);
+  console.error('Stack:', err && err.stack);
+  console.error('==========================');
+});
+process.on('warning', (w) => {
+  console.error('=== NODE WARNING ===');
+  console.error(w.name, w.message);
+  console.error(w.stack);
+  console.error('====================');
+});
 
 const esSSLOptions = { rejectUnauthorized: !ArkimeConfig.insecure };
 let httpAgent;
 let httpsAgent;
+let multiESBasicAuthHmac;
 ArkimeConfig.loaded(() => {
   const esClientKey = Config.get('esClientKey');
   const esClientCert = Config.get('esClientCert');
@@ -39,6 +67,11 @@ ArkimeConfig.loaded(() => {
   }
   httpAgent = new http.Agent({ keepAlive: true, keepAliveMsecs: 5000, maxSockets: 100 });
   httpsAgent = new https.Agent(Object.assign({ keepAlive: true, keepAliveMsecs: 5000, maxSockets: 100 }, esSSLOptions));
+
+  const expected = Config.get('multiESBasicAuth');
+  if (expected) {
+    multiESBasicAuthHmac = cryptoLib.createHmac('sha256', 'compare').update(expected).digest();
+  }
 });
 
 const clients = {};
@@ -90,6 +123,27 @@ app.use(function (req, res, next) {
     res.setTimeout(10 * 60 * 1000); // Increase default from 2 min to 10 min
     return next();
   }
+});
+
+// ============================================================================
+// Optional basic auth: if multiESBasicAuth ("user:password") is set in config,
+// require it on every request. Compared in constant time.
+// ============================================================================
+app.use((req, res, next) => {
+  if (!multiESBasicAuthHmac) { return next(); }
+
+  const header = req.headers.authorization;
+  if (!header || !header.startsWith('Basic ')) {
+    return res.set('WWW-Authenticate', 'Basic').status(401).send();
+  }
+
+  const supplied = Buffer.from(header.slice(6).trim(), 'base64').toString('utf8');
+  const b = cryptoLib.createHmac('sha256', 'compare').update(supplied).digest();
+  if (!cryptoLib.timingSafeEqual(multiESBasicAuthHmac, b)) {
+    return res.set('WWW-Authenticate', 'Basic').status(401).send();
+  }
+
+  return next();
 });
 
 function node2Url (node) {
@@ -167,6 +221,12 @@ function getActiveNodes (clusterin) {
 
 function makeRequest (url, options, cb) {
   let result = '';
+  let called = false;
+  const done = (err, res) => {
+    if (called) { return; }
+    called = true;
+    if (cb) { cb(err, res); }
+  };
 
   const preq = options.arkime_client.request(url, options, (pres) => {
     pres.on('data', (chunk) => {
@@ -182,14 +242,16 @@ function makeRequest (url, options, cb) {
           result = JSON.parse(result);
         } catch (e) {
           console.log('ERROR - could not parse response from ES', e);
-          if (cb) { return cb(e, {}); }
+          return done(e, {});
         }
       } else {
         result = {};
       }
-      if (cb) {
-        cb(null, result);
-      }
+      done(null, result);
+    });
+    pres.on('error', (e) => {
+      console.log('Response error', e);
+      done(e, {});
     });
   });
   preq.setHeader('content-type', 'application/json');
@@ -204,6 +266,7 @@ function makeRequest (url, options, cb) {
   }
   preq.on('error', (e) => {
     console.log('Request error', e);
+    done(e, {});
   });
   preq.end();
 }
@@ -375,7 +438,12 @@ function simpleGather1Cluster (req, res) {
 
   // Remove cluster from body if there
   if (req._body) {
-    const body = JSON.parse(req.body);
+    let body;
+    try {
+      body = JSON.parse(req.body);
+    } catch (e) {
+      return res.status(400).send({ error: 'Invalid JSON body' });
+    }
     delete body.cluster;
     req.body = JSON.stringify(body);
   }
@@ -574,6 +642,9 @@ app.get('/:index/:type/:id', function (req, res) {
       if (results[i].found) {
         if (results[i]._source) {
           results[i]._source.cluster = results[i].cluster;
+        }
+        if (results[i].fields) {
+          results[i].fields.cluster = results[i].cluster;
         }
         return res.send(results[i]);
       }
@@ -835,7 +906,7 @@ function fixQuery (node, body, doneCb) {
 
   let outstanding = 0;
   let finished = 0;
-  const err = null;
+  let outerErr = null;
 
   function convert (qParent, obj) {
     for (const item in obj) {
@@ -867,10 +938,10 @@ function fixQuery (node, body, doneCb) {
           obj.bool.should.push({ bool: { filter: [{ term: { node: file._source.node } }, { term: { fileId: file._source.num } }] } });
         }
         if (obj.bool.should.length === 0) {
-          err = 'No matching files found';
+          outerErr = 'No matching files found';
         }
         if (finished && outstanding === 0) {
-          doneCb(err, body);
+          doneCb(outerErr, body);
         }
       });
     } else if (typeof obj[item] === 'object') {
@@ -880,7 +951,7 @@ function fixQuery (node, body, doneCb) {
 
   convert(null, body);
   if (outstanding === 0) {
-    return doneCb(err, body);
+    return doneCb(outerErr, body);
   }
 
   finished = 1;
@@ -1021,6 +1092,23 @@ app.post(['/MULTIPREFIX_fields/field/_search', '/MULTIPREFIX_fields/_search'], f
         }
       }
     }
+
+    // Add the cluster field definition for multi-viewer
+    if (!unique.cluster) {
+      obj.hits.total++;
+      obj.hits.hits.push({
+        _index: 'fields_v30',
+        _id: 'cluster',
+        _source: {
+          friendlyName: 'Cluster',
+          group: 'general',
+          help: 'Cluster name the session was recorded on (multi-viewer only)',
+          type: 'termfield',
+          dbField2: 'cluster'
+        }
+      });
+    }
+
     res.send(obj);
   });
 });
@@ -1031,7 +1119,7 @@ app.post(['/:index/:type/_search', '/:index/_search'], function (req, res) {
   try {
     search = JSON.parse(req.body);
   } catch (e) {
-    return res.status(400).send('Invalid JSON body');
+    return res.status(400).send({ error: 'Invalid JSON body' });
   }
 
   if (+search.size + (+search.from || 0) > 10000) {
@@ -1127,7 +1215,12 @@ function msearch (req, res) {
 }
 
 app.post(['/:index/:type/:id/_update', '/:index/_update/:id'], async (req, res) => {
-  const body = JSON.parse(req.body);
+  let body;
+  try {
+    body = JSON.parse(req.body);
+  } catch (e) {
+    return res.status(400).send({ error: 'Invalid JSON body' });
+  }
   const cluster = req.query.cluster ?? body.cluster;
   if (cluster && clusters[cluster]) {
     const node = clusters[cluster];
@@ -1324,7 +1417,7 @@ async function premain () {
   activeESNodes = nodes.slice();
   console.log(nodes);
 
-  ArkimeUtil.createHttpServer(app, Config.get('multiESHost'), Config.get('multiESPort', 8200));
+  ArkimeUtil.createHttpServer(app, Config.get('multiESHost', '127.0.0.1'), Config.get('multiESPort', 8200));
 }
 
 premain();

@@ -4,7 +4,6 @@
  */
 #include "arkime.h"
 #include <arpa/inet.h>
-#include <netinet/udp.h>
 
 extern ArkimeConfig_t        config;
 
@@ -111,15 +110,24 @@ LOCAL int dhcpv6_process(ArkimeSession_t *session, ArkimePacket_t *const packet)
 
     arkime_field_string_add(typeField, session, namesv6[data[0]], -1, TRUE);
 
-    // DHCPv6 transaction ID
-    char str[100];
-    uint32_t id = (data[1] << 16) | (data[2] << 8) | data[3];
-    snprintf(str, sizeof(str), "%x", id);
-    arkime_field_string_add(idField, session, str, -1, TRUE);
+    int optionsOffset;
+    if (data[0] == 12 || data[0] == 13) {
+        // Relay-forward / Relay-reply: msg-type(1) + hop-count(1) + link-addr(16) + peer-addr(16)
+        if (len < 34)
+            return 0;
+        optionsOffset = 34;
+    } else {
+        // Standard client/server message: msg-type(1) + transaction-id(3)
+        char str[100];
+        uint32_t id = (data[1] << 16) | (data[2] << 8) | data[3];
+        snprintf(str, sizeof(str), "%x", id);
+        arkime_field_string_add(idField, session, str, -1, TRUE);
+        optionsOffset = 4;
+    }
 
     // Parse DHCPv6 options
     BSB bsb;
-    BSB_INIT(bsb, data + 4, len - 4);
+    BSB_INIT(bsb, data + optionsOffset, len - optionsOffset);
     while (BSB_REMAINING(bsb) >= 4) {
         uint16_t optionCode = 0;
         uint16_t optionLen = 0;
@@ -236,8 +244,11 @@ LOCAL int dhcp_process(ArkimeSession_t *session, ArkimePacket_t *const packet)
         case 50: // Requested IP Address
             if (l == 4) {
                 BSB_IMPORT_ptr(bsb, valueStr, 4);
-                if (valueStr)
-                    arkime_field_ip4_add(requestIpField, session, *(uint32_t *)valueStr);
+                if (valueStr) {
+                    uint32_t ip;
+                    memcpy(&ip, valueStr, 4);
+                    arkime_field_ip4_add(requestIpField, session, ip);
+                }
             } else {
                 BSB_IMPORT_skip(bsb, l);
             }
@@ -344,13 +355,13 @@ void arkime_parser_init()
 
     macField = arkime_field_define("dhcp", "lotermfield",
                                    "dhcp.mac", "DHCP Client MAC", "dhcp.mac",
-                                   "Client ethernet MAC ",
+                                   "Client ethernet MAC",
                                    ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
                                    (char *)NULL);
 
     ouiField = arkime_field_define("dhcp", "termfield",
                                    "dhcp.oui", "DHCP Client OUI", "dhcp.oui",
-                                   "Client ethernet OUI ",
+                                   "Client ethernet OUI",
                                    ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
                                    (char *)NULL);
 

@@ -39,12 +39,13 @@ LOCAL const uint8_t *m3ua_parse_m2ua(const uint8_t *data, int len, int *mtp3Len)
     BSB_INIT(bsb, data, len);
 
     uint8_t version = 0, msgClass = 0, msgType = 0;
+    uint32_t msgLen = 0;
 
     BSB_IMPORT_u08(bsb, version);
     BSB_IMPORT_skip(bsb, 1); // reserved
     BSB_IMPORT_u08(bsb, msgClass);
     BSB_IMPORT_u08(bsb, msgType);
-    BSB_IMPORT_skip(bsb, 4); // msgLen
+    BSB_IMPORT_u32(bsb, msgLen);
 
     if (BSB_IS_ERROR(bsb))
         return NULL;
@@ -54,6 +55,11 @@ LOCAL const uint8_t *m3ua_parse_m2ua(const uint8_t *data, int len, int *mtp3Len)
 
     if (msgClass != M2UA_MSG_CLASS_MAUP || msgType != M2UA_MSG_TYPE_DATA)
         return NULL;
+
+    if (msgLen < 8 || msgLen > (uint32_t)len)
+        return NULL;
+
+    BSB_INIT(bsb, data + 8, msgLen - 8);
 
     // Parse parameters looking for Protocol Data
     while (BSB_REMAINING(bsb) >= 4) {
@@ -91,12 +97,13 @@ LOCAL const uint8_t *m3ua_parse_m3ua(const uint8_t *data, int len, int *userLen,
     BSB_INIT(bsb, data, len);
 
     uint8_t version = 0, msgClass = 0, msgType = 0;
+    uint32_t msgLen = 0;
 
     BSB_IMPORT_u08(bsb, version);
     BSB_IMPORT_skip(bsb, 1); // reserved
     BSB_IMPORT_u08(bsb, msgClass);
     BSB_IMPORT_u08(bsb, msgType);
-    BSB_IMPORT_skip(bsb, 4); // msgLen
+    BSB_IMPORT_u32(bsb, msgLen);
 
     if (BSB_IS_ERROR(bsb))
         return NULL;
@@ -106,6 +113,11 @@ LOCAL const uint8_t *m3ua_parse_m3ua(const uint8_t *data, int len, int *userLen,
 
     if (msgClass != M3UA_MSG_CLASS_TRANSFER || msgType != M3UA_MSG_TYPE_DATA)
         return NULL;
+
+    if (msgLen < 8 || msgLen > (uint32_t)len)
+        return NULL;
+
+    BSB_INIT(bsb, data + 8, msgLen - 8);
 
     // Parse parameters looking for Protocol Data (0x0210 per RFC 4666, 0x0002 older)
     while (BSB_REMAINING(bsb) >= 4) {

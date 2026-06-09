@@ -33,6 +33,7 @@ LOCAL ArkimeSchemeLater_t *laterHead;
 LOCAL ArkimeSchemeLater_t *laterTail;
 ARKIME_COND_DEFINE(laterLock);
 ARKIME_LOCK_DEFINE(laterLock);
+LOCAL char *currentProcessingUri;
 LOCAL GThread *schemeThread;
 
 LOCAL  ArkimeStringHashStd_t  schemesHash;
@@ -60,6 +61,7 @@ LOCAL int                    offlineDispatchAfter;
 extern void                 *esServer;
 
 extern ArkimeOfflineInfo_t   offlineInfo[256];
+extern ARKIME_LOCK_EXTERN(offlineInfoLock);
 
 extern ArkimeFieldOps_t     readerFieldOps[256];
 ArkimeSchemeAction_t       *schemeActions[256];
@@ -89,9 +91,10 @@ LOCAL struct {
 } readerState;
 
 LOCAL void reader_scheme_pause();
+LOCAL void arkime_reader_scheme_enqueue(const char *uri, ArkimeSchemeFlags flags, ArkimeSchemeAction_t *actions);
 
 /******************************************************************************/
-LOCAL void reader_scheme_actions_ref(ArkimeSchemeAction_t *actions)
+void arkime_reader_scheme_actions_ref(ArkimeSchemeAction_t *actions)
 {
     if (!actions)
         return;
@@ -110,6 +113,8 @@ LOCAL void reader_scheme_actions_deref(ArkimeSchemeAction_t *actions)
         return;
 
     arkime_field_ops_free(&actions->ops);
+    if (actions->notifyClientRef)
+        arkime_command_client_decref(actions->notifyClientRef);
     ARKIME_TYPE_FREE(ArkimeSchemeAction_t, actions);
 }
 /******************************************************************************/
@@ -132,16 +137,25 @@ LOCAL ArkimeScheme_t *uri2scheme(const char *uri)
     return str ? str->uw : NULL;
 }
 /******************************************************************************/
+/******************************************************************************/
+/* Tracks recursion depth of load_thread on the scheme thread. depth==1 means
+ * the outermost call (i.e. add-file/add-dir top level). Nested calls happen
+ * when reading a directory: outer load_thread(DIRHINT) -> readerScheme->load
+ * -> arkime_reader_scheme_load(file) -> inner load_thread(no DIRHINT). */
+LOCAL int loadThreadDepth;
 /* Actually call the scheme load function. This is guaranteed to be on the scheme thread */
 LOCAL void arkime_reader_scheme_load_thread(const char *uri, ArkimeSchemeFlags flags, ArkimeSchemeAction_t *actions)
 {
+    loadThreadDepth++;
     reader_scheme_pause();
 
     LOG("Processing %s", uri);
     ArkimeScheme_t *readerScheme = uri2scheme(uri);
     if (!readerScheme) {
         LOG("ERROR - Unknown scheme for %s", uri);
-        return;
+        if (actions && actions->notifyClientRef)
+            arkime_command_notify_file_error(actions->notifyClientRef, uri);
+        goto cleanup;
     }
 
     readerState.startPos = 0;
@@ -150,10 +164,24 @@ LOCAL void arkime_reader_scheme_load_thread(const char *uri, ArkimeSchemeFlags f
     readerState.fileHeaderLen = 24;
     readerState.isPcapNG = 0;
     readerState.haveInterface = -1;
+    if (readerState.packet) {
+        arkime_packet_free(readerState.packet);
+        readerState.packet = 0;
+    }
 
     int rcl = readerScheme->load(uri, flags, actions);
 
-    if (rcl == 0 && !config.dryRun && !config.copyPcap && offlineInfo[readerState.readerPos].didBatch) {
+    gboolean notifyHandedOff = FALSE;
+    if (rcl == 0 && offlineInfo[readerState.readerPos].didBatch) {
+        // Stash an async file-done notification on the offlineInfo slot. The
+        // packet thread will fire file-done + decref when the last packet of
+        // this file has been processed.
+        if (!(flags & ARKIME_SCHEME_FLAG_DIRHINT) && actions && actions->notifyClientRef) {
+            arkime_command_client_incref(actions->notifyClientRef);
+            offlineInfo[readerState.readerPos].notifyClientRef = actions->notifyClientRef;
+            offlineInfo[readerState.readerPos].notifyFilename = g_strdup(uri);
+            notifyHandedOff = TRUE;
+        }
         arkime_packet_batch_end_of_file(readerState.readerPos);
     }
 
@@ -169,6 +197,31 @@ LOCAL void arkime_reader_scheme_load_thread(const char *uri, ArkimeSchemeFlags f
             usleep(5000);
         }
     }
+
+    // Synchronous notification path: load failed or no packets batched. The
+    // packet thread won't fire FILE_DONE so we notify inline. We don't touch
+    // actions->notifyClientRef — for add-dir it's shared across files.
+    if (!(flags & ARKIME_SCHEME_FLAG_DIRHINT) && actions && actions->notifyClientRef && !notifyHandedOff) {
+        if (rcl != 0) {
+            arkime_command_notify_file_error(actions->notifyClientRef, uri);
+        } else {
+            arkime_command_notify_file_done(actions->notifyClientRef, uri,
+                                            offlineInfo[readerState.readerPos].lastBytes,
+                                            offlineInfo[readerState.readerPos].lastPackets);
+        }
+    }
+
+cleanup:
+    // Outermost load_thread call (depth==1 going to 0): release the client ref
+    // that was attached to actions when --notify was specified. Per-file
+    // notifications already incref'd their own copy onto offlineInfo, so it's
+    // safe to drop the actions-held ref here. Done at outermost depth so that
+    // recursive directory iteration can continue using actions->notifyClientRef.
+    if (loadThreadDepth == 1 && actions && actions->notifyClientRef) {
+        arkime_command_client_decref(actions->notifyClientRef);
+        actions->notifyClientRef = NULL;
+    }
+    loadThreadDepth--;
 }
 /******************************************************************************/
 void arkime_reader_scheme_load(const char *uri, ArkimeSchemeFlags flags, ArkimeSchemeAction_t *actions)
@@ -182,13 +235,17 @@ void arkime_reader_scheme_load(const char *uri, ArkimeSchemeFlags flags, ArkimeS
         return;
     }
 
-    // Enqueue for later
+    arkime_reader_scheme_enqueue(uri, flags, actions);
+}
+/******************************************************************************/
+LOCAL void arkime_reader_scheme_enqueue(const char *uri, ArkimeSchemeFlags flags, ArkimeSchemeAction_t *actions)
+{
     ArkimeSchemeLater_t *item = ARKIME_TYPE_ALLOC(ArkimeSchemeLater_t);
     item->next = 0;
     item->uri = g_strdup(uri);
     item->flags = flags;
     item->actions = actions;
-    reader_scheme_actions_ref(actions);
+    arkime_reader_scheme_actions_ref(actions);
     ARKIME_LOCK(laterLock);
     if (laterHead) {
         laterTail->next = item;
@@ -202,13 +259,38 @@ void arkime_reader_scheme_load(const char *uri, ArkimeSchemeFlags flags, ArkimeS
 /******************************************************************************/
 LOCAL int reader_scheme_header_common(const char *uri, int dlt, int snaplen, const char *extraInfo, ArkimeSchemeAction_t *actions)
 {
-    readerState.readerPos++;
+    uint8_t nextPos = readerState.readerPos + 1;
+
+    // readerPos is uint8_t (wraps at 256). Before reusing a slot, wait until
+    // the prior file occupying it has been fully drained: packet threads
+    // have processed FILE_DONE (finishWaiting==0) AND the FILE_DONE handler
+    // has released the lock. Hold offlineInfoLock across the wait + cleanup
+    // so we can't race with the FILE_DONE handler in arkime_packet_thread,
+    // which also touches notifyClientRef/notifyFilename under this lock and
+    // does a slow arkime_db_update_file before the decref.
+    ARKIME_LOCK(offlineInfoLock);
+    while (!config.quitting && offlineInfo[nextPos].finishWaiting > 0) {
+        ARKIME_UNLOCK(offlineInfoLock);
+        LOG_RATE(5, "Waiting for reader slot %u to drain, finishWaiting=%u",
+                 nextPos, offlineInfo[nextPos].finishWaiting);
+        usleep(5000);
+        ARKIME_LOCK(offlineInfoLock);
+    }
+
+    readerState.readerPos = nextPos;
     // We've wrapped around all 256 reader items, clear the previous file information
     if (offlineInfo[readerState.readerPos].filename) {
         g_free(offlineInfo[readerState.readerPos].filename);
         g_free(offlineInfo[readerState.readerPos].extra);
+        if (offlineInfo[readerState.readerPos].notifyFilename) {
+            g_free(offlineInfo[readerState.readerPos].notifyFilename);
+        }
+        if (offlineInfo[readerState.readerPos].notifyClientRef) {
+            arkime_command_client_decref(offlineInfo[readerState.readerPos].notifyClientRef);
+        }
         memset(&offlineInfo[readerState.readerPos], 0, sizeof(ArkimeOfflineInfo_t));
     }
+    ARKIME_UNLOCK(offlineInfoLock);
     offlineInfo[readerState.readerPos].filename = g_strdup(uri);
 
     ArkimeScheme_t *readerScheme = uri2scheme(uri);
@@ -219,7 +301,7 @@ LOCAL int reader_scheme_header_common(const char *uri, int dlt, int snaplen, con
         reader_scheme_actions_deref(schemeActions[readerState.readerPos]);
 
     schemeActions[readerState.readerPos] = actions;
-    reader_scheme_actions_ref(actions);
+    arkime_reader_scheme_actions_ref(actions);
 
     if (readerFilenameOpsNum > 0) {
         // Free any previously allocated
@@ -343,7 +425,7 @@ LOCAL void *reader_scheme_thread(void *UNUSED(arg))
             }
 
             int lineLen = strlen(line);
-            if (line[lineLen - 1] == '\n') {
+            if (lineLen > 0 && line[lineLen - 1] == '\n') {
                 line[lineLen - 1] = 0;
             }
 
@@ -375,8 +457,12 @@ LOCAL void *reader_scheme_thread(void *UNUSED(arg))
         }
         ArkimeSchemeLater_t *item = laterHead;
         laterHead = laterHead->next;
+        currentProcessingUri = item->uri;
         ARKIME_UNLOCK(laterLock);
         arkime_reader_scheme_load_thread(item->uri, item->flags, item->actions);
+        ARKIME_LOCK(laterLock);
+        currentProcessingUri = NULL;
+        ARKIME_UNLOCK(laterLock);
         g_free(item->uri);
         reader_scheme_actions_deref(item->actions);
         ARKIME_TYPE_FREE(ArkimeSchemeLater_t, item);
@@ -483,7 +569,7 @@ LOCAL int arkime_reader_scheme_processNG(const char *uri, uint8_t *data, int len
             if (len < need) {
                 memcpy(readerState.tmpBuffer + readerState.tmpBufferLen, data, len);
                 readerState.tmpBufferLen += len;
-                return 0;
+                goto processNG;
             }
             memcpy(readerState.tmpBuffer + readerState.tmpBufferLen, data, need);
             readerState.tmpBufferLen += need;
@@ -491,6 +577,11 @@ LOCAL int arkime_reader_scheme_processNG(const char *uri, uint8_t *data, int len
             len -= need;
 
             const ArkimePcapNGFileHdr_t *h = (ArkimePcapNGFileHdr_t *)readerState.tmpBuffer;
+
+            if (h->byte_order_magic != 0x1A2B3C4D && h->byte_order_magic != 0x4D3C2B1A) {
+                LOG("ERROR - Invalid pcapNG byte_order_magic 0x%08x in '%s'", h->byte_order_magic, uri);
+                return 1;
+            }
 
             readerState.needSwap = h->byte_order_magic != 0x1A2B3C4D;
             readerState.tsresol = 1000000; // default to microsecond resolution
@@ -552,10 +643,18 @@ LOCAL int arkime_reader_scheme_processNG(const char *uri, uint8_t *data, int len
 
             readerState.nextStartPos = readerState.startPos + blockHeader->block_total_length;
             if (blockHeader->block_type == 6) {
+                if (readerState.blockSize < 24) {
+                    LOG("ERROR - Invalid EPB block size %d in pcapNG file '%s'", readerState.blockSize, uri);
+                    return 1;
+                }
                 readerState.state = ARKIME_SCHEME_NG_PACKET_HEADER;
             } else if (blockHeader->block_type == 3) {
                 readerState.state = ARKIME_SCHEME_NG_SPB_HEADER;
             } else if (blockHeader->block_type == 1) {
+                if (readerState.blockSize < 8) {
+                    LOG("ERROR - Invalid IDB block size %d in pcapNG file '%s'", readerState.blockSize, uri);
+                    return 1;
+                }
                 readerState.state = ARKIME_SCHEME_NG_INTERFACE;
             } else if (blockHeader->block_type == 0x0A0D0D0A) {
                 // New Section Header Block - reset interface and tsresol state
@@ -620,11 +719,17 @@ LOCAL int arkime_reader_scheme_processNG(const char *uri, uint8_t *data, int len
                 }
 
                 if (otype == 9) {
+                    if (olen < 1) {
+                        options += olen;
+                        options += (4 - (olen & 3)) & 3;
+                        continue;
+                    }
                     if (options[0] & 0x80) {
-                        readerState.tsresol = 1LL << MIN((options[0] & 0x7F), 63);
+                        readerState.tsresol = 1ULL << MIN((options[0] & 0x7F), 63);
                     } else {
                         readerState.tsresol = 1;
-                        for (int i = 0; i < options[0]; i++)
+                        const int exp = MIN(options[0], 19);
+                        for (int i = 0; i < exp; i++)
                             readerState.tsresol *= 10;
                     }
                 }
@@ -649,7 +754,7 @@ LOCAL int arkime_reader_scheme_processNG(const char *uri, uint8_t *data, int len
                 memcpy(readerState.tmpBuffer + readerState.tmpBufferLen, data, len);
                 readerState.tmpBufferLen += len;
                 readerState.blockSize -= len;
-                return 0;
+                goto processNG;
             }
 
             memcpy(readerState.tmpBuffer + readerState.tmpBufferLen, data, need);
@@ -683,7 +788,7 @@ LOCAL int arkime_reader_scheme_processNG(const char *uri, uint8_t *data, int len
                 memcpy(readerState.tmpBuffer + readerState.tmpBufferLen, data, len);
                 readerState.tmpBufferLen += len;
                 readerState.blockSize -= len;
-                return 0;
+                goto processNG;
             }
 
             memcpy(readerState.tmpBuffer + readerState.tmpBufferLen, data, need);
@@ -943,8 +1048,10 @@ int arkime_reader_scheme_process(const char *uri, uint8_t *data, int len, const 
             readerState.state = ARKIME_SCHEME_PACKET_HEADER;
         }
         if (readerState.state == ARKIME_SCHEME_PACKET_SKIP) {
-            arkime_packet_free(readerState.packet);
-            readerState.packet = 0;
+            if (readerState.packet) {
+                arkime_packet_free(readerState.packet);
+                readerState.packet = 0;
+            }
             if ((uint32_t)len < readerState.pktlen) {
                 data += len;
                 readerState.pktlen -= len;
@@ -982,6 +1089,8 @@ LOCAL int arkime_scheme_cmd_add(int argc, char **argv, gpointer cc, ArkimeScheme
 {
     int opsNum = 0;
     char *ops[11];
+    gboolean notify = FALSE;
+
     if (config.pcapMonitor) {
         flags |= ARKIME_SCHEME_FLAG_MONITOR;
     }
@@ -1017,6 +1126,10 @@ LOCAL int arkime_scheme_cmd_add(int argc, char **argv, gpointer cc, ArkimeScheme
             flags |= ARKIME_SCHEME_FLAG_DELETE;
         } else if (strcmp(cmp, "-nodelete") == 0) {
             flags &= (ArkimeSchemeFlags)(~ARKIME_SCHEME_FLAG_DELETE);
+        } else if (strcmp(cmp, "-notify") == 0) {
+            notify = TRUE;
+        } else if (strcmp(cmp, "-nonotify") == 0) {
+            notify = FALSE;
         } else if (strcmp(cmp, "-op") == 0) {
             if (opsNum >= 10) {
                 arkime_command_respond(cc, "Too many ops\n", -1);
@@ -1036,8 +1149,11 @@ LOCAL int arkime_scheme_cmd_add(int argc, char **argv, gpointer cc, ArkimeScheme
     }
 
     ArkimeSchemeAction_t *actions = NULL;
-    if (opsNum > 0) {
+    if (opsNum > 0 || notify) {
         actions = ARKIME_TYPE_ALLOC0(ArkimeSchemeAction_t);
+    }
+
+    if (opsNum > 0) {
         ops[opsNum] = 0;
         const char *error = arkime_field_ops_parse(&actions->ops, ARKIME_FIELD_OPS_FLAGS_COPY, ops);
         if (error) {
@@ -1048,7 +1164,13 @@ LOCAL int arkime_scheme_cmd_add(int argc, char **argv, gpointer cc, ArkimeScheme
         }
     }
 
-    arkime_reader_scheme_load(argv[argc - 1], flags, actions);
+    // Attach async notification client ref if --notify was specified
+    if (notify && cc) {
+        arkime_command_client_incref(cc);
+        actions->notifyClientRef = cc;
+    }
+
+    arkime_reader_scheme_enqueue(argv[argc - 1], flags, actions);
     return 0;
 }
 
@@ -1073,6 +1195,28 @@ LOCAL void arkime_scheme_cmd_add_dir(int argc, char **argv, gpointer cc)
 
     if (!arkime_scheme_cmd_add(argc, argv, cc, ARKIME_SCHEME_FLAG_DIRHINT))
         arkime_command_respond(cc, "Added directory\n", -1);
+}
+/******************************************************************************/
+LOCAL void arkime_scheme_file_status(int UNUSED(argc), char UNUSED(**argv), gpointer cc)
+{
+    GString *output = g_string_new(NULL);
+
+    ARKIME_LOCK(laterLock);
+    if (currentProcessingUri) {
+        g_string_append_printf(output, "file-status filename=%s\n", currentProcessingUri);
+    }
+    ArkimeSchemeLater_t *item = laterHead;
+    while (item) {
+        g_string_append_printf(output, "file-status filename=%s\n", item->uri);
+        item = item->next;
+    }
+    ARKIME_UNLOCK(laterLock);
+
+    if (output->len > 0) {
+        arkime_command_respond(cc, output->str, output->len);
+    }
+    arkime_command_respond(cc, "file-status done\n", -1);
+    g_string_free(output, TRUE);
 }
 /******************************************************************************/
 void arkime_reader_scheme_init()
@@ -1100,14 +1244,18 @@ void arkime_reader_scheme_init()
     void arkime_reader_scheme_sqs_init();
     arkime_reader_scheme_sqs_init();
 
+    arkime_command_register("file-status", arkime_scheme_file_status, "Show outstanding file processing items");
+
     arkime_command_register_opts("add-file", arkime_scheme_cmd_add_file, "Add a file to process",
                                  "[--delete|--nodelete]", "Override command line delete files after processing",
+                                 "[--notify|--nonotify]", "Send async completion notification (file-done/file-error) on this connection",
                                  "[--op <field>=<value>]", "Can be multiple, override command line op option",
                                  "[--skip|--noskip]", "Override command line skip files already processed",
                                  "<file>", "File to process",
                                  NULL);
     arkime_command_register_opts("add-dir", arkime_scheme_cmd_add_dir, "Add a directory to process",
                                  "[--delete|--nodelete]", "Override command line delete files after processing",
+                                 "[--notify|--nonotify]", "Send async completion notification (file-done/file-error) for each file",
                                  "[--op <field>=<value>]", "Can be multiple, override command line op option",
                                  "[--skip|--noskip]", "Override command line skip files already processed",
                                  "[--monitor|--nomonitor]", "Override command line monitor the directory for new files option",

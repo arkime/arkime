@@ -61,6 +61,7 @@ SPDX-License-Identifier: Apache-2.0
       <button
         class="btn btn-sm btn-warning"
         id="cancelRemoveDataBtn"
+        :aria-label="$t('common.cancel')"
         @click="emit('done', null, false, false)"
         type="button">
         <span class="fa fa-ban" />

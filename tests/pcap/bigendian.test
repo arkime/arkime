@@ -1,96 +1,96 @@
 {
-   "sessions3" : [
-      {
-         "body" : {
-            "@timestamp" : "SET",
-            "client" : {
-               "bytes" : 128
-            },
-            "destination" : {
-               "bytes" : 0,
-               "ip" : "10.64.11.49",
-               "mac" : [
-                  "00:00:5e:00:01:b1"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 0,
-               "port" : 0
-            },
-            "dstOui" : [
-               "ICANN, IANA Department"
-            ],
-            "dstOuiCnt" : 1,
-            "ethertype" : 2048,
-            "fileId" : [],
-            "firstPacket" : 1335958313152,
-            "icmp" : {
-               "code" : [
-                  0
-               ],
-               "type" : [
-                  8
-               ]
-            },
-            "ipProtocol" : 1,
-            "lastPacket" : 1335958317529,
-            "length" : 4377,
-            "network" : {
-               "bytes" : 196,
-               "community_id" : "1:u15ZSE/zwPPH+PdNHE0LOby1NF0=",
-               "packets" : 2
-            },
-            "node" : "test",
-            "packetLen" : [
-               114,
-               114
-            ],
-            "packetPos" : [
-               24,
-               138
-            ],
-            "packetRange" : {
-               "gte" : 1335958313152,
-               "lte" : 1335958317529
-            },
-            "protocol" : [
-               "icmp"
-            ],
-            "protocolCnt" : 1,
-            "segmentCnt" : 1,
-            "server" : {
-               "bytes" : 0
-            },
-            "source" : {
-               "bytes" : 196,
-               "geo" : {
-                  "city_name" : "City",
-                  "region_iso_code" : "REG"
-               },
-               "ip" : "192.168.177.160",
-               "mac" : [
-                  "00:21:28:05:29:ba"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 2,
-               "port" : 0
-            },
-            "srcOui" : [
-               "Oracle Corporation"
-            ],
-            "srcOuiCnt" : 1,
-            "srcRIR" : "ARIN",
-            "srcTTL" : [
-               255
-            ],
-            "srcTTLCnt" : 1,
-            "totDataBytes" : 128
-         },
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions3-120502"
-            }
-         }
-      }
-   ]
+ "sessions3" : [
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 128
+    },
+    "destination" : {
+     "bytes" : 0,
+     "ip" : "10.64.11.49",
+     "mac" : [
+      "00:00:5e:00:01:b1"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 0,
+     "port" : 0
+    },
+    "dstOui" : [
+     "ICANN, IANA Department"
+    ],
+    "dstOuiCnt" : 1,
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 1335958313152,
+    "icmp" : {
+     "code" : [
+      0
+     ],
+     "type" : [
+      8
+     ]
+    },
+    "ipProtocol" : 1,
+    "lastPacket" : 1335958317529,
+    "length" : 4377,
+    "network" : {
+     "bytes" : 196,
+     "community_id" : "1:u15ZSE/zwPPH+PdNHE0LOby1NF0=",
+     "packets" : 2
+    },
+    "node" : "test",
+    "packetLen" : [
+     114,
+     114
+    ],
+    "packetPos" : [
+     24,
+     138
+    ],
+    "packetRange" : {
+     "gte" : 1335958313152,
+     "lte" : 1335958317529
+    },
+    "protocol" : [
+     "icmp"
+    ],
+    "protocolCnt" : 1,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 0
+    },
+    "source" : {
+     "bytes" : 196,
+     "geo" : {
+      "city_name" : "City",
+      "region_iso_code" : "REG"
+     },
+     "ip" : "192.168.177.160",
+     "mac" : [
+      "00:21:28:05:29:ba"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 2,
+     "port" : 0
+    },
+    "srcOui" : [
+     "Oracle Corporation"
+    ],
+    "srcOuiCnt" : 1,
+    "srcRIR" : "ARIN",
+    "srcTTL" : [
+     255
+    ],
+    "srcTTLCnt" : 1,
+    "totDataBytes" : 128
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-12m05"
+    }
+   }
+  }
+ ]
 }
 

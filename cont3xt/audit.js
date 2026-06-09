@@ -73,7 +73,7 @@ class Audit {
       const msg = Audit.verifyAudit(audit);
 
       if (msg) {
-        reject(msg);
+        return reject(msg);
       }
 
       Db.putAudit(null, audit).then((results) => {

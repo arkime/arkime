@@ -162,7 +162,7 @@
    },
    "header" : {
     "index" : {
-     "_index" : "tests_sessions3-030611"
+     "_index" : "tests_sessions3-03m06"
     }
    }
   },
@@ -334,7 +334,7 @@
    },
    "header" : {
     "index" : {
-     "_index" : "tests_sessions3-030611"
+     "_index" : "tests_sessions3-03m06"
     }
    }
   },
@@ -530,7 +530,10 @@
     "tagsCnt" : 1,
     "tcpflags" : {
      "ack" : 10,
+     "ae" : 0,
+     "cwr" : 1,
      "dstZero" : 0,
+     "ece" : 2,
      "fin" : 2,
      "psh" : 8,
      "rst" : 0,
@@ -547,7 +550,7 @@
    },
    "header" : {
     "index" : {
-     "_index" : "tests_sessions3-030611"
+     "_index" : "tests_sessions3-03m06"
     }
    }
   },
@@ -685,7 +688,7 @@
    },
    "header" : {
     "index" : {
-     "_index" : "tests_sessions3-030611"
+     "_index" : "tests_sessions3-03m06"
     }
    }
   },
@@ -859,7 +862,7 @@
    },
    "header" : {
     "index" : {
-     "_index" : "tests_sessions3-030611"
+     "_index" : "tests_sessions3-03m06"
     }
    }
   },
@@ -1033,7 +1036,7 @@
    },
    "header" : {
     "index" : {
-     "_index" : "tests_sessions3-030611"
+     "_index" : "tests_sessions3-03m06"
     }
    }
   }

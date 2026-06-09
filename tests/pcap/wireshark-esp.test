@@ -1,2237 +1,2237 @@
 {
-   "sessions3" : [
-      {
-         "body" : {
-            "@timestamp" : "SET",
-            "client" : {
-               "bytes" : 0
-            },
-            "destination" : {
-               "as" : {
-                  "full" : "AS13489 EPM Telecomunicaciones S.A. E.S.P.",
-                  "number" : 13489,
-                  "organization" : {
-                     "name" : "EPM Telecomunicaciones S.A. E.S.P."
-                  }
-               },
-               "bytes" : 1500,
-               "geo" : {
-                  "city_name" : "Medellín",
-                  "country_iso_code" : "CO",
-                  "region_iso_code" : "ANT"
-               },
-               "ip" : "190.0.0.2",
-               "mac" : [
-                  "00:11:43:4a:d7:0a"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 10,
-               "port" : 0
-            },
-            "dstOui" : [
-               "Dell Inc."
-            ],
-            "dstOuiCnt" : 1,
-            "dstRIR" : "LACNIC",
-            "dstTTL" : [
-               64
-            ],
-            "dstTTLCnt" : 1,
-            "ethertype" : 2048,
-            "fileId" : [],
-            "firstPacket" : 1140435037629,
-            "ipProtocol" : 50,
-            "lastPacket" : 1140435046628,
-            "length" : 8999,
-            "network" : {
-               "bytes" : 1500,
-               "community_id" : "1:q/l11Aul7Q4o/Z/WqmElI1VJ3U8=",
-               "packets" : 10
-            },
-            "node" : "test",
-            "packetLen" : [
-               166
-            ],
-            "packetPos" : [
-               24
-            ],
-            "packetRange" : {
-               "gte" : 1140435037629,
-               "lte" : 1140435046628
-            },
-            "protocol" : [
-               "esp"
-            ],
-            "protocolCnt" : 1,
-            "segmentCnt" : 1,
-            "server" : {
-               "bytes" : 1080
-            },
-            "source" : {
-               "as" : {
-                  "full" : "AS13489 EPM Telecomunicaciones S.A. E.S.P.",
-                  "number" : 13489,
-                  "organization" : {
-                     "name" : "EPM Telecomunicaciones S.A. E.S.P."
-                  }
-               },
-               "bytes" : 0,
-               "geo" : {
-                  "city_name" : "Medellín",
-                  "country_iso_code" : "CO",
-                  "region_iso_code" : "ANT"
-               },
-               "ip" : "190.0.0.1",
-               "mac" : [
-                  "00:00:00:00:00:12"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 0,
-               "port" : 0
-            },
-            "srcOui" : [
-               "Officially Xerox, but 0:0:0:0:0:0 is more common"
-            ],
-            "srcOuiCnt" : 1,
-            "srcRIR" : "LACNIC",
-            "tags" : [
-               "truncated-pcap"
-            ],
-            "tagsCnt" : 1,
-            "totDataBytes" : 1080
-         },
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions3-060220"
-            }
-         }
-      },
-      {
-         "body" : {
-            "@timestamp" : "SET",
-            "client" : {
-               "bytes" : 0
-            },
-            "destination" : {
-               "as" : {
-                  "full" : "AS13489 EPM Telecomunicaciones S.A. E.S.P.",
-                  "number" : 13489,
-                  "organization" : {
-                     "name" : "EPM Telecomunicaciones S.A. E.S.P."
-                  }
-               },
-               "bytes" : 1340,
-               "geo" : {
-                  "city_name" : "Medellín",
-                  "country_iso_code" : "CO",
-                  "region_iso_code" : "ANT"
-               },
-               "ip" : "190.0.0.3",
-               "mac" : [
-                  "00:11:43:4a:d7:0a"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 10,
-               "port" : 0
-            },
-            "dstOui" : [
-               "Dell Inc."
-            ],
-            "dstOuiCnt" : 1,
-            "dstRIR" : "LACNIC",
-            "dstTTL" : [
-               64
-            ],
-            "dstTTLCnt" : 1,
-            "ethertype" : 2048,
-            "fileId" : [],
-            "firstPacket" : 1140435056630,
-            "ipProtocol" : 50,
-            "lastPacket" : 1140435065672,
-            "length" : 9042,
-            "network" : {
-               "bytes" : 1340,
-               "community_id" : "1:X2f5bDfiyW1E3aPsBOv0F27zduM=",
-               "packets" : 10
-            },
-            "node" : "test",
-            "packetLen" : [
-               150
-            ],
-            "packetPos" : [
-               1684
-            ],
-            "packetRange" : {
-               "gte" : 1140435056630,
-               "lte" : 1140435065672
-            },
-            "protocol" : [
-               "esp"
-            ],
-            "protocolCnt" : 1,
-            "segmentCnt" : 1,
-            "server" : {
-               "bytes" : 920
-            },
-            "source" : {
-               "as" : {
-                  "full" : "AS13489 EPM Telecomunicaciones S.A. E.S.P.",
-                  "number" : 13489,
-                  "organization" : {
-                     "name" : "EPM Telecomunicaciones S.A. E.S.P."
-                  }
-               },
-               "bytes" : 0,
-               "geo" : {
-                  "city_name" : "Medellín",
-                  "country_iso_code" : "CO",
-                  "region_iso_code" : "ANT"
-               },
-               "ip" : "190.0.0.1",
-               "mac" : [
-                  "00:00:00:00:00:13"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 0,
-               "port" : 0
-            },
-            "srcOui" : [
-               "Officially Xerox, but 0:0:0:0:0:0 is more common"
-            ],
-            "srcOuiCnt" : 1,
-            "srcRIR" : "LACNIC",
-            "tags" : [
-               "truncated-pcap"
-            ],
-            "tagsCnt" : 1,
-            "totDataBytes" : 920
-         },
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions3-060220"
-            }
-         }
-      },
-      {
-         "body" : {
-            "@timestamp" : "SET",
-            "client" : {
-               "bytes" : 0
-            },
-            "destination" : {
-               "as" : {
-                  "full" : "AS13489 EPM Telecomunicaciones S.A. E.S.P.",
-                  "number" : 13489,
-                  "organization" : {
-                     "name" : "EPM Telecomunicaciones S.A. E.S.P."
-                  }
-               },
-               "bytes" : 1340,
-               "geo" : {
-                  "city_name" : "Medellín",
-                  "country_iso_code" : "CO",
-                  "region_iso_code" : "ANT"
-               },
-               "ip" : "190.0.0.4",
-               "mac" : [
-                  "00:11:43:4a:d7:0a"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 10,
-               "port" : 0
-            },
-            "dstOui" : [
-               "Dell Inc."
-            ],
-            "dstOuiCnt" : 1,
-            "dstRIR" : "LACNIC",
-            "dstTTL" : [
-               64
-            ],
-            "dstTTLCnt" : 1,
-            "ethertype" : 2048,
-            "fileId" : [],
-            "firstPacket" : 1140435075674,
-            "ipProtocol" : 50,
-            "lastPacket" : 1140435084674,
-            "length" : 9000,
-            "network" : {
-               "bytes" : 1340,
-               "community_id" : "1:FrzLC/9Db5KtN8FCHAJAmnaAmoM=",
-               "packets" : 10
-            },
-            "node" : "test",
-            "packetLen" : [
-               150
-            ],
-            "packetPos" : [
-               3184
-            ],
-            "packetRange" : {
-               "gte" : 1140435075674,
-               "lte" : 1140435084674
-            },
-            "protocol" : [
-               "esp"
-            ],
-            "protocolCnt" : 1,
-            "segmentCnt" : 1,
-            "server" : {
-               "bytes" : 920
-            },
-            "source" : {
-               "as" : {
-                  "full" : "AS13489 EPM Telecomunicaciones S.A. E.S.P.",
-                  "number" : 13489,
-                  "organization" : {
-                     "name" : "EPM Telecomunicaciones S.A. E.S.P."
-                  }
-               },
-               "bytes" : 0,
-               "geo" : {
-                  "city_name" : "Medellín",
-                  "country_iso_code" : "CO",
-                  "region_iso_code" : "ANT"
-               },
-               "ip" : "190.0.0.1",
-               "mac" : [
-                  "00:00:00:00:00:14"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 0,
-               "port" : 0
-            },
-            "srcOui" : [
-               "Officially Xerox, but 0:0:0:0:0:0 is more common"
-            ],
-            "srcOuiCnt" : 1,
-            "srcRIR" : "LACNIC",
-            "tags" : [
-               "truncated-pcap"
-            ],
-            "tagsCnt" : 1,
-            "totDataBytes" : 920
-         },
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions3-060220"
-            }
-         }
-      },
-      {
-         "body" : {
-            "@timestamp" : "SET",
-            "client" : {
-               "bytes" : 0
-            },
-            "destination" : {
-               "as" : {
-                  "full" : "AS13489 EPM Telecomunicaciones S.A. E.S.P.",
-                  "number" : 13489,
-                  "organization" : {
-                     "name" : "EPM Telecomunicaciones S.A. E.S.P."
-                  }
-               },
-               "bytes" : 1220,
-               "geo" : {
-                  "city_name" : "Medellín",
-                  "country_iso_code" : "CO",
-                  "region_iso_code" : "ANT"
-               },
-               "ip" : "190.0.0.5",
-               "mac" : [
-                  "00:11:43:4a:d7:0a"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 10,
-               "port" : 0
-            },
-            "dstOui" : [
-               "Dell Inc."
-            ],
-            "dstOuiCnt" : 1,
-            "dstRIR" : "LACNIC",
-            "dstTTL" : [
-               64
-            ],
-            "dstTTLCnt" : 1,
-            "ethertype" : 2048,
-            "fileId" : [],
-            "firstPacket" : 1140435094676,
-            "ipProtocol" : 50,
-            "lastPacket" : 1140435103675,
-            "length" : 8999,
-            "network" : {
-               "bytes" : 1220,
-               "community_id" : "1:xK9QrHrJJQNmb+2jiF+nm7SMzk4=",
-               "packets" : 10
-            },
-            "node" : "test",
-            "packetLen" : [
-               138
-            ],
-            "packetPos" : [
-               4684
-            ],
-            "packetRange" : {
-               "gte" : 1140435094676,
-               "lte" : 1140435103675
-            },
-            "protocol" : [
-               "esp"
-            ],
-            "protocolCnt" : 1,
-            "segmentCnt" : 1,
-            "server" : {
-               "bytes" : 800
-            },
-            "source" : {
-               "as" : {
-                  "full" : "AS13489 EPM Telecomunicaciones S.A. E.S.P.",
-                  "number" : 13489,
-                  "organization" : {
-                     "name" : "EPM Telecomunicaciones S.A. E.S.P."
-                  }
-               },
-               "bytes" : 0,
-               "geo" : {
-                  "city_name" : "Medellín",
-                  "country_iso_code" : "CO",
-                  "region_iso_code" : "ANT"
-               },
-               "ip" : "190.0.0.1",
-               "mac" : [
-                  "00:00:00:00:00:15"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 0,
-               "port" : 0
-            },
-            "srcOui" : [
-               "Officially Xerox, but 0:0:0:0:0:0 is more common"
-            ],
-            "srcOuiCnt" : 1,
-            "srcRIR" : "LACNIC",
-            "tags" : [
-               "truncated-pcap"
-            ],
-            "tagsCnt" : 1,
-            "totDataBytes" : 800
-         },
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions3-060220"
-            }
-         }
-      },
-      {
-         "body" : {
-            "@timestamp" : "SET",
-            "client" : {
-               "bytes" : 0
-            },
-            "destination" : {
-               "as" : {
-                  "full" : "AS13489 EPM Telecomunicaciones S.A. E.S.P.",
-                  "number" : 13489,
-                  "organization" : {
-                     "name" : "EPM Telecomunicaciones S.A. E.S.P."
-                  }
-               },
-               "bytes" : 1500,
-               "geo" : {
-                  "city_name" : "Medellín",
-                  "country_iso_code" : "CO",
-                  "region_iso_code" : "ANT"
-               },
-               "ip" : "190.0.0.12",
-               "mac" : [
-                  "00:11:43:4a:d7:0a"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 10,
-               "port" : 0
-            },
-            "dstOui" : [
-               "Dell Inc."
-            ],
-            "dstOuiCnt" : 1,
-            "dstRIR" : "LACNIC",
-            "dstTTL" : [
-               64
-            ],
-            "dstTTLCnt" : 1,
-            "ethertype" : 2048,
-            "fileId" : [],
-            "firstPacket" : 1140435199683,
-            "ipProtocol" : 50,
-            "lastPacket" : 1140435208683,
-            "length" : 9000,
-            "network" : {
-               "bytes" : 1500,
-               "community_id" : "1:Vlp8i48N+5PVUz2YCuJIZ6UOPtg=",
-               "packets" : 10
-            },
-            "node" : "test",
-            "packetLen" : [
-               166
-            ],
-            "packetPos" : [
-               6064
-            ],
-            "packetRange" : {
-               "gte" : 1140435199683,
-               "lte" : 1140435208683
-            },
-            "protocol" : [
-               "esp"
-            ],
-            "protocolCnt" : 1,
-            "segmentCnt" : 1,
-            "server" : {
-               "bytes" : 1080
-            },
-            "source" : {
-               "as" : {
-                  "full" : "AS13489 EPM Telecomunicaciones S.A. E.S.P.",
-                  "number" : 13489,
-                  "organization" : {
-                     "name" : "EPM Telecomunicaciones S.A. E.S.P."
-                  }
-               },
-               "bytes" : 0,
-               "geo" : {
-                  "city_name" : "Medellín",
-                  "country_iso_code" : "CO",
-                  "region_iso_code" : "ANT"
-               },
-               "ip" : "190.0.0.1",
-               "mac" : [
-                  "00:00:00:00:00:12"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 0,
-               "port" : 0
-            },
-            "srcOui" : [
-               "Officially Xerox, but 0:0:0:0:0:0 is more common"
-            ],
-            "srcOuiCnt" : 1,
-            "srcRIR" : "LACNIC",
-            "tags" : [
-               "truncated-pcap"
-            ],
-            "tagsCnt" : 1,
-            "totDataBytes" : 1080
-         },
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions3-060220"
-            }
-         }
-      },
-      {
-         "body" : {
-            "@timestamp" : "SET",
-            "client" : {
-               "bytes" : 0
-            },
-            "destination" : {
-               "as" : {
-                  "full" : "AS13489 EPM Telecomunicaciones S.A. E.S.P.",
-                  "number" : 13489,
-                  "organization" : {
-                     "name" : "EPM Telecomunicaciones S.A. E.S.P."
-                  }
-               },
-               "bytes" : 1340,
-               "geo" : {
-                  "city_name" : "Medellín",
-                  "country_iso_code" : "CO",
-                  "region_iso_code" : "ANT"
-               },
-               "ip" : "190.0.0.13",
-               "mac" : [
-                  "00:11:43:4a:d7:0a"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 10,
-               "port" : 0
-            },
-            "dstOui" : [
-               "Dell Inc."
-            ],
-            "dstOuiCnt" : 1,
-            "dstRIR" : "LACNIC",
-            "dstTTL" : [
-               64
-            ],
-            "dstTTLCnt" : 1,
-            "ethertype" : 2048,
-            "fileId" : [],
-            "firstPacket" : 1140435218685,
-            "ipProtocol" : 50,
-            "lastPacket" : 1140435227733,
-            "length" : 9048,
-            "network" : {
-               "bytes" : 1340,
-               "community_id" : "1:q1QBuhdRJUzvwx8OftysvB0spEU=",
-               "packets" : 10
-            },
-            "node" : "test",
-            "packetLen" : [
-               150
-            ],
-            "packetPos" : [
-               7724
-            ],
-            "packetRange" : {
-               "gte" : 1140435218685,
-               "lte" : 1140435227733
-            },
-            "protocol" : [
-               "esp"
-            ],
-            "protocolCnt" : 1,
-            "segmentCnt" : 1,
-            "server" : {
-               "bytes" : 920
-            },
-            "source" : {
-               "as" : {
-                  "full" : "AS13489 EPM Telecomunicaciones S.A. E.S.P.",
-                  "number" : 13489,
-                  "organization" : {
-                     "name" : "EPM Telecomunicaciones S.A. E.S.P."
-                  }
-               },
-               "bytes" : 0,
-               "geo" : {
-                  "city_name" : "Medellín",
-                  "country_iso_code" : "CO",
-                  "region_iso_code" : "ANT"
-               },
-               "ip" : "190.0.0.1",
-               "mac" : [
-                  "00:00:00:00:00:13"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 0,
-               "port" : 0
-            },
-            "srcOui" : [
-               "Officially Xerox, but 0:0:0:0:0:0 is more common"
-            ],
-            "srcOuiCnt" : 1,
-            "srcRIR" : "LACNIC",
-            "tags" : [
-               "truncated-pcap"
-            ],
-            "tagsCnt" : 1,
-            "totDataBytes" : 920
-         },
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions3-060220"
-            }
-         }
-      },
-      {
-         "body" : {
-            "@timestamp" : "SET",
-            "client" : {
-               "bytes" : 0
-            },
-            "destination" : {
-               "as" : {
-                  "full" : "AS13489 EPM Telecomunicaciones S.A. E.S.P.",
-                  "number" : 13489,
-                  "organization" : {
-                     "name" : "EPM Telecomunicaciones S.A. E.S.P."
-                  }
-               },
-               "bytes" : 1340,
-               "geo" : {
-                  "city_name" : "Medellín",
-                  "country_iso_code" : "CO",
-                  "region_iso_code" : "ANT"
-               },
-               "ip" : "190.0.0.14",
-               "mac" : [
-                  "00:11:43:4a:d7:0a"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 10,
-               "port" : 0
-            },
-            "dstOui" : [
-               "Dell Inc."
-            ],
-            "dstOuiCnt" : 1,
-            "dstRIR" : "LACNIC",
-            "dstTTL" : [
-               64
-            ],
-            "dstTTLCnt" : 1,
-            "ethertype" : 2048,
-            "fileId" : [],
-            "firstPacket" : 1140435237736,
-            "ipProtocol" : 50,
-            "lastPacket" : 1140435246755,
-            "length" : 9019,
-            "network" : {
-               "bytes" : 1340,
-               "community_id" : "1:WnrhfVWe+DJyVsXc1xSMeL0nVgg=",
-               "packets" : 10
-            },
-            "node" : "test",
-            "packetLen" : [
-               150
-            ],
-            "packetPos" : [
-               9224
-            ],
-            "packetRange" : {
-               "gte" : 1140435237736,
-               "lte" : 1140435246755
-            },
-            "protocol" : [
-               "esp"
-            ],
-            "protocolCnt" : 1,
-            "segmentCnt" : 1,
-            "server" : {
-               "bytes" : 920
-            },
-            "source" : {
-               "as" : {
-                  "full" : "AS13489 EPM Telecomunicaciones S.A. E.S.P.",
-                  "number" : 13489,
-                  "organization" : {
-                     "name" : "EPM Telecomunicaciones S.A. E.S.P."
-                  }
-               },
-               "bytes" : 0,
-               "geo" : {
-                  "city_name" : "Medellín",
-                  "country_iso_code" : "CO",
-                  "region_iso_code" : "ANT"
-               },
-               "ip" : "190.0.0.1",
-               "mac" : [
-                  "00:00:00:00:00:14"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 0,
-               "port" : 0
-            },
-            "srcOui" : [
-               "Officially Xerox, but 0:0:0:0:0:0 is more common"
-            ],
-            "srcOuiCnt" : 1,
-            "srcRIR" : "LACNIC",
-            "tags" : [
-               "truncated-pcap"
-            ],
-            "tagsCnt" : 1,
-            "totDataBytes" : 920
-         },
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions3-060220"
-            }
-         }
-      },
-      {
-         "body" : {
-            "@timestamp" : "SET",
-            "client" : {
-               "bytes" : 0
-            },
-            "destination" : {
-               "as" : {
-                  "full" : "AS13489 EPM Telecomunicaciones S.A. E.S.P.",
-                  "number" : 13489,
-                  "organization" : {
-                     "name" : "EPM Telecomunicaciones S.A. E.S.P."
-                  }
-               },
-               "bytes" : 1220,
-               "geo" : {
-                  "city_name" : "Medellín",
-                  "country_iso_code" : "CO",
-                  "region_iso_code" : "ANT"
-               },
-               "ip" : "190.0.0.15",
-               "mac" : [
-                  "00:11:43:4a:d7:0a"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 10,
-               "port" : 0
-            },
-            "dstOui" : [
-               "Dell Inc."
-            ],
-            "dstOuiCnt" : 1,
-            "dstRIR" : "LACNIC",
-            "dstTTL" : [
-               64
-            ],
-            "dstTTLCnt" : 1,
-            "ethertype" : 2048,
-            "fileId" : [],
-            "firstPacket" : 1140435256758,
-            "ipProtocol" : 50,
-            "lastPacket" : 1140435265757,
-            "length" : 8999,
-            "network" : {
-               "bytes" : 1220,
-               "community_id" : "1:9vUY3OzPvkNy1jDRG6jL8Sj2O6U=",
-               "packets" : 10
-            },
-            "node" : "test",
-            "packetLen" : [
-               138
-            ],
-            "packetPos" : [
-               10724
-            ],
-            "packetRange" : {
-               "gte" : 1140435256758,
-               "lte" : 1140435265757
-            },
-            "protocol" : [
-               "esp"
-            ],
-            "protocolCnt" : 1,
-            "segmentCnt" : 1,
-            "server" : {
-               "bytes" : 800
-            },
-            "source" : {
-               "as" : {
-                  "full" : "AS13489 EPM Telecomunicaciones S.A. E.S.P.",
-                  "number" : 13489,
-                  "organization" : {
-                     "name" : "EPM Telecomunicaciones S.A. E.S.P."
-                  }
-               },
-               "bytes" : 0,
-               "geo" : {
-                  "city_name" : "Medellín",
-                  "country_iso_code" : "CO",
-                  "region_iso_code" : "ANT"
-               },
-               "ip" : "190.0.0.1",
-               "mac" : [
-                  "00:00:00:00:00:15"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 0,
-               "port" : 0
-            },
-            "srcOui" : [
-               "Officially Xerox, but 0:0:0:0:0:0 is more common"
-            ],
-            "srcOuiCnt" : 1,
-            "srcRIR" : "LACNIC",
-            "tags" : [
-               "truncated-pcap"
-            ],
-            "tagsCnt" : 1,
-            "totDataBytes" : 800
-         },
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions3-060220"
-            }
-         }
-      },
-      {
-         "body" : {
-            "@timestamp" : "SET",
-            "client" : {
-               "bytes" : 0
-            },
-            "destination" : {
-               "as" : {
-                  "full" : "AS13489 EPM Telecomunicaciones S.A. E.S.P.",
-                  "number" : 13489,
-                  "organization" : {
-                     "name" : "EPM Telecomunicaciones S.A. E.S.P."
-                  }
-               },
-               "bytes" : 1380,
-               "geo" : {
-                  "city_name" : "Medellín",
-                  "country_iso_code" : "CO",
-                  "region_iso_code" : "ANT"
-               },
-               "ip" : "190.0.0.22",
-               "mac" : [
-                  "00:11:43:4a:d7:0a"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 10,
-               "port" : 0
-            },
-            "dstOui" : [
-               "Dell Inc."
-            ],
-            "dstOuiCnt" : 1,
-            "dstRIR" : "LACNIC",
-            "dstTTL" : [
-               64
-            ],
-            "dstTTLCnt" : 1,
-            "ethertype" : 2048,
-            "fileId" : [],
-            "firstPacket" : 1140435361771,
-            "ipProtocol" : 50,
-            "lastPacket" : 1140435370891,
-            "length" : 9120,
-            "network" : {
-               "bytes" : 1380,
-               "community_id" : "1:izN7Tux8sSTKAu2Tr+hBS9kWu7s=",
-               "packets" : 10
-            },
-            "node" : "test",
-            "packetLen" : [
-               154
-            ],
-            "packetPos" : [
-               12104
-            ],
-            "packetRange" : {
-               "gte" : 1140435361771,
-               "lte" : 1140435370891
-            },
-            "protocol" : [
-               "esp"
-            ],
-            "protocolCnt" : 1,
-            "segmentCnt" : 1,
-            "server" : {
-               "bytes" : 960
-            },
-            "source" : {
-               "as" : {
-                  "full" : "AS13489 EPM Telecomunicaciones S.A. E.S.P.",
-                  "number" : 13489,
-                  "organization" : {
-                     "name" : "EPM Telecomunicaciones S.A. E.S.P."
-                  }
-               },
-               "bytes" : 0,
-               "geo" : {
-                  "city_name" : "Medellín",
-                  "country_iso_code" : "CO",
-                  "region_iso_code" : "ANT"
-               },
-               "ip" : "190.0.0.1",
-               "mac" : [
-                  "00:00:00:00:00:12"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 0,
-               "port" : 0
-            },
-            "srcOui" : [
-               "Officially Xerox, but 0:0:0:0:0:0 is more common"
-            ],
-            "srcOuiCnt" : 1,
-            "srcRIR" : "LACNIC",
-            "tags" : [
-               "truncated-pcap"
-            ],
-            "tagsCnt" : 1,
-            "totDataBytes" : 960
-         },
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions3-060220"
-            }
-         }
-      },
-      {
-         "body" : {
-            "@timestamp" : "SET",
-            "client" : {
-               "bytes" : 0
-            },
-            "destination" : {
-               "as" : {
-                  "full" : "AS13489 EPM Telecomunicaciones S.A. E.S.P.",
-                  "number" : 13489,
-                  "organization" : {
-                     "name" : "EPM Telecomunicaciones S.A. E.S.P."
-                  }
-               },
-               "bytes" : 1220,
-               "geo" : {
-                  "city_name" : "Medellín",
-                  "country_iso_code" : "CO",
-                  "region_iso_code" : "ANT"
-               },
-               "ip" : "190.0.0.23",
-               "mac" : [
-                  "00:11:43:4a:d7:0a"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 10,
-               "port" : 0
-            },
-            "dstOui" : [
-               "Dell Inc."
-            ],
-            "dstOuiCnt" : 1,
-            "dstRIR" : "LACNIC",
-            "dstTTL" : [
-               64
-            ],
-            "dstTTLCnt" : 1,
-            "ethertype" : 2048,
-            "fileId" : [],
-            "firstPacket" : 1140435380893,
-            "ipProtocol" : 50,
-            "lastPacket" : 1140435389893,
-            "length" : 9000,
-            "network" : {
-               "bytes" : 1220,
-               "community_id" : "1:9iQQ+3R+ldlxRxJz5DUsNE9IsWA=",
-               "packets" : 10
-            },
-            "node" : "test",
-            "packetLen" : [
-               138
-            ],
-            "packetPos" : [
-               13644
-            ],
-            "packetRange" : {
-               "gte" : 1140435380893,
-               "lte" : 1140435389893
-            },
-            "protocol" : [
-               "esp"
-            ],
-            "protocolCnt" : 1,
-            "segmentCnt" : 1,
-            "server" : {
-               "bytes" : 800
-            },
-            "source" : {
-               "as" : {
-                  "full" : "AS13489 EPM Telecomunicaciones S.A. E.S.P.",
-                  "number" : 13489,
-                  "organization" : {
-                     "name" : "EPM Telecomunicaciones S.A. E.S.P."
-                  }
-               },
-               "bytes" : 0,
-               "geo" : {
-                  "city_name" : "Medellín",
-                  "country_iso_code" : "CO",
-                  "region_iso_code" : "ANT"
-               },
-               "ip" : "190.0.0.1",
-               "mac" : [
-                  "00:00:00:00:00:13"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 0,
-               "port" : 0
-            },
-            "srcOui" : [
-               "Officially Xerox, but 0:0:0:0:0:0 is more common"
-            ],
-            "srcOuiCnt" : 1,
-            "srcRIR" : "LACNIC",
-            "tags" : [
-               "truncated-pcap"
-            ],
-            "tagsCnt" : 1,
-            "totDataBytes" : 800
-         },
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions3-060220"
-            }
-         }
-      },
-      {
-         "body" : {
-            "@timestamp" : "SET",
-            "client" : {
-               "bytes" : 0
-            },
-            "destination" : {
-               "as" : {
-                  "full" : "AS13489 EPM Telecomunicaciones S.A. E.S.P.",
-                  "number" : 13489,
-                  "organization" : {
-                     "name" : "EPM Telecomunicaciones S.A. E.S.P."
-                  }
-               },
-               "bytes" : 1220,
-               "geo" : {
-                  "city_name" : "Medellín",
-                  "country_iso_code" : "CO",
-                  "region_iso_code" : "ANT"
-               },
-               "ip" : "190.0.0.24",
-               "mac" : [
-                  "00:11:43:4a:d7:0a"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 10,
-               "port" : 0
-            },
-            "dstOui" : [
-               "Dell Inc."
-            ],
-            "dstOuiCnt" : 1,
-            "dstRIR" : "LACNIC",
-            "dstTTL" : [
-               64
-            ],
-            "dstTTLCnt" : 1,
-            "ethertype" : 2048,
-            "fileId" : [],
-            "firstPacket" : 1140435399895,
-            "ipProtocol" : 50,
-            "lastPacket" : 1140435408894,
-            "length" : 8999,
-            "network" : {
-               "bytes" : 1220,
-               "community_id" : "1:n19Ht6x+yYT3fbH5r9aVlGbN3ys=",
-               "packets" : 10
-            },
-            "node" : "test",
-            "packetLen" : [
-               138
-            ],
-            "packetPos" : [
-               15024
-            ],
-            "packetRange" : {
-               "gte" : 1140435399895,
-               "lte" : 1140435408894
-            },
-            "protocol" : [
-               "esp"
-            ],
-            "protocolCnt" : 1,
-            "segmentCnt" : 1,
-            "server" : {
-               "bytes" : 800
-            },
-            "source" : {
-               "as" : {
-                  "full" : "AS13489 EPM Telecomunicaciones S.A. E.S.P.",
-                  "number" : 13489,
-                  "organization" : {
-                     "name" : "EPM Telecomunicaciones S.A. E.S.P."
-                  }
-               },
-               "bytes" : 0,
-               "geo" : {
-                  "city_name" : "Medellín",
-                  "country_iso_code" : "CO",
-                  "region_iso_code" : "ANT"
-               },
-               "ip" : "190.0.0.1",
-               "mac" : [
-                  "00:00:00:00:00:14"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 0,
-               "port" : 0
-            },
-            "srcOui" : [
-               "Officially Xerox, but 0:0:0:0:0:0 is more common"
-            ],
-            "srcOuiCnt" : 1,
-            "srcRIR" : "LACNIC",
-            "tags" : [
-               "truncated-pcap"
-            ],
-            "tagsCnt" : 1,
-            "totDataBytes" : 800
-         },
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions3-060220"
-            }
-         }
-      },
-      {
-         "body" : {
-            "@timestamp" : "SET",
-            "client" : {
-               "bytes" : 0
-            },
-            "destination" : {
-               "as" : {
-                  "full" : "AS13489 EPM Telecomunicaciones S.A. E.S.P.",
-                  "number" : 13489,
-                  "organization" : {
-                     "name" : "EPM Telecomunicaciones S.A. E.S.P."
-                  }
-               },
-               "bytes" : 1100,
-               "geo" : {
-                  "city_name" : "Medellín",
-                  "country_iso_code" : "CO",
-                  "region_iso_code" : "ANT"
-               },
-               "ip" : "190.0.0.25",
-               "mac" : [
-                  "00:11:43:4a:d7:0a"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 10,
-               "port" : 0
-            },
-            "dstOui" : [
-               "Dell Inc."
-            ],
-            "dstOuiCnt" : 1,
-            "dstRIR" : "LACNIC",
-            "dstTTL" : [
-               64
-            ],
-            "dstTTLCnt" : 1,
-            "ethertype" : 2048,
-            "fileId" : [],
-            "firstPacket" : 1140435418897,
-            "ipProtocol" : 50,
-            "lastPacket" : 1140435427896,
-            "length" : 8999,
-            "network" : {
-               "bytes" : 1100,
-               "community_id" : "1:s4Ib539kIqpYDryKECciSZutNkY=",
-               "packets" : 10
-            },
-            "node" : "test",
-            "packetLen" : [
-               126
-            ],
-            "packetPos" : [
-               16404
-            ],
-            "packetRange" : {
-               "gte" : 1140435418897,
-               "lte" : 1140435427896
-            },
-            "protocol" : [
-               "esp"
-            ],
-            "protocolCnt" : 1,
-            "segmentCnt" : 1,
-            "server" : {
-               "bytes" : 680
-            },
-            "source" : {
-               "as" : {
-                  "full" : "AS13489 EPM Telecomunicaciones S.A. E.S.P.",
-                  "number" : 13489,
-                  "organization" : {
-                     "name" : "EPM Telecomunicaciones S.A. E.S.P."
-                  }
-               },
-               "bytes" : 0,
-               "geo" : {
-                  "city_name" : "Medellín",
-                  "country_iso_code" : "CO",
-                  "region_iso_code" : "ANT"
-               },
-               "ip" : "190.0.0.1",
-               "mac" : [
-                  "00:00:00:00:00:15"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 0,
-               "port" : 0
-            },
-            "srcOui" : [
-               "Officially Xerox, but 0:0:0:0:0:0 is more common"
-            ],
-            "srcOuiCnt" : 1,
-            "srcRIR" : "LACNIC",
-            "tags" : [
-               "truncated-pcap"
-            ],
-            "tagsCnt" : 1,
-            "totDataBytes" : 680
-         },
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions3-060220"
-            }
-         }
-      },
-      {
-         "body" : {
-            "@timestamp" : "SET",
-            "client" : {
-               "bytes" : 0
-            },
-            "destination" : {
-               "bytes" : 1700,
-               "ip" : "3ffe::2",
-               "mac" : [
-                  "00:11:43:4a:d7:0a"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 10,
-               "port" : 0
-            },
-            "dstOui" : [
-               "Dell Inc."
-            ],
-            "dstOuiCnt" : 1,
-            "dstTTL" : [
-               64
-            ],
-            "dstTTLCnt" : 1,
-            "ethertype" : 34525,
-            "fileId" : [],
-            "firstPacket" : 1140435683595,
-            "ipProtocol" : 50,
-            "lastPacket" : 1140435692635,
-            "length" : 9040,
-            "network" : {
-               "bytes" : 1700,
-               "community_id" : "1:HeLJDpz57u3SQIJ9Qd2K/efJkqY=",
-               "packets" : 10
-            },
-            "node" : "test",
-            "packetLen" : [
-               186
-            ],
-            "packetPos" : [
-               17664
-            ],
-            "packetRange" : {
-               "gte" : 1140435683595,
-               "lte" : 1140435692635
-            },
-            "protocol" : [
-               "esp"
-            ],
-            "protocolCnt" : 1,
-            "segmentCnt" : 1,
-            "server" : {
-               "bytes" : 1080
-            },
-            "source" : {
-               "bytes" : 0,
-               "ip" : "3ffe::1",
-               "mac" : [
-                  "00:00:00:00:00:02"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 0,
-               "port" : 0
-            },
-            "srcOui" : [
-               "Officially Xerox, but 0:0:0:0:0:0 is more common"
-            ],
-            "srcOuiCnt" : 1,
-            "tags" : [
-               "truncated-pcap"
-            ],
-            "tagsCnt" : 1,
-            "totDataBytes" : 1080
-         },
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions3-060220"
-            }
-         }
-      },
-      {
-         "body" : {
-            "@timestamp" : "SET",
-            "client" : {
-               "bytes" : 0
-            },
-            "destination" : {
-               "bytes" : 1540,
-               "ip" : "3ffe::3",
-               "mac" : [
-                  "00:11:43:4a:d7:0a"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 10,
-               "port" : 0
-            },
-            "dstOui" : [
-               "Dell Inc."
-            ],
-            "dstOuiCnt" : 1,
-            "dstTTL" : [
-               64
-            ],
-            "dstTTLCnt" : 1,
-            "ethertype" : 34525,
-            "fileId" : [],
-            "firstPacket" : 1140435702637,
-            "ipProtocol" : 50,
-            "lastPacket" : 1140435711701,
-            "length" : 9064,
-            "network" : {
-               "bytes" : 1540,
-               "community_id" : "1:/rSr9PRtUM/PbL8ELHKHU+txHGY=",
-               "packets" : 10
-            },
-            "node" : "test",
-            "packetLen" : [
-               170
-            ],
-            "packetPos" : [
-               19524
-            ],
-            "packetRange" : {
-               "gte" : 1140435702637,
-               "lte" : 1140435711701
-            },
-            "protocol" : [
-               "esp"
-            ],
-            "protocolCnt" : 1,
-            "segmentCnt" : 1,
-            "server" : {
-               "bytes" : 920
-            },
-            "source" : {
-               "bytes" : 0,
-               "ip" : "3ffe::1",
-               "mac" : [
-                  "00:00:00:00:00:03"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 0,
-               "port" : 0
-            },
-            "srcOui" : [
-               "Officially Xerox, but 0:0:0:0:0:0 is more common"
-            ],
-            "srcOuiCnt" : 1,
-            "tags" : [
-               "truncated-pcap"
-            ],
-            "tagsCnt" : 1,
-            "totDataBytes" : 920
-         },
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions3-060220"
-            }
-         }
-      },
-      {
-         "body" : {
-            "@timestamp" : "SET",
-            "client" : {
-               "bytes" : 0
-            },
-            "destination" : {
-               "bytes" : 1540,
-               "ip" : "3ffe::4",
-               "mac" : [
-                  "00:11:43:4a:d7:0a"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 10,
-               "port" : 0
-            },
-            "dstOui" : [
-               "Dell Inc."
-            ],
-            "dstOuiCnt" : 1,
-            "dstTTL" : [
-               64
-            ],
-            "dstTTLCnt" : 1,
-            "ethertype" : 34525,
-            "fileId" : [],
-            "firstPacket" : 1140435721711,
-            "ipProtocol" : 50,
-            "lastPacket" : 1140435730710,
-            "length" : 8999,
-            "network" : {
-               "bytes" : 1540,
-               "community_id" : "1:dKwS0tclQusGrVOQGxUZD1LVYAU=",
-               "packets" : 10
-            },
-            "node" : "test",
-            "packetLen" : [
-               170
-            ],
-            "packetPos" : [
-               21224
-            ],
-            "packetRange" : {
-               "gte" : 1140435721711,
-               "lte" : 1140435730710
-            },
-            "protocol" : [
-               "esp"
-            ],
-            "protocolCnt" : 1,
-            "segmentCnt" : 1,
-            "server" : {
-               "bytes" : 920
-            },
-            "source" : {
-               "bytes" : 0,
-               "ip" : "3ffe::1",
-               "mac" : [
-                  "00:00:00:00:00:04"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 0,
-               "port" : 0
-            },
-            "srcOui" : [
-               "Officially Xerox, but 0:0:0:0:0:0 is more common"
-            ],
-            "srcOuiCnt" : 1,
-            "tags" : [
-               "truncated-pcap"
-            ],
-            "tagsCnt" : 1,
-            "totDataBytes" : 920
-         },
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions3-060220"
-            }
-         }
-      },
-      {
-         "body" : {
-            "@timestamp" : "SET",
-            "client" : {
-               "bytes" : 0
-            },
-            "destination" : {
-               "bytes" : 1420,
-               "ip" : "3ffe::5",
-               "mac" : [
-                  "00:11:43:4a:d7:0a"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 10,
-               "port" : 0
-            },
-            "dstOui" : [
-               "Dell Inc."
-            ],
-            "dstOuiCnt" : 1,
-            "dstTTL" : [
-               64
-            ],
-            "dstTTLCnt" : 1,
-            "ethertype" : 34525,
-            "fileId" : [],
-            "firstPacket" : 1140435740713,
-            "ipProtocol" : 50,
-            "lastPacket" : 1140435749712,
-            "length" : 8999,
-            "network" : {
-               "bytes" : 1420,
-               "community_id" : "1:vFMKcYAJ5joBAO43ttGrk5BDA3I=",
-               "packets" : 10
-            },
-            "node" : "test",
-            "packetLen" : [
-               158
-            ],
-            "packetPos" : [
-               22924
-            ],
-            "packetRange" : {
-               "gte" : 1140435740713,
-               "lte" : 1140435749712
-            },
-            "protocol" : [
-               "esp"
-            ],
-            "protocolCnt" : 1,
-            "segmentCnt" : 1,
-            "server" : {
-               "bytes" : 800
-            },
-            "source" : {
-               "bytes" : 0,
-               "ip" : "3ffe::1",
-               "mac" : [
-                  "00:00:00:00:00:05"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 0,
-               "port" : 0
-            },
-            "srcOui" : [
-               "Officially Xerox, but 0:0:0:0:0:0 is more common"
-            ],
-            "srcOuiCnt" : 1,
-            "tags" : [
-               "truncated-pcap"
-            ],
-            "tagsCnt" : 1,
-            "totDataBytes" : 800
-         },
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions3-060220"
-            }
-         }
-      },
-      {
-         "body" : {
-            "@timestamp" : "SET",
-            "client" : {
-               "bytes" : 0
-            },
-            "destination" : {
-               "bytes" : 1700,
-               "ip" : "3ffe::12",
-               "mac" : [
-                  "00:11:43:4a:d7:0a"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 10,
-               "port" : 0
-            },
-            "dstOui" : [
-               "Dell Inc."
-            ],
-            "dstOuiCnt" : 1,
-            "dstTTL" : [
-               64
-            ],
-            "dstTTLCnt" : 1,
-            "ethertype" : 34525,
-            "fileId" : [],
-            "firstPacket" : 1140435845816,
-            "ipProtocol" : 50,
-            "lastPacket" : 1140435854815,
-            "length" : 8999,
-            "network" : {
-               "bytes" : 1700,
-               "community_id" : "1:x5nb/50wSYnUWf2L4WrDu3t29kg=",
-               "packets" : 10
-            },
-            "node" : "test",
-            "packetLen" : [
-               186
-            ],
-            "packetPos" : [
-               24504
-            ],
-            "packetRange" : {
-               "gte" : 1140435845816,
-               "lte" : 1140435854815
-            },
-            "protocol" : [
-               "esp"
-            ],
-            "protocolCnt" : 1,
-            "segmentCnt" : 1,
-            "server" : {
-               "bytes" : 1080
-            },
-            "source" : {
-               "bytes" : 0,
-               "ip" : "3ffe::1",
-               "mac" : [
-                  "00:00:00:00:00:02"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 0,
-               "port" : 0
-            },
-            "srcOui" : [
-               "Officially Xerox, but 0:0:0:0:0:0 is more common"
-            ],
-            "srcOuiCnt" : 1,
-            "tags" : [
-               "truncated-pcap"
-            ],
-            "tagsCnt" : 1,
-            "totDataBytes" : 1080
-         },
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions3-060220"
-            }
-         }
-      },
-      {
-         "body" : {
-            "@timestamp" : "SET",
-            "client" : {
-               "bytes" : 0
-            },
-            "destination" : {
-               "bytes" : 1540,
-               "ip" : "3ffe::13",
-               "mac" : [
-                  "00:11:43:4a:d7:0a"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 10,
-               "port" : 0
-            },
-            "dstOui" : [
-               "Dell Inc."
-            ],
-            "dstOuiCnt" : 1,
-            "dstTTL" : [
-               64
-            ],
-            "dstTTLCnt" : 1,
-            "ethertype" : 34525,
-            "fileId" : [],
-            "firstPacket" : 1140435864818,
-            "ipProtocol" : 50,
-            "lastPacket" : 1140435873836,
-            "length" : 9018,
-            "network" : {
-               "bytes" : 1540,
-               "community_id" : "1:yps3A2OLxbYbuK5+pIEgXaXtqPU=",
-               "packets" : 10
-            },
-            "node" : "test",
-            "packetLen" : [
-               170
-            ],
-            "packetPos" : [
-               26364
-            ],
-            "packetRange" : {
-               "gte" : 1140435864818,
-               "lte" : 1140435873836
-            },
-            "protocol" : [
-               "esp"
-            ],
-            "protocolCnt" : 1,
-            "segmentCnt" : 1,
-            "server" : {
-               "bytes" : 920
-            },
-            "source" : {
-               "bytes" : 0,
-               "ip" : "3ffe::1",
-               "mac" : [
-                  "00:00:00:00:00:03"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 0,
-               "port" : 0
-            },
-            "srcOui" : [
-               "Officially Xerox, but 0:0:0:0:0:0 is more common"
-            ],
-            "srcOuiCnt" : 1,
-            "tags" : [
-               "truncated-pcap"
-            ],
-            "tagsCnt" : 1,
-            "totDataBytes" : 920
-         },
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions3-060220"
-            }
-         }
-      },
-      {
-         "body" : {
-            "@timestamp" : "SET",
-            "client" : {
-               "bytes" : 0
-            },
-            "destination" : {
-               "bytes" : 1540,
-               "ip" : "3ffe::14",
-               "mac" : [
-                  "00:11:43:4a:d7:0a"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 10,
-               "port" : 0
-            },
-            "dstOui" : [
-               "Dell Inc."
-            ],
-            "dstOuiCnt" : 1,
-            "dstTTL" : [
-               64
-            ],
-            "dstTTLCnt" : 1,
-            "ethertype" : 34525,
-            "fileId" : [],
-            "firstPacket" : 1140435883839,
-            "ipProtocol" : 50,
-            "lastPacket" : 1140435892838,
-            "length" : 8999,
-            "network" : {
-               "bytes" : 1540,
-               "community_id" : "1:y3awuWizhQadiCQFmygxcwinoNA=",
-               "packets" : 10
-            },
-            "node" : "test",
-            "packetLen" : [
-               170
-            ],
-            "packetPos" : [
-               28064
-            ],
-            "packetRange" : {
-               "gte" : 1140435883839,
-               "lte" : 1140435892838
-            },
-            "protocol" : [
-               "esp"
-            ],
-            "protocolCnt" : 1,
-            "segmentCnt" : 1,
-            "server" : {
-               "bytes" : 920
-            },
-            "source" : {
-               "bytes" : 0,
-               "ip" : "3ffe::1",
-               "mac" : [
-                  "00:00:00:00:00:04"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 0,
-               "port" : 0
-            },
-            "srcOui" : [
-               "Officially Xerox, but 0:0:0:0:0:0 is more common"
-            ],
-            "srcOuiCnt" : 1,
-            "tags" : [
-               "truncated-pcap"
-            ],
-            "tagsCnt" : 1,
-            "totDataBytes" : 920
-         },
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions3-060220"
-            }
-         }
-      },
-      {
-         "body" : {
-            "@timestamp" : "SET",
-            "client" : {
-               "bytes" : 0
-            },
-            "destination" : {
-               "bytes" : 1420,
-               "ip" : "3ffe::15",
-               "mac" : [
-                  "00:11:43:4a:d7:0a"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 10,
-               "port" : 0
-            },
-            "dstOui" : [
-               "Dell Inc."
-            ],
-            "dstOuiCnt" : 1,
-            "dstTTL" : [
-               64
-            ],
-            "dstTTLCnt" : 1,
-            "ethertype" : 34525,
-            "fileId" : [],
-            "firstPacket" : 1140435902840,
-            "ipProtocol" : 50,
-            "lastPacket" : 1140435911877,
-            "length" : 9037,
-            "network" : {
-               "bytes" : 1420,
-               "community_id" : "1:0Kf65Ogew305Rp9sS3J/rdx+j5U=",
-               "packets" : 10
-            },
-            "node" : "test",
-            "packetLen" : [
-               158
-            ],
-            "packetPos" : [
-               29764
-            ],
-            "packetRange" : {
-               "gte" : 1140435902840,
-               "lte" : 1140435911877
-            },
-            "protocol" : [
-               "esp"
-            ],
-            "protocolCnt" : 1,
-            "segmentCnt" : 1,
-            "server" : {
-               "bytes" : 800
-            },
-            "source" : {
-               "bytes" : 0,
-               "ip" : "3ffe::1",
-               "mac" : [
-                  "00:00:00:00:00:05"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 0,
-               "port" : 0
-            },
-            "srcOui" : [
-               "Officially Xerox, but 0:0:0:0:0:0 is more common"
-            ],
-            "srcOuiCnt" : 1,
-            "tags" : [
-               "truncated-pcap"
-            ],
-            "tagsCnt" : 1,
-            "totDataBytes" : 800
-         },
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions3-060220"
-            }
-         }
-      },
-      {
-         "body" : {
-            "@timestamp" : "SET",
-            "client" : {
-               "bytes" : 0
-            },
-            "destination" : {
-               "bytes" : 1580,
-               "ip" : "3ffe::22",
-               "mac" : [
-                  "00:11:43:4a:d7:0a"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 10,
-               "port" : 0
-            },
-            "dstOui" : [
-               "Dell Inc."
-            ],
-            "dstOuiCnt" : 1,
-            "dstTTL" : [
-               64
-            ],
-            "dstTTLCnt" : 1,
-            "ethertype" : 34525,
-            "fileId" : [],
-            "firstPacket" : 1140436007955,
-            "ipProtocol" : 50,
-            "lastPacket" : 1140436016956,
-            "length" : 9001,
-            "network" : {
-               "bytes" : 1580,
-               "community_id" : "1:OZ5467XosNPdzDt1yOrbQ/3XykA=",
-               "packets" : 10
-            },
-            "node" : "test",
-            "packetLen" : [
-               174
-            ],
-            "packetPos" : [
-               31344
-            ],
-            "packetRange" : {
-               "gte" : 1140436007955,
-               "lte" : 1140436016956
-            },
-            "protocol" : [
-               "esp"
-            ],
-            "protocolCnt" : 1,
-            "segmentCnt" : 1,
-            "server" : {
-               "bytes" : 960
-            },
-            "source" : {
-               "bytes" : 0,
-               "ip" : "3ffe::1",
-               "mac" : [
-                  "00:00:00:00:00:02"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 0,
-               "port" : 0
-            },
-            "srcOui" : [
-               "Officially Xerox, but 0:0:0:0:0:0 is more common"
-            ],
-            "srcOuiCnt" : 1,
-            "tags" : [
-               "truncated-pcap"
-            ],
-            "tagsCnt" : 1,
-            "totDataBytes" : 960
-         },
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions3-060220"
-            }
-         }
-      },
-      {
-         "body" : {
-            "@timestamp" : "SET",
-            "client" : {
-               "bytes" : 0
-            },
-            "destination" : {
-               "bytes" : 1420,
-               "ip" : "3ffe::23",
-               "mac" : [
-                  "00:11:43:4a:d7:0a"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 10,
-               "port" : 0
-            },
-            "dstOui" : [
-               "Dell Inc."
-            ],
-            "dstOuiCnt" : 1,
-            "dstTTL" : [
-               64
-            ],
-            "dstTTLCnt" : 1,
-            "ethertype" : 34525,
-            "fileId" : [],
-            "firstPacket" : 1140436026969,
-            "ipProtocol" : 50,
-            "lastPacket" : 1140436035972,
-            "length" : 9003,
-            "network" : {
-               "bytes" : 1420,
-               "community_id" : "1:HRya8a4OCGSf0P5hJWu3RbecmLw=",
-               "packets" : 10
-            },
-            "node" : "test",
-            "packetLen" : [
-               158
-            ],
-            "packetPos" : [
-               33084
-            ],
-            "packetRange" : {
-               "gte" : 1140436026969,
-               "lte" : 1140436035972
-            },
-            "protocol" : [
-               "esp"
-            ],
-            "protocolCnt" : 1,
-            "segmentCnt" : 1,
-            "server" : {
-               "bytes" : 800
-            },
-            "source" : {
-               "bytes" : 0,
-               "ip" : "3ffe::1",
-               "mac" : [
-                  "00:00:00:00:00:03"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 0,
-               "port" : 0
-            },
-            "srcOui" : [
-               "Officially Xerox, but 0:0:0:0:0:0 is more common"
-            ],
-            "srcOuiCnt" : 1,
-            "tags" : [
-               "truncated-pcap"
-            ],
-            "tagsCnt" : 1,
-            "totDataBytes" : 800
-         },
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions3-060220"
-            }
-         }
-      },
-      {
-         "body" : {
-            "@timestamp" : "SET",
-            "client" : {
-               "bytes" : 0
-            },
-            "destination" : {
-               "bytes" : 1420,
-               "ip" : "3ffe::24",
-               "mac" : [
-                  "00:11:43:4a:d7:0a"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 10,
-               "port" : 0
-            },
-            "dstOui" : [
-               "Dell Inc."
-            ],
-            "dstOuiCnt" : 1,
-            "dstTTL" : [
-               64
-            ],
-            "dstTTLCnt" : 1,
-            "ethertype" : 34525,
-            "fileId" : [],
-            "firstPacket" : 1140436045975,
-            "ipProtocol" : 50,
-            "lastPacket" : 1140436054974,
-            "length" : 8999,
-            "network" : {
-               "bytes" : 1420,
-               "community_id" : "1:NJ1B7SkoBaRmCi9wygtJXFJWTHU=",
-               "packets" : 10
-            },
-            "node" : "test",
-            "packetLen" : [
-               158
-            ],
-            "packetPos" : [
-               34664
-            ],
-            "packetRange" : {
-               "gte" : 1140436045975,
-               "lte" : 1140436054974
-            },
-            "protocol" : [
-               "esp"
-            ],
-            "protocolCnt" : 1,
-            "segmentCnt" : 1,
-            "server" : {
-               "bytes" : 800
-            },
-            "source" : {
-               "bytes" : 0,
-               "ip" : "3ffe::1",
-               "mac" : [
-                  "00:00:00:00:00:04"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 0,
-               "port" : 0
-            },
-            "srcOui" : [
-               "Officially Xerox, but 0:0:0:0:0:0 is more common"
-            ],
-            "srcOuiCnt" : 1,
-            "tags" : [
-               "truncated-pcap"
-            ],
-            "tagsCnt" : 1,
-            "totDataBytes" : 800
-         },
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions3-060220"
-            }
-         }
-      },
-      {
-         "body" : {
-            "@timestamp" : "SET",
-            "client" : {
-               "bytes" : 0
-            },
-            "destination" : {
-               "bytes" : 1300,
-               "ip" : "3ffe::25",
-               "mac" : [
-                  "00:11:43:4a:d7:0a"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 10,
-               "port" : 0
-            },
-            "dstOui" : [
-               "Dell Inc."
-            ],
-            "dstOuiCnt" : 1,
-            "dstTTL" : [
-               64
-            ],
-            "dstTTLCnt" : 1,
-            "ethertype" : 34525,
-            "fileId" : [],
-            "firstPacket" : 1140436064977,
-            "ipProtocol" : 50,
-            "lastPacket" : 1140436074108,
-            "length" : 9131,
-            "network" : {
-               "bytes" : 1300,
-               "community_id" : "1:wCCJEWspE5gE5Vs+Pr+04xqUsAI=",
-               "packets" : 10
-            },
-            "node" : "test",
-            "packetLen" : [
-               146
-            ],
-            "packetPos" : [
-               36244
-            ],
-            "packetRange" : {
-               "gte" : 1140436064977,
-               "lte" : 1140436074108
-            },
-            "protocol" : [
-               "esp"
-            ],
-            "protocolCnt" : 1,
-            "segmentCnt" : 1,
-            "server" : {
-               "bytes" : 680
-            },
-            "source" : {
-               "bytes" : 0,
-               "ip" : "3ffe::1",
-               "mac" : [
-                  "00:00:00:00:00:05"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 0,
-               "port" : 0
-            },
-            "srcOui" : [
-               "Officially Xerox, but 0:0:0:0:0:0 is more common"
-            ],
-            "srcOuiCnt" : 1,
-            "tags" : [
-               "truncated-pcap"
-            ],
-            "tagsCnt" : 1,
-            "totDataBytes" : 680
-         },
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions3-060220"
-            }
-         }
+ "sessions3" : [
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 0
+    },
+    "destination" : {
+     "as" : {
+      "full" : "AS13489 EPM Telecomunicaciones S.A. E.S.P.",
+      "number" : 13489,
+      "organization" : {
+       "name" : "EPM Telecomunicaciones S.A. E.S.P."
       }
-   ]
+     },
+     "bytes" : 1500,
+     "geo" : {
+      "city_name" : "Medellín",
+      "country_iso_code" : "CO",
+      "region_iso_code" : "ANT"
+     },
+     "ip" : "190.0.0.2",
+     "mac" : [
+      "00:11:43:4a:d7:0a"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 10,
+     "port" : 0
+    },
+    "dstOui" : [
+     "Dell Inc."
+    ],
+    "dstOuiCnt" : 1,
+    "dstRIR" : "LACNIC",
+    "dstTTL" : [
+     64
+    ],
+    "dstTTLCnt" : 1,
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 1140435037629,
+    "ipProtocol" : 50,
+    "lastPacket" : 1140435046628,
+    "length" : 8999,
+    "network" : {
+     "bytes" : 1500,
+     "community_id" : "1:q/l11Aul7Q4o/Z/WqmElI1VJ3U8=",
+     "packets" : 10
+    },
+    "node" : "test",
+    "packetLen" : [
+     166
+    ],
+    "packetPos" : [
+     24
+    ],
+    "packetRange" : {
+     "gte" : 1140435037629,
+     "lte" : 1140435046628
+    },
+    "protocol" : [
+     "esp"
+    ],
+    "protocolCnt" : 1,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 1080
+    },
+    "source" : {
+     "as" : {
+      "full" : "AS13489 EPM Telecomunicaciones S.A. E.S.P.",
+      "number" : 13489,
+      "organization" : {
+       "name" : "EPM Telecomunicaciones S.A. E.S.P."
+      }
+     },
+     "bytes" : 0,
+     "geo" : {
+      "city_name" : "Medellín",
+      "country_iso_code" : "CO",
+      "region_iso_code" : "ANT"
+     },
+     "ip" : "190.0.0.1",
+     "mac" : [
+      "00:00:00:00:00:12"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 0,
+     "port" : 0
+    },
+    "srcOui" : [
+     "Officially Xerox, but 0:0:0:0:0:0 is more common"
+    ],
+    "srcOuiCnt" : 1,
+    "srcRIR" : "LACNIC",
+    "tags" : [
+     "truncated-pcap"
+    ],
+    "tagsCnt" : 1,
+    "totDataBytes" : 1080
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-06m02"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 0
+    },
+    "destination" : {
+     "as" : {
+      "full" : "AS13489 EPM Telecomunicaciones S.A. E.S.P.",
+      "number" : 13489,
+      "organization" : {
+       "name" : "EPM Telecomunicaciones S.A. E.S.P."
+      }
+     },
+     "bytes" : 1340,
+     "geo" : {
+      "city_name" : "Medellín",
+      "country_iso_code" : "CO",
+      "region_iso_code" : "ANT"
+     },
+     "ip" : "190.0.0.3",
+     "mac" : [
+      "00:11:43:4a:d7:0a"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 10,
+     "port" : 0
+    },
+    "dstOui" : [
+     "Dell Inc."
+    ],
+    "dstOuiCnt" : 1,
+    "dstRIR" : "LACNIC",
+    "dstTTL" : [
+     64
+    ],
+    "dstTTLCnt" : 1,
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 1140435056630,
+    "ipProtocol" : 50,
+    "lastPacket" : 1140435065672,
+    "length" : 9042,
+    "network" : {
+     "bytes" : 1340,
+     "community_id" : "1:X2f5bDfiyW1E3aPsBOv0F27zduM=",
+     "packets" : 10
+    },
+    "node" : "test",
+    "packetLen" : [
+     150
+    ],
+    "packetPos" : [
+     1684
+    ],
+    "packetRange" : {
+     "gte" : 1140435056630,
+     "lte" : 1140435065672
+    },
+    "protocol" : [
+     "esp"
+    ],
+    "protocolCnt" : 1,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 920
+    },
+    "source" : {
+     "as" : {
+      "full" : "AS13489 EPM Telecomunicaciones S.A. E.S.P.",
+      "number" : 13489,
+      "organization" : {
+       "name" : "EPM Telecomunicaciones S.A. E.S.P."
+      }
+     },
+     "bytes" : 0,
+     "geo" : {
+      "city_name" : "Medellín",
+      "country_iso_code" : "CO",
+      "region_iso_code" : "ANT"
+     },
+     "ip" : "190.0.0.1",
+     "mac" : [
+      "00:00:00:00:00:13"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 0,
+     "port" : 0
+    },
+    "srcOui" : [
+     "Officially Xerox, but 0:0:0:0:0:0 is more common"
+    ],
+    "srcOuiCnt" : 1,
+    "srcRIR" : "LACNIC",
+    "tags" : [
+     "truncated-pcap"
+    ],
+    "tagsCnt" : 1,
+    "totDataBytes" : 920
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-06m02"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 0
+    },
+    "destination" : {
+     "as" : {
+      "full" : "AS13489 EPM Telecomunicaciones S.A. E.S.P.",
+      "number" : 13489,
+      "organization" : {
+       "name" : "EPM Telecomunicaciones S.A. E.S.P."
+      }
+     },
+     "bytes" : 1340,
+     "geo" : {
+      "city_name" : "Medellín",
+      "country_iso_code" : "CO",
+      "region_iso_code" : "ANT"
+     },
+     "ip" : "190.0.0.4",
+     "mac" : [
+      "00:11:43:4a:d7:0a"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 10,
+     "port" : 0
+    },
+    "dstOui" : [
+     "Dell Inc."
+    ],
+    "dstOuiCnt" : 1,
+    "dstRIR" : "LACNIC",
+    "dstTTL" : [
+     64
+    ],
+    "dstTTLCnt" : 1,
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 1140435075674,
+    "ipProtocol" : 50,
+    "lastPacket" : 1140435084674,
+    "length" : 9000,
+    "network" : {
+     "bytes" : 1340,
+     "community_id" : "1:FrzLC/9Db5KtN8FCHAJAmnaAmoM=",
+     "packets" : 10
+    },
+    "node" : "test",
+    "packetLen" : [
+     150
+    ],
+    "packetPos" : [
+     3184
+    ],
+    "packetRange" : {
+     "gte" : 1140435075674,
+     "lte" : 1140435084674
+    },
+    "protocol" : [
+     "esp"
+    ],
+    "protocolCnt" : 1,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 920
+    },
+    "source" : {
+     "as" : {
+      "full" : "AS13489 EPM Telecomunicaciones S.A. E.S.P.",
+      "number" : 13489,
+      "organization" : {
+       "name" : "EPM Telecomunicaciones S.A. E.S.P."
+      }
+     },
+     "bytes" : 0,
+     "geo" : {
+      "city_name" : "Medellín",
+      "country_iso_code" : "CO",
+      "region_iso_code" : "ANT"
+     },
+     "ip" : "190.0.0.1",
+     "mac" : [
+      "00:00:00:00:00:14"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 0,
+     "port" : 0
+    },
+    "srcOui" : [
+     "Officially Xerox, but 0:0:0:0:0:0 is more common"
+    ],
+    "srcOuiCnt" : 1,
+    "srcRIR" : "LACNIC",
+    "tags" : [
+     "truncated-pcap"
+    ],
+    "tagsCnt" : 1,
+    "totDataBytes" : 920
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-06m02"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 0
+    },
+    "destination" : {
+     "as" : {
+      "full" : "AS13489 EPM Telecomunicaciones S.A. E.S.P.",
+      "number" : 13489,
+      "organization" : {
+       "name" : "EPM Telecomunicaciones S.A. E.S.P."
+      }
+     },
+     "bytes" : 1220,
+     "geo" : {
+      "city_name" : "Medellín",
+      "country_iso_code" : "CO",
+      "region_iso_code" : "ANT"
+     },
+     "ip" : "190.0.0.5",
+     "mac" : [
+      "00:11:43:4a:d7:0a"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 10,
+     "port" : 0
+    },
+    "dstOui" : [
+     "Dell Inc."
+    ],
+    "dstOuiCnt" : 1,
+    "dstRIR" : "LACNIC",
+    "dstTTL" : [
+     64
+    ],
+    "dstTTLCnt" : 1,
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 1140435094676,
+    "ipProtocol" : 50,
+    "lastPacket" : 1140435103675,
+    "length" : 8999,
+    "network" : {
+     "bytes" : 1220,
+     "community_id" : "1:xK9QrHrJJQNmb+2jiF+nm7SMzk4=",
+     "packets" : 10
+    },
+    "node" : "test",
+    "packetLen" : [
+     138
+    ],
+    "packetPos" : [
+     4684
+    ],
+    "packetRange" : {
+     "gte" : 1140435094676,
+     "lte" : 1140435103675
+    },
+    "protocol" : [
+     "esp"
+    ],
+    "protocolCnt" : 1,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 800
+    },
+    "source" : {
+     "as" : {
+      "full" : "AS13489 EPM Telecomunicaciones S.A. E.S.P.",
+      "number" : 13489,
+      "organization" : {
+       "name" : "EPM Telecomunicaciones S.A. E.S.P."
+      }
+     },
+     "bytes" : 0,
+     "geo" : {
+      "city_name" : "Medellín",
+      "country_iso_code" : "CO",
+      "region_iso_code" : "ANT"
+     },
+     "ip" : "190.0.0.1",
+     "mac" : [
+      "00:00:00:00:00:15"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 0,
+     "port" : 0
+    },
+    "srcOui" : [
+     "Officially Xerox, but 0:0:0:0:0:0 is more common"
+    ],
+    "srcOuiCnt" : 1,
+    "srcRIR" : "LACNIC",
+    "tags" : [
+     "truncated-pcap"
+    ],
+    "tagsCnt" : 1,
+    "totDataBytes" : 800
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-06m02"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 0
+    },
+    "destination" : {
+     "as" : {
+      "full" : "AS13489 EPM Telecomunicaciones S.A. E.S.P.",
+      "number" : 13489,
+      "organization" : {
+       "name" : "EPM Telecomunicaciones S.A. E.S.P."
+      }
+     },
+     "bytes" : 1500,
+     "geo" : {
+      "city_name" : "Medellín",
+      "country_iso_code" : "CO",
+      "region_iso_code" : "ANT"
+     },
+     "ip" : "190.0.0.12",
+     "mac" : [
+      "00:11:43:4a:d7:0a"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 10,
+     "port" : 0
+    },
+    "dstOui" : [
+     "Dell Inc."
+    ],
+    "dstOuiCnt" : 1,
+    "dstRIR" : "LACNIC",
+    "dstTTL" : [
+     64
+    ],
+    "dstTTLCnt" : 1,
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 1140435199683,
+    "ipProtocol" : 50,
+    "lastPacket" : 1140435208683,
+    "length" : 9000,
+    "network" : {
+     "bytes" : 1500,
+     "community_id" : "1:Vlp8i48N+5PVUz2YCuJIZ6UOPtg=",
+     "packets" : 10
+    },
+    "node" : "test",
+    "packetLen" : [
+     166
+    ],
+    "packetPos" : [
+     6064
+    ],
+    "packetRange" : {
+     "gte" : 1140435199683,
+     "lte" : 1140435208683
+    },
+    "protocol" : [
+     "esp"
+    ],
+    "protocolCnt" : 1,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 1080
+    },
+    "source" : {
+     "as" : {
+      "full" : "AS13489 EPM Telecomunicaciones S.A. E.S.P.",
+      "number" : 13489,
+      "organization" : {
+       "name" : "EPM Telecomunicaciones S.A. E.S.P."
+      }
+     },
+     "bytes" : 0,
+     "geo" : {
+      "city_name" : "Medellín",
+      "country_iso_code" : "CO",
+      "region_iso_code" : "ANT"
+     },
+     "ip" : "190.0.0.1",
+     "mac" : [
+      "00:00:00:00:00:12"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 0,
+     "port" : 0
+    },
+    "srcOui" : [
+     "Officially Xerox, but 0:0:0:0:0:0 is more common"
+    ],
+    "srcOuiCnt" : 1,
+    "srcRIR" : "LACNIC",
+    "tags" : [
+     "truncated-pcap"
+    ],
+    "tagsCnt" : 1,
+    "totDataBytes" : 1080
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-06m02"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 0
+    },
+    "destination" : {
+     "as" : {
+      "full" : "AS13489 EPM Telecomunicaciones S.A. E.S.P.",
+      "number" : 13489,
+      "organization" : {
+       "name" : "EPM Telecomunicaciones S.A. E.S.P."
+      }
+     },
+     "bytes" : 1340,
+     "geo" : {
+      "city_name" : "Medellín",
+      "country_iso_code" : "CO",
+      "region_iso_code" : "ANT"
+     },
+     "ip" : "190.0.0.13",
+     "mac" : [
+      "00:11:43:4a:d7:0a"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 10,
+     "port" : 0
+    },
+    "dstOui" : [
+     "Dell Inc."
+    ],
+    "dstOuiCnt" : 1,
+    "dstRIR" : "LACNIC",
+    "dstTTL" : [
+     64
+    ],
+    "dstTTLCnt" : 1,
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 1140435218685,
+    "ipProtocol" : 50,
+    "lastPacket" : 1140435227733,
+    "length" : 9048,
+    "network" : {
+     "bytes" : 1340,
+     "community_id" : "1:q1QBuhdRJUzvwx8OftysvB0spEU=",
+     "packets" : 10
+    },
+    "node" : "test",
+    "packetLen" : [
+     150
+    ],
+    "packetPos" : [
+     7724
+    ],
+    "packetRange" : {
+     "gte" : 1140435218685,
+     "lte" : 1140435227733
+    },
+    "protocol" : [
+     "esp"
+    ],
+    "protocolCnt" : 1,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 920
+    },
+    "source" : {
+     "as" : {
+      "full" : "AS13489 EPM Telecomunicaciones S.A. E.S.P.",
+      "number" : 13489,
+      "organization" : {
+       "name" : "EPM Telecomunicaciones S.A. E.S.P."
+      }
+     },
+     "bytes" : 0,
+     "geo" : {
+      "city_name" : "Medellín",
+      "country_iso_code" : "CO",
+      "region_iso_code" : "ANT"
+     },
+     "ip" : "190.0.0.1",
+     "mac" : [
+      "00:00:00:00:00:13"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 0,
+     "port" : 0
+    },
+    "srcOui" : [
+     "Officially Xerox, but 0:0:0:0:0:0 is more common"
+    ],
+    "srcOuiCnt" : 1,
+    "srcRIR" : "LACNIC",
+    "tags" : [
+     "truncated-pcap"
+    ],
+    "tagsCnt" : 1,
+    "totDataBytes" : 920
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-06m02"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 0
+    },
+    "destination" : {
+     "as" : {
+      "full" : "AS13489 EPM Telecomunicaciones S.A. E.S.P.",
+      "number" : 13489,
+      "organization" : {
+       "name" : "EPM Telecomunicaciones S.A. E.S.P."
+      }
+     },
+     "bytes" : 1340,
+     "geo" : {
+      "city_name" : "Medellín",
+      "country_iso_code" : "CO",
+      "region_iso_code" : "ANT"
+     },
+     "ip" : "190.0.0.14",
+     "mac" : [
+      "00:11:43:4a:d7:0a"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 10,
+     "port" : 0
+    },
+    "dstOui" : [
+     "Dell Inc."
+    ],
+    "dstOuiCnt" : 1,
+    "dstRIR" : "LACNIC",
+    "dstTTL" : [
+     64
+    ],
+    "dstTTLCnt" : 1,
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 1140435237736,
+    "ipProtocol" : 50,
+    "lastPacket" : 1140435246755,
+    "length" : 9019,
+    "network" : {
+     "bytes" : 1340,
+     "community_id" : "1:WnrhfVWe+DJyVsXc1xSMeL0nVgg=",
+     "packets" : 10
+    },
+    "node" : "test",
+    "packetLen" : [
+     150
+    ],
+    "packetPos" : [
+     9224
+    ],
+    "packetRange" : {
+     "gte" : 1140435237736,
+     "lte" : 1140435246755
+    },
+    "protocol" : [
+     "esp"
+    ],
+    "protocolCnt" : 1,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 920
+    },
+    "source" : {
+     "as" : {
+      "full" : "AS13489 EPM Telecomunicaciones S.A. E.S.P.",
+      "number" : 13489,
+      "organization" : {
+       "name" : "EPM Telecomunicaciones S.A. E.S.P."
+      }
+     },
+     "bytes" : 0,
+     "geo" : {
+      "city_name" : "Medellín",
+      "country_iso_code" : "CO",
+      "region_iso_code" : "ANT"
+     },
+     "ip" : "190.0.0.1",
+     "mac" : [
+      "00:00:00:00:00:14"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 0,
+     "port" : 0
+    },
+    "srcOui" : [
+     "Officially Xerox, but 0:0:0:0:0:0 is more common"
+    ],
+    "srcOuiCnt" : 1,
+    "srcRIR" : "LACNIC",
+    "tags" : [
+     "truncated-pcap"
+    ],
+    "tagsCnt" : 1,
+    "totDataBytes" : 920
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-06m02"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 0
+    },
+    "destination" : {
+     "as" : {
+      "full" : "AS13489 EPM Telecomunicaciones S.A. E.S.P.",
+      "number" : 13489,
+      "organization" : {
+       "name" : "EPM Telecomunicaciones S.A. E.S.P."
+      }
+     },
+     "bytes" : 1220,
+     "geo" : {
+      "city_name" : "Medellín",
+      "country_iso_code" : "CO",
+      "region_iso_code" : "ANT"
+     },
+     "ip" : "190.0.0.15",
+     "mac" : [
+      "00:11:43:4a:d7:0a"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 10,
+     "port" : 0
+    },
+    "dstOui" : [
+     "Dell Inc."
+    ],
+    "dstOuiCnt" : 1,
+    "dstRIR" : "LACNIC",
+    "dstTTL" : [
+     64
+    ],
+    "dstTTLCnt" : 1,
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 1140435256758,
+    "ipProtocol" : 50,
+    "lastPacket" : 1140435265757,
+    "length" : 8999,
+    "network" : {
+     "bytes" : 1220,
+     "community_id" : "1:9vUY3OzPvkNy1jDRG6jL8Sj2O6U=",
+     "packets" : 10
+    },
+    "node" : "test",
+    "packetLen" : [
+     138
+    ],
+    "packetPos" : [
+     10724
+    ],
+    "packetRange" : {
+     "gte" : 1140435256758,
+     "lte" : 1140435265757
+    },
+    "protocol" : [
+     "esp"
+    ],
+    "protocolCnt" : 1,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 800
+    },
+    "source" : {
+     "as" : {
+      "full" : "AS13489 EPM Telecomunicaciones S.A. E.S.P.",
+      "number" : 13489,
+      "organization" : {
+       "name" : "EPM Telecomunicaciones S.A. E.S.P."
+      }
+     },
+     "bytes" : 0,
+     "geo" : {
+      "city_name" : "Medellín",
+      "country_iso_code" : "CO",
+      "region_iso_code" : "ANT"
+     },
+     "ip" : "190.0.0.1",
+     "mac" : [
+      "00:00:00:00:00:15"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 0,
+     "port" : 0
+    },
+    "srcOui" : [
+     "Officially Xerox, but 0:0:0:0:0:0 is more common"
+    ],
+    "srcOuiCnt" : 1,
+    "srcRIR" : "LACNIC",
+    "tags" : [
+     "truncated-pcap"
+    ],
+    "tagsCnt" : 1,
+    "totDataBytes" : 800
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-06m02"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 0
+    },
+    "destination" : {
+     "as" : {
+      "full" : "AS13489 EPM Telecomunicaciones S.A. E.S.P.",
+      "number" : 13489,
+      "organization" : {
+       "name" : "EPM Telecomunicaciones S.A. E.S.P."
+      }
+     },
+     "bytes" : 1380,
+     "geo" : {
+      "city_name" : "Medellín",
+      "country_iso_code" : "CO",
+      "region_iso_code" : "ANT"
+     },
+     "ip" : "190.0.0.22",
+     "mac" : [
+      "00:11:43:4a:d7:0a"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 10,
+     "port" : 0
+    },
+    "dstOui" : [
+     "Dell Inc."
+    ],
+    "dstOuiCnt" : 1,
+    "dstRIR" : "LACNIC",
+    "dstTTL" : [
+     64
+    ],
+    "dstTTLCnt" : 1,
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 1140435361771,
+    "ipProtocol" : 50,
+    "lastPacket" : 1140435370891,
+    "length" : 9120,
+    "network" : {
+     "bytes" : 1380,
+     "community_id" : "1:izN7Tux8sSTKAu2Tr+hBS9kWu7s=",
+     "packets" : 10
+    },
+    "node" : "test",
+    "packetLen" : [
+     154
+    ],
+    "packetPos" : [
+     12104
+    ],
+    "packetRange" : {
+     "gte" : 1140435361771,
+     "lte" : 1140435370891
+    },
+    "protocol" : [
+     "esp"
+    ],
+    "protocolCnt" : 1,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 960
+    },
+    "source" : {
+     "as" : {
+      "full" : "AS13489 EPM Telecomunicaciones S.A. E.S.P.",
+      "number" : 13489,
+      "organization" : {
+       "name" : "EPM Telecomunicaciones S.A. E.S.P."
+      }
+     },
+     "bytes" : 0,
+     "geo" : {
+      "city_name" : "Medellín",
+      "country_iso_code" : "CO",
+      "region_iso_code" : "ANT"
+     },
+     "ip" : "190.0.0.1",
+     "mac" : [
+      "00:00:00:00:00:12"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 0,
+     "port" : 0
+    },
+    "srcOui" : [
+     "Officially Xerox, but 0:0:0:0:0:0 is more common"
+    ],
+    "srcOuiCnt" : 1,
+    "srcRIR" : "LACNIC",
+    "tags" : [
+     "truncated-pcap"
+    ],
+    "tagsCnt" : 1,
+    "totDataBytes" : 960
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-06m02"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 0
+    },
+    "destination" : {
+     "as" : {
+      "full" : "AS13489 EPM Telecomunicaciones S.A. E.S.P.",
+      "number" : 13489,
+      "organization" : {
+       "name" : "EPM Telecomunicaciones S.A. E.S.P."
+      }
+     },
+     "bytes" : 1220,
+     "geo" : {
+      "city_name" : "Medellín",
+      "country_iso_code" : "CO",
+      "region_iso_code" : "ANT"
+     },
+     "ip" : "190.0.0.23",
+     "mac" : [
+      "00:11:43:4a:d7:0a"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 10,
+     "port" : 0
+    },
+    "dstOui" : [
+     "Dell Inc."
+    ],
+    "dstOuiCnt" : 1,
+    "dstRIR" : "LACNIC",
+    "dstTTL" : [
+     64
+    ],
+    "dstTTLCnt" : 1,
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 1140435380893,
+    "ipProtocol" : 50,
+    "lastPacket" : 1140435389893,
+    "length" : 9000,
+    "network" : {
+     "bytes" : 1220,
+     "community_id" : "1:9iQQ+3R+ldlxRxJz5DUsNE9IsWA=",
+     "packets" : 10
+    },
+    "node" : "test",
+    "packetLen" : [
+     138
+    ],
+    "packetPos" : [
+     13644
+    ],
+    "packetRange" : {
+     "gte" : 1140435380893,
+     "lte" : 1140435389893
+    },
+    "protocol" : [
+     "esp"
+    ],
+    "protocolCnt" : 1,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 800
+    },
+    "source" : {
+     "as" : {
+      "full" : "AS13489 EPM Telecomunicaciones S.A. E.S.P.",
+      "number" : 13489,
+      "organization" : {
+       "name" : "EPM Telecomunicaciones S.A. E.S.P."
+      }
+     },
+     "bytes" : 0,
+     "geo" : {
+      "city_name" : "Medellín",
+      "country_iso_code" : "CO",
+      "region_iso_code" : "ANT"
+     },
+     "ip" : "190.0.0.1",
+     "mac" : [
+      "00:00:00:00:00:13"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 0,
+     "port" : 0
+    },
+    "srcOui" : [
+     "Officially Xerox, but 0:0:0:0:0:0 is more common"
+    ],
+    "srcOuiCnt" : 1,
+    "srcRIR" : "LACNIC",
+    "tags" : [
+     "truncated-pcap"
+    ],
+    "tagsCnt" : 1,
+    "totDataBytes" : 800
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-06m02"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 0
+    },
+    "destination" : {
+     "as" : {
+      "full" : "AS13489 EPM Telecomunicaciones S.A. E.S.P.",
+      "number" : 13489,
+      "organization" : {
+       "name" : "EPM Telecomunicaciones S.A. E.S.P."
+      }
+     },
+     "bytes" : 1220,
+     "geo" : {
+      "city_name" : "Medellín",
+      "country_iso_code" : "CO",
+      "region_iso_code" : "ANT"
+     },
+     "ip" : "190.0.0.24",
+     "mac" : [
+      "00:11:43:4a:d7:0a"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 10,
+     "port" : 0
+    },
+    "dstOui" : [
+     "Dell Inc."
+    ],
+    "dstOuiCnt" : 1,
+    "dstRIR" : "LACNIC",
+    "dstTTL" : [
+     64
+    ],
+    "dstTTLCnt" : 1,
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 1140435399895,
+    "ipProtocol" : 50,
+    "lastPacket" : 1140435408894,
+    "length" : 8999,
+    "network" : {
+     "bytes" : 1220,
+     "community_id" : "1:n19Ht6x+yYT3fbH5r9aVlGbN3ys=",
+     "packets" : 10
+    },
+    "node" : "test",
+    "packetLen" : [
+     138
+    ],
+    "packetPos" : [
+     15024
+    ],
+    "packetRange" : {
+     "gte" : 1140435399895,
+     "lte" : 1140435408894
+    },
+    "protocol" : [
+     "esp"
+    ],
+    "protocolCnt" : 1,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 800
+    },
+    "source" : {
+     "as" : {
+      "full" : "AS13489 EPM Telecomunicaciones S.A. E.S.P.",
+      "number" : 13489,
+      "organization" : {
+       "name" : "EPM Telecomunicaciones S.A. E.S.P."
+      }
+     },
+     "bytes" : 0,
+     "geo" : {
+      "city_name" : "Medellín",
+      "country_iso_code" : "CO",
+      "region_iso_code" : "ANT"
+     },
+     "ip" : "190.0.0.1",
+     "mac" : [
+      "00:00:00:00:00:14"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 0,
+     "port" : 0
+    },
+    "srcOui" : [
+     "Officially Xerox, but 0:0:0:0:0:0 is more common"
+    ],
+    "srcOuiCnt" : 1,
+    "srcRIR" : "LACNIC",
+    "tags" : [
+     "truncated-pcap"
+    ],
+    "tagsCnt" : 1,
+    "totDataBytes" : 800
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-06m02"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 0
+    },
+    "destination" : {
+     "as" : {
+      "full" : "AS13489 EPM Telecomunicaciones S.A. E.S.P.",
+      "number" : 13489,
+      "organization" : {
+       "name" : "EPM Telecomunicaciones S.A. E.S.P."
+      }
+     },
+     "bytes" : 1100,
+     "geo" : {
+      "city_name" : "Medellín",
+      "country_iso_code" : "CO",
+      "region_iso_code" : "ANT"
+     },
+     "ip" : "190.0.0.25",
+     "mac" : [
+      "00:11:43:4a:d7:0a"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 10,
+     "port" : 0
+    },
+    "dstOui" : [
+     "Dell Inc."
+    ],
+    "dstOuiCnt" : 1,
+    "dstRIR" : "LACNIC",
+    "dstTTL" : [
+     64
+    ],
+    "dstTTLCnt" : 1,
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 1140435418897,
+    "ipProtocol" : 50,
+    "lastPacket" : 1140435427896,
+    "length" : 8999,
+    "network" : {
+     "bytes" : 1100,
+     "community_id" : "1:s4Ib539kIqpYDryKECciSZutNkY=",
+     "packets" : 10
+    },
+    "node" : "test",
+    "packetLen" : [
+     126
+    ],
+    "packetPos" : [
+     16404
+    ],
+    "packetRange" : {
+     "gte" : 1140435418897,
+     "lte" : 1140435427896
+    },
+    "protocol" : [
+     "esp"
+    ],
+    "protocolCnt" : 1,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 680
+    },
+    "source" : {
+     "as" : {
+      "full" : "AS13489 EPM Telecomunicaciones S.A. E.S.P.",
+      "number" : 13489,
+      "organization" : {
+       "name" : "EPM Telecomunicaciones S.A. E.S.P."
+      }
+     },
+     "bytes" : 0,
+     "geo" : {
+      "city_name" : "Medellín",
+      "country_iso_code" : "CO",
+      "region_iso_code" : "ANT"
+     },
+     "ip" : "190.0.0.1",
+     "mac" : [
+      "00:00:00:00:00:15"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 0,
+     "port" : 0
+    },
+    "srcOui" : [
+     "Officially Xerox, but 0:0:0:0:0:0 is more common"
+    ],
+    "srcOuiCnt" : 1,
+    "srcRIR" : "LACNIC",
+    "tags" : [
+     "truncated-pcap"
+    ],
+    "tagsCnt" : 1,
+    "totDataBytes" : 680
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-06m02"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 0
+    },
+    "destination" : {
+     "bytes" : 1700,
+     "ip" : "3ffe::2",
+     "mac" : [
+      "00:11:43:4a:d7:0a"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 10,
+     "port" : 0
+    },
+    "dstOui" : [
+     "Dell Inc."
+    ],
+    "dstOuiCnt" : 1,
+    "dstTTL" : [
+     64
+    ],
+    "dstTTLCnt" : 1,
+    "ethertype" : 34525,
+    "fileId" : [],
+    "firstPacket" : 1140435683595,
+    "ipProtocol" : 50,
+    "lastPacket" : 1140435692635,
+    "length" : 9040,
+    "network" : {
+     "bytes" : 1700,
+     "community_id" : "1:HeLJDpz57u3SQIJ9Qd2K/efJkqY=",
+     "packets" : 10
+    },
+    "node" : "test",
+    "packetLen" : [
+     186
+    ],
+    "packetPos" : [
+     17664
+    ],
+    "packetRange" : {
+     "gte" : 1140435683595,
+     "lte" : 1140435692635
+    },
+    "protocol" : [
+     "esp"
+    ],
+    "protocolCnt" : 1,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 1080
+    },
+    "source" : {
+     "bytes" : 0,
+     "ip" : "3ffe::1",
+     "mac" : [
+      "00:00:00:00:00:02"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 0,
+     "port" : 0
+    },
+    "srcOui" : [
+     "Officially Xerox, but 0:0:0:0:0:0 is more common"
+    ],
+    "srcOuiCnt" : 1,
+    "tags" : [
+     "truncated-pcap"
+    ],
+    "tagsCnt" : 1,
+    "totDataBytes" : 1080
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-06m02"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 0
+    },
+    "destination" : {
+     "bytes" : 1540,
+     "ip" : "3ffe::3",
+     "mac" : [
+      "00:11:43:4a:d7:0a"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 10,
+     "port" : 0
+    },
+    "dstOui" : [
+     "Dell Inc."
+    ],
+    "dstOuiCnt" : 1,
+    "dstTTL" : [
+     64
+    ],
+    "dstTTLCnt" : 1,
+    "ethertype" : 34525,
+    "fileId" : [],
+    "firstPacket" : 1140435702637,
+    "ipProtocol" : 50,
+    "lastPacket" : 1140435711701,
+    "length" : 9064,
+    "network" : {
+     "bytes" : 1540,
+     "community_id" : "1:/rSr9PRtUM/PbL8ELHKHU+txHGY=",
+     "packets" : 10
+    },
+    "node" : "test",
+    "packetLen" : [
+     170
+    ],
+    "packetPos" : [
+     19524
+    ],
+    "packetRange" : {
+     "gte" : 1140435702637,
+     "lte" : 1140435711701
+    },
+    "protocol" : [
+     "esp"
+    ],
+    "protocolCnt" : 1,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 920
+    },
+    "source" : {
+     "bytes" : 0,
+     "ip" : "3ffe::1",
+     "mac" : [
+      "00:00:00:00:00:03"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 0,
+     "port" : 0
+    },
+    "srcOui" : [
+     "Officially Xerox, but 0:0:0:0:0:0 is more common"
+    ],
+    "srcOuiCnt" : 1,
+    "tags" : [
+     "truncated-pcap"
+    ],
+    "tagsCnt" : 1,
+    "totDataBytes" : 920
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-06m02"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 0
+    },
+    "destination" : {
+     "bytes" : 1540,
+     "ip" : "3ffe::4",
+     "mac" : [
+      "00:11:43:4a:d7:0a"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 10,
+     "port" : 0
+    },
+    "dstOui" : [
+     "Dell Inc."
+    ],
+    "dstOuiCnt" : 1,
+    "dstTTL" : [
+     64
+    ],
+    "dstTTLCnt" : 1,
+    "ethertype" : 34525,
+    "fileId" : [],
+    "firstPacket" : 1140435721711,
+    "ipProtocol" : 50,
+    "lastPacket" : 1140435730710,
+    "length" : 8999,
+    "network" : {
+     "bytes" : 1540,
+     "community_id" : "1:dKwS0tclQusGrVOQGxUZD1LVYAU=",
+     "packets" : 10
+    },
+    "node" : "test",
+    "packetLen" : [
+     170
+    ],
+    "packetPos" : [
+     21224
+    ],
+    "packetRange" : {
+     "gte" : 1140435721711,
+     "lte" : 1140435730710
+    },
+    "protocol" : [
+     "esp"
+    ],
+    "protocolCnt" : 1,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 920
+    },
+    "source" : {
+     "bytes" : 0,
+     "ip" : "3ffe::1",
+     "mac" : [
+      "00:00:00:00:00:04"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 0,
+     "port" : 0
+    },
+    "srcOui" : [
+     "Officially Xerox, but 0:0:0:0:0:0 is more common"
+    ],
+    "srcOuiCnt" : 1,
+    "tags" : [
+     "truncated-pcap"
+    ],
+    "tagsCnt" : 1,
+    "totDataBytes" : 920
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-06m02"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 0
+    },
+    "destination" : {
+     "bytes" : 1420,
+     "ip" : "3ffe::5",
+     "mac" : [
+      "00:11:43:4a:d7:0a"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 10,
+     "port" : 0
+    },
+    "dstOui" : [
+     "Dell Inc."
+    ],
+    "dstOuiCnt" : 1,
+    "dstTTL" : [
+     64
+    ],
+    "dstTTLCnt" : 1,
+    "ethertype" : 34525,
+    "fileId" : [],
+    "firstPacket" : 1140435740713,
+    "ipProtocol" : 50,
+    "lastPacket" : 1140435749712,
+    "length" : 8999,
+    "network" : {
+     "bytes" : 1420,
+     "community_id" : "1:vFMKcYAJ5joBAO43ttGrk5BDA3I=",
+     "packets" : 10
+    },
+    "node" : "test",
+    "packetLen" : [
+     158
+    ],
+    "packetPos" : [
+     22924
+    ],
+    "packetRange" : {
+     "gte" : 1140435740713,
+     "lte" : 1140435749712
+    },
+    "protocol" : [
+     "esp"
+    ],
+    "protocolCnt" : 1,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 800
+    },
+    "source" : {
+     "bytes" : 0,
+     "ip" : "3ffe::1",
+     "mac" : [
+      "00:00:00:00:00:05"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 0,
+     "port" : 0
+    },
+    "srcOui" : [
+     "Officially Xerox, but 0:0:0:0:0:0 is more common"
+    ],
+    "srcOuiCnt" : 1,
+    "tags" : [
+     "truncated-pcap"
+    ],
+    "tagsCnt" : 1,
+    "totDataBytes" : 800
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-06m02"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 0
+    },
+    "destination" : {
+     "bytes" : 1700,
+     "ip" : "3ffe::12",
+     "mac" : [
+      "00:11:43:4a:d7:0a"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 10,
+     "port" : 0
+    },
+    "dstOui" : [
+     "Dell Inc."
+    ],
+    "dstOuiCnt" : 1,
+    "dstTTL" : [
+     64
+    ],
+    "dstTTLCnt" : 1,
+    "ethertype" : 34525,
+    "fileId" : [],
+    "firstPacket" : 1140435845816,
+    "ipProtocol" : 50,
+    "lastPacket" : 1140435854815,
+    "length" : 8999,
+    "network" : {
+     "bytes" : 1700,
+     "community_id" : "1:x5nb/50wSYnUWf2L4WrDu3t29kg=",
+     "packets" : 10
+    },
+    "node" : "test",
+    "packetLen" : [
+     186
+    ],
+    "packetPos" : [
+     24504
+    ],
+    "packetRange" : {
+     "gte" : 1140435845816,
+     "lte" : 1140435854815
+    },
+    "protocol" : [
+     "esp"
+    ],
+    "protocolCnt" : 1,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 1080
+    },
+    "source" : {
+     "bytes" : 0,
+     "ip" : "3ffe::1",
+     "mac" : [
+      "00:00:00:00:00:02"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 0,
+     "port" : 0
+    },
+    "srcOui" : [
+     "Officially Xerox, but 0:0:0:0:0:0 is more common"
+    ],
+    "srcOuiCnt" : 1,
+    "tags" : [
+     "truncated-pcap"
+    ],
+    "tagsCnt" : 1,
+    "totDataBytes" : 1080
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-06m02"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 0
+    },
+    "destination" : {
+     "bytes" : 1540,
+     "ip" : "3ffe::13",
+     "mac" : [
+      "00:11:43:4a:d7:0a"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 10,
+     "port" : 0
+    },
+    "dstOui" : [
+     "Dell Inc."
+    ],
+    "dstOuiCnt" : 1,
+    "dstTTL" : [
+     64
+    ],
+    "dstTTLCnt" : 1,
+    "ethertype" : 34525,
+    "fileId" : [],
+    "firstPacket" : 1140435864818,
+    "ipProtocol" : 50,
+    "lastPacket" : 1140435873836,
+    "length" : 9018,
+    "network" : {
+     "bytes" : 1540,
+     "community_id" : "1:yps3A2OLxbYbuK5+pIEgXaXtqPU=",
+     "packets" : 10
+    },
+    "node" : "test",
+    "packetLen" : [
+     170
+    ],
+    "packetPos" : [
+     26364
+    ],
+    "packetRange" : {
+     "gte" : 1140435864818,
+     "lte" : 1140435873836
+    },
+    "protocol" : [
+     "esp"
+    ],
+    "protocolCnt" : 1,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 920
+    },
+    "source" : {
+     "bytes" : 0,
+     "ip" : "3ffe::1",
+     "mac" : [
+      "00:00:00:00:00:03"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 0,
+     "port" : 0
+    },
+    "srcOui" : [
+     "Officially Xerox, but 0:0:0:0:0:0 is more common"
+    ],
+    "srcOuiCnt" : 1,
+    "tags" : [
+     "truncated-pcap"
+    ],
+    "tagsCnt" : 1,
+    "totDataBytes" : 920
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-06m02"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 0
+    },
+    "destination" : {
+     "bytes" : 1540,
+     "ip" : "3ffe::14",
+     "mac" : [
+      "00:11:43:4a:d7:0a"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 10,
+     "port" : 0
+    },
+    "dstOui" : [
+     "Dell Inc."
+    ],
+    "dstOuiCnt" : 1,
+    "dstTTL" : [
+     64
+    ],
+    "dstTTLCnt" : 1,
+    "ethertype" : 34525,
+    "fileId" : [],
+    "firstPacket" : 1140435883839,
+    "ipProtocol" : 50,
+    "lastPacket" : 1140435892838,
+    "length" : 8999,
+    "network" : {
+     "bytes" : 1540,
+     "community_id" : "1:y3awuWizhQadiCQFmygxcwinoNA=",
+     "packets" : 10
+    },
+    "node" : "test",
+    "packetLen" : [
+     170
+    ],
+    "packetPos" : [
+     28064
+    ],
+    "packetRange" : {
+     "gte" : 1140435883839,
+     "lte" : 1140435892838
+    },
+    "protocol" : [
+     "esp"
+    ],
+    "protocolCnt" : 1,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 920
+    },
+    "source" : {
+     "bytes" : 0,
+     "ip" : "3ffe::1",
+     "mac" : [
+      "00:00:00:00:00:04"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 0,
+     "port" : 0
+    },
+    "srcOui" : [
+     "Officially Xerox, but 0:0:0:0:0:0 is more common"
+    ],
+    "srcOuiCnt" : 1,
+    "tags" : [
+     "truncated-pcap"
+    ],
+    "tagsCnt" : 1,
+    "totDataBytes" : 920
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-06m02"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 0
+    },
+    "destination" : {
+     "bytes" : 1420,
+     "ip" : "3ffe::15",
+     "mac" : [
+      "00:11:43:4a:d7:0a"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 10,
+     "port" : 0
+    },
+    "dstOui" : [
+     "Dell Inc."
+    ],
+    "dstOuiCnt" : 1,
+    "dstTTL" : [
+     64
+    ],
+    "dstTTLCnt" : 1,
+    "ethertype" : 34525,
+    "fileId" : [],
+    "firstPacket" : 1140435902840,
+    "ipProtocol" : 50,
+    "lastPacket" : 1140435911877,
+    "length" : 9037,
+    "network" : {
+     "bytes" : 1420,
+     "community_id" : "1:0Kf65Ogew305Rp9sS3J/rdx+j5U=",
+     "packets" : 10
+    },
+    "node" : "test",
+    "packetLen" : [
+     158
+    ],
+    "packetPos" : [
+     29764
+    ],
+    "packetRange" : {
+     "gte" : 1140435902840,
+     "lte" : 1140435911877
+    },
+    "protocol" : [
+     "esp"
+    ],
+    "protocolCnt" : 1,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 800
+    },
+    "source" : {
+     "bytes" : 0,
+     "ip" : "3ffe::1",
+     "mac" : [
+      "00:00:00:00:00:05"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 0,
+     "port" : 0
+    },
+    "srcOui" : [
+     "Officially Xerox, but 0:0:0:0:0:0 is more common"
+    ],
+    "srcOuiCnt" : 1,
+    "tags" : [
+     "truncated-pcap"
+    ],
+    "tagsCnt" : 1,
+    "totDataBytes" : 800
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-06m02"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 0
+    },
+    "destination" : {
+     "bytes" : 1580,
+     "ip" : "3ffe::22",
+     "mac" : [
+      "00:11:43:4a:d7:0a"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 10,
+     "port" : 0
+    },
+    "dstOui" : [
+     "Dell Inc."
+    ],
+    "dstOuiCnt" : 1,
+    "dstTTL" : [
+     64
+    ],
+    "dstTTLCnt" : 1,
+    "ethertype" : 34525,
+    "fileId" : [],
+    "firstPacket" : 1140436007955,
+    "ipProtocol" : 50,
+    "lastPacket" : 1140436016956,
+    "length" : 9001,
+    "network" : {
+     "bytes" : 1580,
+     "community_id" : "1:OZ5467XosNPdzDt1yOrbQ/3XykA=",
+     "packets" : 10
+    },
+    "node" : "test",
+    "packetLen" : [
+     174
+    ],
+    "packetPos" : [
+     31344
+    ],
+    "packetRange" : {
+     "gte" : 1140436007955,
+     "lte" : 1140436016956
+    },
+    "protocol" : [
+     "esp"
+    ],
+    "protocolCnt" : 1,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 960
+    },
+    "source" : {
+     "bytes" : 0,
+     "ip" : "3ffe::1",
+     "mac" : [
+      "00:00:00:00:00:02"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 0,
+     "port" : 0
+    },
+    "srcOui" : [
+     "Officially Xerox, but 0:0:0:0:0:0 is more common"
+    ],
+    "srcOuiCnt" : 1,
+    "tags" : [
+     "truncated-pcap"
+    ],
+    "tagsCnt" : 1,
+    "totDataBytes" : 960
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-06m02"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 0
+    },
+    "destination" : {
+     "bytes" : 1420,
+     "ip" : "3ffe::23",
+     "mac" : [
+      "00:11:43:4a:d7:0a"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 10,
+     "port" : 0
+    },
+    "dstOui" : [
+     "Dell Inc."
+    ],
+    "dstOuiCnt" : 1,
+    "dstTTL" : [
+     64
+    ],
+    "dstTTLCnt" : 1,
+    "ethertype" : 34525,
+    "fileId" : [],
+    "firstPacket" : 1140436026969,
+    "ipProtocol" : 50,
+    "lastPacket" : 1140436035972,
+    "length" : 9003,
+    "network" : {
+     "bytes" : 1420,
+     "community_id" : "1:HRya8a4OCGSf0P5hJWu3RbecmLw=",
+     "packets" : 10
+    },
+    "node" : "test",
+    "packetLen" : [
+     158
+    ],
+    "packetPos" : [
+     33084
+    ],
+    "packetRange" : {
+     "gte" : 1140436026969,
+     "lte" : 1140436035972
+    },
+    "protocol" : [
+     "esp"
+    ],
+    "protocolCnt" : 1,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 800
+    },
+    "source" : {
+     "bytes" : 0,
+     "ip" : "3ffe::1",
+     "mac" : [
+      "00:00:00:00:00:03"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 0,
+     "port" : 0
+    },
+    "srcOui" : [
+     "Officially Xerox, but 0:0:0:0:0:0 is more common"
+    ],
+    "srcOuiCnt" : 1,
+    "tags" : [
+     "truncated-pcap"
+    ],
+    "tagsCnt" : 1,
+    "totDataBytes" : 800
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-06m02"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 0
+    },
+    "destination" : {
+     "bytes" : 1420,
+     "ip" : "3ffe::24",
+     "mac" : [
+      "00:11:43:4a:d7:0a"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 10,
+     "port" : 0
+    },
+    "dstOui" : [
+     "Dell Inc."
+    ],
+    "dstOuiCnt" : 1,
+    "dstTTL" : [
+     64
+    ],
+    "dstTTLCnt" : 1,
+    "ethertype" : 34525,
+    "fileId" : [],
+    "firstPacket" : 1140436045975,
+    "ipProtocol" : 50,
+    "lastPacket" : 1140436054974,
+    "length" : 8999,
+    "network" : {
+     "bytes" : 1420,
+     "community_id" : "1:NJ1B7SkoBaRmCi9wygtJXFJWTHU=",
+     "packets" : 10
+    },
+    "node" : "test",
+    "packetLen" : [
+     158
+    ],
+    "packetPos" : [
+     34664
+    ],
+    "packetRange" : {
+     "gte" : 1140436045975,
+     "lte" : 1140436054974
+    },
+    "protocol" : [
+     "esp"
+    ],
+    "protocolCnt" : 1,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 800
+    },
+    "source" : {
+     "bytes" : 0,
+     "ip" : "3ffe::1",
+     "mac" : [
+      "00:00:00:00:00:04"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 0,
+     "port" : 0
+    },
+    "srcOui" : [
+     "Officially Xerox, but 0:0:0:0:0:0 is more common"
+    ],
+    "srcOuiCnt" : 1,
+    "tags" : [
+     "truncated-pcap"
+    ],
+    "tagsCnt" : 1,
+    "totDataBytes" : 800
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-06m02"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 0
+    },
+    "destination" : {
+     "bytes" : 1300,
+     "ip" : "3ffe::25",
+     "mac" : [
+      "00:11:43:4a:d7:0a"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 10,
+     "port" : 0
+    },
+    "dstOui" : [
+     "Dell Inc."
+    ],
+    "dstOuiCnt" : 1,
+    "dstTTL" : [
+     64
+    ],
+    "dstTTLCnt" : 1,
+    "ethertype" : 34525,
+    "fileId" : [],
+    "firstPacket" : 1140436064977,
+    "ipProtocol" : 50,
+    "lastPacket" : 1140436074108,
+    "length" : 9131,
+    "network" : {
+     "bytes" : 1300,
+     "community_id" : "1:wCCJEWspE5gE5Vs+Pr+04xqUsAI=",
+     "packets" : 10
+    },
+    "node" : "test",
+    "packetLen" : [
+     146
+    ],
+    "packetPos" : [
+     36244
+    ],
+    "packetRange" : {
+     "gte" : 1140436064977,
+     "lte" : 1140436074108
+    },
+    "protocol" : [
+     "esp"
+    ],
+    "protocolCnt" : 1,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 680
+    },
+    "source" : {
+     "bytes" : 0,
+     "ip" : "3ffe::1",
+     "mac" : [
+      "00:00:00:00:00:05"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 0,
+     "port" : 0
+    },
+    "srcOui" : [
+     "Officially Xerox, but 0:0:0:0:0:0 is more common"
+    ],
+    "srcOuiCnt" : 1,
+    "tags" : [
+     "truncated-pcap"
+    ],
+    "tagsCnt" : 1,
+    "totDataBytes" : 680
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-06m02"
+    }
+   }
+  }
+ ]
 }
 

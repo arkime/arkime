@@ -759,7 +759,8 @@
       "molochtype": "Kuum/Soe",
       "shardsPerNode": "Kilde/Sõlm",
       "versionCreated": "ES versioon",
-      "docSize": "Ketas dokumendi kohta"
+      "docSize": "Ketas dokumendi kohta",
+      "codec": "Koodek"
     },
     "esNodes": {
       "mainManaging": "Peamine haldussõlm",
@@ -1218,6 +1219,24 @@
       "mismatchedPassword": "Sinu uus parool ja kinnitus ei vasta",
       "changePassword": "Muuda parool"
     },
+    "totp": {
+      "title": "Kaheastmeline autentimine",
+      "description": "Lisage täiendav turvakiht, nõudes tundlike muudatuste tegemisel koodi autentimisrakendusest (Authy, Google Authenticator jne).",
+      "status": "Olek",
+      "enabled": "Lubatud",
+      "disabled": "Pole lubatud",
+      "enroll": "Luba 2FA",
+      "unenroll": "Keela 2FA",
+      "scanQR": "Skanni QR-kood",
+      "generatingQR": "QR-koodi genereerimine...",
+      "manualEntry": "Käsitsi sisestamine",
+      "verifyCode": "Kinnituskood",
+      "codePlaceholder": "000000",
+      "verify": "Kinnita ja luba",
+      "invalidCode": "Palun sisestage kehtiv 6-kohaline kood",
+      "confirmDisable": "Sisestage kood keelamiseks",
+      "confirmUnenroll": "Keela 2FA"
+    },
     "shortcuts": {
       "newShortcut": "Uus otsetee",
       "editShortcut": "Muuda otseteed",
@@ -1293,6 +1312,7 @@
     "hideViz": "See klaster on seadistatud peitma graafiku, kui päritakse {days} päeva või suurem ajavahemik",
     "hideVizTip": "See aitab jõudlusele kaasa",
     "hideVizMore": "Klõpsake ülal nupul 'Too Viz Andmed', et tuua selle päringu visualiseerimisandmed (või avage rippmenüü lisavalikute jaoks).",
+    "toggleMapSize": "Lülita kaardi suurust",
     "toggleSrcCountry": "Lülita allika riigid",
     "toggleDstCountry": "Lülita sihtkoha riigid",
     "graphLines": "Jooned",
@@ -1739,6 +1759,8 @@
       "missingList": "Seanside loend puudub",
       "noSessionsFound": "Seansside ei leitud",
       "cantGetSessions": "Seansside toomine ID-de järgi ebaõnnestus",
+      "allDateNotAllowedSpiview": "Kuupäevavahemik 'Kõik' pole spiview päringu jaoks lubatud",
+      "spiviewFetchError": "Viga spiview andmete toomisel",
       "badFieldParam": "Vigane 'field' parameeter",
       "missingExpParam": "exp parameeter puudub",
       "sessionNotFound": "Seanssi ei leitud",

@@ -7,13 +7,8 @@
  */
 
 #define CURL_DISABLE_DEPRECATION
-#include <stdio.h>
-#include <stdlib.h>
 #include <sys/socket.h>
-#include <string.h>
-#include <ctype.h>
 #include <sys/types.h>
-#include <unistd.h>
 #include <arpa/inet.h>
 #include <curl/curl.h>
 #include "arkime.h"
@@ -137,14 +132,18 @@ LOCAL GHashTable *servers;
 /******************************************************************************/
 LOCAL int arkime_http_conn_cmp(const void *keyv, const ArkimeHttpConn_t *conn)
 {
-    return memcmp(keyv, conn->sessionId, MIN(((uint8_t *)keyv)[0], conn->sessionId[0])) == 0;
+    return memcmp(keyv, conn->sessionId, conn->sessionId[0]) == 0;
 }
 /******************************************************************************/
 LOCAL size_t arkime_http_curl_write_callback(void *contents, size_t size, size_t nmemb, void *requestP)
 {
     ArkimeHttpRequest_t *request = requestP;
 
+    if (size != 0 && nmemb > (SIZE_MAX / size))
+        return 0;
     size_t sz = size * nmemb;
+    if (sz > 0x7FFFFFFF)
+        return 0;
 
     if (request->rfunc) {
         if (!request->rfunc(contents, sz, request->uw))
@@ -164,9 +163,9 @@ LOCAL size_t arkime_http_curl_write_callback(void *contents, size_t size, size_t
         return sz;
     }
 
-    if (request->used + sz >= request->size) {
-        if (request->used + sz > 0x7FFFFFFF)
-            return 0;
+    if ((size_t)request->used + sz > 0x7FFFFFFF)
+        return 0;
+    if (request->used + sz > request->size) {
         request->size += request->used + sz;
         ARKIME_SIZE_REALLOC("dataIn", request->dataIn, request->size + 1);
     }
@@ -426,6 +425,13 @@ LOCAL void arkime_http_curlm_check_multi_info(ArkimeHttpServer_t *server)
                 curl_multi_remove_handle(server->multi, easy);
 
                 request->retries--;
+                if (request->dataIn) {
+                    if (!server->dontFreeResponse)
+                        ARKIME_SIZE_FREE("dataIn", request->dataIn);
+                    request->dataIn = 0;
+                }
+                request->used = 0;
+                request->size = 0;
                 struct timeval now;
                 gettimeofday(&now, NULL);
                 ARKIME_LOCK(requests);
@@ -556,11 +562,14 @@ LOCAL size_t arkime_http_curlm_header_function(char *buffer, size_t size, size_t
     if (!colon)
         return sz;
 
+    const char *end = buffer + i;
     *colon = 0;
     colon++;
-    while (isspace(*colon)) colon++;
+    while (colon < end && isspace((unsigned char) * colon)) colon++;
 
-    request->server->headerCb(request->url, buffer, colon, buffer + i - colon, request->uw);
+    int valueLen = (int)(end - colon);
+    if (valueLen < 0) valueLen = 0;
+    request->server->headerCb(request->url, buffer, colon, valueLen, request->uw);
     return sz;
 }
 /******************************************************************************/
@@ -619,6 +628,11 @@ LOCAL gboolean arkime_http_curl_watch_open_callback(int fd, GIOCondition conditi
     ArkimeHttpConn_t *conn;
 
     ARKIME_LOCK(connections);
+    if ((unsigned)fd >= ARRAY_LEN(connectionsSet) * 64) {
+        LOG("ERROR - fd %d exceeds connectionsSet capacity", fd);
+        ARKIME_UNLOCK(connections);
+        return CURLE_OK;
+    }
     BIT_SET(fd, connectionsSet);
     HASH_FIND(h_, connections, sessionId, conn);
     if (!conn) {
@@ -644,6 +658,10 @@ LOCAL curl_socket_t arkime_http_curl_open_callback(void *snameV, curlsocktype UN
     ArkimeHttpServer_t        *server = sname->server;
 
     int fd = socket(addr->family, addr->socktype, addr->protocol);
+    if (fd < 0) {
+        LOG("ERROR - socket() failed: %s", strerror(errno));
+        return CURL_SOCKET_BAD;
+    }
 
     long ev = arkime_watch_fd(fd, G_IO_OUT | G_IO_IN, arkime_http_curl_watch_open_callback, snameV);
     g_hash_table_insert(server->fd2ev, (void *)(long)fd, (void *)(long)ev);
@@ -655,7 +673,7 @@ LOCAL int arkime_http_curl_close_callback(void *snameV, curl_socket_t fd)
     ArkimeHttpServerName_t    *sname = snameV;
     ArkimeHttpServer_t        *server = sname->server;
 
-    if (! BIT_ISSET(fd, connectionsSet)) {
+    if ((unsigned)fd >= ARRAY_LEN(connectionsSet) * 64 || ! BIT_ISSET(fd, connectionsSet)) {
         long ev = (long)g_hash_table_lookup(server->fd2ev, (void *)(long)fd);
         LOG("Couldn't connect %s (%d, %ld) ", sname->name, fd, ev);
         close(fd);
@@ -717,7 +735,8 @@ LOCAL int arkime_http_curl_close_callback(void *snameV, curl_socket_t fd)
 
 
     ArkimeHttpConn_t *conn;
-    BIT_CLR(fd, connectionsSet);
+    if ((unsigned)fd < ARRAY_LEN(connectionsSet) * 64)
+        BIT_CLR(fd, connectionsSet);
 
     ARKIME_LOCK(connections);
     HASH_FIND(h_, connections, sessionId, conn);
@@ -767,14 +786,20 @@ LOCAL gboolean arkime_http_send_timer_callback(gpointer UNUSED(unused))
         LOG("HTTPDEBUG DO %p %d %s", request, request->server->outstanding, request->url);
 #endif
         curl_multi_add_handle(request->server->multi, request->easy);
+
+        /* Kick-start the transfer immediately after adding the handle.
+         * This is the recommended libcurl pattern for event-driven
+         * curl_multi_socket usage - ensures the transfer begins without
+         * waiting for the next timer or socket event. */
+        curl_multi_socket_action(request->server->multi, CURL_SOCKET_TIMEOUT, 0, &request->server->multiRunning);
     }
 
     return G_SOURCE_REMOVE;
 }
 /******************************************************************************/
-gboolean arkime_http_send(void *serverV, const char *method, const char *key, int32_t key_len, char *data, uint32_t data_len, char **headers, gboolean dropable, ArkimeHttpResponse_cb func, gpointer uw)
+gboolean arkime_http_send(void *serverV, const char *method, const char *key, int32_t key_len, char *data, uint32_t data_len, char **headers, gboolean droppable, ArkimeHttpResponse_cb func, gpointer uw)
 {
-    return arkime_http_schedule(serverV, method, key, key_len, data, data_len, headers, dropable ? ARKIME_HTTP_PRIORITY_DROPABLE : ARKIME_HTTP_PRIORITY_NORMAL, func, uw);
+    return arkime_http_schedule(serverV, method, key, key_len, data, data_len, headers, droppable ? ARKIME_HTTP_PRIORITY_DROPABLE : ARKIME_HTTP_PRIORITY_NORMAL, func, uw);
 }
 /******************************************************************************/
 gboolean arkime_http_schedule2(void *serverV, const char *method, const char *key, int32_t key_len, char *data, uint32_t data_len, char **headers, int priority, ArkimeHttpResponse_cb func, ArkimeHttpRead_cb rfunc, gpointer uw)

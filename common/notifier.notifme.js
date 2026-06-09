@@ -122,7 +122,8 @@ exports.sendSlackAlert = function (config, message, links, cb) {
   }
 
   SlackNotifier.send(slackMsgObj)
-    .then((response) => { if (cb) { cb(response); } });
+    .then((response) => { if (cb) { cb(response); } })
+    .catch((err) => { if (cb) { cb({ errors: { slack: err.message || String(err) } }); } });
 };
 
 // Twilio
@@ -157,7 +158,9 @@ exports.sendTwilioAlert = function (config, message, links, cb) {
       to: config.toNumber,
       text: message
     }
-  }).then((response) => { if (cb) { cb(response); } });
+  })
+    .then((response) => { if (cb) { cb(response); } })
+    .catch((err) => { if (cb) { cb({ errors: { twilio: err.message || String(err) } }); } });
 };
 
 // Email
@@ -202,5 +205,7 @@ exports.sendEmailAlert = function (config, message, links, cb) {
       from: config.from,
       subject: config.subject || 'Parliament Alert'
     }
-  }).then((response) => { if (cb) { cb(response); } });
+  })
+    .then((response) => { if (cb) { cb(response); } })
+    .catch((err) => { if (cb) { cb({ errors: { email: err.message || String(err) } }); } });
 };

@@ -297,7 +297,7 @@ class StatsAPIs {
 
       let i, ilen;
       const data = {};
-      const num = (req.query.stop - req.query.start) / req.query.step;
+      const num = Math.min(Math.floor((req.query.stop - req.query.start) / req.query.step), 100000);
 
       let mult = 1;
       if (req.query.name === 'freeSpaceM' || req.query.name === 'usedSpaceM') {
@@ -574,6 +574,8 @@ class StatsAPIs {
           index.shardsPerNode = indicesSettings[index.index].settings['index.routing.allocation.total_shards_per_node'];
         }
 
+        index.codec = indicesSettings[index.index].settings['index.codec'] || 'default';
+
         index.creationDate = parseInt(indicesSettings[index.index].settings['index.creation_date']);
         index.versionCreated = parseInt(indicesSettings[index.index].settings['index.version.created']);
         index.docSize = index['docs.count'] === '0' ? 0 : Math.ceil(parseInt(index['store.size']) / parseInt(index['docs.count']));
@@ -581,7 +583,7 @@ class StatsAPIs {
 
       // sorting
       const sortField = req.query.sortField || 'index';
-      if (sortField === 'index' || sortField === 'status' || sortField === 'health') {
+      if (sortField === 'index' || sortField === 'status' || sortField === 'health' || sortField === 'codec') {
         if (req.query.desc === 'true') {
           findices = findices.sort((a, b) => { return b[sortField].localeCompare(a[sortField]); });
         } else {
@@ -633,11 +635,9 @@ class StatsAPIs {
    * @returns {boolean} success - Always true, the optimizeIndex function might block. Check the logs for errors.
    */
   static optimizeESIndex (req, res) {
-    try {
-      Db.optimizeIndex([req.params.index], { cluster: req.query.cluster });
-    } catch (err) {
+    Db.optimizeIndex([req.params.index], { cluster: req.query.cluster }).catch((err) => {
       console.log(`ERROR - ${req.method} /api/esindices/%s/optimize`, ArkimeUtil.sanitizeStr(req.params.index), util.inspect(err, false, 50));
-    }
+    });
 
     // always return successfully right away, optimizeIndex might block
     return res.json({ success: true });
@@ -680,11 +680,9 @@ class StatsAPIs {
       return res.serverError(401, 'Not supported in multies', 'api.stats.notSupportedInMulties');
     }
 
-    try {
-      Db.openIndex([req.params.index], { cluster: req.query.cluster });
-    } catch (err) {
+    Db.openIndex([req.params.index], { cluster: req.query.cluster }).catch((err) => {
       console.log(`ERROR - ${req.method} /api/esindices/%s/open`, ArkimeUtil.sanitizeStr(req.params.index), util.inspect(err, false, 50));
-    }
+    });
 
     // always return successfully right away, openIndex might block
     return res.json({ success: true });
@@ -737,7 +735,7 @@ class StatsAPIs {
         cluster: req.query.cluster
       };
 
-      // wait for no more reloacting shards
+      // wait for no more relocating shards
       const shrinkCheckInterval = setInterval(() => {
         Db.healthCache(req.query.cluster).then(async (result) => {
           if (result.relocating_shards === 0) {
@@ -754,6 +752,8 @@ class StatsAPIs {
               console.log(`ERROR - ${req.method} /api/esindices/%s/shrink`, ArkimeUtil.sanitizeStr(req.params.index), util.inspect(err, false, 50));
             }
           }
+        }).catch((err) => {
+          console.log(`ERROR - ${req.method} /api/esindices/%s/shrink healthCache`, ArkimeUtil.sanitizeStr(req.params.index), util.inspect(err, false, 50));
         });
       }, 10000);
 
@@ -1129,7 +1129,8 @@ class StatsAPIs {
     }
 
     if (req.body.key.startsWith('arkime.ilm')) {
-      Promise.all([Db.getILMPolicy(req.query.cluster)]).then(([ilm]) => {
+      try {
+        const [ilm] = await Promise.all([Db.getILMPolicy(req.query.cluster)]);
         const silm = ilm[`${prefix}molochsessions`];
         const hilm = ilm[`${prefix}molochhistory`];
 
@@ -1157,17 +1158,20 @@ class StatsAPIs {
           return res.serverError(500, 'Unknown field', 'api.stats.unknownField');
         }
         if (req.body.key.startsWith('arkime.ilm.history')) {
-          Db.setILMPolicy(`${prefix}molochhistory`, hilm, req.query.cluster);
+          await Db.setILMPolicy(`${prefix}molochhistory`, hilm, req.query.cluster);
         } else {
-          Db.setILMPolicy(`${prefix}molochsessions`, silm, req.query.cluster);
+          await Db.setILMPolicy(`${prefix}molochsessions`, silm, req.query.cluster);
         }
         return res.json({ success: true, text: 'Set', i18n: 'api.stats.set' });
-      });
-      return;
+      } catch (err) {
+        console.log(`ERROR - ${req.method} /api/esadmin/set (ilm)`, util.inspect(err, false, 50));
+        return res.serverError(500, 'Set failed', 'api.stats.setFailed');
+      }
     }
 
     if (req.body.key.startsWith('arkime.sessions')) {
-      Promise.all([Db.getTemplate('sessions3_template', req.query.cluster)]).then(([{ body: template }]) => {
+      try {
+        const [{ body: template }] = await Promise.all([Db.getTemplate('sessions3_template', req.query.cluster)]);
         switch (req.body.key) {
         case 'arkime.sessions.shards':
           template[`${prefix}sessions3_template`].settings['index.number_of_shards'] = req.body.value;
@@ -1185,10 +1189,12 @@ class StatsAPIs {
         default:
           return res.serverError(500, 'Unknown field', 'api.stats.unknownField');
         }
-        Db.putTemplate('sessions3_template', template[`${prefix}sessions3_template`], req.query.cluster);
+        await Db.putTemplate('sessions3_template', template[`${prefix}sessions3_template`], req.query.cluster);
         return res.json({ success: true, text: 'Successfully set settings', i18n: 'api.stats.settingsSet' });
-      });
-      return;
+      } catch (err) {
+        console.log(`ERROR - ${req.method} /api/esadmin/set (sessions)`, util.inspect(err, false, 50));
+        return res.serverError(500, 'Set failed', 'api.stats.setFailed');
+      }
     }
 
     const clusterQuery = { body: { persistent: {} }, cluster: req.query.cluster };
@@ -1235,8 +1241,12 @@ class StatsAPIs {
    * @returns {string} text - The success message to (optionally) display to the user.
    */
   static flushES (req, res) {
-    Db.refresh('*', req.query.cluster);
-    Db.flush('*', req.query.cluster);
+    Db.refresh('*', req.query.cluster).catch((err) => {
+      console.log(`ERROR - ${req.method} /api/esadmin/flush (refresh)`, util.inspect(err, false, 50));
+    });
+    Db.flush('*', req.query.cluster).catch((err) => {
+      console.log(`ERROR - ${req.method} /api/esadmin/flush (flush)`, util.inspect(err, false, 50));
+    });
     return res.json({ success: true, text: 'Flushed', i18n: 'api.stats.flushed' });
   }
 
@@ -1253,6 +1263,8 @@ class StatsAPIs {
     Db.setIndexSettings('*', {
       body: { 'index.blocks.read_only_allow_delete': null },
       cluster: req.query.cluster
+    }).catch((err) => {
+      console.log(`ERROR - ${req.method} /api/esadmin/unflood`, util.inspect(err, false, 50));
     });
     return res.json({ success: true, text: 'Unflooded', i18n: 'api.stats.unflooded' });
   }
