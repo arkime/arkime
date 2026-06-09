@@ -218,7 +218,7 @@ ${Config.arkimeWebURL()}hunt
     }
 
     // update the hunt with number of matchedSessions and searchedSessions
-    // and the date of the first packet of the last searched session
+    // and the date of the last packet of the last searched session
     const lastPacketTime = session.lastPacket;
     const now = Math.floor(Date.now() / 1000);
 

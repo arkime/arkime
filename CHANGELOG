@@ -55,6 +55,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #4010 Fix crash on startup when rootPlugins is set
   - #4013 Add entropy plugin to calculate the Shannon entropy of the TCP/UDP data bytes per direction, with entropyChunkSize and entropyMaxUniqueValues options
   - #4019 Fix TCP flow split into two sessions when a reordered original SYN (arriving after FIN/RST, e.g. across multiple capture interfaces/reader threads) was mistaken for a port reuse
+  - #4021 Fix hunts and PCAP retrieval stalling with the writer-s3 plugin when a session's file is missing
 ## Cont3xt
   - #3999 Fix logoutUrl when logoutUrlMethod=GET
 ## Viewer
