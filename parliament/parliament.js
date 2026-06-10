@@ -267,6 +267,15 @@ class Parliament {
     }
   };
 
+  // allowlist of general settings that can be set via apiUpdateSettings, so
+  // clients can't write arbitrary keys into settings.general (mass assignment)
+  static generalSettingKeys = new Set([
+    'noPackets', 'noPacketsLength', 'outOfDate', 'esQueryTimeout',
+    'removeIssuesAfter', 'removeAcknowledgedAfter', 'lowDiskSpace',
+    'lowDiskSpaceType', 'lowDiskSpaceES', 'lowDiskSpaceESType',
+    'hostname', 'wiseUrl', 'cont3xtUrl', 'includeUrl'
+  ]);
+
   static async initialize (options) {
     Parliament.name = options.name;
 
@@ -406,6 +415,9 @@ class Parliament {
 
       // save general settings
       for (const s in req.body.settings.general) {
+        // ignore any keys that aren't known general settings
+        if (!Parliament.generalSettingKeys.has(s)) { continue; }
+
         let setting = req.body.settings.general[s];
 
         if (s === 'hostname') { // hostname must be a string
