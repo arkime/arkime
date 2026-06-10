@@ -60,7 +60,7 @@ LOCAL gboolean aws_refresh_creds(gpointer UNUSED(user_data))
         const char *key = arkime_js0n_get_str(credentials, clen, "SecretAccessKey");
         const char *token = arkime_js0n_get_str(credentials, clen, "Token");
         if (config.debug)
-            LOG("Found AccessKeyId %s", id);
+            LOG("Found AccessKeyId %s", id ? id : "(null)");
 
         if (id && key) {
             arkime_credentials_set(id, key, token);
@@ -96,6 +96,7 @@ LOCAL int aws_get_credentials_metadata(const char UNUSED(*service))
             if (!rolename || !rlen || rolename[0] == '<') {
                 if (config.debug)
                     LOG("ERROR - Cannot retrieve role name from metadata service\n");
+                free(rolename);
                 return 0;
             }
 

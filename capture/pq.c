@@ -81,6 +81,7 @@ void arkime_pq_upsert(ArkimePQ_t *pq, ArkimeSession_t *session, void *uw)
     if (item) {
         DLL_MOVE_TAIL(pql_, &pq->lists[session->thread], item);
         item->expire = expire;
+        item->uw = uw;
         return;
     }
 

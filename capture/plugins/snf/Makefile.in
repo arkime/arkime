@@ -14,4 +14,4 @@ SOS=$(patsubst %.c,../%.so,$(SRCS))
 all:$(SOS)
 
 distclean realclean clean:
-	rm -f *.o *.so
+	rm -f *.o $(SOS)
