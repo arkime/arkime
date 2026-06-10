@@ -390,42 +390,43 @@ LOCAL void adb_parse_client_server(ArkimeSession_t *session, const uint8_t *data
     /* Add data to buffer */
     arkime_parser_buf_add(adb->pb, which, data, remaining);
 
-    /* Need at least 4 bytes for hex length */
-    if (adb->pb->len[which] < 4)
-        return;
+    /* Process as many complete framed messages as are buffered */
+    while (adb->pb->len[which] >= 4) {
 
-    /* Check if we have a valid hex string */
-    if (adb->expectedLen[which] == 0) {
-        char hex_str[5];
-        memcpy(hex_str, adb->pb->buf[which], 4);
-        hex_str[4] = '\0';
+        /* Check if we have a valid hex string */
+        if (adb->expectedLen[which] == 0) {
+            char hex_str[5];
+            memcpy(hex_str, adb->pb->buf[which], 4);
+            hex_str[4] = '\0';
 
-        /* Validate hex string */
-        int valid = 1;
-        for (int i = 0; i < 4; i++) {
-            if (!isxdigit(hex_str[i])) {
-                valid = 0;
-                break;
+            /* Validate hex string */
+            int valid = 1;
+            for (int i = 0; i < 4; i++) {
+                if (!isxdigit(hex_str[i])) {
+                    valid = 0;
+                    break;
+                }
             }
-        }
 
-        if (valid) {
-            adb->expectedLen[which] = (uint32_t)strtoul(hex_str, NULL, 16);
-            if (adb->expectedLen[which] > 4096) {
-                /* Invalid length, reset */
-                adb->pb->len[which] = 0;
-                adb->expectedLen[which] = 0;
+            if (valid) {
+                adb->expectedLen[which] = (uint32_t)strtoul(hex_str, NULL, 16);
+                if (adb->expectedLen[which] > 4096) {
+                    /* Invalid length, reset */
+                    adb->pb->len[which] = 0;
+                    adb->expectedLen[which] = 0;
+                    return;
+                }
+            } else {
+                /* Not valid hex, might not be client-server protocol */
+                adb->isClientServer[which] = 0;
                 return;
             }
-        } else {
-            /* Not valid hex, might not be client-server protocol */
-            adb->isClientServer[which] = 0;
-            return;
         }
-    }
 
-    /* Check if we have complete message (4 bytes hex + service name) */
-    if ((uint32_t)adb->pb->len[which] >= 4 + adb->expectedLen[which]) {
+        /* Need complete message (4 bytes hex + service name) */
+        if ((uint32_t)adb->pb->len[which] < 4 + adb->expectedLen[which])
+            return;
+
         const uint8_t *service = adb->pb->buf[which] + 4;
         int service_len = adb->expectedLen[which];
 

@@ -826,6 +826,22 @@ LOCAL void dns_parser(ArkimeSession_t *session, int kind, const uint8_t *data, i
                 break;
             }
 
+            /* EDNS(0) OPT pseudo-record (RFC 6891 §6.1.3): the high byte of the
+             * TTL field holds the upper 8 bits of the extended RCODE. Combine it
+             * with the 4-bit header RCODE to form the full 12-bit RCODE, which is
+             * the only way rcodes 16-23 (BADVERS..BADCOOKIE) can be reached. */
+            if (antype == 41 && recordType == RESULT_RECORD_ADDITIONAL) {
+                const uint8_t extRcode = (anttl >> 24) & 0xff;
+                if (extRcode != 0) {
+                    const int fullRcode = (extRcode << 4) | (data[3] & 0x0f);
+                    if (fullRcode < 24) {
+                        dns->rcode_id = fullRcode;
+                        dns->rcode    = rcodes[fullRcode];
+                        ARKIME_RULES_RUN_FIELD_SET(session, dnsStatusField, dns->rcode);
+                    }
+                }
+            }
+
             if (anclass != CLASS_IN) {
                 BSB_IMPORT_skip(bsb, rdlength);
                 goto continueerr;

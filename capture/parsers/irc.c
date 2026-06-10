@@ -30,7 +30,8 @@ LOCAL int irc_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, in
             int pos = 0;
             BSB_memchr(bsb, '\n', pos);
 
-            if (pos) {
+            // pos is the offset of '\n', or -1 if not found in this packet.
+            if (pos >= 0) {
                 irc->ircState &= ~ 0x1;
                 BSB_IMPORT_skip(bsb, pos + 1);
                 while (BSB_REMAINING(bsb) > 0 && BSB_PEEK(bsb) == 0) { // Some irc clients have 0's after new lines
