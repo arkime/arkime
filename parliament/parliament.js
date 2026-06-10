@@ -670,8 +670,8 @@ class Parliament {
       return res.serverError(422, 'A cluster must have a title.');
     }
 
-    if (!ArkimeUtil.isString(req.body.url) || !(req.body.url.startsWith('http') || req.body.url.startsWith('/'))) {
-      return res.serverError(422, 'A cluster must have a url that starts with http or /.');
+    if (!ArkimeUtil.isString(req.body.url) || !(req.body.url.startsWith('http') || req.body.url.startsWith('/')) || req.body.url.startsWith('//')) {
+      return res.serverError(422, 'A cluster must have a url that starts with http or / (and not //).');
     }
 
     if (req.body.description && !ArkimeUtil.isString(req.body.description)) {
@@ -682,8 +682,8 @@ class Parliament {
       return res.serverError(422, 'A cluster must have a string localUrl.');
     }
 
-    if (req.body.localUrl && !(req.body.localUrl.startsWith('http') || req.body.localUrl.startsWith('/'))) {
-      return res.serverError(422, 'A cluster localUrl must start with http or /.');
+    if (req.body.localUrl && (!(req.body.localUrl.startsWith('http') || req.body.localUrl.startsWith('/')) || req.body.localUrl.startsWith('//'))) {
+      return res.serverError(422, 'A cluster localUrl must start with http or / (and not //).');
     }
 
     if (req.body.type && !ArkimeUtil.isString(req.body.type)) {
@@ -790,8 +790,8 @@ class Parliament {
       return res.serverError(422, 'A cluster must have a title.');
     }
 
-    if (!ArkimeUtil.isString(req.body.url) || !(req.body.url.startsWith('http') || req.body.url.startsWith('/'))) {
-      return res.serverError(422, 'A cluster must have a url that starts with http or /.');
+    if (!ArkimeUtil.isString(req.body.url) || !(req.body.url.startsWith('http') || req.body.url.startsWith('/')) || req.body.url.startsWith('//')) {
+      return res.serverError(422, 'A cluster must have a url that starts with http or / (and not //).');
     }
 
     if (req.body.description && !ArkimeUtil.isString(req.body.description)) {
@@ -802,8 +802,8 @@ class Parliament {
       return res.serverError(422, 'A cluster must have a string localUrl.');
     }
 
-    if (req.body.localUrl && !(req.body.localUrl.startsWith('http') || req.body.localUrl.startsWith('/'))) {
-      return res.serverError(422, 'A cluster localUrl must start with http or /.');
+    if (req.body.localUrl && (!(req.body.localUrl.startsWith('http') || req.body.localUrl.startsWith('/')) || req.body.localUrl.startsWith('//'))) {
+      return res.serverError(422, 'A cluster localUrl must start with http or / (and not //).');
     }
 
     if (req.body.type && !ArkimeUtil.isString(req.body.type)) {
