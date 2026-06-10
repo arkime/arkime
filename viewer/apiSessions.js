@@ -1039,8 +1039,8 @@ class SessionAPIs {
 
       // js has 53 bit numbers, this will overflow on Jun 05 2255
       const time = buffer.readUInt32LE(0) * 1000000 + buffer.readUInt32LE(4);
-      b.writeUInt32LE(Math.floor(time / 0x100000000), boffset + 12); // Block Len 1
-      b.writeUInt32LE(time % 0x100000000, boffset + 16); // Interface Id
+      b.writeUInt32LE(Math.floor(time / 0x100000000), boffset + 12); // Timestamp High
+      b.writeUInt32LE(time % 0x100000000, boffset + 16); // Timestamp Low
 
       buffer.copy(b, boffset + 20, 8, buffer.length - 8); // cap_len, packet_len
       b.fill(0, boffset + 12 + buffer.length, boffset + 12 + buffer.length + (4 - (buffer.length % 4)) % 4); // padding
@@ -1697,7 +1697,7 @@ class SessionAPIs {
       SessionAPIs.sessionsListFromIds(req, ids, fields, (err, list) => {
         if (err) {
           console.log('ERROR - getSessionsCSV', util.inspect(err, false, 50));
-          res.end(JSON.stringify({ success: false, text: 'Can\'t get sessions from IDs', i18n: 'api.sessions.cantGetSessions' }));
+          return res.end(JSON.stringify({ success: false, text: 'Can\'t get sessions from IDs', i18n: 'api.sessions.cantGetSessions' }));
         }
         SessionAPIs.#csvListWriter(req, res, ['start', 'data', 'end'], list, reqFields);
       });
@@ -3811,9 +3811,9 @@ class SessionAPIs {
    * @name /sessions/:nodeName/send
    * @param {SessionsQuery} See_List - This API supports a common set of parameters documented in the SessionsQuery section
    * @param {string} ids - Comma separated list of session ids.
-   * @param {string} tags - Commas separated list of tags to tag the sent sessions with.
+   * @param {string} tags - Comma separated list of tags to tag the sent sessions with.
    * @param {string} cluster - The name of the Arkime cluster to send the sessions.
-   * @param {saveId} saveId - The sessionId to use on the remote side.
+   * @param {string} saveId - The sessionId to use on the remote side.
    */
   static sendSessionsToNode (req, res) {
     ArkimeUtil.noCache(req, res);
@@ -3899,7 +3899,7 @@ class SessionAPIs {
    *
    * Receive sessions.
    * @name /sessions/receive
-   * @param {saveId} saveId - The sessionId to save the session.
+   * @param {string} saveId - The sessionId to save the session.
    */
   static #saveIds = {};
   static receiveSession (req, res) {

@@ -366,7 +366,7 @@ class MiscAPIs {
    * GET - /api/appinfo
    *
    * Retrieves information that the app uses on every page:
-   * eshealth, currentuser, views, remoteclusters, clusters, fields, fieldsmap, fieldshistory
+   * eshealth, currentuser, views, remoteclusters, clusters, fields, fieldsmap, fieldhistory
    * @name /appinfo
    * @returns {ESHealth} eshealth - The OpenSearch/Elasticsearch cluster health status and information.
    * @returns {ArkimeUser} currentuser - The currently logged in user
@@ -375,7 +375,7 @@ class MiscAPIs {
    * @returns {Array} clusters - A list of known configured Arkime clusters (if in Multi Viewer mode)
    * @returns {Array} fields - Available database field objects pertaining to sessions
    * @returns {Array} fieldsmap - Available database field objects pertaining to sessions
-   * @returns {Object} fieldshistory - The user's field history for the search expression input
+   * @returns {Object} fieldhistory - The user's field history for the search expression input
    */
   static async getAppInfo (req, res) {
     try {

@@ -93,7 +93,7 @@ exports.init = function (Config, emitter) {
       });
     });
     req.on('error', function (err) {
-      console.log('WISE Right Click ERROR', err);
+      console.log('WISE Field Actions ERROR', err);
       return cb(err, {});
     });
     req.end();

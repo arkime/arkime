@@ -78,12 +78,15 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #4026 Fix [packet-drop-ips] section in the main config file never being loaded (only packetDropIpsFiles worked)
   - #4026 Fix IPv6 DSCP extraction using only the top 4 bits of the traffic class
   - #4026 Fix rules file field modifier (contains/head/tail) on one field incorrectly applying to later fields in the same rule
+  - #4027 Fix wrong packetPos when reading truncated captures with readTruncatedPackets set
 ## Cont3xt
   - #3999 Fix logoutUrl when logoutUrlMethod=GET
 ## Viewer
   - #3994 Fix SPIView all not allowed error message
   - #4007 Add sanitized {ORIGINALNAME} uploadCommand variable as a safe alternative to {INSECURE-ORIGINALNAME}
   - #4018 Added support for preauth and postauth endpoint registration to plugins
+  - #4027 Fix viewer crash when /api/sessions/csv with ids fails to build the query
+  - #4027 Fix malformed TOTP codes causing a request error instead of being treated as invalid
 ## Wise
   - #3999 Mark phpipam appCode/password and fieldactions/valueactions url fields as secret so they are redacted in /config/get
   - #3999 Add /api/user endpoint and hide save/import/create-source UI controls from non-wiseAdmin users

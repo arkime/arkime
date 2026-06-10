@@ -879,10 +879,6 @@ class Auth {
       }
     }
 
-    if (nuser.passStore === undefined) {
-      nuser.passStore = Auth.pass2store(nuser.userId, crypto.randomBytes(48));
-    }
-
     if (nuser.userId !== userId) {
       if (nuser.userId === undefined) {
         if (ArkimeConfig.debug > 0) {
@@ -892,6 +888,10 @@ class Auth {
         console.log(`WARNING - the userAutoCreateTmpl set userId to a different value than header/oidc '${userId}' while the userAutoCreateTmpl returned '${nuser.userId}', resetting to use '${userId}'`);
       }
       nuser.userId = userId;
+    }
+
+    if (nuser.passStore === undefined) {
+      nuser.passStore = Auth.pass2store(nuser.userId, crypto.randomBytes(48));
     }
 
     if (nuser.userName === undefined || nuser.userName === 'undefined') {
