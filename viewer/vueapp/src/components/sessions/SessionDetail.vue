@@ -975,7 +975,7 @@ const tsharkSkipProtos = new Set(['eth', 'ethertype', 'ip', 'ipv6', 'sll', 'sll2
 
 const tsharkHashColor = (s) => {
   let h = 0;
-  for (let i = 0; i < s.length; i++) { h = (h * 31 + s.charCodeAt(i)) | 0; }
+  for (let i = 0; i < s.length; i++) { h = (h * 31 + s.charCodeAt(i)) | 0; } // eslint-disable-line no-bitwise
   return `hsl(${Math.abs(h) % 360}, 70%, 80%)`;
 };
 
