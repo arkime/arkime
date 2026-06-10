@@ -963,7 +963,7 @@ LOCAL PyObject *arkime_python_session_get(PyObject UNUSED(*self), PyObject *args
         Py_RETURN_NONE;
     }
 
-    // This session doesn't have this many fields or field isnt set
+    // This session doesn't have this many fields or field isn't set
     if (pos < 0 || pos >= session->maxFields || !session->fields[pos])
         Py_RETURN_NONE;
 
@@ -1396,7 +1396,7 @@ LOCAL PyObject *arkime_python_packet_set(PyObject UNUSED(*self), PyObject *args)
     const char                  *field;
     uint32_t                     value;
 
-    if (!PyArg_ParseTuple(args, "Osk", &py_packet_obj, &field, &value)) {
+    if (!PyArg_ParseTuple(args, "OsI", &py_packet_obj, &field, &value)) {
         return NULL;
     }
 

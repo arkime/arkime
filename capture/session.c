@@ -1013,7 +1013,7 @@ LOCAL void arkime_session_load_stopped()
         uint8_t  key[ARKIME_SESSIONID_LEN];
         uint32_t value;
         read += fread(key, 1, 1, fp);
-        if (key[0] < 1 || key[0] > ARKIME_SESSIONID_LEN) {
+        if (read != 1 || key[0] < 1 || key[0] > ARKIME_SESSIONID_LEN) {
             LOG("WARNING - `%s` corrupt", stoppedFilename);
             break;
         }
@@ -1206,7 +1206,7 @@ void arkime_session_process_commands(int thread)
                 break;
 
             if (DLL_COUNT(q_, &sessionThreadData[thread].sessionsQ[mProtocol]) > (int)config.maxStreams[session->ses]) {
-                LOG_RATE(60, "ERROR - closing session early, increase maxStreams see https://arkime.com/settings#maxStreams");
+                LOG_RATE(60, "ERROR - closing session early, increase maxStreams; see https://arkime.com/settings#maxStreams");
                 arkime_session_save(session);
             } else if (((uint64_t)session->lastPacket.tv_sec + mProtocols[mProtocol].sessionTimeout < (uint64_t)arkimeThreadData[thread].lastPacketSecs)) {
                 arkime_session_save(session);

@@ -69,6 +69,9 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #4025 Fix DNS EDNS(0) extended RCODE (BADVERS..BADCOOKIE) not being decoded
   - #4025 Fix TLS certificate enrichment crash when a cert has no extra fields
   - #4025 Fix NetBIOS name decoding for embedded spaces, compressed names, and authority records
+  - #4026 Fix [packet-drop-ips] section in the main config file never being loaded (only packetDropIpsFiles worked)
+  - #4026 Fix IPv6 DSCP extraction using only the top 4 bits of the traffic class
+  - #4026 Fix rules file field modifier (contains/head/tail) on one field incorrectly applying to later fields in the same rule
 ## Cont3xt
   - #3999 Fix logoutUrl when logoutUrlMethod=GET
 ## Viewer

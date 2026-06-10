@@ -161,7 +161,7 @@ int arkime_dedup_should_drop (const ArkimePacket_t *packet, int headerLen)
     const uint8_t tag = md[3];
 
     // First see if we need to clean up old slot, and block all new folks while we do
-    // In theory no one should be using this slot because hadn't been searching it for a second.
+    // In theory no one should be using this slot because we hadn't been searching it for a second.
     if (seconds[secondSlot].tv_sec != currentTime.tv_sec) {
         ARKIME_LOCK(seconds[secondSlot].lock);
         if (seconds[secondSlot].tv_sec != currentTime.tv_sec) { // Check critical section again inside the lock

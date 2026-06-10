@@ -1,7 +1,7 @@
 /******************************************************************************/
 /* reader-netmap.c  -- Reader using NETMAP
  *
- * For Linux and FreeBSD
+ * For FreeBSD
  *
  * SPDX-License-Identifier: Apache-2.0
  */

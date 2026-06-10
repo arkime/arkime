@@ -48,7 +48,7 @@ LOCAL int reader_snf_stats(ArkimeReaderStats_t *stats)
             if (err)
                 continue;
             //
-            // Miricom reports drops at the NIC level
+            // Myricom reports drops at the NIC level
             // not by ring, so we need to distribute
             // the drops across all rings so we don't overstate.
             // Unfortunately, in multi-process mode you can't tell
@@ -187,7 +187,7 @@ LOCAL void reader_snf_init(const char *UNUSED(name))
         for (r = ringStartOffset; r < (ringStartOffset + snfNumRings); r++) {
             err = snf_ring_open(handles[i], &rings[i][r]);
             if (err != 0) {
-                CONFIGEXIT("Mryicom: Couldn't open ring %d for interface '%s' %d", r, config.interface[i], err);
+                CONFIGEXIT("Myricom: Couldn't open ring %d for interface '%s' %d", r, config.interface[i], err);
             }
         }
 
