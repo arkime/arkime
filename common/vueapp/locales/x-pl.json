@@ -1349,9 +1349,47 @@
     "greeting": "Elcomeway {userName}!",
     "checkOutOur": "Eckchay outway ourway",
     "pageInfo": "agepay orfay oremay informationway, orway ickclay ethay owlway onway ethay optay eftlay.",
-    "dismissTip": "Utbay eesay isthay essagemay againway extnay imetay",
-    "gotIt": "Otgay itway!",
-    "gotItTip": "On'tday owshay emay isthay essagemay againway"
+    "v7Title": "Elcomeway otay ArkimeWay 7!",
+    "v7Intro": "Ere'shay at'swhay ewnay:",
+    "v7Item1": "Away odernizedmay ooklay onway everyway agepay",
+    "v7Item2": "Arkday odemay andway ustomcay emesthay inway Ettingssay",
+    "v7Item3": "Essionsay etailday eorganizedray intoway Eneralgay, Acketspay, andway sharktay abstay",
+    "v7Item4": "Away ewnay ateday andway imetay ickerpay inway ethay earchsay arbay",
+    "v7Item5": "Acketpay ecodingsday underway ethay ewnay Acketpay Optionsway enumay"
+  },
+  "helpNotes": {
+    "learnMore": "Earnlay oremay",
+    "dismissTip": "Evernay owshay isthay essagemay againway",
+    "dismissAll": "Ismissday allway",
+    "dismissAllTip": "Evernay owshay anyway ofway esethay essagesmay againway",
+    "closeTip": "Utpay esethay essagesmay awayway untilway extnay imetay",
+    "sessions": {
+      "text": "Isthay isway ethay Essionssay agepay — earchsay apturedcay raffictay, enthay ickclay away essionsay otay inspectway itsway etadatamay andway acketspay."
+    },
+    "spiview": {
+      "text": "PIsay Iewvay owsshay apturedcay ieldfay aluesvay oupedgray ybay ategorycay, osay ouyay ancay anscay at'swhay inway ouryay ataday atway away anceglay."
+    },
+    "spigraph": {
+      "text": "PIsay Raphgray artschay ethay optay aluesvay ofway anyway ieldfay overway imetay — ytray ifferentday ieldsfay andway aphgray ypestay."
+    },
+    "connections": {
+      "text": "Ethay Onnectionscay agepay apsmay owhay ourcessay andway estinationsday alktay otay eachway otherway — agdray, oomzay, andway ickclay odesnay otay igday inway."
+    },
+    "hunt": {
+      "text": "Untshay earchsay insideway awray acketspay, otnay ustjay essionsay etadatamay. Eatecray away acketpay earchsay objay otay indfay atwhay indexingway issedmay."
+    },
+    "files": {
+      "text": "Ethay Ilesfay agepay istslay ethay ACAPpay ilesfay ArkimeWay ashay ittenwray andway etherwhay eirthay essionssay areway illstay earchablesay."
+    },
+    "stats": {
+      "text": "Ethay Atsstay agepay ackstray apturecay odenay andway Elasticsearchway ealthhay — aphsgray, erpay-odenay etricsmay, andway indexway etailsday."
+    },
+    "history": {
+      "text": "Ethay Istoryhay agepay ecordsray astpay ueriesqay omfray ouyay (orway everyoneway, orfay adminsway) osay ouyay ancay eviewray andway eplayray emthay."
+    },
+    "settings": {
+      "text": "Akemay ArkimeWay oursyay — emesthay, imetay oneszay, ustomcay olumncay andway ieldfay ayoutslay, iewsvay, ortcutsshay, andway otifiersnay allway ivelay erehay."
+    }
   },
   "spigraph": {
     "addAnotherField": "Addway anotherway ieldfay",
@@ -1710,6 +1748,9 @@
       "userNotFound": "Userway otnay oundfay",
       "welcomeMsgNumNotInteger": "elcomeMsgNumway isway otnay integerway",
       "dismissedMessage": "Userway, {userId}, ismissedday essagemay {msgNum}",
+      "dismissedNote": "Userway, {userId}, ismissedday elphay otenay {noteId}",
+      "invalidNoteId": "Invalidway otenay idway",
+      "tooManyDismissedNotes": "Ootay anymay ismissedday otesnay",
       "unknownUser": "Unknownway userway",
       "invalidStateName": "Invalidway atestay amenay",
       "stateUpdateFailed": "atestay updateway ailedfay",

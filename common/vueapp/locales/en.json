@@ -1348,9 +1348,47 @@
     "greeting": "Welcome {userName}!",
     "checkOutOur": "Check out our",
     "pageInfo": "page for more information, or click the owl on the top left.",
-    "dismissTip": "But see this message again next time",
-    "gotIt": "Got it!",
-    "gotItTip": "Don't show me this message again"
+    "v7Title": "Welcome to Arkime 7!",
+    "v7Intro": "Here's what's new:",
+    "v7Item1": "A modernized look on every page",
+    "v7Item2": "Dark mode and custom themes in Settings",
+    "v7Item3": "Session detail reorganized into General, Packets, and tshark tabs",
+    "v7Item4": "A new date and time picker in the search bar",
+    "v7Item5": "Packet decodings under the new Packet Options menu"
+  },
+  "helpNotes": {
+    "learnMore": "Learn more",
+    "dismissTip": "Never show this message again",
+    "dismissAll": "Dismiss all",
+    "dismissAllTip": "Never show any of these messages again",
+    "closeTip": "Put these messages away until next time",
+    "sessions": {
+      "text": "This is the Sessions page — search captured traffic, then click a session to inspect its metadata and packets."
+    },
+    "spiview": {
+      "text": "SPI View shows captured field values grouped by category, so you can scan what's in your data at a glance."
+    },
+    "spigraph": {
+      "text": "SPI Graph charts the top values of any field over time — try different fields and graph types."
+    },
+    "connections": {
+      "text": "The Connections page maps how sources and destinations talk to each other — drag, zoom, and click nodes to dig in."
+    },
+    "hunt": {
+      "text": "Hunts search inside raw packets, not just session metadata. Create a packet search job to find what indexing missed."
+    },
+    "files": {
+      "text": "The Files page lists the PCAP files Arkime has written and whether their sessions are still searchable."
+    },
+    "stats": {
+      "text": "The Stats page tracks capture node and Elasticsearch health — graphs, per-node metrics, and index details."
+    },
+    "history": {
+      "text": "The History page records past queries from you (or everyone, for admins) so you can review and replay them."
+    },
+    "settings": {
+      "text": "Make Arkime yours — themes, time zones, custom column and field layouts, views, shortcuts, and notifiers all live here."
+    }
   },
   "spigraph": {
     "addAnotherField": "Add another field",
@@ -1709,6 +1747,9 @@
       "userNotFound": "User not found",
       "welcomeMsgNumNotInteger": "welcomeMsgNum is not integer",
       "dismissedMessage": "User, {userId}, dismissed message {msgNum}",
+      "dismissedNote": "User, {userId}, dismissed help note {noteId}",
+      "invalidNoteId": "Invalid note id",
+      "tooManyDismissedNotes": "Too many dismissed notes",
       "unknownUser": "Unknown user",
       "invalidStateName": "Invalid state name",
       "stateUpdateFailed": "state update failed",

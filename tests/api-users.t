@@ -1,7 +1,7 @@
 # Many of these test user/roles start with sac- (skip auto create) because
 # otherwise viewer in regression mode would auto create the user.
 # Some day should remove all autocreate code.
-use Test::More tests => 271;
+use Test::More tests => 283;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -471,6 +471,39 @@ anonymous,,true,true,false,"arkimeAdmin, cont3xtUser, parliamentUser, usersAdmin
 
     $info = viewerGet("/api/user?arkimeRegressionUser=sac-test1");
     eq_or_diff($info->{welcomeMsgNum}, 2, "welcome message number is correct");
+
+# Help notes
+    $info = viewerPutToken("/api/user/sac-test1/acknowledge", '{"noteId":"sessions"}', $token2);
+    ok(!$info->{success}, "can't dismiss help note for another user");
+
+    $info = viewerPutToken("/api/user/sac-test1/acknowledge?arkimeRegressionUser=sac-test1", '{"noteId":"BAD ID!"}', $test1Token);
+    is($info->{success}, 0, "invalid note id rejected");
+    is($info->{i18n}, "api.users.invalidNoteId", "invalid note id i18n");
+
+    $info = viewerPutToken("/api/user/sac-test1/acknowledge?arkimeRegressionUser=sac-test1", '{"noteId":123}', $test1Token);
+    is($info->{success}, 0, "numeric note id rejected");
+    is($info->{i18n}, "api.users.invalidNoteId", "numeric note id i18n");
+
+    $info = viewerPutToken("/api/user/sac-test1/acknowledge?arkimeRegressionUser=sac-test1", '{"noteId":"sessions"}', $test1Token);
+    ok($info->{success}, "dismiss help note");
+
+    $info = viewerGet("/api/user?arkimeRegressionUser=sac-test1");
+    eq_or_diff($info->{dismissedHelpNotes}, from_json('["sessions"]'), "dismissed help notes contains sessions");
+
+    $info = viewerPutToken("/api/user/sac-test1/acknowledge?arkimeRegressionUser=sac-test1", '{"noteId":"sessions"}', $test1Token);
+    ok($info->{success}, "dismiss help note repeat");
+
+    $info = viewerGet("/api/user?arkimeRegressionUser=sac-test1");
+    eq_or_diff($info->{dismissedHelpNotes}, from_json('["sessions"]'), "dismissed help notes deduped");
+
+    $info = viewerPutToken("/api/user/sac-test1/acknowledge?arkimeRegressionUser=sac-test1", '{"noteId":"v7"}', $test1Token);
+    ok($info->{success}, "dismiss help note with digit id");
+
+    $info = viewerPutToken("/api/user/sac-test1/acknowledge?arkimeRegressionUser=sac-test1", '{"noteId":"all"}', $test1Token);
+    ok($info->{success}, "dismiss all help notes");
+
+    $info = viewerGet("/api/user?arkimeRegressionUser=sac-test1");
+    eq_or_diff($info->{dismissedHelpNotes}, from_json('["sessions","v7","all"]'), "dismissed help notes contains all");
 
 # user time limit
     $json = viewerPostToken("/api/user/sac-test2", '{"timeLimit":"72", "roles": ["arkimeUser"]}', $token);

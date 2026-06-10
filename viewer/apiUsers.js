@@ -681,13 +681,21 @@ class UserAPIs {
    * PUT - /api/user/:userId/acknowledge
    *
    * Acknowledges a UI message for a user. Used to display help popups.
+   * Send msgNum to set the welcome message sequence number, or noteId to
+   * dismiss a per-page help note ('all' silences every note).
    * @name /user/:userId/acknowledge
    * @returns {boolean} success - Whether the operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
   static acknowledgeMsg (req, res) {
-    if (!req.body.msgNum) {
+    const { noteId } = req.body;
+
+    if (noteId === undefined && !req.body.msgNum) {
       return res.serverError(403, 'Message number required', 'api.users.messageNumberRequired');
+    }
+
+    if (noteId !== undefined && (!ArkimeUtil.isString(noteId) || !/^[a-z0-9]{1,32}$/.test(noteId))) {
+      return res.serverError(403, 'Invalid note id', 'api.users.invalidNoteId');
     }
 
     if (req.params.userId !== req.user.userId) {
@@ -700,14 +708,33 @@ class UserAPIs {
         return res.serverError(403, 'User not found', 'api.users.userNotFound');
       }
 
-      user.welcomeMsgNum = parseInt(req.body.msgNum);
-      if (!Number.isInteger(user.welcomeMsgNum)) {
-        return res.serverError(403, 'welcomeMsgNum is not integer', 'api.users.welcomeMsgNumNotInteger');
+      if (noteId !== undefined) {
+        user.dismissedHelpNotes ??= [];
+        if (!user.dismissedHelpNotes.includes(noteId)) {
+          if (user.dismissedHelpNotes.length >= 50) {
+            return res.serverError(403, 'Too many dismissed notes', 'api.users.tooManyDismissedNotes');
+          }
+          user.dismissedHelpNotes.push(noteId);
+        }
+      } else {
+        user.welcomeMsgNum = parseInt(req.body.msgNum);
+        if (!Number.isInteger(user.welcomeMsgNum)) {
+          return res.serverError(403, 'welcomeMsgNum is not integer', 'api.users.welcomeMsgNumNotInteger');
+        }
       }
 
       User.setUser(req.params.userId, user, (err, info) => {
         if (Config.debug) {
           console.log(`${req.method} /api/user/%s/acknowledge (setUser)`, ArkimeUtil.sanitizeStr(req.params.userId), util.inspect(err, false, 50), user, info);
+        }
+
+        if (noteId !== undefined) {
+          return res.json({
+            success: true,
+            text: `User, ${req.user.userId}, dismissed help note ${noteId}`,
+            i18n: 'api.users.dismissedNote',
+            i18nParams: { userId: req.user.userId, noteId }
+          });
         }
 
         return res.json({

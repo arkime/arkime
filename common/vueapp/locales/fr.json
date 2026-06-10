@@ -1348,9 +1348,47 @@
     "greeting": "Bienvenue {userName} !",
     "checkOutOur": "Consultez notre page d'",
     "pageInfo": "pour plus d'informations, ou cliquez sur le hibou en haut à gauche.",
-    "dismissTip": "Voir ce message à nouveau la prochaine fois",
-    "gotIt": "Compris !",
-    "gotItTip": "Ne plus afficher ce message"
+    "v7Title": "Bienvenue dans Arkime 7 !",
+    "v7Intro": "Voici les nouveautés :",
+    "v7Item1": "Une apparence modernisée sur chaque page",
+    "v7Item2": "Mode sombre et thèmes personnalisés dans les Paramètres",
+    "v7Item3": "Détail de session réorganisé en onglets Général, Paquets et tshark",
+    "v7Item4": "Un nouveau sélecteur de date et d'heure dans la barre de recherche",
+    "v7Item5": "Décodages de paquets dans le nouveau menu Options de paquets"
+  },
+  "helpNotes": {
+    "learnMore": "En savoir plus",
+    "dismissTip": "Ne plus jamais afficher ce message",
+    "dismissAll": "Tout ignorer",
+    "dismissAllTip": "Ne plus jamais afficher aucun de ces messages",
+    "closeTip": "Masquer ces messages jusqu'à la prochaine fois",
+    "sessions": {
+      "text": "Voici la page Sessions — recherchez dans le trafic capturé, puis cliquez sur une session pour inspecter ses métadonnées et ses paquets."
+    },
+    "spiview": {
+      "text": "La Vue SPI affiche les valeurs de champs capturées regroupées par catégorie, pour parcourir vos données d'un coup d'œil."
+    },
+    "spigraph": {
+      "text": "Le Graphique SPI trace les principales valeurs de n'importe quel champ dans le temps — essayez différents champs et types de graphiques."
+    },
+    "connections": {
+      "text": "La page Connexions cartographie les échanges entre sources et destinations — déplacez, zoomez et cliquez sur les nœuds pour approfondir."
+    },
+    "hunt": {
+      "text": "Les chasses recherchent dans les paquets bruts, pas seulement dans les métadonnées de session. Créez une tâche de recherche de paquets pour trouver ce que l'indexation a manqué."
+    },
+    "files": {
+      "text": "La page Fichiers liste les fichiers PCAP écrits par Arkime et indique si leurs sessions restent consultables."
+    },
+    "stats": {
+      "text": "La page Statistiques suit la santé des nœuds de capture et d'Elasticsearch — graphiques, métriques par nœud et détails des index."
+    },
+    "history": {
+      "text": "La page Historique enregistre vos requêtes passées (ou celles de tous, pour les admins) afin de les revoir et de les rejouer."
+    },
+    "settings": {
+      "text": "Faites d'Arkime le vôtre — thèmes, fuseaux horaires, dispositions personnalisées de colonnes et de champs, vues, raccourcis et notificateurs sont tous ici."
+    }
   },
   "spigraph": {
     "addAnotherField": "Ajouter un autre champ",
@@ -1709,6 +1747,9 @@
       "userNotFound": "Utilisateur introuvable",
       "welcomeMsgNumNotInteger": "welcomeMsgNum n'est pas un entier",
       "dismissedMessage": "L'utilisateur {userId} a ignoré le message {msgNum}",
+      "dismissedNote": "L'utilisateur {userId} a ignoré la note d'aide {noteId}",
+      "invalidNoteId": "ID de note invalide",
+      "tooManyDismissedNotes": "Trop de notes ignorées",
       "unknownUser": "Utilisateur inconnu",
       "invalidStateName": "Nom d'état invalide",
       "stateUpdateFailed": "Échec de la mise à jour de l'état",

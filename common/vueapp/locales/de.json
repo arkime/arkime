@@ -1348,9 +1348,47 @@
     "greeting": "Willkommen {userName}!",
     "checkOutOur": "Schauen Sie sich unsere",
     "pageInfo": "Seite für weitere Informationen an oder klicken Sie auf die Eule oben links.",
-    "dismissTip": "Diese Nachricht beim nächsten Mal wieder anzeigen",
-    "gotIt": "Verstanden!",
-    "gotItTip": "Diese Nachricht nicht mehr anzeigen"
+    "v7Title": "Willkommen bei Arkime 7!",
+    "v7Intro": "Das ist neu:",
+    "v7Item1": "Ein modernisiertes Erscheinungsbild auf jeder Seite",
+    "v7Item2": "Dunkelmodus und eigene Themes in den Einstellungen",
+    "v7Item3": "Sitzungsdetails neu gegliedert in die Tabs Allgemein, Pakete und tshark",
+    "v7Item4": "Eine neue Datums- und Uhrzeitauswahl in der Suchleiste",
+    "v7Item5": "Paket-Dekodierungen im neuen Menü Paketoptionen"
+  },
+  "helpNotes": {
+    "learnMore": "Mehr erfahren",
+    "dismissTip": "Diese Nachricht nie wieder anzeigen",
+    "dismissAll": "Alle verwerfen",
+    "dismissAllTip": "Keine dieser Nachrichten je wieder anzeigen",
+    "closeTip": "Diese Nachrichten bis zum nächsten Mal ausblenden",
+    "sessions": {
+      "text": "Dies ist die Seite Sitzungen — durchsuchen Sie den erfassten Datenverkehr und klicken Sie dann auf eine Sitzung, um ihre Metadaten und Pakete zu untersuchen."
+    },
+    "spiview": {
+      "text": "Die SPI-Ansicht zeigt erfasste Feldwerte nach Kategorie gruppiert, damit Sie auf einen Blick sehen, was in Ihren Daten steckt."
+    },
+    "spigraph": {
+      "text": "Die SPI-Grafik stellt die häufigsten Werte eines beliebigen Feldes über die Zeit dar — probieren Sie verschiedene Felder und Diagrammtypen aus."
+    },
+    "connections": {
+      "text": "Die Seite Verbindungen zeigt, wie Quellen und Ziele miteinander kommunizieren — ziehen, zoomen und klicken Sie auf Knoten, um tiefer einzusteigen."
+    },
+    "hunt": {
+      "text": "Jagden durchsuchen die Roh-Pakete selbst, nicht nur Sitzungs-Metadaten. Erstellen Sie einen Paketsuchauftrag, um zu finden, was die Indizierung übersehen hat."
+    },
+    "files": {
+      "text": "Die Seite Dateien listet die von Arkime geschriebenen PCAP-Dateien auf und zeigt, ob ihre Sitzungen noch durchsuchbar sind."
+    },
+    "stats": {
+      "text": "Die Seite Statistik überwacht den Zustand der Capture-Knoten und von Elasticsearch — Diagramme, Metriken pro Knoten und Indexdetails."
+    },
+    "history": {
+      "text": "Die Seite Verlauf zeichnet Ihre früheren Abfragen auf (oder die aller Benutzer, für Admins), damit Sie sie überprüfen und erneut ausführen können."
+    },
+    "settings": {
+      "text": "Machen Sie Arkime zu Ihrem Arkime — Themes, Zeitzonen, eigene Spalten- und Feldlayouts, Ansichten, Tastenkürzel und Benachrichtigungen finden Sie alle hier."
+    }
   },
   "spigraph": {
     "addAnotherField": "Weiteres Feld hinzufügen",
@@ -1709,6 +1747,9 @@
       "userNotFound": "Benutzer nicht gefunden",
       "welcomeMsgNumNotInteger": "welcomeMsgNum ist keine Ganzzahl",
       "dismissedMessage": "Benutzer {userId} hat Nachricht {msgNum} verworfen",
+      "dismissedNote": "Benutzer {userId} hat Hilfehinweis {noteId} verworfen",
+      "invalidNoteId": "Ungültige Hinweis-ID",
+      "tooManyDismissedNotes": "Zu viele verworfene Hinweise",
       "unknownUser": "Unbekannter Benutzer",
       "invalidStateName": "Ungültiger Statusname",
       "stateUpdateFailed": "Statusaktualisierung fehlgeschlagen",

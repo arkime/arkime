@@ -1348,9 +1348,47 @@
     "greeting": "欢迎 {userName}！",
     "checkOutOur": "查看我们的",
     "pageInfo": "页面了解更多信息，或点击左上角的猫头鹰。",
-    "dismissTip": "下次再显示此消息",
-    "gotIt": "知道了！",
-    "gotItTip": "不再显示此消息"
+    "v7Title": "欢迎使用 Arkime 7！",
+    "v7Intro": "新功能一览：",
+    "v7Item1": "每个页面都焕然一新的现代化外观",
+    "v7Item2": "设置中提供深色模式和自定义主题",
+    "v7Item3": "会话详情重新组织为常规、数据包和 tshark 标签页",
+    "v7Item4": "搜索栏中新增日期时间选择器",
+    "v7Item5": "数据包解码移至新的数据包选项菜单"
+  },
+  "helpNotes": {
+    "learnMore": "了解更多",
+    "dismissTip": "不再显示此消息",
+    "dismissAll": "全部忽略",
+    "dismissAllTip": "不再显示这些消息",
+    "closeTip": "将这些消息收起，下次再显示",
+    "sessions": {
+      "text": "这是会话页面——搜索捕获的流量，然后点击会话查看其元数据和数据包。"
+    },
+    "spiview": {
+      "text": "SPI 视图按类别分组显示捕获的字段值，让您一目了然地了解数据内容。"
+    },
+    "spigraph": {
+      "text": "SPI 图按时间绘制任意字段的最高频值——尝试不同的字段和图表类型。"
+    },
+    "connections": {
+      "text": "连接页面展示源和目标之间的通信关系——拖动、缩放并点击节点深入查看。"
+    },
+    "hunt": {
+      "text": "捕获任务可搜索原始数据包内部，而不仅仅是会话元数据。创建数据包搜索任务，找出索引遗漏的内容。"
+    },
+    "files": {
+      "text": "文件页面列出 Arkime 已写入的 PCAP 文件，以及其会话是否仍可搜索。"
+    },
+    "stats": {
+      "text": "统计页面跟踪捕获节点和 Elasticsearch 的健康状况——图表、每节点指标和索引详情。"
+    },
+    "history": {
+      "text": "历史记录页面记录您（管理员可查看所有人）过去的查询，方便您回顾和重放。"
+    },
+    "settings": {
+      "text": "让 Arkime 成为您的专属工具——主题、时区、自定义列和字段布局、视图、快捷方式和通知器都在这里。"
+    }
   },
   "spigraph": {
     "addAnotherField": "添加另一个字段",
@@ -1709,6 +1747,9 @@
       "userNotFound": "未找到用户",
       "welcomeMsgNumNotInteger": "welcomeMsgNum 不是整数",
       "dismissedMessage": "用户 {userId} 已关闭消息 {msgNum}",
+      "dismissedNote": "用户 {userId} 已关闭帮助提示 {noteId}",
+      "invalidNoteId": "无效的提示 ID",
+      "tooManyDismissedNotes": "关闭的提示过多",
       "unknownUser": "未知用户",
       "invalidStateName": "无效的状态名称",
       "stateUpdateFailed": "状态更新失败",
