@@ -99,12 +99,6 @@ class BuildQuery {
       const field = info['mDataProp_' + info['iSortCol_' + i]];
       obj[field] = { order: info['sSortDir_' + i] };
       query.sort.push(obj);
-
-      if (field === 'firstPacket') {
-        query.sort.push({ firstPacket: { order: info['sSortDir_' + i] } });
-      } else if (field === 'lastPacket') {
-        query.sort.push({ lastPacket: { order: info['sSortDir_' + i] } });
-      }
     }
   }
 
@@ -115,8 +109,7 @@ class BuildQuery {
    * @name addViewToQuery
    * @param {object} req - the client request
    * @param {object} query - the elasticsearch query that has been partially built already by buildSessionQuery
-   * @param {boolean} queryOverride=null - override the client query with overriding query
-   * @returns {function} - the callback to call once the session query is built or an error occurs
+   * @param {object|null} queryOverride=null - override the client query with overriding query
    */
   static async #addViewToQuery (req, query, queryOverride = null) {
     // queryOverride can supersede req.query if specified
@@ -265,9 +258,9 @@ class BuildQuery {
   /**
    * Builds the session query based on req.query (Promise version)
    * @ignore
-   * @name buildSessionQueryPromise
+   * @name buildPromise
    * @param {object} req - the client request
-   * @param {boolean} queryOverride=null - override the client query with overriding query
+   * @param {object|null} queryOverride=null - override the client query with overriding query
    * @returns {Promise} - resolves with {query, indices}
    */
   static buildPromise (req, queryOverride = null) {
@@ -286,11 +279,10 @@ class BuildQuery {
   /**
    * Builds the session query based on req.query
    * @ignore
-   * @name buildSessionQuery
+   * @name build
    * @param {object} req - the client request
    * @param {function} buildCb - the callback to call when building the query is complete
-   * @param {boolean} queryOverride=null - override the client query with overriding query
-   * @returns {function} - the callback to call once the session query is built or an error occurs
+   * @param {object|null} queryOverride=null - override the client query with overriding query
    */
   static async build (req, buildCb, queryOverride = null) {
     // validate time limit is not exceeded

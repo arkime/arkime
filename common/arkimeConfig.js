@@ -210,7 +210,7 @@ class ArkimeConfig {
    * Get a config value
    * @param {string[] | string} sections The sections the key lives in, can also be a string
    * @param {string} sectionKey The key in the section to get the value for
-   * @param {string} d=undefined The default value to return if sectionKey isn't found
+   * @param {*} d=undefined The default value to return if sectionKey isn't found, returned as-is
    */
   static getFull (sections, sectionKey, d) {
     sections ??= ArkimeConfig.#defaultSections;
@@ -259,7 +259,8 @@ class ArkimeConfig {
    * Get an array config value
    * @param {string[] | string} sections The sections the key lives in, can also be a string
    * @param {string} sectionKey The key in the section to get the value for
-   * @param {string} d=undefined The default value to return if sectionKey isn't found
+   * @param {*} d=undefined The default value to return if sectionKey isn't found
+   * @param {string|RegExp} sep The separator to split string values on, defaults to ; or ,
    */
   static getFullArray (sections, sectionKey, d, sep) {
     const value = ArkimeConfig.getFull(sections, sectionKey, d);
@@ -347,7 +348,7 @@ class ArkimeConfig {
   /**
    * Get a list of all the sections in the config file
    *
-   * @returns {string|Array} - A list of all the sections in the config file
+   * @returns {Array} - A list of all the sections in the config file
    */
   static getSections () {
     return Object.keys(ArkimeConfig.#config);
@@ -518,7 +519,7 @@ class ConfigRedisSentinel {
     const redisParts = uri.split('/');
     redisParts[1] = 'stoperror';
     if (redisParts.length !== 6 || redisParts.some(p => p === '')) {
-      throw new Error(`Invalid redis-sentinel url - ${redisParts[0]}//[sentinelPassword:redisPassword@]sentinelHost[:sentinelPort][,sentinelPortN:sentinelPortN]/redisName/redisDbNum/key`);
+      throw new Error(`Invalid redis-sentinel url - ${redisParts[0]}//[sentinelPassword:redisPassword@]sentinelHost[:sentinelPort][,sentinelHostN:sentinelPortN]/redisName/redisDbNum/key`);
     }
     ConfigRedisSentinel.#redisKey = redisParts[5];
     ConfigRedisSentinel.#redis = ArkimeUtil.createRedisClient(uri, 'config');

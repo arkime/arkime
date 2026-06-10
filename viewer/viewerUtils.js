@@ -84,7 +84,7 @@ class ViewerUtils {
     const filterNameMap = { totPackets: 'network.packets', totBytes: 'network.bytes' };
     let filters = req.user.settings.timelineDataFilters || internals.settingDefaults.timelineDataFilters;
 
-    // Convert old names to names locally
+    // Convert old names to new names locally
     filters = filters.map(x => filterNameMap[x] ?? x);
 
     const graph = {
@@ -214,7 +214,7 @@ class ViewerUtils {
         })
       };
     } catch (err) {
-      return { fieldsMap: {}, fieldsArr: [] };
+      return { fieldsMap: '{}', fieldsArr: [] };
     }
   }
 
@@ -325,10 +325,10 @@ class ViewerUtils {
       const preq = client.request(url, options, responseFunc);
       preq.on('error', (err) => {
         // Try a second time on errors
-        console.log(`Retry ${url.path} on remote viewer: ${err}`);
+        console.log(`Retry ${url.pathname}${url.search} on remote viewer: ${err}`);
         const preq2 = client.request(url, options, responseFunc);
         preq2.on('error', (err) => {
-          console.log(`Error with ${url.path} on remote viewer: ${err}`);
+          console.log(`Error with ${url.pathname}${url.search} on remote viewer: ${err}`);
           cb(err);
         });
         preq2.end();

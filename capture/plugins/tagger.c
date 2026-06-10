@@ -403,7 +403,7 @@ LOCAL void tagger_unload_file(TaggerFile_t *file)
             HASH_FIND(s_, *hash, file->elements[i], tstring);
             if (tstring) {
                 tagger_remove_file(tstring->infos, file);
-                // We could check if files is now empty and remove the node, but the
+                // We could check if infos is now empty and remove the node, but the
                 // theory is most of the time it will be just re-added in the load_file
             }
         }

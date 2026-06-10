@@ -76,7 +76,7 @@ function makeS3 (node, region, bucket) {
     s3Params.endpoint = 'https://' + s3Params.endpoint;
   }
 
-  // Lets hope that we can find a credential provider elsewhere
+  // Let's hope that we can find a credential provider elsewhere
   const rv = S3s[region + key] = new S3(s3Params);
   return rv;
 }
@@ -249,7 +249,7 @@ async function processSessionIdS3 (session, headerCb, packetCb, endCb, limit) {
       }
     }
 
-    // FIrst pass, convert packetPos and packetLen (if we have it) into packetData
+    // First pass, convert packetPos and packetLen (if we have it) into packetData
     const packetData = [];
 
     async.eachLimit(Object.keys(fields.packetPos), limit || 1, async function (p) {

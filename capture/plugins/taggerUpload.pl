@@ -41,7 +41,7 @@ if (!$INSECURE && $host =~ /^https:\/\//) {
 }
 
 showHelp("Missing arguments") if (@ARGV < 3); # Again because of INSECURE
-showHelp("Must be ip, host, or md5 for file type instead of $ARGV[1]") if ($ARGV[1] !~ /^(host|ip|md5|email|uri)$/);
+showHelp("Must be ip, host, md5, email, or uri for file type instead of $ARGV[1]") if ($ARGV[1] !~ /^(host|ip|md5|email|uri)$/);
 showHelp("file '$ARGV[2]' not found") if (! -f $ARGV[2]);
 showHelp("file '$ARGV[2]' empty") if (-z $ARGV[2]);
 

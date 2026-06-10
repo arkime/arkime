@@ -49,7 +49,7 @@ typedef struct writer_s3_file {
     uint32_t                   sessionsPresent;
 
     // outputActualFilePos is the offset in the compressed file
-    // outputLastBLockStart is the offset in the compressed file of the most recent block
+    // outputLastBlockStart is the offset in the compressed file of the most recent block
     // outputOffsetInBlock is the offset within the current decompressed block
 
     uint64_t                   outputActualFilePos;
@@ -535,8 +535,8 @@ LOCAL void writer_s3_request(const char *method, const char *path, const char *q
     g_checksum_free(checksum);
 }
 /******************************************************************************/
-/* Make a new encryption full block/frame.
- * This will cause the encryption to fully flush any waiting data
+/* Make a new compression full block/frame.
+ * This will cause the compression to fully flush any waiting data
  * and the next data written will cause a new block header.
  */
 LOCAL void make_new_block(SavepcapS3File_t *s3file)
@@ -573,8 +573,8 @@ LOCAL void make_new_block(SavepcapS3File_t *s3file)
     }
 }
 /******************************************************************************/
-/* Make sure there is enough space in encryption buffers for incoming data and
- * data that is waiting to be written out. Because encryption lib does its
+/* Make sure there is enough space in compression buffers for incoming data and
+ * data that is waiting to be written out. Because compression lib does its
  * own buffer we do our best guess here.
  */
 LOCAL void ensure_space_for_output(SavepcapS3File_t *s3file, size_t space)
@@ -623,11 +623,11 @@ LOCAL void ensure_space_for_output(SavepcapS3File_t *s3file, size_t space)
 }
 /******************************************************************************/
 /* Add data:length to the output.
- * This is call for file headers and packets. If for packets it will be called twice,
+ * This is called for file headers and packets. If for packets it will be called twice,
  * once with packetHeader true (with the header) and a second time with packetHeader false and the packet.
  *
  * When packetHeader is true the return value is where the writerFilePos of the start of the packetHeader.
- * This value might be encoded if using encryption.
+ * This value might be encoded if using compression.
  */
 LOCAL uint64_t append_to_output(SavepcapS3File_t *s3file, void *data, size_t length, gboolean packetHeader, size_t extra_space)
 {
@@ -735,7 +735,7 @@ LOCAL uint64_t append_to_output(SavepcapS3File_t *s3file, void *data, size_t len
 }
 /******************************************************************************/
 /* Called when the buffer we are saving to is full and needs to be
- * sent along. Encryption blocks can cross buffers.
+ * sent along. Compression blocks can cross buffers.
  */
 LOCAL void writer_s3_flush(SavepcapS3File_t *s3file, gboolean end)
 {
