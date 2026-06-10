@@ -358,8 +358,9 @@ ok(scalar @{$result->{issues}} >= 2);
 $result = parliamentGetToken("/parliament/api/issues?filter=a&filter=b&arkimeRegressionUser=parliamentAdminP", $parliamentAdminToken);
 ok(exists $result->{issues});
 
-# sort with an inherited prototype key (constructor) is ignored instead of throwing (500) in the comparator
-$result = parliamentGetToken("/parliament/api/issues?sort=constructor&order=asc&arkimeRegressionUser=parliamentAdminP", $parliamentAdminToken);
+# sort with an inherited prototype key is ignored instead of throwing (500) in the comparator
+# (toString instead of constructor, which auth's ppChecker middleware already rejects with a 403)
+$result = parliamentGetToken("/parliament/api/issues?sort=toString&order=asc&arkimeRegressionUser=parliamentAdminP", $parliamentAdminToken);
 ok(exists $result->{issues});
 
 # clean up the issue test group
