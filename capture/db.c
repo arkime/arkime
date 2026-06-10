@@ -414,7 +414,7 @@ LOCAL void arkime_db_send_bulk_cb(int code, uint8_t *data, int data_len, gpointe
         LOG("Bulk issue.  Code: %d\n%.*s", code, data_len, data);
     else if (config.debug > 4)
         LOG("Bulk Reply code:%d :>%.*s<", code, data_len, data);
-    else if ((forbidden = (uint8_t *)strstr((char *)data, "FORBIDDEN")) != 0) {
+    else if (data && (forbidden = (uint8_t *)strstr((char *)data, "FORBIDDEN")) != 0) {
         const uint8_t *end = forbidden + 10;
         while (forbidden > data && *forbidden != '{') {
             forbidden--;
@@ -1934,9 +1934,9 @@ LOCAL gboolean arkime_db_flush_gfunc (gpointer user_data)
     return G_SOURCE_CONTINUE;
 }
 /******************************************************************************/
-LOCAL void arkime_db_health_check_cb(int UNUSED(code), uint8_t *data, int data_len, gpointer uw)
+LOCAL void arkime_db_health_check_cb(int code, uint8_t *data, int data_len, gpointer uw)
 {
-    if (code != 200 || !data) {
+    if (code != 200 || !data || data_len < 2) {
         LOG("WARNING - Couldn't perform Elasticsearch health check");
         return;
     }
@@ -2163,29 +2163,9 @@ char *arkime_db_create_file_full(const struct timeval *firstPacket, const char *
         key_len = arkime_snprintf_len(key, sizeof(key), "/%sfiles/_doc/%s-%u?refresh=true", config.prefix, config.nodeName, num);
     } else {
 
-        int flen = strlen(config.pcapDir[config.pcapDirPos]);
-        if (flen >= (int)sizeof(filename) - 1) {
-            LOGEXIT("ERROR - pcapDir '%s' string length is too large", config.pcapDir[config.pcapDirPos]);
-        }
-
-        g_strlcpy(filename, config.pcapDir[config.pcapDirPos], sizeof(filename));
-
-        struct tm tmp;
-        localtime_r(&firstPacket->tv_sec, &tmp);
-
-        if (config.pcapDirTemplate) {
-            int tlen;
-
-            // pcapDirTemplate must start with /, checked in config.c
-            if (filename[flen - 1] == '/')
-                flen--;
-
-            if ((tlen = strftime(filename + flen, sizeof(filename) - flen - 1, config.pcapDirTemplate, &tmp)) == 0) {
-                LOGEXIT("ERROR - Couldn't form filename: %s %s", config.pcapDir[config.pcapDirPos], config.pcapDirTemplate);
-            }
-            flen += tlen;
-        }
-
+        // Free-space algorithms pick the directory for this file now;
+        // round robin keeps the historical behavior of rotating afterwards
+        gboolean roundRobin = FALSE;
         if (strcmp(config.pcapDirAlgorithm, "max-free-percent") == 0) {
             // Select the pcapDir with the highest percentage of free space
 
@@ -2222,7 +2202,34 @@ char *arkime_db_create_file_full(const struct timeval *firstPacket, const char *
             if (config.debug)
                 LOG("%s has the most available space", config.pcapDir[config.pcapDirPos]);
         } else {
-            // Select pcapDir by round robin
+            roundRobin = TRUE;
+        }
+
+        int flen = strlen(config.pcapDir[config.pcapDirPos]);
+        if (flen >= (int)sizeof(filename) - 1) {
+            LOGEXIT("ERROR - pcapDir '%s' string length is too large", config.pcapDir[config.pcapDirPos]);
+        }
+
+        g_strlcpy(filename, config.pcapDir[config.pcapDirPos], sizeof(filename));
+
+        struct tm tmp;
+        localtime_r(&firstPacket->tv_sec, &tmp);
+
+        if (config.pcapDirTemplate) {
+            int tlen;
+
+            // pcapDirTemplate must start with /, checked in config.c
+            if (filename[flen - 1] == '/')
+                flen--;
+
+            if ((tlen = strftime(filename + flen, sizeof(filename) - flen - 1, config.pcapDirTemplate, &tmp)) == 0) {
+                LOGEXIT("ERROR - Couldn't form filename: %s %s", config.pcapDir[config.pcapDirPos], config.pcapDirTemplate);
+            }
+            flen += tlen;
+        }
+
+        if (roundRobin) {
+            // Rotate to the next pcapDir for the next file
             config.pcapDirPos++;
             if (!config.pcapDir[config.pcapDirPos])
                 config.pcapDirPos = 0;

@@ -1564,7 +1564,9 @@ class User {
         }
 
         if (this.#allSettings[col] !== undefined) {
-          this.#allSettings[col] |= role.#allSettings[col];
+          // Keep booleans boolean - bitwise |= would yield 1, breaking the
+          // strict === true checks in checkPermissions
+          this.#allSettings[col] = this.#allSettings[col] || role.#allSettings[col];
         } else {
           this.#allSettings[col] = role.#allSettings[col];
         }

@@ -537,7 +537,7 @@ LOCAL int smb2_parse(ArkimeSession_t *session, const SMBInfo_t *smb, BSB *bsb, c
         BSB_IMPORT_skip(*bsb, pathoffset);
 
         if (!BSB_IS_ERROR(*bsb) && pathlen <= BSB_REMAINING(*bsb)) {
-            smb_add_string(session, shareField, (char *)BSB_WORK_PTR(*bsb), pathlen, smb->flags2[which] & SMB1_FLAGS2_UNICODE);
+            smb_add_string(session, shareField, (char *)BSB_WORK_PTR(*bsb), pathlen, TRUE); // SMB2 strings are always UTF-16LE
         }
 
         *remlen -= (BSB_WORK_PTR(*bsb) - start);

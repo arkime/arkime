@@ -283,7 +283,7 @@ async function processSessionIdS3 (session, headerCb, packetCb, endCb, limit) {
           if (compressed) {
             pd.rangeStart = Math.floor(packetPos / (1 << COMPRESSED_WITHIN_BLOCK_BITS));
             pd.rangeEnd = pd.rangeStart + info.compressionBlockSize;
-            pd.packetStart = packetPos & ((1 << COMPRESSED_WITHIN_BLOCK_BITS) - 1);
+            pd.packetStart = packetPos & ((1 << COMPRESSED_WITHIN_BLOCK_BITS) - 1); // eslint-disable-line no-bitwise
             pd.packetEnd = pd.packetStart + len;
           } else {
             pd.rangeStart = packetPos;
