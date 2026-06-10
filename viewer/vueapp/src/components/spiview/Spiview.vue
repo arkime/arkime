@@ -1565,7 +1565,7 @@ export default {
    elements styled like a bordered card with a clickable header.
    --color-gray-light is theme-aware (subtle on light, mid on dark),
    matching the rest of viewer's bordered components (Settings.vue,
-   Hunt.vue, ESHealth.vue, WelcomeMessage.vue). */
+   Hunt.vue, ESHealth.vue, HelpNotes.vue). */
 .spiview-page .spi-card {
   border: 1px solid rgb(var(--v-theme-neutral-light));
   background-color: rgb(var(--v-theme-background));

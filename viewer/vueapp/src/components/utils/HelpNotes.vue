@@ -149,16 +149,26 @@ export default {
       return this.messages[this.index];
     },
     visible: function () {
-      return !this.closed && this.messages.length > 0;
+      if (this.closed || !this.messages.length) { return false; }
+      // tips only show on their own page; announcements (routeless, at the head) show anywhere
+      return !this.messages[0].route || this.messages.some(m => m.route === this.$route.name);
+    }
+  },
+  watch: {
+    '$route.name': function () {
+      this.aimAtRoute();
     }
   },
   mounted: function () {
-    // welcome/v7 (routeless, at the head) lead; otherwise start on the current page's tip
-    if (this.messages.length && !this.messages[0].route) { return; }
-    const i = this.messages.findIndex(m => m.route === this.$route.name);
-    if (i > -1) { this.index = i; }
+    this.aimAtRoute();
   },
   methods: {
+    // announcements lead; otherwise point at the current page's tip
+    aimAtRoute: function () {
+      if (this.messages.length && !this.messages[0].route) { return; }
+      const i = this.messages.findIndex(m => m.route === this.$route.name);
+      if (i > -1) { this.index = i; }
+    },
     close: function () {
       this.closed = true;
     },

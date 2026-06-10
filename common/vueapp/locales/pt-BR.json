@@ -1750,6 +1750,7 @@
       "dismissedNote": "Usuário, {userId}, dispensou a nota de ajuda {noteId}",
       "invalidNoteId": "ID de nota inválido",
       "tooManyDismissedNotes": "Muitas notas dispensadas",
+      "dismissNoteFailed": "Falha ao descartar a mensagem",
       "unknownUser": "Usuário desconhecido",
       "invalidStateName": "Nome de estado inválido",
       "stateUpdateFailed": "falha na atualização do estado",

@@ -1750,6 +1750,7 @@
       "dismissedNote": "사용자 {userId}이(가) 도움말 노트 {noteId}을(를) 닫았습니다",
       "invalidNoteId": "잘못된 노트 ID",
       "tooManyDismissedNotes": "닫은 노트가 너무 많습니다",
+      "dismissNoteFailed": "메시지 닫기에 실패했습니다",
       "unknownUser": "알 수 없는 사용자",
       "invalidStateName": "잘못된 상태 이름",
       "stateUpdateFailed": "상태 업데이트 실패",

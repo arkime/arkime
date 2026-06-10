@@ -1751,6 +1751,7 @@
       "dismissedNote": "Userway, {userId}, ismissedday elphay otenay {noteId}",
       "invalidNoteId": "Invalidway otenay idway",
       "tooManyDismissedNotes": "Ootay anymay ismissedday otesnay",
+      "dismissNoteFailed": "Otenay ismissalday ailedfay",
       "unknownUser": "Unknownway userway",
       "invalidStateName": "Invalidway atestay amenay",
       "stateUpdateFailed": "atestay updateway ailedfay",

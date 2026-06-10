@@ -711,7 +711,8 @@ class UserAPIs {
       if (noteId !== undefined) {
         user.dismissedHelpNotes ??= [];
         if (!user.dismissedHelpNotes.includes(noteId)) {
-          if (user.dismissedHelpNotes.length >= 50) {
+          // 'all' supersedes everything, so it must never be blocked by the cap
+          if (noteId !== 'all' && user.dismissedHelpNotes.length >= 50) {
             return res.serverError(403, 'Too many dismissed notes', 'api.users.tooManyDismissedNotes');
           }
           user.dismissedHelpNotes.push(noteId);
@@ -729,6 +730,10 @@ class UserAPIs {
         }
 
         if (noteId !== undefined) {
+          if (err) {
+            console.log(`ERROR - ${req.method} /api/user/%s/acknowledge (setUser)`, ArkimeUtil.sanitizeStr(req.params.userId), util.inspect(err, false, 50));
+            return res.serverError(500, 'Note dismissal failed', 'api.users.dismissNoteFailed');
+          }
           return res.json({
             success: true,
             text: `User, ${req.user.userId}, dismissed help note ${noteId}`,

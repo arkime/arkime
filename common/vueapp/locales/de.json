@@ -1750,6 +1750,7 @@
       "dismissedNote": "Benutzer {userId} hat Hilfehinweis {noteId} verworfen",
       "invalidNoteId": "Ungültige Hinweis-ID",
       "tooManyDismissedNotes": "Zu viele verworfene Hinweise",
+      "dismissNoteFailed": "Verwerfen der Nachricht fehlgeschlagen",
       "unknownUser": "Unbekannter Benutzer",
       "invalidStateName": "Ungültiger Statusname",
       "stateUpdateFailed": "Statusaktualisierung fehlgeschlagen",

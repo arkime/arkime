@@ -1750,6 +1750,7 @@
       "dismissedNote": "Kasutaja {userId} keeldus abimärkusest {noteId}",
       "invalidNoteId": "Vigane märkuse ID",
       "tooManyDismissedNotes": "Liiga palju tagasilükatud märkusi",
+      "dismissNoteFailed": "Teate peitmine ebaõnnestus",
       "unknownUser": "Tundmatu kasutaja",
       "invalidStateName": "Vigane oleku nimi",
       "stateUpdateFailed": "Oleku uuendamine ebaõnnestus",

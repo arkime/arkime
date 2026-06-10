@@ -1750,6 +1750,7 @@
       "dismissedNote": "L'utilisateur {userId} a ignoré la note d'aide {noteId}",
       "invalidNoteId": "ID de note invalide",
       "tooManyDismissedNotes": "Trop de notes ignorées",
+      "dismissNoteFailed": "Échec du rejet du message",
       "unknownUser": "Utilisateur inconnu",
       "invalidStateName": "Nom d'état invalide",
       "stateUpdateFailed": "Échec de la mise à jour de l'état",

@@ -1750,6 +1750,7 @@
       "dismissedNote": "用户 {userId} 已关闭帮助提示 {noteId}",
       "invalidNoteId": "无效的提示 ID",
       "tooManyDismissedNotes": "关闭的提示过多",
+      "dismissNoteFailed": "关闭消息失败",
       "unknownUser": "未知用户",
       "invalidStateName": "无效的状态名称",
       "stateUpdateFailed": "状态更新失败",

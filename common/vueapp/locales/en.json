@@ -1750,6 +1750,7 @@
       "dismissedNote": "User, {userId}, dismissed help note {noteId}",
       "invalidNoteId": "Invalid note id",
       "tooManyDismissedNotes": "Too many dismissed notes",
+      "dismissNoteFailed": "Note dismissal failed",
       "unknownUser": "Unknown user",
       "invalidStateName": "Invalid state name",
       "stateUpdateFailed": "state update failed",

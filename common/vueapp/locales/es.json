@@ -1750,6 +1750,7 @@
       "dismissedNote": "El usuario {userId} descartó la nota de ayuda {noteId}",
       "invalidNoteId": "ID de nota inválido",
       "tooManyDismissedNotes": "Demasiadas notas descartadas",
+      "dismissNoteFailed": "Error al descartar el mensaje",
       "unknownUser": "Usuario desconocido",
       "invalidStateName": "Nombre de estado inválido",
       "stateUpdateFailed": "Error al actualizar el estado",

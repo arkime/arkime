@@ -1750,6 +1750,7 @@
       "dismissedNote": "ユーザー {userId} がヘルプノート {noteId} を非表示にしました",
       "invalidNoteId": "無効なノートIDです",
       "tooManyDismissedNotes": "非表示にしたノートが多すぎます",
+      "dismissNoteFailed": "メッセージを非表示にできませんでした",
       "unknownUser": "不明なユーザー",
       "invalidStateName": "無効なステート名",
       "stateUpdateFailed": "ステートの更新に失敗しました",
