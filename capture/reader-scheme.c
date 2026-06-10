@@ -801,7 +801,9 @@ LOCAL int arkime_reader_scheme_processNG(const char *uri, uint8_t *data, int len
                 readerState.pktlen = SWAP32(readerState.pktlen);
             }
 
-            if (unlikely(readerState.pktlen > 0xffff)) {
+            // caplen must fit in the remaining block (data + options + 4 byte trailing length);
+            // it is an independent field in EPB so a bad value would underflow blockSize
+            if (unlikely(readerState.pktlen > 0xffff || readerState.pktlen > (uint32_t)(readerState.blockSize - 4))) {
                 readerState.state = ARKIME_SCHEME_NG_SKIP;
                 continue;
             }

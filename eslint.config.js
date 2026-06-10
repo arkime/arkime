@@ -69,6 +69,13 @@ const commonJavaScriptRules = {
 
     "space-infix-ops": "error",
 
+    // Ban |, &, and |= in regular code - bitwise on booleans is a footgun
+    // (true|true === 1 breaks === true checks). Genuine bitfield/byte work
+    // opts back in with an inline eslint-disable or a per-file override.
+    "no-bitwise": ["error", {
+        "allow": ["^", "<<", ">>", ">>>", "~", "^=", "&=", "<<=", ">>=", ">>>="],
+    }],
+
     "preserve-caught-error": "off",
 };
 
@@ -123,6 +130,15 @@ module.exports = defineConfig([
         rules: {
             ...commonJavaScriptRules,
             ...vueRuleOverrides,
+        },
+    },
+    // pcap.js is low-level packet byte parsing - allow | and & there
+    {
+        files: ["viewer/pcap.js"],
+        rules: {
+            "no-bitwise": ["error", {
+                "allow": ["^", "|", "&", "<<", ">>", ">>>", "~", "^=", "&=", "<<=", ">>=", ">>>="],
+            }],
         },
     },
     globalIgnores([

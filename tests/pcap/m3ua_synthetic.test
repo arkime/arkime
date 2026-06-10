@@ -991,6 +991,274 @@
      "_index" : "tests_sessions3-26m06"
     }
    }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "camel" : {
+     "calling" : [
+      "11111111111",
+      "22222222222",
+      "33333333333"
+     ],
+     "callingCnt" : 3,
+     "op" : [
+      "establishTemporaryConnection",
+      "initialDP"
+     ],
+     "opCnt" : 2
+    },
+    "client" : {
+     "bytes" : 452
+    },
+    "destination" : {
+     "bytes" : 116,
+     "ip" : "10.6.6.6",
+     "mac" : [
+      "00:66:77:88:99:aa"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 2,
+     "port" : 2905
+    },
+    "dstTTL" : [
+     64
+    ],
+    "dstTTLCnt" : 1,
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 1781048077000,
+    "ipProtocol" : 132,
+    "lastPacket" : 1781048077350,
+    "length" : 350,
+    "m3ua" : {
+     "si" : [
+      3
+     ],
+     "siCnt" : 1
+    },
+    "network" : {
+     "bytes" : 844,
+     "community_id" : "1:1jKCl3m2t3vG1VFMJoHORb+wFiE=",
+     "packets" : 8
+    },
+    "node" : "test",
+    "packetLen" : [
+     82,
+     82,
+     70,
+     66,
+     138,
+     138,
+     198,
+     198
+    ],
+    "packetPos" : [
+     5592,
+     5674,
+     5756,
+     5826,
+     5892,
+     6030,
+     6168,
+     6366
+    ],
+    "packetRange" : {
+     "gte" : 1781048077000,
+     "lte" : 1781048077350
+    },
+    "protocol" : [
+     "camel",
+     "m3ua",
+     "sccp",
+     "sctp"
+    ],
+    "protocolCnt" : 4,
+    "sccp" : {
+     "dst" : [
+      500
+     ],
+     "dstCnt" : 1,
+     "src" : [
+      600
+     ],
+     "srcCnt" : 1
+    },
+    "sctp" : {
+     "protoId" : [
+      3
+     ]
+    },
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 24
+    },
+    "source" : {
+     "bytes" : 728,
+     "ip" : "10.5.5.5",
+     "mac" : [
+      "00:11:22:33:44:55"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 6,
+     "port" : 2905
+    },
+    "srcOui" : [
+     "CIMSYS Inc"
+    ],
+    "srcOuiCnt" : 1,
+    "srcPayload8" : "0100010100000078",
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
+    "tcap" : {
+     "opcode" : [
+      "0",
+      "17"
+     ],
+     "opcodeCnt" : 2
+    },
+    "totDataBytes" : 476
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-26m06"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "camel" : {
+     "calling" : [
+      "77777777777",
+      "88888888888",
+      "99999999999"
+     ],
+     "callingCnt" : 3,
+     "op" : [
+      "establishTemporaryConnection",
+      "initialDP"
+     ],
+     "opCnt" : 2
+    },
+    "client" : {
+     "bytes" : 436
+    },
+    "destination" : {
+     "bytes" : 116,
+     "ip" : "10.8.8.8",
+     "mac" : [
+      "00:66:77:88:99:aa"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 2,
+     "port" : 2905
+    },
+    "dstTTL" : [
+     64
+    ],
+    "dstTTLCnt" : 1,
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 1781048077400,
+    "ipProtocol" : 132,
+    "lastPacket" : 1781048077699,
+    "length" : 299,
+    "m3ua" : {
+     "si" : [
+      3
+     ],
+     "siCnt" : 1
+    },
+    "network" : {
+     "bytes" : 782,
+     "community_id" : "1:aox0WHPDKOSRFzV1sPW5QOggQgQ=",
+     "packets" : 7
+    },
+    "node" : "test",
+    "packetLen" : [
+     82,
+     82,
+     70,
+     66,
+     198,
+     198,
+     198
+    ],
+    "packetPos" : [
+     6564,
+     6646,
+     6728,
+     6798,
+     6864,
+     7062,
+     7260
+    ],
+    "packetRange" : {
+     "gte" : 1781048077400,
+     "lte" : 1781048077699
+    },
+    "protocol" : [
+     "camel",
+     "m3ua",
+     "sccp",
+     "sctp"
+    ],
+    "protocolCnt" : 4,
+    "sccp" : {
+     "dst" : [
+      500
+     ],
+     "dstCnt" : 1,
+     "src" : [
+      600
+     ],
+     "srcCnt" : 1
+    },
+    "sctp" : {
+     "protoId" : [
+      3
+     ]
+    },
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 24
+    },
+    "source" : {
+     "bytes" : 666,
+     "ip" : "10.7.7.7",
+     "mac" : [
+      "00:11:22:33:44:55"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 5,
+     "port" : 2905
+    },
+    "srcOui" : [
+     "CIMSYS Inc"
+    ],
+    "srcOuiCnt" : 1,
+    "srcPayload8" : "0100010100000078",
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
+    "tcap" : {
+     "opcode" : [
+      "0",
+      "17"
+     ],
+     "opcodeCnt" : 2
+    },
+    "totDataBytes" : 460
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-26m06"
+    }
+   }
   }
  ]
 }

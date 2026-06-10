@@ -292,7 +292,9 @@ class ConnectionAPIs {
       }
 
       nodesHash[vsrc].sessions++;
+      /* eslint-disable-next-line no-bitwise */
       nodesHash[vsrc].type |= 1;
+      /* eslint-disable-next-line no-bitwise */
       nodesHash[vsrc].inresult |= resultId;
       updateValues(f, nodesHash[vsrc], fields);
 
@@ -301,7 +303,9 @@ class ConnectionAPIs {
       }
 
       nodesHash[vdst].sessions++;
+      /* eslint-disable-next-line no-bitwise */
       nodesHash[vdst].type |= 2;
+      /* eslint-disable-next-line no-bitwise */
       nodesHash[vdst].inresult |= resultId;
       updateValues(f, nodesHash[vdst], fields);
 
