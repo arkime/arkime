@@ -1936,6 +1936,10 @@ app.put('/parliament/api/ignoreIssues', [isUser, checkCookieToken], (req, res, n
   }
 
   const ms = req.body.ms ?? 3600000; // Default to 1 hour
+  if (typeof ms !== 'number' || !Number.isFinite(ms)) {
+    return res.serverError(422, 'ms must be a finite number.');
+  }
+
   let ignoreUntil = Date.now() + ms;
   if (ms === -1) { ignoreUntil = -1; } // -1 means ignore it forever
 
