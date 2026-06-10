@@ -656,7 +656,10 @@ GPtrArray *arkime_field_certsinfo_get_extra(const ArkimeSession_t *session, cons
 
     GPtrArray *array = NULL;
     HASH_FORALL2(o_, *ohash, object) {
-        char *value = g_hash_table_lookup(((ArkimeCertsInfo_t *)object->object)->extra, key);
+        GHashTable *extra = ((ArkimeCertsInfo_t *)object->object)->extra;
+        if (!extra)
+            continue;
+        char *value = g_hash_table_lookup(extra, key);
         if (value) {
             if (!array) {
                 array = g_ptr_array_new();

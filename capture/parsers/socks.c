@@ -338,7 +338,7 @@ void arkime_parser_init()
                                     (char *)NULL);
 
     arkime_parsers_classifier_register_tcp("socks5", NULL, 0, (uint8_t *)"\005", 1, socks5_classify);
-    arkime_parsers_classifier_register_tcp("socks4", NULL, 0, (uint8_t *)"\004\000", 2, socks4_classify);
+    arkime_parsers_classifier_register_tcp("socks4", NULL, 0, (uint8_t *)"\004\002", 2, socks4_classify);
     arkime_parsers_classifier_register_tcp("socks4", NULL, 0, (uint8_t *)"\004\001", 2, socks4_classify);
 }
 

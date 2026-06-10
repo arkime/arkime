@@ -63,6 +63,12 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #4024 Fix TCP/SCTP reassembly failure on U32 wrap in some cases
   - #4024 Fix HTTP DELETE request Host/Cookie/Authorization headers being treated as response headers
   - #4024 Fix SMTP Q-encoded header and AUTH decoding
+  - #4025 Fix HTTP request/response header mislabeling on reversed-direction sessions
+  - #4025 Fix S7comm function code 0x00 mislabeled as "Setup communication" (now "CPU services")
+  - #4025 Fix CAMEL/CAP operation code table to match 3GPP TS 29.078
+  - #4025 Fix DNS EDNS(0) extended RCODE (BADVERS..BADCOOKIE) not being decoded
+  - #4025 Fix TLS certificate enrichment crash when a cert has no extra fields
+  - #4025 Fix NetBIOS name decoding for embedded spaces, compressed names, and authority records
 ## Cont3xt
   - #3999 Fix logoutUrl when logoutUrlMethod=GET
 ## Viewer

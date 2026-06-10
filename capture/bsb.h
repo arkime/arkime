@@ -374,14 +374,14 @@ do {                                              \
 #define BSB_memchr(b, ch, pos)                    \
 do {                                              \
     if (BSB_IS_ERROR(b)) {                        \
-        pos = 0;                                  \
+        pos = -1;                                 \
         break;                                    \
     }                                             \
     char *s = memchr((char*)(b).ptr, ch, BSB_REMAINING(b)); \
     if (s)                                        \
         pos = (char *)s - (char *)(b).ptr;        \
     else                                          \
-        pos = 0;                                  \
+        pos = -1;                                 \
 } while (0)
 
 #define BSB_memcmp(str, b, len) ((b).ptr && (b).ptr + len <= (b).end ? memcmp(str, (b).ptr, len) : -1)

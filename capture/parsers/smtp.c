@@ -101,6 +101,31 @@ LOCAL char *smtp_remove_matching(char *str, char start, char stop)
     return startstr;
 }
 /******************************************************************************/
+// Parse a MIME parameter value (RFC 2045): either a quoted-string ("...") or a
+// bare token terminated by ';', whitespace, or end-of-string. NUL-terminates the
+// value in place and returns a pointer to its start.
+LOCAL char *smtp_parse_param_value(char *str)
+{
+    while (isspace(*str))
+        str++;
+
+    if (*str == '"') {
+        str++;
+        char *startstr = str;
+        while (*str && *str != '"')
+            str++;
+        *str = 0;
+        return startstr;
+    }
+
+    char *startstr = str;
+    while (*str && *str != ';' && !isspace(*str))
+        str++;
+    *str = 0;
+
+    return startstr;
+}
+/******************************************************************************/
 LOCAL void smtp_email_add_value(ArkimeSession_t *session, int pos, const char *s, int l)
 {
     while (l > 0 && isspace(*s)) {
@@ -680,7 +705,7 @@ LOCAL int smtp_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, i
                     char *boundary = (char *)arkime_memcasestr(s, line->len - (s - line->str), "boundary=", 9);
                     if (boundary && DLL_COUNT(s_, &email->boundaries) < SMTP_MAX_BOUNDARIES) {
                         ArkimeString_t *string = ARKIME_TYPE_ALLOC0(ArkimeString_t);
-                        string->str = g_strdup(smtp_remove_matching(boundary + 9, '"', '"'));
+                        string->str = g_strdup(smtp_parse_param_value(boundary + 9));
                         string->len = strlen(string->str);
                         DLL_PUSH_TAIL(s_, &email->boundaries, string);
                     }
@@ -877,7 +902,7 @@ LOCAL int smtp_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, i
                 char *boundary = (char *)arkime_memcasestr(s, line->len - (s - line->str), "boundary=", 9);
                 if (boundary && DLL_COUNT(s_, &email->boundaries) < SMTP_MAX_BOUNDARIES) {
                     ArkimeString_t *string = ARKIME_TYPE_ALLOC0(ArkimeString_t);
-                    string->str = g_strdup(smtp_remove_matching(boundary + 9, '"', '"'));
+                    string->str = g_strdup(smtp_parse_param_value(boundary + 9));
                     string->len = strlen(string->str);
                     DLL_PUSH_TAIL(s_, &email->boundaries, string);
                 }
