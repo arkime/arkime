@@ -101,8 +101,8 @@ LOCAL int radius_udp_parser(ArkimeSession_t *session, void *UNUSED(uw), const ui
                          value[8], value[9],
                          value[10], value[11]);
                 for (i = 0; i < 17; i++) {
-                    if (isupper(str[i]))
-                        str[i] = tolower(str[i]);
+                    if (isupper((unsigned char)str[i]))
+                        str[i] = tolower((unsigned char)str[i]);
                 }
                 arkime_field_string_add(macField, session, str, 17, TRUE);
             }

@@ -1434,8 +1434,10 @@ export default {
       let val = 'visible';
 
       if (this.query.baselineDate !== '0') {
+        /* eslint-disable no-bitwise */
         const inActualSet = ((n.inresult & 0x1) !== 0);
         const inBaselineSet = ((n.inresult & 0x2) !== 0);
+        /* eslint-enable no-bitwise */
         switch (this.query.baselineVis) {
         case 'actual':
           val = inActualSet ? 'visible' : 'hidden';

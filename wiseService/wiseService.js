@@ -1076,10 +1076,12 @@ app.post('/get', function (req, res) {
         offset++;
 
         let typeName;
+        /* eslint-disable no-bitwise */
         if (type & 0x80) {
           typeName = buf.toString('utf8', offset, offset + (type & ~0x80));
           offset += (type & ~0x80);
         } else {
+        /* eslint-enable no-bitwise */
           typeName = internals.type2Name[type];
         }
 

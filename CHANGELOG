@@ -42,6 +42,8 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
           covered by userAuthIps when authTrustProxy is used.
 ## Release
   - #4004 Fix Ubuntu 26.04 builds having the incorrect dependencies
+## All
+  - #4030 Fix hidePcap/hideFiles/hideStats/disablePcapDownload failing open for users with the permission inherited from multiple roles
 ## Capture
   - #3996 Added mssing ntlm.detail.jade for NTLM session detail rendering
   - #3996 Added opcua parser (OPC UA Binary) with opcua.endpointUrl, opcua.securityPolicyUri and SenderCertificate parsing
@@ -73,8 +75,14 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #4026 Fix IPv6 DSCP extraction using only the top 4 bits of the traffic class
   - #4026 Fix rules file field modifier (contains/head/tail) on one field incorrectly applying to later fields in the same rule
   - #4027 Fix wrong packetPos when reading truncated captures with readTruncatedPackets set
+  - #4030 Fix MQTT multi-topic UNSUBSCRIBE only extracting the first topic
+  - #4030 Fix SCTP reassembly losing messages after out-of-order delivery, causing spurious incomplete-sctp
+  - #4030 Fix SMB2 TREE_CONNECT share name not decoded for SMB2-only sessions
+  - #4030 Fix max-free-percent/max-free-bytes pcapDir selection lagging by one file
 ## Cont3xt
   - #3999 Fix logoutUrl when logoutUrlMethod=GET
+## Parliament
+  - #4028 Harden parliament against malicious Arkime clusters
 ## Viewer
   - #3994 Fix SPIView all not allowed error message
   - #4007 Add sanitized {ORIGINALNAME} uploadCommand variable as a safe alternative to {INSECURE-ORIGINALNAME}
