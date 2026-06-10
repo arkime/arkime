@@ -46,7 +46,7 @@ typedef struct s3_request {
     ArkimeSchemeAction_t  *actions;
     const char            *url;
     char                  *continuation; // Continuation token, http thread -> scheme thread
-    uint8_t                isDir : 1;    // Doint a prefix match
+    uint8_t                isDir : 1;    // Doing a prefix match
     uint8_t                isS3 : 1;     // Use S3 URL
     uint8_t                tryAgain : 1; // Try again because wrong region
     uint8_t                first : 1;    // The first attempt at url

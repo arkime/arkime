@@ -242,6 +242,7 @@ LOCAL uint8_t *arkime_get_instance_metadata(void *serverV, const char *key, int 
         if (token) {
             snprintf(tokenHeader, sizeof(tokenHeader), "X-aws-ec2-metadata-token: %s", token);
             requestHeaders[0] = tokenHeader;
+            free((void *)token);
         } else {
             LOG("WARNING - Failed to get IMDSv2 metadata token");
             requestHeaders[0] = NULL;
@@ -952,6 +953,9 @@ LOCAL void writer_s3_init(const char *UNUSED(name))
     s3Region              = arkime_config_str(NULL, "s3Region", "us-east-1");
     s3Host                = arkime_config_str(NULL, "s3Host", NULL);
     s3Bucket              = arkime_config_str(NULL, "s3Bucket", NULL);
+    if (!s3Bucket) {
+        CONFIGEXIT("Must set s3Bucket to save to s3");
+    }
     s3PathAccessStyle     = arkime_config_boolean(NULL, "s3PathAccessStyle", strchr(s3Bucket, '.') != NULL);
     s3Compress            = arkime_config_boolean(NULL, "s3Compress", FALSE);
     REMOVEDCONFIG("s3WriteGzip", "use s3Compression=gzip");
@@ -969,10 +973,6 @@ LOCAL void writer_s3_init(const char *UNUSED(name))
     s3ConfigCreds.s3SecretAccessKey = arkime_config_str(NULL, "s3SecretAccessKey", NULL);
 
     config.gapPacketPos = arkime_config_boolean(NULL, "s3GapPacketPos", TRUE);
-
-    if (!s3Bucket) {
-        CONFIGEXIT("Must set s3Bucket to save to s3");
-    }
 
     if (s3Compression != NULL) {
         if (strcmp(s3Compression, "none") == 0) {

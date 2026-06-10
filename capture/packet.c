@@ -384,7 +384,7 @@ LOCAL void arkime_packet_process(ArkimePacket_t *packet, int thread)
         const uint8_t *pcapData = packet->pkt;
 
         if (packet->ipProtocol) {
-            int tc = ip4->ip_v == 4 ? ip4->ip_tos >> 2 : ip6->ip6_vfc & 0xf;
+            int tc = ip4->ip_v == 4 ? ip4->ip_tos >> 2 : (int)((ntohl(ip6->ip6_flow) >> 22) & 0x3f);
             if (tc != 0) {
                 arkime_field_int_add(dscpField[packet->direction], session, tc);
             }
@@ -696,7 +696,7 @@ LOCAL gboolean arkime_packet_frags_process(ArkimePacket_t *const packet)
             LOG("WARNING - Not enough room for frag %d > %d", packet->payloadOffset + (fip_off * 8) + fpacket->payloadLen, packet->pktlen);
     }
 
-    // Set all the vars in the current packet to new defraged packet
+    // Set all the vars in the current packet to new defragged packet
     if (packet->copied)
         free(packet->pkt);
     packet->pkt = pkt;
@@ -901,7 +901,7 @@ LOCAL ArkimePacketRC arkime_packet_ip4(ArkimePacketBatch_t *batch, ArkimePacket_
 
     if (ip4->ip_v != 4) {
 #ifdef DEBUG_PACKET
-        LOG("BAD PACKET: ip4->ip_v4 %d != 4", ip4->ip_v);
+        LOG("BAD PACKET: ip4->ip_v %d != 4", ip4->ip_v);
 #endif
         return ARKIME_PACKET_CORRUPT;
     }
@@ -1677,7 +1677,7 @@ process_packet:
         }
         ARKIME_COND_SIGNAL(packetThreadData[thread].packetQ.lock);
         ARKIME_UNLOCK(packetThreadData[thread].packetQ.lock);
-        batch->packetStats[rc]++;
+        batch->packetStats[ARKIME_PACKET_OVERLOAD_DROPPED]++;
         arkime_packet_free(packet);
         return;
     }
@@ -1699,7 +1699,7 @@ process_packet:
 }
 /******************************************************************************/
 /*
- * When finished reading a inplace file this is called to schedule a synchronized
+ * When finished reading an inplace file this is called to schedule a synchronized
  * event when all packets are processed to update the file db.
  */
 void arkime_packet_batch_end_of_file(int readerPos)
@@ -2019,19 +2019,19 @@ void arkime_packet_init()
                                          (char *)NULL);
 
     vlanField = arkime_field_define("general", "integer",
-                                    "vlan", "VLan", "network.vlan.id",
+                                    "vlan", "VLAN", "network.vlan.id",
                                     "vlan value",
                                     ARKIME_FIELD_TYPE_INT_ARRAY_UNIQUE,  ARKIME_FIELD_FLAG_ECS_CNT | ARKIME_FIELD_FLAG_LINKED_SESSIONS | ARKIME_FIELD_FLAG_NOSAVE,
                                     (char *)NULL);
 
     dot1qField = arkime_field_define("general", "integer",
-                                     "vlan.dot1q", "VLan dot1q", "dot1q.id",
+                                     "vlan.dot1q", "VLAN dot1q", "dot1q.id",
                                      "vlan dot1q",
                                      ARKIME_FIELD_TYPE_INT_ARRAY_UNIQUE,  ARKIME_FIELD_FLAG_CNT | ARKIME_FIELD_FLAG_LINKED_SESSIONS,
                                      (char *)NULL);
 
     dot1adField = arkime_field_define("general", "integer",
-                                      "vlan.dot1ad", "VLan dot1ad", "dot1ad.id",
+                                      "vlan.dot1ad", "VLAN dot1ad", "dot1ad.id",
                                       "vlan dot1ad",
                                       ARKIME_FIELD_TYPE_INT_ARRAY_UNIQUE,  ARKIME_FIELD_FLAG_CNT | ARKIME_FIELD_FLAG_LINKED_SESSIONS,
                                       (char *)NULL);
@@ -2143,7 +2143,7 @@ void arkime_packet_init()
                         (char *)NULL);
 
     arkime_field_define("general", "termfield",
-                        "communityId", "Community Id", "communityId",
+                        "communityId", "Community ID", "communityId",
                         "Community id flow hash",
                         0,  ARKIME_FIELD_FLAG_FAKE,
                         "fieldECS", "network.community_id",
@@ -2270,11 +2270,11 @@ void arkime_packet_add_packet_ip(char *ipstr, int mode)
 {
     patricia_node_t *node;
     if (strchr(ipstr, '.') != 0) {
-        if (!ipTree4)
+        if (!newipTree4)
             newipTree4 = New_Patricia(32);
         node = make_and_lookup(newipTree4, ipstr);
     } else {
-        if (!ipTree6)
+        if (!newipTree6)
             newipTree6 = New_Patricia(128);
         node = make_and_lookup(newipTree6, ipstr);
     }

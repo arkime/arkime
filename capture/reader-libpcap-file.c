@@ -163,9 +163,9 @@ LOCAL void reader_libpcapfile_init_monitor()
 LOCAL void reader_libpcapfile_init_monitor()
 {
     if (config.commandSocket || config.commandList)
-        LOG("ERROR - Monitoring not supporting on this OS");
+        LOG("ERROR - Monitoring not supported on this OS");
     else
-        LOGEXIT("ERROR - Monitoring not supporting on this OS");
+        LOGEXIT("ERROR - Monitoring not supported on this OS");
 }
 #endif
 /******************************************************************************/

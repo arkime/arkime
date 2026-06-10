@@ -122,7 +122,7 @@ LOCAL int                    openOptions;
  * controlled by simpleCompressionBlockSize.
  * uncompressedBits is calculated so it can hold simpleCompressionBlockSize.
  * The file pos for each packet is made of two parts
- *   X the location in the file of the start of the compress block, which
+ *   X the location in the file of the start of the compressed block, which
  *   is shifted uncompressedBits
  *   Y the location inside the uncompressed block of the packet start
  * A larger simpleCompressionBlockSize leads to better compression but slower read time.
@@ -506,7 +506,7 @@ LOCAL void writer_simple_write(const ArkimeSession_t *const session, ArkimePacke
     if (DLL_COUNT(simple_, &simpleQ) > simpleMaxQ) {
         static uint32_t notSaved;
         notSaved++;
-        LOG_RATE(60, "WARNING - Disk Q of %d is too large and exceed simpleMaxQ setting so not saving %u packets. Check the Arkime FAQ about (https://arkime.com/faq#why-am-i-dropping-packets) testing disk speed", DLL_COUNT(simple_, &simpleQ), notSaved);
+        LOG_RATE(60, "WARNING - Disk Q of %d is too large and exceeds simpleMaxQ setting so not saving %u packets. Check the Arkime FAQ about (https://arkime.com/faq#why-am-i-dropping-packets) testing disk speed", DLL_COUNT(simple_, &simpleQ), notSaved);
         return;
     }
 

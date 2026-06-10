@@ -192,7 +192,7 @@ typedef enum {
 #define ARKIME_FIELD_FLAG_NODB               0x0008
 /* Not a real field in capture, just in viewer */
 #define ARKIME_FIELD_FLAG_FAKE               0x0010
-/* Don't save this fields data into memory or ES */
+/* Don't save this field's data into memory or ES */
 #define ARKIME_FIELD_FLAG_DISABLED           0x0020
 /* Save in memory but not in db.c loop, saved another way */
 #define ARKIME_FIELD_FLAG_NOSAVE             0x0040
@@ -1134,7 +1134,7 @@ void     arkime_db_memory_info(int refresh, uint64_t *memBytes, float *memPercen
 
 
 // Replace how SPI data is sent to ES.
-// The implementation must either call a arkime_http_free_buffer or another arkime_http routine that frees the buffer
+// The implementation must either call arkime_http_free_buffer or another arkime_http routine that frees the buffer
 typedef void (* ArkimeDbSendBulkFunc) (char *json, int len);
 // bulkHeader - include the bulk header
 // indexInDoc - add sessionIndex field to doc where arkime would index doc

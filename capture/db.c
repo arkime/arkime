@@ -422,7 +422,7 @@ LOCAL void arkime_db_send_bulk_cb(int code, uint8_t *data, int data_len, gpointe
         while (end < data + data_len && *end != '}') {
             end++;
         }
-        LOG("ERROR - OpenSearch/Elasticsearch is returning a FORBIDDEN error. This is mostly likely because: the index is closed, the index is read-only from ILM, or you've hit the disk water marks. %.*s", (int)(end - forbidden + 1), forbidden);
+        LOG("ERROR - OpenSearch/Elasticsearch is returning a FORBIDDEN error. This is most likely because: the index is closed, the index is read-only from ILM, or you've hit the disk watermarks. %.*s", (int)(end - forbidden + 1), forbidden);
     }
 }
 /******************************************************************************/
