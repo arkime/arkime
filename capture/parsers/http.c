@@ -523,10 +523,10 @@ LOCAL int arkime_hp_cb_on_header_value (http_parser *parser, const char *at, siz
         http->pos[http->which] = (long)(hstring ? hstring->uw : 0);
 
         if (http->pos[http->which] == 0) { // Header was not defined
-            if ((http->which == 0) && config.parseHTTPHeaderRequestAll) { // Header in request
+            if ((http->which == http->urlWhich) && config.parseHTTPHeaderRequestAll) { // Header in request
                 arkime_field_string_add(headerReqField, session, lower, -1, TRUE);
                 http->pos[http->which] = (long) headerReqValue;
-            } else if ((http->which == 1) && config.parseHTTPHeaderResponseAll) { // Header in response
+            } else if ((http->which != http->urlWhich) && config.parseHTTPHeaderResponseAll) { // Header in response
                 arkime_field_string_add(headerResField, session, lower, -1, TRUE);
                 http->pos[http->which] = (long) headerResValue;
             }

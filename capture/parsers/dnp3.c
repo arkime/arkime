@@ -118,7 +118,9 @@ LOCAL void dnp3_parse_frame(ArkimeSession_t *session, BSB *bsb)
     // Skip header CRC (2 bytes) to get to transport + application layer
     BSB_IMPORT_skip(*bsb, 2);
 
-    // Parse transport header and application layer if present
+    // Parse transport header and application layer if this frame carries user
+    // data. The BSB is bounded to this frame, so link-only frames (ACK/link-
+    // status, pduLen 5) leave BSB_REMAINING < 3 and are skipped.
     if (BSB_REMAINING(*bsb) >= 3) {
         BSB_IMPORT_skip(*bsb, 1);  // transport header
         BSB_IMPORT_skip(*bsb, 1);  // app control
@@ -184,7 +186,12 @@ LOCAL int dnp3_tcp_parser(ArkimeSession_t *session, void *uw, const uint8_t *dat
             return 0;  // Need more data
         }
 
-        dnp3_parse_frame(session, &bsb);
+        // Bound a BSB to just this frame so the parser can't read into the next
+        // buffered frame, then skip the start bytes (2) and length (1).
+        BSB fbsb;
+        BSB_INIT(fbsb, dnp3->buf[which], totalLen);
+        BSB_IMPORT_skip(fbsb, 3);
+        dnp3_parse_frame(session, &fbsb);
 
         arkime_parser_buf_del(dnp3, which, totalLen);
     }
@@ -222,7 +229,11 @@ LOCAL int dnp3_udp_parser(ArkimeSession_t *session, void *UNUSED(uw), const uint
         return 0;
     }
 
-    dnp3_parse_frame(session, &bsb);
+    // Bound a BSB to just this frame, then skip start bytes (2) and length (1).
+    BSB fbsb;
+    BSB_INIT(fbsb, data, totalLen);
+    BSB_IMPORT_skip(fbsb, 3);
+    dnp3_parse_frame(session, &fbsb);
 
     return 0;
 }

@@ -38,10 +38,10 @@
     "dstTTLCnt" : 1,
     "ethertype" : 2048,
     "fileId" : [],
-    "firstPacket" : 1770170675223,
+    "firstPacket" : 1781048076732,
     "ipProtocol" : 132,
-    "lastPacket" : 1770170679223,
-    "length" : 4000,
+    "lastPacket" : 1781048076732,
+    "length" : 0,
     "m3ua" : {
      "si" : [
       3
@@ -69,8 +69,8 @@
      336
     ],
     "packetRange" : {
-     "gte" : 1770170675223,
-     "lte" : 1770170679223
+     "gte" : 1781048076732,
+     "lte" : 1781048076732
     },
     "protocol" : [
      "camel",
@@ -121,7 +121,7 @@
     "tcap" : {
      "opcode" : [
       "0",
-      "1"
+      "16"
      ],
      "opcodeCnt" : 2
     },
@@ -129,7 +129,7 @@
    },
    "header" : {
     "index" : {
-     "_index" : "tests_sessions3-26m02"
+     "_index" : "tests_sessions3-26m06"
     }
    }
   },
@@ -160,10 +160,10 @@
     "dstTTLCnt" : 1,
     "ethertype" : 2048,
     "fileId" : [],
-    "firstPacket" : 1770170680223,
+    "firstPacket" : 1781048076732,
     "ipProtocol" : 132,
-    "lastPacket" : 1770170684223,
-    "length" : 4000,
+    "lastPacket" : 1781048076733,
+    "length" : 1,
     "m3ua" : {
      "si" : [
       5
@@ -191,8 +191,8 @@
      838
     ],
     "packetRange" : {
-     "gte" : 1770170680223,
-     "lte" : 1770170684223
+     "gte" : 1781048076732,
+     "lte" : 1781048076733
     },
     "protocol" : [
      "isup",
@@ -233,7 +233,7 @@
    },
    "header" : {
     "index" : {
-     "_index" : "tests_sessions3-26m02"
+     "_index" : "tests_sessions3-26m06"
     }
    }
   },
@@ -264,10 +264,10 @@
     "dstTTLCnt" : 1,
     "ethertype" : 2048,
     "fileId" : [],
-    "firstPacket" : 1770170685223,
+    "firstPacket" : 1781048076733,
     "ipProtocol" : 132,
-    "lastPacket" : 1770170689223,
-    "length" : 4000,
+    "lastPacket" : 1781048076733,
+    "length" : 0,
     "m3ua" : {
      "si" : [
       4
@@ -295,8 +295,8 @@
      1264
     ],
     "packetRange" : {
-     "gte" : 1770170685223,
-     "lte" : 1770170689223
+     "gte" : 1781048076733,
+     "lte" : 1781048076733
     },
     "protocol" : [
      "m3ua",
@@ -337,7 +337,7 @@
    },
    "header" : {
     "index" : {
-     "_index" : "tests_sessions3-26m02"
+     "_index" : "tests_sessions3-26m06"
     }
    }
   },
@@ -379,10 +379,10 @@
     "dstTTLCnt" : 1,
     "ethertype" : 2048,
     "fileId" : [],
-    "firstPacket" : 1770170690223,
+    "firstPacket" : 1781048076733,
     "ipProtocol" : 132,
-    "lastPacket" : 1770170694223,
-    "length" : 4000,
+    "lastPacket" : 1781048076734,
+    "length" : 1,
     "m3ua" : {
      "si" : [
       3
@@ -410,8 +410,8 @@
      1682
     ],
     "packetRange" : {
-     "gte" : 1770170690223,
-     "lte" : 1770170694223
+     "gte" : 1781048076733,
+     "lte" : 1781048076734
     },
     "protocol" : [
      "camel",
@@ -466,7 +466,7 @@
     "tcap" : {
      "opcode" : [
       "0",
-      "2"
+      "17"
      ],
      "opcodeCnt" : 2
     },
@@ -474,7 +474,7 @@
    },
    "header" : {
     "index" : {
-     "_index" : "tests_sessions3-26m02"
+     "_index" : "tests_sessions3-26m06"
     }
    }
   },
@@ -516,10 +516,10 @@
     "dstTTLCnt" : 1,
     "ethertype" : 2048,
     "fileId" : [],
-    "firstPacket" : 1770171694223,
+    "firstPacket" : 1781048076734,
     "ipProtocol" : 132,
-    "lastPacket" : 1770171703223,
-    "length" : 9000,
+    "lastPacket" : 1781048076735,
+    "length" : 1,
     "m3ua" : {
      "si" : [
       3
@@ -557,8 +557,8 @@
      2802
     ],
     "packetRange" : {
-     "gte" : 1770171694223,
-     "lte" : 1770171703223
+     "gte" : 1781048076734,
+     "lte" : 1781048076735
     },
     "protocol" : [
      "camel",
@@ -609,7 +609,7 @@
     "tcap" : {
      "opcode" : [
       "0",
-      "1"
+      "16"
      ],
      "opcodeCnt" : 2
     },
@@ -617,7 +617,7 @@
    },
    "header" : {
     "index" : {
-     "_index" : "tests_sessions3-26m02"
+     "_index" : "tests_sessions3-26m06"
     }
    }
   },
@@ -648,10 +648,10 @@
     "dstTTLCnt" : 1,
     "ethertype" : 2048,
     "fileId" : [],
-    "firstPacket" : 1770171704223,
+    "firstPacket" : 1781048076735,
     "ipProtocol" : 132,
-    "lastPacket" : 1770171713223,
-    "length" : 9000,
+    "lastPacket" : 1781048076736,
+    "length" : 1,
     "m3ua" : {
      "si" : [
       5
@@ -689,8 +689,8 @@
      3654
     ],
     "packetRange" : {
-     "gte" : 1770171704223,
-     "lte" : 1770171713223
+     "gte" : 1781048076735,
+     "lte" : 1781048076736
     },
     "protocol" : [
      "isup",
@@ -731,7 +731,7 @@
    },
    "header" : {
     "index" : {
-     "_index" : "tests_sessions3-26m02"
+     "_index" : "tests_sessions3-26m06"
     }
    }
   },
@@ -762,10 +762,10 @@
     "dstTTLCnt" : 1,
     "ethertype" : 2048,
     "fileId" : [],
-    "firstPacket" : 1770171714223,
+    "firstPacket" : 1781048076736,
     "ipProtocol" : 132,
-    "lastPacket" : 1770171723223,
-    "length" : 9000,
+    "lastPacket" : 1781048076737,
+    "length" : 1,
     "m3ua" : {
      "si" : [
       4
@@ -803,8 +803,8 @@
      4490
     ],
     "packetRange" : {
-     "gte" : 1770171714223,
-     "lte" : 1770171723223
+     "gte" : 1781048076736,
+     "lte" : 1781048076737
     },
     "protocol" : [
      "m3ua",
@@ -845,7 +845,7 @@
    },
    "header" : {
     "index" : {
-     "_index" : "tests_sessions3-26m02"
+     "_index" : "tests_sessions3-26m06"
     }
    }
   },
@@ -887,10 +887,10 @@
     "dstTTLCnt" : 1,
     "ethertype" : 2048,
     "fileId" : [],
-    "firstPacket" : 1770171724223,
+    "firstPacket" : 1781048076737,
     "ipProtocol" : 132,
-    "lastPacket" : 1770171733223,
-    "length" : 9000,
+    "lastPacket" : 1781048076737,
+    "length" : 0,
     "m3ua" : {
      "si" : [
       3
@@ -928,8 +928,8 @@
      5510
     ],
     "packetRange" : {
-     "gte" : 1770171724223,
-     "lte" : 1770171733223
+     "gte" : 1781048076737,
+     "lte" : 1781048076737
     },
     "protocol" : [
      "camel",
@@ -980,7 +980,7 @@
     "tcap" : {
      "opcode" : [
       "0",
-      "2"
+      "17"
      ],
      "opcodeCnt" : 2
     },
@@ -988,7 +988,7 @@
    },
    "header" : {
     "index" : {
-     "_index" : "tests_sessions3-26m02"
+     "_index" : "tests_sessions3-26m06"
     }
    }
   }
