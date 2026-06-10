@@ -11,6 +11,11 @@
 const MIN_PARLIAMENT_VERSION = 7;
 const MIN_DB_VERSION = 79;
 
+// Cap the size of responses we accept from monitored clusters so a malicious
+// or misbehaving viewer/ES node can't exhaust Parliament's memory. Even very
+// large deployments produce health/stats payloads well under this.
+const MAX_CLUSTER_RESPONSE_SIZE = 10 * 1024 * 1024; // 10MB
+
 // ----------------------------------------------------------------------------
 // DEPENDENCIES
 // ----------------------------------------------------------------------------
@@ -1083,7 +1088,10 @@ async function buildAlert (cluster, issue) {
 
   issue.alerted = Date.now();
 
-  const message = `${ArkimeUtil.safeStr(cluster.title)} - ${issue.message}`;
+  // escape the whole composed message: the cluster title, the remote node
+  // name, and any error values come from monitored clusters and must not be
+  // able to inject markup into notifier channels (email, etc.)
+  const message = ArkimeUtil.safeStr(`${cluster.title} - ${issue.message}`);
 
   for (const setNotifier of notifiers) {
 
@@ -1334,6 +1342,8 @@ function getHealth (cluster) {
       url: `${cluster.localUrl ?? cluster.url}/eshealth.json`,
       method: 'GET',
       httpsAgent: internals.httpsAgent,
+      maxContentLength: MAX_CLUSTER_RESPONSE_SIZE,
+      maxBodyLength: MAX_CLUSTER_RESPONSE_SIZE,
       timeout
     };
 
@@ -1383,6 +1393,8 @@ async function getStats (cluster) {
       url: `${cluster.localUrl ?? cluster.url}/api/parliament`,
       method: 'GET',
       httpsAgent: internals.httpsAgent,
+      maxContentLength: MAX_CLUSTER_RESPONSE_SIZE,
+      maxBodyLength: MAX_CLUSTER_RESPONSE_SIZE,
       timeout: Parliament.getGeneralSetting('esQueryTimeout') * 1000
     };
 
@@ -1416,16 +1428,16 @@ async function getStats (cluster) {
       for (const stat of stats.data) {
         // sum delta bytes per second
         if (stat.deltaBytesPerSec) {
-          cluster.deltaBPS += stat.deltaBytesPerSec;
+          cluster.deltaBPS += Number(stat.deltaBytesPerSec) || 0;
         }
 
         // sum delta total dropped per second
         if (stat.deltaTotalDroppedPerSec) {
-          cluster.deltaTDPS += stat.deltaTotalDroppedPerSec;
+          cluster.deltaTDPS += Number(stat.deltaTotalDroppedPerSec) || 0;
         }
 
         if (stat.monitoring) {
-          cluster.monitoring += stat.monitoring;
+          cluster.monitoring += Number(stat.monitoring) || 0;
         }
 
         if ((now - stat.currentTime) <= Parliament.getGeneralSetting('outOfDate') && stat.deltaPacketsPerSec > 0) {
