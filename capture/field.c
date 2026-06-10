@@ -2141,6 +2141,6 @@ void arkime_field_exit()
 
     // Remove those are only in exp
     HASH_FORALL_POP_HEAD2(e_, fieldsByExp, info) {
-        g_free(info->expression);
+        arkime_field_free_info(info);
     }
 }
