@@ -101,14 +101,24 @@ LOCAL int MD_pcre_create(lua_State *L)
         g_clear_error(&error);
         return lua_error(L);
     }
-    lua_pushlightuserdata(L, regex);
+    GRegex **ud = (GRegex **)lua_newuserdata(L, sizeof(GRegex *));
+    *ud = regex;
+    luaL_getmetatable(L, "ArkimeRegex");
+    lua_setmetatable(L, -2);
     return 1;
+}
+/******************************************************************************/
+LOCAL int MD_pcre_gc(lua_State *L)
+{
+    GRegex **ud = (GRegex **)luaL_checkudata(L, 1, "ArkimeRegex");
+    g_regex_unref(*ud);
+    return 0;
 }
 /******************************************************************************/
 LOCAL int MD_pcre_ismatch(lua_State *L)
 {
     const MD_t *data = checkArkimeData(L, 1);
-    const GRegex *pattern = lua_touserdata(L, 2);
+    const GRegex *pattern = *(GRegex **)luaL_checkudata(L, 2, "ArkimeRegex");
     gboolean result = g_regex_match_full(pattern, data->str, data->len, 0, 0, NULL, NULL);
     lua_pushboolean(L, result);
     return 1;
@@ -117,7 +127,7 @@ LOCAL int MD_pcre_ismatch(lua_State *L)
 LOCAL int MD_pcre_match(lua_State *L)
 {
     MD_t *data = checkArkimeData(L, 1);
-    const GRegex *pattern = lua_touserdata(L, 2);
+    const GRegex *pattern = *(GRegex **)luaL_checkudata(L, 2, "ArkimeRegex");
     GMatchInfo *match_info;
     gboolean result = g_regex_match_full(pattern, data->str, data->len, 0, 0, &match_info, NULL);
     lua_pushboolean(L, result);
@@ -143,14 +153,24 @@ LOCAL int MD_pattern_create(lua_State *L)
 {
     const char *str = luaL_checkstring(L, 1);
     GPatternSpec *pattern = g_pattern_spec_new(str);
-    lua_pushlightuserdata(L, pattern);
+    GPatternSpec **ud = (GPatternSpec **)lua_newuserdata(L, sizeof(GPatternSpec *));
+    *ud = pattern;
+    luaL_getmetatable(L, "ArkimePattern");
+    lua_setmetatable(L, -2);
     return 1;
+}
+/******************************************************************************/
+LOCAL int MD_pattern_gc(lua_State *L)
+{
+    GPatternSpec **ud = (GPatternSpec **)luaL_checkudata(L, 1, "ArkimePattern");
+    g_pattern_spec_free(*ud);
+    return 0;
 }
 /******************************************************************************/
 LOCAL int MD_pattern_ismatch(lua_State *L)
 {
     const MD_t *data = checkArkimeData(L, 1);
-    GPatternSpec *pattern = lua_touserdata(L, 2);
+    GPatternSpec *pattern = *(GPatternSpec **)luaL_checkudata(L, 2, "ArkimePattern");
     lua_pushboolean(L, g_pattern_match(pattern, data->len, data->str, NULL));
     return 1;
 }
@@ -180,6 +200,17 @@ void luaopen_arkimedata(lua_State *L)
     lua_pushvalue(L, -1);
     lua_setfield(L, -2, "__index");
     luaL_setfuncs(L, methods, 0);
+
+    luaL_newmetatable(L, "ArkimeRegex");
+    lua_pushcfunction(L, MD_pcre_gc);
+    lua_setfield(L, -2, "__gc");
+    lua_pop(L, 1);
+
+    luaL_newmetatable(L, "ArkimePattern");
+    lua_pushcfunction(L, MD_pattern_gc);
+    lua_setfield(L, -2, "__gc");
+    lua_pop(L, 1);
+
     luaL_newlib(L, functions);
     lua_setglobal(L, "ArkimeData");
 }

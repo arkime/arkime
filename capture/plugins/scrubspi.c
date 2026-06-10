@@ -108,7 +108,7 @@ LOCAL void scrubspi_add_entry(const char *key, const char *value)
 {
     char spliton[2] = {0, 0};
     spliton[0] = value[0];
-    char **values = g_strsplit(value + 1, spliton, 0); // Don't free
+    char **values = g_strsplit(value + 1, spliton, 0);
 
     if (!values[0] || !values[1])
         CONFIGEXIT("'%s' bad format, should be '/search pcre/replace literal/', where the '/' can be any char in all three places", value);
