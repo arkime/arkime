@@ -41,6 +41,21 @@ class ArkimeUtil {
 
   // ---------------------------------------------------------------------------
   /**
+   * Neutralize CSV/spreadsheet formula injection. A cell that begins with one
+   * of = + - @ TAB CR can execute as a formula when the export is opened in
+   * Excel/Google Sheets. Since values can come from captured traffic or other
+   * untrusted input, prefix risky cells with a single quote.
+   */
+  static csvSafeStr (str) {
+    if (typeof str !== 'string') { str = String(str); }
+    if (str.length > 0 && '=+-@\t\r'.includes(str[0])) {
+      return "'" + str;
+    }
+    return str;
+  }
+
+  // ---------------------------------------------------------------------------
+  /**
    * For both arrays and single values escape entities
    */
   static safeStr (str) {

@@ -655,9 +655,12 @@ class User {
           if (value === undefined) {
             value = '';
           } else if (Array.isArray(value)) {
-            value = '"' + value.join(', ').replace(/"/g, '""') + '"';
-          } else if (typeof (value) === 'string' && (value.includes(',') || value.includes('"') || value.includes('\n') || value.includes('\r'))) {
-            value = '"' + value.replace(/"/g, '""') + '"';
+            value = '"' + value.map(v => ArkimeUtil.csvSafeStr(String(v))).join(', ').replace(/"/g, '""') + '"';
+          } else if (typeof (value) === 'string') {
+            value = ArkimeUtil.csvSafeStr(value);
+            if (value.includes(',') || value.includes('"') || value.includes('\n') || value.includes('\r')) {
+              value = '"' + value.replace(/"/g, '""') + '"';
+            }
           }
           values.push(value);
         }

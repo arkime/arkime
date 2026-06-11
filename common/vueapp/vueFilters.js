@@ -4,6 +4,22 @@
 import moment from 'moment-timezone';
 
 /**
+ * Escapes HTML special characters.
+ *
+ * @param {string} str The string to escape
+ * @returns {string}   The HTML-escaped string
+ */
+export const escapeHtml = function (str) {
+  if (str === undefined || str === null) { return str; }
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+};
+
+/**
  * Rounds a number using Math.round
  *
  * @example

@@ -44,6 +44,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #4004 Fix Ubuntu 26.04 builds having the incorrect dependencies
 ## All
   - #4030 Fix hidePcap/hideFiles/hideStats/disablePcapDownload failing open for users with the permission inherited from multiple roles
+  - #4031 Fix CSV formula injection in session, connection, and user CSV exports by neutralizing cells starting with = + - @
 ## Capture
   - #3996 Added mssing ntlm.detail.jade for NTLM session detail rendering
   - #3996 Added opcua parser (OPC UA Binary) with opcua.endpointUrl, opcua.securityPolicyUri and SenderCertificate parsing
@@ -89,6 +90,8 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #4018 Added support for preauth and postauth endpoint registration to plugins
   - #4027 Fix viewer crash when /api/sessions/csv with ids fails to build the query
   - #4027 Fix malformed TOTP codes causing a request error instead of being treated as invalid
+  - #4031 Fix potential stored XSS in session detail
+  - #4031 Fix possible stored XSS in hunt search string
 ## Wise
   - #3999 Mark phpipam appCode/password and fieldactions/valueactions url fields as secret so they are redacted in /config/get
   - #3999 Add /api/user endpoint and hide save/import/create-source UI controls from non-wiseAdmin users
