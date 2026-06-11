@@ -673,6 +673,131 @@
      "_index" : "tests_sessions3-23m11"
     }
    }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 75
+    },
+    "destination" : {
+     "bytes" : 120,
+     "ip" : "10.0.0.100",
+     "packets" : 3,
+     "port" : 1883
+    },
+    "dstTTL" : [
+     64
+    ],
+    "dstTTLCnt" : 1,
+    "fileId" : [],
+    "firstPacket" : 1700000050000,
+    "initRTT" : 50,
+    "ipProtocol" : 6,
+    "lastPacket" : 1700000050300,
+    "length" : 300,
+    "mqtt" : {
+     "clientId" : [
+      "iot-gateway-west"
+     ],
+     "clientIdCnt" : 1,
+     "flags" : [
+      "cleanSession"
+     ],
+     "flagsCnt" : 1,
+     "topic" : [
+      "unsub/first",
+      "unsub/second"
+     ],
+     "topicCnt" : 2,
+     "type" : [
+      "CONNECT",
+      "UNSUBSCRIBE"
+     ],
+     "typeCnt" : 2,
+     "version" : [
+      "3.1.1"
+     ],
+     "versionCnt" : 1
+    },
+    "network" : {
+     "bytes" : 355,
+     "community_id" : "1:tY0DpdNCQeGlb1LS60KVYqBuV4w=",
+     "packets" : 7
+    },
+    "node" : "test",
+    "packetLen" : [
+     56,
+     56,
+     56,
+     100,
+     56,
+     87,
+     56
+    ],
+    "packetPos" : [
+     3210,
+     3266,
+     3322,
+     3378,
+     3478,
+     3534,
+     3621
+    ],
+    "packetRange" : {
+     "gte" : 1700000050000,
+     "lte" : 1700000050300
+    },
+    "protocol" : [
+     "mqtt",
+     "tcp"
+    ],
+    "protocolCnt" : 2,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 0
+    },
+    "source" : {
+     "bytes" : 235,
+     "ip" : "192.168.1.60",
+     "packets" : 4,
+     "port" : 55556
+    },
+    "srcPayload8" : "102a00044d515454",
+    "srcRIR" : "ARIN",
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
+    "tcpflags" : {
+     "ack" : 3,
+     "ae" : 0,
+     "cwr" : 0,
+     "dstZero" : 0,
+     "ece" : 0,
+     "fin" : 0,
+     "psh" : 2,
+     "rst" : 0,
+     "srcZero" : 0,
+     "syn" : 1,
+     "syn-ack" : 1,
+     "urg" : 0
+    },
+    "tcpseq" : {
+     "dst" : 0,
+     "src" : 4096
+    },
+    "totDataBytes" : 75,
+    "user" : [
+     "gateway_user"
+    ],
+    "userCnt" : 1
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-23m11"
+    }
+   }
   }
  ]
 }

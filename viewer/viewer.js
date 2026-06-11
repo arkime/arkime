@@ -883,7 +883,7 @@ function sendSessionWorker (options, cb) {
     }
     if (!session) {
       console.log('no session', session, 'err', err, 'id', options.id);
-      return;
+      return cb();
     }
     session.id = options.id;
     session.packetPos = ps;

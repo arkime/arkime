@@ -1,6 +1,6 @@
 /* tcp.c
  *
- * Since this used to be part of packet.c still a little more coupled then we would like
+ * Since this used to be part of packet.c still a little more coupled than we would like
  *
  * Copyright 2019 AOL Inc. All rights reserved.
  *
@@ -76,10 +76,10 @@ LOCAL void tcp_session_free(ArkimeSession_t *session)
 LOCAL int64_t tcp_sequence_diff(int64_t a, int64_t b)
 {
     if (a > 0xc0000000 && b < 0x40000000)
-        return a + 0x100000000LL - b;
+        return b + 0x100000000LL - a;
 
     if (b > 0xc0000000 && a < 0x40000000)
-        return a - b - 0x100000000LL;
+        return b - a - 0x100000000LL;
 
     return b - a;
 }
@@ -344,7 +344,7 @@ LOCAL int tcp_packet_process(ArkimeSession_t *const session, ArkimePacket_t *con
     td->dataOffset = packet->payloadOffset + 4 * tcphdr->th_off;
 
 #ifdef DEBUG_TCP
-    LOG("dir: %u seq: %u ack: %u len: %d diff0: %" PRIu64, packet->direction, seq, ack, len, diff);
+    LOG("dir: %u seq: %u ack: %u len: %d diff0: %" PRId64, packet->direction, seq, ack, len, diff);
 #endif
 
     if (DLL_COUNT(td_, tcpData) == 0) {

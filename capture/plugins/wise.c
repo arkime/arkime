@@ -715,7 +715,7 @@ LOCAL void wise_plugin_pre_save(ArkimeSession_t *session, int UNUSED(final))
                 continue;
             }
 
-            // This session doesn't have this many fields or field isnt set
+            // This session doesn't have this many fields or field isn't set
             if (pos < 0 || pos >= session->maxFields || !session->fields[pos] || !config.fields[pos])
                 continue;
 

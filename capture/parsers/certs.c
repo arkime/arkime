@@ -33,7 +33,7 @@ typedef struct arkime_certsinfo {
     ArkimeCertInfo_t         subject;
     ArkimeStringHead_t       alt;
     uint8_t                 *serialNumber;
-    short                    serialNumberLen;
+    uint32_t                 serialNumberLen;
     uint8_t                  hash[60];
     char                     isCA;
     const char              *publicAlgorithm;
@@ -84,7 +84,7 @@ LOCAL void certinfo_save(BSB *jbsb, ArkimeFieldObject_t *object, ArkimeSession_t
     SAVE_STRING_HEAD(ci->subject.orgUnit, "subjectOU");
 
     if (ci->serialNumber) {
-        int k;
+        uint32_t k;
         BSB_EXPORT_cstr(*jbsb, "\"serial\":\"");
         for (k = 0; k < ci->serialNumberLen; k++) {
             BSB_EXPORT_sprintf(*jbsb, "%02x", ci->serialNumber[k]);
@@ -501,9 +501,10 @@ LOCAL int certinfo_process_single_cert(ArkimeSession_t *session, const uint8_t *
             goto bad_cert;
         }
     }
-    certs->serialNumberLen = alen;
-    certs->serialNumber = ARKIME_SIZE_ALLOC("serialNumber", alen);
-    memcpy(certs->serialNumber, value, alen);
+    // RFC 5280 says serialNumber is max 20 octets, but some CAs violate that; cap defensively
+    certs->serialNumberLen = MIN(alen, 256);
+    certs->serialNumber = ARKIME_SIZE_ALLOC("serialNumber", certs->serialNumberLen);
+    memcpy(certs->serialNumber, value, certs->serialNumberLen);
 
     /* signature */
     if (!arkime_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen)) {
@@ -656,7 +657,10 @@ GPtrArray *arkime_field_certsinfo_get_extra(const ArkimeSession_t *session, cons
 
     GPtrArray *array = NULL;
     HASH_FORALL2(o_, *ohash, object) {
-        char *value = g_hash_table_lookup(((ArkimeCertsInfo_t *)object->object)->extra, key);
+        GHashTable *extra = ((ArkimeCertsInfo_t *)object->object)->extra;
+        if (!extra)
+            continue;
+        char *value = g_hash_table_lookup(extra, key);
         if (value) {
             if (!array) {
                 array = g_ptr_array_new();

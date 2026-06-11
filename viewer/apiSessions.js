@@ -34,6 +34,34 @@ const { LRUCache } = require('lru-cache');
 const sanitizeHtml = require('sanitize-html');
 const BuildQuery = require('./buildQuery');
 
+// Replace pug's escape with the same algorithm plus {. Detail HTML must be
+// sanitized with decodeEntities:false so the &#123; survives to the client.
+const pugRuntime = require('pug-runtime');
+const pugMatchHtmlVue = /["&<>{]/;
+pugRuntime.escape = function pugEscapeVue (_html) {
+  const html = '' + _html;
+  const regexResult = pugMatchHtmlVue.exec(html);
+  if (!regexResult) return _html;
+
+  let result = '';
+  let i, lastIndex, esc;
+  for (i = regexResult.index, lastIndex = 0; i < html.length; i++) {
+    switch (html.charCodeAt(i)) {
+    case 34: esc = '&quot;'; break;
+    case 38: esc = '&amp;'; break;
+    case 60: esc = '&lt;'; break;
+    case 62: esc = '&gt;'; break;
+    case 123: esc = '&#123;'; break;
+    default: continue;
+    }
+    if (lastIndex !== i) result += html.substring(lastIndex, i);
+    lastIndex = i + 1;
+    result += esc;
+  }
+  if (lastIndex !== i) return result + html.substring(lastIndex, i);
+  else return result;
+};
+
 const headerlru = new LRUCache({ max: 100 });
 
 const SEGMENTS_REGEX = /^(time|all)$/;
@@ -172,13 +200,16 @@ class SessionAPIs {
           }
 
           if (Array.isArray(value)) {
-            const singleValue = '"' + value.map(v => String(v).replace(/"/g, '""')).join(', ') + '"';
+            const singleValue = '"' + value.map(v => ArkimeUtil.csvSafeStr(String(v)).replace(/"/g, '""')).join(', ') + '"';
             values.push(singleValue);
           } else {
             if (value === undefined) {
               value = '';
-            } else if (typeof (value) === 'string' && (value.includes(',') || value.includes('"') || value.includes('\n') || value.includes('\r'))) {
-              value = '"' + value.replace(/"/g, '""') + '"';
+            } else if (typeof (value) === 'string') {
+              value = ArkimeUtil.csvSafeStr(value);
+              if (value.includes(',') || value.includes('"') || value.includes('\n') || value.includes('\r')) {
+                value = '"' + value.replace(/"/g, '""') + '"';
+              }
             }
             values.push(value);
           }
@@ -1039,8 +1070,8 @@ class SessionAPIs {
 
       // js has 53 bit numbers, this will overflow on Jun 05 2255
       const time = buffer.readUInt32LE(0) * 1000000 + buffer.readUInt32LE(4);
-      b.writeUInt32LE(Math.floor(time / 0x100000000), boffset + 12); // Block Len 1
-      b.writeUInt32LE(time % 0x100000000, boffset + 16); // Interface Id
+      b.writeUInt32LE(Math.floor(time / 0x100000000), boffset + 12); // Timestamp High
+      b.writeUInt32LE(time % 0x100000000, boffset + 16); // Timestamp Low
 
       buffer.copy(b, boffset + 20, 8, buffer.length - 8); // cap_len, packet_len
       b.fill(0, boffset + 12 + buffer.length, boffset + 12 + buffer.length + (4 - (buffer.length % 4)) % 4); // padding
@@ -1697,7 +1728,7 @@ class SessionAPIs {
       SessionAPIs.sessionsListFromIds(req, ids, fields, (err, list) => {
         if (err) {
           console.log('ERROR - getSessionsCSV', util.inspect(err, false, 50));
-          res.end(JSON.stringify({ success: false, text: 'Can\'t get sessions from IDs', i18n: 'api.sessions.cantGetSessions' }));
+          return res.end(JSON.stringify({ success: false, text: 'Can\'t get sessions from IDs', i18n: 'api.sessions.cantGetSessions' }));
         }
         SessionAPIs.#csvListWriter(req, res, ['start', 'data', 'end'], list, reqFields);
       });
@@ -2587,6 +2618,7 @@ class SessionAPIs {
           console.log('/api/session/%s/%s/detail rendering', ArkimeUtil.sanitizeStr(req.params.nodeName), ArkimeUtil.sanitizeStr(req.params.id), data.replace(/>/g, '>\n'));
         }
         const html = sanitizeHtml(data, {
+          parser: { decodeEntities: false }, // keep &#123; from pugEscapeVue so it survives to the client
           allowedTags: [
             // Standard HTML
             'h3', 'h4', 'h5', 'h6', 'a', 'b', 'i', 'strong', 'em', 'div',
@@ -3811,9 +3843,9 @@ class SessionAPIs {
    * @name /sessions/:nodeName/send
    * @param {SessionsQuery} See_List - This API supports a common set of parameters documented in the SessionsQuery section
    * @param {string} ids - Comma separated list of session ids.
-   * @param {string} tags - Commas separated list of tags to tag the sent sessions with.
+   * @param {string} tags - Comma separated list of tags to tag the sent sessions with.
    * @param {string} cluster - The name of the Arkime cluster to send the sessions.
-   * @param {saveId} saveId - The sessionId to use on the remote side.
+   * @param {string} saveId - The sessionId to use on the remote side.
    */
   static sendSessionsToNode (req, res) {
     ArkimeUtil.noCache(req, res);
@@ -3899,7 +3931,7 @@ class SessionAPIs {
    *
    * Receive sessions.
    * @name /sessions/receive
-   * @param {saveId} saveId - The sessionId to save the session.
+   * @param {string} saveId - The sessionId to save the session.
    */
   static #saveIds = {};
   static receiveSession (req, res) {

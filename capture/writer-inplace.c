@@ -53,7 +53,7 @@ LOCAL long writer_inplace_create(ArkimePacket_t *const packet)
 }
 
 /******************************************************************************/
-LOCAL void writer_inplace_write(const ArkimeSession_t *const UNUSED(session), ArkimePacket_t *const packet)
+LOCAL void writer_inplace_write(const ArkimeSession_t *const session, ArkimePacket_t *const packet)
 {
     // Check without lock first since outputId is only set once and never cleared
     long outputId = offlineInfo[packet->readerPos].outputId;

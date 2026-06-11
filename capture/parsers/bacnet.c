@@ -125,14 +125,14 @@ LOCAL void bacnet_parse_object_name(ArkimeSession_t *session, BSB *bsb)
 {
     // Scan for CharacterString tags:
     // - Application tag 7 (0x7x where x is length, or 0x75 for extended length)
-    // - Context tag 7 for object-name in Who-Has (0x3d for extended length)
+    // - Context tag 3 for object-name in Who-Has (0x3d for extended length)
     while (BSB_REMAINING(*bsb) >= 3) {
         uint8_t tag = 0;
         BSB_IMPORT_u08(*bsb, tag);
 
         // Check for CharacterString:
         // Application tag 7: 0x70-0x77 (high nibble 0x7)
-        // Context tag 7: 0x38-0x3F (context 7, primitive or constructed)
+        // Context tag 3: 0x38-0x3F (context 3, primitive or constructed)
         uint8_t isCharString = 0;
         uint8_t lenByte = tag & 0x07;
 
@@ -140,7 +140,7 @@ LOCAL void bacnet_parse_object_name(ArkimeSession_t *session, BSB *bsb)
             // Application tag 7 (CharacterString)
             isCharString = 1;
         } else if ((tag & 0xF8) == 0x38) {
-            // Context tag 7 (often used for object-name in requests)
+            // Context tag 3 (often used for object-name in requests)
             isCharString = 1;
         }
 

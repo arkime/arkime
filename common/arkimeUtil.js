@@ -41,6 +41,21 @@ class ArkimeUtil {
 
   // ---------------------------------------------------------------------------
   /**
+   * Neutralize CSV/spreadsheet formula injection. A cell that begins with one
+   * of = + - @ TAB CR can execute as a formula when the export is opened in
+   * Excel/Google Sheets. Since values can come from captured traffic or other
+   * untrusted input, prefix risky cells with a single quote.
+   */
+  static csvSafeStr (str) {
+    if (typeof str !== 'string') { str = String(str); }
+    if (str.length > 0 && '=+-@\t\r'.includes(str[0])) {
+      return "'" + str;
+    }
+    return str;
+  }
+
+  // ---------------------------------------------------------------------------
+  /**
    * For both arrays and single values escape entities
    */
   static safeStr (str) {
@@ -57,7 +72,7 @@ class ArkimeUtil {
 
   // ----------------------------------------------------------------------------
   /**
-   * Replace ESC character with ESC. This should be used when console.log of
+   * Replace ESC character with *ESC*. This should be used when console.log of
    * any user input to stop ESC 52 issues
    */
   static sanitizeStr (str) {
@@ -192,11 +207,11 @@ class ArkimeUtil {
       return new Redis(url);
     }
 
-    // redis-sentinel://sentinelPassword:redisPassword@host:port[,hostN;portN]/name/db
+    // redis-sentinel://sentinelPassword:redisPassword@host:port[,hostN:portN]/name/db
     if (url.startsWith('redis-sentinel://')) {
       const match = url.match(/(redis-sentinel):\/\/(([^:]+)?:([^@]+)?@)?([^/]+)\/([^/]+)\/([0-9]+)(\/.+)?/);
       if (!match) {
-        console.log(`${section} - ERROR - can't parse redis-sentinel url '%s' should be of form //[sentinelPassword:redisPassword@]sentinelHost[:sentinelPort][,sentinelPortN[:sentinelPortN]]/redisName/redisDbNum`, url);
+        console.log(`${section} - ERROR - can't parse redis-sentinel url '%s' should be of form //[sentinelPassword:redisPassword@]sentinelHost[:sentinelPort][,sentinelHostN[:sentinelPortN]]/redisName/redisDbNum`, url);
         process.exit(1);
       }
 
@@ -412,7 +427,7 @@ class ArkimeUtil {
    */
   static missingResource (err, req, res, next) {
     res.status(404);
-    console.log('Can not locate requested resource', ArkimeUtil.sanitizeStr(req.path));
+    console.log('Cannot locate requested resource', ArkimeUtil.sanitizeStr(req.path));
     return res.send('Cannot locate resource');
   }
 
@@ -447,8 +462,8 @@ class ArkimeUtil {
   // ----------------------------------------------------------------------------
   /**
    * Breaks file of certificates into an array of separate certificates
-   * @param {string} string - The file containing certificates
-   * @returns {Array} The array of values parsed from the string
+   * @param {string} certificateFile - Path to the file containing certificates
+   * @returns {Array|undefined} The array of certificates read from the file, or undefined if none found
    */
   static certificateFileToArray (certificateFile) {
     if (certificateFile && certificateFile.length > 0) {

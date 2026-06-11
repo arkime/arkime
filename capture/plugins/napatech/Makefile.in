@@ -1,13 +1,15 @@
-INCLUDE_KAFKA  = @KAFKA_CFLAGS@
-LIB_KAFKA = @KAFKA_LIBS@
+INCLUDE_PCAP  = @PCAP_CFLAGS@
+
 INCLUDE_OTHER = -I../.. -I../../thirdparty \
                 @GLIB2_CFLAGS@
+
+NTDIR         ?= /opt/napatech3
 
 SRCS=$(wildcard *.c)
 SOS=$(patsubst %.c,../%.so,$(SRCS))
 
 ../%.so : %.c ../../arkime.h ../../hash.h ../../dll.h
-	$(CC) -pthread @SHARED_FLAGS@ -o $@ @CFLAGS@ -Wall -Wextra -D_GNU_SOURCE -fPIC $(INCLUDE_OTHER) $(INCLUDE_KAFKA) $< $(LIB_KAFKA)
+	$(CC) -pthread @SHARED_FLAGS@ -I$(NTDIR)/include $(INCLUDE_PCAP) -o $@ @CFLAGS@ -Wall -Wextra -D_GNU_SOURCE -fPIC $(INCLUDE_OTHER) $< -Wl,-rpath=$(NTDIR)/lib -L$(NTDIR)/lib -lntapi
 
 all:$(SOS)
 

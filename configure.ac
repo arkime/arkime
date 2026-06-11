@@ -13,6 +13,7 @@ AC_CONFIG_FILES([
   capture/plugins/daq/Makefile
   capture/plugins/pfring/Makefile
   capture/plugins/snf/Makefile
+  capture/plugins/napatech/Makefile
   capture/plugins/lua/Makefile
   capture/plugins/kafka/Makefile
   capture/parsers/Makefile

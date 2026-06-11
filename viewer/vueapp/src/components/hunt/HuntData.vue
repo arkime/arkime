@@ -89,7 +89,7 @@ SPDX-License-Identifier: Apache-2.0
       <span
         v-html="$t('hunts.results-searchedHtml', {
           matched: commaString(localJob.matchedSessions),
-          search: localJob.search,
+          search: escapeHtml(localJob.search),
           searchType: localJob.searchType,
           searched: localJob.failedSessionIds && localJob.failedSessionIds.length ? commaString(localJob.searchedSessions - localJob.failedSessionIds.length) : commaString(localJob.searchedSessions),
           total: commaString(localJob.totalSessions)
@@ -313,7 +313,7 @@ import HuntStatus from './HuntStatus.vue';
 import HuntService from './HuntService';
 import Focus from '@common/Focus.vue';
 import RoleDropdown from '@common/RoleDropdown.vue';
-import { commaString, timezoneDateString } from '@common/vueFilters.js';
+import { commaString, timezoneDateString, escapeHtml } from '@common/vueFilters.js';
 
 export default {
   name: 'HuntData',
@@ -373,6 +373,7 @@ export default {
   methods: {
     commaString,
     timezoneDateString,
+    escapeHtml,
     removeJob: function (job, list) {
       this.$emit('removeJob', job, list);
     },

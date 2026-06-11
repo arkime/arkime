@@ -310,7 +310,7 @@ LOCAL int reader_scheme_header_common(const char *uri, int dlt, int snaplen, con
 
         arkime_field_ops_init(&readerFieldOps[readerState.readerPos], readerFilenameOpsNum, ARKIME_FIELD_OPS_FLAGS_COPY);
 
-        // Go thru all the filename ops looking for matches and then expand the value string
+        // Go through all the filename ops looking for matches and then expand the value string
         for (int i = 0; i < readerFilenameOpsNum; i++) {
             GMatchInfo *match_info = 0;
             g_regex_match(readerFilenameOps[i].regex, uri, 0, &match_info);
@@ -801,7 +801,9 @@ LOCAL int arkime_reader_scheme_processNG(const char *uri, uint8_t *data, int len
                 readerState.pktlen = SWAP32(readerState.pktlen);
             }
 
-            if (unlikely(readerState.pktlen > 0xffff)) {
+            // caplen must fit in the remaining block (data + options + 4 byte trailing length);
+            // it is an independent field in EPB so a bad value would underflow blockSize
+            if (unlikely(readerState.pktlen > 0xffff || readerState.pktlen > (uint32_t)(readerState.blockSize - 4))) {
                 readerState.state = ARKIME_SCHEME_NG_SKIP;
                 continue;
             }
@@ -1259,7 +1261,7 @@ void arkime_reader_scheme_init()
                                  "[--op <field>=<value>]", "Can be multiple, override command line op option",
                                  "[--skip|--noskip]", "Override command line skip files already processed",
                                  "[--monitor|--nomonitor]", "Override command line monitor the directory for new files option",
-                                 "[--recursive|--norecursive]", "Override command line Recurse sub directories option",
+                                 "[--recursive|--norecursive]", "Override command line Recurse subdirectories option",
                                  "<dir>", "Directory to process",
                                  NULL);
 }

@@ -31,16 +31,18 @@ LOCAL int nbns_decode_name(BSB *bsb, char *out, int outLen)
         return -1;
 
     int outPos = 0;
-    for (int i = 0; i < 32 && outPos < 15; i += 2) {
+    for (int i = 0; i < 30; i += 2) {  // 15 name chars; byte 16 is the suffix
         if (data[i] < 'A' || data[i] > 'P' || data[i + 1] < 'A' || data[i + 1] > 'P')
             return -1;
 
         char c = ((data[i] - 'A') << 4) | (data[i + 1] - 'A');
-        if (c == ' ')  // Trim trailing spaces
-            break;
         if (c >= 0x20 && c <= 0x7e)  // Printable ASCII only
             out[outPos++] = c;
     }
+    // NetBIOS names are space-padded to 15 chars; trim trailing spaces (embedded
+    // spaces are legal and must be preserved).
+    while (outPos > 0 && out[outPos - 1] == ' ')
+        outPos--;
     out[outPos] = '\0';
     BSB_IMPORT_skip(*bsb, 32);
 
@@ -53,6 +55,24 @@ LOCAL int nbns_decode_name(BSB *bsb, char *out, int outLen)
         BSB_IMPORT_skip(*bsb, scopeLen);
     }
 
+    return outPos;
+}
+/******************************************************************************/
+// Decode a raw 32-byte first-level-encoded NetBIOS label (no length byte) into
+// out (must hold >= 16 bytes), trimming trailing space padding. Returns length.
+LOCAL int nbns_decode_label(const uint8_t *data, char *out)
+{
+    int outPos = 0;
+    for (int i = 0; i < 30; i += 2) {  // 15 name chars; byte 16 is the suffix
+        if (data[i] < 'A' || data[i] > 'P' || data[i + 1] < 'A' || data[i + 1] > 'P')
+            break;
+        char c = ((data[i] - 'A') << 4) | (data[i + 1] - 'A');
+        if (c >= 0x20 && c <= 0x7e)
+            out[outPos++] = c;
+    }
+    while (outPos > 0 && out[outPos - 1] == ' ')
+        outPos--;
+    out[outPos] = '\0';
     return outPos;
 }
 /******************************************************************************/
@@ -80,13 +100,13 @@ LOCAL void nbns_parser(ArkimeSession_t *session, const uint8_t *data, int len)
 
     // Parse header
     uint16_t flags = 0;
-    uint16_t qdCount = 0, anCount = 0, arCount = 0;
+    uint16_t qdCount = 0, anCount = 0, nsCount = 0, arCount = 0;
 
     BSB_IMPORT_skip(bsb, 2);  // transId
     BSB_IMPORT_u16(bsb, flags);
     BSB_IMPORT_u16(bsb, qdCount);
     BSB_IMPORT_u16(bsb, anCount);
-    BSB_IMPORT_skip(bsb, 2);  // nsCount
+    BSB_IMPORT_u16(bsb, nsCount);
     BSB_IMPORT_u16(bsb, arCount);
 
     if (BSB_IS_ERROR(bsb))
@@ -121,8 +141,9 @@ LOCAL void nbns_parser(ArkimeSession_t *session, const uint8_t *data, int len)
         }
     }
 
-    // Parse answer and additional sections for responses
-    int totalAnswers = anCount + arCount;
+    // Parse all resource records (answer + authority + additional all share the
+    // same RR wire format and appear in that order).
+    int totalAnswers = anCount + nsCount + arCount;
     for (int a = 0; a < totalAnswers && !BSB_IS_ERROR(bsb); a++) {
         char name[16];
         int nameLen = 0;
@@ -134,26 +155,22 @@ LOCAL void nbns_parser(ArkimeSession_t *session, const uint8_t *data, int len)
             return;
 
         if ((firstByte & 0xc0) == 0xc0) {
-            // Compression pointer - skip second byte
-            BSB_IMPORT_skip(bsb, 1);
+            // Compression pointer: 14-bit offset from the start of the message.
+            // Resolve it so compressed answer names populate nbns.host/name.
+            uint8_t secondByte = 0;
+            BSB_IMPORT_u08(bsb, secondByte);
+            if (BSB_IS_ERROR(bsb))
+                return;
+            int offset = ((firstByte & 0x3f) << 8) | secondByte;
+            // Pointed-to name is a length byte (0x20) followed by 32 encoded bytes
+            if (offset + 33 <= len && data[offset] == 0x20)
+                nameLen = nbns_decode_label(data + offset + 1, name);
         } else if (firstByte == 0x20) {
             // Full encoded name - decode it
-            const uint8_t *nameData = BSB_WORK_PTR(bsb);
             if (BSB_REMAINING(bsb) < 32)
                 return;
 
-            int outPos = 0;
-            for (int i = 0; i < 32 && outPos < 15; i += 2) {
-                if (nameData[i] < 'A' || nameData[i] > 'P' || nameData[i + 1] < 'A' || nameData[i + 1] > 'P')
-                    break;
-                char c = ((nameData[i] - 'A') << 4) | (nameData[i + 1] - 'A');
-                if (c == ' ')
-                    break;
-                if (c >= 0x20 && c <= 0x7e)
-                    name[outPos++] = c;
-            }
-            name[outPos] = '\0';
-            nameLen = outPos;
+            nameLen = nbns_decode_label(BSB_WORK_PTR(bsb), name);
             BSB_IMPORT_skip(bsb, 32);
 
             // Skip scope
