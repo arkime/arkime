@@ -1432,8 +1432,13 @@ LOCAL void dns_save(BSB *jbsb, ArkimeFieldObject_t *object, struct arkime_sessio
     BSB_EXPORT_sprintf(*jbsb, "\"opcode\":\"%s\",", dns->query.opcode);
     BSB_EXPORT_sprintf(*jbsb, "\"queryHost\":");
     arkime_db_js0n_str(jbsb, (uint8_t *)dns->query.hostname, TRUE);
-    BSB_EXPORT_sprintf(*jbsb, ",\"qc\":\"%s\",", dns->query.class);
-    BSB_EXPORT_sprintf(*jbsb, "\"qt\":\"%s\",", dns->query.type);
+    if (dns->query.class) {
+        BSB_EXPORT_sprintf(*jbsb, ",\"qc\":\"%s\"", dns->query.class);
+    }
+    if (dns->query.type) {
+        BSB_EXPORT_sprintf(*jbsb, ",\"qt\":\"%s\"", dns->query.type);
+    }
+    BSB_EXPORT_u08(*jbsb, ',');
 
     if (HASH_COUNT(s_, dns->hosts) > 0) {
         SAVE_STRING_HASH(dns->hosts, "host");
