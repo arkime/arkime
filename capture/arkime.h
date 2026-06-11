@@ -1521,7 +1521,7 @@ void arkime_plugins_set_cb(const char             *name,
                            ArkimePluginSaveFunc    saveFunc,
                            ArkimePluginNewFunc     newFunc,
                            ArkimePluginExitFunc    exitFunc,
-                           ArkimePluginExitFunc    reloadFunc);
+                           ArkimePluginReloadFunc  reloadFunc);
 
 void arkime_plugins_set_http_cb(const char              *name,
                                 ArkimePluginHttpFunc     on_message_begin,

@@ -117,7 +117,7 @@ LOCAL void scheme_file_monitor_dir(const char *dirname, ArkimeSchemeFlags flags,
     GDir     *dir = g_dir_open(dirname, 0, &error);
 
     if (error)
-        LOGEXIT("ERROR - Couldn't open pcap directory %s: Receive Error: %s", dirname, error->message);
+        LOGEXIT("ERROR - Couldn't open pcap directory %s: %s", dirname, error->message);
 
     while (1) {
         const gchar *filename = g_dir_read_name(dir);
