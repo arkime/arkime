@@ -34,6 +34,34 @@ const { LRUCache } = require('lru-cache');
 const sanitizeHtml = require('sanitize-html');
 const BuildQuery = require('./buildQuery');
 
+// Replace pug's escape with the same algorithm plus {. Detail HTML must be
+// sanitized with decodeEntities:false so the &#123; survives to the client.
+const pugRuntime = require('pug-runtime');
+const pugMatchHtmlVue = /["&<>{]/;
+pugRuntime.escape = function pugEscapeVue (_html) {
+  const html = '' + _html;
+  const regexResult = pugMatchHtmlVue.exec(html);
+  if (!regexResult) return _html;
+
+  let result = '';
+  let i, lastIndex, esc;
+  for (i = regexResult.index, lastIndex = 0; i < html.length; i++) {
+    switch (html.charCodeAt(i)) {
+    case 34: esc = '&quot;'; break;
+    case 38: esc = '&amp;'; break;
+    case 60: esc = '&lt;'; break;
+    case 62: esc = '&gt;'; break;
+    case 123: esc = '&#123;'; break;
+    default: continue;
+    }
+    if (lastIndex !== i) result += html.substring(lastIndex, i);
+    lastIndex = i + 1;
+    result += esc;
+  }
+  if (lastIndex !== i) return result + html.substring(lastIndex, i);
+  else return result;
+};
+
 const headerlru = new LRUCache({ max: 100 });
 
 const SEGMENTS_REGEX = /^(time|all)$/;
@@ -172,13 +200,16 @@ class SessionAPIs {
           }
 
           if (Array.isArray(value)) {
-            const singleValue = '"' + value.map(v => String(v).replace(/"/g, '""')).join(', ') + '"';
+            const singleValue = '"' + value.map(v => ArkimeUtil.csvSafeStr(String(v)).replace(/"/g, '""')).join(', ') + '"';
             values.push(singleValue);
           } else {
             if (value === undefined) {
               value = '';
-            } else if (typeof (value) === 'string' && (value.includes(',') || value.includes('"') || value.includes('\n') || value.includes('\r'))) {
-              value = '"' + value.replace(/"/g, '""') + '"';
+            } else if (typeof (value) === 'string') {
+              value = ArkimeUtil.csvSafeStr(value);
+              if (value.includes(',') || value.includes('"') || value.includes('\n') || value.includes('\r')) {
+                value = '"' + value.replace(/"/g, '""') + '"';
+              }
             }
             values.push(value);
           }
@@ -2587,6 +2618,7 @@ class SessionAPIs {
           console.log('/api/session/%s/%s/detail rendering', ArkimeUtil.sanitizeStr(req.params.nodeName), ArkimeUtil.sanitizeStr(req.params.id), data.replace(/>/g, '>\n'));
         }
         const html = sanitizeHtml(data, {
+          parser: { decodeEntities: false }, // keep &#123; from pugEscapeVue so it survives to the client
           allowedTags: [
             // Standard HTML
             'h3', 'h4', 'h5', 'h6', 'a', 'b', 'i', 'strong', 'em', 'div',
