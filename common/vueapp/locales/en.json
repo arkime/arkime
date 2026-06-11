@@ -1350,11 +1350,11 @@
     "pageInfo": "page for more information, or click the owl on the top left.",
     "v7Title": "Welcome to Arkime 7!",
     "v7Intro": "Here's what's new:",
-    "v7Item1": "A modernized look on every page",
-    "v7Item2": "Dark mode and custom themes in Settings",
-    "v7Item3": "Session detail reorganized into General, Packets, and tshark tabs",
-    "v7Item4": "A new date and time picker in the search bar",
-    "v7Item5": "Packet decodings under the new Packet Options menu"
+    "v7Item1": "New look and feel with 2 new themes",
+    "v7Item2": "New session view (detail/packets/tshark)",
+    "v7Item3": "More internationalization",
+    "v7Item4": "More visualizations",
+    "v7Item5": "And many more"
   },
   "helpNotes": {
     "learnMore": "Learn more",

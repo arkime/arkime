@@ -1350,11 +1350,11 @@
     "pageInfo": "página para mais informações, ou clique na coruja no canto superior esquerdo.",
     "v7Title": "Bem-vindo ao Arkime 7!",
     "v7Intro": "Veja as novidades:",
-    "v7Item1": "Um visual modernizado em todas as páginas",
-    "v7Item2": "Modo escuro e temas personalizados nas Configurações",
-    "v7Item3": "Detalhes da sessão reorganizados nas abas Geral, Pacotes e tshark",
-    "v7Item4": "Um novo seletor de data e hora na barra de pesquisa",
-    "v7Item5": "Decodificações de pacotes no novo menu Opções de Pacote"
+    "v7Item1": "Novo visual com 2 novos temas",
+    "v7Item2": "Nova visualização de sessão (detalhes/pacotes/tshark)",
+    "v7Item3": "Mais internacionalização",
+    "v7Item4": "Mais visualizações",
+    "v7Item5": "E muito mais"
   },
   "helpNotes": {
     "learnMore": "Saiba mais",

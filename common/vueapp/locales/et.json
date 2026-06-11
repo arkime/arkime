@@ -1350,11 +1350,11 @@
     "pageInfo": "lehega lisateabe saamiseks või klõpsa öökullil vasakul üleval.",
     "v7Title": "Tere tulemast Arkime 7-sse!",
     "v7Intro": "Siin on uut:",
-    "v7Item1": "Kaasaegsem välimus igal lehel",
-    "v7Item2": "Tume režiim ja kohandatud teemad seadetes",
-    "v7Item3": "Seansi üksikasjad on ümber korraldatud vahekaartideks Üldine, Paketid ja tshark",
-    "v7Item4": "Uus kuupäeva- ja kellaajavalija otsinguribal",
-    "v7Item5": "Pakettide dekodeeringud uues paketivalikute menüüs"
+    "v7Item1": "Uus välimus koos 2 uue teemaga",
+    "v7Item2": "Uus seansivaade (üksikasjad/paketid/tshark)",
+    "v7Item3": "Rohkem rahvusvahelistamist",
+    "v7Item4": "Rohkem visualiseeringuid",
+    "v7Item5": "Ja palju muud"
   },
   "helpNotes": {
     "learnMore": "Loe lähemalt",
