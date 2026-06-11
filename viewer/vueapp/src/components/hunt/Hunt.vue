@@ -494,7 +494,7 @@ SPDX-License-Identifier: Apache-2.0
                         <span v-html="$t('hunts.runningJob-headHtml', { matched: commaString(runningJob.matchedSessions) })" />
                         <span
                           v-if="canView"
-                          v-html="$t('hunts.runningJob-canViewHtml', { search: runningJob.search, searchType: runningJob.searchType })" />
+                          v-html="$t('hunts.runningJob-canViewHtml', { search: escapeHtml(runningJob.search), searchType: runningJob.searchType })" />
                         <span
                           v-if="runningJob.failedSessionIds && runningJob.failedSessionIds.length"
                           v-html="$t('hunts.runningJob-outOfHtml', {
@@ -862,7 +862,7 @@ import HuntData from './HuntData.vue';
 import HuntRow from './HuntRow.vue';
 import RoleDropdown from '@common/RoleDropdown.vue';
 import NotifierDropdown from '@common/NotifierDropdown.vue';
-import { commaString, round } from '@common/vueFilters.js';
+import { commaString, round, escapeHtml } from '@common/vueFilters.js';
 import { resolveMessage } from '@common/resolveI18nMessage';
 // import utils
 import Utils from '../utils/utils';
@@ -1003,6 +1003,7 @@ export default {
   methods: {
     round,
     commaString,
+    escapeHtml,
     /**
      * Cancels the pending session query (if it's still pending) and runs a new
      * query if requested

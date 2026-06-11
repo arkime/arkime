@@ -1,7 +1,7 @@
 # Many of these test user/roles start with sac- (skip auto create) because
 # otherwise viewer in regression mode would auto create the user.
 # Some day should remove all autocreate code.
-use Test::More tests => 262;
+use Test::More tests => 266;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -33,6 +33,18 @@ my $json;
     eq_or_diff ($csv, 'userId, userName, enabled, webEnabled, headerAuthEnabled, roles, emailSearch, removeEnabled, packetSearch, hideStats, hideFiles, hidePcap, disablePcapDownload, expression, timeLimit
 anonymous,,true,true,false,"arkimeAdmin, cont3xtUser, parliamentUser, usersAdmin, wiseUser",true,true,true,,,,,,
 ', "CSV Users");
+
+# csv formula injection - userName/expression starting with a trigger char must be neutralized with a leading '
+    $json = viewerPostToken("/api/user", '{"userId": "sac-csvinj", "userName": "=cmd|calc", "enabled":true, "password":"password", "roles":["arkimeUser"], "expression":"+danger"}', $token);
+    eq_or_diff($json, from_json('{"text": "User created successfully", "success": true}'));
+
+    my $csvinj = $ArkimeTest::userAgent->post("http://$ArkimeTest::host:8123/api/users.csv", Content => "")->content;
+    $csvinj =~ s/\r//g;
+    like ($csvinj, qr/sac-csvinj,'=cmd\|calc,/, "CSV neutralizes formula in userName");
+    like ($csvinj, qr/,'\+danger,/, "CSV neutralizes formula in expression");
+    unlike ($csvinj, qr/,=cmd/, "CSV has no raw formula userName");
+
+    $json = viewerDeleteToken("/api/user/sac-csvinj", $token);
 
 # Can't create system rule
     $json = viewerPostToken("/api/user", '{"userId": "usersAdmin", "userName": "UserName", "enabled":true, "password":"password"}', $token);

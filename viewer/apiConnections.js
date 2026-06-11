@@ -546,14 +546,14 @@ class ConnectionAPIs {
       res.write('\r\n');
 
       for (let i = 0, ilen = links.length; i < ilen; i++) {
-        res.write('"' + nodes[links[i].source].id.replaceAll('"', '""') + '"' + separator +
-                  '"' + nodes[links[i].target].id.replaceAll('"', '""') + '"' + separator +
+        res.write('"' + ArkimeUtil.csvSafeStr(nodes[links[i].source].id).replaceAll('"', '""') + '"' + separator +
+                  '"' + ArkimeUtil.csvSafeStr(nodes[links[i].target].id).replaceAll('"', '""') + '"' + separator +
                        links[i].value + separator);
         for (let f = 0, flen = fields.length; f < flen; f++) {
           const df = displayFields[fields[f]];
           if (df) {
             const val = links[i][df.dbField];
-            res.write(val !== undefined && val !== null ? val.toString() : '');
+            res.write(val !== undefined && val !== null ? ArkimeUtil.csvSafeStr(val.toString()) : '');
           } else {
             res.write('');
           }
