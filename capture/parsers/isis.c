@@ -114,7 +114,7 @@ void arkime_parser_init()
 
 
     typeField = arkime_field_define("isis", "lotermfield",
-                                    "isis.msgType", "isis.msgType", "isis.msgType",
+                                    "isis.msgType", "Msg Type", "isis.msgType",
                                     "ISIS Msg Type field",
                                     ARKIME_FIELD_TYPE_STR_GHASH, 0,
                                     (char *)NULL);
